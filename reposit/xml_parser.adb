@@ -165,13 +165,13 @@ package body Xml_Parser is
   -------------
   -- Parse a Xml file, stdin if empty
   -- May raise File_Error, Parse_Error
-  procedure Parse (Ctx             : out Ctx_Type;
-                   File_Name       : in String;
-                   Ok              : out Boolean;
-                   Comments        : in Boolean := False;
-                   Expand_Entities : in Boolean := True;
-                   Use_Dtd         : in Boolean := True;
-                   Dtd_File        : in String  := "") is
+  procedure Parse (Ctx       : out Ctx_Type;
+                   File_Name : in String;
+                   Ok        : out Boolean;
+                   Comments  : in Boolean := False;
+                   Expand    : in Boolean := True;
+                   Use_Dtd   : in Boolean := True;
+                   Dtd_File  : in String  := "") is
   begin
     if Ctx.Status /= Clean then
       raise Status_Error;
@@ -190,7 +190,7 @@ package body Xml_Parser is
     Ctx.Flow.Xml_Line := 1;
     -- Parse this file
     Ctx.Parse_Comments := Comments;
-    Ctx.Expand_Entities := Expand_Entities;
+    Ctx.Expand := Expand;
     Ctx.Use_Dtd := Use_Dtd;
     Ctx.Dtd_File := Asu_Tus (Dtd_File);
     Parse_Mng.Parse (Ctx);
@@ -253,7 +253,7 @@ package body Xml_Parser is
       File_Mng.Close (Ctx.Flow.Dtd_File);
     end if;
     Ctx.Parse_Comments := False;
-    Ctx.Expand_Entities := True;
+    Ctx.Expand := True;
     -- Clean prologue tree
     if not My_Tree.Is_Empty (Ctx.Prologue.all) then
       My_Tree.Move_Root (Ctx.Prologue.all);
@@ -313,11 +313,11 @@ package body Xml_Parser is
   -- Parse the prologue of a string
   -- may raise Status_Error if Ctx is not clean
   --    Parse_Error while parsing the string
-  procedure Parse_Prologue (Ctx             : out Ctx_Type;
-                            Str             : in String;
-                            Ok              : out Boolean;
-                            Comments        : in Boolean := False;
-                            Expand_Entities : in Boolean := True) is
+  procedure Parse_Prologue (Ctx      : out Ctx_Type;
+                            Str      : in String;
+                            Ok       : out Boolean;
+                            Comments : in Boolean := False;
+                            Expand   : in Boolean := True) is
   begin
     if Ctx.Status /= Clean then
       raise Status_Error;
@@ -335,7 +335,7 @@ package body Xml_Parser is
     Ctx.Flow.In_Str := Asu_Tus (Str);
     Ctx.Flow.Xml_Line := 1;
     Ctx.Parse_Comments := Comments;
-    Ctx.Expand_Entities := Expand_Entities;
+    Ctx.Expand := Expand;
     Parse_Mng.Parse_Prologue (Ctx);
     -- Close the file
     Ctx.Status := Parsed_Prologue;

@@ -501,7 +501,7 @@ package body Util is
     Check_Cdata (Text);
     if not In_Dtd then
       -- In xml, only expand general entities
-      if Ctx.Expand_Entities then
+      if Ctx.Expand then
         -- If Parse was called with Expand_Entities = False
         Text := Asu_Tus (String_Mng.Eval_Variables (
                            Str => Asu_Ts (Text),

@@ -56,6 +56,7 @@ package body Dtd is
       end if;
       -- Add a dummy prologue root or a dummy child to prologue root
       Trace ("Dtd parsing xml");
+      Dummy.Line_No := 0;
       if My_Tree.Is_Empty (Ctx.Prologue.all) then
         My_Tree.Insert_Father (Ctx.Prologue.all, Dummy);
       else
@@ -810,10 +811,10 @@ package body Dtd is
   end Check_Children;
 
   -- Check attributes of element
-  procedure Check_Attributes (Ctx  : in out Ctx_Type;
-                              Adtd : in out Dtd_Type;
-                              Name : in Asu_Us;
-                              Line_No : in Natural;
+  procedure Check_Attributes (Ctx        : in out Ctx_Type;
+                              Adtd       : in out Dtd_Type;
+                              Name       : in Asu_Us;
+                              Line_No    : in Natural;
                               Attributes : in Asu_Us) is
     -- Atl, Att and Id info blocs
     Info, Attinfo, Idinfo : Info_Rec;
@@ -891,8 +892,8 @@ package body Dtd is
 
     -- Check attributes dtd vs xml
     --  Any Fixed in dtd must appear in xml and have correct value
-    --  Any default, if it does not appear in Attributes, must be added
-    --   to tree with default value
+    --  If Expand, then any default, if it does not appear in Attributes,
+    --   must be added to tree with default value
     Parser.Set (Iter_Dtd, Asu_Ts (Info.List), Is_Sep'Access);
     loop
       declare
@@ -946,7 +947,7 @@ package body Dtd is
                       & " has incorrect value "
                       & Asu_Ts (Xml_Val), Line_No);
           end if;
-        elsif Td(2) = 'D' and then not Att_Set then
+        elsif Td(2) = 'D' and then not Att_Set and then Ctx.Expand then
           -- Default in dtd with no xml value: insert default in tree
           if Td(1) = 'E' then
             -- Default of enum is first string after Info_Sep

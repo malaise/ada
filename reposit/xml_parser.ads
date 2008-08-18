@@ -12,11 +12,12 @@ with Queues, Trees, Unique_List, Text_Char;
 --  - The Xml versions (1.0 or 1.1) are not checked; 1.1 applies.
 --  - CDATA sections are detected only when a markup ('<') is expected or
 --    within text. Not "anywhere character data may occur" (parsing error).
---  - The detection and expansion of parameter entity references may not be complete.
+--  - The detection and expansion of parameter entity references may not be
+--    complete.
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "3";
+  Major_Version : constant String := "4";
   function Version return String;
 
   -----------
@@ -77,19 +78,20 @@ package Xml_Parser is
   ------------------
   -- Parse a Xml file, stdin if empty
   -- On option, allows retrieval of comments (usefull for formatter)
-  -- On option, does not expand General entities (usefull for formatter)
+  -- On option, does not expand General entities nor set attributes with
+  --  default values (usefull for formatter)
   -- On option does not check compliance with Dtd
   -- On option force a dtd file different from DOCTYPE directive
   -- May raise File_Error if error accessing the File_Name,
   --           Status_Error if Ctx is not clean
   Stdin : constant String := "";
-  procedure Parse (Ctx             : out Ctx_Type;
-                   File_Name       : in String;
-                   Ok              : out Boolean;
-                   Comments        : in Boolean := False;
-                   Expand_Entities : in Boolean := True;
-                   Use_Dtd         : in Boolean := True;
-                   Dtd_File        : in String  := "");
+  procedure Parse (Ctx       : out Ctx_Type;
+                   File_Name : in String;
+                   Ok        : out Boolean;
+                   Comments  : in Boolean := False;
+                   Expand    : in Boolean := True;
+                   Use_Dtd   : in Boolean := True;
+                   Dtd_File  : in String  := "");
   File_Error, Status_Error : exception;
 
   -- Return the error message if Parse error
@@ -123,11 +125,11 @@ package Xml_Parser is
   -- On option, allows retrieval of comments (usefull for formatter)
   -- On option, does not expand General entities (usefull for formatter)
   -- may raise Status_Error if Ctx is not clean
-  procedure Parse_Prologue (Ctx             : out Ctx_Type;
-                            Str             : in String;
-                            Ok              : out Boolean;
-                            Comments        : in Boolean := False;
-                            Expand_Entities : in Boolean := True);
+  procedure Parse_Prologue (Ctx      : out Ctx_Type;
+                            Str      : in String;
+                            Ok       : out Boolean;
+                            Comments : in Boolean := False;
+                            Expand   : in Boolean := True);
 
   -- Parse the elements (after the prologue) of a string with a dtd
   -- may raise Status_Error if Ctx is clean
@@ -402,8 +404,8 @@ private
     Flow : Flow_Type;
     -- Parse or skip comments
     Parse_Comments : Boolean := False;
-    -- Expand or not general entities
-    Expand_Entities : Boolean := True;
+    -- Expand or not general entities and attributes with default values
+    Expand : Boolean := True;
     -- Use Dtd
     Use_Dtd : Boolean := True;
     Dtd_File : Ada.Strings.Unbounded.Unbounded_String;
