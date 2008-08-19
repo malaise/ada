@@ -821,8 +821,9 @@ package body Parse_Mng  is
         Util.Error (Ctx.Flow, "Unexpected char " & Char
                             & " after " & Util.Slash);
       end if;
-      -- End of this empty element, check attributes only is OK
+      -- End of this empty element, check attributes and content
       Dtd.Check_Element (Ctx, Adtd, Check_The_Attributes => True);
+      Dtd.Check_Element (Ctx, Adtd, Check_The_Attributes => False);
       Trace ("Parsed element " & Asu_Ts (Element_Name));
       if not Root then
         Tree_Mng.Move_Up (Ctx.Elements.all);
