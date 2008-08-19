@@ -156,33 +156,50 @@ package body Dtd is
       Util.Error (Ctx.Flow, "ELEMENT " & Asu_Ts (Info_Name)
                           & " already exists");
     end if;
-    -- Parse type
+    -- Parse content
     Util.Skip_Separators (Ctx.Flow);
     Util.Check_Cdata (Ctx.Flow, 5);
-    Util.Try (Ctx.Flow, "EMPTY", Found);
+    Util.Try (Ctx.Flow, "%", Found);
     if Found then
-      Info.List := Asu_Tus ("E");
+      Util.Parse_Until_Char (Ctx.Flow, ";");
+      Info.List := "%" & Util.Get_Curr_Str (Ctx.Flow) & ";";
     else
-      Util.Try (Ctx.Flow, "ANY", Found);
+      Util.Try (Ctx.Flow, "(", Found);
       if Found then
-        Info.List := Asu_Tus ("A");
+        Util.Parse_Until_Close (Ctx.Flow);
+        -- Restore first '(' in string for further detection
+        Info.List := '(' & Util.Get_Curr_Str (Ctx.Flow);
+      else
+        Util.Parse_Until_Stop (Ctx.Flow);
+        Info.List := Util.Get_Curr_Str (Ctx.Flow);
+        -- Restore last '>' in input flow
+        Util.Unget (Ctx.Flow);
       end if;
     end if;
-    if not Found then
-      -- A list of sub-elements, possibly containing #PCDATA,
-      --  possibly followed by '*'
-      -- Must be '('
-      Util.Get (Ctx.Flow, Char);
-      if Char /= '(' then
-        Util.Error (Ctx.Flow, "Unexpected character " & Char
+
+    -- Remove all separators and expand
+    Util.Reset_Curr_Str (Ctx.Flow);
+    Info.List := Util.Remove_Separators (Info.List);
+    Util.Fix_Text (Ctx, Adtd, Info.List, True, False);
+    Trace ("Dtd checking element " & Asu_Ts (Info_Name) & " for children >"
+          & Asu_Ts (Info.List) & "<");
+
+    -- Check possible content
+    if Asu_Ts (Info.List) = "EMPTY" then
+      Info.List := Asu_Tus ("E");
+    elsif Asu_Ts (Info.List) = "ANY" then
+      Info.List := Asu_Tus ("A");
+    elsif Info.List = Asu_Null then
+      Util.Error (Ctx.Flow, "Unexpected content of ELEMENT");
+    elsif Asu.Element (Info.List, 1) /= '(' then
+      Util.Error (Ctx.Flow, "Unexpected character " & Asu.Element (Info.List, 1)
                  & " at start of ELEMENT list");
-      end if;
-      -- Get children definition (until ')' matching the '(' got)
-      Util.Parse_Until_Close (Ctx.Flow);
-      Util.Skip_Separators (Ctx.Flow);
-      Info.List := Util.Remove_Separators (Util.Get_Curr_Str (Ctx.Flow));
-      Util.Fix_Text (Ctx, Adtd, Info.List, True, False);
-      Util.Reset_Curr_Str (Ctx.Flow);
+    else
+      -- Get children definition: remove leading '('
+      Info.List := Asu_Tus (String_Mng.Extract (
+                        Asu_Ts (Info.List),
+                        Asu.Length (Info.List) - 1,
+                        False) );
       -- Now see if it is mixed or children
       if Asu.Index (Info.List, "#PCDATA") /= 0 then
         -- Mixed
@@ -1089,7 +1106,8 @@ package body Dtd is
     end if;
     if Debug_Level /= 0 then
       My_Tree.Read (Ctx.Elements.all, Cell);
-      Trace ("Dtd checking element " & Asu_Ts(Cell.Name));
+      Trace ("Dtd checking element " & Asu_Ts(Cell.Name) & " attributes "
+           & Check_The_Attributes'Img);
     end if;
     -- Read current element from tree and make its attribute and children lists
     Is_Mixed := False;
