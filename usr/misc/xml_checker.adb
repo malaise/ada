@@ -3,7 +3,7 @@ with Argument, Argument_Parser, Xml_Parser.Generator, Normal, Basic_Proc,
      Text_Line, Sys_Calls;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V4.0";
+  Version : constant String := "V4.1";
 
   -- Ada.Strings.Unbounded and Ada.Exceptions re-definitions
   package Asu renames Ada.Strings.Unbounded;
@@ -61,7 +61,7 @@ procedure Xml_Checker is
     Ple (" <one>        ::= -1 | --one        -- Put one attribute per line");
     Ple (" <expand>     ::= -e | --expand     -- Expand general entities and");
     Ple ("                                    --  attributes with default");
-    Ple (" <check_dtd>  ::= -c <Dtd> | --check_dtd=<Dtd>");
+    Ple (" <check_dtd>  ::= -c [ <Dtd> ] | --check_dtd=[<Dtd>]");
     Ple ("                                    -- Check vs a specific dtd or none");
     Ple (" <help>       ::= -h | --help       -- Put this help");
     Ple (" <version>    ::= -v | --version    -- Put versions");
