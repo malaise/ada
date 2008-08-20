@@ -167,8 +167,8 @@ package body Dtd is
       Util.Try (Ctx.Flow, "(", Found);
       if Found then
         Util.Parse_Until_Close (Ctx.Flow);
-        -- Restore first '(' in string for further detection
-        Info.List := '(' & Util.Get_Curr_Str (Ctx.Flow);
+        -- Restore '(' and ')' in string for further processing
+        Info.List := '(' & Util.Get_Curr_Str (Ctx.Flow) & ')';
       else
         Util.Parse_Until_Stop (Ctx.Flow);
         Info.List := Util.Get_Curr_Str (Ctx.Flow);
@@ -195,12 +195,22 @@ package body Dtd is
       Util.Error (Ctx.Flow, "Unexpected character " & Asu.Element (Info.List, 1)
                  & " at start of ELEMENT list");
     else
-      -- Get children definition: remove leading '(' and any seperator
+      -- Get children definition:
+      -- Remove any seperator and '(' and ')'
+      Info.List := Util.Remove_Separators (Info.List);
+      if Asu.Element (Info.List, Asu.Length (Info.List)) /= ')' then
+        Util.Error (Ctx.Flow, "Unexpected character "
+                      & Asu.Element (Info.List, Asu.Length (Info.List))
+                      & " at end of ELEMENT list");
+      end if;
       Info.List := Asu_Tus (String_Mng.Extract (
                         Asu_Ts (Info.List),
                         Asu.Length (Info.List) - 1,
                         False) );
-      Info.List := Util.Remove_Separators (Info.List);
+      Info.List := Asu_Tus (String_Mng.Extract (
+                        Asu_Ts (Info.List),
+                        Asu.Length (Info.List) - 1,
+                        True) );
       -- Now see if it is mixed or children
       if Asu.Index (Info.List, "#PCDATA") /= 0 then
         -- Mixed
@@ -266,7 +276,6 @@ package body Dtd is
     Trace ("Dtd parsed directive ELEMENT -> " & Asu_Ts (Info.Name)
          & " " & Asu_Ts(Info.List));
   end Parse_Element;
-
 
   -- Parse <!ATTLIST
   procedure Parse_Attlist (Ctx : in out Ctx_Type; Adtd : in out Dtd_Type) is
