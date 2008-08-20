@@ -733,7 +733,8 @@ package body Util is
   function Normalize_Separators (Text : Asu_Us) return Asu_Us is
     Res : Asu_Us;
     Char : Character;
-    Prev_Is_Sep : Boolean := False;
+    -- Will skip leading separators
+    Prev_Is_Sep : Boolean := True;
   begin
     for I in 1 .. Asu.Length (Text) loop
       Char := Asu.Element (Text, I);
@@ -747,6 +748,11 @@ package body Util is
         Prev_Is_Sep := False;
       end if;
     end loop;
+    -- Remove trailing space
+    if Asu.Length (Res) > 1
+    and then Asu.Element (Res, Asu.Length (Res)) = Util.Space then
+      Asu.Delete (Res, Asu.Length (Res), Asu.Length (Res));
+    end if;
     return Res;
   end Normalize_Separators;
 

@@ -177,10 +177,10 @@ package body Dtd is
       end if;
     end if;
 
-    -- Remove all separators and expand
+    -- Expand and remove all useless separators
     Util.Reset_Curr_Str (Ctx.Flow);
-    Info.List := Util.Remove_Separators (Info.List);
     Util.Fix_Text (Ctx, Adtd, Info.List, True, False);
+    Info.List := Util.Normalize_Separators (Info.List);
     Trace ("Dtd checking element " & Asu_Ts (Info_Name) & " for children >"
           & Asu_Ts (Info.List) & "<");
 
@@ -195,11 +195,12 @@ package body Dtd is
       Util.Error (Ctx.Flow, "Unexpected character " & Asu.Element (Info.List, 1)
                  & " at start of ELEMENT list");
     else
-      -- Get children definition: remove leading '('
+      -- Get children definition: remove leading '(' and any seperator
       Info.List := Asu_Tus (String_Mng.Extract (
                         Asu_Ts (Info.List),
                         Asu.Length (Info.List) - 1,
                         False) );
+      Info.List := Util.Remove_Separators (Info.List);
       -- Now see if it is mixed or children
       if Asu.Index (Info.List, "#PCDATA") /= 0 then
         -- Mixed

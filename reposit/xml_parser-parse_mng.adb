@@ -136,6 +136,7 @@ package body Parse_Mng  is
     -- Remove sepators from text
     function Remove_Separators (Text : Asu_Us) return Asu_Us;
     -- Replace any sequence of separators by a space
+    -- Remove Leading and trailing spaces
     function Normalize_Separators (Text : Asu_Us) return Asu_Us;
     -- Skip any Cdata section (<![CDATA[xxx]]>)
     -- If Full_Markup then check for <![CDATA[, else check for [CDATA[
