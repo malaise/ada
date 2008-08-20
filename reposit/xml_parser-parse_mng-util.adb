@@ -265,6 +265,26 @@ package body Util is
     end loop;
   end Read;
 
+  -- Injects Str in flow so that it will be got
+  procedure Insert (Flow : in out Flow_Type;  Str : in String) is
+  begin
+    if Flow.Kind = Xml_String then
+      -- Insert Str after current pos (last read)
+      Asu.Insert (Flow.In_Str, Flow.In_Stri + 1, Str);
+    else
+      for I in reverse Str'Range loop
+        case Flow.Kind is
+          when Xml_File =>
+            Text_Char.Unget (Flow.Xml_File, Str(I));
+          when Xml_String =>
+            null;
+          when Dtd_File =>
+            Text_Char.Unget (Flow.Dtd_File, Str(I));
+        end case;
+      end loop;
+    end if;
+  end Insert;
+
   -------------
   -- Parsing --
   -------------
