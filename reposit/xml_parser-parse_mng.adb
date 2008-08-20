@@ -64,6 +64,8 @@ package body Parse_Mng  is
     procedure Read (Flow : in out Flow_Type; Char : out Character);
     -- Read Str'Length chars got
     procedure Read (Flow : in out Flow_Type; Str : out String);
+    -- Injects Str in flow so that it will be got
+    procedure Insert (Flow : in out Flow_Type;  Str : in String);
 
     -------------
     -- Parsing --
@@ -371,7 +373,7 @@ package body Parse_Mng  is
   --  for its XML declaration
   package body Dtd is separate;
 
-  -- Check that XML instruction is set
+  -- Check that XML instruction is set, create one
   -- Inherit the Dtd encoding (if any)
   procedure Check_Xml (Ctx : in out Ctx_Type;
                        Adtd : in out Dtd_Type) is
@@ -380,8 +382,10 @@ package body Parse_Mng  is
   begin
     Tree_Mng.Xml_Existst (Ctx.Prologue.all, Ok);
     if not Ok then
-      -- Add a 'xml' directive but with no attribute
-      Util.Error (Ctx.Flow, "Missing xml directive");
+      -- Add a 'xml' directive with version 1.0
+      Tree_Mng.Set_Xml (Ctx.Prologue.all, Util.Get_Line_No (Ctx.Flow));
+      Tree_Mng.Add_Xml_Attribute (Ctx.Prologue.all,
+          Asu_Tus ("version"), Asu_Tus ("1.0"), Util.Get_Line_No (Ctx.Flow));
     end if;
     -- If Dtd has encoding and Expand
     if Adtd.Encoding = Asu_Null or else not Ctx.Expand then
@@ -410,7 +414,7 @@ package body Parse_Mng  is
         -- Only one xml declaration allowed
         Tree_Mng.Xml_Existst (Ctx.Prologue.all, Ok);
         if Ok then
-          Util.Error (Ctx.Flow, "Second declaration of xml");
+          Util.Error (Ctx.Flow, "Late or second declaration of xml");
         end if;
         Trace ("Parsing xml declaration");
         Tree_Mng.Set_Xml (Ctx.Prologue.all, Util.Get_Line_No (Ctx.Flow));

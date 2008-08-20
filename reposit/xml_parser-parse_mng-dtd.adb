@@ -55,7 +55,7 @@ package body Dtd is
         Util.Error (Ctx.Flow, "Invalid xml instruction in internal dtd");
       end if;
       if Adtd.Xml_Found then
-        Util.Error (Ctx.Flow, "Second declaration of xml in dtd");
+        Util.Error (Ctx.Flow, "Late or second declaration of xml in dtd");
       end if;
       -- Add a dummy prologue root or a dummy child to prologue root
       Trace ("Dtd parsing xml");
@@ -73,13 +73,14 @@ package body Dtd is
       -- Delete this dummy child
       My_Tree.Delete_Tree (Ctx.Prologue.all);
       -- Done
-      Adtd.Xml_Found := True;
       Trace ("Dtd parsed instruction " & Asu_Ts(Util.Get_Curr_Str (Ctx.Flow)));
       Util.Reset_Curr_Str (Ctx.Flow);
     else
       -- Parse instruction as if in Xml
       Parse_Instruction (Ctx, Adtd);
     end if;
+    -- Xml instruction not allowed any more
+    Adtd.Xml_Found := True;
   end Parse_Instruction;
 
   -- Build the regexp: <name> -> (#<name>#) ,  . -> \.
@@ -159,58 +160,44 @@ package body Dtd is
     -- Parse content
     Util.Skip_Separators (Ctx.Flow);
     Util.Check_Cdata (Ctx.Flow, 5);
-    Util.Try (Ctx.Flow, "%", Found);
+
+    Util.Parse_Until_Stop (Ctx.Flow);
+    Util.Unget (Ctx.Flow);
+    Info.List := Util.Get_Curr_Str (Ctx.Flow);
+    Util.Reset_Curr_Str (Ctx.Flow);
+    -- Expand potential parameter entities and re-insert
+    Util.Fix_Text (Ctx, Adtd, Info.List, True, False);
+    Info.List := Util.Normalize_Separators (Info.List);
+    Util.Insert (Ctx.Flow, Asu_Ts (Info.List));
+
+    -- Check possible content: EMPTY, ANY or (<list>)
+    Util.Try (Ctx.Flow, "EMPTY", Found);
     if Found then
-      Util.Parse_Until_Char (Ctx.Flow, ";");
-      Info.List := "%" & Util.Get_Curr_Str (Ctx.Flow) & ";";
-    else
-      Util.Try (Ctx.Flow, "(", Found);
+      Info.List := Asu_Tus ("E");
+    end if;
+    if not Found then
+      Util.Try (Ctx.Flow, "ANY", Found);
       if Found then
-        Util.Parse_Until_Close (Ctx.Flow);
-        -- Restore '(' and ')' in string for further processing
-        Info.List := '(' & Util.Get_Curr_Str (Ctx.Flow) & ')';
+        Info.List := Asu_Tus ("A");
+      end if;
+    end if;
+    if not Found then
+      Util.Try (Ctx.Flow, "(", Found);
+      if not Found then
+        Util.Error (Ctx.Flow, "Unexpected character "
+                 & Asu.Element (Info.List, 1)
+                 & " at start of ELEMENT list");
       else
-        Util.Parse_Until_Stop (Ctx.Flow);
-        Info.List := Util.Get_Curr_Str (Ctx.Flow);
-        -- Restore last '>' in input flow
-        Util.Unget (Ctx.Flow);
+        -- A (mixed) list
+        Found := False;
       end if;
     end if;
 
-    -- Expand and remove all useless separators
-    Util.Reset_Curr_Str (Ctx.Flow);
-    Util.Fix_Text (Ctx, Adtd, Info.List, True, False);
-    Info.List := Util.Normalize_Separators (Info.List);
-    Trace ("Dtd checking element " & Asu_Ts (Info_Name) & " for children >"
-          & Asu_Ts (Info.List) & "<");
-
-    -- Check possible content
-    if Asu_Ts (Info.List) = "EMPTY" then
-      Info.List := Asu_Tus ("E");
-    elsif Asu_Ts (Info.List) = "ANY" then
-      Info.List := Asu_Tus ("A");
-    elsif Info.List = Asu_Null then
-      Util.Error (Ctx.Flow, "Unexpected content of ELEMENT");
-    elsif Asu.Element (Info.List, 1) /= '(' then
-      Util.Error (Ctx.Flow, "Unexpected character " & Asu.Element (Info.List, 1)
-                 & " at start of ELEMENT list");
-    else
-      -- Get children definition:
-      -- Remove any seperator and '(' and ')'
-      Info.List := Util.Remove_Separators (Info.List);
-      if Asu.Element (Info.List, Asu.Length (Info.List)) /= ')' then
-        Util.Error (Ctx.Flow, "Unexpected character "
-                      & Asu.Element (Info.List, Asu.Length (Info.List))
-                      & " at end of ELEMENT list");
-      end if;
-      Info.List := Asu_Tus (String_Mng.Extract (
-                        Asu_Ts (Info.List),
-                        Asu.Length (Info.List) - 1,
-                        False) );
-      Info.List := Asu_Tus (String_Mng.Extract (
-                        Asu_Ts (Info.List),
-                        Asu.Length (Info.List) - 1,
-                        True) );
+    if not Found then
+      -- A (mixed) list: parse until ')' and remove any seperator
+      Util.Parse_Until_Close (Ctx.Flow);
+      Info.List := Util.Remove_Separators (Util.Get_Curr_Str (Ctx.Flow));
+      Util.Reset_Curr_Str (Ctx.Flow);
       -- Now see if it is mixed or children
       if Asu.Index (Info.List, "#PCDATA") /= 0 then
         -- Mixed
@@ -284,6 +271,8 @@ package body Dtd is
     Found : Boolean;
     -- Element, attribute name and type
     Elt_Name, Att_Name, Att_Type : Asu_Us;
+    -- Complete Attlist to expand
+    Attlist : Asu_Us;
     -- Type and default chars
     Typ_Char, Def_Char : Character;
     -- Enum List
@@ -327,6 +316,19 @@ package body Dtd is
       Trace ("Dtd retrieved previous ATTLIST -> " & Asu_Ts (Info.Name)
            & " " & Asu_Ts (Info.List));
     end if;
+
+    -- Parse Attlist
+    Util.Skip_Separators (Ctx.Flow);
+    Util.Check_Cdata (Ctx.Flow, 5);
+
+    Util.Parse_Until_Stop (Ctx.Flow);
+    Util.Unget (Ctx.Flow);
+    Attlist := Util.Get_Curr_Str (Ctx.Flow);
+    Util.Reset_Curr_Str (Ctx.Flow);
+    -- Expand potential parameter entities and re-insert
+    Util.Fix_Text (Ctx, Adtd, Attlist, True, False);
+    Attlist := Util.Normalize_Separators (Attlist);
+    Util.Insert (Ctx.Flow, Asu_Ts (Attlist));
 
     -- Loop on all attributes
     Elt_Has_Id := False;
@@ -606,6 +608,8 @@ package body Dtd is
     Word : Asu_Us;
     Ok : Boolean;
   begin
+    -- Xml instruction not allowed any more
+    Adtd.Xml_Found := True;
     -- Check for CDATA
     Util.Skip_Cdata (Ctx.Flow, False, Ok);
     if Ok then
@@ -775,8 +779,10 @@ package body Dtd is
     Info.Name := "Elt" & Info_Sep & Name;
     Info_Mng.Search (Adtd.Info_List, Info, Ok);
     if not Ok then
-      -- No ELEMENT directive, no constraint
-      return;
+      -- Should have been detected by Check_Attributes
+      Trace ("Dtd check children. Element name " & Asu_Ts (Name)
+            & " does not exist");
+      raise Internal_Error;
     end if;
     Info_Mng.Read (Adtd.Info_List, Info, Info);
     -- Check children
@@ -868,6 +874,13 @@ package body Dtd is
     use type Asu_Us;
   begin
      Trace ("Dtd check Xml attributes list " & Asu_Ts (Attributes) );
+    -- Read element def
+    Info.Name := "Elt" & Info_Sep & Name;
+    Info_Mng.Search (Adtd.Info_List, Info, Info_Found);
+    if not Info_Found then
+      Util.Error (Ctx.Flow, "Element " &  Asu_Ts (Name)
+                 & " is not defined in dtd");
+    end if;
     -- Read its ATTLIST def
     Info.Name := "Atl" & Info_Sep & Name;
     Info_Mng.Search (Adtd.Info_List, Info, Info_Found);
