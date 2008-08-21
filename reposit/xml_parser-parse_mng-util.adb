@@ -185,7 +185,16 @@ package body Util is
     end case;
     My_Circ.Push (Flow.Circ, Char);
     if Flow.Recording then
-      Asu.Append (Flow.Recorded, Char);
+      if Flow.Skip_Recording <= 0 then
+        -- 0: all Get to skip have been skipped (but an unget
+        --  still shall be skipped). -1: No more skip
+        -- Record this get
+        Asu.Append (Flow.Recorded, Char);
+      end if;
+      if Flow.Skip_Recording /= No_Skip_Rec then
+        -- Skip recording this get
+        Flow.Skip_Recording := Flow.Skip_Recording - 1;
+      end if;
     end if;
     if Char = Lf then
       if Flow.Kind /= Dtd_File then
@@ -234,9 +243,15 @@ package body Util is
           Text_Char.Unget (Flow.Dtd_File, Char);
       end case;
       if Flow.Recording then
-        Len := Asu.Length (Flow.Recorded);
-        if Len /= 0 then
-          Asu.Delete (Flow.Recorded, Len, Len);
+        if Flow.Skip_Recording = No_Skip_Rec then
+          -- Record this unget (remove the recorded get)
+          Len := Asu.Length (Flow.Recorded);
+          if Len /= 0 then
+            Asu.Delete (Flow.Recorded, Len, Len);
+          end if;
+        else
+          -- Skip next Get of this char
+          Flow.Skip_Recording := Flow.Skip_Recording + 1;
         end if;
       end if;
       if Char = Lf then
@@ -282,6 +297,14 @@ package body Util is
             Text_Char.Unget (Flow.Dtd_File, Str(I));
         end case;
       end loop;
+    end if;
+    -- The inserted characters shall not be recorded (when got/ungot)
+    if Flow.Recording then
+      if Flow.Skip_Recording = No_Skip_Rec then
+        Flow.Skip_Recording := Str'Length;
+      else
+        Flow.Skip_Recording := Flow.Skip_Recording + Str'Length;
+      end if;
     end if;
   end Insert;
 

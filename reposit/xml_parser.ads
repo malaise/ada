@@ -292,8 +292,10 @@ private
   ---------------------
   -- INPUT FLOW TYPE --
   ---------------------
- -- Longest keywork + <![CDATA[
+  -- Longest keywork + <![CDATA[
   Max_Buf_Len : constant := 21;
+  -- Don't skip current data from recording
+  No_Skip_Rec : constant Integer := -1;
   package My_Circ is new Queues.Circ (Max_Buf_Len, Character);
   type Flow_Kind_List is (Xml_File, Xml_String, Dtd_File);
   type Flow_Type is record
@@ -313,6 +315,7 @@ private
     Curr_Str : Ada.Strings.Unbounded.Unbounded_String;
     -- Recorded input characters
     Recording : Boolean := False;
+    Skip_Recording : Integer := No_Skip_Rec;
     Recorded : Ada.Strings.Unbounded.Unbounded_String;
     -- Saved line of input (when switching to dtd file and back)
     -- Inputs flows: string and index, or files

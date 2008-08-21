@@ -3,7 +3,7 @@ with Environ, Basic_Proc, Rnd, Exception_Messenger;
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "6";
+  Minor_Version : constant String := "7";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -253,6 +253,7 @@ package body Xml_Parser is
     Ctx.Flow.Err_Msg := Asu_Null;
     Ctx.Flow.Curr_Str := Asu_Null;
     Ctx.Flow.Recording := False;
+    Ctx.Flow.Skip_Recording := No_Skip_Rec;
     Ctx.Flow.Recorded := Asu_Null;
 
     Ctx.Flow.In_Str := Asu_Null;
