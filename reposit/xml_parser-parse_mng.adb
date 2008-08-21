@@ -234,9 +234,14 @@ package body Parse_Mng  is
     loop
       -- Parse name
       Line_No := Util.Get_Line_No (Ctx.Flow);
-      Util.Parse_Until_Char (Ctx.Flow, Util.Equal & "");
+      -- Read until a = (looks like a valid attr definition)
+      --  or until > or < (no '=' so invalid definition)
+      Util.Parse_Until_Char (Ctx.Flow, Util.Equal
+                                     & Util.Stop & Util.Start & Util.Slash);
       Attribute_Name := Util.Get_Curr_Str (Ctx.Flow);
-      if not Util.Name_Ok (Attribute_Name) then
+      Util.Read (Ctx.Flow, Char);
+      if Char /= Util.Equal
+      or else not Util.Name_Ok (Attribute_Name) then
         Util.Error (Ctx.Flow, "Invalid attribute name "
                   & Asu_Ts (Attribute_Name));
       end if;
