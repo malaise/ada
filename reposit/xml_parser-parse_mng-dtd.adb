@@ -216,7 +216,7 @@ package body Dtd is
             Util.Error (Ctx.Flow, "Invalid Mixed definition");
           end if;
           if not Util.Names_Ok (Info.List, "|") then
-            Util.Error (Ctx.Flow, "Invalid name in Mixed definition");
+            Util.Error (Ctx.Flow, "Invalid Mixed definition");
           end if;
           -- Last ')' must be followed by "*", remove it
           Util.Get (Ctx.Flow, Char);
@@ -517,16 +517,22 @@ package body Dtd is
     Util.Skip_Separators (Ctx.Flow);
     Util.Get (Ctx.Flow, Char);
     if Char = '%' then
-      Parameter := True;
-      Parstr := Asu_Tus ("%");
-      -- Must have a separator after "%"
+      -- Check if this is "% name" of parameter entity definition
+      --  or "%name;" of entity definition of a name that is a reference
+      --  to a parameter entity
       Util.Get (Ctx.Flow, Char);
-      if not Util.Is_Separator (Char) then
-        Util.Error (Ctx.Flow, "Expect a separator after '%'");
+      if Util.Is_Separator (Char) then
+        -- This is the definition of a parameter entity
+        Parameter := True;
+        Parstr := Asu_Tus ("%");
+      else
+        -- This is a reference to a parameter entity
+        Parameter := False;
+        Parstr := Asu_Null;
+        Util.Unget (Ctx.Flow, 2);
       end if;
-      Util.Skip_Separators (Ctx.Flow);
     else
-      Parameter := False;
+      -- This is a entity definition
       Util.Unget (Ctx.Flow);
     end if;
     -- Parse entity name
