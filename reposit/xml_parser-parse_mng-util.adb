@@ -31,7 +31,9 @@ package body Util is
            or else Char = '_'
            or else Char = ':'
            or else Char = '-'
-           or else Char = '.';
+           or else Char = '.'
+           -- UTF-8
+           or else Char > Ada.Characters.Latin_1.Del;
   end Is_Valid_In_Name;
 
   -- Check that a Name is correct
