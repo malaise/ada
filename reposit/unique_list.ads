@@ -16,7 +16,7 @@ generic
 
 package Unique_List is
 
-  type List_Type is limited private;
+  type List_Type is tagged limited private;
 
   -- For Iterator
   type Reference is (From_First, From_Last);
@@ -112,7 +112,7 @@ private
                              Element_Access,
                              Dump);
   -- A unique list
-  type List_Type is record
+  type List_Type is tagged limited record
     List : List_Mng.List_Type;
     Table : Hash_Mng.Hash_Table;
   end record;
