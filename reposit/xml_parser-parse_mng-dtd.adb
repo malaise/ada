@@ -1082,14 +1082,16 @@ package body Dtd is
             -- Store these IDREFs and line_no to list of IDREFs
             Xml_Val := Util.Normalize_Separators (Xml_Val);
             -- Split IDREFS and insert each IDREF
-            Parser.Set (Iter_Xml, Asu_Ts (Xml_Val), Is_Sep'Access);
+            Parser.Set (Iter_Xml, Asu_Ts (Xml_Val),
+                        Parser.Is_Space_Or_Htab_Function'Access);
+            Trace (" Check, adding IDREFs " & Asu_Ts (Xml_Val));
             loop
               Idcell.Name := Asu_Tus (Parser.Next_Word (Iter_Xml));
               exit when Idcell.Name = Asu_Null;
               Ctx.Idrefs.Insert (Idcell);
+              Trace (" Check, added IDREF " & Asu_Ts (Idcell.Name));
             end loop;
             Parser.Del (Iter_Xml);
-            Trace (" Check, added IDREFs " & Asu_Ts (Xml_Val));
           end if;
         end if;
         Trace ("Dtd checked versus dtd attribute " & Attr & " type " & Td);
