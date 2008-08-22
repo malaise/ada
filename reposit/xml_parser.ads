@@ -1,5 +1,5 @@
 with Ada.Strings.Unbounded, Ada.Finalization;
-with Queues, Trees, Unique_List, Text_Char;
+with Queues, Trees, Unique_List, Text_Char, Unique_List, Dynamic_List;
 -- Parse Xml file or string, and provide read access to the corresponding tree
 -- The following features of DTD are not supported (parsing error):
 --  - ENTITY, ENTITIES and NOTATION attribute type
@@ -9,7 +9,6 @@ with Queues, Trees, Unique_List, Text_Char;
 --  - Only the system URI of the DOCTYPE is used, PUBLIC Id (if any) is skipped.
 --  - Only local file reference is fetched, no http :-) (parsing error)
 -- The following restrictions applies to all the parsing:
---  - The Xml versions (1.0 or 1.1) are not checked; 1.1 applies.
 --  - CDATA sections are detected only when a markup ('<') is expected or
 --    within text. Not "anywhere character data may occur" (parsing error).
 --  - The detection and expansion of parameter entity references may not be
@@ -17,7 +16,7 @@ with Queues, Trees, Unique_List, Text_Char;
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "4";
+  Major_Version : constant String := "5";
   function Version return String;
 
   -----------
@@ -382,6 +381,30 @@ private
     In_Include : Boolean := False;
   end record;
 
+  --------------------
+  -- IDs and IDREFs --
+  --------------------
+  type Id_Cell is record
+    -- Line where the ID or IDREF is defined
+    Line_No : Natural := 0;
+    -- ID name
+    Name : Ada.Strings.Unbounded.Unbounded_String;
+  end record;
+  type Id_Cell_Access is access all Id_Cell;
+  procedure Set (To : out Id_Cell;  Val : in Id_Cell);
+  function Image (Element : Id_Cell) return String;
+  function "=" (Current : Id_Cell; Criteria : Id_Cell) return Boolean;
+
+  -- Unique list of IDs
+  package Id_List_Mng is new Unique_List (Id_Cell, Id_Cell_Access,
+                                          Set, Image, "=");
+  type Id_List_Access is access Id_List_Mng.List_Type;
+  
+  -- List of IDREFs found
+  package Idref_Dyn_List_Mng is new Dynamic_List (Id_Cell);
+  package Idref_List_Mng renames Idref_Dyn_List_Mng.Dyn_List;
+  type Idref_List_Access is access Idref_List_Mng.List_Type;
+
   ------------------
   -- DOCTYPE info --
   ------------------
@@ -419,8 +442,12 @@ private
     Elements : Tree_Acc := new My_Tree.Tree_Type;
     -- Doctype name, file and a tag of internal definitions
     Doctype : Doctype_Type;
+    -- Unique list of Ids
+    Ids : Id_List_Access := new Id_List_Mng.List_Type;
+    -- List of Idrefs
+    Idrefs : Idref_List_Access := new Idref_List_Mng.List_Type;
   end record;
-  procedure Finalize (Ctx : in out Ctx_Type) renames Clean;
+  procedure Finalize (Ctx : in out Ctx_Type);
 
   -- For Xml_Generator
   function Get_Magic return Float;

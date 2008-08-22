@@ -1,3 +1,4 @@
+with Ada.Text_Io;
 with Regular_Expressions, Parser, Int_Image;
 separate (Xml_Parser.Parse_Mng)
 package body Dtd is
@@ -441,7 +442,7 @@ package body Dtd is
         -- Id must be implied or required
         if Def_Char /= 'R' and then Def_Char /= 'I' then
           Util.Error (Ctx.Flow,
-               "Id attribute must be of type required or implied");
+               "Id attribute must be required or implied");
         end if;
         -- Initialise an Empty Ide info
         Elt_Has_Id := True;
@@ -877,6 +878,9 @@ package body Dtd is
     Xml_Val : Asu_Us;
     -- List of dtd attribute names
     Att_Names : Asu_Us;
+    -- Cell of ID (or IDREF), and if Found
+    Idcell : Id_Cell;
+    Found :  Boolean;
     use type Asu_Us;
   begin
      Trace ("Dtd check Xml attributes list " & Asu_Ts (Attributes) );
@@ -1053,57 +1057,39 @@ package body Dtd is
 
           -- Store IDs and IDREFs
           if Td(1) = 'I' then
-            -- Check this ID is not already set for this element
-            Idinfo.Name := "Ide" & Info_Sep & Name;
-            Info_Mng.Search (Adtd.Info_List, Idinfo, Info_Found);
-            if Info_Found then
-              Info_Mng.Read (Adtd.Info_List, Idinfo, Idinfo);
-              if String_Mng.Locate (Asu_Ts (Idinfo.List),
-                           Info_Sep & Asu_Ts (Xml_Val) & Info_Sep) /= 0 then
-                Util.Error (Ctx.Flow, "This ID " & Asu_Ts (Xml_Val)
-                          & " is already set to this element", Line_No);
-              end if;
+            -- Check this ID is not already set and add it (with its line_no)
+            Idcell.Name := Xml_Val;
+            Idcell.Line_No := Line_No;
+            Ctx.Ids.Search (Idcell, Found);
+            if Found then
+              Ctx.Ids.Read (Idcell, Idcell);
+              Util.Error (Ctx.Flow,
+                 "ID " & Asu_Ts (Xml_Val)
+                       & " already defined at line "
+                       & Line_Image (Idcell.Line_No),
+                 Line_No);
             end if;
-            -- Append ID to the list of this element
-            Asu.Append (Idinfo.List, Info_Sep & Xml_Val & Info_Sep);
-            Info_Mng.Insert (Adtd.Info_List, Idinfo);
-            -- Append ID to global list
-            Idinfo.Name := Asu_Tus ("Idl");
-            Error_Name := Idinfo.Name;
-            Info_Mng.Read (Adtd.Info_List, Idinfo, Idinfo);
-            Asu.Append (Idinfo.List, Info_Sep & Xml_Val & Info_Sep);
-            Info_Mng.Insert (Adtd.Info_List, Idinfo);
+            Ctx.Ids.Insert (Idcell);
             Trace (" Check, added ID " & Asu_Ts (Xml_Val));
           elsif Td(1) = 'R' then
-            -- Append this ID ref and line_no to list of IDREFs
-            Idinfo.Name := Asu_Tus ("Idr");
-            Error_Name := Idinfo.Name;
-            Info_Mng.Read (Adtd.Info_List, Idinfo, Idinfo);
-            Asu.Append (Idinfo.List, Info_Sep & Xml_Val & Info_Sep
-                      & Line_Image(Line_No) & Info_Sep);
-            Info_Mng.Insert (Adtd.Info_List, Idinfo);
+            -- Store this IDREF and line_no to list of IDREFs
+            Idcell.Name := Xml_Val;
+            Idcell.Line_No := Line_No;
+            Ctx.Idrefs.Insert (Idcell);
             Trace (" Check, added IDREF " & Asu_Ts (Xml_Val));
           elsif Td(1) = 'r' then
-            -- Append each of the IDREFs to the global list
-            Idinfo.Name := Asu_Tus ("Idr");
-            Error_Name := Idinfo.Name;
-            Info_Mng.Read (Adtd.Info_List, Idinfo, Idinfo);
-            -- Parse IDREFs separated by spaces
-            Parser.Set (Iter_Xml, Asu_Ts (Xml_Val), Util.Is_Separator'Access);
+            Idcell.Line_No := Line_No;
+            -- Store these IDREFs and line_no to list of IDREFs
+            Xml_Val := Util.Normalize_Separators (Xml_Val);
+            -- Split IDREFS and insert each IDREF
+            Parser.Set (Iter_Xml, Asu_Ts (Xml_Val), Is_Sep'Access);
             loop
-              declare
-                -- Next IDREF from xml
-                Idref : constant String := Parser.Next_Word (Iter_Xml);
-              begin
-                exit when Idref = "";
-                -- Append this ID ref and line_no to list of IDREFs
-                Asu.Append (Idinfo.List, Info_Sep & Asu_Tus (Idref) & Info_Sep
-                      & Line_Image(Line_No) & Info_Sep);
-                Trace (" Check, added IDREF " & Idref);
-              end;
+              Idcell.Name := Asu_Tus (Parser.Next_Word (Iter_Xml));
+              exit when Idcell.Name = Asu_Null;
+              Ctx.Idrefs.Insert (Idcell);
             end loop;
             Parser.Del (Iter_Xml);
-            Info_Mng.Insert (Adtd.Info_List, Idinfo);
+            Trace (" Check, added IDREFs " & Asu_Ts (Xml_Val));
           end if;
         end if;
         Trace ("Dtd checked versus dtd attribute " & Attr & " type " & Td);
@@ -1212,51 +1198,47 @@ package body Dtd is
     My_Tree.Move_Father (Ctx.Elements.all);
   end Check_Subtree;
 
+
+  -- For sorting IDREFs
+  function Less_Than (I1, I2 : Id_Cell) return Boolean is
+    use type Asu_Us;
+  begin
+    -- Sort by Name then Line_No
+    return I1.Name < I2.Name
+    or else (I1.Name = I2.Name and then I1.Line_No < I2.Line_No);
+  end Less_Than;
+  procedure Id_Sort is new Idref_List_Mng.Sort (Less_Than);
   -- Final checks
   -- Check that all attribute values of Xml tagged IDREF(s) in Dtd
-  --  and thus collected in "Idr" info,
+  --  and thus collected in Idrefs
   --  exist in the list of attribute values of Xml tagged ID
-  --  and thus collected in "Idl" info,
+  --  and thus collected in Ids
   procedure Final_Check (Ctx : in out Ctx_Type;
                          Adtd : in out Dtd_Type) is
-    -- List of IDs and list of IDrefs
-    Ids, Idrefs : Info_Rec;
-    -- Parser iterator on IDrefs
-    Iter_Idref : Parser.Iterator;
+    Done : Boolean;
+    Idref, Prev_Ref : Id_Cell;
+    Found : Boolean;
   begin
-    -- Read Ids
-    Ids.Name := Asu_Tus ("Idl");
-    -- For error
-    Idrefs.Name := Ids.Name;
-    Info_Mng.Read (Adtd.Info_List, Ids, Ids);
-    Trace ("Check final, got IDs " & Asu_Ts (Ids.List));
-    -- Read Idrefs
-    Idrefs.Name := Asu_Tus ("Idr");
-    Info_Mng.Read (Adtd.Info_List, Idrefs, Idrefs);
-    Trace ("Check final, got IDREFs " & Asu_Ts (Idrefs.List));
-    -- Idl is a list of #Id#, Idr is a list of #Idref#Line_No#
-    -- Parse IDREFs separated by Sep
-    Parser.Set (Iter_Idref, Asu_Ts (Idrefs.List), Is_Sep'Access);
-    loop
-      declare
-        -- Next IDREF from xml
-        Idref : constant String := Parser.Next_Word (Iter_Idref);
-        Line : constant String := Parser.Next_Word (Iter_Idref);
-      begin
-        exit when Idref = "";
-          -- Check that this Idref is in Ids
-          if String_Mng.Locate (Asu_Ts (Ids.List),
-                            Info_Sep & Idref & Info_Sep) = 0 then
-            Util.Error (Ctx.Flow, "The ID of the ref " & Idref
-                        & " does not exist", Natural'Value(Line));
+    Trace ("Checking final");
+    -- Each IDREF must exist in IDs
+    if not Ctx.Idrefs.Is_Empty then
+      Id_Sort (Ctx.Idrefs.all);
+      Ctx.Idrefs.Rewind;
+      loop
+        Ctx.Idrefs.Read (Idref, Done => Done);
+        -- Check for Id if this reference is new
+        if Idref /= Prev_Ref then
+          Ctx.Ids.Search (Idref, Found);
+          if not Found then
+            Util.Error (Ctx.Flow,"No ID for this IDREF " & Asu_Ts (Idref.Name),
+                        Idref.Line_No);
           end if;
-      end;
-    end loop;
-    Parser.Del (Iter_Idref);
+          Prev_Ref := Idref;
+        end if;
+        exit when not Done;
+      end loop;
+    end if;
     Trace ("Checked final");
-  exception
-    when Info_Mng.Not_In_List =>
-      Trace ("Dtd check: Cannot find info " & Asu_Ts (Idrefs.Name));
   end Final_Check;
 
 end Dtd;

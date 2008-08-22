@@ -1,9 +1,9 @@
-with Ada.Exceptions;
+with Ada.Exceptions, Ada.Unchecked_Deallocation;
 with Environ, Basic_Proc, Rnd, Exception_Messenger;
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "7";
+  Minor_Version : constant String := "0";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -17,6 +17,21 @@ package body Xml_Parser is
                    renames Asu.To_Unbounded_String;
   function Asu_Ts (Str : Asu_Us) return String
                    renames Asu.To_String;
+
+  -- Unique list of IDs
+  procedure Set (To : out Id_Cell;  Val : in Id_Cell) is
+  begin
+    To := Val;
+  end Set;
+  function Image (Element : Id_Cell) return String is
+  begin
+    return Asu_Ts (Element.Name);
+  end Image;
+  function "=" (Current : Id_Cell; Criteria : Id_Cell) return Boolean is
+    use type Asu_Us;
+  begin
+    return Current.Name = Criteria.Name;
+  end "=";
 
   -- Trace debug message
   Debug_Level : Integer := -1;
@@ -52,7 +67,6 @@ package body Xml_Parser is
     -- Get an attribute (if it exists, otherwise "")
     procedure Get_Attribute (Elements : in out My_Tree.Tree_Type;
                            Name : in Asu_Us; Value : out Asu_Us);
-    
     -- Initialise an empty prologue
     procedure Init_Prologue (Prologue : in out My_Tree.Tree_Type);
     -- Set xml directive, add a xml attribute
@@ -266,6 +280,8 @@ package body Xml_Parser is
     end if;
     Ctx.Parse_Comments := False;
     Ctx.Expand := True;
+    Ctx.Use_Dtd := True;
+    Ctx.Dtd_File := Asu_Null;
     -- Clean prologue tree
     if not My_Tree.Is_Empty (Ctx.Prologue.all) then
       My_Tree.Move_Root (Ctx.Prologue.all);
@@ -283,6 +299,9 @@ package body Xml_Parser is
     Ctx.Doctype.Pub_Id  := Asu_Null;
     Ctx.Doctype.File    := Asu_Null;
     Ctx.Doctype.Int_Def := Asu_Null;
+    -- Clean IDs
+    Ctx.Ids.Delete_List;
+    Ctx.Idrefs.Delete_List;
     -- Context is clean
     Ctx.Magic := Clean_Magic;
     Ctx.Status := Clean;
@@ -751,30 +770,32 @@ package body Xml_Parser is
         My_Tree.Move_Brother (Tree.all, False);
       end if;
       if I = Cell.Nb_Attributes + Index then
-        My_Tree.Read (Tree.all, Child);
-        case Child.Kind is
-          when Xml_Parser.Element =>
-            N := (Kind =>  Xml_Parser.Element,
-                  Magic => Element.Magic,
-                  In_Prologue => Element.In_Prologue,
-                  Tree_Access => My_Tree.Get_Position (Tree.all));
-          when Xml_Parser.Text =>
-            N := (Kind => Xml_Parser.Text,
-                  Magic => Element.Magic,
-                  In_Prologue => Element.In_Prologue,
-                  Tree_Access => My_Tree.Get_Position (Tree.all));
-          when Xml_Parser.Comment =>
-            N := (Kind => Xml_Parser.Comment,
-                  Magic => Element.Magic,
-                  In_Prologue => Element.In_Prologue,
-                  Tree_Access => My_Tree.Get_Position (Tree.all));
-          when  Xml_Parser.Attribute =>
-            -- Attribute
-            Trace ("Expecting kind element or text or comment, found attribute");
-            raise Internal_Error;
-        end case;
+        exit;
       end if;
     end loop;
+
+    My_Tree.Read (Tree.all, Child);
+    case Child.Kind is
+      when Xml_Parser.Element =>
+        N := (Kind =>  Xml_Parser.Element,
+              Magic => Element.Magic,
+              In_Prologue => Element.In_Prologue,
+              Tree_Access => My_Tree.Get_Position (Tree.all));
+      when Xml_Parser.Text =>
+        N := (Kind => Xml_Parser.Text,
+              Magic => Element.Magic,
+              In_Prologue => Element.In_Prologue,
+              Tree_Access => My_Tree.Get_Position (Tree.all));
+      when Xml_Parser.Comment =>
+        N := (Kind => Xml_Parser.Comment,
+              Magic => Element.Magic,
+              In_Prologue => Element.In_Prologue,
+              Tree_Access => My_Tree.Get_Position (Tree.all));
+      when  Xml_Parser.Attribute =>
+        -- Attribute
+        Trace ("Expecting kind element or text or comment, found attribute");
+        raise Internal_Error;
+    end case;
     return N;
   end Get_Child;
 
@@ -888,6 +909,26 @@ package body Xml_Parser is
     end if;
     return Cell.Name;
   end Get_Comment;
+
+  -----------------------------------
+  -- Deallocation and Finalization --
+  -----------------------------------
+  procedure Deallocate is new Ada.Unchecked_Deallocation
+   (My_Tree.Tree_Type, Tree_Acc);
+  procedure Deallocate is new Ada.Unchecked_Deallocation
+   (Id_List_Mng.List_Type, Id_List_Access);
+  procedure Deallocate is new Ada.Unchecked_Deallocation
+   (Idref_List_Mng.List_Type, Idref_List_Access);
+  procedure Finalize (Ctx : in out Ctx_Type) is
+  begin
+    -- Clean contenxt and its data
+    Clean (Ctx);
+    -- Deallocate trees and ID lists
+    Deallocate (Ctx.Prologue);
+    Deallocate (Ctx.Elements);
+    Deallocate (Ctx.Ids);
+    Deallocate (Ctx.Idrefs);
+  end Finalize;
 
 end Xml_Parser;
 
