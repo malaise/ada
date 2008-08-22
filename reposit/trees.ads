@@ -1,4 +1,4 @@
-with Ada.Text_Io;
+with Ada.Text_Io, Ada.Finalization;
 with Unlimited_Pool;
 package Trees is
 
@@ -17,8 +17,7 @@ package Trees is
 
   package Tree is
     -- A tree
-    type Tree_Type is limited private;
-    No_Tree : constant Tree_Type;
+    type Tree_Type is tagged limited private;
 
     -- Access to current data
     type Element_Access is access all Element_Type;
@@ -135,6 +134,16 @@ package Trees is
                           Child    : in Boolean;
                           Elder    : in Boolean := True);
 
+    -- Move saved pos and its sub tree as (elder or youger) son or brother of
+    --  current position.
+    -- Saved position is poped.
+    -- Current position becomes the moved cell
+    -- May raise No_Cell if The_Tree is empty
+    -- May raise No_Saved_Position if no position is saved
+    -- May raise Is_Ancestor if saved is ancestor of current
+    procedure Move_Saved (The_Tree : in out Tree_Type;
+                          Child    : in Boolean;
+                          Elder    : in Boolean := True);
 
     -- Look up --
     -------------
@@ -258,14 +267,14 @@ package Trees is
     end record;
 
     -- A tree
-    type Tree_Type is record
+    type Tree_Type is limited new Ada.Finalization.Limited_Controlled
+    with record
       Root : Cell_Access := null;
       Curr : Cell_Access := null;
       Save : Saved_Pool_Access := null;
       In_Cb : Boolean := False;
     end record;
-
-    No_Tree : constant Tree_Type := (null, null, null, False);
+    procedure Finalize (Tree : in out Tree_Type);
 
   end Tree;
 

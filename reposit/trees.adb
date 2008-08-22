@@ -1,3 +1,4 @@
+with Ada.Unchecked_Deallocation;
 with Dyn_Data;
 package body Trees is
 
@@ -151,7 +152,8 @@ package body Trees is
 
     -- Copy a cell as (elder or youger) son or brother of another
     -- Also copie recursively the children of the cell
-    -- First call MUST have First_Call to True
+    -- First call (call from outside) MUST have First_Call to True
+    --  First_Call=False is restricted to internal (recursive) use.
     procedure Copy_Cell (From, To : in Cell_Access;
                          Child    : in Boolean;
                          Elder    : in Boolean;
@@ -206,6 +208,72 @@ package body Trees is
       return The_Tree.Curr = null;
     end Is_Empty;
 
+    -- Insert a cell (and subtree) as child
+    procedure Insert_Child (The_Tree : in out Tree_Type;
+                            Cell_Acc : in Cell_Access;
+                            Eldest   : in Boolean := True) is
+      Child, Brother : Order;
+    begin
+      -- Check number of children
+      if The_Tree.Curr.Nb_Children = Child_Range'Last then
+        raise Too_Many_Children;
+      end if;
+
+      -- Insert and move
+      if Eldest then
+        Child := Old;
+        Brother := Young;
+      else
+        Child := Young;
+        Brother := Old;
+      end if;
+      Cell_Acc.Father := The_Tree.Curr;
+      The_Tree.Curr := Cell_Acc;
+      Cell_Acc.Brothers(Brother) := Cell_Acc.Father.Children(Child);
+      Cell_Acc.Father.Children(Child) := Cell_Acc;
+      if Cell_Acc.Father.Nb_Children = 0 then
+        Cell_Acc.Father.Children(Brother) := Cell_Acc;
+      end if;
+      Link_Brothers (Cell_Acc);
+
+      -- Increment number of children
+      Cell_Acc.Father.Nb_Children := Cell_Acc.Father.Nb_Children + 1;
+    end Insert_Child;
+
+    -- Insert a cell (and subtree) as brother
+    procedure Insert_Brother (The_Tree : in out Tree_Type;
+                              Cell_Acc : in Cell_Access;
+                              Elder    : in Boolean := True) is
+    begin
+      -- No empty tree
+      Check_Callback (The_Tree);
+
+      -- Not root
+      if The_Tree.Curr = The_Tree.Root then
+        raise Is_Root;
+      end if;
+
+      -- Check number of children of father
+      if The_Tree.Curr.Father.Nb_Children = Child_Range'Last then
+        raise Too_Many_Children;
+      end if;
+      The_Tree.Curr.Father.Nb_Children := The_Tree.Curr.Father.Nb_Children + 1;
+
+      -- Link to father and brothers
+      Cell_Acc.Father := The_Tree.Curr.Father;
+      Cell_Acc.Brothers := The_Tree.Curr.Brothers;
+      if Elder then
+        Cell_Acc.Brothers(Young) := The_Tree.Curr;
+      else
+        Cell_Acc.Brothers(Old) := The_Tree.Curr;
+      end if;
+      -- Link father and brothers to me
+      Link_Father (Cell_Acc);
+      Link_Brothers (Cell_Acc);
+      -- Move to inserted
+      The_Tree.Curr := Cell_Acc;
+
+    end Insert_Brother;
     ----------------
     -- Insertions --
     ----------------
@@ -277,7 +345,6 @@ package body Trees is
                             Element  : in Element_Type;
                             Eldest   : in Boolean := True) is
       Cell_Acc : Cell_Access;
-      Child, Brother : Order;
     begin
       -- No empty tree
       Check_Callback (The_Tree);
@@ -287,28 +354,9 @@ package body Trees is
         raise Too_Many_Children;
       end if;
 
-      -- Create
+      -- Create cell and insert
       Cell_Acc := Allocate (Element);
-
-      -- Insert and move
-      if Eldest then
-        Child := Old;
-        Brother := Young;
-      else
-        Child := Young;
-        Brother := Old;
-      end if;
-      Cell_Acc.Father := The_Tree.Curr;
-      The_Tree.Curr := Cell_Acc;
-      Cell_Acc.Brothers(Brother) := Cell_Acc.Father.Children(Child);
-      Cell_Acc.Father.Children(Child) := Cell_Acc;
-      if Cell_Acc.Father.Nb_Children = 0 then
-        Cell_Acc.Father.Children(Brother) := Cell_Acc;
-      end if;
-      Link_Brothers (Cell_Acc);
-
-      -- Increment number of children
-      Cell_Acc.Father.Nb_Children := Cell_Acc.Father.Nb_Children + 1;
+      Insert_Child (The_Tree, Cell_Acc, Eldest);
 
     end Insert_Child;
 
@@ -319,7 +367,7 @@ package body Trees is
     -- May raise Is_Root if current is root
     procedure Insert_Brother (The_Tree : in out Tree_Type;
                               Element  : in Element_Type;
-                              Elder   : in Boolean := True) is
+                              Elder    : in Boolean := True) is
       Cell_Acc : Cell_Access;
     begin
       -- No empty tree
@@ -334,24 +382,10 @@ package body Trees is
       if The_Tree.Curr.Father.Nb_Children = Child_Range'Last then
         raise Too_Many_Children;
       end if;
-      The_Tree.Curr.Father.Nb_Children := The_Tree.Curr.Father.Nb_Children + 1;
 
-      -- Create
+      -- Create and insert
       Cell_Acc := Allocate (Element);
-
-      -- Link to father and brothers
-      Cell_Acc.Father := The_Tree.Curr.Father;
-      Cell_Acc.Brothers := The_Tree.Curr.Brothers;
-      if Elder then
-        Cell_Acc.Brothers(Young) := The_Tree.Curr;
-      else
-        Cell_Acc.Brothers(Old) := The_Tree.Curr;
-      end if;
-      -- Link father and brothers to me
-      Link_Father (Cell_Acc);
-      Link_Brothers (Cell_Acc);
-      -- Move to inserted
-      The_Tree.Curr := Cell_Acc;
+      Insert_Brother (The_Tree, Cell_Acc, Elder);
 
     end Insert_Brother;
 
@@ -427,6 +461,8 @@ package body Trees is
       -- Check for root (no father)
       if Cell_Acc.Father = null then
         Cell_Dyn.Free (The_Tree.Curr);
+        The_Tree.Root := null;
+        The_Tree.Curr := null;
         return;
       end if;
 
@@ -622,6 +658,46 @@ package body Trees is
       end if;
     end Copy_Saved;
 
+    -- Move saved pos and its sub tree as (elder or youger) son or brother of
+    --  current position.
+    -- Saved position is poped.
+    -- Current position becomes the copied cell
+    -- May raise No_Cell if The_Tree is empty
+    -- May raise No_Saved_Position if no position is saved
+    -- May raise Is_Ancestor if one (current or saved) is ancestor of the other
+    procedure Move_Saved (The_Tree : in out Tree_Type;
+                          Child    : in Boolean;
+                          Elder    : in Boolean := True) is
+      Saved : Cell_Access;
+    begin
+      -- Check not in callback
+      Check_Callback (The_Tree);
+
+      -- Check that a pos is saved
+      if Saved_Pool.Is_Empty (The_Tree.Save.all) then
+        raise No_Saved_Position;
+      end if;
+
+      -- Get saved pos and check that saved is not ancestor of current
+      Saved_Pool.Pop (The_Tree.Save.all, Saved);
+      if Is_Ancestor_Of (Saved, The_Tree.Curr) then
+        raise Is_Ancestor;
+      end if;
+
+       
+      -- Detach saved pos
+      -- Saved cannot be root (would be ancestor)
+      Saved.Father.Nb_Children := Saved.Father.Nb_Children - 1;
+      Detach (Saved);
+
+      -- Insert saved pos
+      if Child then
+        Insert_Child (The_Tree, Saved, Elder);
+      else
+        Insert_Brother (The_Tree, Saved, Elder);
+      end if;
+
+    end Move_Saved;
 
     -------------
     -- Look up --
@@ -796,9 +872,8 @@ package body Trees is
         raise In_Callback;
       end if;
 
-      -- Nothing if same tree or both empty
-      if Tree_A = Tree_B
-      or else (Tree_A.Root = null and then Tree_B.Root = null) then
+      -- Nothing if both empty
+      if Tree_A.Root = null and then Tree_B.Root = null then
         return;
       end if;
 
@@ -979,6 +1054,23 @@ package body Trees is
       The_Tree.In_Cb := False;
     end Iterate;
 
+    procedure Deallocate is new Ada.Unchecked_Deallocation
+        (Saved_Pool.Pool_Type, Saved_Pool_Access);
+    procedure Finalize (Tree : in out Tree_Type) is
+    begin
+      -- Clear all saved positions
+      if Tree.Save /= null then
+        -- Tree may not be initialized
+        Tree.Save.Clear;
+      end if;
+      -- Delete tree
+      if Tree.Root /= null then
+        Move_Root (Tree);
+        Delete_Tree (Tree);
+      end if;
+      -- Deallocate pool of saved position
+      Deallocate (Tree.Save);
+    end Finalize;
   end Tree;
 
 end Trees;
