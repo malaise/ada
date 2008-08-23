@@ -39,7 +39,8 @@ package body Unlimited_Pool is
     if not Lifo then
       -- Fifo means pop last (and go to previous) then rewind to first
       Pool_List_Mng.Rewind (Pool_List_Mng.List_Type(Pool), Pool_List_Mng.Prev);
-      Pool_List_Mng.Get(Pool_List_Mng.List_Type(Pool), Data);
+      Pool_List_Mng.Get (Pool_List_Mng.List_Type(Pool), Data,
+                         Pool_List_Mng.Prev);
       if not Is_Empty(Pool) then
         Pool_List_Mng.Rewind (Pool_List_Mng.List_Type(Pool));
       end if;
