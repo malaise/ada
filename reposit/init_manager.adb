@@ -73,11 +73,13 @@ package body Init_Manager is
       -- Handler set and no pending events => deliver
       Deliver (Event);
       Mutex_Manager.Release (Mutex);
-      return;
+    else
+      -- Either handler is null (then event will be flushed when setting it)
+      -- Or pool is not empty (then flush is running and will flush event)
+      -- Push the event and release
+      Event_Pool.Push (Event);
+      Mutex_Manager.Release (Mutex);
     end if;
-    -- Push the event and try to flush buffer
-    Event_Pool.Push (Event);
-    Flush;
   exception
     when others =>
       -- Always release
