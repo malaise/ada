@@ -1,4 +1,4 @@
-With Ada.Text_Io;
+with Ada.Text_Io;
 with Passive_Timers;
 
 procedure T_Passive_Timers is
