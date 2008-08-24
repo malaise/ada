@@ -200,7 +200,7 @@ procedure T_Xml_String is
     if not Parse_Ok then
       Basic_Proc.Put_Line_Error (Xml_Parser.Get_Parse_Error_Message (Ctx));
       Basic_Proc.Set_Error_Exit_Code;
-      Xml_Parser.Clean (Ctx);
+      Ctx.Clean;
       return;
     end if;
     Prologue := Ctx.Get_Prologue;
@@ -262,6 +262,7 @@ begin
     end;
   end loop;
   Ada.Text_Io.Put_Line (Separator);
+
 
   if Argument.Get_Nbre_Arg = 1
   and then Upper_Str (Argument.Get_Parameter) = "RND" then
