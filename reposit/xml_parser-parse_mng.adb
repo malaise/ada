@@ -378,17 +378,16 @@ package body Parse_Mng  is
   --  for its XML declaration
   package body Dtd is separate;
 
-  -- Check that XML instruction is set, create one
-  -- Inherit the Dtd encoding (if any)
-  procedure Check_Xml (Ctx : in out Ctx_Type;
-                       Adtd : in out Dtd_Type) is
-    Ok : Boolean;
+  -- Set default Xml version (1.0) if needed
+  -- Set encoding from Dtd if needed
+  procedure Set_Default_Xml (Ctx : in out Ctx_Type;
+                             Adtd : in out Dtd_Type) is
+    Nb_Attr : Natural;
     use type Asu_Us;
   begin
-    Tree_Mng.Xml_Existst (Ctx.Prologue.all, Ok);
-    if not Ok then
-      -- Add a 'xml' directive with version 1.0
-      Tree_Mng.Set_Xml (Ctx.Prologue.all, Util.Get_Line_No (Ctx.Flow));
+    -- No xml attribute? set version
+    Tree_Mng.Get_Nb_Xml_Attributes (Ctx.Prologue.all, Nb_Attr);
+    if Nb_Attr = 0 then
       Tree_Mng.Add_Xml_Attribute (Ctx.Prologue.all,
           Asu_Tus ("version"), Asu_Tus ("1.0"), Util.Get_Line_No (Ctx.Flow));
     end if;
@@ -400,6 +399,21 @@ package body Parse_Mng  is
     Trace ("Setting xml encoding from dtd to " & Asu_Ts (Adtd.Encoding));
     Tree_Mng.Set_Xml_Attribute (Ctx.Prologue.all, Asu_Tus ("encoding"),
                                 2, Adtd.Encoding);
+  end Set_Default_Xml;
+
+  -- Check that XML instruction is set, create one
+  -- Inherit the Dtd encoding (if any)
+  procedure Check_Xml (Ctx : in out Ctx_Type;
+                       Adtd : in out Dtd_Type) is
+    Ok : Boolean;
+  begin
+    Tree_Mng.Xml_Existst (Ctx.Prologue.all, Ok);
+    if not Ok then
+      -- Add a 'xml' directive
+      Tree_Mng.Set_Xml (Ctx.Prologue.all, Util.Get_Line_No (Ctx.Flow));
+    end if;
+    -- Set default version and inherit encoding if needed
+    Set_Default_Xml (Ctx, Adtd);
   end Check_Xml;
 
   -- Parse an instruction (<?xxx?>)
@@ -1007,6 +1021,13 @@ package body Parse_Mng  is
         Ctx.Flow.Xml_Line := 1;
         Dtd.Parse (Ctx, Adtd, Dtd.String_Flow);
       end if;
+    end if;
+    -- Xml declaration must have a version, which might not be the case
+    --  if Ctx comes from Xml_Parser.Generator
+    Set_Default_Xml (Ctx, Adtd);
+    -- There must be one root
+    if Tree_Mng.Is_Empty (Ctx.Elements.all) then
+      Util.Error (Ctx.Flow, "No root element found");
     end if;
     -- Check all elements
     Dtd.Check_Subtree (Ctx, Adtd);

@@ -439,7 +439,7 @@ package body Xml_Parser is
   procedure Check (Ctx : in out Ctx_Type;
                    Ok  : out Boolean) is
   begin
-    -- Status must be Parsed_Prologue
+    -- Status must be Parsed_xxx or Init
     if Ctx.Status = Clean or else Ctx.Status = Error then
       raise Status_Error;
     end if;

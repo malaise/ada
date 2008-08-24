@@ -59,8 +59,7 @@ package Xml_Parser is
   --  (<?xml attributes?>) then optional processing instructions
   --  (<?name text?>), DOCTYPE and comments.
   -- In Xml V1.1 the xml directive and version is mandatory.
-  -- So the Prologue is an element of name "xml" with attributes (no
-  --  attributes if no xml directive). Its children are:
+  -- So the Prologue is an element of name "xml" with attributes and children:
   --  for PIs: elements each with the directive name
   --  for Comments: comments
   --  for the doctype: an empty text
