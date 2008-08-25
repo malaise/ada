@@ -2,6 +2,6 @@
 
 <!ELEMENT try (#PCDATA|bold|italic|underline)*>
 <!ATTLIST try xml:space (default|preserve) "preserve">
-<!ELEMENT bold EMPTY>
-<!ELEMENT italic EMPTY>
+<!ELEMENT bold (#PCDATA)>
+<!ELEMENT italic (#PCDATA)>
 

@@ -2,5 +2,5 @@
 
 <!ELEMENT try (#PCDATA|bold)*>
 <!ATTLIST try xml:space (default|preserve) "preserve">
-<!ELEMENT bold EMPTY>
+<!ELEMENT bold (#PCDATA)>
 
