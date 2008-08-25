@@ -16,7 +16,7 @@ with Queues, Trees, Unique_List, Text_Char, Unique_List, Dynamic_List;
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "5";
+  Major_Version : constant String := "6";
   function Version return String;
 
   -----------
@@ -41,6 +41,7 @@ package Xml_Parser is
   end record;
   -- The attributes of an element
   type Attributes_Array is array (Positive range <>) of Attribute_Rec;
+  type Attributes_Access is access all Attributes_Array;
 
    -- Number of children of an element
   subtype Child_Range is Trees.Child_Range;
@@ -71,6 +72,27 @@ package Xml_Parser is
   --  when the Prologue has a child of type text (empty)
   -- PUBLIC directive is not processed
 
+  -----------------------------
+  -- NOTE ABOUT THE CALLBACK --
+  -----------------------------
+  -- When a callback is provided to Parse, then no tree is build but nodes
+  --  are directly provided. Prologue items all have a level of 0 and no child
+  --  only elements have attributes, children and are closed.
+  type Node_Update is new Ada.Finalization.Limited_Controlled with record
+    In_Prologue : Boolean;
+    Line_No : Natural;
+    Name : Ada.Strings.Unbounded.Unbounded_String;
+    Creation : Boolean;
+    Kind : Node_Kind_List;
+    -- Only for Kind Element
+    Has_Children : Boolean := False;
+    -- Only for Kind Element
+    Attributes : Attributes_Access;
+  end record;
+  -- If the callback raises an exception the parse raises
+  Callback_Error : exception;
+  type Parse_Callback_Access is access procedure (Node : in Node_Update);
+
   ------------------
   -- FILE PARSING --
   ------------------
@@ -89,7 +111,8 @@ package Xml_Parser is
                    Comments  : in Boolean := False;
                    Expand    : in Boolean := True;
                    Use_Dtd   : in Boolean := True;
-                   Dtd_File  : in String  := "");
+                   Dtd_File  : in String  := "";
+                   Callback  : in Parse_Callback_Access := null);
   File_Error, Status_Error : exception;
 
   -- Return the error message if Parse error
@@ -127,7 +150,8 @@ package Xml_Parser is
                             Str      : in String;
                             Ok       : out Boolean;
                             Comments : in Boolean := False;
-                            Expand   : in Boolean := True);
+                            Expand   : in Boolean := True;
+                            Callback : in Parse_Callback_Access := null);
 
   -- Parse the elements (after the prologue) of a string with a dtd
   -- may raise Status_Error if Ctx is clean
@@ -436,6 +460,8 @@ private
     -- Use Dtd
     Use_Dtd : Boolean := True;
     Dtd_File : Ada.Strings.Unbounded.Unbounded_String;
+    -- Call a callback i.o. feedong trees
+    Callback : Parse_Callback_Access := null;
     -- Prologue and parsed elements
     Prologue : Tree_Acc := new My_Tree.Tree_Type;
     Elements : Tree_Acc := new My_Tree.Tree_Type;
@@ -447,6 +473,8 @@ private
     Idrefs : Idref_List_Access := new Idref_List_Mng.List_Type;
   end record;
   procedure Finalize (Ctx : in out Ctx_Type);
+
+  procedure Finalize (Node : in out Node_Update);
 
   -- For Xml_Generator
   function Get_Magic return Float;

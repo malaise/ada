@@ -19,7 +19,7 @@ package body Tree_Mng is
       return;
     end if;
     for I in 1 .. Nb loop
-      -- Move to first child of to brother
+      -- Move to first child or to brother
       if I = 1 then
         My_Tree.Move_Child (In_Tree);
       else
@@ -129,6 +129,12 @@ package body Tree_Mng is
     My_Tree.Move_Father (Elements);
   end Move_Up;
 
+  -- Move to root of current tree
+  procedure Move_Root (Elements : in out My_Tree.Tree_Type) is
+  begin
+    My_Tree.Move_Root (Elements);
+  end Move_Root;
+
   procedure Add_Attribute (Elements : in out My_Tree.Tree_Type;
                            Name, Value : in Asu_Us; Line : in Natural) is
     Cell : My_Tree_Cell;
@@ -195,7 +201,7 @@ package body Tree_Mng is
     Cell.Nb_Attributes := 0;
     Cell.Name := Asu.To_Unbounded_String ("xml");
     Cell.Value := Asu_Null;
-      -- Update root
+    -- Update root
     My_Tree.Replace (Prologue, Cell);
   end Set_Xml;
 
@@ -208,7 +214,7 @@ package body Tree_Mng is
     Cell.Nb_Attributes := 0;
     Cell.Name := Name;
     Cell.Value := Value;
-    -- Insert as attribute of Root and remain root
+    -- Insert as attribute
     Insert_Attribute (Prologue, Cell);
     -- Increment number of attributes
     My_Tree.Read (Prologue, Cell);
@@ -270,11 +276,15 @@ package body Tree_Mng is
 
   procedure Xml_Existst (Prologue : in out My_Tree.Tree_Type;
                          Exists : out Boolean) is
-    Cell : My_Tree_Cell;
+   Cell : My_Tree_Cell;
     use type Asu_Us;
   begin
-    My_Tree.Read (Prologue, Cell);
-    Exists := Cell.Name /= "";
+    if My_Tree.Is_Empty (Prologue) then
+      Exists := False;
+    else
+      My_Tree.Read (Prologue, Cell);
+      Exists := Cell.Name /= "";
+    end if;
   end Xml_Existst;
 
   procedure Find_Xml_Attribute (Prologue : in out My_Tree.Tree_Type;
@@ -303,8 +313,6 @@ package body Tree_Mng is
     Cell.Name := Name;
     Cell.Value := Text;
     My_Tree.Insert_Child (Prologue, Cell, False);
-    -- Move back to root
-    My_Tree.Move_Root (Prologue);
   end Add_Pi;
 
   -- Is a tree (elements or prologue) empty
@@ -324,7 +332,7 @@ package body Tree_Mng is
     Cell.Nb_Attributes := 0;
     Cell.Name := Text;
     Cell.Value := Asu_Null;
-    -- Insert as attribute of current and remain current
+    -- Insert as child of current and remain current
     My_Tree.Insert_Child (Tree, Cell, False);
     My_Tree.Move_Father (Tree);
   end Add_Text;
@@ -344,5 +352,56 @@ package body Tree_Mng is
     My_Tree.Insert_Child (Tree, Cell, False);
     My_Tree.Move_Father (Tree);
   end Add_Comment;
+
+  -- Build the Node_Update associated to current Node
+  procedure Build_Update (Tree   : in out My_Tree.Tree_Type;
+                          Update : in out Node_Update;
+                          Creation : in Boolean) is
+    Cell, Attr : My_Tree_Cell;
+  begin
+    My_Tree.Read (Tree, Cell);
+    Update.Line_No := Cell.Line_No;
+    Update.Name := Cell.Name;
+    Update.Creation := Creation;
+    case Cell.Kind is
+      when Element =>
+        Update.Kind := Element;
+      when Text =>
+        Update.Kind := Text;
+      when Comment =>
+        Update.Kind := Comment;
+      when Attribute =>
+        Trace ("Buildling a node update from an attribute "
+             & Asu_Ts (Cell.Name));
+        raise Internal_Error;
+    end case;
+    Deallocate (Update.Attributes);
+
+    -- Case of deletion, no build of attribtues
+    if not Creation then
+      if Cell.Kind /= Element then
+        Trace ("Buildling deletion but not of element "
+             & Asu_Ts (Cell.Name));
+        raise Internal_Error;
+      end if;
+      return;
+    end if;
+      
+    Update.Has_Children := My_Tree.Children_Number (Tree) > Cell.Nb_Attributes;
+    -- Create and fill attributes
+    Update.Attributes := new Attributes_Array (1 .. Cell.Nb_Attributes);
+    for I in 1 .. Cell.Nb_Attributes loop
+      -- Move to first child or to brother
+      if I = 1 then
+        My_Tree.Move_Child (Tree);
+      else
+        My_Tree.Move_Brother (Tree, False);
+      end if;
+      My_Tree.Read (Tree, Attr);
+      Update.Attributes(I).Name := Attr.Name;
+      Update.Attributes(I).Value := Attr.Value;
+    end loop;
+  end Build_Update;
+
 end Tree_Mng;
 

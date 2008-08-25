@@ -1157,8 +1157,40 @@ package body Dtd is
       -- Check children
       Check_Children (Ctx, Adtd, Cell.Name, Cell.Line_No, Children, Is_Mixed);
     end if;
-
   end Check_Element;
+
+  -- Add current element to list of children
+  procedure Add_Current (Ctx      : in out Ctx_Type;
+                         Children : in out Asu_Us;
+                         Is_Mixed : in out Boolean) is
+    Cell : My_Tree_Cell;
+    use type Asu_Us;
+  begin
+    My_Tree.Read (Ctx.Elements.all, Cell);
+    case Cell.Kind is
+      when Element =>
+        Asu.Append (Children, Info_Sep & Cell.Name & Info_Sep);
+      when Text =>
+        Is_Mixed := True;
+      when Comment =>
+        null;
+      when Attribute =>
+        Trace ("Adding current attribue as element list");
+        raise Internal_Error;
+    end case;
+  end Add_Current;
+
+  -- Check that list matches Dtd definition of current element
+  procedure Check_Element (Ctx  : in out Ctx_Type;
+                           Adtd : in out Dtd_Type;
+                           Children : in Asu_Us;
+                           Is_Mixed : in Boolean) is
+    Cell : My_Tree_Cell;
+  begin
+    My_Tree.Read (Ctx.Elements.all, Cell);
+    Check_Children (Ctx, Adtd, Cell.Name, Cell.Line_No, Children, Is_Mixed);
+  end Check_Element;
+
 
   -- Check a whole element tree recursively
   procedure Check_Subtree (Ctx  : in out Ctx_Type;

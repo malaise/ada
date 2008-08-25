@@ -3,7 +3,7 @@ with Environ, Basic_Proc, Rnd, Exception_Messenger;
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "1";
+  Minor_Version : constant String := "0";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -17,6 +17,10 @@ package body Xml_Parser is
                    renames Asu.To_Unbounded_String;
   function Asu_Ts (Str : Asu_Us) return String
                    renames Asu.To_String;
+
+  -- Used in Tree_Mng when building a new update
+  procedure Deallocate is new Ada.Unchecked_Deallocation
+   (Attributes_Array, Attributes_Access);
 
   -- Unique list of IDs
   procedure Set (To : out Id_Cell;  Val : in Id_Cell) is
@@ -56,8 +60,9 @@ package body Xml_Parser is
                             Tuning : in String);
     -- Get all tuning of an element
     function Get_Tuning (Elements : My_Tree.Tree_Type) return String;
-    -- Move up
+    -- Move up, Move root
     procedure Move_Up (Elements : in out My_Tree.Tree_Type);
+    procedure Move_Root (Elements : in out My_Tree.Tree_Type);
     -- Add an attribute to current element, remain on current element
     procedure Add_Attribute (Elements : in out My_Tree.Tree_Type;
                              Name, Value : in Asu_Us; Line : in Natural);
@@ -103,6 +108,12 @@ package body Xml_Parser is
     -- remain on current cell
     procedure Add_Comment (Tree : in out My_Tree.Tree_Type;
                            Comment : in Asu_Us; Line : in Natural);
+
+    -- Build the Node_Update associated to current Node
+    -- The In_Prologue of the Update is not modified
+    procedure Build_Update (Tree : in out My_Tree.Tree_Type;
+                            Update : in out Node_Update;
+                            Creation : in Boolean);
   end Tree_Mng;
   package body Tree_Mng is separate;
 
@@ -196,7 +207,8 @@ package body Xml_Parser is
                    Comments  : in Boolean := False;
                    Expand    : in Boolean := True;
                    Use_Dtd   : in Boolean := True;
-                   Dtd_File  : in String  := "") is
+                   Dtd_File  : in String  := "";
+                   Callback  : in Parse_Callback_Access := null) is
   begin
     if Ctx.Status /= Clean then
       raise Status_Error;
@@ -218,6 +230,7 @@ package body Xml_Parser is
     Ctx.Expand := Expand;
     Ctx.Use_Dtd := Use_Dtd;
     Ctx.Dtd_File := Asu_Tus (Dtd_File);
+    Ctx.Callback := Callback;
     Parse_Mng.Parse (Ctx);
     -- Close the file
     File_Mng.Close (Ctx.Flow.Xml_File);
@@ -282,6 +295,7 @@ package body Xml_Parser is
     Ctx.Expand := True;
     Ctx.Use_Dtd := True;
     Ctx.Dtd_File := Asu_Null;
+    Ctx.Callback := null;
     -- Clean prologue tree
     if not My_Tree.Is_Empty (Ctx.Prologue.all) then
       My_Tree.Move_Root (Ctx.Prologue.all);
@@ -349,7 +363,8 @@ package body Xml_Parser is
                             Str      : in String;
                             Ok       : out Boolean;
                             Comments : in Boolean := False;
-                            Expand   : in Boolean := True) is
+                            Expand   : in Boolean := True;
+                            Callback : in Parse_Callback_Access := null) is
   begin
     if Ctx.Status /= Clean then
       raise Status_Error;
@@ -368,9 +383,14 @@ package body Xml_Parser is
     Ctx.Flow.Xml_Line := 1;
     Ctx.Parse_Comments := Comments;
     Ctx.Expand := Expand;
+    Ctx.Callback := Callback;
     Parse_Mng.Parse_Prologue (Ctx);
     -- Close the file
-    Ctx.Status := Parsed_Prologue;
+    if Ctx.Callback = null then
+      Ctx.Status := Parsed_Prologue;
+    else
+      Ctx.Status := Clean;
+    end if;
     Ok := True;
   exception
     when Status_Error =>
@@ -397,7 +417,8 @@ package body Xml_Parser is
     Loc_Parse_Error : exception;
   begin
     -- Status must be Parsed_Prologue
-    if Ctx.Status = Clean or else Ctx.Status = Init then
+    if (Ctx.Status = Clean and then Ctx.Callback /= null)
+    or else Ctx.Status = Init then
       raise Status_Error;
     elsif Ctx.Status = Parsed_Elements then
       raise End_Error;
@@ -409,7 +430,11 @@ package body Xml_Parser is
     Ctx.Flow.Err_Msg := Asu_Null;
     Ok := False;
     -- Parse
-    Parse_Mng.Parse_Elements (Ctx, Dtd);
+    if Ctx.Callback = null then
+      Parse_Mng.Parse_Elements (Ctx, Dtd);
+    else
+      Ctx.Status := Clean;
+    end if;
     -- Close the file
     Ctx.Status := Parsed_Elements;
     Ok := True;
@@ -418,6 +443,7 @@ package body Xml_Parser is
       raise;
     when Loc_Parse_Error =>
       -- Raising Parse_Error because previous parsing detected error
+      Trace ("Parse error because prologue did not parse");
       raise Parse_Error;
     when Error_Occ:Parse_Error =>
       -- Retrieve and store parsing error message
@@ -928,6 +954,11 @@ package body Xml_Parser is
     Deallocate (Ctx.Elements);
     Deallocate (Ctx.Ids);
     Deallocate (Ctx.Idrefs);
+  end Finalize;
+
+  procedure Finalize (Node : in out Node_Update) is
+  begin
+    Deallocate (Node.Attributes);
   end Finalize;
 
 end Xml_Parser;

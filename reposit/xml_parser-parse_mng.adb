@@ -211,6 +211,15 @@ package body Parse_Mng  is
     procedure Check_Element (Ctx  : in out Ctx_Type;
                              Adtd : in out Dtd_Type;
                              Check_The_Attributes : Boolean);
+    -- Add current element to list of children
+    procedure Add_Current (Ctx      : in out Ctx_Type;
+                           Children : in out Asu_Us;
+                           Is_Mixed : in out Boolean);
+    -- Check that list matches Dtd definition of current element
+    procedure Check_Element (Ctx      : in out Ctx_Type;
+                             Adtd     : in out Dtd_Type;
+                             Children : in Asu_Us;
+                             Is_Mixed : in Boolean);
     -- Check a whole element tree recursively
     procedure Check_Subtree (Ctx  : in out Ctx_Type;
                              Adtd : in out Dtd_Type);
@@ -378,6 +387,29 @@ package body Parse_Mng  is
   --  for its XML declaration
   package body Dtd is separate;
 
+  -- Call Callback of creation if requested
+  procedure Call_Callback (Ctx : in out Ctx_Type;
+                           In_Prologue : in Boolean;
+                           Creation : in Boolean) is
+    Upd : Node_Update;
+  begin
+    if Ctx.Callback = null then
+      return;
+    end if;
+    if In_Prologue then
+      Tree_Mng.Build_Update (Ctx.Prologue.all, Upd, Creation);
+    else
+      Tree_Mng.Build_Update (Ctx.Elements.all, Upd, Creation);
+    end if;
+    Upd.In_Prologue := In_Prologue;
+    begin
+      Ctx.Callback (Upd);
+    exception
+      when others =>
+        raise Callback_Error;
+    end;
+  end Call_Callback;
+
   -- Set default Xml version (1.0) if needed
   -- Set encoding from Dtd if needed
   procedure Set_Default_Xml (Ctx : in out Ctx_Type;
@@ -414,6 +446,10 @@ package body Parse_Mng  is
     end if;
     -- Set default version and inherit encoding if needed
     Set_Default_Xml (Ctx, Adtd);
+    -- Callback creation if Xml has been created here
+    if not Ok then
+      Call_Callback (Ctx, True, True);
+    end if;
   end Check_Xml;
 
   -- Parse an instruction (<?xxx?>)
@@ -431,6 +467,7 @@ package body Parse_Mng  is
       Util.Get (Ctx.Flow, Char);
       if Util.Is_Separator (Char) then
         -- Only one xml declaration allowed
+        Tree_Mng.Move_Root (Ctx.Prologue.all);
         Tree_Mng.Xml_Existst (Ctx.Prologue.all, Ok);
         if Ok then
           Util.Error (Ctx.Flow, "Late or second declaration of xml");
@@ -445,6 +482,7 @@ package body Parse_Mng  is
           Parse_Attributes (Ctx, Adtd, Of_Xml => True);
         end if;
         Check_Xml_Attributes (Ctx, True);
+        Call_Callback (Ctx, True, True);
         Trace ("Parsed xml declaration");
         return;
       else
@@ -476,8 +514,10 @@ package body Parse_Mng  is
       Util.Parse_Until_Char (Ctx.Flow, Util.Instruction & "");
     end if;
     -- Store PI and text if any
+    Tree_Mng.Move_Root (Ctx.Prologue.all);
     Tree_Mng.Add_Pi (Ctx.Prologue.all, Name, Util.Get_Curr_Str (Ctx.Flow),
                      Util.Get_Line_No(Ctx.Flow));
+        Call_Callback (Ctx, True, True);
     Util.Reset_Curr_Str (Ctx.Flow);
     -- Skip to the end
     Util.Get (Ctx.Flow, Char);
@@ -513,6 +553,7 @@ package body Parse_Mng  is
     Ctx.Doctype.Line_No := Util.Get_Line_No (Ctx.Flow);
     Ctx.Doctype.Name := Doctype_Name;
     -- Insert an empty text in prologue
+    Tree_Mng.Move_Root (Ctx.Prologue.all);
     Tree_Mng.Add_Text (Ctx.Prologue.all, Asu_Null, Util.Get_Line_No (Ctx.Flow));
     -- What's next
     Util.Skip_Separators (Ctx.Flow);
@@ -624,6 +665,7 @@ package body Parse_Mng  is
       if not In_Dtd and then Ctx.Parse_Comments then
         if Tree_Mng.Is_Empty (Ctx.Elements.all) then
           -- No element => in prologue
+          Tree_Mng.Move_Root (Ctx.Prologue.all);
           Tree_Mng.Add_Comment (Ctx.Prologue.all, Comment,
                                 Util.Get_Line_No (Ctx.Flow));
         else
@@ -709,6 +751,7 @@ package body Parse_Mng  is
     and then Ctx.Doctype.Name = Asu_Null then
       Dtd.Parse (Ctx, Adtd, Asu.To_String (Ctx.Dtd_File));
     end if;
+    Tree_Mng.Move_Root (Ctx.Prologue.all);
   exception
     when Util.End_Error =>
       Util.Error (Ctx.Flow, "Unexpected end of file");

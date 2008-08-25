@@ -145,6 +145,7 @@ package body Util is
     Asu.Append (Err_Msg, ": " & Msg & ".");
     -- The error message is attached to the exception
     -- Xml_parser will copy it in the Flow.
+    Trace ("Raising Parse_Error with " & Asu_Ts (Err_Msg));
     Exception_Messenger.Raise_Exception (Parse_Error'Identity,
                                          Asu_Ts (Err_Msg));
   end Error;
