@@ -446,8 +446,9 @@ private
   ------------------
   -- CONTEXT TYPE --
   ------------------
-  type Ctx_Status_List is (Clean, Parsed_Prologue, Parsed_Elements, Error,
-                           Init);
+  type Ctx_Status_List is (Clean, Parsed_Prologue, Parsed_Elements,
+                                  Parsed_Prologue_Cb,
+                           Error, Init);
   type Ctx_Type is limited new Ada.Finalization.Limited_Controlled with record
     Status  : Ctx_Status_List := Clean;
     Magic : Float := Clean_Magic;

@@ -254,10 +254,12 @@ package body Xml_Parser is
   -- Return the error message if Parse_Error
   function Get_Parse_Error_Message (Ctx : Ctx_Type) return String is
   begin
-    if Ctx.Status = Clean or else Ctx.Status = Init then
-      raise Status_Error;
-    end if;
-    return Asu_Ts (Ctx.Flow.Err_Msg);
+    case Ctx.Status is
+      when Clean | Init | Parsed_Prologue_Cb =>
+        raise Status_Error;
+      when Parsed_Prologue | Parsed_Elements | Error =>
+        return Asu_Ts (Ctx.Flow.Err_Msg);
+    end case;
   end Get_Parse_Error_Message;
 
   -- Clean a parsing context
@@ -389,7 +391,7 @@ package body Xml_Parser is
     if Ctx.Callback = null then
       Ctx.Status := Parsed_Prologue;
     else
-      Ctx.Status := Clean;
+      Ctx.Status := Parsed_Prologue_Cb;
     end if;
     Ok := True;
   exception
@@ -416,27 +418,29 @@ package body Xml_Parser is
                             Ok        : out Boolean) is
     Loc_Parse_Error : exception;
   begin
-    -- Status must be Parsed_Prologue
-    if (Ctx.Status = Clean and then Ctx.Callback /= null)
-    or else Ctx.Status = Init then
-      raise Status_Error;
-    elsif Ctx.Status = Parsed_Elements then
-      raise End_Error;
-    elsif Ctx.Status = Error then
-      raise Loc_Parse_Error;
-    end if;
+    -- Status must be Parsed_Prologue [_Cb]
+    case Ctx.Status is
+      when Clean | Init =>
+        raise Status_Error;
+      when Parsed_Elements =>
+        raise End_Error;
+      when Error =>
+        raise Loc_Parse_Error;
+      when Parsed_Prologue | Parsed_Prologue_Cb =>
+        null;
+    end case;
     -- In case of exception...
     Ctx.Status := Error;
     Ctx.Flow.Err_Msg := Asu_Null;
     Ok := False;
     -- Parse
+    Parse_Mng.Parse_Elements (Ctx, Dtd);
     if Ctx.Callback = null then
-      Parse_Mng.Parse_Elements (Ctx, Dtd);
+      Ctx.Status := Parsed_Elements;
     else
-      Ctx.Status := Clean;
+      Clean (Ctx);
     end if;
     -- Close the file
-    Ctx.Status := Parsed_Elements;
     Ok := True;
   exception
     when Status_Error | End_Error =>
@@ -466,7 +470,9 @@ package body Xml_Parser is
                    Ok  : out Boolean) is
   begin
     -- Status must be Parsed_xxx or Init
-    if Ctx.Status = Clean or else Ctx.Status = Error then
+    if Ctx.Status = Clean
+    or else Ctx.Status = Error
+    or else Ctx.Status = Parsed_Prologue_Cb then
       raise Status_Error;
     end if;
     -- In case of exception...
