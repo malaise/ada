@@ -114,6 +114,9 @@ package body Xml_Parser is
     procedure Build_Update (Tree : in out My_Tree.Tree_Type;
                             Update : in out Node_Update;
                             Creation : in Boolean);
+    -- Delete current node
+    procedure Delete_Node (Tree : in out My_Tree.Tree_Type;
+                           Deallocate : in Boolean);
   end Tree_Mng;
   package body Tree_Mng is separate;
 

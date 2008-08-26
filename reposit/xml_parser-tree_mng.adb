@@ -403,5 +403,12 @@ package body Tree_Mng is
     end loop;
   end Build_Update;
 
+  -- Delete current node
+  procedure Delete_Node (Tree : in out My_Tree.Tree_Type;
+                         Deallocate : in Boolean) is
+  begin
+    My_Tree.Delete_Tree (Tree, Deallocate);
+  end Delete_Node;
+
 end Tree_Mng;
 

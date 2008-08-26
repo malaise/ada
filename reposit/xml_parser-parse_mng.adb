@@ -410,6 +410,21 @@ package body Parse_Mng  is
     end;
   end Call_Callback;
 
+  -- Delete current node/tree if callback
+  procedure Delete_Node (Ctx : in out Ctx_Type;
+                         In_Prologue : in Boolean;
+                         Deallocate : in Boolean := False) is
+  begin
+     if Ctx.Callback = null then
+      return;
+    end if;
+    if In_Prologue then
+      Tree_Mng.Delete_Node (Ctx.Prologue.all, Deallocate);
+    else
+      Tree_Mng.Delete_Node (Ctx.Prologue.all, Deallocate);
+    end if;
+  end Delete_Node;
+
   -- Set default Xml version (1.0) if needed
   -- Set encoding from Dtd if needed
   procedure Set_Default_Xml (Ctx : in out Ctx_Type;
@@ -517,7 +532,8 @@ package body Parse_Mng  is
     Tree_Mng.Move_Root (Ctx.Prologue.all);
     Tree_Mng.Add_Pi (Ctx.Prologue.all, Name, Util.Get_Curr_Str (Ctx.Flow),
                      Util.Get_Line_No(Ctx.Flow));
-        Call_Callback (Ctx, True, True);
+    Call_Callback (Ctx, True, True);
+    Delete_Node (Ctx, True);
     Util.Reset_Curr_Str (Ctx.Flow);
     -- Skip to the end
     Util.Get (Ctx.Flow, Char);
@@ -625,6 +641,8 @@ package body Parse_Mng  is
       -- Reset dtd info
       Dtd.Init (Adtd);
     end if;
+    Call_Callback (Ctx, True, True);
+    Delete_Node (Ctx, True);
     Trace ("Parsed <!DOCTYPE ... >");
   end Parse_Doctype;
 
@@ -668,9 +686,13 @@ package body Parse_Mng  is
           Tree_Mng.Move_Root (Ctx.Prologue.all);
           Tree_Mng.Add_Comment (Ctx.Prologue.all, Comment,
                                 Util.Get_Line_No (Ctx.Flow));
+          Call_Callback (Ctx, True, True);
+          Delete_Node (Ctx, True);
         else
           Tree_Mng.Add_Comment (Ctx.Elements.all, Comment,
                                 Util.Get_Line_No (Ctx.Flow));
+          Call_Callback (Ctx, False, True);
+          Delete_Node (Ctx, False);
         end if;
         Trace ("Parsed comment " & Asu_Ts (Comment));
       else
@@ -752,6 +774,8 @@ package body Parse_Mng  is
       Dtd.Parse (Ctx, Adtd, Asu.To_String (Ctx.Dtd_File));
     end if;
     Tree_Mng.Move_Root (Ctx.Prologue.all);
+    -- Delete completely the prologue if callback
+    Delete_Node (Ctx, True, True);
   exception
     when Util.End_Error =>
       Util.Error (Ctx.Flow, "Unexpected end of file");
