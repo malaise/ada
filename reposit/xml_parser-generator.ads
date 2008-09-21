@@ -192,6 +192,18 @@ package Xml_Parser.Generator is
                  Format : in Format_Kind_List := Default_Format;
                  Width  : in Natural := Default_Width);
 
+
+  -- Put a node update image in a string
+  function Image (Ctx    : Xml_Parser.Ctx_Type;
+                  Update : Node_Update;
+                  Format : Format_Kind_List := Default_Format;
+                  Width  : Natural := Default_Width) return String;
+  procedure Set_Image (Ctx    : in Xml_Parser.Ctx_Type;
+                       Update : in Node_Update;
+                       Str    : out Ada.Strings.Unbounded.Unbounded_String;
+                       Format : in Format_Kind_List := Default_Format;
+                       Width  : in Natural := Default_Width);
+
 private
   type Ctx_Type is new Xml_Parser.Ctx_Type with null record;
 end Xml_Parser.Generator;

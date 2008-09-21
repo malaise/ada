@@ -840,6 +840,50 @@ package body Xml_Parser.Generator is
     return Asu_Ts (Res);
   end Normalize;
 
+  -- Put the attributes
+  procedure Put_Attributes (Flow         : in out Flow_Dscr;
+                            Format       : in Format_Kind_List;
+                            Width        : in Natural;
+                            Attributes   : in Attributes_Array;
+                            Level        : in Natural;
+                            Offset       : in Positive;
+                            Has_Children : in Boolean) is
+    Pad : constant String (1 .. 2 * Level + Offset) := (others => ' ');
+    Cur_Col : Natural;
+    Att_Width : Positive;
+    use type Asu_Us;
+  begin
+    -- Put each attribute
+    Cur_Col := Pad'Length;
+    for I in Attributes'Range loop
+      -- Needed width is ' Name="Value"'
+      Att_Width := Asu.Length (Attributes(I).Name)
+                 + Asu.Length (Attributes(I).Value) + 4;
+      -- For last attribute, a ">" (if children) or a "/>" will be added
+      if I = Attributes'Last then
+        if Has_Children then
+          Att_Width := Att_Width + 1;
+        else
+          Att_Width := Att_Width + 2;
+        end if;
+      end if;
+      -- New line and Indent if needed
+      -- Never new line for first
+      -- New line if One_Per_Line of Fill_Width and no more width
+      if I /= Attributes'First
+      and then (Format = One_Per_Line
+         or else (Format = Fill_Width
+                  and then Cur_Col + Att_Width > Width) ) then
+        New_Line (Flow);
+        Put (Flow, Pad);
+        Cur_Col := Pad'Length;
+      end if;
+      Put (Flow, " " & Asu_Ts (Attributes(I).Name & "="""
+               & Attributes(I).Value) & """");
+      Cur_Col := Cur_Col + Att_Width;
+    end loop;
+  end Put_Attributes;
+
   -- Put the attributes of current element
   -- Move to first child of element if any, otherwise remain on element
   procedure Put_Attributes (Flow         : in out Flow_Dscr;
@@ -851,9 +895,6 @@ package body Xml_Parser.Generator is
                             Has_Children : in Boolean) is
     Cell : My_Tree_Cell;
     Nb_Attributes : Natural;
-    Pad : constant String (1 .. 2 * Level + Offset) := (others => ' ');
-    Cur_Col : Natural;
-    Att_Width : Positive;
     use type Asu_Us;
   begin
     -- Read number of attribtues
@@ -866,39 +907,24 @@ package body Xml_Parser.Generator is
       end if;
       return;
     end if;
-    -- Put each attribute
-    Cur_Col := Pad'Length;
-    for I in 1 .. Nb_Attributes loop
-      if I = 1 then
-         My_Tree.Move_Child (Element, True);
-      else
-        My_Tree.Move_Brother (Element, False);
-      end if;
-      -- Read attribute, needed width is ' Name="Value"'
-      My_Tree.Read (Element, Cell);
-      Att_Width := Asu.Length (Cell.Name) + Asu.Length (Cell.Value) + 4;
-      -- For last attribute, a ">" (if children) or a "/>" will be added
-      if I = Nb_Attributes then
-        if Has_Children then
-          Att_Width := Att_Width + 1;
+    declare
+      Attributes : Attributes_Array (1 .. Nb_Attributes);
+    begin
+      -- Read each attribute
+      for I in 1 .. Nb_Attributes loop
+        if I = 1 then
+           My_Tree.Move_Child (Element, True);
         else
-          Att_Width := Att_Width + 2;
+          My_Tree.Move_Brother (Element, False);
         end if;
-      end if;
-      -- New line and Indent if needed
-      -- Never new line for first
-      -- New line if One_Per_Line of Fill_Width and no more width
-      if I /= 1
-      and then (Format = One_Per_Line
-         or else (Format = Fill_Width
-                  and then Cur_Col + Att_Width > Width) ) then
-        New_Line (Flow);
-        Put (Flow, Pad);
-        Cur_Col := Pad'Length;
-      end if;
-      Put (Flow, " " & Asu_Ts (Cell.Name & "=""" & Cell.Value) & """");
-      Cur_Col := Cur_Col + Att_Width;
-    end loop;
+        -- Read attribute, needed width is ' Name="Value"'
+        My_Tree.Read (Element, Cell);
+        Attributes(I).Name := Cell.Name;
+        Attributes(I).Value := Cell.Value;
+      end loop;
+      Put_Attributes (Flow, Format, Width, Attributes, Level, Offset,
+                      Has_Children);
+    end;
     -- Move to next brother if any, otherwise move to father
     if My_Tree.Has_Brother (Element, False) then
       My_Tree.Move_Brother (Element, False);
@@ -913,6 +939,38 @@ package body Xml_Parser.Generator is
   begin
     Put (Flow, "<!--" & Comment & "-->");
   end Put_Comment;
+
+  -- Put a DOCTYPE directive
+  procedure Put_Doctype (Flow    : in out Flow_Dscr;
+                         Doctype : in Doctype_Type;
+                         Format  : in Format_Kind_List) is
+    use type Asu_Us;
+  begin
+    -- Put DOCTYPE, name
+    Put (Flow, "<!DOCTYPE " & Asu_Ts (Doctype.Name));
+    if Doctype.Name = Asu_Null then
+      raise Internal_Error;
+    end if;
+    -- Public or System external reference
+    if Doctype.Public then
+      -- Public and public Id
+      Put (Flow, " PUBLIC """ & Asu_Ts (Doctype.Pub_Id) & """");
+    else
+      Put (Flow, " SYSTEM");
+    end if;
+    -- Public or System URI
+    Put (Flow, " """  & Asu_Ts (Doctype.File) & """");
+    -- Internal definition
+    if Doctype.Int_Def /= Asu_Null then
+      if Format /= Raw then
+        Put (Flow, " [" & Asu_Ts (Doctype.Int_Def) & "] ");
+      else
+        Put (Flow, "[" & Normalize (Asu_Ts (Doctype.Int_Def))
+                               & "]");
+      end if;
+    end if;
+    Put (Flow, ">");
+  end Put_Doctype;
 
   -- Put an element (and its attributes and children)
   Prologue_Level : constant := -1;
@@ -974,30 +1032,7 @@ package body Xml_Parser.Generator is
             end if;
             Put (Flow, "?>");
           when Text =>
-            -- Put DOCTYPE, name
-            Put (Flow, "<!DOCTYPE " & Asu_Ts (Ctx.Doctype.Name));
-            if Ctx.Doctype.Name = Asu_Null then
-              raise Internal_Error;
-            end if;
-            -- Public or System external reference
-            if Ctx.Doctype.Public then
-              -- Public and public Id
-              Put (Flow, " PUBLIC """ & Asu_Ts (Ctx.Doctype.Pub_Id) & """");
-            else
-              Put (Flow, " SYSTEM");
-            end if;
-            -- Public or System URI
-            Put (Flow, " """  & Asu_Ts (Ctx.Doctype.File) & """");
-            -- Internal definition
-            if Ctx.Doctype.Int_Def /= Asu_Null then
-              if Format /= Raw then
-                Put (Flow, " [" & Asu_Ts (Ctx.Doctype.Int_Def) & "] ");
-              else
-                Put (Flow, "[" & Normalize (Asu_Ts (Ctx.Doctype.Int_Def))
-                               & "]");
-              end if;
-            end if;
-            Put (Flow, ">");
+            Put_Doctype (Flow, Ctx.Doctype, Format);
           when Comment =>
             Put_Comment (Flow, Asu_Ts (Child.Name));
         end case;
@@ -1044,7 +1079,7 @@ package body Xml_Parser.Generator is
           raise Internal_Error;
         when Xml_Parser.Element =>
           -- Recursive dump child
-          if I = 1 or else not Prev_Is_Text then
+          if not Prev_Is_Text then
             -- Father did not New_Line because of possible text
             --  or prev was not text and did not New_Line because
             --  of possible text
@@ -1052,18 +1087,10 @@ package body Xml_Parser.Generator is
               New_Line (Flow);
             end if;
             Put_Element (Flow, Format, Width, Ctx, Element, Level + 1);
-          elsif I = 1 then
-            -- First Child
-            Put_Element (Flow, Format, Width, Ctx, Element, Level + 1);
           else
             -- Child element following text
             --  we bet that it has no child itself, so no New_Line nor Indent
             Put_Element (Flow, Format, Width, Ctx, Element, 0);
-          end if;
-          if not My_Tree.Has_Brother (Element, False)
-          and then Format /= Raw then
-            -- Last child
-            New_Line (Flow);
           end if;
           Prev_Is_Text := False;
         when Text =>
@@ -1073,7 +1100,7 @@ package body Xml_Parser.Generator is
         when Comment =>
           -- Comment
           if Format /= Raw then
-            if (I = 1 or else not Prev_Is_Text) then
+            if not Prev_Is_Text then
               -- Father did not New_Line because of possible text
               --  or prev was not text and did not New_Line because
               --  of possible text
@@ -1082,11 +1109,6 @@ package body Xml_Parser.Generator is
             Put (Flow, Indent1);
           end if;
           Put_Comment (Flow, Asu_Ts (Child.Name));
-          if not My_Tree.Has_Brother (Element, False)
-          and then Format /= Raw then
-            -- Last child
-            New_Line (Flow);
-          end if;
           Prev_Is_Text := False;
         end case;
         -- Next child or done
@@ -1095,6 +1117,7 @@ package body Xml_Parser.Generator is
       end loop;
       -- Terminate tag after children
       if not Prev_Is_Text and then Format /= Raw then
+        New_Line (Flow);
         Put (Flow, Indent);
       end if;
       Put (Flow, "</" & Asu_Ts (Cell.Name) & ">");
@@ -1125,6 +1148,99 @@ package body Xml_Parser.Generator is
       New_Line (Flow);
     end if;
   end Generate;
+
+  -- Put a node update image in a string
+  function Image (Ctx    : Xml_Parser.Ctx_Type;
+                  Update : Node_Update;
+                  Format : Format_Kind_List := Default_Format;
+                  Width  : Natural := Default_Width) return String is
+    Flow : Flow_Dscr(Use_File => False);
+    Indent : constant String (1 .. 2 * Update.Level) := (others => ' ');
+    Xml_Attr_Format : Format_Kind_List;
+  begin
+    if Update.In_Prologue then
+      if Update.Level = 0 then
+        -- The XML directive
+        -- Even if one attr per line request, Xml directive attributes
+        --  are all on the same line
+        if Format = One_Per_Line then
+          Xml_Attr_Format := Fill_Width;
+        else
+          Xml_Attr_Format := Format;
+        end if;
+        -- Put the xml directive with attributes if any
+        Put (Flow, "<?" & Asu_Ts (Update.Name));
+        if Update.Attributes /= null then
+          Put_Attributes (Flow, Xml_Attr_Format, Width, Update.Attributes.all,
+                          0, 2 + Asu.Length (Update.Name), False);
+        end if;
+        Put (Flow, "?>");
+      else
+        -- A child of prologue (PI, comment or doctype)
+        case Update.Kind is
+          when Xml_Parser.Element =>
+            -- Put PI
+            Put (Flow, "<?" & Asu_Ts (Update.Name) & "?>");
+          when Text =>
+            Put_Doctype (Flow, Ctx.Doctype, Format);
+          when Comment =>
+            Put_Comment (Flow, Asu_Ts (Update.Name));
+        end case;
+      end if;
+      if Format /= Raw then
+        New_Line (Flow);
+      end if;
+      return Asu_Ts (Flow.Us);
+    end if;
+
+    -- In elements tree
+    -- New_line and indent except if text or after text
+    if Format /= Raw
+    and then Update.Kind /= Xml_Parser.Text
+    and then not Update.Prev_Is_Text then
+      New_Line (Flow);
+      Put (Flow, Indent);
+    end if;
+    case Update.Kind is
+      when Xml_Parser.Element =>
+        if Update.Creation then
+          -- Put element and attributes
+          Put (Flow, "<" & Asu_Ts(Update.Name));
+          if Update.Attributes /= null then
+            Put_Attributes (Flow, Format, Width, Update.Attributes.all,
+                            Update.Level, 1 + Asu.Length (Update.Name),
+                            Update.Has_Children);
+          end if;
+          -- Any child?
+          if not Update.Has_Children then
+            -- No child, terminate tag now
+            Put (Flow, "/>");
+          else
+            -- Children to come
+            Put (Flow, ">");
+          end if;
+        else
+          -- End of element with children
+          Put (Flow, "</" & Asu_Ts (Update.Name) & ">");
+        end if;
+      when Text =>
+        -- Put text
+        Put (Flow, Asu_Ts (Update.Name));
+      when Comment =>
+        -- Comment
+        Put_Comment (Flow, Asu_Ts (Update.Name));
+    end case;
+    return Asu_Ts (Flow.Us);
+  end Image;
+
+  procedure Set_Image (Ctx    : in Xml_Parser.Ctx_Type;
+                       Update : in Node_Update;
+                       Str    : out Ada.Strings.Unbounded.Unbounded_String;
+                       Format : in Format_Kind_List := Default_Format;
+                       Width  : in Natural := Default_Width) is
+  begin
+    Str := Asu_Tus (Image (Ctx, Update, Format, Width));
+  end Set_Image;
 
 end Xml_Parser.Generator;
 

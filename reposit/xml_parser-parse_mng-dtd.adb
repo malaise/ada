@@ -535,6 +535,8 @@ package body Dtd is
     else
       -- This is a entity definition
       Util.Unget (Ctx.Flow);
+      Parameter := False;
+      Parstr := Asu_Null;
     end if;
     -- Parse entity name
     Util.Parse_Until_Char (Ctx.Flow, "" & Util.Space);
@@ -883,7 +885,7 @@ package body Dtd is
     Found :  Boolean;
     use type Asu_Us;
   begin
-     Trace ("Dtd check Xml attributes list " & Asu_Ts (Attributes) );
+    Trace ("Dtd check Xml attributes list " & Asu_Ts (Attributes) );
     -- Read element def
     Info.Name := "Elt" & Info_Sep & Name;
     Info_Mng.Search (Adtd.Info_List, Info, Info_Found);
@@ -1161,11 +1163,16 @@ package body Dtd is
 
   -- Add current element to list of children
   procedure Add_Current (Ctx      : in out Ctx_Type;
+                         Adtd     : in out Dtd_Type;
                          Children : in out Asu_Us;
                          Is_Mixed : in out Boolean) is
     Cell : My_Tree_Cell;
     use type Asu_Us;
   begin
+    if not Adtd.Set then
+      -- No dtd => no check
+      return;
+    end if;
     My_Tree.Read (Ctx.Elements.all, Cell);
     case Cell.Kind is
       when Element =>
@@ -1187,10 +1194,13 @@ package body Dtd is
                            Is_Mixed : in Boolean) is
     Cell : My_Tree_Cell;
   begin
+    if not Adtd.Set then
+      -- No dtd => no check
+      return;
+    end if;
     My_Tree.Read (Ctx.Elements.all, Cell);
     Check_Children (Ctx, Adtd, Cell.Name, Cell.Line_No, Children, Is_Mixed);
   end Check_Element;
-
 
   -- Check a whole element tree recursively
   procedure Check_Subtree (Ctx  : in out Ctx_Type;

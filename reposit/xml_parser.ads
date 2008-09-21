@@ -77,21 +77,27 @@ package Xml_Parser is
   -----------------------------
   -- When a callback is provided to Parse, then no tree is build but nodes
   --  are directly provided. Prologue items all have a level of 0 and no child
-  --  only elements have attributes, children and are closed.
+  --  only elements have attributes, children and can be closed (if children).
+  -- Prev_Is_Text, on element (creation or not), indicates if a new_line and
+  --  indent shall be skipped
   type Node_Update is new Ada.Finalization.Limited_Controlled with record
-    In_Prologue : Boolean;
-    Line_No : Natural;
+    In_Prologue : Boolean:= True;
+    Line_No : Natural := 0;
+    Level : Natural := 0;
     Name : Ada.Strings.Unbounded.Unbounded_String;
-    Creation : Boolean;
-    Kind : Node_Kind_List;
+    Creation : Boolean := True;
+    Prev_Is_Text : Boolean := False;
+    Kind : Node_Kind_List := Element;
     -- Only for Kind Element
     Has_Children : Boolean := False;
     -- Only for Kind Element
-    Attributes : Attributes_Access;
+    Attributes : Attributes_Access := null;
   end record;
   -- If the callback raises an exception the parse raises
   Callback_Error : exception;
-  type Parse_Callback_Access is access procedure (Node : in Node_Update);
+  type Parse_Callback_Access is access
+            procedure (Ctx  : in Ctx_Type;
+                       Node : in Node_Update);
 
   ------------------
   -- FILE PARSING --
@@ -461,8 +467,9 @@ private
     -- Use Dtd
     Use_Dtd : Boolean := True;
     Dtd_File : Ada.Strings.Unbounded.Unbounded_String;
-    -- Call a callback i.o. feedong trees
+    -- Call a callback i.o. feeding trees
     Callback : Parse_Callback_Access := null;
+    Level : Natural := 0;
     -- Prologue and parsed elements
     Prologue : Tree_Acc := new My_Tree.Tree_Type;
     Elements : Tree_Acc := new My_Tree.Tree_Type;

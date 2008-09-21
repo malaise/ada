@@ -132,7 +132,9 @@ package body Tree_Mng is
   -- Move to root of current tree
   procedure Move_Root (Elements : in out My_Tree.Tree_Type) is
   begin
-    My_Tree.Move_Root (Elements);
+    if not My_Tree.Is_Empty (Elements) then
+      My_Tree.Move_Root (Elements);
+    end if;
   end Move_Root;
 
   procedure Add_Attribute (Elements : in out My_Tree.Tree_Type;
@@ -334,7 +336,6 @@ package body Tree_Mng is
     Cell.Value := Asu_Null;
     -- Insert as child of current and remain current
     My_Tree.Insert_Child (Tree, Cell, False);
-    My_Tree.Move_Father (Tree);
   end Add_Text;
 
   -- Add a comment to current cell (of elements or prologue)
@@ -348,9 +349,8 @@ package body Tree_Mng is
     Cell.Nb_Attributes := 0;
     Cell.Name := Comment;
     Cell.Value := Asu_Null;
-    -- Insert as attribute of current and remain current
+    -- Insert child
     My_Tree.Insert_Child (Tree, Cell, False);
-    My_Tree.Move_Father (Tree);
   end Add_Comment;
 
   -- Build the Node_Update associated to current Node
@@ -386,7 +386,12 @@ package body Tree_Mng is
       end if;
       return;
     end if;
-      
+
+    -- Children and attributes are only for elements
+    if Update.Kind /= Element then
+      return;
+    end if;
+
     Update.Has_Children := My_Tree.Children_Number (Tree) > Cell.Nb_Attributes;
     -- Create and fill attributes
     Update.Attributes := new Attributes_Array (1 .. Cell.Nb_Attributes);
@@ -401,6 +406,9 @@ package body Tree_Mng is
       Update.Attributes(I).Name := Attr.Name;
       Update.Attributes(I).Value := Attr.Value;
     end loop;
+    if Update.Attributes'Length /= 0 then
+      My_Tree.Move_Father (Tree);
+    end if;
   end Build_Update;
 
   -- Delete current node

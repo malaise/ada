@@ -301,6 +301,7 @@ package body Xml_Parser is
     Ctx.Use_Dtd := True;
     Ctx.Dtd_File := Asu_Null;
     Ctx.Callback := null;
+    Ctx.Level := 0;
     -- Clean prologue tree
     if not My_Tree.Is_Empty (Ctx.Prologue.all) then
       My_Tree.Move_Root (Ctx.Prologue.all);
