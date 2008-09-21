@@ -1,5 +1,8 @@
 History of Asubst:
 ------------------
+06/09/2008 V6.2
+Add: Prevent the use in UTF-8 of non ASCII chars in regex bracket expression.
+
 13/08/2008 V6.1
 Add: Support '\n' in noregex mode.
 Add: Support '\n' when delimiter is set.

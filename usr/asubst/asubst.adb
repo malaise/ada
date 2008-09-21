@@ -3,7 +3,7 @@ with Environ, Argument, Argument_Parser, Sys_Calls, Language, Mixed_Str, Text_Li
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
-  Version : constant String  := "V6.1";
+  Version : constant String  := "V6.2";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -136,6 +136,12 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
     "    This allows multi-row processing.");
 
+    Sys_Calls.Put_Line_Error (
+     "  " & Argument.Get_Program_Name & " is based on GNU regex, based on POSIX regex, which does NOT support");
+    Sys_Calls.Put_Line_Error (
+     "    UTF-8. Ex: ""0xC3 0xA0"" matches '[' & '0xC3 0xA9' & ']' at first byte!");
+    Sys_Calls.Put_Line_Error (
+     "    So in UTF-8 non ASCII characters in regex bracket expressions are forbiden.");
     Sys_Calls.Put_Line_Error (
      "  Warning: regex are powerfull (see ""man 7 regex"") and automatic substitution");
     Sys_Calls.Put_Line_Error (

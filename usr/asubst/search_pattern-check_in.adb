@@ -51,7 +51,7 @@ begin
           Error ("Unexpected '^' within regex");
         end if;
       end if;
-    elsif Char = '$'  and then not In_Brakets then
+    elsif Char = '$' and then not In_Brakets then
       -- '$' is allowed at end and when not meaning "end of line"
       -- '$' means end of line except in brakets in Extented regex
       -- '$' means end of line after \) in Basic regex
@@ -64,6 +64,11 @@ begin
           Error ("Unexpected '$' within regex");
         end if;
       end if;
+    elsif Char > Ada.Characters.Latin_1.Del
+    and then In_Brakets
+    and then Is_Utf8 then
+      -- A non ASCII character within brackets in UTF-8 mode
+      Error ("Non ASCII character within brackets in UTF-8 mode");
     end if;
     Nav.Move;
     exit when not Nav.In_Bounds;

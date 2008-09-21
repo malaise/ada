@@ -3,13 +3,15 @@
 <HEAD>
 	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
 	<TITLE>Asubst</TITLE>
-	<META NAME="GENERATOR" CONTENT="OpenOffice.org 1.1.5  (Linux)">
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 2.4  (Linux)">
 	<META NAME="AUTHOR" CONTENT="MALAISE Pascal">
 	<META NAME="CREATED" CONTENT="20060414;18573000">
-	<META NAME="CHANGED" CONTENT="20080813;13431800">
+	<META NAME="CHANGEDBY" CONTENT="malaise">
+	<META NAME="CHANGED" CONTENT="20080907;9183200">
+	<META NAME="CHANGEDBY" CONTENT="malaise">
 </HEAD>
 <BODY LANG="en-US" DIR="LTR">
-<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><B><FONT SIZE=6>V6.1</FONT></B></FONT></FONT></P>
+<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><FONT SIZE=6><B>V6.2</B></FONT></FONT></FONT></P>
 <H1 LANG="en-GB"><FONT FACE="monospace">1. General syntax</FONT></H1>
 <P LANG="en-GB"><FONT FACE="monospace">Usage: asubst [ { &lt;option&gt;
 } ] &lt;find_pattern&gt; &lt;replace_string&gt; [ { &lt;file&gt; }
@@ -31,11 +33,10 @@ or --delimiter=&lt;string&gt; for a delimiter other than '\n'.<BR>-e
 contains the names of files to process.<BR>-g or --grep : print
 matching text as grep would do (no substitution).</FONT><BR><FONT FACE="monospace">-i
 or --ignorecase : do case insensitive match checking of
-&lt;find_pattern&gt;.<BR><FONT FACE="monospace">-l or --line for
-display line number in grep mode.<BR></FONT>-m &lt;max&gt; or
---max=&lt;max&gt; : stop processing each file after &lt;max&gt;
-substitutions, (0 for infinite).<BR>-<FONT FACE="monospace">n or
---number : print number of substitutions per file.<BR></FONT>-p &lt;dir&gt;
+&lt;find_pattern&gt;.<BR>-l or --line for display line number in grep
+mode.<BR>-m &lt;max&gt; or --max=&lt;max&gt; : stop processing each
+file after &lt;max&gt; substitutions, (0 for infinite).<BR>-n or
+--number : print number of substitutions per file.<BR>-p &lt;dir&gt;
 or --tmp=&lt;dir&gt; : directory of temporary files.<BR>-q or --quiet
 : no printout.</FONT><BR><FONT FACE="monospace">-s or --save : make a
 copy (&lt;file&gt;.asu) of original file(s),<BR>-t or --test for
@@ -55,7 +56,11 @@ considers that input flow or file is coded in Utf-8. This setting can
 be altered in a way or the other by setting ASUBST_UTF8 environment
 variable to Y, yes, N or no (with whatever casing). Finally, this
 setting can be altered in a way or the other by the options -a
-(--ascii), or -u (--utf8).</FONT></P>
+(--ascii), or -u (--utf8). However, consider that asubst is based on
+GNU regex, based on POSIX regex, which does NOT support UTF-8. Ex:
+&quot;0xC3 0xA0&quot; matches '[' &amp; '0xC3 0xA9' &amp; ']' at
+first byte! So in UTF-8 non ASCII characters in regex bracket
+expressions are forbiden.</FONT></P>
 <P LANG="en-GB"><FONT FACE="monospace">If ASUBST_DEBUG environment
 variable is set to Y or yes (with whatever casing) then asubst puts
 on stderr some debugging information.</FONT></P>

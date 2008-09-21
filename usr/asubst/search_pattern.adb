@@ -1,6 +1,6 @@
 with Ada.Characters.Latin_1, Ada.Strings.Unbounded;
 with Sys_Calls, Argument, Unique_List, String_Mng, Text_Line, Debug,
-     Char_To_Hexa;
+     Char_To_Hexa, Language;
 package body Search_Pattern is
 
   package Asu renames Ada.Strings.Unbounded;
@@ -68,6 +68,9 @@ package body Search_Pattern is
 
   -- True if find pattern is regexes
   Is_Regex : Boolean;
+
+  -- True if Language is set to Lang_Utf_8
+  Is_UTF8 : Boolean;
 
   -- The official Line Feed
   Line_Feed : constant String := Text_Line.Line_Feed_Str;
@@ -185,14 +188,18 @@ package body Search_Pattern is
 
   -- Check that the string does not contain any significant ^ or $
   --  except ^ in first and $ in last post
-  procedure Check_In (Str : in String; Extended : in Boolean) is separate;
+  -- Check that regex bracket expression in UTF-8 does not contain non ASCII
+  --  character
+  procedure Check_In (Str : in String;
+                      Extended : in Boolean) is separate;
 
   -- Parses a pattern (splits it or not in several items of List)
   -- Reports errors on stderr and raises Parse_Error.
   procedure Parse_One (Pattern : in String;
-                       Extended, Case_Sensitive, Is_Regex : in Boolean;
-                       List : in out Unique_Pattern.List_Type;
-                       Split : in Boolean := True) is
+                       Extended, Case_Sensitive : in Boolean;
+                       Regex_Mode : in Boolean;
+                       Split : in Boolean;
+                       List : in out Unique_Pattern.List_Type) is
 
     The_Pattern : Asu.Unbounded_String;
 
@@ -226,7 +233,7 @@ package body Search_Pattern is
                & Asu.Slice (The_Pattern, Index, Index + 1)
                & " in pattern");
       end;
-      if Result = 0 and then Is_Regex then
+      if Result = 0 and then Regex_Mode then
         Error ("Invalid null hexadecimal sequence in regex"
              & Asu.Slice (The_Pattern, Index, Index + 1)
              & " in pattern");
@@ -242,7 +249,7 @@ package body Search_Pattern is
     --  or "\Key"
     function Char_Class_Of (Key : Character) return String is
     begin
-      if not Is_Regex then
+      if not Regex_Mode then
         -- If not a regex, no interpretation
         return '\' & Key;
       end if;
@@ -279,7 +286,6 @@ package body Search_Pattern is
     Unique_Pattern.Delete_List (List);
     Is_Iterative := False;
     Check_Completed := False;
-    Search_Pattern.Is_Regex := Is_Regex;
     -- Reject empty pattern
     if Pattern = "" then
       Error ("Empty pattern");
@@ -354,22 +360,22 @@ package body Search_Pattern is
             Slice : constant String
                   := Asu.Slice (The_Pattern, Start_Index, Stop_Index);
           begin
-            if Is_Regex then
+            if Regex_Mode then
               -- It must not contain Start_String if preeceded by a delim
               Check_Bound (Slice, Start_String (Prev_Delim), True);
               -- It must not contain Stop_String if preeceded by a delim
               Check_Bound (Slice, Stop_String (Next_Delim), False);
+              -- It must not contain any significant ^ or $ in the middle
+              Check_In (Slice, Extended);
               -- Add this regex with start/stop strings
               Add (Start_String (Prev_Delim) & Slice & Stop_String (Next_Delim),
                  Extended, Case_Sensitive, List);
-              -- It must not contain any significant ^ or $ in the middle
-              Check_In (Slice, Extended);
             else
               -- Add this regex with no start/stop strings
               Add (Slice, True, True, List);
             end if;
           end;
-          if Is_Regex then
+          if Regex_Mode then
             -- See if this is a single regex and if it can apply several times
             --  to one line of input (no ^ nor $, except "\$")
             if not Prev_Delim
@@ -401,10 +407,10 @@ package body Search_Pattern is
       declare
         Str : constant String := Asu.To_String (The_Pattern);
       begin
-        Check_In (Str, Extended);
-        Check_Bound (Str, Start_String (True), True);
-        Check_Bound (Str, Start_String (False), False);
-        if Is_Regex then
+        if Regex_Mode then
+          Check_Bound (Str, Start_String (True), True);
+          Check_Bound (Str, Start_String (False), False);
+          Check_In (Str, Extended);
           Add (Str, Extended, Case_Sensitive, List);
         else
           Add (Str, True, True, List);
@@ -440,7 +446,7 @@ package body Search_Pattern is
 
     -- Parse Delim as a non-regex string, not splitted
     Pattern_Kind := Delimiter_Kind;
-    Parse_One (Delim, False, False, False, Delim_List, False);
+    Parse_One (Delim, False, False, False, False, Delim_List);
     -- One string in list: the delimiter
     Upat.Num := 1;
     Unique_Pattern.Get_Access (Delim_List,  Upat, Acc);
@@ -463,7 +469,11 @@ package body Search_Pattern is
     Std_Delim : Boolean;
     Upat : Line_Pat_Rec;
     Search_Access, Exclude_Access : Line_Pat_Acc;
+    use type Language.Language_Set_List;
   begin
+    -- Init global variables and 'constants'
+    Search_Pattern.Is_Regex := Is_Regex;
+    Is_Utf8 := Language.Get_Language = Language.Lang_Utf_8;
     Expected_Search := 1;
     -- Parse the delimiter
     Std_Delim := Parse_Delimiter (Delimiter);
@@ -476,8 +486,8 @@ package body Search_Pattern is
     Pattern_Kind := Search_Kind;
     -- Parse the search pattern
     --  Don't split if not the standard delimiter
-    Parse_One (Search, Extended, Case_Sensitive, Is_Regex, Search_List,
-               Std_Delim);
+    Parse_One (Search, Extended, Case_Sensitive, Is_Regex, Std_Delim,
+               Search_List);
     -- If Delimiter is not Line_Feed, then find pattern must be iterative
     if not Std_Delim and then not Is_Iterative then
       Pattern_Kind := Delimiter_Kind;
@@ -495,7 +505,8 @@ package body Search_Pattern is
       Sys_Calls.Put_Line_Error ("Search, parsing exclude pattern");
     end if;
     Pattern_Kind := Exclude_Kind;
-    Parse_One (Exclude, Extended, Case_Sensitive, Is_Regex, Exclude_List);
+    Parse_One (Exclude, Extended, Case_Sensitive, Is_Regex, Std_Delim,
+               Exclude_List);
 
     -- Both patterns must have same length and have delims at same pos
     if Unique_Pattern.List_Length (Search_List) /=

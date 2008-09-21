@@ -1,5 +1,5 @@
                                  Asubst
-                                  V6.1
+                                  V6.2
 
 
 1. General syntax
@@ -37,11 +37,15 @@ matching.
 
 
 3. Environment
-If the LANG environment variable is set to something containing "UTF-8", then asubst
-considers that input flow or file is coded in Utf-8. This setting can be
+If the LANG environment variable is set to something containing "UTF-8", then
+asubst considers that input flow or file is coded in Utf-8. This setting can be
 altered in a way or the other by setting ASUBST_UTF8 environment variable
 to Y, yes, N or no (with whatever casing). Finally, this setting can be
 altered in a way or the other by the options -a (--ascii), or -u (--utf8).
+However, consider that asubst is based on GNU regex, based on POSIX regex,
+which does NOT support UTF-8. Ex: "0xC3 0xA0" matches '[' & '0xC3 0xA9' & ']'
+at first byte! So in UTF-8 non ASCII characters in regex bracket expressions are
+forbiden.
 
 If ASUBST_DEBUG environment variable is set to Y or yes (with whatever casing)
 then asubst puts on stderr some debugging information.
