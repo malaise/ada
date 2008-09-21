@@ -20,7 +20,8 @@ procedure Xwords is
   Ptg_Result   : Afpx.Result_Rec;
   Redisplay    : Boolean;
   Afpx_Item    : Afpx.Line_Rec;
-  Status_Ok    : Boolean;
+  type Status_List is (Found, Ok, Error);
+  Status       : Status_List;
 
   -- Fields
   Clear_Fld : constant Afpx.Field_Range := 3;
@@ -72,6 +73,7 @@ procedure Xwords is
   procedure Do_Command (Num : Afpx.Field_Range) is
     Result : Command.Res_List;
     Com, Arg : Common.Asu_Us;
+    Command_Ok : Boolean;
     First : Boolean;
     use type Afpx.Field_Range, Common.Asu_Us;
   begin
@@ -88,14 +90,21 @@ procedure Xwords is
       when Del_Word_Fld | Del_Noun_Fld =>
         Com := Common.Asu_Tus ("wd");
       when others =>
-        Status_Ok := False;
+        Status := Error;
         return;
     end case;
     if Num = Add_Noun_Fld or else Num = Del_Noun_Fld then
       Arg := Common.Asu_Tus (Many_Strings.Cat ("-noun", Common.Asu_Ts (Arg)));
     end if;
     Command.Exec (Common.Asu_Ts (Com), Common.Asu_Ts (Arg),
-                  Status_Ok, Result);
+                  Command_Ok, Result);
+    if not Command_Ok then
+      Status := Error;
+    elsif Num = Search_Fld then
+      Status := Found;
+    else
+      Status := Ok;
+    end if;
 
     -- Store in history and selection if search
     if Num = Search_Fld and then Arg /= Common.Asu_Null then
@@ -120,7 +129,7 @@ procedure Xwords is
       Result.Rewind;
       loop
         Result.Read (Line, Done => Done);
-        if Status_Ok and then First then
+        if Status = Found and then First then
           Afpx.Set_Selection (Lower_Str (Common.Asu_Ts (Line)));
           First := False;
         end if;
@@ -137,7 +146,7 @@ procedure Xwords is
     end if;
 
     -- Make ready for a brand new command
-    if Status_Ok then
+    if Status /= Error then
       Afpx.Clear_Field (Get_Fld);
     end if;
   end Do_Command;
@@ -171,17 +180,21 @@ begin
   Insert := False;
   Redisplay := False;
 
-  Status_Ok := True;
+  Status := Ok;
 
 
   loop
-    -- Color of result list according to result
-    if Status_Ok then
-      Afpx.Reset_Field (Afpx.List_Field_No, Reset_String => False);
-    else
-      Afpx.Set_Field_Colors (Afpx.List_Field_No, Background => Con_Io.Red);
-      Afpx.Set_Field_Protection (Afpx.List_Field_No, True);
-    end if;
+    -- Color and protection of result list according to status
+    case Status is
+      when Found =>
+        Afpx.Reset_Field (Afpx.List_Field_No, Reset_String => False);
+      when Ok =>
+        Afpx.Reset_Field (Afpx.List_Field_No, Reset_String => False);
+        Afpx.Set_Field_Protection (Afpx.List_Field_No, True);
+      when Error =>
+        Afpx.Set_Field_Protection (Afpx.List_Field_No, True);
+        Afpx.Set_Field_Colors (Afpx.List_Field_No, Background => Con_Io.Red);
+    end case;
 
     -- Set cursor at last significant char of the Get field
     Cursor_Col := Afpx.Last_Index (Afpx.Decode_Wide_Field (Get_Fld, 0), True);
@@ -240,11 +253,11 @@ begin
               Afpx.Update_List(Afpx.Bottom);
               History.Rewind (Command.Res_Mng.Dyn_List.Prev);
             end if;
-            Status_Ok := True;
+            Status := Found;
           -- Clear list
           when Clear_List_Fld =>
             Afpx.Line_List.Delete_List (Deallocate => False);
-            Status_Ok := True;
+            Status := Ok;
 
           -- List management
           when Lmng_Fld + 0 =>
