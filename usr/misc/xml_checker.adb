@@ -3,7 +3,7 @@ with Argument, Argument_Parser, Xml_Parser.Generator, Normal, Basic_Proc,
      Text_Line, Sys_Calls;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V4.1";
+  Version : constant String := "V5.0";
 
   -- Ada.Strings.Unbounded and Ada.Exceptions re-definitions
   package Asu renames Ada.Strings.Unbounded;
@@ -51,7 +51,7 @@ procedure Xml_Checker is
   begin
     Ple ("Usage: " & Argument.Get_Program_Name & "[ { <option> } ] [ { <file> } ]");
     Ple (" <option> ::= <silent> | <dump> | <raw> | <no_comment> | <width> | <one>");
-    Ple ("            | <expand> | <check_dtd> | <help> | <version>");
+    Ple ("            | <expand> | <check_dtd> | <flow> | <help> | <version>");
     Ple (" <silent>     ::= -s | --silent     -- No output, only exit code");
     Ple (" <dump>       ::= -d | --dump       -- Dump expanded Xml tree");
     Ple (" <raw>        ::= -r | --raw        -- Put all on one line");
@@ -63,6 +63,8 @@ procedure Xml_Checker is
     Ple ("                                    --  attributes with default");
     Ple (" <check_dtd>  ::= -c [ <Dtd> ] | --check_dtd=[<Dtd>]");
     Ple ("                                    -- Check vs a specific dtd or none");
+    Ple (" <flow>       ::= -f | --flow       -- Display xml content on the flow");
+    Ple ("                                    --  don't build tree for large files");
     Ple (" <help>       ::= -h | --help       -- Put this help");
     Ple (" <version>    ::= -v | --version    -- Put versions");
     Ple ("Always expands general entities in dump.");
@@ -84,7 +86,8 @@ procedure Xml_Checker is
     7 => ('v', Asu_Tus ("version"), False, False),
     8 => ('e', Asu_Tus ("expand"), False, False),
     9 => ('n', Asu_Tus ("no_comment"), False, False),
-   10 => ('c', Asu_Tus ("check_dtd"), False, True)
+   10 => ('c', Asu_Tus ("check_dtd"), False, True),
+   11 => ('f', Asu_Tus ("flow"), False, False)
    );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
@@ -95,7 +98,7 @@ procedure Xml_Checker is
   -------------------
   procedure Dump_Line (Node : in Xml_Parser.Node_Type) is
   begin
-    Out_Flow.Put (Normal (Ctx.Get_Line_No (Node), 5, True, '0'));
+    Out_Flow.Put (Normal (Ctx.Get_Line_No (Node), 8, True, '0'));
   end Dump_Line;
 
   procedure Dump_Attributes (Elt : in Xml_Parser.Element_Type) is
@@ -154,6 +157,53 @@ procedure Xml_Checker is
     end if;
   end Get_File_Name;
 
+  -- Callback for "on the flow" display
+  In_Prologue : Boolean := False;
+  procedure Callback (Ctx  : in Xml_Parser.Ctx_Type;
+                      Node : in Xml_Parser.Node_Update) is
+    Indent : constant String (1 .. Node.Level + 1) := (others => ' ');
+    use type Xml_Parser.Node_Kind_List, Xml_Parser.Attributes_Access, Asu_Us;
+  begin
+    if Output_Kind = None then
+      return;
+    elsif Output_Kind /= Dump then
+      -- Use the Image of Xml_Parser.Generator
+      Out_Flow.Put (Xml_Parser.Generator.Image (Ctx, Node, Format, Width));
+      return;
+    end if;
+    -- Dump mode
+    if not Node.Creation then
+      return;
+    end if;
+    if not In_Prologue and then Node.In_Prologue then
+      -- Entering prologue (new file)
+      Out_Flow.Put_Line ("Prologue:");
+    elsif In_Prologue and then not Node.In_Prologue then
+      -- Leaving prologue
+      Out_Flow.Put_Line ("Elements tree:");
+    end if;
+    In_Prologue := Node.In_Prologue;
+    Out_Flow.Put (Normal (Node.Line_No, 8, True, '0'));
+    Out_Flow.Put (Indent);
+    case Node.Kind is
+      when Xml_Parser.Element =>
+        Out_Flow.Put (Asu.To_String(Node.Name));
+      when Xml_Parser.Comment =>
+        Out_Flow.Put ("<!--" & Asu.To_String(Node.Name) & "-->");
+      when Xml_Parser.Text =>
+        Out_Flow.Put ("=>" & Asu.To_String(Node.Name) & "<=");
+    end case;
+    if Node.Attributes /= null then
+      Out_Flow.Put (" :");
+      for I in  Node.Attributes.all'Range loop
+        Out_Flow.Put (" " & Asu.To_String (Node.Attributes(I).Name
+                    & "=" & Node.Attributes(I).Value));
+      end loop;
+    end if;
+    Out_Flow.New_Line;
+  end Callback;
+  Callback_Acc : Xml_Parser.Parse_Callback_Access;
+
   -- Parse a file provided as arg or stdin
   -- Retrieve comments and don't expand General Entities if output is Xml
   procedure Do_One (Index : in Natural;
@@ -161,7 +211,8 @@ procedure Xml_Checker is
     -- Parsing elements and charactericstics
     Prologue, Root : Xml_Parser.Element_Type;
     Parse_Ok : Boolean;
-    use type Xml_Parser.Generator.Format_Kind_List;
+    use type Xml_Parser.Generator.Format_Kind_List,
+             Xml_Parser.Parse_Callback_Access;
   begin
     Ctx.Parse (Get_File_Name (Index, False),
                Parse_Ok,
@@ -169,12 +220,24 @@ procedure Xml_Checker is
                  and then Format /= Xml_Parser.Generator.Raw,
                Expand => Expand or else Output_Kind = Dump,
                Use_Dtd => Use_Dtd,
-               Dtd_File => Asu_Ts (Dtd_File));
+               Dtd_File => Asu_Ts (Dtd_File),
+               Callback => Callback_Acc);
     if not Parse_Ok then
       Basic_Proc.Put_Line_Error ("Error in file "
                                & Get_File_Name (Index, True) & ": "
                                & Ctx.Get_Parse_Error_Message);
       Basic_Proc.Set_Error_Exit_Code;
+      Ctx.Clean;
+      return;
+    end if;
+
+    -- Done in callback mode
+    if Callback_Acc /= null then
+      if Output_Kind /= Dump and then Format /= Xml_Parser.Generator.Raw then
+         -- Last Line feeds
+         Out_Flow.New_Line;
+         Out_Flow.New_Line;
+      end if;
       Ctx.Clean;
       return;
     end if;
@@ -261,9 +324,10 @@ begin
   Expand := False;
   Use_Dtd := True;
   Dtd_File := Asu_Null;
+  Callback_Acc := null;
   -- Get Expand option and chek max of options
-  -- Only 1 option, one more if Expand, one more if no_comment
-  --  one more if check_dtd
+  -- Only one option, one more if Expand, one more if no_comment
+  --  one more if check_dtd, one more if ontheflow
   Max_Opt := 1;
   if Arg_Dscr.Is_Set (8) then
     Expand := True;
@@ -274,6 +338,10 @@ begin
   end if;
   if Arg_Dscr.Is_Set (10) then
     Max_Opt := Max_Opt + 1;
+  end if;
+  if Arg_Dscr.Is_Set (11) then
+    Max_Opt := Max_Opt + 1;
+    Callback_Acc := Callback'Unrestricted_Access;
   end if;
   if Arg_Dscr.Get_Number_Keys > Max_Opt then
     Ae_Re (Arg_Error'Identity, "Too many options");
@@ -314,7 +382,7 @@ begin
     if Output_Kind = Gen and then Format /= Xml_Parser.Generator.Raw then
       Output_Kind := No_Comment;
     else
-      Ae_Re (Arg_Error'Identity, "Too many options");
+      Ae_Re (Arg_Error'Identity, "Incompatible options");
     end if;
   end if;
 
