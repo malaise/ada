@@ -2,9 +2,10 @@ include $(HOME)/Makefiles/common.mk
 
 ADAVIEW := $(REPOSIT)
 AFPX := true
-EXES := xwords
+EXES := xwords words_check
 
-CLIBS := x_mng cutil X11
+CLIBS_xwords := x_mng cutil X11
+CLIBS_words_check := cutil
 
 include $(TEMPLATES)/ada.mk
 

@@ -60,7 +60,7 @@ begin
           if Word(I) not in Letter_Range then
             -- Invalid character, report and next word/line
             Sys_Calls.Put_Line_Error ("Error: In valid character in "
-                    &  Word(1 .. Last - 1) & " at line No" & Line_No'Img & ".");
+                    &  Word(1 .. Last - 1) & " at line No" & Line_No'Img);
             Sys_Calls.Set_Error_Exit_Code;
             exit;
           end if;
