@@ -1,4 +1,4 @@
--- Binding to Posix regular expression
+-- Binding to PCRE POSIX regular expression
 with System, Ada.Finalization;
 with Language;
 package Regular_Expressions is
@@ -25,17 +25,15 @@ package Regular_Expressions is
   No_Match : constant Match_Cell := (0, 0, 0);
   Any_Match : constant Match_Cell := (1, 0, 0);
 
-  -- Compile a regex, using Language
+  -- Compile a regex
   procedure Compile (Result : in out Compiled_Pattern;
                      Ok : out Boolean;
                      Criteria : in String;
-                     Extended : in Boolean := True;
                      Case_Sensitive : in Boolean := True;
                      Match_Newline : in Boolean := True);
 
   -- Check a regex, return True if OK
-  function Check (Criteria : String;
-                  Extended : Boolean := True) return Boolean;
+  function Check (Criteria : String) return Boolean;
 
   -- Execute a regex
   -- If Mach_Info is empty, N_Matched is set to 1 (match) or 0 (not match)

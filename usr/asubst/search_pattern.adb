@@ -70,7 +70,7 @@ package body Search_Pattern is
   Is_Regex : Boolean;
 
   -- True if Language is set to Lang_Utf_8
-  Is_UTF8 : Boolean;
+  Is_Utf8 : Boolean;
 
   -- The official Line Feed
   Line_Feed : constant String := Text_Line.Line_Feed_Str;
@@ -107,7 +107,7 @@ package body Search_Pattern is
 
   -- Add a line pattern
   procedure Add (Crit : in String;
-                 Extended, Case_Sensitive : in Boolean;
+                 Case_Sensitive : in Boolean;
                  List : in out Unique_Pattern.List_Type) is
     Upat : Line_Pat_Rec;
     Upat_Access : Line_Pat_Acc;
@@ -145,7 +145,6 @@ package body Search_Pattern is
     -- Get access to it and compile in this access
     Unique_Pattern.Get_Access (List, Upat, Upat_Access);
     Regular_Expressions.Compile (Upat_Access.Pat, Ok, Crit,
-                                 Extended => Extended,
                                  Case_Sensitive => Case_Sensitive);
     if not Ok then
       Error ("Invalid pattern """ & Crit
@@ -190,13 +189,12 @@ package body Search_Pattern is
   --  except ^ in first and $ in last post
   -- Check that regex bracket expression in UTF-8 does not contain non ASCII
   --  character
-  procedure Check_In (Str : in String;
-                      Extended : in Boolean) is separate;
+  procedure Check_In (Str : in String) is separate;
 
   -- Parses a pattern (splits it or not in several items of List)
   -- Reports errors on stderr and raises Parse_Error.
   procedure Parse_One (Pattern : in String;
-                       Extended, Case_Sensitive : in Boolean;
+                       Case_Sensitive : in Boolean;
                        Regex_Mode : in Boolean;
                        Split : in Boolean;
                        List : in out Unique_Pattern.List_Type) is
@@ -344,7 +342,7 @@ package body Search_Pattern is
                                          Line_Feed, Start_Index);
         if Stop_Index = Start_Index then
           -- A Delim
-          Add ("", Extended, Case_Sensitive, List);
+          Add ("", Case_Sensitive, List);
           Prev_Delim := True;
         else
           -- A Regex: see if it is followed by a delim (always except at the end)
@@ -366,13 +364,13 @@ package body Search_Pattern is
               -- It must not contain Stop_String if preeceded by a delim
               Check_Bound (Slice, Stop_String (Next_Delim), False);
               -- It must not contain any significant ^ or $ in the middle
-              Check_In (Slice, Extended);
+              Check_In (Slice);
               -- Add this regex with start/stop strings
               Add (Start_String (Prev_Delim) & Slice & Stop_String (Next_Delim),
-                 Extended, Case_Sensitive, List);
+                 Case_Sensitive, List);
             else
               -- Add this regex with no start/stop strings
-              Add (Slice, True, True, List);
+              Add (Slice, True, List);
             end if;
           end;
           if Regex_Mode then
@@ -410,10 +408,10 @@ package body Search_Pattern is
         if Regex_Mode then
           Check_Bound (Str, Start_String (True), True);
           Check_Bound (Str, Start_String (False), False);
-          Check_In (Str, Extended);
-          Add (Str, Extended, Case_Sensitive, List);
+          Check_In (Str);
+          Add (Str, Case_Sensitive, List);
         else
-          Add (Str, True, True, List);
+          Add (Str, True, List);
         end if;
       end;
       Is_Iterative := True;
@@ -446,7 +444,7 @@ package body Search_Pattern is
 
     -- Parse Delim as a non-regex string, not splitted
     Pattern_Kind := Delimiter_Kind;
-    Parse_One (Delim, False, False, False, False, Delim_List);
+    Parse_One (Delim, False, False, False, Delim_List);
     -- One string in list: the delimiter
     Upat.Num := 1;
     Unique_Pattern.Get_Access (Delim_List,  Upat, Acc);
@@ -465,7 +463,7 @@ package body Search_Pattern is
   procedure Parse (Search  : in String;
                    Exclude : in String;
                    Delimiter : in String;
-                   Extended, Case_Sensitive, Is_Regex : in Boolean) is
+                   Case_Sensitive, Is_Regex : in Boolean) is
     Std_Delim : Boolean;
     Upat : Line_Pat_Rec;
     Search_Access, Exclude_Access : Line_Pat_Acc;
@@ -486,7 +484,7 @@ package body Search_Pattern is
     Pattern_Kind := Search_Kind;
     -- Parse the search pattern
     --  Don't split if not the standard delimiter
-    Parse_One (Search, Extended, Case_Sensitive, Is_Regex, Std_Delim,
+    Parse_One (Search, Case_Sensitive, Is_Regex, Std_Delim,
                Search_List);
     -- If Delimiter is not Line_Feed, then find pattern must be iterative
     if not Std_Delim and then not Is_Iterative then
@@ -505,7 +503,7 @@ package body Search_Pattern is
       Sys_Calls.Put_Line_Error ("Search, parsing exclude pattern");
     end if;
     Pattern_Kind := Exclude_Kind;
-    Parse_One (Exclude, Extended, Case_Sensitive, Is_Regex, Std_Delim,
+    Parse_One (Exclude, Case_Sensitive, Is_Regex, Std_Delim,
                Exclude_List);
 
     -- Both patterns must have same length and have delims at same pos

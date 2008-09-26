@@ -11,10 +11,15 @@ EXES := adand add_nums alook arbipas beep comp_vars ddir e2f fact g \
 
 CLIBS := cutil
 CLIBS_renamer := x_mng X11
+CLIBS_comp_vars := pcreposix pcre
+CLIBS_xml_checker := pcreposix pcre
 
 LARGS_tcping.stat := $(CPATHD)/libcutil.a
 LARGS_udp_spy.stat := $(CPATHD)/libcutil.a
-LARGS_xml_checker.stat := $(CPATHD)/libcutil.a
+
+PCRE := `pcre-config --prefix`/lib
+LARGS_xml_checker.stat := $(CPATHD)/libcutil.a $(PCRE)/libpcreposix.a \
+  $(PCRE)/libpcre.a
 
 include $(TEMPLATES)/ada.mk
 

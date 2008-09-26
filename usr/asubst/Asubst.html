@@ -3,15 +3,13 @@
 <HEAD>
 	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
 	<TITLE>Asubst</TITLE>
-	<META NAME="GENERATOR" CONTENT="OpenOffice.org 2.4  (Linux)">
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 1.1.5  (Linux)">
 	<META NAME="AUTHOR" CONTENT="MALAISE Pascal">
 	<META NAME="CREATED" CONTENT="20060414;18573000">
-	<META NAME="CHANGEDBY" CONTENT="malaise">
-	<META NAME="CHANGED" CONTENT="20080907;9183200">
-	<META NAME="CHANGEDBY" CONTENT="malaise">
+	<META NAME="CHANGED" CONTENT="20080926;14425800">
 </HEAD>
 <BODY LANG="en-US" DIR="LTR">
-<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><FONT SIZE=6><B>V6.2</B></FONT></FONT></FONT></P>
+<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><B><FONT SIZE=6>V7.0</FONT></B></FONT></FONT></P>
 <H1 LANG="en-GB"><FONT FACE="monospace">1. General syntax</FONT></H1>
 <P LANG="en-GB"><FONT FACE="monospace">Usage: asubst [ { &lt;option&gt;
 } ] &lt;find_pattern&gt; &lt;replace_string&gt; [ { &lt;file&gt; }
@@ -19,19 +17,19 @@
 --help | -V | --version</FONT><BR><FONT FACE="monospace">Substitutes
 strings in files.</FONT><BR><FONT FACE="monospace">If no file name is
 specified, substitutes from stdin to stdout.</FONT><BR><FONT FACE="monospace">See
-&quot;man 7 regex&quot; for basic and extended regex and for
-ignorecase pattern matching.</FONT></P>
+&quot;man 3 pcre&quot; for Perl Compatible Regular Expressions
+pattern matching and &quot;man 1 perlre&quot; for Perl Regular
+Expressions.</FONT></P>
 <H1 LANG="en-GB"><FONT FACE="monospace">2. Options</FONT></H1>
 <P LANG="en-GB"><FONT FACE="monospace">-a or --ascii : consider that
-input flow or file is pure ASCII.<BR>-b or --basic : use 'basic'
-regex instead of the default 'extended' regex for &lt;find_pattern&gt;.<BR>-d
-or --display : display arguments &lt;find_pattern&gt;,
-&lt;exclude_pattern&gt; and &lt;replace_string&gt;.<BR>-D &lt;string&gt;
-or --delimiter=&lt;string&gt; for a delimiter other than '\n'.<BR>-e
-&lt;pattern&gt; or --exclude=&lt;pattern&gt; for skip text matching
-&lt;pattern&gt;.<BR>-f or --file : indicate that &lt;file&gt;
-contains the names of files to process.<BR>-g or --grep : print
-matching text as grep would do (no substitution).</FONT><BR><FONT FACE="monospace">-i
+input flow or file is pure ASCII.<BR><FONT FACE="monospace">-D
+&lt;string&gt; or --delimiter=&lt;string&gt; for a delimiter other
+than '\n'.<BR></FONT>-d or --display : display arguments
+&lt;find_pattern&gt;, &lt;exclude_pattern&gt; and
+&lt;replace_string&gt;.<BR>-e &lt;pattern&gt; or --exclude=&lt;pattern&gt;
+for skip text matching &lt;pattern&gt;.<BR>-f or --file : indicate
+that &lt;file&gt; contains the names of files to process.<BR>-g or
+--grep : print matching text as grep would do (no substitution).</FONT><BR><FONT FACE="monospace">-i
 or --ignorecase : do case insensitive match checking of
 &lt;find_pattern&gt;.<BR>-l or --line for display line number in grep
 mode.<BR>-m &lt;max&gt; or --max=&lt;max&gt; : stop processing each
@@ -56,11 +54,7 @@ considers that input flow or file is coded in Utf-8. This setting can
 be altered in a way or the other by setting ASUBST_UTF8 environment
 variable to Y, yes, N or no (with whatever casing). Finally, this
 setting can be altered in a way or the other by the options -a
-(--ascii), or -u (--utf8). However, consider that asubst is based on
-GNU regex, based on POSIX regex, which does NOT support UTF-8. Ex:
-&quot;0xC3 0xA0&quot; matches '[' &amp; '0xC3 0xA9' &amp; ']' at
-first byte! So in UTF-8 non ASCII characters in regex bracket
-expressions are forbiden.</FONT></P>
+(--ascii), or -u (--utf8).</FONT></P>
 <P LANG="en-GB"><FONT FACE="monospace">If ASUBST_DEBUG environment
 variable is set to Y or yes (with whatever casing) then asubst puts
 on stderr some debugging information.</FONT></P>

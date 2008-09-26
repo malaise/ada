@@ -3,7 +3,7 @@ with Environ, Argument, Argument_Parser, Sys_Calls, Language, Mixed_Str, Text_Li
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
-  Version : constant String  := "V6.2";
+  Version : constant String  := "V7.0";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -25,17 +25,15 @@ procedure Asubst is
   begin
     Usage;
     Sys_Calls.Put_Line_Error (
-     "  <option> ::= -a | -b | -d | -D <string> | > -e <pattern> | -f | -g | -i");
+     "  <option> ::= -a | -D <string> | -d | -e <pattern> | -f | -g | -i");
     Sys_Calls.Put_Line_Error (
      "             | -l | -m <max> | -n | -p | -q | -s | -t | -u | -v | -x | --");
     Sys_Calls.Put_Line_Error (
      "    -a or --ascii for pure ASCII processing,");
     Sys_Calls.Put_Line_Error (
-     "    -b or --basic for basic regex,");
+     "    -D <string> or --delimiter=<string> for a delimiter other than '\n',");
     Sys_Calls.Put_Line_Error (
      "    -d or --display for display find and exclude patterns and replace_string,");
-    Sys_Calls.Put_Line_Error (
-     "    -D <string> or --delimiter=<string> for a delimiter other than '\n',");
     Sys_Calls.Put_Line_Error (
      "    -e <pattern> or --exclude=<pattern> for skip text matching <pattern>,");
     Sys_Calls.Put_Line_Error (
@@ -137,15 +135,9 @@ procedure Asubst is
     "    This allows multi-row processing.");
 
     Sys_Calls.Put_Line_Error (
-     "  " & Argument.Get_Program_Name & " is based on GNU regex, based on POSIX regex, which does NOT support");
+     "  Warning: regex are powerfull (see ""man 3 pcre"" and ""man 1 perlre"") and");
     Sys_Calls.Put_Line_Error (
-     "    UTF-8. Ex: ""0xC3 0xA0"" matches '[' & '0xC3 0xA9' & ']' at first byte!");
-    Sys_Calls.Put_Line_Error (
-     "    So in UTF-8 non ASCII characters in regex bracket expressions are forbiden.");
-    Sys_Calls.Put_Line_Error (
-     "  Warning: regex are powerfull (see ""man 7 regex"") and automatic substitution");
-    Sys_Calls.Put_Line_Error (
-     "    can be dangerous, so use " & Argument.Get_Program_Name & " with caution:");
+     "    automatic substitution can be dangerous, so use " & Argument.Get_Program_Name & " with caution:");
     Sys_Calls.Put_Line_Error (
      "    test pattern with ""echo string | " &  Argument.Get_Program_Name & " <search_pattern> <replace_string>""");
     Sys_Calls.Put_Line_Error (
@@ -168,7 +160,7 @@ procedure Asubst is
   -- The keys and descriptor of parsed keys
   Keys : constant Argument_Parser.The_Keys_Type := (
    01 => ('a', Asu_Tus ("ascii"), False, False),
-   02 => ('b', Asu_Tus ("basic"), False, False),
+   02 => ('D', Asu_Tus ("delimiter"), False, True),
    03 => ('d', Asu_Tus ("display"), False, False),
    04 => ('e', Asu_Tus ("exclude"), False, True),
    05 => ('f', Asu_Tus ("file"), False, False),
@@ -185,8 +177,7 @@ procedure Asubst is
    16 => ('v', Asu_Tus ("verbose"), False, False),
    17 => ('V', Asu_Tus ("version"), False, False),
    18 => ('x', Asu_Tus ("noregex"), False, False),
-   19 => ('p', Asu_Tus ("tmp"), False, True),
-   20 => ('D', Asu_Tus ("delimiter"), False, True)
+   19 => ('p', Asu_Tus ("tmp"), False, True)
    );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
@@ -194,7 +185,6 @@ procedure Asubst is
 
   -- Option management
   Display : Boolean := False;
-  Extended : Boolean := True;
   Exclude : Ada.Strings.Unbounded.Unbounded_String;
   File_Of_Files : Boolean := False;
   Case_Sensitive : Boolean := True;
@@ -327,11 +317,25 @@ begin
     Lang := Language.Lang_C;
   end if;
   if Arg_Dscr.Is_Set (02) then
-    -- Basic regex
+    -- Specific delimiter instead of '\n'
+    begin
+      Delimiter := Ada.Strings.Unbounded.To_Unbounded_String
+                 (Arg_Dscr.Get_Option (02));
+      if Ada.Strings.Unbounded.Length (Delimiter)
+         > Text_Line.Max_Line_Feed_Len then
+        raise Constraint_Error;
+      end if;
+    exception
+      when others =>
+        Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
+           & ": Syntax ERROR. Invalid delimiter.");
+        Error;
+        return;
+    end;
     if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Option basic regex");
+      Sys_Calls.Put_Line_Error ("Option delimiter = "
+          & Ada.Strings.Unbounded.To_String (Delimiter));
     end if;
-    Extended := False;
   end if;
   if Arg_Dscr.Is_Set (03) then
     -- Display patterns
@@ -481,27 +485,6 @@ begin
           & Ada.Strings.Unbounded.To_String (Tmp_Dir));
     end if;
   end if;
-  if Arg_Dscr.Is_Set (20) then
-    -- Specific delimiter instead of '\n'
-    begin
-      Delimiter := Ada.Strings.Unbounded.To_Unbounded_String
-                 (Arg_Dscr.Get_Option (20));
-      if Ada.Strings.Unbounded.Length (Delimiter)
-         > Text_Line.Max_Line_Feed_Len then
-        raise Constraint_Error;
-      end if;
-    exception
-      when others =>
-        Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
-           & ": Syntax ERROR. Invalid delimiter.");
-        Error;
-        return;
-    end;
-    if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Option delimiter = "
-          & Ada.Strings.Unbounded.To_String (Delimiter));
-    end if;
-  end if;
 
   -- Set language (for regexp)
   Language.Set_Language (Lang);
@@ -516,7 +499,7 @@ begin
          Arg_Dscr.Get_Option (No_Key_Index, 1),
          Ada.Strings.Unbounded.To_String (Exclude),
          Ada.Strings.Unbounded.To_String (Delimiter),
-         Extended, Case_Sensitive, Is_Regex);
+         Case_Sensitive, Is_Regex);
   exception
     when Search_Pattern.Parse_Error =>
       Error;

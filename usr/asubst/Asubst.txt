@@ -1,5 +1,5 @@
                                  Asubst
-                                  V6.2
+                                  V7.0
 
 
 1. General syntax
@@ -7,16 +7,15 @@ Usage: asubst [ { <option> } ] <find_pattern> <replace_string> [ { <file> } ]
 or   : asubst -h | --help | -V | --version
 Substitutes strings in files.
 If no file name is specified, substitutes from stdin to stdout.
-See "man 7 regex" for basic and extended regex and for ignorecase pattern
-matching.
+See "man 3 pcre" for Perl Compatible Regular Expressions and "man 1 perlre"
+for Perl Regular Expressions.
 
 
 2. Options
 -a or --ascii : consider that input flow or file is pure ASCII.
--b or --basic : use 'basic' regex instead of the default 'extended' regex.
+-D <string> or --delimiter=<string> for a delimiter other than '\n'.
 -d or --display : display arguments <find_pattern>, <exclude_pattern> and
     <replace_string>.
--D <string> or --delimiter=<string> for a delimiter other than '\n'.
 -e <pattern> or --exclude=<pattern> for skip text matching <pattern>,
 -f or --file : indicate that <file> will contain names of files to process.
 -g or --grep : print matching text as grep would do (no substitution).
@@ -42,10 +41,6 @@ asubst considers that input flow or file is coded in Utf-8. This setting can be
 altered in a way or the other by setting ASUBST_UTF8 environment variable
 to Y, yes, N or no (with whatever casing). Finally, this setting can be
 altered in a way or the other by the options -a (--ascii), or -u (--utf8).
-However, consider that asubst is based on GNU regex, based on POSIX regex,
-which does NOT support UTF-8. Ex: "0xC3 0xA0" matches '[' & '0xC3 0xA9' & ']'
-at first byte! So in UTF-8 non ASCII characters in regex bracket expressions are
-forbiden.
 
 If ASUBST_DEBUG environment variable is set to Y or yes (with whatever casing)
 then asubst puts on stderr some debugging information.

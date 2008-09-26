@@ -1,5 +1,8 @@
 History of Asubst:
 ------------------
+25/09/2008 V7.0
+Add: Use PCRE i.o. POSIX regex. Full support of UTF-8.
+
 06/09/2008 V6.2
 Add: Prevent the use in UTF-8 of non ASCII chars in regex bracket expression.
 

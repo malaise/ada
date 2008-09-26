@@ -2,7 +2,7 @@ with String_Mng.Regex, String_Mng.Navigator;
 separate (Search_Pattern)
 -- Check that the string does not contain any significant ^ or $
 --  except ^ in first and $ in last post
-procedure Check_In (Str : in String; Extended : in Boolean) is
+procedure Check_In (Str : in String) is
   -- The navigator
   Nav : String_Mng.Navigator.Navigator_Type;
   No_Char : constant Character := String_Mng.Navigator.Default_No_Char;
@@ -41,34 +41,16 @@ begin
     elsif Char = '^' and then not In_Brakets then
       -- '^' is allowed at beginning and when not meaning "begin of line"
       -- '^' means begin of line except in brakets in Extented regex
-      -- '^' means begin of line before \( in Basic regex
       if Nav.Position /= 1 then
-        if Extended then
-          Error ("Unexpected '^' within regex");
-        elsif not Extended
-        and then Nav.Lookup (1) = '\'
-        and then Nav.Lookup (2) = '(' then
-          Error ("Unexpected '^' within regex");
-        end if;
+        Error ("Unexpected '^' within regex");
       end if;
     elsif Char = '$' and then not In_Brakets then
       -- '$' is allowed at end and when not meaning "end of line"
       -- '$' means end of line except in brakets in Extented regex
       -- '$' means end of line after \) in Basic regex
       if Nav.Position /= Nav.Length then
-        if Extended then
-          Error ("Unexpected '$' within regex");
-        elsif not Extended
-        and then Nav.Lookup (-2) = '\'
-        and then Nav.Lookup (-1) = ')' then
-          Error ("Unexpected '$' within regex");
-        end if;
+        Error ("Unexpected '$' within regex");
       end if;
-    elsif Char > Ada.Characters.Latin_1.Del
-    and then In_Brakets
-    and then Is_Utf8 then
-      -- A non ASCII character within brackets in UTF-8 mode
-      Error ("Non ASCII character within brackets in UTF-8 mode");
     end if;
     Nav.Move;
     exit when not Nav.In_Bounds;

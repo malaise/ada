@@ -1,6 +1,6 @@
 -- Posix regular expression
 with Ada.Characters.Latin_1;
-with Bit_Ops, Utf_8;
+with Bit_Ops, Utf_8, Flo_Io;
 package body Regular_Expressions is
 
   -- C interface --
@@ -15,6 +15,9 @@ package body Regular_Expressions is
     return Str & Ada.Characters.Latin_1.Nul;
   end Str4C;
 
+  function C_Regvers return System.Address;
+  pragma Import (C, C_Regvers, "pcre_version");
+
   function C_Malloc_Regex return System.Address;
   pragma Import (C, C_Malloc_Regex, "malloc_regex");
 
@@ -28,9 +31,9 @@ package body Regular_Expressions is
                       Regex : in System.Address;
                       Cflags : in Integer) return Integer;
   pragma Import (C, C_Regcomp, "regcomp");
-  C_Extended : constant Integer := 1;
-  C_Icase    : constant Integer := 2;
-  C_Newline  : constant Integer := 4;
+  C_Icase    : constant Integer := 16#01#;
+  C_Newline  : constant Integer := 16#02#;
+  C_Utf8     : constant Integer := 16#40#;
 
   function C_Regexec (Preg : in System.Address;
                       Str : in System.Address;
@@ -38,8 +41,8 @@ package body Regular_Expressions is
                       Pmatch : in System.Address;
                       Eflags : in Integer) return Integer;
   pragma Import (C, C_Regexec, "regexec");
-  C_Notbol : constant Integer := 1;
-  C_Noteol : constant Integer := 2;
+  C_Notbol : constant Integer := 16#04#;
+  C_Noteol : constant Integer := 16#08#;
 
   function C_Regerror (Errcode : in Integer;
                        Preg : in System.Address;
@@ -50,22 +53,51 @@ package body Regular_Expressions is
   procedure C_Regfree (Preg : in System.Address);
   pragma Import (C, C_Regfree, "regfree");
 
+  -- Check PCRE version >= 6.5
+  Version_Ok : Boolean := False;
+  Invalid_Pcre_Version : exception;
+  procedure Check_Version is
+    Addr, Dummy : System.Address;
+    Str : String (1 .. 255);
+    Vers : Float;
+    Last : Positive;
+    function C_Strncpy (Dest, Src : System.Address; Size : Integer)
+             return System.Address;
+    pragma Import (C, C_Strncpy, "strncpy");
+  begin
+    if Version_Ok then
+      return;
+    end if;
+    -- Returns a char*, make it a string then a float
+    Addr := C_Regvers;
+    Dummy := C_Strncpy (Str(Str'First)'Address, Addr, Str'Length);
+    Flo_Io.Get (Str, Vers, Last);
+    if Vers < 6.5 then
+      raise Invalid_Pcre_Version;
+    end if;
+    Version_Ok := True;
+  exception
+    when others =>
+      raise Invalid_Pcre_Version;
+  end Check_Version;
+
   -- Ada binding
   procedure Compile (Result : in out Compiled_Pattern;
                      Ok : out Boolean;
                      Criteria : in String;
-                     Extended : in Boolean := True;
                      Case_Sensitive : in Boolean := True;
                      Match_Newline : in Boolean := True) is
     Criteria4C : constant String := Str4C (Criteria);
     Cflags : Integer := 0;
-    use type System.Address;
+    use type System.Address, Language.Language_Set_List;
     use Bit_Ops;
   begin
+    Check_Version;
+    Result.Lang := Language.Get_Language;
     -- Set flags
     Cflags := 0;
-    if Extended then
-      Cflags := Cflags or C_Extended;
+    if Result.Lang = Language.Lang_Utf_8 then
+      Cflags := Cflags or C_Utf8;
     end if;
     if not Case_Sensitive then
       Cflags := Cflags or C_Icase;
@@ -82,14 +114,12 @@ package body Regular_Expressions is
       Result.Comp_Addr := C_Malloc_Regex;
     end if;
     -- Compile
-    Result.Lang := Language.Get_Language;
     Result.Error := C_Regcomp (Result.Comp_Addr, Criteria4C'Address, Cflags);
     Ok := Result.Error = 0;
   end Compile;
 
   -- Check a regex, return True if OK
-  function Check (Criteria : String;
-           Extended : Boolean := True) return Boolean is
+  function Check (Criteria : String) return Boolean is
     Pattern : Compiled_Pattern;
     Ok : Boolean;
   begin

@@ -12,7 +12,7 @@ LIBS := $(filter-out $(SUBUNITS), $(UNITS))
 
 EXES := afpx_bld clear_screen
 
-CLIBS := x_mng cutil X11
+CLIBS := pcreposix pcre x_mng cutil X11
 
 GNATHTMLOPT := -D
 
