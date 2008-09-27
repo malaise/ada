@@ -3,7 +3,7 @@ with Argument, Argument_Parser, Xml_Parser.Generator, Normal, Basic_Proc,
      Text_Line, Sys_Calls;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V5.0";
+  Version : constant String := "V5.1";
 
   -- Ada.Strings.Unbounded and Ada.Exceptions re-definitions
   package Asu renames Ada.Strings.Unbounded;
@@ -64,7 +64,6 @@ procedure Xml_Checker is
     Ple (" <check_dtd>  ::= -c [ <Dtd> ] | --check_dtd=[<Dtd>]");
     Ple ("                                    -- Check vs a specific dtd or none");
     Ple (" <flow>       ::= -f | --flow       -- Display xml content on the flow");
-    Ple ("                                    --  don't build tree for large files");
     Ple (" <help>       ::= -h | --help       -- Put this help");
     Ple (" <version>    ::= -v | --version    -- Put versions");
     Ple ("Always expands general entities in dump.");
@@ -73,6 +72,10 @@ procedure Xml_Checker is
     Ple ("Empty Dtd leads to skip check of comformance to DTD.");
     Ple ("Default is -w" & Xml_Parser.Generator.Default_Width'Img
                          & " on stdout.");
+    Ple ("On-the-flow mode is usefull with large files to reduce memory consumption");
+    Ple ("  and avoid pagination (no tree => less heap).");
+    Ple ("Please also consider increasing the process stack size (ulimit -s) to");
+    Ple ("  avoid stack overflow and Storage_Error.");
   end Usage;
 
   -- The argument keys and descriptor of parsed keys
