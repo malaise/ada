@@ -3,7 +3,7 @@ with Environ, Basic_Proc, Rnd, Exception_Messenger;
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "0";
+  Minor_Version : constant String := "1";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -249,6 +249,8 @@ package body Xml_Parser is
         Exception_Messenger.Exception_Message(
           Ada.Exceptions.Save_Occurrence (Error_Occ)));
       Ok := False;
+    when Storage_Error =>
+      raise;
     when Error_Occ:others =>
       Trace ("Got exception " & Ada.Exceptions.Exception_Name (Error_Occ));
       raise Internal_Error;
@@ -408,6 +410,8 @@ package body Xml_Parser is
         Exception_Messenger.Exception_Message(
           Ada.Exceptions.Save_Occurrence (Error_Occ)));
       Ok := False;
+    when Storage_Error =>
+      raise;
     when Error_Occ:others =>
       Trace ("Got exception " & Ada.Exceptions.Exception_Name (Error_Occ));
       raise Internal_Error;
@@ -460,6 +464,8 @@ package body Xml_Parser is
         Exception_Messenger.Exception_Message(
           Ada.Exceptions.Save_Occurrence (Error_Occ)));
       Ok := False;
+    when Storage_Error =>
+      raise;
     when Error_Occ:others =>
       Trace ("Got exception " & Ada.Exceptions.Exception_Name (Error_Occ));
       raise Internal_Error;
@@ -500,6 +506,8 @@ package body Xml_Parser is
         Exception_Messenger.Exception_Message(
           Ada.Exceptions.Save_Occurrence (Error_Occ)));
       Ok := False;
+    when Storage_Error =>
+      raise;
     when Error_Occ:others =>
       Trace ("Got exception " & Ada.Exceptions.Exception_Name (Error_Occ));
       raise Internal_Error;
