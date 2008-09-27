@@ -841,8 +841,6 @@ package body Dtd is
         -- Strictly check that list matches criteria
         if not Regular_Expressions.Match (Asu_Ts (Info.List),
                 Asu_Ts (Children), Strict => True) then
-          Trace ("Unmatch >" & Asu_Ts (Info.List) & "<>"
-                             & Asu_Ts (Children) & "<");
           Util.Error (Ctx.Flow, "According to dtd, element " & Asu_Ts (Name)
                     & " allows children " & Strip_Sep (Info.List)
                     & " but has children " & Strip_Sep (Children));
