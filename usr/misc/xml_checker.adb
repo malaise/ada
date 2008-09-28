@@ -3,7 +3,7 @@ with Argument, Argument_Parser, Xml_Parser.Generator, Normal, Basic_Proc,
      Text_Line, Sys_Calls;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V5.1";
+  Version : constant String := "V5.2";
 
   -- Ada.Strings.Unbounded and Ada.Exceptions re-definitions
   package Asu renames Ada.Strings.Unbounded;
@@ -236,7 +236,9 @@ procedure Xml_Checker is
 
     -- Done in callback mode
     if Callback_Acc /= null then
-      if Output_Kind /= Dump and then Format /= Xml_Parser.Generator.Raw then
+      if Output_Kind /= Dump
+      and then Output_Kind /= None
+      and then Format /= Xml_Parser.Generator.Raw then
          -- Last Line feeds
          Out_Flow.New_Line;
          Out_Flow.New_Line;
