@@ -120,12 +120,17 @@ procedure Xwords is
       Ada.Text_Io.Put_Line (Common.Asu_Ts (Line));
     end if;
 
-    -- Reset selection for case where no result or error
-    Afpx.Set_Selection ("");
-
     -- Encode result, set first word as selection
     First := True;
-    if not Result.Is_Empty then
+    if Result.Is_Empty then
+      if Status = Found then
+        -- Set selection to search word/pattern
+        Afpx.Set_Selection (Lower_Str (Common.Asu_Ts (Arg)));
+      else
+        -- Reset selection for case where no result or error
+        Afpx.Set_Selection ("");
+      end if;
+    else
       Result.Rewind;
       loop
         Result.Read (Line, Done => Done);
