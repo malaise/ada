@@ -6,10 +6,10 @@
 	<META NAME="GENERATOR" CONTENT="OpenOffice.org 1.1.5  (Linux)">
 	<META NAME="AUTHOR" CONTENT="MALAISE Pascal">
 	<META NAME="CREATED" CONTENT="20060414;18573000">
-	<META NAME="CHANGED" CONTENT="20080926;14425800">
+	<META NAME="CHANGED" CONTENT="20081002;16570500">
 </HEAD>
 <BODY LANG="en-US" DIR="LTR">
-<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><B><FONT SIZE=6>V7.0</FONT></B></FONT></FONT></P>
+<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><B><FONT SIZE=6>V7.1</FONT></B></FONT></FONT></P>
 <H1 LANG="en-GB"><FONT FACE="monospace">1. General syntax</FONT></H1>
 <P LANG="en-GB"><FONT FACE="monospace">Usage: asubst [ { &lt;option&gt;
 } ] &lt;find_pattern&gt; &lt;replace_string&gt; [ { &lt;file&gt; }
@@ -147,26 +147,29 @@ trailing new_line) from a XML file:<BR>asubst -D ''
 in paragraphs (separated by two '\n'):<BR>asubst -D '\n\n' asubst -D
 '\n\n' -- '\&lt;([\M]+)\&gt;[\S]+\1' '-&gt;\R01&lt;-' file</FONT></P>
 <H1 LANG="en-GB"><FONT FACE="monospace">7. Replace string</FONT></H1>
-<P LANG="en-GB"><FONT FACE="monospace">The following '\' sequences
-are supported:</FONT><BR><FONT FACE="monospace">- &quot;\n&quot; will
-be replaced by a newline.</FONT><BR><FONT FACE="monospace">- &quot;\t&quot;
-will be replaced by a (horiz) tab.</FONT><BR><FONT FACE="monospace">-
-&quot;\xIJ&quot; where IJ is an hexadecimal number (00 to FF or ff)
-will be replaced</FONT> <FONT FACE="monospace">by a byte with the
-corresponding value.</FONT><BR><FONT FACE="monospace">- &quot;\RIJ&quot;
-where IJ is an hexadecimal number will be replaced by the string
-matching the regex number IJ, <BR>(00 &lt;= IJ &lt;= NbOfRegex, 00
-means the whole string matching all regex).</FONT><BR><FONT FACE="monospace">-
+<P><SPAN LANG="en-GB"><FONT FACE="monospace">The following '\'
+sequences are supported:</FONT><BR><FONT FACE="monospace">- &quot;\n&quot;
+will be replaced by a newline.</FONT><BR><FONT FACE="monospace">-
+</FONT><FONT FACE="Monospace">&quot;\t&quot; will be replaced by a
+(horiz) tab.<BR>- &quot;\xIJ&quot; where IJ is an hexadecimal number
+(00 to FF or ff) will be replaced by a byte with the corresponding
+value.<BR>- &quot;\RIJ&quot; where IJ is an hexadecimal number will
+be replaced by the string  matching the regex number IJ, (00 &lt;= IJ
+&lt;= NbOfRegex, 00 means the whole string matching all regex).<BR>-
 &quot;\rIJ&quot; where IJ is an hexadecimal number will be replaced
-by the string</FONT> <FONT FACE="monospace">matching the substring J
-of the regex number I (I &lt; 0), J=0 for the complete string,</FONT>
-<FONT FACE="monospace">(so \R0x = \rx0). Note that substrings are
-numbered in the order of the opening parenthesis, left to right.</FONT><BR><FONT FACE="monospace">-
-&quot;\u&quot;, &quot;\l&quot;, &quot;\m&quot; for starting an UPPER,
-lower or Mixed case conversion. A</FONT> <FONT FACE="monospace">conversion
-ends when a new starts, at end of line or on &quot;\c&quot;.</FONT><BR><FONT FACE="monospace">-
-&quot;\c&quot; for stopping a case conversion.<BR>Case conversion
-applies after (sub)string replacement.<BR></FONT><BR><FONT FACE="monospace">Examples:</FONT><BR><FONT FACE="monospace">echo
+by the string matching the substring J of the regex number I (0 &lt;
+I), J = 0 for the complete string, (so &quot;\R0x&quot; = &quot;\rx0&quot;).<BR>-
+&quot;\iIJ&quot; and &quot;\f&quot; to replace by the &lt;text&gt;
+following &quot;\iIJ&quot; if the Jth substring of the Ith regex
+matches (\iIJ not empty). &lt;text&gt; ends when encountering another
+&quot;\i&quot; or a &quot;\f&quot;.<BR>- &quot;\u&quot;, &quot;\l&quot;,
+&quot;\m&quot; for starting an UPPER, lower or Mixed case conversion.
+A conversion ends when a new starts, at end of line or on &quot;\c&quot;.<BR><FONT FACE="Monospace">-
+&quot;\c&quot; for stopping a case conversion.<BR><BR></FONT>Note
+that substrings are numbered in the order of the opening parenthesis,
+left to right.<BR>Note that &quot;\r0i&quot; and &quot;\i0i&quot; are
+is forbidden.<BR></FONT><FONT FACE="monospace"><FONT FACE="Monospace">Conditions
+apply first, then replacement, then case conversion.</FONT><BR></FONT><BR><FONT FACE="monospace">Examples:</FONT><BR><FONT FACE="monospace">echo
 -en &quot;toto&quot; | asubst &quot;t&quot;
 &quot;\x40&quot;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;
 &quot;@&quot;</FONT><BR><FONT FACE="monospace">echo -en
@@ -184,7 +187,7 @@ applies after (sub)string replacement.<BR></FONT><BR><FONT FACE="monospace">Exam
 &quot;Tito&quot;<BR>echo -en &quot;toto\ntiti\n&quot; | asubst
 &quot;to\nti&quot; &quot;\u\R00&quot; -&gt; &quot;toTO\nTIti\n&quot;</FONT><BR><FONT FACE="monospace">echo
 -en &quot;toto&quot; | asubst &quot;(.)(.)(..)&quot;
-&quot;\u\r12\c\r11\r13&quot;&nbsp;-&gt; &quot;Otto&quot;</FONT></P>
+&quot;\u\r12\c\r11\r13&quot;&nbsp;-&gt; &quot;Otto&quot;</FONT></SPAN></P>
 <H1 LANG="en-GB"><FONT FACE="Monospace">8.Grep mode</FONT></H1>
 <P LANG="en-GB"><FONT FACE="Monospace">In grep mode, asubst only
 looks for find_pattern and displays result, (possibly with the line

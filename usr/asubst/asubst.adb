@@ -3,7 +3,7 @@ with Environ, Argument, Argument_Parser, Sys_Calls, Language, Mixed_Str, Text_Li
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
-  Version : constant String  := "V7.0";
+  Version : constant String  := "V7.1";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -101,23 +101,29 @@ procedure Asubst is
      "    and ""\x00"" is allowed (forbidden in a regex).");
 
     Sys_Calls.Put_Line_Error (
-     "  <replace_string> is a string with ""\n"" (new_line), ""\t"" (tab), ""\s"" (space),");
+     "  <replace_string> is a string with the following specific sequences:");
     Sys_Calls.Put_Line_Error (
-     "    ""\xIJ"" (hexa byte value), ""\RIJ"" or ""\rIJ"" (IJ in hexa, replaced by the");
+     "    ""\n"" (new_line), ""\t"" (tab), ""\s"" (space), ""\xIJ"" (hexa byte value).");
+     Sys_Calls.Put_Line_Error (
+     "    ""\iIJ<text>"" to replace by <text> if the Jth substring of the Ith regex");
+     Sys_Calls.Put_Line_Error (
+     "      matches. <text> ends when encountering another ""\i"" or a ""\f"".");
+     Sys_Calls.Put_Line_Error (
+     "    ""\RIJ"" (IJ in hexa) to replace by the input text matching the IJth regex,");
+     Sys_Calls.Put_Line_Error (
+     "    ""\rIJ"" to replace by the text matching the Jth substring of the Ith regex.");
     Sys_Calls.Put_Line_Error (
-     "    string of the input text matching the IJth regex if \R, or matching the Jth");
+     "    ""\u"" (start UPPERCASE conversion), ""\l"" (lowercase), ""\m"" (Mixed_Case),");
     Sys_Calls.Put_Line_Error (
-     "    substring of the Ith regex if \r), ""\u"" (start UPPERCASE conversion),");
+     "      ""\c"" (stop case conversion). Any new conversion replaces previous.");
     Sys_Calls.Put_Line_Error (
-     "    ""\l"" (lowercase), ""\m"" (Mixed_Case), ""\c"" (stop case conversion). Any new");
-    Sys_Calls.Put_Line_Error (
-     "    conv replaces previous, case conv applies after (sub)string replacement.");
+     "    Conditions apply first, then replacement, then case conversion.");
     Sys_Calls.Put_Line_Error (
      "    ""\R01"" <-> 1st <regex>, ""\R00"" <-> all <regex>, ""\ri0"" == ""\R0i"".");
     Sys_Calls.Put_Line_Error (
-     "    Like back references, substrings are numbered in the order of opening");
+     "    Like back references, substrs are numbered in order of opening parentheses.");
     Sys_Calls.Put_Line_Error (
-     "    parentheses. Note that ""\r0i"" is forbidden.");
+     "    Note that ""\r0i"" and ""\i0i"" are is forbidden.");
 
     Sys_Calls.Put_Line_Error (
      "  If set <exclude_pattern> must have the same number of regex as <find_pattern>.");

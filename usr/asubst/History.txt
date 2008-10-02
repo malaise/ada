@@ -1,5 +1,8 @@
 History of Asubst:
 ------------------
+02/10/2008 V7.1
+Add: \iIJ and \f in replace string for conditional replacement.
+
 25/09/2008 V7.0
 Add: Use PCRE i.o. POSIX regex. Full support of UTF-8.
 

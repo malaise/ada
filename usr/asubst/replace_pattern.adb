@@ -24,6 +24,7 @@ package body Replace_Pattern is
   -- Start/stop upper/lower/mixed case conversion
   type Subtit_Action_List is (
        Replace_Match_Regex, Replace_Match_Substring,
+       If_Match_Substring, End_If,
        Start_Uppercase, Start_Lowercase, Start_Mixedcase, Stop_Case);
   -- The chars in The_Pattern qualifying the action
   type Substit_Action_Rec is record
@@ -130,6 +131,8 @@ package body Replace_Pattern is
     Hexa_Byte : Byte;
     -- Current case action
     Case_Action : Case_Mode_List;
+    -- Current If action
+    If_Action : Boolean;
 
   begin
     if Debug.Set then
@@ -140,10 +143,11 @@ package body Replace_Pattern is
     -- Replace escape sequences by coding chars
     Start := 1;
     Case_Action := Stop_Case;
+    If_Action := False;
     loop
       -- Locate an escape sequence, exit when no more
       Got := String_Mng.Locate_Escape (Asu.To_String (The_Pattern),
-                                       Start, "\clmnRrstux");
+                                       Start, "\cfilmnRrstux");
       exit when Got = 0;
       -- Set corresponding code
       Esc_Char := Asu.Element (The_Pattern, Got);
@@ -162,6 +166,17 @@ package body Replace_Pattern is
           -- "\c" XXX case switch off
           Subst.Action := Stop_Case;
           Switch_Case (Subst, Case_Action);
+        when 'f' =>
+          -- "\f" \IIJ or \iIJ end of if
+          Subst.Action := End_If;
+          if not If_Action then
+            Error ("Invalid " & Mixed_Str (Subst.Action'Img)
+                 & " while not in condition");
+          end if;
+          Substites_List.Insert (Substites, Subst);
+          Asu.Replace_Slice (The_Pattern, Subst.Index, Subst.Index + 1,
+                             Subst_Char & "");
+          If_Action := False;
         when 'l' =>
           -- "\l" lower_case switch on
           Subst.Action := Start_Lowercase;
@@ -197,8 +212,9 @@ package body Replace_Pattern is
           Hexa_Byte := Get_Hexa (Got + 1);
           Asu.Replace_Slice (The_Pattern, Got - 1, Got + 2,
                              Character'Val (Hexa_Byte) & "");
-        when 'R' | 'r' =>
+        when 'R' | 'r' | 'i' =>
           -- "\RIJ" or \rIJ, IJ in hexa, replaced by matching (sub) string
+          -- "\iIJ", IJ in hexa, replaced by text if substring is matching
           -- Check IJ is a valid byte in hexa
           Hexa_Byte := Get_Hexa (Got + 1);
           Subst.Info := Hexa_Byte;
@@ -227,7 +243,12 @@ package body Replace_Pattern is
                 & " of regex index " & Asu.Element (The_Pattern, Got + 1)
                 & " in replace pattern");
             end if;
-            Subst.Action := Replace_Match_Substring;
+            if Esc_Char = 'r' then
+              Subst.Action := Replace_Match_Substring;
+            else
+              Subst.Action := If_Match_Substring;
+              If_Action := True;
+            end if;
           end if;
           -- Store that, at this index, there is a (sub) string match
           Substites_List.Insert (Substites, Subst);
@@ -242,8 +263,16 @@ package body Replace_Pattern is
     end loop;
     -- Stop case substitution at end of line, add subst marker
     if Case_Action /= Stop_Case then
-      Subst.Index := Asu.Length (The_Pattern) + 1;
       Subst.Action := Stop_Case;
+      Subst.Index := Asu.Length (The_Pattern) + 1;
+      Subst.Info := 0;
+      Substites_List.Insert (Substites, Subst);
+      Asu.Append (The_Pattern, Subst_Char & "");
+    end if;
+    -- Stop conditional section at end of line, add subst marker
+    if If_Action then
+      Subst.Action := End_If;
+      Subst.Index := Asu.Length (The_Pattern) + 1;
       Subst.Info := 0;
       Substites_List.Insert (Substites, Subst);
       Asu.Append (The_Pattern, Subst_Char & "");
@@ -256,7 +285,7 @@ package body Replace_Pattern is
 
   -- Extract a substring of string matching a regex
   subtype Extraction_List is Subtit_Action_List
-          range Replace_Match_Regex .. Replace_Match_Substring;
+          range Replace_Match_Regex .. If_Match_Substring;
   function Matchstring (Kind : Extraction_List; Nth : Byte) return String is
     Rth : Positive;
     Sth : Search_Pattern.Nb_Sub_String_Range;
@@ -266,12 +295,12 @@ package body Replace_Pattern is
       return Search_Pattern.Allstring;
     else
       if Kind = Replace_Match_Regex then
-        -- \Rij
+        -- \RIJ
         -- Nth is the regex index
         Rth := Nth;
         Sth := 0;
       else
-        -- \rij
+        -- \rIJ or \iIJ
         -- Nth is the regex index / substr index
         Rth := Nth / 16;
         Sth := Nth rem 16;
@@ -325,6 +354,8 @@ package body Replace_Pattern is
     -- Case substitution start index (0 if none) and mode (Stop if none)
     Case_Index : Natural;
     Case_Mode : Case_Mode_List;
+    -- If substring does not match, skip from start_skip to end
+    Start_Skip : Natural;
   begin
     -- Init result with replace pattern
     Result := The_Pattern;
@@ -344,6 +375,7 @@ package body Replace_Pattern is
     Offset := 0;
     Case_Index := 0;
     Case_Mode := Stop_Case;
+    Start_Skip := 0;
     loop
       -- Locate replace code
       Got := String_Mng.Locate (Asu.To_String (Result),
@@ -363,61 +395,86 @@ package body Replace_Pattern is
       -- Process match action
       if Valid_Subst then
         case Subst.Action is
-          when Replace_Match_Regex | Replace_Match_Substring =>
-            -- Replace by (sub) Str matching regex
-            declare
-             -- Get full or partial substring
-              Sub_Str : constant String
-                      := Matchstring (Subst.Action, Subst.Info);
-            begin
-              if Debug.Set then
-                Sys_Calls.Put_Line_Error ("Replace, got match string >"
-                                        & Sub_Str & "<");
-              end if;
-              Asu.Replace_Slice (Result, Got, Got, Sub_Str);
-              -- Restart locate from first char after replacement
-              Start := Got + Sub_Str'Length;
-              Offset := Offset + Sub_Str'Length - 1;
-            end;
-          when Start_Uppercase | Start_Lowercase
-             | Start_Mixedcase | Stop_Case =>
-            if Case_Index /= 0 then
-              -- End of a casing: apply
-              if Debug.Set then
-                Sys_Calls.Put_Line_Error ("Replace, converting >"
-                       & Asu.Slice (Result, Case_Index, Got - 1) & "< to "
-                       & Mixed_Str(Case_Mode'Img));
-              end if;
-              -- New or stop casing: replace from Start to Subst_Char
-              -- This is compatible with utf8 without explicit checks
-              declare
-                Case_Str : constant String
-                         := Casestring (Asu.Slice (Result, Case_Index, Got - 1),
-                                        Case_Mode);
-              begin
-                Asu.Replace_Slice (Result, Case_Index, Got, Case_Str);
-              end;
+          when If_Match_Substring | End_If =>
+            -- End of a previous section to skip?
+            if Start_Skip /= 0 then
+              -- Delete from Start_Skip to current
+              Asu.Delete (Result, Start_Skip, Got);
+              Offset := Offset - (Got - Start_Skip);
+              -- Start_Skip remains unchanged
+              Got := Start_Skip;
             else
-              -- No casing active: remove subst tag
-              Asu.Replace_Slice (Result, Got, Got, "");
-            end if;
-            if Subst.Action = Stop_Case then
-              -- Stop casing
-              Case_Index := 0;
-              Case_Mode := Stop_Case;
-            else
-              -- New case
-              Case_Index := Got;
-              Case_Mode := Subst.Action;
-            end if;
-            if Debug.Set then
-              Sys_Calls.Put_Line_Error ("Replace, marking start case at"
-                       & Case_Index'Img
-                       & " with " & Subst.Action'Img);
+              -- Remove this tag
+              Asu.Delete (Result, Got, Got);
             end if;
             -- Restart locate from first char after case switch
+            Start_Skip := Got;
             Start := Got;
             Offset := Offset - 1;
+            if Subst.Action /= If_Match_Substring
+            or else Matchstring (Subst.Action, Subst.Info) /= "" then
+              -- End_If or match => New section is not to skip
+              Start_Skip := 0;
+            end if;
+          when Replace_Match_Regex | Replace_Match_Substring =>
+            if Start_Skip = 0 then
+              -- Replace by (sub) Str matching regex
+              declare
+               -- Get full or partial substring
+                Sub_Str : constant String
+                        := Matchstring (Subst.Action, Subst.Info);
+              begin
+                if Debug.Set then
+                  Sys_Calls.Put_Line_Error ("Replace, got match string >"
+                                          & Sub_Str & "<");
+                end if;
+                Asu.Replace_Slice (Result, Got, Got, Sub_Str);
+                -- Restart locate from first char after replacement
+                Start := Got + Sub_Str'Length;
+                Offset := Offset + Sub_Str'Length - 1;
+              end;
+            end if;
+          when Start_Uppercase | Start_Lowercase
+             | Start_Mixedcase | Stop_Case =>
+            if Start_Skip = 0 then
+              if Case_Index /= 0 then
+                -- End of a casing: apply
+                if Debug.Set then
+                  Sys_Calls.Put_Line_Error ("Replace, converting >"
+                         & Asu.Slice (Result, Case_Index, Got - 1) & "< to "
+                         & Mixed_Str(Case_Mode'Img));
+                end if;
+                -- New or stop casing: replace from Start to Subst_Char
+                -- This is compatible with utf8 without explicit checks
+                declare
+                  Case_Str : constant String
+                           := Casestring (Asu.Slice (Result, Case_Index, Got - 1),
+                                          Case_Mode);
+                begin
+                  Asu.Replace_Slice (Result, Case_Index, Got, Case_Str);
+                end;
+              else
+                -- No casing active: remove subst tag
+                Asu.Delete (Result, Got, Got);
+              end if;
+              if Subst.Action = Stop_Case then
+                -- Stop casing
+                Case_Index := 0;
+                Case_Mode := Stop_Case;
+              else
+                -- New case
+                Case_Index := Got;
+                Case_Mode := Subst.Action;
+              end if;
+              if Debug.Set then
+                Sys_Calls.Put_Line_Error ("Replace, marking start case at"
+                         & Case_Index'Img
+                         & " with " & Subst.Action'Img);
+              end if;
+              -- Restart locate from first char after case switch
+              Start := Got;
+              Offset := Offset - 1;
+            end if;
         end case;
       else
         -- This Subst_Char is, in fact, not a subst action

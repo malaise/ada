@@ -1,5 +1,5 @@
                                  Asubst
-                                  V7.0
+                                  V7.1
 
 
 1. General syntax
@@ -143,13 +143,19 @@ The following '\' sequences are supported:
   matching the regex number IJ, (00 <= IJ <= NbOfRegex, 00 means the whole
 string matching all regex).
 - "\rIJ" where IJ is an hexadecimal number will be replaced by the string
-  matching the substring J of the regex number I (0 < I), J=0 for the
-  complete string, (so "\R0x" = "\rx0"). Note that substrings are numbered
-  in the order of the opening parenthesis, left to right.
+  matching the substring J of the regex number I (0 < I), J = 0 for the
+  complete string, (so "\R0x" = "\rx0").
+- "\iIJ" and "\f" to replace by the <text> following "\iIJ" if the Jth substring
+  of the Ith regex matches (\iIJ not empty).
+  <text> ends when encountering another "\i" or a "\f".
 - "\u", "\l", "\m" for starting an UPPER, lower or Mixed case conversion. A
   conversion ends when a new starts, at end of line or on "\c".
 - "\c" for stopping a case conversion.
-Case conversion applies after (sub)string replacement.
+
+Note that substrings are numbered in the order of the opening parenthesis, left
+to right.
+Note that "\r0i" and "\i0i" are is forbidden.
+Conditions apply first, then replacement, then case conversion.
 
 Examples:
 echo -en "toto" | asubst "t" "\x40"                     ->  "@"
