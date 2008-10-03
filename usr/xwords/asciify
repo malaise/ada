@@ -1,0 +1,25 @@
+#!/bin/bash
+
+if [ \( "$1" = "" \) -o \( "$2" != "" \) ] ; then
+  echo "Error: Invalid arguments."   2>&1
+  echo "Usage: `basename $0` <file>" 2>&1
+  exit 1
+fi
+
+# Separators -> ''
+asubst "\s|\t|\.|,|_|!|̃|̈|̂|̀|'|’|́|/| |\\\\|-|&amp;" '' $1
+
+# Upper case -> lower case
+asubst '([A-Z])' '\l\r11\c' $1
+
+# Digits -> trash
+asubst '^.*[0-9]+.*\n' '' $1
+
+# Non ascii -> ascii
+asubst '([áàâäã])|([éèêë])|([ïî])|([óôö])|([úùûü])|(ÿ)|(œ)|(æ)|(ç)|(ñ)' \
+'\i11a\i12e\i13i\i14o\i15u\i16y\i17oe\i18ae\i19c\i1An\f' $1
+
+# Non ASCII -> ascii
+asubst '([ÂÄ])|([ÉÈÊË])|(Î)|([ÔÖ)])|(Œ)|(Ç)' \
+'\i11a\i12e\i13i\i14o\i15oe\i16c\f' $1
+
