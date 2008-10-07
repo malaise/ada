@@ -12,7 +12,7 @@ asubst "\s|\t|\.|,|_|!|̃|̈|̂|̀|'|’|́|/| |\\\\|-|&amp;" '' $1
 # Upper case -> lower case
 asubst '([A-Z])' '\l\r11\c' $1
 
-# Digits -> trash
+# Lines with digits -> trash
 asubst '^.*[0-9]+.*\n' '' $1
 
 # Non ascii -> ascii
@@ -22,4 +22,7 @@ asubst '([áàâäã])|([éèêë])|([ïî])|([óôö])|([úùûü])|(ÿ)|(œ)|(
 # Non ASCII -> ascii
 asubst '([ÂÄ])|([ÉÈÊË])|(Î)|([ÔÖ)])|(Œ)|(Ç)' \
 '\i11a\i12e\i13i\i14o\i15oe\i16c\f' $1
+
+# Empty lines -> trash
+asubst '^\n' '' $1
 
