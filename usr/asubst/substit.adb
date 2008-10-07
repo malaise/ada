@@ -270,14 +270,14 @@ package body Substit is
     end if;
   end Error;
 
-  -- Read the number of lines and New_Lines requested
-  Trail_New_Line : Boolean := False;
+  -- Read the number of lines and New_Lines needed to fill Line_List
+  Trail_Line_Feed : Boolean := False;
   function Read return Boolean is
     Nb_To_Read : Natural;
     Line : Asu.Unbounded_String;
     Len : Natural;
     Line_Feed : constant Asu.Unbounded_String
-              :=  Asu.To_Unbounded_String (Text_Line.Line_Feed_Str);
+              :=  Asu.To_Unbounded_String (Text_Line.Get_Line_Feed (In_File));
   begin
     -- Move to end
     if not Line_List_Mng.Is_Empty (Line_List) then
@@ -286,10 +286,13 @@ package body Substit is
     -- Compute amount to fill buffer (Nb lines)
     Nb_To_Read := Nb_Pattern - Line_List_Mng.List_Length (Line_List);
     -- Append trailing new line if any
-    if Trail_New_Line then
+    if Trail_Line_Feed then
       Line_List_Mng.Insert (Line_List, Line_Feed);
-      Trail_New_Line := False;
+      Trail_Line_Feed := False;
       Nb_To_Read := Nb_To_Read - 1;
+      if Debug.Set then
+        Sys_Calls.Put_Line_Error ("Read added trailing line feed");
+      end if;
     end if;
 
     -- Read and append remaining amount, save trailing newline
@@ -304,8 +307,9 @@ package body Substit is
         return False;
       end if;
       -- There are either one or two items to push
-      if Len > 1 and then Asu.Element(Line, Len) = Text_Line.Line_Feed_Char then
-        -- Line and Line_Feed
+      if Len >= 1
+      and then Asu.Element(Line, Len) = Text_Line.Line_Feed_Char then
+        -- Line (possibly empty) and Line_Feed
         -- Insert line (without Lf)
         Line_List_Mng.Insert (Line_List,
               Asu.To_Unbounded_String (Asu.Slice (Line, 1, Len-1)));
@@ -313,14 +317,14 @@ package body Substit is
         Line_No := Line_No + 1;
         if Nb_To_Read = 0 then
           -- Nl remains for next read
-          Trail_New_Line := True;
+          Trail_Line_Feed := True;
         else
           -- Insert Nl
           Line_List_Mng.Insert (Line_List, Line_Feed);
           Nb_To_Read := Nb_To_Read - 1;
         end if;
       else
-        -- Line without Nl (last line), or a Nl (empty line)
+        -- Line without Nl (last line)
         -- Insert it
         Line_List_Mng.Insert (Line_List, Line);
         Nb_To_Read := Nb_To_Read - 1;
@@ -362,7 +366,7 @@ package body Substit is
 
     -- Init buffer of lines
     Line_List_Mng.Delete_List (Line_List);
-    Trail_New_Line := False;
+    Trail_Line_Feed := False;
     Substit.Delimiter := Asu.To_Unbounded_String (Delimiter);
     -- Init substitution by reading Nb_Pattern lines and Newlines
     -- Loop on substit

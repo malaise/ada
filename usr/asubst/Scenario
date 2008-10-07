@@ -40,6 +40,8 @@
 "toto titi"            "\btoto\b"                   ""                          " titi"
 "tototiti"            "\btoto\b"                    ""                          "tototiti"
 "toto\ttiti"           "\t"                         "\s"                        "toto titi"
+"\n\ntoto\n\ntiti\n\n" "^\n"                        ""                          "toto\ntiti\n"
+"\n\nto\n\nti\n\n"     "^$"                         "E"                         "E\nE\nto\nE\nti\nE\n"
 "toto\ntiti\ntata\n"   ".*\n"                       "\R01"                      "tototititata"
 "toto\nt^t^\ntata\n"   "\n[t^]{4}\n"                "tutu"                      "tototututata"
 "\ntoto\ntiti\ntata"   "\n.*"                       "\R02"                      "tototititata"
@@ -70,6 +72,11 @@
 "Options" "-x" "--delimiter="
 "titi to\nto tutu"     "to\nto "                    ""                          "titi tutu"
 
+"Options" "--delimiter=END" "--"
+"to to ti\nti"         "\b([\M]+)\b[\S]+\1"         "->\R01<-"                  "->to to<- ->ti\nti<-"
+
+"Options" "--delimiter=i"
+"tototititata"         "ti"                         "LF"                        "totoLFLFtata"
 "Options" "-x"
 "titi to\nto tutu"     "to\nto "                    ""                          "titi tutu"
 "titi to to tutu"      "to "                        ""                          "titi tutu"

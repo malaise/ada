@@ -1,5 +1,5 @@
                                  Asubst
-                                  V7.1
+                                  V7.2
 
 
 1. General syntax
@@ -60,15 +60,16 @@ echo "toto" | asubst "t" "ti"                      ->  "tiotio"
 echo "tito" | asubst "t." "tu"                     ->  "tutu"
 
 If there are "\n", they delimit several regex that will apply to several lines.
-Search pattern is split into several regex and \n patterns, each line of input is
-split in two input items: text then newline, pattern 1 will be compared to item
-1, if they match, pattern 2 will be compared to item 2....
+Search pattern is split into several regex and \n patterns, each line of input
+is split in two input items: text (possibly empty) then newline. Pattern 1 will
+be compared to item 1, if they match, pattern 2 will be compared to item 2....
 In this case, significant '^' and '$' are only allowed respectively at
 the beginning and at the end of the pattern.
 
 Examples:
-r        -> r
-^r$      -> ^r$
+r        -> r                (r anywhere in line)
+^r$      -> ^r$              (line exctly matching r)
+^\n      -> ^$ \n            (empty line)
 r1\nr2\n -> r1$ \n and ^r2$
 r1\nr2   -> r1$ \n and ^r2
 r1\nr2$  -> r1$ \n and ^r2$
@@ -121,8 +122,8 @@ and searches for matches, between the input sequences of text and '\n', and the
 sequence of regex of find_pattern. When an input delimiter is specified (option
 -D or --delimiter) then asubst reads sequences of text separated by this
 delimiter (the whole text if delimiter is empty). In this case the find
-patern must be a simple <regex> (no '^' or '$', but '\n' is allowed), and
-it applies to each chunk.
+pattern cannot contain '^' or '$' and it applies to each chunk.
+However, '\n' is allowed in find pattern and denotes line feed within a chunk.
 Delimiter can contain "\s", "\t", "\xIJ" (even "\x00") and "\n".
 
 Examples:
@@ -130,7 +131,7 @@ Remove comments (and possible trailing new_line) from a XML file:
 asubst -D '' '<!--([^-]|-[^-])*-->\n?' '' file
 
 Tag duplicated words in paragraphs (separated by two '\n'):
-asubst -D '\n\n' -- '\<([\M]+)\>[\S]+\1' '->\R01<-' file
+asubst -D '\n\n' -- '\b([\M]+)\b[\S]+\1' '->\R01<-' file
 
 
 7. Replace string

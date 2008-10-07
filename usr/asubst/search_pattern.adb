@@ -115,7 +115,7 @@ package body Search_Pattern is
   begin
     -- Compute new pattern number and type
     Upat.Num := Unique_Pattern.List_Length (List) + 1;
-    Upat.Is_Delim := Crit = "";
+    Upat.Is_Delim := Crit = Asu.To_String (Delimiter);
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Search adding regex "
              &  Upat.Num'Img & " >" & Crit & "<");
@@ -342,10 +342,20 @@ package body Search_Pattern is
                                          Line_Feed, Start_Index);
         if Stop_Index = Start_Index then
           -- A Delim
-          Add ("", Case_Sensitive, List);
+          if Prev_Delim then
+            -- Two successive Delims
+            if Regex_Mode and then Prev_Delim then
+              Add (Start_String (True) & Stop_String (True),
+                   Case_Sensitive, List);
+            else
+              Add ("", Case_Sensitive, List);
+            end if;
+          end if;
+          Add (Asu.To_String (Delimiter), Case_Sensitive, List);
           Prev_Delim := True;
         else
-          -- A Regex: see if it is followed by a delim (always except at the end)
+          -- A Regex: see if it is followed by a delim (always,
+          --  except at the end)
           Next_Delim := Stop_Index /= 0;
           -- Make Stop_Index be the last index of regex,
           if Stop_Index = 0 then
@@ -394,6 +404,7 @@ package body Search_Pattern is
               Is_Iterative := True;
             end if;
           end if;
+          Prev_Delim := False;
         end if;
         -- Done
         exit when Stop_Index = Asu.Length (The_Pattern);
@@ -634,10 +645,10 @@ package body Search_Pattern is
     end if;
     -- Delimiter matches delimiter
     if Upat_Access.Is_Delim then
-      if Str = Line_Feed then
+      if Str = Asu.To_String (Delimiter) then
         Upat_Access.Nb_Substr := 0;
         Upat_Access.Substrs(0) := (1, 1, 1);
-        Upat_Access.Match_Str := Asu.To_Unbounded_String (Line_Feed);
+        Upat_Access.Match_Str := Delimiter;
         if Regex_Index = Unique_Pattern.List_Length (List.all) then
           -- Last pattern and matches
           Store_Index (1, True);
@@ -656,7 +667,7 @@ package body Search_Pattern is
         end if;
         return False;
       end if;
-    elsif Str = Line_Feed then
+    elsif Str = Asu.To_String (Delimiter) then
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Search check pattern is not delim vs delim");
       end if;
@@ -678,15 +689,21 @@ package body Search_Pattern is
                      Asu.To_String (Upat_Access.Find_Str), Start);
         if Nmatch /= 0 then
           -- Fill matching info as if from a regex
-          Match (1) := (
+          Match(1) := (
            First_Offset => Nmatch,
            Last_Offset_Start => Nmatch + Asu.Length (Upat_Access.Find_Str) - 1,
            Last_Offset_Stop  => Nmatch + Asu.Length (Upat_Access.Find_Str) - 1);
           Nmatch := 1;
+        elsif Str = "" and then Asu.To_String (Upat_Access.Find_Str) = "" then
+          -- Empty string versus empty pattern
+          Match(1) := (Start, 0, 0);
+          Nmatch := 1;
         end if;
       end if;
-      if Nmatch >= 1
-      and then Match(1).First_Offset <= Match(1).Last_Offset_Stop then
+      if (Nmatch >= 1
+          and then Match(1).First_Offset <= Match(1).Last_Offset_Stop)
+      or else (Nmatch = 1 and then Str = "") then
+        -- Normal match or empty string
         -- Copy the slice of substrings
         Upat_Access.Nb_Substr := Nmatch - 1;
         Upat_Access.Substrs(0) := Match(1);

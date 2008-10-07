@@ -1,5 +1,8 @@
 History of Asubst:
 ------------------
+07/10/2008 V7.2
+Fix: Handling of '^$' regex for empty lines
+
 02/10/2008 V7.1
 Add: \iIJ and \f in replace string for conditional replacement.
 
