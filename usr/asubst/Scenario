@@ -60,7 +60,6 @@
 "toto"                 "toto"                       "titi"                      "toto"
 "abtotocd"             "toto"                       "titi"                      "abtotocd"
 "abtiticd"             "titi"                       "tutu"                      "abtutucd"
-
 "Options" "--exclude=to"
 "toto"                 "to"                         "ti"                        "toto"
 
@@ -68,16 +67,17 @@
 "titi to to tutu"      "(([\M]+)[\S]+)\2[\S]+"      "\r11"                      "titi to tutu"
 "titi to\nto tutu"     "(([\M]+)[\S]+)\2[\S]+"      "\r11"                      "titi to\ntutu"
 "titi to\nto tutu"     "(([\M]+)\n+)\2[\S]+"        "\r11"                      "titi to\ntutu"
-
 "Options" "-x" "--delimiter="
 "titi to\nto tutu"     "to\nto "                    ""                          "titi tutu"
 
 "Options" "--delimiter=END" "--"
 "to to ti\nti"         "\b([\M]+)\b[\S]+\1"         "->\R01<-"                  "->to to<- ->ti\nti<-"
-
 "Options" "--delimiter=i"
 "tototititata"         "ti"                         "LF"                        "totoLFLFtata"
 "Options" "-x"
 "titi to\nto tutu"     "to\nto "                    ""                          "titi tutu"
 "titi to to tutu"      "to "                        ""                          "titi tutu"
+
+"Options" "-x"
+"\n\ntoto\n\ntiti\n\n" "\n\n"                       "\n"                        "\ntoto\ntiti\n"  
 
