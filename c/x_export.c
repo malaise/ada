@@ -1223,6 +1223,11 @@ extern int x_get_pointer_pos (void *line_id, int *p_x, int *p_y) {
 extern int x_set_selection (void *line_id, const char *selection) {
     t_window *win_id = (t_window*) line_id;
 
+    /* Check that window is open */
+    if (! lin_check(win_id)) {
+        return (ERR);
+    }
+
     /* Clear selection buffer */
     if (win_id->selection != NULL) {
         free (win_id->selection);
@@ -1261,7 +1266,11 @@ extern int x_set_selection (void *line_id, const char *selection) {
 /* Request a SELECTION event */
 extern int x_request_selection (void *line_id) {
     t_window *win_id = (t_window*) line_id;
-    if (win_id == NULL) return (ERR);
+
+    /* Check that window is open */
+    if (! lin_check(win_id)) {
+        return (ERR);
+    }
 
     /* Clean previous selection if any */
     x_clear_in_selection (win_id);
@@ -1282,7 +1291,10 @@ extern int x_get_selection (void *line_id, char *p_selection, int len) {
     unsigned long nitems_return, offset_return;
     char *data;
     
-    if (win_id == NULL) return (ERR);
+    /* Check that window is open */
+    if (! lin_check(win_id)) {
+        return (ERR);
+    }
     if (p_selection == NULL) return (ERR);
     if (win_id->select_index < SELEC_STORED) return (ERR);
 
