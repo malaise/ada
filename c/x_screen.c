@@ -41,7 +41,8 @@ void scr_put_char(Display *x_server, GC x_context, Window x_window,
                   XFontSet x_font_set, int x, int y, char car, int xor_mode) {
 
     if (!xor_mode) {
-      XmbDrawImageString (x_server, x_window, x_font_set, x_context, x, y, &car, 1);
+      XmbDrawImageString (x_server, x_window, x_font_set, x_context, x, y, &car,
+                          1);
     } else {
       XmbDrawString (x_server, x_window, x_font_set, x_context, x, y, &car, 1);
     }
@@ -110,3 +111,4 @@ XGCValues gc_values;
 
     XChangeGC (x_server, x_context, gc_mask, &gc_values);
 }
+
