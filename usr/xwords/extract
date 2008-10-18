@@ -1,0 +1,46 @@
+#!/bin/bash
+
+# Removes line not containing CITERIA
+# Then extracts REPLACE 
+
+function usage {
+  echo "usage: `basename $0` <mode> <file>"
+  echo "<mode> ::= Morphalou | Prolex"
+}
+
+if [ "$1" = "Morphalou" ] ; then
+  export CRITERIA='[\B]*<orthography>([^<]*)</orthography>[\B]*'
+  export REPLACE='\r11'
+elif [ "$1" = "Prolex" ] ; then
+  export CRITERIA='[\B]*(<WordForm|<Lemma)[\B]+writtenForm="([^"]*)".*'
+  export REPLACE='\r12'
+elif [ \( "$1" = "-h" \) -o \( "$1" == "--help" \) ] ; then
+  usage
+  exit 1
+else
+  echo "Error: invalid mode $1."
+  usage
+  exit 1
+fi
+shift
+
+if [ "$1" = "" ] ; then
+  echo "Error: missing argument <file>."
+  usage
+  exit 1
+elif [ "$2" != "" ] ; then
+  echo "Error: invalid argument $2."
+  usage
+  exit 1
+fi
+
+echo "Copying"
+cp $1 extracted
+if [ $? -ne 0 ] ; then
+  exit 1
+fi
+
+echo "Selecting" $CRITERIA
+asubst -e '^'$CRITERIA'\n' '.*\n' '' extracted
+asubst '^'$CRITERIA'$' $REPLACE extracted
+
