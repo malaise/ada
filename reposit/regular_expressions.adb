@@ -72,7 +72,7 @@ package body Regular_Expressions is
     Addr := C_Regvers;
     Dummy := C_Strncpy (Str(Str'First)'Address, Addr, Str'Length);
     Flo_Io.Get (Str, Vers, Last);
-    if Vers < 6.5 then
+    if Vers < 7.8 then
       raise Invalid_Pcre_Version;
     end if;
     Version_Ok := True;
