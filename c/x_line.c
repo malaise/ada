@@ -52,7 +52,20 @@ Window x_window;
     char *imvalret;
     int i;
 
-    setlocale (LC_ALL, "");
+    if (setlocale (LC_ALL, "") == NULL) {
+#ifdef DEBUG
+        printf ("X_LINE : X cannot set locale.\n");
+#endif
+        return (False);
+    }
+    if (!XSupportsLocale()) {
+#ifdef DEBUG
+        printf ("X_LINE : X does not support locale %s.",
+                setlocale (LC_ALL, NULL));
+#endif
+        return (False);
+    }
+
 
     /* Open X display */
     local_server.x_server = XOpenDisplay (server_name);
