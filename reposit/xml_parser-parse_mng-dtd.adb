@@ -124,6 +124,24 @@ package body Dtd is
     if In_Word then
       Asu.Append (Res, "#)");
     end if;
+    -- Check that words are always separated: a '(' shall always be
+    -- either the first of precceded by ( | or ,
+    declare
+      Index : Natural;
+      Str : constant String := Asu_Ts (Res);
+    begin
+      Index := 1;
+      loop
+        Index := String_Mng.Locate (Asu_Ts (Res), "(", Index + 1);
+        exit when Index = 0;
+        C := Str(Index - 1);
+        if C /= '(' and then C /= '|' and then C /= ',' then
+          Trace ("Dtd missing seperator in >" & Asu_Ts (Res)
+               & "< at index " & Line_Image (Index));
+          Util.Error (Ctx.Flow, "Invalid children definition");
+        end if;
+      end loop;
+    end;
     -- Remove any ','
     Res := Asu_Tus (String_Mng.Replace (Asu_Ts (Res), ",", ""));
     -- Now compile to check it
