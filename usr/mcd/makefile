@@ -5,7 +5,7 @@ ADAVIEW := $(USR)/fifos $(USR)/dictio $(REPOSIT)
 EXES := mcd
 
 CLIBS := cutil
-CLIBS_mcd := pcreposix pcre
+CLIBS_mcd := posix2pcre pcre
 
 include $(TEMPLATES)/ada.mk
 

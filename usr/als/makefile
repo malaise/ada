@@ -5,10 +5,10 @@ ADAVIEW := $(REPOSIT)
 EXES := als als.stat
 
 CLIBS := cutil
-CLIBS_als := pcreposix pcre
+CLIBS_als := posix2pcre pcre
 
 PCRE := `pcre-config --prefix`/lib
-LARGS_als.stat := $(CPATHD)/libcutil.a $(PCRE)/libpcreposix.a \
+LARGS_als.stat := $(CPATHD)/libcutil.a $(CPATHD)/libposix2pcre.a \
   $(PCRE)/libpcre.a
 
 include $(TEMPLATES)/ada.mk
