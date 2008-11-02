@@ -1,10 +1,11 @@
 include $(HOME)/Makefiles/common.mk
 
-LIBS := libcndbm libcutil libx_mng
+LIBS := libcndbm libcutil libx_mng libpcreregex
 EXES := test_x
 
 OBJS_libcndbm := cndbm.o
-OBJS_libcutil := timeval.o sys_calls.o wait_evt.o socket.o socket_afux.o regex.o
+OBJS_libcutil := timeval.o sys_calls.o wait_evt.o socket.o socket_afux.o
+OBJS_libpcreregex := pcreregex.o
 OBJS_libx_mng := x_color.o x_font.o x_line.o x_export.o x_file.o x_key.o \
                  x_screen.o
 
@@ -14,7 +15,7 @@ DEST_LIBS := /usr/local/lib
 INST_LIBS := $(LIBS)
 
 DEST_HEADS := /usr/local/include
-INST_HEADS := boolean.h timeval.h sys_calls.h wait_evt.h socket.h
+INST_HEADS := boolean.h timeval.h sys_calls.h wait_evt.h socket.h pcreregex.h
 
 include $(TEMPLATES)/c.mk
 
