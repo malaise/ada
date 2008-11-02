@@ -7,7 +7,7 @@
 
 #include "boolean.h"
 
-#include "pcreregex.h"
+#include "posix2pcre.h"
 
 /* Mapping PCRE error codes to POSIX error codes */
 static const int eint[] = {
