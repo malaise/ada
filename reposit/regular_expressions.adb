@@ -15,6 +15,13 @@ package body Regular_Expressions is
     return Str & Ada.Characters.Latin_1.Nul;
   end Str4C;
 
+  C_Icase    : constant Integer := 16#0001#;
+  C_Newline  : constant Integer := 16#0002#;
+  C_Notbol   : constant Integer := 16#0004#;
+  C_Noteol   : constant Integer := 16#0008#;
+  C_Utf8     : constant Integer := 16#0040#;
+  C_Notempty : constant Integer := 16#0100#;
+
   function C_Regvers return System.Address;
   pragma Import (C, C_Regvers, "pcre_version");
 
@@ -31,9 +38,6 @@ package body Regular_Expressions is
                       Regex : in System.Address;
                       Cflags : in Integer) return Integer;
   pragma Import (C, C_Regcomp, "regcomp");
-  C_Icase    : constant Integer := 16#01#;
-  C_Newline  : constant Integer := 16#02#;
-  C_Utf8     : constant Integer := 16#40#;
 
   function C_Regexec (Preg : in System.Address;
                       Str : in System.Address;
@@ -41,8 +45,6 @@ package body Regular_Expressions is
                       Pmatch : in System.Address;
                       Eflags : in Integer) return Integer;
   pragma Import (C, C_Regexec, "regexec");
-  C_Notbol : constant Integer := 16#04#;
-  C_Noteol : constant Integer := 16#08#;
 
   function C_Regerror (Errcode : in Integer;
                        Preg : in System.Address;
@@ -175,6 +177,10 @@ package body Regular_Expressions is
     end if;
     if not End_Line_Match then
       Eflags := Eflags or C_Noteol;
+    end if;
+    if To_Check /= "" then
+      -- Close to POSIX behavior
+      Eflags := Eflags or C_Notempty;
     end if;
     -- Exec regex
     C_Match_Info := (others => (1, 0));
