@@ -11,6 +11,7 @@
 "tétè"                 "é|è"                        "e"                         "tete"
 "tito"                 "t."                         ">\R01<"                    ">ti<>to<"
 "tito"                 "(.i)(.o)"                   "\r12<->\r11"               "to<->ti"
+"titi"                 "(toto)?|(titi)?"            "tutu"                      "tutu"
 "tito"                 ".*"                         "\m\R01"                    "Tito"
 "toto\ntiti\n"         "to\nti"                     "\u\R00"                    "toTO\nTIti\n"
 "TIto"                 "(.I)(.o)"                   "\u\r12\l\r11\c"            "TOti"
