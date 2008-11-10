@@ -1,4 +1,4 @@
-                            Land LEM  V2.8
+                            Land LEM  V2.9
 
 1. Presentation
 The goal of the game is to land the LEM on the Moon.
@@ -18,9 +18,9 @@ vertical speed, and at the bottom, the remaining fuel and the horizontal speed.
 The fuel gauge becomes yellow when reaching 20%, then red when reaching 10%.
 The speeds are red when above acceptable values for landing. Note that the LEM
 speed can be far above the speed gauges maxima without problem.
-Finally, in the lower right corner, an indicator shows "APP" when above a
-landing area and close (less than 5 times the LEM height). This indicator shows
-"LAND" when landed.
+Finally, in the lower right corner, an indicator shows "APPR" when above a
+landing area and and not too high (less than 5 times the LEM height).
+This indicator shows "CLOS" when getting close to land, then "LAND" when landed.
 Below the indicator, a chronometer indicates the duration of the game.
 
 4. Commands
@@ -50,8 +50,9 @@ the vertical thrust to take off, or you can shut-down the engine, which ends
 the game.
 When the game ends, a message indicates if you lost or crashed the LEM, if you
 landed normally or safely.
-You can then hit any key (except an arrow) to play again.
+You can then hit any key (except an arrow) or click middle button to play again.
 If you landed, then you start a new game, otherwise you restart the same game.
+If you landed, you can hit Control Tab to restart the same game.
 At any time, hitting escape aborts the game and quits.
 
 6. Mechanics
