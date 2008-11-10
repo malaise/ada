@@ -5,6 +5,8 @@ package body Flight is
 
   -- Part of margin for a landing to be "safe"
   Safe_Ratio : constant := 0.75;
+  -- Part of Approaching height in which LEM is Closing
+  Close_Ratio : constant := 1.0 / 4.0;
 
   -- Get a valid init position for the LEM
   function Get_Init_Position return Space.Position_Rec is
@@ -144,7 +146,12 @@ package body Flight is
     if Flat_Index /= 0
     and then Right.Y_Pos - Ground(Flat_Index).Y_Pos < Moon.Y_Ground_Max then
       -- Ground is flat and less than Y_Ground_Max below
-      Result.Status := Approaching;
+      if Right.Y_Pos - Ground(Flat_Index).Y_Pos
+          < Moon.Y_Ground_Max * Close_Ratio then
+        Result.Status := Close;
+      else
+        Result.Status := Approaching;
+      end if;
     else
       -- Ground is not flat or too far below
       Result.Status := Flying;
@@ -243,7 +250,7 @@ package body Flight is
       if Debug.Set_Flight then
         Ada.Text_Io.Put_Line ("FLIGHT On ground but climbing");
       end if;
-      Result.Status := Approaching;
+      Result.Status := Close;
       return;
     end if;
 

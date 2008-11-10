@@ -29,8 +29,10 @@ package body Moon is
     -- Check if Hard_Level (-h argument)
     begin
       if Argument.Get_Parameter (1, "h") = "" then
+        -- "-h"
         Hard_Level := True;
       else
+        -- "-hard"
         Hard_Level := True;
       end if;
     exception

@@ -25,11 +25,21 @@ package Screen is
                              range Flight.Landed .. Flight.Lost;
   procedure Put_End (Reason : in End_Reason_List);
 
-  -- Get a key
-  type Got_List is (Right_Key, Left_Key, Super_Right_Key, Super_Left_Key,
-                    Up_Key, Down_Key, Super_Up_Key, Super_Down_Key,
-                    Break, Other_Key, Timeout, Refresh);
-  function Get_Key (Wait : in Duration) return Got_List;
+  -- Get an event
+  type Evt_Kind_List is (Move_Key, Move_Click, Break, Next, Prev,
+                         Timeout, Refresh);
+  type Mvt_Kind_List is (Right_Key, Left_Key, Super_Right_Key, Super_Left_Key,
+                         Up_Key, Down_Key, Super_Up_Key, Super_Down_Key);
+  type Evt_Rec (Evt : Evt_Kind_List := Refresh) is record
+    case Evt is
+      when Move_Key | Move_Click =>
+        Mvt : Mvt_Kind_List;
+      when others =>
+        null;
+    end case;
+  end record;
+    
+  function Get_Event (Wait : in Duration) return Evt_Rec;
 
   -- Check if two heights are the same on screen
   --  (to be used as a "flat" ground criteria)

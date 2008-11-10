@@ -11,7 +11,7 @@ package body Game is
     -- Flight (Lem) status
     Flight_Status : Flight.Status_Rec;
     -- Key reading result
-    Get_Status : Screen.Got_List;
+    Got_Event : Screen.Evt_Rec;
     use type Lem.Thrust_Range, Lem.Mass_Range;
     -- Tuning
     X_Thrust_Increment : constant Lem.X_Thrust_Range
@@ -26,7 +26,7 @@ package body Game is
     Land_Status : Flight.Status_List;
     -- Worst landing satus
     Worst_Landing : Flight.Status_List;
-    use type Flight.Status_List;
+    use type Flight.Status_List, Screen.Evt_Kind_List, Screen.Mvt_Kind_List;
     function Is_Landed (Status : Flight.Status_List) return Boolean is
     begin
       return Status = Flight.Landed or else Status = Flight.Safe_Landed;
@@ -114,47 +114,51 @@ package body Game is
       Screen.Update (Flight_Status, Chronos.Read (Chrono), False);
 
       -- Get a key or wait a bit
-      Get_Status := Screen.Get_Key (0.1);
+      Got_Event := Screen.Get_Event (0.1);
       -- Handle key
-      case Get_Status is
-        when Screen.Right_Key =>
-          -- Push right
-          Lem.Set_X_Thrust (-X_Thrust_Increment);
-        when Screen.Left_Key =>
-          -- Push left
-          Lem.Set_X_Thrust (X_Thrust_Increment);
-        when Screen.Super_Right_Key =>
-          -- Super push right
-          Lem.Set_X_Thrust (- X_Thrust_Increment * 5);
-        when Screen.Super_Left_Key =>
-          -- Super push left
-          Lem.Set_X_Thrust (X_Thrust_Increment * 5);
-        when Screen.Up_Key =>
-          -- Push less, down to 0
-          if Y_Thrust > Y_Thrust_Increment then
-            Y_Thrust := Y_Thrust - Y_Thrust_Increment;
-          else
-            Y_Thrust := 0;
-          end if;
-          Lem.Set_Y_Thrust (Y_Thrust);
-        when Screen.Down_Key =>
-          -- Push more, up to max
-          Y_Thrust := Lem.Get_Y_Thrust;
-          if Y_Thrust < Lem.Max_Y_Thrust - Y_Thrust_Increment then
-            Y_Thrust := Y_Thrust + Y_Thrust_Increment;
-          else
-            Y_Thrust := Lem.Max_Y_Thrust;
-          end if;
-          Lem.Set_Y_Thrust (Y_Thrust);
-        when Screen.Super_Up_Key =>
-          -- Y thrust to 0
-          Y_Thrust := 0;
-          Lem.Set_Y_Thrust (Y_Thrust);
-        when Screen.Super_Down_Key =>
-          -- Y thrust to Max
-          Y_Thrust := Lem.Max_Y_Thrust;
-          Lem.Set_Y_Thrust (Y_Thrust);
-        when Screen.Other_Key =>
+      case Got_Event.Evt is
+        when Screen.Move_Key | Screen.Move_Click =>
+          case Got_Event.Mvt is
+            -- A movement
+            when Screen.Right_Key =>
+              -- Push right
+              Lem.Set_X_Thrust (-X_Thrust_Increment);
+            when Screen.Left_Key =>
+              -- Push left
+              Lem.Set_X_Thrust (X_Thrust_Increment);
+            when Screen.Super_Right_Key =>
+              -- Super push right
+              Lem.Set_X_Thrust (- X_Thrust_Increment * 5);
+            when Screen.Super_Left_Key =>
+              -- Super push left
+              Lem.Set_X_Thrust (X_Thrust_Increment * 5);
+            when Screen.Up_Key =>
+              -- Push less, down to 0
+              if Y_Thrust > Y_Thrust_Increment then
+                Y_Thrust := Y_Thrust - Y_Thrust_Increment;
+              else
+                Y_Thrust := 0;
+              end if;
+              Lem.Set_Y_Thrust (Y_Thrust);
+            when Screen.Down_Key =>
+              -- Push more, up to max
+              Y_Thrust := Lem.Get_Y_Thrust;
+              if Y_Thrust < Lem.Max_Y_Thrust - Y_Thrust_Increment then
+                Y_Thrust := Y_Thrust + Y_Thrust_Increment;
+              else
+                Y_Thrust := Lem.Max_Y_Thrust;
+              end if;
+              Lem.Set_Y_Thrust (Y_Thrust);
+            when Screen.Super_Up_Key =>
+              -- Y thrust to 0
+              Y_Thrust := 0;
+              Lem.Set_Y_Thrust (Y_Thrust);
+            when Screen.Super_Down_Key =>
+              -- Y thrust to Max
+              Y_Thrust := Lem.Max_Y_Thrust;
+              Lem.Set_Y_Thrust (Y_Thrust);
+          end case;
+        when Screen.Next | Screen.Prev =>
           -- Ignore any other key
           null;
         when Screen.Break =>
@@ -186,8 +190,8 @@ package body Game is
       end if;
       Screen.Put_End (Flight_Status.Status);
 
-      Get_Status := Screen.Get_Key (-1.0);
-      case Get_Status is
+      Got_Event := Screen.Get_Event (0.1);
+      case Got_Event.Evt is
         when Screen.Break =>
           -- Abort
           Screen.Close;
@@ -198,15 +202,18 @@ package body Game is
         when Screen.Timeout =>
           -- Should not occure
           null;
-        when Screen.Other_Key | Screen.Left_Key | Screen.Right_Key =>
-          -- Any other key: go on and return game status
+        when Screen.Prev =>
+          -- Prev game: force Lost
+          return Lost;
+        when Screen.Next =>
+          -- Next game : only if success
           if Is_Landed (Flight_Status.Status) then
             return Landed;
           else
             return Lost;
           end if;
         when others =>
-          -- Arrows (remaining events): ignore
+          -- Arrows, clicks (remaining events): ignore
           null;
       end case;
     end loop;

@@ -305,7 +305,10 @@ package body Screen is
     Con_Io.Graphics.Put ("    ", Thn.X, Fun.Y);
     if Flight_Status.Status = Flight.Approaching then
       Con_Io.Set_Foreground (Con_Io.Light_Green);
-      Con_Io.Graphics.Put ("APP ", Thn.X, Fun.Y);
+      Con_Io.Graphics.Put ("APPR", Thn.X, Fun.Y);
+    elsif Flight_Status.Status = Flight.Close then
+      Con_Io.Set_Foreground (Con_Io.Yellow);
+      Con_Io.Graphics.Put ("CLOS", Thn.X, Fun.Y);
     elsif Flight_Status.Status = Flight.Landed
     or else Flight_Status.Status = Flight.Safe_Landed then
       Con_Io.Set_Foreground (Con_Io.Magenta);
@@ -382,9 +385,10 @@ package body Screen is
   --                            range Flight.Landed .. Flight.Lost;
   procedure Put_End (Reason : in End_Reason_List) is
     use type Flight.Status_List;
-    Y_Text : constant Con_Io.Graphics.Y_Range := 250;
+    Y_Text : constant Con_Io.Graphics.Y_Range := 350;
     Y_Offset : constant Con_Io.Graphics.Y_Range
-             := 2 * Con_Io.Graphics.Font_Height;
+             := 3 * Con_Io.Graphics.Font_Height / 2;
+    Factor : Natural;
   begin
     case Reason is
       when Flight.Landed =>
@@ -403,20 +407,25 @@ package body Screen is
     Con_Io.Set_Foreground (Con_Io.Light_Gray);
     case Reason is
       when Flight.Landed | Flight.Safe_Landed =>
-        Center ("Click or hit any key for a new game", Y_Text - Y_Offset);
+        Center ("Hit any key or click middle button for a new game",
+                Y_Text - Y_Offset * 2);
+        Center ("or hit Shit-Tab to redo this game", Y_Text - Y_Offset * 3);
+        Factor := 4;
       when Flight.Lost | Flight.Crashed =>
-        Center ("Hit any key to retry", Y_Text - Y_Offset);
+        Center ("Hit any key or click middle button to retry",
+                Y_Text - Y_Offset * 2);
+        Factor := 3;
     end case;
-    Center ("or hit Escape to quit",
-            Y_Text - Y_Offset - Con_Io.Graphics.Font_Height);
+    Center ("or hit Escape to quit", Y_Text - Y_Offset * Factor);
     Con_Io.Flush;
   end Put_End;
 
-  -- Get a key
+  -- Memory of prev event to handle double click
   type Repeat_Action_List is (Right_Key, Left_Key, None);
   Prev_Click_Action : Repeat_Action_List := None;
   Prev_Click_Time : Ada.Calendar.Time := Ada.Calendar.Clock;
-  function Get_Key (Wait : in Duration) return Got_List is separate;
+  -- Get an event
+  function Get_Event (Wait : in Duration) return Evt_Rec is separate;
 
   -- Check if two heights are the same on screen
   --  (to be used as a "flat" ground criteria)
