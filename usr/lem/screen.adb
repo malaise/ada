@@ -385,7 +385,7 @@ package body Screen is
   --                            range Flight.Landed .. Flight.Lost;
   procedure Put_End (Reason : in End_Reason_List) is
     use type Flight.Status_List;
-    Y_Text : constant Con_Io.Graphics.Y_Range := 350;
+    Y_Text : constant Con_Io.Graphics.Y_Range := 300;
     Y_Offset : constant Con_Io.Graphics.Y_Range
              := 3 * Con_Io.Graphics.Font_Height / 2;
     Factor : Natural;
