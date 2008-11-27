@@ -344,9 +344,12 @@ begin
 
 exception
   when Socket.Soc_Name_Not_Found =>
-    Basic_Proc.Put_Line_Error ("Unknown host or port");
+    Basic_Proc.Put_Line_Error ("Error, unknown host or port");
     Basic_Proc.Set_Error_Exit_Code;
   when Arg_Error =>
+    Basic_Proc.Set_Exit_Code(2);
+  when Argument.Argument_Not_Found =>
+    Basic_Proc.Put_Error ("Error, invalid argument(s)");
     Basic_Proc.Set_Exit_Code(2);
 end Tcping;
 
