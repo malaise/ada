@@ -3,7 +3,7 @@ with Environ, Argument, Argument_Parser, Sys_Calls, Language, Mixed_Str, Text_Li
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
-  Version : constant String  := "V7.2";
+  Version : constant String  := "V7.3";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -107,7 +107,7 @@ procedure Asubst is
      Sys_Calls.Put_Line_Error (
      "    ""\iIJ<text>"" to replace by <text> if the Jth substring of the Ith regex");
      Sys_Calls.Put_Line_Error (
-     "      matches. <text> ends when encountering another ""\i"" or a ""\f"".");
+     "      matches. <text> ends when encountering another ""\i"", a ""\e"" or a ""\f"".");
      Sys_Calls.Put_Line_Error (
      "    ""\RIJ"" (IJ in hexa) to replace by the input text matching the IJth regex,");
      Sys_Calls.Put_Line_Error (

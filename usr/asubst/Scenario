@@ -34,6 +34,8 @@
 "toto"                 "toto"                       "\\\R01"                    "\\toto"
 "Mal à la tête d'œuf"  "([àâä])|([éèêë])|(œ)|(')"   "\i11a\i12e\i13oe\i14\f"    "Mal a la tete doeuf"
 "Mal à la tête d'œuf"  "([àâä])|([éèêë])|(œ)|(')"   "\i11a\i12e\i13oe\i14 \f"   "Mal a la tete d oeuf"
+"MediumToto"           "((Big|Small)|.*)Toto"       "\i12\r12\eSmall\fToto"     "SmallToto"
+"tototiti"             "(toto)(titi)"               "\i11\u\r11\c\f\r12"        "TOTOtiti"
 "toto\ntoto"           "\x0A"                       ""                          "totototo"
 "toto\ntoto\n"         "toto\n"                     ""                          ""
 "toto\ntiti"           "\n"                         ""                          "tototiti"

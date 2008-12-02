@@ -24,7 +24,7 @@ package body Replace_Pattern is
   -- Start/stop upper/lower/mixed case conversion
   type Subtit_Action_List is (
        Replace_Match_Regex, Replace_Match_Substring,
-       If_Match_Substring, End_If,
+       If_Match_Substring, Else_Match_Substring, End_If_Match_Substring,
        Start_Uppercase, Start_Lowercase, Start_Mixedcase, Stop_Case);
   -- The chars in The_Pattern qualifying the action
   type Substit_Action_Rec is record
@@ -132,7 +132,9 @@ package body Replace_Pattern is
     -- Current case action
     Case_Action : Case_Mode_List;
     -- Current If action
-    If_Action : Boolean;
+    type If_Mode_List is (None, In_If, In_Else);
+    If_Mode : If_Mode_List;
+    If_Info : Byte;
 
   begin
     if Debug.Set then
@@ -143,11 +145,12 @@ package body Replace_Pattern is
     -- Replace escape sequences by coding chars
     Start := 1;
     Case_Action := Stop_Case;
-    If_Action := False;
+    If_Mode := None;
+    If_Info := 0;
     loop
       -- Locate an escape sequence, exit when no more
       Got := String_Mng.Locate_Escape (Asu.To_String (The_Pattern),
-                                       Start, "\cfilmnRrstux");
+                                       Start, "\cefilmnRrstux");
       exit when Got = 0;
       -- Set corresponding code
       Esc_Char := Asu.Element (The_Pattern, Got);
@@ -166,17 +169,29 @@ package body Replace_Pattern is
           -- "\c" XXX case switch off
           Subst.Action := Stop_Case;
           Switch_Case (Subst, Case_Action);
-        when 'f' =>
-          -- "\f" \IIJ or \iIJ end of if
-          Subst.Action := End_If;
-          if not If_Action then
+        when 'e' =>
+          -- "\e" else of if
+          Subst.Action := Else_Match_Substring;
+          Subst.Info := If_Info;
+          if If_Mode /= In_If then
             Error ("Invalid " & Mixed_Str (Subst.Action'Img)
                  & " while not in condition");
           end if;
           Substites_List.Insert (Substites, Subst);
           Asu.Replace_Slice (The_Pattern, Subst.Index, Subst.Index + 1,
                              Subst_Char & "");
-          If_Action := False;
+          If_Mode := In_Else;
+        when 'f' =>
+          -- "\f" end of if
+          Subst.Action := End_If_Match_Substring;
+          if If_Mode = None then
+            Error ("Invalid " & Mixed_Str (Subst.Action'Img)
+                 & " while not in condition or else part");
+          end if;
+          Substites_List.Insert (Substites, Subst);
+          Asu.Replace_Slice (The_Pattern, Subst.Index, Subst.Index + 1,
+                             Subst_Char & "");
+          If_Mode := None;
         when 'l' =>
           -- "\l" lower_case switch on
           Subst.Action := Start_Lowercase;
@@ -246,8 +261,10 @@ package body Replace_Pattern is
             if Esc_Char = 'r' then
               Subst.Action := Replace_Match_Substring;
             else
+              -- Check i
               Subst.Action := If_Match_Substring;
-              If_Action := True;
+              If_Info := Subst.Info;
+              If_Mode := In_If;
             end if;
           end if;
           -- Store that, at this index, there is a (sub) string match
@@ -270,8 +287,8 @@ package body Replace_Pattern is
       Asu.Append (The_Pattern, Subst_Char & "");
     end if;
     -- Stop conditional section at end of line, add subst marker
-    if If_Action then
-      Subst.Action := End_If;
+    if If_Mode /= None then
+      Subst.Action := End_If_Match_Substring;
       Subst.Index := Asu.Length (The_Pattern) + 1;
       Subst.Info := 0;
       Substites_List.Insert (Substites, Subst);
@@ -285,7 +302,7 @@ package body Replace_Pattern is
 
   -- Extract a substring of string matching a regex
   subtype Extraction_List is Subtit_Action_List
-          range Replace_Match_Regex .. If_Match_Substring;
+          range Replace_Match_Regex .. Else_Match_Substring;
   function Matchstring (Kind : Extraction_List; Nth : Byte) return String is
     Rth : Positive;
     Sth : Search_Pattern.Nb_Sub_String_Range;
@@ -300,7 +317,7 @@ package body Replace_Pattern is
         Rth := Nth;
         Sth := 0;
       else
-        -- \rIJ or \iIJ
+        -- \rIJ or \iIJ or \e of a \iIJ
         -- Nth is the regex index / substr index
         Rth := Nth / 16;
         Sth := Nth rem 16;
@@ -395,7 +412,8 @@ package body Replace_Pattern is
       -- Process match action
       if Valid_Subst then
         case Subst.Action is
-          when If_Match_Substring | End_If =>
+          when If_Match_Substring | Else_Match_Substring
+             | End_If_Match_Substring =>
             -- End of a previous section to skip?
             if Start_Skip /= 0 then
               -- Delete from Start_Skip to current
@@ -411,9 +429,24 @@ package body Replace_Pattern is
             Start_Skip := Got;
             Start := Got;
             Offset := Offset - 1;
-            if Subst.Action /= If_Match_Substring
-            or else Matchstring (Subst.Action, Subst.Info) /= "" then
-              -- End_If or match => New section is not to skip
+            if Debug.Set then
+              if Subst.Action = End_If_Match_Substring then
+                Sys_Calls.Put_Line_Error (
+                  "Replace, got 'if' action " & Subst.Action'Img);
+              else
+                Sys_Calls.Put_Line_Error (
+                  "Replace, got 'if' action " & Subst.Action'Img
+                  & " on string >"
+                  & Matchstring (Subst.Action, Subst.Info) & "<");
+              end if;
+            end if;
+            if (Subst.Action = If_Match_Substring
+                and then Matchstring (Subst.Action, Subst.Info) /= "")
+            or else (Subst.Action = Else_Match_Substring
+                and then Matchstring (Subst.Action, Subst.Info) = "")
+            or else Subst.Action = End_If_Match_Substring then
+              -- (if and match) or (else and not match) or end if
+              --   => New section is not to skip
               Start_Skip := 0;
             end if;
           when Replace_Match_Regex | Replace_Match_Substring =>
@@ -433,6 +466,8 @@ package body Replace_Pattern is
                 Start := Got + Sub_Str'Length;
                 Offset := Offset + Sub_Str'Length - 1;
               end;
+            else
+              Start := Got + 1;
             end if;
           when Start_Uppercase | Start_Lowercase
              | Start_Mixedcase | Stop_Case =>

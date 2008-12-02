@@ -1,5 +1,5 @@
                                  Asubst
-                                  V7.2
+                                  V7.3
 
 
 1. General syntax
@@ -146,9 +146,10 @@ string matching all regex).
 - "\rIJ" where IJ is an hexadecimal number will be replaced by the string
   matching the substring J of the regex number I (0 < I), J = 0 for the
   complete string, (so "\R0x" = "\rx0").
-- "\iIJ" and "\f" to replace by the <text> following "\iIJ" if the Jth substring
-  of the Ith regex matches (\iIJ not empty).
-  <text> ends when encountering another "\i" or a "\f".
+- "\iIJ", "\e" and "\f" to replace by the <text> following "\iIJ" if the Jth
+  substring of the Ith regex matches (\rIJ not empty) or by the <text> following
+  "\e" if the Jth substring of the Ith regex does not matches (\rIJ empty).
+  <text> ends when encountering another "\i", a "\e" or a "\f".
 - "\u", "\l", "\m" for starting an UPPER, lower or Mixed case conversion. A
   conversion ends when a new starts, at end of line or on "\c".
 - "\c" for stopping a case conversion.

@@ -1,5 +1,8 @@
 History of Asubst:
 ------------------
+02/12/2008 V7.3
+Add: \e in replace string for 'else' part of a \iIJ
+
 07/10/2008 V7.2
 Fix: Handling of '^$' regex for empty lines
 
