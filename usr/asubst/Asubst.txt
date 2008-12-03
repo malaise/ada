@@ -1,5 +1,5 @@
                                  Asubst
-                                  V7.3
+                                  V7.4
 
 
 1. General syntax
@@ -140,16 +140,16 @@ The following '\' sequences are supported:
 - "\t" will be replaced by a (horiz) tab.
 - "\xIJ" where IJ is an hexadecimal number (00 to FF or ff) will be replaced
   by a byte with the corresponding value.
+- "\iIJ", "\e" and "\f" to replace by the <text> following "\iIJ" if the Jth
+  substring of the Ith regex matches (\rIJ not empty). The logic is a sequence
+  of if... [ { elsif... } ] [ else... ] [ endif ].
+  <text> ends when encountering another "\i", a "\e", a "\f" or at end of line.
 - "\RIJ" where IJ is an hexadecimal number will be replaced by the string
   matching the regex number IJ, (00 <= IJ <= NbOfRegex, 00 means the whole
-string matching all regex).
+  string matching all regex).
 - "\rIJ" where IJ is an hexadecimal number will be replaced by the string
   matching the substring J of the regex number I (0 < I), J = 0 for the
   complete string, (so "\R0x" = "\rx0").
-- "\iIJ", "\e" and "\f" to replace by the <text> following "\iIJ" if the Jth
-  substring of the Ith regex matches (\rIJ not empty) or by the <text> following
-  "\e" if the Jth substring of the Ith regex does not matches (\rIJ empty).
-  <text> ends when encountering another "\i", a "\e" or a "\f".
 - "\u", "\l", "\m" for starting an UPPER, lower or Mixed case conversion. A
   conversion ends when a new starts, at end of line or on "\c".
 - "\c" for stopping a case conversion.
@@ -200,16 +200,23 @@ was found and with 2 otherwise (e.g. in case of error).
 
 
 11. Troubleshooting
-- Asubst is stuck. Maybe an argument is missing or an option is not complete,
+- Asubst is stuck. -> Maybe an argument is missing or an option is not complete,
 and asubst is waiting in stdin.
 E.g. "asubst -m 5 6 file". Asubst considers "5" as the value for m, "6" as the
 find_pattern and "file" as the replace_string, so no file name is provided.
-- I want to substitute "\f", why do I need to provide "\\\\f"?
-Because regex imposes to provide "\\f" for matching "\f", ("\f" matches "f")
-and the shell imposes a "\\" for each "\" transmitted to asubst.
+
+- I want to substitute "\f", why do I need to provide "\\\\f"? -> Because regex
+imposes to provide "\\f" for matching "\f", ("\f" matches "f") and the shell
+imposes a "\\" for each "\" transmitted to asubst.
 Note that, you can pass to the shell '\\f' instead of "\\\\f".
 Same considerations apply to "\$" or '$' in order to pass '$' to asubst.
-- ERROR: Cannot create temp file in ".". Asubst cannot make the temporary file,
-probably because the file system does not support hard links (e.g. samba file
-system). Try the -p (--tmp) option with a UNIX directory.
+- ERROR: Cannot create temp file in ".".  -> Asubst cannot make the temporary
+file, probably because the file system does not support hard links (e.g. samba
+file system). Try the -p (--tmp) option with a UNIX directory.
+
+- The 'else' part of the condition is not processed. -> The whole replace string
+is not processed if the input text does not match the find pattern. Example,
+with '([A-Z][a-z])|([0-1])' '\i11Letter\i12Digit\eOther\f' the input text '!'
+remains unchanged. Appending '|.' to the search pattern makes it match and be
+substituted by 'Other'.
 

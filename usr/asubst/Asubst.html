@@ -6,10 +6,10 @@
 	<META NAME="GENERATOR" CONTENT="OpenOffice.org 1.1.5  (Linux)">
 	<META NAME="AUTHOR" CONTENT="MALAISE Pascal">
 	<META NAME="CREATED" CONTENT="20060414;18573000">
-	<META NAME="CHANGED" CONTENT="20081202;18163000">
+	<META NAME="CHANGED" CONTENT="20081203;13111200">
 </HEAD>
 <BODY LANG="en-US" DIR="LTR">
-<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><B><FONT SIZE=6>V7.3</FONT></B></FONT></FONT></P>
+<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><B><FONT SIZE=6>V7.4</FONT></B></FONT></FONT></P>
 <H1 LANG="en-GB"><FONT FACE="monospace">1. General syntax</FONT></H1>
 <P LANG="en-GB"><FONT FACE="monospace">Usage: asubst [ { &lt;option&gt;
 } ] &lt;find_pattern&gt; &lt;replace_string&gt; [ { &lt;file&gt; }
@@ -156,24 +156,24 @@ are supported:</FONT><BR><FONT FACE="monospace">- &quot;\n&quot; will
 be replaced by a newline.</FONT><BR><FONT FACE="monospace">- </FONT><FONT FACE="Monospace">&quot;\t&quot;
 will be replaced by a (horiz) tab.<BR>- &quot;\xIJ&quot; where IJ is
 an hexadecimal number (00 to FF or ff) will be replaced by a byte
-with the corresponding value.<BR>- &quot;\RIJ&quot; where IJ is an
-hexadecimal number will be replaced by the string matching the regex
-number IJ, (00 &lt;= IJ &lt;= NbOfRegex, 00 means the whole string
-matching all regex).<BR>- &quot;\rIJ&quot; where IJ is an hexadecimal
-number will be replaced by the string matching the substring J of the
-regex number I (0 &lt; I), J = 0 for the complete string, (so &quot;\R0x&quot;
-= &quot;\rx0&quot;).<BR>- &quot;\iIJ&quot;, &quot;\e&quot; and &quot;\f&quot;
-to replace by the &lt;text&gt; following &quot;\iIJ&quot; if the Jth
-substring of the Ith regex matches (\rIJ not empty) or by the &lt;text&gt;
-following&quot;\e&quot; if the Jth substring of the Ith regex does
-not matches (\rIJ empty).<BR>&lt;text&gt; ends when encountering
-another &quot;\i&quot;, a &quot;\e&quot; or a &quot;\f&quot;.<BR>-
-&quot;\u&quot;, &quot;\l&quot;, &quot;\m&quot; for starting an UPPER,
-lower or Mixed case conversion. A conversion ends when a new starts,
-at end of line or on &quot;\c&quot;.<BR><FONT FACE="Monospace">- &quot;\c&quot;
-for stopping a case conversion.<BR><BR></FONT>Note that substrings
-are numbered in the order of the opening parenthesis, left to
-right.<BR>Note that &quot;\r0i&quot; and &quot;\i0i&quot; are is
+with the corresponding value.<BR>- &quot;\iIJ&quot;, &quot;\e&quot;
+and &quot;\f&quot; to replace by the &lt;text&gt; following &quot;\iIJ&quot;
+if the Jth substring of the Ith regex matches (\rIJ not empty). The
+logic is a sequence of if... [ { elsif... } ] [ else... ] [ endif ].
+&lt;text&gt; ends when encountering another &quot;\i&quot;, a &quot;\e&quot;,
+a &quot;\f&quot; or at end of line.<BR>- &quot;\RIJ&quot; where IJ is
+an hexadecimal number will be replaced by the string matching the
+regex number IJ, (00 &lt;= IJ &lt;= NbOfRegex, 00 means the whole
+string matching all regex).<BR>- &quot;\rIJ&quot; where IJ is an
+hexadecimal number will be replaced by the string matching the
+substring J of the regex number I (0 &lt; I), J = 0 for the complete
+string, (so &quot;\R0x&quot; = &quot;\rx0&quot;).<BR>- &quot;\u&quot;,
+&quot;\l&quot;, &quot;\m&quot; for starting an UPPER, lower or Mixed
+case conversion. A conversion ends when a new starts, at end of line
+or on &quot;\c&quot;.<BR><FONT FACE="Monospace">- &quot;\c&quot; for
+stopping a case conversion.<BR><BR></FONT>Note that substrings are
+numbered in the order of the opening parenthesis, left to right.<BR>Note
+that &quot;\r0i&quot; and &quot;\i0i&quot; are is
 forbidden.<BR></FONT><FONT FACE="monospace"><FONT FACE="Monospace">Conditions
 apply first, then replacement, then case conversion.</FONT><BR></FONT><BR><FONT FACE="monospace">Examples:</FONT><BR><FONT FACE="monospace">echo
 -en &quot;toto&quot; | asubst &quot;t&quot;
@@ -226,22 +226,30 @@ forbidden (no substring).</FONT></P>
 matching was found, with 1 if no matching was found and with 2
 otherwise (e.g. in case of error).</FONT></P>
 <H1 LANG="en-GB"><FONT FACE="Monospace">11.Troubleshooting</FONT></H1>
-<P LANG="en-GB"><FONT FACE="Monospace">- Asubst is stuck. Maybe an
-argument is missing or an option is not complete, and asubst is
+<P LANG="en-GB"><FONT FACE="Monospace">- Asubst is stuck. -&gt; Maybe
+an argument is missing or an option is not complete, and asubst is
 waiting in stdin. E.g. &quot;asubst -m 5 6 file&quot;. Asubst
 considers &quot;5&quot; as the value for m, &quot;6&quot; as the
 find_pattern and &quot;file&quot; as the replace_string, so no file
 name is provided.</FONT></P>
 <P LANG="en-GB"><FONT FACE="Monospace">- I want to substitute &quot;\f&quot;,
-why do I need to provide &quot;\\\\f&quot;? Because regex imposes to
-provide &quot;\\f&quot; for matching &quot;\f&quot;, (&quot;\f&quot;
+why do I need to provide &quot;\\\\f&quot;? -&gt; Because regex
+imposes to provide &quot;\\f&quot; for matching &quot;\f&quot;, (&quot;\f&quot;
 matches &quot;f&quot;) and the shell imposes a &quot;\\&quot; for
 each &quot;\&quot; transmitted to asubst. Note that, you can pass to
 the shell '\\f' instead of &quot;\\\\f&quot;. Same considerations
 apply to &quot;\$&quot; or '$' in order to pass '$' to asubst.</FONT></P>
 <P LANG="en-GB"><FONT FACE="Monospace">- ERROR: Cannot create temp
-file in &quot;.&quot;. Asubst cannot make the temporary file,
+file in &quot;.&quot;. -&gt; Asubst cannot make the temporary file,
 probably because the file system does not support hard links (e.g.
 samba file system). Try the -p (--tmp) option with a UNIX directory.</FONT></P>
+<P LANG="en-GB"><FONT FACE="Monospace">- The 'else' part of the
+condition is not processed. -&gt; The whole replace string is not
+processed if the input text does not match the find pattern. Example,
+with '([A-Z][a-z])|([0-1])' '\i11Letter\i12Digit\eOther\f' the input
+text '!' remains unchanged. Appending '|.' to the search pattern
+makes it match and be substituted by 'Other'.</FONT></P>
+<P LANG="en-GB"><BR><BR>
+</P>
 </BODY>
 </HTML>

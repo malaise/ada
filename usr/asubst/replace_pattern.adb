@@ -24,7 +24,8 @@ package body Replace_Pattern is
   -- Start/stop upper/lower/mixed case conversion
   type Subtit_Action_List is (
        Replace_Match_Regex, Replace_Match_Substring,
-       If_Match_Substring, Else_Match_Substring, End_If_Match_Substring,
+       If_Match_Substring, Else_If_Match_Substring, Else_Match_Substring,
+       End_If_Match_Substring,
        Start_Uppercase, Start_Lowercase, Start_Mixedcase, Stop_Case);
   -- The chars in The_Pattern qualifying the action
   type Substit_Action_Rec is record
@@ -134,7 +135,6 @@ package body Replace_Pattern is
     -- Current If action
     type If_Mode_List is (None, In_If, In_Else);
     If_Mode : If_Mode_List;
-    If_Info : Byte;
 
   begin
     if Debug.Set then
@@ -146,7 +146,6 @@ package body Replace_Pattern is
     Start := 1;
     Case_Action := Stop_Case;
     If_Mode := None;
-    If_Info := 0;
     loop
       -- Locate an escape sequence, exit when no more
       Got := String_Mng.Locate_Escape (Asu.To_String (The_Pattern),
@@ -172,7 +171,6 @@ package body Replace_Pattern is
         when 'e' =>
           -- "\e" else of if
           Subst.Action := Else_Match_Substring;
-          Subst.Info := If_Info;
           if If_Mode /= In_If then
             Error ("Invalid " & Mixed_Str (Subst.Action'Img)
                  & " while not in condition");
@@ -262,8 +260,15 @@ package body Replace_Pattern is
               Subst.Action := Replace_Match_Substring;
             else
               -- Check i
-              Subst.Action := If_Match_Substring;
-              If_Info := Subst.Info;
+              case If_Mode is
+                when None =>
+                  Subst.Action := If_Match_Substring;
+                when In_If =>
+                  Subst.Action := Else_If_Match_Substring;
+                when In_Else =>
+                  Error ("Invalid " & Mixed_Str (Else_If_Match_Substring'Img)
+                       & " while in else of condition");
+              end case;
               If_Mode := In_If;
             end if;
           end if;
@@ -354,6 +359,7 @@ package body Replace_Pattern is
   end Casestring;
 
   -- Return the replacing string
+  type If_Status_List is (None, If_Ok, If_Ko, In_Else);
   function Replace return String is
     Result : Asu.Unbounded_String;
     -- Current index in result
@@ -373,6 +379,11 @@ package body Replace_Pattern is
     Case_Mode : Case_Mode_List;
     -- If substring does not match, skip from start_skip to end
     Start_Skip : Natural;
+    -- None outside If (\i), then If_Ko as long as no If is OK,
+    -- then Is_Ok if a If is Ok, then possible Else_Ok, then None
+    If_Status : If_Status_List;
+    -- Anonymous exception when Subst.Action and If_Status don't match
+    If_Action_Mismatch : exception;
   begin
     -- Init result with replace pattern
     Result := The_Pattern;
@@ -393,6 +404,7 @@ package body Replace_Pattern is
     Case_Index := 0;
     Case_Mode := Stop_Case;
     Start_Skip := 0;
+    If_Status := None;
     loop
       -- Locate replace code
       Got := String_Mng.Locate (Asu.To_String (Result),
@@ -412,8 +424,7 @@ package body Replace_Pattern is
       -- Process match action
       if Valid_Subst then
         case Subst.Action is
-          when If_Match_Substring | Else_Match_Substring
-             | End_If_Match_Substring =>
+          when If_Match_Substring .. End_If_Match_Substring =>
             -- End of a previous section to skip?
             if Start_Skip /= 0 then
               -- Delete from Start_Skip to current
@@ -430,7 +441,8 @@ package body Replace_Pattern is
             Start := Got;
             Offset := Offset - 1;
             if Debug.Set then
-              if Subst.Action = End_If_Match_Substring then
+              if Subst.Action = End_If_Match_Substring
+              or else Subst.Action = Else_Match_Substring then
                 Sys_Calls.Put_Line_Error (
                   "Replace, got 'if' action " & Subst.Action'Img);
               else
@@ -440,15 +452,55 @@ package body Replace_Pattern is
                   & Matchstring (Subst.Action, Subst.Info) & "<");
               end if;
             end if;
-            if (Subst.Action = If_Match_Substring
-                and then Matchstring (Subst.Action, Subst.Info) /= "")
-            or else (Subst.Action = Else_Match_Substring
-                and then Matchstring (Subst.Action, Subst.Info) = "")
-            or else Subst.Action = End_If_Match_Substring then
-              -- (if and match) or (else and not match) or end if
-              --   => New section is not to skip
-              Start_Skip := 0;
-            end if;
+            case If_Status is
+              when None =>
+                if Subst.Action /= If_Match_Substring then
+                  raise If_Action_Mismatch;
+                end if;
+                -- Entering if
+                if Matchstring (Subst.Action, Subst.Info) /= "" then
+                  -- This if is Ok
+                  If_Status := If_Ok;
+                  Start_Skip := 0;
+                else
+                  If_Status := If_Ko;
+                end if;
+              when If_Ko =>
+                if Subst.Action = If_Match_Substring then
+                  raise If_Action_Mismatch;
+                end if;
+                if Subst.Action = Else_If_Match_Substring
+                   and then Matchstring (Subst.Action, Subst.Info) /= "" then
+                  -- After one or several if were Ko, this elsif is Ok
+                  If_Status := If_Ok;
+                  Start_Skip := 0;
+                  -- otherwise it remains If_Ko
+                elsif Subst.Action = Else_Match_Substring then
+                  -- After one or several if were Ko, the else is Ok
+                  If_Status := In_Else;
+                  Start_Skip := 0;
+                elsif Subst.Action = End_If_Match_Substring then
+                  If_Status := None;
+                  Start_Skip := 0;
+                end if;
+              when If_Ok =>
+                if Subst.Action = If_Match_Substring then
+                  raise If_Action_Mismatch;
+                end if;
+                -- A If was Ok, everything is skipped
+                if Subst.Action = Else_Match_Substring then
+                  If_Status := In_Else;
+                elsif Subst.Action = End_If_Match_Substring then
+                  If_Status := None;
+                  Start_Skip := 0;
+                end if;
+              when In_Else =>
+                if Subst.Action /= End_If_Match_Substring then
+                  raise If_Action_Mismatch;
+                end if;
+                If_Status := None;
+                Start_Skip := 0;
+            end case;
           when Replace_Match_Regex | Replace_Match_Substring =>
             if Start_Skip = 0 then
               -- Replace by (sub) Str matching regex
