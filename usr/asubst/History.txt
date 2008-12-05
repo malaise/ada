@@ -1,5 +1,8 @@
 History of Asubst:
 ------------------
+05/12/2008 V7.5
+Add: \aIJ (and then) and \oIJ (or else) to 'if' syntax
+
 03/12/2008 V7.4
 Add: Change semantic of successive \iIJ to elsif
 

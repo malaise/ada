@@ -1,5 +1,5 @@
                                  Asubst
-                                  V7.4
+                                  V7.5
 
 
 1. General syntax
@@ -140,9 +140,14 @@ The following '\' sequences are supported:
 - "\t" will be replaced by a (horiz) tab.
 - "\xIJ" where IJ is an hexadecimal number (00 to FF or ff) will be replaced
   by a byte with the corresponding value.
-- "\iIJ", "\e" and "\f" to replace by the <text> following "\iIJ" if the Jth
-  substring of the Ith regex matches (\rIJ not empty). The logic is a sequence
-  of if... [ { elsif... } ] [ else... ] [ endif ].
+- "\iIJ", "\aIJ", "\oIJ", "\e" and "\f" to replace by the <text> following it,
+  if Jth substring of the Ith regex matches (\rIJ not empty).
+  The logic is a sequence of if... [ { elsif... } ] [ else... ] [ endif ].
+  Each 'if' or 'elsif' must start with a "\iIJ", possibly immediately followed
+  by one or several "\aIJ" or "\oIJ" evaluated one after the other.
+  Example: "\i11\o12\a13T1\i13T2\eT3\f" means: If sub11 matches or sub12 matches
+  and sub13 matches, then replace by T1, elsif sub13 matches, then replace by
+  T2, else replace by T3.
   <text> ends when encountering another "\i", a "\e", a "\f" or at end of line.
 - "\RIJ" where IJ is an hexadecimal number will be replaced by the string
   matching the regex number IJ, (00 <= IJ <= NbOfRegex, 00 means the whole

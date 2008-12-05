@@ -3,7 +3,7 @@ with Environ, Argument, Argument_Parser, Sys_Calls, Language, Mixed_Str, Text_Li
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
-  Version : constant String  := "V7.4";
+  Version : constant String  := "V7.5";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -104,15 +104,19 @@ procedure Asubst is
      "  <replace_string> is a string with the following specific sequences:");
     Sys_Calls.Put_Line_Error (
      "    ""\n"" (new_line), ""\t"" (tab), ""\s"" (space), ""\xIJ"" (hexa byte value).");
-     Sys_Calls.Put_Line_Error (
+    Sys_Calls.Put_Line_Error (
      "    ""\iIJ<text>"" to replace by <text> if the Jth substring of the Ith regex");
-     Sys_Calls.Put_Line_Error (
-     "      matches. <text> ends when encountering another ""\i"", a ""\e"" or a ""\f""");
-     Sys_Calls.Put_Line_Error (
-     "      and the logic is if... elsif... elsif... else... endif.");
-     Sys_Calls.Put_Line_Error (
+    Sys_Calls.Put_Line_Error (
+     "      matches. ""\iIJ"" can be followed by one or several""\aIJ"" (and then) and");
+    Sys_Calls.Put_Line_Error (
+     "      ""\oIJ"" (or else). <text> ends when encountering another ""\iIJ"" (elsif),");
+    Sys_Calls.Put_Line_Error (
+     "      a ""\e"" (else) or a ""\f"" (end if). Ex: \i11\o12\a13OK\eNOK\f.");
+    Sys_Calls.Put_Line_Error (
+     "      The logic is if... elsif... elsif... else... endif.");
+    Sys_Calls.Put_Line_Error (
      "    ""\RIJ"" (IJ in hexa) to replace by the input text matching the IJth regex,");
-     Sys_Calls.Put_Line_Error (
+    Sys_Calls.Put_Line_Error (
      "    ""\rIJ"" to replace by the text matching the Jth substring of the Ith regex.");
     Sys_Calls.Put_Line_Error (
      "    ""\u"" (start UPPERCASE conversion), ""\l"" (lowercase), ""\m"" (Mixed_Case),");

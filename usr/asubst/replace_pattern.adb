@@ -23,10 +23,16 @@ package body Replace_Pattern is
   -- Replace by substring No (Info rem 16) of string matching No (Info / 16)
   -- Start/stop upper/lower/mixed case conversion
   type Subtit_Action_List is (
+       -- These ones lead to substring extraction
        Replace_Match_Regex, Replace_Match_Substring,
-       If_Match_Substring, Else_If_Match_Substring, Else_Match_Substring,
-       End_If_Match_Substring,
+       If_Match_Substring, Elsif_Match_Substring,
+       And_Then_Match_Substring, Or_Else_Match_Substring,
+       -- These ones don't
+       Else_Match_Substring, End_If_Match_Substring,
        Start_Uppercase, Start_Lowercase, Start_Mixedcase, Stop_Case);
+  -- Substring extraction kind
+  subtype Extraction_List is Subtit_Action_List
+          range Replace_Match_Regex .. Or_Else_Match_Substring;
   -- The chars in The_Pattern qualifying the action
   type Substit_Action_Rec is record
     -- Index in the pattern
@@ -135,6 +141,7 @@ package body Replace_Pattern is
     -- Current If action
     type If_Mode_List is (None, In_If, In_Else);
     If_Mode : If_Mode_List;
+    If_Index : Positive;
 
   begin
     if Debug.Set then
@@ -149,7 +156,7 @@ package body Replace_Pattern is
     loop
       -- Locate an escape sequence, exit when no more
       Got := String_Mng.Locate_Escape (Asu.To_String (The_Pattern),
-                                       Start, "\cefilmnRrstux");
+                                       Start, "\acefilmnoRrstux");
       exit when Got = 0;
       -- Set corresponding code
       Esc_Char := Asu.Element (The_Pattern, Got);
@@ -225,7 +232,7 @@ package body Replace_Pattern is
           Hexa_Byte := Get_Hexa (Got + 1);
           Asu.Replace_Slice (The_Pattern, Got - 1, Got + 2,
                              Character'Val (Hexa_Byte) & "");
-        when 'R' | 'r' | 'i' =>
+        when 'R' | 'r' | 'i' | 'a' | 'o' =>
           -- "\RIJ" or \rIJ, IJ in hexa, replaced by matching (sub) string
           -- "\iIJ", IJ in hexa, replaced by text if substring is matching
           -- Check IJ is a valid byte in hexa
@@ -258,18 +265,35 @@ package body Replace_Pattern is
             end if;
             if Esc_Char = 'r' then
               Subst.Action := Replace_Match_Substring;
-            else
-              -- Check i
+            elsif Esc_Char = 'i' then
+              -- Check 'if' or 'elsif' directive
               case If_Mode is
                 when None =>
                   Subst.Action := If_Match_Substring;
                 when In_If =>
-                  Subst.Action := Else_If_Match_Substring;
+                  Subst.Action := Elsif_Match_Substring;
                 when In_Else =>
-                  Error ("Invalid " & Mixed_Str (Else_If_Match_Substring'Img)
-                       & " while in else of condition");
+                  Error ("Invalid 'if' or 'elsif' directive while in 'else' "
+                         & "of condition");
               end case;
               If_Mode := In_If;
+              If_Index := Subst.Index;
+            else
+              -- Check 'and then' or 'or else '
+              if If_Mode /= In_If then
+                Error ("Invalid 'and then' or 'or else ' directive while "
+                     & " not in 'if' or 'elsif' condition");
+              end if;
+              if Subst.Index /= If_Index + 1 then
+                Error ("Invalid 'and then' or 'or else ' directive "
+                     & " not part of 'if' or 'elsif' condition");
+              end if;
+              If_Index := Subst.Index;
+              if Esc_Char = 'a' then
+                Subst.Action := And_Then_Match_Substring;
+              else
+                Subst.Action := Or_Else_Match_Substring;
+              end if;
             end if;
           end if;
           -- Store that, at this index, there is a (sub) string match
@@ -306,8 +330,6 @@ package body Replace_Pattern is
   end Parse;
 
   -- Extract a substring of string matching a regex
-  subtype Extraction_List is Subtit_Action_List
-          range Replace_Match_Regex .. Else_Match_Substring;
   function Matchstring (Kind : Extraction_List; Nth : Byte) return String is
     Rth : Positive;
     Sth : Search_Pattern.Nb_Sub_String_Range;
@@ -322,7 +344,7 @@ package body Replace_Pattern is
         Rth := Nth;
         Sth := 0;
       else
-        -- \rIJ or \iIJ or \e of a \iIJ
+        -- \rIJ or \iIJ or \aIJ or \oIJ
         -- Nth is the regex index / substr index
         Rth := Nth / 16;
         Sth := Nth rem 16;
@@ -466,34 +488,64 @@ package body Replace_Pattern is
                   If_Status := If_Ko;
                 end if;
               when If_Ko =>
-                if Subst.Action = If_Match_Substring then
-                  raise If_Action_Mismatch;
-                end if;
-                if Subst.Action = Else_If_Match_Substring
-                   and then Matchstring (Subst.Action, Subst.Info) /= "" then
-                  -- After one or several if were Ko, this elsif is Ok
-                  If_Status := If_Ok;
-                  Start_Skip := 0;
-                  -- otherwise it remains If_Ko
-                elsif Subst.Action = Else_Match_Substring then
-                  -- After one or several if were Ko, the else is Ok
-                  If_Status := In_Else;
-                  Start_Skip := 0;
-                elsif Subst.Action = End_If_Match_Substring then
-                  If_Status := None;
-                  Start_Skip := 0;
-                end if;
+                case Subst.Action is
+                  when If_Match_Substring =>
+                    raise If_Action_Mismatch;
+                  when Elsif_Match_Substring =>
+                    if Matchstring (Subst.Action, Subst.Info) /= "" then
+                      -- After one or several if were Ko, this elsif is Ok
+                      If_Status := If_Ok;
+                      Start_Skip := 0;
+                    end if;
+                    -- otherwise it remains If_Ko
+                  when Else_Match_Substring =>
+                    -- After one or several if were Ko, the else is Ok
+                    If_Status := In_Else;
+                    Start_Skip := 0;
+                  when End_If_Match_Substring =>
+                    If_Status := None;
+                    Start_Skip := 0;
+                  when And_Then_Match_Substring =>
+                    -- And_Then after If_Ko -> remains If_Ko
+                    null;
+                  when Or_Else_Match_Substring =>
+                    if Matchstring (Subst.Action, Subst.Info) /= "" then
+                      -- Or_Else Ok after If_Ko -> If_Ok
+                      If_Status := If_Ok;
+                      Start_Skip := 0;
+                    end if;
+                  when others =>
+                    -- Impossible
+                    raise If_Action_Mismatch;
+                end case;
               when If_Ok =>
-                if Subst.Action = If_Match_Substring then
-                  raise If_Action_Mismatch;
-                end if;
-                -- A If was Ok, everything is skipped
-                if Subst.Action = Else_Match_Substring then
-                  If_Status := In_Else;
-                elsif Subst.Action = End_If_Match_Substring then
-                  If_Status := None;
-                  Start_Skip := 0;
-                end if;
+                case Subst.Action is
+                  when If_Match_Substring =>
+                    raise If_Action_Mismatch;
+                  when Elsif_Match_Substring =>
+                    -- it remains If_Ko
+                    null;
+                  when Else_Match_Substring =>
+                    -- A If was Ok, everything is skipped
+                    If_Status := In_Else;
+                  when End_If_Match_Substring =>
+                    If_Status := None;
+                    Start_Skip := 0;
+                  when And_Then_Match_Substring =>
+                    if Matchstring (Subst.Action, Subst.Info) /= "" then
+                      -- And_Then Ok after If_Ok -> If_Ok
+                      Start_Skip := 0;
+                    else
+                      -- And_Then Ko after If_Ok -> If_Ko
+                      If_Status := If_Ko;
+                    end if;
+                  when Or_Else_Match_Substring =>
+                    -- Or_Else after If_Ok -> remains If_Ok
+                    Start_Skip := 0;
+                  when others =>
+                    -- Impossible
+                    raise If_Action_Mismatch;
+                end case;
               when In_Else =>
                 if Subst.Action /= End_If_Match_Substring then
                   raise If_Action_Mismatch;

@@ -6,10 +6,10 @@
 	<META NAME="GENERATOR" CONTENT="OpenOffice.org 1.1.5  (Linux)">
 	<META NAME="AUTHOR" CONTENT="MALAISE Pascal">
 	<META NAME="CREATED" CONTENT="20060414;18573000">
-	<META NAME="CHANGED" CONTENT="20081203;13111200">
+	<META NAME="CHANGED" CONTENT="20081205;11564900">
 </HEAD>
 <BODY LANG="en-US" DIR="LTR">
-<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><B><FONT SIZE=6>V7.4</FONT></B></FONT></FONT></P>
+<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><B><FONT SIZE=6>V7.5</FONT></B></FONT></FONT></P>
 <H1 LANG="en-GB"><FONT FACE="monospace">1. General syntax</FONT></H1>
 <P LANG="en-GB"><FONT FACE="monospace">Usage: asubst [ { &lt;option&gt;
 } ] &lt;find_pattern&gt; &lt;replace_string&gt; [ { &lt;file&gt; }
@@ -156,12 +156,20 @@ are supported:</FONT><BR><FONT FACE="monospace">- &quot;\n&quot; will
 be replaced by a newline.</FONT><BR><FONT FACE="monospace">- </FONT><FONT FACE="Monospace">&quot;\t&quot;
 will be replaced by a (horiz) tab.<BR>- &quot;\xIJ&quot; where IJ is
 an hexadecimal number (00 to FF or ff) will be replaced by a byte
-with the corresponding value.<BR>- &quot;\iIJ&quot;, &quot;\e&quot;
-and &quot;\f&quot; to replace by the &lt;text&gt; following &quot;\iIJ&quot;
-if the Jth substring of the Ith regex matches (\rIJ not empty). The
-logic is a sequence of if... [ { elsif... } ] [ else... ] [ endif ].
-&lt;text&gt; ends when encountering another &quot;\i&quot;, a &quot;\e&quot;,
-a &quot;\f&quot; or at end of line.<BR>- &quot;\RIJ&quot; where IJ is
+with the corresponding value.<BR></FONT><BR><BR>
+</P>
+<P LANG="en-GB"><FONT FACE="Monospace">- &quot;\iI- &quot;\iIJ&quot;,
+&quot;\aIJ&quot;, &quot;\oIJ&quot;, &quot;\e&quot; and &quot;\f&quot;
+to replace by the &lt;text&gt; following it,if Jth substring of the
+Ith regex matches (\rIJ not empty).The logic is a sequence of if...
+[ { elsif... } ] [ else... ] [ endif ].Each 'if' or 'elsif' must
+start with a &quot;\iIJ&quot;, possibly immediately followedby one
+or several &quot;\aIJ&quot; or &quot;\oIJ&quot; evaluated one after
+the other.Example: &quot;\i11\o12\a13T1\i13T2\eT3\f&quot; means: If
+sub11 matches or sub12 matchesand sub13 matches, then replace by T1,
+elsif sub13 matches, then replace byT2, else replace by T3.&lt;text&gt;
+ends when encountering another &quot;\i&quot;, a &quot;\e&quot;, a
+&quot;\f&quot; or at end of line.<BR>- &quot;\RIJ&quot; where IJ is
 an hexadecimal number will be replaced by the string matching the
 regex number IJ, (00 &lt;= IJ &lt;= NbOfRegex, 00 means the whole
 string matching all regex).<BR>- &quot;\rIJ&quot; where IJ is an
@@ -249,7 +257,7 @@ processed if the input text does not match the find pattern. Example,
 with '([A-Z][a-z])|([0-1])' '\i11Letter\i12Digit\eOther\f' the input
 text '!' remains unchanged. Appending '|.' to the search pattern
 makes it match and be substituted by 'Other'.</FONT></P>
-<P LANG="en-GB"><BR><BR>
+<P><BR><BR>
 </P>
 </BODY>
 </HTML>
