@@ -302,17 +302,17 @@ package body Screen is
                                     Hsy + Gauge_Size);
     -- Approach/Landed indicator
     Con_Io.Set_Foreground (Con_Io.Get_Background);
-    Con_Io.Graphics.Put ("    ", Thn.X, Fun.Y);
+    Con_Io.Graphics.Put ("     ", Thn.X, Fun.Y);
     if Flight_Status.Status = Flight.Approaching then
       Con_Io.Set_Foreground (Con_Io.Light_Green);
-      Con_Io.Graphics.Put ("APPR", Thn.X, Fun.Y);
+      Con_Io.Graphics.Put ("APPR ", Thn.X, Fun.Y);
     elsif Flight_Status.Status = Flight.Close then
       Con_Io.Set_Foreground (Con_Io.Yellow);
-      Con_Io.Graphics.Put ("CLOS", Thn.X, Fun.Y);
+      Con_Io.Graphics.Put ("CLOSE", Thn.X, Fun.Y);
     elsif Flight_Status.Status = Flight.Landed
     or else Flight_Status.Status = Flight.Safe_Landed then
       Con_Io.Set_Foreground (Con_Io.Magenta);
-      Con_Io.Graphics.Put ("LAND", Thn.X, Fun.Y);
+      Con_Io.Graphics.Put ("LAND ", Thn.X, Fun.Y);
     end if;
     -- Elapsed time "mm.ss"
     Con_Io.Set_Foreground (Con_Io.Get_Background);
