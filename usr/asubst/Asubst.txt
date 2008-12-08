@@ -1,5 +1,5 @@
                                  Asubst
-                                  V7.5
+                                  V7.6
 
 
 1. General syntax
@@ -148,20 +148,20 @@ The following '\' sequences are supported:
   Example: "\i11\o12\a13T1\i13T2\eT3\f" means: If sub11 matches or sub12 matches
   and sub13 matches, then replace by T1, elsif sub13 matches, then replace by
   T2, else replace by T3.
-  <text> ends when encountering another "\i", a "\e", a "\f" or at end of line.
+  <text> ends when encountering another "\i", a "\e" or a "\f".
 - "\RIJ" where IJ is an hexadecimal number will be replaced by the string
   matching the regex number IJ, (00 <= IJ <= NbOfRegex, 00 means the whole
   string matching all regex).
 - "\rIJ" where IJ is an hexadecimal number will be replaced by the string
   matching the substring J of the regex number I (0 < I), J = 0 for the
   complete string, (so "\R0x" = "\rx0").
-- "\u", "\l", "\m" for starting an UPPER, lower or Mixed case conversion. A
-  conversion ends when a new starts, at end of line or on "\c".
-- "\c" for stopping a case conversion.
+- "\u", "\l", "\m" for starting an UPPER, lower or Mixed case conversion. "\c"
+  for stopping a case conversion. A conversion ends when a new starts, on "\c"
+  or at the end of replace string.
 
 Note that substrings are numbered in the order of the opening parenthesis, left
 to right.
-Note that "\r0i" and "\i0i" are is forbidden.
+Note that "\r0i" and "\i0i" are forbidden.
 Conditions apply first, then replacement, then case conversion.
 
 Examples:

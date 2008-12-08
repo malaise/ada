@@ -317,11 +317,7 @@ package body Replace_Pattern is
     end if;
     -- Stop conditional section at end of line, add subst marker
     if If_Mode /= None then
-      Subst.Action := End_If_Match_Substring;
-      Subst.Index := Asu.Length (The_Pattern) + 1;
-      Subst.Info := 0;
-      Substites_List.Insert (Substites, Subst);
-      Asu.Append (The_Pattern, Subst_Char & "");
+      Error ("Un-terminated 'if', 'elsif' or 'else' directive");
     end if;
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Replace stored pattern >"
