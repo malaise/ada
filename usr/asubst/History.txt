@@ -1,5 +1,8 @@
 History of Asubst:
 ------------------
+09/12/2008 V7.7
+Add: Online help on grep mode.
+
 08/12/2008 V7.6
 Add: Reject un-terminated 'if', 'elsif' or 'else' directive.
 

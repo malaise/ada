@@ -3,7 +3,7 @@ with Environ, Argument, Argument_Parser, Sys_Calls, Language, Mixed_Str, Text_Li
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
-  Version : constant String  := "V7.6";
+  Version : constant String  := "V7.7";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -145,6 +145,12 @@ procedure Asubst is
     "    (no '^' or '$', but '\n' is allowed), and applies to each chunk.");
     Sys_Calls.Put_Line_Error (
     "    This allows multi-row processing.");
+    Sys_Calls.Put_Line_Error (
+     "  In grep mode <replace_string> is put if not empty (ex: ""\R01"" for the matching");
+    Sys_Calls.Put_Line_Error (
+    "    text), otherwise the full line of the matching text is put (as grep would");
+    Sys_Calls.Put_Line_Error (
+    "    do), possibly with line number (""-l"").");
 
     Sys_Calls.Put_Line_Error (
      "  Warning: regex are powerfull (see ""man 3 pcre"" and ""man 1 perlre"") and");
