@@ -101,3 +101,10 @@
 "toto"                 "o"                            "i"                         "toto"
 "\ntoto\ntiti\ntata"   "toto\ntiti"                   "\u\R01\R02\R03"            "\ntoto\ntiti\ntata"
 
+"Options" "-g"
+"tototiti"             "toto"                         ""                          "tototiti"
+"totutiti"             "toto"                         ""                          ""
+"tototiti"             "toto"                         "\R01"                      "toto"
+"totutiti"             "toto"                         "\R01"                      ""
+"tototiti"             "(.o)\1"                       "\r11"                      "to"
+
