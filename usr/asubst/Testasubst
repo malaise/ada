@@ -53,7 +53,7 @@ echo "end Pack;" >> $FR
 echo "end Pack;" >> $FE
 
 # Substit from file list with no backup
-STEP="File substitution from file list"
+STEP="Test of file substitution from file list"
 cp $FR $FT
 echo $FT > $FL
 res=`asubst -f "^(  )*--.*\n(  )*--.*\n(  )*--.*\n\n" "\R03\n" $FL`
@@ -83,7 +83,7 @@ fi
 echo "$STEP OK."
 
 # Substit with backup
-STEP="File substitution with backup"
+STEP="Test of file substitution with backup"
 rm -rf $FS
 cp $FR $FT
 res=`asubst -s "^(  )*--.*\n(  )*--.*\n(  )*--.*\n\n" "\R03\n" $FT`
@@ -124,7 +124,7 @@ fi
 echo "$STEP OK."
 
 # File substitution in test mode
-STEP="Substitution in test mode"
+STEP="Test of substitution in test mode"
 rm -rf $FS
 cp $FR $FT
 res=`asubst -t "^(  )*--.*\n(  )*--.*\n(  )*--.*\n\n" "\R03\n" $FT`
@@ -151,25 +151,10 @@ if [ -f "Temp_File.*" ] ; then
   echo "$STEP FAILED."
   exit 1
 fi
-res=`echo toto | asubst -t o i`
-if [ "$res" != "toto" ] ; then
-  echo "Result $res differs from expected toto."
-  echo "$STEP FAILED."
-  exit 1
-fi
-# Stdin substitution in test mode
-exp="\ntoto\ntiti\ntata"
-res=`echo -e "$exp" | asubst -t "toto\ntiti" "\u\R01\R02\R03"`
-exp=`echo -e "$exp"`
-if [ "$res" != "$exp" ] ; then
-  echo "Result $res differs from expected."
-  echo "$STEP FAILED."
-  exit 1
-fi
 echo "$STEP OK."
 
 # Substitution with a "--"
-STEP="Substitution with --"
+STEP="Test of Substitution with --"
 res=`echo "t_o..T'I" | asubst "--"  "[\T]" "-"`
 if [ "$res" != "t-o--T-I" ] ; then
   echo "Result $res differs from expected."
@@ -178,8 +163,8 @@ if [ "$res" != "t-o--T-I" ] ; then
 fi
 echo "$STEP OK."
 
-# Grep mode
-STEP="Grep mode"
+# Grep mode, check result and exit code
+STEP="Tests of grep mode"
 rm -rf $FS
 cp $FR $FT
 # Check multiple regexp grep
@@ -265,7 +250,7 @@ fi
 echo "$STEP OK."
 
 # Exit codes
-STEP="Exit codes"
+STEP="Tests of exit code"
 asubst -g > /dev/null 2>&1
 code=$?
 if [ $code != 2 ] ; then

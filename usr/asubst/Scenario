@@ -97,3 +97,7 @@
 "Options" "-x"
 "\n\ntoto\n\ntiti\n\n" "\n\n"                         "\n"                        "\ntoto\ntiti\n"  
 
+"Options" "-t"
+"toto"                 "o"                            "i"                         "toto"
+"\ntoto\ntiti\ntata"   "toto\ntiti"                   "\u\R01\R02\R03"            "\ntoto\ntiti\ntata"
+
