@@ -379,7 +379,7 @@ package body Substit is
       exit when not Read;
       -- If grep is iterative with a replace and got something,
       --  then append a line feed
-      if Grep and then Is_Iterative and then Nb_Subst /= 0 
+      if Grep and then Is_Iterative and then Nb_Subst /= 0
       and then not Replace_Pattern.Is_Empty then
         Ada.Text_Io.New_Line;
       end if;
