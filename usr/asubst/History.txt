@@ -1,5 +1,8 @@
 History of Asubst:
 ------------------
+12/12/2008 V7.8
+Add: Put in grep mode all replacements (one per line) of each line.
+
 09/12/2008 V7.7
 Add: Online help on grep mode.
 
@@ -7,16 +10,16 @@ Add: Online help on grep mode.
 Add: Reject un-terminated 'if', 'elsif' or 'else' directive.
 
 05/12/2008 V7.5
-Add: \aIJ (and then) and \oIJ (or else) to 'if' syntax
+Add: \aIJ (and then) and \oIJ (or else) to 'if' syntax.
 
 03/12/2008 V7.4
-Add: Change semantic of successive \iIJ to elsif
+Add: Change semantic of successive \iIJ to elsif.
 
 02/12/2008 V7.3
-Add: \e in replace string for 'else' part of a \iIJ
+Add: \e in replace string for 'else' part of a \iIJ.
 
 07/10/2008 V7.2
-Fix: Handling of '^$' regex for empty lines
+Fix: Handling of '^$' regex for empty lines.
 
 02/10/2008 V7.1
 Add: \iIJ and \f in replace string for conditional replacement.

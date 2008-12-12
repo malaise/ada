@@ -357,6 +357,7 @@ package body Substit is
                         Test      : Boolean) return Long_Long_Natural is
     Total_Subst : Long_Long_Natural;
     Remain_Subst : Long_Long_Natural;
+    Nb_Subst : Long_Long_Natural;
     Do_Verbose : Boolean;
   begin
     -- Open files
@@ -371,13 +372,20 @@ package body Substit is
     -- Init substitution by reading Nb_Pattern lines and Newlines
     -- Loop on substit
     Total_Subst := 0;
+    Nb_Subst := 0;
     Remain_Subst := Max_Subst;
     loop
       -- Done when the amount of lines cannot be read
       exit when not Read;
+      -- If grep is iterative with a replace and got something,
+      --  then append a line feed
+      if Grep and then Is_Iterative and then Nb_Subst /= 0 
+      and then not Replace_Pattern.Is_Empty then
+        Ada.Text_Io.New_Line;
+      end if;
       -- Process these lines
-      Total_Subst := Total_Subst
-           + Subst_Lines (Remain_Subst, Do_Verbose, Grep, Line_Nb, Test);
+      Nb_Subst := Subst_Lines (Remain_Subst, Do_Verbose, Grep, Line_Nb, Test);
+      Total_Subst := Total_Subst + Nb_Subst;
       -- Done when amount of substitutions reached
       if Max_Subst /= 0 then
         exit when Max_Subst = Total_Subst;
@@ -468,19 +476,20 @@ package body Substit is
                                      Match_Res.Last_Offset_Stop)
               & " -> " & Replacing);
           elsif Grep then
-            if not Is_Stdin then
+            if Nb_Match = 1 and then not Is_Stdin then
               Ada.Text_Io.Put (Asu.To_String (In_File_Name) & ":");
               if Line_Nb then
                 Ada.Text_Io.Put (Line_Image(Line_No) & ":");
               end if;
             end if;
-            if Replacing = "" then
+            if Replace_Pattern.Is_Empty then
+              -- Display once each matching line
               Ada.Text_Io.Put_Line (Asu.To_String (Line.all));
+              exit;
             else
-              Ada.Text_Io.Put_Line (Replacing);
+              -- Display each replaced (line feed is handled in Do_One_File)
+              Ada.Text_Io.Put (Replacing);
             end if;
-            -- Display one match per line
-            exit;
           end if;
           if not Test then
             -- Substitute from start to stop
@@ -721,7 +730,7 @@ package body Substit is
               Ada.Text_Io.Put (Line_Image(Line_No) & ":");
             end if;
           end if;
-          if Str_Replacing = "" then
+          if Replace_Pattern.Is_Empty then
             Put_Match (True);
             Ada.Text_Io.New_Line;
           else

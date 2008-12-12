@@ -325,6 +325,13 @@ package body Replace_Pattern is
     end if;
   end Parse;
 
+  -- Returns if pattern is empty
+  function Is_Empty return Boolean is
+    use type Asu.Unbounded_String;
+  begin
+    return The_Pattern = Asu.Null_Unbounded_String;
+  end Is_Empty;
+
   -- Extract a substring of string matching a regex
   function Matchstring (Kind : Extraction_List; Nth : Byte) return String is
     Rth : Positive;

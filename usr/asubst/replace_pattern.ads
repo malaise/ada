@@ -6,6 +6,9 @@ package Replace_Pattern is
   procedure Parse (Pattern : in String);
   Parse_Error : exception;
 
+  -- Returns if pattern is empty
+  function Is_Empty return Boolean;
+
   -- Returns the replacing string
   function Replace return String;
   -- If result string is too long?

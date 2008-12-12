@@ -107,4 +107,9 @@
 "tototiti"             "toto"                         "\R01"                      "toto"
 "totutiti"             "toto"                         "\R01"                      ""
 "tototiti"             "(.o)\1"                       "\r11"                      "to"
+"tototiti"             "(t.)\1"                       "\r11"                      "toti"
+"tototiti"             "(.o)\1(.*)"                   "\r11\r12"                  "totiti"
+"<toto>titi</toto>"    "<([^>]+)>([^<]*)</\1>"        "\r11 contains \r12"        "toto contains titi"
+"mamatotopapatiti"     "(t.)\1"                       "\r11"                      "toti"
+"totopapatiti\ntata"   "(t.)\1"                       "\r11"                      "toti\nta"
 
