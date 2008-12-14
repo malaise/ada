@@ -77,7 +77,9 @@ package Xml_Parser is
   -----------------------------
   -- When a callback is provided to Parse, then no tree is build but nodes
   --  are directly provided. Prologue items all have a level of 0 and no child
-  --  only elements have attributes, children and can be closed (if children).
+  -- Only elements have attributes and children. When it has children an element
+  --  is created (Creation = True), then its children (recusively) then it is
+  --  closed (Creation = False)
   -- Prev_Is_Text, on element (creation or not), indicates if a new_line and
   --  indent shall be skipped
   type Node_Update is new Ada.Finalization.Limited_Controlled with record
