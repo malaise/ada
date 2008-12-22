@@ -2,7 +2,7 @@ with Ada.Calendar, Ada.Strings.Unbounded;
 with Basic_Proc, Argument, Argument_Parser;
 with Entities, Output, Targets, Lister;
 procedure Als is
-  Version : constant String  := "V2.6";
+  Version : constant String  := "V2.7";
 
   -- Exit codes
   Found_Exit_Code : constant Natural := 0;
@@ -23,6 +23,7 @@ procedure Als is
     Put_Line_Error ("            | <separator>");
     Put_Line_Error ("            | -s (--size) | -t (--time) | -r (--reverse)");
     Put_Line_Error ("            | -R (--recursive) | -M (--merge) | -T (--total)");
+    Put_Line_Error ("            | -n <date> (--newer=<date>)");
     Put_Line_Error (" <match_name>    ::= -m <criteria> | --match <criteria>");
     Put_Line_Error (" <exclude_name>  ::= -e <criteria> | --exclude <criteria>");
     Put_Line_Error (" <match_dir>     ::= --match_dir <criteria>");
@@ -34,6 +35,7 @@ procedure Als is
     Put_Line_Error (" <date>          ::= yyyy/mm/dd-hh:mm  |  hh:mm  |  <positive><duration>");
     Put_Line_Error (" <duration>      ::= Y | M | D | h | m");
     Put_Line_Error (" <separator>     ::= -S <string> | --separator=<string>");
+    Put_Line_Error (" -n <date>       ::= -RMt -d ge<date>");
     Put_Line_Error ("Exits with 0 if a result, 1 if none and 2 on error.");
   end Usage;
   Error_Exception : exception;
@@ -75,7 +77,8 @@ procedure Als is
    18 => (Argument_Parser.No_Key_Char, Asu_Tus ("match_dir"), True, True),
    19 => (Argument_Parser.No_Key_Char, Asu_Tus ("exclude_dir"), True, True),
    20 => ('S', Asu_Tus ("separator"), False, True),
-   21 => ('T', Asu_Tus ("total"), False, False) );
+   21 => ('T', Asu_Tus ("total"), False, False),
+   22 => ('n', Asu_Tus ("newer"), False, True));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
                := Argument_Parser.No_Key_Index;
@@ -149,11 +152,14 @@ begin
   One_Row := Arg_Dscr.Is_Set (04);
   List_Only_Dirs := Arg_Dscr.Is_Set (05);
   Sort_Reverse := Arg_Dscr.Is_Set (06);
-  Recursive := Arg_Dscr.Is_Set (07);
+  Recursive := Arg_Dscr.Is_Set (07) or else Arg_Dscr.Is_Set (22);
   Sort_By_Size := Arg_Dscr.Is_Set (08);
-  Sort_By_Time := Arg_Dscr.Is_Set (09);
-  Merge_Lists := Arg_Dscr.Is_Set (10);
+  Sort_By_Time := Arg_Dscr.Is_Set (09) or else Arg_Dscr.Is_Set (22);
+  Merge_Lists := Arg_Dscr.Is_Set (10) or else Arg_Dscr.Is_Set (22);
   -- Check dates
+  if Arg_Dscr.Is_Set (11) and then Arg_Dscr.Is_Set (22) then
+    Error ("-d (--date) and -n (--new) are mutially exclusive");
+  end if;
   if Arg_Dscr.Get_Nb_Occurences (11) > 2 then
     Error ("At most two dates can be specified");
   elsif Arg_Dscr.Get_Nb_Occurences (11) /= 0 then
@@ -163,6 +169,10 @@ begin
     else
       Date2.Oper := Entities.None;
     end if;
+  end if;
+  if Arg_Dscr.Get_Nb_Occurences (22) /= 0 then
+    Date1 := Parse_Date ("ge" & Arg_Dscr.Get_Option(22, 1));
+    Date2.Oper := Entities.None;
   end if;
   List_Only_Links := Arg_Dscr.Is_Set (14);
   List_Only_Files := Arg_Dscr.Is_Set (15);
@@ -212,7 +222,6 @@ begin
   end if;
   -- Put total size
   Put_Total := Arg_Dscr.Is_Set (21);
-  
   -- Set output criteria
   declare
     Sort_Kind : Output.Sort_Kind_List;
