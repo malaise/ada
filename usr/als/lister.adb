@@ -35,21 +35,24 @@ package body Lister is
     Lister.Date2 := Date2;
   end Set_Criteria;
 
-  -- Check that a template or regex is valid, raises Invalid_Template
-  procedure Check_Template (Template : in String; Regex : in Boolean) is
+  -- Check that a template or regex is valid, raises Invalid_Template if not
+  -- return False if Template is empty
+  function Check_Template (Template : in String; Regex : in Boolean)
+                          return Boolean is
     Dummy_File : constant String := "Toto";
     Dummy_Result : Boolean;
   begin
-    -- Template must not be empty and must have no path
-    if Template = ""
-    or else Directory.Dirname (Template) /= "" then
+    if Template = "" then
+      return False;
+    end if;
+    -- Template must have no path
+    if Directory.Dirname (Template) /= "" then
       raise Invalid_Template;
     end if;
     if not Regex then
       -- Check template match does not raise exception
       begin
         Dummy_Result := Directory.File_Match (Dummy_File, Template);
-        return;
       exception
         when Directory.Syntax_Error =>
           raise Invalid_Template;
@@ -60,18 +63,21 @@ package body Lister is
         raise Invalid_Template;
       end if;
     end if;
+    return True;
   end Check_Template;
 
   procedure Add_Match (Template : in String; Regex : in Boolean) is
   begin
-    Check_Template (Template, Regex);
-    Matches.Insert ((Asu.To_Unbounded_String (Template), Regex));
+    if Check_Template (Template, Regex) then
+      Matches.Insert ((Asu.To_Unbounded_String (Template), Regex));
+    end if;
   end Add_Match;
 
   procedure Add_Exclude (Template : in String; Regex : in Boolean) is
   begin
-    Check_Template (Template, Regex);
-    Excludes.Insert ( (Asu.To_Unbounded_String (Template), Regex) );
+    if Check_Template (Template, Regex) then
+      Excludes.Insert ( (Asu.To_Unbounded_String (Template), Regex) );
+    end if;
   end Add_Exclude;
 
   -- Does an entiy match a date criteria
@@ -355,14 +361,16 @@ package body Lister is
   Dir_Exclude : Tmpl_List;
   procedure Add_Dir_Match   (Template : in String; Regex : in Boolean) is
   begin
-    Check_Template (Template, Regex);
-    Dir_Match.Insert ((Asu.To_Unbounded_String (Template), Regex));
+    if Check_Template (Template, Regex) then
+      Dir_Match.Insert ((Asu.To_Unbounded_String (Template), Regex));
+    end if;
   end Add_Dir_Match;
 
   procedure Add_Dir_Exclude (Template : in String; Regex : in Boolean) is
   begin
-    Check_Template (Template, Regex);
-    Dir_Exclude.Insert ((Asu.To_Unbounded_String (Template), Regex));
+    if Check_Template (Template, Regex) then
+      Dir_Exclude.Insert ((Asu.To_Unbounded_String (Template), Regex));
+    end if;
   end Add_Dir_Exclude;
 
   -- Does a dir (full path) match
@@ -473,6 +481,5 @@ package body Lister is
     when Constraint_Error =>
       Total_Size := Size_Type'Last;
   end Add_Size;
-  
 end Lister;
 
