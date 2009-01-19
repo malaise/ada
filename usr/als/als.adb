@@ -2,7 +2,7 @@ with Ada.Calendar, Ada.Strings.Unbounded;
 with Basic_Proc, Argument, Argument_Parser;
 with Entities, Output, Targets, Lister;
 procedure Als is
-  Version : constant String  := "V2.8";
+  Version : constant String  := "V2.9";
 
   -- Exit codes
   Found_Exit_Code : constant Natural := 0;
@@ -15,15 +15,16 @@ procedure Als is
   begin
     Put_Line_Error ("Usage: " & Argument.Get_Program_Name
       & " [ { <option> } ] [ { <file_or_dir_spec> } ]");
-    Put_Line_Error (" <option> ::= -a (--all) | -A (--All) | -l (--list) | -1 (--1row)");
+    Put_Line_Error (" <option> ::= -a (--all) | -A (--All)");
+    Put_Line_Error ("            | -l (--list) | -1 (--1row) | -c (--classify) | <separator>");
     Put_Line_Error ("            | -D (--directories) | -L (--links) | -F (--files)");
     Put_Line_Error ("            | [ { <match_name> } ] | [ { <exclude_name> } ]");
     Put_Line_Error ("            | [ { <match_dir> } ] | [ { <exclude_dir> } ]");
     Put_Line_Error ("            | <date_spec> [ <date_spec> ]");
-    Put_Line_Error ("            | <separator>");
     Put_Line_Error ("            | -s (--size) | -t (--time) | -r (--reverse)");
     Put_Line_Error ("            | -R (--recursive) | -M (--merge) | -T (--total)");
     Put_Line_Error ("            | -n <date> (--newer=<date>)");
+    Put_Line_Error (" <separator>     ::= -S <string> | --separator=<string>");
     Put_Line_Error (" <match_name>    ::= -m <criteria> | --match <criteria>");
     Put_Line_Error (" <exclude_name>  ::= -e <criteria> | --exclude <criteria>");
     Put_Line_Error (" <match_dir>     ::= --match_dir <criteria>");
@@ -34,8 +35,10 @@ procedure Als is
     Put_Line_Error (" <date_comp>     ::= eq | lt | le | gt | ge");
     Put_Line_Error (" <date>          ::= yyyy/mm/dd-hh:mm  |  hh:mm  |  <positive><duration>");
     Put_Line_Error (" <duration>      ::= Y | M | D | h | m");
-    Put_Line_Error (" <separator>     ::= -S <string> | --separator=<string>");
     Put_Line_Error (" -n <date>       ::= -RMt -d ge<date>");
+    Put_Line_Error (" -n <date>       ::= -RMt -d ge<date>");
+    Put_Line_Error ("exclude_name excludes the entries from the output list");
+    Put_Line_Error ("  while exclude_dir excludes directories from the recursive scan.");
     Put_Line_Error ("Exits with 0 if a result, 1 if none and 2 on error.");
   end Usage;
   Error_Exception : exception;
@@ -78,7 +81,8 @@ procedure Als is
    19 => (Argument_Parser.No_Key_Char, Asu_Tus ("exclude_dir"), True, True),
    20 => ('S', Asu_Tus ("separator"), False, True),
    21 => ('T', Asu_Tus ("total"), False, False),
-   22 => ('n', Asu_Tus ("newer"), False, True));
+   22 => ('n', Asu_Tus ("newer"), False, True),
+   23 => ('c', Asu_Tus ("classify"), False, False));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
                := Argument_Parser.No_Key_Index;
@@ -98,6 +102,7 @@ procedure Als is
   Date1, Date2 : Entities.Date_Spec_Rec;
   Separator : Ada.Strings.Unbounded.Unbounded_String;
   Put_Total : Boolean;
+  Classify : Boolean;
 
   -- Parse a date argument
   function Parse_Date (Str : String) return Entities.Date_Spec_Rec is separate;
@@ -156,6 +161,7 @@ begin
   Sort_By_Size := Arg_Dscr.Is_Set (08);
   Sort_By_Time := Arg_Dscr.Is_Set (09) or else Arg_Dscr.Is_Set (22);
   Merge_Lists := Arg_Dscr.Is_Set (10) or else Arg_Dscr.Is_Set (22);
+  Classify := Arg_Dscr.Is_Set (23);
   -- Check dates
   if Arg_Dscr.Is_Set (11) and then Arg_Dscr.Is_Set (22) then
     Error ("-d (--date) and -n (--new) are mutially exclusive");
@@ -243,7 +249,8 @@ begin
     else
       Format_Kind := Output.Simple;
     end if;
-    Output.Set_Style (Sort_Kind, Sort_Reverse, Format_Kind, Merge_Lists, Separator);
+    Output.Set_Style (Sort_Kind, Sort_Reverse, Format_Kind, Merge_Lists,
+                      Classify, Separator);
   end;
 
   -- Set selection criteria in Lister, activate Total computation

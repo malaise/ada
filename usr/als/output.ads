@@ -9,6 +9,7 @@ package Output is
                        Revert : in Boolean;
                        Format_Kind : in Format_Kind_List;
                        Put_Path : in Boolean;
+                       Classify : in Boolean;
                        Separator : Ada.Strings.Unbounded.Unbounded_String);
 
   -- Sort list and put according to style

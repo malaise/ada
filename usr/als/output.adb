@@ -18,6 +18,7 @@ package body Output is
   Format_Kind : Format_Kind_List;
   Put_Path : Boolean;
   Separator : Asu.Unbounded_String;
+  Classify : Boolean;
   Default_Separator : constant String := "  ";
 
   -- Set (store) sorting and format style
@@ -25,6 +26,7 @@ package body Output is
                        Revert : in Boolean;
                        Format_Kind : in Format_Kind_List;
                        Put_Path : in Boolean;
+                       Classify : in Boolean;
                        Separator : Ada.Strings.Unbounded.Unbounded_String) is
   begin
     Output.Sort_Kind := Sort_Kind;
@@ -32,6 +34,7 @@ package body Output is
     Output.Format_Kind := Format_Kind;
     Output.Put_Path := Put_Path;
     Output.Separator := Separator;
+    Output.Classify := Classify;
     Environ.Get_Nat (Env_Max_To_Sort, Max_To_Sort);
   end Set_Style;
 
@@ -140,12 +143,46 @@ package body Output is
     First_Entry := False;
   end Put_Raw;
 
+  -- Char associated to Classify option
+  Default_Char : constant Character := ' ';
+  function Char_Of (Kind : Directory.File_Kind_List;
+                    Rights : Natural) return Character is
+    use Directory, Bit_Ops;
+  begin
+    case Kind is
+      when File =>
+        -- Executable file?
+        if (Rights and Shl (1, 6)) /= 0
+        or else (Rights and Shl (1, 3)) /= 0
+        or else (Rights and Shl (1, 0)) /= 0 then
+          return '*';
+        else
+          return Default_Char;
+        end if;
+      when Unknown => return Default_Char;
+      when Character_Device | Block_Device => return Default_Char;
+      when Socket => return Default_Char;
+      when Dir => return '/';
+      when Link => return '@';
+      when Pipe => return '|';
+    end case;
+  end Char_Of;
+
   -- Put an entity in normal mode
   Max_Col : constant := 80;
   Current_Col : Natural := 0;
   procedure Put_Simple (Entity : in Entities.Entity) is
-    Len : constant Natural := Asu.Length (Entity.Name);
+    Name_Len : constant Natural := Asu.Length (Entity.Name);
+    Len : Natural := Name_Len;
+    Char : Character := Default_Char;
   begin
+    -- Increase Len if Classify character is appended
+    if Classify then
+      Char := Char_Of (Entity.Kind, Entity.Rights);
+      if Char /= Default_Char then
+        Len := Len + 1;
+      end if;
+    end if;
     -- Check if need to New_Line or Space
     if Current_Col /= 0 then
       if Current_Col + Default_Separator'Length + Len > Max_Col then
@@ -157,6 +194,9 @@ package body Output is
       end if;
     end if;
     Ada.Text_Io.Put (Asu.To_String (Entity.Name));
+    if Char /= Default_Char then
+      Ada.Text_Io.Put (Char);
+    end if;
     Current_Col := Current_Col + Len;
   end Put_Simple;
 
@@ -164,6 +204,10 @@ package body Output is
   procedure Put_One_Row (Entity : in Entities.Entity) is
   begin
     Put_Name (Entity);
+    if Classify
+    and then Char_Of (Entity.Kind, Entity.Rights) /= Default_Char then
+      Ada.Text_Io.Put (Char_Of (Entity.Kind, Entity.Rights));
+    end if;
     Ada.Text_Io.New_Line;
   end Put_One_Row;
 
@@ -333,6 +377,14 @@ package body Output is
         Ada.Text_Io.Put (" => ");
       end if;
       Ada.Text_Io.Put (Asu.To_String (Entity.Link));
+      if Classify and then Entity.Link_Ok
+      and then Char_Of (Entity.Link_Kind, Entity.Link_Rights)
+                       /= Default_Char then
+        Ada.Text_Io.Put (Char_Of (Entity.Link_Kind, Entity.Link_Rights));
+      end if;
+    elsif Classify
+    and then Char_Of (Entity.Kind, Entity.Rights) /= Default_Char then
+      Ada.Text_Io.Put (Char_Of (Entity.Kind, Entity.Rights));
     end if;
     -- Done
     Ada.Text_Io.New_Line;

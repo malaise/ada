@@ -174,9 +174,10 @@ package body Lister is
     return False;
   end Match;
 
-  -- Read link Name and fill Ent.Link and Ent.Link_Ok
+  -- Read link Name and fill Ent.Link, Ent.Link_Ok and Ent.Link_Kind
   procedure Read_Link (Name : in String; Ent : in out Entities.Entity) is
     Link_Target : Asu.Unbounded_String;
+    Stat : Sys_Calls.File_Stat_Rec;
     use type Asu.Unbounded_String;
   begin
     -- Read link direct target
@@ -187,16 +188,24 @@ package body Lister is
       when Directory.Name_Error | Directory.Access_Error =>
         Ent.Link := Asu.Null_Unbounded_String;
         Ent.Link_Ok := False;
+        Ent.Link_Kind := Directory.Unknown;
+        Ent.Link_Rights := 0;
         return;
     end;
-    -- Check if final target exists (and is reachable)
+    -- Check if final target exists (and is reachable), and store its kind
     begin
       Link_Target := Asu.To_Unbounded_String (Directory.Read_Link (
           File_Name => Name, Recursive => True));
+      Stat := Sys_Calls.File_Stat (Asu.To_String (Link_Target));
       Ent.Link_Ok := True;
+      Ent.Link_Kind := Directory.File_Kind_List (Stat.Kind);
+      Ent.Link_Rights := Stat.Rights;
     exception
-      when Directory.Name_Error | Directory.Access_Error =>
+      when Directory.Name_Error | Directory.Access_Error |
+           Sys_Calls.Name_Error | Sys_Calls.Access_Error =>
         Ent.Link_Ok := False;
+        Ent.Link_Kind := Directory.Unknown;
+        Ent.Link_Rights := 0;
     end;
   end Read_Link;
 

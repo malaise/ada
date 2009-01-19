@@ -19,10 +19,14 @@ package Entities is
     Modif_Time : Ada.Calendar.Time;
     -- Size
     Size : Sys_Calls.Size_T;
-    -- Symbolic link destination (if link)
+    -- Symbolic link first target (if link)
     Link : Asu_Us;
     -- Symbolic link final target exists (if link)
     Link_Ok : Boolean;
+    -- Symbolic link final target kind (if link and Ok)
+    Link_Kind : Directory.File_Kind_List;
+    -- Symbolic link final target rights (if link and Ok)
+    Link_Rights : Natural;
   end record;
 
   -- List of entities
