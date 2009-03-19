@@ -2,7 +2,7 @@ with Ada.Calendar, Ada.Strings.Unbounded;
 with Basic_Proc, Argument, Argument_Parser;
 with Entities, Output, Targets, Lister;
 procedure Als is
-  Version : constant String  := "V2.9";
+  Version : constant String  := "V2.10";
 
   -- Exit codes
   Found_Exit_Code : constant Natural := 0;
@@ -25,17 +25,16 @@ procedure Als is
     Put_Line_Error ("            | -R (--recursive) | -M (--merge) | -T (--total)");
     Put_Line_Error ("            | -n <date> (--newer=<date>)");
     Put_Line_Error (" <separator>     ::= -S <string> | --separator=<string>");
-    Put_Line_Error (" <match_name>    ::= -m <criteria> | --match <criteria>");
-    Put_Line_Error (" <exclude_name>  ::= -e <criteria> | --exclude <criteria>");
-    Put_Line_Error (" <match_dir>     ::= --match_dir <criteria>");
-    Put_Line_Error (" <exclude_dir>   ::= --exclude_dir <criteria>");
+    Put_Line_Error (" <match_name>    ::= -m <criteria> | --match=<criteria>");
+    Put_Line_Error (" <exclude_name>  ::= -e <criteria> | --exclude=<criteria>");
+    Put_Line_Error (" <match_dir>     ::= --match_dir=<criteria>");
+    Put_Line_Error (" <exclude_dir>   ::= --exclude_dir=<criteria>");
     Put_Line_Error (" <criteria>      ::= <templates> | @<regex>");
     Put_Line_Error (" <templates>     ::= <template> [ { ,<template> } ]");
     Put_Line_Error (" <date_spec>     ::= -d <date_comp><date> | --date=<date_comp><date>");
     Put_Line_Error (" <date_comp>     ::= eq | lt | le | gt | ge");
     Put_Line_Error (" <date>          ::= yyyy/mm/dd-hh:mm  |  hh:mm  |  <positive><duration>");
     Put_Line_Error (" <duration>      ::= Y | M | D | h | m");
-    Put_Line_Error (" -n <date>       ::= -RMt -d ge<date>");
     Put_Line_Error (" -n <date>       ::= -RMt -d ge<date>");
     Put_Line_Error ("exclude_name excludes the entries from the output list");
     Put_Line_Error ("  while exclude_dir excludes directories from the recursive scan.");
