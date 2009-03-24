@@ -6,6 +6,7 @@ package body Targets is
 
   function List (Dots : Entities.Dots_Kind_List;
                  Recursive : Boolean;
+                 Depth : Natural;
                  Merge : Boolean;
                  Args : Argument_Parser.Parsed_Dscr) return Boolean is
     Found : Boolean;
@@ -13,7 +14,7 @@ package body Targets is
     Need_New_Line : Boolean;
     use type Directory.File_Kind_List;
 
-    function Do_Dir (Dir : String; Put_Name : Boolean) return Boolean is
+    function Do_Dir (Dir : String; Put_Name : Boolean; Level : Positive) return Boolean is
       Found : Boolean;
       Done : Boolean;
       Subdirs : Lister.Dir_List;
@@ -41,6 +42,9 @@ package body Targets is
       -- Done except if recursive
       if not Recursive then
         return Found;
+      elsif Depth /= 0 and then Level > Depth then
+        -- Depth level is reached
+        return Found;
       end if;
       -- Recursive: list subdirs and recurse on each
       Lister.List_Dirs (Dir, Subdirs);
@@ -52,7 +56,9 @@ package body Targets is
         Subdirs.Read (Subdir, Done => Done);
         -- Recursive invocation
         Found := Found or Do_Dir (Directory.Build_File_Name (
-             Dir, Ada.Strings.Unbounded.To_String (Subdir), ""), True);
+             Dir, Ada.Strings.Unbounded.To_String (Subdir), ""),
+             True,
+             Level + 1);
         exit when not Done;
       end loop;
       Subdirs.Delete_List (Deallocate => False);
@@ -92,7 +98,7 @@ package body Targets is
 
     -- If no arg at all, then process "."
     if Args.Get_First_Pos_After_Keys = 0 then
-      Found := Found or Do_Dir (".", False);
+      Found := Found or Do_Dir (".", False, 1);
     end if;
 
     -- Process dirs that match
@@ -104,7 +110,7 @@ package body Targets is
           if Directory.File_Kind (Dir) = Directory.Dir
           and then Lister.Dir_Matches (Dir) then
             -- Add this "Dir"
-            Found := Found or Do_Dir (Dir, True);
+            Found := Found or Do_Dir (Dir, True, 1);
           end if;
         exception
           when Directory.Name_Error =>

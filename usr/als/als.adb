@@ -2,7 +2,7 @@ with Ada.Calendar, Ada.Strings.Unbounded;
 with Basic_Proc, Argument, Argument_Parser;
 with Entities, Output, Targets, Lister;
 procedure Als is
-  Version : constant String  := "V2.10";
+  Version : constant String  := "V2.11";
 
   -- Exit codes
   Found_Exit_Code : constant Natural := 0;
@@ -23,6 +23,7 @@ procedure Als is
     Put_Line_Error ("            | <date_spec> [ <date_spec> ]");
     Put_Line_Error ("            | -s (--size) | -t (--time) | -r (--reverse)");
     Put_Line_Error ("            | -R (--recursive) | -M (--merge) | -T (--total)");
+    Put_Line_Error ("            | --depth=<positive>");
     Put_Line_Error ("            | -n <date> (--newer=<date>)");
     Put_Line_Error (" <separator>     ::= -S <string> | --separator=<string>");
     Put_Line_Error (" <match_name>    ::= -m <criteria> | --match=<criteria>");
@@ -81,7 +82,8 @@ procedure Als is
    20 => ('S', Asu_Tus ("separator"), False, True),
    21 => ('T', Asu_Tus ("total"), False, False),
    22 => ('n', Asu_Tus ("newer"), False, True),
-   23 => ('c', Asu_Tus ("classify"), False, False));
+   23 => ('c', Asu_Tus ("classify"), False, False),
+   24 => (Argument_Parser.No_Key_Char, Asu_Tus ("depth"), False, True));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
                := Argument_Parser.No_Key_Index;
@@ -102,6 +104,7 @@ procedure Als is
   Separator : Ada.Strings.Unbounded.Unbounded_String;
   Put_Total : Boolean;
   Classify : Boolean;
+  Depth : Natural;
 
   -- Parse a date argument
   function Parse_Date (Str : String) return Entities.Date_Spec_Rec is separate;
@@ -161,6 +164,7 @@ begin
   Sort_By_Time := Arg_Dscr.Is_Set (09) or else Arg_Dscr.Is_Set (22);
   Merge_Lists := Arg_Dscr.Is_Set (10) or else Arg_Dscr.Is_Set (22);
   Classify := Arg_Dscr.Is_Set (23);
+  Depth := 0;
   -- Check dates
   if Arg_Dscr.Is_Set (11) and then Arg_Dscr.Is_Set (22) then
     Error ("-d (--date) and -n (--new) are mutially exclusive");
@@ -251,6 +255,23 @@ begin
     Output.Set_Style (Sort_Kind, Sort_Reverse, Format_Kind, Merge_Lists,
                       Classify, Separator);
   end;
+  if Arg_Dscr.Is_Set (24) then
+    if not Recursive then
+      Error ("--depth option requires -R (--recursive) or -n (--newer) options");
+    end if;
+    if Arg_Dscr.Get_Option (24) = "" then
+      Error ("No depth provided");
+    end if;
+    begin
+      Depth := Natural'Value (Arg_Dscr.Get_Option (24));
+      if Depth not in Positive'Range then
+        raise Constraint_Error;
+      end if;
+    exception
+      when others =>
+         Error ("Invalid depth");
+    end;
+  end if;
 
   -- Set selection criteria in Lister, activate Total computation
   Lister.Set_Criteria (List_Only_Dirs, List_Only_Links, List_Only_Files,
@@ -260,7 +281,7 @@ begin
   end if;
 
   -- List each target
-  if Targets.List (Dots, Recursive, Merge_Lists, Arg_Dscr) then
+  if Targets.List (Dots, Recursive, Depth, Merge_Lists, Arg_Dscr) then
     Basic_Proc.Set_Exit_Code (Found_Exit_Code);
   else
     Basic_Proc.Set_Exit_Code (Empty_Exit_Code);
