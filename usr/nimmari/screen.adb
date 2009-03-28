@@ -286,8 +286,8 @@ package body Screen is
   begin
     Human_Score := Human;
     Machine_Score := Machine;
-    Encode_Field (19, (0,  6), Normal(Human_Score, 3));
-    Encode_Field (19, (0, 17), Normal(Machine_Score, 3));
+    Encode_Field (19, (0,  1), "You: " & Normal(Human_Score, 3));
+    Encode_Field (19, (0, 13), "Me: " & Normal(Machine_Score, 3));
   end Score;
 
 
