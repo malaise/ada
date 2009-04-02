@@ -3,6 +3,8 @@ package body Arbitrary is
 
   package Unb renames Ada.Strings.Unbounded;
   subtype Unbstr is Unb.Unbounded_String;
+  function Set (Str : String) return Unbstr renames Unb.To_Unbounded_String;
+
 
   -- Syntax checking: <sign>{<digit>}
   package Syntax is
@@ -71,9 +73,11 @@ package body Arbitrary is
     -- Both must have no sign and B <= A
     function Sub_No_Sign (A, B : Unbstr) return Unbstr;
     -- Both must have no sign
-    function Mult_No_Sign (A, B : Unbstr) return Unbstr;
+    function Mul_No_Sign (A, B : Unbstr) return Unbstr;
     -- Both must have no sign
     procedure Div_No_Sign (A, B : in Unbstr; Q, R : out Unbstr);
+    -- Both must have no sign
+    function Les_No_Sign (A, B : Unbstr) return Boolean;
   end Basic;
 
   package body Basic is
@@ -267,7 +271,7 @@ package body Arbitrary is
       return R;
     end Sub_No_Sign;
 
-    function Mult_No_Sign (A, B : Unbstr) return Unbstr is
+    function Mul_No_Sign (A, B : Unbstr) return Unbstr is
       La : constant Natural := Unb.Length(A);
       Lb : constant Natural := Unb.Length(B);
       T, R : Unbstr;
@@ -295,7 +299,7 @@ package body Arbitrary is
       end loop;
       Trim (R);
       return R;
-    end Mult_No_Sign;
+    end Mul_No_Sign;
 
     procedure Div_One (A, B : in Unbstr; Q : out Character; R : out Unbstr) is
       La : constant Natural := Unb.Length(A);
@@ -332,7 +336,7 @@ package body Arbitrary is
       -- Check that Q * B < A or decrement Q until
       loop
         T := Unb.To_Unbounded_String ("" & Cq);
-        T := Mult_No_Sign (T, B);
+        T := Mul_No_Sign (T, B);
         Lt := Unb.Length(T);
         if Lt > La or else (Lt = La and then T > A) then
           -- Decrement Q by one
@@ -376,6 +380,21 @@ package body Arbitrary is
       end loop;
       Trim(Q);
     end Div_No_Sign;
+
+    -- Both must have no sign
+    function Les_No_Sign (A, B : Unbstr) return Boolean is
+      use type Unbstr;
+    begin
+      if Unb.Length (A) < Unb.Length (B) then
+        return True;
+      elsif Unb.Length (A) > Unb.Length (B) then
+        return False;
+      else
+        return A < B;
+      end if;
+    end Les_No_Sign;
+
+       
   end Basic;
 
 
@@ -615,7 +634,7 @@ package body Arbitrary is
     C : Unbstr;
     use type Unbstr;
   begin
-    C := Basic.Mult_No_Sign (Da, Db);
+    C := Basic.Mul_No_Sign (Da, Db);
     -- Set sign of result
     if Pa = Pb then
       return Basic.Make ('+' & C);
@@ -678,7 +697,7 @@ package body Arbitrary is
     end if;
   end Div;
 
-  function "**" (A, B : in Number) return Number is
+  function "**" (A, B : Number) return Number is
     Pa : constant Boolean := Basic.Check_Is_Pos (A);
     Pb : constant Boolean := Basic.Check_Is_Pos (B);
     One : constant Number := Set_Uncheck ("1");
@@ -695,6 +714,140 @@ package body Arbitrary is
     end loop;
     return R;
   end "**";
+
+  function Sqrt (A : Number) return Number is
+    Onestr : constant Unbstr := Set ("1");
+    Twostr : constant Unbstr := Set ("2");
+    Ninestr : constant Unbstr := Set ("9");
+
+    -- Extract the square root of a number of 1 or 2 digits
+    function Sqrt2 (N : Unbstr) return Unbstr is
+      Prev, Curr, Val : Unbstr;
+      use type Unbstr;
+    begin
+      if Unb.Length (N) = 1 then
+        -- 1 digit, so it can be 0, 1, 2 or 3
+        Prev := Set ("0");
+        Curr := Onestr;
+        loop
+          Val := Basic.Mul_No_Sign (Curr, Curr);
+          if Val = N then
+            return Curr;
+          elsif Basic.Les_No_Sign (N, Val) then
+            -- Curr * Curr > N so the result is Prev
+            return Prev;
+          else
+            Prev := Curr;
+            Curr := Basic.Add_No_Sign (Curr, Onestr);
+          end if;
+        end loop;
+      elsif Unb.Length (N) = 2 then
+        -- 2 digits so it can be from 4 to 9
+        -- Optim: there are more chances that it is 7 or above
+        Curr := Ninestr;
+        loop
+          Val := Basic.Mul_No_Sign (Curr, Curr);
+          if Val = N or else Basic.Les_No_Sign (Val, N) then
+            -- Curr * Curr <= N so the result is Curr
+            return Curr;
+          end if;
+          Curr := Basic.Sub_No_Sign (Curr, Onestr);
+        end loop;
+      else
+        raise Constraint_Error;
+      end if;
+    end Sqrt2;
+
+    -- Extract and remove a heading slice of a number
+    -- The slice length is 2 if the length of the number rem 2 = 0 and 1 otherwise
+    procedure Get_Slice (N : in out Unbstr; S : out Unbstr) is
+      L : Positive;
+    begin
+      if Unb.Length (N) rem 2 = 0 then
+        L := 2;
+      else
+        L := 1;
+      end if;
+      S := Unb.To_Unbounded_String (Unb.Slice (N, 1, L));
+      N := Unb.To_Unbounded_String (Unb.Slice (N, L + 1, Unb.Length (N)));
+    end Get_Slice;
+
+    -- Remove last digit of a number
+    function Get_Head (N : Unbstr) return Unbstr is
+    begin
+      return Unb.To_Unbounded_String (Unb.Slice (N, 1, Unb.Length (N) - 1));
+    end Get_Head;
+
+    -- The input
+    Input : Unbstr;
+    -- The current slice
+    Slice : Unbstr;
+    -- The solution
+    Sol : Unbstr;
+    -- The rest
+    Rest : Unbstr;
+    -- The head of the rest
+    Head : Unbstr;
+    -- The double of current solution
+    Double : Unbstr;
+    -- Quotien and rest
+    Quot, Tmp_Rest : Unbstr;
+    -- The tried digit
+    Try : Unbstr;
+
+    use type Unbstr;
+  begin
+    -- A must be positive
+    if not Basic.Check_Is_Pos (A) then
+      raise Constraint_Error;
+    end if;
+    -- Init: first digit of solution
+    Input := Basic.Extract (A);
+    -- Extract first slice of 1 or 2 digits
+    Get_Slice (Input, Slice);
+    -- Get its sqrt
+    Sol := Sqrt2 (Slice);
+    -- Substract to the slice
+    Rest := Basic.Sub_No_Sign (Slice, Basic.Mul_No_Sign (Sol, Sol));
+
+    -- Main loop for one slice
+    One_Slice: loop
+      -- Done when no more slice
+      exit when Unb.Length (Input) = 0;
+      -- Extract next slice (of 2)
+      Get_Slice (Input, Slice);
+      -- Concat new slice to previous rest
+      Rest := Rest & Slice;
+      -- Discard last digit
+      Head := Get_Head (Rest);
+      -- Get double of current solution
+      Double := Basic.Mul_No_Sign (Twostr, Sol);
+      -- Head / (2 * Sol) -> Tmp_Quot
+      Basic.Div_No_Sign (Head, Double, Quot, Tmp_Rest);
+      -- Tmp_Quot is 9 maximum
+      if Unb.Length (Quot) > 1 then
+        Quot := Ninestr;
+      end if;
+
+      -- Sub loop to find the correct value of Quot
+      One_Try: loop
+        -- Double&Tmp_Quot * Tmp_Quot
+        Try := Basic.Mul_No_Sign (Double & Quot, Quot);
+        -- Exit when Try <= Rest
+        exit One_Try when Try = Rest or else Basic.Les_No_Sign (Try, Rest);
+        -- Try too big, try with lower Tmp_Quot
+        Quot := Basic.Sub_No_Sign (Quot, Onestr);
+     end loop One_Try;
+
+     -- Quot  is OK
+    Sol := Sol & Quot;
+    Rest := Basic.Sub_No_Sign (Rest, Try);
+
+    end loop One_Slice;
+
+    -- Make it a number
+    return Basic.Make ("+" & Sol);
+  end Sqrt;
 
 end Arbitrary;
 

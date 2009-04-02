@@ -35,8 +35,11 @@ package Arbitrary is
   function "/" (A, B : Number) return Number;
   function "rem" (A, B : Number) return Number;
   function "mod" (A, B : Number) return Number;
+
+  -- Less basic operations
   procedure Div (A, B : in Number; Q, R : out Number);
   function "**" (A, B : Number) return Number;
+  function Sqrt (A : Number) return Number;
 
 private
   type Number is new Ada.Strings.Unbounded.Unbounded_String;
