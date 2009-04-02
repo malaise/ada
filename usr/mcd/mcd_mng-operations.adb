@@ -823,12 +823,16 @@ package body Operations is
     return (Kind => Real, Val_Real => R);
   end Msd;
 
+  -- Real,Arbi->Real,Arbi
   function Sqrt (X : Item_Rec) return Item_Rec is
   begin
-    if X.Kind /= Real then
+    if X.Kind = Real then
+      return (Kind => Real, Val_Real => My_Math.Sqrt(X.Val_Real));
+    elsif X.Kind = Arbi then
+      return (Kind => Arbi, Val_Arbi => Arbitrary.Sqrt (X.Val_Arbi));
+    else
       raise Invalid_Argument;
     end if;
-    return (Kind => Real, Val_Real => My_Math.Sqrt(X.Val_Real));
   exception
     when Invalid_Argument | Argument_Mismatch =>
       raise;
