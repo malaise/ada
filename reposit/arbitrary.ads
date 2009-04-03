@@ -39,6 +39,7 @@ package Arbitrary is
   -- Less basic operations
   procedure Div (A, B : in Number; Q, R : out Number);
   function "**" (A, B : Number) return Number;
+  procedure Sqrt (A : in Number; S, R : out Number);
   function Sqrt (A : Number) return Number;
 
 private
