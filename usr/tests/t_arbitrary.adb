@@ -53,11 +53,13 @@ begin
     Ada.Text_Io.Put_Line ("abs B is    " & Arbitrary.Image(abs B));
     Ada.Text_Io.Put_Line ("-B is       " & Arbitrary.Image(-B));
     begin
-      Ada.Text_Io.Put_Line ("Sqrt(B)     " & Arbitrary.Image(Arbitrary.Sqrt(B)));
+      Arbitrary.Sqrt(B, C, D);
     exception
       when Constraint_Error =>
         Ada.Text_Io.Put_Line ("Constraint_Error on Sqrt(B)");
     end;
+    Ada.Text_Io.Put_Line ("Sqrt(B)     " & Arbitrary.Image(C)
+                        & " remaining "  & Arbitrary.Image(D));
 
     Ada.Text_Io.Put_Line ("A =  B is   " & Boolean'Image(A = B));
     Ada.Text_Io.Put_Line ("A <  B is   " & Boolean'Image(A < B));
