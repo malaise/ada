@@ -818,6 +818,7 @@ package body Arbitrary is
       Get_Slice (Input, Slice);
       -- Concat new slice to previous rest
       Rest := Rest & Slice;
+      Basic.Trim (Rest);
       -- Discard last digit
       Head := Get_Head (Rest);
       -- Get double of current solution
@@ -839,8 +840,9 @@ package body Arbitrary is
         Quot := Basic.Sub_No_Sign (Quot, Onestr);
      end loop One_Try;
 
-     -- Quot  is OK
+     -- Quot is OK
     Sol := Sol & Quot;
+    Basic.Trim (Sol);
     Rest := Basic.Sub_No_Sign (Rest, Try);
 
     end loop One_Slice;
