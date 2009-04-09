@@ -132,7 +132,9 @@ package body Mcd_Parser is
    Nextr    => (Nosy, "push next reg (RegA -> RegB)  ", False),
    Prevr    => (Nosy, "push prev reg (RegB -> RegA)  ", False),
    Regind   => (Nosy, "push inte index of RegA       ", False),
-   Indreg   => (Nosy, "push Reg of inte index A      ", True),
+   Indreg   => (Nosy, "push Reg of inte index A      ", False),
+   Popa     => (Nosy, "C -> regB[A]                  ", False),
+   Pusha    => (Nosy, "push regB[A]                  ", True),
 
    Pope     => (Nosy, "pop A push_extra A            ", False),
    Copye    => (Nosy, "pop A push_extra A push A     ", False),

@@ -101,6 +101,8 @@ package Mcd_Mng is
    Prevr,
    Regind,
    Indreg,
+   Popa,
+   Pusha,
 
    Pope,
    Copye,
@@ -198,7 +200,7 @@ package Mcd_Mng is
   -- Is a character a register (in A..Z or a..z)
   function Is_Register (C : in Character) return Boolean;
 
-  Invalid_Argument, Argument_Mismatch, Invalid_Register, Emtpy_Register,
+  Invalid_Argument, Argument_Mismatch, Invalid_Register, Empty_Register,
   Empty_Stack, String_Len, Compute_Error, File_Error: exception;
 
 end Mcd_Mng;

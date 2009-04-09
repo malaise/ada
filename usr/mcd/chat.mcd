@@ -7,34 +7,35 @@
 
 # Variable sentence end
 26 N popr
-"joue du piano" a popr
-"fait la sieste" b popr
-"explore le toit" c popr
-"se fait brosser" d popr
-"fait sa toilette" e popr
-"boit dans la mare" f popr
-"fait des galipettes" g popr
-"joue avec la souris" h popr
-"s'étire près du feu" i popr
-"dit bonjour aux pies" j popr
-"mange des croquettes" k popr
-"se cache sous le lit" l popr
-"a des yeux de nautilus" m popr
-"gratte sous son collier" n popr
-"attaque les brins d'herbe" o popr
-"guette au coin du couloir" p popr
-"joue à chat avec les maîtres" q popr
-"court après l'eau du jet d'eau" r popr
-"n'aime pas le vent qui rend fou" s popr
-"joue dehors avec les autres chats" t popr
-"remue les papiers dans la corbeille" u popr
-"ronronne sur les genoux de la maîtresse" v popr
-"regarde l'eau s'écouler dans la baignoire" w popr
-"surveille la maison du haut du secrétaire" x popr
-"attend devant la chatière l'arrivée d'un portier" y popr
-"toise le monde du haut de la cheminée du barbecue" z popr
+"joue du piano" a 01 popa
+"fait la sieste" a 02 popa
+"explore le toit" a 03 popa
+"se fait brosser" a 04 popa
+"fait sa toilette" a 05 popa
+"boit dans la mare" a 06 popa
+"fait des galipettes" a 07 popa
+"joue avec la souris" a 08 popa
+"s'étire près du feu" a 09 popa
+"dit bonjour aux pies" a 10 popa
+"mange des croquettes" a 11 popa
+"se cache sous le lit" a 12 popa
+"a des yeux de nautilus" a 13 popa
+"gratte sous son collier" a 14 popa
+"attaque les brins d'herbe" a 15 popa
+"guette au coin du couloir" a 16 popa
+"joue à chat avec les maîtres" a 17 popa
+"court après l'eau du jet d'eau" a 18 popa
+"n'aime pas le vent qui rend fou" a 19 popa
+"joue dehors avec les autres chats" a 20 popa
+"remue les papiers dans la corbeille" a 21 popa
+"ronronne sur les genoux de la maîtresse" a 22 popa
+"regarde l'eau s'écouler dans la baignoire" a 23 popa
+"surveille la maison du haut du secrétaire" a 24 popa
+"attend devant la chatière l'arrivée d'un portier" a 25 popa
+"toise le monde du haut de la cheminée du barbecue" a 26 popa
 
-# Display a sentence part
+
+# Display start of sentence
 # Top of stack is base register, followed by offset number (1 .. N)
 [
 # Add offset-1 to base register and put its content
@@ -51,7 +52,7 @@ rnd M pushr toreal * trunc 1 +
 # Display start of sentence
 Y P pushr call " " put
 # Display end of sentence
-a P pushr call "." putl
+a swap pusha put "." putl
 # Wait a bit
 1 sleep
 # Loop

@@ -1,3 +1,4 @@
+with Unique_List, Normal;
 separate (Mcd_Mng)
 
 package body Registers is
@@ -73,7 +74,7 @@ package body Registers is
   begin
     Val := Registers_Array(Reg2Ind(From_Reg));
     if Val.Kind not in Register_Content_List then
-      raise Emtpy_Register;
+      raise Empty_Register;
     end if;
     if Debug.Debug_Level_Array(Debug.Register) then
       Async_Stdin.Put_Err ("Register: Retrieving from " & From_Reg.Val_Regi & ": ");
@@ -134,6 +135,89 @@ package body Registers is
   begin
     return (Kind => Regi, Val_Regi => Ind2Reg(Index));
   end Register_At;
+
+  -- Array: store / retrieve Var[Index]
+  -- Var must be a register; Index must be Inte (otherwise Invalid_Argument)
+
+  -- Key for accessing an array variable: string made of
+  --  - the register
+  --  - Plus or minus sign
+  --  - index padded by zeros
+  Key_Width : constant Positive := My_Math.Inte'Width + 1;
+  subtype Key_Type is String (1 .. Key_Width);
+  function Key_Of (Reg : Item_Rec; Index : Item_Rec) return Key_Type is
+    I : Integer;
+    Key : Key_Type;
+  begin
+    -- Check arguments
+    Check_Reg (Reg);
+    if Index.Kind /= Inte then
+      raise Invalid_Argument;
+    end if;
+    begin
+      I := Integer (Index.Val_Inte);
+    exception
+      when Constraint_Error =>
+        raise Invalid_Argument;
+    end;
+    -- BUild key
+    Key(1) := Reg.Val_Regi;
+    if I >= 0 then
+      Key(2) := '+';
+    else
+      Key(2) := '-';
+      I := -I;
+    end if;
+    Key (3 .. Key_Width) := Normal (I, Key_Width - 2, Gap => '0');
+    return Key;
+  end Key_Of;
+
+  -- What is stored in Unique_List
+  type Storage_Rec is record
+    Key : Key_Type;
+    Data : Item_Rec;
+  end record;
+  type Storage_Access is access all Storage_Rec;
+  procedure Set (To : out Storage_Rec; Val : in Storage_Rec) is
+  begin
+    To := Val;
+  end Set;
+  function Key_Image (Element : Storage_Rec) return String is
+  begin
+    return Element.Key;
+  end Key_Image;
+  function "=" (Current : Storage_Rec; Criteria : Storage_Rec)
+               return Boolean is
+  begin
+    return Current.Key = Criteria.Key;
+  end "=";
+  package List_Mng is new Unique_List (Storage_Rec, Storage_Access, Set,
+                                       "=", Key_Image);
+  Array_List : List_Mng.List_Type;
+
+  procedure Store_Array (Val : in Item_Rec;
+                         To_Reg : in Item_Rec; Index : in Item_Rec) is
+    Storage : Storage_Rec;
+  begin
+    if Val.Kind not in Register_Content_List then
+      raise Invalid_Argument;
+    end if;
+    Storage.Key := Key_Of (To_Reg, Index);
+    Storage.Data := Val;
+    Array_List.Insert (Storage);
+  end Store_Array;
+
+  function Retrieve_Array (To_Reg : Item_Rec; Index : Item_Rec)
+                          return Item_Rec is
+    Storage : Storage_Rec;
+  begin
+    Storage.Key := Key_Of (To_Reg, Index);
+    Array_List.Read (Storage, Storage);
+    return Storage.Data;
+  exception
+    when List_Mng.Not_In_List =>
+      raise Empty_Register;
+  end Retrieve_Array;
 
 end Registers;
 

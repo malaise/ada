@@ -6,7 +6,7 @@ procedure Mcd is
   Item : Mcd_Mng.Item_Rec;
   The_End : Mcd_Mng.End_Status_List;
   use type Mcd_Mng.End_Status_List;
-  Invalid_Argument, Argument_Mismatch, Invalid_Register, Emtpy_Register,
+  Invalid_Argument, Argument_Mismatch, Invalid_Register, Empty_Register,
                     Empty_Stack : exception;
   Parsing_Error : exception;
 
@@ -87,7 +87,7 @@ exception
     Error ("Compute error");
   when Mcd_Mng.Invalid_Register =>
     Error ("Invalid register");
-  when Mcd_Mng.Emtpy_Register =>
+  when Mcd_Mng.Empty_Register =>
     Error ("Empty register");
   when Mcd_Mng.Empty_Stack =>
     Error ("Empty stack");

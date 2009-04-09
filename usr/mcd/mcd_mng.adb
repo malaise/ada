@@ -185,6 +185,13 @@ package body Mcd_Mng is
     function Index_Of (Reg : Item_Rec) return Item_Rec;
     function Register_At (Index : Item_Rec) return Item_Rec;
 
+    -- Array: store / retrieve Var[Index]
+    -- Var must be a register; Index must be Inte (otherwise Invalid_Argument)
+    procedure Store_Array (Val : in Item_Rec;
+                           To_Reg : in Item_Rec; Index : in Item_Rec);
+    function Retrieve_Array (To_Reg : Item_Rec; Index : Item_Rec)
+                            return Item_Rec;
+
     -- Valid registers  are 'a' .. 'z' and 'A' .. 'Z'
     -- Invalid_Register : exception;
 
@@ -192,7 +199,7 @@ package body Mcd_Mng is
     -- Invalid_Argument : exception;
 
     -- Nothing to retrieve
-    -- Emtpy_Register : exception;
+    -- Empty_Register : exception;
   end Registers;
 
   package Ios is
@@ -617,23 +624,23 @@ package body Mcd_Mng is
 
         -- These are about registers
         when Popr =>
-          -- store B in reg A
+          -- Store B in reg A
           Pop(A); Pop(B); Registers.Store(B, A);
-          S := A;
+          S := B;
         when Copyr =>
-          -- store B in reg A and push B
+          -- Store B in reg A and push B
           Pop(A); Read(B); Registers.Store(B, A);
           S := A;
         when Pushr =>
-          -- push content of reg A
+          -- Push content of reg A
           Pop(A); Push(Registers.Retrieve(A));
           S := A;
         when Swapr =>
-          -- exchange B and content of reg A
+          -- Exchange B and content of reg A
           Pop(A); Pop(B); Push(Registers.Retrieve(A)); Registers.Store(B, A);
-          S := A;
+          S := B;
         when Swap2R =>
-          -- exchange content of reg B and content of reg A
+          -- Exchange content of reg B and content of reg A
           Pop(A); Pop(B);
           C := Registers.Retrieve(A);
           Registers.Store(Registers.Retrieve(B), A);
@@ -666,6 +673,15 @@ package body Mcd_Mng is
           -- Register at index
           Pop(A); Push(Registers.Register_At(A));
           S := A;
+        when Popa =>
+          -- B[A] <- C
+          Pop(A); Pop(B); Pop(C);
+          Registers.Store_Array(C, B, A);
+          S := C;
+        when Pusha =>
+          -- Push B[A]
+          Pop(A); Pop(B);
+          Push (Registers.Retrieve_Array(B, A));
 
         -- Stack size
         when Ssize =>
