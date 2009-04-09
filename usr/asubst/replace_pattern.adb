@@ -56,7 +56,7 @@ package body Replace_Pattern is
     return Current.Index = Criteria.Index;
   end "=";
   package Substites_List is new Unique_List (Substit_Action_Rec,
-                    Substit_Action_Access, Set, Image);
+                    Substit_Action_Access, Set, "=", Image);
   Substites : Substites_List.List_Type;
 
   -- What is current case substitution mode

@@ -11,7 +11,7 @@ package body Unique_List is
   procedure Locate (List : in out List_Type;
                     Crit : in Element_Type;
                     Element : out Element_Access) is
-    Key : constant String := Image (Crit);
+    Key : constant String := Key_Image (Crit);
     Data_Found : Hash_Mng.Found_Rec;
   begin
     -- Search by hashing
@@ -56,7 +56,7 @@ package body Unique_List is
       -- Insert new element in list and hashing
       List_Mng.Insert (List.List, Item);
       Hash_Mng.Store (List.Table,
-                      Image(Item),
+                      Key_Image(Item),
                       Element_Access (List_Mng.Access_Current (List.List)));
     end if;
   exception
@@ -109,7 +109,7 @@ package body Unique_List is
                     Done : out Boolean) is
     Dummy : Boolean;
     Acc : Element_Access;
-    Key : constant String := Image (Crit);
+    Key : constant String := Key_Image (Crit);
   begin
     -- Locate in list the item matching the criteria
     Search (List.List, Done, Crit, From => List_Mng.Absolute);

@@ -30,7 +30,7 @@ procedure T_Ul is
     return Current.Name = Criteria.Name;
   end "=";
 
-  package My_Ul is new Unique_List (Var_Rec, Var_Acc, Set, Image, "=");
+  package My_Ul is new Unique_List (Var_Rec, Var_Acc, Set, "=", Image);
   Ul : My_Ul.List_Type;
 
   -- Store a env var (from string "name=val")

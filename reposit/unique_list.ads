@@ -6,13 +6,15 @@ generic
   type Element_Access is access all Element_Type;
   -- Affectation of elements
   with procedure Set (To : out Element_Type; Val : in Element_Type);
-  -- A string representing the element, for hashing (different elements
-  --  in term of the following "=" function should rather have different
-  --  images
-  with function Image (Element : Element_Type) return String;
   -- Criteria of unicity (and search) of elements
+  -- Must return True if and only if Current and Criteria have the same key
   with function "=" (Current : Element_Type; Criteria : Element_Type)
-                return Boolean is <>;
+                return Boolean;
+  -- A string representing the key (search criteria) for hashing.
+  -- Must be compatible with the "=" function in the sense that
+  --  Image(A) /= Image(B) implies A /= B
+  -- For efficiency A /= B should better imply that Image(A) /= Image(B)
+  with function Key_Image (Element : Element_Type) return String;
 
 package Unique_List is
 

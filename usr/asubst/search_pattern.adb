@@ -54,7 +54,7 @@ package body Search_Pattern is
     return Current.Num = Criteria.Num;
   end "=";
   package Unique_Pattern  is new Unique_List (Line_Pat_Rec, Line_Pat_Acc,
-                                            Set, Image, "=");
+                                            Set, "=", Image);
   -- True only after Check (Search, Number) called and OK.
   Check_Completed : Boolean := False;
   Expected_Search : Positive := 1;

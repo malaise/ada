@@ -62,7 +62,7 @@ package body Computer is
     return Current.Persistent = Criteria.Persistent
     and then Current.Name = Criteria.Name;
   end "=";
-  package Var_Mng is new Unique_List (Var_Rec, Var_Access, Set, Image, "=");
+  package Var_Mng is new Unique_List (Var_Rec, Var_Access, Set, "=", Image);
   Var_List : Var_Mng.List_Type;
 
   -- Variable management

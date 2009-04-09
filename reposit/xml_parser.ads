@@ -1,5 +1,5 @@
 with Ada.Strings.Unbounded, Ada.Finalization;
-with Queues, Trees, Unique_List, Text_Char, Unique_List, Dynamic_List;
+with Queues, Trees, Unique_List, Text_Char, Dynamic_List;
 -- Parse Xml file or string, and provide read access to the corresponding tree
 -- The following features of DTD are not supported (parsing error):
 --  - ENTITY, ENTITIES and NOTATION attribute type
@@ -366,10 +366,10 @@ private
   end record;
   type Entity_Access is access all Entity_Type;
   procedure Set (To : out Entity_Type; Val : in Entity_Type);
-  function Image (Entity : Entity_Type) return String;
   function "=" (Current : Entity_Type; Criteria : Entity_Type) return Boolean;
+  function Image (Entity : Entity_Type) return String;
   package Entity_List_Mng is new Unique_List (Entity_Type, Entity_Access,
-             Set, Image, "=");
+             Set, "=", Image);
 
   -- Dtd info rec
   type Info_Rec is record
@@ -395,7 +395,7 @@ private
   procedure Set (To : out Info_Rec; Val : in Info_Rec);
   function Image (Element : Info_Rec) return String;
   function "=" (Current : Info_Rec; Criteria : Info_Rec) return Boolean;
-  package Info_Mng is new Unique_List (Info_Rec, Info_Access, Set, Image, "=");
+  package Info_Mng is new Unique_List (Info_Rec, Info_Access, Set, "=", Image);
 
   type Dtd_Type is record
     -- Is there a dtd set, otherwise check is always ok
@@ -428,7 +428,7 @@ private
 
   -- Unique list of IDs
   package Id_List_Mng is new Unique_List (Id_Cell, Id_Cell_Access,
-                                          Set, Image, "=");
+                                          Set, "=", Image);
   type Id_List_Access is access Id_List_Mng.List_Type;
   
   -- List of IDREFs found
