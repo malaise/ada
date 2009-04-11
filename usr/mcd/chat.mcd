@@ -6,34 +6,40 @@
 "La petite chatte Circé" Z popr
 
 # Variable sentence end
-26 N popr
-"joue du piano" a 01 popa
-"fait la sieste" a 02 popa
-"explore le toit" a 03 popa
-"se fait brosser" a 04 popa
-"fait sa toilette" a 05 popa
-"boit dans la mare" a 06 popa
-"fait des galipettes" a 07 popa
-"joue avec la souris" a 08 popa
-"s'étire près du feu" a 09 popa
-"dit bonjour aux pies" a 10 popa
-"mange des croquettes" a 11 popa
-"se cache sous le lit" a 12 popa
-"a des yeux de nautilus" a 13 popa
-"gratte sous son collier" a 14 popa
-"attaque les brins d'herbe" a 15 popa
-"guette au coin du couloir" a 16 popa
-"joue à chat avec les maîtres" a 17 popa
-"court après l'eau du jet d'eau" a 18 popa
-"n'aime pas le vent qui rend fou" a 19 popa
-"joue dehors avec les autres chats" a 20 popa
-"remue les papiers dans la corbeille" a 21 popa
-"ronronne sur les genoux de la maîtresse" a 22 popa
-"regarde l'eau s'écouler dans la baignoire" a 23 popa
-"surveille la maison du haut du secrétaire" a 24 popa
-"attend devant la chatière l'arrivée d'un portier" a 25 popa
-"toise le monde du haut de la cheminée du barbecue" a 26 popa
-
+0 N popr
+[ a N pushr 1 + N copyr popa ] S popr
+"joue du piano" S pushr call
+"fait la sieste" S pushr call
+"explore le toit" S pushr call
+"se fait brosser" S pushr call
+"fait sa toilette" S pushr call
+"boit dans la mare" S pushr call
+"fait des galipettes" S pushr call
+"joue avec la souris" S pushr call
+"s'étire près du feu" S pushr call
+"dit bonjour aux pies" S pushr call
+"mange des croquettes" S pushr call
+"se cache sous le lit" S pushr call
+"a des yeux de nautilus" S pushr call
+"gratte sous son collier" S pushr call
+"attaque les brins d'herbe" S pushr call
+"guette au coin du couloir" S pushr call
+"boxe à travers la chatière" S pushr call
+"joue à chat avec les maîtres" S pushr call
+"met de l'ordre dans le doudou" S pushr call
+"court après l'eau du jet d'eau" S pushr call
+"n'aime pas le vent qui rend fou" S pushr call
+"joue dehors avec les autres chats" S pushr call
+"remue les papiers dans la corbeille" S pushr call
+"veut être de l'autre côté de la porte" S pushr call
+"deterre les plantations de la maîtresse" S pushr call
+"ronronne sur les genoux de la maîtresse" S pushr call
+"regarde l'eau s'écouler dans la baignoire" S pushr call
+"surveille la maison du haut du secrétaire" S pushr call
+"range le secrétaire en mettant tout par terre" S pushr call
+"attend devant la chatière l'arrivée d'un portier" S pushr call
+"toise le monde du haut de la cheminée du barbecue" S pushr call
+2 format N pushr putl
 
 # Display start of sentence
 # Top of stack is base register, followed by offset number (1 .. N)
