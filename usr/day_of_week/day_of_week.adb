@@ -7,13 +7,17 @@ procedure Day_Of_Week is
   Day   : Ada.Calendar.Day_Number;
   Month : Ada.Calendar.Month_Number;
   Year  : Ada.Calendar.Year_Number;
-  Txt : Text_Handler.Text (10);
-  T : Ada.Calendar.Time;
+  -- dd/mm/yyyy
+  Txt : Text_Handler.Text(10);
+  -- "is", "was" or "will be"
+  Verb : Text_Handler.Text(7);
+  Today, T : Ada.Calendar.Time;
+  -- From 1st Jan to today and from today to 31th Dec
   Delta_Date_0 : Perpet.Delta_Rec;
   Delta_Date_1 : Perpet.Delta_Rec;
   Day_No : Perpet.Day_Range;
-  Th : String (1 .. 2);
-  Days : Text_Handler.Text (4);
+  Th : String(1 .. 2);
+  Days : Text_Handler.Text(4);
 
   procedure Usage is
   begin
@@ -39,6 +43,16 @@ procedure Day_Of_Week is
   end Is_Digit;
 
 begin
+
+  -- Build time of 00h00 of today
+  declare
+    Dummy_Duration : Ada.Calendar.Day_Duration;
+  begin
+    Today := Ada.Calendar.Clock;
+    Ada.Calendar.Split (Today, Year, Month, Day, Dummy_Duration);
+    Dummy_Duration := 0.0;
+    Today := Ada.Calendar.Time_Of (Year, Month, Day, Dummy_Duration);
+  end;
 
   if Argument.Get_Nbre_Arg = 0 then
     -- Current date
@@ -82,7 +96,7 @@ begin
     return;
   end if;
 
-  -- Build time of 0h00 of date
+  -- Build time of 00h00 of requested date
   declare
     Hour     : Day_Mng.T_Hours    := 0;
     Minute   : Day_Mng.T_Minutes  := 0;
@@ -95,6 +109,19 @@ begin
     when others =>
       Usage;
       return;
+  end;
+
+  -- Compute verb
+  declare
+    use type Ada.Calendar.Time;
+  begin
+    if T < Today then
+      Text_Handler.Set (Verb, "was");
+    elsif T = Today then
+      Text_Handler.Set (Verb, "is");
+    else
+      Text_Handler.Set (Verb, "will be");
+    end if;
   end;
 
   -- Compute delta from 01/01 and to 31/12 of year
@@ -112,7 +139,6 @@ begin
       Ada.Text_Io.Put_Line ("Internal error");
       raise;
   end;
-
 
   -- Compute sentence
   Day_No := Delta_Date_0.Days + 1;
@@ -140,7 +166,10 @@ begin
   end if;
 
   -- Display result
-  Ada.Text_Io.Put_Line (Text_Handler.Value (Txt) & " is "
+  Ada.Text_Io.Put_Line (Text_Handler.Value (Txt)
+       & " "
+       & Text_Handler.Value (Verb)
+       & " "
        & Mixed_Str (Perpet.Day_Of_Week_List'Image (Perpet.Get_Day_Of_Week (T)))
        & " "
        & Normal (Day, 2, Gap => '0')
