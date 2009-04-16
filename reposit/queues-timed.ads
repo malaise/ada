@@ -1,4 +1,4 @@
--- Queue of item that are kept only for a limited time
+-- Queue of items that are kept only for a limited time
 with Ada.Calendar;
 with Perpet, Dynamic_List;
 generic
@@ -8,11 +8,13 @@ generic
 package Queues.Timed is
   type Timed_Type is tagged limited private;
 
-  -- Remove obsolete items and add this one that will expire at Expdate
+  subtype Len_Range is Natural range 0 .. Size;
+
+  -- Remove obsolete items and add this one, which will expire at Expdate
   procedure Push (Queue : in out Timed_Type;
                   X : in Item; Expdate : in Ada.Calendar.Time);
 
-  -- Remove obsolete items an add this one that will expire after
+  -- Remove obsolete items an add this one, which will expire after
   --  Lifetime
   procedure Push (Queue : in out Timed_Type;
                   X : in Item; Lifetime : in Perpet.Delta_Rec);
@@ -24,11 +26,16 @@ package Queues.Timed is
   procedure Clear (Queue : in out Timed_Type);
 
   -- Remove obsolete items and retrieve (and also remove)
-  --  the first to expire item,
+  --  the first item to expire, may raise Timed_Empty
   procedure Pop (Queue : in out Timed_Type; X : out Item);
 
+  -- Remove obsolete items and retrieve (and also remove)
+  --  the first item to expire, sets Done to False if the
+  --  queue was empty (and X is not set)
+  procedure Pop (Queue : in out Timed_Type; X : out Item; Done : out Boolean);
+
   -- Exceptions raised during push if the stack is full
-  --  or when popping if stack is empty
+  --  or during pop if the stack is empty
   Timed_Full, Timed_Empty : exception;
 private
     -- Item and its expiration time

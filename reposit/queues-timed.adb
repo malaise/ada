@@ -76,13 +76,25 @@ package body Queues.Timed is
   -- Remove obsolete items and retrieve (and also remove)
   --  the first to expire item,
   procedure Pop (Queue : in out Timed_Type; X : out Item) is
+    Done : Boolean;
+  begin
+    Pop (Queue, X, Done);
+    if not Done then
+      raise Timed_Empty;
+    end if;
+  end Pop;
+
+  -- Remove obsolete items and retrieve (and also remove)
+  --  the first to expire item, no exception
+  procedure Pop (Queue : in out Timed_Type; X : out Item; Done : out Boolean) is
     L : Loc_Item;
   begin
     -- Expire any obsolete
     Expire (Queue);
     -- Check list is not empty
     if Item_List_Mng.Is_Empty (Lt(Queue)) then
-      raise Timed_Empty;
+      Done := False;
+      return;
     end if;
     -- Get first item
     -- Moving to next should always be Ok because progressing from first and
@@ -90,7 +102,7 @@ package body Queues.Timed is
     --  the last one (no exception)!
     Item_List_Mng.Get (Lt(Queue), L);
     X := L.Data;
+    Done := True;
   end Pop;
-
 end Queues.Timed;
 
