@@ -25,13 +25,11 @@ procedure T_Timeq is
     V : Val_Range;
     -- Pop all queue until empty
     procedure Pop is
+      D : Boolean;
     begin
       loop
-        begin
-          Val_Queue.Pop (Vals, V);
-        exception
-          when Val_Queue.Timed_Empty => exit;
-        end;
+        Val_Queue.Pop (Vals, V, D);
+        exit when not D;
         Ada.Text_Io.Put_Line ("Got" & V'Img);
       end loop;
     end Pop;
