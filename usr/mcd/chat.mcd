@@ -8,10 +8,12 @@
 # Variable sentence end
 0 N popr
 [ a N pushr 1 + N copyr popa ] S popr
+"a peur" S pushr call
 "joue du piano" S pushr call
 "fait la sieste" S pushr call
 "explore le toit" S pushr call
 "se fait brosser" S pushr call
+"se fait tripoter" S pushr call
 "fait sa toilette" S pushr call
 "boit dans la mare" S pushr call
 "fait des galipettes" S pushr call
@@ -36,6 +38,7 @@
 "ronronne sur les genoux de la maîtresse" S pushr call
 "regarde l'eau s'écouler dans la baignoire" S pushr call
 "surveille la maison du haut du secrétaire" S pushr call
+"rapporte un oiseau dans la maison pour jouer" S pushr call
 "range le secrétaire en mettant tout par terre" S pushr call
 "attend devant la chatière l'arrivée d'un portier" S pushr call
 "toise le monde du haut de la cheminée du barbecue" S pushr call
