@@ -825,11 +825,15 @@ package body Operations is
 
   -- Real,Arbi->Real,Arbi
   function Sqrt (X : Item_Rec) return Item_Rec is
+    R : My_Math.Real;
   begin
     if X.Kind = Real then
-      return (Kind => Real, Val_Real => My_Math.Sqrt(X.Val_Real));
+      return (Kind => Real, Val_Real => My_Math.Sqrt (X.Val_Real));
     elsif X.Kind = Arbi then
       return (Kind => Arbi, Val_Arbi => Arbitrary.Sqrt (X.Val_Arbi));
+    elsif X.Kind = Inte then
+      R := My_Math.Sqrt (My_Math.Real(X.Val_Inte));
+      return (Kind => Inte, Val_Inte => My_Math.Round(R));
     else
       raise Invalid_Argument;
     end if;
