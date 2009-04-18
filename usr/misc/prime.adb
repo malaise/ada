@@ -7,11 +7,10 @@
 --        prime -lcm <n1> <n2>     lowest common multiple
 
 with Ada.Text_Io;
-with Argument, Dynamic_List, Arbitrary, Arbitrary.Factors;
-with Prime_List;
+with Argument, Dynamic_List, Arbitrary, Arbitrary.Factors, Arbitrary.Prime_List;
 procedure Prime is
   use type Arbitrary.Number;
-  use Prime_List;
+  subtype Positive_Number is Arbitrary.Prime_List.Positive_Number;
 
   -- Lists of prime factors
   package Plm renames Arbitrary.Factors.Nb_List_Mng;
@@ -22,7 +21,7 @@ procedure Prime is
   Mode : Mode_List;
 
   -- Arguments, numbers
-  N1, N2, N3 : Prime_Positive;
+  N1, N2, N3 : Positive_Number;
 
   -- Lists of prime factors
   L1, L2, Lr : Plm.List_Type;
@@ -50,36 +49,36 @@ procedure Prime is
   end Usage;
 
   -- Remove the leading '+'
-  function Image (P : Prime_Positive) return String is
+  function Image (P : Positive_Number) return String is
     Str : constant String := Arbitrary.Image (P);
   begin
     return Str (2 .. Str'Last);
   end Image;
 
   -- Put a number
-  procedure Put_Line (P : in Prime_Positive) is
+  procedure Put_Line (P : in Positive_Number) is
   begin
     Ada.Text_Io.Put (Image (P) );
     Ada.Text_Io.New_Line;
   end Put_Line;
 
-  Zero : constant Prime_Number := Arbitrary.Zero;
-  One  : constant Prime_Positive := Arbitrary.One;
+  Zero : constant Arbitrary.Number := Arbitrary.Zero;
+  One  : constant Positive_Number := Arbitrary.One;
 
   -- Set a positive number from string (for arg parsing)
-  function  Prime_Positive_Value (Str : String) return Prime_Positive is
-    R : Prime_Number;
+  function  Positive_Number_Value (Str : String) return Positive_Number is
+    R : Positive_Number;
   begin
     R := Arbitrary.Set (Str);
     if R <= Zero then
       raise Constraint_Error;
     end if;
     return R;
-  end Prime_Positive_Value;
+  end Positive_Number_Value;
 
   -- Put list from current
   procedure Put_List (L : in out Plm.List_Type) is
-    T : Prime_Positive;
+    T : Positive_Number;
   begin
     loop
       Plm.Read (L, T, Plm.Current);
@@ -99,33 +98,33 @@ begin
     elsif Argument.Get_Nbre_Arg = 2
     and then Argument.Get_Parameter = "-list" then
       Mode := List;
-      N1 := Prime_Positive_Value (Argument.Get_Parameter(Occurence => 2));
+      N1 := Positive_Number_Value (Argument.Get_Parameter(Occurence => 2));
     elsif Argument.Get_Nbre_Arg = 2
     and then Argument.Get_Parameter = "-is" then
       Mode := Is_Prime;
-      N1 := Prime_Positive_Value (Argument.Get_Parameter(Occurence => 2));
+      N1 := Positive_Number_Value (Argument.Get_Parameter(Occurence => 2));
     elsif Argument.Get_Nbre_Arg = 2
     and then Argument.Get_Parameter = "-next" then
       Mode := Next;
-      N1 := Prime_Positive_Value (Argument.Get_Parameter(Occurence => 2));
+      N1 := Positive_Number_Value (Argument.Get_Parameter(Occurence => 2));
     elsif Argument.Get_Nbre_Arg = 2
     and then Argument.Get_Parameter = "-prev" then
       Mode := Prev;
-      N1 := Prime_Positive_Value (Argument.Get_Parameter(Occurence => 2));
+      N1 := Positive_Number_Value (Argument.Get_Parameter(Occurence => 2));
     elsif Argument.Get_Nbre_Arg = 2
     and then Argument.Get_Parameter = "-fact" then
       Mode := Factors;
-      N1 := Prime_Positive_Value (Argument.Get_Parameter(Occurence => 2));
+      N1 := Positive_Number_Value (Argument.Get_Parameter(Occurence => 2));
     elsif Argument.Get_Nbre_Arg = 3
     and then Argument.Get_Parameter = "-hcd" then
       Mode := Hcd;
-      N1 := Prime_Positive_Value (Argument.Get_Parameter(Occurence => 2));
-      N2 := Prime_Positive_Value (Argument.Get_Parameter(Occurence => 3));
+      N1 := Positive_Number_Value (Argument.Get_Parameter(Occurence => 2));
+      N2 := Positive_Number_Value (Argument.Get_Parameter(Occurence => 3));
     elsif Argument.Get_Nbre_Arg = 3
     and then Argument.Get_Parameter = "-lcm" then
       Mode := Lcm;
-      N1 := Prime_Positive_Value (Argument.Get_Parameter(Occurence => 2));
-      N2 := Prime_Positive_Value (Argument.Get_Parameter(Occurence => 3));
+      N1 := Positive_Number_Value (Argument.Get_Parameter(Occurence => 2));
+      N2 := Positive_Number_Value (Argument.Get_Parameter(Occurence => 3));
     else
       Usage;
       return;
@@ -141,21 +140,21 @@ begin
     when List_All =>
       -- List all prime numbers
       loop
-        Put_Line (Prime_List.Next);
+        Put_Line (Arbitrary.Prime_List.Next);
       end loop;
     when List =>
       -- List prime numbers up to N1
       loop
-        N2 := Prime_List.Next;
+        N2 := Arbitrary.Prime_List.Next;
         exit when N2 > N1;
         Put_Line (N2);
       end loop;
 
     when Is_Prime =>
-      N2 := Prime_List.Next;
+      N2 := Arbitrary.Prime_List.Next;
       if N1 /= One then
         loop
-          N2 := Prime_List.Next;
+          N2 := Arbitrary.Prime_List.Next;
           exit when N1 rem N2 = Zero;
         end loop;
       end if;
@@ -168,14 +167,14 @@ begin
 
     when Next =>
       loop
-        N2 := Prime_List.Next;
+        N2 := Arbitrary.Prime_List.Next;
         exit when N2 > N1;
       end loop;
       Ada.Text_Io.Put_Line (Image (N2));
     when Prev =>
       N3 := One;
       loop
-        N2 := Prime_List.Next;
+        N2 := Arbitrary.Prime_List.Next;
         exit when N2 >= N1;
         N3 := N2;
       end loop;
