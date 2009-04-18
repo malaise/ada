@@ -10,37 +10,17 @@ dup isinte [ toarbi ] ifcall
 dup isarbi ~ E pushr ifcall
 m popr
 
-# Compute Sqrt of n and stores it in s
-# Supposes that s already contains a minorant of sqrt(n)
-@1 u popr
+# Compute Sqrt of n and store it in s
+# and store s + 1 in t and t * t in c
+# So s already contains sqrt(n) as long as n < c
+# Init with 1 2 and 4
+@1 dup s popr dup + dup t popr dup * c popr
 [
-# Check that s is set and s * s <= n, otherwise set it to 1
-s emptyr [ u pushr s popr ] ifcall
-s pushr dup * n pushr > [ u pushr s popr ] ifcall
-
-# Loop, each time multiplying y by 10, until y * y > n
-s pushr dup x popr y popr
-[
-y pushr dup * n pushr > ifret
-# Save y in x and multiply y by 10
-y pushr x copyr @10 * y popr
-# Loop
-M pushr retacal ] M copyr call
-
-# Now x * x <= n < y * y
-# Dichotomy between x and y. z = (x + y) / 2
-[ x pushr y pushr + @2 / z copyr dup
-# If z * z > n then y = z else x = z
-dup * n pushr > y x ifte popr
-# Exit when y = x + 1
-x pushr @1 + y pushr = ifret
-# Loop
-D pushr retacal ] D copyr call
-
-# Now x = sqrt (n)
-x pushr s popr
+# If n < c then sqrt(n) is s
+n pushr c pushr < ifret
+# So it is t=s+1, update s t and c
+t pushr dup s popr @1 + dup t popr dup * c popr
 ] S popr
-
 
 # Loop on all extra stack
 #  j has to be initialised to @0
@@ -69,7 +49,7 @@ i pushr n popr S pushr call
 [ i pushr copye putl ] ifcall
 # Next i
 i pushr @1 + i popr
-# Stop loop f m /= 0 and then m < j
+# Stop loop if m /= 0 and then m < j
 m pushr dup isnotnul swap i pushr < & ifret
 # Infinite loop or up to m
 P pushr retacal ] P popr
