@@ -88,6 +88,14 @@ begin
     end;
   end;
 
+  -- Digits of A
+  Ada.Text_Io.Put ("Digits: ");
+  for I in 1 .. Arbitrary.Nb_Digits (A) - 1 loop
+    Ada.Text_Io.Put (Arbitrary.Nth_Digit (A, I)'Img);
+  end loop;
+  Ada.Text_Io.Put (" and" & Arbitrary.Last_Digit (A)'Img);
+  Ada.Text_Io.New_Line;
+
   begin
     A := Arbitrary.Set("");
     Ada.Text_Io.Put_Line ("Set("""") SHOULD HAVE RAISED Constraint_Error");

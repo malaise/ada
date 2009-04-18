@@ -61,6 +61,9 @@ package body Arbitrary is
     -- Is a number positive?
     function Check_Is_Pos (A : Number) return Boolean;
 
+    -- Char -> Digit
+    function To_Digit (C : Character) return Digit;
+
     -- Add/remove leading sign
     function Make (V : Unbstr) return Number;
     function Extract (N : Number) return Unbstr;
@@ -84,12 +87,13 @@ package body Arbitrary is
     Zero_Pos : constant Natural := Character'Pos('0');
 
     -- Int <-> char
-    function To_Int (C : Character) return Natural is
+    function To_Int (C : Character) return Digit is
     begin
       return Character'Pos(C) - Zero_Pos;
     end To_Int;
+    function To_Digit (C : Character) return Digit renames To_Int;
 
-    function To_Char (I : Natural) return Character is
+    function To_Char (I : Digit) return Character is
     begin
       return Character'Val(I + Zero_Pos);
     end To_Char;
@@ -858,6 +862,27 @@ package body Arbitrary is
     Sqrt (A, S, R);
     return S;
   end Sqrt;
+
+  -- Digit extraction. Sign is not taken into account
+  function Nb_Digits (A : Number) return Positive is
+  begin
+    -- A length is at least 2
+    return Unb.Length (Unbstr(A)) - 1;
+  end Nb_Digits;
+
+  function Nth_Digit (A : Number; N : Positive) return Digit is
+  begin
+    if N > Nb_Digits (A) then
+      raise Constraint_Error;
+    else
+      return Basic.To_Digit (Unb.Element (Unbstr(A), N + 1));
+    end if;
+  end Nth_Digit;
+    
+  function Last_Digit (A : Number) return Digit is
+  begin
+    return Basic.To_Digit (Unb.Element (Unbstr(A), Unb.Length (Unbstr(A))));
+  end Last_Digit;
 
 end Arbitrary;
 

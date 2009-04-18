@@ -13,7 +13,7 @@ package Arbitrary is
   function Zero return Number;
   function One  return Number;
 
-  -- Image
+  -- Image: +xxx or -xxx
   function Image (V : Number) return String;
   function Length (V : Number) return Natural;
 
@@ -41,6 +41,12 @@ package Arbitrary is
   function "**" (A, B : Number) return Number;
   procedure Sqrt (A : in Number; S, R : out Number);
   function Sqrt (A : Number) return Number;
+
+  -- Digit extraction. Sign is not taken into account
+  subtype Digit is Natural range 0 .. 9;
+  function Nb_Digits (A : Number) return Positive;
+  function Nth_Digit (A : Number; N : Positive) return Digit;
+  function Last_Digit (A : Number) return Digit;
 
 private
   type Number is new Ada.Strings.Unbounded.Unbounded_String;
