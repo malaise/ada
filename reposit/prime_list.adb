@@ -43,34 +43,20 @@ package body Prime_List is
   Zero : constant Prime_Number := Arbitrary.Zero;
   One  : constant Prime_Number := Arbitrary.One;
 
-  Sqrt_Memory : Prime_Positive := One;
-  Step : constant Prime_Positive := Arbitrary.Set (Integer'(10));
+  -- S is last Sqrt found, also store S+1 and N=(S+1)*(S+1)
+  S_Memory : Prime_Positive := One;
+  Sp1_Memory : Prime_Positive := S_Memory + One;
+  N_Memory : Prime_Positive := Sp1_Memory * Sp1_Memory;
   function Sqrt (N : Prime_Positive) return Prime_Positive is
-    I, J, K : Prime_Positive;
   begin
-    -- Check that (Memory)2 <= N, else reset to 1
-    if Sqrt_Memory * Sqrt_Memory > N then
-      Sqrt_Memory := One;
+    -- If N < N_Mem then Sqrt(N) = S_Mem
+    -- Otherwise it is S_Mem + 1 and update S, S+1 and N
+    if N >= N_Memory then
+      S_Memory := Sp1_Memory;
+      Sp1_Memory := Sp1_Memory + One;
+      N_Memory := Sp1_Memory * Sp1_Memory;
     end if;
-    -- J := J * 10 until (J)2 > N, I = J / 10
-    I := Sqrt_Memory;
-    J := I;
-    while J * J <= N loop
-      I := J;
-      J := J * Step;
-    end loop;
-    -- Now (I)2 <= N < (J)2
-    -- Dichotomy between I and J
-    loop
-      K := (I + J) / Two;
-      if K * K > N then
-        J := K;
-      else
-        I := K;
-      end if;
-      exit when J = I + One;
-    end loop;
-    return I;
+    return S_Memory;
   end Sqrt;
 
   -- Get next prime number
