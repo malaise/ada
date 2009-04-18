@@ -1,4 +1,3 @@
-with Prime_List, Dynamic_List;
 package body Arbitrary.Fractions is
 
   -- Extract the highest common denominator of two (positive) numbers

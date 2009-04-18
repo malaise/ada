@@ -1,14 +1,13 @@
 with Dynamic_List, My_Math;
-package body Prime_List is
+package body Arbitrary.Prime_List is
 
-  use type Arbitrary.Number;
 
-  package Prime_Dyn_List_Mng is new Dynamic_List(Prime_Positive);
+  package Prime_Dyn_List_Mng is new Dynamic_List(Positive_Number);
   package Prime_List_Mng renames Prime_Dyn_List_Mng.Dyn_List;
   The_List : Prime_List_Mng.List_Type;
   Need_Search : Boolean := True;
 
-  Two  : constant Prime_Positive := Arbitrary.Set (Integer'(2));
+  Two  : constant Positive_Number := Set (Integer'(2));
 
   -- Rewind the list of prime numbers found so far
   procedure Rewind is
@@ -22,8 +21,8 @@ package body Prime_List is
   end Rewind;
 
   -- Read item from list
-  function Read return Prime_Positive is
-    Res : Prime_Positive;
+  function Read return Positive_Number is
+    Res : Positive_Number;
     Moved : Boolean;
   begin
     -- Read next
@@ -32,7 +31,7 @@ package body Prime_List is
   end Read;
 
   -- Append a prime number to list
-  procedure Append (N : in Prime_Positive) is
+  procedure Append (N : in Positive_Number) is
   begin
     if not Prime_List_Mng.Is_Empty (The_List) then
       Prime_List_Mng.Rewind (The_List, Prime_List_Mng.Prev);
@@ -40,14 +39,14 @@ package body Prime_List is
     Prime_List_Mng.Insert (The_List, N);
   end Append;
 
-  Zero : constant Prime_Number := Arbitrary.Zero;
-  One  : constant Prime_Number := Arbitrary.One;
+  Zero : constant Number := Arbitrary.Zero;
+  One  : constant Positive_Number := Arbitrary.One;
 
   -- S is last Sqrt found, also store S+1 and N=(S+1)*(S+1)
-  S_Memory : Prime_Positive := One;
-  Sp1_Memory : Prime_Positive := S_Memory + One;
-  N_Memory : Prime_Positive := Sp1_Memory * Sp1_Memory;
-  function Sqrt (N : Prime_Positive) return Prime_Positive is
+  S_Memory : Positive_Number := One;
+  Sp1_Memory : Positive_Number := S_Memory + One;
+  N_Memory : Positive_Number := Sp1_Memory * Sp1_Memory;
+  function Sqrt (N : Positive_Number) return Positive_Number is
   begin
     -- If N < N_Mem then Sqrt(N) = S_Mem
     -- Otherwise it is S_Mem + 1 and update S, S+1 and N
@@ -60,10 +59,10 @@ package body Prime_List is
   end Sqrt;
 
   -- Get next prime number
-  function Next return Prime_Positive is
-    Res, Tmp : Prime_Positive;
+  function Next return Positive_Number is
+    Res, Tmp : Positive_Number;
     Is_Prime : Boolean;
-    Square : Prime_Positive;
+    Square : Positive_Number;
     Moved : Boolean;
   begin
     -- Need to search?
@@ -112,5 +111,5 @@ package body Prime_List is
     end loop Search_Loop;
   end Next;
 
-end Prime_List;
+end Arbitrary.Prime_List;
 

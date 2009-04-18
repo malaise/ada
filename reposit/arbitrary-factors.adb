@@ -1,5 +1,5 @@
 -- Decomposition of Arbirary precision numbers into prime factors
-with Prime_List;
+with Arbitrary.Prime_List;
 package body Arbitrary.Factors is
 
   -- Search a number
@@ -25,16 +25,20 @@ package body Arbitrary.Factors is
 
   -- Decompose N in prime factors, append them to L and rewind it
   -- If N is prime (including 1) only append it
-  procedure Decompose (N : in Number; L : in out Nb_List_Mng.List_Type) is
-    C, T : Number;
+  procedure Decompose (N : in Positive_Number;
+                       L : in out Nb_List_Mng.List_Type) is
+    C, T : Positive_Number;
   begin
+    if N <= Zero then
+      raise Constraint_Error;
+    end if;
     C := N;
     -- Start after 1
     if C = One then
       Nb_List_Mng.Insert (L, One);
     else
-      T := Prime_List.Next;
-      T := Prime_List.Next;
+      T := Arbitrary.Prime_List.Next;
+      T := Arbitrary.Prime_List.Next;
       loop
         if C rem T = Zero then
           -- Insert this factor and try again with it
@@ -43,20 +47,20 @@ package body Arbitrary.Factors is
           exit when C = One;
         else
           -- Try next factor
-          T := Prime_List.Next;
+          T := Arbitrary.Prime_List.Next;
         end if;
       end loop;
     end if;
     -- Rewind lists
     Rewind (L);
-    Prime_List.Rewind;
+    Arbitrary.Prime_List.Rewind;
   end Decompose;
 
 
   -- Extract common numbers of L1 and L2 and move them (appending) in L
   procedure Extract_Common (L1, L2 : in out Nb_List_Mng.List_Type;
                             L      : in out Nb_List_Mng.List_Type) is
-    N : Number;
+    N : Positive_Number;
     Match : Boolean;
     End_Of_List : Boolean;
   begin
@@ -95,8 +99,8 @@ package body Arbitrary.Factors is
 
 
   -- Multiply numbers of L from current to the last
-  function Multiply (L : in Nb_List_Mng.List_Type) return Number is
-    S, T : Number;
+  function Multiply (L : in Nb_List_Mng.List_Type) return Positive_Number is
+    S, T : Positive_Number;
     Lt : Nb_List_Mng.List_Type;
   begin
     S := One;

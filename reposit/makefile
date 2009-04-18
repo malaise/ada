@@ -2,7 +2,8 @@ include $(HOME)/Makefiles/common.mk
 
 include $(TEMPLATES)/units.mk
 
-SUBUNITS := afpx-af_dscr afpx-af_list afpx-af_ptg channels-file \
+SUBUNITS := afpx-af_dscr afpx-af_list afpx-af_ptg \
+  arbitrary-prime_list channels-file \
   pattern-storage x_mng-dispatch \
   xml_parser-file_mng xml_parser-parse_mng \
   xml_parser-parse_mng-dtd xml_parser-parse_mng-entity_mng \
