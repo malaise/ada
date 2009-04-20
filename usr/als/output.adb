@@ -115,6 +115,31 @@ package body Output is
     end if;
   end Get_Separator;
 
+  -- Split a size in X.y thousands of it
+  Kilo : constant Lister.Size_Type := 1024;
+  procedure Split (Size : in Lister.Size_Type;
+                   Int  : out Lister.Size_Type;
+                   Frac : out Lister.Size_Type) is
+    Real : My_Math.Real;
+    use type My_Math.Real;
+  begin
+    -- Integer part
+    Int := Size / Kilo;
+    -- Thousands in base 10 -> xyz
+    Frac := ((Size rem Kilo) * 1000) / Kilo;
+    -- Round at hundredths: x.yz
+    Real := My_Math.Real (Frac) / 100.0;
+    Frac := Lister.Size_Type(My_Math.Round (Real));
+    if Frac > 10 then
+      Frac := 10;
+    end if;
+    -- Propagate carry
+    if Frac = 10 then
+      Int := Int + 1;
+      Frac := 0;
+    end if;
+  end Split;
+
   -- First entry, and first entry after we put a name; don't need
   --  separator
   First_Entry : Boolean := True;
@@ -212,7 +237,8 @@ package body Output is
   end Put_One_Row;
 
   -- Put an entity in full mode
-  procedure Put_Long (Entity : in Entities.Entity) is
+  procedure Put_Long (Entity : in Entities.Entity;
+                      Human : in Boolean) is
    Suid, Sgid, Tbit : Boolean;
    Date : String (1 .. 23);
    -- Max length of fields user, group and size, for padding
@@ -230,6 +256,50 @@ package body Output is
        return Normal (Id, Max_Name_Len);
      end if;
    end Id_Image;
+
+  -- Size on human readable format (xxxx or y.zM or yyM or yyyM)
+  -- or on N digits or more
+  function Size_Image (Size : Sys_Calls.Size_T; Human : Boolean) return String is
+    Multipliers : constant array (1 .. 4) of Character := ('k', 'M', 'G', 'T');
+    Kilos : Lister.Size_Type;
+    Kilosi, Kilosf : Lister.Size_Type;
+  begin
+    if Human then
+      if Size < 1024 then
+        return Normal (Natural(Size), 4);
+      end if;
+      Kilos := Lister.Size_Type(Size);
+      for I in Multipliers'Range loop
+        Split (Kilos, Kilosi, Kilosf);
+        if Kilosi < 10 then
+          -- This is the proper multiplier
+          -- y.zM
+          return Total_Image (Kilosi) & '.'
+               & Total_Image (Kilosf) & Multipliers(I);
+        else
+          if Kilosf > 5 then
+            -- Round
+            Kilosi := Kilosi + 1;
+          end if;
+          if Kilosi < 1000 then
+            -- yyM or yyyM
+            return Normal (Natural(Kilosi), 3) & Multipliers(I);
+          end if;
+        end if;
+        Kilos := Kilosi;
+      end loop;
+      return Total_Image (Kilos) & Multipliers(Multipliers'Last);
+    else
+      declare
+        Str : constant String := Size_Image (Entity.Size);
+        Pad : constant String (1 .. Max_Size_Len - Str'Length)
+            := (others => ' ');
+      begin
+        return Pad & Str;
+      end;
+    end if;
+  end Size_Image;
+
   begin
     -- Put kind
     case Entity.Kind is
@@ -351,13 +421,8 @@ package body Output is
         Ada.Text_Io.Put (Id_Image (Entity.Group_Id) & ' ');
     end;
 
-    -- Size on N digits or more
-    declare
-      Str : constant String := Size_Image (Entity.Size);
-      Pad : constant String (1 .. Max_Size_Len - Str'Length) := (others => ' ');
-    begin
-      Ada.Text_Io.Put (Pad & Str & ' ');
-    end;
+    -- Size human format or full size
+    Ada.Text_Io.Put (Size_Image (Entity.Size, Human) & ' ');
 
     -- Modif time
     -- Date_Image is "YYyy/Mm/Dd Hh:Mm:Ss.mmm"
@@ -420,7 +485,9 @@ package body Output is
           when One_Row =>
             Put_One_Row (Ent);
           when Long =>
-            Put_Long (Ent);
+            Put_Long (Ent, False);
+          when Long_Human =>
+            Put_Long (Ent, True);
         end case;
       end if;
       exit when not Moved;
@@ -436,31 +503,6 @@ package body Output is
   begin
     Ada.Text_Io.New_Line;
   end New_Line;
-
-  -- Split a size in X.y thousands of it
-  Kilo : constant Lister.Size_Type := 1024;
-  procedure Split (Size : in Lister.Size_Type;
-                   Int  : out Lister.Size_Type;
-                   Frac : out Lister.Size_Type) is
-    Real : My_Math.Real;
-    use type My_Math.Real;
-  begin
-    -- Integer part
-    Int := Size / Kilo;
-    -- Thousands in base 10 -> xyz
-    Frac := ((Size rem Kilo) * 1000) / Kilo;
-    -- Round at hundredths: x.yz
-    Real := My_Math.Real (Frac) / 100.0;
-    Frac := Lister.Size_Type(My_Math.Round (Real));
-    if Frac > 10 then
-      Frac := 10;
-    end if;
-    -- Propagate carry
-    if Frac = 10 then
-      Int := Int + 1;
-      Frac := 0;
-    end if;
-  end Split;
 
   -- Put Total size, no new_line
   procedure Put_Size (Size : in Lister.Size_Type) is
@@ -513,11 +555,7 @@ package body Output is
     end if;
     Ada.Text_Io.Put (" " & Total_Image (Kilosi)
                    & "." & Total_Image (Kilosf) & "TB");
-    if Kilosf < 5 then
-      Kilos := Kilosi;
-    else
-      Kilos := Kilosi + 1;
-    end if;
   end Put_Size;
+
 end Output;
 

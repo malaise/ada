@@ -2,7 +2,7 @@ with Ada.Calendar, Ada.Strings.Unbounded;
 with Basic_Proc, Argument, Argument_Parser;
 with Entities, Output, Targets, Lister;
 procedure Als is
-  Version : constant String  := "V2.11";
+  Version : constant String  := "V3.0";
 
   -- Exit codes
   Found_Exit_Code : constant Natural := 0;
@@ -16,7 +16,8 @@ procedure Als is
     Put_Line_Error ("Usage: " & Argument.Get_Program_Name
       & " [ { <option> } ] [ { <file_or_dir_spec> } ]");
     Put_Line_Error (" <option> ::= -a (--all) | -A (--All)");
-    Put_Line_Error ("            | -l (--list) | -1 (--1row) | -c (--classify) | <separator>");
+    Put_Line_Error ("            | -l (--list) | -1 (--1row) | -c (--classify)");
+    Put_Line_Error ("            | -h (--human) | <separator>");
     Put_Line_Error ("            | -D (--directories) | -L (--links) | -F (--files)");
     Put_Line_Error ("            | [ { <match_name> } ] | [ { <exclude_name> } ]");
     Put_Line_Error ("            | [ { <match_dir> } ] | [ { <exclude_dir> } ]");
@@ -71,7 +72,7 @@ procedure Als is
    09 => ('t', Asu_Tus ("time"), False, False),
    10 => ('M', Asu_Tus ("merge"), False, False),
    11 => ('d', Asu_Tus ("date"), True, True),
-   12 => ('h', Asu_Tus ("help"), False, False),
+   12 => (Argument_Parser.No_Key_Char, Asu_Tus ("help"), False, False),
    13 => ('v', Asu_Tus ("version"), False, False),
    14 => ('L', Asu_Tus ("links"), False, False),
    15 => ('F', Asu_Tus ("files"), False, False),
@@ -83,7 +84,8 @@ procedure Als is
    21 => ('T', Asu_Tus ("total"), False, False),
    22 => ('n', Asu_Tus ("newer"), False, True),
    23 => ('c', Asu_Tus ("classify"), False, False),
-   24 => (Argument_Parser.No_Key_Char, Asu_Tus ("depth"), False, True));
+   24 => (Argument_Parser.No_Key_Char, Asu_Tus ("depth"), False, True),
+   25 => ('h', Asu_Tus ("human"), False, False));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
                := Argument_Parser.No_Key_Index;
@@ -91,6 +93,7 @@ procedure Als is
   List_Dots, List_Roots_And_Dots : Boolean;
   Dots : Entities.Dots_Kind_List;
   Long_List : Boolean;
+  Human : Boolean;
   One_Row : Boolean;
   List_Only_Dirs : Boolean;
   List_Only_Links : Boolean;
@@ -157,6 +160,7 @@ begin
   end if;
   Long_List := Arg_Dscr.Is_Set (03);
   One_Row := Arg_Dscr.Is_Set (04);
+  Human := Arg_Dscr.Is_Set (25);
   List_Only_Dirs := Arg_Dscr.Is_Set (05);
   Sort_Reverse := Arg_Dscr.Is_Set (06);
   Recursive := Arg_Dscr.Is_Set (07) or else Arg_Dscr.Is_Set (22);
@@ -246,7 +250,11 @@ begin
     end if;
     -- Output format style
     if Long_List then
-      Format_Kind := Output.Long;
+      if Human then
+        Format_Kind := Output.Long_Human;
+      else
+        Format_Kind := Output.Long;
+      end if;
     elsif One_Row or else Merge_Lists then
       Format_Kind := Output.One_Row;
     else

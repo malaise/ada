@@ -4,7 +4,7 @@ package Output is
 
   -- Set (store) sorting and format style
   type Sort_Kind_List is (Alpha, Time, Size);
-  type Format_Kind_List is (Simple, One_Row, Long);
+  type Format_Kind_List is (Simple, One_Row, Long, Long_Human);
   procedure Set_Style (Sort_Kind : in Sort_Kind_List;
                        Revert : in Boolean;
                        Format_Kind : in Format_Kind_List;
