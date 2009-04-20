@@ -102,7 +102,7 @@ static const char *const pstring[] = {
 #define POSIX_MALLOC_THRESHOLD 10
 
 /* Compile regex */
-int regcomp(regex_t *preg, const char *pattern, int cflags) {
+extern int regcomp(regex_t *preg, const char *pattern, int cflags) {
   const char *errorptr;
   int erroffset;
   int errorcode;
@@ -125,7 +125,7 @@ int regcomp(regex_t *preg, const char *pattern, int cflags) {
 }
 
 /* Execute regex */
-int regexec(regex_t *preg, const char *string, size_t nmatch,
+extern int regexec(regex_t *preg, const char *string, size_t nmatch,
             regmatch_t pmatch[], int eflags) {
   int rc, so, eo;
   int options = 0;
@@ -193,7 +193,7 @@ int regexec(regex_t *preg, const char *string, size_t nmatch,
 }
 
 /* Translate error code to message */
-size_t regerror(int errcode, const regex_t *preg, char *errbuf,
+extern size_t regerror(int errcode, const regex_t *preg, char *errbuf,
                 size_t errbuf_size) {
   const char *message, *addmessage;
   size_t length, addlength;
@@ -222,7 +222,7 @@ size_t regerror(int errcode, const regex_t *preg, char *errbuf,
 }
 
 /* Free regex */
-void regfree(regex_t *preg) {
+extern void regfree(regex_t *preg) {
   pcre_free(preg->re_pcre);
 }
 
@@ -231,7 +231,7 @@ extern void * malloc_regex (void) {
   return malloc (sizeof(regex_t));
 }
 
-void free_regex (void *ptr) {
+extern void free_regex (void *ptr) {
   if (ptr != NULL) free(ptr);
 }
 

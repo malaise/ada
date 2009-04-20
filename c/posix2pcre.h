@@ -46,12 +46,12 @@ typedef struct {
 } regmatch_t;
 
 /* POSIX API */
-int regcomp(regex_t *, const char *, int);
-int regexec(regex_t *, const char *, size_t, regmatch_t *, int);
-size_t regerror(int, const regex_t *, char *, size_t);
-void regfree(regex_t *);
+extern int regcomp(regex_t *, const char *, int);
+extern int regexec(regex_t *, const char *, size_t, regmatch_t *, int);
+extern size_t regerror(int, const regex_t *, char *, size_t);
+extern void regfree(regex_t *);
 
 /* Memory management */
 extern void * malloc_regex (void);
-void free_regex (void *);
+extern void free_regex (void *);
 
