@@ -1,6 +1,6 @@
 with Ada.Calendar, Ada.Text_Io;
 with Directory, Sys_Calls, Bit_Ops, Normal, Int_Image, Date_Image, Upper_Str,
-     My_Math, Environ;
+     Environ;
 package body Output is
 
   -- Max amount of entries to sort
@@ -120,21 +120,19 @@ package body Output is
   procedure Split (Size : in Lister.Size_Type;
                    Int  : out Lister.Size_Type;
                    Frac : out Lister.Size_Type) is
-    Real : My_Math.Real;
-    use type My_Math.Real;
+    Tmp : Lister.Size_Type;
   begin
     -- Integer part
     Int := Size / Kilo;
     -- Thousands in base 10 -> xyz
-    Frac := ((Size rem Kilo) * 1000) / Kilo;
-    -- Round at hundredths: x.yz
-    Real := My_Math.Real (Frac) / 100.0;
-    Frac := Lister.Size_Type(My_Math.Round (Real));
-    if Frac > 10 then
-      Frac := 10;
+    Tmp := ((Size rem Kilo) * 1000) / Kilo;
+    -- "Round" at hundredths: x.yz, set x+1 if yz /= 0
+    Frac := Tmp / 100;
+    if Tmp rem 100 /= 0 then
+      Frac := Frac + 1;
     end if;
     -- Propagate carry
-    if Frac = 10 then
+    if Frac >= 10 then
       Int := Int + 1;
       Frac := 0;
     end if;
