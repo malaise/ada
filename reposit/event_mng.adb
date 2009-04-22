@@ -166,6 +166,9 @@ package body Event_Mng is
   function C_Get_Signal return Integer;
   pragma Import(C, C_Get_Signal, "get_signal");
 
+  procedure C_Reset_Default_Signals;
+   pragma Import(C, C_Reset_Default_Signals, "reset_default_signals");
+
   Cb_Term_Sig : Sig_Callback := Null_Procedure'Access;
   Cb_Child_Sig : Sig_Callback := Null_Procedure'Access;
 
@@ -178,6 +181,17 @@ package body Event_Mng is
   begin
     Cb_Child_Sig := Callback;
   end Set_Sig_Child_Callback;
+
+  -- Return current Cb
+  function Get_Sig_Term_Callback return Sig_Callback is
+  begin
+    return Cb_Term_Sig;
+  end Get_Sig_Term_Callback;
+
+  function Get_Sig_Child_Callback return Sig_Callback is
+  begin
+    return Cb_Child_Sig;
+  end Get_Sig_Child_Callback;
 
   -- Is a callback set on signals
   function Sig_Term_Callback_Set return Boolean is
@@ -197,6 +211,11 @@ package body Event_Mng is
     end if;
     C_Send_Signal (C_Sig_Dummy);
   end Send_Dummy_Signal;
+
+  procedure Reset_Default_Signals_Policy is
+  begin
+    C_Reset_Default_Signals;
+  end Reset_Default_Signals_Policy;
 
   -- PRIVATE. Get kind of last signal
   type Signal_Kind_List is (Unknown_Sig, No_Sig, Dummy_Sig,

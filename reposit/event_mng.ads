@@ -39,9 +39,16 @@ package Event_Mng is
   function Sig_Term_Callback_Set return Boolean;
   function Sig_Child_Callback_Set return Boolean;
 
+  -- Return current callback on signal
+  function  Get_Sig_Term_Callback return Sig_Callback;
+  function  Get_Sig_Child_Callback return Sig_Callback;
+
   -- Send a dummy signal
   -- It always generates a Sig_Event but Callbacks are not called
   procedure Send_Dummy_Signal;
+
+  -- Reset signal handling to default UNIX behaviour
+  procedure Reset_Default_Signals_Policy;
 
   -------------------
   -- Waiting point --
