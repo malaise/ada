@@ -104,7 +104,7 @@ package body Command is
                    Exit_Code : out Integer;
                    Out_Flow : out Ada.Strings.Unbounded.Unbounded_String) is
     Spawn_Result : Proc_Family.Spawn_Result_Rec;
-    Term_Cb : Event_Mng.Sig_Callback;
+    Prev_Term_Cb : aliased Event_Mng.Sig_Callback;
     use type Sys_Calls.Death_Cause_List;
   begin
     -- Init path to Words if first call and ENV set
@@ -122,7 +122,7 @@ package body Command is
 
     -- Ready for sigterm
     Aborted := False;
-    Term_Cb := Event_Mng.Get_Sig_Term_Callback;
+    Prev_Term_Cb := Event_Mng.Get_Sig_Term_Callback;
     Event_Mng.Set_Sig_Term_Callback (Term_Cb'Access);
 
     -- Spawn
@@ -165,7 +165,7 @@ package body Command is
     end if;
     Event_Mng.Del_Fd_Callback (Spawn_Result.Fd_Out, True);
     Event_Mng.Del_Fd_Callback (Spawn_Result.Fd_Err, True);
-    Event_Mng.Set_Sig_Term_Callback (Term_Cb);
+    Event_Mng.Set_Sig_Term_Callback (Prev_Term_Cb);
     if Debug then
       Ada.Text_Io.Put_Line ("Command: Closing Fds");
     end if;
