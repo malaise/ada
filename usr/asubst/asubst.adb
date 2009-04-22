@@ -107,7 +107,7 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
      "    ""\iIJ<text>"" to replace by <text> if the Jth substring of the Ith regex");
     Sys_Calls.Put_Line_Error (
-     "      matches. ""\iIJ"" can be followed by one or several""\aIJ"" (and then) and");
+     "      matches. ""\iIJ"" can be followed by one or several ""\aIJ"" (and then) and");
     Sys_Calls.Put_Line_Error (
      "      ""\oIJ"" (or else). <text> ends when encountering another ""\iIJ"" (elsif),");
     Sys_Calls.Put_Line_Error (
