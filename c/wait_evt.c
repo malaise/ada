@@ -155,6 +155,16 @@ static void init_evt (void) {
   }
 }
 
+extern void reset_default_signals (void) {
+  if (sig_handled) {
+    (void) signal(SIGINT, SIG_DFL);
+    (void) signal(SIGTERM, SIG_DFL);
+    (void) signal(SIGCHLD, SIG_DFL);
+    (void) signal(SIGPIPE, SIG_DFL);
+    sig_handled = FALSE;
+  }
+}
+
 /* Compute time remaining */
 extern void evt_time_remaining (int *timeout_ms, timeout_t *exp_time) {
 

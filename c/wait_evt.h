@@ -13,6 +13,9 @@ extern int evt_del_fd (int fd, boolean read);
 /* Check if fd set (for read or write) */
 extern boolean evt_fd_set (int fd, boolean read);
 
+/* Reset signals to default UNIX behaviour */
+extern void reset_default_signals (void);
+
 /* Send Dummy, Terminate or Child */
 extern void send_signal (int sig);
 
