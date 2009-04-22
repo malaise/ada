@@ -200,7 +200,7 @@ extern size_t regerror(int errcode, const regex_t *preg, char *errbuf,
 
   /* Message + offset */
   message = (errcode >= (int)(sizeof(pstring)/sizeof(char *))) ?
-             "unknown error code"  
+             "unknown error code"
            : pstring[errcode]; length = strlen(message) + 1;
 
   addmessage = " at offset ";
