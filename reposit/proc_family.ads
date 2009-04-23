@@ -1,4 +1,4 @@
-with Sys_Calls;
+with Sys_Calls, Many_Strings;
 package Proc_Family is
 
   -- Callback for death report
@@ -39,6 +39,7 @@ package Proc_Family is
   -- Spawn a process (with mutation if mutation /= "")
   --  redirecting standard in/out/err flows if Std_Fds
   --  opening com channel if New_Fds
+  -- If not empty, Mutation has to follow Many_Strings format
   -- If Death_Callback is set, it will be called on child's death
   type Comm_Kind_List is (None, Std_Fds, New_Fds);
   function Spawn (Mutation     : String := "";
