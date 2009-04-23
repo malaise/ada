@@ -63,7 +63,7 @@
 "\ntoto\ntiti\ntata"   "\n.*"                         "\R02"                      "tototititata"
 "\ntoto\ntiti\ntata"   "^toto\ntiti$"                 "\u\R01\R02\R03"            "\nTOTO\nTITI\ntata"
 "\ntoto\ntiti\ntata"   "toto\ntiti"                   "\R01\u\R02\R03"            "\ntoto\nTITI\ntata"
-"toto:100"             "([0-9]+)"                     "\Kecho -n \r11 1 + 3 True 1 format 0 strof normal put | Mcd\k" "toto:101"
+"toto:100"             "([0-9]+)"                     "\K/bin/bash -c 'let i=$0+1;echo $i' \r11\k" "toto:101"
 
 "Options" "--exclude=tototiti"
 "tototiti"             "(toto)(.{4})"                 "\r11titi\r12"              "tototiti"
