@@ -21,7 +21,10 @@ package Sys_Calls is
   function Errno return Integer;
   function Str_Error (Err : Integer) return String;
 
-  -- Put line on stderr
+  -- Put line on stdout or stderr
+  procedure Put_Output (Str : in String);
+  procedure Put_Line_Output (Str : in String);
+  procedure New_Line_Output;
   procedure Put_Error (Str : in String);
   procedure Put_Line_Error (Str : in String);
   procedure New_Line_Error;

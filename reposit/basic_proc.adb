@@ -3,6 +3,30 @@ with Ada.Command_Line, Ada.Characters.Latin_1;
 
 package body Basic_Proc is
 
+  -- Put line on stdout
+  procedure Put_Output (Str : in String) is
+    I : Interfaces.C_Streams.Int;
+    Str4C : constant String := Str & Ada.Characters.Latin_1.Nul;
+  begin
+    I := Interfaces.C_Streams.Fputs (Str4C'Address,
+                 Interfaces.C_Streams.Stdout);
+  end Put_Output;
+
+  procedure New_Line_Output is
+    I : Interfaces.C_Streams.Int;
+    Str4C : constant String := Ada.Characters.Latin_1.Lf
+                             & Ada.Characters.Latin_1.Nul;
+  begin
+    I := Interfaces.C_Streams.Fputs (Str4C'Address,
+                 Interfaces.C_Streams.Stdout);
+  end New_Line_Output;
+
+  procedure Put_Line_Output (Str : in String) is
+  begin
+    Put_Output (Str);
+    New_Line_Output;
+  end Put_Line_Output;
+
   -- Put line on stderr
   procedure Put_Error (Str : in String) is
     I : Interfaces.C_Streams.Int;

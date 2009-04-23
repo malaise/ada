@@ -144,7 +144,11 @@ package body Sys_Calls is
     return Str_From_C (C_Strerror (Err));
   end Str_Error;
 
-  -- Put line on stderr
+  -- Put line on stdout or stderr
+  procedure Put_Output (Str : in String) renames Basic_Proc.Put_Output;
+  procedure New_Line_Output renames Basic_Proc.New_Line_Output;
+  procedure Put_Line_Output (Str : in String)
+            renames Basic_Proc.Put_Line_Output;
   procedure Put_Error (Str : in String) renames Basic_Proc.Put_Error;
   procedure New_Line_Error renames Basic_Proc.New_Line_Error;
   procedure Put_Line_Error (Str : in String) renames Basic_Proc.Put_Line_Error;
