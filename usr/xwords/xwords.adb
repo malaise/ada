@@ -1,7 +1,7 @@
 with Ada.Text_Io;
 with Argument, Con_Io, Afpx, Basic_Proc, Language, Many_Strings, String_Mng,
      Lower_Str;
-with Common, Command;
+with Common, Cmd;
 procedure Xwords is
 
   procedure Error is
@@ -38,7 +38,7 @@ procedure Xwords is
   Exit_Fld : constant Afpx.Field_Range := 22;
 
   -- History of search requests
-  History : Command.Res_List;
+  History : Cmd.Res_List;
   Done : Boolean;
 
   -- A line of text
@@ -71,7 +71,7 @@ procedure Xwords is
 
   -- Build and launch a Words command
   procedure Do_Command (Num : Afpx.Field_Range) is
-    Result : Command.Res_List;
+    Result : Cmd.Res_List;
     Com, Arg : Common.Asu_Us;
     Command_Ok : Boolean;
     First : Boolean;
@@ -96,7 +96,7 @@ procedure Xwords is
     if Num = Add_Noun_Fld or else Num = Del_Noun_Fld then
       Arg := Common.Asu_Tus (Many_Strings.Cat ("-noun", Common.Asu_Ts (Arg)));
     end if;
-    Command.Exec (Common.Asu_Ts (Com), Common.Asu_Ts (Arg),
+    Cmd.Exec (Common.Asu_Ts (Com), Common.Asu_Ts (Arg),
                   Command_Ok, Result);
     if not Command_Ok then
       Status := Error;
@@ -160,7 +160,7 @@ procedure Xwords is
   begin
     Afpx.Clear_Field (Get_Fld);
     if not History.Is_Empty then
-      History.Read (Line, Command.Res_Mng.Dyn_List.Current);
+      History.Read (Line, Cmd.Res_Mng.Dyn_List.Current);
       Afpx.Encode_Field (Get_Fld, (0, 0), Lower_Str (Common.Asu_Ts (Line)));
     end if;
   end Do_Recall;
@@ -256,7 +256,7 @@ begin
               -- Move to Bottom
               Afpx.Line_List.Rewind (Afpx.Line_List_Mng.Prev);
               Afpx.Update_List(Afpx.Bottom);
-              History.Rewind (Command.Res_Mng.Dyn_List.Prev);
+              History.Rewind (Cmd.Res_Mng.Dyn_List.Prev);
             end if;
             Status := Found;
           -- Clear list
@@ -298,7 +298,7 @@ begin
   Afpx.Release_Descriptor;
 
 exception
-  when Command.Terminate_Request =>
+  when Cmd.Terminate_Request =>
     Afpx.Release_Descriptor;
 end Xwords;
 
