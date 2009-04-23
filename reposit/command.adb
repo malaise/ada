@@ -71,14 +71,16 @@ package body Command is
   -- Add a string of flow to a out flow
   procedure Add_Flow (Flow : in out Flow_Rec; Line : in Asu_Us) is
     Loc_Line : Asu_Us := Line;
+    Len : Natural;
   begin
     if Flow.Kind = Str then
       Asu.Append (Flow.Str, Loc_Line);
     else
+      Len := Asu.Length (Loc_Line);
       -- Remove trailing Line_Feed
-      if Asu.Element (Loc_Line, Asu.Length (Loc_Line))
-         = Text_Line.Line_Feed_Char then
-        Asu.Delete (Loc_Line, Asu.Length (Loc_Line), Asu.Length (Loc_Line));
+      if Len /= 0
+      and then Asu.Element (Loc_Line, Len) = Text_Line.Line_Feed_Char then
+        Asu.Delete (Loc_Line, Len, Len);
       end if;
       Flow.List.Insert (Loc_Line);
     end if;
@@ -114,9 +116,6 @@ package body Command is
       exit when Line = Asu_Null;
       -- Got at least an event
       Got := True;
-      if Debug then
-        Ada.Text_Io.Put_Line ("Command: Fd Cb got >" & Asu_Ts (Line) & "<");
-      end if;
       -- Apply policy to flow
       if Fd = Output_Fd then
         if Debug then
@@ -141,9 +140,15 @@ package body Command is
           Add_Flow (Error_Result.all, Line);
         end if;
       end if;
+      if Debug then
+        Ada.Text_Io.Put_Line ("Command: Fd Cb got >" & Asu_Ts (Line) & "<");
+      end if;
     end loop;
     Flow.Close;
     if not Got then
+      if Debug then
+        Ada.Text_Io.Put_Line ("Command: Fd Cb end of flow");
+      end if;
       -- We were awaken but nothing to read -> End of flow
       if Fd = Output_Fd then
         Output_Done := True;
@@ -152,6 +157,9 @@ package body Command is
       end if;
       Event_Mng.Del_Fd_Callback (Fd, True);
       Sys_Calls.Close (Fd);
+    end if;
+    if Debug then
+      Ada.Text_Io.Put_Line ("Command: Fd Cb Done");
     end if;
     return True;
   end Fd_Cb;
