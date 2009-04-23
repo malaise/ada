@@ -13,6 +13,11 @@ package body Many_Strings is
     Text_Handler.Append (To, Sep & What);
   end Cat;
 
+  procedure Cat (To : in out Ada.Strings.Unbounded.Unbounded_String;
+                 What : in String) is
+  begin
+    Ada.Strings.Unbounded.Append (To, Sep & What);
+  end Cat;
 
   -- Decode
   function Nb (Str : Many_String) return Positive is
