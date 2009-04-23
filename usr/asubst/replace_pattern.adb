@@ -1,6 +1,7 @@
 with Ada.Strings.Unbounded, Ada.Characters.Latin_1, Ada.Exceptions;
 with Argument, Sys_Calls, String_Mng, Text_Line, Unique_List, Debug,
-     Char_To_Hexa, Regular_Expressions, Upper_Str, Lower_Str, Mixed_Str;
+     Char_To_Hexa, Regular_Expressions, Upper_Str, Lower_Str, Mixed_Str,
+     Command;
 with Search_Pattern;
 package body Replace_Pattern is
 
@@ -29,6 +30,7 @@ package body Replace_Pattern is
        And_Then_Match_Substring, Or_Else_Match_Substring,
        -- These ones don't
        Else_Match_Substring, End_If_Match_Substring,
+       Start_Command, Stop_Command,
        Start_Uppercase, Start_Lowercase, Start_Mixedcase, Stop_Case);
   -- Substring extraction kind
   subtype Extraction_List is Subtit_Action_List
@@ -142,6 +144,8 @@ package body Replace_Pattern is
     type If_Mode_List is (None, In_If, In_Else);
     If_Mode : If_Mode_List;
     If_Index : Positive;
+    -- Currently in command
+    In_Command : Boolean;
 
   begin
     if Debug.Set then
@@ -153,10 +157,11 @@ package body Replace_Pattern is
     Start := 1;
     Case_Action := Stop_Case;
     If_Mode := None;
+    In_Command := False;
     loop
       -- Locate an escape sequence, exit when no more
       Got := String_Mng.Locate_Escape (Asu.To_String (The_Pattern),
-                                       Start, "\acefilmnoRrstux");
+                                       Start, "\acefiKklmnoRrstux");
       exit when Got = 0;
       -- Set corresponding code
       Esc_Char := Asu.Element (The_Pattern, Got);
@@ -182,6 +187,10 @@ package body Replace_Pattern is
             Error ("Invalid " & Mixed_Str (Subst.Action'Img)
                  & " while not in condition");
           end if;
+          if In_Command then
+            Error ("Invalid " & Mixed_Str (Subst.Action'Img)
+                 & " while in command");
+          end if;
           Substites_List.Insert (Substites, Subst);
           Asu.Replace_Slice (The_Pattern, Subst.Index, Subst.Index + 1,
                              Subst_Char & "");
@@ -193,10 +202,36 @@ package body Replace_Pattern is
             Error ("Invalid " & Mixed_Str (Subst.Action'Img)
                  & " while not in condition or else part");
           end if;
+          if In_Command then
+            Error ("Invalid " & Mixed_Str (Subst.Action'Img)
+                 & " while in command");
+          end if;
           Substites_List.Insert (Substites, Subst);
           Asu.Replace_Slice (The_Pattern, Subst.Index, Subst.Index + 1,
                              Subst_Char & "");
           If_Mode := None;
+        when 'K' =>
+          -- "\K" to start command
+          Subst.Action := Start_Command;
+          if In_Command then
+            Error ("Invalid " & Mixed_Str (Subst.Action'Img)
+                 & " while in command");
+          end if;
+          Substites_List.Insert (Substites, Subst);
+          Asu.Replace_Slice (The_Pattern, Subst.Index, Subst.Index + 1,
+                             Subst_Char & "");
+          In_Command := True;
+        when 'k' =>
+          -- "\k" to stop command
+          Subst.Action := Stop_Command;
+          if not In_Command then
+            Error ("Invalid " & Mixed_Str (Subst.Action'Img)
+                 & " while not in command");
+          end if;
+          Substites_List.Insert (Substites, Subst);
+          Asu.Replace_Slice (The_Pattern, Subst.Index, Subst.Index + 1,
+                             Subst_Char & "");
+          In_Command := False;
         when 'l' =>
           -- "\l" lower_case switch on
           Subst.Action := Start_Lowercase;
@@ -276,6 +311,10 @@ package body Replace_Pattern is
                   Error ("Invalid 'if' or 'elsif' directive while in 'else' "
                          & "of condition");
               end case;
+              if In_Command then
+                Error ("Invalid " & Mixed_Str (Subst.Action'Img)
+                     & " while in command");
+              end if;
               If_Mode := In_If;
               If_Index := Subst.Index;
             else
@@ -287,6 +326,10 @@ package body Replace_Pattern is
               if Subst.Index /= If_Index + 1 then
                 Error ("Invalid 'and then' or 'or else ' directive "
                      & " not part of 'if' or 'elsif' condition");
+              end if;
+              if In_Command then
+                Error ("Invalid " & Mixed_Str (Subst.Action'Img)
+                     & " while in command");
               end if;
               If_Index := Subst.Index;
               if Esc_Char = 'a' then
@@ -315,9 +358,13 @@ package body Replace_Pattern is
       Substites_List.Insert (Substites, Subst);
       Asu.Append (The_Pattern, Subst_Char & "");
     end if;
-    -- Stop conditional section at end of line, add subst marker
+    -- Check not in conditional section
     if If_Mode /= None then
       Error ("Un-terminated 'if', 'elsif' or 'else' directive");
+    end if;
+    -- Check not in command section
+    if In_Command then
+      Error ("Un-terminated command");
     end if;
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Replace stored pattern >"
@@ -366,6 +413,11 @@ package body Replace_Pattern is
       raise Replace_Error;
   end Matchstring;
 
+  -- Issue a Shell command and return its stdout, raises Command_Error
+  --  if command did not exit with coide 0
+  Out_Flow, Err_Flow : aliased Command.Flow_Rec (Command.Str);
+  function Shell_Command (Cmd : String) return String is separate;
+
   -- Apply XXX case conversion to Str(Start .. Stop)
   -- Return the converted Str(Start .. Stop)
   function Casestring (Str : String;
@@ -404,6 +456,8 @@ package body Replace_Pattern is
     Case_Mode : Case_Mode_List;
     -- If substring does not match, skip from start_skip to end
     Start_Skip : Natural;
+    -- Command start index (0 if none)
+    Command_Index : Natural;
     -- None outside If (\i), then If_Ko as long as no If is OK,
     -- then Is_Ok if a If is Ok, then possible Else_Ok, then None
     If_Status : If_Status_List;
@@ -556,6 +610,21 @@ package body Replace_Pattern is
                 If_Status := None;
                 Start_Skip := 0;
             end case;
+          when Start_Command =>
+            if Start_Skip = 0 then
+              Command_Index := Got;
+              -- Go on searching from next char
+              Start := Got + 1;
+            end if;
+          when Stop_Command =>
+            if Start_Skip = 0 then
+              Asu.Replace_Slice (Result, Command_Index, Got,
+                Shell_Command (Asu.Slice (Result, Command_Index + 1,
+                                                  Got - 1)));
+            else
+              -- Go on searching from next char
+              Start := Got + 1;
+            end if;
           when Replace_Match_Regex | Replace_Match_Substring =>
             if Start_Skip = 0 then
               -- Replace by (sub) Str matching regex
@@ -574,6 +643,7 @@ package body Replace_Pattern is
                 Offset := Offset + Sub_Str'Length - 1;
               end;
             else
+              -- Go on searching from next char
               Start := Got + 1;
             end if;
           when Start_Uppercase | Start_Lowercase
@@ -590,7 +660,8 @@ package body Replace_Pattern is
                 -- This is compatible with utf8 without explicit checks
                 declare
                   Case_Str : constant String
-                           := Casestring (Asu.Slice (Result, Case_Index, Got - 1),
+                           := Casestring (Asu.Slice (Result, Case_Index,
+                                                             Got - 1),
                                           Case_Mode);
                 begin
                   Asu.Replace_Slice (Result, Case_Index, Got, Case_Str);
@@ -616,6 +687,9 @@ package body Replace_Pattern is
               -- Restart locate from first char after case switch
               Start := Got;
               Offset := Offset - 1;
+            else
+              -- Go on searching from next char
+              Start := Got + 1;
             end if;
         end case;
       else
@@ -630,6 +704,8 @@ package body Replace_Pattern is
     return Asu.To_String (Result);
   exception
     when Replace_Error =>
+      raise;
+    when Command_Error =>
       raise;
     when Error:others =>
       Sys_Calls.Put_Line_Error (Argument.Get_Program_Name

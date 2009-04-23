@@ -3,7 +3,7 @@ with Environ, Argument, Argument_Parser, Sys_Calls, Language, Mixed_Str, Text_Li
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
-  Version : constant String  := "V7.8";
+  Version : constant String  := "V7.9";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -119,11 +119,17 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
      "    ""\rIJ"" to replace by the text matching the Jth substring of the Ith regex.");
     Sys_Calls.Put_Line_Error (
+     "    ""\K""<shell command>""\k"", within which ""\RIJ"" and ""\rIJ"" are first replaced,");
+    Sys_Calls.Put_Line_Error (
+     "      then the command is launched (and must exit with 0), then the command");
+    Sys_Calls.Put_Line_Error (
+     "      directive is replaced by the command output.");
+    Sys_Calls.Put_Line_Error (
      "    ""\u"" (start UPPERCASE conversion), ""\l"" (lowercase), ""\m"" (Mixed_Case),");
     Sys_Calls.Put_Line_Error (
      "      ""\c"" (stop case conversion). Any new conversion replaces previous.");
     Sys_Calls.Put_Line_Error (
-     "    Conditions apply first, then replacement, then case conversion.");
+     "    Conditions apply first, then replacement and command, then case conversion.");
     Sys_Calls.Put_Line_Error (
      "    ""\R01"" <-> 1st <regex>, ""\R00"" <-> all <regex>, ""\ri0"" == ""\R0i"".");
     Sys_Calls.Put_Line_Error (

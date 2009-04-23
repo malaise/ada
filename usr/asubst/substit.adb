@@ -409,6 +409,11 @@ package body Substit is
     end if;
     return Total_Subst;
   exception
+    when Replace_Pattern.Command_Error =>
+      -- Rollback
+      Close;
+      Clean;
+      return 0;
     when others =>
       -- Rollback
       Close;

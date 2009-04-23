@@ -13,6 +13,7 @@ package Replace_Pattern is
   function Replace return String;
   -- If result string is too long?
   Replace_Error : exception;
-
+  -- If external shell command exit /= 0
+  Command_Error : exception;
 end Replace_Pattern;
  
