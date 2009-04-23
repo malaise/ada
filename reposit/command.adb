@@ -4,9 +4,9 @@ with Sys_Calls, Environ, Proc_Family, Event_Mng, Many_Strings, Text_Line,
 package body Command is
 
   -- Asu stuff
-  package Asu renames Ada.Strings.Unbounded;
-  subtype Asu_Us is Asu.Unbounded_String;
   function Asu_Ts (Str : Asu_Us) return String renames Asu.To_String;
+  function Asu_Tus (Str : String) return Asu_Us
+           renames Asu.To_Unbounded_String;
   Asu_Null :  constant Asu_Us := Asu.Null_Unbounded_String;
 
   -- Debug option
@@ -15,12 +15,14 @@ package body Command is
   Debug : Boolean := False;
 
   -- Output fd (to distinguish Error flow) and policy
+  Mix_Policy : Flow_Mixing_Policies;
   Output_Fd : Sys_Calls.File_Desc;
-  Mix_Error : Boolean;
 
   -- The result of out/err flow
   Output_Done : Boolean;
-  Output_Result : Ada.Strings.Unbounded.Unbounded_String;
+  Output_Result : Flow_Access;
+  Error_Done : Boolean;
+  Error_Result : Flow_Access;
 
   -- The result child execution
   Child_Done : Boolean;
@@ -66,11 +68,38 @@ package body Command is
     Child_Done := True;
   end Death_Cb;
 
+  -- Add a string of flow to a out flow
+  procedure Add_Flow (Flow : in out Flow_Rec; Line : in Asu_Us) is
+    Loc_Line : Asu_Us := Line;
+  begin
+    if Flow.Kind = Str then
+      Asu.Append (Flow.Str, Loc_Line);
+    else
+      -- Remove trailing Line_Feed
+      if Asu.Element (Loc_Line, Asu.Length (Loc_Line))
+         = Text_Line.Line_Feed_Char then
+        Asu.Delete (Loc_Line, Asu.Length (Loc_Line), Asu.Length (Loc_Line));
+      end if;
+      Flow.List.Insert (Loc_Line);
+    end if;
+  end Add_Flow;
+
+  -- Reset a flow
+  procedure Reset_Flow (Flow : in out Flow_Rec) is
+  begin
+    if Flow.Kind = Str then
+      Flow.Str := Asu_Null;
+    else
+      Flow.List.Delete_List;
+    end if;
+  end Reset_Flow;
+
   -- The callback for reading out/err output of child
   function Fd_Cb (Fd : in Sys_Calls.File_Desc;
                   Read : in Boolean) return Boolean is
     Flow : Text_Line.File_Type;
     Line : Asu_Us;
+    Got : Boolean;
     use type Asu_Us, Sys_Calls.File_Desc;
   begin
     if Debug then
@@ -78,62 +107,112 @@ package body Command is
     end if;
     -- Init Text_Line flow
     Flow.Open (Text_Line.In_File, Fd);
-    -- Read lines and store in Output_Result
+    Got := False;
+    -- Read lines and store in Output/Error_Result
     loop
       Line := Flow.Get;
       exit when Line = Asu_Null;
-      -- Store always output flow, mix error flow if requested
-      if Fd = Output_Fd or else Mix_Error then
-        Ada.Strings.Unbounded.Append (Output_Result, Line);
-      else
-        -- Error flow on our error flow
-        Sys_Calls.Put_Error (Asu_Ts (Line));
-      end if;
+      -- Got at least an event
+      Got := True;
       if Debug then
         Ada.Text_Io.Put_Line ("Command: Fd Cb got >" & Asu_Ts (Line) & "<");
       end if;
+      -- Apply policy to flow
+      if Fd = Output_Fd then
+        if Debug then
+          Ada.Text_Io.Put_Line ("Command: Fd Cb output flow");
+        end if;
+        if Mix_Policy = None then
+          -- Stdout -> Stdout
+          Sys_Calls.Put_Output (Asu_Ts (Line));
+        else
+          -- Stdout -> Output
+          Add_Flow (Output_Result.all, Line);
+        end if;
+      else
+        if Debug then
+          Ada.Text_Io.Put_Line ("Command: Fd Cb error flow");
+        end if;
+        if Mix_Policy /= Both then
+          -- Stderr -> Stderr
+          Sys_Calls.Put_Error (Asu_Ts (Line));
+        else
+          -- Stderr -> Error
+          Add_Flow (Error_Result.all, Line);
+        end if;
+      end if;
     end loop;
     Flow.Close;
-    Output_Done := True;
+    if not Got then
+      -- We were awaken but nothing to read -> End of flow
+      if Fd = Output_Fd then
+        Output_Done := True;
+      else
+        Error_Done := True;
+      end if;
+      Event_Mng.Del_Fd_Callback (Fd, True);
+      Sys_Calls.Close (Fd);
+    end if;
     return True;
   end Fd_Cb;
 
-  -- Issue '/bin/sh "Cmd"' and set resulting execution flow
-  procedure Shell (Cmd : in String;
-                   Mix_Error_Flow : in Boolean;
-                   Exit_Code : out Integer;
-                   Out_Flow : out Ada.Strings.Unbounded.Unbounded_String) is
+  -- Execute Cmd
+  procedure Execute (Cmd : in String;
+                     Use_Sh : in Boolean;
+                     Mix_Policy : in Flow_Mixing_Policies;
+                     Out_Flow : in Flow_Access;
+                     Err_Flow : in Flow_Access;
+                     Exit_Code : out Exit_Code_Range) is
+    Cmd_Line : Asu_Us;
+    Nb_Substr : Positive;
     Spawn_Result : Proc_Family.Spawn_Result_Rec;
     Prev_Term_Cb : aliased Event_Mng.Sig_Callback;
     use type Sys_Calls.Death_Cause_List;
   begin
-    -- Init path to Words if first call and ENV set
+    -- Init Debug
     if not Debug_Init then
       Debug := Environ.Is_Yes (Command_Debug_Name);
       Debug_Init := True;
     end if;
 
-    -- Init results
+    -- Init results and 'global' exchange variables
     Output_Done := False;
-    Output_Result := Asu_Null;
+    Reset_Flow (Out_Flow.all);
+    Output_Result := Out_Flow;
+    Error_Done := False;
+    Reset_Flow (Err_Flow.all);
+    Error_Result := Err_Flow;
     Child_Done := False;
-    Exit_Code := -1;
-    Out_Flow := Asu_Null;
+    Exit_Code := Error;
 
     -- Ready for sigterm
     Aborted := False;
     Prev_Term_Cb := Event_Mng.Get_Sig_Term_Callback;
     Event_Mng.Set_Sig_Term_Callback (Term_Cb'Access);
 
+    -- Build command line
+    if Use_Sh then
+      Cmd_Line := Asu_Tus (
+         Many_Strings.Cat (
+           Many_Strings.Cat ("/bin/sh", "-c"), ""));
+      -- Extract substrings and concatenante with spaces
+      Nb_Substr := Many_Strings.Nb (Cmd);
+      for I in 1 .. Nb_Substr loop
+        Asu.Append (Cmd_Line, Many_Strings.Nth (Cmd, I));
+        if I /= Nb_Substr then
+          Asu.Append (Cmd_Line, " ");
+        end if;
+      end loop;
+    else
+      Cmd_Line := Asu_Tus (Cmd);
+    end if;
     -- Spawn
     if Debug then
-      Ada.Text_Io.Put_Line ("Command: Spwaning >" & Cmd & "<");
+      Ada.Text_Io.Put_Line ("Command: Spwaning >" & Asu_Ts (Cmd_Line) & "<");
     end if;
-    Spawn_Result := Proc_Family.Spawn (
-      Many_Strings.Cat (Many_Strings.Cat ("/bin/sh", "-c"),
-                        """" & Cmd & """"),
-      Proc_Family.Std_Fds,
-      Death_Cb'Access);
+    Spawn_Result := Proc_Family.Spawn (Asu_Ts (Cmd_Line),
+                                       Proc_Family.Std_Fds,
+                                       Death_Cb'Access);
     if not Spawn_Result.Ok or else not Spawn_Result.Open then
       if Debug then
         Ada.Text_Io.Put_Line ("Command: Spawn error: " & Spawn_Result.Ok'Img
@@ -145,47 +224,37 @@ package body Command is
     -- Init Cb for out/err flow
     Current_Pid := Spawn_Result.Child_Pid;
     Output_Fd := Spawn_Result.Fd_Out;
-    Mix_Error := Mix_Error_Flow;
+    Command.Mix_Policy := Mix_Policy;
     Event_Mng.Add_Fd_Callback (Spawn_Result.Fd_Out, True, Fd_Cb'Access);
     Event_Mng.Add_Fd_Callback (Spawn_Result.Fd_Err, True, Fd_Cb'Access);
 
-    -- Wait until child end and no more out/err data
+    -- Wait until child ends and no more out/err data
     --  or aborted by sigterm
     loop
       Event_Mng.Wait (Event_Mng.Infinite_Ms);
-      exit when Child_Done and then Output_Done;
+      exit when Child_Done and then Output_Done and then Error_Done;
       if Aborted then
         raise Terminate_Request;
       end if;
     end loop;
 
-    -- Unset Cb of out/err flow and close
+    -- Unset Cbs and close
     if Debug then
-      Ada.Text_Io.Put_Line ("Command: Cleaning Fd Cbs");
+      Ada.Text_Io.Put_Line ("Command: Cleaning");
     end if;
-    Event_Mng.Del_Fd_Callback (Spawn_Result.Fd_Out, True);
-    Event_Mng.Del_Fd_Callback (Spawn_Result.Fd_Err, True);
     Event_Mng.Set_Sig_Term_Callback (Prev_Term_Cb);
-    if Debug then
-      Ada.Text_Io.Put_Line ("Command: Closing Fds");
-    end if;
     Sys_Calls.Close (Spawn_Result.Fd_In);
-    Sys_Calls.Close (Spawn_Result.Fd_Out);
-    Sys_Calls.Close (Spawn_Result.Fd_Err);
 
     -- Set "out" values
-    if Debug then
-      Ada.Text_Io.Put_Line ("Command: Copying result");
-    end if;
-    Out_Flow := Output_Result;
-    Output_Result := Asu_Null;
+    Output_Result := null;
+    Error_Result := null;
     if Child_Result.Cause = Sys_Calls.Exited then
       Exit_Code := Child_Result.Exit_Code;
     else
-      Exit_Code := -1;
+      Exit_Code := Error;
     end if;
 
-  end Shell;
+  end Execute;
 
 end Command;
 
