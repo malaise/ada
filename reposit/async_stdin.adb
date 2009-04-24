@@ -1,4 +1,4 @@
-with Ada.Text_Io, Ada.Calendar, Ada.Characters.Latin_1, Ada.Strings.Unbounded;
+with Ada.Calendar, Ada.Characters.Latin_1, Ada.Strings.Unbounded;
 with Text_Handler, Event_Mng, Sys_Calls, Console, Dynamic_List, Trace, Environ;
 package body Async_Stdin is
 
@@ -12,6 +12,7 @@ package body Async_Stdin is
   Stdio_Is_A_Tty : Boolean;
   -- Is the input flow to be activated
   Active : Boolean := True;
+
 
   package Line is
     -- Init (getenv history size)
@@ -29,6 +30,8 @@ package body Async_Stdin is
   end Line;
 
   package body Line is
+    package Latin_1 renames Ada.Characters.Latin_1;
+    Bell : constant String := Latin_1.Bel & "";
 
     package History is
       -- Buffer for exchanges (in/out with caller)
@@ -222,7 +225,7 @@ package body Async_Stdin is
         Console.Set_Col (1);
         Console.Erase_Line;
         Txt := History.Buf;
-        Ada.Text_Io.Put (Unb.To_String (Txt));
+        Sys_Calls.Put_Output (Unb.To_String (Txt));
         Ind := Unb.Length (Txt) + 1;
       end if;
     end Update;
@@ -234,8 +237,6 @@ package body Async_Stdin is
       History.Add;
       At_Last := True;
     end Store;
-
-    package Latin_1 renames Ada.Characters.Latin_1;
 
     function Add (C : Character) return Boolean is
        Saved_Searching : Boolean;
@@ -263,7 +264,7 @@ package body Async_Stdin is
             return True;
           end if;
           if Ind = 1 then
-            Ada.Text_Io.Put (Latin_1.Bel);
+            Sys_Calls.Put_Output (Bell);
           else
             -- Move one left, shift tail
             Ind := Ind - 1;
@@ -290,7 +291,7 @@ package body Async_Stdin is
             Update;
             At_Last := False;
           else
-            Ada.Text_Io.Put (Latin_1.Bel);
+            Sys_Calls.Put_Output (Bell);
           end if;
           Searching := True;
         when Latin_1.Esc =>
@@ -310,7 +311,7 @@ package body Async_Stdin is
                     & C
                     & Unb.Slice (Txt, Ind, Unb.Length(Txt)));
             Ind := Ind + 1;
-            Ada.Text_Io.Put (Unb.Slice (Txt, Ind - 1, Unb.Length(Txt)));
+            Sys_Calls.Put_Output (Unb.Slice (Txt, Ind - 1, Unb.Length(Txt)));
             for I in 1 .. Unb.Length(Txt) - Ind + 1 loop
               Console.Left;
             end loop;
@@ -329,7 +330,7 @@ package body Async_Stdin is
               if Str = Arrow_Left_Seq then
                 -- Left if not at first
                 if Ind = 1 then
-                  Ada.Text_Io.Put (Latin_1.Bel);
+                  Sys_Calls.Put_Output (Bell);
                 else
                   Ind := Ind - 1;
                   Console.Left;
@@ -338,7 +339,7 @@ package body Async_Stdin is
               elsif Str = Arrow_Right_Seq then
                 -- Right if not at Last
                 if Ind = Unb.Length (Txt) + 1 then
-                  Ada.Text_Io.Put (Latin_1.Bel);
+                  Sys_Calls.Put_Output (Bell);
                 else
                   Ind := Ind + 1;
                   Console.Right;
@@ -479,7 +480,7 @@ package body Async_Stdin is
     if Stdio_Is_A_Tty
     and then (C = Ada.Characters.Latin_1.Cr
       or else C = Ada.Characters.Latin_1.Lf) then
-      Ada.Text_Io.New_Line;
+      Sys_Calls.New_Line_Output;
     end if;
 
     Result := Cb (Line.Get);
@@ -580,10 +581,10 @@ package body Async_Stdin is
   begin
     if Cb /= null then
       Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
-      Ada.Text_Io.Put (Str);
+      Sys_Calls.Put_Output (Str);
       Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False);
     else
-      Ada.Text_Io.Put (Str);
+      Sys_Calls.Put_Output (Str);
     end if;
   end Put_Out;
 
@@ -592,10 +593,10 @@ package body Async_Stdin is
   begin
     if Cb /= null then
       Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
-      Ada.Text_Io.Put_Line (Str);
+      Sys_Calls.Put_Line_Output (Str);
       Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False);
     else
-      Ada.Text_Io.Put_Line (Str);
+      Sys_Calls.Put_Line_Output (Str);
     end if;
   end Put_Line_Out;
 
@@ -604,10 +605,10 @@ package body Async_Stdin is
   begin
     if Cb /= null then
       Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
-      Ada.Text_Io.New_Line;
+      Sys_Calls.New_Line_Output;
       Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False);
     else
-      Ada.Text_Io.New_Line;
+      Sys_Calls.New_Line_Output;
     end if;
   end New_Line_Out;
 
