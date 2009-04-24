@@ -6,10 +6,10 @@
 	<META NAME="GENERATOR" CONTENT="OpenOffice.org 1.1.5  (Linux)">
 	<META NAME="AUTHOR" CONTENT="MALAISE Pascal">
 	<META NAME="CREATED" CONTENT="20060414;18573000">
-	<META NAME="CHANGED" CONTENT="20081208;14510500">
+	<META NAME="CHANGED" CONTENT="20090424;16202500">
 </HEAD>
 <BODY LANG="en-US" DIR="LTR">
-<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><B><FONT SIZE=6>V7.8</FONT></B></FONT></FONT></P>
+<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><B><FONT SIZE=6>V7.9</FONT></B></FONT></FONT></P>
 <H1 LANG="en-GB"><FONT FACE="monospace">1. General syntax</FONT></H1>
 <P LANG="en-GB"><FONT FACE="monospace">Usage: asubst [ { &lt;option&gt;
 } ] &lt;find_pattern&gt; &lt;replace_string&gt; [ { &lt;file&gt; }
@@ -151,33 +151,36 @@ comments (and possible trailing new_line) from a XML file:<BR>asubst
 words in paragraphs (separated by two '\n'):<BR>asubst -D '\n\n'
 asubst -D '\n\n' -- '\b([\M]+)\b[\S]+\1' '-&gt;\R01&lt;-' file</FONT></P>
 <H1 LANG="en-GB"><FONT FACE="monospace">7. Replace string</FONT></H1>
-<P><SPAN LANG="en-GB"><FONT FACE="monospace">The following '\'
-sequences are supported:</FONT><BR><FONT FACE="monospace">- &quot;\n&quot;
-will be replaced by a newline.</FONT><BR><FONT FACE="monospace">-
-</FONT><FONT FACE="Monospace">&quot;\t&quot; will be replaced by a
-(horiz) tab.<BR>- &quot;\xIJ&quot; where IJ is an hexadecimal number
-(00 to FF or ff) will be replaced by a byte with the corresponding
-value.<BR>- &quot;\iI- &quot;\iIJ&quot;, &quot;\aIJ&quot;, &quot;\oIJ&quot;,
-&quot;\e&quot; and &quot;\f&quot; to replace by the &lt;text&gt;
-following it, if Jth substring of the Ith regex matches (\rIJ not
-empty). The logic is a sequence of if... [ { elsif... } ] [ else... ]
-[ endif ]. Each 'if' or 'elsif' must start with a &quot;\iIJ&quot;,
-possibly immediately followed by one or several &quot;\aIJ&quot; or
-&quot;\oIJ&quot; evaluated one after the other. Example:
-&quot;\i11\o12\a13T1\i13T2\eT3\f&quot; means: If sub11 matches or
-sub12 matches and sub13 matches, then replace by T1, elsif sub13
-matches, then replace by T2, else replace by T3. &lt;text&gt; ends
-when encountering another &quot;\i&quot;, a &quot;\e&quot; or a &quot;\f&quot;.
-<BR>- &quot;\RIJ&quot; where IJ is an hexadecimal number will be
-replaced by the string matching the regex number IJ, (00 &lt;= IJ &lt;=
-NbOfRegex, 00 means the whole string matching all regex).<BR>- &quot;\rIJ&quot;
-where IJ is an hexadecimal number will be replaced by the string
-matching the substring J of the regex number I (0 &lt; I), J = 0 for
-the complete string, (so &quot;\R0x&quot; = &quot;\rx0&quot;).<BR>-
-&quot;\u&quot;, &quot;\l&quot;, &quot;\m&quot; for starting an UPPER,
-lower or Mixed case conversion. &quot;\c&quot; for stopping a case
-conversion. A conversion ends when a new starts, on &quot;\c&quot; or
-at the end of replace string.</FONT></SPAN></P>
+<P LANG="en-GB"><FONT FACE="monospace">The following '\' sequences
+are supported:</FONT><BR><FONT FACE="monospace">- &quot;\n&quot; will
+be replaced by a newline.</FONT><BR><FONT FACE="monospace">- </FONT><FONT FACE="Monospace">&quot;\t&quot;
+will be replaced by a (horiz) tab.<BR>- &quot;\xIJ&quot; where IJ is
+an hexadecimal number (00 to FF or ff) will be replaced by a byte
+with the corresponding value.<BR>- &quot;\iI- &quot;\iIJ&quot;,
+&quot;\aIJ&quot;, &quot;\oIJ&quot;, &quot;\e&quot; and &quot;\f&quot;
+to replace by the &lt;text&gt; following it, if Jth substring of the
+Ith regex matches (\rIJ not empty). The logic is a sequence of if...
+[ { elsif... } ] [ else... ] [ endif ]. Each 'if' or 'elsif' must
+start with a &quot;\iIJ&quot;, possibly immediately followed by one
+or several &quot;\aIJ&quot; or &quot;\oIJ&quot; evaluated one after
+the other. Example: &quot;\i11\o12\a13T1\i13T2\eT3\f&quot; means: If
+sub11 matches or sub12 matches and sub13 matches, then replace by T1,
+elsif sub13 matches, then replace by T2, else replace by T3. &lt;text&gt;
+ends when encountering another &quot;\i&quot;, a &quot;\e&quot; or a
+&quot;\f&quot;. <BR>- &quot;\RIJ&quot; where IJ is an hexadecimal
+number will be replaced by the string matching the regex number IJ,
+(00 &lt;= IJ &lt;= NbOfRegex, 00 means the whole string matching all
+regex).<BR>- &quot;\rIJ&quot; where IJ is an hexadecimal number will
+be replaced by the string matching the substring J of the regex
+number I (0 &lt; I), J = 0 for the complete string, (so &quot;\R0x&quot;
+= &quot;\rx0&quot;).<BR>- &quot;\K&quot;&lt;shell command&gt;&quot;\k&quot;,
+within which &quot;\RIJ&quot; and &quot;\rIJ&quot; are first
+replaced, then the command is launched (and must exit with 0), then
+the command directive is replaced by the command output.<BR>- &quot;\u&quot;,
+&quot;\l&quot;, &quot;\m&quot; for starting an UPPER, lower or Mixed
+case conversion. &quot;\c&quot; for stopping a case conversion. A
+conversion ends when a new starts, on &quot;\c&quot; or at the end of
+replace string.</FONT></P>
 <P LANG="en-GB"><FONT FACE="Monospace">Note that substrings are
 numbered in the order of the opening parenthesis, left to right.<BR>Note
 that &quot;\r0i&quot; and &quot;\i0i&quot; are forbidden.<BR></FONT><FONT FACE="monospace"><FONT FACE="Monospace">Conditions

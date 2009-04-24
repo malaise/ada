@@ -1,5 +1,5 @@
                                  Asubst
-+                                 V7.8
+                                  V7.9
 
 
 1. General syntax
@@ -155,6 +155,9 @@ The following '\' sequences are supported:
 - "\rIJ" where IJ is an hexadecimal number will be replaced by the string
   matching the substring J of the regex number I (0 < I), J = 0 for the
   complete string, (so "\R0x" = "\rx0").
+- "\K"<shell command>"\k", within which "\RIJ" and "\rIJ" are first replaced,
+  then the command is launched (and must exit with 0), then the command
+  directive is replaced by the command output.
 - "\u", "\l", "\m" for starting an UPPER, lower or Mixed case conversion. "\c"
   for stopping a case conversion. A conversion ends when a new starts, on "\c"
   or at the end of replace string.

@@ -1,5 +1,8 @@
 History of Asubst:
 ------------------
+24/04/2009 V7.9
+Add: Possibility to define \Kshell command\k in replace string.
+
 12/12/2008 V7.8
 Add: Put in grep mode all replacements (one per line) of each line.
 
