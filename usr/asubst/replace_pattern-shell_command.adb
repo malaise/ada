@@ -10,7 +10,7 @@ begin
   end if;
 
   -- Execute command and check exit code
-  Command.Execute (Cmd, False, Command.Only_Out,
+  Command.Execute (Cmd, True, Command.Only_Out,
      Out_Flow'Access, Err_Flow'Access, Code);
   Event_Mng.Reset_Default_Signals_Policy;
   if Code /= 0 then
