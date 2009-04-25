@@ -7,8 +7,9 @@ fi
 export SCENARIO=$1
 
 # Read field $2 of line $1
+export DELIMITER="\""
 function readarg {
-res="`awk -vLINE=$1 -vFIELD=$2 -F '"' '
+res="`awk -vLINE=$1 -vFIELD=$2 -F $DELIMITER '
   BEGIN {
     NL=0
     FIELD=2*FIELD
@@ -39,7 +40,9 @@ while true ; do
   if [ "$input" = "" ] ; then
     break
   fi
-  if [ "$input" = "Options" ] ; then
+  if [ "$input" = "Delimiter" ] ; then
+    DELIMITER=`readarg $L 2`
+  elif [ "$input" = "Options" ] ; then
     export opt1=`readarg $L 2`
     export opt2=`readarg $L 3`
     export opt3=`readarg $L 4`

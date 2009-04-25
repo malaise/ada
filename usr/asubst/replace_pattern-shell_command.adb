@@ -14,7 +14,8 @@ begin
      Out_Flow'Access, Err_Flow'Access, Code);
   Event_Mng.Reset_Default_Signals_Policy;
   if Code /= 0 then
-    Sys_Calls.Put_Line_Error ("Replace, command exited with code " & Code'Img);
+    Sys_Calls.Put_Line_Error ("Replace, command exited with code "
+                            & Code_Image (Code));
     raise Command_Error;
   end if;
   if Debug.Set then

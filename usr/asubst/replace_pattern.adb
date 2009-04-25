@@ -1,11 +1,12 @@
 with Ada.Strings.Unbounded, Ada.Characters.Latin_1, Ada.Exceptions;
 with Argument, Sys_Calls, String_Mng, Text_Line, Unique_List, Debug,
      Char_To_Hexa, Regular_Expressions, Upper_Str, Lower_Str, Mixed_Str,
-     Command;
+     Command, Int_Image;
 with Search_Pattern;
 package body Replace_Pattern is
 
   package Asu renames Ada.Strings.Unbounded;
+  function Code_Image is new Int_Image (Command.Exit_Code_Range);
 
   -- The pattern to replace
   The_Pattern : Asu.Unbounded_String;
@@ -165,8 +166,18 @@ package body Replace_Pattern is
       exit when Got = 0;
       -- Set corresponding code
       Esc_Char := Asu.Element (The_Pattern, Got);
-      if Debug.Set then
-        Sys_Calls.Put_Line_Error ("Replace, found Esc char >" & Esc_Char & "<");
+      -- In command, skip unexpected characters. Handle k, R and r
+      if In_Command and then
+        (Esc_Char /= 'k'and then Esc_Char /= 'R' and then Esc_Char /= 'r') then
+        -- Skip this char by settting Esc_Char tu Subst_Char, which:
+        --  should not be in the original replace pattern
+        --  is not in the Locate_Escape above
+        --  is not in the case statement below
+        Esc_Char := Subst_Char;
+      else
+        if Debug.Set then
+          Sys_Calls.Put_Line_Error ("Replace, found Esc char >" & Esc_Char & "<");
+        end if;
       end if;
       -- In all case of replacement of \... by a char:
       Start := Got;
@@ -187,10 +198,6 @@ package body Replace_Pattern is
             Error ("Invalid " & Mixed_Str (Subst.Action'Img)
                  & " while not in condition");
           end if;
-          if In_Command then
-            Error ("Invalid " & Mixed_Str (Subst.Action'Img)
-                 & " while in command");
-          end if;
           Substites_List.Insert (Substites, Subst);
           Asu.Replace_Slice (The_Pattern, Subst.Index, Subst.Index + 1,
                              Subst_Char & "");
@@ -202,10 +209,6 @@ package body Replace_Pattern is
             Error ("Invalid " & Mixed_Str (Subst.Action'Img)
                  & " while not in condition or else part");
           end if;
-          if In_Command then
-            Error ("Invalid " & Mixed_Str (Subst.Action'Img)
-                 & " while in command");
-          end if;
           Substites_List.Insert (Substites, Subst);
           Asu.Replace_Slice (The_Pattern, Subst.Index, Subst.Index + 1,
                              Subst_Char & "");
@@ -213,10 +216,6 @@ package body Replace_Pattern is
         when 'K' =>
           -- "\K" to start command
           Subst.Action := Start_Command;
-          if In_Command then
-            Error ("Invalid " & Mixed_Str (Subst.Action'Img)
-                 & " while in command");
-          end if;
           Substites_List.Insert (Substites, Subst);
           Asu.Replace_Slice (The_Pattern, Subst.Index, Subst.Index + 1,
                              Subst_Char & "");
@@ -311,10 +310,6 @@ package body Replace_Pattern is
                   Error ("Invalid 'if' or 'elsif' directive while in 'else' "
                          & "of condition");
               end case;
-              if In_Command then
-                Error ("Invalid " & Mixed_Str (Subst.Action'Img)
-                     & " while in command");
-              end if;
               If_Mode := In_If;
               If_Index := Subst.Index;
             else
@@ -326,10 +321,6 @@ package body Replace_Pattern is
               if Subst.Index /= If_Index + 1 then
                 Error ("Invalid 'and then' or 'or else ' directive "
                      & " not part of 'if' or 'elsif' condition");
-              end if;
-              if In_Command then
-                Error ("Invalid " & Mixed_Str (Subst.Action'Img)
-                     & " while in command");
               end if;
               If_Index := Subst.Index;
               if Esc_Char = 'a' then
@@ -344,7 +335,8 @@ package body Replace_Pattern is
           Asu.Replace_Slice (The_Pattern, Got - 1, Got + 2,
                              Subst_Char & "");
         when others =>
-          -- Impossible. Leave sequence as it is, skip it
+          -- Impossible or a \* to skip within command
+          -- Leave sequence as it is, skip it
           Start := Got + 1;
       end case;
       -- Also done if end of pattern

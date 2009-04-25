@@ -410,12 +410,12 @@ package body Substit is
     return Total_Subst;
   exception
     when Replace_Pattern.Command_Error =>
-      -- Rollback
+      -- Rollback on this file
       Close;
       Clean;
       return 0;
     when others =>
-      -- Rollback
+      -- Rollback and stop
       Close;
       Clean;
       raise;
