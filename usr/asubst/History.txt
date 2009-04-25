@@ -1,5 +1,8 @@
 History of Asubst:
 ------------------
+25/04/2009 V7.10
+Fix: Don't process meaningless '\' sequences within command of replace string.
+
 24/04/2009 V7.9
 Add: Possibility to define \Kshell command\k in replace string.
 
@@ -44,8 +47,8 @@ Add: -D <string> (--delimiter=<string>) to set a specific input line delimiter.
 Add: -p (--tmp) for alternative dir of tmp files.
 
 25/01/2008 V5.2
-BugFix: Fix internal error when matching substring has index=(0, 0).
-BugFix: Fix String_Mng bug on \\\R01 in replace pattern.
+Fix: internal error when matching substring has index=(0, 0).
+Fix: String_Mng bug on \\\R01 in replace pattern.
 
 18/01/2008 V5.1
 Add: Re-implement \R00.
@@ -59,11 +62,11 @@ Add: Support non empty replacing string in grep mode (put matching string when
   replacing is empty).
 
 16/01/2008 V4.8
-Bugfix: Fix display when grep "^toto" (single line, not multi match),
+Fix: display when grep "^toto" (single line, not multi match),
   matching string was put twice.
 
 25/11/2007 V4.7
-Bugfix: Complete help and doc on back reference and order of substrings.
+Fix: Complete help and doc on back reference and order of substrings.
 
 20/11/2007 V4.6
 Add: -d or --display also display exclude pattern (if any).
@@ -72,7 +75,7 @@ Add: -d or --display also display exclude pattern (if any).
 Add: Complete check of validity of '^' or '$' in simple or multiple regex.
 
 18/11/2007 V4.4
-Bugfix: Cannot check that multi-regex pattern does not contain '^' or '$',
+Fix: Cannot check that multi-regex pattern does not contain '^' or '$',
   (because they are allowed if backslashed, and ^ is allowed in []).
   Replace by a detection of "\n^" and "$\n" and error in this case.
 
@@ -80,7 +83,7 @@ Bugfix: Cannot check that multi-regex pattern does not contain '^' or '$',
 Add: -e <pattern> or --exclude=<pattern> to exclude string matching <pattern>.
 
 15/11/2007 V4.2
-Bugfix: Fix help and doc: \r0i and \R00 are forbidden.
+Fix: help and doc: \r0i and \R00 are forbidden.
 
 14/11/2007 V4.1
 Add: -d or --display to display patterns.
@@ -91,26 +94,26 @@ Add: Use generic parsing by Argument_Parser; single letter options can now
      be grouped (ex: -tv).
 
 18/07/2007 V3_8
-Bugfix: Fix verbose output when multi-line search pattern.
+Fix: verbose output when multi-line search pattern.
 Add: -g or --grep option.
 CHANGE: Exit codes become 0 (found), 1 (not found) and 2 (error).
 
 18/07/2007 V3_7
-Bugfix: Fix and robustify the parsing of arguments.
-Bugfix: Fix language setting (env and/or arg).
-Bugfix: Change -v to -V for --version.
-Bugfix: Do not commit when -t.
-Bugfix: Propagate all access right of original file into new file.
+Fix: and robustify the parsing of arguments.
+Fix: language setting (env and/or arg).
+Fix: Change -v to -V for --version.
+Fix: Do not commit when -t.
+Fix: Propagate all access right of original file into new file.
 
 22/04/2007 V3_6
 Add: -t or --test option.
 
 13/04/2007 V3_5
-Internal change in Utf_8 handling.
+Fix: Internal change in Utf_8 handling.
 
 25/04/2006 V3_4
-Bugfix: Return "" i.o. exception when no matching substring.
-Bugfix: Forbid "\n" in noregex mode.
+Fix: Return "" i.o. exception when no matching substring.
+Fix: Forbid "\n" in noregex mode.
 Add: Improve doc regarding noregex mode.
 
 25/04/2006 V3_3
@@ -128,11 +131,11 @@ Add: Check if env variable LANG ends by ".UTF-8" then check env variable
 
 16/04/2006 V2_13
 Add: -u or --utf8 for UTF-8 processing, and -a or --ascii for ASCII processing.
-Bugfix: Invalid processing of \R00 if multiple regexps.
+Fix: Invalid processing of \R00 if multiple regexps.
 CHANGE: \R00 and \r0i become forbidden.
 
 06/04/2006 V2_12
-Bugfix: Exception in replace because string for replace must be full string
+Fix: Exception in replace because string for replace must be full string
         and not matching string.
 
 03/04/2006 V2_11
@@ -150,7 +153,7 @@ Add: Count substitutions and lines with Long_Long.
 21/12/2005 V2_8
 Add: checks of access right on file prior to substitution.
 Add: clean temp file in case of exception.
-Bugfix: file name was always displayed if default verbosity (since V2_7).
+Fix: file name was always displayed if default verbosity (since V2_7).
 
 19/12/2005 V2_7
 Add: -n (--number) and -v (--verbose) options for putting number of
@@ -172,8 +175,8 @@ Add: \rIJ in replace pattern fo substring of matching string substitution.
 Add: Support for \s (for space) in both patterns.
 
 07/12/2005 V2_2
-Bugfix: \x0A in search pattern was not parsed as line delimiter.
-Bugfix: One not multiple regex ("\n" of "^..." or "...$") was badly handled.
+Fix: \x0A in search pattern was not parsed as line delimiter.
+Fix: One not multiple regex ("\n" of "^..." or "...$") was badly handled.
 
 05/12/2005 V2_1
 Add: Support for \t and \xIJ in search pattern.
