@@ -1,8 +1,6 @@
 with Dynamic_List, Event_Mng, Environ;
 package body Proc_Family is
 
-  Init_Done : Boolean := False;
-
   -- List of running children
   type Child_Rec is record
     Child_Pid : Sys_Calls.Pid;
@@ -86,7 +84,6 @@ package body Proc_Family is
     return True;
   end Handle_Death;
 
-
   -- The SigChild callback
   procedure Sig_Child_Cb is
   begin
@@ -94,17 +91,6 @@ package body Proc_Family is
       exit when not Handle_Death;
     end loop;
   end Sig_Child_Cb;
-
-  -- Initialisation
-  procedure Init is
-  begin
-    if Init_Done then
-      return;
-    end if;
-    Event_Mng.Set_Sig_Child_Callback (Sig_Child_Cb'Access);
-    Event_Mng.Wait (0);
-    Init_Done := True;
-  end Init;
 
   -- Image of a fd, of a pid
   function Image (I : Natural) return String is
@@ -153,7 +139,8 @@ package body Proc_Family is
     I_Am_Child : Boolean;
   begin
     -- Init if needed
-    Init;
+    Event_Mng.Set_Sig_Child_Callback (Sig_Child_Cb'Access);
+    Event_Mng.Wait (0);
     -- Init Child rec
     Child.Open := Comm /= None;
     Child.Child_Cb := Death_Report;
