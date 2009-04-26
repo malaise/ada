@@ -1,5 +1,5 @@
                                  Asubst
-                                  V7.10
+                                  V7.11
 
 
 1. General syntax
@@ -204,7 +204,9 @@ In noregex mode, "\rIJ" with J > 0 is forbidden (no substring).
 
 10. Exit code
 asubst exits with 0 if some matching was found, with 1 if no matching
-was found and with 2 otherwise (e.g. in case of error).
+was found, with 2 otherwise (e.g. in case of error). It can also exit with code
+3 if stopped (Ctrl-C or SIGTERM) while executing external command, or with
+standard 128 + signal number.
 
 
 11. Troubleshooting

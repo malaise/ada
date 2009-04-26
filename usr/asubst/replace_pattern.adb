@@ -699,6 +699,8 @@ package body Replace_Pattern is
       raise;
     when Command_Error =>
       raise;
+    when Terminate_Request =>
+      raise;
     when Error:others =>
       Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
                                & " INTERNAL ERROR: "

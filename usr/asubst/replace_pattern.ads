@@ -13,7 +13,9 @@ package Replace_Pattern is
   function Replace return String;
   -- If result string is too long?
   Replace_Error : exception;
-  -- If external shell command exit /= 0
+  -- If external shell command exit /= 0 or spawn error
   Command_Error : exception;
+  -- If Ctr C while waiting for external shell result
+  Terminate_Request : exception;
 end Replace_Pattern;
  

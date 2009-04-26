@@ -1,5 +1,8 @@
 History of Asubst:
 ------------------
+26/04/2009 V7.11
+Fix: Exit with code 3 on Ctrl-C while executing command.
+
 25/04/2009 V7.10
 Fix: Don't process meaningless '\' sequences within command of replace string.
 

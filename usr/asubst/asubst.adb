@@ -3,12 +3,13 @@ with Environ, Argument, Argument_Parser, Sys_Calls, Language, Mixed_Str, Text_Li
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
-  Version : constant String  := "V7.10";
+  Version : constant String  := "V7.11";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
   No_Subst_Exit_Code : constant Natural := 1;
   Error_Exit_Code : constant Natural := 2;
+  Terminate_Exit_Code : constant Natural := 3;
 
   procedure Usage is
   begin
@@ -272,6 +273,8 @@ procedure Asubst is
   exception
     when Substit.Substit_Error =>
       Ok := False;
+    when Replace_Pattern.Terminate_Request =>
+      raise;
     when Error:others =>
       Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
                 & ": EXCEPTION: " & Ada.Exceptions.Exception_Name (Error)
@@ -618,6 +621,8 @@ begin
       exception
         when Substit.Substit_Error =>
           Ok := False;
+        when Replace_Pattern.Terminate_Request =>
+          raise;
         when Error:others =>
           Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
                     & ": EXCEPTION: " & Ada.Exceptions.Exception_Name (Error)
@@ -664,5 +669,8 @@ begin
       Sys_Calls.Set_Exit_Code (No_Subst_Exit_Code);
     end if;
   end if;
+exception
+  when Replace_Pattern.Terminate_Request =>
+    Sys_Calls.Set_Exit_Code (Terminate_Exit_Code);
 end Asubst;
 
