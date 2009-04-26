@@ -50,10 +50,16 @@ package body Command is
     case Death_Report.Cause is
       when Sys_Calls.Exited =>
         if Death_Report.Exited_Pid /= Current_Pid then
+          if Debug then
+            Ada.Text_Io.Put_Line ("Command: Death Cb bad exit pid");
+          end if;
           return;
         end if;
       when Sys_Calls.Signaled  =>
         if Death_Report.Signaled_Pid /= Current_Pid then
+          if Debug then
+            Ada.Text_Io.Put_Line ("Command: Death Cb bad signal pid");
+          end if;
           return;
         end if;
     end case;
@@ -105,7 +111,15 @@ package body Command is
     use type Asu_Us, Sys_Calls.File_Desc;
   begin
     if Debug then
-      Ada.Text_Io.Put_Line ("Command: Fd Cb");
+      if Fd = Output_Fd then
+        if Debug then
+          Ada.Text_Io.Put_Line ("Command: Fd Cb output flow");
+        end if;
+      else
+        if Debug then
+          Ada.Text_Io.Put_Line ("Command: Fd Cb error flow");
+        end if;
+      end if;
     end if;
     -- Init Text_Line flow
     Flow.Open (Text_Line.In_File, Fd);
@@ -118,9 +132,6 @@ package body Command is
       Got := True;
       -- Apply policy to flow
       if Fd = Output_Fd then
-        if Debug then
-          Ada.Text_Io.Put_Line ("Command: Fd Cb output flow");
-        end if;
         if Mix_Policy = None then
           -- Stdout -> Stdout
           Sys_Calls.Put_Output (Asu_Ts (Line));
@@ -129,9 +140,6 @@ package body Command is
           Add_Flow (Output_Result.all, Line);
         end if;
       else
-        if Debug then
-          Ada.Text_Io.Put_Line ("Command: Fd Cb error flow");
-        end if;
         if Mix_Policy /= Both then
           -- Stderr -> Stderr
           Sys_Calls.Put_Error (Asu_Ts (Line));
