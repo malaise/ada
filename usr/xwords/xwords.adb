@@ -28,14 +28,15 @@ procedure Xwords is
   Recall_Fld : constant Afpx.Field_Range := 4;
   Get_Fld : constant Afpx.Field_Range := 5;
   Search_Fld : constant Afpx.Field_Range := 6;
-  Add_Word_Fld : constant Afpx.Field_Range := 9;
-  Add_Noun_Fld : constant Afpx.Field_Range := 10;
-  Del_Word_Fld : constant Afpx.Field_Range := 11;
-  Del_Noun_Fld : constant Afpx.Field_Range := 12;
-  History_Fld : constant Afpx.Field_Range := 13;
-  Clear_List_Fld : constant Afpx.Field_Range := 14;
-  Lmng_Fld : constant Afpx.Field_Range := 15;
-  Exit_Fld : constant Afpx.Field_Range := 22;
+  Research_Fld : constant Afpx.Field_Range := 7;
+  Add_Word_Fld : constant Afpx.Field_Range := 10;
+  Add_Noun_Fld : constant Afpx.Field_Range := 11;
+  Del_Word_Fld : constant Afpx.Field_Range := 12;
+  Del_Noun_Fld : constant Afpx.Field_Range := 13;
+  History_Fld : constant Afpx.Field_Range := 14;
+  Clear_List_Fld : constant Afpx.Field_Range := 15;
+  Lmng_Fld : constant Afpx.Field_Range := 17;
+  Exit_Fld : constant Afpx.Field_Range := 16;
 
   -- History of search requests
   History : Cmd.Res_List;
@@ -72,7 +73,7 @@ procedure Xwords is
   -- Build and launch a Words command
   procedure Do_Command (Num : Afpx.Field_Range) is
     Result : Cmd.Res_List;
-    Com, Arg : Common.Asu_Us;
+    Com, Word, Arg : Common.Asu_Us;
     Command_Ok : Boolean;
     First : Boolean;
     use type Afpx.Field_Range, Common.Asu_Us;
@@ -81,9 +82,9 @@ procedure Xwords is
     Afpx.Line_List.Delete_List (Deallocate => False);
 
     -- Build command and execute it
-    Arg := Common.Asu_Tus (Strip (Afpx.Decode_Field (Get_Fld, 0, False)));
+    Word := Common.Asu_Tus (Strip (Afpx.Decode_Field (Get_Fld, 0, False)));
     case Num is
-      when Search_Fld =>
+      when Search_Fld | Research_Fld =>
         Com := Common.Asu_Tus ("ws");
       when Add_Word_Fld | Add_Noun_Fld =>
         Com := Common.Asu_Tus ("wa");
@@ -93,22 +94,27 @@ procedure Xwords is
         Status := Error;
         return;
     end case;
-    if Num = Add_Noun_Fld or else Num = Del_Noun_Fld then
-      Arg := Common.Asu_Tus (Many_Strings.Cat ("-noun", Common.Asu_Ts (Arg)));
+    if Num = Research_Fld then
+      Arg := Common.Asu_Tus (Many_Strings.Cat ("-re", Common.Asu_Ts (Word)));
+    elsif Num = Add_Noun_Fld or else Num = Del_Noun_Fld then
+      Arg := Common.Asu_Tus (Many_Strings.Cat ("-noun", Common.Asu_Ts (Word)));
+    else
+      Arg := Word;
     end if;
     Cmd.Exec (Common.Asu_Ts (Com), Common.Asu_Ts (Arg),
                   Command_Ok, Result);
     if not Command_Ok then
       Status := Error;
-    elsif Num = Search_Fld then
+    elsif Num = Search_Fld or else Num = Research_Fld then
       Status := Found;
     else
       Status := Ok;
     end if;
 
     -- Store in history and selection if search
-    if Num = Search_Fld and then Arg /= Common.Asu_Null then
-      History.Insert (Arg);
+    if (Num = Search_Fld or else Num = Research_Fld)
+    and then Arg /= Common.Asu_Null then
+      History.Insert (Word);
     end if;
 
     -- Log request if needed
@@ -125,7 +131,7 @@ procedure Xwords is
     if Result.Is_Empty then
       if Status = Found then
         -- Set selection to search word/pattern
-        Afpx.Set_Selection (Lower_Str (Common.Asu_Ts (Arg)));
+        Afpx.Set_Selection (Lower_Str (Common.Asu_Ts (Word)));
       else
         -- Reset selection for case where no result or error
         Afpx.Set_Selection ("");
