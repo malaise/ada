@@ -191,13 +191,18 @@ package body Arbitrary is
 
     subtype Str2 is String (1 .. 2);
     procedure Div_Char (A : in Str2; B : in Character;
-                        Q : out Character; R : out Character) is
-      Ta, Tb : Natural;
+                        Q : out Character) is
+      Ta, Tb, D : Natural;
     begin
       Ta := To_Int( A(1)) * 10 + To_Int( A(2));
       Tb := To_Int (B);
-      Q := To_Char (Ta / Tb);
-      R := To_Char (Ta rem Tb);
+      D := Ta / Tb;
+      if D in Digit then
+        Q := To_Char (D);
+      else
+        -- This can occur, ex: 710 / 79
+        Q := '9';
+      end if;
     end Div_Char;
 
     -- Operations on data without sign
@@ -336,7 +341,7 @@ package body Arbitrary is
         St(1) := Ca;
         St(2) := Unb.Element (A, 2);
       end if;
-      Div_Char (St, Cb, Cq, Cr);
+      Div_Char (St, Cb, Cq);
       -- Check that Q * B < A or decrement Q until
       loop
         T := Unb.To_Unbounded_String ("" & Cq);
