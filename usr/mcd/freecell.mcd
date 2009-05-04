@@ -19,10 +19,9 @@ d C pushr call
 # w
 w C pushr call
 
-# Format a result (2 digits)
-[ toreal 4 2 " " normal put ] P popr
-
 # X = W / (W + D)
 w pushr dup d pushr + / 100.0 *
-P pushr call
+
+# Format a result (2 digits)
+toreal 4 2 " " normal put "%" putl
 
