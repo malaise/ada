@@ -8,6 +8,7 @@ package Arbitrary is
   function Set (V : Integer) return Number;
   function Set (V : Long_Integer) return Number;
   function Set (V : Long_Long_Integer) return Number;
+  function Is_Set (V : Number) return Boolean;
 
   -- Basic "constants"
   function Zero return Number;

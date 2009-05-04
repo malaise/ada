@@ -452,6 +452,11 @@ package body Arbitrary is
     return Set_Uncheck (Strip (V'Img) );
   end Set;
 
+  function Is_Set (V : Number) return Boolean is
+  begin
+    return Unb.Length (Unbstr(V)) >= 2;
+  end Is_Set;
+
   -- "Constants"
   function Zero return Number is
   begin
@@ -871,6 +876,7 @@ package body Arbitrary is
   -- Digit extraction. Sign is not taken into account
   function Nb_Digits (A : Number) return Positive is
   begin
+    Syntax.Check (A);
     -- A length is at least 2
     return Unb.Length (Unbstr(A)) - 1;
   end Nb_Digits;
@@ -886,6 +892,7 @@ package body Arbitrary is
     
   function Last_Digit (A : Number) return Digit is
   begin
+    Syntax.Check (A);
     return Basic.To_Digit (Unb.Element (Unbstr(A), Unb.Length (Unbstr(A))));
   end Last_Digit;
 
