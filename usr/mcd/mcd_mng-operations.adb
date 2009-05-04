@@ -833,7 +833,7 @@ package body Operations is
       return (Kind => Arbi, Val_Arbi => Arbitrary.Sqrt (X.Val_Arbi));
     elsif X.Kind = Inte then
       R := My_Math.Sqrt (My_Math.Real(X.Val_Inte));
-      return (Kind => Inte, Val_Inte => My_Math.Round(R));
+      return (Kind => Inte, Val_Inte => My_Math.Trunc(R));
     else
       raise Invalid_Argument;
     end if;
