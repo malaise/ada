@@ -313,7 +313,7 @@ package body Arbitrary is
     procedure Div_One (A, B : in Unbstr; Q : out Character; R : out Unbstr) is
       La : constant Natural := Unb.Length(A);
       Lb : constant Natural := Unb.Length(B);
-      Ca, Cb, Cq, Cr : Character;
+      Ca, Cb, Cq : Character;
       St : Str2;
       T : Unbstr;
       Lt : Natural;
