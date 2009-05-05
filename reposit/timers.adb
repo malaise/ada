@@ -243,14 +243,15 @@ package body Timers is
   end Delete;
 
   -- Locate First timer to expire
-  -- May raise Invalid_Timer if no more timer
-  procedure First is
+  -- Retuns False if no more timer
+  function First return Boolean is
   begin
     if Timer_List_Mng.Is_Empty (Timer_List) then
-      raise Invalid_Timer;
+      return False;
     end if;
     -- Move to beginning
     Timer_List_Mng.Rewind (Timer_List);
+    return True;
   end First;
 
   -- For each timer for which if expiration time/delay is reached
@@ -266,14 +267,8 @@ package body Timers is
     Set_Debug;
     One_True := False;
     loop
-      begin
-        -- Search first timer
-        First;
-      exception
-        when Invalid_Timer =>
-          -- No  more timer
-          exit;
-      end;
+      -- Search first timer, exit when no  more timer
+      exit when not First;
 
       -- Get it
       Timer_List_Mng.Read (Timer_List, Timer, Timer_List_Mng.Current);
@@ -323,15 +318,12 @@ package body Timers is
     Timer : Timer_Rec;
   begin
     Set_Debug;
-    begin
       -- Search first timer and read it
-      First;
-    exception
-      when Invalid_Timer =>
-        -- No  more timer
-        Put_Debug ("Wait_Until", "-> Infinite cause no timer");
-        return Infinite_Expiration;
-    end;
+    if not First then
+      -- No  more timer
+      Put_Debug ("Wait_Until", "-> Infinite cause no timer");
+      return Infinite_Expiration;
+    end if;
     Timer_List_Mng.Read (Timer_List, Timer, Timer_List_Mng.Current);
 
     Put_Debug ("Wait_Until", "-> "
