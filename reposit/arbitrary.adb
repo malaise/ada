@@ -1,9 +1,14 @@
 with Ada.Strings.Maps;
 package body Arbitrary is
 
+  -- Unbounded string operations
   package Unb renames Ada.Strings.Unbounded;
   subtype Unbstr is Unb.Unbounded_String;
   function Set (Str : String) return Unbstr renames Unb.To_Unbounded_String;
+
+  -- Digits
+  subtype C_Digit is Character range '0' .. '9';
+  subtype I_Digit is Digit;
 
 
   -- Syntax checking: <sign>{<digit>}
@@ -18,7 +23,7 @@ package body Arbitrary is
   package body Syntax is
     function Is_Digit (C : Character) return Boolean is
     begin
-      return C >= '0' and then C <= '9';
+      return C in C_Digit;
     end Is_Digit;
 
     function Is_Sign (C : Character) return Boolean is
@@ -62,7 +67,7 @@ package body Arbitrary is
     function Check_Is_Pos (A : Number) return Boolean;
 
     -- Char -> Digit
-    function To_Digit (C : Character) return Digit;
+    function To_Digit (C : C_Digit) return I_Digit;
 
     -- Add/remove leading sign
     function Make (V : Unbstr) return Number;
@@ -87,13 +92,13 @@ package body Arbitrary is
     Zero_Pos : constant Natural := Character'Pos('0');
 
     -- Int <-> char
-    function To_Int (C : Character) return Digit is
+    function To_Int (C : C_Digit) return I_Digit is
     begin
       return Character'Pos(C) - Zero_Pos;
     end To_Int;
-    function To_Digit (C : Character) return Digit renames To_Int;
+    function To_Digit (C : C_Digit) return Digit renames To_Int;
 
-    function To_Char (I : Digit) return Character is
+    function To_Char (I : Digit) return C_Digit is
     begin
       return Character'Val(I + Zero_Pos);
     end To_Char;
@@ -148,7 +153,8 @@ package body Arbitrary is
       end if;
     end Trim;
 
-    -- Char -> Char operations
+    -- Char -> Char addition, substraction and multiplication
+    -- Note that Carry is 'in out'
     procedure Add_Char (A, B : in Character;
                         Carry : in out Boolean; C : out Character) is
       R : Natural;
@@ -189,6 +195,12 @@ package body Arbitrary is
       C := To_Char (R);
     end Mult_Char;
 
+    -- Division of a Char (or two) by a char, for an overestimation of the
+    -- quotien.
+    -- Note that quotien could be above 9. This can occur, by ex when
+    --  dividing 710 by 79, which leads to divide 71 by 7. In this case
+    --  9 is returned.
+    --  And this is why Div_Char does not return the remaining.
     subtype Str2 is String (1 .. 2);
     procedure Div_Char (A : in Str2; B : in Character;
                         Q : out Character) is
@@ -197,10 +209,10 @@ package body Arbitrary is
       Ta := To_Int( A(1)) * 10 + To_Int( A(2));
       Tb := To_Int (B);
       D := Ta / Tb;
-      if D in Digit then
+      if D in I_Digit then
         Q := To_Char (D);
       else
-        -- This can occur, ex: 710 / 79
+        -- Quotien above 9 -> 9
         Q := '9';
       end if;
     end Div_Char;
@@ -310,7 +322,9 @@ package body Arbitrary is
       return R;
     end Mul_No_Sign;
 
-    procedure Div_One (A, B : in Unbstr; Q : out Character; R : out Unbstr) is
+    -- Divide a slice by a slice, the quotient is a single digit
+    -- A prerequisit is that A < 10 * B
+    procedure Div_One (A, B : in Unbstr; Q : out C_Digit; R : out Unbstr) is
       La : constant Natural := Unb.Length(A);
       Lb : constant Natural := Unb.Length(B);
       Ca, Cb, Cq : Character;
@@ -334,23 +348,28 @@ package body Arbitrary is
           R := A;
           return;
         else
+          -- Same length, so first quotient is got by first digit
+          --  of A and B: Ca/Cb
           St(1) := '0';
           St(2) := Ca;
         end if;
       else
+        -- A < 10 * B but has one more digit, so first quotien is got
+        --  by 2 first digits of A / first digit of B
         St(1) := Ca;
         St(2) := Unb.Element (A, 2);
       end if;
       Div_Char (St, Cb, Cq);
-      -- Check that Q * B < A or decrement Q until
+      -- Check that Q * B <= A or decrement Q until this is true
       loop
         T := Unb.To_Unbounded_String ("" & Cq);
         T := Mul_No_Sign (T, B);
         Lt := Unb.Length(T);
         if Lt > La or else (Lt = La and then T > A) then
-          -- Decrement Q by one
+          -- T > A: Decrement Q by one
           Cq := Character'Pred(Cq);
         else
+          -- T <= A, done
           exit;
         end if;
       end loop;
@@ -371,22 +390,29 @@ package body Arbitrary is
     begin
       -- Check that B <= A
       if La < Lb or else (La = Lb and then A < B) then
-        -- A < B. Return 0, A
+        -- A < B. Return 0 and A
         Q := Unb.To_Unbounded_String("0");
         R := A;
         return;
       end if;
+      -- Divide slices of lenght <= B'Length, so quotien is always
+      --  one digit
       Q := Unb.Null_Unbounded_String;
       N := Lb;
       T := Unb.Head(A, N);
       loop
+        -- Divide this slice and append digit to quotien
         Div_One (T, B, Cq, R);
         Unb.Append (Q, Cq);
+        -- Done when last digit of A has been divided
         exit when N = La;
+        -- Take next digit of A and append to previous rest
         N := N + 1;
         T := R & Unb.Element (A, N);
+        -- R can be zero => T can have leading zero
         Trim (T);
       end loop;
+      -- Q can have leading zeros
       Trim(Q);
     end Div_No_Sign;
 
@@ -403,9 +429,7 @@ package body Arbitrary is
       end if;
     end Les_No_Sign;
 
-       
   end Basic;
-
 
   -- Constructors
   function Set_Uncheck (V : String) return Number is
