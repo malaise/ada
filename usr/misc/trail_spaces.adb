@@ -3,7 +3,7 @@ with Argument, Sys_Calls, Temp_File, Text_Line;
 procedure Trail_Spaces is
 
   -- This is the exit code. Like diff:
-  -- An  exit status of 0 means no change,
+  -- An exit status of 0 means no change,
   --  1 means some files have been modified,
   --  and 2 means trouble on at least one file
   All_Unchanged : constant Natural := 0;
@@ -122,6 +122,10 @@ procedure Trail_Spaces is
               Modified := True;
             end if;
             exit;
+          elsif I = 1 then
+            -- Line is made of spaces, replace it by an empty line
+            Text_Line.New_Line (Out_File);
+            Modified := True;
           end if;
         end loop;
       end if;
