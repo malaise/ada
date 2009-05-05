@@ -1,7 +1,15 @@
 # Displays square root of numbers
 # Loop
-[ i pushr @1 + i copyr dup "Sqrt(" put put ") = " put
-  sqrt putl pushle copye retacal ] copye
+[
+# Incr
+i pushr @1 + i copyr dup
+# Sqrt of arbi
+"Sqrt(" put put ") = " put dup sqrt dup putl 
+# Check v.s. int
+tointe swap tointe sqrt /=
+[ "Error on " put i pushr putl ssize popn retall ] ifcall
+# Loop
+pushle copye retacal ] copye
 
 @0 i popr
 10 format
