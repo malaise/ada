@@ -913,7 +913,7 @@ package body Arbitrary is
       return Basic.To_Digit (Unb.Element (Unbstr(A), N + 1));
     end if;
   end Nth_Digit;
-    
+
   function Last_Digit (A : Number) return Digit is
   begin
     Syntax.Check (A);

@@ -43,6 +43,6 @@ package body Common is
          & Ada.Strings.Unbounded.To_String (Word.Text));
     end loop;
   end Dump_Words;
-    
+
 end Common;
 

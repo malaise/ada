@@ -430,7 +430,7 @@ private
   package Id_List_Mng is new Unique_List (Id_Cell, Id_Cell_Access,
                                           Set, "=", Image);
   type Id_List_Access is access Id_List_Mng.List_Type;
-  
+
   -- List of IDREFs found
   package Idref_Dyn_List_Mng is new Dynamic_List (Id_Cell);
   package Idref_List_Mng renames Idref_Dyn_List_Mng.Dyn_List;
@@ -450,7 +450,7 @@ private
     File    : Ada.Strings.Unbounded.Unbounded_String;
     Int_Def : Ada.Strings.Unbounded.Unbounded_String;
   end record;
-    
+
   ------------------
   -- CONTEXT TYPE --
   ------------------

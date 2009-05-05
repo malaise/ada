@@ -25,7 +25,7 @@ package body Sok_Manager is
   -- Menu return : go on with same frame or,
   --  if new frame, reset_all state (read) or update time (restored)
   type Menu_Result_List is (Go_On, Reset_All, Update_Time);
-  
+
 
   -- Frames reading, saving and restoring.
   package Sok_File is
@@ -112,7 +112,7 @@ package body Sok_Manager is
       State.No_Frame := First_Frame;
       Init_Frame;
     end if;
-    
+
 
     -- Play or end of frame
     if State.Box_Ok /= State.Nbre_Targets then

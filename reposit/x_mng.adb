@@ -324,7 +324,7 @@ package body X_Mng is
   function X_Set_Selection (Line_Id : Line_For_C;
                             Selection : System.Address) return Result;
   pragma Import(C, X_Set_Selection, "x_set_selection");
-  
+
   ------------------------------------------------------------------
   -- Request selection from others
   -- extern int x_request_selection (void *line_id);
@@ -1195,7 +1195,7 @@ package body X_Mng is
     end loop;
     return Buffer;
   end X_Get_Selection;
-  
+
 
   ------------------------------------------------------------------
   procedure X_Blink_Alternate (Line_Id : in Line) is

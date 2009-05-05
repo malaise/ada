@@ -3,7 +3,7 @@
 --  a and b are integers or ${Variable}
 -- Supports parentheses.
 package Computer is
-  
+
   -- Variable management
   ----------------------
   -- Reset not persistent or all variables
@@ -32,7 +32,7 @@ package Computer is
   --  raised
   type Resolver_Access is access function (Name : String) return String;
   External_Resolver : Resolver_Access := null;
-  
+
   -- Resolv variables of an expresssion
   function Eval (Expression : String) return String;
 
@@ -50,6 +50,6 @@ package Computer is
   Unknown_Variable : exception;
   -- On Eval when invalid expression (parentheses, operations, values...)
   Invalid_Expression : exception;
-  
+
  end Computer;
- 
+

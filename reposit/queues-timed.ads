@@ -50,6 +50,6 @@ private
   package Item_List_Mng renames Item_Dyn_List_Mng.Dyn_List;
   subtype Lt is Item_List_Mng.List_Type;
   type Timed_Type is new Item_List_Mng.List_Type with null record;
-  
+
 end Queues.Timed;
 

@@ -49,7 +49,7 @@ package Xml_Parser.Generator is
   --   by Xml_parser.Check. Default is Doctype.File when dtd file is "".
   procedure Set_Dtd_File (Ctx      : in out Ctx_Type;
                           Dtd_File : in String);
-  
+
 
   -- Add a processing instruction as the last or next child (if Append_Next)
   -- May raise Invalid_Node if Node is not of prologue

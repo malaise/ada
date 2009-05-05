@@ -69,7 +69,7 @@ package body Ada_Parser is
     Cc : Character;
   begin
     Set (Text, C);
-    
+
     loop
       -- Read as long as letter, digit or '_'
       Cc := Text_Char_Get (File);

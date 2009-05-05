@@ -15,7 +15,7 @@ procedure Astub is
     Usage;
     Sys_Calls.Set_Error_Exit_Code;
   end Error;
-    
+
   Generated : Boolean;
 begin
   Ada.Text_Io.Put_Line ("Astubbing " & Argument.Get_Parameter);

@@ -128,7 +128,7 @@ package body Scrambler_Factory is
   begin
     Jammer.Carry_Offset := Carry_Offset;
   end Set_Carry;
-  
+
   -- Increment the jammer
   -- Set Carry to True after Carry_Offset then after each 26 increments
   procedure Increment (Jammer : in out Jammer_Type;

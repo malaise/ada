@@ -43,7 +43,7 @@ package Text_Char is
 private
   type File_Type_Rec is record
     Line_File : Text_Line.File_Type;
-    
+
     -- Line got from Text_Line file and index in Line_Got of last char got
     -- If Get_Index is not 0 and Line_Got is empty, this means
     --  that end of Text_Line file has been reached

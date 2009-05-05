@@ -18,7 +18,7 @@ begin
   if Argument.Get_Nbre_Arg /= 2 then
     Error;
   end if;
-  
+
   -- Get R
   Int_Float := Get_Float.Get_Int_Float (
                    Argument.Get_Parameter (Occurence => 1));

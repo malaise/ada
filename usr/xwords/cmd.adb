@@ -14,7 +14,7 @@ package body Cmd is
   Output_Flow : aliased Command.Flow_Rec (Command.List);
   Error_Flow : aliased Command.Flow_Rec (Command.Str);
   Exit_Code : Command.Exit_Code_Range;
-  
+
   -- subtype Line_Type is Asu_Us;
   -- package Res_Mng is newDynamic_List (Line_Type);
   -- subtype Res_List is Res_Mng.Dyn_List.List_Type;
@@ -42,7 +42,7 @@ package body Cmd is
         Many_Strings.Cat (Asu_Ts (Words_Path) & Com, Arg),
         False, Command.Both,
         Output_Flow'Access, Error_Flow'Access, Exit_Code);
-        
+
     if Exit_Code = Command.Error then
       if Debug then
         Ada.Text_Io.Put_Line ("Execute error");

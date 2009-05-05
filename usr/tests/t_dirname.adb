@@ -25,6 +25,6 @@ begin
 
   Ada.Text_Io.Put_Line ("File_Suffix /tools/toto.ads: "
     & Directory.File_Suffix ("/tools/toto.ads"));
-  
+
 end T_Dirname;
 

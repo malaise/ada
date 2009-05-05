@@ -18,4 +18,4 @@ package Replace_Pattern is
   -- If Ctr C while waiting for external shell result
   Terminate_Request : exception;
 end Replace_Pattern;
- 
+

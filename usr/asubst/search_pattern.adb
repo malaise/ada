@@ -466,7 +466,7 @@ package body Search_Pattern is
     end if;
     return False;
   end Parse_Delimiter;
-  
+
 
   -- Parses and compiles the search patern
   -- Parses and compiles the exclude patern (if any)

@@ -20,4 +20,4 @@ package Files is
   procedure Close (Action : in Result_Action_List);
 
 end Files;
-  
+

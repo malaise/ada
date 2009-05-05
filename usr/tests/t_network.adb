@@ -58,7 +58,7 @@ begin
   Put_Connections (N1);
   Put_Connections (N2);
   Put_Connections (N3);
-  
+
   -- Delete all connections
   Ada.Text_Io.Put_Line ("Deleting all connections of Node3");
   N3.Delete_All_Connections;

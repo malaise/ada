@@ -56,7 +56,7 @@ procedure T_Door is
     end loop;
     Ada.Text_Io.Put_Line ("Client " & Me'Img & " terminating");
   end Client;
-     
+
   Clients : array (1 .. Nb_Clients) of Client;
 
 begin -- T_Cond

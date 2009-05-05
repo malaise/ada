@@ -29,7 +29,7 @@ package body Af_Dscr is
     -- Even when not used, each dscr has the screen size
     return Dscrs(1).Size;
   end Load_Size;
-  
+
   -- Load a descriptor
   procedure Load_Dscr (Dscr_No : in Afpx_Typ.Descriptor_Range) is
     Dscr_Index : Afpx_Typ.Descriptor_Range;

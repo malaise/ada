@@ -684,7 +684,7 @@ package body Trees is
         raise Is_Ancestor;
       end if;
 
-       
+
       -- Detach saved pos
       -- Saved cannot be root (would be ancestor)
       Saved.Father.Nb_Children := Saved.Father.Nb_Children - 1;

@@ -448,7 +448,7 @@ procedure Afpx_Bld is
     if Fields(Fn).Kind = Afpx_Typ.Get and then Fields(Fn).Height /= 1 then
       File_Error (Node, "Invalid geometry. Get fields must have ONE row");
     end if;
-    
+
   exception
     when Constraint_Error =>
       File_Error (Node, "Invalid geometry");

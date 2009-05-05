@@ -292,7 +292,7 @@ package Afpx is
   -- Propose (mouse) selection to to other applications
   -- Clears if empty string
   procedure Set_Selection (Selection : in String);
- 
+
   -- At elaboration
   Afpx_File_Not_Found, Afpx_File_Read_Error,
   Afpx_File_Version_Error : exception;

@@ -163,7 +163,7 @@ package String_Mng is
                      Separating : access
     function (Char : Character) return Boolean := Is_Separator'Access)
   return Natural;
-  
+
   -- Copy the string Val at the beginning of the string To
   -- To (To'First .. To'First + Val'Length - 1) := Val;
   procedure Copy (Val : in String; To : in out String);

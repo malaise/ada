@@ -38,7 +38,7 @@ package Screen is
         null;
     end case;
   end record;
-    
+
   function Get_Event (Wait : in Duration) return Evt_Rec;
 
   -- Check if two heights are the same on screen

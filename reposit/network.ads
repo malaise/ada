@@ -138,7 +138,7 @@ private
   end record;
   procedure Set_Connection (To : out Connection_Info_Type;
                             Val : in Connection_Info_Type);
-  
+
   -- List of node's connections (dynamic list of node accesses)
   package Connection_Mng is new Limited_List (Connection_Info_Type,
                                    Connection_Access, Set_Connection);
