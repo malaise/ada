@@ -37,6 +37,10 @@ package Queues is
     -- Make room by removing the last to be popped
     procedure Discard_Last (Queue : in out Lifo_Type);
 
+    -- Clear
+    procedure Clear (Queue : in out Lifo_Type);
+
+
     -- Exceptions raised during push if the stack is full
     --  or when popping if stack is empty
     Lifo_Full : exception;
@@ -91,6 +95,8 @@ package Queues is
     -- Make room by removing the last to be popped
     procedure Discard_Last (Queue : in out Fifo_Type);
 
+    -- Clear
+    procedure Clear (Queue : in out Fifo_Type);
 
     -- Exceptions raised during push if the stack is full
     --  or when popping if stack is empty
@@ -155,6 +161,10 @@ package Queues is
     -- Make room by removing the last to be popped
     procedure Discard_Last (Queue : in out Prio_Type);
 
+    -- Clear
+    procedure Clear (Queue : in out Prio_Type);
+
+
     -- Exceptions raised during push if the stack is full
     --  or when popping if stack is empty
     Prio_Full : exception;
@@ -214,6 +224,9 @@ package Queues is
 
     -- Make room by removing the last to be popped
     procedure Discard_Last (Queue : in out Circ_Type);
+
+    -- Clear
+    procedure Clear (Queue : in out Circ_Type);
 
 
     -- Exceptions raised when popping if stack is empty

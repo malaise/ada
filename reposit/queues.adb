@@ -70,6 +70,12 @@ package body Queues is
       Queue.Ptr := Queue.Ptr - 1;
     end Discard_Last;
 
+    -- Clear
+    procedure Clear (Queue : in out Lifo_Type) is
+    begin
+      Queue.Ptr := 0;
+    end Clear;
+
   end Lifo;
 
   package body Fifo is
@@ -169,6 +175,13 @@ package body Queues is
       Queue.Ptr_In := (Queue.Ptr_In - 1) mod Size;
       Queue.Full := False;
     end Discard_Last;
+
+    -- Clear
+    procedure Clear (Queue : in out Fifo_Type) is
+    begin
+      Queue.Ptr_Out := Queue.Ptr_In;
+      Queue.Full := False;
+    end Clear;
 
   end Fifo;
 
@@ -293,6 +306,13 @@ package body Queues is
       Queue.Full := False;
     end Discard_Last;
 
+    -- Clear
+    procedure Clear (Queue : in out Prio_Type) is
+    begin
+      Queue.Ptr_Out := Queue.Ptr_In;
+      Queue.Full := False;
+    end Clear;
+
   end Prio;
 
   package body Circ is
@@ -394,6 +414,12 @@ package body Queues is
       Queue.Full := False;
     end Discard_Last;
 
+    -- Clear
+    procedure Clear (Queue : in out Circ_Type) is
+    begin
+      Queue.Ptr_Out := Queue.Ptr_In;
+      Queue.Full := False;
+    end Clear;
   end Circ;
 
 end Queues;
