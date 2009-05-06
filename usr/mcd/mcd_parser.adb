@@ -1,5 +1,5 @@
 with Ada.Strings.Unbounded;
-with My_Math, Queues, Sys_Calls, Lower_Str, Argument, Bool_Io, Arbitrary,
+with My_Math, Queues, Basic_Proc, Lower_Str, Argument, Bool_Io, Arbitrary,
      Arbitrary.Fractions, Async_Stdin, String_Mng;
 with Debug, Input_Dispatcher, Inte_Io, Real_Io, Io_Flow;
 package body Mcd_Parser is
@@ -193,6 +193,7 @@ package body Mcd_Parser is
    Getenv   => (Nosy, "push getenv(A) or False       ", False),
    Rnd      => (Nosy, "push 0.0 <= Rnd < 1.0         ", False),
    Sleep    => (Nosy, "sleep A seconds               ", False),
+   Setexit  => (Nosy, "set exit code to A (natural)  ", False),
    Debugall => (Nosy, "set debug to A (boolean)      ", False),
    Help     => (Nosy, "put help                      ", False) );
 
@@ -448,17 +449,17 @@ package body Mcd_Parser is
     if not Debug.Debug_Level_Array(Debug.History) then
       return;
     end if;
-    Sys_Calls.Put_Line_Error ("History:");
+    Basic_Proc.Put_Line_Error ("History:");
     loop
       begin
         Instr_Stack.Pop (Stack, Item_Chrs);
-        Sys_Calls.Put_Error (Unb.To_String(Item_Chrs.Val_Text) & " ");
+        Basic_Proc.Put_Error (Unb.To_String(Item_Chrs.Val_Text) & " ");
       exception
         when Instr_Stack.Circ_Empty =>
          exit;
       end;
     end loop;
-    Sys_Calls.New_Line_Error;
+    Basic_Proc.New_Line_Error;
   end Dump_Stack;
 
 end Mcd_Parser;

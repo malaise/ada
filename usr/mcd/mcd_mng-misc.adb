@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with Event_Mng, Regular_Expressions;
+with Event_Mng, Regular_Expressions, Basic_Proc;
 
 separate (Mcd_Mng)
 package body Misc is
@@ -145,6 +145,19 @@ package body Misc is
     when Regular_Expressions.No_Criteria =>
       raise Invalid_Argument;
   end Reg_Match;
+
+  procedure Set_Exit_Code (Code : Item_Rec) is
+  begin
+    if Code.Kind /= Inte
+    or else Code.Val_Inte < 0
+    or else Code.Val_Inte > My_Math.Inte(Natural'Last) then
+      raise Invalid_Argument;
+    end if;
+    Basic_Proc.Set_Exit_Code (Natural(Code.Val_Inte) );
+  exception
+    when others =>
+      raise Invalid_Argument;
+  end Set_Exit_Code;
 
 end Misc;
 

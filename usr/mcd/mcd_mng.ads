@@ -161,6 +161,7 @@ package Mcd_Mng is
    Getenv,
    Rnd,
    Sleep,
+   Setexit,
    Debugall,
    Help
    );
@@ -196,6 +197,9 @@ package Mcd_Mng is
 
   -- Check stack is empty
   function Check_Empty_Stack return Boolean;
+
+  -- Dump stack if debug history
+  procedure Dump_Stack;
 
   -- Is a character a register (in A..Z or a..z)
   function Is_Register (C : in Character) return Boolean;

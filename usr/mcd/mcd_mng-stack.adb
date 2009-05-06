@@ -1,4 +1,4 @@
-with Dynamic_List;
+with Dynamic_List, Basic_Proc, Queues;
 separate (Mcd_Mng)
 
 package body Stack is
@@ -6,6 +6,10 @@ package body Stack is
   package Stack_Dyn_List is new Dynamic_List (Item_Rec);
   package Stack_List renames Stack_Dyn_List.Dyn_List;
   List, Extra_List : Stack_List.List_Type;
+
+  -- Hitory of Last 3 popped items
+  package History_Mng is new Queues.Circ (3, Item_Rec);
+  History : History_Mng.Circ_Type;
 
   procedure Push (Item : in Item_Rec; Default_Stack : in Boolean := True) is
   begin
@@ -46,6 +50,7 @@ package body Stack is
     end if;
     if Default_Stack then
       Stack_List.Get(List, Litem, Stack_List.Prev);
+      History.Push (Litem);
     else
       Stack_List.Get(Extra_List, Litem, Stack_List.Prev);
     end if;
@@ -73,6 +78,7 @@ package body Stack is
     end if;
     if Default_Stack then
       Stack_List.Read(List, Litem, Stack_List.Current);
+      History.Push (Litem);
     else
       Stack_List.Read(Extra_List, Litem, Stack_List.Current);
     end if;
@@ -151,6 +157,40 @@ package body Stack is
     -- Move back to last pushed item
     Stack_List.Rewind(Extra_List, Stack_List.Prev);
   end Pushfe;
+
+  -- Dump last items popped or read
+  procedure Dump_History is
+    Litem, Sitem : Item_Rec;
+    Len : constant Natural := History.Length;
+  begin
+    if not Debug.Debug_Level_Array(Debug.History)
+    or else Len = 0 then
+      return;
+    end if;
+    Basic_Proc.Put_Line_Error ("Last Stack (bottom to top):");
+    for I in 1 .. Len loop
+      History.Look_Last (Litem);
+      History.Discard_Last;
+      Sitem := Ios.Strof (Litem);
+      if Litem.Kind = Chrs then
+        Basic_Proc.Put_Error ('"' & Unb.To_String (Sitem.Val_Text) &'"');
+      elsif Litem.Kind = Prog then
+        Basic_Proc.Put_Error ("[ " & Unb.To_String (Sitem.Val_Text) & " ]");
+      else
+        Basic_Proc.Put_Error (Unb.To_String (Sitem.Val_Text));
+      end if;
+      if I /= Len then
+        Basic_Proc.Put_Error (" ");
+      else
+        Basic_Proc.New_Line_Error;
+      end if;
+    end loop;
+  end Dump_History;
+
+  procedure Clear_History is
+  begin
+    History.Clear;
+  end Clear_History;
 
 end Stack;
 

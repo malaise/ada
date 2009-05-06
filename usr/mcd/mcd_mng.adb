@@ -27,6 +27,11 @@ package body Mcd_Mng is
 
     function Stack_Size (Default_Stack : Boolean := True) return Natural;
 
+    -- Dump last N elements popped or read, if debug history
+    procedure Dump_History;
+    -- Clear history
+    procedure Clear_History;
+
     -- Pop first pushed in extra stack
     procedure Popfe (Item : out Item_Rec);
 
@@ -275,6 +280,8 @@ package body Mcd_Mng is
     procedure Set_Debug (Set : in Item_Rec);
 
     function Reg_Match (Pattern, Str : Item_Rec) return Item_Rec;
+
+    procedure Set_Exit_Code (Code : Item_Rec);
   end Misc;
 
   package body Stack is separate;
@@ -285,6 +292,8 @@ package body Mcd_Mng is
   package body Strings is separate;
   package body Dates is separate;
   package body Misc is separate;
+
+  procedure Dump_Stack renames Stack.Dump_History;
 
   -- Check for Ctrl Break each Item_Check_Period items
   --  to dectect it even if no input (e.g. within a loop)
@@ -360,6 +369,7 @@ package body Mcd_Mng is
       The_End := Continue;
     end if;
     -- Dispatch
+    Clear_History;
     if Item.Kind /= Oper then
       -- Push operand
       Push(Item);
@@ -853,6 +863,8 @@ package body Mcd_Mng is
         when Getenv =>
           Pop(A); Push (Ios.Getenv(A));
           S := A;
+        when Setexit =>
+          Pop (A); Misc.Set_Exit_Code (A);
         when Debugall =>
           Pop(A); Misc.Set_Debug(A);
           S := A;
