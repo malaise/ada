@@ -1,5 +1,5 @@
-with Ada.Text_Io, Ada.Characters.Latin_1, Ada.Exceptions;
-with Argument, Text_Handler, Event_Mng, Sys_Calls, Async_Stdin;
+with Ada.Characters.Latin_1, Ada.Exceptions;
+with Argument, Text_Handler, Event_Mng, Sys_Calls, Async_Stdin, Text_Line;
 with Fifos;
 with Input_Dispatcher, Debug, Mcd_Mng, Io_Data;
 package body Io_Flow is
@@ -9,6 +9,9 @@ package body Io_Flow is
   -- Init, get fifo name or leave empty for stdin
   Init_Done : Boolean := False;
   Fifo_Name : Text_Handler.Text (Fifos.Max_Fifo_Name_Len);
+
+  -- Input flow when not a fifo nor a tty
+  Input_Flow : Text_Line.File_Type;
 
   -- Data read from stdin tty or fifo
   Input_Data : Unb.Unbounded_String;
@@ -67,6 +70,11 @@ package body Io_Flow is
       if Debug.Debug_Level_Array(Debug.Flow) then
         Async_Stdin.Put_Line_Err ("Flow: stdio is a tty");
       end if;
+    else
+      Input_Flow.Open (Text_Line.In_File, Sys_Calls.Stdin);
+      if Debug.Debug_Level_Array(Debug.Flow) then
+        Async_Stdin.Put_Line_Err ("Flow: stdio is a not a tty");
+      end if;
     end if;
     return;
 
@@ -77,8 +85,7 @@ package body Io_Flow is
   ----------------------------------------------------
   procedure Next_Line (Str : out Ada.Strings.Unbounded.Unbounded_String) is
     Evt : Event_Mng.Out_Event_List;
-    S : String (1 .. 1024);
-    L : Natural;
+    Len : Natural;
     use type Event_Mng.Out_Event_List;
     use type Mcd_Fifos.Fifo_Id;
   begin
@@ -87,22 +94,18 @@ package body Io_Flow is
       Input_Data := Unb.To_Unbounded_String ("");
       -- Get next non empty line from Stdin (not a tty)
       loop
-        begin
-          -- Get a chunk of L'Len characters
-          Ada.Text_Io.Get_Line (S, L);
-          if L /= 0 then
-            -- Append the read chunk to result
-            Unb.Append (Input_Data, S(1 .. L));
-          end if;
-          -- Done when Get_Line returns less that L'Len => End of line
-          -- but skip empty lines
-          exit when L /= S'Last and then Unb.Length (Input_Data) /= 0;
-        exception
-          when Ada.Text_Io.End_Error =>
-            -- Set Len to 0 and the end of Stdin
-            Input_Data := Unb.To_Unbounded_String ("");
-            exit;
-        end;
+        -- Get next line
+        Input_Data := Input_Flow.Get;
+        -- End of flow when got an empty line
+        Len := Unb.Length (Input_Data);
+        exit when Len = 0;
+        -- Remove trailing Line_Feed
+        if Unb.Element (Input_Data, Len) = Text_Line.Line_Feed_Char then
+          Unb.Delete (Input_Data, Len, Len);
+          Len := Len - 1;
+        end if;
+        -- This line is Ok if not empty
+        exit when Len /= 0;
       end loop;
     else
       -- Get next data on Tty stdin or Fifo
@@ -207,6 +210,9 @@ package body Io_Flow is
       if Stdio_Is_A_Tty then
         -- Reset tty blocking
         Async_Stdin.Set_Async;
+      else
+        -- Close input flow
+        Input_Flow.Close;
       end if;
       return;
     end if;
