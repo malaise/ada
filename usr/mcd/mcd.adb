@@ -1,5 +1,5 @@
 with Ada.Exceptions;
-with Argument, Sys_Calls, Mixed_Str;
+with Argument, Basic_Proc, Mixed_Str;
 with Debug, Mcd_Parser, Mcd_Mng, Io_Flow;
 
 procedure Mcd is
@@ -15,22 +15,31 @@ procedure Mcd is
     Io_Flow.Close;
   end Close;
 
+  procedure Set_Error_Code is
+    Error_Exit_Code : constant := 21;
+  begin
+    Basic_Proc.Set_Exit_Code (Error_Exit_Code);
+  end Set_Error_Code;
+
   procedure Error (Message : in String) is
   begin
-    Sys_Calls.Put_Line_Error (Mixed_Str(Argument.Get_Program_Name) & " error: "
+    Basic_Proc.Put_Line_Error (Mixed_Str(Argument.Get_Program_Name) & " error: "
                             & Message & ".");
     Mcd_Parser.Dump_Stack;
+    Mcd_Mng.Dump_Stack;
     Close;
-    Sys_Calls.Set_Error_Exit_Code;
+    Set_Error_Code;
   end Error;
 
 begin
 
+  Basic_Proc.Set_Ok_Exit_Code;
   Debug.Init;
 
   -- Check at most one arg
   if Argument.Get_Nbre_Arg > 1 then
     Mcd_Parser.Print_Help;
+    Set_Error_Code;
     return;
   end if;
 
@@ -42,6 +51,7 @@ begin
       -- -f. A fifo must be provided
       if Str = "" then
         Mcd_Parser.Print_Help;
+        Set_Error_Code;
         return;
       end if;
       -- A fifo is provided
@@ -51,10 +61,12 @@ begin
       if Argument.Get_Nbre_Arg /= 0 then
         -- Unrecognised argument
         Mcd_Parser.Print_Help;
+        Set_Error_Code;
         return;
       end if;
     when others =>
       Mcd_Parser.Print_Help;
+      Set_Error_Code;
       return;
   end;
 
@@ -70,12 +82,11 @@ begin
   -- Normal exit: check empty stack
   if The_End /= Mcd_Mng.Exit_Break
   and then not Mcd_Mng.Check_Empty_Stack then
-    Sys_Calls.Put_Line_Error ("Warning: The stack was not empty.");
+    Basic_Proc.Put_Line_Error ("Warning: The stack was not empty.");
   end if;
 
   -- Done
   Close;
-  Sys_Calls.Set_Ok_Exit_Code;
 
 exception
   -- Clean mapping of exceptions
