@@ -1,5 +1,5 @@
 with Ada.Text_Io;
-with My_Math, Sys_Calls, Normal, Bool_Io, Mixed_Str, String_Mng;
+with My_Math, Normal, Bool_Io, Mixed_Str, String_Mng;
 with Inte_Io, Real_Io, Io_Flow;
 separate (Mcd_Mng)
 
@@ -9,8 +9,6 @@ package body Ios is
 
   -- Max len for int/real image
   Max_Image_Len : constant := 1024;
-  -- Max len for getenv
-  Max_Env_Len : constant := 10240;
 
   Inte_Format_Set : Boolean := False;
   Real_Format_Set : Boolean := False;
@@ -373,25 +371,6 @@ package body Ios is
     end if;
     return Res;
   end Normalof;
-
-  Env_Str : String (1 .. Max_Env_Len);
-  function Getenv (Item : Item_Rec) return Item_Rec is
-    Len : Natural;
-    Set, Trunc : Boolean;
-
-  begin
-    if Item.Kind /= Chrs then
-      raise Invalid_Argument;
-    end if;
-    Len := Env_Str'Length;
-    Sys_Calls.Getenv (Unb.To_String (Item.Val_Text), Set, Trunc,
-                      Env_Str, Len);
-    if not Set then
-      return (Kind => Bool, Val_Bool => False);
-    end if;
-    return (Kind => Chrs,
-            Val_Text => Unb.To_Unbounded_String(Env_Str(1 .. Len)));
-  end Getenv;
 
 end Ios;
 

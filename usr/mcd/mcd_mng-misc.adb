@@ -1,8 +1,11 @@
 with Ada.Calendar;
-with Event_Mng, Regular_Expressions, Basic_Proc;
+with Event_Mng, Regular_Expressions, Basic_Proc, Sys_Calls;
 
 separate (Mcd_Mng)
 package body Misc is
+
+  -- Max len for getenv
+  Max_Env_Len : constant := 10240;
 
   procedure Do_Call is
   begin
@@ -145,6 +148,25 @@ package body Misc is
     when Regular_Expressions.No_Criteria =>
       raise Invalid_Argument;
   end Reg_Match;
+
+  Env_Str : String (1 .. Max_Env_Len);
+  function Getenv (Item : Item_Rec) return Item_Rec is
+    Len : Natural;
+    Set, Trunc : Boolean;
+
+  begin
+    if Item.Kind /= Chrs then
+      raise Invalid_Argument;
+    end if;
+    Len := Env_Str'Length;
+    Sys_Calls.Getenv (Unb.To_String (Item.Val_Text), Set, Trunc,
+                      Env_Str, Len);
+    if not Set then
+      return (Kind => Bool, Val_Bool => False);
+    end if;
+    return (Kind => Chrs,
+            Val_Text => Unb.To_Unbounded_String(Env_Str(1 .. Len)));
+  end Getenv;
 
   procedure Set_Exit_Code (Code : Item_Rec) is
   begin

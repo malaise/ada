@@ -228,8 +228,6 @@ package body Mcd_Mng is
                        Len       : Item_Rec;
                        Right_Len : Item_Rec;
                        Gap       : Item_Rec) return Item_Rec;
-
-    function Getenv (Item : Item_Rec) return Item_Rec;
     -- Invalid_Argument, Argument_Mismatch : exception;
   end Ios;
 
@@ -280,6 +278,8 @@ package body Mcd_Mng is
     procedure Set_Debug (Set : in Item_Rec);
 
     function Reg_Match (Pattern, Str : Item_Rec) return Item_Rec;
+
+    function Getenv (Item : Item_Rec) return Item_Rec;
 
     procedure Set_Exit_Code (Code : Item_Rec);
   end Misc;
@@ -861,7 +861,7 @@ package body Mcd_Mng is
 
         -- Misc
         when Getenv =>
-          Pop(A); Push (Ios.Getenv(A));
+          Pop(A); Push (Misc.Getenv(A));
           S := A;
         when Setexit =>
           Pop (A); Misc.Set_Exit_Code (A);
