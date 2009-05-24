@@ -83,13 +83,34 @@ extern boolean evt_fd_set (int fd, boolean read) {
 
 
 /***** Sig Management   *****/
+static int map_signal (int sig_num) {
+  if (sig_num == SIGINT) {
+    return (SIG_TERMINATE);
+  } else if (sig_num == SIGTERM) {
+    return (SIG_TERMINATE);
+  } else if (sig_num == SIGCHLD) {
+    return (SIG_CHILD);
+  } else if (sig_num == SIG_DUMMY) {
+    return (SIG_DUMMY);
+  } else if (sig_num == SIG_NONE) {
+    return (SIG_NONE);
+  } else {
+    return (SIG_UNKNOWN);
+  }
+}
+
 static int sig_received = SIG_NONE;
 static int last_sig = SIG_NONE;
 static boolean sig_handled = FALSE;
 static void signal_handler (int sig) {
+  int new_sig = map_signal (sig);
+  /* Discard NONE or UNKNOWN */
   if (sig < SIG_DUMMY) return;
-  if ( (sig == SIG_DUMMY) && (sig_received != SIG_NONE) ) return;
-  sig_received = sig;
+  /* Discard new signal if a more urgent is pending */
+  /* DUMMY < CHILD < TERM */
+  if (new_sig <= sig_received) return;
+  /* Store signal received */
+  sig_received = new_sig;
 }
 
 extern void send_signal (int sig) {
@@ -97,19 +118,7 @@ extern void send_signal (int sig) {
 }
 
 extern int get_signal (void) {
-  if (last_sig == SIG_NONE) {
-    return (SIG_NONE);
-  } else if (last_sig == SIG_DUMMY) {
-    return (SIG_DUMMY);
-  } else if (last_sig == SIGINT) {
-    return (SIG_TERMINATE);
-  } else if (last_sig == SIGTERM) {
-    return (SIG_TERMINATE);
-  } else if (last_sig == SIGCHLD) {
-    return (SIG_CHILD);
-  } else {
-    return (SIG_UNKNOWN);
-  }
+  return last_sig;
 }
 
 /***** WakeUp Management   *****/
@@ -155,7 +164,10 @@ static void init_evt (void) {
   }
 }
 
-extern void reset_default_signals (void) {
+extern int reset_default_signals (void) {
+  int res;
+  res = sig_received;
+  sig_received = SIG_NONE;
   if (sig_handled) {
     (void) signal(SIGINT, SIG_DFL);
     (void) signal(SIGTERM, SIG_DFL);
@@ -163,6 +175,7 @@ extern void reset_default_signals (void) {
     (void) signal(SIGPIPE, SIG_DFL);
     sig_handled = FALSE;
   }
+  return res;
 }
 
 /* Compute time remaining */

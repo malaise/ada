@@ -14,22 +14,23 @@ extern int evt_del_fd (int fd, boolean read);
 extern boolean evt_fd_set (int fd, boolean read);
 
 /* Reset signals to default UNIX behaviour */
-extern void reset_default_signals (void);
+/* Returns un-handled signal */
+extern int reset_default_signals (void);
 
 /* Send Dummy, Terminate or Child */
 extern void send_signal (int sig);
 
 /* Get signal received */
-/* Unknown signal was received */
-#define SIG_UNKNOWN  -2
 /* No signal was received */
-#define SIG_NONE     -1
+#define SIG_NONE     -2
+/* Unknown signal was received */
+#define SIG_UNKNOWN  -1
 /* Dummy signal has been received */
 #define SIG_DUMMY     0
-/* Terminate signal has been received */
-#define SIG_TERMINATE 1
 /* Child signal has been received */
-#define SIG_CHILD     2
+#define SIG_CHILD     1
+/* Terminate signal has been received */
+#define SIG_TERMINATE 2
 extern int get_signal (void);
 
 /* Send WakeUp event */
