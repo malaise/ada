@@ -92,7 +92,7 @@ package body Screen is
     -- Reset screen and hide mouse
     Con_Io.Init;
     Con_Io.Reset_Term;
-    Con_Io.Set_Pointer_Shape (Con_Io.None);
+    Con_Io.Set_Pointer_Shape (Con_Io.None, True);
     -- Clear previous LEM position
     Prev_Pos := No_Pos;
     -- Compute space
