@@ -2,12 +2,13 @@ with Afpx;
 with Oper_Def, Unit_Format;
 -- Manage the screen fields
 package Screen is
-
+  -- In default mode,
   -- Allow oper edition buttons (edit/view, delete, clean_up, search)
   --  and Show_all button at next reset, confirm, ack
-  -- False by default
   procedure Allow_Edit (Allow : in Boolean);
-  procedure Sublist (Active : in Boolean);
+  -- In subblist, some actions are disabled or modified
+  procedure Set_Sublist (Active : in Boolean);
+  function Is_Sublist return Boolean;
 
   -- Set to default mode
   procedure Reset;

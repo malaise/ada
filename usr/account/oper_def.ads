@@ -1,8 +1,8 @@
 with Ada.Calendar;
 package Oper_Def is
 
-  subtype Oper_Range is Natural;
-  subtype Oper_Index is Positive;
+  subtype Oper_Range is Natural range 0 .. 9999;
+  subtype Oper_Index is Positive range 1 .. Oper_Range'Last;
 
   -- Date
   type Date_Rec is record

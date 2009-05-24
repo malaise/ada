@@ -2,6 +2,7 @@ with Con_Io;
 separate(Mng)
 
 procedure Search is
+  In_Sublist : Boolean;
 
   -- Unselect current oper
   procedure Unsel is
@@ -92,21 +93,21 @@ procedure Search is
     Update_Color (12, Criteria.Status(Oper_Def.Defered));
     Status_Set := One_Set;
     One_Set := False;
-    Update_Color (14, Criteria.Kind(Oper_Def.Cheque));
-    Update_Color (15, Criteria.Kind(Oper_Def.Credit));
-    Update_Color (16, Criteria.Kind(Oper_Def.Transfer));
-    Update_Color (17, Criteria.Kind(Oper_Def.Withdraw));
-    Update_Color (18, Criteria.Kind(Oper_Def.Savings));
+    Update_Color (15, Criteria.Kind(Oper_Def.Cheque));
+    Update_Color (16, Criteria.Kind(Oper_Def.Credit));
+    Update_Color (17, Criteria.Kind(Oper_Def.Transfer));
+    Update_Color (18, Criteria.Kind(Oper_Def.Withdraw));
+    Update_Color (19, Criteria.Kind(Oper_Def.Savings));
     Kind_Set := One_Set;
-    Update_Color (19, Criteria.Reference_Set);
+    Update_Color (20, Criteria.Reference_Set);
     -- Update reference
     if not Criteria.Reference_Set then
      Criteria.Reference := (others => ' ');
-     Afpx.Clear_Field (20);
+     Afpx.Clear_Field (21);
     end if;
-    Afpx.Set_Field_Activation (20, Criteria.Reference_Set);
+    Afpx.Set_Field_Activation (21, Criteria.Reference_Set);
     -- Update SEARCH button
-    Afpx.Set_Field_Activation (23, Status_Set and then Kind_Set);
+    Afpx.Set_Field_Activation (24, Status_Set and then Kind_Set);
   end Update_Fields;
 
   -- Update the Criteria and fields according to clicked field
@@ -124,17 +125,17 @@ procedure Search is
         Switch (Criteria.Status(Oper_Def.Not_Entered));
       when 12 =>
         Switch (Criteria.Status(Oper_Def.Defered));
-      when 14 =>
-        Switch (Criteria.Kind(Oper_Def.Cheque));
       when 15 =>
-        Switch (Criteria.Kind(Oper_Def.Credit));
+        Switch (Criteria.Kind(Oper_Def.Cheque));
       when 16 =>
-        Switch (Criteria.Kind(Oper_Def.Transfer));
+        Switch (Criteria.Kind(Oper_Def.Credit));
       when 17 =>
-        Switch (Criteria.Kind(Oper_Def.Withdraw));
+        Switch (Criteria.Kind(Oper_Def.Transfer));
       when 18 =>
-        Switch (Criteria.Kind(Oper_Def.Savings));
+        Switch (Criteria.Kind(Oper_Def.Withdraw));
       when 19 =>
+        Switch (Criteria.Kind(Oper_Def.Savings));
+      when 20 =>
         Switch (Criteria.Reference_Set);
       when others =>
         raise Program_Error;
@@ -143,7 +144,7 @@ procedure Search is
 
 begin
 
-  if In_Sublist then
+  if Screen.Is_Sublist then
     -- Unselect
     Unsel;
     Refresh_Screen(Unchanged);
@@ -175,41 +176,45 @@ begin
         case Ptg_Result.Keyboard_Key is
           when Afpx.Return_Key =>
             -- Return = Search if allowed
-            if Afpx.Get_Field_Activation (23) then
-              Criteria.Reference := Afpx.Decode_Wide_Field(20, 0);
+            if Afpx.Get_Field_Activation (24) then
+              Criteria.Reference := Afpx.Decode_Wide_Field(21, 0);
               Unsel_All(Criteria);
               In_Sublist := True;
               exit;
             end if;
           when Afpx.Escape_Key | Afpx.Break_Key =>
             -- Escape/Break = Cancel
-            In_Sublist := False;
+            In_Sublist := True;
             exit;
         end case;
       when Afpx.Mouse_Button =>
         case Ptg_Result.Field_No is
-          when 10 | 11 | 12 | 14 | 15 | 16 | 17 | 18 | 19 =>
+          when 10 | 11 | 12 | 15 | 16 | 17 | 18 | 19 | 20 =>
             -- Switch a button
             Switch_Field (Ptg_Result.Field_No);
             Update_Fields;
-          when 21 =>
+          when 13 =>
+            -- Select all statuses
+            Criteria.Status := (others => True);
+            Update_Fields;
+          when 22 =>
             -- Select all
             Criteria.Status := (others => True);
             Criteria.Kind := (others => True);
             Update_Fields;
-          when 22 =>
+          when 23 =>
             -- Select none
             Criteria.Status := (others => False);
             Criteria.Kind := (others => False);
             Criteria.Reference_Set := False;
             Update_Fields;
-          when 23 =>
+          when 24 =>
             -- Search
-            Criteria.Reference := Afpx.Decode_Wide_Field(20, 0);
+            Criteria.Reference := Afpx.Decode_Wide_Field(21, 0);
             Unsel_All(Criteria);
             In_Sublist := True;
             exit;
-          when 24 =>
+          when 25 =>
             -- Cancel
             In_Sublist := False;
             exit;
@@ -226,7 +231,7 @@ begin
   end loop;
 
   Screen.Reset;
-  Screen.Sublist(In_Sublist);
+  Screen.Set_Sublist(In_Sublist);
   Refresh_Screen(Bottom);
 
 end Search;

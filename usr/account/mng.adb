@@ -1,6 +1,6 @@
 with Ada.Text_Io, Ada.Calendar;
 with Text_Handler, Dynamic_List, Directory, Afpx, Select_File, Normal,
-     Environ, Sys_Calls, Date_Image, Language;
+     Environ, Sys_Calls, Date_Image, Language, Perpet;
 with File_Mng, Oper_Dyn_List_Mng, Screen, Unit_Format;
 
 -- Manage the whole acount status
@@ -22,9 +22,6 @@ package body Mng is
   -- Name and status of current account
   Account_Name : Text_Handler.Text(Directory.Max_Dir_Name_Len);
   Account_Saved : Boolean := True;
-
-  -- Are we working with sublist or all selection
-  In_Sublist : Boolean := False;
 
   -- The amount in first record of file (entered)
   Root_Amount : Oper_Def.Amount_Range;
@@ -109,8 +106,7 @@ package body Mng is
       for I in 1 .. Oper_List_Mng.List_Length(Oper_List) loop
         Sel_List_Mng.Insert(Sel_List, (No => I, Deleted => False));
       end loop;
-      In_Sublist := False;
-      Screen.Sublist(In_Sublist);
+      Screen.Set_Sublist(False);
     end Reset_Selection;
 
 
@@ -263,6 +259,77 @@ package body Mng is
     Screen.Allow_Edit(not Sel_List_Mng.Is_Empty(Sel_List));
   end Refresh_Screen;
 
+  -- Adjust operation after copy
+  procedure Adjust_Copy (Oper : in out Oper_Def.Oper_Rec) is
+    Oper_Time : Ada.Calendar.Time;
+    Dummy_Seconds : Ada.Calendar.Day_Duration;
+    Max_Days : Ada.Calendar.Day_Number;
+    use type Oper_Def.Kind_List, Perpet.Duration_Rec;
+  begin
+    -- Adjust Status: Credit is defered, others are not entered
+    if Oper.Kind = Oper_Def.Credit then
+      Oper.Status := Oper_Def.Defered;
+    else
+      Oper.Status := Oper_Def.Not_Entered;
+    end if;
+
+    -- Increment month of Transfers and Savings
+    if Oper.Kind = Oper_Def.Transfer
+    or else Oper.Kind = Oper_Def.Savings then
+      Oper_Time := Ada.Calendar.Time_Of (Oper.Date.Year,
+                                         Oper.Date.Month,
+                                         Oper.Date.Day, 0.0);
+      Oper_Time := Oper_Time + (Years => 0, Months => 1);
+      Ada.Calendar.Split (Oper_Time, Oper.Date.Year,
+                                     Oper.Date.Month,
+                                     Oper.Date.Day, Dummy_Seconds);
+      -- Adjust days if new month does not have enough days
+      Max_Days := Perpet.Nb_Days_Month(Oper.Date.Year, Oper.Date.Month);
+      if Oper.Date.Day > Max_Days then
+        Oper.Date.Day := Max_Days;
+      end if;
+    end if;
+
+  end Adjust_Copy;
+
+  -- Copy selected operations
+  procedure Copy_Selection is
+    Oper : Oper_Def.Oper_Rec;
+    Copied_List : Sel_List_Mng.List_Type;
+  begin
+    -- Sanity
+    if Sel_List.Is_Empty then
+      return;
+    end if;
+    if Oper_List.List_Length + Sel_List.List_Length
+       > Oper_Def.Oper_Range'Last then
+      return;
+    end if;
+    -- Copy all selected operations
+    Sel_List.Rewind;
+    loop
+      -- Read current operation
+      List_Util.Move_To_Current;
+      Oper_List.Read (Oper, Oper_List_Mng.Current);
+      -- Adjust status and date if needed
+      Adjust_Copy (Oper);
+      -- Append in list of operations
+      Oper_List.Rewind (Oper_List_Mng.Prev);
+      Oper_List.Insert (Oper);
+      -- Save this operation ref
+      Copied_List.Insert ( (No => Oper_List.List_Length, Deleted => False) );
+      -- Next selected operation if any
+      exit when not Sel_List.Check_Move;
+      Sel_List.Move_To;
+    end loop;
+    -- Merge selection lists: new selection is previous + copies
+    Sel_List.Insert_Copy (Copied_List);
+    -- Recompute
+    Account_Saved := False;
+    Compute_Amounts;
+    Refresh_Screen(Bottom);
+  end Copy_Selection;
+
   -- Load from file
   procedure Load (File_Name : in String) is
     Loaded_Name : Text_Handler.Text(Account_Name.Max_Len);
@@ -289,6 +356,7 @@ package body Mng is
       -- Let user select file
       Loading := True;
       Text_Handler.Set(Loaded_Name, Account_Select_File(2, "", True));
+      Screen.Set_Sublist(False);
       Screen.Reset;
       Refresh_Screen(Bottom);
     end if;
@@ -329,6 +397,11 @@ package body Mng is
   procedure Save (Mode : Save_Mode_List) is
     Tmp_Name : Text_Handler.Text(Directory.Max_Dir_Name_Len);
   begin
+    -- The save button is also used for Copy_All when in Sublist
+    if Screen.Is_Sublist then
+      Copy_Selection;
+      return;
+    end if;
     if Mode = Rescue then
       List_Util.Insert_Amount(Root_Amount);
       File_Mng.Save("Tmp", Oper_List);
@@ -346,6 +419,7 @@ package body Mng is
         return;
       end if;
       Text_Handler.Set(Tmp_Name, Account_Select_File(2, "", False));
+      Screen.Set_Sublist(False);
       Screen.Reset;
       Refresh_Screen(Center);
       if Text_Handler.Empty(Tmp_Name) then
@@ -391,8 +465,7 @@ package body Mng is
     Account_Saved := True;
     Compute_Amounts;
     -- Set screen
-    In_Sublist := False;
-    Screen.Sublist(In_Sublist);
+    Screen.Set_Sublist(False);
     Refresh_Screen(Bottom);
   end Clear;
 
@@ -602,10 +675,12 @@ package body Mng is
   -- Create a new operation
   procedure Add_Oper is
   begin
-    Edition.Edit(Edition.Create);
-    Screen.Reset;
-    Compute_Amounts;
-    Refresh_Screen(Bottom);
+    if Oper_List.List_Length /= Oper_Def.Oper_Range'Last then
+      Edition.Edit(Edition.Create);
+      Screen.Reset;
+      Compute_Amounts;
+      Refresh_Screen(Bottom);
+    end if;
   end Add_Oper;
 
   -- Edit an operation
@@ -620,10 +695,12 @@ package body Mng is
   -- Copy an operation
   procedure Copy_Oper is
   begin
-    Edition.Edit(Edition.Copy);
-    Screen.Reset;
-    Compute_Amounts;
-    Refresh_Screen(Bottom);
+    if Oper_List.List_Length /= Oper_Def.Oper_Range'Last then
+      Edition.Edit(Edition.Copy);
+      Screen.Reset;
+      Compute_Amounts;
+      Refresh_Screen(Bottom);
+    end if;
   end Copy_Oper;
 
   -- Delete an operation
@@ -686,8 +763,6 @@ package body Mng is
   -- Reset selection to the full list
   procedure Show_All is
   begin
-    In_Sublist := False;
-    Screen.Sublist(In_Sublist);
     List_Util.Reset_Selection;
     Refresh_Screen(Bottom);
   end Show_All;

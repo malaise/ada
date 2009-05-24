@@ -223,13 +223,13 @@
     </Field>
     <!-- Save account -->
     <Field Num="35" Kind="Button">
-      <Geometry Up="${Bottom}+5" Left="25" Low="${Bottom}+5" Right="30"/>
+      <Geometry Up="${Bottom}+5" Left="25" Low="${Bottom}+5" Right="31"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="0" Col="1">SAVE</Init>
     </Field>
     <!-- Print account -->
     <Field Num="36" Kind="Button">
-      <Geometry Up="${Bottom}+5" Left="33" Low="${Bottom}+5" Right="39"/>
+      <Geometry Up="${Bottom}+5" Left="34" Low="${Bottom}+5" Right="40"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="0" Col="1">PRINT</Init>
     </Field>
@@ -704,57 +704,62 @@
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="1" Col="1">Defered</Init>
     </Field>
+    <Field Num="13" Kind="Button">
+      <Geometry Up="6" Left="51" Low="8" Right="55"/>
+      <Colors Foreground="Cyan" Background="Brown"/>
+      <Init Row="1" Col="1">All</Init>
+    </Field>
 
     <!-- Kind -->
-    <Field Num="13" Kind="Put">
+    <Field Num="14" Kind="Put">
       <Geometry Up="11" Left="2" Low="11" Right="5"/>
       <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">Kind</Init>
     </Field>
-    <Field Num="14" Kind="Button">
+    <Field Num="15" Kind="Button">
       <Geometry Up="10" Left="11" Low="12" Right="18"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="1" Col="1">Cheque</Init>
     </Field>
-    <Field Num="15" Kind="Button">
+    <Field Num="16" Kind="Button">
       <Geometry Up="10" Left="22" Low="12" Right="34"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="1" Col="1">Credit Card</Init>
     </Field>
-    <Field Num="16" Kind="Button">
+    <Field Num="17" Kind="Button">
       <Geometry Up="10" Left="38" Low="12" Right="47"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="1" Col="1">Transfer</Init>
     </Field>
-    <Field Num="17" Kind="Button">
+    <Field Num="18" Kind="Button">
       <Geometry Up="10" Left="51" Low="12" Right="60"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="1" Col="1">Withdraw</Init>
     </Field>
-    <Field Num="18" Kind="Button">
+    <Field Num="19" Kind="Button">
       <Geometry Up="10" Left="64" Low="12" Right="72"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="1" Col="1">Savings</Init>
     </Field>
 
     <!-- Reference -->
-    <Field Num="19" Kind="Button">
+    <Field Num="20" Kind="Button">
       <Geometry Up="14" Left="11" Low="16" Right="21"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="1" Col="1">Reference</Init>
     </Field>
-    <Field Num="20" Kind="Get">
+    <Field Num="21" Kind="Get">
       <Geometry Up="15" Left="25" Low="15" Right="34"/>
       <Colors Foreground="Cyan" Background="Brown" Selected="Brown"/>
     </Field>
 
     <!-- Set to All/None -->
-    <Field Num="21" Kind="Button">
+    <Field Num="22" Kind="Button">
       <Geometry Up="20" Left="3" Low="22" Right="7"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="1" Col="1">All</Init>
     </Field>
-    <Field Num="22" Kind="Button">
+    <Field Num="23" Kind="Button">
       <Geometry Up="20" Left="11" Low="22" Right="16"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="1" Col="1">None</Init>
@@ -762,12 +767,12 @@
 
 
     <!-- Search/Cancel -->
-    <Field Num="23" Kind="Button">
+    <Field Num="24" Kind="Button">
       <Geometry Up="20" Left="23" Low="22" Right="35"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="1" Col="1">S E A R C H</Init>
     </Field>
-    <Field Num="24" Kind="Button">
+    <Field Num="25" Kind="Button">
       <Geometry Up="20" Left="39" Low="22" Right="51"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="1" Col="1">C A N C E L</Init>

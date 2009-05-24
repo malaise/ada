@@ -22,25 +22,18 @@ package body Screen is
     -- List unprotected in default
     Afpx.Set_Field_Protection(Afpx.List_Field_No, Mode /= Default);
     -- Oper buttons
-    for F in Title_Oper_Fld .. Add_Oper_Fld loop
+    for F in Title_Oper_Fld .. Show_Oper_Fld loop
       Afpx.Set_Field_Activation(F, Mode = Default);
     end loop;
-    for F in Copy_Oper_Fld .. Clean_Oper_Fld loop
-      Afpx.Set_Field_Activation(F, Mode = Default and then Edit_Allowed);
-    end loop;
-    if Sublist_Active then
-      Afpx.Encode_Field(Search_Oper_Fld, (0, 1), "UN SEL");
-    else
-      Afpx.Reset_Field(Search_Oper_Fld, Reset_Colors => False);
-    end if;
-    Afpx.Set_Field_Activation(Search_Oper_Fld,
-                              Mode = Default and then Edit_Allowed);
-    Afpx.Set_Field_Activation(Show_Oper_Fld,
-                              Mode = Default and then Sublist_Active);
     -- Account buttons
     for F in Title_Account_Fld .. Samo_Account_Fld loop
        Afpx.Set_Field_Activation(F, Mode = Default);
     end loop;
+    -- Adapt to allow edit and in sublist
+    if Mode = Default then
+      Allow_Edit (Edit_Allowed);
+      Set_Sublist (Sublist_Active);
+    end if;
     -- To francs/Euros button
     if Mode = Default then
       Update_To_Unit;
@@ -68,20 +61,31 @@ package body Screen is
     end loop;
   end Allow_Edit;
 
-  procedure Sublist (Active : in Boolean) is
+  procedure Set_Sublist (Active : in Boolean) is
   begin
     Sublist_Active := Active;
+    -- Disable main account IOs when in sublist
+    Afpx.Set_Field_Activation(Title_Account_Fld, not Sublist_Active);
+    Afpx.Set_Field_Activation(New_Account_Fld, not Sublist_Active);
+    Afpx.Set_Field_Activation(Load_Account_Fld, not Sublist_Active);
     if Sublist_Active then
+      Afpx.Encode_Field(Save_Account_Fld, (0, 0), "COPYALL");
       Afpx.Encode_Field(Search_Oper_Fld, (0, 1), "UN SEL");
       Afpx.Set_Field_Colors(Sdat_Account_Fld, Con_Io.Blue);
       Afpx.Set_Field_Colors(Samo_Account_Fld, Con_Io.Blue);
     else
-      Afpx.Reset_Field(Search_Oper_Fld, Reset_Colors => False);
+      Afpx.Reset_Field(Save_Account_Fld);
+      Afpx.Reset_Field(Search_Oper_Fld, Reset_Colors => True);
       Afpx.Reset_Field(Sdat_Account_Fld, Reset_String => False);
       Afpx.Reset_Field(Samo_Account_Fld, Reset_String => False);
     end if;
     Afpx.Set_Field_Activation(Show_Oper_Fld, Sublist_Active);
-  end Sublist;
+  end Set_Sublist;
+
+  function Is_Sublist return Boolean is
+  begin
+    return Sublist_Active;
+  end Is_Sublist;
 
   -- Reset to default screen
   procedure Reset is

@@ -35,7 +35,7 @@ begin
 
   -- Check arguments
   -- Screen.reset must be called before mng.load(which uses the screen),
-  --  but after sanity checks (which don't the screen to be loaded)
+  --  but after sanity checks (which don't need the screen to be loaded)
   declare
     File_Arg : Natural := 0;
   begin
@@ -62,6 +62,8 @@ begin
 
     -- Init the screen
     Screen.Reset;
+    Screen.Set_Sublist(False);
+    Screen.Allow_Edit(False);
 
     -- No data
     Mng.Clear;
