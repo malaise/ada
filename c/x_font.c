@@ -16,7 +16,7 @@ XFontStruct **fonts;
         font_set[i] = XCreateFontSet(x_server, font_name[i],
                        &name_list, &missing_count, NULL);
         if (font_set[i] == NULL) {
-     
+
 #ifdef DEBUG
             printf ("X_FONT : can't create font set of %s.\n", font_name[i]);
 #endif
@@ -56,7 +56,7 @@ XFontStruct **fonts;
             err = i;
             break;
         }
-        
+
     }
 
     if (err != -1) {
