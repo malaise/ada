@@ -240,12 +240,14 @@ package X_Mng is
   -- The area MUST be convex otherwise the graphic result is undefined
   procedure X_Fill_Area (Line_Id : in Line; Xys : in Natural_Array);
 
-  -- Set mouse cursor to cross (graphic) or arrow
+  -- Set mouse cursor to '+' cross (graphic) or arrow
   procedure X_Set_Graphic_Pointer(Line_Id : in Line;
-                                  Graphic : in Boolean);
+                                  Graphic : in Boolean;
+                                  Grab : in Boolean);
 
   -- Hide mouse
-  procedure X_Hide_Graphic_Pointer(Line_Id : in Line);
+  procedure X_Hide_Graphic_Pointer(Line_Id : in Line;
+                                   Grab : in Boolean);
 
   ----- EVENT MANAGEMENT -----
   -- Wait until an event is availble

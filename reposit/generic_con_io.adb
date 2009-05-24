@@ -1613,12 +1613,13 @@ package body Generic_Con_Io is
     end Graphics;
 
     -- Set pointer shape
-    procedure Set_Pointer_Shape (Pointer_Shape : in Pointer_Shape_List) is
+    procedure Set_Pointer_Shape (Pointer_Shape : in Pointer_Shape_List;
+                                 Grab : in Boolean) is
     begin
       if Pointer_Shape = None then
-        X_Mng.X_Hide_Graphic_Pointer(Id);
+        X_Mng.X_Hide_Graphic_Pointer(Id, Grab);
       else
-        X_Mng.X_Set_Graphic_Pointer(Id, Pointer_Shape=Cross);
+        X_Mng.X_Set_Graphic_Pointer(Id, Pointer_Shape=Cross, Grab);
       end if;
     end Set_Pointer_Shape;
 

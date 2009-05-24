@@ -264,14 +264,16 @@ package body X_Mng is
   -- int x_set_graphic_pointer (void *line_id, boolean graphic);
   ------------------------------------------------------------------
   function X_Set_Graphic_Pointer(Line_Id : Line_For_C;
-                                 Graphic : Bool_For_C) return Result;
+                                 Graphic : Bool_For_C;
+                                 Grab : Bool_For_C) return Result;
   pragma Import(C, X_Set_Graphic_Pointer, "x_set_graphic_pointer");
 
   ------------------------------------------------------------------
   -- Hide mouse pointer
   -- int x_hide_graphic_pointer (void *line_id);
   ------------------------------------------------------------------
-  function X_Hide_Graphic_Pointer(Line_Id : Line_For_C) return Result;
+  function X_Hide_Graphic_Pointer(Line_Id : Line_For_C;
+                                  Grab : Bool_For_C) return Result;
   pragma Import(C, X_Hide_Graphic_Pointer, "x_hide_graphic_pointer");
 
 
@@ -977,7 +979,8 @@ package body X_Mng is
 
   ------------------------------------------------------------------
   procedure X_Set_Graphic_Pointer(Line_Id : in Line;
-                                  Graphic : in Boolean) is
+                                  Graphic : in Boolean;
+                                  Grab : in Boolean) is
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
   begin
@@ -986,7 +989,7 @@ package body X_Mng is
     end if;
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Set_Graphic_Pointer(Line_For_C_Id,
-                            For_C(Graphic)) = Ok;
+                            For_C(Graphic), For_C(Grab)) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
     if not Res then
       raise X_Failure;
@@ -994,7 +997,8 @@ package body X_Mng is
   end X_Set_Graphic_Pointer;
 
   ------------------------------------------------------------------
-  procedure X_Hide_Graphic_Pointer(Line_Id : in Line) is
+  procedure X_Hide_Graphic_Pointer(Line_Id : in Line;
+                                   Grab : in Boolean) is
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
   begin
@@ -1002,7 +1006,7 @@ package body X_Mng is
       raise X_Failure;
     end if;
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
-    Res := X_Hide_Graphic_Pointer(Line_For_C_Id) = Ok;
+    Res := X_Hide_Graphic_Pointer(Line_For_C_Id, For_C(Grab)) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
     if not Res then
       raise X_Failure;
