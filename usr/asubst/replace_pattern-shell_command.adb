@@ -12,7 +12,10 @@ begin
   -- Execute command and check exit code
   Command.Execute (Cmd, True, Command.Only_Out,
      Out_Flow'Access, Err_Flow'Access, Code);
-  Event_Mng.Reset_Default_Signals_Policy;
+  if Event_Mng.Reset_Default_Signals_Policy then
+    -- Sig term received after event
+    raise Terminate_Request;
+  end if;
   if Code /= 0 then
     Sys_Calls.Put_Line_Error ("Replace, command exited with code "
                             & Code_Image (Code));
