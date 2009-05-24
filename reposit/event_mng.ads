@@ -48,7 +48,8 @@ package Event_Mng is
   procedure Send_Dummy_Signal;
 
   -- Reset signal handling to default UNIX behaviour
-  procedure Reset_Default_Signals_Policy;
+  -- Returns True if a Sig Term was received but not handled
+  function Reset_Default_Signals_Policy return Boolean;
 
   -------------------
   -- Waiting point --

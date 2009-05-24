@@ -154,11 +154,11 @@ package body Event_Mng is
   -----------------------
   -- Signal management --
   -----------------------
-  C_Sig_Unknown   : constant Integer := -2;
-  C_Sig_None      : constant Integer := -1;
+  C_Sig_None      : constant Integer := -2;
+  C_Sig_Unknown   : constant Integer := -1;
   C_Sig_Dummy     : constant Integer :=  0;
-  C_Sig_Terminate : constant Integer :=  1;
-  C_Sig_Child     : constant Integer :=  2;
+  C_Sig_Child     : constant Integer :=  1;
+  C_Sig_Terminate : constant Integer :=  2;
 
   procedure C_Send_Signal (Num : Integer);
   pragma Import(C, C_Send_Signal, "send_signal");
@@ -166,8 +166,8 @@ package body Event_Mng is
   function C_Get_Signal return Integer;
   pragma Import(C, C_Get_Signal, "get_signal");
 
-  procedure C_Reset_Default_Signals;
-   pragma Import(C, C_Reset_Default_Signals, "reset_default_signals");
+  function C_Reset_Default_Signals return Integer;
+  pragma Import(C, C_Reset_Default_Signals, "reset_default_signals");
 
   Cb_Term_Sig : Sig_Callback := Null_Procedure'Access;
   Cb_Child_Sig : Sig_Callback := Null_Procedure'Access;
@@ -212,9 +212,11 @@ package body Event_Mng is
     C_Send_Signal (C_Sig_Dummy);
   end Send_Dummy_Signal;
 
-  procedure Reset_Default_Signals_Policy is
+  function Reset_Default_Signals_Policy return Boolean is
+    Sig : Integer;
   begin
-    C_Reset_Default_Signals;
+    Sig := C_Reset_Default_Signals;
+    return Sig = C_Sig_Terminate;
   end Reset_Default_Signals_Policy;
 
   -- PRIVATE. Get kind of last signal
