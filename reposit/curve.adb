@@ -1071,7 +1071,7 @@ package body Curve is
     Cur_Con_Io.Set_Foreground (Blink_Stat => Cur_Con_Io.Not_Blink);
 
     Cur_Con_Io.Set_Xor_Mode (Cur_Con_Io.Xor_On);
-    Cur_Con_Io.Set_Pointer_Shape(Cur_Con_Io.Cross);
+    Cur_Con_Io.Set_Pointer_Shape(Cur_Con_Io.Cross, False);
 
     -- Initialise zooms storing
     Zoom_Array(Zoom_No_Range'First) := Boundaries;
