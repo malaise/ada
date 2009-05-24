@@ -717,8 +717,13 @@ extern int x_fill_area (void *line_id, int xys[], int nb_points) {
     return (OK);
 }
 
+static void grab_pointer (Window window, Cursor cursor) {
+    XGrabPointer(local_server.x_server, window, TRUE, 0, GrabModeAsync,
+                 GrabModeAsync, window, cursor, CurrentTime);
 
-extern int x_set_graphic_pointer (void *line_id, boolean graphic) {
+}
+
+extern int x_set_graphic_pointer (void *line_id, boolean graphic, boolean grab) {
     t_window *win_id = (t_window*) line_id;
     Cursor cursor;
 
@@ -730,13 +735,20 @@ extern int x_set_graphic_pointer (void *line_id, boolean graphic) {
       cursor = XCreateFontCursor(local_server.x_server, XC_tcross);
       XDefineCursor(local_server.x_server, win_id->x_window, cursor);
     } else {
+      cursor = XCreateFontCursor(local_server.x_server, XC_arrow);
       XUndefineCursor(local_server.x_server, win_id->x_window);
+    }
+
+    if (grab) {
+      grab_pointer(win_id->x_window, cursor);
+    } else {
+      XUngrabPointer (local_server.x_server, CurrentTime);
     }
     return (OK);
 }
 
 
-extern int x_hide_graphic_pointer (void *line_id) {
+extern int x_hide_graphic_pointer (void *line_id, boolean grab) {
     t_window *win_id = (t_window*) line_id;
     Pixmap blank;
     XColor dummy;
@@ -762,8 +774,16 @@ extern int x_hide_graphic_pointer (void *line_id) {
     /* Assign */
     XDefineCursor(local_server.x_server, win_id->x_window, cursor);
     XFreePixmap (local_server.x_server, blank);
+
+    /* Grab */
+    if (grab) {
+      grab_pointer(win_id->x_window, cursor);
+    } else {
+      XUngrabPointer (local_server.x_server, CurrentTime);
+    }
     return (OK);
 }
+
 
 /***** Event management *****/
 /* Previous event stored if arrived just after an expose */
@@ -1290,7 +1310,7 @@ extern int x_get_selection (void *line_id, char *p_selection, int len) {
     int format_return;
     unsigned long nitems_return, offset_return;
     char *data;
-    
+
     /* Check that window is open */
     if (! lin_check(win_id)) {
         return (ERR);
@@ -1310,7 +1330,7 @@ extern int x_get_selection (void *line_id, char *p_selection, int len) {
       x_clear_in_selection (win_id);
       return ERR;
     }
-  
+
     /* Trunc to len characters (including '\0') */
     if (len > 0) {
       if ((unsigned)nitems_return > (unsigned)len - 1) {

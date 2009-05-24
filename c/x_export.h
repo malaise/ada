@@ -89,9 +89,9 @@ extern int x_fill_area (void *line_id, int xys[], int nb_points);
 
 extern int x_get_pointer_pos (void *line_id, int *p_x, int *p_y);
 
-extern int x_set_graphic_pointer (void *line_id, boolean graphic);
+extern int x_set_graphic_pointer (void *line_id, boolean graphic, boolean grab);
 
-extern int x_hide_graphic_pointer (void *line_id);
+extern int x_hide_graphic_pointer (void *line_id, boolean grab);
 
 /* Events */
 extern int x_select (int *p_fd, boolean *p_read, int *timeout_ms);
