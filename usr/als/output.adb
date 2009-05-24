@@ -66,6 +66,8 @@ package body Output is
     C1.Name := Asu.To_Unbounded_String (Upper_Str (Asu.To_String (C1.Name)));
     C2.Name := Asu.To_Unbounded_String (Upper_Str (Asu.To_String (C2.Name)));
     case Sort_Kind is
+      when None =>
+        return True;
       when Alpha =>
         -- Name then Time then Size
         if C1.Name /= C2.Name then
@@ -462,7 +464,7 @@ package body Output is
       return;
     end if;
     -- Sort (rewinds) if less than a max
-    if List.List_Length > Max_To_Sort then
+    if Sort_Kind = None or else List.List_Length > Max_To_Sort then
       List.Rewind;
     else
       Sort (List);

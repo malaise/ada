@@ -2,7 +2,7 @@ with Ada.Calendar, Ada.Strings.Unbounded;
 with Basic_Proc, Argument, Argument_Parser;
 with Entities, Output, Targets, Lister;
 procedure Als is
-  Version : constant String  := "V3.0";
+  Version : constant String  := "V3.1";
 
   -- Exit codes
   Found_Exit_Code : constant Natural := 0;
@@ -22,7 +22,7 @@ procedure Als is
     Put_Line_Error ("            | [ { <match_name> } ] | [ { <exclude_name> } ]");
     Put_Line_Error ("            | [ { <match_dir> } ] | [ { <exclude_dir> } ]");
     Put_Line_Error ("            | <date_spec> [ <date_spec> ]");
-    Put_Line_Error ("            | -s (--size) | -t (--time) | -r (--reverse)");
+    Put_Line_Error ("            | -s (--size) | -t (--time) | -r (--reverse) | -n (--no_sort)");
     Put_Line_Error ("            | -R (--recursive) | -M (--merge) | -T (--total)");
     Put_Line_Error ("            | --depth=<positive>");
     Put_Line_Error ("            | -n <date> (--newer=<date>)");
@@ -85,7 +85,8 @@ procedure Als is
    22 => ('n', Asu_Tus ("newer"), False, True),
    23 => ('c', Asu_Tus ("classify"), False, False),
    24 => (Argument_Parser.No_Key_Char, Asu_Tus ("depth"), False, True),
-   25 => ('h', Asu_Tus ("human"), False, False));
+   25 => ('h', Asu_Tus ("human"), False, False),
+   26 => ('N', Asu_Tus ("no_sort"), False, False) );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
                := Argument_Parser.No_Key_Index;
@@ -102,6 +103,7 @@ procedure Als is
   Recursive : Boolean;
   Sort_By_Size : Boolean;
   Sort_By_Time : Boolean;
+  No_Sorting : Boolean;
   Merge_Lists : Boolean;
   Date1, Date2 : Entities.Date_Spec_Rec;
   Separator : Ada.Strings.Unbounded.Unbounded_String;
@@ -168,7 +170,16 @@ begin
   Sort_By_Time := Arg_Dscr.Is_Set (09) or else Arg_Dscr.Is_Set (22);
   Merge_Lists := Arg_Dscr.Is_Set (10) or else Arg_Dscr.Is_Set (22);
   Classify := Arg_Dscr.Is_Set (23);
+  No_Sorting := Arg_Dscr.Is_Set (26);
   Depth := 0;
+  -- Check sorting
+  if Sort_By_Time and then Sort_By_Size then
+    Error ("-s (--size) and -t (--time) are mutually exclusive");
+  end if;
+  if No_Sorting and then
+  (Sort_By_Size or else Sort_By_Time or else Sort_Reverse) then
+    Error ("-n (--no_sort) is exclusive with other sorting options");
+  end if;
   -- Check dates
   if Arg_Dscr.Is_Set (11) and then Arg_Dscr.Is_Set (22) then
     Error ("-d (--date) and -n (--new) are mutially exclusive");
@@ -240,7 +251,9 @@ begin
     Sort_Kind : Output.Sort_Kind_List;
     Format_Kind : Output.Format_Kind_List;
   begin
-    if Sort_By_Time then
+    if No_Sorting then
+      Sort_Kind := Output.None;
+    elsif Sort_By_Time then
       -- Time is higher criteria than size
       Sort_Kind := Output.Time;
     elsif Sort_By_Size then

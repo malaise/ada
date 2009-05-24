@@ -3,7 +3,7 @@ with Entities, Lister;
 package Output is
 
   -- Set (store) sorting and format style
-  type Sort_Kind_List is (Alpha, Time, Size);
+  type Sort_Kind_List is (Alpha, None, Size, Time);
   type Format_Kind_List is (Simple, One_Row, Long, Long_Human);
   procedure Set_Style (Sort_Kind : in Sort_Kind_List;
                        Revert : in Boolean;
