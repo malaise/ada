@@ -50,7 +50,7 @@ package body Curve is
                   Points : in T_The_Points) is
 
     -- Miscellaneous drawings on screen : help, axes, scales, points
-    type T_Misc_List is (M_Help, M_Axes, M_Scale, M_Points, M_Curve);
+    type T_Misc_List is (M_Help, M_Grab, M_Axes, M_Scale, M_Points, M_Curve);
     type T_Misc is array (T_Misc_List) of Boolean;
     Misc : T_Misc := (others => False);
 
@@ -292,7 +292,6 @@ package body Curve is
 
     end Convert;
 
-
     -- Draw a curve and miscellaneous drawings on request
     -- -> when zoom defines new scale, new bounds are stored
     --     and True is retuned
@@ -367,21 +366,25 @@ package body Curve is
         case Misc_Index is
           when M_Help =>
             null;
+          when M_Grab =>
+            Cur_Con_Io.Move (Cur_Con_Io.Row_Range_Last - 6,
+                       Cur_Con_Io.Col_Range_Last - 8);
+            Cur_Con_Io.Put ("*");
           when M_Axes =>
             Cur_Con_Io.Move (Cur_Con_Io.Row_Range_Last - 5,
-                       Cur_Con_Io.Col_Range_Last - 7);
+                       Cur_Con_Io.Col_Range_Last - 8);
             Cur_Con_Io.Put ("*");
           when M_Points =>
             Cur_Con_Io.Move (Cur_Con_Io.Row_Range_Last - 4,
-                       Cur_Con_Io.Col_Range_Last - 7);
+                       Cur_Con_Io.Col_Range_Last - 8);
             Cur_Con_Io.Put ("*");
           when M_Curve =>
             Cur_Con_Io.Move (Cur_Con_Io.Row_Range_Last - 3,
-                       Cur_Con_Io.Col_Range_Last - 7);
+                       Cur_Con_Io.Col_Range_Last - 8);
             Cur_Con_Io.Put ("*");
           when M_Scale =>
             Cur_Con_Io.Move (Cur_Con_Io.Row_Range_Last - 2,
-                       Cur_Con_Io.Col_Range_Last - 7);
+                       Cur_Con_Io.Col_Range_Last - 8);
             Cur_Con_Io.Put ("*");
         end case;
       end Toggle_Help_Misc;
@@ -392,8 +395,8 @@ package body Curve is
         -- Dedicated message according to zoom mode (hide/show)
         procedure Put_Mode (Mode : in Zoom_Mode_List) is
         begin
-          Cur_Con_Io.Move (Cur_Con_Io.Row_Range_Last - 10,
-                       Cur_Con_Io.Col_Range_Last - 17);
+          Cur_Con_Io.Move (Cur_Con_Io.Row_Range_Last - 11,
+                       Cur_Con_Io.Col_Range_Last - 18);
           case Mode is
             when Init =>
               Cur_Con_Io.Put ("Point & click L");
@@ -433,22 +436,25 @@ package body Curve is
 
         -- Global help
         if Action = Toggle or else Action = Init then
-          Cur_Con_Io.Move (Cur_Con_Io.Row_Range_Last - 9,
+          Cur_Con_Io.Move (Cur_Con_Io.Row_Range_Last - 10,
                        Cur_Con_Io.Col_Range_Last - 18);
           Cur_Con_Io.Put ("Current ZOOM: " & Normal(Curr_Zoom_No, 1) );
-          Cur_Con_Io.Move (Cur_Con_Io.Row_Range_Last - 8,
+          Cur_Con_Io.Move (Cur_Con_Io.Row_Range_Last - 9,
                        Cur_Con_Io.Col_Range_Last - 18);
           Cur_Con_Io.Put ("0.." & Normal(Last_Zoom_No, 1) & ": other ZOOM");
 
           -- if mouse not installed : color is set here
           Cur_Con_Io.Set_Foreground (Cur_Con_Io.Magenta);
 
-          Cur_Con_Io.Move (Cur_Con_Io.Row_Range_Last - 7,
+          Cur_Con_Io.Move (Cur_Con_Io.Row_Range_Last - 8,
                        Cur_Con_Io.Col_Range_Last - 10);
           Cur_Con_Io.Put ("SWITCHES:");
-          Cur_Con_Io.Move (Cur_Con_Io.Row_Range_Last - 6,
+          Cur_Con_Io.Move (Cur_Con_Io.Row_Range_Last - 7,
                        Cur_Con_Io.Col_Range_Last - 10);
           Cur_Con_Io.Put ("H * Help");
+          Cur_Con_Io.Move (Cur_Con_Io.Row_Range_Last - 6,
+                       Cur_Con_Io.Col_Range_Last - 10);
+          Cur_Con_Io.Put ("G   Grab");
           Cur_Con_Io.Move (Cur_Con_Io.Row_Range_Last - 5,
                        Cur_Con_Io.Col_Range_Last - 10);
           Cur_Con_Io.Put ("A   Axes");
@@ -774,7 +780,8 @@ package body Curve is
         Cur_Con_Io.Enable_Motion_Events (Misc(M_Scale));
       end Cancel_Zoom;
 
-    use Cur_Con_Io;
+    use type Cur_Con_Io.Curs_Mvt, Cur_Con_Io.Mouse_Button_List,
+             Cur_Con_Io.Mouse_Button_Status_List;
     begin -- Draw_One
 
       -- Init context
@@ -814,6 +821,11 @@ package body Curve is
           end if;
           -- Draw what has to be for initial/refresh
           Cur_Con_Io.Clear;
+          if Misc(M_Grab)   then
+            if Misc(M_Help) then
+              Toggle_Help_Misc (M_Grab);
+            end if;
+          end if;
           if Misc(M_Curve)  then Draw_Curve; end if;
           if Misc(M_Axes)   then Draw_Axes; end if;
           if Misc(M_Points) then Draw_Points; end if;
@@ -881,6 +893,13 @@ package body Curve is
               -- Toggle curve
               Misc(M_Curve) := not Misc(M_Curve);
               Draw_Curve;
+            elsif Upper_Char(Char) = 'G' then
+              -- Grab / ungrab pointer
+              Misc(M_Grab) := not Misc(M_Grab);
+              Cur_Con_Io.Set_Pointer_Shape(Cur_Con_Io.Cross, Misc(M_Grab));
+              if Misc(M_Help) then
+                Toggle_Help_Misc (M_Grab);
+              end if;
             elsif Char >= '0' and then
                   Char <= Character'Val(Last_Zoom_No + Character'Pos('0')) then
               -- New zoom level selection
@@ -1071,7 +1090,7 @@ package body Curve is
     Cur_Con_Io.Set_Foreground (Blink_Stat => Cur_Con_Io.Not_Blink);
 
     Cur_Con_Io.Set_Xor_Mode (Cur_Con_Io.Xor_On);
-    Cur_Con_Io.Set_Pointer_Shape(Cur_Con_Io.Cross, False);
+    Cur_Con_Io.Set_Pointer_Shape(Cur_Con_Io.Cross, Misc(M_Grab));
 
     -- Initialise zooms storing
     Zoom_Array(Zoom_No_Range'First) := Boundaries;
