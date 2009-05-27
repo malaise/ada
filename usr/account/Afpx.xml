@@ -665,15 +665,15 @@
       <Init Row="0" Col="0">saved</Init>
     </Field>
 
-    <!-- Selected (not used) -->
+    <!-- Selected (used for date) -->
     <Field Num="6" Kind="Put">
       <Geometry Up="0" Left="57" Low="0" Right="60"/>
       <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
     </Field>
     <Field Num="7" Kind="Put">
       <Geometry Up="0" Left="62" Low="0" Right="69"/>
-      <Colors Foreground="Blue" Blink="False" Background="Black"/>
-      <Init Row="0" Col="0">selected</Init>
+      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Init Row="0" Col="0">dd/mm/yy</Init>
     </Field>
 
     <!-- Title: Search -->

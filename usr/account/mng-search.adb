@@ -157,6 +157,8 @@ begin
   Screen.Encode_File_Name(Text_Handler.Value(Account_Name));
   Screen.Encode_Nb_Oper(Oper_List_Mng.List_Length(Oper_List),
                         Sel_List_Mng.List_Length(Sel_List));
+  Afpx.Set_Field_Activation(Screen.Selected_Fld, True);
+  Afpx.Encode_Field (Screen.Selected_Fld, (0,0), "date");
   Screen.Encode_Saved(Account_Saved);
   Cursor_Field := Afpx.Next_Cursor_Field(0);
 
