@@ -1,8 +1,46 @@
-with Con_Io;
+with Con_Io, Timers;
 separate(Mng)
 
 procedure Search is
   In_Sublist : Boolean;
+
+  -- Current date for searching and displaying
+  Today : Oper_Def.Date_Rec;
+  -- Update current date if it changes
+  function Set_Today (Id : in Timers.Timer_Id;
+                      Data : in Timers.Timer_Data := Timers.No_Data)
+           return Boolean is
+    Newday : Oper_Def.Date_Rec;
+    Seconds : Ada.Calendar.Day_Duration;
+    use type Oper_Def.Date_Rec;
+  begin
+    -- Encode current day
+    Ada.Calendar.Split (Ada.Calendar.Clock,
+                        Newday.Year, Newday.Month, Newday.Day, Seconds);
+    if Newday /= Today then
+      -- New day
+      Today := Newday;
+      Afpx.Encode_Field (Screen.Selected_Fld, (0,0),
+          Unit_Format.Short_Date_Image(Today));
+      return True;
+    else
+      -- No change
+      return False;
+    end if;
+  end Set_Today;
+
+  -- The timer id
+  Timer : Timers.Timer_Id;
+
+  -- Cancel timer if it is active
+  procedure Cancel_Timer is
+    use type Timers.Timer_Id;
+  begin
+    if Timer /= Timers.No_Timer then
+      Timers.Delete (Timer);
+      Timer := Timers.No_Timer;
+    end if;
+  end Cancel_Timer;
 
   -- Unselect current oper
   procedure Unsel is
@@ -14,10 +52,12 @@ procedure Search is
   -- Search criteria
   type Status_Array is array (Oper_Def.Status_List) of Boolean;
   type Kind_Array   is array (Oper_Def.Kind_List) of Boolean;
+  type Date_List is (Prev_Month, Curr_Month, All_Dates);
   type Criteria_Rec is record
     Status : Status_Array;
     Kind   : Kind_Array;
     Reference_Set : Boolean;
+    Date : Date_List;
     Reference : Oper_Def.Reference_Str;
   end record;
 
@@ -29,13 +69,36 @@ procedure Search is
 
   -- Unselect all non matching oper
   procedure Unsel_All (Crit : in Criteria_Rec) is
+    -- Previous month
+    Prev_Month_Date : Oper_Def.Date_Rec;
+    -- Does Current date match Criteria
     function Match (Current  : Oper_Def.Oper_Rec;
                     Criteria : Criteria_Rec) return Boolean is
+
+      function Date_Match (Current  : Oper_Def.Oper_Rec;
+                           Criteria : Criteria_Rec) return Boolean is
+      begin
+        if Criteria.Date = All_Dates then
+          return True;
+        end if;
+        if Criteria.Date = Curr_Month
+        and then Current.Date.Year = Today.Year
+        and then Current.Date.Month = Today.Month then
+          return True;
+        end if;
+        if Criteria.Date = Prev_Month
+        and then Current.Date.Year = Prev_Month_Date.Year
+        and then Current.Date.Month = Prev_Month_Date.Month then
+          return True;
+        end if;
+        return False;
+      end Date_Match;
     begin
       -- Match if Cur kind is set in Crit and Cur status is set in Crit
       -- Or reference Crit is set and Cur matches
       return Criteria.Kind(Current.Kind)
       and then Criteria.Status(Current.Status)
+      and then Date_Match (Current, Criteria)
       and then (not Criteria.Reference_Set
                 or else Criteria.Reference = Current.Reference);
     end Match;
@@ -43,6 +106,21 @@ procedure Search is
   begin
     if Sel_List_Mng.Is_Empty(Sel_List) then
       return;
+    end if;
+
+    -- Compute previous month
+    if Crit.Date = Prev_Month then
+      declare
+        Now : constant Ada.Calendar.Time
+            := Ada.Calendar.Time_Of (Today.Year, Today.Month, Today.Day, 0.0);
+        Prev_Month_Time : constant Ada.Calendar.Time
+                        := Perpet."-" (Now, (Years => 0, Months => 1));
+        Seconds : Ada.Calendar.Day_Duration;
+      begin
+        Ada.Calendar.Split (Prev_Month_Time,
+           Prev_Month_Date.Year, Prev_Month_Date.Month, Prev_Month_Date.Day,
+           Seconds);
+      end;
     end if;
 
     -- Scan from first
@@ -79,7 +157,7 @@ procedure Search is
     procedure Update_Color (Fld : in Afpx.Field_Range; Value : in Boolean) is
     begin
       if Value then
-        Afpx.Set_Field_Colors (Fld, Foreground => Con_Io.Red);
+        Afpx.Set_Field_Colors (Fld, Foreground => Con_Io.Blue);
         One_Set := True;
       else
         Afpx.Reset_Field (Fld, Reset_String => False);
@@ -99,15 +177,18 @@ procedure Search is
     Update_Color (18, Criteria.Kind(Oper_Def.Withdraw));
     Update_Color (19, Criteria.Kind(Oper_Def.Savings));
     Kind_Set := One_Set;
-    Update_Color (20, Criteria.Reference_Set);
+    Update_Color (22, Criteria.Date=Prev_Month);
+    Update_Color (23, Criteria.Date=Curr_Month);
+    Update_Color (25, Criteria.Reference_Set);
     -- Update reference
     if not Criteria.Reference_Set then
      Criteria.Reference := (others => ' ');
-     Afpx.Clear_Field (21);
+     Afpx.Clear_Field (26);
+     Cursor_Col := 0;
     end if;
-    Afpx.Set_Field_Activation (21, Criteria.Reference_Set);
+    Afpx.Set_Field_Activation (26, Criteria.Reference_Set);
     -- Update SEARCH button
-    Afpx.Set_Field_Activation (24, Status_Set and then Kind_Set);
+    Afpx.Set_Field_Activation (29, Status_Set and then Kind_Set);
   end Update_Fields;
 
   -- Update the Criteria and fields according to clicked field
@@ -135,13 +216,14 @@ procedure Search is
         Switch (Criteria.Kind(Oper_Def.Withdraw));
       when 19 =>
         Switch (Criteria.Kind(Oper_Def.Savings));
-      when 20 =>
+      when 25 =>
         Switch (Criteria.Reference_Set);
       when others =>
         raise Program_Error;
     end case;
   end Switch_Field;
 
+  Dummy_Bool : Boolean;
 begin
 
   if Screen.Is_Sublist then
@@ -158,13 +240,20 @@ begin
   Screen.Encode_Nb_Oper(Oper_List_Mng.List_Length(Oper_List),
                         Sel_List_Mng.List_Length(Sel_List));
   Afpx.Set_Field_Activation(Screen.Selected_Fld, True);
-  Afpx.Encode_Field (Screen.Selected_Fld, (0,0), "date");
   Screen.Encode_Saved(Account_Saved);
   Cursor_Field := Afpx.Next_Cursor_Field(0);
+
+  -- Arm timer
+  Dummy_Bool := Set_Today (Timers.No_Timer);
+  Timer := Timers.Create ( (Delay_Kind => Timers.Delay_Sec,
+                            Period => 1.0,
+                            Delay_Seconds => 1.0),
+                           Set_Today'Unrestricted_Access);
 
   -- Init criteria and fields accordingly
   Criteria.Status := (others => False);
   Criteria.Kind   := (others => False);
+  Criteria.Date := All_Dates;
   Criteria.Reference_Set := False;
   Update_Fields;
 
@@ -178,8 +267,8 @@ begin
         case Ptg_Result.Keyboard_Key is
           when Afpx.Return_Key =>
             -- Return = Search if allowed
-            if Afpx.Get_Field_Activation (24) then
-              Criteria.Reference := Afpx.Decode_Wide_Field(21, 0);
+            if Afpx.Get_Field_Activation (29) then
+              Criteria.Reference := Afpx.Decode_Wide_Field(26, 0);
               Unsel_All(Criteria);
               In_Sublist := True;
               exit;
@@ -191,7 +280,7 @@ begin
         end case;
       when Afpx.Mouse_Button =>
         case Ptg_Result.Field_No is
-          when 10 | 11 | 12 | 15 | 16 | 17 | 18 | 19 | 20 =>
+          when 10 | 11 | 12 | 15 | 16 | 17 | 18 | 19 | 25 =>
             -- Switch a button
             Switch_Field (Ptg_Result.Field_No);
             Update_Fields;
@@ -199,42 +288,70 @@ begin
             -- Select all statuses
             Criteria.Status := (others => True);
             Update_Fields;
+          when 20 =>
+            -- Select all kinds
+            Criteria.Kind := (others => True);
+            Update_Fields;
           when 22 =>
+            -- Select previous month or all dates
+            if Criteria.Date /= Prev_Month then
+              Criteria.Date := Prev_Month;
+            else
+              Criteria.Date := All_Dates;
+            end if;
+            Update_Fields;
+          when 23 =>
+            -- Select current month or all dates
+            if Criteria.Date /= Curr_Month then
+              Criteria.Date := Curr_Month;
+            else
+              Criteria.Date := All_Dates;
+            end if;
+            Update_Fields;
+          when 24 =>
+            -- Select all dates
+            Criteria.Date := All_Dates;
+            Update_Fields;
+          when 27 =>
             -- Select all
             Criteria.Status := (others => True);
             Criteria.Kind := (others => True);
             Update_Fields;
-          when 23 =>
+          when 28 =>
             -- Select none
             Criteria.Status := (others => False);
             Criteria.Kind := (others => False);
-            Criteria.Reference_Set := False;
             Update_Fields;
-          when 24 =>
+          when 29 =>
             -- Search
-            Criteria.Reference := Afpx.Decode_Wide_Field(21, 0);
+            Criteria.Reference := Afpx.Decode_Wide_Field(26, 0);
             Unsel_All(Criteria);
             In_Sublist := True;
             exit;
-          when 25 =>
+          when 30 =>
             -- Cancel
             In_Sublist := False;
             exit;
           when others =>
             null;
         end case;
-      when Afpx.Refresh =>
+      when Afpx.Refresh | Afpx.Timer_Event =>
         Redisplay := True;
-      when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event
+      when Afpx.Fd_Event | Afpx.Signal_Event
          | Afpx.Wakeup_Event =>
         null;
     end case;
 
   end loop;
 
+  Cancel_Timer;
   Screen.Reset;
   Screen.Set_Sublist(In_Sublist);
   Refresh_Screen(Bottom);
 
+exception
+  when others =>
+    Cancel_Timer;
+    raise;
 end Search;
 

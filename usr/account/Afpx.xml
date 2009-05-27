@@ -695,17 +695,17 @@
       <Init Row="1" Col="1">Entered</Init>
     </Field>
     <Field Num="11" Kind="Button">
-      <Geometry Up="6" Left="23" Low="8" Right="35"/>
+      <Geometry Up="6" Left="22" Low="8" Right="34"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="1" Col="1">Not entered</Init>
     </Field>
     <Field Num="12" Kind="Button">
-      <Geometry Up="6" Left="39" Low="8" Right="47"/>
+      <Geometry Up="6" Left="37" Low="8" Right="45"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="1" Col="1">Defered</Init>
     </Field>
     <Field Num="13" Kind="Button">
-      <Geometry Up="6" Left="51" Low="8" Right="55"/>
+      <Geometry Up="6" Left="50" Low="8" Right="54"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="1" Col="1">All</Init>
     </Field>
@@ -722,44 +722,71 @@
       <Init Row="1" Col="1">Cheque</Init>
     </Field>
     <Field Num="16" Kind="Button">
-      <Geometry Up="10" Left="22" Low="12" Right="34"/>
+      <Geometry Up="10" Left="21" Low="12" Right="33"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="1" Col="1">Credit Card</Init>
     </Field>
     <Field Num="17" Kind="Button">
-      <Geometry Up="10" Left="38" Low="12" Right="47"/>
+      <Geometry Up="10" Left="36" Low="12" Right="45"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="1" Col="1">Transfer</Init>
     </Field>
     <Field Num="18" Kind="Button">
-      <Geometry Up="10" Left="51" Low="12" Right="60"/>
+      <Geometry Up="10" Left="48" Low="12" Right="57"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="1" Col="1">Withdraw</Init>
     </Field>
     <Field Num="19" Kind="Button">
-      <Geometry Up="10" Left="64" Low="12" Right="72"/>
+      <Geometry Up="10" Left="60" Low="12" Right="68"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="1" Col="1">Savings</Init>
     </Field>
-
-    <!-- Reference -->
     <Field Num="20" Kind="Button">
+      <Geometry Up="10" Left="73" Low="12" Right="77"/>
+      <Colors Foreground="Cyan" Background="Brown"/>
+      <Init Row="1" Col="1">All</Init>
+    </Field>
+
+    <!-- Month -->
+    <Field Num="21" Kind="Put">
+      <Geometry Up="15" Left="2" Low="15" Right="5"/>
+      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Init Row="0" Col="0">Date</Init>
+    </Field>
+    <Field Num="22" Kind="Button">
       <Geometry Up="14" Left="11" Low="16" Right="21"/>
       <Colors Foreground="Cyan" Background="Brown"/>
-      <Init Row="1" Col="1">Reference</Init>
+      <Init Row="1" Col="1">PrevMonth</Init>
     </Field>
-    <Field Num="21" Kind="Get">
-      <Geometry Up="15" Left="25" Low="15" Right="34"/>
+    <Field Num="23" Kind="Button">
+      <Geometry Up="14" Left="24" Low="16" Right="34"/>
+      <Colors Foreground="Cyan" Background="Brown"/>
+      <Init Row="1" Col="1">CurrMonth</Init>
+    </Field>
+    <Field Num="24" Kind="Button">
+      <Geometry Up="14" Left="39" Low="16" Right="43"/>
+      <Colors Foreground="Cyan" Background="Brown"/>
+      <Init Row="1" Col="1">All</Init>
+    </Field>
+
+    <!-- Reference -->
+    <Field Num="25" Kind="Button">
+      <Geometry Up="18" Left="11" Low="18" Right="21"/>
+      <Colors Foreground="Cyan" Background="Brown"/>
+      <Init Row="0" Col="1">Reference</Init>
+    </Field>
+    <Field Num="26" Kind="Get">
+      <Geometry Up="18" Left="24" Low="18" Right="33"/>
       <Colors Foreground="Cyan" Background="Brown" Selected="Brown"/>
     </Field>
 
     <!-- Set to All/None -->
-    <Field Num="22" Kind="Button">
+    <Field Num="27" Kind="Button">
       <Geometry Up="20" Left="3" Low="22" Right="7"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="1" Col="1">All</Init>
     </Field>
-    <Field Num="23" Kind="Button">
+    <Field Num="28" Kind="Button">
       <Geometry Up="20" Left="11" Low="22" Right="16"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="1" Col="1">None</Init>
@@ -767,12 +794,12 @@
 
 
     <!-- Search/Cancel -->
-    <Field Num="24" Kind="Button">
+    <Field Num="29" Kind="Button">
       <Geometry Up="20" Left="23" Low="22" Right="35"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="1" Col="1">S E A R C H</Init>
     </Field>
-    <Field Num="25" Kind="Button">
+    <Field Num="30" Kind="Button">
       <Geometry Up="20" Left="39" Low="22" Right="51"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="1" Col="1">C A N C E L</Init>
