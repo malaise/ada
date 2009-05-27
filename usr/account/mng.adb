@@ -356,8 +356,8 @@ package body Mng is
       -- Let user select file
       Loading := True;
       Text_Handler.Set(Loaded_Name, Account_Select_File(2, "", True));
-      Screen.Set_Sublist(False);
       Screen.Reset;
+      Screen.Set_Sublist(False);
       Refresh_Screen(Bottom);
     end if;
 
@@ -419,8 +419,8 @@ package body Mng is
         return;
       end if;
       Text_Handler.Set(Tmp_Name, Account_Select_File(2, "", False));
-      Screen.Set_Sublist(False);
       Screen.Reset;
+      Screen.Set_Sublist(False);
       Refresh_Screen(Center);
       if Text_Handler.Empty(Tmp_Name) then
         -- User discards selecting new file name
