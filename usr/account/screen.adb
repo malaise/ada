@@ -272,7 +272,7 @@ package body Screen is
       when Account_Full =>
         Afpx.Encode_Field (Message_Fld, (0, 0), "Sorry, the account is full");
       when Not_Implemented =>
-        Afpx.Encode_Field (Message_Fld, (0, 0), "Sorry, not implmeneted yet");
+        Afpx.Encode_Field (Message_Fld, (0, 0), "Sorry, not implemented yet");
       when Internal_Error =>
         Afpx.Encode_Field (Message_Fld, (0, 0),
              "Internal error. Saving in Tmp");
