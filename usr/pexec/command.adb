@@ -4,7 +4,7 @@ package body Command is
   -- Pexec options definitions
   type Opt_Key_Array is array (Positive range <>) of Character;
   Opt_Key : constant Opt_Key_Array := ('a', 'd', 'c', 'f', 'l', 'i', 's');
-  Nbre_Max_Opt : constant := Opt_Key'Length;
+  Nbre_Max_Opt : constant Positive := Opt_Key'Length;
   subtype Index_Opt is Positive range Opt_Key'Range;
 
   -- Parse already called...
