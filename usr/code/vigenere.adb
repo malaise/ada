@@ -85,30 +85,32 @@ package body Vigenere is
     Kindex := 1;
     -- Decode each character one by one
     for I in Str'Range loop
-      -- This character to decode
-      if Str(I) not in Car then
-        raise Decode_Error;
+      if Str(I) /= ' ' then
+        -- This character to decode
+        if Str(I) not in Car then
+          raise Decode_Error;
+        end if;
+        C := Char2Car(Str(I));
+        -- Index of Car corresponding to this character
+        Cindex := Car2Index(C);
+        -- Offest: Index of Car in Key
+        Offset := Car2Index(Carkey(Kindex));
+        -- Sub offest
+        T := Cindex - Offset;
+        if T < Car_Index'First then
+          T := T + Car_Index'Last;
+        end if;
+        -- Get corresponding Car
+        C := Index2Car(T);
+        -- Next Key for next char
+        if Kindex /= Carkey'Last then
+          Kindex := Kindex + 1;
+        else
+          Kindex := Carkey'First;
+        end if;
+        -- Store
+        Str(I) := C;
       end if;
-      C := Char2Car(Str(I));
-      -- Index of Car corresponding to this character
-      Cindex := Car2Index(C);
-      -- Offest: Index of Car in Key
-      Offset := Car2Index(Carkey(Kindex));
-      -- Sub offest
-      T := Cindex - Offset;
-      if T < Car_Index'First then
-        T := T + Car_Index'Last;
-      end if;
-      -- Get corresponding Car
-      C := Index2Car(T);
-      -- Next Key for next char
-      if Kindex /= Carkey'Last then
-        Kindex := Kindex + 1;
-      else
-        Kindex := Carkey'First;
-      end if;
-      -- Store
-      Str(I) := C;
     end loop;
   end Decode;
 
