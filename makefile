@@ -1,4 +1,4 @@
-SUBDIRS := c reposit usr
+SUBDIRS := c reposit usr cots
 
 include $(HOME)/Makefiles/dir.mk
 
