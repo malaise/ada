@@ -7,12 +7,13 @@ package Regular_Expressions is
   type Compiled_Pattern is limited private;
 
   -- Matching information:
-  -- Filled with indexes in string To_Check, up to (1, 0)
+  -- Filled with indexes in string To_Check,
   --  defining matching substrings
   -- When a character is encoded on several bytes,
   --  Language is used to detect the end of this sequence and
   --  set Last_Offset_Stop to the last byte of the sequence.
-  -- abcab matches (ab)c\1* at pos [1-5] [1-2]
+  -- 'abcab' matches '(ab)c\1*' at pos [1-5] [1-2]
+  -- 'to/to' matches 'to($)' 'at pos [4-5] [6-5]
   subtype Offset_Range is Integer;
   type Match_Cell is record
     First_Offset      :  Offset_Range;
@@ -37,10 +38,14 @@ package Regular_Expressions is
 
   -- Execute a regex
   -- If Mach_Info is empty, N_Matched is set to 1 (match) or 0 (not match)
-  --  otherwise N_Matched is set to 0 or to the last non empty slot of
-  --  Match_Info (but some slots from 1 to N_Matched might be empty)
+  -- Otherwise N_Matched is set to 0 (not match) or to the last non empty slot
+  --  of Match_Info
+  -- Beware that some slots from 1 to N_Matched might have strange values:
+  --  - No_Match e.g. when an optional substring does not match
+  --  - empty string (First_Offset > Last_Offset) e.g. when Criteria is like
+  --    'toto($)', including (1, 0) when Criteria is like '(^)toto'.
   -- Also beware that an empty To_Check can match a Criteria that is
-  --  only made of optional patterns (e.g. "" matches "t*"). In this
+  --  only made of optional patterns (e.g. '' matches 't*'). In this
   --  case Match_Info is one cell of Any_Match.
   No_Criteria : exception;
   procedure Exec (Criteria : in Compiled_Pattern;
