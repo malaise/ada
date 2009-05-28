@@ -3,7 +3,7 @@ with Environ, Argument, Argument_Parser, Sys_Calls, Language, Mixed_Str, Text_Li
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
-  Version : constant String  := "V7.11";
+  Version : constant String  := "V7.12";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -94,8 +94,6 @@ procedure Asubst is
      "    A <regex> can contain '^' or '$'. If not, it applies several times per line.");
     Sys_Calls.Put_Line_Error (
      "    Each <regex> of <multiple_regex> applies to one line (once).");
-    Sys_Calls.Put_Line_Error (
-     "    The <multiple_regex> cannot have ""\n^"" or ""$\n"".");
     Sys_Calls.Put_Line_Error (
      "    In noregex mode, only ""\t"", ""\s"", ""\xIJ"" and ""\n"" are interpreted");
     Sys_Calls.Put_Line_Error (

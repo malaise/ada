@@ -159,37 +159,33 @@ package body Search_Pattern is
     if Frag = "" then
       return;
     end if;
-    Index := String_Mng.Locate (Str, Frag);
+    Index := String_Mng.Locate (Str, Frag, Forward => Start);
     if Index = 0 then
        return;
     end if;
     if Start and then Index = Str'First then
       Error ("Pattern """ & Str & """ cannot begin with """ & Frag & """");
-    elsif not Start and then Index = Str'Last
+    elsif not Start and then Index = Str'Last - Frag'Length + 1
     and then not String_Mng.Is_Backslashed (Str, Index) then
       Error ("Pattern """ & Str & """ cannot end with """ & Frag & """");
     end if;
   end Check_Bound;
 
   -- Start line and stop line strings in regex
+  Start_Char : constant Character := '^';
   function Start_String (Delim : in Boolean) return String is
   begin
-    if Delim then return "^";
+    if Delim then return "" & Start_Char;
     else return "";
     end if;
   end Start_String;
+  Stop_Char : constant Character := '$';
   function Stop_String (Delim : in Boolean) return String is
   begin
-    if Delim then return "$";
+    if Delim then return "" & Stop_Char;
     else return "";
     end if;
   end Stop_String;
-
-  -- Check that the string does not contain any significant ^ or $
-  --  except ^ in first and $ in last post
-  -- Check that regex bracket expression in UTF-8 does not contain non ASCII
-  --  character
-  procedure Check_In (Str : in String) is separate;
 
   -- Parses a pattern (splits it or not in several items of List)
   -- Reports errors on stderr and raises Parse_Error.
@@ -369,12 +365,6 @@ package body Search_Pattern is
                   := Asu.Slice (The_Pattern, Start_Index, Stop_Index);
           begin
             if Regex_Mode then
-              -- It must not contain Start_String if preeceded by a delim
-              Check_Bound (Slice, Start_String (Prev_Delim), True);
-              -- It must not contain Stop_String if preeceded by a delim
-              Check_Bound (Slice, Stop_String (Next_Delim), False);
-              -- It must not contain any significant ^ or $ in the middle
-              Check_In (Slice);
               -- Add this regex with start/stop strings
               Add (Start_String (Prev_Delim) & Slice & Stop_String (Next_Delim),
                  Case_Sensitive, List);
@@ -385,13 +375,15 @@ package body Search_Pattern is
           end;
           if Regex_Mode then
             -- See if this is a single regex and if it can apply several times
-            --  to one line of input (no ^ nor $, except "\$")
+            --  to one line of input (not start by ^ nor end by $, except "\$")
+            -- Note that ^ or $ cannot be followed by ?, * or +, so no need to
+            --  check "^?"
+            -- Also note that "(^|@)toto(/|$)" is potentially iterative and
+            --  is handled as iterative
             if not Prev_Delim
             and then not Next_Delim
-            and then Asu.Element (The_Pattern, Start_Index) & ""
-                   /= Start_String (True)
-            and then (Asu.Element (The_Pattern, Stop_Index) & ""
-                   /= Stop_String (True)
+            and then Asu.Element (The_Pattern, Start_Index) /= Start_Char
+            and then (Asu.Element (The_Pattern, Stop_Index) /= Stop_Char
               or else String_Mng.Is_Backslashed (Asu.To_String (The_Pattern),
                                                     Stop_Index) ) then
               Is_Iterative := True;
@@ -412,19 +404,11 @@ package body Search_Pattern is
       end loop;
     else
       -- No split
-      -- Check no ^ nor $, within nor at first or last char
-      declare
-        Str : constant String := Asu.To_String (The_Pattern);
-      begin
-        if Regex_Mode then
-          Check_Bound (Str, Start_String (True), True);
-          Check_Bound (Str, Start_String (False), False);
-          Check_In (Str);
-          Add (Str, Case_Sensitive, List);
-        else
-          Add (Str, True, List);
-        end if;
-      end;
+      if Regex_Mode then
+        Add (Asu.To_String (The_Pattern), Case_Sensitive, List);
+      else
+        Add (Asu.To_String (The_Pattern), True, List);
+      end if;
       Is_Iterative := True;
     end if;
     -- Done

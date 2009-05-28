@@ -3,14 +3,13 @@
 <HEAD>
 	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
 	<TITLE>Asubst</TITLE>
-	<META NAME="GENERATOR" CONTENT="OpenOffice.org 2.4  (Linux)">
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 1.1.5  (Linux)">
 	<META NAME="AUTHOR" CONTENT="MALAISE Pascal">
 	<META NAME="CREATED" CONTENT="20060414;18573000">
-	<META NAME="CHANGEDBY" CONTENT="Pascal MALAISE">
-	<META NAME="CHANGED" CONTENT="20090426;16341900">
+	<META NAME="CHANGED" CONTENT="20090528;14402200">
 </HEAD>
 <BODY LANG="en-US" DIR="LTR">
-<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><FONT SIZE=6><B>V7.11</B></FONT></FONT></FONT></P>
+<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><B><FONT SIZE=6>V7.12</FONT></B></FONT></FONT></P>
 <H1 LANG="en-GB"><FONT FACE="monospace">1. General syntax</FONT></H1>
 <P LANG="en-GB"><FONT FACE="monospace">Usage: asubst [ { &lt;option&gt;
 } ] &lt;find_pattern&gt; &lt;replace_string&gt; [ { &lt;file&gt; }
@@ -77,9 +76,7 @@ regex.</FONT><BR><FONT FACE="monospace">Examples:</FONT><BR><FONT FACE="monospac
 successive lines. Search pattern is split into several regex and \n
 patterns, each line of input is split in two input items: text then
 newline, pattern 1 will be compared to item 1, if they match, pattern
-2 will be compared to item 2.... In this case, significant '^' and
-'$' are only allowed respectively at the beginning and at the end of
-the pattern.<BR></FONT><BR><FONT FACE="monospace">Examples:</FONT><BR><FONT FACE="monospace">r&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;
+2 will be compared to item 2...<BR></FONT><BR><FONT FACE="monospace">Examples:</FONT><BR><FONT FACE="monospace">r&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;
 r&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(r
 anywhere in line)</FONT><BR><FONT FACE="monospace">^r$&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt;
 ^r$&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(line
@@ -232,10 +229,11 @@ like other regex specific characters (including &quot;^&quot; and
 forbidden (no substring).</FONT></P>
 <H1 LANG="en-GB"><FONT FACE="Monospace">10.Exit code</FONT></H1>
 <P LANG="en-GB"><FONT FACE="Monospace">asubst exits with 0 if some
-matching was found, with 1 if no matching was found, with 2
-otherwise (e.g. in case of error). It can also exit with code 3 if
-stopped (Ctrl-C or SIGTERM) while executing external command, or
-with standard 128 + signal number.</FONT></P>
+matching was found, with 1 if no matching was found, with 2 otherwise
+(e.g. in case of error). It can also exit with code 3 if stopped
+(Ctrl-C or SIGTERM) while executing external command, or with
+standard 128 + signal number. </FONT>
+</P>
 <H1 LANG="en-GB"><FONT FACE="Monospace">11.Troubleshooting</FONT></H1>
 <P LANG="en-GB"><FONT FACE="Monospace">- Asubst is stuck. -&gt; Maybe
 an argument is missing or an option is not complete, and asubst is
