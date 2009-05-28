@@ -393,7 +393,9 @@ package body Substit is
       end if;
     end loop;
     -- Put remaining lines (read but not matching, or not read)
-    Flush_Lines;
+    if not Grep then
+      Flush_Lines;
+    end if;
     -- Close and cleanup files
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Done.");
