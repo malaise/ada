@@ -363,10 +363,21 @@ package body Search_Pattern is
           declare
             Slice : constant String
                   := Asu.Slice (The_Pattern, Start_Index, Stop_Index);
+            Needs_Start, Needs_Stop : Boolean;
           begin
             if Regex_Mode then
+              -- It is not mandatory to avoid ^^toto and toto$$, but cleaner
+              -- Add '^' if a delimiter preceeds and no leading '^' yet
+              Needs_Start := Prev_Delim
+                  and then Slice(Slice'First) /= Start_Char;
+              -- Add '$' if a delimiter follows and no trailing '$' yet
+              --  (or if it is "\$")
+              Needs_Stop := Next_Delim
+                  and then (Slice(Slice'Last) /= Stop_Char
+                      or else String_Mng.Is_Backslashed (Slice, Slice'Last) );
               -- Add this regex with start/stop strings
-              Add (Start_String (Prev_Delim) & Slice & Stop_String (Next_Delim),
+              Add (Start_String (Needs_Start) & Slice
+                 & Stop_String (Needs_Stop),
                  Case_Sensitive, List);
             else
               -- Add this regex with no start/stop strings
