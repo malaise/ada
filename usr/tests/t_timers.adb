@@ -2,8 +2,10 @@
 -- Periodical : 1 then each 3 secs
 -- Single     : 1 then [1, 5] secs re-created in the callback
 -- Funny      : 0 then in [2.1, 2.9[ with callback (10 times)
---                then once in 20 with no callback (then never)
+--                then once in 20 with no callback, then never
 -- Never      : never
+-- Escape suspends the Periodic and the Single (if not expired)
+-- Return resumes them
 
 with Ada.Text_Io;
 with Afpx, Con_Io, Timers, Rnd, Event_Mng;
@@ -42,13 +44,22 @@ procedure T_Timers is
     end if;
   end Put_Line;
 
+  Use_Afpx : Boolean := False;
+
+  procedure Display (Str : in String) is
+  begin
+    if Use_Afpx then
+      Put_Line (Str);
+    else
+      Ada.Text_Io.Put_Line (Str);
+    end if;
+  end Display;
 
   -- The timers stuff
   type Timer_List is (Periodic, Single, Funny, Never);
 
   The_Timers : array (Timer_List) of Timers.Timer_Id;
 
-  Use_Afpx : Boolean := False;
 
   -- Generic callback
   function Callback (Id : Timers.Timer_Id;
@@ -71,13 +82,8 @@ procedure T_Timers is
                        Delay_Seconds => D,
                        Period => P),
         Callback   => A);
-    if Use_Afpx then
-      Put_Line ("Created timer " & Timer_List'Image(T) & ": "
+    Display ("Created timer " & Timer_List'Image(T) & ": "
               & Timers.Image(The_Timers(T)));
-    else
-      Ada.Text_Io.Put_Line ("Created timer " & Timer_List'Image(T) & ": "
-                          & Timers.Image(The_Timers(T)));
-    end if;
   end Start;
 
   Nb_Funny : Natural := 0;
@@ -102,11 +108,7 @@ procedure T_Timers is
     end if;
     for T in Timer_List loop
       if The_Timers(T) = Id then
-        if Use_Afpx then
-          Put_Line ("Expiration of " & Timer_List'Image(T));
-        else
-          Ada.Text_Io.Put_Line ("Expiration of " & Timer_List'Image(T));
-        end if;
+        Display ("Expiration of " & Timer_List'Image(T));
         if T = Single then
           N := Rnd.Int_Random (1, 5);
           Start (Single, Duration(N), Timers.No_Period, True);
@@ -122,7 +124,7 @@ procedure T_Timers is
         return True;
       end if;
     end loop;
-    Ada.Text_Io.Put_Line ("Expiration of unknown timer:" & Timers.Image(Id));
+    Display ("Expiration of unknown timer:" & Timers.Image(Id));
     return False;
   end Callback;
 
@@ -154,9 +156,23 @@ begin
 
         case Ptg_Result.Keyboard_Key is
           when Afpx.Return_Key =>
-            null;
+            Display ("Resuming Periodical and Single.");
+            Timers.Resume (The_Timers(Periodic));
+            begin
+              Timers.Resume (The_Timers(Single));
+            exception
+              when Timers.Invalid_Timer =>
+                null;
+            end;
           when Afpx.Escape_Key =>
-            null;
+            Display ("Suspending Periodical and Single. Resume with Return.");
+            Timers.Suspend (The_Timers(Periodic));
+            begin
+              Timers.Suspend (The_Timers(Single));
+            exception
+              when Timers.Invalid_Timer =>
+                null;
+            end;
           when Afpx.Break_Key =>
             exit;
         end case;
@@ -169,7 +185,7 @@ begin
       when Afpx.Signal_Event =>
         exit;
       when Afpx.Timer_Event =>
-        Put_Line ("Timer Event");
+        Display ("Timer Event");
       when Afpx.Refresh =>
         Redisplay := True;
     end case;
@@ -181,8 +197,7 @@ begin
       Timers.Delete (The_Timers(T));
     exception
       when Timers.Invalid_Timer =>
-        Ada.Text_Io.Put_Line ("Invalid timer when closing "
-          & Timer_List'Image (T));
+        Display ("Invalid timer when closing " & Timer_List'Image (T));
     end;
   end loop;
 
