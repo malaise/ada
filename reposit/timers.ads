@@ -61,6 +61,16 @@ package Timers is
   Invalid_Timer : exception;
   procedure Delete (Id : in Timer_Id);
 
+  -- Suspend a timer: expirations, even the pending ones are suspended
+  -- No action is timer is alread syspended
+  -- May raise Invalid_Timer if timer has no period and has expired
+  procedure Suspend (Id : in Timer_Id);
+
+  -- Resume a suspended a timer: expirations, even the pending ones are resumed
+  -- No action is timer is not syspended
+  -- May raise Invalid_Timer if timer has no period and has expired
+  procedure Resume (Id : in Timer_Id);
+
 
   -- For each timer for which if expiration time/delay is reached
   -- its callback is called
@@ -89,9 +99,8 @@ package Timers is
 
   -- Compute next timeout from Expiration and timers
   function Next_Timeout (Expiration : Expiration_Rec) return Duration;
-  -- Compute nearest expiratin time from Expiration and timers
+  -- Compute nearest expiratio time from Expiration and timers
   function Next_Expiration (Expiration : Expiration_Rec) return Expiration_Rec;
-
 
   -- Is expiration reached
   function Is_Reached (Expiration : Expiration_Rec) return Boolean;

@@ -77,7 +77,7 @@ package body Timers is
   -- Allocate a new (free) timer id
   function Get_Next_Id return Timer_Id_Range;
 
-  -- List of running timers
+  -- List of timers, running or suspended
   subtype Exp_Rec is Delay_Rec(Delay_Exp);
   type Timer_Rec is record
     Id  : Timer_Id_Range;
@@ -85,6 +85,8 @@ package body Timers is
     Cre : Ada.Calendar.Time;
     Dat : Timer_Data;
     Cb  : Timer_Callback;
+    Running : Boolean;
+    Remaining : Duration;
   end record;
 
   package Timer_Dyn_List_Mng is new Dynamic_List (Timer_Rec);
@@ -93,12 +95,25 @@ package body Timers is
 
   -- Sort timers in crescent order of expiration times
   --  if same expiration, use creation time
+  -- Suspended timers are higher
   function "<" (T1, T2 : Timer_Rec) return Boolean is
     use type Ada.Calendar.Time;
   begin
-    return T1.Exp.Expiration_Time < T2.Exp.Expiration_Time
-    or else (T1.Exp.Expiration_Time = T2.Exp.Expiration_Time
-      and then T1.Cre < T2.Cre);
+    if T1.Running and then T2.Running then
+      -- Both running => Expiration time
+      return T1.Exp.Expiration_Time < T2.Exp.Expiration_Time
+      or else (T1.Exp.Expiration_Time = T2.Exp.Expiration_Time
+        and then T1.Cre < T2.Cre);
+    end if;
+    -- At least one suspended
+    if T1.Running and then not T2.Running then
+      return True;
+    elsif not T1.Running and then T2.Running then
+      return False;
+    else
+      -- Both suspended: sort by remaining time
+      return T1.Remaining < T2.Remaining;
+    end if;
   end "<";
   procedure Sort is new Timer_List_Mng.Sort ("<");
 
@@ -152,7 +167,7 @@ package body Timers is
 
     Timer : Timer_Rec;
     This_Id : Timer_Id_Range;
-    use Ada.Calendar;
+    use type Ada.Calendar.Time;
   begin
     -- Compute expiration time ASAP
     Timer.Cre := Ada.Calendar.Clock;
@@ -172,6 +187,8 @@ package body Timers is
     Timer.Exp.Period := Delay_Spec.Period;
     Timer.Dat := Data;
     Timer.Cb := Callback;
+    Timer.Running := True;
+    Timer.Remaining := 0.0;
 
     -- Insert in beginning of list and sort it
     if not Timer_List_Mng.Is_Empty (Timer_List) then
@@ -242,6 +259,66 @@ package body Timers is
     Put_Debug ("Delete", " id " & Id.Timer_Num'Img);
   end Delete;
 
+  -- Suspend a timer: expirations, even the pending ones are suspended
+  -- No action is timer is alread syspended
+  -- May raise Invalid_Timer if timer has no period and has expired
+  procedure Suspend (Id : in Timer_Id) is
+    Now : constant Ada.Calendar.Time := Ada.Calendar.Clock;
+    Timer : Timer_Rec;
+    use type Ada.Calendar.Time;
+  begin
+     Set_Debug;
+    -- Search timer
+    Locate (Id);
+    -- Get it
+    Timer_List_Mng.Read (Timer_List, Timer, Timer_List_Mng.Current);
+    if not Timer.Running then
+      -- Already suspended
+      return;
+    end if;
+    -- Update it (not running and remaining time until next expiration)
+    Timer.Running := False;
+    Timer.Remaining := Timer.Exp.Expiration_Time - Now;
+    -- Store it and re-sort
+    Timer_List_Mng.Modify (Timer_List, Timer, Timer_List_Mng.Current);
+    Sort (Timer_List);
+    Put_Debug ("Suspend", " id " & Id.Timer_Num'Img);
+  end Suspend;
+
+  -- Resume a suspended a timer: expirations, even the pending ones are resumed
+  -- No action is timer is not syspended
+  -- May raise Invalid_Timer if timer has no period and has expired
+  procedure Resume (Id : in Timer_Id) is
+    Now : constant Ada.Calendar.Time := Ada.Calendar.Clock;
+    Timer : Timer_Rec;
+    This_Id : Timer_Id_Range;
+    use type Ada.Calendar.Time;
+  begin
+     Set_Debug;
+    -- Search timer
+    Locate (Id);
+    -- Get it
+    Timer_List_Mng.Read (Timer_List, Timer, Timer_List_Mng.Current);
+    if Timer.Running then
+      -- Already running
+      return;
+    end if;
+    -- Update it (running and next expiration time)
+    Timer.Running := True;
+    -- Re-apply remaining delay to current time
+    Timer.Exp.Expiration_Time := Now + Timer.Remaining;
+    -- Store it and re-sort
+    Timer_List_Mng.Modify (Timer_List, Timer, Timer_List_Mng.Current);
+    Sort (Timer_List);
+
+    -- If this timer is first then force wake-up of select
+    This_Id := Timer.Id;
+    Timer_List_Mng.Read (Timer_List, Timer, Timer_List_Mng.Current);
+    if Timer.Id = This_Id then
+      Event_Mng.Wake_Up;
+    end if;
+  end Resume;
+
   -- Locate First timer to expire
   -- Retuns False if no more timer
   function First return Boolean is
@@ -267,13 +344,14 @@ package body Timers is
     Set_Debug;
     One_True := False;
     loop
-      -- Search first timer, exit when no  more timer
+      -- Search first timer, exit when no more timer
       exit when not First;
 
       -- Get it
       Timer_List_Mng.Read (Timer_List, Timer, Timer_List_Mng.Current);
-      -- Done when  no more to expire
-      exit when Timer.Exp.Expiration_Time > Ada.Calendar.Clock;
+      -- Done when no more to expire
+      exit when not Timer.Running
+      or else Timer.Exp.Expiration_Time > Ada.Calendar.Clock;
 
       -- Expired: Remove single shot
       if Timer.Exp.Period = No_Period then
@@ -320,11 +398,17 @@ package body Timers is
     Set_Debug;
       -- Search first timer and read it
     if not First then
-      -- No  more timer
+      -- No more timer
       Put_Debug ("Wait_Until", "-> Infinite cause no timer");
       return Infinite_Expiration;
     end if;
     Timer_List_Mng.Read (Timer_List, Timer, Timer_List_Mng.Current);
+    if not Timer.Running then
+      -- No more running timer
+      Put_Debug ("Wait_Until", "-> Infinite cause no more running timer"
+                 & Timer.Id'Img);
+      return Infinite_Expiration;
+    end if;
 
     Put_Debug ("Wait_Until", "-> "
                            & Date_Image (Timer.Exp.Expiration_Time)
@@ -395,7 +479,6 @@ package body Timers is
     return Result;
   end Next_Expiration;
 
-
   function Next_Timeout (Expiration : Expiration_Rec) return Duration is
     Now : Ada.Calendar.Time;
     Next_Exp : Expiration_Rec;
@@ -421,7 +504,6 @@ package body Timers is
     Put_Debug ("Next_Timeout", "-> " & Result'Img);
     return Result;
   end Next_Timeout;
-
 
   -- Is expiration reached
   function Is_Reached (Expiration : Expiration_Rec) return Boolean is
