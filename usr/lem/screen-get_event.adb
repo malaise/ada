@@ -68,7 +68,10 @@ begin
         return (Move_Key, Super_Left_Key);
       when Con_Io.Ctrl_Right =>
         return (Move_Key, Super_Right_Key);
-      when Con_Io.Tab | Con_Io.Full | Con_Io.Ret =>
+      when Con_Io.Tab =>
+        Pointer_Grabbed := not Pointer_Grabbed;
+        Con_Io.Set_Pointer_Shape (Con_Io.None, Pointer_Grabbed);
+      when Con_Io.Full | Con_Io.Ret =>
         return (Evt => Next);
       when Con_Io.Stab =>
         return (Evt => Prev);

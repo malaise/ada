@@ -84,6 +84,9 @@ package body Screen is
     Con_Io.Destroy;
   end Close;
 
+  -- Pointer grabbing switch
+  Pointer_Grabbed : Boolean;
+
   -- Reset screen. Display titles and moon ground
   procedure Init is
     use Con_Io.Graphics;
@@ -92,7 +95,8 @@ package body Screen is
     -- Reset screen and hide mouse
     Con_Io.Init;
     Con_Io.Reset_Term;
-    Con_Io.Set_Pointer_Shape (Con_Io.None, True);
+    Pointer_Grabbed := True;
+    Con_Io.Set_Pointer_Shape (Con_Io.None, Pointer_Grabbed);
     -- Clear previous LEM position
     Prev_Pos := No_Pos;
     -- Compute space
