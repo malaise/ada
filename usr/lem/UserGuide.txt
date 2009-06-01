@@ -9,8 +9,10 @@ vertical speeds, then stop its engines.
 The main area represents the space, the LEM and the Moon ground.
 The LEM must not reach the borders (up, left or right) of the space, otherwise
 it is lost. The ground shows at least one flat landing area.
-Normal mode defines at least one large flat area, while hard mode (argument -h)
+Normal mode defines at least one large flat area, while hard mode (argument '-h')
 defines at least one narrow flat area.
+When started with argument '-g' the mouse pointer is grabbed in the game
+window. It can be grabed / ungrabed at any time by pressing the key 'g'.
 
 3. The gauges
 Around the space are the gauges: on the right, the vertical thrust and the
@@ -24,6 +26,9 @@ This indicator shows "CLOS" when getting close to land, then "LAND" when landed.
 Below the indicator, a chronometer indicates the duration of the game.
 
 4. Commands
+Hit 'g' at any time to grab or ungrab the mouse pointer in the window (while
+within the window the pointer is hidden).
+Hit space while flying to pause or resume the game.
 When flying and landed, the commands are the four arrows. Each arrow activates
 the corresponding engine.
 Vertical arrows increase/decrease vertical thrust by 15% each time. Down
@@ -38,7 +43,7 @@ normal arrow (still for one second).
 Mouse controls can also be used: left and right click and double click for
 horizontal thrust, and wheel for vertical thurst.
 
-5. PLaying
+5. Playing
 The game starts at a random (high) position, with a random vertical speed and
 a reasonable vertical thrust (and a very reasonable horizontal speed).
 Spot a flat landing area and adjust speeds to reach it. Check the area (APP

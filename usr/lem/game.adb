@@ -7,6 +7,13 @@ package body Game is
   Init_Position : Space.Position_Rec := Flight.Get_Init_Position;
   Init_Speed : Lem.Speed_Rec;
 
+  -- Chronometer to display mission time:x
+  Chrono : Chronos.Chrono_Type;
+
+  -- Pause the game
+  -- Return True if game goes on
+  function Pause_Game (Flight_Status : Flight.Status_Rec) return Boolean;
+
   function Play_One (New_Game : in Boolean) return Result_List is
     -- Flight (Lem) status
     Flight_Status : Flight.Status_Rec;
@@ -20,13 +27,13 @@ package body Game is
                        := Lem.Max_Y_Thrust / 15;
     -- Current Y thrust
     Y_Thrust : Lem.Y_Thrust_Range;
-    -- Chronometer
-    Chrono : Chronos.Chrono_Type;
     -- Landing status
     Land_Status : Flight.Status_List;
     -- Worst landing satus
     Worst_Landing : Flight.Status_List;
-    use type Flight.Status_List, Screen.Evt_Kind_List, Screen.Mvt_Kind_List;
+    use type Flight.Status_List, Screen.Evt_Kind_List, Screen.Mvt_Kind_List,
+             Chronos.Status_List;
+
     function Is_Landed (Status : Flight.Status_List) return Boolean is
     begin
       return Status = Flight.Landed or else Status = Flight.Safe_Landed;
@@ -50,7 +57,8 @@ package body Game is
     end if;
     -- Init Lem and start chrono
     Lem.Init (Init_Position, Init_Speed);
-    Chronos.Start (Chrono);
+    Chrono.Reset;
+    Chrono.Start;
 
     -- Worst of all landings
     Worst_Landing := Flight.Safe_Landed;
@@ -58,7 +66,7 @@ package body Game is
     -- Init screen
     Screen.Init;
     Flight_Status := Flight.Get_Status;
-    Screen.Update (Flight_Status, Chronos.Read (Chrono), True);
+    Screen.Update (Flight_Status, Chrono.Read, True);
     if Debug.Set_Game then
       Ada.Text_Io.Put_Line ("GAME: Init done");
     end if;
@@ -111,7 +119,7 @@ package body Game is
       end if;
 
       -- Get Lem characteristics and put
-      Screen.Update (Flight_Status, Chronos.Read (Chrono), False);
+      Screen.Update (Flight_Status, Chrono.Read, False);
 
       -- Get a key or wait a bit
       Got_Event := Screen.Get_Event (0.1);
@@ -171,22 +179,29 @@ package body Game is
         when Screen.Refresh =>
           -- Refresh screen
           Screen.Refresh;
+        when Screen.Pause =>
+          -- Pause/Resume game
+          if not Pause_Game (Flight_Status) then
+            -- Aborted while in pause
+            Screen.Close;
+            return Aborted;
+          end if;
       end case;
     end loop;
 
     -- Game is ended
     -- Stop the LEM and chrono
     Lem.Stop;
-    Chronos.Stop (Chrono);
+    Chrono.Stop;
 
     -- Last display and get key
     loop
       if Flight_Status.Status = Flight.Lost then
         -- Lem lost: hide it
-        Screen.Delete (Flight_Status, Chronos.Read (Chrono));
+        Screen.Delete (Flight_Status, Chrono.Read);
       else
         -- Landed or crashed: show it
-        Screen.Update (Flight_Status, Chronos.Read (Chrono), True);
+        Screen.Update (Flight_Status, Chrono.Read, True);
       end if;
       Screen.Put_End (Flight_Status.Status);
 
@@ -219,6 +234,50 @@ package body Game is
     end loop;
 
   end Play_One;
+
+  -- Pause the game until resumed
+  function Pause_Game (Flight_Status : Flight.Status_Rec) return Boolean is
+    Got_Event : Screen.Evt_Rec;
+  begin
+    -- Pause
+    Lem.Pause;
+    Chrono.Stop;
+
+    -- Wait until resume
+    Screen.Init;
+    Screen.Update (Flight_Status, Chrono.Read, True);
+    -- Display a screen about pause mode
+    Screen.Put_Pause;
+    loop
+      Got_Event := Screen.Get_Event (-1.0);
+      case Got_Event.Evt is
+        when Screen.Refresh =>
+          -- Reinit screen (message is in Xor mode)
+          Screen.Init;
+          -- Put Lem
+          Screen.Update (Flight_Status, Chrono.Read, True);
+          -- Redisplay screen about pause mode
+          Screen.Put_Pause;
+        when Screen.Pause =>
+          exit;
+        when Screen.Break =>
+          -- Abort
+          return False;
+        when others =>
+          -- Arrows, clicks (remaining events): ignore
+          null;
+      end case;
+    end loop;
+
+    -- Reset screen (clear message)
+    Screen.Init;
+    Screen.Update (Flight_Status, Chrono.Read, True);
+    -- Resume
+    Lem.Resume;
+    Chrono.Start;
+    Screen.Refresh;
+    return True;
+  end Pause_Game;
 
 end Game;
 

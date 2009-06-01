@@ -76,6 +76,10 @@ package Lem is
   -- Stop Lem life
   procedure Stop;
 
+  -- Pause and resume
+  procedure Pause;
+  procedure Resume;
+
   -- Exception when setting thrust... while stopped, initialising or setting
   -- landing position while not stopped
   Invalid_Mode : exception;

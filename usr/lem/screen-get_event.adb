@@ -16,7 +16,7 @@ separate (Screen)
 --  end record;
 
 function Get_Event (Wait : in Duration) return Evt_Rec is
-  Str    : Wide_String (1 .. 0);
+  Str    : Wide_String (1 .. 1);
   Last   : Natural;
   Stat   : Con_Io.Curs_Mvt;
   Pos    : Positive;
@@ -43,6 +43,9 @@ begin
   -- Values before loop, for check
   Prev_Action := Prev_Click_Action;
   Prev_Time := Prev_Click_Time;
+  -- Position and color for blind get
+  Con_Io.Move (Get_Pos);
+  Con_Io.Set_Foreground (Con_Io.Get_Background);
   loop
     -- Get key
     Con_Io.Get (Str, Last, Stat, Pos, Insert, Time_Out => Time_Out);
@@ -68,11 +71,17 @@ begin
         return (Move_Key, Super_Left_Key);
       when Con_Io.Ctrl_Right =>
         return (Move_Key, Super_Right_Key);
-      when Con_Io.Tab =>
-        Pointer_Grabbed := not Pointer_Grabbed;
-        Con_Io.Set_Pointer_Shape (Con_Io.None, Pointer_Grabbed);
-      when Con_Io.Full | Con_Io.Ret =>
+      when Con_Io.Tab | Con_Io.Ret =>
         return (Evt => Next);
+      when Con_Io.Full =>
+        if Str(1) = 'g' then
+          -- Grab / ungrab pointer
+          Pointer_Grabbed := not Pointer_Grabbed;
+          Con_Io.Set_Pointer_Shape (Con_Io.None, Pointer_Grabbed);
+        elsif Str(1) = ' ' then
+          -- Pause / resume game
+          return (Evt => Pause);
+        end if;
       when Con_Io.Stab =>
         return (Evt => Prev);
       when Con_Io.Break | Con_Io.Esc =>

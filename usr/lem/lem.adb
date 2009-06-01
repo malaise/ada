@@ -1,5 +1,5 @@
-with Ada.Calendar, Ada.Text_Io;
-with Timers, Rnd;
+with Ada.Text_Io, Ada.Calendar;
+with Timers, Rnd, Chronos, Day_Mng;
 with Moon, Debug;
 package body Lem is
 
@@ -133,7 +133,17 @@ package body Lem is
   ---------------
   -- Time when Current_Acceleration, Current_Speed and Current_Position
   --  have been set (by init or periodic timer callback)
-  Current_Time : Ada.Calendar.Time;
+  Chrono : Chronos.Chrono_Type;
+
+  -- Get duration since last computation
+  function Read_Chrono return Duration is
+    Time : constant Chronos.Time_Rec := Chrono.Read;
+  begin
+    -- Assumption that result is less that one day,
+    --  or at least will not overflow duration
+    return Duration(Time.Days) * Ada.Calendar.Day_Duration'Last
+         + Time.Secs;
+  end Read_Chrono;
 
   -- Acceleration in m/s2
   type Acceleration_Rec is record
@@ -158,8 +168,7 @@ package body Lem is
 
   -- Current position: Speed_At (Now)
   function Get_Speed return Speed_Rec is
-    use type Ada.Calendar.Time;
-    Delta_Time : constant Duration := Ada.Calendar.Clock - Current_Time;
+    Delta_Time : constant Duration := Read_Chrono;
   begin
     return Speed_At (Delta_Time);
   end Get_Speed;
@@ -191,8 +200,7 @@ package body Lem is
 
   -- Current position: Position_At (Now)
   function Get_Position return Position_Rec is
-    use type Ada.Calendar.Time;
-    Delta_Time : constant Duration := Ada.Calendar.Clock - Current_Time;
+    Delta_Time : constant Duration := Read_Chrono;
   begin
     if Debug.Set_Lem then
       Ada.Text_Io.Put_Line ("LEM Delta time is " & Delta_Time'Img);
@@ -221,7 +229,7 @@ package body Lem is
     end if;
     -- Compute LEM characteristics
     -- Time of computation for further linear interpolation
-    Current_Time := Ada.Calendar.Clock;
+    Chrono.Reset;
     -- New position
     -- GNAT Bug? Current_Position is set to 0 before calling Position_At!
     New_Position := Position_At (Period);
@@ -298,11 +306,14 @@ package body Lem is
     --  (random) vertical speed remains constant
     Current_X_Thrust := 0;
     Current_Y_Thrust := (-Moon.Acceleration) * (Empty_Mass + Current_Fuel);
+    -- Time
+    Chrono.Stop;
+    Chrono.Reset;
+    Chrono.Start;
     -- Acceleration, speed, position
     Current_Acceleration := (0.0, 0.0);
     Current_Speed := Speed;
     Current_Position := Position;
-    Current_Time := Ada.Calendar.Clock;
     -- Start periodical timer
     Period_Tid := Timers.Create ( (Delay_Kind => Timers.Delay_Sec,
                                    Delay_Seconds => Period,
@@ -324,12 +335,37 @@ package body Lem is
       Thrust_Tid := Timers.No_Timer;
     end if;
     -- Reset Trust, acceleration and speed
+    Chrono.Stop;
     Current_X_Thrust := 0;
     Current_Y_Thrust := 0;
     Current_Acceleration := (0.0, 0.0);
     Current_Speed := (0.0, 0.0);
     Running := False;
   end Stop;
+
+  -- Pause LEM flight
+  procedure Pause is
+    use type Timers.Timer_Id;
+  begin
+    Chrono.Stop;
+    -- Suspend thrust timer if it is active and Periodical
+    if Thrust_Tid /=  Timers.No_Timer then
+      Timers.Suspend (Thrust_Tid);
+    end if;
+    Timers.Suspend (Period_Tid);
+  end Pause;
+
+  -- Resume LEM flight
+  procedure Resume is
+    use type Timers.Timer_Id;
+  begin
+    Chrono.Start;
+    -- Resume thrust timer if it is active and Periodical
+    if Thrust_Tid /=  Timers.No_Timer then
+      Timers.Resume (Thrust_Tid);
+    end if;
+    Timers.Resume (Period_Tid);
+  end Resume;
 
   -- Set position when landed
   procedure Set_Landed_Position (Position : in Space.Position_Rec) is

@@ -1,0 +1,14 @@
+#!/bin/bash
+ARGS=""
+while [ "$1" != "" ] ; do
+  if [ "$1" = "-l" ] ; then
+      export CON_IO_FONT=large
+  elif [ "$1" = "-s" ] ; then
+      export CON_IO_FONT=small
+  else
+    ARGS=$ARGS" "$1
+  fi
+  shift
+done
+land_lem -h $ARGS
+

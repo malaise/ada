@@ -13,21 +13,24 @@ package Screen is
 
   -- Update lem and show the gauges and time
   procedure Update (Flight_Status : in Flight.Status_Rec;
-                    Elapsed_Time  : in Chronos.Time_Rec;
+                    Elapsed_Time  : in Chronos.Date_Rec;
                     Update_Gauges : in Boolean);
 
   -- Delete lem and show the gauges and time
   procedure Delete (Flight_Status : in Flight.Status_Rec;
-                    Elapsed_Time  : in Chronos.Time_Rec);
+                    Elapsed_Time  : in Chronos.Date_Rec);
 
   -- Put game end
   subtype End_Reason_List is Flight.Status_List
                              range Flight.Landed .. Flight.Lost;
   procedure Put_End (Reason : in End_Reason_List);
 
+  -- Put message when paused
+  procedure Put_Pause;
+
   -- Get an event
   type Evt_Kind_List is (Move_Key, Move_Click, Break, Next, Prev,
-                         Timeout, Refresh);
+                         Timeout, Refresh, Pause);
   type Mvt_Kind_List is (Right_Key, Left_Key, Super_Right_Key, Super_Left_Key,
                          Up_Key, Down_Key, Super_Up_Key, Super_Down_Key);
   type Evt_Rec (Evt : Evt_Kind_List := Refresh) is record

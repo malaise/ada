@@ -1,5 +1,5 @@
 with Ada.Text_Io, Ada.Calendar;
-with My_Math, Normal;
+with My_Math, Normal, Argument;
 with Moon, Debug;
 package body Screen is
 
@@ -56,6 +56,9 @@ package body Screen is
   -- Screen position of gauge names (thrust, speeds and fuel)
   Thn, Vsn, Fun, Hsn : Coordinate_Rec;
 
+  -- Screen position of Get square
+  Get_Pos : Con_Io.Square;
+
   -- Gauges definition
   Gauge_Size : constant := 5;
   -- Thrust
@@ -95,7 +98,18 @@ package body Screen is
     -- Reset screen and hide mouse
     Con_Io.Init;
     Con_Io.Reset_Term;
-    Pointer_Grabbed := True;
+    begin
+      if Argument.Get_Parameter (1, "g") = "" then
+        -- "-g": Grab
+        Pointer_Grabbed := True;
+      else
+        -- "-grab"
+        Pointer_Grabbed := True;
+      end if;
+    exception
+      when Argument.Argument_Not_Found =>
+        Pointer_Grabbed := False;
+    end;
     Con_Io.Set_Pointer_Shape (Con_Io.None, Pointer_Grabbed);
     -- Clear previous LEM position
     Prev_Pos := No_Pos;
@@ -138,6 +152,7 @@ package body Screen is
     Hsy := Hsn.Y + 1;
     Hsfactor := My_Math.Real(Hsxmax - Hsxmid) / My_Math.Real(Max_Hori_Speed);
     -- Put constant info
+    Get_Pos := (23, 3);
     Refresh;
     Do_Put_Gauges := True;
   end Init;
@@ -226,7 +241,7 @@ package body Screen is
 
   -- Update (hide then draw) the gauges
   procedure Put_Gauges (Flight_Status : in Flight.Status_Rec;
-                        Elapsed_Time  : in Chronos.Time_Rec) is
+                        Elapsed_Time  : in Chronos.Date_Rec) is
     -- Extra info to get directly from the Lem
     Y_Thrust : constant Lem.Y_Thrust_Range := Lem.Get_Y_Thrust;
     Fuel     : constant Lem.Fuel_Range := Lem.Get_Fuel;
@@ -330,7 +345,7 @@ package body Screen is
 
   -- Update lem and show the gauges
   procedure Update (Flight_Status : in Flight.Status_Rec;
-                    Elapsed_Time  : in Chronos.Time_Rec;
+                    Elapsed_Time  : in Chronos.Date_Rec;
                     Update_Gauges : in Boolean) is
 
   begin
@@ -357,7 +372,7 @@ package body Screen is
 
   -- Delete lem and show the gauges
   procedure Delete (Flight_Status : in Flight.Status_Rec;
-                    Elapsed_Time  : in Chronos.Time_Rec) is
+                    Elapsed_Time  : in Chronos.Date_Rec) is
   begin
     if Prev_Pos.Set then
       -- Hide prev pos
@@ -387,11 +402,17 @@ package body Screen is
   -- Put game end
   -- subtype End_Reason_List is Flight.Status_List
   --                            range Flight.Landed .. Flight.Lost;
+  function Y_Text return Con_Io.Graphics.Y_Range is
+  begin
+    return 20 * Con_Io.Graphics.Font_Height;
+  end Y_Text;
+  function Y_Offset return Con_Io.Graphics.Y_Range is
+  begin
+    return 3 * Con_Io.Graphics.Font_Height / 2;
+  end Y_Offset;
+
   procedure Put_End (Reason : in End_Reason_List) is
     use type Flight.Status_List;
-    Y_Text : constant Con_Io.Graphics.Y_Range := 300;
-    Y_Offset : constant Con_Io.Graphics.Y_Range
-             := 3 * Con_Io.Graphics.Font_Height / 2;
     Factor : Natural;
   begin
     case Reason is
@@ -423,6 +444,15 @@ package body Screen is
     Center ("or hit Escape to quit", Y_Text - Y_Offset * Factor);
     Con_Io.Flush;
   end Put_End;
+
+  procedure Put_Pause is
+  begin
+    Con_Io.Set_Foreground (Con_Io.Magenta);
+    Con_Io.Set_Xor_Mode (Con_Io.Xor_On);
+    Center ("Game Paused", Y_Text);
+    Center ("Hit Space to resume", Y_Text - Y_Offset);
+    Con_Io.Set_Xor_Mode (Con_Io.Xor_Off);
+  end Put_Pause;
 
   -- Memory of prev event to handle double click
   type Repeat_Action_List is (Right_Key, Left_Key, None);
