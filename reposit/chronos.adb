@@ -1,5 +1,4 @@
 -- Simple chronometer that can be start/stop/reset...
-with Perpet;
 package body Chronos is
 
   -- Start the chrono
@@ -7,9 +6,11 @@ package body Chronos is
   -- No effect if it is already running
   procedure Start (A_Chrono : in out Chrono_Type) is
   begin
-    -- Reset start time
-    A_Chrono.Start_Time := Ada.Calendar.Clock;
-    A_Chrono.Status := Running;
+    if A_Chrono.Status /= Running then
+      -- Reset start time
+      A_Chrono.Start_Time := Ada.Calendar.Clock;
+      A_Chrono.Status := Running;
+    end if;
   end Start;
 
   -- Stop the chrono
@@ -17,11 +18,13 @@ package body Chronos is
   procedure Stop (A_Chrono : in out Chrono_Type) is
     use type Ada.Calendar.Time;
   begin
-    -- Add current offset to chrono offset
-    A_Chrono.Offset := A_Chrono.Offset
-                     + Ada.Calendar.Clock
-                     - A_Chrono.Start_Time;
-    A_Chrono.Status := Stopped;
+    if A_Chrono.Status /= Stopped then
+      -- Add current offset to chrono offset
+      A_Chrono.Offset := A_Chrono.Offset
+                       + Ada.Calendar.Clock
+                       - A_Chrono.Start_Time;
+      A_Chrono.Status := Stopped;
+    end if;
   end Stop;
 
   -- Get the status of the chrono
@@ -33,29 +36,33 @@ package body Chronos is
   -- Reads the chrono
   -- Chrono can be running or stopped
   function Read (A_Chrono : Chrono_Type) return Time_Rec is
-    Curr_Delta : Perpet.Delta_Rec;
-    Now : Ada.Calendar.Time;
+    Now : constant Ada.Calendar.Time := Ada.Calendar.Clock;
     Result : Time_Rec;
     use type Perpet.Delta_Rec, Ada.Calendar.Time;
   begin
-    Now := Ada.Calendar.Clock;
     if A_Chrono.Status = Running then
       -- Compute delta since chrono started + offset
-      Curr_Delta := Perpet.To_Delta_Rec (
+      Result := Perpet.To_Delta_Rec (
            A_Chrono.Offset + Now - A_Chrono.Start_Time);
     else
       -- Just Chrono.Offset
-      Curr_Delta := Perpet.To_Delta_Rec (A_Chrono.Offset);
+      Result := Perpet.To_Delta_Rec (A_Chrono.Offset);
     end if;
-    -- Keep days and split seconds
-    Result.Days := Curr_Delta.Days;
-    Day_Mng.Split (Curr_Delta.Secs,
-      Result.Hours, Result.Minutes, Result.Seconds, Result.Millisecs);
-    -- Done
     return Result;
   exception
     when others =>
       raise Time_Error;
+  end Read;
+
+  function Read (A_Chrono : Chrono_Type) return Date_Rec is
+    Time : Time_Rec := Read (A_Chrono);
+    Result : Date_Rec;
+  begin
+    -- Keep days and split seconds
+    Result.Days := Time.Days;
+    Day_Mng.Split (Time.Secs,
+      Result.Hours, Result.Minutes, Result.Seconds, Result.Millisecs);
+    return Result;
   end Read;
 
   -- Reset the chrono
@@ -63,6 +70,7 @@ package body Chronos is
   procedure Reset (A_Chrono : in out Chrono_Type) is
   begin
     A_Chrono.Start_Time := Ada.Calendar.Clock;
+    A_Chrono.Offset := 0.0;
   end Reset;
 
 end Chronos;

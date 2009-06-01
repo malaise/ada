@@ -1,13 +1,16 @@
 -- Simple chronometer that can be start/stop/reset...
 with Ada.Calendar;
-with Day_Mng;
+with Day_Mng, Perpet;
 package Chronos is
 
   -- A chronometer
-  type Chrono_Type is private;
+  type Chrono_Type is tagged private;
 
-  -- The time read at a chronometer
-  type Time_Rec is record
+  -- The time read at a chronometer (days and seconds)
+  subtype Time_Rec is Perpet.Delta_Rec;
+  -- Same but with day duration split
+  subtype Day_Range is Perpet.Day_Range;
+  type Date_Rec is record
     Days      : Natural;
     Hours     : Day_Mng.T_Hours;
     Minutes   : Day_Mng.T_Minutes;
@@ -33,6 +36,7 @@ package Chronos is
   -- Reads the chrono
   -- Chrono can be running or stopped
   function Read (A_Chrono : Chrono_Type) return Time_Rec;
+  function Read (A_Chrono : Chrono_Type) return Date_Rec;
 
   -- Reset the chrono
   -- Does not stop it if it is running (but resets it)
@@ -43,7 +47,7 @@ package Chronos is
 
 private
 
-  type Chrono_Type is record
+  type Chrono_Type is tagged record
     -- Chrono status
     Status : Status_List := Stopped;
     -- Time when it was started, when running
