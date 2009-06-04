@@ -11,7 +11,7 @@ package Chronos is
   -- Same but with day duration split
   subtype Day_Range is Perpet.Day_Range;
   type Date_Rec is record
-    Days      : Natural;
+    Days      : Day_Range;
     Hours     : Day_Mng.T_Hours;
     Minutes   : Day_Mng.T_Minutes;
     Seconds   : Day_Mng.T_Seconds;
