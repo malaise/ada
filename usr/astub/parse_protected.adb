@@ -64,6 +64,8 @@ begin
         Parse_Procedure (Level + 1, Dummy);
       elsif Str = "function" then
         Parse_Function (Level + 1, Dummy);
+      elsif Str = "overriding" then
+        Words.Add (Parser_Ada.Reserved_Word, "overriding");
       elsif Str = "entry" then
         Parse_Entry (Level + 1);
       elsif Str = "not" then

@@ -85,6 +85,8 @@ begin
       elsif Str = "function" then
         Put_Body;
         Parse_Function (Level + 1, Generated);
+      elsif Str = "overriding" then
+        Words.Add (Parser_Ada.Reserved_Word, "overriding");
       elsif Str = "task" then
         Put_Body;
         Parse_Task (Level + 1);
