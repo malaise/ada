@@ -1,10 +1,11 @@
 -- Simple chronometer that can be start/stop/reset...
-with Ada.Calendar;
-with Day_Mng, Perpet;
+-- But also follows change of a virtual time if attached to it
+with Ada.Finalization, Ada.Calendar;
+with Perpet, Day_Mng, Virtual_Time;
 package Chronos is
 
-  -- A chronometer
-  type Chrono_Type is tagged private;
+  type Chrono_Type is new Ada.Finalization.Controlled
+                      and Virtual_Time.Observer with private;
 
   -- The time read at a chronometer (days and seconds)
   subtype Time_Rec is Perpet.Delta_Rec;
@@ -39,22 +40,45 @@ package Chronos is
   function Read (A_Chrono : Chrono_Type) return Date_Rec;
 
   -- Reset the chrono
-  -- Does not stop it if it is running (but resets it)
+  -- Does not stop it if it is running (but resets it to 0)
   procedure Reset (A_Chrono : in out Chrono_Type);
 
   -- Raised by Read if chrono has reached a too high value
   Time_Error : exception renames Ada.Calendar.Time_Error;
 
+
+  -- Attach the Chrono to a (new) clock (detach from previous clock if any)
+  -- Chrono must be stopped, it is reset
+  -- By default, chronos are normal (real time)
+  Chrono_Running : exception;
+  procedure Attach (A_Chrono : in out Chrono_Type;
+                    A_Clock : in Virtual_Time.Clock_Access);
+
+  -- Detach the chrono from the clock (if attached)
+  -- Chrono must be stopped, it is reset and becomes a normal
+  --  chronometer (real time)
+  procedure Detach (A_Chrono : in out Chrono_Type);
+
+  -- Interface for the virtual clock, don'use
+  procedure Notify (An_Observer : in out Chrono_Type;
+                    Vtime : in Virtual_Time.Time;
+                    A_Clock : in Virtual_Time.Clock_Access);
+
 private
 
-  type Chrono_Type is tagged record
+  type Chrono_Type is new Ada.Finalization.Controlled
+                      and Virtual_Time.Observer with record
     -- Chrono status
     Status : Status_List := Stopped;
     -- Time when it was started, when running
-    Start_Time : Ada.Calendar.Time;
+    Start_Time : Virtual_Time.Time;
     -- Offset, when stopped or running
     Offset : Duration := 0.0;
+    -- Virtual clock (when attached)
+    Clock : Virtual_Time.Clock_Access := null;
   end record;
+
+  overriding procedure Finalize (Chrono : in out Chrono_Type);
 
 end Chronos;
 

@@ -1,4 +1,4 @@
-with Ada.Calendar;
+with Ada.Calendar, Ada.Finalization;
 package Timers is
 
   -- How to specify a timer, wait some seconds or until a specific time
@@ -30,7 +30,7 @@ package Timers is
                      Delay_Seconds => Infinite_Seconds);
 
   -- Timer unique identifier
-  type Timer_Id is private;
+  type Timer_Id is new Ada.Finalization.Controlled with private;
   function Image (Id : Timer_Id) return String;
 
   -- Timer callback: called when the timer expires with two argument:
@@ -107,10 +107,11 @@ package Timers is
 
 private
 
-  type Timer_Id is record
+  type Timer_Id is new Ada.Finalization.Controlled with record
     Timer_Num : Natural := 0;
   end record;
-  No_Timer : constant Timer_Id := (Timer_Num => 0);
+  No_Timer : constant Timer_Id := (Ada.Finalization.Controlled
+                                  with Timer_Num => 0);
 
 end Timers;
 

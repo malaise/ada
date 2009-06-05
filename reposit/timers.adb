@@ -209,7 +209,7 @@ package body Timers is
              & Cb_Image (Callback)
              & " -> " & This_Id'Img);
     -- Done
-    return (Timer_Num => This_Id);
+    return (Ada.Finalization.Controlled with Timer_Num => This_Id);
   end Create;
 
   -- Locate a timer in list
@@ -369,7 +369,8 @@ package body Timers is
         -- A timer with no cb is for generating events
         One_True := True;
       else
-        if Timer.Cb ( (Timer_Num => Timer.Id), Timer.Dat) then
+        if Timer.Cb ( (Ada.Finalization.Controlled with Timer_Num => Timer.Id),
+                      Timer.Dat) then
           -- At least this Cb has returned True
           One_True := True;
         end if;
