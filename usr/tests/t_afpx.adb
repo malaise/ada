@@ -51,11 +51,12 @@ begin
   Dir_Mng.File_List_Mng.Rewind (Dir_List);
 
   -- Start a temporary silly timer
-  Timer_Tmp := Timers.Create ( (Timers.Delay_Sec, 0.1, 0.1), null);
+  Timer_Tmp := Timers.Create ( (Timers.Delay_Sec, null, 0.1, 0.1), null);
   -- Start a single shot timer in 10 secs
-  Timer_Ss := Timers.Create ( (Timers.Delay_Sec, Timers.No_Period, 10.0), null);
+  Timer_Ss := Timers.Create ( (Timers.Delay_Sec, null, Timers.No_Period, 10.0),
+                              null);
   -- Start a 10 sec periodical timer in 20 secs
-  Timer_Per := Timers.Create ( (Timers.Delay_Sec, 10.0, 20.0),
+  Timer_Per := Timers.Create ( (Timers.Delay_Sec, null, 10.0, 20.0),
                                Timer_Cb'Unrestricted_Access);
   -- Delete the temporary silly timer
   Timers.Delete (Timer_Tmp);

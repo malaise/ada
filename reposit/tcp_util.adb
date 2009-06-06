@@ -438,8 +438,9 @@ package body Tcp_Util is
       -- First attempt failure: start timer
       Rec.Timer := Timers.Create (
           Delay_Spec => (Delay_Kind    => Timers.Delay_Sec,
+                         Clock         => null,
                          Period        => Rec.Delta_Retry,
-                         Delay_Seconds =>  Rec.Delta_Retry),
+                         Delay_Seconds => Rec.Delta_Retry),
           Callback => Connection_Timer_Cb'Access);
       if Debug_Connect then
         My_Io.Put_Line ("  Tcp_Util.Connection_Timer_Cb created timer "

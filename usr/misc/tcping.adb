@@ -123,8 +123,9 @@ procedure Tcping is
     Cid : Timers.Timer_Id;
   begin
     -- Need a timer so that the main loop Wait returns
-    Cid := Timers.Create ( (Delay_Kind => Timers.Delay_Sec,
-                            Period => Timers.No_Period,
+    Cid := Timers.Create ( (Delay_Kind    => Timers.Delay_Sec,
+                            Clock         => null,
+                            Period        => Timers.No_Period,
                             Delay_Seconds => 0.0),
                            Cancel_Cb'Unrestricted_Access);
   end Cancel;
@@ -307,8 +308,9 @@ begin
   end if;
 
   -- Arm periodical timer
-  Tid := Timers.Create ( (Delay_Kind => Timers.Delay_Sec,
-                          Period => Delta_Tries,
+  Tid := Timers.Create ( (Delay_Kind    => Timers.Delay_Sec,
+                          Clock         => null,
+                          Period        => Delta_Tries,
                           Delay_Seconds => 0.0),
                          Timer_Cb'Unrestricted_Access);
 

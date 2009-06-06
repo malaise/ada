@@ -1,4 +1,4 @@
-with Ada.Calendar, Ada.Finalization;
+with Virtual_Time;
 package Timers is
 
   -- How to specify a timer, wait some seconds or until a specific time
@@ -14,28 +14,30 @@ package Timers is
   Default_Timeout : constant Duration := 1.0;
 
   type Delay_Rec (Delay_Kind : Delay_List := Delay_Sec) is record
+    Clock  : Virtual_Time.Clock_Access := null;
     Period : Period_Range := No_Period;
     case Delay_Kind is
       when Delay_Sec =>
         Delay_Seconds : Duration := Default_Timeout;
       when Delay_Exp =>
-        Expiration_Time : Ada.Calendar.Time;
+        Expiration_Time : Virtual_Time.Time;
     end case;
   end record;
 
   -- Infinite delay. Do not use for timers
   Infinite_Delay : constant Delay_Rec(Delay_Sec)
-                 := (Delay_Kind => Delay_Sec,
+                 := (Delay_Kind    => Delay_Sec,
+                     Clock         => null,
                      Period        => No_Period,
                      Delay_Seconds => Infinite_Seconds);
 
   -- Timer unique identifier
-  type Timer_Id is new Ada.Finalization.Controlled with private;
+  type Timer_Id is private;
   function Image (Id : Timer_Id) return String;
 
   -- Timer callback: called when the timer expires with two argument:
   --  the timer Id and the Data provided at timer creation
-  -- Should return True if the timer expiration has to be reported by
+  -- Should return True if the timer Virtual_Time has to be reported by
   --    expire
   subtype Timer_Data is Natural;
   No_Data : constant Timer_Data := 0;
@@ -85,7 +87,7 @@ package Timers is
   type Expiration_Rec (Infinite : Boolean := True) is record
     case Infinite is
       when True => null;
-      when False => Time : Ada.Calendar.Time;
+      when False => Time : Virtual_Time.Time;
     end case;
   end record;
   Infinite_Expiration : constant Expiration_Rec := (Infinite => True);
@@ -105,13 +107,18 @@ package Timers is
   -- Is expiration reached
   function Is_Reached (Expiration : Expiration_Rec) return Boolean;
 
+  -- Interface for the virtual clock, don'use
+  type Observer_Type is new Virtual_Time.Observer with null record;
+  procedure Notify (An_Observer : in out Observer_Type;
+                    Vtime : in Virtual_Time.Time;
+                    Clock : in Virtual_Time.Clock_Access);
+
 private
 
-  type Timer_Id is new Ada.Finalization.Controlled with record
+  type Timer_Id is record
     Timer_Num : Natural := 0;
   end record;
-  No_Timer : constant Timer_Id := (Ada.Finalization.Controlled
-                                  with Timer_Num => 0);
+  No_Timer : constant Timer_Id := (Timer_Num => 0);
 
 end Timers;
 

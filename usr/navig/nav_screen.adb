@@ -26,8 +26,9 @@ package body Nav_Screen is
 
   -- Delay max of a get (data or action) in seconds.
   Delta_Get : constant Con_Io.Delay_Rec(Timers.Delay_Sec) :=
-    (Delay_Kind => Timers.Delay_Sec,
-     Period => Con_Io.No_Period,
+    (Delay_Kind    => Timers.Delay_Sec,
+     Clock         => null,
+     Period        => Con_Io.No_Period,
      Delay_Seconds => 0.5);
   -- Number of deltas before clearing err messages
   Time_Out_Get : constant := 6;

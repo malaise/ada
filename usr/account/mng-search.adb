@@ -246,6 +246,7 @@ begin
   -- Arm timer
   Dummy_Bool := Set_Today (Timers.No_Timer);
   Timer := Timers.Create ( (Delay_Kind => Timers.Delay_Sec,
+                            Clock  => null,
                             Period => 1.0,
                             Delay_Seconds => 1.0),
                            Set_Today'Unrestricted_Access);

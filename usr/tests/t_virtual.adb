@@ -26,12 +26,14 @@ begin
   Ada.Text_Io.Put_Line ("Now is " & Date_Image (My_Clock.Current_Time));
   Ada.Text_Io.Put_Line ("Start chrono");
   My_Chrono.Start;
+
   Ada.Text_Io.Put_Line ("Registering observer");
   My_Clock.Add_Observer (My_Observer'Unrestricted_Access);
   Ada.Text_Io.Put_Line ("Stopping, attaching and starting chrono");
   My_Chrono.Stop;
   My_Chrono.Attach (My_Clock'Unrestricted_Access);
   My_Chrono.Start;
+
   Ada.Text_Io.Put_Line ("Waiting 1s");
   delay 1.0;
   Ada.Text_Io.Put_Line ("Setting speed to 0.1 and waiting 5s");
@@ -39,5 +41,19 @@ begin
   delay 5.0;
   Ada.Text_Io.Put_Line ("Now is " & Date_Image (My_Clock.Current_Time));
   Ada.Text_Io.Put_Line ("Chrono is " & My_Chrono.Read.Secs'Img);
+
+  Ada.Text_Io.Put_Line ("Setting speed to 0.0 and waiting 3s");
+  My_Clock.Set_Speed (0.0);
+  delay 3.0;
+  Ada.Text_Io.Put_Line ("Now is " & Date_Image (My_Clock.Current_Time));
+  Ada.Text_Io.Put_Line ("Chrono is " & My_Chrono.Read.Secs'Img);
+
+  Ada.Text_Io.Put_Line ("Setting speed to 1.0 and waiting 1s");
+  My_Clock.Set_Speed (1.0);
+  delay 1.0;
+  Ada.Text_Io.Put_Line ("Now is " & Date_Image (My_Clock.Current_Time));
+  Ada.Text_Io.Put_Line ("Chrono is " & My_Chrono.Read.Secs'Img);
+
+  Ada.Text_Io.Put_Line ("Done.");
 end T_Virtual;
 

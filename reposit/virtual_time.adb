@@ -13,6 +13,17 @@ package body Virtual_Time is
     return Virtual_Time_Of (A_Clock, Ada.Calendar.Clock);
   end Current_Time;
 
+  -- Use Ada.Calendar.Clock if A_Clock is null
+  function Current_Time (A_Clock : Clock_Access) return Time is
+  begin
+    if A_Clock = null then
+      -- No clock => real time
+      return Ada.Calendar.Clock;
+    else
+      return Current_Time (A_Clock.all);
+    end if;
+  end Current_Time;
+
   -- Notify observers of a clock change
   procedure Notify_Observers (A_Clock : Clock;
                               Vtime : Time) is

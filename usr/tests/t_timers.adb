@@ -78,9 +78,10 @@ procedure T_Timers is
       A := null;
     end if;
     The_Timers(T) := Timers.Create (
-        Delay_Spec => (Delay_Kind => Timers.Delay_Sec,
-                       Delay_Seconds => D,
-                       Period => P),
+        Delay_Spec => (Delay_Kind    => Timers.Delay_Sec,
+                       Clock         => null,
+                       Period        => P,
+                       Delay_Seconds => D),
         Callback   => A);
     Display ("Created timer " & Timer_List'Image(T) & ": "
               & Timers.Image(The_Timers(T)));

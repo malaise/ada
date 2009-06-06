@@ -9,6 +9,8 @@ package Virtual_Time is
 
   -- Get current time
   function Current_Time (A_Clock : Clock) return Time;
+  -- Use Ada.Calendar.Clock if A_Clock is null
+  function Current_Time (A_Clock : Clock_Access) return Time;
 
   -- Set a new synchro point
   procedure Set_Time (A_Clock : in Clock;

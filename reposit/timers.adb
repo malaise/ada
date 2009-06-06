@@ -1,4 +1,4 @@
-with Ada.Text_Io;
+with Ada.Calendar, Ada.Text_Io;
 with Dynamic_List, Event_Mng, Environ, Date_Image;
 package body Timers is
 
@@ -20,21 +20,22 @@ package body Timers is
   end Set_Debug;
 
   function Delay_Image (Delay_Spec : Delay_Rec) return String is
-    use type Ada.Calendar.Time;
+    use type Virtual_Time.Time;
   begin
     if Delay_Spec.Delay_Kind = Delay_Sec then
       return "delay:" & Delay_Spec.Delay_Seconds'Img
            & ", period: " & Delay_Spec.Period'Img & " ";
     else
-      return "exp in: " & Duration'Image (Delay_Spec.Expiration_Time
-                                          - Ada.Calendar.Clock)
+      return "exp in: " & Duration'Image (
+                   Delay_Spec.Expiration_Time
+                   - Virtual_Time.Current_Time (Delay_Spec.Clock))
            & ", period: " & Delay_Spec.Period'Img & " ";
 
     end if;
   end Delay_Image;
 
   function Exp_Image (Expiration : Expiration_Rec) return String is
-    use type Ada.Calendar.Time;
+    use type Virtual_Time.Time;
   begin
     if Expiration.Infinite then
       return "exp infinite ";
@@ -82,9 +83,10 @@ package body Timers is
   type Timer_Rec is record
     Id  : Timer_Id_Range;
     Exp : Exp_Rec;
-    Cre : Ada.Calendar.Time;
+    Cre : Virtual_Time.Time;
     Dat : Timer_Data;
     Cb  : Timer_Callback;
+    Clock : Virtual_Time.Clock_Access;
     Running : Boolean;
     Remaining : Duration;
   end record;
@@ -97,7 +99,7 @@ package body Timers is
   --  if same expiration, use creation time
   -- Suspended timers are higher
   function "<" (T1, T2 : Timer_Rec) return Boolean is
-    use type Ada.Calendar.Time;
+    use type Virtual_Time.Time;
   begin
     if T1.Running and then T2.Running then
       -- Both running => Expiration time
@@ -167,7 +169,7 @@ package body Timers is
 
     Timer : Timer_Rec;
     This_Id : Timer_Id_Range;
-    use type Ada.Calendar.Time;
+    use type  Virtual_Time.Time, Virtual_Time.Clock_Access;
   begin
     -- Compute expiration time ASAP
     Timer.Cre := Ada.Calendar.Clock;
@@ -176,9 +178,11 @@ package body Timers is
       if Delay_Spec.Delay_Seconds < 0.0 then
         raise Invalid_Delay;
       end if;
+      -- @@@
       Timer.Exp.Expiration_Time := Timer.Cre
                                  + Delay_Spec.Delay_Seconds;
     else
+      -- @@@
       Timer.Exp.Expiration_Time := Delay_Spec.Expiration_Time;
     end if;
 
@@ -187,19 +191,23 @@ package body Timers is
     Timer.Exp.Period := Delay_Spec.Period;
     Timer.Dat := Data;
     Timer.Cb := Callback;
+    Timer.Clock := Delay_Spec.Clock;
     Timer.Running := True;
     Timer.Remaining := 0.0;
 
-    -- Insert in beginning of list and sort it
-    if not Timer_List_Mng.Is_Empty (Timer_List) then
-      Timer_List_Mng.Rewind (Timer_List);
+    -- Insert in beginning of list and sort
+    if not Timer_List.Is_Empty then
+      Timer_List.Rewind;
     end if;
-    Timer_List_Mng.Insert (Timer_List, Timer, Timer_List_Mng.Prev);
+    Timer_List.Insert (Timer, Timer_List_Mng.Prev);
     Sort (Timer_List);
+
+    -- Register observer
+    -- @@@
 
     -- If this timer is first then force wake-up of select
     This_Id := Timer.Id;
-    Timer_List_Mng.Read (Timer_List, Timer, Timer_List_Mng.Current);
+    Timer_List.Read (Timer, Timer_List_Mng.Current);
     if Timer.Id = This_Id then
       Event_Mng.Wake_Up;
     end if;
@@ -209,7 +217,7 @@ package body Timers is
              & Cb_Image (Callback)
              & " -> " & This_Id'Img);
     -- Done
-    return (Ada.Finalization.Controlled with Timer_Num => This_Id);
+    return (Timer_Num => This_Id);
   end Create;
 
   -- Locate a timer in list
@@ -222,11 +230,11 @@ package body Timers is
     if Id = No_Timer then
       raise Invalid_Timer;
     end if;
-    if Timer_List_Mng.Is_Empty (Timer_List) then
+    if Timer_List.Is_Empty then
       raise Invalid_Timer;
     end if;
     -- Try current
-    Timer_List_Mng.Read (Timer_List, Timer, Timer_List_Mng.Current);
+    Timer_List.Read (Timer, Timer_List_Mng.Current);
     if Timer.Id = Id.Timer_Num then
       return ;
     end if;
@@ -244,7 +252,7 @@ package body Timers is
   procedure Delete_Current is
     Done : Boolean;
   begin
-    Timer_List_Mng.Delete (Timer_List, Done => Done);
+    Timer_List.Delete (Done => Done);
   end Delete_Current;
 
   -- Delete a timer
@@ -263,15 +271,15 @@ package body Timers is
   -- No action is timer is alread syspended
   -- May raise Invalid_Timer if timer has no period and has expired
   procedure Suspend (Id : in Timer_Id) is
-    Now : constant Ada.Calendar.Time := Ada.Calendar.Clock;
+    Now : constant Virtual_Time.Time := Ada.Calendar.Clock;
     Timer : Timer_Rec;
-    use type Ada.Calendar.Time;
+    use type Virtual_Time.Time;
   begin
      Set_Debug;
     -- Search timer
     Locate (Id);
     -- Get it
-    Timer_List_Mng.Read (Timer_List, Timer, Timer_List_Mng.Current);
+    Timer_List.Read (Timer, Timer_List_Mng.Current);
     if not Timer.Running then
       -- Already suspended
       return;
@@ -280,7 +288,7 @@ package body Timers is
     Timer.Running := False;
     Timer.Remaining := Timer.Exp.Expiration_Time - Now;
     -- Store it and re-sort
-    Timer_List_Mng.Modify (Timer_List, Timer, Timer_List_Mng.Current);
+    Timer_List.Modify (Timer, Timer_List_Mng.Current);
     Sort (Timer_List);
     Put_Debug ("Suspend", " id " & Id.Timer_Num'Img);
   end Suspend;
@@ -289,16 +297,16 @@ package body Timers is
   -- No action is timer is not syspended
   -- May raise Invalid_Timer if timer has no period and has expired
   procedure Resume (Id : in Timer_Id) is
-    Now : constant Ada.Calendar.Time := Ada.Calendar.Clock;
+    Now : constant  Virtual_Time.Time := Ada.Calendar.Clock;
     Timer : Timer_Rec;
     This_Id : Timer_Id_Range;
-    use type Ada.Calendar.Time;
+    use type Virtual_Time.Time;
   begin
      Set_Debug;
     -- Search timer
     Locate (Id);
     -- Get it
-    Timer_List_Mng.Read (Timer_List, Timer, Timer_List_Mng.Current);
+    Timer_List.Read (Timer, Timer_List_Mng.Current);
     if Timer.Running then
       -- Already running
       return;
@@ -308,12 +316,12 @@ package body Timers is
     -- Re-apply remaining delay to current time
     Timer.Exp.Expiration_Time := Now + Timer.Remaining;
     -- Store it and re-sort
-    Timer_List_Mng.Modify (Timer_List, Timer, Timer_List_Mng.Current);
+    Timer_List.Modify (Timer, Timer_List_Mng.Current);
     Sort (Timer_List);
 
     -- If this timer is first then force wake-up of select
     This_Id := Timer.Id;
-    Timer_List_Mng.Read (Timer_List, Timer, Timer_List_Mng.Current);
+    Timer_List.Read (Timer, Timer_List_Mng.Current);
     if Timer.Id = This_Id then
       Event_Mng.Wake_Up;
     end if;
@@ -323,11 +331,11 @@ package body Timers is
   -- Retuns False if no more timer
   function First return Boolean is
   begin
-    if Timer_List_Mng.Is_Empty (Timer_List) then
+    if Timer_List.Is_Empty then
       return False;
     end if;
     -- Move to beginning
-    Timer_List_Mng.Rewind (Timer_List);
+    Timer_List.Rewind;
     return True;
   end First;
 
@@ -339,7 +347,7 @@ package body Timers is
   function Expire return Boolean is
     Timer : Timer_Rec;
     One_True : Boolean;
-    use type Ada.Calendar.Time;
+    use type Virtual_Time.Time;
   begin
     Set_Debug;
     One_True := False;
@@ -348,7 +356,7 @@ package body Timers is
       exit when not First;
 
       -- Get it
-      Timer_List_Mng.Read (Timer_List, Timer, Timer_List_Mng.Current);
+      Timer_List.Read (Timer, Timer_List_Mng.Current);
       -- Done when no more to expire
       exit when not Timer.Running
       or else Timer.Exp.Expiration_Time > Ada.Calendar.Clock;
@@ -360,7 +368,7 @@ package body Timers is
         -- Re-arm periodical, store and sort
         Timer.Exp.Expiration_Time := Timer.Exp.Expiration_Time
                                    + Timer.Exp.Period;
-        Timer_List_Mng.Modify (Timer_List, Timer, Timer_List_Mng.Current);
+        Timer_List.Modify (Timer, Timer_List_Mng.Current);
         Sort (Timer_List);
       end if;
       Put_Debug ("Expire", "expiring id " & Timer.Id'Img);
@@ -369,7 +377,7 @@ package body Timers is
         -- A timer with no cb is for generating events
         One_True := True;
       else
-        if Timer.Cb ( (Ada.Finalization.Controlled with Timer_Num => Timer.Id),
+        if Timer.Cb ( (Timer_Num => Timer.Id),
                       Timer.Dat) then
           -- At least this Cb has returned True
           One_True := True;
@@ -403,7 +411,7 @@ package body Timers is
       Put_Debug ("Wait_Until", "-> Infinite cause no timer");
       return Infinite_Expiration;
     end if;
-    Timer_List_Mng.Read (Timer_List, Timer, Timer_List_Mng.Current);
+    Timer_List.Read (Timer, Timer_List_Mng.Current);
     if not Timer.Running then
       -- No more running timer
       Put_Debug ("Wait_Until", "-> Infinite cause no more running timer"
@@ -418,10 +426,10 @@ package body Timers is
   end Wait_Until;
 
   function Wait_For return Duration is
-    Now : Ada.Calendar.Time;
+    Now : Virtual_Time.Time;
     Next_Exp : Expiration_Rec;
     Result : Duration;
-    use type Ada.Calendar.Time;
+    use type Virtual_Time.Time;
   begin
     -- Get next timer and substract now
     Now :=  Ada.Calendar.Clock;
@@ -443,7 +451,7 @@ package body Timers is
   end Wait_For;
 
   function "<" (E1, E2 : Expiration_Rec) return Boolean is
-    use type Ada.Calendar.Time;
+    use type Virtual_Time.Time;
   begin
     if E1 = Infinite_Expiration then
       return False;
@@ -459,7 +467,7 @@ package body Timers is
            return Expiration_Rec is
     Next_Exp : Expiration_Rec;
     Result   : Expiration_Rec;
-    use type Ada.Calendar.Time;
+    use type Virtual_Time.Time;
   begin
     -- First timer to expire
     Next_Exp := Wait_Until;
@@ -481,10 +489,10 @@ package body Timers is
   end Next_Expiration;
 
   function Next_Timeout (Expiration : Expiration_Rec) return Duration is
-    Now : Ada.Calendar.Time;
+    Now : Virtual_Time.Time;
     Next_Exp : Expiration_Rec;
     Result : Duration;
-    use type Ada.Calendar.Time;
+    use type Virtual_Time.Time;
   begin
     -- Get next expiration and substract now
     Now :=  Ada.Calendar.Clock;
@@ -508,7 +516,7 @@ package body Timers is
 
   -- Is expiration reached
   function Is_Reached (Expiration : Expiration_Rec) return Boolean is
-    use type Ada.Calendar.Time;
+    use type Virtual_Time.Time;
     Result : Boolean;
   begin
     Set_Debug;
@@ -518,6 +526,15 @@ package body Timers is
                            & " -> " & Result'Img);
     return Result;
   end Is_Reached;
+
+  -- Clock update notification
+  procedure Notify (An_Observer : in out Observer_Type;
+                    Vtime : in Virtual_Time.Time;
+                    Clock : in Virtual_Time.Clock_Access) is
+  begin
+    -- @@@
+    null;
+  end Notify;
 
 end Timers;
 

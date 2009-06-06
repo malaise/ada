@@ -92,6 +92,7 @@ procedure T_Channels is
     if Dur /= Timers.Infinite_Seconds then
       -- No timer if infinite
       Id := Timers.Create ( (Delay_Kind    => Timers.Delay_Sec,
+                             Clock         => null,
                              Period        => Timers.No_Period,
                              Delay_Seconds => Dur),
                              Timer_Cb'Unrestricted_Access);

@@ -67,6 +67,7 @@ package body Sync_Mng is
     Nb_Syn_Received := 0;
     Intra_Dictio.Reply_Status;
     Timer_Id := Timers.Create ( (Timers.Delay_Sec,
+                                 null,
                                  Sync_Timeout,
                                  Sync_Init_Timeout),
                                 Timer_Rec_Cb'Access);
@@ -139,6 +140,7 @@ package body Sync_Mng is
     if Sync_List_Mng.Is_Empty (Sync_List) then
       -- First dest, arm timer
       Tid := Timers.Create ( (Timers.Delay_Sec,
+                              null,
                               Timers.No_Period,
                               Sync_Listen_Timeout),
                               Timer_Sen_Cb'Access);

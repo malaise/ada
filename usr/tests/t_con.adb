@@ -27,8 +27,9 @@ procedure T_Con is
     Str_Exit : constant Wide_String := "exit";
     Width : Natural;
     Delt : constant Con_Io.Delay_Rec(Timers.Delay_Sec)
-         := (Delay_Kind => Timers.Delay_Sec,
-             Period => Con_Io.No_Period,
+         := (Delay_Kind    => Timers.Delay_Sec,
+             Clock         => null,
+             Period        => Con_Io.No_Period,
              Delay_Seconds => 10.0);
     Pos : Positive;
     Ins : Boolean;
@@ -170,8 +171,9 @@ procedure T_Con is
       Con_Io.Put ("Exiting", W1, Con_Io.Red, Con_Io.Blink, Con_Io.Green);
       Con_Io.Get (Str(1..0), Last, Stat, Pos, Ins,
          W1, Con_Io.Current, Con_Io.Current, Con_Io.Red,
-         (Delay_Kind => Timers.Delay_Sec,
-          Period => Con_Io.No_Period,
+         (Delay_Kind    => Timers.Delay_Sec,
+          Clock         => null,
+          Period        => Con_Io.No_Period,
           Delay_Seconds => 3.0) );
     end loop;
 

@@ -5,8 +5,9 @@ package body Sok_Input is
 
   Play : Boolean := True;
   Delta_Get : constant Con_Io.Delay_Rec(Timers.Delay_Sec)
-            := (Delay_Kind => Timers.Delay_Sec,
-                Period => Con_Io.No_Period,
+            := (Delay_Kind    => Timers.Delay_Sec,
+                Clock         => null,
+                Period        => Con_Io.No_Period,
                 Delay_Seconds => 1.0);
 
   function Get_Key return Key_List is

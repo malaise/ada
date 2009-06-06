@@ -1018,6 +1018,7 @@ package body Generic_Con_Io is
         Last_Time := Time_Out;
       else
         Last_Time := (Delay_Kind => Timers.Delay_Exp,
+                      Clock      => null,
                       Period     => Timers.No_Period,
                       Expiration_Time => Ada.Calendar."+"
                          (Ada.Calendar.Clock, Time_Out.Delay_Seconds) );

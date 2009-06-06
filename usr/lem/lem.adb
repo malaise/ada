@@ -101,9 +101,10 @@ package body Lem is
     end if;
     -- Set new thrust and arm timer
     Current_X_Thrust := X_Thrust;
-    Thrust_Tid := Timers.Create ( (Delay_Kind => Timers.Delay_Sec,
-                                   Delay_Seconds => 1.0,
-                                   Period => Timers.No_Period),
+    Thrust_Tid := Timers.Create ( (Delay_Kind    => Timers.Delay_Sec,
+                                   Clock         => null,
+                                   Period        => Timers.No_Period,
+                                   Delay_Seconds => 1.0),
                                    Timer_Thrust_Cb'Access);
   end Set_X_Thrust;
 
@@ -315,9 +316,10 @@ package body Lem is
     Current_Speed := Speed;
     Current_Position := Position;
     -- Start periodical timer
-    Period_Tid := Timers.Create ( (Delay_Kind => Timers.Delay_Sec,
-                                   Delay_Seconds => Period,
-                                   Period => Period),
+    Period_Tid := Timers.Create ( (Delay_Kind    => Timers.Delay_Sec,
+                                   Clock         => null,
+                                   Period        => Period,
+                                   Delay_Seconds => Period),
                                   Period_Timer_Cb'Access);
   end Init;
 

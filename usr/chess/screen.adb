@@ -314,7 +314,7 @@ package body Screen is
 
       Con_Io.Move (23, 7);
       Con_Io.Put_Then_Get (Str, Last, Stat, Pos, Ins,
-             Time_Out => (Timers.Delay_Sec, Con_Io.No_Period, 0.1));
+             Time_Out => (Timers.Delay_Sec, null, Con_Io.No_Period, 0.1));
       Put_Time (Move_Color);
       if Stat = Con_Io.Ret then
         if Str(1) = ' ' then
@@ -405,7 +405,8 @@ package body Screen is
     else
       Put_Time (Move_Color);
       -- Start a single shot timer (no callback)
-      Timer := Timers.Create ( (Timers.Delay_Sec, Con_Io.No_Period, 1.0), null);
+      Timer := Timers.Create ( (Timers.Delay_Sec, null, Con_Io.No_Period, 1.0),
+                               null);
     end if;
     Ins := False;
 
@@ -452,7 +453,7 @@ package body Screen is
 
     use type Con_Io.Curs_Mvt, Space.Color_List;
   begin
-    Timeout := (Timers.Delay_Sec, Con_Io.No_Period, 0.5);
+    Timeout := (Timers.Delay_Sec, null, Con_Io.No_Period, 0.5);
     Ins := False;
     Put_Time (Move_Color);
 
@@ -486,7 +487,7 @@ package body Screen is
 
     use type Con_Io.Curs_Mvt;
   begin
-    Timeout := (Timers.Delay_Sec, Con_Io.No_Period, Delay_Sec);
+    Timeout := (Timers.Delay_Sec, null, Con_Io.No_Period, Delay_Sec);
     Ins := False;
 
     loop

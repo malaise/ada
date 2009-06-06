@@ -63,8 +63,9 @@ begin
   Event_Mng.Set_Sig_Term_Callback (Null_Procedure'Access);
 
   Kind := X_Mng.Refresh;
-  Exp := (Delay_Kind => Timers.Delay_Exp,
-          Period => Timers.No_Period,
+  Exp := (Delay_Kind      => Timers.Delay_Exp,
+          Period          => Timers.No_Period,
+          Clock           => null,
           Expiration_Time => Ada.Calendar.Clock + Timeout);
   Main_Loop:
   loop

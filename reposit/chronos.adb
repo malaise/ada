@@ -3,14 +3,8 @@ package body Chronos is
   -- Get current time of a chrono
   function Current_Time (A_Chrono : Chrono_Type)
                         return Virtual_Time.Time is
-    use type Virtual_Time.Clock_Access;
   begin
-    if A_Chrono.Clock = null then
-       -- No clock => real time
-       return Ada.Calendar.Clock;
-    else
-      return A_Chrono.Clock.Current_Time;
-    end if;
+    return Virtual_Time.Current_Time (A_Chrono.Clock);
   end Current_Time;
 
   -- Clock has changed at Vtime

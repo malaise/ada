@@ -420,8 +420,9 @@ package body Sok_Display is
       Con_Io.Move ( (01, 34), Get_Win);
       Con_Io.Put_Then_Get (Str, Last, Stat, Pos, Ins, Get_Win,
        Foreground => Con_Io.Light_Gray, Background => Con_Io.Black,
-       Time_Out => (Delay_Kind => Timers.Delay_Sec,
-                    Period     => Con_Io.No_Period,
+       Time_Out => (Delay_Kind    => Timers.Delay_Sec,
+                    Clock         => null,
+                    Period        => Con_Io.No_Period,
                     Delay_Seconds => 1.0) );
 
       case Stat is

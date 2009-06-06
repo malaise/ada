@@ -401,11 +401,12 @@ package body Event_Mng is
       Wait_Timeout := 0;
     else
       -- Arm a timer
-      Tid := Timers.Create ( (Timers.Delay_Sec,
-                              Timers.No_Period,
-                              Duration(Timeout_Ms)/1000.0),
-                             Pause_Cb'Access,
-                             Pause_Level);
+      Tid := Timers.Create ( (Delay_Kind    => Timers.Delay_Sec,
+                              Clock         => null,
+                              Period        => Timers.No_Period,
+                              Delay_Seconds => Duration(Timeout_Ms)/1000.0),
+                             Callback => Pause_Cb'Access,
+                             Data     => Pause_Level);
       Wait_Timeout := Infinite_Ms;
     end if;
 

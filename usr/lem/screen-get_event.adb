@@ -32,12 +32,14 @@ function Get_Event (Wait : in Duration) return Evt_Rec is
 begin
   -- Compute expiration time
   if Wait >= 0.0 then
-    Time_Out := (Delay_Kind => Timers.Delay_Exp,
-                 Period => Timers.No_Period,
+    Time_Out := (Delay_Kind      => Timers.Delay_Exp,
+                 Clock           => null,
+                 Period          => Timers.No_Period,
                  Expiration_Time => Ada.Calendar.Clock + Wait);
   else
-    Time_Out := (Delay_Kind => Timers.Delay_Sec,
-                 Period => Timers.No_Period,
+    Time_Out := (Delay_Kind    => Timers.Delay_Sec,
+                 Clock         => null,
+                 Period        => Timers.No_Period,
                  Delay_Seconds => Timers.Infinite_Seconds);
   end if;
   -- Values before loop, for check
