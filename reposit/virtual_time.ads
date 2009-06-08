@@ -21,23 +21,35 @@ package Virtual_Time is
   procedure Get_Synchro (A_Clock : in Clock;
                          Reference_Time : out Time;
                          Virtual_Time : out Time);
+  -- Return Ada.Calendar.Clock if A_Clock is null
+  procedure Get_Synchro (A_Clock : in Clock_Access;
+                         Reference_Time : out Time;
+                         Virtual_Time : out Time);
 
-  -- Set a new speed
+  -- Set a new speed, change synchro point to current time
   type Speed_Range is new Duration range 0.0 .. 128.0;
   procedure Set_Speed (A_Clock : in Clock;
                        Speed : in Speed_Range);
 
   -- Get current speed
   function Get_Speed (A_Clock : Clock) return Speed_Range;
+  -- Return 1.0 if A_Clock is null
+  function Get_Speed (A_Clock : Clock_Access) return Speed_Range;
 
 
   -- Get Virtual time corresponding to a Reference time
   function Virtual_Time_Of (A_Clock : Clock;
                             Reference_Time : Time) return Time;
+  -- Return Reference_Time is A_Clock is null
+  function Virtual_Time_Of (A_Clock : Clock_Access;
+                            Reference_Time : Time) return Time;
 
   -- Get Reference time corresponding to a Virtual time
   -- May raise Vtime_Error is current speed is 0.0
   function Reference_Time_Of (A_Clock : Clock;
+                              Virtual_Time : Time) return Time;
+  -- Return Virtual_Time is A_Clock is null
+  function Reference_Time_Of (A_Clock : Clock_Access;
                               Virtual_Time : Time) return Time;
 
   -- Exception on time operations
@@ -49,7 +61,9 @@ package Virtual_Time is
   -- Tho observer is notified with the time of change (clock before the change)
   -- and the new clock
   procedure Notify (An_Observer : in out Observer;
-                    Change_Time : in Time;
+                    Prev_Reference_Time : in Time;
+                    Prev_Virtual_Time : in Time;
+                    Prev_Speed : in Speed_Range;
                     A_Clock : in Clock_Access) is abstract;
 
   -- Add an observer

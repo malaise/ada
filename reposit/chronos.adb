@@ -9,7 +9,8 @@ package body Chronos is
 
   -- Clock has changed at Vtime
   procedure Notify (An_Observer : in out Chrono_Type;
-                    Vtime : Virtual_Time.Time;
+                    Rtime, Vtime : Virtual_Time.Time;
+                    Speed : in Virtual_Time.Speed_Range;
                     A_Clock : in Virtual_Time.Clock_Access) is
     use type Virtual_Time.Time;
     Rt, Vt : Virtual_Time.Time;
