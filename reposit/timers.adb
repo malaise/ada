@@ -7,6 +7,23 @@ package body Timers is
   Debug : Boolean := False;
   Debug_Set : Boolean := False;
 
+  -- Clock observer and list of observed clocks
+  Observer : aliased Observer_Type;
+  type Clock_Rec is record
+    Nb_Timers : Positive;
+    Clock : Virtual_Time.Clock_Access;
+  end record;
+  package Clocks_Dyn_List_Mng is new Dynamic_List (Clock_Rec);
+  package Clocks_List_Mng renames Clocks_Dyn_List_Mng.Dyn_List;
+  Clocks_List : Clocks_List_Mng.List_Type;
+  function Match (Current, Criteria : Clock_Rec)
+                 return Boolean is
+    use type Virtual_Time.Clock_Access;
+  begin
+    return Current.Clock = Criteria.Clock;
+  end Match;
+  procedure Search_Clock is new Clocks_List_Mng.Search (Match);
+
   procedure Set_Debug is
   begin
     if Debug_Set then
@@ -87,7 +104,10 @@ package body Timers is
     Dat : Timer_Data;
     Cb  : Timer_Callback;
     Clock : Virtual_Time.Clock_Access;
-    Running : Boolean;
+    -- Suspend/Resume
+    Suspended : Boolean;
+    -- Clock speed 0
+    Frozen : Boolean;
     Remaining : Duration;
   end record;
 
@@ -97,23 +117,25 @@ package body Timers is
 
   -- Sort timers in crescent order of expiration times
   --  if same expiration, use creation time
-  -- Suspended timers are higher
+  -- Suspended and frozen timers are higher
   function "<" (T1, T2 : Timer_Rec) return Boolean is
     use type Virtual_Time.Time;
+    T1_Running : constant Boolean := not T1.Suspended and then not T1.Frozen;
+    T2_Running : constant Boolean := not T2.Suspended and then not T2.Frozen;
   begin
-    if T1.Running and then T2.Running then
+    if T1_Running and then T2_Running then
       -- Both running => Expiration time
       return T1.Exp.Expiration_Time < T2.Exp.Expiration_Time
       or else (T1.Exp.Expiration_Time = T2.Exp.Expiration_Time
         and then T1.Cre < T2.Cre);
     end if;
-    -- At least one suspended
-    if T1.Running and then not T2.Running then
+    -- At least one suspended or frozen
+    if T1_Running and then not T2_Running then
       return True;
-    elsif not T1.Running and then T2.Running then
+    elsif not T1_Running and then T2_Running then
       return False;
     else
-      -- Both suspended: sort by remaining time
+      -- Both suspended or frozen: sort by remaining time
       return T1.Remaining < T2.Remaining;
     end if;
   end "<";
@@ -168,22 +190,21 @@ package body Timers is
                    Data       : Timer_Data := No_Data) return Timer_Id is
 
     Timer : Timer_Rec;
+    Start : Virtual_Time.Time;
     This_Id : Timer_Id_Range;
-    use type  Virtual_Time.Time, Virtual_Time.Clock_Access;
+    Clock : Clock_Rec;
+    Found : Boolean;
+    use type Virtual_Time.Time, Virtual_Time.Clock_Access,
+             Virtual_Time.Speed_Range;
   begin
-    -- Compute expiration time ASAP
+    -- Get current time ASAP
     Timer.Cre := Ada.Calendar.Clock;
     Set_Debug;
-    if Delay_Spec.Delay_Kind = Delay_Sec then
-      if Delay_Spec.Delay_Seconds < 0.0 then
+
+    -- Check
+    if Delay_Spec.Delay_Kind = Delay_Sec
+    and then Delay_Spec.Delay_Seconds < 0.0 then
         raise Invalid_Delay;
-      end if;
-      -- @@@
-      Timer.Exp.Expiration_Time := Timer.Cre
-                                 + Delay_Spec.Delay_Seconds;
-    else
-      -- @@@
-      Timer.Exp.Expiration_Time := Delay_Spec.Expiration_Time;
     end if;
 
     -- Allocate Id and copy period and callback
@@ -192,8 +213,46 @@ package body Timers is
     Timer.Dat := Data;
     Timer.Cb := Callback;
     Timer.Clock := Delay_Spec.Clock;
-    Timer.Running := True;
-    Timer.Remaining := 0.0;
+    Timer.Suspended := False;
+    Timer.Frozen := Delay_Spec.Clock /= null
+           and then Delay_Spec.Clock.Get_Speed = 0.0;
+
+    -- Start time in virtual or real time
+    if Delay_Spec.Clock /= null then
+      Start := Delay_Spec.Clock.Virtual_Time_Of (Timer.Cre);
+    else
+      Start := Timer.Cre;
+    end if;
+
+    -- Compute expiration time or remaining delay (if clock frozen)
+    if Timer.Frozen then
+      -- Remaining virtual time
+      if Delay_Spec.Delay_Kind = Delay_Sec then
+        Timer.Remaining := Delay_Spec.Delay_Seconds;
+      else
+        Timer.Remaining := Delay_Spec.Expiration_Time - Start;
+        if Timer.Remaining < 0.0 then
+          Timer.Remaining := 0.0;
+        end if;
+      end if;
+      Put_Debug ("Create ", Timer.Id'Img & " frozen for "
+                    & Timer.Remaining'Img & "s");
+
+    else
+      if Delay_Spec.Delay_Kind = Delay_Sec then
+        Timer.Exp.Expiration_Time := Start
+                                   + Delay_Spec.Delay_Seconds;
+      else
+        Timer.Exp.Expiration_Time := Delay_Spec.Expiration_Time;
+      end if;
+      if Delay_Spec.Clock /= null then
+        -- Expiration time in reference time (speed is not null)
+        Timer.Exp.Expiration_Time :=
+          Delay_Spec.Clock.Reference_Time_Of (Timer.Exp.Expiration_Time);
+      end if;
+      Put_Debug ("Create ", Timer.Id'Img & " started for "
+                    & Date_Image (Timer.Exp.Expiration_Time));
+    end if;
 
     -- Insert in beginning of list and sort
     if not Timer_List.Is_Empty then
@@ -203,7 +262,22 @@ package body Timers is
     Sort (Timer_List);
 
     -- Register observer
-    -- @@@
+    if Delay_Spec.Clock /= null then
+      Clock.Clock := Delay_Spec.Clock;
+      Search_Clock (Clocks_List, Found, Clock,
+                    From => Clocks_List_Mng.Absolute);
+      if not Found then
+        -- This clock not used so far: insert it and register
+        Clock.Nb_Timers := 1;
+        Clocks_List.Insert (Clock);
+        Delay_Spec.Clock.Add_Observer (Observer'Access);
+      else
+        -- This clock already known => incr its nb of timers
+        Clocks_List.Read (Clock, Clocks_List_Mng.Current);
+        Clock.Nb_Timers := Clock.Nb_Timers + 1;
+        Clocks_List.Modify (Clock, Clocks_List_Mng.Current);
+      end if;
+    end if;
 
     -- If this timer is first then force wake-up of select
     This_Id := Timer.Id;
@@ -250,9 +324,38 @@ package body Timers is
 
   -- Delete current timer
   procedure Delete_Current is
-    Done : Boolean;
+    Timer : Timer_Rec;
+    Clock : Clock_Rec;
+    Found : Boolean;
+    use type Virtual_Time.Clock_Access;
   begin
-    Timer_List.Delete (Done => Done);
+    -- Read timer (to see its clock) and delete it
+    Timer_List.Read (Timer, Timer_List_Mng.Current);
+    Timer_List.Delete (Done => Found);
+
+    -- Update clock if any
+    if Timer.Clock /= null then
+      Clock.Clock := Timer.Clock;
+      Search_Clock (Clocks_List, Found, Clock,
+                    From => Clocks_List_Mng.Absolute);
+      if not Found then
+        -- Abnormal, clock shall be known
+        Put_Debug ("Delete ", Timer.Id'Img
+                 & " is being deleted but its clock is unknown!!!");
+        raise Invalid_Timer;
+      else
+        Clocks_List.Read (Clock, Clocks_List_Mng.Current);
+        if Clock.Nb_Timers /= 1 then
+          -- Not last timer on this clock => decr nb of timers
+          Clock.Nb_Timers := Clock.Nb_Timers - 1;
+          Clocks_List.Modify (Clock, Clocks_List_Mng.Current);
+        else
+          -- Last timer on this clock => delete clock and unregister
+          Clocks_List.Delete (Done => Found);
+          Clock.Clock.Del_Observer (Observer'Access);
+        end if;
+      end if;
+    end if;
   end Delete_Current;
 
   -- Delete a timer
@@ -271,34 +374,40 @@ package body Timers is
   -- No action is timer is alread syspended
   -- May raise Invalid_Timer if timer has no period and has expired
   procedure Suspend (Id : in Timer_Id) is
-    Now : constant Virtual_Time.Time := Ada.Calendar.Clock;
     Timer : Timer_Rec;
-    use type Virtual_Time.Time;
+    Now : Virtual_Time.Time;
+    Speed : Virtual_Time.Speed_Range;
+    use type Virtual_Time.Time, Virtual_Time.Clock_Access;
   begin
      Set_Debug;
     -- Search timer
     Locate (Id);
     -- Get it
     Timer_List.Read (Timer, Timer_List_Mng.Current);
-    if not Timer.Running then
+    if Timer.Suspended then
       -- Already suspended
       return;
     end if;
-    -- Update it (not running and remaining time until next expiration)
-    Timer.Running := False;
-    Timer.Remaining := Timer.Exp.Expiration_Time - Now;
+    if not Timer.Frozen then
+      -- Compute remaining in virtual time
+      Now := Virtual_Time.Current_Time (Timer.Clock);
+      Speed := Virtual_Time.Get_Speed (Timer.Clock);
+      Timer.Remaining := (Timer.Exp.Expiration_Time - Now) * Speed;
+    end if;
     -- Store it and re-sort
+    Timer.Suspended := True;
     Timer_List.Modify (Timer, Timer_List_Mng.Current);
     Sort (Timer_List);
-    Put_Debug ("Suspend", " id " & Id.Timer_Num'Img);
+    Put_Debug ("Suspend", Id.Timer_Num'Img & " for "
+                    & Timer.Remaining'Img & "s");
   end Suspend;
 
   -- Resume a suspended a timer: expirations, even the pending ones are resumed
   -- No action is timer is not syspended
   -- May raise Invalid_Timer if timer has no period and has expired
   procedure Resume (Id : in Timer_Id) is
-    Now : constant  Virtual_Time.Time := Ada.Calendar.Clock;
     Timer : Timer_Rec;
+    Speed : Virtual_Time.Speed_Range;
     This_Id : Timer_Id_Range;
     use type Virtual_Time.Time;
   begin
@@ -307,15 +416,18 @@ package body Timers is
     Locate (Id);
     -- Get it
     Timer_List.Read (Timer, Timer_List_Mng.Current);
-    if Timer.Running then
+    if not Timer.Suspended then
       -- Already running
       return;
     end if;
-    -- Update it (running and next expiration time)
-    Timer.Running := True;
-    -- Re-apply remaining delay to current time
-    Timer.Exp.Expiration_Time := Now + Timer.Remaining;
+    if not Timer.Frozen then
+      -- Re-apply remaining delay (virtual) to current expiration (reference)
+      Speed := Virtual_Time.Get_Speed (Timer.Clock);
+      Timer.Exp.Expiration_Time := Virtual_Time.Current_Time (null)
+                                 + (Timer.Remaining / Speed);
+    end if;
     -- Store it and re-sort
+    Timer.Suspended := False;
     Timer_List.Modify (Timer, Timer_List_Mng.Current);
     Sort (Timer_List);
 
@@ -325,6 +437,9 @@ package body Timers is
     if Timer.Id = This_Id then
       Event_Mng.Wake_Up;
     end if;
+    Put_Debug ("Resume ", Timer.Id'Img & " restarted for "
+                    & Date_Image (Timer.Exp.Expiration_Time));
+
   end Resume;
 
   -- Locate First timer to expire
@@ -358,7 +473,7 @@ package body Timers is
       -- Get it
       Timer_List.Read (Timer, Timer_List_Mng.Current);
       -- Done when no more to expire
-      exit when not Timer.Running
+      exit when Timer.Suspended or else Timer.Frozen
       or else Timer.Exp.Expiration_Time > Ada.Calendar.Clock;
 
       -- Expired: Remove single shot
@@ -367,7 +482,7 @@ package body Timers is
       else
         -- Re-arm periodical, store and sort
         Timer.Exp.Expiration_Time := Timer.Exp.Expiration_Time
-                                   + Timer.Exp.Period;
+             + Timer.Exp.Period / Virtual_Time.Get_Speed (Timer.Clock);
         Timer_List.Modify (Timer, Timer_List_Mng.Current);
         Sort (Timer_List);
       end if;
@@ -412,7 +527,7 @@ package body Timers is
       return Infinite_Expiration;
     end if;
     Timer_List.Read (Timer, Timer_List_Mng.Current);
-    if not Timer.Running then
+    if Timer.Suspended or else Timer.Frozen then
       -- No more running timer
       Put_Debug ("Wait_Until", "-> Infinite cause no more running timer"
                  & Timer.Id'Img);
@@ -529,11 +644,58 @@ package body Timers is
 
   -- Clock update notification
   procedure Notify (An_Observer : in out Observer_Type;
-                    Vtime : in Virtual_Time.Time;
+                    Rtime, Vtime : in Virtual_Time.Time;
+                    Speed : in Virtual_Time.Speed_Range;
                     Clock : in Virtual_Time.Clock_Access) is
+    New_Speed : constant Virtual_Time.Speed_Range := Clock.Get_Speed;
+
+    -- Update current timer if needed
+    procedure Update is
+      Timer : Timer_Rec;
+      use type Virtual_Time.Time, Virtual_Time.Clock_Access,
+               Virtual_Time.Speed_Range;
+    begin
+      Timer_List.Read (Timer, Timer_List_Mng.Current);
+      if Timer.Clock /= Clock then
+        return;
+      end if;
+      if Timer.Frozen and then New_Speed /= 0.0 then
+        -- Clock restarted at Rtime, compute expiration with new speed
+        if not Timer.Suspended then
+          Timer.Exp.Expiration_Time := Rtime + (Timer.Remaining / New_Speed);
+          Put_Debug ("Update ", Timer.Id'Img & " restarted for "
+                    & Date_Image (Timer.Exp.Expiration_Time));
+        end if;
+        Timer.Frozen := False;
+      elsif not Timer.Frozen and then New_Speed = 0.0 then
+        -- Clock froze at Rtime, store remaining time in previous Vtime
+        if not Timer.Suspended then
+          Timer.Remaining := (Timer.Exp.Expiration_Time - Rtime) * Speed;
+          Put_Debug ("Update ", Timer.Id'Img & " frozen for "
+                    & Timer.Remaining'Img & "s");
+        end if;
+        Timer.Frozen := True;
+      elsif not Timer.Frozen then
+        -- Jump or change speed while timer is running
+        -- Apply speed factor and add to now
+        Timer.Exp.Expiration_Time :=
+              (Timer.Exp.Expiration_Time - Rtime) * Duration(Speed / New_Speed)
+            + Virtual_Time.Current_Time (null);
+      end if;
+      Timer_List.Modify (Timer, Timer_List_Mng.Current);
+    end Update;
+
   begin
-    -- @@@
-    null;
+    if not First then
+      Put_Debug ("Notify", "No timer!!!");
+      return;
+    end if;
+    loop
+      Update;
+      exit when not Timer_List.Check_Move;
+      Timer_List.Move_To;
+    end loop;
+    Sort (Timer_List);
   end Notify;
 
 end Timers;

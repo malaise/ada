@@ -110,7 +110,8 @@ package Timers is
   -- Interface for the virtual clock, don'use
   type Observer_Type is new Virtual_Time.Observer with null record;
   procedure Notify (An_Observer : in out Observer_Type;
-                    Vtime : in Virtual_Time.Time;
+                    Rtime, Vtime : in Virtual_Time.Time;
+                    Speed : in Virtual_Time.Speed_Range;
                     Clock : in Virtual_Time.Clock_Access);
 
 private
