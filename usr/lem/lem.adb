@@ -102,7 +102,7 @@ package body Lem is
     -- Set new thrust and arm timer
     Current_X_Thrust := X_Thrust;
     Thrust_Tid := Timers.Create ( (Delay_Kind    => Timers.Delay_Sec,
-                                   Clock         => null,
+                                   Clock         => Space.Clock'Access,
                                    Period        => Timers.No_Period,
                                    Delay_Seconds => 1.0),
                                    Timer_Thrust_Cb'Access);
@@ -307,9 +307,10 @@ package body Lem is
     --  (random) vertical speed remains constant
     Current_X_Thrust := 0;
     Current_Y_Thrust := (-Moon.Acceleration) * (Empty_Mass + Current_Fuel);
-    -- Time
+    -- Time: Re-init chrono
     Chrono.Stop;
     Chrono.Reset;
+    Chrono.Attach (Space.Clock'Access);
     Chrono.Start;
     -- Acceleration, speed, position
     Current_Acceleration := (0.0, 0.0);
@@ -317,7 +318,7 @@ package body Lem is
     Current_Position := Position;
     -- Start periodical timer
     Period_Tid := Timers.Create ( (Delay_Kind    => Timers.Delay_Sec,
-                                   Clock         => null,
+                                   Clock         => Space.Clock'Access,
                                    Period        => Period,
                                    Delay_Seconds => Period),
                                   Period_Timer_Cb'Access);
@@ -344,30 +345,6 @@ package body Lem is
     Current_Speed := (0.0, 0.0);
     Running := False;
   end Stop;
-
-  -- Pause LEM flight
-  procedure Pause is
-    use type Timers.Timer_Id;
-  begin
-    Chrono.Stop;
-    -- Suspend thrust timer if it is active and Periodical
-    if Thrust_Tid /=  Timers.No_Timer then
-      Timers.Suspend (Thrust_Tid);
-    end if;
-    Timers.Suspend (Period_Tid);
-  end Pause;
-
-  -- Resume LEM flight
-  procedure Resume is
-    use type Timers.Timer_Id;
-  begin
-    Chrono.Start;
-    -- Resume thrust timer if it is active and Periodical
-    if Thrust_Tid /=  Timers.No_Timer then
-      Timers.Resume (Thrust_Tid);
-    end if;
-    Timers.Resume (Period_Tid);
-  end Resume;
 
   -- Set position when landed
   procedure Set_Landed_Position (Position : in Space.Position_Rec) is

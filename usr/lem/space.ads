@@ -1,4 +1,4 @@
-with My_Math;
+with My_Math, Virtual_Time;
 package Space is
 
   -- Position in space
@@ -15,6 +15,9 @@ package Space is
   -- Y from 0 to 200 meters
   Y_Max : constant Position_Range := 200.0;
   subtype Y_Range is Position_Range range 0.0 .. Y_Max;
+
+  -- Mission clock
+  Clock : aliased Virtual_Time.Clock;
 
 end Space;
 

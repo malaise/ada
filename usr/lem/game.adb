@@ -57,7 +57,9 @@ package body Game is
     end if;
     -- Init Lem and start chrono
     Lem.Init (Init_Position, Init_Speed);
+    Chrono.Stop;
     Chrono.Reset;
+    Chrono.Attach (Space.Clock'Access);
     Chrono.Start;
 
     -- Worst of all landings
@@ -240,9 +242,7 @@ package body Game is
     Got_Event : Screen.Evt_Rec;
   begin
     -- Pause
-    Lem.Pause;
-    Chrono.Stop;
-
+    Space.Clock.Set_Speed (0.0);
     -- Wait until resume
     Screen.Init;
     Screen.Update (Flight_Status, Chrono.Read, True);
@@ -273,8 +273,8 @@ package body Game is
     Screen.Init;
     Screen.Update (Flight_Status, Chrono.Read, True);
     -- Resume
-    Lem.Resume;
-    Chrono.Start;
+    Space.Clock.Set_Speed (1.0);
+
     Screen.Refresh;
     return True;
   end Pause_Game;
