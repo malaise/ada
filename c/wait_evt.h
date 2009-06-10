@@ -13,6 +13,9 @@ extern int evt_del_fd (int fd, boolean read);
 /* Check if fd set (for read or write) */
 extern boolean evt_fd_set (int fd, boolean read);
 
+/* Activate signal handling and reporting */
+extern void activate_signal_handling (void);
+
 /* Reset signals to default UNIX behaviour */
 /* Returns un-handled signal */
 extern int reset_default_signals (void);

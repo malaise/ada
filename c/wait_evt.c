@@ -149,21 +149,25 @@ extern void evt_wake_up (void) {
 
 /***** Select Management   *****/
 /* Init signal handling and wake-up pipe */
-static void init_evt (void) {
-  /* Set handler if not set */
-  if (! sig_handled) {
-    (void) signal(SIGINT, signal_handler);
-    (void) signal(SIGTERM, signal_handler);
-    (void) signal(SIGCHLD, signal_handler);
-    (void) signal(SIGPIPE, SIG_IGN);
-    sig_handled = TRUE;
-  }
+static void init_sig_and_wake_up (void) {
+  (void) signal(SIGPIPE, SIG_IGN);
   if (wake_up_fds[0] == -1) {
     (void) pipe (wake_up_fds);
     (void) evt_add_fd (wake_up_fds[0], TRUE);
   }
 }
+/* Activate signal handling and reporting */
+extern void activate_signal_handling (void) {
+  /* Set handler if not set */
+  if (! sig_handled) {
+    (void) signal(SIGINT, signal_handler);
+    (void) signal(SIGTERM, signal_handler);
+    (void) signal(SIGCHLD, signal_handler);
+    sig_handled = TRUE;
+  }
+}
 
+/* Reset default unix behaviour */
 extern int reset_default_signals (void) {
   int res;
   res = sig_received;
@@ -172,7 +176,6 @@ extern int reset_default_signals (void) {
     (void) signal(SIGINT, SIG_DFL);
     (void) signal(SIGTERM, SIG_DFL);
     (void) signal(SIGCHLD, SIG_DFL);
-    (void) signal(SIGPIPE, SIG_DFL);
     sig_handled = FALSE;
   }
   return res;
@@ -212,8 +215,8 @@ extern int evt_wait (int *p_fd, boolean *p_read, int *timeout_ms) {
     timeout_ptr = NULL;
   }
 
-  /* Init signal handling and wake-up pipe */
-  init_evt ();
+  /* Init wake-up pipe */
+  init_sig_and_wake_up ();
 
   for (;;) {
 
