@@ -89,9 +89,11 @@ begin
     X_Mng.X_Wait_Event (Id, Exp, Kind);
     case Kind is
       when X_Mng.Refresh | X_Mng.Fd_Event
-         | X_Mng.Timer_Event | X_Mng.Signal_Event | X_Mng.Wakeup_Event =>
+         | X_Mng.Timer_Event | X_Mng.Wakeup_Event =>
         X_Mng.X_Set_Attributes (Id, 0, 3, False, False, True, False);
         Put (X_Mng.Event_Kind'Image(Kind));
+      when X_Mng.Signal_Event =>
+        exit;
       when X_Mng.Tid_Press | X_Mng.Tid_Release =>
         X_Mng.X_Read_Tid (Id, True, Tid_Button, Tid_Row, Tid_Col);
         Put (X_Mng.Event_Kind'Image(Kind) & " " & X_Mng.Button_List'Image(Tid_Button)
@@ -107,6 +109,7 @@ begin
            Text_Handler.Append (Txt, " " & X_Mng.Byte'Image(Kbd_Codes.Tab(I)));
         end loop;
         Put (Text_Handler.Value(Txt));
+        -- Ctrl C
         exit Main_Loop when Kbd_Codes.Nbre = 2
              and then Kbd_Codes.Tab(1) = 255 and then Kbd_Codes.Tab(2) = 27;
       when X_Mng.No_Event =>
