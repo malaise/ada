@@ -166,6 +166,9 @@ package body Event_Mng is
   function C_Get_Signal return Integer;
   pragma Import(C, C_Get_Signal, "get_signal");
 
+  procedure C_Activate_Signal_Handling;
+  pragma Import(C, C_Activate_Signal_Handling, "activate_signal_handling");
+
   function C_Reset_Default_Signals return Integer;
   pragma Import(C, C_Reset_Default_Signals, "reset_default_signals");
 
@@ -174,11 +177,17 @@ package body Event_Mng is
 
   procedure Set_Sig_Term_Callback (Callback : in Sig_Callback) is
   begin
+    if Callback /= null then
+      Activate_Signal_Handling;
+    end if;
     Cb_Term_Sig := Callback;
   end Set_Sig_Term_Callback;
 
   procedure Set_Sig_Child_Callback (Callback : in Sig_Callback) is
   begin
+    if Callback /= null then
+      Activate_Signal_Handling;
+    end if;
     Cb_Child_Sig := Callback;
   end Set_Sig_Child_Callback;
 
@@ -211,6 +220,11 @@ package body Event_Mng is
     end if;
     C_Send_Signal (C_Sig_Dummy);
   end Send_Dummy_Signal;
+
+  procedure Activate_Signal_Handling is
+  begin
+    C_Activate_Signal_Handling;
+  end Activate_Signal_Handling;
 
   function Reset_Default_Signals_Policy return Boolean is
     Sig : Integer;

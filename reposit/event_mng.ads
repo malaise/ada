@@ -47,6 +47,11 @@ package Event_Mng is
   -- It always generates a Sig_Event but Callbacks are not called
   procedure Send_Dummy_Signal;
 
+
+  -- Activate signa handling (capability to catch SigTerm (and Sigint) and
+  --  SigChild and report them
+  procedure Activate_Signal_Handling;
+
   -- Reset signal handling to default UNIX behaviour
   -- Returns True if a Sig Term was received but not handled
   function Reset_Default_Signals_Policy return Boolean;
