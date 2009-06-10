@@ -1,5 +1,5 @@
 with Ada.Calendar, Ada.Characters.Latin_1, Ada.Strings.Unbounded;
-with Argument, Dyn_Data, Environ, Language, Lower_Str;
+with Argument, Dyn_Data, Environ, Language, Lower_Str, Event_Mng;
 package body Generic_Con_Io is
 
   X_Init_Done : Boolean := False;
@@ -12,6 +12,8 @@ package body Generic_Con_Io is
     if not X_Init_Done then
       X_Mng.X_Initialise ("");
       X_Init_Done := True;
+      -- Because we handle Ctrl-C in (Get_Key_Time) we shall handle signals
+      Event_Mng.Activate_Signal_Handling;
     end if;
   end Initialise;
 
@@ -812,8 +814,7 @@ package body Generic_Con_Io is
     -- Returns if key pressed (Esc event), then Ctrl..Kbd_Tab are significant
     -- otherwise mouse action, refresh, timeout...
     subtype Event_List is Curs_Mvt range Esc .. Refresh;
-    procedure Get_Key_Time (Check_Break : in Boolean;
-                            Event       : out Event_List;
+    procedure Get_Key_Time (Event       : out Event_List;
                             Ctrl        : out Boolean;
                             Shift       : out Boolean;
                             Code        : out Boolean;
@@ -874,16 +875,14 @@ package body Generic_Con_Io is
           X_Mng.X_Read_Key(Id, Ctrl, Shift, Code, Kbd_Tab);
           Translate_X_Key (Kbd_Tab, Code);
           -- Check break
-          if Check_Break then
-            if not Code
-            and then Ctrl
-            and then Kbd_Tab.Nbre = 1
-            and then (Kbd_Tab.Tab(1) = 3
-              or else Kbd_Tab.Tab(1) = Character'Pos('c')) then
-              -- Ctrl c
-              Event := Break;
-              return;
-            end if;
+          if not Code
+          and then Ctrl
+          and then Kbd_Tab.Nbre = 1
+          and then (Kbd_Tab.Tab(1) = 3
+            or else Kbd_Tab.Tab(1) = Character'Pos('c')) then
+            -- Ctrl c
+            Event := Break;
+            return;
           end if;
           -- Escape for any other keyboard key
           Event := Esc;
@@ -1029,7 +1028,7 @@ package body Generic_Con_Io is
         Last := 0;
 
         loop
-          Get_Key_Time (True, Event, Ctrl, Shift, Code, Kbd_Tab, Last_Time);
+          Get_Key_Time (Event, Ctrl, Shift, Code, Kbd_Tab, Last_Time);
           if Event /= Esc then
             -- No key ==> mouse, time out, refresh, fd...
             Stat := Event;
@@ -1148,7 +1147,7 @@ package body Generic_Con_Io is
         end if;
         Redraw := False;
         -- Try to get a key
-        Get_Key_Time (True, Event, Ctrl, Shift, Code, Kbd_Tab, Last_Time);
+        Get_Key_Time (Event, Ctrl, Shift, Code, Kbd_Tab, Last_Time);
         -- Hide cursor
         if Echo then
           Cursor (False);
