@@ -1,5 +1,5 @@
 with Ada.Calendar, Ada.Exceptions, Ada.Characters.Latin_1;
-with My_Io, Address_Ops, Environ, Event_Mng;
+with My_Io, Address_Ops, Environ;
 package body X_Mng is
 
   -- Maximum successive X events
