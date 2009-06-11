@@ -1,14 +1,14 @@
 with Ada.Strings.Unbounded;
 with Text_Char;
 with Common, Output, Words, Parser_Ada, Parse_To_End,
-     Parse_Procedure, Parse_Function, Parse_Entry, Fix_Comment;
+     Parse_Procedure, Parse_Function, Parse_Entry, Fix_Comment, Put_Comments;
 
 procedure Parse_Protected (Level : in Natural) is
     package Asu renames Ada.Strings.Unbounded;
   Name : Asu.Unbounded_String;
   Word : Parser_Ada.Word_Rec;
   Dummy : Boolean := True;
-  use type Parser_Ada.Lexical_Kind_List;
+  use type Parser_Ada.Lexical_Kind_List, Asu.Unbounded_String;
 begin
 
   -- Read until protected name, skip "type"
@@ -18,7 +18,7 @@ begin
       Str : constant String := Asu.To_String (Word.Text);
     begin
       if Word.Lexic = Parser_Ada.Comment then
-        -- Put comment or separator
+        -- Put comment
         Output.Put_Line (Str, False);
       elsif Str = "type" then
         -- Skip type
@@ -55,8 +55,13 @@ begin
       if Word.Lexic = Parser_Ada.Comment then
         Output.Put (Str, False, Level + 1);
       elsif Word.Lexic = Parser_Ada.Separator then
-        -- Put separators
-        Words.Add (Word);
+        -- Within the protected, Output Line_Feed, save other separators
+        if Word.Text = String'(Common.Line_Feed) then
+          Output.New_Line;
+          Words.Reset;
+        else
+          Words.Add (Word);
+        end if;
       elsif Str = "end" then
         -- End of this protected
         exit;
@@ -83,7 +88,8 @@ begin
         -- Unexpected, word. Parse to end as comment
         Words.Add (Word);
         Parse_To_End (Parser_Ada.Delimiter, ";", Level + 1);
-        Output.Put (Words.Concat, True, Level);
+        Fix_Comment (Level + 1);
+        Output.Put (Words.Concat, True, Level, True);
         Words.Reset;
       end if;
     end;
@@ -91,6 +97,7 @@ begin
 
   -- Skip up to last ";"
   Parse_To_End (Parser_Ada.Delimiter, ";", Level);
+  Put_Comments;
   Words.Reset;
 
   -- end <name>;
