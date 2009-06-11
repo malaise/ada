@@ -56,7 +56,7 @@ begin
         Output.Put (Str, False, Level + 1);
       elsif Word.Lexic = Parser_Ada.Separator then
         -- Put separators
-        Output.Put (Asu.To_String (Word.Text), False);
+        Words.Add (Word);
       elsif Str = "end" then
         -- End of this protected
         exit;
@@ -64,28 +64,12 @@ begin
         Parse_Procedure (Level + 1, Dummy);
       elsif Str = "function" then
         Parse_Function (Level + 1, Dummy);
+      elsif Str = "not" then
+        Words.Add (Word);
       elsif Str = "overriding" then
-        Words.Add (Parser_Ada.Reserved_Word, "overriding");
+        Words.Add (Word);
       elsif Str = "entry" then
         Parse_Entry (Level + 1);
-      elsif Str = "not" then
-        -- Skip "not overriding" and a separator
-        Words.Add (Word);
-        Parse_To_End (Parser_Ada.Reserved_Word, "overriding", Level + 1,
-                      Up_To_Next_Significant => False);
-        Fix_Comment (Level + 1);
-        Output.Put_Line (Words.Concat, True, Level + 1, False);
-        Words.Reset;
-        Output.Put ("", False, Level + 1, True);
-        Word := Parser_Ada.Multiparse.Get (True);
-      elsif Str = "overriding" then
-        -- Skip "overriding" and a separator
-        Words.Add (Word);
-        Fix_Comment (Level + 1);
-        Output.Put_Line (Words.Concat, True, Level + 1, False);
-        Words.Reset;
-        Output.Put ("", False, Level + 1, True);
-        Word := Parser_Ada.Multiparse.Get (True);
       elsif Str = "private" then
         -- Put "private" as a comment
         Output.Put_Line (Str, True, Level);

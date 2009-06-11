@@ -85,8 +85,10 @@ begin
       elsif Str = "function" then
         Put_Body;
         Parse_Function (Level + 1, Generated);
+      elsif Str = "not" then
+        Words.Add (Word);
       elsif Str = "overriding" then
-        Words.Add (Parser_Ada.Reserved_Word, "overriding");
+        Words.Add (Word);
       elsif Str = "task" then
         Put_Body;
         Parse_Task (Level + 1);
@@ -124,26 +126,6 @@ begin
         -- Reset indent
         Words.Add (Word);
         Parse_Type (Level + 1);
-      elsif Str = "not" then
-        -- Skip "not overriding" of function/procedure
-        Put_Body;
-        Words.Add (Word);
-        Parse_To_End (Parser_Ada.Reserved_Word, "overriding", Level + 1,
-                      Up_To_Next_Significant => False);
-        Fix_Comment (Level + 1);
-        Output.Put_Line (Words.Concat, True, Level + 1, True);
-        Words.Reset;
-        Output.Put ("", False, Level + 1, True);
-        Word := Parser_Ada.Multiparse.Get (True);
-      elsif Str = "overriding" then
-        -- Skip "overriding" of function/procedure
-        Put_Body;
-        Words.Add (Word);
-        Fix_Comment (Level + 1);
-        Output.Put_Line (Words.Concat, True, Level + 1, True);
-        Words.Reset;
-        Output.Put ("", False, Level + 1, True);
-        Word := Parser_Ada.Multiparse.Get (True);
       else
         -- Unexpected word. Parse to end as comment
         Put_Body;

@@ -33,8 +33,11 @@ begin
         Level := 0;
         Output.New_Line;
         Parse_Function (0, Generated);
+      elsif Str = "not" then
+        -- Propagate [ not ] overriding
+        Words.Add (Word);
       elsif Str = "overriding" then
-        Words.Add (Parser_Ada.Reserved_Word, "overriding");
+        Words.Add (Word);
       elsif Str = "private" then
         -- Skip private prefix of package/procedure/function
         --   keep trace for "private with"
