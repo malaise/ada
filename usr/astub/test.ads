@@ -130,7 +130,7 @@ package Test is
     not overriding function Read return Otyp7;
   private
      V: Otyp7;
-  end;
+  end Otyp11;
   overriding procedure Read(Obj: in Otyp11; X: out Otyp7);
 
   type Otyp12 is tagged;
@@ -139,8 +139,8 @@ package Test is
 private
 
   type Typ5 is new Integer;
-  Const2 : constant Typ5 := 21;
   function Func6 return Typ5;
+  Const2 : constant Typ5 := 21;
 
 end Test;
 
