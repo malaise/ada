@@ -59,9 +59,9 @@ begin
         -- Restore private if "private with"
         -- And put this statement as a comment
         if Str = "with" and then Prev_Private then
-          Output.Put ("private " & Words.Concat, True, 0);
+          Output.Put_Line ("private " & Words.Concat, True, 0);
         else
-          Output.Put (Words.Concat, True, 0);
+          Output.Put_Line (Words.Concat, True, 0);
         end if;
         Words.Reset;
       end if;

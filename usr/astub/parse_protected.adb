@@ -89,7 +89,7 @@ begin
         Words.Add (Word);
         Parse_To_End (Parser_Ada.Delimiter, ";", Level + 1);
         Fix_Comment (Level + 1);
-        Output.Put (Words.Concat, True, Level, True);
+        Output.Put_Line (Words.Concat, True, Level, True);
         Words.Reset;
       end if;
     end;
