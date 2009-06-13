@@ -22,5 +22,7 @@ package Output is
 
   procedure New_Line;
 
+  -- Must be called at end of program
+  procedure Flush;
 end Output;
 

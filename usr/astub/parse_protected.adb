@@ -38,7 +38,7 @@ begin
   end loop;
 
 
-  -- Output this and " is"
+  -- Output protected body <name> is
   Output.Put_Line (Words.Concat & "protected body " & Asu.To_String (Name)
                  & " is", False, Level);
 
@@ -53,17 +53,20 @@ begin
       Str : constant String := Ada.Strings.Unbounded.To_String (Word.Text);
     begin
       if Word.Lexic = Parser_Ada.Comment then
-        Output.Put (Str, False, Level + 1);
+        Output.Put (Words.Concat & Asu.To_String (Word.Text), False);
+        Words.Reset;
       elsif Word.Lexic = Parser_Ada.Separator then
         -- Within the protected, Output Line_Feed, save other separators
         if Word.Text = String'(Common.Line_Feed) then
-          Output.New_Line;
+          Output.Put_Line (Words.Concat, False);
           Words.Reset;
         else
           Words.Add (Word);
         end if;
       elsif Str = "end" then
         -- End of this protected
+        -- Normally, Words contains only separators
+        Words.Reset;
         exit;
       elsif Str = "procedure" then
         Parse_Procedure (Level + 1, Dummy);
@@ -77,7 +80,9 @@ begin
         Parse_Entry (Level + 1);
       elsif Str = "private" then
         -- Put "private" as a comment
-        Output.Put_Line (Str, True, Level);
+        -- Normally, Words contains only separators
+        Words.Reset;
+        Output.Put_Line (Str, True, Level, True);
       elsif Str = "new" then
         -- Parse until "with" as comment
         Words.Add (Word);
@@ -101,6 +106,6 @@ begin
   Words.Reset;
 
   -- end <name>;
-  Output.Put_Line ("end " & Asu.To_String (Name) & ";", False, Level);
+  Output.Put_Line ("end " & Asu.To_String (Name) & ";", False, Level, True);
 end Parse_Protected;
 

@@ -9,6 +9,9 @@ procedure Parse_Entry (Level : in Natural) is
   In_Id, In_Parent : Boolean;
   use type Parser_Ada.Lexical_Kind_List;
 begin
+  -- Output pending words
+  Output.Put (Words.Concat, False, Level);
+  Words.Reset;
 
   -- Read until entry name
   loop
@@ -23,8 +26,8 @@ begin
 
   -- Put "entry <name>"
   Name := Words.Get;
-  Output.Put ("entry " & Asu.To_String (Name), False, Level);
   Words.Reset;
+  Output.Put ("entry " & Asu.To_String (Name), False, Level);
 
   -- Parse family and arguments, store Family
   -- Store arguments lexical elements in words

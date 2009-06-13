@@ -1,5 +1,5 @@
 with Ada.Strings.Unbounded;
-with Environ, Text_Handler, Text_Line, String_Mng, Ada_Words;
+with Environ, Text_Handler, Text_Line, String_Mng.Regex, Ada_Words;
 with Common, Files;
 package body Output is
 
@@ -19,6 +19,9 @@ package body Output is
   Mini_Len : constant := 40;
 
   package Asu renames Ada.Strings.Unbounded;
+  subtype Asu_Us is Asu.Unbounded_String;
+  function Asu_Ts (Str : Asu_Us) return String renames Asu.To_String;
+  Asu_Null : constant Asu_Us := Asu.Null_Unbounded_String;
 
   -- get envir variables if first call
   procedure Getenv is
@@ -64,6 +67,47 @@ package body Output is
     or else Ada_Words.Is_Delimiter (Char);
   end Separates;
 
+  -- Low level output procedure to filter successive Line_Feed
+  Prev_Tail : Asu_Us;
+  procedure Low_Put (Str : in String) is
+    Ustr : Asu_Us;
+    Found : Natural;
+    Line_Feed_Char : constant Character := Common.Line_Feed;
+    use type Asu_Us;
+  begin
+    -- Prepend previous tail and replace any sequence of 3 or more
+    -- line_feeds by only 2
+    Ustr := Asu.To_Unbounded_String (
+      String_Mng.Regex.Replace (Asu_Ts (Prev_Tail) & Str, "\n{3,}",
+      Line_Feed_Char & Line_Feed_Char));
+    Prev_Tail := Asu_Null;
+    if Ustr = Asu_Null then
+      -- Nothing to put
+      return;
+    end if;
+    -- Locate any tailing line feeds (1 or 2)
+    Found := 0;
+    for I in reverse 1 .. Asu.Length (Ustr) loop
+      if Asu.Element (Ustr, I) = Common.Line_Feed then
+        Found := I;
+      else
+        exit;
+      end if;
+    end loop;
+    -- Remove and save tailing line feeds if any
+    if Found /= 0 then
+      Prev_Tail := Asu.Unbounded_Slice (Ustr, Found,  Asu.Length (Ustr));
+      Asu.Delete (Ustr, Found, Asu.Length (Ustr));
+    end if;
+    -- Put remaining
+    Text_Line.Put (Files.Out_File, Asu_Ts(Ustr));
+  end Low_Put;
+
+  procedure Flush is
+  begin
+    Text_Line.Put (Files.Out_File, Asu_Ts(Prev_Tail));
+    Prev_Tail := Asu_Null;
+  end Flush;
 
   -- Put one line (after flow has been cut according to Line_Feeds)
   procedure Format (Str : in String;
@@ -85,7 +129,7 @@ package body Output is
     if Index /= 0
     and then Index = Str'Last
     and then Str(Str'Last) = Common.Line_Feed then
-      Text_Line.New_Line (Files.Out_File);
+      Low_Put (Common.Line_Feed);
       return;
     end if;
 
@@ -121,7 +165,7 @@ package body Output is
 
     -- Put comment without truncating
     if Comment or else Comment_Index /= 0 then
-      Text_Line.Put (Files.Out_File, Asu.To_String (Line2Put));
+       Low_Put (Asu.To_String (Line2Put));
       return;
     end if;
 
@@ -131,11 +175,11 @@ package body Output is
                                   Separates'Access);
 
     -- Put the first chunk 1 .. Index
-    Text_Line.Put (Files.Out_File, Asu.Slice (Line2Put, 1, Index) );
+    Low_Put (Asu.Slice (Line2Put, 1, Index));
 
     if Index /= Asu.Length (Line2Put) then
       -- Line2Put is split. First chunk is Put_Line
-      Text_Line.New_Line (Files.Out_File);
+      Low_Put (Common.Line_Feed);
       -- Format the remaining: Index + 1 .. Last
       Format (Asu.Slice (Line2Put, Index + 1, Asu.Length (Line2Put)),
               False, Level, True);

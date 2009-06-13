@@ -1,7 +1,7 @@
 with Ada.Strings.Unbounded;
 with Text_Char;
 with Common, Output, Words, Parser_Ada,
-     Parse_To_End, Parse_Procedure, Parse_Function, Parse_Package;
+     Parse_To_End, Parse_Procedure, Parse_Function, Parse_Package, Fix_Comment;
 
 procedure Parse_Context (Generated : out Boolean) is
   Word, Trash_Word : Words.Word_Rec;
@@ -56,6 +56,7 @@ begin
         -- Parse up to end of statement
         Words.Add (Word);
         Parse_To_End (Parser_Ada.Delimiter, ";", 0);
+        Fix_Comment (0);
         -- Restore private if "private with"
         -- And put this statement as a comment
         if Str = "with" and then Prev_Private then
@@ -73,6 +74,8 @@ begin
     end;
   end loop;
 
+  -- Done
+  Output.Flush;
 exception
   when Parser_Ada.End_Error =>
     Common.Error ("EOF");
