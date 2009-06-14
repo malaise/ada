@@ -61,7 +61,7 @@ use Gtk.Radio_Menu_Item;
 use Gtk.Widget;
 
 package body User_If is
-   package Window_Cb is new Gtk.Handlers.Callback (Gtk_Window_Record);
+   package Window_Cb is new Gtk.Handlers.Return_Callback (Gtk_Window_Record, Boolean);
    package Button_Cb is new Gtk.Handlers.Callback (Gtk_Button_Record);
    package Toggle_Cb is new Gtk.Handlers.Callback (Gtk_Toggle_Button_Record);
    package Marker_Cb is new Gtk.Handlers.Return_Callback (Gtk_Toggle_Button_Record, Boolean);
@@ -188,12 +188,14 @@ package body User_If is
       Restarting := False;
    end Reset_Screen;
 
-   procedure When_Close (Object : access Gtk_Window_Record'Class;
-                         Params : Gtk_Args)
+   function When_Close (Object : access Gtk_Window_Record'Class;
+                        Event  : Gdk.Event.Gdk_Event)
+            return Boolean
    is
       -- null;
    begin -- When_Close
       Main_Quit;
+      return True;
    end When_Close;
 
    procedure Toggle (Button_Access : access Gtk_Toggle_Button_Record'Class;
@@ -269,12 +271,14 @@ package body User_If is
       Field.Operations.Reset;
    end When_Restart_Button;
 
-   procedure Close_Rules (Object : access Gtk_Window_Record'Class;
-                          Params : Gtk_Args)
+   function Close_Rules (Object : access Gtk_Window_Record'Class;
+                         Event  : Gdk.Event.Gdk_Event)
+            return Boolean
    is
       -- null;
    begin -- Close_Rules
       Destroy (Rules_Dialog);
+      return True;
    end Close_Rules;
 
    procedure OK_Close_Rules (Object : access Gtk_Button_Record'Class;
@@ -369,7 +373,8 @@ package body User_If is
       Gtk_New (Rules_Dialog);
       Set_Title (Rules_Dialog, "Rules for Mine Detector");
       Set_USize (Rules_Dialog, 500, 400);
-      Window_Cb.Connect (Rules_Dialog, "delete_event", Close_Rules'access);
+      Window_Cb.Connect (Rules_Dialog, "delete_event", 
+                Window_Cb.To_Marshaller (Close_Rules'access));
 
       V_Box := Get_Vbox (Rules_Dialog);
       Action := Get_Action_Area (Rules_Dialog);
@@ -468,7 +473,8 @@ package body User_If is
       Set_Policy (Window, True, True, False);
       Set_Position (Window, Win_Pos_Center);
       Set_Title (Window, "Mine Detector");
-      Window_Cb.Connect (Window, "delete_event", When_Close'access);
+      Window_Cb.Connect (Window, "delete_event", 
+           Window_Cb.To_Marshaller (When_Close'access));
       Gtk_New_Hbox (Box => Box, Spacing => 2);
       Add (Window, Box);
       Gtk_New (Widget      => Table,
