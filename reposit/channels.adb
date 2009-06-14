@@ -395,7 +395,7 @@ package body Channels is
                           Remote_Host_Id  : in Tcp_Util.Host_Id;
                           Connected       : in Boolean;
                           Dscr            : in Socket.Socket_Dscr) is
-      pragma Unreferenced (Remote_port_Num, Connected);
+      pragma Unreferenced (Remote_Port_Num, Connected);
       Dest : Dest_Rec;
       Found : Boolean;
     begin
