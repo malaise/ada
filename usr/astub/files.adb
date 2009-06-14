@@ -13,7 +13,8 @@ package body Files is
   Keep_Name : constant String := "ASTUB_KEEP_ON_ERROR";
 
   -- Open --
-  procedure Open (Spec_File_Name : in String) is
+  procedure Open (Spec_File_Name : in String;
+                  Delete_Body : in Boolean) is
     Fd : Sys_Calls.File_Desc;
   begin
     -- Check that spec file ends with spec suffix
@@ -37,12 +38,29 @@ package body Files is
     Body_File_Name := Asu.To_Unbounded_String (
           String_Mng.Cut (Spec_File_Name, Spec_Suffix'Length, False)
         & Body_Suffix);
+
+    -- Check if body file exists and delete it if requested
+    begin
+      if Sys_Calls.File_Check (Asu.To_String (Body_File_Name))
+      and then Delete_Body then
+        if not Sys_Calls.Unlink (Asu.To_String (Body_File_Name)) then
+          raise Sys_Calls.Access_Error;
+        end if;
+      end if;
+    exception
+      when Sys_Calls.Access_Error =>
+        -- Raised by File_Check or failure of Unlink
+        Body_File_Name := Asu.Null_Unbounded_String;
+        Close (Remove);
+        raise Out_Error;
+    end;
+
     -- Check that Out file does not exist
     begin
       Fd := Sys_Calls.Open (Asu.To_String (Body_File_Name), Sys_Calls.In_File);
       Sys_Calls.Close (Fd);
       Body_File_Name := Asu.Null_Unbounded_String;
-      Close (Remove_If_Not_Keep);
+      Close (Remove);
       raise Out_Error;
     exception
       when Sys_Calls.Name_Error =>
@@ -56,7 +74,7 @@ package body Files is
     exception
       when Sys_Calls.Name_Error =>
         Body_File_Name := Asu.Null_Unbounded_String;
-        Close (Remove_If_Not_Keep);
+        Close (Remove);
         raise Out_Error;
     end;
     -- This should work ok

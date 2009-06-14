@@ -3,7 +3,9 @@ with Text_Line, Text_Char;
 package Files is
 
   -- Open both files
-  procedure Open (Spec_File_Name : in String);
+  -- Optrionnaly Delete body file if is exists
+  procedure Open (Spec_File_Name : in String;
+                  Delete_Body : in Boolean);
   In_Error, Out_Error : exception;
 
   -- File descriptor of inputs

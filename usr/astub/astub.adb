@@ -1,12 +1,16 @@
 with Ada.Text_Io, Ada.Exceptions;
-with Argument, Sys_Calls, Mixed_Str;
+with Argument, Argument_Parser, Sys_Calls, Mixed_Str;
 with Common, Files, Parse_Context;
 procedure Astub is
 
   procedure Usage is
   begin
     Ada.Text_Io.Put_Line ("Usage : " & Argument.Get_Program_Name
-                        & " <spec_file_name>");
+                   & " [ -f | --force ] [ -k | --keep ] <spec_file_name>");
+    Ada.Text_Io.Put_Line (
+      " -f | --force : Force generation (delete existing body)");
+    Ada.Text_Io.Put_Line (
+      " -k | --keep : Keep empty body");
   end Usage;
 
   procedure Error (Msg : in String) is
@@ -16,37 +20,76 @@ procedure Astub is
     Sys_Calls.Set_Error_Exit_Code;
   end Error;
 
+  -- The keys and descriptor of parsed keys
+  function Asu_Tus (Source : in String) return Argument_Parser.Asu_Us
+                   renames Argument_Parser.Asu.To_Unbounded_String;
+
+  Keys : constant Argument_Parser.The_Keys_Type := (
+   01 => ('f', Asu_Tus ("force"), False, False),
+   02 => ('k', Asu_Tus ("keep"), False, False));
+  Arg_Dscr : Argument_Parser.Parsed_Dscr;
+
+  -- The options
+  Force_Opt : Boolean;
+  Keep_Opt : Boolean;
+
+
   Generated : Boolean;
 begin
-  Ada.Text_Io.Put_Line ("Astubbing " & Argument.Get_Parameter);
-
-  -- Must be one argument
-  if Argument.Get_Nbre_Arg /= 1 then
-    Error ("Argument expected.");
+  -- Parse keys and options
+  Arg_Dscr := Argument_Parser.Parse (Keys);
+  if not Arg_Dscr.Is_Ok then
+    Error ("Invalid arguments: " & Arg_Dscr.Get_Error & ".");
     return;
   end if;
+  -- Must be one and only one file name
+  declare
+     Nb_File : constant Natural
+             := Arg_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index);
+  begin
+    if Nb_File = 0 then
+      Error ("Missing file name.");
+      return;
+    elsif Nb_File /= 1 then
+      Error ("Too many file names.");
+      return;
+    end if;
+  end;
+  Force_Opt := Arg_Dscr.Is_Set (1);
+  Keep_Opt := Arg_Dscr.Is_Set (2);
 
   -- Open files
+  Ada.Text_Io.Put_Line ("Astubbing "
+      & Arg_Dscr.Get_Option (Argument_Parser.No_Key_Index, 1) );
   begin
-    Files.Open (Argument.Get_Parameter);
+    Files.Open (Arg_Dscr.Get_Option (Argument_Parser.No_Key_Index, 1),
+                Force_Opt);
   exception
     when Files.In_Error =>
       Error ("Cannot open spec file for reading.");
       return;
     when Files.Out_Error =>
-      Error ("Cannot create new body file for writing. File exists?");
+      if Force_Opt then
+        Error ("Cannot create new body file for writing.");
+      else
+        Error ("Cannot create new body file for writing. File exists?");
+      end if;
       return;
   end;
 
   -- Parse, starting from context
   Parse_Context (Generated);
 
-  if Generated then
+  if Generated or else Keep_Opt then
     -- Done, close files
     Files.Close (Files.Keep);
 
     -- Output success
-    Ada.Text_Io.Put_Line ("Done.");
+    if Generated then
+      Ada.Text_Io.Put_Line ("Done.");
+    else
+      Sys_Calls.Put_Line_Error ("Warning: Body is empty but kept.");
+    end if;
   else
     -- Dummy body
     Ada.Text_Io.Put_Line ("Warning: " & Argument.Get_Parameter
