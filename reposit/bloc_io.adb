@@ -187,6 +187,7 @@ package  body Bloc_Io is
     Bug_Fix:
     declare
       Dummy_Index : Positive_Count;
+      pragma Unreferenced (Dummy_Index);
     begin
       Dummy_Index := Index(File);
     end Bug_Fix;

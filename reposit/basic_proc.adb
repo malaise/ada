@@ -6,6 +6,7 @@ package body Basic_Proc is
   -- Put line on stdout
   procedure Put_Output (Str : in String) is
     I : Interfaces.C_Streams.Int;
+    pragma Unreferenced (I);
     Str4C : constant String := Str & Ada.Characters.Latin_1.Nul;
   begin
     I := Interfaces.C_Streams.Fputs (Str4C'Address,
@@ -14,6 +15,7 @@ package body Basic_Proc is
 
   procedure New_Line_Output is
     I : Interfaces.C_Streams.Int;
+    pragma Unreferenced (I);
     Str4C : constant String := Ada.Characters.Latin_1.Lf
                              & Ada.Characters.Latin_1.Nul;
   begin
@@ -30,6 +32,7 @@ package body Basic_Proc is
   -- Put line on stderr
   procedure Put_Error (Str : in String) is
     I : Interfaces.C_Streams.Int;
+    pragma Unreferenced (I);
     Str4C : constant String := Str & Ada.Characters.Latin_1.Nul;
   begin
     I := Interfaces.C_Streams.Fputs (Str4C'Address,
@@ -38,6 +41,7 @@ package body Basic_Proc is
 
   procedure New_Line_Error is
     I : Interfaces.C_Streams.Int;
+    pragma Unreferenced (I);
     Str4C : constant String := Ada.Characters.Latin_1.Lf
                              & Ada.Characters.Latin_1.Nul;
   begin

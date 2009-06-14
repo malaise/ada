@@ -1,8 +1,6 @@
 with Unchecked_Deallocation;
 package body Limited_List is
 
-  type Element_Array is array (Positive range <>) of Element_Type;
-
   Free_List : Link := null;
 
   -- Utilities
@@ -733,7 +731,7 @@ package body Limited_List is
                     Occurence : in Positive := 1;
                     From      : in Search_Kind_List) is
 
-    procedure Item_Search is new Search_Criteria (Element_Type, Set, Match);
+    procedure Item_Search is new Search_Criteria (Element_Type, Match);
   begin
     Item_Search (List, Found, Criteria, Where, Occurence, From);
   end Search;
@@ -745,14 +743,6 @@ package body Limited_List is
     Criteria : Element_Type;
     Match : Match_Access;
   end record;
-  -- Criteria is limited private => need a set operation
-  procedure Set (To : out Crit_Match_Rec; Val : in Crit_Match_Rec) is
-  begin
-    -- Elements
-    Set (To.Criteria, Val.Criteria);
-    -- Match
-    To.Match := Val.Match;
-  end Set;
 
   -- Search_Criteria instanciation
   function Criteria_Match  (Current : Element_Type; Criteria : Crit_Match_Rec)
@@ -764,7 +754,7 @@ package body Limited_List is
       return Criteria.Match (Current, Criteria.Criteria);
     end if;
   end Criteria_Match;
-  procedure Search_Element is new Search_Criteria (Crit_Match_Rec, Set, Criteria_Match);
+  procedure Search_Element is new Search_Criteria (Crit_Match_Rec, Criteria_Match);
 
   -- Search with Match passed by access
   procedure Search_Match (List      : in out List_Type;

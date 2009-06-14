@@ -97,7 +97,7 @@ package body Syslin is
       -- So all A(s,l+1) = 0
       for Sub_Line in Dimension'Succ(Line) .. Dimension'Last loop
         declare
-          Factor : Number := A_T(Sub_Line, Line) / A_T(Line, Line);
+          Factor : constant Number := A_T(Sub_Line, Line) / A_T(Line, Line);
         begin
           for Column in Dimension'Succ(Line) .. Dimension'Last loop
             A_T(Sub_Line, Column) := A_T(Sub_Line, Column) - Factor * A_T(Line, Column);

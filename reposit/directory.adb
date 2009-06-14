@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1;
-with Sys_Calls, Bit_Ops, Day_Mng, String_Mng;
+with String_Mng;
 package body Directory is
   use System;
 
@@ -14,14 +14,6 @@ package body Directory is
 
   function C_Strlen (S : System.Address) return Natural;
   pragma Import(C, C_Strlen, "strlen");
-
-  function C_Strcpy (Dest, Src : System.Address) return System.Address;
-  pragma Import(C, C_Strcpy, "strcpy");
-
-  function C_Memcpy (Dest, Src : System.Address; Size : Integer)
-                    return System.Address;
-  pragma Import(C, C_Memcpy, "memcpy");
-
 
   function Str_For_C (Str : String) return String is
   begin

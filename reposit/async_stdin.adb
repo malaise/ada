@@ -1,5 +1,5 @@
 with Ada.Calendar, Ada.Characters.Latin_1, Ada.Strings.Unbounded;
-with Text_Handler, Event_Mng, Sys_Calls, Console, Dynamic_List, Trace, Environ;
+with Text_Handler, Event_Mng, Sys_Calls, Console, Dynamic_List, Environ;
 package body Async_Stdin is
 
   package Unb renames Ada.Strings.Unbounded;
@@ -252,9 +252,6 @@ package body Async_Stdin is
       Saved_Searching := Searching;
       -- Default, we cancel search on each input except on escape
       Searching := False;
-      -- For debug
-      -- Trace.Activate;
-      -- Trace.Put (C & "->" & Integer'Image(Character'Pos(C)));
       case C is
         when Latin_1.Bs | Latin_1.Del =>
           -- Backspace
@@ -455,6 +452,7 @@ package body Async_Stdin is
   -- Our callback
   function Fd_Callback (Fd : Sys_Calls.File_Desc;
                         Read : Boolean) return Boolean is
+    pragma Unreferenced (Read);
     Status : Sys_Calls.Get_Status_List;
     C : Character;
     Result : Boolean;
@@ -526,9 +524,6 @@ package body Async_Stdin is
   begin
     Stdio_Is_A_Tty := Sys_Calls.File_Desc_Kind (Sys_Calls.Stdin) = Sys_Calls.Tty
              and then Sys_Calls.File_Desc_Kind (Sys_Calls.Stdout) = Sys_Calls.Tty;
-    -- For debug
-    -- Trace.Activate;
-    -- Trace.Put ("Stdio is a tty -> " & Stdio_Is_A_Tty'Img);
     -- Check if restore
     if User_Callback = null then
       if Cb = null then
@@ -578,6 +573,7 @@ package body Async_Stdin is
   -- Put on stdout when in async
   procedure Put_Out (Str : in String) is
     Result : Boolean;
+    pragma Unreferenced (Result);
   begin
     if Cb /= null then
       Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
@@ -590,6 +586,7 @@ package body Async_Stdin is
 
   procedure Put_Line_Out (Str : in String) is
     Result : Boolean;
+    pragma Unreferenced (Result);
   begin
     if Cb /= null then
       Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
@@ -602,6 +599,7 @@ package body Async_Stdin is
 
   procedure New_Line_Out is
     Result : Boolean;
+    pragma Unreferenced (Result);
   begin
     if Cb /= null then
       Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
@@ -615,6 +613,7 @@ package body Async_Stdin is
   -- Put on stderr when in async
   procedure Put_Err (Str : in String) is
     Result : Boolean;
+    pragma Unreferenced (Result);
   begin
     if Cb /= null then
       Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
@@ -627,6 +626,7 @@ package body Async_Stdin is
 
   procedure Put_Line_Err (Str : in String) is
     Result : Boolean;
+    pragma Unreferenced (Result);
   begin
     if Cb /= null then
       Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
@@ -639,6 +639,7 @@ package body Async_Stdin is
 
   procedure New_Line_Err is
     Result : Boolean;
+    pragma Unreferenced (Result);
   begin
     if Cb /= null then
       Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);

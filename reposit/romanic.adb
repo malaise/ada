@@ -162,22 +162,16 @@ package body Romanic is
   function Arabic2Romanic (Arabic : in Arabic_Range) return String is
     -- Remaining value
     Rest : Natural := Arabic;
-    -- Index in Type_Def_Array, init to last power of 10
+    -- Index in Type_Def_Array, init to last power of 10 (odd)
     Index : Digits_Range := Digits_Range'Last;
     -- Result string
     Result : Text_Handler.Text (3 * Nb_Digits);
     N : Natural;
     Div : Positive;
-    Dig : Character;
   begin
-    -- Index must be init to a power of 10 (odd)
-    if Index rem 2 /= 1 then
-      raise Program_Error;
-    end if;
 
     loop
       -- Compute number of digits(Index) from 0 to 9
-      Dig :=  Typo_Def_Array(Index).Typo;
       Div :=  Typo_Def_Array(Index).Val;
       N := Rest / Div;
       if N > 9 then

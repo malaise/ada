@@ -66,7 +66,7 @@ package body Util is
   function Names_Ok (Str : Asu_Us;
                      Seps : String;
                      Allow_Token : Boolean := False) return Boolean is
-    S : String(1 .. Asu.Length (Str)) := Asu_Ts (Str);
+    S : constant String(1 .. Asu.Length (Str)) := Asu_Ts (Str);
     I1, I2 : Natural;
     function Is_Sep (C : Character) return Boolean is
     begin
@@ -221,12 +221,6 @@ package body Util is
       Get (Flow, Str(I));
       Flow.Nb_Got := Flow.Nb_Got + 1;
     end loop;
-  end Get;
-
-  -- Get N characters
-  procedure Get (Flow : in out Flow_Type; N : in Positive; Str : out String) is
-  begin
-    Get (Flow, Str(Str'First .. Str'First + N - 1));
   end Get;
 
   -- Undo some gets (default 1)
@@ -700,7 +694,7 @@ package body Util is
                       Preserve_Spaces : in Boolean) is
     Char : Character;
     Found : Boolean;
-    Name, S1, S2 : Asu_Us;
+    S1, S2 : Asu_Us;
     use type Asu_Us;
   begin
     if Text = Asu_Null then

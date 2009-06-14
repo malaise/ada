@@ -1,4 +1,3 @@
-with Dynamic_List;
 -- Child package of Queues
 package body Queues.Timed is
 

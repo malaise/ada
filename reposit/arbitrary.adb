@@ -251,15 +251,11 @@ package body Arbitrary is
         Unb.Replace_Element (R, L - I + 1, Cr);
       end loop;
       -- Add last carry and return
-      declare
-        use Unb;
-      begin
-        if C then
-          return '1' & R;
-        else
-          return R;
-        end if;
-      end;
+      if C then
+        return '1' & R;
+      else
+        return R;
+      end if;
     end Add_No_Sign;
 
     function Sub_No_Sign (A, B : Unbstr) return Unbstr is
@@ -383,7 +379,6 @@ package body Arbitrary is
       La : constant Natural := Unb.Length(A);
       Lb : constant Natural := Unb.Length(B);
       T : Unbstr;
-      Cb : constant Character := Unb.Element (B, 1);
       Cq : Character;
       N : Natural;
       use type Unbstr;
@@ -446,7 +441,7 @@ package body Arbitrary is
   Number_One  : constant Number := Set_Uncheck ("1");
 
   function Set (V : String) return Number is
-    N : Number := Set_Uncheck (V);
+    N : constant Number := Set_Uncheck (V);
   begin
     Syntax.Check (N);
     return N;
@@ -736,12 +731,12 @@ package body Arbitrary is
   end Div;
 
   function "**" (A, B : Number) return Number is
-    Pa : constant Boolean := Basic.Check_Is_Pos (A);
     Pb : constant Boolean := Basic.Check_Is_Pos (B);
     One : constant Number := Set_Uncheck ("1");
     R : Number := One;
     I : Number := B;
   begin
+    Syntax.Check (A);
     if not Pb then
       raise Constraint_Error;
     end if;

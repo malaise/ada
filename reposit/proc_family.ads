@@ -1,4 +1,4 @@
-with Sys_Calls, Many_Strings;
+with Sys_Calls;
 package Proc_Family is
 
   -- Callback for death report

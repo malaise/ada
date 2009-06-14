@@ -12,6 +12,7 @@ package body Dispatch is
 
   -- From x_process_event
   C_Xevent_Discard        : constant Integer := 0;
+  pragma Unreferenced (C_Xevent_Discard);
   C_Xevent_Mouse_Release  : constant Integer := 1;
   C_Xevent_Mouse_Press    : constant Integer := 2;
   C_Xevent_Keyboard       : constant Integer := 3;
@@ -88,7 +89,7 @@ package body Dispatch is
 
     use type Ada.Calendar.Time, System.Address,
              Timers.Expiration_Rec,
-             Event_Mng.In_Event_List, Event_Mng.Out_Event_List;
+             Event_Mng.Out_Event_List;
   begin
 
     if C_Id /= No_Line_For_C then

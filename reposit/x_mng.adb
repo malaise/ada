@@ -1,4 +1,4 @@
-with Ada.Calendar, Ada.Exceptions, Ada.Characters.Latin_1;
+with Ada.Calendar, Ada.Characters.Latin_1;
 with My_Io, Address_Ops, Environ;
 package body X_Mng is
 
@@ -32,11 +32,6 @@ package body X_Mng is
   begin
     return Bool_For_C'Val(Boolean'Pos(Ada_Boolean));
   end For_C;
-
-  function For_Ada(C_Boolean : in Bool_For_C) return Boolean is
-  begin
-    return Boolean'Val(Bool_For_C'Pos(C_Boolean));
-  end For_Ada;
 
   ------------------------------------------------------------------
   -------------------- T H E   I N T E R F A C E -------------------
@@ -1205,6 +1200,7 @@ package body X_Mng is
   procedure X_Blink_Alternate (Line_Id : in Line) is
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
+    pragma Unreferenced (Res);
   begin
     if not Initialised or else Line_Id = No_Client then
       raise X_Failure;
@@ -1218,6 +1214,7 @@ package body X_Mng is
   procedure X_Stop_Blinking_Task (Line_Id : in Line) is
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
+    pragma Unreferenced (Res);
   begin
     if not Initialised or else Line_Id = No_Client then
       raise X_Failure;
@@ -1231,6 +1228,7 @@ package body X_Mng is
   procedure X_Start_Blinking_Task (Line_Id : in Line) is
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
+    pragma Unreferenced (Res);
   begin
     if not Initialised or else Line_Id = No_Client then
       raise X_Failure;

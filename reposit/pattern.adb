@@ -1,5 +1,5 @@
 with Ada.Text_Io, Ada.Characters.Latin_1;
-with Parser, Environ, Lower_Str;
+with Environ, Lower_Str;
 package body Pattern is
 
   Inited : Boolean := False;
@@ -238,6 +238,7 @@ package body Pattern is
     Term : Storage.Term_Rec;
     Len : Natural;
     Dummy : Boolean;
+    pragma Unreferenced (Dummy);
     Index : Natural;
     use type Storage.Str_Access;
   begin
@@ -273,7 +274,7 @@ package body Pattern is
     declare
       subtype Image_Str is String (1 .. Len);
       type Image_Access is access Image_Str;
-      Str_Acc : Image_Access := new Image_Str;
+      Str_Acc : constant Image_Access := new Image_Str;
     begin
       loop
         Term := Storage.Next_Term (False);
@@ -339,6 +340,7 @@ package body Pattern is
     Term, Prev_Term : Storage.Term_Rec;
     Repeating : Boolean;
     Index : Natural;
+    pragma Unreferenced (Index);
 
     use type Storage.Str_Access;
 
@@ -430,7 +432,6 @@ package body Pattern is
     Storage.Rewind (Rule);
     Nb_Match := 0;
     Ok := False;
-    Index := 0;
     Repeating := False;
 
     -- Get first term and word
@@ -476,7 +477,6 @@ package body Pattern is
         if Term.Str_Acc.all = "" then
           Put_Debug ("Check", "  Term is wildcard");
           Nb_Match := 0;
-          Index := 0;
           Ok := True;
           exit One_Word;
         elsif Strl = "" then
@@ -495,7 +495,6 @@ package body Pattern is
           Parser.Reset (Iter);
           Parser.Next_Word (Iter);
           Nb_Match := 0;
-          Index := 0;
           Ok := False;
           Repeating := False;
           exit One_Word when Flush (False);
@@ -519,7 +518,6 @@ package body Pattern is
             Parser.Reset (Iter);
             Parser.Next_Word (Iter);
             Nb_Match := 0;
-            Index := 0;
             Ok := False;
             exit One_Word when Flush (False);
           else
@@ -542,8 +540,9 @@ package body Pattern is
                    Str  : in String;
                    Case_Sensitive : in Boolean := True) is
     Dummy : Boolean;
+    pragma Unreferenced (Dummy);
   begin
-    Dummy := Check (Rule, Str);
+    Dummy := Check (Rule, Str, Case_Sensitive);
   end Check;
 
 

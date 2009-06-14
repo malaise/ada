@@ -91,7 +91,7 @@ package Unique_List is
                      Iteration : access
      procedure (Current : in Element_Type;
                 Go_On   : in out Boolean);
-                     From      : in Reference := From_First);
+                From    : in Reference := From_First);
 
   -- When inserting
   Full_List : exception;

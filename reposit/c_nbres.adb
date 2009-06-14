@@ -52,7 +52,7 @@ package body C_Nbres is
     R : Radian;
   begin
     N := Trunc (Real(A / (Two_Pi)));
-    R := A - Radian(N) * Radian(Two_Pi);
+    R := A - Radian(N) * Two_Pi;
     if R < 0.0 then R := R + Two_Pi; end if;
     return R;
   end Reduct;
@@ -62,8 +62,8 @@ package body C_Nbres is
     One_Circle : constant Degree := Reducted_Degree'Last;
     R : Degree;
   begin
-    N := Trunc (Real(A / (One_Circle)));
-    R := A - Degree(N) * Degree(One_Circle);
+    N := Trunc (Real(A / One_Circle));
+    R := A - Degree(N) * One_Circle;
     if R < 0.0 then R := R + One_Circle; end if;
     return R;
   end Reduct;
@@ -98,7 +98,7 @@ package body C_Nbres is
   end Create_Complex;
 
   function Module (C : Complex) return Typ_Module is
-    M : Real := Polar.To_Polar (C).Module;
+    M : constant Real := Polar.To_Polar (C).Module;
   begin
     return Typ_Module (abs(M));
   end Module;
@@ -218,8 +218,8 @@ package body C_Nbres is
   -----------------------------------------------------------------------------
 
   function "/" (X, Y : Complex) return Complex is
-    Module_Y : Real := Y.Part_Real * Y.Part_Real
-                     + Y.Part_Imag * Y.Part_Imag;
+    Module_Y : constant Real := Y.Part_Real * Y.Part_Real
+                              + Y.Part_Imag * Y.Part_Imag;
   begin
     return (Part_Real =>
                 ( (X.Part_Real * Y.Part_Real) + (X.Part_Imag * Y.Part_Imag) )
@@ -230,8 +230,8 @@ package body C_Nbres is
   end "/";
 
   function "/" (X : Real; Y : Complex) return Complex is
-    Module_Y : Real := Y.Part_Real * Y.Part_Real
-                     + Y.Part_Imag * Y.Part_Imag;
+    Module_Y : constant Real := Y.Part_Real * Y.Part_Real
+                              + Y.Part_Imag * Y.Part_Imag;
   begin
     return (Part_Real => (  X * Y.Part_Real / Module_Y),
             Part_Imag => (- X * Y.Part_Imag / Module_Y) );
@@ -267,7 +267,7 @@ package body C_Nbres is
   use My_Real_Io;
 
   procedure Put (C : in Complex) is
-    Imag_Part : Real := Part_Imag (C);
+    Imag_Part : constant Real := Part_Imag (C);
   begin
     Put (Part_Real (C) );
     if (Imag_Part >= 0.0) then

@@ -38,9 +38,6 @@ package body My_Math is
   -- Constants for computing
   --------------------------
   -- Multiples et sub multiples of pi
-  Two_Pi               : constant := 2.0*Pi;
-  Pi_Two               : constant := Pi/2.0;
-  Pi_Four              : constant := Pi/4.0;
   Pi_Hundred_Heighty   : constant := Pi/180.0;
 
 

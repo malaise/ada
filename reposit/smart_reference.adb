@@ -2,7 +2,7 @@ with Ada.Text_Io;
 with Unchecked_Deallocation;
 package body Smart_Reference is
 
-  Debug : Boolean := False;
+  Debug : constant Boolean := False;
   procedure Trace (Str : in String) is
   begin
     if Debug then
@@ -34,6 +34,7 @@ package body Smart_Reference is
 
   -- Init Nb_Access to 1
   procedure Initialize (Ref : in out Handle) is
+    pragma Unreferenced (Ref);
   begin
     Trace("Initialization");
   end Initialize;

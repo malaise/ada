@@ -1,4 +1,4 @@
-with Dynamic_List, My_Math;
+with Dynamic_List;
 package body Arbitrary.Prime_List is
 
 
@@ -6,8 +6,6 @@ package body Arbitrary.Prime_List is
   package Prime_List_Mng renames Prime_Dyn_List_Mng.Dyn_List;
   The_List : Prime_List_Mng.List_Type;
   Need_Search : Boolean := True;
-
-  Two  : constant Positive_Number := Set (Integer'(2));
 
   -- Rewind the list of prime numbers found so far
   procedure Rewind is

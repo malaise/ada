@@ -1,7 +1,7 @@
 with Ada.Finalization, Ada.Calendar;
 package Passive_Timers is
 
-  type Passive_Timer is tagged private;
+  type Passive_Timer is tagged limited private;
 
   -- Arm a passive timer with a given period
   -- Overwrites any previous setting on this timer
@@ -24,7 +24,7 @@ private
   type Timer_Access is access Timer_Rec;
 
   -- So timer can be In for function Has_Expired
-  type Passive_Timer is tagged record
+  type Passive_Timer is new Ada.Finalization.Limited_Controlled with record
     Acc : Timer_Access := new Timer_Rec;
   end record;
 

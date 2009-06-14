@@ -34,9 +34,6 @@ package body Generic_Con_Io is
       Border => 0,
       No_Font => Font_No);
 
-    type Border_List is (Erase, Simple, Blink);
-
-
     -- Discard or Tid_xxx
     Mouse_Discard : constant X_Mng.Event_Kind := X_Mng.Keyboard;
     Mouse_Status : X_Mng.Event_Kind := X_Mng.No_Event;

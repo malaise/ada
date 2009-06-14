@@ -37,6 +37,7 @@ private
 
   -- Access key
   type Key_Type is mod Positive'Last;
+  type Key_Access is access Key_Type;
 
   -- Data stored in list
   type Cell_Type is record
@@ -48,7 +49,7 @@ private
   package Elt_List_Mng renames Elt_Dyn_List_Mng.Dyn_List;
   type List_Access is access Elt_List_Mng.List_Type;
   type Pool_Type is limited new Ada.Finalization.Limited_Controlled with record
-    Next_Key : Key_Type := Key_Type'First;
+    Next_Key : Key_Access := new Key_Type'(Key_Type'First);
     Mutex : Mutex_Manager.Mutex (Mutex_Manager.Simple);
     List : List_Access := new Elt_List_Mng.List_Type;
   end record;

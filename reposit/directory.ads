@@ -1,5 +1,4 @@
 with System;
-with Ada.Calendar;
 with Text_Handler, Sys_Calls;
 package Directory is
 

@@ -368,6 +368,7 @@ package body Event_Mng is
 
   procedure Wait (Timeout_Ms : Integer) is
     Event : Out_Event_List;
+    pragma Unreferenced (Event);
   begin
     Event := Wait (Timeout_Ms);
   end Wait;
@@ -377,6 +378,7 @@ package body Event_Mng is
 
   function Pause_Cb (Id : Timers.Timer_Id;
                      Data : Timers.Timer_Data) return Boolean is
+    pragma Unreferenced (Id);
   begin
     -- Check this expiration versus current pause level
     if Pause_Level >= Data then
@@ -390,10 +392,11 @@ package body Event_Mng is
   end Pause_Cb;
 
   procedure Pause (Timeout_Ms : in Integer) is
-     Tid : Timers.Timer_Id := Timers.No_Timer;
-     Loc_Level : Positive;
-     Wait_Timeout : Integer;
-     Dummy : Boolean;
+    Tid : Timers.Timer_Id := Timers.No_Timer;
+    Loc_Level : Positive;
+    Wait_Timeout : Integer;
+    Dummy : Boolean;
+    pragma Unreferenced (Tid, Dummy);
   begin
     Set_Debug;
 

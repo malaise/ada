@@ -56,8 +56,6 @@ package body Parse_Mng  is
 
     -- Get a string
     procedure Get (Flow : in out Flow_Type; Str : out String);
-    -- Get N characters
-    procedure Get (Flow : in out Flow_Type; N : in Positive; Str : out String);
     -- Undo some gets (default 1)
     procedure Unget (Flow : in out Flow_Type; N : in Positive := 1);
     -- Read last char got
@@ -226,8 +224,7 @@ package body Parse_Mng  is
     procedure Check_Subtree (Ctx  : in out Ctx_Type;
                              Adtd : in out Dtd_Type);
     -- Perform final checks: that IDREF(s) appear as ID
-    procedure Final_Check (Ctx  : in out Ctx_Type;
-                           Adtd : in out Dtd_Type);
+    procedure Final_Check (Ctx  : in out Ctx_Type);
   end Dtd;
 
   -- Parse attributes of an element Name='Value' or Name="Value"
@@ -867,7 +864,6 @@ package body Parse_Mng  is
     Text : Asu_Us;
     Char : Character;
     Line_No : Natural;
-    Preserve_Txt : Asu_Us;
     Preserve : Boolean;
     Ok : Boolean;
     Has_Child : Boolean;
@@ -1134,7 +1130,7 @@ package body Parse_Mng  is
     -- Parse elements
     Parse_Root_To_End (Ctx, Adtd);
     -- Perform final checks versus dtd
-    Dtd.Final_Check (Ctx, Adtd);
+    Dtd.Final_Check (Ctx);
     -- Clean Dtd before it disapears
     Dtd.Init (Adtd);
   exception
@@ -1183,7 +1179,7 @@ package body Parse_Mng  is
     -- Parse root element
     Parse_Root_To_End (Ctx, Adtd);
     -- Perform final checks versus dtd
-    Dtd.Final_Check (Ctx, Adtd);
+    Dtd.Final_Check (Ctx);
   exception
     when Util.Cdata_Detected =>
       Util.Cdata_Error (Ctx.Flow);
@@ -1223,7 +1219,7 @@ package body Parse_Mng  is
     -- Check all elements
     Dtd.Check_Subtree (Ctx, Adtd);
     -- Perform final checks versus dtd
-    Dtd.Final_Check (Ctx, Adtd);
+    Dtd.Final_Check (Ctx);
     -- Clean Dtd before it disapears
     Dtd.Init (Adtd);
   exception

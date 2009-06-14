@@ -6,7 +6,7 @@ package body Utf_8 is
   function Nb_Chars (First_Char : Character) return Len_Range is
     use Bit_Ops;
     -- Byte value
-    Val : Integer := Character'Pos (First_Char);
+    Val : constant Integer := Character'Pos (First_Char);
   begin
     -- Check bits from highest to lowest
     if    (Val and 2#1000_0000#) = 0 then

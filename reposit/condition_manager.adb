@@ -109,6 +109,7 @@ package body Condition_Manager is
   -- Get access to the condition : infinite wait
   procedure Get (A_Condition : in Condition) is
     Dummy : Boolean;
+    pragma Unreferenced (Dummy);
   begin
     Dummy := Get (A_Condition, -1.0);
   end Get;

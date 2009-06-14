@@ -31,9 +31,6 @@ package body Regular_Expressions is
   procedure C_Free_Regex (Ptr : in System.Address);
   pragma Import (C, C_Free_Regex, "free_regex");
 
-  procedure C_Regexcpy (Dest, Source : in System.Address);
-  pragma Import (C, C_Regexcpy, "regexcpy");
-
   function C_Regcomp (Preg : in System.Address;
                       Regex : in System.Address;
                       Cflags : in Integer) return Integer;
@@ -60,6 +57,7 @@ package body Regular_Expressions is
   Invalid_Pcre_Version : exception;
   procedure Check_Version is
     Addr, Dummy : System.Address;
+    pragma Unreferenced (Dummy);
     Str : String (1 .. 255);
     Vers : Float;
     Last : Positive;

@@ -1,4 +1,3 @@
-with Ada.Text_Io;
 with Ada.Unchecked_Deallocation;
 with String_Mng, Int_Image;
 package body Argument_Parser is

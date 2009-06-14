@@ -1,5 +1,5 @@
 with System;
-with Ada.Text_Io, Ada.Characters.Latin_1;
+with Ada.Characters.Latin_1;
 with Bit_Ops;
 package body Ndbm is
 
@@ -36,9 +36,6 @@ package body Ndbm is
   procedure Memcpy (Dest, Src : in System.Address;
                     N : in Long_Long_Integer);
   pragma Import (C, Memcpy, "memcpy");
-
-  procedure Free (P : in System.Address);
-  pragma Import (C, Free, "free");
 
   function Dbm_Open (File_Name : System.Address;
                      Flags : Integer;
@@ -154,7 +151,7 @@ package body Ndbm is
     if The_Data.Dptr = System.Null_Address then
       raise No_Data;
     end if;
-    Memcpy (D'Address, The_Data.Dptr, Long_Long_Integer(Data_Len));
+    Memcpy (D'Address, The_Data.Dptr, Data_Len);
     return D;
   end Read;
 
@@ -187,7 +184,7 @@ package body Ndbm is
     if The_Key.Dptr = System.Null_Address then
       raise No_Data;
     end if;
-    Memcpy (K'Address, The_Key.Dptr, Long_Long_Integer(Key_Len));
+    Memcpy (K'Address, The_Key.Dptr, Key_Len);
     return K;
   end First_Key;
 
@@ -204,7 +201,7 @@ package body Ndbm is
     if The_Key.Dptr = System.Null_Address then
       raise No_Data;
     end if;
-    Memcpy (K'Address, The_Key.Dptr, Long_Long_Integer(Key_Len));
+    Memcpy (K'Address, The_Key.Dptr, Key_Len);
     return K;
   end Next_Key;
 

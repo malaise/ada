@@ -353,7 +353,6 @@ package body Network is
     procedure Deallocation_Of is new
       Unchecked_Deallocation (Object => Connection_Mng.List_Type,
                               Name => Connections_Access);
-    Name : constant String := A_Node.Get_Name;
   begin
     -- Disconnect from network
     Delete_All_Connections (A_Node);

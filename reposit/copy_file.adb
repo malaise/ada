@@ -15,6 +15,7 @@ function Copy_File (Src_Name, Dst_Name : String) return Boolean is
 
   -- Result of Unlink
   Dummy : Boolean;
+  pragma Unreferenced (Dummy);
 
   use type Char_Io.Count;
 begin

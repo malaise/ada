@@ -36,6 +36,7 @@ package body Door_Manager is
   end Check_Open;
   procedure Check_Open (A_Door : in Door) is
     Dummy : Boolean;
+    pragma Unreferenced (Dummy);
   begin
     Dummy := Check_Open (A_Door);
   end Check_Open;
@@ -114,6 +115,7 @@ package body Door_Manager is
 
   procedure Wait (A_Door : in Door) is
     Ok : Boolean;
+    pragma Unreferenced (Ok);
   begin
     Ok := Wait (A_Door, -1.0);
   end Wait;

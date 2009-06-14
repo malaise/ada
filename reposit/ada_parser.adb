@@ -3,8 +3,6 @@ with Ada_Words, Upper_Char, Lower_Str, Mixed_Str;
 package body Ada_Parser is
 
   -- Characters that deserve specific handling:
-  -- Convention for "No character"
-  Nul : constant Character := Ada.Characters.Latin_1.Nul;
   -- New line
   Lf : constant Character := Ada.Characters.Latin_1.Lf;
   -- Carriage return (skipped)

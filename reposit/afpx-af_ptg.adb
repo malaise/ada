@@ -106,7 +106,7 @@ package body Af_Ptg is
   function Last_Col (Field_No :  Afpx_Typ.Field_Range)
            return Af_Con_Io.Full_Col_Range is
     Field : constant Afpx_Typ.Field_Rec := Af_Dscr.Fields(Field_No);
-    Str : Wide_String (1 .. Field.Width)
+    Str : constant Wide_String (1 .. Field.Width)
         := Af_Dscr.Chars
               (Field.Char_Index .. Field.Char_Index + Field.Width - 1);
   begin
@@ -359,7 +359,7 @@ package body Af_Ptg is
   -- Otherwise return the new cursor col
   Sel_No_Change : constant Integer := -2;
   Sel_New_Field : constant Integer := -1;
-  function Handle_Selection (Insert : in Boolean) return Integer is
+  function Handle_Selection return Integer is
     Selection : constant String
               := Af_Con_Io.Get_Selection (Af_Con_Io.Full_Col_Range'Last + 1);
     -- Field and its initial content
@@ -718,7 +718,7 @@ package body Af_Ptg is
         when Af_Con_Io.Selection =>
           -- Paste selection
           if Get_Active  then
-            Selection_Result := Handle_Selection (Insert);
+            Selection_Result := Handle_Selection;
             if Selection_Result = Sel_New_Field then
               -- Selection completed the field
               -- Restore normal color of previous field

@@ -1,6 +1,5 @@
 -- More powerfull search and substitution in strings,
 --  based on regex.
-with Ada.Strings.Unbounded;
 with Char_To_Hexa, Upper_Str, Lower_Str, Mixed_Str;
 package body String_Mng.Regex is
 
@@ -114,7 +113,7 @@ package body String_Mng.Regex is
     From : Positive;
     Char : Character;
     Info_Index : Positive;
-    Linfo : Regular_Expressions.Match_Array := Info;
+    Linfo : constant Regular_Expressions.Match_Array := Info;
     Case_Start : Positive;
     Case_Char : Character;
   begin

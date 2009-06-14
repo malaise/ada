@@ -1,7 +1,5 @@
 package body Dir_Mng is
 
-  Dir_Internal_Error : exception;
-
   Path_Separator : constant Character := '/';
 
   function Less_Than (El1, El2 : in File_Entry_Rec) return Boolean is

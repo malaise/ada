@@ -65,7 +65,6 @@ package body Argument is
    Param_Key : in String := Any_Arg) is
 
     Comform_Occurence : Natural := 0;
-    In_Occurence : Natural := Occurence;
     First_Char : Positive;
   begin
     -- Init result for case of error
@@ -73,7 +72,7 @@ package body Argument is
     Position := 0;
 
     -- test if occurence is 0
-    if In_Occurence=0 then
+    if Occurence = 0 then
       if Param_Key /= Any_Arg and then Param_Key /= Not_Key then
         raise Argument_Not_Found;
       end if;
@@ -119,7 +118,7 @@ package body Argument is
         Comform_Occurence := Comform_Occurence + 1;
       end if;
 
-      if Comform_Occurence = In_Occurence then
+      if Comform_Occurence = Occurence then
         -- Comforming occurence is found. Check length
         if Parameter'Length < Data(I)'Length - (First_Char-1) then
           raise Argument_Too_Long;

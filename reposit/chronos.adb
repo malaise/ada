@@ -12,6 +12,7 @@ package body Chronos is
                     Rtime, Vtime : Virtual_Time.Time;
                     Speed : in Virtual_Time.Speed_Range;
                     A_Clock : in Virtual_Time.Clock_Access) is
+    pragma Unreferenced (Rtime, Speed);
     use type Virtual_Time.Time;
     Rt, Vt : Virtual_Time.Time;
   begin
@@ -74,12 +75,12 @@ package body Chronos is
     return Result;
   exception
     when others =>
-      raise ; --Time_Error;
+      raise Time_Error;
   end Read;
 
   -- Read the chrono, return days, hours, minutes...
   function Read (A_Chrono : Chrono_Type) return Date_Rec is
-    Time : Time_Rec := Read (A_Chrono);
+    Time : constant Time_Rec := Read (A_Chrono);
     Result : Date_Rec;
   begin
     -- Keep days and split seconds

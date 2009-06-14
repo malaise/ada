@@ -38,6 +38,7 @@ package body Rnd is
   procedure Randomize (Init : in Float := 1.0) is
     -- The result of mutex allocation is always true, because infinite waiting
     Ok : Boolean;
+    pragma Unreferenced (Ok);
     F : Float;
     I : U_Rand.Seed_Range_1;
 
@@ -45,6 +46,7 @@ package body Rnd is
     function Init_Aleat return Float is
       Tv : C_Struct_Timeval;
       Dummy : Integer;
+      pragma Unreferenced (Dummy);
     begin
       Dummy := C_Gettimeofday (Tv'Address, System.Null_Address);
       return Float(Tv.Usec) / 1.0E6;
@@ -71,6 +73,7 @@ package body Rnd is
     -- Returned value
     Val : Float;
     Ok : Boolean;
+    pragma Unreferenced (Ok);
   begin
     Ok := Mutex_Manager.Get (Lock, -1.0);
     Val := U_Rand.Next;

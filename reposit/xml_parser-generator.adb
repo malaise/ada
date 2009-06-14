@@ -1,6 +1,6 @@
 -- Generates a Xml file (or stdout), or string from a tree
 with Ada.Characters.Latin_1;
-with Int_Image, Text_Line, Sys_Calls;
+with Int_Image, Text_Line, Sys_Calls, Trees;
 package body Xml_Parser.Generator is
 
   -- Version incremented at each significant change
@@ -414,16 +414,6 @@ package body Xml_Parser.Generator is
     end if;
     Move_To (Ctx, Node, Tree);
   end Move_To_Element;
-
-  -- Internal op
-  -- May raise No_Element if no father (at root or tree is empty)
-  procedure Move_Father (Ctx      : in out Ctx_Type) is
-  begin
-    if not My_Tree.Has_Father (Ctx.Elements.all) then
-      raise No_Element;
-    end if;
-    My_Tree.Move_Father (Ctx.Elements.all);
-  end Move_Father;
 
   -- Internal op
   function Internal_Kind_Of (Kind : Node_Kind_List) return Internal_Kind_List is
@@ -988,7 +978,6 @@ package body Xml_Parser.Generator is
     Child : My_Tree_Cell;
     Indent : constant String (1 .. 2 * Level) := (others => ' ');
     Indent1 : constant String := Indent & "  ";
-    Doctype_Name, Doctype_File : Asu_Us;
     Prev_Is_Text : Boolean;
     Xml_Attr_Format : Format_Kind_List;
     use type Asu_Us, My_Tree.Position_Access;

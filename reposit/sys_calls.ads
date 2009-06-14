@@ -1,6 +1,5 @@
 with System;
 with Ada.Calendar;
-with Many_Strings;
 package Sys_Calls is
 
   -- Call system

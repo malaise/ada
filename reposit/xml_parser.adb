@@ -670,7 +670,7 @@ package body Xml_Parser is
   -- Get the attributes of an element
   function Get_Attributes (Ctx     : Ctx_Type;
                            Element : Element_Type) return Attributes_Array is
-    Tree : Tree_Acc := Get_Tree (Ctx, Element);
+    Tree : constant Tree_Acc := Get_Tree (Ctx, Element);
     Cell : My_Tree_Cell := Get_Cell (Tree, Element);
     A : Attributes_Array (1 .. Cell.Nb_Attributes);
   begin
@@ -703,7 +703,7 @@ package body Xml_Parser is
   function Get_Attribute (Ctx     : Ctx_Type;
                           Element : Element_Type;
                           Index   : Positive) return Attribute_Rec is
-    Tree : Tree_Acc := Get_Tree (Ctx, Element);
+    Tree : constant Tree_Acc := Get_Tree (Ctx, Element);
     Cell : My_Tree_Cell := Get_Cell (Tree, Element);
   begin
     if Index > Cell.Nb_Attributes then
@@ -737,8 +737,8 @@ package body Xml_Parser is
   -- Get the Children of an element (elements or texts or comments)
   function Get_Children (Ctx     : Ctx_Type;
                          Element : Element_Type) return Nodes_Array is
-    Tree : Tree_Acc := Get_Tree (Ctx, Element);
-    Cell : My_Tree_Cell := Get_Cell (Tree, Element);
+    Tree : constant Tree_Acc := Get_Tree (Ctx, Element);
+    Cell : constant My_Tree_Cell := Get_Cell (Tree, Element);
     -- Nb of nodes is Nb in tree - attributes
     Nb_Nodes : constant Natural
              := My_Tree.Children_Number (Tree.all)
@@ -785,7 +785,7 @@ package body Xml_Parser is
 
   function Get_Nb_Children (Ctx     : Ctx_Type;
                             Element : Element_Type) return Natural is
-    Tree : Tree_Acc := Get_Tree (Ctx, Element);
+    Tree : constant Tree_Acc := Get_Tree (Ctx, Element);
     Cell : constant My_Tree_Cell := Get_Cell (Tree, Element);
   begin
     -- Nb of nodes is Nb in tree - attributes
@@ -796,8 +796,8 @@ package body Xml_Parser is
   function Get_Child (Ctx     : Ctx_Type;
                       Element : Element_Type;
                       Index   : Positive) return Node_Type is
-    Tree : Tree_Acc := Get_Tree (Ctx, Element);
-    Cell : My_Tree_Cell := Get_Cell (Tree, Element);
+    Tree : constant Tree_Acc := Get_Tree (Ctx, Element);
+    Cell : constant My_Tree_Cell := Get_Cell (Tree, Element);
     -- Nb of nodes is Nb in tree - attributes
     Nb_Nodes : constant Natural
              := My_Tree.Children_Number (Tree.all) - Cell.Nb_Attributes;
@@ -847,7 +847,7 @@ package body Xml_Parser is
   function Get_Brother (Ctx  : Ctx_Type;
                         Node : Node_Type;
                         Next : Boolean := True) return Node_Type is
-    Tree : Tree_Acc := Get_Tree (Ctx, Node);
+    Tree : constant Tree_Acc := Get_Tree (Ctx, Node);
     Cell : My_Tree_Cell := Get_Cell (Tree, Node);
     N : Node_Type;
   begin
@@ -884,7 +884,7 @@ package body Xml_Parser is
   -- May raise No_Parent
   function Get_Parent (Ctx     : Ctx_Type;
                        Node : Node_Type) return Element_Type is
-    Tree : Tree_Acc := Get_Tree (Ctx, Node);
+    Tree : constant Tree_Acc := Get_Tree (Ctx, Node);
     Cell : My_Tree_Cell := Get_Cell (Tree, Node);
     N : Node_Type;
   begin
@@ -908,8 +908,7 @@ package body Xml_Parser is
 
   function Is_Root (Ctx  : Ctx_Type;
                     Node : Node_Type) return Boolean is
-    Tree : Tree_Acc := Get_Tree (Ctx, Node);
-    Cell : constant My_Tree_Cell := Get_Cell (Tree, Node);
+    Tree : constant Tree_Acc := Get_Tree (Ctx, Node);
   begin
     return not My_Tree.Has_Father (Tree.all);
   end Is_Root;

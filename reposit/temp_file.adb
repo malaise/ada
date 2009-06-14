@@ -24,6 +24,7 @@ package body Temp_File  is
   -- Remove a file is possible, no error
   procedure Remove (File_Name : in String) is
     Dummy : Boolean;
+    pragma Unreferenced (Dummy);
   begin
     Dummy := Sys_Calls.Unlink (File_Name);
   end Remove;

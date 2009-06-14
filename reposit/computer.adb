@@ -73,6 +73,7 @@ package body Computer is
     -- Iterator to build list of names of volatile variables
     procedure List_Iter (Current : in Var_Rec;
                          Go_On   : in out Boolean) is
+      pragma Unreferenced (Go_On);
     begin
       if not Current.Persistent then
         Asu.Append (Vol_List, Asu_Ts (Current.Name) & " ");

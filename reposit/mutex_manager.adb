@@ -255,6 +255,7 @@ package body Mutex_Manager is
   procedure Get (A_Mutex      : in Mutex;
                  Kind         : in Access_Kind := Read) is
     Dummy : Boolean;
+    pragma Unreferenced (Dummy);
   begin
     Dummy := Get (A_Mutex, -1.0, Kind);
   end Get;

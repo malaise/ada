@@ -647,6 +647,7 @@ package body Timers is
                     Rtime, Vtime : in Virtual_Time.Time;
                     Speed : in Virtual_Time.Speed_Range;
                     Clock : in Virtual_Time.Clock_Access) is
+    pragma Unreferenced (An_Observer, Vtime);
     New_Speed : constant Virtual_Time.Speed_Range := Clock.Get_Speed;
 
     -- Update current timer if needed

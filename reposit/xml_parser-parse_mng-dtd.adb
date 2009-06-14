@@ -1,4 +1,3 @@
-with Ada.Text_Io;
 with Regular_Expressions, Parser, Int_Image;
 separate (Xml_Parser.Parse_Mng)
 package body Dtd is
@@ -883,7 +882,7 @@ package body Dtd is
                               Line_No    : in Natural;
                               Attributes : in Asu_Us) is
     -- Atl, Att and Id info blocs
-    Info, Attinfo, Idinfo : Info_Rec;
+    Info, Attinfo : Info_Rec;
     -- Name looked in Info list (for error tracing)
     Error_Name : Asu_Us;
     -- Is info found in info list
@@ -892,8 +891,6 @@ package body Dtd is
     Iter_Dtd, Iter_Xml : Parser.Iterator;
     -- Is an attribute set in xml
     Att_Set : Boolean;
-    -- Attribute value
-    Att_Value : Asu_Us;
     -- Attribute value in Xml
     Xml_Val : Asu_Us;
     -- List of dtd attribute names
@@ -1275,8 +1272,7 @@ package body Dtd is
   --  and thus collected in Idrefs
   --  exist in the list of attribute values of Xml tagged ID
   --  and thus collected in Ids
-  procedure Final_Check (Ctx : in out Ctx_Type;
-                         Adtd : in out Dtd_Type) is
+  procedure Final_Check (Ctx : in out Ctx_Type) is
     Done : Boolean;
     Idref, Prev_Ref : Id_Cell;
     Found : Boolean;

@@ -45,12 +45,6 @@ package body Afpx is
   end Af_Dscr;
 
 
-  function In_Field (Field_No : in Afpx_Typ.Absolute_Field_Range;
-                     Square : in Con_Io.Full_Square) return Boolean is
-  begin
-    return Afpx_Typ.In_Field (Af_Dscr.Fields(Field_No), Square);
-  end In_Field;
-
   function In_Field_Absolute (Field_No : in Afpx_Typ.Absolute_Field_Range;
                               Square : in Con_Io.Full_Square) return Boolean is
   begin
@@ -129,20 +123,6 @@ package body Afpx is
     end loop;
     return Fn;
   end Prev_Get_Field;
-
-  function Next_Mouse_Field (Field_No : Afpx_Typ.Field_Range)
-                            return Afpx_Typ.Field_Range is
-    Fn : Afpx_Typ.Absolute_Field_Range;
-    use Afpx_Typ;
-  begin
-    Fn := Field_No;
-    loop
-      Fn := Next_Field(Fn);
-      exit when Fn /= 0 and then Af_Dscr.Fields(Fn).Kind = Afpx_Typ.Button
-          and then not Af_Dscr.Fields(Fn).Isprotected;
-    end loop;
-    return Fn;
-  end Next_Mouse_Field;
 
   -- The real con io with size from Af_Dscr
   Size : constant Con_Io.Full_Square := Af_Dscr.Load_Size;
@@ -233,7 +213,7 @@ package body Afpx is
     function To_Row (Id : Positive) return Af_Con_Io.Row_Range;
     function To_Id  (Row : Af_Con_Io.Row_Range) return Positive;
 
-    Not_Opened, Not_Displayed : exception;
+    Not_Opened : exception;
   end Af_List;
 
   package body Af_Ptg is separate;
@@ -597,8 +577,6 @@ package body Afpx is
 
   -- Erase all the fields of the descriptor from the screen
   procedure Erase is
-    Background : constant Con_Io.Effective_Basic_Colors
-               := Con_Io.Get_Background (Con_Io.Screen);
     use Afpx_Typ;
   begin
     Af_Dscr.Check;

@@ -107,8 +107,6 @@ package body Storage is
 
   -- Delete all terms of current pattern
   procedure Delete_Current_Pattern is
-    Rule : Rule_No;
-    Id : Pattern_Id;
     Term : Term_Rec;
     Found : Boolean;
   begin
@@ -117,8 +115,6 @@ package body Storage is
     end if;
     -- Get current pattern id
     Term_List_Mng.Read (Term_List, Term, Term_List_Mng.Current);
-    Rule := Term.Rule;
-    Id := Term.Id;
     -- Remove all records with same id
     loop
       -- Delete current and exit if end of list

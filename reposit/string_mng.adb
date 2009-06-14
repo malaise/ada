@@ -52,7 +52,7 @@ package body String_Mng is
                      Trunc_Head : Boolean := True;
                      Show_Trunc : Boolean := True)
            return String is
-    L : Natural := Str'Length;
+    L : constant Natural := Str'Length;
     S : String (1 .. Len);
   begin
     if L < Len then
@@ -410,7 +410,7 @@ package body String_Mng is
                 Val : constant String
                     := Resolv (Asu.Slice (Ustr, Start_Var, Stop_Var));
                 -- Correction to current and last index
-                Offset : Integer
+                Offset : constant Integer
                        := Val'Length - (Stop_Index - Start_Index + 1);
               begin
                 Asu.Replace_Slice (Ustr, Start_Index, Stop_Index, Val);

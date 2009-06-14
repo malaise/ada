@@ -74,7 +74,6 @@ package body Channels is
   package Reply_List_Mng renames Reply_Dyn_List_Mng.Dyn_List;
 
   -- The channel
-  type Read_Kind is (None, Send, Dest);
   type Channel_Rec is record
     Init : Boolean := False;
     Name : Text_Handler.Text (Tcp_Util.Max_Port_Name_Len);
@@ -240,6 +239,7 @@ package body Channels is
           else
             declare
               Res : Boolean;
+              pragma Unreferenced (Res);
               Port : Tcp_Util.Remote_Port (Tcp_Util.Port_Name_Spec);
             begin
               -- Update record
@@ -286,6 +286,7 @@ package body Channels is
 
     function Rec_Read_Cb (Fd : in Event_Mng.File_Desc; Read : in Boolean)
                      return Boolean is
+      pragma Unreferenced (Read);
     begin
       return Read_Cb (True, Fd);
     end Rec_Read_Cb;
@@ -295,6 +296,8 @@ package body Channels is
                          Remote_Port_Num : in Tcp_Util.Port_Num;
                          Remote_Host_Id  : in Tcp_Util.Host_Id;
                          New_Dscr        : in Socket.Socket_Dscr) is
+      pragma Unreferenced (Local_Port_Num, Local_Dscr,
+                           Remote_Port_Num, Remote_Host_Id);
       use type Socket.Port_Num;
     begin
       -- Discard and close if channel is closed
@@ -383,6 +386,7 @@ package body Channels is
 
     function Snd_Read_Cb (Fd : in Event_Mng.File_Desc; Read : in Boolean)
                      return Boolean is
+      pragma Unreferenced (Read);
     begin
       return Read_Cb (False, Fd);
     end Snd_Read_Cb;
@@ -391,6 +395,7 @@ package body Channels is
                           Remote_Host_Id  : in Tcp_Util.Host_Id;
                           Connected       : in Boolean;
                           Dscr            : in Socket.Socket_Dscr) is
+      pragma Unreferenced (Remote_port_Num, Connected);
       Dest : Dest_Rec;
       Found : Boolean;
     begin
@@ -468,8 +473,6 @@ package body Channels is
         exception
           when Destination_Already | Unknown_Destination =>
             null;
-          when others =>
-            raise;
         end;
         -- Next host or the end
         if Host_List_Mng.Check_Move (List) then
@@ -529,6 +532,7 @@ package body Channels is
           -- Check host name
           declare
             Id : Socket.Host_Id;
+            pragma Unreferenced (Id);
           begin
             Id := Socket.Host_Id_Of (Host_Name);
             -- Host is ok
@@ -728,6 +732,7 @@ package body Channels is
       Msg : Channel_Message_Type;
       Len : Message_Length;
       Res : Boolean;
+      pragma Unreferenced (Res);
     begin
       -- Build message and len
       Msg.Diff := False;
@@ -871,6 +876,7 @@ package body Channels is
 
     function Loc_Read_Cb (Fd : in Event_Mng.File_Desc; Read : in Boolean)
                      return Boolean is
+      pragma Unreferenced (Read);
       Dscr : Socket.Socket_Dscr;
       Msg : Bus_Message_Type;
       Len  : Natural;
@@ -922,6 +928,7 @@ package body Channels is
       when Socket.Soc_Name_Not_Found =>
         declare
           Num : Socket.Port_Num;
+          pragma Unreferenced (Num);
         begin
           Num := Socket.Port_Num_Of (Text_Handler.Value (Bus_Dscr.Bus_Name),
                                      Socket.Udp);

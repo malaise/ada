@@ -1,5 +1,4 @@
-with Ada.Strings.Unbounded, Ada.Finalization;
-with Trees;
+with Ada.Strings.Unbounded;
 -- Generates a Xml file (or stdout), or string from a tree
 package Xml_Parser.Generator is
 

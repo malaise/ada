@@ -1,8 +1,6 @@
 with Ada.Characters.Latin_1, Ada.Unchecked_Deallocation;
 package body Parser is
 
-  Empty : constant String := "";
-
   -- Standard seaparing function
   function Is_Space_Or_Htab_Function (C : Character) return Boolean is
   begin
@@ -40,6 +38,7 @@ package body Parser is
     end if;
     declare
       Dummy : Boolean;
+      pragma Unreferenced (Dummy);
     begin
       Dummy := Is_Sep ('-');
     exception

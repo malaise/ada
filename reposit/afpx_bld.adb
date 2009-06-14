@@ -1,6 +1,6 @@
 with Ada.Text_Io, Ada.Direct_Io, Ada.Strings.Unbounded;
 with Con_Io, Text_Handler, Normal, Argument, Directory,
-     Upper_Str, Mixed_Str, Basic_Proc, Xml_Parser,
+     Mixed_Str, Basic_Proc, Xml_Parser,
      Ada_Words, Parser, String_Mng, Computer, Int_Image,
      Language;
 with Afpx_Typ;
@@ -879,9 +879,6 @@ procedure Afpx_Bld is
         Load_Variable (Child, False);
       elsif not Match(Ctx.Get_Name (Child), "Field") then
         File_Error (Child, "Expected a Var or a Field");
-      elsif Descriptors(Dscr_No).Nb_Fields > Afpx_Typ.Field_Range'Last then
-        File_Error (Child, "Too many fields. Maximum is"
-         & Field_Range'Image(Afpx_Typ.Field_Range'Last) & " per descriptor");
       else
         Descriptors(Dscr_No).Nb_Fields := Descriptors(Dscr_No).Nb_Fields + 1;
         Loc_Load_Field (Child, Descriptors(Dscr_No).Nb_Fields, Screen_Size);

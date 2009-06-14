@@ -494,7 +494,7 @@ package body Curve is
             X, Y: Integer;
           end record;
           type T_Point_Pixels is array (Positive range <>) of Pix;
-          Point_Pixels : T_Point_Pixels (1..15) :=
+          Point_Pixels : constant T_Point_Pixels (1..15) :=
                ( (-2, -2), (-2,  2), ( 2, -2), (  2,  2), (-1, -1),
                  (-1,  0), (-1,  1), ( 1, -1), (  1,  0), ( 1,  1),
                  ( 0, -2), ( 0, -1), ( 0,  0), (  0,  1), ( 0,  2) );

@@ -197,7 +197,6 @@ package body Language is
   begin
     -- Move forward up to Put_Pos
     Index := Str'First;
-    Index := 0;
     loop
       if Index > Str'Last then
         -- End of string reached: Put_Pos is too large

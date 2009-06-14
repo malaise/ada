@@ -1,4 +1,3 @@
-with Limited_List, Hash;
 package body Unique_List is
 
   -- Element hashing
@@ -170,7 +169,7 @@ package body Unique_List is
                      Iteration : access
      procedure (Current : in Element_Type;
                 Go_On   : in out Boolean);
-                     From      : in Reference := From_First) is
+                From      : in Reference := From_First) is
     Item : Element_Type;
     Moved : Boolean;
     Go_On : Boolean;
@@ -179,10 +178,18 @@ package body Unique_List is
       return;
     end if;
     -- Prepare loop on all items
-    List_Mng.Rewind (List.List);
+    if From = From_First then
+      List_Mng.Rewind (List.List, List_Mng.Next);
+    else
+      List_Mng.Rewind (List.List, List_Mng.Prev);
+    end if;
     Go_On := True;
     loop
-      List_Mng.Read (List.List, Item, Done => Moved);
+      if From = From_First then
+        List_Mng.Read (List.List, Item, List_Mng.Next, Done => Moved);
+      else
+        List_Mng.Read (List.List, Item, List_Mng.Prev, Done => Moved);
+      end if;
       Iteration (Item, Go_On);
       -- Callback requests to stop or en of list
       exit when not Go_On or else not Moved;

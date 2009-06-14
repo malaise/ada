@@ -201,7 +201,6 @@ package Limited_List is
     -- The Criteria is the one provided to Search
     -- Current will be the element of list compared to criteria
     type Criteria_Type is limited private;
-    with procedure Set (To : out Criteria_Type; Val : in Criteria_Type);
     with function Match (Current : Element_Type; Criteria : Criteria_Type)
                   return Boolean;
   -- Search from the nth occurence of an item matching the provided criteria

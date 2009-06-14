@@ -13,7 +13,7 @@ package body State_Machine is
 
   -- The states, each one is an access to first transition
   State_Array : array (State_List) of Transition_Access := (others => null);
-  State_Nb : Integer := State_Array'Length;
+  State_Nb : constant Integer := State_Array'Length;
 
   -- The events and states callbacks
   State_Cbs : array (State_List) of State_Report_Access

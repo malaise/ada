@@ -1,3 +1,4 @@
+with Ada.Unchecked_Deallocation;
 with Mod_Image;
 package body Protected_Pool is
 
@@ -24,13 +25,13 @@ package body Protected_Pool is
     -- Lock mutex
     Mutex_Manager.Get (Pool.Mutex);
     -- Find next available (not used) key
-    Cell.Key := Pool.Next_Key;
+    Cell.Key := Pool.Next_Key.all;
     Cell.Data := Element;
     loop
       Search (Pool.List.all, Found, Cell, From => Elt_List_Mng.Absolute);
       exit when not Found;
       Cell.Key := Cell.Key + 1;
-      if Cell.Key = Pool.Next_Key then
+      if Cell.Key = Pool.Next_Key.all then
         -- No available key
         Mutex_Manager.Release (Pool.Mutex);
         raise Pool_Full;
@@ -38,6 +39,8 @@ package body Protected_Pool is
     end loop;
     -- Store
     Pool.List.Insert (Cell);
+    -- Update next key
+    Pool.Next_Key.all := Cell.Key + 1;
     -- Release Mutex
     Mutex_Manager.Release (Pool.Mutex);
     -- Done
@@ -49,7 +52,7 @@ package body Protected_Pool is
     Cell : Cell_Type;
     Found : Boolean;
   begin
-    Cell.Key := Pool.Next_Key;
+    Cell.Key := Key;
     Search (Pool.List.all, Found, Cell, From => Elt_List_Mng.Absolute);
     if not Found then
       raise Not_Found;
@@ -101,6 +104,7 @@ package body Protected_Pool is
   end Delete;
 
   -- Delete the whole pool
+  -- Clears most of the memory
   procedure Delete_Pool (Pool : Pool_Type) is
   begin
     Mutex_Manager.Get (Pool.Mutex);
@@ -108,10 +112,17 @@ package body Protected_Pool is
     Mutex_Manager.Release (Pool.Mutex);
   end Delete_Pool;
 
+  procedure Deallocate is new Ada.Unchecked_Deallocation
+   (Key_Type, Key_Access);
+  procedure Deallocate is new Ada.Unchecked_Deallocation
+   (Elt_List_Mng.List_Type, List_Access);
+
   procedure Finalize (Pool : in out Pool_Type) is
   begin
     Mutex_Manager.Get (Pool.Mutex);
     Pool.List.all.Delete_List;
+    Deallocate (Pool.Next_Key);
+    Deallocate (Pool.List);
     Mutex_Manager.Release (Pool.Mutex);
   end Finalize;
 

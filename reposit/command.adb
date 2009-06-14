@@ -1,6 +1,5 @@
 with Ada.Text_Io;
-with Sys_Calls, Environ, Proc_Family, Event_Mng, Many_Strings, Text_Line,
-     Null_Procedure;
+with Sys_Calls, Environ, Many_Strings, Proc_Family, Event_Mng, Text_Line;
 package body Command is
 
   -- Asu stuff
@@ -105,6 +104,7 @@ package body Command is
   -- The callback for reading out/err output of child
   function Fd_Cb (Fd : in Sys_Calls.File_Desc;
                   Read : in Boolean) return Boolean is
+    pragma Unreferenced (Read);
     Flow : Text_Line.File_Type;
     Line : Asu_Us;
     Got : Boolean;

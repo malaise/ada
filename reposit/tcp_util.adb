@@ -342,7 +342,7 @@ package body Tcp_Util is
   function Connection_Timer_Cb (Id : Timers.Timer_Id;
                                 Data : Timers.Timer_Data := Timers.No_Data)
            return Boolean is
-
+    pragma Unreferenced (Data);
     Rec : Connecting_Rec;
     Connected : Boolean;
     Go_On : Boolean;
@@ -479,6 +479,7 @@ package body Tcp_Util is
     if Port.Kind = Port_Name_Spec then
       declare
         Num : Port_Num;
+        pragma Unreferenced (Num);
       begin
         Num := Socket.Port_Num_Of (Name_Of (Port.Name), Protocol);
       exception
@@ -489,6 +490,7 @@ package body Tcp_Util is
     if Host.Kind = Host_Name_Spec then
       declare
         Id : Host_Id;
+        pragma Unreferenced (Id);
       begin
         Id := Socket.Host_Id_Of (Name_Of (Host.Name));
       exception
@@ -1000,9 +1002,6 @@ package body Tcp_Util is
 
       -- Allocate message
       Msg := new Message_Type;
-      if Msg = null then
-        raise Storage_Error;
-      end if;
       -- Try to read
       begin
         Read (The_Rec.Dscr, Msg.all, Len);

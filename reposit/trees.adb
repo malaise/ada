@@ -97,7 +97,7 @@ package body Trees is
     -- Swap two cells A and B and their children
     -- Does not update Root if A or B is root
     procedure Swap_Cells (A, B : in Cell_Access) is
-      Tmp : Cell_Rec := B.all;
+      Tmp : constant Cell_Rec := B.all;
     begin
       -- Update B from A
       B.Father := A.Father;
@@ -589,7 +589,6 @@ package body Trees is
     procedure Swap_Saved (The_Tree : in out Tree_Type) is
 
       Saved : Cell_Access;
-      Tmp : Cell_Rec;
     begin
       -- No empty tree
       Check_Callback (The_Tree);
