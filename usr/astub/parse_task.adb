@@ -1,6 +1,5 @@
 with Ada.Strings.Unbounded;
-with Text_Char;
-with Common, Output, Words,  Parser_Ada, Parse_To_End, Fix_Comment;
+with Common, Output, Words,  Parser_Ada, Parse_To_End;
 
 procedure Parse_Task (Level : in Natural) is
     package Asu renames Ada.Strings.Unbounded;

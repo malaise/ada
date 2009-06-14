@@ -7,7 +7,6 @@ procedure G is
 
   -- result of division of current value
   type Div_Res is (Minus_1, Zero, Plus_1);
-  Div_Error : exception;
 
   Got_Res, Res : Div_Res;
   Success : Boolean;
@@ -60,15 +59,6 @@ procedure G is
   procedure Div (N : in Number;
    New_N : out Number; Res : out Div_Res) is
     N0 : Natural;
-    function Trunc (R : in Float) return Natural is
-      N : Natural;
-    begin
-      N := Natural (R);
-      if Float (N) > R then
-        N := N - 1;
-      end if;
-      return N;
-    end Trunc;
   begin
     N0 := N rem 3;
     if N0 = 0 then

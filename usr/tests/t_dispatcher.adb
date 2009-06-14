@@ -112,6 +112,7 @@ procedure T_Dispatcher is
 
   task type Client is
     entry Stop;
+    pragma Unreferenced (Stop);
   end Client;
 
   task body Client is
@@ -124,6 +125,7 @@ procedure T_Dispatcher is
       My_Io.Put_Line ("Client " & Id'Img & " in X");
       Dispatcher.Call_Off (Id);
     end Call_X;
+    pragma Unreferenced (Call_X);
   begin
     Dispatcher.Register (Id);
     if Id = No_Client_No then
@@ -162,6 +164,7 @@ procedure T_Dispatcher is
   end Client;
 
   Clients : array (Client_Range) of Client;
+  pragma Unreferenced (Clients);
 
 begin
   null;

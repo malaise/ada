@@ -69,9 +69,6 @@ package body Search_Pattern is
   -- True if find pattern is regexes
   Is_Regex : Boolean;
 
-  -- True if Language is set to Lang_Utf_8
-  Is_Utf8 : Boolean;
-
   -- The official Line Feed
   Line_Feed : constant String := Text_Line.Line_Feed_Str;
 
@@ -151,25 +148,6 @@ package body Search_Pattern is
         & """. Error is " & Regular_Expressions.Error(Upat_Access.Pat));
     end if;
   end Add;
-
-  -- Check that the string does start or stop by the fragment
-  procedure Check_Bound (Str : in String; Frag : in String; Start : Boolean) is
-    Index : Natural;
-  begin
-    if Frag = "" then
-      return;
-    end if;
-    Index := String_Mng.Locate (Str, Frag, Forward => Start);
-    if Index = 0 then
-       return;
-    end if;
-    if Start and then Index = Str'First then
-      Error ("Pattern """ & Str & """ cannot begin with """ & Frag & """");
-    elsif not Start and then Index = Str'Last - Frag'Length + 1
-    and then not String_Mng.Is_Backslashed (Str, Index) then
-      Error ("Pattern """ & Str & """ cannot end with """ & Frag & """");
-    end if;
-  end Check_Bound;
 
   -- Start line and stop line strings in regex
   Start_Char : constant Character := '^';
@@ -340,7 +318,7 @@ package body Search_Pattern is
           -- A Delim
           if Prev_Delim then
             -- Two successive Delims
-            if Regex_Mode and then Prev_Delim then
+            if Regex_Mode then
               Add (Start_String (True) & Stop_String (True),
                    Case_Sensitive, List);
             else
@@ -477,7 +455,6 @@ package body Search_Pattern is
   begin
     -- Init global variables and 'constants'
     Search_Pattern.Is_Regex := Is_Regex;
-    Is_Utf8 := Language.Get_Language = Language.Lang_Utf_8;
     Expected_Search := 1;
     -- Parse the delimiter
     Std_Delim := Parse_Delimiter (Delimiter);

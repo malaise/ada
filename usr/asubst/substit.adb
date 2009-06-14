@@ -131,11 +131,11 @@ package body Substit is
 
   -- Remove Out file
   procedure Clean is
-    Rec : Sys_Calls.File_Stat_Rec;
     Dummy : Boolean;
+    pragma Unreferenced (Dummy);
   begin
-    if Asu.Length (Out_File_Name) /= 0 then
-      Rec := Sys_Calls.File_Stat (Asu.To_String (Out_File_Name));
+    if Asu.Length (Out_File_Name) /= 0
+    and then Sys_Calls.File_Check (Asu.To_String (Out_File_Name)) then
       -- File exists => remove
       Dummy := Sys_Calls.Unlink (Asu.To_String (Out_File_Name));
     end if;

@@ -1,5 +1,4 @@
 with Ada.Strings.Unbounded;
-with Text_Char;
 with Common,  Output, Words, Parser_Ada;
 
 procedure Parse_Entry (Level : in Natural) is

@@ -37,14 +37,6 @@ package body Menu2 is
   end Menu21;
   package body Menu21 is separate;
 
-  procedure Error (Msg : in Screen.S_Error_List) is
-  begin
-    Screen.Error(Msg);
-    -- Restore screen
-    Afpx.Use_Descriptor(3, False);
-    Screen.Init_For_Main2 (Cursor_Field);
-  end Error;
-
   procedure Do_Restore (Restore : in Restore_List) is
     Activate_No_Curve : constant Boolean := Curved_Stopped;
   begin

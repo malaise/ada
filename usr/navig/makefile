@@ -1,6 +1,7 @@
 include $(HOME)/Makefiles/common.mk
 
 ADAVIEW := $(REPOSIT)
+ADAWARN := true
 EXES := navig
 
 CLIBS := x_mng cutil X11

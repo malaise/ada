@@ -61,6 +61,7 @@ package body Mesu_Nam is
 
   function Valid_Pid (Pid : in String) return Boolean is
     Pid_Val : Pers_Def.Pid_Range;
+    pragma Unreferenced (Pid_Val);
   begin
     if Pid'Length /= 3 then
       return False;
@@ -119,7 +120,7 @@ package body Mesu_Nam is
     end if;
 
     if File_Name(1 .. 6) = "??????" then
-      Date := "??" & File_Name;
+      Date := "??" & File_Name(1 .. 6);
     else
       Date := Round (File_Name(1 .. 6));
       if not Valid_Date (Date) then

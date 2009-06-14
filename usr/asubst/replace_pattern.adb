@@ -1,7 +1,6 @@
 with Ada.Strings.Unbounded, Ada.Characters.Latin_1, Ada.Exceptions;
 with Argument, Sys_Calls, String_Mng, Text_Line, Unique_List, Debug,
-     Char_To_Hexa, Regular_Expressions, Upper_Str, Lower_Str, Mixed_Str,
-     Command, Int_Image;
+     Char_To_Hexa, Upper_Str, Lower_Str, Mixed_Str, Command, Int_Image;
 with Search_Pattern;
 package body Replace_Pattern is
 

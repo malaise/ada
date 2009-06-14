@@ -1,4 +1,4 @@
-with My_Math, Rnd, Argument;
+with Rnd, Argument;
 with Lem;
 package body Moon is
 
@@ -24,7 +24,6 @@ package body Moon is
     Index_Landing : Point_Range;
     Y_Ground_Min : constant Space.Y_Range := 2.0;
     Hard_Level : Boolean;
-    use type Space.X_Range, Space.Y_Range;
   begin
     -- Check if Hard_Level (-h argument)
     begin
@@ -44,7 +43,6 @@ package body Moon is
     declare
       Delta_Point_Lem_Width_Error : exception;
       Nb_Consec : Space.X_Range;
-      use type Space.X_Range;
     begin
       if Hard_Level then
         Nb_Consec := 1.0;

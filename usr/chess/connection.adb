@@ -96,6 +96,7 @@ package body Connection is
                            Remote_Host_Id  : in Tcp_Util.Host_Id;
                            Connected       : in Boolean;
                            Dscr            : in Socket.Socket_Dscr) is
+    pragma Unreferenced (Remote_Port_Num, Remote_Host_Id, Connected);
   begin
     if Debug.Get (Debug.Connection) then
       Ada.Text_Io.Put_Line ("Connect callback");
@@ -108,6 +109,7 @@ package body Connection is
 
   procedure Connect_Server is
     Ok : Boolean;
+    pragma Unreferenced (Ok);
   begin
     Close;
     Ok := Tcp_Util.Connect_To (Socket.Tcp_Header,
@@ -129,6 +131,7 @@ package body Connection is
                            Remote_Port_Num : in Tcp_Util.Port_Num;
                            Remote_Host_Id  : in Tcp_Util.Host_Id;
                            New_Dscr        : in Socket.Socket_Dscr) is
+    pragma Unreferenced (Local_Dscr, Remote_Port_Num, Remote_Host_Id);
   begin
     if Debug.Get (Debug.Connection) then
       Ada.Text_Io.Put_Line ("Accept callback");
@@ -152,7 +155,8 @@ package body Connection is
   end Accept_Client;
 
   function Rec_Call_Back (Fd : in Event_Mng.File_Desc; Read : in Boolean)
-  return Boolean is
+           return Boolean is
+    pragma Unreferenced (Fd, Read);
     Default_Action : Players.Valid_Action_Rec;
     -- Largest message
     Message : Message_Type := (Kind => Move, Action => Default_Action);

@@ -664,22 +664,6 @@ package body Screen is
 
   end Put_Selected_Color;
 
-  -----------
-  -- MOUSE --
-  -----------
-  -- Call before mouse selection
-  procedure Show_Mouse is
-  begin
-    null;
-  end Show_Mouse;
-
-  -- Call before any put
-  procedure Hide_Mouse is
-  begin
-    null;
-  end Hide_Mouse;
-
-
   ---------------
   -- SELECTION --
   ---------------

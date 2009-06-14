@@ -1,5 +1,5 @@
 with Ada.Exceptions, Ada.Characters.Latin_1;
-with Argument, Socket, Event_Mng, Tcp_Util, Async_Stdin;
+with Argument, Socket, Event_Mng, Async_Stdin;
 
 procedure T_Stdin is
 
@@ -29,6 +29,7 @@ procedure T_Stdin is
 
   function Socket_Cb(F : in Event_Mng.File_Desc; Read : in Boolean)
                      return Boolean is
+    pragma Unreferenced (Read);
     use type Event_Mng.File_Desc;
     Message : Message_Type;
     Message_Len : Natural;

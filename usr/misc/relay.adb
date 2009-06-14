@@ -9,7 +9,6 @@ procedure Relay is
 
   -- Message type
   Max_Data_Len : constant := 1024;
-  subtype Data_Len_Range is Positive range 1 .. Max_Data_Len;
   subtype Data_Type is String (1 .. Max_Data_Len);
   type Message_Type is record
     Id : Socket.Host_Id;
@@ -51,6 +50,7 @@ procedure Relay is
   procedure Channel_Read_Cb (Message  : in Message_Type;
                              Length   : in Channels.Message_Length;
                              Diffused : in Boolean) is
+    pragma Unreferenced (Diffused);
     Len : Channels.Message_Length;
     use type Socket.Host_Id;
   begin

@@ -1,6 +1,6 @@
 with Ada.Text_Io, Ada.Calendar;
-with My_Math, Normal, Argument;
-with Moon, Debug;
+with My_Math, Normal, Argument, Con_Io;
+with Moon, Debug, Lem;
 package body Screen is
 
   -- Lem position
@@ -185,7 +185,6 @@ package body Screen is
     Screen_Ground(J) := Last_X;
     J := J + 1;
     Screen_Ground(J) := First_Y;
-    J := J + 1;
     Con_Io.Set_Foreground (Con_Io.Light_Gray);
     Con_Io.Graphics.Fill_Area (Screen_Ground);
     -- Frame
@@ -252,7 +251,7 @@ package body Screen is
     Fuel_Size : Natural;
     Hspeed : Lem.Speed_Range;
     Hspeed_Size : Integer;
-    use type My_Math.Real, Lem.Speed_Range, Lem.Mass_Range, Flight.Status_List;
+    use type My_Math.Real, Lem.Mass_Range, Flight.Status_List;
   begin
     -- Thrust gauge
     Con_Io.Set_Foreground (Con_Io.Get_Background);

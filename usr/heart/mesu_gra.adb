@@ -1,4 +1,4 @@
-with Ada.Characters.Latin_1, Ada.Text_Io, Ada.Exceptions;
+with Ada.Text_Io, Ada.Exceptions;
 with Afpx, Con_Io, Normal, My_Math, Text_Handler;
 with Mesu_Def, Str_Mng, Mesu_Nam, Pers_Mng, Pers_Def, Mesu_Fil;
 use Pers_Def;
@@ -52,7 +52,6 @@ package body Mesu_Gra is
   end X_To_Screen;
 
   function Y_To_Screen (Bpm : in Pers_Def.Bpm_Range) return Con_Io.Graphics.Y_Range is
-    use Pers_Def;
   begin
     return Con_Io.Graphics.Y_Range(Float(Bpm - Y_First) * Y_Factor) + Ys_First;
   end Y_To_Screen;
@@ -64,20 +63,9 @@ package body Mesu_Gra is
   end X_To_Screen_Secure;
 
   function Y_To_Screen_Secure (Bpm : in Pers_Def.Bpm_Range) return Integer is
-    use Pers_Def;
   begin
     return Integer(Float(Bpm - Y_First) * Y_Factor) + Ys_First;
   end Y_To_Screen_Secure;
-
-  function In_Screen (X : Integer; Y : Integer)
-  return Boolean is
-    use Con_Io.Graphics;
-  begin
-    return     Y >= Ys_First
-      and then Y <= Ys_Last
-      and then X >= Xs_First
-      and then X <= Xs_Last;
-  end In_Screen;
 
   procedure Pixel (X : in Integer; Y : in Integer; In_Graphic : in Boolean) is
     use Con_Io;
@@ -221,7 +209,7 @@ package body Mesu_Gra is
     -- Vertical scale : one + each 25 Bpm
     --                  Bpm for each +
     for I in Y_First / Y_Step .. Y_Last / Y_Step loop
-      Bpm := Pers_Def.Bpm_Range(I) * Y_Step;
+      Bpm := I * Y_Step;
       Y := Y_To_Screen (Bpm);
       Con_Io.Graphics.Draw_Line (Xs_First - 2, Y, Xs_First + 2, Y);
       Con_Io.Graphics.Put (Normal (Integer(Bpm), 3),
@@ -277,7 +265,6 @@ package body Mesu_Gra is
                7 => Con_Io.Magenta,
                8 => Con_Io.Yellow,
                9 => Con_Io.White);
-    use Pers_Def;
     Sec1, Sec2 : Natural;
     Bpm1, Bpm2 : Pers_Def.Bpm_Range;
     Mesure : Mesu_Def.Mesure_Rec renames Mesure_Array(No).Mesure;
@@ -367,7 +354,6 @@ package body Mesu_Gra is
 
 
     use Afpx.Line_List_Mng;
-    use Pers_Def;
     use type Con_Io.Curs_Mvt;
   begin
     -- Here we only use Afpx.Line_List, no pb to suspend for

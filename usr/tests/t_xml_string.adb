@@ -67,7 +67,7 @@ procedure T_Xml_String is
   procedure Put_Attributes (Elt : in Xml_Parser.Element_Type;
                             Level : in Natural;
                             Offset : in Positive) is
-    Attrs : Xml_Parser.Attributes_Array := Ctx.Get_Attributes (Elt);
+    Attrs : constant Xml_Parser.Attributes_Array := Ctx.Get_Attributes (Elt);
     Indent : constant String (1 .. 2 * Level + Offset) := (others => ' ');
     use type Asu_Us;
   begin
@@ -89,7 +89,7 @@ procedure T_Xml_String is
   procedure Put_Element (Elt : in Xml_Parser.Element_Type;
                          Level : in Integer) is
     Name : constant String := Asu.To_String(Ctx.Get_Name (Elt));
-    Children : Xml_Parser.Nodes_Array := Ctx.Get_Children (Elt);
+    Children : constant Xml_Parser.Nodes_Array := Ctx.Get_Children (Elt);
     Indent : constant String (1 .. 2 * Level) := (others => ' ');
     Pi_Text : Asu_Us;
     Prev_Is_Text : Boolean;

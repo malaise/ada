@@ -1,4 +1,4 @@
-with My_Io, Ada.Text_Io, Schedule;
+with My_Io;
 use  My_Io;
 procedure Ex1 is
   pragma Priority (1);

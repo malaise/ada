@@ -103,7 +103,7 @@ package body Words is
       Last := Length;
     end if;
 
-    for I in 1 .. Last loop
+    for I in From_Index .. Last loop
       Ada.Strings.Unbounded.Append (Result, String'(Read (I)));
     end loop;
     return Result;
@@ -156,8 +156,10 @@ package body Words is
                    From_Index : Positive := 1) return Natural is
     Found : Boolean;
   begin
+    Words_List_Mng.Move_To (Words_List, Words_List_Mng.Next,
+                  From_Index - 1, From_Current => False);
     Words_List_Mng.Search_Match (Words_List, Found, Match'Access,
-        Word, From => Words_List_Mng.Absolute);
+        Word, From => Words_List_Mng.From_Current);
     if not Found then
        return 0;
     else

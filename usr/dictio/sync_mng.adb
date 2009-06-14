@@ -1,5 +1,5 @@
 with Timers, Event_Mng, Dynamic_List, Environ;
-with Status, Intra_Dictio, Data_Base, Parse, Dictio_Debug, Errors, Online_Mng, Args;
+with Intra_Dictio, Data_Base, Parse, Dictio_Debug, Online_Mng, Args;
 package body Sync_Mng is
 
 
@@ -48,6 +48,7 @@ package body Sync_Mng is
 
   function Timer_Rec_Cb (Id : in Timers.Timer_Id;
                          Data : Timers.Timer_Data) return Boolean is
+    pragma Unreferenced (Id, Data);
   begin
     if Sync_Has_Been_Received then
       -- Still in sync
@@ -291,6 +292,7 @@ package body Sync_Mng is
 
   function Timer_Sen_Cb (Id : Timers.Timer_Id;
                          Data : Timers.Timer_Data) return Boolean is
+    pragma Unreferenced (Id, Data);
     use type Args.Channel_Mode_List;
   begin
     Tid := Timers.No_Timer;

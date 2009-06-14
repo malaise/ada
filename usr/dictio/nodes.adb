@@ -1,4 +1,4 @@
-with Dynamic_List, Normal;
+with Dynamic_List;
 with Local_Host_Name, Parse, Dictio_Debug;
 package body Nodes is
 

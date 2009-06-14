@@ -29,7 +29,6 @@ package body Game is
   -- Save and Try a move (no commit - must be undone)
   procedure Try_Move (Color : in Space.Color_List; Action : in Valid_Action_Rec) is
     use type Pieces.Action_Kind_List;
-    Take_Own : exception;
   begin
     -- Save the action
     History := (Action => Action, Taken  => null, Promoted => null);
@@ -95,7 +94,6 @@ package body Game is
   procedure Commit_Move (Color  : in Space.Color_List;
                          Action : in Valid_Action_Rec) is
     use type Pieces.Action_Kind_List;
-    Take_Own : exception;
   begin
     -- Delete taken piece
     if Action.To.Kind = Pieces.Take

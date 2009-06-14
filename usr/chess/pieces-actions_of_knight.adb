@@ -1,6 +1,7 @@
 separate(Pieces)
 procedure Actions_Of_Knight (Piece : in Knight_Piece) is
   Dummy : Boolean;
+  pragma Unreferenced (Dummy);
 begin
 
   -- Any combination of (+/- 1 row, +/- 2 col) , (+/- 2 row, +/- 1 col)

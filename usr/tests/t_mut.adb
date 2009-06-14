@@ -118,7 +118,6 @@ procedure T_Mut is
       K, A : Character;
       Action : Mutex_Manager.Access_Kind;
       Waiting : Duration;
-      Tab : constant String := "    ";
       B : Boolean;
     begin
       -- Get kind, action
@@ -239,7 +238,7 @@ begin -- T_Mut
   end if;
 
 exception
-  when Constraint_Error | Numeric_Error =>
+  when Constraint_Error =>
     Error ("Wrong argument");
   when Storage_Error =>
     Error ("Argument too big");

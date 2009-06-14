@@ -58,6 +58,7 @@ procedure T_Ul is
                  & "<->" & Text_Handler.Value(Var.Val) & "<");
   end Put;
   procedure Iteration (Current : Var_Rec; Go_On : in out Boolean) is
+    pragma Unreferenced (Go_On);
   begin
     Put (Current);
     Ada.Text_Io.New_Line;

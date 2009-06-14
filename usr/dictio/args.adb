@@ -1,4 +1,4 @@
-with Sys_Calls, Argument, Normal;
+with Argument, Normal;
 with Errors, Dictio_Debug;
 package body Args is
 
@@ -26,6 +26,7 @@ package body Args is
       S3 : constant String := Get_Client_Port;
       P  : constant Prio_Range
          := Prio_Range'Value (Argument.Get_Parameter(1, "P"));
+      pragma Unreferenced (S1, S2, S3);
     begin
       Prio := Normal (P, 3, Gap => '0');
       return;
@@ -43,6 +44,7 @@ package body Args is
   begin
     declare
       S :  constant String := Argument.Get_Parameter(1, Key);
+      pragma Unreferenced (S);
     begin
       return True;
     end;

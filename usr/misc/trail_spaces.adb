@@ -41,6 +41,7 @@ procedure Trail_Spaces is
     Modified : Boolean;
     -- Dummy result for Sys calls
     Dummy : Boolean;
+    pragma Unreferenced (Dummy);
 
     use type Asu.Unbounded_String;
 

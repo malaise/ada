@@ -6,9 +6,6 @@ procedure Mcd is
   Item : Mcd_Mng.Item_Rec;
   The_End : Mcd_Mng.End_Status_List;
   use type Mcd_Mng.End_Status_List;
-  Invalid_Argument, Argument_Mismatch, Invalid_Register, Empty_Register,
-                    Empty_Stack : exception;
-  Parsing_Error : exception;
 
   procedure Close is
   begin

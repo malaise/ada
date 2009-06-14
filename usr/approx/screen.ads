@@ -1,5 +1,5 @@
-with Afpx, Text_Handler;
-with Points, File;
+with Afpx;
+with File;
 package Screen is
 
   -- The get field

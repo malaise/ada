@@ -1,7 +1,5 @@
 with Ada.Strings.Unbounded;
-with Text_Char;
-with Common, Output, Words, Parser_Ada, Parse_To_End, Fix_Comment,
-     Parse_To_Ends;
+with Output, Words, Parser_Ada, Parse_To_End, Parse_To_Ends, Fix_Comment;
 
 -- Parse type definition or representation clause
 procedure Parse_Type (Level : in Natural) is

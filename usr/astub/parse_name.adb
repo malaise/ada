@@ -1,6 +1,5 @@
 with Ada.Strings.Unbounded;
-with Text_Char;
-with Common, Words, Output, Parse_To_Ends, Put_Comments, Parser_Ada;
+with Common, Words, Parse_To_Ends, Put_Comments, Parser_Ada;
 
   -- Read until identifier, save it in Name, put intermediate comments at Level
 procedure Parse_Name (Level : in Natural;
@@ -14,7 +13,7 @@ begin
   Parse_To_Ends (
       End_Criteria => ( (Parser_Ada.Identifier, Common.Null_String),
                         (Parser_Ada.String_Literal, Common.Null_String)),
-      Level => 0,
+      Level => Level,
       Put_Comments => False,
       Up_To_Next_Significant => False);
   Word := Words.Read;

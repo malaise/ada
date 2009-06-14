@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1, Ada.Strings.Unbounded;
-with Debug, Mcd_Mng, Io_Flow, Async_Stdin;
+with Debug, Io_Flow, Async_Stdin;
 package body Input_Dispatcher is
 
   package Unb renames Ada.Strings.Unbounded;

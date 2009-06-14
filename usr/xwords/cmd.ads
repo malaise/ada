@@ -1,6 +1,4 @@
 with Command;
-with Common;
-use Common;
 package Cmd is
 
   package Res_Mng renames Command.Res_Mng;

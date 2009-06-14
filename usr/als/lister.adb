@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with Basic_Proc, Argument, Sys_Calls, Regular_Expressions;
+with Basic_Proc, Argument, Sys_Calls, Regular_Expressions, Directory;
 package body Lister is
 
   -- type Dots_Kind_List is (Basic, Basic_Dots, Basic_Dots_Roots);
@@ -41,6 +41,7 @@ package body Lister is
                           return Boolean is
     Dummy_File : constant String := "Toto";
     Dummy_Result : Boolean;
+    pragma Unreferenced (Dummy_Result);
   begin
     if Template = "" then
       return False;

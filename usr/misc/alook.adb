@@ -1,4 +1,5 @@
--- Make a ADA 83 sources look like a Ada 95 & 05 one.
+-- Make ADA 83 sources, or badly cased but valid Ada sources,
+--  look like a Ada 95 & 05 one.
 -- Reserved words are set in lower_case and other identifiers in Mixed_Case.
 -- Numeric literals (extended digits and exponent) are set in UPPERCASE.
 -- Strings and comments are not modified.
@@ -17,7 +18,7 @@
 
 with Ada.Text_Io, Ada.Direct_Io, Ada.Exceptions, Ada.Characters.Latin_1;
 
-with Argument, Lower_Char, Bloc_Io, Text_Handler, Ada_Words,
+with Argument, Bloc_Io, Text_Handler, Ada_Words,
      Lower_Str, Mixed_Str, Upper_Str, Basic_Proc;
 
 procedure Alook is
@@ -36,9 +37,6 @@ procedure Alook is
 
     -- Forced close
     procedure Close;
-
-    -- Modify last read char
-    procedure Update_Char(New_Char : in Character);
 
     -- Current index in file: 0 if closed or nothing read
     --  1 after reading first char...
@@ -166,12 +164,6 @@ procedure Alook is
       Curr_Count := Curr_Count + 1;
       return Curr_Bloc(Sub_Index);
     end Next_Char;
-
-    procedure Update_Char(New_Char : in Character) is
-    begin
-      Curr_Bloc(Sub_Index) := New_Char;
-      Modified := True;
-    end Update_Char;
 
     function Curr_Index return Count is
     begin

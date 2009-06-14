@@ -1,5 +1,4 @@
 with Normal, Lower_Str, Text_Handler;
-with Space.Board;
 
 package body Image is
 

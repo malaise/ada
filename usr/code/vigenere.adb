@@ -1,4 +1,4 @@
-with Text_Handler, Upper_Char;
+with Upper_Char;
 package body Vigenere is
 
   -- Coding generates upper char

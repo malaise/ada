@@ -1,5 +1,5 @@
 with Ada.Text_Io;
-with My_Io, Door_Manager, Schedule, Argument, Basic_Proc, Upper_Char;
+with Door_Manager;
 
 procedure T_Door is
   pragma Priority(10);

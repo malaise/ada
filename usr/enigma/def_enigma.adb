@@ -198,10 +198,10 @@ begin
                            & Normal (Year,  4, Gap => '0') );
       -- Build time of 0h00 of date
       declare
-        Hour     : Day_Mng.T_Hours    := 0;
-        Minute   : Day_Mng.T_Minutes  := 0;
-        Second   : Day_Mng.T_Seconds  := 0;
-        Millisec : Day_Mng.T_Millisec := 0;
+        Hour     : constant Day_Mng.T_Hours    := 0;
+        Minute   : constant Day_Mng.T_Minutes  := 0;
+        Second   : constant Day_Mng.T_Seconds  := 0;
+        Millisec : constant Day_Mng.T_Millisec := 0;
       begin
         T := Ada.Calendar.Time_Of (Year, Month, Day,
                    Day_Mng.Pack (Hour, Minute, Second, Millisec));

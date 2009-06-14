@@ -8,6 +8,7 @@ package body Io_Manager is
   -- Skip to Bytes_Offset
   procedure Skip_To (Bytes_Offset : Positive) is
     B : Byte;
+    pragma Unreferenced (B);
   begin
     for I in 1 .. Bytes_Offset - 1 loop
       B := Read;
@@ -84,6 +85,7 @@ package body Io_Manager is
 
   procedure Flush is
     N : Natural;
+    pragma Unreferenced (N);
   begin
     -- Write buffer on stdout
     if Last_Output /= 0 then

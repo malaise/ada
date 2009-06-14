@@ -1,9 +1,9 @@
-with My_Io, Con_Io;
+with Con_Io;
 separate (Action)
 procedure Treat_Release (Go_On, Exit_Game : out Boolean) is
 
   procedure Put_Secret is
-    Secret : Response.Color_Rec := Response.Get_Code;
+    Secret : constant Response.Color_Rec := Response.Get_Code;
   begin
     for I in Common.Level_Range
      range Common.Level_Range'First .. Level loop
@@ -221,14 +221,7 @@ begin
     if Cur_Selection.Selection_Kind = Screen.Nothing and then
        Cur_Selection.Selection = Screen.Propal then
       -- Restore color
-      declare
-        Prev_State : Common.Propal_State_Rec;
-        Moved_Color : Common.Eff_Color_Range;
-      begin
-        Prev_State := Common.Get_Propal_State (Last_Click.Propal_No);
-        Moved_Color := Prev_State.Propal_Color(Last_Click.Column_No);
-        Con_Io.Bell;
-      end;
+      Con_Io.Bell;
     else
       -- Remove a color from propal (already cleared)
       Common.Set_Color (Last_Click.Propal_No,

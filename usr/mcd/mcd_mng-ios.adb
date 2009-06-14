@@ -293,8 +293,6 @@ package body Ios is
     end case;
     return Res;
   exception
-    when Invalid_Argument =>
-      raise;
     when Constraint_Error =>
       -- Int or real format generates too long string
       raise String_Len;

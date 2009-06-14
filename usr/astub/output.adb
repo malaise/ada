@@ -45,6 +45,11 @@ package body Output is
 
       -- Also set line length
       Environ.Get_Pos (Length_Name, Length);
+      if Length < Min_Length then
+        Length := Min_Length;
+      elsif Length > Max_Length then
+        Length := Max_Length;
+      end if;
 
     end if;
   end Getenv;

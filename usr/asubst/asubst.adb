@@ -22,7 +22,7 @@ procedure Asubst is
      "  Substitutes pattern in files, or from stdin to stdout if no file.");
   end Usage;
 
-  procedure Help (New_Line : Boolean := True) is
+  procedure Help is
   begin
     Usage;
     Sys_Calls.Put_Line_Error (
@@ -665,6 +665,8 @@ begin
   else
     if not Found then
       Sys_Calls.Set_Exit_Code (No_Subst_Exit_Code);
+    else
+      Sys_Calls.Set_Exit_Code (Ok_Exit_Code);
     end if;
   end if;
 exception

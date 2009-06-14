@@ -2,8 +2,6 @@ with Ada.Calendar, Ada.Text_Io;
 with Perpet, Argument, Day_Mng, Text_Handler, Normal, Mixed_Str;
 procedure Day_Of_Week is
 
-  package Dur_Io is new Ada.Text_Io.Fixed_Io (Ada.Calendar.Day_Duration);
-
   Day   : Ada.Calendar.Day_Number;
   Month : Ada.Calendar.Month_Number;
   Year  : Ada.Calendar.Year_Number;
@@ -98,10 +96,10 @@ begin
 
   -- Build time of 00h00 of requested date
   declare
-    Hour     : Day_Mng.T_Hours    := 0;
-    Minute   : Day_Mng.T_Minutes  := 0;
-    Second   : Day_Mng.T_Seconds  := 0;
-    Millisec : Day_Mng.T_Millisec := 0;
+    Hour     : constant Day_Mng.T_Hours    := 0;
+    Minute   : constant Day_Mng.T_Minutes  := 0;
+    Second   : constant Day_Mng.T_Seconds  := 0;
+    Millisec : constant Day_Mng.T_Millisec := 0;
   begin
     T := Ada.Calendar.Time_Of (Year, Month, Day,
                Day_Mng.Pack (Hour, Minute, Second, Millisec));

@@ -4,9 +4,9 @@
 -- -s : accepts connections for data to relay
 -- -C or -S for remanent (otherwise exit on fifo disconnection or end of input)
 -- Each data is send to client which sent last data received
-with Ada.Text_Io, Ada.Characters.Latin_1;
+with Ada.Characters.Latin_1;
 
-with Text_Handler, Basic_Proc, Argument, Async_Stdin, Mixed_Str, Event_Mng;
+with Basic_Proc, Argument, Async_Stdin, Mixed_Str, Event_Mng;
 with Fifos;
 with Io_Data;
 procedure Pipe is
@@ -64,6 +64,7 @@ procedure Pipe is
   procedure Conn_Cb (Fifo_Name : in String;
                      Id        : in Pipe_Fifo.Fifo_Id;
                      Connected : in Boolean) is
+    pragma Unreferenced (Fifo_Name);
     use type Pipe_Fifo.Fifo_Id;
   begin
     if Server then
@@ -114,7 +115,7 @@ procedure Pipe is
 
   -- Sender may read stdin with this
   function Stdin_Cb (Str : in String) return Boolean is
-    Len : Natural := Str'Length;
+    Len : constant Natural := Str'Length;
   begin
     if Len = 0 then
       -- Error

@@ -2,7 +2,6 @@ with Ada.Text_Io;
 with Normal, Rnd, Argument;
 procedure Generate is
   Dim : Positive;
-  File : Ada.Text_Io.File_Type;
 begin
 
   if Argument.Get_Nbre_Arg /= 1 then

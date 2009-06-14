@@ -1,4 +1,4 @@
-with Intra_Dictio, Nodes, Fight_Mng;
+with Status, Nodes, Fight_Mng;
 package body Init_Mng is
 
   procedure Start is

@@ -59,12 +59,11 @@ begin
       My_Get_Line.Get_Words (Line);
       My_Get_Line.Get_Whole_Line (Whole_Line);
       Dim := My_Get_Line.Get_Word_Number - 1;
-      if Dim = 0 then
+    exception
+      when Constraint_Error =>
         Ada.Text_Io.Put_Line ("ERROR in file " & Argument.Get_Parameter
                           & " only one word in first line.");
         raise File_Error;
-      end if;
-    exception
       when Ada.Text_Io.End_Error =>
         Ada.Text_Io.Put_Line ("ERROR in file " & Argument.Get_Parameter
                           & " file is empty.");

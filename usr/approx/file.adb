@@ -1,5 +1,5 @@
 with Ada.Sequential_Io;
-with Directory, Text_Handler, My_Math;
+with My_Math;
 package body File is
 
   Magic_X : constant Points.P_T_Coordinate := 21.21;

@@ -1,6 +1,7 @@
 include $(HOME)/Makefiles/common.mk
 
 ADAVIEW := $(REPOSIT)
+ADAWARN := true
 EXES := astub
 
 CLIBS := cutil

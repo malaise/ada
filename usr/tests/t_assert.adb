@@ -1,4 +1,3 @@
-with Ada.Text_Io;
 with Assertion;
 procedure T_Assert is
 

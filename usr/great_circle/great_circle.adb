@@ -38,62 +38,13 @@ package body Great_Circle is
     end if;
   end Angle_Of_Chord;
 
-  -- Mathematical spheric coordinates and vector
-  type Spheric_Rec is record
-    T, P : Real;
-  end record;
-
-  function Rad2Spheric (Rad : Lat_Lon.Lat_Lon_Rad_Rec) return Spheric_Rec is
-  begin
-    -- Theta is the co-latitude (Pi/2 - Lat), Phi is the longitude
-    return (T => Real(C_Nbres.Reduct(Conv.Pi / 2.0 - Rad.X)),
-            P => Real(Rad.Y));
-  end Rad2Spheric;
-
-  type Vector_Rec is record
-    A, B, C : Real;
-  end record;
-
-  function Vector_Of (A, B : Spheric_Rec) return Vector_Rec is
-    V : Vector_Rec;
-    Nu : Real;
-    use My_Math;
-  begin
-    Nu := Sin(A.T) * Sin(B.T) * Cos(B.P - A.P) + Cos(A.T) * Cos(B.T);
-    V.A := Nu * Sin(A.T) * Cos(A.P) - Sin(B.T) * Cos(B.P);
-    V.B := Nu * Sin(A.T) * Sin(A.P) - Sin(B.T) * Sin(B.P);
-    V.C := Nu * Cos(A.T) - Cos(B.T);
-    return V;
-  end Vector_Of;
-
-  function Scalar_Product (V1, V2 : Vector_Rec) return Real is
-    use type My_Math.Real;
-  begin
-    return V1.A * V2.A + V1.B * V2.B + V1.C * V2.C;
-  end Scalar_Product;
-
-  function Vectorial_Product (V1, V2 : Vector_Rec) return Vector_Rec is
-    use type My_Math.Real;
-  begin
-    return (A => V1.B * V2.C - V2.B * V1.C,
-            B => V1.C * V2.A - V2.C * V1.A,
-            C => V1.A * V2.B - V2.A * V1.B);
-  end Vectorial_Product;
-
-  function Vector_Norm (V : Vector_Rec) return Real is
-    use type My_Math.Real;
-  begin
-    return My_Math.Sqrt(Scalar_Product(V, V));
-  end Vector_Norm;
-
-
   -- Compute heading and distance form point A to point B
   procedure Compute_Route (A, B : in Lat_Lon.Lat_Lon_Geo_Rec;
                            Heading  : out Conv.Geo_Coord_Rec;
                            Distance : out Lat_Lon.Distance) is
 
     -- The radius for computation (Earth + Altitude);
-    Route_Radius : Lat_Lon.Distance := Earth_Radius;
+    Route_Radius : constant Lat_Lon.Distance := Earth_Radius;
 
     -- Lat lon of A and B in rad
     Lat_Lon_Rad_A, Lat_Lon_Rad_B : Lat_Lon.Lat_Lon_Rad_Rec;
@@ -120,13 +71,9 @@ package body Great_Circle is
     Lat_Lon_Rad_B := Lat_Lon.Geo2Rad(B);
 
     -- Compute delta of lat and log
-    declare
-      use type C_Nbres.Radian;
-    begin
-      Lat_Lon_Rad_Delta :=
+    Lat_Lon_Rad_Delta :=
               (X => C_Nbres.Reduct(Lat_Lon_Rad_B.X - Lat_Lon_Rad_A.X),
                Y => C_Nbres.Reduct(Lat_Lon_Rad_B.Y - Lat_Lon_Rad_A.Y));
-    end;
 
     -- Compute Chords A long, B long and lat
     Chord_Xa := Chord_Of_Angle (Lat_Lon_Rad_Delta.X,

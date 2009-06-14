@@ -1,5 +1,5 @@
 with Ada.Text_Io, Ada.Calendar;
-with Timers, Rnd, Chronos, Day_Mng;
+with Timers, Rnd, Chronos;
 with Moon, Debug;
 package body Lem is
 
@@ -78,6 +78,7 @@ package body Lem is
   Thrust_Tid : Timers.Timer_Id := Timers.No_Timer;
   function Timer_Thrust_Cb (Id : Timers.Timer_Id; Data : in Timers.Timer_Data)
            return Boolean is
+    pragma Unreferenced (Id, Data);
   begin
     -- Reset X thrust
     Current_X_Thrust := 0;
@@ -220,6 +221,7 @@ package body Lem is
   -- Timer callback computing new LEM characteristics
   function Period_Timer_Cb (Id : Timers.Timer_Id; Data : in Timers.Timer_Data)
                     return Boolean is
+    pragma Unreferenced (Id, Data);
     Fuel_Consumed : Fuel_Range;
     Mass : Mass_Range;
     New_Position : Position_Rec;
@@ -249,7 +251,7 @@ package body Lem is
 
     -- And for next time
     -- Fuel consumed during the Period
-    Fuel_Consumed := Conso_Of (abs Current_X_Thrust + abs Current_Y_Thrust,
+    Fuel_Consumed := Conso_Of (abs Current_X_Thrust + Current_Y_Thrust,
                                Period);
     -- New fuel remaining
     if Fuel_Consumed <= Current_Fuel then

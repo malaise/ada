@@ -1,6 +1,6 @@
 with Ada.Exceptions, Ada.Text_Io;
 
-with Text_Handler, Get_Line, Upper_Char;
+with Text_Handler, Get_Line;
 
 with Space.Board, Pieces, Image;
 

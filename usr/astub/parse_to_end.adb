@@ -1,7 +1,7 @@
 -- Go on parsing current input file up to the next End_String
 --  that is not within parentheses.
 with Ada.Strings.Unbounded;
-with Common, Words, Parser_Ada, Parse_To_Ends;
+with Words, Parser_Ada, Parse_To_Ends;
 procedure Parse_To_End (End_Lexic : in Parser_Ada.Lexical_Kind_List;
                         End_String : in String;
                         Level : in Natural;

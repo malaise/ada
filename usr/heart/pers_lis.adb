@@ -1,4 +1,4 @@
-with Afpx, Con_Io, Normal, Upper_Str, My_Math;
+with Afpx, Con_Io, Upper_Str;
 with Pers_Def, Str_Mng, Mesu_Mng, Pers_Mng, Pers_Fil;
 package body Pers_Lis is
 

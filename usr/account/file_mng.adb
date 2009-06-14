@@ -1,6 +1,4 @@
 with Ada.Text_Io, Ada.Sequential_Io, Ada.Exceptions;
-with Directory, Text_Handler;
-
 with Oper_Def;
 package body File_Mng is
 

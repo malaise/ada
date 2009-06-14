@@ -1,5 +1,6 @@
 with Ada.Text_Io;
 with Rnd;
+with Types;
 package body Scrambler_Gen is
 
   -- Generate a scrambler for enigma config file

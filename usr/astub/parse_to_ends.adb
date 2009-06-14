@@ -5,8 +5,7 @@
 -- For separator Line_fine must match line_feed
 --   space or htab matches space or htab
 with Ada.Strings.Unbounded;
-with Text_Line, Text_Char;
-with Files, Common, Words, Get_Separators, Output, Parser_Ada;
+with Common, Words, Get_Separators, Output, Parser_Ada;
 
 procedure Parse_To_Ends (End_Criteria : in Words.Word_Array;
                          Level : in Natural;

@@ -10,14 +10,7 @@ package body Nav_Data is
   Comp_Err : exception;
 
   -- Utilities to convert angles
-  -- From deg & min to real
-  function To_Real (Deg : Nav_Types.T_Degree; Min : Nav_Types.T_Minute := 0)
-   return Real is
-  begin
-    return Real (Deg) + Real (Min) / 60.0;
-  end To_Real;
-
-   -- From angle to real
+  -- From angle to real
   function To_Real (Angle : Nav_Types.T_Angle) return Real is
   begin
     return Real (Angle.Degrees) + Real (Angle.Minutes) / 60.0;
@@ -38,7 +31,6 @@ package body Nav_Data is
     Loc_R : Real := R;
     Deg : Nav_Types.T_Common_Deg;
     Min : Natural;
-    Ret_Angle : Nav_Types.T_Angle;
     use Nav_Types;
   begin
 
@@ -57,9 +49,7 @@ package body Nav_Data is
     Min := Natural (My_Math.Round ( abs(My_Math.Frac(Loc_R)) *
      ( Real(Nav_Types.T_Minute'Last) + 1.0) ) );
 
-    if Min <= Natural(Nav_Types.T_Minute'Last) then
-      Ret_Angle.Minutes := Nav_Types.T_Minute (Min);
-    else
+    if Min > Natural(Nav_Types.T_Minute'Last) then
       Deg := Deg + 1;
       Min := Min - Natural(Nav_Types.T_Minute'Last) - 1;
     end if;
@@ -175,8 +165,6 @@ package body Nav_Data is
   exception
     when Comp_Err =>
       Check := Val_Err;
-    when others => raise;
-
   end Resolution;
 
 end Nav_Data;

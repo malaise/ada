@@ -2,7 +2,7 @@ with Sys_Calls, Normal;
 with Definition, Scrambler_Factory, Io_Manager;
 package body Coder is
 
-  Debug : Boolean := False;
+  Debug : constant Boolean := False;
 
   -- The coder config
   type Jammer_Array is array (Definition.Jammers_Index range <>)

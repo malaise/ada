@@ -1,4 +1,4 @@
-with Argument, Afpx, Con_Io, Dynamic_List, Dir_Mng, Timers, Language;
+with Argument, Afpx, Con_Io, Dir_Mng, Timers, Language;
 procedure T_Afpx is
 
   procedure Dir_Sort is new Dir_Mng.File_List_Mng.Sort (Dir_Mng.Less_Than);
@@ -13,11 +13,11 @@ procedure T_Afpx is
   Redisplay    : Boolean;
   Flip_Flop : Boolean;
 
-  List1 : Afpx.Line_List_Mng.List_Type;
-
   Timer_Ss, Timer_Per, Timer_Tmp : Timers.Timer_Id;
+  pragma Unreferenced (Timer_Ss);
   function Timer_Cb (Id : Timers.Timer_Id;
                      Data : Timers.Timer_Data) return Boolean is
+    pragma Unreferenced (Id, Data);
   begin
     Flip_Flop := not Flip_Flop;
     return True;

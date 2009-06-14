@@ -2,7 +2,6 @@ with Upper_Char, Lower_Char;
 with Types, Io_Manager, Definition, Scrambler_Factory, Coder;
 procedure Enigma is
   Byte : Io_Manager.Byte;
-  Last_Char : constant Io_Manager.Byte := Character'Pos(Character'Last);
   Char, Uchar : Character;
   use type Io_Manager.Byte;
 begin
@@ -33,19 +32,17 @@ begin
     end;
     -- Check if it can be encoded
     -- Must be a character, an upper or lower letter
-    if Byte <= Last_Char then
-      Char := Character'Val(Byte);
-      if Char in Types.Letter then
+    Char := Character'Val(Byte);
+    if Char in Types.Letter then
+      -- Encode if it is a letter
+      Char := Coder.Encode (Char);
+      Byte := Character'Pos(Char);
+    else
+      Uchar := Upper_Char (Char);
+      if Uchar in Types.Letter then
         -- Encode if it is a letter
-        Char := Coder.Encode (Char);
+        Char := Lower_Char (Coder.Encode (Uchar));
         Byte := Character'Pos(Char);
-      else
-        Uchar := Upper_Char (Char);
-        if Uchar in Types.Letter then
-          -- Encode if it is a letter
-          Char := Lower_Char (Coder.Encode (Uchar));
-          Byte := Character'Pos(Char);
-        end if;
       end if;
     end if;
     -- Write byte

@@ -1,6 +1,6 @@
 with Ada.Characters.Latin_1;
 with Con_Io, Afpx, Normal, Language;
-with Point_Str, Resol;
+with Point_Str;
 package body Dialog is
 
   -- If points are not saved, ask for confirmation

@@ -3,7 +3,7 @@ with Argument, Arbitrary.Fractions, String_Mng;
 procedure T_Fraction is
 
   subtype Fraction is Arbitrary.Fractions.Fraction;
-  A, B, C, D : Fraction;
+  A, B : Fraction;
 
   Abort_Error : exception;
   procedure Usage is

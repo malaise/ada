@@ -1,7 +1,8 @@
 with Ada.Text_Io;
-with Environ, Many_Strings, Command;
+with Environ, Many_Strings, Common;
 package body Cmd is
 
+  use Common;
   -- Path to Words
   Words_Path_Env_Name : constant String := "WORDS_PATH";
   Words_Path_Init : Boolean := False;

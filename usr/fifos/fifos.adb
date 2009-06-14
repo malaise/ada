@@ -1,5 +1,4 @@
-with Assertion, Event_Mng, String_Mng, Text_Handler, Normal, Event_Mng,
-     Environ;
+with Assertion, String_Mng, Text_Handler, Normal, Environ;
 with Dictio_Lib;
 package body Fifos is
 
@@ -286,6 +285,7 @@ package body Fifos is
                               Remote_Port_Num : in Tcp_Util.Port_Num;
                               Remote_Host_Id  : in Tcp_Util.Host_Id;
                               New_Dscr        : in Socket.Socket_Dscr) is
+        pragma Unreferenced (Local_Dscr);
         Tmp_Dscr : Socket.Socket_Dscr;
         Rec : Fifo_Rec;
         Acc : Fifo_Access;
@@ -382,6 +382,7 @@ package body Fifos is
 
       procedure Connect (Fifo : in Fifo_Access) is
         Result : Boolean;
+        pragma Unreferenced (Result);
         Protocol : Socket.Protocol_List;
         use type Socket.Host_Id, Tcp_Util.Remote_Host_List;
       begin
@@ -557,6 +558,7 @@ package body Fifos is
       procedure Notify_Cb (Name : in String;
                            Item : in Boolean;
                            Data : in String) is
+        pragma Unreferenced (Item);
         Acc : Fifo_Access;
       begin
         -- Cet record and check
@@ -831,7 +833,6 @@ package body Fifos is
 
     -- Close all fifos of all kind this Message_Type
     procedure Close_All is
-      Id : Fifo_Id;
     begin
       List.Rewind;
       while not List.Empty loop

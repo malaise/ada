@@ -22,7 +22,6 @@ package body Dispatch is
 
   procedure Handle_New_Status
         (Prev_Status, New_Status : in Status.Status_List);
-  Prev_Status : Status.Status_List := Status.Starting;
 
   procedure Init is
     use type Event_Mng.Out_Event_List;
@@ -77,10 +76,10 @@ package body Dispatch is
         when Status.Starting | Status.Dead =>
           return;
         when Status.Init | Status.Fight =>
-          Fight_Mng.Event (From, Stat, Sync, Prio, Diff,
+          Fight_Mng.Event (From, Stat, Sync, Prio,
                           Item.Data(1 .. Item.Data_Len));
         when Status.Slave | Status.Master =>
-          Online_Mng.Event (From, Stat, Sync, Diff,
+          Online_Mng.Event (From, Stat, Sync,
                             Item.Data(1 .. Item.Data_Len));
       end case;
     elsif Kind = Intra_Dictio.Sync_Kind then

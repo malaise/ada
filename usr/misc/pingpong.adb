@@ -1,5 +1,5 @@
 with Ada.Exceptions, Ada.Calendar, Ada.Text_Io;
-with Argument, Socket, Tcp_Util, Ip_Addr, Event_Mng, Text_Handler, Date_Image, String_Mng;
+with Argument, Socket, Tcp_Util, Ip_Addr, Event_Mng, Date_Image, String_Mng;
 procedure Pingpong is
   Arg_Error : exception;
   Soc : Socket.Socket_Dscr;
@@ -10,14 +10,10 @@ procedure Pingpong is
     Ada.Text_Io.Put_Line (Date_Image (Ada.Calendar.Clock) & " PingPong -> " & Message);
   end Put;
 
-  -- Signal received
-  Sig : Boolean := False;
-
   -- Signal callback
   procedure Signal_Cb is
   begin
     Put ("Aborted.");
-    Sig := True;
   end Signal_Cb;
 
   -- Ping request is "Ping" "<ping_sender>"
@@ -47,6 +43,7 @@ procedure Pingpong is
 
   function Call_Back (F : in Event_Mng.File_Desc; Read : in Boolean)
                      return Boolean is
+    pragma Unreferenced (Read);
     use type Event_Mng.File_Desc, Socket.Host_Id;
     Message : Message_Type;
     Message_Len : Natural;

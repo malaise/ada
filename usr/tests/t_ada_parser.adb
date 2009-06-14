@@ -1,4 +1,4 @@
-with Ada.Text_Io, Ada.Characters.Latin_1;
+with Ada.Characters.Latin_1;
 with Argument, Text_Char, Text_Line, Sys_Calls, Ada_Parser, Mixed_Str;
 procedure T_Ada_Parser is
 

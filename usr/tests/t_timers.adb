@@ -11,8 +11,6 @@ with Ada.Text_Io;
 with Afpx, Con_Io, Timers, Rnd, Event_Mng;
 procedure T_Timers is
 
-  Timers_Error : exception;
-
   -- Afpx stuff
   Cursor_Field : Afpx.Field_Range;
   Cursor_Col   : Con_Io.Col_Range;
@@ -93,12 +91,14 @@ procedure T_Timers is
   -- Generic callback
   function Callback (Id : Timers.Timer_Id;
                      Data : Timers.Timer_Data) return Boolean is
+    pragma Unreferenced (Data);
     use type Timers.Timer_Id;
     N : Positive;
   begin
     if not Use_Afpx then
       declare
         W : Afpx.Width_Range;
+        pragma Unreferenced (W);
       begin
         W := Afpx.Get_Field_Width (F);
         Use_Afpx := True;

@@ -1,8 +1,8 @@
 with Ada.Calendar;
 
-with Big_Con_Io, Normal, Lower_Str, Lower_Char, Upper_Char, Day_Mng, Timers;
+with Big_Con_Io, Normal, Lower_Str, Upper_Char, Day_Mng, Timers;
 
-with Pieces, Space.Board, Image, Debug;
+with Pieces, Space.Board, Image;
 
 package body Screen is
 
@@ -185,10 +185,11 @@ package body Screen is
   end Put_Time;
 
 
-  procedure Erase_Time (Color : Space.Color_List) is
+  procedure Erase_Time is
   begin
     Con_Io.Move (2, 65);
-    Con_Io.Put ("               ", Foreground => Main_Back, Background => Main_Back);
+    Con_Io.Put ("               ", Foreground => Main_Back,
+                                   Background => Main_Back);
   end Erase_Time;
 
   procedure Reset_Time is
@@ -401,7 +402,7 @@ package body Screen is
     use type Con_Io.Curs_Mvt, Space.Color_List;
   begin
     if Ack then
-      Erase_Time (Move_Color);
+      Erase_Time;
     else
       Put_Time (Move_Color);
       -- Start a single shot timer (no callback)

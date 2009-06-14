@@ -1,5 +1,5 @@
 with Tcp_Util;
-with Space, Players;
+with Space;
 package Human is
 
   type Play_Mode is (Server, Client, Both);

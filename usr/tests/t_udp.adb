@@ -34,7 +34,8 @@ procedure T_Udp is
   procedure My_Receive is new Socket.Receive (Message_Type);
 
   function Call_Back (F : in Event_Mng.File_Desc; Read : in Boolean)
-  return Boolean is
+           return Boolean is
+    pragma Unreferenced (Read);
     use type Event_Mng.File_Desc;
     Message_Len : Natural;
   begin
@@ -130,6 +131,7 @@ begin
     -- Check host
     declare
       Dest_Host_Id : Socket.Host_Id;
+      pragma Unreferenced (Dest_Host_Id);
     begin
       Dest_Host_Id := Socket.Host_Id_Of (Text_Handler.Value (Server_Name));
       Socket.Set_Destination_Name_And_Service (Soc,

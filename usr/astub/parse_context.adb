@@ -1,11 +1,10 @@
 with Ada.Strings.Unbounded;
-with Text_Char;
 with Common, Output, Words, Parser_Ada,
      Parse_To_End, Parse_Procedure, Parse_Function, Parse_Package, Fix_Comment;
 
 procedure Parse_Context (Generated : out Boolean) is
   Word, Trash_Word : Words.Word_Rec;
-  Level : Natural := 0;
+  pragma Unreferenced (Trash_Word);
   Prev_Private : Boolean;
   use type Parser_Ada.Lexical_Kind_List;
 begin
@@ -22,15 +21,12 @@ begin
         -- End of file
         exit;
       elsif Str = "package" then
-        Level := 0;
         Output.New_Line;
         Parse_Package (0, Generated);
       elsif Str = "procedure" then
-        Level := 0;
         Output.New_Line;
         Parse_Procedure (0, Generated);
       elsif Str = "function" then
-        Level := 0;
         Output.New_Line;
         Parse_Function (0, Generated);
       elsif Str = "not" then

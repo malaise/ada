@@ -91,6 +91,7 @@ package body Files is
   procedure Close (Action : in Result_Action_List) is
     Fd : Sys_Calls.File_Desc;
     Dummy : Boolean;
+    pragma Unreferenced (Dummy);
   begin
     -- Close Out file if it is open
     if Text_Line.Is_Open (Out_File) then

@@ -46,7 +46,7 @@ begin
   New_Line (2);
 
   declare
-    Pa : T_Ptr_Tache := new T_Tache;
+    Pa : constant T_Ptr_Tache := new T_Tache;
     Pb : T_Tache;
   begin
     Put (Separateur); Put (" Debut bloc "); Put_Line (Separateur);

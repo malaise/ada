@@ -1,6 +1,5 @@
 with Ada.Strings.Unbounded;
 with Environ, Bool_Io, Arbitrary.Fractions, Async_Stdin;
-with Inte_Io, Real_Io;
 package body Debug is
 
   package Unb renames Ada.Strings.Unbounded;

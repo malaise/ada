@@ -1,7 +1,7 @@
 with Ada.Characters.Latin_1, Ada.Exceptions;
 with Argument, Text_Handler, Event_Mng, Sys_Calls, Async_Stdin, Text_Line;
 with Fifos;
-with Input_Dispatcher, Debug, Mcd_Mng, Io_Data;
+with Debug, Io_Data;
 package body Io_Flow is
 
   package Unb renames Ada.Strings.Unbounded;
@@ -237,6 +237,7 @@ package body Io_Flow is
   procedure Conn_Cb (Fifo_Name : in String;
                      Id        : in Mcd_Fifos.Fifo_Id;
                      Connected : in Boolean) is
+    pragma Unreferenced (Fifo_Name);
     Active : Boolean;
   begin
     if Connected then
@@ -262,6 +263,7 @@ package body Io_Flow is
   procedure Rece_Cb (Id      : in Mcd_Fifos.Fifo_Id;
                      Message : in Io_Data.Message_Type;
                      Length  : in Fifos.Message_Length) is
+    pragma Unreferenced (Id);
   begin
     if Length = 0 then
       return;

@@ -113,6 +113,7 @@ procedure Tcping is
   function Cancel_Cb (Id : in Timers.Timer_Id;
                     Data : in Timers.Timer_Data := Timers.No_Data)
            return Boolean is
+    pragma Unreferenced (Id, Data);
   begin
     Game_Over := True;
     return True;
@@ -121,6 +122,7 @@ procedure Tcping is
   -- Immediate timer to stop
   procedure Cancel is
     Cid : Timers.Timer_Id;
+    pragma Unreferenced (Cid);
   begin
     -- Need a timer so that the main loop Wait returns
     Cid := Timers.Create ( (Delay_Kind    => Timers.Delay_Sec,
@@ -171,7 +173,9 @@ procedure Tcping is
   function Timer_Cb (Id : in Timers.Timer_Id;
                      Data : in Timers.Timer_Data := Timers.No_Data)
            return Boolean is
+    pragma Unreferenced (Id, Data);
     Dummy :  Boolean;
+    pragma Unreferenced (Dummy);
   begin
     -- Cancel pending connection
     -- This occures if blocked looking for host/port in dns/yp...
@@ -255,7 +259,6 @@ begin
     when others =>
       Put_Arg_Error (Argument.Get_Parameter (Param_Key => "t"));
   end;
-  Delta_Tries := Timeout + 1.0;
   begin
     Delta_Tries := Timers.Period_Range'Value (
        Argument.Get_Parameter (Param_Key => "d"));
@@ -264,7 +267,7 @@ begin
     end if;
   exception
     when Argument.Argument_Not_Found =>
-      null;
+      Delta_Tries := Timeout + 1.0;
     when others =>
       Put_Arg_Error (Argument.Get_Parameter (Param_Key => "d"));
   end;

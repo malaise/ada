@@ -32,7 +32,7 @@ package body Points is
 
   function P_One_Point (Index : in Positive) return P_T_One_Point is
   begin
-    if Index < 1 or else Index > Storage.Number then
+    if Index > Storage.Number then
       raise P_Index_Out;
     end if;
     return Storage.The_Points(Index);
@@ -83,7 +83,7 @@ package body Points is
         end;
         Storage.The_Points(Storage.Number) := Point;
       when Remove =>
-        if Index < 1 or else Index > Storage.Number then
+        if Index > Storage.Number then
           raise P_Index_Out;
         end if;
         -- Shift points
@@ -92,7 +92,7 @@ package body Points is
           Storage.The_Points(Index + 1 .. Storage.Number + 1);
       when Modify =>
         -- Store new content
-        if Index < 1 or else Index > Storage.Number then
+        if Index > Storage.Number then
           raise P_Index_Out;
         end if;
         Storage.The_Points(Index) := Point;

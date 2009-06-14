@@ -1,5 +1,5 @@
-with Con_Io, Chronos;
-with Space, Flight, Lem;
+with Chronos;
+with Space, Flight;
 package Screen is
 
   -- Reset screen. Display titles and moon ground

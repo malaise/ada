@@ -1,5 +1,5 @@
 with Ada.Text_Io;
-with Sys_Calls, Proc_Family, Many_Strings, Argument, Text_Handler, Event_Mng;
+with Sys_Calls, Proc_Family, Event_Mng;
 
 procedure T_Proc_Child is
 
@@ -10,6 +10,7 @@ procedure T_Proc_Child is
 
   function Fd_Cb (Fd : in Sys_Calls.File_Desc;
                   Read : in Boolean) return Boolean is
+    pragma Unreferenced (Read);
     Res : Natural;
     use type Sys_Calls.File_Desc;
   begin

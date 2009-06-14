@@ -1,5 +1,5 @@
 with Ada.Strings.Unbounded;
-with Dynamic_List, Directory;
+with Dynamic_List;
 with Entities;
 package Lister is
 

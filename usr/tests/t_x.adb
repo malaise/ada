@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with My_Io, X_Mng, Event_Mng, Timers, Argument, Text_Handler,
+with X_Mng, Event_Mng, Timers, Argument, Text_Handler,
      Null_Procedure, Language;
 use X_Mng;
 procedure T_X is

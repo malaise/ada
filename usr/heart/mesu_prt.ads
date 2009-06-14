@@ -1,4 +1,3 @@
-with Afpx;
 package Mesu_Prt is
 
   procedure Print;

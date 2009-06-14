@@ -10,7 +10,7 @@ procedure Code is
   Rec : Grid_1.Coordinate_Rec;
   -- Better not allocate that in stack, but in heap.
   type Access_Long_String is access Grid_2.Long_String;
-  Str  : Access_Long_String
+  Str  : constant Access_Long_String
        := new Grid_2.Long_String(1 .. My_Math.Inte(1_048_576));
   File_Too_Long : exception;
 

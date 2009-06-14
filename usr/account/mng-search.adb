@@ -10,6 +10,7 @@ procedure Search is
   function Set_Today (Id : in Timers.Timer_Id;
                       Data : in Timers.Timer_Data := Timers.No_Data)
            return Boolean is
+    pragma Unreferenced (Id, Data);
     Newday : Oper_Def.Date_Rec;
     Seconds : Ada.Calendar.Day_Duration;
     use type Oper_Def.Date_Rec;
@@ -60,12 +61,6 @@ procedure Search is
     Date : Date_List;
     Reference : Oper_Def.Reference_Str;
   end record;
-
-  -- Set_Criteria Match for search
-  procedure Set (To : out Criteria_Rec; Val : in Criteria_Rec) is
-  begin
-    To := Val;
-  end Set;
 
   -- Unselect all non matching oper
   procedure Unsel_All (Crit : in Criteria_Rec) is
@@ -224,6 +219,7 @@ procedure Search is
   end Switch_Field;
 
   Dummy_Bool : Boolean;
+  pragma Unreferenced (Dummy_Bool);
 begin
 
   if Screen.Is_Sublist then

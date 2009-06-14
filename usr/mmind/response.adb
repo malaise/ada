@@ -7,7 +7,7 @@ package body Response is
   function Color_Random is new Rnd.Discr_Random (Common.Eff_Color_Range);
 
   procedure New_Code is
-    Current_Level : Common.Last_Level_Range := Common.Get_Level;
+    Current_Level : constant Common.Last_Level_Range := Common.Get_Level;
   begin
     Secret := (Level => Current_Level,
               Color => (others => Common.Eff_Color_Range'First) );

@@ -1,6 +1,5 @@
 with Ada.Exceptions, Ada.Characters.Latin_1;
-with Text_Handler, Event_Mng, Async_Stdin, Rnd, Argument, Sys_Calls, Parser,
-     Lower_Str, Pattern;
+with Event_Mng, Async_Stdin, Rnd, Argument, Sys_Calls, Parser, Pattern;
 with Dictio_Lib;
 procedure T_Dictio is
 
@@ -49,6 +48,7 @@ procedure T_Dictio is
                         Id   : in Pattern.Pattern_Id;
                         Nb_Match : in Natural;
                         Iter : in Parser.Iterator) return Boolean is
+    pragma Unreferenced (Rule, Nb_Match);
     Arg1 : constant String := Parser.Current_Word (Iter);
     Arg2 : constant String := Parser.Next_Word (Iter);
     Arg3 : constant String := Parser.Next_Word (Iter);
@@ -73,6 +73,7 @@ procedure T_Dictio is
                         Id   : in Pattern.Pattern_Id;
                         Nb_Match : in Natural;
                         Iter : in Parser.Iterator) return Boolean is
+    pragma Unreferenced (Rule);
     Arg1 : constant String := Parser.Current_Word (Iter);
     Arg2 : constant String := Parser.Next_Word (Iter);
     Alias_Name : constant String := "alias";
@@ -134,6 +135,7 @@ procedure T_Dictio is
                     Id   : in Pattern.Pattern_Id;
                     Nb_Match : in Natural;
                     Iter : in Parser.Iterator) return Boolean is
+    pragma Unreferenced (Rule, Nb_Match);
     Arg1 : constant String := Parser.Current_Word (Iter);
     Arg2 : constant String := Parser.Next_Word (Iter);
     use type Pattern.Pattern_Id;
@@ -157,8 +159,8 @@ procedure T_Dictio is
                 Id   : in Pattern.Pattern_Id;
                 Nb_Match : in Natural;
                 Iter : in Parser.Iterator) return Boolean is
+    pragma Unreferenced (Rule, Nb_Match);
     Arg1 : constant String := Parser.Current_Word (Iter);
-    Alias : constant Boolean := Nb_Match = 2;
     use type Pattern.Pattern_Id;
   begin
     -- Help/Status/Exit/Quit or error

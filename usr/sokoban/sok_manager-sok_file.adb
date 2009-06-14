@@ -1,5 +1,5 @@
 with Ada.Direct_Io, Ada.Sequential_Io;
-with Normal, Text_Handler, Sys_Calls, Directory;
+with Text_Handler, Sys_Calls, Directory;
 
 separate (Sok_Manager)
 -- Sokoban frames reading.
@@ -279,32 +279,6 @@ package body Sok_File is
       Close_Files (Sok_State_File, Sok_Saved_File);
       raise Error_Reading_Frame;
   end Restore;
-
-
-  procedure Init_Scores is
-    Sok_Score_File : Sok_Score_Mng.File_Type;
-    Score : Sok_Types.Score_Rec;
-  begin
-    Score.Set := False;
-    begin
-      Sok_Score_Mng.Open (Sok_Score_File, Sok_Score_Mng.Inout_File,
-       Sok_Score_Name);
-      Sok_Score_Mng.Close (Sok_Score_File);
-    exception
-      when Sok_Score_Mng.Name_Error =>
-        -- Create default score file
-        Sok_Score_Mng.Create (Sok_Score_File, Sok_Score_Mng.Inout_File,
-             Sok_Score_Name);
-        for I in Sok_Types.Frame_Range loop
-          Sok_Score_Mng.Write (Sok_Score_File, Score);
-        end loop;
-        Sok_Score_Mng.Close (Sok_Score_File);
-    end;
-  exception
-    when others =>
-      raise Score_Io_Error;
-  end Init_Scores;
-
 
   function Read_Score (No : Sok_Types.Frame_Range) return Sok_Types.Score_Rec is
     Sok_Score_File : Sok_Score_Mng.File_Type;

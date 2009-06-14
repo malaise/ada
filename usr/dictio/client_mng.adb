@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with Socket, Tcp_Util, Dynamic_List, Event_Mng, Environ;
+with Socket, Tcp_Util, Event_Mng, Environ;
 with Args, Parse, Notify, Client_Fd, Client_Com, Dictio_Debug, Intra_Dictio,
      Versions, Status, Alias;
 package body Client_Mng is
@@ -23,6 +23,7 @@ package body Client_Mng is
 
   function Read_Cb (Fd : in Event_Mng.File_Desc; Read : in Boolean)
                    return Boolean is
+    pragma Unreferenced (Read);
     Dscr : Socket.Socket_Dscr;
     Msg : Client_Com.Dictio_Client_Rec;
     Len : Natural;
@@ -130,6 +131,7 @@ package body Client_Mng is
                        Remote_Port_Num : in Tcp_Util.Port_Num;
                        Remote_Host_Id  : in Tcp_Util.Host_Id;
                        New_Dscr        : in Socket.Socket_Dscr) is
+    pragma Unreferenced (Local_Dscr, Remote_Port_Num, Remote_Host_Id);
     use type Tcp_Util.Port_Num;
   begin
     if Local_Port_Num /= Accept_Port then
@@ -154,6 +156,7 @@ package body Client_Mng is
     declare
       Msg : Client_Com.Dictio_Client_Rec;
       Dummy : Boolean;
+      pragma Unreferenced (Dummy);
     begin
       -- Send version then status
       Msg.Action := Client_Com.Version;
@@ -221,7 +224,6 @@ package body Client_Mng is
 
 
   procedure Quit is
-    Dscr : Socket.Socket_Dscr;
   begin
     if Dictio_Debug.Level_Array(Dictio_Debug.Client) then
       Dictio_Debug.Put ("Client: quit");
@@ -256,6 +258,7 @@ package body Client_Mng is
   procedure Send_Status (Dscr : in Socket.Socket_Dscr) is
     Msg : Client_Com.Dictio_Client_Rec;
     Dummy : Boolean;
+    pragma Unreferenced (Dummy);
     State : constant String
           := Status.Stable_Status_List'Image(Dictio_Status);
 
@@ -271,7 +274,7 @@ package body Client_Mng is
   end Send_Status;
 
   procedure New_Status is
-    Got_New_Status : Status.Stable_Status_List := Status.Get_Stable;
+    Got_New_Status : constant Status.Stable_Status_List := Status.Get_Stable;
     Dscr : Socket.Socket_Dscr;
     use type Status.Stable_Status_List, Socket.Socket_Dscr;
   begin

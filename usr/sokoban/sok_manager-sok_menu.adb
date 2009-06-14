@@ -12,6 +12,7 @@ function Sok_Menu (Done : Boolean) return Menu_Result_List is
     Sok_Display.Put_Error (Error);
     declare
       Key : Sok_Input.Key_List;
+      pragma Unreferenced (Key);
     begin
       Key := Sok_Input.Get_Key;
     exception

@@ -1,5 +1,4 @@
 with Ada.Strings.Unbounded;
-with Text_Char;
 with Common, Output, Words, Parser_Ada, Parse_To_End,
      Parse_Procedure, Parse_Function, Parse_Entry, Fix_Comment, Put_Comments;
 

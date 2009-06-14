@@ -28,6 +28,7 @@ procedure T_Proc_Father is
 
   function Fd_Cb (Fd : in Sys_Calls.File_Desc;
                   Read : in Boolean) return Boolean is
+    pragma Unreferenced (Read);
     Buf : String (1 .. 1024);
     Res : Natural;
     Reply : constant String := "F2C";

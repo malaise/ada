@@ -1,4 +1,3 @@
-with Types;
 package Scrambler_Gen is
 
   -- generate a scrambler string (symetrical or not)

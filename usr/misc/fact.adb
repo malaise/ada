@@ -1,6 +1,4 @@
-
-
-with My_Io, Ada.Text_Io; use My_Io;
+with My_Io; use My_Io;
 -- calcul de la factorielle d'un entier;
 
 procedure Fact is
@@ -46,7 +44,7 @@ begin
       New_Line;
       New_Line;
     exception
-      when Constraint_Error | Numeric_Error | Storage_Error =>
+      when Constraint_Error | Storage_Error =>
         Put_Line("Nombre trop grand. Recommencez.");
         New_Line;
     end;

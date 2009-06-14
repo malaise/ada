@@ -11,14 +11,16 @@ procedure T_Urand is
     Actual_Results : Results_Type;
     Eos : Natural;
     Results_Ok : Boolean := True;
-    Expected_Results : Results_Type := (1=>" 6533892.00",
-                                        2=>"14220222.00",
-                                        3=>" 7275067.00",
-                                        4=>" 6172232.00",
-                                        5=>" 8354498.00",
-                                        6=>"10633180.00");
+    Expected_Results : constant Results_Type
+                     := (1=>" 6533892.00",
+                         2=>"14220222.00",
+                         3=>" 7275067.00",
+                         4=>" 6172232.00",
+                         5=>" 8354498.00",
+                         6=>"10633180.00");
 
     Rnum : Float;
+    pragma Unreferenced (Rnum);
 begin
     for I in 1..20000 loop
         Rnum := U_Rand.Next;

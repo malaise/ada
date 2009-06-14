@@ -1,11 +1,6 @@
 with My_Io, Argument, Text_Handler, Directory;
 procedure Ddir is
 
-  procedure Usage is
-  begin
-    My_Io.Put_Line ("Usage: " & Argument.Get_Program_Name & " [ { <directory> } ]");
-  end Usage;
-
   procedure Ddir_One (Dir_Name : in String) is
     Dir_Dsc : Directory.Dir_Desc;
     Entry_Name : Text_Handler.Text (Directory.Max_Dir_Name_Len);

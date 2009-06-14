@@ -51,7 +51,7 @@ package body Fl_Time is
       return - (Abs_Time(Left) - Right);
     end if;
   exception
-    when Constraint_Error | Numeric_Error =>
+    when Constraint_Error =>
       raise Time_Overflow;
   end "+";
 
@@ -80,7 +80,7 @@ package body Fl_Time is
       return Left + (- Right);
     end if;
   exception
-    when Constraint_Error | Numeric_Error =>
+    when Constraint_Error =>
       raise Time_Overflow;
   end "-";
 

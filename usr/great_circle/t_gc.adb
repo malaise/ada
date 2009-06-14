@@ -11,7 +11,7 @@ procedure T_Gc is
     Ada.Text_Io.Put_Line (" where a is N or S and o is E or W.");
   end Usage;
 
-  Debug : Boolean := False;
+  Debug : constant Boolean := False;
 
   Use_Afpx : Boolean;
 
@@ -44,6 +44,7 @@ procedure T_Gc is
                           Cursor_Col : Con_Io.Full_Col_Range;
                           Enter_Field_Cause : Afpx.Enter_Field_Cause_List;
                           Str : Wide_String) return Con_Io.Full_Col_Range is
+    pragma Unreferenced (Cursor_Field, New_Field, Cursor_Col);
     use type Afpx.Enter_Field_Cause_List;
   begin
     if Need_Clean then

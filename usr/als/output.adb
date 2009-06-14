@@ -506,7 +506,6 @@ package body Output is
 
   -- Put Total size, no new_line
   procedure Put_Size (Size : in Lister.Size_Type) is
-    Limit : constant Lister.Size_Type := Kilo / 2;
     Kilos : Lister.Size_Type;
     Kilosi, Kilosf : Lister.Size_Type;
 

@@ -24,7 +24,6 @@ procedure Udp_Spy is
 
   package Byte_Io is new Ada.Text_Io.Integer_Io (Socket.Byte);
 
-  function Byte_Image is new Int_Image (Socket.Byte);
   function Port_Image is new Int_Image (Socket.Port_Num);
   function Inte_Image is new Int_Image (Integer);
 
@@ -80,7 +79,7 @@ procedure Udp_Spy is
     Hexa_Str : String (1 .. 49) := (others => ' ');
     Char_Str : String (1 .. 16) := (others => ' ');
     function Hexa_Index (I : Positive) return Positive is
-      T : Natural := (I - 1) rem 16;
+      T : constant Natural := (I - 1) rem 16;
     begin
       if T < 8 then
         return T * 3 + 1;
@@ -120,6 +119,7 @@ procedure Udp_Spy is
 
   function Call_Back (F : in Event_Mng.File_Desc; Read : in Boolean)
                      return Boolean is
+    pragma Unreferenced (Read);
     use type Event_Mng.File_Desc;
     Data_Len : Natural;
   begin
@@ -205,13 +205,12 @@ begin
 
   -- Interface
   -- Default
-  Iface := (Kind => Tcp_Util.Host_Id_Spec, Id => Socket.No_Host);
   begin
     Iface := Ip_Addr.Parse (Argument.Get_Parameter (1, "i"));
     Nb_Options := Nb_Options + 1;
   exception
     when Argument.Argument_Not_Found =>
-      null;
+      Iface := (Kind => Tcp_Util.Host_Id_Spec, Id => Socket.No_Host);
     when others =>
       raise Arg_Error;
   end;

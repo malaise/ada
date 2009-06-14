@@ -1,4 +1,3 @@
-with Language;
 package body Oper_Def is
 
   function Current_Date return Date_Rec is

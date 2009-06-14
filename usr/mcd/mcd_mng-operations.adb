@@ -12,11 +12,6 @@ package body Operations is
     return X.Val_Bool;
   end Is_True;
 
-  function Is_Inte_Or_Real (X : Item_Rec) return Boolean is
-  begin
-    return X.Kind = Inte or else X.Kind = Real;
-  end Is_Inte_Or_Real;
-
   function Is_Arbi_Or_Inte_Or_Real (X : Item_Rec) return Boolean is
   begin
     return X.Kind = Arbi or else X.Kind = Inte or else X.Kind = Real;
@@ -33,18 +28,6 @@ package body Operations is
     return X.Kind = Arbi or else X.Kind = Inte;
   end Is_Arbi_Or_Inte;
 
-  function Is_Inte_Or_Real_Or_Bool (X : Item_Rec) return Boolean is
-  begin
-    return X.Kind = Inte or else X.Kind = Real or else X.Kind = Bool;
-  end Is_Inte_Or_Real_Or_Bool;
-
-  function Is_Inte_Or_Real_Or_Bool_Or_Chars (X : Item_Rec)
-           return Boolean is
-  begin
-    return X.Kind = Inte or else X.Kind = Real
-   or else X.Kind = Bool or else X.Kind = Chrs;
-  end Is_Inte_Or_Real_Or_Bool_Or_Chars;
-
   function Is_Arbi_Or_Frac_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi
     (X : Item_Rec) return Boolean is
   begin
@@ -52,13 +35,6 @@ package body Operations is
    or else X.Kind = Inte or else X.Kind = Real
    or else X.Kind = Bool or else X.Kind = Chrs or else X.Kind = Regi;
   end Is_Arbi_Or_Frac_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi;
-
-  function Is_Arbi_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi (X : Item_Rec)
-           return Boolean is
-  begin
-    return X.Kind = Arbi or else X.Kind = Inte or else X.Kind = Real
-   or else X.Kind = Bool or else X.Kind = Chrs or else X.Kind = Regi;
-  end Is_Arbi_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi;
 
   -- Arbi,Arbi->Arbi or Frac,Frac->Frac or Inte,Inte->Inte or Real,Real->Real
   function Add     (L, R : Item_Rec) return Item_Rec is
@@ -167,7 +143,6 @@ package body Operations is
 
   -- Arbi,Arbi->Arbi or Frac,Arbi->Frac or Inte,Inte->Inte or Real,Real->Real
   function Pow     (L, R : Item_Rec) return Item_Rec is
-    use My_Math; -- for real ** real
     use type Arbitrary.Number, Arbitrary.Fractions.Fraction;
   begin
     if not Is_Arbi_Or_Frac_Or_Inte_Or_Real(L)

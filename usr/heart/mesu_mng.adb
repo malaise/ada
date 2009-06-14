@@ -1,6 +1,6 @@
-with Con_Io, Afpx, Normal, Perpet, Dir_Mng;
+with Con_Io, Afpx, Normal, Dir_Mng;
 with Mesu_Edi, Pers_Mng, Mesu_Def, Mesu_Sel, Mesu_Nam, Pers_Lis, Mesu_Fil,
-     Pers_Def, Mesu_Prt, Mesu_Gra;
+     Mesu_Prt, Mesu_Gra;
 use Afpx;
 package body Mesu_Mng is
 
@@ -17,7 +17,6 @@ package body Mesu_Mng is
     Criteria     : Mesu_Sel.Criteria_Rec;
     Line         : Afpx.Line_Rec;
     File_Name    : Mesu_Nam.File_Name_Str;
-    P_File_Name  : Mesu_Nam.File_Name_Str;
     Exit_Program : Boolean;
     Current_Date : Str_Mng.Date_Str_Rec;
     Redisplay    : Boolean;
@@ -347,7 +346,6 @@ package body Mesu_Mng is
               Str_Mng.Format_List_To_Mesure (Line, File_Name);
 
               -- Edit
-              P_File_Name := File_Name;
               Mesu_Edi.Edit (File_Name, Exit_Program);
               if Exit_Program then
                 exit List;
@@ -365,7 +363,6 @@ package body Mesu_Mng is
               Str_Mng.Format_List_To_Mesure (Line, File_Name);
 
               -- Delete
-              P_File_Name := File_Name;
               Mesu_Edi.Delete (File_Name, Exit_Program);
 
               if Exit_Program then

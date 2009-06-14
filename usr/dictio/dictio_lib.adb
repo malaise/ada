@@ -47,7 +47,9 @@ package body Dictio_Lib is
     end if;
   end Close;
 
-  function Read_Cb (Fd : in Event_Mng.File_Desc; Read : in Boolean) return Boolean is
+  function Read_Cb (Fd : in Event_Mng.File_Desc; Read : in Boolean)
+           return Boolean is
+    pragma Unreferenced (Read);
     Len : Natural;
     State : Status.Stable_Status_List;
     New_Dictio_State : Dictio_State_List;
@@ -164,6 +166,7 @@ package body Dictio_Lib is
                            Remote_Host_Id  : in Tcp_Util.Host_Id;
                            Connected       : in Boolean;
                            Dscr            : in Socket.Socket_Dscr) is
+    pragma Unreferenced (Remote_Port_Num, Remote_Host_Id);
   begin
     if not Connected then
       if Dictio_Debug.Level_Array(Dictio_Debug.Lib) then
@@ -186,6 +189,7 @@ package body Dictio_Lib is
 
   procedure Connect_To_Dictio is
     Connected : Boolean;
+    pragma Unreferenced (Connected);
   begin
     Connected := Tcp_Util.Connect_To (Protocol,
                                       Host, Port, 1.0, 0,

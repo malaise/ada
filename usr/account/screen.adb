@@ -1,4 +1,5 @@
 with String_Mng, Normal, Con_Io;
+with Unit_Format;
 package body Screen is
   type Modes_List is (Default, Confirm, Ack);
 

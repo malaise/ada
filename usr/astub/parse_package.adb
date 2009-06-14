@@ -1,8 +1,7 @@
 with Ada.Strings.Unbounded;
-with Text_Char;
 with Common, Output, Words, Parser_Ada, Parse_To_End, Parse_Type,
      Parse_Procedure, Parse_Function, Parse_Task, Parse_Protected,
-     Parse_Name, Put_Comments, Get_Separators, Fix_Comment;
+     Parse_Name, Put_Comments, Fix_Comment;
 
 procedure Parse_Package (Level : in Natural;
                          Generated : in out Boolean) is

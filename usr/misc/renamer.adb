@@ -16,14 +16,9 @@ procedure Renamer is
 
   Access_Error : exception;
   function File_Exists (File_Name : String) return Boolean is
-    Stat : Sys_Calls.File_Stat_Rec;
   begin
-    -- Check new name is accessible and does not exist
-    Stat := Sys_Calls.File_Stat (File_Name);
-    return True;
+    return Sys_Calls.File_Check (File_Name);
   exception
-    when Sys_Calls.Name_Error =>
-      return False;
     when Sys_Calls.Access_Error =>
       raise Access_Error;
   end File_Exists;

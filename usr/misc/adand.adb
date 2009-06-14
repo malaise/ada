@@ -63,7 +63,7 @@ begin
   exception
     when Argument.Argument_Not_Found =>
       Line_Deb := 1;
-    when Constraint_Error | Numeric_Error =>
+    when Constraint_Error =>
       Usage;
       raise;
   end;
@@ -74,7 +74,7 @@ begin
   exception
     when Argument.Argument_Not_Found =>
       Line_Fin := Positive'Last;
-    when Constraint_Error | Numeric_Error =>
+    when Constraint_Error =>
       Usage;
       raise;
   end;
@@ -85,7 +85,7 @@ begin
   exception
     when Argument.Argument_Not_Found =>
       Ind := 2;
-    when Constraint_Error | Numeric_Error =>
+    when Constraint_Error =>
       Usage;
       raise;
   end;

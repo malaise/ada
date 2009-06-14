@@ -36,7 +36,8 @@ procedure T_Tcp is
   procedure My_Receive is new Socket.Receive (Message_Type);
 
   function Call_Back (F : in Event_Mng.File_Desc; Read : in Boolean)
-  return Boolean is
+           return Boolean is
+    pragma Unreferenced (Read);
     use type Event_Mng.File_Desc;
     Message_Len : Natural;
   begin

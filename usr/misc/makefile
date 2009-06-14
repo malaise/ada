@@ -1,6 +1,7 @@
 include $(HOME)/Makefiles/common.mk
 
 ADAVIEW := $(REPOSIT)
+ADAWARN := true
 AFPX := true
 
 EXES := adand add_nums alook arbipas beep comp_vars ddir e2f fact g \

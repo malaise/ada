@@ -78,6 +78,7 @@ procedure T_Fifos is
   end Rece_Cb;
 
   procedure Ovfl_Cb (Id      : in Test_Fifo.Fifo_Id) is
+    pragma Unreferenced (Id);
   begin
     Ada.Text_Io.Put_Line ("End of overflow");
   end Ovfl_Cb;

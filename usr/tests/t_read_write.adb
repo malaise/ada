@@ -1,5 +1,5 @@
 with Ada.Text_Io;
-with Mutex_Manager, Schedule, Rnd, Normal, Argument, Mixed_Str, Basic_Proc;
+with Mutex_Manager, Schedule, Rnd, Normal, Argument, Basic_Proc;
 
 procedure T_Read_Write is
   pragma Priority(10);
@@ -33,7 +33,7 @@ procedure T_Read_Write is
     Dur : Duration;
     Kind : Mutex_Manager.Access_Kind;
     subtype Str5 is String (1 .. 5);
-    Kind_Strs : array (Mutex_Manager.Access_Kind) of Str5 := (
+    Kind_Strs : constant array (Mutex_Manager.Access_Kind) of Str5 := (
       Mutex_Manager.Read  => " Read",
       Mutex_Manager.Write => "Write");
     Res : Boolean;

@@ -80,16 +80,17 @@ procedure Garde is
 
 begin
   Cond := False;
-  Put_Line("        Prog condition FALSE");
+  Put_Line("        Prog condition " & Cond'Img);
   Serveur.Init;
   Client_1.Init;
   Client_2.Init;
   delay 3.0;
   Cond := True;
-  Put_Line("        Prog condition TRUE");
+  Put_Line("        Prog condition " & Cond'Img);
   delay 3.0;
   Put_Line("        fin Prog");
 exception
   when others =>
     Put_Line("        exception Prog");
 end Garde;
+

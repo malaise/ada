@@ -22,8 +22,6 @@ procedure Xml_Checker is
 
   -- Argument error
   Arg_Error : exception;
-  -- Error on Xml directive!
-  Internal_Error : exception;
   -- Abort loop of arguments
   Abort_Error : exception;
 
@@ -105,7 +103,7 @@ procedure Xml_Checker is
   end Dump_Line;
 
   procedure Dump_Attributes (Elt : in Xml_Parser.Element_Type) is
-    Attrs : Xml_Parser.Attributes_Array := Ctx.Get_Attributes (Elt);
+    Attrs : constant Xml_Parser.Attributes_Array := Ctx.Get_Attributes (Elt);
     use type Asu_Us;
   begin
     for I in Attrs'Range loop

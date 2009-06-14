@@ -1,10 +1,8 @@
-with Ada.Exceptions, System;
-with Sys_Calls, Address_Ops, Socket, Tcp_Util, Channels, Mixed_Str;
-with Dictio_Debug, Parse, Local_Host_Name, Status, Errors;
+with Ada.Exceptions;
+with Address_Ops, Socket, Channels, Mixed_Str;
+with Dictio_Debug, Parse, Local_Host_Name;
 pragma Elaborate (Channels);
 package body Intra_Dictio is
-
-  Byte_Size : constant := System.Storage_Unit;
 
   type Header_Rec is record
     Stat : Character;
@@ -205,6 +203,7 @@ package body Intra_Dictio is
   procedure Read_Cb (Message  : in Message_Rec;
                      Length   : in Channels.Message_Length;
                      Diffused : in Boolean) is
+  pragma Unreferenced (Length);
   begin
     -- Discard own message
     if Mode = Bus and then Local_Name = Message.Head.From then

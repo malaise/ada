@@ -102,7 +102,9 @@ procedure T_Tcp_Util is
                         Remote_Host_Id  : in Tcp_Util.Host_Id;
                         Connected       : in Boolean;
                         Dscr            : in Socket.Socket_Dscr) is
+    pragma Unreferenced (Remote_Port_Num, Remote_Host_Id);
     Dummy : Boolean;
+    pragma Unreferenced (Dummy);
   begin
     if Connected then
       The_Dscr := Dscr;
@@ -127,8 +129,8 @@ procedure T_Tcp_Util is
 
   procedure Connect is
     Host : Tcp_Util.Remote_Host(Tcp_Util.Host_Name_Spec);
-    Port : Tcp_Util.Remote_Port;
     Result : Boolean;
+    pragma Unreferenced (Result);
   begin
     Host.Name (1 .. Text_Handler.Length(Server_Name))
          := Text_Handler.Value(Server_Name);
@@ -144,6 +146,8 @@ procedure T_Tcp_Util is
                        Remote_Port_Num : in Tcp_Util.Port_Num;
                        Remote_Host_Id  : in Tcp_Util.Host_Id;
                        New_Dscr        : in Socket.Socket_Dscr) is
+    pragma Unreferenced (Local_Port_Num, Local_Dscr, Remote_Port_Num,
+                         Remote_Host_Id);
     use type Socket.Socket_Dscr;
     Tmp_Dscr : Socket.Socket_Dscr;
   begin
@@ -175,9 +179,11 @@ procedure T_Tcp_Util is
   end Wait;
 
   function Read_Cb (Fd : in Event_Mng.File_Desc; Read : in Boolean)
-  return Boolean is
+           return Boolean is
+    pragma Unreferenced (Read);
     Len : Natural;
     Res : Boolean;
+    pragma Unreferenced (Res);
     use type Event_Mng.File_Desc;
   begin
     if Server then

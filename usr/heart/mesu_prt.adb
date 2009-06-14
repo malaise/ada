@@ -64,6 +64,7 @@ package body Mesu_Prt is
     Person    : Pers_Def.Person_Rec;
     Mesure    : Mesu_Def.Mesure_Rec;
     Dummy     : Integer;
+    pragma Unreferenced (Dummy);
 
     use Afpx.Line_List_Mng;
   begin

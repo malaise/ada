@@ -1,5 +1,5 @@
 with Ada.Text_Io;
-with Event_Mng, Chronos;
+with Chronos;
 with Space, Screen, Flight, Moon, Lem, Debug;
 package body Game is
 

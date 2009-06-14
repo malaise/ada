@@ -1,6 +1,6 @@
 with Ada.Text_Io, Ada.Calendar;
 with Text_Handler, Dynamic_List, Directory, Afpx, Select_File, Normal,
-     Environ, Sys_Calls, Date_Image, Language, Perpet;
+     Oper_Def, Environ, Sys_Calls, Date_Image, Language, Perpet;
 with File_Mng, Oper_Dyn_List_Mng, Screen, Unit_Format;
 
 -- Manage the whole acount status
@@ -193,7 +193,7 @@ package body Mng is
       begin
         Amounts(Kind).Amount := Amounts(Kind).Amount + Value;
       exception
-        when Constraint_Error | Numeric_Error =>
+        when Constraint_Error =>
           Amounts(Kind).Overflow := True;
         end;
       end if;
@@ -333,7 +333,6 @@ package body Mng is
   -- Load from file
   procedure Load (File_Name : in String) is
     Loaded_Name : Text_Handler.Text(Account_Name.Max_Len);
-    Oper : Oper_Def.Oper_Rec;
     Can_Write : Boolean;
   begin
     if not Account_Saved
@@ -451,7 +450,6 @@ package body Mng is
   end Save;
 
   procedure Clear is
-    Oper : Oper_Def.Oper_Rec;
   begin
     if not Account_Saved
     and then not Screen.Confirm_Action(Screen.Overwrite_Account) then
@@ -570,7 +568,6 @@ package body Mng is
     end if;
     New_Line (Pf);
 
-    Line := Line + 1;
     New_Page(Pf);
     Flush(Pf);
 
@@ -579,6 +576,7 @@ package body Mng is
       Val : String(1 .. 256);
       Len : Natural;
       Dummy : Integer;
+      pragma Unreferenced (Dummy);
     begin
       Len := 3;
       Val (1 .. Len) := "lpr";
@@ -736,7 +734,7 @@ package body Mng is
         begin
           Tmp_Amount := Tmp_Amount + Oper.Amount;
         exception
-          when Constraint_Error | Numeric_Error =>
+          when Constraint_Error =>
             -- Overflow on root amount. Cancel.
             Deletion.Cancel_Deletions;
             Screen.Ack_Error(Screen.Capacity_Error);

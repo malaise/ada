@@ -25,7 +25,8 @@ package body Action is
   end End_Action;
 
   procedure Update_Try (Propal : in Common.Propal_Range) is
-    Prop_State : Common.Propal_State_Rec := Common.Get_Propal_State (Propal);
+    Prop_State : constant Common.Propal_State_Rec
+               := Common.Get_Propal_State (Propal);
     use Common;
   begin
     for I in Common.Level_Range

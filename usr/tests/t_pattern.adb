@@ -50,6 +50,7 @@ procedure T_Pattern is
                 Pa : in Pattern.Pattern_Id;
                 Nb : in Natural;
                 It : in Parser.Iterator) return Boolean is
+    pragma Unreferenced (Ru, Pa, Nb);
     New_Pa : Pattern.Pattern_Id;
 
     Str : constant String := Parser.Image (It);
@@ -86,6 +87,7 @@ procedure T_Pattern is
                 Pa : in Pattern.Pattern_Id;
                 Nb : in Natural;
                 It : in Parser.Iterator) return Boolean is
+    pragma Unreferenced (Ru, Pa, Nb);
     New_Pa : Pattern.Pattern_Id;
 
   begin
@@ -109,6 +111,7 @@ procedure T_Pattern is
                 Pa : in Pattern.Pattern_Id;
                 Nb : in Natural;
                 It : in Parser.Iterator) return Boolean is
+    pragma Unreferenced (Ru, Pa, Nb);
     Str : constant String := Parser.Image (It);
     First : constant Natural := Parser.First_Index (It);
     Res : Boolean;
@@ -131,6 +134,7 @@ procedure T_Pattern is
                 Pa : in Pattern.Pattern_Id;
                 Nb : in Natural;
                 It : in Parser.Iterator) return Boolean is
+    pragma Unreferenced (Ru, Pa, Nb);
     Str : constant String := Parser.Current_Word (It);
     Str1 : constant String := Parser.Next_Word (It);
     Pat2Put : Pattern.Pattern_Id;
@@ -174,6 +178,7 @@ procedure T_Pattern is
                 Pa : in Pattern.Pattern_Id;
                 Nb : in Natural;
                 It : in Parser.Iterator) return Boolean is
+    pragma Unreferenced (Ru, Pa, Nb, It);
   begin
     Ada.Text_Io.Put_Line ("The following commands are supported:");
     Ada.Text_Io.Put_Line ("  set <id> <pattern>");

@@ -9,11 +9,13 @@ procedure T_Virtual is
   My_Observer : aliased Observer_Rec;
   My_Chrono : Chronos.Chrono_Type;
   My_Tid : Timers.Timer_Id;
+  pragma Unreferenced (My_Tid);
 
   procedure Notify (An_Observer : in out Observer_Rec;
                     Rtime, Vtime : in Virtual_Time.Time;
                     Speed : in Virtual_Time.Speed_Range;
                     A_Clock : in Virtual_Time.Clock_Access) is
+    pragma Unreferenced (An_Observer, Rtime, Speed);
     Rt, Vt : Virtual_Time.Time;
   begin
     Ada.Text_Io.Put_Line ("Observer notified of change done at V "
@@ -27,6 +29,7 @@ procedure T_Virtual is
   function Timer_Callback (Id : in Timers.Timer_Id;
                            Data : in Timers.Timer_Data := Timers.No_Data)
            return Boolean is
+    pragma Unreferenced (Id, Data);
   begin
     Ada.Text_Io.Put_Line ("Timer expiration at "
       & Date_Image (Virtual_Time.Current_Time (null))

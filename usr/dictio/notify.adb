@@ -1,4 +1,4 @@
-with Dynamic_List, Socket, Event_Mng;
+with Dynamic_List, Event_Mng;
 with Client_Com, Client_Fd, Dictio_Debug, Parse, Names;
 package body Notify is
 
@@ -134,6 +134,7 @@ package body Notify is
       Fd := Socket.Fd_Of (Rec.Client);
       declare
         Dummy : Boolean;
+        pragma Unreferenced (Dummy);
       begin
         Dummy := Client_Com.Dictio_Send (Rec.Client, null, Msg);
         if Dictio_Debug.Level_Array(Dictio_Debug.Client_Notify) then

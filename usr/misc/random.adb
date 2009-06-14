@@ -1,5 +1,4 @@
-with Ada.Text_Io;
-with Argument, Rnd, Basic_Proc, My_Math, Int_Io, Flo_Io, Get_Float;
+with Argument, Rnd, Basic_Proc, Int_Io, Flo_Io, Get_Float;
 procedure Random is
 
   Nb_Arg : Natural;
@@ -7,9 +6,6 @@ procedure Random is
   Int_Float_Min, Int_Float_Max : Get_Float.Int_Float_Rec;
 
   Error : exception;
-
-  package Inte_Io is new Ada.Text_Io.Integer_Io(My_Math.Inte);
-  package Real_Io is new Ada.Text_Io.Float_Io(My_Math.Real);
 
 begin
 

@@ -93,7 +93,7 @@ begin    -- para
     when Storage_Error =>
       My_Io.Put_Line("Exception STORAGE_ERROR successfully transmitted from 1");
       raise;
-    when Constraint_Error | Numeric_Error =>
+    when Constraint_Error =>
       My_Io.Put_Line(
        "Exception CONSTRAINT - NUMERIC ERROR successfully transmitted from 1");
       raise;

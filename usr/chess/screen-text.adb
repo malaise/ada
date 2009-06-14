@@ -177,7 +177,6 @@ package body Text is
   function Get_Mouse_Event (Color : Space.Color_List) return Mouse_Event_Rec is
     Con_Io_Rec : Con_Io.Mouse_Event_Rec;
     Got_Square : Square_Result_Rec;
-    Result : Mouse_Event_Rec;
     use type Con_Io.Mouse_Button_List, Con_Io.Mouse_Button_Status_List;
   begin
     -- Get and check Con_Io event

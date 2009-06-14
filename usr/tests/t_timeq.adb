@@ -15,8 +15,6 @@ procedure T_Timeq is
     Ada.Text_Io.Put_Line ("a => run autotest");
   end Usage;
 
-  package Dur_Io is new Ada.Text_Io.Fixed_Io (Ada.Calendar.Day_Duration);
-
   subtype Val_Range is Natural range 0 .. 9;
   package Val_Queue is new Queues.Timed (5, Val_Range);
   Vals : Val_Queue.Timed_Type;

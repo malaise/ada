@@ -1,5 +1,5 @@
 with Ada.Text_Io;
-with My_Io, Condition_Manager, Schedule, Argument, Basic_Proc, Upper_Char;
+with Condition_Manager;
 
 procedure T_Cond is
   pragma Priority(10);

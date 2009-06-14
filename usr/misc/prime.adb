@@ -7,14 +7,13 @@
 --        prime -lcm <n1> <n2>     lowest common multiple
 
 with Ada.Text_Io;
-with Argument, Dynamic_List, Arbitrary, Arbitrary.Factors, Arbitrary.Prime_List;
+with Argument, Arbitrary, Arbitrary.Factors, Arbitrary.Prime_List;
 procedure Prime is
   use type Arbitrary.Number;
   subtype Positive_Number is Arbitrary.Prime_List.Positive_Number;
 
   -- Lists of prime factors
   package Plm renames Arbitrary.Factors.Nb_List_Mng;
-  procedure Search is new Plm.Search("=");
 
   -- What should we do
   type Mode_List is (List_All, List, Is_Prime, Next, Prev, Factors, Hcd, Lcm);

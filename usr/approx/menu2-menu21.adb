@@ -25,15 +25,6 @@ package body Menu21 is
     Bounds := The_Bounds;
   end Get_Bounds;
 
-
-  procedure Error (Msg : in Screen.S_Error_List) is
-  begin
-    Screen.Error(Msg);
-    -- Restore screen
-    Afpx.Use_Descriptor(4, False);
-    Screen.Init_For_Main21 (Cursor_Field);
-  end Error;
-
   procedure Put_Bounds is
     use Curve;
   begin

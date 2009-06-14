@@ -1,5 +1,4 @@
 -- All the primitives to access the screen
-with System;
 with Task_Mng, Timers, Language;
 package body Nav_Screen is
 

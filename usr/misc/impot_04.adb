@@ -22,9 +22,10 @@ procedure Impot_04 is
 
   -- l'impot apres correction
   Impot_Apres_Correction : Somme;
-
   -- l'impot apres deduction
   Impot_Apres_Deduction  : Somme;
+  pragma Unreferenced (Impot_Apres_Correction, Impot_Apres_Deduction);
+
 
   -- l'impot a payer
   Impot_A_Payer : Somme;

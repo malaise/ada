@@ -1,4 +1,3 @@
-with Sok_Types;
 with Sok_Movement;
 
 -- salvage of movements for undo, save/restore ...

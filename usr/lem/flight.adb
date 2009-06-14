@@ -30,6 +30,8 @@ package body Flight is
 
     function Get_Index (Left, Right : Space.Position_Rec;
                         Ground : Moon.Ground_Array) return Positive is
+      -- Keep it ofr the symetry
+      pragma Unreferenced (Right);
       use type Space.Position_Range;
       Start, Stop : Positive;
     begin

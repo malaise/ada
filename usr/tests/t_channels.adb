@@ -76,6 +76,7 @@ procedure T_Channels is
   -- Time callback, no more waiting
   function Timer_Cb (Id : Timers.Timer_Id;
                      Data : Timers.Timer_Data) return Boolean is
+    pragma Unreferenced (Id, Data);
   begin
     Go_Wait := False;
     return True;
@@ -84,6 +85,7 @@ procedure T_Channels is
   -- Infinite wait or use a timer
   procedure Wait (Dur : in Duration) is
     Id : Timers.Timer_Id;
+    pragma Unreferenced (Id);
   begin
     if Sig then
       return;

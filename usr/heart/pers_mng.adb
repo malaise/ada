@@ -267,13 +267,6 @@ package body Pers_Mng is
     Last := Loc_Last;
   end Select_By_Name;
 
-
-  function Order_Activity (Left, Right : Pers_Def.Person_Rec) return Boolean is
-  begin
-    return Left.Activity < Right.Activity;
-  end Order_Activity;
-  procedure Sort_Activity is new Pers_Def.Person_List_Mng.Sort (Order_Activity);
-
   -- Get first and last index (in list) of persons with the provided activity
   procedure Select_By_Activity (List : in out Pers_Def.Person_List;
                                 Activity : in Pers_Def.Person_Activity_Str;

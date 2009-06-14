@@ -6,9 +6,9 @@ procedure T_Con is
 
 
   task type Task_T is
+    pragma Storage_Size (1024 * 1024);
     entry Start(I : in Positive);
   end Task_T;
-  for Task_T'Storage_Size use 1024 * 1024;
 
   Nb_Tasks : constant := 2;
   T : array (1 .. Nb_Tasks) of Task_T;

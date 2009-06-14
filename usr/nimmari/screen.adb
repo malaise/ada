@@ -1,7 +1,6 @@
 with Afpx, Con_Io, Normal, Rnd;
 use Afpx;
 
-with Common;
 package body Screen is
 
   -- All the bars
@@ -163,7 +162,7 @@ package body Screen is
   end Play;
 
   function Content (Row : Common.Row_Range) return Common.Full_Bar_Range is
-    J : Natural := 0;
+    J : constant Natural := 0;
     Res : Common.Full_Bar_Range := 0;
   begin
     for I in reverse First_Index_Of_Row(Row) .. Last_Index_Of_Row(Row) loop

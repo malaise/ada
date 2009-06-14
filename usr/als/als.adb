@@ -88,8 +88,6 @@ procedure Als is
    25 => ('h', Asu_Tus ("human"), False, False),
    26 => ('N', Asu_Tus ("no_sort"), False, False) );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
-  No_Key_Index : constant Argument_Parser.The_Keys_Index
-               := Argument_Parser.No_Key_Index;
   -- Option management
   List_Dots, List_Roots_And_Dots : Boolean;
   Dots : Entities.Dots_Kind_List;

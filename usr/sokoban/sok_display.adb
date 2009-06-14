@@ -5,7 +5,6 @@ with Sok_Input, Sok_Time;
 package body Sok_Display is
 
   Len_Moves  : constant := 5;
-  Len_Pushes : constant := 5;
   Len_Days   : constant := 3;
 
   Title_Win : Con_Io.Window;
@@ -22,8 +21,6 @@ package body Sok_Display is
   Current_Allow_Write : Boolean;
 
   procedure Init is
-    Help_Row : constant := 1;
-    Help_Col : constant := 1;
   begin
     Con_Io.Init;
     Con_Io.Reset_Term;

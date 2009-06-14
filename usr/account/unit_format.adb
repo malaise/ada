@@ -26,6 +26,7 @@ package body Unit_Format is
   function Date_Value(Str : Date_Str) return Oper_Def.Date_Rec is
     Date : Oper_Def.Date_Rec;
     Time : Ada.Calendar.Time;
+    pragma Unreferenced (Time);
   begin
     Date.Day   := Ada.Calendar.Day_Number'Value  (Str(1 ..  2));
     Date.Month := Ada.Calendar.Month_Number'Value(Str(4 ..  5));

@@ -43,7 +43,6 @@ package body Sok_Manager is
     Frame_File_Not_Found, Error_Reading_Frame : exception;
 
     -- Initialise scores, read/update score
-    procedure Init_Scores;
     function Read_Score (No : Sok_Types.Frame_Range) return Sok_Types.Score_Rec;
     procedure Write_Score (No : in Sok_Types.Frame_Range;
                            Score : in Sok_Types.Score_Rec);

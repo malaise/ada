@@ -45,8 +45,8 @@ begin
 
       when Screen.Try =>
         declare
-          Try_State : Common.Try_List :=
-           Common.Get_Propal_State (Cur_Selection.Try_No).Try;
+          Try_State : constant Common.Try_List
+                    := Common.Get_Propal_State (Cur_Selection.Try_No).Try;
           use Common;
         begin
           -- Check that this propal is completed and not already answered
@@ -72,8 +72,8 @@ begin
 
       when Screen.Propal =>
         declare
-          Propal_State : Common.Propal_State_Rec :=
-           Common.Get_Propal_State (Cur_Selection.Propal_No);
+          Propal_State : constant Common.Propal_State_Rec
+                       := Common.Get_Propal_State (Cur_Selection.Propal_No);
           use Common;
         begin
           -- Check that this propal is completed and not already answered

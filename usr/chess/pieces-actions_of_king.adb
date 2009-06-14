@@ -111,6 +111,7 @@ begin
   -- Insert physical movements
   declare
     Dummy : Boolean;
+    pragma Unreferenced (Dummy);
   begin
     for Col in Space.Movement_Range'(-1) .. 1 loop
       for Row in Space.Movement_Range'(-1) .. 1 loop

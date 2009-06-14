@@ -29,13 +29,6 @@ package body Pieces is
     Action_List_Mng.Insert(Action_List, (Kind => Cover, Dest => To) );
   end Insert_Cover;
 
-  -- Delete current action
-  procedure Delete_Action is
-    Done : Boolean;
-  begin
-    Action_List_Mng.Delete(Action_List, Done => Done);
-  end Delete_Action;
-
   -- Create e new piece
   function Create (Kind      : Piece_Kind_List;
                    Color     : Space.Color_List;

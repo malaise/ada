@@ -1,8 +1,8 @@
-with My_Math, C_Nbres;
+with C_Nbres;
 package body Lat_Lon is
 
-  Max_Lat : Conv.Deg_Range := 90;
-  Max_Lon : Conv.Deg_Range := 180;
+  Max_Lat : constant Conv.Deg_Range := 90;
+  Max_Lon : constant Conv.Deg_Range := 180;
 
   --  00.00.00 <= Lat.Coord <=  90.00.00
   -- 000.00.00 <= Lon.Coord <= 180.00.00

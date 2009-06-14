@@ -1,4 +1,4 @@
-with Con_Io, Afpx, Normal, X_Mng;
+with Con_Io, Normal, Text_Handler;
 with Points, Resol;
 package body Screen is
 
@@ -248,6 +248,7 @@ package body Screen is
 
   procedure Error (Msg : in S_Error_List; Subtitle : in Boolean := False) is
     Res : Boolean;
+    pragma Unreferenced (Res);
   begin
     -- No menu. Ok
     Clear_Menu(Subtitle);

@@ -1,5 +1,5 @@
 with Afpx;
-with Oper_Def, Unit_Format;
+with Oper_Def;
 -- Manage the screen fields
 package Screen is
   -- In default mode,

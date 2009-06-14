@@ -130,7 +130,6 @@ package body Misc is
   end Set_Debug;
 
   function Reg_Match (Pattern, Str : Item_Rec) return Item_Rec is
-    Criteria : Regular_Expressions.Compiled_Pattern;
     Res : Regular_Expressions.Match_Cell;
     use type Regular_Expressions.Match_Cell;
   begin

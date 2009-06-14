@@ -1,6 +1,5 @@
 with Ada.Strings.Unbounded;
 with My_Math, Arbitrary, Arbitrary.Fractions;
-with Input_Dispatcher;
 package Mcd_Mng is
 
   type Item_Kind_List is (Arbi, Frac, Inte, Real, Bool, Chrs, Prog, Regi, Oper);

@@ -1,4 +1,4 @@
-with Generic_Con_Io, Con_Io;
+with Con_Io;
 separate (Mng)
 package body Edition is
 
@@ -431,6 +431,7 @@ package body Edition is
                        Col   : Con_Io.Full_Col_Range;
                        Cause : Afpx.Enter_Field_Cause_List;
                        Str   : Wide_String) return Con_Io.Full_Col_Range is
+    pragma Unreferenced (Field, New_Field, Col);
     use type Afpx.Enter_Field_Cause_List, Afpx.Field_Range;
   begin
     if Cause = Afpx.Left then

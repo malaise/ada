@@ -1,5 +1,5 @@
-with Timers, Normal;
-with Dictio_Debug, Parse, Local_Host_Name, Nodes, Errors, Versions, Intra_Dictio;
+with Timers;
+with Dictio_Debug, Parse, Errors, Versions, Intra_Dictio;
 package body Fight_Mng is
 
   Tid : Timers.Timer_Id := Timers.No_Timer;
@@ -58,7 +58,6 @@ package body Fight_Mng is
                    Stat : in Status.Status_List;
                    Sync : in Boolean;
                    Prio : in Args.Prio_Str;
-                   Diff : in Boolean;
                    Extra : in String := "") is
     use type Status.Status_List;
   begin
@@ -89,6 +88,7 @@ package body Fight_Mng is
 
   function Timer_Cb (Id : Timers.Timer_Id;
                      Data : Timers.Timer_Data) return Boolean is
+    pragma Unreferenced (Id, Data);
     Result : Nodes.Check_Result_List;
     use type Timers.Timer_Id;
   begin
@@ -109,6 +109,7 @@ package body Fight_Mng is
 
   function Perio_Cb (Id : Timers.Timer_Id;
                      Data : Timers.Timer_Data) return Boolean is
+    pragma Unreferenced (Id, Data);
     use type Status.Status_List;
   begin
     if In_Fight and then Last_Status /= Status.Fight then

@@ -1,4 +1,3 @@
-with Oper_Def;
 -- Manage the whole acount status
 package Mng is
   -- Nb of operations in current account

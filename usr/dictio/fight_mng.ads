@@ -14,7 +14,6 @@ package Fight_Mng is
                    Stat : in Status.Status_List;
                    Sync : in Boolean;
                    Prio : in Args.Prio_Str;
-                   Diff : in Boolean;
                    Extra : in String := "");
 
 end Fight_Mng;

@@ -1,4 +1,3 @@
-with My_Io;
 with Common, Resolution, Display;
 procedure Simusi is
 

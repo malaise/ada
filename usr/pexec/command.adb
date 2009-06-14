@@ -66,13 +66,13 @@ package body Command is
     Ll := False;
     Li := False;
     Ls := False;
-    No_Action        := La;
-    No_Name_Of_Dir   := Ld;
-    Not_In_Current   := Lc;
-    First_Level_Only := Lf;
-    Leaves_Only      := Lf;
-    No_Stop_On_Error := Li;
-    Follow_Links     := Ls;
+    No_Action        := False;
+    No_Name_Of_Dir   := False;
+    Not_In_Current   := False;
+    First_Level_Only := False;
+    Leaves_Only      := False;
+    No_Stop_On_Error := False;
+    Follow_Links     := False;
 
     -- Check that not already parsed
     if Parsed then

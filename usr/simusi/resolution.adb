@@ -54,7 +54,6 @@ package body Resolution is
     Cote_Done : Bool_Vector;
 
     subtype Cote_Nb_Range is Natural range 0 .. Data.Eff_Cote_Range'Last;
-    Nb_Done : Cote_Nb_Range;
     Last_Cote_Nb : Cote_Nb_Range;
 
     procedure Init is
@@ -62,7 +61,6 @@ package body Resolution is
       Level := 1;
       Gp := G;
       Cote_Done := (others => False);
-      Nb_Done := 0;
       Last_Cote_Nb := 0;
     end Init;
 

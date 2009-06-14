@@ -6,7 +6,6 @@ with My_Math;
 with Get_Line;
 with Get_Float;
 
-with Types;
 package body File is
 
   Max_Dim : constant := Types.Max_Dim;
@@ -19,7 +18,7 @@ package body File is
   type Input_Row_Tab_Access is access Input_Row_Tab;
   type Input_Mattrix_Tab is array (1 .. Max_Dim) of
     Input_Row_Tab_Access;
-  Input_Mattrix : Input_Mattrix_Tab
+  Input_Mattrix : constant Input_Mattrix_Tab
                 := (others => new Input_Row_Tab);
 
   Loc_Kind : Types.Mattrix_Kind_List;

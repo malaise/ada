@@ -6,6 +6,7 @@ procedure T_Temp_File is
   Names : array (1 .. 1000) of String_Access;
   Desc : Directory.Dir_Desc;
   Dummy : Boolean;
+  pragma Unreferenced (Dummy);
 begin
   Ada.Text_Io.Put_Line ("Creating " & Names'Last'Img & " temp files in "
                       & Temp_Dir & ":");
@@ -31,6 +32,7 @@ begin
   begin
     declare
       N3 : constant String := Temp_File.Create (Temp_Dir);
+      pragma Unreferenced (N3);
     begin
       null;
     end;
@@ -43,6 +45,7 @@ begin
   begin
     declare
       N3 : constant String := Temp_File.Create ("DataDir_That_Does_NOT_Exist");
+      pragma Unreferenced (N3);
     begin
       null;
     end;

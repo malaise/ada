@@ -23,7 +23,7 @@ begin
 
   Solve:
   declare
-    Mattrix : Types.Mattrix_Rec_Access :=
+    Mattrix : constant Types.Mattrix_Rec_Access :=
       new Types.Mattrix_Rec'(File.Read (Argument.Get_Parameter));
   begin
 

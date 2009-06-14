@@ -27,9 +27,9 @@ package body Resol is
     if not Resolved then
       if The_Degree > The_Points'Length then raise R_Degree_Out; end if;
       declare
-        T_A_A : Mattrix_Access
+        T_A_A : constant Mattrix_Access
               := new R_Compute.Matrix(1..The_Degree, 1..The_Degree);
-        A_Y : Vector_Access := new Vector(1..The_Degree);
+        A_Y : constant Vector_Access := new Vector(1..The_Degree);
       begin
         Resolved := True;
         R_Compute.Do_Matrixes (The_Points, T_A_A.all, A_Y.all);

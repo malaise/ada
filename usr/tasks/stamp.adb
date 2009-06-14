@@ -34,12 +34,11 @@ procedure Stamp is
   end St;
 
   task body Scan is
-    Max_Win : constant Positive := 5;
   begin
     accept Start;
     loop
-      I := I+ 1;
-      Put (I,2); New_Line;
+      I := I + 1;
+      Put (I, 2); New_Line;
       delay Rnd.Dur_Random(0.0, 0.1);
     end loop;
   end Scan;

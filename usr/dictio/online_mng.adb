@@ -1,7 +1,6 @@
 with Timers;
 with Dictio_Debug, Parse, Intra_Dictio, Local_Host_Name, Nodes,
-     Fight_Mng, Sync_Mng, Data_Base, Sync_Mng, Versions,
-     Client_Mng;
+     Fight_Mng, Sync_Mng, Data_Base, Client_Mng;
 
 package body Online_Mng is
 
@@ -87,7 +86,6 @@ package body Online_Mng is
   procedure Event (From  : in Tcp_Util.Host_Name;
                    Stat  : in Status.Status_List;
                    Sync  : in Boolean;
-                   Diff  : in Boolean;
                    Extra : in String := "") is
     use type Status.Status_List;
     Crc : constant String
@@ -184,6 +182,7 @@ package body Online_Mng is
 
   function Timer_Cb (Id : Timers.Timer_Id;
                      Data : Timers.Timer_Data) return Boolean is
+    pragma Unreferenced (Id, Data);
     use type Status.Status_List;
   begin
     if Status.Get = Status.Master then
