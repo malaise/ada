@@ -101,7 +101,7 @@ package body Chronos is
   -- Attach a virtal clock to the virtual chrono
   procedure Attach (A_Chrono : in out Chrono_Type;
                     A_Clock : in Virtual_Time.Clock_Access) is
-    use type Chronos.Status_List;
+    use type Chronos.Status_List, Virtual_Time.Clock_Access;
   begin
     if A_Chrono.Get_Status = Chronos.Running  then
       raise Chrono_Running;
@@ -112,7 +112,9 @@ package body Chronos is
     A_Chrono.Clock := A_Clock;
     A_Chrono.Reset;
     -- Register as observer of this clock
-    A_Clock.Add_Observer (A_Chrono'Unchecked_Access);
+    if A_Clock /= null then
+      A_Clock.Add_Observer (A_Chrono'Unchecked_Access);
+    end if;
   end Attach;
 
   -- Detach any virtual clock from the chrono
