@@ -234,7 +234,7 @@ package body Str_Mng is
     Months : Ada.Calendar.Month_Number;
     Days   : Ada.Calendar.Day_Number;
     Secs   : Ada.Calendar.Day_Duration;
-    use Perpet;
+    use type Perpet.Duration_Rec;
   begin
     if Offset /= 0 then
       Current_Time := Current_Time - (Years => 0, Months => Offset);

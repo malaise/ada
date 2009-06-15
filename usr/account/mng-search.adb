@@ -108,8 +108,9 @@ procedure Search is
       declare
         Now : constant Ada.Calendar.Time
             := Ada.Calendar.Time_Of (Today.Year, Today.Month, Today.Day, 0.0);
+        use type Perpet.Duration_Rec;
         Prev_Month_Time : constant Ada.Calendar.Time
-                        := Perpet."-" (Now, (Years => 0, Months => 1));
+                        := Now - (Years => 0, Months => 1);
         Seconds : Ada.Calendar.Day_Duration;
       begin
         Ada.Calendar.Split (Prev_Month_Time,

@@ -60,11 +60,11 @@ begin
     Crit.Date := Ada.Calendar.Time_Of (Year, Month, Day,
                    Day_Mng.Pack (Hour, Minute, Second, Milli));
   else
-    -- <positive><letter>, where <letter> ::= Y|M|D|hm
+    -- <positive><letter>, where <letter> ::= Y|M|D|h|m
     declare
       N : constant Positive := Positive'Value (Lstr(3 .. Lstr'Last-1));
       C : constant Character := Lstr(Lstr'Last);
-      use Perpet, Ada.Calendar;
+      use type Perpet.Duration_Rec, Ada.Calendar.Time;
     begin
       case C is
         when 'Y' =>
@@ -72,7 +72,7 @@ begin
         when 'M' =>
           Crit.Date := Ada.Calendar.Clock - (Years => 0, Months => N);
         when 'D' =>
-          Crit.Date := Ada.Calendar.Clock - N;
+          Crit.Date := Perpet."-" (Ada.Calendar.Clock, N);
         when 'h' =>
           Crit.Date := Ada.Calendar.Clock - Duration(N) * 3600;
         when 'm' =>
