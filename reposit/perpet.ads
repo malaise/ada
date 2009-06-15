@@ -63,6 +63,19 @@ package Perpet is
   subtype Natural_Duration is Duration range 0.0 .. Duration'Last;
   function To_Delta_Rec (Dur : Natural_Duration) return Delta_Rec;
 
+  -- Delta_rec comparison
+  function "<" (Delta_1, Delta_2 : Delta_Rec) return Boolean;
+
+  -- Add/Sub a delta to a time
+ function "+" (Date : Ada.Calendar.Time; Delta_Date : Delta_Rec)
+    return Ada.Calendar.Time;
+ function "-" (Date : Ada.Calendar.Time; Delta_Date : Delta_Rec)
+    return Ada.Calendar.Time;
+
+  -- Add/Sub a duration to delta, may raise Time_Error if result < 0
+  function "+" (Delta_Date : Delta_Rec; Dur : Duration) return Delta_Rec;
+  function "-" (Delta_Date : Delta_Rec; Dur : Duration) return Delta_Rec;
+
   -- Nb of days and secs between two dates
   --  If Date_1 < Date_2, Time_Error will be raised
   function "-" (Date_1, Date_2 : Ada.Calendar.Time)

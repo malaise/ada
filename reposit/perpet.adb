@@ -251,6 +251,14 @@ package body Perpet is
     return Time_Of(Rec);
   end "-";
 
+  -- Delta_rec comparison
+  function "<" (Delta_1, Delta_2 : Delta_Rec) return Boolean is
+  begin
+    return Delta_1.Days < Delta_2.Days
+        or else (Delta_1.Days = Delta_2.Days
+            and then Delta_1.Secs < Delta_2.Secs);
+  end "<";
+
   -- Duration to Delta_Rec
   function To_Delta_Rec (Dur : Natural_Duration) return Delta_Rec is
     Delta_Val : Delta_Rec;
@@ -337,6 +345,66 @@ package body Perpet is
 
     return Delta_Val;
 
+  end "-";
+
+  -- Add a delta to a time
+  function "+" (Date : Ada.Calendar.Time; Delta_Date : Delta_Rec)
+    return Ada.Calendar.Time is
+    use type Ada.Calendar.Time;
+  begin
+    return (Date + Delta_Date.Days) + Delta_Date.Secs;
+  end "+";
+
+  -- Sub a delta to a time
+  function "-" (Date : Ada.Calendar.Time; Delta_Date : Delta_Rec)
+    return Ada.Calendar.Time is
+    use type Ada.Calendar.Time;
+  begin
+    return (Date - Delta_Date.Days) - Delta_Date.Secs;
+  end "-";
+
+  -- Add a duration to delta, may raise Time_Error if result < 0
+  function "+" (Delta_Date : Delta_Rec; Dur : Duration) return Delta_Rec is
+    Adur : constant Natural_Duration := abs Dur;
+    Adelta : Delta_Rec;
+    Days : Integer;
+    Secs : Duration;
+    Dur_Last : constant Ada.Calendar.Day_Duration
+             := Ada.Calendar.Day_Duration'Last;
+  begin
+    -- Extract Dur
+    Adelta := To_Delta_Rec (Adur);
+    if Dur >= 0.0 then
+      Days := Delta_Date.Days + Adelta.Days;
+      Secs := Delta_Date.Secs + Adelta.Secs;
+       -- Carry
+      if Secs > Dur_Last then
+        Days := Days + 1;
+        Secs := Secs - Dur_Last;
+      end if;
+    else
+      if Delta_Date < Adelta then
+        -- Result would be < 0
+        raise Time_Error;
+      end if;
+      Days := Delta_Date.Days - Adelta.Days;
+      Secs := Delta_Date.Secs - Adelta.Secs;
+       -- Carry
+      if Secs < 0.0 then
+        Days := Days - 1;
+        Secs := Secs + Dur_Last;
+      end if;
+    end if;
+    return (Days, Secs);
+  exception
+    when others =>
+      raise Time_Error;
+  end "+";
+
+  -- Sub a duration to delta, may raise Time_Error if result < 0
+  function "-" (Delta_Date : Delta_Rec; Dur : Duration) return Delta_Rec is
+  begin
+    return Delta_Date + (-Dur);
   end "-";
 
   -- type Day_Of_Week_List is (Monday, Tuesday, Wednesday, Thursday, Friday,
