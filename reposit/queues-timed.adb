@@ -16,21 +16,32 @@ package body Queues.Timed is
   end Check_Length;
 
   -- Remove obsolete items an add this one that will expire at Expdate
-  procedure Push (Queue : in out Timed_Type;
-                  X       : in Item;
-                  Expdate : in Virtual_Time.Time;
-                  Clock   : in Virtual_Time.Clock_Access := null) is
+  procedure Add_Item (Queue : in out Timed_Type;
+                      X     : in Item;
+                      Timer : out Timer_Access) is
     Item : Loc_Item;
   begin
     -- Make room first
     Expire (Queue);
     -- Check length vs. size
     Check_Length (Queue);
-    -- Init and insert record
+    -- Init record and timer access
     Item.Data := X;
     Item.Timer := new Passive_Timers.Passive_Timer;
-    Item.Timer.Start ( (Timers.Delay_Exp, Clock, Timers.No_Period, Expdate) );
+    Timer := Item.Timer;
+    -- Insert record and rewind
     Queue.List.Insert (Item);
+    Queue.List.Rewind;
+  end Add_Item;
+
+  procedure Push (Queue : in out Timed_Type;
+                  X       : in Item;
+                  Expdate : in Virtual_Time.Time;
+                  Clock   : in Virtual_Time.Clock_Access := null) is
+    Timer : Timer_Access;
+  begin
+    Add_Item (Queue, X, Timer);
+    Timer.Start ( (Timers.Delay_Exp, Clock, Timers.No_Period, Expdate) );
   end Push;
 
   -- Remove obsolete items an add this one that will expire after
@@ -39,17 +50,10 @@ package body Queues.Timed is
                   X        : in Item;
                   Lifetime : in Perpet.Delta_Rec;
                   Clock    : in Virtual_Time.Clock_Access := null) is
-    Item : Loc_Item;
+    Timer : Timer_Access;
   begin
-    -- Make room first
-    Expire (Queue);
-    -- Check length vs. size
-    Check_Length (Queue);
-    -- Init and insert record
-    Item.Data := X;
-    Item.Timer := new Passive_Timers.Passive_Timer;
-    Item.Timer.Start ( (Timers.Delay_Del, Clock, Timers.No_Period, Lifetime) );
-    Queue.List.Insert (Item);
+    Add_Item (Queue, X, Timer);
+    Timer.Start ( (Timers.Delay_Del, Clock, Timers.No_Period, Lifetime) );
   end Push;
 
   -- Remove obsolete items
