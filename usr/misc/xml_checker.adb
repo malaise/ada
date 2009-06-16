@@ -3,7 +3,7 @@ with Argument, Argument_Parser, Xml_Parser.Generator, Normal, Basic_Proc,
      Text_Line, Sys_Calls;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V5.2";
+  Version : constant String := "V5.3";
 
   -- Ada.Strings.Unbounded and Ada.Exceptions re-definitions
   package Asu renames Ada.Strings.Unbounded;
@@ -49,7 +49,7 @@ procedure Xml_Checker is
   begin
     Ple ("Usage: " & Argument.Get_Program_Name & "[ { <option> } ] [ { <file> } ]");
     Ple (" <option> ::= <silent> | <dump> | <raw> | <no_comment> | <width> | <one>");
-    Ple ("            | <expand> | <check_dtd> | <flow> | <help> | <version>");
+    Ple ("            | <expand> | <check_dtd> | <tree> | <help> | <version>");
     Ple (" <silent>     ::= -s | --silent     -- No output, only exit code");
     Ple (" <dump>       ::= -d | --dump       -- Dump expanded Xml tree");
     Ple (" <raw>        ::= -r | --raw        -- Put all on one line");
@@ -61,7 +61,7 @@ procedure Xml_Checker is
     Ple ("                                    --  attributes with default");
     Ple (" <check_dtd>  ::= -c [ <Dtd> ] | --check_dtd=[<Dtd>]");
     Ple ("                                    -- Check vs a specific dtd or none");
-    Ple (" <flow>       ::= -f | --flow       -- Display xml content on the flow");
+    Ple (" <tree>       ::= -t | --tree       -- Build tree then dump it");
     Ple (" <help>       ::= -h | --help       -- Put this help");
     Ple (" <version>    ::= -v | --version    -- Put versions");
     Ple ("Always expands general entities in dump.");
@@ -70,8 +70,7 @@ procedure Xml_Checker is
     Ple ("Empty Dtd leads to skip check of comformance to DTD.");
     Ple ("Default is -w" & Xml_Parser.Generator.Default_Width'Img
                          & " on stdout.");
-    Ple ("On-the-flow mode is usefull with large files to reduce memory consumption");
-    Ple ("  and avoid pagination (no tree => less heap).");
+    Ple ("Building the tree is not recommended for big files.");
     Ple ("Please also consider increasing the process stack size (ulimit -s) to");
     Ple ("  avoid stack overflow and Storage_Error.");
   end Usage;
@@ -88,7 +87,7 @@ procedure Xml_Checker is
     8 => ('e', Asu_Tus ("expand"), False, False),
     9 => ('n', Asu_Tus ("no_comment"), False, False),
    10 => ('c', Asu_Tus ("check_dtd"), False, True),
-   11 => ('f', Asu_Tus ("flow"), False, False)
+   11 => ('t', Asu_Tus ("tree"), False, False)
    );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
@@ -344,6 +343,7 @@ begin
   end if;
   if Arg_Dscr.Is_Set (11) then
     Max_Opt := Max_Opt + 1;
+  else
     Callback_Acc := Callback'Unrestricted_Access;
   end if;
   if Arg_Dscr.Get_Number_Keys > Max_Opt then
