@@ -10,7 +10,6 @@ procedure T_Virtual is
   My_Chrono : Chronos.Chrono_Type;
   My_Tid : Timers.Timer_Id;
   My_Pt : Passive_Timers.Passive_Timer;
-  pragma Unreferenced (My_Tid);
 
   procedure Notify (An_Observer : in out Observer_Rec;
                     Rtime, Vtime : in Virtual_Time.Time;
@@ -38,17 +37,29 @@ procedure T_Virtual is
     return False;
   end Timer_Callback;
 
-  procedure Check_Pt (Pt : in out Passive_Timers.Passive_Timer; Name : in String := "") is
+  function Check_Pt (Pt : Passive_Timers.Passive_Timer;
+                     Name : String := "") return Boolean is
+    Res : Boolean;
   begin
     Ada.Text_Io.Put ("Passive timer");
     if Name /= "" then
       Ada.Text_Io.Put (" " & Name);
     end if;
     Ada.Text_Io.Put (" has");
-    if not Pt.Has_Expired then
+    Res := Pt.Has_Expired;
+    if not Res then
       Ada.Text_Io.Put (" not");
     end if;
     Ada.Text_Io.Put_Line (" expired");
+    return Res;
+  end Check_Pt;
+
+  procedure Check_Pt (Pt : in Passive_Timers.Passive_Timer;
+                      Name : in String := "") is
+    Dummy : Boolean;
+    pragma Unreferenced (Dummy);
+  begin
+    Dummy := Check_Pt (Pt, Name);
   end Check_Pt;
 
 begin
@@ -106,6 +117,20 @@ begin
   Ada.Text_Io.Put_Line ("Chrono is " & My_Chrono.Read.Secs'Img);
 
   Ada.Text_Io.New_Line;
+  Ada.Text_Io.Put_Line ("Suspending timer and setting speed to 10.0");
+  Timers.Suspend (My_Tid);
+  My_Clock.Set_Speed (10.0);
+  for I in 1 .. 3 loop
+    Ada.Text_Io.Put_Line ("Now is " & Date_Image (My_Clock.Current_Time));
+    while Check_Pt (My_Pt) loop
+      null;
+    end loop;
+    Ada.Text_Io.Put_Line ("Chrono is " & My_Chrono.Read.Secs'Img);
+    Event_Mng.Wait (1_000);
+  end loop;
+
+  Ada.Text_Io.New_Line;
+  Ada.Text_Io.Put_Line ("Chrono is " & My_Chrono.Read.Secs'Img);
   Ada.Text_Io.Put_Line ("Done.");
 end T_Virtual;
 
