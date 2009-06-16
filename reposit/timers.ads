@@ -1,8 +1,8 @@
-with Virtual_Time;
+with Perpet, Virtual_Time;
 package Timers is
 
   -- How to specify a timer, wait some seconds or until a specific time
-  type Delay_List is (Delay_Sec, Delay_Exp);
+  type Delay_List is (Delay_Sec, Delay_Del, Delay_Exp);
 
   -- May be returned by Wait_For
   -- Do not use for timers
@@ -11,7 +11,8 @@ package Timers is
   -- How to specify a period for a timer
   subtype Period_Range is Duration range 0.0 .. Duration'Last;
   No_Period : Period_Range := 0.0;
-  Default_Timeout : constant Duration := 1.0;
+  Default_Timeout : constant Duration := 0.0;
+  Default_Delta : constant Perpet.Delta_Rec := (0, 0.0);
 
   type Delay_Rec (Delay_Kind : Delay_List := Delay_Sec) is record
     Clock  : Virtual_Time.Clock_Access := null;
@@ -19,6 +20,8 @@ package Timers is
     case Delay_Kind is
       when Delay_Sec =>
         Delay_Seconds : Duration := Default_Timeout;
+      when Delay_Del =>
+        Delay_Delta : Perpet.Delta_Rec := Default_Delta;
       when Delay_Exp =>
         Expiration_Time : Virtual_Time.Time;
     end case;

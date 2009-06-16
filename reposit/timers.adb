@@ -108,7 +108,7 @@ package body Timers is
     Suspended : Boolean;
     -- Clock speed 0
     Frozen : Boolean;
-    Remaining : Duration;
+    Remaining : Perpet.Delta_Rec;
   end record;
 
   package Timer_Dyn_List_Mng is new Dynamic_List (Timer_Rec);
@@ -119,7 +119,7 @@ package body Timers is
   --  if same expiration, use creation time
   -- Suspended and frozen timers are higher
   function "<" (T1, T2 : Timer_Rec) return Boolean is
-    use type Virtual_Time.Time;
+    use type Virtual_Time.Time, Perpet.Delta_Rec;
     T1_Running : constant Boolean := not T1.Suspended and then not T1.Frozen;
     T2_Running : constant Boolean := not T2.Suspended and then not T2.Frozen;
   begin
@@ -195,16 +195,14 @@ package body Timers is
     Clock : Clock_Rec;
     Found : Boolean;
     use type Virtual_Time.Time, Virtual_Time.Clock_Access,
-             Virtual_Time.Speed_Range;
+             Virtual_Time.Speed_Range, Perpet.Delta_Rec;
   begin
     -- Get current time ASAP
     Timer.Cre := Ada.Calendar.Clock;
     Set_Debug;
-
-    -- Check
     if Delay_Spec.Delay_Kind = Delay_Sec
     and then Delay_Spec.Delay_Seconds < 0.0 then
-        raise Invalid_Delay;
+      raise Invalid_Delay;
     end if;
 
     -- Allocate Id and copy period and callback
@@ -227,24 +225,32 @@ package body Timers is
     -- Compute expiration time or remaining delay (if clock frozen)
     if Timer.Frozen then
       -- Remaining virtual time
-      if Delay_Spec.Delay_Kind = Delay_Sec then
-        Timer.Remaining := Delay_Spec.Delay_Seconds;
-      else
-        Timer.Remaining := Delay_Spec.Expiration_Time - Start;
-        if Timer.Remaining < 0.0 then
-          Timer.Remaining := 0.0;
-        end if;
-      end if;
+      case Delay_Spec.Delay_Kind is
+        when Delay_Sec =>
+          Timer.Remaining := Perpet.To_Delta_Rec (Delay_Spec.Delay_Seconds);
+        when Delay_Del =>
+          Timer.Remaining := Delay_Spec.Delay_Delta;
+        when Delay_Exp =>
+          if (Delay_Spec.Expiration_Time > Start) then
+            Timer.Remaining := Delay_Spec.Expiration_Time - Start;
+          else
+            Timer.Remaining := Default_Delta;
+          end if;
+      end case;
       Put_Debug ("Create ", Timer.Id'Img & " frozen for "
-                    & Timer.Remaining'Img & "s");
-
+        & Timer.Remaining.Days'Img & "D +  "
+        & Timer.Remaining.Secs'Img & "s");
     else
-      if Delay_Spec.Delay_Kind = Delay_Sec then
-        Timer.Exp.Expiration_Time := Start
-                                   + Delay_Spec.Delay_Seconds;
-      else
-        Timer.Exp.Expiration_Time := Delay_Spec.Expiration_Time;
-      end if;
+      case Delay_Spec.Delay_Kind is
+        when Delay_Sec =>
+          Timer.Exp.Expiration_Time := Start
+                                     + Delay_Spec.Delay_Seconds;
+        when Delay_Del =>
+          Timer.Exp.Expiration_Time := Start
+                                     + Delay_Spec.Delay_Delta;
+        when Delay_Exp =>
+          Timer.Exp.Expiration_Time := Delay_Spec.Expiration_Time;
+      end case;
       if Delay_Spec.Clock /= null then
         -- Expiration time in reference time (speed is not null)
         Timer.Exp.Expiration_Time :=
@@ -377,7 +383,8 @@ package body Timers is
     Timer : Timer_Rec;
     Now : Virtual_Time.Time;
     Speed : Virtual_Time.Speed_Range;
-    use type Virtual_Time.Time, Virtual_Time.Clock_Access;
+    use type Virtual_Time.Time, Virtual_Time.Clock_Access,
+             Virtual_Time.Speed_Range, Perpet.Delta_Rec;
   begin
      Set_Debug;
     -- Search timer
@@ -392,14 +399,20 @@ package body Timers is
       -- Compute remaining in virtual time
       Now := Virtual_Time.Current_Time (Timer.Clock);
       Speed := Virtual_Time.Get_Speed (Timer.Clock);
-      Timer.Remaining := (Timer.Exp.Expiration_Time - Now) * Speed;
+      if Timer.Exp.Expiration_Time > Now then
+        Timer.Remaining := (Timer.Exp.Expiration_Time - Now)
+            * Perpet.Natural_Duration(Speed);
+      else
+        Timer.Exp.Expiration_Time := Now;
+      end if;
     end if;
     -- Store it and re-sort
     Timer.Suspended := True;
     Timer_List.Modify (Timer, Timer_List_Mng.Current);
     Sort (Timer_List);
     Put_Debug ("Suspend", Id.Timer_Num'Img & " for "
-                    & Timer.Remaining'Img & "s");
+        & Timer.Remaining.Days'Img & "D +  "
+        & Timer.Remaining.Secs'Img & "s");
   end Suspend;
 
   -- Resume a suspended a timer: expirations, even the pending ones are resumed
@@ -409,7 +422,7 @@ package body Timers is
     Timer : Timer_Rec;
     Speed : Virtual_Time.Speed_Range;
     This_Id : Timer_Id_Range;
-    use type Virtual_Time.Time;
+    use type Virtual_Time.Time, Perpet.Delta_Rec;
   begin
      Set_Debug;
     -- Search timer
@@ -424,7 +437,7 @@ package body Timers is
       -- Re-apply remaining delay (virtual) to current expiration (reference)
       Speed := Virtual_Time.Get_Speed (Timer.Clock);
       Timer.Exp.Expiration_Time := Virtual_Time.Current_Time (null)
-                                 + (Timer.Remaining / Speed);
+          + (Timer.Remaining * Perpet.Natural_Duration(1.0 / Speed));
     end if;
     -- Store it and re-sort
     Timer.Suspended := False;
@@ -654,7 +667,7 @@ package body Timers is
     procedure Update is
       Timer : Timer_Rec;
       use type Virtual_Time.Time, Virtual_Time.Clock_Access,
-               Virtual_Time.Speed_Range;
+               Virtual_Time.Speed_Range, Perpet.Delta_Rec;
     begin
       Timer_List.Read (Timer, Timer_List_Mng.Current);
       if Timer.Clock /= Clock then
@@ -663,7 +676,8 @@ package body Timers is
       if Timer.Frozen and then New_Speed /= 0.0 then
         -- Clock restarted at Rtime, compute expiration with new speed
         if not Timer.Suspended then
-          Timer.Exp.Expiration_Time := Rtime + (Timer.Remaining / New_Speed);
+          Timer.Exp.Expiration_Time := Rtime
+              + (Timer.Remaining * Perpet.Natural_Duration(1.0 / New_Speed));
           Put_Debug ("Update ", Timer.Id'Img & " restarted for "
                     & Date_Image (Timer.Exp.Expiration_Time));
         end if;
@@ -671,9 +685,11 @@ package body Timers is
       elsif not Timer.Frozen and then New_Speed = 0.0 then
         -- Clock froze at Rtime, store remaining time in previous Vtime
         if not Timer.Suspended then
-          Timer.Remaining := (Timer.Exp.Expiration_Time - Rtime) * Speed;
+          Timer.Remaining := (Timer.Exp.Expiration_Time - Rtime)
+              * Perpet.Natural_Duration(Speed);
           Put_Debug ("Update ", Timer.Id'Img & " frozen for "
-                    & Timer.Remaining'Img & "s");
+              & Timer.Remaining.Days'Img & "D +  "
+              & Timer.Remaining.Secs'Img & "s");
         end if;
         Timer.Frozen := True;
       elsif not Timer.Frozen then
