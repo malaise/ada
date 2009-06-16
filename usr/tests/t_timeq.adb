@@ -55,7 +55,7 @@ procedure T_Timeq is
     Val_Queue.Expire (Vals);
     Pop;
     -- Step 3, test clear
-    Ada.Text_Io.Put_Line ("Putting 66, cleaning then getting all");
+    Ada.Text_Io.Put_Line ("Putting 11 and 66, cleaning then getting all");
     Val_Queue.Push (Vals, 1, (0, 1.0));
     Val_Queue.Push (Vals, 6, (0, 6.0));
     Val_Queue.Clear (Vals);
