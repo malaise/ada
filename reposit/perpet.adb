@@ -407,6 +407,26 @@ package body Perpet is
     return Delta_Date + (-Dur);
   end "-";
 
+  -- Multiply a delta by a factor
+  function "*" (Delta_Date : Delta_Rec;
+                Factor : Natural_Duration) return Delta_Rec is
+    Dur_Last : constant My_Math.Real
+             := My_Math.Real (Ada.Calendar.Day_Duration'Last);
+    -- Use reals :-(
+    Int : My_Math.Real;
+    Res_Real : My_Math.Real;
+    Res_Delta : Delta_Rec;
+    use type My_Math.Real;
+  begin
+    Res_Real := My_Math.Real(Delta_Date.Days) * Dur_Last
+         + My_Math.Real(Delta_Date.Secs);
+    Res_Real := Res_Real * My_Math.Real(Factor);
+    Int := My_Math.Int (Res_Real / Dur_Last);
+    Res_Delta.Days := Day_Range(My_Math.Trunc (Int));
+    Res_Delta.Secs := Ada.Calendar.Day_Duration (Res_Real - Int * Dur_Last);
+    return Res_Delta;
+  end "*";
+
   -- type Day_Of_Week_List is (Monday, Tuesday, Wednesday, Thursday, Friday,
   --                           Saturday, Sunday);
   function Get_Day_Of_Week (Date : Ada.Calendar.Time) return Day_Of_Week_List is

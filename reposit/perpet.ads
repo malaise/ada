@@ -66,20 +66,24 @@ package Perpet is
   -- Delta_rec comparison
   function "<" (Delta_1, Delta_2 : Delta_Rec) return Boolean;
 
+  -- Nb of days and secs between two dates
+  --  If Date_1 < Date_2, Time_Error will be raised
+  function "-" (Date_1, Date_2 : Ada.Calendar.Time)
+    return Delta_Rec;
+
   -- Add/Sub a delta to a time
- function "+" (Date : Ada.Calendar.Time; Delta_Date : Delta_Rec)
+  function "+" (Date : Ada.Calendar.Time; Delta_Date : Delta_Rec)
     return Ada.Calendar.Time;
- function "-" (Date : Ada.Calendar.Time; Delta_Date : Delta_Rec)
+  function "-" (Date : Ada.Calendar.Time; Delta_Date : Delta_Rec)
     return Ada.Calendar.Time;
 
   -- Add/Sub a duration to delta, may raise Time_Error if result < 0
   function "+" (Delta_Date : Delta_Rec; Dur : Duration) return Delta_Rec;
   function "-" (Delta_Date : Delta_Rec; Dur : Duration) return Delta_Rec;
 
-  -- Nb of days and secs between two dates
-  --  If Date_1 < Date_2, Time_Error will be raised
-  function "-" (Date_1, Date_2 : Ada.Calendar.Time)
-    return Delta_Rec;
+  -- Multiply a delta by a factor
+  function "*" (Delta_Date : Delta_Rec;
+                Factor : Natural_Duration) return Delta_Rec;
 
   -- Day name of a date
   type Day_Of_Week_List is
