@@ -1,5 +1,5 @@
 with Ada.Unchecked_Deallocation;
-with Perpet;
+with Virtual_Time, Perpet;
 package body Passive_Timers is
 
   procedure Free is new Ada.Unchecked_Deallocation (Timer_Rec, Timer_Access);
@@ -7,25 +7,38 @@ package body Passive_Timers is
   -- Arm a passive timer with a given period
   -- Overwrites any previous setting on this timer
   -- Raises Invalid_Period if Period is <= 0.0
-  procedure Arm (Timer  : in out Passive_Timer;
-                 Period : in Duration;
-                 Clock  : in Virtual_Time.Clock_Access := null) is
-    use type Virtual_Time.Time, Perpet.Delta_Rec;
+  procedure Start (Timer      : in out Passive_Timer;
+                   Delay_Spec : in Timers.Delay_Rec) is
+    Start_Time : Virtual_Time.Time;
+    use type Timers.Delay_List, Virtual_Time.Time, Perpet.Delta_Rec;
   begin
-    if Period <= 0.0 then
-      raise Invalid_Period;
+    if Delay_Spec.Delay_Kind = Timers.Delay_Sec
+    and then Delay_Spec.Delay_Seconds < 0.0 then
+      raise Invalid_Delay;
     end if;
     if Timer.Acc = null then
       Timer.Acc := new Timer_Rec;
     end if;
     -- (Re) initialize chrono
     Timer.Acc.Chrono.Stop;
-    Timer.Acc.Chrono.Attach (Clock);
-    Timer.Acc.Chrono.Start;
+    Timer.Acc.Chrono.Attach (Delay_Spec.Clock);
+    Timer.Acc.Chrono.Start (Start_Time);
     -- Initialise timer
-    Timer.Acc.Next_Expiration := Perpet.To_Delta_Rec (Period);
-    Timer.Acc.Period := Period;
-  end Arm;
+    case Delay_Spec.Delay_Kind is
+      when Timers.Delay_Sec =>
+        Timer.Acc.Next_Expiration :=
+            Perpet.To_Delta_Rec (Delay_Spec.Delay_Seconds);
+      when Timers.Delay_Del =>
+        Timer.Acc.Next_Expiration := Delay_Spec.Delay_Delta;
+      when Timers.Delay_Exp =>
+        if Delay_Spec.Expiration_Time > Start_Time then
+          Timer.Acc.Next_Expiration := Delay_Spec.Expiration_Time - Start_Time;
+        else
+          Timer.Acc.Next_Expiration := Timers.Default_Delta;
+        end if;
+    end case;
+    Timer.Acc.Period := Delay_Spec.Period;
+  end Start;
 
   -- Stop a timer, which becomes unusable until re-armed
   -- Timer_Stopped : exception;

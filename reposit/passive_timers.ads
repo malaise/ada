@@ -1,15 +1,15 @@
 with Ada.Finalization;
-with Virtual_Time, Chronos;
+with Chronos, Timers;
 package Passive_Timers is
 
   type Passive_Timer is tagged limited private;
 
   -- Arm a passive timer with a given period
   -- Overwrites any previous setting on this timer
-  -- Raises Invalid_Period if Period is <= 0.0
-  procedure Arm (Timer  : in out Passive_Timer;
-                 Period : in Duration;
-                 Clock  : in Virtual_Time.Clock_Access := null);
+  -- May raise Invalid_Delay if Delay_Seconds is < 0
+  Invalid_Delay : exception;
+  procedure Start (Timer      : in out Passive_Timer;
+                   Delay_Spec : in Timers.Delay_Rec);
 
   -- Stop a timer, which becomes unusable until re-armed
   Timer_Stopped : exception;
@@ -26,8 +26,6 @@ package Passive_Timers is
   -- Checks if timer expiration time (Prev_Exp + Period) is reached
   -- If yes, add Period to expiration time
   function Has_Expired (Timer : in Passive_Timer) return Boolean;
-
-  Invalid_Period : exception;
 
 private
   type Timer_Rec is record
