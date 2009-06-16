@@ -40,7 +40,11 @@ procedure T_Virtual is
 
   procedure Check_Pt (Pt : in out Passive_Timers.Passive_Timer; Name : in String := "") is
   begin
-    Ada.Text_Io.Put ("Passive timer " & Name & " has");
+    Ada.Text_Io.Put ("Passive timer");
+    if Name /= "" then
+      Ada.Text_Io.Put (" " & Name);
+    end if;
+    Ada.Text_Io.Put (" has");
     if not Pt.Has_Expired then
       Ada.Text_Io.Put (" not");
     end if;
@@ -56,7 +60,10 @@ begin
                                           Period => 1.0,
                                           Delay_Seconds => 1.0),
                            Callback => Timer_Callback'Unrestricted_Access);
-  My_Pt.Arm (5.0, My_Clock'Unrestricted_Access);
+  My_Pt.Start ( (Delay_Kind => Timers.Delay_Sec,
+                 Clock => My_Clock'Unrestricted_Access,
+                 Period => 5.0,
+                 Delay_Seconds => 5.0) );
   Check_Pt (My_Pt);
   Event_Mng.Wait (3_000);
 
