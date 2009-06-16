@@ -29,12 +29,21 @@ package body Chronos is
   -- Default status is stopped
   -- No effect if it is already running
   procedure Start (A_Chrono : in out Chrono_Type) is
+    Dummy : Virtual_Time.Time;
+  begin
+    Start (A_Chrono, Dummy);
+  end Start;
+
+  -- Same and returns current virtual time (when chrono has started)
+  procedure Start (A_Chrono : in out Chrono_Type;
+                   Vtime : out Virtual_Time.Time) is
   begin
     if A_Chrono.Status /= Running then
       -- Reset start time from clock
       A_Chrono.Start_Time := Current_Time (A_Chrono);
       A_Chrono.Status := Running;
     end if;
+    Vtime := A_Chrono.Start_Time;
   end Start;
 
   -- Stop the chrono

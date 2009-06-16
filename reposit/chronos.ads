@@ -27,6 +27,10 @@ package Chronos is
   -- No effect if it is already running
   procedure Start (A_Chrono : in out Chrono_Type);
 
+  -- Same and returns current virtual time (when chrono has started)
+  procedure Start (A_Chrono : in out Chrono_Type;
+                   Vtime : out Virtual_Time.Time);
+
   -- Stop the chrono
   -- No effect if it is already stopped
   procedure Stop (A_Chrono : in out Chrono_Type);
