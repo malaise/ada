@@ -1,75 +1,105 @@
+with Ada.Unchecked_Deallocation;
+with Timers;
 -- Child package of Queues
 package body Queues.Timed is
 
-  -- Sort by chrono expiration
-  function "<" (X1, X2 : Loc_Item) return Boolean is
-    use type Ada.Calendar.Time;
-  begin
-    return X1.Exp < X2.Exp;
-  end "<";
-  procedure Sort is new Item_List_Mng.Sort ("<");
+  procedure Free_Timer is new Ada.Unchecked_Deallocation (
+    Object => Passive_Timers.Passive_Timer,
+    Name => Timer_Access);
 
   -- Check length before pushing (raise Timed_Full if list lenght is size)
   procedure Check_Length (Queue : in Timed_Type) is
   begin
-    if Size /= 0 and then Item_List_Mng.List_Length(Lt(Queue)) = Size then
+    if Size /= 0 and then Queue.List.List_Length = Size then
       raise Timed_Full;
     end if;
   end Check_Length;
 
   -- Remove obsolete items an add this one that will expire at Expdate
   procedure Push (Queue : in out Timed_Type;
-                  X : in Item; Expdate : in Ada.Calendar.Time) is
+                  X       : in Item;
+                  Expdate : in Virtual_Time.Time;
+                  Clock   : in Virtual_Time.Clock_Access := null) is
+    Item : Loc_Item;
   begin
     -- Make room first
     Expire (Queue);
     -- Check length vs. size
     Check_Length (Queue);
-    -- Insert record
-    Item_List_Mng.Insert (Lt(Queue), (Expdate, X));
-    -- Re-sort list. This also sets current pos to first
-    Sort (Lt(Queue));
+    -- Init and insert record
+    Item.Data := X;
+    Item.Timer := new Passive_Timers.Passive_Timer;
+    Item.Timer.Start ( (Timers.Delay_Exp, Clock, Timers.No_Period, Expdate) );
+    Queue.List.Insert (Item);
   end Push;
 
   -- Remove obsolete items an add this one that will expire after
   --  Lifetime
   procedure Push (Queue : in out Timed_Type;
-                  X : in Item; Lifetime : in Perpet.Delta_Rec) is
-    Exp : Ada.Calendar.Time;
-    use Perpet, Ada.Calendar; -- For both "+"
+                  X        : in Item;
+                  Lifetime : in Perpet.Delta_Rec;
+                  Clock    : in Virtual_Time.Clock_Access := null) is
+    Item : Loc_Item;
   begin
-    -- Compute expiration time
-    Exp := Ada.Calendar.Clock + Lifetime.Days + Lifetime.Secs;
-    Push (Queue, X, Exp);
+    -- Make room first
+    Expire (Queue);
+    -- Check length vs. size
+    Check_Length (Queue);
+    -- Init and insert record
+    Item.Data := X;
+    Item.Timer := new Passive_Timers.Passive_Timer;
+    Item.Timer.Start ( (Timers.Delay_Del, Clock, Timers.No_Period, Lifetime) );
+    Queue.List.Insert (Item);
   end Push;
 
   -- Remove obsolete items
   procedure Expire (Queue : in out Timed_Type) is
-    Now : Ada.Calendar.Time;
-    L : Loc_Item;
-    use type Ada.Calendar.Time;
+    Item : Loc_Item;
+    Done : Boolean;
   begin
-    Now := Ada.Calendar.Clock;
-    -- List is always sorted and with current pos set to first
+    if Queue.Frozen then
+      return;
+    end if;
+    -- List is always with current pos set to first
     loop
-      -- Nothing if empty list
-      exit when Item_List_Mng.Is_Empty (Lt(Queue));
-      -- Stop expiring when Exp is in future
-      Item_List_Mng.Read (Lt(Queue), L, Item_List_Mng.Current);
-      exit when L.Exp > Now;
-      -- Moving to next should always be Ok because progressing from first and
-      --  always deleting. If there is no next record it is because deleting
-      --  the last one (no exception)!
-      Item_List_Mng.Delete (Lt(Queue));
+      -- Nothing when list is/becomes empty
+      exit when Queue.List.Is_Empty;
+      Queue.List.Read (Item, Item_List_Mng.Current);
+      if Item.Timer.Has_Expired then
+        -- Delete timer that has expired
+        Queue.List.Delete (Done => Done);
+        Item.Timer.Stop;
+        Free_Timer (Item.Timer);
+      else
+        Done := Queue.List.Check_Move;
+        if Done then
+          Queue.List.Move_To;
+        end if;
+      end if;
+      -- End of list
+      exit when not Done;
     end loop;
-    -- List is still sorted and with current pos set to first
+    if not Queue.List.Is_Empty then
+      Queue.List.Rewind;
+    end if;
   end Expire;
 
   -- Remove all items
   procedure Clear (Queue : in out Timed_Type) is
+    Item : Loc_Item;
   begin
+    -- List is always with current pos set to first
+    loop
+      -- Nothing when list is/becomes empty
+      exit when Queue.List.Is_Empty;
+      Queue.List.Read (Item, Item_List_Mng.Current);
+      -- Delete timer
+      Queue.List.Delete;
+      Item.Timer.Stop;
+      Free_Timer (Item.Timer);
+    end loop;
     -- Clear and deallocate
-    Item_List_Mng.Delete_List (Lt(Queue));
+    Queue.List.Delete_List;
   end Clear;
 
   -- Remove obsolete items and retrieve (and also remove)
@@ -84,14 +114,14 @@ package body Queues.Timed is
   end Pop;
 
   -- Remove obsolete items and retrieve (and also remove)
-  --  the first to expire item, no exception
+  --  a non expired item, may raise Timed_Empty
   procedure Pop (Queue : in out Timed_Type; X : out Item; Done : out Boolean) is
-    L : Loc_Item;
+    Item : Loc_Item;
   begin
     -- Expire any obsolete
     Expire (Queue);
     -- Check list is not empty
-    if Item_List_Mng.Is_Empty (Lt(Queue)) then
+    if Queue.List.Is_Empty then
       Done := False;
       return;
     end if;
@@ -99,9 +129,24 @@ package body Queues.Timed is
     -- Moving to next should always be Ok because progressing from first and
     --  always getting. If there is no next record it is because getting
     --  the last one (no exception)!
-    Item_List_Mng.Get (Lt(Queue), L);
-    X := L.Data;
+    Queue.List.Get (Item);
+    Item.Timer.Stop;
+    Free_Timer (Item.Timer);
+    X := Item.Data;
     Done := True;
   end Pop;
+
+  -- Suspend removal of obsolete items
+  procedure Freeze (Queue : in out Timed_Type) is
+  begin
+    Queue.Frozen := True;
+  end Freeze;
+
+  -- Re-activate removal of obsolete items
+  procedure Unfreeze (Queue : in out Timed_Type) is
+  begin
+    Queue.Frozen := False;
+  end Unfreeze;
+
 end Queues.Timed;
 
