@@ -67,12 +67,12 @@ package Timers is
   procedure Delete (Id : in Timer_Id);
 
   -- Suspend a timer: expirations, even the pending ones are suspended
-  -- No action is timer is alread syspended
+  -- No action if timer is alread syspended
   -- May raise Invalid_Timer if timer has no period and has expired
   procedure Suspend (Id : in Timer_Id);
 
   -- Resume a suspended a timer: expirations, even the pending ones are resumed
-  -- No action is timer is not syspended
+  -- No action if timer is not syspended
   -- May raise Invalid_Timer if timer has no period and has expired
   procedure Resume (Id : in Timer_Id);
 

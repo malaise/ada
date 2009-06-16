@@ -11,16 +11,16 @@ package Passive_Timers is
   procedure Start (Timer      : in out Passive_Timer;
                    Delay_Spec : in Timers.Delay_Rec);
 
-  -- Stop a timer, which becomes unusable until re-armed
+  -- Stop a timer, which becomes unusable until re-started
   Timer_Stopped : exception;
   procedure Stop (Timer : in out Passive_Timer);
 
   -- Suspend a timer: pending expirations can still be retrieved
-  -- No action is timer is alread syspended
+  -- No action if timer is alread syspended
   procedure Suspend (Timer : in out Passive_Timer);
 
   -- Resume a suspended a timer: new expirations are resumed
-  -- No action is timer is not syspended
+  -- No action if timer is not syspended
   procedure Resume (Timer : in out Passive_Timer);
 
   -- Checks if timer expiration time (Prev_Exp + Period) is reached
@@ -29,7 +29,7 @@ package Passive_Timers is
 
 private
   type Timer_Rec is record
-    Period : Duration;
+    Period : Timers.Period_Range;
     Next_Expiration : Chronos.Time_Rec;
     Chrono : Chronos.Chrono_Type;
   end record;
