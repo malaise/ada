@@ -23,6 +23,7 @@ begin
   begin
     T2.Start ( (Timers.Delay_Sec, null, 2.0, 2.0) );
     while not T1.Has_Expired loop
+      Put ("T1", False);
       Put ("T2", T2.Has_Expired);
       delay 1.0;
     end loop;
@@ -34,4 +35,21 @@ begin
       Put ("T1", T1.Has_Expired);
       delay 0.5;
   end loop;
+
+  -- Test Timer_Expired
+  declare
+    T3 : Passive_Timers.Passive_Timer;
+  begin
+    T3.Start ( (Timers.Delay_Sec, null, 0.0, 1.0) );
+    delay 0.5;
+    Put ("T3", T3.Has_Expired);
+    delay 1.0;
+    Put ("T3", T3.Has_Expired);
+    Put ("T3", T3.Has_Expired);
+  exception
+    when Passive_Timers.Timer_Expired =>
+      Ada.Text_Io.Put_Line ("Exception Timer_Expired (OK)");
+      T3.Stop;
+  end;
+
 end T_Passive_Timers;
