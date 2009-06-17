@@ -45,6 +45,7 @@ package Event_Mng is
 
   -- Send a dummy signal
   -- It always generates a Sig_Event but Callbacks are not called
+  -- Usefull to unlock a Wait or Pause
   procedure Send_Dummy_Signal;
 
 
@@ -75,7 +76,11 @@ package Event_Mng is
   -- Force re-evaluation (and expiration) of timers while in Wait
   procedure Wake_Up;
 
-  -- Waits for the specified delay or Signal_Event or Wakeup_Event
+  -- Suspend current execution flow until either:
+  --   - a signal is received (term/child/dummy)
+  --   - the end of the timeout
+  --   - another pause called earlier (which calls us as a Cb) ends on timeout
+  -- Usefull to wait a bit while Fd/timers Cb are called transparently
   procedure Pause (Timeout_Ms : in Integer);
 
   ----------------------
