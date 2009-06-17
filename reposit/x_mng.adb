@@ -1,5 +1,5 @@
 with Ada.Calendar, Ada.Characters.Latin_1;
-with My_Io, Address_Ops, Environ;
+with My_Io, Address_Ops, Environ, Perpet;
 package body X_Mng is
 
   -- Maximum successive X events
@@ -1013,21 +1013,27 @@ package body X_Mng is
                          Timeout : in out Timers.Delay_Rec;
                          Kind : out Event_Kind) is
     Final_Exp : Timers.Expiration_Rec;
-    use type Ada.Calendar.Time, Timers.Delay_List;
+    use type Ada.Calendar.Time, Timers.Delay_List, Perpet.Delta_Rec;
   begin
     if not Initialised or else Line_Id = No_Client then
       raise X_Failure;
     end if;
 
     -- Compute final expiration
-    if Timeout.Delay_Kind = Timers.Delay_Exp then
-      Final_Exp := (Infinite => False, Time => Timeout.Expiration_Time);
-    elsif Timeout.Delay_Seconds /= Infinite_Timeout then
-      Final_Exp := (Infinite => False, Time => Ada.Calendar.Clock
-                                             + Timeout.Delay_Seconds);
-    else
-      Final_Exp := (Infinite => True);
-    end if;
+    case Timeout.Delay_Kind is
+      when Timers.Delay_Exp =>
+        Final_Exp := (Infinite => False, Time => Timeout.Expiration_Time);
+      when Timers.Delay_Sec =>
+        if Timeout.Delay_Seconds /= Infinite_Timeout then
+          Final_Exp := (Infinite => False,
+                        Time => Ada.Calendar.Clock + Timeout.Delay_Seconds);
+        else
+          Final_Exp := (Infinite => True);
+        end if;
+      when Timers.Delay_Del =>
+        Final_Exp :=  (Infinite => False,
+                       Time => Ada.Calendar.Clock + Timeout.Delay_Delta);
+    end case;
 
 
     -- Ready to wait
@@ -1037,13 +1043,23 @@ package body X_Mng is
     Dispatcher.Get_Event(Line_Id.No) (Kind);
 
     -- Compute remaining time
-    if Timeout.Delay_Kind = Timers.Delay_Sec
-    and then Timeout.Delay_Seconds /= Infinite_Timeout then
-      Timeout.Delay_Seconds := Ada.Calendar.Clock - Final_Exp.Time;
-      if Timeout.Delay_Seconds < 0.0 then
-        Timeout.Delay_Seconds := 0.0;
-      end if;
-    end if;
+    case Timeout.Delay_Kind is
+      when Timers.Delay_Exp =>
+        null;
+      when Timers.Delay_Sec =>
+        if Timeout.Delay_Seconds /= Infinite_Timeout then
+          Timeout.Delay_Seconds := Ada.Calendar.Clock - Final_Exp.Time;
+          if Timeout.Delay_Seconds < 0.0 then
+            Timeout.Delay_Seconds := 0.0;
+          end if;
+        end if;
+      when Timers.Delay_Del =>
+        if Ada.Calendar.Clock > Final_Exp.Time then
+          Timeout.Delay_Delta := Ada.Calendar.Clock - Final_Exp.Time;
+        else
+          Timeout.Delay_Delta := (0, 0.0);
+        end if;
+    end case;
 
   end X_Wait_Event;
 
