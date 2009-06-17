@@ -27,11 +27,16 @@ package Passive_Timers is
   -- If yes, add Period to expiration time
   function Has_Expired (Timer : in Passive_Timer) return Boolean;
 
+  -- When a timer has expired once and has no period (0.0) it is not re-armed
+  -- Calling Suspend, Resume or Has_Expired again on it will raise
+  Timer_Expired : exception;
+
 private
   type Timer_Rec is record
     Period : Timers.Period_Range;
     Next_Expiration : Chronos.Time_Rec;
     Chrono : Chronos.Chrono_Type;
+    Expired : Boolean;
   end record;
   type Timer_Access is access Timer_Rec;
 

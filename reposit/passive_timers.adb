@@ -38,6 +38,7 @@ package body Passive_Timers is
         end if;
     end case;
     Timer.Acc.Period := Delay_Spec.Period;
+    Timer.Acc.Expired := False;
   end Start;
 
   -- Stop a timer, which becomes unusable until re-armed
@@ -58,6 +59,9 @@ package body Passive_Timers is
     if Timer.Acc = null then
       raise Timer_Stopped;
     end if;
+    if Timer.Acc.Expired then
+      raise Timer_Expired;
+    end if;
     Timer.Acc.Chrono.Stop;
   end Suspend;
 
@@ -67,6 +71,9 @@ package body Passive_Timers is
   begin
     if Timer.Acc = null then
       raise Timer_Stopped;
+    end if;
+    if Timer.Acc.Expired then
+      raise Timer_Expired;
     end if;
     Timer.Acc.Chrono.Stop;
   end Resume;
@@ -79,11 +86,18 @@ package body Passive_Timers is
     if Timer.Acc = null then
       raise Timer_Stopped;
     end if;
+    if Timer.Acc.Expired then
+      raise Timer_Expired;
+    end if;
     if Timer.Acc.Chrono.Read < Timer.Acc.Next_Expiration then
       return False;
     else
-      Timer.Acc.Next_Expiration :=
-          Timer.Acc.Next_Expiration + Timer.Acc.Period;
+      if Timer.Acc.Period /= 0.0 then
+        Timer.Acc.Next_Expiration :=
+            Timer.Acc.Next_Expiration + Timer.Acc.Period;
+      else
+        Timer.Acc.Expired := True;
+      end if;
       return True;
     end if;
   end Has_Expired;
