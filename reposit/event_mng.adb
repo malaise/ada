@@ -396,7 +396,7 @@ package body Event_Mng is
     Loc_Level : Positive;
     Wait_Timeout : Integer;
     Dummy : Boolean;
-    pragma Unreferenced (Tid, Dummy);
+    pragma Unreferenced (Dummy);
   begin
     Set_Debug;
 
@@ -442,6 +442,13 @@ package body Event_Mng is
             Send_Dummy_Signal;
           end if;
         end if;
+        -- Cancel timer if not yet expired
+        begin
+          Timers.Delete (Tid);
+        exception
+          when Timers.Invalid_Timer =>
+            null;
+        end;
         exit;
       end if;
 
