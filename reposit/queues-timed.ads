@@ -9,43 +9,46 @@ package Queues.Timed is
 
   subtype Len_Range is Natural range 0 .. Size;
 
-  -- Remove obsolete items and add this one, which will expire at Expdate
-  procedure Push (Queue : in out Timed_Type;
-                  X       : in Item;
-                  Expdate : in Virtual_Time.Time;
-                  Clock   : in Virtual_Time.Clock_Access := null);
+  -- Assign a virtual clock to the queue (the queue does not register but each
+  --  Item will have a chrono on this clock.
+  -- By default, clock is null (real time).
+  -- The Queue must be empty, otherwise tje exception Timed_Not_Empty is raised
+  procedure Attach (Queue : in out Timed_Type;
+                    Clock : in Virtual_Time.Clock_Access);
 
-  -- Remove obsolete items an add this one, which will expire after
-  --  Lifetime
+  -- Remove obsolete items and add this one, which will expire after Lifetime
   procedure Push (Queue : in out Timed_Type;
                   X        : in Item;
-                  Lifetime : in Perpet.Delta_Rec;
-                  Clock    : in Virtual_Time.Clock_Access := null);
+                  Lifetime : in Perpet.Natural_Duration);
 
-  -- Remove obsolete items
+  -- Remove obsolete items an add this one, which will expire after Lifetime
+  procedure Push (Queue : in out Timed_Type;
+                  X        : in Item;
+                  Lifetime : in Perpet.Delta_Rec);
+
+  -- Remove expired items
   procedure Expire (Queue : in out Timed_Type);
 
   -- Remove all items if any (no exception)
   procedure Clear (Queue : in out Timed_Type);
 
-  -- Remove obsolete items and retrieve (and also remove)
-  --  a non expired item, may raise Timed_Empty
+  -- Retrieve (and also remove) a non expired item
+  -- Does not expire items
+  -- Items are retrieved in the order there where pushed
+  -- May raise Timed_Empty
   procedure Pop (Queue : in out Timed_Type; X : out Item);
 
-  -- Remove obsolete items and retrieve (and also remove)
-  --  a non expired item, sets Done to False if the
-  --  queue was empty (and X is not set)
+  -- Retrieve (and also remove) a non expired item
+  -- Does not expire items
+  -- Items are retrieved in the order there where pushed
+  -- Set Done to False if the queue was empty (and X is not set)
   procedure Pop (Queue : in out Timed_Type; X : out Item; Done : out Boolean);
-
-  -- Suspend removal of obsolete items
-  procedure Freeze (Queue : in out Timed_Type);
-
-  -- Re-activate removal of obsolete items
-  procedure Unfreeze (Queue : in out Timed_Type);
 
   -- Exceptions raised during push if the stack is full
   --  or during pop if the stack is empty
   Timed_Full, Timed_Empty : exception;
+  -- Exception raised when setting the clock on a non-empty stack
+  Timed_Not_Empty : exception;
 private
   -- Item and its expiration time
   type Timer_Access is access Passive_Timers.Passive_Timer;
@@ -59,7 +62,7 @@ private
   package Item_Dyn_List_Mng is new Dynamic_List (Loc_Item);
   package Item_List_Mng renames Item_Dyn_List_Mng.Dyn_List;
   type Timed_Type is tagged limited record
-    Frozen : Boolean := False;
+    Clock : Virtual_Time.Clock_Access := null;
     List : Item_List_Mng.List_Type;
   end record;
 

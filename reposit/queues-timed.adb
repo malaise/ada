@@ -15,7 +15,20 @@ package body Queues.Timed is
     end if;
   end Check_Length;
 
-  -- Remove obsolete items an add this one that will expire at Expdate
+    -- Assign a virtual clock to the queue (the queue does not register but each
+  --  Item will have a chrono on this clock.
+  -- By default, clock is null (real time).
+  -- The Queue must be empty, otherwise tje exception Timed_Not_Empty is raised
+  procedure Attach (Queue : in out Timed_Type;
+                    Clock : in Virtual_Time.Clock_Access) is
+  begin
+    if not Queue.List.Is_Empty then
+      raise Timed_Not_Empty;
+    end if;
+    Queue.Clock := Clock;
+  end Attach;
+
+  -- Remove obsolete items an add this one
   procedure Add_Item (Queue : in out Timed_Type;
                       X     : in Item;
                       Timer : out Timer_Access) is
@@ -29,31 +42,32 @@ package body Queues.Timed is
     Item.Data := X;
     Item.Timer := new Passive_Timers.Passive_Timer;
     Timer := Item.Timer;
-    -- Insert record and rewind
+    -- Append record and rewind
+    if not Queue.List.Is_Empty then
+      Queue.List.Rewind (Item_List_Mng.Prev);
+    end if;
     Queue.List.Insert (Item);
     Queue.List.Rewind;
   end Add_Item;
 
-  procedure Push (Queue : in out Timed_Type;
-                  X       : in Item;
-                  Expdate : in Virtual_Time.Time;
-                  Clock   : in Virtual_Time.Clock_Access := null) is
+  procedure Push (Queue    : in out Timed_Type;
+                  X        : in Item;
+                  Lifetime : in Perpet.Natural_Duration) is
     Timer : Timer_Access;
   begin
     Add_Item (Queue, X, Timer);
-    Timer.Start ( (Timers.Delay_Exp, Clock, Timers.No_Period, Expdate) );
+    Timer.Start ( (Timers.Delay_Sec, Queue.Clock, Timers.No_Period, Lifetime) );
   end Push;
 
   -- Remove obsolete items an add this one that will expire after
   --  Lifetime
-  procedure Push (Queue : in out Timed_Type;
+  procedure Push (Queue    : in out Timed_Type;
                   X        : in Item;
-                  Lifetime : in Perpet.Delta_Rec;
-                  Clock    : in Virtual_Time.Clock_Access := null) is
+                  Lifetime : in Perpet.Delta_Rec) is
     Timer : Timer_Access;
   begin
     Add_Item (Queue, X, Timer);
-    Timer.Start ( (Timers.Delay_Del, Clock, Timers.No_Period, Lifetime) );
+    Timer.Start ( (Timers.Delay_Del, Queue.Clock, Timers.No_Period, Lifetime) );
   end Push;
 
   -- Remove obsolete items
@@ -61,9 +75,6 @@ package body Queues.Timed is
     Item : Loc_Item;
     Done : Boolean;
   begin
-    if Queue.Frozen then
-      return;
-    end if;
     -- List is always with current pos set to first
     loop
       -- Nothing when list is/becomes empty
@@ -122,8 +133,6 @@ package body Queues.Timed is
   procedure Pop (Queue : in out Timed_Type; X : out Item; Done : out Boolean) is
     Item : Loc_Item;
   begin
-    -- Expire any obsolete
-    Expire (Queue);
     -- Check list is not empty
     if Queue.List.Is_Empty then
       Done := False;
@@ -139,18 +148,6 @@ package body Queues.Timed is
     X := Item.Data;
     Done := True;
   end Pop;
-
-  -- Suspend removal of obsolete items
-  procedure Freeze (Queue : in out Timed_Type) is
-  begin
-    Queue.Frozen := True;
-  end Freeze;
-
-  -- Re-activate removal of obsolete items
-  procedure Unfreeze (Queue : in out Timed_Type) is
-  begin
-    Queue.Frozen := False;
-  end Unfreeze;
 
 end Queues.Timed;
 
