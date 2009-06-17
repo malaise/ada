@@ -34,11 +34,11 @@ procedure T_Timeq is
   begin
     -- Step 1, test auto expire
     Ada.Text_Io.Put_Line ("Putting 11 22 33 44 55 and waiting 3 seconds");
-    Val_Queue.Push (Vals, 1, (0, 1.0));
-    Val_Queue.Push (Vals, 2, (0, 2.0));
-    Val_Queue.Push (Vals, 3, (0, 3.0));
-    Val_Queue.Push (Vals, 4, (0, 4.0));
-    Val_Queue.Push (Vals, 5, (0, 5.0));
+    Val_Queue.Push (Vals, 1, 1.0);
+    Val_Queue.Push (Vals, 2, 2.0);
+    Val_Queue.Push (Vals, 3, 3.0);
+    Val_Queue.Push (Vals, 4, 4.0);
+    Val_Queue.Push (Vals, 5, 5.0);
     delay 3.0;
     Ada.Text_Io.Put_Line ("Getting first without expire");
     Val_Queue.Pop (Vals, V);
