@@ -1,16 +1,11 @@
 with Ada.Text_Io;
-with Date_Image;
-with Virtual_Time, Chronos, Timers, Event_Mng, Passive_Timers;
+with Date_Image, Virtual_Time, Chronos, Timers, Event_Mng, Passive_Timers,
+     Queues.Timed;
 procedure T_Virtual is
 
-  type Observer_Rec is new Virtual_Time.Observer with null record;
-
+  -- The virtual clock and its observer
   My_Clock : aliased Virtual_Time.Clock;
-  My_Observer : aliased Observer_Rec;
-  My_Chrono : Chronos.Chrono_Type;
-  My_Tid : Timers.Timer_Id;
-  My_Pt : Passive_Timers.Passive_Timer;
-
+  type Observer_Rec is new Virtual_Time.Observer with null record;
   procedure Notify (An_Observer : in out Observer_Rec;
                     Rtime, Vtime : in Virtual_Time.Time;
                     Speed : in Virtual_Time.Speed_Range;
@@ -25,7 +20,10 @@ procedure T_Virtual is
                         & " " & Date_Image (Vt));
     Ada.Text_Io.Put_Line ("Speed is " & A_Clock.Get_Speed'Img);
   end Notify;
+  My_Observer : aliased Observer_Rec;
 
+  -- The timer and its expiration callback
+  My_Tid : Timers.Timer_Id;
   function Timer_Callback (Id : in Timers.Timer_Id;
                            Data : in Timers.Timer_Data := Timers.No_Data)
            return Boolean is
@@ -37,6 +35,11 @@ procedure T_Virtual is
     return False;
   end Timer_Callback;
 
+  -- Ther chrono
+  My_Chrono : Chronos.Chrono_Type;
+
+  -- The passive timer and check of expiration
+  My_Pt : Passive_Timers.Passive_Timer;
   function Check_Pt (Pt : Passive_Timers.Passive_Timer;
                      Name : String := "") return Boolean is
     Res : Boolean;
@@ -62,9 +65,26 @@ procedure T_Virtual is
     Dummy := Check_Pt (Pt, Name);
   end Check_Pt;
 
+  -- The timed queue and dump
+  package Int_Queue_Timed is new Queues.Timed (0, Integer);
+  My_Queue : Int_Queue_Timed.Timed_Type;
+  procedure Dump_Queue is
+    Val : Integer;
+    Done : Boolean;
+  begin
+    Ada.Text_Io.Put ("Queue contains: ");
+    loop
+      My_Queue.Pop (Val, Done);
+      exit when not Done;
+      Ada.Text_Io.Put (Val'Img & " ");
+    end loop;
+    Ada.Text_Io.New_Line;
+  end Dump_Queue;
+
 begin
   Ada.Text_Io.Put_Line ("Now is " & Date_Image (My_Clock.Current_Time));
-  Ada.Text_Io.Put_Line ("Start chrono and timers and waiting 3s");
+  Ada.Text_Io.Put_Line (
+      "Starting chrono and timers, attaching queue and waiting 3s");
   My_Chrono.Start;
   My_Tid := Timers.Create (Delay_Spec => (Delay_Kind => Timers.Delay_Sec,
                                           Clock => My_Clock'Unrestricted_Access,
@@ -75,6 +95,7 @@ begin
                  Clock => My_Clock'Unrestricted_Access,
                  Period => 5.0,
                  Delay_Seconds => 5.0) );
+  My_Queue.Attach (My_Clock'Unrestricted_Access);
   Check_Pt (My_Pt);
   Event_Mng.Wait (3_000);
 
@@ -93,30 +114,50 @@ begin
   Ada.Text_Io.New_Line;
   Ada.Text_Io.Put_Line ("Now is " & Date_Image (My_Clock.Current_Time));
   Check_Pt (My_Pt);
+  Ada.Text_Io.Put_Line ("Chrono is " & My_Chrono.Read.Secs'Img);
+  Ada.Text_Io.Put_Line ("Pushing in Queue 2 3 and 4");
+  My_Queue.Push (2, 2.0);
+  My_Queue.Push (3, 3.0);
+  My_Queue.Push (4, 4.0);
   Ada.Text_Io.Put_Line ("Setting speed to 0.5 and waiting 5s");
   My_Clock.Set_Speed (0.5);
   Event_Mng.Wait (5_000);
   Ada.Text_Io.Put_Line ("Now is " & Date_Image (My_Clock.Current_Time));
   Check_Pt (My_Pt);
   Ada.Text_Io.Put_Line ("Chrono is " & My_Chrono.Read.Secs'Img);
+  My_Queue.Expire;
+  Dump_Queue;
 
   Ada.Text_Io.New_Line;
+  Ada.Text_Io.Put_Line ("Pushing in Queue 1");
+  My_Queue.Push (1, 1.0);
   Ada.Text_Io.Put_Line ("Setting speed to 0.0 and waiting 3s");
   My_Clock.Set_Speed (0.0);
   Event_Mng.Wait (3_000);
   Ada.Text_Io.Put_Line ("Now is " & Date_Image (My_Clock.Current_Time));
   Check_Pt (My_Pt);
   Ada.Text_Io.Put_Line ("Chrono is " & My_Chrono.Read.Secs'Img);
+  My_Queue.Expire;
+  Dump_Queue;
 
   Ada.Text_Io.New_Line;
+  Ada.Text_Io.Put_Line ("Pushing in Queue 2 3 and 4");
+  My_Queue.Push (2, 2.0);
+  My_Queue.Push (3, 3.0);
+  My_Queue.Push (4, 4.0);
   Ada.Text_Io.Put_Line ("Setting speed to 1.0 and waiting 3s");
   My_Clock.Set_Speed (1.0);
   Event_Mng.Wait (3_000);
   Ada.Text_Io.Put_Line ("Now is " & Date_Image (My_Clock.Current_Time));
   Check_Pt (My_Pt);
   Ada.Text_Io.Put_Line ("Chrono is " & My_Chrono.Read.Secs'Img);
+  My_Queue.Expire;
+  Dump_Queue;
 
   Ada.Text_Io.New_Line;
+  Ada.Text_Io.Put_Line ("Pushing in Queue 25 and 35");
+  My_Queue.Push (25, 25.0);
+  My_Queue.Push (35, 35.0);
   Ada.Text_Io.Put_Line ("Suspending timer and setting speed to 10.0");
   Timers.Suspend (My_Tid);
   My_Clock.Set_Speed (10.0);
@@ -130,7 +171,13 @@ begin
   end loop;
 
   Ada.Text_Io.New_Line;
+  Ada.Text_Io.Put_Line ("Now is " & Date_Image (My_Clock.Current_Time));
+  Check_Pt (My_Pt);
   Ada.Text_Io.Put_Line ("Chrono is " & My_Chrono.Read.Secs'Img);
+  My_Queue.Expire;
+  Dump_Queue;
+
+  Ada.Text_Io.New_Line;
   Ada.Text_Io.Put_Line ("Done.");
 end T_Virtual;
 
