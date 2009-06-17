@@ -305,7 +305,9 @@ extern int evt_wait (int *p_fd, boolean *p_read, int *timeout_ms) {
     }
 
     /* Check for timeout reached */
-    if ( (timeout_is_active) && time_is_reached (&exp_time) ) {
+    if ( (sig_received == SIG_NONE)
+        && (timeout_is_active)
+        && time_is_reached (&exp_time) ) {
       /* Done on timeout */
       *p_fd = NO_EVENT;
       *timeout_ms = 0;
