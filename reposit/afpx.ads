@@ -207,8 +207,7 @@ package Afpx is
   -- Result of Put_Then_Get:
   -- See Con_io.Curs_Mvt
   type Event_List is (Keyboard, Mouse_Button,
-                      Fd_Event, Timer_Event, Signal_Event, Wakeup_Event,
-                      Refresh);
+                      Fd_Event, Timer_Event, Signal_Event, Refresh);
   type Keyboard_Key_List is (Return_Key, Escape_Key, Break_Key);
 
   type Result_Rec (Event : Event_List := Keyboard) is record
@@ -218,7 +217,7 @@ package Afpx is
         Keyboard_Key : Keyboard_Key_List;
       when Mouse_Button =>
         Field_No : Absolute_Field_Range;
-      when Fd_Event | Timer_Event | Signal_Event | Wakeup_Event | Refresh =>
+      when Fd_Event | Timer_Event | Signal_Event | Refresh =>
         null;
     end case;
   end record;

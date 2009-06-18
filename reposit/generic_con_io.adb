@@ -844,10 +844,6 @@ package body Generic_Con_Io is
           -- Signal event
           Event := Signal_Event;
           return;
-        when X_Mng.Wakeup_Event =>
-          -- Wake Up event
-          Event := Wakeup_Event;
-          return;
         when X_Mng.Refresh =>
           -- Refresh
           Event := Refresh;
@@ -1392,8 +1388,6 @@ package body Generic_Con_Io is
           return (Mvt => Timer_Event);
         when Signal_Event =>
           return (Mvt => Signal_Event);
-        when Wakeup_Event =>
-          return (Mvt => Wakeup_Event);
         when Refresh =>
           return (Mvt => Refresh);
         when Mouse_Button =>

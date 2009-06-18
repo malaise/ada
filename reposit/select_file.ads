@@ -8,8 +8,6 @@ generic
   with procedure Timer_Callback is null;
   -- Any action to do when a signal_event has occured (see Afpx Signal_Event)
   with procedure Signal_Callback is null;
-  -- Any action to do when a wakeup_event has occured (see Afpx Wakeup_Event)
-  with procedure Wakeup_Callback is null;
   -- Title when reading or writting
   Read_Title  : in String := "";
   Write_Title : in String := "";

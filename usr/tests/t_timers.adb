@@ -181,8 +181,6 @@ begin
         null;
       when Afpx.Fd_Event =>
         null;
-      when Afpx.Wakeup_Event =>
-        null;
       when Afpx.Signal_Event =>
         exit;
       when Afpx.Timer_Event =>

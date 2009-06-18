@@ -140,8 +140,7 @@ package body Dialog is
             when others =>
               null;
           end case;
-        when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event
-           | Afpx.Wakeup_Event =>
+        when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event =>
           null;
         when Afpx.Refresh =>
           Redisplay := True;
@@ -231,8 +230,7 @@ package body Dialog is
             when others =>
               null;
           end case;
-        when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event
-           | Afpx.Wakeup_Event =>
+        when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event =>
           null;
         when Afpx.Refresh =>
           Redisplay := True;

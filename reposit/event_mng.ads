@@ -67,8 +67,7 @@ package Event_Mng is
   -- Any negative timeout means infinite
   -- The three operation end on event or timeout
   Infinite_Ms : constant Integer := -1;
-  type Out_Event_List is (Timer_Event, Fd_Event, Signal_Event,
-                          Wakeup_Event, No_Event);
+  type Out_Event_List is (Timer_Event, Fd_Event, Signal_Event, No_Event);
   function Wait (Timeout_Ms : Integer) return Out_Event_List;
   function Wait (Timeout_Ms : Integer) return Boolean;
   procedure Wait (Timeout_Ms : Integer);
@@ -86,7 +85,6 @@ package Event_Mng is
   ----------------------
   -- These low level operations shall not be used internally by applications
 
-  -- Force return of Select on Wakeup event.
   -- To be used in multi-tasking to unlock currently suspended task
   -- Current use-cases are:
   -- - In Timers, when a new timer is the first to expire, force
@@ -103,8 +101,6 @@ package Event_Mng is
         Fd : File_Desc;
         Read : Boolean;
       when Signal_Event =>
-        null;
-      when Wakeup_Event =>
         null;
       when No_Event =>
         null;

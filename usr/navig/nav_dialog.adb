@@ -341,8 +341,7 @@ package body Nav_Dialog is
                 null;
               when Con_Io.Refresh =>
                 Refresh := True;
-              when Con_Io.Fd_Event | Con_Io.Timer_Event | Con_Io.Signal_Event
-                 | Con_Io.Wakeup_Event =>
+              when Con_Io.Fd_Event | Con_Io.Timer_Event | Con_Io.Signal_Event =>
                 null;
               when Con_Io.Timeout | Con_Io.Esc |
                    Con_Io.Mouse_Button | Con_Io.Break | Con_Io.Selection =>

@@ -335,8 +335,7 @@ begin
         end case;
       when Afpx.Refresh | Afpx.Timer_Event =>
         Redisplay := True;
-      when Afpx.Fd_Event | Afpx.Signal_Event
-         | Afpx.Wakeup_Event =>
+      when Afpx.Fd_Event | Afpx.Signal_Event =>
         null;
     end case;
 

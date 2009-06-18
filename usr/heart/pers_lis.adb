@@ -227,8 +227,7 @@ package body Pers_Lis is
 
         when Refresh =>
           Redisplay := True;
-        when Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event
-           | Afpx.Wakeup_Event =>
+        when Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event =>
           null;
         when Keyboard =>
 

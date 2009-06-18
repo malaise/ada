@@ -226,8 +226,7 @@ package body Screen is
           end case;
         when Afpx.Refresh =>
           Redisplay := True;
-        when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event
-           | Afpx.Wakeup_Event =>
+        when Afpx.Fd_Event | Afpx.Timer_Event | Afpx.Signal_Event =>
           Redisplay := True;
       end case;
     end loop;

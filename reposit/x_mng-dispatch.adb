@@ -71,7 +71,7 @@ package body Dispatch is
   -- The real call to select
   procedure Xx_Select (Exp : in Timers.Expiration_Rec;
                        C_Id : in out Line_For_C;
-                       Event : out Event_Kind;
+                       Event : out Event_Rec;
                        Next : out Boolean) is
 
     -- Next expiration
@@ -94,8 +94,9 @@ package body Dispatch is
 
     if C_Id /= No_Line_For_C then
       -- Try to get a new event from prev line
-      Xx_Get_Event (C_Id, Event, Next);
-      if Event /= No_Event then
+      Event := (False, No_Event);
+      Xx_Get_Event (C_Id, Event.Kind, Next);
+      if Event.Kind /= No_Event then
         return;
       end if;
     end if;
@@ -142,11 +143,14 @@ package body Dispatch is
       elsif C_Fd = C_Select_Sig_Event then
         Evt_In := (Kind => Event_Mng.Signal_Event);
       elsif C_Fd = C_Select_Wake_Event then
-        Evt_In := (Kind => Event_Mng.Wakeup_Event);
+        -- A wakeup event to transmit to Wait
+        Handle_Event := False;
+        Event := (Wakeup_Event => True);
       elsif C_Fd = C_Select_X_Event then
         -- Get X event
         Handle_Event := False;
-        Xx_Get_Event (C_Id, Event, Next);
+        Event := (False, No_Event);
+        Xx_Get_Event (C_Id, Event.Kind, Next);
       else
         -- A fd
         Evt_In := (Kind => Event_Mng.Fd_Event,
@@ -154,34 +158,36 @@ package body Dispatch is
                    Read => Boolean(C_Read));
       end if;
 
-      -- Handle event
+      -- Handle event and conver
       if Handle_Event then
         Evt_Out := Event_Mng.Handle (Evt_In);
         case Evt_Out is
           when Event_Mng.Timer_Event =>
-            Event := Timer_Event;
+            Event := (False, Timer_Event);
           when Event_Mng.Fd_Event =>
-            Event := Fd_Event;
+            Event := (False, Fd_Event);
           when Event_Mng.Signal_Event =>
-            Event := Signal_Event;
-          when Event_Mng.Wakeup_Event =>
-            Event := Wakeup_Event;
+            Event := (False, Signal_Event);
           when Event_Mng.No_Event =>
-            Event := No_Event;
+            Event := (False, No_Event);
         end case;
 
         -- Done on select timeout (No_Event) or an event to report
         exit when Evt_In.Kind = Event_Mng.No_Event
-        or else Event /= No_Event;
+        or else Event.Kind /= No_Event;
       else
-        -- X event, done if valid
-        exit when Event  /= No_Event;
+        -- X event or Wakeup, done if valid
+        exit when Event.Wakeup_Event or else Event.Kind /= No_Event;
       end if;
 
     end loop;
 
     if Debug then
-      My_Io.Put_Line ("  Xx_Select -> " & Event'Img & " " & Next'Img);
+      if Event.Wakeup_Event then
+        My_Io.Put_Line ("  Xx_Select -> Wakeup " & Next'Img);
+      else
+        My_Io.Put_Line ("  Xx_Select -> " & Event.Kind'Img & " " & Next'Img);
+      end if;
     end if;
   end Xx_Select;
 
@@ -362,7 +368,7 @@ package body Dispatch is
       Nb_Clients := Nb_Clients - 1;
       Clients(Client).Used := False;
       Selected := First;
-      Event := Refresh;
+      Event := (False, Refresh);
       if Selected /= No_Client_No then
         -- At least one client remaining
         Refreshing := True;
@@ -430,7 +436,7 @@ package body Dispatch is
         Nb_X_Events := 0;
         Next_Event := False;
         Selected := Next (Client);
-        Event := Refresh;
+        Event := (False, Refresh);
         if Selected = No_Client_No then
           -- No more client to refresh
           Refreshing := False;
@@ -458,7 +464,7 @@ package body Dispatch is
         Nb_X_Events := 0;
         Next_Event := False;
         -- Try to dispatch a non X event
-        if Event_Mng.Wait  (0) /= Event_Mng.No_Event then
+        if Event_Mng.Wait (0) /= Event_Mng.No_Event then
           Selected := Oldest;
           Clients(Client).Running := True;
           return;
@@ -482,17 +488,8 @@ package body Dispatch is
       Xx_Select (Clients(First_Client).Wait_Exp, Got_Id, Event, Next_Event);
 
       -- Dispatch result
-      case Event is
-        when Keyboard | Tid_Release | Tid_Press | Tid_Motion
-           | Refresh | Exit_Request | Selection =>
-          -- A X event to deliver to proper client
-          Selected := Find_From_C (Got_Id);
-          Nb_X_Events := Nb_X_Events + 1;
-        when Timer_Event | Fd_Event | Signal_Event =>
-          -- A general event to deliver to oldest
-          Selected := Oldest;
-          Nb_X_Events := 0;
-        when Wakeup_Event =>
+      case Event.Wakeup_Event is
+        when True =>
           -- A wake up. Select no client if registration pending
           if Register_Waiting /= 0 then
             Selected := No_Client_No;
@@ -501,19 +498,31 @@ package body Dispatch is
             Selected := Oldest;
           end if;
           Nb_X_Events := 0;
-        when No_Event =>
-          -- Timeout to deliver to closest
-          Selected := First_Client;
-          Nb_X_Events := 0;
+        when False =>
+          case Event.Kind is
+            when Keyboard | Tid_Release | Tid_Press | Tid_Motion
+               | Refresh | Exit_Request | Selection =>
+              -- A X event to deliver to proper client
+              Selected := Find_From_C (Got_Id);
+              Nb_X_Events := Nb_X_Events + 1;
+            when Timer_Event | Fd_Event | Signal_Event =>
+              -- A general event to deliver to oldest
+              Selected := Oldest;
+              Nb_X_Events := 0;
+            when No_Event =>
+              -- Timeout to deliver to closest
+              Selected := First_Client;
+              Nb_X_Events := 0;
+          end case;
       end case;
 
       -- One shall be selected or a registration pending
       if Selected /= No_Client_No then
         Clients(Selected).Running := True;
-      elsif Event /= Wakeup_Event then
+      elsif not Event.Wakeup_Event then
         -- This event belongs to no registered client
         -- Send a "dummy" refresh event to oldest
-        Event := Refresh;
+        Event := (False, Refresh);
         Selected := Oldest;
         Nb_X_Events := 0;
         Clients(Selected).Running := True;
@@ -526,14 +535,19 @@ package body Dispatch is
 
     -- All but one client wait here, eventually getting and event
     --  from select [ process_event ]
-    entry Get_Event (for Client in Client_Range) (Kind : out Event_Kind)
+    entry Get_Event (for Client in Client_Range) (Kind : out Event_Rec)
           when not In_X and then Client = Selected is
     begin
       Check (Client, True);
       Kind := Event;
       if Debug then
-        My_Io.Put_Line ("Dispatch.Get_Event: " & Client'Img
-                      & " <- " & Kind'Img);
+        if Kind.Wakeup_Event then
+         My_Io.Put_Line ("Dispatch.Get_Event: " & Client'Img
+                       & " <- Wakeup");
+        else
+         My_Io.Put_Line ("Dispatch.Get_Event: " & Client'Img
+                       & " <- " & Kind.Kind'Img);
+        end if;
       end if;
     end Get_Event;
 

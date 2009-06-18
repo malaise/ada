@@ -325,7 +325,7 @@ package Generic_Con_Io is
                       Left, Right, Ctrl_Left, Ctrl_Right,
                       Full, Tab, Stab, Ret, Esc, Break,
                       Mouse_Button, Selection, Timeout, Fd_Event, Timer_Event,
-                      Signal_Event, Wakeup_Event, Refresh);
+                      Signal_Event, Refresh);
     procedure Get (Str        : out Wide_String;
                    Last       : out Natural;
                    Stat       : out Curs_Mvt;

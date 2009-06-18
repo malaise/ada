@@ -395,6 +395,16 @@ package body X_Mng is
   end record;
   type Client_List is array (Positive range <>) of Client_Rec;
 
+  -- Event kind exhanged with dispatcher
+  -- Either a Wakeup event (to mask) or a real event to return
+  type Event_Rec (Wakeup_Event : Boolean := False) is record
+    case Wakeup_Event is
+      when True => null;
+      when False =>
+        Kind : Event_Kind := No_Event;
+    end case;
+  end record;
+
   -- Dispatcher of X calls and X events
   package Dispatch is
 
@@ -421,7 +431,7 @@ package body X_Mng is
       -- All but one client wait here, eventually getting and event
       --  from select [ process_event ]
       -- Some may be true only when Kind is a X event.
-      entry Get_Event(Client_Range) (Kind : out Event_Kind);
+      entry Get_Event(Client_Range) (Kind : out Event_Rec);
 
     private
       -- Number of registered clients
@@ -430,7 +440,7 @@ package body X_Mng is
       Nb_Waiting : Line_Range := 0;
       -- Client selected by Wait and the event for it
       Selected : Line_Range := No_Client_No;
-      Event : Event_Kind := No_Event;
+      Event : Event_Rec := (False, No_Event);
       Next_Event : Boolean := False;
       -- Number of successive X events
       Nb_X_Events : Natural := 0;
@@ -1012,6 +1022,7 @@ package body X_Mng is
   procedure X_Wait_Event(Line_Id : in Line;
                          Timeout : in out Timers.Delay_Rec;
                          Kind : out Event_Kind) is
+    Internal_Event : Event_Rec;
     Final_Exp : Timers.Expiration_Rec;
     use type Ada.Calendar.Time, Timers.Delay_List, Perpet.Delta_Rec;
   begin
@@ -1035,12 +1046,18 @@ package body X_Mng is
                        Time => Ada.Calendar.Clock + Timeout.Delay_Delta);
     end case;
 
+    -- Loop while wake-up events
+    loop
+      -- Ready to wait
+      Dispatcher.Wait(Line_Id.No, Final_Exp);
 
-    -- Ready to wait
-    Dispatcher.Wait(Line_Id.No, Final_Exp);
+      -- Get an event
+      Dispatcher.Get_Event(Line_Id.No) (Internal_Event);
+      exit when not Internal_Event.Wakeup_Event;
+    end loop;
 
-    -- Get an event
-    Dispatcher.Get_Event(Line_Id.No) (Kind);
+    -- Set out event kind
+    Kind := Internal_Event.Kind;
 
     -- Compute remaining time
     case Timeout.Delay_Kind is

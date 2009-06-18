@@ -813,13 +813,6 @@ package body Af_Ptg is
           Result := (Id_Selected  => Af_List.Get_Status.Id_Selected,
                      Event        => Signal_Event);
           Done := True;
-        when Af_Con_Io.Wakeup_Event =>
-          if List_Present then
-            Af_List.Set_Current;
-          end if;
-          Result := (Id_Selected  => Af_List.Get_Status.Id_Selected,
-                     Event        => Wakeup_Event);
-          Done := True;
         when Af_Con_Io.Timeout =>
           null;
       end case;

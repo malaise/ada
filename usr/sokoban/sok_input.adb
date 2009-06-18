@@ -53,7 +53,7 @@ package body Sok_Input is
           when Mouse_Button => null;
           when Selection => null;
           when Timeout => null;
-          when Fd_Event | Timer_Event | Signal_Event | Con_Io.Wakeup_Event =>
+          when Fd_Event | Timer_Event | Signal_Event =>
             null;
           when Refresh =>
             return Refresh;
@@ -98,7 +98,7 @@ package body Sok_Input is
         when Mouse_Button => null;
         when Timeout => null;
         when Selection => null;
-        when Fd_Event | Timer_Event | Signal_Event | Con_Io.Wakeup_Event =>
+        when Fd_Event | Timer_Event | Signal_Event =>
           null;
         when Refresh => null;
       end case;

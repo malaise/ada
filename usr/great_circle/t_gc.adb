@@ -201,8 +201,7 @@ begin
       end if;
 
       -- Refresh
-      Redisplay := Result.Event = Afpx.Wakeup_Event
-           or else Result.Event = Afpx.Refresh;
+      Redisplay := Result.Event = Afpx.Refresh;
 
     end loop;
 
