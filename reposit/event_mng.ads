@@ -45,11 +45,11 @@ package Event_Mng is
 
   -- Send a dummy signal
   -- It always generates a Sig_Event but Callbacks are not called
-  -- Usefull to unlock a Wait or Pause
+  -- Usefull to unblock a Wait or Pause
   procedure Send_Dummy_Signal;
 
 
-  -- Activate signa handling (capability to catch SigTerm (and Sigint) and
+  -- Activate signal handling (capability to catch SigTerm (and Sigint) and
   --  SigChild and report them
   procedure Activate_Signal_Handling;
 
@@ -73,19 +73,28 @@ package Event_Mng is
   function Wait (Timeout_Ms : Integer) return Boolean;
   procedure Wait (Timeout_Ms : Integer);
 
-  -- Force re-evaluation (and expiration) of timers while in Wait
-  procedure Wake_Up;
 
-  -- Suspend current execution flow until either:
-  --   - a signal is received (term/child/dummy)
-  --   - the end of the timeout
-  --   - another pause called earlier (which calls us as a Cb) ends on timeout
-  -- Usefull to wait a bit while Fd/timers Cb are called transparently
+  -- Waits for the specified delay or a signal
+  -- Pause returns if either:
+  --  - A signal (even Dummy) is received
+  --  - Another Pause (armed earlier) expires (and we are in a Cb of this Pause)
+  -- Usefull to wait a bit and still process timers and Fds transparently
   procedure Pause (Timeout_Ms : in Integer);
 
   ----------------------
   -- Event management --
   ----------------------
+  -- These low level operations shall not be used internally by applications
+
+  -- Force return of Select on Wakeup event.
+  -- To be used in multi-tasking to unlock currently suspended task
+  -- Current use-cases are:
+  -- - In Timers, when a new timer is the first to expire, force
+  --   re-evaluation (and expiration) of timers by currently suspended task
+  --   (if any)
+  -- - In X_Mng when a new task wants to register to X dispather
+  procedure Wake_Up;
+
   -- Event got by another waiting point (X_Wait_Event?)
   subtype In_Event_List is Out_Event_List range Fd_Event .. No_Event;
   type Event_Rec (Kind : In_Event_List := Fd_Event) is record

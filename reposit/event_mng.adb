@@ -273,9 +273,6 @@ package body Event_Mng is
                    Timeout_Ms : System.Address) return Result;
   pragma Import(C, C_Wait, "evt_wait");
 
-  procedure C_Wake_Up;
-  pragma Import(C, C_Wake_Up, "evt_wake_up");
-
   Infinite_Timeout : constant Duration := Timers.Infinite_Seconds;
 
   function Wait (Timeout_Ms : Integer) return Out_Event_List is
@@ -456,7 +453,13 @@ package body Event_Mng is
     end loop;
   end Pause;
 
-  --
+  ------------------------------------------------------------------
+  --------------------------
+  -- Low level operations --
+  --------------------------
+
+  procedure C_Wake_Up;
+  pragma Import(C, C_Wake_Up, "evt_wake_up");
 
   procedure Wake_Up is
   begin
