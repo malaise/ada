@@ -328,7 +328,7 @@ package body Event_Mng is
         -- Expire timers?
         Handle_Res := Handle ((Kind => No_Event));
         if Handle_Res = No_Event and then Fd >= 0 then
-          -- No timer and fd: fd
+          -- No timer event to report and a fd set: handle fd
           Handle_Res := Handle ((Kind => Fd_Event,
                           Fd => File_Desc(Fd),
                           Read => For_Ada(Read)));

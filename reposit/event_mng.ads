@@ -60,9 +60,10 @@ package Event_Mng is
   -------------------
   -- Waiting point --
   -------------------
-  -- Wait until some timer or fd callback return True,
-  --      until a Dummy_Sig
-  --      until a Terminate_Sig or Child_Sig while Sig_Callback set
+  -- Wait until a Terminate_Sig or Child_Sig with a callback set,
+  --   or until a Dummy_Sig,
+  --   or until some timer expires and its callback returns True,
+  --   or until some fd event and its callback return True,
   --   or until timeout
   -- Any negative timeout means infinite
   -- The three operation end on event or timeout
