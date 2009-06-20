@@ -1,5 +1,5 @@
 with Ada.Calendar, Ada.Characters.Latin_1;
-with My_Io, Address_Ops, Environ, Perpet;
+with My_Io, Address_Ops, Environ, Perpet, Event_Mng;
 package body X_Mng is
 
   -- Maximum successive X events
@@ -379,43 +379,57 @@ package body X_Mng is
   --------------- T H E   D I S P A T C H E R   S P E C ------------
   ------------------------------------------------------------------
 
-  -- Client definition
-  type Client_Rec is record
-    -- Slot used
-    Used : Boolean := False;
-    -- Registration date
-    Birth : Ada.Calendar.Time;
-    -- Is this client going to call Wait (running)
-    --  or blocked in Get_Event
-    Running : Boolean := False;
-    -- Will be Line_For_C
-    Line_For_C_Id : Line_For_C := No_Line_For_C;
-    -- The one provided to Wait
-    Wait_Exp : Timers.Expiration_Rec;
-  end record;
-  type Client_List is array (Positive range <>) of Client_Rec;
-
-  -- Event kind exhanged with dispatcher
-  -- Either a Wakeup event (to mask) or a real event to return
-  type Event_Rec (Wakeup_Event : Boolean := False) is record
-    case Wakeup_Event is
-      when True => null;
-      when False =>
-        Kind : Event_Kind := No_Event;
-    end case;
-  end record;
-
   -- Dispatcher of X calls and X events
   package Dispatch is
 
-    -- Wake up dispatcher before Register
-    procedure Wake_Up;
+    -- The dispatcher ensures that each task but one is waiting for X event
+    --  on an entry (Wait_Event) dedicated to it. One task processes other
+    --  events (fd, timers...) or its own X events, then blocks on C select
+
+    -- Each client must call Prepare, where it signals it is ready to wait
+    --  and in which it might block on C select
+    -- Then it must call Wait_Event on which it blocks until events are for it
+
+    -- Event kind exchanged with dispatcher
+    -- Either a Wakeup event (to mask) or a real event to return
+    type Prv_Event_Kind is (Wakeup_Event, Dispatch_Event);
+    type Event_Rec (Prv : Boolean := False) is record
+      case Prv is
+        when True =>
+          Prv_Kind : Prv_Event_Kind := Dispatch_Event;
+        when False =>
+          Kind : Event_Kind := No_Event;
+      end case;
+    end record;
+
+    -- Client definition, used internally in dispatcher
+    type Client_Rec is record
+      -- Client status
+      Used : Boolean := False;       -- Slot available
+      Running : Boolean;             -- Running or Waiting
+      Refreshing : Boolean;          -- First to refresh
+      Registering : Boolean;         -- Doing the registration
+      -- Registration date
+      Birth : Ada.Calendar.Time;
+      -- Will be Line_For_C
+      Line_For_C_Id : Line_For_C := No_Line_For_C;
+      -- The one provided to Wait
+      Wait_Exp : Timers.Expiration_Rec;
+    end record;
+    type Client_List is array (Positive range <>) of Client_Rec;
+
+    ----------------
+    -- OPERATIONS --
+    ----------------
+
+    -- Wake up the dispatcher before Register (then try to register)
+    procedure Pre_Register;
 
     protected Dispatcher is
 
-      -- Register / Unregister. Count clients and refreshh all on Unregister
+      -- Register / Unregister. Count clients and refresh all on Unregister
       entry Register (Client : out Line_Range);
-      procedure Unregister (Client : in out Line_Range);
+      entry Unregister (Client : in out Line_Range);
 
       -- Two calls to protect a call to X
       entry Call_On  (Client : in Client_Range;
@@ -423,22 +437,22 @@ package body X_Mng is
       procedure Call_Off (Client : in Client_Range;
                       New_Line_For_C_Id : in Line_For_C);
 
-      -- Ready to wait, store expiration time. Select if last
-      --  and no client to wake up
-      entry Wait (Client : in Client_Range;
-                     Exp : in Timers.Expiration_Rec);
+      -- Ready to wait for Exp
+      entry Prepare (Client : in Client_Range;
+                     Exp    : in Timers.Expiration_Rec);
 
-      -- All but one client wait here, eventually getting and event
-      --  from select [ process_event ]
-      -- Some may be true only when Kind is a X event.
-      entry Get_Event(Client_Range) (Kind : out Event_Rec);
+      -- Wait for an event
+      entry Wait_Event(Client_Range) (Kind : out Event_Rec);
 
     private
+
       -- Number of registered clients
       Nb_Clients : Line_Range := 0;
-      -- Number of clients which have called Wait and wait for Get_Event
+      -- Number of clients which have called Wait and are waiting in Wait_Event
+      --  does not count the one in C select
       Nb_Waiting : Line_Range := 0;
-      -- Client selected by Wait and the event for it
+      -- Client selected by Wait that is (to be) released from Wait_Event,
+      --  and the event for it
       Selected : Line_Range := No_Client_No;
       Event : Event_Rec := (False, No_Event);
       Next_Event : Boolean := False;
@@ -446,8 +460,10 @@ package body X_Mng is
       Nb_X_Events : Natural := 0;
       -- Between Call_On and Call_Off
       In_X : Boolean := False;
-      -- After Unregister
-      Refreshing : Boolean := False;
+      -- After un Unregister, all other clients deserve a Refresh event
+      Refresh_All : Boolean := False;
+      -- While a client is registering, its index
+      Registered : Line_Range := No_Client_No;
       -- The clients
       Clients : Client_List(Client_Range);
     end Dispatcher;
@@ -487,9 +503,12 @@ package body X_Mng is
     if not Initialised or else Line_Id /= No_Client then
       raise X_Failure;
     end if;
-    -- Register, force wake up of waiting task
+    -- Register
+    -- If several simultaneous Pre_Register, then only one Wake_Up
+    --   so be ready to try several times
     loop
-      Dispatch.Wake_Up;
+      -- Force wake up of dispatcher
+      Dispatch.Pre_Register;
       select
         Dispatcher.Register(Line_Id.No);
         exit;
@@ -501,6 +520,16 @@ package body X_Mng is
       -- Too many clients
       raise X_Failure;
     end if;
+
+    -- Wait for an event so that we are fully registered
+    declare
+      Infinite : constant Timers.Expiration_Rec := (Infinite => True);
+      Evt : Event_Rec;
+    begin
+      Dispatcher.Prepare(Line_Id.No, Infinite);
+      -- Get an event
+      Dispatcher.Wait_Event(Line_Id.No) (Evt);
+    end;
 
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     -- Open window
@@ -571,7 +600,7 @@ package body X_Mng is
     end if;
     -- Register, force wake up of waiting task
     loop
-      Dispatch.Wake_Up;
+      Dispatch.Pre_Register;
       select
         Dispatcher.Register(Line_Id.No);
         exit;
@@ -583,6 +612,17 @@ package body X_Mng is
       -- Too many clients
       raise X_Failure;
     end if;
+
+    -- Wait for an event so that we are fully registered
+    declare
+      Infinite : constant Timers.Expiration_Rec := (Infinite => True);
+      Evt : Event_Rec;
+    begin
+      Dispatcher.Prepare(Line_Id.No, Infinite);
+      -- Get an event
+      Dispatcher.Wait_Event(Line_Id.No) (Evt);
+    end;
+
     -- Call_Off to set saved Line_For_C
     Dispatcher.Call_On (Line_Id.No, Dummy_Line_For_C);
     Dispatcher.Call_Off (Line_Id.No, Line_Id.Suspended_Line_For_C);
@@ -1019,12 +1059,23 @@ package body X_Mng is
   end X_Hide_Graphic_Pointer;
 
   ------------------------------------------------------------------
+  function Translate_Events (Mng_Event : Event_Mng.Out_Event_List)
+           return Event_Kind is
+  begin
+    case Mng_Event is
+      when Event_Mng.Timer_Event  => return Timer_Event;
+      when Event_Mng.Fd_Event     => return Fd_Event;
+      when Event_Mng.Signal_Event => return Signal_Event;
+      when Event_Mng.No_Event     => return No_Event;
+    end case;
+  end Translate_Events;
   procedure X_Wait_Event(Line_Id : in Line;
                          Timeout : in out Timers.Delay_Rec;
                          Kind : out Event_Kind) is
     Internal_Event : Event_Rec;
     Final_Exp : Timers.Expiration_Rec;
-    use type Ada.Calendar.Time, Timers.Delay_List, Perpet.Delta_Rec;
+    use type Ada.Calendar.Time, Timers.Delay_List, Perpet.Delta_Rec,
+             Event_Mng.Out_Event_List;
   begin
     if not Initialised or else Line_Id = No_Client then
       raise X_Failure;
@@ -1049,15 +1100,20 @@ package body X_Mng is
     -- Loop while wake-up events
     loop
       -- Ready to wait
-      Dispatcher.Wait(Line_Id.No, Final_Exp);
+      Dispatcher.Prepare(Line_Id.No, Final_Exp);
 
       -- Get an event
-      Dispatcher.Get_Event(Line_Id.No) (Internal_Event);
-      exit when not Internal_Event.Wakeup_Event;
-    end loop;
+      Dispatcher.Wait_Event(Line_Id.No) (Internal_Event);
+      -- An event to report?
+      if not Internal_Event.Prv then
+        Kind := Internal_Event.Kind;
+        exit;
+      end if;
 
-    -- Set out event kind
-    Kind := Internal_Event.Kind;
+      -- Dispatch non X events if any, and report if needed
+      Kind := Translate_Events (Event_Mng.Wait (0));
+      exit when Kind /= No_Event;
+    end loop;
 
     -- Compute remaining time
     case Timeout.Delay_Kind is
