@@ -1,5 +1,5 @@
 with Ada.Calendar, Ada.Text_Io;
-with Dynamic_List, Event_Mng, Environ, Date_Image;
+with Dynamic_List, Environ, Date_Image;
 package body Timers is
 
   -- Debugging
@@ -191,7 +191,6 @@ package body Timers is
 
     Timer : Timer_Rec;
     Start : Virtual_Time.Time;
-    This_Id : Timer_Id_Range;
     Clock : Clock_Rec;
     Found : Boolean;
     use type Virtual_Time.Time, Virtual_Time.Clock_Access,
@@ -285,19 +284,12 @@ package body Timers is
       end if;
     end if;
 
-    -- If this timer is first then force wake-up of select
-    This_Id := Timer.Id;
-    Timer_List.Read (Timer, Timer_List_Mng.Current);
-    if Timer.Id = This_Id then
-      Event_Mng.Wake_Up;
-    end if;
-
     -- Trace
     Put_Debug ("Create", Delay_Image (Delay_Spec)
              & Cb_Image (Callback)
-             & " -> " & This_Id'Img);
+             & " -> " & Timer.Id'Img);
     -- Done
-    return (Timer_Num => This_Id);
+    return (Timer_Num => Timer.Id);
   end Create;
 
   -- Locate a timer in list
@@ -421,7 +413,6 @@ package body Timers is
   procedure Resume (Id : in Timer_Id) is
     Timer : Timer_Rec;
     Speed : Virtual_Time.Speed_Range;
-    This_Id : Timer_Id_Range;
     use type Virtual_Time.Time, Perpet.Delta_Rec;
   begin
      Set_Debug;
@@ -444,12 +435,7 @@ package body Timers is
     Timer_List.Modify (Timer, Timer_List_Mng.Current);
     Sort (Timer_List);
 
-    -- If this timer is first then force wake-up of select
-    This_Id := Timer.Id;
-    Timer_List.Read (Timer, Timer_List_Mng.Current);
-    if Timer.Id = This_Id then
-      Event_Mng.Wake_Up;
-    end if;
+    --Done
     Put_Debug ("Resume ", Timer.Id'Img & " restarted for "
                     & Date_Image (Timer.Exp.Expiration_Time));
 
