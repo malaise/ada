@@ -328,7 +328,7 @@ package body Event_Mng is
         -- Expire timers?
         Handle_Res := Handle ((Kind => No_Event));
         if Handle_Res = No_Event and then Fd >= 0 then
-        -- No timer and fd: fd
+          -- No timer and fd: fd
           Handle_Res := Handle ((Kind => Fd_Event,
                           Fd => File_Desc(Fd),
                           Read => For_Ada(Read)));
@@ -457,15 +457,6 @@ package body Event_Mng is
   --------------------------
   -- Low level operations --
   --------------------------
-
-  procedure C_Wake_Up;
-  pragma Import(C, C_Wake_Up, "evt_wake_up");
-
-  procedure Wake_Up is
-  begin
-    C_Wake_Up;
-  end Wake_Up;
-
   function Handle (Event : Event_Rec) return Out_Event_List is
     Cb_Searched : Cb_Rec;
     Signal_Kind : Signal_Kind_List;

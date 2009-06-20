@@ -83,16 +83,7 @@ package Event_Mng is
   ----------------------
   -- Event management --
   ----------------------
-  -- These low level operations shall not be used internally by applications
-
-  -- To be used in multi-tasking to unlock currently suspended task
-  -- Current use-cases are:
-  -- - In Timers, when a new timer is the first to expire, force
-  --   re-evaluation (and expiration) of timers by currently suspended task
-  --   (if any)
-  -- - In X_Mng when a new task wants to register to X dispather
-  procedure Wake_Up;
-
+  -- This low level operation shall not be used by applications
   -- Event got by another waiting point (X_Wait_Event?)
   subtype In_Event_List is Out_Event_List range Fd_Event .. No_Event;
   type Event_Rec (Kind : In_Event_List := Fd_Event) is record
