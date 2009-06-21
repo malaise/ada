@@ -390,6 +390,9 @@ package body X_Mng is
     --  and in which it might block on C select
     -- Then it must call Wait_Event on which it blocks until events are for it
 
+    -- During registration (Pre_Register, then Register, up to the first
+    -- Prepare), the task can do X calls and there cannot be other registration
+
     -- Event kind exchanged with dispatcher
     -- Either a Wakeup event (to mask) or a real event to return
     type Prv_Event_Kind is (Wakeup_Event, Dispatch_Event);
@@ -408,7 +411,6 @@ package body X_Mng is
       Used : Boolean := False;       -- Slot available
       Running : Boolean;             -- Running or Waiting
       Refreshing : Boolean;          -- First to refresh
-      Registering : Boolean;         -- Doing the registration
       -- Registration date
       Birth : Ada.Calendar.Time;
       -- Will be Line_For_C
@@ -442,7 +444,7 @@ package body X_Mng is
                      Exp    : in Timers.Expiration_Rec);
 
       -- Wait for an event
-      entry Wait_Event(Client_Range) (Kind : out Event_Rec);
+      entry Wait_Event(Client_Range) (New_Event : out Event_Rec);
 
     private
 
@@ -521,16 +523,6 @@ package body X_Mng is
       raise X_Failure;
     end if;
 
-    -- Wait for an event so that we are fully registered
-    declare
-      Infinite : constant Timers.Expiration_Rec := (Infinite => True);
-      Evt : Event_Rec;
-    begin
-      Dispatcher.Prepare(Line_Id.No, Infinite);
-      -- Get an event
-      Dispatcher.Wait_Event(Line_Id.No) (Evt);
-    end;
-
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     -- Open window
     Res := X_Open_Line (Line_Definition.Screen_Id,
@@ -547,10 +539,12 @@ package body X_Mng is
                     & " -> " & Address_Ops.Image(Line_For_C_Id));
     end if;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
+
     if not Res then
       Dispatcher.Unregister(Line_Id.No);
       raise X_Failure;
     end if;
+
   end X_Open_Line;
 
   ------------------------------------------------------------------
@@ -612,16 +606,6 @@ package body X_Mng is
       -- Too many clients
       raise X_Failure;
     end if;
-
-    -- Wait for an event so that we are fully registered
-    declare
-      Infinite : constant Timers.Expiration_Rec := (Infinite => True);
-      Evt : Event_Rec;
-    begin
-      Dispatcher.Prepare(Line_Id.No, Infinite);
-      -- Get an event
-      Dispatcher.Wait_Event(Line_Id.No) (Evt);
-    end;
 
     -- Call_Off to set saved Line_For_C
     Dispatcher.Call_On (Line_Id.No, Dummy_Line_For_C);
@@ -1103,7 +1087,13 @@ package body X_Mng is
       Dispatcher.Prepare(Line_Id.No, Final_Exp);
 
       -- Get an event
+      if Debug then
+        My_Io.Put_Line ("X_Wait_Event: " & Line_Id.No'Img & " waiting");
+      end if;
       Dispatcher.Wait_Event(Line_Id.No) (Internal_Event);
+      if Debug then
+        My_Io.Put_Line ("X_Wait_Event: " & Line_Id.No'Img & " released");
+      end if;
       -- An event to report?
       if not Internal_Event.Prv then
         Kind := Internal_Event.Kind;
@@ -1114,6 +1104,10 @@ package body X_Mng is
       Kind := Translate_Events (Event_Mng.Wait (0));
       exit when Kind /= No_Event;
     end loop;
+
+    if Debug then
+      My_Io.Put_Line ("X_Wait_Event: " & Line_Id.No'Img & " got " & Kind'Img);
+    end if;
 
     -- Compute remaining time
     case Timeout.Delay_Kind is

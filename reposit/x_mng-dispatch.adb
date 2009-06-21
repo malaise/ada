@@ -3,6 +3,16 @@ with Date_Image;
 separate (X_Mng)
 package body Dispatch is
 
+  procedure Log (Operation : in String;
+                 Client : in Line_Range;
+                 Message : in String) is
+  begin
+    if Debug then
+      My_Io.Put_Line ("X_Mng.Dispatcher." & Operation & ":"
+                    & Client'Img & " " & Message);
+    end if;
+  end Log;
+
   -- Wake-up the task that is in select
   procedure C_Wake_Up;
   pragma Import(C, C_Wake_Up, "evt_wake_up");
@@ -41,9 +51,7 @@ package body Dispatch is
     C_Res :=  X_Process_Event (C_Id'Address,
                                C_Event'Address, C_Next'Address);
     if C_Res /= Ok then
-      if Debug then
-        My_Io.Put_Line ("  Xx_Get_Event -> x_process_event ERROR");
-      end if;
+      Log ("Xx_Get_Event", No_Client_No, "-> X_Process_Event ERROR");
       raise X_Failure;
     end if;
 
@@ -67,9 +75,7 @@ package body Dispatch is
       -- Discard, or Invalid X event
       Event := No_Event;
     end if;
-    if Debug then
-      My_Io.Put_Line ("  Xx_Get_Event -> " & Event'Img);
-    end if;
+    Log ("Xx_Get_Event", No_Client_No, "-> " & Event'Img);
   end Xx_Get_Event;
 
   -- From x_Select
@@ -117,20 +123,14 @@ package body Dispatch is
       C_Timeout_Ms := Integer(Timeout * 1000.0);
 
       -- Call the real select
-      if Debug then
-        My_Io.Put_Line ("  Xx_Select timeout " & C_Timeout_Ms'Img);
-      end if;
+      Log ("Xx_Select", No_CLient_No, "timeout " & C_Timeout_Ms'Img);
       C_Res := X_Select (C_Fd'Address, C_Read'Address, C_Timeout_Ms'Address);
       if C_Res /= Ok then
-        if Debug then
-          My_Io.Put_Line ("  Xx_Select.x_select -> ERROR");
-        end if;
+        Log ("Xx_Select.X_Select", No_CLient_No, "-> ERROR");
         raise X_Failure;
       end if;
-      if Debug then
-        My_Io.Put_Line ("  Xx_Select.x_select -> " & Integer'Image(C_Fd)
-                                    & " " & Bool_For_C'Image(C_Read));
-      end if;
+      Log ("Xx_Select.X_Select", No_CLient_No,
+            "-> " & Integer'Image(C_Fd) & " " & Bool_For_C'Image(C_Read));
 
       -- For all but X:
       C_Id := No_Line_For_C;
@@ -184,14 +184,12 @@ package body Dispatch is
 
     end loop;
 
-    if Debug then
-      if Event.Prv then
-        My_Io.Put_Line ("  Xx_Select -> " & Event.Prv_Kind'Img
-                      & " " & Next'Img);
-      else
-        My_Io.Put_Line ("  Xx_Select -> " & Event.Kind'Img
-                      & " " & Next'Img);
-      end if;
+    if Event.Prv then
+      Log ("Xx_Select", No_Client_No,
+           "-> " & Event.Prv_Kind'Img & " " & Next'Img);
+    else
+      Log ("Xx_Select", No_Client_No,
+           "-> " & Event.Kind'Img & " " & Next'Img);
     end if;
   end Xx_Select;
 
@@ -243,9 +241,7 @@ package body Dispatch is
     begin
       I := First;
       if I = No_Client_No then
-        if Debug then
-          My_Io.Put_Line ("Dispatch.Closest: no client");
-        end if;
+        Log ("Closest", No_Client_No, "no client");
         raise Dispatch_Error;
       end if;
       Res := I;
@@ -283,9 +279,7 @@ package body Dispatch is
     begin
       I := First;
       if I = No_Client_No then
-        if Debug then
-          My_Io.Put_Line ("Dispatch.Oldest: no client");
-        end if;
+        Log ("Oldest", No_Client_No, "no client");
         raise Dispatch_Error;
       end if;
       Res := I;
@@ -307,22 +301,15 @@ package body Dispatch is
                      Running : in Boolean := True) is
     begin
       if not Clients(Client).Used then
-        if Debug then
-          My_Io.Put_Line ("Dispatch.Check: unknown client " & Client'Img);
-        end if;
+        Log ("Check", Client, "unknown");
         raise Dispatch_Error;
       end if;
       if Clients(Client).Running /= Running then
-        if Debug then
-          My_Io.Put_Line ("Dispatch.Check: unexpected client "
-                        & Client'Img);
-        end if;
+        Log ("Check", Client, "unexpected");
         raise Dispatch_Error;
       end if;
       if Check_X and then In_X then
-        if Debug then
-          My_Io.Put_Line ("Dispatch.Check: in X client " & Client'Img);
-        end if;
+        Log ("Check", Client, "in X");
         raise Dispatch_Error;
       end if;
     end Check;
@@ -330,58 +317,46 @@ package body Dispatch is
     -- Register one client at a time
     -- Find free slot, init it, incease client count
     entry Register (Client : out Line_Range)
-                   when Registered = No_Client_No is
+                   when Registered = No_Client_No 
+                   and then not In_X is
     begin
-      if In_X then
-        if Debug then
-          My_Io.Put_Line ("Dispatch.Register: in X client " & Client'Img);
-        end if;
-        raise Dispatch_Error;
-      end if;
       Client := First_Free;
       if Client = No_Client_No then
         -- Too many clients
-        if Debug then
-          My_Io.Put_Line ("Dispatch.Register: too many clients");
-        end if;
+        Log ("Register", No_Client_No, "too many lines");
         return;
       end if;
       -- Update the client admin info
       Clients(Client).Used := True;
       Clients(Client).Running := True;
       Clients(Client).Refreshing := False;
-      Clients(Client).Registering := True;
       Clients(Client).Birth := Ada.Calendar.Clock;
       Clients(Client).Line_For_C_Id := No_Line_For_C;
       -- Update global admin info
       Registered := Client;
       Nb_Clients := Nb_Clients + 1;
-      if Debug then
-        My_Io.Put_Line ("Dispatch.Register " & Client'Img
-                 & " " & Nb_Clients'Img & " " & Nb_Waiting'Img);
-      end if;
+      Log ("Register", Client, Nb_Clients'Img & " " & Nb_Waiting'Img);
     end Register;
 
-    -- Unregister, not while registration in progress
+    -- Unregister
     -- Count clients and refreshh all on Unregister
     entry Unregister (Client : in out Line_Range)
-                     when Registered = No_Client_No is
+                     when not In_X is
     begin
       if Client = No_Client_No then
-        if Debug then
-          My_Io.Put_Line ("Dispatch.Unregister: invalid client");
-        end if;
+        Log ("Unregister", Client, "invalid");
         raise Dispatch_Error;
       end if;
       Check (Client, True);
-      if Debug then
-        My_Io.Put_Line ("Dispatch.Unregister " & Client'Img
-                 & " " & Nb_Clients'Img & " " & Nb_Waiting'Img);
-      end if;
+      Log ("Unregister", Client, Nb_Clients'Img & " " & Nb_Waiting'Img);
       -- I am executing, anyway Nb_Waiting is unchanged
       -- This client is not used (reset slot before calling First)
       Nb_Clients := Nb_Clients - 1;
       Clients(Client).Used := False;
+      -- If I was registering... then I am not any more
+      if Client = Registered then
+        Registered := No_Client_No;
+      end if;
       -- All remaining clients need to receive a Refresh event
       -- Start from the first client
       Selected := First;
@@ -397,10 +372,7 @@ package body Dispatch is
       end if;
 
       Client := No_Client_No;
-      if Debug then
-        My_Io.Put_Line ("Dispatch.Unregister selected "
-                       & Line_Range'Image(Selected));
-      end if;
+      Log ("Unregister", Selected, "is selected");
     end Unregister;
 
     -- Two calls to protect a call to X
@@ -417,10 +389,7 @@ package body Dispatch is
     begin
       Check (Client, False);
       if not In_X then
-        if Debug then
-          My_Io.Put_Line ("Dispatch.Call_Off: not in X client "
-                        & Client_Range'Image(Client));
-        end if;
+        Log ("Call_Off", Client, "not in X");
         raise Dispatch_Error;
       end if;
       In_X := False;
@@ -436,38 +405,23 @@ package body Dispatch is
       use type System.Address; -- for checking Line_For_C
     begin
       Check (Client, True);
-      if Debug then
-        My_Io.Put ("Dispatch.Prepare: " & Client'Img
-                 & " " & Nb_Clients'Img & " " & Nb_Waiting'Img);
-        if Exp.Infinite then
-          My_Io.Put_Line (" infinite");
-        else
-           My_Io.Put_Line (" " & Date_Image (Exp.Time));
-        end if;
+      Log ("Prepare", Client, Nb_Clients'Img & " " & Nb_Waiting'Img);
+      if Exp.Infinite then
+        Log  ("Prepare", Client, "Exp infinite at "
+            & Date_Image (Ada.Calendar.Clock));
+      else
+        Log  ("Prepare", Client, "Exp " & Date_Image (Exp.Time) & " at "
+            & Date_Image (Ada.Calendar.Clock));
       end if;
 
       -- Update client data with desired expiration
       Clients(Client).Wait_Exp := Exp;
 
       -- First, handle registration
-      if Registered /= No_Client_No then
-        if Nb_Waiting = Nb_Clients - 1 then
-          -- I am the last running task: I need to deliver a
-          -- Refresh event to the registering task (possibly me)
-          Selected := Registered;
-          Event := (False, Refresh);
-          Next_Event := False;
-        else
-          -- Some other task is running that will deliver the Refresh
-          Selected := No_Client_No;
-        end if;
-          if Debug then
-            My_Io.Put_Line ("Dispatch.Prepare: registering -> " & Selected'Img);
-          end if;
-        -- In any case, I go to Wait
-        Clients(Client).Running := False;
-        Nb_Waiting := Nb_Waiting + 1;
-        return;
+      if Client = Registered then
+        -- This is the end of my registration
+        -- Allow other (Un) Register
+        Registered := No_Client_No;
       end if;
 
       -- Second, handle global refreshing
@@ -488,9 +442,8 @@ package body Dispatch is
           Selected := New_Client;
           Event := (False, Refresh);
           Next_Event := False;
-          if Debug then
-            My_Io.Put_Line ("Dispatch.Prepare: refreshing -> " & Selected'Img);
-          end if;
+          Log ("Prepare", Selected, "will be refreshing");
+          Log ("Prepare", Client, "goes waiting");
           -- I go to wait
           Clients(Client).Running := False;
           Nb_Waiting := Nb_Waiting + 1;
@@ -498,18 +451,14 @@ package body Dispatch is
         end if;
         -- No more client to refresh, end of global refresh
         Refresh_All := False;
-        if Debug then
-          My_Io.Put_Line ("Dispatch.Wait: end of refresh");
-        end if;
+        Log ("Prepare", No_Client_No, "end of refresh");
       end if;
 
       -- Third, go waiting if we are not the last running
       if Nb_Waiting /= Nb_Clients - 1 then
         -- All but the last must go/remain waiting
         Selected := No_Client_No;
-        if Debug then
-          My_Io.Put_Line ("Dispatch.Prepare: " & Client'Img & " goes waiting");
-        end if;
+        Log ("Prepare", Client, "goes waiting cause not last");
         -- I go waiting
         Clients(Client).Running := False;
         Nb_Waiting := Nb_Waiting + 1;
@@ -529,10 +478,8 @@ package body Dispatch is
         Selected := Oldest;
         Event := (True, Dispatch_Event);
         Next_Event := False;
-        if Debug then
-          My_Io.Put_Line ("Dispatch.Prepare: " & Selected'Img
-                        & " will dispatch non X events");
-        end if;
+        Log ("Prepare", Selected, "will be dispatching non X events");
+        Log ("Prepare", Client, "goes waiting");
         -- I go waiting
         Clients(Client).Running := False;
         Nb_Waiting := Nb_Waiting + 1;
@@ -552,16 +499,11 @@ package body Dispatch is
       if Event.Kind = No_Event then
         -- Select on smaller delay
         New_Client := Closest;
-        if Debug then
-          My_Io.Put_Line ("Dispatch.Prepare: selecting " & New_Client'Img);
-        end if;
+        Log ("Prepare", Client, "is selecting for " & New_Client'Img);
         -- Call the C select
         Xx_Select (Clients(New_Client).Wait_Exp, Got_Id, Event, Next_Event);
       else
-        if Debug then
-          My_Io.Put_Line ("Dispatch.Prepare: got direct event "
-                        & New_Client'Img);
-        end if;
+        Log ("Prepare", Client, "gets direct event for " & New_Client'Img);
       end if;
 
       -- Seventh, dispatch resulting event
@@ -572,10 +514,7 @@ package body Dispatch is
             Selected := New_Client;
             Next_Event := False;
           when others =>
-            if Debug then
-              My_Io.Put_Line ("Dispatch.Prepare: unexpected private event "
-                            & New_Client'Img);
-            end if;
+            Log ("Prepare", New_Client, "unexpected private event");
             raise Dispatch_Error;
         end case;
       else
@@ -603,43 +542,36 @@ package body Dispatch is
           Selected := Oldest;
           Event := (False, Refresh);
           Next_Event := False;
-          if Debug then
-            My_Io.Put_Line ("Dispatch.Prepare: no selected => " & Selected'Img);
-          end if;
+          Log ("Prepare", Selected, " gets a dummy refresh");
         end if;
       end if;
 
       -- Nice work! time to go to wait
       Nb_Waiting := Nb_Waiting + 1;
       Clients(Client).Running := False;
-      return;
+      if Event.Prv then
+        Log ("Prepare", Selected, "<= " & Event.Prv_Kind'Img);
+      else
+        Log ("Prepare", Selected, "<= " & Event.Kind'Img);
+      end if;
+      Log ("Prepare", Client, "goes waiting");
 
     end Prepare;
 
     -- All but one client wait here, eventually getting and event
     --  from select [ process_event ]
-    entry Wait_Event (for Client in Client_Range) (Kind : out Event_Rec)
+    entry Wait_Event (for Client in Client_Range) (New_Event : out Event_Rec)
           when not In_X and then Client = Selected is
     begin
       Check (Client, True, False);
-      if Clients(Client).Registering then
-        -- This is the end of my registration
-        -- Allow other (Un) Register
-        Clients(Client).Registering := False;
-        Registered := No_Client_No;
-      end if;
       -- I become running with this event
       Clients(Selected).Running := True;
       Nb_Waiting := Nb_Waiting - 1;
-      Kind := Event;
-      if Debug then
-        if Kind.Prv then
-          My_Io.Put_Line ("Dispatch.Wait_Event: " & Client'Img
-                       & " <- " & Kind.Prv_Kind'Img);
-        else
-          My_Io.Put_Line ("Dispatch.Wait_Event: " & Client'Img
-                       & " <- " & Kind.Kind'Img);
-        end if;
+      New_Event := Event;
+      if New_Event.Prv then
+        Log ("Wait_Event", Client, "<- " & New_Event.Prv_Kind'Img);
+      else
+        Log ("Wait_Event", Client, "<- " & New_Event.Kind'Img);
       end if;
     end Wait_Event;
 
