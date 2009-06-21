@@ -3,6 +3,7 @@
 
 #include <X11/Xlib.h>
 #include "boolean.h"
+#include "timeval.h"
 #include "wait_evt.h"
 
 /* New kind of event (fd) added to the list */
@@ -94,7 +95,7 @@ extern int x_set_graphic_pointer (void *line_id, boolean graphic, boolean grab);
 extern int x_hide_graphic_pointer (void *line_id, boolean grab);
 
 /* Events */
-extern int x_select (int *p_fd, boolean *p_read, int *timeout_ms);
+extern int x_select (int *p_fd, boolean *p_read, timeout_t *timeout);
 
 extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next);
 

@@ -1,5 +1,5 @@
 with Ada.Calendar, Ada.Characters.Latin_1;
-with My_Io, Address_Ops, Environ, Perpet, Event_Mng;
+with My_Io, Address_Ops, Environ, Perpet, Event_Mng, Virtual_Time;
 package body X_Mng is
 
   -- Maximum successive X events
@@ -270,25 +270,6 @@ package body X_Mng is
   function X_Hide_Graphic_Pointer(Line_Id : Line_For_C;
                                   Grab : Bool_For_C) return Result;
   pragma Import(C, X_Hide_Graphic_Pointer, "x_hide_graphic_pointer");
-
-
-  ------------------------------------------------------------------
-  -- Wait for some events
-  -- int x_select (int *p_fd, int *p_read, int *timeout_ms);
-  ------------------------------------------------------------------
-  function X_Select (P_Fd : System.Address;
-                     P_Read : System.Address;
-                     Timeout_Ms : System.Address) return Result;
-  pragma Import(C, X_Select, "x_select");
-
-  ------------------------------------------------------------------
-  -- Process a X event (Tid or Keyboard or other)
-  -- int x_process_event (void **p_line_id, int *p_kind, boolean *p_next);
-  ------------------------------------------------------------------
-  function X_Process_Event(P_Line_Id : System.Address;
-                           P_Kind    : System.Address;
-                           P_Next    : System.Address) return Result;
-  pragma Import(C, X_Process_Event, "x_process_event");
 
   ------------------------------------------------------------------
   -- Reads the position on Tid
@@ -1059,10 +1040,13 @@ package body X_Mng is
     Internal_Event : Event_Rec;
     Final_Exp : Timers.Expiration_Rec;
     use type Ada.Calendar.Time, Timers.Delay_List, Perpet.Delta_Rec,
-             Event_Mng.Out_Event_List;
+             Event_Mng.Out_Event_List, Virtual_Time.Clock_Access;
   begin
     if not Initialised or else Line_Id = No_Client then
       raise X_Failure;
+    end if;
+    if Timeout.Clock /= null then
+      raise Invalid_Timeout;
     end if;
 
     -- Compute final expiration

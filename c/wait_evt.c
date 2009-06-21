@@ -182,35 +182,35 @@ extern int reset_default_signals (void) {
 }
 
 /* Compute time remaining */
-extern void evt_time_remaining (int *timeout_ms, timeout_t *exp_time) {
+extern void evt_time_remaining (timeout_t *remaining, timeout_t *exp_time) {
 
   timeout_t cur_time;
 
-  if (*timeout_ms > 0) {
+  if ( (remaining->tv_sec > 0) && (remaining->tv_usec > 0) ) {
     get_time (&cur_time);
-    if (sub_time (exp_time, &cur_time) >= 0) {
-      *timeout_ms = exp_time->tv_sec * 1000 + exp_time->tv_usec / 1000;
-    } else {
-      *timeout_ms = 0;
+    *remaining = *exp_time;
+    if (sub_time (remaining, &cur_time) < 0) {
+      remaining->tv_sec = 0;
+      remaining->tv_usec = 0;
     }
   }
 }
 
 
-extern int evt_wait (int *p_fd, boolean *p_read, int *timeout_ms) {
+extern int evt_wait (int *p_fd, boolean *p_read, timeout_t *timeout) {
   fd_set select_read_mask, select_write_mask;
-  timeout_t exp_time, timeout, *timeout_ptr;
+  timeout_t exp_time, *timeout_ptr;
   boolean timeout_is_active;
   int i, n;
   ssize_t size;
   char c;
 
   /* Compute exp_time = cur_time + timeout_ms */
-  timeout_is_active = *timeout_ms >= 0;
+  timeout_is_active = (timeout->tv_sec >= 0) && (timeout->tv_usec >= 0);
   if (timeout_is_active) {
     get_time (&exp_time);
-    incr_time (&exp_time, (unsigned int) *timeout_ms);
-    timeout_ptr = &timeout;
+    add_time (&exp_time, timeout);
+    timeout_ptr = timeout;
   } else {
     timeout_ptr = NULL;
   }
@@ -225,7 +225,7 @@ extern int evt_wait (int *p_fd, boolean *p_read, int *timeout_ms) {
       last_sig = sig_received;
       sig_received = SIG_NONE;
       *p_fd = SIG_EVENT;
-      evt_time_remaining (timeout_ms, &exp_time);
+      evt_time_remaining (timeout, &exp_time);
       return (OK);
     }
 
@@ -239,9 +239,7 @@ extern int evt_wait (int *p_fd, boolean *p_read, int *timeout_ms) {
 
     /* Compute select timeout */
     if (timeout_is_active) {
-      evt_time_remaining (timeout_ms, &exp_time);
-      timeout.tv_sec =  (*timeout_ms / 1000);
-      timeout.tv_usec = (*timeout_ms % 1000) * 1000;
+      evt_time_remaining (timeout, &exp_time);
     }
 
     /* The select */
@@ -291,7 +289,7 @@ extern int evt_wait (int *p_fd, boolean *p_read, int *timeout_ms) {
         return (ERR);
       }
 
-      evt_time_remaining (timeout_ms, &exp_time);
+      evt_time_remaining (timeout, &exp_time);
       return (OK);
 
     } else if (n < 0) {
@@ -310,7 +308,8 @@ extern int evt_wait (int *p_fd, boolean *p_read, int *timeout_ms) {
         && time_is_reached (&exp_time) ) {
       /* Done on timeout */
       *p_fd = NO_EVENT;
-      *timeout_ms = 0;
+      timeout->tv_sec = 0;
+      timeout->tv_usec = 0;
       return (OK);
     }
 

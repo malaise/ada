@@ -602,32 +602,6 @@ package body Timers is
     return Result;
   end Next_Expiration;
 
-  function Next_Timeout (Expiration : Expiration_Rec) return Duration is
-    Now : Virtual_Time.Time;
-    Next_Exp : Expiration_Rec;
-    Result : Duration;
-    use type Virtual_Time.Time;
-  begin
-    -- Get next expiration and substract now
-    Now :=  Ada.Calendar.Clock;
-    Next_Exp := Next_Expiration (Expiration);
-
-    if Next_Exp = Infinite_Expiration then
-      Result := Infinite_Seconds;
-    else
-      Result := Next_Exp.Time - Now;
-      if Result < 0.0 then
-        -- Timer should have expired
-        Result := 0.0;
-      else
-        Adjust (Result);
-      end if;
-    end if;
-
-    Put_Debug ("Next_Timeout", "-> " & Result'Img);
-    return Result;
-  end Next_Timeout;
-
   -- Is expiration reached
   function Is_Reached (Expiration : Expiration_Rec) return Boolean is
     use type Virtual_Time.Time;

@@ -52,13 +52,13 @@ extern void evt_wake_up (void);
 /* *p_read is set to indicate if the fd is for read or write */
 /*  always set to read if not a fd event */
 
-/* Timeout is in out. Set it to the delay (0 for poll) */
+/* Timeout is in-out. Set it to the delay (0 for poll) */
 /*  it will be set to the remaining time (0 if NO_EVENT) */
-/*  Set it to a negative value for infinite wait */
-extern int evt_wait (int *p_fd, boolean *p_read, int *timeout_ms);
+/*  Set it (tv_sec or tv_usec) to a negative value for infinite wait */
+extern int evt_wait (int *p_fd, boolean *p_read, timeout_t *timeout);
 
-/* Set in timeout_ms the remaining time between now and exp_time */
+/* Set in timeout the remaining time between now and exp_time */
 /* Result is always >= 0 */
-extern void evt_time_remaining (int *timeout_ms, timeout_t *exp_time);
+extern void evt_time_remaining (timeout_t *remaining, timeout_t *exp_time);
 #endif
 

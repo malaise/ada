@@ -69,10 +69,6 @@ extern int x_start_blinking (void) {
   return (OK);
 }
 
-static int timeout_to_ms (timeout_t *p_time) {
-  return (p_time->tv_sec * 1000 + p_time->tv_usec / 10000);
-}
-
 
 /***** Event management *****/
 static void x_clear_in_selection (t_window *win_id ) {
@@ -91,15 +87,13 @@ static void x_request_in_selection (t_window *win_id ) {
         win_id->server->select_code, win_id->x_window, CurrentTime);
 }
 
-extern int x_select (int *p_fd, boolean *p_read, int *timeout_ms) {
+extern int x_select (int *p_fd, boolean *p_read, timeout_t *timeout) {
   boolean timeout_is_active, blink_is_active;
-  timeout_t exp_time, cur_time, tmp_timeout;
-  timeout_t *select_exp;
-  int select_ms;
+  timeout_t exp_time;
   int x_fd;
   int res;
 
-  timeout_is_active = *timeout_ms >= 0;
+  timeout_is_active = (timeout->tv_sec >= 0) && (timeout->tv_usec >= 0);
   blink_is_active = (curr_percent != 0);
 
   if (local_server.x_server == NULL) {
@@ -122,47 +116,29 @@ extern int x_select (int *p_fd, boolean *p_read, int *timeout_ms) {
   /* Compute expiration time */
   if (timeout_is_active) {
     get_time (&exp_time);
-    incr_time (&exp_time, (unsigned int)*timeout_ms);
+    add_time (&exp_time, timeout);
   }
 
   for (;; ) {
 
 
-    /* Compute select expiration time */
+    /* Compute select timeout */
     /* Nearest between exp_time and next_blink */
-    if (blink_is_active) {
-      if (timeout_is_active) {
+    if (timeout_is_active) {
+      if (blink_is_active) {
         if (comp_time(&next_blink, &exp_time) < 0) {
-          select_exp = &next_blink;
+          evt_time_remaining (timeout, &next_blink);
         } else {
-          select_exp = &exp_time;
+          evt_time_remaining (timeout, &exp_time);
         }
       } else {
-        select_exp = &next_blink;
-      }
-    } else {
-      if (timeout_is_active) {
-        select_exp = &exp_time;
-      } else {
-        select_exp = NULL;
+        evt_time_remaining (timeout, &exp_time);
       }
     }
 
-    /* Compute select timeout */
-    if (select_exp == NULL) {
-      select_ms = -1;
-    } else {
-      get_time(&cur_time);
-      memcpy (&tmp_timeout, select_exp, sizeof(timeout_t));
-      if (sub_time (&tmp_timeout, &cur_time) <= 0 ) {
-        select_ms = 0;
-      } else {
-        select_ms = timeout_to_ms (&tmp_timeout);
-      }
-    }
 
     /* Call the real select */
-    res = evt_wait (p_fd, p_read, &select_ms);
+    res = evt_wait (p_fd, p_read, timeout);
     if (res == ERR) {
       return (ERR);
     }
@@ -180,12 +156,13 @@ extern int x_select (int *p_fd, boolean *p_read, int *timeout_ms) {
         *p_read = TRUE;
       }
       /* Done */
-      evt_time_remaining (timeout_ms, &exp_time);
+      evt_time_remaining (timeout, &exp_time);
       return (OK);
     } else {
       /* Timeout. Check expiration */
       if (timeout_is_active && time_is_reached (&exp_time) ) {
-        *timeout_ms = 0;
+        timeout->tv_sec = 0;
+        timeout->tv_usec = 0;
         return (OK);
       }
     }

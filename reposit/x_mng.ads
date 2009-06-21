@@ -251,10 +251,12 @@ package X_Mng is
 
   ----- EVENT MANAGEMENT -----
   -- Wait until an event is availble
-  -- If Timeout is a real delay (neither infinite nor exp) then
+  -- If Timeout is a real delay (neither infinite nor expiration time) then
   --  it is updated with the time remaining
   -- Kind is Keyboard or Tid (Press or Release or Motion) for this line,
   --  or Refresh or Exit_Request or Fd_Event or Timer_Event or Signal_Event...
+  -- Timeout must be in real time (Clock = null) or Invalid_Timeout is raised
+  Invalid_Timeout : exception;
   procedure X_Wait_Event(Line_Id : in Line;
                          Timeout : in out Timers.Delay_Rec;
                          Kind : out Event_Kind);

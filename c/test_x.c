@@ -4,6 +4,7 @@
 #include <string.h>
 #include <sys/time.h>
 
+#include "timeval.h"
 #include "x_export.h"
 
 #define CLL "                                                      "
@@ -68,7 +69,7 @@ boolean control, shift, code;
 int bord, font;
 unsigned int b1;
 unsigned int s, u, b, r;
-int delta;
+timeout_t delta;
 int b_off, c_off, bv, cv;
 int motion;
 boolean read;
@@ -119,7 +120,6 @@ boolean read;
     exit (1);
   }
 
-  delta = 0;
   strcpy (stre, "");
   b_off = 0; c_off = 1;
   motion = False;
@@ -178,7 +178,8 @@ boolean read;
 
 
     /* Wait for events */
-    delta = 2000;
+    delta.tv_sec = 2;
+    delta.tv_usec = 0;
 
     if (l == 0) {
       /* no event pending */
@@ -197,6 +198,7 @@ boolean read;
       }
     } else if (m == NO_EVENT) {
       /* Timeout */
+      printf ("Timeout\n");
       x_set_selection (line, NULL);
       k = DISCARD;
       continue;
@@ -204,7 +206,7 @@ boolean read;
       printf ("Signal\n");
       break;
     } else {
-      printf ("ERROR OTHER FD %d\n", m);
+      printf ("ERROR: other event %d\n", m);
     }
 
     /* Keybord or TID */

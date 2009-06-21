@@ -102,9 +102,7 @@ package Timers is
   -- Expiration time of next timer (or Infinite)
   function Wait_Until return Expiration_Rec;
 
-  -- Compute next timeout from Expiration and timers
-  function Next_Timeout (Expiration : Expiration_Rec) return Duration;
-  -- Compute nearest expiratio time from Expiration and timers
+  -- Compute nearest expiration time from Expiration and timers
   function Next_Expiration (Expiration : Expiration_Rec) return Expiration_Rec;
 
   -- Is expiration reached

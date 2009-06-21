@@ -1,5 +1,5 @@
 with System, Ada.Calendar, Ada.Text_Io;
-with Null_Procedure, Dynamic_List, Timers, Environ;
+with Null_Procedure, Dynamic_List, Timers, Environ, Timeval, Perpet;
 package body Event_Mng is
 
   -------------
@@ -270,42 +270,58 @@ package body Event_Mng is
   C_Wake_Event : constant Integer := -3;
   function C_Wait (P_Fd : System.Address;
                    P_Read : System.Address;
-                   Timeout_Ms : System.Address) return Result;
+                   P_Timeout : System.Address) return Result;
   pragma Import(C, C_Wait, "evt_wait");
 
-  Infinite_Timeout : constant Duration := Timers.Infinite_Seconds;
-
-  function Wait (Timeout_Ms : Integer) return Out_Event_List is
+  function Wait (Delay_Spec : Timers.Delay_Rec) return Out_Event_List is
     Fd    : Integer;
     Read  : Bool_For_C;
-    Final_Exp : Timers.Expiration_Rec;
-    Timeout_In, Timeout_Dur : Duration;
-    Timeout_Wait : Integer;
+    Final_Exp, Next_Exp : Timers.Expiration_Rec;
+    Now : Ada.Calendar.Time;
+    Timeout : Timeval.C_Timeout_T;
     C_Res : Result;
     Handle_Res : Out_Event_List;
-    use type  Ada.Calendar.Time;
+    use type Ada.Calendar.Time, Timers.Expiration_Rec, Perpet.Delta_Rec;
   begin
     Set_Debug;
     -- Compute final expiration
-    if Timeout_Ms >= 0 then
-      Timeout_In := Duration (Timeout_Ms) / 1000.0;
-      Final_Exp := (Infinite => False,
-                    Time => Ada.Calendar.Clock + Timeout_In);
-    else
-      Timeout_In := Infinite_Timeout;
-      Final_Exp := (Infinite => True);
-    end if;
+    case Delay_Spec.Delay_Kind is
+      when Timers.Delay_Sec =>
+        if Delay_Spec.Delay_Seconds < 0.0 then
+          Final_Exp := (Infinite => True);
+        else
+          Final_Exp := (Infinite => False,
+                        Time => Ada.Calendar.Clock + Delay_Spec.Delay_Seconds);
+        end if;
+      when Timers.Delay_Del =>
+        Final_Exp := (Infinite => False,
+                      Time => Ada.Calendar.Clock + Delay_Spec.Delay_Delta);
+      when Timers.Delay_Exp =>
+        Final_Exp := (Infinite => False,
+                      Time => Delay_Spec.Expiration_Time);
+    end case;
+
 
     loop
       -- Compute next timeout
-      Timeout_Dur := Timers.Next_Timeout (Final_Exp);
+      Next_Exp := Timers.Next_Expiration (Final_Exp);
+      if Next_Exp = Timers.Infinite_Expiration then
+        Timeout := Timeval.Infinite_C_Timeout;
+      else
+        Now := Ada.Calendar.Clock;
+        if Now < Next_Exp.Time then
+          Timeout := Timeval.To_C_Timeout (Next_Exp.Time - Now);
+        else
+          Timeout := (0, 0);
+        end if;
+      end if;
 
       -- Wait
-      Timeout_Wait := Integer (Timeout_Dur * 1000.0);
       if Debug then
-        Ada.Text_Io.Put_Line ("Event_Mng.Wait timeout " & Timeout_Wait'Img);
+        Ada.Text_Io.Put_Line ("Event_Mng.Wait timeout "
+                            & Timeval.Image(Timeout));
       end if;
-      C_Res := C_Wait (Fd'Address, Read'Address, Timeout_Wait'Address);
+      C_Res := C_Wait (Fd'Address, Read'Address, Timeout'Address);
       if Debug then
         if C_Res /= Ok then
           Ada.Text_Io.Put_Line ("Event_Mng.Wait.C_Wait -> ERROR");
@@ -354,6 +370,20 @@ package body Event_Mng is
 
     end loop;
 
+  end Wait;
+
+  function Wait (Timeout_Ms : Integer) return Out_Event_List is
+    Dur : Duration;
+  begin
+    if Timeout_Ms >= 0 then
+      Dur := Duration (Timeout_Ms) / 1_000.0;
+    else
+      Dur := Timers.Infinite_Seconds;
+    end if;
+    return Wait ((Delay_Kind    => Timers.Delay_Sec,
+                  Clock         => null,
+                  Period        => Timers.No_Period,
+                  Delay_Seconds => Dur));
   end Wait;
 
   function Wait (Timeout_Ms : Integer) return Boolean is

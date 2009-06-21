@@ -1,4 +1,4 @@
-with Date_Image;
+with Date_Image, Timeval;
 
 separate (X_Mng)
 package body Dispatch is
@@ -13,13 +13,35 @@ package body Dispatch is
     end if;
   end Log;
 
+  ------------------------------------------------------------------
   -- Wake-up the task that is in select
+  -- void evt_wake_up (void)
+  ------------------------------------------------------------------
   procedure C_Wake_Up;
   pragma Import(C, C_Wake_Up, "evt_wake_up");
   procedure Wake_Up is
   begin
     C_Wake_Up;
   end Wake_Up;
+
+  ------------------------------------------------------------------
+  -- Wait for some events
+  -- int x_select (int *p_fd, int *p_read, timeout_t *timeout_ms);
+  ------------------------------------------------------------------
+  function X_Select (P_Fd : System.Address;
+                     P_Read : System.Address;
+                     P_Timeout : System.Address) return Result;
+  pragma Import(C, X_Select, "x_select");
+
+  ------------------------------------------------------------------
+  -- Process a X event (Tid or Keyboard or other)
+  -- int x_process_event (void **p_line_id, int *p_kind, boolean *p_next);
+  ------------------------------------------------------------------
+  function X_Process_Event(P_Line_Id : System.Address;
+                           P_Kind    : System.Address;
+                           P_Next    : System.Address) return Result;
+  pragma Import(C, X_Process_Event, "x_process_event");
+
 
   -- Prepare the registration of a new task
   -- Ensure that the dispatcher will not remain blocked in select
@@ -93,11 +115,11 @@ package body Dispatch is
 
     -- Next expiration
     Select_Exp : Timers.Expiration_Rec;
-    Timeout : Duration;
+    Timeout : Timeval.C_Timeout_T;
+    Now : Ada.Calendar.Time;
     -- For C x_select
     C_Fd    : Integer;
     C_Read  : Bool_For_C;
-    C_Timeout_Ms : Integer;
     C_Res : Result;
     -- For Event_Mng.Handle
     Handle_Event : Boolean;
@@ -106,30 +128,32 @@ package body Dispatch is
 
     use type Ada.Calendar.Time, System.Address,
              Timers.Expiration_Rec,
-             Event_Mng.Out_Event_List;
+             Event_Mng.Out_Event_List,
+             Perpet.Delta_Rec;
   begin
 
     loop
       -- Compute min of Exp and timers, set timeout in Ms
       Select_Exp := Timers.Next_Expiration (Exp);
       if Select_Exp = Timers.Infinite_Expiration then
-        Timeout := Infinite_Timeout;
+        Timeout := Timeval.Infinite_C_Timeout;
       else
-        Timeout := Select_Exp.Time - Ada.Calendar.Clock;
-        if Timeout < 0.0 then
-          Timeout := 0.0;
+        Now := Ada.Calendar.Clock;
+        if Now < Select_Exp.Time then
+          Timeout := Timeval.To_C_Timeout (Select_Exp.Time - Now);
+        else
+          Timeout := (0, 0);
         end if;
       end if;
-      C_Timeout_Ms := Integer(Timeout * 1000.0);
 
       -- Call the real select
-      Log ("Xx_Select", No_CLient_No, "timeout " & C_Timeout_Ms'Img);
-      C_Res := X_Select (C_Fd'Address, C_Read'Address, C_Timeout_Ms'Address);
+      Log ("Xx_Select", No_Client_No, "timeout " & Timeval.Image (Timeout));
+      C_Res := X_Select (C_Fd'Address, C_Read'Address, Timeout'Address);
       if C_Res /= Ok then
-        Log ("Xx_Select.X_Select", No_CLient_No, "-> ERROR");
+        Log ("Xx_Select.X_Select", No_Client_No, "-> ERROR");
         raise X_Failure;
       end if;
-      Log ("Xx_Select.X_Select", No_CLient_No,
+      Log ("Xx_Select.X_Select", No_Client_No,
             "-> " & Integer'Image(C_Fd) & " " & Bool_For_C'Image(C_Read));
 
       -- For all but X:
@@ -317,7 +341,7 @@ package body Dispatch is
     -- Register one client at a time
     -- Find free slot, init it, incease client count
     entry Register (Client : out Line_Range)
-                   when Registered = No_Client_No 
+                   when Registered = No_Client_No
                    and then not In_X is
     begin
       Client := First_Free;
