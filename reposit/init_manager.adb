@@ -2,7 +2,7 @@ with Unlimited_Pool, Mutex_Manager;
 package body Init_Manager is
 
   -- The mutex to protect pool and handler
-  Mutex : Mutex_Manager.Mutex;
+  Mutex : Mutex_Manager.Mutex(Mutex_Manager.Simple);
 
   -- The pool of pending events: Fifo
   package Event_Pool_Mng is new Unlimited_Pool (Event_Type, Lifo => False);
@@ -15,7 +15,7 @@ package body Init_Manager is
   procedure Deliver (Event : in Event_Type) is
   begin
     -- No lock while calling handler
-    Mutex_Manager.Release (Mutex);
+    Mutex.Release;
     -- Call handler and mask exception
     begin
       The_Handler (Event);
@@ -24,7 +24,7 @@ package body Init_Manager is
         null;
     end;
     -- Re-acquire mutex
-    Mutex_Manager.Get (Mutex);
+    Mutex.Get;
   end Deliver;
 
   -- Flush pending events, mutex must be acquired and is released
@@ -36,15 +36,13 @@ package body Init_Manager is
       Event_Pool.Pop (Event);
       Deliver (Event);
     end loop;
-    -- Final release
-    Mutex_Manager.Release (Mutex);
   end Flush;
 
   -- Clean mutex if acquired
   procedure Clean is
   begin
-    if Mutex_Manager.Is_Owner (Mutex) then
-      Mutex_Manager.Release (Mutex);
+    if Mutex.Is_Owner then
+      Mutex.Release;
     end if;
   end Clean;
 
@@ -55,9 +53,11 @@ package body Init_Manager is
   -- type Event_Handler is access procedure (Event : in Event_Type);
   procedure Set_Handler (Handler : Event_Handler) is
   begin
-    Mutex_Manager.Get (Mutex);
+    Mutex.Get;
     The_Handler := Handler;
     Flush;
+    -- Final release
+    Mutex.Release;
   exception
     when others =>
       -- Always release
@@ -68,17 +68,17 @@ package body Init_Manager is
   -- Inject a new event
   procedure New_Event (Event : in Event_Type) is
   begin
-    Mutex_Manager.Get (Mutex);
+    Mutex.Get;
     if The_Handler /= null and then Event_Pool.Is_Empty then
       -- Handler set and no pending events => deliver
       Deliver (Event);
-      Mutex_Manager.Release (Mutex);
+      Mutex.Release;
     else
       -- Either handler is null (then event will be flushed when setting it)
       -- Or pool is not empty (then flush is running and will flush event)
       -- Push the event and release
       Event_Pool.Push (Event);
-      Mutex_Manager.Release (Mutex);
+      Mutex.Release;
     end if;
   exception
     when others =>

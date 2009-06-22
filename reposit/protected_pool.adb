@@ -23,7 +23,7 @@ package body Protected_Pool is
     Found : Boolean;
   begin
     -- Lock mutex
-    Mutex_Manager.Get (Pool.Mutex);
+    Pool.Mutex.Get;
     -- Find next available (not used) key
     Cell.Key := Pool.Next_Key.all;
     Cell.Data := Element;
@@ -33,7 +33,7 @@ package body Protected_Pool is
       Cell.Key := Cell.Key + 1;
       if Cell.Key = Pool.Next_Key.all then
         -- No available key
-        Mutex_Manager.Release (Pool.Mutex);
+        Pool.Mutex.Release;
         raise Pool_Full;
       end if;
     end loop;
@@ -42,7 +42,7 @@ package body Protected_Pool is
     -- Update next key
     Pool.Next_Key.all := Cell.Key + 1;
     -- Release Mutex
-    Mutex_Manager.Release (Pool.Mutex);
+    Pool.Mutex.Release;
     -- Done
     return Cell.Key;
   end Store;
@@ -64,14 +64,14 @@ package body Protected_Pool is
     Cell : Cell_Type;
     Done : Boolean;
   begin
-    Mutex_Manager.Get (Pool.Mutex);
+    Pool.Mutex.Get;
     Locate (Pool, Key);
     Pool.List.all.Get (Cell, Done => Done);
-    Mutex_Manager.Release (Pool.Mutex);
+    Pool.Mutex.Release;
     return Cell.Data;
   exception
     when Not_Found =>
-      Mutex_Manager.Release (Pool.Mutex);
+      Pool.Mutex.Release;
       raise;
   end Get;
 
@@ -79,27 +79,27 @@ package body Protected_Pool is
     Cell : Cell_Type;
     Done : Boolean;
   begin
-    Mutex_Manager.Get (Pool.Mutex);
+    Pool.Mutex.Get;
     Locate (Pool, Key);
     Pool.List.all.Read (Cell, Done => Done);
-    Mutex_Manager.Release (Pool.Mutex);
+    Pool.Mutex.Release;
     return Cell.Data;
   exception
     when Not_Found =>
-      Mutex_Manager.Release (Pool.Mutex);
+      Pool.Mutex.Release;
       raise;
   end Read;
 
   procedure Delete (Pool : Pool_Type; Key : Key_Type) is
     Done : Boolean;
   begin
-    Mutex_Manager.Get (Pool.Mutex);
+    Pool.Mutex.Get;
     Locate (Pool, Key);
     Pool.List.all.Delete (Done => Done);
-    Mutex_Manager.Release (Pool.Mutex);
+    Pool.Mutex.Release;
   exception
     when Not_Found =>
-      Mutex_Manager.Release (Pool.Mutex);
+      Pool.Mutex.Release;
       raise;
   end Delete;
 
@@ -107,9 +107,9 @@ package body Protected_Pool is
   -- Clears most of the memory
   procedure Delete_Pool (Pool : Pool_Type) is
   begin
-    Mutex_Manager.Get (Pool.Mutex);
+    Pool.Mutex.Get;
     Pool.List.all.Delete_List;
-    Mutex_Manager.Release (Pool.Mutex);
+    Pool.Mutex.Release;
   end Delete_Pool;
 
   procedure Deallocate is new Ada.Unchecked_Deallocation
@@ -119,11 +119,11 @@ package body Protected_Pool is
 
   procedure Finalize (Pool : in out Pool_Type) is
   begin
-    Mutex_Manager.Get (Pool.Mutex);
+    Pool.Mutex.Get;
     Pool.List.all.Delete_List;
     Deallocate (Pool.Next_Key);
     Deallocate (Pool.List);
-    Mutex_Manager.Release (Pool.Mutex);
+    Pool.Mutex.Release;
   end Finalize;
 
 end Protected_Pool;

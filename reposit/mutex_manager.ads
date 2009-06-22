@@ -1,4 +1,4 @@
-with Ada.Task_Identification;
+with Ada.Task_Identification, Ada.Finalization;
 -- Mutex (single and Read_Write) management
 package Mutex_Manager is
 
@@ -15,8 +15,8 @@ package Mutex_Manager is
   -- Kind of requested access for a Read_Write and Write_Read mutex
   type Access_Kind is (Read, Write);
 
-  -- Mutex object, simple by default, free at creation
-  type Mutex (Kind : Mutex_Kind := Simple) is private;
+  -- Mutex object, free at creation
+  type Mutex (Kind : Mutex_Kind) is tagged limited private;
 
   -- Get un mutex.
   -- Simple mutex provides exclusive access (Access_Kind is not significant).
@@ -25,8 +25,8 @@ package Mutex_Manager is
   -- If delay is negative, wait until mutex is got,
   -- If delay is null, try and give up if not free,
   -- If delay is positive, try during the specified delay.
-  -- Raises Already_Got of current task has already got the simple mutex
-  --  or if it has already got the RW mutex for write.
+  -- Raises Already_Got if the current task has already got the RW mutex for
+  --  write (not raised by Simple mutex that will deadlock).
   -- Note that there is no check of "Read then Write" deadlock.
   Already_Got : exception;
   function Get (A_Mutex      : Mutex;
@@ -58,8 +58,12 @@ private
     procedure Mutex_Release;
     function Mutex_Owns return Boolean;
   private
+    -- Status of the mutex
     Free : Boolean := True;
+    -- Owner of the mutex
     Owner : Ada.Task_Identification.Task_Id;
+    -- Number of times it has got the lock
+    Count : Natural := 0;
   end Mutex_Protect;
 
   type Mutex_Access is access Mutex_Protect;
@@ -103,6 +107,8 @@ private
     Writer  : Boolean := False;
     -- Writer identification
     Owner : Ada.Task_Identification.Task_Id;
+    -- Numer of times it has got the write lock
+    Count : Natural := 0;
 
     -- Two queues, one is active at a time
     entry Queues (Queue_Range) (Kind : in Access_Kind);
@@ -146,6 +152,8 @@ private
     Writer  : Boolean := False;
     -- Writer identification
     Owner : Ada.Task_Identification.Task_Id;
+    -- Numer of times it has got the write lock
+    Count : Natural := 0;
 
     -- The queues
     entry Reading_Queue;
@@ -158,7 +166,8 @@ private
   --------------------------------------------------------------------------
 
   -- The general purpose mutex
-  type Mutex (Kind : Mutex_Kind := Simple) is record
+  type Mutex (Kind : Mutex_Kind) is
+  new Ada.Finalization.Limited_Controlled with record
     case Kind is
       when Simple =>
         Mutex_Pointer : Mutex_Access := new Mutex_Protect;
@@ -168,6 +177,8 @@ private
         Wr_Mutex_Pointer : Wr_Mutex_Access := new Wr_Mutex_Protect;
     end case;
   end record;
+
+  overriding procedure Finalize (A_Mutex : in out Mutex);
 
 end Mutex_Manager;
 

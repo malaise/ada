@@ -3,7 +3,7 @@ package body Control_Pool is
 
   -- The global mutex protecting the pool
   -------------------
-  Global_Mutex : Mutex_Manager.Mutex;
+  Global_Mutex : Mutex_Manager.Mutex(Mutex_Manager.Simple);
 
 
   -- Pool of used mutexes
@@ -46,7 +46,7 @@ package body Control_Pool is
     if not Free_Mutex_Pool.Is_Empty (Free_Mutexes) then
       Free_Mutex_Pool.Pop (Free_Mutexes, Mut_Acc);
     else
-      Mut_Acc := new  Mutex_Manager.Mutex;
+      Mut_Acc := new Mutex_Manager.Mutex(Mutex_Manager.Simple);
     end if;
     return Mut_Acc;
   end Get_Mutex;
@@ -62,7 +62,7 @@ package body Control_Pool is
     Cell : Cell_Type;
   begin
     -- Global lock
-    Got := Mutex_Manager.Get (Global_Mutex, -1.0);
+    Global_Mutex.Get;
     -- Look for this key in pool
     Cell.Key := Key;
     Search (Pool, Got, Cell, From => Pool_Mng.Absolute);
@@ -72,7 +72,7 @@ package body Control_Pool is
       Cell.Waiters := Cell.Waiters + 1;
       Pool_Mng.Modify (Pool, Cell, Pool_Mng.Current);
       -- Unlock Global mutex and wait for data mutex
-      Mutex_Manager.Release (Global_Mutex);
+      Global_Mutex.Release;
       Got := Mutex_Manager.Get (Cell.Data_Mutex.all, Waiting_Time);
       -- Release cell if mutex not got
       if not Got then
@@ -82,13 +82,13 @@ package body Control_Pool is
     else
       -- Get and lock data mutex (not blocking cause we are first)
       Cell.Data_Mutex := Get_Mutex;
-      Got := Mutex_Manager.Get (Cell.Data_Mutex.all, -1.0);
+      Cell.Data_Mutex.Get;
       -- Store cell
       Cell.Key := Key;
       Cell.Waiters := 1;
       Pool_Mng.Insert (Pool, Cell);
       -- Unlock Global mutex and return success
-      Mutex_Manager.Release (Global_Mutex);
+      Global_Mutex.Release;
       return True;
     end if;
   end Get;
@@ -106,7 +106,7 @@ package body Control_Pool is
     Cell : Cell_Type;
   begin
     -- Global lock
-    Got := Mutex_Manager.Get (Global_Mutex, -1.0);
+    Global_Mutex.Get;
     -- Look for this key in pool
     Cell.Key := Key;
     Search (Pool, Got, Cell, From => Pool_Mng.Absolute);
@@ -124,10 +124,10 @@ package body Control_Pool is
     end if;
     -- Release data mutex if it was granted
     if Granted then
-      Mutex_Manager.Release (Cell.Data_Mutex.all);
+      Cell.Data_Mutex.Release;
     end if;
     -- Unlock Global mutex
-    Mutex_Manager.Release (Global_Mutex);
+    Global_Mutex.Release;
   end Release;
 
 end Control_Pool;

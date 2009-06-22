@@ -28,14 +28,15 @@ procedure T_Mut is
     package body Input is
       In_Get : Boolean := False;
       Current_I : Range_Task;
-      Put_Lock, Get_Lock, Prompt_Lock : Mutex_Manager.Mutex;
+      Put_Lock, Get_Lock, Prompt_Lock :
+                   Mutex_Manager.Mutex(Mutex_Manager.Simple);
 
       Tab : constant String (1..4) := (others => ' ');
 
       procedure Prompt (I : in Range_Task; Set : in Boolean) is
         use type Mutex_Manager.Mutex_Kind;
       begin
-        Mutex_Manager.Get (Prompt_Lock);
+        Prompt_Lock.Get;
         if Set then
           -- Call by Get: store I for further calls by Put while in get
           Current_I := I;
@@ -50,7 +51,7 @@ procedure T_Mut is
           Ada.Text_Io.Put (" : Bloqued, Immediate, Wait (5s), Terminate ? ");
         end if;
         Ada.Text_Io.Flush;
-        Mutex_Manager.Release (Prompt_Lock);
+        Prompt_Lock.Release;
       end Prompt;
 
       procedure Get (I : in Range_Task; K, A : out Character)  is
@@ -60,7 +61,7 @@ procedure T_Mut is
         L : Natural;
         use type Mutex_Manager.Mutex_Kind;
       begin
-        Mutex_Manager.Get (Get_Lock);
+        Get_Lock.Get;
         -- Skip any pending character
         loop
           Ada.Text_Io.Get_Immediate (C, B);
@@ -92,12 +93,12 @@ procedure T_Mut is
           end if;
         end loop;
         In_Get := False;
-        Mutex_Manager.Release (Get_Lock);
+        Get_Lock.Release;
       end Get;
 
       procedure Put (S : in String; I : in  Range_Task) is
       begin
-        Mutex_Manager.Get (Put_Lock);
+        Put_Lock.Get;
         if In_Get then
           Ada.Text_Io.New_Line;
         end if;
@@ -107,7 +108,7 @@ procedure T_Mut is
         if In_Get then
           Prompt (1, False);
         end if;
-        Mutex_Manager.Release (Put_Lock);
+        Put_Lock.Release;
       end Put;
     end Input;
 
@@ -143,13 +144,13 @@ procedure T_Mut is
         return True;
       end if;
 
-      B := Mutex_Manager.Get (Crit_Lock, Waiting, Action);
+      B := Crit_Lock.Get (Waiting, Action);
 
       if B then
         Input.Put ("Start of critical section for", Num);
         delay Critical_Section_Duration;
         Input.Put ("End   of critical section for", Num);
-        Mutex_Manager.Release (Crit_Lock);
+        Crit_Lock.Release;
       else
         Input.Put ("Mutex not free for", Num);
       end if;

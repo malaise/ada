@@ -4,8 +4,8 @@ with Mutex_Manager, Schedule, Rnd, Normal, Argument, Basic_Proc;
 procedure T_Read_Write is
   pragma Priority(10);
 
-  Lock : Mutex_Manager.Mutex;
-  Io_Lock : Mutex_Manager.Mutex;
+  Lock : access Mutex_Manager.Mutex;
+  Io_Lock : Mutex_Manager.Mutex(Mutex_Manager.Simple);
 
   subtype Range_Task is Positive range 1 .. 10;
 
@@ -17,9 +17,9 @@ procedure T_Read_Write is
 
   procedure Put_Line (Index : in Range_Task; Msg : in String) is
   begin
-    Mutex_Manager.Get (Io_Lock);
+    Io_Lock.Get;
     Ada.Text_Io.Put_Line (Normal (Index, 3) & " " & Msg);
-    Mutex_Manager.Release (Io_Lock);
+    Io_Lock.Release;
   end Put_Line;
 
   function Image (D : Duration) return String is
@@ -55,7 +55,7 @@ procedure T_Read_Write is
       end if;
       -- Get lock
       Put_Line (Index, "get " & Kind_Strs(Kind) & " " & Image(Dur));
-      Res := Mutex_Manager.Get (Lock, Dur, Kind);
+      Res := Lock.Get (Dur, Kind);
       -- Trace result
       if Res then
         Put_Line (Index, "OK");
@@ -69,7 +69,7 @@ procedure T_Read_Write is
 
         -- Release lock
         Put_Line (Index, "release");
-        Mutex_Manager.Release (Lock);
+        Lock.Release;
       end if;
 
       -- 1% chances to terminate
@@ -97,17 +97,9 @@ begin
   end if;
   if Argument.Get_Nbre_Arg = 0
   or else Argument.Get_Parameter = "rw" then
-    declare
-      T : Mutex_Manager.Mutex (Mutex_Manager.Read_Write);
-    begin
-      Lock := T;
-    end;
+    Lock := new Mutex_Manager.Mutex (Mutex_Manager.Read_Write);
   elsif Argument.Get_Parameter = "wr" then
-    declare
-      T : Mutex_Manager.Mutex (Mutex_Manager.Write_Read);
-    begin
-      Lock := T;
-    end;
+    Lock := new Mutex_Manager.Mutex (Mutex_Manager.Write_Read);
   else
     Error ("unexpected argument " & Argument.Get_Parameter);
     return;
