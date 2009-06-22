@@ -1,11 +1,23 @@
 with Ada.Calendar, Ada.Text_Io;
-with Dynamic_List, Environ, Date_Image;
+with Dynamic_List, Environ, Date_Image, Recursive_Mutex;
 package body Timers is
 
   -- Debugging
   Debug_Var_Name : constant String := "TIMERS_DEBUG";
   Debug : Boolean := False;
   Debug_Set : Boolean := False;
+
+  -- The mutex that protect the whole
+  -- Must be recursive because timer Cb can call Timers
+  Mutex : Recursive_Mutex.Mutex;
+  procedure Get_Mutex is
+  begin
+    Mutex.Get;
+  end Get_Mutex;
+  procedure Release_Mutex is
+  begin
+    Mutex.Release;
+  end Release_Mutex;
 
   -- Clock observer and list of observed clocks
   Observer : aliased Observer_Type;
@@ -198,12 +210,13 @@ package body Timers is
   begin
     -- Get current time ASAP
     Timer.Cre := Ada.Calendar.Clock;
-    Set_Debug;
     if Delay_Spec.Delay_Kind = Delay_Sec
     and then Delay_Spec.Delay_Seconds < 0.0 then
       raise Invalid_Delay;
     end if;
 
+    Get_Mutex;
+    Set_Debug;
     -- Allocate Id and copy period and callback
     Timer.Id := Get_Next_Id;
     Timer.Exp.Period := Delay_Spec.Period;
@@ -289,6 +302,7 @@ package body Timers is
              & Cb_Image (Callback)
              & " -> " & Timer.Id'Img);
     -- Done
+    Release_Mutex;
     return (Timer_Num => Timer.Id);
   end Create;
 
@@ -360,12 +374,14 @@ package body Timers is
   -- May raise Invalid_Timer if timer has expired
   procedure Delete (Id : in Timer_Id) is
   begin
+    Get_Mutex;
     Set_Debug;
     -- Search timer
     Locate (Id);
     -- Delete timer
     Delete_Current;
     Put_Debug ("Delete", " id " & Id.Timer_Num'Img);
+    Release_Mutex;
   end Delete;
 
   -- Suspend a timer: expirations, even the pending ones are suspended
@@ -378,13 +394,15 @@ package body Timers is
     use type Virtual_Time.Time, Virtual_Time.Clock_Access,
              Virtual_Time.Speed_Range, Perpet.Delta_Rec;
   begin
-     Set_Debug;
+    Get_Mutex;
+    Set_Debug;
     -- Search timer
     Locate (Id);
     -- Get it
     Timer_List.Read (Timer, Timer_List_Mng.Current);
     if Timer.Suspended then
       -- Already suspended
+      Release_Mutex;
       return;
     end if;
     if not Timer.Frozen then
@@ -405,6 +423,7 @@ package body Timers is
     Put_Debug ("Suspend", Id.Timer_Num'Img & " for "
         & Timer.Remaining.Days'Img & "D +  "
         & Timer.Remaining.Secs'Img & "s");
+    Release_Mutex;
   end Suspend;
 
   -- Resume a suspended a timer: expirations, even the pending ones are resumed
@@ -415,13 +434,15 @@ package body Timers is
     Speed : Virtual_Time.Speed_Range;
     use type Virtual_Time.Time, Perpet.Delta_Rec;
   begin
-     Set_Debug;
+    Get_Mutex;
+    Set_Debug;
     -- Search timer
     Locate (Id);
     -- Get it
     Timer_List.Read (Timer, Timer_List_Mng.Current);
     if not Timer.Suspended then
       -- Already running
+      Release_Mutex;
       return;
     end if;
     if not Timer.Frozen then
@@ -438,7 +459,7 @@ package body Timers is
     --Done
     Put_Debug ("Resume ", Timer.Id'Img & " restarted for "
                     & Date_Image (Timer.Exp.Expiration_Time));
-
+    Release_Mutex;
   end Resume;
 
   -- Locate First timer to expire
@@ -463,6 +484,7 @@ package body Timers is
     One_True : Boolean;
     use type Virtual_Time.Time;
   begin
+    Get_Mutex;
     Set_Debug;
     One_True := False;
     loop
@@ -500,6 +522,7 @@ package body Timers is
     end loop;
 
     Put_Debug ("Expire", "-> " & One_True'Img);
+    Release_Mutex;
     return One_True;
   end Expire;
 
@@ -518,11 +541,13 @@ package body Timers is
   function Wait_Until return Expiration_Rec is
     Timer : Timer_Rec;
   begin
+    Get_Mutex;
     Set_Debug;
       -- Search first timer and read it
     if not First then
       -- No more timer
       Put_Debug ("Wait_Until", "-> Infinite cause no timer");
+      Release_Mutex;
       return Infinite_Expiration;
     end if;
     Timer_List.Read (Timer, Timer_List_Mng.Current);
@@ -530,12 +555,14 @@ package body Timers is
       -- No more running timer
       Put_Debug ("Wait_Until", "-> Infinite cause no more running timer"
                  & Timer.Id'Img);
+      Release_Mutex;
       return Infinite_Expiration;
     end if;
 
     Put_Debug ("Wait_Until", "-> "
                            & Date_Image (Timer.Exp.Expiration_Time)
                            & " cause id " & Timer.Id'Img);
+    Release_Mutex;
     return (Infinite => False, Time =>Timer.Exp.Expiration_Time);
   end Wait_Until;
 
@@ -583,6 +610,8 @@ package body Timers is
     Result   : Expiration_Rec;
     use type Virtual_Time.Time;
   begin
+    Get_Mutex;
+    Set_Debug;
     -- First timer to expire
     Next_Exp := Wait_Until;
 
@@ -594,25 +623,17 @@ package body Timers is
       Result := Expiration;
     end if;
 
-    if Result.Infinite then
-      Put_Debug ("Next_Expiration", "-> infinite");
-    else
-      Put_Debug ("Next_Expiration", "-> " & Date_Image (Result.Time));
-    end if;
+    Put_Debug ("Next_Expiration", "-> " & Exp_Image (Result));
+    Release_Mutex;
     return Result;
   end Next_Expiration;
 
   -- Is expiration reached
   function Is_Reached (Expiration : Expiration_Rec) return Boolean is
     use type Virtual_Time.Time;
-    Result : Boolean;
   begin
-    Set_Debug;
-    Result := not Expiration.Infinite
-              and then Ada.Calendar.Clock > Expiration.Time;
-    Put_Debug ("Is_Reached", Exp_Image(Expiration)
-                           & " -> " & Result'Img);
-    return Result;
+    return not Expiration.Infinite
+           and then Ada.Calendar.Clock > Expiration.Time;
   end Is_Reached;
 
   -- Clock update notification
@@ -663,8 +684,11 @@ package body Timers is
     end Update;
 
   begin
+    Get_Mutex;
+    Set_Debug;
     if not First then
       Put_Debug ("Notify", "No timer!!!");
+      Release_Mutex;
       return;
     end if;
     loop
@@ -673,6 +697,7 @@ package body Timers is
       Timer_List.Move_To;
     end loop;
     Sort (Timer_List);
+    Release_Mutex;
   end Notify;
 
 end Timers;
