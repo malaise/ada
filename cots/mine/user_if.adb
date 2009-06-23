@@ -1,8 +1,8 @@
 -- Mine Detector Game
--- Copyright (C) 2006 by PragmAda Software Engineering.  All rights reserved.
+-- Copyright (C) 2007 by PragmAda Software Engineering.  All rights reserved.
 -- **************************************************************************
 --
--- V5.0 2006 Feb 01
+-- V5.1 20076 Feb 01
 --
 with Glib;
 with Gdk.Event;
@@ -68,14 +68,12 @@ package body User_If is
    package Check_Cb  is new Gtk.Handlers.Callback (Gtk_Check_Button_Record);
 
    type Button_Set is array (Field.Valid_Row, Field.Valid_Column) of Gtk_Toggle_Button;
-   type Press_Set  is array (Field.Valid_Row, Field.Valid_Column) of Gtk_Label;
 
    Window         : Gtk_Window;
    Mines_Left     : Gtk_Label;
    Box            : Gtk_Hbox;
    Table          : Gtk_Table;
    Right_Side     : Gtk_Vbox;
-   Press          : Press_Set;
    Button         : Button_Set;
    Restart_Button : Gtk_Button;
    Restarting     : Boolean := False;
@@ -103,7 +101,10 @@ package body User_If is
                                     3 => (Name => "200", Mines => 200),
                                     4 => (Name => "250", Mines => 250) );
 
-   Default_Level : constant Glib.Gint := 2;
+   Default_Level : constant Glib.Gint := 1;
+
+   Auto_Marking_Desired      : Boolean := False;
+   Extended_Stepping_Desired : Boolean := False;
 
    subtype Cell_String is String (1 .. 1);
 
@@ -121,14 +122,14 @@ package body User_If is
    end Show_Game_Over;
    pragma Inline (Show_Game_Over);
 
-   use type Field.Operations.Game_State_ID;
+   use type Field.Operations.Game_State_Id;
 
    procedure Display (Cell   : in Field.Cell_Location;
                       Text   : in Cell_String;
                       Active : in Boolean) is
       -- null;
    begin -- Display
-      Set_Text (Press (Cell.Row, Cell.Column), Text);
+      Set_Label (Button (Cell.Row, Cell.Column), Text);
       Set_Active (Button (Cell.Row, Cell.Column), Active);
 
       if Field.Operations.Game_State /= Field.Operations.In_Progress then
@@ -188,6 +189,19 @@ package body User_If is
       Restarting := False;
    end Reset_Screen;
 
+   function Auto_Marking return Boolean is
+      -- null;
+   begin -- Auto_Marking
+      return Auto_Marking_Desired;
+   end Auto_Marking;
+
+   function Extended_Stepping return Boolean is
+      -- null;
+   begin -- Extended_Stepping
+      return Extended_Stepping_Desired;
+   end Extended_Stepping;
+
+
    function When_Close (Object : access Gtk_Window_Record'Class;
                         Event  : Gdk.Event.Gdk_Event)
             return Boolean
@@ -220,7 +234,7 @@ package body User_If is
    is
       -- null;
    begin -- Mark_Toggle
-      Field.Operations.Auto_Marking.Enable (Enabled => Get_Active (Mark_Check) );
+      Auto_Marking_Desired := Get_Active (Mark_Check);
    end Mark_Toggle;
 
    procedure Step_Toggle (Button : access Gtk_Check_Button_Record'Class;
@@ -228,7 +242,7 @@ package body User_If is
    is
       -- null;
    begin -- Step_Toggle
-      Field.Operations.Extended_Stepping.Enable (Enabled => Get_Active (Step_Check) );
+      Extended_Stepping_Desired := Get_Active (Step_Check);
    end Step_Toggle;
 
    function Button_Press (Button : access Gtk_Toggle_Button_Record'Class; Event : Gdk.Event.Gdk_Event)
@@ -281,13 +295,13 @@ package body User_If is
       return True;
    end Close_Rules;
 
-   procedure OK_Close_Rules (Object : access Gtk_Button_Record'Class;
+   procedure Ok_Close_Rules (Object : access Gtk_Button_Record'Class;
                              Params : Gtk_Args)
    is
       -- null;
    begin -- OK_Close_Rules
       Destroy (Rules_Dialog);
-   end OK_Close_Rules;
+   end Ok_Close_Rules;
 
    procedure Rules_Pressed (Object : access Gtk_Button_Record'Class;
                             Params : Gtk_Args)
@@ -297,24 +311,24 @@ package body User_If is
       Rules : constant Text_Set :=
          (To_Unbounded_String ("The object of the game is to mark all cells containing " &
                                "mines and to step on all cells that do not contain a " &
-                               "mine." & Latin_1.LF),
-          Null_Unbounded_String & Latin_1.LF,
+                               "mine." & Latin_1.Lf),
+          Null_Unbounded_String & Latin_1.Lf,
           To_Unbounded_String ("The game is played on a rectangular field of 16 x 30 " &
-                               "cells. A number of mines are hidden within the field." & Latin_1.LF),
-          Null_Unbounded_String & Latin_1.LF,
+                               "cells. A number of mines are hidden within the field." & Latin_1.Lf),
+          Null_Unbounded_String & Latin_1.Lf,
           To_Unbounded_String ("Some of the cells have numbers on them. The numbers represent " &
                                "the total number of mines in that cell and its " &
                                "immediate neighbors. As you play the game, additional cells " &
-                               "will become numbered." & Latin_1.LF),
-          Null_Unbounded_String & Latin_1.LF,
+                               "will become numbered." & Latin_1.Lf),
+          Null_Unbounded_String & Latin_1.Lf,
           To_Unbounded_String ("You step on a cell by clicking on it with the primary " &
                                "mouse button (normally the left button when configured " &
                                "for a right-handed user). You mark a cell by clicking " &
                                "on it with the secondary mouse button (normally the " &
                                "right button). A marked cell has an M on it. Marking a " &
                                "marked cell unmarks it. You can only mark or step " &
-                               "on a cell with a number on it." & Latin_1.LF),
-          Null_Unbounded_String & Latin_1.LF,
+                               "on a cell with a number on it." & Latin_1.Lf),
+          Null_Unbounded_String & Latin_1.Lf,
           To_Unbounded_String ("When you step on a cell, an auto-stepping algorithm " &
                                "automatically steps on any of its neighbors that " &
                                "obviously do not contain mines. Since this is then " &
@@ -323,42 +337,42 @@ package body User_If is
                                "of the field that obviously do not contain mines. The " &
                                "auto-stepping algorithm is invoked even if the cell is " &
                                "already stepped on. This can be useful to clear around " &
-                               "a new mark." & Latin_1.LF),
-          Null_Unbounded_String & Latin_1.LF,
+                               "a new mark." & Latin_1.Lf),
+          Null_Unbounded_String & Latin_1.Lf,
           To_Unbounded_String ("If you step on a cell containing a mine, either " &
                                "directly or indirectly through the auto-stepping " &
                                "algorithm, the cell shows an X, and the game is over." &
-                               Latin_1.LF),
-          Null_Unbounded_String & Latin_1.LF,
+                               Latin_1.Lf),
+          Null_Unbounded_String & Latin_1.Lf,
           To_Unbounded_String ("The game is over when you step on a mine, or when you " &
                                "have marked all mines and stepped on all other cells. " &
                                "If you win, '" & You_Won_Message &"' appears below the " &
                                "'About' button. If you lose, '" & You_Lost_Message &
-                               "' appears there." & Latin_1.LF),
-          Null_Unbounded_String & Latin_1.LF,
+                               "' appears there." & Latin_1.Lf),
+          Null_Unbounded_String & Latin_1.Lf,
           To_Unbounded_String ("At the top right of the window is a number. At the " &
                                "start of a game this is the number of mines in the " &
                                "field. Each time you mark a cell, this number is " &
                                "decreased by one. Each time you unmark a marked cell, " &
                                "this number is increased by one. If you successfully " &
-                               "complete a game, this number will be zero." & Latin_1.LF),
-          Null_Unbounded_String & Latin_1.LF,
+                               "complete a game, this number will be zero." & Latin_1.Lf),
+          Null_Unbounded_String & Latin_1.Lf,
           To_Unbounded_String ("The 'New Game' button starts a new game. Any game in " &
-                               "progress is abandoned." & Latin_1.LF),
-          Null_Unbounded_String & Latin_1.LF,
+                               "progress is abandoned." & Latin_1.Lf),
+          Null_Unbounded_String & Latin_1.Lf,
           To_Unbounded_String ("The level drop-down allows you to choose how many mines " &
                                "will be in the field at the start of the next game. You " &
                                "can choose from" & Levels (Levels'First).Name & " to " &
                                Levels (Levels'Last).Name & " mines. This goes into effect " &
                                "the next time you start a new game. At higher numbers of " &
-                               "mines, it may not be able to win the game without luck." & Latin_1.LF),
-          Null_Unbounded_String & Latin_1.LF,
+                               "mines, it may not be able to win the game without luck." & Latin_1.Lf),
+          Null_Unbounded_String & Latin_1.Lf,
           To_Unbounded_String ("The 'Auto Mark' check box enables an auto-marking " &
                                "algorithm that marks any cells that obviously contain " &
                                "a mine. At lower levels, the game does not present much " &
                                "of an intellectual challenge with this option. At higher " &
-                               "levels, it's very difficult to play without this option." & Latin_1.LF),
-          Null_Unbounded_String & Latin_1.LF,
+                               "levels, it's very difficult to play without this option." & Latin_1.Lf),
+          Null_Unbounded_String & Latin_1.Lf,
           To_Unbounded_String ("The 'Auto Step after Mark' check box enables the auto-" &
                                "stepping algorithm after a cell is marked, either " &
                                "directly or indirectly through the auto-marking " &
@@ -366,15 +380,15 @@ package body User_If is
 
       Scroller  : Gtk_Scrolled_Window;
       Text_Box  : Gtk_Text;
-      OK_Button : Gtk_Button;
+      Ok_Button : Gtk_Button;
       V_Box     : Gtk_Vbox;
       Action    : Gtk_Box;
    begin -- Rules_Pressed
       Gtk_New (Rules_Dialog);
       Set_Title (Rules_Dialog, "Rules for Mine Detector");
-      Set_USize (Rules_Dialog, 500, 400);
-      Window_Cb.Connect (Rules_Dialog, "delete_event", 
-                Window_Cb.To_Marshaller (Close_Rules'access));
+      Set_Usize (Rules_Dialog, 500, 400);
+      Window_Cb.Connect (Rules_Dialog, "delete_event",
+                         Window_Cb.To_Marshaller (Close_Rules'Access));
 
       V_Box := Get_Vbox (Rules_Dialog);
       Action := Get_Action_Area (Rules_Dialog);
@@ -385,15 +399,15 @@ package body User_If is
       Set_Word_Wrap (Text_Box);
       Add (Scroller, Text_Box);
 
-      Insert_Text : for I in Rules'range loop
+      Insert_Text : for I in Rules'Range loop
          Insert (Text => Text_Box, Chars => To_String (Rules (I) ) );
       end loop Insert_Text;
 
       Set_Editable (Text => Text_Box, Editable => False);
 
-      Gtk_New (OK_Button, "OK");
-      Button_Cb.Connect (OK_Button, "clicked", OK_Close_Rules'access);
-      Pack_Start (Action, OK_Button, False);
+      Gtk_New (Ok_Button, "OK");
+      Button_Cb.Connect (Ok_Button, "clicked", Ok_Close_Rules'Access);
+      Pack_Start (Action, Ok_Button, False);
 
       Show_All (Rules_Dialog);
    end Rules_Pressed;
@@ -403,14 +417,14 @@ package body User_If is
    is
       Result : Message_Dialog_Buttons;
    begin -- About_Pressed
-      Result := Message_Dialog (Msg         => "Mine Detector" & Latin_1.LF &
-                                               "Copyright (C) 2006" & Latin_1.LF &
-                                               "PragmAda Software Engineering" & Latin_1.LF &
-                                               "Released as Free Software under the terms" & Latin_1.LF &
-                                               "of the GNU Public License" & Latin_1.LF &
+      Result := Message_Dialog (Msg         => "Mine Detector" & Latin_1.Lf &
+                                               "Copyright (C) 2007" & Latin_1.Lf &
+                                               "PragmAda Software Engineering" & Latin_1.Lf &
+                                               "Released as Free Software under the terms" & Latin_1.Lf &
+                                               "of the GNU Public License" & Latin_1.Lf &
                                                '"' & "Ada Inside" & '"',
                                 Dialog_Type => Custom,
-                                Buttons     => Button_OK,
+                                Buttons     => Button_Ok,
                                 Title       => "About Mine Detector");
    end About_Pressed;
 
@@ -439,7 +453,7 @@ package body User_If is
 
    function Create_Level_Option_Menu return Gtk_Menu is
       Menu      : Gtk_Menu;
-      Group     : Widget_SList.GSlist;
+      Group     : Widget_Slist.Gslist;
       Menu_Item : Gtk_Radio_Menu_Item;
 
       procedure Add_Line (Text : in String) is
@@ -453,7 +467,7 @@ package body User_If is
    begin -- Create_Level_Option_Menu
       Gtk_New (Menu);
 
-      for I in Levels'range loop
+      for I in Levels'Range loop
          Add_Line (Levels (I).Name);
       end loop;
 
@@ -462,9 +476,8 @@ package body User_If is
 
    procedure First_Game (Data : System.Address);
    pragma Convention (C, First_Game);
-
    procedure First_Game (Data : System.Address) is
-      Button_Size : constant := 25; -- Linux systems may need a larger size.
+      Button_Size : constant := 25;
 
       use type Glib.Guint;
    begin -- First_Game
@@ -473,8 +486,8 @@ package body User_If is
       Set_Policy (Window, True, True, False);
       Set_Position (Window, Win_Pos_Center);
       Set_Title (Window, "Mine Detector");
-      Window_Cb.Connect (Window, "delete_event", 
-           Window_Cb.To_Marshaller (When_Close'access));
+      Window_Cb.Connect (Window, "delete_event",
+                         Window_Cb.To_Marshaller (When_Close'Access));
       Gtk_New_Hbox (Box => Box, Spacing => 2);
       Add (Window, Box);
       Gtk_New (Widget      => Table,
@@ -486,20 +499,15 @@ package body User_If is
       Pack_End (Box, Right_Side);
 
       Gtk_New (Mines_Left, "0");
-      Set_Use_Markup (Mines_Left, True);
-      Set_Justify (Mines_Left, Justify_Right);
       Pack_Start (Right_Side, Mines_Left, False);
 
       Button_Row : for Row in Field.Valid_Row loop
          Button_Column : for Column in Field.Valid_Column loop
-            Gtk_New (Button (Row, Column));
+            Gtk_New (Button (Row, Column), " ");
             Set_Name (Button (Row, Column), Image (Row, Column) );
-            Set_USize (Button (Row, Column), Button_Size, Button_Size);
-            Toggle_Cb.Connect (Button (Row, Column), "toggled", Toggle'access);
-            Marker_Cb.Connect (Button (Row, Column), "button_press_event", Marker_Cb.To_Marshaller (Button_Press'access) );
-            Gtk_New (Press (Row, Column), " ");
-            Set_Use_Markup (Press (Row, Column), True);
-            Add (Button (Row, Column), Press (Row, Column) );
+            Set_Usize (Button (Row, Column), Button_Size, Button_Size);
+            Toggle_Cb.Connect (Button (Row, Column), "toggled", Toggle'Access);
+            Marker_Cb.Connect (Button (Row, Column), "button_press_event", Marker_Cb.To_Marshaller (Button_Press'Access) );
             Attach (Table,
                     Button (Row, Column),
                     Glib.Guint (Column) - 1,
@@ -510,7 +518,7 @@ package body User_If is
       end loop Button_Row;
 
       Gtk_New (Restart_Button, "New Game");
-      Button_Cb.Connect (Restart_Button, "clicked", When_Restart_Button'access);
+      Button_Cb.Connect (Restart_Button, "clicked", When_Restart_Button'Access);
       Pack_Start (Right_Side, Restart_Button, False);
 
       Gtk_New (Level);
@@ -520,21 +528,21 @@ package body User_If is
       Pack_Start (Right_Side, Level, False);
 
       Gtk_New (Mark_Check, "Auto Mark");
-      Set_Active (Mark_Check, Field.Operations.Auto_Marking.Enabled);
-      Check_Cb.Connect (Mark_Check, "toggled", Mark_Toggle'access);
+      Set_Active (Mark_Check, Auto_Marking_Desired);
+      Check_Cb.Connect (Mark_Check, "toggled", Mark_Toggle'Access);
       Pack_Start (Right_Side, Mark_Check, False);
 
-      Gtk_New (Step_Check, "Auto Step" & Latin_1.LF & "after Mark");
-      Set_Active (Step_Check, Field.Operations.Extended_Stepping.Enabled);
-      Check_Cb.Connect (Step_Check, "toggled", Step_Toggle'access);
+      Gtk_New (Step_Check, "Auto Step" & Latin_1.Lf & "after Mark");
+      Set_Active (Step_Check, Extended_Stepping_Desired);
+      Check_Cb.Connect (Step_Check, "toggled", Step_Toggle'Access);
       Pack_Start (Right_Side, Step_Check, False);
 
       Gtk_New (Rules, "Rules");
-      Button_Cb.Connect (Rules, "clicked", Rules_Pressed'access);
+      Button_Cb.Connect (Rules, "clicked", Rules_Pressed'Access);
       Pack_Start (Right_Side, Rules, False);
 
       Gtk_New (About, "About");
-      Button_Cb.Connect (About, "clicked", About_Pressed'access);
+      Button_Cb.Connect (About, "clicked", About_Pressed'Access);
       Pack_Start (Right_Side, About, False);
 
       Gtk_New (Game_Over, You_Won_Message);
@@ -549,12 +557,12 @@ begin -- User_IF
    Init;
    Set_Locale;
 
-   Init_Add (Func => First_Game'access, Data => System.Null_Address);
+   Init_Add (Func => First_Game'Access, Data => System.Null_Address);
 end User_If;
 --
 -- This is free software; you can redistribute it and/or modify it under
 -- terms of the GNU General Public License as published by the Free Software
--- Foundation; either version 2, or (at your option) any later version.
+-- Foundation; version 2.
 -- This software is distributed in the hope that it will be useful, but WITH
 -- OUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 -- or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License

@@ -1,10 +1,10 @@
 -- Mine Detector Game
--- Copyright (C) 2006 by PragmAda Software Engineering.  All rights reserved.
+-- Copyright (C) 2007 by PragmAda Software Engineering.  All rights reserved.
 -- **************************************************************************
 --
 -- Provide the user interface
 --
--- V5.0 2006 Feb 01
+-- V5.1 2007 Feb 01
 --
 with Field;
 package User_If is
@@ -21,11 +21,16 @@ package User_If is
    procedure Display_To_Go (To_Go : in Integer); -- Display # of mines still to mark
 
    procedure Reset_Screen; -- Return to start of game condition
+
+   function Auto_Marking return Boolean; -- Get auto-marking state
+
+   function Extended_Stepping return Boolean; -- Get extended-stepping (after mark) state
+
 end User_If;
 --
 -- This is free software; you can redistribute it and/or modify it under
 -- terms of the GNU General Public License as published by the Free Software
--- Foundation; either version 2, or (at your option) any later version.
+-- Foundation; version 2.
 -- This software is distributed in the hope that it will be useful, but WITH
 -- OUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 -- or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License

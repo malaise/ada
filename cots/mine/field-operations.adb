@@ -1,8 +1,8 @@
 -- Mine Detector Game
--- Copyright (C) 2006 by PragmAda Software Engineering.  All rights reserved.
+-- Copyright (C) 2007 by PragmAda Software Engineering.  All rights reserved.
 -- **************************************************************************
 --
--- V5.0 2006 Feb 01
+-- V5.1 2007 Feb 01
 --
 with Ada.Numerics.Discrete_Random;
 with User_If;
@@ -86,12 +86,12 @@ package body Field.Operations is
       Step_Count := 0;
 
       -- Set the extra ring around the field to stepped_on
-      Step_On_Sides : for Row in Mine_Field'range (1) loop
+      Step_On_Sides : for Row in Mine_Field'Range (1) loop
          Mine_Field (Row, Mine_Field'First (2) ).State := Stepped_On;
          Mine_Field (Row, Mine_Field'Last  (2) ).State := Stepped_On;
       end loop Step_On_Sides;
 
-      Step_On_Top_Bottom : for Column in Mine_Field'range (2) loop
+      Step_On_Top_Bottom : for Column in Mine_Field'Range (2) loop
          Mine_Field (Mine_Field'First (1), Column).State := Stepped_On;
          Mine_Field (Mine_Field'Last  (1), Column).State := Stepped_On;
       end loop Step_On_Top_Bottom;
@@ -106,7 +106,7 @@ package body Field.Operations is
       Random.Reset (Gen);
 
       -- Shuffle Rand_List, a list of cell locations
-      Shuffle : for I in Rand_List'range loop
+      Shuffle : for I in Rand_List'Range loop
          Index := Random.Random (Gen);
          Temp := Rand_List (I);
          Rand_List (I) := Rand_List (Index);
@@ -247,7 +247,7 @@ package body Field.Operations is
 
          User_If.Display_To_Go (To_Go => To_Mark);
 
-         if Extended_Stepping.Enabled then
+         if User_If.Extended_Stepping then
             Auto_Step (Cell => Cell);
          end if;
       end if;
@@ -320,7 +320,7 @@ package body Field.Operations is
             return;
          end if;
 
-         if Auto_Marking.Enabled then
+         if User_If.Auto_Marking then
             -- See if stepping here has created any normal cells that obviously contain mines;
             -- if so, mark them.
             if Mine_Field (Cell.Row, Cell.Column).Count - Num_Marked_Neighbors (Cell) = Num_Normal_Neighbors (Cell) then
@@ -348,7 +348,7 @@ package body Field.Operations is
 
    -- The game is Lost when a mine has been stepped on, Won when all mines have been marked & all other cells stepped on,
    -- and In_Progress otherwise
-   function Game_State return Game_State_ID is
+   function Game_State return Game_State_Id is
       -- null;
    begin -- Game_State
       if Dead then -- A mine has been stepped on
@@ -371,7 +371,7 @@ end Field.Operations;
 --
 -- This is free software; you can redistribute it and/or modify it under
 -- terms of the GNU General Public License as published by the Free Software
--- Foundation; either version 2, or (at your option) any later version.
+-- Foundation; version 2.
 -- This software is distributed in the hope that it will be useful, but WITH
 -- OUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
 -- or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
