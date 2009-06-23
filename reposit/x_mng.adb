@@ -25,7 +25,7 @@ package body X_Mng is
 
   -- GNAT GPL2008 erroneously complains that this is a 8-bits Ada Boolean
   --  and that char should be used instead in C
-  pragma Warnings (Off, Bool_For_C);
+  -- pragma Warnings (Off, Bool_For_C);
 
 
   function For_C(Ada_Boolean : in Boolean) return Bool_For_C is

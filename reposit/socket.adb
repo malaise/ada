@@ -36,7 +36,7 @@ package body Socket is
 
   -- GNAT GPL2008 erroneously complains that this is a 8-bits Ada Boolean
   --  and that char should be used instead in C
-  pragma Warnings (Off, Boolean_For_C);
+  -- pragma Warnings (Off, Boolean_For_C);
 
 
   type Word is new Integer range 0 .. Integer(Port_Num'Last);
@@ -308,8 +308,8 @@ package body Socket is
                      Set_For_Reply : in Boolean := False;
                      Set_Ipm_Iface : in Boolean := False) is
     Len : Natural;
-    Sfr_For_C : Boolean_For_C := Boolean_For_C(Set_For_Reply);
-    Sif_For_C : Boolean_For_C := Boolean_For_C(Set_Ipm_Iface);
+    Sfr_For_C : constant Boolean_For_C := Boolean_For_C(Set_For_Reply);
+    Sif_For_C : constant Boolean_For_C := Boolean_For_C(Set_Ipm_Iface);
   begin
     if Message_Size = 0 then
       -- Size not provided at instantiation, guess it from
