@@ -2,7 +2,7 @@ with Unlimited_Pool, Mutex_Manager;
 package body Init_Manager is
 
   -- The mutex to protect pool and handler
-  Mutex : Mutex_Manager.Mutex(Mutex_Manager.Simple);
+  Mutex : Mutex_Manager.Simple_Mutex;
 
   -- The pool of pending events: Fifo
   package Event_Pool_Mng is new Unlimited_Pool (Event_Type, Lifo => False);

@@ -8,7 +8,7 @@ procedure T_Mut is
 
   procedure Exec (Mut_Kind : Mutex_Manager.Mutex_Kind;
                   Max_Task : in Positive) is
-    Crit_Lock : Mutex_Manager.Mutex (Mut_Kind);
+    Crit_Lock : Mutex_Manager.Mutex (Mut_Kind, False);
 
     subtype Range_Task is Positive range 1 .. Max_Task;
 
@@ -28,8 +28,7 @@ procedure T_Mut is
     package body Input is
       In_Get : Boolean := False;
       Current_I : Range_Task;
-      Put_Lock, Get_Lock, Prompt_Lock :
-                   Mutex_Manager.Mutex(Mutex_Manager.Simple);
+      Put_Lock, Get_Lock, Prompt_Lock : Mutex_Manager.Simple_Mutex;
 
       Tab : constant String (1..4) := (others => ' ');
 

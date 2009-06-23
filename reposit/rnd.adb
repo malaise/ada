@@ -11,7 +11,7 @@ package body Rnd is
   pragma Import (C, C_Gettimeofday, "gettimeofday");
 
   -- Protection of critical sections
-  Lock : Mutex_Manager.Mutex(Mutex_Manager.Simple);
+  Lock : Mutex_Manager.Simple_Mutex;
 
   -- Return integer equal or below X
   function To_Int (X : Float) return Long_Long_Integer is

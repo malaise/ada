@@ -50,7 +50,7 @@ private
   type List_Access is access Elt_List_Mng.List_Type;
   type Pool_Type is limited new Ada.Finalization.Limited_Controlled with record
     Next_Key : Key_Access := new Key_Type'(Key_Type'First);
-    Mutex : Mutex_Manager.Mutex (Mutex_Manager.Simple);
+    Mutex : Mutex_Manager.Simple_Mutex;
     List : List_Access := new Elt_List_Mng.List_Type;
   end record;
 

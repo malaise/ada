@@ -1,4 +1,4 @@
-with Ada.Task_Identification, Ada.Finalization;
+with Ada.Task_Identification;
 -- Mutex (single and Read_Write) management
 package Mutex_Manager is
 
@@ -16,7 +16,9 @@ package Mutex_Manager is
   type Access_Kind is (Read, Write);
 
   -- Mutex object, free at creation
-  type Mutex (Kind : Mutex_Kind) is tagged limited private;
+  type Mutex (Kind : Mutex_Kind;
+              Recursive : Boolean) is tagged private;
+  subtype Simple_Mutex is Mutex (Simple, False);
 
   -- Get un mutex.
   -- Simple mutex provides exclusive access (Access_Kind is not significant).
@@ -25,13 +27,15 @@ package Mutex_Manager is
   -- If delay is negative, wait until mutex is got,
   -- If delay is null, try and give up if not free,
   -- If delay is positive, try during the specified delay.
-  -- Raises Already_Got if the current task has already got the RW mutex for
-  --  write (not raised by Simple mutex that will deadlock).
+  -- Raises Already_Got if the mutex is not Recursive and if the current task
+  --  has already got the simple mutex or if it has already got the RW mutex
+  --  for write.
   -- Note that there is no check of "Read then Write" deadlock.
   Already_Got : exception;
   function Get (A_Mutex      : Mutex;
                 Waiting_Time : Duration;
                 Kind         : Access_Kind := Read) return Boolean;
+  function Get (A_Mutex : Mutex) return Boolean;
   -- Get a mutex : infinite wait.
   procedure Get (A_Mutex      : in Mutex;
                  Kind         : in Access_Kind := Read);
@@ -41,8 +45,10 @@ package Mutex_Manager is
   -- Raises Not_Owner if current task doesn't own the simple mutex
   --  or does not own the RW mutex for write (no check when releasing
   --  a RW mutex aquired for read).
+  -- Fully is used to release a recusive mutex acquired several times
   Not_Owner : exception;
-  procedure Release (A_Mutex : in Mutex);
+  procedure Release (A_Mutex : in Mutex;
+                     Fully : in Boolean := False);
 
 
   -- Is current task the owner of a simple mutex
@@ -53,17 +59,18 @@ private
 
   -- Simple mutex
   -- The simple access lock and queue. No time.
-  protected type Mutex_Protect is
+  protected type Mutex_Protect (Recursive : Boolean) is
     entry Mutex_Get;
-    procedure Mutex_Release;
+    procedure Mutex_Release (Full : in Boolean);
     function Mutex_Owns return Boolean;
   private
-    -- Status of the mutex
-    Free : Boolean := True;
     -- Owner of the mutex
     Owner : Ada.Task_Identification.Task_Id;
-    -- Number of times it has got the lock
+    -- Number of times it has got the lock, 0 <=> free
     Count : Natural := 0;
+
+    -- The queue for waiting
+    entry Waiting_Queue;
   end Mutex_Protect;
 
   type Mutex_Access is access Mutex_Protect;
@@ -90,25 +97,23 @@ private
   type Queue_Range is mod 2;
 
   -- The read/write access lock and queues. No time.
-  protected type Rw_Mutex_Protect is
+  protected type Rw_Mutex_Protect (Recursive : Boolean) is
 
     -- Gets the lock. Blocking.
     entry Mutex_Get (Kind : in Access_Kind);
 
-    -- Releases the lock
-    procedure Mutex_Release;
+    -- Releases the lock (Full is not significant for a reader).
+    procedure Mutex_Release (Full : in Boolean);
 
     -- Is current task write owner of the lock
     function Mutex_Owns return Boolean;
   private
     -- Number of readers
     Readers : Natural := 0;
-    -- Is there a writer
-    Writer  : Boolean := False;
     -- Writer identification
     Owner : Ada.Task_Identification.Task_Id;
     -- Numer of times it has got the write lock
-    Count : Natural := 0;
+    Writer : Natural := 0;
 
     -- Two queues, one is active at a time
     entry Queues (Queue_Range) (Kind : in Access_Kind);
@@ -134,26 +139,24 @@ private
   --  prio they have
 
   -- The write/read access lock and queues. No time.
-  protected type Wr_Mutex_Protect is
+  protected type Wr_Mutex_Protect (Recursive : Boolean) is
 
     -- Gets the lock. Blocking.
     entry Mutex_Get (Kind : in Access_Kind);
 
     -- Releases the lock. No Check of kind but the lock must have been
-    -- got.
-    procedure Mutex_Release;
+    -- got. (Full is not significant for a reader).
+    procedure Mutex_Release (Full : in Boolean);
 
     -- Is current task write owner of the lock
     function Mutex_Owns return Boolean;
   private
     -- Number of readers reading
     Readers : Natural := 0;
-    -- Is there a writer writing
-    Writer  : Boolean := False;
     -- Writer identification
     Owner : Ada.Task_Identification.Task_Id;
     -- Numer of times it has got the write lock
-    Count : Natural := 0;
+    Writer : Natural := 0;
 
     -- The queues
     entry Reading_Queue;
@@ -166,19 +169,17 @@ private
   --------------------------------------------------------------------------
 
   -- The general purpose mutex
-  type Mutex (Kind : Mutex_Kind) is
-  new Ada.Finalization.Limited_Controlled with record
+  type Mutex (Kind : Mutex_Kind;
+              Recursive : Boolean) is tagged record
     case Kind is
       when Simple =>
-        Mutex_Pointer : Mutex_Access := new Mutex_Protect;
+        Mutex_Pointer : Mutex_Access := new Mutex_Protect (Recursive);
       when Read_Write =>
-        Rw_Mutex_Pointer : Rw_Mutex_Access := new Rw_Mutex_Protect;
+        Rw_Mutex_Pointer : Rw_Mutex_Access := new Rw_Mutex_Protect (Recursive);
       when Write_Read =>
-        Wr_Mutex_Pointer : Wr_Mutex_Access := new Wr_Mutex_Protect;
+        Wr_Mutex_Pointer : Wr_Mutex_Access := new Wr_Mutex_Protect (Recursive);
     end case;
   end record;
-
-  overriding procedure Finalize (A_Mutex : in out Mutex);
 
 end Mutex_Manager;
 

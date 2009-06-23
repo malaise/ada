@@ -1,8 +1,8 @@
 with Ada.Text_Io;
-with Recursive_Mutex, Mixed_Str;
+with Mutex_Manager, Mixed_Str;
 procedure T_Recursive_Mutex is
 
-  M : Recursive_Mutex.Mutex;
+  M : Mutex_Manager.Mutex (Mutex_Manager.Simple, Recursive => True);
   B : Boolean;
 
   task T is
@@ -46,7 +46,7 @@ begin
 
   -- Release fully mutex (task takes it)
   Ada.Text_Io.Put_Line ("Releasing fully mutex");
-  M.Release_Full;
+  M.Release(Fully => True);
 
   -- Get mutex => Ko, Ko... Ok
   loop

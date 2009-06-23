@@ -5,7 +5,7 @@ procedure T_Read_Write is
   pragma Priority(10);
 
   Lock : access Mutex_Manager.Mutex;
-  Io_Lock : Mutex_Manager.Mutex(Mutex_Manager.Simple);
+  Io_Lock : Mutex_Manager.Simple_Mutex;
 
   subtype Range_Task is Positive range 1 .. 10;
 
@@ -97,9 +97,9 @@ begin
   end if;
   if Argument.Get_Nbre_Arg = 0
   or else Argument.Get_Parameter = "rw" then
-    Lock := new Mutex_Manager.Mutex (Mutex_Manager.Read_Write);
+    Lock := new Mutex_Manager.Mutex (Mutex_Manager.Read_Write, False);
   elsif Argument.Get_Parameter = "wr" then
-    Lock := new Mutex_Manager.Mutex (Mutex_Manager.Write_Read);
+    Lock := new Mutex_Manager.Mutex (Mutex_Manager.Write_Read, False);
   else
     Error ("unexpected argument " & Argument.Get_Parameter);
     return;

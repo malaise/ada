@@ -3,7 +3,7 @@ package body Control_Pool is
 
   -- The global mutex protecting the pool
   -------------------
-  Global_Mutex : Mutex_Manager.Mutex(Mutex_Manager.Simple);
+  Global_Mutex : Mutex_Manager.Simple_Mutex;
 
 
   -- Pool of used mutexes
@@ -46,7 +46,7 @@ package body Control_Pool is
     if not Free_Mutex_Pool.Is_Empty (Free_Mutexes) then
       Free_Mutex_Pool.Pop (Free_Mutexes, Mut_Acc);
     else
-      Mut_Acc := new Mutex_Manager.Mutex(Mutex_Manager.Simple);
+      Mut_Acc := new Mutex_Manager.Simple_Mutex;
     end if;
     return Mut_Acc;
   end Get_Mutex;
