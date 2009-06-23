@@ -1,5 +1,6 @@
-with System, Ada.Calendar, Ada.Text_Io;
-with Null_Procedure, Dynamic_List, Timers, Environ, Timeval, Perpet;
+with System, Ada.Text_Io;
+with Null_Procedure, Dynamic_List, Environ, Timeval, Perpet,
+     Virtual_Time;
 package body Event_Mng is
 
   -------------
@@ -17,13 +18,7 @@ package body Event_Mng is
 
   -- GNAT GPL2008 erroneously complains that this is a 8-bits Ada Boolean
   --  and that char should be used instead in C
-  pragma Warnings (Off, Bool_For_C);
-
-
-  function For_C(Ada_Boolean : in Boolean) return Bool_For_C is
-  begin
-    return Bool_For_C'Val(Boolean'Pos(Ada_Boolean));
-  end For_C;
+  -- pragma Warnings (Off, Bool_For_C);
 
   function For_Ada(C_Boolean : in Bool_For_C) return Boolean is
   begin
@@ -90,9 +85,10 @@ package body Event_Mng is
     Cb_Searched.Fd := Fd;
     Cb_Searched.Read := Read;
     Cb_Searched.Cb := null;
-    Cb_Search (Cb_List, Found, Cb_Searched, Cb_Mng.Prev, From => Cb_Mng.Absolute);
+    Cb_Search (Cb_List, Found, Cb_Searched, Cb_Mng.Prev,
+               From => Cb_Mng.Absolute);
     if Found then
-      raise Event_Failure;
+      raise Fd_Cb_Error;
     end if;
 
     -- Append
@@ -103,7 +99,7 @@ package body Event_Mng is
     -- Add fd to select
     Res := C_Add_Fd (Integer(Fd), Bool_For_C(Read)) = Ok;
     if not Res then
-      raise Event_Failure;
+      raise Fd_Cb_Error;
     end if;
     if Debug then
       Ada.Text_Io.Put_Line ("Event_Mng.Add_Fd_Callback "
@@ -111,7 +107,7 @@ package body Event_Mng is
     end if;
   exception
     when others =>
-      raise Event_Failure;
+      raise Fd_Cb_Error;
   end Add_Fd_Callback;
 
   procedure Del_Fd_Callback (Fd : in File_Desc; Read : in Boolean) is
@@ -124,14 +120,15 @@ package body Event_Mng is
     Cb_Searched.Fd := Fd;
     Cb_Searched.Read := Read;
     Cb_Searched.Cb := null;
-    Cb_Search (Cb_List, Res2, Cb_Searched, Cb_Mng.Prev, From => Cb_Mng.Absolute);
+    Cb_Search (Cb_List, Res2, Cb_Searched, Cb_Mng.Prev,
+               From => Cb_Mng.Absolute);
     if not Res2 then
-      raise Event_Failure;
+      raise Fd_Cb_Error;
     end if;
     Cb_Mng.Delete (Cb_List, Done => Res2);
 
     if not Res1 then
-      raise Event_Failure;
+      raise Fd_Cb_Error;
     end if;
 
     if Debug then
@@ -277,38 +274,44 @@ package body Event_Mng is
     Fd    : Integer;
     Read  : Bool_For_C;
     Final_Exp, Next_Exp : Timers.Expiration_Rec;
-    Now : Ada.Calendar.Time;
+    Now : Virtual_Time.Time;
     Timeout : Timeval.C_Timeout_T;
     C_Res : Result;
     Handle_Res : Out_Event_List;
-    use type Ada.Calendar.Time, Timers.Expiration_Rec, Perpet.Delta_Rec;
+    use type Virtual_Time.Clock_Access,
+             Virtual_Time.Time, Virtual_Time.Speed_Range,
+             Timers.Expiration_Rec, Perpet.Delta_Rec;
   begin
     Set_Debug;
-    -- Compute final expiration
+    if Delay_Spec.Clock /= null then
+      raise Invalid_Delay;
+    end if;
+    -- Compute final expiration in virtual time
+    Now := Virtual_Time.Current_Time (Delay_Spec.Clock);
     case Delay_Spec.Delay_Kind is
       when Timers.Delay_Sec =>
         if Delay_Spec.Delay_Seconds < 0.0 then
           Final_Exp := (Infinite => True);
         else
           Final_Exp := (Infinite => False,
-                        Time => Ada.Calendar.Clock + Delay_Spec.Delay_Seconds);
+                        Time => Now + Delay_Spec.Delay_Seconds);
         end if;
       when Timers.Delay_Del =>
         Final_Exp := (Infinite => False,
-                      Time => Ada.Calendar.Clock + Delay_Spec.Delay_Delta);
+                      Time => Now + Delay_Spec.Delay_Delta);
       when Timers.Delay_Exp =>
         Final_Exp := (Infinite => False,
                       Time => Delay_Spec.Expiration_Time);
     end case;
 
-
     loop
+
       -- Compute next timeout
       Next_Exp := Timers.Next_Expiration (Final_Exp);
       if Next_Exp = Timers.Infinite_Expiration then
         Timeout := Timeval.Infinite_C_Timeout;
       else
-        Now := Ada.Calendar.Clock;
+        Now := Virtual_Time.Current_Time (Delay_Spec.Clock);
         if Now < Next_Exp.Time then
           Timeout := Timeval.To_C_Timeout (Next_Exp.Time - Now);
         else

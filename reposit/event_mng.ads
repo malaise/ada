@@ -1,4 +1,4 @@
-with Sys_Calls;
+with Sys_Calls, Timers;
 package Event_Mng is
 
   -------------------
@@ -14,9 +14,11 @@ package Event_Mng is
 
   -- Register a callback on a fd for read or write.
   -- The callback will be called (within Wait) with the fd and read
+  -- Raises Fd_Cb_Error if this Fd has already a Callback
   procedure Add_Fd_Callback (Fd : in File_Desc; Read : in Boolean;
                              Callback : in Fd_Callback);
   -- Unregister the callback from a fd in a mode
+  -- Raises Fd_Cb_Error if this Fd has no Callback
   procedure Del_Fd_Callback (Fd : in File_Desc; Read : in Boolean);
   -- Is a callback registered on a fd in a mode
   function Fd_Callback_Set (Fd : in File_Desc; Read : in Boolean)
@@ -66,9 +68,14 @@ package Event_Mng is
   --   or until some fd event and its callback return True,
   --   or until timeout
   -- Any negative timeout means infinite
-  -- The three operation end on event or timeout
-  Infinite_Ms : constant Integer := -1;
+  -- The four operation end on event or timeout
   type Out_Event_List is (Timer_Event, Fd_Event, Signal_Event, No_Event);
+
+  -- This uses virtual time and allows various specifications of delay
+  function Wait (Delay_Spec : Timers.Delay_Rec) return Out_Event_List;
+
+  -- These are in real time and in Milli seconds
+  Infinite_Ms : constant Integer := -1;
   function Wait (Timeout_Ms : Integer) return Out_Event_List;
   function Wait (Timeout_Ms : Integer) return Boolean;
   procedure Wait (Timeout_Ms : Integer);
@@ -105,7 +112,12 @@ package Event_Mng is
   ----------------
   -- Exceptions --
   ----------------
-  Event_Failure : exception;
+  -- When setting a Cb on a fd that has already a Cb
+  -- When deleting a Cb on a fd that has no Cb
+  Fd_Cb_Error : exception;
+
+  -- When Delay_Spec has a clock
+  Invalid_Delay : exception;
 
 end Event_Mng;
 
