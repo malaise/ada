@@ -55,6 +55,9 @@ package body Virtual_Time is
     Vtime : constant Time := Virtual_Time_Of (A_Clock, Rtime);
     A : constant Clock_Def_Access := A_Clock.Clock_Access;
   begin
+    if A.Speed /= 0.0 then
+      raise Vtime_Error;
+    end if;
     A.Refe_Time := Reference_Time;
     A.Virt_Time := Virtual_Time;
     Notify_Observers (A_Clock, Rtime, Vtime, A.Speed);

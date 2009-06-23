@@ -12,7 +12,9 @@ package Virtual_Time is
   -- Use Ada.Calendar.Clock if A_Clock is null
   function Current_Time (A_Clock : Clock_Access) return Time;
 
-  -- Set a new synchro point
+  -- Set a new synchro point.
+  -- The speed of the clock must be 0.0
+  --  otherwise the exception Vtime_Error is raised
   procedure Set_Time (A_Clock : in Clock;
                       Reference_Time : in Time;
                       Virtual_Time : in Time);
