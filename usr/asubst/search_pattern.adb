@@ -672,9 +672,9 @@ package body Search_Pattern is
           Nmatch := 1;
         end if;
       end if;
-      if (Nmatch >= 1
-          and then Match(1).First_Offset <= Match(1).Last_Offset_Stop)
-      or else (Nmatch = 1 and then Str = "") then
+      if Nmatch >= 1
+      and then (Match(1).First_Offset <= Match(1).Last_Offset_Stop
+                or else Str = "") then
         -- Normal match or empty string
         -- Copy the slice of substrings
         Upat_Access.Nb_Substr := Nmatch - 1;

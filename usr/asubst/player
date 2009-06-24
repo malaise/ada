@@ -37,9 +37,6 @@ let L=1
 while true ; do
   # Read line until end of file
   export input=`readarg $L 1`
-  if [ "$input" = "" ] ; then
-    break
-  fi
   if [ "$input" = "Delimiter" ] ; then
     DELIMITER=`readarg $L 2`
   elif [ "$input" = "Options" ] ; then
@@ -50,6 +47,9 @@ while true ; do
     export search=`readarg $L 2`
     export replace=`readarg $L 3`
     export expected=`readarg $L 4`
+    if [ \( -z "$input" \) -a \( -z "$search" \) ] ; then
+      break
+    fi
     rexpected=`echo -e -n "$expected"`
     # Do test and save exit status
     if [ "$opt1" != "" ] ; then
