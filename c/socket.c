@@ -451,7 +451,7 @@ static int set_ipm_if (soc_ptr soc, boolean report_error) {
   /* Set interface for sending multicast */
   ipm_addr.imr_multiaddr.s_addr = soc->send_struct.sin_addr.s_addr;
   ipm_addr.imr_interface.s_addr = soc->ipm_send_if.s_addr;
-  result = setsockopt(soc->socket_id, SOL_SOCKET, IP_MULTICAST_IF,
+  result = setsockopt(soc->socket_id, IPPROTO_IP, IP_MULTICAST_IF,
                  &ipm_addr, sizeof (ipm_addr));
   soc->set_send_if = FALSE;
   if (result == -1) {
