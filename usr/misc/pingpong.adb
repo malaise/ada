@@ -1,13 +1,18 @@
-with Ada.Exceptions, Ada.Calendar, Ada.Text_Io;
-with Argument, Socket, Tcp_Util, Ip_Addr, Event_Mng, Date_Image, String_Mng;
+with Ada.Exceptions, Ada.Calendar;
+with Argument, Socket, Tcp_Util, Ip_Addr, Event_Mng, Date_Image, String_Mng,
+     Basic_Proc;
 procedure Pingpong is
   Arg_Error : exception;
   Soc : Socket.Socket_Dscr;
   Fd  : Event_Mng.File_Desc := 0;
+  Nb_Options : Natural;
+  Iface : Tcp_Util.Remote_Host;
+  Period : Positive;
 
   procedure Put (Message : in String) is
   begin
-    Ada.Text_Io.Put_Line (Date_Image (Ada.Calendar.Clock) & " PingPong -> " & Message);
+    Basic_Proc.Put_Line_Output (Date_Image (Ada.Calendar.Clock)
+                              & " PingPong -> " & Message);
   end Put;
 
   -- Signal callback
@@ -85,13 +90,54 @@ procedure Pingpong is
     My_Send (Soc, Message);
   end Send_Ping;
 
-  Period : Positive := 1;
-
+  use type Tcp_Util.Remote_Host_List;
 begin
-  if Argument.Get_Nbre_Arg = 2 then
-    Period := Positive'Value (Argument.Get_Parameter (2));
-  elsif Argument.Get_Nbre_Arg /= 1 then
+  -- Parse arguments
+  Nb_Options := 0;
+  if Argument.Get_Nbre_Arg = 0
+  or else Argument.Get_Nbre_Arg > 3 then
     raise Arg_Error;
+  end if;
+
+  -- Interface
+  begin
+    Iface := Ip_Addr.Parse (Argument.Get_Parameter (1, "i"));
+    Nb_Options := Nb_Options + 1;
+  exception
+    when Argument.Argument_Not_Found =>
+      Iface := (Kind => Tcp_Util.Host_Id_Spec, Id => Socket.No_Host);
+    when others =>
+      raise Arg_Error;
+  end;
+
+  -- Period
+  begin
+    Period := Positive'Value (Argument.Get_Parameter (1, "p"));
+    Nb_Options := Nb_Options + 1;
+  exception
+    when Argument.Argument_Not_Found =>
+      Period := 1;
+  end;
+
+  -- No other options are supported
+  --  only one extra arg, the address that is parsed here after
+  if Argument.Get_Nbre_Arg /= Nb_Options + 1 then
+    raise Arg_Error;
+  end if;
+
+  -- Set interface from host
+  if Iface.Kind = Tcp_Util.Host_Name_Spec then
+    -- Set host id
+    begin
+      Iface := (
+          Kind => Tcp_Util.Host_Id_Spec,
+          Id => Socket.Host_Id_Of (Tcp_Util.Name_Of (Iface.Name)));
+    exception
+      when Socket.Soc_Name_Not_Found =>
+        Basic_Proc.Put_Line_Error ("Error: Unknown interface name "
+                                 & Tcp_Util.Name_Of (Iface.Name));
+      raise;
+    end;
   end if;
 
   -- Create socket, add callback
@@ -102,18 +148,25 @@ begin
 
   -- Ipm address and port
   declare
-    Addr : constant String := Argument.Get_Parameter (1);
+    Addr : constant String := Argument.Get_Parameter (Param_Key => Argument.Not_Key);
     Index : constant Natural := String_Mng.Locate (Addr, ":");
     Lan : constant Tcp_Util.Remote_Host
         := Ip_Addr.Parse (Addr(1 .. Index - 1));
     Port : constant Tcp_Util.Remote_Port
            := Ip_Addr.Parse (Addr(Index + 1 .. Addr'Last));
-    use type Tcp_Util.Remote_Port_List, Tcp_Util.Remote_Host_List;
+    use type Tcp_Util.Remote_Port_List, Socket.Host_Id;
   begin
     if Lan.Kind /= Tcp_Util.Host_Id_Spec
     or else Port.Kind /= Tcp_Util.Port_Num_Spec then
       raise Ip_Addr.Parse_Error;
     end if;
+
+    -- Set interface
+    if Iface.Id /= Socket.No_Host then
+      Socket.Set_Reception_Ipm_Interface (Soc, Iface.Id);
+      Socket.Set_Sending_Ipm_Interface (Soc, Iface.Id);
+    end if;
+    -- Set dist and bind
     Socket.Set_Destination_Host_And_Port (Soc, Lan.Id, Port.Num);
     Socket.Link_Port (Soc, Port.Num);
   end;
@@ -136,6 +189,6 @@ exception
   when Error:others =>
     Put ("Exception: " & Ada.Exceptions.Exception_Name (Error) & " raised");
     Put ("Invalid arguments. Usage: " & Argument.Get_Program_Name
-     & " <ipm_addr>:<port_num> [ <period_sec> ] ");
+     & " <ipm_addr>:<port_num> [ -i<interface> ] [ -p<period_sec> ] ");
 end Pingpong;
 
