@@ -148,17 +148,29 @@ begin
 
   -- Ipm address and port
   declare
-    Addr : constant String := Argument.Get_Parameter (Param_Key => Argument.Not_Key);
+    Addr : constant String
+         := Argument.Get_Parameter (Param_Key => Argument.Not_Key);
     Index : constant Natural := String_Mng.Locate (Addr, ":");
     Lan : constant Tcp_Util.Remote_Host
         := Ip_Addr.Parse (Addr(1 .. Index - 1));
     Port : constant Tcp_Util.Remote_Port
            := Ip_Addr.Parse (Addr(Index + 1 .. Addr'Last));
+    Port_Num : Socket.Port_Num;
     use type Tcp_Util.Remote_Port_List, Socket.Host_Id;
   begin
-    if Lan.Kind /= Tcp_Util.Host_Id_Spec
-    or else Port.Kind /= Tcp_Util.Port_Num_Spec then
-      raise Ip_Addr.Parse_Error;
+    -- Compute port num
+    if Port.Kind /= Tcp_Util.Port_Num_Spec then
+      begin
+        Port_Num := Socket.Port_Num_Of (Tcp_Util.Name_Of (Port.Name),
+                                        Socket.Udp);
+      exception
+        when Socket.Soc_Name_Not_Found =>
+          Basic_Proc.Put_Line_Error ("Error: Unknown port name "
+                                 & Tcp_Util.Name_Of (Port.Name));
+          raise;
+      end;
+    else
+      Port_Num := Port.Num;
     end if;
 
     -- Set interface
@@ -166,9 +178,22 @@ begin
       Socket.Set_Reception_Ipm_Interface (Soc, Iface.Id);
       Socket.Set_Sending_Ipm_Interface (Soc, Iface.Id);
     end if;
+
     -- Set dist and bind
-    Socket.Set_Destination_Host_And_Port (Soc, Lan.Id, Port.Num);
-    Socket.Link_Port (Soc, Port.Num);
+    if Lan.Kind = Tcp_Util.Host_Name_Spec then
+      begin
+        Socket.Set_Destination_Name_And_Port (Soc, True,
+                 Tcp_Util.Name_Of (Lan.Name), Port_Num);
+      exception
+        when Socket.Soc_Name_Not_Found =>
+          Basic_Proc.Put_Line_Error ("Error: Unknown LAN name "
+                                   & Tcp_Util.Name_Of (Lan.Name));
+          raise;
+      end;
+    else
+      Socket.Set_Destination_Host_And_Port (Soc, Lan.Id, Port_Num);
+    end if;
+    Socket.Link_Port (Soc, Port_Num);
   end;
   Put ("Initialized on " & Local_Host_Name);
 
