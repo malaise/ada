@@ -8,6 +8,7 @@ procedure Pingpong is
   Nb_Options : Natural;
   Iface : Tcp_Util.Remote_Host;
   Period : Positive;
+  Send_Mode, Receive_Mode : Boolean;
 
   procedure Put (Message : in String) is
   begin
@@ -74,10 +75,12 @@ procedure Pingpong is
       -- No answer to Pong
       return False;
     end if;
-    -- Answer to Ping
-    Message.Kind := Pong;
-    Fill_Host (Message);
-    My_Send (Soc, Message);
+    if Send_Mode then
+      -- Answer to Ping if not only receive_mode
+      Message.Kind := Pong;
+      Fill_Host (Message);
+      My_Send (Soc, Message);
+    end if;
     return False;
   end Call_Back;
 
@@ -94,10 +97,6 @@ procedure Pingpong is
 begin
   -- Parse arguments
   Nb_Options := 0;
-  if Argument.Get_Nbre_Arg = 0
-  or else Argument.Get_Nbre_Arg > 3 then
-    raise Arg_Error;
-  end if;
 
   -- Interface
   begin
@@ -118,6 +117,30 @@ begin
     when Argument.Argument_Not_Found =>
       Period := 1;
   end;
+
+  -- Mode
+  Send_Mode := True;
+  Receive_Mode := True;
+  if Argument.Is_Set (1, "s") then
+   if Argument.Get_Parameter (1, "s") /= "" then
+     raise Arg_Error;
+   end if;
+   -- Only send
+   Receive_Mode := False;
+   Nb_Options := Nb_Options + 1;
+  end if;
+  if Argument.Is_Set (1, "r") then
+   if Argument.Get_Parameter (1, "r") /= "" then
+     raise Arg_Error;
+   end if;
+   if Argument.Is_Set (1, "s") then
+     -- Not both
+     raise Arg_Error;
+   end if;
+   -- Only receive
+   Send_Mode := False;
+   Nb_Options := Nb_Options + 1;
+  end if;
 
   -- No other options are supported
   --  only one extra arg, the address that is parsed here after
@@ -175,11 +198,15 @@ begin
 
     -- Set interface
     if Iface.Id /= Socket.No_Host then
-      Socket.Set_Reception_Ipm_Interface (Soc, Iface.Id);
-      Socket.Set_Sending_Ipm_Interface (Soc, Iface.Id);
+      if Send_Mode then
+        Socket.Set_Sending_Ipm_Interface (Soc, Iface.Id);
+      end if;
+      if Receive_Mode then
+        Socket.Set_Reception_Ipm_Interface (Soc, Iface.Id);
+      end if;
     end if;
 
-    -- Set dist and bind
+    -- Always set dist
     if Lan.Kind = Tcp_Util.Host_Name_Spec then
       begin
         Socket.Set_Destination_Name_And_Port (Soc, True,
@@ -193,13 +220,18 @@ begin
     else
       Socket.Set_Destination_Host_And_Port (Soc, Lan.Id, Port_Num);
     end if;
-    Socket.Link_Port (Soc, Port_Num);
+    -- Bind if reeive
+    if Receive_Mode then
+      Socket.Link_Port (Soc, Port_Num);
+    end if;
   end;
   Put ("Initialized on " & Local_Host_Name);
 
   -- Main loop
   loop
-    Send_Ping;
+    if Send_Mode then
+      Send_Ping;
+    end if;
     exit when Event_Mng.Wait (Period * 1_000);
   end loop;
 
@@ -209,11 +241,10 @@ begin
     Socket.Close (Soc);
   end if;
 
-
 exception
   when Error:others =>
     Put ("Exception: " & Ada.Exceptions.Exception_Name (Error) & " raised");
     Put ("Invalid arguments. Usage: " & Argument.Get_Program_Name
-     & " <ipm_addr>:<port_num> [ -i<interface> ] [ -p<period_sec> ] ");
+  & " <ipm_addr>:<port_num> [ -i<interface> ] [ -p<period_sec> ] [ -s | -r ]");
 end Pingpong;
 
