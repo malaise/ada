@@ -1,5 +1,8 @@
 History of Asubst:
 ------------------
+24/06/2009 V7.13
+Fix: "" was not matching "(.?)"
+
 28/05/2009 V7.12
 Fix: Allow '^' and '$' within multiple regex (e.g. 'toto(/|$)\n').
 Fix: Don't flush remaining (non matching) line in grep mode.
