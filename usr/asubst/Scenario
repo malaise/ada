@@ -49,6 +49,7 @@
 "btotob"               "(a?)(b?)toto(b?)"             "\i11Err\i12\a13Ok\eErr\f"  "Ok"
 "btoto"                "(a?)(b?)toto(b?)"             "\i11Err\i12\a13Ok\eErr\f"  "Err"
 "btoto"                "(a?)(b?)toto(b?)"             "\i11Err\i12\o13Ok\eErr\f"  "Ok"
+"tototititutu"         "(to)|(ti)|(tu)"               "\i11OT\i12IT\eUT\f"        "OTOTITITUTUT"
 "toto\ntoto"           "\x0A"                         ""                          "totototo"
 "toto\ntoto\n"         "toto\n"                       ""                          ""
 "toto\ntiti"           "\n"                           ""                          "tototiti"
