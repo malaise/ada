@@ -630,13 +630,9 @@ package body Util is
         Asu.Replace_Slice (Result, Istart, Istop, Asu_Ts (Val));
         -- Istart is now the first replaced character. OK.
         -- Update Last
-        if Starter = Param_Ref then
-          -- "%Name;" has been replaced by "Val"
-          Last := Last - Asu.Length (Name) - 2 + Asu.Length (Val);
-        else
-          -- "&#Name;" has been replaced by "Val"
-          Last := Last - Asu.Length (Name) - 3 + Asu.Length (Val);
-        end if;
+        -- "%Name;" has been replaced by "Val"
+        -- "&Name;" has been replaced by "Val" (Name constains '#')
+        Last := Last - Asu.Length (Name) - 2 + Asu.Length (Val);
       end if;
 
     end loop;
