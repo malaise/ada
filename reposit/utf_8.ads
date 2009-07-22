@@ -26,7 +26,7 @@ package Utf_8 is
   procedure Check_Safe (Seq : in Sequence);
 
 
-  -- Decodes a Utf-8 sequence to Unicode. May raise Invalid_Utf_8_Sequence
+  -- Decodes a Utf-8 sequence to Unicode. May raise Invalid_Sequence
   function Decode (Seq : Sequence) return Unicode_Number;
   -- Encodes a Unicode as a Utf-8 sequence
   function Encode (Unicode : Unicode_Number) return Sequence;
@@ -37,7 +37,7 @@ package Utf_8 is
   Not_Wide_Character : exception;
 
   -- Decodes a Utf-8 sequence to Wide_Character.
-  -- May raise Invalid_Utf_8_Sequence or Not_Wide_Character
+  -- May raise Invalid_Sequence or Not_Wide_Character
   function Decode (Seq : Sequence) return Wide_Character;
   -- Encodes a Unicode as a Utf-8 sequence
   function Encode (Wide_Char : Wide_Character) return Sequence;
