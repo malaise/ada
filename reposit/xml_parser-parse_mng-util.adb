@@ -535,7 +535,11 @@ package body Util is
         -- Useless because Error already raises it
         --  but gnat complains :-(
         raise Parse_Error;
+      when Entity_Mng.Invalid_Char_Code =>
+        Error (Ctx.Flow, "Invalid Char code " & Name);
+        raise Parse_Error;
     end Variable_Of;
+
   begin
     Check_Cdata (Text);
     if not In_Dtd then
@@ -641,7 +645,8 @@ package body Util is
   exception
     when Entity_Mng.Entity_Not_Found =>
       Error (Ctx.Flow, "Unknown entity " & Asu_Ts (Name));
-      raise Parse_Error;
+    when Entity_Mng.Invalid_Char_Code =>
+      Error (Ctx.Flow, "Invalid Char code " & Asu_Ts (Name));
   end Expand_Vars;
 
 

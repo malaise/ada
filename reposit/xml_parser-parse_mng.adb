@@ -11,17 +11,18 @@ package body Parse_Mng  is
     -- Store an entity
     procedure Add (The_Entities : in out Entity_List_Mng.List_Type;
                    Name, Value : in Asu_Us; Parameter : in Boolean);
-    -- Check if an entity exists
+    -- Check if an entity exists. May raise Invalid_Char_Code
     procedure Exists (The_Entities : in out Entity_List_Mng.List_Type;
                       Name : in Asu_Us; Parameter : in Boolean;
                       Found : out Boolean);
     -- Get value of an entity. Raises Entity_Not_Found if none
+    -- May raise Invalid_Char_Code
     procedure Get (The_Entities : in out Entity_List_Mng.List_Type;
                    Name : in Asu_Us; Parameter : in Boolean;
                    Got : out Asu_Us);
+    Invalid_Char_Code : exception;
     Entity_Not_Found : exception;
   end Entity_Mng;
-  package body Entity_Mng is separate;
 
   -- Parsing utilities
   package Util is
@@ -149,6 +150,8 @@ package body Parse_Mng  is
     -- Check for <![CDATA[ in the next N+9 chars of Flow, raises Cdata_Detected
     procedure Check_Cdata (Flow : in out Flow_Type; N : Natural := 0);
   end Util;
+
+  package body Entity_Mng is separate;
   package body Util is separate;
 
   -- Parse a directive <! >
@@ -354,6 +357,10 @@ package body Parse_Mng  is
       or else not Util.Is_Letter (Asu.Element (Attribute_Value, 1))
       or else Asu.Index (Attribute_Value, ":") /= 0 then
         Util.Error (Ctx.Flow, "Invalid encoding name");
+      end if;
+      -- Check this is "UTF-8"
+      if Asu_Ts (Attribute_Value) /= "UTF-8" then
+        Util.Error (Ctx.Flow, "Unsupported encoding (only UTF-8 is supported)");
       end if;
       Next_Index := Attribute_Index + 1;
     end if;

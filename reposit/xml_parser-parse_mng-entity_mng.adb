@@ -57,7 +57,7 @@ package body Entity_Mng is
   exception
     when others =>
       Trace ("Invalid char code " & Code);
-      raise Constraint_Error;
+      raise Invalid_Char_Code;
   end Code_Of;
 
   -- Initialise with default entities
@@ -66,11 +66,11 @@ package body Entity_Mng is
     -- Reset all entities
     Entity_List_Mng.Delete_List (The_Entities);
     -- Load predefined entities
-    Store (The_Entities, Asu_Tus ("amp"),   Asu_Tus ("&"), False, False);
-    Store (The_Entities, Asu_Tus ("lt"),    Asu_Tus ("<"), False, False);
-    Store (The_Entities, Asu_Tus ("gt"),    Asu_Tus (">"), False, False);
-    Store (The_Entities, Asu_Tus ("quot"),  Asu_Tus (""""), False, False);
-    Store (The_Entities, Asu_Tus ("aquot"), Asu_Tus ("'"), False, False);
+    Store (The_Entities, Asu_Tus ("amp"),  Asu_Tus ("&"), False, False);
+    Store (The_Entities, Asu_Tus ("lt"),   Asu_Tus ("<"), False, False);
+    Store (The_Entities, Asu_Tus ("gt"),   Asu_Tus (">"), False, False);
+    Store (The_Entities, Asu_Tus ("quot"), Asu_Tus (""""), False, False);
+    Store (The_Entities, Asu_Tus ("apos"), Asu_Tus ("'"), False, False);
   end Initialise;
 
   -- Store an entity
