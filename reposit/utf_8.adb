@@ -47,6 +47,9 @@ package body Utf_8 is
       end if;
     end loop;
     return True;
+  exception
+    when Invalid_Sequence =>
+      return False;
   end Is_Valid;
 
   -- Checks that a Utf-8 sequence is valid, raise Invalid_Sequence if not
