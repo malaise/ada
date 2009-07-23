@@ -33,30 +33,31 @@ begin
 
   Rnd.Randomize;
   loop
-    loop
+    begin
       U1 := Rnd.Int_Random (Utf_16.Unicode_Number'First,
                             Utf_16.Unicode_Number'Last);
-      -- Some Unicode non-characters are excluded
-      exit when U1 < 16#D800# or else U1 > 16#DFFF#;
-    end loop;
-    Put (U1);
-    Ada.Text_Io.Put (" -> ");
-    declare
-      Str : constant Utf_16.Sequence := Utf_16.Encode (U1);
-    begin
-      for I in Str'Range loop
-        Put (Wide_Character'Pos (Str(I)));
-      end loop;
-      Ada.Text_Io.Put (" -> ");
+      declare
+        Str : constant Utf_16.Sequence := Utf_16.Encode (U1);
+      begin
+        Put (U1);
+        Ada.Text_Io.Put (" -> ");
+        for I in Str'Range loop
+          Put (Wide_Character'Pos (Str(I)));
+        end loop;
+        Ada.Text_Io.Put (" -> ");
 
-      U2 := Utf_16.Decode (Str);
-      Put (U2);
-      if U1 /= U2 then
-        Ada.Text_Io.Put_Line (" Bug");
-        exit;
-      else
-        Ada.Text_Io.Put_Line (" OK");
-      end if;
+        U2 := Utf_16.Decode (Str);
+        Put (U2);
+        if U1 /= U2 then
+          Ada.Text_Io.Put_Line (" Bug");
+          exit;
+        else
+          Ada.Text_Io.Put_Line (" OK");
+        end if;
+      end;
+    exception
+      when Utf_16.Excluded_Non_Character =>
+        null;
     end;
   end loop;
 
