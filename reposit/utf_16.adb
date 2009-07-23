@@ -79,6 +79,9 @@ package body Utf_16 is
   begin
     if Unicode < 16#10000# then
       -- One word
+      if 16#D800# <= Unicode and then Unicode <= 16#DFFF# then
+        raise Excluded_Non_Character;
+      end if;
       return "" & Wide_Character'Val (Unicode);
     end if;
     Val := Unicode - 16#10000#;

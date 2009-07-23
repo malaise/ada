@@ -22,6 +22,8 @@ package Utf_16 is
   -- Checks that a Utf-16 sequence is valid, raise Invalid_Sequence if not
   procedure Check_Valid (Seq : in Sequence);
 
+  -- Raised when encoding excluded non-character Unicode (U+D800 .. U+DFFF)
+  Excluded_Non_Character : exception;
 
   -- Decodes a Utf-16 sequence to Unicode. May raise Invalid_Sequence
   function Decode (Seq : Sequence) return Unicode_Number;
