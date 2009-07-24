@@ -31,7 +31,7 @@ procedure T_Utf is
     end if;
   end Get_Value;
 
-  procedure Put (Str : in String) renames Basic_Proc.Put_Output;    
+  procedure Put (Str : in String) renames Basic_Proc.Put_Output;
   procedure Put (N : in Natural; Width : in Positive) is
     Str : String (1 .. 10);
     Res : String (1 .. Width) := (others => '0');
@@ -80,7 +80,7 @@ begin
     elsif Argument.Get_Parameter (1) = "-utf8" then
       -- Up to 4 Utf8 codes
       Mode := Utf8;
-      if Nb_Arg < 2 or else Nb_Arg > Utf_8.Max_Chars then
+      if Nb_Arg < 2 or else Nb_Arg  - 1 > Utf_8.Max_Chars then
         raise Constraint_Error;
       end if;
       Nb_Codes := Nb_Arg - 1;
@@ -93,7 +93,7 @@ begin
     elsif Argument.Get_Parameter (1) = "-utf16" then
       -- One or 2 Utf16 codes
       Mode := Utf16;
-      if Nb_Arg < 2 or else Nb_Arg > Utf_16.Max_Chars then
+      if Nb_Arg < 2 or else Nb_Arg  - 1 > Utf_16.Max_Chars then
         raise Constraint_Error;
       end if;
       Nb_Codes := Nb_Arg - 1;
@@ -110,71 +110,72 @@ begin
     when others =>
       Error ("Invalid argument");
   end;
-  
-  if Mode = Unicode then
-    Put ("U+");
-    Put (Unicode_Val, 6);
-    Put (" -> ");
-    begin
-      declare
-        Str16 : constant Utf_16.Sequence := Utf_16.Encode (Unicode_Val);
-      begin
-        Put (Wide_Character'Pos (Str16(1)), 4);
-        Put (" ");
-        if Str16'Length = 2 then
-          Put (Wide_Character'Pos (Str16(2)), 4);
-        else
-          Put ("    ");
-        end if;
-      end;
-    exception
-      when Utf_16.Excluded_Non_Character =>
-        Put ("Excluded ");
-    end;
-    Put (" : ");
 
-    declare
-      Str8 : constant Utf_8.Sequence := Utf_8.Encode (Unicode_Val);
-    begin
-      for I in Str8'Range loop
-        Put (Character'Pos (Str8(I)), 2);
-        Put (" ");
-      end loop;
-      Put (": " & Str8);
-    end;
-  elsif Mode = Utf8 then
+  -- Convert Utf to Unicode
+  if Mode = Utf8 then
     declare
       Seq : Utf_8.Sequence (1 .. Nb_Codes);
     begin
-      for I in 1 .. Nb_Codes loop
+      for I in 1 ..  Nb_Codes loop
         Seq(I) := Character'Val (Codes(I));
-        Put (Codes(I), 2);
-        Put (" ");
       end loop;
-      Put ("-> U+");
       Unicode_Val := Utf_8.Decode (Seq);
-      Put (Unicode_Val, 6);
     exception
       when Utf_8.Invalid_Sequence =>
-        Put ("Invalid sequence");
+        Basic_Proc.Put_Line_Output ("Invalid sequence");
+        return;
     end;
-  else
+  elsif Mode = Utf16 then
     declare
       Seq : Utf_16.Sequence (1 .. Nb_Codes);
     begin
       for I in 1 .. Nb_Codes loop
         Seq(I) := Wide_Character'Val (Codes(I));
-        Put (Codes(I), 4);
-        Put (" ");
       end loop;
-      Put ("-> U+");
       Unicode_Val := Utf_16.Decode (Seq);
-      Put (Unicode_Val, 6);
     exception
       when Utf_16.Invalid_Sequence =>
-        Put ("Invalid sequence");
+        Basic_Proc.Put_Line_Output ("Invalid sequence");
+        return;
     end;
   end if;
+
+  -- Put unicode and conversion in Utf-16 and Utf-8
+  --  and corresponding Char (Utf-8)
+  Put ("U+");
+  Put (Unicode_Val, 6);
+  Put (" : ");
+  begin
+    declare
+      Str16 : constant Utf_16.Sequence := Utf_16.Encode (Unicode_Val);
+    begin
+      Put (Wide_Character'Pos (Str16(1)), 4);
+      Put (" ");
+      if Str16'Length = 2 then
+        Put (Wide_Character'Pos (Str16(2)), 4);
+      else
+        Put ("    ");
+      end if;
+    end;
+  exception
+    when Utf_16.Excluded_Non_Character =>
+      Put ("Excluded ");
+  end;
+  Put (" : ");
+
+  declare
+    Str8 : constant Utf_8.Sequence := Utf_8.Encode (Unicode_Val);
+  begin
+    for I in 1 .. Utf_8.Max_Chars loop
+      if I <= Str8'Last then
+        Put (Character'Pos (Str8(I)), 2);
+      else
+        Put ("  ");
+      end if;
+      Put (" ");
+    end loop;
+    Put (": " & Str8);
+  end;
   Basic_Proc.New_Line_Output;
 
 exception
