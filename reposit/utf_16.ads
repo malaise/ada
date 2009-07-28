@@ -10,6 +10,9 @@ package Utf_16 is
   -- Unicode: Natural range 0 .. 16#10FFFF#;
   subtype Unicode_Number is Utf_8.Unicode_Number;
 
+  -- All the following operations suppose that the UTF-16 sequence
+  --  is in big endian (UTF-16BE)
+
   -- Raised if incorrect UTF-16 Sequence or incorrect First_Char
   Invalid_Sequence : exception;
 
@@ -40,6 +43,19 @@ package Utf_16 is
   function Decode (Seq : Sequence) return Wide_Character;
   -- Encodes a Unicode as a Utf-16 sequence
   function Encode (Wide_Char : Wide_Character) return Sequence;
+
+
+  -- Swap a sequence BE <-> LE (big endian <-> little endian)
+  procedure Swap (Wide_Char : in out Wide_Character);
+  function Swap (Wide_Char : Wide_Character) return Wide_Character;
+  procedure Swap (Seq : in out Sequence);
+  function Swap (Seq : Sequence) return Sequence;
+
+  -- Split / merge a UTF-16 sequence into a sequence of bytes (chars)
+  function Split (Seq : Sequence) return String;
+  -- The string length must be multiple of 2
+  Odd_Length : exception;
+  function Merge (Str : String) return Sequence;
 
 end Utf_16;
 

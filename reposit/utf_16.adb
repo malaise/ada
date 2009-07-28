@@ -109,5 +109,74 @@ package body Utf_16 is
     return Encode (Wide_Character'Pos (Wide_Char));
   end Encode;
 
+  -- Swap a sequence BE <-> LE (big endian <-> little endian)
+  procedure Swap (Wide_Char : in out Wide_Character) is
+  begin
+    Wide_Char := Swap (Wide_Char);
+  end Swap;
+
+  function Swap (Wide_Char : Wide_Character) return Wide_Character is
+    Val1, Val2 : Integer;
+    use Bit_Ops;
+  begin
+    Val1 := Wide_Character'Pos (Wide_Char);
+    Val2 := Shl (Val1 and 16#00FF#, 8)
+        and Shr (Val1 and 16#FF00#, 8);
+    return Wide_Character'Val (Val2);
+  end Swap;
+
+  procedure Swap (Seq : in out Sequence) is
+  begin
+    for I in Seq'Range loop
+      Swap (Seq(I));
+    end loop;
+  end Swap;
+
+  function Swap (Seq : Sequence) return Sequence is
+    Res : Sequence (1 .. Seq'Length) := Seq;
+  begin
+    Swap (Res);
+    return Res;
+  end Swap;
+
+  -- Split / merge a UTF-16 sequence into a sequence of bytes (chars)
+  function Split (Seq : Sequence) return String is
+    Str : String (1 .. Seq'Length * 2);
+    J : Positive;
+    Val : Integer;
+    use Bit_Ops;
+  begin
+    J := 1;
+    for I in Seq'Range loop
+      Val := Wide_Character'Pos (Seq(I));
+      Str(J + 0) := Character'Val (Shr (Val and 16#FF00#, 8));
+      Str(J + 1) := Character'Val (Val and 16#00FF#);
+      J := J + 2;
+    end loop;
+    return Str;
+  end Split;
+
+  function Merge (Str : String) return Sequence is
+    Res : Sequence (1 .. Str'Length / 2);
+    J : Positive;
+    Val : Integer;
+    use Bit_Ops;
+  begin
+    if Str'Length mod 2 /= 0 then
+      raise Odd_Length;
+    end if;
+    J := 1;
+    for I in Str'Range loop
+      if I mod 2 = 1 then
+        Val := Shl (Character'Pos (Str(I)), 8);
+      else
+        Val := Val or Character'Pos (Str(I));
+        Res (J) := Wide_Character'Val (Val);
+        J := J + 1;
+      end if;
+    end loop;
+    return Res;
+  end Merge;
+
 end Utf_16;
 
