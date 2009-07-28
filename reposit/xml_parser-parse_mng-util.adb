@@ -1,5 +1,90 @@
 separate (Xml_Parser.Parse_Mng)
 package body Util is
+  -- Autodetect ancoding family
+  type Encoding_List is (Ucs4_Be, Ucs4_Le, Ucs4_Unusual,
+                         Utf16_Be, Utf16_Le, Utf8,
+                         Ebcdic, Other);
+  procedure Guess_Encoding (Flow : in out Flow_Type) is
+    Str : String (1 .. 4);
+    C : array (1 .. Str'Length) of Integer;
+    Encoding : Encoding_List;
+    Encod : Encod_List;
+  begin
+    -- Read 4 bytes
+    Get (Flow, Str);
+    for I in Str'Range loop
+      C(I) := Character'Pos (Str(I));
+    end loop;
+    -- If there is a Byte Order Mark then skip it
+    if C = (0, 0, 16#FE#, 16#FF#) then
+      Encoding := Ucs4_Be;
+    elsif C = (16#FF#, 16#FE#, 0, 0) then
+      Encoding := Ucs4_Le;
+    elsif C = (0, 0, 16#FF#, 16#FE#) or else C = (16#FE#, 16#FF#, 0, 0) then
+      Encoding := Ucs4_Unusual;
+    elsif C(1) = 16#FE# and then C(2) = 16#FF#
+    and then (C(3) /= 0 or else C(4) /= 0) then
+      Encoding := Utf16_Be;
+    elsif C(1) = 16#FF# and then C(2) = 16#FE#
+    and then (C(3) /= 0 or else C(4) /= 0) then
+      Encoding := Utf16_Le;
+    elsif C (1 .. 3) = (16#EF#, 16#BB#, 16#BF#) then
+      -- Only 3 bytes of BOM
+      Unget (Flow, 1);
+      Encoding := Utf8;
+    else
+      -- Else restore "<?xml" (4 first bytes of it)
+      Unget (Flow, Str'Length);
+      if  C = (0, 0, 0, 16#3C#) then
+        Encoding := Ucs4_Be;
+      elsif C = (16#3C#, 0, 0, 0) then
+        Encoding := Ucs4_Le;
+      elsif C = (0, 0, 16#3C#, 0) or else C = (0, 16#3C#, 0, 0) then
+        Encoding := Ucs4_Unusual;
+      elsif C = (0, 16#3C#, 0, 16#3F#) then
+        Encoding := Utf16_Be;
+      elsif C = (16#3C#, 0, 16#3F#, 0) then
+        Encoding := Utf16_Le;
+      elsif C = (16#3C#, 16#3F#, 16#78#, 16#6D#) then
+        Encoding := Utf8;
+      elsif C = (16#4C#, 16#6F#, 16#A7#, 16#94#) then
+        Encoding := Ebcdic;
+      else
+        Encoding := Other;
+      end if;
+    end if;
+    -- Check validity of detected encoding
+    if Encoding = Utf16_Be then
+      Encod := Utf16_Be;
+    elsif Encoding = Utf16_Le then
+      Encod := Utf16_Le;
+    elsif Encoding = Utf8 or else Encoding = Other then
+      Encod := Utf8;
+    else
+      Error (Flow, "Unsupported encoding " & Encoding'Img);
+    end if;
+    -- Store for flow
+    case Flow.Kind is
+      when Xml_File =>
+        Flow.Encod_Xml := Encod;
+      when Xml_String =>
+        Flow.Encod_Str := Encod;
+      when Dtd_File =>
+        Flow.Encod_Dtd := Encod;
+    end case;
+  end Guess_Encoding;
+
+  function Get_Encoding (Flow : Flow_Type) return Encod_List is
+  begin
+    case Flow.Kind is
+      when Xml_File =>
+        return Flow.Encod_Xml;
+      when Xml_String =>
+        return Flow.Encod_Str;
+      when Dtd_File =>
+        return Flow.Encod_Dtd;
+    end case;
+  end Get_Encoding;
 
   -- Current line of input
   function Get_Line_No (Flow : Flow_Type) return Natural is
@@ -527,7 +612,8 @@ package body Util is
     function Variable_Of (Name : String) return String is
       Got : Asu_Us;
     begin
-      Entity_Mng.Get (Dtd.Entity_List, Asu_Tus (Name), False, Got);
+      Entity_Mng.Get (Dtd.Entity_List, Asu_Tus (Name), False,
+                      Get_Encoding (Ctx.Flow), Got);
       return Asu_Ts (Got);
     exception
       when Entity_Mng.Entity_Not_Found =>
@@ -628,7 +714,8 @@ package body Util is
             Error (Ctx.Flow, "Unknown entity " & Asu_Ts (Name));
           end if;
         end if;
-        Entity_Mng.Get (Dtd.Entity_List, Name, Starter = Param_Ref, Val);
+        Entity_Mng.Get (Dtd.Entity_List, Name, Starter = Param_Ref,
+                        Get_Encoding (Ctx.Flow), Val);
 
         -- Substitute from start to stop
         Asu.Replace_Slice (Result, Istart, Istop, Asu_Ts (Val));

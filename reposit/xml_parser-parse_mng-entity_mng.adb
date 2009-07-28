@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1;
-with Unique_List, Int_Io, Utf_8;
+with Unique_List, Int_Io, Utf_8, Utf_16;
 separate (Xml_Parser.Parse_Mng)
 -- Entity management
 package body Entity_Mng is
@@ -112,6 +112,7 @@ package body Entity_Mng is
   -- Get value of an entity. Raises Parse_Error if none
   procedure Get (The_Entities : in out Entity_List_Mng.List_Type;
                  Name : in Asu_Us; Parameter : in Boolean;
+                 Encod : in Encod_List;
                  Got : out Asu_Us) is
     Code : Natural;
     Entity : Entity_Type;
@@ -121,7 +122,14 @@ package body Entity_Mng is
     if not Parameter and then Name /= Asu_Null
     and then Asu.Element (Name, 1) = '#' then
       Code := Code_Of (Asu_Ts (Name));
-      Got := Asu_Tus (Utf_8.Encode (Code));
+      case Encod is
+        when Utf8 =>
+          Got := Asu_Tus (Utf_8.Encode (Code));
+        when Utf16_Be =>
+          Got := Asu_Tus (Utf_16.Split (Utf_16.Swap (Utf_16.Encode (Code))));
+        when Utf16_Le =>
+          Got := Asu_Tus (Utf_16.Split (Utf_16.Encode (Code)));
+      end case;
       return;
     end if;
     -- Read entity with the given name

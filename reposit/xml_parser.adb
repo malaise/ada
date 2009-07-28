@@ -3,7 +3,7 @@ with Environ, Basic_Proc, Rnd, Exception_Messenger;
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "2";
+  Minor_Version : constant String := "0";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -82,6 +82,7 @@ package body Xml_Parser is
     -- Sets or overwrites a xml attribute at a given index
     procedure Set_Xml_Attribute (Prologue : in out My_Tree.Tree_Type;
                   Name : in Asu_Us; Index : in Positive; Value : in Asu_Us);
+    pragma Unreferenced (Set_Xml_Attribute);
 
     -- Check xml is set, find an attribute (Index is 0 if not found)
     procedure Xml_Existst (Prologue : in out My_Tree.Tree_Type;
@@ -298,6 +299,13 @@ package body Xml_Parser is
     if Text_Char.Is_Open (Ctx.Flow.Dtd_File) then
       File_Mng.Close (Ctx.Flow.Dtd_File);
     end if;
+    Ctx.Flow.Encod_Str := Utf8;
+    Ctx.Flow.Encod_Xml := Utf8;
+    Ctx.Flow.Encod_Dtd := Utf8;
+    Ctx.Flow.Nb_Bytes_Str  := 0;
+    Ctx.Flow.Nb_Bytes_Xml  := 0;
+    Ctx.Flow.Nb_Bytes_Dtd  := 0;
+
     Ctx.Parse_Comments := False;
     Ctx.Expand := True;
     Ctx.Use_Dtd := True;

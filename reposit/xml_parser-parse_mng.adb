@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1;
-with Lower_Str, String_Mng;
+with Lower_Str, Upper_Str, String_Mng;
 separate (Xml_Parser)
 
 package body Parse_Mng  is
@@ -19,6 +19,7 @@ package body Parse_Mng  is
     -- May raise Invalid_Char_Code
     procedure Get (The_Entities : in out Entity_List_Mng.List_Type;
                    Name : in Asu_Us; Parameter : in Boolean;
+                   Encod : in Encod_List;
                    Got : out Asu_Us);
     Invalid_Char_Code : exception;
     Entity_Not_Found : exception;
@@ -30,6 +31,11 @@ package body Parse_Mng  is
     ------------------
     -- Syntax check --
     ------------------
+    -- Autodetect encoding family
+    procedure Guess_Encoding (Flow : in out Flow_Type);
+    function Get_Encoding (Flow : Flow_Type) return Encod_List;
+
+    -- Check if char is a letter
     function Is_Letter (Char : Character) return Boolean;
     -- Check that Name is valid
     function Name_Ok (Name : Asu_Us;
@@ -358,9 +364,23 @@ package body Parse_Mng  is
       or else Asu.Index (Attribute_Value, ":") /= 0 then
         Util.Error (Ctx.Flow, "Invalid encoding name");
       end if;
-      -- Check this is "UTF-8"
-      if Asu_Ts (Attribute_Value) /= "UTF-8" then
-        Util.Error (Ctx.Flow, "Unsupported encoding (only UTF-8 is supported)");
+      -- Check this is "UTF-8" or "UTF-16" and that it matches the
+      --  guessed encoding
+      if Upper_Str (Asu_Ts (Attribute_Value)) = "UTF-8" then
+        if Util.Get_Encoding (Ctx.Flow) /= Utf8 then
+          Util.Error (Ctx.Flow, "Encoding " & Asu_Ts (Attribute_Value)
+                    & " differs from autodetected "
+                    & Util.Get_Encoding (Ctx.Flow)'Img);
+        end if;
+      elsif Upper_Str (Asu_Ts (Attribute_Value)) = "UTF-16" then
+        if Util.Get_Encoding (Ctx.Flow)  = Utf8 then
+          Util.Error (Ctx.Flow, "Encoding " & Asu_Ts (Attribute_Value)
+                    & " differs from autodetected "
+                    & Util.Get_Encoding (Ctx.Flow)'Img);
+        end if;
+      else
+        Util.Error (Ctx.Flow,
+         "Unsupported encoding (only UTF-8 and UTF-16 are supported)");
       end if;
       Next_Index := Attribute_Index + 1;
     end if;
@@ -477,8 +497,7 @@ package body Parse_Mng  is
 
   -- Set default Xml version (1.0) if needed
   -- Set encoding from Dtd if needed
-  procedure Set_Default_Xml (Ctx : in out Ctx_Type;
-                             Adtd : in out Dtd_Type) is
+  procedure Set_Default_Xml (Ctx : in out Ctx_Type) is
     Nb_Attr : Natural;
     use type Asu_Us;
   begin
@@ -488,22 +507,11 @@ package body Parse_Mng  is
       Tree_Mng.Add_Xml_Attribute (Ctx.Prologue.all,
           Asu_Tus ("version"), Asu_Tus ("1.0"), Util.Get_Line_No (Ctx.Flow));
     end if;
-    -- If Dtd has encoding and Expand and not in callback
-    if Adtd.Encoding = Asu_Null
-    or else not Ctx.Expand
-    or else Ctx.Callback /= null then
-      return;
-    end if;
-    -- Current encoding shall be those of DTD
-    Trace ("Setting xml encoding from dtd to " & Asu_Ts (Adtd.Encoding));
-    Tree_Mng.Set_Xml_Attribute (Ctx.Prologue.all, Asu_Tus ("encoding"),
-                                2, Adtd.Encoding);
   end Set_Default_Xml;
 
   -- Check that XML instruction is set, create one
   -- Inherit the Dtd encoding (if any)
-  procedure Check_Xml (Ctx : in out Ctx_Type;
-                       Adtd : in out Dtd_Type) is
+  procedure Check_Xml (Ctx : in out Ctx_Type) is
     Ok : Boolean;
   begin
     Tree_Mng.Move_Root (Ctx.Prologue.all);
@@ -512,8 +520,8 @@ package body Parse_Mng  is
       -- Add a 'xml' directive
       Tree_Mng.Set_Xml (Ctx.Prologue.all, Util.Get_Line_No (Ctx.Flow));
     end if;
-    -- Set default version and inherit encoding if needed
-    Set_Default_Xml (Ctx, Adtd);
+    -- Set default version
+    Set_Default_Xml (Ctx);
     -- Callback creation if Xml has been created here
     if not Ok then
       Call_Callback (Ctx, True, True);
@@ -569,7 +577,7 @@ package body Parse_Mng  is
     end if;
 
     -- Parse instruction until ? or separator
-    Check_Xml (Ctx, Adtd);
+    Check_Xml (Ctx);
     Util.Parse_Until_Char (Ctx.Flow, Util.Instruction & Util.Space);
     Name := Util.Get_Curr_Str (Ctx.Flow);
     if not Util.Name_Ok (Name) then
@@ -791,6 +799,10 @@ package body Parse_Mng  is
     C1, C2 : Character;
     use type Asu_Us;
   begin
+    -- Autodetect encoding and check
+    Util.Guess_Encoding (Ctx.Flow);
+    Trace ("Detected encoding format " & Util.Get_Encoding (Ctx.Flow)'Img);
+
     Ctx.Level := 0;
     -- Loop until end of prologue (<name>)
     loop
@@ -813,7 +825,7 @@ package body Parse_Mng  is
           Parse_Instruction (Ctx, Adtd);
         when Util.Directive =>
           -- Directive or comment or CDATA
-          Check_Xml (Ctx, Adtd);
+          Check_Xml (Ctx);
           Parse_Directive (Ctx, Adtd, Allow_Dtd, False);
         when Util.Start =>
           -- "<<" maybe "<<![CDATA["
@@ -826,7 +838,7 @@ package body Parse_Mng  is
       end case;
     end loop;
     -- Xml directive is mandatory in prologue, which is mandatory in doc
-    Check_Xml (Ctx, Adtd);
+    Check_Xml (Ctx);
     -- Parse dtd file if requested to do so and no Doctype
     if Ctx.Use_Dtd
     and then Ctx.Dtd_File /= Asu_Null
@@ -1218,7 +1230,7 @@ package body Parse_Mng  is
     end if;
     -- Xml declaration must have a version, which might not be the case
     --  if Ctx comes from Xml_Parser.Generator
-    Set_Default_Xml (Ctx, Adtd);
+    Set_Default_Xml (Ctx);
     -- There must be one root
     if Tree_Mng.Is_Empty (Ctx.Elements.all) then
       Util.Error (Ctx.Flow, "No root element found");

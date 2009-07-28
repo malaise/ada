@@ -682,7 +682,7 @@ package body Dtd is
   end Parse_Directive;
 
   -- Parse current dtd
-  -- If external, will stop end end of file
+  -- If external, will stop at end of file
   -- otherwise, will stop on ']'
   procedure Parse (Ctx : in out Ctx_Type;
                    Adtd : in out Dtd_Type;
@@ -690,6 +690,13 @@ package body Dtd is
     Found, Cdata_Found : Boolean;
     Char : Character;
   begin
+    if External then
+      -- Autodetect encoding and check
+      Util.Guess_Encoding (Ctx.Flow);
+      Trace ("Detected dtd encoding format "
+           & Util.Get_Encoding (Ctx.Flow)'Img);
+    end if;
+
     loop
       begin
         Util.Skip_Separators (Ctx.Flow);

@@ -16,7 +16,7 @@ with Queues, Trees, Unique_List, Text_Char, Dynamic_List;
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "6";
+  Major_Version : constant String := "7";
   function Version return String;
 
   -----------
@@ -327,7 +327,13 @@ private
   -- Don't skip current data from recording
   No_Skip_Rec : constant Integer := -1;
   package My_Circ is new Queues.Circ (Max_Buf_Len, Character);
+
+  -- Current flow is...
   type Flow_Kind_List is (Xml_File, Xml_String, Dtd_File);
+  -- Current encoding
+  type Encod_List is (Utf8, Utf16_Le, Utf16_Be);
+  -- Number of single UTF8 bytes re-inserted in flow when in UTF16
+  subtype Bytes_Range is Natural;
   type Flow_Type is record
     -- Is the flow a file or a string
     Kind : Flow_Kind_List := Xml_File;
@@ -353,6 +359,11 @@ private
     In_Stri : Natural := 0;
     Xml_File : Text_Char.File_Type;
     Dtd_File : Text_Char.File_Type;
+    -- Encoding of each kind of flow
+    Encod_Str, Encod_Xml, Encod_Dtd: Encod_List := Utf8;
+    -- Remaining bytes in each kind of flow when UTF8 characters
+    -- are re-inserted in a UTF16 flow
+    Nb_Bytes_Str, Nb_Bytes_Xml, Nb_Bytes_Dtd : Bytes_Range := 0;
   end record;
 
   --------------
