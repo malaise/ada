@@ -167,7 +167,7 @@ package body Utf_16 is
     end if;
     J := 1;
     for I in Str'Range loop
-      if I mod 2 = 1 then
+      if (I - Str'First) mod 2 = 0 then
         Val := Shl (Character'Pos (Str(I)), 8);
       else
         Val := Val or Character'Pos (Str(I));
