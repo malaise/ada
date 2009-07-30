@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="Utf-8"?>
+<!DOCTYPE Channels SYSTEM "Channels.dtd">
+
+<Channels>
+  <Channel Name="test_tcp">
+    <Host>ulysse</Host>
+    <Host>penelope</Host>
+    <Host>telemaque</Host>
+  </Channel>
+</Channels>

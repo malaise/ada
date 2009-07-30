@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="Utf-8"?>
+
+<!ELEMENT Channels (Channel)*>
+
+<!ELEMENT Channel (Host)*>
+<!ATTLIST Channel Name ID #REQUIRED>
+
+<!ELEMENT Host (#PCDATA)>
+

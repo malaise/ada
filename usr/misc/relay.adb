@@ -24,7 +24,7 @@ procedure Relay is
   -- Name of the Channel
   Channel_Name : Text_Handler.Text(Tcp_Util.Max_Port_Name_Len);
   -- Suffix to build destinations file name
-  File_Name_Suffix : constant String := ".chn";
+  File_Name_Suffix : constant String := ".xml";
 
   -- End of processing
   Done : Boolean := False;

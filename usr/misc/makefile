@@ -13,6 +13,7 @@ EXES := adand add_nums alook arbipas beep comp_vars ddir e2f fact g \
 CLIBS := cutil
 CLIBS_renamer := x_mng X11
 CLIBS_comp_vars := posix2pcre pcre
+CLIBS_relay := posix2pcre pcre
 CLIBS_xml_checker := posix2pcre pcre
 
 LARGS_tcping.stat := $(CPATHD)/libcutil.a
