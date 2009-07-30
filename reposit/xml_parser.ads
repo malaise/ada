@@ -16,7 +16,7 @@ with Queues, Trees, Unique_List, Text_Char, Dynamic_List;
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "7";
+  Major_Version : constant String := "8";
   function Version return String;
 
   -----------

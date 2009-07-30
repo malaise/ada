@@ -782,12 +782,14 @@ package body Util is
     if not In_Dtd then
       -- In xml, only expand general entities
       if Ctx.Expand then
-        -- If Parse was called with Expand_Entities = False
+        -- If Parse was called with Expand_Entities = True
+        --  but allow ';' within text
         Text := Asu_Tus (String_Mng.Eval_Variables (
                            Str => Asu_Ts (Text),
                            Start_Delimiter => "&",
                            Stop_Delimiter  => ";",
-                           Resolv => Variable_Of'Access));
+                           Resolv => Variable_Of'Access,
+                           No_Check_Stop => True));
       end if;
       return;
     end if;
@@ -909,13 +911,12 @@ package body Util is
     -- Check presence of "&" and "%" and ";"
     Ne := String_Mng.Locate (Str, "&");
     Np := String_Mng.Locate (Str, "%");
-    Ns := String_Mng.Locate (Str, ";");
-    if Ne + Np + Ns = 0 then
+    if Ne + Np = 0 then
       return;
     end if;
+    Ns := String_Mng.Locate (Str, ";");
     -- Must have one start at beginning and one stop at end
-    if Ne + Np = 0         -- and Ns /= 0
-    or else Ne + Np /= 1   -- both or not at beginning
+    if Ne + Np /= 1        -- both or not at beginning
     or else Ns /= Len      -- not at end
     or else String_Mng.Locate (Str, "&", Occurence => 2) /= 0
     or else String_Mng.Locate (Str, "%", Occurence => 2) /= 0
