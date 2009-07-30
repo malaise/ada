@@ -26,6 +26,7 @@ package Xml_Parser is
   -- A node is either an element or a text or a comment
   type Node_Kind_List is (Element, Text, Comment);
   type Node_Type (Kind : Node_Kind_List := Element) is private;
+  No_Node : constant Node_Type;
 
   -- Element type
   subtype Element_Type is Node_Type(Element);
@@ -318,7 +319,8 @@ private
     -- Position in tree
     Tree_Access : My_Tree.Position_Access := My_Tree.No_Position;
   end record;
-
+  No_Node : constant Node_Type (Element)
+          := (Element, Clean_Magic, False, My_Tree.No_Position);
   ---------------------
   -- INPUT FLOW TYPE --
   ---------------------
