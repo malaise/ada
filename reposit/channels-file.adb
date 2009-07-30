@@ -1,46 +1,50 @@
-with Get_Line, Lower_Str;
+with Ada.Strings.Unbounded;
+with Xml_Parser;
 
 separate (Channels)
 
 package body File is
 
-  package Channel_File is new Get_Line (
-     Max_Word_Len => Tcp_Util.Max_Host_Name_Len,
-     Max_Word_Nb  => 60,
-     Max_Line_Len => 132,
-     Comment      => "#");
-
-  type Section_List is (Out_Channel, In_Channel, In_Matching_Channel);
-
-  Channel_Name : Text_Handler.Text (Tcp_Util.Max_Port_Name_Len);
-  Section : Section_List;
-  Curr_Word : Channel_File.Word_Count;
-  Line : Channel_File.Line_Array;
+  Ctx : Xml_Parser.Ctx_Type;
+  Chn : Xml_Parser.Element_Type;
+  Nod : Xml_Parser.Element_Type;
 
   procedure Open (File_Name : in String; Channel_Name : in String) is
+    Root : Xml_Parser.Element_Type;
+    Ok : Boolean;
   begin
+    Chn := Xml_Parser.No_Node;
+    -- Open and parse file
+    Ctx.Parse (File_Name, Ok);
+    if not Ok then
+      raise File_Error;
+    end if;
+
+    -- Look for requested Channel if found
+    Root := Ctx.Get_Root_Element;
+    declare
+      Channels : constant Xml_Parser.Nodes_Array
+               := Ctx.Get_Children (Root);
+      Name : Xml_Parser.Attribute_Rec;
     begin
-      Text_Handler.Set (File.Channel_Name, Channel_Name);
-    exception
-      when others =>
-        raise Name_Too_Long;
+      for I in Channels'Range loop
+        Name := Ctx.Get_Attribute (Channels(I), 1);
+        if Ada.Strings.Unbounded.To_String (Name.Value) = Channel_Name then
+          Chn := Channels(I);
+          Nod := Xml_Parser.No_Node;
+          exit;
+        end if;
+      end loop;
     end;
-    begin
-      Channel_File.Open (File_Name);
-    exception
-       when Channel_File.No_More_Line =>
-         null;
-       when others =>
-        raise File_Error;
-    end;
-    Curr_Word := 0;
-    Section := Out_Channel;
+  exception
+    when others =>
+      raise File_Error;
   end Open;
 
   procedure Close is
   begin
-    Channel_File.Close;
-    Text_Handler.Empty (Channel_Name);
+    Ctx.Clean;
+    Chn := Xml_Parser.No_Node;
   exception
      when others =>
       raise File_Error;
@@ -48,80 +52,41 @@ package body File is
 
   function Next_Host return Tcp_Util.Remote_Host is
     Host : Tcp_Util.Remote_Host;
+    Txt : Xml_Parser.Text_Type;
+    use type Xml_Parser.Element_Type;
   begin
-    loop
-      -- Load a new line?
-      if Curr_Word = Channel_File.Get_Word_Number then
-        begin
-          Channel_File.Read_Next_Line;
-        exception
-          when Channel_File.No_More_Line =>
-            raise End_Error;
-        end;
-        Curr_Word := 0;
-      end if;
-
-      if Curr_Word = 0 then
-        Channel_File.Get_Words (Line);
-
-        if Lower_Str (Channel_File.Get_First_Word) = "channel" then
-          -- Channel { <channel_name> }
-          if Section /= Out_Channel
-          or else Channel_File.Get_Word_Number < 2 then
-            raise File_Error;
-          end if;
-          -- Locate Channel_Name in list
-          Section := In_Channel;
-          for I in 2 .. Channel_File.Get_Word_Number loop
-            if Text_Handler."=" (Channel_Name, Line(I)) then
-              Section := In_Matching_Channel;
-              exit;
-            end if;
-          end loop;
-          Curr_Word := Channel_File.Get_Word_Number;
-        elsif Lower_Str (Channel_File.Get_First_Word) = "end_channel" then
-          if Section = Out_Channel
-          or else Channel_File.Get_Word_Number /= 1 then
-            raise File_Error;
-          end if;
-          Section := Out_Channel;
-          Curr_Word := 1;
-        elsif Lower_Str (Channel_File.Get_First_Word) = "host" then
-          case Section is
-            when Out_Channel =>
-              raise File_Error;
-            when In_Channel =>
-              -- Skip
-              Curr_Word := Channel_File.Get_Word_Number;
-            when In_Matching_Channel =>
-              Curr_Word := 1;
-          end case;
-        else
-          raise File_Error;
-        end if;
+    if Chn = Xml_Parser.No_Node then
+      raise File_Error;
+    end if;
+    begin
+      if Nod = Xml_Parser.No_Node then
+        -- First call => First Host
+        Nod := Ctx.Get_Child (Chn, 1);
       else
-        Curr_Word := Curr_Word + 1;
-        if Section = In_Matching_Channel then
-          Host.Name(1 .. Text_Handler.Length (Line(Curr_Word)) ) :=
-                  Text_Handler.Value (Line(Curr_Word));
-          exit;
-        else
-          -- Unexpected. Bug in algo.
-          raise File_Error;
-        end if;
+        -- Next Host
+        Nod := Ctx.Get_Brother (Nod);
       end if;
+    exception
+      when Xml_Parser.Invalid_Index | Xml_Parser.No_Brother =>
+        -- No (more) Host
+        raise End_Error;
+    end;
 
-    end loop;
-
+    -- The Text node
+    Txt := Ctx.Get_Child (Nod, 1);
+    declare
+      Str : constant String := Ctx.Get_Text (Txt);
+    begin
+      Host.Name(1 .. Str'Length) := Str;
+    end;
     return Host;
 
   exception
     when End_Error =>
       raise;
     when others =>
-      Section := Out_Channel;
-      Curr_Word := Channel_File.Get_Word_Number;
       raise File_Error;
+
   end Next_Host;
 
 
