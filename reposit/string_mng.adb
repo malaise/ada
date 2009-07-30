@@ -318,8 +318,8 @@ package body String_Mng is
   function Eval_Variables (Str : String;
                            Start_Delimiter, Stop_Delimiter : in String;
                            Resolv : access
-    function (Variable_Name : String) return String)
-  return String is
+    function (Variable_Name : String) return String;
+                           No_Check_Stop : Boolean := False) return String is
 
 
     -- The string to work on
@@ -393,41 +393,46 @@ package body String_Mng is
           Curr_Index := Curr_Index + Start_Delimiter'Length - 1;
           Start_Var := Curr_Index + 1;
         elsif Match (Curr_Index, Stop_Delimiter) then
-          if Level = 0 then
-            -- More Stop than Start
-            raise Delimiter_Mismatch;
-          end if;
-          Level := Level - 1;
-          if Start_Index /= 0 then
-            -- Found stop delimiter: jump after it
-            Stop_Var := Curr_Index - 1;
-            Curr_Index := Curr_Index + Stop_Delimiter'Length - 1;
-            Stop_Index := Curr_Index;
-            -- Substitute
-            if Resolv /= null then
-              declare
-                -- Variable value
-                Val : constant String
-                    := Resolv (Asu.Slice (Ustr, Start_Var, Stop_Var));
-                -- Correction to current and last index
-                Offset : constant Integer
-                       := Val'Length - (Stop_Index - Start_Index + 1);
-              begin
-                Asu.Replace_Slice (Ustr, Start_Index, Stop_Index, Val);
-                Curr_Index := Curr_Index + Offset;
-                Last_Index := Last_Index + Offset;
-              end;
-            else
-              -- No resolving => empty string
-              Asu.Replace_Slice (Ustr, Start_Index, Stop_Index, "");
-              Curr_Index := Curr_Index - (Stop_Index - Start_Index + 1);
-              Last_Index := Last_Index - (Stop_Index - Start_Index + 1);
+          if Level = 0 and then No_Check_Stop then
+            -- Skip this extra Stop
+            null;
+          else
+            if Level = 0 then
+              -- More Stop than Start
+              raise Delimiter_Mismatch;
             end if;
-            -- Go on trying to substitute
-            Subst_Occured := True;
-            -- Following stop delimiter will not be processed if no
-            -- new start has been found
-            Start_Index := 0;
+            Level := Level - 1;
+            if Start_Index /= 0 then
+              -- Found stop delimiter: jump after it
+              Stop_Var := Curr_Index - 1;
+              Curr_Index := Curr_Index + Stop_Delimiter'Length - 1;
+              Stop_Index := Curr_Index;
+              -- Substitute
+              if Resolv /= null then
+                declare
+                  -- Variable value
+                  Val : constant String
+                      := Resolv (Asu.Slice (Ustr, Start_Var, Stop_Var));
+                  -- Correction to current and last index
+                  Offset : constant Integer
+                         := Val'Length - (Stop_Index - Start_Index + 1);
+                begin
+                  Asu.Replace_Slice (Ustr, Start_Index, Stop_Index, Val);
+                  Curr_Index := Curr_Index + Offset;
+                  Last_Index := Last_Index + Offset;
+                end;
+              else
+                -- No resolving => empty string
+                Asu.Replace_Slice (Ustr, Start_Index, Stop_Index, "");
+                Curr_Index := Curr_Index - (Stop_Index - Start_Index + 1);
+                Last_Index := Last_Index - (Stop_Index - Start_Index + 1);
+              end if;
+              -- Go on trying to substitute
+              Subst_Occured := True;
+              -- Following stop delimiter will not be processed if no
+              -- new start has been found
+              Start_Index := 0;
+            end if;
           end if;
         end if;
         -- End of this pass?

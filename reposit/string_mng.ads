@@ -110,12 +110,14 @@ package String_Mng is
   -- Delimiter number must match (as many stop as start and in consistent
   --  sequence e.g. {}}{ s forbidden), otherwise the exception
   --  Delimiter_Mismatch is raised.
+  -- On option No_Check_Stop extra stops are accepted ({}} is OK)
   -- If no callback is set (Resolv = null) then variables are replaced by
   --  empty strings.
   function Eval_Variables (Str : String;
                            Start_Delimiter, Stop_Delimiter : in String;
                            Resolv : access
-    function (Variable_Name : String) return String)
+    function (Variable_Name : String) return String;
+                           No_Check_Stop : Boolean := False)
            return String;
   Inv_Delimiter, Delimiter_Mismatch : exception;
 
