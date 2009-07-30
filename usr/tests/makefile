@@ -11,6 +11,7 @@ CLIBS := x_mng cutil X11
 CLIBS_t_ndbm := cndbm gdbm \
  $(patsubst /usr/lib/lib%.so, %, $(wildcard /usr/lib/libgdbm_compat.so))
 
+CLIBS_t_channels := posix2pcre pcre
 CLIBS_t_regex_filters := posix2pcre pcre
 CLIBS_t_regexp := posix2pcre pcre
 CLIBS_t_string := posix2pcre pcre
