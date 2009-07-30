@@ -121,7 +121,7 @@ package body Utf_16 is
   begin
     Val1 := Wide_Character'Pos (Wide_Char);
     Val2 := Shl (Val1 and 16#00FF#, 8)
-        and Shr (Val1 and 16#FF00#, 8);
+         or Shr (Val1 and 16#FF00#, 8);
     return Wide_Character'Val (Val2);
   end Swap;
 
