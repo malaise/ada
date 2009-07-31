@@ -31,10 +31,6 @@ package body Parse_Mng  is
     ------------------
     -- Syntax check --
     ------------------
-    -- Autodetect encoding family
-    procedure Guess_Encoding (Flow : in out Flow_Type);
-    function Get_Encoding (Flow : Flow_Type) return Encod_List;
-
     -- Check if char is a letter
     function Is_Letter (Char : Character) return Boolean;
     -- Check that Name is valid
@@ -47,6 +43,14 @@ package body Parse_Mng  is
     -- Report an error, raises Parsing_Error.
     procedure Error (Flow : in out Flow_Type;
                      Msg : in String; Line_No : in Natural := 0);
+
+    ----------------------
+    -- Input characters --
+    ----------------------
+    -- Autodetect encoding family
+    procedure Guess_Encoding (Flow : in out Flow_Type);
+    function Get_Encoding (Flow : Flow_Type) return Encod_List;
+
     -- Report Unsupported Cdata
     procedure Cdata_Error (Flow : in out Flow_Type);
     -- Get current line number
@@ -155,6 +159,7 @@ package body Parse_Mng  is
     procedure Check_Cdata (Str : in Asu_Us);
     -- Check for <![CDATA[ in the next N+9 chars of Flow, raises Cdata_Detected
     procedure Check_Cdata (Flow : in out Flow_Type; N : Natural := 0);
+
   end Util;
 
   package body Entity_Mng is separate;
@@ -618,6 +623,7 @@ package body Parse_Mng  is
     Ok : Boolean;
     Char : Character;
     Len : Natural;
+    File_Name : Asu_Us;
     use type Asu_Us;
   begin
     -- Only one DOCTYPE allowed
@@ -672,13 +678,17 @@ package body Parse_Mng  is
       Util.Reset_Curr_Str (Ctx.Flow);
       Util.Skip_Separators (Ctx.Flow);
       if Ctx.Use_Dtd then
+        Ctx.File_Stack.Read (File_Name);
         if Ctx.Dtd_File /= Asu_Null then
           -- Parse dtd file provided
-          Dtd.Parse (Ctx, Adtd, Asu.To_String (Ctx.Dtd_File));
+          File_Name := Build_Full_Name (Ctx.Dtd_File, File_Name);
         else
-          -- Parse dtd file of doctype
-          Dtd.Parse (Ctx, Adtd, Asu.To_String (Doctype_File));
+          -- Parse dtd file of doctype directive
+          File_Name := Build_Full_Name (Doctype_File, File_Name);
         end if;
+        Ctx.File_Stack.Push (File_Name);
+        Dtd.Parse (Ctx, Adtd, Asu.To_String (File_Name));
+        Ctx.File_Stack.Pop;
       end if;
       Ctx.Doctype.File := Doctype_File;
     end if;
@@ -687,7 +697,9 @@ package body Parse_Mng  is
     if Char = '[' then
       -- Internal definition, record the parsing and copy it in Ctx
       Util.Start_Recording (Ctx.Flow);
+      Ctx.File_Stack.Push (Asu_Null);
       Dtd.Parse (Ctx, Adtd, Dtd.Internal_Flow);
+      Ctx.File_Stack.Pop;
       Util.Stop_Recording (Ctx.Flow, Ctx.Doctype.Int_Def);
       -- Remove last ']'
       Len := Asu.Length (Ctx.Doctype.Int_Def);
@@ -1163,14 +1175,18 @@ package body Parse_Mng  is
     return Dtd.String_Flow;
   end String_Flow;
 
-  -- Parse a Dtd Flow
+  -- Parse a standalone Dtd Flow
   procedure Parse_Dtd (Ctx : in out Ctx_Type;
                        Adtd : in out Dtd_Type;
                        File_Name : in String) is
+    New_File_Name : Asu_Us;
   begin
     -- If File_Name is a file name, then a Name_Error on it
     --  will be propagated as such
-    Dtd.Parse (Ctx, Adtd, File_Name, Name_Raise_Parse => False);
+    New_File_Name := Build_Full_Name (Asu_Tus (File_Name));
+    Ctx.File_Stack.Push (New_File_Name);
+    Dtd.Parse (Ctx, Adtd, Asu_Ts (New_File_Name), Name_Raise_Parse => False);
+    Ctx.File_Stack.Pop;
   exception
     when Util.Cdata_Detected =>
       Util.Cdata_Error (Ctx.Flow);

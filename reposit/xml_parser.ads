@@ -1,5 +1,5 @@
 with Ada.Strings.Unbounded, Ada.Finalization;
-with Queues, Trees, Unique_List, Text_Char, Dynamic_List;
+with Queues, Trees, Unique_List, Text_Char, Dynamic_List, Unlimited_Pool;
 -- Parse Xml file or string, and provide read access to the corresponding tree
 -- The following features of DTD are not supported (parsing error):
 --  - ENTITY, ENTITIES and NOTATION attribute type
@@ -464,6 +464,11 @@ private
     Int_Def : Ada.Strings.Unbounded.Unbounded_String;
   end record;
 
+  -- Pool (stack) of file path
+  package Ustr_Pool_Mng is new Unlimited_Pool
+          (Ada.Strings.Unbounded.Unbounded_String);
+
+
   ------------------
   -- CONTEXT TYPE --
   ------------------
@@ -473,6 +478,8 @@ private
   type Ctx_Type is limited new Ada.Finalization.Limited_Controlled with record
     Status  : Ctx_Status_List := Clean;
     Magic : Float := Clean_Magic;
+    -- Stack of file names
+    File_Stack : Ustr_Pool_Mng.Pool_Type;
     -- Input flow description
     Flow : Flow_Type;
     -- Parse or skip comments
