@@ -20,6 +20,10 @@ package Unlimited_Pool is
   -- Get from pool
   Empty_Pool : exception;
   procedure Pop (Pool : in out Pool_Type; Data : out Data_Type);
+  procedure Pop (Pool : in out Pool_Type);
+
+  -- Read from pool
+  procedure Read (Pool : in out Pool_Type; Data : out Data_Type);
 
   -- Clear the pool
   procedure Clear (Pool : in out Pool_Type);

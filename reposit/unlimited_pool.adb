@@ -50,6 +50,43 @@ package body Unlimited_Pool is
     end if;
   end Pop;
 
+  procedure Pop (Pool : in out Pool_Type) is
+  begin
+    if Is_Empty(Pool) then
+      raise Empty_Pool;
+    end if;
+    if not Lifo then
+      -- Fifo means pop last (and go to previous) then rewind to first
+      Pool_List_Mng.Rewind (Pool_List_Mng.List_Type(Pool), Pool_List_Mng.Prev);
+      Pool_List_Mng.Delete (Pool_List_Mng.List_Type(Pool), Pool_List_Mng.Prev);
+      if not Is_Empty(Pool) then
+        Pool_List_Mng.Rewind (Pool_List_Mng.List_Type(Pool));
+      end if;
+    else
+      -- Lifo means pop first and move to next
+      Pool_List_Mng.Delete (Pool_List_Mng.List_Type(Pool));
+    end if;
+  end Pop;
+
+  -- Read from pool, remain at current pos
+  procedure Read (Pool : in out Pool_Type; Data : out Data_Type) is
+  begin
+    if Is_Empty(Pool) then
+      raise Empty_Pool;
+    end if;
+    if not Lifo then
+      -- Fifo means read last then rewind to first
+      Pool_List_Mng.Rewind (Pool_List_Mng.List_Type(Pool), Pool_List_Mng.Prev);
+      Pool_List_Mng.Read (Pool_List_Mng.List_Type(Pool), Data,
+                          Pool_List_Mng.Current);
+      Pool_List_Mng.Rewind (Pool_List_Mng.List_Type(Pool));
+    else
+      -- Lifo means read first
+      Pool_List_Mng.Read (Pool_List_Mng.List_Type(Pool), Data,
+                          Pool_List_Mng.Current);
+    end if;
+  end Read;
+
   -- Clear the pool
   procedure Clear (Pool : in out Pool_Type) is
   begin
