@@ -1,13 +1,13 @@
 -- Mine Detector Game
--- Copyright (C) 2007 by PragmAda Software Engineering.  All rights reserved.
+-- Copyright (C) 2009 by PragmAda Software Engineering.  All rights reserved.
 -- **************************************************************************
 --
 -- Provide the user interface
 --
--- V5.1 2007 Feb 01
+-- V6.0 2009 Aug 01
 --
 with Field;
-package User_If is
+package User_IF is
    procedure Display_Count (Count    : in Field.Valid_Count;
                             Stepped  : in Boolean;
                             Cell     : in Field.Cell_Location);
@@ -25,8 +25,7 @@ package User_If is
    function Auto_Marking return Boolean; -- Get auto-marking state
 
    function Extended_Stepping return Boolean; -- Get extended-stepping (after mark) state
-
-end User_If;
+end User_IF;
 --
 -- This is free software; you can redistribute it and/or modify it under
 -- terms of the GNU General Public License as published by the Free Software

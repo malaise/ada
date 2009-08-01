@@ -1,10 +1,10 @@
 -- Mine Detector Game
--- Copyright (C) 2007 by PragmAda Software Engineering.  All rights reserved.
+-- Copyright (C) 2009 by PragmAda Software Engineering.  All rights reserved.
 -- **************************************************************************
 --
 -- Encapsulates the operations on the mine field
 --
--- V5.1 2007 Feb 01
+-- V6.0 2009 Aug 01
 --
 package Field.Operations is
    procedure Reset; -- Reset the mine field to its initial condition
@@ -13,9 +13,9 @@ package Field.Operations is
 
    procedure Step (Cell : in Cell_Location); -- Step on a cell
 
-   type Game_State_Id is (In_Progress, Won, Lost);
+   type Game_State_ID is (In_Progress, Won, Lost);
 
-   function Game_State return Game_State_Id;
+   function Game_State return Game_State_ID;
 
    procedure Set_Mine_Count (New_Mine_Count : in Natural);
    -- Takes effect the next time a game is created.

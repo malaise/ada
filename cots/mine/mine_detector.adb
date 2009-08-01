@@ -1,14 +1,14 @@
 -- Mine Detector Game
--- Copyright (C) 2007 by PragmAda Software Engineering.  All rights reserved.
+-- Copyright (C) 2009 by PragmAda Software Engineering.  All rights reserved.
 -- **************************************************************************
 --
--- V5.1 2007 Feb 01
+-- V6.0 2009 Aug 01
 --
 with Gtk.Main;
-with User_If;
+with User_IF;
 procedure Mine_Detector is
    -- null;
-begin -- Mine_Dectector
+begin -- Mine_Detector
    Gtk.Main.Main;
 end Mine_Detector;
 --
