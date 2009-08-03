@@ -3,7 +3,7 @@ with Environ, Basic_Proc, Rnd, Exception_Messenger, Directory;
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "1";
+  Minor_Version : constant String := "0";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -174,17 +174,35 @@ package body Xml_Parser is
     end if;
   end Build_Full_Name;
 
+  -- Reset a Flow_Info
+  procedure Deallocate is new Ada.Unchecked_Deallocation
+   (Text_Char.File_Type, File_Access);
+  procedure Reset (Flow_Info : in out Flow_Info_Type) is
+  begin
+    if Flow_Info.File /= null then
+      Deallocate (Flow_Info.File);
+    end if;
+    Flow_Info.Is_File := True;
+    Flow_Info.Kind := Xml_Flow;
+    Flow_Info.Name := Asu_Null;
+    Flow_Info.Line := 0;
+    Flow_Info.Encod := Utf8;
+    Flow_Info.Nb_Bytes := 0;
+    Flow_Info.File := null;
+    Flow_Info.In_Str := Asu_Null;
+    Flow_Info.In_Stri := 0;
+  end Reset;
+
   -- Parses the content of the file into the tree
   package Parse_Mng is
-    -- Parse the Xml file. Raises exceptions
-    procedure Parse (Ctx : in out Ctx_Type);
-    -- Parse a Dtd Flow
     -- Use String_Flow as File_Name when Flow is Ctx.String, otherwise
-    --  File_Name is the file name
+    --  File_Name is the file name and will be open
+    -- Parse the Xml flow. Raises exceptions
+    procedure Parse_Xml (Ctx : in out Ctx_Type);
+    -- Parse a Dtd Flow
     function String_Flow return String;
     procedure Parse_Dtd (Ctx : in out Ctx_Type;
-                         Adtd : in out Dtd_Type;
-                         File_Name : in String);
+                         Adtd : in out Dtd_Type);
     -- Parse the prologue
     procedure Parse_Prologue (Ctx : in out Ctx_Type);
     -- Parse the elements
@@ -232,7 +250,6 @@ package body Xml_Parser is
                    Use_Dtd   : in Boolean := True;
                    Dtd_File  : in String  := "";
                    Callback  : in Parse_Callback_Access := null) is
-    Full_Name : Asu_Us;
   begin
     if Ctx.Status /= Clean then
       raise Status_Error;
@@ -245,22 +262,19 @@ package body Xml_Parser is
     Ctx.Status := Error;
     Ctx.Flow.Err_Msg := Asu_Null;
     Ok := False;
-    -- Open file
-    File_Mng.Open (File_Name, Ctx.Flow.Xml_File);
-    Ctx.Flow.Kind := Xml_File;
-    Ctx.Flow.Xml_Line := 1;
+    -- Open file of Xml flow
+    Ctx.Flow.Curr_Flow.Is_File := True;
+    Ctx.Flow.Curr_Flow.Kind := Xml_Flow;
+    Ctx.Flow.Curr_Flow.Name := Build_Full_Name (Asu_Tus (File_Name));
+    Ctx.Flow.Curr_Flow.File := new Text_Char.File_Type;
+    Ctx.Flow.Curr_Flow.Line := 1;
     -- Parse this file
     Ctx.Parse_Comments := Comments;
     Ctx.Expand := Expand;
     Ctx.Use_Dtd := Use_Dtd;
     Ctx.Dtd_File := Asu_Tus (Dtd_File);
     Ctx.Callback := Callback;
-    Full_Name := Build_Full_Name (Asu_Tus (File_Name));
-    Ctx.File_Stack.Push (Full_Name);
-    Parse_Mng.Parse (Ctx);
-    Ctx.File_Stack.Pop;
-    -- Close the file
-    File_Mng.Close (Ctx.Flow.Xml_File);
+    Parse_Mng.Parse_Xml (Ctx);
     Ctx.Status := Parsed_Elements;
     Ok := True;
   exception
@@ -294,40 +308,19 @@ package body Xml_Parser is
   -- Clean a parsing context
   procedure Clean (Ctx : in out Ctx_Type) is
     use type My_Tree.Position_Access;
+
   begin
     -- Clean input flow
-    Ctx.Flow.Kind := Xml_File;
     Ctx.Flow.Nb_Got := 0;
-    loop
-      begin
-        My_Circ.Discard_Last (Ctx.Flow.Circ);
-      exception
-        when My_Circ.Circ_Empty =>
-          exit;
-      end;
-    end loop;
-    Ctx.Flow.Xml_Line := 0;
-    Ctx.Flow.Dtd_Line := 0;
+    Ctx.Flow.Circ.Clear;
     Ctx.Flow.Err_Msg := Asu_Null;
     Ctx.Flow.Curr_Str := Asu_Null;
     Ctx.Flow.Recording := False;
     Ctx.Flow.Skip_Recording := No_Skip_Rec;
     Ctx.Flow.Recorded := Asu_Null;
 
-    Ctx.Flow.In_Str := Asu_Null;
-    Ctx.Flow.In_Stri := 0;
-    if Text_Char.Is_Open (Ctx.Flow.Xml_File) then
-      File_Mng.Close (Ctx.Flow.Xml_File);
-    end if;
-    if Text_Char.Is_Open (Ctx.Flow.Dtd_File) then
-      File_Mng.Close (Ctx.Flow.Dtd_File);
-    end if;
-    Ctx.Flow.Encod_Str := Utf8;
-    Ctx.Flow.Encod_Xml := Utf8;
-    Ctx.Flow.Encod_Dtd := Utf8;
-    Ctx.Flow.Nb_Bytes_Str  := 0;
-    Ctx.Flow.Nb_Bytes_Xml  := 0;
-    Ctx.Flow.Nb_Bytes_Dtd  := 0;
+    -- Clear Current flow
+    Reset (Ctx.Flow.Curr_Flow);
 
     Ctx.Parse_Comments := False;
     Ctx.Expand := True;
@@ -355,8 +348,6 @@ package body Xml_Parser is
     -- Clean IDs
     Ctx.Ids.Delete_List;
     Ctx.Idrefs.Delete_List;
-    -- Clean File stack
-    Ctx.File_Stack.Clear;
     -- Context is clean
     Ctx.Magic := Clean_Magic;
     Ctx.Status := Clean;
@@ -368,10 +359,12 @@ package body Xml_Parser is
     Ctx : Ctx_Type;
   begin
     Clean_Dtd (Dtd);
+    -- Flow is file
+    Ctx.Flow.Curr_Flow.Is_File := True;
+    Ctx.Flow.Curr_Flow.Kind := Dtd_Flow;
+    Ctx.Flow.Curr_Flow.Name := Build_Full_Name (Asu_Tus (File_Name));
     -- File Name_Error raises File_Error
-    Ctx.File_Stack.Push (Asu_Null);
-    Parse_Mng.Parse_Dtd (Ctx, Dtd, File_Name);
-    Ctx.File_Stack.Pop;
+    Parse_Mng.Parse_Dtd (Ctx, Dtd);
     Clean (Ctx);
   end Parse_Dtd_File;
 
@@ -379,13 +372,14 @@ package body Xml_Parser is
                               Dtd : out Dtd_Type) is
     Ctx : Ctx_Type;
   begin
-    Ctx.Flow.Kind := Xml_String;
-    Ctx.Flow.In_Str := Asu_Tus (Str);
-    Ctx.Flow.Xml_Line := 1;
     Clean_Dtd (Dtd);
-    Ctx.File_Stack.Push (Asu_Null);
-    Parse_Mng.Parse_Dtd (Ctx, Dtd, Parse_Mng.String_Flow);
-    Ctx.File_Stack.Pop;
+    -- Flow is string
+    Ctx.Flow.Curr_Flow.Is_File := False;
+    Ctx.Flow.Curr_Flow.Kind := Dtd_Flow;
+    Ctx.Flow.Curr_Flow.Name := Asu_Tus (Parse_Mng.String_Flow);
+    Ctx.Flow.Curr_Flow.In_Str := Asu_Tus (Str);
+    Ctx.Flow.Curr_Flow.Line := 1;
+    Parse_Mng.Parse_Dtd (Ctx, Dtd);
     Clean (Ctx);
   end Parse_Dtd_String;
 
@@ -423,16 +417,16 @@ package body Xml_Parser is
     Ctx.Flow.Err_Msg := Asu_Null;
     Ok := False;
     -- Parse the prologue string
-    Ctx.Flow.Kind := Xml_String;
-    Ctx.Flow.In_Str := Asu_Tus (Str);
-    Ctx.Flow.Xml_Line := 1;
+    Ctx.Flow.Curr_Flow.Is_File := False;
+    Ctx.Flow.Curr_Flow.Kind := Xml_Flow;
+    Ctx.Flow.Curr_Flow.Name := Asu_Tus (Parse_Mng.String_Flow);
+    Ctx.Flow.Curr_Flow.In_Str := Asu_Tus (Str);
+    Ctx.Flow.Curr_Flow.Line := 1;
     Ctx.Parse_Comments := Comments;
     Ctx.Expand := Expand;
     Ctx.Callback := Callback;
-    Ctx.File_Stack.Push (Asu_Null);
     Parse_Mng.Parse_Prologue (Ctx);
-    Ctx.File_Stack.Pop;
-    -- Close the file
+    -- Update status
     if Ctx.Callback = null then
       Ctx.Status := Parsed_Prologue;
     else
@@ -481,9 +475,7 @@ package body Xml_Parser is
     Ctx.Flow.Err_Msg := Asu_Null;
     Ok := False;
     -- Parse
-    Ctx.File_Stack.Push (Asu_Null);
     Parse_Mng.Parse_Elements (Ctx, Dtd);
-    Ctx.File_Stack.Pop;
     if Ctx.Callback = null then
       Ctx.Status := Parsed_Elements;
     else
@@ -1003,7 +995,7 @@ package body Xml_Parser is
    (Id_List_Mng.List_Type, Id_List_Access);
   procedure Deallocate is new Ada.Unchecked_Deallocation
    (Idref_List_Mng.List_Type, Idref_List_Access);
-  procedure Finalize (Ctx : in out Ctx_Type) is
+  overriding procedure Finalize (Ctx : in out Ctx_Type) is
   begin
     -- Clean contenxt and its data
     Clean (Ctx);
@@ -1014,7 +1006,7 @@ package body Xml_Parser is
     Deallocate (Ctx.Idrefs);
   end Finalize;
 
-  procedure Finalize (Node : in out Node_Update) is
+  overriding procedure Finalize (Node : in out Node_Update) is
   begin
     Deallocate (Node.Attributes);
   end Finalize;

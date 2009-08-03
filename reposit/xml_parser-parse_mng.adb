@@ -49,7 +49,6 @@ package body Parse_Mng  is
     ----------------------
     -- Autodetect encoding family
     procedure Guess_Encoding (Flow : in out Flow_Type);
-    function Get_Encoding (Flow : Flow_Type) return Encod_List;
 
     -- Report Unsupported Cdata
     procedure Cdata_Error (Flow : in out Flow_Type);
@@ -218,7 +217,7 @@ package body Parse_Mng  is
     Internal_Flow : constant String := ""  & Ada.Characters.Latin_1.Nul;
     procedure Parse (Ctx  : in out Ctx_Type;
                      Adtd : in out Dtd_Type;
-                     File_Name : in String;
+                     File_Name : in Asu_Us;
                      Name_Raise_Parse : in Boolean := True);
     -- Check current element of the tree
     procedure Check_Element (Ctx  : in out Ctx_Type;
@@ -372,16 +371,16 @@ package body Parse_Mng  is
       -- Check this is "UTF-8" or "UTF-16" and that it matches the
       --  guessed encoding
       if Upper_Str (Asu_Ts (Attribute_Value)) = "UTF-8" then
-        if Util.Get_Encoding (Ctx.Flow) /= Utf8 then
+        if Ctx.Flow.Curr_Flow.Encod /= Utf8 then
           Util.Error (Ctx.Flow, "Encoding " & Asu_Ts (Attribute_Value)
                     & " differs from autodetected "
-                    & Util.Get_Encoding (Ctx.Flow)'Img);
+                    & Ctx.Flow.Curr_Flow.Encod'Img);
         end if;
       elsif Upper_Str (Asu_Ts (Attribute_Value)) = "UTF-16" then
-        if Util.Get_Encoding (Ctx.Flow)  = Utf8 then
+        if Ctx.Flow.Curr_Flow.Encod = Utf8 then
           Util.Error (Ctx.Flow, "Encoding " & Asu_Ts (Attribute_Value)
                     & " differs from autodetected "
-                    & Util.Get_Encoding (Ctx.Flow)'Img);
+                    & Ctx.Flow.Curr_Flow.Encod'Img);
         end if;
       else
         Util.Error (Ctx.Flow,
@@ -623,7 +622,6 @@ package body Parse_Mng  is
     Ok : Boolean;
     Char : Character;
     Len : Natural;
-    File_Name : Asu_Us;
     use type Asu_Us;
   begin
     -- Only one DOCTYPE allowed
@@ -677,18 +675,13 @@ package body Parse_Mng  is
       Doctype_File := Util.Get_Curr_Str (Ctx.Flow);
       Util.Reset_Curr_Str (Ctx.Flow);
       Util.Skip_Separators (Ctx.Flow);
-      if Ctx.Use_Dtd then
-        Ctx.File_Stack.Read (File_Name);
-        if Ctx.Dtd_File /= Asu_Null then
-          -- Parse dtd file provided
-          File_Name := Build_Full_Name (Ctx.Dtd_File, File_Name);
-        else
-          -- Parse dtd file of doctype directive
-          File_Name := Build_Full_Name (Doctype_File, File_Name);
-        end if;
-        Ctx.File_Stack.Push (File_Name);
-        Dtd.Parse (Ctx, Adtd, Asu.To_String (File_Name));
-        Ctx.File_Stack.Pop;
+      if Ctx.Use_Dtd
+      and then Ctx.Dtd_File = Asu_Null then
+        -- Parse dtd file of doctype directive if no alternate file
+        Ctx.Flow.Flows.Push (Ctx.Flow.Curr_Flow);
+        Dtd.Parse (Ctx, Adtd, Build_Full_Name (Doctype_File,
+                                               Ctx.Flow.Curr_Flow.Name));
+        Ctx.Flow.Flows.Pop (Ctx.Flow.Curr_Flow);
       end if;
       Ctx.Doctype.File := Doctype_File;
     end if;
@@ -697,13 +690,17 @@ package body Parse_Mng  is
     if Char = '[' then
       -- Internal definition, record the parsing and copy it in Ctx
       Util.Start_Recording (Ctx.Flow);
-      Ctx.File_Stack.Push (Asu_Null);
-      Dtd.Parse (Ctx, Adtd, Dtd.Internal_Flow);
-      Ctx.File_Stack.Pop;
+      Ctx.Flow.Flows.Push (Ctx.Flow.Curr_Flow);
+      Dtd.Parse (Ctx, Adtd, Asu_Tus (Dtd.Internal_Flow));
+      Ctx.Flow.Flows.Pop (Ctx.Flow.Curr_Flow);
       Util.Stop_Recording (Ctx.Flow, Ctx.Doctype.Int_Def);
       -- Remove last ']'
       Len := Asu.Length (Ctx.Doctype.Int_Def);
       Asu.Delete (Ctx.Doctype.Int_Def, Len, Len);
+      if Ctx.Dtd_File /= Asu_Null then
+        -- This Dtd internal definition is overriden by an alternate file
+        Clean_Dtd (Adtd);
+      end if;
     else
       Util.Unget (Ctx.Flow);
     end if;
@@ -813,7 +810,7 @@ package body Parse_Mng  is
   begin
     -- Autodetect encoding and check
     Util.Guess_Encoding (Ctx.Flow);
-    Trace ("Detected encoding format " & Util.Get_Encoding (Ctx.Flow)'Img);
+    Trace ("Detected encoding format " & Ctx.Flow.Curr_Flow.Encod'Img);
 
     Ctx.Level := 0;
     -- Loop until end of prologue (<name>)
@@ -851,11 +848,14 @@ package body Parse_Mng  is
     end loop;
     -- Xml directive is mandatory in prologue, which is mandatory in doc
     Check_Xml (Ctx);
-    -- Parse dtd file if requested to do so and no Doctype
+    -- Parse dtd alternate file if requested to do so
     if Ctx.Use_Dtd
-    and then Ctx.Dtd_File /= Asu_Null
-    and then Ctx.Doctype.Name = Asu_Null then
-      Dtd.Parse (Ctx, Adtd, Asu.To_String (Ctx.Dtd_File));
+    and then Ctx.Dtd_File /= Asu_Null then
+      Ctx.Flow.Flows.Push (Ctx.Flow.Curr_Flow);
+      -- Parse dtd file provided instead of doctype directive
+      Dtd.Parse (Ctx, Adtd, Build_Full_Name (Ctx.Dtd_File,
+                                             Ctx.Flow.Curr_Flow.Name));
+      Ctx.Flow.Flows.Pop (Ctx.Flow.Curr_Flow);
     end if;
     Tree_Mng.Move_Root (Ctx.Prologue.all);
     -- Delete completely the prologue if callback
@@ -1149,9 +1149,14 @@ package body Parse_Mng  is
   end Parse_Root_To_End;
 
   -- Main parser (entry point)
-  procedure Parse (Ctx : in out Ctx_Type) is
+  procedure Parse_Xml (Ctx : in out Ctx_Type) is
     Adtd : Dtd_Type;
+    use type Asu_Us;
   begin
+    if Ctx.Flow.Curr_Flow.Name /= Asu_Null then
+      File_Mng.Open (Asu_Ts (Ctx.Flow.Curr_Flow.Name),
+                     Ctx.Flow.Curr_Flow.File.all);
+    end if;
     -- Init Prologue with an empty root
     Tree_Mng.Init_Prologue (Ctx.Prologue.all);
     -- Reset Dtd
@@ -1164,10 +1169,13 @@ package body Parse_Mng  is
     Dtd.Final_Check (Ctx);
     -- Clean Dtd before it disapears
     Dtd.Init (Adtd);
+    if Ctx.Flow.Curr_Flow.Name /= Asu_Null then
+      File_Mng.Close (Ctx.Flow.Curr_Flow.File.all);
+    end if;
   exception
     when Util.Cdata_Detected =>
       Util.Cdata_Error (Ctx.Flow);
-  end Parse;
+  end Parse_Xml;
 
   -- Propagate Dtd convention
   function String_Flow return String is
@@ -1177,16 +1185,12 @@ package body Parse_Mng  is
 
   -- Parse a standalone Dtd Flow
   procedure Parse_Dtd (Ctx : in out Ctx_Type;
-                       Adtd : in out Dtd_Type;
-                       File_Name : in String) is
-    New_File_Name : Asu_Us;
+                       Adtd : in out Dtd_Type) is
   begin
     -- If File_Name is a file name, then a Name_Error on it
     --  will be propagated as such
-    New_File_Name := Build_Full_Name (Asu_Tus (File_Name));
-    Ctx.File_Stack.Push (New_File_Name);
-    Dtd.Parse (Ctx, Adtd, Asu_Ts (New_File_Name), Name_Raise_Parse => False);
-    Ctx.File_Stack.Pop;
+    Dtd.Parse (Ctx, Adtd, Ctx.Flow.Curr_Flow.Name,
+               Name_Raise_Parse => False);
   exception
     when Util.Cdata_Detected =>
       Util.Cdata_Error (Ctx.Flow);
@@ -1227,23 +1231,26 @@ package body Parse_Mng  is
   begin
     -- Reset Dtd
     Dtd.Init (Adtd);
+    Ctx.Flow.Flows.Push (Ctx.Flow.Curr_Flow);
     -- Parse Dtd
-    if Ctx.Doctype.Name /= Asu_Null then
-      if Ctx.Dtd_File /= Asu_Null then
-        -- Parse Dtd explicitely forced when user called Parsed
-        Dtd.Parse (Ctx, Adtd, Asu.To_String (Ctx.Dtd_File));
-      elsif Ctx.Doctype.File /= Asu_Null then
+    if Ctx.Dtd_File /= Asu_Null then
+      -- Parse alternate Dtd provided by caller
+      Dtd.Parse (Ctx, Adtd, Build_Full_Name (Ctx.Dtd_File));
+    elsif Ctx.Doctype.Name /= Asu_Null then
+      if Ctx.Doctype.File /= Asu_Null then
         -- Parse Dtd file set in DOCTYPE of Xml
-        Dtd.Parse (Ctx, Adtd, Asu.To_String (Ctx.Doctype.File));
+        Dtd.Parse (Ctx, Adtd, Build_Full_Name (Ctx.Doctype.File));
       end if;
       if Ctx.Doctype.Int_Def /= Asu_Null then
         -- Parse internal defs
-        Ctx.Flow.Kind := Xml_String;
-        Ctx.Flow.In_Str := Ctx.Doctype.Int_Def;
-        Ctx.Flow.Xml_Line := 1;
-        Dtd.Parse (Ctx, Adtd, Dtd.String_Flow);
+        Ctx.Flow.Curr_Flow.Is_File := False;
+        Ctx.Flow.Curr_Flow.Kind := Dtd_Flow;
+        Ctx.Flow.Curr_Flow.In_Str := Ctx.Doctype.Int_Def;
+        Ctx.Flow.Curr_Flow.Line := 1;
+        Dtd.Parse (Ctx, Adtd, Asu_Tus (Dtd.String_Flow));
       end if;
     end if;
+    Ctx.Flow.Flows.Pop (Ctx.Flow.Curr_Flow);
     -- Xml declaration must have a version, which might not be the case
     --  if Ctx comes from Xml_Parser.Generator
     Set_Default_Xml (Ctx);

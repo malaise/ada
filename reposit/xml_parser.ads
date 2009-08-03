@@ -16,7 +16,7 @@ with Queues, Trees, Unique_List, Text_Char, Dynamic_List, Unlimited_Pool;
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "8";
+  Major_Version : constant String := "9";
   function Version return String;
 
   -----------
@@ -331,22 +331,42 @@ private
   package My_Circ is new Queues.Circ (Max_Buf_Len, Character);
 
   -- Current flow is...
-  type Flow_Kind_List is (Xml_File, Xml_String, Dtd_File);
+  type Flow_Kind_List is (Xml_Flow, Dtd_Flow);
   -- Current encoding
   type Encod_List is (Utf8, Utf16_Le, Utf16_Be);
   -- Number of single UTF8 bytes re-inserted in flow when in UTF16
   subtype Bytes_Range is Natural;
-  type Flow_Type is record
-    -- Is the flow a file or a string
-    Kind : Flow_Kind_List := Xml_File;
+  type File_Access is access all Text_Char.File_Type;
 
+  type Flow_Info_Type is record
+    -- Is it a file or string
+    Is_File : Boolean := True;
+    -- Is it a xml (or entity) or dtd
+    Kind : Flow_Kind_List := Xml_Flow;
+    -- File name (empty if stdin or string)
+    Name : Ada.Strings.Unbounded.Unbounded_String;
+    -- Current line No
+    Line : Natural := 0;
+    -- Encoding of each kind of flow
+    Encod : Encod_List := Utf8;
+    -- Remaining bytes when UTF8 characters
+    -- are re-inserted in a UTF16 flow
+    Nb_Bytes : Bytes_Range := 0;
+    -- If Flow is a file (Text_Char)
+    File : File_Access;
+    -- If Flow is a String
+    In_Str : Ada.Strings.Unbounded.Unbounded_String;
+    In_Stri : Natural := 0;
+  end record;
+
+  -- Pool of flows of external entities
+  package Flow_Pool_Mng is new Unlimited_Pool (Flow_Info_Type);
+
+  type Flow_Type is record
     -- To know how many where got before End_Error
-    Nb_Got : Natural;
+    Nb_Got : Natural := 0;
     -- Circular buffer of read characters
     Circ : My_Circ.Circ_Type;
-    -- Current line of input and in dtd
-    Xml_Line : Natural := 0;
-    Dtd_Line : Natural := 0;
     -- Error message
     Err_Msg : Ada.Strings.Unbounded.Unbounded_String;
     -- Current significant string, loaded by Parse_Until_xxx
@@ -355,17 +375,10 @@ private
     Recording : Boolean := False;
     Skip_Recording : Integer := No_Skip_Rec;
     Recorded : Ada.Strings.Unbounded.Unbounded_String;
-    -- Saved line of input (when switching to dtd file and back)
-    -- Inputs flows: string and index, or files
-    In_Str : Ada.Strings.Unbounded.Unbounded_String;
-    In_Stri : Natural := 0;
-    Xml_File : Text_Char.File_Type;
-    Dtd_File : Text_Char.File_Type;
-    -- Encoding of each kind of flow
-    Encod_Str, Encod_Xml, Encod_Dtd: Encod_List := Utf8;
-    -- Remaining bytes in each kind of flow when UTF8 characters
-    -- are re-inserted in a UTF16 flow
-    Nb_Bytes_Str, Nb_Bytes_Xml, Nb_Bytes_Dtd : Bytes_Range := 0;
+    -- Current flow
+    Curr_Flow : Flow_Info_Type;
+    -- Previous Xml flow, dtd flow, External entity flows
+    Flows : Flow_Pool_Mng.Pool_Type;
   end record;
 
   --------------
@@ -464,9 +477,6 @@ private
     Int_Def : Ada.Strings.Unbounded.Unbounded_String;
   end record;
 
-  -- Pool (stack) of file path
-  package Ustr_Pool_Mng is new Unlimited_Pool
-          (Ada.Strings.Unbounded.Unbounded_String);
 
 
   ------------------
@@ -478,8 +488,6 @@ private
   type Ctx_Type is limited new Ada.Finalization.Limited_Controlled with record
     Status  : Ctx_Status_List := Clean;
     Magic : Float := Clean_Magic;
-    -- Stack of file names
-    File_Stack : Ustr_Pool_Mng.Pool_Type;
     -- Input flow description
     Flow : Flow_Type;
     -- Parse or skip comments
@@ -502,9 +510,9 @@ private
     -- List of Idrefs
     Idrefs : Idref_List_Access := new Idref_List_Mng.List_Type;
   end record;
-  procedure Finalize (Ctx : in out Ctx_Type);
+  overriding procedure Finalize (Ctx : in out Ctx_Type);
 
-  procedure Finalize (Node : in out Node_Update);
+  overriding procedure Finalize (Node : in out Node_Update);
 
   -- For Xml_Generator
   function Get_Magic return Float;

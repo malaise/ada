@@ -694,7 +694,7 @@ package body Dtd is
       -- Autodetect encoding and check
       Util.Guess_Encoding (Ctx.Flow);
       Trace ("Detected dtd encoding format "
-           & Util.Get_Encoding (Ctx.Flow)'Img);
+           & Ctx.Flow.Curr_Flow.Encod'Img);
     end if;
 
     loop
@@ -748,12 +748,15 @@ package body Dtd is
   -- Parse a dtd (either a external file or internal if name is empty)
   procedure Parse (Ctx : in out Ctx_Type;
                    Adtd : in out Dtd_Type;
-                   File_Name : in String;
+                   File_Name : in Asu_Us;
                    Name_Raise_Parse : in Boolean := True) is
+    use type Asu_Us;
   begin
+    Ctx.Flow.Curr_Flow.Kind := Dtd_Flow;
     if File_Name = String_Flow then
       -- String of Ctx
       Trace ("Dtd parsing string");
+      Ctx.Flow.Curr_Flow.Is_File := False;
       Parse (Ctx, Adtd, True);
     elsif File_Name = Internal_Flow then
       -- Internal declarations (string or file) of Ctx
@@ -761,13 +764,16 @@ package body Dtd is
       Parse (Ctx, Adtd, False);
     else
       -- File name
-      Trace ("Dtd parsing file " & File_Name);
-      File_Mng.Open (File_Name, Ctx.Flow.Dtd_File);
-      Ctx.Flow.Kind := Dtd_File;
-      Ctx.Flow.Dtd_Line := 1;
+      Ctx.Flow.Curr_Flow.Is_File := True;
+      Trace ("Dtd parsing file " & Asu_Ts (File_Name));
+      Ctx.Flow.Curr_Flow.Is_File := True;
+      Ctx.Flow.Curr_Flow.Kind := Dtd_Flow;
+      Ctx.Flow.Curr_Flow.Name := File_Name;
+      Ctx.Flow.Curr_Flow.Line := 1;
+      Ctx.Flow.Curr_Flow.File := new Text_Char.File_Type;
+      File_Mng.Open (Asu_Ts (File_Name), Ctx.Flow.Curr_Flow.File.all);
       Parse (Ctx, Adtd, True);
-      Ctx.Flow.Kind := Xml_File;
-      File_Mng.Close (Ctx.Flow.Dtd_File);
+      Reset (Ctx.Flow.Curr_Flow);
     end if;
     -- Dtd is now valid
     Trace ("Dtd parsed dtd");
@@ -776,7 +782,7 @@ package body Dtd is
     when File_Error =>
       -- Can only be raised if not internal nor string flow
       if Name_Raise_Parse then
-        Util.Error (Ctx.Flow, "Cannot open dtd file " & File_Name);
+        Util.Error (Ctx.Flow, "Cannot open dtd file " & Asu_Ts (File_Name));
       else
         raise;
       end if;

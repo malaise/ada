@@ -81,40 +81,14 @@ package body Util is
     -- So the Nb_Bytes_xxx must be Adjusted. Reset is acceptable
     --  because this is for sure the beginning of the flow.
     -- Store for flow
-    case Flow.Kind is
-      when Xml_File =>
-        Flow.Encod_Xml := Encod;
-        Flow.Nb_Bytes_Xml := 0;
-      when Xml_String =>
-        Flow.Encod_Str := Encod;
-        Flow.Nb_Bytes_Str := 0;
-      when Dtd_File =>
-        Flow.Encod_Dtd := Encod;
-        Flow.Nb_Bytes_Dtd := 0;
-    end case;
+    Flow.Curr_Flow.Encod := Encod;
+    Flow.Curr_Flow.Nb_Bytes := 0;
   end Guess_Encoding;
-
-  function Get_Encoding (Flow : Flow_Type) return Encod_List is
-  begin
-    case Flow.Kind is
-      when Xml_File =>
-        return Flow.Encod_Xml;
-      when Xml_String =>
-        return Flow.Encod_Str;
-      when Dtd_File =>
-        return Flow.Encod_Dtd;
-    end case;
-  end Get_Encoding;
 
   -- Current line of input
   function Get_Line_No (Flow : Flow_Type) return Natural is
   begin
-    case Flow.Kind is
-      when Xml_File | Xml_String =>
-        return Flow.Xml_Line;
-      when Dtd_File =>
-        return Flow.Dtd_Line;
-    end case;
+    return Flow.Curr_Flow.Line;
   end Get_Line_No;
 
   ------------------
@@ -239,7 +213,7 @@ package body Util is
     if Put_Line_No /= 0 then
       Asu.Append (Err_Msg, " at line" & Put_Line_No'Img);
     end if;
-    if Flow.Kind = Dtd_File then
+    if Flow.Curr_Flow.Kind = Dtd_Flow then
       if Put_Line_No /= 0 then
         Asu.Append (Err_Msg, " of");
       else
@@ -276,7 +250,21 @@ package body Util is
     Flow.Recorded := Asu_Null;
   end Stop_Recording;
 
-  -- Internal: Get one char on current flow
+  -- Internal: Get one char on current flow - Raw
+  procedure Get_One_Char (Flow : in out Flow_Type; Char : out Character) is
+  begin
+    if Flow.Curr_Flow.Is_File then
+      Char := Flow.Curr_Flow.File.Get;
+    else
+      if Flow.Curr_Flow.In_Stri = Asu.Length (Flow.Curr_Flow.In_Str) then
+        raise End_Error;
+      end if;
+      Flow.Curr_Flow.In_Stri := Flow.Curr_Flow.In_Stri + 1;
+      Char := Asu.Element (Flow.Curr_Flow.In_Str, Flow.Curr_Flow.In_Stri);
+    end if;
+  end;
+
+  -- Internal: Get one char on current flow - handle encoding
   Decoding_Error : exception;
   procedure Get_Char (Flow : in out Flow_Type; Char : out Character) is
     Str2 : Utf_8.Sequence(1 .. 2);
@@ -284,67 +272,25 @@ package body Util is
     Seq8 : Asu_Us;
     Unicode : Utf_8.Unicode_Number;
   begin
-    case Flow.Kind is
-      when Xml_File =>
-        if Flow.Encod_Xml = Utf8 then
-          -- Utf8 => get char
-          Char := Text_Char.Get (Flow.Xml_File);
-          return;
-        elsif Flow.Nb_Bytes_Xml /= 0 then
-          -- Utf16 but some chars in buffer => get char
-          Char := Text_Char.Get (Flow.Xml_File);
-          Flow.Nb_Bytes_Xml := Flow.Nb_Bytes_Xml - 1;
-          return;
-        else
-          -- Utf16 => read first word
-          Str2(1) := Text_Char.Get (Flow.Xml_File);
-          Str2(2) := Text_Char.Get (Flow.Xml_File);
-        end if;
-      when Xml_String =>
-        if Flow.In_Stri = Asu.Length (Flow.In_Str) then
-          raise End_Error;
-        end if;
-        if Flow.Encod_Str = Utf8 then
-          -- Utf8 => get char
-          Flow.In_Stri := Flow.In_Stri + 1;
-          Char := Asu.Element (Flow.In_Str, Flow.In_Stri);
-          return;
-        elsif Flow.Nb_Bytes_Str /= 0 then
-          -- Utf16 but some chars in buffer => get char
-          Flow.In_Stri := Flow.In_Stri + 1;
-          Char := Asu.Element (Flow.In_Str, Flow.In_Stri);
-          return;
-        else
-          -- Utf16 => read first word
-          if Flow.In_Stri = Asu.Length (Flow.In_Str) - 1 then
-            raise Decoding_Error;
-          end if;
-          Flow.In_Stri := Flow.In_Stri + 1;
-          Str2(1) := Asu.Element (Flow.In_Str, Flow.In_Stri);
-          Flow.In_Stri := Flow.In_Stri + 1;
-          Str2(2) := Asu.Element (Flow.In_Str, Flow.In_Stri);
-        end if;
-      when Dtd_File =>
-        if Flow.Encod_Dtd = Utf8 then
-          -- Utf8 => get char
-          Char := Text_Char.Get (Flow.Dtd_File);
-          return;
-        elsif Flow.Nb_Bytes_Dtd /= 0 then
-          -- Utf16 but some chars in buffer => get char
-          Char := Text_Char.Get (Flow.Dtd_File);
-          Flow.Nb_Bytes_Dtd := Flow.Nb_Bytes_Dtd - 1;
-          return;
-        else
-          -- Utf16 => read first word
-          Str2(1) := Text_Char.Get (Flow.Dtd_File);
-          Str2(2) := Text_Char.Get (Flow.Dtd_File);
-        end if;
-    end case;
+    if Flow.Curr_Flow.Encod = Utf8 then
+      -- Utf8 => get char
+      Get_One_Char (Flow, Char);
+      return;
+    elsif Flow.Curr_Flow.Nb_Bytes /= 0 then
+      -- Utf16 but some chars in buffer => get char
+      Get_One_Char (Flow, Char);
+      Flow.Curr_Flow.Nb_Bytes := Flow.Curr_Flow.Nb_Bytes - 1;
+      return;
+    else
+      -- Utf16 => read first word
+      Get_One_Char (Flow, Str2(1));
+      Get_One_Char (Flow, Str2(2));
+    end if;
 
     -- Decoding of UTF-16, common to all flows, get a Unicode
     Seq16(1 .. 1) := Utf_16.Merge (Str2);
     -- Convert to UTF-16BE
-    if Flow.Encod_Xml = Utf16_Le then
+    if Flow.Curr_Flow.Encod = Utf16_Le then
       Utf_16.Swap (Seq16(1));
     end if;
     if Utf_16.Nb_Chars (Seq16(1)) = 1 then
@@ -352,28 +298,14 @@ package body Util is
     else
       -- Need to read second word
       begin
-        case Flow.Kind is
-          when Xml_File =>
-            Str2(1) := Text_Char.Get (Flow.Xml_File);
-            Str2(2) := Text_Char.Get (Flow.Xml_File);
-          when Xml_String =>
-            if Flow.In_Stri >= Asu.Length (Flow.In_Str) - 1 then
-              raise Decoding_Error;
-            end if;
-            Flow.In_Stri := Flow.In_Stri + 1;
-            Str2(1) := Asu.Element (Flow.In_Str, Flow.In_Stri);
-            Flow.In_Stri := Flow.In_Stri + 1;
-            Str2(2) := Asu.Element (Flow.In_Str, Flow.In_Stri);
-          when Dtd_File =>
-            Str2(1) := Text_Char.Get (Flow.Dtd_File);
-            Str2(2) := Text_Char.Get (Flow.Dtd_File);
-        end case;
+        Get_One_Char (Flow, Str2(1));
+        Get_One_Char (Flow, Str2(2));
       exception
         when End_Error =>
           raise Decoding_Error;
       end;
       Seq16(2 .. 2) := Utf_16.Merge (Str2);
-      if Flow.Encod_Xml = Utf16_Le then
+      if Flow.Curr_Flow.Encod = Utf16_Le then
         Utf_16.Swap (Seq16(1));
       end if;
       Unicode := Utf_16.Decode (Seq16);
@@ -383,23 +315,19 @@ package body Util is
     Seq8 := Asu_Tus (Utf_8.Encode (Unicode));
 
     -- Re-insert in flow all but first character
-    case Flow.Kind is
-      when Xml_File =>
-        for I in reverse 2 .. Asu.Length (Seq8) loop
-          Text_Char.Unget (Flow.Xml_File, Asu.Element (Seq8, I));
-        end loop;
-        Flow.Nb_Bytes_Xml := Flow.Nb_Bytes_Xml + Asu.Length (Seq8) - 1;
-      when Xml_String =>
-        -- Insert Seq8 (2 .. Last) at current index of In_String
-        Asu.Insert (Flow.In_Str, Flow.In_Stri,
-                    Asu.Slice (Seq8, 2, Asu.Length (Seq8)) );
-        Flow.Nb_Bytes_Str := Flow.Nb_Bytes_Str + Asu.Length (Seq8) - 1;
-      when Dtd_File =>
-        for I in reverse 2 .. Asu.Length (Seq8) loop
-          Text_Char.Unget (Flow.Dtd_File, Asu.Element (Seq8, I));
-        end loop;
-        Flow.Nb_Bytes_Dtd := Flow.Nb_Bytes_Dtd + Asu.Length (Seq8) - 1;
-    end case;
+    if Flow.Curr_Flow.Is_File then
+      for I in reverse 2 .. Asu.Length (Seq8) loop
+        Flow.Curr_Flow.File.Unget (Asu.Element (Seq8, I));
+      end loop;
+      Flow.Curr_Flow.Nb_Bytes := Flow.Curr_Flow.Nb_Bytes
+                               + Asu.Length (Seq8) - 1;
+    else
+      -- Insert Seq8 (2 .. Last) at current index of In_String
+      Asu.Insert (Flow.Curr_Flow.In_Str, Flow.Curr_Flow.In_Stri,
+                  Asu.Slice (Seq8, 2, Asu.Length (Seq8)) );
+      Flow.Curr_Flow.Nb_Bytes := Flow.Curr_Flow.Nb_Bytes
+                               + Asu.Length (Seq8) - 1;
+    end if;
 
     -- Return First Char
     Char := Asu.Element (Seq8, 1);
@@ -431,11 +359,7 @@ package body Util is
       end if;
     end if;
     if Char = Lf then
-      if Flow.Kind /= Dtd_File then
-        Flow.Xml_Line := Flow.Xml_Line + 1;
-      else
-        Flow.Dtd_Line := Flow.Dtd_Line + 1;
-      end if;
+      Flow.Curr_Flow.Line := Flow.Curr_Flow.Line + 1;
     end if;
   exception
     when Text_Char.End_Error =>
@@ -464,17 +388,13 @@ package body Util is
     for I in 1 .. N loop
       My_Circ.Look_Last (Flow.Circ, Char);
       My_Circ.Discard_Last (Flow.Circ);
-      case Flow.Kind is
-        when Xml_File =>
-          Text_Char.Unget (Flow.Xml_File, Char);
-          Flow.Nb_Bytes_Xml := Flow.Nb_Bytes_Xml + 1;
-        when Xml_String =>
-          Flow.In_Stri := Flow.In_Stri - 1;
-          Flow.Nb_Bytes_Str := Flow.Nb_Bytes_Str + 1;
-        when Dtd_File =>
-          Text_Char.Unget (Flow.Dtd_File, Char);
-          Flow.Nb_Bytes_Dtd := Flow.Nb_Bytes_Dtd + 1;
-      end case;
+      if Flow.Curr_Flow.Is_File then
+        Flow.Curr_Flow.File.Unget (Char);
+        Flow.Curr_Flow.Nb_Bytes := Flow.Curr_Flow.Nb_Bytes + 1;
+      else
+        Flow.Curr_Flow.In_Stri := Flow.Curr_Flow.In_Stri - 1;
+        Flow.Curr_Flow.Nb_Bytes := Flow.Curr_Flow.Nb_Bytes + 1;
+      end if;
       if Flow.Recording then
         if Flow.Skip_Recording = No_Skip_Rec then
           -- Record this unget (remove the recorded get)
@@ -488,11 +408,7 @@ package body Util is
         end if;
       end if;
       if Char = Lf then
-        if Flow.Kind /= Dtd_File then
-          Flow.Xml_Line := Flow.Xml_Line - 1;
-        else
-          Flow.Dtd_Line := Flow.Dtd_Line - 1;
-        end if;
+        Flow.Curr_Flow.Line := Flow.Curr_Flow.Line - 1;
       end if;
     end loop;
   end Unget;
@@ -516,20 +432,13 @@ package body Util is
   -- Injects Str in flow so that it will be got
   procedure Insert (Flow : in out Flow_Type;  Str : in String) is
   begin
-    if Flow.Kind = Xml_String then
-      -- Insert Str after current pos (last read)
-      Asu.Insert (Flow.In_Str, Flow.In_Stri + 1, Str);
-    else
+    if Flow.Curr_Flow.Is_File then
       for I in reverse Str'Range loop
-        case Flow.Kind is
-          when Xml_File =>
-            Text_Char.Unget (Flow.Xml_File, Str(I));
-          when Xml_String =>
-            null;
-          when Dtd_File =>
-            Text_Char.Unget (Flow.Dtd_File, Str(I));
-        end case;
+        Flow.Curr_Flow.File.Unget (Str(I));
       end loop;
+    else
+      -- Insert Str after current pos (last read)
+      Asu.Insert (Flow.Curr_Flow.In_Str, Flow.Curr_Flow.In_Stri + 1, Str);
     end if;
     -- The inserted characters shall not be recorded (when got/ungot)
     if Flow.Recording then
@@ -764,7 +673,7 @@ package body Util is
       Got : Asu_Us;
     begin
       Entity_Mng.Get (Dtd.Entity_List, Asu_Tus (Name), False,
-                      Get_Encoding (Ctx.Flow), Got);
+                      Ctx.Flow.Curr_Flow.Encod, Got);
       return Asu_Ts (Got);
     exception
       when Entity_Mng.Entity_Not_Found =>
@@ -868,7 +777,7 @@ package body Util is
           end if;
         end if;
         Entity_Mng.Get (Dtd.Entity_List, Name, Starter = Param_Ref,
-                        Get_Encoding (Ctx.Flow), Val);
+                        Ctx.Flow.Curr_Flow.Encod, Val);
 
         -- Substitute from start to stop
         Asu.Replace_Slice (Result, Istart, Istop, Asu_Ts (Val));
