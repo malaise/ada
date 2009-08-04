@@ -1153,7 +1153,7 @@ package body Parse_Mng  is
     Adtd : Dtd_Type;
     use type Asu_Us;
   begin
-    if Ctx.Flow.Curr_Flow.Name /= Asu_Null then
+    if Ctx.Flow.Curr_Flow.Is_File then
       File_Mng.Open (Asu_Ts (Ctx.Flow.Curr_Flow.Name),
                      Ctx.Flow.Curr_Flow.File.all);
     end if;
@@ -1169,7 +1169,7 @@ package body Parse_Mng  is
     Dtd.Final_Check (Ctx);
     -- Clean Dtd before it disapears
     Dtd.Init (Adtd);
-    if Ctx.Flow.Curr_Flow.Name /= Asu_Null then
+    if Ctx.Flow.Curr_Flow.Is_File then
       File_Mng.Close (Ctx.Flow.Curr_Flow.File.all);
     end if;
   exception
