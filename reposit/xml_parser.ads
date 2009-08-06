@@ -11,8 +11,6 @@ with Queues, Trees, Unique_List, Text_Char, Dynamic_List, Unlimited_Pool;
 -- The following restrictions applies to all the parsing:
 --  - CDATA sections are detected only when a markup ('<') is expected or
 --    within text. Not "anywhere character data may occur" (parsing error).
---  - The detection and expansion of parameter entity references may not be
---    complete.
 package Xml_Parser is
 
   -- Version incremented at each significant change
