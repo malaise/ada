@@ -401,8 +401,8 @@ package body Dtd is
         or else Asu.Element (Enum, 1) = '|' then
           Util.Error (Ctx.Flow, "Invalid Enum definition");
         end if;
-        if not Util.Names_Ok (Enum, "|") then
-          Util.Error (Ctx.Flow, "Invalid name in Enum definition");
+        if not Util.Names_Ok (Enum, "|", True) then
+          Util.Error (Ctx.Flow, "Invalid nmtoken in Enum definition");
         end if;
         -- Replace '|' by '#' and prepend and append a '#'
         Enum := Asu_Tus (
