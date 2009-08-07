@@ -649,7 +649,7 @@ package body Util is
   procedure Expand_Vars (Ctx : in out Ctx_Type;
                          Dtd : in out Dtd_Type;
                          Text : in out Asu_Us;
-                         In_Dtd : in Boolean) is
+                         Context : in Context_List) is
     Result : Asu_Us;
     -- Number of ";" to skip (because within "&var;")
     Nb2Skip : Natural;
@@ -672,8 +672,8 @@ package body Util is
     function Variable_Of (Name : String) return String is
       Got : Asu_Us;
     begin
-      Entity_Mng.Get (Dtd.Entity_List, Asu_Tus (Name), False,
-                      Ctx.Flow.Curr_Flow.Encod, Got);
+      Entity_Mng.Get (Dtd.Entity_List, Ctx.Flow.Curr_Flow.Encod, Context,
+                      Asu_Tus (Name), False, Got);
       return Asu_Ts (Got);
     exception
       when Entity_Mng.Entity_Not_Found =>
@@ -688,7 +688,7 @@ package body Util is
 
   begin
     Check_Cdata (Text);
-    if not In_Dtd then
+    if not In_Dtd (Context) then
       -- In xml, only expand general entities
       if Ctx.Expand then
         -- If Parse was called with Expand_Entities = True
@@ -776,8 +776,8 @@ package body Util is
             Error (Ctx.Flow, "Unknown entity " & Asu_Ts (Name));
           end if;
         end if;
-        Entity_Mng.Get (Dtd.Entity_List, Name, Starter = Param_Ref,
-                        Ctx.Flow.Curr_Flow.Encod, Val);
+        Entity_Mng.Get (Dtd.Entity_List, Ctx.Flow.Curr_Flow.Encod, Context,
+                        Name, Starter = Param_Ref, Val);
 
         -- Substitute from start to stop
         Asu.Replace_Slice (Result, Istart, Istop, Asu_Ts (Val));
@@ -806,7 +806,7 @@ package body Util is
   procedure Expand_Name (Ctx : in out Ctx_Type;
                          Dtd : in out Dtd_Type;
                          Text : in out Asu_Us;
-                         In_Dtd : in Boolean) is
+                         Context : in Context_List) is
     Str : constant String := Asu_Ts (Text);
     Len : constant Natural := Str'Length;
     Ne, Np, Ns: Natural;
@@ -832,14 +832,14 @@ package body Util is
     or else String_Mng.Locate (Str, ";", Occurence => 2) /= 0 then
       Entity_Error;
     end if;
-    Expand_Vars (Ctx, Dtd, Text, In_Dtd);
+    Expand_Vars (Ctx, Dtd, Text, Context);
   end Expand_Name;
 
   -- Fix text: expand variables and remove repetition of separators
   procedure Fix_Text (Ctx : in out Ctx_Type;
                       Dtd : in out Dtd_Type;
                       Text : in out Asu_Us;
-                      In_Dtd : in Boolean;
+                      Context : in Context_List;
                       Preserve_Spaces : in Boolean) is
     Char : Character;
     Found : Boolean;
@@ -852,7 +852,7 @@ package body Util is
 
     -- Expand entities values
     S1 := Text;
-    Expand_Vars (Ctx, Dtd, S1, In_Dtd);
+    Expand_Vars (Ctx, Dtd, S1, Context);
 
     -- Skip Cr
     for I in 1 .. Asu.Length (S1) loop
@@ -862,7 +862,7 @@ package body Util is
       end if;
     end loop;
 
-    if not In_Dtd and then not Preserve_Spaces then
+    if not In_Dtd(Context) and then not Preserve_Spaces then
       -- Replace "{ Lf | Tab | Space }" by a space
       S1 := S2;
       S2 := Asu_Null;

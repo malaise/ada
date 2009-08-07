@@ -134,6 +134,8 @@ package body Xml_Parser is
       return Asu_Ts (Entity.Name);
     end if;
   end Image;
+  -- Entities differ if one is parameter and not the other
+  --  or if names differ
   function "=" (Current : Entity_Type; Criteria : Entity_Type) return Boolean is
     use type Asu_Us;
   begin

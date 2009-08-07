@@ -384,9 +384,11 @@ private
   --------------
   -- The stored entities
   type Entity_Type is record
-    Parameter : Boolean;
     Name : Ada.Strings.Unbounded.Unbounded_String;
     Value : Ada.Strings.Unbounded.Unbounded_String;
+    Parameter : Boolean;
+    Internal : Boolean;
+    Parsed : Boolean;
   end record;
   type Entity_Access is access all Entity_Type;
   procedure Set (To : out Entity_Type; Val : in Entity_Type);

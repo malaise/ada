@@ -4,25 +4,42 @@ separate (Xml_Parser)
 
 package body Parse_Mng  is
 
+  -- Context where a reference to entity is resolved
+  -- In Xml content, in attribute value, in entity value, in dtd
+  type Context_List is (Ref_Xml, Ref_Attribute, Ref_Entity, Ref_Dtd);
+  -- Is a context in dtd
+  function In_Dtd (Context : Context_List) return Boolean is
+  begin
+    return Context = Ref_Entity or else Context = Ref_Dtd;
+  end In_Dtd;
+
   -- Entity management
   package Entity_Mng is
     -- Initialise with default entities
     procedure Initialise (The_Entities : in out Entity_List_Mng.List_Type);
     -- Store an entity
     procedure Add (The_Entities : in out Entity_List_Mng.List_Type;
-                   Name, Value : in Asu_Us; Parameter : in Boolean);
+                   Name, Value : in Asu_Us;
+                   Parameter : in Boolean;
+                   Internal : in Boolean;
+                   Parsed : in Boolean);
     -- Check if an entity exists. May raise Invalid_Char_Code
     procedure Exists (The_Entities : in out Entity_List_Mng.List_Type;
-                      Name : in Asu_Us; Parameter : in Boolean;
+                      Name : in Asu_Us;
+                      Parameter : in Boolean;
                       Found : out Boolean);
+
     -- Get value of an entity. Raises Entity_Not_Found if none
     -- May raise Invalid_Char_Code
     procedure Get (The_Entities : in out Entity_List_Mng.List_Type;
-                   Name : in Asu_Us; Parameter : in Boolean;
                    Encod : in Encod_List;
+                   Context : in Context_List;
+                   Name : in Asu_Us;
+                   Parameter : in Boolean;
                    Got : out Asu_Us);
     Invalid_Char_Code : exception;
     Entity_Not_Found : exception;
+    Entity_Forbidden : exception;
   end Entity_Mng;
 
   -- Parsing utilities
@@ -128,7 +145,7 @@ package body Parse_Mng  is
     procedure Expand_Vars (Ctx : in out Ctx_Type;
                            Dtd : in out Dtd_Type;
                            Text : in out Asu_Us;
-                           In_Dtd : in Boolean);
+                           Context : in Context_List);
     -- Expand a name if it is a (parameter) entity reference
     -- Error if Text contains % or & but not at beginning
     -- Error if Text contains ; but not at end
@@ -136,12 +153,12 @@ package body Parse_Mng  is
     procedure Expand_Name (Ctx : in out Ctx_Type;
                            Dtd : in out Dtd_Type;
                            Text : in out Asu_Us;
-                           In_Dtd : in Boolean);
+                           Context : in Context_List);
     -- Fix text: expand entities and remove repetition of separators
     procedure Fix_Text (Ctx : in out Ctx_Type;
                         Dtd : in out Dtd_Type;
                         Text : in out Asu_Us;
-                        In_Dtd : in Boolean;
+                        Context : in Context_List;
                         Preserve_Spaces : in Boolean);
     -- Remove sepators from text
     function Remove_Separators (Text : Asu_Us) return Asu_Us;
@@ -170,7 +187,7 @@ package body Parse_Mng  is
   procedure Parse_Directive (Ctx : in out Ctx_Type;
                              Adtd : in out Dtd_Type;
                              Allow_Dtd : in Boolean;
-                             In_Dtd : in Boolean;
+                             Context : in Context_List;
                              Prev_Is_Text : in Boolean := False);
 
   -- Parse instruction <? >
@@ -181,7 +198,7 @@ package body Parse_Mng  is
   -- Parse a value "Value" or 'Value' (of an entity or, attribute default...)
   procedure Parse_Value (Ctx : in out Ctx_Type;
                          Adtd : in out Dtd_Type;
-                         In_Dtd : in Boolean;
+                         Context : in Context_List;
                          Value : out Asu_Us) is
     use type Asu_Us;
     Char : Character;
@@ -199,7 +216,7 @@ package body Parse_Mng  is
     Value := Util.Get_Curr_Str (Ctx.Flow);
     Util.Reset_Curr_Str (Ctx.Flow);
     -- Fix separators and expand entities
-    Util.Fix_Text (Ctx, Adtd, Value, In_Dtd, False);
+    Util.Fix_Text (Ctx, Adtd, Value, Context, False);
   end Parse_Value;
 
   -- Dtd management, uses util and the tree
@@ -283,7 +300,7 @@ package body Parse_Mng  is
                   Attribute_Name, Attr_Exists);
       end if;
       -- Parse value
-      Parse_Value (Ctx, Adtd, False, Attribute_Value);
+      Parse_Value (Ctx, Adtd, Ref_Attribute, Attribute_Value);
       if Of_Xml then
         Tree_Mng.Add_Xml_Attribute (Ctx.Prologue.all,
                   Attribute_Name, Attribute_Value, Line_No);
@@ -725,7 +742,7 @@ package body Parse_Mng  is
   procedure Parse_Directive (Ctx : in out Ctx_Type;
                              Adtd : in out Dtd_Type;
                              Allow_Dtd : in Boolean;
-                             In_Dtd : in Boolean;
+                             Context : in Context_List;
                              Prev_Is_Text : in Boolean := False) is
     Index : Natural;
     Ok : Boolean;
@@ -755,7 +772,7 @@ package body Parse_Mng  is
       -- Remove tailing "-->"
       Comment := Asu.Delete (Comment, Index, Index + 2);
       -- Add node
-      if not In_Dtd and then Ctx.Parse_Comments then
+      if not In_Dtd (Context) and then Ctx.Parse_Comments then
         if Tree_Mng.Is_Empty (Ctx.Elements.all) then
           -- No element => in prologue
           Tree_Mng.Move_Root (Ctx.Prologue.all);
@@ -835,7 +852,7 @@ package body Parse_Mng  is
         when Util.Directive =>
           -- Directive or comment or CDATA
           Check_Xml (Ctx);
-          Parse_Directive (Ctx, Adtd, Allow_Dtd, False);
+          Parse_Directive (Ctx, Adtd, Allow_Dtd, Ref_Xml);
         when Util.Start =>
           -- "<<" maybe "<<![CDATA["
           Util.Check_Cdata (Ctx.Flow);
@@ -923,7 +940,7 @@ package body Parse_Mng  is
             -- Element has no child but text (only separators)
             --  between start and stop, add it
             Create (True);
-            Util.Fix_Text (Ctx, Adtd, Text, False, Preserve);
+            Util.Fix_Text (Ctx, Adtd, Text, Ref_Xml, Preserve);
             Tree_Mng.Add_Text (Ctx.Elements.all, Text, Line_No);
             Add_Child (Ctx, Adtd, Children);
             Call_Callback (Ctx, False, True, False, Prev_Is_Text);
@@ -944,7 +961,8 @@ package body Parse_Mng  is
         elsif Char = Util.Directive then
           -- Must be a comment or CDATA
           Create (True);
-          Parse_Directive (Ctx, Adtd, Allow_Dtd => False, In_Dtd => False,
+          Parse_Directive (Ctx, Adtd, Allow_Dtd => False,
+                                      Context => Ref_Xml,
                                       Prev_Is_Text => Prev_Is_Text);
           Line_No := Util.Get_Line_No (Ctx.Flow);
           Util.Get_Separators (Ctx.Flow, Text);
@@ -980,7 +998,7 @@ package body Parse_Mng  is
           -- This "Start" is not a Cdata => End
           exit when not Ok;
         end loop;
-        Util.Fix_Text (Ctx, Adtd, Text, False, Preserve);
+        Util.Fix_Text (Ctx, Adtd, Text, Ref_Xml, Preserve);
         Tree_Mng.Add_Text (Ctx.Elements.all, Text, Line_No);
         Add_Child (Ctx, Adtd, Children);
         Call_Callback (Ctx, False, True, False);
@@ -1118,7 +1136,7 @@ package body Parse_Mng  is
           Util.Error (Ctx.Flow, "Unexpected processing instruction");
         when Util.Directive =>
           -- Directive : only comment
-          Parse_Directive (Ctx, Adtd, Allow_Dtd => False, In_Dtd => False);
+          Parse_Directive (Ctx, Adtd, Allow_Dtd => False, Context => Ref_Xml);
         when Util.Start =>
           -- "<<" maybe "<<![CDATA["
           Util.Check_Cdata (Ctx.Flow);

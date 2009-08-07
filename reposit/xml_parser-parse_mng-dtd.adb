@@ -164,7 +164,7 @@ package body Dtd is
     Util.Parse_Until_Char (Ctx.Flow, "" & Util.Space);
     Info_Name := Util.Get_Curr_Str (Ctx.Flow);
     Util.Reset_Curr_Str (Ctx.Flow);
-    Util.Expand_Name (Ctx, Adtd, Info_Name, In_Dtd => True);
+    Util.Expand_Name (Ctx, Adtd, Info_Name, Ref_Dtd);
     if not Util.Name_Ok (Info_Name) then
       Util.Error (Ctx.Flow, "Invalid name " & Asu_Ts (Info_Name));
     end if;
@@ -184,7 +184,7 @@ package body Dtd is
     Info.List := Util.Get_Curr_Str (Ctx.Flow);
     Util.Reset_Curr_Str (Ctx.Flow);
     -- Expand potential parameter entities and re-insert
-    Util.Fix_Text (Ctx, Adtd, Info.List, True, False);
+    Util.Fix_Text (Ctx, Adtd, Info.List, Ref_Dtd, False);
     Info.List := Util.Normalize_Separators (Info.List);
     Util.Insert (Ctx.Flow, Asu_Ts (Info.List));
 
@@ -226,7 +226,7 @@ package body Dtd is
           Info.List := Asu_Tus (
               String_Mng.Cut (Asu_Ts (Info.List), 8));
           -- Expand variables if any
-          Util.Fix_Text (Ctx, Adtd, Info.List, True, False);
+          Util.Fix_Text (Ctx, Adtd, Info.List, Ref_Dtd, False);
           Info.List := Util.Remove_Separators (Info.List);
           -- Check that everything between "|" are names
           if Asu.Element (Info.List, Asu.Length (Info.List)) = '|'
@@ -258,7 +258,7 @@ package body Dtd is
           Util.Unget (Ctx.Flow);
         end if;
         -- Expand variables if any
-        Util.Fix_Text (Ctx, Adtd, Info.List, True, False);
+        Util.Fix_Text (Ctx, Adtd, Info.List, Ref_Dtd, False);
         Info.List := Util.Remove_Separators (Info.List);
         -- Check valid names
         if not Util.Names_Ok (Info.List, "|,?*+()") then
@@ -322,7 +322,7 @@ package body Dtd is
     Util.Unget (Ctx.Flow);
     Elt_Name := Util.Get_Curr_Str (Ctx.Flow);
     Util.Reset_Curr_Str (Ctx.Flow);
-    Util.Expand_Name (Ctx, Adtd, Elt_Name, In_Dtd => True);
+    Util.Expand_Name (Ctx, Adtd, Elt_Name, Ref_Dtd);
     if not Util.Name_Ok (Elt_Name) then
       Util.Error (Ctx.Flow, "Invalid name " & Asu_Ts (Elt_Name));
     end if;
@@ -344,7 +344,7 @@ package body Dtd is
     Attlist := Util.Get_Curr_Str (Ctx.Flow);
     Util.Reset_Curr_Str (Ctx.Flow);
     -- Expand potential parameter entities and re-insert
-    Util.Fix_Text (Ctx, Adtd, Attlist, True, False);
+    Util.Fix_Text (Ctx, Adtd, Attlist, Ref_Dtd, False);
     Attlist := Util.Normalize_Separators (Attlist);
     Util.Insert (Ctx.Flow, Asu_Ts (Attlist));
 
@@ -359,7 +359,7 @@ package body Dtd is
       Util.Parse_Until_Char (Ctx.Flow, "" & Util.Space);
       Att_Name := Util.Get_Curr_Str (Ctx.Flow);
       Util.Reset_Curr_Str (Ctx.Flow);
-      Util.Expand_Name (Ctx, Adtd, Att_Name, In_Dtd => True);
+      Util.Expand_Name (Ctx, Adtd, Att_Name, Ref_Dtd);
       if not Util.Name_Ok (Att_Name) then
         Util.Error (Ctx.Flow, "Invalid attribute " & Asu_Ts (Att_Name));
       end if;
@@ -393,7 +393,7 @@ package body Dtd is
         Typ_Char := 'E';
         Util.Parse_Until_Char (Ctx.Flow, ")");
         Enum := Util.Get_Curr_Str (Ctx.Flow);
-        Util.Fix_Text (Ctx, Adtd, Enum, True, False);
+        Util.Fix_Text (Ctx, Adtd, Enum, Ref_Dtd, False);
         Enum := Util.Remove_Separators (Enum);
         Util.Reset_Curr_Str (Ctx.Flow);
         -- Check that everything between "|" are names
@@ -446,7 +446,7 @@ package body Dtd is
         end if;
       else
         -- Get default value for fixed or default attribute
-        Parse_Value (Ctx, Adtd, True, Def_Val);
+        Parse_Value (Ctx, Adtd, Ref_Dtd, Def_Val);
       end if;
 
       -- Check ID
@@ -559,18 +559,12 @@ package body Dtd is
     Util.Parse_Until_Char (Ctx.Flow, "" & Util.Space);
     Name := Util.Get_Curr_Str (Ctx.Flow);
     Util.Reset_Curr_Str (Ctx.Flow);
-    Util.Expand_Name (Ctx, Adtd, Name, In_Dtd => True);
+    Util.Expand_Name (Ctx, Adtd, Name, Ref_Dtd);
     -- Check name is valid and not already defined
     if not Util.Name_Ok (Name) then
       Util.Error (Ctx.Flow, "Invalid entity name " & Asu_Ts (Name));
     end if;
     Util.Skip_Separators (Ctx.Flow);
-    -- Check that it does not exist
-    Entity_Mng.Exists (Adtd.Entity_List, Name, Parameter, Found);
-    if Found then
-      Util.Error (Ctx.Flow, "Entity " & Asu_Ts (Parstr & Name)
-                          & " already defined");
-    end if;
     -- Only accept local entities
     Util.Check_Cdata (Ctx.Flow, 7);
     Util.Try (Ctx.Flow, "SYSTEM ", Found);
@@ -583,7 +577,7 @@ package body Dtd is
       end if;
     end if;
     -- Parse and expand value
-    Parse_Value (Ctx, Adtd, True, Value);
+    Parse_Value (Ctx, Adtd, Ref_Entity, Value);
     -- Must stop now
     Util.Skip_Separators (Ctx.Flow);
     Util.Get (Ctx.Flow, Char);
@@ -591,7 +585,7 @@ package body Dtd is
       Util.Error (Ctx.Flow, "Unexpected character at end of entity " & Char);
     end if;
     -- Store entity
-    Entity_Mng.Add (Adtd.Entity_List, Name, Value, Parameter);
+    Entity_Mng.Add (Adtd.Entity_List, Name, Value, Parameter, True, True);
     Trace ("Dtd parsed directive ENTITY -> " &  Asu_Ts (Parstr & Name)
          & " " & Asu_Ts(Value));
   end Parse_Entity;
@@ -608,7 +602,7 @@ package body Dtd is
     Util.Reset_Curr_Str (Ctx.Flow);
 
     -- Expand dtd entities
-    Util.Expand_Name (Ctx, Adtd, Word, In_Dtd => True);
+    Util.Expand_Name (Ctx, Adtd, Word, Ref_Dtd);
     if Asu_Ts (Word) = "IGNORE" then
       -- IGNORE directive, skip up to "]]>"
       Util.Parse_Until_Char (Ctx.Flow, "[");
@@ -649,7 +643,7 @@ package body Dtd is
       Util.Try (Ctx.Flow, Util.Doctype, Ok, Consume => False);
     end if;
     if Ok then
-      Parse_Directive (Ctx, Adtd, Allow_Dtd => False, In_Dtd => True);
+      Parse_Directive (Ctx, Adtd, False, Ref_Dtd);
       return;
     end if;
     -- Check for conditional directive
@@ -786,6 +780,8 @@ package body Dtd is
       else
         raise;
       end if;
+    when Entity_Mng.Entity_Forbidden =>
+      Util.Error (Ctx.Flow, "Forbidden entity reference in dtd");
   end Parse;
 
   -- Replace "##" by "," then suppress "#"
