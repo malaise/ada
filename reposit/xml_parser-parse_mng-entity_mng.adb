@@ -205,6 +205,7 @@ package body Entity_Mng is
         if not Parameter then
           if Entity.Parsed then
             -- Bypass => return the "&name;"
+            Trace ("Bypassing entity " & Asu_Ts (Name));
             Got := "&" & Entity.Name & ";";
           else
             Trace ("Unexpected unparsed entity reference " & Asu_Ts (Name)

@@ -644,20 +644,16 @@ package body Util is
       Check_Cdata (Asu_Tus(Got_Str(1 ..  Flow.Nb_Got)));
   end Try;
 
-  -- Expand %Var; and &#xx; if in dtd
-  -- or Expand &Var; if not in dtd, both recursively
+  -- Expand %Var; and &#xx; and &Var; if in dtd
+  -- or Expand &Var; and &#xx; if not in dtd, both recursively
   procedure Expand_Vars (Ctx : in out Ctx_Type;
                          Dtd : in out Dtd_Type;
                          Text : in out Asu_Us;
                          Context : in Context_List) is
     Result : Asu_Us;
-    -- Number of ";" to skip (because within "&var;")
-    Nb2Skip : Natural;
     -- Indexes of start and stop of variable name
     Istart, Istop : Natural;
-    -- Kind of starter
-    type Starter_Kind is (Param_Ref, Char_Ref, None);
-    Starter : Starter_Kind;
+    Starter : Character;
     -- Last valid index in string
     Last : Natural;
     -- Current character
@@ -667,6 +663,8 @@ package body Util is
     use type Asu_Us;
     -- Entity found
     Found : Boolean;
+    -- Do we need to restart
+    Restart : Boolean;
 
     -- Variable resolver, when not in dtd
     function Variable_Of (Name : String) return String is
@@ -702,92 +700,73 @@ package body Util is
       end if;
       return;
     end if;
+
     -- Expand variables when in dtd
-    -- Loop as long as an expansion occured
+    -- Restart at beginning as long as an expansion occured
     Result := Text;
-    Istart := 0;
-    Last := Asu.Length (Result);
+    Restart := False;
     loop
       -- Scan all the string
-      Istart := Istart + 1;
-      exit when Istart = Last;
+      Istart := 0;
+      Istop := 0;
+      Last := Asu.Length (Result);
 
-      -- Locate start of var name '%' or "&#"
-      if Asu.Element (Result, Istart) = '%' then
-        Starter := Param_Ref;
-      elsif Asu.Element (Result, Istart) = '&'
-      and then Asu.Element (Result, Istart + 1) = '#' then
-        Starter := Char_Ref;
-      else
-        Starter := None;
-      end if;
-
-      if Starter /= None then
-        -- Locate stop of var name ';',
-        -- skipping intermediate &var; sequences
-        Nb2Skip := 0;
-        Istop := 0;
-        for I in Istart + 1 .. Last loop
-          Char := Asu.Element (Result, I);
-          if Char = ';' then
-            if Nb2Skip = 0 then
-              -- Current ';' matches '%'
-              Istop := I;
-              exit;
-            else
-              -- Current ';' matches a '&'
-              Nb2Skip := Nb2Skip - 1;
-            end if;
-          elsif Char = '&' then
-            if I /= Last and then Asu.Element (Result, I + 1) = '#' then
-              -- A character reference within a %var;
-              -- Restart substitution from current
-              Istart := I - 1;
-              exit;
-            else
-              -- A &var; to skip
-              Nb2Skip := Nb2Skip + 1;
-            end if;
-          elsif Char = '%' then
-            -- A %var; within a %var;
-            -- Restart substitution from current
-            Istart := I - 1;
+      -- Locate last starter. Will need to restart if more that
+      -- one starter
+      -- And locate corresponding its stop
+      for I in 1 .. Last loop
+        -- Locate start of var name '%' or "&"
+        Char := Asu.Element (Result, I);
+        if Char = '%' then
+          Restart := Istart /= 0;
+          Istart := I;
+          Starter := Char;
+        elsif Char = '&' then
+          Restart := Istart /= 0;
+          Istart := I;
+          Starter := Char;
+        elsif Char = ';' then
+          if Istart /= 0 then
+            -- The end of a reference, otherwise ignore
+            Istop := I;
             exit;
           end if;
-        end loop;
+        end if;
+      end loop;
 
-        -- Check that a stop was found
-        if Istop = 0 then
-          Error (Ctx.Flow, "Unterminated entity reference " & Asu_Ts (Text));
-        end if;
-        -- Check that a stop is big enough
-        if Istop = Istart + 1 then
-          -- "%;"
-          Error (Ctx.Flow, "Emtpy entity reference " & Asu_Ts (Text));
-        end if;
-        -- Got an entity name: get value if it exists
-        Name := Asu_Tus (Asu.Slice (Result, Istart + 1, Istop - 1));
-        Entity_Mng.Exists (Dtd.Entity_List,
-                           Name, Starter = Param_Ref, Found);
-        if not Found then
-          if Starter = Param_Ref then
-            Error (Ctx.Flow, "Unknown entity %" & Asu_Ts (Name));
-          else
-            Error (Ctx.Flow, "Unknown entity " & Asu_Ts (Name));
-          end if;
-        end if;
-        Entity_Mng.Get (Dtd.Entity_List, Ctx.Flow.Curr_Flow.Encod, Context,
-                        Name, Starter = Param_Ref, Val);
+      -- Done when no reference
+      exit when Istart = 0;
 
-        -- Substitute from start to stop
-        Asu.Replace_Slice (Result, Istart, Istop, Asu_Ts (Val));
-        -- Istart is now the first replaced character. OK.
-        -- Update Last
-        -- "%Name;" has been replaced by "Val"
-        -- "&Name;" has been replaced by "Val" (Name constains '#')
-        Last := Last - Asu.Length (Name) - 2 + Asu.Length (Val);
+      if Istop = 0 then
+        -- A start with no stop => Error
+        Error (Ctx.Flow, "Unterminated entity reference " & Asu_Ts (Text));
       end if;
 
+      -- Check that a stop is big enough
+      if Istop = Istart + 1 then
+        -- "%;"
+        Error (Ctx.Flow, "Emtpy entity reference " & Asu_Ts (Text));
+      end if;
+
+      -- Got an entity name: get value if it exists (skip % & ;)
+      Name := Asu_Tus (Asu.Slice (Result, Istart + 1, Istop - 1));
+      Entity_Mng.Exists (Dtd.Entity_List,
+                           Name, Starter = '%', Found);
+      if not Found then
+        if Starter = '%' then
+          Error (Ctx.Flow, "Unknown entity %" & Asu_Ts (Name));
+        else
+          Error (Ctx.Flow, "Unknown entity " & Asu_Ts (Name));
+        end if;
+      end if;
+      Entity_Mng.Get (Dtd.Entity_List, Ctx.Flow.Curr_Flow.Encod, Context,
+                      Name, Starter = '%', Val);
+
+      -- Substitute from start to stop
+      Asu.Replace_Slice (Result, Istart, Istop, Asu_Ts (Val));
+
+      -- Done when no more reference
+      exit when not Restart;
     end loop;
 
     Text := Result;
