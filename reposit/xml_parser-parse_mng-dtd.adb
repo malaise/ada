@@ -1,4 +1,4 @@
-with Regular_Expressions, Parser, Int_Image;
+with Regular_Expressions, Parser, Int_Image, Mixed_Str;
 separate (Xml_Parser.Parse_Mng)
 package body Dtd is
 
@@ -22,10 +22,13 @@ package body Dtd is
     Adtd.Xml_Found := False;
     -- No encoding
     Adtd.Encoding := Asu_Null;
-    -- Clear entities
+    -- Reset entities
     Entity_Mng.Initialise (Adtd.Entity_List);
     -- Reset info list
     Info_Mng.Delete_List (Adtd.Info_List);
+    -- Reset lists of unparsed entities and notations
+    Adtd.Unparsed := Asu_Null;
+    Adtd.Notations := Asu_Null;
     -- Init with empty IDs and empty IDREFs
     Info.Name := Asu_Tus ("Idl");
     Info_Mng.Insert (Adtd.Info_List, Info);
@@ -108,20 +111,20 @@ package body Dtd is
       if Is_Sep (C) then
         if In_Word then
           -- End of word
-          Asu.Append (Res, "#)");
+          Asu.Append (Res, Info_Sep & ")");
           In_Word := False;
         end if;
       else
         if not In_Word then
           -- Start of word
-          Asu.Append (Res, "(#");
+          Asu.Append (Res, "(" & Info_Sep);
           In_Word := True;
         end if;
       end if;
       Asu.Append (Res, C);
     end loop;
     if In_Word then
-      Asu.Append (Res, "#)");
+      Asu.Append (Res, Info_Sep & ")");
     end if;
     -- Check that words are always separated: a '(' shall always be
     -- either the first of precceded by ( | or ,
@@ -225,8 +228,6 @@ package body Dtd is
           -- Remove heading #PCDATA
           Info.List := Asu_Tus (
               String_Mng.Cut (Asu_Ts (Info.List), 8));
-          -- Expand variables if any
-          Util.Fix_Text (Ctx, Adtd, Info.List, Ref_Dtd, False);
           Info.List := Util.Remove_Separators (Info.List);
           -- Check that everything between "|" are names
           if Asu.Element (Info.List, Asu.Length (Info.List)) = '|'
@@ -243,7 +244,8 @@ package body Dtd is
           end if;
           -- Replace '|' by '#' and prepend and append a '#'
           Info.List := Asu_Tus (
-            String_Mng.Replace ("#" & Asu_Ts (Info.List) & "#", "|", "#"));
+            String_Mng.Replace (Info_Sep & Asu_Ts (Info.List) & Info_Sep,
+                                "|", "" & Info_Sep));
         else
           Util.Error (Ctx.Flow, "Invalid Mixed definition");
         end if;
@@ -301,6 +303,8 @@ package body Dtd is
     Elt_Has_Id : Boolean;
     -- Is this attribute already defined
     Attr_Already_Set : Boolean;
+    -- Parser iterator
+    Iter : Parser.Iterator;
     use type Asu_Us;
 
     function Try (Str : String) return Boolean is
@@ -363,7 +367,8 @@ package body Dtd is
       if not Util.Name_Ok (Att_Name) then
         Util.Error (Ctx.Flow, "Invalid attribute " & Asu_Ts (Att_Name));
       end if;
-      -- Check that this attribute is not already defined, otherwise discard any new
+      -- Check that this attribute is not already defined, otherwise discard
+      --  any new definition
       -- Look for #attribute##
       Attr_Already_Set := String_Mng.Locate (Asu_Ts (Info.List),
              Info_Sep & Asu_Ts (Att_Name) & Info_Sep & Info_Sep) /= 0;
@@ -388,39 +393,75 @@ package body Dtd is
       elsif Try ("NMTOKENS ") then
         -- NMTOKENS type
         Typ_Char := 't';
+      elsif Try ("ENTITY ") then
+        -- ENTITY type
+        Typ_Char := 'Y';
+      elsif Try ("ENTITIES ") then
+        -- ENTITIES type
+        Typ_Char := 'y';
+      elsif Try ("NOTATION ") then
+        -- NOTATION type
+        Typ_Char := 'N';
+        Util.Skip_Separators (Ctx.Flow);
+        if Get /= '(' then
+          Util.Error (Ctx.Flow, "Invalid Notation definition");
+        end if;
       elsif Get = '(' then
         -- Enum type
         Typ_Char := 'E';
-        Util.Parse_Until_Char (Ctx.Flow, ")");
-        Enum := Util.Get_Curr_Str (Ctx.Flow);
-        Util.Fix_Text (Ctx, Adtd, Enum, Ref_Dtd, False);
-        Enum := Util.Remove_Separators (Enum);
-        Util.Reset_Curr_Str (Ctx.Flow);
-        -- Check that everything between "|" are names
-        if Asu.Element (Enum, Asu.Length (Enum)) = '|'
-        or else Asu.Element (Enum, 1) = '|' then
-          Util.Error (Ctx.Flow, "Invalid Enum definition");
-        end if;
-        if not Util.Names_Ok (Enum, "|", True) then
-          Util.Error (Ctx.Flow, "Invalid nmtoken in Enum definition");
-        end if;
-        -- Replace '|' by '#' and prepend and append a '#'
-        Enum := Asu_Tus (
-          String_Mng.Replace ("#" & Asu_Ts (Enum) & "#", "|", "#"));
       else
-        -- Get type
+        -- Unknown ATTLIST
         Util.Unget (Ctx.Flow);
         Util.Parse_Until_Char (Ctx.Flow, "" & Util.Space);
         Att_Type := Util.Get_Curr_Str (Ctx.Flow);
         Util.Reset_Curr_Str (Ctx.Flow);
-        if Asu_Ts (Att_Type) = "ENTITY"
-        or else Asu_Ts (Att_Type) = "ENTITIES"
-        or else Asu_Ts (Att_Type) = "NOTATION" then
-          Util.Error (Ctx.Flow, "Unsupported attribute type "
-                              & Asu_Ts (Att_Type));
-        else
-          Util.Error (Ctx.Flow, "Invalid attribute type " & Asu_Ts (Att_Type));
+        Util.Error (Ctx.Flow, "Invalid attribute type " & Asu_Ts (Att_Type));
+      end if;
+
+      -- Parse enumeration for Enum or Notation
+      if Typ_Char = 'E' or else Typ_Char = 'N' then
+        Util.Parse_Until_Char (Ctx.Flow, ")");
+        Enum := Util.Get_Curr_Str (Ctx.Flow);
+        Enum := Util.Remove_Separators (Enum);
+        Util.Reset_Curr_Str (Ctx.Flow);
+        if Enum = Asu_Null then
+          Util.Error (Ctx.Flow, "Empty enumeration");
         end if;
+        -- Check that everything between "|" are
+        -- nmtokens if Enum, names if Notation
+        if Asu.Element (Enum, Asu.Length (Enum)) = '|'
+        or else Asu.Element (Enum, 1) = '|' then
+          Util.Error (Ctx.Flow, "Invalid Enum definition");
+        end if;
+        if not Util.Names_Ok (Enum, "|", Allow_Token => Typ_Char = 'E') then
+          if Typ_Char = 'E' then
+            Util.Error (Ctx.Flow, "Invalid nmtoken in Enum definition");
+          else
+            Util.Error (Ctx.Flow, "Invalid name in Notation definition");
+          end if;
+        end if;
+        -- Replace '|' by '#' and prepend and append a '#'
+        Enum := Asu_Tus (
+          String_Mng.Replace (Info_Sep & Asu_Ts (Enum) & Info_Sep,
+                              "|", "" & Info_Sep));
+        -- Check unicity of entries
+        Parser.Set (Iter, Asu_Ts (Enum), Is_Sep'Access);
+        loop
+          declare
+            -- Next enum value
+            Val : constant String := Parser.Next_Word (Iter);
+          begin
+            exit when Val = "";
+            -- The val from Istart to Istop shall appear only once
+            if String_Mng.Locate (Asu_Ts (Enum),
+                                  Info_Sep & Val & Info_Sep,
+                                  Occurence => 2) /= 0 then
+              Util.Error (Ctx.Flow, "Enumerated value "
+                   & Val & " already used");
+            end if;
+          end;
+        end loop;
+        Parser.Del (Iter);
       end if;
 
       -- Check supported att defaults
@@ -469,7 +510,7 @@ package body Dtd is
       end if;
 
       -- Check Enum
-      if Typ_Char = 'E'
+      if (Typ_Char = 'E' or else Typ_Char = 'N')
       and then (Def_Char = 'D' or else Def_Char = 'F') then
         -- Enum and (default or fixed), check default is in enum
         --  and set the default in first pos
@@ -486,11 +527,12 @@ package body Dtd is
         Enum := Info_Sep & Asu_Ts (Def_Val) & Enum;
       end if;
 
-      -- If enum store Att of enum
-      --  or if fixed or default store Att of default
+      -- Discard re-definition of the same attribute
       if not Attr_Already_Set then
+        -- If enum store Att of enum
+        --  or if fixed or default store Att of default
         Attinfo.Name := "Att" & Info_Sep & Elt_Name & Info_Sep & Att_Name;
-        if Typ_Char = 'E' then
+        if Typ_Char = 'E' or else Typ_Char = 'N' then
           Attinfo.List := Enum;
           Info_Mng.Insert (Adtd.Info_List, Attinfo);
           Trace ("Dtd stored attribute type -> " & Asu_Ts (Attinfo.Name)
@@ -500,6 +542,12 @@ package body Dtd is
           Info_Mng.Insert (Adtd.Info_List, Attinfo);
           Trace ("Dtd stored attribute type -> " & Asu_Ts (Attinfo.Name)
            & " " & Asu_Ts(Attinfo.List));
+        end if;
+        -- Verify Notation is not used twice (##N)
+        if String_Mng.Locate (Asu_Ts (Info.List), Info_Sep & Info_Sep & "N")
+           /= 0 then
+          Util.Error (Ctx.Flow, "Notation already defined for element "
+                               & Asu_Ts (Info.Name));
         end if;
         -- Append this attribute in list: #attribute##td#attribute##td#...
         if Info.List = Asu_Null then
@@ -521,12 +569,18 @@ package body Dtd is
 
   -- Parse <!ENTITY
   procedure Parse_Entity (Ctx : in out Ctx_Type; Adtd : in out Dtd_Type) is
-    -- Entity name and value
+    -- Entity name, value (or URI or notation)
     Name, Value : Asu_Us;
     -- Is it a parameter entity
     Parameter : Boolean;
+    -- Is it Internal, and parsed
+    Internal : Boolean;
+    Parsed : Boolean;
     -- Is entity found
     Found : Boolean;
+    -- Is it public
+    Public : Boolean;
+    -- Parameter entity indicator
     Parstr : Asu_Us;
     Char : Character;
     use type Asu_Us;
@@ -555,6 +609,7 @@ package body Dtd is
       Parameter := False;
       Parstr := Asu_Null;
     end if;
+
     -- Parse entity name
     Util.Parse_Until_Char (Ctx.Flow, "" & Util.Space);
     Name := Util.Get_Curr_Str (Ctx.Flow);
@@ -565,30 +620,168 @@ package body Dtd is
       Util.Error (Ctx.Flow, "Invalid entity name " & Asu_Ts (Name));
     end if;
     Util.Skip_Separators (Ctx.Flow);
-    -- Only accept local entities
+
+    -- Is it a public a system or an internal entity
+    Internal := False;
+    Public := False;
     Util.Check_Cdata (Ctx.Flow, 7);
     Util.Try (Ctx.Flow, "SYSTEM ", Found);
-    if Found then
-      Util.Error (Ctx.Flow, "Unsupported SYSTEM external entity");
-     else
+    if not Found then
+      Public := True;
       Util.Try (Ctx.Flow, "PUBLIC ", Found);
-      if Found then
-        Util.Error (Ctx.Flow, "Unsupported PUBLIC external entity");
+      if not Found then
+        Internal := True;
       end if;
     end if;
-    -- Parse and expand value
-    Parse_Value (Ctx, Adtd, Ref_Entity, Value);
+
+    -- Parse value or URI
+    if Internal then
+      -- ENTITY [ % ] name "value"
+      -- Parse and expand value
+      Parse_Value (Ctx, Adtd, Ref_Entity, Value);
+      Util.Skip_Separators (Ctx.Flow);
+    else
+      if Public then
+        -- ENTITY [ % ] name PUBLIC "PubId" "URI"
+        -- Skip PubId
+        -- Parse URI or Id
+        Util.Get (Ctx.Flow, Char);
+        if Char = ''' then
+          Util.Parse_Until_Char (Ctx.Flow, "'");
+        elsif Char = '"' then
+          Util.Parse_Until_Char (Ctx.Flow, """");
+        else
+          Util.Error (Ctx.Flow, "Unexpected delimiter of PUBLIC Id");
+        end if;
+        Util.Reset_Curr_Str (Ctx.Flow);
+        Util.Skip_Separators (Ctx.Flow);
+      end if;
+      -- PUBLIC or SYSTEM: get URI
+      Util.Get (Ctx.Flow, Char);
+      if Char = ''' then
+        Util.Parse_Until_Char (Ctx.Flow, "'");
+      elsif Char = '"' then
+        Util.Parse_Until_Char (Ctx.Flow, """");
+      else
+        Util.Error (Ctx.Flow, "Unexpected delimiter of PUBLIC Id");
+      end if;
+      Value := Util.Get_Curr_Str (Ctx.Flow);
+      Util.Reset_Curr_Str (Ctx.Flow);
+      Util.Skip_Separators (Ctx.Flow);
+    end if;
+
+    -- See if Parsed, if not store notation
+    Parsed := True;
+    if not Parameter and then not Internal then
+      Util.Try (Ctx.Flow, "NDATA ", Found);
+      if Found then
+        Parsed := False;
+        Util.Parse_Name (Ctx.Flow, Value);
+        Util.Skip_Separators (Ctx.Flow);
+      end if;
+    end if;
+
     -- Must stop now
-    Util.Skip_Separators (Ctx.Flow);
     Util.Get (Ctx.Flow, Char);
     if Char /= Util.Stop then
       Util.Error (Ctx.Flow, "Unexpected character at end of entity " & Char);
     end if;
+
+    -- Check that it does not exist. Discard re-definition
+    Entity_Mng.Exists (Adtd.Entity_List, Name, Parameter, Found);
+    if Found then
+      Trace ("Dtd discarding re-definition of entity "
+           & Asu_Ts (Parstr & Name));
+      return;
+    end if;
+
+    -- Store associated notation if unparsed entity
+    if not Parsed then
+      if Adtd.Unparsed = Asu_Null then
+        Adtd.Unparsed := Asu_Tus (""  & Info_Sep);
+      end if;
+      Asu.Append (Adtd.Unparsed, Value & Info_Sep);
+      -- Associated value will be empty
+      Value := Asu_Null;
+    end if;
+
     -- Store entity
-    Entity_Mng.Add (Adtd.Entity_List, Name, Value, Parameter, True, True);
+    Entity_Mng.Add (Adtd.Entity_List, Name, Value, Parameter, Internal, Parsed);
     Trace ("Dtd parsed directive ENTITY -> " &  Asu_Ts (Parstr & Name)
-         & " " & Asu_Ts(Value));
+         & " " & Asu_Ts (Value) & " " & Mixed_Str (Internal'Img)
+         & " " & Mixed_Str (Parsed'Img) );
   end Parse_Entity;
+
+  -- Parse a <!NOTATION
+  procedure Parse_Notation (Ctx : in out Ctx_Type; Adtd : in out Dtd_Type) is
+    -- Notation name
+    Name : Asu_Us;
+    -- Is Notation found
+    Found : Boolean;
+    -- Is it public
+    Public : Boolean;
+    Char : Character;
+    use type Asu_Us;
+  begin
+    -- Parse notation name
+    Util.Skip_Separators (Ctx.Flow);
+    Util.Parse_Until_Char (Ctx.Flow, "" & Util.Space);
+    Name := Util.Get_Curr_Str (Ctx.Flow);
+    Util.Reset_Curr_Str (Ctx.Flow);
+    Util.Expand_Name (Ctx, Adtd, Name, Ref_Dtd);
+    -- Check name is valid and not already defined
+    if not Util.Name_Ok (Name) then
+      Util.Error (Ctx.Flow, "Invalid notation name " & Asu_Ts (Name));
+    end if;
+    Util.Skip_Separators (Ctx.Flow);
+    -- See if SYSTEM or PUBLIC
+    Public := False;
+    Util.Check_Cdata (Ctx.Flow, 7);
+    Util.Try (Ctx.Flow, "SYSTEM ", Found);
+    if not Found then
+      Public := True;
+      Util.Try (Ctx.Flow, "PUBLIC ", Found);
+    end if;
+    if not Found then
+      Util.Error (Ctx.Flow, "Invalid notation definition");
+    end if;
+    -- Parse URI or Id
+    Util.Get (Ctx.Flow, Char);
+    if Char = ''' then
+      Util.Parse_Until_Char (Ctx.Flow, "'");
+    elsif Char = '"' then
+      Util.Parse_Until_Char (Ctx.Flow, """");
+    else
+      Util.Error (Ctx.Flow, "Unexpected delimiter of notation");
+    end if;
+    Util.Reset_Curr_Str (Ctx.Flow);
+    -- Parse URI if PUBLIC not end
+    Util.Skip_Separators (Ctx.Flow);
+    Util.Try (Ctx.Flow, Util.Stop & "", Found, False);
+    if Public and then not Found then
+      Util.Get (Ctx.Flow, Char);
+      if Char = ''' then
+        Util.Parse_Until_Char (Ctx.Flow, "'");
+      elsif Char = '"' then
+        Util.Parse_Until_Char (Ctx.Flow, """");
+      else
+        Util.Error (Ctx.Flow, "Invalid notation definition");
+      end if;
+    end if;
+    Util.Reset_Curr_Str (Ctx.Flow);
+    -- Must stop now
+    Util.Skip_Separators (Ctx.Flow);
+    Util.Get (Ctx.Flow, Char);
+    if Char /= Util.Stop then
+      Util.Error (Ctx.Flow, "Unexpected character at end of notation " & Char);
+    end if;
+    -- Store notation
+    if Adtd.Notations = Asu_Null then
+      Adtd.Notations := Asu_Tus ("" & Info_Sep);
+    end if;
+    Asu.Append (Adtd.Notations, Name & Info_Sep);
+    Trace ("Dtd parsed directive NOTATION -> " &  Asu_Ts (Name));
+  end Parse_Notation;
 
   -- Parse a conditional directive
   procedure Parse_Condition (Ctx : in out Ctx_Type; Adtd : in out Dtd_Type) is
@@ -668,7 +861,7 @@ package body Dtd is
       elsif Str = "ENTITY" then
         Parse_Entity (Ctx, Adtd);
       elsif Str = "NOTATION" then
-        Util.Error (Ctx.Flow, "Unsupported NOTATION directive");
+        Parse_Notation (Ctx, Adtd);
       else
         Util.Error (Ctx.Flow, "Invalid directive " & Str);
       end if;
@@ -788,7 +981,8 @@ package body Dtd is
   function Strip_Sep (Us : in Asu_Us) return String is
     use String_Mng;
   begin
-    return Replace (Replace (Asu_Ts (Us), "##", ","), "#", "");
+    return Replace (Replace (Asu_Ts (Us), Info_Sep & Info_Sep, ","),
+                    "" & Info_Sep, "");
   end Strip_Sep;
 
   -- Check children of element

@@ -1,11 +1,11 @@
 with Ada.Strings.Unbounded, Ada.Finalization;
 with Queues, Trees, Unique_List, Text_Char, Dynamic_List, Unlimited_Pool;
 -- Parse Xml file or string, and provide read access to the corresponding tree
--- The following features of DTD are not supported (parsing error):
---  - ENTITY, ENTITIES and NOTATION attribute type
---  - SYSTEM and PUBLIC external entity
---  - NOTATION directive
--- The following limitations apply to the DOCTYPE directive of xml:
+-- The following restrictions apply to ENTITY
+--  - Parsed external entities are not parsed (empty value)
+--  - Unparsed external entities are not notifying
+-- The following limitations apply to the DOCTYPE directive of xml and
+-- to external parsed entities of dtd:
 --  - Only the system URI of the DOCTYPE is used, PUBLIC Id (if any) is skipped.
 --  - Only local file reference is fetched, no http :-) (parsing error)
 -- The following restrictions applies to all the parsing:
@@ -399,7 +399,8 @@ private
 
   -- Dtd info rec
   type Info_Rec is record
-    -- Kind'Img#Element_name[#Attribute_Name]
+    -- Kind#Element_name[#Attribute_Name]
+    -- Kind is Elt, Atl or Att
     Name : Ada.Strings.Unbounded.Unbounded_String;
     -- Elt: Possible children, first chars is <type> ::= E|A|M|C
     --  (empty, any, mixed or children), then
@@ -407,10 +408,10 @@ private
     --   (empty if only #PCDATA)
     --  for Children the regexp of "#<name>#"
     -- Atl: Possible attributes, list of "#<name>##<type><default>#"
-    --  <type> ::= S|I|R|r|T|t|E (String, ID, IDREF, IDREFS, NMTOKEN, NMTOKENS
-    --   or enum)
+    --  <type> ::= S|I|R|r|T|t|Y|y|N|E (String, ID, IDREF, IDREFS,
+    --  NMTOKEN, NMTOKENS, ENTITY, ENTITIES, NOTATION or enum)
     --  <default> ::= R|I|F|D (required, implied, fixed or default)
-    -- Att: for a fixed of any type or the a default of not enum, the value
+    -- Att: for a fixed of any type or the default of not enum, the value
     --   for an Enum, the list of possible "<name>#" and, if there is a default
     --   this value is the first
     List : Ada.Strings.Unbounded.Unbounded_String;
@@ -434,6 +435,9 @@ private
     Info_List : Info_Mng.List_Type;
     -- Parsed entities
     Entity_List : Entity_List_Mng.List_Type;
+    -- Unparsed entities and notations
+    Unparsed : Ada.Strings.Unbounded.Unbounded_String;
+    Notations : Ada.Strings.Unbounded.Unbounded_String;
     -- Are we in an INCLUDE directive
     In_Include : Boolean := False;
   end record;

@@ -651,6 +651,8 @@ package body Util is
                          Text : in out Asu_Us;
                          Context : in Context_List) is
     Result : Asu_Us;
+    -- Indexes of start of search
+    Sstart : Positive;
     -- Indexes of start and stop of variable name
     Istart, Istop : Natural;
     Starter : Character;
@@ -705,16 +707,19 @@ package body Util is
     -- Restart at beginning as long as an expansion occured
     Result := Text;
     Restart := False;
+    Istart := 1;
     loop
-      -- Scan all the string
-      Istart := 0;
-      Istop := 0;
+      -- Start searching new reference from Istart to Last
+      Sstart := Istart;
       Last := Asu.Length (Result);
 
-      -- Locate last starter. Will need to restart if more that
-      -- one starter
-      -- And locate corresponding its stop
-      for I in 1 .. Last loop
+      -- Default: not found
+      Istart := 0;
+      Istop := 0;
+
+      -- Locate first deepest starter and corresponding stop
+      -- Will need to restart if more that one starter
+      for I in Sstart .. Last loop
         -- Locate start of var name '%' or "&"
         Char := Asu.Element (Result, I);
         if Char = '%' then
@@ -734,8 +739,14 @@ package body Util is
         end if;
       end loop;
 
-      -- Done when no reference
-      exit when Istart = 0;
+      -- End of this scanning
+      if Istart = 0 then
+        -- Done when no reference
+        exit when not Restart;
+        -- Restart scanning from 1 to Last
+        Restart := False;
+        Istart := 1;
+      end if;
 
       if Istop = 0 then
         -- A start with no stop => Error
@@ -765,8 +776,12 @@ package body Util is
       -- Substitute from start to stop
       Asu.Replace_Slice (Result, Istart, Istop, Asu_Ts (Val));
 
-      -- Done when no more reference
-      exit when not Restart;
+      -- Non parameter entity bypassed => &name; -> &name;
+      --  restart from after length of Val
+      if Starter = '&' then
+        Istart := Istart + Asu.Length (Val);
+      end if;
+
     end loop;
 
     Text := Result;
@@ -889,7 +904,7 @@ package body Util is
   begin
     -- Replace any separator by a space
     for I in Res'Range loop
-      if Util.Is_Separator (Res(I)) then
+      if Is_Separator (Res(I)) then
         Res(I) := Util.Space;
       end if;
     end loop;

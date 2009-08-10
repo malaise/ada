@@ -221,6 +221,14 @@ package body Entity_Mng is
         end if;
     end case;
 
+    -- At present, external parsed entities are not expanded
+    -- Shall replace Got by the result of its parsing
+    -- @@@
+    if Entity.Parsed and then not Entity.Internal then
+      Trace ("External entity " & Asu_Ts (Name) & " with URI "
+           & Asu_Ts (Got) & " not yet expanded");
+      Got := Asu_Null;
+    end if;
   exception
     when Entity_List_Mng.Not_In_List =>
       Trace ("Unknown entity name " & Asu_Ts (Entity.Name));
