@@ -236,6 +236,8 @@ package body Parse_Mng  is
                      Adtd : in out Dtd_Type;
                      File_Name : in Asu_Us;
                      Name_Raise_Parse : in Boolean := True);
+    -- Perform final checks after DTD parsing: unparsed entities v.s. notations
+    procedure Final_Dtd_Check (Ctx  : in out Ctx_Type; Adtd : in out Dtd_Type);
     -- Check current element of the tree
     procedure Check_Element (Ctx  : in out Ctx_Type;
                              Adtd : in out Dtd_Type;
@@ -253,7 +255,7 @@ package body Parse_Mng  is
     -- Check a whole element tree recursively
     procedure Check_Subtree (Ctx  : in out Ctx_Type;
                              Adtd : in out Dtd_Type);
-    -- Perform final checks: that IDREF(s) appear as ID
+    -- Perform final checks after XML parsing: that IDREF(s) appear as ID
     procedure Final_Check (Ctx  : in out Ctx_Type);
   end Dtd;
 
@@ -874,6 +876,8 @@ package body Parse_Mng  is
                                              Ctx.Flow.Curr_Flow.Name));
       Ctx.Flow.Flows.Pop (Ctx.Flow.Curr_Flow);
     end if;
+    -- Perform final checks on Dtd (unparsed entities v;s. notations)
+    Dtd.Final_Dtd_Check (Ctx, Adtd);
     Tree_Mng.Move_Root (Ctx.Prologue.all);
     -- Delete completely the prologue if callback
     Delete_Node (Ctx, True, True);
