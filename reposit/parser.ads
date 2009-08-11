@@ -11,7 +11,7 @@ package Parser is
              := Is_Space_Or_Htab_Function'Access;
 
   -- Access key
-  type Iterator is limited private;
+  type Iterator is tagged limited private;
 
   -- Initialise the iterator Iter with the string to parse and the criteria.
   -- Previous content of Iter is overwritten.
