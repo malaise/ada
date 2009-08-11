@@ -169,7 +169,7 @@ package body Unique_List is
                      Iteration : access
      procedure (Current : in Element_Type;
                 Go_On   : in out Boolean);
-                From      : in Reference := From_First) is
+                     From      : in Reference := From_First) is
     Item : Element_Type;
     Moved : Boolean;
     Go_On : Boolean;
@@ -195,6 +195,35 @@ package body Unique_List is
       exit when not Go_On or else not Moved;
     end loop;
   end Iterate;
+
+ -- Rewind internal list and read successive items
+  procedure Rewind (List : in out List_Type;
+                    From : in Reference := From_First) is
+  begin
+    if List_Mng.Is_Empty (List.List) then
+      raise Not_In_List;
+    end if;
+    if From = From_First then
+      List_Mng.Rewind (List.List, List_Mng.Next);
+    else
+      List_Mng.Rewind (List.List, List_Mng.Prev);
+    end if;
+  end Rewind;
+
+  procedure Read (List : in out List_Type;
+                  Item : out Element_Type;
+                  From : in Reference := From_First;
+                  Moved : out Boolean) is
+  begin
+    if List_Mng.Is_Empty (List.List) then
+      raise Not_In_List;
+    end if;
+    if From = From_First then
+      List_Mng.Read (List.List, Item, List_Mng.Next, Moved);
+    else
+      List_Mng.Read (List.List, Item, List_Mng.Prev, Moved);
+    end if;
+  end Read;
 
 end Unique_List;
 

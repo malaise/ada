@@ -91,8 +91,21 @@ package Unique_List is
                      Iteration : access
      procedure (Current : in Element_Type;
                 Go_On   : in out Boolean);
-                From    : in Reference := From_First);
+                     From    : in Reference := From_First);
 
+  -- Rewind internal list
+  -- May raise Not_In_List if list is empty
+  procedure Rewind (List : in out List_Type;
+                    From : in Reference := From_First);
+  -- Read successive items
+  -- May raise Not_In_List if list is empty
+  procedure Read (List : in out List_Type;
+                  Item : out Element_Type;
+                  From : in Reference := From_First;
+                  Moved : out Boolean);
+
+
+  -- EXCEPTIONS
   -- When inserting
   Full_List : exception;
 
