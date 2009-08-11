@@ -1,12 +1,10 @@
 with Ada.Strings.Unbounded, Ada.Finalization;
 with Queues, Trees, Unique_List, Text_Char, Dynamic_List, Unlimited_Pool;
 -- Parse Xml file or string, and provide read access to the corresponding tree
--- The following restrictions apply to ENTITY
---  - Parsed external entities are not parsed (empty value)
---  - Unparsed external entities are not notifying
--- The following limitations apply to the DOCTYPE directive of xml and
--- to external parsed entities of dtd:
---  - Only the system URI of the DOCTYPE is used, PUBLIC Id (if any) is skipped.
+-- Limitations:
+--  - Unparsed external entities and notations are not notifying.
+--  - Only the system URI of the DOCTYPE and external parsed ENTITY is used,
+--    PUBLIC Id (if any) is skipped.
 --  - Only local file reference is fetched, no http :-) (parsing error)
 -- The following restrictions applies to all the parsing:
 --  - CDATA sections are detected only when a markup ('<') is expected or
@@ -400,7 +398,7 @@ private
   -- Dtd info rec
   type Info_Rec is record
     -- Kind#Element_name[#Attribute_Name]
-    -- Kind is Elt, Atl or Att
+    -- Kind is Elt, Atl, Att
     Name : Ada.Strings.Unbounded.Unbounded_String;
     -- Elt: Possible children, first chars is <type> ::= E|A|M|C
     --  (empty, any, mixed or children), then
@@ -415,6 +413,7 @@ private
     --   for an Enum, the list of possible "<name>#" and, if there is a default
     --   this value is the first
     List : Ada.Strings.Unbounded.Unbounded_String;
+    Line : Natural;
   end record;
 
   -- Unique list of Info_Rec
@@ -435,9 +434,12 @@ private
     Info_List : Info_Mng.List_Type;
     -- Parsed entities
     Entity_List : Entity_List_Mng.List_Type;
-    -- Unparsed entities and notations
+    -- Unparsed entities: #Entity##Line##Notation#Entity##Line##Notation#e...
     Unparsed : Ada.Strings.Unbounded.Unbounded_String;
+    -- Notations: #Notation#Notation#...
     Notations : Ada.Strings.Unbounded.Unbounded_String;
+    -- Notation attributes: #Elt##Attr#Elt##Attr#...
+    Notation_Attrs : Ada.Strings.Unbounded.Unbounded_String;
     -- Are we in an INCLUDE directive
     In_Include : Boolean := False;
   end record;
