@@ -223,12 +223,16 @@ begin
             My_Io.Put_Line ("Env variable substitution");
             My_Io.Put ("Start delimiter (Str)? "); My_Io.Get_Line (Str1, Nat1);
             My_Io.Put ("Stop delimiter (Str)? ");  My_Io.Get_Line (Str2, Nat2);
+            My_Io.Put ("Multiple passes (YN)? "); Bool_Get(Bool1);
+            My_Io.Put ("No check of stop (YN)? "); Bool_Get(Bool2);
             My_Io.Put_Line ("Substitued: |"
               & String_Mng.Eval_Variables (
                         Str(1 .. Str_Len),
                         Start_Delimiter => Str1(1 .. Nat1),
                         Stop_Delimiter => Str2(1 .. Nat2),
-                        Resolv => Environ.Getenv'Access)
+                        Resolv => Environ.Getenv'Access,
+                        Muliple_Passes => Bool1,
+                        No_Check_Stop => Bool2)
               & "|" );
           when 12 =>
             My_Io.Put_Line ("Escape sequence location");
