@@ -255,7 +255,9 @@ package body Computer is
   function Eval (Expression : String) return String is
   begin
     return String_Mng.Eval_Variables (
-              Expression, "${", "}", Ext_Get'Access);
+              Expression, "${", "}", Ext_Get'Access,
+              Muliple_Passes => True,
+              No_Check_Stop => False);
   exception
     when String_Mng.Inv_Delimiter | String_Mng.Delimiter_Mismatch =>
       raise Invalid_Expression;
