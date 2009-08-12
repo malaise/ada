@@ -698,12 +698,13 @@ package body Util is
                            Start_Delimiter => "&",
                            Stop_Delimiter  => ";",
                            Resolv => Variable_Of'Access,
+                           Muliple_Passes => False,
                            No_Check_Stop => True));
       end if;
       return;
     end if;
 
-    -- Expand variables when in dtd
+    -- Expand when in dtd: parameter entities and character references
     -- Restart at beginning as long as an expansion occured
     Result := Text;
     Restart := False;
@@ -720,13 +721,15 @@ package body Util is
       -- Locate first deepest starter and corresponding stop
       -- Will need to restart if more that one starter
       for I in Sstart .. Last loop
-        -- Locate start of var name '%' or "&"
+        -- Locate start of var name '%' or "&#"
         Char := Asu.Element (Result, I);
         if Char = '%' then
           Restart := Istart /= 0;
           Istart := I;
           Starter := Char;
-        elsif Char = '&' then
+        elsif Char = '&'
+        and then I /= Last
+        and then Asu.Element (Result, I+1) = '#' then
           Restart := Istart /= 0;
           Istart := I;
           Starter := Char;

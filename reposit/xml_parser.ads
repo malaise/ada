@@ -2,6 +2,7 @@ with Ada.Strings.Unbounded, Ada.Finalization;
 with Queues, Trees, Unique_List, Text_Char, Dynamic_List, Unlimited_Pool;
 -- Parse Xml file or string, and provide read access to the corresponding tree
 -- Limitations:
+--  - Parsed external entities are not parsed (empty value).
 --  - Unparsed external entities and notations are not notifying.
 --  - Only the system URI of the DOCTYPE and external parsed ENTITY is used,
 --    PUBLIC Id (if any) is skipped.
