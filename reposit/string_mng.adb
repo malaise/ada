@@ -304,22 +304,24 @@ package body String_Mng is
     end if;
   end Unique;
 
-  -- Replace recursively all variables by their values provided by the
-  --  Resolv callback.
+  -- Replace all variables by their values provided by the Resolv callback.
   -- A variable name is identified because it is within delimiters (strings).
-  -- Start and stop delimiters must be non empty and different (e.g. "(" and ")",
-  --  or "${" and "}"), otherwise Inv_Delimiter is raised.
+  -- Start and stop delimiters must be non empty and different (e.g. "(" and ")"  --  or "${" and "}"), otherwise Inv_Delimiter is raised.
   -- Variables may be defined recursively (e.g. ${Foo${Bar}}).
   -- Delimiter number must match (as many stop as start and in consistent
   --  sequence e.g. {}}{ s forbidden), otherwise the exception
   --  Delimiter_Mismatch is raised.
+  -- On option Recursive, loops re-avaluating as long as possible (otherwise
+  --  only one pass)
+  -- On option No_Check_Stop, extra stops are accepted ({}} is OK)
   -- If no callback is set (Resolv = null) then variables are replaced by
   --  empty strings.
   function Eval_Variables (Str : String;
                            Start_Delimiter, Stop_Delimiter : in String;
                            Resolv : access
     function (Variable_Name : String) return String;
-                           No_Check_Stop : Boolean := False) return String is
+                           Muliple_Passes : Boolean;
+                           No_Check_Stop : Boolean) return String is
 
 
     -- The string to work on
@@ -440,6 +442,7 @@ package body String_Mng is
         -- Search delimiters in next char
         Curr_Index := Curr_Index + 1;
       end loop;
+      exit when not Muliple_Passes;
     end loop;
 
     -- Final level must be 0

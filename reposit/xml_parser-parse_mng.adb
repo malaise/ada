@@ -472,7 +472,7 @@ package body Parse_Mng  is
                          In_Prologue : in Boolean;
                          Deallocate : in Boolean := False) is
   begin
-     if Ctx.Callback = null then
+    if Ctx.Callback = null then
       return;
     end if;
     if In_Prologue then
@@ -556,7 +556,7 @@ package body Parse_Mng  is
   procedure Parse_Instruction (Ctx : in out Ctx_Type;
                                Adtd : in out Dtd_Type) is
     Char : Character;
-    Name : Asu_Us;
+    Name, Value : Asu_Us;
     Ok : Boolean;
     Str3 : String (1 .. 3);
   begin
@@ -609,23 +609,29 @@ package body Parse_Mng  is
     end if;
     Util.Reset_Curr_Str (Ctx.Flow);
     Util.Read (Ctx.Flow, Char);
-    if Char /= Util.Instruction then
-      -- Some text after the name
+    if Char = Util.Instruction then
+      -- Skip to the end
+      Util.Get (Ctx.Flow, Char);
+      if Char /= Util.Stop then
+        Util.Error (Ctx.Flow, "Unvalid processing instruction termination");
+      end if;
+    else
+      -- Some text after the name, get it until "?>"
       Util.Skip_Separators (Ctx.Flow);
-      Util.Parse_Until_Char (Ctx.Flow, Util.Instruction & "");
+      Util.Parse_Until_Str (Ctx.Flow, Util.Instruction & Util.Stop);
+      -- Skip "?>"
+      Value := Util.Get_Curr_Str (Ctx.Flow);
+      Value := Asu.Delete (Value, Asu.Length (Value) - 1, Asu.Length (Value));
+      Util.Reset_Curr_Str (Ctx.Flow);
     end if;
     -- Add node
+    Trace ("Parsed <?" & Asu_Ts (Name) & " "
+         & Asu_Ts (Value) & "?>");
     Tree_Mng.Move_Root (Ctx.Prologue.all);
-    Tree_Mng.Add_Pi (Ctx.Prologue.all, Name, Util.Get_Curr_Str (Ctx.Flow),
+    Tree_Mng.Add_Pi (Ctx.Prologue.all, Name, Value,
                      Util.Get_Line_No(Ctx.Flow));
     Call_Callback (Ctx, True, True);
     Delete_Node (Ctx, True);
-    Util.Reset_Curr_Str (Ctx.Flow);
-    -- Skip to the end
-    Util.Get (Ctx.Flow, Char);
-    if Char /= Util.Stop then
-      Util.Error (Ctx.Flow, "Unvalid processing instruction termination");
-    end if;
   exception
     when Util.End_Error =>
       Util.Error (Ctx.Flow,

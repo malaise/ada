@@ -13,7 +13,7 @@ with Queues, Trees, Unique_List, Text_Char, Dynamic_List, Unlimited_Pool;
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "9";
+  Major_Version : constant String := "10";
   function Version return String;
 
   -----------
@@ -78,6 +78,7 @@ package Xml_Parser is
   -- Only elements have attributes and children. When it has children an element
   --  is created (Creation = True), then its children (recusively) then it is
   --  closed (Creation = False)
+  -- Only PIs have a value
   -- Prev_Is_Text, on element (creation or not), indicates if a new_line and
   --  indent shall be skipped
   type Node_Update is new Ada.Finalization.Limited_Controlled with record
@@ -85,6 +86,7 @@ package Xml_Parser is
     Line_No : Natural := 0;
     Level : Natural := 0;
     Name : Ada.Strings.Unbounded.Unbounded_String;
+    Value : Ada.Strings.Unbounded.Unbounded_String;
     Creation : Boolean := True;
     Prev_Is_Text : Boolean := False;
     Kind : Node_Kind_List := Element;
@@ -298,9 +300,9 @@ private
     Kind : Internal_Kind_List;
     -- Number of attributes when Kind is Element
     Nb_Attributes : Natural := 0;
-    -- Element name or Attribute name or text or comment
+    -- Element name or Attribute name or text or comment...
     Name : Ada.Strings.Unbounded.Unbounded_String;
-    -- Attribute value
+    -- Attribute value of PI content
     Value : Ada.Strings.Unbounded.Unbounded_String;
   end record;
   package My_Tree is new Trees.Tree(My_Tree_Cell);

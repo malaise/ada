@@ -362,6 +362,7 @@ package body Tree_Mng is
     My_Tree.Read (Tree, Cell);
     Update.Line_No := Cell.Line_No;
     Update.Name := Cell.Name;
+    Update.Value := Cell.Value;
     Update.Creation := Creation;
     case Cell.Kind is
       when Element =>

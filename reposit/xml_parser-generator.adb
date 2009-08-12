@@ -4,7 +4,7 @@ with Int_Image, Text_Line, Sys_Calls, Trees;
 package body Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "1";
+  Minor_Version : constant String := "2";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -1146,6 +1146,7 @@ package body Xml_Parser.Generator is
     Flow : Flow_Dscr(Use_File => False);
     Indent : constant String (1 .. 2 * Update.Level) := (others => ' ');
     Xml_Attr_Format : Format_Kind_List;
+    use type Asu_Us;
   begin
     if Update.In_Prologue then
       if Update.Level = 0 then
@@ -1169,7 +1170,11 @@ package body Xml_Parser.Generator is
         case Update.Kind is
           when Xml_Parser.Element =>
             -- Put PI
-            Put (Flow, "<?" & Asu_Ts (Update.Name) & "?>");
+            Put (Flow, "<?" & Asu_Ts (Update.Name));
+            if Update.Value /= Asu_Null then
+              Put (Flow, " " & Asu_Ts (Update.Value));
+            end if;
+            Put (Flow, "?>");
           when Text =>
             Put_Doctype (Flow, Ctx.Doctype, Format);
           when Comment =>
