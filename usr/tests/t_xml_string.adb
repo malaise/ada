@@ -6,8 +6,6 @@ procedure T_Xml_String is
   Prologue, Root : Xml_Parser.Element_Type;
   package Asu renames Ada.Strings.Unbounded;
   subtype Asu_Us is Asu.Unbounded_String;
-  Asu_Null : constant Asu_Us := Asu.Null_Unbounded_String;
-  function Asu_Ts (Str : Asu_Us) return String renames Asu.To_String;
 
   Data_Dir : constant String := "data";
 
@@ -84,14 +82,49 @@ procedure T_Xml_String is
     end loop;
   end Put_Attributes;
 
+
+  procedure Put_Pi (Pi : in Xml_Parser.Pi_Type) is
+    Target : constant String := Asu.To_String(Ctx.Get_Target (Pi));
+    Text : constant String := Asu.To_String(Ctx.Get_Pi (Pi));
+  begin
+    Ada.Text_Io.Put ("<?" & Target);
+    if Text /= ""  then
+      Ada.Text_Io.Put (" " & Text);
+    end if;
+    Ada.Text_Io.Put_Line ("?>");
+    if Target = If_Name_Key then
+      if Text = If_Name_Val then
+        If_Name_Ok := True;
+      else
+        Basic_Proc.Put_Line_Error ("Error. Invalid interface name "
+                                 & Text);
+        raise Interface_Error;
+      end if;
+    elsif Target = If_Vers_Key then
+      declare
+        Strs : constant String_Mng.Regex.String_Slice
+             := String_Mng.Regex.Split (Text, If_Vers_Crit, 2);
+      begin
+        if Strs'Length /= 2 then
+          raise Interface_Error;
+        end if;
+        Dtd_Index := Natural'Value (Asu.To_String (Strs (1)));
+      exception
+        when others =>
+          Basic_Proc.Put_Line_Error ("Error. Invalid interface version "
+                                     & Text);
+          raise Interface_Error;
+      end;
+      If_Vers_Ok := True;
+    end if;
+  end Put_Pi;
+
   Prologue_Level : constant := -1;
-  Prologue_Instruction_Level : constant := -2;
   procedure Put_Element (Elt : in Xml_Parser.Element_Type;
                          Level : in Integer) is
     Name : constant String := Asu.To_String(Ctx.Get_Name (Elt));
     Children : constant Xml_Parser.Nodes_Array := Ctx.Get_Children (Elt);
     Indent : constant String (1 .. 2 * Level) := (others => ' ');
-    Pi_Text : Asu_Us;
     Prev_Is_Text : Boolean;
     use type Xml_Parser.Node_Kind_List, Asu_Us;
   begin
@@ -103,46 +136,11 @@ procedure T_Xml_String is
         Put_Attributes (Elt, 0, 2 + Name'Length);
         Ada.Text_Io.Put_Line ("?>");
         for I in Children'Range loop
-          if Children(I).Kind = Xml_Parser.Element then
+          if Children(I).Kind = Xml_Parser.Pi then
             -- Put PIs
-            Put_Element (Children(I), Prologue_Instruction_Level);
+            Put_Pi (Children(I));
           end if;
         end loop;
-      end if;
-      return;
-    elsif Level = Prologue_Instruction_Level then
-      -- A PI of the prologue
-      -- Put PI directive
-      Ada.Text_Io.Put ("<?" & Name);
-      Pi_Text := Ctx.Get_Pi (Elt);
-      if Pi_Text /= Asu_Null then
-        Ada.Text_Io.Put (" " & Asu_Ts (Pi_Text));
-      end if;
-      Ada.Text_Io.Put_Line ("?>");
-      if Name = If_Name_Key then
-        if Asu_Ts (Pi_Text) = If_Name_Val then
-          If_Name_Ok := True;
-        else
-          Basic_Proc.Put_Line_Error ("Error. Invalid interface name "
-                                   & Asu_Ts (Pi_Text));
-          raise Interface_Error;
-        end if;
-      elsif Name = If_Vers_Key then
-        declare
-          Strs : constant String_Mng.Regex.String_Slice
-               := String_Mng.Regex.Split (Asu_Ts (Pi_Text), If_Vers_Crit, 2);
-        begin
-          if Strs'Length /= 2 then
-            raise Interface_Error;
-          end if;
-          Dtd_Index := Natural'Value (Asu.To_String (Strs (1)));
-        exception
-          when others =>
-            Basic_Proc.Put_Line_Error ("Error. Invalid interface version "
-                                       & Asu_Ts (Pi_Text));
-            raise Interface_Error;
-        end;
-          If_Vers_Ok := True;
       end if;
       return;
     else
