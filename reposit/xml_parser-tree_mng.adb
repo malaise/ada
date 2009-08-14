@@ -304,17 +304,17 @@ package body Tree_Mng is
   end Get_Nb_Xml_Attributes;
 
   -- Add a processing instruction
-  procedure Add_Pi (Prologue : in out My_Tree.Tree_Type;
+  procedure Add_Pi (Tree : in out My_Tree.Tree_Type;
                     Name, Text : in Asu_Us; Line : in Natural) is
     Cell : My_Tree_Cell;
   begin
     -- Insert the Element child of root
     Cell.Line_No := Line;
-    Cell.Kind := Element;
+    Cell.Kind := Pi;
     Cell.Nb_Attributes := 0;
     Cell.Name := Name;
     Cell.Value := Text;
-    My_Tree.Insert_Child (Prologue, Cell, False);
+    My_Tree.Insert_Child (Tree, Cell, False);
   end Add_Pi;
 
   -- Is a tree (elements or prologue) empty
@@ -369,6 +369,8 @@ package body Tree_Mng is
         Update.Kind := Element;
       when Text =>
         Update.Kind := Text;
+      when Pi =>
+        Update.Kind := Pi;
       when Comment =>
         Update.Kind := Comment;
       when Attribute =>

@@ -190,11 +190,6 @@ package body Parse_Mng  is
                              Context : in Context_List;
                              Prev_Is_Text : in Boolean := False);
 
-  -- Parse instruction <? >
-  -- Dtd adds its own instructions (except xml)
-  procedure Parse_Instruction (Ctx : in out Ctx_Type;
-                               Adtd : in out Dtd_Type);
-
   -- Parse a value "Value" or 'Value' (of an entity or, attribute default...)
   procedure Parse_Value (Ctx : in out Ctx_Type;
                          Adtd : in out Dtd_Type;
@@ -559,13 +554,14 @@ package body Parse_Mng  is
     Name, Value : Asu_Us;
     Ok : Boolean;
     Str3 : String (1 .. 3);
+    In_Prologue : constant Boolean := Tree_Mng.Is_Empty (Ctx.Elements.all);
   begin
     -- See if this is the xml directive
     Util.Check_Cdata (Ctx.Flow, 3);
-    Util.Try (Ctx.Flow, "xml", Ok);
-    if Ok then
-      Util.Get (Ctx.Flow, Char);
-      if Util.Is_Separator (Char) then
+    if In_Prologue then
+      -- No element => in prologue
+      Util.Try (Ctx.Flow, "xml ", Ok);
+      if Ok then
         -- Only one xml declaration allowed
         Tree_Mng.Move_Root (Ctx.Prologue.all);
         Tree_Mng.Xml_Existst (Ctx.Prologue.all, Ok);
@@ -587,20 +583,21 @@ package body Parse_Mng  is
         Trace ("Parsed xml declaration");
         return;
       else
-        Util.Error (Ctx.Flow, "Invalid processing instruction");
-      end if;
-    else
-      Util.Get (Ctx.Flow, Str3);
-      if Lower_Str (Str3) = "xml" then
-        Util.Error (Ctx.Flow, "Invalid processing instruction");
-      else
-        -- OK, go on
-        Util.Unget (Ctx.Flow, 3);
+        -- A PI in prologue => insert Xml if it is missing
+        Check_Xml (Ctx);
       end if;
     end if;
 
+    -- Xml not allowed in prologue of elements
+    Util.Get (Ctx.Flow, Str3);
+    if Lower_Str (Str3) = "xml" then
+      Util.Error (Ctx.Flow, "Invalid processing instruction");
+    else
+      -- OK, go on
+      Util.Unget (Ctx.Flow, 3);
+    end if;
+
     -- Parse instruction until ? or separator
-    Check_Xml (Ctx);
     Util.Parse_Until_Char (Ctx.Flow, Util.Instruction & Util.Space);
     Name := Util.Get_Curr_Str (Ctx.Flow);
     if not Util.Name_Ok (Name) then
@@ -613,7 +610,7 @@ package body Parse_Mng  is
       -- Skip to the end
       Util.Get (Ctx.Flow, Char);
       if Char /= Util.Stop then
-        Util.Error (Ctx.Flow, "Unvalid processing instruction termination");
+        Util.Error (Ctx.Flow, "Invalid processing instruction termination");
       end if;
     else
       -- Some text after the name, get it until "?>"
@@ -624,14 +621,22 @@ package body Parse_Mng  is
       Value := Asu.Delete (Value, Asu.Length (Value) - 1, Asu.Length (Value));
       Util.Reset_Curr_Str (Ctx.Flow);
     end if;
+
     -- Add node
     Trace ("Parsed <?" & Asu_Ts (Name) & " "
          & Asu_Ts (Value) & "?>");
-    Tree_Mng.Move_Root (Ctx.Prologue.all);
-    Tree_Mng.Add_Pi (Ctx.Prologue.all, Name, Value,
-                     Util.Get_Line_No(Ctx.Flow));
-    Call_Callback (Ctx, True, True);
-    Delete_Node (Ctx, True);
+    if In_Prologue then
+      -- No element => in prologue
+      Tree_Mng.Move_Root (Ctx.Prologue.all);
+      Tree_Mng.Add_Pi (Ctx.Prologue.all, Name, Value,
+                       Util.Get_Line_No(Ctx.Flow));
+    else
+      Tree_Mng.Add_Pi (Ctx.Elements.all, Name, Value,
+                       Util.Get_Line_No(Ctx.Flow));
+      Move_Up (Ctx);
+    end if;
+    Call_Callback (Ctx, In_Prologue, True);
+    Delete_Node (Ctx, In_Prologue);
   exception
     when Util.End_Error =>
       Util.Error (Ctx.Flow,
@@ -640,7 +645,6 @@ package body Parse_Mng  is
 
   -- Parse "<!DOCTYPE" <Spc> <Name> [ <Spc> "SYSTEM" <Spc> <File> ]
   --  [ <Spc> ] [ "[" <IntSubset> "]" [ <Spc> ] ] "!>"
-  -- Reject PUBLIC directive
   procedure Parse_Doctype (Ctx : in out Ctx_Type;
                            Adtd : in out Dtd_Type) is
     Doctype_Name, Doctype_File : Asu_Us;
@@ -978,6 +982,13 @@ package body Parse_Mng  is
           Util.Get_Separators (Ctx.Flow, Text);
           Has_Child := True;
           Prev_Is_Text := False;
+        elsif Char = Util.Instruction then
+          Create (True);
+          Parse_Instruction (Ctx, Adtd);
+          Line_No := Util.Get_Line_No (Ctx.Flow);
+          Util.Get_Separators (Ctx.Flow, Text);
+          Has_Child := True;
+          Prev_Is_Text := False;
         elsif Char = Util.Start then
           Util.Check_Cdata (Ctx.Flow);
           Util.Error (Ctx.Flow, "Unexpected character " & Util.Start);
@@ -1143,7 +1154,7 @@ package body Parse_Mng  is
        Util.Get (Ctx.Flow, C2);
       case C2 is
         when Util.Instruction =>
-          Util.Error (Ctx.Flow, "Unexpected processing instruction");
+          Parse_Instruction (Ctx, Adtd);
         when Util.Directive =>
           -- Directive : only comment
           Parse_Directive (Ctx, Adtd, Allow_Dtd => False, Context => Ref_Xml);

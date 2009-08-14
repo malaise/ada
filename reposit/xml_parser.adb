@@ -94,7 +94,7 @@ package body Xml_Parser is
     procedure Get_Nb_Xml_Attributes (Prologue : in out My_Tree.Tree_Type;
                                      Number : out Natural);
     -- Add a processing instruction
-    procedure Add_Pi (Prologue : in out My_Tree.Tree_Type;
+    procedure Add_Pi (Tree : in out My_Tree.Tree_Type;
                       Name, Text : in Asu_Us; Line : in Natural);
 
     -- Is a tree (elements or prologue) empty
@@ -617,16 +617,36 @@ package body Xml_Parser is
     Int_Def := Ctx.Doctype.Int_Def;
   end Get_Doctype;
 
-  -- Get a PI data (use Get_Name to get the PITarget)
-  -- May raise Invalid_Node if not is not of the prologue
+ -- Get the Target of a PI
+  function Get_Target (Ctx     : Ctx_Type;
+                       Pi_Node : Pi_Type) return String is
+  begin
+    return Asu_Ts (Get_Target (Ctx, Pi_Node));
+  end Get_Target;
+
+  function Get_Target (Ctx     : Ctx_Type;
+                       Pi_Node : Pi_Type)
+                    return Ada.Strings.Unbounded.Unbounded_String is
+    Cell : constant My_Tree_Cell
+         := Get_Cell (Get_Tree (Ctx, Pi_Node), Pi_Node);
+  begin
+    if Ctx.Status = Error then
+      raise Parse_Error;
+    elsif Ctx.Status = Clean then
+      raise Status_Error;
+    end if;
+    return Cell.Name;
+  end Get_Target;
+
+  -- Get a PI data
   function Get_Pi (Ctx : in Ctx_Type;
-                   Pi_Node : Element_Type) return String is
+                   Pi_Node : Pi_Type) return String is
   begin
     return Asu_Ts (Get_Pi (Ctx, Pi_Node));
   end Get_Pi;
 
   function Get_Pi (Ctx : in Ctx_Type;
-                   Pi_Node : Element_Type)
+                   Pi_Node : Pi_Type)
            return Ada.Strings.Unbounded.Unbounded_String is
     Cell : constant My_Tree_Cell
          := Get_Cell (Get_Tree (Ctx, Pi_Node), Pi_Node);
@@ -635,8 +655,6 @@ package body Xml_Parser is
       raise Parse_Error;
     elsif Ctx.Status = Clean then
       raise Status_Error;
-    elsif not Pi_Node.In_Prologue then
-      raise Invalid_Node;
     end if;
     return Cell.Value;
   end Get_Pi;
@@ -802,6 +820,12 @@ package body Xml_Parser is
                    Magic => Element.Magic,
                    In_Prologue => Element.In_Prologue,
                    Tree_Access => My_Tree.Get_Position (Tree.all));
+          when Xml_Parser.Pi =>
+            N (I - Cell.Nb_Attributes) :=
+                  (Kind => Xml_Parser.Pi,
+                   Magic => Element.Magic,
+                   In_Prologue => Element.In_Prologue,
+                   Tree_Access => My_Tree.Get_Position (Tree.all));
           when Xml_Parser.Comment =>
             N (I - Cell.Nb_Attributes) :=
                   (Kind => Xml_Parser.Comment,
@@ -865,6 +889,11 @@ package body Xml_Parser is
               Magic => Element.Magic,
               In_Prologue => Element.In_Prologue,
               Tree_Access => My_Tree.Get_Position (Tree.all));
+      when Xml_Parser.Pi =>
+        N := (Kind => Xml_Parser.Pi,
+              Magic => Element.Magic,
+              In_Prologue => Element.In_Prologue,
+              Tree_Access => My_Tree.Get_Position (Tree.all));
       when Xml_Parser.Comment =>
         N := (Kind => Xml_Parser.Comment,
               Magic => Element.Magic,
@@ -899,6 +928,11 @@ package body Xml_Parser is
               Tree_Access => My_Tree.Get_Position (Tree.all));
       when Xml_Parser.Text =>
         N := (Kind => Xml_Parser.Text,
+              Magic => Node.Magic,
+              In_Prologue => Node.In_Prologue,
+              Tree_Access => My_Tree.Get_Position (Tree.all));
+      when Xml_Parser.Pi =>
+        N := (Kind => Xml_Parser.Pi,
               Magic => Node.Magic,
               In_Prologue => Node.In_Prologue,
               Tree_Access => My_Tree.Get_Position (Tree.all));

@@ -3,7 +3,7 @@ with Ada.Strings.Unbounded;
 package Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "5";
+  Major_Version : constant String := "6";
   function Version return String;
 
   type Ctx_Type is new Xml_Parser.Ctx_Type with private;
@@ -51,10 +51,11 @@ package Xml_Parser.Generator is
 
 
   -- Add a processing instruction as the last or next child (if Append_Next)
+  --  of the prologue
   -- May raise Invalid_Node if Node is not of prologue
   procedure Add_Pi (Ctx      : in out Ctx_Type;
                     Node     : in Node_Type;
-                    Name     : in String; Value : in String;
+                    Pi       : in String;
                     New_Node : out Node_Type;
                     Append_Next : in Boolean := True);
 
@@ -97,7 +98,7 @@ package Xml_Parser.Generator is
   procedure Del_Attributes (Ctx     : in out Ctx_Type;
                             Element : in out Element_Type);
 
-  -- Insert a child element, text or comment, and move to it
+  -- Insert a child element, text, Pi or comment, and move to it
   -- May raise Invalid_Node if in prologue
   procedure Add_Child (Ctx      : in out Ctx_Type;
                        Element  : in Element_Type;
@@ -106,7 +107,7 @@ package Xml_Parser.Generator is
                        New_Node : out Node_Type;
                        Append   : in Boolean := True);
 
-  -- Insert a brother element, text or comment, and move to it
+  -- Insert a brother element, text, Pi or comment, and move to it
   -- May raise Invalid_Node if in prologue
   procedure Add_Brother (Ctx      : in out Ctx_Type;
                          Node     : in Node_Type;

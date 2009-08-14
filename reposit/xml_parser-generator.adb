@@ -4,7 +4,7 @@ with Int_Image, Text_Line, Sys_Calls, Trees;
 package body Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "2";
+  Minor_Version : constant String := "0";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -53,6 +53,15 @@ package body Xml_Parser.Generator is
       end if;
     end loop;
   end Check_Name;
+
+  -- Detect separator
+  function Is_Separator (Char : Character) return Boolean is
+  begin
+    return  Char = Ada.Characters.Latin_1.Space
+    or else Char = Ada.Characters.Latin_1.Lf
+    or else Char = Ada.Characters.Latin_1.Cr
+    or else Char = Ada.Characters.Latin_1.Ht;
+  end Is_Separator;
 
   Xml_Name : constant Asu_Us := Asu_Tus ("xml");
   -- Init prologue and empty root element if needed
@@ -328,10 +337,55 @@ package body Xml_Parser.Generator is
     Ctx.Dtd_File := Asu_Tus (Dtd_File);
   end Set_Dtd_File;
 
+  -- Internal: Split PI into Target (-> Name) and text (-> Value)
+  procedure Set_Pi (Cell : in out My_Tree_Cell;
+                    Pi : in String) is
+    Sep1, Sep2, Sep3 : Natural;
+  begin
+    -- Locate first non separator, then first separator,
+    --  then first non separator
+    Sep1 := 0;
+    Sep2 := 0;
+    Sep3 := 0;
+    for I in Pi'Range loop
+      if Is_Separator (Pi(I)) then
+        if Sep1 /= 0 and then Sep2 = 0 then
+          -- First separator
+          Sep2 := I - 1;
+        end if;
+      else
+        if Sep1 = 0 then
+          Sep1 := I;
+        elsif Sep2 /= 0 and then Sep3 = 0 then
+          -- First non separator after separators
+          Sep3 := I;
+          exit;
+        end if;
+      end if;
+    end loop;
+    if Sep1 = 0 then
+      -- All separators
+      Cell.Name := Asu_Null;
+      Cell.Value := Asu_Null;
+    elsif Sep2 = 0 then
+      -- No separator after first word
+      Cell.Name := Asu_Tus (Pi (Sep1 .. Pi'Last));
+      Cell.Value := Asu_Null;
+    elsif Sep3 = 0 then
+      -- A target then only separators
+      Cell.Name := Asu_Tus (Pi (Sep1 .. Sep2));
+      Cell.Value := Asu_Null;
+    else
+      -- A target then separators then ...
+      Cell.Name := Asu_Tus (Pi(Sep1 .. Sep2));
+      Cell.Value := Asu_Tus (Pi(Sep3 .. Pi'Last));
+   end if;
+  end Set_Pi;
+
   -- Add a processing instruction in the prologue
   procedure Add_Pi (Ctx  : in out Ctx_Type;
                     Node : in Node_Type;
-                    Name : in String; Value : in String;
+                    Pi   : in String;
                     New_Node : out Node_Type;
                     Append_Next : in Boolean := True) is
     Tree : Tree_Acc;
@@ -340,14 +394,13 @@ package body Xml_Parser.Generator is
     if not Node.In_Prologue then
       raise Invalid_Node;
     end if;
-    Check_Name (Name);
     -- Move to node
     Move_To (Ctx, Node, Tree);
     -- Add this child to prologue
-    Cell.Kind := Element;
+    Cell.Kind := Xml_Parser.Pi;
     Cell.Nb_Attributes := 0;
-    Cell.Name := Asu_Tus (Name);
-    Cell.Value := Asu_Tus (Value);
+    Set_Pi (Cell, Pi);
+    Check_Name (Asu_Ts (Cell.Name));
     Insert_Cell (Tree, Cell, Append_Next);
     -- Done
     New_Node := (Kind => Element,
@@ -421,6 +474,7 @@ package body Xml_Parser.Generator is
     case Kind is
       when Element => return Element;
       when Text    => return Text;
+      when Pi      => return Pi;
       when Comment => return Comment;
     end case;
   end Internal_Kind_Of;
@@ -547,7 +601,11 @@ package body Xml_Parser.Generator is
     -- Add this child
     Cell.Kind := Internal_Kind_Of (Kind);
     Cell.Nb_Attributes := 0;
-    Cell.Name := Asu_Tus (Name);
+    if Kind = Pi then
+      Set_Pi (Cell, Name);
+    else
+      Cell.Name := Asu_Tus (Name);
+    end if;
     if Append or else Father.Nb_Attributes = 0 then
       My_Tree.Insert_Child (Tree.all, Cell, not Append);
     else
@@ -579,7 +637,11 @@ package body Xml_Parser.Generator is
      -- Add this brother
     Cell.Kind := Internal_Kind_Of (Kind);
     Cell.Nb_Attributes := 0;
-    Cell.Name := Asu_Tus (Name);
+    if Kind = Pi then
+      Set_Pi (Cell, Name);
+    else
+      Cell.Name := Asu_Tus (Name);
+    end if;
     My_Tree.Insert_Brother (Tree.all, Cell, not Next);
     New_Node := (Kind => Kind,
                  Magic => Ctx.Magic,
@@ -1014,7 +1076,10 @@ package body Xml_Parser.Generator is
             -- Impossibe
             raise Internal_Error;
           when Xml_Parser.Element =>
-            -- Put PI
+            -- No child element of prologue
+            raise Constraint_Error;
+          when Xml_Parser.Pi =>
+            -- Put xml or PI
             Put (Flow, "<?" & Asu_Ts (Child.Name));
             if Child.Value /= Asu_Null then
               Put (Flow, " " & Asu_Ts (Child.Value));
@@ -1086,6 +1151,23 @@ package body Xml_Parser.Generator is
           -- Specific put text
           Put (Flow, Asu_Ts (Child.Name));
           Prev_Is_Text := True;
+        when Pi =>
+          -- Put PI
+          if Format /= Raw then
+            if not Prev_Is_Text then
+              -- Father did not New_Line because of possible text
+              --  or prev was not text and did not New_Line because
+              --  of possible text
+              New_Line (Flow);
+            end if;
+            Put (Flow, Indent1);
+          end if;
+          Put (Flow, "<?" & Asu_Ts (Child.Name));
+          if Child.Value /= Asu_Null then
+            Put (Flow, " " & Asu_Ts (Child.Value));
+          end if;
+          Put (Flow, "?>");
+          Prev_Is_Text := False;
         when Comment =>
           -- Comment
           if Format /= Raw then
@@ -1169,6 +1251,9 @@ package body Xml_Parser.Generator is
         -- A child of prologue (PI, comment or doctype)
         case Update.Kind is
           when Xml_Parser.Element =>
+            -- Only one element in the prologue => the xml
+            raise Constraint_Error;
+          when Xml_Parser.Pi =>
             -- Put PI
             Put (Flow, "<?" & Asu_Ts (Update.Name));
             if Update.Value /= Asu_Null then
@@ -1220,6 +1305,13 @@ package body Xml_Parser.Generator is
       when Text =>
         -- Put text
         Put (Flow, Asu_Ts (Update.Name));
+      when Pi =>
+        -- Put PI
+        Put (Flow, "<?" & Asu_Ts (Update.Name));
+        if Update.Value /= Asu_Null then
+          Put (Flow, " " & Asu_Ts (Update.Value));
+        end if;
+        Put (Flow, "?>");
       when Comment =>
         -- Comment
         Put_Comment (Flow, Asu_Ts (Update.Name));

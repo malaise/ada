@@ -13,7 +13,7 @@ with Queues, Trees, Unique_List, Text_Char, Dynamic_List, Unlimited_Pool;
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "10";
+  Major_Version : constant String := "11";
   function Version return String;
 
   -----------
@@ -21,7 +21,7 @@ package Xml_Parser is
   -----------
   -- Generic node type
   -- A node is either an element or a text or a comment
-  type Node_Kind_List is (Element, Text, Comment);
+  type Node_Kind_List is (Element, Text, Pi, Comment);
   type Node_Type (Kind : Node_Kind_List := Element) is private;
   No_Node : constant Node_Type;
 
@@ -29,6 +29,8 @@ package Xml_Parser is
   subtype Element_Type is Node_Type(Element);
   -- A Text
   subtype Text_Type is Node_Type(Text);
+  -- A Processing Instruction
+  subtype Pi_Type is Node_Type(Pi);
   -- A Comment
   subtype Comment_Type is Node_Type(Comment);
 
@@ -59,7 +61,7 @@ package Xml_Parser is
   --  (<?name text?>), DOCTYPE and comments.
   -- In Xml V1.1 the xml directive and version is mandatory.
   -- So the Prologue is an element of name "xml" with attributes and children:
-  --  for PIs: elements each with the directive name
+  --  for PIs: PIs each with the PITarget as name
   --  for Comments: comments
   --  for the doctype: an empty text
 
@@ -207,12 +209,17 @@ package Xml_Parser is
        File    : out Ada.Strings.Unbounded.Unbounded_String;
        Int_Def : out Ada.Strings.Unbounded.Unbounded_String);
 
-  -- Get a PI data (use Get_Name to get the PITarget)
-  -- May raise Invalid_Node if not is not of the prologue
+  -- Get the Target of a PI
+  function Get_Target (Ctx     : Ctx_Type;
+                       Pi_Node : Pi_Type) return String;
+  function Get_Target (Ctx     : Ctx_Type;
+                       Pi_Node : Pi_Type)
+                    return Ada.Strings.Unbounded.Unbounded_String;
+  -- Get a PI data
   function Get_Pi (Ctx : in Ctx_Type;
-                   Pi_Node : Element_Type) return String;
+                   Pi_Node : Pi_Type) return String;
   function Get_Pi (Ctx : in Ctx_Type;
-                   Pi_Node : Element_Type)
+                   Pi_Node : Pi_Type)
            return Ada.Strings.Unbounded.Unbounded_String;
 
   -- Get the line number of the beginning of the declaration of a node
@@ -292,7 +299,7 @@ private
   -- NODE TYPE --
   ---------------
   -- Internal tree
-  type Internal_Kind_List is (Element, Text, Comment, Attribute);
+  type Internal_Kind_List is (Element, Text, Pi, Comment, Attribute);
   type My_Tree_Cell is record
     -- Line in source file
     Line_No : Natural := 0;
@@ -302,7 +309,7 @@ private
     Nb_Attributes : Natural := 0;
     -- Element name or Attribute name or text or comment...
     Name : Ada.Strings.Unbounded.Unbounded_String;
-    -- Attribute value of PI content
+    -- Attribute value or PI content
     Value : Ada.Strings.Unbounded.Unbounded_String;
   end record;
   package My_Tree is new Trees.Tree(My_Tree_Cell);

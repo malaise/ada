@@ -74,8 +74,9 @@ package body Dtd is
       Trace ("Dtd parsed instruction " & Asu_Ts(Util.Get_Curr_Str (Ctx.Flow)));
       Util.Reset_Curr_Str (Ctx.Flow);
     else
-      -- Parse instruction as if in Xml
-      Parse_Instruction (Ctx, Adtd);
+      -- Skip processing instruction
+      Util.Parse_Until_Str (Ctx.Flow, Util.Instruction & Util.Stop);
+      Util.Reset_Curr_Str (Ctx.Flow);
     end if;
     -- Xml instruction not allowed any more
     Adtd.Xml_Found := True;
@@ -1475,7 +1476,7 @@ package body Dtd is
             Asu.Append (Children, Info_Sep & Cell.Name & Info_Sep);
           when Xml_Parser.Text =>
             Is_Mixed := True;
-          when Xml_Parser.Comment =>
+          when Xml_Parser.Pi | Xml_Parser.Comment =>
             null;
         end case;
       end loop;
@@ -1509,7 +1510,7 @@ package body Dtd is
         Asu.Append (Children, Info_Sep & Cell.Name & Info_Sep);
       when Text =>
         Is_Mixed := True;
-      when Comment =>
+      when Pi | Comment =>
         null;
       when Attribute =>
         Trace ("Adding current attribue as element list");
