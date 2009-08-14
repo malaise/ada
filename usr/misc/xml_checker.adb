@@ -130,15 +130,30 @@ procedure Xml_Checker is
         -- Test the individual get
         Children(I) := Ctx.Get_Child (Elt, I);
       end if;
-      if Children(I).Kind = Xml_Parser.Element then
-        -- Recursive dump child
-        Dump_Element (Children(I), Level + 1);
-      else
-        -- Specific put text
-        Dump_Line (Children(I));
-        Out_Flow.Put (Indent);
-        Out_Flow.Put_Line (" =>" & Ctx.Get_Text (Children(I)) & "<=");
-      end if;
+      case Children(I).Kind is
+        when Xml_Parser.Element =>
+          -- Recursive dump child
+          Dump_Element (Children(I), Level + 1);
+        when Xml_Parser.Text =>
+          -- Put text
+          Dump_Line (Children(I));
+          Out_Flow.Put (Indent);
+          Out_Flow.Put_Line (" =>" & Ctx.Get_Text (Children(I)) & "<=");
+        when Xml_Parser.Pi =>
+          -- Put Pi
+          Dump_Line (Children(I));
+          Out_Flow.Put (Indent);
+          Out_Flow.Put (" <?" & Ctx.Get_Target (Children(I)));
+          if Asu.Length (Ctx.Get_Pi (Children(I))) /= 0 then
+            Out_Flow.Put (" " & Ctx.Get_Target (Children(I)));
+          end if;
+          Out_Flow.Put_Line ("?>");
+        when Xml_Parser.Comment =>
+          -- Put Comment
+          Dump_Line (Children(I));
+          Out_Flow.Put (Indent);
+          Out_Flow.Put_Line (" <!--" & Ctx.Get_Comment (Children(I)) & "-->");
+      end case;
     end loop;
   end Dump_Element;
 
@@ -188,6 +203,12 @@ procedure Xml_Checker is
     case Node.Kind is
       when Xml_Parser.Element =>
         Out_Flow.Put (Asu.To_String(Node.Name));
+      when Xml_Parser.Pi =>
+        Out_Flow.Put ("<?" & Asu.To_String(Node.Name));
+        if Asu.Length (Node.Value) /= 0 then
+          Out_Flow.Put (" " & Asu.To_String(Node.Value));
+        end if;
+        Out_Flow.Put ("?>");
       when Xml_Parser.Comment =>
         Out_Flow.Put ("<!--" & Asu.To_String(Node.Name) & "-->");
       when Xml_Parser.Text =>
