@@ -181,6 +181,13 @@ package body Parse_Mng  is
   package body Entity_Mng is separate;
   package body Util is separate;
 
+  -- Descriptor of list of children found
+  type Children_Desc is record
+    Children : Asu_Us;
+    Is_Mixed : Boolean := False;
+    Has_Other : Boolean := False;
+  end record;
+
   -- Parse a directive <! >
   -- Dtd uses Parse_Directive for comment and CDATA
   -- If not In_Dtd, comments might be stored (if Ctx.Parse_Comments)
@@ -188,6 +195,7 @@ package body Parse_Mng  is
                              Adtd : in out Dtd_Type;
                              Allow_Dtd : in Boolean;
                              Context : in Context_List;
+                             Children : access Children_Desc;
                              Prev_Is_Text : in Boolean := False);
 
   -- Parse a value "Value" or 'Value' (of an entity or, attribute default...)
@@ -240,13 +248,11 @@ package body Parse_Mng  is
     -- Add current element to list of children
     procedure Add_Current (Ctx      : in out Ctx_Type;
                            Adtd     : in out Dtd_Type;
-                           Children : in out Asu_Us;
-                           Is_Mixed : in out Boolean);
+                           Children : in out Children_Desc);
     -- Check that list matches Dtd definition of current element
     procedure Check_Element (Ctx      : in out Ctx_Type;
                              Adtd     : in out Dtd_Type;
-                             Children : in Asu_Us;
-                             Is_Mixed : in Boolean);
+                             Children : in Children_Desc);
     -- Check a whole element tree recursively
     procedure Check_Subtree (Ctx  : in out Ctx_Type;
                              Adtd : in out Dtd_Type);
@@ -487,29 +493,25 @@ package body Parse_Mng  is
   end Move_Up;
 
   -- Add current element to list of children
-  type Children_Desc is record
-    Children : Asu_Us;
-    Is_Mixed : Boolean := False;
-  end record;
   procedure Add_Child (Ctx  : in out Ctx_Type;
                        Adtd : in out Dtd_Type;
-                       Desc : in out Children_Desc) is
+                       Desc : access Children_Desc) is
   begin
     if Ctx.Callback = null then
       return;
     end if;
-    Dtd.Add_Current (Ctx, Adtd, Desc.Children, Desc.Is_Mixed);
+    Dtd.Add_Current (Ctx, Adtd, Desc.all);
   end Add_Child;
 
   -- Check element's children, tree or desc
   procedure Check_Children (Ctx  : in out Ctx_Type;
                             Adtd : in out Dtd_Type;
-                            Desc : in out Children_Desc) is
+                            Desc : access Children_Desc) is
   begin
     if Ctx.Callback = null then
       Dtd.Check_Element (Ctx, Adtd, Check_The_Attributes => False);
     else
-      Dtd.Check_Element (Ctx, Adtd, Desc.Children, Desc.Is_Mixed);
+      Dtd.Check_Element (Ctx, Adtd, Desc.all);
     end if;
   end Check_Children;
 
@@ -549,7 +551,8 @@ package body Parse_Mng  is
 
   -- Parse an instruction (<?xxx?>)
   procedure Parse_Instruction (Ctx : in out Ctx_Type;
-                               Adtd : in out Dtd_Type) is
+                               Adtd : in out Dtd_Type;
+                               Children : access Children_Desc) is
     Char : Character;
     Name, Value : Asu_Us;
     Ok : Boolean;
@@ -633,6 +636,10 @@ package body Parse_Mng  is
     else
       Tree_Mng.Add_Pi (Ctx.Elements.all, Name, Value,
                        Util.Get_Line_No(Ctx.Flow));
+      -- Add this child
+      if Children /= null then
+        Add_Child (Ctx, Adtd, Children);
+      end if;
       Move_Up (Ctx);
     end if;
     Call_Callback (Ctx, In_Prologue, True);
@@ -755,6 +762,7 @@ package body Parse_Mng  is
                              Adtd : in out Dtd_Type;
                              Allow_Dtd : in Boolean;
                              Context : in Context_List;
+                             Children : access Children_Desc;
                              Prev_Is_Text : in Boolean := False) is
     Index : Natural;
     Ok : Boolean;
@@ -796,6 +804,10 @@ package body Parse_Mng  is
           Tree_Mng.Add_Comment (Ctx.Elements.all, Comment,
                                 Util.Get_Line_No (Ctx.Flow));
           Call_Callback (Ctx, False, True, Prev_Is_Text);
+          -- Add this child
+          if Children /= null then
+            Add_Child (Ctx, Adtd, Children);
+          end if;
           Delete_Node (Ctx, False);
           Move_Up (Ctx);
         end if;
@@ -860,11 +872,11 @@ package body Parse_Mng  is
       Util.Get (Ctx.Flow, C2);
       case C2 is
         when Util.Instruction =>
-          Parse_Instruction (Ctx, Adtd);
+          Parse_Instruction (Ctx, Adtd, null);
         when Util.Directive =>
           -- Directive or comment or CDATA
           Check_Xml (Ctx);
-          Parse_Directive (Ctx, Adtd, Allow_Dtd, Ref_Xml);
+          Parse_Directive (Ctx, Adtd, Allow_Dtd, Ref_Xml, null);
         when Util.Start =>
           -- "<<" maybe "<<![CDATA["
           Util.Check_Cdata (Ctx.Flow);
@@ -899,7 +911,7 @@ package body Parse_Mng  is
   -- Parse an element
   procedure Parse_Element (Ctx : in out Ctx_Type;
                            Adtd : in out Dtd_Type;
-                           Parent_Children : in out Children_Desc;
+                           Parent_Children : access Children_Desc;
                            Root : in Boolean;
                            Prev_Is_Text : in Boolean);
 
@@ -907,7 +919,7 @@ package body Parse_Mng  is
   -- Children and Is_mixed are set with list of children, only if Callback
   procedure Parse_Children (Ctx : in out Ctx_Type;
                             Adtd : in out Dtd_Type;
-                            Children : in out Children_Desc;
+                            Children : access Children_Desc;
                             Prev_Was_Text : in Boolean) is
     Created : Boolean := False;
     -- Create parent node with children if needed
@@ -977,17 +989,16 @@ package body Parse_Mng  is
           Create (True);
           Parse_Directive (Ctx, Adtd, Allow_Dtd => False,
                                       Context => Ref_Xml,
+                                      Children => Children,
                                       Prev_Is_Text => Prev_Is_Text);
           Line_No := Util.Get_Line_No (Ctx.Flow);
           Util.Get_Separators (Ctx.Flow, Text);
-          Has_Child := True;
           Prev_Is_Text := False;
         elsif Char = Util.Instruction then
           Create (True);
-          Parse_Instruction (Ctx, Adtd);
+          Parse_Instruction (Ctx, Adtd, Children);
           Line_No := Util.Get_Line_No (Ctx.Flow);
           Util.Get_Separators (Ctx.Flow, Text);
-          Has_Child := True;
           Prev_Is_Text := False;
         elsif Char = Util.Start then
           Util.Check_Cdata (Ctx.Flow);
@@ -1035,13 +1046,13 @@ package body Parse_Mng  is
   -- Parse an element (<Name...>)
   procedure Parse_Element (Ctx : in out Ctx_Type;
                            Adtd : in out Dtd_Type;
-                           Parent_Children : in out Children_Desc;
+                           Parent_Children : access Children_Desc;
                            Root : in Boolean;
                            Prev_Is_Text : in Boolean) is
     Element_Name, End_Name : Asu_Us;
     Char : Character;
     Line_No : Natural;
-    My_Children : Children_Desc;
+    My_Children : aliased Children_Desc;
     use type Asu_Us;
   begin
     Line_No := Util.Get_Line_No (Ctx.Flow);
@@ -1089,7 +1100,7 @@ package body Parse_Mng  is
       end if;
       -- End of this empty element, check attributes and content
       Dtd.Check_Element (Ctx, Adtd, Check_The_Attributes => True);
-      Check_Children (Ctx, Adtd,  My_Children);
+      Check_Children (Ctx, Adtd,  My_Children'Access);
       Call_Callback (Ctx, False, True, False, Prev_Is_Text);
       Delete_Node (Ctx, False);
       if not Root then
@@ -1102,7 +1113,7 @@ package body Parse_Mng  is
       -- Check attributes first (e.g. xml:space)
       Dtd.Check_Element (Ctx, Adtd, Check_The_Attributes => True);
       Trace ("Parsing children of " & Asu_Ts (Element_Name));
-      Parse_Children (Ctx, Adtd, My_Children, Prev_Is_Text);
+      Parse_Children (Ctx, Adtd, My_Children'Access, Prev_Is_Text);
       Trace ("Parsed children of " & Asu_Ts (Element_Name));
       -- Check Name matches
       Util.Parse_Until_Char (Ctx.Flow, Util.Stop & "");
@@ -1114,7 +1125,7 @@ package body Parse_Mng  is
                   & ", got " & Asu_Ts (End_Name));
       end if;
       -- End of this non empty element, check children
-      Check_Children (Ctx, Adtd,  My_Children);
+      Check_Children (Ctx, Adtd,  My_Children'Access);
       Delete_Node (Ctx, False);
       if not Root then
         Move_Up (Ctx);
@@ -1132,7 +1143,7 @@ package body Parse_Mng  is
                                Adtd : in out Dtd_Type) is
     Root_Found : Boolean;
     C1, C2 : Character;
-    My_Children : Children_Desc;
+    My_Children : aliased Children_Desc;
   begin
     -- Loop until end of file
     Root_Found := False;
@@ -1154,10 +1165,11 @@ package body Parse_Mng  is
        Util.Get (Ctx.Flow, C2);
       case C2 is
         when Util.Instruction =>
-          Parse_Instruction (Ctx, Adtd);
+          Parse_Instruction (Ctx, Adtd, null);
         when Util.Directive =>
           -- Directive : only comment
-          Parse_Directive (Ctx, Adtd, Allow_Dtd => False, Context => Ref_Xml);
+          Parse_Directive (Ctx, Adtd, Allow_Dtd => False, Children => null,
+                                      Context => Ref_Xml);
         when Util.Start =>
           -- "<<" maybe "<<![CDATA["
           Util.Check_Cdata (Ctx.Flow);
@@ -1166,7 +1178,7 @@ package body Parse_Mng  is
           if Root_Found then
             Util.Error (Ctx.Flow, "More that one root element found");
           end if;
-          Parse_Element (Ctx, Adtd, My_Children,
+          Parse_Element (Ctx, Adtd, My_Children'Access,
                          Root => True, Prev_Is_Text => False);
           Root_Found := True;
       end case;

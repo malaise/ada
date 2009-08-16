@@ -374,7 +374,7 @@ package body Tree_Mng is
       when Comment =>
         Update.Kind := Comment;
       when Attribute =>
-        Trace ("Buildling a node update from an attribute "
+        Trace ("Building a node update from an attribute "
              & Asu_Ts (Cell.Name));
         raise Internal_Error;
     end case;
@@ -383,7 +383,7 @@ package body Tree_Mng is
     -- Case of deletion, no build of attribtues
     if not Creation then
       if Cell.Kind /= Element then
-        Trace ("Buildling deletion but not of element "
+        Trace ("Building deletion but not of element "
              & Asu_Ts (Cell.Name));
         raise Internal_Error;
       end if;

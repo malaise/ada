@@ -39,7 +39,6 @@ package body Dtd is
     Ok : Boolean;
     Char : Character;
     Dummy : My_Tree_Cell;
-    Encoding_Index : Natural;
   begin
     -- See if this is the xml directive
     Util.Check_Cdata (Ctx.Flow, 3);
@@ -65,9 +64,6 @@ package body Dtd is
       end if;
       Parse_Attributes (Ctx, Adtd, True);
       Check_Xml_Attributes (Ctx, False);
-      -- Store encoding if any
-      Tree_Mng.Find_Xml_Attribute (Ctx.Prologue.all, Asu_Tus ("encoding"),
-                                   Encoding_Index, Adtd.Encoding);
       -- Delete this dummy child
       My_Tree.Delete_Tree (Ctx.Prologue.all);
       -- Done
@@ -844,7 +840,7 @@ package body Dtd is
       Util.Try (Ctx.Flow, Util.Doctype, Ok, Consume => False);
     end if;
     if Ok then
-      Parse_Directive (Ctx, Adtd, False, Ref_Dtd);
+      Parse_Directive (Ctx, Adtd, False, Ref_Dtd, null);
       return;
     end if;
     -- Check for conditional directive
@@ -1079,8 +1075,7 @@ package body Dtd is
                             Adtd : in out Dtd_Type;
                             Name : in Asu_Us;
                             Line_No : in Natural;
-                            Children : in Asu_Us;
-                            Is_Mixed : in Boolean) is
+                            Children : in Children_Desc) is
     -- Element info
     Info : Info_Rec;
     -- Char of info List
@@ -1090,8 +1085,9 @@ package body Dtd is
     -- General purpose Boolean
     use type Asu_Us;
   begin
-    Trace ("Dtd check Xml children list " & Asu_Ts (Children)
-         & " Mixed: " & Is_Mixed'Img);
+    Trace ("Dtd check Xml children list " & Asu_Ts (Children.Children)
+         & " Mixed: " & Children.Is_Mixed'Img
+         & " Has others: " & Children.Has_Other'Img);
     -- Read its element def
     Info.Name := "Elt" & Info_Sep & Name;
     begin
@@ -1111,7 +1107,8 @@ package body Dtd is
     case Char is
       when 'E' =>
         -- Must be empty
-        if Asu.Length (Children) /= 0 or else Is_Mixed then
+        if Asu.Length (Children.Children) /= 0 or else Children.Is_Mixed
+        or else Children.Has_Other then
           Util.Error (Ctx.Flow, "According to dtd, element " & Asu_Ts (Name)
                     & " must be empty",
                       Line_No);
@@ -1121,7 +1118,7 @@ package body Dtd is
         null;
       when 'M' =>
         -- Check mixed: all children of xml must appear in dtd list
-        Iter_Xml.Set (Asu_Ts (Children), Is_Sep'Access);
+        Iter_Xml.Set (Asu_Ts (Children.Children), Is_Sep'Access);
         loop
           declare
             -- Next Child from xml
@@ -1142,19 +1139,19 @@ package body Dtd is
         end loop;
         Iter_Xml.Del;
       when 'C' =>
-        if Is_Mixed then
+        if Children.Is_Mixed then
           Util.Error (Ctx.Flow, "According to dtd, element " & Asu_Ts (Name)
                     & " must not have text",
                       Line_No);
         end if;
         -- Strictly check that list matches criteria
         if not Regular_Expressions.Match (Asu_Ts (Info.List),
-                Asu_Ts (Children), Strict => True) then
+                Asu_Ts (Children.Children), Strict => True) then
           Util.Error (Ctx.Flow, "According to dtd, element " & Asu_Ts (Name)
                     & " allows children " & Strip_Sep (Info.List)
-                    & " but has children " & Strip_Sep (Children));
+                    & " but has children " & Strip_Sep (Children.Children));
         end if;
-        Trace ("Dtd checked children " & Strip_Sep (Children)
+        Trace ("Dtd checked children " & Strip_Sep (Children.Children)
              & " versus " & Strip_Sep (Info.List));
       when others =>
         Trace ("Dtd check: Unexpected element type " & Char);
@@ -1445,9 +1442,8 @@ package body Dtd is
     -- Current cell in tree
     Cell : My_Tree_Cell;
     -- Lists of attributes and of children from xml tree
-    Attributes, Children : Asu_Us;
-    -- Has current element mixed children (text)
-    Is_Mixed : Boolean;
+    Attributes : Asu_Us;
+    Children : Children_Desc;
     use type Asu_Us;
   begin
     if not Adtd.Set then
@@ -1460,7 +1456,8 @@ package body Dtd is
            & Check_The_Attributes'Img);
     end if;
     -- Read current element from tree and make its attribute and children lists
-    Is_Mixed := False;
+    Children.Is_Mixed := False;
+    Children.Has_Other := False;
     if My_Tree.Children_Number (Ctx.Elements.all) /= 0 then
       for I in 1 .. My_Tree.Children_Number (Ctx.Elements.all) loop
         if I = 1 then
@@ -1473,11 +1470,11 @@ package body Dtd is
           when Xml_Parser.Attribute =>
             Asu.Append (Attributes, Info_Sep & Cell.Name & Info_Sep);
           when Xml_Parser.Element =>
-            Asu.Append (Children, Info_Sep & Cell.Name & Info_Sep);
+            Asu.Append (Children.Children, Info_Sep & Cell.Name & Info_Sep);
           when Xml_Parser.Text =>
-            Is_Mixed := True;
+            Children.Is_Mixed := True;
           when Xml_Parser.Pi | Xml_Parser.Comment =>
-            null;
+            Children.Has_Other := True;
         end case;
       end loop;
       My_Tree.Move_Father (Ctx.Elements.all);
@@ -1488,15 +1485,14 @@ package body Dtd is
       Check_Attributes (Ctx, Adtd, Cell.Name, Cell.Line_No, Attributes);
     else
       -- Check children
-      Check_Children (Ctx, Adtd, Cell.Name, Cell.Line_No, Children, Is_Mixed);
+      Check_Children (Ctx, Adtd, Cell.Name, Cell.Line_No, Children);
     end if;
   end Check_Element;
 
   -- Add current element to list of children
   procedure Add_Current (Ctx      : in out Ctx_Type;
                          Adtd     : in out Dtd_Type;
-                         Children : in out Asu_Us;
-                         Is_Mixed : in out Boolean) is
+                         Children : in out Children_Desc) is
     Cell : My_Tree_Cell;
     use type Asu_Us;
   begin
@@ -1507,11 +1503,11 @@ package body Dtd is
     My_Tree.Read (Ctx.Elements.all, Cell);
     case Cell.Kind is
       when Element =>
-        Asu.Append (Children, Info_Sep & Cell.Name & Info_Sep);
+        Asu.Append (Children.Children, Info_Sep & Cell.Name & Info_Sep);
       when Text =>
-        Is_Mixed := True;
+        Children.Is_Mixed := True;
       when Pi | Comment =>
-        null;
+        Children.Has_Other := True;
       when Attribute =>
         Trace ("Adding current attribue as element list");
         raise Internal_Error;
@@ -1519,10 +1515,9 @@ package body Dtd is
   end Add_Current;
 
   -- Check that list matches Dtd definition of current element
-  procedure Check_Element (Ctx  : in out Ctx_Type;
-                           Adtd : in out Dtd_Type;
-                           Children : in Asu_Us;
-                           Is_Mixed : in Boolean) is
+  procedure Check_Element (Ctx      : in out Ctx_Type;
+                           Adtd     : in out Dtd_Type;
+                           Children : in Children_Desc) is
     Cell : My_Tree_Cell;
   begin
     if not Adtd.Set then
@@ -1530,7 +1525,7 @@ package body Dtd is
       return;
     end if;
     My_Tree.Read (Ctx.Elements.all, Cell);
-    Check_Children (Ctx, Adtd, Cell.Name, Cell.Line_No, Children, Is_Mixed);
+    Check_Children (Ctx, Adtd, Cell.Name, Cell.Line_No, Children);
   end Check_Element;
 
   -- Check a whole element tree recursively
