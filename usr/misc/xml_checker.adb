@@ -3,7 +3,7 @@ with Argument, Argument_Parser, Xml_Parser.Generator, Normal, Basic_Proc,
      Text_Line, Sys_Calls;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V5.3";
+  Version : constant String := "V6.1";
 
   -- Ada.Strings.Unbounded and Ada.Exceptions re-definitions
   package Asu renames Ada.Strings.Unbounded;
@@ -115,16 +115,22 @@ procedure Xml_Checker is
                           Level : in Natural) is
     Children : Xml_Parser.Nodes_Array := Ctx.Get_Children (Elt);
     Indent : constant String (1 .. Level + 1) := (others => ' ');
-    use type Xml_Parser.Node_Kind_List;
+    In_Tail : Boolean;
+    use type Xml_Parser.Node_Kind_List, Asu_Us;
   begin
-    Dump_Line (Elt);
-    Out_Flow.Put (Indent);
-    Out_Flow.Put (Asu.To_String(Ctx.Get_Name (Elt)));
-    if Ctx.Get_Nb_Attributes (Elt) /= 0 then
-      Out_Flow.Put (" :" );
+    In_Tail := Level = 1 and then String'(Ctx.Get_Name (Elt)) = "";
+    if not In_Tail then
+       -- Not the tail
+      Dump_Line (Elt);
+      Out_Flow.Put (Indent);
+      Out_Flow.Put (Asu.To_String(Ctx.Get_Name (Elt)));
+      if Ctx.Get_Nb_Attributes (Elt) /= 0 then
+        Out_Flow.Put (" :" );
+      end if;
+      Dump_Attributes (Elt);
+      Out_Flow.New_Line;
     end if;
-    Dump_Attributes (Elt);
-    Out_Flow.New_Line;
+
     for I in Children'Range loop
       if I rem 2 = 0 then
         -- Test the individual get
@@ -133,25 +139,35 @@ procedure Xml_Checker is
       case Children(I).Kind is
         when Xml_Parser.Element =>
           -- Recursive dump child
-          Dump_Element (Children(I), Level + 1);
+          if not In_Tail then
+            Dump_Element (Children(I), Level + 1);
+          else
+            Dump_Element (Children(I), 0);
+          end if;
         when Xml_Parser.Text =>
           -- Put text
           Dump_Line (Children(I));
-          Out_Flow.Put (Indent);
+          if not In_Tail then
+            Out_Flow.Put (Indent);
+          end if;
           Out_Flow.Put_Line (" =>" & Ctx.Get_Text (Children(I)) & "<=");
         when Xml_Parser.Pi =>
           -- Put Pi
           Dump_Line (Children(I));
-          Out_Flow.Put (Indent);
+          if not In_Tail then
+            Out_Flow.Put (Indent);
+          end if;
           Out_Flow.Put (" <?" & Ctx.Get_Target (Children(I)));
           if Asu.Length (Ctx.Get_Pi (Children(I))) /= 0 then
-            Out_Flow.Put (" " & Ctx.Get_Target (Children(I)));
+            Out_Flow.Put (" " & Ctx.Get_Pi (Children(I)));
           end if;
           Out_Flow.Put_Line ("?>");
         when Xml_Parser.Comment =>
           -- Put Comment
           Dump_Line (Children(I));
-          Out_Flow.Put (Indent);
+          if not In_Tail then
+            Out_Flow.Put (Indent);
+          end if;
           Out_Flow.Put_Line (" <!--" & Ctx.Get_Comment (Children(I)) & "-->");
       end case;
     end loop;
@@ -199,6 +215,11 @@ procedure Xml_Checker is
     end if;
     In_Prologue := Node.In_Prologue;
     Out_Flow.Put (Normal (Node.Line_No, 8, True, '0'));
+    if Node.Prev_Is_Text then
+      Out_Flow.Put (" T");
+    else
+      Out_Flow.Put (" F");
+    end if;
     Out_Flow.Put (Indent);
     case Node.Kind is
       when Xml_Parser.Element =>
@@ -237,8 +258,10 @@ procedure Xml_Checker is
   begin
     Ctx.Parse (Get_File_Name (Index, False),
                Parse_Ok,
-               Comments => Output_Kind = Gen
-                 and then Format /= Xml_Parser.Generator.Raw,
+               Comments =>
+                  (Output_Kind = Gen
+                     and then Format /= Xml_Parser.Generator.Raw)
+                  or else Output_Kind = Dump,
                Expand => Expand or else Output_Kind = Dump,
                Use_Dtd => Use_Dtd,
                Dtd_File => Asu_Ts (Dtd_File),
