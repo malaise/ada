@@ -889,17 +889,7 @@ package body Dtd is
     end if;
 
     loop
-      begin
-        Util.Skip_Separators (Ctx.Flow);
-      exception
-        when Util.End_Error =>
-          if External then
-            return;
-          else
-            Util.Error (Ctx.Flow,
-                        "Unexpected end of file while parsing internal dtd");
-          end if;
-      end;
+      Util.Skip_Separators (Ctx.Flow);
       -- Skip any Cdata section
       Util.Skip_Cdata (Ctx.Flow, True, Cdata_Found);
       if not Cdata_Found then
@@ -924,7 +914,18 @@ package body Dtd is
           end if;
         end if;
         if not Found then
-          Util.Get (Ctx.Flow, Char);
+          -- Should be the end: End_Error if external, ']' if internal
+          begin
+            Util.Get (Ctx.Flow, Char);
+          exception
+            when Util.End_Error =>
+              if External then
+                return;
+              else
+                Util.Error (Ctx.Flow,
+                        "Unexpected end of file while parsing internal dtd");
+              end if;
+          end;
           if Char = (']') and then not External then
             return;
           else
@@ -955,7 +956,6 @@ package body Dtd is
       Parse (Ctx, Adtd, False);
     else
       -- File name
-      Ctx.Flow.Curr_Flow.Is_File := True;
       Trace ("Dtd parsing file " & Asu_Ts (File_Name));
       Ctx.Flow.Curr_Flow.Is_File := True;
       Ctx.Flow.Curr_Flow.Kind := Dtd_Flow;
@@ -1086,8 +1086,8 @@ package body Dtd is
     use type Asu_Us;
   begin
     Trace ("Dtd check Xml children list " & Asu_Ts (Children.Children)
-         & " Mixed: " & Children.Is_Mixed'Img
-         & " Has others: " & Children.Has_Other'Img);
+         & " Empty: " & Children.Is_Empty'Img
+         & " Text : " & Children.Has_Text'Img);
     -- Read its element def
     Info.Name := "Elt" & Info_Sep & Name;
     begin
@@ -1107,8 +1107,7 @@ package body Dtd is
     case Char is
       when 'E' =>
         -- Must be empty
-        if Asu.Length (Children.Children) /= 0 or else Children.Is_Mixed
-        or else Children.Has_Other then
+        if not Children.Is_Empty then
           Util.Error (Ctx.Flow, "According to dtd, element " & Asu_Ts (Name)
                     & " must be empty",
                       Line_No);
@@ -1139,7 +1138,7 @@ package body Dtd is
         end loop;
         Iter_Xml.Del;
       when 'C' =>
-        if Children.Is_Mixed then
+        if Children.Has_Text then
           Util.Error (Ctx.Flow, "According to dtd, element " & Asu_Ts (Name)
                     & " must not have text",
                       Line_No);
@@ -1164,6 +1163,7 @@ package body Dtd is
       raise Internal_Error;
   end Check_Children;
 
+  -- INTERNAL
   -- Check attributes of element
   procedure Check_Attributes (Ctx        : in out Ctx_Type;
                               Adtd       : in out Dtd_Type;
@@ -1435,15 +1435,13 @@ package body Dtd is
       raise Internal_Error;
   end Check_Attributes;
 
-  -- Check Current element of the tree
-  procedure Check_Element (Ctx : in out Ctx_Type;
-                           Adtd : in out Dtd_Type;
-                           Check_The_Attributes : in Boolean) is
+  -- Check attributes of current element of the tree
+  procedure Check_Attributes (Ctx : in out Ctx_Type;
+                              Adtd : in out Dtd_Type) is
     -- Current cell in tree
     Cell : My_Tree_Cell;
-    -- Lists of attributes and of children from xml tree
+    -- Lists of attributes
     Attributes : Asu_Us;
-    Children : Children_Desc;
     use type Asu_Us;
   begin
     if not Adtd.Set then
@@ -1452,12 +1450,9 @@ package body Dtd is
     end if;
     if Debug_Level /= 0 then
       My_Tree.Read (Ctx.Elements.all, Cell);
-      Trace ("Dtd checking element " & Asu_Ts(Cell.Name) & " attributes "
-           & Check_The_Attributes'Img);
+      Trace ("Dtd checking attributes of element " & Asu_Ts(Cell.Name));
     end if;
-    -- Read current element from tree and make its attribute and children lists
-    Children.Is_Mixed := False;
-    Children.Has_Other := False;
+    -- Read current element from tree and make its attribute list
     if My_Tree.Children_Number (Ctx.Elements.all) /= 0 then
       for I in 1 .. My_Tree.Children_Number (Ctx.Elements.all) loop
         if I = 1 then
@@ -1466,53 +1461,26 @@ package body Dtd is
           My_Tree.Move_Brother (Ctx.Elements.all, False);
         end if;
         My_Tree.Read (Ctx.Elements.all, Cell);
-        case Cell.Kind is
-          when Xml_Parser.Attribute =>
+        if Cell.Kind = Xml_Parser.Attribute then
             Asu.Append (Attributes, Info_Sep & Cell.Name & Info_Sep);
-          when Xml_Parser.Element =>
-            Asu.Append (Children.Children, Info_Sep & Cell.Name & Info_Sep);
-          when Xml_Parser.Text =>
-            Children.Is_Mixed := True;
-          when Xml_Parser.Pi | Xml_Parser.Comment =>
-            Children.Has_Other := True;
-        end case;
+        else
+          -- Children
+          exit;
+        end if;
       end loop;
       My_Tree.Move_Father (Ctx.Elements.all);
     end if;
     My_Tree.Read (Ctx.Elements.all, Cell);
-    if Check_The_Attributes then
-      -- Check Attributes
-      Check_Attributes (Ctx, Adtd, Cell.Name, Cell.Line_No, Attributes);
-    else
-      -- Check children
-      Check_Children (Ctx, Adtd, Cell.Name, Cell.Line_No, Children);
-    end if;
-  end Check_Element;
+    -- Check Attributes
+    Check_Attributes (Ctx, Adtd, Cell.Name, Cell.Line_No, Attributes);
+  end Check_Attributes;
 
   -- Add current element to list of children
-  procedure Add_Current (Ctx      : in out Ctx_Type;
-                         Adtd     : in out Dtd_Type;
-                         Children : in out Children_Desc) is
-    Cell : My_Tree_Cell;
+  procedure Add_Current_Element (List : in out Asu_Us; Name : in Asu_Us) is
     use type Asu_Us;
   begin
-    if not Adtd.Set then
-      -- No dtd => no check
-      return;
-    end if;
-    My_Tree.Read (Ctx.Elements.all, Cell);
-    case Cell.Kind is
-      when Element =>
-        Asu.Append (Children.Children, Info_Sep & Cell.Name & Info_Sep);
-      when Text =>
-        Children.Is_Mixed := True;
-      when Pi | Comment =>
-        Children.Has_Other := True;
-      when Attribute =>
-        Trace ("Adding current attribue as element list");
-        raise Internal_Error;
-    end case;
-  end Add_Current;
+    Asu.Append (List, Info_Sep & Name & Info_Sep);
+  end Add_Current_Element;
 
   -- Check that list matches Dtd definition of current element
   procedure Check_Element (Ctx      : in out Ctx_Type;
@@ -1528,14 +1496,58 @@ package body Dtd is
     Check_Children (Ctx, Adtd, Cell.Name, Cell.Line_No, Children);
   end Check_Element;
 
+  -- INTERNAL
+  -- Build from tree the descriptor of children
+  procedure Build_Children (Ctx  : in out Ctx_Type;
+                            Adtd : in out Dtd_Type;
+                            Children : out Children_Desc) is
+    -- Current cell in tree
+    Cell : My_Tree_Cell;
+  begin
+    if not Adtd.Set then
+      -- No dtd => no check
+      return;
+    end if;
+    -- Read current element from tree and make its children lists
+    Children.Is_Empty := True;
+    Children.Has_Text := False;
+    Children.Children := Asu_Null;
+    if My_Tree.Children_Number (Ctx.Elements.all) /= 0 then
+      for I in 1 .. My_Tree.Children_Number (Ctx.Elements.all) loop
+        if I = 1 then
+          My_Tree.Move_Child (Ctx.Elements.all);
+        else
+          My_Tree.Move_Brother (Ctx.Elements.all, False);
+        end if;
+        My_Tree.Read (Ctx.Elements.all, Cell);
+        case Cell.Kind is
+          when Xml_Parser.Attribute =>
+            -- Attribute: skip
+            null;
+          when Xml_Parser.Element =>
+            Children.Is_Empty := False;
+            Add_Current_Element (Children.Children, Cell.Name);
+          when Xml_Parser.Text =>
+            Children.Is_Empty := False;
+            Children.Has_Text := True;
+          when Xml_Parser.Pi | Xml_Parser.Comment =>
+            Children.Is_Empty := False;
+        end case;
+      end loop;
+      My_Tree.Move_Father (Ctx.Elements.all);
+    end if;
+  end Build_Children;
+
   -- Check a whole element tree recursively
   procedure Check_Subtree (Ctx  : in out Ctx_Type;
                            Adtd : in out Dtd_Type) is
     Cell : My_Tree_Cell;
+    Children : Children_Desc;
   begin
     -- Check current element, attributes then children
-    Check_Element (Ctx, Adtd, Check_The_Attributes => True);
-    Check_Element (Ctx, Adtd, Check_The_Attributes => False);
+    Check_Attributes (Ctx, Adtd);
+    Build_Children (Ctx, Adtd, Children);
+    Check_Element (Ctx, Adtd, Children);
     -- Check children recursively
     if My_Tree.Children_Number (Ctx.Elements.all) = 0 then
       -- No child

@@ -203,6 +203,7 @@ package body Util is
                    Msg : in String; Line_No : in Natural := 0) is
     Err_Msg : Asu_Us;
     Put_Line_No : Natural := 0;
+    use type Asu_Us;
   begin
     if Line_No = 0 then
       Put_Line_No := Get_Line_No(Flow);
@@ -213,13 +214,21 @@ package body Util is
     if Put_Line_No /= 0 then
       Asu.Append (Err_Msg, " at line" & Put_Line_No'Img);
     end if;
-    if Flow.Curr_Flow.Kind = Dtd_Flow then
+    if Flow.Curr_Flow.Kind /= Xml_Flow then
+      -- Dtd or external entity
       if Put_Line_No /= 0 then
         Asu.Append (Err_Msg, " of");
       else
         Asu.Append (Err_Msg, " in");
       end if;
-      Asu.Append (Err_Msg, " dtd");
+      if Flow.Curr_Flow.Kind = Dtd_Flow then
+        Asu.Append (Err_Msg, " dtd");
+      else
+        Asu.Append (Err_Msg, " external entity");
+      end if;
+      if Flow.Curr_Flow.Name /= Asu_Null then
+        Asu.Append (Err_Msg, " " & Flow.Curr_Flow.Name);
+      end if;
     end if;
     Asu.Append (Err_Msg, ": " & Msg & ".");
     -- The error message is attached to the exception
@@ -381,7 +390,7 @@ package body Util is
   end Get;
 
   -- Undo some gets (default 1)
-  procedure Unget (Flow : in out Flow_Type; N : Positive := 1) is
+  procedure Unget (Flow : in out Flow_Type; N : Natural := 1) is
     Char : Character;
     Len : Natural;
   begin
@@ -471,11 +480,13 @@ package body Util is
       exit when not Is_Separator (Char);
     end loop;
     Unget (Flow);
+  exception
+    when End_Error => null;
   end Skip_Separators;
 
   -- Skip separators, return the skipped separators
   procedure Get_Separators (Flow : in out Flow_Type;
-                              Seps : out Asu_Us) is
+                            Seps : out Asu_Us) is
     Char : Character;
     use type Asu_Us;
   begin
@@ -486,6 +497,8 @@ package body Util is
       Seps := Seps & Char;
     end loop;
     Unget (Flow);
+  exception
+    when End_Error => null;
   end Get_Separators;
 
   function Get_Curr_Str (Flow : Flow_Type;
@@ -572,6 +585,20 @@ package body Util is
   begin
     Parse_Until_Char (Flow, "" & Stop);
   end Parse_Until_Stop;
+
+  -- Parse until end of flow
+  -- Sets Curr_Str
+  procedure Parse_Until_End (Flow : in out Flow_Type) is
+    Char : Character;
+    use type Asu_Us;
+  begin
+    loop
+      Get (Flow, Char);
+      Flow.Curr_Str := Flow.Curr_Str & Char;
+    end loop;
+  exception
+    when End_Error => null;
+  end Parse_Until_End;
 
   -- Parse until a ')' closes the already got '('
   -- Sets Curr_Str
@@ -672,8 +699,8 @@ package body Util is
     function Variable_Of (Name : String) return String is
       Got : Asu_Us;
     begin
-      Entity_Mng.Get (Dtd.Entity_List, Ctx.Flow.Curr_Flow.Encod, Context,
-                      Asu_Tus (Name), False, Got);
+      Entity_Mng.Get (Ctx, Dtd, Ctx.Flow.Curr_Flow.Encod,
+                      Context, Asu_Tus (Name), False, Got);
       return Asu_Ts (Got);
     exception
       when Entity_Mng.Entity_Not_Found =>
@@ -773,8 +800,8 @@ package body Util is
           Error (Ctx.Flow, "Unknown entity " & Asu_Ts (Name));
         end if;
       end if;
-      Entity_Mng.Get (Dtd.Entity_List, Ctx.Flow.Curr_Flow.Encod, Context,
-                      Name, Starter = '%', Val);
+      Entity_Mng.Get (Ctx, Dtd, Ctx.Flow.Curr_Flow.Encod,
+                      Context, Name, Starter = '%', Val);
 
       -- Substitute from start to stop
       Asu.Replace_Slice (Result, Istart, Istop, Asu_Ts (Val));
@@ -959,6 +986,8 @@ package body Util is
     exception
       when Cdata_Detected =>
         Ok := True;
+      when End_Error =>
+        Ok := False;
     end;
     if Ok then
       -- "<![CDATA[", a CDATA block, skip until "]]>"

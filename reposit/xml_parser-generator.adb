@@ -4,7 +4,7 @@ with Int_Image, Text_Line, Sys_Calls, Trees;
 package body Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "0";
+  Minor_Version : constant String := "1";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -1007,18 +1007,19 @@ package body Xml_Parser.Generator is
     if Doctype.Public then
       -- Public and public Id
       Put (Flow, " PUBLIC """ & Asu_Ts (Doctype.Pub_Id) & """");
-    else
+    elsif Doctype.File /= Asu_Null then
       Put (Flow, " SYSTEM");
     end if;
     -- Public or System URI
-    Put (Flow, " """  & Asu_Ts (Doctype.File) & """");
+    if Doctype.File /= Asu_Null then
+      Put (Flow, " """  & Asu_Ts (Doctype.File) & """");
+    end if;
     -- Internal definition
     if Doctype.Int_Def /= Asu_Null then
       if Format /= Raw then
         Put (Flow, " [" & Asu_Ts (Doctype.Int_Def) & "] ");
       else
-        Put (Flow, "[" & Normalize (Asu_Ts (Doctype.Int_Def))
-                               & "]");
+        Put (Flow, "[" & Normalize (Asu_Ts (Doctype.Int_Def)) & "]");
       end if;
     end if;
     Put (Flow, ">");
@@ -1042,6 +1043,20 @@ package body Xml_Parser.Generator is
     Indent1 : constant String := Indent & "  ";
     Prev_Is_Text : Boolean;
     Xml_Attr_Format : Format_Kind_List;
+    In_Tail : Boolean;
+    Closed : Boolean := False;
+    -- Terminate tag after children
+    procedure Close is
+    begin
+      if not In_Tail and then not Closed then
+        if not Prev_Is_Text and then Format /= Raw then
+          New_Line (Flow);
+          Put (Flow, Indent);
+        end if;
+        Put (Flow, "</" & Asu_Ts (Cell.Name) & ">");
+      end if;
+      Closed := True;
+    end Close;
     use type Asu_Us, My_Tree.Position_Access;
   begin
     if Level = Prologue_Level then
@@ -1105,25 +1120,48 @@ package body Xml_Parser.Generator is
       return;
     end if;
 
+    -- In Elements or in tail
+    In_Tail := Level = 1 and then Cell.Name = Asu_Null;
+
     -- An element
-    -- Put element, attributes and children recursively
-    if Format /= Raw then
-      Put (Flow, Indent);
+    if not In_Tail then
+      -- Put element, attributes and children recursively
+      if Format /= Raw then
+        Put (Flow, Indent);
+      end if;
+      Put (Flow, "<" & Asu_Ts(Cell.Name));
     end if;
-    Put (Flow, "<" & Asu_Ts(Cell.Name));
+
+    -- Put attributes and move to first child (if any)
     Put_Attributes (Flow, Format, Width, Element, Level,
                     1 + Asu.Length (Cell.Name),
-                    Has_Children => My_Tree.Children_Number (Element)
-                                      > Cell.Nb_Attributes);
-    -- Any child
+                    Has_Children => Nb_Children > Cell.Nb_Attributes);
+
+    -- Any child?
     if My_Tree.Get_Position (Element) = Cell_Ref then
-      -- No child, terminate tag now
-      Put (Flow, "/>");
+      -- No Child (Put_Attributes moved back to current): return
+      if not In_Tail then
+        -- Terminate tag now
+        Put (Flow, "/>");
+      end if;
+      -- Terminate now
       return;
+    else
+      -- End Father for child or not (just a tail)
+      Child := My_Tree.Read (Element);
+      if not In_Tail then
+        if Child.Name /= Asu_Null then
+          -- There is a significan child
+          Put (Flow, ">");
+        else
+          -- There is just a tail
+          Put (Flow, "/>");
+          Closed := True;
+        end if;
+      end if;
     end if;
 
     -- Put children
-    Put (Flow, ">");
     Prev_Is_Text := False;
     for I in 1 .. Nb_Children loop
       Child := My_Tree.Read (Element);
@@ -1132,22 +1170,36 @@ package body Xml_Parser.Generator is
           -- Impossibe
           raise Internal_Error;
         when Xml_Parser.Element =>
-          -- Recursive dump child
-          if not Prev_Is_Text then
+          if In_Tail then
+            -- Impossibe
+            raise Internal_Error;
+          end if;
+          if Level = 0 and then Child.Name = Asu_Null then
+            -- Start of Tail
+            Close;
+          elsif not Prev_Is_Text then
             -- Father did not New_Line because of possible text
             --  or prev was not text and did not New_Line because
             --  of possible text
             if Format /= Raw then
               New_Line (Flow);
             end if;
+          end if;
+          -- Recursive dump child
+          if not In_Tail and then not Prev_Is_Text then
             Put_Element (Flow, Format, Width, Ctx, Element, Level + 1);
           else
             -- Child element following text
-            --  we bet that it has no child itself, so no New_Line nor Indent
+            --  we bet that it has no child itself, so no indent
+            -- On in Tail, no indent
             Put_Element (Flow, Format, Width, Ctx, Element, 0);
           end if;
           Prev_Is_Text := False;
         when Text =>
+          if In_Tail then
+            -- Impossibe
+            raise Internal_Error;
+          end if;
           -- Specific put text
           Put (Flow, Asu_Ts (Child.Name));
           Prev_Is_Text := True;
@@ -1160,7 +1212,9 @@ package body Xml_Parser.Generator is
               --  of possible text
               New_Line (Flow);
             end if;
-            Put (Flow, Indent1);
+            if not In_Tail then
+              Put (Flow, Indent1);
+            end if;
           end if;
           Put (Flow, "<?" & Asu_Ts (Child.Name));
           if Child.Value /= Asu_Null then
@@ -1177,7 +1231,9 @@ package body Xml_Parser.Generator is
               --  of possible text
               New_Line (Flow);
             end if;
-            Put (Flow, Indent1);
+            if not In_Tail then
+              Put (Flow, Indent1);
+            end if;
           end if;
           Put_Comment (Flow, Asu_Ts (Child.Name));
           Prev_Is_Text := False;
@@ -1186,13 +1242,7 @@ package body Xml_Parser.Generator is
         exit when not My_Tree.Has_Brother (Element, False);
         My_Tree.Move_Brother (Element, False);
       end loop;
-      -- Terminate tag after children
-      if not Prev_Is_Text and then Format /= Raw then
-        New_Line (Flow);
-        Put (Flow, Indent);
-      end if;
-      Put (Flow, "</" & Asu_Ts (Cell.Name) & ">");
-
+      Close;
       -- End of this element
       My_Tree.Move_Father (Element);
   end Put_Element;
@@ -1273,16 +1323,18 @@ package body Xml_Parser.Generator is
     end if;
 
     -- In elements tree
-    -- New_line and indent except if text or after text
+    -- New_line and indent except if text or after text, or at beginning of tail
     if Format /= Raw
     and then Update.Kind /= Xml_Parser.Text
-    and then not Update.Prev_Is_Text then
+    and then not Update.Prev_Is_Text
+    and then (Update.Kind /= Xml_Parser.Element
+              or else Update.Name /= Asu_Null) then
       New_Line (Flow);
       Put (Flow, Indent);
     end if;
     case Update.Kind is
       when Xml_Parser.Element =>
-        if Update.Creation then
+        if Update.Creation and then Update.Name /= Asu_Null then
           -- Put element and attributes
           Put (Flow, "<" & Asu_Ts(Update.Name));
           if Update.Attributes /= null then
@@ -1298,7 +1350,7 @@ package body Xml_Parser.Generator is
             -- Children to come
             Put (Flow, ">");
           end if;
-        else
+        elsif  Update.Name /= Asu_Null then
           -- End of element with children
           Put (Flow, "</" & Asu_Ts (Update.Name) & ">");
         end if;

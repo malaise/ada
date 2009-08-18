@@ -13,7 +13,7 @@ with Queues, Trees, Unique_List, Text_Char, Dynamic_List, Unlimited_Pool;
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "11";
+  Major_Version : constant String := "12";
   function Version return String;
 
   -----------
@@ -71,6 +71,13 @@ package Xml_Parser is
   -- The DOCTYPE is parsed during the prologue parsing, it can be retrieved
   --  when the Prologue has a child of type text (empty)
   -- PUBLIC directive is not processed
+
+  -------------------------
+  -- NOTE ABOUT THE TAIL --
+  -------------------------
+  -- The tail (Comments and PIs after the root element) are attached
+  --  to a dummy child of the root element. This child (if any) is the
+  --  last child of root and has no name.
 
   -----------------------------
   -- NOTE ABOUT THE CALLBACK --
@@ -163,7 +170,7 @@ package Xml_Parser is
                             Expand   : in Boolean := True;
                             Callback : in Parse_Callback_Access := null);
 
-  -- Parse the elements (after the prologue) of a string with a dtd
+  -- Parse the elements (after the prologue) and tail of a string with a dtd
   -- may raise Status_Error if Ctx is clean
   --           End_Error if Ctx has already parsed elements
   --           Parse_Error if Parse_Prologue was not ok
@@ -337,7 +344,7 @@ private
   package My_Circ is new Queues.Circ (Max_Buf_Len, Character);
 
   -- Current flow is...
-  type Flow_Kind_List is (Xml_Flow, Dtd_Flow);
+  type Flow_Kind_List is (Xml_Flow, Dtd_Flow, Ext_Flow);
   -- Current encoding
   type Encod_List is (Utf8, Utf16_Le, Utf16_Be);
   -- Number of single UTF8 bytes re-inserted in flow when in UTF16
@@ -516,7 +523,7 @@ private
     -- Call a callback i.o. feeding trees
     Callback : Parse_Callback_Access := null;
     Level : Natural := 0;
-    -- Prologue and parsed elements
+    -- Prologue, parsed elements and tail
     Prologue : Tree_Acc := new My_Tree.Tree_Type;
     Elements : Tree_Acc := new My_Tree.Tree_Type;
     -- Doctype name, file and a tag of internal definitions

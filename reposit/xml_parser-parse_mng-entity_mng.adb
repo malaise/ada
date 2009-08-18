@@ -137,7 +137,8 @@ package body Entity_Mng is
   end Exists;
 
   -- Get value of an entity. Raises Parse_Error if none
-  procedure Get (The_Entities : in out Entity_List_Mng.List_Type;
+  procedure Get (Ctx : in out Ctx_Type;
+                 Dtd : in out Dtd_Type;
                  Encod : in Encod_List;
                  Context : in Context_List;
                  Name : in Asu_Us;
@@ -170,7 +171,7 @@ package body Entity_Mng is
     -- Read entity with the given name
     Entity.Parameter := Parameter;
     Entity.Name := Name;
-    Entity_List_Mng.Read (The_Entities, Entity, Entity);
+    Entity_List_Mng.Read (Dtd.Entity_List, Entity, Entity);
     if Parameter then
       Trace ("Read parameter entity name " & Asu_Ts (Entity.Name)
            & " value " & Asu_Ts (Entity.Value));
@@ -215,20 +216,17 @@ package body Entity_Mng is
         end if;
       when Ref_Dtd =>
         if not Parameter then
-          Trace ("Unexpected non paramter entity reference " & Asu_Ts (Name)
+          Trace ("Unexpected non parameter entity reference " & Asu_Ts (Name)
               & " in dtd");
           raise Entity_Forbidden;
         end if;
     end case;
 
-    -- At present, external parsed entities are not expanded
-    -- Shall replace Got by the result of its parsing
-    -- @@@
+    -- Expand the content of external parsed entity
     if Entity.Parsed and then not Entity.Internal then
-      Trace ("External entity " & Asu_Ts (Name) & " with URI "
-           & Asu_Ts (Got) & " not yet expanded");
-      Got := Asu_Null;
+      Expand_External_Entity (Ctx, Dtd, Name, Got, Got);
     end if;
+
   exception
     when Entity_List_Mng.Not_In_List =>
       Trace ("Unknown entity name " & Asu_Ts (Entity.Name));

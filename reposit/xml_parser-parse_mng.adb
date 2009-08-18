@@ -13,6 +13,13 @@ package body Parse_Mng  is
     return Context = Ref_Entity or else Context = Ref_Dtd;
   end In_Dtd;
 
+  -- Expand the content of an external parsed entity
+  -- Non recursive
+  procedure Expand_External_Entity (Ctx : in out Ctx_Type;
+                                    Dtd : in out Dtd_Type;
+                                    Name, Uri : in Asu_Us;
+                                    Text : out Asu_Us);
+
   -- Entity management
   package Entity_Mng is
     -- Initialise with default entities
@@ -31,7 +38,8 @@ package body Parse_Mng  is
 
     -- Get value of an entity. Raises Entity_Not_Found if none
     -- May raise Invalid_Char_Code
-    procedure Get (The_Entities : in out Entity_List_Mng.List_Type;
+    procedure Get (Ctx : in out Ctx_Type;
+                   Dtd : in out Dtd_Type;
                    Encod : in Encod_List;
                    Context : in Context_List;
                    Name : in Asu_Us;
@@ -84,7 +92,7 @@ package body Parse_Mng  is
     -- Get a string
     procedure Get (Flow : in out Flow_Type; Str : out String);
     -- Undo some gets (default 1)
-    procedure Unget (Flow : in out Flow_Type; N : in Positive := 1);
+    procedure Unget (Flow : in out Flow_Type; N : in Natural := 1);
     -- Read last char got
     procedure Read (Flow : in out Flow_Type; Char : out Character);
     -- Read Str'Length chars got
@@ -128,6 +136,9 @@ package body Parse_Mng  is
     -- Parse until stop character
     -- Sets Curr_Str
     procedure Parse_Until_Stop (Flow : in out Flow_Type);
+    -- Parse until end of flow
+    -- Sets Curr_Str
+    procedure Parse_Until_End (Flow : in out Flow_Type);
     -- Parse until a ')' closes the already got '('
     -- Sets Curr_Str
     procedure Parse_Until_Close (Flow : in out Flow_Type);
@@ -183,22 +194,27 @@ package body Parse_Mng  is
 
   -- Descriptor of list of children found
   type Children_Desc is record
+    -- Result of parsing of children
+    Is_Empty : Boolean := True;
     Children : Asu_Us;
-    Is_Mixed : Boolean := False;
-    Has_Other : Boolean := False;
+    Has_Text : Boolean := False;
+    -- Token passed along the parsing of children
+    Prev_Is_Text : Boolean := False;
+    Preserve : Boolean := False;
   end record;
 
   -- Parse a directive <! >
   -- Dtd uses Parse_Directive for comment and CDATA
   -- If not In_Dtd, comments might be stored (if Ctx.Parse_Comments)
+  -- Can be called by Dtd
   procedure Parse_Directive (Ctx : in out Ctx_Type;
                              Adtd : in out Dtd_Type;
                              Allow_Dtd : in Boolean;
                              Context : in Context_List;
-                             Children : access Children_Desc;
-                             Prev_Is_Text : in Boolean := False);
+                             Children : access Children_Desc);
 
   -- Parse a value "Value" or 'Value' (of an entity or, attribute default...)
+  -- Can be called by Dtd (for ATTLIST or ENTITY value)
   procedure Parse_Value (Ctx : in out Ctx_Type;
                          Adtd : in out Dtd_Type;
                          Context : in Context_List;
@@ -241,14 +257,11 @@ package body Parse_Mng  is
                      Name_Raise_Parse : in Boolean := True);
     -- Perform final checks after DTD parsing: unparsed entities v.s. notations
     procedure Final_Dtd_Check (Ctx  : in out Ctx_Type; Adtd : in out Dtd_Type);
-    -- Check current element of the tree
-    procedure Check_Element (Ctx  : in out Ctx_Type;
-                             Adtd : in out Dtd_Type;
-                             Check_The_Attributes : Boolean);
+    -- Check attributes of current element of the tree
+    procedure Check_Attributes (Ctx  : in out Ctx_Type;
+                                Adtd : in out Dtd_Type);
     -- Add current element to list of children
-    procedure Add_Current (Ctx      : in out Ctx_Type;
-                           Adtd     : in out Dtd_Type;
-                           Children : in out Children_Desc);
+    procedure Add_Current_Element (List : in out Asu_Us; Name : in Asu_Us);
     -- Check that list matches Dtd definition of current element
     procedure Check_Element (Ctx      : in out Ctx_Type;
                              Adtd     : in out Dtd_Type;
@@ -469,38 +482,51 @@ package body Parse_Mng  is
   end Call_Callback;
 
   -- Delete current node/tree if callback
-  procedure Delete_Node (Ctx : in out Ctx_Type;
-                         In_Prologue : in Boolean;
-                         Deallocate : in Boolean := False) is
+  -- Move up if no callback (and not root)
+  procedure Move_Del (Ctx : in out Ctx_Type;
+                      In_Prologue : in Boolean;
+                      Deallocate : in Boolean := False) is
+    Tree : Tree_Acc;
   begin
-    if Ctx.Callback = null then
-      return;
-    end if;
     if In_Prologue then
-      Tree_Mng.Delete_Node (Ctx.Prologue.all, Deallocate);
+      Tree := Ctx.Prologue;
     else
-      Tree_Mng.Delete_Node (Ctx.Elements.all, Deallocate);
+      Tree := Ctx.Elements;
     end if;
-  end Delete_Node;
 
-  -- Move up in elements if no callback
-  procedure Move_Up (Ctx : in out Ctx_Type) is
-  begin
-     if Ctx.Callback /= null then
-      return;
+    if Ctx.Callback /= null then
+      Tree.Delete_Tree (Deallocate);
+    elsif Tree.Has_Father then
+      Tree.Move_Father;
     end if;
-    Tree_Mng.Move_Up (Ctx.Elements.all);
-  end Move_Up;
+  end Move_Del;
 
   -- Add current element to list of children
   procedure Add_Child (Ctx  : in out Ctx_Type;
                        Adtd : in out Dtd_Type;
-                       Desc : access Children_Desc) is
+                       Children : access Children_Desc) is
+    Cell : My_Tree_Cell;
+    use type Asu_Us;
   begin
-    if Ctx.Callback = null then
+    if not Adtd.Set or else Children = null then
+      -- In Prologue (Pi or directive) => no check
+      -- No dtd => no check
       return;
     end if;
-    Dtd.Add_Current (Ctx, Adtd, Desc.all);
+    Children.Is_Empty := False;
+    My_Tree.Read (Ctx.Elements.all, Cell);
+    case Cell.Kind is
+      when Element =>
+        Dtd.Add_Current_Element (Children.Children, Cell.Name);
+      when Text =>
+        Children.Has_Text := True;
+      when Pi | Comment =>
+        -- Is_Empty is False
+        null;
+      when Attribute =>
+        Trace ("Adding current attribute as element list");
+        raise Internal_Error;
+    end case;
   end Add_Child;
 
   -- Check element's children, tree or desc
@@ -508,12 +534,79 @@ package body Parse_Mng  is
                             Adtd : in out Dtd_Type;
                             Desc : access Children_Desc) is
   begin
-    if Ctx.Callback = null then
-      Dtd.Check_Element (Ctx, Adtd, Check_The_Attributes => False);
-    else
-      Dtd.Check_Element (Ctx, Adtd, Desc.all);
-    end if;
+    Dtd.Check_Element (Ctx, Adtd, Desc.all);
   end Check_Children;
+
+  -- Expand the content of an external parsed entity
+  procedure Expand_External_Entity (Ctx : in out Ctx_Type;
+                                    Dtd : in out Dtd_Type;
+                                    Name, Uri : in Asu_Us;
+                                    Text : out Asu_Us) is
+    File_Name : Asu_Us;
+    Ok : Boolean;
+    Char : Character;
+    Dummy : My_Tree_Cell;
+
+    use type Asu_Us;
+  begin
+    Trace ("Ext expanding external entity " & Asu_Ts (Name) & " with URI "
+         & Asu_Ts (Uri));
+    if Uri = Asu_Null then
+      Util.Error (Ctx.Flow, "Invalid external entity URI " & Asu_Ts (Uri)
+                          & " for entity " & Asu_Ts (Name) & ".");
+    end if;
+    Ctx.Flow.Flows.Push (Ctx.Flow.Curr_Flow);
+    -- Init Flow
+    File_Name := Build_Full_Name (Uri, Ctx.Flow.Curr_Flow.Name);
+    Ctx.Flow.Curr_Flow.Is_File := True;
+    Ctx.Flow.Curr_Flow.Kind := Ext_Flow;
+    Ctx.Flow.Curr_Flow.Name := Uri;
+    Ctx.Flow.Curr_Flow.Line := 1;
+    Ctx.Flow.Curr_Flow.File := new Text_Char.File_Type;
+    File_Mng.Open (Asu_Ts (File_Name), Ctx.Flow.Curr_Flow.File.all);
+
+    -- Parse
+    Util.Guess_Encoding (Ctx.Flow);
+    -- See if this is the "<?xml " directive
+    Util.Check_Cdata (Ctx.Flow, 5);
+    Util.Try (Ctx.Flow, Util.Start & Util.Instruction & "xml", Ok);
+    if Ok then
+      Util.Get (Ctx.Flow, Char);
+      Ok := Util.Is_Separator (Char);
+      if not Ok then
+        Util.Error (Ctx.Flow, "Invalid text declaration");
+      end if;
+    end  if;
+    if Ok then
+      -- Parse xml directive: on a dummy child of prologue
+      Dummy.Line_No := 0;
+      if My_Tree.Is_Empty (Ctx.Prologue.all) then
+        My_Tree.Insert_Father (Ctx.Prologue.all, Dummy);
+      else
+        My_Tree.Insert_Child (Ctx.Prologue.all, Dummy, False);
+      end if;
+      Parse_Attributes (Ctx, Dtd, True);
+      Check_Xml_Attributes (Ctx, False);
+      My_Tree.Delete_Tree (Ctx.Prologue.all);
+      Trace ("Ext parsed instruction " & Asu_Ts(Util.Get_Curr_Str (Ctx.Flow)));
+      Util.Reset_Curr_Str (Ctx.Flow);
+      Util.Skip_Separators (Ctx.Flow);
+    end if;
+
+    -- Load content in string
+    Util.Parse_Until_End (Ctx.Flow);
+    Text := Util.Get_Curr_Str (Ctx.Flow, Check_Cdata => False);
+    Util.Reset_Curr_Str (Ctx.Flow);
+    Trace ("Ext expanded as >" & Asu_Ts(Text) & "<");
+
+    -- Done: restore flow
+    Reset (Ctx.Flow.Curr_Flow);
+    Ctx.Flow.Flows.Pop (Ctx.Flow.Curr_Flow);
+  exception
+    when File_Error =>
+     Util.Error (Ctx.Flow, "Cannot open external entity file "
+                         & Asu_Ts (File_Name));
+  end Expand_External_Entity;
 
   -- Set default Xml version (1.0) if needed
   -- Set encoding from Dtd if needed
@@ -633,17 +726,20 @@ package body Parse_Mng  is
       Tree_Mng.Move_Root (Ctx.Prologue.all);
       Tree_Mng.Add_Pi (Ctx.Prologue.all, Name, Value,
                        Util.Get_Line_No(Ctx.Flow));
+      Call_Callback (Ctx, True, True);
     else
       Tree_Mng.Add_Pi (Ctx.Elements.all, Name, Value,
                        Util.Get_Line_No(Ctx.Flow));
       -- Add this child
       if Children /= null then
+        Call_Callback (Ctx, False, True,
+                       Prev_Is_Text => Children.Prev_Is_Text);
         Add_Child (Ctx, Adtd, Children);
+      else
+        Call_Callback (Ctx, False, True);
       end if;
-      Move_Up (Ctx);
+      Move_Del (Ctx, In_Prologue);
     end if;
-    Call_Callback (Ctx, In_Prologue, True);
-    Delete_Node (Ctx, In_Prologue);
   exception
     when Util.End_Error =>
       Util.Error (Ctx.Flow,
@@ -751,7 +847,7 @@ package body Parse_Mng  is
       Dtd.Init (Adtd);
     end if;
     Call_Callback (Ctx, True, True);
-    Delete_Node (Ctx, True);
+    Move_Del (Ctx, True);
     Trace ("Parsed <!DOCTYPE ... >");
   end Parse_Doctype;
 
@@ -762,8 +858,7 @@ package body Parse_Mng  is
                              Adtd : in out Dtd_Type;
                              Allow_Dtd : in Boolean;
                              Context : in Context_List;
-                             Children : access Children_Desc;
-                             Prev_Is_Text : in Boolean := False) is
+                             Children : access Children_Desc) is
     Index : Natural;
     Ok : Boolean;
     Comment : Asu_Us;
@@ -799,18 +894,19 @@ package body Parse_Mng  is
           Tree_Mng.Add_Comment (Ctx.Prologue.all, Comment,
                                 Util.Get_Line_No (Ctx.Flow));
           Call_Callback (Ctx, True, True);
-          Delete_Node (Ctx, True);
         else
           Tree_Mng.Add_Comment (Ctx.Elements.all, Comment,
                                 Util.Get_Line_No (Ctx.Flow));
-          Call_Callback (Ctx, False, True, Prev_Is_Text);
           -- Add this child
           if Children /= null then
+            Call_Callback (Ctx, False, True,
+                           Prev_Is_Text => Children.Prev_Is_Text);
             Add_Child (Ctx, Adtd, Children);
+          else
+            Call_Callback (Ctx, False, True);
           end if;
-          Delete_Node (Ctx, False);
-          Move_Up (Ctx);
         end if;
+        Move_Del (Ctx, Tree_Mng.Is_Empty (Ctx.Elements.all));
         Trace ("Parsed comment " & Asu_Ts (Comment));
       else
         Trace ("Skipped comment <!--" & Asu_Ts (Comment) & "-->");
@@ -902,7 +998,7 @@ package body Parse_Mng  is
     Dtd.Final_Dtd_Check (Ctx, Adtd);
     Tree_Mng.Move_Root (Ctx.Prologue.all);
     -- Delete completely the prologue if callback
-    Delete_Node (Ctx, True, True);
+    Move_Del (Ctx, True, True);
   exception
     when Util.End_Error =>
       Util.Error (Ctx.Flow, "Unexpected end of file");
@@ -912,16 +1008,23 @@ package body Parse_Mng  is
   procedure Parse_Element (Ctx : in out Ctx_Type;
                            Adtd : in out Dtd_Type;
                            Parent_Children : access Children_Desc;
-                           Root : in Boolean;
-                           Prev_Is_Text : in Boolean);
+                           Root : in Boolean);
+
+  -- Parse text
+  procedure Parse_Text (Ctx : in out Ctx_Type;
+                        Dtd : in out Dtd_Type;
+                        Children : access Children_Desc) is
+  begin
+    null;
+  end Parse_Text;
 
   -- Parse text or sub-elements of an element (until </)
   -- Children and Is_mixed are set with list of children, only if Callback
   procedure Parse_Children (Ctx : in out Ctx_Type;
                             Adtd : in out Dtd_Type;
-                            Children : access Children_Desc;
-                            Prev_Was_Text : in Boolean) is
+                            Children : access Children_Desc) is
     Created : Boolean := False;
+    Prev_Was_Text : constant Boolean := Children.Prev_Is_Text;
     -- Create parent node with children if needed
     procedure Create (Has_Children : in Boolean) is
     begin
@@ -938,47 +1041,28 @@ package body Parse_Mng  is
     Text : Asu_Us;
     Char : Character;
     Line_No : Natural;
-    Preserve : Boolean;
     Ok : Boolean;
-    Has_Child : Boolean;
-    Prev_Is_Text : Boolean;
     use type Asu_Us;
   begin
     -- Try to preserve spaces if current element has this tuning
-    Preserve := String_Mng.Locate (Tree_Mng.Get_Tuning (Ctx.Elements.all),
-                                   Tree_Mng.Xml_Space_Preserve) /= 0;
-    if Preserve then
+    Children.Preserve := String_Mng.Locate (
+            Tree_Mng.Get_Tuning (Ctx.Elements.all),
+                                 Tree_Mng.Xml_Space_Preserve) /= 0;
+    if Children.Preserve then
       Trace ("Preserving spaces of the texts of this element");
     end if;
 
     -- Detect children
-    Has_Child := False;
-    Prev_Is_Text := False;
     Line_No := Util.Get_Line_No (Ctx.Flow);
-    Util.Get_Separators (Ctx.Flow, Text);
     loop
       Util.Get (Ctx.Flow, Char);
       if Char = Util.Start then
         Util.Get (Ctx.Flow, Char);
         if Char = Util.Slash then
-          -- "</" end of this element
-          if not Has_Child and then Text /= Asu_Null then
-            -- Element has no child but text (only separators)
-            --  between start and stop, add it
-            Create (True);
-            Util.Fix_Text (Ctx, Adtd, Text, Ref_Xml, Preserve);
-            Tree_Mng.Add_Text (Ctx.Elements.all, Text, Line_No);
-            Add_Child (Ctx, Adtd, Children);
-            Call_Callback (Ctx, False, True, False, Prev_Is_Text);
-            Delete_Node (Ctx, False);
-            Move_Up (Ctx);
-            Has_Child := True;
-            Prev_Is_Text := True;
-          end if;
-          if Has_Child then
-            -- Element was created with children, notify of end of it
+          if Created then
+            -- Element was created
             Ctx.Level := Ctx.Level - 1;
-            Call_Callback (Ctx, False, False, False, Prev_Is_Text);
+            Call_Callback (Ctx, False, False, False, Children.Prev_Is_Text);
           else
             -- Empty element
             Create (False);
@@ -989,17 +1073,16 @@ package body Parse_Mng  is
           Create (True);
           Parse_Directive (Ctx, Adtd, Allow_Dtd => False,
                                       Context => Ref_Xml,
-                                      Children => Children,
-                                      Prev_Is_Text => Prev_Is_Text);
+                                      Children => Children);
           Line_No := Util.Get_Line_No (Ctx.Flow);
           Util.Get_Separators (Ctx.Flow, Text);
-          Prev_Is_Text := False;
+          Children.Prev_Is_Text := False;
         elsif Char = Util.Instruction then
           Create (True);
           Parse_Instruction (Ctx, Adtd, Children);
           Line_No := Util.Get_Line_No (Ctx.Flow);
           Util.Get_Separators (Ctx.Flow, Text);
-          Prev_Is_Text := False;
+          Children.Prev_Is_Text := False;
         elsif Char = Util.Start then
           Util.Check_Cdata (Ctx.Flow);
           Util.Error (Ctx.Flow, "Unexpected character " & Util.Start);
@@ -1007,20 +1090,18 @@ package body Parse_Mng  is
           -- A new sub-element
           Create (True);
           Util.Unget (Ctx.Flow);
-          Parse_Element (Ctx, Adtd, Children, False, Prev_Is_Text);
+          Parse_Element (Ctx, Adtd, Children, False);
           Line_No := Util.Get_Line_No (Ctx.Flow);
           Util.Get_Separators (Ctx.Flow, Text);
-          Has_Child := True;
-          Prev_Is_Text := False;
+          Children.Prev_Is_Text := False;
         end if;
       else
         -- A text, will stop with a new sub-element or
         --  with stop of current element
-        Create (True);
         -- Concatenate blocks separated by <![CDATA[xxx]]>
         Util.Unget (Ctx.Flow);
         loop
-          -- Parse until "Start" and concat
+          -- Parse until "Start" and concat. Skip CDATA
           Util.Parse_Until_Char (Ctx.Flow, Util.Start & "");
           Util.Unget (Ctx.Flow);
           Text := Text & Util.Get_Curr_Str (Ctx.Flow, Check_Cdata => False);
@@ -1030,15 +1111,16 @@ package body Parse_Mng  is
           -- This "Start" is not a Cdata => End
           exit when not Ok;
         end loop;
-        Util.Fix_Text (Ctx, Adtd, Text, Ref_Xml, Preserve);
-        Tree_Mng.Add_Text (Ctx.Elements.all, Text, Line_No);
-        Add_Child (Ctx, Adtd, Children);
-        Call_Callback (Ctx, False, True, False);
-        Delete_Node (Ctx, False);
-        Move_Up (Ctx);
-        Has_Child := True;
-        Prev_Is_Text := True;
-        Trace ("Parsed Text " & Asu_Ts (Text));
+        Util.Fix_Text (Ctx, Adtd, Text, Ref_Xml, Children.Preserve);
+        if Text /= Asu_Null then
+          Create (True);
+          Tree_Mng.Add_Text (Ctx.Elements.all, Text, Line_No);
+          Add_Child (Ctx, Adtd, Children);
+          Call_Callback (Ctx, False, True, False, Children.Prev_Is_Text);
+          Move_Del (Ctx, False);
+          Children.Prev_Is_Text := True;
+          Trace ("Parsed Text >" & Asu_Ts (Text) & "<");
+        end if;
       end if;
     end loop;
   end Parse_Children;
@@ -1047,14 +1129,14 @@ package body Parse_Mng  is
   procedure Parse_Element (Ctx : in out Ctx_Type;
                            Adtd : in out Dtd_Type;
                            Parent_Children : access Children_Desc;
-                           Root : in Boolean;
-                           Prev_Is_Text : in Boolean) is
+                           Root : in Boolean) is
     Element_Name, End_Name : Asu_Us;
     Char : Character;
     Line_No : Natural;
     My_Children : aliased Children_Desc;
     use type Asu_Us;
   begin
+    My_Children.Prev_Is_Text := Parent_Children.Prev_Is_Text;
     Line_No := Util.Get_Line_No (Ctx.Flow);
     -- Parse name until /, > or a separator
     Util.Parse_Until_Char (Ctx.Flow, "/> ");
@@ -1074,14 +1156,12 @@ package body Parse_Mng  is
     Util.Reset_Curr_Str (Ctx.Flow);
     -- Add new element and move to it
     Tree_Mng.Add_Element (Ctx.Elements.all, Element_Name, Line_No);
-    -- Add oursefl as child of our parent
+    -- Add ourself as child of our parent
     Add_Child (Ctx, Adtd, Parent_Children);
     Trace ("Parsing element " & Asu_Ts (Element_Name));
-    -- See next significant character
+    -- See first significant character after name
     Util.Read (Ctx.Flow, Char);
     if Util.Is_Separator (Char) then
-      -- Skip separators
-      Util.Skip_Separators (Ctx.Flow);
       Util.Get (Ctx.Flow, Char);
     end if;
     -- If not / nor >, then parse_attributes
@@ -1099,21 +1179,19 @@ package body Parse_Mng  is
                             & " after " & Util.Slash);
       end if;
       -- End of this empty element, check attributes and content
-      Dtd.Check_Element (Ctx, Adtd, Check_The_Attributes => True);
+      Dtd.Check_Attributes (Ctx, Adtd);
       Check_Children (Ctx, Adtd,  My_Children'Access);
-      Call_Callback (Ctx, False, True, False, Prev_Is_Text);
-      Delete_Node (Ctx, False);
-      if not Root then
-        Move_Up (Ctx);
-      end if;
+      Call_Callback (Ctx, False, True, False, Parent_Children.Prev_Is_Text);
+      Move_Del (Ctx, False);
+      Parent_Children.Prev_Is_Text := False;
       Trace ("Parsed element " & Asu_Ts (Element_Name));
       return;
     elsif Char = Util.Stop then
       -- >: parse text and children elements until </
       -- Check attributes first (e.g. xml:space)
-      Dtd.Check_Element (Ctx, Adtd, Check_The_Attributes => True);
+      Dtd.Check_Attributes (Ctx, Adtd);
       Trace ("Parsing children of " & Asu_Ts (Element_Name));
-      Parse_Children (Ctx, Adtd, My_Children'Access, Prev_Is_Text);
+      Parse_Children (Ctx, Adtd, My_Children'Access);
       Trace ("Parsed children of " & Asu_Ts (Element_Name));
       -- Check Name matches
       Util.Parse_Until_Char (Ctx.Flow, Util.Stop & "");
@@ -1126,10 +1204,7 @@ package body Parse_Mng  is
       end if;
       -- End of this non empty element, check children
       Check_Children (Ctx, Adtd,  My_Children'Access);
-      Delete_Node (Ctx, False);
-      if not Root then
-        Move_Up (Ctx);
-      end if;
+      Move_Del (Ctx, False);
       Trace ("Parsed element " & Asu_Ts (Element_Name));
       return;
     else
@@ -1150,19 +1225,19 @@ package body Parse_Mng  is
     Ctx.Level := 0;
     loop
       -- Get until a significant character, if any
+      Util.Skip_Separators (Ctx.Flow);
       begin
-        Util.Skip_Separators (Ctx.Flow);
+        Util.Get (Ctx.Flow, C1);
       exception
         when Util.End_Error =>
           exit;
       end;
-      Util.Get (Ctx.Flow, C1);
       -- Shall be '<'
       if C1 /= Util.Start then
         Util.Error (Ctx.Flow, "Unexpected character " & C1 & " while expecting "
                   & Util.Start & " for root");
       end if;
-       Util.Get (Ctx.Flow, C2);
+      Util.Get (Ctx.Flow, C2);
       case C2 is
         when Util.Instruction =>
           Parse_Instruction (Ctx, Adtd, null);
@@ -1178,21 +1253,31 @@ package body Parse_Mng  is
           if Root_Found then
             Util.Error (Ctx.Flow, "More that one root element found");
           end if;
-          Parse_Element (Ctx, Adtd, My_Children'Access,
-                         Root => True, Prev_Is_Text => False);
+          Parse_Element (Ctx, Adtd, My_Children'Access, Root => True);
           Root_Found := True;
+          -- Insert dummy child for tail
+          Tree_Mng.Add_Element (Ctx.Elements.all, Asu_Null,
+                                Util.Get_Line_No (Ctx.Flow));
       end case;
     end loop;
     -- One (and only one) root must have been found
     if not Root_Found then
       Util.Error (Ctx.Flow, "No root element found");
     end if;
-    -- Deallocate if in callback mode (needs Elements tree to be not empty)
+    -- Deallocate if in callback mode (at least there is the tail)
     if Ctx.Callback /= null then
-      -- Insert a dummy root
-      Tree_Mng.Add_Element (Ctx.Elements.all, Asu_Null, 0);
       -- Deallocate
-      Delete_Node (Ctx, False, True);
+      Ctx.Elements.Move_Root;
+      Move_Del (Ctx, False, True);
+    else
+      -- Delete Tail if it is empty
+      Ctx.Elements.Move_Root;
+      Ctx.Elements.Move_Child (Eldest =>False);
+      if Ctx.Elements.Children_Number = 0 then
+        Ctx.Elements.Delete_Current;
+      else
+        Ctx.Elements.Move_Root;
+      end if;
     end if;
   exception
     when Util.End_Error =>

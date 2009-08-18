@@ -3,7 +3,7 @@ with Environ, Basic_Proc, Rnd, Exception_Messenger, Directory;
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "1";
+  Minor_Version : constant String := "3";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -51,6 +51,9 @@ package body Xml_Parser is
 
   -- My tree manipulation
   package Tree_Mng is
+    -- Move to root
+    procedure Move_Root (Elements : in out My_Tree.Tree_Type);
+
     -- Add an element, move to it
     procedure Add_Element (Elements : in out My_Tree.Tree_Type;
                            Name : in Asu_Us; Line : in Natural);
@@ -60,9 +63,6 @@ package body Xml_Parser is
                             Tuning : in String);
     -- Get all tuning of an element
     function Get_Tuning (Elements : My_Tree.Tree_Type) return String;
-    -- Move up, Move root
-    procedure Move_Up (Elements : in out My_Tree.Tree_Type);
-    procedure Move_Root (Elements : in out My_Tree.Tree_Type);
     -- Add an attribute to current element, remain on current element
     procedure Add_Attribute (Elements : in out My_Tree.Tree_Type;
                              Name, Value : in Asu_Us; Line : in Natural);
@@ -115,9 +115,6 @@ package body Xml_Parser is
     procedure Build_Update (Tree : in out My_Tree.Tree_Type;
                             Update : in out Node_Update;
                             Creation : in Boolean);
-    -- Delete current node
-    procedure Delete_Node (Tree : in out My_Tree.Tree_Type;
-                           Deallocate : in Boolean);
   end Tree_Mng;
   package body Tree_Mng is separate;
 

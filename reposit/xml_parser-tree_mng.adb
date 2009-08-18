@@ -123,12 +123,6 @@ package body Tree_Mng is
     return Asu_Ts (Cell.Value);
   end Get_Tuning;
 
-  -- Move to father of current element
-  procedure Move_Up (Elements : in out My_Tree.Tree_Type) is
-  begin
-    My_Tree.Move_Father (Elements);
-  end Move_Up;
-
   -- Move to root of current tree
   procedure Move_Root (Elements : in out My_Tree.Tree_Type) is
   begin
@@ -413,13 +407,6 @@ package body Tree_Mng is
       My_Tree.Move_Father (Tree);
     end if;
   end Build_Update;
-
-  -- Delete current node
-  procedure Delete_Node (Tree : in out My_Tree.Tree_Type;
-                         Deallocate : in Boolean) is
-  begin
-    My_Tree.Delete_Tree (Tree, Deallocate);
-  end Delete_Node;
 
 end Tree_Mng;
 
