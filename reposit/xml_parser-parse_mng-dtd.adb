@@ -41,7 +41,6 @@ package body Dtd is
     Dummy : My_Tree_Cell;
   begin
     -- See if this is the xml directive
-    Util.Check_Cdata (Ctx.Flow, 3);
     Util.Try (Ctx.Flow, "xml", Ok);
     if Ok then
       Util.Get (Ctx.Flow, Char);
@@ -173,14 +172,14 @@ package body Dtd is
     end if;
     -- Parse content
     Util.Skip_Separators (Ctx.Flow);
-    Util.Check_Cdata (Ctx.Flow, 5);
 
     Util.Parse_Until_Stop (Ctx.Flow);
     Util.Unget (Ctx.Flow);
     Info.List := Util.Get_Curr_Str (Ctx.Flow);
     Util.Reset_Curr_Str (Ctx.Flow);
     -- Expand potential parameter entities and re-insert
-    Util.Fix_Text (Ctx, Adtd, Info.List, Ref_Dtd, False);
+    Util.Expand_Vars (Ctx, Adtd, Info.List, Ref_Dtd);
+    Util.Fix_Text (Ctx, Info.List, Ref_Dtd, False);
     Info.List := Util.Normalize_Separators (Info.List);
     Util.Insert (Ctx.Flow, Asu_Ts (Info.List));
 
@@ -216,6 +215,8 @@ package body Dtd is
       if Asu.Index (Info.List, "#PCDATA") /= 0 then
         -- Mixed
         if Asu_Ts (Info.List) = "#PCDATA" then
+          -- Possible '*' after ')', skip it
+          Util.Try (Ctx.Flow, "*", Found);
           Info.List := Asu_Null;
         elsif Asu.Slice (Info.List, 1, 8) = "#PCDATA|" then
           -- Remove heading #PCDATA
@@ -230,7 +231,7 @@ package body Dtd is
           if not Util.Names_Ok (Info.List, "|") then
             Util.Error (Ctx.Flow, "Invalid Mixed definition");
           end if;
-          -- Last ')' must be followed by "*", remove it
+          -- Last ')' must be followed by '*', remove it
           Util.Get (Ctx.Flow, Char);
           if Char /= '*' then
             Util.Error (Ctx.Flow, "Invalid Mixed definition");
@@ -253,7 +254,8 @@ package body Dtd is
           Util.Unget (Ctx.Flow);
         end if;
         -- Expand variables if any
-        Util.Fix_Text (Ctx, Adtd, Info.List, Ref_Dtd, False);
+        Util.Expand_Vars (Ctx, Adtd, Info.List, Ref_Dtd);
+        Util.Fix_Text (Ctx, Info.List, Ref_Dtd, False);
         Info.List := Util.Remove_Separators (Info.List);
         -- Check valid names
         if not Util.Names_Ok (Info.List, "|,?*+()") then
@@ -335,14 +337,14 @@ package body Dtd is
 
     -- Parse Attlist
     Util.Skip_Separators (Ctx.Flow);
-    Util.Check_Cdata (Ctx.Flow, 5);
 
     Util.Parse_Until_Stop (Ctx.Flow);
     Util.Unget (Ctx.Flow);
     Attlist := Util.Get_Curr_Str (Ctx.Flow);
     Util.Reset_Curr_Str (Ctx.Flow);
     -- Expand potential parameter entities and re-insert
-    Util.Fix_Text (Ctx, Adtd, Attlist, Ref_Dtd, False);
+    Util.Expand_Vars (Ctx, Adtd, Attlist, Ref_Dtd);
+    Util.Fix_Text (Ctx, Attlist, Ref_Dtd, False);
     Attlist := Util.Normalize_Separators (Attlist);
     Util.Insert (Ctx.Flow, Asu_Ts (Attlist));
 
@@ -368,7 +370,6 @@ package body Dtd is
              Info_Sep & Asu_Ts (Att_Name) & Info_Sep & Info_Sep) /= 0;
       -- Check supported att types
       Util.Skip_Separators (Ctx.Flow);
-      Util.Check_Cdata (Ctx.Flow, 9);
       if Try ("CDATA ") then
         -- String type
         Typ_Char := 'S';
@@ -460,7 +461,6 @@ package body Dtd is
 
       -- Check supported att defaults
       Util.Skip_Separators (Ctx.Flow);
-      Util.Check_Cdata (Ctx.Flow, 9);
       if Try ("#REQUIRED") then
         Def_Char := 'R';
       elsif Try ("#IMPLIED") then
@@ -624,7 +624,6 @@ package body Dtd is
     -- Is it a public a system or an internal entity
     Internal := False;
     Public := False;
-    Util.Check_Cdata (Ctx.Flow, 7);
     Util.Try (Ctx.Flow, "SYSTEM ", Found);
     if not Found then
       Public := True;
@@ -740,7 +739,6 @@ package body Dtd is
     Util.Skip_Separators (Ctx.Flow);
     -- See if SYSTEM or PUBLIC
     Public := False;
-    Util.Check_Cdata (Ctx.Flow, 7);
     Util.Try (Ctx.Flow, "SYSTEM ", Found);
     if not Found then
       Public := True;
@@ -800,6 +798,8 @@ package body Dtd is
 
     -- Expand dtd entities
     Util.Expand_Name (Ctx, Adtd, Word, Ref_Dtd);
+    -- Skip separators (=> Context = Ref_Xml)
+    Util.Fix_Text (Ctx, Word, Ref_Xml, False);
     if Asu_Ts (Word) = "IGNORE" then
       -- IGNORE directive, skip up to "]]>"
       Util.Parse_Until_Char (Ctx.Flow, "[");
@@ -827,12 +827,6 @@ package body Dtd is
   begin
     -- Xml instruction not allowed any more
     Adtd.Xml_Found := True;
-    -- Check for CDATA
-    Util.Skip_Cdata (Ctx.Flow, False, Ok);
-    if Ok then
-      return;
-    end if;
-    Util.Check_Cdata (Ctx.Flow, 7);
     -- Check for Comment
     Util.Try (Ctx.Flow, Util.Comment, Ok, Consume => False);
     if not Ok then
@@ -872,16 +866,23 @@ package body Dtd is
     end;
   end Parse_Directive;
 
+  -- Switch input to Text, Parse it up to the end
+  procedure Switch_Input (Ctx : in out Ctx_Type;
+                          Adtd : in out Dtd_Type;
+                          Text : in out Asu_Us);
+
   -- Parse current dtd
   -- If external, will stop at end of file
   -- otherwise, will stop on ']'
   procedure Parse (Ctx : in out Ctx_Type;
                    Adtd : in out Dtd_Type;
                    External : in Boolean) is
-    Found, Cdata_Found : Boolean;
+    Found : Boolean;
+    Entity_Value : Asu_Us;
     Char : Character;
+    use type Asu_Us;
   begin
-    if External then
+    if External and then Ctx.Flow.Curr_Flow.Is_File then
       -- Autodetect encoding and check
       Util.Guess_Encoding (Ctx.Flow);
       Trace ("Detected dtd encoding format "
@@ -890,52 +891,83 @@ package body Dtd is
 
     loop
       Util.Skip_Separators (Ctx.Flow);
-      -- Skip any Cdata section
-      Util.Skip_Cdata (Ctx.Flow, True, Cdata_Found);
-      if not Cdata_Found then
-        -- Parse instruction
-        Util.Check_Cdata (Ctx.Flow, 2);
-        Util.Try (Ctx.Flow, Util.Start & Util.Instruction, Found);
+      -- Try instruction
+      Util.Try (Ctx.Flow, Util.Start & Util.Instruction, Found);
+      if Found then
+        Parse_Instruction (Ctx, Adtd, External);
+      end if;
+      if not Found then
+        -- Try directive
+        Util.Try (Ctx.Flow, Util.Start & Util.Directive, Found);
         if Found then
-          Parse_Instruction (Ctx, Adtd, External);
+          Parse_Directive (Ctx, Adtd);
+        end if;
+      end if;
+      if not Found then
+        -- Try parameter entity
+        Util.Try (Ctx.Flow, Util.Ent_Param & "", Found);
+        if Found then
+          -- Get entity reference
+          Util.Unget (Ctx.Flow);
+          Util.Parse_Until_Char (Ctx.Flow, Util.Ent_End & "");
+          Entity_Value := Util.Get_Curr_Str (Ctx.Flow) & Util.Ent_End;
+          Util.Reset_Curr_Str (Ctx.Flow);
+          -- Expand
+          Trace ("Dtd expanding parameter entity " & Asu_Ts (Entity_Value));
+          Util.Expand_Name (Ctx, Adtd, Entity_Value, Ref_Dtd);
+          -- Parse
+          Switch_Input (Ctx, Adtd, Entity_Value);
+        end if;
+      end if;
+      if not Found and then Adtd.In_Include then
+        -- Detect end of include
+        Util.Try (Ctx.Flow, "]]" & Util.Stop, Found);
+        if Found then
+          Adtd.In_Include := False;
+          Trace ("Dtd ending inclusion");
+        end if;
+      end if;
+      if not Found then
+        -- Should be the end: End_Error if external, ']' if internal
+        begin
+          Util.Get (Ctx.Flow, Char);
+        exception
+          when Util.End_Error =>
+            if External then
+              return;
+            else
+              Util.Error (Ctx.Flow,
+                      "Unexpected end of file while parsing internal dtd");
+            end if;
+        end;
+        if Char = (']') and then not External then
+          return;
         else
-          -- Parse directive
-          Util.Try (Ctx.Flow, Util.Start & Util.Directive, Found);
-          if Found then
-            Parse_Directive (Ctx, Adtd);
-          end if;
-        end if;
-        if not Found and then Adtd.In_Include then
-          -- Detect end of include
-          Util.Try (Ctx.Flow, "]]" & Util.Stop, Found);
-          if Found then
-            Adtd.In_Include := False;
-            Trace ("Dtd ending inclusion");
-          end if;
-        end if;
-        if not Found then
-          -- Should be the end: End_Error if external, ']' if internal
-          begin
-            Util.Get (Ctx.Flow, Char);
-          exception
-            when Util.End_Error =>
-              if External then
-                return;
-              else
-                Util.Error (Ctx.Flow,
-                        "Unexpected end of file while parsing internal dtd");
-              end if;
-          end;
-          if Char = (']') and then not External then
-            return;
-          else
-            Util.Error (Ctx.Flow,
-                        "Unexpected character while parsing dtd " & Char);
-          end if;
+          Util.Error (Ctx.Flow,
+                      "Unexpected character while parsing dtd " & Char);
         end if;
       end if;
     end loop;
   end Parse;
+
+  -- Switch input to Text, Parse it up to the end
+  procedure Switch_Input (Ctx : in out Ctx_Type;
+                          Adtd : in out Dtd_Type;
+                          Text : in out Asu_Us) is
+  begin
+    -- Save current flow
+    Ctx.Flow.Flows.Push (Ctx.Flow.Curr_Flow);
+    -- Prepare new string flow, keep file name
+    Ctx.Flow.Curr_Flow.Is_File := False;
+    Ctx.Flow.Curr_Flow.Kind := Dtd_Flow;
+    Ctx.Flow.Curr_Flow.In_Str := Text;
+    Ctx.Flow.Curr_Flow.In_Stri := 0;
+    -- Parse new flow as dtd
+    Trace ("Switching input to " & Asu_Ts (Text));
+    Parse (Ctx, Adtd, External => True);
+    -- Restore flow
+    Util.Restore_Flow (Ctx.Flow, True);
+  end Switch_Input;
 
   -- Parse a dtd (either a external file or internal if name is empty)
   procedure Parse (Ctx : in out Ctx_Type;

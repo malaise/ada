@@ -2,14 +2,10 @@ with Ada.Strings.Unbounded, Ada.Finalization;
 with Queues, Trees, Unique_List, Text_Char, Dynamic_List, Unlimited_Pool;
 -- Parse Xml file or string, and provide read access to the corresponding tree
 -- Limitations:
---  - Parsed external entities are not parsed (empty value).
 --  - Unparsed external entities and notations are not notifying.
 --  - Only the system URI of the DOCTYPE and external parsed ENTITY is used,
 --    PUBLIC Id (if any) is skipped.
 --  - Only local file reference is fetched, no http :-) (parsing error)
--- The following restrictions applies to all the parsing:
---  - CDATA sections are detected only when a markup ('<') is expected or
---    within text. Not "anywhere character data may occur" (parsing error).
 package Xml_Parser is
 
   -- Version incremented at each significant change

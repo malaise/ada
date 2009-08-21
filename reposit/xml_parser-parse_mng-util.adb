@@ -1,7 +1,7 @@
 with Utf_8, Utf_16;
 separate (Xml_Parser.Parse_Mng)
 package body Util is
-  -- Autodetect ancoding family
+  -- Autodetect encoding family
   type Encoding_List is (Ucs4_Be, Ucs4_Le, Ucs4_Unusual,
                          Utf16_Be, Utf16_Le, Utf8,
                          Ebcdic, Other);
@@ -194,7 +194,6 @@ package body Util is
   -- Getting char --
   ------------------
   -- Circular buffer of read characters
-  Cdata_Directive : constant String := Start & Directive & Cdata;
 
   -- Separator for current line of input
   Lf : constant Character := Ada.Characters.Latin_1.Lf;
@@ -237,12 +236,6 @@ package body Util is
     Exception_Messenger.Raise_Exception (Parse_Error'Identity,
                                          Asu_Ts (Err_Msg));
   end Error;
-
-  -- Report Unsupported Cdata
- procedure Cdata_Error (Flow : in out Flow_Type) is
- begin
-    Error (Flow, "CDATA directive detected in an unsupported context");
- end Cdata_Error;
 
   -- Start recording
   procedure Start_Recording (Flow : in out Flow_Type) is
@@ -471,6 +464,16 @@ package body Util is
     or else Char = Ada.Characters.Latin_1.Ht;
   end Is_Separator;
 
+  function Is_Separators (Str : Asu_Us) return Boolean is
+  begin
+    for I in 1 .. Asu.Length (Str) loop
+      if not Is_Separator (Asu.Element (Str, I) ) then
+        return False;
+      end if;
+    end loop;
+    return True;
+  end Is_Separators;
+
   -- Skip separators until a significant char (not separator) is got
   procedure Skip_Separators (Flow : in out Flow_Type) is
     Char : Character;
@@ -484,29 +487,8 @@ package body Util is
     when End_Error => null;
   end Skip_Separators;
 
-  -- Skip separators, return the skipped separators
-  procedure Get_Separators (Flow : in out Flow_Type;
-                            Seps : out Asu_Us) is
-    Char : Character;
-    use type Asu_Us;
+  function Get_Curr_Str (Flow : Flow_Type) return Asu_Us is
   begin
-    Seps := Asu_Null;
-    loop
-      Get (Flow, Char);
-      exit when not Is_Separator (Char);
-      Seps := Seps & Char;
-    end loop;
-    Unget (Flow);
-  exception
-    when End_Error => null;
-  end Get_Separators;
-
-  function Get_Curr_Str (Flow : Flow_Type;
-                         Check_Cdata : Boolean := True) return Asu_Us is
-  begin
-    if Check_Cdata then
-      Util.Check_Cdata (Flow.Curr_Str);
-    end if;
     return Flow.Curr_Str;
   end Get_Curr_Str;
 
@@ -635,7 +617,6 @@ package body Util is
       Name := Name & Char;
     end loop;
     Unget (Flow);
-    Check_Cdata (Name);
   end Parse_Name;
 
   -- Try to parse a keyword, rollback if not
@@ -662,21 +643,23 @@ package body Util is
       -- Consume any separator following Str last separator
       Skip_Separators (Flow);
     end if;
-    Check_Cdata (Asu_Tus(Got_Str));
   exception
     when End_Error =>
       -- Not enough chars
       Ok := False;
       Unget (Flow, Flow.Nb_Got);
-      Check_Cdata (Asu_Tus(Got_Str(1 ..  Flow.Nb_Got)));
   end Try;
 
-  -- Expand %Var; and &#xx; and &Var; if in dtd
-  -- or Expand &Var; and &#xx; if not in dtd, both recursively
+  -- Expand entities: %Var; and &#xx; if in dtd
+  --                  &Var; and &#xx; if in xml
+  -- Stop at '<' when in Xml content
+  -- Never call it with Recurs.
+  Stop_Expansion : exception;
   procedure Expand_Vars (Ctx : in out Ctx_Type;
                          Dtd : in out Dtd_Type;
                          Text : in out Asu_Us;
-                         Context : in Context_List) is
+                         Context : in Context_List;
+                         Recurs : in Boolean := False) is
     Result : Asu_Us;
     -- Indexes of start of search
     Sstart : Positive;
@@ -692,53 +675,21 @@ package body Util is
     use type Asu_Us;
     -- Entity found
     Found : Boolean;
-    -- Do we need to restart
-    Restart : Boolean;
-
-    -- Variable resolver, when not in dtd
-    function Variable_Of (Name : String) return String is
-      Got : Asu_Us;
-    begin
-      Entity_Mng.Get (Ctx, Dtd, Ctx.Flow.Curr_Flow.Encod,
-                      Context, Asu_Tus (Name), False, Got);
-      return Asu_Ts (Got);
-    exception
-      when Entity_Mng.Entity_Not_Found =>
-        Error (Ctx.Flow, "Unknown entity " & Name);
-        -- Useless because Error already raises it
-        --  but gnat complains :-(
-        raise Parse_Error;
-      when Entity_Mng.Invalid_Char_Code =>
-        Error (Ctx.Flow, "Invalid Char code " & Name);
-        raise Parse_Error;
-    end Variable_Of;
 
   begin
-    Check_Cdata (Text);
-    if not In_Dtd (Context) then
-      -- In xml, only expand general entities
-      if Ctx.Expand then
-        -- If Parse was called with Expand_Entities = True
-        --  but allow ';' within text
-        Text := Asu_Tus (String_Mng.Eval_Variables (
-                           Str => Asu_Ts (Text),
-                           Start_Delimiter => "&",
-                           Stop_Delimiter  => ";",
-                           Resolv => Variable_Of'Access,
-                           Muliple_Passes => False,
-                           No_Check_Stop => True));
-      end if;
+    if not In_Dtd (Context) and then not Ctx.Expand then
+      -- Do not expand in Xml
       return;
     end if;
 
-    -- Expand when in dtd: parameter entities and character references
-    -- Restart at beginning as long as an expansion occured
+    -- Expand when in dtd: parameter entities
+    -- Expand when in Xml: general entities
+    -- Expand recursively but, in Xml, stop when generating a '<'
+
+    -- Start searching new reference from Istart to Last
+    Sstart := 1;
     Result := Text;
-    Restart := False;
-    Istart := 1;
     loop
-      -- Start searching new reference from Istart to Last
-      Sstart := Istart;
       Last := Asu.Length (Result);
 
       -- Default: not found
@@ -750,17 +701,32 @@ package body Util is
       for I in Sstart .. Last loop
         -- Locate start of var name '%' or "&#"
         Char := Asu.Element (Result, I);
-        if Char = '%' then
-          Restart := Istart /= 0;
+        if Char = Ent_Param and then In_Dtd (Context) then
+          -- Parameter entity
           Istart := I;
-          Starter := Char;
-        elsif Char = '&'
-        and then I /= Last
-        and then Asu.Element (Result, I+1) = '#' then
-          Restart := Istart /= 0;
-          Istart := I;
-          Starter := Char;
-        elsif Char = ';' then
+          Starter := Ent_Param;
+        elsif Char = Ent_Other then
+          if not In_Dtd (Context)
+             and then (I = Last
+               or else Asu.Element (Result, I + 1) /= Ent_Char) then
+            -- General entity in Xml
+            Istart := I;
+            Starter := Ent_Other;
+          elsif I /= Last
+          and then Asu.Element (Result, I + 1) = Ent_Char then
+            -- Character entity everywhere
+            Istart := I;
+            Starter := Ent_Char;
+          end if;
+        elsif Char = Start then
+          if Context = Ref_Xml then
+            -- A '<' in expanded content
+            raise Stop_Expansion;
+          elsif Context = Ref_Attribute then
+            -- '<' forbidden in attribute value
+            Error (Ctx.Flow, "Forbidden character '<' in attribute value");
+          end if;
+        elsif Char = Ent_End then
           if Istart /= 0 then
             -- The end of a reference, otherwise ignore
             Istop := I;
@@ -769,14 +735,9 @@ package body Util is
         end if;
       end loop;
 
-      -- End of this scanning
-      if Istart = 0 then
-        -- Done when no reference
-        exit when not Restart;
-        -- Restart scanning from 1 to Last
-        Restart := False;
-        Istart := 1;
-      end if;
+
+      -- End of scanning if no more reference
+      exit when Istart = 0;
 
       if Istop = 0 then
         -- A start with no stop => Error
@@ -785,36 +746,67 @@ package body Util is
 
       -- Check that a stop is big enough
       if Istop = Istart + 1 then
-        -- "%;"
+        -- "%;" or "&;"
         Error (Ctx.Flow, "Emtpy entity reference " & Asu_Ts (Text));
       end if;
 
       -- Got an entity name: get value if it exists (skip % & ;)
-      Name := Asu_Tus (Asu.Slice (Result, Istart + 1, Istop - 1));
+      Name := Asu.Unbounded_Slice (Result, Istart + 1, Istop - 1);
+
       Entity_Mng.Exists (Dtd.Entity_List,
-                           Name, Starter = '%', Found);
+                           Name, Starter = Ent_Param, Found);
       if not Found then
-        if Starter = '%' then
-          Error (Ctx.Flow, "Unknown entity %" & Asu_Ts (Name));
+        if Starter = Ent_Param then
+          Error (Ctx.Flow, "Unknown entity " & Ent_Param & " " & Asu_Ts (Name));
         else
           Error (Ctx.Flow, "Unknown entity " & Asu_Ts (Name));
         end if;
       end if;
       Entity_Mng.Get (Ctx, Dtd, Ctx.Flow.Curr_Flow.Encod,
-                      Context, Name, Starter = '%', Val);
+                      Context, Name, Starter = Ent_Param, Val);
 
-      -- Substitute from start to stop
-      Asu.Replace_Slice (Result, Istart, Istop, Asu_Ts (Val));
+      begin
+        -- Check and expand this entity replacement (recursively)
+        -- Skip when this is too short to get an expansion (< 3 chars)
+        Found := Asu.Length (Val) >= 3;
+        -- But check if in xml or attr and if contains a '<'
+        if not Found and then not In_Dtd (Context)
+        and then String_Mng.Locate (Asu_Ts (Val), Util.Start & "") /= 0 then
+          Found := True;
+          -- But don't check in attr when this is the "<"
+          --  resulting of expansion of a character reference
+          if Context = Ref_Attribute and then Starter = Ent_Char then
+            Found := False;
+          end if;
+        end if;
+        if Found then
+          Trace ("Expanding >" & Asu_Ts (Val) & "<");
+          Expand_Vars (Ctx, Dtd, Val, Context, True);
+          Trace ("Expanded >" & Asu_Ts (Name) & "< as >" & Asu_Ts (Val) & "<");
+        end if;
+        -- Substitute from start to stop
+        Asu.Replace_Slice (Result, Istart, Istop, Asu_Ts (Val));
+      exception
+        when Stop_Expansion =>
+          -- Expansion has generated a Start
+          Asu.Replace_Slice (Result, Istart, Istop, Asu_Ts (Val));
+          if Recurs then
+            -- Propagate up to first caller
+            raise;
+          else
+            -- In first caller => Stop expansion
+            exit;
+          end if;
+      end;
 
-      -- Non parameter entity bypassed => &name; -> &name;
-      --  restart from after length of Val
-      if Starter = '&' then
-        Istart := Istart + Asu.Length (Val);
-      end if;
+      -- Go on parsing after expansion
+      Sstart := Istart + Asu.Length (Val);
 
     end loop;
 
+    -- Done
     Text := Result;
+
   exception
     when Entity_Mng.Entity_Not_Found =>
       Error (Ctx.Flow, "Unknown entity " & Asu_Ts (Name));
@@ -842,8 +834,8 @@ package body Util is
 
   begin
     -- Check presence of "&" and "%" and ";"
-    Ne := String_Mng.Locate (Str, "&");
-    Np := String_Mng.Locate (Str, "%");
+    Ne := String_Mng.Locate (Str, Ent_Other & "");
+    Np := String_Mng.Locate (Str, Ent_Param & "");
     if Ne + Np = 0 then
       return;
     end if;
@@ -851,17 +843,16 @@ package body Util is
     -- Must have one start at beginning and one stop at end
     if Ne + Np /= 1        -- both or not at beginning
     or else Ns /= Len      -- not at end
-    or else String_Mng.Locate (Str, "&", Occurence => 2) /= 0
-    or else String_Mng.Locate (Str, "%", Occurence => 2) /= 0
-    or else String_Mng.Locate (Str, ";", Occurence => 2) /= 0 then
+    or else String_Mng.Locate (Str, Ent_Other & "", Occurence => 2) /= 0
+    or else String_Mng.Locate (Str, Ent_Param & "", Occurence => 2) /= 0
+    or else String_Mng.Locate (Str, Ent_End   & "", Occurence => 2) /= 0 then
       Entity_Error;
     end if;
     Expand_Vars (Ctx, Dtd, Text, Context);
   end Expand_Name;
 
-  -- Fix text: expand variables and remove repetition of separators
+  -- Fix text: remove repetition of separators
   procedure Fix_Text (Ctx : in out Ctx_Type;
-                      Dtd : in out Dtd_Type;
                       Text : in out Asu_Us;
                       Context : in Context_List;
                       Preserve_Spaces : in Boolean) is
@@ -874,10 +865,7 @@ package body Util is
       return;
     end if;
 
-    -- Expand entities values
     S1 := Text;
-    Expand_Vars (Ctx, Dtd, S1, Context);
-
     -- Skip Cr
     for I in 1 .. Asu.Length (S1) loop
       Char := Asu.Element (S1, I);
@@ -969,64 +957,17 @@ package body Util is
     return Res;
   end Normalize_Separators;
 
-  -- Skip any Cdata section (<![CDATA[xxx]]>)
-  -- If Full_Markup then check for <![CDATA[, else check for [CDATA[
-  -- Ok set to True if a CDATA was found
-  -- Resets Curr_Str!!!
-  procedure Skip_Cdata (Flow : in out Flow_Type;
-                        Full_Markup : in Boolean;
-                        Ok : out Boolean) is
-  begin
+  -- Restore a flow (previously pushed in Flows pool)
+    procedure Restore_Flow (Flow : in out Flow_Type;
+                            Keep_Line : in Boolean) is
+      Line : Natural;
     begin
-      if Full_Markup then
-        Try (Flow, Cdata_Directive, Ok);
-      else
-        Try (Flow, Cdata, Ok);
-      end if;
-    exception
-      when Cdata_Detected =>
-        Ok := True;
-      when End_Error =>
-        Ok := False;
-    end;
-    if Ok then
-      -- "<![CDATA[", a CDATA block, skip until "]]>"
-      Parse_Until_Str (Flow, "]]" & Stop);
-      Trace ("Skipped " & Cdata_Directive & Asu_Ts (Get_Curr_Str (Flow)));
-      Reset_Curr_Str (Flow);
-      return;
+    Line := Flow.Curr_Flow.Line;
+    Flow.Flows.Pop (Flow.Curr_Flow);
+    if Keep_Line then
+      Flow.Curr_Flow.Line := Line;
     end if;
-  end Skip_Cdata;
-
-  -- Check for <![CDATA[ in text, raises Cdata_Detected
-  procedure Check_Cdata (Str : in Asu_Us) is
-  begin
-    if String_Mng.Locate (Asu_Ts(Str), Cdata_Directive) /= 0 then
-      Trace ("Detected Cdata in " & Asu_Ts(Str));
-      raise Cdata_Detected;
-    end if;
-  end Check_Cdata;
-
-  -- Check for <![CDATA[ in the next N characters if Flow, raises Cdata_Detected
-  procedure Check_Cdata (Flow : in out Flow_Type; N : Natural := 0) is
-    Got_Str : String (1 .. N + Cdata_Directive'Length);
-  begin
-    -- Ensure no buffer overflow
-    if Got_Str'Length > Max_Buf_Len then
-      Trace ("Checking Cdata within a too long string");
-      raise Constraint_Error;
-    end if;
-    -- Check Cdata in next chars of flow
-    Get (Flow, Got_Str);
-    Check_Cdata (Asu_Tus(Got_Str));
-    Unget (Flow, Got_Str'Length);
-  exception
-    when End_Error =>
-      -- Not enough chars
-      Check_Cdata (Asu_Tus(Got_Str(1 ..  Flow.Nb_Got)));
-      Unget (Flow, Flow.Nb_Got);
-  end Check_Cdata;
-
+  end Restore_Flow;
 
 end Util;
 

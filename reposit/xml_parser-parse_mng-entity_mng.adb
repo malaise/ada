@@ -39,7 +39,7 @@ package body Entity_Mng is
   function Code_Of (Code : String) return Natural is
     Res : Natural;
     Start : Natural;
-    Exp_Len : Natural;
+    Exp_Last : Natural;
     Last : Natural;
   begin
     -- Get Hexa or decimal value
@@ -51,21 +51,22 @@ package body Entity_Mng is
       Start := Code'First + 2;
       Int_Io.Get ("16#" & Code(Start .. Code'Last) & "#",
                   Res, Last);
-      Exp_Len := 4 + Code'Length - 2;
+      Exp_Last := 4 + Code'Length - 2;
     else
       -- Skip "#"
       Start := Code'First + 1;
       Int_Io.Get (Code(Start .. Code'Last), Res, Last);
-      Exp_Len := Code'Length - 1;
+      Exp_Last := Code'Last;
     end if;
     -- Check all characters have been was got
-    if Last /= Exp_Len then
+    if Last /= Exp_Last then
       raise Constraint_Error;
     end if;
     -- Check for valid values
-    if Res = 16#9# or else Res = 16#A# or else Res = 16#D#
-    or else (Res >= 16#20# and then Res <= 16#D7FF#)
-    or else (Res >= 16#E0000# and then Res <= 16#FFFD#) then
+    if (Res >= 16#20# and then Res <= 16#D7FF#)
+    or else Res = 16#9# or else Res = 16#A# or else Res = 16#D#
+    or else (Res >= 16#E000# and then Res <= 16#FFFD#)
+    or else (Res >= 16#10000# and then Res <= 16#10FFFF#) then
       return Res;
     else
       raise Constraint_Error;
@@ -89,8 +90,8 @@ package body Entity_Mng is
     -- Reset all entities
     Entity_List_Mng.Delete_List (The_Entities);
     -- Load predefined entities
-    Store_Predefined (The_Entities, Asu_Tus ("amp"),  Asu_Tus ("&"));
-    Store_Predefined (The_Entities, Asu_Tus ("lt"),   Asu_Tus ("<"));
+    Store_Predefined (The_Entities, Asu_Tus ("amp"),  Asu_Tus ("&#38;"));
+    Store_Predefined (The_Entities, Asu_Tus ("lt"),   Asu_Tus ("&#60;"));
     Store_Predefined (The_Entities, Asu_Tus ("gt"),   Asu_Tus (">"));
     Store_Predefined (The_Entities, Asu_Tus ("quot"), Asu_Tus (""""));
     Store_Predefined (The_Entities, Asu_Tus ("apos"), Asu_Tus ("'"));
@@ -185,20 +186,21 @@ package body Entity_Mng is
     --  - Include (leave Got = Value)
     --  - Forbid (raise Entity_Forbidden)
     --  - Bypass (replace Got by "&name;")
+    --  - Include as PE (Got = ' ' & Value & ' ')
     case Context is
       when Ref_Xml | Ref_Attribute =>
         if Parameter then
-          Trace ("Unexpected parameter entity reference " & Asu_Ts (Name)
+          Trace ("Forbidden parameter entity reference " & Asu_Ts (Name)
                & " in xml");
           raise Entity_Forbidden;
         end if;
         if Context = Ref_Attribute and then not Entity.Internal then
-          Trace ("Unexpected external entity reference " & Asu_Ts (Name)
+          Trace ("Forbidden external entity reference " & Asu_Ts (Name)
                & " in attribute");
           raise Entity_Forbidden;
         end if;
         if not Entity.Parsed then
-          Trace ("Unexpected unparsed entity reference " & Asu_Ts (Name)
+          Trace ("Forbidden unparsed entity reference " & Asu_Ts (Name)
                & " in xml");
           raise Entity_Forbidden;
         end if;
@@ -216,10 +218,12 @@ package body Entity_Mng is
         end if;
       when Ref_Dtd =>
         if not Parameter then
-          Trace ("Unexpected non parameter entity reference " & Asu_Ts (Name)
+          Trace ("Forbidden non parameter entity reference " & Asu_Ts (Name)
               & " in dtd");
           raise Entity_Forbidden;
         end if;
+        -- Include as PE => return ' ' & Value & ' '
+        Got := Util.Space & Got & Util.Space;
     end case;
 
     -- Expand the content of external parsed entity
