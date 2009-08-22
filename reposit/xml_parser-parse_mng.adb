@@ -179,6 +179,11 @@ package body Parse_Mng  is
     -- Remove Leading and trailing spaces
     function Normalize_Separators (Text : Asu_Us) return Asu_Us;
 
+    -- Push current flow
+    procedure Push_Flow (Flow : in out Flow_Type);
+    -- Pop and restore current flow
+    procedure Pop_Flow (Flow : in out Flow_Type);
+
   end Util;
 
   package body Entity_Mng is separate;
@@ -546,7 +551,7 @@ package body Parse_Mng  is
       Util.Error (Ctx.Flow, "Invalid external entity URI " & Asu_Ts (Uri)
                           & " for entity " & Asu_Ts (Name) & ".");
     end if;
-    Ctx.Flow.Flows.Push (Ctx.Flow.Curr_Flow);
+    Util.Push_Flow (Ctx.Flow);
     -- Init Flow
     File_Name := Build_Full_Name (Uri, Ctx.Flow.Curr_Flow.Name);
     Ctx.Flow.Curr_Flow.Is_File := True;
@@ -555,6 +560,7 @@ package body Parse_Mng  is
     Ctx.Flow.Curr_Flow.Line := 1;
     Ctx.Flow.Curr_Flow.Same_Line := False;
     Ctx.Flow.Curr_Flow.File := new Text_Char.File_Type;
+    Ctx.Flow.Files.Push (Ctx.Flow.Curr_Flow.File);
     File_Mng.Open (Asu_Ts (File_Name), Ctx.Flow.Curr_Flow.File.all);
 
     -- Parse
@@ -590,7 +596,7 @@ package body Parse_Mng  is
 
     -- Done: restore flow
     Reset (Ctx.Flow.Curr_Flow);
-    Ctx.Flow.Flows.Pop (Ctx.Flow.Curr_Flow);
+    Util.Pop_Flow (Ctx.Flow);
   exception
     when File_Error =>
      Util.Error (Ctx.Flow, "Cannot open external entity file "
@@ -793,10 +799,10 @@ package body Parse_Mng  is
       if Ctx.Use_Dtd
       and then Ctx.Dtd_File = Asu_Null then
         -- Parse dtd file of doctype directive if no alternate file
-        Ctx.Flow.Flows.Push (Ctx.Flow.Curr_Flow);
+        Util.Push_Flow (Ctx.Flow);
         Dtd.Parse (Ctx, Adtd, Build_Full_Name (Doctype_File,
                                                Ctx.Flow.Curr_Flow.Name));
-        Ctx.Flow.Flows.Pop (Ctx.Flow.Curr_Flow);
+        Util.Pop_Flow (Ctx.Flow);
       end if;
       Ctx.Doctype.File := Doctype_File;
     end if;
@@ -961,11 +967,11 @@ package body Parse_Mng  is
     -- Parse dtd alternate file if requested to do so
     if Ctx.Use_Dtd
     and then Ctx.Dtd_File /= Asu_Null then
-      Ctx.Flow.Flows.Push (Ctx.Flow.Curr_Flow);
+      Util.Push_Flow (Ctx.Flow);
       -- Parse dtd file provided instead of doctype directive
       Dtd.Parse (Ctx, Adtd, Build_Full_Name (Ctx.Dtd_File,
                                              Ctx.Flow.Curr_Flow.Name));
-      Ctx.Flow.Flows.Pop (Ctx.Flow.Curr_Flow);
+      Util.Pop_Flow (Ctx.Flow);
     end if;
     -- Perform final checks on Dtd (unparsed entities v;s. notations)
     Dtd.Final_Dtd_Check (Ctx, Adtd);
@@ -1129,7 +1135,7 @@ package body Parse_Mng  is
       return;
     end if;
     -- Save current flow
-    Ctx.Flow.Flows.Push (Ctx.Flow.Curr_Flow);
+    Util.Push_Flow (Ctx.Flow);
     -- Prepare new string flow, keep file name
     Ctx.Flow.Curr_Flow.Is_File := False;
     Ctx.Flow.Curr_Flow.Same_Line := True;
@@ -1141,7 +1147,7 @@ package body Parse_Mng  is
     Parse_Children (Ctx, Adtd, Children, Allow_End => True);
     Trace ("Txt switching back");
     -- Restore flow
-    Ctx.Flow.Flows.Pop (Ctx.Flow.Curr_Flow);
+    Util.Pop_Flow (Ctx.Flow);
 
   end Parse_Text;
 
@@ -1454,7 +1460,7 @@ package body Parse_Mng  is
   begin
     -- Reset Dtd
     Dtd.Init (Adtd);
-    Ctx.Flow.Flows.Push (Ctx.Flow.Curr_Flow);
+    Util.Push_Flow (Ctx.Flow);
     -- Parse Dtd
     if Ctx.Dtd_File /= Asu_Null then
       -- Parse alternate Dtd provided by caller
@@ -1476,7 +1482,7 @@ package body Parse_Mng  is
       end if;
     end if;
     -- Restore flow
-    Ctx.Flow.Flows.Pop (Ctx.Flow.Curr_Flow);
+    Util.Pop_Flow (Ctx.Flow);
     -- Xml declaration must have a version, which might not be the case
     --  if Ctx comes from Xml_Parser.Generator
     Set_Default_Xml (Ctx);

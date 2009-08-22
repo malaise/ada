@@ -963,5 +963,18 @@ package body Util is
     return Res;
   end Normalize_Separators;
 
+  -- Push current flow
+  procedure Push_Flow (Flow : in out Flow_Type) is
+  begin
+    -- Push current flow
+    Flow.Flows.Push (Flow.Curr_Flow);
+  end Push_Flow;
+
+  -- Pop and restore current flow
+  procedure Pop_Flow (Flow : in out Flow_Type) is
+  begin
+    Flow.Flows.Pop (Flow.Curr_Flow);
+  end Pop_Flow;
+
 end Util;
 

@@ -173,14 +173,13 @@ package body Xml_Parser is
     end if;
   end Build_Full_Name;
 
-  -- Reset a Flow_Info
+  -- Deallocate a text char file
   procedure Deallocate is new Ada.Unchecked_Deallocation
    (Text_Char.File_Type, File_Access);
+
+  -- Reset a Flow_Info
   procedure Reset (Flow_Info : in out Flow_Info_Type) is
   begin
-    if Flow_Info.File /= null then
-      Deallocate (Flow_Info.File);
-    end if;
     Flow_Info.Is_File := True;
     Flow_Info.Kind := Xml_Flow;
     Flow_Info.Name := Asu_Null;
@@ -267,6 +266,7 @@ package body Xml_Parser is
     Ctx.Flow.Curr_Flow.Kind := Xml_Flow;
     Ctx.Flow.Curr_Flow.Name := Build_Full_Name (Asu_Tus (File_Name));
     Ctx.Flow.Curr_Flow.File := new Text_Char.File_Type;
+    Ctx.Flow.Files.Push (Ctx.Flow.Curr_Flow.File);
     Ctx.Flow.Curr_Flow.Line := 1;
     Ctx.Flow.Curr_Flow.Same_Line := False;
     -- Parse this file
@@ -309,7 +309,7 @@ package body Xml_Parser is
   -- Clean a parsing context
   procedure Clean (Ctx : in out Ctx_Type) is
     use type My_Tree.Position_Access;
-
+    File : File_Access;
   begin
     -- Clean input flow
     Ctx.Flow.Nb_Got := 0;
@@ -319,9 +319,16 @@ package body Xml_Parser is
     Ctx.Flow.Recording := False;
     Ctx.Flow.Skip_Recording := No_Skip_Rec;
     Ctx.Flow.Recorded := Asu_Null;
+    Ctx.Flow.Flows.Clear;
 
     -- Clear Current flow
     Reset (Ctx.Flow.Curr_Flow);
+
+    -- Clear allocated text files
+    for I in 1 .. Ctx.Flow.Files.Length loop
+      Ctx.Flow.Files.Pop (File);
+      Deallocate (File);
+    end loop;
 
     Ctx.Parse_Comments := False;
     Ctx.Expand := True;

@@ -943,9 +943,10 @@ package body Dtd is
                           Text : in out Asu_Us) is
   begin
     -- Save current flow
-    Ctx.Flow.Flows.Push (Ctx.Flow.Curr_Flow);
+    Util.Push_Flow (Ctx.Flow);
     -- Prepare new string flow, keep file name
     Ctx.Flow.Curr_Flow.Is_File := False;
+    Ctx.Flow.Curr_Flow.File := null;
     Ctx.Flow.Curr_Flow.Kind := Dtd_Flow;
     Ctx.Flow.Curr_Flow.In_Str := Text;
     Ctx.Flow.Curr_Flow.In_Stri := 0;
@@ -954,7 +955,7 @@ package body Dtd is
     Trace ("Switching input to " & Asu_Ts (Text));
     Parse (Ctx, Adtd, External => True);
     -- Restore flow
-    Ctx.Flow.Flows.Pop (Ctx.Flow.Curr_Flow);
+    Util.Pop_Flow (Ctx.Flow);
   end Switch_Input;
 
   -- Parse a dtd (either a external file or internal if name is empty)
@@ -969,6 +970,7 @@ package body Dtd is
       -- String of Ctx
       Trace ("Dtd parsing string");
       Ctx.Flow.Curr_Flow.Is_File := False;
+      Ctx.Flow.Curr_Flow.File := null;
       Parse (Ctx, Adtd, True);
     elsif File_Name = Internal_Flow then
       -- Internal declarations (string or file) of Ctx
@@ -983,6 +985,7 @@ package body Dtd is
       Ctx.Flow.Curr_Flow.Line := 1;
       Ctx.Flow.Curr_Flow.Same_Line := False;
       Ctx.Flow.Curr_Flow.File := new Text_Char.File_Type;
+      Ctx.Flow.Files.Push (Ctx.Flow.Curr_Flow.File);
       File_Mng.Open (Asu_Ts (File_Name), Ctx.Flow.Curr_Flow.File.all);
       Parse (Ctx, Adtd, True);
       Reset (Ctx.Flow.Curr_Flow);

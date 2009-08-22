@@ -371,8 +371,11 @@ private
     In_Stri : Natural := 0;
   end record;
 
-  -- Pool of flows of external entities
+  -- Pool of flows (when switching to new flow then back)
   package Flow_Pool_Mng is new Unlimited_Pool (Flow_Info_Type);
+
+  -- Pool of files to deallocate
+  package File_Pool_Mng is new Unlimited_Pool (File_Access);
 
   type Flow_Type is record
     -- To know how many where got before End_Error
@@ -389,8 +392,10 @@ private
     Recorded : Ada.Strings.Unbounded.Unbounded_String;
     -- Current flow
     Curr_Flow : Flow_Info_Type;
-    -- Previous Xml flow, dtd flow, External entity flows
+    -- Previous Xml flow, dtd flow, External entity flow, text flow...
     Flows : Flow_Pool_Mng.Pool_Type;
+    -- Created text files
+    Files : File_Pool_Mng.Pool_Type;
   end record;
 
   --------------
