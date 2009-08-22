@@ -3,7 +3,7 @@ with Queues, Trees, Unique_List, Text_Char, Dynamic_List, Unlimited_Pool;
 -- Parse Xml file or string, and provide read access to the corresponding tree
 -- Limitations:
 --  - Unparsed external entities and notations are not notifying.
---  - Only the system URI of the DOCTYPE and external parsed ENTITY is used,
+--  - Only the system URI of the DOCTYPE and of external parsed ENTITY is used,
 --    PUBLIC Id (if any) is skipped.
 --  - Only local file reference is fetched, no http :-) (parsing error)
 package Xml_Parser is
@@ -356,6 +356,9 @@ private
     Name : Ada.Strings.Unbounded.Unbounded_String;
     -- Current line No
     Line : Natural := 0;
+    -- Is it a string expanded in original flow
+    --  so keep Line unchanged
+    Same_Line : Boolean := False;
     -- Encoding of each kind of flow
     Encod : Encod_List := Utf8;
     -- Remaining bytes when UTF8 characters

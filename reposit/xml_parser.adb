@@ -3,7 +3,7 @@ with Environ, Basic_Proc, Rnd, Exception_Messenger, Directory;
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "0";
+  Minor_Version : constant String := "1";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -185,6 +185,7 @@ package body Xml_Parser is
     Flow_Info.Kind := Xml_Flow;
     Flow_Info.Name := Asu_Null;
     Flow_Info.Line := 0;
+    Flow_Info.Same_Line := False;
     Flow_Info.Encod := Utf8;
     Flow_Info.Nb_Bytes := 0;
     Flow_Info.File := null;
@@ -267,6 +268,7 @@ package body Xml_Parser is
     Ctx.Flow.Curr_Flow.Name := Build_Full_Name (Asu_Tus (File_Name));
     Ctx.Flow.Curr_Flow.File := new Text_Char.File_Type;
     Ctx.Flow.Curr_Flow.Line := 1;
+    Ctx.Flow.Curr_Flow.Same_Line := False;
     -- Parse this file
     Ctx.Parse_Comments := Comments;
     Ctx.Expand := Expand;
@@ -378,6 +380,7 @@ package body Xml_Parser is
     Ctx.Flow.Curr_Flow.Name := Asu_Tus (Parse_Mng.String_Flow);
     Ctx.Flow.Curr_Flow.In_Str := Asu_Tus (Str);
     Ctx.Flow.Curr_Flow.Line := 1;
+    Ctx.Flow.Curr_Flow.Same_Line := False;
     Parse_Mng.Parse_Dtd (Ctx, Dtd);
     Clean (Ctx);
   end Parse_Dtd_String;
@@ -421,6 +424,7 @@ package body Xml_Parser is
     Ctx.Flow.Curr_Flow.Name := Asu_Tus (Parse_Mng.String_Flow);
     Ctx.Flow.Curr_Flow.In_Str := Asu_Tus (Str);
     Ctx.Flow.Curr_Flow.Line := 1;
+    Ctx.Flow.Curr_Flow.Same_Line := False;
     Ctx.Parse_Comments := Comments;
     Ctx.Expand := Expand;
     Ctx.Callback := Callback;

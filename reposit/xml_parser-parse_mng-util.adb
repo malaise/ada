@@ -360,7 +360,7 @@ package body Util is
         Flow.Skip_Recording := Flow.Skip_Recording - 1;
       end if;
     end if;
-    if Char = Lf then
+    if Char = Lf and then not Flow.Curr_Flow.Same_Line then
       Flow.Curr_Flow.Line := Flow.Curr_Flow.Line + 1;
     end if;
   exception
@@ -409,7 +409,7 @@ package body Util is
           Flow.Skip_Recording := Flow.Skip_Recording + 1;
         end if;
       end if;
-      if Char = Lf then
+      if Char = Lf and then not Flow.Curr_Flow.Same_Line then
         Flow.Curr_Flow.Line := Flow.Curr_Flow.Line - 1;
       end if;
     end loop;
@@ -487,9 +487,15 @@ package body Util is
     when End_Error => null;
   end Skip_Separators;
 
-  function Get_Curr_Str (Flow : Flow_Type) return Asu_Us is
+  procedure Get_Curr_Str (Flow : in out Flow_Type;
+                          Str : out Asu_Us;
+                          Reset : in Boolean := True) is
+
   begin
-    return Flow.Curr_Str;
+    Str := Flow.Curr_Str;
+    if Reset then
+      Flow.Curr_Str := Asu_Null;
+    end if;
   end Get_Curr_Str;
 
   procedure Reset_Curr_Str (Flow : in out Flow_Type) is
@@ -956,18 +962,6 @@ package body Util is
     end if;
     return Res;
   end Normalize_Separators;
-
-  -- Restore a flow (previously pushed in Flows pool)
-    procedure Restore_Flow (Flow : in out Flow_Type;
-                            Keep_Line : in Boolean) is
-      Line : Natural;
-    begin
-    Line := Flow.Curr_Flow.Line;
-    Flow.Flows.Pop (Flow.Curr_Flow);
-    if Keep_Line then
-      Flow.Curr_Flow.Line := Line;
-    end if;
-  end Restore_Flow;
 
 end Util;
 

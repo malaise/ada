@@ -123,7 +123,9 @@ package body Parse_Mng  is
     -- Skip separators until a significant char (not separator); got
     procedure Skip_Separators (Flow : in out Flow_Type);
     -- Current significant string, loaded by Parse_Until_xxx
-    function Get_Curr_Str (Flow : Flow_Type) return Asu_Us;
+    procedure Get_Curr_Str (Flow : in out Flow_Type;
+                            Str : out Asu_Us;
+                            Reset : in Boolean := True);
     -- Reset current string
     procedure Reset_Curr_Str (Flow : in out Flow_Type);
     -- Parse until Criteria found, or until a separator if Criteria = ""
@@ -177,9 +179,6 @@ package body Parse_Mng  is
     -- Remove Leading and trailing spaces
     function Normalize_Separators (Text : Asu_Us) return Asu_Us;
 
-    -- Restore a flow (previously pushed in Flows pool)
-    procedure Restore_Flow (Flow : in out Flow_Type;
-                            Keep_Line : in Boolean);
   end Util;
 
   package body Entity_Mng is separate;
@@ -225,8 +224,7 @@ package body Parse_Mng  is
       Util.Error (Ctx.Flow, "Unexpected value delimiter " & Char);
     end if;
     -- Save parsed text
-    Value := Util.Get_Curr_Str (Ctx.Flow);
-    Util.Reset_Curr_Str (Ctx.Flow);
+    Util.Get_Curr_Str (Ctx.Flow, Value);
     -- Expand entities and fix separators and expand entities
     Util.Expand_Vars (Ctx, Adtd, Value, Context);
     Util.Fix_Text (Ctx, Value, Context, False);
@@ -286,14 +284,13 @@ package body Parse_Mng  is
       --  or until > or < (no '=' so invalid definition)
       Util.Parse_Until_Char (Ctx.Flow, Util.Equal
                                      & Util.Stop & Util.Start & Util.Slash);
-      Attribute_Name := Util.Get_Curr_Str (Ctx.Flow);
+      Util.Get_Curr_Str (Ctx.Flow, Attribute_Name);
       Util.Read (Ctx.Flow, Char);
       if Char /= Util.Equal
       or else not Util.Name_Ok (Attribute_Name) then
         Util.Error (Ctx.Flow, "Invalid attribute name "
                   & Asu_Ts (Attribute_Name));
       end if;
-      Util.Reset_Curr_Str (Ctx.Flow);
       -- Attribute name must be unique
       if Of_Xml then
         Tree_Mng.Find_Xml_Attribute (
@@ -556,6 +553,7 @@ package body Parse_Mng  is
     Ctx.Flow.Curr_Flow.Kind := Ext_Flow;
     Ctx.Flow.Curr_Flow.Name := Uri;
     Ctx.Flow.Curr_Flow.Line := 1;
+    Ctx.Flow.Curr_Flow.Same_Line := False;
     Ctx.Flow.Curr_Flow.File := new Text_Char.File_Type;
     File_Mng.Open (Asu_Ts (File_Name), Ctx.Flow.Curr_Flow.File.all);
 
@@ -581,20 +579,18 @@ package body Parse_Mng  is
       Parse_Attributes (Ctx, Dtd, True);
       Check_Xml_Attributes (Ctx, False);
       My_Tree.Delete_Tree (Ctx.Prologue.all);
-      Trace ("Ext parsed instruction " & Asu_Ts(Util.Get_Curr_Str (Ctx.Flow)));
-      Util.Reset_Curr_Str (Ctx.Flow);
+      Trace ("Ext parsed xml instruction");
       Util.Skip_Separators (Ctx.Flow);
     end if;
 
     -- Load content in string
     Util.Parse_Until_End (Ctx.Flow);
-    Text := Util.Get_Curr_Str (Ctx.Flow);
-    Util.Reset_Curr_Str (Ctx.Flow);
+    Util.Get_Curr_Str (Ctx.Flow, Text);
     Trace ("Ext expanded as >" & Asu_Ts(Text) & "<");
 
     -- Done: restore flow
     Reset (Ctx.Flow.Curr_Flow);
-    Util.Restore_Flow (Ctx.Flow, False);
+    Ctx.Flow.Flows.Pop (Ctx.Flow.Curr_Flow);
   exception
     when File_Error =>
      Util.Error (Ctx.Flow, "Cannot open external entity file "
@@ -687,12 +683,11 @@ package body Parse_Mng  is
 
     -- Parse instruction until ? or separator
     Util.Parse_Until_Char (Ctx.Flow, Util.Instruction & Util.Space);
-    Name := Util.Get_Curr_Str (Ctx.Flow);
+    Util.Get_Curr_Str (Ctx.Flow, Name);
     if not Util.Name_Ok (Name) then
       Util.Error (Ctx.Flow, "Invalid processing instruction name"
                & Asu_Ts (Name));
     end if;
-    Util.Reset_Curr_Str (Ctx.Flow);
     Util.Read (Ctx.Flow, Char);
     if Char = Util.Instruction then
       -- Skip to the end
@@ -705,9 +700,8 @@ package body Parse_Mng  is
       Util.Skip_Separators (Ctx.Flow);
       Util.Parse_Until_Str (Ctx.Flow, Util.Instruction & Util.Stop);
       -- Skip "?>"
-      Value := Util.Get_Curr_Str (Ctx.Flow);
+      Util.Get_Curr_Str (Ctx.Flow, Value);
       Value := Asu.Delete (Value, Asu.Length (Value) - 1, Asu.Length (Value));
-      Util.Reset_Curr_Str (Ctx.Flow);
     end if;
 
     -- Add node
@@ -777,8 +771,7 @@ package body Parse_Mng  is
         Util.Error (Ctx.Flow, "Unexpected delimiter of DOCTYPE PUBLIC Id");
       end if;
       Ctx.Doctype.Public := True;
-      Ctx.Doctype.Pub_Id := Util.Get_Curr_Str (Ctx.Flow);
-      Util.Reset_Curr_Str (Ctx.Flow);
+      Util.Get_Curr_Str (Ctx.Flow, Ctx.Doctype.Pub_Id);
       Util.Skip_Separators (Ctx.Flow);
     else
       -- A dtd SYSTEM directive?
@@ -795,8 +788,7 @@ package body Parse_Mng  is
       else
         Util.Error (Ctx.Flow, "Unexpected delimiter of DOCTYPE external Id");
       end if;
-      Doctype_File := Util.Get_Curr_Str (Ctx.Flow);
-      Util.Reset_Curr_Str (Ctx.Flow);
+      Util.Get_Curr_Str (Ctx.Flow, Doctype_File);
       Util.Skip_Separators (Ctx.Flow);
       if Ctx.Use_Dtd
       and then Ctx.Dtd_File = Asu_Null then
@@ -804,7 +796,7 @@ package body Parse_Mng  is
         Ctx.Flow.Flows.Push (Ctx.Flow.Curr_Flow);
         Dtd.Parse (Ctx, Adtd, Build_Full_Name (Doctype_File,
                                                Ctx.Flow.Curr_Flow.Name));
-        Util.Restore_Flow (Ctx.Flow, False);
+        Ctx.Flow.Flows.Pop (Ctx.Flow.Curr_Flow);
       end if;
       Ctx.Doctype.File := Doctype_File;
     end if;
@@ -813,9 +805,7 @@ package body Parse_Mng  is
     if Char = '[' then
       -- Internal definition, record the parsing and copy it in Ctx
       Util.Start_Recording (Ctx.Flow);
-      Ctx.Flow.Flows.Push (Ctx.Flow.Curr_Flow);
       Dtd.Parse (Ctx, Adtd, Asu_Tus (Dtd.Internal_Flow));
-      Util.Restore_Flow (Ctx.Flow, True);
       Util.Stop_Recording (Ctx.Flow, Ctx.Doctype.Int_Def);
       -- Remove last ']'
       Len := Asu.Length (Ctx.Doctype.Int_Def);
@@ -862,8 +852,7 @@ package body Parse_Mng  is
       -- "<!--", a comment, skip util "-->"
       Util.Parse_Until_Str (Ctx.Flow, "--" & Util.Stop);
       -- Check that no "--" within comment
-      Comment := Util.Get_Curr_Str (Ctx.Flow);
-      Util.Reset_Curr_Str (Ctx.Flow);
+      Util.Get_Curr_Str (Ctx.Flow, Comment);
       Index := Asu.Index (Comment, "--");
       if Index < Asu.Length(Comment) - 2 then
         Util.Error (Ctx.Flow, "Invalid ""--"" in comment");
@@ -913,9 +902,9 @@ package body Parse_Mng  is
 
     -- Reject directive
     Util.Parse_Until_Stop (Ctx.Flow);
+    Util.Get_Curr_Str (Ctx.Flow, Comment);
     Util.Error (Ctx.Flow, "Invalid directive <!"
-         & Asu_Ts (Util.Get_Curr_Str (Ctx.Flow)) & Util.Stop);
-    Util.Reset_Curr_Str (Ctx.Flow);
+         & Asu_Ts (Comment) & Util.Stop);
   exception
     when Util.End_Error =>
       Util.Error (Ctx.Flow, "Unexpected end of file while parsing directive");
@@ -976,7 +965,7 @@ package body Parse_Mng  is
       -- Parse dtd file provided instead of doctype directive
       Dtd.Parse (Ctx, Adtd, Build_Full_Name (Ctx.Dtd_File,
                                              Ctx.Flow.Curr_Flow.Name));
-      Util.Restore_Flow (Ctx.Flow, False);
+      Ctx.Flow.Flows.Pop (Ctx.Flow.Curr_Flow);
     end if;
     -- Perform final checks on Dtd (unparsed entities v;s. notations)
     Dtd.Final_Dtd_Check (Ctx, Adtd);
@@ -1023,13 +1012,11 @@ package body Parse_Mng  is
         Util.Parse_Until_Char (Ctx.Flow, Util.Start & "");
         Util.Unget (Ctx.Flow);
         -- Save Text
-        Text := Util.Get_Curr_Str (Ctx.Flow);
-        Util.Reset_Curr_Str (Ctx.Flow);
+        Util.Get_Curr_Str (Ctx.Flow, Text);
       exception
         when Util.End_Error =>
           -- End of flow, save text
-          Text := Util.Get_Curr_Str (Ctx.Flow);
-          Util.Reset_Curr_Str (Ctx.Flow);
+          Util.Get_Curr_Str (Ctx.Flow, Text);
           if Text = Asu_Null then
             -- End of flow and no text
             exit Cdata_In_Flow;
@@ -1040,8 +1027,7 @@ package body Parse_Mng  is
       Util.Try (Ctx.Flow, Util.Cdata_Start, Ok);
       if Ok then
         Util.Parse_Until_Str (Ctx.Flow, Util.Cdata_End);
-        Cdata := Util.Get_Curr_Str (Ctx.Flow);
-        Util.Reset_Curr_Str (Ctx.Flow);
+        Util.Get_Curr_Str (Ctx.Flow, Cdata);
         Trace ("Txt Got cdata >" & Asu_Ts (Cdata) & "<");
         Cdata := Util.Cdata_Start & Cdata & Util.Cdata_End;
         if Text = Asu_Null then
@@ -1109,6 +1095,9 @@ package body Parse_Mng  is
             Text := Asu_Null;
           end if;
         end loop Cdata_In_Text;
+      else
+        -- No expansion
+        Head := Text;
       end if;
 
     end loop Cdata_In_Flow;
@@ -1143,6 +1132,7 @@ package body Parse_Mng  is
     Ctx.Flow.Flows.Push (Ctx.Flow.Curr_Flow);
     -- Prepare new string flow, keep file name
     Ctx.Flow.Curr_Flow.Is_File := False;
+    Ctx.Flow.Curr_Flow.Same_Line := True;
     Ctx.Flow.Curr_Flow.Kind := Xml_Flow;
     Ctx.Flow.Curr_Flow.In_Str := Tail;
     Ctx.Flow.Curr_Flow.In_Stri := 0;
@@ -1151,7 +1141,7 @@ package body Parse_Mng  is
     Parse_Children (Ctx, Adtd, Children, Allow_End => True);
     Trace ("Txt switching back");
     -- Restore flow
-    Util.Restore_Flow (Ctx.Flow, True);
+    Ctx.Flow.Flows.Pop (Ctx.Flow.Curr_Flow);
 
   end Parse_Text;
 
@@ -1255,11 +1245,10 @@ package body Parse_Mng  is
     -- Parse name until /, > or a separator
     Util.Parse_Until_Char (Ctx.Flow, "/> ");
     -- Check and store name
-    if not Util.Name_Ok (Util.Get_Curr_Str (Ctx.Flow)) then
-      Util.Error (Ctx.Flow, "Invalid element name "
-                          & Asu_Ts (Util.Get_Curr_Str (Ctx.Flow)));
+    Util.Get_Curr_Str (Ctx.Flow, Element_Name);
+    if not Util.Name_Ok (Element_Name) then
+      Util.Error (Ctx.Flow, "Invalid element name " & Asu_Ts (Element_Name));
     end if;
-    Element_Name := Util.Get_Curr_Str (Ctx.Flow);
     if Root
     and then Ctx.Doctype.Name /= Asu_Null
     and then Element_Name /= Ctx.Doctype.Name then
@@ -1309,8 +1298,7 @@ package body Parse_Mng  is
       Trace ("Parsed children of " & Asu_Ts (Element_Name));
       -- Check Name matches
       Util.Parse_Until_Char (Ctx.Flow, Util.Stop & "");
-      End_Name := Util.Get_Curr_Str (Ctx.Flow);
-      Util.Reset_Curr_Str (Ctx.Flow);
+      Util.Get_Curr_Str (Ctx.Flow, End_Name);
       if End_Name /= Element_Name then
         Util.Error (Ctx.Flow, "Element name mismatch, expected "
                   & Asu_Ts (Element_Name)
@@ -1482,11 +1470,13 @@ package body Parse_Mng  is
         Ctx.Flow.Curr_Flow.Kind := Dtd_Flow;
         Ctx.Flow.Curr_Flow.In_Str := Ctx.Doctype.Int_Def;
         Ctx.Flow.Curr_Flow.In_Stri := 0;
+        Ctx.Flow.Curr_Flow.Line := Ctx.Doctype.Line_No;
+        Ctx.Flow.Curr_Flow.Same_Line := True;
         Dtd.Parse (Ctx, Adtd, Asu_Tus (Dtd.String_Flow));
       end if;
     end if;
-    -- Restore flow, save line
-    Util.Restore_Flow (Ctx.Flow, True);
+    -- Restore flow
+    Ctx.Flow.Flows.Pop (Ctx.Flow.Curr_Flow);
     -- Xml declaration must have a version, which might not be the case
     --  if Ctx comes from Xml_Parser.Generator
     Set_Default_Xml (Ctx);
