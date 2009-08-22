@@ -188,7 +188,7 @@ package body One_File_Statements is
         Text_Line.Put (File, File_Name);
         if File_Name_Len < Max_Tab then
           Text_Line.Put (File, " ");
-          for I in File_Name_Len+2 .. Max_Tab loop
+          for I in File_Name_Len+1 .. Max_Tab loop
             Text_Line.Put (File, ".");
           end loop;
         elsif File_Name_Len > Max_Tab then
