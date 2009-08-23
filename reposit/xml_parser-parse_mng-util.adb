@@ -656,16 +656,13 @@ package body Util is
       Unget (Flow, Flow.Nb_Got);
   end Try;
 
-  -- Expand entities: %Var; and &#xx; if in dtd
-  --                  &Var; and &#xx; if in xml
-  -- Stop at '<' when in Xml content
-  -- Never call it with Recurs.
-  Stop_Expansion : exception;
-  procedure Expand_Vars (Ctx : in out Ctx_Type;
+  -- Expand text (expand vars) returns the index of localized '<'
+  --  if any
+  procedure Expand_Text (Ctx : in out Ctx_Type;
                          Dtd : in out Dtd_Type;
                          Text : in out Asu_Us;
                          Context : in Context_List;
-                         Recurs : in Boolean := False) is
+                         Start_Index : out Natural) is
     Result : Asu_Us;
     -- Indexes of start of search
     Sstart : Positive;
@@ -683,6 +680,7 @@ package body Util is
     Found : Boolean;
 
   begin
+    Start_Index := 0;
     if not In_Dtd (Context) and then not Ctx.Expand then
       -- Do not expand in Xml
       return;
@@ -727,7 +725,8 @@ package body Util is
         elsif Char = Start then
           if Context = Ref_Xml then
             -- A '<' in expanded content
-            raise Stop_Expansion;
+            Start_Index := I;
+            return;
           elsif Context = Ref_Attribute then
             -- '<' forbidden in attribute value
             Error (Ctx.Flow, "Forbidden character '<' in attribute value");
@@ -771,39 +770,34 @@ package body Util is
       Entity_Mng.Get (Ctx, Dtd, Ctx.Flow.Curr_Flow.Encod,
                       Context, Name, Starter = Ent_Param, Val);
 
-      begin
-        -- Check and expand this entity replacement (recursively)
-        -- Skip when this is too short to get an expansion (< 3 chars)
-        Found := Asu.Length (Val) >= 3;
-        -- But check if in xml or attr and if contains a '<'
-        if not Found and then not In_Dtd (Context)
-        and then String_Mng.Locate (Asu_Ts (Val), Util.Start & "") /= 0 then
-          Found := True;
-          -- But don't check in attr when this is the "<"
-          --  resulting of expansion of a character reference
-          if Context = Ref_Attribute and then Starter = Ent_Char then
-            Found := False;
-          end if;
+      -- Check and expand this entity replacement (recursively)
+      -- Skip when this is too short to get an expansion (< 3 chars)
+      Found := Asu.Length (Val) >= 3;
+      -- But check if in xml or attr and if contains a '<'
+      if not Found and then not In_Dtd (Context)
+      and then String_Mng.Locate (Asu_Ts (Val), Util.Start & "") /= 0 then
+        Found := True;
+        -- But don't check in attr when this is the "<"
+        --  resulting of expansion of a character reference
+        if Context = Ref_Attribute and then Starter = Ent_Char then
+          Found := False;
         end if;
-        if Found then
-          Trace ("Expanding >" & Asu_Ts (Val) & "<");
-          Expand_Vars (Ctx, Dtd, Val, Context, True);
-          Trace ("Expanded >" & Asu_Ts (Name) & "< as >" & Asu_Ts (Val) & "<");
-        end if;
-        -- Substitute from start to stop
-        Asu.Replace_Slice (Result, Istart, Istop, Asu_Ts (Val));
-      exception
-        when Stop_Expansion =>
-          -- Expansion has generated a Start
-          Asu.Replace_Slice (Result, Istart, Istop, Asu_Ts (Val));
-          if Recurs then
-            -- Propagate up to first caller
-            raise;
-          else
-            -- In first caller => Stop expansion
-            exit;
-          end if;
-      end;
+      end if;
+      if Found then
+        Trace ("Expanding >" & Asu_Ts (Val) & "<");
+        Expand_Text (Ctx, Dtd, Val, Context, Start_Index);
+        Trace ("Expanded >" & Asu_Ts (Name) & "< as >" & Asu_Ts (Val) & "<");
+      end if;
+      -- Substitute from start to stop
+      Asu.Replace_Slice (Result, Istart, Istop, Asu_Ts (Val));
+
+      -- Is a Start localized?
+      if Start_Index /= 0 then
+        -- Update it to be index in current Text
+        Start_Index := Istart + Start_Index - 1;
+        -- Done with expansion
+        exit;
+      end if;
 
       -- Go on parsing after expansion
       Sstart := Istart + Asu.Length (Val);
@@ -818,8 +812,19 @@ package body Util is
       Error (Ctx.Flow, "Unknown entity " & Asu_Ts (Name));
     when Entity_Mng.Invalid_Char_Code =>
       Error (Ctx.Flow, "Invalid Char code " & Asu_Ts (Name));
-  end Expand_Vars;
+  end Expand_Text;
 
+  -- Expand entities: %Var; and &#xx; if in dtd
+  --                  &Var; and &#xx; if in xml
+  -- Stop at '<' when in Xml content
+  procedure Expand_Vars (Ctx : in out Ctx_Type;
+                         Dtd : in out Dtd_Type;
+                         Text : in out Asu_Us;
+                         Context : in Context_List) is
+    Start_Index : Natural;
+  begin
+    Expand_Text (Ctx, Dtd, Text, Context, Start_Index);
+  end Expand_Vars;
 
   -- Expand a name if it is a (parameter) entity reference
   -- Error if Text contains % or & but not at beginning

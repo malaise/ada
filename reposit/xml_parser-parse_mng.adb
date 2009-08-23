@@ -154,12 +154,17 @@ package body Parse_Mng  is
     -- Expand entities: %Var; and &#xx; if in dtd
     --                  &Var; and &#xx; if in xml
     -- Stop at '<' when in Xml content
-    -- Never call it with Recurs.
     procedure Expand_Vars (Ctx : in out Ctx_Type;
                            Dtd : in out Dtd_Type;
                            Text : in out Asu_Us;
-                           Context : in Context_List;
-                           Recurs : in Boolean := False);
+                           Context : in Context_List);
+    -- Expand text (expand vars) returns the index of localized '<'
+    --  if any
+    procedure Expand_Text (Ctx : in out Ctx_Type;
+                            Dtd : in out Dtd_Type;
+                            Text : in out Asu_Us;
+                            Context : in Context_List;
+                            Start_Index : out Natural);
     -- Expand a name if it is a (parameter) entity reference
     -- Error if Text contains % or & but not at beginning
     -- Error if Text contains ; but not at end
@@ -1059,13 +1064,12 @@ package body Parse_Mng  is
           -- Done when no more text to expand
           exit Cdata_In_Text when Text = Asu_Null;
           -- Expand Text and check if it generated a '<'
-          Util.Expand_Vars (Ctx, Adtd, Text, Ref_Xml);
+          Util.Expand_Text (Ctx, Adtd, Text, Ref_Xml, Index);
           if Text /= Asu_Null then
             -- Expansion lead to something => not empty
             Children.Is_Empty := False;
           end if;
 
-          Index := String_Mng.Locate (Asu_Ts (Text), Util.Start & "");
           if Index /= 0 then
             if Index + Util.Cdata_Start'Length - 1 <= Asu.Length (Text)
             and then Asu.Slice (Text, Index,
