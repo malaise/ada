@@ -1,15 +1,15 @@
 with Ada.Strings.Unbounded, Ada.Finalization;
 with Queues, Trees, Unique_List, Text_Char, Dynamic_List, Unlimited_Pool;
--- Parse Xml file or string, and provide read access to the corresponding tree
+-- Parse Xml file or string.
+-- Call callback while parsing or provide read access to the tree after parsing.
 -- Limitations:
---  - Unparsed external entities and notations are not notifying.
---  - Only the system URI of the DOCTYPE and of external parsed ENTITY is used,
---    PUBLIC Id (if any) is skipped.
---  - Only local file reference is fetched, no http :-) (parsing error)
+--  * Only the System Id of the DOCTYPE and of external parsed ENTITY is used,
+--    Public Id (if any) is skipped.
+--  * Only local file reference is fetched, no http :-) (parsing error).
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "12";
+  Major_Version : constant String := "13";
   function Version return String;
 
   -----------
@@ -34,6 +34,7 @@ package Xml_Parser is
   type Attribute_Rec is record
     Name : Ada.Strings.Unbounded.Unbounded_String;
     Value : Ada.Strings.Unbounded.Unbounded_String;
+    Unparsed : Boolean := False;
   end record;
   -- The attributes of an element
   type Attributes_Array is array (Positive range <>) of Attribute_Rec;
@@ -290,6 +291,26 @@ package Xml_Parser is
                         Comment : Comment_Type)
                         return Ada.Strings.Unbounded.Unbounded_String;
 
+  --------------------------
+  -- UNPARSED ENTITY info --
+  --------------------------
+  -- URI and PudId of an unparsed entity
+  type Unparsed_Entity_Info_Rec is record
+    Entity_System_Id : Ada.Strings.Unbounded.Unbounded_String;
+    Entity_Public_Id : Ada.Strings.Unbounded.Unbounded_String;
+    Notation_Name    : Ada.Strings.Unbounded.Unbounded_String;
+    Notation_System_Id : Ada.Strings.Unbounded.Unbounded_String;
+    Notation_Public_Id : Ada.Strings.Unbounded.Unbounded_String;
+  end record;
+
+  -- Get info on an unparsed entity and its associated notation
+  --  may raise Status_Error if Ctx prologue is not Parsed
+  --            Unknown_Entity if not such unparsed entity
+  Unknown_Entity : exception;
+  procedure Get_Unparsed_Entity_Info (Ctx : in out Ctx_Type;
+                                      Entity : in String;
+                                      Info : out Unparsed_Entity_Info_Rec);
+
   ------------------------
   -- General EXCEPTIONS --
   ------------------------
@@ -314,6 +335,8 @@ private
     Name : Ada.Strings.Unbounded.Unbounded_String;
     -- Attribute value or PI content
     Value : Ada.Strings.Unbounded.Unbounded_String;
+    -- Is this attribute an Unparsed entity or a list of unparsed entities
+    Unparsed : Boolean := False;
   end record;
   package My_Tree is new Trees.Tree(My_Tree_Cell);
 
@@ -436,13 +459,34 @@ private
     List : Ada.Strings.Unbounded.Unbounded_String;
     Line : Natural;
   end record;
-
-  -- Unique list of Info_Rec
   type Info_Access is access all Info_Rec;
   procedure Set (To : out Info_Rec; Val : in Info_Rec);
   function Image (Element : Info_Rec) return String;
   function "=" (Current : Info_Rec; Criteria : Info_Rec) return Boolean;
   package Info_Mng is new Unique_List (Info_Rec, Info_Access, Set, "=", Image);
+
+  -- Unparsed entity or notation info
+  type Unparsed_Type is record
+    -- Entity or Notation
+    Is_Entity : Boolean := True;
+    -- Name
+    Name : Ada.Strings.Unbounded.Unbounded_String;
+    -- Line where defined
+    Line_No : Natural := 0;
+    -- Ids
+    System_Id : Ada.Strings.Unbounded.Unbounded_String;
+    Public_Id : Ada.Strings.Unbounded.Unbounded_String;
+    -- Notation name (when this is an entity)
+    Notation : Ada.Strings.Unbounded.Unbounded_String;
+  end record;
+  type Unparsed_Access is access all Unparsed_Type;
+  procedure Set (To : out Unparsed_Type; Val : in Unparsed_Type);
+  function "=" (Current : Unparsed_Type; Criteria : Unparsed_Type)
+               return Boolean;
+  function Image (Unparsed : Unparsed_Type) return String;
+  package Unparsed_List_Mng is new Unique_List (Unparsed_Type, Unparsed_Access,
+             Set, "=", Image);
+
 
   type Dtd_Type is record
     -- Is there a dtd set, otherwise check is always ok
@@ -455,10 +499,6 @@ private
     Info_List : Info_Mng.List_Type;
     -- Parsed entities
     Entity_List : Entity_List_Mng.List_Type;
-    -- Unparsed entities: #Entity##Line##Notation#Entity##Line##Notation#e...
-    Unparsed : Ada.Strings.Unbounded.Unbounded_String;
-    -- Notations: #Notation#Notation#...
-    Notations : Ada.Strings.Unbounded.Unbounded_String;
     -- Notation attributes: #Elt##Attr#Elt##Attr#...
     Notation_Attrs : Ada.Strings.Unbounded.Unbounded_String;
     -- Are we in an INCLUDE directive
@@ -536,6 +576,8 @@ private
     Ids : Id_List_Access := new Id_List_Mng.List_Type;
     -- List of Idrefs
     Idrefs : Idref_List_Access := new Idref_List_Mng.List_Type;
+    -- Unparsed entities and Notations
+    Unparsed_List : Unparsed_List_Mng.List_Type;
   end record;
   overriding procedure Finalize (Ctx : in out Ctx_Type);
 

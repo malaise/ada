@@ -402,6 +402,7 @@ package body Tree_Mng is
       My_Tree.Read (Tree, Attr);
       Update.Attributes(I).Name := Attr.Name;
       Update.Attributes(I).Value := Attr.Value;
+      Update.Attributes(I).Unparsed := Attr.Unparsed;
     end loop;
     if Update.Attributes'Length /= 0 then
       My_Tree.Move_Father (Tree);

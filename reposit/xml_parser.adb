@@ -3,7 +3,7 @@ with Environ, Basic_Proc, Rnd, Exception_Messenger, Directory;
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "2";
+  Minor_Version : constant String := "0";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -137,6 +137,26 @@ package body Xml_Parser is
     use type Asu_Us;
   begin
     return Current.Parameter = Criteria.Parameter
+    and then Current.Name = Criteria.Name;
+  end "=";
+  -- Dtd definition: unparsed entities and notations
+  procedure Set (To : out Unparsed_Type; Val : in Unparsed_Type) is
+  begin
+    To := Val;
+  end Set;
+  function Image (Unparsed : Unparsed_Type) return String is
+  begin
+    if Unparsed.Is_Entity then
+      return "E:" & Asu_Ts (Unparsed.Name);
+    else
+      return "N:" & Asu_Ts (Unparsed.Name);
+    end if;
+  end Image;
+  function "=" (Current : Unparsed_Type; Criteria : Unparsed_Type)
+               return Boolean is
+    use type Asu_Us;
+  begin
+    return Current.Is_Entity = Criteria.Is_Entity
     and then Current.Name = Criteria.Name;
   end "=";
   -- Dtd definition: infos
@@ -353,9 +373,10 @@ package body Xml_Parser is
     Ctx.Doctype.Pub_Id  := Asu_Null;
     Ctx.Doctype.File    := Asu_Null;
     Ctx.Doctype.Int_Def := Asu_Null;
-    -- Clean IDs
+    -- Clean IDs and unparsed entities
     Ctx.Ids.Delete_List;
     Ctx.Idrefs.Delete_List;
+    Ctx.Unparsed_List.Delete_List;
     -- Context is clean
     Ctx.Magic := Clean_Magic;
     Ctx.Status := Clean;
@@ -748,6 +769,7 @@ package body Xml_Parser is
       end if;
       A(I).Name := Cell.Name;
       A(I).Value := Cell.Value;
+      A(I).Unparsed := Cell.Unparsed;
     end loop;
     return A;
   end Get_Attributes;
@@ -782,7 +804,7 @@ package body Xml_Parser is
       Trace ("Expecting kind attribute, found " & Cell.Kind'Img);
       raise Internal_Error;
     end if;
-    return (Cell.Name, Cell.Value);
+    return (Cell.Name, Cell.Value, Cell.Unparsed);
   end Get_Attribute;
 
 
@@ -1029,6 +1051,46 @@ package body Xml_Parser is
     end if;
     return Cell.Name;
   end Get_Comment;
+
+  -- Unparsed entity
+  procedure Get_Unparsed_Entity_Info (Ctx : in out Ctx_Type;
+                                      Entity : in String;
+                                      Info : out Unparsed_Entity_Info_Rec) is
+    Rec : Unparsed_Type;
+  begin
+    case Ctx.Status is
+      when Clean | Init =>
+        raise Status_Error;
+      when Error =>
+        raise Parse_Error;
+      when Parsed_Elements | Parsed_Prologue | Parsed_Prologue_Cb =>
+        null;
+    end case;
+    -- Get entity
+    Rec.Is_Entity := True;
+    Rec.Name := Asu_Tus (Entity);
+    begin
+      Ctx.Unparsed_List.Read (Rec, Rec);
+    exception
+      when Unparsed_List_Mng.Not_In_List =>
+        raise Unknown_Entity;
+    end;
+    Info.Entity_System_Id := Rec.System_Id;
+    Info.Entity_Public_Id := Rec.Public_Id;
+    Info.Notation_Name := Rec.Notation;
+    -- Get notation
+    Rec.Is_Entity := False;
+    Rec.Name := Rec.Notation;
+    begin
+      Ctx.Unparsed_List.Read (Rec, Rec);
+    exception
+      when Unparsed_List_Mng.Not_In_List =>
+        -- Should not occur (checked at end of Dtd parsing)
+        raise Internal_Error;
+    end;
+    Info.Notation_System_Id := Rec.System_Id;
+    Info.Notation_Public_Id := Rec.Public_Id;
+  end Get_Unparsed_Entity_Info;
 
   -----------------------------------
   -- Deallocation and Finalization --

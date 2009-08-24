@@ -25,9 +25,7 @@ package body Dtd is
     Entity_Mng.Initialise (Adtd.Entity_List);
     -- Reset info list
     Adtd.Info_List.Delete_List;
-    -- Reset lists of unparsed entities and notations
-    Adtd.Unparsed := Asu_Null;
-    Adtd.Notations := Asu_Null;
+    -- Reset lists of attributes of type notation
     Adtd.Notation_Attrs := Asu_Null;
   end Init;
 
@@ -533,8 +531,8 @@ package body Dtd is
           Util.Error (Ctx.Flow, "Notation already defined for element "
                                & Asu_Ts (Info.Name));
         end if;
-        -- Append Elt##Attr# to the list of notation attributes
         if Typ_Char = 'N' then
+          -- Append Elt##Attr# to the list of notation attributes
           if Adtd.Notation_Attrs = Asu_Null then
             Adtd.Notation_Attrs := Asu_Tus ("" & Info_Sep);
           end if;
@@ -563,6 +561,8 @@ package body Dtd is
   procedure Parse_Entity (Ctx : in out Ctx_Type; Adtd : in out Dtd_Type) is
     -- Entity name, value (or URI or notation)
     Name, Value : Asu_Us;
+    -- Public and System Ids
+    Public_Id, System_Id : Asu_Us;
     -- Is it a parameter entity
     Parameter : Boolean;
     -- Is it Internal, and parsed
@@ -574,6 +574,8 @@ package body Dtd is
     Public : Boolean;
     -- Parameter entity indicator
     Parstr : Asu_Us;
+    -- Unparsed entity rec
+    Unparsed_Rec : Unparsed_Type;
     Char : Character;
     use type Asu_Us;
   begin
@@ -643,7 +645,7 @@ package body Dtd is
         else
           Util.Error (Ctx.Flow, "Unexpected delimiter of PUBLIC Id");
         end if;
-        Util.Reset_Curr_Str (Ctx.Flow);
+        Util.Get_Curr_Str (Ctx.Flow, Public_Id);
         Util.Skip_Separators (Ctx.Flow);
       end if;
       -- PUBLIC or SYSTEM: get URI
@@ -655,7 +657,7 @@ package body Dtd is
       else
         Util.Error (Ctx.Flow, "Unexpected delimiter of PUBLIC Id");
       end if;
-      Util.Get_Curr_Str (Ctx.Flow, Value);
+      Util.Get_Curr_Str (Ctx.Flow, System_Id);
       Util.Skip_Separators (Ctx.Flow);
     end if;
 
@@ -664,9 +666,13 @@ package body Dtd is
     if not Parameter and then not Internal then
       Util.Try (Ctx.Flow, "NDATA ", Found);
       if Found then
+        -- Unparsed entity: the value is the notation
         Parsed := False;
         Util.Parse_Name (Ctx.Flow, Value);
         Util.Skip_Separators (Ctx.Flow);
+      else
+        -- Parsed external entity, the value is the URI
+        Value := System_Id;
       end if;
     end if;
 
@@ -683,17 +689,15 @@ package body Dtd is
            & Asu_Ts (Parstr & Name));
       return;
     end if;
-
     -- Store Entity, line and associated notation if unparsed entity
-    -- #Entity##Line##Notation#Entity##Notation#...
     if not Parsed then
-      if Adtd.Unparsed = Asu_Null then
-        Adtd.Unparsed := Asu_Tus (""  & Info_Sep);
-      end if;
-      Asu.Append (Adtd.Unparsed,
-           Name & Info_Sep & Info_Sep
-            & Line_Image (Util.Get_Line_No (Ctx.Flow)) & Info_Sep & Info_Sep
-            & Value & Info_Sep);
+      Unparsed_Rec.Is_Entity := True;
+      Unparsed_Rec.Name := Name;
+      Unparsed_Rec.Line_No := Util.Get_Line_No (Ctx.Flow);
+      Unparsed_Rec.System_Id := System_Id;
+      Unparsed_Rec.Public_Id := Public_Id;
+      Unparsed_Rec.Notation := Value;
+      Ctx.Unparsed_List.Insert (Unparsed_Rec);
       -- Associated value will be empty
       Value := Asu_Null;
     end if;
@@ -713,6 +717,10 @@ package body Dtd is
     Found : Boolean;
     -- Is it public
     Public : Boolean;
+    -- Public and System Ids
+    Public_Id, System_Id : Asu_Us;
+    -- Unparsed entity rec
+    Unparsed_Rec : Unparsed_Type;
     Char : Character;
     use type Asu_Us;
   begin
@@ -745,7 +753,7 @@ package body Dtd is
     else
       Util.Error (Ctx.Flow, "Unexpected delimiter of notation");
     end if;
-    Util.Reset_Curr_Str (Ctx.Flow);
+    Util.Get_Curr_Str (Ctx.Flow, Public_Id);
     -- Parse URI if PUBLIC not end
     Util.Skip_Separators (Ctx.Flow);
     Util.Try (Ctx.Flow, Util.Stop & "", Found, False);
@@ -759,18 +767,28 @@ package body Dtd is
         Util.Error (Ctx.Flow, "Invalid notation definition");
       end if;
     end if;
-    Util.Reset_Curr_Str (Ctx.Flow);
+    Util.Get_Curr_Str (Ctx.Flow, System_Id);
     -- Must stop now
     Util.Skip_Separators (Ctx.Flow);
     Util.Get (Ctx.Flow, Char);
     if Char /= Util.Stop then
       Util.Error (Ctx.Flow, "Unexpected character at end of notation " & Char);
     end if;
-    -- Store notation
-    if Adtd.Notations = Asu_Null then
-      Adtd.Notations := Asu_Tus ("" & Info_Sep);
+
+    -- When if is SYSTEM, the first field is the system Id
+    if not Public then
+      System_Id := Public_Id;
+      Public_Id := Asu_Null;
     end if;
-    Asu.Append (Adtd.Notations, Name & Info_Sep);
+
+    -- Store notation
+    Unparsed_Rec.Is_Entity := False;
+    Unparsed_Rec.Name := Name;
+    Unparsed_Rec.Line_No := Util.Get_Line_No (Ctx.Flow);
+    Unparsed_Rec.System_Id := System_Id;
+    Unparsed_Rec.Public_Id := Public_Id;
+    Unparsed_Rec.Notation := Asu_Null;
+    Ctx.Unparsed_List.Insert (Unparsed_Rec);
     Trace ("Dtd parsed directive NOTATION -> " &  Asu_Ts (Name));
   end Parse_Notation;
 
@@ -1008,33 +1026,57 @@ package body Dtd is
   -- Perform final checks after DTD parsing: unparsed entities v.s. notations
   procedure Final_Dtd_Check (Ctx  : in out Ctx_Type; Adtd : in out Dtd_Type) is
     -- Iterators
-    Iter, Iter1 : Parser.Iterator;
+    Iter, Iter1, Iter2 : Parser.Iterator;
     -- Element/att info
     Info : Info_Rec;
+    -- List of unparsed entities, line of def and notation
+    Entities, Notations, Lines : Asu_Us;
+    -- Unparsed entity or Notation
+    Unparsed_Rec : Unparsed_Type;
+    Ok : Boolean;
+    use type Asu_Us;
   begin
     -- All unparsed entities have a notation associated
     Trace ("Dtd final: All unparsed entities have a notation");
-    Iter.Set (Asu_Ts (Adtd.Unparsed), Is_Sep'Access);
-    loop
-      declare
-        -- Next unparsed entity name and notation
-        Name : constant String := Iter.Next_Word;
-        Line : constant String := Iter.Next_Word;
-        Notation : constant String := Iter.Next_Word;
-      begin
-        exit when Name = "";
-        Trace ("Checking notation " & Notation
-             & " for unparsed entity " & Name);
-        -- Name must appear in notations
-        if String_Mng.Locate (Asu_Ts (Adtd.Notations),
-                              Info_Sep & Notation & Info_Sep) = 0 then
-          Util.Error (Ctx.Flow,
-             "No notation " & Notation & " for unparsed entity " & Name
-           & " defined at line " & Line);
-        end if;
-      end;
-    end loop;
-    Iter.Del;
+    if not Ctx.Unparsed_List.Is_Empty then
+      -- Make a string list of notations used by unparsed entities
+      Ctx.Unparsed_List.Rewind;
+      loop
+        Ctx.Unparsed_List.Read (Unparsed_Rec, Moved => Ok);
+        Asu.Append (Entities, Unparsed_Rec.Name & Info_Sep);
+        Asu.Append (Lines, Line_Image(Unparsed_Rec.Line_No) & Info_Sep);
+        Asu.Append (Notations, Unparsed_Rec.Notation & Info_Sep);
+        exit when not Ok;
+      end loop;
+      -- Locate notation
+      Iter.Set (Asu_Ts (Entities), Is_Sep'Access);
+      Iter1.Set (Asu_Ts (Lines), Is_Sep'Access);
+      Iter2.Set (Asu_Ts (Notations), Is_Sep'Access);
+      loop
+        declare
+          -- Next entity and its notation
+          Entity : constant String := Iter.Next_Word;
+          Line : constant String := Iter1.Next_Word;
+          Notation : constant String := Iter2.Next_Word;
+        begin
+          exit when Notation = "";
+          Trace ("Checking notation " & Notation
+               & " for unparsed entity " & Entity);
+          -- Name must appear in notations
+          Unparsed_Rec.Is_Entity := False;
+          Unparsed_Rec.Name := Asu_Tus (Notation);
+          Ctx.Unparsed_List.Search (Unparsed_Rec, Ok);
+          if not Ok then
+            Util.Error (Ctx.Flow,
+               "No notation " & Notation & " for unparsed entity " & Entity
+             & " defined at line " & Line);
+          end if;
+        end;
+      end loop;
+      Iter.Del;
+      Iter1.Del;
+      Iter2.Del;
+    end if;
 
     -- All ATTLIST NOTATION values shall refer to a NOTATION
     -- Any element having a notation is not EMPTY
@@ -1059,11 +1101,14 @@ package body Dtd is
           Val : constant String := Iter1.Next_Word;
         begin
           exit when Val = "";
-          Trace ("  Checking value " & Val & " of attribute " & Att
+          Trace ("  Checking definition of notation " & Val
+               & " of attribute " & Att
                & " of element " & Elt);
           -- Each value must be defined by a notation
-          if String_Mng.Locate (Asu_Ts (Adtd.Notations),
-                              Info_Sep & Val & Info_Sep) = 0 then
+          Unparsed_Rec.Is_Entity := False;
+          Unparsed_Rec.Name := Asu_Tus (Val);
+          Ctx.Unparsed_List.Search (Unparsed_Rec, Ok);
+          if not Ok then
             Util.Error (Ctx.Flow,
                  "No notation for value " & Val
                & " of attribute " & Att & " defined at line "
@@ -1187,6 +1232,33 @@ package body Dtd is
       raise Internal_Error;
   end Check_Children;
 
+  -- INTERNAL: set Unparsed tag on attribute Attr
+  procedure Set_Unparsed (Ctx : in out Ctx_Type;
+                          Attr : in Asu_Us) is
+    -- Current cell in tree
+    Cell : My_Tree_Cell;
+    use type Asu_Us;
+  begin
+    Trace ("Dtd setting unparsed on attribute " & Asu_Ts(Attr));
+    -- Read current element from tree and make its attribute list
+    for I in 1 .. My_Tree.Children_Number (Ctx.Elements.all) loop
+      if I = 1 then
+        My_Tree.Move_Child (Ctx.Elements.all);
+      else
+        My_Tree.Move_Brother (Ctx.Elements.all, False);
+      end if;
+      My_Tree.Read (Ctx.Elements.all, Cell);
+      if Cell.Kind = Xml_Parser.Attribute
+      and then Cell.Name = Attr then
+        -- Found the correct attribute
+        Cell.Unparsed := True;
+        My_Tree.Replace (Ctx.Elements.all, Cell);
+        exit;
+      end if;
+    end loop;
+      My_Tree.Move_Father (Ctx.Elements.all);
+  end Set_Unparsed;
+
   -- INTERNAL
   -- Check attributes of element
   procedure Check_Attributes (Ctx        : in out Ctx_Type;
@@ -1213,6 +1285,8 @@ package body Dtd is
     Found :  Boolean;
     -- Iterator of entities
     Iter : Parser.Iterator;
+    -- Descriptor of unparsed entity
+    Unparsed_Rec : Unparsed_Type;
     use type Asu_Us;
   begin
     Trace ("Dtd check Xml attributes list " & Asu_Ts (Attributes) );
@@ -1433,6 +1507,8 @@ package body Dtd is
 
         -- Check that ENTITY or ENTITIES are unparsed entities
         if Td(1) = 'Y' or else Td(1) = 'y' then
+          -- This attribute is ENTITY or ENTITIES => notify
+          Set_Unparsed (Ctx, Asu_Tus (Attr));
           Iter.Set (Asu_Ts (Xml_Val));
           loop
             declare
@@ -1440,8 +1516,10 @@ package body Dtd is
             begin
               exit when Entity = "";
               Trace (" Check, unparsed entity " & Entity);
-              if String_Mng.Locate (Asu_Ts (Adtd.Unparsed),
-                         Info_Sep & Entity & Info_Sep & Info_Sep) = 0 then
+              Unparsed_Rec.Is_Entity := True;
+              Unparsed_Rec.Name := Asu_Tus (Entity);
+              Ctx.Unparsed_List.Search (Unparsed_Rec, Found);
+              if not Found then
                 Util.Error (Ctx.Flow, "Unknown unparsed entity " & Entity);
               end if;
             end;
@@ -1486,7 +1564,7 @@ package body Dtd is
         end if;
         My_Tree.Read (Ctx.Elements.all, Cell);
         if Cell.Kind = Xml_Parser.Attribute then
-            Asu.Append (Attributes, Info_Sep & Cell.Name & Info_Sep);
+          Asu.Append (Attributes, Info_Sep & Cell.Name & Info_Sep);
         else
           -- Children
           exit;
