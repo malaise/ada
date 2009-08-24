@@ -777,9 +777,9 @@ package body Util is
       if not Found and then not In_Dtd (Context)
       and then String_Mng.Locate (Asu_Ts (Val), Util.Start & "") /= 0 then
         Found := True;
-        -- But don't check in attr when this is the "<"
+        -- But don't check when this is the "<"
         --  resulting of expansion of a character reference
-        if Context = Ref_Attribute and then Starter = Ent_Char then
+        if Starter = Ent_Char then
           Found := False;
         end if;
       end if;
@@ -793,7 +793,7 @@ package body Util is
 
       -- Is a Start localized?
       if Start_Index /= 0 then
-        -- Update it to be index in current Text
+        -- Update it to be the index in new text
         Start_Index := Istart + Start_Index - 1;
         -- Done with expansion
         exit;
