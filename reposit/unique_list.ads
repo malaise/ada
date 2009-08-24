@@ -1,3 +1,4 @@
+with Ada.Finalization;
 with Limited_List, Hash;
 pragma Elaborate (Hash);
 generic
@@ -127,9 +128,11 @@ private
                              Element_Access,
                              Dump);
   -- A unique list
-  type List_Type is tagged limited record
+  type List_Type is limited new Ada.Finalization.Limited_Controlled with record
     List : List_Mng.List_Type;
     Table : Hash_Mng.Hash_Table;
   end record;
+  overriding procedure Finalize (List : in out List_Type);
+
 end Unique_List;
 

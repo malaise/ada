@@ -225,5 +225,10 @@ package body Unique_List is
     end if;
   end Read;
 
+  overriding procedure Finalize (List : in out List_Type) is
+  begin
+    Delete_List (List, Deallocate => True);
+  end Finalize;
+
 end Unique_List;
 
