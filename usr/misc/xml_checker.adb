@@ -1,9 +1,9 @@
 with Ada.Strings.Unbounded, Ada.Exceptions;
 with Argument, Argument_Parser, Xml_Parser.Generator, Normal, Basic_Proc,
-     Text_Line, Sys_Calls;
+     Text_Line, Sys_Calls, Parser;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V6.1";
+  Version : constant String := "V6.2";
 
   -- Ada.Strings.Unbounded and Ada.Exceptions re-definitions
   package Asu renames Ada.Strings.Unbounded;
@@ -42,6 +42,9 @@ procedure Xml_Checker is
 
   -- Maximum of options allowed
   Max_Opt : Natural;
+
+  -- String list of unparsed entities
+  Unparsed_Entities : Asu_Us;
 
   -- Program help
   procedure Usage is
@@ -106,8 +109,15 @@ procedure Xml_Checker is
     use type Asu_Us;
   begin
     for I in Attrs'Range loop
-      Out_Flow.Put (" " & Asu.To_String (Attrs(I).Name
-                     & "=" & Attrs(I).Value));
+      if not Attrs(I).Unparsed then
+        Out_Flow.Put (" " & Asu.To_String (Attrs(I).Name
+                       & "=" & Attrs(I).Value));
+      else
+        Out_Flow.Put (" " & Asu.To_String (Attrs(I).Name
+                       & "=U=" & Attrs(I).Value));
+        -- Maybe several entities here
+        Asu.Append (Unparsed_Entities, Asu.To_String (Attrs(I).Value) & ' ');
+      end if;
     end loop;
   end Dump_Attributes;
 
@@ -172,6 +182,30 @@ procedure Xml_Checker is
       end case;
     end loop;
   end Dump_Element;
+
+  -- Dump the unparsed entities characterisics
+  procedure Dump_Unparsed_Entities is
+    -- Iterator on string list of unparsed entities
+    Iter : Parser.Iterator;
+    Info : Xml_Parser.Unparsed_Entity_Info_Rec;
+  begin
+    Iter.Set (Asu_Ts (Unparsed_Entities));
+    loop
+      declare
+        Entity : constant String := Iter.Next_Word;
+      begin
+        exit when Entity = "";
+        Ctx.Get_Unparsed_Entity_Info (Entity, Info);
+        Out_Flow.Put_Line ("Entity: " & Entity
+                         & ", System_Id=" & Asu_Ts (Info.Entity_System_Id)
+                         & ", Public_Id=" & Asu_Ts (Info.Entity_System_Id));
+        Out_Flow.Put_Line (" Notation: " & Asu_Ts (Info.Notation_Name)
+                         & ", System_Id=" & Asu_Ts (Info.Notation_System_Id)
+                         & ", Public_Id=" & Asu_Ts (Info.Notation_Public_Id));
+      end;
+    end loop;
+    Iter.Del;
+  end Dump_Unparsed_Entities;
 
   -- Return a file name
   function Get_File_Name (Occurence : in Natural;
@@ -238,8 +272,15 @@ procedure Xml_Checker is
     if Node.Attributes /= null then
       Out_Flow.Put (" :");
       for I in  Node.Attributes.all'Range loop
-        Out_Flow.Put (" " & Asu.To_String (Node.Attributes(I).Name
-                    & "=" & Node.Attributes(I).Value));
+        if not Node.Attributes(I).Unparsed then
+          Out_Flow.Put (" " & Asu.To_String (Node.Attributes(I).Name
+                      & "=" & Node.Attributes(I).Value));
+        else
+          Out_Flow.Put (" " & Asu.To_String (Node.Attributes(I).Name
+                      & "=U=" & Node.Attributes(I).Value));
+          Asu.Append (Unparsed_Entities,
+                      Asu.To_String (Node.Attributes(I).Value) & ' ');
+        end if;
       end loop;
     end if;
     Out_Flow.New_Line;
@@ -277,6 +318,10 @@ procedure Xml_Checker is
 
     -- Done in callback mode
     if Callback_Acc /= null then
+      if Output_Kind = Dump then
+        Out_Flow.Put_Line ("Unparsed entities:");
+        Dump_Unparsed_Entities;
+      end if;
       if Output_Kind /= Dump
       and then Output_Kind /= None
       and then Format /= Xml_Parser.Generator.Raw then
@@ -301,6 +346,8 @@ procedure Xml_Checker is
       Dump_Element (Prologue, 0);
       Out_Flow.Put_Line ("Elements tree:");
       Dump_Element (Root, 0);
+      Out_Flow.Put_Line ("Unparsed entities:");
+      Dump_Unparsed_Entities;
       Out_Flow.Flush;
     elsif Output_Kind = Gen or else Output_Kind = No_Comment then
       Xml_Parser.Generator.Put (Ctx, Xml_Parser.Generator.Stdout,
