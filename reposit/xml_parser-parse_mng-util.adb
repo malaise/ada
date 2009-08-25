@@ -656,13 +656,19 @@ package body Util is
       Unget (Flow, Flow.Nb_Got);
   end Try;
 
-  -- Expand text (expand vars) returns the index of localized '<'
+  -- List of names of entities expanding to each other, to detect recursion
+  package Name_Dyn_List_Mng is new Dynamic_List (Asu_Us);
+  package Name_List_Mng renames Name_Dyn_List_Mng.Dyn_List;
+  procedure Search_Name is new Name_List_Mng.Search (Asu."=");
+
+  -- INTERNAL: Expand text (expand vars) returns the index of localized '<'
   --  if any
-  procedure Expand_Text (Ctx : in out Ctx_Type;
+  procedure Expand_Internal (Ctx : in out Ctx_Type;
                          Dtd : in out Dtd_Type;
                          Text : in out Asu_Us;
                          Context : in Context_List;
-                         Start_Index : out Natural) is
+                         Start_Index : out Natural;
+                         Name_Stack : in out Name_List_Mng.List_Type) is
     Result : Asu_Us;
     -- Indexes of start of search
     Sstart : Positive;
@@ -675,9 +681,11 @@ package body Util is
     Char : Character;
     -- Entity name and value
     Name, Val : Asu_Us;
-    use type Asu_Us;
     -- Entity found
     Found : Boolean;
+    -- Entity list is empty
+    Stack_Empty : Boolean;
+    use type Asu_Us;
 
   begin
     Start_Index := 0;
@@ -767,26 +775,35 @@ package body Util is
           Error (Ctx.Flow, "Unknown entity " & Asu_Ts (Name));
         end if;
       end if;
+
+      -- Verify that this entity is not already in the stack
+      Search_Name (Name_Stack, Found, (Starter & Name),
+                     From => Name_List_Mng.Absolute);
+      if Found then
+        Error (Ctx.Flow, "Recursive reference to entity "
+                       & Asu_Ts (Starter & Name));
+      end if;
+
       Entity_Mng.Get (Ctx, Dtd, Ctx.Flow.Curr_Flow.Encod,
                       Context, Name, Starter = Ent_Param, Val);
 
       -- Check and expand this entity replacement (recursively)
-      -- Skip when this is too short to get an expansion (< 3 chars)
-      Found := Asu.Length (Val) >= 3;
-      -- But check if in xml or attr and if contains a '<'
-      if not Found and then not In_Dtd (Context)
-      and then String_Mng.Locate (Asu_Ts (Val), Util.Start & "") /= 0 then
-        Found := True;
-        -- But don't check when this is the "<"
-        --  resulting of expansion of a character reference
-        if Starter = Ent_Char then
-          Found := False;
+      -- Skip when this is a character entity or
+      --  in Dtd and too short to get an expansion (< 3 chars)
+      if Starter /= Ent_Char
+      and then (not In_Dtd (Context) or else Asu.Length (Val) >= 3) then
+        Stack_Empty := Name_Stack.Is_Empty;
+        if not Stack_Empty then
+          -- Push this entity name in the stack
+          Name_Stack.Rewind;
         end if;
-      end if;
-      if Found then
+        Name_Stack.Insert ( (Starter & Name), Name_List_Mng.Prev);
         Trace ("Expanding >" & Asu_Ts (Val) & "<");
-        Expand_Text (Ctx, Dtd, Val, Context, Start_Index);
+        Expand_Internal (Ctx, Dtd, Val, Context, Start_Index, Name_Stack);
         Trace ("Expanded >" & Asu_Ts (Name) & "< as >" & Asu_Ts (Val) & "<");
+        -- Pop this entity name from the stack
+        Name_Stack.Rewind;
+        Name_Stack.Delete;
       end if;
       -- Substitute from start to stop
       Asu.Replace_Slice (Result, Istart, Istop, Asu_Ts (Val));
@@ -812,6 +829,19 @@ package body Util is
       Error (Ctx.Flow, "Unknown entity " & Asu_Ts (Name));
     when Entity_Mng.Invalid_Char_Code =>
       Error (Ctx.Flow, "Invalid Char code " & Asu_Ts (Name));
+  end Expand_Internal;
+
+  -- Expand text (expand vars) returns the index of localized '<'
+  --  if any
+  procedure Expand_Text (Ctx : in out Ctx_Type;
+                         Dtd : in out Dtd_Type;
+                         Text : in out Asu_Us;
+                         Context : in Context_List;
+                         Start_Index : out Natural) is
+
+    List : Name_List_Mng.List_Type;
+  begin
+    Expand_Internal (Ctx, Dtd, Text, Context, Start_Index, List);
   end Expand_Text;
 
   -- Expand entities: %Var; and &#xx; if in dtd
