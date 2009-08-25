@@ -54,15 +54,15 @@ package body Dtd is
       -- Add a dummy prologue root or a dummy child to prologue root
       Trace ("Dtd parsing xml");
       Dummy.Line_No := 0;
-      if My_Tree.Is_Empty (Ctx.Prologue.all) then
-        My_Tree.Insert_Father (Ctx.Prologue.all, Dummy);
+      if Ctx.Prologue.Is_Empty then
+        Ctx.Prologue.Insert_Father (Dummy);
       else
-        My_Tree.Insert_Child (Ctx.Prologue.all, Dummy, False);
+        Ctx.Prologue.Insert_Child (Dummy, False);
       end if;
       Parse_Attributes (Ctx, Adtd, True);
       Check_Xml_Attributes (Ctx, False);
       -- Delete this dummy child
-      My_Tree.Delete_Tree (Ctx.Prologue.all);
+      Ctx.Prologue.Delete_Tree;
       -- Done
       Trace ("Dtd parsed xml instruction");
     else
@@ -1151,12 +1151,25 @@ package body Dtd is
     Char : Character;
     -- Parser iterator
     Iter_Xml : Parser.Iterator;
+    -- Childs of current element
+    Childstr : Asu_Us := Children.Children;
     -- General purpose Boolean
     use type Asu_Us;
   begin
     Trace ("Dtd check Xml children list " & Asu_Ts (Children.Children)
          & " Empty: " & Children.Is_Empty'Img
          & " Text : " & Children.Has_Text'Img);
+    -- Remove tail from root (Info_Sep & Info_Sep) if any
+    if not Ctx.Elements.Has_Father
+    and then Asu.Length (Childstr) >= 2
+    and then Asu.Slice (Childstr,
+                        Asu.Length (Childstr) - 1,
+                        Asu.Length (Childstr)) = Info_Sep & Info_Sep
+    then
+      Asu.Delete (Childstr,
+                  Asu.Length (Childstr) - 1,
+                  Asu.Length (Childstr));
+    end if;
     -- Read its element def
     Info.Name := "Elt" & Info_Sep & Name;
     begin
@@ -1186,7 +1199,7 @@ package body Dtd is
         null;
       when 'M' =>
         -- Check mixed: all children of xml must appear in dtd list
-        Iter_Xml.Set (Asu_Ts (Children.Children), Is_Sep'Access);
+        Iter_Xml.Set (Asu_Ts (Childstr), Is_Sep'Access);
         loop
           declare
             -- Next Child from xml
@@ -1214,12 +1227,12 @@ package body Dtd is
         end if;
         -- Strictly check that list matches criteria
         if not Regular_Expressions.Match (Asu_Ts (Info.List),
-                Asu_Ts (Children.Children), Strict => True) then
+                Asu_Ts (Childstr), Strict => True) then
           Util.Error (Ctx.Flow, "According to dtd, element " & Asu_Ts (Name)
                     & " allows children " & Strip_Sep (Info.List)
-                    & " but has children " & Strip_Sep (Children.Children));
+                    & " but has children " & Strip_Sep (Childstr));
         end if;
-        Trace ("Dtd checked children " & Strip_Sep (Children.Children)
+        Trace ("Dtd checked children " & Strip_Sep (Childstr)
              & " versus " & Strip_Sep (Info.List));
       when others =>
         Trace ("Dtd check: Unexpected element type " & Char);
@@ -1241,22 +1254,22 @@ package body Dtd is
   begin
     Trace ("Dtd setting unparsed on attribute " & Asu_Ts(Attr));
     -- Read current element from tree and make its attribute list
-    for I in 1 .. My_Tree.Children_Number (Ctx.Elements.all) loop
+    for I in 1 .. Ctx.Elements.Children_Number loop
       if I = 1 then
-        My_Tree.Move_Child (Ctx.Elements.all);
+        Ctx.Elements.Move_Child;
       else
-        My_Tree.Move_Brother (Ctx.Elements.all, False);
+        Ctx.Elements.Move_Brother (False);
       end if;
-      My_Tree.Read (Ctx.Elements.all, Cell);
+      Ctx.Elements.Read (Cell);
       if Cell.Kind = Xml_Parser.Attribute
       and then Cell.Name = Attr then
         -- Found the correct attribute
         Cell.Unparsed := True;
-        My_Tree.Replace (Ctx.Elements.all, Cell);
+        Ctx.Elements.Replace (Cell);
         exit;
       end if;
     end loop;
-      My_Tree.Move_Father (Ctx.Elements.all);
+    Ctx.Elements.Move_Father;
   end Set_Unparsed;
 
   -- INTERNAL
@@ -1551,18 +1564,18 @@ package body Dtd is
       return;
     end if;
     if Debug_Level /= 0 then
-      My_Tree.Read (Ctx.Elements.all, Cell);
+      Ctx.Elements.Read (Cell);
       Trace ("Dtd checking attributes of element " & Asu_Ts(Cell.Name));
     end if;
     -- Read current element from tree and make its attribute list
-    if My_Tree.Children_Number (Ctx.Elements.all) /= 0 then
-      for I in 1 .. My_Tree.Children_Number (Ctx.Elements.all) loop
+    if Ctx.Elements.Children_Number /= 0 then
+      for I in 1 .. Ctx.Elements.Children_Number loop
         if I = 1 then
-          My_Tree.Move_Child (Ctx.Elements.all);
+          Ctx.Elements.Move_Child;
         else
-          My_Tree.Move_Brother (Ctx.Elements.all, False);
+          Ctx.Elements.Move_Brother (False);
         end if;
-        My_Tree.Read (Ctx.Elements.all, Cell);
+        Ctx.Elements.Read (Cell);
         if Cell.Kind = Xml_Parser.Attribute then
           Asu.Append (Attributes, Info_Sep & Cell.Name & Info_Sep);
         else
@@ -1570,9 +1583,9 @@ package body Dtd is
           exit;
         end if;
       end loop;
-      My_Tree.Move_Father (Ctx.Elements.all);
+      Ctx.Elements.Move_Father;
     end if;
-    My_Tree.Read (Ctx.Elements.all, Cell);
+    Ctx.Elements.Read (Cell);
     -- Check Attributes
     Check_Attributes (Ctx, Adtd, Cell.Name, Cell.Line_No, Attributes);
   end Check_Attributes;
@@ -1594,7 +1607,7 @@ package body Dtd is
       -- No dtd => no check
       return;
     end if;
-    My_Tree.Read (Ctx.Elements.all, Cell);
+    Ctx.Elements.Read (Cell);
     Check_Children (Ctx, Adtd, Cell.Name, Cell.Line_No, Children);
   end Check_Element;
 
@@ -1614,14 +1627,14 @@ package body Dtd is
     Children.Is_Empty := True;
     Children.Has_Text := False;
     Children.Children := Asu_Null;
-    if My_Tree.Children_Number (Ctx.Elements.all) /= 0 then
-      for I in 1 .. My_Tree.Children_Number (Ctx.Elements.all) loop
+    if Ctx.Elements.Children_Number /= 0 then
+      for I in 1 .. Ctx.Elements.Children_Number loop
         if I = 1 then
-          My_Tree.Move_Child (Ctx.Elements.all);
+          Ctx.Elements.Move_Child;
         else
-          My_Tree.Move_Brother (Ctx.Elements.all, False);
+          Ctx.Elements.Move_Brother (False);
         end if;
-        My_Tree.Read (Ctx.Elements.all, Cell);
+        Ctx.Elements.Read (Cell);
         case Cell.Kind is
           when Xml_Parser.Attribute =>
             -- Attribute: skip
@@ -1636,50 +1649,84 @@ package body Dtd is
             Children.Is_Empty := False;
         end case;
       end loop;
-      My_Tree.Move_Father (Ctx.Elements.all);
+      Ctx.Elements.Move_Father;
     end if;
   end Build_Children;
+
+  -- INTERNAL Check tail
+  procedure Check_Tail (Ctx : in out Ctx_Type) is
+    Cell : My_Tree_Cell;
+  begin
+    if Ctx.Elements.Children_Number = 0 then
+      -- No child
+      return;
+    end if;
+    Ctx.Elements.Read (Cell);
+    if Cell.Nb_Attributes /= 0 then
+      Util.Error (Ctx.Flow, "Tail has attributes");
+    end if;
+
+    -- Only Pis and Comments in tail
+    Ctx.Elements.Move_Child;
+    loop
+      Ctx.Elements.Read (Cell);
+      if Cell.Kind /= Pi and then Cell.Kind /= Comment then
+         Util.Error (Ctx.Flow, "Invalid node type " & Mixed_Str (Cell.Kind'Img)
+                              & " in tail");
+      end if;
+      exit when not Ctx.Elements.Has_Brother (False);
+      Ctx.Elements.Move_Brother (False);
+    end loop;
+  end Check_Tail;
+
 
   -- Check a whole element tree recursively
   procedure Check_Subtree (Ctx  : in out Ctx_Type;
                            Adtd : in out Dtd_Type) is
     Cell : My_Tree_Cell;
     Children : Children_Desc;
+    Is_Root : constant Boolean := not Ctx.Elements.Has_Father;
+    use type Asu_Us;
   begin
     -- Check current element, attributes then children
     Check_Attributes (Ctx, Adtd);
     Build_Children (Ctx, Adtd, Children);
     Check_Element (Ctx, Adtd, Children);
     -- Check children recursively
-    if My_Tree.Children_Number (Ctx.Elements.all) = 0 then
+    if Ctx.Elements.Children_Number = 0 then
       -- No child
       return;
     end if;
-    My_Tree.Read (Ctx.Elements.all, Cell);
-    if Cell.Nb_Attributes = My_Tree.Children_Number (Ctx.Elements.all) then
+    Ctx.Elements.Read (Cell);
+    if Cell.Nb_Attributes = Ctx.Elements.Children_Number then
       -- All children are attributes
       return;
     end if;
 
     -- Move to first real child (not attribute)
-    My_Tree.Move_Child (Ctx.Elements.all);
+    Ctx.Elements.Move_Child;
     for I in 1 .. Cell.Nb_Attributes loop
-      My_Tree.Move_Brother (Ctx.Elements.all, False);
+      Ctx.Elements.Move_Brother (False);
     end loop;
 
     loop
-      My_Tree.Read (Ctx.Elements.all, Cell);
-      -- Skip Text and Comments
+      Ctx.Elements.Read (Cell);
+      -- Skip Text, Comments and tail
       if Cell.Kind = Element then
-        -- Recursive check this sub element
-        Check_Subtree (Ctx, Adtd);
+        if Is_Root and then Cell.Name = Asu_Null
+        and then not Ctx.Elements.Has_Brother (False) then
+          Check_Tail (Ctx);
+        else
+          -- Recursive check this sub element
+          Check_Subtree (Ctx, Adtd);
+        end if;
       end if;
-      exit when not My_Tree.Has_Brother (Ctx.Elements.all, False);
-      My_Tree.Move_Brother (Ctx.Elements.all, False);
+      exit when not Ctx.Elements.Has_Brother (False);
+      Ctx.Elements.Move_Brother (False);
     end loop;
 
     -- Done, move back to father
-    My_Tree.Move_Father (Ctx.Elements.all);
+    Ctx.Elements.Move_Father;
   end Check_Subtree;
 
 
