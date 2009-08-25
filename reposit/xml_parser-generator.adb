@@ -78,10 +78,10 @@ package body Xml_Parser.Generator is
       Cell.Nb_Attributes := 0;
       Cell.Name := Xml_Name;
       Cell.Value := Asu_Null;
-      My_Tree.Insert_Father (Ctx.Prologue.all, Cell);
+      Ctx.Prologue.Insert_Father (Cell);
       -- Init elements: an empty root element
       Cell.Name := Asu_Null;
-      My_Tree.Insert_Father (Ctx.Elements.all, Cell);
+      Ctx.Elements.Insert_Father (Cell);
       Ctx.Status := Init;
     end if;
   end Init_Ctx;
@@ -94,7 +94,7 @@ package body Xml_Parser.Generator is
     -- Init context if needed
     Init_Ctx (Ctx);
     Tree := Get_Tree (Ctx, Node);
-    My_Tree.Set_Position (Tree.all, Node.Tree_Access);
+    Tree.Set_Position (Node.Tree_Access);
   end Move_To;
 
   -------------------------
@@ -116,17 +116,17 @@ package body Xml_Parser.Generator is
     Vers.Value := Asu_Tus (Vers_Image (Major) & "." & Vers_Image (Minor));
 
     -- Read Xml
-    My_Tree.Move_Root (Ctx.Prologue.all);
-    My_Tree.Read (Ctx.Prologue.all, Cell);
+    Ctx.Prologue.Move_Root;
+    Ctx.Prologue.Read (Cell);
     if Cell.Nb_Attributes = 0 then
       Cell.Nb_Attributes := 1;
-      My_Tree.Replace (Ctx.Prologue.all, Cell);
+      Ctx.Prologue.Replace (Cell);
       -- Insert version as first attribute
-      My_Tree.Insert_Child (Ctx.Prologue.all, Vers);
+      Ctx.Prologue.Insert_Child (Vers);
     else
        -- Overwrite first attribute
-       My_Tree.Move_Child (Ctx.Prologue.all);
-       My_Tree.Replace (Ctx.Prologue.all, Vers);
+       Ctx.Prologue.Move_Child;
+       Ctx.Prologue.Replace (Vers);
     end if;
   end Set_Version;
 
@@ -135,8 +135,8 @@ package body Xml_Parser.Generator is
   begin
     Init_Ctx (Ctx);
     -- Read Xml
-    My_Tree.Move_Root (Ctx.Prologue.all);
-    My_Tree.Read (Ctx.Prologue.all, Cell);
+    Ctx.Prologue.Move_Root;
+    Ctx.Prologue.Read (Cell);
     if Cell.Nb_Attributes = 0 then
       Set_Version (Ctx, 1, 0);
     end if;
@@ -150,30 +150,30 @@ package body Xml_Parser.Generator is
     Check_Name (Encoding);
     -- Read Xml
     Init_Version (Ctx);
-    My_Tree.Move_Root (Ctx.Prologue.all);
-    My_Tree.Read (Ctx.Prologue.all, Cell);
+    Ctx.Prologue.Move_Root;
+    Ctx.Prologue.Read (Cell);
     Cell.Nb_Attributes := Cell.Nb_Attributes + 1;
-    My_Tree.Replace (Ctx.Prologue.all, Cell);
+    Ctx.Prologue.Replace (Cell);
     -- Set this attribute
     Encoding_Cell.Kind := Attribute;
     Encoding_Cell.Name := Encoding_Name;
     Encoding_Cell.Value := Asu_Tus (Encoding);
     -- Add this attribute as brother of version
-    My_Tree.Move_Child (Ctx.Prologue.all);
-    if My_Tree.Has_Brother (Ctx.Prologue.all, False) then
-      My_Tree.Move_Brother (Ctx.Prologue.all, False);
-      My_Tree.Read (Ctx.Prologue.all, Cell);
+    Ctx.Prologue.Move_Child;
+    if Ctx.Prologue.Has_Brother (False) then
+      Ctx.Prologue.Move_Brother (False);
+      Ctx.Prologue.Read (Cell);
       if Cell.Kind = Attribute and then Cell.Name = Encoding_Name then
         -- Change encoding
-        My_Tree.Replace (Ctx.Prologue.all, Encoding_Cell);
+        Ctx.Prologue.Replace (Encoding_Cell);
         return;
       else
         -- Back to version
-        My_Tree.Move_Brother (Ctx.Prologue.all, True);
+        Ctx.Prologue.Move_Brother (True);
       end if;
     end if;
     -- Insert encoding as brother of version
-    My_Tree.Insert_Brother (Ctx.Prologue.all, Encoding_Cell, False);
+    Ctx.Prologue.Insert_Brother (Encoding_Cell, False);
   end Set_Encoding;
 
   procedure Set_Standalone (Ctx : in out Ctx_Type;
@@ -184,10 +184,10 @@ package body Xml_Parser.Generator is
   begin
     -- Read Xml
     Init_Version (Ctx);
-    My_Tree.Move_Root (Ctx.Prologue.all);
-    My_Tree.Read (Ctx.Prologue.all, Cell);
+    Ctx.Prologue.Move_Root;
+    Ctx.Prologue.Read (Cell);
     Cell.Nb_Attributes := Cell.Nb_Attributes + 1;
-    My_Tree.Replace (Ctx.Prologue.all, Cell);
+    Ctx.Prologue.Replace (Cell);
     -- Set this attribute
     Standalone_Cell.Kind := Attribute;
     Standalone_Cell.Name := Standalone_Name;
@@ -198,39 +198,39 @@ package body Xml_Parser.Generator is
     end if;
     -- Add this attribute as brother of version or encoding
     -- Move to Version
-    My_Tree.Move_Child (Ctx.Prologue.all);
-    if not My_Tree.Has_Brother (Ctx.Prologue.all, False) then
+    Ctx.Prologue.Move_Child;
+    if not Ctx.Prologue.Has_Brother (False) then
       -- No more brother (only version)
-      My_Tree.Insert_Brother (Ctx.Prologue.all, Standalone_Cell, False);
+      Ctx.Prologue.Insert_Brother (Standalone_Cell, False);
       return;
     end if;
     -- Move 2nd child
-    My_Tree.Move_Brother (Ctx.Prologue.all, False);
-    My_Tree.Read (Ctx.Prologue.all, Cell);
+    Ctx.Prologue.Move_Brother (False);
+    Ctx.Prologue.Read (Cell);
     if Cell.Kind /= Attribute then
       -- 2nd child is no attribute
-      My_Tree.Insert_Brother (Ctx.Prologue.all, Standalone_Cell, True);
+      Ctx.Prologue.Insert_Brother (Standalone_Cell, True);
       return;
     end if;
     if Cell.Name = Standalone_Name then
       -- Change standalone as 2nd attribute
-      My_Tree.Replace (Ctx.Prologue.all, Standalone_Cell);
+      Ctx.Prologue.Replace (Standalone_Cell);
       return;
     end if;
     -- 2nd attribute is encoding
-    if not My_Tree.Has_Brother (Ctx.Prologue.all, False) then
+    if not Ctx.Prologue.Has_Brother (False) then
       -- No more brother (only version and encoding)
-      My_Tree.Insert_Brother (Ctx.Prologue.all, Standalone_Cell, False);
+      Ctx.Prologue.Insert_Brother (Standalone_Cell, False);
       return;
     end if;
-    My_Tree.Move_Brother (Ctx.Prologue.all, False);
-    My_Tree.Read (Ctx.Prologue.all, Cell);
+    Ctx.Prologue.Move_Brother (False);
+    Ctx.Prologue.Read (Cell);
     if Cell.Kind = Attribute and then Cell.Name = Standalone_Name then
       -- 3rd child is standalone
-      My_Tree.Replace (Ctx.Prologue.all, Standalone_Cell);
+      Ctx.Prologue.Replace (Standalone_Cell);
     else
       -- 3rd child is not attribute
-      My_Tree.Insert_Brother (Ctx.Prologue.all, Standalone_Cell, True);
+      Ctx.Prologue.Insert_Brother (Standalone_Cell, True);
     end if;
   end Set_Standalone;
 
@@ -240,15 +240,15 @@ package body Xml_Parser.Generator is
   begin
     -- Clear all Xml attributes
     Init_Ctx (Ctx);
-    My_Tree.Move_Root (Ctx.Prologue.all);
-    My_Tree.Read (Ctx.Prologue.all, Cell);
+    Ctx.Prologue.Move_Root;
+    Ctx.Prologue.Read (Cell);
     Cell.Nb_Attributes := 0;
-    My_Tree.Replace  (Ctx.Prologue.all, Cell);
+    Ctx.Prologue.Replace  (Cell);
     loop
-      My_Tree.Move_Child (Ctx.Prologue.all, True);
-      My_Tree.Read (Ctx.Prologue.all, Cell);
+      Ctx.Prologue.Move_Child (True);
+      Ctx.Prologue.Read (Cell);
       exit when Cell.Kind /= Attribute;
-      My_Tree.Delete_Current (Ctx.Prologue.all);
+      Ctx.Prologue.Delete_Current;
     end loop;
   end Clear_Xml;
 
@@ -258,31 +258,31 @@ package body Xml_Parser.Generator is
                          Append_Next : in Boolean) is
     Father : My_Tree_Cell;
   begin
-    My_Tree.Read (Tree.all, Father);
+    Tree.Read (Father);
     if Append_Next then
-      if not My_Tree.Has_Father (Tree.all) then
+      if not Tree.Has_Father then
         -- Current is Root of prologue, append as last child
-        My_Tree.Insert_Child (Tree.all, Cell, False);
+        Tree.Insert_Child (Cell, False);
       else
         -- Current is a child
-        My_Tree.Insert_Brother (Tree.all, Cell, False);
+        Tree.Insert_Brother (Cell, False);
       end if;
-    elsif My_Tree.Has_Father (Tree.all) then
+    elsif Tree.Has_Father then
       -- Current is a child
-      My_Tree.Insert_Brother (Tree.all, Cell, True);
-    elsif My_Tree.Children_Number (Tree.all) = Father.Nb_Attributes then
+      Tree.Insert_Brother (Cell, True);
+    elsif Tree.Children_Number = Father.Nb_Attributes then
       -- No child (only attributes), append as last child
-      My_Tree.Insert_Child (Tree.all, Cell, False);
+      Tree.Insert_Child (Cell, False);
     elsif Father.Nb_Attributes = 0 then
       -- No attribute, insert as first child
-      My_Tree.Insert_Child (Tree.all, Cell, True);
+      Tree.Insert_Child (Cell, True);
     else
       -- Insert after attributes
-      My_Tree.Move_Child (Tree.all, False);
+      Tree.Move_Child (False);
       for I in 1 .. Father.Nb_Attributes - 1 loop
-        My_Tree.Move_Brother (Tree.all, False);
+        Tree.Move_Brother (False);
       end loop;
-      My_Tree.Insert_Brother (Tree.all, Cell, False);
+      Tree.Insert_Brother (Cell, False);
     end if;
   end Insert_Cell;
 
@@ -327,7 +327,7 @@ package body Xml_Parser.Generator is
     New_Node := (Kind => Text,
                  Magic => Ctx.Magic,
                  In_Prologue => True,
-                 Tree_Access => My_Tree.Get_Position (Tree.all));
+                 Tree_Access => Tree.Get_Position);
   end Add_Doctype;
 
   -- Set the Dtd file towards which comformance shall be checked
@@ -406,7 +406,7 @@ package body Xml_Parser.Generator is
     New_Node := (Kind => Element,
                  Magic => Ctx.Magic,
                  In_Prologue => True,
-                 Tree_Access => My_Tree.Get_Position (Tree.all));
+                 Tree_Access => Tree.Get_Position);
   end Add_Pi;
 
   -- Add a comment in prologue
@@ -432,7 +432,7 @@ package body Xml_Parser.Generator is
     New_Node := (Kind => Xml_Parser.Comment,
                  Magic => Ctx.Magic,
                  In_Prologue => True,
-                 Tree_Access => My_Tree.Get_Position (Tree.all));
+                 Tree_Access => Tree.Get_Position);
   end Add_Comment;
 
   -- Clear the whole prologue
@@ -441,8 +441,8 @@ package body Xml_Parser.Generator is
   begin
     Init_Ctx (Ctx);
     -- Delete prologue
-    My_Tree.Move_Root (Ctx.Prologue.all);
-    My_Tree.Delete_Tree (Ctx.Prologue.all);
+    Ctx.Prologue.Move_Root;
+    Ctx.Prologue.Delete_Tree;
     -- Clear doctype
     Ctx.Doctype.Line_No := 0;
     Ctx.Doctype.Name := Asu_Null;
@@ -451,7 +451,7 @@ package body Xml_Parser.Generator is
     Cell.Nb_Attributes := 0;
     Cell.Name := Xml_Name;
     Cell.Value := Asu_Null;
-    My_Tree.Insert_Father (Ctx.Prologue.all, Cell);
+    Ctx.Prologue.Insert_Father (Cell);
   end Clear_Prologue;
 
   ----------------------
@@ -490,9 +490,9 @@ package body Xml_Parser.Generator is
     -- Move to node, must be an element
     Move_To_Element (Ctx, Element, Tree);
     -- Update name
-    My_Tree.Read (Tree.all, Cell);
+    Tree.Read (Cell);
     Cell.Name := Asu_Tus (Name);
-    My_Tree.Replace (Tree.all, Cell);
+    Tree.Replace (Cell);
   end Set_Name;
 
   -- Add an attribute to current element
@@ -507,10 +507,10 @@ package body Xml_Parser.Generator is
     -- Move to node, must be an element
     Move_To_Element (Ctx, Element, Tree);
     -- Increment Nb_Attributes
-    My_Tree.Read (Tree.all, Cell);
+    Tree.Read (Cell);
     Nb_Attributes := Cell.Nb_Attributes;
     Cell.Nb_Attributes := Cell.Nb_Attributes + 1;
-    My_Tree.Replace (Tree.all, Cell);
+    Tree.Replace (Cell);
     -- Add this attribute
     Cell.Kind := Attribute;
     Cell.Nb_Attributes := 0;
@@ -518,16 +518,16 @@ package body Xml_Parser.Generator is
     Cell.Value := Asu_Tus (Value);
     if Nb_Attributes = 0 then
       -- As first child
-      My_Tree.Insert_Child (Tree.all, Cell);
+      Tree.Insert_Child (Cell);
     else
       -- Insert after current attributes
-      My_Tree.Move_Child (Tree.all);
+      Tree.Move_Child;
       for I in 1 .. Nb_Attributes - 1 loop
-        My_Tree.Move_Brother (Tree.all, False);
+        Tree.Move_Brother (False);
       end loop;
-      My_Tree.Insert_Brother (Tree.all, Cell, False);
+      Tree.Insert_Brother (Cell, False);
     end if;
-    My_Tree.Move_Father (Tree.all);
+    Tree.Move_Father;
   end Add_Attribute;
 
  -- Set all the attributes of an element
@@ -543,17 +543,17 @@ package body Xml_Parser.Generator is
     -- Move to node
     Move_To_Element (Ctx, Element, Tree);
     -- Set Nb_Attributes
-    My_Tree.Read (Tree.all, Cell);
+    Tree.Read (Cell);
     Cell.Nb_Attributes := Attributes'Length;
-    My_Tree.Replace (Tree.all, Cell);
+    Tree.Replace (Cell);
     -- Add these attributes
     Cell.Kind := Attribute;
     Cell.Nb_Attributes := 0;
     for I in reverse Attributes'Range loop
       Cell.Name := Attributes(I).Name;
       Cell.Value := Attributes(I).Value;
-      My_Tree.Insert_Child (Tree.all, Cell);
-      My_Tree.Move_Father (Tree.all);
+      Tree.Insert_Child (Cell);
+      Tree.Move_Father;
     end loop;
   end Set_Attributes;
 
@@ -566,22 +566,22 @@ package body Xml_Parser.Generator is
     -- Move to node, must be an element
     Move_To_Element (Ctx, Element, Tree);
     -- Reset Nb_Attributes
-    My_Tree.Read (Tree.all, Cell);
+    Tree.Read (Cell);
     Cell.Nb_Attributes := 0;
-    My_Tree.Replace (Tree.all, Cell);
+    Tree.Replace (Cell);
     -- Del all attributes
     loop
       -- No more child?
-      exit when My_Tree.Children_Number (Tree.all) = 0;
-      My_Tree.Move_Child (Tree.all);
-      My_Tree.Read (Tree.all, Cell);
+      exit when Tree.Children_Number = 0;
+      Tree.Move_Child;
+      Tree.Read (Cell);
       if Cell.Kind /= Attribute then
         -- A child element (or comment or text), no more attribute
-        My_Tree.Move_Father (Tree.all);
+        Tree.Move_Father;
         exit;
       end if;
       -- Delete this attribute (move up)
-      My_Tree.Delete_Current (Tree.all);
+      Tree.Delete_Current;
     end loop;
   end Del_Attributes;
 
@@ -597,7 +597,7 @@ package body Xml_Parser.Generator is
   begin
     -- Move to node, must be an element
     Move_To_Element (Ctx, Element, Tree);
-    My_Tree.Read (Tree.all, Father);
+    Tree.Read (Father);
     -- Add this child
     Cell.Kind := Internal_Kind_Of (Kind);
     Cell.Nb_Attributes := 0;
@@ -607,19 +607,19 @@ package body Xml_Parser.Generator is
       Cell.Name := Asu_Tus (Name);
     end if;
     if Append or else Father.Nb_Attributes = 0 then
-      My_Tree.Insert_Child (Tree.all, Cell, not Append);
+      Tree.Insert_Child (Cell, not Append);
     else
       -- Insert after attributes
-      My_Tree.Move_Child (Tree.all);
+      Tree.Move_Child;
       for I in 1 .. Father.Nb_Attributes - 1 loop
-        My_Tree.Move_Brother (Tree.all, False);
+        Tree.Move_Brother (False);
       end loop;
-      My_Tree.Insert_Brother (Tree.all, Cell, False);
+      Tree.Insert_Brother (Cell, False);
     end if;
     New_Node := (Kind => Kind,
                  Magic => Ctx.Magic,
                  In_Prologue => False,
-                 Tree_Access => My_Tree.Get_Position (Tree.all));
+                 Tree_Access => Tree.Get_Position);
   end Add_Child;
 
   -- Insert a brother element, text or comment, and move to it
@@ -642,11 +642,11 @@ package body Xml_Parser.Generator is
     else
       Cell.Name := Asu_Tus (Name);
     end if;
-    My_Tree.Insert_Brother (Tree.all, Cell, not Next);
+    Tree.Insert_Brother (Cell, not Next);
     New_Node := (Kind => Kind,
                  Magic => Ctx.Magic,
                  In_Prologue => False,
-                 Tree_Access => My_Tree.Get_Position (Tree.all));
+                 Tree_Access => Tree.Get_Position);
   end Add_Brother;
 
   -- Swap two elements (and their children)
@@ -657,11 +657,11 @@ package body Xml_Parser.Generator is
   begin
     -- Move to node1, must be an element, save pos
     Move_To_Element (Ctx, Elt1, Tree);
-    My_Tree.Save_Position (Tree.all);
+    Tree.Save_Position;
     -- Move to node2, must be an element
     Move_To_Element (Ctx, Elt2, Tree);
     -- Swap
-    My_Tree.Swap_Saved (Tree.all);
+    Tree.Swap_Saved;
   exception
     when Trees.Is_Ancestor =>
       raise Invalid_Node;
@@ -678,11 +678,11 @@ package body Xml_Parser.Generator is
   begin
     -- Move to Src, must be an element, save pos
     Move_To_Element (Ctx, Src, Tree);
-    My_Tree.Save_Position (Tree.all);
+    Tree.Save_Position;
     -- Move to Dst, must be an element
     Move_To_Element (Ctx, Dst, Tree);
     -- Copy Src below or beside Dst
-    My_Tree.Copy_Saved (Tree.all, Child, not Next);
+    Tree.Copy_Saved (Child, not Next);
   exception
     when Trees.Is_Ancestor =>
       raise Invalid_Node;
@@ -698,9 +698,9 @@ package body Xml_Parser.Generator is
     -- Move to node, must be an element
     Move_To_Element (Ctx, Text, Tree);
     -- Update Text
-    My_Tree.Read (Tree.all, Cell);
+    Tree.Read (Cell);
     Cell.Name := Asu_Tus (Content);
-    My_Tree.Replace (Tree.all, Cell);
+    Tree.Replace (Cell);
   end Set_Text;
 
   -- Set the text of a Comment
@@ -713,9 +713,9 @@ package body Xml_Parser.Generator is
     -- Move to node, must be an element
     Move_To_Element (Ctx, Comment, Tree);
     -- Update Text
-    My_Tree.Read (Tree.all, Cell);
+    Tree.Read (Cell);
     Cell.Name := Asu_Tus (Content);
-    My_Tree.Replace (Tree.all, Cell);
+    Tree.Replace (Cell);
   end Set_Comment;
 
   -- Delete current node and its children
@@ -727,19 +727,19 @@ package body Xml_Parser.Generator is
   begin
     -- Move to node, check not root
     Move_To (Ctx, Node, Tree);
-    if not My_Tree.Has_Father (Tree.all) then
+    if not Tree.Has_Father then
       raise Invalid_Node;
     end if;
     -- Clean doctype info if node is the doctype (text of prologue)
     if Node.In_Prologue and then Node.Kind = Text then
       Ctx.Doctype.Name := Asu_Null;
     end if;
-    My_Tree.Delete_Current (Tree.all);
+    Tree.Delete_Current;
     -- Father is an element
     New_Node := (Kind => Element,
                  Magic => Ctx.Magic,
                  In_Prologue => Node.In_Prologue,
-                 Tree_Access => My_Tree.Get_Position (Tree.all));
+                 Tree_Access => Tree.Get_Position);
   end Delete_Node;
 
 
@@ -752,14 +752,14 @@ package body Xml_Parser.Generator is
     -- Move to node
     Move_To (Ctx, Element, Tree);
     -- Clean doctype info if node is the prologue
-    if Element.In_Prologue and then not My_Tree.Has_Father (Tree.all) then
+    if Element.In_Prologue and then not Tree.Has_Father then
       Ctx.Doctype.Name := Asu_Null;
     end if;
     -- Delete all children
-    My_Tree.Read (Tree.all, Cell);
-    for I in 1 .. My_Tree.Children_Number (Tree.all) - Cell.Nb_Attributes loop
-      My_Tree.Move_Child (Tree.all, True);
-      My_Tree.Delete_Current (Tree.all);
+    Tree.Read (Cell);
+    for I in 1 .. Tree.Children_Number - Cell.Nb_Attributes loop
+      Tree.Move_Child (True);
+      Tree.Delete_Current;
     end loop;
   end Delete_Children;
 
@@ -950,12 +950,12 @@ package body Xml_Parser.Generator is
     use type Asu_Us;
   begin
     -- Read number of attribtues
-    My_Tree.Read (Element, Cell);
+    Element.Read (Cell);
     Nb_Attributes := Cell.Nb_Attributes;
     if Nb_Attributes = 0 then
       -- No attribute. Move to first child if any
-      if My_Tree.Children_Number (Element) /= 0 then
-        My_Tree.Move_Child (Element, True);
+      if Element.Children_Number /= 0 then
+        Element.Move_Child (True);
       end if;
       return;
     end if;
@@ -965,12 +965,12 @@ package body Xml_Parser.Generator is
       -- Read each attribute
       for I in 1 .. Nb_Attributes loop
         if I = 1 then
-           My_Tree.Move_Child (Element, True);
+           Element.Move_Child (True);
         else
-          My_Tree.Move_Brother (Element, False);
+          Element.Move_Brother (False);
         end if;
         -- Read attribute, needed width is ' Name="Value"'
-        My_Tree.Read (Element, Cell);
+        Element.Read (Cell);
         Attributes(I).Name := Cell.Name;
         Attributes(I).Value := Cell.Value;
       end loop;
@@ -978,10 +978,10 @@ package body Xml_Parser.Generator is
                       Has_Children);
     end;
     -- Move to next brother if any, otherwise move to father
-    if My_Tree.Has_Brother (Element, False) then
-      My_Tree.Move_Brother (Element, False);
+    if Element.Has_Brother (False) then
+      Element.Move_Brother (False);
     else
-      My_Tree.Move_Father (Element);
+      Element.Move_Father;
     end if;
   end Put_Attributes;
 
@@ -1033,11 +1033,9 @@ package body Xml_Parser.Generator is
                          Ctx     : in Ctx_Type;
                          Element : in out My_Tree.Tree_Type;
                          Level   : in Integer) is
-    Cell : constant My_Tree_Cell := My_Tree.Read (Element);
-    Cell_Ref : constant My_Tree.Position_Access
-             := My_Tree.Get_Position (Element);
-    Nb_Children : constant Trees.Child_Range
-                := My_Tree.Children_Number (Element);
+    Cell : constant My_Tree_Cell := Element.Read;
+    Cell_Ref : constant My_Tree.Position_Access := Element.Get_Position;
+    Nb_Children : constant Trees.Child_Range := Element.Children_Number;
     Child : My_Tree_Cell;
     Indent : constant String (1 .. 2 * Level) := (others => ' ');
     Indent1 : constant String := Indent & "  ";
@@ -1077,7 +1075,7 @@ package body Xml_Parser.Generator is
         New_Line (Flow);
       end if;
       -- Any child of prologue?
-      if My_Tree.Get_Position (Element) = Cell_Ref then
+      if Element.Get_Position = Cell_Ref then
         -- No Child (Put_Attributes moved back to current): return
         return;
       end if;
@@ -1085,7 +1083,7 @@ package body Xml_Parser.Generator is
       -- Put prologue children: DOCTYPE, PIs and comments
       -- Put_Attributes remained on first child
       loop
-        Child := My_Tree.Read (Element);
+        Child := Element.Read;
         case Child.Kind is
           when Attribute =>
             -- Impossibe
@@ -1109,11 +1107,11 @@ package body Xml_Parser.Generator is
           New_Line (Flow);
         end if;
         -- Next child or done
-        exit when not My_Tree.Has_Brother (Element, False);
-        My_Tree.Move_Brother (Element, False);
+        exit when not Element.Has_Brother (False);
+        Element.Move_Brother (False);
       end loop;
       -- End of prologue and its children
-      My_Tree.Move_Father (Element);
+      Element.Move_Father;
       if Format /= Raw then
         New_Line (Flow);
       end if;
@@ -1138,7 +1136,7 @@ package body Xml_Parser.Generator is
                     Has_Children => Nb_Children > Cell.Nb_Attributes);
 
     -- Any child?
-    if My_Tree.Get_Position (Element) = Cell_Ref then
+    if Element.Get_Position = Cell_Ref then
       -- No Child (Put_Attributes moved back to current): return
       if not In_Tail then
         -- Terminate tag now
@@ -1148,7 +1146,7 @@ package body Xml_Parser.Generator is
       return;
     else
       -- End Father for child or not (just a tail)
-      Child := My_Tree.Read (Element);
+      Child := Element.Read;
       if not In_Tail then
         if Child.Name /= Asu_Null then
           -- There is a significan child
@@ -1164,7 +1162,7 @@ package body Xml_Parser.Generator is
     -- Put children
     Prev_Is_Text := False;
     for I in 1 .. Nb_Children loop
-      Child := My_Tree.Read (Element);
+      Child := Element.Read;
       case Child.Kind is
         when Attribute =>
           -- Impossibe
@@ -1239,12 +1237,12 @@ package body Xml_Parser.Generator is
           Prev_Is_Text := False;
         end case;
         -- Next child or done
-        exit when not My_Tree.Has_Brother (Element, False);
-        My_Tree.Move_Brother (Element, False);
+        exit when not Element.Has_Brother (False);
+        Element.Move_Brother (False);
       end loop;
       Close;
       -- End of this element
-      My_Tree.Move_Father (Element);
+      Element.Move_Father;
   end Put_Element;
 
   -- Internal procedure to generate the output
@@ -1259,10 +1257,10 @@ package body Xml_Parser.Generator is
       raise Status_Error;
     end if;
     -- Put prologue if any
-    My_Tree.Move_Root (Ctx.Prologue.all);
+    Ctx.Prologue.Move_Root;
     Put_Element (Flow, Format, Width, Ctx, Ctx.Prologue.all, Prologue_Level);
     -- Put Elements
-    My_Tree.Move_Root (Ctx.Elements.all);
+    Ctx.Elements.Move_Root;
     Put_Element (Flow, Format, Width, Ctx, Ctx.Elements.all, 0);
     if Format /= Raw then
       New_Line (Flow);

@@ -357,14 +357,14 @@ package body Xml_Parser is
     Ctx.Callback := null;
     Ctx.Level := 0;
     -- Clean prologue tree
-    if not My_Tree.Is_Empty (Ctx.Prologue.all) then
-      My_Tree.Move_Root (Ctx.Prologue.all);
-      My_Tree.Delete_Tree (Ctx.Prologue.all);
+    if not Ctx.Prologue.Is_Empty then
+      Ctx.Prologue.Move_Root;
+      Ctx.Prologue.Delete_Tree;
     end if;
     -- Clean element tree
-    if not My_Tree.Is_Empty (Ctx.Elements.all) then
-      My_Tree.Move_Root (Ctx.Elements.all);
-      My_Tree.Delete_Tree (Ctx.Elements.all);
+    if not Ctx.Elements.Is_Empty then
+      Ctx.Elements.Move_Root;
+      Ctx.Elements.Delete_Tree;
     end if;
     -- Clean Doctype info
     Ctx.Doctype.Line_No := 1;
@@ -554,8 +554,8 @@ package body Xml_Parser is
     Ctx.Flow.Err_Msg := Asu_Null;
     Ok := False;
     -- Check this context
-    if not My_Tree.Is_Empty (Ctx.Elements.all) then
-      My_Tree.Move_Root (Ctx.Elements.all);
+    if not Ctx.Elements.Is_Empty then
+      Ctx.Elements.Move_Root;
     end if;
     Parse_Mng.Check (Ctx);
     Ctx.Status := Parsed_Elements;
@@ -611,8 +611,8 @@ package body Xml_Parser is
     use type My_Tree.Position_Access;
   begin
     -- Read cell in tree
-    My_Tree.Set_Position (Tree.all, Node.Tree_Access);
-    My_Tree.Read (Tree.all, Cell);
+    Tree.Set_Position (Node.Tree_Access);
+    Tree.Read (Cell);
     -- Check kinds match
     if (Node.Kind = Element and then Cell.Kind /= Element)
     or else (Node.Kind = Text and then Cell.Kind /= Text)
@@ -697,11 +697,11 @@ package body Xml_Parser is
       raise Status_Error;
     end if;
     -- Only prologue or full parsing completed
-    My_Tree.Move_Root (Ctx.Prologue.all);
+    Ctx.Prologue.Move_Root;
     return (Kind => Element,
             Magic => Ctx.Magic,
             In_Prologue => True,
-            Tree_Access => My_Tree.Get_Position (Ctx.Prologue.all));
+            Tree_Access => Ctx.Prologue.Get_Position);
   end Get_Prologue;
 
   -- Get elements'root after Parse or Parse_Elements
@@ -715,11 +715,11 @@ package body Xml_Parser is
       raise Status_Error;
     end if;
     -- Only prologue or full parsing completed
-    My_Tree.Move_Root (Ctx.Elements.all);
+    Ctx.Elements.Move_Root;
     return (Kind => Element,
             Magic => Ctx.Magic,
             In_Prologue => False,
-            Tree_Access => My_Tree.Get_Position (Ctx.Elements.all));
+            Tree_Access => Ctx.Elements.Get_Position);
   end Get_Root_Element;
 
   -- Line number of start of declaration of node
@@ -758,11 +758,11 @@ package body Xml_Parser is
   begin
     for I in A'Range loop
       if I = A'First then
-        My_Tree.Move_Child (Tree.all);
+        Tree.Move_Child;
       else
-        My_Tree.Move_Brother (Tree.all, False);
+        Tree.Move_Brother (False);
       end if;
-      My_Tree.Read (Tree.all, Cell);
+      Tree.Read (Cell);
       if Cell.Kind /= Attribute then
         Trace ("Expecting kind attribute, found " & Cell.Kind'Img);
         raise Internal_Error;
@@ -794,12 +794,12 @@ package body Xml_Parser is
     end if;
     for I in 1 .. Index loop
       if I = 1 then
-        My_Tree.Move_Child (Tree.all);
+        Tree.Move_Child;
       else
-        My_Tree.Move_Brother (Tree.all, False);
+        Tree.Move_Brother (False);
       end if;
     end loop;
-    My_Tree.Read (Tree.all, Cell);
+    Tree.Read (Cell);
     if Cell.Kind /= Attribute then
       Trace ("Expecting kind attribute, found " & Cell.Kind'Img);
       raise Internal_Error;
@@ -824,44 +824,43 @@ package body Xml_Parser is
     Cell : constant My_Tree_Cell := Get_Cell (Tree, Element);
     -- Nb of nodes is Nb in tree - attributes
     Nb_Nodes : constant Natural
-             := My_Tree.Children_Number (Tree.all)
-                - Cell.Nb_Attributes;
+             := Tree.Children_Number - Cell.Nb_Attributes;
     N : Nodes_Array (1 .. Nb_Nodes);
     Child : My_Tree_Cell;
   begin
-    for I in 1 .. My_Tree.Children_Number (Tree.all) loop
+    for I in 1 .. Tree.Children_Number loop
       if I = 1 then
-        My_Tree.Move_Child (Tree.all);
+        Tree.Move_Child;
       else
-        My_Tree.Move_Brother (Tree.all, False);
+        Tree.Move_Brother (False);
       end if;
       if I > Cell.Nb_Attributes then
-        My_Tree.Read (Tree.all, Child);
+        Tree.Read (Child);
         case Child.Kind is
           when Xml_Parser.Element =>
             N (I - Cell.Nb_Attributes) :=
                   (Kind =>  Xml_Parser.Element,
                    Magic => Element.Magic,
                    In_Prologue => Element.In_Prologue,
-                   Tree_Access => My_Tree.Get_Position (Tree.all));
+                   Tree_Access => Tree.Get_Position);
           when Xml_Parser.Text =>
             N (I - Cell.Nb_Attributes) :=
                   (Kind => Xml_Parser.Text,
                    Magic => Element.Magic,
                    In_Prologue => Element.In_Prologue,
-                   Tree_Access => My_Tree.Get_Position (Tree.all));
+                   Tree_Access => Tree.Get_Position);
           when Xml_Parser.Pi =>
             N (I - Cell.Nb_Attributes) :=
                   (Kind => Xml_Parser.Pi,
                    Magic => Element.Magic,
                    In_Prologue => Element.In_Prologue,
-                   Tree_Access => My_Tree.Get_Position (Tree.all));
+                   Tree_Access => Tree.Get_Position);
           when Xml_Parser.Comment =>
             N (I - Cell.Nb_Attributes) :=
                   (Kind => Xml_Parser.Comment,
                    Magic => Element.Magic,
                    In_Prologue => Element.In_Prologue,
-                   Tree_Access => My_Tree.Get_Position (Tree.all));
+                   Tree_Access => Tree.Get_Position);
           when Xml_Parser.Attribute =>
             -- Attribute
             Trace ("Expecting kind text or element or comment, found attribute");
@@ -878,7 +877,7 @@ package body Xml_Parser is
     Cell : constant My_Tree_Cell := Get_Cell (Tree, Element);
   begin
     -- Nb of nodes is Nb in tree - attributes
-    return My_Tree.Children_Number (Tree.all) - Cell.Nb_Attributes;
+    return Tree.Children_Number - Cell.Nb_Attributes;
   end Get_Nb_Children;
 
   -- May raise Invalid_Index
@@ -888,47 +887,46 @@ package body Xml_Parser is
     Tree : constant Tree_Acc := Get_Tree (Ctx, Element);
     Cell : constant My_Tree_Cell := Get_Cell (Tree, Element);
     -- Nb of nodes is Nb in tree - attributes
-    Nb_Nodes : constant Natural
-             := My_Tree.Children_Number (Tree.all) - Cell.Nb_Attributes;
+    Nb_Nodes : constant Natural := Tree.Children_Number - Cell.Nb_Attributes;
     N : Node_Type;
     Child : My_Tree_Cell;
   begin
     if Index > Nb_Nodes then
       raise Invalid_Index;
     end if;
-    for I in 1 .. My_Tree.Children_Number (Tree.all) loop
+    for I in 1 .. Tree.Children_Number loop
       if I = 1 then
-        My_Tree.Move_Child (Tree.all);
+        Tree.Move_Child;
       else
-        My_Tree.Move_Brother (Tree.all, False);
+        Tree.Move_Brother (False);
       end if;
       if I = Cell.Nb_Attributes + Index then
         exit;
       end if;
     end loop;
 
-    My_Tree.Read (Tree.all, Child);
+    Tree.Read (Child);
     case Child.Kind is
       when Xml_Parser.Element =>
         N := (Kind =>  Xml_Parser.Element,
               Magic => Element.Magic,
               In_Prologue => Element.In_Prologue,
-              Tree_Access => My_Tree.Get_Position (Tree.all));
+              Tree_Access => Tree.Get_Position);
       when Xml_Parser.Text =>
         N := (Kind => Xml_Parser.Text,
               Magic => Element.Magic,
               In_Prologue => Element.In_Prologue,
-              Tree_Access => My_Tree.Get_Position (Tree.all));
+              Tree_Access => Tree.Get_Position);
       when Xml_Parser.Pi =>
         N := (Kind => Xml_Parser.Pi,
               Magic => Element.Magic,
               In_Prologue => Element.In_Prologue,
-              Tree_Access => My_Tree.Get_Position (Tree.all));
+              Tree_Access => Tree.Get_Position);
       when Xml_Parser.Comment =>
         N := (Kind => Xml_Parser.Comment,
               Magic => Element.Magic,
               In_Prologue => Element.In_Prologue,
-              Tree_Access => My_Tree.Get_Position (Tree.all));
+              Tree_Access => Tree.Get_Position);
       when  Xml_Parser.Attribute =>
         -- Attribute
         Trace ("Expecting kind element or text or comment, found attribute");
@@ -945,32 +943,32 @@ package body Xml_Parser is
     Cell : My_Tree_Cell := Get_Cell (Tree, Node);
     N : Node_Type;
   begin
-    if not My_Tree.Has_Brother (Tree.all, not Next) then
+    if not Tree.Has_Brother (not Next) then
       raise No_Brother;
     end if;
-    My_Tree.Move_Brother (Tree.all, not Next);
-    My_Tree.Read (Tree.all, Cell);
+    Tree.Move_Brother (not Next);
+    Tree.Read (Cell);
     case Cell.Kind is
       when Xml_Parser.Element =>
         N := (Kind =>  Xml_Parser.Element,
               Magic => Node.Magic,
               In_Prologue => Node.In_Prologue,
-              Tree_Access => My_Tree.Get_Position (Tree.all));
+              Tree_Access => Tree.Get_Position);
       when Xml_Parser.Text =>
         N := (Kind => Xml_Parser.Text,
               Magic => Node.Magic,
               In_Prologue => Node.In_Prologue,
-              Tree_Access => My_Tree.Get_Position (Tree.all));
+              Tree_Access => Tree.Get_Position);
       when Xml_Parser.Pi =>
         N := (Kind => Xml_Parser.Pi,
               Magic => Node.Magic,
               In_Prologue => Node.In_Prologue,
-              Tree_Access => My_Tree.Get_Position (Tree.all));
+              Tree_Access => Tree.Get_Position);
       when Xml_Parser.Comment =>
         N := (Kind => Xml_Parser.Comment,
               Magic => Node.Magic,
               In_Prologue => Node.In_Prologue,
-              Tree_Access => My_Tree.Get_Position (Tree.all));
+              Tree_Access => Tree.Get_Position);
       when  Xml_Parser.Attribute =>
         -- Attribute
         Trace ("Expecting kind element or text or comment, found attribute");
@@ -987,16 +985,16 @@ package body Xml_Parser is
     Cell : My_Tree_Cell := Get_Cell (Tree, Node);
     N : Node_Type;
   begin
-    if not My_Tree.Has_Father (Tree.all) then
+    if not Tree.Has_Father then
       raise No_Parent;
     end if;
-    My_Tree.Move_Father (Tree.all);
-    My_Tree.Read (Tree.all, Cell);
+    Tree.Move_Father;
+    Tree.Read (Cell);
     if Cell.Kind = Xml_Parser.Element then
       N := (Kind =>  Xml_Parser.Element,
             Magic => Node.Magic,
             In_Prologue => Node.In_Prologue,
-            Tree_Access => My_Tree.Get_Position (Tree.all));
+            Tree_Access => Tree.Get_Position);
     else
       -- Attribute or text or comment as parent of something!
       Trace ("Expecting kind element, found " & Cell.Kind'Img);
@@ -1009,7 +1007,7 @@ package body Xml_Parser is
                     Node : Node_Type) return Boolean is
     Tree : constant Tree_Acc := Get_Tree (Ctx, Node);
   begin
-    return not My_Tree.Has_Father (Tree.all);
+    return not Tree.Has_Father;
   end Is_Root;
 
    -- TEXT

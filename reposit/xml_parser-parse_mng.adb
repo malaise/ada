@@ -515,7 +515,7 @@ package body Parse_Mng  is
       return;
     end if;
     Children.Is_Empty := False;
-    My_Tree.Read (Ctx.Elements.all, Cell);
+    Ctx.Elements.Read (Cell);
     case Cell.Kind is
       when Element =>
         Dtd.Add_Current_Element (Children.Children, Cell.Name);
@@ -582,14 +582,14 @@ package body Parse_Mng  is
     if Ok then
       -- Parse xml directive: on a dummy child of prologue
       Dummy.Line_No := 0;
-      if My_Tree.Is_Empty (Ctx.Prologue.all) then
-        My_Tree.Insert_Father (Ctx.Prologue.all, Dummy);
+      if Ctx.Prologue.Is_Empty then
+        Ctx.Prologue.Insert_Father (Dummy);
       else
-        My_Tree.Insert_Child (Ctx.Prologue.all, Dummy, False);
+        Ctx.Prologue.Insert_Child (Dummy, False);
       end if;
       Parse_Attributes (Ctx, Dtd, True);
       Check_Xml_Attributes (Ctx, False);
-      My_Tree.Delete_Tree (Ctx.Prologue.all);
+      Ctx.Prologue.Delete_Tree;
       Trace ("Ext parsed xml instruction");
       Util.Skip_Separators (Ctx.Flow);
     end if;
