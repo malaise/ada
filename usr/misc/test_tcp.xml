@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="Utf-8"?>
-<!DOCTYPE Channels SYSTEM "Channels.dtd">
+<!DOCTYPE Channels SYSTEM "../../reposit/Channels.dtd">
 
 <Channels>
   <Channel Name="test_tcp">
-    <Host>ulysse</Host>
-    <Host>penelope</Host>
-    <Host>telemaque</Host>
+    <Host>uc1</Host>
+    <Host>uc2</Host>
+    <Host>uc3</Host>
+    <Host>uc4</Host>
+    <Host>uc5</Host>
+    <Host>uc6</Host>
+    <Host>uc7</Host>
+    <Host>plt2</Host>
+    <Host>fs1</Host>
   </Channel>
 </Channels>
