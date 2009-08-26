@@ -14,7 +14,7 @@ package body Dates is
 
   -- Reference time
   Ref_Cal_Time : constant Ada.Calendar.Time
-               := Ada.Calendar.Time_Of (1960, 01, 01, 0.0);
+               := Ada.Calendar.Time_Of (1970, 01, 01, 0.0);
 
 
   function Clock return Item_Rec is
