@@ -46,7 +46,7 @@ while [ "$1" != "" ] ; do
 done
 
 if [ "$MODE" = "channel" ] ; then
-  export CHANNEL="-ntest_tcp -cdictio.chn"
+  export CHANNEL="-ntest_tcp -cdictio.xml"
 else
   export CHANNEL="-ntest_udp -btest_ipm"
 fi
