@@ -1,3 +1,4 @@
+-- Executes a command (fork/exec) and retrieves its outputs
 with Ada.Strings.Unbounded;
 with Dynamic_List;
 package Command is

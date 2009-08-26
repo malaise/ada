@@ -3,7 +3,7 @@ package Pattern is
 
   -- Look successively in a rule (set of patterns) to find a pattern
   --   with which a given string matches.
-  type Rule_No is private;
+  type Rule_No is tagged private;
   function Image (Rule : Rule_No) return String;
 
   -- A pattern is a list of terms separated by spaces or tabs
@@ -114,7 +114,7 @@ private
   type Rule_No_Range is new Natural;
   subtype Valid_Rule_No_Range is Rule_No_Range range 1 .. Rule_No_Range'Last;
   -- Valid numbers are positive
-  type Rule_No is record
+  type Rule_No is tagged record
     No : Rule_No_Range := 0;
   end record;
   No_Rule_No : constant Rule_No := (No => 0);

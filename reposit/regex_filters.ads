@@ -3,7 +3,7 @@
 with Dynamic_List, Regular_Expressions;
 package Regex_Filters is
 
-  type Regex_Filter is limited private;
+  type Regex_Filter is tagged limited private;
 
   -- Append the regex Criteria and the success condition Match to the Filter
   Invalid_Regex : exception;
