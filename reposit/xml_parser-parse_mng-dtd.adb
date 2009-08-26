@@ -997,14 +997,14 @@ package body Dtd is
     else
       -- File name
       Trace ("Dtd parsing file " & Asu_Ts (File_Name));
+      Ctx.Flow.Curr_Flow.File := new Text_Char.File_Type;
+      Ctx.Flow.Files.Push (Ctx.Flow.Curr_Flow.File);
+      File_Mng.Open (Asu_Ts (File_Name), Ctx.Flow.Curr_Flow.File.all);
       Ctx.Flow.Curr_Flow.Is_File := True;
       Ctx.Flow.Curr_Flow.Kind := Dtd_Flow;
       Ctx.Flow.Curr_Flow.Name := File_Name;
       Ctx.Flow.Curr_Flow.Line := 1;
       Ctx.Flow.Curr_Flow.Same_Line := False;
-      Ctx.Flow.Curr_Flow.File := new Text_Char.File_Type;
-      Ctx.Flow.Files.Push (Ctx.Flow.Curr_Flow.File);
-      File_Mng.Open (Asu_Ts (File_Name), Ctx.Flow.Curr_Flow.File.all);
       Parse (Ctx, Adtd, True);
       Reset (Ctx.Flow.Curr_Flow);
     end if;

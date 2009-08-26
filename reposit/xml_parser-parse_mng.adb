@@ -559,14 +559,14 @@ package body Parse_Mng  is
     Util.Push_Flow (Ctx.Flow);
     -- Init Flow
     File_Name := Build_Full_Name (Uri, Ctx.Flow.Curr_Flow.Name);
+    Ctx.Flow.Curr_Flow.File := new Text_Char.File_Type;
+    Ctx.Flow.Files.Push (Ctx.Flow.Curr_Flow.File);
+    File_Mng.Open (Asu_Ts (File_Name), Ctx.Flow.Curr_Flow.File.all);
     Ctx.Flow.Curr_Flow.Is_File := True;
     Ctx.Flow.Curr_Flow.Kind := Ext_Flow;
     Ctx.Flow.Curr_Flow.Name := Uri;
     Ctx.Flow.Curr_Flow.Line := 1;
     Ctx.Flow.Curr_Flow.Same_Line := False;
-    Ctx.Flow.Curr_Flow.File := new Text_Char.File_Type;
-    Ctx.Flow.Files.Push (Ctx.Flow.Curr_Flow.File);
-    File_Mng.Open (Asu_Ts (File_Name), Ctx.Flow.Curr_Flow.File.all);
 
     -- Parse
     Util.Guess_Encoding (Ctx.Flow);

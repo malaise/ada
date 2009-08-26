@@ -213,21 +213,23 @@ package body Util is
     if Put_Line_No /= 0 then
       Asu.Append (Err_Msg, " at line" & Put_Line_No'Img);
     end if;
-    if Flow.Curr_Flow.Kind /= Xml_Flow then
-      -- Dtd or external entity
-      if Put_Line_No /= 0 then
-        Asu.Append (Err_Msg, " of");
-      else
-        Asu.Append (Err_Msg, " in");
-      end if;
-      if Flow.Curr_Flow.Kind = Dtd_Flow then
+    -- Xml, Dtd or external entity
+    if Put_Line_No /= 0 then
+      Asu.Append (Err_Msg, " of");
+    else
+      Asu.Append (Err_Msg, " in");
+    end if;
+    case Flow.Curr_Flow.Kind is
+      when Xml_Flow =>
+        Asu.Append (Err_Msg, " xml");
+      when Dtd_Flow =>
         Asu.Append (Err_Msg, " dtd");
-      else
+      when Ext_Flow =>
         Asu.Append (Err_Msg, " external entity");
-      end if;
-      if Flow.Curr_Flow.Name /= Asu_Null then
-        Asu.Append (Err_Msg, " " & Flow.Curr_Flow.Name);
-      end if;
+    end case;
+    if Flow.Curr_Flow.Kind /= Xml_Flow
+    and then Flow.Curr_Flow.Name /= Asu_Null then
+      Asu.Append (Err_Msg, " " & Flow.Curr_Flow.Name);
     end if;
     Asu.Append (Err_Msg, ": " & Msg & ".");
     -- The error message is attached to the exception
