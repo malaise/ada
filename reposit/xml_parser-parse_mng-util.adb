@@ -359,6 +359,8 @@ package body Util is
     if Char = Ada.Characters.Latin_1.Cr then
       Char := Ada.Characters.Latin_1.Lf;
       Flow.Curr_Flow.Prev_Char_Was_Cr := True;
+    else
+      Flow.Curr_Flow.Prev_Char_Was_Cr := False;
     end if;
 
     My_Circ.Push (Flow.Circ, Char);
