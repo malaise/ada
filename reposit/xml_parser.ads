@@ -363,7 +363,7 @@ private
   package My_Circ is new Queues.Circ (Max_Buf_Len, Character);
 
   -- Current flow is...
-  type Flow_Kind_List is (Xml_Flow, Dtd_Flow, Ext_Flow);
+  type Flow_Kind_List is (Xml_Flow, Dtd_Flow, Int_Dtd_Flow, Ext_Flow);
   -- Current encoding
   type Encod_List is (Utf8, Utf16_Le, Utf16_Be);
   -- Number of single UTF8 bytes re-inserted in flow when in UTF16

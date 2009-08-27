@@ -216,13 +216,22 @@ package body Entity_Mng is
             raise Entity_Forbidden;
           end if;
         end if;
-      when Ref_Dtd =>
+      when Ref_Dtd | Ref_Dtd_Mark =>
         if not Parameter then
           Trace ("Forbidden non parameter entity reference " & Asu_Ts (Name)
               & " in dtd");
           raise Entity_Forbidden;
         end if;
     end case;
+
+    -- No parameter entity referenc with internal Dtd subset markups
+    if Parameter
+    and then Ctx.Flow.Curr_Flow.Kind = Int_Dtd_Flow
+    and then (Context = Ref_Dtd_Mark or else Context = Ref_Entity) then
+      Trace ("Forbidden parameter entity reference " & Asu_Ts (Name)
+           & " within markup in internal dtd subset");
+      raise Entity_Forbidden;
+    end if;
 
     -- Expand the content of external parsed entity
     if Entity.Parsed and then not Entity.Internal then

@@ -220,7 +220,7 @@ package body Util is
       Asu.Append (Err_Msg, " in");
     end if;
     case Flow.Curr_Flow.Kind is
-      when Xml_Flow =>
+      when Xml_Flow | Int_Dtd_Flow =>
         Asu.Append (Err_Msg, " xml");
       when Dtd_Flow =>
         Asu.Append (Err_Msg, " dtd");
@@ -915,56 +915,45 @@ package body Util is
                       Preserve_Spaces : in Boolean) is
     Char : Character;
     Found : Boolean;
-    S1, S2 : Asu_Us;
+    S1 : Asu_Us;
     use type Asu_Us;
   begin
-    if Text = Asu_Null then
+
+    if Text = Asu_Null or else Context /= Ref_Dtd or else Preserve_Spaces then
       return;
     end if;
 
-    S1 := Text;
-    -- Skip Cr
-    for I in 1 .. Asu.Length (S1) loop
-      Char := Asu.Element (S1, I);
-      if Char /= Ada.Characters.Latin_1.Cr then
-        Asu.Append (S2, Char);
+    -- Replace "{ Lf | Tab | Space }" by a space
+    S1 := Asu_Null;
+    Found := False;
+    for I in 1 .. Asu.Length (Text) loop
+      Char := Asu.Element (Text, I);
+      if not Found then
+        -- Not skipping yet, replace any separator by space
+        if Is_Separator (Char) then
+          Asu.Append (S1, Space);
+          Found := True;
+        else
+          Asu.Append (S1, Char);
+        end if;
+      else
+        -- Skipping: skip all separators
+        if not Is_Separator (Char) then
+          Asu.Append (S1, Char);
+          Found := False;
+        end if;
       end if;
     end loop;
-
-    if not In_Dtd(Context) and then not Preserve_Spaces then
-      -- Replace "{ Lf | Tab | Space }" by a space
-      S1 := S2;
-      S2 := Asu_Null;
-      Found := False;
-      for I in 1 .. Asu.Length (S1) loop
-        Char := Asu.Element (S1, I);
-        if not Found then
-          -- Not skipping yet, replace any separator by sapce
-          if Is_Separator (Char) then
-            Asu.Append (S2, Space);
-            Found := True;
-          else
-            Asu.Append (S2, Char);
-          end if;
-        else
-          -- Skipping: skip all separators
-          if not Is_Separator (Char) then
-            Asu.Append (S2, Char);
-            Found := False;
-          end if;
-        end if;
-      end loop;
-      -- Remove heading space and trailing space if any
-      if Asu.Element (S2, 1) = ' ' then
-        Asu.Delete (S2, 1, 1);
-      end if;
-      if Asu.Length (S2) /= 0
-      and then Asu.Element (S2, Asu.Length (S2)) = ' ' then
-        Asu.Delete (S2, Asu.Length (S2), Asu.Length (S2));
-      end if;
+    -- Remove heading space and trailing space if any
+    if Asu.Element (S1, 1) = ' ' then
+      Asu.Delete (S1, 1, 1);
+    end if;
+    if Asu.Length (S1) /= 0
+    and then Asu.Element (S1, Asu.Length (S1)) = ' ' then
+      Asu.Delete (S1, Asu.Length (S1), Asu.Length (S1));
     end if;
     -- Done
-    Text := S2;
+    Text := S1;
   exception
     when String_Mng.Delimiter_Mismatch =>
       Error (Ctx.Flow, "Invalid entity reference in text " & Asu_Ts (Text));

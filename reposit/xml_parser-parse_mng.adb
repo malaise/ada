@@ -5,12 +5,14 @@ separate (Xml_Parser)
 package body Parse_Mng  is
 
   -- Context where a reference to entity is resolved
-  -- In Xml content, in attribute value, in entity value, in dtd
-  type Context_List is (Ref_Xml, Ref_Attribute, Ref_Entity, Ref_Dtd);
+  -- In Xml content, in attribute value, in entity value,
+  --  in dtd (outside or inside markup)
+  type Context_List is (Ref_Xml, Ref_Attribute,
+                        Ref_Entity, Ref_Dtd, Ref_Dtd_Mark);
   -- Is a context in dtd
   function In_Dtd (Context : Context_List) return Boolean is
   begin
-    return Context = Ref_Entity or else Context = Ref_Dtd;
+    return Context >= Ref_Entity;
   end In_Dtd;
 
   -- Expand the content of an external parsed entity
@@ -898,6 +900,7 @@ package body Parse_Mng  is
         Move_Del (Ctx, Tree_Mng.Is_Empty (Ctx.Elements.all));
         Trace ("Parsed comment " & Asu_Ts (Comment));
       else
+        -- In Dtd or comments not to be parsed
         Trace ("Skipped comment <!--" & Asu_Ts (Comment) & "-->");
       end if;
       return;
