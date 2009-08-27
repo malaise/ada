@@ -222,13 +222,16 @@ package body Entity_Mng is
               & " in dtd");
           raise Entity_Forbidden;
         end if;
-        -- Include as PE => return ' ' & Value & ' '
-        Got := Util.Space & Got & Util.Space;
     end case;
 
     -- Expand the content of external parsed entity
     if Entity.Parsed and then not Entity.Internal then
       Expand_External_Entity (Ctx, Dtd, Name, Got, Got);
+    end if;
+
+    if Context = Ref_Dtd then
+      -- Include as PE => return ' ' & Value & ' '
+      Got := Util.Space & Got & Util.Space;
     end if;
 
   exception

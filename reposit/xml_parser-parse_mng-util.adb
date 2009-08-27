@@ -347,8 +347,20 @@ package body Util is
 
   -- Get character and store in queue
   procedure Get (Flow : in out Flow_Type; Char : out Character) is
+
   begin
     Get_Char (Flow, Char);
+    -- Skip CRs: Replace CrLf by Lf, or else Cr by Lf
+    if Char = Ada.Characters.Latin_1.Lf
+    and then Flow.Curr_Flow.Prev_Char_Was_Cr then
+      -- Prev Cr already gave a Lf, skip this one
+      Get_Char (Flow, Char);
+    end if;
+    if Char = Ada.Characters.Latin_1.Cr then
+      Char := Ada.Characters.Latin_1.Lf;
+      Flow.Curr_Flow.Prev_Char_Was_Cr := True;
+    end if;
+
     My_Circ.Push (Flow.Circ, Char);
     if Flow.Recording then
       if Flow.Skip_Recording <= 0 then
@@ -733,7 +745,7 @@ package body Util is
             Starter := Ent_Char;
           end if;
         elsif Char = Start then
-          if Context = Ref_Xml then
+          if Context = Ref_Xml or else Context = Ref_Dtd then
             -- A '<' in expanded content
             Start_Index := I;
             return;
@@ -793,7 +805,7 @@ package body Util is
       -- Skip when this is a character entity or
       --  in Dtd and too short to get an expansion (< 3 chars)
       if Starter /= Ent_Char
-      and then (not In_Dtd (Context) or else Asu.Length (Val) >= 3) then
+      and then (Context /= Ref_Entity or else Asu.Length (Val) >= 3) then
         Stack_Empty := Name_Stack.Is_Empty;
         if not Stack_Empty then
           -- Push this entity name in the stack

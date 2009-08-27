@@ -674,6 +674,9 @@ package body Dtd is
         -- Parsed external entity, the value is the URI
         Value := System_Id;
       end if;
+    elsif Parameter and then not Internal then
+      -- Parsed external parameter entity, the value is the URI
+      Value := System_Id;
     end if;
 
     -- Must stop now
@@ -885,6 +888,7 @@ package body Dtd is
     Found : Boolean;
     Entity_Value : Asu_Us;
     Char : Character;
+    Is_Recorded : Boolean;
     use type Asu_Us;
   begin
     if External and then Ctx.Flow.Curr_Flow.Is_File then
@@ -920,8 +924,12 @@ package body Dtd is
           -- Expand
           Trace ("Dtd expanding parameter entity " & Asu_Ts (Entity_Value));
           Util.Expand_Name (Ctx, Adtd, Entity_Value, Ref_Dtd);
+          -- Suspend recording for the entity replacement
+          Is_Recorded := Ctx.Flow.Recording;
+          Ctx.Flow.Recording := False;
           -- Parse
           Switch_Input (Ctx, Adtd, Entity_Value);
+          Ctx.Flow.Recording := Is_Recorded;
         end if;
       end if;
       if not Found and then Adtd.In_Include then

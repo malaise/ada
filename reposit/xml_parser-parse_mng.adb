@@ -547,6 +547,7 @@ package body Parse_Mng  is
     Ok : Boolean;
     Char : Character;
     Dummy : My_Tree_Cell;
+    Is_Recorded : Boolean;
 
     use type Asu_Us;
   begin
@@ -567,6 +568,9 @@ package body Parse_Mng  is
     Ctx.Flow.Curr_Flow.Name := Uri;
     Ctx.Flow.Curr_Flow.Line := 1;
     Ctx.Flow.Curr_Flow.Same_Line := False;
+    -- Suspend recording
+    Is_Recorded := Ctx.Flow.Recording;
+    Ctx.Flow.Recording := False;
 
     -- Parse
     Util.Guess_Encoding (Ctx.Flow);
@@ -602,6 +606,7 @@ package body Parse_Mng  is
     -- Done: restore flow
     Reset (Ctx.Flow.Curr_Flow);
     Util.Pop_Flow (Ctx.Flow);
+    Ctx.Flow.Recording := Is_Recorded;
   exception
     when File_Error =>
      Util.Error (Ctx.Flow, "Cannot open external entity file "

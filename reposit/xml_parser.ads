@@ -387,6 +387,8 @@ private
     -- Remaining bytes when UTF8 characters
     -- are re-inserted in a UTF16 flow
     Nb_Bytes : Bytes_Range := 0;
+    -- Prev char read was a Cr
+    Prev_Char_Was_Cr : Boolean := False;
     -- If Flow is a file (Text_Char)
     File : File_Access;
     -- If Flow is a String
