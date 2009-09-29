@@ -656,7 +656,7 @@ package body Parse_Mng  is
     Char : Character;
     Name, Value : Asu_Us;
     Ok : Boolean;
-    Str3 : String (1 .. 3);
+    Str_Xml : String (1 .. 5);
     In_Prologue : constant Boolean := Tree_Mng.Is_Empty (Ctx.Elements.all);
   begin
     -- See if this is the xml directive
@@ -690,13 +690,14 @@ package body Parse_Mng  is
       end if;
     end if;
 
-    -- Xml not allowed in prologue of elements
-    Util.Get (Ctx.Flow, Str3);
-    if Lower_Str (Str3) = "xml" then
+    -- Xml not allowed in prologue of elements, see if "xml?>" or "xml "
+    Util.Get (Ctx.Flow, Str_Xml);
+    if Lower_Str (Str_Xml) = "xml" & Util.Instruction & Util.Stop
+    or else Lower_Str (Str_Xml(1 .. 4)) = "xml" & Util.Space then
       Util.Error (Ctx.Flow, "Invalid processing instruction");
     else
       -- OK, go on
-      Util.Unget (Ctx.Flow, 3);
+      Util.Unget (Ctx.Flow, Str_Xml'Length);
     end if;
 
     -- Parse instruction until ? or separator
