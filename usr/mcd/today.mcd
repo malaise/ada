@@ -16,8 +16,8 @@ clock dateof d popr
 
 # Replace TOS (date) by day of week, 0 for monday
 [
-# Reference date was a Friday
-4 + 7 %
+# Reference date was a Thursday: 0 -> 3, 1 -> 2...
+3 + 7 %
 ] D popr
 
 # Replace TOS (date) by its week number
