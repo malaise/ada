@@ -20,7 +20,9 @@ procedure T_Xml_String is
   If_Vers_Key : constant String := "Interface_Version";
   If_Vers_Crit : constant String := "([0-9]+)\.([0-9]+)";
   If_Vers_Ok : Boolean := False;
+  Dtd_Error : exception;
   Interface_Error : exception;
+  Error_Msg : Asu_Us;
 
   File_List : Dir_Mng.File_List_Mng.List_Type;
   File_Entry : Dir_Mng.File_Entry_Rec;
@@ -232,6 +234,7 @@ procedure T_Xml_String is
     Ctx.Clean;
   end Do_One;
 
+  use type Asu_Us;
 begin
   if Argument.Get_Nbre_Arg = 0 then
     Usage;
@@ -252,15 +255,20 @@ begin
     begin
       if I mod 2 = 1 then
         Ada.Text_Io.Put_Line ("Parsing file " & File_Name);
-        Xml_Parser.Parse_Dtd_File (File_Name, Dtds(I));
+        Xml_Parser.Parse_Dtd_File (File_Name, True, Dtds(I), Error_Msg);
       else
         Ada.Text_Io.Put_Line ("Parsing string of file " & File_Name);
-        Xml_Parser.Parse_Dtd_String (Read_File (File_Name), Dtds(I));
+        Xml_Parser.Parse_Dtd_String (Read_File (File_Name), False, Dtds(I),
+                                     Error_Msg);
+      end if;
+      if Error_Msg /= Asu.Null_Unbounded_String then
+        Basic_Proc.Put_Line_Error (
+             "Error. Invalid Dtd: " & Asu.To_String (Error_Msg));
+        raise Dtd_Error;
       end if;
     end;
   end loop;
   Ada.Text_Io.Put_Line (Separator);
-
 
   if Argument.Get_Nbre_Arg = 1
   and then Upper_Str (Argument.Get_Parameter) = "RND" then
