@@ -60,6 +60,8 @@ package body Parse_Mng  is
     ------------------
     -- Check if char is a letter
     function Is_Letter (Char : Character) return Boolean;
+
+    function Is_Valid_In_Name (Char : Character) return Boolean;
     -- Check that Name is valid
     function Name_Ok (Name : Asu_Us;
                       Allow_Token : Boolean := False) return Boolean;
@@ -70,6 +72,9 @@ package body Parse_Mng  is
     -- Report an error, raises Parsing_Error.
     procedure Error (Flow : in out Flow_Type;
                      Msg : in String; Line_No : in Natural := 0);
+    -- Report a warning, raises Parsing_Error.
+    procedure Warning (Flow : in out Flow_Type;
+                       Msg : in String; Line_No : in Natural := 0);
 
     ----------------------
     -- Input characters --

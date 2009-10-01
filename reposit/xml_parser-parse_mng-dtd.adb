@@ -329,6 +329,11 @@ package body Dtd is
       Adtd.Info_List.Read (Info, Info);
       Trace ("Dtd retrieved previous ATTLIST -> " & Asu_Ts (Info.Name)
            & " " & Asu_Ts (Info.List));
+      if Ctx.Warnings then
+        Util.Warning (Ctx.Flow, "Attlist already defined at line "
+           & Line_Image (Info.Line)
+           & " for element " & Asu_Ts (Elt_Name));
+      end if;
     end if;
 
     -- Parse Attlist
@@ -532,7 +537,7 @@ package body Dtd is
         if String_Mng.Locate (Asu_Ts (Info.List), Info_Sep & Info_Sep & "N")
            /= 0 then
           Util.Error (Ctx.Flow, "Notation already defined for element "
-                               & Asu_Ts (Info.Name));
+                               & Asu_Ts (Elt_Name));
         end if;
         if Typ_Char = 'N' then
           -- Append Elt##Attr# to the list of notation attributes
@@ -549,9 +554,14 @@ package body Dtd is
         Asu.Append (Info.List, Att_Name
                   & Info_Sep & Info_Sep & Typ_Char & Def_Char & Info_Sep);
       else
+        -- This attribute is already defined (for this element)
         Trace ("Dtd discarding duplicate ATTLIST -> " & Asu_Ts (Info.Name)
              & " " & Asu_Ts (Att_Name) & Info_Sep & Info_Sep
              & Typ_Char & Def_Char);
+        if Ctx.Warnings then
+          Util.Warning (Ctx.Flow, "Attribute " & Asu_Ts (Att_Name)
+             & " already defined for element " & Asu_Ts (Elt_Name));
+        end if;
       end if;
     end loop;
     -- Attlist is ended: store
@@ -991,6 +1001,9 @@ package body Dtd is
     Util.Pop_Flow (Ctx.Flow);
   end Switch_Input;
 
+  procedure Check_Warnings (Ctx  : in out Ctx_Type;
+                            Adtd : in out Dtd_Type);
+
   -- Parse a dtd (either a external file or internal if name is empty)
   procedure Parse (Ctx : in out Ctx_Type;
                    Adtd : in out Dtd_Type;
@@ -1023,11 +1036,15 @@ package body Dtd is
       Ctx.Flow.Curr_Flow.Line := 1;
       Ctx.Flow.Curr_Flow.Same_Line := False;
       Parse (Ctx, Adtd, True);
-      Reset (Ctx.Flow.Curr_Flow);
     end if;
     -- Dtd is now valid
     Trace ("Dtd parsed dtd");
     Adtd.Set := True;
+    if Ctx.Warnings then
+      Trace ("Dtd checking warnings");
+      Check_Warnings (Ctx, Adtd);
+      Trace ("Dtd checked warnings");
+    end if;
   exception
     when File_Error =>
       -- Can only be raised if not internal nor string flow
@@ -1147,6 +1164,107 @@ package body Dtd is
     Iter.Del;
 
   end Final_Dtd_Check;
+
+  -- Check for warnings
+  type Elt_Ref_Type is record
+    Father, Child : Asu_Us;
+    Line : Natural;
+  end record;
+  package Us_Pool_Mng is new Unlimited_Pool (Elt_Ref_Type);
+  procedure Check_Warnings (Ctx  : in out Ctx_Type;
+                            Adtd : in out Dtd_Type) is
+    Info : Info_Rec;
+    Moved : Boolean;
+    Info_Kind : String (1 .. 3);
+    Child_Kind, C : Character;
+    In_Name : Boolean;
+    Elt_Ref : Elt_Ref_Type;
+    Pool : Us_Pool_Mng.Pool_Type;
+    Found : Boolean;
+    use type Asu_Us;
+  begin
+    -- Check that all elements referenced as children or in attlist are defined
+    if Adtd.Info_List.Is_Empty then
+      return;
+    end if;
+
+    -- Push in pool a list of all referenced elements
+    -- Read all Infos
+    Adtd.Info_List.Rewind;
+    loop
+      Adtd.Info_List.Read (Info, Moved => Moved);
+      Info_Kind := Asu.Slice (Info.Name, 1, 3);
+      if Info_Kind = "Elt" then
+        -- Elt directive, need to parse children if Mixed of Children
+        Child_Kind := Asu.Element (Info.List, 1);
+        if Child_Kind = 'M' or else Child_Kind = 'C' then
+          Child_Kind := 'C';
+        else
+          Child_Kind := 'X';
+        end if;
+      elsif Info_Kind = "Atl" then
+        Child_Kind := 'A';
+      else
+        -- Att => discard
+        Child_Kind := 'X';
+      end if;
+
+      if Child_Kind = 'C' then
+        -- This is an element with a (mixed or not) list of children
+        -- Push an entry for each child
+        -- Save name (skip "Elt#")
+        Elt_Ref.Father := Asu_Tus (Asu.Slice (
+                   Info.Name, 5, Asu.Length (Info.Name)) );
+        Elt_Ref.Line := Info.Line;
+        Elt_Ref.Child := Asu_Null;
+        -- Parse children names from list (skip first char)
+        In_Name := False;
+        for I in 2 .. Asu.Length (Info.List) loop
+          C := Asu.Element (Info.List, I);
+          if Util.Is_Valid_In_Name (C) then
+            Asu.Append (Elt_Ref.Child, C);
+            In_Name := True;
+          else
+            if In_Name then
+              -- End of name, completed
+              -- Push this child
+              Pool.Push (Elt_Ref);
+              Elt_Ref.Child := Asu_Null;
+            end if;
+            In_Name := False;
+          end if;
+        end loop;
+
+      elsif Child_Kind = 'A' then
+        -- This is a attlist, push an etry with empty Father
+        Elt_Ref.Father := Asu_Null;
+        Elt_Ref.Line := Info.Line;
+        Elt_Ref.Child := Asu_Tus (Asu.Slice (
+                   Info.Name, 5, Asu.Length (Info.Name)) );
+        Pool.Push (Elt_Ref);
+      end if;
+      exit when not Moved;
+    end loop;
+
+    -- Check that each entry of the pool exists in list as Elt
+    while not Pool.Is_Empty loop
+      Pool.Pop (Elt_Ref);
+      Info.Name := "Elt" & Info_Sep & Elt_Ref.Child;
+      Adtd.Info_List.Search (Info, Found);
+      if not Found then
+        if Elt_Ref.Father /= Asu_Null then
+          Util.Warning (Ctx.Flow,
+            "Element " & Asu_Ts (Elt_Ref.Father) & " references unknown child "
+                       &  Asu_Ts (Elt_Ref.Child),
+            Elt_Ref.Line);
+        else
+          Util.Warning (Ctx.Flow,
+            "Undefined element " & Asu_Ts (Elt_Ref.Child) & " used in ATTLIST",
+            Elt_Ref.Line);
+        end if;
+      end if;
+    end loop;
+  end Check_Warnings;
 
   -- Replace "##" by "," then suppress "#"
   function Strip_Sep (Us : in Asu_Us) return String is

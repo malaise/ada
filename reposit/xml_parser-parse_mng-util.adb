@@ -198,8 +198,10 @@ package body Util is
   -- Separator for current line of input
   Lf : constant Character := Ada.Characters.Latin_1.Lf;
 
-  procedure Error (Flow : in out Flow_Type;
-                   Msg : in String; Line_No : in Natural := 0) is
+  procedure Raise_Error (Flow : in out Flow_Type;
+                         Is_Error : in Boolean;
+                         Msg : in String;
+                         Line_No : in Natural) is
     Err_Msg : Asu_Us;
     Put_Line_No : Natural := 0;
     use type Asu_Us;
@@ -209,7 +211,12 @@ package body Util is
     else
       Put_Line_No := Line_No;
     end if;
-    Err_Msg := Asu_Tus ("Xml_Parse error");
+    Err_Msg := Asu_Tus ("Xml_Parser");
+    if Is_Error then
+      Asu.Append (Err_Msg, " error");
+    else
+      Asu.Append (Err_Msg, " warning");
+    end if;
     if Put_Line_No /= 0 then
       Asu.Append (Err_Msg, " at line" & Put_Line_No'Img);
     end if;
@@ -237,7 +244,18 @@ package body Util is
     Trace ("Raising Parse_Error with " & Asu_Ts (Err_Msg));
     Exception_Messenger.Raise_Exception (Parse_Error'Identity,
                                          Asu_Ts (Err_Msg));
+  end Raise_Error;
+
+  procedure Error (Flow : in out Flow_Type;
+                   Msg : in String; Line_No : in Natural := 0) is
+  begin
+    Raise_Error (Flow, True, Msg, Line_No);
   end Error;
+  procedure Warning (Flow : in out Flow_Type;
+                   Msg : in String; Line_No : in Natural := 0) is
+  begin
+    Raise_Error (Flow, False, Msg, Line_No);
+  end Warning;
 
   -- Start recording
   procedure Start_Recording (Flow : in out Flow_Type) is

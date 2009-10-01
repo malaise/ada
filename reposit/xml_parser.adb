@@ -3,7 +3,7 @@ with Environ, Basic_Proc, Rnd, Exception_Messenger, Directory;
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "6";
+  Minor_Version : constant String := "0";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -266,6 +266,7 @@ package body Xml_Parser is
                    File_Name : in String;
                    Ok        : out Boolean;
                    Comments  : in Boolean := False;
+                   Warnings  : in Boolean := False;
                    Expand    : in Boolean := True;
                    Use_Dtd   : in Boolean := True;
                    Dtd_File  : in String  := "";
@@ -292,6 +293,7 @@ package body Xml_Parser is
     Ctx.Flow.Curr_Flow.Same_Line := False;
     -- Parse this file
     Ctx.Parse_Comments := Comments;
+    Ctx.Warnings := Warnings;
     Ctx.Expand := Expand;
     Ctx.Use_Dtd := Use_Dtd;
     Ctx.Dtd_File := Asu_Tus (Dtd_File);
@@ -352,6 +354,7 @@ package body Xml_Parser is
     end loop;
 
     Ctx.Parse_Comments := False;
+    Ctx.Warnings := False;
     Ctx.Expand := True;
     Ctx.Use_Dtd := True;
     Ctx.Dtd_File := Asu_Null;
@@ -384,8 +387,30 @@ package body Xml_Parser is
   end Clean;
 
   -- Dtd parsing
-  procedure Parse_Dtd_File (File_Name : in String;
-                            Dtd       : out Dtd_Type) is
+  procedure Parse_Dtd_Internal (Ctx      : in out Ctx_Type;
+                                Dtd      : out Dtd_Type;
+                                Error    : out Asu_Us) is
+  begin
+    Error := Asu_Null;
+    Parse_Mng.Parse_Dtd (Ctx, Dtd);
+    Clean (Ctx);
+  exception
+    when Parse_Occ:Parse_Error =>
+      -- Retrieve and set parsing error message
+      Clean (Ctx);
+      Error := Asu_Tus (
+        Exception_Messenger.Exception_Message(
+          Ada.Exceptions.Save_Occurrence (Parse_Occ)));
+    when Error_Occ:others =>
+      Trace ("Got exception " & Ada.Exceptions.Exception_Name (Error_Occ));
+      raise Internal_Error;
+  end Parse_Dtd_Internal;
+
+  procedure Parse_Dtd_File (
+      File_Name : in String;
+      Warnings  : in Boolean;
+      Dtd       : out Dtd_Type;
+      Error     : out Ada.Strings.Unbounded.Unbounded_String) is
     Ctx : Ctx_Type;
   begin
     Clean_Dtd (Dtd);
@@ -394,12 +419,15 @@ package body Xml_Parser is
     Ctx.Flow.Curr_Flow.Kind := Dtd_Flow;
     Ctx.Flow.Curr_Flow.Name := Build_Full_Name (Asu_Tus (File_Name));
     -- File Name_Error raises File_Error
-    Parse_Mng.Parse_Dtd (Ctx, Dtd);
-    Clean (Ctx);
+    Ctx.Warnings := Warnings;
+    Parse_Dtd_Internal (Ctx, Dtd, Error);
   end Parse_Dtd_File;
 
-  procedure Parse_Dtd_String (Str : in String;
-                              Dtd : out Dtd_Type) is
+  procedure Parse_Dtd_String (
+      Str       : in String;
+      Warnings  : in Boolean;
+      Dtd       : out Dtd_Type;
+      Error     : out Ada.Strings.Unbounded.Unbounded_String) is
     Ctx : Ctx_Type;
   begin
     Clean_Dtd (Dtd);
@@ -410,8 +438,8 @@ package body Xml_Parser is
     Ctx.Flow.Curr_Flow.In_Str := Asu_Tus (Str);
     Ctx.Flow.Curr_Flow.Line := 1;
     Ctx.Flow.Curr_Flow.Same_Line := False;
-    Parse_Mng.Parse_Dtd (Ctx, Dtd);
-    Clean (Ctx);
+    Ctx.Warnings := Warnings;
+    Parse_Dtd_Internal (Ctx, Dtd, Error);
   end Parse_Dtd_String;
 
   -- Clean a dtd
@@ -433,6 +461,7 @@ package body Xml_Parser is
                             Str      : in String;
                             Ok       : out Boolean;
                             Comments : in Boolean := False;
+                            Warnings : in Boolean := False;
                             Expand   : in Boolean := True;
                             Callback : in Parse_Callback_Access := null) is
   begin
@@ -455,6 +484,7 @@ package body Xml_Parser is
     Ctx.Flow.Curr_Flow.Line := 1;
     Ctx.Flow.Curr_Flow.Same_Line := False;
     Ctx.Parse_Comments := Comments;
+    Ctx.Warnings := Warnings;
     Ctx.Expand := Expand;
     Ctx.Callback := Callback;
     Parse_Mng.Parse_Prologue (Ctx);

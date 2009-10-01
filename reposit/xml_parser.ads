@@ -9,7 +9,7 @@ with Queues, Trees, Unique_List, Text_Char, Dynamic_List, Unlimited_Pool;
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "13";
+  Major_Version : constant String := "14";
   function Version return String;
 
   -----------
@@ -123,6 +123,7 @@ package Xml_Parser is
                    File_Name : in String;
                    Ok        : out Boolean;
                    Comments  : in Boolean := False;
+                   Warnings  : in Boolean := False;
                    Expand    : in Boolean := True;
                    Use_Dtd   : in Boolean := True;
                    Dtd_File  : in String  := "";
@@ -141,15 +142,19 @@ package Xml_Parser is
   --------------------
   -- STRING PARSING --
   --------------------
-  -- Parse a Dtd
-  -- may raise Status_Error if Dtd is not clean
-  --           Parse_Error if error while parsing the dtd
+  -- Parse a Dtd, optionally check for some warnings
+  -- Set Error to error/warning string, or empty string if OK
   type Dtd_Type is limited private;
-  procedure Parse_Dtd_File (File_Name : in String;
-                            Dtd       : out Dtd_Type);
-  procedure Parse_Dtd_String (Str : in String;
-                              Dtd : out Dtd_Type);
-  Parse_Error : exception;
+  procedure Parse_Dtd_File (
+      File_Name : in String;
+      Warnings  : in Boolean;
+      Dtd       : out Dtd_Type;
+      Error     : out Ada.Strings.Unbounded.Unbounded_String);
+  procedure Parse_Dtd_String (
+      Str       : in String;
+      Warnings  : in Boolean;
+      Dtd       : out Dtd_Type;
+      Error     : out Ada.Strings.Unbounded.Unbounded_String);
 
   -- Clean a dtd
   procedure Clean_Dtd (Dtd : in out Dtd_Type);
@@ -164,6 +169,7 @@ package Xml_Parser is
                             Str      : in String;
                             Ok       : out Boolean;
                             Comments : in Boolean := False;
+                            Warnings : in Boolean := False;
                             Expand   : in Boolean := True;
                             Callback : in Parse_Callback_Access := null);
 
@@ -171,6 +177,7 @@ package Xml_Parser is
   -- may raise Status_Error if Ctx is clean
   --           End_Error if Ctx has already parsed elements
   --           Parse_Error if Parse_Prologue was not ok
+  Parse_Error : exception;
   procedure Parse_Elements (Ctx      : in out Ctx_Type;
                             Dtd      : in out Dtd_Type;
                             Ok       : out Boolean);
@@ -561,6 +568,8 @@ private
     Flow : Flow_Type;
     -- Parse or skip comments
     Parse_Comments : Boolean := False;
+    -- Check also (and stop) on warnings
+    Warnings : Boolean := False;
     -- Expand or not general entities and attributes with default values
     Expand : Boolean := True;
     -- Use Dtd
