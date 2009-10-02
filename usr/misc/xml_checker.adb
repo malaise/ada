@@ -3,7 +3,7 @@ with Argument, Argument_Parser, Xml_Parser.Generator, Normal, Basic_Proc,
      Text_Line, Sys_Calls, Parser;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V6.2";
+  Version : constant String := "V7.0";
 
   -- Ada.Strings.Unbounded and Ada.Exceptions re-definitions
   package Asu renames Ada.Strings.Unbounded;
@@ -29,6 +29,9 @@ procedure Xml_Checker is
   type Output_Kind_List is (None, Dump, Gen, No_Comment);
   Output_Kind : Output_Kind_List;
 
+  -- Warning detection
+  Warnings : Boolean;
+
   -- Xml_Generator descriptor and format
   Format : Xml_Parser.Generator.Format_Kind_List;
   Width  : Positive;
@@ -51,13 +54,15 @@ procedure Xml_Checker is
     procedure Ple (Str : in String) renames Basic_Proc.Put_Line_Error;
   begin
     Ple ("Usage: " & Argument.Get_Program_Name & "[ { <option> } ] [ { <file> } ]");
-    Ple (" <option> ::= <silent> | <dump> | <raw> | <no_comment> | <width> | <one>");
-    Ple ("            | <expand> | <check_dtd> | <tree> | <help> | <version>");
+    Ple (" <option> ::= <silent> | <dump> | <raw> | <no_comment> | <warnings>");
+    Ple ("            |  <width> | <one> | <expand> | <check_dtd> | <tree>");
+    Ple ("            | <help> | <version>");
     Ple (" <silent>     ::= -s | --silent     -- No output, only exit code");
     Ple (" <dump>       ::= -d | --dump       -- Dump expanded Xml tree");
     Ple (" <raw>        ::= -r | --raw        -- Put all on one line");
     Ple (" <no_comment> ::= -n | --no_comment -- Skip comments");
-    Ple (" <width>      ::= -w <Width> | --width=<Width>");
+    Ple (" <warnings>   ::= -w | --warnings   -- Check for warnings");
+    Ple (" <width>      ::= -W <Width> | --width=<Width>");
     Ple ("                                    -- Put attributes up to Width");
     Ple (" <one>        ::= -1 | --one        -- Put one attribute per line");
     Ple (" <expand>     ::= -e | --expand     -- Expand general entities and");
@@ -68,7 +73,7 @@ procedure Xml_Checker is
     Ple (" <help>       ::= -h | --help       -- Put this help");
     Ple (" <version>    ::= -v | --version    -- Put versions");
     Ple ("Always expands general entities in dump.");
-    Ple ("All options except expand, no_comment and check_dtd are exclusive.");
+    Ple ("All options except expand, no_comment, warnings and check_dtd are exclusive.");
     Ple ("No_comment not allowed on silent, dump and raw modes.");
     Ple ("Empty Dtd leads to skip check of comformance to DTD.");
     Ple ("Default is -w" & Xml_Parser.Generator.Default_Width'Img
@@ -83,14 +88,15 @@ procedure Xml_Checker is
     1 => ('s', Asu_Tus ("silent"), False, False),
     2 => ('d', Asu_Tus ("dump"), False, False),
     3 => ('r', Asu_Tus ("raw"), False, False),
-    4 => ('w', Asu_Tus ("width"), False, True),
+    4 => ('W', Asu_Tus ("width"), False, True),
     5 => ('1', Asu_Tus ("one"), False, False),
     6 => ('h', Asu_Tus ("help"), False, False),
     7 => ('v', Asu_Tus ("version"), False, False),
     8 => ('e', Asu_Tus ("expand"), False, False),
     9 => ('n', Asu_Tus ("no_comment"), False, False),
    10 => ('c', Asu_Tus ("check_dtd"), False, True),
-   11 => ('t', Asu_Tus ("tree"), False, False)
+   11 => ('t', Asu_Tus ("tree"), False, False),
+   12 => ('w', Asu_Tus ("warnings"), False, False)
    );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
@@ -303,6 +309,7 @@ procedure Xml_Checker is
                   (Output_Kind = Gen
                      and then Format /= Xml_Parser.Generator.Raw)
                   or else Output_Kind = Dump,
+               Warnings => Warnings,
                Expand => Expand or else Output_Kind = Dump,
                Use_Dtd => Use_Dtd,
                Dtd_File => Asu_Ts (Dtd_File),
@@ -414,13 +421,14 @@ begin
   Output_Kind := Gen;
   Width := Xml_Parser.Generator.Default_Width;
   Format := Xml_Parser.Generator.Default_Format;
+  Warnings := False;
   Expand := False;
   Use_Dtd := True;
   Dtd_File := Asu_Null;
   Callback_Acc := null;
   -- Get Expand option and chek max of options
   -- Only one option, one more if Expand, one more if no_comment
-  --  one more if check_dtd, one more if ontheflow
+  --  one more if check_dtd, one more if ontheflow, one more if warnings
   Max_Opt := 1;
   if Arg_Dscr.Is_Set (8) then
     Expand := True;
@@ -439,6 +447,9 @@ begin
   end if;
   if Arg_Dscr.Get_Number_Keys > Max_Opt then
     Ae_Re (Arg_Error'Identity, "Too many options");
+  end if;
+  if Arg_Dscr.Is_Set (12) then
+    Max_Opt := Max_Opt + 1;
   end if;
 
   -- Get format info
@@ -486,6 +497,10 @@ begin
       -- If option set with empty dtd => no check
       Use_Dtd := False;
     end if;
+  end if;
+
+  if Arg_Dscr.Is_Set (12) then
+    Warnings := True;
   end if;
 
   -- Process arguments
