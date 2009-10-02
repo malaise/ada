@@ -705,6 +705,10 @@ package body Dtd is
     if Found then
       Trace ("Dtd discarding re-definition of entity "
            & Asu_Ts (Parstr & Name));
+      if Ctx.Warnings then
+        Util.Warning (Ctx.Flow, "Entity " & Asu_Ts (Parstr & Name)
+           & " already defined");
+      end if;
       return;
     end if;
     -- Store Entity, line and associated notation if unparsed entity
