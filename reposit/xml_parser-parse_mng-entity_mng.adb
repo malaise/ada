@@ -159,7 +159,7 @@ package body Entity_Mng is
       end if;
       Code := Code_Of (Asu_Ts (Name));
       case Encod is
-        when Utf8 =>
+        when Utf8 | Latin1=>
           Got := Asu_Tus (Utf_8.Encode (Code));
         when Utf16_Be =>
           Got := Asu_Tus (Utf_16.Split (Utf_16.Swap (Utf_16.Encode (Code))));

@@ -372,7 +372,7 @@ private
   -- Current flow is...
   type Flow_Kind_List is (Xml_Flow, Dtd_Flow, Int_Dtd_Flow, Ext_Flow);
   -- Current encoding
-  type Encod_List is (Utf8, Utf16_Le, Utf16_Be);
+  type Encod_List is (Utf8, Utf16_Le, Utf16_Be, Latin1);
   -- Number of single UTF8 bytes re-inserted in flow when in UTF16
   subtype Bytes_Range is Natural;
   type File_Access is access all Text_Char.File_Type;

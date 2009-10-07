@@ -299,56 +299,62 @@ package body Util is
       Get_One_Char (Flow, Char);
       return;
     elsif Flow.Curr_Flow.Nb_Bytes /= 0 then
-      -- Utf16 but some chars in buffer => get char
+      -- Utf16 or latin1 but some chars in buffer => get char
       Get_One_Char (Flow, Char);
       Flow.Curr_Flow.Nb_Bytes := Flow.Curr_Flow.Nb_Bytes - 1;
       return;
+    elsif Flow.Curr_Flow.Encod = Latin1 then
+      -- Latin 1 <=> Unicode. generate an UTF-8 sequence
+      Get_One_Char (Flow, Char);
+      Unicode := Character'Pos (Char);
     else
       -- Utf16 => read first word
       Get_One_Char (Flow, Str2(1));
       Get_One_Char (Flow, Str2(2));
-    end if;
 
-    -- Decoding of UTF-16, common to all flows, get a Unicode
-    Seq16(1 .. 1) := Utf_16.Merge (Str2);
-    -- Convert to UTF-16BE
-    if Flow.Curr_Flow.Encod = Utf16_Le then
-      Utf_16.Swap (Seq16(1));
-    end if;
-    if Utf_16.Nb_Chars (Seq16(1)) = 1 then
-      Unicode := Utf_16.Decode (Seq16(1 .. 1));
-    else
-      -- Need to read second word
-      begin
-        Get_One_Char (Flow, Str2(1));
-        Get_One_Char (Flow, Str2(2));
-      exception
-        when End_Error =>
-          raise Decoding_Error;
-      end;
-      Seq16(2 .. 2) := Utf_16.Merge (Str2);
+      -- Decoding of UTF-16, common to all flows, get a Unicode
+      Seq16(1 .. 1) := Utf_16.Merge (Str2);
+      -- Convert to UTF-16BE
       if Flow.Curr_Flow.Encod = Utf16_Le then
         Utf_16.Swap (Seq16(1));
       end if;
-      Unicode := Utf_16.Decode (Seq16);
+      if Utf_16.Nb_Chars (Seq16(1)) = 1 then
+        Unicode := Utf_16.Decode (Seq16(1 .. 1));
+      else
+        -- Need to read second word
+        begin
+          Get_One_Char (Flow, Str2(1));
+          Get_One_Char (Flow, Str2(2));
+        exception
+          when End_Error =>
+            raise Decoding_Error;
+        end;
+        Seq16(2 .. 2) := Utf_16.Merge (Str2);
+        if Flow.Curr_Flow.Encod = Utf16_Le then
+          Utf_16.Swap (Seq16(1));
+        end if;
+        Unicode := Utf_16.Decode (Seq16);
+      end if;
     end if;
 
     -- Get a Utf8 sequence
     Seq8 := Asu_Tus (Utf_8.Encode (Unicode));
 
-    -- Re-insert in flow all but first character
-    if Flow.Curr_Flow.Is_File then
-      for I in reverse 2 .. Asu.Length (Seq8) loop
-        Flow.Curr_Flow.File.Unget (Asu.Element (Seq8, I));
-      end loop;
-      Flow.Curr_Flow.Nb_Bytes := Flow.Curr_Flow.Nb_Bytes
-                               + Asu.Length (Seq8) - 1;
-    else
-      -- Insert Seq8 (2 .. Last) at current index of In_String
-      Asu.Insert (Flow.Curr_Flow.In_Str, Flow.Curr_Flow.In_Stri,
-                  Asu.Slice (Seq8, 2, Asu.Length (Seq8)) );
-      Flow.Curr_Flow.Nb_Bytes := Flow.Curr_Flow.Nb_Bytes
-                               + Asu.Length (Seq8) - 1;
+    if Asu.Length (Seq8) /= 1 then
+      -- Re-insert in flow all but first character
+      if Flow.Curr_Flow.Is_File then
+        for I in reverse 2 .. Asu.Length (Seq8) loop
+          Flow.Curr_Flow.File.Unget (Asu.Element (Seq8, I));
+        end loop;
+        Flow.Curr_Flow.Nb_Bytes := Flow.Curr_Flow.Nb_Bytes
+                                 + Asu.Length (Seq8) - 1;
+      else
+        -- Insert Seq8 (2 .. Last) at current index of In_String
+        Asu.Insert (Flow.Curr_Flow.In_Str, Flow.Curr_Flow.In_Stri,
+                    Asu.Slice (Seq8, 2, Asu.Length (Seq8)) );
+        Flow.Curr_Flow.Nb_Bytes := Flow.Curr_Flow.Nb_Bytes
+                                 + Asu.Length (Seq8) - 1;
+      end if;
     end if;
 
     -- Return First Char
@@ -426,11 +432,10 @@ package body Util is
       My_Circ.Discard_Last (Flow.Circ);
       if Flow.Curr_Flow.Is_File then
         Flow.Curr_Flow.File.Unget (Char);
-        Flow.Curr_Flow.Nb_Bytes := Flow.Curr_Flow.Nb_Bytes + 1;
       else
         Flow.Curr_Flow.In_Stri := Flow.Curr_Flow.In_Stri - 1;
-        Flow.Curr_Flow.Nb_Bytes := Flow.Curr_Flow.Nb_Bytes + 1;
       end if;
+      Flow.Curr_Flow.Nb_Bytes := Flow.Curr_Flow.Nb_Bytes + 1;
       if Flow.Recording then
         if Flow.Skip_Recording = No_Skip_Rec then
           -- Record this unget (remove the recorded get)
@@ -476,6 +481,7 @@ package body Util is
       -- Insert Str after current pos (last read)
       Asu.Insert (Flow.Curr_Flow.In_Str, Flow.Curr_Flow.In_Stri + 1, Str);
     end if;
+    Flow.Curr_Flow.Nb_Bytes := Flow.Curr_Flow.Nb_Bytes + Str'Length;
     -- The inserted characters shall not be recorded (when got/ungot)
     if Flow.Recording then
       if Flow.Skip_Recording = No_Skip_Rec then

@@ -52,7 +52,7 @@ package body Dtd is
         Util.Error (Ctx.Flow, "Late or second declaration of xml in dtd");
       end if;
       -- Add a dummy prologue root or a dummy child to prologue root
-      Trace ("Dtd parsing xml");
+      Trace ("Dtd parsing xml instruction");
       Dummy.Line_No := 0;
       if Ctx.Prologue.Is_Empty then
         Ctx.Prologue.Insert_Father (Dummy);
@@ -1015,12 +1015,12 @@ package body Dtd is
                    Name_Raise_Parse : in Boolean := True) is
     use type Asu_Us;
   begin
-    Ctx.Flow.Curr_Flow.Kind := Dtd_Flow;
     if File_Name = String_Flow then
       -- String of Ctx
       Trace ("Dtd parsing string");
       Ctx.Flow.Curr_Flow.Is_File := False;
       Ctx.Flow.Curr_Flow.File := null;
+      Ctx.Flow.Curr_Flow.Kind := Dtd_Flow;
       Parse (Ctx, Adtd, True);
     elsif File_Name = Internal_Flow then
       -- Internal declarations (string or file) of Ctx
