@@ -79,7 +79,7 @@ package body Parse_Mng  is
     -- Input characters --
     ----------------------
     -- Autodetect encoding family
-    -- Sets the encoding of flow Utf16xx, or to Utf8 for any 
+    -- Sets the encoding of flow Utf16xx, or to Utf8 for any
     -- byte-oriented encoding
     subtype Detected_Encod_List is Encod_List range Utf8 .. Utf16_Be;
     procedure Guess_Encoding (Flow : in out Flow_Type);
