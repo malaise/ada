@@ -1,5 +1,6 @@
 with Ada.Strings.Unbounded, Ada.Finalization;
-with Queues, Trees, Unique_List, Text_Char, Dynamic_List, Unlimited_Pool;
+with Queues, Trees, Unique_List, Text_Char, Dynamic_List, Unlimited_Pool,
+     Byte_To_Unicode;
 -- Parse Xml file or string.
 -- Call callback while parsing or provide read access to the tree after parsing.
 -- Limitations:
@@ -372,7 +373,7 @@ private
   -- Current flow is...
   type Flow_Kind_List is (Xml_Flow, Dtd_Flow, Int_Dtd_Flow, Ext_Flow);
   -- Current encoding
-  type Encod_List is (Utf8, Utf16_Le, Utf16_Be, Latin1);
+  type Encod_List is (Utf8, Utf16_Le, Utf16_Be, Latin1, Other);
   -- Number of single UTF8 bytes re-inserted in flow when in UTF16
   subtype Bytes_Range is Natural;
   type File_Access is access all Text_Char.File_Type;
@@ -391,6 +392,8 @@ private
     Same_Line : Boolean := False;
     -- Encoding of each kind of flow
     Encod : Encod_List := Utf8;
+    -- Map when encoding is other
+    Map : Byte_To_Unicode.Map;
     -- Remaining bytes when UTF8 characters
     -- are re-inserted in a UTF16 flow
     Nb_Bytes : Bytes_Range := 0;

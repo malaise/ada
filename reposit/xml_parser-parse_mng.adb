@@ -84,6 +84,10 @@ package body Parse_Mng  is
     subtype Detected_Encod_List is Encod_List range Utf8 .. Utf16_Be;
     procedure Guess_Encoding (Flow : in out Flow_Type);
 
+    -- Load a character encoding map
+    procedure Load_Map (Flow : in out Flow_Type;
+                        Name : in String);
+
     -- Get current line number
     function Get_Line_No (Flow : Flow_Type) return Natural;
 
@@ -427,6 +431,7 @@ package body Parse_Mng  is
                     & Ctx.Flow.Curr_Flow.Encod'Img);
         end if;
       elsif Upper_Str (Asu_Ts (Attribute_Value)) = "ISO-8859-1" then
+        -- Guessing set encoding to Utf8 for any byte-based format
         if Ctx.Flow.Curr_Flow.Encod /= Utf8 then
           Util.Error (Ctx.Flow, "Encoding " & Asu_Ts (Attribute_Value)
                     & " differs from autodetected "
@@ -434,9 +439,12 @@ package body Parse_Mng  is
         else
           Ctx.Flow.Curr_Flow.Encod := Latin1;
         end if;
+      elsif Ctx.Flow.Curr_Flow.Encod = Utf8 then
+        -- Try to load a map of encoding
+        Util.Load_Map (Ctx.Flow,
+                       Upper_Str (Asu_Ts (Attribute_Value)));
       else
-        Util.Error (Ctx.Flow,
-         "Unsupported encoding (only UTF-8 and UTF-16 are supported)");
+        Util.Error (Ctx.Flow, "Inconsistent encoding (UTF-16 detected)");
       end if;
       Next_Index := Attribute_Index + 1;
     end if;
@@ -956,7 +964,6 @@ package body Parse_Mng  is
     -- Autodetect encoding and check
     if Ctx.Flow.Curr_Flow.Is_File then
       Util.Guess_Encoding (Ctx.Flow);
-      Trace ("Detected encoding format " & Ctx.Flow.Curr_Flow.Encod'Img);
     else
       Ctx.Flow.Curr_Flow.Encod := Utf8;
     end if;

@@ -1,4 +1,4 @@
-with Utf_8, Utf_16;
+with Utf_8, Utf_16, Sys_Calls, Directory;
 separate (Xml_Parser.Parse_Mng)
 package body Util is
   -- Autodetect encoding family
@@ -81,9 +81,37 @@ package body Util is
     -- So the Nb_Bytes_xxx must be Adjusted. Reset is acceptable
     --  because this is for sure the beginning of the flow.
     -- Store for flow
+    Trace ("Guessed encoding " & Encod'Img);
     Flow.Curr_Flow.Encod := Encod;
     Flow.Curr_Flow.Nb_Bytes := 0;
   end Guess_Encoding;
+
+  -- Load a character encoding map
+  procedure Load_Map (Flow : in out Flow_Type;
+                      Name : in String) is
+    Var_Name : constant String := "XML_PARSER_MAP_DIR";
+
+  begin
+    declare
+      File_Name : constant String
+                := Directory.Build_File_Name (Environ.Getenv (Var_Name),
+                                              Name, "xml");
+    begin
+      if not Environ.Is_Set (Var_Name)
+      or else not Sys_Calls.File_Found (File_Name) then
+        Error (Flow, "Unsupported encoding (only UTF-8, UTF-16 "
+                          & "and ISO-8859-1 are natively supported)");
+      end if;
+      Trace ("Loading map " & File_Name);
+      Flow.Curr_Flow.Map.Load (File_Name);
+      Flow.Curr_Flow.Encod := Other;
+    exception
+      when Byte_To_Unicode.File_Error =>
+        Error (Flow, "Error accessing encoding file " & Name);
+      when Byte_To_Unicode.Parse_Error =>
+        Error (Flow, "Error parsing file " & Name);
+    end;
+  end Load_Map;
 
   -- Current line of input
   function Get_Line_No (Flow : Flow_Type) return Natural is
@@ -304,9 +332,13 @@ package body Util is
       Flow.Curr_Flow.Nb_Bytes := Flow.Curr_Flow.Nb_Bytes - 1;
       return;
     elsif Flow.Curr_Flow.Encod = Latin1 then
-      -- Latin 1 <=> Unicode. generate an UTF-8 sequence
+      -- Latin 1 <=> Unicode.
       Get_One_Char (Flow, Char);
-      Unicode := Character'Pos (Char);
+      Unicode := Character'Pos(Char);
+    elsif Flow.Curr_Flow.Encod = Other then
+      -- Other 1 -> Unicode: Use map
+      Get_One_Char (Flow, Char);
+      Unicode := Flow.Curr_Flow.Map.Convert(Character'Pos(Char));
     else
       -- Utf16 => read first word
       Get_One_Char (Flow, Str2(1));
