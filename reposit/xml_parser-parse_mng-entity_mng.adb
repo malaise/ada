@@ -140,7 +140,6 @@ package body Entity_Mng is
   -- Get value of an entity. Raises Parse_Error if none
   procedure Get (Ctx : in out Ctx_Type;
                  Dtd : in out Dtd_Type;
-                 Encod : in Encod_List;
                  Context : in Context_List;
                  Name : in Asu_Us;
                  Parameter : in Boolean;
@@ -158,14 +157,7 @@ package body Entity_Mng is
         raise Entity_Forbidden;
       end if;
       Code := Code_Of (Asu_Ts (Name));
-      case Encod is
-        when Utf8 | Latin1=>
-          Got := Asu_Tus (Utf_8.Encode (Code));
-        when Utf16_Be =>
-          Got := Asu_Tus (Utf_16.Split (Utf_16.Swap (Utf_16.Encode (Code))));
-        when Utf16_Le =>
-          Got := Asu_Tus (Utf_16.Split (Utf_16.Encode (Code)));
-      end case;
+      Got := Asu_Tus (Utf_8.Encode (Code));
       return;
     end if;
 

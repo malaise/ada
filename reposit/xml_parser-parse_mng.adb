@@ -42,7 +42,6 @@ package body Parse_Mng  is
     -- May raise Invalid_Char_Code
     procedure Get (Ctx : in out Ctx_Type;
                    Dtd : in out Dtd_Type;
-                   Encod : in Encod_List;
                    Context : in Context_List;
                    Name : in Asu_Us;
                    Parameter : in Boolean;
@@ -80,6 +79,9 @@ package body Parse_Mng  is
     -- Input characters --
     ----------------------
     -- Autodetect encoding family
+    -- Sets the encoding of flow Utf16xx, or to Utf8 for any 
+    -- byte-oriented encoding
+    subtype Detected_Encod_List is Encod_List range Utf8 .. Utf16_Be;
     procedure Guess_Encoding (Flow : in out Flow_Type);
 
     -- Get current line number

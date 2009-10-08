@@ -9,7 +9,7 @@ package body Util is
     Str : String (1 .. 4);
     C : array (1 .. Str'Length) of Integer;
     Encoding : Encoding_List;
-    Encod : Encod_List;
+    Encod : Detected_Encod_List;
   begin
     -- Read 4 bytes
     Get (Flow, Str);
@@ -824,8 +824,7 @@ package body Util is
                        & Asu_Ts (Starter & Name));
       end if;
 
-      Entity_Mng.Get (Ctx, Dtd, Ctx.Flow.Curr_Flow.Encod,
-                      Context, Name, Starter = Ent_Param, Val);
+      Entity_Mng.Get (Ctx, Dtd, Context, Name, Starter = Ent_Param, Val);
 
       -- Check and expand this entity replacement (recursively)
       -- Skip when this is a character entity or
