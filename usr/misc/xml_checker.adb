@@ -3,7 +3,7 @@ with Argument, Argument_Parser, Xml_Parser.Generator, Normal, Basic_Proc,
      Text_Line, Sys_Calls, Parser;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V7.0";
+  Version : constant String := "V7.1";
 
   -- Ada.Strings.Unbounded and Ada.Exceptions re-definitions
   package Asu renames Ada.Strings.Unbounded;
@@ -357,9 +357,7 @@ procedure Xml_Checker is
       Dump_Unparsed_Entities;
       Out_Flow.Flush;
     elsif Output_Kind = Gen or else Output_Kind = No_Comment then
-      Xml_Parser.Generator.Put (Ctx, Xml_Parser.Generator.Stdout,
-                                Format, Width);
-      -- Ctx.Put (Xml_Parser.Generator.Stdout, Format, Width);
+      Ctx.Put (Xml_Parser.Generator.Stdout, Format, Width);
     end if;
     Ctx.Clean;
   exception
@@ -509,7 +507,8 @@ begin
   else
     for I in 1 .. Arg_Dscr.Get_Nb_Occurences (No_Key_Index) loop
       Do_One (I, Expand);
-      if I /= Arg_Dscr.Get_Nb_Occurences (No_Key_Index) then
+      if I /= Arg_Dscr.Get_Nb_Occurences (No_Key_Index)
+      and then Output_Kind /= None then
         Out_Flow.New_Line;
         Out_Flow.Flush;
       end if;
