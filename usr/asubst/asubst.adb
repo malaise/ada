@@ -3,7 +3,7 @@ with Environ, Argument, Argument_Parser, Sys_Calls, Language, Mixed_Str, Text_Li
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
-  Version : constant String  := "V7.13";
+  Version : constant String  := "V7.14";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -420,7 +420,7 @@ begin
   if Arg_Dscr.Is_Set (10) then
     -- Stop each file after <max> substitutions
     begin
-      Max := Substit.Long_Long_Natural'Value (Arg_Dscr.Get_Option (07));
+      Max := Substit.Long_Long_Natural'Value (Arg_Dscr.Get_Option (10));
     exception
       when others =>
         Sys_Calls.Put_Line_Error (Argument.Get_Program_Name

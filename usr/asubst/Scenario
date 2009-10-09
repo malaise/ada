@@ -123,4 +123,6 @@
 "<toto>titi</toto>"    "<([^>]+)>([^<]*)</\1>"        "\r11 contains \r12"        "toto contains titi"
 "mamatotopapatiti"     "(t.)\1"                       "\r11"                      "toti"
 "totopapatiti\ntata"   "(t.)\1"                       "\r11"                      "toti\nta"
+"Options" "-m 1"
+"toto"                 "o"                            "i"                         "tito"
 

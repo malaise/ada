@@ -1,5 +1,8 @@
 History of Asubst:
 ------------------
+08/10/2009 V7.14
+Fix: Incorrect parsing of argument -m (--max=)
+
 24/06/2009 V7.13
 Fix: "" was not matching "(.?)"
 
