@@ -3,6 +3,8 @@ with Argument, Num_Match;
 
 procedure T_Num_Match is
 
+  package My_Num_Match is new Num_Match (Integer);
+
   procedure Usage is
   begin
     Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
@@ -27,10 +29,10 @@ begin
     return;
   end if;
 
-  Res := Num_Match (Num, Str(1 .. Len));
+  Res := My_Num_Match.Matches (Num, Str(1 .. Len));
 
   Ada.Text_Io.Put (Num'Img);
-  if Num_Match (Num, Str(1 .. Len)) then
+  if Res then
     Ada.Text_Io.Put (" matches");
   else
     Ada.Text_Io.Put (" does not match");
