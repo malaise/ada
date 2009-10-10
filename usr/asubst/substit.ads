@@ -1,22 +1,23 @@
+with Num_Match;
 package Substit is
 
   Std_In_Out : constant String := "-";
 
-  subtype Long_Long_Natural is Long_Long_Integer
-                                range 0 .. Long_Long_Integer'Last;
+  package Subst_Match is new Num_Match (Integer);
+  subtype Long_Long_Natural is Subst_Match.Natural_Type;
 
   -- Process one file (stdin -> stdout if File_Name is Std_In_Out)
   -- Make a backup file, display substitutions, and test mode on option
   -- Return the number of substitutions
-  function Do_One_File (File_Name : String;
-                        Tmp_Dir   : String;
-                        Delimiter : String;
-                        Max_Subst : Long_Long_Natural;
-                        Backup    : Boolean;
-                        Verbose   : Boolean;
-                        Grep      : Boolean;
-                        Line_Nb   : Boolean;
-                        Test      : Boolean) return Long_Long_Natural;
+  function Do_One_File (File_Name   : String;
+                        Tmp_Dir     : String;
+                        Delimiter   : String;
+                        Match_Range : String;
+                        Backup      : Boolean;
+                        Verbose     : Boolean;
+                        Grep        : Boolean;
+                        Line_Nb     : Boolean;
+                        Test        : Boolean) return Natural;
   -- Error handled and traced by Do_One
   Substit_Error : exception;
 

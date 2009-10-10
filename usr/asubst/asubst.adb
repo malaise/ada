@@ -3,7 +3,7 @@ with Environ, Argument, Argument_Parser, Sys_Calls, Language, Mixed_Str, Text_Li
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
-  Version : constant String  := "V7.14";
+  Version : constant String  := "V8.0";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -28,7 +28,7 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
      "  <option> ::= -a | -D <string> | -d | -e <pattern> | -f | -g | -i");
     Sys_Calls.Put_Line_Error (
-     "             | -l | -m <max> | -n | -p | -q | -s | -t | -u | -v | -x | --");
+     "             | -l | -m <range> | -n | -p | -q | -s | -t | -u | -v | -x | --");
     Sys_Calls.Put_Line_Error (
      "    -a or --ascii for pure ASCII processing,");
     Sys_Calls.Put_Line_Error (
@@ -46,7 +46,7 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
      "    -l or --line for display line number in grep mode,");
     Sys_Calls.Put_Line_Error (
-     "    -m <max> or --max=<max> for stop processing file after <max> substitutions,");
+     "    -m <range> or --match=<range> for substitution of only <range> matches,");
     Sys_Calls.Put_Line_Error (
      "    -n or --number for print number of substitutions,");
     Sys_Calls.Put_Line_Error (
@@ -177,6 +177,8 @@ procedure Asubst is
   package Asu renames Argument_Parser.Asu;
   function Asu_Tus (Source : in String) return Argument_Parser.Asu_Us
                    renames Asu.To_Unbounded_String;
+  function Asu_Ts (Source : in Argument_Parser.Asu_Us) return String
+                   renames Asu.To_String;
 
   -- For getenv
   Utf8_Var_Name : constant String := "ASUBST_UTF8";
@@ -191,7 +193,7 @@ procedure Asubst is
    07 => ('h', Asu_Tus ("help"), False, False),
    08 => ('i', Asu_Tus ("ignorecase"), False, False),
    09 => ('l', Asu_Tus ("line"), False, False),
-   10 => ('m', Asu_Tus ("max"), False, True),
+   10 => ('m', Asu_Tus ("match"), False, True),
    11 => ('n', Asu_Tus ("number"), False, False),
    12 => ('q', Asu_Tus ("quiet"), False, False),
    13 => ('s', Asu_Tus ("save"), False, False),
@@ -211,7 +213,7 @@ procedure Asubst is
   Exclude : Ada.Strings.Unbounded.Unbounded_String;
   File_Of_Files : Boolean := False;
   Case_Sensitive : Boolean := True;
-  Max : Substit.Long_Long_Natural := 0;
+  Match_Range : Ada.Strings.Unbounded.Unbounded_String;
   Tmp_Dir : Ada.Strings.Unbounded.Unbounded_String;
   type Verbose_List is (Quiet, Put_File_Name, Put_Subst_Nb, Verbose);
   Verbosity : Verbose_List := Put_File_Name;
@@ -255,9 +257,10 @@ procedure Asubst is
     end if;
     Nb_Subst := Substit.Do_One_File (
                   File_Name,
-                  Asu.To_String (Tmp_Dir),
-                  Asu.To_String (Delimiter),
-                  Max, Backup, Verbosity = Verbose, Grep, Line_Nb, Test);
+                  Asu_Ts (Tmp_Dir),
+                  Asu_Ts (Delimiter),
+                  Asu_Ts (Match_Range),
+                  Backup, Verbosity = Verbose, Grep, Line_Nb, Test);
     if Nb_Subst /= 0 then
       Found := True;
     end if;
@@ -418,19 +421,26 @@ begin
     Line_Nb := True;
   end if;
   if Arg_Dscr.Is_Set (10) then
-    -- Stop each file after <max> substitutions
+    -- Substit only occurences that match criteria
+    declare
+      Dummy : Boolean;
+      pragma Unreferenced (Dummy);
     begin
-      Max := Substit.Long_Long_Natural'Value (Arg_Dscr.Get_Option (10));
+      Match_Range := Asu_Tus (Arg_Dscr.Get_Option (10));
+      Dummy := Substit.Subst_Match.Matches (0, Asu_Ts (Match_Range));
     exception
       when others =>
         Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
-           & ": Syntax ERROR. Invalid specification of max subtitutions.");
+           & ": Syntax ERROR. Invalid specification of matching range.");
         Error;
         return;
     end;
     if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Option max =" & Max'Img);
+      Sys_Calls.Put_Line_Error ("Option match =" & Asu_Ts (Match_Range));
     end if;
+  else
+    -- No criteria
+    Match_Range := Asu_Tus ("-");
   end if;
   if Arg_Dscr.Is_Set (11) then
     -- Put number of substitutions
@@ -582,9 +592,9 @@ begin
   if Display then
     Ada.Text_Io.Put_Line ("Search pattern: >"
        & Arg_Dscr.Get_Option (No_Key_Index, 1) & "<");
-    if Asu.To_String (Exclude) /= "" then
+    if Asu_Ts (Exclude) /= "" then
       Ada.Text_Io.Put_Line ("Exclude pattern: >"
-         & Asu.To_String (Exclude) & "<");
+         & Asu_Ts (Exclude) & "<");
     end if;
     if not Grep then
       Ada.Text_Io.Put_Line ("Replace string: >"
@@ -604,15 +614,15 @@ begin
     else
       begin
         Nb_Subst := Substit.Do_One_File (
-            File_Name => Substit.Std_In_Out,
-            Tmp_Dir   => Asu.To_String (Tmp_Dir),
-            Delimiter => Asu.To_String (Delimiter),
-            Max_Subst => Max,
-            Backup    => False,
-            Verbose   => False,
-            Grep      => Grep,
-            Line_Nb   => Line_Nb,
-            Test      => Test);
+            File_Name   => Substit.Std_In_Out,
+            Tmp_Dir     => Asu_Ts (Tmp_Dir),
+            Delimiter   => Asu_Ts (Delimiter),
+            Match_Range => Asu_Ts (Match_Range),
+            Backup      => False,
+            Verbose     => False,
+            Grep        => Grep,
+            Line_Nb     => Line_Nb,
+            Test        => Test);
         if Nb_Subst /= 0 then
           Found := True;
         end if;

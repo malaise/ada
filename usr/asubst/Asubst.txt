@@ -1,5 +1,5 @@
                                  Asubst
-                                  V7.14
+                                  V8.0
 
 
 1. General syntax
@@ -21,8 +21,7 @@ for Perl Regular Expressions.
 -g or --grep : print matching text as grep would do (no substitution).
 -i or --ignorecase : do case insensitive match checking of <find_pattern>.
 -l or --line for display line number in grep mode.
--m <max> or --max=<max> : stop processing each file after <max> substitutions,
-    (0 for infinite).
+-m <range> or --match=<range> for substitution of only <range> matches.
 -n or --number : print number of substitutions per file.
 -p <dir> or --tmp=<dir> : directory of temporary files.
 -q or --quiet : no printout.
@@ -114,7 +113,16 @@ On the other hand, echo "toto" | asubst --exclude=to to ti and
 echo "toto" | asubst --exclude=toto toto titi will not substitute.
 
 
-6. Delimiter
+6. Match range
+The <range> has the format: i-j,k-l... Example: "-4,7-9,15-" means the first 4
+matching occurence, the 7th to the 9th and 15th occurence and after ("" means
+none). Only these occurences of matching (in the file or flow) will be
+substituted.
+Because of the rules for parsing arguments, a <range> starting by '-' requires
+the long option name. Example: don't use '-m -4', but '-m 1-4' or '--match=-4'.
+
+
+7. Delimiter
 Normally asubst reads the input flow or file line by line (separated by '\n')
 and searches for matches, between the input sequences of text and '\n', and the
 sequence of regex of find_pattern. When an input delimiter is specified (option
@@ -132,7 +140,7 @@ Tag duplicated words in paragraphs (separated by two '\n'):
 asubst -D '\n\n' -- '\b([\M]+)\b[\S]+\1' '->\R01<-' file
 
 
-7. Replace string
+8. Replace string
 The following '\' sequences are supported:
 - "\n" will be replaced by a newline.
 - "\t" will be replaced by a (horiz) tab.
@@ -175,7 +183,7 @@ echo -en "toto\ntiti\n" | asubst "to\nti" "\u\R00"      ->  "toTO\nTIti\n"
 echo -en "toto" | asubst "(.)(.)(..)" "\u\r12\c\r11"    ->  "Otto"
 
 
-8. Grep mode
+9. Grep mode
 In grep mode, asubst only looks for find_pattern and displays result,
 (possibly with the line number in input file) but does not alter the files.
 As a consequence, grep mode imposes quiet, test and no-backup modes, and
@@ -190,7 +198,7 @@ echo -en "toto" | asubst -g "toto" "found"              -> found
 echo -en "*cs add" | asubst -g "^\*([^ ]+) " "Got \r11" -> Got cs
 
 
-9. Differences between regex and noregex modes
+10. Regex and noregex modes
 In both modes "\x0A" is the same as "\n", and "\s" and "\t" are interpreted.
 In regex mode "\x00" is forbidden in find pattern because it is the C string
 terminator and it is used as such by regex library.
@@ -200,14 +208,14 @@ characters (including "^" and "$").
 In noregex mode, "\rIJ" with J > 0 is forbidden (no substring). 
 
 
-10. Exit code
+11. Exit code
 asubst exits with 0 if some matching was found, with 1 if no matching
 was found, with 2 otherwise (e.g. in case of error). It can also exit with code
 3 if stopped (Ctrl-C or SIGTERM) while executing external command, or with
 standard 128 + signal number.
 
 
-11. Troubleshooting
+12. Troubleshooting
 - Asubst is stuck. -> Maybe an argument is missing or an option is not complete,
 and asubst is waiting in stdin.
 E.g. "asubst -m 5 6 file". Asubst considers "5" as the value for m, "6" as the

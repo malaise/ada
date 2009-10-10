@@ -1,5 +1,8 @@
 History of Asubst:
 ------------------
+10/10/2009 V8.0
+Add: Replace -m (--max) by -m (--match) for match_range
+
 08/10/2009 V7.14
 Fix: Incorrect parsing of argument -m (--max=)
 

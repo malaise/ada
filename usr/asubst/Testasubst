@@ -164,10 +164,10 @@ fi
 echo "$STEP OK."
 
 # Grep mode, check result and exit code
-STEP="Tests of grep mode"
 rm -rf $FS
 cp $FR $FT
 # Check multiple regexp grep
+STEP="Test of multiple regexp grep"
 res=`asubst -gl " is\n" "" $FT`
 code=$?
 if [ $code -ne 0 ] ; then
@@ -182,6 +182,7 @@ if [ "$res" != "$exp_res" ] ; then
   exit 1
 fi
 # Check mono line not multiple grep
+STEP="Test of mono line not multiple grep"
 res=`echo "toto" | asubst -g "^toto" ""`
 code=$?
 if [ $code -ne 0 ] ; then
@@ -196,6 +197,7 @@ if [ "$res" != "$exp_res" ] ; then
   exit 1
 fi
 # Check grep with replacing
+STEP="Test grep with replacing"
 res=`echo "tototiti" | asubst -g "(toto)titi" "\r11"`
 code=$?
 if [ $code -ne 0 ] ; then
@@ -210,6 +212,7 @@ if [ "$res" != "$exp_res" ] ; then
   exit 1
 fi
 # Check mono regexp grep
+STEP="Test mono regexp grep"
 res=`asubst -g " is" "" $FT`
 if [ $code -ne 0 ] ; then
   echo "Error: asubst exited with code $code"
@@ -218,7 +221,7 @@ if [ $code -ne 0 ] ; then
 fi
 exp_res=`echo -e "tstfile.tst:Package body Pack is\ntstfile.tst:  procedure Test is\n"`
 if [ "$res" != "$exp_res" ] ; then
-  echo "Result $res differs from expected toto."
+  echo "Result $res differs from expected."
   echo "$STEP FAILED."
   exit 1
 fi
@@ -229,7 +232,8 @@ if [ $? -ne 0 ] ; then
   exit 1
 fi
 # Check grep with exclusion
-res=`asubst -g "--exclude=Pack\sis" "[^\s]* is" "" $FT`
+STEP="Test grep with exclusion"
+res=`asubst -g "--exclude=Pack\sis" "[^\s]{4} is" "" $FT`
 if [ $code -ne 0 ] ; then
   echo "Error: asubst exited with code $code"
   echo "$STEP FAILED."
@@ -237,7 +241,7 @@ if [ $code -ne 0 ] ; then
 fi
 exp_res=`echo -e "tstfile.tst:  procedure Test is\n"`
 if [ "$res" != "$exp_res" ] ; then
-  echo "Result $res differs from expected toto."
+  echo "Result $res differs from expected."
   echo "$STEP FAILED."
   exit 1
 fi
@@ -247,6 +251,7 @@ if [ $? -ne 0 ] ; then
   echo "$STEP FAILED."
   exit 1
 fi
+STEP="Test grep"
 echo "$STEP OK."
 
 # Exit codes
