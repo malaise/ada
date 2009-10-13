@@ -101,6 +101,7 @@
 "to to ti\nti"         "\b([\M]+)\b[\S]+\1"           "->\R01<-"                  "->to to<- ->ti\nti<-"
 "Options" "--delimiter=i"
 "tototititata"         "ti"                           "LF"                        "totoLFLFtata"
+
 "Options" "-x"
 "titi to\nto tutu"     "to\nto "                      ""                          "titi tutu"
 "titi to to tutu"      "to "                          ""                          "titi tutu"
@@ -123,6 +124,7 @@
 "<toto>titi</toto>"    "<([^>]+)>([^<]*)</\1>"        "\r11 contains \r12"        "toto contains titi"
 "mamatotopapatiti"     "(t.)\1"                       "\r11"                      "toti"
 "totopapatiti\ntata"   "(t.)\1"                       "\r11"                      "toti\nta"
+
 "Options" "-m 1,4-6"
 "toto"                 "o"                            "i"                         "tito"
 "tatetitotuty"         "t(.)"                         "m\r11"                     "matetimomumy"

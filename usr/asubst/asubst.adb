@@ -3,7 +3,7 @@ with Environ, Argument, Argument_Parser, Sys_Calls, Language, Mixed_Str, Text_Li
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
-  Version : constant String  := "V8.0";
+  Version : constant String  := "V8.1";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -477,6 +477,12 @@ begin
     Test := True;
   end if;
   if Arg_Dscr.Is_Set (15) then
+    if Arg_Dscr.Is_Set (1) then
+      Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
+         & ": Syntax ERROR. Incompatible options -a and -u.");
+      Error;
+      return;
+    end if;
     -- Process utf-8 sequences
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Option utf8");
