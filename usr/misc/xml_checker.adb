@@ -3,7 +3,7 @@ with Argument, Argument_Parser, Xml_Parser.Generator, Normal, Basic_Proc,
      Text_Line, Sys_Calls, Parser;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V7.1";
+  Version : constant String := "V7.2";
 
   -- Ada.Strings.Unbounded and Ada.Exceptions re-definitions
   package Asu renames Ada.Strings.Unbounded;
@@ -76,7 +76,7 @@ procedure Xml_Checker is
     Ple ("All options except expand, no_comment, warnings and check_dtd are exclusive.");
     Ple ("No_comment not allowed on silent, dump and raw modes.");
     Ple ("Empty Dtd leads to skip check of comformance to DTD.");
-    Ple ("Default is -w" & Xml_Parser.Generator.Default_Width'Img
+    Ple ("Default is -W" & Xml_Parser.Generator.Default_Width'Img
                          & " on stdout.");
     Ple ("Building the tree is not recommended for big files.");
     Ple ("Please also consider increasing the process stack size (ulimit -s) to");
@@ -443,11 +443,11 @@ begin
   else
     Callback_Acc := Callback'Unrestricted_Access;
   end if;
-  if Arg_Dscr.Get_Number_Keys > Max_Opt then
-    Ae_Re (Arg_Error'Identity, "Too many options");
-  end if;
   if Arg_Dscr.Is_Set (12) then
     Max_Opt := Max_Opt + 1;
+  end if;
+  if Arg_Dscr.Get_Number_Keys > Max_Opt then
+    Ae_Re (Arg_Error'Identity, "Too many options");
   end if;
 
   -- Get format info
