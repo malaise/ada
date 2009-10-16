@@ -736,11 +736,11 @@ package body Util is
   -- INTERNAL: Expand text (expand vars) returns the index of localized '<'
   --  if any
   procedure Expand_Internal (Ctx : in out Ctx_Type;
-                         Dtd : in out Dtd_Type;
-                         Text : in out Asu_Us;
-                         Context : in Context_List;
-                         Start_Index : out Natural;
-                         Name_Stack : in out Name_List_Mng.List_Type) is
+                             Dtd : in out Dtd_Type;
+                             Text : in out Asu_Us;
+                             Context : in Context_List;
+                             Start_Index : out Natural;
+                             Name_Stack : in out Name_List_Mng.List_Type) is
     Result : Asu_Us;
     -- Indexes of start of search
     Sstart : Positive;
@@ -773,6 +773,16 @@ package body Util is
     -- Start searching new reference from Istart to Last
     Sstart := 1;
     Result := Text;
+    -- Normalize separators if attribute
+    if Context = Ref_Attribute then
+      declare
+        Str : String := Asu_Ts (Result);
+      begin
+        Fix_Spaces (Str);
+        Result := Asu_Tus (Str);
+      end;
+    end if;
+
     loop
       Last := Asu.Length (Result);
 
@@ -964,90 +974,32 @@ package body Util is
   end Expand_Name;
 
   -- Fix text: remove repetition of separators
-  procedure Fix_Text (Ctx : in out Ctx_Type;
-                      Text : in out Asu_Us;
-                      Context : in Context_List;
-                      Preserve_Spaces : in Boolean) is
-    Char : Character;
-    Found : Boolean;
-    S1 : Asu_Us;
-    use type Asu_Us;
-  begin
-
-    if Text = Asu_Null or else Context /= Ref_Dtd or else Preserve_Spaces then
-      return;
-    end if;
-
-    -- Replace "{ Lf | Tab | Space }" by a space
-    S1 := Asu_Null;
-    Found := False;
-    for I in 1 .. Asu.Length (Text) loop
-      Char := Asu.Element (Text, I);
-      if not Found then
-        -- Not skipping yet, replace any separator by space
-        if Is_Separator (Char) then
-          Asu.Append (S1, Space);
-          Found := True;
-        else
-          Asu.Append (S1, Char);
-        end if;
-      else
-        -- Skipping: skip all separators
-        if not Is_Separator (Char) then
-          Asu.Append (S1, Char);
-          Found := False;
-        end if;
-      end if;
-    end loop;
-    -- Remove heading space and trailing space if any
-    if Asu.Element (S1, 1) = ' ' then
-      Asu.Delete (S1, 1, 1);
-    end if;
-    if Asu.Length (S1) /= 0
-    and then Asu.Element (S1, Asu.Length (S1)) = ' ' then
-      Asu.Delete (S1, Asu.Length (S1), Asu.Length (S1));
-    end if;
-    -- Done
-    Text := S1;
-  exception
-    when String_Mng.Delimiter_Mismatch =>
-      Error (Ctx.Flow, "Invalid entity reference in text " & Asu_Ts (Text));
-      -- Useless because Error already raises it
-      --  but gnat complains :-(
-      raise Parse_Error;
-  end Fix_Text;
-
-  -- Remove sepators from text
-  function Remove_Separators (Text : Asu_Us) return Asu_Us is
+  procedure Normalize (Text : in out Asu_Us) is
     Res : String (1 .. Asu.Length (Text)) := Asu_Ts (Text);
   begin
-    -- Replace any separator by a space
-    for I in Res'Range loop
-      if Is_Separator (Res(I)) then
-        Res(I) := Util.Space;
-      end if;
-    end loop;
-    -- Replace any space by nothing
-    return Asu_Tus (String_Mng.Replace (Res, Space & "", ""));
-  end Remove_Separators;
+    -- Replace "{ Lf | Tab | Space }" by a space
+    Fix_Spaces (Res);
+    Text := Asu_Tus (Res);
+  end Normalize;
 
-  -- Replace any sequence of separators by a space
-  function Normalize_Separators (Text : Asu_Us) return Asu_Us is
+  -- Replace any sequence of spaces by a space
+  -- Remove Leading and trailing spaces
+  procedure Normalize_Spaces (Text : in out Asu_Us) is
     Res : Asu_Us;
     Char : Character;
-    -- Will skip leading separators
-    Prev_Is_Sep : Boolean := True;
+    -- Will skip leading spaces
+    Prev_Is_Space : Boolean := True;
   begin
     for I in 1 .. Asu.Length (Text) loop
       Char := Asu.Element (Text, I);
-      if Util.Is_Separator (Char) then
-        if not Prev_Is_Sep then
+      if Char = Space then
+        if not Prev_Is_Space then
           Asu.Append (Res, Util.Space);
-          Prev_Is_Sep := True;
+          Prev_Is_Space := True;
         end if;
       else
         Asu.Append (Res, Char);
-        Prev_Is_Sep := False;
+        Prev_Is_Space := False;
       end if;
     end loop;
     -- Remove trailing space
@@ -1055,8 +1007,22 @@ package body Util is
     and then Asu.Element (Res, Asu.Length (Res)) = Util.Space then
       Asu.Delete (Res, Asu.Length (Res), Asu.Length (Res));
     end if;
-    return Res;
-  end Normalize_Separators;
+    Text := Res;
+  end Normalize_Spaces;
+
+  -- Remove separators from text
+  procedure Remove_Separators (Text : in out Asu_Us) is
+    Res : Asu_Us;
+    Char : Character;
+  begin
+    for I in 1 .. Asu.Length (Text) loop
+      Char := Asu.Element (Text, I);
+      if not Util.Is_Separator (Char) then
+        Asu.Append (Res, Char);
+      end if;
+    end loop;
+    Text := Res;
+  end Remove_Separators;
 
   -- Push current flow
   procedure Push_Flow (Flow : in out Flow_Type) is

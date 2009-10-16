@@ -186,16 +186,13 @@ package body Parse_Mng  is
                            Dtd : in out Dtd_Type;
                            Text : in out Asu_Us;
                            Context : in Context_List);
-    -- Fix text: Remove repetition of separators
-    procedure Fix_Text (Ctx : in out Ctx_Type;
-                        Text : in out Asu_Us;
-                        Context : in Context_List;
-                        Preserve_Spaces : in Boolean);
-    -- Remove sepators from text
-    function Remove_Separators (Text : Asu_Us) return Asu_Us;
-    -- Replace any sequence of separators by a space
+    -- Fix text: replace any separator by a space
+    procedure Normalize (Text : in out Asu_Us);
+    -- Replace any sequence of spaces by a space
     -- Remove Leading and trailing spaces
-    function Normalize_Separators (Text : Asu_Us) return Asu_Us;
+    procedure Normalize_Spaces (Text : in out Asu_Us);
+    -- Remove sepators from text
+    procedure Remove_Separators (Text : in out Asu_Us);
 
     -- Push current flow
     procedure Push_Flow (Flow : in out Flow_Type);
@@ -248,9 +245,8 @@ package body Parse_Mng  is
     end if;
     -- Save parsed text
     Util.Get_Curr_Str (Ctx.Flow, Value);
-    -- Expand entities and fix separators and expand entities
+    -- Expand entities
     Util.Expand_Vars (Ctx, Adtd, Value, Context);
-    Util.Fix_Text (Ctx, Value, Context, False);
   end Parse_Value;
 
   -- Dtd management, uses util and the tree
@@ -275,6 +271,11 @@ package body Parse_Mng  is
     -- Check attributes of current element of the tree
     procedure Check_Attributes (Ctx  : in out Ctx_Type;
                                 Adtd : in out Dtd_Type);
+    -- Is this attribute of this element CDATA
+    procedure Is_Cdata (Adtd      : in out Dtd_Type;
+                        Elt, Attr : in Asu_Us;
+                        Yes       : out Boolean);
+
     -- Add current element to list of children
     procedure Add_Current_Element (List : in out Asu_Us; Name : in Asu_Us);
     -- Check that list matches Dtd definition of current element
@@ -292,12 +293,13 @@ package body Parse_Mng  is
   -- Either of xml prologue directive or on current element
   procedure Parse_Attributes (Ctx : in out Ctx_Type;
                               Adtd : in out Dtd_Type;
-                              Of_Xml : in Boolean) is
+                              Of_Xml : in Boolean;
+                              Elt_Name : in Asu_Us := Asu_Null) is
     Attribute_Name, Attribute_Value : Asu_Us;
     Attribute_Index : Natural;
     Char : Character;
     Line_No : Natural;
-    Attr_Exists : Boolean;
+    Attr_Exists, Attr_Cdata : Boolean;
   begin
     -- Loop on several attributes
     loop
@@ -336,6 +338,12 @@ package body Parse_Mng  is
                   Attribute_Name, Attribute_Value, Line_No);
       elsif not Attr_Exists then
         -- Keep first definition
+        -- Normalize separators of non CDATA attributes
+        Dtd.Is_Cdata (Adtd, Elt_Name, Attribute_Name, Attr_Cdata);
+        if not Attr_Cdata then
+          Trace ("Attribute " & Asu_Ts (Attribute_Name) & " is not CDATA");
+          Util.Normalize_Spaces (Attribute_Value);
+        end if;
         Tree_Mng.Add_Attribute (Ctx.Elements.all,
                   Attribute_Name, Attribute_Value, Line_No);
         if Asu_Ts (Attribute_Name) = "xml:space"
@@ -1119,7 +1127,9 @@ package body Parse_Mng  is
                                   Index + Util.Cdata_End'Length - 1);
               -- Text is the remaining unexpanded text, fixed
               Asu.Delete (Text, 1, Index + Util.Cdata_End'Length - 1);
-              Util.Fix_Text (Ctx, Text, Ref_Xml, Children.Preserve);
+              if not Children.Preserve then
+                Util.Normalize (Text);
+              end if;
               -- And we loop
 
             else
@@ -1312,7 +1322,7 @@ package body Parse_Mng  is
     -- If not / nor >, then parse_attributes
     if Char /= Util.Slash and then Char /= Util.Stop then
       Util.Unget (Ctx.Flow);
-      Parse_Attributes (Ctx, Adtd, Of_Xml => False);
+      Parse_Attributes (Ctx, Adtd, Of_Xml => False, Elt_Name => Element_Name);
       Util.Read (Ctx.Flow, Char);
     end if;
     -- If /, then must be followed by >, return

@@ -155,7 +155,8 @@ package body Dtd is
     Util.Parse_Until_Char (Ctx.Flow, "" & Util.Space);
     Util.Get_Curr_Str (Ctx.Flow, Info_Name);
     Util.Expand_Name (Ctx, Adtd, Info_Name, Ref_Dtd_Mark);
-    Util.Fix_Text (Ctx, Info_Name, Ref_Dtd_Mark, False);
+    Util.Normalize (Info_Name);
+    Util.Normalize_Spaces (Info_Name);
     if not Util.Name_Ok (Info_Name) then
       Util.Error (Ctx.Flow, "Invalid name " & Asu_Ts (Info_Name));
     end if;
@@ -175,8 +176,8 @@ package body Dtd is
     Util.Get_Curr_Str (Ctx.Flow, Info.List);
     -- Expand potential parameter entities and re-insert
     Util.Expand_Vars (Ctx, Adtd, Info.List, Ref_Dtd_Mark);
-    Util.Fix_Text (Ctx, Info.List, Ref_Dtd_Mark, False);
-    Info.List := Util.Normalize_Separators (Info.List);
+    Util.Normalize (Info.List);
+    Util.Normalize_Spaces (Info.List);
     Util.Insert (Ctx.Flow, Asu_Ts (Info.List));
 
     -- Check possible content: EMPTY, ANY or (<list>)
@@ -206,7 +207,7 @@ package body Dtd is
       -- A (mixed) list: parse until ')' and remove any seperator
       Util.Parse_Until_Close (Ctx.Flow);
       Util.Get_Curr_Str (Ctx.Flow, Info.List);
-      Info.List := Util.Remove_Separators (Info.List);
+      Util.Remove_Separators (Info.List);
       -- Now see if it is mixed or children
       if Asu.Index (Info.List, "#PCDATA") /= 0 then
         -- Mixed
@@ -218,7 +219,7 @@ package body Dtd is
           -- Remove heading #PCDATA
           Info.List := Asu_Tus (
               String_Mng.Cut (Asu_Ts (Info.List), 8));
-          Info.List := Util.Remove_Separators (Info.List);
+          Util.Remove_Separators (Info.List);
           -- Check that everything between "|" are names
           if Asu.Element (Info.List, Asu.Length (Info.List)) = '|'
           or else Asu.Element (Info.List, 1) = '|' then
@@ -251,8 +252,8 @@ package body Dtd is
         end if;
         -- Expand variables if any
         Util.Expand_Vars (Ctx, Adtd, Info.List, Ref_Dtd_Mark);
-        Util.Fix_Text (Ctx, Info.List, Ref_Dtd_Mark, False);
-        Info.List := Util.Remove_Separators (Info.List);
+        Util.Normalize (Info.List);
+        Util.Remove_Separators (Info.List);
         -- Check valid names
         if not Util.Names_Ok (Info.List, "|,?*+()") then
           Util.Error (Ctx.Flow, "Invalid name in Children definition");
@@ -317,7 +318,8 @@ package body Dtd is
     Util.Unget (Ctx.Flow);
     Util.Get_Curr_Str (Ctx.Flow, Elt_Name);
     Util.Expand_Name (Ctx, Adtd, Elt_Name, Ref_Dtd_Mark);
-    Util.Fix_Text (Ctx, Elt_Name, Ref_Dtd_Mark, False);
+    Util.Normalize (Elt_Name);
+    Util.Normalize_Spaces (Elt_Name);
     if not Util.Name_Ok (Elt_Name) then
       Util.Error (Ctx.Flow, "Invalid name " & Asu_Ts (Elt_Name));
     end if;
@@ -344,8 +346,8 @@ package body Dtd is
     Util.Get_Curr_Str (Ctx.Flow, Attlist);
     -- Expand potential parameter entities and re-insert
     Util.Expand_Vars (Ctx, Adtd, Attlist, Ref_Dtd_Mark);
-    Util.Fix_Text (Ctx, Attlist, Ref_Dtd_Mark, False);
-    Attlist := Util.Normalize_Separators (Attlist);
+    Util.Normalize (Attlist);
+    Util.Normalize_Spaces (Attlist);
     Util.Insert (Ctx.Flow, Asu_Ts (Attlist));
 
     -- Loop on all attributes
@@ -359,7 +361,8 @@ package body Dtd is
       Util.Parse_Until_Char (Ctx.Flow, "" & Util.Space);
       Util.Get_Curr_Str (Ctx.Flow, Att_Name);
       Util.Expand_Name (Ctx, Adtd, Att_Name, Ref_Dtd_Mark);
-      Util.Fix_Text (Ctx, Att_Name, Ref_Dtd_Mark, False);
+      Util.Normalize (Att_Name);
+      Util.Normalize_Spaces (Attlist);
       if not Util.Name_Ok (Att_Name) then
         Util.Error (Ctx.Flow, "Invalid attribute " & Asu_Ts (Att_Name));
       end if;
@@ -416,7 +419,7 @@ package body Dtd is
       if Typ_Char = 'E' or else Typ_Char = 'N' then
         Util.Parse_Until_Char (Ctx.Flow, ")");
         Util.Get_Curr_Str (Ctx.Flow, Enum);
-        Enum := Util.Remove_Separators (Enum);
+        Util.Remove_Separators (Enum);
         if Enum = Asu_Null then
           Util.Error (Ctx.Flow, "Empty enumeration");
         end if;
@@ -622,7 +625,8 @@ package body Dtd is
     Util.Get_Curr_Str (Ctx.Flow, Name);
     Util.Expand_Name (Ctx, Adtd, Name, Ref_Dtd_Mark);
     -- Strip separators
-    Util.Fix_Text (Ctx, Name, Ref_Dtd_Mark, False);
+    Util.Normalize (Name);
+    Util.Normalize_Spaces (Name);
     -- Check name is valid and not already defined
     if not Util.Name_Ok (Name) then
       Util.Error (Ctx.Flow, "Invalid entity name " & Asu_Ts (Name));
@@ -752,7 +756,7 @@ package body Dtd is
     Util.Get_Curr_Str (Ctx.Flow, Name);
     Util.Expand_Name (Ctx, Adtd, Name, Ref_Dtd_Mark);
     -- Strip separators
-    Util.Fix_Text (Ctx, Name, Ref_Dtd_Mark, False);
+    Util.Normalize (Name);
     -- Check name is valid and not already defined
     if not Util.Name_Ok (Name) then
       Util.Error (Ctx.Flow, "Invalid notation name " & Asu_Ts (Name));
@@ -829,13 +833,13 @@ package body Dtd is
     -- Expand dtd entities
     Util.Expand_Name (Ctx, Adtd, Word, Ref_Dtd_Mark);
     -- Strip separators
-    Util.Fix_Text (Ctx, Word, Ref_Dtd_Mark, False);
+    Util.Normalize (Word);
     if Asu_Ts (Word) = "IGNORE" then
       -- IGNORE directive, skip up to "]]>"
       Util.Parse_Until_Char (Ctx.Flow, "[");
       Util.Parse_Until_Str (Ctx.Flow, "]]" & Util.Stop);
       Util.Get_Curr_Str (Ctx.Flow, Word);
-      Word := Util.Normalize_Separators (Word);
+      Util.Normalize_Spaces (Word);
       Trace ("Dtd ignored " & Asu_Ts (Word));
       return;
     elsif Asu_Ts (Word) = "INCLUDE" then
@@ -1642,7 +1646,7 @@ package body Dtd is
           elsif Td(1) = 'r' then
             Idcell.Line_No := Line_No;
             -- Store these IDREFs and line_no to list of IDREFs
-            Xml_Val := Util.Normalize_Separators (Xml_Val);
+            Util.Normalize_Spaces (Xml_Val);
             -- Split IDREFS and insert each IDREF
             Iter_Xml.Set (Asu_Ts (Xml_Val),
                         Parser.Is_Space_Or_Htab_Function'Access);
@@ -1728,6 +1732,47 @@ package body Dtd is
     -- Check Attributes
     Check_Attributes (Ctx, Adtd, Cell.Name, Cell.Line_No, Attributes);
   end Check_Attributes;
+
+  -- Is this attribute of this element CDATA
+  procedure Is_Cdata (Adtd      : in out Dtd_Type;
+                      Elt, Attr : in Asu_Us;
+                      Yes       : out Boolean) is
+    Info : Info_Rec;
+    Info_Found : Boolean;
+    use type Asu_Us;
+  begin
+    -- Default: Yes, it is CDATA
+    Yes := True;
+    if not Adtd.Set then
+      -- No dtd => CDATA
+      return;
+    end if;
+    -- Read ATTLIST def of Elt
+    Info.Name := Asu_Tus ("Atl" & Info_Sep) & Elt;
+    Adtd.Info_List.Search (Info, Info_Found);
+    if Info_Found then
+      Adtd.Info_List.Read (Info, Info);
+    end if;
+    if not Info_Found or else Info.List = Asu_Null then
+      return;
+    end if;
+    -- Locate attribute name in List
+    declare
+      Str : constant String := Asu_Ts (Info.List);
+      Index : Natural;
+    begin
+      Index := String_Mng.Locate (Str, Info_Sep & Asu_Ts (Attr)
+                                     & Info_Sep & Info_Sep);
+      if Index = 0 then
+        -- Not found
+        return;
+      end if;
+      -- Skip # and attribute name and ##
+      Index := Index + Asu.Length (Attr) + 3;
+      -- 'S' for CDATA
+      Yes := Asu.Element (Info.List, Index) = 'S';
+    end;
+  end Is_Cdata;
 
   -- Add current element to list of children
   procedure Add_Current_Element (List : in out Asu_Us; Name : in Asu_Us) is
