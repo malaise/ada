@@ -910,6 +910,9 @@ package body Util is
       Error (Ctx.Flow, "Unknown entity " & Asu_Ts (Name));
     when Entity_Mng.Invalid_Char_Code =>
       Error (Ctx.Flow, "Invalid Char code " & Asu_Ts (Name));
+    when Entity_Mng.Entity_Standalone =>
+      Error (Ctx.Flow, "Invalid reference in standalone document to entity "
+           & Asu_Ts (Name) & " defined in external markup declaration");
   end Expand_Internal;
 
   -- Expand text (expand vars) returns the index of localized '<'

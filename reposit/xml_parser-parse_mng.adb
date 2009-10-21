@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1;
-with Lower_Str, Upper_Str, String_Mng;
+with Lower_Str, Upper_Str, Mixed_Str, String_Mng;
 separate (Xml_Parser)
 
 package body Parse_Mng  is
@@ -31,6 +31,7 @@ package body Parse_Mng  is
                    Name, Value : in Asu_Us;
                    Parameter : in Boolean;
                    Internal : in Boolean;
+                   Intern_Dtd : in Boolean;
                    Parsed : in Boolean);
     -- Check if an entity exists. May raise Invalid_Char_Code
     procedure Exists (The_Entities : in out Entity_List_Mng.List_Type;
@@ -49,6 +50,7 @@ package body Parse_Mng  is
     Invalid_Char_Code : exception;
     Entity_Not_Found : exception;
     Entity_Forbidden : exception;
+    Entity_Standalone : exception;
   end Entity_Mng;
 
   -- Parsing utilities
@@ -206,6 +208,8 @@ package body Parse_Mng  is
 
   -- Descriptor of list of children found
   type Children_Desc is record
+    -- Constraint when parsing children
+    Space_Allowed : Boolean := True;
     -- Result of parsing of children
     Is_Empty : Boolean := True;
     Children : Asu_Us;
@@ -271,6 +275,10 @@ package body Parse_Mng  is
     -- Check attributes of current element of the tree
     procedure Check_Attributes (Ctx  : in out Ctx_Type;
                                 Adtd : in out Dtd_Type);
+    -- Is this element defined in internal dtd or else has not Content def
+    procedure Can_Have_Spaces (Adtd : in out Dtd_Type;
+                               Elt  : in Asu_Us;
+                               Yes  : out Boolean);
     -- Is this attribute of this element CDATA
     procedure Is_Cdata (Adtd      : in out Dtd_Type;
                         Elt, Attr : in Asu_Us;
@@ -295,11 +303,12 @@ package body Parse_Mng  is
                               Adtd : in out Dtd_Type;
                               Of_Xml : in Boolean;
                               Elt_Name : in Asu_Us := Asu_Null) is
-    Attribute_Name, Attribute_Value : Asu_Us;
+    Attribute_Name, Attribute_Value, Unnormalized : Asu_Us;
     Attribute_Index : Natural;
     Char : Character;
     Line_No : Natural;
     Attr_Exists, Attr_Cdata : Boolean;
+    use type Asu_Us;
   begin
     -- Loop on several attributes
     loop
@@ -342,7 +351,13 @@ package body Parse_Mng  is
         Dtd.Is_Cdata (Adtd, Elt_Name, Attribute_Name, Attr_Cdata);
         if not Attr_Cdata then
           Trace ("Attribute " & Asu_Ts (Attribute_Name) & " is not CDATA");
+          Unnormalized := Attribute_Value;
           Util.Normalize_Spaces (Attribute_Value);
+          if Ctx.Standalone and then Unnormalized /= Attribute_Value then
+            Util.Error (Ctx.Flow,
+              "Normalization of attribute " & Asu_Ts (Attribute_Name)
+            & " in standalone document is impacted by not CDATA declaration");
+          end if;
         end if;
         Tree_Mng.Add_Attribute (Ctx.Elements.all,
                   Attribute_Name, Attribute_Value, Line_No);
@@ -467,8 +482,12 @@ package body Parse_Mng  is
     end if;
     if Attribute_Index /= 0 then
       -- Check standalone value, must be "yes" or "no"
-      if Asu_Ts (Attribute_Value) /= "yes"
-      and then Asu_Ts (Attribute_Value) /= "no" then
+      -- Ctx.Standalone is False by default
+      if Asu_Ts (Attribute_Value) = "yes" then
+        Ctx.Standalone := True;
+      elsif Asu_Ts (Attribute_Value) = "no" then
+        Ctx.Standalone := False;
+      else
         Util.Error (Ctx.Flow, "Invalid standalone value");
       end if;
       Next_Index := Attribute_Index + 1;
@@ -1044,7 +1063,7 @@ package body Parse_Mng  is
   procedure Parse_Text (Ctx : in out Ctx_Type;
                         Adtd : in out Dtd_Type;
                         Children : access Children_Desc) is
-    Text, Tail, Head, Cdata : Asu_Us;
+    Text, Tail, Head, Cdata, Tmp_Text : Asu_Us;
     Index : Natural;
     Ok : Boolean;
     use type Asu_Us;
@@ -1053,6 +1072,7 @@ package body Parse_Mng  is
 
     -- Loop as long a flow does not contain and does not expand
     --  to '<', skipping "<![CDATA["
+    -- Save expanded text and CDATA in Head, and save '<' and following in Tail
     Cdata_In_Flow:
     loop
 
@@ -1074,7 +1094,12 @@ package body Parse_Mng  is
           end if;
       end;
       Trace ("Txt Got text >" & Asu_Ts (Text) & "<");
-      -- Check "<![CDATA["
+
+      if not Children.Preserve then
+        Util.Normalize (Text);
+      end if;
+
+      -- Check "<![CDATA[" in flow
       Util.Try (Ctx.Flow, Util.Cdata_Start, Ok);
       if Ok then
         Util.Parse_Until_Str (Ctx.Flow, Util.Cdata_End);
@@ -1089,7 +1114,7 @@ package body Parse_Mng  is
           Tail := Cdata;
         end if;
       elsif Text = Asu_Null then
-        -- A valid '<' found and no text before it
+        -- A valid '<' read and no text before it
         exit Cdata_In_Flow;
       end if;
 
@@ -1097,60 +1122,68 @@ package body Parse_Mng  is
       --  or as long as this is a "<![CDATA["
       -- At the end, Head contains expanded text and CDATA
       --  and Tail contains non expanded flow
-      Head := Asu_Null;
-      if Ctx.Expand then
-        Cdata_In_Text:
-        loop
-          -- Done when no more text to expand
-          exit Cdata_In_Text when Text = Asu_Null;
+      Cdata_In_Text:
+      loop
+        -- Done when no more text to expand
+        exit Cdata_In_Text when Text = Asu_Null;
+        if Ctx.Expand then
           -- Expand Text and check if it generated a '<'
           Util.Expand_Text (Ctx, Adtd, Text, Ref_Xml, Index);
-          if Text /= Asu_Null then
-            -- Expansion lead to something => not empty
-            Children.Is_Empty := False;
+        else
+          Index := 0;
+        end if;
+        if Text /= Asu_Null then
+          -- Expansion lead to something => not empty
+          Children.Is_Empty := False;
+        end if;
+        if not Children.Space_Allowed then
+          -- No space allowed within this element
+          -- doc is standalone, element has content and is not internal
+          Tmp_Text := Text;
+          Util.Normalize (Tmp_Text);
+          if String_Mng.Locate (Asu_Ts (Tmp_Text), Util.Space & "") /= 0 then
+            Util.Error (Ctx.Flow, "element with content, defined in external"
+               & " markup declaration has spaces in standalone document");
           end if;
+        end if;
 
-          if Index /= 0 then
-            if Index + Util.Cdata_Start'Length - 1 <= Asu.Length (Text)
-            and then Asu.Slice (Text, Index,
-                                Index + Util.Cdata_Start'Length - 1)
-                     = Util.Cdata_Start then
+        if Index /= 0 then
+          if Index + Util.Cdata_Start'Length - 1 <= Asu.Length (Text)
+          and then Asu.Slice (Text, Index,
+                              Index + Util.Cdata_Start'Length - 1)
+                   = Util.Cdata_Start then
 
-              -- Expansion stopped but this is a Cdata, locate the end of CDATA
-              Index := String_Mng.Locate (Asu_Ts (Text), Util.Cdata_End,
+            -- Expansion stopped but this is a Cdata, locate the end of CDATA
+            Index := String_Mng.Locate (Asu_Ts (Text), Util.Cdata_End,
                        Index + Util.Cdata_Start'Length);
-              if Index = 0 then
-                Util.Error (Ctx.Flow, "Unterminated CDATA section");
-              end if;
-              -- Head takes the expanded text and the CDATA section
-              Head := Head & Asu.Slice (Text, 1,
-                                  Index + Util.Cdata_End'Length - 1);
-              -- Text is the remaining unexpanded text, fixed
-              Asu.Delete (Text, 1, Index + Util.Cdata_End'Length - 1);
-              if not Children.Preserve then
-                Util.Normalize (Text);
-              end if;
-              -- And we loop
-
-            else
-              -- There is a '<' but not CDATA: prepend it to the tail
-              Tail := Asu.Slice (Text, Index, Asu.Length (Text)) & Tail;
-              Head := Head & Asu.Slice (Text, 1, Index - 1);
-              -- And done (completely)
-              exit Cdata_In_Flow;
+            if Index = 0 then
+              Util.Error (Ctx.Flow, "Unterminated CDATA section");
             end if;
+            -- Head takes the expanded text and the CDATA section
+            Head := Head & Asu.Slice (Text, 1,
+                                  Index + Util.Cdata_End'Length - 1);
+            -- Text is the remaining unexpanded text, fixed
+            Asu.Delete (Text, 1, Index + Util.Cdata_End'Length - 1);
+            if not Children.Preserve then
+              Util.Normalize (Text);
+            end if;
+            -- And we loop
+
           else
-            -- There is no '<' in expanded text
-            -- Head takes the expanded text and the initial CDATA
-            Head := Head & Text & Tail;
-            -- Nothing more to expand => Need to read from flow
-            Text := Asu_Null;
+            -- There is a '<' but not CDATA: prepend it to the tail
+            Tail := Asu.Slice (Text, Index, Asu.Length (Text)) & Tail;
+            Head := Head & Asu.Slice (Text, 1, Index - 1);
+            -- And done (completely)
+            exit Cdata_In_Flow;
           end if;
-        end loop Cdata_In_Text;
-      else
-        -- No expansion
-        Head := Text;
-      end if;
+        else
+          -- There is no '<' in expanded text
+          -- Head takes the expanded text and the initial CDATA
+          Head := Head & Text & Tail;
+          -- Nothing more to expand => Need to read from flow
+          Text := Asu_Null;
+        end if;
+      end loop Cdata_In_Text;
 
     end loop Cdata_In_Flow;
     Trace ("Txt expanded text >" & Asu_Ts (Head)
@@ -1313,7 +1346,14 @@ package body Parse_Mng  is
     Tree_Mng.Add_Element (Ctx.Elements.all, Element_Name, Line_No);
     -- Add ourself as child of our parent
     Add_Child (Ctx, Adtd, Parent_Children);
-    Trace ("Parsing element " & Asu_Ts (Element_Name));
+    -- Space are forbidden if standalone and content
+    if not Ctx.Standalone then
+      My_Children.Space_Allowed := True;
+    else
+      Dtd.Can_Have_Spaces (Adtd, Element_Name, My_Children.Space_Allowed);
+    end if;
+    Trace ("Parsing element " & Asu_Ts (Element_Name) & " allowing space " &
+      Mixed_Str (My_Children.Space_Allowed'Img));
     -- See first significant character after name
     Util.Read (Ctx.Flow, Char);
     if Util.Is_Separator (Char) then

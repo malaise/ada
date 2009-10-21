@@ -442,6 +442,7 @@ private
     Value : Ada.Strings.Unbounded.Unbounded_String;
     Parameter : Boolean;
     Internal : Boolean;
+    Intern_Dtd : Boolean;
     Parsed : Boolean;
   end record;
   type Entity_Access is access all Entity_Type;
@@ -513,6 +514,11 @@ private
     Entity_List : Entity_List_Mng.List_Type;
     -- Notation attributes: #Elt##Attr#Elt##Attr#...
     Notation_Attrs : Ada.Strings.Unbounded.Unbounded_String;
+    -- Internal elements #@Elt# or attributes #Elt##Attr#
+    -- ELEMENT or ATTLIST defined in internal dtd
+    Internals : Ada.Strings.Unbounded.Unbounded_String;
+    -- Are we presently parsing internal declarations
+    In_Internal : Boolean := False;
     -- Are we in an INCLUDE directive
     In_Include : Boolean := False;
   end record;
@@ -556,8 +562,6 @@ private
     Int_Def : Ada.Strings.Unbounded.Unbounded_String;
   end record;
 
-
-
   ------------------
   -- CONTEXT TYPE --
   ------------------
@@ -586,6 +590,8 @@ private
     Elements : Tree_Acc := new My_Tree.Tree_Type;
     -- Doctype name, file and a tag of internal definitions
     Doctype : Doctype_Type;
+    -- Standalone
+    Standalone : Boolean := False;
     -- Unique list of Ids
     Ids : Id_List_Access := new Id_List_Mng.List_Type;
     -- List of Idrefs

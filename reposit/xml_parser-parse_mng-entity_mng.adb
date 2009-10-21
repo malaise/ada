@@ -9,12 +9,13 @@ package body Entity_Mng is
                    Name, Value : in Asu_Us;
                    Parameter : in Boolean;
                    Internal : in Boolean;
+                   Intern_Dtd : in Boolean;
                    Parsed : in Boolean;
                    Log : in Boolean) is
     Found : Boolean;
     Entity : Entity_Type;
   begin
-    Entity := (Name, Value, Parameter, Internal, Parsed);
+    Entity := (Name, Value, Parameter, Internal, Intern_Dtd, Parsed);
     -- Re definition of an existing entity is skipped
     Entity_List_Mng.Search (The_Entities, Entity, Found);
     if Found then
@@ -81,7 +82,7 @@ package body Entity_Mng is
   procedure Store_Predefined (The_Entities : in out Entity_List_Mng.List_Type;
                               Name, Value : in Asu_Us) is
   begin
-    Store (The_Entities, Name, Value, False, True, True, False);
+    Store (The_Entities, Name, Value, False, True, True, True, False);
   end Store_Predefined;
 
   -- Initialise with default entities
@@ -102,6 +103,7 @@ package body Entity_Mng is
                  Name, Value : in Asu_Us;
                  Parameter : in Boolean;
                  Internal : in Boolean;
+                 Intern_Dtd : in Boolean;
                  Parsed : in Boolean) is
     use type Asu_Us;
   begin
@@ -109,7 +111,8 @@ package body Entity_Mng is
       Trace ("Storing an empty entity name");
       raise Internal_Error;
     end if;
-    Store (The_Entities, Name, Value, Parameter, Internal, Parsed, True);
+    Store (The_Entities, Name, Value, Parameter, Internal, Intern_Dtd, Parsed,
+           True);
   end Add;
 
   -- Check if an entity exists
@@ -195,6 +198,11 @@ package body Entity_Mng is
           Trace ("Forbidden unparsed entity reference " & Asu_Ts (Name)
                & " in xml");
           raise Entity_Forbidden;
+        end if;
+        if Ctx.Standalone and then not Entity.Intern_Dtd then
+          -- Reference in standalone document to entity defined
+          --  in external marckup
+          raise Entity_Standalone;
         end if;
       when Ref_Entity =>
         if not Parameter then

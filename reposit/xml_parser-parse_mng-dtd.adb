@@ -27,6 +27,11 @@ package body Dtd is
     Adtd.Info_List.Delete_List;
     -- Reset lists of attributes of type notation
     Adtd.Notation_Attrs := Asu_Null;
+    -- Reset list of internal attlist and entity
+    Adtd.In_Internal := False;
+    Adtd.Internals := Asu_Null;
+    -- Clean in iclude tag
+    Adtd.In_Include := False;
   end Init;
 
   -- Parse an instruction:
@@ -269,6 +274,15 @@ package body Dtd is
     if Char /= Util.Stop then
       Util.Error (Ctx.Flow, "Unexpected character " & Char
                           & " at end of ELEMENT");
+    end if;
+
+    -- If in internal dtd and not in include, add @element to Internals
+    if Adtd.In_Internal and then not Adtd.In_Include then
+      if Adtd.Internals = Asu_Null then
+        Asu.Append (Adtd.Internals, Info_Sep);
+      end if;
+      Asu.Append (Adtd.Internals,
+          "@" & Asu_Ts (Info_Name) & Info_Sep);
     end if;
     -- Store element
     Adtd.Info_List.Insert (Info);
@@ -556,6 +570,15 @@ package body Dtd is
         end if;
         Asu.Append (Info.List, Att_Name
                   & Info_Sep & Info_Sep & Typ_Char & Def_Char & Info_Sep);
+        -- If in internal dtd and not in include, add it to internals
+        if Adtd.In_Internal and then not Adtd.In_Include then
+          if Adtd.Internals = Asu_Null then
+            Asu.Append (Adtd.Internals, Info_Sep);
+          end if;
+          Asu.Append (Adtd.Internals,
+              Asu_Ts (Elt_Name) & Info_Sep & Info_Sep
+            & Asu_Ts (Att_Name) & Info_Sep);
+        end if;
       else
         -- This attribute is already defined (for this element)
         Trace ("Dtd discarding duplicate ATTLIST -> " & Asu_Ts (Info.Name)
@@ -729,7 +752,8 @@ package body Dtd is
     end if;
 
     -- Store entity
-    Entity_Mng.Add (Adtd.Entity_List, Name, Value, Parameter, Internal, Parsed);
+    Entity_Mng.Add (Adtd.Entity_List, Name, Value, Parameter, Internal,
+                    Adtd.In_Internal and then not Adtd.In_Include, Parsed);
     Trace ("Dtd parsed directive ENTITY -> " &  Asu_Ts (Parstr & Name)
          & " " & Asu_Ts (Value) & " " & Mixed_Str (Internal'Img)
          & " " & Mixed_Str (Parsed'Img) );
@@ -916,6 +940,7 @@ package body Dtd is
     Is_Recorded : Boolean;
     use type Asu_Us;
   begin
+    Adtd.In_Internal := not External;
     if External and then Ctx.Flow.Curr_Flow.Is_File then
       -- Autodetect encoding and check
       Util.Guess_Encoding (Ctx.Flow);
@@ -979,6 +1004,7 @@ package body Dtd is
             end if;
         end;
         if Char = (']') and then not External then
+          Adtd.In_Internal := False;
           return;
         else
           Util.Error (Ctx.Flow,
@@ -1543,6 +1569,7 @@ package body Dtd is
           Util.Error (Ctx.Flow, "According to dtd, element " & Asu_Ts (Name)
                     & " must have attribute " & Attr, Line_No);
         end if;
+
         -- Enum and Fixed must have correct value
         if Td(2) = 'F' then
           -- Fixed (Enum or string): first #<val># is the one required
@@ -1559,7 +1586,8 @@ package body Dtd is
             end if;
           end;
         elsif (Td(1) = 'E' or else Td (1) = 'N') and then Att_Set then
-          -- Not fixed Enum in dtd with xml value: #<val># must be in dtd list
+          -- Not fixed Enum or notation in dtd with value set in xml:
+          -- #<val># must be in dtd list
           if String_Mng.Locate (Asu_Ts (Attinfo.List),
                  Info_Sep  & Asu_Ts (Xml_Val) & Info_Sep) = 0 then
             Util.Error (Ctx.Flow, "According to dtd, Enum attribute " & Attr
@@ -1569,6 +1597,14 @@ package body Dtd is
         elsif Td(2) = 'D' and then not Att_Set then
           -- Default in dtd with no xml value: insert default in tree
           --  and set Xml_Val
+          if Ctx.Standalone then
+            -- This default must be defined in internal Dtd
+            if String_Mng.Locate (Asu_Ts (Adtd.Internals), Info_Sep
+                     & Asu_Ts (Name) & Info_Sep & Info_Sep & Attr) = 0 then
+              Util.Error (Ctx.Flow, "Attribute " & Attr
+                     & " needs default value in standalone document");
+            end if;
+          end if;
           if Td(1) = 'E' or else Td(1) = 'N' then
             -- Default of enum is first string after Info_Sep
             declare
@@ -1592,7 +1628,7 @@ package body Dtd is
             end;
           else
             if Ctx.Expand then
-              -- Default of not enum is the value
+              -- Attinfo of not enum is the value
               Tree_Mng.Add_Attribute (Ctx.Elements.all,
                     Asu_Tus (Attr), Attinfo.List, Line_No);
             end if;
@@ -1732,6 +1768,38 @@ package body Dtd is
     -- Check Attributes
     Check_Attributes (Ctx, Adtd, Cell.Name, Cell.Line_No, Attributes);
   end Check_Attributes;
+
+  -- Is this element defined in internal dtd or else has not Content def
+ procedure Can_Have_Spaces (Adtd : in out Dtd_Type;
+                            Elt  : in Asu_Us;
+                            Yes  : out Boolean) is
+    Info : Info_Rec;
+    Info_Found : Boolean;
+    use type Asu_Us;
+  begin
+    -- Default: Yes (not Content or else internal)
+    Yes := True;
+    if not Adtd.Set then
+      -- No dtd => not Content
+      return;
+    end if;
+    -- Read ELEMENT def of Elt
+    Info.Name := Asu_Tus ("Elt" & Info_Sep) & Elt;
+    Adtd.Info_List.Search (Info, Info_Found);
+    if Info_Found then
+      Adtd.Info_List.Read (Info, Info);
+    else
+      -- Not found => Elt not defined
+      return;
+    end if;
+    -- Element can have spaces if not Content
+    if Asu.Element (Info.List, 1) /= 'C' then
+      return;
+    end if;
+    -- The element is defined in internal DTD if there is #@Elt# in Internals
+    Yes := String_Mng.Locate (Asu_Ts (Adtd.Internals),
+          Info_Sep & "@" & Asu_Ts (Elt) & Info_Sep) /= 0;
+  end Can_Have_Spaces;
 
   -- Is this attribute of this element CDATA
   procedure Is_Cdata (Adtd      : in out Dtd_Type;

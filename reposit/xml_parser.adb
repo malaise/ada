@@ -3,7 +3,7 @@ with Environ, Basic_Proc, Rnd, Exception_Messenger, Directory;
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "6";
+  Minor_Version : constant String := "7";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -377,6 +377,8 @@ package body Xml_Parser is
     Ctx.Doctype.Pub_Id  := Asu_Null;
     Ctx.Doctype.File    := Asu_Null;
     Ctx.Doctype.Int_Def := Asu_Null;
+    -- Clean Standalone tag
+    Ctx.Standalone := False;
     -- Clean IDs and unparsed entities
     Ctx.Ids.Delete_List;
     Ctx.Idrefs.Delete_List;
