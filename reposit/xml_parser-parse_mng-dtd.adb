@@ -1570,6 +1570,12 @@ package body Dtd is
                     & " must have attribute " & Attr, Line_No);
         end if;
 
+        -- If not expanding then further checks are skipped
+        if not Ctx.Expand then
+          Trace ("Dtd check of attributes stops cause not expanding");
+          return;
+        end if;
+
         -- Enum and Fixed must have correct value
         if Td(2) = 'F' then
           -- Fixed (Enum or string): first #<val># is the one required

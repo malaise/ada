@@ -1027,6 +1027,33 @@ package body Util is
     Text := Res;
   end Remove_Separators;
 
+  -- Remove (no expanded) entities from text
+  procedure Remove_Entities (Text : in out Asu_Us) is
+    Result : Asu_Us;
+    In_Entity : Boolean;
+    Char : Character;
+  begin
+    In_Entity := False;
+    for I In 1 .. Asu.Length (Text) loop
+      Char := Asu.Element (Text, I);
+      if not In_Entity then
+        if Char = Ent_Param or else Char = Ent_Other then
+          -- Beginning of entity reference
+          In_Entity := True;
+        else
+          -- Out of entity
+          Asu.Append (Result, Char);
+        end if;
+      else
+        if Char = Ent_End then
+          -- End of entity reference 
+          In_Entity := False;
+        end if;
+      end if;
+    end loop;
+    Text := Result;
+  end Remove_Entities;
+
   -- Push current flow
   procedure Push_Flow (Flow : in out Flow_Type) is
   begin

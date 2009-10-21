@@ -195,6 +195,8 @@ package body Parse_Mng  is
     procedure Normalize_Spaces (Text : in out Asu_Us);
     -- Remove sepators from text
     procedure Remove_Separators (Text : in out Asu_Us);
+    -- Remove (no expanded) entities from text
+    procedure Remove_Entities (Text : in out Asu_Us);
 
     -- Push current flow
     procedure Push_Flow (Flow : in out Flow_Type);
@@ -249,6 +251,10 @@ package body Parse_Mng  is
     end if;
     -- Save parsed text
     Util.Get_Curr_Str (Ctx.Flow, Value);
+    -- Normalize attribute
+    if Context = Ref_Attribute then
+      Util.Normalize (Value);
+    end if;
     -- Expand entities
     Util.Expand_Vars (Ctx, Adtd, Value, Context);
   end Parse_Value;
@@ -1129,11 +1135,16 @@ package body Parse_Mng  is
         if Ctx.Expand then
           -- Expand Text and check if it generated a '<'
           Util.Expand_Text (Ctx, Adtd, Text, Ref_Xml, Index);
+          Tmp_Text := Text;
         else
+          -- Handle full text
           Index := 0;
+          -- See if text without entities is empty
+          Tmp_Text := Text;
+          Util.Remove_Entities (Tmp_Text);
         end if;
-        if Text /= Asu_Null then
-          -- Expansion lead to something => not empty
+        if Tmp_Text /= Asu_Null then
+          -- Expansion or text without entities lead to something => not empty
           Children.Is_Empty := False;
         end if;
         if not Children.Space_Allowed then
@@ -1201,7 +1212,16 @@ package body Parse_Mng  is
         -- Fix text to insert
         -- Insert and notify this child
         Tree_Mng.Add_Text (Ctx.Elements.all, Head, Util.Get_Line_No (Ctx.Flow));
-        Add_Child (Ctx, Adtd, Children);
+        if not Ctx.Expand then
+          -- When not expanding, add child only if not empty
+          Tmp_Text := Head;
+          Util.Remove_Entities (Tmp_Text);
+          if Tmp_Text /= Asu_Null then
+            Add_Child (Ctx, Adtd, Children);
+          end if;
+        else
+          Add_Child (Ctx, Adtd, Children);
+        end if;
         Call_Callback (Ctx, False, True, False, Children.Prev_Is_Text);
         Move_Del (Ctx, False);
         Children.Prev_Is_Text := True;
