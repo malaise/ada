@@ -1034,7 +1034,7 @@ package body Util is
     Char : Character;
   begin
     In_Entity := False;
-    for I In 1 .. Asu.Length (Text) loop
+    for I in 1 .. Asu.Length (Text) loop
       Char := Asu.Element (Text, I);
       if not In_Entity then
         if Char = Ent_Param or else Char = Ent_Other then
@@ -1046,7 +1046,7 @@ package body Util is
         end if;
       else
         if Char = Ent_End then
-          -- End of entity reference 
+          -- End of entity reference
           In_Entity := False;
         end if;
       end if;
