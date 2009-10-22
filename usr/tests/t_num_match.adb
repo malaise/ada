@@ -15,7 +15,6 @@ procedure T_Num_Match is
   Len : Natural;
   Num : Natural;
   Res : Boolean;
-  pragma Unreferenced (Res);
 begin
 
   if Argument.Get_Nbre_Arg = 1 then
