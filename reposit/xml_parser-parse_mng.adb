@@ -60,9 +60,8 @@ package body Parse_Mng  is
     -- Syntax check --
     ------------------
     -- Check if char is a letter
-    function Is_Letter (Char : Character) return Boolean;
+    function Is_Valid_Encoding (Name : Asu_Us) return Boolean;
 
-    function Is_Valid_In_Name (Char : Character) return Boolean;
     -- Check that Name is valid
     function Name_Ok (Name : Asu_Us;
                       Allow_Token : Boolean := False) return Boolean;
@@ -158,8 +157,6 @@ package body Parse_Mng  is
     -- Parse until a ')' closes the already got '('
     -- Sets Curr_Str
     procedure Parse_Until_Close (Flow : in out Flow_Type);
-    -- Parse while name looks valid
-    procedure Parse_Name (Flow : in out Flow_Type; Name : out Asu_Us);
     -- Try to parse a keyword, rollback if not
     -- Optionally does not consume the keyword
     -- Str = " " stands for any separator
@@ -439,9 +436,7 @@ package body Parse_Mng  is
     if Attribute_Index /= 0 then
       -- Check encoding value, must be valid name
       -- and also starting with letter and without ":"
-      if not Util.Name_Ok (Attribute_Value)
-      or else not Util.Is_Letter (Asu.Element (Attribute_Value, 1))
-      or else Asu.Index (Attribute_Value, ":") /= 0 then
+      if not Util.Is_Valid_Encoding (Attribute_Value) then
         Util.Error (Ctx.Flow, "Invalid encoding name");
       end if;
       -- Check this is "UTF-8", "UTF-16" or "ISO-8859-1" and that it matches
@@ -823,7 +818,10 @@ package body Parse_Mng  is
       Util.Error (Ctx.Flow, "Invalid second DOCTYPE directive");
     end if;
     -- Parse and check name
-    Util.Parse_Name (Ctx.Flow, Doctype_Name);
+    Util.Parse_Until_Char (Ctx.Flow, Util.Space & Util.Stop & '[');
+    Util.Unget (Ctx.Flow);
+    Util.Skip_Separators (Ctx.Flow);
+    Util.Get_Curr_Str (Ctx.Flow, Doctype_Name);
     if not Util.Name_Ok (Doctype_Name) then
       Util.Error (Ctx.Flow, "Invalid DOCTYPE name " & Asu_Ts (Doctype_Name));
     end if;

@@ -3,7 +3,7 @@ with Environ, Basic_Proc, Rnd, Exception_Messenger, Directory;
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "9";
+  Minor_Version : constant String := "10";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;

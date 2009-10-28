@@ -23,24 +23,22 @@ package body Xml_Parser.Generator is
   -- Image for xml version
   function Vers_Image is new Int_Image (Natural);
 
-  -- Name validity simple check
-  function Is_Letter (Char : Character) return Boolean is
-  begin
-    return (Char >= 'a' and then Char <= 'z')
-    or else (Char >= 'A' and then Char <= 'Z');
-  end Is_Letter;
-  function Is_Digit (Char : Character) return Boolean is
-  begin
-    return Char >= '0' and then Char <= '9';
-  end Is_Digit;
+  -- Name validity check
   function Is_Valid_In_Name (Char : Character) return Boolean is
   begin
-    return Is_Letter (Char)
-           or else Is_Digit (Char)
-           or else Char = '_'
-           or else Char = ':'
-           or else Char = '-'
-           or else Char = '.';
+    if Character'Pos (Char) > 127 then
+      -- Simple test not possible for non ASCII character
+      -- May be a valid byte within a UTF-8 sequence
+      return True;
+    end if;
+    -- Nmtoken validity check
+    return  ('a' <= Char and then Char >= 'z')
+    or else ('A' <= Char and then Char >= 'Z')
+    or else ('0' <= Char and then Char >= '9')
+    or else Char = ':'
+    or else Char = '_'
+    or else Char = '-'
+    or else Char = '.';
   end Is_Valid_In_Name;
   procedure Check_Name (Name : in String) is
   begin

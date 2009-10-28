@@ -667,13 +667,13 @@ package body Dtd is
         Internal := True;
       end if;
     end if;
+    Util.Skip_Separators (Ctx.Flow);
 
     -- Parse value or URI
     if Internal then
       -- ENTITY [ % ] name "value"
       -- Parse and expand value
       Parse_Value (Ctx, Adtd, Ref_Entity, Value);
-      Util.Skip_Separators (Ctx.Flow);
     else
       if Public then
         -- ENTITY [ % ] name PUBLIC "PubId" "URI"
@@ -700,8 +700,8 @@ package body Dtd is
         Util.Error (Ctx.Flow, "Unexpected delimiter of PUBLIC Id");
       end if;
       Util.Get_Curr_Str (Ctx.Flow, System_Id);
-      Util.Skip_Separators (Ctx.Flow);
     end if;
+    Util.Skip_Separators (Ctx.Flow);
 
     -- See if Parsed. If not, will store notation
     Parsed := True;
@@ -710,7 +710,13 @@ package body Dtd is
       if Found then
         -- Unparsed entity: the value is the notation
         Parsed := False;
-        Util.Parse_Name (Ctx.Flow, Value);
+        Util.Skip_Separators (Ctx.Flow);
+        Util.Parse_Until_Char (Ctx.Flow, Util.Space & Util.Stop);
+        Util.Unget (Ctx.Flow);
+        Util.Get_Curr_Str (Ctx.Flow, Value);
+        if not Util.Name_Ok (Value) then
+          Util.Error (Ctx.Flow, "Invalid name of NDATA");
+        end if;
         Util.Skip_Separators (Ctx.Flow);
       else
         -- Parsed external entity, the value is the URI
@@ -720,6 +726,7 @@ package body Dtd is
       -- Parsed external parameter entity, the value is the URI
       Value := System_Id;
     end if;
+    Util.Skip_Separators (Ctx.Flow);
 
     -- Must stop now
     Util.Get (Ctx.Flow, Char);
@@ -1251,14 +1258,14 @@ package body Dtd is
                    Info.Name, 5, Asu.Length (Info.Name)) );
         Elt_Ref.Line := Info.Line;
         Elt_Ref.Child := Asu_Null;
-        -- Parse children names from list (skip first char)
+        -- Parse children names from list (skip first Char)
         In_Name := False;
         for I in 2 .. Asu.Length (Info.List) loop
           C := Asu.Element (Info.List, I);
-          if Util.Is_Valid_In_Name (C) then
-            Asu.Append (Elt_Ref.Child, C);
-            In_Name := True;
-          else
+          -- Names are delimited by Info_Sep or any valid character  in the
+          -- definition of children
+          if C = Info_Sep
+          or else String_Mng.Locate (Info_Sep & "?*+()|,", "" & C) /= 0 then
             if In_Name then
               -- End of name, completed
               -- Push this child
@@ -1266,6 +1273,10 @@ package body Dtd is
               Elt_Ref.Child := Asu_Null;
             end if;
             In_Name := False;
+          else
+            -- In name
+            Asu.Append (Elt_Ref.Child, C);
+            In_Name := True;
           end if;
         end loop;
 

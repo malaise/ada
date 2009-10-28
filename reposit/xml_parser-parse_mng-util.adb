@@ -122,51 +122,92 @@ package body Util is
   ------------------
   -- Syntax check --
   ------------------
+ -- Encoding name check
   function Is_Letter (Char : Character) return Boolean is
   begin
     return (Char >= 'a' and then Char <= 'z')
     or else (Char >= 'A' and then Char <= 'Z');
   end Is_Letter;
-  function Is_Digit (Char : Character) return Boolean is
+
+  function Is_Valid_Encoding (Name : Asu_Us) return Boolean is
+    Char : Character;
   begin
-    return Char >= '0' and then Char <= '9';
-  end Is_Digit;
-  function Is_Valid_In_Name (Char : Character) return Boolean is
+    if Asu.Length (Name) = 0 then
+      return False;
+    end if;
+    Char := Asu.Element (Name, 1);
+    if not Is_Letter (Char) then
+      return False;
+    end if;
+    for I in 2 .. Asu.Length (Name) loop
+      Char := Asu.Element (Name, I);
+      if not Is_Letter (Char)
+      and then (Char < '0' or else '9' < Char)
+      and then Char /= '.'
+      and then Char /= '_'
+      and then Char /= '-' then
+        return False;
+      end if;
+    end loop;
+    return True;
+  end Is_Valid_Encoding;
+
+  function Is_Valid_Start (U : Utf_8.Unicode_Number) return Boolean is
   begin
-    return Is_Letter (Char)
-           or else Is_Digit (Char)
-           or else Char = '_'
-           or else Char = ':'
-           or else Char = '-'
-           or else Char = '.'
-           -- UTF-8
-           or else Char > Ada.Characters.Latin_1.Del;
+    return  (Character'Pos('a') <= U and then U <= Character'Pos('z'))
+    or else (Character'Pos('A') <= U and then U <= Character'Pos('Z'))
+    or else U = Character'Pos (':')
+    or else U = Character'Pos ('_')
+    or else (16#C0# <= U and then U <= 16#2FF#
+             and then U /= 16#D7#  and then U /= 16#F7#)
+    or else (16#370# <= U and then U <= 16#1FFF# and then U /= 16#37E#)
+    or else U = 16#200C#
+    or else U = 16#200D#
+    or else (16#2070# <= U and then U <= 16#218F#)
+    or else (16#2C00# <= U and then U <= 16#2FEF#)
+    or else (16#3001# <= U and then U <= 16#D7FF#)
+    or else (16#F900# <= U and then U <= 16#FDCF#);
+  end Is_Valid_Start;
+  function Is_Valid_In_Name (U : Utf_8.Unicode_Number) return Boolean is
+  begin
+    return  U = Character'Pos ('-')
+    or else U = Character'Pos ('.')
+    or else (Character'Pos('0') <= U and then U <= Character'Pos('9'))
+    or else Is_Valid_Start (U)
+    or else U= 16#B7#
+    or else (16#300# <= U and then U <= 16#36F#)
+    or else U= 16#203F#
+    or else U= 16#2040#;
   end Is_Valid_In_Name;
 
   -- Check that a Name is correct
   function Name_Ok (Name : Asu_Us;
                     Allow_Token : Boolean := False) return Boolean is
-    Char : Character;
   begin
     -- Must not be empty
     if Asu.Length (Name) = 0 then
       return False;
-    else
-      -- For true name (not token) first char must be letter or '_' or ':'
-      Char := Asu.Element (Name, 1);
+    end if;
+    declare
+      Unicodes : constant Utf_8.Unicode_Sequence
+               := Utf_8.Decode (Asu_Ts (Name));
+    begin
+      -- For true name (not token) first char must be Valid_Start
       if not Allow_Token
-      and then (Is_Digit (Char) or else Char = '-' or else Char = '.') then
+      and then not Is_Valid_Start (Unicodes(1)) then
         return False;
       end if;
-      -- Other chars must be letter, digit, or '_' or ':' or '-'
-      for I in 1 .. Asu.Length (Name) loop
-        Char := Asu.Element (Name, I);
-        if not Is_Valid_In_Name (Char) then
+      -- Other chars must be Is_Valid_In_Name
+      for I in Unicodes'Range loop
+        if not Is_Valid_In_Name (Unicodes(I)) then
           return False;
         end if;
       end loop;
       return True;
-    end if;
+    end;
+  exception
+    when Utf_8.Invalid_Sequence =>
+      return False;
   end Name_Ok;
 
   -- Check that Str defines valid names seprated by Sep
@@ -681,21 +722,6 @@ package body Util is
       Flow.Curr_Str := Flow.Curr_Str & Char;
     end loop;
   end Parse_Until_Close;
-
-  -- Parse until end of name
-  procedure Parse_Name (Flow : in out Flow_Type; Name : out Asu_Us) is
-    Char : Character;
-    use type Asu_Us;
-  begin
-    Name := Asu_Null;
-    loop
-      Get (Flow, Char);
-      -- Loop while valid in name
-      exit when not Is_Valid_In_Name (Char);
-      Name := Name & Char;
-    end loop;
-    Unget (Flow);
-  end Parse_Name;
 
   -- Try to parse a keyword, rollback if not
   procedure Try (Flow : in out Flow_Type; Str : in String; Ok : out Boolean;
