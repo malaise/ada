@@ -31,6 +31,13 @@ package Utf_8 is
   -- Encodes a Unicode as a Utf-8 sequence
   function Encode (Unicode : Unicode_Number) return Sequence;
 
+  type Unicode_Sequence is array (Positive range <>) of Unicode_Number;
+  -- Decodes a Utf-8 sequence (of sequences) to Unicode sequence.
+  -- May raise Invalid_Sequence
+  function Decode (Seq : Sequence) return Unicode_Sequence;
+  -- Encodes a Unicode sequence as a Utf-8 sequencei (of sequecnes)
+  function Encode (Unicode : Unicode_Sequence) return Sequence;
+
 
   -- Raised if a Utf-8 sequence leads to a Unicode above last
   --  Wide_Character (16#FFFF#)

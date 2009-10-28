@@ -1,3 +1,4 @@
+with Ada.Strings.Unbounded;
 with Bit_Ops;
 -- Utf_8 encoding/decoding
 package body Utf_8 is
@@ -170,6 +171,52 @@ package body Utf_8 is
       return Seq;
     end;
   end Encode;
+
+
+  -- Decodes a Utf-8 sequence (of sequences) to Unicode sequence.
+  -- May raise Invalid_Sequence
+  function Decode (Seq : Sequence) return Unicode_Sequence is
+    Indexes : array (1 .. Seq'Last) of Natural;
+    Lengths : array (1 .. Seq'Last) of Positive;
+    Last_Index : Positive;
+    Offset : Positive;
+  begin
+    if Seq'Length = 0 then
+      raise Invalid_Sequence;
+    end if;
+    Offset := Seq'First;
+    Last_Index := 1;
+    -- Navigate in sequences of Seq, store index of each sequence in Indexes
+    loop
+      exit when Offset > Seq'Last;
+      Indexes(Last_Index) := Offset;
+      Lengths(Last_Index) := Nb_Chars (Seq(Offset));
+      Offset := Offset + Lengths(Last_Index);
+      Last_Index := Last_Index + 1;
+    end loop;
+    Last_Index := Last_Index - 1;
+    -- Now we know the length of the unicode sequence
+    -- Decode each
+    declare
+      Result : Unicode_Sequence (1 .. Last_Index);
+    begin
+      for I in Result'Range loop
+        Result(I) := Decode (Seq(Indexes(I) .. Indexes(I) + Lengths(I) - 1));
+      end loop;
+      return Result;
+    end;
+  end Decode;
+
+  -- Encodes a Unicode sequence as a Utf-8 sequencei (of sequecnes)
+  function Encode (Unicode : Unicode_Sequence) return Sequence is
+    Result : Ada.Strings.Unbounded.Unbounded_String;
+  begin
+    for I in Unicode'Range loop
+      Ada.Strings.Unbounded.Append (Result, Encode (Unicode(I)));
+    end loop;
+    return Ada.Strings.Unbounded.To_String (Result);
+  end Encode;
+
 
  -- Decodes a Utf-8 sequence to Wide_Character.
   -- May raise Invalid_Utf_8_Sequence or Not_Wide_Character
