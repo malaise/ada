@@ -28,7 +28,6 @@ package body Dtd is
     -- Reset lists of attributes of type notation
     Adtd.Notation_Attrs := Asu_Null;
     -- Reset list of internal attlist and entity
-    Adtd.In_Internal := False;
     Adtd.Internals := Asu_Null;
     -- Clean in iclude tag
     Adtd.In_Include := False;
@@ -154,6 +153,8 @@ package body Dtd is
     Info_Name : Asu_Us;
     Found : Boolean;
     Char : Character;
+    -- Parser iterator
+    Iter : Parser.Iterator;
     use type Asu_Us;
   begin
     -- Parse element name
@@ -180,7 +181,7 @@ package body Dtd is
     Util.Unget (Ctx.Flow);
     Util.Get_Curr_Str (Ctx.Flow, Info.List);
     -- Expand potential parameter entities and re-insert
-    Util.Expand_Vars (Ctx, Adtd, Info.List, Ref_Dtd_Mark);
+    Util.Expand_Vars (Ctx, Adtd, Info.List, Ref_Dtd_Content);
     Util.Normalize (Info.List);
     Util.Normalize_Spaces (Info.List);
     Util.Insert (Ctx.Flow, Asu_Ts (Info.List));
@@ -242,6 +243,25 @@ package body Dtd is
           Info.List := Asu_Tus (
             String_Mng.Replace (Info_Sep & Asu_Ts (Info.List) & Info_Sep,
                                 "|", "" & Info_Sep));
+          -- Check unicity of entries
+          Iter.Set (Asu_Ts (Info.List), Is_Sep'Access);
+          loop
+            declare
+              -- Next enum value
+              Val : constant String := Parser.Next_Word (Iter);
+            begin
+              exit when Val = "";
+              -- The val shall appear only once
+              if String_Mng.Locate (Asu_Ts (Info.List),
+                                    Info_Sep & Val & Info_Sep,
+                                    Occurence => 2) /= 0 then
+                Util.Error (Ctx.Flow, "Mixed value "
+                     & Val & " already used");
+              end if;
+            end;
+          end loop;
+          Iter.Del;
+
         else
           Util.Error (Ctx.Flow, "Invalid Mixed definition");
         end if;
@@ -255,9 +275,6 @@ package body Dtd is
         else
           Util.Unget (Ctx.Flow);
         end if;
-        -- Expand variables if any
-        Util.Expand_Vars (Ctx, Adtd, Info.List, Ref_Dtd_Mark);
-        Util.Normalize (Info.List);
         Util.Remove_Separators (Info.List);
         -- Check valid names
         if not Util.Names_Ok (Info.List, "|,?*+()") then
@@ -277,7 +294,7 @@ package body Dtd is
     end if;
 
     -- If in internal dtd and not in include, add @element to Internals
-    if Adtd.In_Internal and then not Adtd.In_Include then
+    if Ctx.Flow.Curr_Flow.Kind = Int_Dtd_Flow then
       if Adtd.Internals = Asu_Null then
         Asu.Append (Adtd.Internals, Info_Sep);
       end if;
@@ -469,9 +486,22 @@ package body Dtd is
               Util.Error (Ctx.Flow, "Enumerated value "
                    & Val & " already used");
             end if;
+            -- Check xml:space has either "default" or "preserve or both
+            if Asu_Ts (Att_Name) = Tree_Mng.Xml_Space then
+              if Val /= Tree_Mng.Preserve and then Val /= "default" then
+                Util.Error (Ctx.Flow, "Enumerated value "
+                     & Val & " not allowed for " & Tree_Mng.Xml_Space);
+              end if;
+            end if;
           end;
         end loop;
         Iter.Del;
+      end if;
+
+      -- Check xml:space is enum
+      if Asu_Ts (Att_Name) = Tree_Mng.Xml_Space and then Typ_Char /= 'E' then
+        Util.Error (Ctx.Flow, "Attribute " & Tree_Mng.Xml_Space
+                            & " must be enum");
       end if;
 
       -- Check supported att defaults
@@ -533,6 +563,30 @@ package body Dtd is
         Enum := Info_Sep & Asu_Ts (Def_Val) & Enum;
       end if;
 
+      -- Check validity of default value
+      if Def_Char = 'D' or else Def_Char = 'F' then
+        case Typ_Char is
+          when 'R' | 'Y' =>
+            if not Util.Name_Ok (Def_Val) then
+              Util.Error (Ctx.Flow, "Invalid name for default value");
+            end if;
+          when 'r' | 'y' =>
+            if not Util.Names_Ok (Def_Val, Util.Space & "") then
+              Util.Error (Ctx.Flow, "Invalid name in default value");
+            end if;
+          when 'T' =>
+            if not Util.Name_Ok (Def_Val, Allow_Token => True) then
+              Util.Error (Ctx.Flow, "Invalid token for default value");
+            end if;
+          when 't' =>
+            if not Util.Names_Ok (Def_Val, Util.Space & "",
+                                  Allow_Token => True) then
+              Util.Error (Ctx.Flow, "Invalid token in default value");
+            end if;
+          when others => null;
+        end case;
+      end if;
+
       -- Discard re-definition of the same attribute
       if not Attr_Already_Set then
         -- If enum store Att of enum
@@ -571,7 +625,7 @@ package body Dtd is
         Asu.Append (Info.List, Att_Name
                   & Info_Sep & Info_Sep & Typ_Char & Def_Char & Info_Sep);
         -- If in internal dtd and not in include, add it to internals
-        if Adtd.In_Internal and then not Adtd.In_Include then
+        if Ctx.Flow.Curr_Flow.Kind = Int_Dtd_Flow then
           if Adtd.Internals = Asu_Null then
             Asu.Append (Adtd.Internals, Info_Sep);
           end if;
@@ -760,7 +814,7 @@ package body Dtd is
 
     -- Store entity
     Entity_Mng.Add (Adtd.Entity_List, Name, Value, Parameter, Internal,
-                    Adtd.In_Internal and then not Adtd.In_Include, Parsed);
+                    Ctx.Flow.Curr_Flow.Kind = Int_Dtd_Flow, Parsed);
     Trace ("Dtd parsed directive ENTITY -> " &  Asu_Ts (Parstr & Name)
          & " " & Asu_Ts (Value) & " " & Mixed_Str (Internal'Img)
          & " " & Mixed_Str (Parsed'Img) );
@@ -854,33 +908,60 @@ package body Dtd is
   -- Parse a conditional directive
   procedure Parse_Condition (Ctx : in out Ctx_Type; Adtd : in out Dtd_Type) is
     Word : Asu_Us;
+    Char : Character;
+    Nb_Open : Natural;
+    Index : Natural;
   begin
+    -- Not in internal Dtd
+    if Ctx.Flow.Curr_Flow.Kind = Int_Dtd_Flow then
+      Util.Error (Ctx.Flow, "Conditional directive forbidden in internal dtd");
+    end if;
     -- After '[', possible separators, then IGNORE or INCLUDE directive
     -- then possible separators then '['
     Util.Skip_Separators (Ctx.Flow);
     Util.Parse_Until_Char (Ctx.Flow, Util.Space & "[");
     Util.Get_Curr_Str (Ctx.Flow, Word);
 
-    -- Expand dtd entities
+    -- Expand dtd entitiesa and check keywork and format
     Util.Expand_Name (Ctx, Adtd, Word, Ref_Dtd_Mark);
-    -- Strip separators
     Util.Normalize (Word);
+    if Asu_Ts (Word) = "IGNORE" or else Asu_Ts (Word) = "INCLUDE" then
+      Util.Skip_Separators (Ctx.Flow);
+      Util.Get (Ctx.Flow, Char);
+      if Char /= '[' then
+        Util.Error (Ctx.Flow, "Unexpected character " & Char & " in condition");
+      end if;
+    else
+      Util.Error (Ctx.Flow, "Unknown conditional directive " & Asu_Ts (Word));
+    end if;
+
+    -- Include or ignore
     if Asu_Ts (Word) = "IGNORE" then
-      -- IGNORE directive, skip up to "]]>"
-      Util.Parse_Until_Char (Ctx.Flow, "[");
-      Util.Parse_Until_Str (Ctx.Flow, "]]" & Util.Stop);
-      Util.Get_Curr_Str (Ctx.Flow, Word);
-      Util.Normalize_Spaces (Word);
-      Trace ("Dtd ignored " & Asu_Ts (Word));
+      -- IGNORE directive, skip included "<![...]]>" up to a "]]>"
+      Nb_Open := 1;
+      loop
+        Util.Parse_Until_Str (Ctx.Flow, "]]" & Util.Stop);
+        Util.Get_Curr_Str (Ctx.Flow, Word);
+        Util.Normalize_Spaces (Word);
+        -- Count the number of instances of "<!["
+        -- Add to the number of expected "]]>"
+        Index := 0;
+        loop
+          Index := String_Mng.Locate (Asu_Ts (Word),
+            Util.Start & Util.Directive & '[', Index + 1);
+          exit when Index = 0;
+          Nb_Open := Nb_Open + 1;
+        end loop;
+        Trace ("Dtd ignored " & Asu_Ts (Word));
+        exit when Nb_Open = 1;
+        Nb_Open := Nb_Open - 1;
+      end loop;
       return;
     elsif Asu_Ts (Word) = "INCLUDE" then
       -- INCLUDE directive
-      Util.Parse_Until_Char (Ctx.Flow, "[");
       -- Go on parsing, knowing that we are in an Include directive
       Trace ("Dtd starting inclusion");
       Adtd.In_Include := True;
-    else
-      Util.Error (Ctx.Flow, "Unknown conditional directive " & Asu_Ts (Word));
     end if;
   end Parse_Condition;
 
@@ -947,7 +1028,6 @@ package body Dtd is
     Is_Recorded : Boolean;
     use type Asu_Us;
   begin
-    Adtd.In_Internal := not External;
     if External and then Ctx.Flow.Curr_Flow.Is_File then
       -- Autodetect encoding and check
       Util.Guess_Encoding (Ctx.Flow);
@@ -1011,7 +1091,6 @@ package body Dtd is
             end if;
         end;
         if Char = (']') and then not External then
-          Adtd.In_Internal := False;
           return;
         else
           Util.Error (Ctx.Flow,
@@ -1031,7 +1110,6 @@ package body Dtd is
     -- Prepare new string flow, keep file name
     Ctx.Flow.Curr_Flow.Is_File := False;
     Ctx.Flow.Curr_Flow.File := null;
-    Ctx.Flow.Curr_Flow.Kind := Dtd_Flow;
     Ctx.Flow.Curr_Flow.In_Str := Text;
     Ctx.Flow.Curr_Flow.In_Stri := 0;
     Ctx.Flow.Curr_Flow.Same_Line := True;
@@ -1198,7 +1276,7 @@ package body Dtd is
         if Asu.Element (Info.List, 1) = 'E' then
           Util.Error (Ctx.Flow,
             "Element " & Elt & " defined at line " & Line_Image (Info.Line)
-            & " is EMPTY and has an attribute type notation");
+            & " in dtd is EMPTY and has an attribute type notation");
         end if;
       end;
     end loop;
@@ -1631,7 +1709,7 @@ package body Dtd is
                     Asu_Tus (Attr), Asu_Tus (Dtd_Val), Line_No);
               end if;
               Xml_Val := Asu_Tus (Dtd_Val);
-              if Attr = "xml:space" and then Dtd_Val = "preserve" then
+              if Attr = Tree_Mng.Xml_Space and then Dtd_Val = Tree_Mng.Preserve then
                 Tree_Mng.Add_Tuning (Ctx.Elements.all,
                                      Tree_Mng.Xml_Space_Preserve);
                 Trace (" Check, added tuning " & Tree_Mng.Xml_Space_Preserve);
@@ -1650,11 +1728,11 @@ package body Dtd is
           -- Store ID and IDREFs and Sanity checks on I
           if (Td(1) = 'I' or else Td(1) = 'R' or else Td(1) = 'Y')
           and then not Util.Name_Ok (Xml_Val) then
-            Util.Error (Ctx.Flow, "Invalid name for ID, IDREF or ENTITY"
+            Util.Error (Ctx.Flow, "Invalid name for ID, IDREF or ENTITY "
                       & Asu_Ts (Xml_Val), Line_No);
           elsif (Td(1) = 'r' or else Td(1) = 'y')
           and then  not Util.Names_Ok (Xml_Val, Util.Space & "") then
-            Util.Error (Ctx.Flow, "Invalid name in IDREFS or ENTITIES"
+            Util.Error (Ctx.Flow, "Invalid name in IDREFS or ENTITIES "
                       & Asu_Ts (Xml_Val), Line_No);
           elsif Td(1) = 'T'
           and then not Util.Name_Ok (Xml_Val, Allow_Token => True) then

@@ -6,9 +6,9 @@ package body Parse_Mng  is
 
   -- Context where a reference to entity is resolved
   -- In Xml content, in attribute value, in entity value,
-  --  in dtd (outside or inside markup)
+  --  in dtd (outside or inside markup or inside content description)
   type Context_List is (Ref_Xml, Ref_Attribute,
-                        Ref_Entity, Ref_Dtd, Ref_Dtd_Mark);
+                        Ref_Entity, Ref_Dtd, Ref_Dtd_Mark, Ref_Dtd_Content);
   -- Is a context in dtd
   function In_Dtd (Context : Context_List) return Boolean is
   begin
@@ -173,10 +173,10 @@ package body Parse_Mng  is
     -- Expand text (expand vars) returns the index of localized '<'
     --  if any
     procedure Expand_Text (Ctx : in out Ctx_Type;
-                            Dtd : in out Dtd_Type;
-                            Text : in out Asu_Us;
-                            Context : in Context_List;
-                            Start_Index : out Natural);
+                           Dtd : in out Dtd_Type;
+                           Text : in out Asu_Us;
+                           Context : in Context_List;
+                           Start_Index : out Natural);
     -- Expand a name if it is a (parameter) entity reference
     -- Error if Text contains % or & but not at beginning
     -- Error if Text contains ; but not at end
@@ -319,10 +319,13 @@ package body Parse_Mng  is
       Line_No := Util.Get_Line_No (Ctx.Flow);
       -- Read until a = (looks like a valid attr definition)
       --  or until > or < (no '=' so invalid definition)
-      Util.Parse_Until_Char (Ctx.Flow, Util.Equal
-                                     & Util.Stop & Util.Start & Util.Slash);
+      Util.Parse_Until_Char (Ctx.Flow, Util.Equal & Util.Stop & Util.Start
+                                     & Util.Slash & Util.Space);
       Util.Get_Curr_Str (Ctx.Flow, Attribute_Name);
       Util.Read (Ctx.Flow, Char);
+      if Util.Is_Separator (Char) then
+        Util.Get (Ctx.Flow, Char);
+      end if;
       if Char /= Util.Equal
       or else not Util.Name_Ok (Attribute_Name) then
         Util.Error (Ctx.Flow, "Invalid attribute name "
@@ -343,7 +346,9 @@ package body Parse_Mng  is
         Tree_Mng.Attribute_Exists (Ctx.Elements.all,
                   Attribute_Name, Attr_Exists);
       end if;
+
       -- Parse value
+      Util.Skip_Separators (Ctx.Flow);
       Parse_Value (Ctx, Adtd, Ref_Attribute, Attribute_Value);
       if Of_Xml then
         Tree_Mng.Add_Xml_Attribute (Ctx.Prologue.all,
@@ -744,6 +749,9 @@ package body Parse_Mng  is
 
     -- Xml not allowed in prologue of elements, see if "xml?>" or "xml "
     Util.Get (Ctx.Flow, Str_Xml);
+    Name := Asu_Tus (Str_Xml);
+    Util.Normalize (Name);
+    Str_Xml := Asu_Ts (Name);
     if Lower_Str (Str_Xml) = "xml" & Util.Instruction & Util.Stop
     or else Lower_Str (Str_Xml(1 .. 4)) = "xml" & Util.Space then
       Util.Error (Ctx.Flow, "Invalid processing instruction");
@@ -1041,7 +1049,7 @@ package body Parse_Mng  is
                                              Ctx.Flow.Curr_Flow.Name));
       Util.Pop_Flow (Ctx.Flow);
     end if;
-    -- Perform final checks on Dtd (unparsed entities v;s. notations)
+    -- Perform final checks on Dtd (unparsed entities v.s. notations)
     Dtd.Final_Dtd_Check (Ctx, Adtd);
     Tree_Mng.Move_Root (Ctx.Prologue.all);
     -- Delete completely the prologue if callback
@@ -1533,6 +1541,8 @@ package body Parse_Mng  is
     --  will be propagated as such
     Dtd.Parse (Ctx, Adtd, Ctx.Flow.Curr_Flow.Name,
                Name_Raise_Parse => False);
+    -- Perform final checks on Dtd (unparsed entities v.s. notations)
+    Dtd.Final_Dtd_Check (Ctx, Adtd);
   end Parse_Dtd;
 
    -- Parse the prologue
@@ -1587,6 +1597,8 @@ package body Parse_Mng  is
     end if;
     -- Restore flow
     Util.Pop_Flow (Ctx.Flow);
+    -- Perform final checks on Dtd (unparsed entities v.s. notations)
+    Dtd.Final_Dtd_Check (Ctx, Adtd);
     -- Xml declaration must have a version, which might not be the case
     --  if Ctx comes from Xml_Parser.Generator
     Set_Default_Xml (Ctx);

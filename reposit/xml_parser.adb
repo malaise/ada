@@ -3,7 +3,7 @@ with Environ, Basic_Proc, Rnd, Exception_Messenger, Directory;
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "10";
+  Minor_Version : constant String := "11";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -58,7 +58,9 @@ package body Xml_Parser is
     procedure Add_Element (Elements : in out My_Tree.Tree_Type;
                            Name : in Asu_Us; Line : in Natural);
     -- Add specific tuning to element (xml:space=preserve)
-    Xml_Space_Preserve : constant String := "xml:space=preserve";
+    Xml_Space : constant String := "xml:space";
+    Preserve : constant String := "preserve";
+    Xml_Space_Preserve : constant String := Xml_Space & "=" & Preserve;
     procedure Add_Tuning (Elements : in out My_Tree.Tree_Type;
                             Tuning : in String);
     -- Get all tuning of an element

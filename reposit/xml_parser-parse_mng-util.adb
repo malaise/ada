@@ -759,6 +759,27 @@ package body Util is
   package Name_List_Mng renames Name_Dyn_List_Mng.Dyn_List;
   procedure Search_Name is new Name_List_Mng.Search (Asu."=");
 
+  -- INTERNAL: Verify propoer nesting of parenths
+  function Check_Nesting (Str : String) return Boolean is
+    Level : Natural := 0;
+    Char : Character;
+  begin
+    for I in Str'Range loop
+      Char := Str(I);
+      if Char = '(' then
+        Level := Level + 1;
+      elsif Char = ')' then
+        if Level = 0 then
+          -- More closing than opening
+          return False;
+        end if;
+        Level := Level - 1;
+      end if;
+    end loop;
+    -- As many closing as opening?
+    return Level = 0;
+  end Check_Nesting;
+
   -- INTERNAL: Expand text (expand vars) returns the index of localized '<'
   --  if any
   procedure Expand_Internal (Ctx : in out Ctx_Type;
@@ -844,8 +865,11 @@ package body Util is
             Start_Index := I;
             return;
           elsif Context = Ref_Attribute then
-            -- '<' forbidden in attribute value
-            Error (Ctx.Flow, "Forbidden character '<' in attribute value");
+            -- '<' forbidden in expansion in attribute value
+            if not Name_Stack.Is_Empty then
+              Error (Ctx.Flow, "Forbidden character '<' in replacement text"
+                             & " of attribute value");
+            end if;
           end if;
         elsif Char = Ent_End then
           if Istart /= 0 then
@@ -912,6 +936,13 @@ package body Util is
         Name_Stack.Rewind;
         Name_Stack.Delete;
       end if;
+      -- Verify nesting of parentheses if within content (children) description
+      if Context = Ref_Dtd_Content
+      and then not Check_Nesting (Asu_Ts (Val)) then
+        Error (Ctx.Flow, "Incorrect nesting of parentheses in entity "
+                       & Asu_Ts (Val));
+      end if;
+
       -- Substitute from start to stop
       Asu.Replace_Slice (Result, Istart, Istop, Asu_Ts (Val));
 

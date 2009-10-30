@@ -517,8 +517,6 @@ private
     -- Internal elements #@Elt# or attributes #Elt##Attr#
     -- ELEMENT or ATTLIST defined in internal dtd
     Internals : Ada.Strings.Unbounded.Unbounded_String;
-    -- Are we presently parsing internal declarations
-    In_Internal : Boolean := False;
     -- Are we in an INCLUDE directive
     In_Include : Boolean := False;
   end record;

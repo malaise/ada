@@ -191,7 +191,7 @@ package body Entity_Mng is
         end if;
         if Context = Ref_Attribute and then not Entity.Internal then
           Trace ("Forbidden external entity reference " & Asu_Ts (Name)
-               & " in attribute");
+               & " in attribute value");
           raise Entity_Forbidden;
         end if;
         if not Entity.Parsed then
@@ -216,7 +216,7 @@ package body Entity_Mng is
             raise Entity_Forbidden;
           end if;
         end if;
-      when Ref_Dtd | Ref_Dtd_Mark =>
+      when Ref_Dtd | Ref_Dtd_Mark | Ref_Dtd_Content =>
         if not Parameter then
           Trace ("Forbidden non parameter entity reference " & Asu_Ts (Name)
               & " in dtd");
@@ -224,10 +224,11 @@ package body Entity_Mng is
         end if;
     end case;
 
-    -- No parameter entity referenc with internal Dtd subset markups
+    -- No parameter entity reference with internal Dtd subset markups
     if Parameter
     and then Ctx.Flow.Curr_Flow.Kind = Int_Dtd_Flow
-    and then (Context = Ref_Dtd_Mark or else Context = Ref_Entity) then
+    and then (Context = Ref_Dtd_Mark or else Context = Ref_Dtd_Content
+              or else Context = Ref_Entity) then
       Trace ("Forbidden parameter entity reference " & Asu_Ts (Name)
            & " within markup in internal dtd subset");
       raise Entity_Forbidden;
