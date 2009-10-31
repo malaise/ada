@@ -25,13 +25,21 @@ package Unbounded_Arrays is
   function To_Unbounded_Array (Source : Element_Array) return Unbounded_Array;
   function To_Array (Source : Unbounded_Array) return Element_Array;
 
-  -- Append
+  -- Prepend, Append, concat
+  procedure Prepend (Source   : in out Unbounded_Array;
+                     New_Item : in Unbounded_Array);
+  procedure Prepend (Source   : in out Unbounded_Array;
+                     New_Item : in Element_Array);
+  procedure Prepend (Source   : in out Unbounded_Array;
+                     New_Item : in Element_Type);
+
   procedure Append (Source   : in out Unbounded_Array;
                     New_Item : in Unbounded_Array);
   procedure Append (Source   : in out Unbounded_Array;
                     New_Item : in Element_Array);
   procedure Append (Source   : in out Unbounded_Array;
                     New_Item : in Element_Type);
+
   function "&" (Left  : Unbounded_Array;
                 Right : Unbounded_Array) return Unbounded_Array;
   function "&" (Left  : Unbounded_Array;
@@ -43,7 +51,28 @@ package Unbounded_Arrays is
   function "&" (Left  : Element_Type;
                 Right : Unbounded_Array) return Unbounded_Array;
 
-  -- Slice
+  -- Replace / Insert / Delete
+  procedure Replace (Source   : in out Unbounded_Array;
+                     Low      : in Positive;
+                     High     : in Natural;
+                     By       : in Unbounded_Array);
+  procedure Replace (Source   : in out Unbounded_Array;
+                     Low      : in Positive;
+                     High     : in Natural;
+                     By       : in Element_Array);
+
+  procedure Insert (Source   : in out Unbounded_Array;
+                    Before   : in Positive;
+                    New_Item : in Unbounded_Array);
+  procedure Insert (Source   : in out Unbounded_Array;
+                    Before   : in Positive;
+                    New_Item : in Element_Array);
+
+  procedure Delete (Source  : in out Unbounded_Array;
+                    From    : in Positive;
+                    Through : in Natural);
+
+  -- Extract Slice
   function Slice (Source : Unbounded_Array;
                   Low    : Positive;
                   High   : Natural) return Element_Array;

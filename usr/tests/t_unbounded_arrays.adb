@@ -66,6 +66,11 @@ begin
   N2 := 60 & Natua.To_Unbounded_Array (70);
   N1 := (1, 21, 5, 30, 40, 50) & N2;
   Ada.Text_Io.Put_Line ("Image " & Image(N1));
+  Ada.Text_Io.Put_Line ("Same with prepend");
+  N1 := Natua.To_Unbounded_Array ( (30, 40, 50, 60, 70) );
+  N1.Prepend ( (21, 5) );
+  N1.Prepend (1);
+  Ada.Text_Io.Put_Line ("Image " & Image(N1));
   Ada.Text_Io.New_Line;
 
   Ada.Text_Io.Put_Line ("Slice 4 .. 6");
@@ -78,6 +83,23 @@ begin
   else
     Ada.Text_Io.Put_Line ("Check ""="" FAILED");
   end if;
+  Ada.Text_Io.New_Line;
+
+  Ada.Text_Io.Put_Line ("Replace from 4 to 7 with 41, 51");
+  N1 := Natua.To_Unbounded_Array ( (1, 21, 5, 30, 40, 50, 60, 70) );
+  N1.Replace (4, 7, (41, 51));
+  Ada.Text_Io.Put_Line ("Image " & Image(N1));
+  Ada.Text_Io.Put_Line ("Delete from 4 to 5, insert 30, 40, 50, 60 before 4");
+  N1.Delete (4, 5);
+  N1.Insert (4, (30, 40, 50, 60));
+  Ada.Text_Io.Put_Line ("Image " & Image(N1));
+  Ada.Text_Io.Put_Line ("Replace from 4 to 5 with 41, 51, 61");
+  N1.Replace (4, 5, (41, 51, 61));
+  Ada.Text_Io.Put_Line ("Image " & Image(N1));
+  Ada.Text_Io.Put_Line ("Delete from 4 to 6, insert 30, 40 before 4");
+  N1.Delete (4, 6);
+  N1.Insert (4, (30, 40));
+  Ada.Text_Io.Put_Line ("Image " & Image(N1));
   Ada.Text_Io.New_Line;
 
   Ada.Text_Io.Put_Line ("Check GC");
