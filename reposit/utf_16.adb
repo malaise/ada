@@ -1,5 +1,10 @@
-with Bit_Ops;
+with Ada.Strings.Wide_Unbounded;
+with Bit_Ops, Unbounded_Arrays;
 package body Utf_16 is
+
+  package Unbounded_Unicode is new Unbounded_Arrays (Unicode_Number,
+                                                     Unicode_Sequence);
+
 
   -- Returns the number of chars of a sequence (coded in the 1st char)
   function Nb_Chars (First_Char : Wide_Character) return Len_Range is
@@ -52,24 +57,42 @@ package body Utf_16 is
     end if;
   end Check_Valid;
 
-  -- Decodes a Utf-16 sequence to Unicode. May raise Invalid_Sequence
-  function Decode (Seq : Sequence) return Unicode_Number is
+  -- Internal
+  -- Decodes the first unicode from the given sequence
+  procedure Decode (Seq : in Sequence;
+                    Len : out Len_Range;
+                    Unicode : out Unicode_Number) is
     Val1, Val2 : Integer;
-    Result : Unicode_Number;
     use Bit_Ops;
   begin
-    Check_Valid (Seq);
+    Len := Nb_Chars (Seq(Seq'First));
+
     Val1 := Wide_Character'Pos (Seq(Seq'First));
-    if Seq'Length = 1 then
-      return Val1;
+    if Len = 1 then
+      Unicode := Val1;
     end if;
+
     Val2 := Wide_Character'Pos (Seq(Seq'First + 1));
+    if 16#DC00# > Val2 or else Val2 > 16#DFFF# then
+      raise Invalid_Sequence;
+    end if;
     -- A 20 bits code with 10 highest from the 10 lowest of Val1
     --                and 10 lowest   from the 10 lowest of Val2
     --  +10000
-    Result := Shl (Val1 and 16#3FF#, 10) or (Val2 and 16#3FF#);
-    Result := Result + 16#10000#;
-    return Result;
+    Unicode := Shl (Val1 and 16#3FF#, 10) or (Val2 and 16#3FF#);
+    Unicode := Unicode + 16#10000#;
+  end Decode;
+
+  -- Decodes a Utf-16 sequence to Unicode. May raise Invalid_Sequence
+  function Decode (Seq : Sequence) return Unicode_Number is
+    U : Unicode_Number;
+    L : Len_Range;
+  begin
+    Decode (Seq, L, U);
+    if L /= Seq'Length then
+      raise Invalid_Sequence;
+    end if;
+    return U;
   end Decode;
 
   -- Encodes a Unicode as a Utf-16 sequence
@@ -91,6 +114,40 @@ package body Utf_16 is
     Val2 := 16#DC00# or     (Val and 16#003FF#);
     return Wide_Character'Val (Val1) & Wide_Character'Val (Val2);
   end Encode;
+
+
+  -- Decodes a Utf-16 sequence (of sequences) to Unicode sequence.
+  -- May raise Invalid_Sequence
+  function Decode (Seq : Sequence) return Unicode_Sequence is
+    Index : Positive;
+    Len : Positive;
+    U : Unicode_Number;
+    Res : Unbounded_Unicode.Unbounded_Array;
+  begin
+    if Seq'Length = 0 then
+      return (1 .. 0 => 0);
+    end if;
+    -- Get each unicode number
+    Index := 1;
+    loop
+      Decode (Seq(Index .. Seq'Last), Len, U);
+      Unbounded_Unicode.Append (Res, U);
+      Index := Index + Len;
+      exit when Index > Seq'Last;
+    end loop;
+    return Unbounded_Unicode.To_Array (Res);
+  end Decode;
+
+  -- Encodes a Unicode sequence as a Utf-16 sequence (of sequecnes)
+  function Encode (Unicode : Unicode_Sequence) return Sequence is
+    Result : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
+  begin
+    for I in Unicode'Range loop
+      Ada.Strings.Wide_Unbounded.Append (Result, Encode (Unicode(I)));
+    end loop;
+    return Ada.Strings.Wide_Unbounded.To_Wide_String (Result);
+  end Encode;
+
 
   -- Decodes a Utf-16 sequence to Wide_Character.
   -- May raise Invalid_Sequence or Not_Wide_Character

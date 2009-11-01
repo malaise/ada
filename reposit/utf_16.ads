@@ -33,17 +33,21 @@ package Utf_16 is
   -- Encodes a Unicode as a Utf-16 sequence
   function Encode (Unicode : Unicode_Number) return Sequence;
 
+  type Unicode_Sequence is array (Positive range <>) of Unicode_Number;
+  -- Decodes a Utf-16 sequence (of sequences) to Unicode sequence.
+  -- May raise Invalid_Sequence
+  function Decode (Seq : Sequence) return Unicode_Sequence;
+  -- Encodes a Unicode sequence as a Utf-16 sequencei (of sequecnes)
+  function Encode (Unicode : Unicode_Sequence) return Sequence;
 
   -- Raised if a Utf-16 sequence leads to a Unicode above last
   --  Wide_Character (16#FFFF#)
   Not_Wide_Character : exception;
-
   -- Decodes a Utf-16 sequence to Wide_Character.
   -- May raise Invalid_Sequence or Not_Wide_Character
   function Decode (Seq : Sequence) return Wide_Character;
   -- Encodes a Unicode as a Utf-16 sequence
   function Encode (Wide_Char : Wide_Character) return Sequence;
-
 
   -- Swap a sequence BE <-> LE (big endian <-> little endian)
   procedure Swap (Wide_Char : in out Wide_Character);

@@ -96,6 +96,7 @@ private
 
   type Unbounded_Array is new Ada.Finalization.Controlled with record
     Reference : Array_Access := Null_Array'Access;
+    Last : Natural := 0;
   end record;
 
   overriding procedure Initialize (Object : in out Unbounded_Array);
@@ -103,7 +104,8 @@ private
   overriding procedure Finalize (Object : in out Unbounded_Array);
 
   Null_Unbounded_Array : constant Unbounded_Array :=
-     (Ada.Finalization.Controlled with Reference => Null_Array'Access);
+     (Ada.Finalization.Controlled with Reference => Null_Array'Access,
+                                       Last      => 0);
 
 
 end Unbounded_Arrays;

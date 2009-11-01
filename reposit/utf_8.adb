@@ -1,7 +1,10 @@
 with Ada.Strings.Unbounded;
-with Bit_Ops;
+with Bit_Ops, Unbounded_Arrays;
 -- Utf_8 encoding/decoding
 package body Utf_8 is
+
+  package Unbounded_Unicode is new Unbounded_Arrays (Unicode_Number,
+                                                     Unicode_Sequence);
 
   -- Returns the number of chars of a sequence (coded in the 1st char)
   function Nb_Chars (First_Char : Character) return Len_Range is
@@ -92,40 +95,64 @@ package body Utf_8 is
     end if;
   end Check_Safe;
 
-  -- Decodes a Utf-8 sequence. May raise Invalid_Sequence.
-  function Decode (Seq : Sequence) return Unicode_Number is
-
+  -- Internal
+  -- Decodes the first unicode from the given sequence
+  procedure Decode (Seq : in Sequence;
+                    Len : out Len_Range;
+                    Unicode : out Unicode_Number) is
     First : constant Positive := Seq'First;
     function Byte_Of (I : Len_Range) return Natural is
     begin
       return Character'Pos (Seq (First + I - 1));
     end Byte_Of;
 
-    Result : Unicode_Number;
     use Bit_Ops;
   begin
-    Check_Valid (Seq);
-    if Seq'Length = 1 then
+    Len := Nb_Chars (Seq(Seq'First));
+
+    if Len = 1 then
       -- One Byte => Ascii: 0iii_iiii
-      Result := Byte_Of (1);
-    elsif Seq'Length = 2 then
+      Unicode := Byte_Of (1);
+      return;
+    end if;
+
+    -- Check that all but first bytes start by 2#10#
+    for I in Len_Range'Succ(Seq'First) .. Seq'First + Len  - 1 loop
+      if Integer'(Character'Pos(Seq(I)) and 2#1100_0000#) /= 2#1000_0000# then
+        raise Invalid_Sequence;
+      end if;
+    end loop;
+    if Len = 2 then
       -- Seq is 110j_jjjj 10ii_iiii and becomes 0000_0jjj jjii_iiii
-      Result :=           Shl (Byte_Of (1) and 2#0001_1111#, 06);
-      Result := Result or     (Byte_Of (2) and 2#0011_1111#);
-    elsif Seq'Length = 3 then
+      Unicode :=            Shl (Byte_Of (1) and 2#0001_1111#, 06);
+      Unicode := Unicode or     (Byte_Of (2) and 2#0011_1111#);
+    elsif Len = 3 then
       -- Seq is 1110_kkkk 10jj_jjjj 10ii_iiii and becomes kkkk_jjjj jjii_iiii
-      Result :=           Shl (Byte_Of (1) and 2#0000_1111#, 12);
-      Result := Result or Shl (Byte_Of (2) and 2#0011_1111#, 06);
-      Result := Result or     (Byte_Of (3) and 2#0011_1111#);
-    else -- Seq'Length = 4
+      Unicode :=            Shl (Byte_Of (1) and 2#0000_1111#, 12);
+      Unicode := Unicode or Shl (Byte_Of (2) and 2#0011_1111#, 06);
+      Unicode := Unicode or     (Byte_Of (3) and 2#0011_1111#);
+    elsif Len = 4 then
       -- Seq is 1111_0lll 10kk_kkkk 10jj_jjjj 10ii_iiii
       --  and becomes 000l_llkk kkkk_jjjj jjii_iiii
-      Result :=           Shl (Byte_Of (1) and 2#0000_0111#, 18);
-      Result := Result or Shl (Byte_Of (2) and 2#0011_1111#, 12);
-      Result := Result or Shl (Byte_Of (3) and 2#0011_1111#, 06);
-      Result := Result or     (Byte_Of (4) and 2#0011_1111#);
+      Unicode :=            Shl (Byte_Of (1) and 2#0000_0111#, 18);
+      Unicode := Unicode or Shl (Byte_Of (2) and 2#0011_1111#, 12);
+      Unicode := Unicode or Shl (Byte_Of (3) and 2#0011_1111#, 06);
+      Unicode := Unicode or     (Byte_Of (4) and 2#0011_1111#);
+    else
+      raise Invalid_Sequence;
     end if;
-    return Result;
+  end Decode;
+
+  -- Decodes a Utf-8 sequence to Unicode. May raise Invalid_Sequence
+  function Decode (Seq : Sequence) return Unicode_Number is
+    U : Unicode_Number;
+    L : Len_Range;
+  begin
+    Decode (Seq, L, U);
+    if L /= Seq'Length then
+      raise Invalid_Sequence;
+    end if;
+    return U;
   end Decode;
 
   -- Encodes a Utf-8 sequence
@@ -176,38 +203,26 @@ package body Utf_8 is
   -- Decodes a Utf-8 sequence (of sequences) to Unicode sequence.
   -- May raise Invalid_Sequence
   function Decode (Seq : Sequence) return Unicode_Sequence is
-    Indexes : array (1 .. Seq'Last) of Natural;
-    Lengths : array (1 .. Seq'Last) of Positive;
-    Last_Index : Positive;
-    Offset : Positive;
+    Index : Positive;
+    Len : Positive;
+    U : Unicode_Number;
+    Res : Unbounded_Unicode.Unbounded_Array;
   begin
     if Seq'Length = 0 then
-      raise Invalid_Sequence;
+      return (1 .. 0 => 0);
     end if;
-    Offset := Seq'First;
-    Last_Index := 1;
-    -- Navigate in sequences of Seq, store index of each sequence in Indexes
+    -- Get each unicode number
+    Index := 1;
     loop
-      exit when Offset > Seq'Last;
-      Indexes(Last_Index) := Offset;
-      Lengths(Last_Index) := Nb_Chars (Seq(Offset));
-      Offset := Offset + Lengths(Last_Index);
-      Last_Index := Last_Index + 1;
+      Decode (Seq(Index .. Seq'Last), Len, U);
+      Unbounded_Unicode.Append (Res, U);
+      Index := Index + Len;
+      exit when Index > Seq'Last;
     end loop;
-    Last_Index := Last_Index - 1;
-    -- Now we know the length of the unicode sequence
-    -- Decode each
-    declare
-      Result : Unicode_Sequence (1 .. Last_Index);
-    begin
-      for I in Result'Range loop
-        Result(I) := Decode (Seq(Indexes(I) .. Indexes(I) + Lengths(I) - 1));
-      end loop;
-      return Result;
-    end;
+    return Unbounded_Unicode.To_Array (Res);
   end Decode;
 
-  -- Encodes a Unicode sequence as a Utf-8 sequencei (of sequecnes)
+  -- Encodes a Unicode sequence as a Utf-8 sequence (of sequecnes)
   function Encode (Unicode : Unicode_Sequence) return Sequence is
     Result : Ada.Strings.Unbounded.Unbounded_String;
   begin
@@ -229,8 +244,7 @@ package body Utf_8 is
       raise Not_Wide_Character;
   end Decode;
 
-
-  -- Encodes a Unicode as a Utf-8 sequence
+  -- Encodes a Wide_Character as a Utf-8 sequence
   function Encode (Wide_Char : Wide_Character) return Sequence is
   begin
     return Encode (Wide_Character'Pos (Wide_Char));
