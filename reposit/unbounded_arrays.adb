@@ -1,5 +1,4 @@
 with Ada.Unchecked_Deallocation;
-
 package body Unbounded_Arrays is
 
   procedure Free (X : in out Array_Access) is
@@ -38,33 +37,9 @@ package body Unbounded_Arrays is
   end Check_Index;
 
   -- Size computed to Add to Length
-  Element_Size : Natural := 0;
   function New_Size (Length : Natural; Add : Positive) return Positive is
-   -- Increase the Source length by Size + 1 / Growth_Factor
-   Growth_Factor : constant := 32;
-
-    -- Rounded to Min_Mul_Alloc
-    Min_Mul_Alloc : constant := Standard'Maximum_Alignment;
-    -- Sizes
-    Raw_Size : Positive;
-    Rounded_Size : Positive;
   begin
-    if Element_Size = 0 then
-      -- Compute element size (in bytes) at first call
-      Element_Size := Element_Type'Size / 8;
-      if Element_Type'Size mod 8 /= 0 then
-        Element_Size := Element_Size + 1;
-      end if;
-      if Element_Size = 0 then
-        Element_Size := 1;
-      end if;
-    end if;
-
-    Raw_Size := Length + Add + (Length / Growth_Factor + Growth_Factor);
-
-    Rounded_Size := ((Raw_Size * Element_Size - 1) / Min_Mul_Alloc + 1)
-                          * Min_Mul_Alloc;
-    return Rounded_Size;
+    return Length + Add + Growth_Offset + (Length / Growth_Factor);
   end New_Size;
 
   -- Store Item in Unbounded array, re-alloc if necessary

@@ -2,6 +2,13 @@ with Ada.Finalization;
 generic
   type Element_Type is private;
   type Element_Array is array (Positive range <>) of Element_Type;
+
+  -- Each time a re-allocation is needed, increment Length by
+  --   Nb_To_Add + Growth_Offset + Curr_Length / Growth_Factor
+  -- so that some further growths will not lead to re-alloc
+  Growth_Factor : Natural := 64;
+  Growth_Offset : Natural := 32;
+
 package Unbounded_Arrays is
 
   type Array_Access is access all Element_Array;
