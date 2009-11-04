@@ -249,7 +249,7 @@ package body Parse_Mng  is
     -- Save parsed text
     Util.Get_Curr_Str (Ctx.Flow, Value);
     -- Normalize attribute
-    if Context = Ref_Attribute then
+    if Ctx.Expand and then Context = Ref_Attribute then
       Util.Normalize (Value);
     end if;
     -- Expand entities
@@ -355,9 +355,9 @@ package body Parse_Mng  is
                   Attribute_Name, Attribute_Value, Line_No);
       elsif not Attr_Exists then
         -- Keep first definition
-        -- Normalize separators of non CDATA attributes
+        -- If expand, then Normalize separators of non CDATA attributes
         Dtd.Is_Cdata (Adtd, Elt_Name, Attribute_Name, Attr_Cdata);
-        if not Attr_Cdata then
+        if Ctx.Expand and then not Attr_Cdata then
           Trace ("Attribute " & Asu_Ts (Attribute_Name) & " is not CDATA");
           Unnormalized := Attribute_Value;
           Util.Normalize_Spaces (Attribute_Value);
@@ -1107,7 +1107,7 @@ package body Parse_Mng  is
       end;
       Trace ("Txt Got text >" & Asu_Ts (Text) & "<");
 
-      if not Children.Preserve then
+      if Ctx.Expand and then not Children.Preserve then
         Util.Normalize (Text);
       end if;
 
@@ -1181,7 +1181,7 @@ package body Parse_Mng  is
                                   Index + Util.Cdata_End'Length - 1);
             -- Text is the remaining unexpanded text, fixed
             Asu.Delete (Text, 1, Index + Util.Cdata_End'Length - 1);
-            if not Children.Preserve then
+            if Ctx.Expand and then not Children.Preserve then
               Util.Normalize (Text);
             end if;
             -- And we loop
