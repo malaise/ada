@@ -1,5 +1,9 @@
 History of Asubst:
 ------------------
+06/11/2009 V9.0
+Add: Use -f (--file) to put file name in grep
+     Previous option -f becomes -F (--file_list)
+
 13/10/2009 V8.1
 Add: Reject simultaneous -a and -u options
 

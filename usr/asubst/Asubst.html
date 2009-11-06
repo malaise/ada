@@ -3,14 +3,13 @@
 <HEAD>
 	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
 	<TITLE>Asubst</TITLE>
-	<META NAME="GENERATOR" CONTENT="OpenOffice.org 2.4  (Linux)">
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 1.1.5  (Linux)">
 	<META NAME="AUTHOR" CONTENT="MALAISE Pascal">
 	<META NAME="CREATED" CONTENT="20060414;18573000">
-	<META NAME="CHANGEDBY" CONTENT="Pascal MALAISE">
-	<META NAME="CHANGED" CONTENT="20091010;11074400">
+	<META NAME="CHANGED" CONTENT="20091106;10214700">
 </HEAD>
 <BODY LANG="en-US" DIR="LTR">
-<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><FONT SIZE=6><B>V8.1</B></FONT></FONT></FONT></P>
+<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><B><FONT SIZE=6>V9.0</FONT></B></FONT></FONT></P>
 <H1 LANG="en-GB"><FONT FACE="monospace">1. General syntax</FONT></H1>
 <P LANG="en-GB"><FONT FACE="monospace">Usage: asubst [ { &lt;option&gt;
 } ] &lt;find_pattern&gt; &lt;replace_string&gt; [ { &lt;file&gt; }
@@ -27,16 +26,16 @@ input flow or file is pure ASCII.<BR>-D &lt;string&gt; or
 --delimiter=&lt;string&gt; for a delimiter other than '\n'.<BR>-d or
 --display : display arguments &lt;find_pattern&gt;, &lt;exclude_pattern&gt;
 and &lt;replace_string&gt;.<BR>-e &lt;pattern&gt; or
---exclude=&lt;pattern&gt; for skip text matching &lt;pattern&gt;.<BR>-f
-or --file : indicate that &lt;file&gt; contains the names of files to
-process.<BR>-g or --grep : print matching text as grep would do (no
-substitution).</FONT><BR><FONT FACE="monospace">-i or --ignorecase :
-do case insensitive match checking of &lt;find_pattern&gt;.<BR>-l or
---line for display line number in grep mode.<BR>-m &lt;range&gt; or
---match=&lt;range&gt; for substitution of only &lt;range&gt;
-matches.<BR>-n or --number : print number of substitutions per
-file.<BR>-p &lt;dir&gt; or --tmp=&lt;dir&gt; : directory of temporary
-files.<BR>-q or --quiet : no printout.</FONT><BR><FONT FACE="monospace">-s
+--exclude=&lt;pattern&gt; for skip text matching &lt;pattern&gt;.<BR>-F
+or --file_list to indicate that &lt;file&gt; will be a list of file
+names,<BR>-f or --file for display file name in grep mode,<BR>-g or
+--grep : print matching text as grep would do (no substitution).</FONT><BR><FONT FACE="monospace">-i
+or --ignorecase : do case insensitive match checking of
+&lt;find_pattern&gt;.<BR>-l or --line for display line number in grep
+mode.<BR>-m &lt;range&gt; or --match=&lt;range&gt; for substitution
+of only &lt;range&gt; matches.<BR>-n or --number : print number of
+substitutions per file.<BR>-p &lt;dir&gt; or --tmp=&lt;dir&gt; :
+directory of temporary files.<BR>-q or --quiet : no printout.</FONT><BR><FONT FACE="monospace">-s
 or --save : make a copy (&lt;file&gt;.asu) of original file(s),<BR>-t
 or --test for test, substitutions not performed,<BR>-u or --utf8 :
 process utf-8 sequences.<BR>-v or --verbose : print each substitution
@@ -137,9 +136,9 @@ exclusion &quot;toto&quot;.<BR>On the other hand, echo &quot;toto&quot;
 <P LANG="en-GB"><FONT FACE="monospace">The &lt;range&gt; has the
 format: i-j,k-l... Example: &quot;-4,7-9,15-&quot; means the first 4
 matching occurence, the 7th to the 9th and 15th occurence and after
-(&quot;&quot; means none). Only these occurences of matching (in the
-file or flow) will be substituted.<BR>Because of the rules for
-parsing arguments, a &lt;range&gt; starting by '-' requires the long
+(&quot;&quot; means none). Only these occurences of matching (in the
+file or flow) will be substituted. <BR>Because of the rules for
+parsing arguments, a &lt;range&gt; starting by '-' requires the long
 option name. Example: don't use '-m -4', but '-m 1-4' or
 '--match=-4'.</FONT></P>
 <H1 LANG="en-GB"><FONT FACE="monospace">7. Delimiter</FONT></H1>
@@ -213,11 +212,13 @@ apply first, then replacement, then case conversion.</FONT><FONT FACE="monospace
 <H1 LANG="en-GB"><FONT FACE="Monospace">9. Grep mode</FONT></H1>
 <P LANG="en-GB"><FONT FACE="Monospace">In grep mode, asubst only
 looks for find_pattern and displays result, (possibly with the line
-number in input file) but does not alter the files. As a consequence,
-grep mode imposes quiet, test and no-backup modes, and line_nb mode
-is allowed in grep mode only.</FONT></P>
+number in input file) but does not alter the files.</FONT></P>
+<P LANG="en-GB"><FONT FACE="Monospace">As a consequence, grep mode
+imposes quiet, test and no-backup modes. File_name and line_nb modes
+are allowed in grep mode only, and line_nb mode requires file_name
+mode.</FONT></P>
 <P LANG="en-GB"><FONT FACE="Monospace">It is possible to provide a
-non empty replace_string (if line_nb mode is not active), so that
+non empty replace_string (if file_name mode is not active), so that
 asubst displays it. Of course, this is especially useful if it
 contains some &quot;\RIJ&quot; or &quot;\rIJ&quot;.</FONT></P>
 <P LANG="en-GB"><FONT FACE="Monospace">Examples:<BR>echo -en &quot;toto&quot;

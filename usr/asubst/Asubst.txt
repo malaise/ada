@@ -1,5 +1,5 @@
                                  Asubst
-                                  V8.1
+                                  V9.0
 
 
 1. General syntax
@@ -17,7 +17,8 @@ for Perl Regular Expressions.
 -d or --display : display arguments <find_pattern>, <exclude_pattern> and
     <replace_string>.
 -e <pattern> or --exclude=<pattern> for skip text matching <pattern>,
--f or --file : indicate that <file> will contain names of files to process.
+-F or --file_list to indicate that <file> will be a list of file names,
+-f or --file for display file name in grep mode,
 -g or --grep : print matching text as grep would do (no substitution).
 -i or --ignorecase : do case insensitive match checking of <find_pattern>.
 -l or --line for display line number in grep mode.
@@ -185,10 +186,12 @@ echo -en "toto" | asubst "(.)(.)(..)" "\u\r12\c\r11"    ->  "Otto"
 
 9. Grep mode
 In grep mode, asubst only looks for find_pattern and displays result,
-(possibly with the line number in input file) but does not alter the files.
-As a consequence, grep mode imposes quiet, test and no-backup modes, and
-line_nb mode is allowed in grep mode only.
-It is possible to provide a non empty replace_string (if line_nb mode is not
+(possibly with the input file name and possibly with the line number in this 
+input file) but does not alter the files.
+As a consequence, grep mode imposes quiet, test and no-backup modes. File_name
+and line_nb modes are allowed in grep mode only, and line_nb mode requires
+file_name mode.
+It is possible to provide a non empty replace_string (if file_name mode is not
 active), so that asubst displays it. Of course, this is especially useful if it
 contains some "\RIJ" or "\rIJ".
 

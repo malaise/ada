@@ -340,23 +340,25 @@ package body Substit is
 
   -- Process one file (stdin -> stdout if File_Name is Std_In_Out)
   procedure Flush_Lines;
-  procedure Subst_Lines (Match_Range : in String;
-                         Verbose     : in Boolean;
-                         Grep        : in Boolean;
-                         Line_Nb     : in Boolean;
-                         Test        : in Boolean;
-                         Nb_Match    : in out Long_Long_Natural;
-                         Loc_Subst   : out Long_Long_Natural);
+  procedure Subst_Lines (Match_Range    : in String;
+                         Verbose        : in Boolean;
+                         Grep           : in Boolean;
+                         Grep_Line_Nb   : in Boolean;
+                         Grep_File_Name : in Boolean;
+                         Test           : in Boolean;
+                         Nb_Match       : in out Long_Long_Natural;
+                         Loc_Subst      : out Long_Long_Natural);
 
-  function Do_One_File (File_Name   : String;
-                        Tmp_Dir     : String;
-                        Delimiter   : String;
-                        Match_Range : String;
-                        Backup      : Boolean;
-                        Verbose     : Boolean;
-                        Grep        : Boolean;
-                        Line_Nb     : Boolean;
-                        Test        : Boolean) return Long_Long_Natural is
+  function Do_One_File (File_Name      : String;
+                        Tmp_Dir        : String;
+                        Delimiter      : String;
+                        Match_Range    : String;
+                        Backup         : Boolean;
+                        Verbose        : Boolean;
+                        Grep           : Boolean;
+                        Grep_Line_Nb   : Boolean;
+                        Grep_File_Name : Boolean;
+                        Test           : Boolean) return Long_Long_Natural is
     Nb_Subst : Long_Long_Natural;
     Nb_Match : Long_Long_Natural;
     Loc_Subst : Long_Long_Natural;
@@ -386,8 +388,8 @@ package body Substit is
         Ada.Text_Io.New_Line;
       end if;
       -- Process these lines
-      Subst_Lines (Match_Range, Do_Verbose, Grep, Line_Nb, Test,
-                   Nb_Match, Loc_Subst);
+      Subst_Lines (Match_Range, Do_Verbose, Grep, Grep_Line_Nb, Grep_File_Name,
+                   Test, Nb_Match, Loc_Subst);
       Nb_Subst := Nb_Subst + Loc_Subst;
     end loop;
     -- Put remaining lines (read but not matching, or not read)
@@ -422,14 +424,15 @@ package body Substit is
   end Do_One_File;
 
   -- Handle multiple substitutions within one line
-  procedure Subst_One_Line (Line       : in Str_Access;
-                           Match_Range : in String;
-                           Verbose     : in Boolean;
-                           Grep        : in Boolean;
-                           Line_Nb     : in Boolean;
-                           Test        : in Boolean;
-                           Nb_Match    : in out Long_Long_Natural;
-                           Loc_Subst   : out Long_Long_Natural) is
+  procedure Subst_One_Line (Line          : in Str_Access;
+                           Match_Range    : in String;
+                           Verbose        : in Boolean;
+                           Grep           : in Boolean;
+                           Grep_Line_Nb   : in Boolean;
+                           Grep_File_Name : in Boolean;
+                           Test           : in Boolean;
+                           Nb_Match       : in out Long_Long_Natural;
+                           Loc_Subst      : out Long_Long_Natural) is
 
     Current : Positive;
     Match_Res : Regular_Expressions.Match_Cell;
@@ -494,9 +497,11 @@ package body Substit is
                                        Match_Res.Last_Offset_Stop)
                 & " -> " & Replacing);
             elsif Grep then
-              if Loc_Subst = 1 and then not Is_Stdin then
+              if Loc_Subst = 1
+              and then not Is_Stdin
+              and then Grep_File_Name then
                 Ada.Text_Io.Put (Asu.To_String (In_File_Name) & ":");
-                if Line_Nb then
+                if Grep_Line_Nb then
                   Ada.Text_Io.Put (Line_Image(Line_No) & ":");
                 end if;
               end if;
@@ -579,13 +584,14 @@ package body Substit is
   end Flush_Lines;
 
   -- Check current list of lines vs search patterns
-  procedure Subst_Lines (Match_Range : in String;
-                         Verbose     : in Boolean;
-                         Grep        : in Boolean;
-                         Line_Nb     : in Boolean;
-                         Test        : in Boolean;
-                         Nb_Match    : in out Long_Long_Natural;
-                         Loc_Subst   : out Long_Long_Natural) is
+  procedure Subst_Lines (Match_Range    : in String;
+                         Verbose        : in Boolean;
+                         Grep           : in Boolean;
+                         Grep_Line_Nb   : in Boolean;
+                         Grep_File_Name : in Boolean;
+                         Test           : in Boolean;
+                         Nb_Match       : in out Long_Long_Natural;
+                         Loc_Subst      : out Long_Long_Natural) is
     Match_Res : Regular_Expressions.Match_Cell;
     Line, First_Line, Last_Line : Str_Access;
     Matches, Excluded : Boolean;
@@ -632,8 +638,8 @@ package body Substit is
     if Is_Iterative then
       -- Handle separately multiple substitutions if one pattern
       Subst_One_Line (Line_List_Mng.Access_Current (Line_List),
-                      Match_Range, Verbose, Grep, Line_Nb, Test,
-                      Nb_Match, Loc_Subst);
+                      Match_Range, Verbose, Grep, Grep_Line_Nb, Grep_File_Name,
+                      Test, Nb_Match, Loc_Subst);
       return;
     end if;
 
@@ -762,9 +768,9 @@ package body Substit is
           Ada.Text_Io.Put_Line (" -> " & Str_Replacing);
         elsif Grep then
           -- Display grep result
-          if not Is_Stdin then
+          if not Is_Stdin and then Grep_File_Name then
             Ada.Text_Io.Put (Asu.To_String (In_File_Name & ":"));
-            if Line_Nb then
+            if Grep_Line_Nb then
               Ada.Text_Io.Put (Line_Image(Line_No) & ":");
             end if;
           end if;

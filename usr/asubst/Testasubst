@@ -56,7 +56,7 @@ echo "end Pack;" >> $FE
 STEP="Test of file substitution from file list"
 cp $FR $FT
 echo $FT > $FL
-res=`asubst -f "^(  )*--.*\n(  )*--.*\n(  )*--.*\n\n" "\R03\n" $FL`
+res=`asubst -F "^(  )*--.*\n(  )*--.*\n(  )*--.*\n\n" "\R03\n" $FL`
 code=$?
 # Check exit code and that result is expected
 if [ $code -ne 0 ] ; then
@@ -168,7 +168,7 @@ rm -rf $FS
 cp $FR $FT
 # Check multiple regexp grep
 STEP="Test of multiple regexp grep"
-res=`asubst -gl " is\n" "" $FT`
+res=`asubst -glf " is\n" "" $FT`
 code=$?
 if [ $code -ne 0 ] ; then
   echo "Error: asubst exited with code $code"
@@ -213,7 +213,7 @@ if [ "$res" != "$exp_res" ] ; then
 fi
 # Check mono regexp grep
 STEP="Test mono regexp grep"
-res=`asubst -g " is" "" $FT`
+res=`asubst -gf " is" "" $FT`
 if [ $code -ne 0 ] ; then
   echo "Error: asubst exited with code $code"
   echo "$STEP FAILED."
@@ -239,7 +239,7 @@ if [ $code -ne 0 ] ; then
   echo "$STEP FAILED."
   exit 1
 fi
-exp_res=`echo -e "tstfile.tst:  procedure Test is\n"`
+exp_res=`echo -e "  procedure Test is\n"`
 if [ "$res" != "$exp_res" ] ; then
   echo "Result $res differs from expected."
   echo "$STEP FAILED."

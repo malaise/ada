@@ -3,7 +3,7 @@ with Environ, Argument, Argument_Parser, Sys_Calls, Language, Mixed_Str, Text_Li
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
-  Version : constant String  := "V8.1";
+  Version : constant String  := "V9.0";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -38,7 +38,9 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
      "    -e <pattern> or --exclude=<pattern> for skip text matching <pattern>,");
     Sys_Calls.Put_Line_Error (
-     "    -f or --file to indicate that <file> will be a list of file names,");
+     "    -F or --file_list to indicate that <file> will be a list of file names,");
+    Sys_Calls.Put_Line_Error (
+     "    -f or --file for display file name in grep mode,");
     Sys_Calls.Put_Line_Error (
      "    -g or --grep to print matching text as grep would do (no subst),");
     Sys_Calls.Put_Line_Error (
@@ -188,7 +190,7 @@ procedure Asubst is
    02 => ('D', Asu_Tus ("delimiter"), False, True),
    03 => ('d', Asu_Tus ("display"), False, False),
    04 => ('e', Asu_Tus ("exclude"), False, True),
-   05 => ('f', Asu_Tus ("file"), False, False),
+   05 => ('F', Asu_Tus ("file_list"), False, False),
    06 => ('g', Asu_Tus ("grep"), False, False),
    07 => ('h', Asu_Tus ("help"), False, False),
    08 => ('i', Asu_Tus ("ignorecase"), False, False),
@@ -202,7 +204,8 @@ procedure Asubst is
    16 => ('v', Asu_Tus ("verbose"), False, False),
    17 => ('V', Asu_Tus ("version"), False, False),
    18 => ('x', Asu_Tus ("noregex"), False, False),
-   19 => ('p', Asu_Tus ("tmp"), False, True)
+   19 => ('p', Asu_Tus ("tmp"), False, True),
+   20 => ('f', Asu_Tus ("file"), False, False)
    );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
@@ -218,7 +221,8 @@ procedure Asubst is
   type Verbose_List is (Quiet, Put_File_Name, Put_Subst_Nb, Verbose);
   Verbosity : Verbose_List := Put_File_Name;
   Grep : Boolean := False;
-  Line_Nb : Boolean := False;
+  Grep_Line_Nb : Boolean := False;
+  Grep_File_Name : Boolean := False;
   Backup : Boolean := False;
   Is_Regex : Boolean := True;
   Test : Boolean := False;
@@ -260,7 +264,8 @@ procedure Asubst is
                   Asu_Ts (Tmp_Dir),
                   Asu_Ts (Delimiter),
                   Asu_Ts (Match_Range),
-                  Backup, Verbosity = Verbose, Grep, Line_Nb, Test);
+                  Backup, Verbosity = Verbose, Grep,
+                  Grep_Line_Nb, Grep_File_Name, Test);
     if Nb_Subst /= 0 then
       Found := True;
     end if;
@@ -418,7 +423,7 @@ begin
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Option line no");
     end if;
-    Line_Nb := True;
+    Grep_Line_Nb := True;
   end if;
   if Arg_Dscr.Is_Set (10) then
     -- Substit only occurences that match criteria
@@ -526,6 +531,13 @@ begin
           & Ada.Strings.Unbounded.To_String (Tmp_Dir));
     end if;
   end if;
+  if Arg_Dscr.Is_Set (20) then
+    -- Put file name
+    if Debug.Set then
+      Sys_Calls.Put_Line_Error ("Option file name");
+    end if;
+    Grep_File_Name := True;
+  end if;
 
   -- Set language (for regexp)
   Language.Set_Language (Lang);
@@ -568,18 +580,25 @@ begin
     Verbosity := Quiet;
     Backup := False;
   end if;
-  -- Line_Nb => Grep
-  if Line_Nb and then not Grep then
+  -- File_Name => Grep
+  if Grep_File_Name and then not Grep then
     Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
-      & ": Syntax ERROR. Line_nb mode is allowed in grep mode only.");
+      & ": Syntax ERROR. File_name mode is allowed in grep mode only.");
     Error;
     return;
   end if;
-  -- Grep AND Line_Nb => empty Replace_Pattern
-  if Grep and then Line_Nb
+  -- Line_Nb => Grep and File_Name
+  if Grep_Line_Nb and then not Grep_File_Name then
+    Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
+      & ": Syntax ERROR. Line_nb mode is allowed in grep mode with file name only.");
+    Error;
+    return;
+  end if;
+  -- Grep AND File_Name => empty Replace_Pattern
+  if Grep and then Grep_File_Name
   and then Arg_Dscr.Get_Option (No_Key_Index, 2) /= "" then
     Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
-      & ": Syntax ERROR. Grep with line_nb implies empty replace_string.");
+      & ": Syntax ERROR. Grep with file_name implies empty replace_string.");
     Error;
     return;
   end if;
@@ -620,15 +639,16 @@ begin
     else
       begin
         Nb_Subst := Substit.Do_One_File (
-            File_Name   => Substit.Std_In_Out,
-            Tmp_Dir     => Asu_Ts (Tmp_Dir),
-            Delimiter   => Asu_Ts (Delimiter),
-            Match_Range => Asu_Ts (Match_Range),
-            Backup      => False,
-            Verbose     => False,
-            Grep        => Grep,
-            Line_Nb     => Line_Nb,
-            Test        => Test);
+            File_Name      => Substit.Std_In_Out,
+            Tmp_Dir        => Asu_Ts (Tmp_Dir),
+            Delimiter      => Asu_Ts (Delimiter),
+            Match_Range    => Asu_Ts (Match_Range),
+            Backup         => False,
+            Verbose        => False,
+            Grep           => Grep,
+            Grep_Line_Nb   => Grep_Line_Nb,
+            Grep_File_Name => Grep_File_Name,
+            Test          => Test);
         if Nb_Subst /= 0 then
           Found := True;
         end if;
