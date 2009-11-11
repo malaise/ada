@@ -56,7 +56,7 @@ echo "end Pack;" >> $FE
 STEP="Test of file substitution from file list"
 cp $FR $FT
 echo $FT > $FL
-res=`asubst -F "^(  )*--.*\n(  )*--.*\n(  )*--.*\n\n" "\R03\n" $FL`
+res=`asubst -F $FL "^(  )*--.*\n(  )*--.*\n(  )*--.*\n\n" "\R03\n"`
 code=$?
 # Check exit code and that result is expected
 if [ $code -ne 0 ] ; then

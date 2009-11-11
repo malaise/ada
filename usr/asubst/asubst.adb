@@ -3,7 +3,7 @@ with Environ, Argument, Argument_Parser, Sys_Calls, Language, Mixed_Str, Text_Li
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
-  Version : constant String  := "V9.0";
+  Version : constant String  := "V10.0";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -38,7 +38,7 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
      "    -e <pattern> or --exclude=<pattern> for skip text matching <pattern>,");
     Sys_Calls.Put_Line_Error (
-     "    -F or --file_list to indicate that <file> will be a list of file names,");
+     "    -F <file> or --file_list=<file> to provide a file list of file names,");
     Sys_Calls.Put_Line_Error (
      "    -f or --file for display file name in grep mode,");
     Sys_Calls.Put_Line_Error (
@@ -190,7 +190,7 @@ procedure Asubst is
    02 => ('D', Asu_Tus ("delimiter"), False, True),
    03 => ('d', Asu_Tus ("display"), False, False),
    04 => ('e', Asu_Tus ("exclude"), False, True),
-   05 => ('F', Asu_Tus ("file_list"), False, False),
+   05 => ('F', Asu_Tus ("file_list"), False, True),
    06 => ('g', Asu_Tus ("grep"), False, False),
    07 => ('h', Asu_Tus ("help"), False, False),
    08 => ('i', Asu_Tus ("ignorecase"), False, False),
@@ -605,10 +605,10 @@ begin
 
   -- One file argument if file of files
   if File_Of_Files
-  and then Arg_Dscr.Get_Nb_Occurences (No_Key_Index) /= 3 then
+  and then Arg_Dscr.Get_Nb_Occurences (No_Key_Index) /= 2 then
     Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
-                   & ": Syntax ERROR. One file (only) must be supplied"
-                   & "  with -f or --file option.");
+                   & ": Syntax ERROR. No file accepted"
+                   & " when -F or --file_list option is set.");
     Error;
     return;
   end if;
@@ -630,7 +630,29 @@ begin
   -- Process files
   Ok := True;
   Found := False;
-  if Arg_Dscr.Get_Nb_Occurences (No_Key_Index) = 2 then
+  if File_Of_Files then
+    -- File of files: open it
+    begin
+      File_Mng.Open (Arg_Dscr.Get_Option (05, 1));
+    exception
+      when File_Mng.Open_Error =>
+        Ok := False;
+    end;
+    -- Process files up to the end of file of files
+    if Ok then
+      loop
+        begin
+          Do_One_File (File_Mng.Get_Next_File);
+        exception
+          when File_Mng.End_Error =>
+            exit;
+          when File_Mng.Io_Error =>
+            Ok := False;
+            exit;
+        end;
+      end loop;
+    end if;
+  elsif Arg_Dscr.Get_Nb_Occurences (No_Key_Index) = 2 then
     -- No file: stdin -> stdout
     if Backup then
       Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
@@ -663,28 +685,6 @@ begin
                     & " while processing stdin to stdout.");
           Ok := False;
       end;
-    end if;
-  elsif File_Of_Files then
-    -- File of files: open it
-    begin
-      File_Mng.Open (Arg_Dscr.Get_Option (No_Key_Index, 3));
-    exception
-      when File_Mng.Open_Error =>
-        Ok := False;
-    end;
-    -- Process files up to the end of file of files
-    if Ok then
-      loop
-        begin
-          Do_One_File (File_Mng.Get_Next_File);
-        exception
-          when File_Mng.End_Error =>
-            exit;
-          when File_Mng.Io_Error =>
-            Ok := False;
-            exit;
-        end;
-      end loop;
     end if;
   else
     -- Files are arguments

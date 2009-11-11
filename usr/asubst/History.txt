@@ -1,5 +1,9 @@
 History of Asubst:
 ------------------
+11/11/2009 V10.0
+Add: Support "-" as file list for stdin.
+     File list becomes an option of -F (--file_list)
+
 06/11/2009 V9.0
 Add: Use -f (--file) to put file name in grep
      Previous option -f becomes -F (--file_list)
