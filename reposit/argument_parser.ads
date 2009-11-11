@@ -16,7 +16,7 @@
 -- - when grouped, single char keys cannot have options. So, if "-o/--option"
 --   can have an option, then in case of "-ao" it has no option.
 
-with Ada.Strings.Unbounded;
+with Ada.Strings.Unbounded, Ada.Finalization;
 with Argument;
 package Argument_Parser is
 
@@ -26,11 +26,11 @@ package Argument_Parser is
   -- Usefull renaming for Unbounded Strings
   package Asu renames Ada.Strings.Unbounded;
   subtype Asu_Us is Asu.Unbounded_String;
-  Asu_Nus : constant  Asu_Us := Asu.Null_Unbounded_String;
+  Asu_Null : constant  Asu_Us := Asu.Null_Unbounded_String;
 
   -- No key when character key, when string key
   No_Key_Char : constant Character := ' ';
-  No_Key_String : constant Asu_Us := Asu_Nus;
+  No_Key_String : constant Asu_Us := Asu_Null;
   -- A key definition
   type A_Key_Type is record
     Key_Char : Character := No_Key_Char;
@@ -124,9 +124,9 @@ private
   type Keyed_Array is array (The_Keys_Index) of Natural;
   type Keys_Access is access The_Keys_Type;
 
-  type Parsed_Dscr is tagged record
+  type Parsed_Dscr is new Ada.Finalization.Controlled with record
     Ok : Boolean := False;
-    Error : Asu_Us := Asu_Nus;
+    Error : Asu_Us := Asu_Null;
     The_Keys : Keys_Access;
     Last_Pos_Key : Natural := 0;
     First_Pos_After_Keys : Natural := 0;
@@ -134,6 +134,8 @@ private
     Nb_Occurences : Keyed_Array := (others => 0);
     First_Occurence : Keyed_Array := (others => 0);
   end record;
+  overriding procedure Adjust (Dscr : in out Parsed_Dscr);
+  overriding procedure Finalize (Dscr : in out Parsed_Dscr);
 
 end Argument_Parser;
 

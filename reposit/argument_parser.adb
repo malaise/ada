@@ -1,4 +1,4 @@
-with Ada.Unchecked_Deallocation;
+with Ada.Unchecked_Deallocation, Ada.Characters.Latin_1;
 with String_Mng, Int_Image;
 package body Argument_Parser is
 
@@ -37,12 +37,10 @@ package body Argument_Parser is
     P_Dscr.Ok := False;
     A_Dscr.Index := 0;
     A_Dscr.Set := False;
-    A_Dscr.Option := Asu_Nus;
+    A_Dscr.Option := Asu_Null;
     if Str'Length >= 1 and then Str(1) = '-' then
       if Str = "-" then
-        -- Just a "-"
-        P_Dscr.Error := Asu_Tus ("Argument " & Str & " at pos "
-           & Image(Arg_No) & " is not valid");
+        -- Just a "-": normal word
         return;
       end if;
 
@@ -121,6 +119,7 @@ package body Argument_Parser is
                    := Argument.Get_Parameter (Arg_No + 1);
           begin
             if (Option'Length >= 1 and then Option(1) /= '-')
+            or else Option = "-"
             or else Option = "" then
               A_Dscr.Set := True;
               A_Dscr.Option := Asu_Tus (Option);
@@ -221,7 +220,7 @@ package body Argument_Parser is
       -- Parse this argument
       Parse_Arg (The_Keys, I, Dscr, Arg);
       if not Dscr.Ok then
-        if Dscr.Error /= Asu_Nus then
+        if Dscr.Error /= Asu_Null then
           -- Error detected
           return Dscr;
         end if;
@@ -252,7 +251,7 @@ package body Argument_Parser is
           Dscr.First_Pos_After_Keys := I + 1;
           Is_Option := False;
         end if;
-      elsif Arg.Option /= Asu_Nus then
+      elsif Arg.Option /= Asu_Null then
         -- A valid group of Char keys, check each char
         for J in 1 .. Asu.Length (Arg.Option) loop
           -- Locate the corresponding key (existence has already been checked)
@@ -321,15 +320,15 @@ package body Argument_Parser is
 
   -- Free the keys
   -- Clean memory allocated during parsing
-  procedure Reset (Dscr : in out Parsed_Dscr) is
-    procedure Deallocate is new Ada.Unchecked_Deallocation (
+  procedure Deallocate is new Ada.Unchecked_Deallocation (
       The_Keys_Type, Keys_Access);
+  procedure Reset (Dscr : in out Parsed_Dscr) is
   begin
     if Dscr.Ok and then Dscr.The_Keys /= null then
       Deallocate (Dscr.The_Keys);
       Dscr.Ok := False;
       Dscr.The_Keys := null;
-      Dscr.Error := Asu_Nus;
+      Dscr.Error := Asu_Null;
     else
       raise Parsing_Error;
     end if;
@@ -426,8 +425,8 @@ package body Argument_Parser is
     return Get_Nb_Occurences (Dscr, Index) /= 0;
   end Is_Set;
 
-  -- Does an argument match the key, returns the option or "-" if not match
-  No_Match : constant String := "-";
+  -- Does an argument match the key, returns the option or No_Match if not match
+  No_Match : constant String := "" & Ada.Characters.Latin_1.Nul;
   function Match (Arg_No : Positive; Key : A_Key_Type) return String is
     Str : constant String := Argument.Get_Parameter (Arg_No);
     Len : Natural;
@@ -476,7 +475,8 @@ package body Argument_Parser is
       Option : constant String
              := Argument.Get_Parameter (Arg_No + 1);
     begin
-      if Option'Length >= 1 and then Option(1) /= '-' then
+      if Option'Length >= 1 and then
+         (Option(1) /= '-' or else Option = "-") then
         return Option;
       else
         return "";
@@ -495,7 +495,7 @@ package body Argument_Parser is
     Char : Character;
   begin
     -- First solve the easiest cases
-    if Str /= "" and then Str(1) = '-' then
+    if Str /= "" and then Str(1) = '-' and then Str /= "-" then
       -- This is a key
       return True;
     elsif Arg_No = 1 then
@@ -519,7 +519,7 @@ package body Argument_Parser is
         return The_Keys(I).Key_Can_Option;
       end if;
     end loop;
-    -- Normally we should have found the key
+    -- Normaly we should have found the key
     raise Internal_Error;
   end Is_Key;
 
@@ -608,6 +608,27 @@ package body Argument_Parser is
       raise Internal_Error;
     end if;
   end Get_Position;
+
+  overriding procedure Finalize (Dscr : in out Parsed_Dscr) is
+  begin
+    if Dscr.The_Keys /= null then
+      Deallocate (Dscr.The_Keys);
+    end if;
+    Dscr.Ok := False;
+    Dscr.Error := Asu_Null;
+    Dscr.The_Keys := null;
+  end Finalize;
+
+  overriding procedure Adjust (Dscr : in out Parsed_Dscr) is
+    Keys : Keys_Access;
+  begin
+    if Dscr.The_Keys = null then
+      return;
+    end if;
+    -- Allocate and copy keys
+    Keys := new The_Keys_Type'(Dscr.The_Keys.all);
+    Dscr.The_Keys := Keys;
+  end Adjust;
 
 end Argument_Parser;
 
