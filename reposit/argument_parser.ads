@@ -10,11 +10,17 @@
 -- - there shall be at least a char or a string definition for any key
 -- - any char or a string definition shall be unique
 
--- The restrictions on arguments are:
+-- The conventions and restriction on arguments are:
 -- - any argument starting by "-" is considered as a key and thus must match
 --   the input specification.
--- - when grouped, single char keys cannot have options. So, if "-o/--option"
---   can have an option, then in case of "-ao" it has no option.
+-- - any argument except --key and -key(s) following a key char that accepts
+--    options is considered as an option. So, if "-o/--option"
+--    can have an option, then in case of "-o opt" or "-ao opt" leaed opt to be
+--    on option of key o.
+-- - an argument "--" leads to stop the parsing. Any following argument will
+--    be considered as No_Key. This special argument cannot be retrieved.
+-- - an argument "-" is considered as a non specific string (either an option
+--    or a No_Key).
 
 with Ada.Strings.Unbounded, Ada.Finalization;
 with Argument;
@@ -49,7 +55,7 @@ package Argument_Parser is
   type Parsed_Dscr is tagged private;
 
   -- Constructor
-  -- May raise:
+  -- May raise exception if incorrect setting in The_Keys:
   No_Key : exception;       -- One key has both Char_Key and String_Key unset
   Dup_Key : exception;      -- Two keys have same Char or String key
   Unprintable_Key : exception; -- One key contains a unprintable char or space
@@ -58,7 +64,7 @@ package Argument_Parser is
   -- Free the keys, clean memory allocated during parsing
   procedure Reset (Dscr : in out Parsed_Dscr);
 
-  -- Was parsing OK
+  -- Was parsing of arguments OK
   function Is_Ok (Dscr : Parsed_Dscr) return Boolean;
 
   -- Error string
@@ -88,14 +94,14 @@ package Argument_Parser is
   --  the possible option of a char key) and skipping "--" if any
   function Get_First_Pos_After_Keys (Dscr : Parsed_Dscr) return Natural;
 
-  -- Return the number of embedded (non key) arguments. Arguments that are
+  -- Return the number of embedded (neither key nor option) arguments that are
   --  before last key
   function Get_Nb_Embedded_Arguments (Dscr : Parsed_Dscr) return Natural;
 
   -- The following operations alow retreiving info per key
   -- Index is relative to the array provided as input
   -- 0 means no key (any argument that is neither a key nor the option of a
-  --  single char key).
+  --  char key).
   No_Key_Index : constant The_Keys_Index := 0;
 
   -- All the following operations may raise, if called with Index too high:

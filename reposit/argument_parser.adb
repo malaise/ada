@@ -7,19 +7,53 @@ package body Argument_Parser is
 
   function Asu_Tus (Source : in String) return Asu.Unbounded_String
            renames Asu.To_Unbounded_String;
+  function Asu_Ts (Source : in Asu.Unbounded_String) return String
+           renames Asu.To_String;
 
+  No_Match : constant String := "" & Ada.Characters.Latin_1.Nul;
   -- The result of parsing of an arg
-  -- If Index is not 0, then it is a single (char or string) key
-  --  and Set and Options are set to the option if any
-  -- Elsif Option is not empty, then it is the list of chars of
-  --  a multiple chars key
-  -- Else, it is "--"
+  -- If Index is not 0, then it is a single (Char or else string) key
+  -- Elsif List is not empty, then it is the list of char keys
+  --   (and Char is True)
+  -- Else this is an option or a No_Key
+  -- In both first cases, Option is set to the option or to No_Match
   type Arg_Dscr is record
     Index : Natural;
     Char : Boolean;
-    Set : Boolean;
+    List : Asu_Us;
     Option : Asu_Us;
   end record;
+
+
+  -- Internal for parsing: get option at pos Pos if valid, else No_Match
+  function Get_Option (Pos : Positive) return Asu_Us is
+  begin
+    if Pos /= Argument.Get_Nbre_Arg then
+      declare
+        Option : constant String
+               := Argument.Get_Parameter (Pos);
+      begin
+        if (Option'Length >= 1 and then Option(1) /= '-')
+        or else Option = "-"
+        or else Option = "" then
+          -- Valid option
+          return Asu_Tus (Option);
+        end if;
+      end;
+    end if;
+    return Asu_Tus (No_Match);
+  end Get_Option;
+
+  -- Internal for user: get option at pos Pos if valid, else ""
+  function Get_Option (Pos : Positive) return String is
+    Str : constant String := Asu_Ts (Get_Option (Pos));
+  begin
+    if Str = No_Match then
+      return "";
+    else
+      return Str;
+    end if;
+  end Get_Option;
 
   -- Parse an argument
   -- P_Dscr.OK is set to false if not a valid key
@@ -32,12 +66,13 @@ package body Argument_Parser is
     Len : Natural;
     Crit : Asu_Us;
     Found : Boolean;
+    Index : The_Keys_Range;
     use type Asu_Us;
   begin
     P_Dscr.Ok := False;
     A_Dscr.Index := 0;
-    A_Dscr.Set := False;
-    A_Dscr.Option := Asu_Null;
+    A_Dscr.List := Asu_Null;
+    A_Dscr.Option := Asu_Tus (No_Match);
     if Str'Length >= 1 and then Str(1) = '-' then
       if Str = "-" then
         -- Just a "-": normal word
@@ -62,7 +97,6 @@ package body Argument_Parser is
           Crit := Asu_Tus (Str(3 .. Str'Last));
         else
           -- An option: save it
-          A_Dscr.Set := True;
           A_Dscr.Option := Asu_Tus (Str(Len + 1 .. Str'Last));
           Crit := Asu_Tus (Str(3 .. Len - 1));
         end if;
@@ -95,6 +129,7 @@ package body Argument_Parser is
            & Image(Arg_No) & " contains minus");
         return;
       end if;
+
       -- Char key
       if Str'Length = 2 then
         -- A single char key, locate it
@@ -111,20 +146,9 @@ package body Argument_Parser is
              & Image(Arg_No) & " is not expected");
           return;
         end if;
-        -- Found, see if it can have and has an option
-        if The_Keys(A_Dscr.Index).Key_Can_Option
-        and then Arg_No /= Argument.Get_Nbre_Arg then
-          declare
-            Option : constant String
-                   := Argument.Get_Parameter (Arg_No + 1);
-          begin
-            if (Option'Length >= 1 and then Option(1) /= '-')
-            or else Option = "-"
-            or else Option = "" then
-              A_Dscr.Set := True;
-              A_Dscr.Option := Asu_Tus (Option);
-            end if;
-          end;
+        -- Found, see if it can have and has a valid option
+        if The_Keys(A_Dscr.Index).Key_Can_Option then
+          A_Dscr.Option := Get_Option (Arg_No + 1);
         end if;
         P_Dscr.Ok := True;
         return;
@@ -135,6 +159,7 @@ package body Argument_Parser is
           for J in The_Keys'Range loop
             if Str(I) = The_Keys(J).Key_Char then
               Found := True;
+              Index := J;
               exit;
             end if;
           end loop;
@@ -143,10 +168,15 @@ package body Argument_Parser is
                & Image(Arg_No) & " has not expected key " & Str(I));
             return;
           end if;
+          -- See if last char key can have and has a valid option
+          if I = Str'Last
+          and then The_Keys(Index).Key_Can_Option then
+            A_Dscr.Option := Get_Option (Arg_No + 1);
+          end if;
         end loop;
         A_Dscr.Index := 0;
         A_Dscr.Char := True;
-        A_Dscr.Option := Asu_Tus (Str(2 .. Str'Last));
+        A_Dscr.List := Asu_Tus (Str(2 .. Str'Last));
         P_Dscr.Ok := True;
         return;
       end if;
@@ -242,7 +272,7 @@ package body Argument_Parser is
         Dscr.Nb_Occurences(Arg.Index) := Dscr.Nb_Occurences(Arg.Index) + 1;
         Dscr.Last_Pos_Key := I;
         Dscr.Nb_Embedded := Dscr.Nb_Occurences(No_Key_Index);
-        if Arg.Char and then Arg.Set then
+        if Arg.Char and Arg.Option /= No_Match then
           -- A Char key with option
           Dscr.First_Pos_After_Keys := I + 2;
           Is_Option := True;
@@ -251,12 +281,12 @@ package body Argument_Parser is
           Dscr.First_Pos_After_Keys := I + 1;
           Is_Option := False;
         end if;
-      elsif Arg.Option /= Asu_Null then
+      elsif Arg.List /= Asu_Null then
         -- A valid group of Char keys, check each char
-        for J in 1 .. Asu.Length (Arg.Option) loop
+        for J in 1 .. Asu.Length (Arg.List) loop
           -- Locate the corresponding key (existence has already been checked)
           for K in The_Keys'Range loop
-            if Asu.Element (Arg.Option, J) = The_Keys(K).Key_Char then
+            if Asu.Element (Arg.List, J) = The_Keys(K).Key_Char then
               if Dscr.First_Occurence(K) = 0 then
                 Dscr.First_Occurence(K) := I;
               elsif not The_Keys(K).Key_Can_Multiple then
@@ -275,9 +305,15 @@ package body Argument_Parser is
         end loop;
         Dscr.Last_Pos_Key := I;
         Dscr.Nb_Embedded := Dscr.Nb_Occurences(No_Key_Index);
-        -- Nex arg is not key
-        Dscr.First_Pos_After_Keys := I + 1;
-        Is_Option := False;
+        if Arg.Option /= No_Match then
+          -- A list of Char keys with an option
+          Dscr.First_Pos_After_Keys := I + 2;
+          Is_Option := True;
+        else
+          -- Nex arg is not key
+          Dscr.First_Pos_After_Keys := I + 1;
+          Is_Option := False;
+        end if;
       else
         -- Not key or "--"
         if Argument.Get_Parameter (I) = "--" then
@@ -291,7 +327,7 @@ package body Argument_Parser is
           end if;
           exit;
         else
-          -- Check that this is not the option of a previous simple char key
+          -- Check that this is not the option of a previous char key(s)
           if not Is_Option then
             if Dscr.First_Occurence(No_Key_Index) = 0 then
               Dscr.First_Occurence(No_Key_Index) := I;
@@ -426,16 +462,16 @@ package body Argument_Parser is
   end Is_Set;
 
   -- Does an argument match the key, returns the option or No_Match if not match
-  No_Match : constant String := "" & Ada.Characters.Latin_1.Nul;
   function Match (Arg_No : Positive; Key : A_Key_Type) return String is
     Str : constant String := Argument.Get_Parameter (Arg_No);
     Len : Natural;
+    Index : Natural;
   begin
     if Str'Length < 2 or else Str(1) /= '-' or else Str = "--" then
       return No_Match;
     end if;
     if Str(2) = '-' then
-      -- Full key, look for option
+      -- String key, look for option
       Len := String_Mng.Locate (Str, "=", 3);
       -- Set Len to last of key string
       if Len = 0 then
@@ -450,38 +486,30 @@ package body Argument_Parser is
         return Str (Len + 2 .. Str'Last);
       end if;
     end if;
-    -- A char key
+
+    -- Char key(s)
     if Str'Length > 2 then
       -- Multiple char keys
-      if String_Mng.Locate (Str, "" & Key.Key_Char, 2) = 0 then
+      Index := String_Mng.Locate (Str, "" & Key.Key_Char, 2);
+      if Index = 0 then
         return No_Match;
-      else
+      elsif Index /= Str'Last or else not Key.Key_Can_Option then
         -- No option possible
         return "";
+      else
+        -- This is then last char of the list and it can have option
+        return Get_Option (Arg_No + 1);
       end if;
     end if;
     -- Single char key
     if Str(2) /= Key.Key_Char then
       return No_Match;
-    end if;
-    -- Match, check option
-    if not Key.Key_Can_Option
-    or else Arg_No = Argument.Get_Nbre_Arg then
-      -- Cannot have option
+    elsif not Key.Key_Can_Option then
       return "";
+    else
+      -- Option?
+      return Get_Option (Arg_No + 1);
     end if;
-    -- Look at next arg
-    declare
-      Option : constant String
-             := Argument.Get_Parameter (Arg_No + 1);
-    begin
-      if Option'Length >= 1 and then
-         (Option(1) /= '-' or else Option = "-") then
-        return Option;
-      else
-        return "";
-      end if;
-    end;
   end Match;
 
   -- Raised anonymous exception when a key/option... shall be found but is
