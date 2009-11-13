@@ -103,7 +103,7 @@ begin
         begin
           Ada.Text_Io.Get_Immediate (Char);
           Ada.Text_Io.New_Line;
-          if Char = 'q' or Char = 'Q' then
+          if Char = 'q' or else Char = 'Q' then
             Clear_Screen;
             return;
           end if;

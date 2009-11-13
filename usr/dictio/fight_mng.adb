@@ -71,7 +71,7 @@ package body Fight_Mng is
       Vers : constant String
            := Intra_Dictio.Extra_Of (Extra, Intra_Dictio.Extra_Ver);
     begin
-      if Vers /= "" and Vers /= Versions.Intra then
+      if Vers /= "" and then Vers /= Versions.Intra then
         Dictio_Debug.Put_Error ("ERROR. Fight: version mismatch. Received "
                        & Vers & " while being " & Versions.Intra);
         raise Errors.Exit_Error;
