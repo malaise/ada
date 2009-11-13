@@ -149,15 +149,15 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
      "   flow if delimiter is empty). The <find_pattern> must be a simple <regex>");
     Sys_Calls.Put_Line_Error (
-    "    (no '^' or '$', but '\n' is allowed), and applies to each chunk.");
+     "    (no '^' or '$', but '\n' is allowed), and applies to each chunk.");
     Sys_Calls.Put_Line_Error (
-    "    This allows multi-row processing.");
+     "    This allows multi-row processing.");
     Sys_Calls.Put_Line_Error (
      "  In grep mode <replace_string> is put if not empty (ex: ""\R01"" for the matching");
     Sys_Calls.Put_Line_Error (
-    "    text), otherwise the full line of the matching text is put (as grep would");
+     "    text), otherwise the full line of the matching text is put (as grep would");
     Sys_Calls.Put_Line_Error (
-    "    do), possibly with line number (""-l"").");
+     "    do), possibly with line number (""-l"").");
 
     Sys_Calls.Put_Line_Error (
      "  Warning: regex are powerfull (see ""man 3 pcre"" and ""man 1 perlre"") and");
