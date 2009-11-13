@@ -28,7 +28,7 @@ package body Argument_Parser is
   -- Internal for parsing: get option at pos Pos if valid, else No_Match
   function Get_Option (Pos : Positive) return Asu_Us is
   begin
-    if Pos /= Argument.Get_Nbre_Arg then
+    if Pos <= Argument.Get_Nbre_Arg then
       declare
         Option : constant String
                := Argument.Get_Parameter (Pos);
@@ -272,7 +272,7 @@ package body Argument_Parser is
         Dscr.Nb_Occurences(Arg.Index) := Dscr.Nb_Occurences(Arg.Index) + 1;
         Dscr.Last_Pos_Key := I;
         Dscr.Nb_Embedded := Dscr.Nb_Occurences(No_Key_Index);
-        if Arg.Char and Arg.Option /= No_Match then
+        if Arg.Char and then Arg.Option /= No_Match then
           -- A Char key with option
           Dscr.First_Pos_After_Keys := I + 2;
           Is_Option := True;
@@ -341,7 +341,8 @@ package body Argument_Parser is
     end loop;
 
     -- Adjust First not key when none are keys
-    if Dscr.First_Pos_After_Keys = 0 then
+    if Dscr.First_Pos_After_Keys = 0
+    and then Argument.Get_Nbre_Arg /= 0 then
       Dscr.First_Pos_After_Keys := 1;
     end if;
     -- Adjust First not key when all are keys or embedded arguments
