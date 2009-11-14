@@ -528,16 +528,18 @@ package body Argument_Parser is
       -- This is a key
       return True;
     elsif Arg_No = 1 then
-      -- First arg cannot be an option nor a not_key
+      -- First arg cannot be an option
       return False;
     end if;
-    -- Now we have a non-key arg, see if previous arg is a single char key
+    -- Now we have a non-key arg, see if previous arg is
+    --  a single or multi char key
     declare
       Prev : constant String := Argument.Get_Parameter (Arg_No - 1);
     begin
-      if Prev'Length = 2 and then Prev(1) = '-' and then Prev(2) /= '-' then
-        -- Prev is a single char key
-        Char := Prev(2);
+      if Prev'Length >= 2 and then Prev(1) = '-' and then Prev(2) /= '-' then
+        -- Prev is a single/multi char key
+        -- Last char key may support option
+        Char := Prev(Prev'Last);
       else
         return False;
       end if;
