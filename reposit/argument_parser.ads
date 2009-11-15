@@ -5,22 +5,21 @@
 -- The parsing stops at last argument or when finding "--"
 
 -- The restrictions on keys (detected and raising exceptions):
--- - a string key shall not contain spaces or unprintable characters
--- - a char key shall be a printable character
+-- - a string key shall not contain spaces or unprintable characters,
+--    nor start with '-'
+-- - a char key shall be a printable character and not '-'
 -- - there shall be at least a char or a string definition for any key
 -- - any char or a string definition shall be unique
 
 -- The conventions and restriction on arguments are:
--- - any argument starting by "-" is considered as a key and thus must match
---   the input specification.
+-- - any argument starting by '-', except "-" and "--", is considered as a key
+--    and thus must match the input specification.
 -- - any argument except --key and -key(s) following a key char that accepts
---    options is considered as an option. So, if "-o/--option"
---    can have an option, then in case of "-o opt" or "-ao opt" leaed opt to be
---    on option of key o.
--- - an argument "--" leads to stop the parsing. Any following argument will
---    be considered as No_Key. This special argument cannot be retrieved.
--- - an argument "-" is considered as a non specific string (either an option
---    or a No_Key).
+--    options is considered as an option. So, if key 'o' can have an option,
+--    then "-o opt" or "-ao opt" lead "opt" to be an option of key o.
+-- - an argument "--" leads to stop the parsing of keys. Any following argument
+--    is considered as No_Key (even another "--").
+-- - an argument "-" is considered as a not a key (either option or No_Key).
 
 with Ada.Strings.Unbounded, Ada.Finalization;
 with Argument;
@@ -58,7 +57,7 @@ package Argument_Parser is
   -- May raise exception if incorrect setting in The_Keys:
   No_Key : exception;       -- One key has both Char_Key and String_Key unset
   Dup_Key : exception;      -- Two keys have same Char or String key
-  Unprintable_Key : exception; -- One key contains a unprintable char or space
+  Invalid_Key : exception;  -- One key contains a unprintable char or space
   function Parse (The_Keys : The_Keys_Type) return Parsed_Dscr;
 
   -- Free the keys, clean memory allocated during parsing
@@ -87,11 +86,11 @@ package Argument_Parser is
   function Get_Number_Keys (Dscr : Parsed_Dscr) return Natural;
 
   -- Return the position of the last argument related to keys (in case
-  --  of char key with option, it is the position of the key).
+  --  of char key(s) with an option, it is the position of the key).
   function Get_Last_Pos_Of_Keys (Dscr : Parsed_Dscr) return Natural;
 
   -- Return position of first argument not related to keys (taking into account
-  --  the possible option of a char key) and skipping "--" if any
+  --  the possible option of a char key) and skipping the first "--" if any
   function Get_First_Pos_After_Keys (Dscr : Parsed_Dscr) return Natural;
 
   -- Return the number of embedded (neither key nor option) arguments that are

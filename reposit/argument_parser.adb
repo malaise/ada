@@ -216,27 +216,30 @@ package body Argument_Parser is
           raise Dup_Key;
         end if;
       end loop;
-      -- Short key must not be an unprintable character
-      if The_Keys(I).Key_Char < ' ' or else  The_Keys(I).Key_Char > '~' then
-        raise Unprintable_Key;
+      -- Short key must not be an unprintable character or '-'
+      if The_Keys(I).Key_Char < ' '
+      or else The_Keys(I).Key_Char > '~'
+      or else The_Keys(I).Key_Char = '-' then
+        raise Invalid_Key;
       end if;
-      -- Long key must not contain space or unprintable character
+      -- Long key must not contain space or unprintable character nor be "--"
       declare
         Str : constant String := Asu.To_String (The_Keys(I).Key_String);
       begin
+        if The_Keys(I).Key_String /= No_Key_String
+        and then Str(Str'First) = '-' then
+          raise Invalid_Key;
+        end if;
         for J in Str'Range loop
           if Str(J) <= ' ' or else Str(J) > '~' then
-            raise Unprintable_Key;
+            raise Invalid_Key;
           end if;
         end loop;
       end;
     end loop;
 
-    -- Parse all the arguments
-    Dscr.Ok := False;
-    Is_Option := False;
+    -- Detect Argument_Too_Long
     for I in 1 .. Argument.Get_Nbre_Arg loop
-      -- Detect Argument_Too_Long
       begin
         if Argument.Get_Parameter (I) = "" then
           null;
@@ -247,15 +250,27 @@ package body Argument_Parser is
              & Image(I) & " is too long");
           return Dscr;
       end;
-      -- Parse this argument
-      Parse_Arg (The_Keys, I, Dscr, Arg);
-      if not Dscr.Ok then
-        if Dscr.Error /= Asu_Null then
-          -- Error detected
-          return Dscr;
+    end loop;
+
+    -- Parse all the arguments
+    Dscr.Ok := False;
+    Is_Option := False;
+    for I in 1 .. Argument.Get_Nbre_Arg loop
+      if not Is_Option then
+        -- Parse this argument
+        Parse_Arg (The_Keys, I, Dscr, Arg);
+        if not Dscr.Ok then
+          if Dscr.Error /= Asu_Null then
+            -- Error detected
+            return Dscr;
+          end if;
+          -- Else, not key argument
         end if;
-        -- Else, not key argument
+      else
+        Arg.Index := 0;
+        Arg.List := Asu_Null;
       end if;
+
       -- Check this arg for Key_Can_Multiple, set terminator indexes
       if Arg.Index /= 0 then
         -- A valid single Char or String key
@@ -314,27 +329,29 @@ package body Argument_Parser is
           Dscr.First_Pos_After_Keys := I + 1;
           Is_Option := False;
         end if;
-      else
-        -- Not key or "--"
-        if Argument.Get_Parameter (I) = "--" then
-          -- Done if "--", all remaining are arguments
+      elsif Argument.Get_Parameter (I) = "--" then
+        -- Done at first "--"
+        -- All remaining are arguments
+        Dscr.Nb_Occurences(No_Key_Index) := Dscr.Nb_Occurences(No_Key_Index)
+                               + Argument.Get_Nbre_Arg - I;
+        -- This "--" is not a No_Key
+        if Dscr.First_Pos_After_Keys = I then
           Dscr.First_Pos_After_Keys := I + 1;
-          Dscr.Nb_Occurences(No_Key_Index) := Dscr.Nb_Occurences(No_Key_Index)
-                                 + Argument.Get_Nbre_Arg - I;
-          if Dscr.Nb_Occurences(No_Key_Index) /= 0
-          and then Dscr.First_Occurence(No_Key_Index) = 0 then
-            Dscr.First_Occurence(No_Key_Index) := I + 1;
+        end if;
+        if Dscr.Nb_Occurences(No_Key_Index) /= 0
+        and then Dscr.First_Occurence(No_Key_Index) = 0 then
+          Dscr.First_Occurence(No_Key_Index) := I + 1;
+        end if;
+        exit;
+      else
+        -- Not key
+        -- Check that this is not the option of a previous char key(s)
+        if not Is_Option then
+          if Dscr.First_Occurence(No_Key_Index) = 0 then
+            Dscr.First_Occurence(No_Key_Index) := I;
           end if;
-          exit;
-        else
-          -- Check that this is not the option of a previous char key(s)
-          if not Is_Option then
-            if Dscr.First_Occurence(No_Key_Index) = 0 then
-              Dscr.First_Occurence(No_Key_Index) := I;
-            end if;
-            Dscr.Nb_Occurences(No_Key_Index) :=
-                 Dscr.Nb_Occurences(No_Key_Index) + 1;
-          end if;
+          Dscr.Nb_Occurences(No_Key_Index) :=
+               Dscr.Nb_Occurences(No_Key_Index) + 1;
         end if;
         Is_Option := False;
       end if;
@@ -345,7 +362,7 @@ package body Argument_Parser is
     and then Argument.Get_Nbre_Arg /= 0 then
       Dscr.First_Pos_After_Keys := 1;
     end if;
-    -- Adjust First not key when all are keys or embedded arguments
+    -- Adjust First not key when all are keys
     if Dscr.First_Pos_After_Keys > Argument.Get_Nbre_Arg then
       Dscr.First_Pos_After_Keys := 0;
     end if;
@@ -361,14 +378,12 @@ package body Argument_Parser is
       The_Keys_Type, Keys_Access);
   procedure Reset (Dscr : in out Parsed_Dscr) is
   begin
-    if Dscr.Ok and then Dscr.The_Keys /= null then
+    if Dscr.The_Keys /= null then
       Deallocate (Dscr.The_Keys);
-      Dscr.Ok := False;
-      Dscr.The_Keys := null;
-      Dscr.Error := Asu_Null;
-    else
-      raise Parsing_Error;
     end if;
+    Dscr.Ok := False;
+    Dscr.The_Keys := null;
+    Dscr.Error := Asu_Null;
   end Reset;
 
   -- Was parsing OK
@@ -642,12 +657,7 @@ package body Argument_Parser is
 
   overriding procedure Finalize (Dscr : in out Parsed_Dscr) is
   begin
-    if Dscr.The_Keys /= null then
-      Deallocate (Dscr.The_Keys);
-    end if;
-    Dscr.Ok := False;
-    Dscr.Error := Asu_Null;
-    Dscr.The_Keys := null;
+    Reset (Dscr);
   end Finalize;
 
   overriding procedure Adjust (Dscr : in out Parsed_Dscr) is
