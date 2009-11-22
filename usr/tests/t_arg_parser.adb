@@ -16,6 +16,8 @@ procedure T_Arg_Parser is
 
   -- The env var set on auto test
   Auto_Env_Name : constant String := "T_ARG_PARSER_AUTO_TEST";
+  -- The env var to set vor test of empty list of keys
+  Empty_Env_Name : constant String := "T_ARG_PARSER_EMPTY_TEST";
 
   -- The keys
   Keys : constant Argument_Parser.The_Keys_Type := (
@@ -31,6 +33,12 @@ procedure T_Arg_Parser is
     Key_Can_Multiple => False, Key_Can_Option => True),
    (Key_Char => 'c', Key_String => Asu_Tus ("combine"),
     Key_Can_Multiple => True, Key_Can_Option => True) );
+
+  No_Keys : constant Argument_Parser.The_Keys_Type (1 .. 0)
+          := (others => (Argument_Parser.No_Key_Char,
+                         Argument_Parser.No_Key_String,
+                         False, False));
+  Nb_Keys : Natural;
 
   Dscr : Argument_Parser.Parsed_Dscr;
 
@@ -115,7 +123,18 @@ begin
   if Argument.Get_Nbre_Arg /= 1 or else Argument.Get_Parameter /= "auto" then
 
     -- Not test mode: parse arguments and output result
-    Dscr :=  Argument_Parser.Parse (Keys);
+    if Environ.Is_Yes (Empty_Env_Name) then
+      -- Test with empty list of keys
+      if not Environ.Is_Set (Auto_Env_Name)
+      or else not Environ.Is_Yes (Auto_Env_Name) then
+        Ada.Text_Io.Put_Line ("Parsing with no keys");
+      end if;
+      Dscr :=  Argument_Parser.Parse (No_Keys);
+      Nb_Keys := No_Keys'Length;
+    else
+      Dscr :=  Argument_Parser.Parse (Keys);
+      Nb_Keys := Keys'Length;
+    end if;
 
     if not Environ.Is_Set (Auto_Env_Name)
     or else not Environ.Is_Yes (Auto_Env_Name) then
@@ -134,7 +153,7 @@ begin
          & ", First after at pos:" & Dscr.Get_First_Pos_After_Keys'Img
          & " and Nb embedded arguments:" & Dscr.Get_Nb_Embedded_Arguments'Img);
 
-      for I in 0 .. Keys'Last loop
+      for I in 0 .. Nb_Keys loop
         if I = 0 then
           Ada.Text_Io.Put ("Arguments not key are");
         else
@@ -164,7 +183,7 @@ begin
       Put (Dscr.Get_Nb_Embedded_Arguments, True);
 
       -- All about keys
-      for I in 1 .. Keys'Last loop
+      for I in 1 .. Nb_Keys loop
         if Dscr.Get_Nb_Occurences (I) /= 0 then
           Put ("" & Keys(I).Key_Char);
           Put (Dscr.Get_Nb_Occurences (I), True);
@@ -195,10 +214,19 @@ begin
 
   -- Auto test
   Sys_Calls.Putenv (Auto_Env_Name, "Yes");
+  Basic_Proc.Put_Line_Output ("Test with no key");
+  Sys_Calls.Putenv (Empty_Env_Name, "Yes");
+  Try ("", "0 0 0 0");
+  Try ("f1 f2", "0 0 1 0 1 f1 2 f2");
+  Try ("f1 -o f2", "Argument -o at pos 2 is not expected");
+
+  Basic_Proc.Put_Line_Output ("Test with keys");
+  Sys_Calls.Putenv (Empty_Env_Name, "No");
   Try ("", "0 0 0 0");
   Try ("-o", "1 1 0 0 o1 1");
   Try ("-o opt", "1 1 0 0 o1 1 opt");
   Try ("-o opt -o", "Argument -o at pos 3 appears several times");
+  Try ("-x -o opt", "Argument -x at pos 1 is not expected");
   Try ("-o opt -f f1 f2", "2 3 4 0 f1 3 o1 1 opt 4 f1 5 f2");
   Try ("-o opt f1 -- -f f1 f2", "1 1 3 0 o1 1 opt 3 f1 5 -f 6 f1 7 f2");
   Try ("-ftso opt f1 f2 f3", "4 1 3 0 f1 1 s1 1 t1 1 o1 1 opt 3 f1 4 f2 5 f3");
