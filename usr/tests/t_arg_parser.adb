@@ -213,6 +213,10 @@ begin
   end if;
 
   -- Auto test
+  -- Expected result is:
+  -- 4 ints: Number_Keys Last_Pos_Of_Keys First_Pos_After_Keys Nb_Embedded
+  -- For each key: <Char><Nb_Occurences> { <Position> [ <Option> ] }
+  -- For each arg: <Position> <Arg>
   Sys_Calls.Putenv (Auto_Env_Name, "Yes");
   Basic_Proc.Put_Line_Output ("Test with no key");
   Sys_Calls.Putenv (Empty_Env_Name, "Yes");
@@ -230,7 +234,11 @@ begin
   Try ("-o opt -f f1 f2", "2 3 4 0 f1 3 o1 1 opt 4 f1 5 f2");
   Try ("-o opt f1 -- -f f1 f2", "1 1 3 0 o1 1 opt 3 f1 5 -f 6 f1 7 f2");
   Try ("-ftso opt f1 f2 f3", "4 1 3 0 f1 1 s1 1 t1 1 o1 1 opt 3 f1 4 f2 5 f3");
-  Try ("-f -- -s -- -t f1", "1 1 3 0 f1 1 3 -s 4 -- 5 -t 6 f1");
+  Try ("-f arg1 -s arg2 -o opt -- -t arg3 arg4",
+       "3 5 8 2 f1 1 s1 3 o1 5 opt 2 arg1 4 arg2 8 -t 9 arg3 10 arg4");
+  Try ("-f arg1 -c opt1 -o opt2 -c opt3 -- -t arg3",
+       "4 7 10 1 f1 1 o1 5 opt2 c2 3 opt1 7 opt3 2 arg1 10 -t 11 arg3");
+
 
   Basic_Proc.Put_Line_Output ("Done");
 exception
