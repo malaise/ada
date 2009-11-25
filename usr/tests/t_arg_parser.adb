@@ -234,6 +234,10 @@ begin
   Try ("-o opt -f f1 f2", "2 3 4 0 f1 3 o1 1 opt 4 f1 5 f2");
   Try ("-o opt f1 -- -f f1 f2", "1 1 3 0 o1 1 opt 3 f1 5 -f 6 f1 7 f2");
   Try ("-ftso opt f1 f2 f3", "4 1 3 0 f1 1 s1 1 t1 1 o1 1 opt 3 f1 4 f2 5 f3");
+  Try ("-m arg1 -m arg2 -- -m arg3",
+       "2 3 4 1 m2 1 3 2 arg1 4 arg2 6 -m 7 arg3");
+  Try ("-m arg1 -m -- arg2 -m arg3",
+       "2 3 5 1 m2 1 3 2 arg1 5 arg2 6 -m 7 arg3");
   Try ("-f arg1 -s arg2 -o opt -- -t arg3 arg4",
        "3 5 8 2 f1 1 s1 3 o1 5 opt 2 arg1 4 arg2 8 -t 9 arg3 10 arg4");
   Try ("-f arg1 -c opt1 -o opt2 -c opt3 -- -t arg3",
