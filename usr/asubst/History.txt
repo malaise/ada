@@ -1,5 +1,8 @@
 History of Asubst:
 ------------------
+26/11/2009 V10.1
+Add: Improve dir and file right access check when not writting
+
 11/11/2009 V10.0
 Add: Support "-" as file list for stdin.
      File list becomes an option of -F (--file_list)

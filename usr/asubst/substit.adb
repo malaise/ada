@@ -39,7 +39,8 @@ package body Substit is
   procedure Error (Msg : in String; Give_Up : in Boolean := True);
 
   -- Check that this is a file we can read and write
-  procedure Check_File (File_Name : in String) is
+  procedure Check_File (File_Name : in String;
+                        For_Write : in Boolean) is
     Path_Name : constant String := Directory.Dirname (File_Name);
     use type Sys_Calls.File_Kind_List;
     -- Get dir name of file, following symbolic links
@@ -62,7 +63,7 @@ package body Substit is
     Stat : Sys_Calls.File_Stat_Rec;
     Can_Read, Can_Write, Can_Exec : Boolean;
   begin
-    -- Directory must be a dir with wrx access
+    -- Directory must be a dir with (w)rx access
     Stat := Sys_Calls.File_Stat (Dir_Name);
     if Stat.Kind /= Sys_Calls.Dir then
       Error ("Directory " & Dir_Name & " is of incorrect kind: "
@@ -71,7 +72,10 @@ package body Substit is
     File_Access (Sys_Calls.Get_Effective_User_Id, Sys_Calls.Get_Effective_Group_Id,
                  Stat.User_Id, Stat.Group_Id, Stat.Rights,
                  Can_Read, Can_Write, Can_Exec);
-    if not (Can_Read and then Can_Write and then Can_Exec) then
+    -- Read => rx, Write => rwx
+    if not Can_Read
+    or else not Can_Exec
+    or else (For_Write and then not Can_Write) then
       Error ("Directory " & Dir_Name & " has incorrect access rights");
     end if;
     -- This must be a file, with rw access
@@ -88,7 +92,9 @@ package body Substit is
     File_Access (Sys_Calls.Get_Effective_User_Id, Sys_Calls.Get_Effective_Group_Id,
                  Stat.User_Id, Stat.Group_Id, Stat.Rights,
                  Can_Read, Can_Write, Can_Exec);
-    if not (Can_Read and then Can_Write) then
+    -- Read => r, Write => rw
+    if not Can_Read
+    or else (For_Write and then not Can_Write) then
       Error ("File " & File_Name & " has incorrect access rights");
     end if;
   end Check_File;
@@ -193,7 +199,8 @@ package body Substit is
 
   -- Open Files
   procedure Open (File_Name : in String;
-                  Tmp_Dir   : in String) is
+                  Tmp_Dir   : in String;
+                  For_Write : in Boolean) is
     In_Fd, Out_Fd : Sys_Calls.File_Desc;
     File_Dir : Asu.Unbounded_String;
     use type Asu.Unbounded_String;
@@ -207,50 +214,54 @@ package body Substit is
       Out_File_Name := Asu.Null_Unbounded_String;
     else
       -- Check access rights (rw) of this file
-      Check_File (File_Name);
+      Check_File (File_Name, For_Write);
       begin
         In_Fd := Sys_Calls.Open (File_Name, Sys_Calls.In_File);
       exception
         when Sys_Calls.Name_Error =>
           Error ("Cannot open input file " & File_Name);
       end;
-      -- Build out file dir
-      if Tmp_Dir = "" then
-        -- Current dir
-        File_Dir := Asu.To_Unbounded_String (Directory.Dirname (File_Name));
-        if File_Dir /= Asu.Null_Unbounded_String then
-          -- Remove trailing /
-          File_Dir := Asu.To_Unbounded_String (
-            Asu.Slice (File_Dir, 1, Asu.Length(File_Dir) - 1));
+      if For_Write then
+        -- Build out file dir
+        if Tmp_Dir = "" then
+          -- Current dir
+          File_Dir := Asu.To_Unbounded_String (Directory.Dirname (File_Name));
+          if File_Dir /= Asu.Null_Unbounded_String then
+            -- Remove trailing /
+            File_Dir := Asu.To_Unbounded_String (
+              Asu.Slice (File_Dir, 1, Asu.Length(File_Dir) - 1));
+          else
+            File_Dir := Asu.To_Unbounded_String (".");
+          end if;
         else
-          File_Dir := Asu.To_Unbounded_String (".");
+          -- Tmp dir specified as argument
+          File_Dir := Asu.To_Unbounded_String (Tmp_Dir);
         end if;
-      else
-        -- Tmp dir specified as argument
-        File_Dir := Asu.To_Unbounded_String (Tmp_Dir);
+        -- Create out file
+        begin
+          Out_File_Name := Asu.To_Unbounded_String (
+                           Temp_File.Create (Asu.To_String (File_Dir)));
+        exception
+          when others =>
+            Error ("Cannot create temp file in """ & Asu.To_String (File_Dir)
+                 & """");
+        end;
+        begin
+          Out_Fd := Sys_Calls.Open (Asu.To_String (Out_File_Name),
+                                    Sys_Calls.Out_File);
+        exception
+          when Sys_Calls.Name_Error =>
+            Error ("Cannot open temp file " & Asu.To_String (Out_File_Name));
+        end;
       end if;
-      -- Create out file
-      begin
-        Out_File_Name := Asu.To_Unbounded_String (
-                         Temp_File.Create (Asu.To_String (File_Dir)));
-      exception
-        when others =>
-          Error ("Cannot create temp file in """ & Asu.To_String (File_Dir)
-               & """");
-      end;
-      begin
-        Out_Fd := Sys_Calls.Open (Asu.To_String (Out_File_Name),
-                                  Sys_Calls.Out_File);
-      exception
-        when Sys_Calls.Name_Error =>
-          Error ("Cannot open temp file " & Asu.To_String (Out_File_Name));
-      end;
     end if;
     -- Associate fds to files
     Text_Line.Open (In_File,  Text_Line.In_File,  In_Fd);
     -- Set specific delimited of In_File
     Text_Line.Set_Line_Feed (In_File, Search_Pattern.Get_Delimiter);
-    Text_Line.Open (Out_File, Text_Line.Out_File, Out_Fd);
+    if For_Write then
+      Text_Line.Open (Out_File, Text_Line.Out_File, Out_Fd);
+    end if;
     -- Get Search pattern characteristics
     Nb_Pattern := Search_Pattern.Number;
     Is_Iterative := Search_Pattern.Iterative;
@@ -364,8 +375,8 @@ package body Substit is
     Loc_Subst : Long_Long_Natural;
     Do_Verbose : Boolean;
   begin
-    -- Open files
-    Open (File_Name, Tmp_Dir);
+    -- Open files: test is set if no need to write
+    Open (File_Name, Tmp_Dir, not Grep);
     -- Verbose if requested and not stdin
     Do_Verbose := Verbose and then not Is_Stdin;
 

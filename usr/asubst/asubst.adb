@@ -3,7 +3,7 @@ with Environ, Argument, Argument_Parser, Sys_Calls, Language, Mixed_Str, Text_Li
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
-  Version : constant String  := "V10.0";
+  Version : constant String  := "V10.1";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
