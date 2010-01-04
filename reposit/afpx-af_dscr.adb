@@ -67,7 +67,7 @@ package body Af_Dscr is
     Dscr_Set := False;
   end Release_Dscr;
 
-  -- Check if a descriptor i in use
+  -- Check if a descriptor is in use
   procedure Check is
   begin
     if not Dscr_Set then
@@ -76,7 +76,7 @@ package body Af_Dscr is
   end Check;
 
 
-  -- Check if a descriptor i in use and if field is valid
+  -- Check if a descriptor is in use and if field is valid
   procedure Check (Field_No : in Afpx_Typ.Absolute_Field_Range) is
     use type Afpx_Typ.Absolute_Field_Range;
   begin
