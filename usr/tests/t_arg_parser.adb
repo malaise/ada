@@ -1,6 +1,6 @@
 with Ada.Text_Io, Ada.Characters.Latin_1;
 with Argument, Argument_Parser, Environ, Basic_Proc, Int_Image, Sys_Calls,
-     Command, Many_Strings, Parser;
+     Command, Many_Strings, Parser, Event_Mng;
 
 procedure T_Arg_Parser is
 
@@ -84,6 +84,12 @@ procedure T_Arg_Parser is
     Command.Execute (Cmd, True, Command.Both,
                      Flow'Unrestricted_Access, Flow'Unrestricted_Access,
                      Code);
+    if Event_Mng.Reset_Default_Signals_Policy then
+       -- Command aborted
+      Basic_Proc.Put_Line_Error ("Aborted");
+      raise Stop_Error;
+    end if;
+
     if Code = Command.Error then
       -- Command returns error
       Basic_Proc.Put_Line_Error ("ERROR: " & Asu_Ts (Flow.Str));
