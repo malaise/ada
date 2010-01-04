@@ -36,9 +36,14 @@ package Command is
   -- If use_Sh, then issue a 'sh -c "Cmd"'
   -- Report or propagate output/error flow with proper kind
   -- Set resulting exit code
-  -- Because it waits for asynchronous exit of child, this function uses
-  --  Event_Mng that set signal handlers. Non interactive programs shall
-  --  Reset_Default_Signal_Policy after using this function.
+  ---------------------------------------------------------------------------
+  -- Because it waits for asynchronous exit of child, this function uses   --
+  --  Event_Mng.Wait, which sets signal handlers. As a consequence:        --
+  --  * Non interactive programs shall call                                --
+  --    Event_Mng.Reset_Default_Signal_Policy after using this function    --
+  --  * X11 programs shall Suspend ALL the X objects X_Line/Con_Io/Afpx    --
+  --    before calling this function, then Resume the X objects.           --
+  ---------------------------------------------------------------------------
   procedure Execute (Cmd : in String;
                      Use_Sh : in Boolean;
                      Mix_Policy : in Flow_Mixing_Policies;
