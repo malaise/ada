@@ -399,6 +399,12 @@ package body Dispatch is
       Log ("Unregister", Selected, "is selected");
     end Unregister;
 
+    -- Return current number of clients
+    function Get_Nb_Clients return Line_Range is
+    begin
+      return Nb_Clients;
+    end Get_Nb_Clients;
+
     -- Two calls to protect a call to X
     entry Call_On  (Client : in Client_Range;
                     Line_For_C_Id : out Line_For_C) when not In_X is

@@ -43,6 +43,20 @@ package body X_Mng is
   pragma Import(C, X_Initialise, "x_initialise");
 
   ------------------------------------------------------------------
+  -- Suspend processing of X events
+  -- int x_suspend (void)
+  ------------------------------------------------------------------
+  function X_Suspend return Result;
+  pragma Import(C, X_Suspend, "x_suspend");
+
+  ------------------------------------------------------------------
+  -- Resume processing of X events
+  -- int x_resume (void)
+  ------------------------------------------------------------------
+  function X_Resume return Result;
+  pragma Import(C, X_Resume, "x_resume");
+
+  ------------------------------------------------------------------
   -- Opens a line
   -- int x_open_line (int screen_id, int row, int column,
   --                  int height, int width,
@@ -413,6 +427,7 @@ package body X_Mng is
       -- Register / Unregister. Count clients and refresh all on Unregister
       entry Register (Client : out Line_Range);
       entry Unregister (Client : in out Line_Range);
+      function Get_Nb_Clients return Line_Range;
 
       -- Two calls to protect a call to X
       entry Call_On  (Client : in Client_Range;
@@ -516,7 +531,7 @@ package body X_Mng is
                         Line_Definition.No_Font,
                         Line_For_C_Id'Address) = Ok;
     if Debug then
-      My_Io.Put_Line ("Open_Line " & Line_Id.No'Img
+      My_Io.Put_Line ("X_Open_Line " & Line_Id.No'Img
                     & " -> " & Address_Ops.Image(Line_For_C_Id));
     end if;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
@@ -549,6 +564,7 @@ package body X_Mng is
 
   ------------------------------------------------------------------
   procedure X_Suspend (Line_Id : in out Line) is
+    Res : Boolean;
   begin
     -- Clear the line before suspending
     X_Clear_Line (Line_Id);
@@ -560,11 +576,22 @@ package body X_Mng is
     Dispatcher.Call_Off (Line_Id.No, Line_Id.Suspended_Line_For_C);
     -- Unregister: Line_No is reset (and Line_For_C would be lost)
     Dispatcher.Unregister(Line_Id.No);
+    -- Disable handling of X events when no more client
+    if Dispatcher.Get_Nb_Clients = 0 then
+      Res := X_Suspend = Ok;
+      if not Res then
+        raise X_Failure;
+      end if;
+      if Debug then
+        My_Io.Put_Line ("X_Suspend => suspend fd");
+      end if;
+    end if;
   end X_Suspend;
 
   ------------------------------------------------------------------
   procedure X_Resume  (Line_Id : in out Line) is
     Dummy_Line_For_C : Line_For_C;
+    Res : Boolean;
     use type System.Address;
   begin
     -- No must not be set but Suspended_Line must be
@@ -592,6 +619,16 @@ package body X_Mng is
     Dispatcher.Call_On (Line_Id.No, Dummy_Line_For_C);
     Dispatcher.Call_Off (Line_Id.No, Line_Id.Suspended_Line_For_C);
     Line_Id.Suspended_Line_For_C := No_Line_For_C;
+    -- Enable handling of X events when first client
+    if Dispatcher.Get_Nb_Clients = 1 then
+      Res := X_Resume = Ok;
+      if not Res then
+        raise X_Failure;
+      end if;
+      if Debug then
+        My_Io.Put_Line ("X_Resume => resume fd");
+      end if;
+    end if;
   end X_Resume;
 
   ------------------------------------------------------------------
