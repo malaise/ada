@@ -24,6 +24,9 @@
 
 extern int x_initialise (const char *server_name);
 
+extern int x_suspend (void);
+extern int x_resume (void);
+
 extern int x_open_line (int screen_id,
                         int row, int column,
                         int height, int width,

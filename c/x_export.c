@@ -190,6 +190,29 @@ extern int x_initialise (const char *server_name) {
     return (result);
 }
 
+/* Suspend processing of X events */
+extern int x_suspend (void) {
+    int result;
+
+    /* Check that display is init */
+    if (local_server.x_server == NULL) {
+        return (ERR);
+    }
+    result = evt_del_fd (ConnectionNumber(local_server.x_server), TRUE);
+    return (result);
+}
+
+/* Resume processing of X events */
+extern int x_resume (void) {
+    int result;
+
+    /* Check that display is init */
+    if (local_server.x_server == NULL) {
+        return (ERR);
+    }
+    result = evt_add_fd (ConnectionNumber(local_server.x_server), TRUE);
+    return (result);
+}
 
 /* Opens a line */
 extern int x_open_line (int screen_id, int row, int column,
