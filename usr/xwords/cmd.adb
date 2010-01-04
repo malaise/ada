@@ -1,5 +1,5 @@
-with Ada.Text_Io;
-with Environ, Many_Strings, Common;
+with Ada.Text_Io, Ada.Characters.Latin_1;
+with Environ, Many_Strings, Common, String_Mng;
 package body Cmd is
 
   use Common;
@@ -15,6 +15,27 @@ package body Cmd is
   Output_Flow : aliased Command.Flow_Rec (Command.List);
   Error_Flow : aliased Command.Flow_Rec (Command.Str);
   Exit_Code : Command.Exit_Code_Range;
+
+  -- Replace all LineFeeds by spaces
+  procedure Normalize (List : in out Res_List) is
+    Line : Asu_Us;
+    Done : Boolean;
+  begin
+    if List.Is_Empty then
+      return;
+    end if;
+    List.Rewind;
+    loop
+      -- Replace for est Rec
+      List.Read (Line, Res_Mng.Dyn_List.Current);
+      Line := Asu_Tus (String_Mng.Replace (
+                Asu_Ts (Line), Ada.Characters.Latin_1.Lf & "", " "));
+      List.Modify (Line, Done => Done);
+      exit when not Done;
+    end loop;
+    -- Rewind to end
+    List.Rewind (Res_Mng.Dyn_List.Prev);
+  end Normalize;
 
   -- subtype Line_Type is Asu_Us;
   -- package Res_Mng is newDynamic_List (Line_Type);
@@ -62,6 +83,7 @@ package body Cmd is
     if Error_Flow.Str /= Asu_Null then
       Res.Insert (Error_Flow.Str);
     end if;
+    Normalize (Res);
     Ok := Exit_Code = 0;
 
     -- Exec failed leads to Exit code 1 with no output
