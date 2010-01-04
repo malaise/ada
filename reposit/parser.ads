@@ -113,7 +113,7 @@ private
   end record;
 
   --  Free Acc
-  procedure Finalize (Iter : in out Iterator);
+  overriding procedure Finalize (Iter : in out Iterator);
 
 end Parser;
 

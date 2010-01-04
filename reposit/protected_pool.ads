@@ -54,7 +54,7 @@ private
     List : List_Access := new Elt_List_Mng.List_Type;
   end record;
 
-  procedure Finalize (Pool : in out Pool_Type);
+  overriding procedure Finalize (Pool : in out Pool_Type);
 
 end Protected_Pool;
 

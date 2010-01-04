@@ -165,7 +165,7 @@ package body Text_Char is
     return File.Acc.Get_Index /= 0;
   end End_Of_File;
 
-  procedure Finalize (File : in out File_Type) is
+  overriding procedure Finalize (File : in out File_Type) is
   begin
     if Is_Open (File) then
       Close (File);

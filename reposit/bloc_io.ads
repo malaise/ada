@@ -66,7 +66,7 @@ private
     Ext_File : System.Address := System.Null_Address;
     Mode : File_Mode;
   end record;
-  procedure Finalize (File : in out File_Type);
+  overriding procedure Finalize (File : in out File_Type);
 
 end Bloc_Io;
 

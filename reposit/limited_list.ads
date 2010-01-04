@@ -332,7 +332,7 @@ private
     First     : Link    := null;
     Last      : Link    := null;
   end record;
-  procedure Finalize (List : in out List_Type);
+  overriding procedure Finalize (List : in out List_Type);
 
 end Limited_List;
 

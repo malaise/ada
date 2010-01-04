@@ -1055,7 +1055,7 @@ package body Trees is
 
     procedure Deallocate is new Ada.Unchecked_Deallocation
         (Saved_Pool.Pool_Type, Saved_Pool_Access);
-    procedure Finalize (Tree : in out Tree_Type) is
+    overriding procedure Finalize (Tree : in out Tree_Type) is
     begin
       -- Clear all saved positions
       if Tree.Save /= null then

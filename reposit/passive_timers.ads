@@ -45,7 +45,7 @@ private
     Acc : Timer_Access;
   end record;
 
-  procedure Finalize (Timer : in out Passive_Timer);
+  overriding procedure Finalize (Timer : in out Passive_Timer);
 
 end Passive_Timers;
 

@@ -161,7 +161,7 @@ private
   end record;
 
   -- Finalization of destruction
-  procedure Finalize (A_Node : in out Node_Type);
+  overriding procedure Finalize (A_Node : in out Node_Type);
 
 end Network;
 

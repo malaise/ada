@@ -85,7 +85,7 @@ private
     Error : Integer := 0;
   end record;
 
-  procedure Finalize  (Criteria : in out Compiled_Pattern);
+  overriding procedure Finalize  (Criteria : in out Compiled_Pattern);
 
 end Regular_Expressions;
 

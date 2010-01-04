@@ -63,7 +63,7 @@ private
     Acc : Rec_Access;
   end record;
 
-  procedure Finalize (File : in out File_Type);
+  overriding procedure Finalize (File : in out File_Type);
 
 end Text_Char;
 

@@ -211,7 +211,7 @@ package body Virtual_Time is
   procedure Deallocate is new Unchecked_Deallocation (
     Object => Clock_Def_Rec,
     Name => Clock_Def_Access);
-  procedure Finalize (A_Clock : in out Clock) is
+  overriding procedure Finalize (A_Clock : in out Clock) is
   begin
     Deallocate (A_Clock.Clock_Access);
   end Finalize;

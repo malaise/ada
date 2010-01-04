@@ -77,7 +77,7 @@ package body Parser is
   end Del;
 
   -- Automatic garbage collection
-  procedure Finalize (Iter : in out Iterator) is
+  overriding procedure Finalize (Iter : in out Iterator) is
   begin
     if Is_Set (Iter) then
       Del (Iter);

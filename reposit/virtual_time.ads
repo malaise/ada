@@ -100,7 +100,7 @@ private
     Clock_Access : Clock_Def_Access := new Clock_Def_Rec;
   end record;
 
-  procedure Finalize (A_Clock : in out Clock);
+  overriding procedure Finalize (A_Clock : in out Clock);
 
 end Virtual_Time;
 

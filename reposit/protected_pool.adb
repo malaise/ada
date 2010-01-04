@@ -117,7 +117,7 @@ package body Protected_Pool is
   procedure Deallocate is new Ada.Unchecked_Deallocation
    (Elt_List_Mng.List_Type, List_Access);
 
-  procedure Finalize (Pool : in out Pool_Type) is
+  overriding procedure Finalize (Pool : in out Pool_Type) is
   begin
     Pool.Mutex.Get;
     Pool.List.all.Delete_List;

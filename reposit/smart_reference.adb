@@ -33,14 +33,14 @@ package body Smart_Reference is
   end Increment_Ref;
 
   -- Init Nb_Access to 1
-  procedure Initialize (Ref : in out Handle) is
+  overriding procedure Initialize (Ref : in out Handle) is
     pragma Unreferenced (Ref);
   begin
     Trace("Initialization");
   end Initialize;
 
   -- Decrement Nb_Access and garbage collect when last
-  procedure Finalize (Ref : in out Handle) is
+  overriding procedure Finalize (Ref : in out Handle) is
   begin
     Trace("Finalization");
     Decrement_Ref(Ref);

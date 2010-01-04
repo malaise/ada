@@ -87,7 +87,7 @@ package Hash is
                                with record
       Arr : Hash_Arr;
     end record;
-    procedure Finalize (Table : in out Hash_Table) renames Clear_All;
+    overriding procedure Finalize (Table : in out Hash_Table) renames Clear_All;
 
   end Hash_Mng;
 

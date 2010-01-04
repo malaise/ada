@@ -349,7 +349,7 @@ package body Network is
   end Set_Process_Connection_Data_Change;
 
   -- Finalization
-  procedure Finalize (A_Node : in out Node_Type) is
+  overriding procedure Finalize (A_Node : in out Node_Type) is
     procedure Deallocation_Of is new
       Unchecked_Deallocation (Object => Connection_Mng.List_Type,
                               Name => Connections_Access);

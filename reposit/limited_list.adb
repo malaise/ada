@@ -905,7 +905,7 @@ package body Limited_List is
     List.Modified := True;
   end Sort;
 
-  procedure Finalize (List : in out List_Type) is
+  overriding procedure Finalize (List : in out List_Type) is
   begin
     Delete_List (List, Deallocate => True);
   end Finalize;

@@ -31,8 +31,8 @@ private
   type Handle is limited new Ada.Finalization.Limited_Controlled with record
     Box_Access : Object_Box_Access := null;
   end record;
-  procedure Initialize (Ref : in out Handle);
-  procedure Finalize (Ref : in out Handle);
+  overriding procedure Initialize (Ref : in out Handle);
+  overriding procedure Finalize (Ref : in out Handle);
 
 end Smart_Reference;
 

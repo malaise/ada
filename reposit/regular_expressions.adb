@@ -283,7 +283,7 @@ package body Regular_Expressions is
     Criteria.Error := 0;
   end Free;
 
-  procedure Finalize (Criteria : in out Compiled_Pattern) is
+  overriding procedure Finalize (Criteria : in out Compiled_Pattern) is
   begin
     Free (Criteria);
   end Finalize;

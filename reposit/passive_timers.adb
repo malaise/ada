@@ -102,7 +102,7 @@ package body Passive_Timers is
     end if;
   end Has_Expired;
 
-  procedure Finalize (Timer : in out Passive_Timer) is
+  overriding procedure Finalize (Timer : in out Passive_Timer) is
   begin
     Free (Timer.Acc);
   end Finalize;

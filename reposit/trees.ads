@@ -274,7 +274,7 @@ package Trees is
       Save : Saved_Pool_Access := null;
       In_Cb : Boolean := False;
     end record;
-    procedure Finalize (Tree : in out Tree_Type);
+    overriding procedure Finalize (Tree : in out Tree_Type);
 
   end Tree;
 

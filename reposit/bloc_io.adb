@@ -240,7 +240,7 @@ package  body Bloc_Io is
     end if;
   end Set_Index;
 
-  procedure Finalize (File : in out File_Type) is
+  overriding procedure Finalize (File : in out File_Type) is
   begin
     if Is_Open (File) then
       Close (File);

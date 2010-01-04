@@ -265,7 +265,7 @@ package body Text_Line is
       raise Io_Error;
   end Flush;
 
-  procedure Finalize (File : in out File_Type) is
+  overriding procedure Finalize (File : in out File_Type) is
   begin
     if Is_Open (File) then
       Close (File);
