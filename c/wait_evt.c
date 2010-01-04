@@ -13,7 +13,10 @@
 static fd_set global_read_mask;
 static fd_set global_write_mask;
 
+/* Highest fd set in mask */
 static int last_fd = -1;
+/* Fd previously returned */
+static int prev_fd = -1;
 
 int evt_add_fd (int fd, boolean read) {
   if (fd < 0) {
@@ -196,12 +199,33 @@ extern void evt_time_remaining (timeout_t *remaining, timeout_t *exp_time) {
   }
 }
 
+/* Check if a fd is set in a mask, from start_fd included
+ *  to start_fd excluded, modulo last_fd + 1
+ *  Return the fd, or NO_EVENT if no fd is set */
+static int check_fd (int start_fd, fd_set *p_mask) {
+  boolean started = FALSE;
+  int i = start_fd;
+
+  for (;;) {
+    if (FD_ISSET(i, p_mask)) {
+      return i;
+    }
+    if ( (i == start_fd) && (started) ) {
+      /* All tried, not found */
+      break;
+    }
+    started = TRUE;
+    i = (i + 1) % (last_fd + 1);
+  }
+  return NO_EVENT;
+}
 
 extern int evt_wait (int *p_fd, boolean *p_read, timeout_t *timeout) {
   fd_set select_read_mask, select_write_mask;
   timeout_t exp_time, *timeout_ptr;
   boolean timeout_is_active;
-  int i, n;
+  int start_fd;
+  int n;
   ssize_t size;
   char c;
 
@@ -247,24 +271,22 @@ extern int evt_wait (int *p_fd, boolean *p_read, timeout_t *timeout) {
                              &select_write_mask, NULL, timeout_ptr);
 
     if (n > 0) {
-      /* Check read events first */
-      for (i = 0; i <= last_fd; i++) {
-        if (FD_ISSET(i, &select_read_mask)) {
-          *p_fd = i;
-          *p_read = TRUE;
-          break;
-        }
+      /* Start from 0 or from prev fd + 1 (round robin) */
+      if (n == 1) {
+        start_fd = 0;
+      } else {
+        start_fd = (prev_fd + 1) % (last_fd + 1);
+start_fd = 0;
       }
 
-      /* Check write events second */
-      if (*p_fd == NO_EVENT) {
-        for (i = 0; i <= last_fd; i++) {
-          if (FD_ISSET(i, &select_write_mask)) {
-            *p_fd = i;
-            *p_read = FALSE;
-            break;
-          }
-        }
+      /* Check read events first */
+      *p_fd = check_fd (start_fd, &select_read_mask);
+      if (*p_fd != NO_EVENT) {
+         *p_read = TRUE;
+      } else {
+        /* Check write events second */
+        *p_read = FALSE;
+        *p_fd = check_fd (start_fd, &select_write_mask);
       }
 
       /* Check i p_fd is wake-up fd) */
@@ -289,6 +311,7 @@ extern int evt_wait (int *p_fd, boolean *p_read, timeout_t *timeout) {
         return (ERR);
       }
 
+      prev_fd = *p_fd;
       evt_time_remaining (timeout, &exp_time);
       return (OK);
 
