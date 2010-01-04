@@ -2,7 +2,7 @@ with Ada.Calendar, Ada.Strings.Unbounded;
 with Basic_Proc, Argument, Argument_Parser;
 with Entities, Output, Targets, Lister;
 procedure Als is
-  Version : constant String  := "V3.1";
+  Version : constant String  := "V3.2";
 
   -- Exit codes
   Found_Exit_Code : constant Natural := 0;
@@ -22,7 +22,7 @@ procedure Als is
     Put_Line_Error ("            | [ { <match_name> } ] | [ { <exclude_name> } ]");
     Put_Line_Error ("            | [ { <match_dir> } ] | [ { <exclude_dir> } ]");
     Put_Line_Error ("            | <date_spec> [ <date_spec> ]");
-    Put_Line_Error ("            | -s (--size) | -t (--time) | -r (--reverse) | -n (--no_sort)");
+    Put_Line_Error ("            | -s (--size) | -t (--time) | -r (--reverse) | -N (--no_sort)");
     Put_Line_Error ("            | -R (--recursive) | -M (--merge) | -T (--total)");
     Put_Line_Error ("            | --depth=<positive>");
     Put_Line_Error ("            | -n <date> (--newer=<date>)");
