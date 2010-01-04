@@ -81,7 +81,7 @@ procedure Xwords is
     -- Clear result
     Afpx.Line_List.Delete_List (Deallocate => False);
 
-    -- Build command and execute it
+    -- Build command
     Word := Common.Asu_Tus (Strip (Afpx.Decode_Field (Get_Fld, 0, False)));
     case Num is
       when Search_Fld | Research_Fld =>
@@ -101,8 +101,15 @@ procedure Xwords is
     else
       Arg := Word;
     end if;
+
+    -- Prevent X events to interfere with the Command internal loop
+    --  and execute command
+    Afpx.Suspend;
     Cmd.Exec (Common.Asu_Ts (Com), Common.Asu_Ts (Arg),
                   Command_Ok, Result);
+    Afpx.Resume;
+
+    -- Set status
     if not Command_Ok then
       Status := Error;
     elsif Num = Search_Fld or else Num = Research_Fld then
