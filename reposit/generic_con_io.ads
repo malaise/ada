@@ -31,7 +31,7 @@ package Generic_Con_Io is
 
   -- Can be called to initialise con_ios
   -- If not called, this init will be called together with first con_io
-  --  initlialisation
+  --  initialisation
   procedure Initialise;
 
   generic
