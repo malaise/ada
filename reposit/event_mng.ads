@@ -62,6 +62,14 @@ package Event_Mng is
   -------------------
   -- Waiting point --
   -------------------
+  -- WARNING:
+  -- * Non interactive programs shall call Reset_Default_Signal_Policy after
+  --   using this function
+  -- * X11 programs shall use the X waiting point (X_Wait_Event/Put_Then_Get)
+  --   instead. If they really need to use it, they shall Suspend ALL the X
+  --   objects (X_Line/Con_Io/Afpx) before calling this function, then Resume
+  --   the X objects.
+  --
   -- Wait until a Terminate_Sig or Child_Sig with a callback set,
   --   or until a Dummy_Sig,
   --   or until some timer expires and its callback returns True,
