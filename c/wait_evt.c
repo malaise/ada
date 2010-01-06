@@ -276,7 +276,6 @@ extern int evt_wait (int *p_fd, boolean *p_read, timeout_t *timeout) {
         start_fd = 0;
       } else {
         start_fd = (prev_fd + 1) % (last_fd + 1);
-start_fd = 0;
       }
 
       /* Check read events first */
