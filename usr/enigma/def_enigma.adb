@@ -196,20 +196,6 @@ begin
       Text_Handler.Set (Txt, Normal (Day,   2, Gap => '0') & "/"
                            & Normal (Month, 2, Gap => '0') & "/"
                            & Normal (Year,  4, Gap => '0') );
-      -- Build time of 0h00 of date
-      declare
-        Hour     : constant Day_Mng.T_Hours    := 0;
-        Minute   : constant Day_Mng.T_Minutes  := 0;
-        Second   : constant Day_Mng.T_Seconds  := 0;
-        Millisec : constant Day_Mng.T_Millisec := 0;
-      begin
-        T := Ada.Calendar.Time_Of (Year, Month, Day,
-                   Day_Mng.Pack (Hour, Minute, Second, Millisec));
-      exception
-        when others =>
-          Usage;
-          return;
-      end;
 
     when Parse_Date =>
       -- Parse date: set Year Month Day for further generation
@@ -358,6 +344,20 @@ begin
   end case;
 
   if Action = Current_Date or else Action = Parse_Date then
+    -- Build time of 0h00 of date
+    declare
+      Hour     : constant Day_Mng.T_Hours    := 0;
+      Minute   : constant Day_Mng.T_Minutes  := 0;
+      Second   : constant Day_Mng.T_Seconds  := 0;
+      Millisec : constant Day_Mng.T_Millisec := 0;
+    begin
+      T := Ada.Calendar.Time_Of (Year, Month, Day,
+                 Day_Mng.Pack (Hour, Minute, Second, Millisec));
+    exception
+      when others =>
+        Usage;
+        return;
+    end;
     -- Switch definition from Day, Month and Year
     -- Concatenate day and month names in uppercase
     Text_Handler.Set (Day_Month,
