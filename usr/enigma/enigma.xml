@@ -27,7 +27,7 @@
   <Rotor Name="VIII"  Carries="ZM">FKQHTLXOCBJSPDZRAMEWNIUYGV</Rotor>
   <Rotor Name="Beta"  Carries=""  >LEYJVCNIXWPBQMDRTAKZGFUHOS</Rotor>
   <Rotor Name="Gamma" Carries=""  >FSOKANUERHMBTIYCWLQPZXVGJD</Rotor>
-  <Rotor Name="Test"  Carries="A" >ABCDEFGHIJKLMNOPQRSTUVWXYZ</Rotor>
+  <Rotor Name="Test"  Carries=""  >ABCDEFGHIJKLMNOPQRSTUVWXYZ</Rotor>
 
   <!-- A Reflector: No dup in scramble (26 letters),
        must be symetrical (a->B->A) and must not have any identity (A->A) -->
