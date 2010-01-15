@@ -1,6 +1,6 @@
 with Ada.Text_Io, Ada.Exceptions;
 with Argument, My_Math, Sys_Calls, Normal, Mixed_Str;
--- Analyse the frquency of each byte of stdin
+-- Analyse the frequency of each byte of stdin
 procedure Anal_Freq is
   -- Put all letters or only non-null
   Put_All : Boolean;

@@ -1,3 +1,10 @@
+-- Enigma expects -s<switches> -j<rotor_def> -b<back_def> -r<rotor_offsets>
+-- <switches> is pairs of letters, each letter appears at most once
+-- <rotor_def> is a list of <rotor_number><letter_offset_of_carry>
+-- <back_def> is a <rotor_number> and an offset letter
+-- <rotor_offsets> is a list of offset letters (one for each rotor)
+-- See Def_Enigma.txt for more information
+
 with Ada.Calendar, Ada.Text_Io;
 with Perpet, Argument, Day_Mng, Normal, Text_Handler, Upper_Str, Rnd,
      Num_Letters, Sys_Calls, String_Mng;
@@ -285,8 +292,24 @@ begin
           return;
       end;
       -- Locate separator between switch and scramblers
-      Start := Text_Handler.Locate (Txt, Separator);
-      -- Pairs of letters before separator
+      -- This can be "JJJJJ"!
+      Start := Text_Handler.Locate (Txt, Separator(1 .. 2) & Separator);
+      if Start /= 0 then
+        -- Yes it is, the real separator is after the first "JJ"
+        Start := Start + 2;
+      else
+        -- This can be "xJJJJ"!
+        Start := Text_Handler.Locate (Txt, Separator(1) & Separator);
+        if Start /= 0 then
+          -- Yes it is, the real separator is after the first "J"
+          Start := Start + 1;
+        else
+          -- This is "xyJJJ"
+          Start := Text_Handler.Locate (Txt, Separator);
+        end if;
+      end if;
+
+      -- Pairs of letters before separator (=> separator found)
       if Start rem 2 /= 1 then
         Usage;
         return;

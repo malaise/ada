@@ -1,59 +1,80 @@
--- Parses command line and returns enigma definition
+-- Parses configuration file and command line and returns enigma definition
 with Types;
 package Definition is
 
-  -- A switch definition
-  type Switch_Range is new Natural range 0 .. 26;
-  subtype Switch_Index is Switch_Range range 1 .. Switch_Range'Last;
-  type Letter_Pair_Array is array (Switch_Range range <>)
-                                  of Types.Letter_Pair_T;
-
-  type Switch_Definition (Nb_Switches : Switch_Range := 0) is record
-    Switch : Letter_Pair_Array (1 .. Nb_Switches);
-  end record;
-
-  -- A scrambler (back or jammer) identifier
-  type Scrambler_Range is new Natural range 0 .. 9;
-  subtype Scrambler_Index is Scrambler_Range range 1 .. Scrambler_Range'Last;
-
-  -- A back is defined by an index (1 .. 9) and an offset
-  type Back_Definition is record
-    Scrambler : Scrambler_Index; -- The selected scrambler
-    Offset    : Types.Letter;    -- The offset of this scrambler;
-  end record;
-
-  -- A jammer is defined by an index (1 .. 9), an offset and a carry offset
-  type Jammer_Definition  is record
-    Scrambler : Scrambler_Index; -- The selected scrambler
-    Offset    : Types.Letter;    -- The offset of this scrambler
-    Carry_Offset : Types.Letter; -- The offset for the carry of this scrambler
-  end record;
-
-  -- Array of 0 to 8 jammers
-  subtype Jammers_Range is Scrambler_Range range 0 .. Scrambler_Range'Last - 1;
-  subtype Jammers_Index is Jammers_Range range 1 .. Jammers_Range'Last;
-  type Jammers_Array is array (Jammers_Index range <>) of Jammer_Definition;
-  type Jammers_Definition (Nb_Jammers : Jammers_Range := 0) is record
-    Jammers : Jammers_Array (1 .. Nb_Jammers);
-  end record;
-
-  -- The complete definition
-  type Def_Rec is record
-    Switch  : Switch_Definition;
-    Jammers : Jammers_Definition;
-    Back    : Back_Definition;
-  end record;
-
-  -- Exception if definition is not correct
+  -- Load and check the configuration (definition of rotors and reflectors)
+  -- Parse arguments and check definition of switches, rotors and reflector
+  -- Logs problem on stdout
+  procedure Load_Configuration;
+  Invalid_Configuration : exception;
   Invalid_Definition : exception;
 
-  -- Parse args and fill Def
-  procedure Read_Definition (Def : out Def_Rec);
+
+  -- Generic definition of the associations of letters
+  -- The first of each pair must be unique,
+  -- The second of each pair must be unique
+  type Scrambler_Type is tagged private;
+
+  -- Translate a letter through a scrambler
+  function Translate (Scrambler : Scrambler_Type; A_Letter : Types.Lid)
+           return Types.Lid;
+
+  -- Return the revert scrambler
+  function Revert (Scrambler : Scrambler_Type) return Scrambler_Type;
+
+  -- Initial definition of the machine
+  -- Possible carries
+  type Carries_Array is array (Types.Lid) of Boolean;
+
+  -- The definition of a rotor: scrambler + carries + offset + position
+  type Rotor_Def_Rec is record
+    Scrambler : Scrambler_Type;
+    Carries   : Carries_Array  := (others => False);
+    Offset : Types.Lid := 0;
+    Position : Types.Lid := 0;
+  end record;
+
+  -- The possible number of rotors
+  subtype Rotors_Nb_Range is Natural range 0 .. 4;
+  subtype Rotors_Id_Range is Positive range 1 .. Rotors_Nb_Range'Last;
+  type Rotors_Array is array (Rotors_Id_Range range <>) of Rotor_Def_Rec;
+
+  -- The definition of the back: Scrambler (symetric) + position
+  type Reflector_Def_Rec is record
+    Scrambler : Scrambler_Type;
+    Position : Types.Lid := 0;
+  end record;
+
+  type Definition_Rec (Nb_Rotors : Rotors_Nb_Range := 0) is record
+    -- The (optional) switches
+    Switches : Scrambler_Type;
+    -- The (optional) Rotors
+    Rotors : Rotors_Array(1 .. Nb_Rotors);
+    -- The mandatory Reflector
+    Reflector : Reflector_Def_Rec;
+  end record;
+
+  -- Parse arguments and fill Def
+  procedure Read_Definition (Def : out Definition_Rec);
 
   -- Get initial start byte offset (1 by default)
   function Read_Start_Byte return Positive;
 
   -- Get last byte offset (0 if none)
   function Read_Last_Byte return Natural;
+
+private
+
+  -- The E -> D mapping
+  type Mapping_Array is array (Types.Lid) of Types.Lid;
+  type Scrambler_Type is tagged record
+    Mapping : Mapping_Array := (others => 0);
+  end record;
+
+  -- Initialize a scrambler
+  procedure Set (Scrambler : out Scrambler_Type; To : String);
+
+  Default_Scrambler : constant Scrambler_Type := (Mapping => (others => 0));
+
 end Definition;
 

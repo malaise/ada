@@ -1,12 +1,13 @@
+with Ada.Exceptions;
 with Upper_Char, Lower_Char;
-with Types, Io_Manager, Definition, Scrambler_Factory, Coder;
+with Types, Io_Manager, Definition, Coder;
 procedure Enigma is
   Byte : Io_Manager.Byte;
   Char, Uchar : Character;
   use type Io_Manager.Byte;
 begin
-  -- Init Scrambler factoy then Coder
-  Scrambler_Factory.Init;
+  -- Check configuration and arguments and Init Coder
+  Definition.Load_Configuration;
   Coder.Init;
 
   -- Skip initial offset
@@ -50,7 +51,11 @@ begin
   end loop;
 
 exception
-  when Scrambler_Factory.Config_Error | Coder.Init_Failed =>
+  when Definition.Invalid_Configuration | Definition.Invalid_Definition =>
+    Io_Manager.Set_Error_Exit_Code;
+  when Error:others =>
+    Io_Manager.Put_Line_Error ("Exception "
+              & Ada.Exceptions.Exception_Name (Error) & " raised.");
     Io_Manager.Set_Error_Exit_Code;
 end Enigma;
 

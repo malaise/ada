@@ -6,27 +6,31 @@ If rnd, generates a random switch sequence, 3 to 8 jammers and a back from 7
 to 9.
 If date, generates a switch sequence, 3 jammers and the back from the date.
 If no arg, same with current date.
-If -text, generate text of key (see B.)
-If text_key, display key from text jey (see B.)
+If -text, generates text of key (see B.)
+If text_key, displays the key from text jey (see B.)
+
+Jammers (1 to 9) are defined in enigma.cnf.  Only jammmers 7 to 9 are symetric
+and can be used as back.
 
 A. Normal generation
+The date is either provided or is current date.
 The date that is considered is DAYNAME DAYNUM MONTHNAME.
 1. Switch
 The switch definition is got from the letters of DAYNAME and MONTHNAME, with
 criteria of unicity and even number. Ex MONDAY DECEMBER -> MONDAYECBR.
 
 2. Back
-The back scambler number is fixed (8) . Its offset is computed from the daynum:
+The back scambler number is fixed (8). Its offset is computed from the daynum:
 01->A, 02->B .. 26->Z, 27->A, 28->B, 29->C, 30->D, 31->E.
 
 3. Jammers
 There are 3 jammers:
 - The first jammer number is the unit of DAYNUM, with 9->0, + 1.
-9,0->1, 1->2, 3->3 .. 9->9.  Ex, the 13th->3, 19th->9.
+9,0->1, 1->2, 3->3 .. 8->8.  Ex, the 13th->4, 19th->1.
 If this leads to 8 (already used for the back) then use 9.
 - The second is the month num / 10, with 9->0, + 1.
 Jan .. Aug->1, Sep->1 and Oct .. Dec->2. If used by first jammer, then add 1.
-- The thrid jammers is month num rem 10 with 9->0, + 1.
+- The third jammers is month num rem 10 with 9->0, + 1.
 Jan->2, Feb->3 .. Aug->9, Sep->1, Oct->1, Nov->2, Dec->3. If used by back,
 first or second jammer, then add 1. Ex Sep will not be 1 because 1 is already
 used by jammer 2. Sep becomes 2 (if not used by 1st jammer).
@@ -35,14 +39,20 @@ The jammers carry offsets are the first three letters of DAYNAME
 respectively.
 
 B. Letters
-If optionnal -text is provided, the key (random, from current or from provided
-date) is translated to text:
+If optionnal -text is provided, the key (random, from current date or from
+provided date) is translated to text:
 The switch definition is displayed, followed by JJJ (letter cannot appear
-twice at first nor twice as second in switch).
+twice at first of pair, nor twice as second of pair, in switch definition).
 Then the jammers and back are displayed but with letters instead of numbers:
 1AF2BP -> ONEAFTWOBP. Then the back offset is repeated (so that, like a jammer,
 it is a number then two letters), then the back number is repeated another time
 (a scrambler num cannot appear twice, so this marks the end).
 
 If the key is provided as text, then it is transformed into normal opions.
+
+C. Random generation
+The switch is a random list (0 to 13 included) of random pairs of letters
+The back is a random jammer from 7 to 9 included
+The jammers are a random number (3 to 8 included) of random jammers (1 to 9),
+each with random carry-offset letter and a random offset letter.
 

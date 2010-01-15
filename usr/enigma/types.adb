@@ -8,6 +8,10 @@ package body Types is
   begin
     return Lid (Letter'Pos(L) - Offset);
   end Id_Of;
+  function Id_Of (P : Positive) return Lid is
+  begin
+    return Lid (P - 1);
+  end Id_Of;
 
   -- Letter index:
   function Letter_Of (I : Lid) return Letter is

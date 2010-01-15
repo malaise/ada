@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!DOCTYPE Enigma SYSTEM "" [
+  <!ELEMENT Enigma (Rotor*, Reflector+)>
+
+  <!ELEMENT Rotor (#PCDATA)>
+  <!ATTLIST Rotor Rot_Name ID #REQUIRED>
+  <!ATTLIST Rotor Carries CDATA #REQUIRED>
+
+  <!ELEMENT Reflector (#PCDATA)>
+  <!ATTLIST Reflector Ref_Name ID #REQUIRED>
+]>
+
+<Enigma>
+  
+  <!-- A Rotor. No dup in Carries (max 26 letters),
+       no dup in scramble (26 letters) -->
+  <!-- If no Carry, the rotor also does not turn -->
+  <!--                                 ABCDEFGHIJKLMNOPQRSTUVWXYZ -->
+  <Rotor Rot_Name="I"     Carries="Q" >EKMFLGDQVZNTOWYHXUSPAIBRCJ</Rotor>
+  <Rotor Rot_Name="II"    Carries="E" >AJDKSIRUXBLHWTMCQGZNPYFVOE</Rotor>
+  <Rotor Rot_Name="III"   Carries="V" >BDFHJLCPRTXVZNYEIWGAKMUSQO</Rotor>
+  <Rotor Rot_Name="IV"    Carries="J" >ESOVPZJAYQUIRHXLNFTGKDCMWB</Rotor>
+  <Rotor Rot_Name="V"     Carries="Z" >VZBRGITYUPSDNHLXAWMJQOFECK</Rotor>
+  <Rotor Rot_Name="VI"    Carries="ZM">JPGVOUMFYQBENHZRDKASXLICTW</Rotor>
+  <Rotor Rot_Name="VII"   Carries="ZM">NZJHGRCXMYSWBOUFAIVLPEKQDT</Rotor>
+  <Rotor Rot_Name="VIII"  Carries="ZM">FKQHTLXOCBJSPDZRAMEWNIUYGV</Rotor>
+  <Rotor Rot_Name="Beta"  Carries=""  >LEYJVCNIXWPBQMDRTAKZGFUHOS</Rotor>
+  <Rotor Rot_Name="Gamma" Carries=""  >FSOKANUERHMBTIYCWLQPZXVGJD</Rotor>
+
+  <!-- A Reflector: No dup in scramble (26 letters),
+       must be symetrical (a->B->A) and must not have any identity (A->A) -->
+  <!--                     ABCDEFGHIJKLMNOPQRSTUVWXYZ -->
+  <Reflector Ref_Name="A" >EJMZALYXVBWFCRQUONTSPIKHGD</Reflector>
+  <Reflector Ref_Name="B" >YRUHQSLDPXNGOKMIEBFZCWVJAT</Reflector>
+  <Reflector Ref_Name="C" >FVPJIAOYEDRZXWGCTKUQSBNMHL</Reflector>
+  <Reflector Ref_Name="Bt">ENKQAUYWJICOPBLMDXZVFTHRGS</Reflector>
+  <Reflector Ref_Name="Ct">RDOBJNTKVEHMLFCWZAXGYIPSUQ</Reflector>
+</Enigma>
+

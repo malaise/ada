@@ -1,344 +1,527 @@
 -- Parses command line and returns enigma definition
-with Argument;
+with Ada.Strings.Unbounded, Ada.Exceptions;
+with Argument, Xml_Parser, Environ, String_Mng, Parser, Int_Image;
 with Io_Manager;
 package body Definition is
 
-  Parsed_Rec : Def_Rec;
+  function Pimage is new Int_Image (Positive);
+
+  -- Ada.Strings.Unbounded and Ada.Exceptions re-definitions
+  package Asu renames Ada.Strings.Unbounded;
+  subtype Asu_Us is Asu.Unbounded_String;
+  function Asu_Ts (Str : Asu_Us) return String renames Asu.To_String;
+
+  -- Is the definition loaded
+  Initialized : Boolean := False;
+  -- The loaded definition
+  Def : Definition_Rec;
   Start_Byte : Positive := 1;
   Last_Byte : Natural := 0;
-  Rec_Parsed : Boolean := False;
-  procedure Parse;
+  -- The Xml context
+  Ctx : Xml_Parser.Ctx_Type;
+
+  -- The configuration file name.
+  Default_File_Name : constant String := "enigma.xml";
+  File_Var_Name : constant String := "ENIGMA_CONF_FILE";
+
+  -- The keys
+  Switches_Key : constant String := "s";
+  Rotors_Key : constant String := "r";
+  Init_Key : constant String := "i";
+  Start_Key : constant String := "f";
+  Last_Key : constant String := "l";
+
+  procedure Ple (S : in String) renames Io_Manager.Put_Line_Error;
+  procedure Error (Msg : in String) is
+  begin
+    Ple ("ERROR: " & Msg & ".");
+    Io_Manager.New_Line_Error;
+    Ple ("Usage: " & Argument.Get_Program_Name
+       & " [ <switches> ] [ <rotor_defs>  ] <reflector_def> [ <rotor_offsets> ] [ <first_index> ] [ <last_index> ]");
+    Ple ("   <switches>      ::= -s{ <upperletter><upperletter> }");
+    Ple ("   <rotor_defs>    ::= -r{ [#]<rotor_name>@<upperletter>[#] }");
+    Ple ("   <reflector_def> ::= <reflector_name>@<upperletter>");
+    Ple ("   <rotor_offsets> ::= -i{ <upperletter> }");
+    Ple ("   <first_index>   ::= -f<positive>       (default 1)");
+    Ple ("   <last_index>    ::= -l<positive>       (default none)");
+    Ple ("   <upperletter>   ::= A .. Z");
+    Ple ("Up to 4 rotors can be used and one reflector must be defined.");
+    Ple ("They must have different names.");
+    Ple ("There must be as many rotor offsets as rotor defined.");
+    Ple ("Ex of rotor defs, for rotors I, IV and Beta: ""I@A#IV@Q#Beta@F"".");
+    raise Invalid_Definition;
+  end Error;
+
+  ---------------------------------------------------------------------------
+
+  -- Return the configuration file name
+  function File_Name return String is
+  begin
+    if not Environ.Is_Set (File_Var_Name)
+    or else Environ.Getenv (File_Var_Name) /= "" then
+      return Default_File_Name;
+    else
+      return Environ.Getenv (File_Var_Name);
+    end if;
+  end File_Name;
+
+  -- Get the Carries definition of a Rotor
+  function Get_Carries (Node : Xml_Parser.Element_Type) return String is
+    Attrs : Xml_Parser.Attributes_Array (1 ..2);
+  begin
+    Attrs := Ctx.Get_Attributes (Node);
+    if Asu_Ts (Attrs(1).Name) = "Carries" then
+      -- Carries is first attribute
+      return Asu_Ts (Attrs(1).Value);
+    else
+      -- Carries is second attribute
+      return Asu_Ts (Attrs(2).Value);
+    end if;
+  end Get_Carries;
+
+  -- Get the definition of a rotor or reflector
+  function Get_Def (Node : Xml_Parser.Element_Type) return String is
+    Child : Xml_Parser.Text_Type;
+  begin
+    Child := Ctx.Get_Child (Node, 1);
+    return Ctx.Get_Text (Child);
+  end Get_Def;
+
+  -- Check no dup in string
+  function Check_Dup (Str : String) return Boolean is
+    Set : Carries_Array := (others => False);
+    Id : Types.Lid;
+  begin
+    -- No need to check lenght because more than 26 Carries would lead to dup
+    for I in Str'Range loop
+      if Str(I) not in Types.Letter then
+        return False;
+      end if;
+      Id := Types.Id_Of (Str(I));
+      if Set(Id) then
+        return False;
+      end if;
+      Set(Id) := True;
+    end loop;
+    return True;
+  end Check_Dup;
+
+  -- Check the semantic of definition of rotors and reflectors
+  -- Already checked because DTD:
+  --   Unicity of name (cause attr is an ID)
+  --   2 attributes for Rotor and 1 for Reflector
+  procedure Check_Config (Children : in Xml_Parser.Nodes_Array) is
+    Scrambler : Scrambler_Type;
+    Reverted : Scrambler_Type;
+    use type Types.Lid;
+  begin
+    for I in Children'Range loop
+      if Ctx.Get_Name (Children(I)) = "Rotor" then
+        -- Check the Carries has no dup
+        if not Check_Dup (Get_Carries (Children(I))) then
+          Ple ("ERROR: Invalid Carries definition at line"
+              & Natural'Image (Ctx.Get_Line_No (Children(I))));
+           raise Invalid_Configuration;
+        end if;
+      end if;
+      begin
+        -- Check the text exists and has no dup
+        if not Check_Dup (Get_Def (Children(I))) then
+          Ple ("ERROR: Duplicated entry in " & Ctx.Get_Name (Children(I)));
+          raise Constraint_Error;
+        end if;
+        -- Set the scrambler, checks length
+        Set (Scrambler, Get_Def (Children(I)));
+        -- Verify symetry of reflector
+        if Ctx.Get_Name (Children(I)) = "Reflector" then
+          Reverted := Revert (Scrambler);
+          if Reverted /= Scrambler then
+            -- Not symetrical
+            Ple ("ERROR: Reflector is not symetrical");
+            raise Constraint_Error;
+          end if;
+          -- Verify no identity in reflector
+          for I in Scrambler.Mapping'Range loop
+            if Scrambler.Mapping(I) = I then
+              -- Identity
+              Ple ("ERROR: Reflector has identity");
+              raise Constraint_Error;
+            end if;
+          end loop;
+        end if;
+      exception
+        when Invalid_Configuration =>
+          raise;
+        when others =>
+          Ple ("ERROR: Invalid " & Ctx.Get_Name (Children(I))
+                & " definition at line"
+                & Natural'Image (Ctx.Get_Line_No (Children(I))));
+             raise Invalid_Configuration;
+      end;
+    end loop;
+  end Check_Config;
+
+  ---------------------------------------------------------------------------
+
+  -- Set the switches
+  procedure Set_Switches (Str : in String) is
+    -- "ABCDE....XYZ"
+    Init_Str : String (1 .. Types.Nb_Letters);
+    Id : Types.Lid;
+    use type Types.Lid;
+  begin
+    -- Init scrambler to default
+    for I in Init_Str'Range loop
+      Init_Str(I) := Types.Letter_Of (Types.Id_Of (I));
+    end loop;
+    Set (Def.Switches, Init_Str);
+    -- Check string length
+    if Str'Length mod 2 /= 0 then
+      Error ("Invalid number of switches");
+    elsif Str'Length > Types.Nb_Letters then
+      Error ("Too many switches (max is " & Pimage (Types.Nb_Letters) & ")");
+    end if;
+    -- Set switches, check no dup and no identity
+    for I in 1 .. Str'Length loop
+      if I mod 2 = 1 then
+        if Str(I) = Str(I + 1) then
+          Error ("Invalid identity in switches");
+        end if;
+        Id := Types.Id_Of (I);
+        if Def.Switches.Mapping(Id) /= Id then
+          -- This position is already set in the scrambler
+           Error ("Invalid dual definition in switches");
+        end if;
+        -- Set scrambler value, symetric
+        Def.Switches.Mapping(Id) := Types.Id_Of (Str(I + 1));
+        Def.Switches.Mapping(Types.Id_Of (Str(I + 1))) := Id;
+      end if;
+    end loop;
+  end Set_Switches;
+
+  -- Get the name of a Rotor
+  function Get_Rotor_Name (Node : Xml_Parser.Element_Type) return String is
+    Attrs : Xml_Parser.Attributes_Array (1 ..2);
+  begin
+    Attrs := Ctx.Get_Attributes (Node);
+    if Asu_Ts (Attrs(1).Name) = "Rot_Name" then
+      -- Name is first attribute
+      return Asu_Ts (Attrs(1).Value);
+    else
+      -- Name is second attribute
+      return Asu_Ts (Attrs(2).Value);
+    end if;
+  end Get_Rotor_Name;
+
+  -- Get the name of a Reflector
+  function Get_Reflector_Name (Node : Xml_Parser.Element_Type) return String is
+    Attr : Xml_Parser.Attribute_Rec;
+  begin
+    Attr := Ctx.Get_Attribute (Node, 1);
+    return Asu_Ts (Attr.Value);
+  end Get_Reflector_Name;
+
+  -- Set a rotor
+  procedure Set_Rotor (Rotor_Id : in Rotors_Id_Range;
+                       Children : in Xml_Parser.Nodes_Array;
+                       Name : in String;
+                       Offset : in Types.Lid;
+                       Init : in Types.Lid) is
+    Found : Natural;
+  begin
+    -- Find the correct child
+    Found := 0;
+    for I in Children'Range loop
+      if Ctx.Get_Name (Children(I)) = "Rotor"
+      and then Get_Rotor_Name (Children(I)) = Name then
+        Found := I;
+        exit;
+      end if;
+    end loop;
+    if Found = 0 then
+      Error ("Rotor name " & Name & " not found");
+    end if;
+    -- Get its characteristics and set the rotor
+    declare
+      Carries : constant String := Get_Carries (Children(Found));
+      Scrambler : constant String := Get_Def (Children(Found));
+    begin
+      -- if no carry, must be last rotor
+      if Carries = "" and then Rotor_Id /= Def.Nb_Rotors then
+        Error ("Only last rotor can have no carry");
+      end if;
+      -- Set scrambler
+      Set (Def.Rotors(Rotor_Id).Scrambler, Scrambler);
+      -- Set carries
+      for I in Carries'Range loop
+        Def.Rotors(Rotor_Id).Carries(Types.Id_Of (Carries(I))) := True;
+      end loop;
+    end;
+    -- Set Offset and initial position
+    Def.Rotors(Rotor_Id).Offset := Offset;
+    Def.Rotors(Rotor_Id).Position := Init;
+  end Set_Rotor;
+
+  -- Delimiter in Rotors string
+  function Separing (C : Character) return Boolean is
+  begin
+    return C = '#';
+  end Separing;
+
+  -- Set the rotors
+  procedure Set_Rotors (Children : in Xml_Parser.Nodes_Array;
+                        Rotor_Str, Init_Str : in String) is
+    Iter : Parser.Iterator;
+  begin
+    -- Parse the Rotors definition
+    -- <Name>@<OffsetLetter> [ { #<Name>@<OffsetLetter> } ]
+    Iter.Set (Rotor_Str, Separing'Access);
+    for I in 1 .. Def.Nb_Rotors loop
+      declare
+        Str : constant String := Iter.Next_Word;
+        Arob : Natural;
+      begin
+        if Str = "" then
+          Error ("Missing rotor definition, expecting "
+              & Pimage (Def.Nb_Rotors));
+        end if;
+        Arob := String_Mng.Locate (Str, "@");
+        if Arob /= Str'Last - 1 then
+          Error ("Invalid rotors definition");
+        end if;
+        -- Check offset letter
+        if Str(Str'Last) not in Types.Letter then
+          Error ("Invalid rotor ring setting " & Str(Str'Last));
+        end if;
+        Set_Rotor (I, Children, Name => Str(Str'First .. Arob - 1),
+                   Offset => Types.Id_Of (Str(Str'Last)),
+                   Init => Types.Id_Of (Init_Str(I)));
+      end;
+    end loop;
+    -- No mor Rotor allowed
+    if Iter.Next_Word /= "" then
+      Error ("Too many rotor definitions, expecting "
+          & Pimage (Def.Nb_Rotors));
+    end if;
+    Iter.Del;
+  end Set_Rotors;
+
+  -- Set the reflector
+  procedure Set_Reflector (Children : in Xml_Parser.Nodes_Array;
+                           Str : in String) is
+    Arob : Natural;
+    Found : Natural;
+  begin
+    if Str = "" then
+      Error ("Empty reflector definition");
+    end if;
+    Arob := String_Mng.Locate (Str, "@");
+    if Arob /= Str'Last - 1 then
+      Error ("Invalid reflector definition");
+    end if;
+    -- Check offset letter
+    if Str(Str'Last) not in Types.Letter then
+      Error ("Invalid reflector offset setting " & Str(Str'Last));
+    end if;
+    -- Find the correct child
+    Found := 0;
+    for I in Children'Range loop
+      if Ctx.Get_Name (Children(I)) = "Reflector"
+      and then Get_Reflector_Name (Children(I))
+               = Str(Str'First .. Arob  - 1) then
+        Found := I;
+        exit;
+      end if;
+    end loop;
+    if Found = 0 then
+      Error ("Reflector name " & Str(Str'First .. Arob  - 1) & " not found");
+    end if;
+    -- Get its characteristics and set the reflector
+    declare
+      Scrambler : constant String := Get_Def (Children(Found));
+    begin
+      -- Set scrambler
+      Set (Def.Reflector.Scrambler, Scrambler);
+    end;
+    -- Set Offset
+    Def.Reflector.Position := Types.Id_Of (Str(Str'Last));
+  end Set_Reflector;
+
+  -- Check arguments and load definition
+  procedure Set_Definition (Children : in Xml_Parser.Nodes_Array) is
+    Rotor_Nb : Rotors_Nb_Range;
+  begin
+    -- Any key at most once, reflector once and only once
+    if Argument.Is_Set (2, Switches_Key) then
+      Error ("Too many switches defintions");
+    elsif Argument.Is_Set (2, Rotors_Key) then
+      Error ("Too many rotors defintions");
+    elsif Argument.Is_Set (2, Init_Key) then
+      Error ("Too many rotors initial offsets definitions");
+    elsif Argument.Is_Set (2, Start_Key) then
+      Error ("Too many first index definitions");
+    elsif Argument.Is_Set (2, Last_Key) then
+      Error ("Too many last index definitions");
+    elsif not Argument.Is_Set (1, Argument.Not_Key) then
+      Error ("Missing reflector definition");
+    elsif Argument.Is_Set (2, Argument.Not_Key) then
+      Error ("Too many reflector definitions");
+    end if;
+
+    -- Check offset versus rotors
+    if not Argument.Is_Set (1, Rotors_Key) then
+      if Argument.Is_Set (Param_Key => Init_Key) then
+        Error ("Unexpected initial rotor offsets key");
+      end if;
+      Rotor_Nb := 0;
+    else
+      if not Argument.Is_Set (1, Init_Key) then
+        Error ("Missing initial rotor offsets key");
+      end if;
+      Rotor_Nb := Argument.Get_Parameter (1, Init_Key)'Length;
+    end if;
+
+    -- Initialize result with correct number of rotors
+    Def := (Nb_Rotors => Rotor_Nb,
+            Switches => Default_Scrambler,
+            Rotors => (others => (Default_Scrambler, (others => False), 0, 0)),
+            Reflector => (Default_Scrambler, 0));
+
+    -- Set switches
+    if Argument.Is_Set (1, Switches_Key) then
+      Set_Switches (Argument.Get_Parameter (1, Switches_Key));
+    else
+      Set_Switches ("");
+    end if;
+
+    -- Set rotors
+    if Def.Nb_Rotors /= 0 then
+      Set_Rotors (Children, Argument.Get_Parameter (1, Rotors_Key),
+                            Argument.Get_Parameter (1, Init_Key));
+    end if;
+
+    -- Set reflector
+    Set_Reflector (Children, Argument.Get_Parameter (1, Argument.Not_Key));
+
+    -- Set indexes
+    if Argument.Is_Set (1, Start_Key) then
+      begin
+        Start_Byte := Positive'Value (Argument.Get_Parameter (1, Start_Key));
+      exception
+        when others =>
+          Error ("Invalid value for first index");
+      end;
+    end if;
+    if Argument.Is_Set (1, Last_Key) then
+      begin
+        Last_Byte := Natural'Value (Argument.Get_Parameter (1, Start_Key));
+      exception
+        when others =>
+          Error ("Invalid value for last index");
+      end;
+    end if;
+  exception
+    when Invalid_Definition =>
+      raise;
+    when Err:others =>
+      Error ("Internal error " & Ada.Exceptions.Exception_Name (Err)
+           & " raised");
+  end Set_Definition;
+
+  ---------------------------------------------------------------------------
+
+  -- Load and check the configuration (definition of rotors and reflectors)
+  -- Parse arguments and check definition of switches, rotors and reflector
+  -- Logs problem on stdout
+  procedure Load_Configuration is
+    Parse_Ok : Boolean;
+    Root : Xml_Parser.Element_Type;
+  begin
+    if Initialized then
+      return;
+    end if;
+    -- Parse Xml
+    begin
+      Ctx.Parse (File_Name, Parse_Ok);
+      if not Parse_Ok then
+        Ple ("ERROR in file " & File_Name & ": " & Ctx.Get_Parse_Error_Message);
+        raise Invalid_Configuration;
+      end if;
+    exception
+      when Xml_Parser.File_Error =>
+        Ple ("ERROR: File " & File_Name & " not found.");
+        raise Invalid_Configuration;
+    end;
+    Root := Ctx.Get_Root_Element;
+
+    -- Load the children (Rotors and Reflectors) and check
+    declare
+      Children : constant Xml_Parser.Nodes_Array := Ctx.Get_Children (Root);
+    begin
+      -- Check definition of Rotors and Reflectors
+      Check_Config (Children);
+      -- Check the arguments versus the definition and set the definition
+      Set_Definition (Children);
+      -- Check length of switches
+     end;
+    Initialized := True;
+  exception
+    when Invalid_Configuration | Invalid_Definition =>
+      raise;
+    when others =>
+      Ple ("ERROR while parsing file " & File_Name & ".");
+      raise Invalid_Configuration;
+  end Load_Configuration;
 
   -- Parse args and fill Def
-  procedure Read_Definition (Def : out Def_Rec) is
+  procedure Read_Definition (Def : out Definition_Rec) is
   begin
-    if not Rec_Parsed then
-      Parse;
-    end if;
-    Rec_Parsed := True;
-    Def := Parsed_Rec;
+    Load_Configuration;
+    Def := Definition.Def;
   end Read_Definition;
 
   -- Get start byte offset
   function Read_Start_Byte return Positive is
   begin
-    if not Rec_Parsed then
-      Parse;
-    end if;
-    Rec_Parsed := True;
+    Load_Configuration;
     return Start_Byte;
   end Read_Start_Byte;
 
   -- Get last byte offset (0 if none)
   function Read_Last_Byte return Natural is
   begin
-    if not Rec_Parsed then
-      Parse;
-    end if;
-    Rec_Parsed := True;
+    Load_Configuration;
     return Last_Byte;
   end Read_Last_Byte;
 
-
-  -------------------------------------------------------------------------
-  Switch_Key : constant String := "s";
-  Jammers_Key : constant String := "j";
-  Back_Key : constant String := "b";
-  Rotors_Key : constant String := "r";
-  Start_Key : constant String := "f";
-  Last_Key : constant String := "l";
-
-  procedure Error (Msg : in String) is
-    procedure Ple (S : in String) renames Io_Manager.Put_Line_Error;
+  -- Initialize a scrambler
+  procedure Set (Scrambler : out Scrambler_Type; To : String) is
+    use type Types.Lid;
   begin
-    Ple ("ERROR: " & Msg & ".");
-    Io_Manager.New_Line_Error;
-    Ple ("Usage: " & Argument.Get_Program_Name
-       & " [ <switch> ] [ <rotor_def>  ] <back> [ <rotor_offsets> ] [ <first_index> ] [ <last_index> ]");
-    Ple ("   <switch>        ::= -s{ <upperletter><upperletter> }");
-    Ple ("   <rotor_def>     ::= -j{ <scrambler_num><upperletter> }");
-    Ple ("   <back>          ::= -b<scrambler_num><upperletter>");
-    Ple ("   <rotor_offsets> ::= -r{ <upperletter> }");
-    Ple ("   <first_index>   ::= -f<positive>       (default 1)");
-    Ple ("   <last_index>    ::= -l<positive>       (default none)");
-    Ple ("   <scrambler_num> ::= 1 .. 9");
-    Ple ("   <upperletter>   ::= A .. Z");
-    Ple ("Up to 8 jammers can be defined and one back must be defined.");
-    Ple ("They must all have different numbers.");
-    Ple ("There must as many rotor offsets as defined in the rotor setting.");
-    raise Invalid_Definition;
-  end Error;
-
-  -- Check that Key is one of the expected keys
-  procedure Is_Valid_Key (Key : in String) is
-    F : constant Integer := Key'First;
-    Str : constant String := Key (F .. F);
-  begin
-   if Key'Length =0 then
-     Error ("Invalid argument -");
-   end if;
-   if       Str /= Jammers_Key
-   and then Str /= Back_Key
-   and then Str /= Rotors_Key
-   and then Str /= Start_Key
-   and then Str /= Last_Key
-   and then Str /= Switch_Key then
-     Error ("Invalid argument -" & Key);
-   end if;
-  end Is_Valid_Key;
-
-  procedure Check_Twice (Key : in String; Msg : in String) is
-    use Argument;
-  begin
-    if Get_Position (2, Key) /= 0 then
-      Error (Msg);
+    if To'Length /= Scrambler.Mapping'Length then
+      raise Constraint_Error;
     end if;
-  exception
-    when Argument_Not_Found =>
-      null;
-  end Check_Twice;
-
-  procedure Check is
-    use Argument;
-  begin
-    -- All must be keys
-    begin
-      declare
-        Not_Key_Arg : constant String := Get_Parameter (1, Not_Key);
-      begin
-        Error ("Unexpected argument: " & Not_Key_Arg);
-    end;
-    exception
-      when Argument_Not_Found =>
-        -- Normal
-        null;
-    end;
-    -- Check all keys are within the expected keys
-    for I in 1 .. Get_Nbre_Arg loop
-      Is_Valid_Key (Get_Parameter (I, Any_Key));
+    for I in To'Range loop
+      Scrambler.Mapping(Types.Id_Of (I)) := Types.Id_Of (To(I));
     end loop;
-    -- Check all key is unique
-    Check_Twice (Switch_Key, "Switch defined twice");
-    Check_Twice (Jammers_Key, "Jammers defined twice");
-    Check_Twice (Back_Key, "Back defined twice");
-    Check_Twice (Rotors_Key, "Rotors defined twice");
-    Check_Twice (Start_Key, "First offset defined twice");
-    Check_Twice (Last_Key, "Last offset defined twice");
-  end Check;
+  end Set;
 
-  -- Parse a switch: N letters
-  procedure Parse_Switch (Str : in String; Switch : out Switch_Definition) is
-    Index : Switch_Index;
+  -- Translate a letter through a scrambler
+  function Translate (Scrambler : Scrambler_Type; A_Letter : Types.Lid)
+           return Types.Lid is
   begin
-    -- Must be non empty pairs of letter, max 26 pairs
-    if Str'Length = 0
-    or else Str'Length rem 2 /= 0
-    or else Str'Length > Natural(Switch_Range'Last) * 2 then
-      Error ("Invalid number of letters in switch definition " & Str);
-    end if;
-    -- Init size of switch definition
-    Switch := (Str'Length / 2, (others => (Types.Letter'First,
-                                           Types.Letter'First)) );
+    return Scrambler.Mapping(A_Letter);
+  end Translate;
 
-    -- Store letters
-    for I in Str'Range loop
-      -- Check they are letters
-      if Str(I) not in Types.Letter then
-        Error ("Invalid letter " & Str(I) & " in switch definition " & Str);
-      end if;
-      if I rem 2 = 1 then
-        Index := Switch_Index (I / 2 + 1);
-        -- Encoding part: check unicity and store
-        for J in 1 .. Index - 1 loop
-          if Switch.Switch(J).E = Str(I) then
-            Error ("Dual first letter " & Str(I) & " in switch definition "
-                   & Str);
-          end if;
-        end loop;
-        Switch.Switch(Index).E := Str(I);
-      else
-        -- Decoding part: check unicity and store
-        for J in 1 .. Index - 1 loop
-          if Switch.Switch(J).D = Str(I) then
-            Error ("Dual second letter " & Str(I) & " in switch definition "
-                   & Str);
-          end if;
-        end loop;
-        Switch.Switch(Index).D := Str(I);
-      end if;
+  -- Return the revert scrambler
+  function Revert (Scrambler : Scrambler_Type) return Scrambler_Type is
+    Res : Scrambler_Type;
+  begin
+    for I in Scrambler.Mapping'Range loop
+      Res.Mapping(Scrambler.Mapping(I)) := I;
     end loop;
-  end Parse_Switch;
-
-  -- Parse the back: a number and a letter
-  procedure Parse_Back (Name : in String; Str : in String;
-                        Back : out Back_Definition) is
-  begin
-    -- A number and a letter
-    if Str'Length /= 2 then
-      Error ("Invalid back definition " & Str & " for " & Name);
-    end if;
-    -- Scrambler number
-    begin
-      Back.Scrambler := Scrambler_Index'Value(
-                              Str(Str'First .. Str'First));
-    exception
-      when Constraint_Error =>
-        Error ("Invalid scrambler number " & Str(Str'First) & " for " & Name);
-    end;
-    -- Scrambler offset
-    declare
-    begin
-      Back.Offset := Str(Str'Last);
-    exception
-      when Constraint_Error =>
-        Error ("Invalid scrambler offset " & Str(Str'Last) & " for " & Name);
-    end;
-  end Parse_Back;
-
-  -- Parse a jammer: a number and a letter
-  procedure Parse_Jammer (Name : in String; Str : in String;
-                          Jammer : out Jammer_Definition) is
-  begin
-    -- A number and a letter
-    if Str'Length /= 2 then
-      Error ("Invalid rotor definition " & Str & " for " & Name);
-    end if;
-    -- Scrambler number
-    begin
-      Jammer.Scrambler := Scrambler_Index'Value(
-                              Str(Str'First .. Str'First));
-    exception
-      when Constraint_Error =>
-        Error ("Invalid scrambler number " & Str(Str'First) & " for " & Name);
-    end;
-    -- Scrambler carry offset
-    begin
-      Jammer.Carry_Offset := Str(Str'Last);
-    exception
-      when Constraint_Error =>
-        Error ("Invalid rotor carry " & Str(Str'Last) & " for " & Name);
-    end;
-  end Parse_Jammer;
-
-  -- Parse a rotor: a letter
-  procedure Parse_Rotor (Name : in String; Chr : in Character;
-                         Rotor_Offset : out Types.Letter) is
-  begin
-    -- Scrambler offset
-    begin
-      Rotor_Offset := Chr;
-    exception
-      when Constraint_Error =>
-        Error ("Invalid value " & Chr & " for " & Name);
-    end;
-  end Parse_Rotor;
-
-  procedure Parse is
-    use Argument;
-  begin
-    Check;
-    -- Parse start index
-    begin
-      Start_Byte := Positive'Value(Get_Parameter (1, Start_Key));
-    exception
-      when Argument_Not_Found =>
-        null;
-      when others =>
-        Error ("Invalid first index: " & Get_Parameter (1, Start_Key));
-    end;
-    -- Parse last index
-    begin
-      Last_Byte := Natural'Value(Get_Parameter (1, Last_Key));
-      if Last_Byte = 0 then
-        raise Constraint_Error;
-      end if;
-    exception
-      when Argument_Not_Found =>
-        -- Last byte remains 0
-        null;
-      when others =>
-        Error ("Invalid last index: " & Get_Parameter (1, Last_Key));
-    end;
-    -- Parse switch
-    begin
-      Parse_Switch (Get_Parameter (1, Switch_Key), Parsed_Rec.Switch);
-    exception
-      when Argument_Not_Found =>
-        null;
-    end;
-    -- Parse back
-    begin
-      Parse_Back ("back", Get_Parameter (1, Back_Key), Parsed_Rec.Back);
-    exception
-      when Argument_Not_Found =>
-        Error ("No back defined");
-    end;
-    -- Parse jammers
-    begin
-      declare
-        Str : constant String :=  Get_Parameter (1, Jammers_Key);
-        Index : Jammers_Index;
-      begin
-        -- Check positive and number of chars rem 2
-        --  (pairs of Num, Carry)
-        if Str'Length < 2 or else Str'Length rem 2 /= 0 then
-          Error ("Invalid rotor setting " & Str);
-        end if;
-        -- Check max number of jammers
-        if Str'Length / 2 > Natural(Jammers_Range'Last) then
-          Error ("To many rotors defined in " & Str);
-        end if;
-        Parsed_Rec.Jammers := (Str'Length / 2,
-                               (others => (Scrambler_Index'First,
-                                          Types.Letter'First,
-                                          Types.Letter'First)) );
-        for I in 1 .. Str'Length / 2 loop
-          Index := Jammers_Index(I);
-          Parse_Jammer ("rotor setting" & I'Img,
-                         Str(I * 2 - 1 .. I * 2),
-                         Parsed_Rec.Jammers.Jammers(Index) );
-          -- Check unicity
-        end loop;
-      end;
-    exception
-      when Argument_Not_Found =>
-        null;
-    end;
-
-    -- Parse Rotors
-    if Parsed_Rec.Jammers.Nb_Jammers = 0 then
-      declare
-        -- Should raise Argument.Argument_not_Found
-        Str : constant String :=  Get_Parameter (1, Rotors_Key);
-      begin
-        Error ("Unexpected definition of rotor offsets " & Str);
-      exception
-        when Argument.Argument_Not_Found =>
-          -- Normal
-          null;
-      end;
-    else
-      declare
-        Str : constant String :=  Get_Parameter (1, Rotors_Key);
-        Index : Jammers_Index;
-      begin
-        -- Check length = Nb of jammers
-        if Str'Length /= Integer(Parsed_Rec.Jammers.Nb_Jammers) then
-          Error ("Invalid number of rotor offsets " & Str);
-        end if;
-        for I in 1 .. Str'Length loop
-          Index := Jammers_Index(I);
-          Parse_Rotor ("rotor offset" & I'Img, Str(I),
-                         Parsed_Rec.Jammers.Jammers(Index).Offset );
-          -- Check unicity
-        end loop;
-      exception
-        when Argument_Not_Found =>
-          null;
-      end;
-    end if;
-
-  end Parse;
+    return Res;
+  end Revert;
 
 end Definition;
 
