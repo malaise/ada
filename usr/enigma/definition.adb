@@ -204,7 +204,7 @@ package body Definition is
     Attrs : Xml_Parser.Attributes_Array (1 ..2);
   begin
     Attrs := Ctx.Get_Attributes (Node);
-    if Asu_Ts (Attrs(1).Name) = "Rot_Name" then
+    if Asu_Ts (Attrs(1).Name) = "Name" then
       -- Name is first attribute
       return Asu_Ts (Attrs(1).Value);
     else
@@ -246,10 +246,6 @@ package body Definition is
       Carries : constant String := Get_Carries (Children(Found));
       Scrambler : constant String := Get_Def (Children(Found));
     begin
-      -- if no carry, must be last rotor
-      if Carries = "" and then Rotor_Id /= Def.Nb_Rotors then
-        Error ("Only last rotor can have no carry");
-      end if;
       -- Set scrambler
       Set (Def.Rotors(Rotor_Id).Scrambler, Scrambler);
       -- Set carries
@@ -272,6 +268,7 @@ package body Definition is
   procedure Set_Rotors (Children : in Xml_Parser.Nodes_Array;
                         Rotor_Str, Init_Str : in String) is
     Iter : Parser.Iterator;
+    No_Carry : constant Carries_Array := (others => False);
   begin
     -- Parse the Rotors definition
     -- <Name>@<OffsetLetter> [ { #<Name>@<OffsetLetter> } ]
@@ -298,11 +295,19 @@ package body Definition is
                    Init => Types.Id_Of (Init_Str(I)));
       end;
     end loop;
-    -- No mor Rotor allowed
+    -- No more Rotor allowed
     if Iter.Next_Word /= "" then
       Error ("Too many rotor definitions, expecting "
           & Pimage (Def.Nb_Rotors));
     end if;
+
+    -- Only last rotor can have no carry
+    for I in 1 .. Def.Nb_Rotors - 1 loop
+      if Def.Rotors(I).Carries = No_Carry  then
+        Error ("Only last rotor can have no carry");
+      end if;
+    end loop;
+
     Iter.Del;
   end Set_Rotors;
 
