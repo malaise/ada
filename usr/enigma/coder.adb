@@ -101,7 +101,7 @@ package body Coder is
     X := Machine.Reflector.Scrambler.Translate (X);
     Put ("F->" & Limage(X) & ", ");
     -- Encode backwards through the rotors
-    for I in 1 .. Machine.Nb_Rotors loop
+    for I in reverse 1 .. Machine.Nb_Rotors loop
       X := Reverted(I).Translate (X);
       X := X - Machine.Rotors(I).Offset - Machine.Rotors(I).Position;
       Put ("R" & Nimage(I) & "->" & Limage(X) & ", ");
