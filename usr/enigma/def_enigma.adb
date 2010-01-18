@@ -1,8 +1,8 @@
--- Enigma expects -s<switches> -j<rotor_def> -b<back_def> -r<rotor_offsets>
+-- Enigma expects -s<switches> -r<rotor_def> <back_def> -i<rotor_init>
 -- <switches> is pairs of letters, each letter appears at most once
--- <rotor_def> is a list of <rotor_number><letter_offset_of_carry>
--- <back_def> is a <rotor_number> and an offset letter
--- <rotor_offsets> is a list of offset letters (one for each rotor)
+-- <rotor_def> is a list of <rotor_name>@<letter_ring_offset>#...
+-- <back_def> is a <reflector_name>@<letter_offset>
+-- <rotor_init> is a list of offset letters (one for each rotor)
 -- See Def_Enigma.txt for more information
 
 with Ada.Calendar, Ada.Text_Io;
@@ -11,7 +11,17 @@ with Perpet, Argument, Day_Mng, Normal, Text_Handler, Upper_Str, Rnd,
 with Types, Scrambler_Gen;
 procedure Def_Enigma is
   -- Constants
-  Back_Scrambler : constant := 8;
+  -- The reflector used when generating from date
+  Back_Scrambler : constant := 2;
+
+  package Xml is
+    -- Parse the Xml config file
+    procedure Init;
+    -- Get the Name of a rotor of reflector, given its id. "" if not found
+    function Get_Name (Rotor : Boolean; Id : Positive) return String;
+    Invalid_Configuration : exception;
+  end Xml;
+  package body Xml is separate;
 
   procedure Usage is
   begin
@@ -45,7 +55,7 @@ procedure Def_Enigma is
 
   -- For random generation
   -- Letter index 1 .. 26
-  subtype Id_Range is Positive range 1 .. Positive(Types.Lid'Last) + 1;
+  subtype Id_Range is Positive range 1 .. Types.Nb_Letters;
   function Id_Random is new Rnd.Discr_Random (Id_Range);
 
   -- String image
@@ -174,6 +184,8 @@ begin
     return;
   end if;
 
+  Xml.Init;
+
   if Nb_Arg = 0 then
     Action := Current_Date;
   elsif Argument.Get_Parameter (Occurence => Other_Arg) = "rnd" then
@@ -241,37 +253,31 @@ begin
       Rnd.Randomize;
       -- Set random switches
       declare
-        -- Generate a random full asymetric scrambler
-        Str : constant String := Scrambler_Gen.Generate (False);
+        -- Generate a random symetric scrambler
+        Str : constant String := Scrambler_Gen.Generate (True);
         -- Generate a random number of switch entries
-        N : constant Natural := Rnd.Int_Random (0, Id_Range'Last);
-        -- Init array of already mapped letters
-        Used : array (Id_Range) of Boolean := (others => False);
-        Index : Id_Range;
+        N : constant Natural := Rnd.Int_Random (0, Id_Range'Last / 2);
       begin
         for I in 1 .. N loop
-          loop
-            -- Look for a random unused char
-            Index := Id_Random;
-            exit when not Used(Index);
-          end loop;
-          Used(Index) := True;
-          Text_Handler.Append (Switch, To_Letter(Index) & Str(Index));
+          -- Skip identity
+          if  To_Letter(I) /= Str(I) then
+            Text_Handler.Append (Switch, To_Letter(I) & Str(I));
+          end if;
         end loop;
       end;
 
-      -- Set random back between 7 and 9
+      -- Set random back between 1 and 5
       declare
-        Back_Num : Pos_9 := Id_Random (7, 9);
+        Back_Num : Pos_9 := Id_Random (1, 5);
       begin
         Back_Num := Store (Back_Num, 1);
         Text_Handler.Set (Back, Normal(Back_Num, 1)
                               & To_Letter (Id_Random));
       end;
 
-      -- Set random number (3 to 8) of random jammers and rotor settings
+      -- Set random number (3 to 4) of random jammers and rotor settings
       declare
-        Jam_Nb : constant Natural := Rnd.Int_Random (3, 8);
+        Jam_Nb : constant Natural := Rnd.Int_Random (3, 4);
         Jam_Num : Pos_9;
       begin
         for I in 1 .. Jam_Nb loop
@@ -292,21 +298,14 @@ begin
           return;
       end;
       -- Locate separator between switch and scramblers
-      -- This can be "JJJJJ"!
-      Start := Text_Handler.Locate (Txt, Separator(1 .. 2) & Separator);
+      -- This cannot be "JJJJJ", but can be "xJJJJ"!
+      Start := Text_Handler.Locate (Txt, Separator(1) & Separator);
       if Start /= 0 then
-        -- Yes it is, the real separator is after the first "JJ"
-        Start := Start + 2;
+        -- Yes it is, the real separator is after the first "J"
+        Start := Start + 1;
       else
-        -- This can be "xJJJJ"!
-        Start := Text_Handler.Locate (Txt, Separator(1) & Separator);
-        if Start /= 0 then
-          -- Yes it is, the real separator is after the first "J"
-          Start := Start + 1;
-        else
-          -- This is "xyJJJ"
-          Start := Text_Handler.Locate (Txt, Separator);
-        end if;
+        -- This is "xyJJJ"
+        Start := Text_Handler.Locate (Txt, Separator);
       end if;
 
       -- Pairs of letters before separator (=> separator found)
@@ -415,6 +414,9 @@ begin
       if L rem 2 /= 0  then
         L := L - 1;
       end if;
+      if L > Id_Range'Last / 2 then
+        L := Id_Range'Last / 2;
+      end if;
       Text_Handler.Set (Switch, Str(1 .. L));
     end;
 
@@ -446,15 +448,28 @@ begin
     Ada.Text_Io.Put (" -s" & Text_Handler.Value (Switch));
   end if;
   if not Text_Handler.Empty (Jammers) then
-    Ada.Text_Io.Put (" -j" & Text_Handler.Value (Jammers));
+    Ada.Text_Io.Put (" -r");
+    for I in 1 .. Text_Handler.Length (Jammers) loop
+      if I mod 2 = 1 then
+        if I /= 1 then
+          Ada.Text_Io.Put ('#');
+        end if;
+        Num := Pos_9'Value (Text_Handler.Value (Jammers)(I) & "");
+        Ada.Text_Io.Put (Xml.Get_Name (True, Num) & '@');
+      else
+        Ada.Text_Io.Put (Text_Handler.Value (Jammers)(I));
+      end if;
+    end loop;
   end if;
-  Ada.Text_Io.Put (" -b" & Text_Handler.Value (Back));
+  Num := Pos_9'Value (Text_Handler.Value (Back)(1) & "");
+  Ada.Text_Io.Put (" " & Xml.Get_Name (False, Num) & '@'
+                 & Text_Handler.Value (Back)(2));
   if not Text_Handler.Empty (Jammers) then
-    Ada.Text_Io.Put (" -r" & Text_Handler.Value (Rotors));
+    Ada.Text_Io.Put (" -i" & Text_Handler.Value (Rotors));
   end if;
-  Ada.Text_Io.New_Line;
 
   if To_Text then
+    Ada.Text_Io.Put (" ");
     -- Key coded onto text
     -- Switch and separator
     Ada.Text_Io.Put (Text_Handler.Value (Switch) & Separator);
@@ -478,5 +493,6 @@ begin
     Ada.Text_Io.Put (Upper_Str (Num_Letters.Letters_Of (Num)));
   end if;
 
+  Ada.Text_Io.New_Line;
 end Def_Enigma;
 

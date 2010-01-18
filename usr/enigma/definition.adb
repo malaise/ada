@@ -37,13 +37,14 @@ package body Definition is
     Ple ("ERROR: " & Msg & ".");
     Io_Manager.New_Line_Error;
     Ple ("Usage: " & Argument.Get_Program_Name
-       & " [ <switches> ] [ <rotor_defs>  ] <reflector_def> [ <rotor_offsets> ] [ <first_index> ] [ <last_index> ]");
+       & " [ <switches> ] [ <rotor_defs>  ] <reflector_def> [ <rotor_inits> ] [ <first_index> ] [ <last_index> ]");
     Ple ("   <switches>      ::= -s{ <upperletter><upperletter> }");
-    Ple ("   <rotor_defs>    ::= -r{ [#]<rotor_name>@<upperletter>[#] }");
+    Ple ("   <rotor_defs>    ::= -r{ [#]<rotor_name>@<ring_setting>[#] }");
     Ple ("   <reflector_def> ::= <reflector_name>@<upperletter>");
-    Ple ("   <rotor_offsets> ::= -i{ <upperletter> }");
+    Ple ("   <rotor_inits>   ::= -i{ <upperletter> }");
     Ple ("   <first_index>   ::= -f<positive>       (default 1)");
     Ple ("   <last_index>    ::= -l<positive>       (default none)");
+    Ple ("   <ring_setting>  ::= <upperletter>");
     Ple ("   <upperletter>   ::= A .. Z");
     Ple ("Up to 4 rotors can be used and one reflector must be defined.");
     Ple ("They must have different names.");
@@ -187,7 +188,7 @@ package body Definition is
         if Str(I) = Str(I + 1) then
           Error ("Invalid identity in switches");
         end if;
-        Id := Types.Id_Of (I);
+        Id := Types.Id_Of (Str(I));
         if Def.Switches.Mapping(Id) /= Id then
           -- This position is already set in the scrambler
            Error ("Invalid dual definition in switches");
@@ -256,6 +257,10 @@ package body Definition is
     -- Set Offset and initial position
     Def.Rotors(Rotor_Id).Offset := Offset;
     Def.Rotors(Rotor_Id).Position := Init;
+  exception
+    when others =>
+      Error ("Invalid definition of rotor " & Name);
+      raise Invalid_Definition;
   end Set_Rotor;
 
   -- Delimiter in Rotors string
@@ -289,6 +294,9 @@ package body Definition is
         -- Check offset letter
         if Str(Str'Last) not in Types.Letter then
           Error ("Invalid rotor ring setting " & Str(Str'Last));
+        end if;
+        if Init_Str(I) not in Types.Letter then
+          Error ("Invalid rotor initial setting " & Str(Str'Last));
         end if;
         Set_Rotor (I, Children, Name => Str(Str'First .. Arob - 1),
                    Offset => Types.Id_Of (Str(Str'Last)),
@@ -350,6 +358,10 @@ package body Definition is
     end;
     -- Set Offset
     Def.Reflector.Position := Types.Id_Of (Str(Str'Last));
+  exception
+    when others =>
+      Error ("Invalid definition of reflector");
+      raise Invalid_Definition;
   end Set_Reflector;
 
   -- Check arguments and load definition
@@ -419,7 +431,7 @@ package body Definition is
     end if;
     if Argument.Is_Set (1, Last_Key) then
       begin
-        Last_Byte := Natural'Value (Argument.Get_Parameter (1, Start_Key));
+        Last_Byte := Natural'Value (Argument.Get_Parameter (1, Last_Key));
       exception
         when others =>
           Error ("Invalid value for last index");

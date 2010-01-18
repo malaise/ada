@@ -2,8 +2,8 @@ Strategy for automatic enigma setting considering the date.
 Usage: def_enigma [ -text ] [ <date> | rnd | <text_key> ]
   date ::= dd/mm/YYyy
 
-If rnd, generates a random switch sequence, 3 to 8 jammers and a back from 7
-to 9.
+If rnd, generates a random switch sequence, 3 to 4 jammers and a back from 1
+to 5.
 If date, generates a switch sequence, 3 jammers and the back from the date.
 If no arg, same with current date.
 If -text, generates text of key (see B.)
@@ -15,12 +15,13 @@ and can be used as back.
 A. Normal generation
 The date is either provided or is current date.
 The date that is considered is DAYNAME DAYNUM MONTHNAME.
-1. Switch
-The switch definition is got from the letters of DAYNAME and MONTHNAME, with
-criteria of unicity and even number. Ex MONDAY DECEMBER -> MONDAYECBR.
+1. Switches
+The switches definition is got from the letters of DAYNAME and MONTHNAME, with
+criteria of unicity, no identity and even number (and max 26 letters).
+Ex MONDAY DECEMBER -> MONDAYECBR.
 
 2. Back
-The back scambler number is fixed (8). Its offset is computed from the daynum:
+The back scambler number is fixed (2). Its offset is computed from the daynum:
 01->A, 02->B .. 26->Z, 27->A, 28->B, 29->C, 30->D, 31->E.
 
 3. Jammers
@@ -38,7 +39,24 @@ The jammers offsets are the first three letters of MONTHNAME respectively.
 The jammers carry offsets are the first three letters of DAYNAME
 respectively.
 
-B. Letters
+4. Output format
+The optional switche are -s{<letter><letter>}
+The optional setting of rotos is -r <rotor>#<rotor>....
+  where each <rotor> is <rotor_name>@<ring_offset>
+The back setting is <reflector_name><reflector_offset>
+The initial rotors positions are -i{<letter>} with as may letter as rotors
+number.
+Ex: -sTPWASFXIEVZCYLBN -rI@G#IV@C#VII@Q#II@G Cthin@B -iTLDO
+
+
+B. Random generation
+The switch is a random list (0 to 13 included) of random pairs of letters
+The back is a random jammer from 1 to 5 included
+The jammers are a random number (3 to 4 included) of random jammers (1 to 9),
+each with random carry-offset letter and a random offset letter.
+
+
+C. Text output
 If optionnal -text is provided, the key (random, from current date or from
 provided date) is translated to text:
 The switch definition is displayed, followed by JJJ (letter cannot appear
@@ -49,10 +67,4 @@ it is a number then two letters), then the back number is repeated another time
 (a scrambler num cannot appear twice, so this marks the end).
 
 If the key is provided as text, then it is transformed into normal opions.
-
-C. Random generation
-The switch is a random list (0 to 13 included) of random pairs of letters
-The back is a random jammer from 7 to 9 included
-The jammers are a random number (3 to 8 included) of random jammers (1 to 9),
-each with random carry-offset letter and a random offset letter.
 

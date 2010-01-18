@@ -9,7 +9,7 @@ package body Coder is
   end Limage;
 
   -- Debug
-  Debug : constant Boolean := True;
+  Debug : constant Boolean := False;
   procedure Put (Str : in String) is
   begin
     if Debug then
@@ -62,8 +62,7 @@ package body Coder is
       Curr_Moves := Next_Moves;
       -- Will next rotor move
       Next_Moves := I /= Machine.Nb_Rotors
-         and then Machine.Rotors(I).Carries(Machine.Rotors(I).Offset
-                                            + Machine.Rotors(I).Position);
+                and then Machine.Rotors(I).Carries(Machine.Rotors(I).Position);
       -- Move current rotor either because previous rotor has the carry
       --  or because current rotor has the carry and moves next rotor
       -- This causes the "doubelstepping"
@@ -99,6 +98,7 @@ package body Coder is
     -- Encode through the reflector
     X := X + Machine.Reflector.Position;
     X := Machine.Reflector.Scrambler.Translate (X);
+    X := X - Machine.Reflector.Position;
     Put ("F->" & Limage(X) & ", ");
     -- Encode backwards through the rotors
     for I in reverse 1 .. Machine.Nb_Rotors loop

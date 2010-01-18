@@ -25,9 +25,12 @@
   <Rotor Name="VI"    Carries="ZM">JPGVOUMFYQBENHZRDKASXLICTW</Rotor>
   <Rotor Name="VII"   Carries="ZM">NZJHGRCXMYSWBOUFAIVLPEKQDT</Rotor>
   <Rotor Name="VIII"  Carries="ZM">FKQHTLXOCBJSPDZRAMEWNIUYGV</Rotor>
+  <Rotor Name="IX"    Carries="ZM">LEYJVCNIXWPBQMDRTAKZGFUHOS</Rotor>
   <Rotor Name="Beta"  Carries=""  >LEYJVCNIXWPBQMDRTAKZGFUHOS</Rotor>
   <Rotor Name="Gamma" Carries=""  >FSOKANUERHMBTIYCWLQPZXVGJD</Rotor>
-  <Rotor Name="Test"  Carries=""  >ABCDEFGHIJKLMNOPQRSTUVWXYZ</Rotor>
+  <Rotor Name="Test1" Carries="A" >ABCDEFGHIJKLMNOPQRSTUVWXYZ</Rotor>
+  <Rotor Name="Test2" Carries="B" >ABCDEFGHIJKLMNOPQRSTUVWXYZ</Rotor>
+  <Rotor Name="Test3" Carries="C" >ABCDEFGHIJKLMNOPQRSTUVWXYZ</Rotor>
 
   <!-- A Reflector: No dup in scramble (26 letters),
        must be symetrical (a->B->A) and must not have any identity (A->A) -->
