@@ -33,7 +33,7 @@
   <Rotor Name="Test3" Carries="C" >ABCDEFGHIJKLMNOPQRSTUVWXYZ</Rotor>
 
   <!-- A Reflector: No dup in scramble (26 letters),
-       must be symetrical (a->B->A) and must not have any identity (A->A) -->
+       must be symetrical (A->B->A) and must not have any identity (A->A) -->
   <!--                    ABCDEFGHIJKLMNOPQRSTUVWXYZ -->
   <Reflector Name="A"    >EJMZALYXVBWFCRQUONTSPIKHGD</Reflector>
   <Reflector Name="B"    >YRUHQSLDPXNGOKMIEBFZCWVJAT</Reflector>

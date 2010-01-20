@@ -4,45 +4,53 @@
 
 1. Command line
 ---------------
-Syntax: enigma [ <switch> ] [ <jammers>  ] <back> [ <rotors> ] [ <start_index> ]
-               [ <last_index>]
+Syntax: enigma <reflector_def> [ <rotor_defs>  ] [ <rotor_inits> ]
+               [ <switches> ] [ <first_index> ] [ <last_index> ]
 
-<switch>        ::= -s{ <upperletter><upperletter> }
-<jammers>       ::= -j{ <scrambler_num><upperletter> }
-<back>          ::= -b<scrambler_num><upperletter>
-<rotors>        ::= -r{ <upperletter> }
-<first_index>   ::= -f<positive>
-<last_index>    ::= -l<positive>
-<scrambler_num> ::= 1 .. 9
-<upperletter>   ::= A .. Z
-<positive>      ::= 1 ..
+   <reflector_def> ::= <reflector_name>@<upperletter>
+   <rotor_defs>    ::= -r{ [#]<rotor_name>@<ring_setting>[#] }
+   <rotor_inits>   ::= -i{ <upperletter> }
+   <switches>      ::= -s{ <upperletter><upperletter> }
+   <first_index>   ::= -f<positive>       (default 1)
+   <last_index>    ::= -l<positive>       (default none)
+   <ring_setting>  ::= <upperletter>
+   <upperletter>   ::= A .. Z
+Up to 4 rotors can be used and one reflector must be defined.
+They must have different names.
+There must be as many rotor offsets as rotors defined.
+Ex, for rotors I (fastest), IV and Beta (slowest): "Beta@A#IV@Q#I@F".
 
 Semantic:
-- Up to 8 jammers can be defined and one back must be defined.
-They must all have different numbers. ex "2A1X9F".
-All the scamblers are defined in a conf file (name from ENV ENIGMA_CONF_FILE,
-default "enigma.cnf"). This file has the following syntax (lines starting with
-# and and empty lines are skipped): Each scambler is defined by three lines.
-The first line is the scambler number from 1 to 9, the second is ABCD...XYZ and
-the third defines the correspondig letters. ex:
-3
+- Up to 4 rotors can be defined and one reflector must be defined.
+They must all have different names.
+All rotors and reflectors are defined in a XML configuration file (name from
+ENV ENIGMA_CONF_FILE, default "enigma.xml"). They must all have differenti
+names.
+Rotor carries are the offsets at which next rotor will turn together with
+current. Rotors with no carry can only appear at first position (slowest) and
+don't turn.
 ABCDEFGHIJKLMNOPQRSTUVWXYZ
+|                        |
 BCDEFGHIJKLMNOPQRSTUVWXYZA
-The third line must define all the letters once and only once.
-For a back, the definition must be symetrical: If X encodes to Y, then Y must
-encode to X (X decodes to Y).
-In the command line, a jammer definition is the scrambler number and a letter of
-carry offset (which is used to increment next jammer).
-- The back definition is the scrambler number and the letter of offset (constant).
+For a back, the definition must be symetrical and with no identity?
+
+In the command line, the rotors (optional) definition consists in <rotor_defs>
+(rotor name @ ring setting, separated by #) and <rotor_inits>, the initial
+position of each rotor. First rotor defined is the slowest and is the one
+crossed just before the reflector. So for command line "I IV V", the coding
+will go through V, IV, I, reflector, then back.
+
+- The reflector is defined by its name and the letter of offset (constant).
+
 - The switch definition follows the same logic but defines only the letters that
 change in the coding (all other letters are kept unchanged). ex:
 AZBJMGZB
-Note that the same letter can appear at max twice, but always in different
-part of a pairs (AXYA and AA are OK but not AXAY).
-- The rotors setup definition defines (with letters), the initial position of the
-jammers.
+Note that max 13 pairs can be defined, with no identity which forces the
+symetry.
+
 - The first_index number defines the offset of input text from which the
 decoding starts (default 1).
+
 - The last number defines the last offset of input text after which the
 decoding stops (default none).
 
@@ -55,75 +63,36 @@ below). Lower letters are converted to uppercase, codded, then converted to
 lowercase. Other bytes are not coded (they are put unchanged on stdout).
 
 Turning rules and coding ways:
-Before coding, the offset of the first jammer is incremented.
-After a certain number of  increments of the first jammer (carry offset), the
-second jammer is incremented...
-All the jammers can turn and are used both ways. The back and the switch
-don't turn. The jammers and the back have a (initial in case of jammer) offset.
+Rotors turn before the coding. The Enigma double stepping behaviour applies.
 
 Coding rule:
 The input letter (uppercase) is encoded through the switch, through all
-the jammers, then through the back (this is called encoding).
-It is then encoded the other way through all the jammers and the switch (this
+the rotors, then through the refelctor (this is called encoding).
+It is then encoded the other way through all the rotors and the switch (this
 is called decoding). The complete cycle is called coding.
 
-InputLetter  -> +------+ -> +------+ -> +------+ ->  +
-                |Switch|    |Jammer|    |Jammer|   |Back|
-OutputLetter <- +------+ <- +------+ <- +------+ <-  +
+InputLetter  -> +------+ -> +-----+ -> +-----+ ->  +
+                |Switch|    |Rotor|    |Rotor|   |Back|
+OutputLetter <- +------+ <- +-----+ <- +-----+ <-  +
 
 
 3. Coding algorithms and objects
 --------------------------------
 Letters are represented by a modulus 0 .. 25, the Id (A->0, B->1, .. Z->25).
-Coding X through a jammer or through the back means:
-- The current offset O of the jammer is the initial offset + nb of increments
+Coding X through a rotor or through the refelctor means:
+- The current offset O of the rotor is nb of increments - ring setting
+- The offset O of the reflector is constant
 - Input I is X + O
 - Output O from I is got from the jammer definition. 
 Decoding is similar except that I = X - O.
 
-A scrambler is made of two arrays, each of 25 different Ids, one for encoding
-one for decoding. The decoding is the reverse of the encoding.
-Initialy, Encode(i) = i and Decode(i)=i.
-It supports the operations:
-* Set (Nid1, Nid2), that makes:
--- Save previous connection
-Oid1 := Encode(Nid1);
-Oid2 := Decode(Nid2);
--- Set new connection
-Encode(Nid1) := Nid2;
-Decode(Nid2) := Nid1;
--- Set missing connection
-Encode(Oid2) := Oid1;
-Decode(Oid1) := Oid2;
-* Encode(x) that returns Encode(x)
-* Decode(x) that returns Decode(x)
-
-The back adds the concept of initial offset.
-It supports:
-* Set_Offset(Id);
-* Encode(x) that returns Encode(x+Offset)-Offset   -- From the scrambler
-
-A back is child of scrambler.
-
-A jammer is a child of scrambler. It adds the concept of increment.
-It supports:
-* Set_Carry(Id);
-* Increment -> Boolean; -- True after carry increments then each 26 increments
-* Set_Offset(Id);
-* Encode(x) that returns Encode(x+Offset)   -- From the scrambler
-* Decode(x) that returns Decode(x)-Offset
+A scrambler is made of an arrays, each of 26 different Ids;
 
 4. General Design
 -----------------
 The software is decomposed into the following components:
-- A Scrambler_Factory that loads the configuration file, creates and
-initializes the scramblers from it.
-
-- A Definition that parses the command line arguments and allows
-to retrieve:
-Get_Switch -> Array_Of_Pairs_Of_Ids;               -- (Id, Id)
-Get_Jammers -> Array_Of_Pairs_Of_Scrambler_Offset; -- (Scrambler, Offset)
-Get_Back    -> Pair_Of_Scrambler_Offset;           -- (Scrambler, Offset)
+- A Definition that checks and loads the configuration file, and
+initializes the machine from it.
 
 - The Io_Manager, that reads and writes bytes. It supports
 Skip (Nb_Bytes);  -- From input flow
@@ -131,7 +100,7 @@ Read -> Byte;     -- Or raises End_Error
 Write (Byte);
 
 - The Coder, that encodes uppercase characters. It supports:
-Init;   -- Using the Scrambler_Factory and Definition to init the enigma
+Init;   -- Using the Definition to init the enigma
 Encode (Upper_Char) -> Upper_Char;
 
 - The main inits the scrambler factory then the Coder, then run the scheduler.
@@ -151,13 +120,16 @@ Encode (Upper_Char) -> Upper_Char;
 
 5. Coder design
 ---------------
-The initialization consists in getting the definitions of various scramblers,
+The initialization consists in getting the definitions
 make them through the factory and store them.
 Encoding an upper character consists in:
-- Incrementing the Jammer1, and if it circled
-    Incrementing the Jammer2, and if it circled...
-- Subcontracting to the scramblers: Switch.Encode,
- Jammer1.Encode ... JammerN.Encode, Back.Encode,
- JammerN.Decode .. Jammer1.Decode, Switch.Decode.
+- Incrementing the Jammer1, and if it carries
+    Incrementing the Jammer2, and if it carries
+- Turning the rotors
+- Encoding through the switches
+- Encoding through the rotors (right to left, fastestr to slowest)
+- Encoding through the reflector
+- Decoding through the rotors (left to right, slowest to fastest)
+- Encoding through the switches
 - Returning the coded upper character.
 

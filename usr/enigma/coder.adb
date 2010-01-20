@@ -1,4 +1,4 @@
-with Int_Image;
+with Int_Image, Environ;
 with Definition, Io_Manager;
 package body Coder is
 
@@ -7,9 +7,13 @@ package body Coder is
   begin
     return Nimage (Natural (L));
   end Limage;
+  function Image (L : Types.Lid) return String is
+  begin
+    return Limage (L) & "=" & Types.Letter_Of (L);
+  end Image;
 
   -- Debug
-  Debug : constant Boolean := False;
+  Debug :  Boolean := False;
   procedure Put (Str : in String) is
   begin
     if Debug then
@@ -38,6 +42,9 @@ package body Coder is
     No_Carry : constant Definition.Carries_Array := (others => False);
     use type Definition.Carries_Array;
   begin
+    -- Init debug
+    Debug := Environ.Is_Yes ("ENIGMA_DEBUG");
+    -- Init definition
     Definition.Read_Definition (Machine);
     -- Optim: Store if last rotor has no carry (=> it does not turn)
     Last_Fixed := Machine.Nb_Rotors >= 1
@@ -85,30 +92,32 @@ package body Coder is
     Move;
     -- Init Lid
     X := Types.Id_Of (L);
-    Put ("Encoding " & L & "=" & Limage(X) & ": ");
+    Put ("Encoding " & Image(X) & ": ");
     -- Encode through the switches
     X := Machine.Switches.Translate (X);
-    Put ("S->" & Limage(X) & ", ");
+    Put ("S->" & Image(X) & ", ");
     -- Encode through the rotors
     for I in 1 .. Machine.Nb_Rotors loop
-      X := X + Machine.Rotors(I).Offset + Machine.Rotors(I).Position;
-      X := Machine.Rotors(I).Scrambler.Translate (X);
-      Put ("R" & Nimage(I) & "->" & Limage(X) & ", ");
+      X := X - Machine.Rotors(I).Offset + Machine.Rotors(I).Position;
+      X := Machine.Rotors(I).Scrambler.Translate (X)
+         + Machine.Rotors(I).Offset - Machine.Rotors(I).Position;
+      Put ("R" & Nimage(I) & "->" & Image(X) & ", ");
     end loop;
     -- Encode through the reflector
     X := X + Machine.Reflector.Position;
     X := Machine.Reflector.Scrambler.Translate (X);
     X := X - Machine.Reflector.Position;
-    Put ("F->" & Limage(X) & ", ");
+    Put ("F->" & Image(X) & ", ");
     -- Encode backwards through the rotors
     for I in reverse 1 .. Machine.Nb_Rotors loop
-      X := Reverted(I).Translate (X);
-      X := X - Machine.Rotors(I).Offset - Machine.Rotors(I).Position;
-      Put ("R" & Nimage(I) & "->" & Limage(X) & ", ");
+      X := X - Machine.Rotors(I).Offset + Machine.Rotors(I).Position;
+      X := Reverted(I).Translate (X)
+         + Machine.Rotors(I).Offset - Machine.Rotors(I).Position;
+      Put ("R" & Nimage(I) & "->" & Image(X) & ", ");
     end loop;
     -- Encode through the switches
     X := Machine.Switches.Translate (X);
-    Putl ("S->" & Limage(X) & "=" & Types.Letter_Of (X));
+    Putl ("S->" & Image(X));
 
     -- Done
     return Types.Letter_Of (X);

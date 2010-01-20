@@ -1,0 +1,20 @@
+#!/bin/bash
+# set -vx
+
+export ENIGMA_CONF_FILE=../enigma.xml
+
+for i in 1 2 ; do
+  cat crypt${i} | enigma `tail -1 set${i}` > tmp
+  cmp -s decod${i} tmp
+  if [ $? -eq 0 ] ; then
+    echo "cat crypt${i} | enigma `tail -1 set${i}` OK."
+  else
+    echo "cat crypt${i} | enigma `tail -1 set${i}` KO."
+    rm tmp
+    exit 1
+  fi
+done
+
+rm tmp
+exit 0
+

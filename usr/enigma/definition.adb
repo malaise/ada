@@ -37,19 +37,20 @@ package body Definition is
     Ple ("ERROR: " & Msg & ".");
     Io_Manager.New_Line_Error;
     Ple ("Usage: " & Argument.Get_Program_Name
-       & " [ <switches> ] [ <rotor_defs>  ] <reflector_def> [ <rotor_inits> ] [ <first_index> ] [ <last_index> ]");
-    Ple ("   <switches>      ::= -s{ <upperletter><upperletter> }");
-    Ple ("   <rotor_defs>    ::= -r{ [#]<rotor_name>@<ring_setting>[#] }");
+       & " <reflector_def> [ <rotor_defs>  ] [ <rotor_inits> ] [ <switches> ]");
+    Ple ("              [ <first_index> ] [ <last_index> ]");
     Ple ("   <reflector_def> ::= <reflector_name>@<upperletter>");
+    Ple ("   <rotor_defs>    ::= -r{ [#]<rotor_name>@<ring_setting>[#] }");
     Ple ("   <rotor_inits>   ::= -i{ <upperletter> }");
+    Ple ("   <switches>      ::= -s{ <upperletter><upperletter> }");
     Ple ("   <first_index>   ::= -f<positive>       (default 1)");
     Ple ("   <last_index>    ::= -l<positive>       (default none)");
     Ple ("   <ring_setting>  ::= <upperletter>");
     Ple ("   <upperletter>   ::= A .. Z");
     Ple ("Up to 4 rotors can be used and one reflector must be defined.");
     Ple ("They must have different names.");
-    Ple ("There must be as many rotor offsets as rotor defined.");
-    Ple ("Ex of rotor defs, for rotors I, IV and Beta: ""I@A#IV@Q#Beta@F"".");
+    Ple ("There must be as many rotor offsets as rotors defined.");
+    Ple ("Ex, for rotors I (fastest), IV and Beta (slowest): ""Beta@A#IV@Q#I@F"".");
     raise Invalid_Definition;
   end Error;
 
@@ -59,7 +60,7 @@ package body Definition is
   function File_Name return String is
   begin
     if not Environ.Is_Set (File_Var_Name)
-    or else Environ.Getenv (File_Var_Name) /= "" then
+    or else Environ.Getenv (File_Var_Name) = "" then
       return Default_File_Name;
     else
       return Environ.Getenv (File_Var_Name);
@@ -258,6 +259,8 @@ package body Definition is
     Def.Rotors(Rotor_Id).Offset := Offset;
     Def.Rotors(Rotor_Id).Position := Init;
   exception
+    when Invalid_Definition =>
+      raise;
     when others =>
       Error ("Invalid definition of rotor " & Name);
       raise Invalid_Definition;
@@ -298,7 +301,13 @@ package body Definition is
         if Init_Str(I) not in Types.Letter then
           Error ("Invalid rotor initial setting " & Str(Str'Last));
         end if;
-        Set_Rotor (I, Children, Name => Str(Str'First .. Arob - 1),
+        -- The order is Refl - R3 - R2 - R1 (R1 is turning fastest)
+        -- And signal is
+        --               +---------------<-
+        --               +--------------->-
+        -- So first arg is last rotor, last arg is first rotor!
+        Set_Rotor (Def.Nb_Rotors - I + 1,
+                   Children, Name => Str(Str'First .. Arob - 1),
                    Offset => Types.Id_Of (Str(Str'Last)),
                    Init => Types.Id_Of (Init_Str(I)));
       end;
@@ -359,6 +368,8 @@ package body Definition is
     -- Set Offset
     Def.Reflector.Position := Types.Id_Of (Str(Str'Last));
   exception
+    when Invalid_Definition =>
+      raise;
     when others =>
       Error ("Invalid definition of reflector");
       raise Invalid_Definition;
