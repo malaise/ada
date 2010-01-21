@@ -4,6 +4,6 @@ if [ "$1" = "-h" ] ; then
   echo "<date> ::= dd/mm/YYyy" 1>&2
   exit 1
 fi
-export ENIGMA_CONF_FILE=${HOME}/ada/usr/enigma/enigma.cnf
+export ENIGMA_CONF_FILE=${HOME}/ada/usr/enigma/enigma.xml
 exec enigma `def_enigma $*`
 

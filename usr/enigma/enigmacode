@@ -7,6 +7,13 @@ function usage {
   exit 1
 }
 
+# The max length of text key
+# 26 for switches
+#  3 for JJJ
+# 28 for the rotors, 4 * 7 (longest number is SEVEN=5, + 2 offsets each)
+# 12 for the reflector (number=5, offset, offset, number)
+export TEXT_KEY_MAX_LEN=69
+
 # Parse mode
 if [ "$1" = "-c" ] ; then
   export mode="code"
@@ -53,7 +60,7 @@ else
   cat > $tmpfile
   # Decode start of message with (current or provided) date key
   export datekey="`def_enigma $date`"
-  export txtkey=`enigma $datekey -l123 < $tmpfile` 
+  export txtkey=`enigma $datekey -l$TEXT_KEY_MAX_LEN < $tmpfile` 
   # Try to find the random key in text from this
   # Result is the index of start text offset after key
   numkey=`def_enigma "$txtkey"`

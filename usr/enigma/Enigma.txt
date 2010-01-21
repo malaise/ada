@@ -133,3 +133,13 @@ Encoding an upper character consists in:
 - Encoding through the switches
 - Returning the coded upper character.
 
+6. Compatibility
+----------------
+Enigma can simulate Enigma M3 and M4 machines, but also allows more combinations
+than the physical machines (rotors are from 0 to 4, no restriction on the
+combination of slowest rotor and reflector, offset of reflector...).
+M3 compatible configurations shall use 3 rotors from I to VIII and a reflector
+from A to C with no offset (A).
+M4 compatible configurations shall use 3 rotors from I to VIII, a rotor Beta
+or Gamma and a reflector Bthin or Cthin with no offset.
+

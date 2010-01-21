@@ -16,5 +16,6 @@ for i in 1 2 ; do
 done
 
 rm tmp
+echo Done OK.
 exit 0
 

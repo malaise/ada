@@ -64,6 +64,10 @@ procedure Def_Enigma is
   begin
     return Character'Val(Id + Offset);
   end To_Letter;
+  function To_Id (L : Character) return Id_Range is
+  begin
+    return Character'Pos(L) - Offset;
+  end To_Id;
 
   -- For date generation
   -- Date
@@ -251,20 +255,27 @@ begin
 
     when Random =>
       Rnd.Randomize;
-      -- Set random switches
-      declare
-        -- Generate a random symetric scrambler
-        Str : constant String := Scrambler_Gen.Generate (True);
-        -- Generate a random number of switch entries
-        N : constant Natural := Rnd.Int_Random (0, Id_Range'Last / 2);
-      begin
-        for I in 1 .. N loop
-          -- Skip identity
-          if  To_Letter(I) /= Str(I) then
-            Text_Handler.Append (Switch, To_Letter(I) & Str(I));
-          end if;
-        end loop;
-      end;
+      -- Set random switches, not empty
+      loop
+        declare
+          -- Generate a random symetric scrambler
+          Str : constant String := Scrambler_Gen.Generate (True);
+          Used : String (Str'Range) := (others => ' ');
+          -- Generate a random number of switch entries
+          N : constant Natural := Rnd.Int_Random (1, Id_Range'Last / 2);
+        begin
+          for I in 1 .. N loop
+            -- Skip identity and dual definition
+            if To_Letter(I) /= Str(I)
+            and then Used(I) = ' ' then
+              Text_Handler.Append (Switch, To_Letter (I) & Str(I));
+              Used(I) := Str(I);
+              Used(To_Id (Str(I))) := To_Letter (I);
+            end if;
+          end loop;
+        end;
+        exit when not Text_Handler.Empty (Switch);
+      end loop;
 
       -- Set random back between 1 and 5
       declare

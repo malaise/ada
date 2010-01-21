@@ -9,8 +9,7 @@ If no arg, same with current date.
 If -text, generates text of key (see B.)
 If text_key, displays the key from text jey (see B.)
 
-Jammers (1 to 9) are defined in enigma.cnf.  Only jammmers 7 to 9 are symetric
-and can be used as back.
+Rotors (1 to 9) and reflectors are defined in enigma.xml.
 
 A. Normal generation
 The date is either provided or is current date.

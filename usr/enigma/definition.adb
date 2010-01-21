@@ -39,7 +39,7 @@ package body Definition is
     Ple ("Usage: " & Argument.Get_Program_Name
        & " <reflector_def> [ <rotor_defs>  ] [ <rotor_inits> ] [ <switches> ]");
     Ple ("              [ <first_index> ] [ <last_index> ]");
-    Ple ("   <reflector_def> ::= <reflector_name>@<upperletter>");
+    Ple ("   <reflector_def> ::= <reflector_name>[@<upperletter>]");
     Ple ("   <rotor_defs>    ::= -r{ [#]<rotor_name>@<ring_setting>[#] }");
     Ple ("   <rotor_inits>   ::= -i{ <upperletter> }");
     Ple ("   <switches>      ::= -s{ <upperletter><upperletter> }");
@@ -337,14 +337,20 @@ package body Definition is
     if Str = "" then
       Error ("Empty reflector definition");
     end if;
+    -- Parse and set offset (optional)
     Arob := String_Mng.Locate (Str, "@");
-    if Arob /= Str'Last - 1 then
+    if Arob = 0 then
+      Arob := Str'Last + 1;
+      Def.Reflector.Position := 0;
+    elsif Arob /= Str'Last - 1 then
       Error ("Invalid reflector definition");
-    end if;
-    -- Check offset letter
-    if Str(Str'Last) not in Types.Letter then
+    elsif Str(Str'Last) not in Types.Letter then
+      -- Check offset letter
       Error ("Invalid reflector offset setting " & Str(Str'Last));
+    else
+      Def.Reflector.Position := Types.Id_Of (Str(Str'Last));
     end if;
+
     -- Find the correct child
     Found := 0;
     for I in Children'Range loop
@@ -365,8 +371,6 @@ package body Definition is
       -- Set scrambler
       Set (Def.Reflector.Scrambler, Scrambler);
     end;
-    -- Set Offset
-    Def.Reflector.Position := Types.Id_Of (Str(Str'Last));
   exception
     when Invalid_Definition =>
       raise;
