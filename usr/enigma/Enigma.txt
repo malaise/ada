@@ -8,7 +8,7 @@ Syntax: enigma <reflector_def> [ <rotor_defs>  ] [ <rotor_inits> ]
                [ <switches> ] [ <first_index> ] [ <last_index> ]
 
    <reflector_def> ::= <reflector_name>@<upperletter>
-   <rotor_defs>    ::= -r{ [#]<rotor_name>@<ring_setting>[#] }
+   <rotor_defs>    ::= -r{ [#]<rotor_name>@<ring_offset>[#] }
    <rotor_inits>   ::= -i{ <upperletter> }
    <switches>      ::= -s{ <upperletter><upperletter> }
    <first_index>   ::= -f<positive>       (default 1)
@@ -32,7 +32,7 @@ don't turn.
 ABCDEFGHIJKLMNOPQRSTUVWXYZ
 |                        |
 BCDEFGHIJKLMNOPQRSTUVWXYZA
-For a back, the definition must be symetrical and with no identity?
+For a reflector, the definition must be symetrical and with no identity?
 
 In the command line, the rotors (optional) definition consists in <rotor_defs>
 (rotor name @ ring setting, separated by #) and <rotor_inits>, the initial
@@ -71,20 +71,22 @@ the rotors, then through the refelctor (this is called encoding).
 It is then encoded the other way through all the rotors and the switch (this
 is called decoding). The complete cycle is called coding.
 
-InputLetter  -> +------+ -> +-----+ -> +-----+ ->  +
-                |Switch|    |Rotor|    |Rotor|   |Back|
-OutputLetter <- +------+ <- +-----+ <- +-----+ <-  +
+InputLetter  -> +------+ -> +-----+ -> +-----+ -----> +
+                |Switch|    |Rotor|    |Rotor|   |Reflector|
+OutputLetter <- +------+ <- +-----+ <- +-----+ <----- +
 
 
 3. Coding algorithms and objects
 --------------------------------
 Letters are represented by a modulus 0 .. 25, the Id (A->0, B->1, .. Z->25).
-Coding X through a rotor or through the refelctor means:
+Coding X through a rotor or through the reflector means:
 - The current offset O of the rotor is nb of increments - ring setting
-- The offset O of the reflector is constant
+  and the offset O of the reflector is constant
 - Input I is X + O
-- Output O from I is got from the jammer definition. 
-Decoding is similar except that I = X - O.
+- Output U from I is got from the scrambler definition of the rotor
+- The final result R is U - O
+Decoding is similar except that I = X - O, the scrambler is inverted and then
+R is U + O.
 
 A scrambler is made of an arrays, each of 26 different Ids;
 
@@ -123,11 +125,9 @@ Encode (Upper_Char) -> Upper_Char;
 The initialization consists in getting the definitions
 make them through the factory and store them.
 Encoding an upper character consists in:
-- Incrementing the Jammer1, and if it carries
-    Incrementing the Jammer2, and if it carries
-- Turning the rotors
+- Turning the rotors (double stepping applies)
 - Encoding through the switches
-- Encoding through the rotors (right to left, fastestr to slowest)
+- Encoding through the rotors (right to left, fastest to slowest)
 - Encoding through the reflector
 - Decoding through the rotors (left to right, slowest to fastest)
 - Encoding through the switches

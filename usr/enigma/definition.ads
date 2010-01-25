@@ -39,7 +39,7 @@ package Definition is
   subtype Rotors_Id_Range is Positive range 1 .. Rotors_Nb_Range'Last;
   type Rotors_Array is array (Rotors_Id_Range range <>) of Rotor_Def_Rec;
 
-  -- The definition of the back: Scrambler (symetric) + position
+  -- The definition of the reflector: Scrambler (symetric) + position
   type Reflector_Def_Rec is record
     Scrambler : Scrambler_Type;
     Position : Types.Lid := 0;

@@ -30,13 +30,12 @@ There are 3 rotors:
 20..29->3 and 30..31 ->4. If used by first rotor, then add 1.
 - The third rotor is month num rem 10 with 1->1 .. 10->10, 11->1...
 If used by first or second rotor, then add 1.
-The rotor (ring) carry offsets are the first three letters of DAYNAME
-respectively.
+The rotor ring offsets are the first three letters of DAYNAME respectively.
 The rotor initial offsets are the first three letters of MONTHNAME respectively.
 
 4. Output format
-The optional switche are -s{<letter><letter>}
-The optional setting of rotos is -r <rotor>#<rotor>....
+The optional switchs are -s{<letter><letter>}
+The optional setting of rotors is -r<rotor>#<rotor>....
   where each <rotor> is <rotor_name>@<ring_offset>
 The reflector setting is <reflector_name><reflector_offset>
 The initial rotors positions are -i{<letter>} with as may letter as rotors
@@ -46,9 +45,9 @@ Ex: -sTPWASFXIEVZCYLBN -rI@G#IV@C#VII@Q#II@G Cthin@B -iTLDO
 
 B. Random generation
 The switch is a random list (1 to 12 included) of random pairs of letters
-The refelctor is random from 1 to 5 included
+The reflector is random from 1 to 5 included
 The rotors are a random number (3 to 4 included) of random rotors (1 to 10),
-each with random carry-offset letter and a random initial offset letter.
+each with a random ring offset letter and a random initial offset letter.
 
 
 C. Text output
@@ -57,7 +56,7 @@ provided date) is translated to text:
 The switch definition is displayed, followed by JJJ (letter cannot appear
 twice at first of pair, nor twice as second of pair, in switch definition).
 Then the rotors are displayed but their number in letters instead of name,
-each with the ring carry then the initial offset.
+each with the ring offset then the initial offset.
 Then the reflector num in letters and its offset.
 Then the reflector offset is repeated (so that, like a rotor, it is a number
 in letters then two letters), then the reflector number is repeated another

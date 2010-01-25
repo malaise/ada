@@ -1,7 +1,7 @@
--- Enigma expects -s<switches> -r<rotor_def> <back_def> -i<rotor_init>
+-- Enigma expects -s<switches> -r<rotor_def> <reflector_def> -i<rotor_init>
 -- <switches> is pairs of letters, each letter appears at most once
 -- <rotor_def> is a list of <rotor_name>@<letter_ring_offset>#...
--- <back_def> is a <reflector_name>@<letter_offset>
+-- <reflector_def> is a <reflector_name>@<letter_offset>
 -- <rotor_init> is a list of offset letters (one for each rotor)
 -- See Def_Enigma.txt for more information
 
@@ -12,7 +12,7 @@ with Types, Scrambler_Gen, Definition;
 procedure Def_Enigma is
   -- Constants
   -- The reflector used when generating from date
-  Back_Scrambler : constant := 2;
+  Reflector_Num : constant := 2;
 
   package Xml is
     -- Parse the Xml config file
@@ -81,8 +81,8 @@ procedure Def_Enigma is
 
   -- For all
   Switch : Text_Handler.Text (26 * 2);
-  Back : Text_Handler.Text (2);
-  Jammers : Text_Handler.Text (31); -- "SEVEN@A" * 4 + '#' * 3
+  Reflector : Text_Handler.Text (2);
+  Rotors : Text_Handler.Text (31); -- "SEVEN@A" * 4 + '#' * 3
   Init_Offset : Text_Handler.Text (4);
 
   -- For unicity of scramblers
@@ -269,20 +269,20 @@ begin
         exit when not Text_Handler.Empty (Switch);
       end loop;
 
-      -- Set random back between 1 and 5
-      Text_Handler.Set (Back, Normal(Rnd.Int_Random (1, 5), 1)
+      -- Set random reflector between 1 and 5
+      Text_Handler.Set (Reflector, Normal(Rnd.Int_Random (1, 5), 1)
                               & To_Letter (Id_Random));
 
       -- Set random number (3 to 4) of random rotors and rotor settings
       -- rotor 10 has N°0
       declare
-        Jam_Nb : constant Natural := Rnd.Int_Random (3, 4);
-        Jam_Num : Rotor_Id;
+        Rot_Nb : constant Natural := Rnd.Int_Random (3, 4);
+        Rot_Num : Rotor_Id;
       begin
-        for I in 1 .. Jam_Nb loop
-          Jam_Num := Rnd.Int_Random (Rotor_Id'First, Rotor_Id'Last);
-          Jam_Num := Store (Jam_Num, I);
-          Text_Handler.Append (Jammers, Normal(Jam_Num rem 10, 1)
+        for I in 1 .. Rot_Nb loop
+          Rot_Num := Rnd.Int_Random (Rotor_Id'First, Rotor_Id'Last);
+          Rot_Num := Store (Rot_Num, I);
+          Text_Handler.Append (Rotors, Normal(Rot_Num rem 10, 1)
                                       & To_Letter (Id_Random));
           Text_Handler.Append (Init_Offset, To_Letter (Id_Random));
         end loop;
@@ -326,23 +326,25 @@ begin
           return;
         end if;
         if Got_Scrambler = Prev_Scrambler then
-          -- Scrambler num repeated : this is a back and done
+          -- Scrambler num repeated : this is a reflector and done
           if Got_Letters(1) /= Got_Letters(2) then
-            -- For the back: same letter
+            -- For the reflector: same letter
             Usage;
             return;
           end if;
-          Text_Handler.Set (Back, Normal(Got_Scrambler, 1) & Got_Letters(1));
+          Text_Handler.Set (Reflector,
+                    Normal(Got_Scrambler, 1) & Got_Letters(1));
           Start := Stop + 1;
           exit;
         elsif Prev_Scrambler /= 0 then
-          -- Prev jammer parsed ok: store jammer num and ring carry,
+          -- Prev rotor parsed ok: store rotor num and ring offset,
           -- and rotor initial offset
-          Text_Handler.Append (Jammers,
+          Text_Handler.Append (Rotors,
                   Normal(Prev_Scrambler rem 10, 1) & Got_Letters(1));
           Text_Handler.Append (Init_Offset, Got_Letters(2));
         end if;
-        -- Two letters (offset and carry, same for back)
+        -- Two letters (ring offset and initial offset, 
+        --  or twice the reflector offset)
         begin
           Got_Letters(1) := Text_Handler.Value(Txt)(Stop + 1);
         exception
@@ -420,8 +422,8 @@ begin
       Text_Handler.Set (Switch, Str(1 .. L));
     end;
 
-    -- Back
-    Text_Handler.Set (Back, Normal(Back_Scrambler, 1)
+    -- Reflector
+    Text_Handler.Set (Reflector, Normal (Reflector_Num, 1)
       & Types.Letter_Of (Types.Id_Of (Day)));
 
     declare
@@ -437,15 +439,15 @@ begin
 
       -- First rotor: day modulo 1 .. 10
       Num := Store (((Day - 1) rem 10) + 1, 1);
-      Text_Handler.Set (Jammers, Normal(Num, 1) & Day_3(1));
+      Text_Handler.Set (Rotors, Normal(Num, 1) & Day_3(1));
       Text_Handler.Set (Init_Offset, Month_3(1));
       -- Second rotor Month / 10
       Num := Store ((Day / 10) + 1, 2);
-      Text_Handler.Append (Jammers, Normal(Num, 1) & Day_3(2));
+      Text_Handler.Append (Rotors, Normal(Num, 1) & Day_3(2));
       Text_Handler.Append (Init_Offset, Month_3(2));
       -- Third rotor
       Num := Store (((Month - 1) rem 10) + 1, 3);
-      Text_Handler.Append (Jammers, Normal(Num, 1) & Day_3(3));
+      Text_Handler.Append (Rotors, Normal(Num, 1) & Day_3(3));
       Text_Handler.Append (Init_Offset, Month_3(3));
     end;
   end if;
@@ -455,16 +457,16 @@ begin
   if not Text_Handler.Empty (Switch) then
     Ada.Text_Io.Put (" -s" & Text_Handler.Value (Switch));
   end if;
-  if not Text_Handler.Empty (Jammers) then
+  if not Text_Handler.Empty (Rotors) then
     Ada.Text_Io.Put (" -r");
-    for I in 1 .. Text_Handler.Length (Jammers) loop
+    for I in 1 .. Text_Handler.Length (Rotors) loop
       if I mod 2 = 1 then
         if I /= 1 then
           Ada.Text_Io.Put ('#');
         end if;
         declare
           Num : constant Natural
-              := Natural'Value (Text_Handler.Value (Jammers)(I) & "");
+              := Natural'Value (Text_Handler.Value (Rotors)(I) & "");
         begin
           if Num /= 0 then
             Ada.Text_Io.Put (Xml.Get_Name (True, Num) & '@');
@@ -473,18 +475,18 @@ begin
           end if;
         end;
       else
-        Ada.Text_Io.Put (Text_Handler.Value (Jammers)(I));
+        Ada.Text_Io.Put (Text_Handler.Value (Rotors)(I));
       end if;
     end loop;
   end if;
   declare
     Num : constant Positive
-        := Positive'Value (Text_Handler.Value (Back)(1) & "");
+        := Positive'Value (Text_Handler.Value (Reflector)(1) & "");
   begin
     Ada.Text_Io.Put (" " & Xml.Get_Name (False, Num) & '@'
-                   & Text_Handler.Value (Back)(2));
+                   & Text_Handler.Value (Reflector)(2));
   end;
-  if not Text_Handler.Empty (Jammers) then
+  if not Text_Handler.Empty (Rotors) then
     Ada.Text_Io.Put (" -i" & Text_Handler.Value (Init_Offset));
   end if;
 
@@ -493,12 +495,12 @@ begin
     -- Key coded onto text
     -- Switch and separator
     Ada.Text_Io.Put (Text_Handler.Value (Switch) & Separator);
-    for I in 1 .. Text_Handler.Length (Jammers) loop
+    for I in 1 .. Text_Handler.Length (Rotors) loop
       if I rem 2 = 1 then
-        -- Jammer letter
+        -- Rotor letter
         declare
           Num : constant Natural
-              := Natural'Value (Text_Handler.Value (Jammers)(I) & "");
+              := Natural'Value (Text_Handler.Value (Rotors)(I) & "");
         begin
           if Num /= 0 then
             Ada.Text_Io.Put (Upper_Str (Num_Letters.Letters_Of (Num)));
@@ -506,24 +508,24 @@ begin
             Ada.Text_Io.Put (Upper_Str (Num_Letters.Letters_Of (10)));
           end if;
         end;
-        -- Carry
-        Ada.Text_Io.Put (Text_Handler.Value (Jammers)(I+1));
-        -- Offset
+        -- Ring offset
+        Ada.Text_Io.Put (Text_Handler.Value (Rotors)(I+1));
+        -- Initial offset
         Ada.Text_Io.Put (Text_Handler.Value (Init_Offset)((I-1)/2+1));
       end if;
     end loop;
-    -- Back: Num, offset, offset and num
+    -- Reflector: Num, offset, offset and num
     declare
-      Back_Num : constant Positive
-               := Positive'Value (Text_Handler.Value (Back)(1) & "");
+      Reflector_Num : constant Positive
+               := Positive'Value (Text_Handler.Value (Reflector)(1) & "");
 
-      Back_Name : constant String
-                := Upper_Str (Num_Letters.Letters_Of (Back_Num));
+      Reflector_Name : constant String
+                := Upper_Str (Num_Letters.Letters_Of (Reflector_Num));
     begin
-      Ada.Text_Io.Put (Back_Name);
-      Ada.Text_Io.Put (Text_Handler.Value (Back)(2));
-      Ada.Text_Io.Put (Text_Handler.Value (Back)(2));
-      Ada.Text_Io.Put (Back_Name);
+      Ada.Text_Io.Put (Reflector_Name);
+      Ada.Text_Io.Put (Text_Handler.Value (Reflector)(2));
+      Ada.Text_Io.Put (Text_Handler.Value (Reflector)(2));
+      Ada.Text_Io.Put (Reflector_Name);
     end;
   end if;
 
