@@ -85,7 +85,7 @@ procedure Def_Enigma is
   Rotors : Text_Handler.Text (31); -- "SEVEN@A" * 4 + '#' * 3
   Init_Offset : Text_Handler.Text (4);
 
-  -- For unicity of scramblers
+  -- For unicity of rotors
   subtype Rotor_Id is Positive range 1 .. 10;
   Rotor_Nums : array (Definition.Rotors_Id_Range) of Rotor_Id;
 
@@ -150,6 +150,7 @@ procedure Def_Enigma is
   Prev_Scrambler : Prev_Scrambler_Range;
   Got_Scrambler : Rotor_Id;
   Got_Letters : array (1 .. 2) of Types.Letter;
+  Nb_Rotors : Natural;
 
 begin
 
@@ -269,24 +270,37 @@ begin
         exit when not Text_Handler.Empty (Switch);
       end loop;
 
-      -- Set random reflector between 1 and 5
-      Text_Handler.Set (Reflector, Normal(Rnd.Int_Random (1, 5), 1)
-                              & To_Letter (Id_Random));
-
       -- Set random number (3 to 4) of random rotors and rotor settings
       -- rotor 10 has N°0
+      Nb_Rotors := Rnd.Int_Random (3, 4);
       declare
-        Rot_Nb : constant Natural := Rnd.Int_Random (3, 4);
         Rot_Num : Rotor_Id;
       begin
-        for I in 1 .. Rot_Nb loop
-          Rot_Num := Rnd.Int_Random (Rotor_Id'First, Rotor_Id'Last);
+        for I in 1 .. Nb_Rotors loop
+          if I /= 4 then
+            -- Rotor 1 to 3: Any of the 10 first rotors
+            Rot_Num := Rnd.Int_Random (Rotor_Id'First, Rotor_Id'Last);
+          else
+            -- Rotor 4: Any of 11th or 12th rotor
+            Rot_Num := Rnd.Int_Random (1, 2);
+          end if;
           Rot_Num := Store (Rot_Num, I);
           Text_Handler.Append (Rotors, Normal(Rot_Num rem 10, 1)
                                       & To_Letter (Id_Random));
           Text_Handler.Append (Init_Offset, To_Letter (Id_Random));
         end loop;
       end;
+
+      -- Set random reflector
+      if Nb_Rotors /= 4 then
+        -- 3 rotors: Reflector A to C
+        Text_Handler.Set (Reflector, Normal(Rnd.Int_Random (1, 3), 1)
+                              & To_Letter (Id_Random));
+      else
+        -- 4 rotors: Reflectors Bthin or Cthin
+        Text_Handler.Set (Reflector, Normal(Rnd.Int_Random (1, 2), 1)
+                              & To_Letter (Id_Random));
+      end if;
 
     when Extract =>
       begin
@@ -343,7 +357,7 @@ begin
                   Normal(Prev_Scrambler rem 10, 1) & Got_Letters(1));
           Text_Handler.Append (Init_Offset, Got_Letters(2));
         end if;
-        -- Two letters (ring offset and initial offset, 
+        -- Two letters (ring offset and initial offset,
         --  or twice the reflector offset)
         begin
           Got_Letters(1) := Text_Handler.Value(Txt)(Stop + 1);
@@ -457,6 +471,7 @@ begin
   if not Text_Handler.Empty (Switch) then
     Ada.Text_Io.Put (" -s" & Text_Handler.Value (Switch));
   end if;
+
   if not Text_Handler.Empty (Rotors) then
     Ada.Text_Io.Put (" -r");
     for I in 1 .. Text_Handler.Length (Rotors) loop
@@ -465,13 +480,18 @@ begin
           Ada.Text_Io.Put ('#');
         end if;
         declare
-          Num : constant Natural
+          Num : Natural
               := Natural'Value (Text_Handler.Value (Rotors)(I) & "");
         begin
-          if Num /= 0 then
-            Ada.Text_Io.Put (Xml.Get_Name (True, Num) & '@');
-          else
+          if Num = 0 then
+            -- Rotor No 10
             Ada.Text_Io.Put (Xml.Get_Name (True, 10) & '@');
+          else
+            if I > 6 then
+              -- 4th rotor No is 1 or 2, but must be Beta or Gamma
+              Num := Num + 10;
+            end if;
+            Ada.Text_Io.Put (Xml.Get_Name (True, Num) & '@');
           end if;
         end;
       else
@@ -479,10 +499,15 @@ begin
       end if;
     end loop;
   end if;
+
   declare
-    Num : constant Positive
+    Num : Positive
         := Positive'Value (Text_Handler.Value (Reflector)(1) & "");
   begin
+    if Text_Handler.Length (Init_Offset) > 3 then
+      -- More than 3 rotors => Reflector must be thin (No 4 or 5)
+      Num := Num + 3;
+    end if;
     Ada.Text_Io.Put (" " & Xml.Get_Name (False, Num) & '@'
                    & Text_Handler.Value (Reflector)(2));
   end;
@@ -502,10 +527,10 @@ begin
           Num : constant Natural
               := Natural'Value (Text_Handler.Value (Rotors)(I) & "");
         begin
-          if Num /= 0 then
-            Ada.Text_Io.Put (Upper_Str (Num_Letters.Letters_Of (Num)));
-          else
+          if Num = 0 then
             Ada.Text_Io.Put (Upper_Str (Num_Letters.Letters_Of (10)));
+          else
+            Ada.Text_Io.Put (Upper_Str (Num_Letters.Letters_Of (Num)));
           end if;
         end;
         -- Ring offset
