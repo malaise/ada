@@ -45,9 +45,12 @@ Ex: -sTPWASFXIEVZCYLBN -rI@G#IV@C#VII@Q#II@G Cthin@B -iTLDO
 
 B. Random generation
 The switch is a random list (1 to 12 included) of random pairs of letters
-The reflector is random from 1 to 5 included
-The rotors are a random number (3 to 4 included) of random rotors (1 to 10),
+The rotors are a random number (3 to 4 included) of random rotors,
 each with a random ring offset letter and a random initial offset letter.
+The 3 first rotors are from 1st to 10th. The 4th rotor, if any, is 1 or 2,
+meaning Beta or Gamma (num 11 and 12).
+The reflector is random from 1 to 3 if 3 rotors, from 1 to 2 (meaning Bthin and
+Cthin, num 4 and 5) if 4 rotors.
 
 
 C. Text output
@@ -62,6 +65,8 @@ Then the reflector offset is repeated (so that, like a rotor, it is a number
 in letters then two letters), then the reflector number is repeated another
 time (a rotor num cannot appear twice, so this marks the end). Example
 -rV@M#III@O#I@N B@Y -iJAN -> MONDAYJUJJJFIVEMJTHREEOAONENNTWOYYTWO
+Note that even in case of 4 rotors the 4th rotor is ONE or TWO and the reflector
+is ONE or TWO.
 
 If the key is provided as text, then it is transformed into normal opions.
 
