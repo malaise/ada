@@ -14,8 +14,8 @@
 
   <!-- All these rotors and reflectors have the wiring used in WW2, except:
        - Test<i> rotors and reflectors, which are used for test 
-       - Rotor IX that is a random one, used by def_enigma that assumes that
-         there are 9 rotors with no carry restriction (and Beta and Gamma
+       - Rotor IX and X that are random, used by def_enigma that assumes that
+         there are 10 rotors with no carry restriction (and Beta and Gamma
          have some) -->
   
   <!-- A Rotor. No dup in Carries (max 26 letters),
@@ -32,6 +32,7 @@
   <Rotor Name="VII"   Carries="ZM">NZJHGRCXMYSWBOUFAIVLPEKQDT</Rotor>
   <Rotor Name="VIII"  Carries="ZM">FKQHTLXOCBJSPDZRAMEWNIUYGV</Rotor>
   <Rotor Name="IX"    Carries="IX">XRUAKZGBPNTOIELVJHCSWDQMFY</Rotor>
+  <Rotor Name="X"     Carries="I0">EOBIHJUCYGDVPMTLRXWQSFZKNA</Rotor>
   <Rotor Name="Beta"  Carries=""  >LEYJVCNIXWPBQMDRTAKZGFUHOS</Rotor>
   <Rotor Name="Gamma" Carries=""  >FSOKANUERHMBTIYCWLQPZXVGJD</Rotor>
   <Rotor Name="Test1" Carries="A" >ABCDEFGHIJKLMNOPQRSTUVWXYZ</Rotor>

@@ -8,7 +8,7 @@
 with Ada.Calendar, Ada.Text_Io;
 with Perpet, Argument, Day_Mng, Normal, Text_Handler, Upper_Str, Rnd,
      Num_Letters, Sys_Calls, String_Mng;
-with Types, Scrambler_Gen;
+with Types, Scrambler_Gen, Definition;
 procedure Def_Enigma is
   -- Constants
   -- The reflector used when generating from date
@@ -59,14 +59,14 @@ procedure Def_Enigma is
   function Id_Random is new Rnd.Discr_Random (Id_Range);
 
   -- String image
-  Offset : constant := Character'Pos('A') - 1;
+  Letter_Offset : constant := Character'Pos('A') - 1;
   function To_Letter (Id : Id_Range) return Character is
   begin
-    return Character'Val(Id + Offset);
+    return Character'Val(Id + Letter_Offset);
   end To_Letter;
   function To_Id (L : Character) return Id_Range is
   begin
-    return Character'Pos(L) - Offset;
+    return Character'Pos(L) - Letter_Offset;
   end To_Id;
 
   -- For date generation
@@ -78,64 +78,52 @@ procedure Def_Enigma is
   Txt : Text_Handler.Text (256);
 
   Day_Month : Text_Handler.Text (18); -- WEDNESDAYSEPTEMBER
-  Day_26 : Natural; -- Day rem 26
-  Month_3 : String (1 .. 3);
-  Day_3 : String (1 .. 3);
 
   -- For all
   Switch : Text_Handler.Text (26 * 2);
   Back : Text_Handler.Text (2);
-  Jammers : Text_Handler.Text (16);
-  Rotors : Text_Handler.Text (8);
+  Jammers : Text_Handler.Text (31); -- "SEVEN@A" * 4 + '#' * 3
+  Init_Offset : Text_Handler.Text (4);
 
   -- For unicity of scramblers
-  type Digit is mod 9; -- 0 .. 8 (that will lead to 1 .. 9)
-  Nums : array (1 .. 9) of Digit;
-  subtype Nat_9 is Natural  range 0 .. 9;
-  subtype Pos_9 is Positive range 1 .. 9;
-  Num : Pos_9;
-  -- I gets its unit (last digit) extracted then wrapped
-  -- 0&9->1, 1->2
-  function Wrap (I : Natural) return Pos_9 is
-  begin
-    if I rem 10 = 9 then
-      return 1;
-    else
-      return I rem 10 + 1;
-    end if;
-  end Wrap;
+  subtype Rotor_Id is Positive range 1 .. 10;
+  Rotor_Nums : array (Definition.Rotors_Id_Range) of Rotor_Id;
 
-  -- Input: N in 1 .. 9, to insert at Index
-  function Store (N : in Pos_9; Index : in Positive) return Pos_9 is
-    V : Digit;
+  -- Input: N in 1 .. 10, to insert at Index
+  function Store (N : Rotor_Id; Index : in Definition.Rotors_Id_Range)
+                 return Rotor_Id is
+    Id : Rotor_Id;
     Done : Boolean;
   begin
-    -- Get a val 0 .. 8
-    V := Digit((N-1) rem Digit'Modulus);
+    Id := N;
     -- Check not used in 1 .. Index - 1
     loop
       Done := True;
       for I in 1 .. Index - 1 loop
-        if Nums(I) = V then
-          -- V exists. Increment and re-check.
-          V := V + 1;
+        if Rotor_Nums(I) = Id then
+          -- Id exists. Increment and re-check.
+          if Id /= Rotor_Id'Last then
+            Id := Id + 1;
+          else
+            Id := Rotor_Id'First;
+          end if;
           Done := False;
           exit;
         end if;
       end loop;
       exit when Done;
     end loop;
-    Nums (Index) := V;
-    return Nat_9(V) + 1;
+    Rotor_Nums (Index) := Id;
+    return Id;
   end Store;
 
   -- For extraction
-  -- Num and Stop are 0 if not found
+  -- Stop is 0 if not found
   Separator : constant String := "JJJ";
   procedure Get_Number (Str : in String; Start : in Positive;
-                        Last : out Natural; Num : out Nat_9) is
+                        Last : out Natural; Id : out Rotor_Id) is
   begin
-    Num := 0;
+    Id := 1;
     Last := 0;
     -- Search if Str (Start .. Start+4) is a number in letters
     for Stop in Start + 2 .. Start + 4 loop
@@ -143,10 +131,10 @@ procedure Def_Enigma is
         -- Nothing found and end of string
         return;
       end if;
-      for I in Pos_9'Range loop
+      for I in Rotor_Id loop
         if Upper_Str (Num_Letters.Letters_Of(I)) = Str(Start .. Stop) then
-          -- Found a num
-          Num := I;
+          -- Found a num (ONE .. NINE, TEN), return 1 .. 10
+          Id := I;
           Last := Stop;
           return;
         end if;
@@ -155,8 +143,12 @@ procedure Def_Enigma is
     -- Not found
     return;
   end Get_Number;
+
+
   Start, Stop : Natural;
-  Prev_Scrambler, Got_Scrambler : Nat_9;
+  subtype Prev_Scrambler_Range is Natural range 0 .. Rotor_Id'Last;
+  Prev_Scrambler : Prev_Scrambler_Range;
+  Got_Scrambler : Rotor_Id;
   Got_Letters : array (1 .. 2) of Types.Letter;
 
 begin
@@ -278,25 +270,21 @@ begin
       end loop;
 
       -- Set random back between 1 and 5
-      declare
-        Back_Num : Pos_9 := Id_Random (1, 5);
-      begin
-        Back_Num := Store (Back_Num, 1);
-        Text_Handler.Set (Back, Normal(Back_Num, 1)
+      Text_Handler.Set (Back, Normal(Rnd.Int_Random (1, 5), 1)
                               & To_Letter (Id_Random));
-      end;
 
-      -- Set random number (3 to 4) of random jammers and rotor settings
+      -- Set random number (3 to 4) of random rotors and rotor settings
+      -- rotor 10 has N°0
       declare
         Jam_Nb : constant Natural := Rnd.Int_Random (3, 4);
-        Jam_Num : Pos_9;
+        Jam_Num : Rotor_Id;
       begin
         for I in 1 .. Jam_Nb loop
-          Jam_Num := Id_Random (1, 9);
-          Jam_Num := Store (Jam_Num, I + 1);
-          Text_Handler.Append (Jammers, Normal(Jam_Num, 1)
+          Jam_Num := Rnd.Int_Random (Rotor_Id'First, Rotor_Id'Last);
+          Jam_Num := Store (Jam_Num, I);
+          Text_Handler.Append (Jammers, Normal(Jam_Num rem 10, 1)
                                       & To_Letter (Id_Random));
-          Text_Handler.Append (Rotors, To_Letter (Id_Random));
+          Text_Handler.Append (Init_Offset, To_Letter (Id_Random));
         end loop;
       end;
 
@@ -348,10 +336,11 @@ begin
           Start := Stop + 1;
           exit;
         elsif Prev_Scrambler /= 0 then
-          -- Prev jammer parsed ok: store jammer num and carry, and rotor setting
+          -- Prev jammer parsed ok: store jammer num and ring carry,
+          -- and rotor initial offset
           Text_Handler.Append (Jammers,
-                  Normal(Prev_Scrambler, 1) & Got_Letters(2));
-          Text_Handler.Append (Rotors, Got_Letters(1));
+                  Normal(Prev_Scrambler rem 10, 1) & Got_Letters(1));
+          Text_Handler.Append (Init_Offset, Got_Letters(2));
         end if;
         -- Two letters (offset and carry, same for back)
         begin
@@ -432,25 +421,33 @@ begin
     end;
 
     -- Back
-    Day_26 := (Day - 1) rem 26;
     Text_Handler.Set (Back, Normal(Back_Scrambler, 1)
-      & Character'Val(Character'Pos('A') + Day_26));
-    Num := Store (Back_Scrambler, 1);
+      & Types.Letter_Of (Types.Id_Of (Day)));
 
-    -- Jammers
-    Month_3 := Upper_Str (Perpet.Month_Name_List'Image
-                       (Perpet.Get_Month_Name (Month))) (1 .. 3);
-    Day_3 := Upper_Str (
-        Perpet.Day_Of_Week_List'Image (Perpet.Get_Day_Of_Week (T)))(1..3);
-    Num := Store (Wrap (Day), 2);
-    Text_Handler.Set (Jammers, Normal(Num, 1) & Day_3(1));
-    Text_Handler.Set (Rotors, Month_3(1));
-    Num := Store (Wrap (Month / 10), 3);
-    Text_Handler.Append (Jammers, Normal(Num, 1) & Day_3(2));
-    Text_Handler.Append (Rotors, Month_3(2));
-    Num := Store (Wrap (Month rem 10), 4);
-    Text_Handler.Append (Jammers, Normal(Num, 1) & Day_3(3));
-    Text_Handler.Append (Rotors, Month_3(3));
+    declare
+      Month_3 : String (1 .. 3);
+      Day_3 : String (1 .. 3);
+      Num : Rotor_Id;
+    begin
+      -- Rotors: ring setting and offset
+      Month_3 := Upper_Str (Perpet.Month_Name_List'Image
+                         (Perpet.Get_Month_Name (Month))) (1 .. 3);
+      Day_3 := Upper_Str (
+          Perpet.Day_Of_Week_List'Image (Perpet.Get_Day_Of_Week (T)))(1..3);
+
+      -- First rotor: day modulo 1 .. 10
+      Num := Store (((Day - 1) rem 10) + 1, 1);
+      Text_Handler.Set (Jammers, Normal(Num, 1) & Day_3(1));
+      Text_Handler.Set (Init_Offset, Month_3(1));
+      -- Second rotor Month / 10
+      Num := Store ((Day / 10) + 1, 2);
+      Text_Handler.Append (Jammers, Normal(Num, 1) & Day_3(2));
+      Text_Handler.Append (Init_Offset, Month_3(2));
+      -- Third rotor
+      Num := Store (((Month - 1) rem 10) + 1, 3);
+      Text_Handler.Append (Jammers, Normal(Num, 1) & Day_3(3));
+      Text_Handler.Append (Init_Offset, Month_3(3));
+    end;
   end if;
 
   -- Result
@@ -465,18 +462,30 @@ begin
         if I /= 1 then
           Ada.Text_Io.Put ('#');
         end if;
-        Num := Pos_9'Value (Text_Handler.Value (Jammers)(I) & "");
-        Ada.Text_Io.Put (Xml.Get_Name (True, Num) & '@');
+        declare
+          Num : constant Natural
+              := Natural'Value (Text_Handler.Value (Jammers)(I) & "");
+        begin
+          if Num /= 0 then
+            Ada.Text_Io.Put (Xml.Get_Name (True, Num) & '@');
+          else
+            Ada.Text_Io.Put (Xml.Get_Name (True, 10) & '@');
+          end if;
+        end;
       else
         Ada.Text_Io.Put (Text_Handler.Value (Jammers)(I));
       end if;
     end loop;
   end if;
-  Num := Pos_9'Value (Text_Handler.Value (Back)(1) & "");
-  Ada.Text_Io.Put (" " & Xml.Get_Name (False, Num) & '@'
-                 & Text_Handler.Value (Back)(2));
+  declare
+    Num : constant Positive
+        := Positive'Value (Text_Handler.Value (Back)(1) & "");
+  begin
+    Ada.Text_Io.Put (" " & Xml.Get_Name (False, Num) & '@'
+                   & Text_Handler.Value (Back)(2));
+  end;
   if not Text_Handler.Empty (Jammers) then
-    Ada.Text_Io.Put (" -i" & Text_Handler.Value (Rotors));
+    Ada.Text_Io.Put (" -i" & Text_Handler.Value (Init_Offset));
   end if;
 
   if To_Text then
@@ -487,21 +496,35 @@ begin
     for I in 1 .. Text_Handler.Length (Jammers) loop
       if I rem 2 = 1 then
         -- Jammer letter
-        Num := Pos_9'Value (Text_Handler.Value (Jammers)(I .. I));
-        Ada.Text_Io.Put (Upper_Str (Num_Letters.Letters_Of (Num)));
-        -- Offset
-        Ada.Text_Io.Put (Text_Handler.Value (Rotors)((I-1)/2+1));
-      else
+        declare
+          Num : constant Natural
+              := Natural'Value (Text_Handler.Value (Jammers)(I) & "");
+        begin
+          if Num /= 0 then
+            Ada.Text_Io.Put (Upper_Str (Num_Letters.Letters_Of (Num)));
+          else
+            Ada.Text_Io.Put (Upper_Str (Num_Letters.Letters_Of (10)));
+          end if;
+        end;
         -- Carry
-        Ada.Text_Io.Put (Text_Handler.Value (Jammers)(I));
+        Ada.Text_Io.Put (Text_Handler.Value (Jammers)(I+1));
+        -- Offset
+        Ada.Text_Io.Put (Text_Handler.Value (Init_Offset)((I-1)/2+1));
       end if;
     end loop;
     -- Back: Num, offset, offset and num
-    Num := Pos_9'Value (Text_Handler.Value (Back)(1 .. 1));
-    Ada.Text_Io.Put (Upper_Str (Num_Letters.Letters_Of (Num)));
-    Ada.Text_Io.Put (Text_Handler.Value (Back)(2));
-    Ada.Text_Io.Put (Text_Handler.Value (Back)(2));
-    Ada.Text_Io.Put (Upper_Str (Num_Letters.Letters_Of (Num)));
+    declare
+      Back_Num : constant Positive
+               := Positive'Value (Text_Handler.Value (Back)(1) & "");
+
+      Back_Name : constant String
+                := Upper_Str (Num_Letters.Letters_Of (Back_Num));
+    begin
+      Ada.Text_Io.Put (Back_Name);
+      Ada.Text_Io.Put (Text_Handler.Value (Back)(2));
+      Ada.Text_Io.Put (Text_Handler.Value (Back)(2));
+      Ada.Text_Io.Put (Back_Name);
+    end;
   end if;
 
   Ada.Text_Io.New_Line;

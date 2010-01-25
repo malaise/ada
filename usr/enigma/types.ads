@@ -9,8 +9,9 @@ package Types is
 
   -- Conversions
   function Id_Of (L : Letter) return Lid;
-  function Id_Of (P : Positive) return Lid;
   function Letter_Of (I : Lid) return Letter;
+  -- 1 -> 0 .. 26 -> 25, 27 -> 0 ..
+  function Id_Of (P : Positive) return Lid;
 
 end Types;
 
