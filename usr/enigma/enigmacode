@@ -9,10 +9,10 @@ function usage {
 
 # The max length of text key
 # 26 for switches
-#  3 for JJJ
-# 28 for the rotors, 4 * 7 (longest number is SEVEN=5, + 2 offsets each)
-# 12 for the reflector (number=5, offset, offset, number)
-export TEXT_KEY_MAX_LEN=69
+#  3 for "JJJ"
+# 31 for the rotors, 4 * 7 (longest number is SEVEN=5, + '@' offset each) + 3 '#'
+#  8 for the reflector (number=5, offset, offset, 'Z')
+export TEXT_KEY_MAX_LEN=68
 
 # Parse mode
 if [ "$1" = "-c" ] ; then
@@ -39,7 +39,7 @@ fi
 
 if [ "$mode" = "code" ] ; then
   # Set random key (text and num)
-  key=`def_enigma rnd -text`
+  key=`def_enigma -text rnd`
   export txtkey=`echo $key | awk '{print $5; exit}'`
   export numkey=`echo $key | awk '{print $1 " " $2 " " $3 " " $4; exit}'`
   # Code random key with (current or provided) date key

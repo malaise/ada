@@ -15,16 +15,17 @@ enigma <key_args>  < <input_file>  >> <coded_file>
 
 Complex decoding
 ----------------
-Extract temporary in the decoded file the 69 first characters from the coded
+Extract temporary in the decoded file the 68 first characters from the coded
 file, with the key generated from the current or a known date:
-<txtkey>=enigma `def_enigma [ <date> ]` -l69
-(69 because 26 for switch, 3 for JJJ, 4 * 7 (5 is longest number in letters
-e.g. SEVEN) for the 4 max rotors, 6 * 2 (number+offset twice) for the reflector.
-txtkey=`enigma $datekey -l69 < <coded_file>`
+<txtkey>=enigma `def_enigma [ <date> ]` -l68
+(68 because 26 for switch, 3 for JJJ, 4 * 7 + 3 (5 is longest number in letters
+e.g. SEVEN) for the 4 max rotors, 5 + 3 (number+offset twice+"Z") for the
+reflector.
+txtkey=`enigma $datekey -l68 < <coded_file>`
 
 Look in the temporary result for the "JJJ" then read the key in text, until
 <num_in_text><letter><letter><num_in_text>. Note the offset <offset> of the
-first letter following this sequence.
+irst letter following this sequence.
 numkey=`def_enigma <textkey>` ; start=$?
 
 Decode the remaining text with the key:

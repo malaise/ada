@@ -120,6 +120,9 @@ procedure Def_Enigma is
   -- For extraction
   -- Stop is 0 if not found
   Separator : constant String := "JJJ";
+  subtype Prev_Scrambler_Range is Natural range 0 .. Rotor_Id'Last;
+
+  -- Look for ONE .. TEN in Str (Start .. Last)
   procedure Get_Number (Str : in String; Start : in Positive;
                         Last : out Natural; Id : out Rotor_Id) is
   begin
@@ -146,7 +149,6 @@ procedure Def_Enigma is
 
 
   Start, Stop : Natural;
-  subtype Prev_Scrambler_Range is Natural range 0 .. Rotor_Id'Last;
   Prev_Scrambler : Prev_Scrambler_Range;
   Got_Scrambler : Rotor_Id;
   Got_Letters : array (1 .. 2) of Types.Letter;
@@ -162,9 +164,11 @@ begin
       if Argument.Get_Parameter (1, "text") = "" then
         To_Text := True;
         Nb_Arg := Nb_Arg - 1;
-        if Argument.Get_Position (1, "text") = 1 then
-          Other_Arg := 2;
+        if Argument.Get_Position (1, "text") /= 1 then
+          Usage;
+          return;
         end if;
+        Other_Arg := 2;
       else
         Usage;
         return;
@@ -277,11 +281,11 @@ begin
         Rot_Num : Rotor_Id;
       begin
         for I in 1 .. Nb_Rotors loop
-          if I /= 4 then
-            -- Rotor 1 to 3: Any of the 10 first rotors
+          if Nb_Rotors /= 4 or else I /= 1 then
+            -- Not the the first of 4 rotors: any of the 10 first rotors
             Rot_Num := Rnd.Int_Random (Rotor_Id'First, Rotor_Id'Last);
           else
-            -- Rotor 4: Any of 11th or 12th rotor
+            -- First rotor of 4: Any of 11th or 12th rotor
             Rot_Num := Rnd.Int_Random (1, 2);
           end if;
           Rot_Num := Store (Rot_Num, I);
@@ -333,24 +337,33 @@ begin
       Prev_Scrambler := 0;
       Got_Letters := (others => 'A');
       loop
-        -- Look for scrambler num in letter
-        Get_Number (Text_Handler.Value(Txt), Start, Stop, Got_Scrambler);
-        if Stop = 0 then
-          Usage;
-          return;
-        end if;
-        if Got_Scrambler = Prev_Scrambler then
-          -- Scrambler num repeated : this is a reflector and done
+        if Text_Handler.Length(Txt) >= Start
+        and then Text_Handler.Value(Txt)(Start) = 'Z' then
+          if Prev_Scrambler = 0 then
+            -- Empty definition!
+            Usage;
+            return;
+          end if;
+          -- End of definition of rotors and reflector
           if Got_Letters(1) /= Got_Letters(2) then
             -- For the reflector: same letter
             Usage;
             return;
           end if;
           Text_Handler.Set (Reflector,
-                    Normal(Got_Scrambler, 1) & Got_Letters(1));
-          Start := Stop + 1;
+                    Normal(Prev_Scrambler, 1) & Got_Letters(1));
+          -- Will exit with code = last significant index
+          Start := Start + 1;
           exit;
-        elsif Prev_Scrambler /= 0 then
+        end if;
+
+        -- Look for scrambler num in letter
+        Get_Number (Text_Handler.Value(Txt), Start, Stop, Got_Scrambler);
+        if Stop = 0 then
+          Usage;
+          return;
+        end if;
+        if Prev_Scrambler /= 0 then
           -- Prev rotor parsed ok: store rotor num and ring offset,
           -- and rotor initial offset
           Text_Handler.Append (Rotors,
@@ -487,8 +500,8 @@ begin
             -- Rotor No 10
             Ada.Text_Io.Put (Xml.Get_Name (True, 10) & '@');
           else
-            if I > 6 then
-              -- 4th rotor No is 1 or 2, but must be Beta or Gamma
+            if Text_Handler.Length (Init_Offset) > 3 and then I = 1 then
+              -- 1st of 4 rotors: No is 1 or 2, but must be Beta or Gamma
               Num := Num + 10;
             end if;
             Ada.Text_Io.Put (Xml.Get_Name (True, Num) & '@');
@@ -539,18 +552,18 @@ begin
         Ada.Text_Io.Put (Text_Handler.Value (Init_Offset)((I-1)/2+1));
       end if;
     end loop;
-    -- Reflector: Num, offset, offset and num
+    -- Reflector: Num, offset, offset and zero
     declare
       Reflector_Num : constant Positive
                := Positive'Value (Text_Handler.Value (Reflector)(1) & "");
 
-      Reflector_Name : constant String
+      Reflector_Str : constant String
                 := Upper_Str (Num_Letters.Letters_Of (Reflector_Num));
     begin
-      Ada.Text_Io.Put (Reflector_Name);
+      Ada.Text_Io.Put (Reflector_Str);
       Ada.Text_Io.Put (Text_Handler.Value (Reflector)(2));
       Ada.Text_Io.Put (Text_Handler.Value (Reflector)(2));
-      Ada.Text_Io.Put (Reflector_Name);
+      Ada.Text_Io.Put ('Z');
     end;
   end if;
 

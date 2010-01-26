@@ -11,6 +11,7 @@ If text_key, displays the key from text jey (see C.).
 
 Rotors (at least 10) and reflectors (at least 5) are defined in enigma.xml.
 
+
 A. Normal generation
 The date is either provided or is current date.
 The date that is considered is DAYNAME DAYNUM MONTHNAME.
@@ -62,9 +63,9 @@ Then the rotors are displayed but their number in letters instead of name,
 each with the ring offset then the initial offset.
 Then the reflector num in letters and its offset.
 Then the reflector offset is repeated (so that, like a rotor, it is a number
-in letters then two letters), then the reflector number is repeated another
-time (a rotor num cannot appear twice, so this marks the end). Example
--rV@M#III@O#I@N B@Y -iJAN -> MONDAYJUJJJFIVEMJTHREEOAONENNTWOYYTWO
+in letters then two letters), then a 'Z' (which cannot start a digit in
+letters), which marks the end). Example
+-rV@M#III@O#I@N B@Y -iJAN -> MONDAYJUJJJFIVEMJTHREEOAONENNTWOYYZ
 Note that even in case of 4 rotors the 4th rotor is ONE or TWO and the reflector
 is ONE or TWO.
 
