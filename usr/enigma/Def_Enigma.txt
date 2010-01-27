@@ -1,13 +1,15 @@
 Strategy for automatic enigma setting considering the date.
-Usage: def_enigma [ -text ] [ <date> | rnd | <text_key> ]
+Usage: def_enigma [ -text ]   <date> | today | rnd | <text_key> | <enigma_key>
   date ::= dd/mm/YYyy
+   <enigma_key> ::= <reflector> [ <rotors> <rotors_init> ] [ <switches> ]
 
 If rnd, generates a random switch sequence, 3 to 4 rotors (see B.).
 reflector (A to Cthin).
 If date, generates a switch sequence, 3 rotors and the reflector from the date.
 If no arg, same with current date.
-If -text, generates text of key (see C.).
 If text_key, displays the key from text jey (see C.).
+If enigma_key, check and displays enigma key
+If -text, also generates text of key (see C.).
 
 Rotors (at least 10) and reflectors (at least 5) are defined in enigma.xml.
 

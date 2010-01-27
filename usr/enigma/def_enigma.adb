@@ -183,7 +183,7 @@ begin
       -- No "-text"
       null;
   end;
-  
+
 
   if Nb_Arg = 0 then
     Usage;
@@ -236,7 +236,7 @@ begin
         if Is_Set (2, Init_Key) then
           raise Key_Error;
         end if;
-        Get_Parameter (Init_Txt, 1, Rotor_Key);
+        Get_Parameter (Init_Txt, 1, Init_Key);
         Nb_Arg := Nb_Arg + 1;
       end if;
       if Is_Set (1, Switches_Key) then
@@ -360,7 +360,7 @@ begin
            To_Letter (Rnd.Int_Random (1, 3)) & 'A');
       else
         -- 4 rotors: Reflectors Bthin or Cthin
-        Text_Handler.Set (Reflector, 
+        Text_Handler.Set (Reflector,
             To_Letter (Rnd.Int_Random (4, 5)) & 'A');
       end if;
 
@@ -468,7 +468,7 @@ begin
       Reflector_Str : constant String := Text_Handler.Value (Reflector_Txt);
       Arob : Natural;
       Id : Natural;
-    begin 
+    begin
       Arob := Reflector_Str'Last - 1;
       if Reflector_Str (Arob) /= '@' then
         raise Key_Error;
@@ -482,7 +482,7 @@ begin
       when others =>
         raise Key_Error;
     end;
-    
+
     -- Extract rotors and check Nb versus offsets
     declare
       -- Delimiter in Rotors string
@@ -550,7 +550,8 @@ begin
           if Str(I) = Str(I + 1) then
             raise Key_Error;
           end if;
-          if Init_Str (I) /= ' ' or else Init_Str (I + 1) /= ' ' then
+          if      Init_Str (To_Id (Str(I))) /= ' '
+          or else Init_Str (To_Id (Str(I + 1))) /= ' ' then
             raise Key_Error;
           end if;
           Init_Str(To_Id (Str(I))) := Str(I+1);
@@ -695,8 +696,8 @@ begin
       if I rem 2 = 1 then
         -- Rotor letter
         declare
-          Num : constant Natural
-              := Natural (To_Id (Text_Handler.Value (Rotors)(I)) );
+          Num : constant Positive
+              := Positive (To_Id (Text_Handler.Value (Rotors)(I)) );
         begin
           Ada.Text_Io.Put (Upper_Str (Num_Letters.Letters_Of (Num)));
         end;
@@ -709,7 +710,7 @@ begin
     -- Reflector: Num, offset, offset and zero
     declare
       Reflector_Num : constant Positive
-               := Positive'Value (Text_Handler.Value (Reflector)(1) & "");
+               := Positive (To_Id (Text_Handler.Value (Reflector)(1)));
 
       Reflector_Str : constant String
                 := Upper_Str (Num_Letters.Letters_Of (Reflector_Num));
@@ -725,6 +726,6 @@ begin
 exception
   when Key_Error =>
     Sys_Calls.Put_Line_Error ("Invalid key specification.");
-    Usage;   
+    Usage;
 end Def_Enigma;
 

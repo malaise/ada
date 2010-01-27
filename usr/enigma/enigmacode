@@ -29,7 +29,7 @@ if [ $# -eq 1 ] ; then
   export date="$1"
   shift;
 else
-  export date=""
+  export date="today"
 fi
 
 # Check that no arg remains

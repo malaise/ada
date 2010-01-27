@@ -6,9 +6,8 @@ This displays <key_args> and <key_text>.
 
 The key in text is coded, with a key generated from the current day, at the
 beginning of the coded file:
-echo -n "<key_text>" | enigmadef  > <coded_file>
-Enigmadef can also be provided a <date> argument:
 echo -n "<key_text>" | enigmadef <date>  > <coded_file>
+<date> can be an explicit date (dd/mm/yyy) or "today"
 
 The input file is coded with the random key and appended to the coded file
 enigma <key_args>  < <input_file>  >> <coded_file>
@@ -16,8 +15,8 @@ enigma <key_args>  < <input_file>  >> <coded_file>
 Complex decoding
 ----------------
 Extract temporary in the decoded file the 68 first characters from the coded
-file, with the key generated from the current or a known date:
-<txtkey>=enigma `def_enigma [ <date> ]` -l68
+file, with the key generated from the current (today) or a provided date:
+<txtkey>=enigma `def_enigma <date>` -l68
 (68 because 26 for switch, 3 for JJJ, 4 * 7 + 3 (5 is longest number in letters
 e.g. SEVEN) for the 4 max rotors, 5 + 3 (number+offset twice+"Z") for the
 reflector.

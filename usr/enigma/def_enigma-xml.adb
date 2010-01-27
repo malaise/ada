@@ -101,7 +101,7 @@ package body Xml is
       else
         Match := False;
       end if;
-      if match and then Asu_Ts (Attr.Value) = Name then
+      if Match and then Asu_Ts (Attr.Value) = Name then
         return Index;
       end if;
     end loop;

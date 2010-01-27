@@ -7,7 +7,7 @@
 Syntax: enigma <reflector_def> [ <rotor_defs>  ] [ <rotor_inits> ]
                [ <switches> ] [ <first_index> ] [ <last_index> ]
 
-   <reflector_def> ::= <reflector_name>@<upperletter>
+   <reflector_def> ::= <reflector_name>[@<upperletter>]
    <rotor_defs>    ::= -r{ [#]<rotor_name>@<ring_offset>[#] }
    <rotor_inits>   ::= -i{ <upperletter> }
    <switches>      ::= -s{ <upperletter><upperletter> }
@@ -21,7 +21,7 @@ There must be as many rotor offsets as rotors defined.
 Ex, for rotors I (fastest), IV and Beta (slowest): "Beta@A#IV@Q#I@F".
 
 Semantic:
-- The reflector is defined by its name and the letter of offset (constant).
+- The reflector is defined by its name and the optional letter of offset (constant).
 
 - Up to 4 rotors can be defined and one reflector must be defined.
 They must all have different names.
@@ -139,7 +139,7 @@ Enigma can simulate Enigma M3 and M4 machines, but also allows more combinations
 than the physical machines (rotors are from 0 to 4, no restriction on the
 combination of first (slowest) rotor and reflector, offset of reflector...).
 M3 compatible configurations shall use a reflector from A to C with no offset
-(i.e. set to A) and 3 rotors from I to VIII.
+and 3 rotors from I to VIII.
 M4 compatible configurations shall use a reflector Bthin or Cthin with no
 offset, a rotor Beta and 3 rotors from I to VIII.
 
