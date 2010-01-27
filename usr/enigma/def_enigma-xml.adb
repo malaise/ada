@@ -76,5 +76,37 @@ package body Xml is
     return "";
   end Get_Name;
 
+  -- Get the Id of a rotor of reflector, given its name. 0 if not found
+  function Get_Id (Rotor : Boolean; Name : String) return Natural is
+    Children : constant Xml_Parser.Nodes_Array := Ctx.Get_Children (Root);
+    Attrs : Xml_Parser.Attributes_Array (1 ..2);
+    Attr : Xml_Parser.Attribute_Rec;
+    Index : Natural;
+    Match : Boolean;
+  begin
+    Index := 0;
+    for I in Children'Range loop
+      Match := True;
+      if Rotor and then Ctx.Get_Name (Children(I)) = "Rotor" then
+        Index := Index + 1;
+        Attrs := Ctx.Get_Attributes (Children(I));
+        if Asu_Ts (Attrs(1).Name) = "Name" then
+          Attr := Attrs(1);
+        else
+          Attr := Attrs(2);
+        end if;
+      elsif not Rotor and then Ctx.Get_Name (Children(I)) = "Reflector" then
+        Index := Index + 1;
+        Attr := Ctx.Get_Attribute (Children(I), 1);
+      else
+        Match := False;
+      end if;
+      if match and then Asu_Ts (Attr.Value) = Name then
+        return Index;
+      end if;
+    end loop;
+    return 0;
+  end Get_Id;
+
 end Xml;
 

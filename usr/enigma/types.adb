@@ -10,7 +10,7 @@ package body Types is
   end Id_Of;
   function Id_Of (P : Positive) return Lid is
   begin
-    return Lid (P - 1);
+    return Lid ((P - 1) mod Nb_Letters);
   end Id_Of;
 
   -- Letter index:
