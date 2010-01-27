@@ -21,6 +21,8 @@ There must be as many rotor offsets as rotors defined.
 Ex, for rotors I (fastest), IV and Beta (slowest): "Beta@A#IV@Q#I@F".
 
 Semantic:
+- The reflector is defined by its name and the letter of offset (constant).
+
 - Up to 4 rotors can be defined and one reflector must be defined.
 They must all have different names.
 All rotors and reflectors are defined in a XML configuration file (name from
@@ -40,13 +42,11 @@ position of each rotor. First rotor defined is the slowest and is the one
 crossed just before the reflector. So for command line "I IV V", the coding
 will go through V, IV, I, reflector, then back.
 
-- The reflector is defined by its name and the letter of offset (constant).
-
-- The switch definition follows the same logic but defines only the letters that
-change in the coding (all other letters are kept unchanged). ex:
-AZBJMGZB
-Note that max 13 pairs can be defined, with no identity which forces the
-symetry.
+- The switches definition follows the same logic but defines only the letters
+that change in the coding (all other letters are kept unchanged). ex:
+AZBJMGYC
+Note that max 13 pairs can be defined, with no identity and each letter can
+appear at most once (implicit symetry).
 
 - The first_index number defines the offset of input text from which the
 decoding starts (default 1).
@@ -66,14 +66,14 @@ Turning rules and coding ways:
 Rotors turn before the coding. The Enigma double stepping behaviour applies.
 
 Coding rule:
-The input letter (uppercase) is encoded through the switch, through all
+The input letter (uppercase) is encoded through the switches, through all
 the rotors, then through the refelctor (this is called encoding).
 It is then encoded the other way through all the rotors and the switch (this
 is called decoding). The complete cycle is called coding.
 
-InputLetter  -> +------+ -> +-----+ -> +-----+ -----> +
-                |Switch|    |Rotor|    |Rotor|   |Reflector|
-OutputLetter <- +------+ <- +-----+ <- +-----+ <----- +
+      + <------ +-----+ <- +-----+ <- +--------+ <- Input
+ |Reflector|    |Rotor|    |Rotor|    |Switches|
+      + ------> +-----+ -> +-----+ -> +--------+ -> Output
 
 
 3. Coding algorithms and objects
@@ -88,7 +88,7 @@ Coding X through a rotor or through the reflector means:
 Decoding is similar except that I = X - O, the scrambler is inverted and then
 R is U + O.
 
-A scrambler is made of an arrays, each of 26 different Ids;
+A scrambler is made of an arrays, each of 26 different Ids.
 
 4. General Design
 -----------------
@@ -137,9 +137,9 @@ Encoding an upper character consists in:
 ----------------
 Enigma can simulate Enigma M3 and M4 machines, but also allows more combinations
 than the physical machines (rotors are from 0 to 4, no restriction on the
-combination of slowest rotor and reflector, offset of reflector...).
-M3 compatible configurations shall use 3 rotors from I to VIII and a reflector
-from A to C with no offset (A).
-M4 compatible configurations shall use 3 rotors from I to VIII, a rotor Beta
-or Gamma and a reflector Bthin or Cthin with no offset.
+combination of first (slowest) rotor and reflector, offset of reflector...).
+M3 compatible configurations shall use a reflector from A to C with no offset
+(i.e. set to A) and 3 rotors from I to VIII.
+M4 compatible configurations shall use a reflector Bthin or Cthin with no
+offset, a rotor Beta and 3 rotors from I to VIII.
 
