@@ -11,6 +11,8 @@ with Perpet, Argument, Day_Mng, Normal, Text_Handler, Upper_Str, Rnd,
 with Types, Scrambler_Gen, Definition;
 procedure Def_Enigma is
 
+  Debug : constant Boolean := False;
+
   package Xml is
     -- Parse the Xml config file
     procedure Init;
@@ -83,9 +85,9 @@ procedure Def_Enigma is
   Reflector_Num : Positive;
 
   -- For all
-  Switch : Text_Handler.Text (26 * 2);
+  Switch : Text_Handler.Text (26);
   Reflector : Text_Handler.Text (2);
-  Rotors : Text_Handler.Text (31); -- "SEVEN@A" * 4 + '#' * 3
+  Rotors : Text_Handler.Text (8); -- 1 letter for rotor Id and 1 for ring
   Init_Offset : Text_Handler.Text (4);
   Nb_Rotors : Natural;
 
@@ -224,7 +226,7 @@ begin
         raise Key_Error;
       end if;
       Get_Parameter (Reflector_Txt, 1, Not_Key);
-      Nb_Arg := 1;
+      Nb_Arg := Other_Arg;
       if Is_Set (1, Rotor_Key) then
         if Is_Set (2, Rotor_Key) then
           raise Key_Error;
@@ -451,7 +453,7 @@ begin
       end loop;
       Sys_Calls.Set_Exit_Code (Start);
   when Key =>
-    -- Get rotors init, for Nb of rotors
+    -- Get rotors init, get Nb of rotors
     begin
       Text_Handler.Set (Init_Offset, Init_Txt);
       Nb_Rotors := Text_Handler.Length (Init_Offset);
@@ -520,8 +522,7 @@ begin
           if Id = 0 then
             raise Key_Error;
           end if;
-          Text_Handler.Append (Rotors, To_Letter (Id) & Str(Str'Last)
-                 & Text_Handler.Value (Init_Offset)(I));
+          Text_Handler.Append (Rotors, To_Letter (Id) & Str(Str'Last));
         end;
       end loop;
 
@@ -651,6 +652,15 @@ begin
     end;
   end if;
 
+  -- Put setting in internal format
+  if Debug then
+    Sys_Calls.Put_Line_Error (
+                 Text_Handler.Value (Reflector)
+       & " r=" & Text_Handler.Value (Rotors)
+       & " i=" & Text_Handler.Value (Init_Offset)
+       & " s=" & Text_Handler.Value (Switch));
+  end if;
+
   -- Result
   -- Put normal enigma keys
   declare
@@ -702,9 +712,9 @@ begin
           Ada.Text_Io.Put (Upper_Str (Num_Letters.Letters_Of (Num)));
         end;
         -- Ring offset
-        Ada.Text_Io.Put (Text_Handler.Value (Rotors)(I+1));
+        Ada.Text_Io.Put (Text_Handler.Value (Rotors)(I + 1));
         -- Initial offset
-        Ada.Text_Io.Put (Text_Handler.Value (Init_Offset)((I-1)/2+1));
+        Ada.Text_Io.Put (Text_Handler.Value (Init_Offset)((I - 1) / 2 + 1));
       end if;
     end loop;
     -- Reflector: Num, offset, offset and zero
