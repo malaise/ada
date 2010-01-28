@@ -3,20 +3,95 @@
 
 export ENIGMA_CONF_FILE=../enigma.xml
 
+# For loops
+export LIST="A B C D E F G H I J K L M N O P Q R S T U V W X Y Z"
+
+# Do local tests with: settings, encypted and decoded text
 for i in 1 2 3 4 ; do
   cat crypt${i} | enigma `tail -1 set${i}` > tmp
   cmp -s decod${i} tmp
-  if [ $? -eq 0 ] ; then
-    echo "cat crypt${i} | enigma `tail -1 set${i}` OK."
+  res=$?
+  echo -n "cat crypt${i} | enigma `tail -1 set${i}` "
+  if [ $res -eq 0 ] ; then
+    echo "OK."
   else
-    echo "cat crypt${i} | enigma `tail -1 set${i}` KO."
-    rm tmp
+    echo "KO."
+    rm -f tmp
     echo "FAILED."
     exit 1
   fi
 done
-
 rm tmp
-echo Done OK.
+echo ""
+
+# Verify upper level txt files through enigmacode -c then -d
+for file in ../*.txt ; do
+  cat $file | enigmacode -c > tmpc
+  cat tmpc | enigmacode -d > tmpd
+  cmp -s $file tmpd
+  res=$?
+  echo -n "`basename $file` through enigmacode -c then -d "
+  if [ $res -eq 0 ] ; then
+    echo "OK."
+  else
+    echo "KO."
+    rm -f tmpc tmpd
+    echo "FAILED."
+    exit 1
+  fi
+done
+rm tmpc tmpd
+echo ""
+
+# Verify several letters twice through random setting
+for L in $LIST ; do
+  key=`def_enigma rnd`
+  r=`echo -n $L | enigma $key`
+  r=`echo -n $r | enigma $key`
+  echo -n "$L through $key twice "
+  if [ "$r" = "$L" ] ; then
+    echo "OK."
+  else
+    echo "KO."
+    echo "FAILED."
+    exit 1
+  fi
+done
+echo ""
+
+# Verfiy key <-> text conversion
+for L in $LIST ; do
+  key1="`def_enigma rnd`"
+  text=`def_enigma -text $key1 | awk '{print $NF}'`
+  key2="`def_enigma $text`"
+  echo -n "$key1 to text and reverse "
+  if [ "$key1" = "$key2" ] ; then
+    echo "OK."
+  else
+    echo "KO."
+    echo "FAILED."
+    exit 1
+  fi
+done
+echo ""
+
+# Verfiy text <-> key conversion
+echo ""
+for L in $LIST ; do
+  text1=`def_enigma -text rnd | awk '{print $NF}'`
+  key="`def_enigma $text1`"
+  text2=`def_enigma -text $key | awk '{print $NF}'`
+  echo -n "$text1 to key and reverse "
+  if [ "$text1" = "$text2" ] ; then
+    echo "OK."
+  else
+    echo "KO."
+    echo "FAILED."
+    exit 1
+  fi
+done
+echo ""
+
+echo Completed OK.
 exit 0
 
