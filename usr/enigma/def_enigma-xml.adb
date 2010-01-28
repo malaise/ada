@@ -21,7 +21,7 @@ package body Xml is
     function File_Name return String is
     begin
       if not Environ.Is_Set (File_Var_Name)
-      or else Environ.Getenv (File_Var_Name) /= "" then
+      or else Environ.Getenv (File_Var_Name) = "" then
         return Default_File_Name;
       else
         return Environ.Getenv (File_Var_Name);
