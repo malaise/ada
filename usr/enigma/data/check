@@ -7,6 +7,7 @@ export ENIGMA_CONF_FILE=../enigma.xml
 export LIST="A B C D E F G H I J K L M N O P Q R S T U V W X Y Z"
 
 # Do local tests with: settings, encypted and decoded text
+echo "Test of fixed settings, encrypted and decoded files:"
 for i in 1 2 3 4 ; do
   cat crypt${i} | enigma `tail -1 set${i}` > tmp
   cmp -s decod${i} tmp
@@ -25,6 +26,7 @@ rm tmp
 echo ""
 
 # Verify upper level txt files through enigmacode -c then -d
+echo "Test of txt files with enigmacode:"
 for file in ../*.txt ; do
   cat $file | enigmacode -c > tmpc
   cat tmpc | enigmacode -d > tmpd
@@ -44,6 +46,7 @@ rm tmpc tmpd
 echo ""
 
 # Verify several letters twice through random setting
+echo "Test of  a letter twice through a random setting:"
 for L in $LIST ; do
   key=`def_enigma rnd`
   r=`echo -n $L | enigma $key`
@@ -59,7 +62,8 @@ for L in $LIST ; do
 done
 echo ""
 
-# Verfiy key <-> text conversion
+# Verify key <-> text conversion
+echo "Test of key to text and back:"
 for L in $LIST ; do
   key1="`def_enigma rnd`"
   text=`def_enigma -text $key1 | awk '{print $NF}'`
@@ -76,7 +80,7 @@ done
 echo ""
 
 # Verfiy text <-> key conversion
-echo ""
+echo "Test of text to key and back:"
 for L in $LIST ; do
   text1=`def_enigma -text rnd | awk '{print $NF}'`
   key="`def_enigma $text1`"
