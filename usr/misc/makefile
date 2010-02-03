@@ -21,7 +21,6 @@ LARGS_tcping.stat := $(CPATHD)/libcutil.a
 LARGS_udp_spy.stat := $(CPATHD)/libcutil.a
 LARGS_pingpong.stat := $(CPATHD)/libcutil.a
 
-PCRE := `pcre-config --prefix`/lib
 LARGS_dtd_checker.stat := $(CPATHD)/libcutil.a $(CPATHD)/libposix2pcre.a \
   $(PCRE)/libpcre.a
 LARGS_xml_checker.stat := $(CPATHD)/libcutil.a $(CPATHD)/libposix2pcre.a \
