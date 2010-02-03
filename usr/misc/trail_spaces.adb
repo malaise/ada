@@ -1,4 +1,4 @@
-with Ada.Text_Io, Ada.Exceptions, Ada.Strings.Unbounded, Ada.Characters.Latin_1;
+with Ada.Exceptions, Ada.Strings.Unbounded, Ada.Characters.Latin_1;
 with Argument, Sys_Calls, Temp_File, Text_Line;
 procedure Trail_Spaces is
 
@@ -139,7 +139,7 @@ procedure Trail_Spaces is
     -- Move files if modified
     if Modified then
       -- Put modified file name
-      Ada.Text_Io.Put_Line (In_File_Name);
+      Sys_Calls.Put_Line_Output (In_File_Name);
       -- Rename out file as in file
       if Sys_Calls.Rename (Out_File_Name, In_File_Name) then
         if Exit_Code = All_Unchanged then
