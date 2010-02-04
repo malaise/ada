@@ -1,5 +1,6 @@
 -- Perform read/write of several Element_Type in file
 with Ada.Characters.Latin_1;
+with C_Types;
 package  body Bloc_Io is
 
   Element_Size : constant Positive := Element_Type'Size / System.Storage_Unit;
@@ -11,7 +12,6 @@ package  body Bloc_Io is
   Create_Str :  constant String := "w+" & Nul;
   Read_Str  : constant String := "r" & Nul;
   Write_Str : constant String := "r+" & Nul;
-  subtype Size_T is Long_Integer;
 
   function Fopen(Path : in System.Address;
                  Mode : in System.Address) return System.Address;
@@ -21,25 +21,25 @@ package  body Bloc_Io is
   pragma Import (C, Fclose, "fclose");
 
   function Fread(To : System.Address;
-                 Size_Item : Size_T;
-                 Num_Item  : Size_T;
-                 File : System.Address) return Size_T;
+                 Size_Item : C_Types.Size_T;
+                 Num_Item  : C_Types.Size_T;
+                 File : System.Address) return C_Types.Size_T;
   pragma Import (C, Fread, "fread");
 
   function Fwrite(To : System.Address;
-                  Size_Item : Size_T;
-                  Num_Item  : Size_T;
-                  File : System.Address) return Size_T;
+                  Size_Item : C_Types.Size_T;
+                  Num_Item  : C_Types.Size_T;
+                  File : System.Address) return C_Types.Size_T;
   pragma Import (C, Fwrite, "fwrite");
 
   Seek_Set : constant Integer := 0;
   Seek_End : constant Integer := 2;
   function Fseek(File : System.Address;
-                 Offset : Size_T;
+                 Offset : C_Types.Long;
                  Whence : Integer) return Integer;
   pragma Import (C, Fseek, "fseek");
 
-  function Ftell(File : System.Address) return Size_T;
+  function Ftell(File : System.Address) return C_Types.Long;
   pragma Import (C, Ftell, "ftell");
 
   ---------------
@@ -131,7 +131,7 @@ package  body Bloc_Io is
 
   procedure Read(File : in File_Type;
                  Item : in out Element_Array) is
-    Res : Size_T;
+    Res : C_Types.Size_T;
   begin
     Check_Open(File);
     if File.Mode = Out_File then
@@ -139,12 +139,12 @@ package  body Bloc_Io is
     end if;
     -- Read
     Res := Fread(Item'Address,
-                 Size_T(Element_Size),
-                 Size_T(Item'Length),
+                 C_Types.Size_T(Element_Size),
+                 C_Types.Size_T(Item'Length),
                  File.Ext_File);
     if Res < 0 then
       raise Device_Error;
-    elsif Res /= Size_T(Item'Length) then
+    elsif Res /= C_Types.Size_T(Item'Length) then
       raise End_Error;
     end if;
   end Read;
@@ -165,7 +165,7 @@ package  body Bloc_Io is
 
   procedure Write(File : in File_Type;
                   Item : in Element_Array) is
-    Res : Size_T;
+    Res : C_Types.Size_T;
   begin
     Check_Open(File);
     if File.Mode = In_File then
@@ -173,12 +173,12 @@ package  body Bloc_Io is
     end if;
     -- Write
     Res := Fwrite(Item'Address,
-                  Size_T(Element_Size),
-                  Size_T(Item'Length),
+                  C_Types.Size_T(Element_Size),
+                  C_Types.Size_T(Item'Length),
                   File.Ext_File);
     if Res < 0 then
       raise Device_Error;
-    elsif Res /= Size_T(Item'Length) then
+    elsif Res /= C_Types.Size_T(Item'Length) then
       raise End_Error;
     end if;
     -- Workaround to a bug on Tru64
@@ -195,8 +195,8 @@ package  body Bloc_Io is
 
   -- Amount of Elements in file
   function Size(File : in File_Type) return Count is
-    Pos : Size_T;
-    Res : Size_T;
+    Pos : C_Types.Long;
+    Res : C_Types.Long;
   begin
     Check_Open(File);
     -- Save pos
@@ -221,7 +221,7 @@ package  body Bloc_Io is
   end Size;
 
   function Index(File : in File_Type) return Positive_Count is
-    Res : Size_T;
+    Res : C_Types.Long;
   begin
     Check_Open(File);
     Res := Ftell(File.Ext_File);
@@ -234,7 +234,8 @@ package  body Bloc_Io is
   procedure Set_Index(File : in File_Type; To : in Positive_Count) is
   begin
     Check_Open(File);
-    if Fseek(File.Ext_File, Size_T(To - 1) * Size_T(Element_Size),
+    if Fseek(File.Ext_File,
+             C_Types.Long(To - 1) * C_Types.Long(Element_Size),
              Seek_Set) /= 0 then
       raise Device_Error;
     end if;

@@ -1,6 +1,6 @@
 with System;
 with Ada.Characters.Latin_1;
-with Bit_Ops;
+with Bit_Ops, C_Types;
 package body Ndbm is
 
   Db : System.Address := System.Null_Address;
@@ -18,15 +18,16 @@ package body Ndbm is
   Dbm_Replace : constant Natural := 1;
 
   -- Length of key and data in bytes
+  subtype Data_Size_T is Integer;
   Byte_Size : constant := 8;
-  Key_Len  : constant Long_Long_Integer
+  Key_Len  : constant Data_Size_T
            := (Key'Size + Byte_Size - 1) / Byte_Size;
-  Data_Len : constant Long_Long_Integer
+  Data_Len : constant Data_Size_T
            := (Data'Size + Byte_Size - 1) / Byte_Size;
 
   type Datum is record
     Dptr : System.Address;
-    Dsize : Long_Long_Integer;
+    Dsize : Data_Size_T;
   end record;
 
 
@@ -34,7 +35,7 @@ package body Ndbm is
   -- Imported C functions --
   --------------------------
   procedure Memcpy (Dest, Src : in System.Address;
-                    N : in Long_Long_Integer);
+                    N : in C_Types.Size_T);
   pragma Import (C, Memcpy, "memcpy");
 
   function Dbm_Open (File_Name : System.Address;
@@ -151,7 +152,7 @@ package body Ndbm is
     if The_Data.Dptr = System.Null_Address then
       raise No_Data;
     end if;
-    Memcpy (D'Address, The_Data.Dptr, Data_Len);
+    Memcpy (D'Address, The_Data.Dptr, C_Types.Size_T (Data_Len));
     return D;
   end Read;
 
@@ -184,7 +185,7 @@ package body Ndbm is
     if The_Key.Dptr = System.Null_Address then
       raise No_Data;
     end if;
-    Memcpy (K'Address, The_Key.Dptr, Key_Len);
+    Memcpy (K'Address, The_Key.Dptr, C_Types.Size_T (Key_Len));
     return K;
   end First_Key;
 
@@ -201,7 +202,7 @@ package body Ndbm is
     if The_Key.Dptr = System.Null_Address then
       raise No_Data;
     end if;
-    Memcpy (K'Address, The_Key.Dptr, Key_Len);
+    Memcpy (K'Address, The_Key.Dptr, C_Types.Size_T (Key_Len));
     return K;
   end Next_Key;
 

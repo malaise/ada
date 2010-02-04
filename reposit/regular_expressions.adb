@@ -1,6 +1,6 @@
 -- Posix regular expression
 with Ada.Characters.Latin_1;
-with Bit_Ops, Utf_8, Flo_Io;
+with C_Types, Bit_Ops, Utf_8, Flo_Io;
 package body Regular_Expressions is
 
   -- C interface --
@@ -38,7 +38,7 @@ package body Regular_Expressions is
 
   function C_Regexec (Preg : in System.Address;
                       Str : in System.Address;
-                      Nmatch : in Long_Integer;
+                      Nmatch : in C_Types.Size_T;
                       Pmatch : in System.Address;
                       Eflags : in Integer) return Integer;
   pragma Import (C, C_Regexec, "regexec");
@@ -46,7 +46,7 @@ package body Regular_Expressions is
   function C_Regerror (Errcode : in Integer;
                        Preg : in System.Address;
                        Errbuf : in System.Address;
-                       Errbuf_Size : in Long_Integer) return Long_Integer;
+                       Errbuf_Size : in C_Types.Size_T) return C_Types.Size_T;
   pragma Import (C, C_Regerror, "regerror");
 
   procedure C_Regfree (Preg : in System.Address);
@@ -184,7 +184,7 @@ package body Regular_Expressions is
     C_Match_Info := (others => (1, 0));
     Cres := C_Regexec (Criteria.Comp_Addr,
                        To_Check4C'Address,
-                       Long_Integer(Match_Info'Length),
+                       C_Types.Size_T(Match_Info'Length),
                        C_Match_Info'Address,
                        Eflags);
     -- Return if no match
@@ -256,7 +256,7 @@ package body Regular_Expressions is
   end Match;
 
   function Error (Criteria : in Compiled_Pattern) return String is
-    Len : Long_Integer;
+    Len : C_Types.Size_T;
   begin
     Len := C_Regerror (Criteria.Error, Criteria.Comp_Addr,
                        System.Null_Address, 0);

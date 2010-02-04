@@ -1,5 +1,6 @@
 with System;
 with Ada.Calendar;
+with C_Types;
 package Sys_Calls is
 
   -- Call system
@@ -221,7 +222,7 @@ package Sys_Calls is
 
 private
 
-  type Time_T is new Integer;
+  type Time_T is new C_Types.Time_T;
 
 end Sys_Calls;
 

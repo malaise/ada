@@ -1,4 +1,4 @@
-with Date_Image, Timeval;
+with Date_Image, C_Types, Timeval;
 
 separate (X_Mng)
 package body Dispatch is
@@ -115,7 +115,7 @@ package body Dispatch is
 
     -- Next expiration
     Select_Exp : Timers.Expiration_Rec;
-    Timeout : Timeval.C_Timeout_T;
+    Timeout : C_Types.Timeval_T;
     Now : Ada.Calendar.Time;
     -- For C x_select
     C_Fd    : Integer;

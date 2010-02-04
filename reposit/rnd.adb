@@ -1,11 +1,7 @@
 with System;
-with Mutex_Manager, U_Rand;
+with Mutex_Manager, U_Rand, C_Types;
 package body Rnd is
 
-  type C_Struct_Timeval is record
-    Sec : Integer;
-    Usec : Integer;
-  end record;
   function C_Gettimeofday (Tv : System.Address; Tz : System.Address)
   return Integer;
   pragma Import (C, C_Gettimeofday, "gettimeofday");
@@ -44,12 +40,12 @@ package body Rnd is
 
     -- Gives a "random" number
     function Init_Aleat return Float is
-      Tv : C_Struct_Timeval;
+      Tv : C_Types.Timeval_T;
       Dummy : Integer;
       pragma Unreferenced (Dummy);
     begin
       Dummy := C_Gettimeofday (Tv'Address, System.Null_Address);
-      return Float(Tv.Usec) / 1.0E6;
+      return Float(Tv.Tv_Usec) / 1.0E6;
     end Init_Aleat;
 
   begin

@@ -1,5 +1,5 @@
 with System, Ada.Text_Io;
-with Null_Procedure, Dynamic_List, Environ, Timeval, Perpet,
+with C_Types, Null_Procedure, Dynamic_List, Environ, Timeval, Perpet,
      Virtual_Time;
 package body Event_Mng is
 
@@ -11,18 +11,9 @@ package body Event_Mng is
   subtype Result is Integer;
   Ok : constant Result := 0;
 
-  -- Boolean on 32 bits for C
-  type Bool_For_C is new Boolean;
-  for Bool_For_C'Size use 32;
-  for Bool_For_C use (False => 0, True => 1);
-
-  -- GNAT GPL2008 erroneously complains that this is a 8-bits Ada Boolean
-  --  and that char should be used instead in C
-  -- pragma Warnings (Off, Bool_For_C);
-
-  function For_Ada(C_Boolean : in Bool_For_C) return Boolean is
+  function For_Ada(C_Boolean : in C_Types.Bool) return Boolean is
   begin
-    return Boolean'Val(Bool_For_C'Pos(C_Boolean));
+    return Boolean'Val(C_Types.Bool'Pos(C_Boolean));
   end For_Ada;
 
   Debug_Var_Name : constant String := "EVENT_MNG_DEBUG";
@@ -48,13 +39,13 @@ package body Event_Mng is
   -- Fd management --
   -------------------
 
-  function C_Add_Fd (Fd : Integer; Read : Bool_For_C) return Result;
+  function C_Add_Fd (Fd : Integer; Read : C_Types.Bool) return Result;
   pragma Import(C, C_Add_Fd, "evt_add_fd");
 
-  function C_Del_Fd (Fd : Integer; Read : Bool_For_C) return Result;
+  function C_Del_Fd (Fd : Integer; Read : C_Types.Bool) return Result;
   pragma Import(C, C_Del_Fd, "evt_del_fd");
 
-  function C_Fd_Set (Fd : Integer; Read : Bool_For_C) return Bool_For_C;
+  function C_Fd_Set (Fd : Integer; Read : C_Types.Bool) return C_Types.Bool;
   pragma Import(C, C_Fd_Set, "evt_fd_set");
 
   -- Callback list
@@ -97,7 +88,7 @@ package body Event_Mng is
     end if;
     Cb_Mng.Insert (Cb_List, (Fd, Read, Callback));
     -- Add fd to select
-    Res := C_Add_Fd (Integer(Fd), Bool_For_C(Read)) = Ok;
+    Res := C_Add_Fd (Integer(Fd), C_Types.Bool(Read)) = Ok;
     if not Res then
       raise Fd_Cb_Error;
     end if;
@@ -115,7 +106,7 @@ package body Event_Mng is
     Cb_Searched : Cb_Rec;
   begin
     -- Del fd from select
-    Res1 := C_Del_Fd (Integer(Fd), Bool_For_C(Read)) = Ok;
+    Res1 := C_Del_Fd (Integer(Fd), C_Types.Bool(Read)) = Ok;
     -- Del from list
     Cb_Searched.Fd := Fd;
     Cb_Searched.Read := Read;
@@ -139,9 +130,9 @@ package body Event_Mng is
 
   function Fd_Callback_Set (Fd : in File_Desc; Read : in Boolean)
   return Boolean is
-    Res : Bool_For_C;
+    Res : C_Types.Bool;
   begin
-    Res := C_Fd_Set (Integer(Fd), Bool_For_C(Read));
+    Res := C_Fd_Set (Integer(Fd), C_Types.Bool(Read));
     return Boolean(Res);
   end Fd_Callback_Set;
 
@@ -272,10 +263,10 @@ package body Event_Mng is
 
   function Wait (Delay_Spec : Timers.Delay_Rec) return Out_Event_List is
     Fd    : Integer;
-    Read  : Bool_For_C;
+    Read  : C_Types.Bool;
     Final_Exp, Next_Exp : Timers.Expiration_Rec;
     Now : Virtual_Time.Time;
-    Timeout : Timeval.C_Timeout_T;
+    Timeout : C_Types.Timeval_T;
     C_Res : Result;
     Handle_Res : Out_Event_List;
     use type Virtual_Time.Clock_Access,
@@ -332,7 +323,7 @@ package body Event_Mng is
         else
           Ada.Text_Io.Put_Line ("Event_Mng.Wait.C_Wait -> "
                                          & Integer'Image(Fd)
-                                         & " " & Bool_For_C'Image(Read));
+                                         & " " & C_Types.Bool'Image(Read));
         end if;
       end if;
 
