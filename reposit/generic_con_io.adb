@@ -120,9 +120,8 @@ package body Generic_Con_Io is
     -- Suspend and resume con_io
     procedure Suspend is
     begin
-      if not Init_Done then
-        raise Not_Init;
-      end if;
+      -- Clear window and suspend
+      Reset_Term;
       X_Mng.X_Suspend (Id);
     end Suspend;
 
@@ -131,7 +130,10 @@ package body Generic_Con_Io is
       if not Init_Done then
         raise Not_Init;
       end if;
+      -- Resume
       X_Mng.X_Resume (Id);
+      -- Force reset of attributes
+      Line_Blink_Stat := Default_Blink_Stat;
     end Resume;
 
 
@@ -350,7 +352,10 @@ package body Generic_Con_Io is
                               Xor_Mode   : in Effective_Xor_Modes;
                               Forced     : in Boolean := False) is
     begin
-      if Forced or else Foreground /= Line_Foreground
+      -- Reset can be forced explicitely by the Forced argument
+      --  or by resetting Line_Blink_Stat to Default
+      if Forced or else Line_Blink_Stat = Default_Blink_Stat
+                or else Foreground /= Line_Foreground
                 or else Blink_Stat /= Line_Blink_Stat
                 or else Background /= Line_Background then
         X_Mng.X_Set_Attributes (Id, Colors'Pos(Background) - 1,

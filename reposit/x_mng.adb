@@ -566,8 +566,6 @@ package body X_Mng is
   procedure X_Suspend (Line_Id : in out Line) is
     Res : Boolean;
   begin
-    -- Clear the line before suspending
-    X_Clear_Line (Line_Id);
     if not Initialised or else Line_Id = No_Client then
       raise X_Failure;
     end if;
