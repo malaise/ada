@@ -12,7 +12,7 @@ package C_Types is
 
   subtype Int is Integer;
 
-  subtype Long is Integer;
+  subtype Long is Long_Integer;
 
   type  Double is new Long_Float;
 
@@ -23,7 +23,7 @@ package C_Types is
   type Uint16 is new Integer range 0 .. 2 ** 16 - 1;
   for Uint16'Size use 16;
 
-  type Uint32 is new Long_Integer range 0 .. 2 ** 32 - 1;
+  type Uint32 is new Long_Long_Integer range 0 .. 2 ** 32 - 1;
   for Uint32'Size use 32;
 
   -- Other types
