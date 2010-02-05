@@ -1,5 +1,5 @@
 with Ada.Calendar, Ada.Characters.Latin_1;
-with My_Io, Address_Ops, Environ, Perpet, Event_Mng, Virtual_Time;
+with C_Types, My_Io, Address_Ops, Environ, Perpet, Event_Mng, Virtual_Time;
 package body X_Mng is
 
   -- Maximum successive X events
@@ -12,16 +12,15 @@ package body X_Mng is
   Debug : Boolean := False;
 
   -- Result of a call to C
-  subtype Result is Integer;
+  subtype Result is C_Types.Int;
   Ok : constant Result := 0;
 
   -- True if the connection to X has been initialised
   Initialised : Boolean := False;
 
   -- Boolean on 32 bits for C
-  type Bool_For_C is new Boolean;
+  type Bool_For_C is new C_Types.Bool;
   for Bool_For_C'Size use 32;
-  for Bool_For_C use (False => 0, True => 1);
 
   -- GNAT GPL2008 erroneously complains that this is a 8-bits Ada Boolean
   --  and that char should be used instead in C
@@ -63,11 +62,11 @@ package body X_Mng is
   --                  int background, int border, int no_font,
   --                  void **p_line_id);
   ------------------------------------------------------------------
-  function X_Open_Line (Screen_Id          : Integer;
-                        Row, Column        : Integer;
-                        Height, Width      : Integer;
-                        Background, Border : Integer;
-                        No_Font            : Integer;
+  function X_Open_Line (Screen_Id          : C_Types.Int;
+                        Row, Column        : C_Types.Int;
+                        Height, Width      : C_Types.Int;
+                        Background, Border : C_Types.Int;
+                        No_Font            : C_Types.Int;
                         P_Line_Id          : System.Address) return Result;
   pragma Import(C, X_Open_Line, "x_open_line");
 
@@ -108,7 +107,7 @@ package body X_Mng is
   --                       boolean blink, boolean reverse);
   ------------------------------------------------------------------
   function X_Set_Attributes(Line_Id     : Line_For_C;
-                            Paper, Ink  : Integer;
+                            Paper, Ink  : C_Types.Int;
                             Superbright : Bool_For_C;
                             Underline   : Bool_For_C;
                             Blink       : Bool_For_C;
@@ -128,8 +127,8 @@ package body X_Mng is
   -- int x_put_char (void *line_id, int  car, int row, int column);
   ------------------------------------------------------------------
   function X_Put_Char(Line_Id     : Line_For_C;
-                      Car         : Integer;
-                      Row, Column : in Integer) return Result;
+                      Car         : C_Types.Int;
+                      Row, Column : in C_Types.Int) return Result;
   pragma Import(C, X_Put_Char, "x_put_char");
 
   ------------------------------------------------------------------
@@ -139,8 +138,8 @@ package body X_Mng is
   --                       int row, int column);
   ------------------------------------------------------------------
   function X_Overwrite_Char(Line_Id     : Line_For_C;
-                            Car         : Integer;
-                            Row, Column : in Integer) return Result;
+                            Car         : C_Types.Int;
+                            Row, Column : in C_Types.Int) return Result;
   pragma Import(C, X_Overwrite_Char, "x_overwrite_char");
 
   ------------------------------------------------------------------
@@ -150,8 +149,8 @@ package body X_Mng is
   ------------------------------------------------------------------
   function X_Put_String(Line_Id     : Line_For_C;
                         Str_Addr    : System.Address;
-                        Length      : Integer;
-                        Row, Column : Integer) return Result;
+                        Length      : C_Types.Int;
+                        Row, Column : C_Types.Int) return Result;
   pragma Import(C, X_Put_String, "x_put_string");
 
   ------------------------------------------------------------------
@@ -162,9 +161,9 @@ package body X_Mng is
   --                            boolean blink, boolean reverse);
   ------------------------------------------------------------------
   function X_Put_Char_Attributes(Line_Id     : Line_For_C;
-                                 Car         : Integer;
-                                 Row, Column : Integer;
-                                 Paper, Ink  : Integer;
+                                 Car         : C_Types.Int;
+                                 Row, Column : C_Types.Int;
+                                 Paper, Ink  : C_Types.Int;
                                  Superbright : Bool_For_C;
                                  Underline   : Bool_For_C;
                                  Blink       : Bool_For_C;
@@ -179,8 +178,8 @@ package body X_Mng is
   -- int x_draw_area (void *line_id, int width, int height);
   ------------------------------------------------------------------
   function X_Draw_Area(Line_Id       : Line_For_C;
-                       Width, Height : Integer;
-                       Row, Column   : Integer) return Result;
+                       Width, Height : C_Types.Int;
+                       Row, Column   : C_Types.Int) return Result;
   pragma Import(C, X_Draw_Area, "x_draw_area");
 
   ------------------------------------------------------------------
@@ -189,8 +188,8 @@ package body X_Mng is
   -- int x_put_char_pixels (void *line_id, int car, int x, int y);
   ------------------------------------------------------------------
   function X_Put_Char_Pixels(Line_Id : Line_For_C;
-                             Car     : Integer;
-                             X, Y    : Integer) return Result;
+                             Car     : C_Types.Int;
+                             X, Y    : C_Types.Int) return Result;
   pragma Import(C, X_Put_Char_Pixels, "x_put_char_pixels");
 
   ------------------------------------------------------------------
@@ -212,7 +211,7 @@ package body X_Mng is
   -- int x_draw_point (void *line_id, int x, int y);
   ------------------------------------------------------------------
   function X_Draw_Point(Line_Id : Line_For_C;
-                        X, Y    : Integer) return Result;
+                        X, Y    : C_Types.Int) return Result;
   pragma Import(C, X_Draw_Point, "x_draw_point");
 
   ------------------------------------------------------------------
@@ -253,10 +252,11 @@ package body X_Mng is
   ------------------------------------------------------------------
   -- Fill an area defined by several points (X, Y)
   -- The area MUST be convex otherwise the graphic result is undefined
+  -- int x_fill_area (void *line_id, int xys[], int nb_points);
   ------------------------------------------------------------------
   function X_Fill_Area (Line_Id : Line_For_C;
                         Xys : System.Address;
-                        Nb_Points : Natural) return Result;
+                        Nb_Points : C_Types.Int) return Result;
   pragma Import(C, X_Fill_Area, "x_fill_area");
 
   ------------------------------------------------------------------
@@ -330,7 +330,7 @@ package body X_Mng is
   ------------------------------------------------------------------
   function X_Get_Selection (Line_Id : Line_For_C;
                              Selection : System.Address;
-                             Len : Integer) return Result;
+                             Len : C_Types.Int) return Result;
   pragma Import(C, X_Get_Selection, "x_get_selection");
 
   ------------------------------------------------------------------
@@ -366,7 +366,7 @@ package body X_Mng is
   -- Rings a bell several times
   -- int x_bell (int nbre_bell;
   ------------------------------------------------------------------
-  function X_Bell (Repeat : Integer) return Result;
+  function X_Bell (Repeat : C_Types.Int) return Result;
   pragma Import(C, X_Bell, "x_bell");
 
 
@@ -698,7 +698,7 @@ package body X_Mng is
     end if;
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Set_Attributes(Line_For_C_Id,
-                            Integer(Paper), Integer(Ink),
+                            C_Types.Int(Paper), C_Types.Int(Ink),
                             For_C(Superbright), For_C(Underline),
                             For_C(Blink), For_C(Inverse)) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
@@ -735,8 +735,8 @@ package body X_Mng is
     end if;
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Put_Char (Line_For_C_Id,
-                       Integer(Character'Pos(Car)),
-                       Integer(Row), Integer(Column)) = Ok;
+                       C_Types.Int(Character'Pos(Car)),
+                       C_Types.Int(Row), C_Types.Int(Column)) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
     if not Res then
       raise X_Failure;
@@ -753,8 +753,8 @@ package body X_Mng is
       raise X_Failure;
     end if;
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
-    Res := X_Put_Char (Line_For_C_Id, Integer(Car),
-                       Integer(Row), Integer(Column)) = Ok;
+    Res := X_Put_Char (Line_For_C_Id, C_Types.Int(Car),
+                       C_Types.Int(Row), C_Types.Int(Column)) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
     if not Res then
       raise X_Failure;
@@ -771,8 +771,8 @@ package body X_Mng is
       raise X_Failure;
     end if;
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
-    Res := X_Overwrite_Char (Line_For_C_Id, Integer(Car),
-                             Integer(Row), Integer(Column)) = Ok;
+    Res := X_Overwrite_Char (Line_For_C_Id, C_Types.Int(Car),
+                             C_Types.Int(Row), C_Types.Int(Column)) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
     if not Res then
       raise X_Failure;
@@ -792,7 +792,7 @@ package body X_Mng is
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Put_String (Line_For_C_Id,
                          Str (Str'First)'Address, Str'Length,
-                         Integer(Row), Integer(Column)) = Ok;
+                         C_Types.Int(Row), C_Types.Int(Column)) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
     if not Res then
       raise X_Failure;
@@ -817,11 +817,11 @@ package body X_Mng is
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Put_Char_Attributes (
                               Line_For_C_Id,
-                              Integer(Character'Pos(Car)),
-                              Integer(Row),
-                              Integer(Column),
-                              Integer(Paper),
-                              Integer(Ink),
+                              C_Types.Int(Character'Pos(Car)),
+                              C_Types.Int(Row),
+                              C_Types.Int(Column),
+                              C_Types.Int(Paper),
+                              C_Types.Int(Ink),
                               For_C(Superbright),
                               For_C(Underline),
                               For_C(Blink),
@@ -844,8 +844,8 @@ package body X_Mng is
     end if;
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Draw_Area (Line_For_C_Id,
-                        Integer(Width), Integer(Height),
-                        Integer(Row), Integer(Column)) = Ok;
+                        C_Types.Int(Width), C_Types.Int(Height),
+                        C_Types.Int(Row), C_Types.Int(Column)) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
     if not Res then
       raise X_Failure;
@@ -863,7 +863,7 @@ package body X_Mng is
       raise X_Failure;
     end if;
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
-       Res := X_Put_Char_Pixels (Line_For_C_Id, Integer(Car), X, Y) = Ok;
+       Res := X_Put_Char_Pixels (Line_For_C_Id, C_Types.Int(Car), X, Y) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
     if not Res then
       raise X_Failure;
@@ -878,6 +878,11 @@ package body X_Mng is
                                           Font_Height   : out Natural;
                                           Font_Offset   : out Natural) is
     Line_For_C_Id : Line_For_C;
+    Window_Width_For_C  : C_Types.Int;
+    Window_Height_For_C : C_Types.Int;
+    Font_Width_For_C    : C_Types.Int;
+    Font_Height_For_C   : C_Types.Int;
+    Font_Offset_For_C   : C_Types.Int;
     Res : Boolean;
   begin
     if not Initialised or else Line_Id = No_Client then
@@ -885,12 +890,18 @@ package body X_Mng is
     end if;
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Get_Graphic_Characteristics(Line_For_C_Id,
-        Window_Width'Address, Window_Height'Address,
-        Font_Width'Address, Font_Height'Address, Font_Offset'Address) = Ok;
+        Window_Width_For_C'Address, Window_Height_For_C'Address,
+        Font_Width_For_C'Address, Font_Height_For_C'Address,
+        Font_Offset_For_C'Address) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
     if not Res then
       raise X_Failure;
     end if;
+    Window_Width  := Natural(Window_Width_For_C);
+    Window_Height := Natural(Window_Height_For_C);
+    Font_Width    := Natural(Font_Width_For_C);
+    Font_Height   := Natural(Font_Height_For_C);
+    Font_Offset   := Natural(Font_Offset_For_C);
   end X_Get_Graphic_Characteristics;
 
   ------------------------------------------------------------------
@@ -1009,17 +1020,20 @@ package body X_Mng is
                                            X, Y    : out Integer) is
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
+    X_For_C, Y_For_C : C_Types.Int;
   begin
     if not Initialised or else Line_Id = No_Client then
       raise X_Failure;
     end if;
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Get_Current_Pointer_Position (Line_For_C_Id,
-                   X'Address, Y'Address) = Ok;
+                   X_For_C'Address, Y_For_C'Address) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
     if not Res then
       raise X_Failure;
     end if;
+    X := Integer (X_For_C);
+    Y := Integer (Y_For_C);
   end X_Get_Current_Pointer_Position;
 
   ------------------------------------------------------------------
@@ -1154,7 +1168,8 @@ package body X_Mng is
                        Row_Col : in Boolean;
                        Button : out Button_List;
                        Row, Column : out Integer) is
-    Loc_Button : Integer;
+    Loc_Button : C_Types.Int;
+    Row_For_C, Col_For_C : C_Types.Int;
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
   begin
@@ -1164,8 +1179,8 @@ package body X_Mng is
     Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
     Res := X_Read_Tid (Line_For_C_Id, For_C(Row_Col),
                        Loc_Button'Address,
-                       Row'Address,
-                       Column'Address) = Ok;
+                       Row_For_C'Address,
+                       Col_For_C'Address) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
     if not Res then
       raise X_Failure;
@@ -1184,6 +1199,8 @@ package body X_Mng is
     elsif Loc_Button = 5 then
       Button := Down;
     end if;
+    Row := Row_For_C;
+    Column := Col_For_C;
   end X_Read_Tid;
 
   ------------------------------------------------------------------
@@ -1193,8 +1210,8 @@ package body X_Mng is
                        Code : out Boolean;
                        Key : out Kbd_Tab_Code) is
     Control4C, Shift4C, Code4C : Bool_For_C;
-    Loc_Nbre : Integer;
-    Loc_Tab : array (Natural range 1..Kbd_Max_Code) of Integer;
+    Loc_Nbre : C_Types.Int;
+    Loc_Tab : array (Natural range 1..Kbd_Max_Code) of C_Types.Int;
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
   begin

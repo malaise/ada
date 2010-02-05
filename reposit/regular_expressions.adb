@@ -33,17 +33,17 @@ package body Regular_Expressions is
 
   function C_Regcomp (Preg : in System.Address;
                       Regex : in System.Address;
-                      Cflags : in Integer) return Integer;
+                      Cflags : in C_Types.Int) return C_Types.Int;
   pragma Import (C, C_Regcomp, "regcomp");
 
   function C_Regexec (Preg : in System.Address;
                       Str : in System.Address;
                       Nmatch : in C_Types.Size_T;
                       Pmatch : in System.Address;
-                      Eflags : in Integer) return Integer;
+                      Eflags : in C_Types.Int) return C_Types.Int;
   pragma Import (C, C_Regexec, "regexec");
 
-  function C_Regerror (Errcode : in Integer;
+  function C_Regerror (Errcode : in C_Types.Int;
                        Preg : in System.Address;
                        Errbuf : in System.Address;
                        Errbuf_Size : in C_Types.Size_T) return C_Types.Size_T;

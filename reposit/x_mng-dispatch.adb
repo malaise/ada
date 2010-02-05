@@ -118,7 +118,7 @@ package body Dispatch is
     Timeout : C_Types.Timeval_T;
     Now : Ada.Calendar.Time;
     -- For C x_select
-    C_Fd    : Integer;
+    C_Fd    : C_Types.Int;
     C_Read  : Bool_For_C;
     C_Res : Result;
     -- For Event_Mng.Handle

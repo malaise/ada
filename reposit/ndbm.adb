@@ -6,19 +6,19 @@ package body Ndbm is
   Db : System.Address := System.Null_Address;
 
   -- Open flags
-  O_Rdwr  : constant Integer := 8#0000002#;
-  O_Creat : constant Integer := 8#0001000#;
+  O_Rdwr  : constant C_Types.Int := 8#0000002#;
+  O_Creat : constant C_Types.Int := 8#0001000#;
 
   -- Open mode
-  S_Irusr : constant Natural := 8#0000400#;
-  S_Iwusr : constant Natural := 8#0000200#;
-  S_Irgrp : constant Natural := 8#0000040#;
+  S_Irusr : constant C_Types.Int := 8#0000400#;
+  S_Iwusr : constant C_Types.Int := 8#0000200#;
+  S_Irgrp : constant C_Types.Int := 8#0000040#;
 
   -- Store flag
   Dbm_Replace : constant Natural := 1;
 
   -- Length of key and data in bytes
-  subtype Data_Size_T is Integer;
+  subtype Data_Size_T is C_Types.Int;
   Byte_Size : constant := 8;
   Key_Len  : constant Data_Size_T
            := (Key'Size + Byte_Size - 1) / Byte_Size;
@@ -39,8 +39,8 @@ package body Ndbm is
   pragma Import (C, Memcpy, "memcpy");
 
   function Dbm_Open (File_Name : System.Address;
-                     Flags : Integer;
-                     Mode  : Natural)
+                     Flags : C_Types.Int;
+                     Mode  : C_Types.Mode_T)
            return System.Address;
   pragma Import (C, Dbm_Open, "dbm_open");
 
@@ -50,8 +50,8 @@ package body Ndbm is
   function Dbm_Store (Db   : in System.Address;
                       Key  : in System.Address;
                       Data : in System.Address;
-                      Mode : in Integer)
-           return Integer;
+                      Mode : in C_Types.Int)
+           return C_Types.Int;
   pragma Import (C, Dbm_Store, "c_dbm_store");
 
   procedure Dbm_Fetch (Db   : in System.Address;
@@ -61,7 +61,7 @@ package body Ndbm is
 
   function Dbm_Delete (Db  : in System.Address;
                        Key : in System.Address)
-           return Integer;
+           return C_Types.Int;
   pragma Import (C, Dbm_Delete, "c_dbm_delete");
 
   procedure Dbm_Firstkey (Db  : in System.Address;
@@ -94,7 +94,7 @@ package body Ndbm is
     end if;
     Db := Dbm_Open (Name_For_C(1)'Address,
                     O_Rdwr or O_Creat,
-                    S_Irusr or S_Iwusr or S_Irgrp);
+                    C_Types.Uint32 (S_Irusr or S_Iwusr or S_Irgrp));
     if not Is_Open then
       raise Name_Error;
     end if;

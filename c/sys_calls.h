@@ -97,5 +97,8 @@ extern int get_group_name_of_gid (int gid, char *name);
 /* Return 0 on success and ERROR (-1) on error (not found) */
 extern int get_gid_of_group_name (char *name, int *gid);
 
+/* Get errno */
+extern int get_errno (void);
+
 #endif
 

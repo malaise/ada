@@ -427,3 +427,8 @@ extern int get_gid_of_group_name (char *name, int *gid) {
   return OK;
 }
 
+/* Get errno */
+extern int get_errno (void) {
+  return errno;
+}
+

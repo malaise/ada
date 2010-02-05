@@ -8,8 +8,7 @@ package body Event_Mng is
   -------------
 
   -- Result of a call to C
-  subtype Result is Integer;
-  Ok : constant Result := 0;
+  Ok : constant C_Types.Int := 0;
 
   function For_Ada(C_Boolean : in C_Types.Bool) return Boolean is
   begin
@@ -39,13 +38,13 @@ package body Event_Mng is
   -- Fd management --
   -------------------
 
-  function C_Add_Fd (Fd : Integer; Read : C_Types.Bool) return Result;
+  function C_Add_Fd (Fd : C_Types.Int; Read : C_Types.Bool) return C_Types.Int;
   pragma Import(C, C_Add_Fd, "evt_add_fd");
 
-  function C_Del_Fd (Fd : Integer; Read : C_Types.Bool) return Result;
+  function C_Del_Fd (Fd : C_Types.Int; Read : C_Types.Bool) return C_Types.Int;
   pragma Import(C, C_Del_Fd, "evt_del_fd");
 
-  function C_Fd_Set (Fd : Integer; Read : C_Types.Bool) return C_Types.Bool;
+  function C_Fd_Set (Fd : C_Types.Int; Read : C_Types.Bool) return C_Types.Bool;
   pragma Import(C, C_Fd_Set, "evt_fd_set");
 
   -- Callback list
@@ -148,16 +147,16 @@ package body Event_Mng is
   C_Sig_Child     : constant Integer :=  1;
   C_Sig_Terminate : constant Integer :=  2;
 
-  procedure C_Send_Signal (Num : Integer);
+  procedure C_Send_Signal (Num : C_Types.Int);
   pragma Import(C, C_Send_Signal, "send_signal");
 
-  function C_Get_Signal return Integer;
+  function C_Get_Signal return C_Types.Int;
   pragma Import(C, C_Get_Signal, "get_signal");
 
   procedure C_Activate_Signal_Handling;
   pragma Import(C, C_Activate_Signal_Handling, "activate_signal_handling");
 
-  function C_Reset_Default_Signals return Integer;
+  function C_Reset_Default_Signals return C_Types.Int;
   pragma Import(C, C_Reset_Default_Signals, "reset_default_signals");
 
   Cb_Term_Sig : Sig_Callback := Null_Procedure'Access;
@@ -258,7 +257,7 @@ package body Event_Mng is
   C_Wake_Event : constant Integer := -3;
   function C_Wait (P_Fd : System.Address;
                    P_Read : System.Address;
-                   P_Timeout : System.Address) return Result;
+                   P_Timeout : System.Address) return C_Types.Int;
   pragma Import(C, C_Wait, "evt_wait");
 
   function Wait (Delay_Spec : Timers.Delay_Rec) return Out_Event_List is
@@ -267,7 +266,7 @@ package body Event_Mng is
     Final_Exp, Next_Exp : Timers.Expiration_Rec;
     Now : Virtual_Time.Time;
     Timeout : C_Types.Timeval_T;
-    C_Res : Result;
+    C_Res : C_Types.Int;
     Handle_Res : Out_Event_List;
     use type Virtual_Time.Clock_Access,
              Virtual_Time.Time, Virtual_Time.Speed_Range,

@@ -5,9 +5,9 @@ package body Socket is
   -- INTERFACES --
   ----------------
   Nul : Character renames Ada.Characters.Latin_1.Nul;
-  Byte_Size : constant := System.Storage_Unit;
+  Byte_Size : constant := C_Types.Uint8'Size;
 
-  subtype Result is Integer;
+  subtype Result is C_Types.Int;
   C_Soc_Ok : constant Result := 0;
   C_Soc_Use_Err   : constant Result :=  -1;
   C_Soc_Sys_Err   : constant Result :=  -2;
@@ -30,16 +30,12 @@ package body Socket is
   C_Soc_Read_0         : constant Result := -26;
   C_Soc_Reply_Iface    : constant Result := -27;
 
-  type Boolean_For_C is new Boolean;
-  for Boolean_For_C'Size use 4 * Byte_Size;
-  for Boolean_For_C use (False => 0, True => 1);
-
   -- GNAT GPL2008 erroneously complains that this is a 8-bits Ada Boolean
   --  and that char should be used instead in C
   -- pragma Warnings (Off, Boolean_For_C);
 
 
-  type Word is new Integer range 0 .. Integer(Port_Num'Last);
+  type Word is new C_Types.Uint16;
   for Word'Size use 2 * Byte_Size;
 
   function C_Str (Str : String) return String is
@@ -56,7 +52,7 @@ package body Socket is
   function Soc_Close (S_Addr : System.Address) return Result;
   pragma Import (C, Soc_Close, "soc_close");
   function Soc_Set_Blocking (S_Addr : System.Address;
-                             Block  : Boolean_For_C) return Result;
+                             Block  : C_Types.Bool) return Result;
   pragma Import (C, Soc_Set_Blocking, "soc_set_blocking");
   function Soc_Is_Blocking (S_Addr : System.Address;
                             Block  : System.Address) return Result;
@@ -83,9 +79,9 @@ package body Socket is
   pragma Import (C, Soc_Accept, "soc_accept");
   function Soc_Receive (S : System.Address;
                         Message       : System.Address;
-                        Length        : Integer;
-                        Set_For_Reply : Boolean_For_C;
-                        Set_Ipm_Iface : Boolean_For_C) return Result;
+                        Length        : C_Types.Int;
+                        Set_For_Reply : C_Types.Bool;
+                        Set_Ipm_Iface : C_Types.Bool) return Result;
   pragma Import (C, Soc_Receive, "soc_receive");
 
   function Soc_Set_Send_Ipm_Interface (S_Addr : System.Address;
@@ -93,12 +89,12 @@ package body Socket is
   pragma Import (C, Soc_Set_Send_Ipm_Interface, "soc_set_send_ipm_interface");
   function Soc_Set_Dest_Name_Service (S : System.Address;
                                       Host_Lan : System.Address;
-                                      Lan      : Boolean_For_C;
+                                      Lan      : C_Types.Bool;
                                       Service  : System.Address) return Result;
   pragma Import (C, Soc_Set_Dest_Name_Service, "soc_set_dest_name_service");
   function Soc_Set_Dest_Name_Port (S : System.Address;
                                    Host_Lan : System.Address;
-                                   Lan      : Boolean_For_C;
+                                   Lan      : C_Types.Bool;
                                    Port     : Word) return Result;
   pragma Import (C, Soc_Set_Dest_Name_Port, "soc_set_dest_name_port");
   function Soc_Set_Dest_Host_Service (S : System.Address;
@@ -112,7 +108,7 @@ package body Socket is
 
   function Soc_Change_Dest_Name (S : System.Address;
                                  Host_Lan : System.Address;
-                                 Lan      : Boolean_For_C) return Result;
+                                 Lan      : C_Types.Bool) return Result;
   pragma Import (C, Soc_Change_Dest_Name, "soc_change_dest_name");
   function Soc_Change_Dest_Host (S : System.Address;
                                  Host : System.Address) return Result;
@@ -138,20 +134,21 @@ package body Socket is
   function Soc_Port_Name_Of (Port : Word;
                              Protocol : C_Protocol;
                              Name : System.Address;
-                             Len  : Natural) return Result;
+                             Len  : C_Types.Uint32) return Result;
   pragma Import (C, Soc_Port_Name_Of, "soc_port_name_of");
   function Soc_Port_Of (Name : System.Address;
                         Protocol : C_Protocol;
                         Port : System.Address) return Result;
   pragma Import (C, Soc_Port_Of, "soc_port_of");
   function Soc_Host_Name_Of (Host : System.Address; Name : System.Address;
-                             Len  : Natural) return Result;
+                             Len  : C_Types.Uint32) return Result;
   pragma Import (C, Soc_Host_Name_Of, "soc_host_name_of");
   function Soc_Host_Of (Name : System.Address;
                         Id   : System.Address) return Result;
   pragma Import (C, Soc_Host_Of, "soc_host_of");
   function Soc_Get_Local_Host_Name (Name : System.Address;
-                                    Len  : Natural) return Result;
+                                    Host_Name_Len : C_Types.Uint32)
+           return Result;
   pragma Import (C, Soc_Get_Local_Host_Name, "soc_get_local_host_name");
   function Soc_Get_Local_Host_Id(Id : System.Address) return Result;
   pragma Import (C, Soc_Get_Local_Host_Id, "soc_get_local_host_id");
@@ -159,7 +156,7 @@ package body Socket is
 
   function Soc_Send (S : System.Address;
                      Message : System.Address;
-                     Length  : Natural) return Result;
+                     Length  : C_Types.Uint32) return Result;
   pragma Import (C, Soc_Send, "soc_send");
   function Soc_Resend (S : System.Address) return Result;
   pragma Import (C, Soc_Resend, "soc_resend");
@@ -227,13 +224,13 @@ package body Socket is
   -- Set a socket blocking or not
   procedure Set_Blocking (Socket : in Socket_Dscr; Blocking : in Boolean) is
   begin
-    Res := Soc_Set_Blocking (Socket.Soc_Addr, Boolean_For_C(Blocking));
+    Res := Soc_Set_Blocking (Socket.Soc_Addr, C_Types.Bool(Blocking));
     Check_Ok;
   end Set_Blocking;
 
   -- Is a socket in blocking mode
   function Is_Blocking (Socket : in Socket_Dscr) return Boolean is
-    Bool : Boolean_For_C;
+    Bool : C_Types.Bool;
   begin
     Res := Soc_Is_Blocking (Socket.Soc_Addr, Bool'Address);
     Check_Ok;
@@ -308,8 +305,8 @@ package body Socket is
                      Set_For_Reply : in Boolean := False;
                      Set_Ipm_Iface : in Boolean := False) is
     Len : Natural;
-    Sfr_For_C : constant Boolean_For_C := Boolean_For_C(Set_For_Reply);
-    Sif_For_C : constant Boolean_For_C := Boolean_For_C(Set_Ipm_Iface);
+    Sfr_For_C : constant C_Types.Bool := C_Types.Bool(Set_For_Reply);
+    Sif_For_C : constant C_Types.Bool := C_Types.Bool(Set_Ipm_Iface);
   begin
     if Message_Size = 0 then
       -- Size not provided at instantiation, guess it from
@@ -358,7 +355,7 @@ package body Socket is
     Service_For_C : constant String := C_Str (Service);
   begin
     Res := Soc_Set_Dest_Name_Service (Socket.Soc_Addr,
-                                 Name_For_C'Address, Boolean_For_C(Lan),
+                                 Name_For_C'Address, C_Types.Bool(Lan),
                                  Service_For_C'Address);
     Check_Ok;
   end Set_Destination_Name_And_Service;
@@ -382,7 +379,7 @@ package body Socket is
     Name_For_C : constant String := C_Str (Name);
   begin
     Res := Soc_Set_Dest_Name_Port (Socket.Soc_Addr,
-                              Name_For_C'Address, Boolean_For_C(Lan),
+                              Name_For_C'Address, C_Types.Bool(Lan),
                               Word(Port) );
     Check_Ok;
   end Set_Destination_Name_And_Port;
@@ -398,7 +395,7 @@ package body Socket is
 
   -- Is a tcp socket connected
   function Is_Connected (Socket : Socket_Dscr) return Boolean is
-    Con_For_C : Boolean_For_C;
+    Con_For_C : C_Types.Bool;
   begin
     Res := Soc_Is_Connected (Socket.Soc_Addr, Con_For_C'Address);
     Check_Ok;
@@ -413,7 +410,7 @@ package body Socket is
     Name_For_C : constant String := C_Str (Name);
   begin
     Res := Soc_Change_Dest_Name (Socket.Soc_Addr, Name_For_C'Address,
-                                 Boolean_For_C(Lan));
+                                 C_Types.Bool(Lan));
     Check_Ok;
   end Change_Destination_Name;
 
@@ -571,7 +568,7 @@ package body Socket is
     else
       Len := Length;
     end if;
-    Res := Soc_Send (Socket.Soc_Addr, Message'Address, Len);
+    Res := Soc_Send (Socket.Soc_Addr, Message'Address, C_Types.Uint32(Len));
     Check_Ok;
   end Send;
 

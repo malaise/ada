@@ -1,5 +1,5 @@
 with System;
-with Sys_Calls;
+with Sys_Calls, C_Types;
 package Socket is
 
   -- A socket descriptor
@@ -22,7 +22,7 @@ package Socket is
   --  to it.
 
   -- A port
-  type Port_Num is new Natural range 0 .. 65535;
+  type Port_Num is new C_Types.Uint16 range 0 .. C_Types.Uint16'Last;
 
   -- A host
   type Host_Id is private;
@@ -284,7 +284,7 @@ private
 
   No_Socket : constant Socket_Dscr := (Soc_Addr => System.Null_Address);
 
-  type Host_Id is new Natural;
+  type Host_Id is new C_Types.Uint32;
   for Host_Id'Size use 4 * System.Storage_Unit; -- As Ip_Addr
   No_Host : constant Host_Id := 0;
 

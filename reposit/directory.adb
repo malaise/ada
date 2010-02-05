@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1;
-with String_Mng;
+with C_Types, String_Mng;
 package body Directory is
   use System;
 
@@ -12,7 +12,7 @@ package body Directory is
   -- For Open_Error else Access_Error
   Einval : constant := 22;
 
-  function C_Strlen (S : System.Address) return Natural;
+  function C_Strlen (S : System.Address) return C_Types.Size_T;
   pragma Import(C, C_Strlen, "strlen");
 
   function Str_For_C (Str : String) return String is
@@ -20,7 +20,8 @@ package body Directory is
     return Str & Ada.Characters.Latin_1.Nul;
   end Str_For_C;
 
-  function C_Getcwd (Buf : System.Address; Size : Integer) return System.Address;
+  function C_Getcwd (Buf : System.Address; Size : C_Types.Size_T)
+           return System.Address;
   pragma Import(C, C_Getcwd, "getcwd");
 
   -- Returns current working directory
@@ -34,7 +35,7 @@ package body Directory is
       -- Buffer too small
       raise Constraint_Error;
     end if;
-    Len := C_Strlen (Result(Result'First)'Address);
+    Len := Natural (C_Strlen (Result(Result'First)'Address));
     return Result (1 .. Len);
   end Get_Current;
 
@@ -43,7 +44,7 @@ package body Directory is
     Text_Handler.Set (Cur_Dir, Get_Current);
   end Get_Current;
 
-  function C_Chdir (Path : System.Address) return Integer;
+  function C_Chdir (Path : System.Address) return C_Types.Int;
   pragma Import(C, C_Chdir, "chdir");
 
   -- Changes current working directory
@@ -82,7 +83,8 @@ package body Directory is
   end Open;
 
 
-  function C_Readdir (Dir : System.Address; Name : System.Address) return Integer;
+  function C_Readdir (Dir : System.Address; Name : System.Address)
+           return C_Types.Int;
   pragma Import(C, C_Readdir, "read_dir");
 
   -- Gets next entry of the opened directory
@@ -138,7 +140,9 @@ package body Directory is
 
   -- Follow a link
   function C_Readlink (Path : System.Address;
-                       Buf : System.Address; Bufsiz : Integer) return Integer;
+                       Buf  : System.Address;
+                       Bufsiz : C_Types.Size_T)
+           return C_Types.Size_T;
   pragma Import(C, C_Readlink, "readlink");
 
   -- May raise Name_Error if File_Name does not exist
@@ -148,7 +152,7 @@ package body Directory is
     C_File_Name : constant String := Str_For_C(File_Name);
     Res : Integer;
   begin
-    Res := C_Readlink (C_File_Name'Address, Str'Address, Str'Length);
+    Res := Integer (C_Readlink (C_File_Name'Address, Str'Address, Str'Length));
     if Res /= -1 then
       return Str (1 .. Res);
     elsif Sys_Calls.Errno = Enoent then
@@ -224,8 +228,10 @@ package body Directory is
   end Read_Link;
 
 
-  function C_Fnmatch (Pattern : System.Address; Strings : System.Address; Flags : Integer)
-           return Integer;
+  function C_Fnmatch (Pattern : System.Address;
+                      Strings : System.Address;
+                      Flags : C_Types.Int)
+           return C_Types.Int;
   pragma Import(C, C_Fnmatch, "fnmatch");
   File_Matches : constant := 0;
   File_Not_Matches : constant := 1;

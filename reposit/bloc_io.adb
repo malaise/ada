@@ -36,7 +36,7 @@ package  body Bloc_Io is
   Seek_End : constant Integer := 2;
   function Fseek(File : System.Address;
                  Offset : C_Types.Long;
-                 Whence : Integer) return Integer;
+                 Whence : C_Types.Int) return C_Types.Int;
   pragma Import (C, Fseek, "fseek");
 
   function Ftell(File : System.Address) return C_Types.Long;

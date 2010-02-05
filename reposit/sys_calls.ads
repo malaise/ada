@@ -55,7 +55,7 @@ package Sys_Calls is
   procedure Set_Error_Exit_Code;
 
   -- Unix File Descriptor
-  type File_Desc is new Natural;
+  type File_Desc is new C_Types.Int range 0 .. C_Types.Int'Last;
   type File_Desc_Kind_List is (Tty,
     File, Dir, Link, Block_Device, Character_Device, Pipe, Socket, Unknown);
   function File_Desc_Kind (Fd : File_Desc) return File_Desc_Kind_List;
@@ -173,7 +173,7 @@ package Sys_Calls is
   function Dup (To_Copy : in File_Desc) return File_Desc;
   function Dup2 (To_Copy, Start_At : in File_Desc) return File_Desc;
 
-  type Pid is new Positive;
+  type Pid is new Integer;
 
   -- Get current / parent pid
   function Get_Pid return Pid;
