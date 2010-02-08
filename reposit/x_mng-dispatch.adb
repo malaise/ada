@@ -320,10 +320,14 @@ package body Dispatch is
     end Oldest;
 
     -- Check client is known and is allowed to be active
-    procedure Check (Client : in Client_Range;
+    procedure Check (Client : in Line_Range;
                      Check_X : in Boolean;
                      Running : in Boolean := True) is
     begin
+      if Client not in Client_Range then
+        Log ("Check", Client, "not registered");
+        raise Dispatch_Error;
+      end if;
       if not Clients(Client).Used then
         Log ("Check", Client, "unknown");
         raise Dispatch_Error;
@@ -406,7 +410,7 @@ package body Dispatch is
     end Get_Nb_Clients;
 
     -- Two calls to protect a call to X
-    entry Call_On  (Client : in Client_Range;
+    entry Call_On  (Client : in Line_Range;
                     Line_For_C_Id : out Line_For_C) when not In_X is
     begin
       Check (Client, True);

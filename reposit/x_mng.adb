@@ -430,7 +430,7 @@ package body X_Mng is
       function Get_Nb_Clients return Line_Range;
 
       -- Two calls to protect a call to X
-      entry Call_On  (Client : in Client_Range;
+      entry Call_On  (Client : in Line_Range;
                       Line_For_C_Id : out Line_For_C);
       procedure Call_Off (Client : in Client_Range;
                       New_Line_For_C_Id : in Line_For_C);
