@@ -326,7 +326,7 @@ package body Dispatch is
     begin
       if Client not in Client_Range then
         Log ("Check", Client, "not registered");
-        raise Dispatch_Error;
+        raise X_Failure;
       end if;
       if not Clients(Client).Used then
         Log ("Check", Client, "unknown");
