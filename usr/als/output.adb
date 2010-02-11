@@ -17,22 +17,26 @@ package body Output is
   Revert : Boolean;
   Format_Kind : Format_Kind_List;
   Put_Path : Boolean;
+  Full_Path : Boolean;
   Separator : Asu.Unbounded_String;
   Classify : Boolean;
   Default_Separator : constant String := "  ";
 
   -- Set (store) sorting and format style
-  procedure Set_Style (Sort_Kind : in Sort_Kind_List;
-                       Revert : in Boolean;
-                       Format_Kind : in Format_Kind_List;
-                       Put_Path : in Boolean;
-                       Classify : in Boolean;
-                       Separator : Ada.Strings.Unbounded.Unbounded_String) is
+  procedure Set_Style (
+             Sort_Kind   : in Sort_Kind_List;
+             Revert      : in Boolean;
+             Format_Kind : in Format_Kind_List;
+             Put_Path    : in Boolean;
+             Full_Path   : in Boolean;
+             Classify    : in Boolean;
+             Separator   : in Ada.Strings.Unbounded.Unbounded_String) is
   begin
     Output.Sort_Kind := Sort_Kind;
     Output.Revert := Revert;
     Output.Format_Kind := Format_Kind;
     Output.Put_Path := Put_Path;
+    Output.Full_Path := Full_Path;
     Output.Separator := Separator;
     Output.Classify := Classify;
     Environ.Get_Nat (Env_Max_To_Sort, Max_To_Sort);

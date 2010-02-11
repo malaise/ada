@@ -2,7 +2,7 @@ with Ada.Calendar, Ada.Strings.Unbounded;
 with Basic_Proc, Argument, Argument_Parser;
 with Entities, Output, Targets, Lister;
 procedure Als is
-  Version : constant String  := "V3.2";
+  Version : constant String  := "V4.0";
 
   -- Exit codes
   Found_Exit_Code : constant Natural := 0;
@@ -17,7 +17,7 @@ procedure Als is
       & " [ { <option> } ] [ { <file_or_dir_spec> } ]");
     Put_Line_Error (" <option> ::= -a (--all) | -A (--All)");
     Put_Line_Error ("            | -l (--list) | -1 (--1row) | -c (--classify)");
-    Put_Line_Error ("            | -h (--human) | <separator>");
+    Put_Line_Error ("            | -h (--human) | -f (--full_path) | <separator>");
     Put_Line_Error ("            | -D (--directories) | -L (--links) | -F (--files)");
     Put_Line_Error ("            | [ { <match_name> } ] | [ { <exclude_name> } ]");
     Put_Line_Error ("            | [ { <match_dir> } ] | [ { <exclude_dir> } ]");
@@ -86,7 +86,8 @@ procedure Als is
    23 => ('c', Asu_Tus ("classify"), False, False),
    24 => (Argument_Parser.No_Key_Char, Asu_Tus ("depth"), False, True),
    25 => ('h', Asu_Tus ("human"), False, False),
-   26 => ('N', Asu_Tus ("no_sort"), False, False) );
+   26 => ('N', Asu_Tus ("no_sort"), False, False),
+   27 => ('f', Asu_Tus ("full_path"), False, False) );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   -- Option management
   List_Dots, List_Roots_And_Dots : Boolean;
@@ -108,6 +109,7 @@ procedure Als is
   Put_Total : Boolean;
   Classify : Boolean;
   Depth : Natural;
+  Full_Path : Boolean;
 
   -- Parse a date argument
   function Parse_Date (Str : String) return Entities.Date_Spec_Rec is separate;
@@ -169,6 +171,7 @@ begin
   Merge_Lists := Arg_Dscr.Is_Set (10) or else Arg_Dscr.Is_Set (22);
   Classify := Arg_Dscr.Is_Set (23);
   No_Sorting := Arg_Dscr.Is_Set (26);
+  Full_Path := Arg_Dscr.Is_Set (27);
   Depth := 0;
   -- Check sorting
   if Sort_By_Time and then Sort_By_Size then
@@ -272,7 +275,7 @@ begin
       Format_Kind := Output.Simple;
     end if;
     Output.Set_Style (Sort_Kind, Sort_Reverse, Format_Kind, Merge_Lists,
-                      Classify, Separator);
+                      Full_Path, Classify, Separator);
   end;
   if Arg_Dscr.Is_Set (24) then
     if not Recursive then
