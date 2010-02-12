@@ -33,8 +33,7 @@ package body Targets is
         end if;
         if not Entries.Is_Empty then
           Found := True;
-          Output.Put (Entries);
-          Output.New_Line;
+          Output.Put (Entries, True);
           Need_New_Line := True;
           Entries.Delete_List;
         end if;
@@ -88,8 +87,7 @@ package body Targets is
       if not Merge then
         if not Entries.Is_Empty then
           Found := True;
-          Output.Put (Entries);
-          Output.New_Line;
+          Output.Put (Entries, True);
           Need_New_Line := True;
           Entries.Delete_List;
         end if;
@@ -127,7 +125,7 @@ package body Targets is
 
     -- Put complete result if merge
     if Merge then
-      Output.Put (Entries);
+      Output.Put (Entries, False);
       Entries.Delete_List;
     end if;
     return Found;

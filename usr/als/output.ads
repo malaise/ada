@@ -14,7 +14,8 @@ package Output is
                        Separator   : in Ada.Strings.Unbounded.Unbounded_String);
 
   -- Sort list and put according to style
-  procedure Put (List : in out Entities.Entity_List);
+  procedure Put (List : in out Entities.Entity_List;
+                 Append_New_Line : in Boolean);
 
   -- Put a dir name ("Dir:")
   procedure Put_Dir (Name : in String);
