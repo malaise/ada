@@ -22,15 +22,20 @@ package body Lister is
   procedure Add_Size (Size : in Sys_Calls.Size_T);
 
   -- Slection criteria
-  Only_Dirs, Only_Links, Only_Files : Boolean := False;
+  Only_Dirs, Only_Files : Boolean := False;
+  Only_Links : Link_Criteria_List := No_Link;
+  Follow_Links : Boolean := False;
   Date1, Date2 : Entities.Date_Spec_Rec;
   -- Set selection criteria
-  procedure Set_Criteria (Only_Dirs, Only_Links, Only_Files : in Boolean;
+  procedure Set_Criteria (Only_Dirs, Only_Files : in Boolean;
+                          Only_Links : in Link_Criteria_List;
+                          Follow_Links : in Boolean;
                           Date1, Date2 : in Entities.Date_Spec_Rec) is
   begin
     Lister.Only_Dirs := Only_Dirs;
-    Lister.Only_Links := Only_Links;
     Lister.Only_Files := Only_Files;
+    Lister.Only_Links := Only_Links;
+    Lister.Follow_Links := Follow_Links;
     Lister.Date1 := Date1;
     Lister.Date2 := Date2;
   end Set_Criteria;
@@ -103,19 +108,21 @@ package body Lister is
   end Match;
 
   -- Does an entity kind match type criteria
-  function Match (Kind : Directory.File_Kind_List) return Boolean is
+  function Match (Kind : Directory.File_Kind_List;
+                  Link_Ok : Boolean) return Boolean is
     use type Directory.File_Kind_List;
   begin
-    if not (Only_Dirs or else Only_Links or else Only_Files) then
+    if not (Only_Dirs or else Only_Files or else Only_Links /= No_Link) then
       -- No criteria => averything matches
       return True;
     end if;
     if Kind = Directory.Dir then
       return Only_Dirs;
-    elsif Kind = Directory.Link then
-      return  Only_Links;
     elsif Kind = Directory.File then
       return Only_Files;
+    elsif Kind = Directory.Link then
+      return Only_Links = All_Links
+      or else (Only_Links = Broken_Links and then not Link_Ok);
     else
       -- Any other kind
       return False;
@@ -138,7 +145,7 @@ package body Lister is
     Done : Boolean;
   begin
     -- Check file type and date
-    if not Match (Ent.Kind)
+    if not Match (Ent.Kind, Ent.Link_Ok)
     or else not Match (Ent.Modif_Time, Date1)
     or else not Match (Ent.Modif_Time, Date2) then
       return False;
@@ -175,7 +182,8 @@ package body Lister is
     return False;
   end Match;
 
-  -- Read link Name and fill Ent.Link, Ent.Link_Ok and Ent.Link_Kind
+  -- Read link Name and fill Ent.Link, Ent.Link_Ok, Ent.Link_Kind and
+  --  Ent.Link_Rights
   procedure Read_Link (Name : in String; Ent : in out Entities.Entity) is
     Link_Target : Asu.Unbounded_String;
     Stat : Sys_Calls.File_Stat_Rec;
@@ -208,6 +216,16 @@ package body Lister is
         Ent.Link_Kind := Directory.Unknown;
         Ent.Link_Rights := 0;
     end;
+    -- Store final target and size instead of direct target if Follow_Link
+    if Follow_Links then
+      if Ent.Link_Ok then
+        Ent.Link := Link_Target;
+        Ent.Size := Stat.Size;
+      else
+        Ent.Link := Asu.Null_Unbounded_String;
+        Ent.Size := 0;
+      end if;
+    end if;
   end Read_Link;
 
   -- Add a file if it matches
@@ -231,15 +249,10 @@ package body Lister is
         return;
     end;
 
-    -- Check it matches
+    -- Fill entity
     Ent.Name := Asu.To_Unbounded_String (Directory.Basename(File));
     Ent.Kind := Directory.File_Kind_List (Stat.Kind);
     Ent.Modif_Time := Sys_Calls.Time_Of (Stat.Modif_Time);
-    if not Match (Ent) then
-      return;
-    end if;
-
-    -- Fill entity
     Ent.Path := Asu.To_Unbounded_String (Directory.Dirname(File));
     Ent.Rights := Stat.Rights;
     Ent.User_Id := Stat.User_Id;
@@ -249,6 +262,12 @@ package body Lister is
     if Ent.Kind = Directory.Link then
       Read_Link (File, Ent);
     end if;
+
+    -- Check it matches
+    if not Match (Ent) then
+      return;
+    end if;
+
     -- Insert entity
     Ent_List.Insert (Ent);
     -- Update size
@@ -328,14 +347,9 @@ package body Lister is
             raise Discard;
         end;
 
-        -- Check it matches
+        -- Fill entity
         Ent.Kind := Directory.File_Kind_List (Stat.Kind);
         Ent.Modif_Time := Sys_Calls.Time_Of (Stat.Modif_Time);
-        if not Match (Ent) then
-          raise Discard;
-        end if;
-
-        -- Fill entity
         Ent.Rights := Stat.Rights;
         Ent.User_Id := Stat.User_Id;
         Ent.Group_Id := Stat.Group_Id;
@@ -345,6 +359,11 @@ package body Lister is
           Read_Link (Directory.Build_File_Name (Dir,
                                     Asu.To_String (Ent.Name), ""),
                      Ent);
+        end if;
+
+        -- Check it matches
+        if not Match (Ent) then
+          raise Discard;
         end if;
 
         -- Append entity to list

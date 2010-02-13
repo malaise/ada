@@ -9,7 +9,10 @@ package Lister is
   package Str_List_Mng renames Str_Dyn_List_Mng.Dyn_List;
 
   -- Set selection criteria
-  procedure Set_Criteria (Only_Dirs, Only_Links, Only_Files : in Boolean;
+  type Link_Criteria_List is (All_Links, Broken_Links, No_Link);
+  procedure Set_Criteria (Only_Dirs, Only_Files : in Boolean;
+                          Only_Links : in Link_Criteria_List;
+                          Follow_Links : in Boolean;
                           Date1, Date2 : in Entities.Date_Spec_Rec);
 
   -- Add a file match or exclude template or regex

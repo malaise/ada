@@ -2,7 +2,7 @@ with Ada.Calendar, Ada.Strings.Unbounded;
 with Basic_Proc, Argument, Argument_Parser;
 with Entities, Output, Targets, Lister;
 procedure Als is
-  Version : constant String  := "V4.0";
+  Version : constant String  := "V5.0";
 
   -- Exit codes
   Found_Exit_Code : constant Natural := 0;
@@ -15,10 +15,12 @@ procedure Als is
   begin
     Put_Line_Error ("Usage: " & Argument.Get_Program_Name
       & " [ { <option> } ] [ { <file_or_dir_spec> } ]");
-    Put_Line_Error (" <option> ::= -a (--all) | -A (--All)");
-    Put_Line_Error ("            | -l (--list) | -1 (--1row) | -c (--classify)");
+    Put_Line_Error (" <option> ::= -l (--list) | -1 (--1row) | -c (--classify)");
     Put_Line_Error ("            | -h (--human) | -f (--full_path) | <separator>");
+    Put_Line_Error ("            | --follow_links");
+    Put_Line_Error ("            | -a (--all) | -A (--All)");
     Put_Line_Error ("            | -D (--directories) | -L (--links) | -F (--files)");
+    Put_Line_Error ("            | -B (--broken_links) ");
     Put_Line_Error ("            | [ { <match_name> } ] | [ { <exclude_name> } ]");
     Put_Line_Error ("            | [ { <match_dir> } ] | [ { <exclude_dir> } ]");
     Put_Line_Error ("            | <date_spec> [ <date_spec> ]");
@@ -87,17 +89,20 @@ procedure Als is
    24 => (Argument_Parser.No_Key_Char, Asu_Tus ("depth"), False, True),
    25 => ('h', Asu_Tus ("human"), False, False),
    26 => ('N', Asu_Tus ("no_sort"), False, False),
-   27 => ('f', Asu_Tus ("full_path"), False, False) );
+   27 => ('f', Asu_Tus ("full_path"), False, False),
+   28 => ('B', Asu_Tus ("broken_links"), False, False),
+   29 => (Argument_Parser.No_Key_Char, Asu_Tus ("follow_links"), False, False) );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   -- Option management
   List_Dots, List_Roots_And_Dots : Boolean;
   Dots : Entities.Dots_Kind_List;
   Long_List : Boolean;
+  Follow_Links : Boolean;
   Human : Boolean;
   One_Row : Boolean;
   List_Only_Dirs : Boolean;
-  List_Only_Links : Boolean;
   List_Only_Files : Boolean;
+  List_Only_Links : Lister.Link_Criteria_List;
   Sort_Reverse : Boolean;
   Recursive : Boolean;
   Sort_By_Size : Boolean;
@@ -161,8 +166,8 @@ begin
     Dots := Entities.Basic;
   end if;
   Long_List := Arg_Dscr.Is_Set (03);
+  Follow_Links := Arg_Dscr.Is_Set (29);
   One_Row := Arg_Dscr.Is_Set (04);
-  Human := Arg_Dscr.Is_Set (25);
   List_Only_Dirs := Arg_Dscr.Is_Set (05);
   Sort_Reverse := Arg_Dscr.Is_Set (06);
   Recursive := Arg_Dscr.Is_Set (07) or else Arg_Dscr.Is_Set (22);
@@ -170,6 +175,7 @@ begin
   Sort_By_Time := Arg_Dscr.Is_Set (09) or else Arg_Dscr.Is_Set (22);
   Merge_Lists := Arg_Dscr.Is_Set (10) or else Arg_Dscr.Is_Set (22);
   Classify := Arg_Dscr.Is_Set (23);
+  Human := Arg_Dscr.Is_Set (25);
   No_Sorting := Arg_Dscr.Is_Set (26);
   Full_Path := Arg_Dscr.Is_Set (27);
   Depth := 0;
@@ -199,7 +205,13 @@ begin
     Date1 := Parse_Date ("ge" & Arg_Dscr.Get_Option(22, 1));
     Date2.Oper := Entities.None;
   end if;
-  List_Only_Links := Arg_Dscr.Is_Set (14);
+  if Arg_Dscr.Is_Set (14) then
+    List_Only_Links := Lister.All_Links;
+  elsif Arg_Dscr.Is_Set (28) then
+    List_Only_Links := Lister.Broken_Links;
+  else
+    List_Only_Links := Lister.No_Link;
+  end if;
   List_Only_Files := Arg_Dscr.Is_Set (15);
   -- Add match template if any
   for I in 1 .. Arg_Dscr.Get_Nb_Occurences (16) loop
@@ -296,8 +308,8 @@ begin
   end if;
 
   -- Set selection criteria in Lister, activate Total computation
-  Lister.Set_Criteria (List_Only_Dirs, List_Only_Links, List_Only_Files,
-                       Date1, Date2);
+  Lister.Set_Criteria (List_Only_Dirs, List_Only_Files, List_Only_Links,
+                       Follow_Links, Date1, Date2);
   if Put_Total then
     Lister.Activate_Total;
   end if;
