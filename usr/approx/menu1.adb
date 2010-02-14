@@ -127,13 +127,16 @@ package body Menu1 is
       Kind := Directory.File_Kind (Text_Handler.Value(Tmp_File_Name));
       if Kind = Directory.Link then
         -- Follow link recursively
-        Directory.Read_Link (Text_Handler.Value(Tmp_File_Name),
-                             Tmp_File_Name);
+        begin
+          Directory.Read_Link (Text_Handler.Value(Tmp_File_Name),
+                               Tmp_File_Name);
+        exception
+          when others =>
+            Error (Screen.E_Io_Error);
+        end;
         Kind := Directory.File_Kind (Text_Handler.Value(Tmp_File_Name));
       end if;
     end;
-
-
 
     -- Restore (for errors)
     Afpx.Use_Descriptor(1);

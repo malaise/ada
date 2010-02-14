@@ -122,6 +122,8 @@ begin
             My_Io.Put_Line ("???? ???");
           when Directory.Access_Error =>
             My_Io.Put_Line ("!!!! !!!");
+          when Directory.Recursive_Link =>
+            My_Io.Put_Line ("#### ###");
         end;
       end loop;
     exception

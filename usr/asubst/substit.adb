@@ -59,6 +59,10 @@ package body Substit is
           return Path_Name;
         end if;
       end if;
+    exception
+      when others =>
+        Error ("Cannot access directory " & Path_Name);
+        raise Substit_Error;
     end Dir_Name;
     Stat : Sys_Calls.File_Stat_Rec;
     Can_Read, Can_Write, Can_Exec : Boolean;

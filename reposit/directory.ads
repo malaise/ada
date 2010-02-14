@@ -44,6 +44,8 @@ package Directory is
   -- May raise Name_Error if File_Name does not exist
   --           Access_Error if File_Name cannot be read
   --           Open_Error if File_Name is not a link
+  --           Recursive_Link if Recursive and if links points on itself
+  --            (indirectly or not)
 
 
   -- Does file name match a pattern
@@ -76,11 +78,12 @@ package Directory is
   function File_Kind (File_Name : String) return File_Kind_List;
 
   -- Exceptions
-  Name_Error   : exception renames Sys_Calls.Name_Error;
-  Open_Error   : exception;
-  Access_Error : exception renames Sys_Calls.Access_Error;
-  End_Error    : exception;
-  Syntax_Error : exception;
+  Name_Error     : exception renames Sys_Calls.Name_Error;
+  Open_Error     : exception;
+  Access_Error   : exception renames Sys_Calls.Access_Error;
+  End_Error      : exception;
+  Syntax_Error   : exception;
+  Recursive_Link : exception;
 
 private
 

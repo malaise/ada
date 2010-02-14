@@ -4,10 +4,6 @@ package body Lister is
 
   -- type Dots_Kind_List is (Basic, Basic_Dots, Basic_Dots_Roots);
   package Asu renames Ada.Strings.Unbounded;
-  subtype Asu_Us is Asu.Unbounded_String;
-  function Asu_Tus (Source : in String) return Asu_Us
-                   renames Asu.To_Unbounded_String;
-
 
   -- List of file templates
   type Tmpl_Rec is record
@@ -189,7 +185,7 @@ package body Lister is
   -- Read link Name and fill Ent.Link, Ent.Link_Ok, Ent.Link_Kind and
   --  Ent.Link_Rights
   procedure Read_Link (Name : in String; Ent : in out Entities.Entity) is
-    Link_Orig, Link_Target : Asu.Unbounded_String;
+    Link_Target : Asu.Unbounded_String;
     Stat : Sys_Calls.File_Stat_Rec;
     use type Asu.Unbounded_String;
   begin
@@ -206,7 +202,6 @@ package body Lister is
         return;
     end;
     -- Check if final target exists (and is reachable), and store its kind
-    Link_Orig := Asu_Tus (Directory.Make_Full_Path (Name));
     begin
       Link_Target := Asu.To_Unbounded_String (Directory.Read_Link (
           File_Name => Name, Recursive => True));
@@ -216,19 +211,13 @@ package body Lister is
       Ent.Link_Rights := Stat.Rights;
     exception
       when Directory.Name_Error | Directory.Access_Error |
+           Directory.Recursive_Link |
            Sys_Calls.Name_Error | Sys_Calls.Access_Error =>
         Ent.Link_Ok := False;
         Ent.Link_Kind := Directory.Unknown;
         Ent.Link_Rights := 0;
         return;
     end;
-    -- Verify that link does not poit to itself
-    if Link_Target = Link_Orig then
-      Ent.Link_Ok := False;
-      Ent.Link_Kind := Directory.Unknown;
-      Ent.Link_Rights := 0;
-      return;
-    end if;
     -- Store final target and size instead of direct target if Follow_Link
     if Follow_Links then
       if Ent.Link_Ok then

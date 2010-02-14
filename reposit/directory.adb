@@ -174,7 +174,9 @@ package body Directory is
 
   function Read_Link (File_Name : String;
                       Recursive : Boolean := True) return String is
-    Link, Orig : Asu_Us;
+    Orig, Src, Dest : Asu_Us;
+    Iter : Positive;
+    Threshold : constant := 1024;
     use Text_Handler;
     use type Sys_Calls.File_Kind_List, Asu_Us;
   begin
@@ -186,17 +188,30 @@ package body Directory is
       return Read_One_Link(File_Name);
     end if;
 
-    Orig := Asu_Tus (Make_Full_Path (File_Name));
+    Src := Asu_Tus (Make_Full_Path (File_Name));
+    Iter := 1;
     loop
-      -- Current is a link, read it
-      Link := Asu_Tus (Read_One_Link(Asu_Ts (Orig)));
-      Link := Asu_Tus (Make_Full_Path (Asu_Ts (Link)));
+      -- Current is a link, read it, done when not a link
+      Dest := Asu_Tus (Read_One_Link(Asu_Ts (Src)));
+      Dest := Asu_Tus (Make_Full_Path (Asu_Ts (Dest)));
+      exit when Sys_Calls.File_Stat (Asu_Ts (Dest)).Kind /= Sys_Calls.Link;
 
-      exit when Link = Orig;
-      exit when Sys_Calls.File_Stat (Asu_Ts (Link)).Kind /= Sys_Calls.Link;
-      Orig := Link;
+      -- Detec recursion
+      if Dest = Src then
+        -- Link points to itself
+        raise Recursive_Link;
+      elsif Iter = Threshold then
+        -- Looks like an infinite loop, store current as Orig
+        Orig := Dest;
+      elsif Iter > Threshold and then Dest = Orig then
+        -- We have looped back to Orig
+        raise Recursive_Link;
+      end if;
+
+      Iter := Iter + 1;
+      Src := Dest;
     end loop;
-    return Asu_Ts (Link);
+    return Asu_Ts (Dest);
   end Read_Link;
 
 
