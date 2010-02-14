@@ -191,9 +191,14 @@ package body Directory is
     Src := Asu_Tus (Make_Full_Path (File_Name));
     Iter := 1;
     loop
-      -- Current is a link, read it, done when not a link
+      -- Current is a link, read it,
       Dest := Asu_Tus (Read_One_Link(Asu_Ts (Src)));
+      if Asu.Length (Dest) >= 1 and then Asu.Element (Dest, 1) /= Separator then
+        -- Link is relative, append apth of source
+        Dest := Asu_Tus (Dirname (Asu_Ts (Src))) & Dest;
+      end if;
       Dest := Asu_Tus (Make_Full_Path (Asu_Ts (Dest)));
+      -- Done when not a link
       exit when Sys_Calls.File_Stat (Asu_Ts (Dest)).Kind /= Sys_Calls.Link;
 
       -- Detec recursion
