@@ -1,6 +1,6 @@
 with Ada.Calendar, Ada.Text_Io;
 with Directory, Sys_Calls, Bit_Ops, Normal, Int_Image, Date_Image, Upper_Str,
-     Environ, Normalize_Path;
+     Environ;
 package body Output is
 
   -- Max amount of entries to sort
@@ -29,9 +29,6 @@ package body Output is
   Classify : Boolean;
   Default_Separator : constant String := "  ";
 
-  -- Current directory path
-  Curdir : constant Asu_Us := Asu_Tus (Directory.Get_Current);
-
   -- Set (store) sorting and format style
   procedure Set_Style (
              Sort_Kind   : in Sort_Kind_List;
@@ -51,20 +48,6 @@ package body Output is
     Output.Classify := Classify;
     Environ.Get_Nat (Env_Max_To_Sort, Max_To_Sort);
   end Set_Style;
-
-  -- Get full path of a path
-  function Make_Full_Path (Path : String) return String is
-  begin
-    if Path = "" then
-      return Normalize_Path (Asu_Ts (Curdir));
-    elsif Path(Path'First) = '/' then
-      -- Path is already absolute => Normalize
-      return Normalize_Path (Path);
-    else
-      -- Path is relative, prepend current path & Normalize
-      return Normalize_Path (Asu_Ts (Curdir) & "/" & Path);
-    end if;
-  end Make_Full_Path;
 
   -- Sorting function for 2 paths
   function "<" (S1, S2 : Asu_Us) return Boolean is
@@ -109,11 +92,11 @@ package body Output is
     if Full_Path then
       C1.Name := Asu.To_Unbounded_String (
         Directory.Build_File_Name (
-           Make_Full_Path (Asu_Ts (C1.Path)),
+           Directory.Make_Full_Path (Asu_Ts (C1.Path)),
            Asu_Ts (C1.Name), "") );
       C2.Name := Asu.To_Unbounded_String (
         Directory.Build_File_Name (
-           Make_Full_Path (Asu_Ts (C2.Path)),
+           Directory.Make_Full_Path (Asu_Ts (C2.Path)),
            Asu_Ts (C2.Name), "") );
     elsif Put_Path then
       C1.Name := Asu.To_Unbounded_String (
@@ -213,7 +196,7 @@ package body Output is
    First_Entry := True;
    if Full_Path then
       return Directory.Build_File_Name (
-           Make_Full_Path (Asu_Ts (Entity.Path)),
+           Directory.Make_Full_Path (Asu_Ts (Entity.Path)),
            Asu_Ts (Entity.Name), "");
     elsif Put_Path then
       return Directory.Build_File_Name (

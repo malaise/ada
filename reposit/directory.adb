@@ -1,7 +1,13 @@
-with Ada.Characters.Latin_1;
+with Ada.Strings.Unbounded, Ada.Characters.Latin_1;
 with C_Types, String_Mng;
 package body Directory is
   use System;
+
+  package Asu renames Ada.Strings.Unbounded;
+  subtype Asu_Us is Asu.Unbounded_String;
+  function Asu_Tus (Source : in String) return Asu_Us
+                 renames Asu.To_Unbounded_String;
+  function Asu_Ts (Source : in Asu_Us) return String renames Asu.To_String;
 
   subtype Dir_Str is String (1 .. 256);
 
@@ -166,26 +172,11 @@ package body Directory is
     end if;
   end Read_One_Link;
 
-
-  procedure Extract_Path (From : in String; To : in out Text_Handler.Text) is
-  begin
-    if From(From'First) /= Separator then
-      Text_Handler.Empty(To);
-      return;
-    end if;
-    for I in reverse From'Range loop
-      if From(I) = Separator then
-        Text_Handler.Set (To, From(From'First .. I - 1));
-        exit;
-      end if;
-    end loop;
-  end Extract_Path;
-
   function Read_Link (File_Name : String;
                       Recursive : Boolean := True) return String is
-    Dir, Txt : Text_Handler.Text(Max_Dir_Name_Len);
+    Link, Orig : Asu_Us;
     use Text_Handler;
-    use type Sys_Calls.File_Kind_List;
+    use type Sys_Calls.File_Kind_List, Asu_Us;
   begin
     -- Check file_name  is a link
     if Sys_Calls.File_Stat (File_Name).Kind /= Sys_Calls.Link then
@@ -195,28 +186,17 @@ package body Directory is
       return Read_One_Link(File_Name);
     end if;
 
-    -- Prepend current dir if relative, store path
-    Text_Handler.Set (Txt, File_Name);
-    if Text_Handler.Value(Txt)(1) /= Separator then
-      Get_Current(Dir);
-      Text_Handler.Set (Txt, Dir & '/' & Txt);
-    end if;
-    Extract_Path(Text_Handler.Value(Txt), Dir);
-
+    Orig := Asu_Tus (Make_Full_Path (File_Name));
     loop
-      -- Current is a link
-      Text_Handler.Set (Txt, Read_One_Link(Text_Handler.Value(Txt)));
+      -- Current is a link, read it
+      Link := Asu_Tus (Read_One_Link(Asu_Ts (Orig)));
+      Link := Asu_Tus (Make_Full_Path (Asu_Ts (Link)));
 
-      -- Prepend path if relative, store path
-      if Text_Handler.Value(Txt)(1) /= Separator then
-        Text_Handler.Set (Txt, Dir & '/' & Txt);
-      end if;
-      Extract_Path(Text_Handler.Value(Txt), Dir);
-
-      exit when Sys_Calls.File_Stat (Text_Handler.Value(Txt)).Kind
-                /= Sys_Calls.Link;
+      exit when Link = Orig;
+      exit when Sys_Calls.File_Stat (Asu_Ts (Link)).Kind /= Sys_Calls.Link;
+      Orig := Link;
     end loop;
-    return Text_Handler.Value(Txt);
+    return Asu_Ts (Link);
   end Read_Link;
 
 
@@ -251,6 +231,94 @@ package body Directory is
       raise Syntax_Error;
     end if;
   end File_Match;
+
+
+  -- Normalize a path:
+  -- - append a "/" if ending by "/." or "/.."
+  -- - replace any "//" by "/" recusively
+  -- - then remove any "./",
+  -- - then recusively replace any "<name>/.." by "" (<name> /= "..")
+  -- - then recusively replace any leading "/.." by ""
+  function Normalize_Path (Path : String) return String is
+    Res : Asu_Us;
+    Start, First, Second : Natural;
+    Sep_Char : constant Character := '/';
+    Sep_Str : constant String := Sep_Char & "";
+  begin
+    -- Append a "/" if ending by "/." or "/.."
+    Res := Asu_Tus (Path);
+    if (Path'Length >= 2
+        and then Path(Path'Last - 1 .. Path'Last) = "/.")
+    or else (Path'Length >= 3
+             and then Path(Path'Last - 2 .. Path'Last) = "/..") then
+      Asu.Append (Res, Sep_Char);
+    end if;
+
+    -- "//" -> "/" recursively
+    loop
+      Start := String_Mng.Locate (Asu_Ts (Res), Sep_Char & Sep_Char);
+      exit when Start = 0;
+      Asu.Delete (Res, Start, Start);
+    end loop;
+
+    -- "/./" -> "/"
+    loop
+      Start := String_Mng.Locate (Asu_Ts (Res), Sep_Char & '.' & Sep_Char);
+      exit when Start = 0;
+      Asu.Delete (Res, Start, Start + 1);
+    end loop;
+
+    -- "<name>/../" -> "" recusively
+    -- Start at first significant char
+    Start := 1;
+    if Asu.Element (Res, 1) = Sep_Char then
+      Start := Start + 1;
+    end if;
+    loop
+      -- Locate next separator
+      First := String_Mng.Locate (Asu_Ts (Res), Sep_Str, Start + 1);
+      exit when First = 0;
+      -- Locate next separator
+      Second := String_Mng.Locate (Asu_Ts (Res), Sep_Str, First + 1);
+      exit when Second = 0;
+      if Asu.Slice (Res, First + 1, Second - 1) = ".."
+      and then Asu.Slice (Res, Start, First - 1) /= ".." then
+        -- Delete "<name>/../", and restart from here
+        Asu.Delete (Res, Start, Second);
+      else
+        -- Skip
+        Start := First + 1;
+      end if;
+      exit when Start >= Asu.Length (Res);
+    end loop;
+
+    -- "^/.." -> ""
+    loop
+      if String_Mng.Locate (Asu_Ts (Res), Sep_Char & "..") = 1 then
+        Asu.Delete (Res, Start, 3);
+      else
+        exit;
+      end if;
+    end loop;
+
+    -- Done
+    return Asu_Ts (Res);
+
+  end Normalize_Path;
+
+   -- Get full path of a path
+  function Make_Full_Path (Path : String) return String is
+  begin
+    if Path = "" then
+      return Normalize_Path (Get_Current);
+    elsif Path(Path'First) = '/' then
+      -- Path is already absolute => Normalize
+      return Normalize_Path (Path);
+    else
+      -- Path is relative, prepend current path & Normalize
+      return Normalize_Path (Get_Current & "/" & Path);
+    end if;
+  end Make_Full_Path;
 
   -- File name manipulation
   Sep :  constant String := "" & Separator;

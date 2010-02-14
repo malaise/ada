@@ -35,6 +35,7 @@ package Directory is
   procedure Close (Desc : in out Dir_Desc);
   -- May raise Open_Error if dir desc is not open
 
+
   function Read_Link (File_Name : String; Recursive : Boolean := True)
                       return String;
   procedure Read_Link (File_Name : in String;
@@ -44,10 +45,16 @@ package Directory is
   --           Access_Error if File_Name cannot be read
   --           Open_Error if File_Name is not a link
 
+
   -- Does file name match a pattern
   -- May raise Syntax_Error
   function File_Match (File_Name : String; Template : String) return Boolean;
 
+  -- Normalize a path: remove "name/..", "./" ....
+  function Normalize_Path (Path : String) return String;
+
+  -- Get full path of a path
+  function Make_Full_Path (Path : String) return String;
 
   -- Get dir name (path) from a complete file name (up to the last / included)
   function Dirname (File_Name : String) return String;
