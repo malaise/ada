@@ -485,6 +485,10 @@ package body Lister is
           -- Append entity to list
           List.Insert (Str);
         end if;
+      exception
+        when Directory.Access_Error =>
+          -- Skip
+          null;
       end;
     end loop;
 
