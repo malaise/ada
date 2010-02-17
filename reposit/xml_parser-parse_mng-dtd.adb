@@ -213,7 +213,7 @@ package body Dtd is
       -- A (mixed) list: parse until ')' and remove any seperator
       Util.Parse_Until_Close (Ctx.Flow);
       Util.Get_Curr_Str (Ctx.Flow, Info.List);
-      Util.Remove_Separators (Info.List);
+      Util.Remove_Separators (Info.List, "?*+()|,");
       -- Now see if it is mixed or children
       if Asu.Index (Info.List, "#PCDATA") /= 0 then
         -- Mixed
@@ -225,7 +225,7 @@ package body Dtd is
           -- Remove heading #PCDATA
           Info.List := Asu_Tus (
               String_Mng.Cut (Asu_Ts (Info.List), 8));
-          Util.Remove_Separators (Info.List);
+          Util.Remove_Separators (Info.List, "?*+()|,");
           -- Check that everything between "|" are names
           if Asu.Element (Info.List, Asu.Length (Info.List)) = '|'
           or else Asu.Element (Info.List, 1) = '|' then
@@ -275,9 +275,9 @@ package body Dtd is
         else
           Util.Unget (Ctx.Flow);
         end if;
-        Util.Remove_Separators (Info.List);
+        Util.Remove_Separators (Info.List, "?*+()|,");
         -- Check valid names
-        if not Util.Names_Ok (Info.List, "|,?*+()") then
+        if not Util.Names_Ok (Info.List, "?*+()|,") then
           Util.Error (Ctx.Flow, "Invalid name in Children definition");
         end if;
         -- Fix regex: each name becomes "(#name#)"
@@ -450,7 +450,7 @@ package body Dtd is
       if Typ_Char = 'E' or else Typ_Char = 'N' then
         Util.Parse_Until_Char (Ctx.Flow, ")");
         Util.Get_Curr_Str (Ctx.Flow, Enum);
-        Util.Remove_Separators (Enum);
+        Util.Remove_Separators (Enum, "()|");
         if Enum = Asu_Null then
           Util.Error (Ctx.Flow, "Empty enumeration");
         end if;

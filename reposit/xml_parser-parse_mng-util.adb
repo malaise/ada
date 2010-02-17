@@ -1,4 +1,4 @@
-with Utf_8, Utf_16, Sys_Calls, Directory;
+with Utf_8, Utf_16, Sys_Calls, Directory, String_Mng.Regex;
 separate (Xml_Parser.Parse_Mng)
 package body Util is
   -- Autodetect encoding family
@@ -1033,7 +1033,7 @@ package body Util is
     Expand_Vars (Ctx, Dtd, Text, Context);
   end Expand_Name;
 
-  -- Fix text: remove repetition of separators
+  -- Fix text: replace any separator by a space
   procedure Normalize (Text : in out Asu_Us) is
     Res : String (1 .. Asu.Length (Text)) := Asu_Ts (Text);
   begin
@@ -1071,17 +1071,55 @@ package body Util is
   end Normalize_Spaces;
 
   -- Remove separators from text
-  procedure Remove_Separators (Text : in out Asu_Us) is
-    Res : Asu_Us;
-    Char : Character;
+  procedure Remove_Separators (Text : in out Asu_Us; Seps : in String) is
+    Lseps : Asu_Us;
+    Index : Natural;
+    use type Asu_Us;
   begin
-    for I in 1 .. Asu.Length (Text) loop
-      Char := Asu.Element (Text, I);
-      if not Util.Is_Separator (Char) then
-        Asu.Append (Res, Char);
+    -- No char of Seps can be separator
+    -- No dup
+    for I in Seps'Range loop
+      if Is_Separator (Seps(I))  then
+        raise Constraint_Error;
       end if;
+      for J in I + 1 .. Seps'Last loop
+        if Seps(J) = Seps(I) then
+          raise Constraint_Error;
+        end if;
+      end loop;
     end loop;
-    Text := Res;
+
+    -- Replace any separators by one space
+    Normalize (Text);
+    Normalize_Spaces (Text);
+
+    -- Build the "find" pattern
+    if Seps = "" then
+      Text := Asu_Tus (String_Mng.Replace (Asu_Ts (Text), " ", ""));
+    else
+      -- One char: no problem
+      Lseps := Asu_Tus (Seps);
+      if Seps'Length /= 1 then
+        -- Will use "[Seps]",
+        -- Avoid "^x" => move '^' at the end
+        if Asu.Element (Lseps, 1) = '^' then
+          Asu.Delete (Lseps, 1, 1);
+          Asu.Append (Lseps, '^');
+        end if;
+        -- Move "-" at the beginning
+        Index := String_Mng.Locate (Asu_Ts (Lseps), "-");
+        if Index /= 0 then
+          Asu.Delete (Lseps, Index, 1);
+          Lseps := "-" & Lseps;
+        end if;
+        Lseps := '[' & Lseps & ']';
+      end if;
+    end if;
+
+    -- Replace " ?([seps]) ?" by \1
+    Text := Asu_Tus (String_Mng.Regex.Replace (Asu_Ts (Text),
+        " ?(" & Asu_Ts (Lseps) & ") ?", "\1"));
+
   end Remove_Separators;
 
   -- Remove (no expanded) entities from text

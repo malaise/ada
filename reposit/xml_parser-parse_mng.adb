@@ -190,8 +190,9 @@ package body Parse_Mng  is
     -- Replace any sequence of spaces by a space
     -- Remove Leading and trailing spaces
     procedure Normalize_Spaces (Text : in out Asu_Us);
-    -- Remove sepators from text
-    procedure Remove_Separators (Text : in out Asu_Us);
+    -- Remove from Text the separators around Seps
+    procedure Remove_Separators (Text : in out Asu_Us;
+                                 Seps : in String);
     -- Remove (no expanded) entities from text
     procedure Remove_Entities (Text : in out Asu_Us);
 
