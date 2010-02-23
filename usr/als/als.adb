@@ -139,6 +139,7 @@ begin
      Error;
     else
       Usage;
+      raise Error_Exception;
       return;
     end if;
   elsif Arg_Dscr.Is_Set (13) then
