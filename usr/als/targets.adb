@@ -73,7 +73,8 @@ package body Targets is
         declare
           File : constant String := Argument.Get_Parameter (Occurence => I);
         begin
-          if Directory.File_Kind (File) /= Directory.Dir then
+          if File /= ""
+          and then Directory.File_Kind (File) /= Directory.Dir then
             -- Add this "file" if it matches
             Lister.List (Entries, File);
           end if;
@@ -95,7 +96,9 @@ package body Targets is
     end if;
 
     -- If no arg at all, then process "."
-    if Args.Get_First_Pos_After_Keys = 0 then
+    if Args.Get_First_Pos_After_Keys = 0
+    or else Argument.Get_Parameter (
+          Occurence => Args.Get_First_Pos_After_Keys) = "" then
       Found := Found or Do_Dir (".", False, 1);
     end if;
 
@@ -105,7 +108,8 @@ package body Targets is
         declare
           Dir : constant String := Argument.Get_Parameter (Occurence => I);
         begin
-          if Directory.File_Kind (Dir) = Directory.Dir
+          if Dir /= ""
+          and then Directory.File_Kind (Dir) = Directory.Dir
           and then Lister.Dir_Matches (Dir) then
             -- Add this "Dir"
             Found := Found or Do_Dir (Dir, True, 1);
