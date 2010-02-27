@@ -33,8 +33,8 @@ A menu lists known bookmarks and buttons allow to:
 2.3 History
 The history of a file or dir is listed (Head on top), each line with the date
 (YYMMDD) a space then the comment.
-EITHER left and right clicks in list allow selecting 2 versions (reference and
-version to compare)
+EITHER right and left clicks in list allow selecting 2 versions (reference and
+version to compare respectively)
 OR a button allows to register selected as reference version, and version to
 compare will be the new selected
 If a file, a button launches X diff from reference to version to compare

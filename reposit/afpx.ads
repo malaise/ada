@@ -211,7 +211,7 @@ package Afpx is
   type Keyboard_Key_List is (Return_Key, Escape_Key, Break_Key);
 
   type Result_Rec (Event : Event_List := Keyboard) is record
-    Id_Selected : Natural;
+    Id_Selected_Right : Natural;
     case Event is
       when Keyboard =>
         Keyboard_Key : Keyboard_Key_List;
@@ -250,7 +250,7 @@ package Afpx is
   -- Redisplay should be set if modif of some other screen actions (con_io)
   --  justify a redisplay, by instance when Result.Event was Refresh.
   -- In List:
-  --   mouse click changes current list element (Id_Selected),
+  --   mouse click changes current list element (or Id_Selected_Right),
   --   Up/Down arrow, Page Up/Down, Ctrl Page Up/Down scrolls the list,
   --   double click terminates Put_Then Get.
   -- In Put fields: nothing.

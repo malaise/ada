@@ -91,7 +91,10 @@
       <Init Row="1" Col="1">Center</Init>
     </Field>
 
-
+    <Field Num="15" Kind="Put">
+      <Geometry Up="5" Left="1" Low="5" Right="45"/>
+      <Colors Foreground="Red" Blink="True" Background="Brown"/>
+    </Field>
 
   </Descriptor>
 

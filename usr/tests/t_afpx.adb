@@ -97,6 +97,8 @@ begin
     Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result, Redisplay);
     Redisplay := False;
 
+    Afpx.Clear_Field (15);
+    Afpx.Encode_Field (15, (0, 0), Ptg_Result.Id_Selected_Right'Img);
     case Ptg_Result.Event is
       when Afpx.Keyboard =>
         case Ptg_Result.Keyboard_Key is
