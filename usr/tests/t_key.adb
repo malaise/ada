@@ -9,6 +9,9 @@ begin
 
   Con_Io.Init;
   Con_Io.Reset_Term;
+  Con_Io.Set_Foreground (Con_Io.Black, Con_Io.Not_Blink);
+  Con_Io.Set_Background (Con_Io.Light_Gray);
+  Con_Io.Clear;
   Got := (Mvt => Con_Io.Refresh);
   loop
     if Got.Mvt = Con_Io.Refresh then
