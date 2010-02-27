@@ -345,19 +345,24 @@ package body Af_Ptg is
                          Normal);
           end if;
           if Click_But = Af_List.Left then
-            -- Change Left selected
-            Af_List.Put (Click_Row_List, Selected);
             -- Reset Right selected if Left clicking on it
             if Af_List.To_Id(Click_Row_List)
              = List_Status.Ids_Selected(Af_List.Right) then
               Af_List.Set_Selected (Af_List.Right, 0);
             end if;
-          else
+            -- Set Left selected
+            Af_List.Put (Click_Row_List, Selected);
+            Af_List.Set_Selected (Click_But, Af_List.To_Id(Click_Row_List));
+          elsif Af_List.To_Id(Click_Row_List)
+                /= List_Status.Ids_Selected(Af_List.Left) then
             -- Set right selected
             Af_List.Put (Click_Row_List, Clicked);
+            Af_List.Set_Selected (Click_But, Af_List.To_Id(Click_Row_List));
+          else 
+            -- Right click on left selection: no right selection
+            Af_List.Put (Click_Row_List, Selected);
+            Af_List.Set_Selected (Click_But, 0);
           end if;
-          -- Set new selected
-          Af_List.Set_Selected (Click_But, Af_List.To_Id(Click_Row_List));
           Af_List.Set_Current;
         end if;
         if Click_But = Af_List.Left then
