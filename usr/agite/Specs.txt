@@ -5,3 +5,44 @@ Agite specifications
 Provide a GIT graphical front end based on Afpx.
 Major functions are Navigation, file status and graphical diff.
 
+2. Detailed functions
+2.1. Dir status
+The main menu lists the git content and subdirs of current directory.
+For file, first character is the status M/A/D/- (Modified/Added/Delete/OK),
+then a space. For dirs 2 spaces.
+Then the name, then a space, then the kind (/@>|=?).
+
+Double click on an entry does:
+- if a directory -> move to it
+- if a file -> launch X editor on it
+A bouton allows to switch to history of currently selected entry.
+A bouton allows to launch X diff on current entry if a file and status M.
+A get field list contains the current directory path.
+Modifying it and Return moves current directory.
+A bouton allows to switch to bookmarks.
+A bouton allows to exit.
+
+2.2. Bookmarks
+Locations (directories) can be bookmarked.
+A menu lists known bookmarks and buttons allow to:
+- add current dir to bookmarks
+- delete a bookmark
+- go to a bookmark (returns to main)
+- return to main screen
+
+2.3 History
+The history of a file or dir is listed (Head on top), each line with the date
+(YYMMDD) a space then the comment.
+EITHER left and right clicks in list allow selecting 2 versions (reference and
+version to compare)
+OR a button allows to register selected as reference version, and version to
+compare will be the new selected
+If a file, a button launches X diff from reference to version to compare
+A button allows to return to main screen.
+
+3. Interfaces
+3.1. Xml configuration
+Bookmarks
+X diff tool path and args
+X edit tool path and args
+
