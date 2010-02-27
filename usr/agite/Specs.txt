@@ -3,5 +3,5 @@ Agite specifications
 
 1. General purpose
 Provide a GIT graphical front end based on Afpx.
-Major functions are Navigation and graphical diff.
+Major functions are Navigation, file status and graphical diff.
 
