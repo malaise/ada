@@ -78,7 +78,11 @@ begin
   loop
     Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
                        Ptg_Result, Redisplay);
-    Mng.Set_Current (Ptg_Result.Id_Selected);
+    if Afpx.Line_List.Is_Empty then
+      Mng.Set_Current (0);
+    else
+      Mng.Set_Current (Afpx.Line_List.Get_Position);
+    end if;
     Redisplay := False;
     case Ptg_Result.Event is
       when Afpx.Keyboard =>

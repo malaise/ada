@@ -183,9 +183,11 @@ package body Afpx is
     procedure Update (Action : in List_Action_List);
 
     -- Set the current item (selected_color) of the list
-    procedure Set_Selected (Item_Id : in Positive);
+    type Button_List is (Left, Right);
+    procedure Set_Selected (Button : in Button_List; Item_Id : in Natural);
 
     -- The current status of the list
+    type Ids_Selected_Array is array (Button_List) of Natural;
     type Status_Rec is record
       -- The number of items diplayed
       -- (width if list_length >= width), list_length otherwise
@@ -194,12 +196,12 @@ package body Afpx is
       Id_Top    : Natural;
       Id_Bottom : Natural;
       -- Item selected
-      Id_Selected : Natural;
+      Ids_Selected : Ids_Selected_Array;
     end record;
 
     function Get_Status return Status_Rec;
 
-    -- Set current item of list according to Id_Selected
+    -- Set current item of list according to Ids_Selected(Left)
     procedure Set_Current;
 
     -- Put a row in a state
