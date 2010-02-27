@@ -13,4 +13,5 @@ umask 111
 $ROOT_DIR/account $*
 umask 022
 
-svn commit -m ""
+git commit -a -m "None"
+git push --all
