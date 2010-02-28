@@ -143,7 +143,7 @@ begin
     Insert := False;
     loop
       Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
-                         Result, Redisplay,
+                         Result, Redisplay, False,
                          Next_Field_Cb'Access);
 
       -- Exit
