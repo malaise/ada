@@ -8,7 +8,8 @@ Major functions are Navigation, file status and graphical diff.
 2. Detailed functions
 2.1. Dir status
 The main menu lists the git content and subdirs of current directory.
-For file, first character is the status M/A/D/- (Modified/Added/Delete/OK),
+For file, two first characters are the status (MADRC)
+(modified-unstaged/Modified/Added/Delete/OK),
 then a space. For dirs 2 spaces.
 Then the name, then a space, then the kind (/@>|=?).
 
@@ -18,31 +19,50 @@ Double click on an entry does:
 A bouton allows to switch to history of currently selected entry.
 A bouton allows to launch X diff on current entry if a file and status M.
 A get field list contains the current directory path.
-Modifying it and Return moves current directory.
+Modifying it and Return moves current directory (or click on Go).
 A bouton allows to switch to bookmarks.
 A bouton allows to exit.
 
 2.2. Bookmarks
 Locations (directories) can be bookmarked.
 A menu lists known bookmarks and buttons allow to:
+- Go to home (returns to main)
+- Go to project root (returns to main)
+- go to a bookmark (returns to main)
 - add current dir to bookmarks
 - delete a bookmark
-- go to a bookmark (returns to main)
 - return to main screen
 
 2.3 History
 The history of a file or dir is listed (Head on top), each line with the date
 (YYMMDD) a space then the comment.
-EITHER right and left clicks in list allow selecting 2 versions (reference and
-version to compare respectively)
-OR a button allows to register selected as reference version, and version to
-compare will be the new selected
-If a file, a button launches X diff from reference to version to compare
+Left click in list allows selecting reference version and right click selects
+version to compare.
+If a file, a button launches X diff from reference to version to compare.
 A button allows to return to main screen.
 
 3. Interfaces
 3.1. Xml configuration
-Bookmarks
+See dtd
 X diff tool path and args
 X edit tool path and args
+Bookmarks (Optional name)
+
+3.2. Git
+These functions use Command to call git and parse result.
+A function lists current entries and status.
+- "git ls-files" => a list of current files
+- "git status --uno --porcelain" => modif versus stage, for the whole box
+- merge lists: apply the status to local file (discard others)
+A function starts graphical diff
+- "git difftool -y -m HEAD <file>" in background
+
+3.3. Human
+See Afpx.xml
+
+4. Design aspects
+At startup:
+- get HOME env variable (for bookmarks)
+- get root directory. Scan from current to / until a dir '.git' is found.
+- get relative path to root (to pass to git_list function)
 
