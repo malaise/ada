@@ -278,6 +278,7 @@ package Afpx is
                           Insert        : in out Boolean;
                           Result        : out Result_Rec;
                           Redisplay     : in Boolean := False;
+                          Right_Select  : in Boolean := False;
                           Cursor_Col_Cb : access
        function (Cursor_Field : Field_Range;
                  New_Field : Boolean;

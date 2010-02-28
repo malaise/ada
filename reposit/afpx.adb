@@ -159,6 +159,7 @@ package body Afpx is
                    Insert        : in out Boolean;
                    Result        : out Result_Rec;
                    Redisplay     : in Boolean;
+                   Right_Select  : in Boolean;
                    Get_Active    : in Boolean;
                    Cursor_Col_Cb : access
       function (Cursor_Field : Field_Range;
@@ -721,6 +722,7 @@ package body Afpx is
                           Insert        : in out Boolean;
                           Result        : out Result_Rec;
                           Redisplay     : in Boolean := False;
+                          Right_Select  : in Boolean := False;
                           Cursor_Col_Cb : access
        function (Cursor_Field : Field_Range;
                  New_Field : Boolean;
@@ -761,7 +763,7 @@ package body Afpx is
       end if;
     end if;
 
-    Af_Ptg.Ptg (Cf, Cursor_Col, Insert, Result, Redisplay,
+    Af_Ptg.Ptg (Cf, Cursor_Col, Insert, Result, Redisplay, Right_Select,
                 Some_Get, Cursor_Col_Cb);
     Cursor_Field := Field_Range(Cf);
     In_Ptg := False;
