@@ -94,7 +94,8 @@ begin
     Afpx.Set_Field_Activation (5, Flip_Flop);
     Afpx.Set_Field_Protection (0, not Flip_Flop);
 
-    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result, Redisplay);
+    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result, Redisplay,
+                       Right_Select => True);
     Redisplay := False;
 
     Afpx.Clear_Field (15);

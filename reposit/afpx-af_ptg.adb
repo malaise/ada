@@ -118,7 +118,8 @@ package body Af_Ptg is
   -- Wheele and Middle button press are handled internally here
   function Valid_Click (List_Present : Boolean;
                         Cursor_Field : Afpx_Typ.Absolute_Field_Range;
-                        Insert       : Boolean) return Boolean is
+                        Insert       : Boolean;
+                        Right_Select : Boolean) return Boolean is
 
     Mouse_Status : Af_Con_Io.Mouse_Event_Rec;
     Click_Pos : Af_Con_Io.Full_Square;
@@ -131,7 +132,8 @@ package body Af_Ptg is
     Af_Con_Io.Get_Mouse_Event (Mouse_Status);
     Click_Pos := (Mouse_Status.Row, Mouse_Status.Col);
     Valid := (        Mouse_Status.Button = Af_Con_Io.Left
-              or else Mouse_Status.Button = Af_Con_Io.Right)
+              or else (Right_Select
+                       and then Mouse_Status.Button = Af_Con_Io.Right) )
              and then Mouse_Status.Status = Af_Con_Io.Pressed;
     if Valid then
       if Mouse_Status.Button = Af_Con_Io.Left then
@@ -209,7 +211,8 @@ package body Af_Ptg is
   --  new color)
   procedure Handle_Click (List_Present : in Boolean;
                           Cursor_Field : in Afpx_Typ.Absolute_Field_Range;
-                          Insert : in Boolean;
+                          Insert       : in Boolean;
+                          Right_Select : in Boolean;
                           Result : out Mouse_Action_Rec) is
     Cursor_Pos : constant Af_Con_Io.Square := Af_Con_Io.Position;
     Valid_Field : Boolean;
@@ -234,7 +237,7 @@ package body Af_Ptg is
 
     -- Result event discarded
     Result := (Kind => Afpx_Typ.Put);
-    if not Valid_Click (List_Present, Cursor_Field, Insert) then
+    if not Valid_Click (List_Present, Cursor_Field, Insert, Right_Select) then
       return;
     end if;
 
@@ -532,6 +535,7 @@ package body Af_Ptg is
                  Insert        : in out Boolean;
                  Result        : out Result_Rec;
                  Redisplay     : in Boolean;
+                 Right_Select  : in Boolean;
                  Get_Active    : in Boolean;
                  Cursor_Col_Cb : access
       function (Cursor_Field : Field_Range;
@@ -792,7 +796,8 @@ package body Af_Ptg is
           declare
             Click_Result : Mouse_Action_Rec;
           begin
-            Handle_Click (List_Present, Cursor_Field, Insert, Click_Result);
+            Handle_Click (List_Present, Cursor_Field, Insert, Right_Select,
+                          Click_Result);
             case Click_Result.Kind is
               when Afpx_Typ.Put =>
                 null;

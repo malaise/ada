@@ -511,7 +511,7 @@ package body Edition is
       One_Edit:
       loop
         Afpx.Put_Then_Get(Cursor_Field, Cursor_Col, Insert,
-                          Ptg_Result, Redisplay, Set_Cursor'Access);
+                          Ptg_Result, Redisplay, False, Set_Cursor'Access);
         Redisplay := False;
         case Ptg_Result.Event is
 
