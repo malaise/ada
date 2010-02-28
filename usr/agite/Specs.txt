@@ -35,10 +35,11 @@ A menu lists known bookmarks and buttons allow to:
 
 2.3 History
 The history of a file or dir is listed (Head on top), each line with the date
-(YYMMDD) a space then the comment.
+(YYMMDD:HHMM) a space then the comment.
 Left click in list allows selecting reference version and right click selects
 version to compare.
 If a file, a button launches X diff from reference to version to compare.
+If a dir A button launches X show on a summary of changes of reference version.
 A button allows to return to main screen.
 
 3. Interfaces
@@ -46,6 +47,7 @@ A button allows to return to main screen.
 See dtd
 X diff tool path and args
 X edit tool path and args
+X show tool path and args
 Bookmarks (Optional name)
 
 3.2. Git
@@ -55,6 +57,8 @@ A function lists current entries and status.
 - "git ls-files" => a list of current files
 - "git status --uno --porcelain" => modif versus stage, for the whole box
 - merge lists: apply the status to local file (discard others)
+A function logs history of file or dir
+- "git log --summary --name-status "
 A function starts graphical diff
 - "git difftool -y -m HEAD <file>" in background
 

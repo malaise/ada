@@ -1,0 +1,69 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!DOCTYPE Afpx_Descriptors SYSTEM "../../reposit/Afpx.dtd">
+
+<!-- For agite -->
+<Afpx_Descriptors Height="42" Width="55">
+
+  <!-- Main screen: explorator --> 
+  <Descriptor Num="1" Background="Light_gray">
+
+    <!-- List management setup -->
+    <Var Name="LmWidth" Value="8"/>
+    <Var Name="LmHOffset" Value="2"/>
+
+    <!-- Title and list -->
+    <Var Name="WWidth" Value="${Screen.Width}-${LmWidth}-${LmHOffset}-1"/>
+    <List>
+      <Geometry Up="6" Left="1" Low="${Screen.Low}-1" Width="${WWidth}"/>
+      <Colors Foreground="Black" Background="Magenta" Selected="Green"/>
+    </List>
+    <Field Num="1" Kind="Put">
+      <Geometry Up="0" Left="23" Height="1" Width="9"/>
+      <Colors Foreground="Black" Background="Light_gray" Blink="False"/>
+      <Init Row="0" Col="0">A G I T E</Init>
+    </Field>
+
+    <!-- List management -->
+    <Var Name="LmLeft"  Value="${List.Right}+${LmHOffset}"/>
+    <Var Name="LmUp"    Value="${List.Up}"/>
+    <Var Name="LmSta"   Value="1"/>
+
+    <Field Num="2" Kind="Button">
+      <Geometry Up="${LmUp}" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
+      <Colors Foreground="Cyan" Background="Brown"/>
+      <Init Row="0" Col="${LmSta}+1">Top</Init>
+    </Field>
+    <Field Num="3" Kind="Button">
+      <Geometry Up="${Field_2.Low}+2" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
+      <Colors Foreground="Cyan" Background="Brown"/>
+      <Init Row="1" Col="${LmSta}+1">PgUp </Init>
+    </Field>
+    <Field Num="4" Kind="Button">
+      <Geometry Up="${Field_3.Low}+2" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
+      <Colors Foreground="Cyan" Background="Brown"/>
+      <Init Row="0" Col="${LmSta}+2">Up </Init>
+    </Field>
+    <Field Num="5" Kind="Button">
+      <Geometry Up="${Field_4.Low}+2" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
+      <Colors Foreground="Cyan" Background="Brown"/>
+      <Init Row="0" Col="${LmSta}">Center</Init>
+    </Field>
+    <Field Num="6" Kind="Button">
+      <Geometry Up="${Field_5.Low}+2" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
+      <Colors Foreground="Cyan" Background="Brown"/>
+      <Init Row="0" Col="${LmSta}+1">Down</Init>
+    </Field>
+    <Field Num="7" Kind="Button">
+      <Geometry Up="${Field_6.Low}+2" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
+      <Colors Foreground="Cyan" Background="Brown"/>
+      <Init Row="1" Col="${LmSta}">PgDown</Init>
+    </Field>
+    <Field Num="8" Kind="Button">
+      <Geometry Up="${Field_7.Low}+2" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
+      <Colors Foreground="Cyan" Background="Brown"/>
+      <Init Row="0" Col="${LmSta}">Bottom</Init>
+    </Field>
+
+  </Descriptor>
+</Afpx_Descriptors>
+
