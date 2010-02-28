@@ -16,8 +16,8 @@ Then the name, then a space, then the kind (/@>|=?).
 Double click on an entry does:
 - if a directory -> move to it
 - if a file -> launch X editor on it
-A bouton allows to switch to history of currently selected entry.
 A bouton allows to launch X diff on current entry if a file and status M.
+A bouton allows to switch to history of currently selected entry.
 A get field list contains the current directory path.
 Modifying it and Return moves current directory (or click on Go).
 A bouton allows to switch to bookmarks.
@@ -26,9 +26,7 @@ A bouton allows to exit.
 2.2. Bookmarks
 Locations (directories) can be bookmarked.
 A menu lists known bookmarks and buttons allow to:
-- Go to home (returns to main)
-- Go to project root (returns to main)
-- go to a bookmark (returns to main)
+- go to a bookmark, as for a double click (returns to main)
 - add current dir to bookmarks
 - delete a bookmark
 - return to main screen
