@@ -7,7 +7,7 @@ package Command is
   package Asu renames Ada.Strings.Unbounded;
   subtype Asu_Us is Asu.Unbounded_String;
 
-  -- Output and error flow, either a list (one item perline) or a Asu_Us
+  -- Output and error flow, either a list (one item per line) or a Asu_Us
   type Flow_Format_Kind_List is (Str, List);
   subtype Line_Type is Asu_Us;
   package Res_Mng is new Dynamic_List (Line_Type);
@@ -33,7 +33,7 @@ package Command is
   Error : constant Exit_Code_Range := -1;
 
   -- Call command, which have to follow Many_Strings format
-  -- If use_Sh, then issue a 'sh -c "Cmd"'
+  -- If Use_Sh, then issue a 'sh -c "Cmd"'
   -- Report or propagate output/error flow with proper kind
   -- Set resulting exit code
   ---------------------------------------------------------------------------
