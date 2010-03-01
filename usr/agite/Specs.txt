@@ -31,14 +31,20 @@ A menu lists known bookmarks and buttons allow to:
 - delete a bookmark
 - return to main screen
 
-2.3 History
+2.3. History
 The history of a file or dir is listed (Head on top), each line with the date
 (YYMMDD:HHMM) a space then the comment.
 Left click in list allows selecting reference version and right click selects
 version to compare.
+If a file or dir A button switches to a screen with the list of modified files
 If a file, a button launches X diff from reference to version to compare.
-If a dir A button launches X show on a summary of changes of reference version.
 A button allows to return to main screen.
+
+2.4. Files
+The Files screen shows for a commit:
+- The date YYYY-MM-DD HH:MM:SS
+- 3 lines of comment
+- The list of files, each preceeded by a letter M/A/D and a space
 
 3. Interfaces
 3.1. Xml configuration
@@ -53,10 +59,12 @@ These functions use Command to call git and parse result.
 Requires git 1.7.0 or above.
 A function lists current entries and status.
 - "git ls-files" => a list of current files
-- "git status --uno --porcelain" => modif versus stage, for the whole box
+- "git status -uno --porcelain" => modif versus stage, for the whole box
 - merge lists: apply the status to local file (discard others)
 A function logs history of file or dir
-- "git log --summary --name-status "
+- "git log --summary --name-status --date=iso"
+A function lists files mofied by a commit
+- git log --summary --name-status --date=iso -n 1 <hash>
 A function starts graphical diff
 - "git difftool -y -m HEAD <file>" in background
 

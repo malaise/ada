@@ -3,7 +3,7 @@ include $(HOME)/Makefiles/common.mk
 ADAVIEW := $(REPOSIT)
 ADAWARN := true
 AFPX := true
-EXES := 
+EXES := agite t_git
 
 CLIBS := cutil
 CLIBS_agite := x_mng X11
