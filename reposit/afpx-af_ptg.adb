@@ -361,7 +361,7 @@ package body Af_Ptg is
             -- Set right selected
             Af_List.Put (Click_Row_List, Clicked);
             Af_List.Set_Selected (Click_But, Af_List.To_Id(Click_Row_List));
-          else 
+          else
             -- Right click on left selection: no right selection
             Af_List.Put (Click_Row_List, Selected);
             Af_List.Set_Selected (Click_But, 0);
