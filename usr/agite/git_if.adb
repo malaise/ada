@@ -1,23 +1,81 @@
-with Environ, Sys_Calls, Basic_Proc, Many_Strings, Command, Directory, Dir_Mng;
+with Ada.Exceptions;
+with Environ, Sys_Calls, Basic_Proc, Many_Strings, Command, Directory, Dir_Mng,
+     String_Mng;
 package body Git_If is
 
   -- Asu
-  function Asu_Ts (Str : Asu_Us) return String renames Asu.To_String;
-  function Asu_Tus (Str : String) return Asu_Us renames Asu.To_Unbounded_String;
-  Asu_Null :  constant Asu_Us := Asu.Null_Unbounded_String;
+  function Asu_Ts (Str : Asu_Us) return String renames Utils.Asu_Ts;
+  function Asu_Tus (Str : String) return Asu_Us renames Utils.Asu_Tus;
+  Asu_Null : constant Asu_Us := Utils.Asu_Null;
 
+  -- For Command
+  -- Two ouput flows as lists
+  Out_Flow_1, Out_Flow_2 : aliased Command.Flow_Rec(Command.List);
+  -- One ouput flows as string
+  Out_Flow_3 : aliased Command.Flow_Rec(Command.Str);
+  -- One Error flow as string
+  Err_Flow : aliased Command.Flow_Rec(Command.Str);
+  -- Exit code
+  Exit_Code : Command.Exit_Code_Range;
+
+  -- Kind file/dir/...
   function Kind_Of (Path : String) return Sys_Calls.File_Kind_List is
     Stat : Sys_Calls.File_Stat_Rec;
   begin
     Stat := Sys_Calls.File_Stat (Path);
-    return Stat.KInd;
+    return Stat.Kind;
   end Kind_Of;
-   
-  -- Current relative path to git, empty or "/" appended
-  function Get_Path return Asu_Us is
+
+  -- Current Git version
+  function Get_Version return Version_Rec is
+    Cmd : Asu_Us;
+    D1, D2 : Natural;
+    Result : Version_Rec;
+  begin
+    -- Git --version
+    Cmd := Asu_Tus ("git");
+    Many_Strings.Cat (Cmd, "--version");
+    Command.Execute (
+        Asu_Ts (Cmd),
+        True, Command.Both,
+        Out_Flow_3'Access, Err_Flow'Access, Exit_Code);
+    -- Handle error
+    if Exit_Code /= 0 then
+      Basic_Proc.Put_Line_Error ("git --version: " & Asu_Ts (Err_Flow.Str));
+      raise No_Git;
+    end if;
+    -- Remove tailing lin feed - Check and remove heading string
+    Asu.Delete (Out_Flow_3.Str, Asu.Length (Out_Flow_3.Str),
+                                Asu.Length (Out_Flow_3.Str));
+    if Asu.Slice (Out_Flow_3.Str, 1, 12) /= "git version " then
+      Basic_Proc.Put_Line_Error ("git --version: " & Asu_Ts (Out_Flow_3.Str));
+      raise No_Git;
+    end if;
+    Asu.Delete (Out_Flow_3.Str, 1, 12);
+    -- Parse number
+    D1 := String_Mng.Locate (Asu_Ts (Out_Flow_3.Str), ".", Occurence => 1);
+    D2 := String_Mng.Locate (Asu_Ts (Out_Flow_3.Str), ".", Occurence => 2);
+    if D1 <= 1 or else D2 <= D1 + 1
+    or else D2 = Asu.Length (Out_Flow_3.Str) then
+      -- Incorrect format
+      Basic_Proc.Put_Line_Error ("git --version: " & Asu_Ts (Out_Flow_3.Str));
+      raise No_Git;
+    end if;
+    Result.Major  := Natural'Value (Asu.Slice (Out_Flow_3.Str, 1, D1 - 1));
+    Result.Medium := Natural'Value (Asu.Slice (Out_Flow_3.Str, D1 + 1, D2 - 1));
+    Result.Minor  := Natural'Value (Asu.Slice (Out_Flow_3.Str, D2 + 1,
+                                               Asu.Length (Out_Flow_3.Str)));
+    return Result;
+  exception
+    when Error:others =>
+      Basic_Proc.Put_Line_Error ("git --version => "
+          & Ada.Exceptions.Exception_Name (Error));
+      raise No_Git;
+  end Get_Version;
+
+  -- Current Root and relative path to git, empty or "/" appended
+  procedure Get_Root_And_Path (Root, Path : out Asu_Us) is
     Git_Dir : Asu_Us;
-    Result : Asu_Us;
-    Curr_Path : Asu_Us;
     Kind : Sys_Calls.File_Kind_List;
     Dir : Asu_Us;
     use type Asu_Us, Sys_Calls.File_Kind_List;
@@ -31,10 +89,11 @@ package body Git_If is
     end if;
 
     -- Look for ".git" in current then upper directories
-    Curr_Path := Asu_Tus (Directory.Get_Current) & "/";
+    Root := Asu_Tus (Directory.Get_Current);
+    Path := Asu_Null;
     loop
       begin
-        Kind := Kind_Of (Asu_Ts (Curr_Path & Git_Dir));
+        Kind := Kind_Of (Asu_Ts (Root & "/" & Git_Dir));
         -- Found?
         exit when Kind = Sys_Calls.Dir;
       exception
@@ -43,33 +102,16 @@ package body Git_If is
       end;
       -- Not found here
       -- Can we get above?
-      if Asu_Ts (Curr_Path) = "/" then
+      if Asu_Ts (Root) = "/" then
         raise No_Git;
       end if;
       -- Append current Dir to Result, remove it from Path (cd ..)
-      Asu.Delete (Curr_Path, Asu.Length (Curr_Path), Asu.Length (Curr_Path));
-      Dir := Asu_Tus (Directory.Basename (Asu_Ts (Curr_Path)));
-      Result := Dir & "/" & Result;
-      Asu.Delete (Curr_Path, Asu.Length (Curr_Path) - Asu.Length (Dir) + 1,
-                             Asu.Length (Curr_Path));
+      Dir := Asu_Tus (Directory.Basename (Asu_Ts (Root)));
+      Path := Dir & "/" & Path;
+      Asu.Delete (Root, Asu.Length (Root) - Asu.Length (Dir),
+                        Asu.Length (Root));
     end loop;
-
-    return Result;
-  end Get_Path;
-
-
-  -- For Command
-  -- Two ouput flows as lists
-  Out_Flow_1, Out_Flow_2 : aliased Command.Flow_Rec(Command.List);
-  -- One Error flow as string
-  Err_Flow: aliased Command.Flow_Rec(Command.Str);
-  -- Exit code
-  Exit_Code : Command.Exit_Code_Range;
-
-  -- Asu stuff
-  -- package Asu renames Ada.Strings.Unbounded;
-
-  -- subtype Asu_Us is Asu.Unbounded_String;
+  end Get_Root_And_Path;
 
   -- LIST OF FILES AND STATUS
   -- A file entry
@@ -157,29 +199,30 @@ package body Git_If is
     end if;
 
     -- Copy local files in result
-    Out_Flow_1.List.Rewind;
-    loop
-      Out_Flow_1.List.Read (Str, Done => Done);
-      if Directory.Dirname (Asu_Ts (Str)) = "" then
-        File_Entry.Name := Str;
-        File_Entry.S2 := ' ';
-        File_Entry.S3 := ' ';
-        begin
-          Kind := Kind_Of (Asu_Ts (Str));
-          case Kind is
-            when Sys_Calls.File => File_Entry.Kind := ' ';
-            when Sys_Calls.Link => File_Entry.Kind := '@';
-            -- Normally no dir
-            when others         => File_Entry.Kind := '?';
-          end case;
-        exception
-          when others => File_Entry.Kind := '?';
-        end;
-        Files.Insert (File_Entry);
-      end if;
-      exit when not Done;
-    end loop;
-
+    if not Out_Flow_1.List.Is_Empty then
+      Out_Flow_1.List.Rewind;
+      loop
+        Out_Flow_1.List.Read (Str, Done => Done);
+        if Directory.Dirname (Asu_Ts (Str)) = "" then
+          File_Entry.Name := Str;
+          File_Entry.S2 := ' ';
+          File_Entry.S3 := ' ';
+          begin
+            Kind := Kind_Of (Asu_Ts (Str));
+            case Kind is
+              when Sys_Calls.File => File_Entry.Kind := ' ';
+              when Sys_Calls.Link => File_Entry.Kind := '@';
+              -- Normally no dir
+              when others         => File_Entry.Kind := '?';
+            end case;
+          exception
+            when others => File_Entry.Kind := '?';
+          end;
+          Files.Insert (File_Entry);
+        end if;
+        exit when not Done;
+      end loop;
+    end if;
 
     -- Update status of files in result
     if not Out_Flow_2.List.Is_Empty then
@@ -226,7 +269,7 @@ package body Git_If is
           File_Entry.S3 := ' ';
           File_Entry.Kind := '/';
           File_Entry.Name := Asu_Tus (Dir_Entry.Name (1 .. Dir_Entry.Len));
-          Files.Insert (File_Entry);          
+          Files.Insert (File_Entry);
         end if;
         exit when not Done;
       end loop;
@@ -247,7 +290,7 @@ package body Git_If is
     File_Entry.Name := Asu_Tus (".");
     Files.Insert (File_Entry, File_Mng.Dyn_List.Prev);
     Files.Rewind;
-    
+
   end List_Files;
 
   -- LOG HISTORY

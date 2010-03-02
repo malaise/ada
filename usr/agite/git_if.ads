@@ -1,15 +1,22 @@
-with Ada.Strings.Unbounded;
 with Dynamic_List;
+with Utils;
 package Git_If is
 
   -- Asu stuff
-  package Asu renames Ada.Strings.Unbounded;
-  subtype Asu_Us is Asu.Unbounded_String;
+  package Asu renames Utils.Asu;
+  subtype Asu_Us is Utils.Asu_Us;
 
-  -- Current relative path to git, empty or "/" appended
+  -- Git version
+  -- No_Git is call to "git --version" fails
+  type Version_Rec is record
+    Major, Medium, Minor : Natural;
+  end record;
   No_Git : exception;
-  function Get_Path return Asu_Us;
+  function Get_Version return Version_Rec;
 
+
+  -- Current Root and relative path to git, empty or "/" appended
+  procedure Get_Root_And_Path (Root, Path : out Asu_Us);
 
   -- LIST OF FILES AND STATUS
   -- A file entry

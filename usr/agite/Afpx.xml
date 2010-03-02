@@ -15,7 +15,7 @@
     <Var Name="WWidth" Value="${Screen.Width}-${LmWidth}-${LmHOffset}-1"/>
     <List>
       <Geometry Up="6" Left="1" Low="${Screen.Low}-1" Width="${WWidth}"/>
-      <Colors Foreground="Black" Background="Magenta" Selected="Green"/>
+      <Colors Foreground="Light_Gray" Background="Brown" Selected="Red"/>
     </List>
     <Field Num="1" Kind="Put">
       <Geometry Up="0" Left="23" Height="1" Width="9"/>
@@ -30,89 +30,89 @@
 
     <Field Num="2" Kind="Button">
       <Geometry Up="${LmUp}" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="0" Col="${LmSta}+1">Top</Init>
     </Field>
     <Field Num="3" Kind="Button">
       <Geometry Up="${Field_2.Low}+2" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="1" Col="${LmSta}+1">PgUp </Init>
     </Field>
     <Field Num="4" Kind="Button">
       <Geometry Up="${Field_3.Low}+2" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="0" Col="${LmSta}+2">Up </Init>
     </Field>
     <Field Num="5" Kind="Button">
       <Geometry Up="${Field_4.Low}+2" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="0" Col="${LmSta}">Center</Init>
     </Field>
     <Field Num="6" Kind="Button">
       <Geometry Up="${Field_5.Low}+2" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="0" Col="${LmSta}+1">Down</Init>
     </Field>
     <Field Num="7" Kind="Button">
       <Geometry Up="${Field_6.Low}+2" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="1" Col="${LmSta}">PgDown</Init>
     </Field>
     <Field Num="8" Kind="Button">
       <Geometry Up="${Field_7.Low}+2" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="0" Col="${LmSta}">Bottom</Init>
     </Field>
 
     <!-- Directory navigation -->
     <Field Num="9" Kind="Button">
       <Geometry Up="${Field_1.Low}+2" Left="1" Height="1" Width="4"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="0" Col="1">Go</Init>
     </Field>
     <Field Num="10" Kind="Get">
       <Geometry Up="${Field_9.Up}" Left="${Field_9.Right}+2"
                 Height="${Field_9.Height}" Right="${Screen.Width}-2"/>
-      <Colors Foreground="Cyan" Background="Brown" Selected="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown" Selected="Brown"/>
     </Field>
     <Field Num="11" Kind="Button">
       <Geometry Up="${Field_10.Low}+2" Left="1" Height="1" Width="4"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="0" Col="1">Up</Init>
     </Field>
     <Field Num="12" Kind="Button">
       <Geometry Up="${Field_11.Up}" Left="${Field_11.Right}+2" Height="1" Width="6"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="0" Col="1">Root</Init>
     </Field>
     <Field Num="13" Kind="Button">
       <Geometry Up="${Field_12.Up}" Left="${Field_12.Right}+2" Height="1" Width="11"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="0" Col="1">Bookmarks</Init>
     </Field>
 
     <!-- Edit, Diff, History, Exit -->
     <Field Num="14" Kind="Button">
       <Geometry Up="${List.Up}" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="1" Col="2">Edit</Init>
     </Field>
 
     <Field Num="15" Kind="Button">
       <Geometry Up="${Field_14.Low}+2" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="1" Col="2">Diff</Init>
     </Field>
 
     <Field Num="16" Kind="Button">
       <Geometry Up="${Field_15.Low}+2" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="1" Col="1">History</Init>
     </Field>
 
     <Field Num="17" Kind="Button">
       <Geometry Up="${List.Low}-2" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="1" Col="2">Exit</Init>
     </Field>
   </Descriptor>
@@ -127,7 +127,7 @@
     <Var Name="WWidth" Value="${Screen.Width}-${LmWidth}-${LmHOffset}-1"/>
     <List>
       <Geometry Up="6" Left="1" Low="${Screen.Low}-1" Width="${WWidth}"/>
-      <Colors Foreground="Black" Background="Magenta" Selected="Green"/>
+      <Colors Foreground="Light_Gray" Background="Brown" Selected="Red"/>
     </List>
     <Field Num="1" Kind="Put">
       <Geometry Up="0" Left="23" Height="1" Width="9"/>
@@ -142,37 +142,37 @@
 
     <Field Num="2" Kind="Button">
       <Geometry Up="${LmUp}" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="0" Col="${LmSta}+1">Top</Init>
     </Field>
     <Field Num="3" Kind="Button">
       <Geometry Up="${Field_2.Low}+2" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="1" Col="${LmSta}+1">PgUp </Init>
     </Field>
     <Field Num="4" Kind="Button">
       <Geometry Up="${Field_3.Low}+2" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="0" Col="${LmSta}+2">Up </Init>
     </Field>
     <Field Num="5" Kind="Button">
       <Geometry Up="${Field_4.Low}+2" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="0" Col="${LmSta}">Center</Init>
     </Field>
     <Field Num="6" Kind="Button">
       <Geometry Up="${Field_5.Low}+2" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="0" Col="${LmSta}+1">Down</Init>
     </Field>
     <Field Num="7" Kind="Button">
       <Geometry Up="${Field_6.Low}+2" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="1" Col="${LmSta}">PgDown</Init>
     </Field>
     <Field Num="8" Kind="Button">
       <Geometry Up="${Field_7.Low}+2" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="0" Col="${LmSta}">Bottom</Init>
     </Field>
 
@@ -186,25 +186,25 @@
     <!-- Goto, Add, Del, Back -->
     <Field Num="10" Kind="Button">
       <Geometry Up="${List.Up}" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="1" Col="2">Goto</Init>
     </Field>
 
     <Field Num="11" Kind="Button">
       <Geometry Up="${Field_10.Low}+2" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="1" Col="2">Del</Init>
     </Field>
 
     <Field Num="12" Kind="Button">
       <Geometry Up="${Field_11.Low}+2" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="1" Col="1">AddCur</Init>
     </Field>
 
     <Field Num="13" Kind="Button">
       <Geometry Up="${List.Low}-2" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="1" Col="2">Back</Init>
     </Field>
   </Descriptor>
@@ -219,7 +219,7 @@
     <Var Name="WWidth" Value="${Screen.Width}-${LmWidth}-${LmHOffset}-1"/>
     <List>
       <Geometry Up="6" Left="1" Low="${Screen.Low}-1" Width="${WWidth}"/>
-      <Colors Foreground="Black" Background="Magenta" Selected="Green"/>
+      <Colors Foreground="Light_Gray" Background="Brown" Selected="Red"/>
     </List>
     <Field Num="1" Kind="Put">
       <Geometry Up="0" Left="23" Height="1" Width="9"/>
@@ -234,37 +234,37 @@
 
     <Field Num="2" Kind="Button">
       <Geometry Up="${LmUp}" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="0" Col="${LmSta}+1">Top</Init>
     </Field>
     <Field Num="3" Kind="Button">
       <Geometry Up="${Field_2.Low}+2" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="1" Col="${LmSta}+1">PgUp </Init>
     </Field>
     <Field Num="4" Kind="Button">
       <Geometry Up="${Field_3.Low}+2" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="0" Col="${LmSta}+2">Up </Init>
     </Field>
     <Field Num="5" Kind="Button">
       <Geometry Up="${Field_4.Low}+2" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="0" Col="${LmSta}">Center</Init>
     </Field>
     <Field Num="6" Kind="Button">
       <Geometry Up="${Field_5.Low}+2" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="0" Col="${LmSta}+1">Down</Init>
     </Field>
     <Field Num="7" Kind="Button">
       <Geometry Up="${Field_6.Low}+2" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="1" Col="${LmSta}">PgDown</Init>
     </Field>
     <Field Num="8" Kind="Button">
       <Geometry Up="${Field_7.Low}+2" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="0" Col="${LmSta}">Bottom</Init>
     </Field>
 
@@ -278,20 +278,20 @@
     <!-- Diff, Back -->
     <Field Num="10" Kind="Button">
       <Geometry Up="${List.Up}" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="1" Col="1">Files</Init>
     </Field>
 
     <Field Num="11" Kind="Button">
       <Geometry Up="${Field_10.Low}+2" Left="${LmLeft}"
                 Height="3" Width="${LmWidth}"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="1" Col="2">Diff</Init>
     </Field>
 
     <Field Num="12" Kind="Button">
       <Geometry Up="${List.Low}-2" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="1" Col="2">Back</Init>
     </Field>
   </Descriptor>
@@ -306,7 +306,7 @@
     <Var Name="WWidth" Value="${Screen.Width}-${LmWidth}-${LmHOffset}-1"/>
     <List>
       <Geometry Up="9" Left="1" Low="${Screen.Low}-1" Width="${WWidth}"/>
-      <Colors Foreground="Black" Background="Magenta" Selected="Green"/>
+      <Colors Foreground="Light_Gray" Background="Brown" Selected="Red"/>
     </List>
     <Field Num="1" Kind="Put">
       <Geometry Up="0" Left="23" Height="1" Width="9"/>
@@ -321,37 +321,37 @@
 
     <Field Num="2" Kind="Button">
       <Geometry Up="${LmUp}" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="0" Col="${LmSta}+1">Top</Init>
     </Field>
     <Field Num="3" Kind="Button">
       <Geometry Up="${Field_2.Low}+2" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="1" Col="${LmSta}+1">PgUp </Init>
     </Field>
     <Field Num="4" Kind="Button">
       <Geometry Up="${Field_3.Low}+2" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="0" Col="${LmSta}+2">Up </Init>
     </Field>
     <Field Num="5" Kind="Button">
       <Geometry Up="${Field_4.Low}+2" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="0" Col="${LmSta}">Center</Init>
     </Field>
     <Field Num="6" Kind="Button">
       <Geometry Up="${Field_5.Low}+2" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="0" Col="${LmSta}+1">Down</Init>
     </Field>
     <Field Num="7" Kind="Button">
       <Geometry Up="${Field_6.Low}+2" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="1" Col="${LmSta}">PgDown</Init>
     </Field>
     <Field Num="8" Kind="Button">
       <Geometry Up="${Field_7.Low}+2" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="0" Col="${LmSta}">Bottom</Init>
     </Field>
 
@@ -380,7 +380,7 @@
     <!-- Back -->
     <Field Num="12" Kind="Button">
       <Geometry Up="${List.Low}-2" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="1" Col="2">Back</Init>
     </Field>
   </Descriptor>

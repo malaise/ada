@@ -5,8 +5,7 @@ ADAWARN := true
 AFPX := true
 EXES := agite t_git
 
-CLIBS := cutil
-CLIBS_agite := x_mng X11
+CLIBS := x_mng cutil X11
 
 include $(TEMPLATES)/ada.mk
 
