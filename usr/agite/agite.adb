@@ -1,5 +1,5 @@
 with Con_Io, Afpx, Basic_Proc, Int_Image, Directory, Language;
-with Utils, Git_If;
+with Utils, Git_If, Config;
 procedure Agite is
   -- Version Stuff
   Version : Git_If.Version_Rec;
@@ -18,6 +18,10 @@ procedure Agite is
   -- Current Git root and path referred to Git root
   Root : Utils.Asu_Us;
   Path : Utils.Asu_Us;
+
+  -- Editor and Differator
+  Editor : Utils.Asu_Us;
+  Differator : Utils.Asu_Us;
 
   -- Encode current directory
   procedure Encode_Dir is
@@ -164,7 +168,8 @@ begin
   end if;
 
   -- Get or init config
-  -- @@@
+  Editor := Utils.Asu_Tus (Config.Editor);
+  Differator := Utils.Asu_Tus (Config.Differator);
 
   -- Init Afpx
   Afpx.Use_Descriptor (1);

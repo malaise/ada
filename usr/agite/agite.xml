@@ -4,14 +4,11 @@
 <!DOCTYPE agite SYSTEM "agite.dtd">
 
 <agite>
-  <editor>xvi</editor>
+  <editor>gedit</editor>
   <differator>meld</differator>
   <bookmarks>
-    <bookmark Name="Ada">/home/malaise/ada</bookmark>
-    <bookmark Name="Reposit">/home/malaise/ada/reposit</bookmark>
-    <bookmark Name="C">/home/malaise/c</bookmark>
-    <bookmark>/home/malaise/ada/c</bookmark>
-    <bookmark>/home/malaise/ada/usr</bookmark>
+    <!-- Optional name then path -->
+    <bookmark Name="C">/home/c</bookmark>
   </bookmarks>
 </agite>
 
