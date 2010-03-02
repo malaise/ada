@@ -20,7 +20,8 @@ begin
     loop
       Files.Read (File_Entry, Done => Done);
       Ada.Text_Io.Put_Line (File_Entry.S2 & File_Entry.S3 & " "
-                          & Git_If.Asu.To_String (File_Entry.Name) & "<");
+                          & Git_If.Asu.To_String (File_Entry.Name)
+                          & File_Entry.Kind);
       exit when not Done;
     end loop;
   end if;

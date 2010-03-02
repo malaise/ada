@@ -1,4 +1,4 @@
-with Environ, Sys_Calls, Basic_Proc, Many_Strings, Command, Directory;
+with Environ, Sys_Calls, Basic_Proc, Many_Strings, Command, Directory, Dir_Mng;
 package body Git_If is
 
   -- Asu
@@ -6,12 +6,19 @@ package body Git_If is
   function Asu_Tus (Str : String) return Asu_Us renames Asu.To_Unbounded_String;
   Asu_Null :  constant Asu_Us := Asu.Null_Unbounded_String;
 
+  function Kind_Of (Path : String) return Sys_Calls.File_Kind_List is
+    Stat : Sys_Calls.File_Stat_Rec;
+  begin
+    Stat := Sys_Calls.File_Stat (Path);
+    return Stat.KInd;
+  end Kind_Of;
+   
   -- Current relative path to git, empty or "/" appended
   function Get_Path return Asu_Us is
     Git_Dir : Asu_Us;
     Result : Asu_Us;
     Curr_Path : Asu_Us;
-    Stat : Sys_Calls.File_Stat_Rec;
+    Kind : Sys_Calls.File_Kind_List;
     Dir : Asu_Us;
     use type Asu_Us, Sys_Calls.File_Kind_List;
   begin
@@ -27,9 +34,9 @@ package body Git_If is
     Curr_Path := Asu_Tus (Directory.Get_Current) & "/";
     loop
       begin
-        Stat := Sys_Calls.File_Stat (Asu_Ts (Curr_Path & Git_Dir));
+        Kind := Kind_Of (Asu_Ts (Curr_Path & Git_Dir));
         -- Found?
-        exit when Stat.Kind = Sys_Calls.Dir;
+        exit when Kind = Sys_Calls.Dir;
       exception
         when Sys_Calls.Name_Error => null;
         when others => raise No_Git;
@@ -87,7 +94,20 @@ package body Git_If is
   function Less_Than (El1, El2 : File_Entry_Rec) return Boolean is
     use type Asu_Us;
   begin
-    return El1.Name < El2.Name;
+    if El1.Kind = El2.Kind then
+      return El1.Name < El2.Name;
+    elsif El1.Kind = '/' then
+      return True;
+    elsif El2.Kind = '/' then
+      return False;
+    elsif El1.Kind = '?' then
+      return False;
+    elsif El2.Kind = '?' then
+      return True;
+    else
+      -- File or link
+      return El1.Name < El2.Name;
+    end if;
   end Less_Than;
   procedure File_Sort is new File_Mng.Dyn_List.Sort (Less_Than);
 
@@ -99,7 +119,11 @@ package body Git_If is
     Str : Asu_Us;
     File_Entry : File_Entry_Rec;
     Done : Boolean;
+    Kind : Sys_Calls.File_Kind_List;
     Found : Boolean;
+    Dir_List : Dir_Mng.File_List_Mng.List_Type;
+    Dir_Entry : Dir_Mng.File_Entry_Rec;
+    use type Directory.File_Kind_List;
   begin
     -- Init result
     Files.Delete_List;
@@ -114,11 +138,6 @@ package body Git_If is
     -- Handle error
     if Exit_Code /= 0 then
       Basic_Proc.Put_Line_Error ("git ls-files: " & Asu_Ts (Err_Flow.Str));
-      return;
-    end if;
-
-    -- Done if no file
-    if Out_Flow_1.List.Is_Empty then
       return;
     end if;
 
@@ -141,48 +160,94 @@ package body Git_If is
     Out_Flow_1.List.Rewind;
     loop
       Out_Flow_1.List.Read (Str, Done => Done);
-      if Directory.Basename (Asu_Ts (Str)) = "" then
+      if Directory.Dirname (Asu_Ts (Str)) = "" then
         File_Entry.Name := Str;
         File_Entry.S2 := ' ';
         File_Entry.S3 := ' ';
+        begin
+          Kind := Kind_Of (Asu_Ts (Str));
+          case Kind is
+            when Sys_Calls.File => File_Entry.Kind := ' ';
+            when Sys_Calls.Link => File_Entry.Kind := '@';
+            -- Normally no dir
+            when others         => File_Entry.Kind := '?';
+          end case;
+        exception
+          when others => File_Entry.Kind := '?';
+        end;
+        Files.Insert (File_Entry);
       end if;
       exit when not Done;
     end loop;
 
-    -- Done if no status
-    if Out_Flow_2.List.Is_Empty then
-      return;
-    end if;
 
     -- Update status of files in result
-    Out_Flow_2.List.Rewind;
-    loop
-      Out_Flow_2.List.Read (Str, Done => Done);
-      File_Entry.S2 := Asu.Element (Str, 1);
-      File_Entry.S3 := Asu.Element (Str, 2);
-      if File_Entry.S2 /= ' ' or else File_Entry.S3 /= ' ' then
-        -- This file is in 2nd or 3rd stage
-        -- Remove "XY "
-        Asu.Delete (Str, 1, 3);
-        if Directory.Dirname (Asu_Ts (Str)) = Current_Path then
-          -- This file is in current dir, look for it
-          File_Entry.Name := Asu_Tus (Directory.Basename (Asu_Ts (Str)));
-          File_Search (Files, Found, File_Entry,
-                       From => File_Mng.Dyn_List.Absolute);
-          if Found then
-            -- This file is found: overwrite
-            Files.Modify (File_Entry, File_Mng.Dyn_List.Current);
-          else
-            -- This file is not found (deleted?), insert
-            Files.Insert (File_Entry);
+    if not Out_Flow_2.List.Is_Empty then
+      Out_Flow_2.List.Rewind;
+      loop
+        Out_Flow_2.List.Read (Str, Done => Done);
+        File_Entry.S2 := Asu.Element (Str, 1);
+        File_Entry.S3 := Asu.Element (Str, 2);
+        if File_Entry.S2 /= ' ' or else File_Entry.S3 /= ' ' then
+          -- This file is in 2nd or 3rd stage
+          -- Remove "XY "
+          Asu.Delete (Str, 1, 3);
+          if Directory.Dirname (Asu_Ts (Str)) = Current_Path then
+            -- This file is in current dir, look for it
+            File_Entry.Name := Asu_Tus (Directory.Basename (Asu_Ts (Str)));
+            File_Search (Files, Found, File_Entry,
+                         From => File_Mng.Dyn_List.Absolute);
+            if Found then
+              -- This file is found: overwrite
+              Files.Modify (File_Entry, File_Mng.Dyn_List.Current);
+            else
+              -- This file is not found (deleted?), insert
+              Files.Insert (File_Entry);
+            end if;
           end if;
         end if;
-      end if;
-      exit when not Done;
-    end loop;
+        exit when not Done;
+      end loop;
+    end if;
 
-    -- Finally sort the list because of insertion of deleted
+    -- Add directories except "." and ".."
+    Dir_Mng.List_Dir (Dir_List, "", "");
+    if not Dir_List.Is_Empty then
+      if not Files.Is_Empty then
+        Files.Rewind;
+      end if;
+      Dir_List.Rewind;
+      loop
+        Dir_List.Read (Dir_Entry, Done => Done);
+        if Dir_Entry.Kind = Directory.Dir
+        and then Dir_Entry.Name (1 .. Dir_Entry.Len) /= "."
+        and then Dir_Entry.Name (1 .. Dir_Entry.Len) /= ".." then
+          File_Entry.S2 := ' ';
+          File_Entry.S3 := ' ';
+          File_Entry.Kind := '/';
+          File_Entry.Name := Asu_Tus (Dir_Entry.Name (1 .. Dir_Entry.Len));
+          Files.Insert (File_Entry);          
+        end if;
+        exit when not Done;
+      end loop;
+    end if;
+
+    -- Sort the list because of insertion of dirs and deleted
     File_Sort (Files);
+
+    -- Finally insert "." then ".." at head
+    if not Files.Is_Empty then
+      Files.Rewind;
+    end if;
+    File_Entry.S2 := ' ';
+    File_Entry.S3 := ' ';
+    File_Entry.Kind := '/';
+    File_Entry.Name := Asu_Tus ("..");
+    Files.Insert (File_Entry, File_Mng.Dyn_List.Prev);
+    File_Entry.Name := Asu_Tus (".");
+    Files.Insert (File_Entry, File_Mng.Dyn_List.Prev);
+    Files.Rewind;
+    
   end List_Files;
 
   -- LOG HISTORY
