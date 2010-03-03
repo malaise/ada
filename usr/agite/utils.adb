@@ -36,6 +36,7 @@ package body Utils is
         := Many_Strings.Cat ("/bin/sh",
              Many_Strings.Cat ("-c", Command));
     Res : Proc_Family.Spawn_Result_Rec;
+    pragma Unreferenced (Res);
   begin
     Res := Proc_Family.Spawn (Cmd);
   end Launch;

@@ -341,5 +341,12 @@ package body Git_If is
     null;
   end List_Commit;
 
+  -- Launch a diff (asynchronous)
+  procedure Launch_Diff (Differator, File_Name : in String) is
+  begin
+    Utils.Launch ("git difftool -y " & " -t " & Differator
+                & " -m  HEAD " & File_Name);
+  end Launch_Diff;
+
 end Git_If;
 

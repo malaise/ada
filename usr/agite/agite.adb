@@ -146,10 +146,9 @@ procedure Agite is
           when Edit | Default =>
             Edit (Str(4 .. Last));
           when Diff =>
-            -- @@@ Diff (Str(4 .. Last - 1))
-            null;
+            Git_If.Launch_Diff (Utils.Asu_Ts (Differator), Str(4 .. Last));
           when History =>
-            -- @@@ History (Str(4 .. Last - 1), True)
+            -- @@@ History (Str(4 .. Last), True)
           null;
         end case;
       end if;
