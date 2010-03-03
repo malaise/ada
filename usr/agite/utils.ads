@@ -17,8 +17,9 @@ package Utils is
   function Parse_Spaces (Str : String) return String;
   function Last_Index (Str : String) return Natural;
 
-  -- The scroll buttons
+  -- The scroll buttons and actions
   subtype List_Scroll_Fld_Range is Afpx.Field_Range range 2 .. 8;
+  procedure Scroll (Fld_No : in List_Scroll_Fld_Range);
 
   -- Start a command in background
   procedure Launch (Command : in String);
