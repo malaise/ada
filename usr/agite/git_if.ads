@@ -71,5 +71,8 @@ package Git_If is
                          Comment : out Comment_Array;
                          Commit : in out Commit_List);
 
+  -- Launch a diff (asynchronous)
+  procedure Launch_Diff (Differator, File_Name : in String);
+
 end Git_If;
 
