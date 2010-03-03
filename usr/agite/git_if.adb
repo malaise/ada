@@ -102,7 +102,7 @@ package body Git_If is
       end;
       -- Not found here
       -- Can we get above?
-      if Asu_Ts (Root) = "/" then
+      if Asu_Ts (Root) = "" then
         raise No_Git;
       end if;
       -- Append current Dir to Result, remove it from Path (cd ..)

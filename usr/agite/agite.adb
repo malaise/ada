@@ -44,12 +44,20 @@ procedure Agite is
   begin
     -- Get info: Path if needed and list
     Afpx.Suspend;
-    if Root = Git_If.Asu.Null_Unbounded_String then
-      Git_If.Get_Root_And_Path (Root, Path);
-    end if;
-    Git_If.List_Files (Git_If.Asu.To_String (Path), Files);
-    Redisplay := True;
-    Afpx.Resume;
+    begin
+      if Root = Git_If.Asu.Null_Unbounded_String then
+        Git_If.Get_Root_And_Path (Root, Path);
+      end if;
+      Git_If.List_Files (Git_If.Asu.To_String (Path), Files);
+      Afpx.Resume;
+      Redisplay := True;
+    exception
+      when others =>
+        Afpx.Resume;
+        Redisplay := True;
+        raise;
+    end;
+
     -- Copy in Afpx list
     Afpx.Line_List.Delete_List;
     loop
@@ -72,6 +80,7 @@ procedure Agite is
   procedure Change_Dir (New_Dir : in String := "") is
     Str : constant String
         := Utils.Parse_Spaces (Afpx.Decode_Field (Dir_Field, 0, False));
+    Cur_Dir : constant String := Directory.Get_Current;
   begin
     begin
       if New_Dir = "" then
@@ -83,7 +92,9 @@ procedure Agite is
       Root := Utils.Asu_Null;
       Encode_Files;
     exception
-      when others => null;
+      when others =>
+        -- Cannot change to new dir or cannot process files (No_Git?)
+        Directory.Change_Current (Cur_Dir);
     end;
     -- Put new dir or restore current
     Encode_Dir;
@@ -105,7 +116,7 @@ procedure Agite is
 
   procedure Edit (File_Name : in String) is
   begin
-    Basic_Proc.Put_Line_Output ("Edit " & File_Name);
+    Utils.Launch (Utils.Asu_Ts (Editor) & " " & File_Name);
   end Edit;
 
   -- List action on File or Dir
@@ -130,10 +141,10 @@ procedure Agite is
             -- @@@ History (Str(4 .. Last - 1), False)
             null;
         end case;
-      elsif Str(Last) = ' ' then
+      elsif Str(Last) /= '@' and then Str(Last) /= '?' then
         case Action is
           when Edit | Default =>
-            Edit (Str(4 .. Last - 1));
+            Edit (Str(4 .. Last));
           when Diff =>
             -- @@@ Diff (Str(4 .. Last - 1))
             null;

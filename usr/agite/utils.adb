@@ -1,4 +1,5 @@
 with Ada.Characters.Latin_1;
+with Many_Strings, Proc_Family;
 package body Utils is
 
   -- If Str fits Width then return Str
@@ -12,7 +13,6 @@ package body Utils is
   end Normalize;
 
   -- Remove trailing spaces and Htabs
-  -- Remove trailing spaces and Htabs
   function Last_Index (Str : String) return Natural is
   begin
     for I in reverse Str'Range loop
@@ -24,10 +24,21 @@ package body Utils is
     return 0;
   end Last_Index;
 
+  -- Remove trailing spaces and Htabs
   function Parse_Spaces (Str : String) return String is
   begin
     return Str (Str'First .. Last_Index (Str));
   end Parse_Spaces;
+
+  -- Start a command in background
+  procedure Launch (Command : in String) is
+    Cmd : constant String
+        := Many_Strings.Cat ("/bin/sh",
+             Many_Strings.Cat ("-c", Command));
+    Res : Proc_Family.Spawn_Result_Rec;
+  begin
+    Res := Proc_Family.Spawn (Cmd);
+  end Launch;
 
 end Utils;
 
