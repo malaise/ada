@@ -186,8 +186,8 @@ package body Git_If is
     -- Git status --uno --porcelain"
     Cmd := Asu_Tus ("git");
     Many_Strings.Cat (Cmd, "status");
-    Many_Strings.Cat (Cmd, "-uno");
     Many_Strings.Cat (Cmd, "--porcelain");
+    Many_Strings.Cat (Cmd, ".");
     Command.Execute (
         Asu_Ts (Cmd),
         True, Command.Both,
@@ -231,8 +231,9 @@ package body Git_If is
         Out_Flow_2.List.Read (Str, Done => Done);
         File_Entry.S2 := Asu.Element (Str, 1);
         File_Entry.S3 := Asu.Element (Str, 2);
-        if File_Entry.S2 /= ' ' or else File_Entry.S3 /= ' ' then
-          -- This file is in 2nd or 3rd stage
+        if Asu.Element (Str, Asu.Length (Str)) /= '/'
+        and then (File_Entry.S2 /= ' ' or else File_Entry.S3 /= ' ') then
+          -- This is a file, and in 2nd or 3rd stage or untracked
           -- Remove "XY "
           Asu.Delete (Str, 1, 3);
           if Directory.Dirname (Asu_Ts (Str)) = Current_Path then
