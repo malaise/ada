@@ -10,7 +10,7 @@ package Utils is
   Asu_Null :  constant Asu_Us := Asu.Null_Unbounded_String;
 
   -- If Str fits Width then return Str
-  -- else return ">> " & tail
+  -- else return ">> " & tail to match Width
   function Normalize (Str : String; Width : Positive) return String;
 
   -- Remove trailing spaces and Htabs
@@ -19,6 +19,9 @@ package Utils is
 
   -- The scroll buttons
   subtype List_Scroll_Fld_Range is Afpx.Field_Range range 2 .. 8;
+
+  -- Start a command in background
+  procedure Launch (Command : in String);
 
   -- Exception on Ctrl C
   Exit_Requested : exception;

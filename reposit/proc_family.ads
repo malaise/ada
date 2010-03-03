@@ -37,6 +37,8 @@ package Proc_Family is
   end record;
 
   -- Spawn a process (with mutation if mutation /= "")
+  --  if set, Mutation (prog name and arguments) have to follow
+  --    Many_Strings format
   --  redirecting standard in/out/err flows if Std_Fds
   --  opening com channel if New_Fds
   -- If not empty, Mutation has to follow Many_Strings format
