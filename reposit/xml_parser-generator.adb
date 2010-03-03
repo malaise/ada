@@ -4,7 +4,7 @@ with Int_Image, Text_Line, Sys_Calls, Trees;
 package body Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "1";
+  Minor_Version : constant String := "2";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -732,7 +732,7 @@ package body Xml_Parser.Generator is
     if Node.In_Prologue and then Node.Kind = Text then
       Ctx.Doctype.Name := Asu_Null;
     end if;
-    Tree.Delete_Current;
+    Tree.Delete_Tree;
     -- Father is an element
     New_Node := (Kind => Element,
                  Magic => Ctx.Magic,
@@ -757,7 +757,7 @@ package body Xml_Parser.Generator is
     Tree.Read (Cell);
     for I in 1 .. Tree.Children_Number - Cell.Nb_Attributes loop
       Tree.Move_Child (True);
-      Tree.Delete_Current;
+      Tree.Delete_Tree;
     end loop;
   end Delete_Children;
 
