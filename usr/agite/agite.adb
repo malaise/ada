@@ -1,5 +1,5 @@
 with Con_Io, Afpx, Basic_Proc, Int_Image, Directory, Language;
-with Utils, Git_If, Config;
+with Utils, Git_If, Config, Bookmarks;
 procedure Agite is
   -- Version Stuff
   Version : Git_If.Version_Rec;
@@ -65,10 +65,12 @@ procedure Agite is
       declare
         Str : constant String
             := Utils.Normalize (Utils.Asu_Ts (File.Name), Width);
+        Wstr : constant Wide_String
+             := Language.String_To_Wide (File.S2 & File.S3 & ' '
+                                       & Str & File.Kind);
       begin
-        Line.Len := 4 + Str'Length;
-        Line.Str (1 .. Line.Len) := Language.String_To_Wide (
-                 File.S2 & File.S3 & ' ' & Str & File.Kind);
+        Line.Len := Wstr'Length;
+        Line.Str (1 .. Line.Len) := Wstr;
       end;
       Afpx.Line_List.Insert (Line);
       exit when not Done;
@@ -100,19 +102,17 @@ procedure Agite is
     Encode_Dir;
   end Change_Dir;
 
-  -- Scroll the list
-  procedure Scroll (Fld_No : in Utils.List_Scroll_Fld_Range) is
+  -- Init Afpx
+  procedure Init is
   begin
-    case Fld_No is
-      when 2 => Afpx.Update_List(Afpx.Top);
-      when 3 => Afpx.Update_List(Afpx.Page_Up);
-      when 4 => Afpx.Update_List(Afpx.Up);
-      when 5 => Afpx.Update_List(Afpx.Center);
-      when 6 => Afpx.Update_List(Afpx.Down);
-      when 7 => Afpx.Update_List(Afpx.Page_Down);
-      when 8 => Afpx.Update_List(Afpx.Bottom);
-    end case;
-  end Scroll;
+    Afpx.Use_Descriptor (1);
+    Cursor_Field := Afpx.Next_Cursor_Field (0);
+    Cursor_Col := 0;
+    Insert := False;
+    Redisplay := False;
+    Encode_Dir;
+    Encode_Files;
+  end;
 
   procedure Edit (File_Name : in String) is
   begin
@@ -182,14 +182,7 @@ begin
   Differator := Utils.Asu_Tus (Config.Differator);
 
   -- Init Afpx
-  Afpx.Use_Descriptor (1);
-  Encode_Dir;
-  Cursor_Field := Afpx.Next_Cursor_Field (0);
-  Cursor_Col := 0;
-  Insert := False;
-  Redisplay := False;
-  Encode_Dir;
-  Encode_Files;
+  Init;
 
   -- Main loop
   loop
@@ -218,30 +211,39 @@ begin
           when Utils.List_Scroll_Fld_Range'First ..
                Utils.List_Scroll_Fld_Range'Last =>
             -- Scroll list
-            Scroll(Ptg_Result.Field_No);
+            Utils.Scroll(Ptg_Result.Field_No);
           when 9 =>
             -- Go (to dir)
             Change_Dir;
           when 11 =>
-            -- Up (change dir)
-            Change_Dir ("..");
+            -- Reread (change dir .)
+            Change_Dir (".");
           when 12 =>
+            -- Up (change dir ..)
+            Change_Dir ("..");
+          when 13 =>
             -- Root (change dir to)
             Change_Dir (Utils.Asu_Ts (Root));
-          when 13 =>
-            -- Bookmarks (menu)
-            -- @@@
-            null;
           when 14 =>
+            -- Bookmarks (menu)
+            declare
+              New_Dir : constant String := Bookmarks.Handle;
+            begin
+              Init;
+              if New_Dir /= "" then
+                Change_Dir (New_Dir);
+              end if;
+            end;
+          when 15 =>
             -- Edit (file)
             List_Action (Edit);
-          when 15 =>
+          when 16 =>
             -- Diff
             List_Action (Diff);
-          when 16 =>
+          when 17 =>
             -- History
             List_Action (History);
-          when 17 =>
+          when 18 =>
             -- Exit
             raise Utils.Exit_Requested;
           when others =>

@@ -1,4 +1,4 @@
-with Basic_Proc, Environ, Xml_Parser;
+with Basic_Proc, Environ, Xml_Parser.Generator;
 package body Config is
 
   -- Config file name
@@ -12,8 +12,9 @@ package body Config is
   end File_Name;
 
   -- Load the conf
-  Ctx : Xml_Parser.Ctx_Type;
+  Ctx : Xml_Parser.Generator.Ctx_Type;
   Root : Xml_Parser.Element_Type;
+  Bookmarks : Xml_Parser.Element_Type;
   procedure Load is
   begin
     -- Parse
@@ -32,6 +33,7 @@ package body Config is
         raise Invalid_Config;
     end;
     Root := Ctx.Get_Root_Element;
+    Bookmarks := Ctx.Get_Child (Root, 3);
   end Load;
 
   -- Editor GUI
@@ -57,29 +59,56 @@ package body Config is
 
   -- Bookmarks
   function Get_Bookmarks return Bookmark_Array is
+    Bookmark : Xml_Parser.Element_Type;
+    use type Utils.Asu_Us;
   begin
     if not Xml_Parser.Is_Valid (Root) then
       Load;
     end if;
     declare
-      Result : Bookmark_Array (1 .. Ctx.Get_Nb_Children (Root) - 2);
+      Result : Bookmark_Array (1 .. Ctx.Get_Nb_Children (Bookmarks));
+      Name : Utils.Asu_Us;
     begin
+      for I in Result'Range loop
+        Bookmark := Ctx.Get_Child (Bookmarks, I);
+        if Ctx.Get_Nb_Attributes (Bookmark) = 0 then
+          Name := Utils.Asu_Null;
+        else
+          Name := "(" & Ctx.Get_Attribute (Bookmark, 1).Value & ") ";
+        end if;
+        Result(I) := Name & Utils.Asu_Us'
+             (Ctx.Get_Text (Ctx.Get_Child (Bookmark, 1)));
+      end loop;
       return Result;
     end;
   end Get_Bookmarks;
 
   procedure Del_Bookmark (Index : in Positive) is
+    Bookmark : Xml_Parser.Element_Type;
   begin
     if not Xml_Parser.Is_Valid (Root) then
       Load;
     end if;
+    Bookmark := Ctx.Get_Child (Bookmarks, Index);
+    -- Del Bookmark marker and its text
+    Ctx.Delete_Node (Bookmark, Bookmark);
+    Ctx.Put (File_Name);
+    Root := Xml_Parser.No_Node;
+    Ctx.Clean;
   end Del_Bookmark;
 
   procedure Add_Bookmark (Bookmark : in String) is
+    New_Node : Xml_Parser.Node_Type;
   begin
     if not Xml_Parser.Is_Valid (Root) then
       Load;
     end if;
+    -- Add Bookmark marker and its text
+    Ctx.Add_Child (Bookmarks, "bookmark", Xml_Parser.Element, New_Node);
+    Ctx.Add_Child (New_Node, Bookmark, Xml_Parser.Text, New_Node);
+    Ctx.Put (File_Name);
+    Root := Xml_Parser.No_Node;
+    Ctx.Clean;
   end Add_Bookmark;
 
 end Config;
