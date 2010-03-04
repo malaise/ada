@@ -51,7 +51,6 @@ The Files screen shows for a commit:
 See dtd
 X diff tool path and args
 X edit tool path and args
-X show tool path and args
 Bookmarks (Optional name)
 
 3.2. Git
