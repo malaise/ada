@@ -62,11 +62,11 @@ A function lists current entries and status.
 - "git status -uno --porcelain" => modif versus stage, for the whole box
 - merge lists: apply the status to local file (discard others)
 A function logs history of file or dir
-- "git log --summary --name-status --date=iso"
+- "git log --name-status --date=iso -- <path>"
 A function lists files mofied by a commit
-- git log --summary --name-status --date=iso -n 1 <hash>
+- git log --name-status --date=iso -n 1 <hash>
 A function starts graphical diff
-- "git difftool -y -m HEAD <file>" in background
+- "git difftool -y -t HEAD <file>" in background
 
 3.3. Human
 See Afpx.xml
