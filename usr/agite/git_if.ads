@@ -34,6 +34,11 @@ package Git_If is
                         Files : in out File_List);
 
 
+  -- A comment of commit
+  type Comment_Array is array (Positive range <>) of Asu_Us;
+  subtype Comment_1 is Comment_Array (1 .. 1);
+  subtype Comment_5 is Comment_Array (1 .. 5);
+
   -- LOG HISTORY
   -- Git hashing number
   subtype Git_Hash is String (1 .. 41);
@@ -43,7 +48,7 @@ package Git_If is
   type Log_Entry_Rec is record
     Hash : Git_Hash;
     Date : Iso_Date;
-    Comment : Asu_Us;
+    Comment : Comment_1;
   end record;
   package Log_Mng is new Dynamic_List (Log_Entry_Rec);
   subtype Log_List is Log_Mng.Dyn_List.List_Type;
@@ -62,13 +67,11 @@ package Git_If is
   package Commit_File_Mng is new Dynamic_List (Commit_Entry_Rec);
   subtype Commit_List is Commit_File_Mng.Dyn_List.List_Type;
 
-  -- A detailed comment
-  type Comment_Array is array (1 .. 5) of Asu_Us;
 
   -- List detailed info on a commit
   procedure List_Commit (Hash : in Git_Hash;
                          Date : out Iso_Date;
-                         Comment : out Comment_Array;
+                         Comment : out Comment_5;
                          Commit : in out Commit_List);
 
   -- Launch a diff (asynchronous)

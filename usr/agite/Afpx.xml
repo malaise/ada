@@ -116,7 +116,7 @@
     <Field Num="17" Kind="Button">
       <Geometry Up="${Field_16.Low}+2" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
       <Colors Foreground="Light_Gray" Background="Brown"/>
-      <Init Row="1" Col="1">History</Init>
+      <Init Row="1" Col="2">Hist</Init>
     </Field>
 
     <Field Num="18" Kind="Button">
@@ -293,7 +293,7 @@
     <Field Num="10" Kind="Button">
       <Geometry Up="${List.Up}" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
       <Colors Foreground="Light_Gray" Background="Brown"/>
-      <Init Row="1" Col="1">Files</Init>
+      <Init Row="1" Col="1">Detail</Init>
     </Field>
 
     <Field Num="11" Kind="Button">
@@ -310,7 +310,7 @@
     </Field>
   </Descriptor>
 
-  <!-- Commit -->
+  <!-- Commit details -->
   <Descriptor Num="4" Background="Light_gray">
     <!-- List management setup -->
     <Var Name="LmWidth" Value="8"/>
@@ -373,7 +373,7 @@
     <Field Num="9" Kind="Put">
       <Geometry Up="${Field_1.Low}+2" Left="23" Height="1" Width="9"/>
       <Colors Foreground="Black" Background="Light_gray" Blink="False"/>
-      <Init Row="0" Col="1">Files</Init>
+      <Init Row="0" Col="0">Details</Init>
     </Field>
 
     <!-- Date and Comment -->
