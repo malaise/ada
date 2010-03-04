@@ -1,5 +1,5 @@
 with Con_Io, Afpx, Basic_Proc, Int_Image, Directory, Language;
-with Utils, Git_If, Config, Bookmarks;
+with Utils, Git_If, Config, Bookmarks, History;
 procedure Agite is
   -- Version Stuff
   Version : Git_If.Version_Rec;
@@ -119,6 +119,16 @@ procedure Agite is
     Utils.Launch (Utils.Asu_Ts (Editor) & " " & File_Name);
   end Edit;
 
+  procedure Hist (Name : in String; Is_File : in Boolean) is
+    Pos : Positive;
+  begin
+    -- Call history and restore current entry
+    Pos := Afpx.Line_List.Get_Position;
+    History.Handle (Name, Is_File);
+    Init;
+    Afpx.Line_List.Move_To (Number => Pos - 1);
+  end Hist;
+
   -- List action on File or Dir
   type Action_List is (Default, Edit, Diff, History);
   procedure List_Action (Action : in Action_List) is
@@ -138,8 +148,7 @@ procedure Agite is
           when Edit | Diff =>
             null;
           when History =>
-            -- @@@ History (Str(4 .. Last - 1), False)
-            null;
+            Hist (Str(4 .. Last - 1), False);
         end case;
       elsif Str(Last) /= '@' and then Str(Last) /= '?' then
         case Action is
@@ -148,8 +157,7 @@ procedure Agite is
           when Diff =>
             Git_If.Launch_Diff (Utils.Asu_Ts (Differator), Str(4 .. Last));
           when History =>
-            -- @@@ History (Str(4 .. Last), True)
-          null;
+           Hist (Str(4 .. Last), True);
         end case;
       end if;
     end;

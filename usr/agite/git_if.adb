@@ -1,4 +1,4 @@
-with Ada.Exceptions;
+with Ada.Exceptions, Ada.Characters.Latin_1;
 with Environ, Sys_Calls, Basic_Proc, Many_Strings, Command, Directory, Dir_Mng,
      String_Mng;
 package body Git_If is
@@ -294,52 +294,179 @@ package body Git_If is
 
   end List_Files;
 
-  -- LOG HISTORY
-  -- Git hashing number
-  -- subtype Git_Hash is String (1 .. 41);
+  -- Assert
+  Log_Error : exception;
+  procedure Assert (Cond : in Boolean) is
+  begin
+    if not Cond then
+      raise Log_Error;
+    end if;
+  end Assert;
 
-  -- A date at iso YYYY-MM-DD HH:MM:SS
-  -- subtype Iso_Date is String (1 .. 19);
+  -- Flow format of log is:
+  -- commit <hash>
+  -- Author: ...
+  -- Date:   YYYY-MM-DD HH:MM:SS ...
+  --
+  --     <Comment>
+  --     ....
+  -- C       <file>
+  -- ....
+  -- except for last block
+  procedure Read_Block (Flow : in out Command.Res_List;
+                        Details : in Boolean;
+                        Hash : out Git_Hash;
+                        Date : out Iso_Date;
+                        Comments : out Comment_Array;
+                        Files : Access Commit_List;
+                        Done : out Boolean) is
+    Line : Asu_Us;
+    Ind : Natural;
+    Last_Comment : Positive;
+    File : Commit_Entry_Rec;
+  begin
+    Comments := (Others => Asu_Null);
+    Files.Delete_List;
+    -- commit <hash>
+    Flow.Read (Line);
+    Assert (Asu.Length (Line) = 47);
+    Assert (Asu.Slice (Line, 1, 7) = "commit ");
+    Hash := Asu.Slice (Line, 8, 47);
 
-  -- A log entry
-  -- type Log_Entry_Rec is record
-  --   Hash : Git_Hash;
-  --   Date : Iso_Date;
-  --   Comment : Asu_Us;
-  -- end record;
+    -- Author: ...
+    Flow.Read (Line);
+    Assert (Asu.Slice (Line, 1, 8) = "Author: ");
 
-  -- package Log_Mng is newDynamic_List (Log_Entry_Rec);
+    -- Date:   YYYY-MM-DD HH:MM:SS ...
+    Flow.Read (Line);
+    Assert (Asu.Length (Line) >= 27);
+    Assert (Asu.Slice (Line, 1, 8) = "Date:   ");
+    Date := Asu.Slice (Line, 9, 27);
 
-  -- subtype Log_List is Log_Mng.Dyn_List.List_Type;
+    -- Empty line
+    Flow.Read (Line);
+    Assert (Asu.Length (Line) = 0);
+
+    -- Copy 1 or 5 comments
+    if Details then
+      Last_Comment := Comments'Last;
+    else
+      Last_Comment := 1;
+    end if;
+    -- Several comments until empty line
+    Ind := 0;
+    loop
+      Flow.Read (Line);
+      exit when Asu.Length (Line) = 0;
+      Ind := Ind + 1;
+      Assert (Asu.length (Line) > 4);
+      Assert (Asu.Slice (Line, 1, 4) = "    ");
+      -- Copy first comments
+      if Ind <= Last_Comment then
+        Comments(Ind) := Asu.Unbounded_Slice (Line, 5,  Asu.length (Line));
+      end if;
+    end loop;
+    -- At least one comment
+    Assert (Ind > 0);
+
+    -- Several updates until empty_line or end
+    Ind := 0;
+    loop
+      Flow.Read (Line, Done => Done);
+      exit when Asu.Length (Line) = 0;
+      Ind := Ind + 1;
+      if Details then
+        Assert (Asu.Length (Line) > 2);
+        Assert (Asu.Element (Line, 2) = Ada.Characters.Latin_1.Ht);
+        File.Status := Asu.Element (Line, 1);
+        File.File := Asu.Unbounded_Slice (Line, 3, Asu.Length (Line));
+        Files.Insert (File);
+      end if;
+      exit when Done;
+    end loop;
+    
+    -- The Dyn_List.Read Done is set to False when reaching the end
+    -- Our Done shall be True as long as not the end
+    Done := not Done;
+  exception
+    when Command.Res_Mng.Dyn_List.Not_In_List =>
+      raise Log_Error;
+  end Read_Block;
 
   -- List the log of a dir or file
   procedure List_Log (Path : in String;
                       Log : in out Log_List) is
+    Cmd : Asu_Us;
+    Done : Boolean;
+    Log_Entry : Log_Entry_Rec;
   begin
-    null;
+    -- Init result
+    Log.Delete_List;
+
+    -- Git ls-files
+    Cmd := Asu_Tus ("git");
+    Many_Strings.Cat (Cmd, "log");
+    Many_Strings.Cat (Cmd, "--summary");
+    Many_Strings.Cat (Cmd, "--name-status");
+    Many_Strings.Cat (Cmd, "--date=iso");
+    Many_Strings.Cat (Cmd, "--");
+    Many_Strings.Cat (Cmd, Path);
+    Command.Execute (
+        Asu_Ts (Cmd),
+        True, Command.Both,
+        Out_Flow_1'Access, Err_Flow'Access, Exit_Code);
+    -- Handle error
+    if Exit_Code /= 0 then
+      Basic_Proc.Put_Line_Error ("git log: " & Asu_Ts (Err_Flow.Str));
+      return;
+    end if;
+
+    -- Done if no log
+    if Out_Flow_1.List.Is_Empty then
+      return;
+    end if;
+
+    -- Encode entries
+    loop
+      Read_Block (Out_Flow_1.List, False, Log_Entry.Hash, Log_Entry.Date,
+                  Log_Entry.Comment, null, Done);
+      Log.Insert (Log_Entry);
+      exit when Done;
+    end loop;
+
   end List_Log;
-
-  -- COMMIT DETAILS
-  -- A commit file entry
-  -- type Commit_Entry_Rec is record
-  --   Status : Character;
-  --   File : Asu_Us;
-  -- end record;
-
-  -- package Commit_File_Mng is newDynamic_List (Commit_Entry_Rec);
-
-  -- subtype Commit_List is Commit_File_Mng.Dyn_List.List_Type;
-
-  -- A detailed comment
-  -- type Comment_Array is array (1 .. 5) of Asu_Us;
 
   -- List detailed info on a commit
   procedure List_Commit (Hash : in Git_Hash;
                          Date : out Iso_Date;
-                         Comment : out Comment_Array;
+                         Comment : out Comment_5;
                          Commit : in out Commit_List) is
+    Cmd : Asu_Us;
+    Dummy_Hash : Git_Hash;
+    pragma Unreferenced (Dummy_Hash);
+    Dummy_Done : Boolean;
+    pragma Unreferenced (Dummy_Done);
   begin
-    null;
+    Cmd := Asu_Tus ("git");
+    Many_Strings.Cat (Cmd, "log");
+    Many_Strings.Cat (Cmd, "--summary");
+    Many_Strings.Cat (Cmd, "--name-status");
+    Many_Strings.Cat (Cmd, "--date=iso");
+    Many_Strings.Cat (Cmd, Hash);
+    Command.Execute (
+        Asu_Ts (Cmd),
+        True, Command.Both,
+        Out_Flow_1'Access, Err_Flow'Access, Exit_Code);
+    -- Handle error
+    if Exit_Code /= 0 then
+      Basic_Proc.Put_Line_Error ("git log1: " & Asu_Ts (Err_Flow.Str));
+      return;
+    end if;
+
+    -- Encode info
+    Read_Block (Out_Flow_1.List, True, Dummy_Hash, Date,
+                  Comment, Commit'Access, Dummy_Done);
+
   end List_Commit;
 
   -- Launch a diff (asynchronous)

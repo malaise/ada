@@ -1,0 +1,5 @@
+# Launch agite
+AGITE_DIR=$HOME/ada/usr/agite
+export AFPX_DATA_DIR=$AGITE_DIR
+exec $AGITE_DIR/agite > /tmp/agite.log 2>&1
+
