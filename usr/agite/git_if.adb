@@ -318,15 +318,13 @@ package body Git_If is
                         Hash : out Git_Hash;
                         Date : out Iso_Date;
                         Comments : out Comment_Array;
-                        Files : Access Commit_List;
+                        Files : access Commit_List;
                         Done : out Boolean) is
     Line : Asu_Us;
     Ind : Natural;
     Last_Comment : Positive;
     File : Commit_Entry_Rec;
   begin
-    Comments := (Others => Asu_Null);
-    Files.Delete_List;
     -- commit <hash>
     Flow.Read (Line);
     Assert (Asu.Length (Line) = 47);
@@ -355,26 +353,49 @@ package body Git_If is
     end if;
     -- Several comments until empty line
     Ind := 0;
-    loop
-      Flow.Read (Line);
-      exit when Asu.Length (Line) = 0;
-      Ind := Ind + 1;
-      Assert (Asu.length (Line) > 4);
-      Assert (Asu.Slice (Line, 1, 4) = "    ");
-      -- Copy first comments
-      if Ind <= Last_Comment then
-        Comments(Ind) := Asu.Unbounded_Slice (Line, 5,  Asu.length (Line));
-      end if;
-    end loop;
-    -- At least one comment
-    Assert (Ind > 0);
-
-    -- Several updates until empty_line or end
-    Ind := 0;
+    Comments := (others => Asu_Null);
     loop
       Flow.Read (Line, Done => Done);
       exit when Asu.Length (Line) = 0;
       Ind := Ind + 1;
+      if Ind = 1 and then Asu.Length (Line) = 47
+      and then Asu.Slice (Line, 1, 7) = "commit " then
+        -- No Comment at all
+        Flow.Move_To (Command.Res_Mng.Dyn_List.Prev);
+        exit;
+      end if;
+      Assert (Asu.Length (Line) >= 4);
+      Assert (Asu.Slice (Line, 1, 4) = "    ");
+      -- Copy first comments
+      if Ind <= Last_Comment then
+        Comments(Ind) := Asu.Unbounded_Slice (Line, 5,  Asu.Length (Line));
+      end if;
+      exit when not Done;
+    end loop;
+
+    -- No files if no detail
+    if (Asu.Length (Line) = 0 or else not Done) and then not Details then
+      -- The Dyn_List.Read Done is set to False when reaching the end
+      -- Our Done shall be True as long as not the end
+      Done := not Done;
+      return;
+    end if;
+
+    -- Several updates until empty_line or end
+    Ind := 0;
+    if Details then
+      Files.Delete_List;
+    end if;
+    loop
+      Flow.Read (Line, Done => Done);
+      exit when Asu.Length (Line) = 0;
+      Ind := Ind + 1;
+      if Ind = 1 and then Asu.Length (Line) = 47
+      and then Asu.Slice (Line, 1, 7) = "commit " then
+        -- No Comment at all
+        Flow.Move_To (Command.Res_Mng.Dyn_List.Prev);
+        exit;
+      end if;
       if Details then
         Assert (Asu.Length (Line) > 2);
         Assert (Asu.Element (Line, 2) = Ada.Characters.Latin_1.Ht);
@@ -382,9 +403,9 @@ package body Git_If is
         File.File := Asu.Unbounded_Slice (Line, 3, Asu.Length (Line));
         Files.Insert (File);
       end if;
-      exit when Done;
+      exit when not Done;
     end loop;
-    
+
     -- The Dyn_List.Read Done is set to False when reaching the end
     -- Our Done shall be True as long as not the end
     Done := not Done;
@@ -406,8 +427,6 @@ package body Git_If is
     -- Git ls-files
     Cmd := Asu_Tus ("git");
     Many_Strings.Cat (Cmd, "log");
-    Many_Strings.Cat (Cmd, "--summary");
-    Many_Strings.Cat (Cmd, "--name-status");
     Many_Strings.Cat (Cmd, "--date=iso");
     Many_Strings.Cat (Cmd, "--");
     Many_Strings.Cat (Cmd, Path);
@@ -427,13 +446,14 @@ package body Git_If is
     end if;
 
     -- Encode entries
+    Out_Flow_1.List.Rewind;
     loop
       Read_Block (Out_Flow_1.List, False, Log_Entry.Hash, Log_Entry.Date,
                   Log_Entry.Comment, null, Done);
       Log.Insert (Log_Entry);
       exit when Done;
     end loop;
-
+    Log.Rewind;
   end List_Log;
 
   -- List detailed info on a commit
@@ -449,9 +469,10 @@ package body Git_If is
   begin
     Cmd := Asu_Tus ("git");
     Many_Strings.Cat (Cmd, "log");
-    Many_Strings.Cat (Cmd, "--summary");
     Many_Strings.Cat (Cmd, "--name-status");
     Many_Strings.Cat (Cmd, "--date=iso");
+    Many_Strings.Cat (Cmd, "-n");
+    Many_Strings.Cat (Cmd, "1");
     Many_Strings.Cat (Cmd, Hash);
     Command.Execute (
         Asu_Ts (Cmd),
@@ -464,8 +485,18 @@ package body Git_If is
     end if;
 
     -- Encode info
-    Read_Block (Out_Flow_1.List, True, Dummy_Hash, Date,
-                  Comment, Commit'Access, Dummy_Done);
+    if Out_Flow_1.List.Is_Empty then
+      Date := (others => ' ');
+      Comment := (others => Utils.Asu_Null);
+      Commit.Delete_List;
+    else
+      Out_Flow_1.List.Rewind;
+      Read_Block (Out_Flow_1.List, True, Dummy_Hash, Date,
+                    Comment, Commit'Access, Dummy_Done);
+    end if;
+    if not Commit.Is_Empty then
+      Commit.Rewind;
+    end if;
 
   end List_Commit;
 
@@ -473,7 +504,7 @@ package body Git_If is
   procedure Launch_Diff (Differator, File_Name : in String) is
   begin
     Utils.Launch ("git difftool -y " & " -t " & Differator
-                & " -m  HEAD " & File_Name);
+                & " HEAD " & File_Name);
   end Launch_Diff;
 
 end Git_If;

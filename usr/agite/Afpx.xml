@@ -319,7 +319,7 @@
     <!-- Title and list -->
     <Var Name="WWidth" Value="${Screen.Width}-${LmWidth}-${LmHOffset}-1"/>
     <List>
-      <Geometry Up="9" Left="1" Low="${Screen.Low}-1" Width="${WWidth}"/>
+      <Geometry Up="11" Left="1" Low="${Screen.Low}-1" Width="${WWidth}"/>
       <Colors Foreground="Light_Gray" Background="Brown" Selected="Red"/>
     </List>
     <Field Num="1" Kind="Put">
@@ -376,14 +376,19 @@
       <Init Row="0" Col="0">Details</Init>
     </Field>
 
-    <!-- Date and Comment -->
+    <!-- Hash, Date and Comment -->
     <Field Num="10" Kind="Put">
-      <Geometry Up="${Field_9.Low}+2" Left="1" Height="1" Width="19"/>
+      <Geometry Up="${Field_9.Low}+2" Left="1" Height="1" Width="40"/>
+      <Colors Foreground="Brown" Background="Light_Gray" Blink="False"/>
+      <Init Row="0" Col="0">f6969c16c1be5ebfa6f9d7239209f7b889e233b4</Init>
+    </Field>
+    <Field Num="11" Kind="Put">
+      <Geometry Up="${Field_10.Low}+2" Left="1" Height="1" Width="19"/>
       <Colors Foreground="Brown" Background="Light_Gray" Blink="False"/>
       <Init Row="0" Col="0">YYYY-MM-DD HH:MM:SS</Init>
     </Field>
-    <Field Num="11" Kind="Put">
-      <Geometry Up="${Field_10.Low}+1" Left="1"
+    <Field Num="12" Kind="Put">
+      <Geometry Up="${Field_11.Low}+1" Left="1"
                 Low="${List.Up}-2" Right="${Screen.Width}-2"/>
       <Colors Foreground="Brown" Background="Light_Gray" Blink="False"/>
       <Init Row="0" Col="0">Comment 1</Init>
@@ -392,7 +397,7 @@
     </Field>
 
     <!-- Back -->
-    <Field Num="12" Kind="Button">
+    <Field Num="13" Kind="Button">
       <Geometry Up="${List.Low}-2" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
       <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="1" Col="2">Back</Init>
