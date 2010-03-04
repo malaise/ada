@@ -288,7 +288,7 @@ extern int evt_wait (int *p_fd, boolean *p_read, timeout_t *timeout) {
         *p_fd = check_fd (start_fd, &select_write_mask);
       }
 
-      /* Check i p_fd is wake-up fd) */
+      /* Check if p_fd is wake-up fd) */
       if (*p_fd == wake_up_fds[0] ) {
         for (;;) {
           size = read (wake_up_fds[0], &c, sizeof(c));
@@ -311,6 +311,10 @@ extern int evt_wait (int *p_fd, boolean *p_read, timeout_t *timeout) {
       }
 
       prev_fd = *p_fd;
+      if (prev_fd < -1) {
+        /* Not a fd => end of round robin */
+        prev_fd = -1;
+      }
       evt_time_remaining (timeout, &exp_time);
       return (OK);
 
