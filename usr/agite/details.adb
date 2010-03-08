@@ -41,6 +41,7 @@ package body Details is
                        From_Current => False);
       Commits.Read (Commit, Git_If.Commit_File_Mng.Dyn_List.Current);
       View (Utils.Asu_Ts (Commit.File), Hash);
+      Redisplay := True;
     end Do_View;
 
   begin
