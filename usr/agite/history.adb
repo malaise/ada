@@ -50,7 +50,6 @@ package body History is
       Cursor_Field := 1;
       Cursor_Col := 0;
       Insert := False;
-      Redisplay := True;
       -- Encode file/dir
       Afpx.Clear_Field (10);
       if Is_File then
@@ -112,6 +111,8 @@ package body History is
         when Show_Details =>
           Details.Handle (Log.Hash);
           Init;
+          Init_List (Logs);
+          Afpx.Update_List (Afpx.Center);
       end case;
     end Show;
 
@@ -124,6 +125,7 @@ package body History is
 
     -- Get history
     Afpx.Suspend;
+    Redisplay := True;
     begin
       Git_If.List_Log (Name, Logs);
       Afpx.Resume;
@@ -178,7 +180,6 @@ package body History is
             when 13 =>
               -- Details
               Show (Show_Details);
-              Init_List (Logs);
             when 14 =>
               -- Back
               return;

@@ -44,7 +44,7 @@ package body Git_If is
       Basic_Proc.Put_Line_Error ("git --version: " & Asu_Ts (Err_Flow.Str));
       raise No_Git;
     end if;
-    -- Remove tailing lin feed - Check and remove heading string
+    -- Remove tailing line feed - Check and remove heading string
     Asu.Delete (Out_Flow_3.Str, Asu.Length (Out_Flow_3.Str),
                                 Asu.Length (Out_Flow_3.Str));
     if Asu.Slice (Out_Flow_3.Str, 1, 12) /= "git version " then
@@ -238,6 +238,7 @@ package body Git_If is
           Asu.Delete (Str, 1, 3);
           if Directory.Dirname (Asu_Ts (Str)) = Current_Path then
             -- This file is in current dir, look for it
+            File_Entry.Kind := ' ';
             File_Entry.Name := Asu_Tus (Directory.Basename (Asu_Ts (Str)));
             File_Search (Files, Found, File_Entry,
                          From => File_Mng.Dyn_List.Absolute);
@@ -336,10 +337,15 @@ package body Git_If is
     Assert (Asu.Slice (Line, 1, 8) = "Author: ");
 
     -- Date:   YYYY-MM-DD HH:MM:SS ...
-    Flow.Read (Line);
+    Flow.Read (Line, Done => Done);
     Assert (Asu.Length (Line) >= 27);
     Assert (Asu.Slice (Line, 1, 8) = "Date:   ");
     Date := Asu.Slice (Line, 9, 27);
+    if not Done then
+      -- No comment and last block
+      Done := not Done;
+      return;
+    end if;
 
     -- Empty line
     Flow.Read (Line);
@@ -410,7 +416,9 @@ package body Git_If is
     -- Our Done shall be True as long as not the end
     Done := not Done;
   exception
-    when Command.Res_Mng.Dyn_List.Not_In_List =>
+    when others =>
+      Basic_Proc.Put_Line_Error ("At line "
+                               & Positive'Image (Flow.Get_Position));
       raise Log_Error;
   end Read_Block;
 
