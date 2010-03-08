@@ -11,6 +11,8 @@ package body Config is
     return Environ.Getenv ("HOME") & "/.agite/agite.xml";
   end File_Name;
 
+  Bookmarks_Pos : constant := 4;
+
   -- Load the conf
   Ctx : Xml_Parser.Generator.Ctx_Type;
   Root : Xml_Parser.Element_Type;
@@ -33,7 +35,7 @@ package body Config is
         raise Invalid_Config;
     end;
     Root := Ctx.Get_Root_Element;
-    Bookmarks := Ctx.Get_Child (Root, 3);
+    Bookmarks := Ctx.Get_Child (Root, Bookmarks_Pos);
   end Load;
 
   -- Editor GUI
@@ -45,16 +47,22 @@ package body Config is
     return Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 1), 1));
   end Editor;
 
+  -- Viewer GUI
+  function Viewer return String is
+  begin
+    if not Xml_Parser.Is_Valid (Root) then
+      Load;
+    end if;
+    return Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 2), 1));
+  end Viewer;
+
   -- Diff GUI
   function Differator return String is
   begin
     if not Xml_Parser.Is_Valid (Root) then
       Load;
     end if;
-    if not Xml_Parser.Is_Valid (Root) then
-      Load;
-    end if;
-    return Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 2), 1));
+    return Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 3), 1));
   end Differator;
 
   -- Bookmarks

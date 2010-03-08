@@ -5,10 +5,11 @@
 
 <agite>
   <editor>gedit</editor>
-  <differator>meld</differator>
+  <viewer>xvi -M</viewer>
+  <differator>tkdiff</differator>
   <bookmarks>
     <!-- Optional name then path -->
-    <bookmark Name="C">/home/c</bookmark>
+    <bookmark Name="C">/home/user/c</bookmark>
   </bookmarks>
 </agite>
 

@@ -4,6 +4,9 @@ package Config is
   -- Editor GUI
   function Editor return String;
 
+  -- Viewer GUI
+  function Viewer return String;
+
   -- Diff GUI
   function Differator return String;
 

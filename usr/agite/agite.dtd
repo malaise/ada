@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!ELEMENT agite (editor,differator,bookmarks*)>
+<!ELEMENT agite (editor,viewer,differator,bookmarks*)>
 
 <!ELEMENT editor (#PCDATA)>
+<!ELEMENT viewer (#PCDATA)>
 <!ELEMENT differator (#PCDATA)>
 <!ELEMENT bookmarks (bookmark*)>
 <!ELEMENT bookmark (#PCDATA)>
 <!ATTLIST bookmark Name CDATA #IMPLIED>
-
 

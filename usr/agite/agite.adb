@@ -1,4 +1,4 @@
-with Con_Io, Afpx, Basic_Proc, Int_Image, Directory, Language;
+with Con_Io, Afpx.List_Manager, Basic_Proc, Int_Image, Directory, Language;
 with Utils, Git_If, Config, Bookmarks, History;
 procedure Agite is
   -- Version Stuff
@@ -14,6 +14,7 @@ procedure Agite is
   Redisplay    : Boolean;
   Ptg_Result   : Afpx.Result_Rec;
   Dir_Field    : constant Afpx.Field_Range := 10;
+  use type Afpx.Absolute_Field_Range;
 
   -- Current Git root and path referred to Git root
   Root : Utils.Asu_Us;
@@ -22,6 +23,19 @@ procedure Agite is
   -- Editor and Differator
   Editor : Utils.Asu_Us;
   Differator : Utils.Asu_Us;
+
+  -- List width and encoding
+  List_Width : Afpx.Width_Range;
+  procedure Set (Line : in out Afpx.Line_Rec;
+                 From : in Git_If.File_Entry_Rec) is
+  begin
+    Afpx.Encode_Line (Line,
+        From.S2 & From.S3 & ' '
+      & Utils.Normalize (Utils.Asu_Ts (From.Name), List_Width) & From.Kind);
+  end Set;
+  procedure Init_List is new Afpx.List_Manager.Init_List (
+    Git_If.File_Entry_Rec, Git_If.File_Mng, Set);
+
 
   -- Encode current directory
   procedure Encode_Dir is
@@ -35,47 +49,26 @@ procedure Agite is
   -- Encode files
   procedure Encode_Files is
     Files : Git_If.File_List;
-    File : Git_If.File_Entry_Rec;
-    Width : constant Afpx.Width_Range
-          := Afpx.Get_Field_Width (Afpx.List_Field_No) - 4;
-    Line : Afpx.Line_Rec;
-    Done : Boolean;
     use type Git_If.Asu_Us;
   begin
+    List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No) - 4;
     -- Get info: Path if needed and list
     Afpx.Suspend;
+    Redisplay := True;
     begin
       if Root = Git_If.Asu.Null_Unbounded_String then
         Git_If.Get_Root_And_Path (Root, Path);
       end if;
       Git_If.List_Files (Git_If.Asu.To_String (Path), Files);
       Afpx.Resume;
-      Redisplay := True;
     exception
       when others =>
         Afpx.Resume;
-        Redisplay := True;
         raise;
     end;
 
     -- Copy in Afpx list
-    Afpx.Line_List.Delete_List;
-    loop
-      Files.Read (File, Done => Done);
-      declare
-        Str : constant String
-            := Utils.Normalize (Utils.Asu_Ts (File.Name), Width);
-        Wstr : constant Wide_String
-             := Language.String_To_Wide (File.S2 & File.S3 & ' '
-                                       & Str & File.Kind);
-      begin
-        Line.Len := Wstr'Length;
-        Line.Str (1 .. Line.Len) := Wstr;
-      end;
-      Afpx.Line_List.Insert (Line);
-      exit when not Done;
-    end loop;
-    Afpx.Line_List.Rewind;
+    Init_List (Files);
   end Encode_Files;
 
   -- Change dir (or at least try) according to argument or Dir_Field
@@ -124,7 +117,7 @@ procedure Agite is
   begin
     -- Call history and restore current entry
     Pos := Afpx.Line_List.Get_Position;
-    History.Handle (Name, Is_File);
+    History.Handle (Utils.Asu_Ts (Path), Name, Is_File);
     Init;
     Afpx.Line_List.Move_To (Number => Pos - 1);
   end Hist;
@@ -219,7 +212,8 @@ begin
           when Utils.List_Scroll_Fld_Range'First ..
                Utils.List_Scroll_Fld_Range'Last =>
             -- Scroll list
-            Utils.Scroll(Ptg_Result.Field_No);
+            Afpx.List_Manager.Scroll(Ptg_Result.Field_No
+                                   - Utils.List_Scroll_Fld_Range'First + 1);
           when 9 =>
             -- Go (to dir)
             Change_Dir;
