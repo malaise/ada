@@ -36,7 +36,7 @@ The history of a file or dir is listed (Head on top), each line with the date
 (YYMMDD:HHMM) a space then the comment.
 Left click in list allows selecting reference version and right click selects
 version to compare.
-If a file or dir A button switches to a screen with the list of modified files
+If a file or dir a button switches to a screen with the list of modified files
 If a file, a button launches X diff from reference to version to compare.
 A button allows to return to main screen.
 

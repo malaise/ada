@@ -67,15 +67,21 @@ package Git_If is
   package Commit_File_Mng is new Dynamic_List (Commit_Entry_Rec);
   subtype Commit_List is Commit_File_Mng.Dyn_List.List_Type;
 
-
   -- List detailed info on a commit
   procedure List_Commit (Hash : in Git_Hash;
                          Date : out Iso_Date;
                          Comment : out Comment_5;
                          Commit : in out Commit_List);
 
-  -- Launch a diff (asynchronous)
+  -- Cat a file at a Hash in a file
+  procedure Cat (Name : in String; Hash : in Git_Hash; File : in String);
+
+  -- Launch a diff (asynchronous) from current to HEAD
   procedure Launch_Diff (Differator, File_Name : in String);
+
+  -- Launch a diff (asynchronous) from Comp to Ref
+  procedure Launch_Delta (Differator, File_Name : in String;
+                          Ref_Hash, Comp_Hash : in Git_Hash);
 
 end Git_If;
 

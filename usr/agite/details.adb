@@ -1,5 +1,5 @@
 with Con_Io, Afpx.List_Manager, String_Mng;
-with Utils;
+with Utils, View;
 package body Details is
 
   List_Width : Afpx.Width_Range;
@@ -14,7 +14,7 @@ package body Details is
 
   procedure Init_List is new Afpx.List_Manager.Init_List (
     Git_If.Commit_Entry_Rec, Git_If.Commit_File_Mng, Set);
-    
+
 
   procedure Handle (Hash : in Git_If.Git_Hash) is
     -- Afpx stuff
@@ -25,38 +25,44 @@ package body Details is
     Ptg_Result   : Afpx.Result_Rec;
     Comment_Height : Afpx.Height_Range;
     Comment_Width  : Afpx.Width_Range;
-    Line : Afpx.Line_Rec;
     use type Afpx.Absolute_Field_Range;
 
     -- Commit details
     Date : Git_If.Iso_Date;
     Comment : Git_If.Comment_5;
     Commits : Git_If.Commit_List;
-    Commit : Git_If.Commit_Entry_Rec;
-    Done : Boolean;
+
+    -- Launch viewer on current file
+    procedure Do_View is
+      Pos : constant Positive := Afpx.Line_List.Get_Position;
+      Commit : Git_If.Commit_Entry_Rec;
+    begin
+      Commits.Move_To (Git_If.Commit_File_Mng.Dyn_List.Next, Pos - 1,
+                       From_Current => False);
+      Commits.Read (Commit, Git_If.Commit_File_Mng.Dyn_List.Current);
+      View (Utils.Asu_Ts (Commit.File), Hash);
+    end Do_View;
+
   begin
      -- Init Afpx
     Afpx.Use_Descriptor (4);
     Cursor_Field := 1;
     Cursor_Col := 0;
     Insert := False;
-    Redisplay := False;
 
     -- Get commit details
+    Redisplay := True;
     Afpx.Suspend;
     begin
       Git_If.List_Commit (Hash, Date, Comment, Commits);
       Afpx.Resume;
-      Redisplay := True;
     exception
       when others =>
         Afpx.Resume;
-        Redisplay := True;
         raise;
     end;
 
     -- Encode info
-    Afpx.Set_Field_Protection (Afpx.List_Field_No, True);
     Afpx.Encode_Field (10, (0, 0), Hash);
     Afpx.Encode_Field (11, (0, 0), Date);
     Afpx.Get_Field_Size (12, Comment_Height, Comment_Width);
@@ -67,21 +73,8 @@ package body Details is
                                 Trunc_Head => False));
     end loop;
     -- Encode list
-    Afpx.Line_List.Delete_List;
     List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No);
-    if not Commits.Is_Empty then
-      -- The Commits shall be rewinded in Git_If. CHECK
-      loop
-        Commits.Read (Commit, Done => Done);
-        Afpx.Encode_Line (Line, String_Mng.Procuste (
-                  Commit.Status & " " & Utils.Asu_Ts (Commit.File),
-                  List_Width,
-                  Trunc_Head => False));
-        Afpx.Line_List.Insert (Line);
-        exit when not Done;
-      end loop;
-      Afpx.Line_List.Rewind;
-    end if;
+    Init_List (Commits);
 
     -- Main loop
     loop
@@ -109,6 +102,9 @@ package body Details is
               Afpx.List_Manager.Scroll (Ptg_Result.Field_No
                                       - Utils.List_Scroll_Fld_Range'First + 1);
             when 13 =>
+              -- View
+              Do_View;
+            when 14 =>
               -- Back
               return;
             when others =>

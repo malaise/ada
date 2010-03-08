@@ -500,12 +500,39 @@ package body Git_If is
 
   end List_Commit;
 
+  -- Cat a file at a Hash in a file
+  procedure Cat (Name : in String; Hash : in Git_Hash; File : in String) is
+    Cmd : Asu_Us;
+  begin
+    Cmd := Asu_Tus ("git");
+    Many_Strings.Cat (Cmd, "show");
+    Many_Strings.Cat (Cmd, Hash & ":" & Name);
+    Many_Strings.Cat (Cmd, ">" & File);
+    Command.Execute (
+        Asu_Ts (Cmd),
+        True, Command.Both,
+        Out_Flow_3'Access, Err_Flow'Access, Exit_Code);
+    -- Handle error
+    if Exit_Code /= 0 then
+      Basic_Proc.Put_Line_Error ("git show: " & Asu_Ts (Err_Flow.Str));
+      return;
+    end if;
+  end Cat;
+
   -- Launch a diff (asynchronous)
   procedure Launch_Diff (Differator, File_Name : in String) is
   begin
     Utils.Launch ("git difftool -y " & " -t " & Differator
                 & " HEAD " & File_Name);
   end Launch_Diff;
+
+  -- Launch a diff (asynchronous) from Comp to Ref
+  procedure Launch_Delta (Differator, File_Name : in String;
+                          Ref_Hash, Comp_Hash : in Git_Hash) is
+  begin
+    Utils.Launch ("git difftool -y " & " -t " & Differator
+          & " " & Ref_Hash & " " & Comp_Hash & " -- " & File_Name);
+  end Launch_Delta;
 
 end Git_If;
 

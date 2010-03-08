@@ -1,4 +1,4 @@
-with Directory, Con_Io, Afpx, Language, String_Mng;
+with Directory, Con_Io, Afpx.List_Manager, String_Mng;
 with Utils, Config;
 package body Bookmarks is
 
@@ -21,14 +21,10 @@ package body Bookmarks is
   end Dir_Of;
 
   procedure Insert_List (Str : in String) is
-    List_Width : constant Afpx.Width_Range
-               := Afpx.Get_Field_Width (Afpx.List_Field_No);
-    Sstr : constant String := Utils.Normalize (Str, List_Width);
-    Wstr : constant Wide_String := Language.String_To_Wide (Sstr);
     Line : Afpx.Line_Rec;
   begin
-    Line.Len := Wstr'Length;
-    Line.Str (1 .. Line.Len) := Wstr;
+    Afpx.Encode_Line (Line,
+         Utils.Normalize (Str, Afpx.Get_Field_Width (Afpx.List_Field_No)) );
     Afpx.Line_List.Insert (Line);
   end Insert_List;
 
@@ -41,6 +37,7 @@ package body Bookmarks is
     Insert       : Boolean;
     Redisplay    : Boolean;
     Ptg_Result   : Afpx.Result_Rec;
+    use type Afpx.Absolute_Field_Range;
 
     -- Current dir
     Curr_Dir : constant String := Directory.Get_Current;
@@ -54,7 +51,7 @@ package body Bookmarks is
     Cursor_Field := 1;
     Cursor_Col := 0;
     Insert := False;
-    Redisplay := False;
+    Redisplay := True;
 
     -- Encode dir
     Afpx.Clear_Field (10);
@@ -99,7 +96,8 @@ package body Bookmarks is
             when Utils.List_Scroll_Fld_Range'First ..
                  Utils.List_Scroll_Fld_Range'Last =>
               -- Scroll list
-              Utils.Scroll(Ptg_Result.Field_No);
+              Afpx.List_Manager.Scroll(Ptg_Result.Field_No
+                                     - Utils.List_Scroll_Fld_Range'First + 1);
             when 12 =>
               -- Del
               Config.Del_Bookmark (Afpx.Line_List.Get_Position);

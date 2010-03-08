@@ -282,28 +282,37 @@
       <Init Row="0" Col="${LmSta}">Bottom</Init>
     </Field>
 
-    <!-- Sub title -->
+    <!-- Sub title and current file/dir-->
     <Field Num="9" Kind="Put">
       <Geometry Up="${Field_1.Low}+2" Left="23" Height="1" Width="9"/>
       <Colors Foreground="Black" Background="Light_gray" Blink="False"/>
       <Init Row="0" Col="1">History</Init>
     </Field>
-
-    <!-- Diff, Back -->
-    <Field Num="10" Kind="Button">
-      <Geometry Up="${List.Up}" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
-      <Colors Foreground="Light_Gray" Background="Brown"/>
-      <Init Row="1" Col="1">Detail</Init>
+    <Field Num="10" Kind="Put">
+      <Geometry Up="${Field_9.Low}+2" Left="1"
+                Height="1" Right="${Screen.Width}-2"/>
+      <Colors Foreground="Black" Background="Light_gray" Blink="False"/>
     </Field>
 
+    <!-- View, Diff, Details, Back -->
     <Field Num="11" Kind="Button">
-      <Geometry Up="${Field_10.Low}+2" Left="${LmLeft}"
+      <Geometry Up="${List.Up}" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
+      <Init Row="1" Col="2">View</Init>
+    </Field>
+    <Field Num="12" Kind="Button">
+      <Geometry Up="${Field_11.Low}+2" Left="${LmLeft}"
                 Height="3" Width="${LmWidth}"/>
       <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="1" Col="2">Diff</Init>
     </Field>
+    <Field Num="13" Kind="Button">
+      <Geometry Up="${Field_12.Low}+2" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
+      <Init Row="1" Col="1">Detail</Init>
+    </Field>
 
-    <Field Num="12" Kind="Button">
+    <Field Num="14" Kind="Button">
       <Geometry Up="${List.Low}-2" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
       <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="1" Col="2">Back</Init>
@@ -330,7 +339,7 @@
 
     <!-- List management -->
     <Var Name="LmLeft"  Value="${List.Right}+${LmHOffset}"/>
-    <Var Name="LmUp"    Value="${List.Up}+10"/>
+    <Var Name="LmUp"    Value="${List.Up}+8"/>
     <Var Name="LmSta"   Value="1"/>
 
     <Field Num="2" Kind="Button">
@@ -396,8 +405,13 @@
       <Init Row="2" Col="0">Comment 3</Init>
     </Field>
 
-    <!-- Back -->
+    <!-- View, Back -->
     <Field Num="13" Kind="Button">
+      <Geometry Up="${List.Up}" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
+      <Init Row="1" Col="2">View</Init>
+    </Field>
+    <Field Num="14" Kind="Button">
       <Geometry Up="${List.Low}-2" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
       <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="1" Col="2">Back</Init>

@@ -30,20 +30,6 @@ package body Utils is
     return Str (Str'First .. Last_Index (Str));
   end Parse_Spaces;
 
-  -- Scroll the list
-  procedure Scroll (Fld_No : in List_Scroll_Fld_Range) is
-  begin
-    case Fld_No is
-      when 2 => Afpx.Update_List(Afpx.Top);
-      when 3 => Afpx.Update_List(Afpx.Page_Up);
-      when 4 => Afpx.Update_List(Afpx.Up);
-      when 5 => Afpx.Update_List(Afpx.Center);
-      when 6 => Afpx.Update_List(Afpx.Down);
-      when 7 => Afpx.Update_List(Afpx.Page_Down);
-      when 8 => Afpx.Update_List(Afpx.Bottom);
-    end case;
-  end Scroll;
-
   -- Start a command in background
   procedure Launch (Command : in String) is
     Cmd : constant String
