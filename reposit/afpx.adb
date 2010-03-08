@@ -372,6 +372,30 @@ package body Afpx is
     Encode_Field (Field_No, From_Pos, Text_Handler.Value (Str));
   end Encode_Field;
 
+  -- Encode a string in a line for the list
+  -- Exceptions : String_Too_Long
+  procedure Encode_Line (Line : in out Line_Rec;
+                         Str  : in String) is
+  begin
+    Encode_Wide_Line (Line, Language.String_To_Wide (Str));
+  end Encode_Line;
+
+  procedure Encode_Wide_Line (Line : in out Line_Rec;
+                         Str  : in Wide_String) is
+  begin
+    if Str'Length > Af_Dscr.Fields(Lfn).Width then
+      raise String_Too_Long;
+    end if;
+    Line.Len := Str'Length;
+    Line.Str (1 .. Line.Len) := Str;
+  end Encode_Wide_Line;
+
+  procedure Encode_Line (Line : in out Line_Rec;
+                         Str  : in Str_Txt) is
+  begin
+    Encode_Line (Line, Text_Handler.Value (Str));
+  end Encode_Line;
+
   -- Decode the content of a row of a field
   function Decode_Field (Field_No : Field_Range;
                          Row      : Con_Io.Full_Row_Range;

@@ -193,6 +193,15 @@ package Afpx is
     Len : Line_Len_Range;
   end record;
 
+  -- Encode a string in a line for the list
+  -- Exceptions : String_Too_Long
+  procedure Encode_Line (Line : in out Line_Rec;
+                         Str  : in String);
+  procedure Encode_Wide_Line (Line : in out Line_Rec;
+                         Str  : in Wide_String);
+  procedure Encode_Line (Line : in out Line_Rec;
+                         Str  : in Str_Txt);
+
   package Line_Dyn_List_Mng is new Dynamic_List (Line_Rec);
   package Line_List_Mng renames Line_Dyn_List_Mng.Dyn_List;
   Line_List : Line_List_Mng.List_Type;
