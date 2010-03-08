@@ -26,6 +26,21 @@ package body Git_If is
     return Stat.Kind;
   end Kind_Of;
 
+
+  function Kind_Of (Path : String) return Character is
+    Kind : Sys_Calls.File_Kind_List;
+  begin
+    Kind := Kind_Of (Path);
+    case Kind is
+      when Sys_Calls.File => return ' ';
+      when Sys_Calls.Link => return '@';
+      when Sys_Calls.Dir  => return '/';
+      when others         => return '?';
+    end case;
+  exception
+    when others => return '?';
+  end Kind_Of;
+
   -- Current Git version
   function Get_Version return Version_Rec is
     Cmd : Asu_Us;
@@ -161,7 +176,6 @@ package body Git_If is
     Str : Asu_Us;
     File_Entry : File_Entry_Rec;
     Done : Boolean;
-    Kind : Sys_Calls.File_Kind_List;
     Found : Boolean;
     Dir_List : Dir_Mng.File_List_Mng.List_Type;
     Dir_Entry : Dir_Mng.File_Entry_Rec;
@@ -207,17 +221,7 @@ package body Git_If is
           File_Entry.Name := Str;
           File_Entry.S2 := ' ';
           File_Entry.S3 := ' ';
-          begin
-            Kind := Kind_Of (Asu_Ts (Str));
-            case Kind is
-              when Sys_Calls.File => File_Entry.Kind := ' ';
-              when Sys_Calls.Link => File_Entry.Kind := '@';
-              -- Normally no dir
-              when others         => File_Entry.Kind := '?';
-            end case;
-          exception
-            when others => File_Entry.Kind := '?';
-          end;
+          File_Entry.Kind := Kind_Of (Asu_Ts (Str));
           Files.Insert (File_Entry);
         end if;
         exit when not Done;
@@ -238,8 +242,8 @@ package body Git_If is
           Asu.Delete (Str, 1, 3);
           if Directory.Dirname (Asu_Ts (Str)) = Current_Path then
             -- This file is in current dir, look for it
-            File_Entry.Kind := ' ';
             File_Entry.Name := Asu_Tus (Directory.Basename (Asu_Ts (Str)));
+            File_Entry.Kind := Kind_Of (Asu_Ts (File_Entry.Name));
             File_Search (Files, Found, File_Entry,
                          From => File_Mng.Dyn_List.Absolute);
             if Found then
