@@ -225,6 +225,15 @@ package body Afpx is
   -- No call to Ptg from a Ptg/Event callback.
   In_Ptg : Boolean := False;
 
+  -- Width and height of the screen
+  -- Exceptions : No_Descriptor (no Descriptor in use),
+  procedure Get_Screen_Size (Height : out Height_Range;
+                             Width  : out Width_Range) is
+  begin
+    Height := Size.Row + 1;
+    Width := Size.Col + 1;
+  end Get_Screen_Size;
+
   -- Set current descriptor (read descriptor description)
   procedure Use_Descriptor (Descriptor_No : in Descriptor_Range;
                             Clear_Screen : in Boolean := True) is
@@ -264,10 +273,19 @@ package body Afpx is
     Af_Dscr.Current_Dscr.Modified := True;
   end Resume;
 
+  --Get descriptor background color
+  procedure Get_Descriptor_Background (
+         Background : out Con_Io.Effective_Basic_Colors) is
+  begin
+    Af_Dscr.Check;
+    Background := Af_Dscr.Current_Dscr.Background;
+  end Get_Descriptor_Background;
+
   -- Check if current descriptor defines a list
   -- Exceptions : No_Descriptor (no Descriptor in use)
   function Has_List return Boolean is
   begin
+    Af_Dscr.Check;
     return Af_Dscr.Has_List;
   end Has_List;
 

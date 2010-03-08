@@ -1,4 +1,4 @@
-with Argument, Afpx, Con_Io, Dir_Mng, Timers, Language;
+with Argument, Afpx, Con_Io, Dir_Mng, Timers, Language, Basic_Proc;
 procedure T_Afpx is
 
   procedure Dir_Sort is new Dir_Mng.File_List_Mng.Sort (Dir_Mng.Less_Than);
@@ -6,6 +6,9 @@ procedure T_Afpx is
   Dir_Item : Dir_Mng.File_Entry_Rec;
   Afpx_Item : Afpx.Line_Rec;
 
+  Height : Afpx.Height_Range;
+  Width  : Afpx.Width_Range;
+  Background   : Con_Io.Effective_Basic_Colors;
   Cursor_Field : Afpx.Field_Range;
   Cursor_Col   : Con_Io.Col_Range;
   Insert       : Boolean;
@@ -37,7 +40,13 @@ procedure T_Afpx is
   end Next_Field;
 
 begin
+  Afpx.Get_Screen_Size (Height, Width);
+  Basic_Proc.Put_Line_Output ("Screen geometry is "
+                            & Width'Img & " x" & Height'Img);
   Afpx.Use_Descriptor(1);
+
+  Afpx.Get_Descriptor_Background (Background);
+  Basic_Proc.Put_Line_Output ("Dscr background is " & Background'Img);
 
   -- List directory and store it in Afpx list
   if Argument.Get_Nbre_Arg = 0 then

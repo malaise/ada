@@ -16,6 +16,10 @@ package Afpx is
   -- The content of one row of one field (encode, decode)
   subtype Str_Txt is Text_Handler.Text (Width_Range'Last);
 
+  -- Width and height of the screen
+  procedure Get_Screen_Size (Height : out Height_Range;
+                             Width  : out Width_Range);
+
   -- Set current descriptor (read from file)
   -- Previous descriptor modifications (from encode, set_colors, put_then_get)
   --  are lost
@@ -43,6 +47,10 @@ package Afpx is
   --   then resume and use the afpx.
   procedure Suspend;
   procedure Resume;
+
+  -- Get descriptor background color
+  procedure Get_Descriptor_Background (
+      Background : out Con_Io.Effective_Basic_Colors);
 
   -- Check if current descriptor defines a list
   -- Exceptions : No_Descriptor (no Descriptor in use)
