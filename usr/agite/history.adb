@@ -44,12 +44,31 @@ package body History is
 
     -- Init Afpx
     procedure Init is
+      Background : Con_Io.Effective_Basic_Colors;
     begin
       Afpx.Use_Descriptor (3);
       Cursor_Field := 1;
       Cursor_Col := 0;
       Insert := False;
       Redisplay := True;
+      -- Encode file/dir
+      Afpx.Clear_Field (10);
+      if Is_File then
+        Afpx.Encode_Field (10, (0, 0),
+               Utils.Normalize (Name, Afpx.Get_Field_Width (10)));
+      else
+        Afpx.Encode_Field (10, (0, 0),
+               Utils.Normalize (Name & "/", Afpx.Get_Field_Width (10)));
+        -- Lock buttons Edit and Diff (only leave history)
+        Afpx.Get_Descriptor_Background (Background);
+        Afpx.Set_Field_Protection (11, True);
+        Afpx.Set_Field_Colors (11, Foreground => Con_Io.Black,
+                                   Background => Background);
+        Afpx.Set_Field_Protection (12, True);
+        Afpx.Set_Field_Colors (12, Foreground => Con_Io.Black,
+                                   Background => Background);
+
+      end if;
     end Init;
 
     -- Show delta from current in list to comp
@@ -89,6 +108,7 @@ package body History is
       case What is
         when Show_View =>
           View (Path & Name, Log.Hash);
+          Redisplay := True;
         when Show_Details =>
           Details.Handle (Log.Hash);
           Init;
@@ -101,11 +121,6 @@ package body History is
 
     -- Width after "YY-MM-DD HH:MM:SS "
     Width := Afpx.Get_Field_Width (Afpx.List_Field_No) - 13;
-
-    -- Encode file/dir
-    Afpx.Clear_Field (10);
-    Afpx.Encode_Field (10, (0, 0),
-               Utils.Normalize (Name, Afpx.Get_Field_Width (10)));
 
     -- Get history
     Afpx.Suspend;
