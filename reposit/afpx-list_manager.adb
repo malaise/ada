@@ -22,7 +22,7 @@ package body Afpx.List_Manager is
     Pos : Positive;
     Elt : Element_Type;
     Done : Boolean;
-    Line : Line_Rec; 
+    Line : Line_Rec;
   begin
     -- Delete Afpx list
     Line_List.Delete_List;
