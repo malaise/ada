@@ -120,6 +120,7 @@ procedure Agite is
     History.Handle (Utils.Asu_Ts (Path), Name, Is_File);
     Init;
     Afpx.Line_List.Move_To (Number => Pos - 1);
+    Afpx.Update_List (Afpx.Center);
   end Hist;
 
   -- List action on File or Dir
