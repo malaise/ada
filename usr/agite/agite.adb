@@ -1,4 +1,4 @@
-with Con_Io, Afpx.List_Manager, Basic_Proc, Int_Image, Directory, Language;
+with Con_Io, Afpx.List_Manager, Basic_Proc, Int_Image, Directory;
 with Utils, Git_If, Config, Bookmarks, History;
 procedure Agite is
   -- Version Stuff
@@ -24,6 +24,9 @@ procedure Agite is
   Editor : Utils.Asu_Us;
   Differator : Utils.Asu_Us;
 
+  -- Files list
+  Files : Git_If.File_List;
+
   -- List width and encoding
   List_Width : Afpx.Width_Range;
   procedure Set (Line : in out Afpx.Line_Rec;
@@ -48,7 +51,6 @@ procedure Agite is
 
   -- Encode files
   procedure Encode_Files is
-    Files : Git_If.File_List;
     use type Git_If.Asu_Us;
   begin
     List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No) - 4;
@@ -126,32 +128,32 @@ procedure Agite is
   -- List action on File or Dir
   type Action_List is (Default, Edit, Diff, History);
   procedure List_Action (Action : in Action_List) is
-    Line : Afpx.Line_Rec;
-    Last : Natural;
+
+    File : Git_If.File_Entry_Rec;
   begin
-    Afpx.Line_List.Read (Line, Afpx.Line_List_Mng.Current);
+    Files.Move_To (Number => Afpx.Line_List.Get_Position - 1,
+                  From_Current => False);
+    Files.Read (File, Git_If.File_Mng.Dyn_List.Current);
     declare
-      Str : constant String
-          := Language.Wide_To_String (Line.Str(1 ..Line.Len));
+      Str : constant String := Utils.Asu_Ts (File.Name);
     begin
-      Last := Utils.Last_Index (Str);
-      if Str(Last) = '/' then
+      if File.Kind = '/' then
         case Action is
           when Default =>
-            Change_Dir (Str(4 .. Last - 1));
+            Change_Dir (Str);
           when Edit | Diff =>
             null;
           when History =>
-            Hist (Str(4 .. Last - 1), False);
+            Hist (Str, False);
         end case;
-      elsif Str(Last) /= '@' and then Str(Last) /= '?' then
+      elsif File.Kind /= '@' and then File.Kind /= '?' then
         case Action is
           when Edit | Default =>
-            Edit (Str(4 .. Last));
+            Edit (Str);
           when Diff =>
-            Git_If.Launch_Diff (Utils.Asu_Ts (Differator), Str(4 .. Last));
+            Git_If.Launch_Diff (Utils.Asu_Ts (Differator), Str);
           when History =>
-           Hist (Str(4 .. Last), True);
+           Hist (Str, True);
         end case;
       end if;
     end;
