@@ -1,4 +1,4 @@
-with Dynamic_List;
+with Dynamic_List, Sys_Calls;
 with Utils;
 package Git_If is
 
@@ -33,6 +33,8 @@ package Git_If is
   procedure List_Files (Current_Path : in String;
                         Files : in out File_List);
 
+  -- The character Kins associated to a kind
+  function Char_Of (Kind : Sys_Calls.File_Kind_List) return Character;
 
   -- A comment of commit
   type Comment_Array is array (Positive range <>) of Asu_Us;
