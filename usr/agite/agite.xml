@@ -2,8 +2,8 @@
 <!DOCTYPE agite SYSTEM "agite.dtd">
 
 <agite>
-  <editor>xvi</editor>
-  <viewer>xvi -M</viewer>
+  <editor>gvi</editor>
+  <viewer>gvi -M</viewer>
   <differator>tkdiff</differator>
   <bookmarks>
     <bookmark Name="Ada"/>
