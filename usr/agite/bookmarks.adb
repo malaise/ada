@@ -1,23 +1,11 @@
-with Directory, Con_Io, Afpx.List_Manager, String_Mng;
+with Directory, Con_Io, Afpx.List_Manager;
 with Utils, Config;
 package body Bookmarks is
 
   -- Strip potential leading "(name) " of bookmark
   function Dir_Of (Index : in Positive) return String is
-    Str : constant String := Utils.Asu_Ts (Config.Get_Bookmarks (Index));
-    I : Natural;
   begin
-    if Str(1) /= '(' then
-      return Str;
-    else
-      I := String_Mng.Locate (Str, ") ");
-      if I = 0 then
-        -- Badly formated
-        return "";
-      else
-        return Str (I + 2 .. Str'Last);
-      end if;
-    end if;
+    return Utils.Asu_Ts (Config.Get_Bookmarks (Index).Path);
   end Dir_Of;
 
   procedure Insert_List (Str : in String) is
@@ -61,9 +49,28 @@ package body Bookmarks is
     Afpx.Line_List.Delete_List;
     declare
       Bookmarks : constant Config.Bookmark_Array := Config.Get_Bookmarks;
+      Mark : Utils.Asu_Us;
+      use type Utils.Asu_Us;
     begin
       for I in Bookmarks'Range loop
-        Insert_List (Utils.Asu_Ts (Bookmarks(I)));
+        Mark := Utils.Asu_Null;
+        if Bookmarks(I).Path /= Utils.Asu_Null then
+          -- Regular bookmark
+          if Bookmarks(I).Name /= Utils.Asu_Null then
+            -- Regular bookmark with name
+            Mark := "(" & Bookmarks(I).Name & ") " & Bookmarks(I).Path;
+          else
+            -- Regular bookmark without name
+            Mark := Bookmarks(I).Path;
+          end if;
+        elsif Bookmarks(I).Name /= Utils.Asu_Null then
+          -- Separator
+          Mark := "----- " & Bookmarks(I).Name & " -----";
+        end if;
+        -- Discard empty entry
+        if Mark /= Utils.Asu_Null then
+          Insert_List (Utils.Asu_Ts (Mark));
+        end if;
       end loop;
     end;
     if not Afpx.Line_List.Is_Empty then

@@ -11,7 +11,11 @@ package Config is
   function Differator return String;
 
   -- Bookmarks
-  type Bookmark_Array is array (Positive range <>) of Utils.Asu_Us;
+  type Bookmark_Rec is record
+    Name : Utils.Asu_Us;
+    Path : Utils.Asu_Us;
+  end record;
+  type Bookmark_Array is array (Positive range <>) of Bookmark_Rec;
 
   function Get_Bookmarks return Bookmark_Array;
 
