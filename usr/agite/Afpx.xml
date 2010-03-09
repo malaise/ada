@@ -84,7 +84,7 @@
     <Field Num="12" Kind="Get">
       <Geometry Up="${Field_11.Up}" Left="${Field_11.Right}+2"
                 Height="1" Right="${Screen.Width}-2"/>
-      <Colors Foreground="Light_Gray" Background="Brown" Selected="Brown"/>
+      <Colors Foreground="Light_Gray" Background="Black" Selected="Black"/>
     </Field>
     <Field Num="13" Kind="Button">
       <Geometry Up="${Field_12.Low}+2" Left="1"
