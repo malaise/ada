@@ -34,8 +34,15 @@ package body Config is
         Basic_Proc.Put_Line_Error ("Cannot open config file.");
         raise Invalid_Config;
     end;
+    -- Store references
     Root := Ctx.Get_Root_Element;
     Bookmarks := Ctx.Get_Child (Root, Bookmarks_Pos);
+    -- Verify that each definition has one (text) child
+    for I in 1 .. 3 loop
+       if Ctx.Get_Nb_Children (Ctx.Get_Child (Root, I)) /= 1 then
+         raise Invalid_Config;
+      end if;
+    end loop;
   end Load;
 
   -- Editor GUI
@@ -82,10 +89,19 @@ package body Config is
         if Ctx.Get_Nb_Attributes (Bookmark) = 0 then
           Name := Utils.Asu_Null;
         else
-          Name := "(" & Ctx.Get_Attribute (Bookmark, 1).Value & ") ";
+          Name := "(" & Ctx.Get_Attribute (Bookmark, 1).Value & ")";
         end if;
-        Result(I) := Name & Utils.Asu_Us'
-             (Ctx.Get_Text (Ctx.Get_Child (Bookmark, 1)));
+        if Ctx.Get_Nb_Children (Bookmark) /= 1 then
+          -- No bookmark text: Separator
+          Result(I) := "----- " & Name & " -----";
+        else
+          if Name /= Utils.Asu_Null then
+            Name := Name & " ";
+          end if;
+          -- Some bookmark text: full bookmark
+          Result(I) := Name & Utils.Asu_Us'
+               (Ctx.Get_Text (Ctx.Get_Child (Bookmark, 1)));
+        end if;
       end loop;
       return Result;
     end;
