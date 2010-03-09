@@ -1,4 +1,5 @@
-with Con_Io, Afpx.List_Manager, Basic_Proc, Int_Image, Directory;
+with Con_Io, Afpx.List_Manager, Basic_Proc, Int_Image, Directory, Dir_Mng,
+     Sys_Calls;
 with Utils, Git_If, Config, Bookmarks, History;
 procedure Agite is
   -- Version Stuff
@@ -40,7 +41,38 @@ procedure Agite is
     Git_If.File_Entry_Rec, Git_If.File_Mng, Set);
 
 
-  -- Encode current directory
+  -- List files of dir
+  procedure List_Files (Path : in String;
+                        Files : in out Git_If.File_List) is
+    Dir : Dir_Mng.File_List_Mng.List_Type;
+    Dir_File : Dir_Mng.File_Entry_Rec;
+    File : Git_If.File_Entry_Rec;
+    Done : Boolean;
+    use type Directory.File_Kind_List;
+  begin
+    Files.Delete_List;
+    -- Copy list from Dir_Mng into a Git_If.File_List
+    Dir_Mng.List_Dir (Dir, Path);
+    Dir_Mng.File_Sort (Dir);
+    loop
+      Dir.Read (Dir_File, Done => Done);
+      if Dir_File.Kind = Directory.Dir then
+        File.S2 := ' ';
+        File.S3 := ' ';
+      else
+        File.S2 := '?';
+        File.S3 := '?';
+      end if;
+      File.Name := Utils.Asu_Tus (Dir_File.Name (1 .. Dir_File.Len));
+      File.Kind := Git_If.Char_Of (
+             Sys_Calls.File_Desc_Kind_List(Dir_File.Kind));
+      Files.Insert (File);
+      exit when not Done;
+    end loop;
+    Files.Rewind;
+  end List_Files;
+
+  -- Encode current directory and root
   procedure Encode_Dir is
     Curr : constant String := Directory.Get_Current;
     Width : constant Afpx.Width_Range := Afpx.Get_Field_Width (Dir_Field);
@@ -61,9 +93,16 @@ procedure Agite is
       if Root = Git_If.Asu.Null_Unbounded_String then
         Git_If.Get_Root_And_Path (Root, Path);
       end if;
-      Git_If.List_Files (Git_If.Asu.To_String (Path), Files);
+      Git_If.List_Files (Utils.Asu.To_String (Path), Files);
       Afpx.Resume;
     exception
+      when Git_If.No_Git =>
+        -- This dir is not GIT
+        Root := Utils.Asu_Null;
+        Path := Utils.Asu_Null;
+        -- List dir content the normal way
+        List_Files (Utils.Asu.To_String (Path), Files);
+        Afpx.Resume;
       when others =>
         Afpx.Resume;
         raise;
@@ -71,6 +110,11 @@ procedure Agite is
 
     -- Copy in Afpx list
     Init_List (Files);
+
+    -- Encode root dir
+    Afpx.Clear_Field (12);
+    Afpx.Encode_Field (12, (0, 0),
+       Utils.Normalize (Utils.Asu_Ts (Root), Afpx.Get_Field_Width (12)));
   end Encode_Files;
 
   -- Change dir (or at least try) according to argument or Dir_Field
@@ -220,16 +264,16 @@ begin
           when 9 =>
             -- Go (to dir)
             Change_Dir;
-          when 11 =>
-            -- Reread (change dir .)
-            Change_Dir (".");
           when 12 =>
-            -- Up (change dir ..)
-            Change_Dir ("..");
-          when 13 =>
             -- Root (change dir to)
             Change_Dir (Utils.Asu_Ts (Root));
+          when 13 =>
+            -- Reread (change dir .)
+            Change_Dir (".");
           when 14 =>
+            -- Up (change dir ..)
+            Change_Dir ("..");
+          when 15 =>
             -- Bookmarks (menu)
             declare
               New_Dir : constant String := Bookmarks.Handle;
@@ -239,16 +283,16 @@ begin
                 Change_Dir (New_Dir);
               end if;
             end;
-          when 15 =>
+          when 16 =>
             -- Edit (file)
             List_Action (Edit);
-          when 16 =>
+          when 17 =>
             -- Diff
             List_Action (Diff);
-          when 17 =>
+          when 18 =>
             -- History
             List_Action (History);
-          when 18 =>
+          when 19 =>
             -- Exit
             raise Utils.Exit_Requested;
           when others =>

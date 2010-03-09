@@ -1,6 +1,5 @@
 with Ada.Exceptions, Ada.Characters.Latin_1;
-with Environ, Sys_Calls, Basic_Proc, Many_Strings, Command, Directory, Dir_Mng,
-     String_Mng;
+with Environ, Basic_Proc, Many_Strings, Command, Directory, Dir_Mng, String_Mng;
 package body Git_If is
 
   -- Asu
@@ -27,10 +26,8 @@ package body Git_If is
   end Kind_Of;
 
 
-  function Kind_Of (Path : String) return Character is
-    Kind : Sys_Calls.File_Kind_List;
+  function Char_Of (Kind : Sys_Calls.File_Kind_List) return Character is
   begin
-    Kind := Kind_Of (Path);
     case Kind is
       when Sys_Calls.File => return ' ';
       when Sys_Calls.Link => return '@';
@@ -39,7 +36,12 @@ package body Git_If is
     end case;
   exception
     when others => return '?';
-  end Kind_Of;
+  end Char_Of;
+
+  function Char_Of (Path : String) return Character is
+  begin
+    return Char_Of (Kind_Of (Path));
+  end Char_Of;
 
   -- Current Git version
   function Get_Version return Version_Rec is
@@ -221,7 +223,7 @@ package body Git_If is
           File_Entry.Name := Str;
           File_Entry.S2 := ' ';
           File_Entry.S3 := ' ';
-          File_Entry.Kind := Kind_Of (Asu_Ts (Str));
+          File_Entry.Kind := Char_Of (Asu_Ts (Str));
           Files.Insert (File_Entry);
         end if;
         exit when not Done;
@@ -243,7 +245,7 @@ package body Git_If is
           if Directory.Dirname (Asu_Ts (Str)) = Current_Path then
             -- This file is in current dir, look for it
             File_Entry.Name := Asu_Tus (Directory.Basename (Asu_Ts (Str)));
-            File_Entry.Kind := Kind_Of (Asu_Ts (File_Entry.Name));
+            File_Entry.Kind := Char_Of (Asu_Ts (File_Entry.Name));
             File_Search (Files, Found, File_Entry,
                          From => File_Mng.Dyn_List.Absolute);
             if Found then

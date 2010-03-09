@@ -2,7 +2,7 @@
 <!DOCTYPE Afpx_Descriptors SYSTEM "../../reposit/Afpx.dtd">
 
 <!-- For agite -->
-<Afpx_Descriptors Height="42" Width="55">
+<Afpx_Descriptors Height="44" Width="55">
 
   <!-- Main screen: explorator --> 
   <Descriptor Num="1" Background="Light_gray">
@@ -14,7 +14,7 @@
     <!-- Title and list -->
     <Var Name="WWidth" Value="${Screen.Width}-${LmWidth}-${LmHOffset}-1"/>
     <List>
-      <Geometry Up="6" Left="1" Low="${Screen.Low}-1" Width="${WWidth}"/>
+      <Geometry Up="8" Left="1" Low="${Screen.Low}-1" Width="${WWidth}"/>
       <Colors Foreground="Light_Gray" Background="Brown" Selected="Red"/>
     </List>
     <Field Num="1" Kind="Put">
@@ -76,50 +76,52 @@
                 Height="${Field_9.Height}" Right="${Screen.Width}-2"/>
       <Colors Foreground="Light_Gray" Background="Brown" Selected="Brown"/>
     </Field>
-    <Field Num="11" Kind="Button">
-      <Geometry Up="${Field_10.Low}+2" Left="1" Height="1" Width="8"/>
-      <Colors Foreground="Light_Gray" Background="Brown"/>
-      <Init Row="0" Col="1">Reread</Init>
+    <Field Num="11" Kind="Put">
+      <Geometry Up="${Field_10.Low}+2" Left="1" Height="1" Width="7"/>
+      <Colors Foreground="Black" Background="Light_gray" Blink="False"/>
+      <Init Row="0" Col="1">Root:</Init>
     </Field>
     <Field Num="12" Kind="Button">
       <Geometry Up="${Field_11.Up}" Left="${Field_11.Right}+2"
+                Height="1" Right="${Screen.Width}-2"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
+    </Field>
+    <Field Num="13" Kind="Button">
+      <Geometry Up="${Field_12.Low}+2" Left="1"
+                Height="1" Width="8"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
+      <Init Row="0" Col="1">Reread</Init>
+    </Field>
+    <Field Num="14" Kind="Button">
+      <Geometry Up="${Field_13.Up}" Left="${Field_13.Right}+2"
                 Height="1" Width="4"/>
       <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="0" Col="1">Up</Init>
     </Field>
-    <Field Num="13" Kind="Button">
-      <Geometry Up="${Field_11.Up}" Left="${Field_12.Right}+2"
-                Height="1" Width="6"/>
-      <Colors Foreground="Light_Gray" Background="Brown"/>
-      <Init Row="0" Col="1">Root</Init>
-    </Field>
-    <Field Num="14" Kind="Button">
-      <Geometry Up="${Field_11.Up}" Left="${Field_13.Right}+2"
+    <Field Num="15" Kind="Button">
+      <Geometry Up="${Field_14.Up}" Left="${Field_14.Right}+2"
                 Height="1" Width="11"/>
       <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="0" Col="1">Bookmarks</Init>
     </Field>
 
     <!-- Edit, Diff, History, Exit -->
-    <Field Num="15" Kind="Button">
+    <Field Num="16" Kind="Button">
       <Geometry Up="${List.Up}" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
       <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="1" Col="2">Edit</Init>
     </Field>
-
-    <Field Num="16" Kind="Button">
-      <Geometry Up="${Field_15.Low}+2" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
-      <Colors Foreground="Light_Gray" Background="Brown"/>
-      <Init Row="1" Col="2">Diff</Init>
-    </Field>
-
     <Field Num="17" Kind="Button">
       <Geometry Up="${Field_16.Low}+2" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
       <Colors Foreground="Light_Gray" Background="Brown"/>
+      <Init Row="1" Col="2">Diff</Init>
+    </Field>
+    <Field Num="18" Kind="Button">
+      <Geometry Up="${Field_17.Low}+2" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="1" Col="2">Hist</Init>
     </Field>
-
-    <Field Num="18" Kind="Button">
+    <Field Num="19" Kind="Button">
       <Geometry Up="${List.Low}-2" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
       <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="1" Col="2">Exit</Init>
