@@ -82,24 +82,20 @@ package body Config is
     end if;
     declare
       Result : Bookmark_Array (1 .. Ctx.Get_Nb_Children (Bookmarks));
-      Name : Utils.Asu_Us;
     begin
       for I in Result'Range loop
         Bookmark := Ctx.Get_Child (Bookmarks, I);
         if Ctx.Get_Nb_Attributes (Bookmark) = 0 then
-          Name := Utils.Asu_Null;
+          Result(I).Name := Utils.Asu_Null;
         else
-          Name := "(" & Ctx.Get_Attribute (Bookmark, 1).Value & ")";
+          Result(I).Name := Ctx.Get_Attribute (Bookmark, 1).Value;
         end if;
         if Ctx.Get_Nb_Children (Bookmark) /= 1 then
           -- No bookmark text: Separator
-          Result(I) := "----- " & Name & " -----";
+          Result(I).Path := Utils.Asu_Null;
         else
-          if Name /= Utils.Asu_Null then
-            Name := Name & " ";
-          end if;
           -- Some bookmark text: full bookmark
-          Result(I) := Name & Utils.Asu_Us'
+          Result(I).Path := Utils.Asu_Us'
                (Ctx.Get_Text (Ctx.Get_Child (Bookmark, 1)));
         end if;
       end loop;
