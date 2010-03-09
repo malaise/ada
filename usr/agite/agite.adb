@@ -14,7 +14,7 @@ procedure Agite is
   Insert       : Boolean;
   Redisplay    : Boolean;
   Ptg_Result   : Afpx.Result_Rec;
-  Dir_Field    : constant Afpx.Field_Range := 10;
+  Dir_Field    : constant Afpx.Field_Range := 12;
   use type Afpx.Absolute_Field_Range;
 
   -- Current Git root and path referred to Git root
@@ -79,10 +79,27 @@ procedure Agite is
   begin
     Afpx.Clear_Field (Dir_Field);
     Afpx.Encode_Field (Dir_Field, (0, 0), Utils.Normalize (Curr, Width));
+    -- Move cursor col on last significant char
+    Cursor_Col := 0;
+    declare
+      Wstr : constant Wide_String := Afpx.Decode_Wide_Field (Dir_Field, 0);
+    begin
+      for I in reverse Wstr'Range loop
+        if Wstr(I) /= ' ' then
+          Cursor_Col := I;
+          exit;
+        end if;
+      end loop;
+    end;
+    -- Full field => last col
+    if Cursor_Col >= Width then
+      Cursor_Col := Width - 1;
+    end if;
   end Encode_Dir;
 
   -- Encode files
   procedure Encode_Files is
+    Background : Con_Io.Effective_Basic_Colors;
     use type Git_If.Asu_Us;
   begin
     List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No) - 4;
@@ -112,9 +129,24 @@ procedure Agite is
     Init_List (Files);
 
     -- Encode root dir
-    Afpx.Clear_Field (12);
-    Afpx.Encode_Field (12, (0, 0),
+    Afpx.Clear_Field (10);
+    Afpx.Encode_Field (10, (0, 0),
        Utils.Normalize (Utils.Asu_Ts (Root), Afpx.Get_Field_Width (12)));
+
+    -- De-activate Diff and history if no in Git
+    if Root = Utils.Asu_Null then
+      Afpx.Get_Descriptor_Background (Background);
+      Afpx.Set_Field_Protection (17, True);
+      Afpx.Set_Field_Colors (17, Foreground => Con_Io.Black,
+                                 Background => Background);
+      Afpx.Set_Field_Protection (18, True);
+      Afpx.Set_Field_Colors (18, Foreground => Con_Io.Black,
+                                 Background => Background);
+    else
+      Afpx.Reset_Field (17);
+      Afpx.Reset_Field (18);
+    end if;
+
   end Encode_Files;
 
   -- Change dir (or at least try) according to argument or Dir_Field
@@ -261,12 +293,12 @@ begin
             -- Scroll list
             Afpx.List_Manager.Scroll(Ptg_Result.Field_No
                                    - Utils.List_Scroll_Fld_Range'First + 1);
-          when 9 =>
-            -- Go (to dir)
-            Change_Dir;
-          when 12 =>
+          when 10 =>
             -- Root (change dir to)
             Change_Dir (Utils.Asu_Ts (Root));
+          when 11 =>
+            -- Go (to dir)
+            Change_Dir;
           when 13 =>
             -- Reread (change dir .)
             Change_Dir (".");

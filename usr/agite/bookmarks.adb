@@ -92,7 +92,13 @@ package body Bookmarks is
           case Ptg_Result.Field_No is
             when Afpx.List_Field_No | 11 =>
               -- Double click or Goto => move to bookmark
-              return Dir_Of (Afpx.Line_List.Get_Position);
+              declare
+                Dir : constant String := Dir_Of (Afpx.Line_List.Get_Position);
+              begin
+                if Dir /= "" then
+                  return Dir;
+                end if;
+              end;
             when Utils.List_Scroll_Fld_Range'First ..
                  Utils.List_Scroll_Fld_Range'Last =>
               -- Scroll list

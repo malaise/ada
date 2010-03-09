@@ -1,15 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<!-- Agite configuration file -->
 <!DOCTYPE agite SYSTEM "agite.dtd">
 
 <agite>
-  <editor>gedit</editor>
+  <editor>xvi</editor>
   <viewer>xvi -M</viewer>
   <differator>tkdiff</differator>
   <bookmarks>
-    <!-- Optional name then path -->
-    <bookmark Name="C">/home/user/c</bookmark>
+    <bookmark Name="Ada"/>
+    <bookmark Name="Ada">/home/malaise/ada</bookmark>
+    <bookmark Name="Reposit">/home/malaise/ada/reposit</bookmark>
+    <bookmark Name="Usr">/home/malaise/ada/usr</bookmark>
+    <bookmark Name="C">/home/malaise/ada/c</bookmark>
+    <bookmark Name="Others"/>
+    <bookmark Name="Home">/home/malaise</bookmark>
+    <bookmark Name="C">/home/malaise/c</bookmark>
+    <bookmark Name="Bin">/home/malaise/bin</bookmark>
+    <bookmark Name="Tmp"/>
+    <bookmark>/home/malaise/ada/usr/agite</bookmark>
   </bookmarks>
 </agite>
 
