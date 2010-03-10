@@ -122,9 +122,9 @@
       <Init Row="1" Col="2">Hist</Init>
     </Field>
     <Field Num="19" Kind="Button">
-      <Geometry Up="${List.Low}-2" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
+      <Geometry Height="1" Left="${LmLeft}" Low="${List.Low}" Width="${LmWidth}"/>
       <Colors Foreground="Light_Gray" Background="Brown"/>
-      <Init Row="1" Col="2">Exit</Init>
+      <Init Row="0" Col="2">Exit</Init>
     </Field>
   </Descriptor>
 
@@ -407,13 +407,18 @@
       <Init Row="2" Col="0">Comment 3</Init>
     </Field>
 
-    <!-- View, Back -->
+    <!-- View, History, Back -->
     <Field Num="13" Kind="Button">
       <Geometry Up="${List.Up}" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
       <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="1" Col="2">View</Init>
     </Field>
     <Field Num="14" Kind="Button">
+      <Geometry Up="${Field_13.Low}+2" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
+      <Init Row="1" Col="2">Hist</Init>
+    </Field>
+    <Field Num="15" Kind="Button">
       <Geometry Up="${List.Low}-2" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
       <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="1" Col="2">Back</Init>
