@@ -195,7 +195,7 @@ procedure Agite is
   begin
     -- Call history and restore current entry
     Pos := Afpx.Line_List.Get_Position;
-    History.Handle (Utils.Asu_Ts (Root), Utils.Asu_Ts (Path), Name, Is_File);
+    History.Handle (Utils.Asu_Ts (Path), Name, Is_File);
     Init;
     Afpx.Line_List.Move_To (Number => Pos - 1);
     Afpx.Update_List (Afpx.Center);

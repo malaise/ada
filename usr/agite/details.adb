@@ -16,8 +16,7 @@ package body Details is
     Git_If.Commit_Entry_Rec, Git_If.Commit_File_Mng, Set);
 
 
-  procedure Handle (Hash : in Git_If.Git_Hash;
-                    Root : in String) is
+  procedure Handle (Hash : in Git_If.Git_Hash) is
 
     -- Afpx stuff
     Cursor_Field : Afpx.Field_Range;
@@ -34,7 +33,7 @@ package body Details is
     Comment : Git_If.Comment_5;
     Commits : Git_If.Commit_List;
 
-    procedure Init is
+    procedure Init (Cet_Details : in Boolean) is
     begin
       -- Init Afpx
       Afpx.Use_Descriptor (4);
@@ -43,16 +42,18 @@ package body Details is
       Insert := False;
 
       -- Get commit details
-      Redisplay := True;
-      Afpx.Suspend;
-      begin
-        Git_If.List_Commit (Hash, Date, Comment, Commits);
-        Afpx.Resume;
-      exception
-        when others =>
+      if Cet_Details then
+        Redisplay := True;
+        Afpx.Suspend;
+        begin
+          Git_If.List_Commit (Hash, Date, Comment, Commits);
           Afpx.Resume;
-          raise;
-      end;
+        exception
+          when others =>
+            Afpx.Resume;
+            raise;
+        end;
+      end if;
 
       -- Encode info
       Afpx.Encode_Field (10, (0, 0), Hash);
@@ -92,15 +93,18 @@ package body Details is
             File : constant String
                  := Directory.Basename (Utils.Asu_Ts (Commit.File));
           begin
-            History.Handle (Root, Path, File,
-                            Utils.Asu_Ts (Commit.File) /= "/");
+            History.Handle (Path, File,
+                            Utils.Asu_Ts (Commit.File) /= "/",
+                            Hash);
           end;
-          Init;
+          -- Re init sreen
+          Init (False);
       end case;
     end Show;
 
   begin
-    Init;
+    -- Full init
+    Init (True);
 
     -- Main loop
     loop
