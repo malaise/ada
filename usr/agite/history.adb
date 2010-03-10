@@ -1,5 +1,5 @@
 with Con_Io, Afpx.List_Manager, String_Mng;
-with Utils, Git_If, Config, Details, View;
+with Utils, Config, Details, View;
 package body History is
 
   -- Cut string if too long for list
@@ -28,8 +28,17 @@ package body History is
   procedure Init_List is new Afpx.List_Manager.Init_List (
     Git_If.Log_Entry_Rec, Git_If.Log_Mng, Set);
 
+  -- To search matching hash in Log
+  function Hash_Match (Current, Criteria : Git_If.Log_Entry_Rec) return Boolean is
+  begin
+    return Current.Hash = Criteria.Hash;
+  end Hash_Match;
+  procedure Hash_Search is new Git_If.Log_Mng.Dyn_List.Search (Hash_Match);
+
   -- Handle the history of a file or dir
-  procedure Handle (Root, Path, Name : in String; Is_File : in Boolean) is
+  procedure Handle (Path, Name : in String;
+                    Is_File : in Boolean;
+                    Hash : in Git_If.Git_Hash := Git_If.No_Hash) is
     -- Afpx stuff
     Cursor_Field : Afpx.Field_Range;
     Cursor_Col   : Con_Io.Col_Range;
@@ -41,6 +50,9 @@ package body History is
     -- The log
     Logs : Git_If.Log_List;
     Log : Git_If.Log_Entry_Rec;
+
+    -- Search found
+    Found : Boolean;
 
     -- Init Afpx
     procedure Init is
@@ -109,7 +121,7 @@ package body History is
           View (Path & Name, Log.Hash);
           Redisplay := True;
         when Show_Details =>
-          Details.Handle (Log.Hash, Root);
+          Details.Handle (Log.Hash);
           Init;
           Init_List (Logs);
           Afpx.Update_List (Afpx.Center);
@@ -138,6 +150,11 @@ package body History is
     -- Encode history
     if Logs.Is_Empty then
       return;
+    end if;
+    if Hash /= Git_If.No_Hash then
+      -- Set current to Hash provided
+      Log.Hash := Hash;
+      Hash_Search (Logs, Found, Log, From => Git_If.Log_Mng.Dyn_List.Absolute);
     end if;
     Init_List (Logs);
 

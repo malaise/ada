@@ -44,6 +44,7 @@ package Git_If is
   -- LOG HISTORY
   -- Git hashing number
   subtype Git_Hash is String (1 .. 40);
+  No_Hash : constant Git_Hash := (others => ' ');
   -- A date at iso YYYY-MM-DD HH:MM:SS
   subtype Iso_Date is String (1 .. 19);
   -- A log entry
