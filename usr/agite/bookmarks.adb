@@ -64,13 +64,13 @@ package body Bookmarks is
             Mark := Bookmarks(I).Path;
           end if;
         elsif Bookmarks(I).Name /= Utils.Asu_Null then
-          -- Separator
+          -- Separator with name
           Mark := "----- " & Bookmarks(I).Name & " -----";
+        else
+          -- Emty separator
+          null;
         end if;
-        -- Discard empty entry
-        if Mark /= Utils.Asu_Null then
-          Insert_List (Utils.Asu_Ts (Mark));
-        end if;
+        Insert_List (Utils.Asu_Ts (Mark));
       end loop;
     end;
     if not Afpx.Line_List.Is_Empty then

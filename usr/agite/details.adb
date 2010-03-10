@@ -1,5 +1,5 @@
-with Con_Io, Afpx.List_Manager, String_Mng;
-with Utils, View;
+with Con_Io, Afpx.List_Manager, String_Mng, Directory;
+with Utils, View, History;
 package body Details is
 
   List_Width : Afpx.Width_Range;
@@ -16,7 +16,9 @@ package body Details is
     Git_If.Commit_Entry_Rec, Git_If.Commit_File_Mng, Set);
 
 
-  procedure Handle (Hash : in Git_If.Git_Hash) is
+  procedure Handle (Hash : in Git_If.Git_Hash;
+                    Root : in String) is
+
     -- Afpx stuff
     Cursor_Field : Afpx.Field_Range;
     Cursor_Col   : Con_Io.Col_Range;
@@ -32,50 +34,73 @@ package body Details is
     Comment : Git_If.Comment_5;
     Commits : Git_If.Commit_List;
 
-    -- Launch viewer on current file
-    procedure Do_View is
+    procedure Init is
+    begin
+      -- Init Afpx
+      Afpx.Use_Descriptor (4);
+      Cursor_Field := 1;
+      Cursor_Col := 0;
+      Insert := False;
+
+      -- Get commit details
+      Redisplay := True;
+      Afpx.Suspend;
+      begin
+        Git_If.List_Commit (Hash, Date, Comment, Commits);
+        Afpx.Resume;
+      exception
+        when others =>
+          Afpx.Resume;
+          raise;
+      end;
+
+      -- Encode info
+      Afpx.Encode_Field (10, (0, 0), Hash);
+      Afpx.Encode_Field (11, (0, 0), Date);
+      Afpx.Get_Field_Size (12, Comment_Height, Comment_Width);
+      for I in 1 .. Comment_Height loop
+        Afpx.Encode_Field (12, (I - 1, 0),
+             String_Mng.Procuste (Utils.Asu_Ts (Comment(I)),
+                                  Comment_Width,
+                                  Trunc_Head => False));
+      end loop;
+      -- Encode list
+      List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No);
+      Init_List (Commits);
+    end Init;
+
+    -- Launch viewer on current file, or history on current dir or file
+    type Show_List is (Show_View, Show_Hist);
+    procedure Show (What : in Show_List) is
       Pos : constant Positive := Afpx.Line_List.Get_Position;
       Commit : Git_If.Commit_Entry_Rec;
     begin
       Commits.Move_To (Git_If.Commit_File_Mng.Dyn_List.Next, Pos - 1,
                        From_Current => False);
       Commits.Read (Commit, Git_If.Commit_File_Mng.Dyn_List.Current);
-      View (Utils.Asu_Ts (Commit.File), Hash);
-      Redisplay := True;
-    end Do_View;
+      case What is
+        when Show_View =>
+          -- Only files except leading "/"
+          if Utils.Asu_Ts (Commit.File) /= "/" then
+            View (Utils.Asu_Ts (Commit.File), Hash);
+          end if;
+          Redisplay := True;
+        when Show_Hist =>
+          declare
+            Path : constant String
+                 := Directory.Dirname (Utils.Asu_Ts (Commit.File));
+            File : constant String
+                 := Directory.Basename (Utils.Asu_Ts (Commit.File));
+          begin
+            History.Handle (Root, Path, File,
+                            Utils.Asu_Ts (Commit.File) /= "/");
+          end;
+          Init;
+      end case;
+    end Show;
 
   begin
-     -- Init Afpx
-    Afpx.Use_Descriptor (4);
-    Cursor_Field := 1;
-    Cursor_Col := 0;
-    Insert := False;
-
-    -- Get commit details
-    Redisplay := True;
-    Afpx.Suspend;
-    begin
-      Git_If.List_Commit (Hash, Date, Comment, Commits);
-      Afpx.Resume;
-    exception
-      when others =>
-        Afpx.Resume;
-        raise;
-    end;
-
-    -- Encode info
-    Afpx.Encode_Field (10, (0, 0), Hash);
-    Afpx.Encode_Field (11, (0, 0), Date);
-    Afpx.Get_Field_Size (12, Comment_Height, Comment_Width);
-    for I in 1 .. Comment_Height loop
-      Afpx.Encode_Field (12, (I - 1, 0),
-           String_Mng.Procuste (Utils.Asu_Ts (Comment(I)),
-                                Comment_Width,
-                                Trunc_Head => False));
-    end loop;
-    -- Encode list
-    List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No);
-    Init_List (Commits);
+    Init;
 
     -- Main loop
     loop
@@ -104,8 +129,11 @@ package body Details is
                                       - Utils.List_Scroll_Fld_Range'First + 1);
             when 13 =>
               -- View
-              Do_View;
+              Show (Show_View);
             when 14 =>
+              -- History
+              Show (Show_Hist);
+            when 15 =>
               -- Back
               return;
             when others =>

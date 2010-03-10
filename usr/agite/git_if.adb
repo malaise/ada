@@ -510,6 +510,8 @@ package body Git_If is
     end if;
     if not Commit.Is_Empty then
       Commit.Rewind;
+      Commit.Insert ((' ', Utils.Asu_Tus ("/")),
+                     Commit_File_Mng.Dyn_List.Prev);
     end if;
 
   end List_Commit;

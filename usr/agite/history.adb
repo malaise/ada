@@ -29,7 +29,7 @@ package body History is
     Git_If.Log_Entry_Rec, Git_If.Log_Mng, Set);
 
   -- Handle the history of a file or dir
-  procedure Handle (Path, Name : in String; Is_File : in Boolean) is
+  procedure Handle (Root, Path, Name : in String; Is_File : in Boolean) is
     -- Afpx stuff
     Cursor_Field : Afpx.Field_Range;
     Cursor_Col   : Con_Io.Col_Range;
@@ -109,7 +109,7 @@ package body History is
           View (Path & Name, Log.Hash);
           Redisplay := True;
         when Show_Details =>
-          Details.Handle (Log.Hash);
+          Details.Handle (Log.Hash, Root);
           Init;
           Init_List (Logs);
           Afpx.Update_List (Afpx.Center);
