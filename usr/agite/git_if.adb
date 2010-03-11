@@ -128,6 +128,7 @@ package body Git_If is
       Asu.Delete (Root, Asu.Length (Root) - Asu.Length (Dir),
                         Asu.Length (Root));
     end loop;
+    Asu.Append (Root, "/");
   end Get_Root_And_Path;
 
   -- LIST OF FILES AND STATUS

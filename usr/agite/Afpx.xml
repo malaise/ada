@@ -122,10 +122,16 @@
       <Init Row="1" Col="2">Hist</Init>
     </Field>
     <Field Num="19" Kind="Button">
+      <Geometry Height="1" Left="${LmLeft}" Low="${List.Low}-2" Width="${LmWidth}"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
+      <Init Row="0" Col="1">GitGUI</Init>
+    </Field>
+    <Field Num="20" Kind="Button">
       <Geometry Height="1" Left="${LmLeft}" Low="${List.Low}" Width="${LmWidth}"/>
       <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="0" Col="2">Exit</Init>
     </Field>
+    
   </Descriptor>
 
   <!-- Bookmarks -->
