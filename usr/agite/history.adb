@@ -68,8 +68,16 @@ package body History is
         Afpx.Encode_Field (10, (0, 0),
                Utils.Normalize (Path & Name, Afpx.Get_Field_Width (10)));
       else
-        Afpx.Encode_Field (10, (0, 0),
-               Utils.Normalize (Path & Name & "/", Afpx.Get_Field_Width (10)));
+        if Name /= "" then
+          Afpx.Encode_Field (10, (0, 0),
+                 Utils.Normalize (Path & Name & "/", Afpx.Get_Field_Width (10)));
+        elsif Path /= "" then
+          Afpx.Encode_Field (10, (0, 0),
+                 Utils.Normalize (Path , Afpx.Get_Field_Width (10)));
+        else
+          Afpx.Encode_Field (10, (0, 0),
+                 Utils.Normalize ("/" , Afpx.Get_Field_Width (10)));
+        end if;
         -- Lock buttons Edit and Diff (only leave history)
         Afpx.Get_Descriptor_Background (Background);
         Afpx.Set_Field_Protection (11, True);
@@ -83,12 +91,12 @@ package body History is
     end Init;
 
     -- Show delta from current in list to comp
-    procedure Show_Delta (Comp : in Positive) is
-      Ref : Positive;
+    procedure Show_Delta (Ref : in Positive) is
+      Comp : Positive;
       Ref_Hash, Comp_Hash : Git_If.Git_Hash;
     begin
       -- Save position in List
-      Ref := Afpx.Line_List.Get_Position;
+      Comp := Afpx.Line_List.Get_Position;
 
       -- Read reference hash in Logs
       Logs.Move_To (Number => Ref - 1, From_Current => False);
@@ -101,10 +109,11 @@ package body History is
       Comp_Hash := Log.Hash;
 
       -- Restore position in List
-      Afpx.Line_List.Move_To (Number => Ref - 1, From_Current => False);
+      Afpx.Line_List.Move_To (Number => Comp - 1, From_Current => False);
 
       -- Call delta
-      Git_If.Launch_Delta (Config.Differator, Path & Name, Ref_Hash, Comp_Hash);
+      Git_If.Launch_Delta (Config.Differator,Root & Path & Name,
+                           Ref_Hash, Comp_Hash);
     end Show_Delta;
 
     -- View file of commit details
