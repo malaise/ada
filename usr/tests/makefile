@@ -1,6 +1,6 @@
 include $(HOME)/Makefiles/common.mk
 
-include $(HOME)/Makefiles/units.mk
+include $(TEMPLATES)/units.mk
 
 ADAVIEW := $(REPOSIT)
 ADAWARN := true
