@@ -36,7 +36,7 @@ package body History is
   procedure Hash_Search is new Git_If.Log_Mng.Dyn_List.Search (Hash_Match);
 
   -- Handle the history of a file or dir
-  procedure Handle (Path, Name : in String;
+  procedure Handle (Root, Path, Name : in String;
                     Is_File : in Boolean;
                     Hash : in Git_If.Git_Hash := Git_If.No_Hash) is
     -- Afpx stuff
@@ -66,10 +66,10 @@ package body History is
       Afpx.Clear_Field (10);
       if Is_File then
         Afpx.Encode_Field (10, (0, 0),
-               Utils.Normalize (Name, Afpx.Get_Field_Width (10)));
+               Utils.Normalize (Path & Name, Afpx.Get_Field_Width (10)));
       else
         Afpx.Encode_Field (10, (0, 0),
-               Utils.Normalize (Name & "/", Afpx.Get_Field_Width (10)));
+               Utils.Normalize (Path & Name & "/", Afpx.Get_Field_Width (10)));
         -- Lock buttons Edit and Diff (only leave history)
         Afpx.Get_Descriptor_Background (Background);
         Afpx.Set_Field_Protection (11, True);
@@ -104,7 +104,7 @@ package body History is
       Afpx.Line_List.Move_To (Number => Ref - 1, From_Current => False);
 
       -- Call delta
-      Git_If.Launch_Delta (Config.Differator, Name, Ref_Hash, Comp_Hash);
+      Git_If.Launch_Delta (Config.Differator, Path & Name, Ref_Hash, Comp_Hash);
     end Show_Delta;
 
     -- View file of commit details
@@ -121,7 +121,7 @@ package body History is
           View (Path & Name, Log.Hash);
           Redisplay := True;
         when Show_Details =>
-          Details.Handle (Log.Hash);
+          Details.Handle (Root, Log.Hash);
           Init;
           Init_List (Logs);
           Afpx.Update_List (Afpx.Center);
@@ -139,7 +139,7 @@ package body History is
     Afpx.Suspend;
     Redisplay := True;
     begin
-      Git_If.List_Log (Name, Logs);
+      Git_If.List_Log (Root & Path & Name, Logs);
       Afpx.Resume;
     exception
       when others =>

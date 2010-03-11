@@ -16,7 +16,7 @@ package body Details is
     Git_If.Commit_Entry_Rec, Git_If.Commit_File_Mng, Set);
 
 
-  procedure Handle (Hash : in Git_If.Git_Hash) is
+  procedure Handle (Root : in String; Hash : in Git_If.Git_Hash) is
 
     -- Afpx stuff
     Cursor_Field : Afpx.Field_Range;
@@ -93,7 +93,7 @@ package body Details is
             File : constant String
                  := Directory.Basename (Utils.Asu_Ts (Commit.File));
           begin
-            History.Handle (Path, File,
+            History.Handle (Root, Path, File,
                             Utils.Asu_Ts (Commit.File) /= "/",
                             Hash);
           end;

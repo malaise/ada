@@ -195,7 +195,7 @@ procedure Agite is
   begin
     -- Call history and restore current entry
     Pos := Afpx.Line_List.Get_Position;
-    History.Handle (Utils.Asu_Ts (Path), Name, Is_File);
+    History.Handle (Utils.Asu_Ts (Root), Utils.Asu_Ts (Path), Name, Is_File);
     Init;
     Afpx.Line_List.Move_To (Number => Pos - 1);
     Afpx.Update_List (Afpx.Center);
@@ -206,6 +206,7 @@ procedure Agite is
   procedure List_Action (Action : in Action_List) is
 
     File : Git_If.File_Entry_Rec;
+    use type Utils.Asu_Us;
   begin
     Files.Move_To (Number => Afpx.Line_List.Get_Position - 1,
                   From_Current => False);
@@ -325,6 +326,9 @@ begin
             -- History
             List_Action (History);
           when 19 =>
+            -- GUI
+            Utils.Launch ("git gui");
+          when 20 =>
             -- Exit
             raise Utils.Exit_Requested;
           when others =>
