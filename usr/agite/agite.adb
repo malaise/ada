@@ -221,7 +221,11 @@ procedure Agite is
           when Edit | Diff =>
             null;
           when History =>
-            Hist (Str, False);
+            if Str = "." then
+              Hist ("", False);
+            elsif Str /= ".." then
+              Hist (Str, False);
+            end if;
         end case;
       elsif File.Kind /= '@' and then File.Kind /= '?' then
         case Action is
