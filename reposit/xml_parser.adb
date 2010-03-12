@@ -3,7 +3,7 @@ with Environ, Basic_Proc, Rnd, Exception_Messenger, Directory;
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "13";
+  Minor_Version : constant String := "0";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -319,6 +319,12 @@ package body Xml_Parser is
       Trace ("Got exception " & Ada.Exceptions.Exception_Name (Error_Occ));
       raise Internal_Error;
   end Parse;
+
+  -- Return current status of context
+  function Get_Status (Ctx : Ctx_Type) return Ctx_Status_List is
+  begin
+    return Ctx.Status;
+  end Get_Status;
 
   -- Return the error message if Parse_Error
   function Get_Parse_Error_Message (Ctx : Ctx_Type) return String is
