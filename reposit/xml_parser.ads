@@ -10,7 +10,7 @@ with Queues, Trees, Unique_List, Text_Char, Dynamic_List, Unlimited_Pool,
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "14";
+  Major_Version : constant String := "15";
   function Version return String;
 
   -----------
@@ -50,6 +50,15 @@ package Xml_Parser is
   -- A parsing context
   type Ctx_Type is tagged limited private;
 
+
+  -- Context status
+  type Ctx_Status_List is (
+    Clean,              -- Nothing parsed (initial status and after Clean)
+    Parsed_Prologue,    -- }
+    Parsed_Prologue_Cb, -- } Prologue parsed (can scan prologue and parse elts)
+    Parsed_Elements,    -- Elements parsed OK (can scan prologue and elts)
+    Error,              -- Parse error detected
+    Init);              -- Initialized for the Generator
 
   -----------------------------
   -- NOTE ABOUT THE PROLOGUE --
@@ -131,6 +140,9 @@ package Xml_Parser is
                    Callback  : in Parse_Callback_Access := null);
   File_Error, Status_Error : exception;
 
+  -- Return current status of context
+  function Get_Status (Ctx : Ctx_Type) return Ctx_Status_List;
+
   -- Return the error message if Parse error
   -- May raise Status_Error if Ctx is clean
   function Get_Parse_Error_Message (Ctx : Ctx_Type) return String;
@@ -138,7 +150,6 @@ package Xml_Parser is
   -- Clean parsing context, when the Prologue and Element trees
   --  are not used any more
   procedure Clean (Ctx : in out Ctx_Type);
-
 
   --------------------
   -- STRING PARSING --
@@ -563,9 +574,6 @@ private
   ------------------
   -- CONTEXT TYPE --
   ------------------
-  type Ctx_Status_List is (Clean, Parsed_Prologue, Parsed_Elements,
-                                  Parsed_Prologue_Cb,
-                           Error, Init);
   type Ctx_Type is limited new Ada.Finalization.Limited_Controlled with record
     Status  : Ctx_Status_List := Clean;
     Magic : Float := Clean_Magic;
