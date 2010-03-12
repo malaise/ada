@@ -75,11 +75,14 @@ package body Config is
 
   -- Last/Current dir
   procedure Save_Curr_Dir (Dir : in String) is
-    Prev : Xml_Parser.Element_Type
-         := Ctx.Get_Child (Ctx.Get_Child (Root, 3), 1);
+    Prev : Xml_Parser.Element_Type;
     New_Node : Xml_Parser.Node_Type;
   begin
+    if not Xml_Parser.Is_Valid (Root) then
+      Load;
+    end if;
     -- Prev dir may not be empty
+    Prev := Ctx.Get_Child (Root, 4);
     if Ctx.Get_Nb_Children (Prev) = 1 then
       Ctx.Delete_Children (Prev);
     end if;
@@ -88,13 +91,13 @@ package body Config is
   end Save_Curr_Dir;
 
   function Prev_Dir return String is
-    Prev : constant Xml_Parser.Element_Type
-         := Ctx.Get_Child (Ctx.Get_Child (Root, 3), 1);
+    Prev : Xml_Parser.Element_Type;
   begin
     if not Xml_Parser.Is_Valid (Root) then
       Load;
     end if;
     -- Prev dir may be empty
+    Prev := Ctx.Get_Child (Root, 4);
     if Ctx.Get_Nb_Children (Prev) = 1 then
       return Ctx.Get_Text (Ctx.Get_Child (Prev, 1));
     else

@@ -1,7 +1,20 @@
 with Con_Io, Afpx.List_Manager, Basic_Proc, Int_Image, Directory, Dir_Mng,
-     Sys_Calls;
+     Sys_Calls, Argument;
 with Utils, Git_If, Config, Bookmarks, History;
 procedure Agite is
+
+  -- Error message
+  procedure Error (Msg : in String) is
+  begin
+    if Msg /= "" then
+      Basic_Proc.Put_Line_Error ("ERROR: " & Msg & ".");
+    end if;
+    Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
+                             & " <path> | --previous");
+    Basic_Proc.Set_Error_Exit_Code;
+    raise Utils.Exit_Requested;
+  end Error;
+
   -- Version Stuff
   Version : Git_If.Version_Rec;
   Ref_Version : constant Git_If.Version_Rec := (1, 7, 0);
@@ -161,8 +174,9 @@ procedure Agite is
       else
         Directory.Change_Current (New_Dir);
       end if;
-      -- Success, reset root path for re-evaluation
+      -- Success, reset root path for re-evaluation, save current dir
       Root := Utils.Asu_Null;
+      Config.Save_Curr_Dir (Directory.Get_Current);
       Encode_Files;
     exception
       when others =>
@@ -241,6 +255,25 @@ procedure Agite is
   end List_Action;
 
 begin
+  -- Check/Parse arguments
+  if Argument.Get_Nbre_Arg > 1 then
+    Error ("Invalid arguments");
+  elsif Argument.Get_Nbre_Arg = 1 then
+    begin
+      if Argument.Get_Parameter (Occurence => 1) = "--previous" then
+        if Config.Prev_Dir /= "" then
+          Directory.Change_Current (Config.Prev_Dir);
+        end if;
+      else
+         Directory.Change_Current (Argument.Get_Parameter (Occurence => 1));
+      end if;
+    exception
+      when Directory.Name_Error =>
+        null;
+    end;
+
+  end if;
+
   -- Get and check version
   begin
     Version := Git_If.Get_Version;
@@ -359,6 +392,11 @@ exception
       & Image (Ref_Version.Minor) );
     Basic_Proc.Set_Error_Exit_Code;
   when Utils.Exit_Requested =>
-    Afpx.Release_Descriptor;
+    begin
+      Afpx.Release_Descriptor;
+    exception
+      when Afpx.No_Descriptor =>
+        null;
+   end;
 end Agite;
 
