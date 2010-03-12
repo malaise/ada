@@ -23,6 +23,9 @@ package body Git_If is
   begin
     Stat := Sys_Calls.File_Stat (Path);
     return Stat.Kind;
+  exception
+    when others =>
+      return Sys_Calls.Unknown;
   end Kind_Of;
 
 
@@ -34,8 +37,6 @@ package body Git_If is
       when Sys_Calls.Dir  => return '/';
       when others         => return '?';
     end case;
-  exception
-    when others => return '?';
   end Char_Of;
 
   function Char_Of (Path : String) return Character is
