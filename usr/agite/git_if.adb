@@ -540,7 +540,7 @@ package body Git_If is
   procedure Launch_Diff (Differator, File_Name : in String) is
   begin
     Utils.Launch ("git difftool -y " & " -t " & Differator
-                & " HEAD " & File_Name);
+                & " HEAD -- " & File_Name);
   end Launch_Diff;
 
   -- Launch a diff (asynchronous) from Comp to Ref
