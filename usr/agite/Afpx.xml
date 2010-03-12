@@ -429,6 +429,12 @@
       <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="1" Col="2">Back</Init>
     </Field>
+    <Field Num="16" Kind="Button">
+      <Geometry Up="${Field_11.Up}" Height="1"
+                Width="8" Right="${Screen.Width}-2"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
+      <Init Row="0" Col="2">Copy</Init>
+    </Field>
   </Descriptor>
 
 

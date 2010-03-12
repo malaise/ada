@@ -1,3 +1,4 @@
+with Ada.Characters.Latin_1;
 with Con_Io, Afpx.List_Manager, String_Mng, Directory;
 with Utils, View, History;
 package body Details is
@@ -102,6 +103,24 @@ package body Details is
       end case;
     end Show;
 
+    -- Copy Comments as X selection
+    procedure Copy_Selection is
+      Result : Utils.Asu_Us;
+      use type Utils.Asu_Us;
+    begin
+      -- Skip tailing empty lines. No LineFeed after last line
+      for I in reverse Comment'Range loop
+        if Comment(I) /= Utils.Asu_Null or else Result /= Utils.Asu_Null then
+          if Result = Utils.Asu_Null then
+            Result := Comment(I);
+          else
+            Result := Comment(I) & Ada.Characters.Latin_1.Lf & Result;
+          end if;
+        end if;
+      end loop;
+      Afpx.Set_Selection (Utils.Asu_Ts (Result));
+    end Copy_Selection;
+
   begin
     -- Full init
     Init (True);
@@ -140,6 +159,9 @@ package body Details is
             when 15 =>
               -- Back
               return;
+            when 16 =>
+              -- Copy commit comment to clipboard
+              Copy_Selection;
             when others =>
               -- Other button?
               null;
