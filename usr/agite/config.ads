@@ -10,6 +10,10 @@ package Config is
   -- Diff GUI
   function Differator return String;
 
+  -- Last/Current dir
+  procedure Save_Curr_Dir (Dir : in String);
+  function Prev_Dir return String;
+
   -- Bookmarks
   type Bookmark_Rec is record
     Name : Utils.Asu_Us;
