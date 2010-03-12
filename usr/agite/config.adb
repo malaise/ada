@@ -113,8 +113,6 @@ package body Config is
     -- Del Bookmark marker and its text
     Ctx.Delete_Node (Bookmark, Bookmark);
     Ctx.Put (File_Name);
-    Root := Xml_Parser.No_Node;
-    Ctx.Clean;
   end Del_Bookmark;
 
   procedure Add_Bookmark (Bookmark : in String) is
@@ -127,8 +125,6 @@ package body Config is
     Ctx.Add_Child (Bookmarks, "bookmark", Xml_Parser.Element, New_Node);
     Ctx.Add_Child (New_Node, Bookmark, Xml_Parser.Text, New_Node);
     Ctx.Put (File_Name);
-    Root := Xml_Parser.No_Node;
-    Ctx.Clean;
   end Add_Bookmark;
 
 end Config;
