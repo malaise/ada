@@ -5,16 +5,19 @@
   <editor>gvi</editor>
   <viewer>gvi -M</viewer>
   <differator>tkdiff</differator>
+  <last_dir></last_dir>
   <bookmarks>
     <bookmark Name="Ada"/>
     <bookmark Name="Ada">/home/malaise/ada</bookmark>
     <bookmark Name="Reposit">/home/malaise/ada/reposit</bookmark>
     <bookmark Name="Usr">/home/malaise/ada/usr</bookmark>
     <bookmark Name="C">/home/malaise/ada/c</bookmark>
+    <bookmark/>
     <bookmark Name="Others"/>
     <bookmark Name="Home">/home/malaise</bookmark>
     <bookmark Name="C">/home/malaise/c</bookmark>
     <bookmark Name="Bin">/home/malaise/bin</bookmark>
+    <bookmark/>
     <bookmark Name="Tmp"/>
     <bookmark>/home/malaise/ada/usr/agite</bookmark>
   </bookmarks>

@@ -11,7 +11,7 @@ package body Config is
     return Environ.Getenv ("HOME") & "/.agite/agite.xml";
   end File_Name;
 
-  Bookmarks_Pos : constant := 4;
+  Bookmarks_Pos : constant := 5;
 
   -- Load the conf
   Ctx : Xml_Parser.Generator.Ctx_Type;
@@ -38,6 +38,7 @@ package body Config is
     Root := Ctx.Get_Root_Element;
     Bookmarks := Ctx.Get_Child (Root, Bookmarks_Pos);
     -- Verify that each definition has one (text) child
+    -- Prev dir may be empty
     for I in 1 .. 3 loop
        if Ctx.Get_Nb_Children (Ctx.Get_Child (Root, I)) /= 1 then
          raise Invalid_Config;
@@ -71,6 +72,35 @@ package body Config is
     end if;
     return Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 3), 1));
   end Differator;
+
+  -- Last/Current dir
+  procedure Save_Curr_Dir (Dir : in String) is
+    Prev : Xml_Parser.Element_Type
+         := Ctx.Get_Child (Ctx.Get_Child (Root, 3), 1);
+    New_Node : Xml_Parser.Node_Type;
+  begin
+    -- Prev dir may not be empty
+    if Ctx.Get_Nb_Children (Prev) = 1 then
+      Ctx.Delete_Children (Prev);
+    end if;
+    Ctx.Add_Child (Prev, Dir, Xml_Parser.Text, New_Node);
+    Ctx.Put (File_Name);
+  end Save_Curr_Dir;
+
+  function Prev_Dir return String is
+    Prev : constant Xml_Parser.Element_Type
+         := Ctx.Get_Child (Ctx.Get_Child (Root, 3), 1);
+  begin
+    if not Xml_Parser.Is_Valid (Root) then
+      Load;
+    end if;
+    -- Prev dir may be empty
+    if Ctx.Get_Nb_Children (Prev) = 1 then
+      return Ctx.Get_Text (Ctx.Get_Child (Prev, 1));
+    else
+      return "";
+    end if;
+  end Prev_Dir;
 
   -- Bookmarks
   function Get_Bookmarks return Bookmark_Array is
