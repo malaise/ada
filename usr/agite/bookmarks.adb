@@ -117,8 +117,12 @@ package body Bookmarks is
               Afpx.Line_List.Delete (Done => Dummy);
             when 13 =>
               -- Add current
-              Config.Add_Bookmark (Directory.Get_Current);
-              Afpx.Line_List.Rewind (Afpx.Line_List_Mng.Prev);
+              if Afpx.Line_List.Is_Empty then
+                Config.Add_Bookmark (0, Directory.Get_Current);
+              else
+                Config.Add_Bookmark (Afpx.Line_List.Get_Position,
+                                     Directory.Get_Current);
+              end if;
               Insert_List (Directory.Get_Current);
             when 14 =>
               -- Back

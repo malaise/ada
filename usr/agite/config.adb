@@ -18,7 +18,11 @@ package body Config is
   Root : Xml_Parser.Element_Type;
   Bookmarks : Xml_Parser.Element_Type;
   procedure Load is
+    use type Xml_Parser.Ctx_Status_List;
   begin
+    if Ctx.Get_Status /= Xml_Parser.Clean then
+      return;
+    end if;
     -- Parse
     declare
       Ok : Boolean;
@@ -49,27 +53,21 @@ package body Config is
   -- Editor GUI
   function Editor return String is
   begin
-    if not Xml_Parser.Is_Valid (Root) then
-      Load;
-    end if;
+    Load;
     return Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 1), 1));
   end Editor;
 
   -- Viewer GUI
   function Viewer return String is
   begin
-    if not Xml_Parser.Is_Valid (Root) then
-      Load;
-    end if;
+    Load;
     return Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 2), 1));
   end Viewer;
 
   -- Diff GUI
   function Differator return String is
   begin
-    if not Xml_Parser.Is_Valid (Root) then
-      Load;
-    end if;
+    Load;
     return Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 3), 1));
   end Differator;
 
@@ -78,9 +76,7 @@ package body Config is
     Prev : Xml_Parser.Element_Type;
     New_Node : Xml_Parser.Node_Type;
   begin
-    if not Xml_Parser.Is_Valid (Root) then
-      Load;
-    end if;
+    Load;
     -- Prev dir may not be empty
     Prev := Ctx.Get_Child (Root, 4);
     if Ctx.Get_Nb_Children (Prev) = 1 then
@@ -93,9 +89,7 @@ package body Config is
   function Prev_Dir return String is
     Prev : Xml_Parser.Element_Type;
   begin
-    if not Xml_Parser.Is_Valid (Root) then
-      Load;
-    end if;
+    Load;
     -- Prev dir may be empty
     Prev := Ctx.Get_Child (Root, 4);
     if Ctx.Get_Nb_Children (Prev) = 1 then
@@ -110,9 +104,7 @@ package body Config is
     Bookmark : Xml_Parser.Element_Type;
     use type Utils.Asu_Us;
   begin
-    if not Xml_Parser.Is_Valid (Root) then
-      Load;
-    end if;
+    Load;
     declare
       Result : Bookmark_Array (1 .. Ctx.Get_Nb_Children (Bookmarks));
     begin
@@ -139,23 +131,29 @@ package body Config is
   procedure Del_Bookmark (Index : in Positive) is
     Bookmark : Xml_Parser.Element_Type;
   begin
-    if not Xml_Parser.Is_Valid (Root) then
-      Load;
-    end if;
+    Load;
     Bookmark := Ctx.Get_Child (Bookmarks, Index);
     -- Del Bookmark marker and its text
     Ctx.Delete_Node (Bookmark, Bookmark);
     Ctx.Put (File_Name);
   end Del_Bookmark;
 
-  procedure Add_Bookmark (Bookmark : in String) is
+  procedure Add_Bookmark (After_Index : in Natural; Bookmark : in String) is
     New_Node : Xml_Parser.Node_Type;
   begin
-    if not Xml_Parser.Is_Valid (Root) then
-      Load;
+    Load;
+    -- Add Bookmark marker
+    if After_Index = 0 then
+      -- As first child
+      Ctx.Add_Child (Bookmarks, "bookmark", Xml_Parser.Element,
+                     New_Node, False);
+    else
+      -- After Index
+      New_Node := Ctx.Get_Child (Bookmarks, After_Index);
+      Ctx.Add_Brother (New_Node, "bookmark", Xml_Parser.Element,
+                       New_Node, True);
     end if;
-    -- Add Bookmark marker and its text
-    Ctx.Add_Child (Bookmarks, "bookmark", Xml_Parser.Element, New_Node);
+    -- Add its text
     Ctx.Add_Child (New_Node, Bookmark, Xml_Parser.Text, New_Node);
     Ctx.Put (File_Name);
   end Add_Bookmark;
