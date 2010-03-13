@@ -25,6 +25,7 @@ package body Bookmarks is
     Insert       : Boolean;
     Redisplay    : Boolean;
     Ptg_Result   : Afpx.Result_Rec;
+    Background : Con_Io.Effective_Basic_Colors;
     use type Afpx.Absolute_Field_Range;
 
     -- Current dir
@@ -77,8 +78,22 @@ package body Bookmarks is
       Afpx.Line_List.Rewind;
     end if;
 
+    -- Main loop
     loop
-      -- Main loop
+      -- No Goto nor Del if no Bookmark
+      if Afpx.Line_List.Is_Empty then
+        Afpx.Get_Descriptor_Background (Background);
+        Afpx.Set_Field_Protection (11, True);
+        Afpx.Set_Field_Colors (11, Foreground => Con_Io.Black,
+                                   Background => Background);
+        Afpx.Set_Field_Protection (12, True);
+        Afpx.Set_Field_Colors (12, Foreground => Con_Io.Black,
+                                   Background => Background);
+      else
+        Afpx.Reset_Field (11);
+        Afpx.Reset_Field (12);
+      end if;
+
       Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
                          Ptg_Result, Redisplay);
 
