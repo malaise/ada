@@ -2,8 +2,8 @@
 <!DOCTYPE agite SYSTEM "agite.dtd">
 
 <agite>
-  <editor>gvi</editor>
-  <viewer>gvi -M</viewer>
+  <editor>xvi</editor>
+  <viewer>xvi -M</viewer>
   <differator>tkdiff</differator>
   <last_dir></last_dir>
   <bookmarks>
