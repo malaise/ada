@@ -372,10 +372,15 @@ package body Git_If is
       Flow.Read (Line, Done => Done);
       exit when Asu.Length (Line) = 0;
       Ind := Ind + 1;
-      if Ind = 1 and then Asu.Length (Line) = 47
-      and then Asu.Slice (Line, 1, 7) = "commit " then
-        -- No Comment at all
-        Flow.Move_To (Command.Res_Mng.Dyn_List.Prev);
+      if Ind = 1 and then Asu.Length (Line) >= 2
+      and then Asu.Slice (Line, 1, 2) /= "  " then
+        -- No Comment at all in short mode (=> next commit)
+        -- No Comment at all in detailed mode (=> modified files)
+        if Done then
+          -- When reding details (one bloc) with no comment and one change
+          -- Done is False and we shall remain on this line
+          Flow.Move_To (Command.Res_Mng.Dyn_List.Prev);
+        end if;
         exit;
       end if;
       Assert (Asu.Length (Line) >= 4);
