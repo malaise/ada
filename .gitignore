@@ -1,0 +1,10 @@
+# For normal libs
+bin_Linux/
+lib_Linux/
+html/
+AFPX.*
+.gitignore
+# For COTS
+*.o
+*.ali
+
