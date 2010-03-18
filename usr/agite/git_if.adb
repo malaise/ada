@@ -340,8 +340,11 @@ package body Git_If is
     Assert (Asu.Slice (Line, 1, 7) = "commit ");
     Hash := Asu.Slice (Line, 8, 47);
 
-    -- Author: ...
+    -- possible "Merge:... ..." then Author: ...
     Flow.Read (Line);
+    if Asu.Slice (Line, 1, 7) = "Merge: " then
+      Flow.Read (Line);
+    end if;
     Assert (Asu.Slice (Line, 1, 8) = "Author: ");
 
     -- Date:   YYYY-MM-DD HH:MM:SS ...
@@ -355,7 +358,7 @@ package body Git_If is
       return;
     end if;
 
-    -- Empty line
+    -- Empty line then a comment
     Flow.Read (Line);
     Assert (Asu.Length (Line) = 0);
 
@@ -398,6 +401,10 @@ package body Git_If is
       -- Our Done shall be True as long as not the end
       Done := not Done;
       return;
+    elsif not Done and then Details then
+      -- No change in detail (merge....)
+      Done := not Done;
+      return;
     end if;
 
     -- Several updates until empty_line or end
@@ -411,7 +418,7 @@ package body Git_If is
       Ind := Ind + 1;
       if Ind = 1 and then Asu.Length (Line) = 47
       and then Asu.Slice (Line, 1, 7) = "commit " then
-        -- No Comment at all
+        -- No change at all
         Flow.Move_To (Command.Res_Mng.Dyn_List.Prev);
         exit;
       end if;
