@@ -11,6 +11,8 @@ package body Details is
           From.Status & " " & Utils.Asu_Ts (From.File),
           List_Width,
           Trunc_Head => False));
+  exception
+    when others => null;
   end Set;
 
   procedure Init_List is new Afpx.List_Manager.Init_List (
@@ -60,11 +62,18 @@ package body Details is
       Afpx.Encode_Field (10, (0, 0), Hash);
       Afpx.Encode_Field (11, (0, 0), Date);
       Afpx.Get_Field_Size (12, Comment_Height, Comment_Width);
+      Afpx.Clear_Field (12);
       for I in 1 .. Comment_Height loop
-        Afpx.Encode_Field (12, (I - 1, 0),
-             String_Mng.Procuste (Utils.Asu_Ts (Comment(I)),
-                                  Comment_Width,
-                                  Trunc_Head => False));
+        begin
+          Afpx.Encode_Field (12, (I - 1, 0),
+               String_Mng.Procuste (Utils.Asu_Ts (Comment(I)),
+                                    Comment_Width,
+                                    Trunc_Head => False));
+        exception
+          when others =>
+            -- Just skip
+            null;
+        end;
       end loop;
       -- Encode list
       List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No);

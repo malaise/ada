@@ -24,6 +24,9 @@ package body History is
         From.Date(03 .. 04) & From.Date(06 .. 07) & From.Date(09 .. 10) & '-'
       & From.Date(12 .. 13) & From.Date(15 .. 16) & ' '
       & Procuste (Utils.Asu_Ts (From.Comment(1))) );
+  exception
+    when others =>
+      null;
   end Set;
   procedure Init_List is new Afpx.List_Manager.Init_List (
     Git_If.Log_Entry_Rec, Git_If.Log_Mng, Set);
