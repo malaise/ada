@@ -112,7 +112,7 @@ package body History is
       Afpx.Line_List.Move_To (Number => Comp - 1, From_Current => False);
 
       -- Call delta
-      Git_If.Launch_Delta (Config.Differator,Root & Path & Name,
+      Git_If.Launch_Delta (Config.Differator, Root & Path & Name,
                            Ref_Hash, Comp_Hash);
     end Show_Delta;
 
