@@ -33,7 +33,7 @@ package body Details is
 
     -- Commit details
     Date : Git_If.Iso_Date;
-    Comment : Git_If.Comment_5;
+    Comment : Git_If.Comment_Array(1 .. 10);
     Commits : Git_If.Commit_List;
 
     procedure Init (Cet_Details : in Boolean) is
