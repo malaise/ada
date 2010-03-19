@@ -156,6 +156,9 @@ package body Details is
 
         when Afpx.Mouse_Button =>
           case Ptg_Result.Field_No is
+            when Afpx.List_Field_No =>
+              -- Double click (View)
+              Show (Show_View);
             when Utils.List_Scroll_Fld_Range'First ..
                  Utils.List_Scroll_Fld_Range'Last =>
               -- Scroll list
