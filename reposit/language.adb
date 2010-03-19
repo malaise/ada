@@ -104,19 +104,18 @@ package body Language is
       loop
         exit when Index > Str'Last;
         -- Encode the Nb_Chars of this sequence
-        Nb := Utf_8.Nb_Chars (Str(Index));
-        if Nb = 1 then
-          -- Optim
-          Wc := Char_To_Wide (Str(Index));
-        else
-          begin
-            Wc := Utf_8.Decode (Str(Index .. Index + Nb - 1));
-          exception
-            when Utf_8.Invalid_Sequence =>
-              Wc := Char_To_Wide (Default_Char);
-              Nb := 1;
-          end;
-        end if;
+        begin
+          Nb := Utf_8.Nb_Chars (Str(Index));
+          if Nb = 1 then
+            -- Optim
+            Wc := Char_To_Wide (Str(Index));
+          else
+              Wc := Utf_8.Decode (Str(Index .. Index + Nb - 1));
+          end if;
+        exception
+          when Utf_8.Invalid_Sequence =>
+            Wc := Char_To_Wide (Default_Char);
+        end;
         Ada.Strings.Wide_Unbounded.Append (Ws, Wc);
         Index := Index + Nb;
       end loop;
