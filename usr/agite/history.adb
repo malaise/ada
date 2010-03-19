@@ -1,4 +1,5 @@
-with Con_Io, Afpx.List_Manager, String_Mng;
+with Ada.Exceptions;
+with Con_Io, Afpx.List_Manager, String_Mng, Basic_Proc;
 with Utils, Config, Details, View;
 package body History is
 
@@ -25,8 +26,10 @@ package body History is
       & From.Date(12 .. 13) & From.Date(15 .. 16) & ' '
       & Procuste (Utils.Asu_Ts (From.Comment(1))) );
   exception
-    when others =>
-      null;
+    when Error:others =>
+      Basic_Proc.Put_Line_Error ("Exception "
+          & Ada.Exceptions.Exception_Name (Error)
+          & " raised on history of " & From.Hash);
   end Set;
   procedure Init_List is new Afpx.List_Manager.Init_List (
     Git_If.Log_Entry_Rec, Git_If.Log_Mng, Set);

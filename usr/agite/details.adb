@@ -1,5 +1,5 @@
-with Ada.Characters.Latin_1;
-with Con_Io, Afpx.List_Manager, String_Mng, Directory;
+with Ada.Characters.Latin_1, Ada.Exceptions;
+with Con_Io, Afpx.List_Manager, String_Mng, Directory, Basic_Proc;
 with Utils, View, History;
 package body Details is
 
@@ -70,9 +70,11 @@ package body Details is
                                     Comment_Width,
                                     Trunc_Head => False));
         exception
-          when others =>
-            -- Just skip
-            null;
+          when Error:others =>
+            -- Just trace
+            Basic_Proc.Put_Line_Error ("Exception "
+                & Ada.Exceptions.Exception_Name (Error)
+                & " raised on details of " & Hash);
         end;
       end loop;
       -- Encode list
