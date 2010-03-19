@@ -336,7 +336,7 @@
     <!-- Title and list -->
     <Var Name="WWidth" Value="${Screen.Width}-${LmWidth}-${LmHOffset}-1"/>
     <List>
-      <Geometry Up="11" Left="1" Low="${Screen.Low}-1" Width="${WWidth}"/>
+      <Geometry Up="14" Left="1" Low="${Screen.Low}-1" Width="${WWidth}"/>
       <Colors Foreground="Light_Gray" Background="Brown" Selected="Red"/>
     </List>
     <Field Num="1" Kind="Put">
@@ -406,11 +406,15 @@
     </Field>
     <Field Num="12" Kind="Put">
       <Geometry Up="${Field_11.Low}+1" Left="1"
-                Low="${List.Up}-2" Right="${Screen.Width}-2"/>
+                Low="${List.Up}-1" Right="${Screen.Width}-2"/>
       <Colors Foreground="Brown" Background="Light_Gray" Blink="False"/>
       <Init Row="0" Col="0">Comment 1</Init>
       <Init Row="1" Col="0">Comment 2</Init>
       <Init Row="2" Col="0">Comment 3</Init>
+      <Init Row="3" Col="0">Comment 4</Init>
+      <Init Row="4" Col="0">Comment 5</Init>
+      <Init Row="5" Col="0">Comment 6</Init>
+      <Init Row="6" Col="0">Comment 7</Init>
     </Field>
 
     <!-- View, History, Back -->

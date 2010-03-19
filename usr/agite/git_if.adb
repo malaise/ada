@@ -331,7 +331,6 @@ package body Git_If is
                         Done : out Boolean) is
     Line : Asu_Us;
     Ind : Natural;
-    Last_Comment : Positive;
     File : Commit_Entry_Rec;
   begin
     -- commit <hash>
@@ -362,12 +361,6 @@ package body Git_If is
     Flow.Read (Line);
     Assert (Asu.Length (Line) = 0);
 
-    -- Copy 1 or 5 comments
-    if Details then
-      Last_Comment := Comments'Last;
-    else
-      Last_Comment := 1;
-    end if;
     -- Several comments until empty line
     Ind := 0;
     Comments := (others => Asu_Null);
@@ -389,7 +382,7 @@ package body Git_If is
       Assert (Asu.Length (Line) >= 4);
       Assert (Asu.Slice (Line, 1, 4) = "    ");
       -- Copy first comments
-      if Ind <= Last_Comment then
+      if Ind <= Comments'Last then
         Comments(Ind) := Asu.Unbounded_Slice (Line, 5,  Asu.Length (Line));
       end if;
       exit when not Done;
@@ -487,7 +480,7 @@ package body Git_If is
   -- List detailed info on a commit
   procedure List_Commit (Hash : in Git_Hash;
                          Date : out Iso_Date;
-                         Comment : out Comment_5;
+                         Comment : out Comment_Array;
                          Commit : in out Commit_List) is
     Cmd : Asu_Us;
     Dummy_Hash : Git_Hash;

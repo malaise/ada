@@ -15,7 +15,7 @@ procedure T_Git is
   Log_Entry : Git_If.Log_Entry_Rec;
 
   Date : Git_If.Iso_Date;
-  Comment : Git_If.Comment_5;
+  Comment : Git_If.Comment_Array (1 ..20);
   Commits : Git_If.Commit_List;
   Commit_Entry : Git_If.Commit_Entry_Rec;
 

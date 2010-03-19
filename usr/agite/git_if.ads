@@ -39,7 +39,6 @@ package Git_If is
   -- A comment of commit
   type Comment_Array is array (Positive range <>) of Asu_Us;
   subtype Comment_1 is Comment_Array (1 .. 1);
-  subtype Comment_5 is Comment_Array (1 .. 5);
 
   -- LOG HISTORY
   -- Git hashing number
@@ -73,7 +72,7 @@ package Git_If is
   -- List detailed info on a commit
   procedure List_Commit (Hash : in Git_Hash;
                          Date : out Iso_Date;
-                         Comment : out Comment_5;
+                         Comment : out Comment_Array;
                          Commit : in out Commit_List);
 
   -- Cat a file at a Hash in a file
