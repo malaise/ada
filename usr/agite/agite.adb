@@ -140,6 +140,7 @@ procedure Agite is
 
     -- Copy in Afpx list
     Init_List (Files);
+    Afpx.Update_List (Afpx.Top);
 
     -- Encode root dir
     Afpx.Clear_Field (10);
