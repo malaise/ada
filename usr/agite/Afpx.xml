@@ -19,7 +19,7 @@
       <Colors Foreground="Light_Gray" Background="Brown" Selected="Red"/>
     </List>
     <Field Num="1" Kind="Put">
-      <Geometry Up="0" Left="23" Height="1" Width="9"/>
+      <Geometry Up="0" Left="15" Height="1" Width="9"/>
       <Colors Foreground="Black" Background="Light_gray" Blink="False"/>
       <Init Row="0" Col="0">A G I T E</Init>
     </Field>
@@ -133,11 +133,17 @@
       <Init Row="0" Col="2">Exit</Init>
     </Field>
     
-    <!-- Version -->
+    <!-- Version and host -->
     <Field Num="21" Kind="Put">
-      <Geometry Up="0" Left="${Field_1.Right}+4" Height="1" Width="4"/>
+      <Geometry Up="0" Left="${Field_1.Right}+3" Height="1" Width="4"/>
       <Colors Foreground="Black" Background="Light_gray" Blink="False"/>
-      <Init Row="0" Col="0">V1.0</Init>
+      <Init Row="0" Col="0">${Version}</Init>
+    </Field>
+    <Field Num="22" Kind="Put">
+      <Geometry Up="0" Left="${Field_21.Right}+3" Height="1" 
+                Right="${Screen.Width}-2"/>
+      <Colors Foreground="Black" Background="Light_gray" Blink="False"/>
+      <Init Row="0" Col="0">${Version}</Init>
     </Field>
   </Descriptor>
 

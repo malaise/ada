@@ -1,5 +1,5 @@
 with Con_Io, Afpx.List_Manager, Basic_Proc, Int_Image, Directory, Dir_Mng,
-     Sys_Calls, Argument;
+     Sys_Calls, Argument, Socket, String_Mng;
 with Utils, Git_If, Config, Bookmarks, History;
 procedure Agite is
 
@@ -188,6 +188,34 @@ procedure Agite is
     Encode_Dir;
   end Change_Dir;
 
+  -- Local host: "on (<host>)" if possible
+  -- else "(<host>)" if possible
+  -- else "<host>" if possible
+  -- else ">tail"
+  Local_Host : Utils.Asu_Us;
+  function Host_Str return String is
+    use type Utils.Asu_Us;
+    Len : constant Positive := Afpx.Get_Field_Width (22);
+  begin
+    if Local_Host /= Utils.Asu_Null then
+      return Utils.Asu_Ts (Local_Host);
+    end if;
+    Local_Host := Utils.Asu_Tus (Socket.Local_Host_Name);
+    if Utils.Asu.Length (Local_Host) + 5 <= Len then
+      Local_Host := "(on " & Local_Host & ")";
+    elsif Utils.Asu.Length (Local_Host) + 2 <= Len then
+      Local_Host := "(" & Local_Host & ")";
+    end if;
+    Local_Host := Utils.Asu_Tus (String_Mng.Procuste (
+        Utils.Asu_Ts (Local_Host),
+        Len,
+        Align_Left => False,
+        Gap => ' ',
+        Trunc_Head => True,
+        Show_Trunc => True));
+    return Utils.Asu_Ts (Local_Host);
+  end Host_Str;
+
   -- Init Afpx
   procedure Init is
   begin
@@ -196,6 +224,7 @@ procedure Agite is
     Cursor_Col := 0;
     Insert := False;
     Redisplay := False;
+    Afpx.Encode_Field (22, (0, 0), Host_Str);
     Encode_Dir;
     Encode_Files;
   end;
