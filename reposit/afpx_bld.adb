@@ -747,7 +747,8 @@ procedure Afpx_Bld is
           if Child_Child.Kind /= Xp.Text then
             File_Error (Child_Child, "Invalid init string");
           end if;
-          Finit_String := Ctx.Get_Text (Child_Child);
+          Finit_String := Asu.To_Unbounded_String (Computer.Eval
+                   (Strof (Ctx.Get_Text (Child_Child))));
           -- Length in term of put positions (also in term of wide characters)
           Finit_Length := Language.Put_Length (Strof (Finit_String));
           -- Check Finit col + string length compatible with field width
