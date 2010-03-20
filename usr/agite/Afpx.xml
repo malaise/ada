@@ -99,7 +99,7 @@
       <Init Row="0" Col="1">Up</Init>
     </Field>
     <Field Num="15" Kind="Button">
-      <Geometry Up="${Field_14.Up}" Left="${Field_14.Right}+2"
+      <Geometry Up="${Field_13.Up}" Left="${Field_14.Right}+2"
                 Height="1" Width="11"/>
       <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="0" Col="1">Bookmarks</Init>
@@ -122,7 +122,7 @@
       <Init Row="1" Col="2">Hist</Init>
     </Field>
     <Field Num="19" Kind="Button">
-      <Geometry Height="1" Left="${LmLeft}" Low="${List.Low}-2" Width="${LmWidth}"/>
+      <Geometry Up="${Field_13.Up}" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
       <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="0" Col="1">GitGUI</Init>
     </Field>
@@ -424,16 +424,21 @@
       <Init Row="1" Col="2">View</Init>
     </Field>
     <Field Num="14" Kind="Button">
-      <Geometry Up="${Field_13.Low}+2" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
+      <Geometry Up="${Field_13.Low}+2" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
       <Colors Foreground="Light_Gray" Background="Brown"/>
-      <Init Row="1" Col="2">Hist</Init>
+      <Init Row="0" Col="2">Hist</Init>
     </Field>
     <Field Num="15" Kind="Button">
+      <Geometry Up="${Field_14.Low}+2" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
+      <Colors Foreground="Light_Gray" Background="Brown"/>
+      <Init Row="0" Col="2">Diff</Init>
+    </Field>
+    <Field Num="16" Kind="Button">
       <Geometry Up="${List.Low}-2" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
       <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="1" Col="2">Back</Init>
     </Field>
-    <Field Num="16" Kind="Button">
+    <Field Num="17" Kind="Button">
       <Geometry Up="${Field_11.Up}" Height="1"
                 Width="8" Right="${Screen.Width}-2"/>
       <Colors Foreground="Light_Gray" Background="Brown"/>

@@ -1,6 +1,6 @@
 with Ada.Characters.Latin_1, Ada.Exceptions;
 with Con_Io, Afpx.List_Manager, String_Mng, Directory, Basic_Proc;
-with Utils, View, History;
+with Utils, View, History, Config;
 package body Details is
 
   List_Width : Afpx.Width_Range;
@@ -83,7 +83,7 @@ package body Details is
     end Init;
 
     -- Launch viewer on current file, or history on current dir or file
-    type Show_List is (Show_View, Show_Hist);
+    type Show_List is (Show_View, Show_Hist, Show_Diff);
     procedure Show (What : in Show_List) is
       Pos : constant Positive := Afpx.Line_List.Get_Position;
       Commit : Git_If.Commit_Entry_Rec;
@@ -91,27 +91,31 @@ package body Details is
       Commits.Move_To (Git_If.Commit_File_Mng.Dyn_List.Next, Pos - 1,
                        From_Current => False);
       Commits.Read (Commit, Git_If.Commit_File_Mng.Dyn_List.Current);
-      case What is
-        when Show_View =>
-          -- Only files except leading "/"
-          if Utils.Asu_Ts (Commit.File) /= "/" then
-            View (Utils.Asu_Ts (Commit.File), Hash);
-          end if;
-          Redisplay := True;
-        when Show_Hist =>
-          declare
-            Path : constant String
-                 := Directory.Dirname (Utils.Asu_Ts (Commit.File));
-            File : constant String
-                 := Directory.Basename (Utils.Asu_Ts (Commit.File));
-          begin
+      declare
+        Path : constant String
+             := Directory.Dirname (Utils.Asu_Ts (Commit.File));
+        File : constant String
+             := Directory.Basename (Utils.Asu_Ts (Commit.File));
+      begin
+        case What is
+          when Show_View =>
+            -- Only files except leading "/"
+            if Utils.Asu_Ts (Commit.File) /= "/" then
+              View (Utils.Asu_Ts (Commit.File), Hash);
+            end if;
+            Redisplay := True;
+          when Show_Hist =>
             History.Handle (Root, Path, File,
                             Utils.Asu_Ts (Commit.File) /= "/",
                             Hash);
-          end;
-          -- Re init sreen
-          Init (False);
-      end case;
+            -- Re init sreen
+            Init (False);
+          when Show_Diff =>
+            -- Call delta between previous of this file and this commit
+            Git_If.Launch_Delta (Config.Differator, Root & Path & File,
+                             Hash & "^", Hash);
+        end case;
+      end;
     end Show;
 
     -- Copy Comments as X selection
@@ -171,9 +175,12 @@ package body Details is
               -- History
               Show (Show_Hist);
             when 15 =>
+              -- Diff
+              Show (Show_Diff);
+            when 16 =>
               -- Back
               return;
-            when 16 =>
+            when 17 =>
               -- Copy commit comment to clipboard
               Copy_Selection;
             when others =>
