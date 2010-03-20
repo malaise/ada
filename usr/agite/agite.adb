@@ -233,8 +233,12 @@ procedure Agite is
         case Action is
           when Default =>
             Change_Dir (Str);
-          when Edit | Diff =>
+          when Edit  =>
             null;
+          when Diff =>
+            if Str = "." then
+              Git_If.Launch_Diff (Utils.Asu_Ts (Differator), Str);
+            end if;
           when History =>
             if Str = "." then
               Hist ("", False);
