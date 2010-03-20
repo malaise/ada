@@ -84,20 +84,17 @@ package body History is
           Afpx.Encode_Field (10, (0, 0),
                  Utils.Normalize ("/" , Afpx.Get_Field_Width (10)));
         end if;
-        -- Lock buttons Edit and Diff (only leave history)
+        -- Lock button View
         Afpx.Get_Descriptor_Background (Background);
         Afpx.Set_Field_Protection (11, True);
         Afpx.Set_Field_Colors (11, Foreground => Con_Io.Black,
-                                   Background => Background);
-        Afpx.Set_Field_Protection (12, True);
-        Afpx.Set_Field_Colors (12, Foreground => Con_Io.Black,
                                    Background => Background);
 
       end if;
     end Init;
 
     -- Show delta from current in list to comp
-    procedure Show_Delta (Ref : in Positive) is
+    procedure Show_Delta (Ref : in Natural) is
       Comp : Positive;
       Ref_Hash, Comp_Hash : Git_If.Git_Hash;
     begin
@@ -105,9 +102,14 @@ package body History is
       Comp := Afpx.Line_List.Get_Position;
 
       -- Read reference hash in Logs
-      Logs.Move_To (Number => Ref - 1, From_Current => False);
-      Logs.Read (Log, Git_If.Log_Mng.Dyn_List.Current);
-      Ref_Hash := Log.Hash;
+      if Ref = 0 then
+        -- Only Left selection
+        Ref_Hash := Git_If.No_Hash;
+      else
+        Logs.Move_To (Number => Ref - 1, From_Current => False);
+        Logs.Read (Log, Git_If.Log_Mng.Dyn_List.Current);
+        Ref_Hash := Log.Hash;
+      end if;
 
       -- Move to Comp and read comp hash in Logs
       Logs.Move_To (Number => Comp - 1, From_Current => False);
@@ -118,8 +120,14 @@ package body History is
       Afpx.Line_List.Move_To (Number => Comp - 1, From_Current => False);
 
       -- Call delta
-      Git_If.Launch_Delta (Config.Differator, Root & Path & Name,
-                           Ref_Hash, Comp_Hash);
+      if Ref_Hash = Git_If.No_Hash then
+        -- Only Left selection: Hash^ and Hash
+        Git_If.Launch_Delta (Config.Differator, Root & Path & Name,
+                             Comp_Hash & "^", Comp_Hash);
+      else
+        Git_If.Launch_Delta (Config.Differator, Root & Path & Name,
+                             Ref_Hash, Comp_Hash);
+      end if;
     end Show_Delta;
 
     -- View file of commit details
@@ -205,10 +213,8 @@ package body History is
                                      - Utils.List_Scroll_Fld_Range'First + 1);
 
             when 12 =>
-              -- Diff, if file and Right selection
-              if Is_File and then Ptg_Result.Id_Selected_Right /= 0 then
-                Show_Delta (Ptg_Result.Id_Selected_Right);
-              end if;
+              -- Diff
+              Show_Delta (Ptg_Result.Id_Selected_Right);
             when 13 =>
               -- Details
               Show (Show_Details);
