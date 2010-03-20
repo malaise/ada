@@ -83,7 +83,7 @@ package Git_If is
 
   -- Launch a diff (asynchronous) from Comp to Ref
   procedure Launch_Delta (Differator, File_Name : in String;
-                          Ref_Hash, Comp_Hash : in Git_Hash);
+                          Ref_Rev, Comp_Rev : in String);
 
 end Git_If;
 

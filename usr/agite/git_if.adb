@@ -551,10 +551,10 @@ package body Git_If is
 
   -- Launch a diff (asynchronous) from Comp to Ref
   procedure Launch_Delta (Differator, File_Name : in String;
-                          Ref_Hash, Comp_Hash : in Git_Hash) is
+                          Ref_Rev, Comp_Rev : in String) is
   begin
     Utils.Launch ("git difftool -y " & " -t " & Differator
-          & " " & Ref_Hash & " " & Comp_Hash & " -- " & File_Name);
+          & " " & Ref_Rev & " " & Comp_Rev & " -- " & File_Name);
   end Launch_Delta;
 
 end Git_If;
