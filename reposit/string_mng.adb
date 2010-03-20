@@ -321,7 +321,8 @@ package body String_Mng is
                            Resolv : access
     function (Variable_Name : String) return String;
                            Muliple_Passes : Boolean;
-                           No_Check_Stop : Boolean) return String is
+                           No_Check_Stop : Boolean;
+                           Skip_Backslashed : Boolean) return String is
 
 
     -- The string to work on
@@ -347,7 +348,16 @@ package body String_Mng is
         return False;
       end if;
       -- Check match
-      return Asu.Slice (Ustr, Str_Index, Stop_Index) = Delimiter;
+      if Asu.Slice (Ustr, Str_Index, Stop_Index) /= Delimiter then
+        -- Not match
+        return False;
+      end if;
+      if Skip_Backslashed
+      and then Is_Backslashed (Asu.To_String (Ustr), Str_Index) then
+        -- Matches but backslashed
+        return False;
+      end if;
+      return True;
     end Match;
 
     -- Nested level of delimiters
@@ -448,6 +458,16 @@ package body String_Mng is
     -- Final level must be 0
     if Level /= 0 then
       raise Delimiter_Mismatch;
+    end if;
+
+    -- Remove backslash for delimiters if they have been skipped
+    if Skip_Backslashed then
+      Ustr := Asu.To_Unbounded_String (
+         Replace (Asu.To_String (Ustr), "\" & Start_Delimiter,
+                  Start_Delimiter));
+      Ustr := Asu.To_Unbounded_String (
+         Replace (Asu.To_String (Ustr), "\" & Stop_Delimiter,
+                  Stop_Delimiter));
     end if;
 
     -- Done

@@ -225,6 +225,7 @@ begin
             My_Io.Put ("Stop delimiter (Str)? ");  My_Io.Get_Line (Str2, Nat2);
             My_Io.Put ("Multiple passes (YN)? "); Bool_Get(Bool1);
             My_Io.Put ("No check of stop (YN)? "); Bool_Get(Bool2);
+            My_Io.Put ("Skip backslashed (YN)? "); Bool_Get(Bool3);
             My_Io.Put_Line ("Substitued: |"
               & String_Mng.Eval_Variables (
                         Str(1 .. Str_Len),
@@ -232,7 +233,8 @@ begin
                         Stop_Delimiter => Str2(1 .. Nat2),
                         Resolv => Environ.Getenv'Access,
                         Muliple_Passes => Bool1,
-                        No_Check_Stop => Bool2)
+                        No_Check_Stop => Bool2,
+                        Skip_Backslashed => Bool3)
               & "|" );
           when 12 =>
             My_Io.Put_Line ("Escape sequence location");

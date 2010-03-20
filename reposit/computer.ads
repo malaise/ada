@@ -33,11 +33,15 @@ package Computer is
   type Resolver_Access is access function (Name : String) return String;
   External_Resolver : Resolver_Access := null;
 
-  -- Resolv variables of an expresssion
+  -- Resolve variables of an expresssion
+  -- Variable delimiters may be backslashed for non expansion but then they
+  --  must both be backslashed. Ex: \${Var\}
   function Eval (Expression : String) return String;
 
   -- Computation of expression
-  -- May raise Invalid_Expression (parentheses, operations, values...)
+  -- All variables must resolve to a number or empty
+  -- Then only numbers, operators and penthesis are allowed
+  -- May raise Invalid_Expression (space, parentheses, operations, values...)
   function Compute (Expression : String) return Integer;
 
   -- On Set, Get or Is_Set if empty name

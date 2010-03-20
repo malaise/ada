@@ -256,8 +256,9 @@ package body Computer is
   begin
     return String_Mng.Eval_Variables (
               Expression, "${", "}", Ext_Get'Access,
-              Muliple_Passes => True,
-              No_Check_Stop => False);
+              Muliple_Passes   => True,
+              No_Check_Stop    => False,
+              Skip_Backslashed => True);
   exception
     when String_Mng.Inv_Delimiter | String_Mng.Delimiter_Mismatch =>
       raise Invalid_Expression;
@@ -269,6 +270,12 @@ package body Computer is
   begin
     -- Replace each operator and parenthese 'op' by ' op '
     Exp := Asu_Tus (Expression);
+    -- No space not Htab
+    for I in Expression'Range loop
+      if Parser.Is_Space_Or_Htab_Function (Expression(I)) then
+        raise Invalid_Expression;
+      end if;
+    end loop;
     -- Variables must not follow one each other (${var}${var})
     if String_Mng.Locate (Asu_Ts (Exp), "}$") /= 0 then
       raise Invalid_Expression;

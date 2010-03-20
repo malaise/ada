@@ -119,7 +119,8 @@ package String_Mng is
                            Resolv : access
     function (Variable_Name : String) return String;
                            Muliple_Passes : Boolean;
-                           No_Check_Stop : Boolean)
+                           No_Check_Stop : Boolean;
+                           Skip_Backslashed : Boolean)
            return String;
   Inv_Delimiter, Delimiter_Mismatch : exception;
 
