@@ -3,6 +3,7 @@
 
 <!-- For agite -->
 <Afpx_Descriptors Height="44" Width="55">
+  <Var Name="Version" Value="V1.0"/>
 
   <!-- Main screen: explorator --> 
   <Descriptor Num="1" Background="Light_gray">
@@ -132,6 +133,12 @@
       <Init Row="0" Col="2">Exit</Init>
     </Field>
     
+    <!-- Version -->
+    <Field Num="21" Kind="Put">
+      <Geometry Up="0" Left="${Field_1.Right}+4" Height="1" Width="4"/>
+      <Colors Foreground="Black" Background="Light_gray" Blink="False"/>
+      <Init Row="0" Col="0">V1.0</Init>
+    </Field>
   </Descriptor>
 
   <!-- Bookmarks -->
