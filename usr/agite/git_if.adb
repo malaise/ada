@@ -449,6 +449,7 @@ package body Git_If is
     Cmd := Asu_Tus ("git");
     Many_Strings.Cat (Cmd, "log");
     Many_Strings.Cat (Cmd, "--date=iso");
+    Many_Strings.Cat (Cmd, "--topo-order");
     Many_Strings.Cat (Cmd, "--");
     Many_Strings.Cat (Cmd, Path);
     Command.Execute (
