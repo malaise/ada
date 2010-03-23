@@ -567,22 +567,6 @@ package body Af_Ptg is
       Af_Con_Io.Clear (Af_Con_Io.Screen);
     end if;
 
-    -- List present : defined, activated and not empty
-    List_Present := Af_Dscr.Fields(Lfn).Kind = Afpx_Typ.Button
-           and then Af_Dscr.Fields(Lfn).Activated
-           and then not Line_List_Mng.Is_Empty(Line_List);
-    -- Init list if needed
-    if List_Present then
-      Af_List.Set_Selected (Af_List.Left,
-                            Line_List_Mng.Get_Position(Line_List));
-      if Af_List.Get_Status.Ids_Selected(Af_List.Left)
-       = Af_List.Get_Status.Ids_Selected(Af_List.Right) then
-        -- User has moved selection to Id_Selected_Right,
-        --  -> Reset Id_Selected_Right
-        Af_List.Set_Selected (Af_List.Right, 0);
-      end if;
-    end if;
-
     -- A new field at start up if some get field
     New_Field := Get_Active;
 
@@ -590,6 +574,22 @@ package body Af_Ptg is
 
     -- The infinite loop
     loop
+
+      -- List present : defined, activated and not empty
+      List_Present := Af_Dscr.Fields(Lfn).Kind = Afpx_Typ.Button
+             and then Af_Dscr.Fields(Lfn).Activated
+             and then not Line_List_Mng.Is_Empty(Line_List);
+      -- Init list if needed
+      if List_Present then
+        Af_List.Set_Selected (Af_List.Left,
+                              Line_List_Mng.Get_Position(Line_List));
+        if Af_List.Get_Status.Ids_Selected(Af_List.Left)
+         = Af_List.Get_Status.Ids_Selected(Af_List.Right) then
+          -- User has moved selection to Id_Selected_Right,
+          --  -> Reset Id_Selected_Right
+          Af_List.Set_Selected (Af_List.Right, 0);
+        end if;
+      end if;
 
       -- Redisplay list if requested or needed
       if (Need_Redisplay or else Line_List_Mng.Is_Modified (Line_List))
