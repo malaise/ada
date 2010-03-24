@@ -226,6 +226,17 @@ package body Af_Ptg is
     List_Status : Af_List.Status_Rec;
     Click_Time : Ada.Calendar.Time;
     Loc_Last_Selected_Id : Natural;
+
+    List_Pos : Positive;
+    procedure Save_Pos is
+    begin
+      List_Pos := Line_List.Get_Position;
+    end Save_Pos;
+    procedure Restore_Pos is
+    begin
+      Line_List.Move_To (Line_List_Mng.Next, List_Pos - 1, False);
+    end Restore_Pos;
+
     use Afpx_Typ;
     use Ada.Calendar;
     use type Af_List.Button_List;
@@ -286,11 +297,14 @@ package body Af_Ptg is
       Valid_Field := False;
     end if;
     if Valid_Field then
-      -- reverse colors of field/row
+      -- Reverse colors of field/row
       if Click_Field = Lfn then
-        -- Reverse
-        Af_List.Put (Click_Row_List, Clicked);
+        -- Reverse this row
+        Save_Pos;
+        Af_List.Put (Click_Row_List, Clicked, False);
+        Restore_Pos;
       else
+        -- Reverse this field
         Put_Field (Click_Field, Clicked);
       end if;
     end if;
@@ -305,7 +319,7 @@ package body Af_Ptg is
     end if;
     Field := Af_Dscr.Fields(Click_Field);
 
-    -- Check release in same field/row than click
+    -- Check release in same field/row as click
     if not In_Field_Absolute (Click_Field, Release_Pos) then
       Valid_Field := False;
     elsif Click_Field = Lfn and then Release_Pos.Row /= Click_Pos.Row then
@@ -313,39 +327,57 @@ package body Af_Ptg is
     end if;
 
     if Click_Field = Lfn then
+      -- Click (& release) in list
       if Click_On_Selected then
-        -- Valid or not, restore selected
-        -- Check double_click
-        if Click_But = Af_List.Left
+        if not Valid_Field then
+          -- Invalid release, restore initial selected
+          Save_Pos;
+          if Click_But = Af_List.Left then
+            Af_List.Put (Click_Row_List, Selected, False);
+          else
+            if List_Status.Ids_Selected(Af_List.Right) /= 0 then
+              Af_List.Put (Click_Row_List, Clicked, False);
+            else
+              Af_List.Put (Click_Row_List, Normal, False);
+            end if;
+          end if;
+          Restore_Pos;
+        elsif Click_But = Af_List.Left
         and then Af_List.To_Id(Click_Row_List) = Loc_Last_Selected_Id
         and then Last_Selection_Time >= Click_Time - Double_Click_Delay then
           -- Double Left click
-          Af_List.Put (Click_Row_List, Selected);
+          Af_List.Put (Click_Row_List, Selected, False);
           Result := (Kind => Afpx_Typ.Button, But_Field_No => Click_Field);
         elsif Click_But = Af_List.Left then
           -- Valid Left click. Store for next click to check double click
-          Af_List.Put (Click_Row_List, Selected);
+          Af_List.Put (Click_Row_List, Selected, False);
           List_Status := Af_List.Get_Status;
           Last_Selected_Id := List_Status.Ids_Selected(Af_List.Left);
           Last_Selection_Time := Click_Time;
         else
           -- Valid right click on selected: flip/flop => Unselect
           Af_List.Set_Selected (Click_But, 0);
-          Af_List.Put (Click_Row_List, Normal);
+          Save_Pos;
+          Af_List.Put (Click_Row_List, Normal, False);
+          Restore_Pos;
         end if;
       else
         -- Click on new row
         if not Valid_Field then
           -- Invalid release, restore clicked field as normal
-          Af_List.Put (Click_Row_List, Normal);
+          Save_Pos;
+          Af_List.Put (Click_Row_List, Normal, False);
+          Restore_Pos;
         else
           -- Valid release
           -- Un-select previous if it was shown
           if List_Status.Ids_Selected(Click_But) /= 0
           and then Af_List.Id_Displayed (List_Status.Ids_Selected(Click_But))
           then
+            Save_Pos;
             Af_List.Put (Af_List.To_Row(List_Status.Ids_Selected(Click_But)),
-                         Normal);
+                         Normal, False);
+            Restore_Pos;
           end if;
           if Click_But = Af_List.Left then
             -- Reset Right selected if Left clicking on it
@@ -354,16 +386,16 @@ package body Af_Ptg is
               Af_List.Set_Selected (Af_List.Right, 0);
             end if;
             -- Set Left selected
-            Af_List.Put (Click_Row_List, Selected);
+            Af_List.Put (Click_Row_List, Selected, False);
             Af_List.Set_Selected (Click_But, Af_List.To_Id(Click_Row_List));
           elsif Af_List.To_Id(Click_Row_List)
                 /= List_Status.Ids_Selected(Af_List.Left) then
             -- Set right selected
-            Af_List.Put (Click_Row_List, Clicked);
+            Af_List.Put (Click_Row_List, Clicked, False);
             Af_List.Set_Selected (Click_But, Af_List.To_Id(Click_Row_List));
           else
             -- Right click on left selection: no right selection
-            Af_List.Put (Click_Row_List, Selected);
+            Af_List.Put (Click_Row_List, Selected, False);
             Af_List.Set_Selected (Click_But, 0);
           end if;
           Af_List.Set_Current;
@@ -578,11 +610,10 @@ package body Af_Ptg is
       -- List present : defined, activated and not empty
       List_Present := Af_Dscr.Fields(Lfn).Kind = Afpx_Typ.Button
              and then Af_Dscr.Fields(Lfn).Activated
-             and then not Line_List_Mng.Is_Empty(Line_List);
+             and then not Line_List.Is_Empty;
       -- Init list if needed
       if List_Present then
-        Af_List.Set_Selected (Af_List.Left,
-                              Line_List_Mng.Get_Position(Line_List));
+        Af_List.Set_Selected (Af_List.Left, Line_List.Get_Position);
         if Af_List.Get_Status.Ids_Selected(Af_List.Left)
          = Af_List.Get_Status.Ids_Selected(Af_List.Right) then
           -- User has moved selection to Id_Selected_Right,
@@ -592,7 +623,7 @@ package body Af_Ptg is
       end if;
 
       -- Redisplay list if requested or needed
-      if (Need_Redisplay or else Line_List_Mng.Is_Modified (Line_List))
+      if (Need_Redisplay or else Line_List.Is_Modified)
       and then Af_Dscr.Fields(Lfn).Kind = Afpx_Typ.Button then
         -- list defined
         if List_Present then
@@ -610,7 +641,7 @@ package body Af_Ptg is
           Af_List.Display(1);
         end if;
       end if;
-      Line_List_Mng.Modification_Ack (Line_List);
+      Line_List.Modification_Ack;
 
       -- Redisplay all fields if requested or needed
       if Need_Redisplay or else Af_Dscr.Current_Dscr.Modified then

@@ -35,18 +35,18 @@ package body Af_List is
 
   end Open;
 
-  procedure Move (Id : in Positive) is
+  procedure Move_To (Id : in Positive) is
   begin
-    Line_List_Mng.Move_To (Line_List, Line_List_Mng.Next, Id - 1, False);
-  end Move;
+    Line_List.Move_To (Line_List_Mng.Next, Id - 1, False);
+  end Move_To;
 
   -- Read and move to next if possible
-  procedure Get_Current_Item (Item : out Line_Rec) is
+  procedure Get_Current_Item (Item : out Line_Rec; Move : in Boolean) is
   begin
-    if Line_List_Mng.Check_Move (Line_List) then
-      Line_List_Mng.Read (Line_List, Item);
+    if Move and then Line_List.Check_Move then
+      Line_List.Read (Item);
     else
-      Line_List_Mng.Read (Line_List, Item, Line_List_Mng.Current);
+      Line_List.Read (Item, Line_List_Mng.Current);
     end if;
   end Get_Current_Item;
 
@@ -97,7 +97,9 @@ package body Af_List is
      Move => False);
   end Clear;
 
-  procedure Put (Row : in Af_Con_Io.Row_Range; State : in Af_Ptg.State_List) is
+  procedure Put (Row : in Af_Con_Io.Row_Range;
+                 State : in Af_Ptg.State_List;
+                 Move : in Boolean) is
     Id : Positive;
     Item : Line_Rec;
   begin
@@ -105,8 +107,8 @@ package body Af_List is
       raise Not_Opened;
     end if;
     Id := Status.Id_Top + Row;
-    Move (Id);
-    Get_Current_Item (Item);
+    Move_To (Id);
+    Get_Current_Item (Item, Move);
     Put (Row, State, Item);
   exception
     when others =>
@@ -138,33 +140,30 @@ package body Af_List is
     if not Opened then
       raise Not_Opened;
     end if;
-    if Line_List_Mng.Is_Empty (Line_List) then
+    if Line_List.Is_Empty then
       Reset;
       return;
     end if;
 
-    if      Status.Ids_Selected(Left)  > Line_List_Mng.List_Length (Line_List)
-    or else Status.Ids_Selected(Right) > Line_List_Mng.List_Length (Line_List)
+    if      Status.Ids_Selected(Left)  > Line_List.List_Length
+    or else Status.Ids_Selected(Right) > Line_List.List_Length
     then
       raise Line_List_Mng.Not_In_List;
     end if;
     -- top + height - 1 <= length => can display Height items
-    if Line_List_Mng.List_Length (Line_List) - First_Item_Id >=
-       Af_Dscr.Fields(Lfn).Height then
+    if Line_List.List_Length - First_Item_Id >= Af_Dscr.Fields(Lfn).Height then
       -- Can display Height items
       Status.Nb_Rows := Af_Dscr.Fields(Lfn).Height;
       Status.Id_Top := First_Item_Id;
-    elsif Line_List_Mng.List_Length (Line_List) <
-          Af_Dscr.Fields(Lfn).Height then
+    elsif Line_List.List_Length < Af_Dscr.Fields(Lfn).Height then
       -- Cannot display List_Length items whatever first
-      Status.Nb_Rows := Line_List_Mng.List_Length (Line_List);
+      Status.Nb_Rows := Line_List.List_Length;
       Status.Id_Top := 1;
     else
       -- Can display Height items but not with this first.
       -- Set top to display last page
       Status.Nb_Rows := Af_Dscr.Fields(Lfn).Height;
-      Status.Id_Top := Line_List_Mng.List_Length (Line_List)
-                     - Af_Dscr.Fields(Lfn).Height + 1;
+      Status.Id_Top := Line_List.List_Length - Af_Dscr.Fields(Lfn).Height + 1;
     end if;
     Status.Id_Bottom := Status.Id_Top + Status.Nb_Rows - 1;
     -- Left select by default the first
@@ -183,16 +182,16 @@ package body Af_List is
     -- Set status
     Compute (First_Item_Id);
 
-    if Line_List_Mng.Is_Empty (Line_List) then
+    if Line_List.Is_Empty then
       Set_Colors;
       Af_Con_Io.Clear (List_Window);
       return;
     end if;
 
     -- Display list
-    Move (Status.Id_Top);
+    Move_To (Status.Id_Top);
     for I in 1 .. Status.Nb_Rows loop
-      Get_Current_Item (Item);
+      Get_Current_Item (Item, True);
       if not Af_Dscr.Fields(Lfn).Isprotected
       and then Status.Id_Top + I - 1 = Status.Ids_Selected(Left)then
         Put (I - 1, Af_Ptg.Selected, Item);
@@ -203,7 +202,7 @@ package body Af_List is
         Put (I - 1, Af_Ptg.Normal, Item);
       end if;
     end loop;
-    Move (Status.Ids_Selected(Left));
+    Move_To (Status.Ids_Selected(Left));
 
     -- Display empty end of list (if any)
     for I in Status.Nb_Rows + 1 .. Af_Dscr.Fields(Lfn).Height loop
@@ -231,13 +230,13 @@ package body Af_List is
       Compute (1);
     end if;
     -- List is empty
-    if Line_List_Mng.Is_Empty (Line_List) then
+    if Line_List.Is_Empty then
       return;
     end if;
 
     -- Update selection, cause current may have changed
     -- called by user
-    Af_List.Set_Selected (Left, Line_List_Mng.Get_Position(Line_List));
+    Af_List.Set_Selected (Left, Line_List.Get_Position);
 
     -- Recompute cause list may have changed
     Compute (Status.Id_Top);
@@ -256,19 +255,19 @@ package body Af_List is
         end if;
       when Down =>
         -- Scroll 1 row down
-        if Status.Id_Bottom /= Line_List_Mng.List_Length (Line_List) then
+        if Status.Id_Bottom /= Line_List.List_Length then
           First_Item_Id := Status.Id_Top + 1;
           Display (First_Item_Id);
         end if;
       when Page_Down =>
         -- Display next page
         -- Bottom + height < length => Bottom + height exists
-        if Line_List_Mng.List_Length (Line_List) - Status.Id_Bottom >
+        if Line_List.List_Length - Status.Id_Bottom >
         Af_Dscr.Fields(Lfn).Height then
           First_Item_Id := Status.Id_Top + Af_Dscr.Fields(Lfn).Height;
-        elsif Status.Id_Bottom /= Line_List_Mng.List_Length (Line_List) then
+        elsif Status.Id_Bottom /= Line_List.List_Length then
           -- End at last item
-          First_Item_Id := Line_List_Mng.List_Length (Line_List)
+          First_Item_Id := Line_List.List_Length
                            - Af_Dscr.Fields(Lfn).Height + 1;
         else
           -- Already at bottom of list
@@ -298,21 +297,20 @@ package body Af_List is
         Display (First_Item_Id);
       when Bottom =>
         -- Move to bottom of list
-        if Status.Id_Bottom = Line_List_Mng.List_Length (Line_List) then
+        if Status.Id_Bottom = Line_List.List_Length then
           -- Already at bottom of list
           return;
         end if;
-        First_Item_Id := Line_List_Mng.List_Length (Line_List)
+        First_Item_Id := Line_List.List_Length
                          - Af_Dscr.Fields(Lfn).Height + 1;
         Display (First_Item_Id);
       when Center =>
         -- Center current List item in window (do ower best)
         declare
           -- List length
-          Len : constant Positive := Line_List_Mng.List_Length (Line_List);
+          Len : constant Positive := Line_List.List_Length;
           -- Current position in list
-          Pos : constant Positive
-              := Line_List_Mng.Get_Position (Line_List);
+          Pos : constant Positive := Line_List.Get_Position;
           -- Row in window to put it
           Height : constant Positive := Af_Dscr.Fields(Lfn).Height;
           Midrow : constant Natural := Height / 2;
@@ -340,7 +338,7 @@ package body Af_List is
     if not Opened then
       raise Not_Opened;
     end if;
-    if Item_Id > Line_List_Mng.List_Length (Line_List)
+    if Item_Id > Line_List.List_Length
     or else (Button = Left and then Item_Id = 0) then
       raise Line_List_Mng.Not_In_List;
     end if;
@@ -358,10 +356,10 @@ package body Af_List is
     if not Opened then
       raise Not_Opened;
     end if;
-    if Line_List_Mng.Is_Empty (Line_List) then
+    if Line_List.Is_Empty then
       return;
     end if;
-    Move (Status.Ids_Selected(Left));
+    Move_To (Status.Ids_Selected(Left));
   exception
     when others =>
       raise Afpx_Internal_Error;

@@ -205,8 +205,10 @@ package body Afpx is
     -- Set current item of list according to Ids_Selected(Left)
     procedure Set_Current;
 
-    -- Put a row in a state
-    procedure Put (Row : in Af_Con_Io.Row_Range; State : in Af_Ptg.State_List);
+    -- Put a row in a state, move to next (if possible and requested)
+    procedure Put (Row : in Af_Con_Io.Row_Range;
+                   State : in Af_Ptg.State_List;
+                   Move : in Boolean);
 
     -- Is an Id, a row displayed
     function Id_Displayed (Id : Positive) return Boolean;
