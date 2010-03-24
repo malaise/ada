@@ -21,7 +21,7 @@ package body Af_Ptg is
   end record;
 
   -- Button and Position of last click
-  Last_But : Af_List.Button_List;
+  Last_But : List_Button_List;
   Last_Pos : Af_Con_Io.Full_Square;
 
   -- Time and list Id of first click
@@ -119,7 +119,10 @@ package body Af_Ptg is
   function Valid_Click (List_Present : Boolean;
                         Cursor_Field : Afpx_Typ.Absolute_Field_Range;
                         Insert       : Boolean;
-                        Right_Select : Boolean) return Boolean is
+                        Right_Select : Boolean;
+                        List_Change_Cb : access
+        procedure (Action : in List_Change_List;
+                   Status : in List_Status_Rec) := null) return Boolean is
 
     Mouse_Status : Af_Con_Io.Mouse_Event_Rec;
     Click_Pos : Af_Con_Io.Full_Square;
@@ -137,9 +140,9 @@ package body Af_Ptg is
              and then Mouse_Status.Status = Af_Con_Io.Pressed;
     if Valid then
       if Mouse_Status.Button = Af_Con_Io.Left then
-        Last_But := Af_List.Left;
+        Last_But := List_Left;
       else
-        Last_But := Af_List.Right;
+        Last_But := List_Right;
       end if;
       Last_Pos := Click_Pos;
     else
@@ -149,8 +152,14 @@ package body Af_Ptg is
       and then Mouse_Status.Status = Af_Con_Io.Pressed then
         if Mouse_Status.Button = Af_Con_Io.Up then
           Af_List.Update (Up);
+          if List_Change_Cb /= null then
+            List_Change_Cb (Scroll, Af_List.Get_Status);
+          end if;
         elsif Mouse_Status.Button = Af_Con_Io.Down then
           Af_List.Update (Down);
+          if List_Change_Cb /= null then
+            List_Change_Cb (Scroll, Af_List.Get_Status);
+          end if;
         end if;
       elsif Mouse_Status.Button = Middle
       and then Mouse_Status.Status = Af_Con_Io.Pressed
@@ -175,7 +184,7 @@ package body Af_Ptg is
     return Valid;
   end Valid_Click;
 
-  function Wait_Release (Button : Af_List.Button_List)
+  function Wait_Release (Button : List_Button_List)
                         return Af_Con_Io.Full_Square is
     Str : Wide_String (1 .. 0);
     Last : Natural;
@@ -184,16 +193,15 @@ package body Af_Ptg is
     Ins : Boolean;
     Mouse_Status : Af_Con_Io.Mouse_Event_Rec;
     use Af_Con_Io;
-    use type Af_List.Button_List;
   begin
     -- Wait until button released
     loop
       Af_Con_Io.Get (Str, Last, Stat, Pos, Ins, Echo => False);
       if Stat = Af_Con_Io.Mouse_Button then
         Af_Con_Io.Get_Mouse_Event (Mouse_Status);
-        exit when ( (Button = Af_List.Left
+        exit when ( (Button = List_Left
               and then Mouse_Status.Button = Af_Con_Io.Left)
-            or else (Button = Af_List.Right
+            or else (Button = List_Right
               and then Mouse_Status.Button = Af_Con_Io.Right) )
           and then Mouse_Status.Status = Af_Con_Io.Released;
       end if;
@@ -213,17 +221,20 @@ package body Af_Ptg is
                           Cursor_Field : in Afpx_Typ.Absolute_Field_Range;
                           Insert       : in Boolean;
                           Right_Select : in Boolean;
-                          Result : out Mouse_Action_Rec) is
+                          Result : out Mouse_Action_Rec;
+                          List_Change_Cb : access
+        procedure (Action : in List_Change_List;
+                   Status : in List_Status_Rec) := null) is
     Cursor_Pos : constant Af_Con_Io.Square := Af_Con_Io.Position;
     Valid_Field : Boolean;
     Click_Pos : Af_Con_Io.Full_Square;
-    Click_But : Af_List.Button_List;
+    Click_But : List_Button_List;
     Click_Field : Afpx_Typ.Absolute_Field_Range;
     Release_Pos : Af_Con_Io.Full_Square;
     Click_Row_List : Af_Con_Io.Full_Row_Range;
     Click_On_Selected : Boolean;
     Field : Afpx_Typ.Field_Rec;
-    List_Status : Af_List.Status_Rec;
+    List_Status : List_Status_Rec;
     Click_Time : Ada.Calendar.Time;
     Loc_Last_Selected_Id : Natural;
 
@@ -239,7 +250,6 @@ package body Af_Ptg is
 
     use Afpx_Typ;
     use Ada.Calendar;
-    use type Af_List.Button_List;
 
   begin
     -- Save and reset last selected id
@@ -248,7 +258,8 @@ package body Af_Ptg is
 
     -- Result event discarded
     Result := (Kind => Afpx_Typ.Put);
-    if not Valid_Click (List_Present, Cursor_Field, Insert, Right_Select) then
+    if not Valid_Click (List_Present, Cursor_Field, Insert, Right_Select,
+                        List_Change_Cb) then
       return;
     end if;
 
@@ -276,7 +287,7 @@ package body Af_Ptg is
       else
         Click_On_Selected := False;
       end if;
-    elsif Click_But = Af_List.Left then
+    elsif Click_But = List_Left then
       -- Try to find a button or get field
       Click_Field := 0;
       for I in 1 .. Af_Dscr.Current_Dscr.Nb_Fields loop
@@ -332,27 +343,27 @@ package body Af_Ptg is
         if not Valid_Field then
           -- Invalid release, restore initial selected
           Save_Pos;
-          if Click_But = Af_List.Left then
+          if Click_But = List_Left then
             Af_List.Put (Click_Row_List, Selected, False);
           else
-            if List_Status.Ids_Selected(Af_List.Right) /= 0 then
+            if List_Status.Ids_Selected(List_Right) /= 0 then
               Af_List.Put (Click_Row_List, Clicked, False);
             else
               Af_List.Put (Click_Row_List, Normal, False);
             end if;
           end if;
           Restore_Pos;
-        elsif Click_But = Af_List.Left
+        elsif Click_But = List_Left
         and then Af_List.To_Id(Click_Row_List) = Loc_Last_Selected_Id
         and then Last_Selection_Time >= Click_Time - Double_Click_Delay then
           -- Double Left click
           Af_List.Put (Click_Row_List, Selected, False);
           Result := (Kind => Afpx_Typ.Button, But_Field_No => Click_Field);
-        elsif Click_But = Af_List.Left then
+        elsif Click_But = List_Left then
           -- Valid Left click. Store for next click to check double click
           Af_List.Put (Click_Row_List, Selected, False);
           List_Status := Af_List.Get_Status;
-          Last_Selected_Id := List_Status.Ids_Selected(Af_List.Left);
+          Last_Selected_Id := List_Status.Ids_Selected(List_Left);
           Last_Selection_Time := Click_Time;
         else
           -- Valid right click on selected: flip/flop => Unselect
@@ -360,6 +371,9 @@ package body Af_Ptg is
           Save_Pos;
           Af_List.Put (Click_Row_List, Normal, False);
           Restore_Pos;
+          if List_Change_Cb /= null then
+            List_Change_Cb (Right_Selection, Af_List.Get_Status);
+          end if;
         end if;
       else
         -- Click on new row
@@ -379,17 +393,17 @@ package body Af_Ptg is
                          Normal, False);
             Restore_Pos;
           end if;
-          if Click_But = Af_List.Left then
+          if Click_But = List_Left then
             -- Reset Right selected if Left clicking on it
             if Af_List.To_Id(Click_Row_List)
-             = List_Status.Ids_Selected(Af_List.Right) then
-              Af_List.Set_Selected (Af_List.Right, 0);
+             = List_Status.Ids_Selected(List_Right) then
+              Af_List.Set_Selected (List_Right, 0);
             end if;
             -- Set Left selected
             Af_List.Put (Click_Row_List, Selected, False);
             Af_List.Set_Selected (Click_But, Af_List.To_Id(Click_Row_List));
           elsif Af_List.To_Id(Click_Row_List)
-                /= List_Status.Ids_Selected(Af_List.Left) then
+                /= List_Status.Ids_Selected(List_Left) then
             -- Set right selected
             Af_List.Put (Click_Row_List, Clicked, False);
             Af_List.Set_Selected (Click_But, Af_List.To_Id(Click_Row_List));
@@ -399,11 +413,18 @@ package body Af_Ptg is
             Af_List.Set_Selected (Click_But, 0);
           end if;
           Af_List.Set_Current;
+          if List_Change_Cb /= null then
+            if Click_But = List_Left then
+              List_Change_Cb (Left_Selection, Af_List.Get_Status);
+            else
+              List_Change_Cb (Right_Selection, Af_List.Get_Status);
+            end if;
+          end if;
         end if;
-        if Click_But = Af_List.Left then
+        if Click_But = List_Left then
           -- Valid Left click. Store for next click to check double click
           List_Status := Af_List.Get_Status;
-          Last_Selected_Id := List_Status.Ids_Selected (Af_List.Left);
+          Last_Selected_Id := List_Status.Ids_Selected (List_Left);
           Last_Selection_Time := Click_Time;
         end if;
       end if;
@@ -569,12 +590,18 @@ package body Af_Ptg is
                  Redisplay     : in Boolean;
                  Right_Select  : in Boolean;
                  Get_Active    : in Boolean;
+
                  Cursor_Col_Cb : access
-      function (Cursor_Field : Field_Range;
-                New_Field : Boolean;
-                Cursor_Col : Con_Io.Full_Col_Range;
-                Enter_Field_Cause : Enter_Field_Cause_List;
-                Str : Wide_String) return Con_Io.Full_Col_Range := null) is
+     function (Cursor_Field : Field_Range;
+               New_Field : Boolean;
+               Cursor_Col : Con_Io.Full_Col_Range;
+               Enter_Field_Cause : Enter_Field_Cause_List;
+               Str : Wide_String) return Con_Io.Full_Col_Range := null;
+
+                 List_Change_Cb : access
+     procedure (Action : in List_Change_List;
+                Status : in List_Status_Rec) := null) is
+
     List_Present : Boolean;
     New_Field : Boolean;
     Field : Afpx_Typ.Field_Rec;
@@ -613,12 +640,12 @@ package body Af_Ptg is
              and then not Line_List.Is_Empty;
       -- Init list if needed
       if List_Present then
-        Af_List.Set_Selected (Af_List.Left, Line_List.Get_Position);
-        if Af_List.Get_Status.Ids_Selected(Af_List.Left)
-         = Af_List.Get_Status.Ids_Selected(Af_List.Right) then
+        Af_List.Set_Selected (List_Left, Line_List.Get_Position);
+        if Af_List.Get_Status.Ids_Selected(List_Left)
+         = Af_List.Get_Status.Ids_Selected(List_Right) then
           -- User has moved selection to Id_Selected_Right,
           --  -> Reset Id_Selected_Right
-          Af_List.Set_Selected (Af_List.Right, 0);
+          Af_List.Set_Selected (List_Right, 0);
         end if;
       end if;
 
@@ -787,7 +814,7 @@ package body Af_Ptg is
             Af_List.Set_Current;
           end if;
           Result := (Id_Selected_Right  =>
-                       Af_List.Get_Status.Ids_Selected (Af_List.Right),
+                       Af_List.Get_Status.Ids_Selected (List_Right),
                      Event        => Keyboard,
                      Keyboard_Key => Return_Key);
           Insert := False;
@@ -798,7 +825,7 @@ package body Af_Ptg is
             Af_List.Set_Current;
           end if;
           Result := (Id_Selected_Right  =>
-                       Af_List.Get_Status.Ids_Selected (Af_List.Right),
+                       Af_List.Get_Status.Ids_Selected (List_Right),
                      Event        => Keyboard,
                      Keyboard_Key => Escape_Key);
           Insert := False;
@@ -828,7 +855,7 @@ package body Af_Ptg is
             Click_Result : Mouse_Action_Rec;
           begin
             Handle_Click (List_Present, Cursor_Field, Insert, Right_Select,
-                          Click_Result);
+                          Click_Result, List_Change_Cb);
             case Click_Result.Kind is
               when Afpx_Typ.Put =>
                 null;
@@ -858,7 +885,7 @@ package body Af_Ptg is
                   Af_List.Set_Current;
                 end if;
                 Result := (Id_Selected_Right  =>
-                             Af_List.Get_Status.Ids_Selected (Af_List.Right),
+                             Af_List.Get_Status.Ids_Selected (List_Right),
                            Event        => Mouse_Button,
                            Field_No =>
                               Absolute_Field_Range(Click_Result.But_Field_No));
@@ -871,7 +898,7 @@ package body Af_Ptg is
             Af_List.Set_Current;
           end if;
           Result := (Id_Selected_Right  =>
-                       Af_List.Get_Status.Ids_Selected (Af_List.Right),
+                       Af_List.Get_Status.Ids_Selected (List_Right),
                      Event        => Keyboard,
                      Keyboard_Key => Break_Key);
           Insert := False;
@@ -881,7 +908,7 @@ package body Af_Ptg is
             Af_List.Set_Current;
           end if;
           Result := (Id_Selected_Right  =>
-                       Af_List.Get_Status.Ids_Selected (Af_List.Right),
+                       Af_List.Get_Status.Ids_Selected (List_Right),
                      Event        => Refresh);
           Done := True;
         when Af_Con_Io.Fd_Event =>
@@ -889,7 +916,7 @@ package body Af_Ptg is
             Af_List.Set_Current;
           end if;
           Result := (Id_Selected_Right  =>
-                       Af_List.Get_Status.Ids_Selected (Af_List.Right),
+                       Af_List.Get_Status.Ids_Selected (List_Right),
                      Event        => Fd_Event);
           Done := True;
         when Af_Con_Io.Timer_Event =>
@@ -897,7 +924,7 @@ package body Af_Ptg is
             Af_List.Set_Current;
           end if;
           Result := (Id_Selected_Right  =>
-                       Af_List.Get_Status.Ids_Selected (Af_List.Right),
+                       Af_List.Get_Status.Ids_Selected (List_Right),
                      Event        => Timer_Event);
           Done := True;
         when Af_Con_Io.Signal_Event =>
@@ -905,12 +932,18 @@ package body Af_Ptg is
             Af_List.Set_Current;
           end if;
           Result := (Id_Selected_Right  =>
-                       Af_List.Get_Status.Ids_Selected (Af_List.Right),
+                       Af_List.Get_Status.Ids_Selected (List_Right),
                      Event        => Signal_Event);
           Done := True;
         when Af_Con_Io.Timeout =>
           null;
       end case;
+
+      -- Notify of change of list because of key
+      if Stat in Af_Con_Io.Up .. Af_Con_Io.Ctrl_Pgdown
+      and then List_Change_Cb /= null then
+        List_Change_Cb (Scroll, Af_List.Get_Status);
+      end if;
 
       exit when Done;
     end loop;

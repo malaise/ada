@@ -166,7 +166,10 @@ package body Afpx is
                 New_Field : Boolean;
                 Cursor_Col : Con_Io.Full_Col_Range;
                 Enter_Field_Cause : Enter_Field_Cause_List;
-                Str : Wide_String) return Con_Io.Full_Col_Range := null);
+                Str : Wide_String) return Con_Io.Full_Col_Range := null;
+                   List_Change_Cb : access
+      procedure (Action : in List_Change_List;
+                 Status : in List_Status_Rec) := null);
 
   end Af_Ptg;
 
@@ -184,23 +187,10 @@ package body Afpx is
     procedure Update (Action : in List_Action_List);
 
     -- Set the current item (selected_color) of the list
-    type Button_List is (Left, Right);
-    procedure Set_Selected (Button : in Button_List; Item_Id : in Natural);
+    procedure Set_Selected (Button : in List_Button_List; Item_Id : in Natural);
 
-    -- The current status of the list
-    type Ids_Selected_Array is array (Button_List) of Natural;
-    type Status_Rec is record
-      -- The number of items diplayed
-      -- (width if list_length >= width), list_length otherwise
-      Nb_Rows : Natural;
-      -- First and last items displayed in the window
-      Id_Top    : Natural;
-      Id_Bottom : Natural;
-      -- Item selected
-      Ids_Selected : Ids_Selected_Array;
-    end record;
-
-    function Get_Status return Status_Rec;
+    -- Get current status of the list (what is shown, what is selected)
+    function Get_Status return List_Status_Rec;
 
     -- Set current item of list according to Ids_Selected(Left)
     procedure Set_Current;
@@ -772,7 +762,10 @@ package body Afpx is
                  New_Field : Boolean;
                  Cursor_Col : Con_Io.Full_Col_Range;
                  Enter_Field_Cause : Enter_Field_Cause_List;
-                 Str : Wide_String) return Con_Io.Full_Col_Range := null) is
+                 Str : Wide_String) return Con_Io.Full_Col_Range := null;
+                          List_Change_Cb : access
+       procedure (Action : in List_Change_List;
+                  Status : in List_Status_Rec) := null) is
     Some_Get : Boolean;
     Cf : Afpx_Typ.Field_Range := Afpx_Typ.Field_Range(Cursor_Field);
     use Afpx_Typ;
@@ -808,7 +801,7 @@ package body Afpx is
     end if;
 
     Af_Ptg.Ptg (Cf, Cursor_Col, Insert, Result, Redisplay, Right_Select,
-                Some_Get, Cursor_Col_Cb);
+                Some_Get, Cursor_Col_Cb, List_Change_Cb);
     Cursor_Field := Field_Range(Cf);
     In_Ptg := False;
   exception

@@ -1,7 +1,7 @@
 separate (Afpx)
 package body Af_List is
 
-  Status : Status_Rec;
+  Status : List_Status_Rec;
   Opened : Boolean := False;
 
   List_Window : Af_Con_Io.Window;
@@ -145,8 +145,8 @@ package body Af_List is
       return;
     end if;
 
-    if      Status.Ids_Selected(Left)  > Line_List.List_Length
-    or else Status.Ids_Selected(Right) > Line_List.List_Length
+    if      Status.Ids_Selected(List_Left)  > Line_List.List_Length
+    or else Status.Ids_Selected(List_Right) > Line_List.List_Length
     then
       raise Line_List_Mng.Not_In_List;
     end if;
@@ -167,8 +167,8 @@ package body Af_List is
     end if;
     Status.Id_Bottom := Status.Id_Top + Status.Nb_Rows - 1;
     -- Left select by default the first
-    if Status.Ids_Selected(Left) = 0 then
-      Status.Ids_Selected(Left) := Status.Id_Top;
+    if Status.Ids_Selected(List_Left) = 0 then
+      Status.Ids_Selected(List_Left) := Status.Id_Top;
     end if;
   exception
     when others =>
@@ -193,16 +193,16 @@ package body Af_List is
     for I in 1 .. Status.Nb_Rows loop
       Get_Current_Item (Item, True);
       if not Af_Dscr.Fields(Lfn).Isprotected
-      and then Status.Id_Top + I - 1 = Status.Ids_Selected(Left)then
+      and then Status.Id_Top + I - 1 = Status.Ids_Selected(List_Left) then
         Put (I - 1, Af_Ptg.Selected, Item);
       elsif not Af_Dscr.Fields(Lfn).Isprotected
-      and then Status.Id_Top + I - 1 = Status.Ids_Selected(Right)then
+      and then Status.Id_Top + I - 1 = Status.Ids_Selected(List_Right) then
         Put (I - 1, Af_Ptg.Clicked, Item);
       else
         Put (I - 1, Af_Ptg.Normal, Item);
       end if;
     end loop;
-    Move_To (Status.Ids_Selected(Left));
+    Move_To (Status.Ids_Selected(List_Left));
 
     -- Display empty end of list (if any)
     for I in Status.Nb_Rows + 1 .. Af_Dscr.Fields(Lfn).Height loop
@@ -226,7 +226,7 @@ package body Af_List is
       raise Not_Opened;
     end if;
     -- Update may be called before 1st Ptg
-    if Status.Ids_Selected(Left) = 0 then
+    if Status.Ids_Selected(List_Left) = 0 then
       Compute (1);
     end if;
     -- List is empty
@@ -236,7 +236,7 @@ package body Af_List is
 
     -- Update selection, cause current may have changed
     -- called by user
-    Af_List.Set_Selected (Left, Line_List.Get_Position);
+    Af_List.Set_Selected (List_Left, Line_List.Get_Position);
 
     -- Recompute cause list may have changed
     Compute (Status.Id_Top);
@@ -333,20 +333,20 @@ package body Af_List is
   end Update;
 
   -- Set the current item (selected_color) of the lis
-  procedure Set_Selected (Button : in Button_List; Item_Id : in Natural) is
+  procedure Set_Selected (Button : in List_Button_List; Item_Id : in Natural) is
   begin
     if not Opened then
       raise Not_Opened;
     end if;
     if Item_Id > Line_List.List_Length
-    or else (Button = Left and then Item_Id = 0) then
+    or else (Button = List_Left and then Item_Id = 0) then
       raise Line_List_Mng.Not_In_List;
     end if;
     Status.Ids_Selected(Button) := Item_Id;
   end Set_Selected;
 
   -- Status of the list
-  function Get_Status return Status_Rec is
+  function Get_Status return List_Status_Rec is
   begin
     return Status;
   end Get_Status;
@@ -359,7 +359,7 @@ package body Af_List is
     if Line_List.Is_Empty then
       return;
     end if;
-    Move_To (Status.Ids_Selected(Left));
+    Move_To (Status.Ids_Selected(List_Left));
   exception
     when others =>
       raise Afpx_Internal_Error;

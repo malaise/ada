@@ -263,6 +263,27 @@ package Afpx is
   function Last_Index (Str : Wide_String; Significant : Boolean)
                        return Con_Io.Full_Col_Range;
 
+  -- Call back called by Put_Then_Get when something is changed in the list
+  --  - change of left or right selection
+  --  - scroll by keyboard or wheel
+  type List_Change_List is (Left_Selection, Right_Selection, Scroll);
+  type List_Button_List is (List_Left, List_Right);
+  type List_Ids_Selected_Array is array (List_Button_List) of Natural;
+  type List_Status_Rec is record
+    -- The number of items diplayed, 0 if no list field active
+    -- Width if list_length >= width, list_length otherwise
+    Nb_Rows : Natural;
+    -- First and last items displayed in the window
+    Id_Top    : Natural;
+    Id_Bottom : Natural;
+    -- Item selected (0 if no selection, if list no active...)
+    Ids_Selected : List_Ids_Selected_Array;
+  end record;
+
+  type List_Change_Cb is access
+    procedure (Action : in List_Change_List;
+               Status : in List_Status_Rec);
+
   -- Print the fields and the list (if Redisplay), then gets.
   -- Redisplay should be set if modif of some other screen actions (con_io)
   --  justify a redisplay, by instance when Result.Event was Refresh.
@@ -301,7 +322,10 @@ package Afpx is
                  New_Field : Boolean;
                  Cursor_Col : Con_Io.Full_Col_Range;
                  Enter_Field_Cause : Enter_Field_Cause_List;
-                 Str : Wide_String) return Con_Io.Full_Col_Range := null);
+                 Str : Wide_String) return Con_Io.Full_Col_Range := null;
+                          List_Change_Cb : access
+       procedure (Action : in List_Change_List;
+                  Status : in List_Status_Rec) := null);
 
   -- Ring a bell on screen
   procedure Bell (Repeat : in Positive := 1);
