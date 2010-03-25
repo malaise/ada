@@ -1,3 +1,4 @@
+with Ada.Text_Io;
 with Ada.Calendar;
 separate (Afpx)
 package body Af_Ptg is
@@ -638,8 +639,10 @@ package body Af_Ptg is
       List_Present := Af_Dscr.Fields(Lfn).Kind = Afpx_Typ.Button
              and then Af_Dscr.Fields(Lfn).Activated
              and then not Line_List.Is_Empty;
-      -- Init list if needed
-      if List_Present then
+
+      -- Update list if Line_List has changed list if needed
+      if Af_List.Get_Status.Ids_Selected(List_Left)
+            /= Line_List.Get_Position then
         Af_List.Set_Selected (List_Left, Line_List.Get_Position);
         if Af_List.Get_Status.Ids_Selected(List_Left)
          = Af_List.Get_Status.Ids_Selected(List_Right) then
@@ -649,10 +652,16 @@ package body Af_Ptg is
         end if;
       end if;
 
-      -- Redisplay list if requested or needed
-      if (Need_Redisplay or else Line_List.Is_Modified)
+      -- list to be updated if Line_List has changed
+      if Line_List.Is_Modified then
+        Af_List.Modified := True;
+        Line_List.Modification_Ack;
+      end if;
+
+Ada.Text_Io.Put_Line ("Modified " & Af_List.Modified'Img);
+      if (Need_Redisplay or else Af_List.Modified)
       and then Af_Dscr.Fields(Lfn).Kind = Afpx_Typ.Button then
-        -- list defined
+        -- List defined
         if List_Present then
           if Af_List.Get_Status.Id_Top = 0 then
             -- First time we display a non empty list
@@ -663,12 +672,15 @@ package body Af_Ptg is
         elsif not Af_Dscr.Fields(Lfn).Activated then
           -- List not active
           Erase_Field (Lfn);
+          Af_List.Modified := False;
         else
           -- Empty list
           Af_List.Display(1);
         end if;
+        if List_Change_Cb /= null then
+          List_Change_Cb (List_Modified, Af_List.Get_Status);
+        end if;
       end if;
-      Line_List.Modification_Ack;
 
       -- Redisplay all fields if requested or needed
       if Need_Redisplay or else Af_Dscr.Current_Dscr.Modified then

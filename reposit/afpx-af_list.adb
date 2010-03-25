@@ -22,6 +22,7 @@ package body Af_List is
     end if;
     -- Start at top
     Reset;
+    Modified := True;
     -- Check there is a window in the dscr
     if Af_Dscr.Fields(Lfn).Kind = Afpx_Typ.Button then
       Af_Con_Io.Open (List_Window,
@@ -114,7 +115,6 @@ package body Af_List is
       raise Afpx_Internal_Error;
   end Put;
 
-
   procedure Set_Colors is
   begin
     Af_Con_Io.Set_Foreground (
@@ -177,15 +177,22 @@ package body Af_List is
   -- Display the list, starting from First_Item
   procedure Display (First_Item_Id : in Positive) is
     Item : Line_Rec;
+    List_Pos : Positive;
+    List_Mod : Boolean;
   begin
     -- Set status
     Compute (First_Item_Id);
+    Modified := False;
 
     if Line_List.Is_Empty then
       Set_Colors;
       Af_Con_Io.Clear (List_Window);
       return;
     end if;
+
+    -- Save position and list status
+    List_Mod := Line_List.Is_Modified;
+    List_Pos := Line_List.Get_Position;
 
     -- Display list
     Move_To (Status.Id_Top);
@@ -201,13 +208,18 @@ package body Af_List is
         Put (I - 1, Af_Ptg.Normal, Item);
       end if;
     end loop;
-    Move_To (Status.Ids_Selected(List_Left));
+
+    -- Restore Position and list status
+    Move_To (List_Pos);
+    if not List_Mod then
+      -- Not seen... not caught
+      Line_List.Modification_Ack;
+    end if;
 
     -- Display empty end of list (if any)
     for I in Status.Nb_Rows + 1 .. Af_Dscr.Fields(Lfn).Height loop
       Clear (I - 1);
     end loop;
-
 
   exception
     when others =>
@@ -225,7 +237,7 @@ package body Af_List is
       raise Not_Opened;
     end if;
     -- Update may be called before 1st Ptg
-    if Status.Ids_Selected(List_Left) = 0 then
+    if Status.Id_Top = 0 then
       Compute (1);
     end if;
     -- List is empty
@@ -235,7 +247,7 @@ package body Af_List is
 
     -- Update selection, cause current may have changed
     -- called by user
-    Af_List.Set_Selected (List_Left, Line_List.Get_Position);
+    Set_Selected (List_Left, Line_List.Get_Position);
 
     -- Recompute cause list may have changed
     Compute (Status.Id_Top);
@@ -341,12 +353,19 @@ package body Af_List is
     or else (Button = List_Left and then Item_Id = 0) then
       raise Line_List_Mng.Not_In_List;
     end if;
-    Status.Ids_Selected(Button) := Item_Id;
+    if Status.Ids_Selected(Button) /= Item_Id then
+      Status.Ids_Selected(Button) := Item_Id;
+      Modified := True;
+    end if;
   end Set_Selected;
 
   -- Status of the list
   function Get_Status return List_Status_Rec is
   begin
+    -- Update may be called before 1st Ptg
+    if Af_Dscr.Has_List and then Status.Id_Top = 0 then
+      Compute (1);
+    end if;
     return Status;
   end Get_Status;
 

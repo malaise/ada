@@ -175,6 +175,9 @@ package body Afpx is
 
   package Af_List is
 
+    -- Is the list modified since previous Put_Then_Get
+    Modified : Boolean := True;
+
     -- Open / Re-open the list window
     procedure Open;
 
@@ -718,12 +721,6 @@ package body Afpx is
     Af_Dscr.Check(Lfn);
     Af_List.Update(Action);
   end Update_List;
-
-  function Get_List_Status return List_Status_Rec is
-  begin
-    Af_Dscr.Check;
-    return Af_List.Get_Status;
-  end Get_List_Status;
 
   -- Returns the index (from 0 to Str'Last-1) of the last character of Str
   --  or, if Significant, the index following last significant character
