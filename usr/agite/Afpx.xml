@@ -334,7 +334,7 @@
     </Field>
     <Field Num="14" Kind="Put">
       <Geometry Up="${Field_10.Low}+2" Left="${Field_13.Right}+1"
-                Height="1" Width="5"/> 
+                Height="1" Width="7"/> 
       <Colors Foreground="Black" Background="Light_gray" Blink="False"/>
     </Field>
     <Field Num="15" Kind="Put">
@@ -345,7 +345,7 @@
     </Field>
     <Field Num="16" Kind="Put">
       <Geometry Up="${Field_10.Low}+2" Left="${Field_15.Right}+1"
-                Height="1" Width="5"/> 
+                Height="1" Width="7"/> 
       <Colors Foreground="Black" Background="Light_gray" Blink="False"/>
     </Field>
 
