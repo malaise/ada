@@ -227,11 +227,13 @@ package body Af_List is
   end Display;
 
   -- Actions on the list
-  -- type Action_List is (Up, Down, Page_Up, Page_Down);
+  -- type Action_List is (Up, Down, Page_Up, Page_Down...);
 
   -- Update the list due to an action
   procedure Update (Action : in List_Action_List) is
     First_Item_Id : Natural;
+    Shift_Factor : constant := 10;
+    Height : constant Positive := Af_Dscr.Fields(Lfn).Height;
   begin
     if not Opened then
       raise Not_Opened;
@@ -253,7 +255,7 @@ package body Af_List is
     Compute (Status.Id_Top);
 
     -- Nothing to scroll
-    if Status.Nb_Rows /= Af_Dscr.Fields(Lfn).Height then
+    if Status.Nb_Rows /= Height then
       return;
     end if;
 
@@ -270,31 +272,55 @@ package body Af_List is
           First_Item_Id := Status.Id_Top + 1;
           Display (First_Item_Id);
         end if;
-      when Page_Down =>
-        -- Display next page
-        -- Bottom + height < length => Bottom + height exists
-        if Line_List.List_Length - Status.Id_Bottom >
-        Af_Dscr.Fields(Lfn).Height then
-          First_Item_Id := Status.Id_Top + Af_Dscr.Fields(Lfn).Height;
-        elsif Status.Id_Bottom /= Line_List.List_Length then
-          -- End at last item
-          First_Item_Id := Line_List.List_Length
-                           - Af_Dscr.Fields(Lfn).Height + 1;
-        else
-          -- Already at bottom of list
-          return;
-        end if;
-        Display (First_Item_Id);
       when Page_Up =>
         -- Display previous page
         -- top - height > 1 => top - height exists
-        if Status.Id_Top > Af_Dscr.Fields(Lfn).Height + 1 then
-          First_Item_Id := Status.Id_Top - Af_Dscr.Fields(Lfn).Height;
+        if Status.Id_Top > Height + 1 then
+          First_Item_Id := Status.Id_Top - Height;
         elsif Status.Id_Top /= 1 then
           -- Start at first item
           First_Item_Id := 1;
         else
           -- Already at top of list
+          return;
+        end if;
+        Display (First_Item_Id);
+      when Page_Down =>
+        -- Display next page
+        -- Bottom + height < length => Bottom + height exists
+        if Line_List.List_Length - Status.Id_Bottom > Height then
+          First_Item_Id := Status.Id_Top + Height;
+        elsif Status.Id_Bottom /= Line_List.List_Length then
+          -- End at last item
+          First_Item_Id := Line_List.List_Length - Height + 1;
+        else
+          -- Already at bottom of list
+          return;
+        end if;
+        Display (First_Item_Id);
+      when Shift_Page_Up =>
+        -- Display previous page
+        -- top - height > 1 => top - height exists
+        if Status.Id_Top > Shift_Factor * Height + 1 then
+          First_Item_Id := Status.Id_Top - Shift_Factor * Height;
+        elsif Status.Id_Top /= 1 then
+          -- Start at first item
+          First_Item_Id := 1;
+        else
+          -- Already at top of list
+          return;
+        end if;
+        Display (First_Item_Id);
+      when Shift_Page_Down =>
+        -- Display next page
+        -- Bottom + height < length => Bottom + height exists
+        if Line_List.List_Length - Status.Id_Bottom > Shift_Factor * Height then
+          First_Item_Id := Status.Id_Top + Shift_Factor * Height;
+        elsif Status.Id_Bottom /= Line_List.List_Length then
+          -- End at last item
+          First_Item_Id := Line_List.List_Length - Height + 1;
+        else
+          -- Already at bottom of list
           return;
         end if;
         Display (First_Item_Id);
@@ -312,8 +338,7 @@ package body Af_List is
           -- Already at bottom of list
           return;
         end if;
-        First_Item_Id := Line_List.List_Length
-                         - Af_Dscr.Fields(Lfn).Height + 1;
+        First_Item_Id := Line_List.List_Length - Height + 1;
         Display (First_Item_Id);
       when Center =>
         -- Center current List item in window (do ower best)
@@ -323,7 +348,6 @@ package body Af_List is
           -- Current position in list
           Pos : constant Positive := Line_List.Get_Position;
           -- Row in window to put it
-          Height : constant Positive := Af_Dscr.Fields(Lfn).Height;
           Midrow : constant Natural := Height / 2;
           Lastrow : constant Natural := Height - 1;
         begin

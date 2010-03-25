@@ -215,6 +215,7 @@ package Afpx is
   Line_List : Line_List_Mng.List_Type;
   -- Actions on the list
   type List_Action_List is (Up, Down, Page_Up, Page_Down,
+                            Shift_Page_Up, Shift_Page_Down,
                             Top, Bottom, Center);
 
   -- Update the list due to an action

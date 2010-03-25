@@ -1,4 +1,3 @@
-with Ada.Text_Io;
 with Ada.Calendar;
 separate (Afpx)
 package body Af_Ptg is
@@ -129,6 +128,7 @@ package body Af_Ptg is
     Click_Pos : Af_Con_Io.Full_Square;
     Signif_Col : Af_Con_Io.Full_Col_Range;
     Valid : Boolean;
+    List_Change : Boolean;
     use Af_Con_Io;
     use type Afpx_Typ.Field_Kind_List;
   begin
@@ -151,16 +151,25 @@ package body Af_Ptg is
       if List_Present
       and then In_Field_Absolute(Lfn, Click_Pos)
       and then Mouse_Status.Status = Af_Con_Io.Pressed then
-        if Mouse_Status.Button = Af_Con_Io.Up then
-          Af_List.Update (Up);
-          if List_Change_Cb /= null then
-            List_Change_Cb (Scroll, Af_List.Get_Status);
-          end if;
-        elsif Mouse_Status.Button = Af_Con_Io.Down then
-          Af_List.Update (Down);
-          if List_Change_Cb /= null then
-            List_Change_Cb (Scroll, Af_List.Get_Status);
-          end if;
+        List_Change := True;
+        case Mouse_Status.Button is
+          when Af_Con_Io.Up =>
+            Af_List.Update (Up);
+          when Af_Con_Io.Down =>
+            Af_List.Update (Down);
+          when Af_Con_Io.Shift_Up =>
+            Af_List.Update (Page_Up);
+          when Af_Con_Io.Shift_Down =>
+            Af_List.Update (Page_Down);
+          when Af_Con_Io.Ctrl_Up =>
+            Af_List.Update (Shift_Page_Up);
+          when Af_Con_Io.Ctrl_Down =>
+            Af_List.Update (Shift_Page_Down);
+          when others =>
+            List_Change := False;
+        end case;
+        if List_Change and then List_Change_Cb /= null then
+          List_Change_Cb (Scroll, Af_List.Get_Status);
         end if;
       elsif Mouse_Status.Button = Middle
       and then Mouse_Status.Status = Af_Con_Io.Pressed
@@ -658,7 +667,6 @@ package body Af_Ptg is
         Line_List.Modification_Ack;
       end if;
 
-Ada.Text_Io.Put_Line ("Modified " & Af_List.Modified'Img);
       if (Need_Redisplay or else Af_List.Modified)
       and then Af_Dscr.Fields(Lfn).Kind = Afpx_Typ.Button then
         -- List defined

@@ -1671,6 +1671,14 @@ package body Generic_Con_Io is
               Loc_Event.Button := Up;
             when X_Mng.Down =>
               Loc_Event.Button := Down;
+            when X_Mng.Shift_Up =>
+              Loc_Event.Button := Shift_Up;
+            when X_Mng.Shift_Down =>
+              Loc_Event.Button := Shift_Down;
+            when X_Mng.Ctrl_Up =>
+              Loc_Event.Button := Ctrl_Up;
+            when X_Mng.Ctrl_Down =>
+              Loc_Event.Button := Ctrl_Down;
           end case;
           if Mouse_Status = X_Mng.Tid_Press then
             Loc_Event.Status := Pressed;

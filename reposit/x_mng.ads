@@ -38,7 +38,8 @@ package X_Mng is
   type Natural_Array is array (Positive range <>) of Natural;
 
   -- Mouse buttons
-  type Button_List is (None, Left, Middle, Right, Up, Down);
+  type Button_List is (None, Left, Middle, Right, Up, Down,
+                       Shift_Up, Shift_Down, Ctrl_Up, Ctrl_Down);
 
   -- Result of waiting (see Event_Mng for Events).
   type Event_Kind is (

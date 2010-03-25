@@ -890,23 +890,40 @@ extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
         }
         /* Store button */
         if (event.xbutton.button == Button1) {
+           /* Left button: Shift => Up */
            if ((event.xbutton.state & ShiftMask) != 0) {
               win_id->button = 4;
            } else {
               win_id->button = 1;
            }
         } else if (event.xbutton.button == Button2) {
+           /* Middle button */
            win_id->button = 2;
         } else if (event.xbutton.button == Button3) {
+           /* Right button: Shift => Down */
            if ((event.xbutton.state & ShiftMask) != 0) {
               win_id->button = 5;
            } else {
               win_id->button = 3;
            }
         } else if (event.xbutton.button == Button4) {
-           win_id->button = 4;
+           /* Wheele Up */
+           if ((event.xbutton.state & ControlMask) != 0) {
+             win_id->button = 8;
+           } else if ((event.xbutton.state & ShiftMask) != 0) {
+             win_id->button = 6;
+           } else {
+             win_id->button = 4;
+           }
         } else if (event.xbutton.button == Button5) {
-           win_id->button = 5;
+           /* Wheele Down */
+           if ((event.xbutton.state & ControlMask) != 0) {
+             win_id->button = 9;
+           } else if ((event.xbutton.state & ShiftMask) != 0) {
+             win_id->button = 7;
+           } else {
+             win_id->button = 5;
+           }
         } else {
            break; /* Next Event */
         }

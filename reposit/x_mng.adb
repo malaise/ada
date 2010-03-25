@@ -1186,19 +1186,28 @@ package body X_Mng is
       raise X_Failure;
     end if;
     -- check returned coordinates
-    if Loc_Button = 0 then
-      Button := None;
-    elsif Loc_Button = 1 then
-      Button := Left;
-    elsif Loc_Button = 2 then
-      Button := Middle;
-    elsif Loc_Button = 3 then
-      Button := Right;
-    elsif Loc_Button = 4 then
-      Button := Up;
-    elsif Loc_Button = 5 then
-      Button := Down;
-    end if;
+    case Loc_Button is
+      when 1 =>
+        Button := Left;
+      when 2 =>
+        Button := Middle;
+      when 3 =>
+        Button := Right;
+      when 4 =>
+        Button := Up;
+      when 5 =>
+        Button := Down;
+      when 6 =>
+        Button := Shift_Up;
+      when 7 =>
+        Button := Shift_Down;
+      when 8 =>
+        Button := Ctrl_Up;
+      when 9 =>
+        Button := Ctrl_Down;
+      when others =>
+        Button := None;
+    end case;
     Row := Row_For_C;
     Column := Col_For_C;
   end X_Read_Tid;
