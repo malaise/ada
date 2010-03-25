@@ -218,7 +218,6 @@ package body Afpx is
   In_Ptg : Boolean := False;
 
   -- Width and height of the screen
-  -- Exceptions : No_Descriptor (no Descriptor in use),
   procedure Get_Screen_Size (Height : out Height_Range;
                              Width  : out Width_Range) is
   begin
@@ -307,8 +306,8 @@ package body Afpx is
 
   -- Reset the field from initial definition in file
   procedure Reset_Field (Field_No : in Absolute_Field_Range;
-  Reset_Colors : in Boolean := True;
-  Reset_String : in Boolean := True) is
+                         Reset_Colors : in Boolean := True;
+                         Reset_String : in Boolean := True) is
     Fn : constant Afpx_Typ.Absolute_Field_Range
        := Afpx_Typ.Absolute_Field_Range(Field_No);
   begin
@@ -391,7 +390,7 @@ package body Afpx is
   end Encode_Line;
 
   procedure Encode_Wide_Line (Line : in out Line_Rec;
-                         Str  : in Wide_String) is
+                              Str  : in Wide_String) is
   begin
     if Str'Length > Af_Dscr.Fields(Lfn).Width then
       raise String_Too_Long;
@@ -657,6 +656,7 @@ package body Afpx is
     Start_No, Ret_No : Afpx_Typ.Absolute_Field_Range;
     use Afpx_Typ;
   begin
+    Af_Dscr.Check;
     -- Empty descriptor (or only a list)
     if Af_Dscr.Current_Dscr.Nb_Fields = 0 then
       return 0;
@@ -690,9 +690,10 @@ package body Afpx is
   -- Computes previous cursor field before current one:
   function Prev_Cursor_Field (From : Absolute_Field_Range)
                              return Absolute_Field_Range is
-  Ret_No : Afpx_Typ.Absolute_Field_Range;
-  use Afpx_Typ;
+    Ret_No : Afpx_Typ.Absolute_Field_Range;
+    use Afpx_Typ;
   begin
+    Af_Dscr.Check;
     Ret_No := Afpx_Typ.Absolute_Field_Range(From);
     loop
       if Ret_No /= 1 then
@@ -716,7 +717,13 @@ package body Afpx is
   begin
     Af_Dscr.Check(Lfn);
     Af_List.Update(Action);
- end Update_List;
+  end Update_List;
+
+  function Get_List_Status return List_Status_Rec is
+  begin
+    Af_Dscr.Check;
+    return Af_List.Get_Status;
+  end Get_List_Status;
 
   -- Returns the index (from 0 to Str'Last-1) of the last character of Str
   --  or, if Significant, the index following last significant character

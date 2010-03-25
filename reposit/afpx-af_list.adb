@@ -20,15 +20,14 @@ package body Af_List is
     if Af_Con_Io.Is_Open (List_Window) then
       Af_Con_Io.Close (List_Window);
     end if;
+    -- Start at top
+    Reset;
     -- Check there is a window in the dscr
     if Af_Dscr.Fields(Lfn).Kind = Afpx_Typ.Button then
       Af_Con_Io.Open (List_Window,
                    Af_Con_Io.Full2Con(Af_Dscr.Fields(Lfn).Upper_Left),
                    Af_Con_Io.Full2Con(Af_Dscr.Fields(Lfn).Lower_Right));
       Opened := True;
-      -- Start at top
-      Status.Ids_Selected := (others => 0);
-      Reset;
     else
       Opened := False;
     end if;

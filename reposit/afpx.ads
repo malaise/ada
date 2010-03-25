@@ -221,6 +221,21 @@ package Afpx is
   -- Exceptions : Invalid_Field if no list in current descriptor.
   procedure Update_List (Action : in List_Action_List);
 
+  -- Status of the list
+  type List_Button_List is (List_Left, List_Right);
+  type List_Ids_Selected_Array is array (List_Button_List) of Natural;
+  type List_Status_Rec is record
+    -- The number of items diplayed, 0 if no list field active
+    -- Width if list_length >= width, list_length otherwise
+    Nb_Rows : Natural;
+    -- First and last items displayed in the window
+    Id_Top    : Natural;
+    Id_Bottom : Natural;
+    -- Item selected (0 if no selection, if list no active...)
+    Ids_Selected : List_Ids_Selected_Array;
+  end record;
+  function Get_List_Status return List_Status_Rec;
+
   -- Result of Put_Then_Get:
   -- See Con_io.Curs_Mvt
   type Event_List is (Keyboard, Mouse_Button,
@@ -263,23 +278,10 @@ package Afpx is
   function Last_Index (Str : Wide_String; Significant : Boolean)
                        return Con_Io.Full_Col_Range;
 
-  -- Call back called by Put_Then_Get when something is changed in the list
+  -- Call back called by Put_Then_Get when something is changed in the list:
   --  - change of left or right selection
   --  - scroll by keyboard or wheel
   type List_Change_List is (Left_Selection, Right_Selection, Scroll);
-  type List_Button_List is (List_Left, List_Right);
-  type List_Ids_Selected_Array is array (List_Button_List) of Natural;
-  type List_Status_Rec is record
-    -- The number of items diplayed, 0 if no list field active
-    -- Width if list_length >= width, list_length otherwise
-    Nb_Rows : Natural;
-    -- First and last items displayed in the window
-    Id_Top    : Natural;
-    Id_Bottom : Natural;
-    -- Item selected (0 if no selection, if list no active...)
-    Ids_Selected : List_Ids_Selected_Array;
-  end record;
-
   type List_Change_Cb is access
     procedure (Action : in List_Change_List;
                Status : in List_Status_Rec);
