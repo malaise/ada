@@ -3,7 +3,7 @@
 
 <!-- For agite -->
 <Afpx_Descriptors Height="44" Width="55">
-  <Var Name="Version" Value="V1.0"/>
+  <Var Name="Version" Value="V1.1"/>
 
   <!-- Main screen: explorator --> 
   <Descriptor Num="1" Background="Light_gray">
@@ -253,7 +253,7 @@
     <!-- Title and list -->
     <Var Name="WWidth" Value="${Screen.Width}-${LmWidth}-${LmHOffset}-1"/>
     <List>
-      <Geometry Up="6" Left="1" Low="${Screen.Low}-1" Width="${WWidth}"/>
+      <Geometry Up="7" Left="1" Low="${Screen.Low}-1" Width="${WWidth}"/>
       <Colors Foreground="Light_Gray" Background="Brown" Selected="Red"/>
     </List>
     <Field Num="1" Kind="Put">
@@ -315,25 +315,59 @@
       <Colors Foreground="Black" Background="Light_gray" Blink="False"/>
     </Field>
 
+    <!-- List status xxx%  LeftSel: yyyyy  RightSel: zzzzz-->
+    <Field Num="11" Kind="Put">
+      <Geometry Up="${Field_10.Low}+2" Left="1" Height="1" Width="3"/> 
+      <Colors Foreground="Black" Background="Light_gray" Blink="False"/>
+    </Field>
+    <Field Num="12" Kind="Put">
+      <Geometry Up="${Field_11.Up}" Left="${Field_11.Right}+1"
+                Height="1" Width="1"/>
+      <Colors Foreground="Black" Background="Light_gray" Blink="False"/>
+      <Init Row="0" Col="0">%</Init>
+    </Field>
+    <Field Num="13" Kind="Put">
+      <Geometry Up="${Field_11.Up}" Left="${Field_12.Right}+3"
+                Height="1" Width="8"/>
+      <Colors Foreground="Black" Background="Light_gray" Blink="False"/>
+      <Init Row="0" Col="0">LeftSel:</Init>
+    </Field>
+    <Field Num="14" Kind="Put">
+      <Geometry Up="${Field_10.Low}+2" Left="${Field_13.Right}+1"
+                Height="1" Width="5"/> 
+      <Colors Foreground="Black" Background="Light_gray" Blink="False"/>
+    </Field>
+    <Field Num="15" Kind="Put">
+      <Geometry Up="${Field_11.Up}" Left="${Field_14.Right}+3"
+                Height="1" Width="9"/>
+      <Colors Foreground="Black" Background="Light_gray" Blink="False"/>
+      <Init Row="0" Col="0">RightSel:</Init>
+    </Field>
+    <Field Num="16" Kind="Put">
+      <Geometry Up="${Field_10.Low}+2" Left="${Field_15.Right}+1"
+                Height="1" Width="5"/> 
+      <Colors Foreground="Black" Background="Light_gray" Blink="False"/>
+    </Field>
+
     <!-- View, Diff, Details, Back -->
-    <Field Num="11" Kind="Button">
+    <Field Num="17" Kind="Button">
       <Geometry Up="${List.Up}" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
       <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="1" Col="2">View</Init>
     </Field>
-    <Field Num="12" Kind="Button">
-      <Geometry Up="${Field_11.Low}+2" Left="${LmLeft}"
+    <Field Num="18" Kind="Button">
+      <Geometry Up="${Field_17.Low}+2" Left="${LmLeft}"
                 Height="3" Width="${LmWidth}"/>
       <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="1" Col="2">Diff</Init>
     </Field>
-    <Field Num="13" Kind="Button">
-      <Geometry Up="${Field_12.Low}+2" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
+    <Field Num="19" Kind="Button">
+      <Geometry Up="${Field_18.Low}+2" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
       <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="1" Col="1">Detail</Init>
     </Field>
 
-    <Field Num="14" Kind="Button">
+    <Field Num="20" Kind="Button">
       <Geometry Up="${List.Low}-2" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
       <Colors Foreground="Light_Gray" Background="Brown"/>
       <Init Row="1" Col="2">Back</Init>

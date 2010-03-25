@@ -1,5 +1,5 @@
 with Ada.Exceptions;
-with Con_Io, Afpx.List_Manager, String_Mng, Basic_Proc;
+with Con_Io, Afpx.List_Manager, String_Mng, Basic_Proc, Normal;
 with Utils, Config, Details, View;
 package body History is
 
@@ -51,6 +51,8 @@ package body History is
     Insert       : Boolean;
     Redisplay    : Boolean;
     Ptg_Result   : Afpx.Result_Rec;
+    List_Height  : Afpx.Height_Range;
+    List_Width   : Afpx.Width_Range;
     use type Afpx.Absolute_Field_Range;
 
     -- The log
@@ -68,6 +70,8 @@ package body History is
       Cursor_Field := 1;
       Cursor_Col := 0;
       Insert := False;
+      -- List characteristics
+      Afpx.Get_Field_Size (Afpx.List_Field_No, List_Height, List_Width);
       -- Encode file/dir
       Afpx.Clear_Field (10);
       if Is_File then
@@ -86,8 +90,8 @@ package body History is
         end if;
         -- Lock button View
         Afpx.Get_Descriptor_Background (Background);
-        Afpx.Set_Field_Protection (11, True);
-        Afpx.Set_Field_Colors (11, Foreground => Con_Io.Black,
+        Afpx.Set_Field_Protection (17, True);
+        Afpx.Set_Field_Colors (17, Foreground => Con_Io.Black,
                                    Background => Background);
 
       end if;
@@ -151,6 +155,34 @@ package body History is
       end case;
     end Show;
 
+    -- Update the list status
+    procedure List_Change (Action : in Afpx.List_Change_List;
+                           Status : in Afpx.List_Status_Rec) is
+      pragma Unreferenced (Action);
+      Percent : Natural;
+      Last_Top : Integer;
+    begin
+      -- Compute %
+      if Status.Id_Top = 0 then
+        -- Empty list
+        Percent := 0;
+      else
+        -- At which percent is the bottom shown
+        -- Top index when at bottom
+        Last_Top := Afpx.Line_List.List_Length - List_Height + 1;
+        -- Factor = (100 - 1) / (LastTop - 1)
+        -- Percent - 1 = (Top - 1) * Factor
+        Percent := (Status.Id_Top - 1) * (100 - 1) / (Last_Top - 1)  + 1;
+      end if;
+      Afpx.Encode_Field (11, (0, 0), Normal (Percent, 3, True));
+      Afpx.Encode_Field (14, (0, 0),
+           Normal (Status.Ids_Selected(Afpx.List_Left),
+                   Afpx.Get_Field_Width (14), False));
+      Afpx.Encode_Field (16, (0, 0),
+           Normal (Status.Ids_Selected(Afpx.List_Right),
+                   Afpx.Get_Field_Width (16), False));
+    end List_Change;
+
   begin
     -- Init Afpx
     Init;
@@ -184,7 +216,8 @@ package body History is
     -- Main loop
     loop
       Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
-                         Ptg_Result, Redisplay, True);
+                         Ptg_Result, Redisplay, True,
+                         List_Change_Cb => List_Change'Access);
 
       Redisplay := False;
       case Ptg_Result.Event is
@@ -201,7 +234,7 @@ package body History is
 
         when Afpx.Mouse_Button =>
           case Ptg_Result.Field_No is
-            when Afpx.List_Field_No | 11 =>
+            when Afpx.List_Field_No | 17 =>
               -- Double click or View => View if file
               if Is_File then
                 Show (Show_View);
@@ -212,13 +245,13 @@ package body History is
               Afpx.List_Manager.Scroll(Ptg_Result.Field_No
                                      - Utils.List_Scroll_Fld_Range'First + 1);
 
-            when 12 =>
+            when 18 =>
               -- Diff
               Show_Delta (Ptg_Result.Id_Selected_Right);
-            when 13 =>
+            when 19 =>
               -- Details
               Show (Show_Details);
-            when 14 =>
+            when 20 =>
               -- Back
               return;
             when others =>
