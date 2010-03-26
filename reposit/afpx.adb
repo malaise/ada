@@ -186,8 +186,10 @@ package body Afpx is
     --  or colors are modified
     procedure Display (First_Item_Id : in Positive);
 
-    -- Update the list due to an action
-    procedure Update (Action : in List_Action_List);
+    -- Update the list due to an action, re-display the list or not
+    -- True if update was possible (some change)
+    function Update (Action : List_Action_List; Display : Boolean)
+                    return Boolean;
 
     -- Set the current item (selected_color) of the list
     procedure Set_Selected (Button : in List_Button_List; Item_Id : in Natural);
@@ -717,9 +719,11 @@ package body Afpx is
   end Prev_Cursor_Field;
 
   procedure Update_List (Action : in List_Action_List) is
+    Dummy : Boolean;
+    pragma Unreferenced (Dummy);
   begin
     Af_Dscr.Check(Lfn);
-    Af_List.Update(Action);
+    Dummy := Af_List.Update(Action, Display => False);
   end Update_List;
 
   -- Returns the index (from 0 to Str'Last-1) of the last character of Str

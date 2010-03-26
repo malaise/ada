@@ -229,8 +229,9 @@ package body Af_List is
   -- Actions on the list
   -- type Action_List is (Up, Down, Page_Up, Page_Down...);
 
-  -- Update the list due to an action
-  procedure Update (Action : in List_Action_List) is
+  -- Update the list due to an action, display the list or not
+  function Update (Action : in List_Action_List; Display : in Boolean)
+                  return Boolean is
     First_Item_Id : Natural;
     Shift_Factor : constant := 10;
     Height : constant Positive := Af_Dscr.Fields(Lfn).Height;
@@ -244,7 +245,7 @@ package body Af_List is
     end if;
     -- List is empty
     if Line_List.Is_Empty then
-      return;
+      return False;
     end if;
 
     -- Update selection, cause current may have changed
@@ -256,22 +257,22 @@ package body Af_List is
 
     -- Nothing to scroll
     if Status.Nb_Rows /= Height then
-      return;
+      return False;
     end if;
 
     case Action is
       when Up =>
         -- Scroll 1 row down
-        if Status.Id_Top /= 1 then
-          First_Item_Id := Status.Id_Top - 1;
-          Display (First_Item_Id);
+        if Status.Id_Top = 1 then
+          return False;
         end if;
+        First_Item_Id := Status.Id_Top - 1;
       when Down =>
         -- Scroll 1 row down
-        if Status.Id_Bottom /= Line_List.List_Length then
-          First_Item_Id := Status.Id_Top + 1;
-          Display (First_Item_Id);
+        if Status.Id_Bottom = Line_List.List_Length then
+          return False;
         end if;
+        First_Item_Id := Status.Id_Top + 1;
       when Page_Up =>
         -- Display previous page
         -- top - height > 1 => top - height exists
@@ -282,9 +283,8 @@ package body Af_List is
           First_Item_Id := 1;
         else
           -- Already at top of list
-          return;
+          return False;
         end if;
-        Display (First_Item_Id);
       when Page_Down =>
         -- Display next page
         -- Bottom + height < length => Bottom + height exists
@@ -295,9 +295,8 @@ package body Af_List is
           First_Item_Id := Line_List.List_Length - Height + 1;
         else
           -- Already at bottom of list
-          return;
+          return False;
         end if;
-        Display (First_Item_Id);
       when Shift_Page_Up =>
         -- Display previous page
         -- top - height > 1 => top - height exists
@@ -308,9 +307,8 @@ package body Af_List is
           First_Item_Id := 1;
         else
           -- Already at top of list
-          return;
+          return False;
         end if;
-        Display (First_Item_Id);
       when Shift_Page_Down =>
         -- Display next page
         -- Bottom + height < length => Bottom + height exists
@@ -321,25 +319,22 @@ package body Af_List is
           First_Item_Id := Line_List.List_Length - Height + 1;
         else
           -- Already at bottom of list
-          return;
+          return False;
         end if;
-        Display (First_Item_Id);
       when Top =>
         -- Move to top of list
         if Status.Id_Top = 1 then
           -- Already at top of list
-          return;
+          return False;
         end if;
         First_Item_Id := 1;
-        Display (First_Item_Id);
       when Bottom =>
         -- Move to bottom of list
         if Status.Id_Bottom = Line_List.List_Length then
           -- Already at bottom of list
-          return;
+          return False;
         end if;
         First_Item_Id := Line_List.List_Length - Height + 1;
-        Display (First_Item_Id);
       when Center =>
         -- Center current List item in window (do ower best)
         declare
@@ -352,16 +347,26 @@ package body Af_List is
           Lastrow : constant Natural := Height - 1;
         begin
           if Pos - 1 < Midrow then
-            Update(Top);
+            return Update(Top, Display);
           elsif Len - Pos < Lastrow - Midrow then
-            Update(Bottom);
+            return Update(Bottom, Display);
           else
             First_Item_Id := Pos - Midrow;
-            Display (First_Item_Id);
           end if;
         end;
-
     end case;
+
+    -- Display or just re-compute and tag
+    if Display then
+      -- Redisplay the list (called by PtG)
+      Af_List.Display (First_Item_Id);
+    else
+      -- Recompute and mark modified for nexwt PtG (called by client)
+      Compute (First_Item_Id);
+      Modified := True;
+    end if;
+
+    return True;
   exception
     when others =>
       raise Afpx_Internal_Error;

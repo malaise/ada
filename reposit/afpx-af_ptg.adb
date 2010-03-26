@@ -151,20 +151,19 @@ package body Af_Ptg is
       if List_Present
       and then In_Field_Absolute(Lfn, Click_Pos)
       and then Mouse_Status.Status = Af_Con_Io.Pressed then
-        List_Change := True;
         case Mouse_Status.Button is
           when Af_Con_Io.Up =>
-            Af_List.Update (Up);
+            List_Change := Af_List.Update (Up, True);
           when Af_Con_Io.Down =>
-            Af_List.Update (Down);
+            List_Change := Af_List.Update (Down, True);
           when Af_Con_Io.Shift_Up =>
-            Af_List.Update (Page_Up);
+            List_Change := Af_List.Update (Page_Up, True);
           when Af_Con_Io.Shift_Down =>
-            Af_List.Update (Page_Down);
+            List_Change := Af_List.Update (Page_Down, True);
           when Af_Con_Io.Ctrl_Up =>
-            Af_List.Update (Shift_Page_Up);
+            List_Change := Af_List.Update (Shift_Page_Up, True);
           when Af_Con_Io.Ctrl_Down =>
-            Af_List.Update (Shift_Page_Down);
+            List_Change := Af_List.Update (Shift_Page_Down, True);
           when others =>
             List_Change := False;
         end case;
@@ -623,6 +622,7 @@ package body Af_Ptg is
     Done : Boolean;
     Need_Redisplay : Boolean;
     Selection_Result : Integer;
+    List_Change : Boolean;
 
     use Afpx_Typ;
     use type Af_Con_Io.Curs_Mvt;
@@ -749,37 +749,38 @@ package body Af_Ptg is
        end if;
 
       Done := False;
-      -- Now the big case
+      -- Now the big case on keys
+      List_Change := False;
       case Stat is
         when Af_Con_Io.Up =>
           -- List scroll down
           if List_Present then
-            Af_List.Update (Up);
+            List_Change := Af_List.Update (Up, True);
           end if;
         when Af_Con_Io.Down =>
           -- List scroll up
           if List_Present then
-            Af_List.Update (Down);
+            List_Change := Af_List.Update (Down, True);
           end if;
         when Af_Con_Io.Pgup | Af_Con_Io.Ctrl_Up =>
           -- List page up
           if List_Present then
-            Af_List.Update (Page_Up);
+            List_Change := Af_List.Update (Page_Up, True);
           end if;
         when Af_Con_Io.Pgdown | Af_Con_Io.Ctrl_Down =>
           -- List page down
           if List_Present then
-            Af_List.Update (Page_Down);
+            List_Change := Af_List.Update (Page_Down, True);
           end if;
         when Af_Con_Io.Ctrl_Pgup =>
           -- List page up
           if List_Present then
-            Af_List.Update (Top);
+            List_Change := Af_List.Update (Top, True);
           end if;
         when Af_Con_Io.Ctrl_Pgdown =>
           -- List page down
           if List_Present then
-            Af_List.Update (Bottom);
+            List_Change := Af_List.Update (Bottom, True);
           end if;
         when Af_Con_Io.Right | Af_Con_Io.Full =>
           if Get_Active then
@@ -965,8 +966,7 @@ package body Af_Ptg is
       end case;
 
       -- Notify of change of list because of key
-      if Stat in Af_Con_Io.Up .. Af_Con_Io.Ctrl_Pgdown
-      and then List_Change_Cb /= null then
+      if List_Change and then List_Change_Cb /= null then
         List_Change_Cb (Scroll, Af_List.Get_Status);
       end if;
 
