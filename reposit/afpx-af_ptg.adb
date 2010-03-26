@@ -650,15 +650,20 @@ package body Af_Ptg is
              and then not Line_List.Is_Empty;
 
       -- Update list if Line_List has changed list if needed
-      if Af_List.Get_Status.Ids_Selected(List_Left)
-            /= Line_List.Get_Position then
-        Af_List.Set_Selected (List_Left, Line_List.Get_Position);
+      if List_Present then
         if Af_List.Get_Status.Ids_Selected(List_Left)
-         = Af_List.Get_Status.Ids_Selected(List_Right) then
-          -- User has moved selection to Id_Selected_Right,
-          --  -> Reset Id_Selected_Right
-          Af_List.Set_Selected (List_Right, 0);
+              /= Line_List.Get_Position then
+          Af_List.Set_Selected (List_Left, Line_List.Get_Position);
+          if Af_List.Get_Status.Ids_Selected(List_Left)
+           = Af_List.Get_Status.Ids_Selected(List_Right) then
+            -- User has moved selection to Id_Selected_Right,
+            --  -> Reset Id_Selected_Right
+            Af_List.Set_Selected (List_Right, 0);
+          end if;
         end if;
+      else
+        Af_List.Set_Selected (List_Left, 0);
+        Af_List.Set_Selected (List_Right, 0);
       end if;
 
       -- list to be updated if Line_List has changed

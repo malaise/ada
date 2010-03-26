@@ -373,7 +373,11 @@ package body Af_List is
     if not Opened then
       raise Not_Opened;
     end if;
-    if Item_Id > Line_List.List_Length
+    if Line_List.Is_Empty then
+      if Item_Id /= 0 then
+        raise Line_List_Mng.Not_In_List;
+      end if;
+    elsif Item_Id > Line_List.List_Length
     or else (Button = List_Left and then Item_Id = 0) then
       raise Line_List_Mng.Not_In_List;
     end if;
