@@ -81,13 +81,13 @@ package body Af_Dscr is
     use type Afpx_Typ.Absolute_Field_Range;
   begin
 
+    Check;
     if Field_No = Lfn then
       -- A list in the descriptor?
       if Has_List then
         return;
       end if;
     else
-      Check;
        -- This field in the descriptor?
       if Field_No <= Current_Dscr.Nb_Fields then
         return;

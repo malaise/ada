@@ -645,7 +645,7 @@ package body Af_Ptg is
     loop
 
       -- List present : defined, activated and not empty
-      List_Present := Af_Dscr.Fields(Lfn).Kind = Afpx_Typ.Button
+      List_Present := Af_Dscr.Has_List
              and then Af_Dscr.Fields(Lfn).Activated
              and then not Line_List.Is_Empty;
 
@@ -661,7 +661,8 @@ package body Af_Ptg is
             Af_List.Set_Selected (List_Right, 0);
           end if;
         end if;
-      else
+      elsif Af_Dscr.Fields(Lfn).Kind = Afpx_Typ.Button then
+        -- List exists but is empty or inactive
         Af_List.Set_Selected (List_Left, 0);
         Af_List.Set_Selected (List_Right, 0);
       end if;
@@ -674,23 +675,28 @@ package body Af_Ptg is
 
       if (Need_Redisplay or else Af_List.Modified)
       and then Af_Dscr.Fields(Lfn).Kind = Afpx_Typ.Button then
-        -- List defined
-        if List_Present then
-          if Af_List.Get_Status.Id_Top = 0 then
-            -- First time we display a non empty list
-            Af_List.Display(1);
-          else
-            Af_List.Display(Af_List.Get_Status.Id_Top);
-          end if;
+        List_Change := True;
+        if not Af_Dscr.Has_List then
+          -- No list in this Dscr
+          List_Change := False;
+        elsif Line_List.Is_Empty then
+          -- Empty list
+          Af_List.Display(1);
         elsif not Af_Dscr.Fields(Lfn).Activated then
           -- List not active
           Erase_Field (Lfn);
           Af_List.Modified := False;
         else
-          -- Empty list
-          Af_List.Display(1);
+          -- List is present (exists, active and not empty)
+          if Af_List.Get_Status.Id_Top = 0 then
+            -- First time we display a non empty list
+            Af_List.Display(1);
+          else
+            -- Redisplay
+            Af_List.Display(Af_List.Get_Status.Id_Top);
+          end if;
         end if;
-        if List_Change_Cb /= null then
+        if List_Change and then List_Change_Cb /= null then
           List_Change_Cb (List_Modified, Af_List.Get_Status);
         end if;
       end if;
