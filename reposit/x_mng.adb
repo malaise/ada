@@ -424,10 +424,12 @@ package body X_Mng is
 
     protected Dispatcher is
 
+      -- Iniitalize (only once)
+      procedure Initialize;
+
       -- Register / Unregister. Count clients and refresh all on Unregister
       entry Register (Client : out Line_Range);
       entry Unregister (Client : in out Line_Range);
-      function Get_Nb_Clients return Line_Range;
 
       -- Two calls to protect a call to X
       entry Call_On  (Client : in Line_Range;
@@ -443,6 +445,8 @@ package body X_Mng is
       entry Wait_Event(Client_Range) (New_Event : out Event_Rec);
 
     private
+      -- Initialized
+      Initialized : Boolean := False;
 
       -- Number of registered clients
       Nb_Clients : Line_Range := 0;
@@ -487,6 +491,7 @@ package body X_Mng is
         raise X_Failure;
       end if;
 
+      Dispatcher.Initialize;
       Debug := Environ.Is_Yes (Debug_Var_Name);
       Initialised := True;
     end if;
@@ -564,7 +569,6 @@ package body X_Mng is
 
   ------------------------------------------------------------------
   procedure X_Suspend (Line_Id : in out Line) is
-    Res : Boolean;
   begin
     if not Initialised or else Line_Id = No_Client then
       raise X_Failure;
@@ -574,22 +578,11 @@ package body X_Mng is
     Dispatcher.Call_Off (Line_Id.No, Line_Id.Suspended_Line_For_C);
     -- Unregister: Line_No is reset (and Line_For_C would be lost)
     Dispatcher.Unregister(Line_Id.No);
-    -- Disable handling of X events when no more client
-    if Dispatcher.Get_Nb_Clients = 0 then
-      Res := X_Suspend = Ok;
-      if not Res then
-        raise X_Failure;
-      end if;
-      if Debug then
-        My_Io.Put_Line ("X_Suspend => suspend fd");
-      end if;
-    end if;
   end X_Suspend;
 
   ------------------------------------------------------------------
   procedure X_Resume  (Line_Id : in out Line) is
     Dummy_Line_For_C : Line_For_C;
-    Res : Boolean;
     use type System.Address;
   begin
     -- No must not be set but Suspended_Line must be
@@ -617,16 +610,6 @@ package body X_Mng is
     Dispatcher.Call_On (Line_Id.No, Dummy_Line_For_C);
     Dispatcher.Call_Off (Line_Id.No, Line_Id.Suspended_Line_For_C);
     Line_Id.Suspended_Line_For_C := No_Line_For_C;
-    -- Enable handling of X events when first client
-    if Dispatcher.Get_Nb_Clients = 1 then
-      Res := X_Resume = Ok;
-      if not Res then
-        raise X_Failure;
-      end if;
-      if Debug then
-        My_Io.Put_Line ("X_Resume => resume fd");
-      end if;
-    end if;
   end X_Resume;
 
   ------------------------------------------------------------------

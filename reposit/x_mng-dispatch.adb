@@ -221,6 +221,21 @@ package body Dispatch is
 
   protected body Dispatcher is
 
+    -- Initialize only once, suspended by default
+    procedure Initialize is
+      Res : Boolean;
+    begin
+      if Initialized then
+        Log ("Initialize", No_Client_No, "already initialized");
+        raise Dispatch_Error;
+      end if;
+      Res := X_Suspend = Ok;
+      if not Res then
+        raise X_Failure;
+      end if;
+      Initialized := True;
+    end Initialize;
+
     -- First Client free
     function First_Free return Line_Range is
     begin
@@ -347,6 +362,7 @@ package body Dispatch is
     entry Register (Client : out Line_Range)
                    when Registered = No_Client_No
                    and then not In_X is
+      Res : Boolean;
     begin
       Client := First_Free;
       if Client = No_Client_No then
@@ -363,6 +379,16 @@ package body Dispatch is
       -- Update global admin info
       Registered := Client;
       Nb_Clients := Nb_Clients + 1;
+
+      if Nb_Clients = 1 then
+        -- First client => resume
+        Log ("Register", No_Client_No, "resuming");
+        Res := X_Resume = Ok;
+        if not Res then
+          Log ("Register", No_Client_No, "X_Failure");
+          raise X_Failure;
+        end if;
+      end if;
       Log ("Register", Client, Nb_Clients'Img & " " & Nb_Waiting'Img);
     end Register;
 
@@ -370,6 +396,7 @@ package body Dispatch is
     -- Count clients and refreshh all on Unregister
     entry Unregister (Client : in out Line_Range)
                      when not In_X is
+      Res : Boolean;
     begin
       if Client = No_Client_No then
         Log ("Unregister", Client, "invalid");
@@ -399,15 +426,19 @@ package body Dispatch is
         Clients(Selected).Refreshing := True;
       end if;
 
+      if Nb_Clients = 0 then
+        -- Last client => suspend
+        Log ("Unregister", No_Client_No, "suspending");
+        Res := X_Suspend = Ok;
+        if not Res then
+          Log ("Register", No_Client_No, "X_Failure");
+          raise X_Failure;
+        end if;
+      end if;
+
       Client := No_Client_No;
       Log ("Unregister", Selected, "is selected");
     end Unregister;
-
-    -- Return current number of clients
-    function Get_Nb_Clients return Line_Range is
-    begin
-      return Nb_Clients;
-    end Get_Nb_Clients;
 
     -- Two calls to protect a call to X
     entry Call_On  (Client : in Line_Range;
