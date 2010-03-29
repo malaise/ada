@@ -35,10 +35,10 @@ package body Af_List is
 
   end Open;
 
-  procedure Move_To (Id : in Positive) is
+  procedure Move_At (Id : in Positive) is
   begin
-    Line_List.Move_To (Line_List_Mng.Next, Id - 1, False);
-  end Move_To;
+    Line_List.Move_At (Id);
+  end Move_At;
 
   -- Read and move to next if possible
   procedure Get_Current_Item (Item : out Line_Rec; Move : in Boolean) is
@@ -107,7 +107,7 @@ package body Af_List is
       raise Not_Opened;
     end if;
     Id := Status.Id_Top + Row;
-    Move_To (Id);
+    Move_At (Id);
     Get_Current_Item (Item, Move);
     Put (Row, State, Item);
   exception
@@ -195,7 +195,7 @@ package body Af_List is
     List_Pos := Line_List.Get_Position;
 
     -- Display list
-    Move_To (Status.Id_Top);
+    Move_At (Status.Id_Top);
     for I in 1 .. Status.Nb_Rows loop
       Get_Current_Item (Item, True);
       if not Af_Dscr.Fields(Lfn).Isprotected
@@ -210,7 +210,7 @@ package body Af_List is
     end loop;
 
     -- Restore Position and list status
-    Move_To (List_Pos);
+    Move_At (List_Pos);
     if not List_Mod then
       -- Not seen... not caught
       Line_List.Modification_Ack;
@@ -410,7 +410,7 @@ package body Af_List is
     if Line_List.Is_Empty then
       return;
     end if;
-    Move_To (Status.Ids_Selected(List_Left));
+    Move_At (Status.Ids_Selected(List_Left));
   exception
     when others =>
       raise Afpx_Internal_Error;

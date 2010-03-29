@@ -237,8 +237,7 @@ package body Menu1 is
           when Partial =>
             Afpx.Use_Descriptor(1, False);
             if Saved_Index /= 0 then
-              Afpx.Line_List_Mng.Move_To (Afpx.Line_List, Afpx.Line_List_Mng.Next,
-                                          Saved_Index - 1, False);
+              Afpx.Line_List.Move_At (Saved_Index);
               Afpx.Update_List (Afpx.Center);
             end if;
             Screen.Init_For_Main1 (Cursor_Field);
@@ -247,8 +246,7 @@ package body Menu1 is
             Afpx.Use_Descriptor(1);
             Set_Points_List;
             if Saved_Index /= 0 then
-              Afpx.Line_List_Mng.Move_To (Afpx.Line_List, Afpx.Line_List_Mng.Next,
-                                          Saved_Index - 1, False);
+              Afpx.Line_List.Move_At (Saved_Index);
               Afpx.Update_List (Afpx.Center);
             end if;
             Screen.Init_For_Main1 (Cursor_Field);
@@ -333,13 +331,13 @@ package body Menu1 is
                   Data_Changed := True;
                 end loop;
                 Afpx.Set_Field_Protection (Afpx.List_Field_No, False);
-                Saved_Index := Afpx.Line_List_Mng.List_Length (Afpx.Line_List);
+                Saved_Index := Afpx.Line_List.List_Length;
                 Restore := Partial;
               when 26 | 27 | Afpx.List_Field_No =>
                 -- Delete / modify a point
                 Afpx.Set_Field_Protection (Afpx.List_Field_No, True);
                 -- Get index then point
-                Point_Index := Afpx.Line_List_Mng.Get_Position (Afpx.Line_List);
+                Point_Index := Afpx.Line_List.Get_Position;
                 A_Point := Points.P_One_Point(Point_Index);
                 if Ptg_Result.Field_No = 26 then
                   -- Delete a point
@@ -349,8 +347,8 @@ package body Menu1 is
                   Afpx.Set_Field_Activation(Screen.Get_Fld, True);
                   if Screen.Confirm(Screen.C_Delete_Point, True) then
                     Points.P_Upd_Point (Points.Remove, Point_Index, A_Point);
-                    Saved_Index := Afpx.Line_List_Mng.Get_Position (Afpx.Line_List);
-                    if Saved_Index = Afpx.Line_List_Mng.List_Length (Afpx.Line_List) then
+                    Saved_Index := Afpx.Line_List.Get_Position;
+                    if Saved_Index = Afpx.Line_List.List_Length then
                       Saved_Index := Saved_Index - 1;
                     end if;
                     Set_Points_List;
@@ -363,7 +361,7 @@ package body Menu1 is
                   Read_Point(Point_Set, A_Point);
                   if Point_Set then
                     Points.P_Upd_Point (Points.Modify, Point_Index, A_Point);
-                    Saved_Index := Afpx.Line_List_Mng.Get_Position (Afpx.Line_List);
+                    Saved_Index := Afpx.Line_List.Get_Position;
                     Set_Points_List;
                     Data_Changed := True;
                   end if;
@@ -373,7 +371,7 @@ package body Menu1 is
               when 29 =>
                 -- approximation
                 Screen.Store_File;
-                Saved_Index := Afpx.Line_List_Mng.Get_Position (Afpx.Line_List);
+                Saved_Index := Afpx.Line_List.Get_Position;
                 Menu2.Main_Screen(Data_Changed);
                 Restore := Full;
                 Data_Changed := False;

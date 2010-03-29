@@ -59,10 +59,10 @@ package body Data_Base is
 
     procedure Append_Itm is
     begin
-      if not Item_List_Mng.Is_Empty (Item_List) then
-        Item_List_Mng.Rewind (Item_List, Item_List_Mng.Prev);
+      if not Item_List.Is_Empty then
+        Item_List.Rewind (Item_List_Mng.Prev);
       end if;
-      Item_List_Mng.Insert (Item_List, Itm);
+      Item_List.Insert (Itm);
     end Append_Itm;
 
     Acc : Item_Dyn_List_Mng.Element_Access;
@@ -80,12 +80,12 @@ package body Data_Base is
         Append_Itm;
         H_Item.Store (H_Table,
                       Item.Kind & Item.Name,
-                      Item_List_Mng.Access_Current(Item_List));
+                      Item_List.Access_Current);
       end if;
     else
       Search_Name (Item_List, Found, Itm, From => Item_List_Mng.Absolute);
       if Found then
-        Item_List_Mng.Modify (Item_List, Itm, Item_List_Mng.Current);
+        Item_List.Modify (Itm, Item_List_Mng.Current);
       else
         Append_Itm;
       end if;
@@ -119,7 +119,7 @@ package body Data_Base is
       Itm.Kind := Kind;
       Search_Name (Item_List, Found, Itm, From => Item_List_Mng.Absolute);
       if Found then
-        Item_List_Mng.Read (Item_List, Item, Item_List_Mng.Current);
+        Item_List.Read (Item, Item_List_Mng.Current);
       else
         Item := No_Item;
       end if;
@@ -131,30 +131,30 @@ package body Data_Base is
     if H_Use then
       H_Item.Clear_All (H_Table);
     end if;
-    Item_List_Mng.Delete_List (Item_List);
+    Item_List.Delete_List;
   end Reset;
 
   function Nb_Item return Natural is
   begin
-    return Item_List_Mng.List_Length (Item_List);
+    return Item_List.List_Length;
   end Nb_Item;
 
 
   -- Item_Name is empty when no more item
   procedure Read_First (Item : out Item_Rec) is
   begin
-    if Item_List_Mng.Is_Empty (Item_List) then
+    if Item_List.Is_Empty then
       Item := No_Item;
       return;
     end if;
-    Item_List_Mng.Rewind (Item_List);
-    Item_List_Mng.Read (Item_List, Item, Item_List_Mng.Current);
+    Item_List.Rewind;
+    Item_List.Read (Item, Item_List_Mng.Current);
   end Read_First;
 
   procedure Read_Next (Item : out Item_Rec) is
   begin
-    Item_List_Mng.Move_To (Item_List);
-    Item_List_Mng.Read (Item_List, Item, Item_List_Mng.Current);
+    Item_List.Move_To;
+    Item_List.Read (Item, Item_List_Mng.Current);
   exception
     when Item_List_Mng.Not_In_List =>
       Item := No_Item;
@@ -168,11 +168,11 @@ package body Data_Base is
     Pos : Positive;
     Item : Item_Rec;
   begin
-    if Item_List_Mng.Is_Empty (Item_List) then
+    if Item_List.Is_Empty then
       return Default_Crc;
     end if;
 
-    Pos := Item_List_Mng.Get_Position (Item_List);
+    Pos := Item_List.Get_Position;
     Read_First (Item);
     Crc_10.Rst;
     loop
@@ -181,8 +181,7 @@ package body Data_Base is
       Read_Next (Item);
     end loop;
 
-    Item_List_Mng.Move_To (Item_List, Item_List_Mng.Next,
-                           Pos-1, From_Current => False);
+    Item_List.Move_At (Pos);
     return Image (Crc_10.Get);
   end Get_Crc;
 

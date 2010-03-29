@@ -18,15 +18,15 @@ package body Pieces is
   -- Insert a move, a take, a cover
   procedure Insert_Move (To : in Space.Square_Coordinate) is
   begin
-    Action_List_Mng.Insert(Action_List, (Kind => Move, Dest => To));
+    Action_List.Insert((Kind => Move, Dest => To));
   end Insert_Move;
   procedure Insert_Take (To : in Space.Square_Coordinate) is
   begin
-    Action_List_Mng.Insert(Action_List, (Kind => Take, Dest => To) );
+    Action_List.Insert((Kind => Take, Dest => To) );
   end Insert_Take;
   procedure Insert_Cover (To : in Space.Square_Coordinate) is
   begin
-    Action_List_Mng.Insert(Action_List, (Kind => Cover, Dest => To) );
+    Action_List.Insert((Kind => Cover, Dest => To) );
   end Insert_Cover;
 
   -- Create e new piece
@@ -189,13 +189,13 @@ package body Pieces is
   begin
     -- Build returned value
     declare
-      Result : Action_Array(1 ..  Action_List_Mng.List_Length(Action_List));
+      Result : Action_Array(1 ..  Action_List.List_Length);
     begin
       -- Scan list if not empty
-      if not Action_List_Mng.Is_Empty(Action_List) then
-        Action_List_Mng.Rewind (Action_List);
+      if not Action_List.Is_Empty then
+        Action_List.Rewind;
         for I in Result'Range loop
-           Action_List_Mng.Get (Action_List, Result(I));
+           Action_List.Get (Result(I));
         end loop;
       end if;
       return Result;

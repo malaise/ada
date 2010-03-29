@@ -47,7 +47,7 @@ procedure Search is
   procedure Unsel is
     Done : Boolean;
   begin
-    Sel_List_Mng.Delete(Sel_List, Sel_List_Mng.Prev, Done => Done);
+    Sel_List.Delete(Sel_List_Mng.Prev, Done => Done);
   end Unsel;
 
   -- Search criteria
@@ -99,7 +99,7 @@ procedure Search is
     end Match;
     Oper : Oper_Def.Oper_Rec;
   begin
-    if Sel_List_Mng.Is_Empty(Sel_List) then
+    if Sel_List.Is_Empty then
       return;
     end if;
 
@@ -120,18 +120,18 @@ procedure Search is
     end if;
 
     -- Scan from first
-    Sel_List_Mng.Rewind(Sel_List);
+    Sel_List.Rewind;
     loop
       List_Util.Move_To_Current;
-      Oper_List_Mng.Read(Oper_List, Oper, Oper_List_Mng.Current);
+      Oper_List.Read(Oper, Oper_List_Mng.Current);
       if not Match(Oper, Crit) then
         -- Remove current and move to next or remove last
         Unsel;
-        exit when Sel_List_Mng.Is_Empty(Sel_List);
+        exit when Sel_List.Is_Empty;
       else
         -- Move to next
-        exit when not Sel_List_Mng.Check_Move(Sel_List);
-        Sel_List_Mng.Move_To(Sel_List);
+        exit when not Sel_List.Check_Move;
+        Sel_List.Move_To;
       end if;
     end loop;
   end Unsel_All;
@@ -234,8 +234,7 @@ begin
   -- Init screen
   Afpx.Use_Descriptor(4);
   Screen.Encode_File_Name(Text_Handler.Value(Account_Name));
-  Screen.Encode_Nb_Oper(Oper_List_Mng.List_Length(Oper_List),
-                        Sel_List_Mng.List_Length(Sel_List));
+  Screen.Encode_Nb_Oper(Oper_List.List_Length, Sel_List.List_Length);
   Afpx.Set_Field_Activation(Screen.Selected_Fld, True);
   Screen.Encode_Saved(Account_Saved);
   Cursor_Field := Afpx.Next_Cursor_Field(0);

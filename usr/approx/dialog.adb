@@ -245,21 +245,20 @@ package body Dialog is
     begin
       Rec.Len := Str'Length;
       Rec.Str (1 .. Rec.Len) := Language.String_To_Wide (Str);
-      Afpx.Line_List_Mng.Insert (Afpx.Line_List, Rec);
+      Afpx.Line_List.Insert (Rec);
     end Insert;
   begin
     Screen.Put_Title(Screen.Polynom);
     Screen.Inform(Screen.I_Clear);
     -- Encode in list
-    Afpx.Line_List_Mng.Delete_List(Afpx.Line_List);
+    Afpx.Line_List.Delete_List;
     for I in Polynom'Range loop
       -- factor * X^ijkl
       Insert (Point_Str.Coordinate_Image(Polynom(I))
         & " * X^" & Normal (I-1, Screen.Max_Degree_Width, Gap => '0'));
     end loop;
     -- Rewind
-    Afpx.Line_List_Mng.Move_To (Afpx.Line_List, Afpx.Line_List_Mng.Next,
-                                Number => 0, From_Current => False);
+    Afpx.Line_List.Rewind;
     -- Go to top
     Afpx.Update_List (Afpx.Top);
     -- Let screen/afpx do the job

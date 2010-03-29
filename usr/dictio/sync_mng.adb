@@ -138,7 +138,7 @@ package body Sync_Mng is
       end if;
       return;
     end if;
-    if Sync_List_Mng.Is_Empty (Sync_List) then
+    if Sync_List.Is_Empty then
       -- First dest, arm timer
       Tid := Timers.Create ( (Timers.Delay_Sec,
                               null,
@@ -152,7 +152,7 @@ package body Sync_Mng is
     end if;
     Sync_Search (Sync_List, Found, To, From => Sync_List_Mng.Absolute);
     if not Found then
-      Sync_List_Mng.Insert (Sync_List, To);
+      Sync_List.Insert (To);
     end if;
   end Send;
 
@@ -220,10 +220,10 @@ package body Sync_Mng is
     Items:
     while Item /= Data_Base.No_Item loop
 
-      Sync_List_Mng.Rewind (Sync_List);
+      Sync_List.Rewind;
       Dests:
       loop
-        Sync_List_Mng.Read (Sync_List, Dest, Sync_List_Mng.Current);
+        Sync_List.Read (Dest, Sync_List_Mng.Current);
 
         Ovf_Timeout := First_Timeout;
         Retries:
@@ -262,8 +262,8 @@ package body Sync_Mng is
             Dictio_Debug.Put ("Sync: Giving up " & Parse (Dest) & " due to "
                      & Reply_Result'Img);
           end if;
-          Sync_List_Mng.Delete (Sync_List, Sync_List_Mng.Prev, Moved);
-          exit Items when Sync_List_Mng.Is_Empty (Sync_List);
+          Sync_List.Delete (Sync_List_Mng.Prev, Moved);
+          exit Items when Sync_List.Is_Empty;
         else
           -- Flow limitation
           Bytes_Sent := Bytes_Sent + 110 + Item.Data_Len;
@@ -275,9 +275,9 @@ package body Sync_Mng is
           end if;
         end if;
 
-        if Sync_List_Mng.Check_Move (Sync_List) then
+        if Sync_List.Check_Move then
           -- Next Dest
-          Sync_List_Mng.Move_To (Sync_List);
+          Sync_List.Move_To;
         else
           exit Dests;
         end if;
@@ -319,8 +319,8 @@ package body Sync_Mng is
     end if;
 
     -- Done
-    if not Sync_List_Mng.Is_Empty (Sync_List) then
-      Sync_List_Mng.Delete_List (Sync_List, True);
+    if not Sync_List.Is_Empty then
+      Sync_List.Delete_List (True);
     end if;
     if Dictio_Debug.Level_Array(Dictio_Debug.Sync) then
       Dictio_Debug.Put ("Sync: Done");

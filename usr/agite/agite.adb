@@ -241,7 +241,7 @@ procedure Agite is
     Pos := Afpx.Line_List.Get_Position;
     History.Handle (Utils.Asu_Ts (Root), Utils.Asu_Ts (Path), Name, Is_File);
     Init;
-    Afpx.Line_List.Move_To (Number => Pos - 1);
+    Afpx.Line_List.Move_At (Pos);
     Afpx.Update_List (Afpx.Center);
   end Hist;
 
@@ -252,8 +252,7 @@ procedure Agite is
     File : Git_If.File_Entry_Rec;
     use type Utils.Asu_Us;
   begin
-    Files.Move_To (Number => Afpx.Line_List.Get_Position - 1,
-                  From_Current => False);
+    Files.Move_At (Afpx.Line_List.Get_Position);
     Files.Read (File, Git_If.File_Mng.Dyn_List.Current);
     declare
       Str : constant String := Utils.Asu_Ts (File.Name);

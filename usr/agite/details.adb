@@ -88,8 +88,7 @@ package body Details is
       Pos : constant Positive := Afpx.Line_List.Get_Position;
       Commit : Git_If.Commit_Entry_Rec;
     begin
-      Commits.Move_To (Git_If.Commit_File_Mng.Dyn_List.Next, Pos - 1,
-                       From_Current => False);
+      Commits.Move_At (Pos);
       Commits.Read (Commit, Git_If.Commit_File_Mng.Dyn_List.Current);
       declare
         Path : constant String

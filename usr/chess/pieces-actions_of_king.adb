@@ -72,12 +72,11 @@ procedure Actions_Of_King (Piece : in King_Piece) is
           Piece.Square,
           King_Direction(Small) * Col, 0,
           King_Pos, Tmp_Piece);
-      Action_List_Mng.Insert (King_Way, (Kind => Move,
-                                         Dest => King_Pos.Square));
+      King_Way.Insert ((Kind => Move, Dest => King_Pos.Square));
     end loop;
 
     -- King must not be attacked nor on its way
-    Action_List_Mng.Insert (King_Way, (Kind => Move, Dest => Piece.Square));
+    King_Way.Insert ((Kind => Move, Dest => Piece.Square));
     Players.Rewind_Actions (Opp_Color);
     Opponent_Actions:
     loop
@@ -89,15 +88,15 @@ procedure Actions_Of_King (Piece : in King_Piece) is
                      From => Action_List_Mng.Absolute);
         if Square_Found then
           -- We are under attack on our way (or current pos)
-          Action_List_Mng.Delete_List (King_Way);
+          King_Way.Delete_List;
           return;
         end if;
       end if;
     end loop Opponent_Actions;
 
     -- Ok
-    Action_List_Mng.Delete_List (King_Way);
-    Action_List_Mng.Insert(Action_List,
+    King_Way.Delete_List;
+    King_Way.Insert(
             (Kind => Castle,
              Dest => King_Pos.Square,
              Rook_From => (Rook_Col(Small), Piece.Square.Row),

@@ -25,7 +25,7 @@ package body Nodes is
   procedure Init_List is
     N : Tcp_Util.Host_Name;
   begin
-    Node_Mng.Delete_List (Node_List, Deallocate => True);
+    Node_List.Delete_List (Deallocate => True);
     Local_Host_Name.Get (N);
     Set (N, Status.Get, Status.Sync, Args.Get_Prio);
   end Init_List;
@@ -56,21 +56,21 @@ package body Nodes is
         if Stat /= Status.Fight then
           -- Known and not dead and not fight => replace
           if Prio = No_Prio then
-            Node_Mng.Read (Node_List, Grec, Node_Mng.Current);
+            Node_List.Read (Grec, Node_Mng.Current);
             Rec.Prio := Grec.Prio;
           end if;
-          Node_Mng.Modify (Node_List, Rec, Node_Mng.Current);
+          Node_List.Modify (Rec, Node_Mng.Current);
         end if;
       else
         -- Dead => delete
-        Node_Mng.Delete (Node_List, Node_Mng.Prev, Done);
+        Node_List.Delete (Node_Mng.Prev, Done);
       end if;
     elsif Stat /= Status.Dead then
       -- Unknown and alive => insert
-      if not Node_Mng.Is_Empty (Node_List) then
-        Node_Mng.Rewind (Node_List);
+      if not Node_List.Is_Empty then
+        Node_List.Rewind;
       end if;
-      Node_Mng.Insert (Node_List, Rec);
+      Node_List.Insert (Rec);
     end if;
   end Set;
 
@@ -115,7 +115,7 @@ package body Nodes is
   begin
 
     -- This should not occure, but well...
-    if Node_Mng.Is_Empty (Node_List) then
+    if Node_List.Is_Empty then
       return No_Master_Slave;
     end if;
 
@@ -125,7 +125,7 @@ package body Nodes is
     Sort (Node_List);
 
     -- Read first record
-    Node_Mng.Read (Node_List, Rec, Node_Mng.Current);
+    Node_List.Read (Rec, Node_Mng.Current);
 
     -- Consider we are slave, but keep in mind if we are first
     Result := All_Init_Slave;
@@ -157,12 +157,12 @@ package body Nodes is
         end if;
       end if;
       -- Next
-      exit when not Node_Mng.Check_Move (Node_List);
-      Node_Mng.Move_To (Node_List);
-      Node_Mng.Read (Node_List, Rec, Node_Mng.Current);
+      exit when not Node_List.Check_Move;
+      Node_List.Move_To;
+      Node_List.Read (Rec, Node_Mng.Current);
     end loop;
 
-    Node_Mng.Delete_List (Node_List, Deallocate => True);
+    Node_List.Delete_List (Deallocate => True);
 
     -- Are we potential master?
     if Will_Be_Master then

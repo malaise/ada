@@ -43,8 +43,8 @@ package body Afpx.List_Manager is
     end loop;
 
     -- Set both lists at pos
-    From.Move_To (Number => Pos - 1, From_Current => False);
-    Line_List.Move_To (Number => Pos - 1, From_Current => False);
+    From.Move_At (Pos);
+    Line_List.Move_At (Pos);
   end Init_List;
 
 end Afpx.List_Manager;

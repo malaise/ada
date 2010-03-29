@@ -9,26 +9,25 @@ package body Words is
   -- Reset --
   procedure Reset is
   begin
-    Words_List_Mng.Delete_List (Words_List, False);
+    Words_List.Delete_List (False);
   end Reset;
 
   -- Del
   procedure Del (Index : in Natural := 0) is
   begin
-    if Words_List_Mng.Is_Empty (Words_List) then
+    if Words_List.Is_Empty then
       return;
     end if;
-    if Index = 0 or else Index =  Words_List_Mng.List_Length (Words_List) then
+    if Index = 0 or else Index =  Words_List.List_Length then
       -- Delete last word
-      Words_List_Mng.Rewind (Words_List, Words_List_Mng.Prev);
-      Words_List_Mng.Delete (Words_List, Words_List_Mng.Prev);
-    elsif Index > Words_List_Mng.List_Length (Words_List) then
+      Words_List.Rewind (Words_List_Mng.Prev);
+      Words_List.Delete (Words_List_Mng.Prev);
+    elsif Index > Words_List.List_Length then
       return;
     else
       -- Delete word at index
-      Words_List_Mng.Move_To (Words_List, Words_List_Mng.Next,
-                              Index - 1, False);
-      Words_List_Mng.Delete (Words_List);
+      Words_List.Move_At (Index);
+      Words_List.Delete;
     end if;
 
   end Del;
@@ -38,7 +37,7 @@ package body Words is
     Read_Index : Positive;
     Word : Word_Rec;
   begin
-    if Words_List_Mng.Is_Empty (Words_List)
+    if Words_List.Is_Empty
     or else Index > Length then
       return (Parser_Ada.Separator,
               Ada.Strings.Unbounded.To_Unbounded_String (""));
@@ -49,13 +48,9 @@ package body Words is
       Read_Index := Length;
     end if;
     -- Move at Index
-    Words_List_Mng.Move_To (
-           List => Words_List,
-           Where => Words_List_Mng.Next,
-           Number => Read_Index - 1,
-           From_Current => False);
+    Words_List.Move_At (Read_Index);
     -- Read word
-    Words_List_Mng.Read (Words_List, Word, Words_List_Mng.Current);
+    Words_List.Read (Word, Words_List_Mng.Current);
     return Word;
   end Read;
 
@@ -119,17 +114,17 @@ package body Words is
   -- Returns the number of words stored
   function Length return Natural is
   begin
-    return Words_List_Mng.List_Length (Words_List);
+    return Words_List.List_Length;
   end Length;
 
   -- Add --
   procedure Add (Word : in Word_Rec) is
   begin
     -- Append word
-    if not Words_List_Mng.Is_Empty (Words_List) then
-       Words_List_Mng.Rewind (Words_List, Words_List_Mng.Prev);
+    if not Words_List.Is_Empty then
+       Words_List.Rewind (Words_List_Mng.Prev);
     end if;
-    Words_List_Mng.Insert (Words_List, Word);
+    Words_List.Insert (Word);
   end Add;
 
   procedure Add (Lexic : in Parser_Ada.Lexical_Kind_List;
@@ -156,14 +151,13 @@ package body Words is
                    From_Index : Positive := 1) return Natural is
     Found : Boolean;
   begin
-    Words_List_Mng.Move_To (Words_List, Words_List_Mng.Next,
-                  From_Index - 1, From_Current => False);
-    Words_List_Mng.Search_Match (Words_List, Found, Match'Access,
-        Word, From => Words_List_Mng.From_Current);
+    Words_List.Move_At (From_Index);
+    Words_List.Search_Match (Found, Match'Access, Word,
+                             From => Words_List_Mng.From_Current);
     if not Found then
        return 0;
     else
-      return Words_List_Mng.Get_Position (Words_List);
+      return Words_List.Get_Position;
     end if;
   end Search;
 

@@ -249,15 +249,14 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
     -- Get list width
     Afpx.Get_Field_Size(Afpx.List_Field_No, Height, Width);
     -- Read dir and move to first
-    Dir_Mng.File_List_Mng.Delete_List (Dir_List);
+    Dir_List.Delete_List;
     Dir_Mng.List_Dir (Dir_List, ".");
     Dir_Mng.File_Sort (Dir_List);
-    Dir_Mng.File_List_Mng.Rewind (Dir_List);
+    Dir_List.Rewind;
     -- Clear Afpx list
     Afpx.Line_List_Mng.Delete_List(Afpx.Line_List);
     loop
-      Dir_Mng.File_List_Mng.Read (Dir_List, Dir_Item,
-                                  Dir_Mng.File_List_Mng.Current);
+      Dir_List.Read (Dir_Item, Dir_Mng.File_List_Mng.Current);
       case Dir_Item.Kind is
         when Directory.File =>
           Char := ' ';
@@ -281,8 +280,8 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
         String_Mng.Procuste (Dir_Item.Name (1 .. Dir_Item.Len) & ' ' & Char,
                              Width) );
       Afpx.Line_List_Mng.Insert (Afpx.Line_List, Afpx_Item);
-      exit when not Dir_Mng.File_List_Mng.Check_Move (Dir_List);
-      Dir_Mng.File_List_Mng.Move_To (Dir_List);
+      exit when not Dir_List.Check_Move;
+      Dir_List.Move_To;
     end loop;
     -- Move to beginning of Afpx list
     Afpx.Line_List_Mng.Rewind (Afpx.Line_List);
@@ -385,11 +384,8 @@ begin
           -- Ok button or double click in list
           when Ok_Fld | Afpx.List_Field_No =>
             Pos_In_List := Afpx.Line_List_Mng.Get_Position(Afpx.Line_List);
-            Dir_Mng.File_List_Mng.Move_To(Dir_List,
-                   Number => Pos_In_List - 1,
-                   From_Current => False);
-            Dir_Mng.File_List_Mng.Read(Dir_List, File_Rec,
-                   Dir_Mng.File_List_Mng.Current);
+            Dir_List.Move_At(Pos_In_List);
+            Dir_List.Read(File_Rec, Dir_Mng.File_List_Mng.Current);
             begin
               if Is_Dir (File_Rec.Name(1 .. File_Rec.Len)) then
                 Afpx.Clear_Field (Get_Fld);
@@ -423,7 +419,7 @@ begin
     end case;
   end loop;
 
-  Dir_Mng.File_List_Mng.Delete_List(Dir_List);
+  Dir_List.Delete_List;
   Afpx.Line_List_Mng.Delete_List(Afpx.Line_List);
   if Valid then
     return File_Rec.Name(1 .. File_Rec.Len);

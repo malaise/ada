@@ -33,14 +33,14 @@ package body Connection is
   -- Has an action been received and get it
   function Action_Received return Boolean is
   begin
-    return not Action_List_Mng.Is_Empty (Action_List);
+    return not Action_List.Is_Empty;
   end;
 
   function Receive return Players.Action_Rec is
     Action : Players.Action_Rec;
   begin
-    Action_List_Mng.Rewind (Action_List, Action_List_Mng.Prev);
-    Action_List_Mng.Get (Action_List, Action, Action_List_Mng.Prev);
+    Action_List.Rewind (Action_List_Mng.Prev);
+    Action_List.Get (Action, Action_List_Mng.Prev);
     return Action;
   exception
     when Action_List_Mng.Empty_List =>
@@ -248,11 +248,10 @@ package body Connection is
         end if;
 
         -- Insert action
-        if not Action_List_Mng.Is_Empty (Action_List) then
-          Action_List_Mng.Rewind (Action_List);
+        if not Action_List.Is_Empty then
+          Action_List.Rewind;
         end if;
-        Action_List_Mng.Insert (Action_List, Message.Action,
-                                Action_List_Mng.Prev);
+        Action_List.Insert (Message.Action, Action_List_Mng.Prev);
         We_Have_Moved := True;
 
     end case;

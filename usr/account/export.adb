@@ -53,7 +53,7 @@ begin
       Ada.Text_Io.Put_Line("Error. Reading from file "
                          & Argument.Get_Parameter(Occurence => 1));
   end;
-  Oper_List_Mng.Rewind(Oper_List);
+  Oper_List.Rewind;
 
   -- Create out file
   begin
@@ -70,7 +70,7 @@ begin
   -- Save opers image one by one
   No := 1;
   loop
-    Oper_List_Mng.Read(Oper_List, Oper, Oper_List_Mng.Current);
+    Oper_List.Read(Oper, Oper_List_Mng.Current);
 
     begin
       Str := Unit_Format.Image(Oper);
@@ -93,8 +93,8 @@ begin
         return;
     end;
 
-    exit when not Oper_List_Mng.Check_Move (Oper_List);
-    Oper_List_Mng.Move_To(Oper_List);
+    exit when not Oper_List.Check_Move;
+    Oper_List.Move_To;
 
     No := No + 1;
 

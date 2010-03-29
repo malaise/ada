@@ -64,30 +64,29 @@ package body Network is
     --  connection access is not set yet
     Connection_Info.Node := To_Node'Unchecked_Access;
     Connection_Info.Data := Of_Conn_Data;
-    if not Connection_Mng.Is_Empty (Of_Node.Connections.all) then
-      Connection_Mng.Rewind (Of_Node.Connections.all, Connection_Mng.Prev);
+    if not Of_Node.Connections.Is_Empty then
+      Of_Node.Connections.Rewind (Connection_Mng.Prev);
     end if;
-    Connection_Mng.Insert (Of_Node.Connections.all, Connection_Info);
+    Of_Node.Connections.Insert (Connection_Info);
     -- Append Of_Node to connections of To_Node
     Connection_Info.Node := Of_Node'Unchecked_Access;
     Connection_Info.Data := To_Conn_Data;
-    Connection_Info.Connection :=
-             Connection_Mng.Access_Current (Of_Node.Connections.all);
-    if not Connection_Mng.Is_Empty (To_Node.Connections.all) then
-      Connection_Mng.Rewind (To_Node.Connections.all, Connection_Mng.Prev);
+    Connection_Info.Connection := Of_Node.Connections.Access_Current;
+    if not To_Node.Connections.Is_Empty then
+      To_Node.Connections.Rewind (Connection_Mng.Prev);
     end if;
-    Connection_Mng.Insert (To_Node.Connections.all, Connection_Info);
+    To_Node.Connections.Insert (Connection_Info);
     -- Update connection access in Of_Node
-    Connection_Mng.Access_Current (Of_Node.Connections.all).Connection :=
-          Connection_Mng.Access_Current (To_Node.Connections.all);
+    Of_Node.Connections.Access_Current.Connection :=
+          To_Node.Connections.Access_Current;
     -- Inform both nodes of connection data change
     if Of_Node.Process_Connection_Data_Change /= null then
       Of_Node.Process_Connection_Data_Change (Of_Node'Unchecked_Access,
-          Connection_Mng.List_Length (Of_Node.Connections.all));
+                                              Of_Node.Connections.List_Length);
     end if;
     if To_Node.Process_Connection_Data_Change /= null then
       To_Node.Process_Connection_Data_Change (To_Node'Unchecked_Access,
-          Connection_Mng.List_Length (To_Node.Connections.all));
+                                              To_Node.Connections.List_Length);
     end if;
   end Connect_To;
 
@@ -97,14 +96,13 @@ package body Network is
     if Of_Node.Connections = null then
       return 0;
     else
-      return Connection_Mng.List_Length (Of_Node.Connections.all);
+      return Of_Node.Connections.List_Length;
     end if;
   end Nb_Connections;
 
   -- Lists the connections of Of_Node
   function List_Connections (Of_Node : in Node_Type) return Connection_Array is
-    Connections : Connection_Array(
-          1 .. Connection_Mng.List_Length (Of_Node.Connections.all));
+    Connections : Connection_Array(1 .. Of_Node.Connections.List_Length);
     Connection : Connection_Info_Type;
     Moved : Boolean;
   begin
@@ -113,13 +111,11 @@ package body Network is
       return Connections;
     end if;
     -- Rewind and copy
-    Connection_Mng.Rewind (Of_Node.Connections.all);
+    Of_Node.Connections.Rewind;
     for I in Connections'Range loop
-      Connection_Mng.Read (Of_Node.Connections.all, Connection,
-                           Done => Moved);
+      Of_Node.Connections.Read (Connection, Done => Moved);
       Connections(I) := (
-       Key => Connection_Key_Type(Connection_Mng.Access_Current
-                                       (Of_Node.Connections.all)),
+       Key => Connection_Key_Type(Of_Node.Connections.Access_Current),
        Node => Connection.Node,
        Data => Connection.Data);
     end loop;
@@ -138,10 +134,8 @@ package body Network is
       raise No_Connection;
     end if;
     -- Move to the proper connection and update data
-    Connection_Mng.Move_To (Of_Node.Connections.all, Number => Index - 1,
-                            From_Current => False);
-    Connection_Mng.Access_Current (Of_Node.Connections.all).Data :=
-                          Of_Conn_Data;
+    Of_Node.Connections.Move_At (Index);
+    Of_Node.Connections.Access_Current.Data := Of_Conn_Data;
     -- Inform the node of connection data change
     if Of_Node.Process_Connection_Data_Change /= null then
       Of_Node.Process_Connection_Data_Change (Of_Node'Unchecked_Access, Index);
@@ -161,19 +155,19 @@ package body Network is
        raise Asym_Connection;
     end if;
     -- Rewind and loop
-    Length := Connection_Mng.List_Length (Of_Node.Connections.all);
+    Length := Of_Node.Connections.List_Length;
     Connection_Mng.Rewind (Of_Node.Connections.all);
     loop
-      Connection_Mng.Read (Of_Node.Connections.all, Connection_Read,
-                           Move => Connection_Mng.Current);
+      Of_Node.Connections.Read (Connection_Read,
+                                Move => Connection_Mng.Current);
       if Connection_Read.Connection = Connection then
         -- This entry matches: delete it and return
-        Connection_Mng.Delete (Of_Node.Connections.all, Done => Moved);
+        Of_Node.Connections.Delete (Done => Moved);
         return;
       end if;
       -- Move to next entry if any
-      exit when Connection_Mng.Get_Position (Of_Node.Connections.all) = Length;
-      Connection_Mng.Move_To (Of_Node.Connections.all);
+      exit when Of_Node.Connections.Get_Position = Length;
+      Of_Node.Connections.Move_To;
     end loop;
     -- There shall have been a connection found and deleted
     raise Asym_Connection;
@@ -190,17 +184,16 @@ package body Network is
       return False;
     end if;
     -- Rewind and loop
-    Length := Connection_Mng.List_Length (Of_Node.Connections.all);
-    Connection_Mng.Rewind (Of_Node.Connections.all);
+    Length := Of_Node.Connections.List_Length;
+    Of_Node.Connections.Rewind;
     loop
-      if Connection_Mng.Access_Current (Of_Node.Connections.all).Node
-               = With_Node then
+      if Of_Node.Connections.Access_Current.Node = With_Node then
         -- This entry matches
         return True;
       end if;
       -- Move to next entry if any
-      exit when Connection_Mng.Get_Position (Of_Node.Connections.all) = Length;
-      Connection_Mng.Move_To (Of_Node.Connections.all);
+      exit when Of_Node.Connections.Get_Position = Length;
+      Of_Node.Connections.Move_To;
     end loop;
     -- No connection found
     return False;
@@ -218,15 +211,13 @@ package body Network is
       raise No_Connection;
     end if;
     -- Move to the proper connection and read it
-    Connection_Mng.Move_To (Of_Node.Connections.all, Number => Index - 1,
-                            From_Current => False);
-    Connection_Mng.Read (Of_Node.Connections.all, Connection,
-                           Move => Connection_Mng.Current);
+    Of_Node.Connections.Move_At (Index - 1);
+    Of_Node.Connections.Read (Connection, Move => Connection_Mng.Current);
     -- Delete one partner's connection to us
     Asym_Delete_Connection (Connection.Node.all,
-                     Connection_Mng.Access_Current(Of_Node.Connections.all));
+                            Of_Node.Connections.Access_Current);
     -- Delete this connection to partner
-    Connection_Mng.Delete (Of_Node.Connections.all, Done => Moved);
+    Of_Node.Connections.Delete (Done => Moved);
   end Delete_Connection;
 
   -- Delete a connection of Of_Node, specify key
@@ -236,17 +227,16 @@ package body Network is
     Found : Boolean;
   begin
     -- Search connection matching key
-    Connection_Mng.Search_Access (Of_Node.Connections.all, Found,
-           Connection_Access(Key));
+    Of_Node.Connections.Search_Access (Found, Connection_Access(Key));
     if not Found then
       raise No_Connection;
     end if;
     -- Delete one partner's connection to us
     Asym_Delete_Connection (
-      Connection_Mng.Access_Current(Of_Node.Connections.all).Node.all,
-      Connection_Mng.Access_Current(Of_Node.Connections.all));
+      Of_Node.Connections.Access_Current.Node.all,
+      Of_Node.Connections.Access_Current);
     -- Delete this connection to partner
-    Connection_Mng.Delete (Of_Node.Connections.all, Done => Found);
+    Of_Node.Connections.Delete (Done => Found);
   end Delete_Connection;
 
 
@@ -259,29 +249,27 @@ package body Network is
        return;
     end if;
     -- Rewind and loop
-    Connection_Mng.Rewind (Of_Node.Connections.all);
+    Of_Node.Connections.Rewind;
     loop
-      Connection_Mng.Read (Of_Node.Connections.all, Connection,
-                           Move => Connection_Mng.Current);
+      Of_Node.Connections.Read (Connection, Move => Connection_Mng.Current);
       if Connection.Node = With_Node'Unchecked_Access then
         -- This entry matches
         -- Delete one partner's connection to us
-        Asym_Delete_Connection (With_Node,
-              Connection_Mng.Access_Current (Of_Node.Connections.all));
+        Asym_Delete_Connection (With_Node, Of_Node.Connections.Access_Current);
         -- Delete this connection to partner, and done if last
-        if Connection_Mng.Get_Position (Of_Node.Connections.all) /=
-           Connection_Mng.List_Length (Of_Node.Connections.all) then
-          Connection_Mng.Delete (Of_Node.Connections.all);
-          exit when Connection_Mng.Is_Empty (Of_Node.Connections.all);
+        if Of_Node.Connections.Get_Position /=
+           Of_Node.Connections.List_Length then
+          Of_Node.Connections.Delete;
+          exit when Of_Node.Connections.Is_Empty;
         else
-          Connection_Mng.Delete (Of_Node.Connections.all, Connection_Mng.Prev);
+          Of_Node.Connections.Delete (Connection_Mng.Prev);
           exit;
         end if;
       else
         -- This entry does not match, move to next if any
-        exit when Connection_Mng.Get_Position (Of_Node.Connections.all) =
-                  Connection_Mng.List_Length (Of_Node.Connections.all);
-        Connection_Mng.Move_To (Of_Node.Connections.all);
+        exit when Of_Node.Connections.Get_Position =
+                  Of_Node.Connections.List_Length;
+        Of_Node.Connections.Move_To;
       end if;
     end loop;
     -- There shall be no more connection of With_Node to Of_Node
@@ -301,11 +289,10 @@ package body Network is
     end if;
     -- Loop of rewind and delete connections with first partner
     loop
-      Connection_Mng.Rewind (Of_Node.Connections.all);
-      Connection_Mng.Read (Of_Node.Connections.all, Connection,
-                           Move => Connection_Mng.Current);
+      Of_Node.Connections.Rewind;
+      Of_Node.Connections.Read (Connection, Move => Connection_Mng.Current);
       Delete_Connections (Of_Node, Connection.Node.all);
-      exit when Connection_Mng.Is_Empty (Of_Node.Connections.all);
+      exit when Of_Node.Connections.Is_Empty;
     end loop;
   end Delete_All_Connections;
 
@@ -358,7 +345,7 @@ package body Network is
     Delete_All_Connections (A_Node);
     -- Release memory, deallocate the list
     if A_Node.Connections /= null then
-      Connection_Mng.Delete_List (A_Node.Connections.all, Deallocate => True);
+      A_Node.Connections.Delete_List (Deallocate => True);
       Deallocation_Of (A_Node.Connections);
     end if;
   exception

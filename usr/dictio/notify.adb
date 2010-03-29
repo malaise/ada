@@ -43,14 +43,14 @@ package body Notify is
                & " kind " & Kind
                & " on " & Event_Mng.File_Desc'Image(Socket.Fd_Of(Client)));
     end if;
-    Notif_List_Mng.Insert (Notif_List, (Client, Item, Kind));
+    Notif_List.Insert ((Client, Item, Kind));
   end Add;
 
 
   procedure Delete_Current is
     Done : Boolean;
   begin
-    Notif_List_Mng.Delete (Notif_List, Done => Done);
+    Notif_List.Delete (Done => Done);
   end Delete_Current;
 
 
@@ -91,7 +91,7 @@ package body Notify is
     end if;
     loop
       if Dictio_Debug.Level_Array(Dictio_Debug.Client_Notify) then
-        Notif_List_Mng.Read (Notif_List, Rec, Notif_List_Mng.Current);
+        Notif_List.Read (Rec, Notif_List_Mng.Current);
         Dictio_Debug.Put ("Client-notify.del_client: " & Parse(Rec.Item)
                & " kind " & Rec.Kind
                & " on " & Event_Mng.File_Desc'Image(Socket.Fd_Of(Rec.Client)));
@@ -109,7 +109,7 @@ package body Notify is
     if Dictio_Debug.Level_Array(Dictio_Debug.Client_Notify) then
       Dictio_Debug.Put ("Client-notify.del_all");
     end if;
-    Notif_List_Mng.Delete_List (Notif_List);
+    Notif_List.Delete_List;
   end Del_All;
 
 
@@ -130,7 +130,7 @@ package body Notify is
       return;
     end if;
     loop
-      Notif_List_Mng.Read (Notif_List, Rec, Notif_List_Mng.Current);
+      Notif_List.Read (Rec, Notif_List_Mng.Current);
       Fd := Socket.Fd_Of (Rec.Client);
       declare
         Dummy : Boolean;

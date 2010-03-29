@@ -83,8 +83,8 @@ package body Edition is
   begin
     Afpx.Use_Descriptor(3);
     Screen.Encode_File_Name(Text_Handler.Value(Account_Name));
-    Screen.Encode_Nb_Oper(Oper_List_Mng.List_Length(Oper_List),
-                          Sel_List_Mng.List_Length(Sel_List));
+    Screen.Encode_Nb_Oper(Oper_List.List_Length,
+                          Sel_List.List_Length);
     Screen.Encode_Saved(Account_Saved);
     Set_Unit;
     case Edit_Type is
@@ -210,14 +210,10 @@ package body Edition is
     end if;
 
     -- Now list cannot be empty: protect out-of-list
-    Afpx.Set_Field_Activation(38,
-            Sel_List_Mng.Check_Move(Sel_List, Sel_List_Mng.Prev));
-    Afpx.Set_Field_Activation(39,
-            Sel_List_Mng.Check_Move(Sel_List, Sel_List_Mng.Prev));
-    Afpx.Set_Field_Activation(42,
-            Sel_List_Mng.Check_Move(Sel_List, Sel_List_Mng.Next));
-    Afpx.Set_Field_Activation(43,
-            Sel_List_Mng.Check_Move(Sel_List, Sel_List_Mng.Next));
+    Afpx.Set_Field_Activation(38, Sel_List.Check_Move(Sel_List_Mng.Prev));
+    Afpx.Set_Field_Activation(39, Sel_List.Check_Move(Sel_List_Mng.Prev));
+    Afpx.Set_Field_Activation(42, Sel_List.Check_Move(Sel_List_Mng.Next));
+    Afpx.Set_Field_Activation(43, Sel_List.Check_Move(Sel_List_Mng.Next));
 
     if Edit_Type = Delete then
       -- Only allow back
@@ -238,7 +234,7 @@ package body Edition is
     if Edit_Type /= Create then
       -- No
       Afpx.Encode_Field(11, (0, 0),
-          Normal(Oper_List_Mng.Get_Position(Oper_List), 4));
+          Normal(Oper_List.Get_Position, 4));
     end if;
     -- Date
     Date_Str := Unit_Format.Short_Date_Image(Oper.Date);
@@ -265,10 +261,8 @@ package body Edition is
   procedure Update is
   begin
     Account_Saved := False;
-    Screen.Encode_Nb_Oper(Oper_List_Mng.List_Length(Oper_List)
-                             - Deletion.Get_Nb_Deleted,
-                          Sel_List_Mng.List_Length(Sel_List)
-                             - Deletion.Get_Nb_Deleted);
+    Screen.Encode_Nb_Oper(Oper_List.List_Length - Deletion.Get_Nb_Deleted,
+                          Sel_List.List_Length - Deletion.Get_Nb_Deleted);
     Screen.Encode_Saved(Account_Saved);
 
     Compute_Amounts;
@@ -345,19 +339,19 @@ package body Edition is
       -- Remove current temporaly (just for search)
       if Edit_Type = Modify then
         -- Save current oper and position before deletion
-        Pos := Oper_List_Mng.Get_Position(Oper_List);
-        Oper_List_Mng.Read(Oper_List, Saved_Oper, Oper_List_Mng.Current);
+        Pos := Oper_List.Get_Position;
+        Oper_List.Read(Saved_Oper, Oper_List_Mng.Current);
         -- Remove current oper so we won't find it
         --  move to next if possible.
-        if Oper_List_Mng.List_Length(Oper_List) = 1
-        or else Oper_List_Mng.Check_Move(Oper_List) then
+        if Oper_List.List_Length = 1
+        or else Oper_List.Check_Move then
           -- Last item of the list or not end of list
           Saved_Movement := Oper_List_Mng.Next;
         else
           Saved_Movement := Oper_List_Mng.Prev;
         end if;
-        Oper_List_Mng.Delete(Oper_List, Saved_Movement);
-        if Oper_List_Mng.Is_Empty(Oper_List) then
+        Oper_List.Delete(Saved_Movement);
+        if Oper_List.Is_Empty then
           -- List becomes empty
           Saved_Movement := Oper_List_Mng.Current;
         end if;
@@ -377,16 +371,16 @@ package body Edition is
           when Oper_List_Mng.Next =>
             -- Not last elem was removed, and we moved to next
             -- Move to this element and insert before
-            Oper_List_Mng.Move_To(Oper_List, Oper_List_Mng.Next, Pos-1, False);
-            Oper_List_Mng.Insert(Oper_List, Saved_Oper, Oper_List_Mng.Prev);
+            Oper_List.Move_At(Pos);
+            Oper_List.Insert(Saved_Oper, Oper_List_Mng.Prev);
           when Oper_List_Mng.Prev =>
             -- Last elem was removed, and we moved to previous
             -- Insert at end
-            Oper_List_Mng.Rewind(Oper_List, Oper_List_Mng.Prev);
-            Oper_List_Mng.Insert(Oper_List, Saved_Oper, Oper_List_Mng.Next);
+            Oper_List.Rewind(Oper_List_Mng.Prev);
+            Oper_List.Insert(Saved_Oper, Oper_List_Mng.Next);
           when Oper_List_Mng.Current =>
             -- List is empty
-            Oper_List_Mng.Insert(Oper_List, Saved_Oper, Oper_List_Mng.Next);
+            Oper_List.Insert(Saved_Oper, Oper_List_Mng.Next);
         end case;
       end if;
       if Field /= 0 then
@@ -397,24 +391,22 @@ package body Edition is
 
     -- Data ok: insert or modify
     if Edit_Type = Modify then
-      Oper_List_Mng.Modify(Oper_List, Oper, Oper_List_Mng.Current);
+      Oper_List.Modify(Oper, Oper_List_Mng.Current);
     else
       -- Insert at the end to keep selection accurate
-      if not Oper_List_Mng.Is_Empty(Oper_List) then
-        Oper_List_Mng.Rewind(Oper_List, Oper_List_Mng.Prev);
+      if not Oper_List.Is_Empty then
+        Oper_List.Rewind(Oper_List_Mng.Prev);
       end if;
-      Oper_List_Mng.Insert(Oper_List, Oper);
+      Oper_List.Insert(Oper);
       -- Insert at the end of selection and go back to current (for next copy)
-      if not Sel_List_Mng.Is_Empty(Sel_List) then
+      if not Sel_List.Is_Empty then
         List_Util.Save_Pos;
-        Sel_List_Mng.Rewind(Sel_List, Sel_List_Mng.Prev);
-        Sel_List_Mng.Insert(Sel_List, (No => Oper_List_Mng.List_Length(Oper_List),
-                                       Deleted => False) );
+        Sel_List.Rewind(Sel_List_Mng.Prev);
+        Sel_List.Insert((No => Oper_List.List_Length, Deleted => False) );
         List_Util.Restore_Pos;
         List_Util.Move_To_Current;
       else
-        Sel_List_Mng.Insert(Sel_List, (No => Oper_List_Mng.List_Length(Oper_List),
-                                       Deleted => False) );
+        Sel_List.Insert((No => Oper_List.List_Length, Deleted => False) );
       end if;
     end if;
     Update;
@@ -467,7 +459,7 @@ package body Edition is
     All_Edit:
     loop
       -- Move to current for copy, edit, view, delete
-      if not Sel_List_Mng.Is_Empty(Sel_List) then
+      if not Sel_List.Is_Empty then
         List_Util.Move_To_Current;
       end if;
       -- Set data
@@ -483,14 +475,14 @@ package body Edition is
           Oper.Comment := (others => ' ');
           Deleted := False;
         when Copy =>
-          Oper_List_Mng.Read(Oper_List, Oper, Oper_List_Mng.Current);
+          Oper_List.Read(Oper, Oper_List_Mng.Current);
           Adjust_Copy (Oper);
           Deleted := False;
         when Modify | Delete =>
-          Sel_List_Mng.Read(Sel_List, Sel, Sel_List_Mng.Current);
+          Sel_List.Read(Sel, Sel_List_Mng.Current);
           Deleted := Sel.Deleted;
           -- Current operation
-          Oper_List_Mng.Read(Oper_List, Oper, Oper_List_Mng.Current);
+          Oper_List.Read(Oper, Oper_List_Mng.Current);
       end case;
       -- Encode data
       Encode_Oper(Edit_Type, Oper, Deleted);
@@ -530,7 +522,7 @@ package body Edition is
                   else
                     if Edit_Type /= Create then
                       -- Next oper
-                      Sel_List_Mng.Move_To(Sel_List, Sel_List_Mng.Next);
+                      Sel_List.Move_To;
                     end if;
                     exit One_Edit;
                   end if;
@@ -570,14 +562,14 @@ package body Edition is
                 Insert := False;
                 if Cursor_Field = 0 then
                   -- Prev oper
-                  Sel_List_Mng.Move_To(Sel_List, Sel_List_Mng.Prev);
+                  Sel_List.Move_To(Sel_List_Mng.Prev);
                   exit One_Edit;
                 end if;
                 Screen.Ring(True);
               when 39 =>
                 -- Cancel and prev
                 Cancel(Edit_Type);
-                Sel_List_Mng.Move_To(Sel_List, Sel_List_Mng.Prev);
+                Sel_List.Move_To(Sel_List_Mng.Prev);
                 exit One_Edit;
               when 40 =>
                 -- Ok and back
@@ -598,7 +590,7 @@ package body Edition is
                 if Cursor_Field = 0 then
                   if Edit_Type /= Create and then Edit_Type /= Copy then
                     -- Next oper
-                    Sel_List_Mng.Move_To(Sel_List, Sel_List_Mng.Next);
+                    Sel_List.Move_To;
                   end if;
                   exit One_Edit;
                 end if;
@@ -606,7 +598,7 @@ package body Edition is
               when 43 =>
                 -- Cancel and next
                 Cancel(Edit_Type);
-                Sel_List_Mng.Move_To(Sel_List, Sel_List_Mng.Next);
+                Sel_List.Move_To;
                 exit One_Edit;
 
               when others =>
@@ -626,9 +618,9 @@ package body Edition is
     if Edit_Type = Delete then
       Deletion.Commit_Deletions;
     elsif Edit_Type = Create
-    and then not Sel_List_Mng.Is_Empty(Sel_List) then
+    and then not Sel_List.Is_Empty then
       -- Move to bottom
-      Sel_List_Mng.Rewind(Sel_List, Sel_List_Mng.Prev);
+      Sel_List.Rewind(Sel_List_Mng.Prev);
     end if;
 
     -- Restore original unit

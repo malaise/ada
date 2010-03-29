@@ -117,6 +117,15 @@ package Limited_List is
                      Number       : in Natural := 1;
                      From_Current : in Boolean := True);
 
+  -- Set the current element to number elements from first (Direction = Next)
+  --  or last (Direction = Prev).
+  -- Equivalent to Move_To (List, Where, Position - 1, False)
+  -- May raise Not_In_List (no movement done)
+  --  Example Move_At (List, Next, 1) goes to FIRST element
+  procedure Move_At (List     : in out List_Type;
+                     Position : in Positive;
+                     Where    : in Direction := Next);
+
   -- Move to beginning/end of list: Move_To (List, Where, 0, False);
   procedure Rewind (List : in out List_Type; Where : in Direction := Next);
 

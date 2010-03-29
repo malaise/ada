@@ -254,7 +254,7 @@ package body Af_Ptg is
     end Save_Pos;
     procedure Restore_Pos is
     begin
-      Line_List.Move_To (Line_List_Mng.Next, List_Pos - 1, False);
+      Line_List.Move_At (List_Pos);
     end Restore_Pos;
 
     use Afpx_Typ;

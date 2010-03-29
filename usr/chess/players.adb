@@ -23,7 +23,7 @@ package body Players is
                           & " is thinking");
     end if;
     -- Clear list of movements
-    Action_List_Mng.Delete_List (Actions(Color), Deallocate => True);
+    Actions(Color).Delete_List (Deallocate => True);
     -- For each piece of team
     Team.Rewind (Color);
     King_Found := False;
@@ -48,7 +48,7 @@ package body Players is
           King_Found := True;
         end if;
         for I in Arr'Range loop
-          Action_List_Mng.Insert (Actions(Color), (True, Piece_Kind, Pos, Arr(I)) );
+          Actions(Color).Insert ((True, Piece_Kind, Pos, Arr(I)) );
           if Debug.Get (Debug.Think) then
             Ada.Text_Io.Put ("-> ");
             Debug.Put (Valid_Action_Rec'(True, Piece_Kind, Pos, Arr(I)));
@@ -71,8 +71,8 @@ package body Players is
   -- Returns a not Valid movement when end of list
   procedure Rewind_Actions (Color : in Space.Color_List) is
   begin
-    if not Action_List_Mng.Is_Empty (Actions(Color)) then
-      Action_List_Mng.Rewind (Actions(Color));
+    if not Actions(Color).Is_Empty then
+      Actions(Color).Rewind;
     end if;
     At_End (Color) := False;
   end Rewind_Actions;
@@ -80,13 +80,13 @@ package body Players is
   function Next_Action (Color : Space.Color_List) return Action_Rec is
     Result : Valid_Action_Rec;
   begin
-    if Action_List_Mng.Is_Empty (Actions(Color)) or else At_End(Color) then
+    if Actions(Color).Is_Empty or else At_End(Color) then
       return (Valid => False);
     end if;
-    if Action_List_Mng.Check_Move (Actions(Color)) then
-      Action_List_Mng.Read (Actions(Color), Result, Action_List_Mng.Next);
+    if Actions(Color).Check_Move then
+      Actions(Color).Read (Result, Action_List_Mng.Next);
     else
-      Action_List_Mng.Read (Actions(Color), Result, Action_List_Mng.Current);
+      Actions(Color).Read (Result, Action_List_Mng.Current);
       At_End(Color) := True;
     end if;
     return Result;
@@ -96,21 +96,19 @@ package body Players is
     Result : Valid_Action_Rec;
     Pos : Positive;
   begin
-    if Action_List_Mng.Is_Empty (Actions(Color)) then
+    if Actions(Color).Is_Empty then
       return (Valid => False);
     end if;
-    Pos := Action_List_Mng.Get_Position (Actions(Color));
+    Pos := Actions(Color).Get_Position;
 
     begin
-      Action_List_Mng.Move_To (Actions(Color), Number => Index - 1,
-                               From_Current => False);
-      Action_List_Mng.Read (Actions(Color), Result, Action_List_Mng.Current);
+      Actions(Color).Move_At (Index);
+      Actions(Color).Read (Result, Action_List_Mng.Current);
     exception
       when Action_List_Mng.Not_In_List =>
         return (Valid => False);
     end;
-    Action_List_Mng.Move_To (Actions(Color), Number => Pos - 1,
-                             From_Current => False);
+    Actions(Color).Move_At (Pos);
     return Result;
   end Get_Action;
 
@@ -166,7 +164,7 @@ package body Players is
     end if;
 
     -- Got one
-    Action_List_Mng.Read(Actions(Color), Res, Action_List_Mng.Current);
+    Actions(Color).Read(Res, Action_List_Mng.Current);
 
     Search_Match_Action(Actions(Color), Found, Ref,
                         From => Action_List_Mng.Skip_Current);

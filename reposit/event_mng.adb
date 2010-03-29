@@ -82,10 +82,10 @@ package body Event_Mng is
     end if;
 
     -- Append
-    if not Cb_Mng.Is_Empty (Cb_List) then
-      Cb_Mng.Move_To (Cb_List, Cb_Mng.Prev, 0, False);
+    if not Cb_List.Is_Empty then
+      Cb_List.Rewind (Cb_Mng.Prev);
     end if;
-    Cb_Mng.Insert (Cb_List, (Fd, Read, Callback));
+    Cb_List.Insert ((Fd, Read, Callback));
     -- Add fd to select
     Res := C_Add_Fd (Integer(Fd), C_Types.Bool(Read)) = Ok;
     if not Res then
@@ -115,7 +115,7 @@ package body Event_Mng is
     if not Res2 then
       raise Fd_Cb_Error;
     end if;
-    Cb_Mng.Delete (Cb_List, Done => Res2);
+    Cb_List.Delete (Done => Res2);
 
     if not Res1 then
       raise Fd_Cb_Error;
@@ -504,7 +504,7 @@ package body Event_Mng is
                                 & " fd not found ****");
           end if;
         else
-          Cb_Mng.Read (Cb_List, Cb_Searched,  Cb_Mng.Current);
+          Cb_List.Read (Cb_Searched,  Cb_Mng.Current);
           if Debug then
             Ada.Text_Io.Put_Line ("Event_Mng.Handle calling Cb on fd "
                    & Event.Fd'Img & " " & Event.Read'Img);

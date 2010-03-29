@@ -55,7 +55,7 @@ package body Mng is
   procedure Set_Current (No : in Oper_Nb_Range) is
   begin
     if No in Oper_Range then
-      Sel_List_Mng.Move_To(Sel_List, Sel_List_Mng.Next, No - 1, False);
+      Sel_List.Move_At(No);
     end if;
   end Set_Current;
 
@@ -102,9 +102,9 @@ package body Mng is
 
     procedure Reset_Selection is
     begin
-      Sel_List_Mng.Delete_List(Sel_List, Deallocate => False);
-      for I in 1 .. Oper_List_Mng.List_Length(Oper_List) loop
-        Sel_List_Mng.Insert(Sel_List, (No => I, Deleted => False));
+      Sel_List.Delete_List(Deallocate => False);
+      for I in 1 .. Oper_List.List_Length loop
+        Sel_List.Insert((No => I, Deleted => False));
       end loop;
       Screen.Set_Sublist(False);
     end Reset_Selection;
@@ -113,24 +113,23 @@ package body Mng is
     procedure Move_To_Current is
       Sel : Sel_Rec;
     begin
-      Sel_List_Mng.Read(Sel_List, Sel, Sel_List_Mng.Current);
-      Oper_List_Mng.Move_To(Oper_List, Oper_List_Mng.Next, Sel.No - 1, False);
+      Sel_List.Read(Sel, Sel_List_Mng.Current);
+      Oper_List.Move_At(Sel.No);
     end Move_To_Current;
-
 
     Loc_Pos : Oper_Range;
 
     procedure Save_Pos (Move_To_First : in Boolean := True) is
     begin
-      Loc_Pos := Sel_List_Mng.Get_Position(Sel_List);
+      Loc_Pos := Sel_List.Get_Position;
       if Move_To_First then
-        Sel_List_Mng.Rewind(Sel_List);
+        Sel_List.Rewind;
       end if;
     end Save_Pos;
 
     procedure Restore_Pos is
     begin
-      Sel_List_Mng.Move_To(Sel_List, Sel_List_Mng.Next, Loc_Pos-1, False);
+      Sel_List.Move_At(Loc_Pos);
     end Restore_Pos;
 
 
@@ -138,17 +137,17 @@ package body Mng is
       Oper : Oper_Def.Oper_Rec;
     begin
       Oper.Amount := Amount;
-      if not Oper_List_Mng.Is_Empty(Oper_List) then
-        Oper_List_Mng.Rewind(Oper_List);
+      if not Oper_List.Is_Empty then
+        Oper_List.Rewind;
       end if;
-      Oper_List_Mng.Insert(Oper_List, Oper, Oper_List_Mng.Prev);
+      Oper_List.Insert(Oper, Oper_List_Mng.Prev);
     end Insert_Amount;
 
     function Get_Amount return Oper_Def.Amount_Range is
       Oper : Oper_Def.Oper_Rec;
     begin
-      Oper_List_Mng.Rewind(Oper_List);
-      Oper_List_Mng.Get(Oper_List, Oper, Oper_List_Mng.Next);
+      Oper_List.Rewind;
+      Oper_List.Get(Oper, Oper_List_Mng.Next);
       return Oper.Amount;
     end Get_Amount;
 
@@ -159,8 +158,8 @@ package body Mng is
   procedure Reset_List is
     Oper : Oper_Def.Oper_Rec;
   begin
-    Afpx.Line_List_Mng.Delete_List(Afpx.Line_List);
-    if Sel_List_Mng.Is_Empty(Sel_List) then
+    Afpx.Line_List.Delete_List;
+    if Sel_List.Is_Empty then
       return;
     end if;
 
@@ -168,16 +167,13 @@ package body Mng is
     List_Util.Save_Pos;
     loop
       List_Util.Move_To_Current;
-      Oper_List_Mng.Read(Oper_List, Oper, Oper_List_Mng.Current);
-      Afpx.Line_List_Mng.Insert(Afpx.Line_List,
-                  Oper_To_Line(Oper_List_Mng.Get_Position(Oper_List), Oper));
-      exit when not Sel_List_Mng.Check_Move(Sel_List);
-      Sel_List_Mng.Move_To(Sel_List);
+      Oper_List.Read(Oper, Oper_List_Mng.Current);
+      Afpx.Line_List.Insert(Oper_To_Line(Oper_List.Get_Position, Oper));
+      exit when not Sel_List.Check_Move;
+      Sel_List.Move_To;
     end loop;
     List_Util.Restore_Pos;
-    Afpx.Line_List_Mng.Move_To(Afpx.Line_List,
-                     Afpx.Line_List_Mng.Next,
-                     Sel_List_Mng.Get_Position(Sel_List) - 1, False);
+    Afpx.Line_List.Move_At(Sel_List.Get_Position);
   end Reset_List;
 
   -- Compute amounts from all account operations
@@ -211,14 +207,14 @@ package body Mng is
       Amounts(I).Overflow := False;
     end loop;
 
-    if Oper_List_Mng.Is_Empty(Oper_List) then
+    if Oper_List.Is_Empty then
       return;
     end if;
 
     -- All operations
-    Oper_List_Mng.Rewind(Oper_List);
+    Oper_List.Rewind;
     loop
-      Oper_List_Mng.Read(Oper_List, Oper, Oper_List_Mng.Current);
+      Oper_List.Read(Oper, Oper_List_Mng.Current);
       Add_Amount (Screen.Real, Oper.Amount);
       if Oper.Status = Oper_Def.Entered then
         Add_Amount(Screen.Account, Oper.Amount);
@@ -229,8 +225,8 @@ package body Mng is
       if Oper.Status = Oper_Def.Defered then
         Add_Amount(Screen.Defered, Oper.Amount);
       end if;
-      exit when not Oper_List_Mng.Check_Move(Oper_List);
-      Oper_List_Mng.Move_To(Oper_List);
+      exit when not Oper_List.Check_Move;
+      Oper_List.Move_To;
     end loop;
   end Compute_Amounts;
 
@@ -245,8 +241,8 @@ package body Mng is
   procedure Refresh_Screen (List_Update : in List_Update_List) is
   begin
     Screen.Encode_File_Name(Text_Handler.Value(Account_Name));
-    Screen.Encode_Nb_Oper(Oper_List_Mng.List_Length(Oper_List),
-                          Sel_List_Mng.List_Length(Sel_List));
+    Screen.Encode_Nb_Oper(Oper_List.List_Length,
+                          Sel_List.List_Length);
     Screen.Encode_Saved(Account_Saved);
     Reset_List;
     if List_Update = Bottom then
@@ -256,7 +252,7 @@ package body Mng is
     end if;
     Encode_Amounts;
     Screen.Update_To_Unit;
-    Screen.Allow_Edit(not Sel_List_Mng.Is_Empty(Sel_List));
+    Screen.Allow_Edit(not Sel_List.Is_Empty);
   end Refresh_Screen;
 
   -- Adjust operation after copy
@@ -457,8 +453,8 @@ package body Mng is
     end if;
     -- Set data
     Text_Handler.Empty(Account_Name);
-    Sel_List_Mng.Delete_List(Sel_List, Deallocate => False);
-    Oper_List_Mng.Delete_List(Oper_List);
+    Sel_List.Delete_List(Deallocate => False);
+    Oper_List.Delete_List;
     Root_Amount := 0.0;
     Account_Saved := True;
     Compute_Amounts;
@@ -511,11 +507,11 @@ package body Mng is
     Put_Line(Pf, Page_Title);
     Line := 3;
 
-    if not Oper_List_Mng.Is_Empty(Oper_List) then
-      Oper_List_Mng.Rewind(Oper_List);
+    if not Oper_List.Is_Empty then
+      Oper_List.Rewind;
       Index := 1;
       loop
-        Oper_List_Mng.Read(Oper_List, Oper, Oper_List_Mng.Current);
+        Oper_List.Read(Oper, Oper_List_Mng.Current);
         Put_Line(Pf, "  " & Normal(Index, 4) & Sep
                    & Unit_Format.Date_Image(Oper.Date) & Sep
                    & Unit_Format.Image(Oper.Amount, False) & Sep
@@ -524,8 +520,8 @@ package body Mng is
                    & Language.Wide_To_String (Oper.Destination) & Sep
                    & Language.Wide_To_String (Oper.Comment) & Sep
                    & Language.Wide_To_String (Oper.Reference)) ;
-        exit when not Oper_List_Mng.Check_Move(Oper_List);
-        Oper_List_Mng.Move_To(Oper_List);
+        exit when not Oper_List.Check_Move;
+        Oper_List.Move_To;
         Index := Index + 1;
         if Line = Lines_Per_Page then
           New_Page(Pf);
@@ -648,7 +644,7 @@ package body Mng is
     use type Oper_Def.Status_List;
   begin
     List_Util.Move_To_Current;
-    Oper_List_Mng.Read(Oper_List, Oper, Oper_List_Mng.Current);
+    Oper_List.Read(Oper, Oper_List_Mng.Current);
     Prev_Status := Oper.Status;
     case Oper.Status is
       when Oper_Def.Entered =>
@@ -663,7 +659,7 @@ package body Mng is
         end if;
     end case;
     if Oper.Status /= Prev_Status then
-      Oper_List_Mng.Modify(Oper_List, Oper, Oper_List_Mng.Current);
+      Oper_List.Modify(Oper, Oper_List_Mng.Current);
       Account_Saved := False;
       Compute_Amounts;
       Refresh_Screen(Unchanged);
@@ -718,17 +714,17 @@ package body Mng is
     Tmp_Amount : Oper_Def.Amount_Range;
     use type Oper_Def.Status_List, Oper_Def.Amount_Range;
   begin
-    if Oper_List_Mng.Is_Empty(Oper_List) then
+    if Oper_List.Is_Empty then
       return;
     end if;
     -- Get number of oper to check and start from the beginning
-    Pos := Sel_List_Mng.Get_Position(Sel_List);
-    Sel_List_Mng.Rewind(Sel_List);
+    Pos := Sel_List.Get_Position;
+    Sel_List.Rewind;
     -- Check up to pos included
     Tmp_Amount := Root_Amount;
     for I in 1 .. Pos loop
       List_Util.Move_To_Current;
-      Oper_List_Mng.Read(Oper_List, Oper, Oper_List_Mng.Current);
+      Oper_List.Read(Oper, Oper_List_Mng.Current);
       -- Remove if entered
       if Oper.Status = Oper_Def.Entered then
         begin
@@ -747,7 +743,7 @@ package body Mng is
       -- Done when orig pos is processed
       exit when I = Pos;
       -- Move to next
-      Sel_List_Mng.Move_To(Sel_List);
+      Sel_List.Move_To;
     end loop;
     Root_Amount := Tmp_Amount;
     Deletion.Commit_Deletions;

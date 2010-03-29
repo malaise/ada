@@ -92,7 +92,7 @@ package body Screen is
   procedure Reset is
   begin
     Afpx.Use_Descriptor(1);
-    Afpx.Line_List_Mng.Delete_List(Afpx.Line_List);
+    Afpx.Line_List.Delete_List;
     Set_Mode(Default);
   end Reset;
 

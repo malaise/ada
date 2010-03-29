@@ -76,7 +76,7 @@ package body Async_Stdin is
       procedure Copy_Current is
         R : Rec;
       begin
-        List_Mng.Read (List, R, List_Mng.Current);
+        List.Read (R, List_Mng.Current);
         Buf := R;
       end Copy_Current;
 
@@ -95,44 +95,44 @@ package body Async_Stdin is
       -- Movements
       procedure First is
       begin
-        if List_Mng.Is_Empty (List) then
+        if List.Is_Empty then
           Clear;
           return;
         end if;
-        List_Mng.Rewind (List, List_Mng.Next);
+        List.Rewind;
         Copy_Current;
       end First;
 
       procedure Last is
       begin
-        if List_Mng.Is_Empty (List) then
+        if List.Is_Empty then
           Clear;
           return;
         end if;
-        List_Mng.Rewind (List, List_Mng.Prev);
+        List.Rewind (List_Mng.Prev);
         Copy_Current;
       end Last;
 
       procedure Next is
       begin
-        if List_Mng.Is_Empty (List) then
+        if List.Is_Empty then
           Clear;
           return;
         end if;
-        if List_Mng.Check_Move (List) then
-          List_Mng.Move_To (List, List_Mng.Next);
+        if List.Check_Move then
+          List.Move_To;
         end if;
         Copy_Current;
       end Next;
 
       procedure Prev is
       begin
-        if List_Mng.Is_Empty (List) then
+        if List.Is_Empty then
           Clear;
           return;
         end if;
-        if List_Mng.Check_Move (List, List_Mng.Prev) then
-          List_Mng.Move_To (List, List_Mng.Prev);
+        if List.Check_Move (List_Mng.Prev) then
+          List.Move_To (List_Mng.Prev);
         end if;
         Copy_Current;
       end Prev;
@@ -141,11 +141,11 @@ package body Async_Stdin is
         Pos : Positive;
         Found : Boolean;
       begin
-        if List_Mng.Is_Empty (List) then
+        if List.Is_Empty then
           return False;
         end if;
         -- Save pos
-        Pos := List_Mng.Get_Position (List);
+        Pos := List.Get_Position;
 
         if Init then
           -- Search present buf from last
@@ -162,7 +162,7 @@ package body Async_Stdin is
           Copy_Current;
         else
           -- Restore Pos
-          List_Mng.Move_To (List, List_Mng.Next, Pos - 1, False);
+          List.Move_At (Pos);
           Clear;
         end if;
         return Found;
@@ -172,16 +172,16 @@ package body Async_Stdin is
       procedure Add is
         R : Rec;
       begin
-        if List_Mng.List_Length (List) = History_Size then
-          List_Mng.Rewind (List, List_Mng.Next);
-          List_Mng.Delete (List);
+        if List.List_Length = History_Size then
+          List.Rewind;
+          List.Delete;
         end if;
         -- Unb.Append at the end of list
         Copy_Buf (R);
-        if not List_Mng.Is_Empty (List) then
-          List_Mng.Rewind (List, List_Mng.Prev);
+        if not List.Is_Empty then
+          List.Rewind (List_Mng.Prev);
         end if;
-        List_Mng.Insert (List, R);
+        List.Insert (R);
       end Add;
 
     end History;

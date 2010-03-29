@@ -23,7 +23,7 @@ procedure Actions_Of_Pawn (Piece : in Pawn_Piece) is
     end if;
     for Piece_Kind in Promotion_Piece_List loop
       Action.New_Piece := Piece_Kind;
-      Action_List_Mng.Insert(Action_List, Action);
+      Action_List.Insert(Action);
     end loop;
   end Insert_Promotions;
 
@@ -94,7 +94,7 @@ begin
       if Dest_Piece /= null then
         raise Pep_Error;
       end if;
-      Action_List_Mng.Insert(Action_List,
+      Action_List.Insert(
             (Kind => Take_En_Passant,
              Dest => New_Pos.Square,
              Taking => Tmp_Pos.Square) );

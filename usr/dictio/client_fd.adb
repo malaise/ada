@@ -38,7 +38,7 @@ package body Client_Fd is
     if Found then
       raise Client_Error;
     end if;
-    Client_List_Mng.Insert (Client_List, Rec);
+    Client_List.Insert (Rec);
   end Add_Client;
 
   procedure Del_Client (Client : in Socket.Socket_Dscr) is
@@ -52,11 +52,11 @@ package body Client_Fd is
       raise Client_Error;
     end if;
 
-    Client_List_Mng.Read (Client_List, Rec, Client_List_Mng.Current);
+    Client_List.Read (Rec, Client_List_Mng.Current);
     if Rec.Fd /= Socket.Fd_Of (Client) then
       raise Client_Error;
     end if;
-    Client_List_Mng.Delete (Client_List, Done => Ok);
+    Client_List.Delete (Done => Ok);
     Event_Mng.Del_Fd_Callback (Rec.Fd, True);
     Socket.Close (Rec.Soc);
   end Del_Client;
@@ -64,17 +64,17 @@ package body Client_Fd is
   procedure Del_All is
     Rec : Client_Rec;
   begin
-    if Client_List_Mng.Is_Empty (Client_List) then
+    if Client_List.Is_Empty then
       return;
     end if;
 
-    Client_List_Mng.Rewind (Client_List);
+    Client_List.Rewind;
     loop
-      Client_List_Mng.Read (Client_List, Rec, Client_List_Mng.Current);
+      Client_List.Read (Rec, Client_List_Mng.Current);
       Event_Mng.Del_Fd_Callback (Rec.Fd, True);
       Socket.Close (Rec.Soc);
-      Client_List_Mng.Delete (Client_List);
-      exit when Client_List_Mng.Is_Empty (Client_List);
+      Client_List.Delete;
+      exit when Client_List.Is_Empty;
     end loop;
   end Del_All;
 
@@ -88,7 +88,7 @@ package body Client_Fd is
     if not Found then
       raise Client_Error;
     end if;
-    Client_List_Mng.Read (Client_List, Rec, Client_List_Mng.Current);
+    Client_List.Read (Rec, Client_List_Mng.Current);
     return Rec.Soc;
   end Socket_Of;
 
@@ -97,24 +97,24 @@ package body Client_Fd is
   procedure Read_First (Client : out Socket.Socket_Dscr) is
     Rec : Client_Rec;
   begin
-    if Client_List_Mng.Is_Empty (Client_List) then
+    if Client_List.Is_Empty then
       Client := Socket.No_Socket;
       return;
     end if;
-    Client_List_Mng.Rewind (Client_List);
-    Client_List_Mng.Read (Client_List, Rec, Client_List_Mng.Current);
+    Client_List.Rewind;
+    Client_List.Read (Rec, Client_List_Mng.Current);
     Client := Rec.Soc;
   end Read_First;
 
   procedure Read_Next  (Client : out Socket.Socket_Dscr) is
     Rec : Client_Rec;
   begin
-    if not Client_List_Mng.Check_Move (Client_List) then
+    if not Client_List.Check_Move then
       Client := Socket.No_Socket;
       return;
     end if;
-    Client_List_Mng.Move_To (Client_List);
-    Client_List_Mng.Read (Client_List, Rec, Client_List_Mng.Current);
+    Client_List.Move_To;
+    Client_List.Read (Rec, Client_List_Mng.Current);
     Client := Rec.Soc;
   end Read_Next;
 

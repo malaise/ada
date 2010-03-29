@@ -377,6 +377,14 @@ package body Limited_List is
     List.Modified := True;
   end Move_To;
 
+  -- Move at given position
+  procedure Move_At (List     : in out List_Type;
+                     Position : in Positive;
+                     Where    : in Direction := Next) is
+  begin
+    Move_To (List, Where, Position - 1, False);
+  end Move_At;
+
   -- Move to beginning/end of list: Move_To (List, Where, 0, False);
   procedure Rewind (List : in out List_Type; Where : in Direction := Next) is
   begin
@@ -496,12 +504,12 @@ package body Limited_List is
     Permute (List, Link1, Link2);
 
     -- Restore initial position
-    Move_To (List, Next, Current_Position - 1, From_Current => False);
+    Move_At (List, Current_Position);
     List.Modified := True;
   exception
     when Not_In_List =>
       -- Restore initial position
-      Move_To (List, Next, Current_Position - 1, From_Current => False);
+      Move_At (List, Current_Position);
       raise;
   end Permute;
 
@@ -849,25 +857,25 @@ package body Limited_List is
         I_Left := Left;
         I_Right := Right;
         -- Set link to frontier
-        Move_To (List, Next, I_Frontier-1, False);
+        Move_At (List, I_Frontier);
         L_Frontier := List.Current;
 
         loop
 
           -- First element at left of slice and not positioned ok
           --  regarding the frontier
-          Move_To (List, Next, I_Left-1, False);
+          Move_At (List, I_Left);
           while Less_Than (List.Current.Value, L_Frontier.Value) loop
-            Move_To (List, Next, 1, True);
+            Move_To (List, Next, 1);
           end loop;
           L_Left := List.Current;
           I_Left := Get_Position (List);
 
           -- Last  element a right of slice and not positioned ok
           --  regarding the frontier
-          Move_To (List, Next, I_Right-1, False);
+          Move_At (List, I_Right);
           while Less_Than (L_Frontier.Value, List.Current.Value) loop
-            Move_To (List, Prev, 1, True);
+            Move_To (List, Prev, 1);
           end loop;
           L_Right := List.Current;
           I_Right := Get_Position (List);
@@ -901,7 +909,7 @@ package body Limited_List is
       Quick (1, Last);
     end;
     -- Move to first item
-    Move_To (List, Next, 0, False);
+    Rewind (List, Next);
     List.Modified := True;
   end Sort;
 

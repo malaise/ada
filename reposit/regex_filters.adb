@@ -21,7 +21,7 @@ package body Regex_Filters is
     Regular_Expressions.Compile (Cell.Pattern.all, Ok, Criteria);
     if Ok then
       -- Insert if Ok
-      Filter_List_Mng.Insert(Filter_List_Mng.List_Type(Filter), Cell);
+      Filter.Insert(Cell);
     else
       -- Roll back, free regex pattern
       Regular_Expressions.Free(Cell.Pattern.all);
@@ -44,24 +44,23 @@ package body Regex_Filters is
     Match : Boolean;
   begin
     -- True if empty list
-    if Filter_List_Mng.Is_Empty(Filter_List_Mng.List_Type(Filter)) then
+    if Filter.Is_Empty then
       return True;
     end if;
     -- Make a copy of list container, just for scanning
-    Filter_List_Mng.Unchecked_Assign(Loc_List,
-                                     Filter_List_Mng.List_Type(Filter));
+    Loc_List.Unchecked_Assign(Filter_List_Mng.List_Type(Filter));
     -- Rewind
-    Filter_List_Mng.Move_To(Loc_List, Number => 0, From_Current => False);
+    Loc_List.Move_To(Number => 0, From_Current => False);
 
     -- Loop of successive tests
     Result := True;
     loop
-      Remains := Filter_List_Mng.Check_Move(Loc_List);
+      Remains := Loc_List.Check_Move;
       -- Read criteria
       if Remains then
-        Filter_List_Mng.Read(Loc_List, Cell);
+        Loc_List.Read(Cell);
       else
-        Filter_List_Mng.Read(Loc_List, Cell, Filter_List_Mng.Current);
+        Loc_List.Read(Cell, Filter_List_Mng.Current);
       end if;
       -- Check regex and see if it must match
       Regular_Expressions.Exec(Cell.Pattern.all, Str, N_Match,
@@ -83,23 +82,22 @@ package body Regex_Filters is
     Cell : Filter_Cell;
   begin
     -- Done if empty list
-    if Filter_List_Mng.Is_Empty(Filter_List_Mng.List_Type(Filter)) then
+    if Filter.Is_Empty then
       return;
     end if;
 
     -- Rewind
-    Filter_List_Mng.Move_To(Filter_List_Mng.List_Type(Filter),
-                            Number => 0, From_Current => False);
+    Filter.Rewind;
     -- Loop of Get
     loop
-      Filter_List_Mng.Get(Filter_List_Mng.List_Type(Filter), Cell);
+      Filter.Get(Cell);
       -- Free regex pattern
       Regular_Expressions.Free(Cell.Pattern.all);
       Free(Cell.Pattern);
-      exit when Filter_List_Mng.Is_Empty(Filter_List_Mng.List_Type(Filter));
+      exit when Filter.Is_Empty;
     end loop;
     -- Delete the list itself
-    Filter_List_Mng.Delete_List(Filter_List_Mng.List_Type(Filter));
+    Filter.Delete_List;
   end Clear_Filter;
 
 end Regex_Filters;

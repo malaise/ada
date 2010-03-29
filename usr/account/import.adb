@@ -89,7 +89,7 @@ begin
     end;
 
     -- Append oper
-    Oper_List_Mng.Insert(Oper_List, Oper);
+    Oper_List.Insert(Oper);
 
     -- Read CR, check there was no extra char
     begin

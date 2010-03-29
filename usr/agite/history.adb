@@ -110,18 +110,18 @@ package body History is
         -- Only Left selection
         Ref_Hash := Git_If.No_Hash;
       else
-        Logs.Move_To (Number => Ref - 1, From_Current => False);
+        Logs.Move_At (Ref);
         Logs.Read (Log, Git_If.Log_Mng.Dyn_List.Current);
         Ref_Hash := Log.Hash;
       end if;
 
       -- Move to Comp and read comp hash in Logs
-      Logs.Move_To (Number => Comp - 1, From_Current => False);
+      Logs.Move_At (Comp);
       Logs.Read (Log, Git_If.Log_Mng.Dyn_List.Current);
       Comp_Hash := Log.Hash;
 
       -- Restore position in List
-      Afpx.Line_List.Move_To (Number => Comp - 1, From_Current => False);
+      Afpx.Line_List.Move_At (Comp);
 
       -- Call delta
       if Ref_Hash = Git_If.No_Hash then
@@ -141,7 +141,7 @@ package body History is
     begin
       -- Read reference hash in Logs
       Ref := Afpx.Line_List.Get_Position;
-      Logs.Move_To (Number => Ref - 1, From_Current => False);
+      Logs.Move_At (Ref);
       Logs.Read (Log, Git_If.Log_Mng.Dyn_List.Current);
       case What is
         when Show_View =>

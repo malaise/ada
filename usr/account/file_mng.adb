@@ -75,16 +75,16 @@ package body File_Mng is
           exit;
       end;
       Oper_Def.Convert (Loc_Read_Oper, Loc_Oper);
-      Oper_List_Mng.Insert (Loc_List, Loc_Oper);
+      Loc_List.Insert (Loc_Oper);
     end loop;
 
     Read_Oper_Io.Close (File);
 
     -- Everything is Ok. Overwrite the existing list. Go to end.
-    Oper_List_Mng.Delete_List (Oper_List);
-    Oper_List_Mng.Insert_Copy (Oper_List, Loc_List);
-    Oper_List_Mng.Delete_List (Loc_List, True);
-    Oper_List_Mng.Rewind (Oper_List, Oper_List_Mng.Prev);
+    Oper_List.Delete_List;
+    Oper_List.Insert_Copy (Loc_List);
+    Loc_List.Delete_List (True);
+    Oper_List.Rewind (Oper_List_Mng.Prev);
 
   exception
     when F_Access_Error =>
@@ -99,7 +99,7 @@ package body File_Mng is
         when others => null;
       end;
       -- Clean the garbage
-      Oper_List_Mng.Delete_List (Loc_List);
+      Loc_List.Delete_List;
       raise F_Io_Error;
   end Load;
 
@@ -136,19 +136,19 @@ package body File_Mng is
     end;
 
     -- A tempo local copy for scanning
-    Oper_List_Mng.Unchecked_Assign (Loc_List, Oper_List);
+    Loc_List.Unchecked_Assign (Oper_List);
     -- Rewind, write magic record with amount of first record
-    Oper_List_Mng.Rewind (Loc_List);
-    Oper_List_Mng.Read (Loc_List, Loc_Oper, Oper_List_Mng.Current);
+    Loc_List.Rewind;
+    Loc_List.Read (Loc_Oper, Oper_List_Mng.Current);
     Loc_Oper_1 := Magic_Oper;
     Loc_Oper_1.Amount := Loc_Oper.Amount;
     Oper_Io.Write (File, Loc_Oper_1);
 
     -- Write other records
     loop
-      exit when not Oper_List_Mng.Check_Move (Loc_List);
-      Oper_List_Mng.Move_To (Loc_List);
-      Oper_List_Mng.Read (Loc_List, Loc_Oper, Oper_List_Mng.Current);
+      exit when not Loc_List.Check_Move;
+      Loc_List.Move_To;
+      Loc_List.Read (Loc_Oper, Oper_List_Mng.Current);
       Oper_Io.Write (File, Loc_Oper);
     end loop;
 
