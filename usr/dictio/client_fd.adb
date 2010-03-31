@@ -56,7 +56,7 @@ package body Client_Fd is
     if Rec.Fd /= Socket.Fd_Of (Client) then
       raise Client_Error;
     end if;
-    Client_List.Delete (Done => Ok);
+    Client_List.Delete (Moved => Ok);
     Event_Mng.Del_Fd_Callback (Rec.Fd, True);
     Socket.Close (Rec.Soc);
   end Del_Client;

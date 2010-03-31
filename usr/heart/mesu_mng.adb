@@ -170,7 +170,7 @@ package body Mesu_Mng is
 
     if Nb_Month /= 0 then
       Str_Mng.Current_Date_Rec (Current_Date, Nb_Month);
-      if Afpx.Line_List_Mng.List_Length(Afpx.Line_List) = 0 then
+      if Afpx.Line_List.Is_Empty then
         -- List empty : Set Aft to current date - offset
         Afpx.Encode_Field (09, (00, 00), Current_Date.Day);
         Afpx.Encode_Field (10, (00, 00), Current_Date.Month);
@@ -192,12 +192,11 @@ package body Mesu_Mng is
 
       Ptg:
       loop
-        Pers_Empty := Pers_Def.Person_List_Mng.Is_Empty (Pers_Def.The_Persons);
-        List_Empty := Afpx.Line_List_Mng.List_Length(Afpx.Line_List) = 0;
+        Pers_Empty := Pers_Def.The_Persons.Is_Empty;
+        List_Empty := Afpx.Line_List.Is_Empty;
         Allow_Draw := not Pers_Empty and then
                       not List_Empty and then
-                      Afpx.Line_List_Mng.List_Length(Afpx.Line_List)
-                            <= Mesu_Gra.Max_Nb_Mesure;
+                      Afpx.Line_List.List_Length <= Mesu_Gra.Max_Nb_Mesure;
         Allow_Undo := Allow_Undo and then not Pers_Empty;
         -- Tittles
         Afpx.Set_Field_Activation (01, not Pers_Empty);
@@ -225,8 +224,7 @@ package body Mesu_Mng is
         Afpx.Set_Field_Activation (26, not Pers_Empty and then not List_Empty);
         Afpx.Set_Field_Activation (27, not Pers_Empty and then not List_Empty);
 
-        Afpx.Encode_Field (20, (0, 0),
-          Normal(Afpx.Line_List_Mng.List_Length(Afpx.Line_List), 5) );
+        Afpx.Encode_Field (20, (0, 0), Normal(Afpx.Line_List.List_Length, 5) );
 
         Afpx.Encode_Field (02, (00, 00), Str_Mng.Current_Date_Printed);
         Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
@@ -309,8 +307,7 @@ package body Mesu_Mng is
               exit List;
             elsif Ptg_Result.Field_No = 22 then
               -- Unselect
-              Afpx.Line_List_Mng.Read (Afpx.Line_List, Line,
-                                       Afpx.Line_List_Mng.Current);
+              Afpx.Line_List.Read (Line, Afpx.Line_List_Mng.Current);
               Str_Mng.Format_List_To_Mesure (Line, File_Name);
               Mesu_Sel.Rem_Selection (File_Name);
               Allow_Undo := True;
@@ -340,8 +337,7 @@ package body Mesu_Mng is
             elsif (Ptg_Result.Field_No = 0
                    or else Ptg_Result.Field_No = 26) then
               -- Edit
-              Afpx.Line_List_Mng.Read (Afpx.Line_List, Line,
-                                       Afpx.Line_List_Mng.Current);
+              Afpx.Line_List.Read (Line, Afpx.Line_List_Mng.Current);
               Str_Mng.Format_List_To_Mesure (Line, File_Name);
 
               -- Edit
@@ -357,8 +353,7 @@ package body Mesu_Mng is
               exit Ptg;
             elsif Ptg_Result.Field_No = 27 then
               -- Delete
-              Afpx.Line_List_Mng.Read (Afpx.Line_List, Line,
-                                       Afpx.Line_List_Mng.Current);
+              Afpx.Line_List.Read (Line, Afpx.Line_List_Mng.Current);
               Str_Mng.Format_List_To_Mesure (Line, File_Name);
 
               -- Delete
@@ -393,17 +388,16 @@ package body Mesu_Mng is
     -- Set files lin ist
     Dir_Mng.List_Dir (The_Files, "", File_Name);
 
-    if Dir_Mng.File_List_Mng.Is_Empty (The_Files) then
+    if The_Files.Is_Empty then
       -- No file
       return;
     end if;
     Mesu_Sel.Load;
 
     -- Remove entries from selection, then files
-    Dir_Mng.File_List_Mng.Rewind (The_Files);
+    The_Files.Rewind;
     loop
-      Dir_Mng.File_List_Mng.Read (The_Files, File,
-                                  Dir_Mng.File_List_Mng.Current);
+      The_Files.Read (File, Dir_Mng.File_List_Mng.Current);
       File_Name := File.Name(1 .. File.Len);
       begin
         Mesu_Sel.Rem_Selection (File_Name);
@@ -414,11 +408,11 @@ package body Mesu_Mng is
       end;
       Mesu_Fil.Delete (File_Name);
       -- Next file
-      exit when not Dir_Mng.File_List_Mng.Check_Move (The_Files);
-      Dir_Mng.File_List_Mng.Move_To (The_Files);
+      exit when not The_Files.Check_Move;
+      The_Files.Move_To;
     end loop;
 
-    Dir_Mng.File_List_Mng.Delete_List (The_Files);
+    The_Files.Delete_List;
     Mesu_Sel.Save;
   end Delete_All;
 

@@ -53,10 +53,10 @@ package body Unique_List is
       Set (Acc.all, Item);
     else
       -- Insert new element in list and hashing
-      List_Mng.Insert (List.List, Item);
+      List.List.Insert (Item);
       Hash_Mng.Store (List.Table,
                       Key_Image(Item),
-                      Element_Access (List_Mng.Access_Current (List.List)));
+                      Element_Access (List.List.Access_Current));
     end if;
   exception
     when List_Mng.Full_List =>
@@ -119,12 +119,12 @@ package body Unique_List is
     -- Locate in hash the item matching the criteria
     Locate (List, Crit, Acc);
     -- Check it has been found and same item
-    if Acc /= Element_Access(List_Mng.Access_Current (List.List)) then
+    if Acc /= Element_Access(List.List.Access_Current) then
       raise Internal_Error;
     end if;
 
     -- Delete this item from list and hash table
-    List_Mng.Delete (List.List, Done => Dummy);
+    List.List.Delete (Moved => Dummy);
     Hash_Mng.Remove (List.Table, Key);
   end Delete;
 
@@ -133,20 +133,20 @@ package body Unique_List is
   procedure Delete_List (List       : in out List_Type;
                          Deallocate : in Boolean := True) is
   begin
-    List_Mng.Delete_List (List.List, Deallocate);
+    List.List.Delete_List (Deallocate);
     Hash_Mng.Clear_All (List.Table);
   end Delete_List;
 
   -- Return without exception
   function Is_Empty (List : List_Type) return Boolean is
   begin
-    return List_Mng.Is_Empty (List.List);
+    return List.List.Is_Empty;
   end Is_Empty;
 
   -- Return the number of elements in the list (0 if empty, no exception)
   function List_Length (List : List_Type) return Natural is
   begin
-    return List_Mng.List_Length (List.List);
+    return List.List.List_Length;
   end List_Length;
 
   -- These two calls allow sharing the same list among several
@@ -155,12 +155,12 @@ package body Unique_List is
   --  testing
   function Is_Modified (List : List_Type) return Boolean is
   begin
-    return List_Mng.Is_Modified (List.List);
+    return List.List.Is_Modified;
   end Is_Modified;
 
   procedure Modification_Ack (List : in out List_Type) is
   begin
-     List_Mng.Modification_Ack (List.List);
+     List.List.Modification_Ack;
   end Modification_Ack;
 
 
@@ -174,21 +174,21 @@ package body Unique_List is
     Moved : Boolean;
     Go_On : Boolean;
   begin
-    if List_Mng.Is_Empty (List.List) then
+    if List.List.Is_Empty then
       return;
     end if;
     -- Prepare loop on all items
     if From = From_First then
-      List_Mng.Rewind (List.List, List_Mng.Next);
+      List.List.Rewind (True, List_Mng.Next);
     else
-      List_Mng.Rewind (List.List, List_Mng.Prev);
+      List.List.Rewind (True, List_Mng.Prev);
     end if;
     Go_On := True;
     loop
       if From = From_First then
-        List_Mng.Read (List.List, Item, List_Mng.Next, Done => Moved);
+        List.List.Read (Item, List_Mng.Next, Moved => Moved);
       else
-        List_Mng.Read (List.List, Item, List_Mng.Prev, Done => Moved);
+        List.List.Read (Item, List_Mng.Prev, Moved => Moved);
       end if;
       Iteration (Item, Go_On);
       -- Callback requests to stop or en of list
@@ -200,13 +200,13 @@ package body Unique_List is
   procedure Rewind (List : in out List_Type;
                     From : in Reference := From_First) is
   begin
-    if List_Mng.Is_Empty (List.List) then
+    if List.List.Is_Empty then
       raise Not_In_List;
     end if;
     if From = From_First then
-      List_Mng.Rewind (List.List, List_Mng.Next);
+      List.List.Rewind (True, List_Mng.Next);
     else
-      List_Mng.Rewind (List.List, List_Mng.Prev);
+      List.List.Rewind (True, List_Mng.Prev);
     end if;
   end Rewind;
 
@@ -215,13 +215,13 @@ package body Unique_List is
                   From : in Reference := From_First;
                   Moved : out Boolean) is
   begin
-    if List_Mng.Is_Empty (List.List) then
+    if List.List.Is_Empty then
       raise Not_In_List;
     end if;
     if From = From_First then
-      List_Mng.Read (List.List, Item, List_Mng.Next, Moved);
+      List.List.Read (Item, List_Mng.Next, Moved);
     else
-      List_Mng.Read (List.List, Item, List_Mng.Prev, Moved);
+      List.List.Read (Item, List_Mng.Prev, Moved);
     end if;
   end Read;
 

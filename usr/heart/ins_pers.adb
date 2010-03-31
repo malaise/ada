@@ -32,18 +32,16 @@ begin
   if Argument.Get_Nbre_Arg = 1 and then Argument.Get_Parameter = "-l" then
     -- Load list
     Pers_Fil.Load;
-    if Pers_Def.Person_List_Mng.Is_Empty (Pers_Def.The_Persons) then
+    if Pers_Def.The_Persons.Is_Empty then
       My_Io.Put_Line ("The list is empty.");
     else
-      List_Length :=
-       Pers_Def.Person_List_Mng.List_Length (Pers_Def.The_Persons);
+      List_Length := Pers_Def.The_Persons.List_Length;
       for I in 1 .. List_Length loop
         if I /= List_Length then
-          Pers_Def.Person_List_Mng.Read (Pers_Def.The_Persons, Person);
+          Pers_Def.The_Persons.Read (Person);
         else
           -- Do not move after reading last person
-          Pers_Def.Person_List_Mng.Read (Pers_Def.The_Persons, Person,
-           Pers_Def.Person_List_Mng.Current);
+          Pers_Def.The_Persons.Read (Person, Pers_Def.Person_List_Mng.Current);
         end if;
         Put(Person, True);
       end loop;
@@ -105,8 +103,7 @@ begin
     My_Io.New_Line;
     My_Io.Put_Line ("Done. PID is " & Normal(Integer(Person.Pid), 3) );
   else
-    Pers_Def.Person_List_Mng.Read (Pers_Def.The_Persons, Got_Person,
-     Pers_Def.Person_List_Mng.Current);
+    Pers_Def.The_Persons.Read (Got_Person, Pers_Def.Person_List_Mng.Current);
     Person.Pid := Got_Person.Pid;
     My_Io.Put_Line ("The person in list");
     Put (Got_Person, True);
@@ -119,8 +116,7 @@ begin
       My_Io.Put_Line ("Aborted");
       return;
     end if;
-    Pers_Def.Person_List_Mng.Modify (Pers_Def.The_Persons, Person,
-     Pers_Def.Person_List_Mng.Current);
+    Pers_Def.The_Persons.Modify (Person, Pers_Def.Person_List_Mng.Current);
     My_Io.New_Line;
     My_Io.Put_Line ("Done.");
   end if;

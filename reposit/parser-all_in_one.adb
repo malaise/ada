@@ -39,12 +39,12 @@ package body Parser.All_In_One is
       -- Store previous seperators if any (may not be the case before first
       --  word or after last word)
       if Seps_Elt.Str /= Ada.Strings.Unbounded.Null_Unbounded_String then
-        Parsed_List_Manager.Insert (Parsed_List, Seps_Elt);
+        Parsed_List.Insert (Seps_Elt);
       end if;
       -- Store word if any, note that an empty string leads to both empty Elts
       --  then to an empty list
       if Word_Elt.Str /= Ada.Strings.Unbounded.Null_Unbounded_String then
-        Parsed_List_Manager.Insert (Parsed_List, Word_Elt);
+        Parsed_List.Insert (Word_Elt);
       else
         -- No more word: exit loop
         exit;
@@ -54,13 +54,13 @@ package body Parser.All_In_One is
 
     -- Create the array and copy list into it
     declare
-      Result : Parsed_Array (1 .. Parsed_List_Manager.List_Length (Parsed_List));
+      Result : Parsed_Array (1 .. Parsed_List.List_Length);
     begin
       if Result'Length /= 0 then
-        Parsed_List_Manager.Rewind (Parsed_List);
+        Parsed_List.Rewind;
         -- Copy and delete list
         for I in 1 .. Result'Length loop
-          Parsed_List_Manager.Get (Parsed_List, Result(I));
+          Parsed_List.Get (Result(I));
         end loop;
       end if;
       return Result;

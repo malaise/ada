@@ -124,22 +124,22 @@ package body Limited_List is
     end if;
   end Read;
 
-  procedure Read (List : in out List_Type;
-                  Item : out Element_Type;
-                  Move : in Movement := Next;
-                  Done : out Boolean) is
+  procedure Read (List  : in out List_Type;
+                  Item  : out Element_Type;
+                  Move  : in Movement := Next;
+                  Moved : out Boolean) is
   begin
     Check_Cb(List);
     Check(List);
     Set (Item, List.Current.Value);
     -- Modified is set by Move_To
     if Move = Current then
-      Done := True;
+      Moved := True;
     elsif Check_Move (List, Move) then
       Move_To (List, Move);
-      Done := True;
+      Moved := True;
     else
-      Done := False;
+      Moved := False;
     end if;
   end Read;
 
@@ -158,22 +158,22 @@ package body Limited_List is
     List.Modified := True;
   end Modify;
 
-  procedure Modify (List : in out List_Type;
-                    Item : in Element_Type;
-                    Move : in Movement := Next;
-                    Done : out Boolean) is
+  procedure Modify (List  : in out List_Type;
+                    Item  : in Element_Type;
+                    Move  : in Movement := Next;
+                    Moved : out Boolean) is
   begin
     Check_Cb(List);
     Check(List);
     Set (List.Current.Value, Item);
     List.Modified := True;
     if Move = Current then
-      Done := True;
+      Moved := True;
     elsif Check_Move (List, Move) then
       Move_To (List, Move);
-      Done := True;
+      Moved := True;
     else
-      Done := False;
+      Moved := False;
     end if;
   end Modify;
 
@@ -287,16 +287,16 @@ package body Limited_List is
     end if;
   end Delete;
 
-  procedure Delete (List : in out List_Type;
-                    Move : in Direction := Next;
-                    Done : out Boolean) is
+  procedure Delete (List  : in out List_Type;
+                    Move  : in Direction := Next;
+                    Moved : out Boolean) is
   begin
     if Check_Move (List, Move) then
       Delete (List, Move);
-      Done := True;
+      Moved := True;
     else
       Delete (List, Other_Way (Move));
-      Done := False;
+      Moved := False;
     end if;
   end Delete;
 
@@ -311,17 +311,17 @@ package body Limited_List is
     -- Modified flag changed by Delete
   end Get;
 
-  procedure Get (List : in out List_Type;
-                 Item : out Element_Type;
-                 Move : in Direction := Next;
-                 Done : out Boolean) is
+  procedure Get (List  : in out List_Type;
+                 Item  : out Element_Type;
+                 Move  : in Direction := Next;
+                 Moved : out Boolean) is
   begin
     if Check_Move (List, Move) then
       Get (List, Item, Move);
-      Done := True;
+      Moved := True;
     else
       Get (List, Item, Other_Way (Move));
-      Done := False;
+      Moved := False;
     end if;
   end Get;
 
@@ -386,9 +386,14 @@ package body Limited_List is
   end Move_At;
 
   -- Move to beginning/end of list: Move_To (List, Where, 0, False);
-  procedure Rewind (List : in out List_Type; Where : in Direction := Next) is
+  procedure Rewind (List        : in out List_Type;
+                    Check_Empty : in Boolean := True;
+                    Where       : in Direction := Next) is
   begin
     Check_Cb(List);
+    if not Check_Empty and then Is_Empty(List) then
+      return;
+    end if;
     Check(List);
     -- Care here: List_Length reads Pos_First and Pos_Last!
     if Where = Next then
@@ -578,7 +583,7 @@ package body Limited_List is
       return;
     end if;
     Unchecked_Assign (Lval, Val);
-    Rewind (Lval, Where);
+    Rewind (Lval, True, Where);
     loop
       -- Copy Elt
       Read (Lval, Elt, Where, Moved);
@@ -909,7 +914,7 @@ package body Limited_List is
       Quick (1, Last);
     end;
     -- Move to first item
-    Rewind (List, Next);
+    Rewind (List, True, Next);
     List.Modified := True;
   end Sort;
 

@@ -184,7 +184,6 @@ package body Mesu_Nam is
 
     procedure My_Sort is new Dir_Mng.File_List_Mng.Sort(Less_Than);
 
-      use Dir_Mng.File_List_Mng;
   begin
     -- Check no wild_char
     if      Text_Handler.Locate (Text_Handler.To_Text(Date), Wild_Char) /= 0
@@ -200,14 +199,14 @@ package body Mesu_Nam is
     My_Sort (List);
     -- Look for lowest
     Ret_No := "00";
-    if Is_Empty (List) then
+    if List.Is_Empty then
       return Ret_No;
     end if;
-    Rewind (List, Next);
+    List.Rewind;
     -- loop in list
     loop
       -- Get file name
-      Read (List, File, Current);
+      List.Read (File, Dir_Mng.File_List_Mng.Current);
       File_Name := File.Name (1 .. File.Len);
       Split_File_Name(File_Name, L_Date, L_No, L_Pid);
 
@@ -221,9 +220,9 @@ package body Mesu_Nam is
       else
         -- Next slot
         Ret_No := Normal(Integer'Value(Ret_No) + 1, 2, Gap => '0');
-        if Check_Move (List) then
+        if List.Check_Move then
           -- Go to next entry
-          Move_To (List);
+          List.Move_To;
         else
           -- End of list
           exit;
@@ -233,8 +232,9 @@ package body Mesu_Nam is
     end loop;
 
     -- Done. Garbage collect!
-    Delete_List (List);
+    List.Delete_List;
     return Ret_No;
   end Find_Slot;
 
 end Mesu_Nam;
+

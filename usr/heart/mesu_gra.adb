@@ -353,7 +353,6 @@ package body Mesu_Gra is
     end Check_Same_Tz;
 
 
-    use Afpx.Line_List_Mng;
     use type Con_Io.Curs_Mvt;
   begin
     -- Here we only use Afpx.Line_List, no pb to suspend for
@@ -370,20 +369,19 @@ package body Mesu_Gra is
 
     -- Init array of mesures
     -- List is not empty
-    Saved_Pos := Get_Position (Afpx.Line_List);
+    Saved_Pos := Afpx.Line_List.Get_Position;
     Nb_Mesure := 0;
     -- for each in list : store in array
-    Rewind (Afpx.Line_List);
+    Afpx.Line_List.Rewind;
     loop
       -- Get line, file_name, split
-      Read (Afpx.Line_List, Line, Current);
+      Afpx.Line_List.Read (Line, Afpx.Line_List_Mng.Current);
       Str_Mng.Format_List_To_Mesure (Line, File_Name);
       Mesu_Nam.Split_File_Name (File_Name, Date_S, No_S, Pid_S);
       -- Get person
       Pers_Mng.Search (Pers_Def.The_Persons, Pers_Def.Pid_Range'Value(Pid_S),
                        Pos_Pers);
-      Pers_Def.Person_List_Mng.Read (Pers_Def.The_Persons, Person,
-                                     Pers_Def.Person_List_Mng.Current);
+      Pers_Def.The_Persons.Read (Person, Pers_Def.Person_List_Mng.Current);
       -- Get mesure
       Nb_Mesure := Nb_Mesure + 1;
       Mesure_Array(Nb_Mesure).Person := Person;
@@ -391,12 +389,12 @@ package body Mesu_Gra is
       Mesure_Array(Nb_Mesure).Drown  := False;
 
       -- Next line except if list empty or end of list
-      exit when Is_Empty (Afpx.Line_List)
-      or else not Check_Move (Afpx.Line_List);
+      exit when Afpx.Line_List.Is_Empty
+      or else not Afpx.Line_List.Check_Move;
 
-      Move_To (Afpx.Line_List);
+      Afpx.Line_List.Move_To;
     end loop;
-    Move_To (Afpx.Line_List, Next, Saved_Pos - 1, False);
+    Afpx.Line_List.Move_At (Saved_Pos);
 
     -- Find Y min and max
     Y_First := Pers_Def.Bpm_Range'Last;

@@ -48,9 +48,9 @@ package body Notify is
 
 
   procedure Delete_Current is
-    Done : Boolean;
+    Moved : Boolean;
   begin
-    Notif_List.Delete (Done => Done);
+    Notif_List.Delete (Moved => Moved);
   end Delete_Current;
 
 
@@ -97,7 +97,8 @@ package body Notify is
                & " on " & Event_Mng.File_Desc'Image(Socket.Fd_Of(Rec.Client)));
       end if;
       Delete_Current;
-      Client_Search (Notif_List, Found, Rec, From => Notif_List_Mng.From_Current);
+      Client_Search (Notif_List, Found, Rec,
+                     From => Notif_List_Mng.From_Current);
       exit when not Found;
     end loop;
     -- No more notification

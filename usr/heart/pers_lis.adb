@@ -5,21 +5,20 @@ package body Pers_Lis is
   procedure Build_List is
     Person : Pers_Def.Person_Rec;
     Line   : Afpx.Line_Rec;
-    use Pers_Def.Person_List_Mng;
   begin
     -- Encode list of persons
-    Afpx.Line_List_Mng.Delete_List (Afpx.Line_List);
-    if not Pers_Def.Person_List_Mng.Is_Empty (Pers_Def.The_Persons) then
-      Rewind (Pers_Def.The_Persons);
+    Afpx.Line_List.Delete_List;
+    if not Pers_Def.The_Persons.Is_Empty then
+      Pers_Def.The_Persons.Rewind;
       loop
-        Read (Pers_Def.The_Persons, Person, Pers_Def.Person_List_Mng.Current);
+        Pers_Def.The_Persons.Read (Person, Pers_Def.Person_List_Mng.Current);
         Str_Mng.Format_Person_To_List (Person, Line);
-        Afpx.Line_List_Mng.Insert (Afpx.Line_List, Line);
-        exit when not Check_Move (Pers_Def.The_Persons);
-        Move_To (Pers_Def.The_Persons);
+        Afpx.Line_List.Insert (Line);
+        exit when not Pers_Def.The_Persons.Check_Move;
+        Pers_Def.The_Persons.Move_To;
       end loop;
       -- End of list
-      Afpx.Line_List_Mng.Rewind (Afpx.Line_List, Afpx.Line_List_Mng.Prev);
+      Afpx.Line_List.Rewind (True, Afpx.Line_List_Mng.Prev);
     end if;
   end Build_List;
 
@@ -175,7 +174,7 @@ package body Pers_Lis is
 
     loop
 
-      List_Empty := Afpx.Line_List_Mng.List_Length(Afpx.Line_List) = 0;
+      List_Empty := Afpx.Line_List.Is_Empty;
       -- List and menu buttons, only in list
       Act := State = In_List;
       Afpx.Set_Field_Activation (03, Act);
@@ -217,10 +216,7 @@ package body Pers_Lis is
 
       -- Move in persons list according to Afpx selection
       if not List_Empty then
-        Pers_Def.Person_List_Mng.Move_To(
-                Pers_Def.The_Persons, Next,
-                Afpx.Line_List_Mng.Get_Position(Line_List) - 1,
-                False);
+        Pers_Def.The_Persons.Move_At(Afpx.Line_List.Get_Position);
       end if;
 
       case Ptg_Result.Event is
@@ -320,7 +316,7 @@ package body Pers_Lis is
                   Mesu_Mng.Delete_All (Person);
                   -- Delete all has changed persons list
                   Pers_Mng.Search (Pers_Def.The_Persons, Person.Pid, Pos);
-                  Delete (Pers_Def.The_Persons, Done => Moved);
+                  Pers_Def.The_Persons.Delete (Moved => Moved);
                   Build_List;
                 end if;
               end if;
@@ -358,7 +354,7 @@ package body Pers_Lis is
 
     end loop;
 
-    Afpx.Line_List_Mng.Delete_List (Afpx.Line_List);
+    Afpx.Line_List.Delete_List;
 
   end List;
 

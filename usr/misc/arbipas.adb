@@ -20,10 +20,10 @@ procedure Arbipas is
     Done : Boolean;
   begin
     -- Init
-    Arbi_List_Mng.Rewind (Arbi_List);
+    Arbi_List.Rewind;
     Ada.Text_Io.Put (N'Img & ": ");
     loop
-      Arbi_List_Mng.Read (Arbi_List, C, Arbi_List_Mng.Next, Done);
+      Arbi_List.Read (C, Arbi_List_Mng.Next, Done);
       Put_Number (C);
       Ada.Text_Io.Put (" ");
       exit when not Done;
@@ -38,19 +38,19 @@ procedure Arbipas is
     use type Arbitrary.Number;
   begin
     -- Init
-    Arbi_List_Mng.Rewind (Arbi_List);
+    Arbi_List.Rewind;
     P := Arbitrary.Zero;
     loop
       -- Compute New = Previous + Current
-      Arbi_List_Mng.Read (Arbi_List, N, Arbi_List_Mng.Current);
+      Arbi_List.Read (N, Arbi_List_Mng.Current);
       C := P + N;
       -- Save new and shift
-      Arbi_List_Mng.Modify (Arbi_List, C, Arbi_List_Mng.Next, Done);
+      Arbi_List.Modify (C, Arbi_List_Mng.Next, Done);
       P := N;
       exit when not Done;
     end loop;
     -- Add last one
-    Arbi_List_Mng.Insert (Arbi_List, Arbitrary.One);
+    Arbi_List.Insert (Arbitrary.One);
   end Compute_Line;
 
   -- Number and current line no
@@ -76,7 +76,7 @@ begin
 
   -- First line
   No_Line := 0;
-  Arbi_List_Mng.Insert (Arbi_List, Arbitrary.One);
+  Arbi_List.Insert (Arbitrary.One);
   Put_Line (No_Line);
 
   while Nb_Line = 0 or else No_Line < Nb_Line loop

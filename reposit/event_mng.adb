@@ -82,9 +82,7 @@ package body Event_Mng is
     end if;
 
     -- Append
-    if not Cb_List.Is_Empty then
-      Cb_List.Rewind (Cb_Mng.Prev);
-    end if;
+    Cb_List.Rewind (False, Cb_Mng.Prev);
     Cb_List.Insert ((Fd, Read, Callback));
     -- Add fd to select
     Res := C_Add_Fd (Integer(Fd), C_Types.Bool(Read)) = Ok;
@@ -115,7 +113,7 @@ package body Event_Mng is
     if not Res2 then
       raise Fd_Cb_Error;
     end if;
-    Cb_List.Delete (Done => Res2);
+    Cb_List.Delete (Moved => Res2);
 
     if not Res1 then
       raise Fd_Cb_Error;

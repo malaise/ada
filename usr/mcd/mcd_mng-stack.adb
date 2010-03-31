@@ -33,9 +33,9 @@ package body Stack is
       Async_Stdin.New_Line_Err;
     end if;
     if Default_Stack then
-      Stack_List.Insert(List, Item);
+      List.Insert(Item);
     else
-      Stack_List.Insert(Extra_List, Item);
+      Extra_List.Insert(Item);
     end if;
   end Push;
 
@@ -49,10 +49,10 @@ package body Stack is
       Async_Stdin.Put_Err ("Stack: Poping ");
     end if;
     if Default_Stack then
-      Stack_List.Get(List, Litem, Stack_List.Prev);
+      List.Get(Litem, Stack_List.Prev);
       History.Push (Litem);
     else
-      Stack_List.Get(Extra_List, Litem, Stack_List.Prev);
+      Extra_List.Get(Litem, Stack_List.Prev);
     end if;
     Item := Litem;
     if Debug.Debug_Level_Array(Debug.Stack) then
@@ -77,10 +77,10 @@ package body Stack is
       Async_Stdin.Put_Err ("Stack: Reading ");
     end if;
     if Default_Stack then
-      Stack_List.Read(List, Litem, Stack_List.Current);
+      List.Read(Litem, Stack_List.Current);
       History.Push (Litem);
     else
-      Stack_List.Read(Extra_List, Litem, Stack_List.Current);
+      Extra_List.Read(Litem, Stack_List.Current);
     end if;
     Item := Litem;
     if Debug.Debug_Level_Array(Debug.Stack) then
@@ -99,9 +99,9 @@ package body Stack is
     Size : Natural;
   begin
     if Default_Stack then
-      Size := Stack_List.List_Length(List);
+      Size := List.List_Length;
     else
-      Size := Stack_List.List_Length(Extra_List);
+      Size := Extra_List.List_Length;
     end if;
     if Debug.Debug_Level_Array(Debug.Stack) then
       if not Default_Stack then
@@ -120,17 +120,15 @@ package body Stack is
       Async_Stdin.Put_Err ("Stack: Poping first ");
     end if;
     -- Get first pushed item
-    Stack_List.Rewind(Extra_List);
-    Stack_List.Get(Extra_List, Litem, Stack_List.Next);
+    Extra_List.Rewind;
+    Extra_List.Get(Litem, Stack_List.Next);
     Item := Litem;
     if Debug.Debug_Level_Array(Debug.Stack) then
       Debug.Put (Litem);
       Async_Stdin.New_Line_Err;
     end if;
     -- Move back to last pushed item
-    if not Stack_List.Is_Empty(Extra_List) then
-      Stack_List.Rewind(Extra_List, Stack_List.Prev);
-    end if;
+    Extra_List.Rewind(False, Stack_List.Prev);
   exception
     when Stack_List.Empty_List =>
       if Debug.Debug_Level_Array(Debug.Stack) then
@@ -145,17 +143,17 @@ package body Stack is
         Async_Stdin.Put_Err ("Extra ");
       Async_Stdin.Put_Err ("Stack: pushing at first ");
     end if;
-    if Stack_List.Is_Empty(Extra_List) then
-      Stack_List.Insert(Extra_List, Item);
+    if Extra_List.Is_Empty then
+      Extra_List.Insert(Item);
       return;
     end if;
 
     -- Insert before first
-    Stack_List.Rewind(Extra_List);
-    Stack_List.Insert(Extra_List, Item, Stack_List.Prev);
+    Extra_List.Rewind;
+    Extra_List.Insert(Item, Stack_List.Prev);
 
     -- Move back to last pushed item
-    Stack_List.Rewind(Extra_List, Stack_List.Prev);
+    Extra_List.Rewind(True, Stack_List.Prev);
   end Pushfe;
 
   -- Dump last items popped or read

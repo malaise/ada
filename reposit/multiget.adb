@@ -49,13 +49,13 @@ package body Multiget is
   procedure Stop_Recording is
     Pos : Positive;
   begin
-    if not Item_List_Mng.Is_Empty (Item_List) then
+    if not Item_List.Is_Empty then
       -- Clear the buffer up to current pos
       if Offset = 0 then
-        Pos := Item_List_Mng.Get_Position (Item_List);
-        Item_List_Mng.Rewind (Item_List);
+        Pos := Item_List.Get_Position;
+        Item_List.Rewind;
         for I in 1 .. Pos loop
-          Item_List_Mng.Delete (Item_List);
+          Item_List.Delete;
         end loop;
         -- Set offset to 1
         Offset := 1;
@@ -78,40 +78,39 @@ package body Multiget is
   function Get (User_Data : User_Data_Type) return Item_Type is
     Item : Item_Type;
   begin
-    if Item_List_Mng.Is_Empty (Item_List)
-    or else (Offset = 0
-             and then not Item_List_Mng.Check_Move (Item_List) ) then
+    if Item_List.Is_Empty
+    or else (Offset = 0 and then not Item_List.Check_Move) then
       -- No list or end of list of unget
       Item := Get_Item (User_Data);
       if Recording then
         -- Control the max length of the list
         if Unget_Length /= 0
-        and then Item_List_Mng.List_Length (Item_List) = Unget_Length then
+        and then Item_List.List_Length = Unget_Length then
           -- Remove oldest got item
-          Item_List_Mng.Rewind (Item_List);
-          Item_List_Mng.Delete (Item_List);
+          Item_List.Rewind;
+          Item_List.Delete;
           -- Be ready to append
-          Item_List_Mng.Rewind (Item_List, Item_List_Mng.Prev);
+          Item_List.Rewind (True, Item_List_Mng.Prev);
         end if;
         -- Append new got item
-        Item_List_Mng.Insert (Item_List, Item);
+        Item_List.Insert (Item);
         Offset := 0;
       end if;
     elsif Offset = 1 then
       -- Ungets performed up to beggining of list
       -- Getting moves to first
       if Recording then
-        Item_List_Mng.Read (Item_List, Item, Item_List_Mng.Current);
+        Item_List.Read (Item, Item_List_Mng.Current);
         Offset := 0;
       else
-        Item_List_Mng.Get (Item_List, Item);
+        Item_List.Get (Item);
       end if;
     else
       -- Current pos, "next to unget" is followed by an Item: the one to re-get
       if Recording then
-        Item_List_Mng.Read (Item_List, Item);
+        Item_List.Read (Item);
       else
-        Item_List_Mng.Get (Item_List, Item);
+        Item_List.Get (Item);
       end if;
     end if;
     return Item;
@@ -120,10 +119,10 @@ package body Multiget is
   -- Returns the number of Unget that can be done (0 when recording is not active)
   function Nb_Unget return Unget_Range is
   begin
-    if not Recording or else Item_List_Mng.Is_Empty (Item_List) then
+    if not Recording or else Item_List.Is_Empty then
       return 0;
     end if;
-    return Item_List_Mng.Get_Position (Item_List) - Offset;
+    return Item_List.Get_Position - Offset;
   end Nb_Unget;
 
 
@@ -136,9 +135,9 @@ package body Multiget is
     end if;
     if Number = 0 then
       -- Unget all
-      if not Item_List_Mng.Is_Empty (Item_List) then
+      if not Item_List.Is_Empty then
         -- Move at first pos - 1
-        Item_List_Mng.Rewind (Item_List);
+        Item_List.Rewind;
         Offset := 1;
       end if;
       return;
@@ -146,12 +145,12 @@ package body Multiget is
     if Number > Nb_Unget then
       raise To_Many_Unget;
     end if;
-    if Item_List_Mng.Get_Position (Item_List) = 1 then
+    if Item_List.Get_Position = 1 then
       -- Already ungot all items but first, simulate move at index -1
       Offset := 1;
     else
       -- Move "back" current pos in the history of got items
-      Item_List_Mng.Move_To (Item_List, Item_List_Mng.Prev, Number, From_Current => True);
+      Item_List.Move_To (Item_List_Mng.Prev, Number, From_Current => True);
     end if;
   end Unget;
 

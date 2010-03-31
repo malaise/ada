@@ -60,7 +60,7 @@ procedure Agite is
     Dir : Dir_Mng.File_List_Mng.List_Type;
     Dir_File : Dir_Mng.File_Entry_Rec;
     File : Git_If.File_Entry_Rec;
-    Done : Boolean;
+    Moved : Boolean;
     use type Directory.File_Kind_List;
   begin
     Files.Delete_List;
@@ -68,7 +68,7 @@ procedure Agite is
     Dir_Mng.List_Dir (Dir, Path);
     Dir_Mng.File_Sort (Dir);
     loop
-      Dir.Read (Dir_File, Done => Done);
+      Dir.Read (Dir_File, Moved => Moved);
       if Dir_File.Kind = Directory.Dir then
         File.S2 := ' ';
         File.S3 := ' ';
@@ -80,7 +80,7 @@ procedure Agite is
       File.Kind := Git_If.Char_Of (
              Sys_Calls.File_Desc_Kind_List(Dir_File.Kind));
       Files.Insert (File);
-      exit when not Done;
+      exit when not Moved;
     end loop;
     Files.Rewind;
   end List_Files;
@@ -241,7 +241,7 @@ procedure Agite is
     Pos := Afpx.Line_List.Get_Position;
     History.Handle (Utils.Asu_Ts (Root), Utils.Asu_Ts (Path), Name, Is_File);
     Init;
-    Afpx.Line_List.Move_To (Number => Pos - 1);
+    Afpx.Line_List.Move_At (Pos);
     Afpx.Update_List (Afpx.Center);
   end Hist;
 

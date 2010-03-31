@@ -31,21 +31,18 @@ package body Pers_Fil is
     -- Open file
     Open;
     -- Clear list
-    Pers_Def.Person_List_Mng.Delete_List (The_Persons);
+    The_Persons.Delete_List;
 
     -- Read persons from file and insert them in list
     while not Person_Io.End_Of_File (Person_File) loop
       Person_Io.Read (Person_File, Person);
-      Pers_Def.Person_List_Mng.Insert (The_Persons, Person,
-       Pers_Def.Person_List_Mng.Next);
+      The_Persons.Insert (Person, Pers_Def.Person_List_Mng.Next);
     end loop;
 
     -- Close file
     Person_Io.Close (Person_File);
     -- Move to begining of list
-    if not Pers_Def.Person_List_Mng.Is_Empty(The_Persons) then
-      Pers_Def.Person_List_Mng.Rewind (The_Persons);
-    end if;
+    The_Persons.Rewind (False);
 
   exception
     when Pers_Def.Person_List_Mng.Full_List =>
@@ -58,8 +55,7 @@ package body Pers_Fil is
   -- Save the list to file. (List not affected)
   procedure Save is
     Person : Pers_Def.Person_Rec;
-    List_Length : constant Natural
-                := Pers_Def.Person_List_Mng.List_Length (The_Persons);
+    List_Length : constant Natural := The_Persons.List_Length;
     Init_Pos    : Natural;
   begin
 
@@ -71,25 +67,23 @@ package body Pers_Fil is
     -- Scan list only if not empty
     if List_Length /= 0 then
       -- Save current position
-      Init_Pos := Pers_Def.Person_List_Mng.Get_Position (The_Persons);
+      Init_Pos := The_Persons.Get_Position;
       -- Move to beginning of list
-      Pers_Def.Person_List_Mng.Rewind (The_Persons);
+      The_Persons.Rewind;
 
       -- Read persons from list and write them to file
       for I in 1 .. List_Length loop
         if I /= List_Length then
-          Pers_Def.Person_List_Mng.Read (The_Persons, Person);
+          The_Persons.Read (Person);
         else
           -- Do not move after reading last person
-          Pers_Def.Person_List_Mng.Read (The_Persons, Person,
-           Pers_Def.Person_List_Mng.Current);
+          The_Persons.Read (Person, Pers_Def.Person_List_Mng.Current);
         end if;
         Person_Io.Write (Person_File, Person);
       end loop;
 
       -- Move to initial position in list
-      Pers_Def.Person_List_Mng.Move_To (The_Persons,
-       Pers_Def.Person_List_Mng.Next, Init_Pos - 1, False);
+      The_Persons.Move_At (Init_Pos);
     end if;
 
     -- Close file

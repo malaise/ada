@@ -2086,7 +2086,7 @@ package body Dtd is
   --  exist in the list of attribute values of Xml tagged ID
   --  and thus collected in Ids
   procedure Final_Check (Ctx : in out Ctx_Type) is
-    Done : Boolean;
+    Moved : Boolean;
     Idref, Prev_Ref : Id_Cell;
     Found : Boolean;
   begin
@@ -2096,7 +2096,7 @@ package body Dtd is
       Id_Sort (Ctx.Idrefs.all);
       Ctx.Idrefs.Rewind;
       loop
-        Ctx.Idrefs.Read (Idref, Done => Done);
+        Ctx.Idrefs.Read (Idref, Moved => Moved);
         -- Check for Id if this reference is new
         if Idref /= Prev_Ref then
           Ctx.Ids.Search (Idref, Found);
@@ -2106,7 +2106,7 @@ package body Dtd is
           end if;
           Prev_Ref := Idref;
         end if;
-        exit when not Done;
+        exit when not Moved;
       end loop;
     end if;
     Trace ("Checked final");

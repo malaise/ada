@@ -45,9 +45,9 @@ procedure Search is
 
   -- Unselect current oper
   procedure Unsel is
-    Done : Boolean;
+    Moved : Boolean;
   begin
-    Sel_List.Delete(Sel_List_Mng.Prev, Done => Done);
+    Sel_List.Delete(Sel_List_Mng.Prev, Moved => Moved);
   end Unsel;
 
   -- Search criteria

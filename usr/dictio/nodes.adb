@@ -44,7 +44,7 @@ package body Nodes is
                  Sync : in Boolean;
                  Prio : in Args.Prio_Str) is
     Rec, Grec : Node_Rec;
-    Done : Boolean;
+    Moved : Boolean;
     use type Status.Status_List;
   begin
     Rec.Name := Name;
@@ -63,13 +63,11 @@ package body Nodes is
         end if;
       else
         -- Dead => delete
-        Node_List.Delete (Node_Mng.Prev, Done);
+        Node_List.Delete (Node_Mng.Prev, Moved);
       end if;
     elsif Stat /= Status.Dead then
       -- Unknown and alive => insert
-      if not Node_List.Is_Empty then
-        Node_List.Rewind;
-      end if;
+      Node_List.Rewind (False);
       Node_List.Insert (Rec);
     end if;
   end Set;

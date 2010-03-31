@@ -179,7 +179,7 @@ package body Git_If is
     Cmd : Asu_Us;
     Str : Asu_Us;
     File_Entry : File_Entry_Rec;
-    Done : Boolean;
+    Moved : Boolean;
     Found : Boolean;
     Dir_List : Dir_Mng.File_List_Mng.List_Type;
     Dir_Entry : Dir_Mng.File_Entry_Rec;
@@ -220,7 +220,7 @@ package body Git_If is
     if not Out_Flow_1.List.Is_Empty then
       Out_Flow_1.List.Rewind;
       loop
-        Out_Flow_1.List.Read (Str, Done => Done);
+        Out_Flow_1.List.Read (Str, Moved => Moved);
         if Directory.Dirname (Asu_Ts (Str)) = "" then
           File_Entry.Name := Str;
           File_Entry.S2 := ' ';
@@ -228,7 +228,7 @@ package body Git_If is
           File_Entry.Kind := Char_Of (Asu_Ts (Str));
           Files.Insert (File_Entry);
         end if;
-        exit when not Done;
+        exit when not Moved;
       end loop;
     end if;
 
@@ -236,7 +236,7 @@ package body Git_If is
     if not Out_Flow_2.List.Is_Empty then
       Out_Flow_2.List.Rewind;
       loop
-        Out_Flow_2.List.Read (Str, Done => Done);
+        Out_Flow_2.List.Read (Str, Moved => Moved);
         File_Entry.S2 := Asu.Element (Str, 1);
         File_Entry.S3 := Asu.Element (Str, 2);
         if Asu.Element (Str, Asu.Length (Str)) /= '/'
@@ -259,19 +259,17 @@ package body Git_If is
             end if;
           end if;
         end if;
-        exit when not Done;
+        exit when not Moved;
       end loop;
     end if;
 
     -- Add directories except "." and ".."
     Dir_Mng.List_Dir (Dir_List, "", "");
     if not Dir_List.Is_Empty then
-      if not Files.Is_Empty then
-        Files.Rewind;
-      end if;
+      Files.Rewind (False);
       Dir_List.Rewind;
       loop
-        Dir_List.Read (Dir_Entry, Done => Done);
+        Dir_List.Read (Dir_Entry, Moved => Moved);
         if Dir_Entry.Kind = Directory.Dir
         and then Dir_Entry.Name (1 .. Dir_Entry.Len) /= "."
         and then Dir_Entry.Name (1 .. Dir_Entry.Len) /= ".." then
@@ -281,7 +279,7 @@ package body Git_If is
           File_Entry.Name := Asu_Tus (Dir_Entry.Name (1 .. Dir_Entry.Len));
           Files.Insert (File_Entry);
         end if;
-        exit when not Done;
+        exit when not Moved;
       end loop;
     end if;
 
@@ -289,9 +287,7 @@ package body Git_If is
     File_Sort (Files);
 
     -- Finally insert "." then ".." at head
-    if not Files.Is_Empty then
-      Files.Rewind;
-    end if;
+    Files.Rewind (False);
     File_Entry.S2 := ' ';
     File_Entry.S3 := ' ';
     File_Entry.Kind := '/';
@@ -347,7 +343,7 @@ package body Git_If is
     Assert (Asu.Slice (Line, 1, 8) = "Author: ");
 
     -- Date:   YYYY-MM-DD HH:MM:SS ...
-    Flow.Read (Line, Done => Done);
+    Flow.Read (Line, Moved => Done);
     Assert (Asu.Length (Line) >= 27);
     Assert (Asu.Slice (Line, 1, 8) = "Date:   ");
     Date := Asu.Slice (Line, 9, 27);
@@ -365,7 +361,7 @@ package body Git_If is
     Ind := 0;
     Comments := (others => Asu_Null);
     loop
-      Flow.Read (Line, Done => Done);
+      Flow.Read (Line, Moved => Done);
       exit when Asu.Length (Line) = 0;
       Ind := Ind + 1;
       if Ind = 1 and then Asu.Length (Line) >= 2
@@ -406,7 +402,7 @@ package body Git_If is
       Files.Delete_List;
     end if;
     loop
-      Flow.Read (Line, Done => Done);
+      Flow.Read (Line, Moved => Done);
       exit when Asu.Length (Line) = 0;
       Ind := Ind + 1;
       if Ind = 1 and then Asu.Length (Line) = 47

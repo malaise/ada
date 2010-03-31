@@ -43,9 +43,7 @@ package body Queues.Timed is
     Item.Timer := new Passive_Timers.Passive_Timer;
     Timer := Item.Timer;
     -- Append record and rewind
-    if not Queue.List.Is_Empty then
-      Queue.List.Rewind (Item_List_Mng.Prev);
-    end if;
+    Queue.List.Rewind (False, Item_List_Mng.Prev);
     Queue.List.Insert (Item);
     Queue.List.Rewind;
   end Add_Item;
@@ -73,7 +71,7 @@ package body Queues.Timed is
   -- Remove obsolete items
   procedure Expire (Queue : in out Timed_Type) is
     Item : Loc_Item;
-    Done : Boolean;
+    Moved : Boolean;
   begin
     -- List is always with current pos set to first
     loop
@@ -82,17 +80,17 @@ package body Queues.Timed is
       Queue.List.Read (Item, Item_List_Mng.Current);
       if Item.Timer.Has_Expired then
         -- Delete timer that has expired
-        Queue.List.Delete (Done => Done);
+        Queue.List.Delete (Moved => Moved);
         Item.Timer.Stop;
         Free_Timer (Item.Timer);
       else
-        Done := Queue.List.Check_Move;
-        if Done then
+        Moved := Queue.List.Check_Move;
+        if Moved then
           Queue.List.Move_To;
         end if;
       end if;
       -- End of list
-      exit when not Done;
+      exit when not Moved;
     end loop;
     if not Queue.List.Is_Empty then
       Queue.List.Rewind;

@@ -3,7 +3,7 @@ with Argument;
 with Utils, Git_If;
 procedure T_Git is
 
-  Done : Boolean;
+  Moved : Boolean;
 
   Vers : Git_If.Version_Rec;
   Root, Path : Utils.Asu_Us;
@@ -34,11 +34,11 @@ begin
     Ada.Text_Io.Put_Line ("No file");
   else
     loop
-      Files.Read (File_Entry, Done => Done);
+      Files.Read (File_Entry, Moved => Moved);
       Ada.Text_Io.Put_Line (File_Entry.S2 & File_Entry.S3 & " "
                           & Utils.Asu.To_String (File_Entry.Name)
                           & File_Entry.Kind);
-      exit when not Done;
+      exit when not Moved;
     end loop;
   end if;
 
@@ -52,11 +52,11 @@ begin
     Ada.Text_Io.Put_Line ("No log");
   else
     loop
-      Logs.Read (Log_Entry, Done => Done);
+      Logs.Read (Log_Entry, Moved => Moved);
       Ada.Text_Io.Put_Line (Log_Entry.Hash & " " & Log_Entry.Date);
       Ada.Text_Io.Put_Line (Utils.Asu_Ts (Log_Entry.Comment(1)));
       Ada.Text_Io.New_Line;
-      exit when not Done;
+      exit when not Moved;
     end loop;
   end if;
 
@@ -74,10 +74,10 @@ begin
      Ada.Text_Io.Put_Line ("No File");
   else
     loop
-      Commits.Read (Commit_Entry, Done => Done);
+      Commits.Read (Commit_Entry, Moved => Moved);
       Ada.Text_Io.Put_Line (Commit_Entry.Status & " "
                           & Utils.Asu_Ts (Commit_Entry.File));
-      exit when not Done;
+      exit when not Moved;
     end loop;
   end if;
 

@@ -21,7 +21,7 @@ package body Afpx.List_Manager is
   procedure Init_List (From : in out Element_List.Dyn_List.List_Type) is
     Pos : Positive;
     Elt : Element_Type;
-    Done : Boolean;
+    Moved : Boolean;
     Line : Line_Rec;
   begin
     -- Delete Afpx list
@@ -36,10 +36,10 @@ package body Afpx.List_Manager is
     -- Copy list
     From.Rewind;
     loop
-      From.Read (Elt, Done => Done);
+      From.Read (Elt, Moved => Moved);
       Set (Line, Elt);
       Line_List.Insert (Line);
-      exit when not Done;
+      exit when not Moved;
     end loop;
 
     -- Set both lists at pos

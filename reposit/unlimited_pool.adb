@@ -11,20 +11,20 @@ package body Unlimited_Pool is
   -- Check if pool is not empty, get number of elements in pool
   function Is_Empty (Pool : in Pool_Type) return Boolean is
   begin
-    return Pool_List_Mng.Is_Empty(Pool_List_Mng.List_Type(Pool));
+    -- The one of the list
+    return Pool_List_Mng.List_Type(Pool).Is_Empty;
   end Is_Empty;
 
   function Length (Pool : in Pool_Type) return Natural is
   begin
-    return Pool_List_Mng.List_Length(Pool_List_Mng.List_Type(Pool));
+    return Pool.List_Length;
   end Length;
+
 
   -- Add in beginning of list
   procedure Push (Pool : in out Pool_Type; Data : in Data_Type) is
   begin
-    Pool_List_Mng.Insert(Pool_List_Mng.List_Type(Pool),
-                         Data,
-                         Pool_List_Mng.Prev);
+    Pool.Insert(Data, Pool_List_Mng.Prev);
   exception
     when Pool_List_Mng.Full_List =>
       raise Pool_Full;
@@ -33,64 +33,57 @@ package body Unlimited_Pool is
   -- Get from pool, move to next
   procedure Pop (Pool : in out Pool_Type; Data : out Data_Type) is
   begin
-    if Is_Empty(Pool) then
+    if Pool.Is_Empty then
       raise Empty_Pool;
     end if;
     if not Lifo then
       -- Fifo means pop last (and go to previous) then rewind to first
-      Pool_List_Mng.Rewind (Pool_List_Mng.List_Type(Pool), Pool_List_Mng.Prev);
-      Pool_List_Mng.Get (Pool_List_Mng.List_Type(Pool), Data,
-                         Pool_List_Mng.Prev);
-      if not Is_Empty(Pool) then
-        Pool_List_Mng.Rewind (Pool_List_Mng.List_Type(Pool));
-      end if;
+      Pool.Rewind (True, Pool_List_Mng.Prev);
+      Pool.Get (Data, Pool_List_Mng.Prev);
+      Pool.Rewind (False);
     else
       -- Lifo means pop first and move to next
-      Pool_List_Mng.Get(Pool_List_Mng.List_Type(Pool), Data);
+      Pool.Get(Data);
     end if;
   end Pop;
 
   procedure Pop (Pool : in out Pool_Type) is
   begin
-    if Is_Empty(Pool) then
+    if Pool.Is_Empty then
       raise Empty_Pool;
     end if;
     if not Lifo then
       -- Fifo means pop last (and go to previous) then rewind to first
-      Pool_List_Mng.Rewind (Pool_List_Mng.List_Type(Pool), Pool_List_Mng.Prev);
-      Pool_List_Mng.Delete (Pool_List_Mng.List_Type(Pool), Pool_List_Mng.Prev);
-      if not Is_Empty(Pool) then
-        Pool_List_Mng.Rewind (Pool_List_Mng.List_Type(Pool));
-      end if;
+      Pool.Rewind (True, Pool_List_Mng.Prev);
+      Pool.Delete (Pool_List_Mng.Prev);
+      Pool.Rewind (False);
     else
       -- Lifo means pop first and move to next
-      Pool_List_Mng.Delete (Pool_List_Mng.List_Type(Pool));
+      Pool.Delete;
     end if;
   end Pop;
 
   -- Read from pool, remain at current pos
   procedure Read (Pool : in out Pool_Type; Data : out Data_Type) is
   begin
-    if Is_Empty(Pool) then
+    if Pool.Is_Empty then
       raise Empty_Pool;
     end if;
     if not Lifo then
       -- Fifo means read last then rewind to first
-      Pool_List_Mng.Rewind (Pool_List_Mng.List_Type(Pool), Pool_List_Mng.Prev);
-      Pool_List_Mng.Read (Pool_List_Mng.List_Type(Pool), Data,
-                          Pool_List_Mng.Current);
-      Pool_List_Mng.Rewind (Pool_List_Mng.List_Type(Pool));
+      Pool.Rewind (True, Pool_List_Mng.Prev);
+      Pool.Read (Data, Pool_List_Mng.Current);
+      Pool.Rewind (True);
     else
       -- Lifo means read first
-      Pool_List_Mng.Read (Pool_List_Mng.List_Type(Pool), Data,
-                          Pool_List_Mng.Current);
+      Pool.Read (Data, Pool_List_Mng.Current);
     end if;
   end Read;
 
   -- Clear the pool
   procedure Clear (Pool : in out Pool_Type) is
   begin
-    Pool_List_Mng.Delete_List(Pool_List_Mng.List_Type(Pool));
+    Pool.Delete_List;
   end Clear;
 
 end Unlimited_Pool;

@@ -62,11 +62,11 @@ package body Protected_Pool is
   -- Get/Read/Delete from the pool the element of key
   function Get (Pool : Pool_Type; Key : Key_Type) return Element_Type is
     Cell : Cell_Type;
-    Done : Boolean;
+    Moved : Boolean;
   begin
     Pool.Mutex.Get;
     Locate (Pool, Key);
-    Pool.List.all.Get (Cell, Done => Done);
+    Pool.List.all.Get (Cell, Moved => Moved);
     Pool.Mutex.Release;
     return Cell.Data;
   exception
@@ -77,11 +77,11 @@ package body Protected_Pool is
 
   function Read (Pool : Pool_Type; Key : Key_Type) return Element_Type is
     Cell : Cell_Type;
-    Done : Boolean;
+    Moved : Boolean;
   begin
     Pool.Mutex.Get;
     Locate (Pool, Key);
-    Pool.List.all.Read (Cell, Done => Done);
+    Pool.List.all.Read (Cell, Moved => Moved);
     Pool.Mutex.Release;
     return Cell.Data;
   exception
@@ -91,11 +91,11 @@ package body Protected_Pool is
   end Read;
 
   procedure Delete (Pool : Pool_Type; Key : Key_Type) is
-    Done : Boolean;
+    Moved : Boolean;
   begin
     Pool.Mutex.Get;
     Locate (Pool, Key);
-    Pool.List.all.Delete (Done => Done);
+    Pool.List.all.Delete (Moved => Moved);
     Pool.Mutex.Release;
   exception
     when Not_Found =>

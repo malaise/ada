@@ -57,7 +57,7 @@ begin
   end if;
 
   Dir_Sort (Dir_List);
-  Dir_Mng.File_List_Mng.Rewind (Dir_List);
+  Dir_List.Rewind;
 
   -- Start a temporary silly timer
   Timer_Tmp := Timers.Create ( (Timers.Delay_Sec, null, 0.1, 0.1), null);
@@ -71,8 +71,7 @@ begin
   Timers.Delete (Timer_Tmp);
 
   loop
-    Dir_Mng.File_List_Mng.Read (Dir_List, Dir_Item,
-                                Dir_Mng.File_List_Mng.Current);
+    Dir_List.Read (Dir_Item, Dir_Mng.File_List_Mng.Current);
     Afpx_Item.Len := Dir_Item.Len;
     Afpx_Item.Str := (others => ' ');
     Afpx_Item.Str(1 .. Afpx_Item.Len) :=
@@ -81,14 +80,13 @@ begin
     Afpx_Item.Str(Afpx_Item.Len+2) :=
        Language.Char_To_Wide (Dir_Mng.File_Kind_List'Image(Dir_Item.Kind)(1));
     Afpx_Item.Len := Afpx_Item.Len + 2;
-    Afpx.Line_List_Mng.Insert (Afpx.Line_List, Afpx_Item);
-    exit when not Dir_Mng.File_List_Mng.Check_Move (Dir_List);
-    Dir_Mng.File_List_Mng.Move_To (Dir_List);
+    Afpx.Line_List.Insert (Afpx_Item);
+    exit when not Dir_List.Check_Move;
+    Dir_List.Move_To;
   end loop;
-  Afpx.Line_List_Mng.Rewind (Afpx.Line_List);
+  Afpx.Line_List.Rewind;
 
-  Afpx.Line_List_Mng.Read (Afpx.Line_List, Afpx_Item,
-                           Afpx.Line_List_Mng.Current);
+  Afpx.Line_List.Read (Afpx_Item, Afpx.Line_List_Mng.Current);
 
   Afpx.Encode_Wide_Field (2, (1, 0),
                      ">" & Afpx_Item.Str (1 .. Afpx_Item.Len) & "<");
@@ -142,8 +140,7 @@ begin
           when 4 =>
             exit;
           when 5 | Afpx.List_Field_No =>
-            Afpx.Line_List_Mng.Read (Afpx.Line_List, Afpx_Item,
-                                     Afpx.Line_List_Mng.Current);
+            Afpx.Line_List.Read (Afpx_Item, Afpx.Line_List_Mng.Current);
             Afpx.Clear_Field (2);
             Afpx.Encode_Wide_Field (2, (1, 0),
                         ">" & Afpx_Item.Str (1 .. Afpx_Item.Len) & "<");

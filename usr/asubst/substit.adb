@@ -295,9 +295,7 @@ package body Substit is
               :=  Asu.To_Unbounded_String (Text_Line.Get_Line_Feed (In_File));
   begin
     -- Move to end
-    if not Line_List.Is_Empty then
-      Line_List.Rewind (Line_List_Mng.Prev);
-    end if;
+    Line_List.Rewind (False, Line_List_Mng.Prev);
     -- Compute amount to fill buffer (Nb lines)
     Nb_To_Read := Nb_Pattern - Line_List.List_Length;
     -- Append trailing new line if any
@@ -751,8 +749,8 @@ package body Substit is
       Match_Res := Search_Pattern.Str_Indexes;
       -- Get access to first and last lines of input
       Line_List.Rewind;
-      First_Line := Line_List_Mng.Access_Current (Line_List);
-      Line_List.Rewind (Line_List_Mng.Prev);
+      First_Line := Line_List.Access_Current;
+      Line_List.Rewind (True, Line_List_Mng.Prev);
       Last_Line := Line_List.Access_Current;
       -- Result string is -> Start of first line + Replacing
       --                   + End of last line

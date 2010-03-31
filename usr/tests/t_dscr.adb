@@ -70,9 +70,9 @@ begin
   for I in 1 .. 999 loop
     Line.Str(1 .. 3) := Language.String_To_Wide (Normal(I, 3, Gap => '0'));
     Line.Len := 3;
-    Afpx.Line_List_Mng.Insert (Afpx.Line_List, Line);
+    Afpx.Line_List.Insert (Line);
   end loop;
-  Afpx.Line_List_Mng.Rewind(Afpx.Line_List);
+  Afpx.Line_List.Rewind;
 
   Set_Dscr(Dscr_No);
 

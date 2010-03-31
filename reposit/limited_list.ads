@@ -38,12 +38,12 @@ package Limited_List is
                   Item : out Element_Type;
                   Move : in Movement := Next);
 
-  -- Read anyway. Set Done to True if movement was possible (and done)
+  -- Read anyway. Set Moved to True if movement was possible (and done)
   --  and False otherwise (no movement done)
-  procedure Read (List : in out List_Type;
-                  Item : out Element_Type;
-                  Move : in Movement := Next;
-                  Done : out Boolean);
+  procedure Read (List  : in out List_Type;
+                  Item  : out Element_Type;
+                  Move  : in Movement := Next;
+                  Moved : out Boolean);
 
 
   -- Modify the current item then moves to another item
@@ -52,12 +52,12 @@ package Limited_List is
                     Item : in Element_Type;
                     Move : in Movement := Next);
 
-  -- Modify anyway. Set Done to True if movement was possible (and done)
+  -- Modify anyway. Set Moved to True if movement was possible (and done)
   --  and False otherwise (no movement done)
-  procedure Modify (List : in out List_Type;
-                    Item : in Element_Type;
-                    Move : in Movement := Next;
-                    Done : out Boolean);
+  procedure Modify (List  : in out List_Type;
+                    Item  : in Element_Type;
+                    Move  : in Movement := Next;
+                    Moved : out Boolean);
 
 
   -- Insert a new item after or before the current item
@@ -76,13 +76,13 @@ package Limited_List is
                  Item : out Element_Type;
                  Move : in Direction := Next);
 
-  -- Get anyway. Set Done to True if movement was possible (and done)
+  -- Get anyway. Set Moved to True if movement was possible (and done)
   --  or lists becomes empty, and False otherwise (movement done in the
   --  opposite direction)
-  procedure Get (List : in out List_Type;
-                 Item : out Element_Type;
-                 Move : in Direction := Next;
-                 Done : out Boolean);
+  procedure Get (List  : in out List_Type;
+                 Item  : out Element_Type;
+                 Move  : in Direction := Next;
+                 Moved : out Boolean);
 
 
   -- Suppress the current element from the list
@@ -92,12 +92,12 @@ package Limited_List is
   procedure Delete (List : in out List_Type;
                     Move : in Direction := Next);
 
-  -- Delete anyway. Set Done to True if movement was possible (and done)
+  -- Delete anyway. Set Moved to True if movement was possible (and done)
   --  or lists becomes empty, and False otherwise (movement done in the
   --  opposite direction)
-  procedure Delete (List : in out List_Type;
-                    Move : in Direction := Next;
-                    Done : out Boolean);
+  procedure Delete (List  : in out List_Type;
+                    Move  : in Direction := Next;
+                    Moved : out Boolean);
 
 
   -- Delete the full list
@@ -127,8 +127,10 @@ package Limited_List is
                      Where    : in Direction := Next);
 
   -- Move to beginning/end of list: Move_To (List, Where, 0, False);
-  procedure Rewind (List : in out List_Type; Where : in Direction := Next);
-
+  -- Does not raise Empty_list if Check_Empty is False;
+  procedure Rewind (List        : in out List_Type;
+                    Check_Empty : in Boolean := True;
+                    Where       : in Direction := Next);
 
   -- Permute 2 elements
   --  If From_Current is True,  then numbers of elements are relative from

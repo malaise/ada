@@ -59,9 +59,7 @@ package body Data_Base is
 
     procedure Append_Itm is
     begin
-      if not Item_List.Is_Empty then
-        Item_List.Rewind (Item_List_Mng.Prev);
-      end if;
+      Item_List.Rewind (False, Item_List_Mng.Prev);
       Item_List.Insert (Itm);
     end Append_Itm;
 

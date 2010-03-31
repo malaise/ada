@@ -10,12 +10,8 @@ package body Arbitrary.Prime_List is
   -- Rewind the list of prime numbers found so far
   procedure Rewind is
   begin
-    if not Prime_List_Mng.Is_Empty (The_List) then
-      Prime_List_Mng.Rewind (The_List);
-      Need_Search := False;
-    else
-      Need_Search := True;
-    end if;
+    Need_Search := The_List.Is_Empty;
+    The_List.Rewind (False);
   end Rewind;
 
   -- Read item from list
@@ -24,17 +20,15 @@ package body Arbitrary.Prime_List is
     Moved : Boolean;
   begin
     -- Read next
-    Prime_List_Mng.Read (The_List, Res, Done => Moved);
+    The_List.Read (Res, Moved => Moved);
     return Res;
   end Read;
 
   -- Append a prime number to list
   procedure Append (N : in Positive_Number) is
   begin
-    if not Prime_List_Mng.Is_Empty (The_List) then
-      Prime_List_Mng.Rewind (The_List, Prime_List_Mng.Prev);
-    end if;
-    Prime_List_Mng.Insert (The_List, N);
+    The_List.Rewind (False, Prime_List_Mng.Prev);
+    The_List.Insert (N);
   end Append;
 
   Zero : constant Number := Arbitrary.Zero;
@@ -66,20 +60,20 @@ package body Arbitrary.Prime_List is
     -- Need to search?
     if not Need_Search then
       -- If read last. Next will require search
-      Prime_List_Mng.Read (The_List, Res, Prime_List_Mng.Next, Moved);
+      The_List.Read (Res, Prime_List_Mng.Next, Moved);
       Need_Search := not Moved;
       return Res;
     end if;
 
     -- Empty list, add 1
-    if Prime_List_Mng.Is_Empty (The_List) then
+    if The_List.Is_Empty then
       Append (One);
       Need_Search := True;
       return One;
     end if;
 
     -- Need to search next, start from last found
-    Prime_List_Mng.Read (The_List, Res, Prime_List_Mng.Current);
+    The_List.Read (Res, Prime_List_Mng.Current);
     -- Loop on Res
     Search_Loop:
     loop
@@ -90,7 +84,7 @@ package body Arbitrary.Prime_List is
 
       -- Loop on list
       Divisor_Loop:
-      for I in 1 .. Prime_List_Mng.List_Length (The_List) loop
+      for I in 1 .. The_List.List_Length loop
         Tmp := Read;
         if Tmp > Square then
           exit Divisor_Loop;

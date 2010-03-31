@@ -49,9 +49,7 @@ package body Dir_Mng is
           when Directory.Name_Error | Directory.Access_Error =>
             File_Rec.Kind := Directory.Unknown;
         end;
-        File_List_Mng.Insert (List => List,
-                              Item => File_Rec,
-                              Where => File_List_Mng.Next);
+        List.Insert (Item => File_Rec, Where => File_List_Mng.Next);
       end if;
     end loop;
   exception

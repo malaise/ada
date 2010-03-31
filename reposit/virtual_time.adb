@@ -172,9 +172,7 @@ package body Virtual_Time is
                           An_Observer :  access Observer'Class) is
     A : constant Clock_Def_Access := A_Clock.Clock_Access;
   begin
-    if not A.Observers.Is_Empty then
-      A.Observers.Rewind (List_Mng.Prev);
-    end if;
+    A.Observers.Rewind (False, List_Mng.Prev);
     A.Observers.Insert (Observer_Access(An_Observer));
   end Add_Observer;
 

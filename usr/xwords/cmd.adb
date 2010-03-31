@@ -19,7 +19,7 @@ package body Cmd is
   -- Replace all LineFeeds by spaces
   procedure Normalize (List : in out Res_List) is
     Line : Asu_Us;
-    Done : Boolean;
+    Moved : Boolean;
   begin
     if List.Is_Empty then
       return;
@@ -30,11 +30,11 @@ package body Cmd is
       List.Read (Line, Res_Mng.Dyn_List.Current);
       Line := Asu_Tus (String_Mng.Replace (
                 Asu_Ts (Line), Ada.Characters.Latin_1.Lf & "", " "));
-      List.Modify (Line, Done => Done);
-      exit when not Done;
+      List.Modify (Line, Moved => Moved);
+      exit when not Moved;
     end loop;
     -- Rewind to end
-    List.Rewind (Res_Mng.Dyn_List.Prev);
+    List.Rewind (True, Res_Mng.Dyn_List.Prev);
   end Normalize;
 
   -- subtype Line_Type is Asu_Us;

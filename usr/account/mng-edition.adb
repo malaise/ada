@@ -376,7 +376,7 @@ package body Edition is
           when Oper_List_Mng.Prev =>
             -- Last elem was removed, and we moved to previous
             -- Insert at end
-            Oper_List.Rewind(Oper_List_Mng.Prev);
+            Oper_List.Rewind(True, Oper_List_Mng.Prev);
             Oper_List.Insert(Saved_Oper, Oper_List_Mng.Next);
           when Oper_List_Mng.Current =>
             -- List is empty
@@ -394,14 +394,12 @@ package body Edition is
       Oper_List.Modify(Oper, Oper_List_Mng.Current);
     else
       -- Insert at the end to keep selection accurate
-      if not Oper_List.Is_Empty then
-        Oper_List.Rewind(Oper_List_Mng.Prev);
-      end if;
+      Oper_List.Rewind(False, Oper_List_Mng.Prev);
       Oper_List.Insert(Oper);
       -- Insert at the end of selection and go back to current (for next copy)
       if not Sel_List.Is_Empty then
         List_Util.Save_Pos;
-        Sel_List.Rewind(Sel_List_Mng.Prev);
+        Sel_List.Rewind(True, Sel_List_Mng.Prev);
         Sel_List.Insert((No => Oper_List.List_Length, Deleted => False) );
         List_Util.Restore_Pos;
         List_Util.Move_To_Current;
@@ -617,10 +615,9 @@ package body Edition is
 
     if Edit_Type = Delete then
       Deletion.Commit_Deletions;
-    elsif Edit_Type = Create
-    and then not Sel_List.Is_Empty then
+    elsif Edit_Type = Create then
       -- Move to bottom
-      Sel_List.Rewind(Sel_List_Mng.Prev);
+      Sel_List.Rewind(False, Sel_List_Mng.Prev);
     end if;
 
     -- Restore original unit

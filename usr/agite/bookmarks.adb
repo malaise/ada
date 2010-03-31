@@ -129,7 +129,7 @@ package body Bookmarks is
             when 12 =>
               -- Del
               Config.Del_Bookmark (Afpx.Line_List.Get_Position);
-              Afpx.Line_List.Delete (Done => Dummy);
+              Afpx.Line_List.Delete (Moved => Dummy);
             when 13 =>
               -- Add current
               if Afpx.Line_List.Is_Empty then

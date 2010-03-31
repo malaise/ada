@@ -76,35 +76,33 @@ package body Fifos is
       -- Insert a record
       function Insert (Rec : Fifo_Rec) return Fifo_Access is
       begin
-        Fifo_List_Mng.Insert (Fifo_List, Rec);
+        Fifo_List.Insert (Rec);
         return Access_Current;
       end Insert;
 
       -- Get access to current record
       function Access_Current return Fifo_Access is
       begin
-        return Fifo_List_Mng.Access_Current (Fifo_List);
+        return Fifo_List.Access_Current;
       end Access_Current;
 
       -- Delete current record and move to next
       procedure Del_Current is
-        Done : Boolean;
+        Moved : Boolean;
       begin
-        Fifo_List_Mng.Delete (Fifo_List, Done => Done);
+        Fifo_List.Delete (Moved => Moved);
       end Del_Current;
 
       -- Move to first fifo in list
       procedure Rewind is
       begin
-        if not Fifo_List_Mng.Is_Empty (Fifo_List) then
-          Fifo_List_Mng.Rewind (Fifo_List);
-        end if;
+        Fifo_List.Rewind (False);
       end Rewind;
 
       -- Is list empty?
       function Empty return Boolean is
       begin
-        return Fifo_List_Mng.Is_Empty (Fifo_List);
+        return Fifo_List.Is_Empty;
       end Empty;
 
       -- Search by name

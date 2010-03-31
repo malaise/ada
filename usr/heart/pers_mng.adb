@@ -6,8 +6,7 @@ package body Pers_Mng is
   procedure Search (List : in out Pers_Def.Person_List;
                     Pid  : in Pers_Def.Pid_Range;
                     Pos  : out Natural) is
-    List_Length : constant Natural
-                := Pers_Def.Person_List_Mng.List_Length (List);
+    List_Length : constant Natural := List.List_Length;
     Person : Pers_Def.Person_Rec;
     Loc_Pos : Natural;
     use Pers_Def;
@@ -19,15 +18,13 @@ package body Pers_Mng is
     end if;
 
     -- Move to beginning
-    Pers_Def.Person_List_Mng.Rewind (List);
+    List.Rewind;
     -- Read persons, look for Pid
     for I in 1 .. List_Length loop
       if I /= List_Length then
-        Pers_Def.Person_List_Mng.Read (List, Person,
-         Pers_Def.Person_List_Mng.Next);
+        List.Read (Person, Pers_Def.Person_List_Mng.Next);
       else
-        Pers_Def.Person_List_Mng.Read (List, Person,
-         Pers_Def.Person_List_Mng.Current);
+        List.Read (Person, Pers_Def.Person_List_Mng.Current);
       end if;
 
       if Person.Pid = Pid then
@@ -35,8 +32,7 @@ package body Pers_Mng is
         Pos := I;
         Loc_Pos := I;
         -- Move to this pos
-        Pers_Def.Person_List_Mng.Move_To (List, Pers_Def.Person_List_Mng.Next,
-         Loc_Pos - 1, False);
+        List.Move_At (Loc_Pos);
         return;
       end if;
     end loop;
@@ -48,8 +44,7 @@ package body Pers_Mng is
                     Name     : in Pers_Def.Person_Name_Str;
                     Activity : in Pers_Def.Person_Activity_Str;
                     Pos      : out Natural) is
-    List_Length : constant Natural
-                := Pers_Def.Person_List_Mng.List_Length (List);
+    List_Length : constant Natural := List.List_Length;
     Person : Pers_Def.Person_Rec;
     Loc_Pos : Natural;
   begin
@@ -59,15 +54,13 @@ package body Pers_Mng is
     end if;
 
     -- Move to beginning
-    Pers_Def.Person_List_Mng.Rewind (List);
+    List.Rewind;
     -- Read persons, look for (Name, Activity)
     for I in 1 .. List_Length loop
       if I /= List_Length then
-        Pers_Def.Person_List_Mng.Read (List, Person,
-         Pers_Def.Person_List_Mng.Next);
+        List.Read (Person, Pers_Def.Person_List_Mng.Next);
       else
-        Pers_Def.Person_List_Mng.Read (List, Person,
-         Pers_Def.Person_List_Mng.Current);
+        List.Read (Person, Pers_Def.Person_List_Mng.Current);
       end if;
 
       if Person.Name = Name and then Person.Activity = Activity then
@@ -75,8 +68,7 @@ package body Pers_Mng is
         Pos := I;
         Loc_Pos := I;
         -- Move to this pos
-        Pers_Def.Person_List_Mng.Move_To (List, Pers_Def.Person_List_Mng.Next,
-         Loc_Pos - 1, False);
+        List.Move_At (Loc_Pos);
         return;
       end if;
     end loop;
@@ -105,8 +97,7 @@ package body Pers_Mng is
     Empty_Activity : constant Pers_Def.Person_Activity_Str := (others => ' ');
     First_Name, Last_Name, Len_Name : Positive;
     First_Activity, Last_Activity, Len_Activity : Positive;
-    List_Length : constant Natural
-                := Pers_Def.Person_List_Mng.List_Length (List);
+    List_Length : constant Natural := List.List_Length;
     Person : Pers_Def.Person_Rec;
     Matching_Person : Pers_Def.Person_Rec;
     Match_Activity : constant Boolean := Activity /= Empty_Activity;
@@ -152,10 +143,9 @@ package body Pers_Mng is
    Loc_Pos := -1;
    Matching_Person.Name := Empty_Name;
    Matching_Person.Activity := Empty_Activity;
-   Pers_Def.Person_List_Mng.Rewind (List);
+   List.Rewind;
    for I in 1 .. List_Length loop
-      Pers_Def.Person_List_Mng.Read (List, Person,
-         Pers_Def.Person_List_Mng.Current);
+      List.Read (Person, Pers_Def.Person_List_Mng.Current);
       -- This person name matches
       if Person.Name(1 .. Len_Name) = Name(First_Name .. Last_Name) then
         -- This person name matches
@@ -169,7 +159,7 @@ package body Pers_Mng is
             if Match_Activity then
               -- Same name, same activity, may be ok if sole
               Matching_Person.Activity := Person.Activity;
-              Loc_Pos  := Pers_Def.Person_List_Mng.Get_Position (List);
+              Loc_Pos := List.Get_Position;
             else
               Loc_Pos := 0;
             end if;
@@ -188,15 +178,14 @@ package body Pers_Mng is
         end if;
       end if;
       if I /= List_Length then
-        Pers_Def.Person_List_Mng.Move_To (List);
+        List.Move_To;
       end if;
     end loop;
 
     if Loc_Pos /= -1 then
       Name := Matching_Person.Name;
       if Loc_Pos /= 0 then
-        Pers_Def.Person_List_Mng.Move_To (List, Pers_Def.Person_List_Mng.Next,
-                                          Loc_Pos - 1, False);
+        List.Move_At (Loc_Pos);
         Activity := Matching_Person.Activity;
       end if;
       Pos := Loc_Pos;
@@ -214,8 +203,7 @@ package body Pers_Mng is
   procedure Select_By_Name (List : in out Pers_Def.Person_List;
                             Name : in Pers_Def.Person_Name_Str;
                             First, Last : out Natural) is
-    List_Length : constant Natural
-                := Pers_Def.Person_List_Mng.List_Length (List);
+    List_Length : constant Natural := List.List_Length;
     Person : Pers_Def.Person_Rec;
     Found : Boolean;
     Loc_Pos : Natural;
@@ -237,11 +225,9 @@ package body Pers_Mng is
     Found := False;
     for I in 1 .. List_Length loop
       if I /= List_Length then
-        Pers_Def.Person_List_Mng.Read (List, Person,
-         Pers_Def.Person_List_Mng.Next);
+        List.Read (Person, Pers_Def.Person_List_Mng.Next);
       else
-        Pers_Def.Person_List_Mng.Read (List, Person,
-         Pers_Def.Person_List_Mng.Current);
+        List.Read (Person, Pers_Def.Person_List_Mng.Current);
       end if;
       if not Found then
         if Person.Name = Name then
@@ -260,8 +246,7 @@ package body Pers_Mng is
         Loc_Last := List_Length;
       end if;
       -- Move to first found
-      Pers_Def.Person_List_Mng.Move_To (List, Pers_Def.Person_List_Mng.Next,
-       Loc_Pos - 1, False);
+      List.Move_At (Loc_Pos);
     end if;
     First := Loc_First;
     Last := Loc_Last;
@@ -271,8 +256,7 @@ package body Pers_Mng is
   procedure Select_By_Activity (List : in out Pers_Def.Person_List;
                                 Activity : in Pers_Def.Person_Activity_Str;
                                 First, Last : out Natural) is
-    List_Length : constant Natural
-                := Pers_Def.Person_List_Mng.List_Length (List);
+    List_Length : constant Natural := List.List_Length;
     Person : Pers_Def.Person_Rec;
     Found : Boolean;
     Loc_Pos : Natural;
@@ -290,11 +274,9 @@ package body Pers_Mng is
     Found := False;
     for I in 1 .. List_Length loop
       if I /= List_Length then
-        Pers_Def.Person_List_Mng.Read (List, Person,
-         Pers_Def.Person_List_Mng.Next);
+        List.Read (Person, Pers_Def.Person_List_Mng.Next);
       else
-        Pers_Def.Person_List_Mng.Read (List, Person,
-         Pers_Def.Person_List_Mng.Current);
+        List.Read (Person, Pers_Def.Person_List_Mng.Current);
       end if;
       if not Found then
         if Person.Activity = Activity then
@@ -305,12 +287,10 @@ package body Pers_Mng is
       elsif Person.Activity /= Activity then
         Last := I - 1;
         -- Move to first found
-        Pers_Def.Person_List_Mng.Move_To (List, Pers_Def.Person_List_Mng.Next,
-         Loc_Pos - 1, False);
+        List.Move_At (Loc_Pos);
         return;
       end if;
     end loop;
-
 
   end Select_By_Activity;
 
@@ -323,8 +303,7 @@ package body Pers_Mng is
   -- Insert a new person in the list. (Its Name+Activity must be sole)
   procedure Insert (List : in out Pers_Def.Person_List;
                     Person : in out Pers_Def.Person_Rec) is
-    List_Length : constant Natural
-                := Pers_Def.Person_List_Mng.List_Length (List);
+    List_Length : constant Natural := List.List_Length;
     Curr_Person : Pers_Def.Person_Rec;
     Pid_Array : array (Pers_Def.Pid_Range) of Boolean := (others => False);
     Found : Boolean;
@@ -332,14 +311,12 @@ package body Pers_Mng is
     if List_Length /= 0 then
       -- Search if this (Name, Activity) is already in List
       -- Mark used Pids
-      Pers_Def.Person_List_Mng.Rewind (List);
+      List.Rewind;
       for I in 1 .. List_Length loop
         if I /= List_Length then
-          Pers_Def.Person_List_Mng.Read (List, Curr_Person,
-           Pers_Def.Person_List_Mng.Next);
+          List.Read (Curr_Person, Pers_Def.Person_List_Mng.Next);
         else
-          Pers_Def.Person_List_Mng.Read (List, Curr_Person,
-           Pers_Def.Person_List_Mng.Current);
+          List.Read (Curr_Person, Pers_Def.Person_List_Mng.Current);
         end if;
         if Curr_Person.Name = Person.Name and then
            Curr_Person.Activity = Person.Activity then
@@ -365,7 +342,7 @@ package body Pers_Mng is
     end if;
 
     -- Insert person in list
-    Pers_Def.Person_List_Mng.Insert (List, Person);
+    List.Insert (Person);
   end Insert;
 
 end Pers_Mng;

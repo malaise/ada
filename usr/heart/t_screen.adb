@@ -54,19 +54,18 @@ begin
 
     -- Sort, move to first, copy in Afpx list
     Dir_Sort (Dir_List);
-    Dir_Mng.File_List_Mng.Rewind (Dir_List);
+    Dir_List.Rewind;
     loop
-      Dir_Mng.File_List_Mng.Read (Dir_List, Dir_Item,
-                                  Dir_Mng.File_List_Mng.Current);
+      Dir_List.Read (Dir_Item, Dir_Mng.File_List_Mng.Current);
       Afpx_Item.Len := Dir_Item.Len;
       Afpx_Item.Str := (others => ' ');
       Afpx_Item.Str(1 .. Afpx_Item.Len) := Dir_Item.Name (1 .. Dir_Item.Len);
-      Afpx.Line_List_Mng.Insert (Afpx.Line_List, Afpx_Item);
-      exit when not Dir_Mng.File_List_Mng.Check_Move (Dir_List);
-      Dir_Mng.File_List_Mng.Move_To (Dir_List);
+      Afpx.Line_List.Insert (Afpx_Item);
+      exit when not Dir_List.Check_Move;
+      Dir_List.Move_To;
     end loop;
     -- End of list
-    Afpx.Line_List_Mng.Rewind (Afpx.Line_List, Afpx.Line_List_Mng.Prev);
+    Afpx.Line_List.Rewind (Afpx.Line_List_Mng.Prev);
   exception
     when Dir_Mng.Name_Error =>
       null;
@@ -110,10 +109,10 @@ begin
 
   loop
 
-    List_Empty := Afpx.Line_List_Mng.List_Length(Afpx.Line_List) = 0;
+    List_Empty := Afpx.Line_List.Is_Empty;
     if Dscr = 1 then
       Allow_Draw := not List_Empty and then
-                    Afpx.Line_List_Mng.List_Length(Afpx.Line_List) <= 10;
+                    Afpx.Line_List.Length <= 10;
       Afpx.Set_Field_Activation (22, not List_Empty);
       Afpx.Set_Field_Activation (23, Allow_Draw);
       Afpx.Set_Field_Activation (24, not List_Empty);
@@ -121,7 +120,7 @@ begin
       Afpx.Set_Field_Activation (27, not List_Empty);
       Afpx.Set_Field_Activation (17, Allow_Undo);
       Afpx.Encode_Field (20, (0, 0),
-        Normal(Afpx.Line_List_Mng.List_Length(Afpx.Line_List), 5) );
+        Normal(Afpx.Line_List.List_Length, 5) );
     elsif Dscr = 2 then
       -- List and menu buttons, not in valid nor edit
       -- Same for create
@@ -258,7 +257,7 @@ begin
               Afpx.Reset_Field (16);
             when  22 | 27 =>
               -- Unselect, delete
-              Afpx.Line_List_Mng.Delete (Afpx.Line_List, Done => Moved);
+              Afpx.Line_List.Delete (Done => Moved);
             when others =>
               Allow_Undo := False;
           end case;

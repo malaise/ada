@@ -32,10 +32,10 @@ package body Proc_Family is
   -- Handle the death of a child. Returns False when no more child
   function Handle_Death return Boolean is
     Death_Dscr : Sys_Calls.Death_Rec;
-    Child : Child_Rec;
+    Child  : Child_Rec;
     Report : Death_Rec;
-    Found : Boolean;
-    Done  : Boolean;
+    Found  : Boolean;
+    Moved  : Boolean;
     use type Sys_Calls.Death_Cause_List;
   begin
     -- Get death description
@@ -64,7 +64,7 @@ package body Proc_Family is
       return True;
     end if;
 
-    Child_List_Mng.Get (Child_List, Child, Done => Done);
+    Child_List.Get (Child, Moved => Moved);
 
     -- Call Cb if set
     if Child.Child_Cb /= null then
@@ -206,7 +206,7 @@ package body Proc_Family is
         Child.Fd_Err := Result.Fd_Err;
       end if;
       Child.Child_Pid := Result.Child_Pid;
-      Child_List_Mng.Insert (Child_List, Child);
+      Child_List.Insert (Child);
       -- Success
       return Result;
     end if;

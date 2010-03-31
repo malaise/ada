@@ -140,15 +140,15 @@ package body Channels is
     function Channel_Send is new Tcp_Util.Send (Channel_Message_Type);
 
     procedure Delete_Current_Dest is
-      Done : Boolean;
+      Moved : Boolean;
     begin
-      Dest_List_Mng.Delete (Channel_Dscr.Dests, Done => Done);
+      Channel_Dscr.Dests.Delete (Moved => Moved);
     end Delete_Current_Dest;
 
     procedure Delete_Current_Send is
-      Done : Boolean;
+      Moved : Boolean;
     begin
-      Send_List_Mng.Delete (Channel_Dscr.Sends, Done => Done);
+      Channel_Dscr.Sends.Delete (Moved => Moved);
     end Delete_Current_Send;
 
     procedure Init is
@@ -174,7 +174,7 @@ package body Channels is
         raise Channel_Active;
       end if;
       -- No destination
-      if not Dest_List_Mng.Is_Empty (Channel_Dscr.Dests) then
+      if not Channel_Dscr.Dests.Is_Empty then
         raise Channel_Active;
       end if;
       -- Store new name
@@ -212,7 +212,7 @@ package body Channels is
           Event_Mng.Del_Fd_Callback (Fd, True);
           return False;
         end if;
-        Send_List_Mng.Read (Channel_Dscr.Sends, S_Rec, Send_List_Mng.Current);
+        Channel_Dscr.Sends.Read (S_Rec, Send_List_Mng.Current);
         Dscr := S_Rec.Dscr;
       else
         -- Look for destination. Unhook Fd if not found (bug).
@@ -223,7 +223,7 @@ package body Channels is
           Event_Mng.Del_Fd_Callback (Fd, True);
           return False;
         end if;
-        Dest_List_Mng.Read (Channel_Dscr.Dests, D_Rec, Dest_List_Mng.Current);
+        Channel_Dscr.Dests.Read (D_Rec, Dest_List_Mng.Current);
         Dscr := D_Rec.Dscr;
       end if;
       -- Read message
@@ -245,8 +245,7 @@ package body Channels is
               -- Update record
               D_Rec.Dscr := Socket.No_Socket;
               D_Rec.Fd := 0;
-              Dest_List_Mng.Modify (Channel_Dscr.Dests, D_Rec,
-                                    Dest_List_Mng.Current);
+              Channel_Dscr.Dests.Modify (D_Rec, Dest_List_Mng.Current);
               -- Retry to connect
               Port.Name (1 .. Text_Handler.Length (Channel_Dscr.Name))
                     := Text_Handler.Value (Channel_Dscr.Name);
@@ -274,13 +273,11 @@ package body Channels is
         when Socket.Soc_Would_Block =>
           return False;
       end;
-      -- Call callback
-      if not Reply_List_Mng.Is_Empty (Channel_Dscr.Replies) then
-        Reply_List_Mng.Rewind (Channel_Dscr.Replies, Reply_List_Mng.Prev);
-      end if;
-      Reply_List_Mng.Insert (Channel_Dscr.Replies, Dscr);
+      -- Append, Call callback
+      Channel_Dscr.Replies.Rewind (False, Reply_List_Mng.Prev);
+      Channel_Dscr.Replies.Insert (Dscr);
       Read_Cb (Msg.Data, Len - (Msg.Diff'Size / Byte_Size), Msg.Diff);
-      Reply_List_Mng.Delete (Channel_Dscr.Replies, Reply_List_Mng.Prev);
+      Channel_Dscr.Replies.Delete (Reply_List_Mng.Prev);
       return True;
     end Read_Cb;
 
@@ -312,9 +309,8 @@ package body Channels is
         return;
       else
         -- Insert new sender
-        Send_List_Mng.Insert (Channel_Dscr.Sends,
-                              (Dscr => New_Dscr,
-                               Fd   => Socket.Fd_Of (New_Dscr)));
+        Channel_Dscr.Sends.Insert ( (Dscr => New_Dscr,
+                                     Fd   => Socket.Fd_Of (New_Dscr)));
 
         -- Hook fd to receive data
         if Channel_Dscr.Active then
@@ -366,19 +362,19 @@ package body Channels is
       Channel_Dscr.Accept_Num := 0;
 
       -- Close all connections
-      if not Send_List_Mng.Is_Empty (Channel_Dscr.Sends) then
+      if not Channel_Dscr.Sends.Is_Empty then
         -- Rewind and close all connections
-        Send_List_Mng.Rewind (Channel_Dscr.Sends);
+        Channel_Dscr.Sends.Rewind;
         loop
-          Send_List_Mng.Read (Channel_Dscr.Sends, Rec, Send_List_Mng.Current);
+          Channel_Dscr.Sends.Read (Rec, Send_List_Mng.Current);
           -- Unhook fd receiving data
           Event_Mng.Del_Fd_Callback (Socket.Fd_Of (Rec.Dscr), True);
           Close (Rec.Dscr);
-          exit when not Send_List_Mng.Check_Move (Channel_Dscr.Sends);
-          Send_List_Mng.Move_To (Channel_Dscr.Sends);
+          exit when not Channel_Dscr.Sends.Check_Move;
+          Channel_Dscr.Sends.Move_To;
         end loop;
         -- Delete list
-        Send_List_Mng.Delete_List (Channel_Dscr.Sends, False);
+        Channel_Dscr.Sends.Delete_List (False);
       end if;
     end Unsubscribe;
 
@@ -410,10 +406,10 @@ package body Channels is
       end if;
 
       -- Update Dscr and Fd
-      Dest_List_Mng.Read (Channel_Dscr.Dests, Dest, Dest_List_Mng.Current);
+      Channel_Dscr.Dests.Read (Dest, Dest_List_Mng.Current);
       Dest.Dscr := Dscr;
       Dest.Fd := Socket.Fd_Of (Dscr);
-      Dest_List_Mng.Modify (Channel_Dscr.Dests, Dest, Dest_List_Mng.Current);
+      Channel_Dscr.Dests.Modify (Dest, Dest_List_Mng.Current);
 
       -- Hook fd to receive data (replies)
       if Channel_Dscr.Active then
@@ -457,17 +453,17 @@ package body Channels is
             File.Close;
             raise;
         end;
-        Host_List_Mng.Insert (List, Host);
+        List.Insert (Host);
       end loop;
 
-      if Host_List_Mng.Is_Empty (List) then
+      if List.Is_Empty then
         return;
       end if;
 
       -- Add destinations of list
-      Host_List_Mng.Rewind (List);
+      List.Rewind;
       loop
-        Host_List_Mng.Read (List, Host, Host_List_Mng.Current);
+        List.Read (Host, Host_List_Mng.Current);
         begin
           Add_Destination (Parse (Host.Name));
         exception
@@ -475,18 +471,18 @@ package body Channels is
             null;
         end;
         -- Next host or the end
-        if Host_List_Mng.Check_Move (List) then
-          Host_List_Mng.Move_To (List);
+        if List.Check_Move then
+          List.Move_To;
         else
           -- Done
-          Host_List_Mng.Delete_List (List, Deallocate => True);
+          List.Delete_List (Deallocate => True);
           exit;
         end if;
       end loop;
 
     exception
       when others =>
-        Host_List_Mng.Delete_List (List, Deallocate => True);
+        List.Delete_List (Deallocate => True);
         raise;
     end Add_Destinations;
 
@@ -519,7 +515,7 @@ package body Channels is
       Dest.Host_Name := Host;
       Dest.Dscr := Socket.No_Socket;
       Dest.Fd := 0;
-      Dest_List_Mng.Insert (Channel_Dscr.Dests, Dest);
+      Channel_Dscr.Dests.Insert (Dest);
 
       -- Try to connect each sec indefinitely
       begin
@@ -552,7 +548,7 @@ package body Channels is
       Port : Tcp_Util.Remote_Port;
       use type Socket.Socket_Dscr;
     begin
-      Dest_List_Mng.Read (Channel_Dscr.Dests, Dest, Dest_List_Mng.Current);
+      Channel_Dscr.Dests.Read (Dest, Dest_List_Mng.Current);
       if Dest.Dscr = Socket.No_Socket then
         -- Pending connection
         Build_Host_Port ("", Host, Port);
@@ -600,16 +596,16 @@ package body Channels is
       Dest : Dest_Rec;
     begin
       -- Empty list?
-      if Dest_List_Mng.Is_Empty (Channel_Dscr.Dests) then
+      if Channel_Dscr.Dests.Is_Empty then
         return;
       end if;
 
       -- Delete all connections
-      Dest_List_Mng.Rewind (Channel_Dscr.Dests);
+      Channel_Dscr.Dests.Rewind;
       loop
-        Dest_List_Mng.Read (Channel_Dscr.Dests, Dest, Dest_List_Mng.Current);
+        Channel_Dscr.Dests.Read (Dest, Dest_List_Mng.Current);
         Close_Current_Connection;
-        exit when Dest_List_Mng.Is_Empty (Channel_Dscr.Dests);
+        exit when Channel_Dscr.Dests.Is_Empty;
       end loop;
 
     end Del_All_Destinations;
@@ -627,11 +623,11 @@ package body Channels is
       end if;
 
       -- Subscribed connections
-      if not Send_List_Mng.Is_Empty (Channel_Dscr.Sends) then
+      if not Channel_Dscr.Sends.Is_Empty then
         -- Rewind and close all connections
-        Send_List_Mng.Rewind (Channel_Dscr.Sends);
+        Channel_Dscr.Sends.Rewind;
         loop
-          Send_List_Mng.Read (Channel_Dscr.Sends, Send, Send_List_Mng.Current);
+          Channel_Dscr.Sends.Read (Send, Send_List_Mng.Current);
           -- (Un)hook fd receiving data
           if Allow_Reception then
             Event_Mng.Add_Fd_Callback (Socket.Fd_Of (Send.Dscr), True,
@@ -639,17 +635,17 @@ package body Channels is
           else
             Event_Mng.Del_Fd_Callback (Socket.Fd_Of (Send.Dscr), True);
           end if;
-          exit when not Send_List_Mng.Check_Move (Channel_Dscr.Sends);
-          Send_List_Mng.Move_To (Channel_Dscr.Sends);
+          exit when not Channel_Dscr.Sends.Check_Move;
+          Channel_Dscr.Sends.Move_To;
         end loop;
       end if;
 
       -- Connected connections
-      if not Dest_List_Mng.Is_Empty (Channel_Dscr.Dests) then
+      if not Channel_Dscr.Dests.Is_Empty then
         -- Rewind and close all connections
-        Dest_List_Mng.Rewind (Channel_Dscr.Dests);
+        Channel_Dscr.Dests.Rewind;
         loop
-          Dest_List_Mng.Read (Channel_Dscr.Dests, Dest, Dest_List_Mng.Current);
+          Channel_Dscr.Dests.Read (Dest, Dest_List_Mng.Current);
           -- (Un)hook fd receiving data
           if Allow_Reception then
             Event_Mng.Add_Fd_Callback (Socket.Fd_Of (Dest.Dscr), True,
@@ -657,8 +653,8 @@ package body Channels is
           else
             Event_Mng.Del_Fd_Callback (Socket.Fd_Of (Dest.Dscr), True);
           end if;
-          exit when not Dest_List_Mng.Check_Move (Channel_Dscr.Dests);
-          Dest_List_Mng.Move_To (Channel_Dscr.Dests);
+          exit when not Channel_Dscr.Dests.Check_Move;
+          Channel_Dscr.Dests.Move_To;
         end loop;
       end if;
 
@@ -684,7 +680,7 @@ package body Channels is
       use type Socket.Socket_Dscr;
     begin
       -- Empty list?
-      if Dest_List_Mng.Is_Empty (Channel_Dscr.Dests) then
+      if Channel_Dscr.Dests.Is_Empty then
         return;
       end if;
 
@@ -698,9 +694,9 @@ package body Channels is
       end if;
 
       -- Send to all connected destinations
-      Dest_List_Mng.Rewind (Channel_Dscr.Dests);
+      Channel_Dscr.Dests.Rewind;
       loop
-        Dest_List_Mng.Read (Channel_Dscr.Dests, Dest, Dest_List_Mng.Current);
+        Channel_Dscr.Dests.Read (Dest, Dest_List_Mng.Current);
         if Dest.Dscr /= Socket.No_Socket then
           begin
             Res := Channel_Send (Dest.Dscr, null, Msg, Len);
@@ -719,8 +715,8 @@ package body Channels is
         if Send_Cb /= null then
           Send_Cb (Parse (Dest.Host_Name.Name), Res);
         end if;
-        exit when not Dest_List_Mng.Check_Move (Channel_Dscr.Dests);
-        Dest_List_Mng.Move_To (Channel_Dscr.Dests);
+        exit when not Channel_Dscr.Dests.Check_Move;
+        Channel_Dscr.Dests.Move_To;
       end loop;
 
     end Write;
@@ -764,10 +760,10 @@ package body Channels is
       use type Socket.Socket_Dscr;
     begin
       -- Get current socket
-      if Reply_List_Mng.Is_Empty (Channel_Dscr.Replies) then
+      if Channel_Dscr.Replies.Is_Empty then
         raise Not_In_Read;
       end if;
-      Reply_List_Mng.Read (Channel_Dscr.Replies, Dscr, Reply_List_Mng.Current);
+      Channel_Dscr.Replies.Read (Dscr, Reply_List_Mng.Current);
 
       -- Check it is still known (not closed)
       -- More probably in senders, but maybe in dests (if reply of a reply)
@@ -812,7 +808,7 @@ package body Channels is
       if not Found then
         raise Unknown_Destination;
       end if;
-      Dest_List_Mng.Read (Channel_Dscr.Dests, D_Rec, Dest_List_Mng.Current);
+      Channel_Dscr.Dests.Read (D_Rec, Dest_List_Mng.Current);
       Send (D_Rec.Dscr, Message, Length);
     end Send;
 
@@ -905,10 +901,9 @@ package body Channels is
           Assertion.Assert (False, "Channel.Bus reading error");
           return False;
       end;
-      Bus_Reply_List_Mng.Insert (Bus_Dscr.Replies,
-           Socket.Get_Destination_Host (Dscr));
+      Bus_Dscr.Replies.Insert (Socket.Get_Destination_Host (Dscr));
       Read_Cb (Msg.Data, Len - (Msg.Diff'Size / Byte_Size), Msg.Diff);
-      Bus_Reply_List_Mng.Delete (Bus_Dscr.Replies, Bus_Reply_List_Mng.Prev);
+      Bus_Dscr.Replies.Delete (Bus_Reply_List_Mng.Prev);
       return True;
     exception
       when others =>
@@ -1053,11 +1048,10 @@ package body Channels is
         raise Not_Subscribed;
       end if;
       -- Get current socket of reception
-      if Bus_Reply_List_Mng.Is_Empty (Bus_Dscr.Replies) then
+      if Bus_Dscr.Replies.Is_Empty then
         raise Not_In_Read;
       end if;
-      Bus_Reply_List_Mng.Read (Bus_Dscr.Replies, Id,
-                               Bus_Reply_List_Mng.Current);
+      Bus_Dscr.Replies.Read (Id, Bus_Reply_List_Mng.Current);
       -- Reply to it
       Socket.Change_Destination_Host (Bus_Dscr.Rece_Dscr, Id);
       Send (Bus_Dscr.Rece_Dscr, False, Message, Length);

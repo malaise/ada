@@ -541,7 +541,7 @@ package body Output is
     Current_Col := 0;
     -- Put list
     loop
-      List.Read (Ent, Done => Moved);
+      List.Read (Ent, Moved => Moved);
       if Separator_Set then
         -- Use separator whatever format requested
         Put_Raw (Ent);

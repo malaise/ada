@@ -68,9 +68,9 @@ package body Control_Pool is
     Search (Pool, Got, Cell, From => Pool_Mng.Absolute);
     if Got then
       -- Read cell, increment counter, store
-      Pool_Mng.Read (Pool, Cell, Pool_Mng.Current);
+      Pool.Read (Cell, Pool_Mng.Current);
       Cell.Waiters := Cell.Waiters + 1;
-      Pool_Mng.Modify (Pool, Cell, Pool_Mng.Current);
+      Pool.Modify (Cell, Pool_Mng.Current);
       -- Unlock Global mutex and wait for data mutex
       Global_Mutex.Release;
       Got := Mutex_Manager.Get (Cell.Data_Mutex.all, Waiting_Time);
@@ -86,7 +86,7 @@ package body Control_Pool is
       -- Store cell
       Cell.Key := Key;
       Cell.Waiters := 1;
-      Pool_Mng.Insert (Pool, Cell);
+      Pool.Insert (Cell);
       -- Unlock Global mutex and return success
       Global_Mutex.Release;
       return True;
@@ -115,12 +115,12 @@ package body Control_Pool is
       raise Key_Not_Got;
     end if;
     -- Decrease counter or remove cell
-    Pool_Mng.Read (Pool, Cell, Pool_Mng.Current);
+    Pool.Read (Cell, Pool_Mng.Current);
     if Cell.Waiters /= 1 then
       Cell.Waiters := Cell.Waiters - 1;
-      Pool_Mng.Modify (Pool, Cell, Pool_Mng.Current);
+      Pool.Modify (Cell, Pool_Mng.Current);
     else
-      Pool_Mng.Delete (Pool, Done => Got);
+      Pool.Delete (Moved => Got);
     end if;
     -- Release data mutex if it was granted
     if Granted then

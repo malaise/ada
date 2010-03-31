@@ -83,9 +83,9 @@ package body Tcp_Util is
 
   -- Delete current connection rec in list
   procedure Delete_Current_Con is
-    Done : Boolean;
+    Moved : Boolean;
   begin
-    Con_List_Mng.Delete (Con_List, Done => Done);
+    Con_List.Delete (Moved => Moved);
   end Delete_Current_Con;
 
   -- Try to open a socket and connect
@@ -300,10 +300,10 @@ package body Tcp_Util is
     Rec.Fd_Set := True;
     Find_By_Fd (Con_List, Rec, From => Con_List_Mng.Absolute);
 
-    Con_List_Mng.Read (Con_List, Rec, Con_List_Mng.Current);
+    Con_List.Read (Rec, Con_List_Mng.Current);
     if Debug_Connect then
       My_Io.Put_Line ("  Tcp_Util.Connection_Fd_Cb found rec "
-                    & Positive'Image (Con_List_Mng.Get_Position (Con_List)));
+                    & Positive'Image (Con_List.Get_Position));
     end if;
 
     -- This try result?
@@ -322,10 +322,10 @@ package body Tcp_Util is
     end if;
     if Go_On then
       -- Store closed Dscr for timer callback
-      Con_List_Mng.Modify (Con_List, Rec, Con_List_Mng.Current);
+      Con_List.Modify (Rec, Con_List_Mng.Current);
       if Debug_Connect then
         My_Io.Put_Line ("  Tcp_Util.Connection_Fd_Cb update rec "
-                      & Positive'Image (Con_List_Mng.Get_Position (Con_List)));
+                      & Positive'Image (Con_List.Get_Position));
       end if;
     end if;
     -- Propagate event if no Go_On
@@ -354,7 +354,7 @@ package body Tcp_Util is
                     & Timers.Image (Id));
     end if;
     -- Read rec: Try current
-    Con_List_Mng.Read (Con_List, Rec, Con_List_Mng.Current);
+    Con_List.Read (Rec, Con_List_Mng.Current);
     if Rec.Timer /= Id then
       -- No good. Locate it
       Rec.Timer := Id;
@@ -365,11 +365,11 @@ package body Tcp_Util is
         end if;
         return False;
       end if;
-      Con_List_Mng.Read (Con_List, Rec, Con_List_Mng.Current);
+      Con_List.Read (Rec, Con_List_Mng.Current);
     end if;
     if Debug_Connect then
       My_Io.Put_Line ("  Tcp_Util.Connection_Timer_Cb found rec "
-                    & Positive'Image (Con_List_Mng.Get_Position (Con_List)));
+                    & Positive'Image (Con_List.Get_Position));
     end if;
 
     -- Either first try, or previous failed (sync or not)
@@ -448,10 +448,10 @@ package body Tcp_Util is
       end if;
     end if;
     -- Store Rec: Fd, Timer_Id, Curr_Try ...
-    Con_List_Mng.Modify (Con_List, Rec, Con_List_Mng.Current);
+    Con_List.Modify (Rec, Con_List_Mng.Current);
     if Debug_Connect then
       My_Io.Put_Line ("  Tcp_Util.Connection_Timer_Cb update rec "
-                    & Positive'Image (Con_List_Mng.Get_Position (Con_List)));
+                    & Positive'Image (Con_List.Get_Position));
     end if;
     return False;
   end Connection_Timer_Cb;
@@ -509,7 +509,7 @@ package body Tcp_Util is
     Rec.Dscr := Socket.No_Socket;
     Rec.Curr_Try := 0;
     Rec.Fd_Set := False;
-    Con_List_Mng.Insert (Con_List, Rec);
+    Con_List.Insert (Rec);
 
     -- Try to connect: call timer callback
     -- Our Rec should be the only one with No_Timer
@@ -537,10 +537,10 @@ package body Tcp_Util is
       end if;
       raise No_Such;
     end if;
-    Con_List_Mng.Read (Con_List, Rec, Con_List_Mng.Current);
+    Con_List.Read (Rec, Con_List_Mng.Current);
     if Debug_Connect then
       My_Io.Put_Line ("  Tcp_Util.Abort_Connect found rec "
-                    & Positive'Image (Con_List_Mng.Get_Position (Con_List)));
+                    & Positive'Image (Con_List.Get_Position));
     end if;
     if Rec.Fd_Set then
       if Debug_Connect then
@@ -561,7 +561,7 @@ package body Tcp_Util is
     if Debug_Connect then
       My_Io.Put_Line ("  Tcp_Util.Abort_Connect deleting rec");
     end if;
-    Con_List_Mng.Delete (Con_List, Done => Ok);
+    Con_List.Delete (Moved => Ok);
   end Abort_Connect;
 
   --------------------------------------------------------------------------
@@ -609,10 +609,10 @@ package body Tcp_Util is
     -- Find record by fd
     Rec.Fd := Fd;
     Find_By_Fd (Acc_List, Rec, From => Acc_List_Mng.Absolute);
-    Acc_List_Mng.Read (Acc_List, Rec, Acc_List_Mng.Current);
+    Acc_List.Read (Rec, Acc_List_Mng.Current);
     if Debug_Accept then
       My_Io.Put_Line ("  Tcp_Util.Acception_Fd_Cb found rec "
-                    & Positive'Image (Acc_List_Mng.Get_Position (Acc_List)));
+                    & Positive'Image (Acc_List.Get_Position));
     end if;
 
     -- Accept
@@ -690,10 +690,10 @@ package body Tcp_Util is
     Event_Mng.Add_Fd_Callback (Rec.Fd, True, Acception_Fd_Cb'Access);
 
     -- Store Rec
-    Acc_List_Mng.Insert (Acc_List, Rec);
+    Acc_List.Insert (Rec);
     if Debug_Accept then
       My_Io.Put_Line ("  Tcp_Util.Accept_From insert rec "
-                    & Positive'Image (Acc_List_Mng.Get_Position (Acc_List)));
+                    & Positive'Image (Acc_List.Get_Position));
     end if;
 
   exception
@@ -724,15 +724,15 @@ package body Tcp_Util is
       end if;
       raise No_Such;
     end if;
-    Acc_List_Mng.Read (Acc_List, Rec, Acc_List_Mng.Current);
+    Acc_List.Read (Rec, Acc_List_Mng.Current);
     if Debug_Accept then
       My_Io.Put_Line ("  Tcp_Util.Abort_Accept found rec "
-                    & Positive'Image (Acc_List_Mng.Get_Position (Acc_List)));
+                    & Positive'Image (Acc_List.Get_Position));
     end if;
     -- Del callback, close and delete rec
     Event_Mng.Del_Fd_Callback (Rec.Fd, True);
     Socket.Close (Rec.Dscr);
-    Acc_List_Mng.Delete (Acc_List, Done => Ok);
+    Acc_List.Delete (Moved => Ok);
     if Debug_Accept then
       My_Io.Put_Line ("  Tcp_Util.Abort_Accept socket closed and rec deleted");
     end if;
@@ -769,9 +769,9 @@ package body Tcp_Util is
 
   -- Delete current sending rec in list
   procedure Delete_Current_Sen is
-    Done : Boolean;
+    Moved : Boolean;
   begin
-    Sen_List_Mng.Delete (Sen_List, Done => Done);
+    Sen_List.Delete (Moved => Moved);
   end Delete_Current_Sen;
 
   -- Sending callback on fd
@@ -786,10 +786,10 @@ package body Tcp_Util is
     -- Find Rec from Fd and read
     Rec.Fd := Fd;
     Find_By_Fd (Sen_List, Rec, From => Sen_List_Mng.Absolute);
-    Sen_List_Mng.Read (Sen_List, Rec, Sen_List_Mng.Current);
+    Sen_List.Read (Rec, Sen_List_Mng.Current);
     if Debug_Overflow then
       My_Io.Put_Line ("  Tcp_Util.Sending_Cb found rec "
-                    & Positive'Image (Sen_List_Mng.Get_Position (Sen_List)));
+                    & Positive'Image (Sen_List.Get_Position));
     end if;
 
     -- Try to re send
@@ -859,11 +859,11 @@ package body Tcp_Util is
     Rec.Dscr := Dscr;
     Rec.Fd := Socket.Fd_Of (Dscr);
     Rec.Cb := End_Of_Overflow_Cb;
-    Sen_List_Mng.Insert (Sen_List, Rec);
+    Sen_List.Insert (Rec);
     if Debug_Overflow then
       My_Io.Put_Line ("  Tcp_Util.Send rec with fd " & Rec.Fd'Img
                     & " inserted at "
-                    & Positive'Image (Sen_List_Mng.Get_Position (Sen_List)));
+                    & Positive'Image (Sen_List.Get_Position));
     end if;
 
     -- Hook our callback in write
@@ -898,10 +898,10 @@ package body Tcp_Util is
       end if;
       raise No_Such;
     end if;
-    Sen_List_Mng.Read (Sen_List, Rec, Sen_List_Mng.Current);
+    Sen_List.Read (Rec, Sen_List_Mng.Current);
     if Debug_Overflow then
       My_Io.Put_Line ("  Tcp_Util.Abort_Send_and_Close found rec "
-                    & Positive'Image (Sen_List_Mng.Get_Position (Sen_List)));
+                    & Positive'Image (Sen_List.Get_Position));
     end if;
 
     -- Unhook callback and del rec
@@ -955,10 +955,10 @@ package body Tcp_Util is
     -- Unhook and close a Dscr. Call appli Cb
     procedure Close_Current is
       Rec : Rece_Rec;
-      Done : Boolean;
+      Moved : Boolean;
     begin
       -- Get from list
-      Rece_List_Mng.Get (Rece_List, Rec, Done => Done);
+      Rece_List.Get (Rec, Moved => Moved);
       -- Call appli disconnection Cb
       if Rec.Discon_Cb /= null then
         Rec.Discon_Cb (Rec.Dscr);
@@ -998,7 +998,7 @@ package body Tcp_Util is
         Event_Mng.Del_Fd_Callback (Fd, True);
         return False;
       end if;
-      Rece_List_Mng.Read (Rece_List, The_Rec, Rece_List_Mng.Current);
+      Rece_List.Read (The_Rec, Rece_List_Mng.Current);
 
       -- Allocate message
       Msg := new Message_Type;
@@ -1051,7 +1051,7 @@ package body Tcp_Util is
       The_Rec.Discon_Cb := Disconnection_Cb;
 
       -- Append to list
-      Rece_List_Mng.Insert (Rece_List, The_Rec);
+      Rece_List.Insert (The_Rec);
 
       Event_Mng.Add_Fd_Callback (Socket.Fd_Of (Dscr), True,
                  Read_Cb'Unrestricted_Access);
@@ -1115,7 +1115,7 @@ package body Tcp_Util is
       end if;
 
       -- Get from list
-      Rece_List_Mng.Get (Rece_List, The_Rec, Done => Ok);
+      Rece_List.Get (The_Rec, Moved => Ok);
       if Debug_Reception then
         My_Io.Put_Line ("  Tcp_Util.Remove_Callbacks on Fd " & The_Rec.Fd'Img);
       end if;

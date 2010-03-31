@@ -16,7 +16,7 @@ package body Targets is
 
     function Do_Dir (Dir : String; Put_Name : Boolean; Level : Positive) return Boolean is
       Found : Boolean;
-      Done : Boolean;
+      Moved : Boolean;
       Subdirs : Lister.Dir_List;
       Subdir : Ada.Strings.Unbounded.Unbounded_String;
     begin
@@ -52,13 +52,13 @@ package body Targets is
       end if;
       Subdirs.Rewind;
       loop
-        Subdirs.Read (Subdir, Done => Done);
+        Subdirs.Read (Subdir, Moved => Moved);
         -- Recursive invocation
         Found := Found or Do_Dir (Directory.Build_File_Name (
              Dir, Ada.Strings.Unbounded.To_String (Subdir), ""),
              True,
              Level + 1);
-        exit when not Done;
+        exit when not Moved;
       end loop;
       Subdirs.Delete_List (Deallocate => False);
       return Found;

@@ -142,7 +142,7 @@ package body Lister is
   -- Does an entity match all criteria
   function Match (Ent : Entities.Entity) return Boolean is
     Tmpl : Tmpl_Rec;
-    Done : Boolean;
+    Moved : Boolean;
   begin
     -- Check file type and date
     if not Match (Ent.Kind, Ent.Link_Ok)
@@ -154,13 +154,13 @@ package body Lister is
     if not Excludes.Is_Empty then
       Excludes.Rewind;
       loop
-        Excludes.Read (Tmpl, Done => Done);
+        Excludes.Read (Tmpl, Moved => Moved);
         if Match (Asu.To_String (Ent.Name),
                   Asu.To_String (Tmpl.Template), Tmpl.Regex) then
           -- The file matches this exclusion template
           return False;
         end if;
-        exit when not Done;
+        exit when not Moved;
       end loop;
     end if;
     -- File matches if no matching template
@@ -170,13 +170,13 @@ package body Lister is
     -- Check versus matching templates
     Matches.Rewind;
     loop
-      Matches.Read (Tmpl, Done => Done);
+      Matches.Read (Tmpl, Moved => Moved);
       if Match (Asu.To_String (Ent.Name),
                 Asu.To_String (Tmpl.Template), Tmpl.Regex) then
         -- The file matches this matching template
         return True;
       end if;
-      exit when not Done;
+      exit when not Moved;
     end loop;
     -- The file does not match any matching template
     return False;
@@ -238,9 +238,7 @@ package body Lister is
     use type Directory.File_Kind_List;
   begin
     -- Prepare list for appending
-    if not Ent_List.Is_Empty then
-       Ent_List.Rewind (Entities.Entity_List_Mng.Prev);
-    end if;
+    Ent_List.Rewind (False, Entities.Entity_List_Mng.Prev);
 
     -- Read file stat
     begin
@@ -286,9 +284,7 @@ package body Lister is
     use type Directory.File_Kind_List, Entities.Dots_Kind_List;
   begin
     -- Prepare list for appending
-    if not Ent_List.Is_Empty then
-       Ent_List.Rewind (Entities.Entity_List_Mng.Prev);
-    end if;
+    Ent_List.Rewind (False, Entities.Entity_List_Mng.Prev);
     -- Init Ent with path
     Ent.Path := Asu.To_Unbounded_String (Dir);
     -- Open
@@ -407,18 +403,18 @@ package body Lister is
   -- Does a dir (full path) match
   function Dir_Matches (Dir : String) return Boolean is
     Tmpl : Tmpl_Rec;
-    Done : Boolean;
+    Moved : Boolean;
   begin
     -- Check versus exclusion templates
     if not Dir_Exclude.Is_Empty then
       Dir_Exclude.Rewind;
       loop
-        Dir_Exclude.Read (Tmpl, Done => Done);
+        Dir_Exclude.Read (Tmpl, Moved => Moved);
         if Match (Dir, Asu.To_String (Tmpl.Template), Tmpl.Regex) then
           -- The file matches this exclusion template
           return False;
         end if;
-        exit when not Done;
+        exit when not Moved;
       end loop;
     end if;
     -- File matches if no matching template
@@ -428,12 +424,12 @@ package body Lister is
     -- Check versus matching templates
     Dir_Match.Rewind;
     loop
-      Dir_Match.Read (Tmpl, Done => Done);
+      Dir_Match.Read (Tmpl, Moved => Moved);
       if Match (Dir, Asu.To_String (Tmpl.Template), Tmpl.Regex) then
         -- The file matches this matching template
         return True;
       end if;
-      exit when not Done;
+      exit when not Moved;
     end loop;
     -- The file does not match any matching template
     return False;

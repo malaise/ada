@@ -206,7 +206,7 @@ package body Pieces is
   function Actions_Of (Piece : Basic_Piece'Class) return Action_Array is
   begin
     -- List must be empty
-    if not Action_List_Mng.Is_Empty (Action_List) then
+    if not Action_List.Is_Empty then
       raise Not_Empty_List_Error;
     end if;
     -- Dispatch

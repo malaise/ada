@@ -275,14 +275,8 @@ begin
     Dir_Mng.List_Dir (File_List, Data_Dir, "xml_*.xml");
     loop
       -- Select a random entry
-      Dir_Mng.File_List_Mng.Move_To (
-        File_List,
-        Where => Dir_Mng.File_List_Mng.Next,
-        Number => Rnd.Int_Random (0,
-                   Dir_Mng.File_List_Mng.List_Length (File_List) - 1),
-        From_Current => False);
-      Dir_Mng.File_List_Mng.Read (File_List, File_Entry,
-                                  Dir_Mng.File_List_Mng.Current);
+      File_List.Move_At (Rnd.Int_Random (1, File_List.List_Length));
+      File_List.Read (File_Entry, Dir_Mng.File_List_Mng.Current);
       if File_Entry.Kind = Directory.File then
         Do_One (Data_Dir & "/" & File_Entry.Name (1 .. File_Entry.Len));
       end if;

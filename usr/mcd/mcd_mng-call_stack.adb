@@ -16,22 +16,22 @@ package body Call_Stack is
   procedure Push (Item : in Unb.Unbounded_String) is
   begin
     Call_Entry.Str := Item;
-    Call_Stack_List.Insert(List, Call_Entry);
+    List.Insert(Call_Entry);
     if Debug.Debug_Level_Array(Debug.Call) then
       Async_Stdin.Put_Line_Err ("Call_stack: Pushing >" & Unb.To_String (Item) & "<"
         & "   Level is "
-        & Integer'Image(Call_Stack_List.List_Length(List)));
+        & Integer'Image(List.List_Length));
     end if;
   end Push;
 
   function  Pop return Unb.Unbounded_String is
   begin
-    Call_Stack_List.Get(List, Call_Entry, Call_Stack_List.Prev);
+    List.Get(Call_Entry, Call_Stack_List.Prev);
     if Debug.Debug_Level_Array(Debug.Call) then
       Async_Stdin.Put_Line_Err ("Call_stack: Poping >"
         & Unb.To_String (Call_Entry.Str) & "<"
         & "   Level is "
-        & Integer'Image(Call_Stack_List.List_Length(List)));
+        & Integer'Image(List.List_Length));
     end if;
     return Call_Entry.Str;
   end Pop;
@@ -40,9 +40,9 @@ package body Call_Stack is
   begin
     if Debug.Debug_Level_Array(Debug.Call) then
       Async_Stdin.Put_Line_Err ("Call_stack: Level "
-        & Integer'Image(Call_Stack_List.List_Length(List)));
+        & Integer'Image(List.List_Length));
     end if;
-    return Call_Stack_List.List_Length(List);
+    return List.List_Length;
   end Level;
 
 end Call_Stack;

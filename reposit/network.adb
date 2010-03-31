@@ -64,17 +64,13 @@ package body Network is
     --  connection access is not set yet
     Connection_Info.Node := To_Node'Unchecked_Access;
     Connection_Info.Data := Of_Conn_Data;
-    if not Of_Node.Connections.Is_Empty then
-      Of_Node.Connections.Rewind (Connection_Mng.Prev);
-    end if;
+    Of_Node.Connections.Rewind (False, Connection_Mng.Prev);
     Of_Node.Connections.Insert (Connection_Info);
     -- Append Of_Node to connections of To_Node
     Connection_Info.Node := Of_Node'Unchecked_Access;
     Connection_Info.Data := To_Conn_Data;
     Connection_Info.Connection := Of_Node.Connections.Access_Current;
-    if not To_Node.Connections.Is_Empty then
-      To_Node.Connections.Rewind (Connection_Mng.Prev);
-    end if;
+    To_Node.Connections.Rewind (False, Connection_Mng.Prev);
     To_Node.Connections.Insert (Connection_Info);
     -- Update connection access in Of_Node
     Of_Node.Connections.Access_Current.Connection :=
@@ -113,7 +109,7 @@ package body Network is
     -- Rewind and copy
     Of_Node.Connections.Rewind;
     for I in Connections'Range loop
-      Of_Node.Connections.Read (Connection, Done => Moved);
+      Of_Node.Connections.Read (Connection, Moved => Moved);
       Connections(I) := (
        Key => Connection_Key_Type(Of_Node.Connections.Access_Current),
        Node => Connection.Node,
@@ -162,7 +158,7 @@ package body Network is
                                 Move => Connection_Mng.Current);
       if Connection_Read.Connection = Connection then
         -- This entry matches: delete it and return
-        Of_Node.Connections.Delete (Done => Moved);
+        Of_Node.Connections.Delete (Moved => Moved);
         return;
       end if;
       -- Move to next entry if any
@@ -217,7 +213,7 @@ package body Network is
     Asym_Delete_Connection (Connection.Node.all,
                             Of_Node.Connections.Access_Current);
     -- Delete this connection to partner
-    Of_Node.Connections.Delete (Done => Moved);
+    Of_Node.Connections.Delete (Moved => Moved);
   end Delete_Connection;
 
   -- Delete a connection of Of_Node, specify key
@@ -236,7 +232,7 @@ package body Network is
       Of_Node.Connections.Access_Current.Node.all,
       Of_Node.Connections.Access_Current);
     -- Delete this connection to partner
-    Of_Node.Connections.Delete (Done => Found);
+    Of_Node.Connections.Delete (Moved => Found);
   end Delete_Connection;
 
 

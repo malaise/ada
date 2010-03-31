@@ -8,9 +8,7 @@ package body Arbitrary.Factors is
   -- Rewind a list
   procedure Rewind (L : in out Nb_List_Mng.List_Type) is
   begin
-    if not Nb_List_Mng.Is_Empty (L) then
-      Nb_List_Mng.Rewind (L);
-    end if;
+    L.Rewind (False);
   end Rewind;
 
   -- Delete current
@@ -18,7 +16,7 @@ package body Arbitrary.Factors is
                     End_Of_List : out Boolean) is
     Done : Boolean;
   begin
-    Nb_List_Mng.Delete (L, Nb_List_Mng.Next, Done);
+    L.Delete (Nb_List_Mng.Next, Done);
     End_Of_List := not Done;
   end Delete;
 
@@ -35,14 +33,14 @@ package body Arbitrary.Factors is
     C := N;
     -- Start after 1
     if C = One then
-      Nb_List_Mng.Insert (L, One);
+      L.Insert (One);
     else
       T := Arbitrary.Prime_List.Next;
       T := Arbitrary.Prime_List.Next;
       loop
         if C rem T = Zero then
           -- Insert this factor and try again with it
-          Nb_List_Mng.Insert (L, T);
+          L.Insert (T);
           C := C / T;
           exit when C = One;
         else
@@ -69,7 +67,7 @@ package body Arbitrary.Factors is
     loop
       -- Next factor of L1
       begin
-        Nb_List_Mng.Read (L1, N, Nb_List_Mng.Current);
+        L1.Read (N, Nb_List_Mng.Current);
       exception
         when Nb_List_Mng.Empty_List =>
           exit;
@@ -79,15 +77,15 @@ package body Arbitrary.Factors is
 
       if Match then
         -- Found. Add it to L and remove it from L1 and L2
-        Nb_List_Mng.Insert (L, N);
+        L.Insert (N);
         Delete (L2, End_Of_List);
         Delete (L1, End_Of_List);
         -- End of L1?
         exit when End_Of_List;
       else
         -- Not found next of L1
-        exit when not Nb_List_Mng.Check_Move (L1);
-        Nb_List_Mng.Move_To (L1);
+        exit when not L1.Check_Move;
+        L1.Move_To;
       end if;
     end loop;
 
@@ -106,12 +104,12 @@ package body Arbitrary.Factors is
     S := One;
     -- This is a temporary copy of L for scanning up to the end
     --  without modifying L.
-    Nb_List_Mng.Unchecked_Assign (Lt, L);
+    Lt.Unchecked_Assign (L);
     loop
-      Nb_List_Mng.Read (Lt, T, Nb_List_Mng.Current);
+      Lt.Read (T, Nb_List_Mng.Current);
       S := S * T;
-      exit when not Nb_List_Mng.Check_Move (Lt);
-      Nb_List_Mng.Move_To (Lt);
+      exit when not Lt.Check_Move;
+      Lt.Move_To;
     end loop;
     return S;
   exception
@@ -120,5 +118,4 @@ package body Arbitrary.Factors is
   end Multiply;
 
 end Arbitrary.Factors;
-
 

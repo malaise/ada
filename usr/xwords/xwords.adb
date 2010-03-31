@@ -40,7 +40,7 @@ procedure Xwords is
 
   -- History of search requests
   History : Cmd.Res_List;
-  Done : Boolean;
+  Moved : Boolean;
 
   -- A line of text
   Line : Common.Asu_Us;
@@ -146,7 +146,7 @@ procedure Xwords is
     else
       Result.Rewind;
       loop
-        Result.Read (Line, Done => Done);
+        Result.Read (Line, Moved => Moved);
         if Status = Found and then First then
           Afpx.Set_Selection (Lower_Str (Common.Asu_Ts (Line)));
           First := False;
@@ -155,7 +155,7 @@ procedure Xwords is
         if Log then
           Ada.Text_Io.Put_Line (Common.Asu_Ts (Line));
         end if;
-        exit when not Done;
+        exit when not Moved;
       end loop;
 
       -- Move to Top
@@ -262,14 +262,14 @@ begin
             if not History.Is_Empty then
               History.Rewind;
               loop
-                History.Read (Line, Done => Done);
+                History.Read (Line, Moved => Moved);
                 Afpx.Line_List.Insert (Us2Afpx (Line));
-                exit when not Done;
+                exit when not Moved;
               end loop;
               -- Move to Bottom
-              Afpx.Line_List.Rewind (Afpx.Line_List_Mng.Prev);
+              Afpx.Line_List.Rewind (True, Afpx.Line_List_Mng.Prev);
               Afpx.Update_List(Afpx.Bottom);
-              History.Rewind (Cmd.Res_Mng.Dyn_List.Prev);
+              History.Rewind (True, Cmd.Res_Mng.Dyn_List.Prev);
             end if;
             Status := Found;
           -- Clear list

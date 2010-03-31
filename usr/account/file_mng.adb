@@ -84,7 +84,7 @@ package body File_Mng is
     Oper_List.Delete_List;
     Oper_List.Insert_Copy (Loc_List);
     Loc_List.Delete_List (True);
-    Oper_List.Rewind (Oper_List_Mng.Prev);
+    Oper_List.Rewind (True, Oper_List_Mng.Prev);
 
   exception
     when F_Access_Error =>

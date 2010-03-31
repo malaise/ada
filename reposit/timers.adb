@@ -273,9 +273,7 @@ package body Timers is
     end if;
 
     -- Insert in beginning of list and sort
-    if not Timer_List.Is_Empty then
-      Timer_List.Rewind;
-    end if;
+    Timer_List.Rewind (False);
     Timer_List.Insert (Timer, Timer_List_Mng.Prev);
     Sort (Timer_List);
 
@@ -343,7 +341,7 @@ package body Timers is
   begin
     -- Read timer (to see its clock) and delete it
     Timer_List.Read (Timer, Timer_List_Mng.Current);
-    Timer_List.Delete (Done => Found);
+    Timer_List.Delete (Moved => Found);
 
     -- Update clock if any
     if Timer.Clock /= null then
@@ -363,7 +361,7 @@ package body Timers is
           Clocks_List.Modify (Clock, Clocks_List_Mng.Current);
         else
           -- Last timer on this clock => delete clock and unregister
-          Clocks_List.Delete (Done => Found);
+          Clocks_List.Delete (Moved => Found);
           Clock.Clock.Del_Observer (Observer'Access);
         end if;
       end if;

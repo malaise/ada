@@ -187,11 +187,9 @@ package body Mesu_Edi is
           -- Set pos in case of end
           if Pos_Pers > 0 then
             -- Uniq
-            Pers_Def.Person_List_Mng.Move_To (
-                Pers_Def.The_Persons, Pers_Def.Person_List_Mng.Next,
-                Pos_Pers - 1, False);
-            Pers_Def.Person_List_Mng.Read (Pers_Def.The_Persons, Person,
-                Pers_Def.Person_List_Mng.Current);
+            Pers_Def.The_Persons.Move_At (Pos_Pers);
+            Pers_Def.The_Persons.Read (Person,
+                                       Pers_Def.Person_List_Mng.Current);
             -- Copy Pid
             Mesure.Pid := Person.Pid;
             if not For_Valid then
@@ -353,8 +351,7 @@ package body Mesu_Edi is
       Mesu_Nam.Split_File_Name (File_Name, Date_S, No_S, Pid_S);
       Person.Pid := Pers_Def.Pid_Range'Value(Pid_S);
       Pers_Mng.Search (Pers_Def.The_Persons, Person.Pid, Pos_Pers);
-      Pers_Def.Person_List_Mng.Read (Pers_Def.The_Persons, Person,
-                                     Pers_Def.Person_List_Mng.Current);
+      Pers_Def.The_Persons.Read (Person, Pers_Def.Person_List_Mng.Current);
       -- Disable import button
       Afpx.Set_Field_Activation (128, False);
       Afpx.Set_Field_Activation (129, False);
@@ -568,8 +565,7 @@ package body Mesu_Edi is
     Mesu_Nam.Split_File_Name (File_Name, Date_S, No_S, Pid_S);
     Person.Pid := Pers_Def.Pid_Range'Value(Pid_S);
     Pers_Mng.Search (Pers_Def.The_Persons, Person.Pid, Pos_Pers);
-    Pers_Def.Person_List_Mng.Read (Pers_Def.The_Persons, Person,
-                                     Pers_Def.Person_List_Mng.Current);
+    Pers_Def.The_Persons.Read (Person, Pers_Def.Person_List_Mng.Current);
     -- Load mesure
     Mesure := Mesu_Fil.Load (File_Name);
 
