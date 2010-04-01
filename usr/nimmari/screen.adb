@@ -12,7 +12,10 @@ package body Screen is
   Status : Status_Tab;
 
   -- Stick color
-  Stick_Color : constant Con_Io.Effective_Basic_Colors := Con_Io.Light_Gray;
+  Stick_Color : constant Con_Io.Effective_Basic_Colors
+              := Con_Io.Color_Of ("Light_Gray");
+  Sel : constant Con_Io.Effective_Basic_Colors
+              := Con_Io.Color_Of ("Red");
 
   Human_Score : Natural;
   Machine_Score : Natural;
@@ -134,7 +137,7 @@ package body Screen is
                 Nb_Selected := Nb_Selected - 1;
               else
                 Status(Selection_Index)  := Selected;
-                Set_Field_Colors (Result.Field_No, Background => Con_Io.Red);
+                Set_Field_Colors (Result.Field_No, Background => Sel);
                 Nb_Selected := Nb_Selected + 1;
               end if;
             end if;
@@ -215,7 +218,7 @@ package body Screen is
           if F = N then
             -- Remove this one
             Status(J)  := Selected;
-            Set_Field_Colors (Field_Range(J), Background => Con_Io.Red);
+            Set_Field_Colors (Field_Range(J), Background => Sel);
             Nb_Left_To_Remove := Nb_Left_To_Remove - 1;
             Nb_Bars := Nb_Bars - 1;
             exit;
@@ -247,7 +250,7 @@ package body Screen is
     for I in First_Index_Of_Row(Row) .. Last_Index_Of_Row(Row) loop
       if Status(I) = Selected then
         Status(I) := Removed;
-        Set_Field_Colors (Field_Range(I), Background => Con_Io.Red);
+        Set_Field_Colors (Field_Range(I), Background => Sel);
         Set_Field_Activation (Field_Range(I), False);
         Nb_Left_To_Remove := Nb_Left_To_Remove - 1;
         exit when Nb_Left_To_Remove = 0;

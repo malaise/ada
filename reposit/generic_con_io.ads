@@ -1,5 +1,14 @@
+with Ada.Strings.Unbounded;
 with X_Mng, Timers;
 package Generic_Con_Io is
+  -- Asu = Ada.Strings.Unbounded
+  package Asu renames Ada.Strings.Unbounded;
+  subtype Asu_Us is Ada.Strings.Unbounded.Unbounded_String;
+  function Asu_Tus (Str : String) return Asu_Us
+                   renames Asu.To_Unbounded_String;
+  function Asu_Ts (Asu_Str : Asu_Us) return String
+                   renames Asu.To_String;
+
   -- The Font
   subtype Font_No_Range is Natural range 0 .. 3;
 
@@ -24,15 +33,46 @@ package Generic_Con_Io is
   -- Possible colors and blink status
   type Colors is (Current,
       -- For background and foreground
-      Black, Blue, Green, Cyan, Red, Magenta, Brown, Light_Gray,
+      Basic1, Basic2, Basic3, Basic4, Basic5, Basic6, Basic7, Basic8,
       -- For foreground only
-      Dark_Gray, Light_Blue, Light_Green, Orange, Yellow, White);
+      Foreg1, Foreg2, Foreg3, Foreg4, Foreg5, Foreg6);
+  subtype Basic_Colors is Colors range Current .. Basic8;
+
+  subtype Effective_Color is Colors range Basic1 .. Colors'Last;
+  subtype Effective_Basic_Colors is Basic_Colors
+            range Basic1 .. Basic_Colors'Last;
   type Blink_Stats is (Current, Blink, Not_Blink);
+
+  -- Default colors
+  type Color_Definition is array (Effective_Color) of Asu_Us;
+  Default_Colors : constant Color_Definition
+                 := (Basic1 => Asu_Tus ("Black"),
+                     Basic2 => Asu_Tus ("Blue"),
+                     Basic3 => Asu_Tus ("Green"),
+                     Basic4 => Asu_Tus ("Cyan"),
+                     Basic5 => Asu_Tus ("Red"),
+                     Basic6 => Asu_Tus ("Magenta"),
+                     Basic7 => Asu_Tus ("Brown"),
+                     Basic8 => Asu_Tus ("Light_Grey"),
+                     Foreg1 => Asu_Tus ("Grey"),
+                     Foreg2 => Asu_Tus ("Light_Blue"),
+                     Foreg3 => Asu_Tus ("Lime_Green"),
+                     Foreg4 => Asu_Tus ("Orange"),
+                     Foreg5 => Asu_Tus ("Yellow"),
+                     Foreg6 => Asu_Tus ("White") );
 
   -- Can be called to initialise con_ios
   -- If not called, this init will be called together with first con_io
-  --  initialisation
+  --  initialisation and with default colors
   procedure Initialise;
+
+  -- Set_Colors raises Already_Init if called after Initialise
+  Already_Init : exception;
+  procedure Set_Colors (Color_Names : in Color_Definition);
+  -- Color_Of raises Unknown_Color ti this color is not found
+  Unknown_Color : exception;
+  function Color_Of (Name : String) return Effective_Color;
+  function Color_Name_Of (Color : Effective_Color) return String;
 
   generic
     Font_No : Font_No_Range;
@@ -77,12 +117,12 @@ package Generic_Con_Io is
 
     -- List of possible colors
     type Colors is new Generic_Con_Io.Colors;
-    subtype Basic_Colors is Colors range Current .. Light_Gray;
+    subtype Basic_Colors is Colors range Current .. Basic8;
 
     -- List of colors for outputs
-    subtype Effective_Colors is Colors range Black .. Colors'Last;
-    subtype Effective_Basic_Colors is Basic_Colors range Black .. Basic_Colors
-      'Last;
+    subtype Effective_Colors is Colors range Basic1 .. Colors'Last;
+    subtype Effective_Basic_Colors is Basic_Colors
+            range Basic1 .. Basic_Colors'Last;
 
     -- List of possible blink states of foreground
     type Blink_Stats is new Generic_Con_Io.Blink_Stats;
@@ -94,8 +134,8 @@ package Generic_Con_Io is
 
 
     -- Standard attributes when reset
-    Default_Foreground : constant Effective_Colors := Light_Gray;
-    Default_Background : constant Effective_Basic_Colors := Black;
+    Default_Foreground : constant Effective_Colors := Basic8;
+    Default_Background : constant Effective_Basic_Colors := Basic1;
     Default_Blink_Stat : constant Effective_Blink_Stats := Not_Blink;
     Default_Xor_Mode   : constant Effective_Xor_Modes := Xor_Off;
 
@@ -103,6 +143,12 @@ package Generic_Con_Io is
 
     subtype Byte_Array is X_Mng.Byte_Array;
     subtype Natural_Array is X_Mng.Natural_Array;
+
+    -- Both can be called as soon as Generic_Con_Io is Initialise
+    function Color_Of (Name : String) return Effective_Color renames
+      Generic_Con_Io.Color_Of;
+    function Color_Name_Of (Color : Effective_Color) return String renames
+     Generic_Con_Io.Color_Name_Of;
 
     -- Has to be called to initialize con_io.
     -- Should be called prior any con_io action
@@ -384,6 +430,8 @@ package Generic_Con_Io is
     String_Too_Long     : exception;
     -- For non window oriented calls (Get_Key, Graphics, Mouse)
     Not_Init : exception;
+    -- For Color_Of if this color name is unkown
+    Unknown_Color : exception renames Generic_Con_Io.Unknown_Color;
 
     -- Graphic operations on Screen window
     package Graphics is

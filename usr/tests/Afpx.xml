@@ -167,7 +167,7 @@
     <!-- Title -->
     <Field Num="1" Kind="Put">
       <Geometry Up="0" Left="25" Low="0" Right="48"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">GENERIC TITLE</Init>
     </Field>
 
@@ -180,7 +180,7 @@
     <!-- File -->
     <Field Num="3" Kind="Put">
       <Geometry Up="1" Left="33" Low="1" Right="37"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">File:</Init>
     </Field>
 
@@ -198,7 +198,7 @@
     <!-- Messages -->
     <Field Num="6" Kind="Put">
       <Geometry Up="23" Left="35" Low="23" Right="78"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
     </Field>
 
     <!-- List actions -->

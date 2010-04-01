@@ -106,7 +106,7 @@ boolean read;
 
   /* Init */
   strcat (name, ":0.0");
-  if (x_initialise (name) != 0) {
+  if (x_initialise (name, NULL) != 0) {
     printf ("ERROR INITIALISE\n");
     exit(1);
   }

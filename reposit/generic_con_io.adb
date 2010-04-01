@@ -1,21 +1,60 @@
-with Ada.Calendar, Ada.Characters.Latin_1, Ada.Strings.Unbounded;
-with Argument, Dyn_Data, Environ, Language, Lower_Str, Event_Mng;
+with Ada.Calendar, Ada.Characters.Latin_1;
+with Argument, Dyn_Data, Environ, Language, Lower_Str, Event_Mng, String_Mng;
 package body Generic_Con_Io is
 
   X_Init_Done : Boolean := False;
 
+  The_Color_Names : Color_Definition := Default_Colors;
+
   Lf : Character renames Ada.Characters.Latin_1.Lf;
   Lfs : constant String := Lf & "";
 
+  -- Can be called to initialise con_ios
+  -- If not called, this init will be called together with first con_io
+  --  initialisation and with default colors
   procedure Initialise is
+    X_Colors : X_Mng.Color_Definition;
+    Xi : X_Mng.Color;
   begin
     if not X_Init_Done then
-      X_Mng.X_Initialise ("");
-      X_Init_Done := True;
+      for I in The_Color_Names'Range loop
+         Xi := Colors'Pos(I) - Colors'Pos(Basic1);
+         X_Colors(Xi) := The_Color_Names(I);
+         -- Lower case and '_' -> ' '
+         X_Colors(Xi) := Asu_Tus (Lower_Str (Asu_Ts (X_Colors(Xi))));
+         X_Colors(Xi) := Asu_Tus (String_Mng.Replace (Asu_Ts (X_Colors(Xi)),
+                                                       "_", " "));
+      end loop;
+      X_Mng.X_Initialise ("", X_Colors);
       -- Because we handle Ctrl-C in (Get_Key_Time) we shall handle signals
       Event_Mng.Activate_Signal_Handling;
+      X_Init_Done := True;
     end if;
   end Initialise;
+
+  procedure Set_Colors (Color_Names : in Color_Definition) is
+  begin
+    if X_Init_Done then
+      raise Already_Init;
+    end if;
+    The_Color_Names := Color_Names;
+  end Set_Colors;
+
+  function Color_Of (Name : String) return Effective_Color is
+    use type Asu_Us;
+  begin
+    for I in The_Color_Names'Range loop
+      if Asu_Ts (The_Color_Names(I)) = Name then
+        return I;
+      end if;
+    end loop;
+    raise Unknown_Color;
+  end Color_Of;
+
+  function Color_Name_Of (Color : Effective_Color) return String is
+  begin
+    return Asu_Ts (The_Color_Names(Color));
+  end Color_Name_Of;
 
   package body One_Con_Io is
 
@@ -888,14 +927,6 @@ package body Generic_Con_Io is
       end case;
 
     end Get_Key_Time;
-
-    -- Asu stuff
-    package Asu renames Ada.Strings.Unbounded;
-    subtype Asu_Us is Asu.Unbounded_String;
-    function Asu_Tus (Str : String) return Asu_Us
-                     renames Asu.To_Unbounded_String;
-    function Asu_Ts (Asu_Str : Asu_Us) return String renames Asu.To_String;
-
 
     -- Idem but the get is initialised with the initial content of the string
     --  and cursor's initial location can be set

@@ -37,8 +37,8 @@ package body Mesu_Edi is
 
   procedure Protect (Field_No : in Afpx.Field_Range) is
   begin
-    Afpx.Set_Field_Colors (Field_No, Foreground => Con_Io.Cyan,
-                                     Background => Con_Io.Black);
+    Afpx.Set_Field_Colors (Field_No, Foreground => Con_Io.Color_Of ("Cyan"),
+                                     Background => Con_Io.Color_Of ("Black"));
     Afpx.Set_Field_Protection (Field_No, True);
   end Protect;
 

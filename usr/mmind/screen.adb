@@ -37,28 +37,30 @@ package body Screen is
   -- Color definitions
   Color_Definition : constant array (Common.Color_Range) of
    Con_Io.Effective_Colors := (
-       0 => Con_Io.Brown,
-       1 => Con_Io.Blue,
-       2 => Con_Io.Green,
-       3 => Con_Io.Cyan,
-       4 => Con_Io.Red,
-       5 => Con_Io.Magenta,
-       6 => Con_Io.Light_Gray,
-       7 => Con_Io.Orange,
-       8 => Con_Io.Yellow);
+       0 => Con_Io.Color_Of ("Brown"),
+       1 => Con_Io.Color_Of ("Blue"),
+       2 => Con_Io.Color_Of ("Green"),
+       3 => Con_Io.Color_Of ("Cyan"),
+       4 => Con_Io.Color_Of ("Red"),
+       5 => Con_Io.Color_Of ("Magenta"),
+       6 => Con_Io.Color_Of ("Light_Gray"),
+       7 => Con_Io.Color_Of ("Orange"),
+       8 => Con_Io.Color_Of ("Yellow"));
+  White : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("White");
 
-  Foreground_Color  : constant Con_Io.Effective_Colors := Con_Io.Dark_Gray;
+  Foreground_Color  : constant Con_Io.Effective_Colors
+                    := Con_Io.Color_Of ("Dark_Gray");
   Background_Color  : constant Con_Io.Effective_Basic_Colors :=
    Color_Definition(0);
 
   -- When possible to try
-  Try_Color : constant Con_Io.Effective_Colors := Con_Io.White;
+  Try_Color : constant Con_Io.Effective_Colors := White;
   -- When click in try or menu window
-  Background_Select : constant Con_Io.Effective_Basic_Colors :=
-   Con_Io.Light_Gray;
+  Background_Select : constant Con_Io.Effective_Basic_Colors
+                    := Con_Io.Color_Of ("Light_Gray");
   -- Used to answer
-  Ok_Color  : constant Con_Io.Effective_Colors := Con_Io.Black;
-  Nok_Color : constant Con_Io.Effective_Colors := Con_Io.White;
+  Ok_Color  : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("Black");
+  Nok_Color : constant Con_Io.Effective_Colors := White;
 
   Pin : constant Character := '!';
 
@@ -333,7 +335,7 @@ package body Screen is
 
     -- Set color and square in global
     if Show then
-      Color := Con_Io.White;
+      Color := White;
       Chars (1) := '+';
       Chars (2) := '+';
       Chars (3) := '+';
@@ -634,7 +636,7 @@ package body Screen is
   begin
     -- Set color and square in global
     if Selected then
-      Fore := Con_Io.White;
+      Fore := White;
       Chars (1) := '+';
       Chars (2) := '+';
       Chars (3) := '+';

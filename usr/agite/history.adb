@@ -91,8 +91,9 @@ package body History is
         -- Lock button View
         Afpx.Get_Descriptor_Background (Background);
         Afpx.Set_Field_Protection (17, True);
-        Afpx.Set_Field_Colors (17, Foreground => Con_Io.Black,
-                                   Background => Background);
+        Afpx.Set_Field_Colors (17,
+          Foreground => Con_Io.Color_Of ("Black"),
+          Background => Background);
 
       end if;
     end Init;

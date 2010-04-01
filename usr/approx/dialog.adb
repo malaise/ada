@@ -271,7 +271,7 @@ package body Dialog is
     Go_On : Boolean;
   begin
     -- Enable Fx, enable and protect y (get field)
-    Afpx.Set_Field_Colors (My_Fld, Foreground => Con_Io.Cyan);
+    Afpx.Set_Field_Colors (My_Fld, Foreground => Con_Io.Color_Of ("Cyan"));
     Afpx.Set_Field_Activation(Screen.Get_Fld, True);
     Afpx.Set_Field_Protection(Screen.Get_Fld, True);
     Afpx.Clear_Field(Screen.Get_Fld);
@@ -287,7 +287,7 @@ package body Dialog is
     -- Let screen/afpx do the job
     Go_On := Screen.Confirm (Screen.C_Go_On, False, Subtitle => True);
     -- Clean up
-    Afpx.Set_Field_Colors (My_Fld, Foreground => Con_Io.Black);
+    Afpx.Set_Field_Colors (My_Fld, Foreground => Con_Io.Color_Of ("Black"));
     Afpx.Clear_Field(My_Fld);
     return Go_On;
   end Put_Yfx;

@@ -22,7 +22,8 @@
 
 /* Basics */
 
-extern int x_initialise (const char *server_name);
+extern int x_initialise (const char *server_name,
+                         const char *color_names[]);
 
 extern int x_suspend (void);
 extern int x_resume (void);

@@ -2,6 +2,13 @@ with Ada.Calendar, Ada.Characters.Latin_1;
 with C_Types, My_Io, Address_Ops, Environ, Perpet, Event_Mng, Virtual_Time;
 package body X_Mng is
 
+   -- Asu = Ada.Strings.Unbounded
+  package Asu renames Ada.Strings.Unbounded;
+  subtype Asu_Us is Ada.Strings.Unbounded.Unbounded_String;
+  function Asu_Ts (Asu_Str : Asu_Us) return String
+                   renames Asu.To_String;
+
+
   -- Maximum successive X events
   Max_Successive_X : constant Positive := 21;
 
@@ -36,9 +43,10 @@ package body X_Mng is
   -------------------- T H E   I N T E R F A C E -------------------
   ------------------------------------------------------------------
   -- Initialise X for one host
-  -- int x_initialise (char *server_name);
+  -- int x_initialise (const char *server_name, const char *color_names[]);
   ------------------------------------------------------------------
-  function X_Initialise (Server_Name : System.Address) return Result;
+  function X_Initialise (Server_Name : System.Address;
+                         Color_Names : System.Address) return Result;
   pragma Import(C, X_Initialise, "x_initialise");
 
   ------------------------------------------------------------------
@@ -79,7 +87,7 @@ package body X_Mng is
 
   ------------------------------------------------------------------
   -- Set the name of a line
-  -- int x_set_line_name (void *line_id, char *line_name);
+  -- int x_set_line_name (void *line_id, const char *line_name);
   ------------------------------------------------------------------
   function X_Set_Line_Name (Line_Id   : Line_For_C;
                             Line_Name : System.Address) return Result;
@@ -144,7 +152,7 @@ package body X_Mng is
 
   ------------------------------------------------------------------
   -- Writes a string at location with the attributes previously set
-  -- int x_put_stringt (void *line_id, char *p_char, int number,
+  -- int x_put_stringt (void *line_id, const char *p_char, int number,
   --                    int row, int column);
   ------------------------------------------------------------------
   function X_Put_String(Line_Id     : Line_For_C;
@@ -480,21 +488,69 @@ package body X_Mng is
   ------------------------ T H E   C A L L S -----------------------
   ------------------------------------------------------------------
 
-  procedure X_Initialise (Server_Name : in String) is
+  procedure X_Initialise (Server_Name : in String;
+                          Colors      : in Color_Definition;
+                          Colors_Set  : in Boolean) is
+
 
     Serv_Name_For_C : constant String(1 .. Server_Name'Length+1)
                     := Server_Name & Ada.Characters.Latin_1.Nul;
+    Max_Len : Positive;
+    Len : Natural;
+    Res : Boolean;
   begin
-    if not Initialised then
-      if X_Initialise (Serv_Name_For_C(Serv_Name_For_C'First)'Address)
-                      /= Ok then
-        raise X_Failure;
-      end if;
-
-      Dispatcher.Initialize;
-      Debug := Environ.Is_Yes (Debug_Var_Name);
-      Initialised := True;
+    if Initialised then
+      return;
     end if;
+    -- Get longest color name
+    if Colors_Set then
+      Max_Len := 1;
+      for I in Colors'Range loop
+        Len := Asu.Length (Colors(I));
+        if Len = 0 then
+          if Debug then
+            My_Io.Put_Line ("X_Initialise, incorrect empty color at " & I'Img);
+          end if;
+          raise X_Failure;
+        elsif Len > Max_Len then
+          Max_Len := Len;
+        end if;
+      end loop;
+      -- Store color names for 4 and their addresses
+      declare
+        subtype Color_Name is String (1 .. Max_Len + 1);
+        Color_Names : array (Colors'Range) of Color_Name;
+        Colors4C : array (Colors'Range) of System.Address;
+      begin
+        for I in Colors'Range loop
+          Color_Names(I) (1 .. Asu.Length (Colors(I)) + 1) :=
+             Asu_Ts (Colors(I)) & Ada.Characters.Latin_1.Nul;
+          Colors4C(I) := Color_Names(I)(Color_Names(I)'First)'Address;
+        end loop;
+        Res := X_Initialise (Serv_Name_For_C(Serv_Name_For_C'First)'Address,
+                       Colors4C(Colors4C'First)'Address) = Ok;
+      end;
+    else
+        Res := X_Initialise (Serv_Name_For_C(Serv_Name_For_C'First)'Address,
+                             System.Null_Address) = Ok;
+    end if;
+    if not Res then
+      raise X_Failure;
+    end if;
+    Dispatcher.Initialize;
+    Debug := Environ.Is_Yes (Debug_Var_Name);
+    Initialised := True;
+  end X_Initialise;
+  procedure X_Initialise (Server_Name : in String;
+                          Colors      : in Color_Definition) is
+  begin
+    X_Initialise (Server_Name, Colors, True);
+  end X_Initialise;
+
+  procedure X_Initialise (Server_Name : in String) is
+    Colors : Color_Definition;
+  begin
+    X_Initialise (Server_Name, Colors, False);
   end X_Initialise;
 
   ------------------------------------------------------------------

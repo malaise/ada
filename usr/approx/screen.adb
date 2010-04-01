@@ -139,7 +139,7 @@ package body Screen is
     if not Get_Prot then
       Afpx.Set_Field_Protection (Get_Fld, True);
     end if;
-    Afpx.Set_Field_Colors(Get_Fld, Background => Con_Io.Black);
+    Afpx.Set_Field_Colors(Get_Fld, Background => Con_Io.Color_Of ("Black"));
     loop
       Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
                          Ptg_Result, Redisplay);
@@ -227,7 +227,7 @@ package body Screen is
     Afpx.Set_Field_Activation(Ok_Button_Fld, True);
     Afpx.Set_Field_Activation(Cancel_Button_Fld, True);
     -- Set colors
-    Afpx.Set_Field_Colors(Info_Fld, Foreground => Con_Io.Orange,
+    Afpx.Set_Field_Colors(Info_Fld, Foreground => Con_Io.Color_Of("Orange"),
                                     Blink_Stat => Con_Io.Blink);
     if Alert then
       Afpx.Bell(1);
@@ -256,7 +256,7 @@ package body Screen is
     Afpx.Set_Field_Activation(Ok_Button_Fld, True);
     Afpx.Set_Field_Activation(Cancel_Button_Fld, False);
     -- Set colors
-    Afpx.Set_Field_Colors(Info_Fld, Foreground => Con_Io.Orange,
+    Afpx.Set_Field_Colors(Info_Fld, Foreground => Con_Io.Color_Of("Orange"),
                                     Blink_Stat => Con_Io.Blink);
     if Msg /= E_Done then
       Afpx.Bell(1);

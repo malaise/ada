@@ -5,13 +5,13 @@ procedure T_Color is
   use type Con_Io.Curs_Mvt;
 begin
   Con_Io.Init;
-  Con_Io.Set_Background (Con_Io.Brown);
+  Con_Io.Set_Background (Con_Io.Color_Of ("Brown"));
 
   loop
     Con_Io.Clear;
     for I in Con_Io.Effective_Colors loop
       Con_Io.Move (Con_Io.Colors'Pos(I), 1);
-      Con_Io.Put (Con_Io.Effective_Colors'Image(I) );
+      Con_Io.Put (Con_Io.Color_Name_Of (I) );
       Con_Io.Move (Con_Io.Colors'Pos(I), 20);
       Con_Io.Put ("^!@#$%&€*é$ê", Foreground => I, Move => False);
       Con_Io.New_Line;

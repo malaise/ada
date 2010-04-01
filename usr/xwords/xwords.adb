@@ -211,7 +211,8 @@ begin
         Afpx.Set_Field_Protection (Afpx.List_Field_No, True);
       when Error =>
         Afpx.Set_Field_Protection (Afpx.List_Field_No, True);
-        Afpx.Set_Field_Colors (Afpx.List_Field_No, Background => Con_Io.Red);
+        Afpx.Set_Field_Colors (Afpx.List_Field_No,
+                  Background => Con_Io.Color_Of ("Red"));
     end case;
 
     -- Set cursor at last significant char of the Get field

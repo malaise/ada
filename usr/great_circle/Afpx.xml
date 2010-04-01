@@ -6,7 +6,7 @@
     <!-- Title -->
     <Field Num="1" Kind="Put">
       <Geometry Up="0" Left="25" Low="0" Right="48"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">GREAT CIRCLE</Init>
     </Field>
 
@@ -196,12 +196,12 @@
     <!-- Route and distance -->
     <Field Num="34" Kind="Put">
       <Geometry Up="6" Left="50" Low="6" Right="59"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
     </Field>
 
     <Field Num="35" Kind="Put">
       <Geometry Up="6" Left="62" Low="6" Right="66"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
     </Field>
 
     <Field Num="36" Kind="Put">

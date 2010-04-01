@@ -153,7 +153,7 @@ procedure Search is
     procedure Update_Color (Fld : in Afpx.Field_Range; Value : in Boolean) is
     begin
       if Value then
-        Afpx.Set_Field_Colors (Fld, Foreground => Con_Io.Blue);
+        Afpx.Set_Field_Colors (Fld, Foreground => Con_Io.Color_Of ("Blue"));
         One_Set := True;
       else
         Afpx.Reset_Field (Fld, Reset_String => False);

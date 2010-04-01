@@ -170,8 +170,8 @@ package body Mesu_Gra is
 
   -- Graphic layout (help, scales, Tz)
   procedure Draw_Layout is
-    Help_Color  : constant Con_Io.Effective_Colors := Con_Io.Brown;
-    Scale_Color : constant Con_Io.Effective_Colors := Con_Io.Blue;
+    Help_Color  : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("Brown");
+    Scale_Color : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("Blue");
     -- Scale step on X in seconds
     Secs_Scale_Step : constant := 600;
     Secs : Natural;
@@ -220,7 +220,7 @@ package body Mesu_Gra is
   end Draw_Layout;
 
   procedure Draw_Tz (Show : in Boolean) is
-    Tz_Color    : constant Con_Io.Effective_Colors := Con_Io.Red;
+    Tz_Color    : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("Red");
     Bpm : Pers_Def.Bpm_Range;
     Y : Con_Io.Graphics.Y_Range;
     Mesure_Index : Mesure_Range;
@@ -256,15 +256,15 @@ package body Mesu_Gra is
   -- Draw one record
   procedure Draw_Mesure (No : in Mesure_Range) is
     Colors : constant array (1 .. Max_Nb_Mesure) of Con_Io.Effective_Colors
-           := (1 => Con_Io.Light_Gray,
-               2 => Con_Io.Cyan,
-               3 => Con_Io.Light_Blue,
-               4 => Con_Io.Light_Green,
-               5 => Con_Io.Orange,
-               6 => Con_Io.Blue,
-               7 => Con_Io.Magenta,
-               8 => Con_Io.Yellow,
-               9 => Con_Io.White);
+           := (1 => Con_Io.Color_Of ("Light_Gray"),
+               2 => Con_Io.Color_Of ("Cyan"),
+               3 => Con_Io.Color_Of ("Light_Blue"),
+               4 => Con_Io.Color_Of ("Light_Green"),
+               5 => Con_Io.Color_Of ("Orange"),
+               6 => Con_Io.Color_Of ("Blue"),
+               7 => Con_Io.Color_Of ("Magenta"),
+               8 => Con_Io.Color_Of ("Yellow"),
+               9 => Con_Io.Color_Of ("White"));
     Sec1, Sec2 : Natural;
     Bpm1, Bpm2 : Pers_Def.Bpm_Range;
     Mesure : Mesu_Def.Mesure_Rec renames Mesure_Array(No).Mesure;

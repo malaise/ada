@@ -185,10 +185,10 @@ package body Screen is
     Screen_Ground(J) := Last_X;
     J := J + 1;
     Screen_Ground(J) := First_Y;
-    Con_Io.Set_Foreground (Con_Io.Light_Gray);
+    Con_Io.Set_Foreground (Con_Io.Color_Of ("Light_Gray"));
     Con_Io.Graphics.Fill_Area (Screen_Ground);
     -- Frame
-    Con_Io.Set_Foreground (Con_Io.Blue);
+    Con_Io.Set_Foreground (Con_Io.Color_Of ("Blue"));
     Con_Io.Graphics.Draw_Rectangle (First_X - 1, First_Y - 1,
                                     Last_X + 1, Last_Y + 1);
     -- Gauge Letters
@@ -251,6 +251,12 @@ package body Screen is
     Fuel_Size : Natural;
     Hspeed : Lem.Speed_Range;
     Hspeed_Size : Integer;
+    Blue : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("Blue");
+    Red : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("Red");
+    Yellow : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("Yellow");
+    Magenta : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("Magenta");
+    Lime_Green : constant Con_Io.Effective_Colors
+               := Con_Io.Color_Of ("Lime_Green");
     use type My_Math.Real, Lem.Mass_Range, Flight.Status_List;
   begin
     -- Thrust gauge
@@ -258,7 +264,7 @@ package body Screen is
     Con_Io.Graphics.Fill_Rectangle (Thx, Thymin, Thx + Gauge_Size, Thymax);
     Thrust_Size := Natural (My_Math.Trunc(
                    My_Math.Real(Y_Thrust) * Thfactor));
-    Con_Io.Set_Foreground (Con_Io.Blue);
+    Con_Io.Set_Foreground (Blue);
     Con_Io.Graphics.Fill_Rectangle (Thx, Thymin, Thx + Gauge_Size,
                                     Thymin + Thrust_Size);
     -- Vertical speed
@@ -270,12 +276,12 @@ package body Screen is
     elsif Vspeed < -Max_Vert_Speed then
       Vspeed := -Max_Vert_Speed;
     end if;
-    Con_Io.Set_Foreground (Con_Io.Blue);
+    Con_Io.Set_Foreground (Blue);
     Con_Io.Graphics.Draw_Line (Vsx - 3, Vsymid, Vsx + Gauge_Size + 3, Vsymid);
     Vspeed_Size := Integer (My_Math.Trunc(
                    My_Math.Real(Vspeed) * Vsfactor));
     if Vspeed < -Flight.Max_Verti_Speed then
-      Con_Io.Set_Foreground (Con_Io.Red);
+      Con_Io.Set_Foreground (Red);
     end if;
     -- Small adjustment
     Vspeed_Size := Vsymid + Vspeed_Size;
@@ -292,11 +298,11 @@ package body Screen is
     Fuel_Size := Natural (My_Math.Trunc(
                    My_Math.Real(Fuel) * Fufactor));
     if Fuel >= Lem.Max_Fuel / 5.0 then
-      Con_Io.Set_Foreground (Con_Io.Blue);
+      Con_Io.Set_Foreground (Blue);
     elsif Fuel >= Lem.Max_Fuel / 10.0 then
-      Con_Io.Set_Foreground (Con_Io.Yellow);
+      Con_Io.Set_Foreground (Yellow);
     else
-      Con_Io.Set_Foreground (Con_Io.Red);
+      Con_Io.Set_Foreground (Red);
     end if;
     Con_Io.Graphics.Fill_Rectangle (Fuxmin, Fuy,
                                     Fuxmin + Fuel_Size, Fuy + Gauge_Size);
@@ -309,12 +315,12 @@ package body Screen is
     elsif Hspeed < -Max_Hori_Speed then
       Hspeed := -Max_Hori_Speed;
     end if;
-    Con_Io.Set_Foreground (Con_Io.Blue);
+    Con_Io.Set_Foreground (Blue);
     Con_Io.Graphics.Draw_Line (Hsxmid, Hsy - 3, Hsxmid, Hsy + Gauge_Size + 3);
     Hspeed_Size := Integer (My_Math.Trunc(
                    My_Math.Real(Hspeed) * Hsfactor));
     if abs Hspeed > Flight.Max_Horiz_Speed then
-      Con_Io.Set_Foreground (Con_Io.Red);
+      Con_Io.Set_Foreground (Red);
     end if;
     Con_Io.Graphics.Fill_Rectangle (Hsxmid, Hsy, Hsxmid + Hspeed_Size,
                                     Hsy + Gauge_Size);
@@ -322,20 +328,20 @@ package body Screen is
     Con_Io.Set_Foreground (Con_Io.Get_Background);
     Con_Io.Graphics.Put ("     ", Thn.X, Fun.Y);
     if Flight_Status.Status = Flight.Approaching then
-      Con_Io.Set_Foreground (Con_Io.Light_Green);
+      Con_Io.Set_Foreground (Lime_Green);
       Con_Io.Graphics.Put ("APPR ", Thn.X, Fun.Y);
     elsif Flight_Status.Status = Flight.Close then
-      Con_Io.Set_Foreground (Con_Io.Yellow);
+      Con_Io.Set_Foreground (Yellow);
       Con_Io.Graphics.Put ("CLOSE", Thn.X, Fun.Y);
     elsif Flight_Status.Status = Flight.Landed
     or else Flight_Status.Status = Flight.Safe_Landed then
-      Con_Io.Set_Foreground (Con_Io.Magenta);
+      Con_Io.Set_Foreground (Magenta);
       Con_Io.Graphics.Put ("LAND ", Thn.X, Fun.Y);
     end if;
     -- Elapsed time "mm.ss"
     Con_Io.Set_Foreground (Con_Io.Get_Background);
     Con_Io.Graphics.Put ("    ", Thn.X, Hsn.Y);
-    Con_Io.Set_Foreground (Con_Io.Blue);
+    Con_Io.Set_Foreground (Blue);
     Con_Io.Graphics.Put (
              Normal (Elapsed_Time.Minutes, 2, True, '0') & "."
            & Normal (Elapsed_Time.Seconds, 2, True, '0'),
@@ -354,7 +360,7 @@ package body Screen is
       Draw_Lem (Prev_Pos.Pos);
     end if;
     -- Show new pos
-    Con_Io.Set_Foreground (Con_Io.Cyan);
+    Con_Io.Set_Foreground (Con_Io.Color_Of ("Cyan"));
     Draw_Lem (Flight_Status.Pos);
     -- Save pos
     Prev_Pos := (True, Flight_Status.Pos);
@@ -416,19 +422,19 @@ package body Screen is
   begin
     case Reason is
       when Flight.Landed =>
-        Con_Io.Set_Foreground (Con_Io.Light_Green);
+        Con_Io.Set_Foreground (Con_Io.Color_Of ("Lime_Green"));
         Center ("You landed the LEM", Y_Text);
       when Flight.Safe_Landed =>
-        Con_Io.Set_Foreground (Con_Io.Light_Green);
+        Con_Io.Set_Foreground (Con_Io.Color_Of ("Lime_Green"));
         Center ("You landed the LEM safely", Y_Text);
       when Flight.Lost =>
-        Con_Io.Set_Foreground (Con_Io.Magenta);
+        Con_Io.Set_Foreground (Con_Io.Color_Of ("Magenta"));
         Center ("You lost the LEM", Y_Text);
       when Flight.Crashed =>
-        Con_Io.Set_Foreground (Con_Io.Magenta);
+        Con_Io.Set_Foreground (Con_Io.Color_Of ("Magenta"));
         Center ("You crashed the LEM", Y_Text);
     end case;
-    Con_Io.Set_Foreground (Con_Io.Light_Gray);
+    Con_Io.Set_Foreground (Con_Io.Color_Of ("Light_Grey"));
     case Reason is
       when Flight.Landed | Flight.Safe_Landed =>
         Center ("Hit any key or click middle button for a new game",
@@ -446,7 +452,7 @@ package body Screen is
 
   procedure Put_Pause is
   begin
-    Con_Io.Set_Foreground (Con_Io.Magenta);
+    Con_Io.Set_Foreground (Con_Io.Color_Of ("Magenta"));
     Con_Io.Set_Xor_Mode (Con_Io.Xor_On);
     Center ("Game Paused", Y_Text);
     Center ("Hit Space to resume", Y_Text - Y_Offset);

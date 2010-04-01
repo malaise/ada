@@ -9,13 +9,13 @@
     <!-- List of records selected -->
     <List>
       <Geometry Up="07" Left="01" Low="23" Right="65"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </List>
 
     <!-- Tittle of selection criteria -->
     <Field Num="01" Kind="Put">
       <Geometry Up="00" Left="01" Low="00" Right="56"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="00" Col="00">Person</Init>
       <Init Row="00" Col="21">Activity</Init>
       <Init Row="00" Col="34">After</Init>
@@ -33,73 +33,73 @@
     <!-- / between day and month of date after -->
     <Field Num="03" Kind="Put">
       <Geometry Up="01" Left="37" Low="01" Right="37"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
     </Field>
 
     <!-- / between month and year of date after -->
     <Field Num="04" Kind="Put">
       <Geometry Up="01" Left="40" Low="01" Right="40"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
     </Field>
 
     <!-- / between day and month of date before -->
     <Field Num="05" Kind="Put">
       <Geometry Up="01" Left="53" Low="01" Right="53"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
     </Field>
 
     <!-- / between month and year of date before -->
     <Field Num="06" Kind="Put">
       <Geometry Up="01" Left="56" Low="01" Right="56"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
     </Field>
 
     <!-- Person -->
     <Field Num="07" Kind="Get">
       <Geometry Up="01" Left="01" Low="01" Right="20"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Activity -->
     <Field Num="08" Kind="Get">
       <Geometry Up="01" Left="22" Low="01" Right="31"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Day after -->
     <Field Num="09" Kind="Get">
       <Geometry Up="01" Left="35" Low="01" Right="36"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Month after -->
     <Field Num="10" Kind="Get">
       <Geometry Up="01" Left="38" Low="01" Right="39"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Year after -->
     <Field Num="11" Kind="Get">
       <Geometry Up="01" Left="41" Low="01" Right="44"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Day before -->
     <Field Num="12" Kind="Get">
       <Geometry Up="01" Left="51" Low="01" Right="52"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Month before -->
     <Field Num="13" Kind="Get">
       <Geometry Up="01" Left="54" Low="01" Right="55"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Year before -->
     <Field Num="14" Kind="Get">
       <Geometry Up="01" Left="57" Low="01" Right="60"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Add selection button -->
@@ -147,7 +147,7 @@
     <!-- Tittle of list -->
     <Field Num="21" Kind="Put">
       <Geometry Up="06" Left="01" Low="06" Right="52"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="00" Col="00">Person</Init>
       <Init Row="00" Col="21">Activity</Init>
       <Init Row="00" Col="34">Date</Init>
@@ -206,13 +206,13 @@
     <!-- List of activities -->
     <List>
       <Geometry Up="05" Left="05" Low="19" Right="35"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </List>
 
     <!-- Tittle screen -->
     <Field Num="01" Kind="Put">
       <Geometry Up="00" Left="21" Low="00" Right="48"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="00" Col="00">Activity Data Base</Init>
     </Field>
 
@@ -226,7 +226,7 @@
     <!-- Tittle of list -->
     <Field Num="03" Kind="Put">
       <Geometry Up="04" Left="05" Low="04" Right="37"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="00" Col="00">Person</Init>
       <Init Row="00" Col="21">Activity</Init>
     </Field>
@@ -276,33 +276,33 @@
     <!-- Person edit tittle -->
     <Field Num="10" Kind="Put">
       <Geometry Up="21" Left="00" Low="21" Right="05"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="00" Col="00">Person</Init>
     </Field>
 
     <!-- Person get -->
     <Field Num="11" Kind="Get">
       <Geometry Up="21" Left="07" Low="21" Right="26"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Activity edit tittle -->
     <Field Num="12" Kind="Put">
       <Geometry Up="21" Left="29" Low="21" Right="36"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="00" Col="00">Activity</Init>
     </Field>
 
     <!-- Activity get -->
     <Field Num="13" Kind="Get">
       <Geometry Up="21" Left="38" Low="21" Right="47"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- TZ edit numbers -->
     <Field Num="14" Kind="Put">
       <Geometry Up="22" Left="15" Low="22" Right="38"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="00" Col="01">50</Init>
       <Init Row="00" Col="05">60</Init>
       <Init Row="00" Col="09">70</Init>
@@ -313,44 +313,44 @@
     <!-- TZ edit tittle -->
     <Field Num="15" Kind="Put">
       <Geometry Up="23" Left="00" Low="23" Right="13"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="00" Col="00">Training Zones</Init>
     </Field>
 
     <!-- TZ1 get -->
     <Field Num="16" Kind="Get">
       <Geometry Up="23" Left="15" Low="23" Right="17"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- TZ2 get -->
     <Field Num="17" Kind="Get">
       <Geometry Up="23" Left="19" Low="23" Right="21"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- TZ3 get -->
     <Field Num="18" Kind="Get">
       <Geometry Up="23" Left="23" Low="23" Right="25"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- TZ4 get -->
     <Field Num="19" Kind="Get">
       <Geometry Up="23" Left="27" Low="23" Right="29"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- TZ5 get -->
     <Field Num="20" Kind="Get">
       <Geometry Up="23" Left="31" Low="23" Right="33"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- TZ6 get -->
     <Field Num="21" Kind="Get">
       <Geometry Up="23" Left="35" Low="23" Right="37"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Valid button -->
@@ -383,7 +383,7 @@
     <!-- Tittle -->
     <Field Num="01" Kind="Put">
       <Geometry Up="01" Left="30" Low="01" Right="49"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="00" Col="00">xxxxxxxx of a record</Init>
     </Field>
 
@@ -397,33 +397,33 @@
     <!-- Person get tittle -->
     <Field Num="03" Kind="Put">
       <Geometry Up="04" Left="05" Low="04" Right="10"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="00" Col="00">Person</Init>
     </Field>
 
     <!-- Person get -->
     <Field Num="04" Kind="Get">
       <Geometry Up="04" Left="12" Low="04" Right="31"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Activity get tittle -->
     <Field Num="05" Kind="Put">
       <Geometry Up="04" Left="34" Low="04" Right="41"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="00" Col="00">Activity</Init>
     </Field>
 
     <!-- Activity get -->
     <Field Num="06" Kind="Get">
       <Geometry Up="04" Left="43" Low="04" Right="52"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- TZ edit numbers -->
     <Field Num="07" Kind="Put">
       <Geometry Up="06" Left="30" Low="06" Right="52"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="00" Col="05">2</Init>
       <Init Row="00" Col="09">3</Init>
       <Init Row="00" Col="13">4</Init>
@@ -434,707 +434,707 @@
     <!-- TZ edit tittle -->
     <Field Num="08" Kind="Put">
       <Geometry Up="07" Left="15" Low="07" Right="28"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="00" Col="00">Training Zones</Init>
     </Field>
 
     <!-- TZ1 get -->
     <Field Num="09" Kind="Get">
       <Geometry Up="07" Left="30" Low="07" Right="32"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- TZ2 get -->
     <Field Num="10" Kind="Get">
       <Geometry Up="07" Left="34" Low="07" Right="36"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- TZ3 get -->
     <Field Num="11" Kind="Get">
       <Geometry Up="07" Left="38" Low="07" Right="40"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- TZ4 get -->
     <Field Num="12" Kind="Get">
       <Geometry Up="07" Left="42" Low="07" Right="44"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- TZ5 get -->
     <Field Num="13" Kind="Get">
       <Geometry Up="07" Left="46" Low="07" Right="48"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- TZ6 get -->
     <Field Num="14" Kind="Get">
       <Geometry Up="07" Left="50" Low="07" Right="52"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Date tittle -->
     <Field Num="15" Kind="Put">
       <Geometry Up="09" Left="05" Low="09" Right="08"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="00" Col="00">Date</Init>
     </Field>
 
     <!-- Date days -->
     <Field Num="16" Kind="Get">
       <Geometry Up="09" Left="10" Low="09" Right="11"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- / betweeen day and month -->
     <Field Num="17" Kind="Put">
       <Geometry Up="09" Left="12" Low="09" Right="12"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
     </Field>
 
     <!-- Date month -->
     <Field Num="18" Kind="Get">
       <Geometry Up="09" Left="13" Low="09" Right="14"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- / betweeen month and year -->
     <Field Num="19" Kind="Put">
       <Geometry Up="09" Left="15" Low="09" Right="15"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
     </Field>
 
     <!-- Date year -->
     <Field Num="20" Kind="Get">
       <Geometry Up="09" Left="16" Low="09" Right="19"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Comment tittle -->
     <Field Num="21" Kind="Put">
       <Geometry Up="09" Left="22" Low="09" Right="28"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="00" Col="00">Comment</Init>
     </Field>
 
     <!-- Comment get -->
     <Field Num="22" Kind="Get">
       <Geometry Up="09" Left="30" Low="09" Right="49"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Sampling tittle -->
     <Field Num="23" Kind="Put">
       <Geometry Up="09" Left="52" Low="09" Right="65"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="00" Col="00">Sampling delta</Init>
     </Field>
 
     <!-- Sampling get -->
     <Field Num="24" Kind="Get">
       <Geometry Up="09" Left="67" Low="09" Right="69"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="25" Kind="Get">
       <Geometry Up="11" Left="00" Low="11" Right="02"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="26" Kind="Get">
       <Geometry Up="11" Left="04" Low="11" Right="06"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="27" Kind="Get">
       <Geometry Up="11" Left="08" Low="11" Right="10"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="28" Kind="Get">
       <Geometry Up="11" Left="12" Low="11" Right="14"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="29" Kind="Get">
       <Geometry Up="11" Left="16" Low="11" Right="18"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="30" Kind="Get">
       <Geometry Up="11" Left="20" Low="11" Right="22"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="31" Kind="Get">
       <Geometry Up="11" Left="24" Low="11" Right="26"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="32" Kind="Get">
       <Geometry Up="11" Left="28" Low="11" Right="30"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="33" Kind="Get">
       <Geometry Up="11" Left="32" Low="11" Right="34"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="34" Kind="Get">
       <Geometry Up="11" Left="36" Low="11" Right="38"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="35" Kind="Get">
       <Geometry Up="11" Left="40" Low="11" Right="42"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="36" Kind="Get">
       <Geometry Up="11" Left="44" Low="11" Right="46"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="37" Kind="Get">
       <Geometry Up="11" Left="48" Low="11" Right="50"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="38" Kind="Get">
       <Geometry Up="11" Left="52" Low="11" Right="54"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="39" Kind="Get">
       <Geometry Up="11" Left="56" Low="11" Right="58"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="40" Kind="Get">
       <Geometry Up="11" Left="60" Low="11" Right="62"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="41" Kind="Get">
       <Geometry Up="11" Left="64" Low="11" Right="66"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="42" Kind="Get">
       <Geometry Up="11" Left="68" Low="11" Right="70"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="43" Kind="Get">
       <Geometry Up="11" Left="72" Low="11" Right="74"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="44" Kind="Get">
       <Geometry Up="11" Left="76" Low="11" Right="78"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="45" Kind="Get">
       <Geometry Up="13" Left="00" Low="13" Right="02"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="46" Kind="Get">
       <Geometry Up="13" Left="04" Low="13" Right="06"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="47" Kind="Get">
       <Geometry Up="13" Left="08" Low="13" Right="10"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="48" Kind="Get">
       <Geometry Up="13" Left="12" Low="13" Right="14"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="49" Kind="Get">
       <Geometry Up="13" Left="16" Low="13" Right="18"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="50" Kind="Get">
       <Geometry Up="13" Left="20" Low="13" Right="22"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="51" Kind="Get">
       <Geometry Up="13" Left="24" Low="13" Right="26"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="52" Kind="Get">
       <Geometry Up="13" Left="28" Low="13" Right="30"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="53" Kind="Get">
       <Geometry Up="13" Left="32" Low="13" Right="34"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="54" Kind="Get">
       <Geometry Up="13" Left="36" Low="13" Right="38"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="55" Kind="Get">
       <Geometry Up="13" Left="40" Low="13" Right="42"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="56" Kind="Get">
       <Geometry Up="13" Left="44" Low="13" Right="46"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="57" Kind="Get">
       <Geometry Up="13" Left="48" Low="13" Right="50"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="58" Kind="Get">
       <Geometry Up="13" Left="52" Low="13" Right="54"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="59" Kind="Get">
       <Geometry Up="13" Left="56" Low="13" Right="58"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="60" Kind="Get">
       <Geometry Up="13" Left="60" Low="13" Right="62"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="61" Kind="Get">
       <Geometry Up="13" Left="64" Low="13" Right="66"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="62" Kind="Get">
       <Geometry Up="13" Left="68" Low="13" Right="70"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="63" Kind="Get">
       <Geometry Up="13" Left="72" Low="13" Right="74"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="64" Kind="Get">
       <Geometry Up="13" Left="76" Low="13" Right="78"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="65" Kind="Get">
       <Geometry Up="15" Left="00" Low="15" Right="02"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="66" Kind="Get">
       <Geometry Up="15" Left="04" Low="15" Right="06"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="67" Kind="Get">
       <Geometry Up="15" Left="08" Low="15" Right="10"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="68" Kind="Get">
       <Geometry Up="15" Left="12" Low="15" Right="14"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="69" Kind="Get">
       <Geometry Up="15" Left="16" Low="15" Right="18"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="70" Kind="Get">
       <Geometry Up="15" Left="20" Low="15" Right="22"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="71" Kind="Get">
       <Geometry Up="15" Left="24" Low="15" Right="26"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="72" Kind="Get">
       <Geometry Up="15" Left="28" Low="15" Right="30"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="73" Kind="Get">
       <Geometry Up="15" Left="32" Low="15" Right="34"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="74" Kind="Get">
       <Geometry Up="15" Left="36" Low="15" Right="38"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="75" Kind="Get">
       <Geometry Up="15" Left="40" Low="15" Right="42"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="76" Kind="Get">
       <Geometry Up="15" Left="44" Low="15" Right="46"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="77" Kind="Get">
       <Geometry Up="15" Left="48" Low="15" Right="50"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="78" Kind="Get">
       <Geometry Up="15" Left="52" Low="15" Right="54"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="79" Kind="Get">
       <Geometry Up="15" Left="56" Low="15" Right="58"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="80" Kind="Get">
       <Geometry Up="15" Left="60" Low="15" Right="62"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="81" Kind="Get">
       <Geometry Up="15" Left="64" Low="15" Right="66"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="82" Kind="Get">
       <Geometry Up="15" Left="68" Low="15" Right="70"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="83" Kind="Get">
       <Geometry Up="15" Left="72" Low="15" Right="74"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="84" Kind="Get">
       <Geometry Up="15" Left="76" Low="15" Right="78"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="85" Kind="Get">
       <Geometry Up="17" Left="00" Low="17" Right="02"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="86" Kind="Get">
       <Geometry Up="17" Left="04" Low="17" Right="06"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="87" Kind="Get">
       <Geometry Up="17" Left="08" Low="17" Right="10"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="88" Kind="Get">
       <Geometry Up="17" Left="12" Low="17" Right="14"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="89" Kind="Get">
       <Geometry Up="17" Left="16" Low="17" Right="18"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="90" Kind="Get">
       <Geometry Up="17" Left="20" Low="17" Right="22"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="91" Kind="Get">
       <Geometry Up="17" Left="24" Low="17" Right="26"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="92" Kind="Get">
       <Geometry Up="17" Left="28" Low="17" Right="30"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="93" Kind="Get">
       <Geometry Up="17" Left="32" Low="17" Right="34"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="94" Kind="Get">
       <Geometry Up="17" Left="36" Low="17" Right="38"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="95" Kind="Get">
       <Geometry Up="17" Left="40" Low="17" Right="42"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="96" Kind="Get">
       <Geometry Up="17" Left="44" Low="17" Right="46"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="97" Kind="Get">
       <Geometry Up="17" Left="48" Low="17" Right="50"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="98" Kind="Get">
       <Geometry Up="17" Left="52" Low="17" Right="54"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="99" Kind="Get">
       <Geometry Up="17" Left="56" Low="17" Right="58"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="100" Kind="Get">
       <Geometry Up="17" Left="60" Low="17" Right="62"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="101" Kind="Get">
       <Geometry Up="17" Left="64" Low="17" Right="66"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="102" Kind="Get">
       <Geometry Up="17" Left="68" Low="17" Right="70"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="103" Kind="Get">
       <Geometry Up="17" Left="72" Low="17" Right="74"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="104" Kind="Get">
       <Geometry Up="17" Left="76" Low="17" Right="78"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="105" Kind="Get">
       <Geometry Up="19" Left="00" Low="19" Right="02"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="106" Kind="Get">
       <Geometry Up="19" Left="04" Low="19" Right="06"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="107" Kind="Get">
       <Geometry Up="19" Left="08" Low="19" Right="10"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="108" Kind="Get">
       <Geometry Up="19" Left="12" Low="19" Right="14"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="109" Kind="Get">
       <Geometry Up="19" Left="16" Low="19" Right="18"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="110" Kind="Get">
       <Geometry Up="19" Left="20" Low="19" Right="22"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="111" Kind="Get">
       <Geometry Up="19" Left="24" Low="19" Right="26"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="112" Kind="Get">
       <Geometry Up="19" Left="28" Low="19" Right="30"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="113" Kind="Get">
       <Geometry Up="19" Left="32" Low="19" Right="34"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="114" Kind="Get">
       <Geometry Up="19" Left="36" Low="19" Right="38"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="115" Kind="Get">
       <Geometry Up="19" Left="40" Low="19" Right="42"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="116" Kind="Get">
       <Geometry Up="19" Left="44" Low="19" Right="46"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="117" Kind="Get">
       <Geometry Up="19" Left="48" Low="19" Right="50"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="118" Kind="Get">
       <Geometry Up="19" Left="52" Low="19" Right="54"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="119" Kind="Get">
       <Geometry Up="19" Left="56" Low="19" Right="58"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="120" Kind="Get">
       <Geometry Up="19" Left="60" Low="19" Right="62"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="121" Kind="Get">
       <Geometry Up="19" Left="64" Low="19" Right="66"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="122" Kind="Get">
       <Geometry Up="19" Left="68" Low="19" Right="70"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="123" Kind="Get">
       <Geometry Up="19" Left="72" Low="19" Right="74"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Rates get -->
     <Field Num="124" Kind="Get">
       <Geometry Up="19" Left="76" Low="19" Right="78"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Valid button -->
@@ -1168,14 +1168,14 @@
     <!-- Import tittle -->
     <Field Num="129" Kind="Put">
       <Geometry Up="23" Left="53" Low="23" Right="56"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="00" Col="00">File</Init>
     </Field>
 
     <!-- Import file name -->
     <Field Num="130" Kind="Get">
       <Geometry Up="23" Left="57" Low="23" Right="78"/>
-      <Colors Foreground="Light_Gray" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Green"/>
     </Field>
 
     <!-- Insert button -->

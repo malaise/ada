@@ -13,7 +13,8 @@ package body Screen is
       Afpx.Reset_Field(Franc_Account_Fld);
     else
       Afpx.Clear_Field(Franc_Account_Fld);
-      Afpx.Set_Field_Colors(Franc_Account_Fld, Foreground => Con_Io.Blue);
+      Afpx.Set_Field_Colors(Franc_Account_Fld,
+                  Foreground => Con_Io.Color_Of ("Blue"));
       Afpx.Encode_Field(Franc_Account_Fld, (0, 1), "TO EUROS");
     end if;
   end Update_To_Unit;
@@ -72,8 +73,8 @@ package body Screen is
     if Sublist_Active then
       Afpx.Encode_Field(Save_Account_Fld, (0, 0), "COPYALL");
       Afpx.Encode_Field(Search_Oper_Fld, (0, 1), "UN SEL");
-      Afpx.Set_Field_Colors(Sdat_Account_Fld, Con_Io.Blue);
-      Afpx.Set_Field_Colors(Samo_Account_Fld, Con_Io.Blue);
+      Afpx.Set_Field_Colors(Sdat_Account_Fld, Con_Io.Color_Of ("Blue"));
+      Afpx.Set_Field_Colors(Samo_Account_Fld, Con_Io.Color_Of ("Blue"));
     else
       Afpx.Reset_Field(Save_Account_Fld);
       Afpx.Reset_Field(Search_Oper_Fld, Reset_Colors => True);
@@ -131,7 +132,7 @@ package body Screen is
                         Reset_String => True);
      else
        Afpx.Encode_Field(Account_Saved_Fld, (0, 0), "NOT SAVED");
-       Afpx.Set_Field_Colors (Account_Saved_Fld, Con_Io.Red);
+       Afpx.Set_Field_Colors (Account_Saved_Fld, Con_Io.Color_Of ("Red"));
      end if;
   end Encode_Saved;
 

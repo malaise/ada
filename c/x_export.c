@@ -171,17 +171,24 @@ extern int x_select (int *p_fd, boolean *p_read, timeout_t *timeout) {
 }
 
 /***** Line management *****/
-
+extern int x_set_colors (const char *color_names[]);
 /* Initialise communication with the 'local' X server */
 /*  opening a little window */
 /* Hangs handler for blinking */
-extern int x_initialise (const char *server_name) {
+extern int x_initialise (const char *server_name,
+                         const char *color_names[]) {
 
     int result;
 
+    /* Open display */
     result = (lin_initialise (server_name) ? OK : ERR);
     if (result == OK) {
       result = evt_add_fd (ConnectionNumber(local_server.x_server), TRUE);
+    }
+
+    /* Init color names if set */
+    if ( (result == OK) && (color_names != NULL) ) {
+      col_set_names (color_names);
     }
 
     if ( (result == OK) && (!blink_bold()) ) {

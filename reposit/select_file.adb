@@ -132,7 +132,8 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
     if not Get_Prot then
       Afpx.Set_Field_Protection (Get_Fld, True);
     end if;
-    Afpx.Set_Field_Colors(Get_Fld, Background => Con_Io.Black);
+    Afpx.Set_Field_Colors(Get_Fld,
+         Background => Con_Io.Color_Of ("Black"));
     loop
       Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
                          Ptg_Result, Redisplay);
@@ -191,7 +192,7 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
     Afpx.Set_Field_Activation (Center_Fld, False);
     Afpx.Set_Field_Activation (Reread_Fld, False);
     Afpx.Set_Field_Activation (Cancel_Fld, False);
-    Afpx.Set_Field_Colors(Info_Fld, Foreground => Con_Io.Orange,
+    Afpx.Set_Field_Colors(Info_Fld, Foreground => Con_Io.Color_Of ("Orange"),
                                     Blink_Stat => Con_Io.Blink);
     case Msg is
       when E_File_Not_Found     => Encode_Info ("File not found");

@@ -40,19 +40,19 @@
     <!-- Play nimm,  Play Marienbad, exit -->
     <Field Num="3" Kind="Button">
       <Geometry Up="21" Left="10" Low="23" Right="19"/>
-      <Colors Foreground="Blue" Background="Light_Gray"/>
+      <Colors Foreground="Blue" Background="Light_Grey"/>
       <Init Row="1" Col="1">Play Nim</Init>
     </Field>
 
     <Field Num="4" Kind="Button">
       <Geometry Up="21" Left="22" Low="23" Right="37"/>
-      <Colors Foreground="Blue" Background="Light_Gray"/>
+      <Colors Foreground="Blue" Background="Light_Grey"/>
       <Init Row="1" Col="1">Play Marienbad</Init>
     </Field>
 
     <Field Num="5" Kind="Button">
       <Geometry Up="21" Left="60" Low="23" Right="68"/>
-      <Colors Foreground="Blue" Background="Light_Gray"/>
+      <Colors Foreground="Blue" Background="Light_Grey"/>
       <Init Row="1" Col="1">E X I T</Init>
     </Field>
 
@@ -63,97 +63,97 @@
     <!-- First row -->
     <Field Num="1" Kind="Button">
       <Geometry Up="2" Left="23" Low="4" Right="24"/>
-      <Colors Foreground="Cyan" Background="Light_Gray"/>
+      <Colors Foreground="Cyan" Background="Light_Grey"/>
     </Field>
 
     <Field Num="2" Kind="Button">
       <Geometry Up="2" Left="28" Low="4" Right="29"/>
-      <Colors Foreground="Cyan" Background="Light_Gray"/>
+      <Colors Foreground="Cyan" Background="Light_Grey"/>
     </Field>
 
     <Field Num="3" Kind="Button">
       <Geometry Up="2" Left="33" Low="4" Right="34"/>
-      <Colors Foreground="Cyan" Background="Light_Gray"/>
+      <Colors Foreground="Cyan" Background="Light_Grey"/>
     </Field>
 
     <Field Num="4" Kind="Button">
       <Geometry Up="2" Left="38" Low="4" Right="39"/>
-      <Colors Foreground="Cyan" Background="Light_Gray"/>
+      <Colors Foreground="Cyan" Background="Light_Grey"/>
     </Field>
 
     <Field Num="5" Kind="Button">
       <Geometry Up="2" Left="43" Low="4" Right="44"/>
-      <Colors Foreground="Cyan" Background="Light_Gray"/>
+      <Colors Foreground="Cyan" Background="Light_Grey"/>
     </Field>
 
     <Field Num="6" Kind="Button">
       <Geometry Up="2" Left="48" Low="4" Right="49"/>
-      <Colors Foreground="Cyan" Background="Light_Gray"/>
+      <Colors Foreground="Cyan" Background="Light_Grey"/>
     </Field>
 
     <Field Num="7" Kind="Button">
       <Geometry Up="2" Left="53" Low="4" Right="54"/>
-      <Colors Foreground="Cyan" Background="Light_Gray"/>
+      <Colors Foreground="Cyan" Background="Light_Grey"/>
     </Field>
 
     <!-- Second row -->
     <Field Num="8" Kind="Button">
       <Geometry Up="6" Left="28" Low="8" Right="29"/>
-      <Colors Foreground="Cyan" Background="Light_Gray"/>
+      <Colors Foreground="Cyan" Background="Light_Grey"/>
     </Field>
 
     <Field Num="9" Kind="Button">
       <Geometry Up="6" Left="33" Low="8" Right="34"/>
-      <Colors Foreground="Cyan" Background="Light_Gray"/>
+      <Colors Foreground="Cyan" Background="Light_Grey"/>
     </Field>
 
     <Field Num="10" Kind="Button">
       <Geometry Up="6" Left="38" Low="8" Right="39"/>
-      <Colors Foreground="Cyan" Background="Light_Gray"/>
+      <Colors Foreground="Cyan" Background="Light_Grey"/>
     </Field>
 
     <Field Num="11" Kind="Button">
       <Geometry Up="6" Left="43" Low="8" Right="44"/>
-      <Colors Foreground="Cyan" Background="Light_Gray"/>
+      <Colors Foreground="Cyan" Background="Light_Grey"/>
     </Field>
 
     <Field Num="12" Kind="Button">
       <Geometry Up="6" Left="48" Low="8" Right="49"/>
-      <Colors Foreground="Cyan" Background="Light_Gray"/>
+      <Colors Foreground="Cyan" Background="Light_Grey"/>
     </Field>
 
     <!-- Third row -->
     <Field Num="13" Kind="Button">
       <Geometry Up="10" Left="33" Low="12" Right="34"/>
-      <Colors Foreground="Cyan" Background="Light_Gray"/>
+      <Colors Foreground="Cyan" Background="Light_Grey"/>
     </Field>
 
     <Field Num="14" Kind="Button">
       <Geometry Up="10" Left="38" Low="12" Right="39"/>
-      <Colors Foreground="Cyan" Background="Light_Gray"/>
+      <Colors Foreground="Cyan" Background="Light_Grey"/>
     </Field>
 
     <Field Num="15" Kind="Button">
       <Geometry Up="10" Left="43" Low="12" Right="44"/>
-      <Colors Foreground="Cyan" Background="Light_Gray"/>
+      <Colors Foreground="Cyan" Background="Light_Grey"/>
     </Field>
 
     <!-- Third row -->
     <Field Num="16" Kind="Button">
       <Geometry Up="14" Left="38" Low="16" Right="39"/>
-      <Colors Foreground="Cyan" Background="Light_Gray"/>
+      <Colors Foreground="Cyan" Background="Light_Grey"/>
     </Field>
 
     <!-- Play -->
     <Field Num="17" Kind="Button">
       <Geometry Up="21" Left="34" Low="23" Right="43"/>
-      <Colors Foreground="Blue" Background="Light_Gray"/>
+      <Colors Foreground="Blue" Background="Light_Grey"/>
       <Init Row="1" Col="2">Remove</Init>
     </Field>
 
     <Field Num="18" Kind="Button">
       <Geometry Up="21" Left="60" Low="23" Right="68"/>
-      <Colors Foreground="Blue" Background="Light_Gray"/>
+      <Colors Foreground="Blue" Background="Light_Grey"/>
       <Init Row="1" Col="1">E X I T</Init>
     </Field>
 
@@ -172,13 +172,13 @@
     <!-- Who wins -->
     <Field Num="21" Kind="Put">
       <Geometry Up="19" Left="0" Low="19" Right="79"/>
-      <Colors Foreground="Light_Green" Blink="True" Background="Black"/>
+      <Colors Foreground="Lime_Green" Blink="True" Background="Black"/>
     </Field>
 
     <!-- Play -->
     <Field Num="22" Kind="Button">
       <Geometry Up="21" Left="03" Low="23" Right="18"/>
-      <Colors Foreground="Blue" Background="Light_Gray"/>
+      <Colors Foreground="Blue" Background="Light_Grey"/>
     </Field>
 
   </Descriptor>

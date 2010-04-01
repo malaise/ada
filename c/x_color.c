@@ -4,6 +4,7 @@
 
 #include "x_color.h"
 
+static boolean color_set = False;
 static boolean envs_got = False;
 
 #define N_PLANES 0
@@ -21,8 +22,27 @@ typedef enum {full_blink, on_0_blink, bold_blink} blink_kind_list;
 static blink_kind_list blink_kind = full_blink;
 static int color_tab_size;
 
-XColor color_value[NBRE_COLOR];
+static char color_name[NBRE_COLOR][COLOR_NAME_MAX_SIZE];
+static XColor color_value[NBRE_COLOR];
 
+static const char *default_color_name[NBRE_COLOR]={
+  "black",      "blue",
+  "dark green", "cyan",
+  "red",        "magenta",
+  "brown",      "light grey",
+  "grey",  "light blue",
+  "lime green","orange",
+  "yellow",     "white"
+ };
+
+extern void col_set_names (const char* names[]) {
+  int i;
+
+  for (i = 0; i < NBRE_COLOR; i++) {
+    strcpy (color_name[i], names[i]);
+  }
+  color_set = True;
+}
 
 
 static void get_envs (void) {
@@ -49,6 +69,11 @@ static void get_envs (void) {
     blink_kind = bold_blink;
     color_tab_size = NBRE_COLOR;
   }
+  /* Set default color name if not set */
+  if (! color_set) {
+    col_set_names (default_color_name);
+  }
+
   envs_got = True;
 }
 

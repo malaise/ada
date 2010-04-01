@@ -26,37 +26,41 @@ package body Edition is
 
   -- Protect get and button fields & set colors.
   procedure Protect_Data is
+    Light_Grey : constant Con_Io.Effective_Colors
+               := Con_Io.Color_Of ("Light_Grey");
+    Black : constant Con_Io.Effective_Colors
+               := Con_Io.Color_Of ("Black");
   begin
     Afpx.Set_Field_Protection(13, True);
-    Afpx.Set_Field_Colors(13, Con_Io.Light_Gray, Background => Con_Io.Black);
+    Afpx.Set_Field_Colors(13, Light_Grey, Background => Black);
     Afpx.Set_Field_Protection(15, True);
-    Afpx.Set_Field_Colors(15, Con_Io.Light_Gray, Background => Con_Io.Black);
+    Afpx.Set_Field_Colors(15, Light_Grey, Background => Black);
     Afpx.Set_Field_Protection(17, True);
-    Afpx.Set_Field_Colors(17, Con_Io.Light_Gray, Background => Con_Io.Black);
+    Afpx.Set_Field_Colors(17, Light_Grey, Background => Black);
     Afpx.Set_Field_Protection(20, True);
-    Afpx.Set_Field_Colors(20, Con_Io.Light_Gray, Background => Con_Io.Black);
+    Afpx.Set_Field_Colors(20, Light_Grey, Background => Black);
     Afpx.Set_Field_Protection(22, True);
-    Afpx.Set_Field_Colors(22, Con_Io.Light_Gray, Background => Con_Io.Black);
+    Afpx.Set_Field_Colors(22, Light_Grey, Background => Black);
     Afpx.Set_Field_Protection(23, True);
-    Afpx.Set_Field_Colors(23, Con_Io.Light_Gray, Background => Con_Io.Black);
+    Afpx.Set_Field_Colors(23, Light_Grey, Background => Black);
     Afpx.Set_Field_Protection(24, True);
-    Afpx.Set_Field_Colors(24, Con_Io.Light_Gray, Background => Con_Io.Black);
+    Afpx.Set_Field_Colors(24, Light_Grey, Background => Black);
     Afpx.Set_Field_Protection(25, True);
-    Afpx.Set_Field_Colors(25, Con_Io.Light_Gray, Background => Con_Io.Black);
+    Afpx.Set_Field_Colors(25, Light_Grey, Background => Black);
     Afpx.Set_Field_Protection(26, True);
-    Afpx.Set_Field_Colors(26, Con_Io.Light_Gray, Background => Con_Io.Black);
+    Afpx.Set_Field_Colors(26, Light_Grey, Background => Black);
     Afpx.Set_Field_Protection(28, True);
-    Afpx.Set_Field_Colors(28, Con_Io.Light_Gray, Background => Con_Io.Black);
+    Afpx.Set_Field_Colors(28, Light_Grey, Background => Black);
     Afpx.Set_Field_Protection(29, True);
-    Afpx.Set_Field_Colors(29, Con_Io.Light_Gray, Background => Con_Io.Black);
+    Afpx.Set_Field_Colors(29, Light_Grey, Background => Black);
     Afpx.Set_Field_Protection(30, True);
-    Afpx.Set_Field_Colors(30, Con_Io.Light_Gray, Background => Con_Io.Black);
+    Afpx.Set_Field_Colors(30, Light_Grey, Background => Black);
     Afpx.Set_Field_Protection(32, True);
-    Afpx.Set_Field_Colors(32, Con_Io.Light_Gray, Background => Con_Io.Black);
+    Afpx.Set_Field_Colors(32, Light_Grey, Background => Black);
     Afpx.Set_Field_Protection(34, True);
-    Afpx.Set_Field_Colors(34, Con_Io.Light_Gray, Background => Con_Io.Black);
+    Afpx.Set_Field_Colors(34, Light_Grey, Background => Black);
     Afpx.Set_Field_Protection(36, True);
-    Afpx.Set_Field_Colors(36, Con_Io.Light_Gray, Background => Con_Io.Black);
+    Afpx.Set_Field_Colors(36, Light_Grey, Background => Black);
   end Protect_Data;
 
   -- Set unit button according to current unit
@@ -73,7 +77,7 @@ package body Edition is
           Afpx.Encode_Field(19, (0, 0), "e");
       end;
     else
-      Afpx.Set_Field_Colors(19, Con_Io.Blue);
+      Afpx.Set_Field_Colors(19, Con_Io.Color_Of ("Blue"));
       Afpx.Encode_Field(19, (0, 0), "F");
     end if;
   end Set_Unit;
@@ -121,17 +125,17 @@ package body Edition is
         if Active then
           -- Active and modifiable
           Afpx.Set_Field_Colors(Button,
-                                Foreground => Con_Io.Magenta);
+                                Foreground => Con_Io.Color_Of("Magenta"));
         else
           -- Inactive and modifiable
           Afpx.Set_Field_Colors(Button,
-                                Foreground => Con_Io.Cyan);
+                                Foreground => Con_Io.Color_Of ("Cyan"));
         end if;
       else
         if Active then
           -- Inactive and modifiable
           Afpx.Set_Field_Colors(Button,
-                                Foreground => Con_Io.Light_Gray);
+                                Foreground => Con_Io.Color_Of ("Light_Grey"));
         else
           Afpx.Set_Field_Activation(Button, False);
         end if;

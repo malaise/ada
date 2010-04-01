@@ -15,13 +15,16 @@ package body Screen is
   -- Are we waiting for promotion selection
   Getting_Promotion : Boolean := False;
 
-  Fore_White : constant Con_Io.Effective_Colors := Con_Io.Orange;
-  Fore_Black : constant Con_Io.Effective_Colors := Con_Io.Red;
-  Back_White : constant Con_Io.Effective_Basic_Colors := Con_Io.Light_Gray;
-  Back_Black : constant Con_Io.Effective_Basic_Colors := Con_Io.Black;
+  Fore_White : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("Orange");
+  Fore_Black : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("Red");
+  Back_White : constant Con_Io.Effective_Basic_Colors
+             := Con_Io.Color_Of ("Light_Gray");
+  Back_Black : constant Con_Io.Effective_Basic_Colors
+             := Con_Io.Color_Of ("Black");
 
-  Main_Fore : constant Con_Io.Effective_Colors := Con_Io.White;
-  Main_Back : constant Con_Io.Effective_Basic_Colors := Con_Io.Brown;
+  Main_Fore : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("White");
+  Main_Back : constant Con_Io.Effective_Basic_Colors
+            := Con_Io.Color_Of ("Brown");
 
 
   -- Foreground color of messages, moves and for get

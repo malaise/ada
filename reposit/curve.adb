@@ -122,7 +122,7 @@ package body Curve is
       procedure Wait_Message is
         Msg : constant String := "COMPUTING. Please wait ...";
       begin
-        Cur_Con_Io.Set_Foreground (Cur_Con_Io.Light_Blue);
+        Cur_Con_Io.Set_Foreground (Cur_Con_Io.Color_Of ("Light_Blue"));
         Cur_Con_Io.Move (Cur_Con_Io.Row_Range_Last,
                      Cur_Con_Io.Col_Range_Last - Msg'Length);
         Cur_Con_Io.Put (Msg);
@@ -362,7 +362,7 @@ package body Curve is
 
       procedure Toggle_Help_Misc (Misc_Index : in T_Misc_List) is
       begin
-        Cur_Con_Io.Set_Foreground (Cur_Con_Io.Magenta);
+        Cur_Con_Io.Set_Foreground (Cur_Con_Io.Color_Of ("Magenta"));
         case Misc_Index is
           when M_Help =>
             null;
@@ -415,7 +415,7 @@ package body Curve is
         end if;
 
         -- Help on zoom only if mouse
-        Cur_Con_Io.Set_Foreground (Cur_Con_Io.Magenta);
+        Cur_Con_Io.Set_Foreground (Cur_Con_Io.Color_Of ("Magenta"));
 
         -- Previous mode to hide : Something drawn and new thing different
         if Misc(M_Help) and then
@@ -444,7 +444,7 @@ package body Curve is
           Cur_Con_Io.Put ("0.." & Normal(Last_Zoom_No, 1) & ": other ZOOM");
 
           -- if mouse not installed : color is set here
-          Cur_Con_Io.Set_Foreground (Cur_Con_Io.Magenta);
+          Cur_Con_Io.Set_Foreground (Cur_Con_Io.Color_Of ("Magenta"));
 
           Cur_Con_Io.Move (Cur_Con_Io.Row_Range_Last - 8,
                        Cur_Con_Io.Col_Range_Last - 10);
@@ -515,7 +515,7 @@ package body Curve is
         end Draw_Point;
 
       begin
-        Cur_Con_Io.Set_Foreground (Cur_Con_Io.Red);
+        Cur_Con_Io.Set_Foreground (Cur_Con_Io.Color_Of ("Red"));
         for I in Points'Range loop
           Draw_Point (Points(I).X, Points(I).Y);
         end loop;
@@ -541,7 +541,7 @@ package body Curve is
         X_0, Y_0 : Natural;
         Intersec : Boolean := True;
       begin
-        Cur_Con_Io.Set_Foreground (Cur_Con_Io.Light_Blue);
+        Cur_Con_Io.Set_Foreground (Cur_Con_Io.Color_Of ("Light_Blue"));
         -- Horizontal
         begin
           Y_0 := Y_Real_Screen (0.0);
@@ -582,7 +582,7 @@ package body Curve is
         procedure Draw_Frame is
         begin
           Cur_Con_Io.Set_Xor_Mode (Cur_Con_Io.Xor_Off);
-          Cur_Con_Io.Set_Foreground (Cur_Con_Io.White);
+          Cur_Con_Io.Set_Foreground (Cur_Con_Io.Color_Of ("White"));
           Draw_X (Screen_Boundaries.X_Min, Screen_Boundaries.X_Max,
                   Screen_Boundaries.Y_Min);
           Draw_Y (Screen_Boundaries.X_Max, Screen_Boundaries.Y_Min,
@@ -597,7 +597,7 @@ package body Curve is
       begin
         -- Draw frame
         Draw_Frame;
-        Cur_Con_Io.Set_Foreground (Cur_Con_Io.Light_Green);
+        Cur_Con_Io.Set_Foreground (Cur_Con_Io.Color_Of ("Light_Green"));
         -- Draw pixel for each possible X screen
         for X_S in Cur_Con_Io.Graphics.X_Range
                  range Screen_Boundaries.X_Min .. Screen_Boundaries.X_Max loop
@@ -648,7 +648,7 @@ package body Curve is
           return;
         end if;
 
-        Cur_Con_Io.Set_Foreground (Cur_Con_Io.Cyan);
+        Cur_Con_Io.Set_Foreground (Cur_Con_Io.Color_Of ("Cyan"));
 
         -- Previous scale to hide : Something drawn and new values different
         if Misc(M_Scale) then
@@ -676,7 +676,7 @@ package body Curve is
         if      Action = Toggle
         or else (Action = Init and then Misc (M_Scale)) then
           -- External scales
-          Cur_Con_Io.Set_Foreground (Cur_Con_Io.Light_Gray);
+          Cur_Con_Io.Set_Foreground (Cur_Con_Io.Color_Of ("Light_Gray"));
           Cur_Con_Io.Move (1, 30);
           Cur_Con_Io.Put (Coo_To_Str(Y_Screen_Real(Screen_Boundaries.Y_Max)));
           Cur_Con_Io.Move (Cur_Con_Io.Row_Range_Last - 1, 30);
@@ -717,7 +717,7 @@ package body Curve is
       begin
         -- Redraw (refresh when done)
         if Action = Redraw then
-          Cur_Con_Io.Set_Foreground (Cur_Con_Io.Cyan);
+          Cur_Con_Io.Set_Foreground (Cur_Con_Io.Color_Of ("Cyan"));
           Put_Frame(Prev_Frame_Bounds);
           return;
         end if;
@@ -734,7 +734,7 @@ package body Curve is
         end if;
 
         -- If action = update, then cur mode is drag and bounds are new
-        Cur_Con_Io.Set_Foreground (Cur_Con_Io.Cyan);
+        Cur_Con_Io.Set_Foreground (Cur_Con_Io.Color_Of ("Cyan"));
 
         -- Previous frame to hide : new drag or drag -> done or done -> init
         if Action = Update

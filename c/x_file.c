@@ -4,15 +4,6 @@
 #define FILE_LOCAL
 #include "x_file.h"
 
-static const char *default_color_name[NBRE_COLOR]={
-  "black",      "blue",
-  "dark green", "cyan",
-  "red",        "magenta",
-  "brown",      "light grey",
-  "grey",  "light blue",
-  "lime green","orange",
-  "yellow",     "white"
- };
 
 static const char *default_font_name[NBRE_FONT] = {
    "-b&h-lucidatypewriter-medium-*-normal-sans-12-120-75-75-m-70-iso10646-1",
@@ -33,9 +24,6 @@ boolean fil_init (void) {
     char env_name[10];
 
     /* Set to default values */
-    for (i=0; i<NBRE_COLOR; i++) {
-        strcpy (color_name[i], default_color_name[i]);
-    }
     for (i=0; i<NBRE_FONT; i++) {
         strcpy (font_name[i], default_font_name[i]);
     }
@@ -56,3 +44,4 @@ void set_from_env (int font_index, char *env_name) {
         strcpy (font_name[font_index], str);
     }
 }
+

@@ -18,29 +18,29 @@
     <!-- Account name -->
     <Field Num="1" Kind="Put">
       <Geometry Up="0" Left="1" Low="0" Right="25"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
     </Field>
     <Field Num="2" Kind="Put">
       <Geometry Up="0" Left="26" Low="0" Right="26"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">:</Init>
     </Field>
 
     <!-- Nb operations -->
     <Field Num="3" Kind="Put">
       <Geometry Up="0" Left="28" Low="0" Right="31"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
     </Field>
     <Field Num="4" Kind="Put">
       <Geometry Up="0" Left="33" Low="0" Right="42"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">operations</Init>
     </Field>
 
     <!-- Saved or NOT SAVED -->
     <Field Num="5" Kind="Put">
       <Geometry Up="0" Left="44" Low="0" Right="53"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">saved</Init>
     </Field>
 
@@ -58,7 +58,7 @@
     <!-- List title -->
     <Field Num="8" Kind="Put">
       <Geometry Up="1" Left="1" Low="1" Right="71"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <!-- 0         1         2         3         4         5         6         7 -->
       <!-- 01234567890123456789012345678901234567890123456789012345678901234567890 -->
       <Init Row="0" Col="2">No|  Date  |  Amount |Stat|Kind|Destinat. |Comment        |Reference</Init>
@@ -70,45 +70,45 @@
     <!-- Real amount -->
     <Field Num="9" Kind="Put">
       <Geometry Up="${Bottom}+1" Left="1" Low="${Bottom}+1" Right="5"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">Real:</Init>
     </Field>
     <Field Num="10" Kind="Put">
       <Geometry Up="${Bottom}+1" Left="6" Low="${Bottom}+1" Right="17"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
     </Field>
 
     <!-- Account -->
     <Field Num="11" Kind="Put">
       <Geometry Up="${Bottom}+1" Left="19" Low="${Bottom}+1" Right="26"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">Account:</Init>
     </Field>
     <Field Num="12" Kind="Put">
       <Geometry Up="${Bottom}+1" Left="27" Low="${Bottom}+1" Right="38"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
     </Field>
 
     <!-- Defered -->
     <Field Num="13" Kind="Put">
       <Geometry Up="${Bottom}+1" Left="40" Low="${Bottom}+1" Right="47"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">Defered:</Init>
     </Field>
     <Field Num="14" Kind="Put">
       <Geometry Up="${Bottom}+1" Left="48" Low="${Bottom}+1" Right="59"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
     </Field>
 
     <!-- Savings -->
     <Field Num="15" Kind="Put">
       <Geometry Up="${Bottom}+1" Left="61" Low="${Bottom}+1" Right="66"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">Saved:</Init>
     </Field>
     <Field Num="16" Kind="Put">
       <Geometry Up="${Bottom}+1" Left="67" Low="${Bottom}+1" Right="78"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
     </Field>
 
     <!-- Actions on list (scrolling) -->
@@ -157,7 +157,7 @@
     <!-- Operations actions Menu -->
     <Field Num="24" Kind="Put">
       <Geometry Up="${Bottom}+3" Left="1" Low="${Bottom}+3" Right="5"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">Oper:</Init>
     </Field>
     <!-- Add operation -->
@@ -206,7 +206,7 @@
     <!-- Account actions -->
     <Field Num="32" Kind="Put">
       <Geometry Up="${Bottom}+5" Left="1" Low="${Bottom}+5" Right="8"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">Account:</Init>
     </Field>
     <!-- Create account -->
@@ -289,7 +289,7 @@
     <!-- Title -->
     <Field Num="1" Kind="Put">
       <Geometry Up="0" Left="25" Low="0" Right="48"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">GENERIC TITLE</Init>
     </Field>
 
@@ -302,7 +302,7 @@
     <!-- File -->
     <Field Num="3" Kind="Put">
       <Geometry Up="1" Left="33" Low="1" Right="37"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">File:</Init>
     </Field>
 
@@ -320,7 +320,7 @@
     <!-- Messages -->
     <Field Num="6" Kind="Put">
       <Geometry Up="23" Left="35" Low="23" Right="78"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
     </Field>
 
     <!-- List actions -->
@@ -396,27 +396,27 @@
     <!-- Account name and status -->
     <Field Num="1" Kind="Put">
       <Geometry Up="0" Left="1" Low="0" Right="25"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
     </Field>
     <Field Num="2" Kind="Put">
       <Geometry Up="0" Left="26" Low="0" Right="26"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">:</Init>
     </Field>
     <!-- Nb operations -->
     <Field Num="3" Kind="Put">
       <Geometry Up="0" Left="28" Low="0" Right="31"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
     </Field>
     <Field Num="4" Kind="Put">
       <Geometry Up="0" Left="33" Low="0" Right="42"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">operations</Init>
     </Field>
     <!-- Saved or NOT SAVED -->
     <Field Num="5" Kind="Put">
       <Geometry Up="0" Left="44" Low="0" Right="53"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">saved</Init>
     </Field>
     <!-- Selected -->
@@ -434,30 +434,30 @@
     <!-- Title: action -->
     <Field Num="8" Kind="Put">
       <Geometry Up="2" Left="23" Low="2" Right="31"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">Operation</Init>
     </Field>
     <!-- Action -->
     <Field Num="9" Kind="Put">
       <Geometry Up="2" Left="33" Low="2" Right="45"/>
-      <Colors Foreground="Light_Green" Blink="False" Background="Black"/>
+      <Colors Foreground="Lime_Green" Blink="False" Background="Black"/>
     </Field>
 
     <!-- No -->
     <Field Num="10" Kind="Put">
       <Geometry Up="4" Left="2" Low="4" Right="4"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">No:</Init>
     </Field>
     <Field Num="11" Kind="Put">
       <Geometry Up="4" Left="6" Low="4" Right="9"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
     </Field>
 
     <!-- Date -->
     <Field Num="12" Kind="Put">
       <Geometry Up="6" Left="2" Low="6" Right="6"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">Date:</Init>
     </Field>
     <Field Num="13" Kind="Get">
@@ -466,7 +466,7 @@
     </Field>
     <Field Num="14" Kind="Put">
       <Geometry Up="6" Left="10" Low="6" Right="10"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">/</Init>
     </Field>
     <Field Num="15" Kind="Get">
@@ -475,7 +475,7 @@
     </Field>
     <Field Num="16" Kind="Put">
       <Geometry Up="6" Left="13" Low="6" Right="15"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">/20</Init>
     </Field>
     <Field Num="17" Kind="Get">
@@ -486,12 +486,12 @@
     <!-- Amount -->
     <Field Num="18" Kind="Put">
       <Geometry Up="8" Left="2" Low="8" Right="8"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">Amount:</Init>
     </Field>
     <Field Num="19" Kind="Put">
       <Geometry Up="8" Left="10" Low="8" Right="10"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
     </Field>
     <Field Num="20" Kind="Get">
       <Geometry Up="8" Left="12" Low="8" Right="23"/>
@@ -501,7 +501,7 @@
     <!-- Kind -->
     <Field Num="21" Kind="Put">
       <Geometry Up="10" Left="2" Low="10" Right="7"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">Kind:</Init>
     </Field>
     <Field Num="22" Kind="Button">
@@ -533,7 +533,7 @@
     <!-- Status -->
     <Field Num="27" Kind="Put">
       <Geometry Up="12" Left="2" Low="12" Right="9"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">Entered:</Init>
     </Field>
     <Field Num="28" Kind="Button">
@@ -555,7 +555,7 @@
     <!-- Destination -->
     <Field Num="31" Kind="Put">
       <Geometry Up="14" Left="2" Low="14" Right="13"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">Destination:</Init>
     </Field>
     <Field Num="32" Kind="Get">
@@ -566,7 +566,7 @@
     <!-- Comment -->
     <Field Num="33" Kind="Put">
       <Geometry Up="16" Left="2" Low="16" Right="9"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">Comment:</Init>
     </Field>
     <Field Num="34" Kind="Get">
@@ -577,7 +577,7 @@
     <!-- Reference -->
     <Field Num="35" Kind="Put">
       <Geometry Up="18" Left="2" Low="18" Right="11"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">Reference:</Init>
     </Field>
     <Field Num="36" Kind="Get">
@@ -639,40 +639,40 @@
     <!-- Account name -->
     <Field Num="1" Kind="Put">
       <Geometry Up="0" Left="1" Low="0" Right="25"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
     </Field>
     <Field Num="2" Kind="Put">
       <Geometry Up="0" Left="26" Low="0" Right="26"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">:</Init>
     </Field>
 
     <!-- Nb operations -->
     <Field Num="3" Kind="Put">
       <Geometry Up="0" Left="28" Low="0" Right="31"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
     </Field>
     <Field Num="4" Kind="Put">
       <Geometry Up="0" Left="33" Low="0" Right="42"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">operations</Init>
     </Field>
 
     <!-- Saved or NOT SAVED -->
     <Field Num="5" Kind="Put">
       <Geometry Up="0" Left="44" Low="0" Right="53"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">saved</Init>
     </Field>
 
     <!-- Selected (used for date) -->
     <Field Num="6" Kind="Put">
       <Geometry Up="0" Left="57" Low="0" Right="60"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
     </Field>
     <Field Num="7" Kind="Put">
       <Geometry Up="0" Left="62" Low="0" Right="69"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">dd/mm/yy</Init>
     </Field>
 
@@ -686,7 +686,7 @@
     <!-- Status -->
     <Field Num="9" Kind="Put">
       <Geometry Up="7" Left="2" Low="7" Right="7"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">Status</Init>
     </Field>
     <Field Num="10" Kind="Button">
@@ -713,7 +713,7 @@
     <!-- Kind -->
     <Field Num="14" Kind="Put">
       <Geometry Up="11" Left="2" Low="11" Right="5"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">Kind</Init>
     </Field>
     <Field Num="15" Kind="Button">
@@ -750,7 +750,7 @@
     <!-- Month -->
     <Field Num="21" Kind="Put">
       <Geometry Up="15" Left="2" Low="15" Right="5"/>
-      <Colors Foreground="Light_Gray" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
       <Init Row="0" Col="0">Date</Init>
     </Field>
     <Field Num="22" Kind="Button">

@@ -84,10 +84,10 @@ package body Bookmarks is
       if Afpx.Line_List.Is_Empty then
         Afpx.Get_Descriptor_Background (Background);
         Afpx.Set_Field_Protection (11, True);
-        Afpx.Set_Field_Colors (11, Foreground => Con_Io.Black,
+        Afpx.Set_Field_Colors (11, Foreground => Con_Io.Color_Of ("Black"),
                                    Background => Background);
         Afpx.Set_Field_Protection (12, True);
-        Afpx.Set_Field_Colors (12, Foreground => Con_Io.Black,
+        Afpx.Set_Field_Colors (12, Foreground => Con_Io.Color_Of ("Black"),
                                    Background => Background);
       else
         Afpx.Reset_Field (11);

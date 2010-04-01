@@ -1,4 +1,5 @@
 with System;
+with Ada.Strings.Unbounded;
 with Timers;
 package X_Mng is
 
@@ -9,7 +10,9 @@ package X_Mng is
   type Byte is new Natural range 0 .. 255;
   for Byte'Size use System.Storage_Unit;
 
-  subtype Color       is Natural range 0 .. 14;
+  subtype Color       is Natural range 0 .. 13;
+  type Color_Definition is array (Color)
+        of Ada.Strings.Unbounded.Unbounded_String;
   subtype Font        is Natural range 0 .. 3;
   subtype Bell_Repeat is Positive range 1 .. 5;
 
@@ -56,6 +59,8 @@ package X_Mng is
   -- Initialise connection to X server on a host
   --  this call should be done only once, and before any other call
   procedure X_Initialise (Server_Name    : in String);
+  procedure X_Initialise (Server_Name    : in String;
+                          Colors         : in Color_Definition);
 
   -- Opens a line on the host
   -- screen_id is integer, (a negative value for the default screen)
@@ -102,7 +107,7 @@ package X_Mng is
 
   -- Sets the attributes for a further put in the same window
   -- The line_id is the token, previously given by open_line
-  -- The paper and ink are color numbers (from 0 to 7)
+  -- The paper and ink are color numbers (from 0 to 13)
   -- The attributes are True or False
   procedure X_Set_Attributes(Line_Id     : in Line;
                              Paper, Ink  : in Color;
@@ -152,7 +157,7 @@ package X_Mng is
   -- The line_id is the token, previously given by open_line
   -- The row and column are in characters, relative to the window
   -- The character is the one to be written
-  -- The paper and ink are color numbers (from 0 to 7)
+  -- The paper and ink are color numbers (from 0 to 13)
   -- The attributes are True or False
   procedure X_Put_Char_Attributes(Line_Id     : in Line;
                                   Car         : in Character;

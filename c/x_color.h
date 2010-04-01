@@ -1,13 +1,17 @@
 #ifndef _X_COLOR_H
 #define _X_COLOR_H
-/* Oct 23, 1998 : Use private color map                   (PM)     */
 #include "x_stdinc.h"
-#include "x_file.h"
 
+/* Limitation in default color map */
+#define NBRE_COLOR 14
+#define COLOR_NAME_MAX_SIZE  255
 #define MAX_SIZE_TAB_COLOR NBRE_COLOR*NBRE_COLOR
 
 /* Is blink simulated by bold */
 boolean blink_bold(void);
+
+/* Define the NBRE_COLOR color names */
+void col_set_names (const char* names[]);
 
 /* Loads and init colors, close and free colors (for each screen) */
 boolean col_open(Display *x_server, int x_screen, unsigned long color_id[], Colormap *colormap);

@@ -485,7 +485,7 @@ procedure Afpx_Bld is
             File_Error (Node, "Duplicated Color " & Attrs(I).Name);
           end if;
           Foreground := True;
-          Fields(Fn).Colors.Foreground := Con_Io.Effective_Colors'Value (
+          Fields(Fn).Colors.Foreground := Con_Io.Color_Of (
                  Computer.Eval (Strof (Attrs(I).Value)));
           Add_Variable (Node, Name_Of (Fn) & "." & "Foreground",
               Mixed_Str (Con_Io.Effective_Colors'Image (
@@ -495,7 +495,7 @@ procedure Afpx_Bld is
             File_Error (Node, "Duplicated Color " & Attrs(I).Name);
           end if;
           Background := True;
-          Fields(Fn).Colors.Background := Con_Io.Effective_Basic_Colors'Value (
+          Fields(Fn).Colors.Background := Con_Io.Color_Of (
                  Computer.Eval (Strof (Attrs(I).Value)));
           Add_Variable (Node, Name_Of (Fn) & "." & "Background",
               Mixed_Str (Con_Io.Effective_Colors'Image (
@@ -516,7 +516,7 @@ procedure Afpx_Bld is
             File_Error (Node, "Duplicated Color " & Attrs(I).Name);
           end if;
           Selected := True;
-          Fields(Fn).Colors.Selected := Con_Io.Effective_Basic_Colors'Value (
+          Fields(Fn).Colors.Selected := Con_Io.Color_Of (
                  Computer.Eval (Strof (Attrs(I).Value)));
           Add_Variable (Node, Name_Of (Fn) & "." & "Selected",
               Mixed_Str (Con_Io.Effective_Colors'Image (
@@ -838,8 +838,7 @@ procedure Afpx_Bld is
         Background := True;
         begin
           Descriptors(Dscr_No).Background :=
-              Con_Io.Effective_Basic_Colors'Value (
-                 Computer.Eval (Strof (Attrs(I).Value)));
+              Con_Io.Color_Of (Computer.Eval (Strof (Attrs(I).Value)));
         exception
           when Computer.Unknown_Variable =>
             File_Error (Node, "Unknown variable when evaluating "
