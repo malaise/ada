@@ -4,7 +4,7 @@ package body Generic_Con_Io is
 
   X_Init_Done : Boolean := False;
 
-  The_Color_Names : Color_Definition := Default_Colors;
+  The_Color_Names : Colors_Definition := Default_Colors;
 
   Lf : Character renames Ada.Characters.Latin_1.Lf;
   Lfs : constant String := Lf & "";
@@ -32,7 +32,7 @@ package body Generic_Con_Io is
     end if;
   end Initialise;
 
-  procedure Set_Colors (Color_Names : in Color_Definition) is
+  procedure Set_Colors (Color_Names : in Colors_Definition) is
   begin
     if X_Init_Done then
       raise Already_Init;
@@ -40,7 +40,7 @@ package body Generic_Con_Io is
     The_Color_Names := Color_Names;
   end Set_Colors;
 
-  function Color_Of (Name : String) return Effective_Color is
+  function Color_Of (Name : String) return Effective_Colors is
     use type Asu_Us;
   begin
     for I in The_Color_Names'Range loop
@@ -51,7 +51,7 @@ package body Generic_Con_Io is
     raise Unknown_Color;
   end Color_Of;
 
-  function Color_Name_Of (Color : Effective_Color) return String is
+  function Color_Name_Of (Color : Effective_Colors) return String is
   begin
     return Asu_Ts (The_Color_Names(Color));
   end Color_Name_Of;
@@ -99,6 +99,15 @@ package body Generic_Con_Io is
       return (Position.Row, Position.Col);
     end Con2Full;
 
+    function Color_Of (Name : String) return Effective_Colors is
+    begin
+      return Effective_Colors(Generic_Con_Io.Color_Of(Name));
+    end Color_Of;
+    function Color_Name_Of (Color : Effective_Colors) return String is
+    begin
+      return Generic_Con_Io.Color_Name_Of (
+                  Generic_Con_Io.Effective_Colors(Color));
+    end Color_Name_Of;
 
     -- Dynamic alloc/desaloc of windows
     package Dyn_Win is new Dyn_Data(Window_Data, Window);

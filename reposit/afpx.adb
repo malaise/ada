@@ -3,6 +3,8 @@ with Generic_Con_Io, Language;
 with Afpx_Typ;
 package body Afpx is
 
+  Initialised : Boolean := False;
+
   Lfn : constant Afpx_Typ.Absolute_Field_Range
       := Afpx_Typ.Absolute_Field_Range(List_Field_No);
   Afpx_Internal_Error : exception;
@@ -234,8 +236,16 @@ package body Afpx is
   procedure Use_Descriptor (Descriptor_No : in Descriptor_Range;
                             Clear_Screen : in Boolean := True) is
   begin
-    Af_Con_Io.Init;
     Af_Dscr.Load_Dscr (Afpx_Typ.Descriptor_Range (Descriptor_No));
+    if not Initialised
+    and then Af_Dscr.Current_Dscr.Colors (Generic_Con_Io.Effective_Colors'First)
+             /= Afpx_Typ.No_Color then
+      -- Set the colors when using the first descriptor
+      Generic_Con_Io.Set_Colors (Afpx_Typ.To_Def (Af_Dscr.Current_Dscr.Colors));
+      Generic_Con_Io.Initialise;
+      Initialised := True;
+    end if;
+    Af_Con_Io.Init;
     Af_List.Open;
     Af_Dscr.Current_Dscr.Modified := True;
     Af_Con_Io.Set_Background (Af_Con_Io.Effective_Basic_Colors(

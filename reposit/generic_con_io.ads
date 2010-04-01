@@ -38,14 +38,14 @@ package Generic_Con_Io is
       Foreg1, Foreg2, Foreg3, Foreg4, Foreg5, Foreg6);
   subtype Basic_Colors is Colors range Current .. Basic8;
 
-  subtype Effective_Color is Colors range Basic1 .. Colors'Last;
+  subtype Effective_Colors is Colors range Basic1 .. Colors'Last;
   subtype Effective_Basic_Colors is Basic_Colors
             range Basic1 .. Basic_Colors'Last;
   type Blink_Stats is (Current, Blink, Not_Blink);
 
   -- Default colors
-  type Color_Definition is array (Effective_Color) of Asu_Us;
-  Default_Colors : constant Color_Definition
+  type Colors_Definition is array (Effective_Colors) of Asu_Us;
+  Default_Colors : constant Colors_Definition
                  := (Basic1 => Asu_Tus ("Black"),
                      Basic2 => Asu_Tus ("Blue"),
                      Basic3 => Asu_Tus ("Green"),
@@ -68,11 +68,11 @@ package Generic_Con_Io is
 
   -- Set_Colors raises Already_Init if called after Initialise
   Already_Init : exception;
-  procedure Set_Colors (Color_Names : in Color_Definition);
+  procedure Set_Colors (Color_Names : in Colors_Definition);
   -- Color_Of raises Unknown_Color ti this color is not found
   Unknown_Color : exception;
-  function Color_Of (Name : String) return Effective_Color;
-  function Color_Name_Of (Color : Effective_Color) return String;
+  function Color_Of (Name : String) return Effective_Colors;
+  function Color_Name_Of (Color : Effective_Colors) return String;
 
   generic
     Font_No : Font_No_Range;
@@ -145,10 +145,8 @@ package Generic_Con_Io is
     subtype Natural_Array is X_Mng.Natural_Array;
 
     -- Both can be called as soon as Generic_Con_Io is Initialise
-    function Color_Of (Name : String) return Effective_Color renames
-      Generic_Con_Io.Color_Of;
-    function Color_Name_Of (Color : Effective_Color) return String renames
-     Generic_Con_Io.Color_Name_Of;
+    function Color_Of (Name : String) return Effective_Colors;
+    function Color_Name_Of (Color : Effective_Colors) return String;
 
     -- Has to be called to initialize con_io.
     -- Should be called prior any con_io action

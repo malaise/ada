@@ -1,8 +1,8 @@
-with Con_Io, Text_Handler, Directory;
+with Generic_Con_Io, Con_Io, Text_Handler, Directory;
 package Afpx_Typ is
 
   -- Version of Afpx
-  Afpx_Version : constant Float := 4.1;
+  Afpx_Version : constant Float := 4.2;
 
   -- Files path
   Dest_Path : Text_Handler.Text (Directory.Max_Dir_Name_Len + 1);
@@ -18,6 +18,12 @@ package Afpx_Typ is
   subtype Field_Range is Absolute_Field_Range
           range 1 .. Absolute_Field_Range 'Last;
 
+  -- The maximum length of a color name
+  Max_Color_Name_Len : constant := 80;
+  subtype Color_Name is String (1 .. Max_Color_Name_Len);
+  No_Color : constant Color_Name := (others => ' ');
+  type Color_Names is array (Generic_Con_Io.Effective_Colors) of Color_Name;
+
   -- A descriptor
   type Dscr_Rec is record
     -- To be checked prior to loading
@@ -31,6 +37,8 @@ package Afpx_Typ is
     Dscr_Index : Descriptor_Range;
     -- Nb of fields of the dscr
     Nb_Fields  : Absolute_Field_Range;
+    -- Name of Colors
+    Colors : Color_Names;
     -- Background color
     Background : Con_Io.Effective_Basic_Colors;
   end record;
@@ -92,5 +100,7 @@ package Afpx_Typ is
   function In_Field_Absolute (Field  : in Field_Rec;
                               Square : in Con_Io.Full_Square) return Boolean;
 
+  -- Make Generic_Con_Io.Colors_Definition from Dscr Color_Names
+  function To_Def (Names : Color_Names) return Generic_Con_Io.Colors_Definition;
 end Afpx_Typ;
 

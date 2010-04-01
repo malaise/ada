@@ -1,5 +1,5 @@
 with Ada.Text_Io, Ada.Direct_Io, Ada.Strings.Unbounded;
-with Con_Io, Text_Handler, Normal, Argument, Directory,
+with Generic_Con_Io, Con_Io, Text_Handler, Normal, Argument, Directory,
      Mixed_Str, Basic_Proc, Xml_Parser,
      Ada_Words, Parser, String_Mng, Computer, Int_Image,
      Language;
@@ -37,6 +37,9 @@ procedure Afpx_Bld is
   Fld_File : Fld_Io.File_Type;
   package Init_Io is new Ada.Direct_Io (Afpx_Typ.Char_Str);
   Init_File : Init_Io.File_Type;
+
+  -- The color names
+  Color_Names : Afpx_Typ.Color_Names := (others => Afpx_Typ.No_Color);
 
   -- List of descriptors
   Descriptors : Afpx_Typ.Descriptors_Array;
@@ -301,6 +304,29 @@ procedure Afpx_Bld is
     end if;
   end Name_Of;
 
+  -- Load the (optional) definition of color names
+  procedure Load_Color_Names (Node : in Xp.Node_Type) is
+    Name : Asu_Us;
+    Index : Positive;
+  begin
+    if Ctx.Get_Nb_Children (Node) /= Color_Names'Length then
+      File_Error (Node, "Invalid number of color names");
+    end if;
+    for I in Color_Names'Range loop
+      Index := Generic_Con_Io.Effective_Colors'Pos(I)
+             - Generic_Con_Io.Effective_Colors'Pos(
+                           Generic_Con_Io.Effective_Colors'First)
+             + 1;
+      Name := Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Node, Index), 1));
+      if Asu.Length (Name) > Afpx_Typ.Max_Color_Name_Len then
+        File_Error (Ctx.Get_Child (Ctx.Get_Child (Node, Index), 1),
+                    "Color name too long");
+      end if;
+      Color_Names(I)(1 .. Asu.Length (Name)) := Strof (Name);
+    end loop;
+    Generic_Con_Io.Set_Colors (Afpx_Typ.To_Def (Color_Names));
+  end Load_Color_Names;
+
   -- Check and store upper_left and lower right
   procedure Load_Geometry (Node : in Xp.Node_Type;
                            Fn : in Afpx_Typ.Absolute_Field_Range;
@@ -498,7 +524,7 @@ procedure Afpx_Bld is
           Fields(Fn).Colors.Background := Con_Io.Color_Of (
                  Computer.Eval (Strof (Attrs(I).Value)));
           Add_Variable (Node, Name_Of (Fn) & "." & "Background",
-              Mixed_Str (Con_Io.Effective_Colors'Image (
+              Mixed_Str (Con_Io.Effective_Basic_Colors'Image (
                   Fields(Fn).Colors.Background)), False, False);
         elsif Match (Attrs(I).Name, "Blink") then
           if Blink then
@@ -952,6 +978,7 @@ procedure Afpx_Bld is
       Descriptors(I).Modified := False;
       Descriptors(I).Dscr_Index := Afpx_Typ.Descriptor_Range'First;
       Descriptors(I).Nb_Fields := 0;
+      Descriptors(I).Colors := Color_Names;
     end loop;
 
     -- Loop on persistent variables and descriptors
@@ -960,13 +987,15 @@ procedure Afpx_Bld is
     Dscr_Index := 1;
     Dscrs:
     for I in 1 .. Ctx.Get_Nb_Children (Root) loop
-      -- Descriptor or persistent variable
+      -- Color names, persistent variable or descriptor
       Child := Ctx.Get_Child (Root, I);
       if Child.Kind /= Xp.Element then
         File_Error (Child, "Expected Descriptor or Var");
       end if;
       if Match (Ctx.Get_Name (Child), "Var") then
         Load_Variable (Child, True);
+      elsif Match (Ctx.Get_Name (Child), "ColorNames") then
+        Load_Color_Names (Child);
       elsif not  Match (Ctx.Get_Name (Child), "Descriptor") then
         File_Error (Child, "Expected Descriptor or Var");
       else
@@ -986,6 +1015,11 @@ procedure Afpx_Bld is
       end if;
 
     end loop Dscrs;
+
+    -- Set colors to all descriptors
+    for I in Afpx_Typ.Descriptor_Range loop
+      Descriptors(I).Colors := Color_Names;
+    end loop;
 
     -- Reset all variables
     Computer.Reset (Not_Persistent => False);
