@@ -35,5 +35,15 @@ package body Afpx_Typ is
     return Colors;
   end To_Def;
 
+  function To_Names (Defs : Generic_Con_Io.Colors_Definition)
+           return Color_Names is
+    Names : Color_Names := (others => No_Color);
+  begin
+    for I in Names'Range loop
+      Names(I)(1 .. Ada.Strings.Unbounded.Length (Defs(I))) :=
+           Ada.Strings.Unbounded.To_String (Defs(I));
+    end loop;
+    return Names;
+  end To_Names;
 end Afpx_Typ;
 

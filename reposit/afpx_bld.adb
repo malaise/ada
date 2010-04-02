@@ -311,29 +311,42 @@ procedure Afpx_Bld is
   -- Load the (optional) definition of color names
   procedure Load_Color_Names (Node : in Xp.Node_Type) is
     Text : Xp.Text_Type;
-    Name : Asu_Us;
-    Index : Positive;
+    Color : Xp.Element_Type;
+    Name, Val : Asu_Us;
+    Index : Generic_Con_Io.Effective_Colors;
+    Color_Defs : Generic_Con_Io.Colors_Definition;
   begin
-    if Ctx.Get_Nb_Children (Node) /= Color_Names'Length then
-      File_Error (Node, "Invalid number of color names");
-    end if;
-    for I in Color_Names'Range loop
-      Index := Generic_Con_Io.Effective_Colors'Pos(I)
-             - Generic_Con_Io.Effective_Colors'Pos(
-                           Generic_Con_Io.Effective_Colors'First)
-             + 1;
-      Text := Ctx.Get_Child (Ctx.Get_Child (Node, Index), 1);
-      Name := Asu_Tus (Computer.Eval (Ctx.Get_Text (Text)));
-      if Asu.Length (Name) > Afpx_Typ.Max_Color_Name_Len then
-        File_Error (Ctx.Get_Child (Ctx.Get_Child (Node, Index), 1),
-                    "Color name too long");
-      end if;
-      Color_Names(I)(1 .. Asu.Length (Name)) := Asu_Ts (Name);
-      -- Variable Colorxy
-      Add_Variable (Text, "Color" & Normal (Index, 2, Gap => '0'),
-                    Asu_Ts (Name), False, True);
+    -- Init with default
+    Color_Defs := Generic_Con_Io.Default_Colors;
+    -- Overwrite some
+    for I in 1 .. Ctx.Get_Nb_Children (Node) loop
+      Color := Ctx.Get_Child (Node, I);
+      begin
+        Name := Ctx.Get_Attribute (Color, 1).Value;
+        Index := Generic_Con_Io.Effective_Colors'Value(Asu_Ts (Name));
+        Text := Ctx.Get_Child (Color, 1);
+        Val := Asu_Tus (Computer.Eval (Ctx.Get_Text (Text)));
+        Color_Defs(Index) := (Val);
+      exception
+        when others =>
+          File_Error (Color, "Invalid color re-definition");
+      end;
     end loop;
-    Generic_Con_Io.Set_Colors (Afpx_Typ.To_Def (Color_Names));
+
+    -- Define variables Colorxy
+    for I in Generic_Con_Io.Effective_Colors'Range loop
+      Add_Variable (Node,
+                    Mixed_Str (Generic_Con_Io.Effective_Colors'Image (I)),
+                    Asu_Ts (Color_Defs(I)), False, True);
+    end loop;
+    Color_Names := Afpx_Typ.To_Names (Color_Defs);
+    Generic_Con_Io.Set_Colors (Color_Defs);
+
+  exception
+    when File_Syntax_Error =>
+      raise;
+    when others =>
+      File_Error (Node, "Invalid colors re-definition");
   end Load_Color_Names;
 
   -- Check and store upper_left and lower right
@@ -996,7 +1009,7 @@ procedure Afpx_Bld is
       end if;
       if Match (Ctx.Get_Name (Child), "Var") then
         Load_Variable (Child, True);
-      elsif Match (Ctx.Get_Name (Child), "ColorNames") then
+      elsif Match (Ctx.Get_Name (Child), "ColorDefinitions") then
         Load_Color_Names (Child);
       elsif not  Match (Ctx.Get_Name (Child), "Descriptor") then
         File_Error (Child, "Expected Descriptor or Var");

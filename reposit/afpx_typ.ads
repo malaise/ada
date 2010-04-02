@@ -102,5 +102,7 @@ package Afpx_Typ is
 
   -- Make Generic_Con_Io.Colors_Definition from Dscr Color_Names
   function To_Def (Names : Color_Names) return Generic_Con_Io.Colors_Definition;
+  function To_Names (Defs :  Generic_Con_Io.Colors_Definition)
+           return Color_Names;
 end Afpx_Typ;
 

@@ -18,12 +18,11 @@
 <!ATTLIST Afpx_Descriptors Width CDATA #IMPLIED
                            Height CDATA #IMPLIED>
 <!-- The Afpx_Descriptors is made of several descriptors. -->
-<!-- Before descriptor it is possible to define 14 color names. The -->
-<!--  constants Basic1 to Basic8 and Foreg1 to Foreg8 are then automatically -->
-<!--  created. -->
+<!-- Before descriptors it is possible to define 14 color names. The -->
+<!--  constants Color01 to Color14 are then automatically created. -->
 <!-- Before descriptors, it is possible to define and overwrite variables. -->
 <!-- These variables are valid for all the following descriptors. -->
-<!ELEMENT Afpx_Descriptors (Var*,ColorNames?,Var*,Descriptor*)>
+<!ELEMENT Afpx_Descriptors (Var*,ColorDefinitions?,Var*,Descriptor*)>
 
 <!-- A variable name must be <Identifier>[{.<Identifier>}] the Ada way. -->
 <!-- Value can be string or number, and may contain some reference to -->
@@ -32,10 +31,9 @@
 <!ATTLIST Var Name  NMTOKEN #REQUIRED
               Value CDATA   #REQUIRED>
 
-<!ELEMENT ColorNames (ColorName,ColorName,ColorName,ColorName,ColorName,
-                      ColorName,ColorName,ColorName,ColorName,ColorName,
-                      ColorName,ColorName,ColorName,ColorName)>
-<!ELEMENT ColorName (#PCDATA)>
+<!ELEMENT ColorDefinitions (ColorDefinition*)>
+<!ATTLIST ColorDefinition Name ID #REQUIRED>
+<!ELEMENT ColorDefinition (#PCDATA)>
 
 
 <!-- A descriptor Num has to be positive range 1 .. 50 and sole (no double). -->
