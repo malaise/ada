@@ -25,7 +25,7 @@ package body Bookmarks is
     Insert       : Boolean;
     Redisplay    : Boolean;
     Ptg_Result   : Afpx.Result_Rec;
-    Background : Con_Io.Effective_Basic_Colors;
+    Background : Con_Io.Effective_Colors;
     use type Afpx.Absolute_Field_Range;
 
     -- Current dir

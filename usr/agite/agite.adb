@@ -112,9 +112,8 @@ procedure Agite is
 
   -- Encode files
   procedure Encode_Files is
-    Background : Con_Io.Effective_Basic_Colors;
-    Black : constant Con_Io.Effective_Basic_Colors
-          := Con_Io.Color_Of ("Black");
+    Background : Con_Io.Effective_Colors;
+    Black : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("Black");
     use type Git_If.Asu_Us;
   begin
     List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No) - 4;

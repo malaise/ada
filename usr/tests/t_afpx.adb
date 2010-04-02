@@ -8,7 +8,7 @@ procedure T_Afpx is
 
   Height : Afpx.Height_Range;
   Width  : Afpx.Width_Range;
-  Background   : Con_Io.Effective_Basic_Colors;
+  Background   : Con_Io.Effective_Colors;
   Cursor_Field : Afpx.Field_Range;
   Cursor_Col   : Con_Io.Col_Range;
   Insert       : Boolean;

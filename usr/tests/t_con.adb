@@ -86,7 +86,7 @@ procedure T_Con is
 
     Con_Io.Set_Background (Con_Io.Color_Of ("Blue"), W1);
     Con_Io.Set_Background (Con_Io.Color_Of ("Red"), W2);
-    Con_Io.Set_Background (Con_Io.Color_Of ("Green"), W3);
+    Con_Io.Set_Background (Con_Io.Color_Of ("Dark_Green"), W3);
 
     Redraw;
 
@@ -171,7 +171,7 @@ procedure T_Con is
       Con_Io.Clear (W1);
       Con_Io.Move (6 - I, 2, W1);
       Con_Io.Put ("Exiting", W1, Con_Io.Color_Of ("Red"), Con_Io.Blink,
-                  Con_Io.Color_Of ("Green"));
+                  Con_Io.Color_Of ("Dark_Green"));
       Con_Io.Get (Str(1..0), Last, Stat, Pos, Ins,
          W1, Con_Io.Current, Con_Io.Current, Con_Io.Color_Of ("Red"),
          (Delay_Kind    => Timers.Delay_Sec,

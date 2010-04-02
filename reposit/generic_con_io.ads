@@ -32,39 +32,29 @@ package Generic_Con_Io is
 
   -- Possible colors and blink status
   type Colors is (Current,
-      -- For background and foreground
-      Basic1, Basic2, Basic3, Basic4, Basic5, Basic6, Basic7, Basic8,
-      -- For foreground only
-      Foreg1, Foreg2, Foreg3, Foreg4, Foreg5, Foreg6);
-  subtype Basic_Colors is Colors range Current .. Basic8;
+      Color01, Color02, Color03, Color04, Color05, Color06, Color07,
+      Color08, Color09, Color10, Color11, Color12, Color13, Color14);
 
-  subtype Effective_Colors is Colors range Basic1 .. Colors'Last;
-  subtype Effective_Basic_Colors is Basic_Colors
-            range Basic1 .. Basic_Colors'Last;
+  subtype Effective_Colors is Colors range Color01 .. Colors'Last;
   type Blink_Stats is (Current, Blink, Not_Blink);
 
   -- Default colors
   type Colors_Definition is array (Effective_Colors) of Asu_Us;
   Default_Colors : constant Colors_Definition
-                 := (Basic1 => Asu_Tus ("Black"),
-                     Basic2 => Asu_Tus ("Blue"),
-                     Basic3 => Asu_Tus ("Green"),
-                     Basic4 => Asu_Tus ("Cyan"),
-                     Basic5 => Asu_Tus ("Red"),
-                     Basic6 => Asu_Tus ("Magenta"),
-                     Basic7 => Asu_Tus ("Brown"),
-                     Basic8 => Asu_Tus ("Light_Grey"),
-                     Foreg1 => Asu_Tus ("Grey"),
-                     Foreg2 => Asu_Tus ("Light_Blue"),
-                     Foreg3 => Asu_Tus ("Lime_Green"),
-                     Foreg4 => Asu_Tus ("Orange"),
-                     Foreg5 => Asu_Tus ("Yellow"),
-                     Foreg6 => Asu_Tus ("White") );
-
-  -- Can be called to initialise con_ios
-  -- If not called, this init will be called together with first con_io
-  --  initialisation and with default colors
-  procedure Initialise;
+                 := (Color01 => Asu_Tus ("Black"),
+                     Color02 => Asu_Tus ("Blue"),
+                     Color03 => Asu_Tus ("Dark_Green"),
+                     Color04 => Asu_Tus ("Cyan"),
+                     Color05 => Asu_Tus ("Red"),
+                     Color06 => Asu_Tus ("Magenta"),
+                     Color07 => Asu_Tus ("Brown"),
+                     Color08 => Asu_Tus ("Light_Grey"),
+                     Color09 => Asu_Tus ("Grey"),
+                     Color10 => Asu_Tus ("Light_Blue"),
+                     Color11 => Asu_Tus ("Lime_Green"),
+                     Color12 => Asu_Tus ("Orange"),
+                     Color13 => Asu_Tus ("Yellow"),
+                     Color14 => Asu_Tus ("White") );
 
   -- Set_Colors raises Already_Init if called after Initialise
   Already_Init : exception;
@@ -73,6 +63,11 @@ package Generic_Con_Io is
   Unknown_Color : exception;
   function Color_Of (Name : String) return Effective_Colors;
   function Color_Name_Of (Color : Effective_Colors) return String;
+
+  -- Can be called to initialise con_ios
+  -- If not called, this init will be called together with first con_io
+  --  initialisation and with default colors
+  procedure Initialise;
 
   generic
     Font_No : Font_No_Range;
@@ -117,12 +112,9 @@ package Generic_Con_Io is
 
     -- List of possible colors
     type Colors is new Generic_Con_Io.Colors;
-    subtype Basic_Colors is Colors range Current .. Basic8;
 
     -- List of colors for outputs
-    subtype Effective_Colors is Colors range Basic1 .. Colors'Last;
-    subtype Effective_Basic_Colors is Basic_Colors
-            range Basic1 .. Basic_Colors'Last;
+    subtype Effective_Colors is Colors range Color01 .. Colors'Last;
 
     -- List of possible blink states of foreground
     type Blink_Stats is new Generic_Con_Io.Blink_Stats;
@@ -134,8 +126,8 @@ package Generic_Con_Io is
 
 
     -- Standard attributes when reset
-    Default_Foreground : constant Effective_Colors := Basic8;
-    Default_Background : constant Effective_Basic_Colors := Basic1;
+    Default_Foreground : constant Effective_Colors := Effective_Colors'Last;
+    Default_Background : constant Effective_Colors := Effective_Colors'First;
     Default_Blink_Stat : constant Effective_Blink_Stats := Not_Blink;
     Default_Xor_Mode   : constant Effective_Xor_Modes := Xor_Off;
 
@@ -181,12 +173,11 @@ package Generic_Con_Io is
                               Blink_Stat : in Blink_Stats := Current;
                               Name       : in Window := Screen);
 
-    procedure Set_Background (Background : in Basic_Colors := Current;
+    procedure Set_Background (Background : in Colors := Current;
                               Name       : in Window := Screen);
 
     function Get_Foreground (Name : Window := Screen) return Effective_Colors;
-    function Get_Background (Name : Window := Screen) return
-      Effective_Basic_Colors;
+    function Get_Background (Name : Window := Screen) return Effective_Colors;
     function Get_Blink_Stat(Name : Window := Screen) return
       Effective_Blink_Stats;
 
@@ -261,7 +252,7 @@ package Generic_Con_Io is
                    Name       : in Window := Screen;
                    Foreground : in Colors := Current;
                    Blink_Stat : in Blink_Stats := Current;
-                   Background : in Basic_Colors := Current;
+                   Background : in Colors := Current;
                    Move       : in Boolean := True);
 
     -- Idem with a string
@@ -271,7 +262,7 @@ package Generic_Con_Io is
                    Name       : in Window := Screen;
                    Foreground : in Colors := Current;
                    Blink_Stat : in Blink_Stats := Current;
-                   Background : in Basic_Colors := Current;
+                   Background : in Colors := Current;
                    Move       : in Boolean := True);
 
     -- Idem but appends a Lf
@@ -279,14 +270,14 @@ package Generic_Con_Io is
                         Name       : in Window := Screen;
                         Foreground : in Colors := Current;
                         Blink_Stat : in Blink_Stats := Current;
-                        Background : in Basic_Colors := Current);
+                        Background : in Colors := Current);
 
     -- Idem with a wide character
     procedure Putw (W          : in Wide_Character;
                     Name       : in Window := Screen;
                     Foreground : in Colors := Current;
                     Blink_Stat : in Blink_Stats := Current;
-                    Background : in Basic_Colors := Current;
+                    Background : in Colors := Current;
                     Move       : in Boolean := True);
 
     -- Idem with a wide string
@@ -294,7 +285,7 @@ package Generic_Con_Io is
                     Name       : in Window := Screen;
                     Foreground : in Colors := Current;
                     Blink_Stat : in Blink_Stats := Current;
-                    Background : in Basic_Colors := Current;
+                    Background : in Colors := Current;
                     Move       : in Boolean := True);
 
     -- Idem but appends a Lf
@@ -302,7 +293,7 @@ package Generic_Con_Io is
                          Name       : in Window := Screen;
                          Foreground : in Colors := Current;
                          Blink_Stat : in Blink_Stats := Current;
-                         Background : in Basic_Colors := Current);
+                         Background : in Colors := Current);
 
     -- Puts Lf
     procedure New_Line (Name   : in Window := Screen;
@@ -378,7 +369,7 @@ package Generic_Con_Io is
                    Name       : in Window := Screen;
                    Foreground : in Colors := Current;
                    Blink_Stat : in Blink_Stats := Current;
-                   Background : in Basic_Colors := Current;
+                   Background : in Colors := Current;
                    Time_Out   : in Delay_Rec := Infinite_Delay;
                    Echo       : in Boolean := True);
 
@@ -392,7 +383,7 @@ package Generic_Con_Io is
                             Name       : in Window := Screen;
                             Foreground : in Colors := Current;
                             Blink_Stat : in Blink_Stats := Current;
-                            Background : in Basic_Colors := Current;
+                            Background : in Colors := Current;
                             Time_Out   : in Delay_Rec :=  Infinite_Delay;
                             Echo       : in Boolean := True);
 
@@ -563,7 +554,7 @@ package Generic_Con_Io is
         Lower_Right        : Square;
         Current_Pos        : Square := Home;
         Current_Foreground : Effective_Colors;
-        Current_Background : Effective_Basic_Colors;
+        Current_Background : Effective_Colors;
         Current_Blink_Stat : Effective_Blink_Stats;
         Current_Xor_Mode   : Effective_Xor_Modes;
       end record;

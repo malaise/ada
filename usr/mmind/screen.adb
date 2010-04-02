@@ -39,7 +39,7 @@ package body Screen is
    Con_Io.Effective_Colors := (
        0 => Con_Io.Color_Of ("Brown"),
        1 => Con_Io.Color_Of ("Blue"),
-       2 => Con_Io.Color_Of ("Green"),
+       2 => Con_Io.Color_Of ("Dark_Green"),
        3 => Con_Io.Color_Of ("Cyan"),
        4 => Con_Io.Color_Of ("Red"),
        5 => Con_Io.Color_Of ("Magenta"),
@@ -50,13 +50,13 @@ package body Screen is
 
   Foreground_Color  : constant Con_Io.Effective_Colors
                     := Con_Io.Color_Of ("Dark_Gray");
-  Background_Color  : constant Con_Io.Effective_Basic_Colors :=
+  Background_Color  : constant Con_Io.Effective_Colors :=
    Color_Definition(0);
 
   -- When possible to try
   Try_Color : constant Con_Io.Effective_Colors := White;
   -- When click in try or menu window
-  Background_Select : constant Con_Io.Effective_Basic_Colors
+  Background_Select : constant Con_Io.Effective_Colors
                     := Con_Io.Color_Of ("Light_Gray");
   -- Used to answer
   Ok_Color  : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("Black");
@@ -479,7 +479,7 @@ package body Screen is
   ----------
   procedure Put_Start_Giveup (Start : in Boolean; Selected : in Boolean) is
     Fore : Con_Io.Effective_Colors;
-    Back : Con_Io.Effective_Basic_Colors;
+    Back : Con_Io.Effective_Colors;
   begin
     if Selected then
       Fore := Background_Color;
@@ -514,7 +514,7 @@ package body Screen is
      Con_Io.Row_Range (Level_No) -
      Con_Io.Row_Range (Common.Last_Level_Range'First);
     Fore : Con_Io.Effective_Colors;
-    Back : Con_Io.Effective_Basic_Colors;
+    Back : Con_Io.Effective_Colors;
   begin
     if Selected then
       Fore := Background_Color;

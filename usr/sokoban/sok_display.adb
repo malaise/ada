@@ -140,7 +140,7 @@ package body Sok_Display is
   end Put_Frame;
 
   -- puts a square
-  Wall_Color : constant Con_Io.Effective_Basic_Colors
+  Wall_Color : constant Con_Io.Effective_Colors
              := Con_Io.Color_Of ("Light_Grey");
   Target_Color : constant Con_Io.Effective_Colors
              := Con_Io.Color_Of ("Red");

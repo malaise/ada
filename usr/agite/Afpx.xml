@@ -3,14 +3,14 @@
 
 <!-- For agite -->
 <Afpx_Descriptors Height="44" Width="55">
-  <Var Name="Version" Value="V1.1"/>
+  <Var Name="Version" Value="V1.2"/>
   <ColorNames>
     <ColorName>Dark_Grey</ColorName>
     <ColorName>Light_Grey</ColorName>
     <ColorName>Black</ColorName>
     <ColorName>White</ColorName>
     <ColorName>Red</ColorName>
-    <ColorName>Green</ColorName>
+    <ColorName>Dark_Green</ColorName>
     <ColorName>Brown</ColorName>
     <ColorName>Cyan</ColorName>
     <ColorName>Blue</ColorName>
@@ -32,7 +32,7 @@
     <Var Name="WWidth" Value="${Screen.Width}-${LmWidth}-${LmHOffset}-1"/>
     <List>
       <Geometry Up="8" Left="1" Low="${Screen.Low}-1" Width="${WWidth}"/>
-      <Colors Foreground="Black" Background="Dark_Grey" Selected="Green"/>
+      <Colors Foreground="Black" Background="Dark_Grey" Selected="Dark_Green"/>
     </List>
     <Field Num="1" Kind="Put">
       <Geometry Up="0" Left="15" Height="1" Width="9"/>
@@ -101,7 +101,7 @@
     <Field Num="12" Kind="Get">
       <Geometry Up="${Field_11.Up}" Left="${Field_11.Right}+2"
                 Height="1" Right="${Screen.Width}-2"/>
-      <Colors Foreground="White" Background="Black" Selected="Black"/>
+      <Colors Foreground="Black" Background="White" Selected="White"/>
     </Field>
     <Field Num="13" Kind="Button">
       <Geometry Up="${Field_12.Low}+2" Left="1"
@@ -173,7 +173,7 @@
     <Var Name="WWidth" Value="${Screen.Width}-${LmWidth}-${LmHOffset}-1"/>
     <List>
       <Geometry Up="6" Left="1" Low="${Screen.Low}-1" Width="${WWidth}"/>
-      <Colors Foreground="Black" Background="Dark_Grey" Selected="Green"/>
+      <Colors Foreground="Black" Background="Dark_Grey" Selected="Dark_Green"/>
     </List>
     <Field Num="1" Kind="Put">
       <Geometry Up="0" Left="23" Height="1" Width="9"/>
@@ -270,7 +270,7 @@
     <Var Name="WWidth" Value="${Screen.Width}-${LmWidth}-${LmHOffset}-1"/>
     <List>
       <Geometry Up="7" Left="1" Low="${Screen.Low}-1" Width="${WWidth}"/>
-      <Colors Foreground="Black" Background="Dark_Grey" Selected="Green"/>
+      <Colors Foreground="Black" Background="Dark_Grey" Selected="Dark_Green"/>
     </List>
     <Field Num="1" Kind="Put">
       <Geometry Up="0" Left="23" Height="1" Width="9"/>
@@ -400,7 +400,7 @@
     <Var Name="WWidth" Value="${Screen.Width}-${LmWidth}-${LmHOffset}-1"/>
     <List>
       <Geometry Up="14" Left="1" Low="${Screen.Low}-1" Width="${WWidth}"/>
-      <Colors Foreground="Black" Background="Dark_Grey" Selected="Green"/>
+      <Colors Foreground="Black" Background="Dark_Grey" Selected="Dark_Green"/>
     </List>
     <Field Num="1" Kind="Put">
       <Geometry Up="0" Left="23" Height="1" Width="9"/>

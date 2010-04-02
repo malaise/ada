@@ -30,8 +30,8 @@ static const char *default_color_name[NBRE_COLOR]={
   "dark green", "cyan",
   "red",        "magenta",
   "brown",      "light grey",
-  "grey",  "light blue",
-  "lime green","orange",
+  "grey",       "light blue",
+  "lime green", "orange",
   "yellow",     "white"
  };
 

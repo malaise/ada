@@ -256,10 +256,10 @@ package body Mesu_Gra is
   -- Draw one record
   procedure Draw_Mesure (No : in Mesure_Range) is
     Colors : constant array (1 .. Max_Nb_Mesure) of Con_Io.Effective_Colors
-           := (1 => Con_Io.Color_Of ("Light_Gray"),
+           := (1 => Con_Io.Color_Of ("Light_Grey"),
                2 => Con_Io.Color_Of ("Cyan"),
                3 => Con_Io.Color_Of ("Light_Blue"),
-               4 => Con_Io.Color_Of ("Light_Green"),
+               4 => Con_Io.Color_Of ("Lime_Green"),
                5 => Con_Io.Color_Of ("Orange"),
                6 => Con_Io.Color_Of ("Blue"),
                7 => Con_Io.Color_Of ("Magenta"),

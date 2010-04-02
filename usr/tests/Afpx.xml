@@ -6,12 +6,12 @@
 
     <List>
       <Geometry Up="6" Left="48" Low="20" Right="78"/>
-      <Colors Foreground="Red" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Red" Background="Blue" Selected="Dark_Green"/>
     </List>
 
     <Field Num="1" Kind="Get">
       <Geometry Up="1" Left="1" Height="1" Right="35"/>
-      <Colors Foreground="Red" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Red" Background="Blue" Selected="Dark_Green"/>
     </Field>
 
     <Field Num="2" Kind="Put">
@@ -21,7 +21,7 @@
 
     <Field Num="3" Kind="Get">
       <Geometry Up="1" Left="37" Height="1" Right="78"/>
-      <Colors Foreground="Red" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Red" Background="Blue" Selected="Dark_Green"/>
     </Field>
 
     <Field Num="4" Kind="Button">
@@ -38,7 +38,7 @@
 
     <Field Num="6" Kind="Get">
       <Geometry Up="19" Left="34" Low="19" Right="46"/>
-      <Colors Foreground="Red" Background="Blue" Selected="Green"/>
+      <Colors Foreground="Red" Background="Blue" Selected="Dark_Green"/>
     </Field>
 
     <Field Num="7" Kind="Put">
@@ -114,7 +114,7 @@
 
     <List>
       <Geometry Up="0" Left="50" Low="2" Right="60"/>
-      <Colors Foreground="Red" Background="Black" Selected="Green"/>
+      <Colors Foreground="Red" Background="Black" Selected="Dark_Green"/>
     </List>
 
   </Descriptor>

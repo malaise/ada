@@ -97,9 +97,8 @@
 <!-- ================================================= -->
 <!ELEMENT Colors EMPTY>
 <!-- This defines default colors, if not defined by ColorNames -->
-<!ENTITY % Basic_Colors "Black|Blue|Green|Cyan|Red|Magenta|Brown|Light_Grey">
-<!ENTITY % Colors "%Basic_Colors;|
-                   Dark_Grey|Light_Blue|Lime_Green|Orange|Yellow|White">
+<!ENTITY % Colors "Black|Blue|Dark_Green|Cyan|Red|Magenta|Brown|Light_Grey|
+                   Grey|Light_Blue|Lime_Green|Orange|Yellow|White">
 <!ENTITY % Blink "True|False">
 <!ATTLIST Colors Foreground CDATA #REQUIRED
                  Blink CDATA #IMPLIED

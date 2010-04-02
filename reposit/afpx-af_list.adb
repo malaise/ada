@@ -54,7 +54,7 @@ package body Af_List is
                  Item : in Line_Rec) is
     Str : Wide_String (1 .. Af_Dscr.Fields(Lfn).Width) := (others => ' ');
     Foreground : Con_Io.Effective_Colors;
-    Background : Con_Io.Effective_Basic_Colors;
+    Background : Con_Io.Effective_Colors;
   begin
     -- Set colors
     Af_Ptg.Set_Colors (Af_Dscr.Fields(Lfn), State,
@@ -80,7 +80,7 @@ package body Af_List is
   procedure Clear (Row : in Af_Con_Io.Row_Range) is
     Str : constant String (1 .. Af_Dscr.Fields(Lfn).Width) := (others => ' ');
     Foreground : Con_Io.Effective_Colors;
-    Background : Con_Io.Effective_Basic_Colors;
+    Background : Con_Io.Effective_Colors;
   begin
     -- Set colors
     Af_Ptg.Set_Colors (Af_Dscr.Fields(Lfn), Af_Ptg.Normal,

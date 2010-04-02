@@ -9,7 +9,7 @@
     <Var Name="WWidth" Value="40"/>
     <List>
       <Geometry Up="6" Left="1" Low="${Screen.Low}-1" Width="${WWidth}"/>
-      <Colors Foreground="Cyan" Background="Brown" Selected="Green"/>
+      <Colors Foreground="Cyan" Background="Brown" Selected="Dark_Green"/>
     </List>
     <Field Num="1" Kind="Put">
       <Geometry Up="0" Left="25" Height="1" Width="9"/>

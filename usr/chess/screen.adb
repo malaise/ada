@@ -17,14 +17,12 @@ package body Screen is
 
   Fore_White : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("Orange");
   Fore_Black : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("Red");
-  Back_White : constant Con_Io.Effective_Basic_Colors
+  Back_White : constant Con_Io.Effective_Colors
              := Con_Io.Color_Of ("Light_Gray");
-  Back_Black : constant Con_Io.Effective_Basic_Colors
-             := Con_Io.Color_Of ("Black");
+  Back_Black : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("Black");
 
   Main_Fore : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("White");
-  Main_Back : constant Con_Io.Effective_Basic_Colors
-            := Con_Io.Color_Of ("Brown");
+  Main_Back : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("Brown");
 
 
   -- Foreground color of messages, moves and for get

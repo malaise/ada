@@ -82,7 +82,7 @@ package body Graphic is
 
   procedure Display_Square (Color : in Space.Color_List;
                             Square : in Space.Square_Coordinate) is
-    Back : Con_Io.Effective_Basic_Colors;
+    Back : Con_Io.Effective_Colors;
     Fore : Con_Io.Effective_Colors;
     Id   : Pieces.Piece_Id;
 
@@ -174,7 +174,7 @@ package body Graphic is
 
   procedure Display_Promotion (Move_Color : in Space.Color_List) is
     Fore : Con_Io.Effective_Colors;
-    Back : Con_Io.Effective_Basic_Colors;
+    Back : Con_Io.Effective_Colors;
     Bits : Bitmaps.Piece_Map_Access;
     use type Space.Color_List;
     use type Con_Io.Colors;

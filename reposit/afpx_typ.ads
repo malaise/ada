@@ -40,7 +40,7 @@ package Afpx_Typ is
     -- Name of Colors
     Colors : Color_Names;
     -- Background color
-    Background : Con_Io.Effective_Basic_Colors;
+    Background : Con_Io.Effective_Colors;
   end record;
   type Descriptors_Array is array (Descriptor_Range) of Dscr_Rec;
 
@@ -51,8 +51,8 @@ package Afpx_Typ is
   type Colors_Rec is record
     Foreground : Con_Io.Effective_Colors;
     Blink_Stat : Con_Io.Effective_Blink_Stats;
-    Background : Con_Io.Effective_Basic_Colors;
-    Selected   : Con_Io.Effective_Basic_Colors;
+    Background : Con_Io.Effective_Colors;
+    Selected   : Con_Io.Effective_Colors;
   end record;
 
   -- Width and height of a field

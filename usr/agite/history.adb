@@ -64,7 +64,7 @@ package body History is
 
     -- Init Afpx
     procedure Init is
-      Background : Con_Io.Effective_Basic_Colors;
+      Background : Con_Io.Effective_Colors;
     begin
       Afpx.Use_Descriptor (3);
       Cursor_Field := 1;

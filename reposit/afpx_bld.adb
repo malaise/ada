@@ -524,7 +524,7 @@ procedure Afpx_Bld is
           Fields(Fn).Colors.Background := Con_Io.Color_Of (
                  Computer.Eval (Strof (Attrs(I).Value)));
           Add_Variable (Node, Name_Of (Fn) & "." & "Background",
-              Mixed_Str (Con_Io.Effective_Basic_Colors'Image (
+              Mixed_Str (Con_Io.Effective_Colors'Image (
                   Fields(Fn).Colors.Background)), False, False);
         elsif Match (Attrs(I).Name, "Blink") then
           if Blink then
@@ -596,15 +596,6 @@ procedure Afpx_Bld is
       when others =>
         File_Error (Node, "Invalid colors specification");
     end;
-
-    -- Foreground has to be basic for all but Put fields
-    if (Fn = 0 or else Fields(Fn).Kind /= Put)
-    and then Fields(Fn).Colors.Foreground
-             not in Con_Io.Effective_Basic_Colors then
-      -- For list, Get and Button, Foreground has to be basic
-      File_Error (Node,
-                  "For all but Put fields, Foreground has to be basic color");
-    end if;
 
   end Load_Colors;
 

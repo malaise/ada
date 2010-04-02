@@ -38,7 +38,7 @@ package body Af_Ptg is
   procedure Set_Colors (Field : in Afpx_Typ.Field_Rec;
                         State : in State_List;
                         Foreground : out Con_Io.Effective_Colors;
-                        Background : out Con_Io.Effective_Basic_Colors) is
+                        Background : out Con_Io.Effective_Colors) is
   begin
     -- Set colors
     case State is
@@ -60,7 +60,7 @@ package body Af_Ptg is
     Field : constant Afpx_Typ.Field_Rec := Af_Dscr.Fields(Field_No);
     Char_Index : Afpx_Typ.Char_Str_Range;
     Foreground : Con_Io.Effective_Colors;
-    Background : Con_Io.Effective_Basic_Colors;
+    Background : Con_Io.Effective_Colors;
   begin
     -- Set colors
     Set_Colors (Field, State, Foreground, Background);
@@ -618,7 +618,7 @@ package body Af_Ptg is
     Stat : Af_Con_Io.Curs_Mvt;
     Pos : Positive;
     Foreground : Con_Io.Effective_Colors;
-    Background : Con_Io.Effective_Basic_Colors;
+    Background : Con_Io.Effective_Colors;
     Done : Boolean;
     Need_Redisplay : Boolean;
     Selection_Result : Integer;

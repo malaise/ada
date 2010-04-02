@@ -19,7 +19,7 @@ package body Nav_Screen is
   Act_Off : constant := 5;
 
   -- Background color of all get fields
-  Get_Back : constant Con_Io.Effective_Basic_Colors := Con_Io.Color_Of ("Blue");
+  Get_Back : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("Blue");
   -- Foreground color of results
   Res_Fore : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("Lime_Green");
 
@@ -429,6 +429,6 @@ begin -- Nav_Screen
   Con_Io.Set_Background (Get_Back, W_Act);
   Con_Io.Set_Foreground (Res_Fore, Con_Io.Not_Blink, W_Res);
   Con_Io.Set_Foreground (Red, Con_Io.Not_Blink, W_Err);
-  Con_Io.Set_Foreground (Con_Io.Color_Of (".Light_Blue"), Name => W_Time);
+  Con_Io.Set_Foreground (Con_Io.Color_Of ("Light_Blue"), Name => W_Time);
 end Nav_Screen;
 

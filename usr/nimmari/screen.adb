@@ -12,9 +12,9 @@ package body Screen is
   Status : Status_Tab;
 
   -- Stick color
-  Stick_Color : constant Con_Io.Effective_Basic_Colors
+  Stick_Color : constant Con_Io.Effective_Colors
               := Con_Io.Color_Of ("Light_Gray");
-  Sel : constant Con_Io.Effective_Basic_Colors
+  Sel : constant Con_Io.Effective_Colors
               := Con_Io.Color_Of ("Red");
 
   Human_Score : Natural;

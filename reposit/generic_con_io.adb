@@ -18,7 +18,7 @@ package body Generic_Con_Io is
   begin
     if not X_Init_Done then
       for I in The_Color_Names'Range loop
-         Xi := Colors'Pos(I) - Colors'Pos(Basic1);
+         Xi := Colors'Pos(I) - Colors'Pos(Color01);
          X_Colors(Xi) := The_Color_Names(I);
          -- Lower case and '_' -> ' '
          X_Colors(Xi) := Asu_Tus (Lower_Str (Asu_Ts (X_Colors(Xi))));
@@ -79,7 +79,7 @@ package body Generic_Con_Io is
     Motion_Enabling : Boolean := False;
 
     Line_Foreground : Effective_Colors := Default_Foreground;
-    Line_Background : Effective_Basic_Colors := Default_Background;
+    Line_Background : Effective_Colors := Default_Background;
     Line_Blink_Stat : Effective_Blink_Stats := Default_Blink_Stat;
     Line_Xor_Mode   : Effective_Xor_Modes := Default_Xor_Mode;
 
@@ -228,7 +228,7 @@ package body Generic_Con_Io is
       end if;
     end Set_Foreground;
 
-    procedure Set_Background (Background : in Basic_Colors := Current;
+    procedure Set_Background (Background : in Colors := Current;
                               Name       : in Window       := Screen) is
     begin
       if Name = null then
@@ -249,7 +249,7 @@ package body Generic_Con_Io is
     end Get_Foreground;
 
     function Get_Background (Name : Window := Screen)
-      return Effective_Basic_Colors is
+      return Effective_Colors is
     begin
       if Name = null then
         raise Window_Not_Open;
@@ -494,10 +494,10 @@ package body Generic_Con_Io is
                        Name       : in Window;
                        Foreground : in Colors;
                        Blink_Stat : in Blink_Stats;
-                       Background : in Basic_Colors) is
+                       Background : in Colors) is
       Fg : Effective_Colors;
       Bl : Effective_Blink_Stats;
-      Bg : Effective_Basic_Colors;
+      Bg : Effective_Colors;
     begin
       if Foreground = Current then
         Fg := Name.Current_Foreground;
@@ -575,7 +575,7 @@ package body Generic_Con_Io is
                           Name       : in Window := Screen;
                           Foreground : in Colors := Current;
                           Blink_Stat : in Blink_Stats := Current;
-                          Background : in Basic_Colors := Current;
+                          Background : in Colors := Current;
                           Move       : in Boolean := True) is
     begin
       if Name = null then
@@ -612,7 +612,7 @@ package body Generic_Con_Io is
                    Name       : in Window := Screen;
                    Foreground : in Colors := Current;
                    Blink_Stat : in Blink_Stats := Current;
-                   Background : in Basic_Colors := Current;
+                   Background : in Colors := Current;
                    Move       : in Boolean := True) is
     begin
       Put_1_Char (C & "", Name, Foreground, Blink_Stat, Background, Move);
@@ -623,7 +623,7 @@ package body Generic_Con_Io is
                    Name       : in Window := Screen;
                    Foreground : in Colors := Current;
                    Blink_Stat : in Blink_Stats := Current;
-                   Background : in Basic_Colors := Current;
+                   Background : in Colors := Current;
                    Move       : in Boolean := True) is
       Ifirst, Ilast : Natural;
       Last : Natural;
@@ -706,7 +706,7 @@ package body Generic_Con_Io is
                         Name       : in Window := Screen;
                         Foreground : in Colors := Current;
                         Blink_Stat : in Blink_Stats := Current;
-                        Background : in Basic_Colors := Current) is
+                        Background : in Colors := Current) is
     begin
       if Name = null then
         raise Window_Not_Open;
@@ -722,7 +722,7 @@ package body Generic_Con_Io is
                     Name       : in Window := Screen;
                     Foreground : in Colors := Current;
                     Blink_Stat : in Blink_Stats := Current;
-                    Background : in Basic_Colors := Current;
+                    Background : in Colors := Current;
                     Move       : in Boolean := True) is
     begin
       Put (Language.Wide_To_String (W & ""),
@@ -734,7 +734,7 @@ package body Generic_Con_Io is
                     Name       : in Window := Screen;
                     Foreground : in Colors := Current;
                     Blink_Stat : in Blink_Stats := Current;
-                    Background : in Basic_Colors := Current;
+                    Background : in Colors := Current;
                     Move       : in Boolean := True) is
     begin
       Put (Language.Wide_To_String (S),
@@ -746,7 +746,7 @@ package body Generic_Con_Io is
                          Name       : in Window := Screen;
                          Foreground : in Colors := Current;
                          Blink_Stat : in Blink_Stats := Current;
-                         Background : in Basic_Colors := Current) is
+                         Background : in Colors := Current) is
     begin
       Put_Line (Language.Wide_To_String (S),
            Name, Foreground, Blink_Stat, Background);
@@ -947,7 +947,7 @@ package body Generic_Con_Io is
                             Name       : in Window := Screen;
                             Foreground : in Colors := Current;
                             Blink_Stat : in Blink_Stats := Current;
-                            Background : in Basic_Colors := Current;
+                            Background : in Colors := Current;
                             Time_Out   : in Delay_Rec :=  Infinite_Delay;
                             Echo       : in Boolean := True) is
       -- Local string for working on
@@ -1359,7 +1359,7 @@ package body Generic_Con_Io is
                    Name       : in Window := Screen;
                    Foreground : in Colors := Current;
                    Blink_Stat : in Blink_Stats := Current;
-                   Background : in Basic_Colors := Current;
+                   Background : in Colors := Current;
                    Time_Out   : in Delay_Rec :=  Infinite_Delay;
                    Echo       : in Boolean := True) is
       Lstr : Wide_String(Str'Range ) := (others => ' ');

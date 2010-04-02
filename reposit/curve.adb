@@ -597,7 +597,7 @@ package body Curve is
       begin
         -- Draw frame
         Draw_Frame;
-        Cur_Con_Io.Set_Foreground (Cur_Con_Io.Color_Of ("Light_Green"));
+        Cur_Con_Io.Set_Foreground (Cur_Con_Io.Color_Of ("Lime_Green"));
         -- Draw pixel for each possible X screen
         for X_S in Cur_Con_Io.Graphics.X_Range
                  range Screen_Boundaries.X_Min .. Screen_Boundaries.X_Max loop
@@ -676,7 +676,7 @@ package body Curve is
         if      Action = Toggle
         or else (Action = Init and then Misc (M_Scale)) then
           -- External scales
-          Cur_Con_Io.Set_Foreground (Cur_Con_Io.Color_Of ("Light_Gray"));
+          Cur_Con_Io.Set_Foreground (Cur_Con_Io.Color_Of ("Light_Grey"));
           Cur_Con_Io.Move (1, 30);
           Cur_Con_Io.Put (Coo_To_Str(Y_Screen_Real(Screen_Boundaries.Y_Max)));
           Cur_Con_Io.Move (Cur_Con_Io.Row_Range_Last - 1, 30);

@@ -50,7 +50,7 @@ package Afpx is
 
   -- Get descriptor background color
   procedure Get_Descriptor_Background (
-      Background : out Con_Io.Effective_Basic_Colors);
+      Background : out Con_Io.Effective_Colors);
 
   -- Check if current descriptor defines a list
   -- Exceptions : No_Descriptor (no Descriptor in use)
@@ -126,21 +126,21 @@ package Afpx is
     Field_No   : in Absolute_Field_Range;
     Foreground : out Con_Io.Effective_Colors;
     Blink_Stat : out Con_Io.Effective_Blink_Stats;
-    Background : out Con_Io.Effective_Basic_Colors;
-    Selected   : out Con_Io.Effective_Basic_Colors);
+    Background : out Con_Io.Effective_Colors;
+    Selected   : out Con_Io.Effective_Colors);
 
   -- Set field colors
   -- Exceptions : No_Descriptor, Invalid_Field
   --              Invalid_Color
-  --       - Foreground has to be Basic_Colors for list, get and button fields
+  --       - Foreground has to be Colors for list, get and button fields
   --       - Selected has to be Current for put and button fields
   --       - Blink_Stat has to be Current except for put fields
   procedure Set_Field_Colors (
     Field_No   : in Absolute_Field_Range;
     Foreground : in Con_Io.Colors       := Con_Io.Current;
     Blink_Stat : in Con_Io.Blink_Stats  := Con_Io.Current;
-    Background : in Con_Io.Basic_Colors := Con_Io.Current;
-    Selected   : in Con_Io.Basic_Colors := Con_Io.Current);
+    Background : in Con_Io.Colors := Con_Io.Current;
+    Selected   : in Con_Io.Colors := Con_Io.Current);
 
   -- Activate/Desactivate a field for further put_then_gets
   -- All fields are activated by default (when Use_Descriptor or Reset_Field)
