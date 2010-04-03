@@ -14,7 +14,7 @@ package body Screen is
     else
       Afpx.Clear_Field(Franc_Account_Fld);
       Afpx.Set_Field_Colors(Franc_Account_Fld,
-                  Foreground => Con_Io.Color_Of ("Blue"));
+                  Foreground => Con_Io.Color_Of ("Brown4"));
       Afpx.Encode_Field(Franc_Account_Fld, (0, 1), "TO EUROS");
     end if;
   end Update_To_Unit;

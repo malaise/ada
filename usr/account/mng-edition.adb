@@ -26,41 +26,41 @@ package body Edition is
 
   -- Protect get and button fields & set colors.
   procedure Protect_Data is
-    Light_Grey : constant Con_Io.Effective_Colors
-               := Con_Io.Color_Of ("Light_Grey");
+    Back : constant Con_Io.Effective_Colors
+               := Afpx.Get_Descriptor_Background;
     Black : constant Con_Io.Effective_Colors
                := Con_Io.Color_Of ("Black");
   begin
     Afpx.Set_Field_Protection(13, True);
-    Afpx.Set_Field_Colors(13, Light_Grey, Background => Black);
+    Afpx.Set_Field_Colors(13, Black, Background => Back);
     Afpx.Set_Field_Protection(15, True);
-    Afpx.Set_Field_Colors(15, Light_Grey, Background => Black);
+    Afpx.Set_Field_Colors(15, Black, Background => Back);
     Afpx.Set_Field_Protection(17, True);
-    Afpx.Set_Field_Colors(17, Light_Grey, Background => Black);
+    Afpx.Set_Field_Colors(17, Black, Background => Back);
     Afpx.Set_Field_Protection(20, True);
-    Afpx.Set_Field_Colors(20, Light_Grey, Background => Black);
+    Afpx.Set_Field_Colors(20, Black, Background => Back);
     Afpx.Set_Field_Protection(22, True);
-    Afpx.Set_Field_Colors(22, Light_Grey, Background => Black);
+    Afpx.Set_Field_Colors(22, Black, Background => Back);
     Afpx.Set_Field_Protection(23, True);
-    Afpx.Set_Field_Colors(23, Light_Grey, Background => Black);
+    Afpx.Set_Field_Colors(23, Black, Background => Back);
     Afpx.Set_Field_Protection(24, True);
-    Afpx.Set_Field_Colors(24, Light_Grey, Background => Black);
+    Afpx.Set_Field_Colors(24, Black, Background => Back);
     Afpx.Set_Field_Protection(25, True);
-    Afpx.Set_Field_Colors(25, Light_Grey, Background => Black);
+    Afpx.Set_Field_Colors(25, Black, Background => Back);
     Afpx.Set_Field_Protection(26, True);
-    Afpx.Set_Field_Colors(26, Light_Grey, Background => Black);
+    Afpx.Set_Field_Colors(26, Black, Background => Back);
     Afpx.Set_Field_Protection(28, True);
-    Afpx.Set_Field_Colors(28, Light_Grey, Background => Black);
+    Afpx.Set_Field_Colors(28, Black, Background => Back);
     Afpx.Set_Field_Protection(29, True);
-    Afpx.Set_Field_Colors(29, Light_Grey, Background => Black);
+    Afpx.Set_Field_Colors(29, Black, Background => Back);
     Afpx.Set_Field_Protection(30, True);
-    Afpx.Set_Field_Colors(30, Light_Grey, Background => Black);
+    Afpx.Set_Field_Colors(30, Black, Background => Back);
     Afpx.Set_Field_Protection(32, True);
-    Afpx.Set_Field_Colors(32, Light_Grey, Background => Black);
+    Afpx.Set_Field_Colors(32, Black, Background => Back);
     Afpx.Set_Field_Protection(34, True);
-    Afpx.Set_Field_Colors(34, Light_Grey, Background => Black);
+    Afpx.Set_Field_Colors(34, Black, Background => Back);
     Afpx.Set_Field_Protection(36, True);
-    Afpx.Set_Field_Colors(36, Light_Grey, Background => Black);
+    Afpx.Set_Field_Colors(36, Black, Background => Back);
   end Protect_Data;
 
   -- Set unit button according to current unit
@@ -77,7 +77,7 @@ package body Edition is
           Afpx.Encode_Field(19, (0, 0), "e");
       end;
     else
-      Afpx.Set_Field_Colors(19, Con_Io.Color_Of ("Blue"));
+      Afpx.Set_Field_Colors(19, Con_Io.Color_Of ("Brown4"));
       Afpx.Encode_Field(19, (0, 0), "F");
     end if;
   end Set_Unit;
@@ -119,24 +119,29 @@ package body Edition is
     procedure Set_Active (Button : in Afpx.Field_Range;
                           Active : in Boolean) is
     begin
-      -- Default (except unselected and view/delete)
-      Afpx.Set_Field_Activation(Button, True);
+      Afpx.Reset_Field(Button);
       if Allow_Edit then
+        -- All buttons shown and active one is protected
+        Afpx.Set_Field_Activation(Button, True);
+        Afpx.Set_Field_Protection(Button, Active);
         if Active then
-          -- Active and modifiable
           Afpx.Set_Field_Colors(Button,
-                                Foreground => Con_Io.Color_Of("Magenta"));
+                                Foreground => Con_Io.Color_Of("Dark_Green"),
+                                Background => Afpx.Get_Descriptor_Background);
         else
-          -- Inactive and modifiable
+          -- Not the active one => modifiable
           Afpx.Set_Field_Colors(Button,
-                                Foreground => Con_Io.Color_Of ("Cyan"));
+                                Foreground => Con_Io.Color_Of ("Black"));
         end if;
       else
+        -- Only active button shown, and protected
         if Active then
-          -- Inactive and modifiable
+          Afpx.Set_Field_Protection(Button, True);
           Afpx.Set_Field_Colors(Button,
-                                Foreground => Con_Io.Color_Of ("Light_Grey"));
+                                Foreground => Con_Io.Color_Of ("Black"),
+                                Background => Afpx.Get_Descriptor_Background);
         else
+          -- Hide
           Afpx.Set_Field_Activation(Button, False);
         end if;
       end if;
@@ -154,9 +159,12 @@ package body Edition is
     if not Oper_Def.Kind_Can_Be(Kind, Status) then
       raise Program_Error;
     end if;
+    -- Hide status that are not possible for this kind
     for Stat in Oper_Def.Status_List loop
-      Afpx.Set_Field_Activation(Status_Buttons(Stat),
+      if Afpx.Get_Field_Activation(Status_Buttons(Stat)) then
+        Afpx.Set_Field_Activation(Status_Buttons(Stat),
                               Oper_Def.Kind_Can_Be(Kind, Stat));
+      end if;
     end loop;
   end Set_Buttons;
 
@@ -278,7 +286,6 @@ package body Edition is
   begin
     if Edit_Type = Delete then
       Deletion.Flag_Undeleted;
-      Update;
     end if;
   end Cancel;
 
