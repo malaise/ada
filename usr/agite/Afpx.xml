@@ -4,11 +4,11 @@
 <!-- For agite -->
 <Afpx_Descriptors Height="44" Width="55">
   <Var Name="Version" Value="V1.2"/>
-  <ColorDefinitions>
-    <ColorDefinition Name="Color09">Dark_Grey</ColorDefinition>
-  </ColorDefinitions>
+  <Color_Definitions>
+    <Color_Definition Name="Color09">Dark_Grey</Color_Definition>
+  </Color_Definitions>
 
-  <!-- Main screen: explorator --> 
+  <!-- Main screen: explorator -->
   <Descriptor Num="1" Background="Light_Grey">
 
     <!-- List management setup -->
@@ -135,7 +135,7 @@
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="2">Exit</Init>
     </Field>
-    
+
     <!-- Version and host -->
     <Field Num="21" Kind="Put">
       <Geometry Up="0" Left="${Field_1.Right}+3" Height="1" Width="4"/>
@@ -143,7 +143,7 @@
       <Init Row="0" Col="0">${Version}</Init>
     </Field>
     <Field Num="22" Kind="Put">
-      <Geometry Up="0" Left="${Field_21.Right}+3" Height="1" 
+      <Geometry Up="0" Left="${Field_21.Right}+3" Height="1"
                 Right="${Screen.Width}-2"/>
       <Colors Foreground="Black" Background="Light_Grey" Blink="False"/>
       <Init Row="0" Col="0">${Version}</Init>
@@ -320,7 +320,7 @@
 
     <!-- List status xxx%  LeftSel: yyyyy  RightSel: zzzzz-->
     <Field Num="11" Kind="Put">
-      <Geometry Up="${Field_10.Low}+2" Left="1" Height="1" Width="3"/> 
+      <Geometry Up="${Field_10.Low}+2" Left="1" Height="1" Width="3"/>
       <Colors Foreground="Black" Background="Light_Grey" Blink="False"/>
     </Field>
     <Field Num="12" Kind="Put">
@@ -337,7 +337,7 @@
     </Field>
     <Field Num="14" Kind="Put">
       <Geometry Up="${Field_10.Low}+2" Left="${Field_13.Right}+1"
-                Height="1" Width="7"/> 
+                Height="1" Width="7"/>
       <Colors Foreground="Black" Background="Light_Grey" Blink="False"/>
     </Field>
     <Field Num="15" Kind="Put">
@@ -348,7 +348,7 @@
     </Field>
     <Field Num="16" Kind="Put">
       <Geometry Up="${Field_10.Low}+2" Left="${Field_15.Right}+1"
-                Height="1" Width="7"/> 
+                Height="1" Width="7"/>
       <Colors Foreground="Black" Background="Light_Grey" Blink="False"/>
     </Field>
 

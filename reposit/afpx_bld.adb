@@ -40,6 +40,8 @@ procedure Afpx_Bld is
 
   -- The color names
   Color_Names : Afpx_Typ.Color_Names := (others => Afpx_Typ.No_Color);
+  Color_Defs : Generic_Con_Io.Colors_Definition;
+  Colors_Loaded : Boolean;
 
   -- List of descriptors
   Descriptors : Afpx_Typ.Descriptors_Array;
@@ -308,16 +310,29 @@ procedure Afpx_Bld is
     end if;
   end Name_Of;
 
-  -- Load the (optional) definition of color names
+  -- Load the variables with names of colors
   procedure Load_Color_Names (Node : in Xp.Node_Type) is
+  begin
+    -- Load colors only once despite called several times
+    if Colors_Loaded then
+      return;
+    end if;
+    Colors_Loaded := True;
+    -- Define variables Colorxy
+    for I in Generic_Con_Io.Effective_Colors'Range loop
+      Add_Variable (Node,
+                    Mixed_Str (Generic_Con_Io.Effective_Colors'Image (I)),
+                    Asu_Ts (Color_Defs(I)), False, True);
+    end loop;
+  end Load_Color_Names;
+
+  -- Parse the (optional) definition of color names
+  procedure Define_Color_Names (Node : in Xp.Node_Type) is
     Text : Xp.Text_Type;
     Color : Xp.Element_Type;
     Name, Val : Asu_Us;
     Index : Generic_Con_Io.Effective_Colors;
-    Color_Defs : Generic_Con_Io.Colors_Definition;
   begin
-    -- Init with default
-    Color_Defs := Generic_Con_Io.Default_Colors;
     -- Overwrite some
     for I in 1 .. Ctx.Get_Nb_Children (Node) loop
       Color := Ctx.Get_Child (Node, I);
@@ -333,21 +348,15 @@ procedure Afpx_Bld is
       end;
     end loop;
 
-    -- Define variables Colorxy
-    for I in Generic_Con_Io.Effective_Colors'Range loop
-      Add_Variable (Node,
-                    Mixed_Str (Generic_Con_Io.Effective_Colors'Image (I)),
-                    Asu_Ts (Color_Defs(I)), False, True);
-    end loop;
     Color_Names := Afpx_Typ.To_Names (Color_Defs);
     Generic_Con_Io.Set_Colors (Color_Defs);
-
+    Load_Color_Names (Node);
   exception
     when File_Syntax_Error =>
       raise;
     when others =>
       File_Error (Node, "Invalid colors re-definition");
-  end Load_Color_Names;
+  end Define_Color_Names;
 
   -- Check and store upper_left and lower right
   procedure Load_Geometry (Node : in Xp.Node_Type;
@@ -985,6 +994,8 @@ procedure Afpx_Bld is
 
     -- Parse size
     Screen_Size := Load_Size (Root);
+    -- Init colors with default
+    Color_Defs := Generic_Con_Io.Default_Colors;
 
     -- Initialize the descriptors array as not used
     for I in Afpx_Typ.Descriptor_Range loop
@@ -999,6 +1010,7 @@ procedure Afpx_Bld is
     -- Loop on persistent variables and descriptors
     -- Descriptors are stored in the descriptor file at Dscr_No
     -- Fields and init tables are stored in their files at Dscr_Index
+    Colors_Loaded := False;
     Dscr_Index := 1;
     Dscrs:
     for I in 1 .. Ctx.Get_Nb_Children (Root) loop
@@ -1009,11 +1021,12 @@ procedure Afpx_Bld is
       end if;
       if Match (Ctx.Get_Name (Child), "Var") then
         Load_Variable (Child, True);
-      elsif Match (Ctx.Get_Name (Child), "ColorDefinitions") then
-        Load_Color_Names (Child);
+      elsif Match (Ctx.Get_Name (Child), "Color_Definitions") then
+        Define_Color_Names (Child);
       elsif not  Match (Ctx.Get_Name (Child), "Descriptor") then
         File_Error (Child, "Expected Descriptor or Var");
       else
+        Load_Color_Names (Child);
         -- Descriptor
         Load_Dscr (Child, Dscr_Index, Screen_Size);
         -- If not check_only, write fields and init
