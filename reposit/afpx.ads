@@ -49,8 +49,7 @@ package Afpx is
   procedure Resume;
 
   -- Get descriptor background color
-  procedure Get_Descriptor_Background (
-      Background : out Con_Io.Effective_Colors);
+  function Get_Descriptor_Background return Con_Io.Effective_Colors;
 
   -- Check if current descriptor defines a list
   -- Exceptions : No_Descriptor (no Descriptor in use)

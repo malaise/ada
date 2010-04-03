@@ -88,7 +88,7 @@
     <Field Num="12" Kind="Get">
       <Geometry Up="${Field_11.Up}" Left="${Field_11.Right}+2"
                 Height="1" Right="${Screen.Width}-2"/>
-      <Colors Foreground="Black" Background="White" Selected="White"/>
+      <Colors Foreground="Black" Background="Light_Grey" Selected="White"/>
     </Field>
     <Field Num="13" Kind="Button">
       <Geometry Up="${Field_12.Low}+2" Left="1"
@@ -146,7 +146,6 @@
       <Geometry Up="0" Left="${Field_21.Right}+3" Height="1"
                 Right="${Screen.Width}-2"/>
       <Colors Foreground="Black" Background="Light_Grey" Blink="False"/>
-      <Init Row="0" Col="0">${Version}</Init>
     </Field>
   </Descriptor>
 

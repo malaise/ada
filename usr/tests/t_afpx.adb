@@ -45,7 +45,7 @@ begin
                             & Width'Img & " x" & Height'Img);
   Afpx.Use_Descriptor(1);
 
-  Afpx.Get_Descriptor_Background (Background);
+  Background := Afpx.Get_Descriptor_Background;
   Basic_Proc.Put_Line_Output ("Dscr background is " & Background'Img);
 
   -- List directory and store it in Afpx list

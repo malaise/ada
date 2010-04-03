@@ -280,11 +280,10 @@ package body Afpx is
   end Resume;
 
   --Get descriptor background color
-  procedure Get_Descriptor_Background (
-         Background : out Con_Io.Effective_Colors) is
+  function Get_Descriptor_Background return Con_Io.Effective_Colors is
   begin
     Af_Dscr.Check;
-    Background := Af_Dscr.Current_Dscr.Background;
+    return Af_Dscr.Current_Dscr.Background;
   end Get_Descriptor_Background;
 
   -- Check if current descriptor defines a list

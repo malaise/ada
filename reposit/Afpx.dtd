@@ -84,7 +84,7 @@
 <!--  Field_21.Height are also defined. -->
 
 <!-- Any field must have a Foreground and Background color. -->
-<!-- Put fields must also have a Blink status. -->
+<!-- Put fields can also have a Blink status (default False). -->
 <!-- Get fields and List must also have a Selected color. -->
 <!-- Summary of color combinations: -->
 <!-- ================================================= -->

@@ -89,7 +89,7 @@ package body History is
                  Utils.Normalize ("/" , Afpx.Get_Field_Width (10)));
         end if;
         -- Lock button View
-        Afpx.Get_Descriptor_Background (Background);
+        Background := Afpx.Get_Descriptor_Background;
         Afpx.Set_Field_Protection (17, True);
         Afpx.Set_Field_Colors (17,
           Foreground => Con_Io.Color_Of ("Black"),

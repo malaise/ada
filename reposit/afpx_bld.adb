@@ -595,7 +595,12 @@ procedure Afpx_Bld is
         Fields(Fn).Colors.Blink_Stat := Con_Io.Not_Blink;
         Add_Blink_Stat;
       elsif Fields(Fn).Kind = Afpx_Typ.Put then
-        if Ctx.Get_Nb_Attributes (Node) /= 3
+        if Ctx.Get_Nb_Attributes (Node) = 2
+        and then Foreground and then Background then
+          -- Default not blink
+          Fields(Fn).Colors.Blink_Stat := Con_Io.Not_Blink;
+          Add_Blink_Stat;
+        elsif Ctx.Get_Nb_Attributes (Node) /= 3
         or else not (Foreground and then Background and then Blink)
         or else Selected then
           File_Error (Node,

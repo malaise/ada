@@ -112,7 +112,8 @@ procedure Agite is
 
   -- Encode files
   procedure Encode_Files is
-    Background : Con_Io.Effective_Colors;
+    Background : constant Con_Io.Effective_Colors
+               := Afpx.Get_Descriptor_Background;
     Black : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("Black");
     use type Git_If.Asu_Us;
   begin
@@ -150,7 +151,6 @@ procedure Agite is
 
     -- De-activate Diff and history if no in Git
     if Root = Utils.Asu_Null then
-      Afpx.Get_Descriptor_Background (Background);
       Afpx.Set_Field_Protection (17, True);
       Afpx.Set_Field_Colors (17, Foreground => Black,
                                  Background => Background);

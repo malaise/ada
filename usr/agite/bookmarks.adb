@@ -82,7 +82,7 @@ package body Bookmarks is
     loop
       -- No Goto nor Del if no Bookmark
       if Afpx.Line_List.Is_Empty then
-        Afpx.Get_Descriptor_Background (Background);
+        Background := Afpx.Get_Descriptor_Background;
         Afpx.Set_Field_Protection (11, True);
         Afpx.Set_Field_Colors (11, Foreground => Con_Io.Color_Of ("Black"),
                                    Background => Background);
