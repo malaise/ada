@@ -75,7 +75,6 @@ package body Af_Ptg is
        S          => Af_Dscr.Chars(Char_Index .. Char_Index + Field.Width - 1),
        Name       => Af_Con_Io.Screen,
        Foreground => Af_Con_Io.Colors(Foreground),
-       Blink_Stat => Af_Con_Io.Blink_Stats(Field.Colors.Blink_Stat),
        Background => Af_Con_Io.Colors(Background),
        Move       => False);
       -- Update Char_Index to first char of next row (except after last row)
@@ -97,7 +96,6 @@ package body Af_Ptg is
       Af_Con_Io.Put (S          => Spaces,
                      Name       => Af_Con_Io.Screen,
                      Foreground => Af_Con_Io.Get_Background(Af_Con_Io.Screen),
-                     Blink_Stat => Af_Con_Io.Not_Blink,
                      Background => Af_Con_Io.Get_Background(Af_Con_Io.Screen),
                      Move       => False);
     end loop;
@@ -735,7 +733,6 @@ package body Af_Ptg is
          Insert => Insert,
          Name   => Af_Con_Io.Screen,
          Foreground => Af_Con_Io.Colors(Foreground),
-         Blink_Stat => Af_Con_Io.Blink_Stats(Field.Colors.Blink_Stat),
          Background => Af_Con_Io.Colors(Background));
         Cursor_Col := Pos - 1;
       else
@@ -750,7 +747,6 @@ package body Af_Ptg is
          Insert => Insert,
          Name   => Af_Con_Io.Screen,
          Foreground => Af_Con_Io.Get_Background(Af_Con_Io.Screen),
-         Blink_Stat => Af_Con_Io.Not_Blink,
          Background => Af_Con_Io.Get_Background(Af_Con_Io.Screen));
        end if;
 

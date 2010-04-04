@@ -4,7 +4,7 @@
 
 void scr_set_attrib(Display *x_server, GC x_context, XFontStruct *x_fonts[],
                     int no_font, unsigned long color_ids[],
-                    int paper, int ink, int blink, int reverse);
+                    int paper, int ink, int reverse);
 
 void scr_put_char(Display *x_server, GC x_context, Window x_window,
                   XFontSet x_font_set, int x, int y, char car, int xor_mode);

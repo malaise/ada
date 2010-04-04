@@ -192,8 +192,7 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
     Afpx.Set_Field_Activation (Center_Fld, False);
     Afpx.Set_Field_Activation (Reread_Fld, False);
     Afpx.Set_Field_Activation (Cancel_Fld, False);
-    Afpx.Set_Field_Colors(Info_Fld, Foreground => Con_Io.Color_Of ("Orange"),
-                                    Blink_Stat => Con_Io.Blink);
+    Afpx.Set_Field_Colors(Info_Fld, Foreground => Con_Io.Color_Of ("Orange"));
     case Msg is
       when E_File_Not_Found     => Encode_Info ("File not found");
       when E_Io_Error           => Encode_Info ("Error accessing file");

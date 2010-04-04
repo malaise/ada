@@ -50,7 +50,6 @@ package Afpx_Typ is
   -- Field colors
   type Colors_Rec is record
     Foreground : Con_Io.Effective_Colors;
-    Blink_Stat : Con_Io.Effective_Blink_Stats;
     Background : Con_Io.Effective_Colors;
     Selected   : Con_Io.Effective_Colors;
   end record;

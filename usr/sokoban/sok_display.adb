@@ -71,8 +71,7 @@ package body Sok_Display is
         Con_Io.Put_Line (" Ctrl Break or Ctrl C", Name => Help_Win);
         Con_Io.Put ("  to quit", Name => Help_Win);
       when Done =>
-        Con_Io.Put_Line ("  - FRAME completed -", Blink_Stat => Con_Io.Blink,
-                         Name => Help_Win);
+        Con_Io.Put_Line ("  - FRAME completed -", Name => Help_Win);
         Con_Io.New_Line (Help_Win, 2);
 
         Con_Io.Put_Line (" Space or Return", Name => Help_Win);
@@ -170,12 +169,10 @@ package body Sok_Display is
             if Blink then
               Con_Io.Put ("[]", Frame_Win,
                                 Foreground => Target_Color,
-                                Blink_Stat => Con_Io.Blink,
                                 Move => False);
             else
               Con_Io.Put ("[]", Frame_Win,
                                 Foreground => Target_Color,
-                                Blink_Stat => Con_Io.Not_Blink,
                                 Move => False);
             end if;
         end case;
@@ -257,7 +254,6 @@ package body Sok_Display is
 
   procedure Put_Action (Action : in Menu_Action_List; Selected : in Boolean) is
     Color : Con_Io.Effective_Colors;
-    Blink : Con_Io.Effective_Blink_Stats;
     Len_Field : constant := 11;
     Pad       : constant :=  4;
     Write_Col   : constant := Pad;
@@ -269,10 +265,8 @@ package body Sok_Display is
   begin
     if not Selected then
       Color := Con_Io.Color_Of ("Light_Gray");
-      Blink := Con_Io.Not_Blink;
     else
       Color := Con_Io.Color_Of ("Red");
-      Blink := Con_Io.Blink;
     end if;
 
     case Action is
@@ -280,15 +274,13 @@ package body Sok_Display is
         if Current_Allow_Write then
           Con_Io.Move ( (0, Write_Col), Menu_Win);
           Con_Io.Put ("           ", Menu_Win, Foreground => Color,
-           Blink_Stat => Blink, Background => Blue,
-           Move => False);
+                      Background => Blue, Move => False);
           Con_Io.Move ( (1, Write_Col), Menu_Win);
           Con_Io.Put ("   SAVE    ", Menu_Win, Foreground => Color,
-           Blink_Stat => Blink, Background => Blue,
-           Move => False);
+                      Background => Blue, Move => False);
           Con_Io.Move ( (2, Write_Col), Menu_Win);
           Con_Io.Put ("           ", Menu_Win, Foreground => Color,
-           Blink_Stat => Blink, Background => Blue, Move => False);
+                      Background => Blue, Move => False);
         else
           Con_Io.Move ( (1, Write_Col), Menu_Win);
           Con_Io.Put ("   SAVE    ", Menu_Win, Move => False);
@@ -296,43 +288,43 @@ package body Sok_Display is
       when Read =>
         Con_Io.Move ( (0, Read_Col), Menu_Win);
         Con_Io.Put ("           ", Menu_Win, Foreground => Color,
-         Blink_Stat => Blink, Background => Blue, Move => False);
+                    Background => Blue, Move => False);
         Con_Io.Move ( (1, Read_Col), Menu_Win);
         Con_Io.Put ("  RESTORE  ", Menu_Win, Foreground => Color,
-         Blink_Stat => Blink, Background => Blue, Move => False);
+                    Background => Blue, Move => False);
         Con_Io.Move ( (2, Read_Col), Menu_Win);
         Con_Io.Put ("           ", Menu_Win, Foreground => Color,
-         Blink_Stat => Blink, Background => Blue, Move => False);
+                    Background => Blue, Move => False);
       when Reset =>
         Con_Io.Move ( (0, Reset_Col), Menu_Win);
         Con_Io.Put ("           ", Menu_Win, Foreground => Color,
-         Blink_Stat => Blink, Background => Blue, Move => False);
+                    Background => Blue, Move => False);
         Con_Io.Move ( (1, Reset_Col), Menu_Win);
         Con_Io.Put ("   RESET   ", Menu_Win, Foreground => Color,
-         Blink_Stat => Blink, Background => Blue, Move => False);
+                    Background => Blue, Move => False);
         Con_Io.Move ( (2, Reset_Col), Menu_Win);
         Con_Io.Put ("           ", Menu_Win, Foreground => Color,
-         Blink_Stat => Blink, Background => Blue, Move => False);
+                    Background => Blue, Move => False);
       when Get_New =>
         Con_Io.Move ( (0, Get_New_Col), Menu_Win);
         Con_Io.Put ("           ", Menu_Win, Foreground => Color,
-         Blink_Stat => Blink, Background => Blue, Move => False);
+                    Background => Blue, Move => False);
         Con_Io.Move ( (1, Get_New_Col), Menu_Win);
         Con_Io.Put (" GOTO NEW  ", Menu_Win, Foreground => Color,
-         Blink_Stat => Blink, Background => Blue, Move => False);
+                    Background => Blue, Move => False);
         Con_Io.Move ( (2, Get_New_Col), Menu_Win);
         Con_Io.Put ("           ", Menu_Win, Foreground => Color,
-         Blink_Stat => Blink, Background => Blue, Move => False);
+                    Background => Blue, Move => False);
       when Break =>
         Con_Io.Move ( (0, Break_Col), Menu_Win);
         Con_Io.Put ("           ", Menu_Win, Foreground => Color,
-         Blink_Stat => Blink, Background => Blue, Move => False);
+                    Background => Blue, Move => False);
         Con_Io.Move ( (1, Break_Col), Menu_Win);
         Con_Io.Put ("    EXIT   ", Menu_Win, Foreground => Color,
-         Blink_Stat => Blink, Background => Blue, Move => False);
+                    Background => Blue, Move => False);
         Con_Io.Move ( (2, Break_Col), Menu_Win);
         Con_Io.Put ("           ", Menu_Win, Foreground => Color,
-         Blink_Stat => Blink, Background => Blue, Move => False);
+                    Background => Blue, Move => False);
     end case;
   end Put_Action;
 

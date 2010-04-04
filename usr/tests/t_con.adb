@@ -78,11 +78,9 @@ procedure T_Con is
     Con_Io.Open ( W2, (15,  1), (17, 78));
     Con_Io.Open ( W3, (20,  0), (20, 9));
 
-    Con_Io.Set_Foreground (Con_Io.Color_Of ("Light_Blue"),
-                           Con_Io.Not_Blink, W1);
-    Con_Io.Set_Foreground (Con_Io.Color_Of ("Cyan"), Con_Io.Not_Blink, W2);
-    Con_Io.Set_Foreground (Con_Io.Color_Of ("Lime_Green"),
-                           Con_Io.Not_Blink, W3);
+    Con_Io.Set_Foreground (Con_Io.Color_Of ("Light_Blue"), W1);
+    Con_Io.Set_Foreground (Con_Io.Color_Of ("Cyan"), W2);
+    Con_Io.Set_Foreground (Con_Io.Color_Of ("Lime_Green"), W3);
 
     Con_Io.Set_Background (Con_Io.Color_Of ("Blue"), W1);
     Con_Io.Set_Background (Con_Io.Color_Of ("Red"), W2);
@@ -92,7 +90,7 @@ procedure T_Con is
 
     Con_Io.Move (1, Col, W1);
     Con_Io.Get (Str(1..Width), Last, Stat, Pos, Ins,
-       W1, Con_Io.Current, Con_Io.Current, Con_Io.Color_Of ("Red"), Delt);
+       W1, Con_Io.Current, Con_Io.Color_Of ("Red"), Delt);
     loop
         Con_Io.Clear (W2);
         Con_Io.Putw (">" & Str(1..Last) & "<"
@@ -162,7 +160,7 @@ procedure T_Con is
         Show_Clock;
         Con_Io.Move (1, Col, W1);
         Con_Io.Put_Then_Get (Str(1..Width), Last, Stat, Pos, Ins,
-         W1, Con_Io.Current, Con_Io.Current, Con_Io.Color_Of ("Red"), Delt);
+         W1, Con_Io.Current, Con_Io.Color_Of ("Red"), Delt);
     end loop;
 
 
@@ -170,10 +168,10 @@ procedure T_Con is
     for I in 1 .. 3 loop
       Con_Io.Clear (W1);
       Con_Io.Move (6 - I, 2, W1);
-      Con_Io.Put ("Exiting", W1, Con_Io.Color_Of ("Red"), Con_Io.Blink,
+      Con_Io.Put ("Exiting", W1, Con_Io.Color_Of ("Red"),
                   Con_Io.Color_Of ("Dark_Green"));
       Con_Io.Get (Str(1..0), Last, Stat, Pos, Ins,
-         W1, Con_Io.Current, Con_Io.Current, Con_Io.Color_Of ("Red"),
+         W1, Con_Io.Current, Con_Io.Color_Of ("Red"),
          (Delay_Kind    => Timers.Delay_Sec,
           Clock         => null,
           Period        => Con_Io.No_Period,

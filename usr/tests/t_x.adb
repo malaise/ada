@@ -71,7 +71,7 @@ begin
   loop
     if Kind = X_Mng.Refresh then
       X_Mng.X_Clear_Line (Id);
-      X_Mng.X_Set_Attributes (Id, 0, 5, True, False, False, False);
+      X_Mng.X_Set_Attributes (Id, 0, 5, True, False, False);
       X_Mng.X_Put_String (Id, "Offset " & Char_Offset'Img, 7, 60);
       for I in 0 .. 15 loop
         for J in 0 .. 15 loop
@@ -79,18 +79,18 @@ begin
           X_Mng.X_Put_String (Id, Language.Wide_To_String(Wchar & ""), 8 + I, 60 + J);
         end loop;
       end loop;
-      X_Mng.X_Set_Attributes (Id, 0, 3, False, False, True, False);
+      X_Mng.X_Set_Attributes (Id, 0, 3, False, False, False);
       X_Mng.X_Put_String (Id, "Ah que coucou", 5, 10);
       X_Mng.X_Set_Attributes (Id, 1, 4);
       X_Mng.X_Draw_Area (Id, 50, 2, 7, 10);
-      X_Mng.X_Set_Attributes (Id, 0, 3, False, False, False, False);
+      X_Mng.X_Set_Attributes (Id, 0, 3, False, False, False);
       X_Mng.X_Bell (Id, 1);
     end if;
     X_Mng.X_Wait_Event (Id, Exp, Kind);
     case Kind is
       when X_Mng.Refresh | X_Mng.Fd_Event
          | X_Mng.Timer_Event =>
-        X_Mng.X_Set_Attributes (Id, 0, 3, False, False, True, False);
+        X_Mng.X_Set_Attributes (Id, 0, 3, False, False, False);
         Put (X_Mng.Event_Kind'Image(Kind));
       when X_Mng.Signal_Event =>
         exit;

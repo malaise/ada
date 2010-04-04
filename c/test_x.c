@@ -47,7 +47,7 @@ static void title (void *line) {
   unsigned char str[4];
 
   (void) x_clear_line (line);
-  (void) x_set_attributes (line, back, 13, 0, 0, 0, 0);
+  (void) x_set_attributes (line, back, 13, 0, 0, 0);
   put (line, T1, TITLE_LNE + 0, 2);
   put (line, T2, TITLE_LNE + 2, 2);
   put (line, T3, TITLE_LNE + 3, 2);
@@ -71,7 +71,7 @@ int kk[4];
 boolean control, shift, code;
 int bord, font;
 unsigned int b1;
-unsigned int s, u, b, r;
+unsigned int s, u, r;
 timeout_t delta;
 int b_off, c_off, bv, cv;
 int motion;
@@ -80,7 +80,7 @@ boolean read;
   /* Parameters */
   name[0] = '\0';
   font = 0;
-  s = 0; u = 0; b = 0; r = 0;
+  s = 0; u = 0; r = 0;
 
   if (argc == 2) {
     strcpy (name, argv[1]);
@@ -151,10 +151,10 @@ boolean read;
         strcat (stra, " on Background ");
         sprintf (digits, "%2d", bv);
         strcat (stra, digits);
-        x_set_attributes (line, bv, cv, (int)s, (int)u, (int)b, (int)r);
+        x_set_attributes (line, bv, cv, (int)s, (int)u, (int)r);
         put (line, stra, COLOURS_LNE + (2*i), 30);
       }
-      x_set_attributes (line, bv, 2, 0, 0, 0, 0);
+      x_set_attributes (line, bv, 2, 0, 0, 0);
       x_draw_area (line, 5, 2*NBRE_COLOR, COLOURS_LNE, 10);
       x_fill_rectangle (line, 0, 0, 9, 14);
       x_draw_rectangle (line, 10, 0, 19, 14);
@@ -165,15 +165,13 @@ boolean read;
       if (s) strcat (stra, YES_STR); else strcat (stra, NO_STR);
       strcat (stra, "(u)nderscore:");
       if (u) strcat (stra, YES_STR); else strcat (stra, NO_STR);
-      strcat (stra, "(b)link:");
-      if (b) strcat (stra, YES_STR); else strcat (stra, NO_STR);
       strcat (stra, "(r)everse:");
       if (r) strcat (stra, YES_STR); else strcat (stra, NO_STR);
-      x_set_attributes (line, back, 13, 0, 0, 0, 0);
+      x_set_attributes (line, back, 13, 0, 0, 0);
       put (line, stra, STATUS_LNE, 7);
 
       /* Text display  : show event */
-      x_set_attributes (line, back, 13, 0, 0, 0, 0);
+      x_set_attributes (line, back, 13, 0, 0, 0);
       put (line, CLL, EVENT_LNE, 10);
       put (line, stre, EVENT_LNE, 10);
 
@@ -248,7 +246,6 @@ boolean read;
        /* Shift colors if + - / *                                */
        if (b1 == 's') s = ! s;
        if (b1 == 'u') u = ! u;
-       if (b1 == 'b') b = ! b;
        if (b1 == 'r') r = ! r;
        if (b1 == '+') c_off = (c_off - 1) % NBRE_COLOR;
        if (b1 == '-') c_off = (c_off + 1) % NBRE_COLOR;

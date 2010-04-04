@@ -48,7 +48,7 @@ extern int x_clear_line (void *line_id);
 extern int x_set_attributes (void *line_id,
                              int paper, int ink,
                              boolean superbright, boolean underline,
-                             boolean blink, boolean reverse);
+                             boolean reverse);
 
 extern int x_set_xor_mode (void *line_id, boolean xor_mode);
 
@@ -66,7 +66,7 @@ extern int x_put_char_attributes (void *line_id,
                                   int row, int column,
                                   int paper, int ink,
                                   boolean superbright, boolean underline,
-                                  boolean blink, boolean reverse);
+                                  boolean reverse);
 
 extern int x_draw_area (void *line_id,
                         int width, int height,
@@ -118,13 +118,7 @@ extern int x_request_selection (void *line_id);
 
 extern int x_get_selection (void *line_id, char *p_selection, int len);
 
-/* Blink, bell */
-
-extern int x_blink (void);
-
-extern int x_stop_blinking (void);
-
-extern int x_start_blinking (void);
+/* Bell */
 
 extern int x_bell (int nbre_bell);
 

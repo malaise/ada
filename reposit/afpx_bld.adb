@@ -514,18 +514,8 @@ procedure Afpx_Bld is
 
   procedure Load_Colors (Node : in Xp.Node_Type;
                          Fn : in Afpx_Typ.Absolute_Field_Range) is
-    Foreground, Background, Blink, Selected : Boolean := False;
-    use type Con_Io.Blink_Stats;
+    Foreground, Background, Selected : Boolean := False;
 
-    -- Add blink constant
-    procedure Add_Blink_Stat is
-    begin
-      if Fields(Fn).Colors.Blink_Stat = Con_Io.Blink then
-        Add_Variable (Node, Name_Of (Fn) & "." & "Blink", "True", False, False);
-      else
-        Add_Variable (Node, Name_Of (Fn) & "." & "Blink", "False", False, False);
-      end if;
-    end Add_Blink_Stat;
   begin
     if Node.Kind /= Xp.Element
     or else not Match (Ctx.Get_Name (Node), "Colors")
@@ -558,17 +548,6 @@ procedure Afpx_Bld is
           Add_Variable (Node, Name_Of (Fn) & "." & "Background",
               Mixed_Str (Con_Io.Effective_Colors'Image (
                   Fields(Fn).Colors.Background)), False, False);
-        elsif Match (Attrs(I).Name, "Blink") then
-          if Blink then
-            File_Error (Node, "Duplicated Color " & Attrs(I).Name);
-          end if;
-          Blink := True;
-          if Boolean'Value (Computer.Eval (Asu_Ts (Attrs(I).Value))) then
-            Fields(Fn).Colors.Blink_Stat := Con_Io.Blink;
-          else
-            Fields(Fn).Colors.Blink_Stat := Con_Io.Not_Blink;
-          end if;
-          Add_Blink_Stat;
         elsif Match (Attrs(I).Name, "Selected") then
           if Selected then
             File_Error (Node, "Duplicated Color " & Attrs(I).Name);
@@ -587,24 +566,16 @@ procedure Afpx_Bld is
       -- Parse colors
       if Fn = 0 or else Fields(Fn).Kind = Afpx_Typ.Get then
         if Ctx.Get_Nb_Attributes (Node) /= 3
-        or else not (Foreground and then Background and then Selected)
-        or else Blink then
+        or else not (Foreground and then Background and then Selected) then
           File_Error (Node,
                       "Expected colors for foreground, background and selected");
         end if;
-        Fields(Fn).Colors.Blink_Stat := Con_Io.Not_Blink;
-        Add_Blink_Stat;
       elsif Fields(Fn).Kind = Afpx_Typ.Put then
-        if Ctx.Get_Nb_Attributes (Node) = 2
-        and then Foreground and then Background then
-          -- Default not blink
-          Fields(Fn).Colors.Blink_Stat := Con_Io.Not_Blink;
-          Add_Blink_Stat;
-        elsif Ctx.Get_Nb_Attributes (Node) /= 3
-        or else not (Foreground and then Background and then Blink)
+        if Ctx.Get_Nb_Attributes (Node) /= 2
+        or else not (Foreground and then Background)
         or else Selected then
           File_Error (Node,
-                      "Expected colors for foreground, blink and background");
+                      "Expected colors for foreground and background");
         end if;
         Fields(Fn).Colors.Selected := Fields(Fn).Colors.Background;
         Add_Variable (Node, Name_Of (Fn) & "." & "Selected",
@@ -613,12 +584,10 @@ procedure Afpx_Bld is
       elsif Fields(Fn).Kind = Afpx_Typ.Button then
         if Ctx.Get_Nb_Attributes (Node) /= 2
         or else not (Foreground and then Background)
-        or else Blink or else Selected then
+        or else Selected then
           File_Error (Node,
                       "Expected colors for foreground and background");
         end if;
-        Fields(Fn).Colors.Blink_Stat := Con_Io.Not_Blink;
-        Add_Blink_Stat;
         Fields(Fn).Colors.Selected := Fields(Fn).Colors.Background;
         Add_Variable (Node, Name_Of (Fn) & "." & "Selected",
             Mixed_Str (Con_Io.Effective_Colors'Image (

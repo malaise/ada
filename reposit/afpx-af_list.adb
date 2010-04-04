@@ -72,7 +72,6 @@ package body Af_List is
      S => Str,
      Name => List_Window,
      Foreground => Af_Con_Io.Colors(Foreground),
-     Blink_Stat => Af_Con_Io.Blink_Stats(Af_Dscr.Fields(0).Colors.Blink_Stat),
      Background => Af_Con_Io.Colors(Background),
      Move => False);
   end Put;
@@ -92,7 +91,6 @@ package body Af_List is
      S => Str,
      Name => List_Window,
      Foreground => Af_Con_Io.Colors(Foreground),
-     Blink_Stat => Af_Con_Io.Blink_Stats(Af_Dscr.Fields(Lfn).Colors.Blink_Stat),
      Background => Af_Con_Io.Colors(Background),
      Move => False);
   end Clear;
@@ -118,8 +116,7 @@ package body Af_List is
   procedure Set_Colors is
   begin
     Af_Con_Io.Set_Foreground (
-     Af_Con_Io.Colors(Af_Dscr.Fields(Lfn).Colors.Foreground),
-     Af_Con_Io.Blink_Stats(Af_Dscr.Fields(Lfn).Colors.Blink_Stat), List_Window);
+     Af_Con_Io.Colors(Af_Dscr.Fields(Lfn).Colors.Foreground), List_Window);
     Af_Con_Io.Set_Background (
      Af_Con_Io.Colors(Af_Dscr.Fields(Lfn).Colors.Background), List_Window);
   end Set_Colors;

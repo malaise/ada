@@ -30,13 +30,12 @@ package Generic_Con_Io is
     Col : Col_Range;
   end record;
 
-  -- Possible colors and blink status
+  -- Possible colors
   type Colors is (Current,
       Color01, Color02, Color03, Color04, Color05, Color06, Color07,
       Color08, Color09, Color10, Color11, Color12, Color13, Color14);
 
   subtype Effective_Colors is Colors range Color01 .. Colors'Last;
-  type Blink_Stats is (Current, Blink, Not_Blink);
 
   -- Default colors
   type Colors_Definition is array (Effective_Colors) of Asu_Us;
@@ -116,10 +115,6 @@ package Generic_Con_Io is
     -- List of colors for outputs
     subtype Effective_Colors is Colors range Color01 .. Colors'Last;
 
-    -- List of possible blink states of foreground
-    type Blink_Stats is new Generic_Con_Io.Blink_Stats;
-    subtype Effective_Blink_Stats is Blink_Stats range Blink .. Not_Blink;
-
     -- List of possible Xor_Mode for graphics
     type Xor_Modes is (Current, Xor_On, Xor_Off);
     subtype Effective_Xor_Modes is Xor_Modes range Xor_On .. Xor_Off;
@@ -128,7 +123,6 @@ package Generic_Con_Io is
     -- Standard attributes when reset
     Default_Foreground : constant Effective_Colors := Effective_Colors'Last;
     Default_Background : constant Effective_Colors := Effective_Colors'First;
-    Default_Blink_Stat : constant Effective_Blink_Stats := Not_Blink;
     Default_Xor_Mode   : constant Effective_Xor_Modes := Xor_Off;
 
     type Window is limited private;
@@ -168,9 +162,8 @@ package Generic_Con_Io is
     -- Flushes data to X
     procedure Flush;
 
-    -- Set / get colors, blink, xor
+    -- Set / get colors, xor
     procedure Set_Foreground (Foreground : in Colors := Current;
-                              Blink_Stat : in Blink_Stats := Current;
                               Name       : in Window := Screen);
 
     procedure Set_Background (Background : in Colors := Current;
@@ -178,8 +171,6 @@ package Generic_Con_Io is
 
     function Get_Foreground (Name : Window := Screen) return Effective_Colors;
     function Get_Background (Name : Window := Screen) return Effective_Colors;
-    function Get_Blink_Stat(Name : Window := Screen) return
-      Effective_Blink_Stats;
 
     procedure Set_Xor_Mode(Xor_Mode : in Xor_Modes := Current;
                            Name : in Window := Screen);
@@ -251,7 +242,6 @@ package Generic_Con_Io is
     procedure Put (C          : in Character;
                    Name       : in Window := Screen;
                    Foreground : in Colors := Current;
-                   Blink_Stat : in Blink_Stats := Current;
                    Background : in Colors := Current;
                    Move       : in Boolean := True);
 
@@ -261,7 +251,6 @@ package Generic_Con_Io is
     procedure Put (S          : in String;
                    Name       : in Window := Screen;
                    Foreground : in Colors := Current;
-                   Blink_Stat : in Blink_Stats := Current;
                    Background : in Colors := Current;
                    Move       : in Boolean := True);
 
@@ -269,14 +258,12 @@ package Generic_Con_Io is
     procedure Put_Line (S          : in String;
                         Name       : in Window := Screen;
                         Foreground : in Colors := Current;
-                        Blink_Stat : in Blink_Stats := Current;
                         Background : in Colors := Current);
 
     -- Idem with a wide character
     procedure Putw (W          : in Wide_Character;
                     Name       : in Window := Screen;
                     Foreground : in Colors := Current;
-                    Blink_Stat : in Blink_Stats := Current;
                     Background : in Colors := Current;
                     Move       : in Boolean := True);
 
@@ -284,7 +271,6 @@ package Generic_Con_Io is
     procedure Putw(S          : in Wide_String;
                     Name       : in Window := Screen;
                     Foreground : in Colors := Current;
-                    Blink_Stat : in Blink_Stats := Current;
                     Background : in Colors := Current;
                     Move       : in Boolean := True);
 
@@ -292,7 +278,6 @@ package Generic_Con_Io is
     procedure Putw_Line (S          : in Wide_String;
                          Name       : in Window := Screen;
                          Foreground : in Colors := Current;
-                         Blink_Stat : in Blink_Stats := Current;
                          Background : in Colors := Current);
 
     -- Puts Lf
@@ -368,7 +353,6 @@ package Generic_Con_Io is
                    Insert     : out Boolean;
                    Name       : in Window := Screen;
                    Foreground : in Colors := Current;
-                   Blink_Stat : in Blink_Stats := Current;
                    Background : in Colors := Current;
                    Time_Out   : in Delay_Rec := Infinite_Delay;
                    Echo       : in Boolean := True);
@@ -382,7 +366,6 @@ package Generic_Con_Io is
                             Insert     : in out Boolean;
                             Name       : in Window := Screen;
                             Foreground : in Colors := Current;
-                            Blink_Stat : in Blink_Stats := Current;
                             Background : in Colors := Current;
                             Time_Out   : in Delay_Rec :=  Infinite_Delay;
                             Echo       : in Boolean := True);
@@ -440,28 +423,28 @@ package Generic_Con_Io is
       function Font_Offset return Natural;
 
       -- Put a char with screen foreground and current Xor mode
-      -- on screen background, no blink
+      -- on screen background
       -- No window is affected
       procedure Put (C : in Character;
                      X : in X_Range;
                      Y : in Y_Range);
 
       -- Put a string with screen foreground and current Xor mode
-      -- on screen background, no blink
+      -- on screen background
       -- No window is affected
       procedure Put (S : in String;
                      X : in X_Range;
                      Y : in Y_Range);
 
       -- Draw a point with screen foreground and current Xor mode
-      -- on screen background, no blink
+      -- on screen background
       -- No window is affected
       procedure Draw_Point (X : in X_Range;
                             Y : in Y_Range);
 
 
       -- Draw a line between 2 points, with screen foreground
-      --  and current Xor mode on screen background, no blink
+      --  and current Xor mode on screen background
       -- No window is affected
       procedure Draw_Line (X1 : in X_Range;
                            Y1 : in Y_Range;
@@ -470,7 +453,7 @@ package Generic_Con_Io is
 
       -- Draw a rectangle (only the border) with screen foreground and current
       --  Xor mode
-      -- on screen background, no blink (only the border)
+      -- on screen background (only the border)
       -- No window is affected
       procedure Draw_Rectangle (X1 : in X_Range;
                                 Y1 : in Y_Range;
@@ -478,7 +461,7 @@ package Generic_Con_Io is
                                 Y2 : in Y_Range);
 
       -- Draw a filled rectangle with screen foreground and current Xor mode
-      -- on screen background, no blink
+      -- on screen background
       -- No window is affected
       procedure Fill_Rectangle (X1 : in X_Range;
                                 Y1 : in Y_Range;
@@ -555,7 +538,6 @@ package Generic_Con_Io is
         Current_Pos        : Square := Home;
         Current_Foreground : Effective_Colors;
         Current_Background : Effective_Colors;
-        Current_Blink_Stat : Effective_Blink_Stats;
         Current_Xor_Mode   : Effective_Xor_Modes;
       end record;
 
@@ -567,7 +549,6 @@ package Generic_Con_Io is
       Current_Pos        => Home,
       Current_Foreground => Default_Foreground,
       Current_Background => Default_Background,
-      Current_Blink_Stat => Default_Blink_Stat,
       Current_Xor_Mode   => Default_Xor_Mode);
 
     Screen_Window : constant Window := new Window_Data'(Screen_Data);

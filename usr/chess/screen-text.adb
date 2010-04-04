@@ -99,7 +99,6 @@ package body Text is
     Con_Io.Move(To_Con_Io_Square(Color, Square));
     Con_Io.Put(Char,
                Foreground => Fore,
-               Blink_Stat => Con_Io.Blink,
                Background => Back,
                Move => False);
 

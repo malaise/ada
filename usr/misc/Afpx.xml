@@ -12,26 +12,26 @@
     <!-- Title -->
     <Field Num="1" Kind="Put">
       <Geometry Up="0" Left="34" Low="0" Right="45"/>
-      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Background="Black"/>
       <Init Row="0" Col="0">FILE RENAMER</Init>
     </Field>
 
     <!-- Action title -->
     <Field Num="2" Kind="Put">
       <Geometry Up="1" Left="3" Low="1" Right="27"/>
-      <Colors Foreground="Cyan" Blink="False" Background="Black"/>
+      <Colors Foreground="Cyan" Background="Black"/>
     </Field>
 
     <!-- File -->
     <Field Num="3" Kind="Put">
       <Geometry Up="1" Left="33" Low="1" Right="37"/>
-      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Background="Black"/>
       <Init Row="0" Col="0">File:</Init>
     </Field>
 
     <Field Num="4" Kind="Put">
       <Geometry Up="1" Left="39" Low="1" Right="65"/>
-      <Colors Foreground="Cyan" Blink="False" Background="Black"/>
+      <Colors Foreground="Cyan" Background="Black"/>
     </Field>
 
     <!-- Get -->
@@ -43,7 +43,7 @@
     <!-- Messages -->
     <Field Num="6" Kind="Put">
       <Geometry Up="23" Left="35" Low="23" Right="78"/>
-      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Background="Black"/>
     </Field>
 
     <!-- List actions -->

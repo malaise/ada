@@ -14,14 +14,6 @@ static boolean envs_got = False;
 #define PUBLIC_COLOR_MAP    "PUBLIC"
 static boolean private_color_map;
 
-#define X_BLINK_KIND "X_BLINK_KIND"
-#define FULL_BLINK   "FULL"
-#define ON_0_BLINK   "ON_0"
-#define BOLD_BLINK   "BOLD"
-typedef enum {full_blink, on_0_blink, bold_blink} blink_kind_list;
-static blink_kind_list blink_kind = full_blink;
-static int color_tab_size;
-
 static char color_name[NBRE_COLOR][COLOR_NAME_MAX_SIZE];
 static XColor color_value[NBRE_COLOR];
 
@@ -47,41 +39,18 @@ extern void col_set_names (const char* names[]) {
 
 static void get_envs (void) {
   char * color_map_type;
-  char * blink_kind_var;
 
   /* Get env color map type */
   color_map_type = getenv(X_COLOR_MAP);
   private_color_map = (color_map_type != NULL)
                    && (strcmp(color_map_type, PRIVATE_COLOR_MAP) == 0);
 
-
-  /* Getenv blink kind */
-  blink_kind_var = getenv (X_BLINK_KIND);
-  if ( (blink_kind_var != NULL)
-    && (strcmp(blink_kind_var, FULL_BLINK) == 0) ) {
-    blink_kind = full_blink;
-    color_tab_size = NBRE_COLOR * NBRE_COLOR;
-  } else if ( (blink_kind_var != NULL)
-           && (strcmp(blink_kind_var, ON_0_BLINK) == 0) ) {
-    blink_kind = on_0_blink;
-    color_tab_size = NBRE_COLOR * 2;
-  } else {
-    blink_kind = bold_blink;
-    color_tab_size = NBRE_COLOR;
-  }
   /* Set default color name if not set */
   if (! color_set) {
     col_set_names (default_color_name);
   }
 
   envs_got = True;
-}
-
-
-
-boolean blink_bold(void) {
-  if (!envs_got) get_envs();
-  return (blink_kind == bold_blink);
 }
 
 /* Loads the colors in the server */
@@ -91,10 +60,8 @@ boolean col_open(Display *x_server, int x_screen, unsigned long color_id[],
   unsigned long plane_mask[1];
   XColor exact_color_value[NBRE_COLOR];
 
-  boolean simple_colors;
 
   if (!envs_got) get_envs();
-  simple_colors = !private_color_map && blink_bold();
 
   /* Create / get color map */
   if (private_color_map) {
@@ -102,24 +69,16 @@ boolean col_open(Display *x_server, int x_screen, unsigned long color_id[],
                                 RootWindow (x_server, x_screen),
                                 XDefaultVisual (x_server, x_screen),
                                 AllocNone);
-  } else {
-    *colormap = DefaultColormap (x_server, x_screen);
-  }
-
-
-  if (! simple_colors) {
-
     /* Alloc colors */
     cr = XAllocColorCells (x_server, *colormap, False, plane_mask, N_PLANES,
-                           color_id, (unsigned int) color_tab_size);
+                           color_id, (unsigned int) NBRE_COLOR);
     if (cr == 0) {
 #ifdef DEBUG
       printf ("X_COLOR : X can't alloc %d cells for colors.\n",
-               color_tab_size);
+               NBRE_COLOR);
 #endif
       return (False);
     }
-
 
     /* Parse color names */
     for (i = 0; i < NBRE_COLOR; i++) {
@@ -134,10 +93,11 @@ boolean col_open(Display *x_server, int x_screen, unsigned long color_id[],
     }
 
     /* Store colors */
-    (void) col_set_blinking (x_server, color_id, *colormap, False);
     XInstallColormap (x_server, *colormap);
 
   } else {
+    *colormap = DefaultColormap (x_server, x_screen);
+
     /* Simple colors */
     /* Get pixels of colors  and store them */
     for (i = 0; i < NBRE_COLOR; i++) {
@@ -160,7 +120,7 @@ boolean col_open(Display *x_server, int x_screen, unsigned long color_id[],
 void col_close(Display *x_server, unsigned long color_id[],
                Colormap colormap) {
 
-  XFreeColors (x_server, colormap, color_id, color_tab_size, 0);
+  XFreeColors (x_server, colormap, color_id, NBRE_COLOR, 0);
 }
 
 /* Checks a color number (in set_attributes) */
@@ -170,106 +130,8 @@ boolean col_check(int color_id) {
 }
 
 /* Gives the normal value for a color */
-unsigned long col_get_std (int background __attribute__ ((unused)),
-                           int foreground,
+unsigned long col_get (int foreground,
                            unsigned long color_id[]) {
-
-  switch (blink_kind) {
-    case full_blink :
-      return (color_id[foreground * NBRE_COLOR + foreground]);
-    case on_0_blink :
-      return (color_id[foreground]);
-    case bold_blink :
-      return (color_id[foreground]);
-  }
-  return (unsigned long)(-1);
-}
-
-/* Gives the blinking value for a color */
-unsigned long col_get_blk (int background,
-                           int foreground,
-                           unsigned long color_id[]) {
-
-  switch (blink_kind) {
-    case full_blink :
-      return (color_id[background * NBRE_COLOR + foreground]);
-    case on_0_blink :
-      return (color_id[foreground + NBRE_COLOR]);
-    case bold_blink :
-      return (color_id[foreground]);
-  }
-  return (unsigned long)(-1);
-}
-
-/* Sets the color map in non_blinking or in blinking state */
-boolean col_set_blinking (Display *x_server, unsigned long color_id[],
-                          Colormap colormap, boolean blinking) {
-
-  XColor tab_color[NBRE_COLOR * NBRE_COLOR];
-  int i, j, p;
-
-
-  /* Set pixel values */
-  for (i = 0; i < color_tab_size; i++) {
-    tab_color[i].pixel = color_id[i];
-    tab_color[i].flags = DoRed | DoGreen | DoBlue;
-  }
-
-  /* Set color values */
-  switch (blink_kind) {
-    case full_blink :
-      if (blinking) {
-        for (i = 0, j = 0; i < NBRE_COLOR; i++) {
-          for (p = 0; p < NBRE_COLOR; p++, j++) {
-            tab_color[j].red   = color_value[i].red;
-            tab_color[j].green = color_value[i].green;
-            tab_color[j].blue  = color_value[i].blue;
-          }
-        }
-      } else {
-        for (i = 0, j = 0; i < NBRE_COLOR; i++) {
-          for (p = 0; p < NBRE_COLOR; p++, j++) {
-            tab_color[j].red   = color_value[p].red;
-            tab_color[j].green = color_value[p].green;
-            tab_color[j].blue  = color_value[p].blue;
-          }
-        }
-      }
-    break;
-    case on_0_blink :
-      if (blinking) {
-        for (j = 0; j < NBRE_COLOR; j++) {
-          tab_color[j].red   = color_value[j].red;
-          tab_color[j].green = color_value[j].green;
-          tab_color[j].blue  = color_value[j].blue;
-          tab_color[j + NBRE_COLOR].red   = color_value[0].red;
-          tab_color[j + NBRE_COLOR].green = color_value[0].green;
-          tab_color[j + NBRE_COLOR].blue  = color_value[0].blue;
-        }
-      } else {
-        for (j = 0; j < NBRE_COLOR; j++) {
-          tab_color[j].red   = color_value[j].red;
-          tab_color[j].green = color_value[j].green;
-          tab_color[j].blue  = color_value[j].blue;
-          tab_color[j + NBRE_COLOR].red   = color_value[j].red;
-          tab_color[j + NBRE_COLOR].green = color_value[j].green;
-          tab_color[j + NBRE_COLOR].blue  = color_value[j].blue;
-        }
-      }
-    break;
-    case bold_blink :
-      for (j = 0; j < NBRE_COLOR; j++) {
-        tab_color[j].red   = color_value[j].red;
-        tab_color[j].green = color_value[j].green;
-        tab_color[j].blue  = color_value[j].blue;
-      }
-    break;
-  }
-
-
-  /* Store colors */
-  XStoreColors (x_server, colormap, tab_color, color_tab_size);
-
-  return (True);
+  return (color_id[foreground]);
 }
 

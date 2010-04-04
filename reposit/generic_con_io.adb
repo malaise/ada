@@ -80,7 +80,6 @@ package body Generic_Con_Io is
 
     Line_Foreground : Effective_Colors := Default_Foreground;
     Line_Background : Effective_Colors := Default_Background;
-    Line_Blink_Stat : Effective_Blink_Stats := Default_Blink_Stat;
     Line_Xor_Mode   : Effective_Xor_Modes := Default_Xor_Mode;
 
     X_Max : Graphics.X_Range;
@@ -113,7 +112,6 @@ package body Generic_Con_Io is
     package Dyn_Win is new Dyn_Data(Window_Data, Window);
 
     procedure Set_Attributes (Foreground : in Effective_Colors;
-                              Blink_Stat : in Effective_Blink_Stats;
                               Background : in Effective_Colors;
                               Xor_Mode   : in Effective_Xor_Modes;
                               Forced     : in Boolean := False);
@@ -148,7 +146,7 @@ package body Generic_Con_Io is
       -- Max is width - 1 so that range is 0 .. max
       X_Max := X_Max - 1;
       Y_Max := Y_Max - 1;
-      Set_Attributes (Default_Foreground, Default_Blink_Stat, Default_Background,
+      Set_Attributes (Default_Foreground, Default_Background,
                       Default_Xor_Mode, Forced => True);
       Flush;
     exception
@@ -180,8 +178,6 @@ package body Generic_Con_Io is
       end if;
       -- Resume
       X_Mng.X_Resume (Id);
-      -- Force reset of attributes
-      Line_Blink_Stat := Default_Blink_Stat;
     end Resume;
 
 
@@ -199,7 +195,7 @@ package body Generic_Con_Io is
       end if;
       X_Mng.X_Clear_Line (Id);
       -- Set current attributes in cache
-      Set_Attributes (Default_Foreground, Default_Blink_Stat, Default_Background,
+      Set_Attributes (Default_Foreground, Default_Background,
                       Default_Xor_Mode, Forced => True);
     end Reset_Term;
 
@@ -214,7 +210,6 @@ package body Generic_Con_Io is
 
     -- Set / get colors
     procedure Set_Foreground (Foreground : in Colors      := Current;
-                              Blink_Stat : in Blink_Stats := Current;
                               Name       : in Window      := Screen) is
     begin
       if Name = null then
@@ -222,9 +217,6 @@ package body Generic_Con_Io is
       end if;
       if Foreground /= Current then
         Name.Current_Foreground := Foreground;
-      end if;
-      if Blink_Stat /= Current then
-        Name.Current_Blink_Stat := Blink_Stat;
       end if;
     end Set_Foreground;
 
@@ -256,15 +248,6 @@ package body Generic_Con_Io is
       end if;
       return Name.Current_Background;
     end Get_Background;
-
-    function Get_Blink_Stat (Name : Window := Screen)
-      return Effective_Blink_Stats is
-    begin
-      if Name = null then
-        raise Window_Not_Open;
-      end if;
-      return Name.Current_Blink_Stat;
-    end Get_Blink_Stat;
 
     procedure Set_Xor_Mode(Xor_Mode : in Xor_Modes := Current;
                            Name : in Window := Screen) is
@@ -335,7 +318,6 @@ package body Generic_Con_Io is
       Name.Current_Pos := Home;
       Name.Current_Foreground := Default_Foreground;
       Name.Current_Background := Default_Background;
-      Name.Current_Blink_Stat := Default_Blink_Stat;
       Name.Current_Xor_Mode   := Default_Xor_Mode;
     exception
       when Constraint_Error =>
@@ -395,23 +377,17 @@ package body Generic_Con_Io is
     end To_Absolute;
 
     procedure Set_Attributes (Foreground : in Effective_Colors;
-                              Blink_Stat : in Effective_Blink_Stats;
                               Background : in Effective_Colors;
                               Xor_Mode   : in Effective_Xor_Modes;
                               Forced     : in Boolean := False) is
     begin
       -- Reset can be forced explicitely by the Forced argument
-      --  or by resetting Line_Blink_Stat to Default
-      if Forced or else Line_Blink_Stat = Default_Blink_Stat
-                or else Foreground /= Line_Foreground
-                or else Blink_Stat /= Line_Blink_Stat
+      if Forced or else Foreground /= Line_Foreground
                 or else Background /= Line_Background then
         X_Mng.X_Set_Attributes (Id, Colors'Pos(Background) - 1,
                                     Colors'Pos(Foreground) - 1,
-                                    Blink => Blink_Stat = Blink,
                                     Superbright => True);
         Line_Foreground := Foreground;
-        Line_Blink_Stat := Blink_Stat;
         Line_Background := Background;
       end if;
       if Forced or else Xor_Mode /= Line_Xor_Mode then
@@ -443,13 +419,11 @@ package body Generic_Con_Io is
       end if;
       -- Upper left and lower right, set foreground as our background
       Set_Attributes (Name.Current_Background,
-                      Not_Blink,
                       Name.Current_Background, Xor_Off);
       X_Mng.X_Draw_Area (Id, Name.Lower_Right.Col - Name.Upper_Left.Col + 1,
                              Name.Lower_Right.Row - Name.Upper_Left.Row + 1,
                              Name.Upper_Left.Row, Name.Upper_Left.Col);
       Set_Attributes (Name.Current_Foreground,
-                      Name.Current_Blink_Stat,
                       Name.Current_Background,
                       Name.Current_Xor_Mode);
       Move (Name => Name);
@@ -493,10 +467,8 @@ package body Generic_Con_Io is
     procedure Set_Attributes_From_Window (
                        Name       : in Window;
                        Foreground : in Colors;
-                       Blink_Stat : in Blink_Stats;
                        Background : in Colors) is
       Fg : Effective_Colors;
-      Bl : Effective_Blink_Stats;
       Bg : Effective_Colors;
     begin
       if Foreground = Current then
@@ -504,17 +476,12 @@ package body Generic_Con_Io is
       else
         Fg := Foreground;
       end if;
-      if Blink_Stat = Current then
-        Bl := Name.Current_Blink_Stat;
-      else
-        Bl := Blink_Stat;
-      end if;
       if Background = Current then
         Bg := Name.Current_Background;
       else
         Bg := Background;
       end if;
-      Set_Attributes (Fg, Bl, Bg, Name.Current_Xor_Mode);
+      Set_Attributes (Fg, Bg, Name.Current_Xor_Mode);
     end Set_Attributes_From_Window;
 
     -- Raw conversion, no exception but Wide_Def_Char
@@ -574,7 +541,6 @@ package body Generic_Con_Io is
     procedure Put_1_Char (C          : in String;
                           Name       : in Window := Screen;
                           Foreground : in Colors := Current;
-                          Blink_Stat : in Blink_Stats := Current;
                           Background : in Colors := Current;
                           Move       : in Boolean := True) is
     begin
@@ -587,7 +553,7 @@ package body Generic_Con_Io is
                             Name.Upper_Left.Row + Name.Current_Pos.Row,
                             Name.Upper_Left.Col + Name.Current_Pos.Col);
       elsif C /= Lfs then
-        Set_Attributes_From_Window (Name, Foreground, Blink_Stat, Background);
+        Set_Attributes_From_Window (Name, Foreground, Background);
         -- Put character
         X_Mng.X_Put_String (Id, C,
                             Name.Upper_Left.Row + Name.Current_Pos.Row,
@@ -611,18 +577,16 @@ package body Generic_Con_Io is
     procedure Put (C          : in Character;
                    Name       : in Window := Screen;
                    Foreground : in Colors := Current;
-                   Blink_Stat : in Blink_Stats := Current;
                    Background : in Colors := Current;
                    Move       : in Boolean := True) is
     begin
-      Put_1_Char (C & "", Name, Foreground, Blink_Stat, Background, Move);
+      Put_1_Char (C & "", Name, Foreground, Background, Move);
     end Put;
 
     -- Idem with a string
     procedure Put (S          : in String;
                    Name       : in Window := Screen;
                    Foreground : in Colors := Current;
-                   Blink_Stat : in Blink_Stats := Current;
                    Background : in Colors := Current;
                    Move       : in Boolean := True) is
       Ifirst, Ilast : Natural;
@@ -651,7 +615,7 @@ package body Generic_Con_Io is
       if S = "" then
         return;
       end if;
-      Set_Attributes_From_Window (Name, Foreground, Blink_Stat, Background);
+      Set_Attributes_From_Window (Name, Foreground, Background);
       -- Put chunks of string due to Lfs or too long slices
       Ifirst := Indexes'First;
       loop
@@ -705,14 +669,13 @@ package body Generic_Con_Io is
     procedure Put_Line (S          : in String;
                         Name       : in Window := Screen;
                         Foreground : in Colors := Current;
-                        Blink_Stat : in Blink_Stats := Current;
                         Background : in Colors := Current) is
     begin
       if Name = null then
         raise Window_Not_Open;
       end if;
       -- Puts the string
-      Put(S, Name, Foreground, Blink_Stat, Background);
+      Put(S, Name, Foreground, Background);
       -- New line
       New_Line(Name);
     end Put_Line;
@@ -721,35 +684,32 @@ package body Generic_Con_Io is
     procedure Putw (W          : in Wide_Character;
                     Name       : in Window := Screen;
                     Foreground : in Colors := Current;
-                    Blink_Stat : in Blink_Stats := Current;
                     Background : in Colors := Current;
                     Move       : in Boolean := True) is
     begin
       Put (Language.Wide_To_String (W & ""),
-           Name, Foreground, Blink_Stat, Background, Move);
+           Name, Foreground, Background, Move);
     end Putw;
 
     -- Idem with a wide string
     procedure Putw (S          : in Wide_String;
                     Name       : in Window := Screen;
                     Foreground : in Colors := Current;
-                    Blink_Stat : in Blink_Stats := Current;
                     Background : in Colors := Current;
                     Move       : in Boolean := True) is
     begin
       Put (Language.Wide_To_String (S),
-           Name, Foreground, Blink_Stat, Background, Move);
+           Name, Foreground, Background, Move);
     end Putw;
 
     -- Idem but appends a Lf
     procedure Putw_Line (S          : in Wide_String;
                          Name       : in Window := Screen;
                          Foreground : in Colors := Current;
-                         Blink_Stat : in Blink_Stats := Current;
                          Background : in Colors := Current) is
     begin
       Put_Line (Language.Wide_To_String (S),
-           Name, Foreground, Blink_Stat, Background);
+           Name, Foreground, Background);
     end Putw_Line;
 
 
@@ -946,7 +906,6 @@ package body Generic_Con_Io is
                             Insert     : in out Boolean;
                             Name       : in Window := Screen;
                             Foreground : in Colors := Current;
-                            Blink_Stat : in Blink_Stats := Current;
                             Background : in Colors := Current;
                             Time_Out   : in Delay_Rec :=  Infinite_Delay;
                             Echo       : in Boolean := True) is
@@ -1174,7 +1133,7 @@ package body Generic_Con_Io is
       Move(First_Pos, Name);
       if Echo then
         Put(Asu_Ts(Lstr), Name,
-            Foreground, Blink_Stat, Background, Move => False);
+            Foreground, Background, Move => False);
       end if;
 
       Done := False;
@@ -1343,7 +1302,7 @@ package body Generic_Con_Io is
         if Redraw and then Echo then
           Move(First_Pos, Name);
           Put(Asu_Ts(Lstr), Name,
-              Foreground, Blink_Stat, Background, Move => False);
+              Foreground, Background, Move => False);
        end if;
        exit when Done;
       end loop;
@@ -1358,7 +1317,6 @@ package body Generic_Con_Io is
                    Insert     : out Boolean;
                    Name       : in Window := Screen;
                    Foreground : in Colors := Current;
-                   Blink_Stat : in Blink_Stats := Current;
                    Background : in Colors := Current;
                    Time_Out   : in Delay_Rec :=  Infinite_Delay;
                    Echo       : in Boolean := True) is
@@ -1370,7 +1328,7 @@ package body Generic_Con_Io is
       Lins := False;
       -- Init empty
       Put_Then_Get(Lstr, Last, Stat, Lpos, Lins, Name,
-          Foreground, Blink_Stat, Background, Time_Out, Echo);
+          Foreground, Background, Time_Out, Echo);
       Str := Lstr;
       Pos := Lpos;
       Insert := Lins;
@@ -1513,7 +1471,6 @@ package body Generic_Con_Io is
       procedure Set_Screen_Attributes is
       begin
         Set_Attributes (Screen.Current_Foreground,
-                        Screen.Current_Blink_Stat,
                         Screen.Current_Background,
                         Screen.Current_Xor_Mode);
       end Set_Screen_Attributes;

@@ -159,7 +159,7 @@ package body Nav_Screen is
       Con_Io.Move ( (Fld_Row(Field), Fld_Col(Field)), W_Get);
       if Blink then
         Con_Io.Put_Then_Get (Lstr, Last, Nxt, Pos, Insert, W_Get,
-         Red, Con_Io.Blink, Time_Out => Delta_Get);
+         Red, Time_Out => Delta_Get);
       else
         Con_Io.Put_Then_Get (Lstr, Last, Nxt, Pos, Insert, W_Get,
          Time_Out => Delta_Get);
@@ -177,7 +177,7 @@ package body Nav_Screen is
   begin
     Con_Io.Move ( (Fld_Row(Field), Fld_Col(Field)), W_Get);
     if Blink then
-      Con_Io.Put (Str, W_Get, Red, Con_Io.Blink);
+      Con_Io.Put (Str, W_Get, Red);
     else
       Con_Io.Put (Str, W_Get);
     end if;
@@ -397,9 +397,7 @@ package body Nav_Screen is
       end if;
       Con_Io.Move ((13, 45), W_Help);
       Con_Io.Get (Str, Lst, Stat, Pos, Ins, W_Help,
-       Con_Io.Default_Background, Con_Io.Default_Blink_Stat,
-       Con_Io.Default_Background,
-       Delta_Get);
+       Con_Io.Default_Background, Con_Io.Default_Background, Delta_Get);
       Time_Task_Mng.Schedule;
       exit when Stat = Con_Io.Ret;
     end loop;
@@ -427,8 +425,8 @@ begin -- Nav_Screen
   Con_Io.Open (W_Time,  ( 0, 60), ( 0, 79));
   Con_Io.Set_Background (Get_Back, W_Get);
   Con_Io.Set_Background (Get_Back, W_Act);
-  Con_Io.Set_Foreground (Res_Fore, Con_Io.Not_Blink, W_Res);
-  Con_Io.Set_Foreground (Red, Con_Io.Not_Blink, W_Err);
+  Con_Io.Set_Foreground (Res_Fore, W_Res);
+  Con_Io.Set_Foreground (Red, W_Err);
   Con_Io.Set_Foreground (Con_Io.Color_Of ("Light_Blue"), Name => W_Time);
 end Nav_Screen;
 

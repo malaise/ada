@@ -36,7 +36,6 @@ typedef struct {
     /* X root window */
     Drawable x_root_win;
     /* X color pixels */
-    boolean blinking;
     unsigned long color_id[MAX_SIZE_TAB_COLOR];
     Colormap colormap;
 }t_screen;
@@ -106,9 +105,6 @@ boolean lin_check(t_window *p_window);
 /* Gives the t_window reference of a x_window (sequencial search) */
 /* Returns NULL if error */
 t_window *lin_get_win (Window x_window);
-
-/* Alternatively swaps colors for blinking */
-void lin_blink_colors(boolean blink);
 
 /* Get font no for line (bold or not) */
 int lin_get_font (t_window *p_window);

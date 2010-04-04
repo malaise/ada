@@ -84,26 +84,23 @@
 <!--  Field_21.Height are also defined. -->
 
 <!-- Any field must have a Foreground and Background color. -->
-<!-- Put fields can also have a Blink status (default False). -->
 <!-- Get fields and List must also have a Selected color. -->
 <!-- Summary of color combinations: -->
-<!-- ================================================= -->
-<!-- Type  |   Foreground  Blink  Background  Selected -->
-<!-- ================================================= -->
-<!-- Put   |       X         X        X                -->
-<!-- Button|       X                  X                -->
-<!-- Get   |       X                  X           X    -->
-<!-- List  |       X                  X           X    -->
-<!-- ================================================= -->
+<!-- ========================================== -->
+<!-- Type  |   Foreground  Background  Selected -->
+<!-- ========================================== -->
+<!-- Put   |       X           X                -->
+<!-- Button|       X           X                -->
+<!-- Get   |       X           X           X    -->
+<!-- List  |       X           X           X    -->
+<!-- ========================================== -->
 <!ELEMENT Colors EMPTY>
-<!ENTITY % Blink "True|False">
 <!ATTLIST Colors Foreground CDATA #REQUIRED
-                 Blink CDATA #IMPLIED
                  Background CDATA #REQUIRED
                  Selected CDATA #IMPLIED>
 <!-- As soon as such color attribute is parsed, the corresponding constant, -->
 <!--  (valid for the rest of the descriptor) is defined (e.g. -->
-<!--  List.Foreground, Field_1.Background, Field_21.Blink). -->
+<!--  List.Foreground and Field_1.Background). -->
 
 <!-- Init row and col have to be compatible with geometry. -->
 <!-- Init string has to be compatible with geometry and init col. -->

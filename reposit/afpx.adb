@@ -478,7 +478,6 @@ package body Afpx is
   -- Get field colors
   procedure Get_Field_Colors (Field_No : in Absolute_Field_Range;
                               Foreground : out Con_Io.Effective_Colors;
-                              Blink_Stat : out Con_Io.Effective_Blink_Stats;
                               Background : out Con_Io.Effective_Colors;
                               Selected   : out Con_Io.Effective_Colors) is
     Fn : constant Afpx_Typ.Absolute_Field_Range
@@ -488,7 +487,6 @@ package body Afpx is
     Af_Dscr.Check(Fn);
     Field := Af_Dscr.Fields(Fn);
     Foreground := Field.Colors.Foreground;
-    Blink_Stat := Field.Colors.Blink_Stat;
     Background := Field.Colors.Background;
     Selected   := Field.Colors.Selected;
   end Get_Field_Colors;
@@ -496,7 +494,6 @@ package body Afpx is
   -- Set field colors
   procedure Set_Field_Colors (Field_No   : in Absolute_Field_Range;
                  Foreground : in Con_Io.Colors       := Con_Io.Current;
-                 Blink_Stat : in Con_Io.Blink_Stats  := Con_Io.Current;
                  Background : in Con_Io.Colors := Con_Io.Current;
                  Selected   : in Con_Io.Colors := Con_Io.Current) is
     Fn : constant Afpx_Typ.Absolute_Field_Range
@@ -507,11 +504,6 @@ package body Afpx is
   begin
     Af_Dscr.Check(Fn);
     Field := Af_Dscr.Fields(Fn);
-    -- Check Blink_Stat is Current except for Put
-    if Blink_Stat /= Con_Io.Current
-        and then (Field.Kind /= Afpx_Typ.Put) then
-      raise Invalid_Color;
-    end if;
 
     -- Check Selected is Current for put and button fields
     if Selected /= Con_Io.Current
@@ -523,9 +515,6 @@ package body Afpx is
     -- Copy colors if not current
     if Foreground /= Con_Io.Current then
       Field.Colors.Foreground := Foreground;
-    end if;
-    if Blink_Stat /= Con_Io.Current then
-      Field.Colors.Blink_Stat := Blink_Stat;
     end if;
     if Background /= Con_Io.Current then
       Field.Colors.Background := Background;

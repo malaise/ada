@@ -97,8 +97,7 @@ package body Screen is
          :=  (others => '-');
   begin
     -- Set attributes
-    Con_Io.Set_Foreground (Con_Io.Get_Foreground (Name),
-                           Con_Io.Get_Blink_Stat (Name));
+    Con_Io.Set_Foreground (Con_Io.Get_Foreground (Name));
     Con_Io.Set_Background (Con_Io.Get_Background (Name));
     -- First and last rows
     Con_Io.Move (Upper_Left.Row - 1,  Upper_Left.Col - 1);

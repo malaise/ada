@@ -11,49 +11,49 @@
 
     <Field Num="1" Kind="Put">
       <Geometry Up="0" Left="25" Low="0" Right="48"/>
-      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Background="Black"/>
       <Init Row="0" Col="0">POLYNOMIAL APPROXIMATION</Init>
     </Field>
 
     <!-- Title -->
     <Field Num="2" Kind="Put">
       <Geometry Up="1" Left="3" Low="1" Right="27"/>
-      <Colors Foreground="Cyan" Blink="False" Background="Black"/>
+      <Colors Foreground="Cyan" Background="Black"/>
     </Field>
 
     <!-- File name -->
     <Field Num="3" Kind="Put">
       <Geometry Up="1" Left="33" Low="1" Right="37"/>
-      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Background="Black"/>
       <Init Row="0" Col="0">File:</Init>
     </Field>
 
     <Field Num="4" Kind="Put">
       <Geometry Up="1" Left="39" Low="1" Right="65"/>
-      <Colors Foreground="Cyan" Blink="False" Background="Black"/>
+      <Colors Foreground="Cyan" Background="Black"/>
     </Field>
 
     <!-- Points -->
     <Field Num="5" Kind="Put">
       <Geometry Up="1" Left="68" Low="1" Right="71"/>
-      <Colors Foreground="Cyan" Blink="False" Background="Black"/>
+      <Colors Foreground="Cyan" Background="Black"/>
     </Field>
 
     <Field Num="6" Kind="Put">
       <Geometry Up="1" Left="73" Low="1" Right="78"/>
-      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Background="Black"/>
       <Init Row="0" Col="0">points</Init>
     </Field>
 
     <Field Num="7" Kind="Put">
       <Geometry Up="2" Left="71" Low="2" Right="73"/>
-      <Colors Foreground="White" Blink="True" Background="Black"/>
+      <Colors Foreground="White" Background="Black"/>
       <Init Row="0" Col="0">NOT</Init>
     </Field>
 
     <Field Num="8" Kind="Put">
       <Geometry Up="3" Left="70" Low="3" Right="74"/>
-      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Background="Black"/>
       <Init Row="0" Col="0">saved</Init>
     </Field>
 
@@ -66,7 +66,7 @@
     <!-- Message -->
     <Field Num="10" Kind="Put">
       <Geometry Up="23" Left="35" Low="23" Right="78"/>
-      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Background="Black"/>
     </Field>
 
     <!-- List Action -->
@@ -128,7 +128,7 @@
     <!-- Menu specific 1 T+3B -->
     <Field Num="20" Kind="Put">
       <Geometry Up="3" Left="13" Low="3" Right="16"/>
-      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Background="Black"/>
       <Init Row="0" Col="0">Data</Init>
     </Field>
 
@@ -153,7 +153,7 @@
     <!-- Menu specific 2 T+3B -->
     <Field Num="24" Kind="Put">
       <Geometry Up="8" Left="13" Low="8" Right="17"/>
-      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Background="Black"/>
       <Init Row="0" Col="0">Point</Init>
     </Field>
 
@@ -178,7 +178,7 @@
     <!-- Menu specific 3 T+3B -->
     <Field Num="28" Kind="Put">
       <Geometry Up="13" Left="0" Low="13" Right="0"/>
-      <Colors Foreground="Black" Blink="False" Background="Black"/>
+      <Colors Foreground="Black" Background="Black"/>
     </Field>
 
     <Field Num="29" Kind="Button">
@@ -189,7 +189,7 @@
 
     <Field Num="30" Kind="Put">
       <Geometry Up="15" Left="21" Low="15" Right="21"/>
-      <Colors Foreground="Black" Blink="False" Background="Black"/>
+      <Colors Foreground="Black" Background="Black"/>
     </Field>
 
     <Field Num="31" Kind="Button">
@@ -211,26 +211,26 @@
 
     <Field Num="1" Kind="Put">
       <Geometry Up="0" Left="25" Low="0" Right="48"/>
-      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Background="Black"/>
       <Init Row="0" Col="0">POLYNOMIAL APPROXIMATION</Init>
     </Field>
 
     <!-- Title -->
     <Field Num="2" Kind="Put">
       <Geometry Up="1" Left="3" Low="1" Right="27"/>
-      <Colors Foreground="Cyan" Blink="False" Background="Black"/>
+      <Colors Foreground="Cyan" Background="Black"/>
     </Field>
 
     <!-- File -->
     <Field Num="3" Kind="Put">
       <Geometry Up="1" Left="33" Low="1" Right="37"/>
-      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Background="Black"/>
       <Init Row="0" Col="0">File:</Init>
     </Field>
 
     <Field Num="4" Kind="Put">
       <Geometry Up="1" Left="39" Low="1" Right="65"/>
-      <Colors Foreground="Cyan" Blink="False" Background="Black"/>
+      <Colors Foreground="Cyan" Background="Black"/>
     </Field>
 
     <!-- Get -->
@@ -242,7 +242,7 @@
     <!-- Messages -->
     <Field Num="6" Kind="Put">
       <Geometry Up="23" Left="35" Low="23" Right="78"/>
-      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Background="Black"/>
     </Field>
 
     <!-- List actions -->
@@ -314,24 +314,24 @@
     <!-- Points -->
     <Field Num="17" Kind="Put">
       <Geometry Up="1" Left="68" Low="1" Right="71"/>
-      <Colors Foreground="Cyan" Blink="False" Background="Black"/>
+      <Colors Foreground="Cyan" Background="Black"/>
     </Field>
 
     <Field Num="18" Kind="Put">
       <Geometry Up="1" Left="73" Low="1" Right="78"/>
-      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Background="Black"/>
       <Init Row="0" Col="0">points</Init>
     </Field>
 
     <Field Num="19" Kind="Put">
       <Geometry Up="2" Left="71" Low="2" Right="73"/>
-      <Colors Foreground="White" Blink="True" Background="Black"/>
+      <Colors Foreground="White" Background="Black"/>
       <Init Row="0" Col="0">NOT</Init>
     </Field>
 
     <Field Num="20" Kind="Put">
       <Geometry Up="3" Left="70" Low="3" Right="74"/>
-      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Background="Black"/>
       <Init Row="0" Col="0">saved</Init>
     </Field>
 
@@ -347,49 +347,49 @@
 
     <Field Num="1" Kind="Put">
       <Geometry Up="0" Left="25" Low="0" Right="48"/>
-      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Background="Black"/>
       <Init Row="0" Col="0">POLYNOMIAL APPROXIMATION</Init>
     </Field>
 
     <!-- Title -->
     <Field Num="2" Kind="Put">
       <Geometry Up="1" Left="3" Low="1" Right="27"/>
-      <Colors Foreground="Cyan" Blink="False" Background="Black"/>
+      <Colors Foreground="Cyan" Background="Black"/>
     </Field>
 
     <!-- File name -->
     <Field Num="3" Kind="Put">
       <Geometry Up="1" Left="33" Low="1" Right="37"/>
-      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Background="Black"/>
       <Init Row="0" Col="0">File:</Init>
     </Field>
 
     <Field Num="4" Kind="Put">
       <Geometry Up="1" Left="39" Low="1" Right="65"/>
-      <Colors Foreground="Cyan" Blink="False" Background="Black"/>
+      <Colors Foreground="Cyan" Background="Black"/>
     </Field>
 
     <!-- Points -->
     <Field Num="5" Kind="Put">
       <Geometry Up="1" Left="68" Low="1" Right="71"/>
-      <Colors Foreground="Cyan" Blink="False" Background="Black"/>
+      <Colors Foreground="Cyan" Background="Black"/>
     </Field>
 
     <Field Num="6" Kind="Put">
       <Geometry Up="1" Left="73" Low="1" Right="78"/>
-      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Background="Black"/>
       <Init Row="0" Col="0">points</Init>
     </Field>
 
     <Field Num="7" Kind="Put">
       <Geometry Up="2" Left="71" Low="2" Right="73"/>
-      <Colors Foreground="White" Blink="True" Background="Black"/>
+      <Colors Foreground="White" Background="Black"/>
       <Init Row="0" Col="0">NOT</Init>
     </Field>
 
     <Field Num="8" Kind="Put">
       <Geometry Up="3" Left="70" Low="3" Right="74"/>
-      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Background="Black"/>
       <Init Row="0" Col="0">saved</Init>
     </Field>
 
@@ -402,7 +402,7 @@
     <!-- Message -->
     <Field Num="10" Kind="Put">
       <Geometry Up="23" Left="35" Low="23" Right="78"/>
-      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Background="Black"/>
     </Field>
 
     <!-- List Action -->
@@ -464,13 +464,13 @@
     <!-- Menu specific 1 2T+1B -->
     <Field Num="20" Kind="Put">
       <Geometry Up="3" Left="7" Low="3" Right="21"/>
-      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Background="Black"/>
       <Init Row="0" Col="0">Current degree:</Init>
     </Field>
 
     <Field Num="21" Kind="Put">
       <Geometry Up="3" Left="23" Low="3" Right="26"/>
-      <Colors Foreground="Cyan" Blink="False" Background="Black"/>
+      <Colors Foreground="Cyan" Background="Black"/>
     </Field>
 
     <Field Num="22" Kind="Button">
@@ -481,13 +481,13 @@
 
     <Field Num="23" Kind="Put">
       <Geometry Up="4" Left="0" Low="4" Right="0"/>
-      <Colors Foreground="Black" Blink="False" Background="Black"/>
+      <Colors Foreground="Black" Background="Black"/>
     </Field>
 
     <!-- Menu specific 2 T+2B -->
     <Field Num="24" Kind="Put">
       <Geometry Up="8" Left="13" Low="8" Right="19"/>
-      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Background="Black"/>
       <Init Row="0" Col="0">Compute</Init>
     </Field>
 
@@ -499,7 +499,7 @@
 
     <Field Num="26" Kind="Put">
       <Geometry Up="9" Left="0" Low="11" Right="0"/>
-      <Colors Foreground="Black" Blink="False" Background="Black"/>
+      <Colors Foreground="Black" Background="Black"/>
     </Field>
 
     <Field Num="27" Kind="Button">
@@ -511,7 +511,7 @@
     <!-- Menu specific 3 T+2B -->
     <Field Num="28" Kind="Put">
       <Geometry Up="13" Left="14" Low="13" Right="17"/>
-      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Background="Black"/>
       <Init Row="0" Col="0">Draw</Init>
     </Field>
 
@@ -523,7 +523,7 @@
 
     <Field Num="30" Kind="Put">
       <Geometry Up="14" Left="0" Low="14" Right="0"/>
-      <Colors Foreground="Black" Blink="False" Background="Black"/>
+      <Colors Foreground="Black" Background="Black"/>
     </Field>
 
     <Field Num="31" Kind="Button">
@@ -536,7 +536,7 @@
     <!-- to display F(....) =  -->
     <Field Num="32" Kind="Put">
       <Geometry Up="22" Left="1" Low="22" Right="33"/>
-      <Colors Foreground="Black" Blink="False" Background="Black"/>
+      <Colors Foreground="Black" Background="Black"/>
     </Field>
 
   </Descriptor>
@@ -552,49 +552,49 @@
 
     <Field Num="1" Kind="Put">
       <Geometry Up="0" Left="25" Low="0" Right="48"/>
-      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Background="Black"/>
       <Init Row="0" Col="0">POLYNOMIAL APPROXIMATION</Init>
     </Field>
 
     <!-- Title -->
     <Field Num="2" Kind="Put">
       <Geometry Up="1" Left="3" Low="1" Right="27"/>
-      <Colors Foreground="Cyan" Blink="False" Background="Black"/>
+      <Colors Foreground="Cyan" Background="Black"/>
     </Field>
 
     <!-- File name -->
     <Field Num="3" Kind="Put">
       <Geometry Up="1" Left="33" Low="1" Right="37"/>
-      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Background="Black"/>
       <Init Row="0" Col="0">File:</Init>
     </Field>
 
     <Field Num="4" Kind="Put">
       <Geometry Up="1" Left="39" Low="1" Right="65"/>
-      <Colors Foreground="Cyan" Blink="False" Background="Black"/>
+      <Colors Foreground="Cyan" Background="Black"/>
     </Field>
 
     <!-- Points -->
     <Field Num="5" Kind="Put">
       <Geometry Up="1" Left="68" Low="1" Right="71"/>
-      <Colors Foreground="Cyan" Blink="False" Background="Black"/>
+      <Colors Foreground="Cyan" Background="Black"/>
     </Field>
 
     <Field Num="6" Kind="Put">
       <Geometry Up="1" Left="73" Low="1" Right="78"/>
-      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Background="Black"/>
       <Init Row="0" Col="0">points</Init>
     </Field>
 
     <Field Num="7" Kind="Put">
       <Geometry Up="2" Left="71" Low="2" Right="73"/>
-      <Colors Foreground="White" Blink="True" Background="Black"/>
+      <Colors Foreground="White" Background="Black"/>
       <Init Row="0" Col="0">NOT</Init>
     </Field>
 
     <Field Num="8" Kind="Put">
       <Geometry Up="3" Left="70" Low="3" Right="74"/>
-      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Background="Black"/>
       <Init Row="0" Col="0">saved</Init>
     </Field>
 
@@ -607,7 +607,7 @@
     <!-- Message -->
     <Field Num="10" Kind="Put">
       <Geometry Up="23" Left="35" Low="23" Right="78"/>
-      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Background="Black"/>
     </Field>
 
     <!-- List Action -->
@@ -669,7 +669,7 @@
     <!-- Menu specific 1 T+2B -->
     <Field Num="20" Kind="Put">
       <Geometry Up="2" Left="2" Low="2" Right="31"/>
-      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Background="Black"/>
       <Init Row="0" Col="0">Computed from curve and points</Init>
     </Field>
 
@@ -687,13 +687,13 @@
 
     <Field Num="23" Kind="Put">
       <Geometry Up="4" Left="0" Low="4" Right="0"/>
-      <Colors Foreground="Black" Blink="False" Background="Black"/>
+      <Colors Foreground="Black" Background="Black"/>
     </Field>
 
     <!-- Menu specific 2 T+2B -->
     <Field Num="24" Kind="Put">
       <Geometry Up="6" Left="5" Low="6" Right="28"/>
-      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Background="Black"/>
       <Init Row="0" Col="0">X defined and Y computed</Init>
     </Field>
 
@@ -711,13 +711,13 @@
 
     <Field Num="27" Kind="Put">
       <Geometry Up="8" Left="0" Low="8" Right="0"/>
-      <Colors Foreground="Black" Blink="False" Background="Black"/>
+      <Colors Foreground="Black" Background="Black"/>
     </Field>
 
     <!-- Menu specific 3 T+2B -->
     <Field Num="28" Kind="Put">
       <Geometry Up="10" Left="9" Low="10" Right="23"/>
-      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Background="Black"/>
       <Init Row="0" Col="0">X and Y defined</Init>
     </Field>
 
@@ -735,24 +735,24 @@
 
     <Field Num="31" Kind="Put">
       <Geometry Up="12" Left="0" Low="12" Right="0"/>
-      <Colors Foreground="Black" Blink="False" Background="Black"/>
+      <Colors Foreground="Black" Background="Black"/>
     </Field>
 
     <!-- Very specific 3 T+2P -->
     <Field Num="32" Kind="Put">
       <Geometry Up="14" Left="2" Low="14" Right="9"/>
-      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Background="Black"/>
       <Init Row="0" Col="0">Current:</Init>
     </Field>
 
     <Field Num="33" Kind="Put">
       <Geometry Up="14" Left="11" Low="14" Right="31"/>
-      <Colors Foreground="Cyan" Blink="False" Background="Black"/>
+      <Colors Foreground="Cyan" Background="Black"/>
     </Field>
 
     <Field Num="34" Kind="Put">
       <Geometry Up="15" Left="3" Low="18" Right="24"/>
-      <Colors Foreground="Cyan" Blink="False" Background="Black"/>
+      <Colors Foreground="Cyan" Background="Black"/>
     </Field>
 
   </Descriptor>

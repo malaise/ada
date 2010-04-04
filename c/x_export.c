@@ -25,51 +25,6 @@
  * }
  */
 
-/***** Blinking management *****/
-/* The percentage of blinking when colors are seeable */
-#define PERCENT_ON  75
-#define PERCENT_OFF (100 - PERCENT_ON)
-int curr_percent = 0;
-
-timeout_t next_blink;
-
-/* The real blinking routine */
-static void x_do_blink (void);
-
-/* The blinking task */
-static void x_do_blinking (void) {
-
-  /* Protection */
-  if (curr_percent == 0) {
-    return;
-  }
-  x_do_blink();
-  if (curr_percent == PERCENT_OFF) {
-    curr_percent = PERCENT_ON;
-  } else {
-    curr_percent = PERCENT_OFF;
-  }
-  (void) incr_time (&next_blink, (unsigned int)curr_percent * 10);
-}
-
-extern int x_stop_blinking (void) {
-
-  /* Set to the non_blink state */
-  if (curr_percent == PERCENT_OFF) {
-    x_do_blink();
-  }
-  curr_percent = 0;
-  return (OK);
-}
-
-extern int x_start_blinking (void) {
-  curr_percent = PERCENT_ON;
-  get_time (&next_blink);
-  (void) incr_time (&next_blink, (unsigned int)curr_percent * 10);
-  return (OK);
-}
-
-
 /***** Event management *****/
 static void x_clear_in_selection (t_window *win_id ) {
     /* Clean previous in selection */
@@ -88,13 +43,12 @@ static void x_request_in_selection (t_window *win_id ) {
 }
 
 extern int x_select (int *p_fd, boolean *p_read, timeout_t *timeout) {
-  boolean timeout_is_active, blink_is_active;
+  boolean timeout_is_active;
   timeout_t exp_time;
   int x_fd;
   int res;
 
   timeout_is_active = (timeout->tv_sec >= 0) && (timeout->tv_usec >= 0);
-  blink_is_active = (curr_percent != 0);
 
   if (local_server.x_server == NULL) {
     /* Cannot be set by wait_evt */
@@ -122,18 +76,9 @@ extern int x_select (int *p_fd, boolean *p_read, timeout_t *timeout) {
   for (;; ) {
 
 
-    /* Compute select timeout */
-    /* Nearest between exp_time and next_blink */
+    /* Compute select timeout until exp_time */
     if (timeout_is_active) {
-      if (blink_is_active) {
-        if (comp_time(&next_blink, &exp_time) < 0) {
-          evt_time_remaining (timeout, &next_blink);
-        } else {
-          evt_time_remaining (timeout, &exp_time);
-        }
-      } else {
-        evt_time_remaining (timeout, &exp_time);
-      }
+      evt_time_remaining (timeout, &exp_time);
     }
 
 
@@ -141,12 +86,6 @@ extern int x_select (int *p_fd, boolean *p_read, timeout_t *timeout) {
     res = evt_wait (p_fd, p_read, timeout);
     if (res == ERR) {
       return (ERR);
-    }
-
-    /* Check Blink */
-    if ( (blink_is_active) && time_is_reached (&next_blink) ) {
-      /* Blink and continue */
-      x_do_blinking();
     }
 
     if (*p_fd != NO_EVENT) {
@@ -174,7 +113,6 @@ extern int x_select (int *p_fd, boolean *p_read, timeout_t *timeout) {
 extern int x_set_colors (const char *color_names[]);
 /* Initialise communication with the 'local' X server */
 /*  opening a little window */
-/* Hangs handler for blinking */
 extern int x_initialise (const char *server_name,
                          const char *color_names[]) {
 
@@ -191,9 +129,6 @@ extern int x_initialise (const char *server_name,
       col_set_names (color_names);
     }
 
-    if ( (result == OK) && (!blink_bold()) ) {
-      (void) x_start_blinking();
-    }
     return (result);
 }
 
@@ -295,7 +230,7 @@ extern int x_clear_line (void *line_id) {
 
 /* Sets the attributes for a further put in the same window */
 extern int x_set_attributes (void *line_id, int paper, int ink,
-  boolean superbright, boolean underline, boolean blink, boolean reverse) {
+  boolean superbright, boolean underline, boolean reverse) {
 
     t_window *win_id = (t_window*) line_id;
     int no_font;
@@ -312,14 +247,14 @@ extern int x_set_attributes (void *line_id, int paper, int ink,
 
     /* Store underline and superbright attribute */
     win_id->underline = underline;
-    win_id->bold = (superbright || (blink && blink_bold() ) );
+    win_id->bold = superbright;
 
     /* Update graphic context */
     no_font = lin_get_font (win_id);
     scr_set_attrib (win_id->server->x_server,
       win_id->x_graphic_context, win_id->server->x_font,
       lin_get_font(win_id), win_id->screen->color_id,
-      paper, ink, blink, reverse);
+      paper, ink, reverse);
 
     return (OK);
 
@@ -460,10 +395,10 @@ extern int x_put_string (void *line_id, const char *p_char, int number,
 /* The output is not flushed */
 extern int x_put_char_attributes (void *line_id, int car, int row, int column,
   int paper, int ink,
-  boolean superbright, boolean underline, boolean blink, boolean reverse) {
+  boolean superbright, boolean underline, boolean reverse) {
 
     if (x_set_attributes (line_id, paper, ink,
-                   superbright, underline, blink, reverse) == ERR) {
+                   superbright, underline, reverse) == ERR) {
         return (ERR);
     }
 
@@ -831,12 +766,6 @@ extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
   /*  - Event OK */
   result = ERR;
   while (result == ERR) {
-
-    if ( (next_blink.tv_sec != 0) || (next_blink.tv_usec != 0) ) {
-      if (time_is_reached (&next_blink) ) {
-        x_do_blinking();
-      }
-    }
 
     if (prev_event_set) {
       /* An event has already been got and stored (for skipping multi expose) */
@@ -1374,40 +1303,6 @@ extern int x_get_selection (void *line_id, char *p_selection, int len) {
     /* Clear */
     if (data != NULL) XFree (data);
     return (OK);
-}
-
-/* Special Blink primitive must be called twice a second to generate */
-/* blink if blinking is stopped */
-extern int x_blink(void) {
-
-    /* Check that the server is initialised */
-    if (local_server.x_server == NULL) return (OK);
-
-    /* Check task is not active */
-    if (curr_percent != 0) {
-      return (ERR);
-    }
-
-    x_do_blink ();
-
-    return (OK);
-}
-
-/* The real blinking primitive */
-static void x_do_blink (void) {
-
-    static boolean blinking;
-
-    /* Check that the server is initialised */
-    if (local_server.x_server == NULL) return;
-
-    /* Here we know if it is colors for blink or standard colors */
-    blinking = ! blinking;
-
-    lin_blink_colors(blinking);
-    XFlush (local_server.x_server);
-
-    return;
 }
 
 /* Rings a bell on the display */

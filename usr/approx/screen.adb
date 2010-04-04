@@ -227,8 +227,7 @@ package body Screen is
     Afpx.Set_Field_Activation(Ok_Button_Fld, True);
     Afpx.Set_Field_Activation(Cancel_Button_Fld, True);
     -- Set colors
-    Afpx.Set_Field_Colors(Info_Fld, Foreground => Con_Io.Color_Of("Orange"),
-                                    Blink_Stat => Con_Io.Blink);
+    Afpx.Set_Field_Colors(Info_Fld, Foreground => Con_Io.Color_Of("Orange"));
     if Alert then
       Afpx.Bell(1);
     end if;
@@ -256,8 +255,7 @@ package body Screen is
     Afpx.Set_Field_Activation(Ok_Button_Fld, True);
     Afpx.Set_Field_Activation(Cancel_Button_Fld, False);
     -- Set colors
-    Afpx.Set_Field_Colors(Info_Fld, Foreground => Con_Io.Color_Of("Orange"),
-                                    Blink_Stat => Con_Io.Blink);
+    Afpx.Set_Field_Colors(Info_Fld, Foreground => Con_Io.Color_Of("Orange"));
     if Msg /= E_Done then
       Afpx.Bell(1);
     end if;

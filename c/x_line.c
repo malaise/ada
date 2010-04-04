@@ -270,8 +270,8 @@ Status res;
 
         gc_mask = GCForeground | GCBackground | GCFont;
         gc_values.font = p_window->server->x_font[no_font]->fid;
-        gc_values.foreground = col_get_std(1, 1, p_window->screen->color_id);
-        gc_values.background = col_get_std(0, 0, p_window->screen->color_id);
+        gc_values.foreground = col_get(1, p_window->screen->color_id);
+        gc_values.background = col_get(0, p_window->screen->color_id);
 
         p_window->x_graphic_context = XCreateGC (p_window->server->x_server,
                           p_window->screen->x_root_win, gc_mask, &gc_values);
@@ -302,9 +302,9 @@ Status res;
             * fon_get_height(p_window->server->x_font[no_font]);
         win_mask = DEF_WIN_MASK;
         win_attrib.background_pixel =
-          col_get_std(background, background, p_window->screen->color_id);
+          col_get(background, p_window->screen->color_id);
         win_attrib.border_pixel =
-          col_get_std(border, border, p_window->screen->color_id);
+          col_get(border, p_window->screen->color_id);
         win_attrib.event_mask = EVENT_MASK;
         win_attrib.cursor = XCreateFontCursor (p_window->server->x_server, XC_left_ptr);
         win_attrib.override_redirect = False;
@@ -430,8 +430,7 @@ int lin_clear (t_window *p_window) {
     /* Reset graphic context */
     scr_set_attrib (p_window->server->x_server, p_window->x_graphic_context,
       p_window->server->x_font, p_window->no_font,
-      p_window->screen->color_id, 0, 1,
-      False, False);
+      p_window->screen->color_id, 1, False, False);
 
     return(True);
 }
@@ -501,7 +500,6 @@ t_screen *p_screen;
 
 
     /* Success */
-    p_screen->blinking = False;
     return (p_screen);
 }
 
@@ -516,26 +514,6 @@ void close_screen (t_screen *p_screen) {
     /* Free memory */
     free (p_screen);
 }
-
-
-
-/* Swaps the color map for each open window */
-void lin_blink_colors(boolean blink) {
-int i;
-
-    for (i=0; i<nbre_window; i++) {
-        if (blink != list_window[i]->screen->blinking) {
-            /* Screen is not in the proper colors */
-            col_set_blinking (list_window[i]->server->x_server,
-                              list_window[i]->screen->color_id,
-                              list_window[i]->screen->colormap,
-                              blink);
-        }
-        /* Screen is now in the proper colors */
-        list_window[i]->screen->blinking = blink;
-    }
-}
-
 
 /* Get font no for line (bold or not) */
 int lin_get_font (t_window *p_window) {

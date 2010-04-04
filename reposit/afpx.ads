@@ -124,7 +124,6 @@ package Afpx is
   procedure Get_Field_Colors (
     Field_No   : in Absolute_Field_Range;
     Foreground : out Con_Io.Effective_Colors;
-    Blink_Stat : out Con_Io.Effective_Blink_Stats;
     Background : out Con_Io.Effective_Colors;
     Selected   : out Con_Io.Effective_Colors);
 
@@ -133,11 +132,9 @@ package Afpx is
   --              Invalid_Color
   --       - Foreground has to be Colors for list, get and button fields
   --       - Selected has to be Current for put and button fields
-  --       - Blink_Stat has to be Current except for put fields
   procedure Set_Field_Colors (
     Field_No   : in Absolute_Field_Range;
     Foreground : in Con_Io.Colors       := Con_Io.Current;
-    Blink_Stat : in Con_Io.Blink_Stats  := Con_Io.Current;
     Background : in Con_Io.Colors := Con_Io.Current;
     Selected   : in Con_Io.Colors := Con_Io.Current);
 
@@ -152,7 +149,7 @@ package Afpx is
                                   return Boolean;
 
   -- Protect/Unprotect a Get or Button for further put_then_gets
-  -- A protected get field is displayed like a put field (but cannot blink)
+  -- A protected get field is displayed like a put field
   -- A protected button field is displayed like a put (but no click/release)
   -- A protected list is displayed (but no item can be selected)
   -- All get/button/list fields are unprotected by default

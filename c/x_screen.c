@@ -11,7 +11,7 @@ void scr_set_gc (Display *x_server, GC x_context, unsigned long paper,
 /* Sets the attribute of the window */
 void scr_set_attrib (Display *x_server, GC x_context, XFontStruct *x_fonts[],
                      int no_font, unsigned long color_ids[],
-                     int paper, int ink, int blink, int reverse) {
+                     int paper, int ink, int reverse) {
 
 unsigned long foreground, background;
 
@@ -21,13 +21,8 @@ unsigned long foreground, background;
         paper = background;
     }
 
-    if (blink) {
-        foreground = col_get_blk (paper, ink, color_ids);
-        background = col_get_std (paper, paper, color_ids);
-    } else {
-        foreground = col_get_std (ink, ink, color_ids);
-        background = col_get_std (paper, paper, color_ids);
-    }
+    foreground = col_get(ink, color_ids);
+    background = col_get(paper, color_ids);
 
     scr_set_gc (x_server, x_context,
       background, foreground, x_fonts[no_font]->fid);

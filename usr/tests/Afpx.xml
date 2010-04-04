@@ -16,7 +16,7 @@
 
     <Field Num="2" Kind="Put">
       <Geometry Up="2" Left="0" Low="4" Right="79"/>
-      <Colors Foreground="Red" Blink="True" Background="Brown"/>
+      <Colors Foreground="Red" Background="Brown"/>
     </Field>
 
     <Field Num="3" Kind="Get">
@@ -43,7 +43,7 @@
 
     <Field Num="7" Kind="Put">
       <Geometry Up="22" Left="0" Low="24" Right="79"/>
-      <Colors Foreground="Red" Blink="False" Background="Magenta"/>
+      <Colors Foreground="Red" Background="Magenta"/>
       <Init Row="0" Col="0">Type exit in a get field to desactivate it</Init>
       <Init Row="1" Col="0">Type return to print content of field, escape to clear field</Init>
       <Init Row="2" Col="0">Print button and list are flip-flop based on keyboard events and timer</Init>
@@ -93,7 +93,7 @@
 
     <Field Num="15" Kind="Put">
       <Geometry Up="5" Left="1" Low="5" Right="45"/>
-      <Colors Foreground="Red" Blink="True" Background="Brown"/>
+      <Colors Foreground="Red" Background="Brown"/>
     </Field>
 
   </Descriptor>
@@ -125,20 +125,20 @@
 
     <Field Num="1" Kind="Put">
       <Geometry Up="0" Left="0" Low="1" Right="79"/>
-      <Colors Foreground="White" Blink="False" Background="Black"/>
+      <Colors Foreground="White" Background="Black"/>
       <Init Row="0" Col="0">0         1         2         3         4         5         6         7</Init>
       <Init Row="1" Col="0">01234567890123456789012345678901234567890123456789012345678901234567890123456789</Init>
     </Field>
 
     <Field Num="2" Kind="Put">
       <Geometry Up="2" Left="20" Low="2" Right="60"/>
-      <Colors Foreground="Red" Blink="True" Background="Blue"/>
+      <Colors Foreground="Red" Background="Blue"/>
       <Init Row="0" Col="5">Ah que coucou!</Init>
     </Field>
 
     <Field Num="3" Kind="Put">
       <Geometry Up="5" Left="30" Low="11" Right="50"/>
-      <Colors Foreground="Light_Blue" Blink="False" Background="Red"/>
+      <Colors Foreground="Light_Blue" Background="Red"/>
       <Init Row="3" Col="7">COUCOU</Init>
     </Field>
 
@@ -150,7 +150,7 @@
 
     <Field Num="1" Kind="Put">
       <Geometry Up="0" Left="0" Low="24" Right="79"/>
-      <Colors Foreground="White" Blink="False" Background="Black"/>
+      <Colors Foreground="White" Background="Black"/>
     </Field>
 
 
@@ -167,26 +167,26 @@
     <!-- Title -->
     <Field Num="1" Kind="Put">
       <Geometry Up="0" Left="25" Low="0" Right="48"/>
-      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Background="Black"/>
       <Init Row="0" Col="0">GENERIC TITLE</Init>
     </Field>
 
     <!-- Action title -->
     <Field Num="2" Kind="Put">
       <Geometry Up="1" Left="3" Low="1" Right="27"/>
-      <Colors Foreground="Cyan" Blink="False" Background="Black"/>
+      <Colors Foreground="Cyan" Background="Black"/>
     </Field>
 
     <!-- File -->
     <Field Num="3" Kind="Put">
       <Geometry Up="1" Left="33" Low="1" Right="37"/>
-      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Background="Black"/>
       <Init Row="0" Col="0">File:</Init>
     </Field>
 
     <Field Num="4" Kind="Put">
       <Geometry Up="1" Left="39" Low="1" Right="65"/>
-      <Colors Foreground="Cyan" Blink="False" Background="Black"/>
+      <Colors Foreground="Cyan" Background="Black"/>
     </Field>
 
     <!-- Get -->
@@ -198,7 +198,7 @@
     <!-- Messages -->
     <Field Num="6" Kind="Put">
       <Geometry Up="23" Left="35" Low="23" Right="78"/>
-      <Colors Foreground="Light_Grey" Blink="False" Background="Black"/>
+      <Colors Foreground="Light_Grey" Background="Black"/>
     </Field>
 
     <!-- List actions -->

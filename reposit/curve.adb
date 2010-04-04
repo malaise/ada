@@ -1087,7 +1087,6 @@ package body Curve is
   begin -- Draw
     -- Initialise graphics
     Cur_Con_Io.Init;
-    Cur_Con_Io.Set_Foreground (Blink_Stat => Cur_Con_Io.Not_Blink);
 
     Cur_Con_Io.Set_Xor_Mode (Cur_Con_Io.Xor_On);
     Cur_Con_Io.Set_Pointer_Shape(Cur_Con_Io.Cross, Misc(M_Grab));

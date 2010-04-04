@@ -9,14 +9,14 @@
     <!-- Title NIM / MARIENBAD, then NIM or Marienbad -->
     <Field Num="1" Kind="Put">
       <Geometry Up="0" Left="30" Low="0" Right="46"/>
-      <Colors Foreground="Blue" Blink="False" Background="Black"/>
+      <Colors Foreground="Blue" Background="Black"/>
       <Init Row="0" Col="0">NIM and MARIENBAD</Init>
     </Field>
 
     <!-- Rules -->
     <Field Num="2" Kind="Put">
       <Geometry Up="1" Left="1" Low="19" Right="78"/>
-      <Colors Foreground="Cyan" Blink="False" Background="Black"/>
+      <Colors Foreground="Cyan" Background="Black"/>
       <Init Row="1" Col="2">This game presents several sticks aligned on four rows:</Init>
       <Init Row="2" Col="3">- seven sticks in the first row,</Init>
       <Init Row="3" Col="3">- five in the second,</Init>
@@ -160,19 +160,19 @@
     <!-- Score -->
     <Field Num="19" Kind="Put">
       <Geometry Up="0" Left="54" Low="0" Right="78"/>
-      <Colors Foreground="Blue" Blink="False" Background="Black"/>
+      <Colors Foreground="Blue" Background="Black"/>
     </Field>
 
     <!-- Title NIM or Marienbad -->
     <Field Num="20" Kind="Put">
       <Geometry Up="0" Left="34" Low="0" Right="42"/>
-      <Colors Foreground="Blue" Blink="False" Background="Black"/>
+      <Colors Foreground="Blue" Background="Black"/>
     </Field>
 
     <!-- Who wins -->
     <Field Num="21" Kind="Put">
       <Geometry Up="19" Left="0" Low="19" Right="79"/>
-      <Colors Foreground="Lime_Green" Blink="True" Background="Black"/>
+      <Colors Foreground="Lime_Green" Background="Black"/>
     </Field>
 
     <!-- Play -->

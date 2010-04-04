@@ -113,7 +113,6 @@ package X_Mng is
                              Paper, Ink  : in Color;
                              Superbright : in Boolean := False;
                              Underline   : in Boolean := False;
-                             Blink       : in Boolean := False;
                              Inverse     : in Boolean := False);
 
   -- Sets the xor mode or a further put in the same window
@@ -165,7 +164,6 @@ package X_Mng is
                                   Paper, Ink  : in Color;
                                   Superbright : in Boolean := False;
                                   Underline   : in Boolean := False;
-                                  Blink       : in Boolean := False;
                                   Inverse     : in Boolean := False);
 
   -- Draws a rectangle (width * height) at position
@@ -306,28 +304,7 @@ package X_Mng is
   -- Raises X_Failure if no selection available
   function X_Get_Selection (Line_Id : Line; Max_Len : Natural) return String;
 
-  ----- BLINK MANAGEMENT -----
-
-  -- This procedure hides the the text which has blink attribute
-  --  (gives the same ink as paper) or restores it, alternatively.
-  -- It has no effect UNLESS the internal task has been
-  --  stoped with X_Stop_Blinking_Task.
-  -- In this case, it has to be called twice a second to provide
-  --  blinking effect.
-  procedure X_Blink_Alternate(Line_Id : in Line);
-
-  -- This procedure stops the task which, internaly to x_vdu_mng,
-  --  manages the blinking of text.
-  -- If a process calls this procedure, no blinking of text will
-  --  be impliciptly assumed any more, and the process must
-  --  call X_Blink_Alternate regulary;
-  procedure X_Stop_Blinking_Task(Line_Id : in Line);
-
-  -- This procedure restarts  the task which, internaly to x_vdu_mng,
-  --  manages the blinking of text.
-  -- The task should be stopped when this call is done
-  procedure X_Start_Blinking_Task(Line_Id : in Line);
-
+  ----- BELL -----
   -- This procedures rings a bell at 400Hz for 100ms and repeats it the number
   -- specified.
   procedure X_Bell (Line_Id : in Line; Repeat : in Bell_Repeat);

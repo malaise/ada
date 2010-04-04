@@ -112,13 +112,12 @@ package body X_Mng is
   -- int x_set_attributes (void *line_id;
   --                       int paper, int ink,
   --                       boolean superbright, boolean underline,
-  --                       boolean blink, boolean reverse);
+  --                       boolean reverse);
   ------------------------------------------------------------------
   function X_Set_Attributes(Line_Id     : Line_For_C;
                             Paper, Ink  : C_Types.Int;
                             Superbright : Bool_For_C;
                             Underline   : Bool_For_C;
-                            Blink       : Bool_For_C;
                             Inverse     : Bool_For_C) return Result;
   pragma Import(C, X_Set_Attributes, "x_set_attributes");
 
@@ -166,7 +165,7 @@ package body X_Mng is
   -- int x_put_char_attributes (void *line_id; int car,
   --                            int row, int column, int paper, int ink,
   --                            boolean superbright, boolean underline,
-  --                            boolean blink, boolean reverse);
+  --                            boolean reverse);
   ------------------------------------------------------------------
   function X_Put_Char_Attributes(Line_Id     : Line_For_C;
                                  Car         : C_Types.Int;
@@ -174,7 +173,6 @@ package body X_Mng is
                                  Paper, Ink  : C_Types.Int;
                                  Superbright : Bool_For_C;
                                  Underline   : Bool_For_C;
-                                 Blink       : Bool_For_C;
                                  Inverse     : Bool_For_C)
    return Result;
   pragma Import(C, X_Put_Char_Attributes, "x_put_char_attributes");
@@ -348,27 +346,6 @@ package body X_Mng is
   function X_Enable_Motion_Events (Line_Id : Line_For_C;
                                    Motion_Enable : Bool_For_C) return Result;
   pragma Import(C, X_Enable_Motion_Events, "x_enable_motion_events");
-
-  ------------------------------------------------------------------
-  -- Assumes blinking of X
-  -- int x_blink(void)
-  ------------------------------------------------------------------
-  function X_Blink return Result;
-  pragma Import(C, X_Blink, "x_blink");
-
-  ------------------------------------------------------------------
-  -- Stops the blinking task
-  -- int x_stop_blinking(void)
-  ------------------------------------------------------------------
-  function X_Stop_Blinking return Result;
-  pragma Import(C, X_Stop_Blinking, "x_stop_blinking");
-
-  ------------------------------------------------------------------
-  -- Start the blinking task
-  -- int x_start_blinking(void)
-  ------------------------------------------------------------------
-  function X_Start_Blinking return Result;
-  pragma Import(C, X_Start_Blinking, "x_start_blinking");
 
   ------------------------------------------------------------------
   -- Rings a bell several times
@@ -727,7 +704,6 @@ package body X_Mng is
                              Paper, Ink  : in Color;
                              Superbright : in Boolean := False;
                              Underline   : in Boolean := False;
-                             Blink       : in Boolean := False;
                              Inverse     : in Boolean:= False) is
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
@@ -739,7 +715,7 @@ package body X_Mng is
     Res := X_Set_Attributes(Line_For_C_Id,
                             C_Types.Int(Paper), C_Types.Int(Ink),
                             For_C(Superbright), For_C(Underline),
-                            For_C(Blink), For_C(Inverse)) = Ok;
+                            For_C(Inverse)) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
     if not Res then
       raise X_Failure;
@@ -845,7 +821,6 @@ package body X_Mng is
                                   Paper, Ink  : in Color;
                                   Superbright : in Boolean := False;
                                   Underline   : in Boolean := False;
-                                  Blink       : in Boolean := False;
                                   Inverse     : in Boolean := False) is
     Line_For_C_Id : Line_For_C;
     Res : Boolean;
@@ -863,7 +838,6 @@ package body X_Mng is
                               C_Types.Int(Ink),
                               For_C(Superbright),
                               For_C(Underline),
-                              For_C(Blink),
                               For_C(Inverse)) = Ok;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
     if not Res then
@@ -1362,48 +1336,6 @@ package body X_Mng is
     return Buffer;
   end X_Get_Selection;
 
-
-  ------------------------------------------------------------------
-  procedure X_Blink_Alternate (Line_Id : in Line) is
-    Line_For_C_Id : Line_For_C;
-    Res : Boolean;
-    pragma Unreferenced (Res);
-  begin
-    if not Initialised or else Line_Id = No_Client then
-      raise X_Failure;
-    end if;
-    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
-    Res := X_Blink = Ok;
-    Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
-  end X_Blink_Alternate;
-
-  ------------------------------------------------------------------
-  procedure X_Stop_Blinking_Task (Line_Id : in Line) is
-    Line_For_C_Id : Line_For_C;
-    Res : Boolean;
-    pragma Unreferenced (Res);
-  begin
-    if not Initialised or else Line_Id = No_Client then
-      raise X_Failure;
-    end if;
-    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
-    Res := X_Stop_Blinking = Ok;
-    Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
-  end X_Stop_Blinking_Task;
-
-  ------------------------------------------------------------------
-  procedure X_Start_Blinking_Task (Line_Id : in Line) is
-    Line_For_C_Id : Line_For_C;
-    Res : Boolean;
-    pragma Unreferenced (Res);
-  begin
-    if not Initialised or else Line_Id = No_Client then
-      raise X_Failure;
-    end if;
-    Dispatcher.Call_On (Line_Id.No, Line_For_C_Id);
-    Res := X_Start_Blinking = Ok;
-    Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
-  end X_Start_Blinking_Task;
 
   ------------------------------------------------------------------
   procedure X_Bell (Line_Id : in Line; Repeat : in Bell_Repeat) is
