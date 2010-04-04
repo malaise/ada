@@ -298,6 +298,9 @@ begin
         if Config.Prev_Dir /= "" then
           Directory.Change_Current (Config.Prev_Dir);
         end if;
+      elsif Argument.Get_Parameter = "-h"
+      or else Argument.Get_Parameter = "--help" then
+        Error ("");
       else
          Directory.Change_Current (Argument.Get_Parameter (Occurence => 1));
       end if;
