@@ -185,7 +185,7 @@ package body Screen is
     Screen_Ground(J) := Last_X;
     J := J + 1;
     Screen_Ground(J) := First_Y;
-    Con_Io.Set_Foreground (Con_Io.Color_Of ("Light_Gray"));
+    Con_Io.Set_Foreground (Con_Io.Color_Of ("Light_Grey"));
     Con_Io.Graphics.Fill_Area (Screen_Ground);
     -- Frame
     Con_Io.Set_Foreground (Con_Io.Color_Of ("Blue"));
