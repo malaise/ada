@@ -1118,7 +1118,7 @@ package body Parse_Mng  is
         Util.Parse_Until_Str (Ctx.Flow, Util.Cdata_End);
         Util.Get_Curr_Str (Ctx.Flow, Cdata);
         Trace ("Txt Got cdata >" & Asu_Ts (Cdata) & "<");
-        Cdata := Util.Cdata_Start & Cdata & Util.Cdata_End;
+        Cdata := Util.Cdata_Start & Cdata;
         if Text = Asu_Null then
           -- No text: This is fixed (in Head), and we will re-loop reading
           Head := Head & Cdata;
@@ -1278,6 +1278,8 @@ package body Parse_Mng  is
     end Create;
 
     Char : Character;
+    Ok : Boolean;
+    Str2 : String (1 .. 2);
   begin
     -- Try to preserve spaces if current element has this tuning
     Children.Preserve := String_Mng.Locate (
@@ -1313,12 +1315,22 @@ package body Parse_Mng  is
           end if;
           return;
         elsif Char = Util.Directive then
-          -- Must be a comment or CDATA
-          Create (True);
-          Parse_Directive (Ctx, Adtd, Allow_Dtd => False,
-                                      Context => Ref_Xml,
-                                      Children => Children);
-          Children.Prev_Is_Text := False;
+          -- Must be a comment, DOCTYPE or CDATA
+          -- Check "<![CDATA["
+          Util.Unget (Ctx.Flow, 2);
+          Util.Try (Ctx.Flow, Util.Cdata_Start, Ok, False);
+          if Ok then
+            -- CDATA => Text
+            Parse_Text (Ctx, Adtd, Children);
+          else
+            -- Must be a comment or DOCTYPE
+            Util.Get (Ctx.Flow, Str2);
+            Create (True);
+            Parse_Directive (Ctx, Adtd, Allow_Dtd => False,
+                                        Context => Ref_Xml,
+                                        Children => Children);
+            Children.Prev_Is_Text := False;
+          end if;
         elsif Char = Util.Instruction then
           Create (True);
           Parse_Instruction (Ctx, Adtd, Children);
