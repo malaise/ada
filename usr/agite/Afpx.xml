@@ -445,25 +445,16 @@
     <!-- Hash, Date and Comment -->
     <Field Num="10" Kind="Put">
       <Geometry Up="${Field_9.Low}+2" Left="1" Height="1" Width="40"/>
-      <Colors Foreground="Dark_Grey" Background="Light_Grey" />
-      <Init Row="0" Col="0">f6969c16c1be5ebfa6f9d7239209f7b889e233b4</Init>
+      <Colors Foreground="Black" Background="Light_Grey" />
     </Field>
     <Field Num="11" Kind="Put">
       <Geometry Up="${Field_10.Low}+2" Left="1" Height="1" Width="19"/>
-      <Colors Foreground="Dark_Grey" Background="Light_Grey" />
-      <Init Row="0" Col="0">YYYY-MM-DD HH:MM:SS</Init>
+      <Colors Foreground="Black" Background="Light_Grey" />
     </Field>
     <Field Num="12" Kind="Put">
       <Geometry Up="${Field_11.Low}+1" Left="1"
                 Low="${List.Up}-1" Right="${Screen.Width}-2"/>
-      <Colors Foreground="Dark_Grey" Background="Light_Grey" />
-      <Init Row="0" Col="0">Comment 1</Init>
-      <Init Row="1" Col="0">Comment 2</Init>
-      <Init Row="2" Col="0">Comment 3</Init>
-      <Init Row="3" Col="0">Comment 4</Init>
-      <Init Row="4" Col="0">Comment 5</Init>
-      <Init Row="5" Col="0">Comment 6</Init>
-      <Init Row="6" Col="0">Comment 7</Init>
+      <Colors Foreground="Black" Background="Light_Grey" />
     </Field>
 
     <!-- View, History, Back -->
