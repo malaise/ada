@@ -1890,6 +1890,33 @@ package body Dtd is
           Info_Sep & "@" & Asu_Ts (Elt) & Info_Sep) /= 0;
   end Can_Have_Spaces;
 
+  -- Is this element defined as EMPTY
+  procedure Is_Empty (Adtd : in out Dtd_Type;
+                      Elt  : in Asu_Us;
+                      Yes  : out Boolean) is
+    Info : Info_Rec;
+    Info_Found : Boolean;
+    use type Asu_Us;
+  begin
+    -- Default: no (not defined or not EMPTY)
+    Yes := False;
+    if not Adtd.Set then
+      -- No dtd => not empty
+      return;
+    end if;
+    -- Read ELEMENT def of Elt
+    Info.Name := Asu_Tus ("Elt" & Info_Sep) & Elt;
+    Adtd.Info_List.Search (Info, Info_Found);
+    if Info_Found then
+      Adtd.Info_List.Read (Info, Info);
+    else
+      -- Not found => not mpty
+      return;
+    end if;
+    -- Is defined as EMPTY?
+    Yes := Asu.Element (Info.List, 1) = 'E';
+  end Is_Empty;
+
   -- Is this attribute of this element CDATA
   procedure Is_Cdata (Adtd      : in out Dtd_Type;
                       Elt, Attr : in Asu_Us;

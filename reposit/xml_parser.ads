@@ -335,9 +335,9 @@ package Xml_Parser is
   -----------------
   -- Shall the Element, if empty, be put with EmptyElemTag (<element/>) or
   --  with STag and ETag (<element></elememt>)
-  -- By default it is True except if
-  --  - Parsing with not Expand and Element is empty with STag and ETag
-  --  - Generator.Set_Put_Empty (False) is called on the element
+  -- By default it is False except if
+  --  - Parsed element is empty with EmptyElemTag (</element>)
+  --  - or Generator.Set_Put_Empty (True) is called on the element
   function Get_Put_Empty (Ctx     : Ctx_Type;
                           Element : Element_Type) return Boolean;
 
@@ -367,8 +367,8 @@ private
     Value : Ada.Strings.Unbounded.Unbounded_String;
     -- Is this attribute an Unparsed entity or a list of unparsed entities
     Unparsed : Boolean := False;
-    -- Put empty element with EmptyElementTag
-    Put_Empty : Boolean := True;
+    -- Put empty element with EmptyElemTag
+    Put_Empty : Boolean := False;
   end record;
   package My_Tree is new Trees.Tree(My_Tree_Cell);
 
