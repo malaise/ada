@@ -1310,8 +1310,16 @@ package body Parse_Mng  is
             Ctx.Level := Ctx.Level - 1;
             Call_Callback (Ctx, False, False, False, Children.Prev_Is_Text);
           else
-            -- Empty element
-            Create (False);
+            -- Empty element <elt></elt>
+            if Ctx.Expand then
+              -- Create empty element if expand
+              Create (False);
+            else
+              -- If not expand: Create non empty element and close it
+              Create (True);
+              Ctx.Level := Ctx.Level - 1;
+              Call_Callback (Ctx, False, False, False, True);
+            end if;
           end if;
           return;
         elsif Char = Util.Directive then
