@@ -4,7 +4,7 @@ with Int_Image, Text_Line, Sys_Calls, Trees;
 package body Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "2";
+  Minor_Version : constant String := "0";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -477,7 +477,7 @@ package body Xml_Parser.Generator is
     end case;
   end Internal_Kind_Of;
 
- -- Set (change) the name of an element
+  -- Set (change) the name of an element
   -- May raise Invalid_Argument if invalid name
   procedure Set_Name (Ctx     : in out Ctx_Type;
                       Element : in out Element_Type;
@@ -685,6 +685,21 @@ package body Xml_Parser.Generator is
     when Trees.Is_Ancestor =>
       raise Invalid_Node;
   end Copy;
+
+  -- Set the Put_Empty tag on the element
+  procedure Set_Put_Empty (Ctx        : in out Ctx_Type;
+                           Element    : in out Element_Type;
+                           Put_Empty  : in Boolean) is
+    Tree : Tree_Acc;
+    Cell : My_Tree_Cell;
+  begin
+    -- Move to node, must be an element
+    Move_To_Element (Ctx, Element, Tree);
+    -- Update name
+    Tree.Read (Cell);
+    Cell.Put_Empty := Put_Empty;
+    Tree.Replace (Cell);
+  end Set_Put_Empty;
 
   -- Set the text of a Text element
   procedure Set_Text (Ctx     : in out Ctx_Type;
@@ -1137,8 +1152,15 @@ package body Xml_Parser.Generator is
     if Element.Get_Position = Cell_Ref then
       -- No Child (Put_Attributes moved back to current): return
       if not In_Tail then
-        -- Terminate tag now
-        Put (Flow, "/>");
+        if Cell.Put_Empty then
+          -- EmptyElementTag now
+          Put (Flow, "/>");
+        else
+          -- Finish STag now and close (add ETag)
+          Put (Flow, ">");
+          Prev_Is_Text := True;
+          Close;
+        end if;
       end if;
       -- Terminate now
       return;

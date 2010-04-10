@@ -10,7 +10,7 @@ with Queues, Trees, Unique_List, Text_Char, Dynamic_List, Unlimited_Pool,
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "15";
+  Major_Version : constant String := "16";
   function Version return String;
 
   -----------
@@ -326,9 +326,20 @@ package Xml_Parser is
   --  may raise Status_Error if Ctx prologue is not Parsed
   --            Unknown_Entity if not such unparsed entity
   Unknown_Entity : exception;
-  procedure Get_Unparsed_Entity_Info (Ctx : in out Ctx_Type;
+  procedure Get_Unparsed_Entity_Info (Ctx    : in out Ctx_Type;
                                       Entity : in String;
-                                      Info : out Unparsed_Entity_Info_Rec);
+                                      Info   : out Unparsed_Entity_Info_Rec);
+
+  -----------------
+  -- Specif TAGS --
+  -----------------
+  -- Shall the Element, if empty, be put with EmptyElemTag (<element/>) or
+  --  with STag and ETag (<element></elememt>)
+  -- By default it is True except if
+  --  - Parsing with not Expand and Element is empty with STag and ETag
+  --  - Generator.Set_Put_Empty (False) is called on the element
+  function Get_Put_Empty (Ctx     : Ctx_Type;
+                          Element : Element_Type) return Boolean;
 
   ------------------------
   -- General EXCEPTIONS --
@@ -356,6 +367,8 @@ private
     Value : Ada.Strings.Unbounded.Unbounded_String;
     -- Is this attribute an Unparsed entity or a list of unparsed entities
     Unparsed : Boolean := False;
+    -- Put empty element with EmptyElementTag
+    Put_Empty : Boolean := True;
   end record;
   package My_Tree is new Trees.Tree(My_Tree_Cell);
 

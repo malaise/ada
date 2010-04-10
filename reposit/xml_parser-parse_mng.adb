@@ -1435,6 +1435,10 @@ package body Parse_Mng  is
       Trace ("Parsing children of " & Asu_Ts (Element_Name));
       Parse_Children (Ctx, Adtd, My_Children'Access);
       Trace ("Parsed children of " & Asu_Ts (Element_Name));
+      -- Update Put_Empty on current element if empty and not expanding
+      if not Ctx.Expand and then My_Children.Is_Empty then
+        Tree_Mng.Set_Put_Empty (Ctx.Elements.all, False);
+      end if;
       -- Check Name matches
       Util.Parse_Until_Char (Ctx.Flow, Util.Stop & "");
       Util.Get_Curr_Str (Ctx.Flow, End_Name);

@@ -3,7 +3,7 @@ with Ada.Strings.Unbounded;
 package Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "6";
+  Major_Version : constant String := "7";
   function Version return String;
 
   type Ctx_Type is new Xml_Parser.Ctx_Type with private;
@@ -132,6 +132,16 @@ package Xml_Parser.Generator is
                   Dst   : in out Element_Type;
                   Child : in Boolean := True;
                   Next  : in Boolean := True);
+
+  -- Set the Put_Empty tag on the element
+  -- Shall the Element, if empty, be put with EmptyElemTag (<element/>) or
+  --  with STag and ETag (<element></elememt>)
+  -- By default it is True except if
+  --  - Parsing with not Expand qnd Element is empty with STag and ETag
+  --  - Generator.Set_Put_Empty (False) is called on the element
+  procedure Set_Put_Empty (Ctx        : in out Ctx_Type;
+                           Element    : in out Element_Type;
+                           Put_Empty  : in Boolean);
 
   -- Set the text of a Text element
   procedure Set_Text (Ctx     : in out Ctx_Type;

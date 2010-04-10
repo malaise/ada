@@ -123,6 +123,16 @@ package body Tree_Mng is
     return Asu_Ts (Cell.Value);
   end Get_Tuning;
 
+  -- set Put_Empty to False
+  procedure Set_Put_Empty (Elements : in out My_Tree.Tree_Type;
+                           Put_Empty : in Boolean) is
+    Cell : My_Tree_Cell;
+  begin
+    Elements.Read (Cell);
+    Cell.Put_Empty := Put_Empty;
+    Elements.Replace (Cell);
+  end Set_Put_Empty;
+
   -- Move to root of current tree
   procedure Move_Root (Elements : in out My_Tree.Tree_Type) is
   begin

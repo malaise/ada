@@ -3,7 +3,7 @@ with Environ, Basic_Proc, Rnd, Exception_Messenger, Directory;
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "2";
+  Minor_Version : constant String := "0";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -62,7 +62,11 @@ package body Xml_Parser is
     Preserve : constant String := "preserve";
     Xml_Space_Preserve : constant String := Xml_Space & "=" & Preserve;
     procedure Add_Tuning (Elements : in out My_Tree.Tree_Type;
-                            Tuning : in String);
+                          Tuning : in String);
+    -- Set Put_Empty
+    procedure Set_Put_Empty (Elements : in out My_Tree.Tree_Type;
+                             Put_Empty : in Boolean);
+
     -- Get all tuning of an element
     function Get_Tuning (Elements : My_Tree.Tree_Type) return String;
     -- Add an attribute to current element, remain on current element
@@ -1092,9 +1096,9 @@ package body Xml_Parser is
   end Get_Comment;
 
   -- Unparsed entity
-  procedure Get_Unparsed_Entity_Info (Ctx : in out Ctx_Type;
+  procedure Get_Unparsed_Entity_Info (Ctx    : in out Ctx_Type;
                                       Entity : in String;
-                                      Info : out Unparsed_Entity_Info_Rec) is
+                                      Info   : out Unparsed_Entity_Info_Rec) is
     Rec : Unparsed_Type;
   begin
     case Ctx.Status is
@@ -1130,6 +1134,16 @@ package body Xml_Parser is
     Info.Notation_System_Id := Rec.System_Id;
     Info.Notation_Public_Id := Rec.Public_Id;
   end Get_Unparsed_Entity_Info;
+
+  -- Shall the Element, if empty, be put with EmptyElemTag (<element/>) or
+  -- with STag and ETag (<element></elememt>)
+  function Get_Put_Empty (Ctx     : Ctx_Type;
+                          Element : Element_Type) return Boolean is
+    Cell : constant My_Tree_Cell
+         := Get_Cell (Get_Tree (Ctx, Element), Element);
+  begin
+    return Cell.Put_Empty;
+  end Get_Put_Empty;
 
   -----------------------------------
   -- Deallocation and Finalization --
