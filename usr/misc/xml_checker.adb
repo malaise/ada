@@ -448,7 +448,6 @@ begin
   if Arg_Dscr.Is_Set (11) then
     -- Put warnings
     Max_Opt := Max_Opt + 1;
-  else
     Warnings := Warning'Unrestricted_Access;
   end if;
   if Arg_Dscr.Get_Number_Keys > Max_Opt then
