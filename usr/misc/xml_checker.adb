@@ -3,7 +3,7 @@ with Argument, Argument_Parser, Xml_Parser.Generator, Normal, Basic_Proc,
      Text_Line, Sys_Calls, Parser;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V8.0";
+  Version : constant String := "V9.0";
 
   -- Ada.Strings.Unbounded and Ada.Exceptions re-definitions
   package Asu renames Ada.Strings.Unbounded;
@@ -30,7 +30,12 @@ procedure Xml_Checker is
   Output_Kind : Output_Kind_List;
 
   -- Warning detection
-  Warnings : Boolean;
+  procedure Warning (Ctx : in  Xml_Parser.Ctx_Type; Msg : in String) is
+  pragma Unreferenced (Ctx);
+  begin
+    Basic_Proc.Put_Line_Error ("WARNING: " & Msg);
+  end Warning;
+  Warnings : Xml_Parser.Warning_Callback_Access;
 
   -- Xml_Generator descriptor and format
   Format : Xml_Parser.Generator.Format_Kind_List;
@@ -60,13 +65,13 @@ procedure Xml_Checker is
     Ple (" <silent>     ::= -s | --silent     -- No output, only exit code");
     Ple (" <dump>       ::= -d | --dump       -- Dump expanded Xml tree");
     Ple (" <raw>        ::= -r | --raw        -- Put all on one line");
-    Ple (" <no_comment> ::= -n | --no_comment -- Skip comments");
     Ple (" <warnings>   ::= -w | --warnings   -- Check for warnings");
     Ple (" <width>      ::= -W <Width> | --width=<Width>");
     Ple ("                                    -- Put attributes up to Width");
     Ple (" <one>        ::= -1 | --one        -- Put one attribute per line");
     Ple (" <keep>       ::= -k | --keep       -- Dont't expand general entities and");
     Ple ("                                    --  attributes with default");
+    Ple (" <no_comment> ::= -n | --no_comment -- Skip comments");
     Ple (" <check_dtd>  ::= -c [ <Dtd> ] | --check_dtd=[<Dtd>]");
     Ple ("                                    -- Check vs a specific dtd or none");
     Ple (" <tree>       ::= -t | --tree       -- Build tree then dump it");
@@ -309,11 +314,11 @@ procedure Xml_Checker is
                   (Output_Kind = Gen
                      and then Format /= Xml_Parser.Generator.Raw)
                   or else Output_Kind = Dump,
-               Warnings => Warnings,
                Expand => not Keep or else Output_Kind = Dump,
                Use_Dtd => Use_Dtd,
                Dtd_File => Asu_Ts (Dtd_File),
-               Callback => Callback_Acc);
+               Warn_Cb => Warnings,
+               Parse_Cb => Callback_Acc);
     if not Parse_Ok then
       Basic_Proc.Put_Line_Error ("Error in file "
                                & Get_File_Name (Index, True) & ": "
@@ -419,7 +424,7 @@ begin
   Output_Kind := Gen;
   Width := Xml_Parser.Generator.Default_Width;
   Format := Xml_Parser.Generator.Default_Format;
-  Warnings := False;
+  Warnings := null;
   Keep := False;
   Use_Dtd := True;
   Dtd_File := Asu_Null;
@@ -498,7 +503,7 @@ begin
   end if;
 
   if Arg_Dscr.Is_Set (12) then
-    Warnings := True;
+    Warnings := Warning'Unrestricted_Access;
   end if;
 
   -- Process arguments

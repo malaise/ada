@@ -255,10 +255,10 @@ begin
     begin
       if I mod 2 = 1 then
         Ada.Text_Io.Put_Line ("Parsing file " & File_Name);
-        Xml_Parser.Parse_Dtd_File (File_Name, True, Dtds(I), Error_Msg);
+        Xml_Parser.Parse_Dtd_File (File_Name, null, Dtds(I), Error_Msg);
       else
         Ada.Text_Io.Put_Line ("Parsing string of file " & File_Name);
-        Xml_Parser.Parse_Dtd_String (Read_File (File_Name), False, Dtds(I),
+        Xml_Parser.Parse_Dtd_String (Read_File (File_Name), null, Dtds(I),
                                      Error_Msg);
       end if;
       if Error_Msg /= Asu.Null_Unbounded_String then

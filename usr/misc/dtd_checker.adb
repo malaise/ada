@@ -26,7 +26,14 @@ procedure Dtd_Checker is
     raise Abort_Error;
   end Error;
 
-  Warnings : Boolean := False;
+  procedure Warning (Ctx : in  Xml_Parser.Ctx_Type; Msg : in String) is
+  pragma Unreferenced (Ctx);
+  begin
+    Basic_Proc.Put_Line_Error ("WARNING: " & Msg);
+  end Warning;
+  Warnings : Xml_Parser.Warning_Callback_Access;
+
+
   File_Pos : Natural := 1;
 
   use type Asu.Unbounded_String;
@@ -46,7 +53,7 @@ begin
 
   if Argument.Get_Parameter (1) = "-w"
   or else Argument.Get_Parameter (1) = "--warnings" then
-    Warnings := True;
+    Warnings := Warning'Unrestricted_Access;
     if Argument.Get_Nbre_Arg > 1 then
       File_Pos := 2;
     end if;
@@ -59,7 +66,7 @@ begin
   -- Parse and check Dtd
   begin
     Xml_Parser.Parse_Dtd_File (Argument.Get_Parameter (File_Pos),
-                                Warnings, Dtd, Error_Msg);
+                               Warnings, Dtd, Error_Msg);
   exception
     when Xml_Parser.File_Error =>
       Error ("File " & String'(Argument.Get_Parameter (File_Pos))

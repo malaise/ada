@@ -272,11 +272,11 @@ package body Xml_Parser is
                    File_Name : in String;
                    Ok        : out Boolean;
                    Comments  : in Boolean := False;
-                   Warnings  : in Boolean := False;
                    Expand    : in Boolean := True;
                    Use_Dtd   : in Boolean := True;
                    Dtd_File  : in String  := "";
-                   Callback  : in Parse_Callback_Access := null) is
+                   Warn_Cb   : in Warning_Callback_Access := null;
+                   Parse_Cb  : in Parse_Callback_Access := null) is
   begin
     if Ctx.Status /= Clean then
       raise Status_Error;
@@ -299,11 +299,11 @@ package body Xml_Parser is
     Ctx.Flow.Curr_Flow.Same_Line := False;
     -- Parse this file
     Ctx.Parse_Comments := Comments;
-    Ctx.Warnings := Warnings;
     Ctx.Expand := Expand;
     Ctx.Use_Dtd := Use_Dtd;
     Ctx.Dtd_File := Asu_Tus (Dtd_File);
-    Ctx.Callback := Callback;
+    Ctx.Warnings := Warn_Cb;
+    Ctx.Callback := Parse_Cb;
     Parse_Mng.Parse_Xml (Ctx);
     Ctx.Status := Parsed_Elements;
     Ok := True;
@@ -366,10 +366,10 @@ package body Xml_Parser is
     end loop;
 
     Ctx.Parse_Comments := False;
-    Ctx.Warnings := False;
     Ctx.Expand := True;
     Ctx.Use_Dtd := True;
     Ctx.Dtd_File := Asu_Null;
+    Ctx.Warnings := null;
     Ctx.Callback := null;
     Ctx.Level := 0;
     -- Clean prologue tree
@@ -422,7 +422,7 @@ package body Xml_Parser is
 
   procedure Parse_Dtd_File (
       File_Name : in String;
-      Warnings  : in Boolean;
+      Warn_Cb   : in Warning_Callback_Access := null;
       Dtd       : out Dtd_Type;
       Error     : out Ada.Strings.Unbounded.Unbounded_String) is
     Ctx : Ctx_Type;
@@ -433,15 +433,15 @@ package body Xml_Parser is
     Ctx.Flow.Curr_Flow.Kind := Dtd_Flow;
     Ctx.Flow.Curr_Flow.Name := Build_Full_Name (Asu_Tus (File_Name));
     -- File Name_Error raises File_Error
-    Ctx.Warnings := Warnings;
+    Ctx.Warnings := Warn_Cb;
     Parse_Dtd_Internal (Ctx, Dtd, Error);
   end Parse_Dtd_File;
 
   procedure Parse_Dtd_String (
-      Str       : in String;
-      Warnings  : in Boolean;
-      Dtd       : out Dtd_Type;
-      Error     : out Ada.Strings.Unbounded.Unbounded_String) is
+      Str     : in String;
+      Warn_Cb : in Warning_Callback_Access := null;
+      Dtd     : out Dtd_Type;
+      Error   : out Ada.Strings.Unbounded.Unbounded_String) is
     Ctx : Ctx_Type;
   begin
     Clean_Dtd (Dtd);
@@ -452,7 +452,7 @@ package body Xml_Parser is
     Ctx.Flow.Curr_Flow.In_Str := Asu_Tus (Str);
     Ctx.Flow.Curr_Flow.Line := 1;
     Ctx.Flow.Curr_Flow.Same_Line := False;
-    Ctx.Warnings := Warnings;
+    Ctx.Warnings := Warn_Cb;
     Parse_Dtd_Internal (Ctx, Dtd, Error);
   end Parse_Dtd_String;
 
@@ -475,9 +475,9 @@ package body Xml_Parser is
                             Str      : in String;
                             Ok       : out Boolean;
                             Comments : in Boolean := False;
-                            Warnings : in Boolean := False;
                             Expand   : in Boolean := True;
-                            Callback : in Parse_Callback_Access := null) is
+                            Warn_Cb  : in Warning_Callback_Access := null;
+                            Parse_Cb : in Parse_Callback_Access := null) is
   begin
     if Ctx.Status /= Clean then
       raise Status_Error;
@@ -498,9 +498,9 @@ package body Xml_Parser is
     Ctx.Flow.Curr_Flow.Line := 1;
     Ctx.Flow.Curr_Flow.Same_Line := False;
     Ctx.Parse_Comments := Comments;
-    Ctx.Warnings := Warnings;
     Ctx.Expand := Expand;
-    Ctx.Callback := Callback;
+    Ctx.Warnings := Warn_Cb;
+    Ctx.Callback := Parse_Cb;
     Parse_Mng.Parse_Prologue (Ctx);
     -- Update status
     if Ctx.Callback = null then

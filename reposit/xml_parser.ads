@@ -10,7 +10,7 @@ with Queues, Trees, Unique_List, Text_Char, Dynamic_List, Unlimited_Pool,
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "16";
+  Major_Version : constant String := "17";
   function Version return String;
 
   -----------
@@ -86,9 +86,9 @@ package Xml_Parser is
   --  to a dummy child of the root element. This child (if any) is the
   --  last child of root and has no name.
 
-  -----------------------------
-  -- NOTE ABOUT THE CALLBACK --
-  -----------------------------
+  -------------------------------------
+  -- NOTE ABOUT THE PARSING CALLBACK --
+  -------------------------------------
   -- When a callback is provided to Parse, then no tree is build but nodes
   --  are directly provided. Prologue items all have a level of 0 and no child
   -- Only elements have attributes and children. When it has children an element
@@ -117,6 +117,11 @@ package Xml_Parser is
             procedure (Ctx  : in Ctx_Type;
                        Node : in Node_Update);
 
+  -- The callback called in case of warning
+  type Warning_Callback_Access is access
+            procedure (Ctx : in Ctx_Type;
+                       Warning : in String);
+
   ------------------
   -- FILE PARSING --
   ------------------
@@ -126,6 +131,9 @@ package Xml_Parser is
   --  default values (usefull for formatter)
   -- On option does not check compliance with Dtd
   -- On option force a dtd file different from DOCTYPE directive
+  -- If a warning callback is set then it is called for each warning detected
+  -- If a Parse_Cb is set then it is called for each node creation et for
+  --  each element end and no tree is build (see above)
   -- May raise File_Error if error accessing the File_Name,
   --           Status_Error if Ctx is not clean
   Stdin : constant String := "";
@@ -133,11 +141,11 @@ package Xml_Parser is
                    File_Name : in String;
                    Ok        : out Boolean;
                    Comments  : in Boolean := False;
-                   Warnings  : in Boolean := False;
                    Expand    : in Boolean := True;
                    Use_Dtd   : in Boolean := True;
                    Dtd_File  : in String  := "";
-                   Callback  : in Parse_Callback_Access := null);
+                   Warn_Cb   : in Warning_Callback_Access := null;
+                   Parse_Cb  : in Parse_Callback_Access := null);
   File_Error, Status_Error : exception;
 
   -- Return current status of context
@@ -155,16 +163,17 @@ package Xml_Parser is
   -- STRING PARSING --
   --------------------
   -- Parse a Dtd, optionally check for some warnings
-  -- Set Error to error/warning string, or empty string if OK
+  -- Set Error to error string, or empty string if OK
   type Dtd_Type is limited private;
   procedure Parse_Dtd_File (
       File_Name : in String;
-      Warnings  : in Boolean;
+      Warn_Cb   : in Warning_Callback_Access := null;
       Dtd       : out Dtd_Type;
       Error     : out Ada.Strings.Unbounded.Unbounded_String);
+
   procedure Parse_Dtd_String (
       Str       : in String;
-      Warnings  : in Boolean;
+      Warn_Cb   : in Warning_Callback_Access := null;
       Dtd       : out Dtd_Type;
       Error     : out Ada.Strings.Unbounded.Unbounded_String);
 
@@ -181,9 +190,9 @@ package Xml_Parser is
                             Str      : in String;
                             Ok       : out Boolean;
                             Comments : in Boolean := False;
-                            Warnings : in Boolean := False;
                             Expand   : in Boolean := True;
-                            Callback : in Parse_Callback_Access := null);
+                            Warn_Cb  : in Warning_Callback_Access := null;
+                            Parse_Cb : in Parse_Callback_Access := null);
 
   -- Parse the elements (after the prologue) and tail of a string with a dtd
   -- may raise Status_Error if Ctx is clean
@@ -594,13 +603,13 @@ private
     Flow : Flow_Type;
     -- Parse or skip comments
     Parse_Comments : Boolean := False;
-    -- Check also (and stop) on warnings
-    Warnings : Boolean := False;
     -- Expand or not general entities and attributes with default values
     Expand : Boolean := True;
     -- Use Dtd
     Use_Dtd : Boolean := True;
     Dtd_File : Ada.Strings.Unbounded.Unbounded_String;
+    -- Check also and report warnings
+    Warnings : Warning_Callback_Access := null;
     -- Call a callback i.o. feeding trees
     Callback : Parse_Callback_Access := null;
     Level : Natural := 0;

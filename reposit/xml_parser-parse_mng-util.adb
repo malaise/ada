@@ -267,10 +267,10 @@ package body Util is
   -- Separator for current line of input
   Lf : constant Character := Ada.Characters.Latin_1.Lf;
 
-  procedure Raise_Error (Flow : in out Flow_Type;
-                         Is_Error : in Boolean;
-                         Msg : in String;
-                         Line_No : in Natural) is
+  function Build_Error (Flow : in Flow_Type;
+                        Is_Error : in Boolean;
+                        Msg : in String;
+                        Line_No : in Natural) return String is
     Err_Msg : Asu_Us;
     Put_Line_No : Natural := 0;
     use type Asu_Us;
@@ -308,22 +308,29 @@ package body Util is
       Asu.Append (Err_Msg, " " & Flow.Curr_Flow.Name);
     end if;
     Asu.Append (Err_Msg, ": " & Msg & ".");
-    -- The error message is attached to the exception
-    -- Xml_parser will copy it in the Flow.
-    Trace ("Raising Parse_Error with " & Asu_Ts (Err_Msg));
-    Exception_Messenger.Raise_Exception (Parse_Error'Identity,
-                                         Asu_Ts (Err_Msg));
-  end Raise_Error;
+    return Asu_Ts (Err_Msg);
+  end Build_Error;
 
   procedure Error (Flow : in out Flow_Type;
-                   Msg : in String; Line_No : in Natural := 0) is
+                   Msg : in String;
+                   Line_No : in Natural := 0) is
+    Err_Msg : constant String := Build_Error (Flow, True, Msg, Line_No);
   begin
-    Raise_Error (Flow, True, Msg, Line_No);
+    -- The error message is attached to the exception
+    -- Xml_parser will copy it in the Flow.
+    Trace ("Raising Parse_Error with " & Err_Msg);
+    Exception_Messenger.Raise_Exception (Parse_Error'Identity, Err_Msg);
   end Error;
-  procedure Warning (Flow : in out Flow_Type;
-                   Msg : in String; Line_No : in Natural := 0) is
+  procedure Warning (Ctx     : in out Ctx_Type;
+                     Msg     : in String;
+                     Line_No : in Natural := 0) is
+    Err_Msg : constant String := Build_Error (Ctx.Flow, True, Msg, Line_No);
   begin
-    Raise_Error (Flow, False, Msg, Line_No);
+    if Ctx.Warnings = null then
+      return;
+    end if;
+    Trace ("Calling Warning with " & Err_Msg);
+    Ctx.Warnings (Ctx, Err_Msg);
   end Warning;
 
   -- Start recording

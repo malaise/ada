@@ -72,9 +72,9 @@ package body Parse_Mng  is
     -- Report an error, raises Parsing_Error.
     procedure Error (Flow : in out Flow_Type;
                      Msg : in String; Line_No : in Natural := 0);
-    -- Report a warning, raises Parsing_Error.
-    procedure Warning (Flow : in out Flow_Type;
-                       Msg : in String; Line_No : in Natural := 0);
+    -- Report a warning
+    procedure Warning (Ctx : in out Ctx_Type;
+                       Msg  : in String; Line_No : in Natural := 0);
 
     ----------------------
     -- Input characters --
@@ -1270,10 +1270,10 @@ package body Parse_Mng  is
                          Xml_Empty : in Boolean) is
     Dtd_Empty : Boolean;
   begin
-    if Ctx.Warnings and then Adtd.Set then
+    if Ctx.Warnings /= null and then Adtd.Set then
       Dtd.Is_Empty (Adtd, Name, Dtd_Empty);
       if Xml_Empty /= Dtd_Empty then
-        Util.Warning (Ctx.Flow,
+        Util.Warning (Ctx,
           "Empty-Element tag shall be used for and only for EMPTY elements");
       end if;
     end if;

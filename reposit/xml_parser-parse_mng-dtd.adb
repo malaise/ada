@@ -362,11 +362,9 @@ package body Dtd is
       Adtd.Info_List.Read (Info, Info);
       Trace ("Dtd retrieved previous ATTLIST -> " & Asu_Ts (Info.Name)
            & " " & Asu_Ts (Info.List));
-      if Ctx.Warnings then
-        Util.Warning (Ctx.Flow, "Attlist already defined at line "
+      Util.Warning (Ctx, "Attlist already defined at line "
            & Line_Image (Info.Line)
            & " for element " & Asu_Ts (Elt_Name));
-      end if;
     end if;
 
     -- Parse Attlist
@@ -638,10 +636,8 @@ package body Dtd is
         Trace ("Dtd discarding duplicate ATTLIST -> " & Asu_Ts (Info.Name)
              & " " & Asu_Ts (Att_Name) & Info_Sep & Info_Sep
              & Typ_Char & Def_Char);
-        if Ctx.Warnings then
-          Util.Warning (Ctx.Flow, "Attribute " & Asu_Ts (Att_Name)
+        Util.Warning (Ctx, "Attribute " & Asu_Ts (Att_Name)
              & " already defined for element " & Asu_Ts (Elt_Name));
-        end if;
       end if;
     end loop;
     -- Attlist is ended: store
@@ -793,10 +789,8 @@ package body Dtd is
     if Found then
       Trace ("Dtd discarding re-definition of entity "
            & Asu_Ts (Parstr & Name));
-      if Ctx.Warnings then
-        Util.Warning (Ctx.Flow, "Entity " & Asu_Ts (Parstr & Name)
+      Util.Warning (Ctx, "Entity " & Asu_Ts (Parstr & Name)
            & " already defined");
-      end if;
       return;
     end if;
     -- Store Entity, line and associated notation if unparsed entity
@@ -1159,7 +1153,7 @@ package body Dtd is
     -- Dtd is now valid
     Trace ("Dtd parsed dtd");
     Adtd.Set := True;
-    if Ctx.Warnings then
+    if Ctx.Warnings /= null then
       Trace ("Dtd checking warnings");
       Check_Warnings (Ctx, Adtd);
       Trace ("Dtd checked warnings");
@@ -1376,12 +1370,12 @@ package body Dtd is
       Adtd.Info_List.Search (Info, Found);
       if not Found then
         if Elt_Ref.Father /= Asu_Null then
-          Util.Warning (Ctx.Flow,
+          Util.Warning (Ctx,
             "Element " & Asu_Ts (Elt_Ref.Father) & " references unknown child "
                        &  Asu_Ts (Elt_Ref.Child),
             Elt_Ref.Line);
         else
-          Util.Warning (Ctx.Flow,
+          Util.Warning (Ctx,
             "Undefined element " & Asu_Ts (Elt_Ref.Child) & " used in ATTLIST",
             Elt_Ref.Line);
         end if;
