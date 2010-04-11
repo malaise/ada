@@ -509,7 +509,7 @@ begin
   end if;
 
   if Arg_Dscr.Is_Set (9) then
-    Dtd_File := Asu_Tus (Arg_Dscr.Get_Option (10));
+    Dtd_File := Asu_Tus (Arg_Dscr.Get_Option (9));
     if Dtd_File = Asu_Null then
       -- If option set with empty dtd => no check
       Use_Dtd := False;
