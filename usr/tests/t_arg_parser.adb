@@ -169,6 +169,12 @@ begin
         Ada.Text_Io.Put_Line (" found on" & Dscr.Get_Nb_Occurences (I)'Img
              & " occurences.");
         for J in 1 .. Dscr.Get_Nb_Occurences(I) loop
+          Ada.Text_Io.Put ("  Kind: ");
+          if Dscr.Is_Char (I, J) then
+            Ada.Text_Io.Put ("Chr");
+          else
+            Ada.Text_Io.Put ("Str");
+          end if;
           Ada.Text_Io.Put_Line ("  Position: " &  Dscr.Get_Position (I, J)'Img
                               & "  Option >" & Dscr.Get_Option (I, J) & "<");
         end loop;

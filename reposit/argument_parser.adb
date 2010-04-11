@@ -585,6 +585,27 @@ package body Argument_Parser is
     end if;
   end Get_Option;
 
+  -- Kind of a key (char or string)
+  function Is_Char (Dscr      : Parsed_Dscr;
+                    Index     : The_Keys_Index;
+                    Occurence : Positive := 1) return Boolean is
+    Loc : Positive;
+  begin
+    Loc := Get_Position (Dscr, Index, Occurence);
+
+    -- Handle No_Key_Index
+    if Index = No_Key_Index then
+      return False;
+    else
+      declare
+        Param : constant String := Argument.Get_Parameter (Loc);
+      begin
+        return Param'Length <= 2
+        or else Param (Param'First .. Param'First + 1) /= "--";
+      end;
+    end if;
+  end Is_Char;
+
   -- Absolute position of an occurence
   function Get_Position (Dscr      : Parsed_Dscr;
                          Index     : The_Keys_Index;

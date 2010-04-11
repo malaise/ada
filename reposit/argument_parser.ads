@@ -120,6 +120,11 @@ package Argument_Parser is
                        Index     : The_Keys_Index;
                        Occurence : Positive := 1) return String;
 
+  -- Kind of a key (char or string)
+  function Is_Char (Dscr      : Parsed_Dscr;
+                    Index     : The_Keys_Index;
+                    Occurence : Positive := 1) return Boolean;
+
   -- Absolute position of an occurence
   function Get_Position (Dscr      : Parsed_Dscr;
                          Index     : The_Keys_Index;
