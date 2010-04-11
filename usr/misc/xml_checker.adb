@@ -497,18 +497,18 @@ begin
       if Opt = "" then
         Keep := Keep_All;
       elsif (Chr and then Opt = "e")
-      or else (not Chr and then Opt = "expand") then
+      or else (not Chr and then Opt = "expanded") then
         Keep := Keep_Expand;
       elsif (Chr and then Opt = "c")
       or else (not Chr and then Opt = "comments") then
         Keep := Keep_Comments;
       else
-        Ae_Re (Arg_Error'Identity, "Invalid ""keep"" option");
+        Ae_Re (Arg_Error'Identity, "Invalid option for ""keep""");
       end if;
     end;
   end if;
 
-  if Arg_Dscr.Is_Set (10) then
+  if Arg_Dscr.Is_Set (9) then
     Dtd_File := Asu_Tus (Arg_Dscr.Get_Option (10));
     if Dtd_File = Asu_Null then
       -- If option set with empty dtd => no check
