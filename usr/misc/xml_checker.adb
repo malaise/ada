@@ -18,7 +18,8 @@ procedure Xml_Checker is
 
   -- Xml Parser context, elements and parsing parameters
   Ctx : Xml_Parser.Generator.Ctx_Type;
-  Keep : Boolean;
+  type Keep_Kind_List is (Keep_Comments, Keep_Expand, Keep_All, Keep_None);
+  Keep : Keep_Kind_List;
 
   -- Argument error
   Arg_Error : exception;
@@ -26,7 +27,7 @@ procedure Xml_Checker is
   Abort_Error : exception;
 
   -- Kind of ouput: None, dump or Xml_Generator
-  type Output_Kind_List is (None, Dump, Gen, No_Comment);
+  type Output_Kind_List is (None, Dump, Gen);
   Output_Kind : Output_Kind_List;
 
   -- Warning detection
@@ -59,7 +60,7 @@ procedure Xml_Checker is
     procedure Ple (Str : in String) renames Basic_Proc.Put_Line_Error;
   begin
     Ple ("Usage: " & Argument.Get_Program_Name & "[ { <option> } ] [ { <file> } ]");
-    Ple (" <option> ::= <silent> | <dump> | <raw> | <no_comment> | <warnings>");
+    Ple (" <option> ::= <silent> | <dump> | <raw> | <warnings>");
     Ple ("            |  <width> | <one> | <keep> | <check_dtd> | <tree>");
     Ple ("            | <help> | <version>");
     Ple (" <silent>     ::= -s | --silent     -- No output, only exit code");
@@ -69,17 +70,18 @@ procedure Xml_Checker is
     Ple (" <width>      ::= -W <Width> | --width=<Width>");
     Ple ("                                    -- Put attributes up to Width");
     Ple (" <one>        ::= -1 | --one        -- Put one attribute per line");
-    Ple (" <keep>       ::= -k | --keep       -- Dont't expand general entities and");
-    Ple ("                                    --  attributes with default");
-    Ple (" <no_comment> ::= -n | --no_comment -- Skip comments");
+    Ple (" <keep>       ::= -k[e|c] | --keep[=""expanded""|=""comments""]");
+    Ple ("                                    -- keep un-expanded general entities");
+    Ple ("                                    --  and attributes with default");
+    Ple ("                                    -- Keep comments");
     Ple (" <check_dtd>  ::= -c [ <Dtd> ] | --check_dtd=[<Dtd>]");
     Ple ("                                    -- Check vs a specific dtd or none");
     Ple (" <tree>       ::= -t | --tree       -- Build tree then dump it");
     Ple (" <help>       ::= -h | --help       -- Put this help");
     Ple (" <version>    ::= -v | --version    -- Put versions");
     Ple ("Always expands general entities in dump.");
-    Ple ("All options except keep, no_comment, warnings and check_dtd are exclusive.");
-    Ple ("No_comment not allowed on silent, dump and raw modes.");
+    Ple ("All options except keep, check_dtd, warnings and tree are exclusive.");
+    Ple ("Keep not allowed on Silent and Dump modes, Dump => keep all.");
     Ple ("Empty Dtd leads to skip check of comformance to DTD.");
     Ple ("Default is -W" & Xml_Parser.Generator.Default_Width'Img
                          & " on stdout.");
@@ -97,11 +99,10 @@ procedure Xml_Checker is
     5 => ('1', Asu_Tus ("one"), False, False),
     6 => ('h', Asu_Tus ("help"), False, False),
     7 => ('v', Asu_Tus ("version"), False, False),
-    8 => ('k', Asu_Tus ("keep"), False, False),
-    9 => ('n', Asu_Tus ("no_comment"), False, False),
-   10 => ('c', Asu_Tus ("check_dtd"), False, True),
-   11 => ('t', Asu_Tus ("tree"), False, False),
-   12 => ('w', Asu_Tus ("warnings"), False, False)
+    8 => ('k', Asu_Tus ("keep"), False, True),
+    9 => ('c', Asu_Tus ("check_dtd"), False, True),
+   10 => ('t', Asu_Tus ("tree"), False, False),
+   11 => ('w', Asu_Tus ("warnings"), False, False)
    );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
@@ -301,7 +302,7 @@ procedure Xml_Checker is
   -- Parse a file provided as arg or stdin
   -- Retrieve comments and don't expand General Entities if output is Xml
   procedure Do_One (Index : in Natural;
-                    Keep : in Boolean) is
+                    Keep : in Keep_Kind_List) is
     -- Parsing elements and charactericstics
     Prologue, Root : Xml_Parser.Element_Type;
     Parse_Ok : Boolean;
@@ -310,11 +311,8 @@ procedure Xml_Checker is
   begin
     Ctx.Parse (Get_File_Name (Index, False),
                Parse_Ok,
-               Comments =>
-                  (Output_Kind = Gen
-                     and then Format /= Xml_Parser.Generator.Raw)
-                  or else Output_Kind = Dump,
-               Expand => not Keep or else Output_Kind = Dump,
+               Comments => Keep = Keep_All or else Keep = Keep_Comments,
+               Expand => Keep /= Keep_All and then Keep /= Keep_Expand,
                Use_Dtd => Use_Dtd,
                Dtd_File => Asu_Ts (Dtd_File),
                Warn_Cb => Warnings,
@@ -361,7 +359,7 @@ procedure Xml_Checker is
       Out_Flow.Put_Line ("Unparsed entities:");
       Dump_Unparsed_Entities;
       Out_Flow.Flush;
-    elsif Output_Kind = Gen or else Output_Kind = No_Comment then
+    elsif Output_Kind = Gen then
       Ctx.Put (Xml_Parser.Generator.Stdout, Format, Width);
     end if;
     Ctx.Clean;
@@ -425,31 +423,33 @@ begin
   Width := Xml_Parser.Generator.Default_Width;
   Format := Xml_Parser.Generator.Default_Format;
   Warnings := null;
-  Keep := False;
+  Keep := Keep_None;
   Use_Dtd := True;
   Dtd_File := Asu_Null;
   Callback_Acc := null;
-  -- Get Keep option and chek max of options
-  -- Only one option, one more if Keep, one more if no_comment
-  --  one more if check_dtd, one more if ontheflow, one more if warnings
+  -- Get options and check max of options
+  -- Only one option, one more if Keep, one more if check_dtd,
+  --  one more if ontheflow, one more if warnings
   Max_Opt := 1;
   if Arg_Dscr.Is_Set (8) then
-    Keep := True;
+    -- Keep
     Max_Opt := 2;
   end if;
   if Arg_Dscr.Is_Set (9) then
+    -- Check dtd
     Max_Opt := Max_Opt + 1;
   end if;
   if Arg_Dscr.Is_Set (10) then
-    Max_Opt := Max_Opt + 1;
-  end if;
-  if Arg_Dscr.Is_Set (11) then
+    -- Tree mode
     Max_Opt := Max_Opt + 1;
   else
     Callback_Acc := Callback'Unrestricted_Access;
   end if;
-  if Arg_Dscr.Is_Set (12) then
+  if Arg_Dscr.Is_Set (11) then
+    -- Put warnings
     Max_Opt := Max_Opt + 1;
+  else
+    Warnings := Warning'Unrestricted_Access;
   end if;
   if Arg_Dscr.Get_Number_Keys > Max_Opt then
     Ae_Re (Arg_Error'Identity, "Too many options");
@@ -486,12 +486,27 @@ begin
     end if;
   end if;
 
-  if Arg_Dscr.Is_Set (9) then
-    if Output_Kind = Gen and then Format /= Xml_Parser.Generator.Raw then
-      Output_Kind := No_Comment;
-    else
+  if Arg_Dscr.Is_Set (8) then
+    if Output_Kind /= Gen then
       Ae_Re (Arg_Error'Identity, "Incompatible options");
     end if;
+    -- Parse Keep options
+    declare
+      Opt : constant String := Arg_Dscr.Get_Option (8);
+      Chr : constant Boolean := Arg_Dscr.Is_Char (8);
+    begin
+      if Opt = "" then
+        Keep := Keep_All;
+      elsif (Chr and then Opt = "e")
+      or else (not Chr and then Opt = "expand") then
+        Keep := Keep_Expand;
+      elsif (Chr and then Opt = "c")
+      or else (not Chr and then Opt = "comments") then
+        Keep := Keep_Comments;
+      else
+        Ae_Re (Arg_Error'Identity, "Invalid ""keep"" option");
+      end if;
+    end;
   end if;
 
   if Arg_Dscr.Is_Set (10) then
@@ -502,11 +517,12 @@ begin
     end if;
   end if;
 
-  if Arg_Dscr.Is_Set (12) then
-    Warnings := Warning'Unrestricted_Access;
+  -- Keep all on Dump
+  if Output_Kind = Dump then
+    Keep := Keep_All;
   end if;
 
-  -- Process arguments
+  -- Process other arguments
   if Arg_Dscr.Get_Nb_Occurences (No_Key_Index) = 0 then
     Do_One (0, Keep);
   else
