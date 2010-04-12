@@ -3,7 +3,7 @@ with Argument, Argument_Parser, Xml_Parser.Generator, Normal, Basic_Proc,
      Text_Line, Sys_Calls, Parser;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V9.0";
+  Version : constant String := "V9.1";
 
   -- Ada.Strings.Unbounded and Ada.Exceptions re-definitions
   package Asu renames Ada.Strings.Unbounded;
@@ -70,10 +70,11 @@ procedure Xml_Checker is
     Ple (" <width>      ::= -W <Width> | --width=<Width>");
     Ple ("                                    -- Put attributes up to Width");
     Ple (" <one>        ::= -1 | --one        -- Put one attribute per line");
-    Ple (" <keep>       ::= -k[e|c] | --keep[=""expanded""|=""comments""]");
-    Ple ("                                    -- keep un-expanded general entities");
+    Ple (" <keep>       ::= -k [e|c|a]  |  --keep[=[expanded|comments|all]]");
+    Ple ("                                    -- Keep un-expanded general entities");
     Ple ("                                    --  and attributes with default");
     Ple ("                                    -- Keep comments");
+    Ple ("                                    -- Keep all (default)");
     Ple (" <check_dtd>  ::= -c [ <Dtd> ] | --check_dtd=[<Dtd>]");
     Ple ("                                    -- Check vs a specific dtd or none");
     Ple (" <tree>       ::= -t | --tree       -- Build tree then dump it");
@@ -81,7 +82,7 @@ procedure Xml_Checker is
     Ple (" <version>    ::= -v | --version    -- Put versions");
     Ple ("Always expands general entities in dump.");
     Ple ("All options except keep, check_dtd, warnings and tree are exclusive.");
-    Ple ("Keep not allowed on Silent and Dump modes, Dump => keep all.");
+    Ple ("Keep not allowed on Dump mode, Dump => keep all.");
     Ple ("Empty Dtd leads to skip check of comformance to DTD.");
     Ple ("Default is -W" & Xml_Parser.Generator.Default_Width'Img
                          & " on stdout.");
@@ -461,6 +462,7 @@ begin
   elsif Arg_Dscr.Is_Set (2) then
     -- Dump
     Output_Kind := Dump;
+    Keep := Keep_All;
   elsif Arg_Dscr.Is_Set (3) then
     Format := Xml_Parser.Generator.Raw;
   end if;
@@ -486,7 +488,7 @@ begin
   end if;
 
   if Arg_Dscr.Is_Set (8) then
-    if Output_Kind /= Gen then
+    if Output_Kind = Dump then
       Ae_Re (Arg_Error'Identity, "Incompatible options");
     end if;
     -- Parse Keep options
@@ -494,7 +496,9 @@ begin
       Opt : constant String := Arg_Dscr.Get_Option (8);
       Chr : constant Boolean := Arg_Dscr.Is_Char (8);
     begin
-      if Opt = "" then
+      if Opt = ""
+      or else (Chr and then Opt = "a")
+      or else (not Chr and then Opt = "all") then
         Keep := Keep_All;
       elsif (Chr and then Opt = "e")
       or else (not Chr and then Opt = "expanded") then
@@ -509,16 +513,12 @@ begin
   end if;
 
   if Arg_Dscr.Is_Set (9) then
+    -- Check dtd file
     Dtd_File := Asu_Tus (Arg_Dscr.Get_Option (9));
     if Dtd_File = Asu_Null then
       -- If option set with empty dtd => no check
       Use_Dtd := False;
     end if;
-  end if;
-
-  -- Keep all on Dump
-  if Output_Kind = Dump then
-    Keep := Keep_All;
   end if;
 
   -- Process other arguments
