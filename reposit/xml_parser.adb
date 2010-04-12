@@ -305,7 +305,12 @@ package body Xml_Parser is
     Ctx.Warnings := Warn_Cb;
     Ctx.Callback := Parse_Cb;
     Parse_Mng.Parse_Xml (Ctx);
-    Ctx.Status := Parsed_Elements;
+    -- Update status
+    if Ctx.Callback = null then
+      Ctx.Status := Parsed_Elements;
+    else
+      Clean (Ctx);
+    end if;
     Ok := True;
   exception
     when File_Error | Status_Error =>
@@ -586,7 +591,8 @@ package body Xml_Parser is
   -- Check the Ctx: parse the DTD (if any) and check the Ctx versus it
   --  (same effect as Xml_Parse.Parse)
   procedure Check (Ctx : in out Ctx_Type;
-                   Ok  : out Boolean) is
+                   Ok  : out Boolean;
+                   Warn_Cb  : in Warning_Callback_Access := null) is
   begin
     -- Status must be Parsed_xxx or Init
     if Ctx.Status = Clean
@@ -602,6 +608,7 @@ package body Xml_Parser is
     if not Ctx.Elements.Is_Empty then
       Ctx.Elements.Move_Root;
     end if;
+    Ctx.Warnings := Warn_Cb;
     Parse_Mng.Check (Ctx);
     Ctx.Status := Parsed_Elements;
     Ok := True;

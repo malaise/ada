@@ -284,10 +284,6 @@ package body Parse_Mng  is
     procedure Can_Have_Spaces (Adtd : in out Dtd_Type;
                                Elt  : in Asu_Us;
                                Yes  : out Boolean);
-    -- Is this element defined as EMPTY
-    procedure Is_Empty (Adtd : in out Dtd_Type;
-                        Elt  : in Asu_Us;
-                        Yes  : out Boolean);
     -- Is this attribute of this element CDATA
     procedure Is_Cdata (Adtd      : in out Dtd_Type;
                         Elt, Attr : in Asu_Us;
@@ -1262,23 +1258,6 @@ package body Parse_Mng  is
 
   end Parse_Text;
 
-  -- Local: Check compliance of STag+Etag or EmptyElemTag
-  -- versus dtd EMPTY definition for element
-  procedure Check_Empty (Ctx : in out Ctx_Type;
-                         Adtd : in out Dtd_Type;
-                         Name : in Asu_Us;
-                         Xml_Empty : in Boolean) is
-    Dtd_Empty : Boolean;
-  begin
-    if Ctx.Warnings /= null and then Adtd.Set then
-      Dtd.Is_Empty (Adtd, Name, Dtd_Empty);
-      if Xml_Empty /= Dtd_Empty then
-        Util.Warning (Ctx,
-          "Empty-Element tag shall be used for and only for EMPTY elements");
-      end if;
-    end if;
-  end Check_Empty;
-
   -- Parse text or sub-elements of an element (until </)
   -- Children and Is_mixed are set with list of children
   procedure Parse_Children (Ctx : in out Ctx_Type;
@@ -1337,7 +1316,6 @@ package body Parse_Mng  is
             Ctx.Level := Ctx.Level - 1;
             Children.Prev_Is_Text := True;
             Call_Callback (Ctx, False, False, False, True);
-            Check_Empty (Ctx, Adtd, Children.Father, False);
           end if;
           return;
         elsif Char = Util.Directive then
@@ -1440,12 +1418,10 @@ package body Parse_Mng  is
                             & " after " & Util.Slash);
       end if;
       -- End of this empty element, check attributes and content
+      Tree_Mng.Set_Put_Empty (Ctx.Elements.all, True);
       Dtd.Check_Attributes (Ctx, Adtd);
       Check_Children (Ctx, Adtd,  My_Children'Access);
       Call_Callback (Ctx, False, True, False, Parent_Children.Prev_Is_Text);
-      -- Check that it can be empty and set Put_Empty on current element
-      Check_Empty (Ctx, Adtd, My_Children.Father, True);
-      Tree_Mng.Set_Put_Empty (Ctx.Elements.all, True);
       Move_Del (Ctx, False);
       Parent_Children.Prev_Is_Text := False;
       Trace ("Parsed element " & Asu_Ts (Element_Name));
@@ -1466,6 +1442,7 @@ package body Parse_Mng  is
                   & ", got " & Asu_Ts (End_Name));
       end if;
       -- End of this non empty element, check children
+      Tree_Mng.Set_Put_Empty (Ctx.Elements.all, False);
       Check_Children (Ctx, Adtd,  My_Children'Access);
       Move_Del (Ctx, False);
       Trace ("Parsed element " & Asu_Ts (Element_Name));

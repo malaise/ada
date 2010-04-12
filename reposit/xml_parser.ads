@@ -7,10 +7,12 @@ with Queues, Trees, Unique_List, Text_Char, Dynamic_List, Unlimited_Pool,
 --  * Only the System Id of the DOCTYPE and of external parsed ENTITY is used,
 --    Public Id (if any) is skipped.
 --  * Only local file reference is fetched, no http :-) (parsing error).
+--  * Only UTF-8, UTF-16 and ISO-8859-1 are natively supported, other character
+--    maps can be defined in $XML_PARSER_MAP_DIR.
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "17";
+  Major_Version : constant String := "18";
   function Version return String;
 
   -----------
@@ -211,7 +213,8 @@ package Xml_Parser is
   --  (same effect as Parse, but on a context set or modified in
   --  Xml_Parser.Generator)
   procedure Check (Ctx : in out Ctx_Type;
-                   Ok  : out Boolean);
+                   Ok  : out Boolean;
+                   Warn_Cb  : in Warning_Callback_Access := null);
 
   -------------------------
   -- NAME AND ATTRIBUTES --
