@@ -34,7 +34,7 @@ procedure Xml_Checker is
   procedure Warning (Ctx : in  Xml_Parser.Ctx_Type; Msg : in String) is
   pragma Unreferenced (Ctx);
   begin
-    Basic_Proc.Put_Line_Error ("WARNING: " & Msg);
+    Basic_Proc.Put_Line_Error (Msg);
   end Warning;
   Warnings : Xml_Parser.Warning_Callback_Access;
 

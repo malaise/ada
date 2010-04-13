@@ -324,7 +324,7 @@ package body Util is
   procedure Warning (Ctx     : in out Ctx_Type;
                      Msg     : in String;
                      Line_No : in Natural := 0) is
-    Err_Msg : constant String := Build_Error (Ctx.Flow, True, Msg, Line_No);
+    Err_Msg : constant String := Build_Error (Ctx.Flow, False, Msg, Line_No);
   begin
     if Ctx.Warnings = null then
       return;
