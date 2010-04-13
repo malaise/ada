@@ -1,4 +1,4 @@
-with Basic_Proc, Xml_Parser.Generator, Sys_Calls;
+with Basic_Proc, Xml_Parser.Generator, Sys_Calls, Argument;
 procedure T_Xml_Gen is
   Dscr : Xml_Parser.Generator.Ctx_Type;
   Dtd_Name : constant String := "variables.dtd";
@@ -6,8 +6,21 @@ procedure T_Xml_Gen is
   New_Node : Xml_Parser.Node_Type;
   Node_1, Path_Node, Fail_Node, Tail_Node : Xml_Parser.Node_Type;
   Ok : Boolean;
+
+  procedure Warning (Ctx : in  Xml_Parser.Ctx_Type; Msg : in String) is
+  pragma Unreferenced (Ctx);
+  begin
+    Basic_Proc.Put_Line_Error (Msg);
+  end Warning;
+  Warnings : Xml_Parser.Warning_Callback_Access := null;
+
   use Xml_Parser, Xml_Parser.Generator;
 begin
+  -- Show warnings if "-w"
+  if Argument.Get_Nbre_Arg = 1 and then Argument.Get_Parameter (1) = "-w" then
+    Warnings := Warning'Unrestricted_Access;
+  end if;
+
   -- Symlink Dtd from Data to current
   if not Sys_Calls.File_Found (Dtd_Name) then
     Sys_Calls.Link ("data/" & Dtd_Name, "./" & Dtd_Name, False);
@@ -50,6 +63,12 @@ begin
   Dscr.Add_Child (New_Node, "${V1}*${V2}", Xml_Parser.Text, New_Node);
   Node := Dscr.Get_Parent (New_Node);
 
+  Dscr.Add_Brother (Node, "Var", Xml_Parser.Element, New_Node);
+  Dscr.Add_Attribute (New_Node, "Name", "V4");
+  Dscr.Add_Attribute (New_Node, "Type", "Str");
+  Dscr.Set_Put_Empty (New_Node, True);
+  Node := New_Node;
+
   -- Add a Copy from Node_1 as brother
   Dscr.Copy (Node_1, Node, Child => False, Next => True);
   New_Node := Dscr.Get_Brother (Node);
@@ -80,7 +99,7 @@ begin
                   Xml_Parser.Comment, New_Node);
 
   -- Check tree
-  Dscr.Check (Ok);
+  Dscr.Check (Ok, Warnings);
   if not Ok then
     Basic_Proc.Put_Line_Error (Dscr.Get_Parse_Error_Message);
     Basic_Proc.Set_Error_Exit_Code;

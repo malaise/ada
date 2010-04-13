@@ -9,6 +9,7 @@
   <Var Name="PATH">${PATH}:/usr/local/bin</Var>
   <Var Name="V2" Type="Int">5*${V1}*${V1}</Var>
   <Var Name="V3" Type="Str">${V1}*${V2}</Var>
+  <Var Name="V4" Type="Str"/>
   <Var Name="V2" Type="Int">${V3}*2</Var>
   <!-- Comp_var will report error if variable SET_ME is not set -->
   <Var Name="Fail" Type="Str">${SET_ME}</Var>

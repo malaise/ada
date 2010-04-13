@@ -36,12 +36,23 @@ procedure Comp_Vars is
   function Do_One (File_Name : String) return Boolean is
     package Asu renames Ada.Strings.Unbounded;
     Ctx : Xml_Parser.Ctx_Type;
+    Step_Parsing : Boolean;
     -- Log an error
     procedure Error (Msg  : in String;
                      Node : in Xml_Parser.Node_Type) is
       use type Xml_Parser.Node_Kind_List;
     begin
-      Sys_Calls.Put_Error ("Error parsing file " & File_Name);
+      Sys_Calls.Put_Error ("Error ");
+      if Step_Parsing then
+        Sys_Calls.Put_Error ("parsing ");
+      else
+        Sys_Calls.Put_Error ("processing ");
+      end if;
+      if File_Name /= "" then
+        Sys_Calls.Put_Error ("file " & File_Name);
+      else
+        Sys_Calls.Put_Error ("input flow");
+      end if;
       if Xml_Parser.Is_Valid (Node) then
         Sys_Calls.Put_Error (" at line"
            & Positive'Image (Ctx.Get_Line_No (Node)));
@@ -64,11 +75,13 @@ procedure Comp_Vars is
     Attr1, Attr2 : Xml_Parser.Attribute_Rec;
     -- Is variable an int or a string
     Var_Is_Int : Boolean;
+    Text : Asu.Unbounded_String;
     -- Result of evaluation
     Result : Asu.Unbounded_String;
     use type Xml_Parser.Node_Kind_List;
   begin
     -- Parse
+    Step_Parsing := True;
     declare
       Ok : Boolean;
     begin
@@ -99,110 +112,117 @@ procedure Comp_Vars is
     for I in 1 .. Ctx.Get_Nb_Children (Vars) loop
       -- A variable
       Var := Ctx.Get_Child (Vars, I);
-      if Var.Kind = Xml_Parser.Element then
-        if Ctx.Get_Name (Var) /= "Var" then
-          Error ("Unexpected node name.", Var);
-          return False;
+      if Var.Kind /= Xml_Parser.Element then
+        Error ("Invalid element as Variable content.", Var);
+        return False;
+      end if;
+      if Ctx.Get_Name (Var) /= "Var" then
+        Error ("Unexpected node name.", Var);
+        return False;
+      end if;
+
+      -- Check and get attributes Name and Type
+      if Ctx.Get_Nb_Attributes (Var) = 1 then
+        -- One attribute: a string
+        Attr1 := Ctx.Get_Attribute (Var, 1);
+        Var_Is_Int := False;
+      elsif Ctx.Get_Nb_Attributes (Var) = 2 then
+        -- Two attributes
+        Attr1 := Ctx.Get_Attribute (Var, 1);
+        Attr2 := Ctx.Get_Attribute (Var, 2);
+        if Asu.To_String (Attr1.Name) = "Type" then
+          -- Swap so that Attr1 is Name and Attr2 is Type
+          declare
+            Attrt : constant Xml_Parser.Attribute_Rec := Attr1;
+          begin
+            Attr1 := Attr2;
+            Attr2 := Attrt;
+          end;
         end if;
-        -- Check and get attributes Name and Type
-        if Ctx.Get_Nb_Attributes (Var) = 1 then
-          -- One attribute: a string
-          Attr1 := Ctx.Get_Attribute (Var, 1);
-          Var_Is_Int := False;
-        elsif Ctx.Get_Nb_Attributes (Var) = 2 then
-          -- Two attributes
-          Attr1 := Ctx.Get_Attribute (Var, 1);
-          Attr2 := Ctx.Get_Attribute (Var, 2);
-          if Asu.To_String (Attr1.Name) = "Type" then
-            -- Swap so that Attr1 is Name and Attr2 is Type
-            declare
-              Attrt : constant Xml_Parser.Attribute_Rec := Attr1;
-            begin
-              Attr1 := Attr2;
-              Attr2 := Attrt;
-            end;
-          end if;
-          -- Second attribute must be type
-          if Asu.To_String (Attr2.Name) /= "Type" then
-            Error ("Invalid attribute " & Asu.To_String (Attr2.Name)
-                 & " to Variable.", Var);
-            return False;
-          end if;
-          -- Check Type is Int or Str
-          if Asu.To_String (Attr2.Value) = "Int" then
-            Var_Is_Int := True;
-          elsif Asu.To_String (Attr2.Value) = "Str" then
-            Var_Is_Int := False;
-          else
-            Error ("Invalid type " & Asu.To_String (Attr2.Value)
-                 & " to Variable.", Var);
-            return False;
-          end if;
-        else
-          -- 0 or more than 2 attributes
-          Error ("Invalid attribute(s) to Variable.", Var);
-          return False;
-        end if;
-        -- First attribute must be Name
-        if Asu.To_String (Attr1.Name) /= "Name" then
-          Error ("Invalid attribute " & Asu.To_String (Attr1.Name)
+        -- Second attribute must be type
+        if Asu.To_String (Attr2.Name) /= "Type" then
+          Error ("Invalid attribute " & Asu.To_String (Attr2.Name)
                & " to Variable.", Var);
           return False;
         end if;
 
-        -- Get Value
-        if Ctx.Get_Nb_Children (Var) /= 1 then
-          Error ("Invalid content of Variable.", Var);
-          return False;
-        end if;
-        Val := Ctx.Get_Child (Var, 1);
-        if Var.Kind /= Xml_Parser.Element then
-          Error ("Invalid element as Variable content.", Var);
-          return False;
-        end if;
-
-        -- Eval or compute
-        declare
-          Expr : constant String := Ctx.Get_Text (Val);
-        begin
-          if Var_Is_Int then
-            Result := Asu.To_Unbounded_String (
-                      Comp_Image (Computer.Compute (Expr)));
-          else
-            Result := Asu.To_Unbounded_String (Computer.Eval (Expr));
-          end if;
-        exception
-          when Computer.Unknown_Variable =>
-            Error ("Unknown variable while evaluating variable.", Var);
-            return False;
-          when Computer.Invalid_Expression =>
-            Error ("Invalid expression while evaluating variable.", Var);
-            return False;
-        end;
-
-        -- Store Result
-        Computer.Set (Name  => Asu.To_String (Attr1.Value),
-                      Value => Asu.To_String (Result),
-                      Modifiable => True, Persistent => False);
-        -- Display result
-        if Xml_Format then
-          Out_File.Put ("  <Var "
-            & "Name=""" & Asu.To_String (Attr1.Value) & """ "
-            & "Type=""");
-          if Var_Is_Int then
-            Out_File.Put ("Int");
-          else
-            Out_File.Put ("Str");
-          end if;
-          Out_File.Put_Line (""">" & Asu.To_String (Result) & "</Var>");
+        -- Check Type is Int or Str
+        if Asu.To_String (Attr2.Value) = "Int" then
+          Var_Is_Int := True;
+        elsif Asu.To_String (Attr2.Value) = "Str" then
+          Var_Is_Int := False;
         else
-          Out_File.Put ("export " & Asu.To_String (Attr1.Value)
-             & "=");
-          if Var_Is_Int then
-            Out_File.Put_Line (Asu.To_String (Result));
-          else
-            Out_File.Put_Line ("""" & Asu.To_String (Result) & """");
-          end if;
+          Error ("Invalid type " & Asu.To_String (Attr2.Value)
+               & " to Variable.", Var);
+          return False;
+        end if;
+      else
+        -- 0 or more than 2 attributes
+        Error ("Invalid attribute(s) to Variable.", Var);
+        return False;
+      end if;
+      -- First attribute must be Name
+      if Asu.To_String (Attr1.Name) /= "Name" then
+        Error ("Invalid attribute " & Asu.To_String (Attr1.Name)
+             & " to Variable.", Var);
+        return False;
+      end if;
+
+      -- Get Value
+      if Ctx.Get_Nb_Children (Var) = 0
+      and then not Var_Is_Int then
+        -- Empty string
+        Text := Asu.Null_Unbounded_String;
+      elsif Ctx.Get_Nb_Children (Var) = 1 then
+        Val := Ctx.Get_Child (Var, 1);
+        Text := Ctx.Get_Text (Val);
+      else
+        Error ("Invalid content of Variable.", Var);
+        return False;
+      end if;
+
+      -- Eval or compute
+      Step_Parsing := False;
+      declare
+        Expr : constant String := Asu.To_String (Text);
+      begin
+        if Var_Is_Int then
+          Result := Asu.To_Unbounded_String (
+                    Comp_Image (Computer.Compute (Expr)));
+        else
+          Result := Asu.To_Unbounded_String (Computer.Eval (Expr));
+        end if;
+      exception
+        when Computer.Unknown_Variable =>
+          Error ("Unknown variable while evaluating variable.", Var);
+          return False;
+        when Computer.Invalid_Expression =>
+          Error ("Invalid expression while evaluating variable.", Var);
+          return False;
+      end;
+
+      -- Store Result
+      Computer.Set (Name  => Asu.To_String (Attr1.Value),
+                    Value => Asu.To_String (Result),
+                    Modifiable => True, Persistent => False);
+      -- Display result
+      if Xml_Format then
+        Out_File.Put ("  <Var "
+          & "Name=""" & Asu.To_String (Attr1.Value) & """ "
+          & "Type=""");
+        if Var_Is_Int then
+          Out_File.Put ("Int");
+        else
+          Out_File.Put ("Str");
+        end if;
+        Out_File.Put_Line (""">" & Asu.To_String (Result) & "</Var>");
+      else
+        Out_File.Put ("export " & Asu.To_String (Attr1.Value)
+           & "=");
+        if Var_Is_Int then
+          Out_File.Put_Line (Asu.To_String (Result));
+        else
+          Out_File.Put_Line ("""" & Asu.To_String (Result) & """");
         end if;
       end if;
 
