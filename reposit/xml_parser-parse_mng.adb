@@ -591,14 +591,6 @@ package body Parse_Mng  is
     end case;
   end Add_Child;
 
-  -- Check element's children, tree or desc
-  procedure Check_Children (Ctx  : in out Ctx_Type;
-                            Adtd : in out Dtd_Type;
-                            Desc : access Children_Desc) is
-  begin
-    Dtd.Check_Element (Ctx, Adtd, Desc.all);
-  end Check_Children;
-
   -- Expand the content of an external parsed entity
   procedure Expand_External_Entity (Ctx : in out Ctx_Type;
                                     Dtd : in out Dtd_Type;
@@ -1420,7 +1412,7 @@ package body Parse_Mng  is
       -- End of this empty element, check attributes and content
       Tree_Mng.Set_Put_Empty (Ctx.Elements.all, True);
       Dtd.Check_Attributes (Ctx, Adtd);
-      Check_Children (Ctx, Adtd,  My_Children'Access);
+      Dtd.Check_Element (Ctx, Adtd,  My_Children);
       Call_Callback (Ctx, False, True, False, Parent_Children.Prev_Is_Text);
       Move_Del (Ctx, False);
       Parent_Children.Prev_Is_Text := False;
@@ -1443,7 +1435,7 @@ package body Parse_Mng  is
       end if;
       -- End of this non empty element, check children
       Tree_Mng.Set_Put_Empty (Ctx.Elements.all, False);
-      Check_Children (Ctx, Adtd,  My_Children'Access);
+      Dtd.Check_Element (Ctx, Adtd,  My_Children);
       Move_Del (Ctx, False);
       Trace ("Parsed element " & Asu_Ts (Element_Name));
       return;

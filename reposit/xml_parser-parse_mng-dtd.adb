@@ -1408,6 +1408,8 @@ package body Dtd is
     Childstr : Asu_Us := Children.Children;
     -- Is Dtd defintion EMPTY
     Dtd_Empty : Boolean;
+    -- "only " or "" depending to Dtd_Empty
+    Only : Asu_Us;
     use type Asu_Us;
   begin
     Trace ("Dtd check Xml children list " & Asu_Ts (Children.Children)
@@ -1441,9 +1443,13 @@ package body Dtd is
     Char := Asu.Element (Info.List, 1);
     Info.List := Asu.Delete (Info.List, 1, 1);
     Dtd_Empty := False;
+    -- When Xml_Empty and not Dtd_Empty
+    Only := Asu_Tus ("only ");
     case Char is
       when 'E' =>
         Dtd_Empty := True;
+        -- When Dtd_Empty and not Xml_Empty
+        Only := Asu_Null;
         -- Must be empty
         if not Children.Is_Empty then
           Util.Error (Ctx.Flow, "According to dtd, element " & Asu_Ts (Name)
@@ -1497,7 +1503,8 @@ package body Dtd is
 
     if Put_Empty /= Dtd_Empty then
       Util.Warning (Ctx,
-        "Empty-Element tag shall be used for and only for EMPTY elements");
+        "Empty-Element tag shall " & Asu_Ts (Only)
+      & "be used for EMPTY elements");
     end if;
   exception
     when Regular_Expressions.No_Criteria =>
