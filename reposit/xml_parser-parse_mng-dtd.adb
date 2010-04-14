@@ -63,7 +63,7 @@ package body Dtd is
       else
         Ctx.Prologue.Insert_Child (Dummy, False);
       end if;
-      Parse_Attributes (Ctx, Adtd, True);
+      Parse_Attributes (Ctx, Adtd, Of_Xml => True);
       Check_Xml_Attributes (Ctx, False);
       -- Delete this dummy child
       Ctx.Prologue.Delete_Tree;

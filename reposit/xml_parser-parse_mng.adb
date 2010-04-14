@@ -347,6 +347,11 @@ package body Parse_Mng  is
       else
         Tree_Mng.Attribute_Exists (Ctx.Elements.all,
                   Attribute_Name, Attr_Exists);
+        if Attr_Exists then
+          -- Elt_Name is always set when not Of_Xml
+          Util.Error (Ctx.Flow, "Attribute " & Asu_Ts (Attribute_Name)
+                    & " already defined for element " & Asu_Ts (Elt_Name));
+        end if;
       end if;
 
       -- Parse value
@@ -355,7 +360,7 @@ package body Parse_Mng  is
       if Of_Xml then
         Tree_Mng.Add_Xml_Attribute (Ctx.Prologue.all,
                   Attribute_Name, Attribute_Value, Line_No);
-      elsif not Attr_Exists then
+      else
         -- Keep first definition
         -- If expand, then Normalize separators of non CDATA attributes
         Dtd.Is_Cdata (Adtd, Elt_Name, Attribute_Name, Attr_Cdata);
@@ -644,7 +649,7 @@ package body Parse_Mng  is
       else
         Ctx.Prologue.Insert_Child (Dummy, False);
       end if;
-      Parse_Attributes (Ctx, Dtd, True);
+      Parse_Attributes (Ctx, Dtd, Of_Xml => True);
       Check_Xml_Attributes (Ctx, False);
       Ctx.Prologue.Delete_Tree;
       Trace ("Ext parsed xml instruction");
@@ -1393,6 +1398,7 @@ package body Parse_Mng  is
     -- See first significant character after name
     Util.Read (Ctx.Flow, Char);
     if Util.Is_Separator (Char) then
+      Util.Skip_Separators (Ctx.Flow);
       Util.Get (Ctx.Flow, Char);
     end if;
     -- If not / nor >, then parse_attributes
