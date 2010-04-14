@@ -65,7 +65,6 @@ begin
 
   Dscr.Add_Brother (Node, "Var", Xml_Parser.Element, New_Node);
   Dscr.Add_Attribute (New_Node, "Name", "V4");
-  Dscr.Add_Attribute (New_Node, "Type", "Str");
   Dscr.Set_Put_Empty (New_Node, True);
   Node := New_Node;
 
