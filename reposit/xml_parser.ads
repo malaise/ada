@@ -12,7 +12,7 @@ with Queues, Trees, Unique_List, Text_Char, Dynamic_List, Unlimited_Pool,
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "18";
+  Major_Version : constant String := "19";
   function Version return String;
 
   -----------
@@ -51,6 +51,12 @@ package Xml_Parser is
 
   -- A parsing context
   type Ctx_Type is tagged limited private;
+
+
+  -- What to do with CDATA sections
+  type Cdata_Policy_List is (Keep_Cdata_Section,    -- Keep markers and Cdata
+                             Remove_Cdata_Markers,  -- Remove markers
+                             Remove_Cdata_Section); -- Remove whole section
 
 
   -- Context status
@@ -131,6 +137,7 @@ package Xml_Parser is
   -- On option, allows retrieval of comments (usefull for formatter)
   -- On option, does not expand General entities nor set attributes with
   --  default values (usefull for formatter)
+  -- On option skip CDATA sections or markers
   -- On option does not check compliance with Dtd
   -- On option force a dtd file different from DOCTYPE directive
   -- If a warning callback is set then it is called for each warning detected
@@ -144,6 +151,7 @@ package Xml_Parser is
                    Ok        : out Boolean;
                    Comments  : in Boolean := False;
                    Expand    : in Boolean := True;
+                   Cdata     : in Cdata_Policy_List := Remove_Cdata_Markers;
                    Use_Dtd   : in Boolean := True;
                    Dtd_File  : in String  := "";
                    Warn_Cb   : in Warning_Callback_Access := null;
@@ -193,6 +201,8 @@ package Xml_Parser is
                             Ok       : out Boolean;
                             Comments : in Boolean := False;
                             Expand   : in Boolean := True;
+                            Cdata    : in Cdata_Policy_List
+                                     := Remove_Cdata_Markers;
                             Warn_Cb  : in Warning_Callback_Access := null;
                             Parse_Cb : in Parse_Callback_Access := null);
 
@@ -316,6 +326,7 @@ package Xml_Parser is
   function Get_Text (Ctx  : Ctx_Type;
                      Text : Text_Type)
                      return Ada.Strings.Unbounded.Unbounded_String;
+
   function Get_Comment (Ctx     : Ctx_Type;
                         Comment : Comment_Type) return String;
   function Get_Comment (Ctx     : Ctx_Type;
@@ -608,6 +619,8 @@ private
     Parse_Comments : Boolean := False;
     -- Expand or not general entities and attributes with default values
     Expand : Boolean := True;
+    -- What to do with CDATA sections
+    Cdata_Policy : Cdata_Policy_List := Remove_Cdata_Markers;
     -- Use Dtd
     Use_Dtd : Boolean := True;
     Dtd_File : Ada.Strings.Unbounded.Unbounded_String;

@@ -3,7 +3,7 @@ with Environ, Basic_Proc, Rnd, Exception_Messenger, Directory;
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "3";
+  Minor_Version : constant String := "0";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -273,6 +273,7 @@ package body Xml_Parser is
                    Ok        : out Boolean;
                    Comments  : in Boolean := False;
                    Expand    : in Boolean := True;
+                   Cdata     : in Cdata_Policy_List := Remove_Cdata_Markers;
                    Use_Dtd   : in Boolean := True;
                    Dtd_File  : in String  := "";
                    Warn_Cb   : in Warning_Callback_Access := null;
@@ -300,6 +301,7 @@ package body Xml_Parser is
     -- Parse this file
     Ctx.Parse_Comments := Comments;
     Ctx.Expand := Expand;
+    Ctx.Cdata_Policy := Cdata;
     Ctx.Use_Dtd := Use_Dtd;
     Ctx.Dtd_File := Asu_Tus (Dtd_File);
     Ctx.Warnings := Warn_Cb;
@@ -372,6 +374,7 @@ package body Xml_Parser is
 
     Ctx.Parse_Comments := False;
     Ctx.Expand := True;
+    Ctx.Cdata_Policy := Remove_Cdata_Markers;
     Ctx.Use_Dtd := True;
     Ctx.Dtd_File := Asu_Null;
     Ctx.Warnings := null;
@@ -481,6 +484,8 @@ package body Xml_Parser is
                             Ok       : out Boolean;
                             Comments : in Boolean := False;
                             Expand   : in Boolean := True;
+                            Cdata    : in Cdata_Policy_List
+                                     := Remove_Cdata_Markers;
                             Warn_Cb  : in Warning_Callback_Access := null;
                             Parse_Cb : in Parse_Callback_Access := null) is
   begin
@@ -504,6 +509,7 @@ package body Xml_Parser is
     Ctx.Flow.Curr_Flow.Same_Line := False;
     Ctx.Parse_Comments := Comments;
     Ctx.Expand := Expand;
+    Ctx.Cdata_Policy := Cdata;
     Ctx.Warnings := Warn_Cb;
     Ctx.Callback := Parse_Cb;
     Parse_Mng.Parse_Prologue (Ctx);

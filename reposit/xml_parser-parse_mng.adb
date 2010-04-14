@@ -1075,7 +1075,7 @@ package body Parse_Mng  is
                         Adtd : in out Dtd_Type;
                         Children : access Children_Desc) is
     Text, Tail, Head, Cdata, Tmp_Text : Asu_Us;
-    Index : Natural;
+    Start_Index, Index : Natural;
     Ok : Boolean;
     use type Asu_Us;
   begin
@@ -1113,10 +1113,26 @@ package body Parse_Mng  is
       -- Check "<![CDATA[" in flow
       Util.Try (Ctx.Flow, Util.Cdata_Start, Ok);
       if Ok then
-        Util.Parse_Until_Str (Ctx.Flow, Util.Cdata_End);
+        -- Get Cdata (without markers)
+        begin
+          Util.Parse_Until_Str (Ctx.Flow, Util.Cdata_End);
+        exception
+          when Util.End_Error =>
+            Util.Error (Ctx.Flow, "Unterminated CDATA section");
+        end;
         Util.Get_Curr_Str (Ctx.Flow, Cdata);
+        Asu.Delete (Cdata, Asu.Length (Cdata) - Util.Cdata_End'Length + 1,
+                           Asu.Length (Cdata));
         Trace ("Txt Got cdata >" & Asu_Ts (Cdata) & "<");
-        Cdata := Util.Cdata_Start & Cdata;
+        -- Apply policy
+        case Ctx.Cdata_Policy is
+          when Keep_Cdata_Section =>
+            Cdata := Util.Cdata_Start & Cdata & Util.Cdata_End;
+          when Remove_Cdata_Markers =>
+            null;
+          when Remove_Cdata_Section =>
+            Cdata := Asu_Null;
+        end case;
         if Text = Asu_Null then
           -- No text: This is fixed (in Head), and we will re-loop reading
           Head := Head & Cdata;
@@ -1170,14 +1186,27 @@ package body Parse_Mng  is
                    = Util.Cdata_Start then
 
             -- Expansion stopped but this is a Cdata, locate the end of CDATA
+            Start_Index := Index;
             Index := String_Mng.Locate (Asu_Ts (Text), Util.Cdata_End,
                        Index + Util.Cdata_Start'Length);
             if Index = 0 then
               Util.Error (Ctx.Flow, "Unterminated CDATA section");
             end if;
+            -- Extract Cdata and apply policy
+            Cdata := Asu.Unbounded_Slice (Text,
+                     Start_Index +  Util.Cdata_Start'Length,
+                     Index - 1);
+            case Ctx.Cdata_Policy is
+              when Keep_Cdata_Section =>
+                Cdata := Util.Cdata_Start & Cdata & Util.Cdata_End;
+              when Remove_Cdata_Markers =>
+                null;
+              when Remove_Cdata_Section =>
+                Cdata := Asu_Null;
+            end case;
             -- Head takes the expanded text and the CDATA section
-            Head := Head & Asu.Slice (Text, 1,
-                                  Index + Util.Cdata_End'Length - 1);
+            Head := Head & Asu.Slice (Text, 1, Start_Index - 1) & Cdata;
+            Trace ("Txt appended >" & Asu_Ts (Head) & "<");
             -- Text is the remaining unexpanded text, fixed
             Asu.Delete (Text, 1, Index + Util.Cdata_End'Length - 1);
             if Ctx.Expand and then not Children.Preserve then
@@ -1206,7 +1235,7 @@ package body Parse_Mng  is
          & "< tail >" & Asu_Ts (Tail) & "<");
 
     if Head /= Asu_Null then
-      -- If there are only sperators, skip them
+      -- If there are only separators, skip them
       if not Util.Is_Separators (Head) then
         -- Notify on father creation if needed
         if not Children.Created then

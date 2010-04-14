@@ -3,7 +3,7 @@ with Argument, Argument_Parser, Xml_Parser.Generator, Normal, Basic_Proc,
      Text_Line, Sys_Calls, Parser;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V9.2";
+  Version : constant String := "V10.0";
 
   -- Ada.Strings.Unbounded and Ada.Exceptions re-definitions
   package Asu renames Ada.Strings.Unbounded;
@@ -18,8 +18,10 @@ procedure Xml_Checker is
 
   -- Xml Parser context, elements and parsing parameters
   Ctx : Xml_Parser.Generator.Ctx_Type;
-  type Keep_Kind_List is (Keep_Comments, Keep_Expand, Keep_All, Keep_None);
-  Keep : Keep_Kind_List;
+
+  -- "Keep" options
+  Keep_Comments, Keep_Expand, Keep_Cdata : Boolean;
+  Cdata_Policy : Xml_Parser.Cdata_Policy_List;
 
   -- Argument error
   Arg_Error : exception;
@@ -29,14 +31,6 @@ procedure Xml_Checker is
   -- Kind of ouput: None, dump or Xml_Generator
   type Output_Kind_List is (None, Dump, Gen);
   Output_Kind : Output_Kind_List;
-
-  -- Warning detection
-  procedure Warning (Ctx : in  Xml_Parser.Ctx_Type; Msg : in String) is
-  pragma Unreferenced (Ctx);
-  begin
-    Basic_Proc.Put_Line_Error (Msg);
-  end Warning;
-  Warnings : Xml_Parser.Warning_Callback_Access;
 
   -- Xml_Generator descriptor and format
   Format : Xml_Parser.Generator.Format_Kind_List;
@@ -48,6 +42,14 @@ procedure Xml_Checker is
   -- Dtd options
   Use_Dtd : Boolean;
   Dtd_File : Asu_Us;
+
+  -- Warning detection
+  procedure Warning (Ctx : in  Xml_Parser.Ctx_Type; Msg : in String) is
+  pragma Unreferenced (Ctx);
+  begin
+    Basic_Proc.Put_Line_Error (Msg);
+  end Warning;
+  Warnings : Xml_Parser.Warning_Callback_Access;
 
   -- Maximum of options allowed
   Max_Opt : Natural;
@@ -70,10 +72,11 @@ procedure Xml_Checker is
     Ple (" <width>      ::= -W <Width> | --width=<Width>");
     Ple ("                                    -- Put attributes up to Width");
     Ple (" <one>        ::= -1 | --one        -- Put one attribute per line");
-    Ple (" <keep>       ::= -k [e|c|a]  |  --keep[=[expanded|comments|all]]");
+    Ple (" <keep>       ::= -k [e|c|d|a]  |  --keep[=[expanded|comments|cdata|all]]");
     Ple ("                                    -- Keep un-expanded general entities");
     Ple ("                                    --  and attributes with default");
     Ple ("                                    -- Keep comments");
+    Ple ("                                    -- Keep CDATA sections");
     Ple ("                                    -- Keep all (default)");
     Ple (" <check_dtd>  ::= -c [ <Dtd> ] | --check_dtd=[<Dtd>]");
     Ple ("                                    -- Check vs a specific dtd or none");
@@ -100,7 +103,7 @@ procedure Xml_Checker is
     5 => ('1', Asu_Tus ("one"), False, False),
     6 => ('h', Asu_Tus ("help"), False, False),
     7 => ('v', Asu_Tus ("version"), False, False),
-    8 => ('k', Asu_Tus ("keep"), False, True),
+    8 => ('k', Asu_Tus ("keep"), True, True),
     9 => ('c', Asu_Tus ("check_dtd"), False, True),
    10 => ('t', Asu_Tus ("tree"), False, False),
    11 => ('w', Asu_Tus ("warnings"), False, False)
@@ -302,18 +305,19 @@ procedure Xml_Checker is
 
   -- Parse a file provided as arg or stdin
   -- Retrieve comments and don't expand General Entities if output is Xml
-  procedure Do_One (Index : in Natural;
-                    Keep : in Keep_Kind_List) is
+  procedure Do_One (Index : in Natural) is
     -- Parsing elements and charactericstics
     Prologue, Root : Xml_Parser.Element_Type;
     Parse_Ok : Boolean;
     use type Xml_Parser.Generator.Format_Kind_List,
              Xml_Parser.Parse_Callback_Access;
   begin
+
     Ctx.Parse (Get_File_Name (Index, False),
                Parse_Ok,
-               Comments => Keep = Keep_All or else Keep = Keep_Comments,
-               Expand => Keep /= Keep_All and then Keep /= Keep_Expand,
+               Comments => Keep_Comments,
+               Expand => not Keep_Expand,
+               Cdata  => Cdata_Policy,
                Use_Dtd => Use_Dtd,
                Dtd_File => Asu_Ts (Dtd_File),
                Warn_Cb => Warnings,
@@ -379,6 +383,11 @@ procedure Xml_Checker is
     end if;
   end Close;
 
+  -- Are these options set
+  Keep_Expand_Set : Boolean := False;
+  Keep_Comments_Set : Boolean := False;
+  Keep_Cdata_Set : Boolean := False;
+
   use type Xml_Parser.Generator.Format_Kind_List;
   use type Asu_Us;
 begin
@@ -424,17 +433,19 @@ begin
   Width := Xml_Parser.Generator.Default_Width;
   Format := Xml_Parser.Generator.Default_Format;
   Warnings := null;
-  Keep := Keep_None;
+  Keep_Expand := False;
+  Keep_Comments := False;
+  Keep_Cdata := False;
   Use_Dtd := True;
   Dtd_File := Asu_Null;
   Callback_Acc := null;
   -- Get options and check max of options
-  -- Only one option, one more if Keep, one more if check_dtd,
+  -- Only one option, one more for each keep, one more if check_dtd,
   --  one more if ontheflow, one more if warnings
   Max_Opt := 1;
   if Arg_Dscr.Is_Set (8) then
-    -- Keep
-    Max_Opt := 2;
+    -- One or several Keep options
+    Max_Opt := Max_Opt + Arg_Dscr.Get_Nb_Occurences (8);
   end if;
   if Arg_Dscr.Is_Set (9) then
     -- Check dtd
@@ -460,9 +471,11 @@ begin
     -- Silent
     Output_Kind := None;
   elsif Arg_Dscr.Is_Set (2) then
-    -- Dump
+    -- Dump: keep all
     Output_Kind := Dump;
-    Keep := Keep_All;
+    Keep_Expand := True;
+    Keep_Comments := True;
+    Keep_Cdata := True;
   elsif Arg_Dscr.Is_Set (3) then
     Format := Xml_Parser.Generator.Raw;
   end if;
@@ -489,27 +502,57 @@ begin
 
   if Arg_Dscr.Is_Set (8) then
     if Output_Kind = Dump then
-      Ae_Re (Arg_Error'Identity, "Incompatible options");
+      Ae_Re (Arg_Error'Identity, "Incompatible ""keep"" and ""dump"" options");
     end if;
-    -- Parse Keep options
-    declare
-      Opt : constant String := Arg_Dscr.Get_Option (8);
-      Chr : constant Boolean := Arg_Dscr.Is_Char (8);
-    begin
-      if Opt = ""
-      or else (Chr and then Opt = "a")
-      or else (not Chr and then Opt = "all") then
-        Keep := Keep_All;
-      elsif (Chr and then Opt = "e")
-      or else (not Chr and then Opt = "expanded") then
-        Keep := Keep_Expand;
-      elsif (Chr and then Opt = "c")
-      or else (not Chr and then Opt = "comments") then
-        Keep := Keep_Comments;
-      else
-        Ae_Re (Arg_Error'Identity, "Invalid option for ""keep""");
-      end if;
-    end;
+    for I in 1 .. Arg_Dscr.Get_Nb_Occurences (8) loop
+      -- Parse Keep options
+      declare
+        Opt : constant String := Arg_Dscr.Get_Option (8, I);
+        Chr : constant Boolean := Arg_Dscr.Is_Char (8, I);
+      begin
+        if Opt = ""
+        or else (Chr and then Opt = "a")
+        or else (not Chr and then Opt = "all") then
+          if Keep_Expand_Set or else Keep_Comments_Set or else Keep_Cdata_Set then
+            Ae_Re (Arg_Error'Identity, "Incompatible ""keep"" options");
+          end if;
+          Keep_Expand := True;
+          Keep_Expand_Set := True;
+          Keep_Comments := True;
+          Keep_Comments_Set := True;
+          Keep_Cdata := True;
+          Keep_Cdata_Set := True;
+        elsif (Chr and then Opt = "e")
+        or else (not Chr and then Opt = "expanded") then
+          if Keep_Expand_Set then
+            Ae_Re (Arg_Error'Identity, "Incompatible ""keep"" options");
+          end if;
+          Keep_Expand := True;
+          Keep_Expand_Set := True;
+        elsif (Chr and then Opt = "c")
+        or else (not Chr and then Opt = "comments") then
+          if Keep_Comments_Set or else Keep_Cdata_Set then
+            Ae_Re (Arg_Error'Identity, "Incompatible ""keep"" options");
+          end if;
+          Keep_Comments := True;
+          Keep_Comments_Set := True;
+        elsif (Chr and then Opt = "d")
+        or else (not Chr and then Opt = "cdata") then
+          if Keep_Cdata_Set then
+            Ae_Re (Arg_Error'Identity, "Incompatible ""keep"" options");
+          end if;
+          Keep_Cdata := True;
+          Keep_Cdata_Set := True;
+        else
+          Ae_Re (Arg_Error'Identity, "Invalid ""keep"" option");
+        end if;
+      end;
+    end loop;
+  end if;
+  if Keep_Cdata then
+    Cdata_Policy := Xml_Parser.Keep_Cdata_Section;
+  else
+    Cdata_Policy := Xml_Parser.Remove_Cdata_Markers;
   end if;
 
   if Arg_Dscr.Is_Set (9) then
@@ -523,10 +566,10 @@ begin
 
   -- Process other arguments
   if Arg_Dscr.Get_Nb_Occurences (No_Key_Index) = 0 then
-    Do_One (0, Keep);
+    Do_One (0);
   else
     for I in 1 .. Arg_Dscr.Get_Nb_Occurences (No_Key_Index) loop
-      Do_One (I, Keep);
+      Do_One (I);
       if I /= Arg_Dscr.Get_Nb_Occurences (No_Key_Index)
       and then Output_Kind /= None then
         Out_Flow.New_Line;

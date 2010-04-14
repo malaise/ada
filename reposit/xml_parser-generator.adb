@@ -4,7 +4,7 @@ with Int_Image, Text_Line, Sys_Calls, Trees;
 package body Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "0";
+  Minor_Version : constant String := "1";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -1279,6 +1279,9 @@ package body Xml_Parser.Generator is
     -- Put prologue if any
     Ctx.Prologue.Move_Root;
     Put_Element (Flow, Format, Width, Ctx, Ctx.Prologue.all, Prologue_Level);
+    if Format /= Raw then
+      New_Line (Flow);
+    end if;
     -- Put Elements
     Ctx.Elements.Move_Root;
     Put_Element (Flow, Format, Width, Ctx, Ctx.Elements.all, 0);
