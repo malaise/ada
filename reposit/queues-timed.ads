@@ -12,22 +12,30 @@ package Queues.Timed is
   -- Assign a virtual clock to the queue (the queue does not register but each
   --  Item will have a chrono on this clock.
   -- By default, clock is null (real time).
-  -- The Queue must be empty, otherwise tje exception Timed_Not_Empty is raised
+  -- The Queue must be empty, otherwise the exception Timed_Not_Empty is raised
   procedure Attach (Queue : in out Timed_Type;
                     Clock : in Virtual_Time.Clock_Access);
 
-  -- Remove obsolete items and add this one, which will expire after Lifetime
+  -- Remove expired items and add this one, which will expire after Lifetime
   procedure Push (Queue : in out Timed_Type;
                   X        : in Item;
                   Lifetime : in Perpet.Natural_Duration);
 
-  -- Remove obsolete items an add this one, which will expire after Lifetime
+  -- Remove expired items and add this one, which will expire after Lifetime
   procedure Push (Queue : in out Timed_Type;
                   X        : in Item;
                   Lifetime : in Perpet.Delta_Rec);
 
   -- Remove expired items
   procedure Expire (Queue : in out Timed_Type);
+
+  -- Remove expired items and retreive the first item pushed that matches
+  --  criteria
+  procedure Get (Queue : in out Timed_Type;
+                 Crit  : in Item;
+                 Equal : access function (X, Criteria : Item) return Boolean;
+                 X     : out Item;
+                 Done  : out Boolean);
 
   -- Remove all items if any (no exception)
   procedure Clear (Queue : in out Timed_Type);

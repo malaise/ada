@@ -92,31 +92,61 @@ package body Queues.Timed is
       -- End of list
       exit when not Moved;
     end loop;
-    if not Queue.List.Is_Empty then
-      Queue.List.Rewind;
-    end if;
+    Queue.List.Rewind (False);
   end Expire;
+
+   -- Remove expired items and retreive the first item pushed that matches
+  --  criteria
+  procedure Get (Queue : in out Timed_Type;
+                 Crit  : in Item;
+                 Equal : access function (X, Criteria : Item) return Boolean;
+                 X     : out Item;
+                 Done  : out Boolean) is
+    Moved : Boolean;
+    Litem : Loc_Item;
+    function Lequal (Current, Criteria : Loc_Item) return Boolean is
+    begin
+      return Equal (Current.Data, Criteria.Data);
+    end Lequal;
+  begin
+    -- Make room first
+    Expire (Queue);
+    -- Search
+    Litem.Data := Crit;
+    Queue.List.Search_Match (Done, Lequal'Access, Litem,
+                             From => Item_List_Mng.Absolute);
+    -- Get
+    if Done then
+      Queue.List.Get (Litem, Moved => Moved);
+      Litem.Timer.Stop;
+      Free_Timer (Litem.Timer);
+      X := Litem.Data;
+    end if;
+    Queue.List.Rewind (False);
+  end Get;
 
   -- Remove all items
   procedure Clear (Queue : in out Timed_Type) is
-    Item : Loc_Item;
+    Litem : Loc_Item;
   begin
     -- List is always with current pos set to first
     loop
       -- Nothing when list is/becomes empty
       exit when Queue.List.Is_Empty;
-      Queue.List.Read (Item, Item_List_Mng.Current);
+      Queue.List.Read (Litem, Item_List_Mng.Current);
       -- Delete timer
       Queue.List.Delete;
-      Item.Timer.Stop;
-      Free_Timer (Item.Timer);
+      Litem.Timer.Stop;
+      Free_Timer (Litem.Timer);
     end loop;
     -- Clear and deallocate
     Queue.List.Delete_List;
   end Clear;
 
-  -- Remove obsolete items and retrieve (and also remove)
-  --  the first to expire item,
+  -- Retrieve (and also remove) a non expired item
+  -- Does not expire items
+  -- Items are retrieved in the order there where pushed
+  -- May raise Timed_Empty
   procedure Pop (Queue : in out Timed_Type; X : out Item) is
     Done : Boolean;
   begin
@@ -126,10 +156,12 @@ package body Queues.Timed is
     end if;
   end Pop;
 
-  -- Remove obsolete items and retrieve (and also remove)
-  --  a non expired item, may raise Timed_Empty
+  -- Retrieve (and also remove) a non expired item
+  -- Does not expire items
+  -- Items are retrieved in the order there where pushed
+  -- Set Done to False if the queue was empty (and X is not set)
   procedure Pop (Queue : in out Timed_Type; X : out Item; Done : out Boolean) is
-    Item : Loc_Item;
+    Litem : Loc_Item;
   begin
     -- Check list is not empty
     if Queue.List.Is_Empty then
@@ -140,10 +172,10 @@ package body Queues.Timed is
     -- Moving to next should always be Ok because progressing from first and
     --  always getting. If there is no next record it is because getting
     --  the last one (no exception)!
-    Queue.List.Get (Item);
-    Item.Timer.Stop;
-    Free_Timer (Item.Timer);
-    X := Item.Data;
+    Queue.List.Get (Litem);
+    Litem.Timer.Stop;
+    Free_Timer (Litem.Timer);
+    X := Litem.Data;
     Done := True;
   end Pop;
 

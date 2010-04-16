@@ -749,39 +749,19 @@ package body Limited_List is
     Item_Search (List, Found, Criteria, Where, Occurence, From);
   end Search;
 
-  -- Search with Match passed by access:
-  -- The criteria for Criteria_Search:
-  --  the criteria and the match function access
-  type Crit_Match_Rec is record
-    Criteria : Element_Type;
-    Match : Match_Access;
-  end record;
-
-  -- Search_Criteria instanciation
-  function Criteria_Match  (Current : Element_Type; Criteria : Crit_Match_Rec)
-           return Boolean is
-  begin
-    if Criteria.Match = null then
-      return True;
-    else
-      return Criteria.Match (Current, Criteria.Criteria);
-    end if;
-  end Criteria_Match;
-  procedure Search_Element is new Search_Criteria (Crit_Match_Rec, Criteria_Match);
 
   -- Search with Match passed by access
   procedure Search_Match (List      : in out List_Type;
                           Found     : out Boolean;
-                          Match     : in Match_Access;
+                          Match     : access
+                    function (Current, Criteria : Element_Type) return Boolean;
                           Criteria  : in Element_Type;
                           Where     : in Direction := Next;
                           Occurence : in Positive := 1;
                           From      : in Search_Kind_List) is
-    Criteria_Match_Data : Crit_Match_Rec;
+    procedure Search_Element is new Search (Match.all);
   begin
-    Set (Criteria_Match_Data.Criteria, Criteria);
-    Criteria_Match_Data.Match := Match;
-    Search_Element (List, Found, Criteria_Match_Data, Where, Occurence, From);
+    Search_Element (List, Found, Criteria, Where, Occurence, From);
   end Search_Match;
 
   -- Search -> exception

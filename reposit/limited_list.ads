@@ -262,7 +262,8 @@ package Limited_List is
   -- Does not raise Empty_List.
   procedure Search_Match (List      : in out List_Type;
                           Found     : out Boolean;
-                          Match     : in Match_Access;
+                          Match     : access
+                    function (Current, Criteria : Element_Type) return Boolean;
                           Criteria  : in Element_Type;
                           Where     : in Direction := Next;
                           Occurence : in Positive := 1;
