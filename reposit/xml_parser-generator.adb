@@ -4,7 +4,7 @@ with Int_Image, Text_Line, Sys_Calls, Trees;
 package body Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "1";
+  Minor_Version : constant String := "2";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -1072,20 +1072,28 @@ package body Xml_Parser.Generator is
   begin
     if Level = Prologue_Level then
       -- A prologue
-      -- Even if one attr per line request, Xml directive attributes
-      --  are all on the same line
-      if Format = One_Per_Line then
-        Xml_Attr_Format := Fill_Width;
+      -- The Xml directive:  Put it if it has attributes
+      if Cell.Nb_Attributes = 0 then
+        -- No Xml Directive: move to first child as if after putting attributes
+        if Element.Children_Number /= 0 then
+          Element.Move_Child (True);
+        end if;
       else
-        Xml_Attr_Format := Format;
-      end if;
-      -- Put the xml directive with attributes if any
-      Put (Flow, "<?" & Asu_Ts (Cell.Name));
-      Put_Attributes (Flow, Xml_Attr_Format, Width, Element, 0,
-                      2 + Asu.Length (Cell.Name), False);
-      Put (Flow, "?>");
-      if Format /= Raw then
-        New_Line (Flow);
+        -- Even if one attr per line request, Xml directive attributes
+        --  are all on the same line
+        if Format = One_Per_Line then
+          Xml_Attr_Format := Fill_Width;
+        else
+          Xml_Attr_Format := Format;
+        end if;
+        -- Put the xml directive with attributes if any
+        Put (Flow, "<?" & Asu_Ts (Cell.Name));
+        Put_Attributes (Flow, Xml_Attr_Format, Width, Element, 0,
+                        2 + Asu.Length (Cell.Name), False);
+        Put (Flow, "?>");
+        if Format /= Raw then
+          New_Line (Flow);
+        end if;
       end if;
       -- Any child of prologue?
       if Element.Get_Position = Cell_Ref then
@@ -1304,20 +1312,21 @@ package body Xml_Parser.Generator is
     if Update.In_Prologue then
       if Update.Level = 0 then
         -- The XML directive
-        -- Even if one attr per line request, Xml directive attributes
-        --  are all on the same line
-        if Format = One_Per_Line then
-          Xml_Attr_Format := Fill_Width;
-        else
-          Xml_Attr_Format := Format;
-        end if;
-        -- Put the xml directive with attributes if any
-        Put (Flow, "<?" & Asu_Ts (Update.Name));
-        if Update.Attributes /= null then
+        -- Put the xml directive if it has attributes
+        if Update.Attributes /= null
+        and then Update.Attributes'Length /= 0 then
+          -- Even if one attr per line request, Xml directive attributes
+          --  are all on the same line
+          if Format = One_Per_Line then
+            Xml_Attr_Format := Fill_Width;
+          else
+            Xml_Attr_Format := Format;
+          end if;
+          Put (Flow, "<?" & Asu_Ts (Update.Name));
           Put_Attributes (Flow, Xml_Attr_Format, Width, Update.Attributes.all,
                           0, 2 + Asu.Length (Update.Name), False);
+          Put (Flow, "?>");
         end if;
-        Put (Flow, "?>");
       else
         -- A child of prologue (PI, comment or doctype)
         case Update.Kind is

@@ -12,7 +12,7 @@ with Queues, Trees, Unique_List, Text_Char, Dynamic_List, Unlimited_Pool,
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "19";
+  Major_Version : constant String := "20";
   function Version return String;
 
   -----------
@@ -75,7 +75,8 @@ package Xml_Parser is
   --  (<?xml attributes?>) then optional processing instructions
   --  (<?name text?>), DOCTYPE and comments.
   -- In Xml V1.1 the xml directive and version is mandatory.
-  -- So the Prologue is an element of name "xml" with attributes and children:
+  -- So the Prologue is an element of name "xml" with possible attributes
+  --  (no attribute means that there is no Xml directive) and children:
   --  for PIs: PIs each with the PITarget as name
   --  for Comments: comments
   --  for the doctype: an empty text

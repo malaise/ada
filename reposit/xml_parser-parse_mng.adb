@@ -671,20 +671,6 @@ package body Parse_Mng  is
                          & Asu_Ts (File_Name));
   end Expand_External_Entity;
 
-  -- Set default Xml version (1.0) if needed
-  -- Set encoding from Dtd if needed
-  procedure Set_Default_Xml (Ctx : in out Ctx_Type) is
-    Nb_Attr : Natural;
-    use type Asu_Us;
-  begin
-    -- No xml attribute? set version
-    Tree_Mng.Get_Nb_Xml_Attributes (Ctx.Prologue.all, Nb_Attr);
-    if Nb_Attr = 0 then
-      Tree_Mng.Add_Xml_Attribute (Ctx.Prologue.all,
-          Asu_Tus ("version"), Asu_Tus ("1.0"), Util.Get_Line_No (Ctx.Flow));
-    end if;
-  end Set_Default_Xml;
-
   -- Check that XML instruction is set, create one
   -- Inherit the Dtd encoding (if any)
   procedure Check_Xml (Ctx : in out Ctx_Type) is
@@ -696,8 +682,6 @@ package body Parse_Mng  is
       -- Add a 'xml' directive
       Tree_Mng.Set_Xml (Ctx.Prologue.all, Util.Get_Line_No (Ctx.Flow));
     end if;
-    -- Set default version
-    Set_Default_Xml (Ctx);
     -- Callback creation if Xml has been created here
     if not Ok then
       Call_Callback (Ctx, True, True);
@@ -1646,9 +1630,6 @@ package body Parse_Mng  is
     Util.Pop_Flow (Ctx.Flow);
     -- Perform final checks on Dtd (unparsed entities v.s. notations)
     Dtd.Final_Dtd_Check (Ctx, Adtd);
-    -- Xml declaration must have a version, which might not be the case
-    --  if Ctx comes from Xml_Parser.Generator
-    Set_Default_Xml (Ctx);
     -- There must be one root
     if Tree_Mng.Is_Empty (Ctx.Elements.all) then
       Util.Error (Ctx.Flow, "No root element found");
