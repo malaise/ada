@@ -1,7 +1,7 @@
 # Arg error
 [
-"Error. Usage entry [ { <entry_time> <leave_time> } ] <entry_time>."
-putl "<time> ::= h.ms    and times must be crescent" putl ssize popn retall
+"Error. Usage: entry <entry_time> [ { <leave_time> <entry_time> } ]"
+putl "<time> ::= h[.ms]    and times must be crescent" putl ssize popn retall
 ] E popr
 
 # Check stack size is odd
@@ -11,6 +11,8 @@ ssize 2 % 0 = E pushr ifcall
 0.0 s popr
 true e popr
 24.0 p popr
+
+# Loop to parse arguments
 [
 # Arg must be int or real, 0.0 <= Arg < 24 and frac < 0.60
 dup isinte [ toreal ] ifcall
