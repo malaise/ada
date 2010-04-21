@@ -13,7 +13,7 @@ package body Screen is
 
   -- Stick color
   Stick_Color : constant Con_Io.Effective_Colors
-              := Con_Io.Color_Of ("Light_Gray");
+              := Con_Io.Color_Of ("Light_Grey");
   Sel : constant Con_Io.Effective_Colors
               := Con_Io.Color_Of ("Red");
 
