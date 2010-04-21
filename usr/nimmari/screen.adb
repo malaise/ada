@@ -66,7 +66,8 @@ package body Screen is
     use Common;
   begin
     Use_Descriptor (2);
-    Score (Human_Score, Machine_Score);
+    Encode_Field (19, (0,  1), "You: " & Normal(Human_Score, 3));
+    Encode_Field (19, (0, 13), "Me: " & Normal(Machine_Score, 3));
     if Game = Common.Nim then
       Encode_Field (20, (0,0), "   Nim   ");
       Encode_Field (22, (1,1), "Play Marienbad");
@@ -284,13 +285,6 @@ package body Screen is
     end if;
   end Update;
 
-  procedure Score (Human, Machine : in Natural) is
-  begin
-    Human_Score := Human;
-    Machine_Score := Machine;
-    Encode_Field (19, (0,  1), "You: " & Normal(Human_Score, 3));
-    Encode_Field (19, (0, 13), "Me: " & Normal(Machine_Score, 3));
-  end Score;
 
 
 end Screen;

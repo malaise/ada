@@ -4,19 +4,24 @@ package Screen is
 
   Exit_Requested : exception;
 
-  function Intro return Common.Game_List;
+  -- Intro and choice of game kind
+  function Intro return Common.Game_Kind_List;
 
+  -- Init of a game
+  procedure Reset (Game : in Common.Game_Kind_List;
+                   Scores : in Common.Score_Array);
 
-  procedure Reset (Game : in Common.Game_List);
+  -- Let human play
+  procedure Play (Row : out Common.Row_Range;
+                  Bars : out Common.Bar_Status_Array);
 
-  procedure Play;
+  -- Update according machine played
+  procedure Update (Row : in Common.Row_Range;
+                    Bars : in Common.Bar_Status_Array);
 
-  function Content (Row : Common.Row_Range) return Common.Full_Bar_Range;
-
-
-  procedure Update (Row : in Common.Row_Range; Bars : in Common.Full_Bar_Range;
-                    Result : in Compute.Result_List; Change_Game : out Boolean);
-
-  procedure Score (Human, Machine : in Natural);
+  -- Show end of a game
+  procedure End_Game (Result : in Common.Played_Result_List;
+                      Change_Game : out Boolean);
 
 end Screen;
+

@@ -1,13 +1,12 @@
 with Common;
 package Compute is
 
+  -- To be done once, before first Play
   procedure Init;
 
-  type Result_List is (Won, Lost, Played_And_Won, Played_And_Lost, Played);
-  subtype Played_Result_List is Result_List range Played_And_Won .. Played;
-
-  procedure Play (Game : in Common.Game_List;
-                  Result : out Result_List;
-                  Row : out Common.Row_Range;
-                  Bars : out Common.Full_Bar_Range);
+  -- Do machine play and return result
+  procedure Play (Row    : out Common.Row_Range;
+                  Remove : out Common.Bar_Status_Array;
+                  Result : out Common.Result_List);
 end Compute;
+

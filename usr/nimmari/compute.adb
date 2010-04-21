@@ -1,22 +1,20 @@
 with Rnd, My_Math;
-with Screen;
 package body Compute is
-  use Common;
 
   procedure Init is
   begin
     Rnd.Randomize;
   end Init;
 
+  -- The state: 0s and 1s
   subtype Power_Range is Positive range 1 .. 3;
   type Mattrix_Tab is array (Common.Row_Range, Power_Range) of Boolean;
   Mattrix : Mattrix_Tab;
   Sigma : array (Power_Range) of Boolean;
 
-  procedure Play (Game : in Common.Game_List;
-                  Result : out Result_List;
-                  Row : out Common.Row_Range;
-                  Bars : out Common.Full_Bar_Range) is
+  procedure Play (Row    : out Common.Row_Range;
+                  Remove : out Common.Bar_Status_Array;
+                  Result : out Common.Result_List) is
     Col : Power_Range;
     Winning : Boolean;
     Selected_Row : Common.Row_Range;
@@ -25,7 +23,7 @@ package body Compute is
     Nb_Bars : Common.Full_Bar_Range;
     Nb_Rows_More_One : Natural := 0;
   begin
-    Result := Played;
+    Result := Common.Played;
     -- Compute Mattrix and Sigma
     declare
       Sum : Natural;
@@ -123,10 +121,9 @@ package body Compute is
         end loop;
       end;
 
-      -- play: for each True in Sigma, change corresponding col in selected row
+      -- Play: for each True in Sigma, change corresponding col in selected row
       for I in Col .. Power_Range'Last loop
-        if Sigma (I) then
-           Mattrix (Selected_Row, I) := not Mattrix (Selected_Row, I);
+        if Sigma (I) then Mattrix (Selected_Row, I) := not Mattrix (Selected_Row, I);
         end if;
       end loop;
 

@@ -1,52 +1,57 @@
 with Common, Screen, Compute;
 procedure Nimmari is
-  Game : Common.Game_List;
-  Row : Common.Row_Range;
-  Bars : Common.Full_Bar_Range;
-  Human, Machine : Natural := 0;
-  Result : Compute.Result_List;
+
+  -- Result of computation
+  Row    : Common.Row_Range;
+  Remove : Common.Bar_Status_Array;
+  Result : Common.Result_List;
+
+  -- Change game after end of a game
   Change_Game : Boolean;
 
-  use Common, Compute;
+  use type Common.Result_List;
 begin
   Compute.Init;
-  Game := Screen.Intro;
+
+  -- Select game: Nim or Marienbad
+  Common.Set_Game_Kind (Screen.Intro);
 
   One_Game:
   loop
-    Screen.Reset (Game);
-    Screen.Score (Human, Machine);
+    -- Init screen (with game kind and scores)
+    Screen.Reset (Common.Get_Game_Kind, Common.Get_Scores);
+
     One_Go:
     loop
       -- Compute game, check end
-      Compute.Play (Game, Result, Row, Bars);
+      Compute.Play(Row, Remove, Result);
 
-      -- Update score
-      if Result = Compute.Won or else Result = Compute.Played_And_Won then
-        Machine := Machine + 1;
-        Screen.Score (Human, Machine);
-      elsif Result = Compute.Lost or else Result = Compute.Played_And_Lost then
-        Human := Human + 1;
-        Screen.Score (Human, Machine);
-      end if;
-
-      -- Display result
-      Screen.Update (Row, Bars, Result, Change_Game);
+      -- Update bars
+      Common.Remove_Bars (Row, Remove);
+      Screen.Update (Row, Remove);
 
       -- exit when end
-      exit One_Go when Result /= Compute.Played;
+      exit One_Go when Result /= Common.Played;
 
       -- User plays
-      Screen.Play;
+      Screen.Play (Row, Remove);
 
     end loop One_Go;
 
+    -- Update score
+    if Result = Common.Won or else Result = Common.Played_And_Won then
+      -- Machine wins
+      Common.Add_Win (Common.Machine);
+    elsif Result = Common.Lost or else Result = Common.Played_And_Lost then
+      -- Machine looses
+      Common.Add_Win (Common.Human);
+    end if;
+    Screen.Reset (Common.Get_Game_Kind, Common.Get_Scores);
+
+    -- Show end of game, change game?
+    Screen.End_Game (Result, Change_Game);
     if Change_Game then
-      if Game = Common.Nim then
-        Game := Common.Marienbad;
-      else
-        Game := Common.Nim;
-      end if;
+      Common.Switch_Game_Kind;
     end if;
 
   end loop One_Game;
