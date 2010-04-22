@@ -35,6 +35,7 @@ begin
 
       -- User plays
       Screen.Play (Row, Remove);
+      Common.Remove_Bars (Row, Remove);
 
     end loop One_Go;
 

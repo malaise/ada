@@ -6,6 +6,28 @@ package body Compute is
     Rnd.Randomize;
   end Init;
 
+  -- Remove How_Many random bars from From
+  procedure Remove_From (From : in out Common.Bar_Status_Array;
+                         How_Many : in Common.Full_Bar_Range) is
+    Nb_Removed : Common.Full_Bar_Range := 0;
+    Remove_Index : Common.Bar_Range;
+  begin
+    loop
+      exit when Nb_Removed = How_Many;
+      Remove_One:
+      loop
+        Remove_Index := Rnd.Int_Random (Common.Bar_Range'First,
+                                        Common.Bar_Range'Last);
+        if From(Remove_Index) then
+          -- Leave this one
+          From(Remove_Index) := False;
+          exit Remove_One;
+        end if;
+      end loop Remove_One;
+      Nb_Removed := Nb_Removed + 1;
+    end loop;
+  end Remove_From;
+
   -- The state: 0s and 1s
   subtype Power_Range is Positive range 1 .. 3;
   type Mattrix_Tab is array (Common.Row_Range, Power_Range) of Boolean;
@@ -15,34 +37,38 @@ package body Compute is
   procedure Play (Row    : out Common.Row_Range;
                   Remove : out Common.Bar_Status_Array;
                   Result : out Common.Result_List) is
+
     Col : Power_Range;
     Winning : Boolean;
-    Selected_Row : Common.Row_Range;
+    New_Sum : Common.Full_Bar_Range;
     Sums : array (Common.Row_Range) of Common.Full_Bar_Range := (others => 0);
     Sums_Sums : Natural := 0;
-    Nb_Bars : Common.Full_Bar_Range;
     Nb_Rows_More_One : Natural := 0;
+    use type Common.Game_Kind_List;
   begin
     Result := Common.Played;
     -- Compute Mattrix and Sigma
     declare
-      Sum : Natural;
+      Sum : Common.Full_Bar_Range;
     begin
       Mattrix := (others => (others => False));
       Sigma := (others => False);
       for I in Common.Row_Range loop
-        Sum := Screen.Content (I);
-        Sums (I) := Sum;
+        -- Nb of bars
+        Sum := Common.Nb_Bars (Common.Get_Bars (I));
+        Sums(I) := Sum;
         Sums_Sums := Sums_Sums + Sum;
         -- Number of rows with more than one for marienbad end
         if Sum > 1 then
           Nb_Rows_More_One := Nb_Rows_More_One + 1;
         end if;
+        -- Mattrix of powers of 2 (7 -> III, 5->101...)
+        -- Logical Sigma per col
         for J in reverse Power_Range loop
           if Sum >= 2 ** (J - 1) then
             Col := Power_Range'Last - J + 1;
-            Mattrix (I, Col) := True;
-            Sigma (Col) := not Sigma (Col);
+            Mattrix(I, Col) := True;
+            Sigma(Col) := not Sigma(Col);
             Sum := Sum - 2 ** (J - 1);
           end if;
         end loop;
@@ -51,42 +77,43 @@ package body Compute is
 
     -- Finished ?
     if Sums_Sums = 0 then
-      if Game = Common.Nim then
-        Result := Lost;
+      if Common.Get_Game_Kind = Common.Nim then
+        Result := Common.Lost;
       else
-        Result := Won;
+        Result := Common.Won;
       end if;
       Row := Common.Row_Range'First;
-      Bars := 0;
+      Remove := (others => False);
       return;
     end if;
 
     -- Special ending for marienbad
-    if Game = Common.Marienbad and then Nb_Rows_More_One = 1 then
+    if Common.Get_Game_Kind = Common.Marienbad
+    and then Nb_Rows_More_One = 1 then
       -- Last decision point
-      -- Choose row with more than one, count rows with one
       declare
         Nb_Rows_One : Natural := 0;
       begin
+        -- Find the row with more than one, count rows with one
         for I in Common.Row_Range loop
-          if Sums (I) = 1 then
+          if Sums(I) = 1 then
             Nb_Rows_One := Nb_Rows_One + 1;
-          elsif Sums (I) > 1 then
+          elsif Sums(I) > 1 then
             Row := I;
           end if;
         end loop;
-        -- Leave one or zero on the selected row
+        -- Leave one or zero bar on the selected row
+        Remove := Common.Get_Bars (Row);
         if Nb_Rows_One mod 2 = 0 then
-          Bars := 1;
-        else
-          Bars := 0;
+          -- Leave only one (random) bar
+          Remove_From (Remove, 1);
         end if;
         return;
       end;
     end if;
 
     -- Can we win (sigma not all false)
-    -- if yes keep first true Col in Sigma
+    -- if yes keep first True Col in Sigma
     Winning := False;
     for J in Power_Range loop
       if Sigma(J) then
@@ -97,41 +124,41 @@ package body Compute is
     end loop;
 
     if Winning then
-
       declare
-        -- number of True in Mattrix (x, Col)
-        R, N : Natural;
+        -- Number of True in Mattrix (x, Col)
+        Nb_True, Nb_Row : Natural;
       begin
-        -- Compute R
-        R := 0;
+        -- Compute Nb_True the number of True in the column Col
+        Nb_True := 0;
         for I in Common.Row_Range loop
-          if Mattrix (I, Col) then
-            R := R + 1;
+          if Mattrix(I, Col) then
+            Nb_True := Nb_True + 1;
           end if;
         end loop;
-        R := Rnd.Int_Random (1, R);
-        -- Select row, the Rth matching
-        N := 0;
+        -- Select one randomly
+        Nb_True := Rnd.Int_Random (1, Nb_True);
+        -- Select row, the Nb_True matching
+        Nb_Row := 0;
         for I in Common.Row_Range loop
-          Selected_Row := I;
-          if Mattrix (I, Col) then
-            N := N + 1;
-            exit when N = R;
+          Row := I;
+          if Mattrix(I, Col) then
+            Nb_Row := Nb_Row + 1;
+            exit when Nb_Row = Nb_True;
           end if;
         end loop;
       end;
 
-      -- Play: for each True in Sigma, change corresponding col in selected row
+      -- Play: for each True in Sigma, change corresponding col in row
       for I in Col .. Power_Range'Last loop
-        if Sigma (I) then Mattrix (Selected_Row, I) := not Mattrix (Selected_Row, I);
+        if Sigma(I) then Mattrix(Row, I) := not Mattrix(Row, I);
         end if;
       end loop;
 
-      -- Compute new amount
-      Nb_Bars := 0;
+      -- Compute new amount and remove corresponding Nb of bars
+      New_Sum := 0;
       for J in Power_Range loop
-        if Mattrix (Selected_Row, Power_Range'Last - J + 1) then
-          Nb_Bars := Nb_Bars + 2 ** (J - 1);
+        if Mattrix(Row, Power_Range'Last - J + 1) then
+          New_Sum := New_Sum + 2 ** (J - 1);
         end if;
       end loop;
 
@@ -140,24 +167,24 @@ package body Compute is
       -- Loosing : play random
       -- Choose a non empty row
       declare
-        -- number of Rows with Sum /= 0
-        R, N : Natural;
+        -- Number of Rows with Sum /= 0
+        Nb_Non0, Curr_Non0 : Natural;
       begin
         -- Compute R
-        R := 0;
+        Nb_Non0 := 0;
         for I in Common.Row_Range loop
           if Sums (I) /= 0 then
-            R := R + 1;
+            Nb_Non0 := Nb_Non0 + 1;
           end if;
         end loop;
-        R := Rnd.Int_Random (1, R);
-        -- Select row, the Rth matching
-        N := 0;
+        Nb_Non0 := Rnd.Int_Random (1, Nb_Non0);
+        -- Select row, the Nb_Non0 th matching
+        Curr_Non0 := 0;
         for I in Common.Row_Range loop
-          Selected_Row := I;
-          if Sums (I) /= 0 then
-            N := N + 1;
-            exit when N = R;
+          Row := I;
+          if Sums(I) /= 0 then
+            Curr_Non0 := Curr_Non0 + 1;
+            exit when Curr_Non0 = Nb_Non0;
           end if;
         end loop;
       end;
@@ -166,37 +193,39 @@ package body Compute is
       declare
         R : Float;
         -- The idea is: the more bars there is, the more we tend to remove
-        Factor : constant Float := Float(Common.Bar_Per_Row(Selected_Row))
-                                 / Float(Sums (Selected_Row));
+        Factor : constant Float := Float(Common.Nb_Init_Bars (Row))
+                                 / Float(Sums(Row));
       begin
        -- 1.0 <= R < N + 1.0
-       R := Rnd.Float_Random (1.0, Float(Sums (Selected_Row)) + 1.0);
+       R := Rnd.Float_Random (1.0, Float(Sums(Row)) + 1.0);
        R := R / Factor;
-       Nb_Bars := Integer(My_Math.Trunc(My_Math.Real(R)));
+       New_Sum := Integer(My_Math.Trunc (My_Math.Real (R)));
       end;
       -- Eh! Play!
-      if Nb_Bars = 0 then
-        Nb_Bars := 1;
-      elsif Nb_Bars > Sums (Selected_Row) then
+      if New_Sum = 0 then
+        New_Sum := 1;
+      elsif New_Sum > Sums (Row) then
         -- Protection, should not enter here, but doesn't hurt :-)
-        Nb_Bars := Sums (Selected_Row);
+        New_Sum := Sums(Row);
       end if;
 
       -- Number of bars to leave
-      Nb_Bars := Sums (Selected_Row) - Nb_Bars;
+      New_Sum := Sums(Row) - New_Sum;
     end if;
-    Bars := Nb_Bars;
-    Row := Selected_Row;
+
+    -- Now remove Random bars to get the new Sum
+    Remove := Common.Get_Bars (Row);
+    Remove_From (Remove, Sums(Row) - New_Sum);
 
     -- Recompute number of bars
-    Sums_Sums := Sums_Sums - Sums(Selected_Row) + Nb_Bars;
+    Sums_Sums := Sums_Sums - Sums(Row) + New_Sum;
 
     -- Finished ?
     if Sums_Sums = 0 then
-      if Game = Common.Nim then
-        Result := Played_And_Won;
+      if Common.Get_Game_Kind = Common.Nim then
+        Result := Common.Played_And_Won;
       else
-        Result := Played_And_Lost;
+        Result := Common.Played_And_Lost;
       end if;
     end if;
 

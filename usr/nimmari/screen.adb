@@ -1,49 +1,23 @@
-with Afpx, Con_Io, Normal, Rnd;
-use Afpx;
-
+with Afpx, Con_Io, Normal;
 package body Screen is
-
-  -- All the bars
-  subtype Index_Range is Positive range 1 .. 16;
-
-  -- Status of one / all bars
-  type Status_List is (Free, Selected, Removed);
-  type Status_Tab is array (Index_Range) of Status_List;
-  Status : Status_Tab;
 
   -- Stick color
   Stick_Color : constant Con_Io.Effective_Colors
               := Con_Io.Color_Of ("Light_Grey");
-  Sel : constant Con_Io.Effective_Colors
-              := Con_Io.Color_Of ("Red");
+  Sel_Color : constant Con_Io.Effective_Colors
+            := Con_Io.Color_Of ("Red");
 
-  Human_Score : Natural;
-  Machine_Score : Natural;
-
-  function First_Index_Of_Row (Row : Common.Row_Range) return Index_Range is
-    Index : Index_Range := Index_Range'First;
-  begin
-    for I in 2 .. Row loop
-      Index := Index + Common.Bar_Per_Row(I - 1);
-    end loop;
-    return Index;
-  end First_Index_Of_Row;
-
-  function Last_Index_Of_Row (Row : Common.Row_Range) return Index_Range is
-  begin
-    return First_Index_Of_Row (Row) + Common.Bar_Per_Row (Row) - 1;
-  end Last_Index_Of_Row;
-
-  function Intro return Common.Game_List is
+  function Intro return Common.Game_Kind_List is
     -- For put then get
-    Cursor_Field : Field_Range := Field_Range'First;
+    Cursor_Field : Afpx.Field_Range := Afpx.Field_Range'First;
     Cursor_Col : Con_Io.Col_Range := Con_Io.Col_Range'First;
     Insert : Boolean := False;
-    Result : Result_Rec;
+    Result : Afpx.Result_Rec;
+    use type Afpx.Event_List, Afpx.Keyboard_Key_List, Afpx.Absolute_Field_Range;
   begin
-    Use_Descriptor (1);
+    Afpx.Use_Descriptor (1);
     loop
-      Put_Then_Get(Cursor_Field, Cursor_Col, Insert, Result, True);
+      Afpx.Put_Then_Get(Cursor_Field, Cursor_Col, Insert, Result, True);
       exit when Result.Event = Afpx.Mouse_Button;
       if Result.Event = Afpx.Signal_Event
       or else (Result.Event = Afpx.Keyboard
@@ -62,12 +36,14 @@ package body Screen is
     return Common.Nim;
   end Intro;
 
-  procedure Reset (Game : in Common.Game_List) is
-    use Common;
+  procedure Reset (Game   : in Common.Game_Kind_List;
+                   Scores : in Common.Score_Array) is
+    use Afpx;
+    use type Common.Game_Kind_List;
   begin
     Use_Descriptor (2);
-    Encode_Field (19, (0,  1), "You: " & Normal(Human_Score, 3));
-    Encode_Field (19, (0, 13), "Me: " & Normal(Machine_Score, 3));
+    Encode_Field (19, (0,  1), "You: " & Normal (Scores(Common.Human), 3));
+    Encode_Field (19, (0, 13), "Me: " & Normal (Scores(Common.Machine), 3));
     if Game = Common.Nim then
       Encode_Field (20, (0,0), "   Nim   ");
       Encode_Field (22, (1,1), "Play Marienbad");
@@ -75,46 +51,50 @@ package body Screen is
       Encode_Field (20, (0,0), "Marienbad");
       Encode_Field (22, (1,1), "   Play Nim");
     end if;
-    Status := (others => Free);
     for I in Field_Range'(1) .. 16 loop
-      Set_Field_Activation (I, True);
-      Set_Field_Colors (I, Background => Stick_Color);
+      Reset_Field (I, Reset_String => False);
     end loop;
     Set_Field_Activation (22, False);
   end Reset;
 
-  procedure Play is
+  procedure Play (Row : out Common.Row_Range;
+                  Remove : out Common.Bar_Status_Array) is
     -- For put then get
-    Cursor_Field : Field_Range := Field_Range'First;
+    Cursor_Field : Afpx.Field_Range := Afpx.Field_Range'First;
     Cursor_Col : Con_Io.Col_Range := Con_Io.Col_Range'First;
     Insert : Boolean := False;
-    Result : Result_Rec;
+    Result : Afpx.Result_Rec;
     Redisplay : Boolean;
 
     -- The current selection
-    Selection_Index : Index_Range;
+    Selection_Index : Common.Index_Range;
     Nb_Selected : Natural;
     Row_Selected : Common.Row_Range;
+    type Selected_Array is array (Common.Index_Range) of Boolean;
+    Selected : Selected_Array := (others => False);
 
-    -- Get the row of an index
-    function Row_Of_Index (Index : Index_Range) return Common.Row_Range is
-    begin
-      case Index is
-        when 01 .. 07 => return 1;
-        when 08 .. 12 => return 2;
-        when 13 .. 15 => return 3;
-        when 16       => return 4;
-      end case;
-    end Row_Of_Index;
+    Row_Col : Common.Row_Col_Rec;
+    Indexes : Common.Indexes_Rec;
 
+    use type Afpx.Event_List, Afpx.Keyboard_Key_List;
   begin
+    -- Init
+    for I in Common.Row_Range loop
+      Remove := Common.Get_Bars (I);
+      Indexes := Common.Get_Indexes (I);
+      for J in Indexes.First_Index .. Indexes.Last_Index loop
+        Row_Col := Common.Index2Row_Col (J);
+        Afpx.Set_Field_Activation (J, Remove(Row_Col.Col));
+      end loop;
+    end loop;
+
     Nb_Selected := 0;
     Row_Selected := 1;
     Redisplay := False;
     loop
       -- Activate play
-      Set_Field_Activation (17, Nb_Selected /= 0);
-      Put_Then_Get(Cursor_Field, Cursor_Col, Insert, Result, Redisplay);
+      Afpx.Set_Field_Activation (17, Nb_Selected /= 0);
+      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Result, Redisplay);
       if Result.Event = Afpx.Signal_Event
       or else (Result.Event = Afpx.Keyboard
                and then Result.Keyboard_Key = Afpx.Break_Key) then
@@ -122,33 +102,38 @@ package body Screen is
       end if;
       if Result.Event = Afpx.Mouse_Button then
         case Result.Field_No is
-          when 1 .. 16 =>
-            Selection_Index := Index_Range(Result.Field_No);
+          when Common.Index_Range =>
+            Selection_Index := Result.Field_No;
+            Row_Col := Common.Index2Row_Col(Selection_Index);
 
             -- First selection
             if Nb_Selected = 0 then
-              Row_Selected := Row_Of_Index(Selection_Index);
+              Row_Selected := Row_Col.Row;
             end if;
 
             -- Take selection / unselect
-            if Row_Of_Index(Selection_Index) = Row_Selected then
-              if Status(Selection_Index) = Selected then
-                Status(Selection_Index)  := Free;
-                Set_Field_Colors (Result.Field_No, Background => Stick_Color);
+            if Row_Col.Row = Row_Selected then
+              if Selected(Selection_Index) then
+                Selected(Selection_Index) := False;
+                Afpx.Set_Field_Colors (Result.Field_No,
+                                       Background => Stick_Color);
                 Nb_Selected := Nb_Selected - 1;
               else
-                Status(Selection_Index)  := Selected;
-                Set_Field_Colors (Result.Field_No, Background => Sel);
+                Selected(Selection_Index) := True;
+                Afpx.Set_Field_Colors (Result.Field_No,
+                                       Background => Sel_Color);
                 Nb_Selected := Nb_Selected + 1;
               end if;
             end if;
 
           when 17 =>
-            -- Take selection
-            for I in First_Index_Of_Row(Row_Selected) .. Last_Index_Of_Row(Row_Selected) loop
-              if Status(I) = Selected then
-                Status(I) := Removed;
-                Set_Field_Activation (Field_Range(I), False);
+            -- Take selection: set Row and Bars to remove
+            Row := Row_Selected;
+            Remove := (others => False);
+            for I in Selected'Range loop
+              if Selected(I)  then
+                Afpx.Set_Field_Activation (I, False);
+                Remove(Common.Index2Row_Col (I).Col) := True;
               end if;
             end loop;
             exit;
@@ -165,126 +150,70 @@ package body Screen is
 
   end Play;
 
-  function Content (Row : Common.Row_Range) return Common.Full_Bar_Range is
-    J : constant Natural := 0;
-    Res : Common.Full_Bar_Range := 0;
+  procedure Update (Row : in Common.Row_Range;
+                    Remove : in Common.Bar_Status_Array) is
+    Cols : constant Common.Cols_Rec := Common.Get_Cols (Row);
   begin
-    for I in reverse First_Index_Of_Row(Row) .. Last_Index_Of_Row(Row) loop
-      if Status(I) = Free then
-        Res := Res + 2 ** J;
+    -- Remove :
+    for I in Cols.First_Col .. Cols.Last_Col loop
+      if Remove (I) then
+        Afpx.Set_Field_Colors (Common.Row_Col2Index ((Row, I)),
+                               Background => Sel_Color);
       end if;
     end loop;
-    return Res;
-  end Content;
-
-
-  procedure Update (Row : in Common.Row_Range; Bars : in Common.Full_Bar_Range;
-                    Result : in Compute.Result_List; Change_Game : out Boolean) is
-    -- Number of bars to remove, number remaining to remove,
-    -- number of bars remaining in row
-    Nb_To_Remove, Nb_Left_To_Remove, Nb_Bars : Natural;
-    -- Random choice of the Nth bar to remove, number of free found
-    N, F : Natural;
-    -- For put then get
-    Cursor_Field : Field_Range := Field_Range'First;
-    Cursor_Col : Con_Io.Col_Range := Con_Io.Col_Range'First;
-    Insert : Boolean := False;
-    Ptg_Result : Result_Rec;
-    use Compute;
-  begin
-    Change_Game := False;
-    -- Current content
-    Nb_Bars := 0;
-    for I in First_Index_Of_Row(Row) .. Last_Index_Of_Row(Row) loop
-      if Status(I) = Free then
-        Nb_Bars := Nb_Bars + 1;
-      end if;
-    end loop;
-    -- Nb to remove
-    Nb_To_Remove := Nb_Bars - Bars;
-
-    -- Select
-    Nb_Left_To_Remove := Nb_To_Remove;
-    -- Select randomly Nb_To_Remove free bars
-    for I in 1 .. Nb_Left_To_Remove loop
-      -- Random choice of the Nth bar to remove
-      N := Rnd.Int_Random(1, Nb_Bars);
-      -- Number of free found
-      F := 0;
-
-      -- Find Nth free bar and remove it
-      for J in First_Index_Of_Row(Row) .. Last_Index_Of_Row(Row) loop
-        if Status(J) = Free then
-          F := F + 1;
-          if F = N then
-            -- Remove this one
-            Status(J)  := Selected;
-            Set_Field_Colors (Field_Range(J), Background => Sel);
-            Nb_Left_To_Remove := Nb_Left_To_Remove - 1;
-            Nb_Bars := Nb_Bars - 1;
-            exit;
-          end if;
-        end if;
-      end loop;
-
-    end loop;
-
-    -- Previous strategy: Select the Nb_To_Remove first from left
-    -- for I in First_Index_Of_Row(Row) .. Last_Index_Of_Row(Row) loop
-    --  if Status(I) = Free then
-    --    Status(I)  := Selected;
-    --    Set_Field_Colors (Field_Range(I), Background => Con_Io.Red);
-    --    Nb_Left_To_Remove := Nb_Left_To_Remove - 1;
-    --    exit when Nb_Left_To_Remove = 0;
-    --  end if;
-    -- end loop;
+    Afpx.Set_Field_Activation (17, False);
 
     -- Display
-    if Result in Compute.Played_Result_List then
-      Set_Field_Activation (17, False);
-      Put;
-      delay 0.5;
-    end if;
+    Afpx.Put;
+    delay 0.5;
 
     -- Remove
-    Nb_Left_To_Remove := Nb_To_Remove;
-    for I in First_Index_Of_Row(Row) .. Last_Index_Of_Row(Row) loop
-      if Status(I) = Selected then
-        Status(I) := Removed;
-        Set_Field_Colors (Field_Range(I), Background => Sel);
-        Set_Field_Activation (Field_Range(I), False);
-        Nb_Left_To_Remove := Nb_Left_To_Remove - 1;
-        exit when Nb_Left_To_Remove = 0;
+    for I in Cols.First_Col .. Cols.Last_Col loop
+      if Remove (I) then
+        Afpx.Set_Field_Colors (Common.Row_Col2Index ((Row, I)),
+                               Background => Sel_Color);
+        Afpx.Set_Field_Activation (Common.Row_Col2Index ((Row, I)),
+                                   False);
       end if;
     end loop;
-
-    -- Validate
-    if Result /= Compute.Played then
-      if Result = Compute.Played_And_Won or else Result = Compute.Won then
-        Encode_Field(21, (0, 34), "I win :-)");
-      else
-        Encode_Field(21, (0, 33), "You win :-(");
-      end if;
-      Set_Field_Activation (17, True);
-      Encode_Field (17, (1, 1), "P l a y");
-      Set_Field_Activation (22, True);
-      loop
-        Put_Then_Get(Cursor_Field, Cursor_Col, Insert, Ptg_Result, True);
-        if Ptg_Result.Event = Afpx.Mouse_Button and then Ptg_Result.Field_No = 22 then
-          Change_Game := True;
-        end if;
-        exit when Ptg_Result.Event = Afpx.Mouse_Button
-                  and then (Ptg_Result.Field_No = 17 or else Ptg_Result.Field_No = 22);
-        if Ptg_Result.Event = Afpx.Mouse_Button and then Ptg_Result.Field_No = 18 then
-          raise Exit_Requested;
-        end if;
-      end loop;
-      Reset_Field (17);
-      Reset_Field (21);
-      Set_Field_Activation (22, False);
-    end if;
   end Update;
 
-
+  -- Show end of a game
+  procedure End_Game (Result : in Common.Done_Result_List;
+                      Change_Game : out Boolean) is
+    Cursor_Field : Afpx.Field_Range := Afpx.Field_Range'First;
+    Cursor_Col : Con_Io.Col_Range := Con_Io.Col_Range'First;
+    Insert : Boolean := False;
+    Ptg_Result : Afpx.Result_Rec;
+    use type Common.Played_Result_List;
+    use type Afpx.Event_List, Afpx.Absolute_Field_Range;
+  begin
+    -- Validate
+    if Result = Common.Played_And_Won or else Result = Common.Won then
+      Afpx.Encode_Field(21, (0, 34), "I win :-)");
+    else
+      Afpx.Encode_Field(21, (0, 33), "You win :-(");
+    end if;
+    Afpx.Set_Field_Activation (17, True);
+    Afpx.Encode_Field (17, (1, 1), "P l a y");
+    Afpx.Set_Field_Activation (22, True);
+    loop
+      Afpx.Put_Then_Get(Cursor_Field, Cursor_Col, Insert, Ptg_Result, True);
+      if Ptg_Result.Event = Afpx.Mouse_Button and then Ptg_Result.Field_No = 22 then
+        Change_Game := True;
+      end if;
+      exit when Ptg_Result.Event = Afpx.Mouse_Button
+                and then (Ptg_Result.Field_No = 17
+                  or else Ptg_Result.Field_No = 22);
+      if Ptg_Result.Event = Afpx.Mouse_Button
+      and then Ptg_Result.Field_No = 18 then
+        raise Exit_Requested;
+      end if;
+    end loop;
+    Afpx.Reset_Field (17);
+    Afpx.Reset_Field (21);
+    Afpx.Set_Field_Activation (22, False);
+  end End_Game;
 
 end Screen;
+
