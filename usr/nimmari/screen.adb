@@ -36,26 +36,45 @@ package body Screen is
     return Common.Nim;
   end Intro;
 
-  procedure Reset (Game   : in Common.Game_Kind_List;
-                   Scores : in Common.Score_Array) is
+  procedure Reset is
+    Scores : constant Common.Score_Array := Common.Get_Scores;
     use Afpx;
     use type Common.Game_Kind_List;
   begin
-    Use_Descriptor (2);
+    if Get_Descriptor /= 2 then
+      Use_Descriptor (2);
+    end if;
     Encode_Field (19, (0,  1), "You: " & Normal (Scores(Common.Human), 3));
     Encode_Field (19, (0, 13), "Me: " & Normal (Scores(Common.Machine), 3));
-    if Game = Common.Nim then
-      Encode_Field (20, (0,0), "   Nim   ");
+    Clear_Field (20);
+    Clear_Field (22);
+    if Common.Get_Game_Kind = Common.Nim then
+      Encode_Field (20, (0,0), "   Nim");
       Encode_Field (22, (1,1), "Play Marienbad");
     else
       Encode_Field (20, (0,0), "Marienbad");
       Encode_Field (22, (1,1), "   Play Nim");
     end if;
-    for I in Field_Range'(1) .. 16 loop
-      Reset_Field (I, Reset_String => False);
-    end loop;
     Set_Field_Activation (22, False);
   end Reset;
+
+  -- Init Bars activation
+  procedure Init is
+    Row_Col : Common.Row_Col_Rec;
+    Indexes : Common.Indexes_Rec;
+    Bars : Common.Bar_Status_Array;
+  begin
+    -- Init
+    for I in Common.Row_Range loop
+      Bars := Common.Get_Bars (I);
+      Indexes := Common.Get_Indexes (I);
+      for J in Indexes.First_Index .. Indexes.Last_Index loop
+        Row_Col := Common.Index2Row_Col (J);
+        Afpx.Reset_Field (J, Reset_String => False);
+        Afpx.Set_Field_Activation (J, Bars(Row_Col.Col));
+      end loop;
+    end loop;
+  end Init;
 
   procedure Play (Row : out Common.Row_Range;
                   Remove : out Common.Bar_Status_Array) is
@@ -70,22 +89,17 @@ package body Screen is
     Selection_Index : Common.Index_Range;
     Nb_Selected : Natural;
     Row_Selected : Common.Row_Range;
+    Row_Col : Common.Row_Col_Rec;
     type Selected_Array is array (Common.Index_Range) of Boolean;
     Selected : Selected_Array := (others => False);
 
-    Row_Col : Common.Row_Col_Rec;
-    Indexes : Common.Indexes_Rec;
 
     use type Afpx.Event_List, Afpx.Keyboard_Key_List;
   begin
     -- Init
-    for I in Common.Row_Range loop
-      Remove := Common.Get_Bars (I);
-      Indexes := Common.Get_Indexes (I);
-      for J in Indexes.First_Index .. Indexes.Last_Index loop
-        Row_Col := Common.Index2Row_Col (J);
-        Afpx.Set_Field_Activation (J, Remove(Row_Col.Col));
-      end loop;
+    Init;
+    for I in Common.Index_Range'Range loop
+      Selected(I) := False;
     end loop;
 
     Nb_Selected := 0;
@@ -154,18 +168,23 @@ package body Screen is
                     Remove : in Common.Bar_Status_Array) is
     Cols : constant Common.Cols_Rec := Common.Get_Cols (Row);
   begin
-    -- Remove :
+    -- Init
+    Init;
+
+    -- Remove bars (machine plays)
+    Afpx.Set_Field_Activation (17, False);
     for I in Cols.First_Col .. Cols.Last_Col loop
       if Remove (I) then
         Afpx.Set_Field_Colors (Common.Row_Col2Index ((Row, I)),
                                Background => Sel_Color);
+        Afpx.Put;
+        delay 0.1;
       end if;
     end loop;
-    Afpx.Set_Field_Activation (17, False);
 
     -- Display
     Afpx.Put;
-    delay 0.5;
+    delay 0.4;
 
     -- Remove
     for I in Cols.First_Col .. Cols.Last_Col loop
@@ -188,6 +207,9 @@ package body Screen is
     use type Common.Played_Result_List;
     use type Afpx.Event_List, Afpx.Absolute_Field_Range;
   begin
+    for I in Common.Index_Range'Range loop
+      Afpx.Set_Field_Protection(I, True);
+    end loop;
     -- Validate
     if Result = Common.Played_And_Won or else Result = Common.Won then
       Afpx.Encode_Field(21, (0, 34), "I win :-)");
@@ -199,15 +221,16 @@ package body Screen is
     Afpx.Set_Field_Activation (22, True);
     loop
       Afpx.Put_Then_Get(Cursor_Field, Cursor_Col, Insert, Ptg_Result, True);
-      if Ptg_Result.Event = Afpx.Mouse_Button and then Ptg_Result.Field_No = 22 then
-        Change_Game := True;
-      end if;
-      exit when Ptg_Result.Event = Afpx.Mouse_Button
-                and then (Ptg_Result.Field_No = 17
-                  or else Ptg_Result.Field_No = 22);
-      if Ptg_Result.Event = Afpx.Mouse_Button
-      and then Ptg_Result.Field_No = 18 then
-        raise Exit_Requested;
+      if Ptg_Result.Event = Afpx.Mouse_Button then
+        if Ptg_Result.Field_No = 22 then
+          Change_Game := True;
+          exit;
+        elsif Ptg_Result.Field_No = 17 then
+          Change_Game := False;
+          exit;
+        elsif Ptg_Result.Field_No = 18 then
+          raise Exit_Requested;
+        end if;
       end if;
     end loop;
     Afpx.Reset_Field (17);

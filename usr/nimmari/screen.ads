@@ -7,8 +7,7 @@ package Screen is
   function Intro return Common.Game_Kind_List;
 
   -- Init of a game
-  procedure Reset (Game : in Common.Game_Kind_List;
-                   Scores : in Common.Score_Array);
+  procedure Reset;
 
   -- Let human play
   procedure Play (Row : out Common.Row_Range;

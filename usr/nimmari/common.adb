@@ -90,7 +90,7 @@ package body Common is
       when 01 .. 07 => return (1, Bar_Range(Index));
       when 08 .. 12 => return (2, Bar_Range(Index - 6));
       when 13 .. 15 => return (3, Bar_Range(Index - 10));
-      when 16       => return (4, 1);
+      when 16       => return (4, 4);
     end case;
   end Index2Row_Col;
 
