@@ -151,15 +151,15 @@ procedure Agite is
 
     -- De-activate Diff and history if no in Git
     if Root = Utils.Asu_Null then
-      Afpx.Set_Field_Protection (17, True);
-      Afpx.Set_Field_Colors (17, Foreground => Black,
+      Afpx.Set_Field_Protection (21, True);
+      Afpx.Set_Field_Colors (21, Foreground => Black,
                                  Background => Background);
-      Afpx.Set_Field_Protection (18, True);
-      Afpx.Set_Field_Colors (18, Foreground => Black,
+      Afpx.Set_Field_Protection (22, True);
+      Afpx.Set_Field_Colors (22, Foreground => Black,
                                  Background => Background);
     else
-      Afpx.Reset_Field (17);
-      Afpx.Reset_Field (18);
+      Afpx.Reset_Field (21);
+      Afpx.Reset_Field (22);
     end if;
 
   end Encode_Files;
@@ -196,7 +196,7 @@ procedure Agite is
   Local_Host : Utils.Asu_Us;
   function Host_Str return String is
     use type Utils.Asu_Us;
-    Len : constant Positive := Afpx.Get_Field_Width (22);
+    Len : constant Positive := Afpx.Get_Field_Width (17);
   begin
     if Local_Host /= Utils.Asu_Null then
       return Utils.Asu_Ts (Local_Host);
@@ -225,7 +225,7 @@ procedure Agite is
     Cursor_Col := 0;
     Insert := False;
     Redisplay := False;
-    Afpx.Encode_Field (22, (0, 0), Host_Str);
+    Afpx.Encode_Field (17, (0, 0), Host_Str);
     Encode_Dir;
     Encode_Files;
   end;
@@ -390,19 +390,22 @@ begin
                 Change_Dir (New_Dir);
               end if;
             end;
-          when 16 =>
-            -- Edit (file)
-            List_Action (Edit);
-          when 17 =>
-            -- Diff
-            List_Action (Diff);
           when 18 =>
-            -- History
-            List_Action (History);
-          when 19 =>
             -- GUI
             Utils.Launch ("git gui");
+          when 19 =>
+            -- XTerm
+            Utils.Launch (Config.Xterminal);
           when 20 =>
+            -- Edit (file)
+            List_Action (Edit);
+          when 21 =>
+            -- Diff
+            List_Action (Diff);
+          when 22 =>
+            -- History
+            List_Action (History);
+          when 23 =>
             -- Exit
             raise Utils.Exit_Requested;
           when others =>

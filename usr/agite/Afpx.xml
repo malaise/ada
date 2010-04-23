@@ -3,7 +3,7 @@
 
 <!-- For agite -->
 <Afpx_Descriptors Height="44" Width="55">
-  <Var Name="Version" Value="V1.2"/>
+  <Var Name="Version" Value="V2.0"/>
   <Color_Definitions>
     <Color_Definition Name="Color09">Dark_Grey</Color_Definition>
   </Color_Definitions>
@@ -29,7 +29,7 @@
 
     <!-- List management -->
     <Var Name="LmLeft"  Value="${List.Right}+${LmHOffset}"/>
-    <Var Name="LmUp"    Value="${List.Up}+13"/>
+    <Var Name="LmUp"    Value="${List.Up}+15"/>
     <Var Name="LmSta"   Value="1"/>
 
     <Field Num="2" Kind="Button">
@@ -109,44 +109,56 @@
       <Init Row="0" Col="1">Bookmarks</Init>
     </Field>
 
-    <!-- Edit, Diff, History, Exit -->
-    <Field Num="16" Kind="Button">
-      <Geometry Up="${List.Up}" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
-      <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="1" Col="2">Edit</Init>
-    </Field>
-    <Field Num="17" Kind="Button">
-      <Geometry Up="${Field_16.Low}+2" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
-      <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="1" Col="2">Diff</Init>
-    </Field>
-    <Field Num="18" Kind="Button">
-      <Geometry Up="${Field_17.Low}+2" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
-      <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="1" Col="2">Hist</Init>
-    </Field>
-    <Field Num="19" Kind="Button">
-      <Geometry Up="${Field_13.Up}" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
-      <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="1">GitGUI</Init>
-    </Field>
-    <Field Num="20" Kind="Button">
-      <Geometry Height="1" Left="${LmLeft}" Low="${List.Low}" Width="${LmWidth}"/>
-      <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="2">Exit</Init>
-    </Field>
-
     <!-- Version and host -->
-    <Field Num="21" Kind="Put">
+    <Field Num="16" Kind="Put">
       <Geometry Up="0" Left="${Field_1.Right}+3" Height="1" Width="4"/>
       <Colors Foreground="Black" Background="Light_Grey" />
       <Init Row="0" Col="0">${Version}</Init>
     </Field>
-    <Field Num="22" Kind="Put">
-      <Geometry Up="0" Left="${Field_21.Right}+3" Height="1"
+    <Field Num="17" Kind="Put">
+      <Geometry Up="0" Left="${Field_16.Right}+3" Height="1"
                 Right="${Screen.Width}-2"/>
       <Colors Foreground="Black" Background="Light_Grey" />
     </Field>
+
+    <!-- GUI, Xtem, Edit, Diff, History, Exit... -->
+    <Field Num="18" Kind="Button">
+      <Geometry Up="${Field_13.Up}" Left="${LmLeft}"
+                Height="1" Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="1">GitGUI</Init>
+    </Field>
+    <Field Num="19" Kind="Button">
+      <Geometry Up="${Field_18.Low}+2" Left="${LmLeft}"
+                Height="1" Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="2">XTerm</Init>
+    </Field>
+    <Field Num="20" Kind="Button">
+      <Geometry Up="${Field_19.Low}+2" Left="${LmLeft}"
+                Height="3" Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="1" Col="2">Edit</Init>
+    </Field>
+    <Field Num="21" Kind="Button">
+      <Geometry Up="${Field_20.Low}+2" Left="${LmLeft}"
+                Height="3" Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="1" Col="2">Diff</Init>
+    </Field>
+    <Field Num="22" Kind="Button">
+      <Geometry Up="${Field_21.Low}+2" Left="${LmLeft}"
+                Height="3" Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="1" Col="2">Hist</Init>
+    </Field>
+    <Field Num="23" Kind="Button">
+      <Geometry Height="1" Left="${LmLeft}" Low="${List.Low}"
+                Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="2">Exit</Init>
+    </Field>
+
   </Descriptor>
 
   <!-- Bookmarks -->

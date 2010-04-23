@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!ELEMENT agite (editor,viewer,differator,last_dir,bookmarks*)>
+<!ELEMENT agite (xterm,editor,viewer,differator,last_dir,bookmarks*)>
 
+<!ELEMENT xterm (#PCDATA)>
 <!ELEMENT editor (#PCDATA)>
 <!ELEMENT viewer (#PCDATA)>
 <!ELEMENT differator (#PCDATA)>

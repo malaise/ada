@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE agite SYSTEM "agite.dtd">
 
+
 <agite>
+  <xterm>gnome-terminal --zoom=0.9</xterm>
   <editor>xvi</editor>
   <viewer>xvi -M</viewer>
   <differator>tkdiff</differator>

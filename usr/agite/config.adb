@@ -11,7 +11,8 @@ package body Config is
     return Environ.Getenv ("HOME") & "/.agite/agite.xml";
   end File_Name;
 
-  Bookmarks_Pos : constant := 5;
+  Curr_Dir_Pos : constant := 5;
+  Bookmarks_Pos : constant := 6;
 
   -- Load the conf
   Ctx : Xml_Parser.Generator.Ctx_Type;
@@ -50,25 +51,32 @@ package body Config is
     end loop;
   end Load;
 
+  -- X terminal
+  function Xterminal return String is
+  begin
+    Load;
+    return Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 1), 1));
+  end Xterminal;
+
   -- Editor GUI
   function Editor return String is
   begin
     Load;
-    return Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 1), 1));
+    return Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 2), 1));
   end Editor;
 
   -- Viewer GUI
   function Viewer return String is
   begin
     Load;
-    return Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 2), 1));
+    return Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 3), 1));
   end Viewer;
 
   -- Diff GUI
   function Differator return String is
   begin
     Load;
-    return Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 3), 1));
+    return Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 4), 1));
   end Differator;
 
   -- Last/Current dir
@@ -78,7 +86,7 @@ package body Config is
   begin
     Load;
     -- Prev dir may not be empty
-    Prev := Ctx.Get_Child (Root, 4);
+    Prev := Ctx.Get_Child (Root, Curr_Dir_Pos);
     if Ctx.Get_Nb_Children (Prev) = 1 then
       Ctx.Delete_Children (Prev);
     end if;
@@ -91,7 +99,7 @@ package body Config is
   begin
     Load;
     -- Prev dir may be empty
-    Prev := Ctx.Get_Child (Root, 4);
+    Prev := Ctx.Get_Child (Root, Curr_Dir_Pos);
     if Ctx.Get_Nb_Children (Prev) = 1 then
       return Ctx.Get_Text (Ctx.Get_Child (Prev, 1));
     else

@@ -1,6 +1,9 @@
 with Utils;
 package Config is
 
+  -- X terminal
+  function Xterminal return String;
+
   -- Editor GUI
   function Editor return String;
 
