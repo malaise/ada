@@ -29,6 +29,9 @@ package Afpx is
   -- Exceptions : No_Descriptor (Descriptor not found)
   procedure Use_Descriptor (Descriptor_No : in Descriptor_Range;
                             Clear_Screen : in Boolean := True);
+  -- Get current descriptor no
+  -- Exceptions : No_Descriptor (no Descriptor in use)
+  function Get_Descriptor return Descriptor_Range;
 
   -- Close the Con_Io screen
   -- Previous descriptor modifications (from encode, set_colors, put_then_get)
@@ -45,8 +48,10 @@ package Afpx is
   --   In this case the program must suspend and not use the afpx,
   --   then open and use the new con_io, then close the new con_io
   --   then resume and use the afpx.
+  -- Exceptions : No_Descriptor (no Descriptor in use)
   procedure Suspend;
   procedure Resume;
+  function Is_Suspended return Boolean;
 
   -- Get descriptor background color
   function Get_Descriptor_Background return Con_Io.Effective_Colors;

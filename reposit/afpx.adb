@@ -255,6 +255,13 @@ package body Afpx is
     end if;
   end Use_Descriptor;
 
+  -- Get current descriptor no
+  function Get_Descriptor return Descriptor_Range is
+  begin
+    Af_Dscr.Check;
+    return Descriptor_Range(Af_Dscr.Current_Dscr.Dscr_Index);
+  end Get_Descriptor;
+
   -- Close the Con_Io window
   procedure Release_Descriptor is
   begin
@@ -278,6 +285,12 @@ package body Afpx is
     -- Trigger a refresh
     Af_Dscr.Current_Dscr.Modified := True;
   end Resume;
+
+  function Is_Suspended return Boolean is
+  begin
+    Af_Dscr.Check;
+    return Af_Con_Io.Is_Suspended;
+  end Is_Suspended;
 
   --Get descriptor background color
   function Get_Descriptor_Background return Con_Io.Effective_Colors is
