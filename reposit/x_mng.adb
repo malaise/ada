@@ -646,6 +646,16 @@ package body X_Mng is
   end X_Resume;
 
   ------------------------------------------------------------------
+  function  X_Is_Suspended  (Line_Id : Line) return Boolean is
+    use type System.Address;
+  begin
+    if not Initialised or else Line_Id = No_Client then
+      raise X_Failure;
+    end if;
+    return Line_Id.Suspended_Line_For_C /= No_Line_For_C;
+  end X_Is_Suspended;
+
+  ------------------------------------------------------------------
   procedure X_Set_Line_Name (Line_Id : in Line;
                              Line_Name : in String) is
     Line_Name_For_C : constant String(1 .. Line_Name'Length+1)

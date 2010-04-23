@@ -180,6 +180,14 @@ package body Generic_Con_Io is
       X_Mng.X_Resume (Id);
     end Resume;
 
+    function Is_Suspended return Boolean is
+    begin
+      if not Init_Done then
+        raise Not_Init;
+      end if;
+      return X_Mng.X_Is_Suspended (Id);
+    end Is_Suspended;
+
 
     -- Screen characteristics
     function Screen return Window is

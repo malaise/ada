@@ -152,6 +152,7 @@ package Generic_Con_Io is
     --   then resume and use the first con_io.
     procedure Suspend;
     procedure Resume;
+    function Is_Suspended return Boolean;
 
     -- The window which is screen
     function Screen return Window;

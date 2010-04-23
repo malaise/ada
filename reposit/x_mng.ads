@@ -87,6 +87,7 @@ package X_Mng is
   --   then resume and use the first line.
   procedure X_Suspend (Line_Id : in out Line);
   procedure X_Resume  (Line_Id : in out Line);
+  function  X_Is_Suspended  (Line_Id : Line) return Boolean;
 
   -- Set the name of a line
   -- This name will be displayed by the window manager if possible
