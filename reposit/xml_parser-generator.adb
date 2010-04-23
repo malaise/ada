@@ -4,7 +4,7 @@ with Int_Image, Text_Line, Sys_Calls, Trees;
 package body Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "2";
+  Minor_Version : constant String := "3";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -1098,6 +1098,10 @@ package body Xml_Parser.Generator is
       -- Any child of prologue?
       if Element.Get_Position = Cell_Ref then
         -- No Child (Put_Attributes moved back to current): return
+        if Cell.Nb_Attributes /= 0 and then Format /= Raw then
+          -- Skip a line between Xml directive and Root
+          New_Line (Flow);
+        end if;
         return;
       end if;
 
@@ -1134,6 +1138,7 @@ package body Xml_Parser.Generator is
       -- End of prologue and its children
       Element.Move_Father;
       if Format /= Raw then
+        -- Skip a line between Prologue and Root
         New_Line (Flow);
       end if;
       return;
@@ -1287,9 +1292,6 @@ package body Xml_Parser.Generator is
     -- Put prologue if any
     Ctx.Prologue.Move_Root;
     Put_Element (Flow, Format, Width, Ctx, Ctx.Prologue.all, Prologue_Level);
-    if Format /= Raw then
-      New_Line (Flow);
-    end if;
     -- Put Elements
     Ctx.Elements.Move_Root;
     Put_Element (Flow, Format, Width, Ctx, Ctx.Elements.all, 0);
