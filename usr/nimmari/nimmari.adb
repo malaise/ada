@@ -1,6 +1,7 @@
 with Ada.Text_Io;
 with Common, Screen, Compute;
 procedure Nimmari is
+  Debug : constant Boolean := False;
 
   -- Result of computation
   Row    : Common.Row_Range;
@@ -38,9 +39,11 @@ begin
     loop
       -- Compute game, check end
       Compute.Play(Row, Remove, Result);
-Ada.Text_Io.Put ("Machine played: Row" & Row'Img & " ");
-Put (Remove);
-Ada.Text_Io.Put_Line (" Result -> " & Result'Img);
+      if Debug then
+        Ada.Text_Io.Put ("Machine played: Row" & Row'Img & " ");
+        Put (Remove);
+        Ada.Text_Io.Put_Line (" Result -> " & Result'Img);
+      end if;
 
       if Result in Common.Played_Result_List then
         -- Update bars
@@ -53,9 +56,11 @@ Ada.Text_Io.Put_Line (" Result -> " & Result'Img);
 
       -- User plays
       Screen.Play (Row, Remove);
-Ada.Text_Io.Put ("Human played: Row" & Row'Img & " ");
-Put (Remove);
-Ada.Text_Io.New_Line;
+      if Debug then
+        Ada.Text_Io.Put ("Human played: Row" & Row'Img & " ");
+        Put (Remove);
+        Ada.Text_Io.New_Line;
+      end if;
       Common.Remove_Bars (Row, Remove);
 
     end loop One_Go;
