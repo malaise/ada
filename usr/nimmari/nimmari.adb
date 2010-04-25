@@ -1,7 +1,9 @@
 with Ada.Text_Io;
-with Common, Screen, Compute;
+with Argument;
+with Common, Screen, Text, Compute;
 procedure Nimmari is
   Debug : constant Boolean := False;
+  Graphic_Mode : Boolean := False;
 
   -- Result of computation
   Row    : Common.Row_Range;
@@ -24,16 +26,27 @@ procedure Nimmari is
 
   use type Common.Result_List;
 begin
-  Compute.Init;
 
-  -- Select game: Nim or Marienbad
-  Common.Set_Game_Kind (Screen.Intro);
+  -- Parse arguments
+  if Argument.Get_Parameter (1) = "--text" then
+    Graphic_Mode := False;
+  end if;
+
+  -- Init then select game: Nim or Marienbad
+  Compute.Init;
+  if Graphic_Mode then
+    Common.Set_Game_Kind (Screen.Intro);
+  else
+    Common.Set_Game_Kind (Text.Intro);
+  end if;
 
   One_Game:
   loop
     Common.Reset_Bars;
     -- Init screen (with game kind and scores)
-    Screen.Reset;
+    if Graphic_Mode then
+      Screen.Reset;
+    end if;
 
     One_Go:
     loop
@@ -47,7 +60,11 @@ begin
 
       if Result in Common.Played_Result_List then
         -- Update bars
-        Screen.Update (Row, Remove);
+        if Graphic_Mode then
+          Screen.Update (Row, Remove);
+        else
+          Text.Update (Row, Remove);
+        end if;
         Common.Remove_Bars (Row, Remove);
       end if;
 
@@ -55,7 +72,11 @@ begin
       exit One_Go when Result /= Common.Played;
 
       -- User plays
-      Screen.Play (Row, Remove);
+      if Graphic_Mode then
+        Screen.Play (Row, Remove);
+      else
+        Text.Play (Row, Remove);
+      end if;
       if Debug then
         Ada.Text_Io.Put ("Human played: Row" & Row'Img & " ");
         Put (Remove);
@@ -74,14 +95,22 @@ begin
       Common.Add_Win (Common.Human);
     end if;
     -- Update scores
-    Screen.Reset;
+    if Graphic_Mode then
+      Screen.Reset;
+    end if;
 
     -- Show end of game, change game?
-    Screen.End_Game (Result, Change_Game);
+    if Graphic_Mode then
+      Screen.End_Game (Result, Change_Game);
+    else
+      Text.End_Game (Result, Change_Game);
+    end if;
     if Change_Game then
       -- Update game kind
       Common.Switch_Game_Kind;
-      Screen.Reset;
+      if Graphic_Mode then
+        Screen.Reset;
+      end if;
     end if;
 
   end loop One_Game;
