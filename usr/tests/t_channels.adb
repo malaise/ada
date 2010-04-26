@@ -201,7 +201,7 @@ begin
 
     Ada.Text_Io.Put_Line ("Adding dests from file");
     begin
-      Fifoc.Add_Destinations ("channels.dir");
+      Fifoc.Add_Destinations ("channels.xml");
     exception
       when Error : others =>
         Ada.Text_Io.Put_Line ("Exception: "
