@@ -48,10 +48,10 @@ package body Data_Base is
 
   -- Crc of a string
   function Crc_Of (Str : String) return Item_Crc is
+    Crc : Crc_10.Crc_Type;
   begin
-    Crc_10.Rst;
-    Crc_10.Add (Str);
-    return Image (Crc_10.Get);
+    Crc.Add (Str);
+    return Image (Crc.Get);
   end Crc_Of;
 
   procedure Set (Item : in Item_Rec) is
@@ -165,6 +165,7 @@ package body Data_Base is
   function Get_Crc return Item_Crc is
     Pos : Positive;
     Item : Item_Rec;
+    Crc : Crc_10.Crc_Type;
   begin
     if Item_List.Is_Empty then
       return Default_Crc;
@@ -172,15 +173,14 @@ package body Data_Base is
 
     Pos := Item_List.Get_Position;
     Read_First (Item);
-    Crc_10.Rst;
     loop
       exit when Item = No_Item;
-      Crc_10.Add (Item.Crc);
+      Crc.Add (Item.Crc);
       Read_Next (Item);
     end loop;
 
     Item_List.Move_At (Pos);
-    return Image (Crc_10.Get);
+    return Image (Crc.Get);
   end Get_Crc;
 
 end Data_Base;

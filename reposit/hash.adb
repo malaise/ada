@@ -13,11 +13,11 @@ package body Hash is
 
 
     function Hash_Func (Key : String) return Hash_Range is
+      Crc : Crc_10.Crc_Type;
       use type Crc_10.Max_Crc_Range;
     begin
-      Crc_10.Rst;
-      Crc_10.Add (Key);
-      return Crc_10.Get rem Hash_Size;
+      Crc.Add (Key);
+      return Crc.Get rem Hash_Size;
     end Hash_Func;
 
     -- To store association Key <-> Index
