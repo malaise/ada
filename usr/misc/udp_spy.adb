@@ -1,7 +1,7 @@
 with Ada.Exceptions, Ada.Text_Io, Ada.Calendar;
 with Argument, Basic_Proc, Text_Handler, Date_Image, Normal, Int_Image,
      Upper_Str, String_Mng, Text_Line, Sys_Calls,
-     Socket, Event_Mng, Ip_Addr, Tcp_Util;
+     Socket, Event_Mng, Ip_Addr, Tcp_Util, Timers;
 
 procedure Udp_Spy is
 
@@ -59,17 +59,36 @@ procedure Udp_Spy is
   Fd  : Event_Mng.File_Desc := 0;
 
   -- Signal received
-  Sig : Boolean := False;
-
+  Signal : Boolean := False;
   -- Signal callback
   procedure Signal_Cb is
   begin
-    Sig := True;
+    Signal := True;
   end Signal_Cb;
 
+  -- Timeout expired
+  Timeout : Boolean := False;
+  Tid : Timers.Timer_Id;
+  pragma Unreferenced (Tid);
+  function Timer_Cb (Id : in Timers.Timer_Id;
+                     Data : in Timers.Timer_Data := Timers.No_Data)
+           return Boolean is
+    pragma Unreferenced (Id, Data);
+  begin
+    Timeout := True;
+    return True;
+  end Timer_Cb;
+
+  -- Exit codes
+  Error_Code : constant := 2;
+  Packet_Received_Code : constant := 1;
+  No_Packet_Code : constant := 0;
+
+  -- Data
   type Data_Type is array (1 .. 9999) of Socket.Byte;
   Data : Data_Type;
   procedure My_Receive is new Socket.Receive (Data_Type);
+  Packet_Received : Boolean := False;
 
   -- Dump all or some of the Data
   -- "  xx xx xx xx xx xx xx xx   xx xx xx xx xx xx xx xx   ................"
@@ -130,6 +149,7 @@ procedure Udp_Spy is
     My_Receive (Soc, Data, Data_Len,
                 Set_For_Reply => True,
                 Set_Ipm_Iface => False);
+    Packet_Received := True;
     -- Put header
     if Dump_Mode /= Binary then
       Text_Line.Put (File, Curr_Date_Image);
@@ -214,6 +234,22 @@ begin
     when others =>
       raise Arg_Error;
   end;
+
+  -- Timeout
+  if Argument.Is_Set (1, "t") then
+    Nb_Options := Nb_Options + 1;
+    begin
+      Tid := Timers.Create (
+          (Clock => null,
+           Period => Timers.No_Period,
+           Delay_Kind => Timers.Delay_Sec,
+           Delay_Seconds => Duration'Value (Argument.Get_Parameter (1, "t"))),
+          Callback => Timer_Cb'Unrestricted_Access);
+    exception
+      when others =>
+        raise Arg_Error;
+    end;
+  end if;
 
   -- No other options are supported
   --  only one extra arg, the address that is parsed here after
@@ -326,7 +362,7 @@ begin
   -- Main loop
   loop
     Event_Mng.Wait (-1);
-    exit when Sig;
+    exit when Signal or else Timeout;
   end loop;
 
   -- Close
@@ -336,25 +372,38 @@ begin
     Socket.Close (Soc);
   end if;
 
-  Basic_Proc.Put_Line_Error (Curr_Date_Image & " stopped.");
+  if Signal then
+    Basic_Proc.Put_Line_Error (Curr_Date_Image & " stopped.");
+  elsif Timeout then
+    Basic_Proc.Put_Line_Error (Curr_Date_Image & " timed out.");
+  else
+    Basic_Proc.Put_Line_Error (Curr_Date_Image & " aborted?");
+  end if;
+
+  if Packet_Received then
+    Basic_Proc.Set_Exit_Code (Packet_Received_Code);
+  else
+    Basic_Proc.Set_Exit_Code (No_Packet_Code);
+  end if;
 
 exception
   when Arg_Error =>
     Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
-      & " <address> [ <interface> ] [ <dump_mode> ] [ <host_name> ] ");
+      & " <address> [ <interface> ] [ <dump_mode> ] [ <host_name> ] [ <timeout> ]");
     Basic_Proc.Put_Line_Error ("  <address>   ::= <lan>:<port>");
     Basic_Proc.Put_Line_Error ("  <lan>       ::= <lan_name_or_num> ");
     Basic_Proc.Put_Line_Error ("  <port>      ::= <port_name_or_num>");
     Basic_Proc.Put_Line_Error ("  <interface> ::= -i<host_name_or_num>");
     Basic_Proc.Put_Line_Error ("  <dump_mode> ::= -dh | -ds | -df | -db");
     Basic_Proc.Put_Line_Error ("  <host_name> ::= -hn");
+    Basic_Proc.Put_Line_Error ("  <timeout> ::= -t<duration>");
     Basic_Proc.Put_Line_Error ("Dump received headers, short ("
       & Inte_Image(Short_Data_Len) & " Bytes, default), full or binary,");
     Basic_Proc.Put_Line_Error ("  put sending hosts IP address or name.");
-    Basic_Proc.Set_Error_Exit_Code;
+    Basic_Proc.Set_Exit_Code (Error_Code);
   when Error : others =>
     Basic_Proc.Put_Line_Error ("Exception: "
         & Ada.Exceptions.Exception_Name (Error));
-    Basic_Proc.Set_Error_Exit_Code;
+    Basic_Proc.Set_Exit_Code (Error_Code);
 end Udp_Spy;
 
