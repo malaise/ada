@@ -23,7 +23,7 @@
       <Init Row="4" Col="3">- three in the third,</Init>
       <Init Row="5" Col="3">- and one in the fourth.</Init>
 
-      <Init Row="7" Col="2">Each of us, at his turn, will remove some sticks, as many as we want,</Init>
+      <Init Row="7" Col="2">Each of us at his turn will remove some sticks, as many as we want,</Init>
       <Init Row="8" Col="3">with only two constraints:</Init>
       <Init Row="9" Col="4">- we must take at least one stick at each turn,</Init>
       <Init Row="10" Col="4">- at each turn, all the sticks we take must be on the same row.</Init>

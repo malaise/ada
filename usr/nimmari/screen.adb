@@ -22,7 +22,7 @@ package body Screen is
       if Result.Event = Afpx.Signal_Event
       or else (Result.Event = Afpx.Keyboard
                and then Result.Keyboard_Key = Afpx.Break_Key) then
-        raise Exit_Requested;
+        raise Common.Exit_Requested;
       end if;
     end loop;
     if Result.Field_No = 3 then
@@ -30,7 +30,7 @@ package body Screen is
     elsif Result.Field_No = 4 then
       return Common.Marienbad;
     elsif Result.Field_No = 5 then
-      raise Exit_Requested;
+      raise Common.Exit_Requested;
     end if;
     -- To avoid warning
     return Common.Nim;
@@ -41,9 +41,14 @@ package body Screen is
     use Afpx;
     use type Common.Game_Kind_List;
   begin
-    if Get_Descriptor /= 2 then
-      Use_Descriptor (2);
-    end if;
+    begin
+      if Get_Descriptor /= 2 then
+        Use_Descriptor (2);
+      end if;
+    exception
+      when Afpx.No_Descriptor =>
+        Use_Descriptor (2);
+    end;
     Encode_Field (19, (0,  1), "You: " & Normal (Scores(Common.Human), 3));
     Encode_Field (19, (0, 13), "Me: " & Normal (Scores(Common.Machine), 3));
     Clear_Field (20);
@@ -112,7 +117,7 @@ package body Screen is
       if Result.Event = Afpx.Signal_Event
       or else (Result.Event = Afpx.Keyboard
                and then Result.Keyboard_Key = Afpx.Break_Key) then
-        raise Exit_Requested;
+        raise Common.Exit_Requested;
       end if;
       if Result.Event = Afpx.Mouse_Button then
         case Result.Field_No is
@@ -152,7 +157,7 @@ package body Screen is
             end loop;
             exit;
           when 18 =>
-            raise Exit_Requested;
+            raise Common.Exit_Requested;
           when others =>
             null;
         end case;
@@ -229,7 +234,7 @@ package body Screen is
           Change_Game := False;
           exit;
         elsif Ptg_Result.Field_No = 18 then
-          raise Exit_Requested;
+          raise Common.Exit_Requested;
         end if;
       end if;
     end loop;

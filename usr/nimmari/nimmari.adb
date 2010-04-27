@@ -1,5 +1,5 @@
 with Ada.Text_Io;
-with Argument;
+with Argument, Argument_Parser;
 with Common, Screen, Text, Compute;
 procedure Nimmari is
   Debug : constant Boolean := False;
@@ -12,6 +12,23 @@ procedure Nimmari is
 
   -- Change game after end of a game
   Change_Game : Boolean;
+
+  function Asu_Tus (Source : in String) return Argument_Parser.Asu_Us
+                   renames Argument_Parser.Asu.To_Unbounded_String;
+  Keys : constant Argument_Parser.The_Keys_Type := (
+   01 => ('h', Asu_Tus ("help"), False, False),
+   02 => ('n', Asu_Tus ("nim"), False, False),
+   03 => ('m', Asu_Tus ("marienbad"), False, False),
+   04 => ('t', Asu_Tus ("text"), False, False));
+  Arg_Dscr : Argument_Parser.Parsed_Dscr;
+
+  procedure Usage is
+  begin
+    Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
+        & " [ -t | --text ]  [ <nim> | <marienbad>]");
+    Ada.Text_Io.Put_Line (" <nim> ::= -n | --nim");
+    Ada.Text_Io.Put_Line (" <marienbad> ::= -m | --marienbad");
+  end Usage;
 
   procedure Put (Bars : Common.Bar_Status_Array) is
   begin
@@ -28,15 +45,42 @@ procedure Nimmari is
 begin
 
   -- Parse arguments
-  if Argument.Get_Parameter (1) = "--text" then
-    Graphic_Mode := False;
+  Arg_Dscr := Argument_Parser.Parse (Keys);
+  if not Arg_Dscr.Is_Ok then
+    Ada.Text_Io.Put_Line (Argument.Get_Program_Name & ": Syntax ERROR. "
+      & Arg_Dscr.Get_Error & ".");
+    Usage;
+    return;
   end if;
+
+  if Arg_Dscr.Is_Set (1) then
+    -- Help
+    Usage;
+    return;
+  end if;
+
+  if Arg_Dscr.Is_Set (2) and then Arg_Dscr.Is_Set (3) then
+     Ada.Text_Io.Put_Line (Argument.Get_Program_Name & ": Syntax ERROR.");
+    Usage;
+    return;
+  end if;
+
+  -- Text mode
+  Graphic_Mode := not Arg_Dscr.Is_Set (4);
 
   -- Init then select game: Nim or Marienbad
   Compute.Init;
-  if Graphic_Mode then
+  if Arg_Dscr.Is_Set (2) then
+    -- Nim
+    Common.Set_Game_Kind (Common.Nim);
+  elsif Arg_Dscr.Is_Set (3) then
+    -- Marienbad
+    Common.Set_Game_Kind (Common.Marienbad);
+  elsif Graphic_Mode then
+    -- Graphic choice
     Common.Set_Game_Kind (Screen.Intro);
   else
+    -- Text choice
     Common.Set_Game_Kind (Text.Intro);
   end if;
 
@@ -116,7 +160,7 @@ begin
   end loop One_Game;
 
 exception
-  when Screen.Exit_Requested =>
+  when Common.Exit_Requested =>
     null;
 end Nimmari;
 

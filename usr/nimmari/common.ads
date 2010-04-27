@@ -1,6 +1,7 @@
 -- Common types and current state
 with Afpx;
 package Common is
+  Exit_Requested : exception;
 
   -- Kind of game
   type Game_Kind_List is (Nim, Marienbad);

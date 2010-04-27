@@ -25,6 +25,28 @@ package body Text is
   function Intro return Common.Game_Kind_List is
     Str : String (1 .. 1);
   begin
+    Put_Line ("This game presents several sticks aligned on four rows:");
+    Put_Line (" - seven sticks in the first row,");
+    Put_Line (" - five in the second,");
+    Put_Line (" - three in the third,");
+    Put_Line (" - and one in the fourth.");
+    New_Line;
+
+    Put_Line ("Each of us at his turn will remove some sticks, as many as we");
+    Put_Line (" want with only two constraints:");
+    Put_Line (" - we must take at least one stick at each turn,");
+    Put_Line (" - at each turn, all the sticks we take must be on the same row.");
+    New_Line;
+
+    Put_Line ("I always play first at the beginning of a game, which gives you");
+    Put_Line (" the possibility to win each game.");
+    New_Line;
+
+    Put_Line ("Two variants are available:");
+    Put_Line (" - at Nim, the winner is the one who takes the last stick,");
+    Put_Line (" - at Marienbad, the player who takes the last stick loses.");
+    New_Line;
+
     loop
       Put ("Do you want to play Nim (N) or Marienbad (M)? ");
       Str := Upper_Str (Get (1));
@@ -152,15 +174,17 @@ package body Text is
     end if;
     loop
       if Common.Get_Game_Kind = Common.Nim then
-        Put ("Enter M to play Marienbad of Return to go on playing Nim: ");
+        Put ("Enter M to play Marienbad or Return to go on playing Nim: ");
       else
-        Put ("Enter N to play Nim of Return to go on playing Marienbad: ");
+        Put ("Enter N to play Nim or Return to go on playing Marienbad: ");
       end if;
       Str := Upper_Str (Get (1));
       if (Common.Get_Game_Kind = Common.Marienbad and then Str(1) = 'N')
       or else (Common.Get_Game_Kind = Common.Nim and then Str(1) = 'M') then
         Change_Game := True;
         exit;
+      elsif Str(1) = 'Q' or else Str(1) = 'X' then
+        raise Common.Exit_Requested;
       elsif Str(1) = Lf then
         Change_Game := False;
         exit;

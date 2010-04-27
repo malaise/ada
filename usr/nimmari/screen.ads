@@ -1,8 +1,6 @@
 with Common;
 package Screen is
 
-  Exit_Requested : exception;
-
   -- Intro and choice of game kind
   function Intro return Common.Game_Kind_List;
 
