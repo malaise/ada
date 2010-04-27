@@ -214,10 +214,11 @@ package body Parse_Mng  is
     Is_Empty : Boolean := True;
     Children : Asu_Us;
     Has_Text : Boolean := False;
+    Is_Mixed : Boolean := False;
     -- Token passed along the parsing of children
     Father : Asu_Us;
     Created : Boolean := False;
-    Prev_Is_Text : Boolean := False;
+    In_Mixed : Boolean := False;
     Preserve : Boolean := False;
   end record;
 
@@ -280,6 +281,10 @@ package body Parse_Mng  is
     -- Check attributes of current element of the tree
     procedure Check_Attributes (Ctx  : in out Ctx_Type;
                                 Adtd : in out Dtd_Type);
+    -- Is this element defined as Mixed
+    procedure Is_Mixed (Adtd : in out Dtd_Type;
+                        Elt  : in Asu_Us;
+                        Yes  : out Boolean);
     -- Is this element defined in internal dtd or else has not Content def
     procedure Can_Have_Spaces (Adtd : in out Dtd_Type;
                                Elt  : in Asu_Us;
@@ -522,7 +527,7 @@ package body Parse_Mng  is
                            In_Prologue : in Boolean;
                            Creation : in Boolean;
                            Has_Children : in Boolean := False;
-                           Prev_Is_Text : in Boolean := False) is
+                           In_Mixed : in Boolean := False) is
     Upd : Node_Update;
   begin
     if Ctx.Callback = null then
@@ -535,7 +540,7 @@ package body Parse_Mng  is
     end if;
     Upd.In_Prologue := In_Prologue;
     Upd.Has_Children := Has_Children;
-    Upd.Prev_Is_Text := Prev_Is_Text;
+    Upd.In_Mixed := In_Mixed;
     Upd.Level := Ctx.Level;
     if not Creation then
       Upd.Line_No := Util.Get_Line_No(Ctx.Flow);
@@ -684,6 +689,7 @@ package body Parse_Mng  is
     end if;
     -- Callback creation if Xml has been created here
     if not Ok then
+      -- In prologue, Creation of the XML directive
       Call_Callback (Ctx, True, True);
       Ctx.Level := 1;
     end if;
@@ -720,6 +726,7 @@ package body Parse_Mng  is
           Parse_Attributes (Ctx, Adtd, Of_Xml => True);
         end if;
         Check_Xml_Attributes (Ctx, True);
+        -- In prologue, Creation of the XML directive
         Call_Callback (Ctx, True, True);
         Ctx.Level := 1;
         Trace ("Parsed xml declaration");
@@ -774,16 +781,19 @@ package body Parse_Mng  is
       Tree_Mng.Move_Root (Ctx.Prologue.all);
       Tree_Mng.Add_Pi (Ctx.Prologue.all, Name, Value,
                        Util.Get_Line_No(Ctx.Flow));
+      -- In_Prologue, Creation of the PI
       Call_Callback (Ctx, True, True);
     else
       Tree_Mng.Add_Pi (Ctx.Elements.all, Name, Value,
                        Util.Get_Line_No(Ctx.Flow));
       -- Add this child
       if Children /= null then
+        -- In Elements, Creation of the PI
         Call_Callback (Ctx, False, True,
-                       Prev_Is_Text => Children.Prev_Is_Text);
+                       In_Mixed => Children.Is_Mixed);
         Add_Child (Ctx, Adtd, Children);
       else
+        -- In tail, Creation of the PI
         Call_Callback (Ctx, False, True);
       end if;
       Move_Del (Ctx, In_Prologue);
@@ -892,6 +902,7 @@ package body Parse_Mng  is
       -- Reset dtd info
       Dtd.Init (Adtd);
     end if;
+    -- In prologue, Creation of the Doctype
     Call_Callback (Ctx, True, True);
     Move_Del (Ctx, True);
     Trace ("Parsed <!DOCTYPE ... >");
@@ -931,16 +942,19 @@ package body Parse_Mng  is
           Tree_Mng.Move_Root (Ctx.Prologue.all);
           Tree_Mng.Add_Comment (Ctx.Prologue.all, Comment,
                                 Util.Get_Line_No (Ctx.Flow));
+          -- In prologue, creation of the comment
           Call_Callback (Ctx, True, True);
         else
           Tree_Mng.Add_Comment (Ctx.Elements.all, Comment,
                                 Util.Get_Line_No (Ctx.Flow));
           -- Add this child
           if Children /= null then
+            -- In elements, creation of the comment
             Call_Callback (Ctx, False, True,
-                           Prev_Is_Text => Children.Prev_Is_Text);
+                           In_Mixed => Children.Is_Mixed);
             Add_Child (Ctx, Adtd, Children);
           else
+            -- In tail, creation of the comment
             Call_Callback (Ctx, False, True);
           end if;
         end if;
@@ -1220,10 +1234,16 @@ package body Parse_Mng  is
 
     if Head /= Asu_Null then
       -- If there are only separators, skip them
-      if not Util.Is_Separators (Head) then
+      if Children.Preserve or else not Util.Is_Separators (Head) then
         -- Notify on father creation if needed
         if not Children.Created then
-          Call_Callback (Ctx, False, True, True, Children.Prev_Is_Text);
+          -- First text child of this element, so this element is mixed
+          -- In elements, Creation of element that has children
+          Tree_Mng.Set_Is_Mixed (Ctx.Elements.all, True);
+          Children.Is_Mixed := True;
+          Trace ("Txt setting mixed on father");
+          Call_Callback (Ctx, False, True, True,
+                         In_Mixed => Children.In_Mixed);
           Ctx.Level := Ctx.Level + 1;
           Children.Created := True;
         end if;
@@ -1240,9 +1260,10 @@ package body Parse_Mng  is
         else
           Add_Child (Ctx, Adtd, Children);
         end if;
-        Call_Callback (Ctx, False, True, False, Children.Prev_Is_Text);
+        -- In elements, Creation of this text element
+        Call_Callback (Ctx, False, True, False,
+                       In_Mixed => Children.Is_Mixed);
         Move_Del (Ctx, False);
-        Children.Prev_Is_Text := True;
         Trace ("Txt added text >" & Asu_Ts (Head) & "<");
       end if;
     end if;
@@ -1274,13 +1295,13 @@ package body Parse_Mng  is
                             Adtd : in out Dtd_Type;
                             Children : access Children_Desc;
                             Allow_End : Boolean := False) is
-    Prev_Was_Text : constant Boolean := Children.Prev_Is_Text;
     -- Create parent node with children if needed
     procedure Create (Has_Children : in Boolean) is
     begin
       if not Children.Created then
         -- Creation of element
-        Call_Callback (Ctx, False, True, Has_Children, Prev_Was_Text);
+        Call_Callback (Ctx, False, True, Has_Children,
+                       In_Mixed => Children.In_Mixed);
         if Has_Children then
           Ctx.Level := Ctx.Level + 1;
         end if;
@@ -1319,13 +1340,16 @@ package body Parse_Mng  is
           if Children.Created then
             -- Element was created, close it
             Ctx.Level := Ctx.Level - 1;
-            Call_Callback (Ctx, False, False, False, Children.Prev_Is_Text);
+            Call_Callback (Ctx, False, False, False,
+                           In_Mixed => Children.In_Mixed);
           else
             -- Empty element <elt></elt>: Create element and close it
+            Tree_Mng.Set_Is_Mixed (Ctx.Elements.all, True);
+            Children.Is_Mixed := True;
             Create (True);
             Ctx.Level := Ctx.Level - 1;
-            Children.Prev_Is_Text := True;
-            Call_Callback (Ctx, False, False, False, True);
+            Call_Callback (Ctx, False, False, False,
+                           In_Mixed => Children.In_Mixed);
           end if;
           return;
         elsif Char = Util.Directive then
@@ -1337,18 +1361,16 @@ package body Parse_Mng  is
             -- CDATA => Text
             Parse_Text (Ctx, Adtd, Children);
           else
-            -- Must be a comment or DOCTYPE
+            -- Directive: must be a comment or DOCTYPE
             Util.Get (Ctx.Flow, Str2);
             Create (True);
             Parse_Directive (Ctx, Adtd, Allow_Dtd => False,
                                         Context => Ref_Xml,
                                         Children => Children);
-            Children.Prev_Is_Text := False;
           end if;
         elsif Char = Util.Instruction then
           Create (True);
           Parse_Instruction (Ctx, Adtd, Children);
-          Children.Prev_Is_Text := False;
         elsif Char = Util.Start then
           Util.Error (Ctx.Flow, "Unexpected character " & Util.Start);
         else
@@ -1356,7 +1378,6 @@ package body Parse_Mng  is
           Create (True);
           Util.Unget (Ctx.Flow);
           Parse_Element (Ctx, Adtd, Children, False);
-          Children.Prev_Is_Text := False;
         end if;
       else
         -- A text, will stop with a new sub-element or
@@ -1378,7 +1399,6 @@ package body Parse_Mng  is
     My_Children : aliased Children_Desc;
     use type Asu_Us;
   begin
-    My_Children.Prev_Is_Text := Parent_Children.Prev_Is_Text;
     Line_No := Util.Get_Line_No (Ctx.Flow);
     -- Parse name until /, > or a separator
     Util.Parse_Until_Char (Ctx.Flow, "/> ");
@@ -1405,9 +1425,16 @@ package body Parse_Mng  is
     else
       Dtd.Can_Have_Spaces (Adtd, Element_Name, My_Children.Space_Allowed);
     end if;
-    Trace ("Parsing element " & Asu_Ts (Element_Name) & " allowing space " &
-      Mixed_Str (My_Children.Space_Allowed'Img));
+    -- Is current element mixed?
+    Dtd.Is_Mixed (Adtd, Element_Name, My_Children.Is_Mixed);
+    if My_Children.Is_Mixed then
+      Tree_Mng.Set_Is_Mixed (Ctx.Elements.all, True);
+    end if;
+    Trace ("Parsing element " & Asu_Ts (Element_Name)
+         & "  allowing space: " & Mixed_Str (My_Children.Space_Allowed'Img)
+         & "  mixed: " & Mixed_Str (My_Children.Is_Mixed'Img));
     My_Children.Father := Element_Name;
+    My_Children.In_Mixed := Parent_Children.Is_Mixed;
     -- See first significant character after name
     Util.Read (Ctx.Flow, Char);
     if Util.Is_Separator (Char) then
@@ -1432,9 +1459,9 @@ package body Parse_Mng  is
       Tree_Mng.Set_Put_Empty (Ctx.Elements.all, True);
       Dtd.Check_Attributes (Ctx, Adtd);
       Dtd.Check_Element (Ctx, Adtd,  My_Children);
-      Call_Callback (Ctx, False, True, False, Parent_Children.Prev_Is_Text);
+      Call_Callback (Ctx, False, True, False,
+                     In_Mixed => Parent_Children.In_Mixed);
       Move_Del (Ctx, False);
-      Parent_Children.Prev_Is_Text := False;
       Trace ("Parsed element " & Asu_Ts (Element_Name));
       return;
     elsif Char = Util.Stop then

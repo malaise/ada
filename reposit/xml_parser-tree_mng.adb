@@ -123,7 +123,7 @@ package body Tree_Mng is
     return Asu_Ts (Cell.Value);
   end Get_Tuning;
 
-  -- set Put_Empty to False
+  -- Set Put_Empty to False
   procedure Set_Put_Empty (Elements : in out My_Tree.Tree_Type;
                            Put_Empty : in Boolean) is
     Cell : My_Tree_Cell;
@@ -132,6 +132,16 @@ package body Tree_Mng is
     Cell.Put_Empty := Put_Empty;
     Elements.Replace (Cell);
   end Set_Put_Empty;
+
+  -- Set Is_Mixed
+  procedure Set_Is_Mixed (Elements : in out My_Tree.Tree_Type;
+                          Is_Mixed : in Boolean) is
+    Cell : My_Tree_Cell;
+  begin
+    Elements.Read (Cell);
+    Cell.Is_Mixed := Is_Mixed;
+    Elements.Replace (Cell);
+  end Set_Is_Mixed;
 
   -- Move to root of current tree
   procedure Move_Root (Elements : in out My_Tree.Tree_Type) is
@@ -368,6 +378,7 @@ package body Tree_Mng is
     Update.Name := Cell.Name;
     Update.Value := Cell.Value;
     Update.Creation := Creation;
+    Update.Is_Mixed := Cell.Is_Mixed;
     case Cell.Kind is
       when Element =>
         Update.Kind := Element;
@@ -399,7 +410,6 @@ package body Tree_Mng is
       return;
     end if;
 
-    Update.Has_Children := Tree.Children_Number > Cell.Nb_Attributes;
     -- Create and fill attributes
     Update.Attributes := new Attributes_Array (1 .. Cell.Nb_Attributes);
     for I in 1 .. Cell.Nb_Attributes loop

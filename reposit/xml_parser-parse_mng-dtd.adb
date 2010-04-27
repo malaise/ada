@@ -1868,10 +1868,37 @@ package body Dtd is
     Check_Attributes (Ctx, Adtd, Cell.Name, Cell.Line_No, Attributes);
   end Check_Attributes;
 
+  -- Is this element defined as Mixed
+  procedure Is_Mixed (Adtd : in out Dtd_Type;
+                      Elt  : in Asu_Us;
+                      Yes  : out Boolean) is
+    Info : Info_Rec;
+    Info_Found : Boolean;
+    use type Asu_Us;
+  begin
+    -- Default: No (not mixed)
+    Yes := False;
+    if not Adtd.Set then
+      -- No dtd => not mixed
+      return;
+    end if;
+    -- Read ELEMENT def of Elt
+    Info.Name := Asu_Tus ("Elt" & Info_Sep) & Elt;
+    Adtd.Info_List.Search (Info, Info_Found);
+    if Info_Found then
+      Adtd.Info_List.Read (Info, Info);
+    else
+      -- Not found => Elt not defined
+      return;
+    end if;
+    -- Element is mixed?
+    Yes := Asu.Element (Info.List, 1) = 'M';
+  end Is_Mixed;
+
   -- Is this element defined in internal dtd or else has not Content def
- procedure Can_Have_Spaces (Adtd : in out Dtd_Type;
-                            Elt  : in Asu_Us;
-                            Yes  : out Boolean) is
+  procedure Can_Have_Spaces (Adtd : in out Dtd_Type;
+                             Elt  : in Asu_Us;
+                             Yes  : out Boolean) is
     Info : Info_Rec;
     Info_Found : Boolean;
     use type Asu_Us;

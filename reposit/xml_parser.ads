@@ -12,7 +12,7 @@ with Queues, Trees, Unique_List, Text_Char, Dynamic_List, Unlimited_Pool,
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "20";
+  Major_Version : constant String := "21";
   function Version return String;
 
   -----------
@@ -104,7 +104,8 @@ package Xml_Parser is
   --  is created (Creation = True), then its children (recusively) then it is
   --  closed (Creation = False)
   -- Only PIs have a value
-  -- Prev_Is_Text, on element (creation or not), indicates if a new_line and
+  -- Is_Mixed on element if this element has mixed content
+  -- In_Mixed on anything if within a Is_Mixed element
   --  indent shall be skipped
   type Node_Update is new Ada.Finalization.Limited_Controlled with record
     In_Prologue : Boolean:= True;
@@ -113,7 +114,8 @@ package Xml_Parser is
     Name : Ada.Strings.Unbounded.Unbounded_String;
     Value : Ada.Strings.Unbounded.Unbounded_String;
     Creation : Boolean := True;
-    Prev_Is_Text : Boolean := False;
+    Is_Mixed : Boolean := False;
+    In_Mixed : Boolean := False;
     Kind : Node_Kind_List := Element;
     -- Only for Kind Element
     Has_Children : Boolean := False;
@@ -365,6 +367,10 @@ package Xml_Parser is
   function Get_Put_Empty (Ctx     : Ctx_Type;
                           Element : Element_Type) return Boolean;
 
+  -- Is this element Mixed: either Mixed in Dtd or its first child is Text
+  function Get_Is_Mixed (Ctx     : Ctx_Type;
+                         Element : Element_Type) return Boolean;
+
   ------------------------
   -- General EXCEPTIONS --
   ------------------------
@@ -393,6 +399,9 @@ private
     Unparsed : Boolean := False;
     -- Put empty element with EmptyElemTag
     Put_Empty : Boolean := False;
+    -- Is this element containing Mixed: either Mixed in Dtd
+    --  or its first child is text
+    Is_Mixed : Boolean := False;
   end record;
   package My_Tree is new Trees.Tree(My_Tree_Cell);
 

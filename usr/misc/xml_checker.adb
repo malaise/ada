@@ -3,7 +3,7 @@ with Argument, Argument_Parser, Xml_Parser.Generator, Normal, Basic_Proc,
      Text_Line, Sys_Calls, Parser;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V10.0";
+  Version : constant String := "V10.1";
 
   -- Ada.Strings.Unbounded and Ada.Exceptions re-definitions
   package Asu renames Ada.Strings.Unbounded;
@@ -265,10 +265,15 @@ procedure Xml_Checker is
     end if;
     In_Prologue := Node.In_Prologue;
     Out_Flow.Put (Normal (Node.Line_No, 8, True, '0'));
-    if Node.Prev_Is_Text then
-      Out_Flow.Put (" T");
+    if Node.Is_Mixed then
+      Out_Flow.Put (" M");
     else
-      Out_Flow.Put (" F");
+      Out_Flow.Put (" -");
+    end if;
+    if Node.In_Mixed then
+      Out_Flow.Put (" M");
+    else
+      Out_Flow.Put (" -");
     end if;
     Out_Flow.Put (Indent);
     case Node.Kind is

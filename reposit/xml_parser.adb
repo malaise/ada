@@ -66,6 +66,9 @@ package body Xml_Parser is
     -- Set Put_Empty
     procedure Set_Put_Empty (Elements : in out My_Tree.Tree_Type;
                              Put_Empty : in Boolean);
+    -- Set Is_Mixed
+    procedure Set_Is_Mixed (Elements : in out My_Tree.Tree_Type;
+                            Is_Mixed : in Boolean);
 
     -- Get all tuning of an element
     function Get_Tuning (Elements : My_Tree.Tree_Type) return String;
@@ -1157,6 +1160,14 @@ package body Xml_Parser is
   begin
     return Cell.Put_Empty;
   end Get_Put_Empty;
+
+  -- Is this element Mixed: either Mixed in Dtd or its first child is Text
+  function Get_Is_Mixed (Ctx     : Ctx_Type;
+                         Element : Element_Type) return Boolean is    Cell : constant My_Tree_Cell
+         := Get_Cell (Get_Tree (Ctx, Element), Element);
+  begin
+    return Cell.Is_Mixed;
+  end Get_Is_Mixed;
 
   -----------------------------------
   -- Deallocation and Finalization --
