@@ -318,6 +318,12 @@ procedure Xml_Checker is
              Xml_Parser.Parse_Callback_Access;
   begin
 
+    -- Title except if stdin or if only one file
+    if Arg_Dscr.Get_Nb_Occurences (No_Key_Index) > 1 then
+      Out_Flow.Put_Line (Get_File_Name (Index, True) & ":");
+      Out_Flow.Flush;
+    end if;
+
     Ctx.Parse (Get_File_Name (Index, False),
                Parse_Ok,
                Comments => Keep_Comments,
@@ -345,20 +351,14 @@ procedure Xml_Checker is
       if Output_Kind /= Dump
       and then Output_Kind /= None
       and then Format /= Xml_Parser.Generator.Raw then
-         -- Last Line feeds
-         Out_Flow.New_Line;
-         Out_Flow.New_Line;
+        -- Last Line feed
+        Out_Flow.New_Line;
       end if;
       Ctx.Clean;
       return;
     end if;
 
     -- Dump / put
-    if Arg_Dscr.Get_Nb_Occurences (No_Key_Index) > 1 then
-      -- Title except if stdin or if only one file
-      Out_Flow.Put_Line (Get_File_Name (Index, True) & ":");
-      Out_Flow.Flush;
-    end if;
     if Output_Kind = Dump then
       Prologue := Ctx.Get_Prologue;
       Root := Ctx.Get_Root_Element;

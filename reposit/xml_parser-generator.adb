@@ -1294,7 +1294,6 @@ package body Xml_Parser.Generator is
                  0, False);
     if Format /= Raw then
       New_Line (Flow);
-      New_Line (Flow);
     end if;
   end Generate;
 
@@ -1325,6 +1324,9 @@ package body Xml_Parser.Generator is
           Put_Attributes (Flow, Xml_Attr_Format, Width, Update.Attributes.all,
                           0, 2 + Asu.Length (Update.Name), False);
           Put (Flow, "?>");
+          if Format /= Raw then
+            New_Line (Flow);
+          end if;
         end if;
       else
         -- A child of prologue (PI, comment or doctype)
@@ -1344,9 +1346,9 @@ package body Xml_Parser.Generator is
           when Comment =>
             Put_Comment (Flow, Asu_Ts (Update.Name));
         end case;
-      end if;
-      if Format /= Raw then
-        New_Line (Flow);
+        if Format /= Raw then
+          New_Line (Flow);
+        end if;
       end if;
       return Asu_Ts (Flow.Us);
     end if;

@@ -1459,8 +1459,9 @@ package body Parse_Mng  is
       Tree_Mng.Set_Put_Empty (Ctx.Elements.all, True);
       Dtd.Check_Attributes (Ctx, Adtd);
       Dtd.Check_Element (Ctx, Adtd,  My_Children);
+      -- Create this element with no child (Close)
       Call_Callback (Ctx, False, True, False,
-                     In_Mixed => Parent_Children.In_Mixed);
+                     In_Mixed => Parent_Children.Is_Mixed);
       Move_Del (Ctx, False);
       Trace ("Parsed element " & Asu_Ts (Element_Name));
       return;
