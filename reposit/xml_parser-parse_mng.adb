@@ -808,7 +808,7 @@ package body Parse_Mng  is
   --  [ <Spc> ] [ "[" <IntSubset> "]" [ <Spc> ] ] "!>"
   procedure Parse_Doctype (Ctx : in out Ctx_Type;
                            Adtd : in out Dtd_Type) is
-    Doctype_Name, Doctype_File : Asu_Us;
+    Doctype_Name, Doctype_File, Full_File : Asu_Us;
     Ok : Boolean;
     Char : Character;
     Len : Natural;
@@ -869,8 +869,12 @@ package body Parse_Mng  is
       and then Ctx.Dtd_File = Asu_Null then
         -- Parse dtd file of doctype directive if no alternate file
         Util.Push_Flow (Ctx.Flow);
-        Dtd.Parse (Ctx, Adtd, Build_Full_Name (Doctype_File,
-                                               Ctx.Flow.Curr_Flow.Name));
+        Full_File := Build_Full_Name (Doctype_File, Ctx.Flow.Curr_Flow.Name);
+        if Asu_Ts (Full_File) = Dtd.String_Flow
+        or else Asu_Ts (Full_File) = Dtd.Internal_Flow then
+          Util.Error (Ctx.Flow, "Invalid Dtd file name");
+        end if;
+        Dtd.Parse (Ctx, Adtd, Full_File);
         Util.Pop_Flow (Ctx.Flow);
       end if;
       Ctx.Doctype.File := Doctype_File;
@@ -887,6 +891,7 @@ package body Parse_Mng  is
       Asu.Delete (Ctx.Doctype.Int_Def, Len, Len);
       if Ctx.Dtd_File /= Asu_Null then
         -- This Dtd internal definition is overriden by an alternate file
+        Trace ("Dtd internal def overwritten by external");
         Clean_Dtd (Adtd);
       end if;
     else
@@ -900,6 +905,7 @@ package body Parse_Mng  is
     end if;
     if not Ctx.Use_Dtd or else not Ctx.Expand then
       -- Reset dtd info
+      Trace ("Dtd reset cause not used or no expand");
       Dtd.Init (Adtd);
     end if;
     -- In prologue, Creation of the Doctype
