@@ -3,7 +3,7 @@ with Argument, Argument_Parser, Xml_Parser.Generator, Normal, Basic_Proc,
      Text_Line, Sys_Calls, Parser;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V10.2";
+  Version : constant String := "V10.3";
 
   -- Ada.Strings.Unbounded and Ada.Exceptions re-definitions
   package Asu renames Ada.Strings.Unbounded;
@@ -141,18 +141,37 @@ procedure Xml_Checker is
                           Level : in Natural) is
     Children : Xml_Parser.Nodes_Array := Ctx.Get_Children (Elt);
     Indent : constant String (1 .. Level + 1) := (others => ' ');
+    In_Mixed : Boolean;
     In_Tail : Boolean;
     use type Xml_Parser.Node_Kind_List, Asu_Us;
+    procedure Put_Mixed (N : in Xml_Parser.Node_Type;
+                         Inm : in Boolean) is
+    begin
+      if N.Kind = Xml_Parser.Element
+      and then Ctx.Get_Is_Mixed (N) then
+        Out_Flow.Put (" M");
+      else
+        Out_Flow.Put (" -");
+      end if;
+      -- Get Father's Is_Mixed
+      if Inm then
+        Out_Flow.Put (" M");
+      else
+        Out_Flow.Put (" -");
+      end if;
+    end Put_Mixed;
+
   begin
     In_Tail := Level = 1 and then String'(Ctx.Get_Name (Elt)) = "";
     if not In_Tail then
        -- Not the tail
       Dump_Line (Elt);
-      if Ctx.Get_Is_Mixed (Elt) then
-        Out_Flow.Put (" M");
+      if Ctx.Is_Root (Elt) then
+        In_Mixed := False;
       else
-        Out_Flow.Put (" -");
+        In_Mixed := Ctx.Get_Is_Mixed (Ctx.Get_Parent (Elt));
       end if;
+      Put_Mixed (Elt, In_Mixed);
       Out_Flow.Put (Indent);
       Out_Flow.Put (Asu.To_String(Ctx.Get_Name (Elt)));
       if Ctx.Get_Nb_Attributes (Elt) /= 0 then
@@ -162,12 +181,12 @@ procedure Xml_Checker is
       Out_Flow.New_Line;
     end if;
 
+    In_Mixed := Ctx.Get_Is_Mixed (Elt);
     for I in Children'Range loop
       if I rem 2 = 0 then
         -- Test the individual get
         Children(I) := Ctx.Get_Child (Elt, I);
       end if;
-      Out_Flow.Put ("  ");
       case Children(I).Kind is
         when Xml_Parser.Element =>
           -- Recursive dump child
@@ -180,6 +199,7 @@ procedure Xml_Checker is
           -- Put text
           Dump_Line (Children(I));
           if not In_Tail then
+            Put_Mixed (Children(I), In_Mixed);
             Out_Flow.Put (Indent);
           end if;
           Out_Flow.Put_Line (" =>" & Ctx.Get_Text (Children(I)) & "<=");
@@ -187,6 +207,7 @@ procedure Xml_Checker is
           -- Put Pi
           Dump_Line (Children(I));
           if not In_Tail then
+            Put_Mixed (Children(I), In_Mixed);
             Out_Flow.Put (Indent);
           end if;
           Out_Flow.Put (" <?" & Ctx.Get_Target (Children(I)));
@@ -198,6 +219,7 @@ procedure Xml_Checker is
           -- Put Comment
           Dump_Line (Children(I));
           if not In_Tail then
+            Put_Mixed (Children(I), In_Mixed);
             Out_Flow.Put (Indent);
           end if;
           Out_Flow.Put_Line (" <!--" & Ctx.Get_Comment (Children(I)) & "-->");
@@ -244,10 +266,17 @@ procedure Xml_Checker is
     end if;
   end Get_File_Name;
 
-  -- Callback for "on the flow" display
+  -- To store if Cb is in prologue for dump mode
   In_Prologue : Boolean := False;
+
+  -- To skip empty line before root if no prologue at all
+  type Cb_Status_List is (Init, Skip, Done);
+  Cb_Status : Cb_Status_List;
+
+  -- Callback for "on the flow" display
   procedure Callback (Ctx  : in Xml_Parser.Ctx_Type;
                       Node : in Xml_Parser.Node_Update) is
+    Str : Asu_Us;
     Indent : constant String (1 .. Node.Level + 1) := (others => ' ');
     use type Xml_Parser.Node_Kind_List, Xml_Parser.Attributes_Access, Asu_Us;
   begin
@@ -255,7 +284,26 @@ procedure Xml_Checker is
       return;
     elsif Output_Kind /= Dump then
       -- Use the Image of Xml_Parser.Generator
-      Out_Flow.Put (Xml_Parser.Generator.Image (Ctx, Node, Format, Width));
+      Str := Asu_Tus (Xml_Parser.Generator.Image (Ctx, Node, Format, Width));
+      if Cb_Status = Init then
+        if Str = Asu_Null then
+          -- Dummy Xml node when no xml directive, we will need to skip
+          --  the leading Line_Feed of root if any
+          Cb_Status := Skip;
+          return;
+        else
+          -- Valid Xml directive
+          Cb_Status := Done;
+        end if;
+      end if;
+      if Cb_Status = Skip
+      and then Asu.Length (Str) >= 1
+      and then Asu.Element (Str, 1) = Text_Line.Line_Feed_Char then
+        -- Leading Line_Feed (of root when no prologue): remove it
+        Asu.Delete (Str, 1, 1);
+      end if;
+      Cb_Status := Done;
+      Out_Flow.Put (Asu_Ts (Str));
       return;
     end if;
     -- Dump mode
@@ -296,7 +344,8 @@ procedure Xml_Checker is
       when Xml_Parser.Text =>
         Out_Flow.Put ("=>" & Asu.To_String(Node.Name) & "<=");
     end case;
-    if Node.Attributes /= null then
+    if Node.Attributes /= null
+    and then Node.Attributes.all'Length /= 0 then
       Out_Flow.Put (" :");
       for I in  Node.Attributes.all'Range loop
         if not Node.Attributes(I).Unparsed then
@@ -330,6 +379,7 @@ procedure Xml_Checker is
       Out_Flow.Flush;
     end if;
 
+    Cb_Status := Init;
     Ctx.Parse (Get_File_Name (Index, False),
                Parse_Ok,
                Comments => Keep_Comments,
