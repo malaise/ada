@@ -4,7 +4,7 @@ with Int_Image, Text_Line, Sys_Calls, Trees;
 package body Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "4";
+  Minor_Version : constant String := "5";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -998,7 +998,7 @@ package body Xml_Parser.Generator is
     end if;
   end Put_Attributes;
 
-  -- Put a comment at propoer indent
+  -- Put a comment at proper indent
   procedure Put_Comment (Flow    : in out Flow_Dscr;
                          Comment : in String) is
   begin
@@ -1364,10 +1364,11 @@ package body Xml_Parser.Generator is
     if Format /= Raw then
       if Update.Creation
       and then not Update.In_Mixed
+      and then Update.Kind /= Xml_Parser.Text
       and then (Update.Kind /= Xml_Parser.Element
               or else Update.Name /= Asu_Null) then
-        -- Creation of a new node: Indent if not within mixed
-        --  and except at beginning of tail
+        -- Creation of a new node: Indent if not within mixed, if not text
+        --  and if not at beginning of tail
         Put (Flow, Indent);
      elsif not Update.Creation and then not Update.Is_Mixed then
        -- Closure of an element: Indent if not mixed
