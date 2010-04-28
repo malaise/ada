@@ -2002,6 +2002,10 @@ package body Dtd is
       -- No dtd => no check
       return;
     end if;
+    -- Set Is_Mixed from Dtd
+    Ctx.Elements.Read (Cell);
+    Is_Mixed (Adtd, Cell.Name, Children.Is_Mixed);
+    Tree_Mng.Set_Is_Mixed (Ctx.Elements.all, Children.Is_Mixed);
     -- Read current element from tree and make its children lists
     Children.Is_Empty := True;
     Children.Has_Text := False;

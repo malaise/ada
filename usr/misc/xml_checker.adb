@@ -3,7 +3,7 @@ with Argument, Argument_Parser, Xml_Parser.Generator, Normal, Basic_Proc,
      Text_Line, Sys_Calls, Parser;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V10.1";
+  Version : constant String := "V10.2";
 
   -- Ada.Strings.Unbounded and Ada.Exceptions re-definitions
   package Asu renames Ada.Strings.Unbounded;
@@ -148,6 +148,11 @@ procedure Xml_Checker is
     if not In_Tail then
        -- Not the tail
       Dump_Line (Elt);
+      if Ctx.Get_Is_Mixed (Elt) then
+        Out_Flow.Put (" M");
+      else
+        Out_Flow.Put (" -");
+      end if;
       Out_Flow.Put (Indent);
       Out_Flow.Put (Asu.To_String(Ctx.Get_Name (Elt)));
       if Ctx.Get_Nb_Attributes (Elt) /= 0 then
@@ -162,6 +167,7 @@ procedure Xml_Checker is
         -- Test the individual get
         Children(I) := Ctx.Get_Child (Elt, I);
       end if;
+      Out_Flow.Put ("  ");
       case Children(I).Kind is
         when Xml_Parser.Element =>
           -- Recursive dump child
