@@ -3,7 +3,7 @@ with Argument, Argument_Parser, Xml_Parser.Generator, Normal, Basic_Proc,
      Text_Line, Sys_Calls, Parser;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V11.0";
+  Version : constant String := "V11.1";
 
   -- Ada.Strings.Unbounded and Ada.Exceptions re-definitions
   package Asu renames Ada.Strings.Unbounded;
@@ -34,7 +34,7 @@ procedure Xml_Checker is
 
   -- Xml_Generator descriptor and format
   Format : Xml_Parser.Generator.Format_Kind_List;
-  Width  : Positive;
+  Width  : Natural;
 
   -- Flow of dump
   Out_Flow : Text_Line.File_Type;
@@ -560,7 +560,7 @@ begin
         Ae_Re (Arg_Error'Identity, "Width value is mandatory with -w");
       end if;
       begin
-        Width := Positive'Value (Arg_Dscr.Get_Option (4));
+        Width := Natural'Value (Arg_Dscr.Get_Option (4));
       exception
         when others =>
           Ae_Re (Arg_Error'Identity, "Invalid Width value "

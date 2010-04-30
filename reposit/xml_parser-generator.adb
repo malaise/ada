@@ -4,7 +4,7 @@ with Int_Image, Text_Line, Sys_Calls, Trees;
 package body Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "6";
+  Minor_Version : constant String := "7";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -938,6 +938,7 @@ package body Xml_Parser.Generator is
       if I /= Attributes'First
       and then (Format = One_Per_Line
          or else (Format = Fill_Width
+                  and then Width /= 0
                   and then Cur_Col + Att_Width > Width) ) then
         New_Line (Flow);
         Put (Flow, Pad);
