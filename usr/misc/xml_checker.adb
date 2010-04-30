@@ -3,7 +3,7 @@ with Argument, Argument_Parser, Xml_Parser.Generator, Normal, Basic_Proc,
      Text_Line, Sys_Calls, Parser;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V10.3";
+  Version : constant String := "V11.0";
 
   -- Ada.Strings.Unbounded and Ada.Exceptions re-definitions
   package Asu renames Ada.Strings.Unbounded;
@@ -163,7 +163,9 @@ procedure Xml_Checker is
 
   begin
     In_Tail := Level = 1 and then String'(Ctx.Get_Name (Elt)) = "";
-    if not In_Tail then
+    if In_Tail then
+      Out_Flow.Put_Line ("Tail:");
+    else
        -- Not the tail
       Dump_Line (Elt);
       if Ctx.Is_Root (Elt) then
@@ -266,8 +268,8 @@ procedure Xml_Checker is
     end if;
   end Get_File_Name;
 
-  -- To store if Cb is in prologue for dump mode
-  In_Prologue : Boolean := False;
+  -- To store if Cb is in prologue/elements/tail for dump mode
+  Stage : Xml_Parser.Stage_List := Xml_Parser.Elements;
 
   -- To skip empty line before root if no prologue at all
   type Cb_Status_List is (Init, Skip, Done);
@@ -278,7 +280,8 @@ procedure Xml_Checker is
                       Node : in Xml_Parser.Node_Update) is
     Str : Asu_Us;
     Indent : constant String (1 .. Node.Level + 1) := (others => ' ');
-    use type Xml_Parser.Node_Kind_List, Xml_Parser.Attributes_Access, Asu_Us;
+    use type Xml_Parser.Node_Kind_List, Xml_Parser.Attributes_Access,
+             Xml_Parser.Stage_List, Asu_Us;
   begin
     if Output_Kind = None then
       return;
@@ -310,14 +313,21 @@ procedure Xml_Checker is
     if not Node.Creation then
       return;
     end if;
-    if not In_Prologue and then Node.In_Prologue then
-      -- Entering prologue (new file)
-      Out_Flow.Put_Line ("Prologue:");
-    elsif In_Prologue and then not Node.In_Prologue then
-      -- Leaving prologue
-      Out_Flow.Put_Line ("Elements tree:");
+    if Node.Stage /= Stage then
+      Stage := Node.Stage;
+      -- New Stage
+      case Stage is
+        when Xml_Parser.Prologue =>
+          -- Entering prologue (new file)
+          Out_Flow.Put_Line ("Prologue:");
+        when Xml_Parser.Elements =>
+          -- Entering elements
+          Out_Flow.Put_Line ("Elements:");
+        when Xml_Parser.Tail =>
+          -- Entering tail
+          Out_Flow.Put_Line ("Tail:");
+      end case;
     end if;
-    In_Prologue := Node.In_Prologue;
     Out_Flow.Put (Normal (Node.Line_No, 8, True, '0'));
     if Node.Is_Mixed then
       Out_Flow.Put (" M");
@@ -420,7 +430,7 @@ procedure Xml_Checker is
       Root := Ctx.Get_Root_Element;
       Out_Flow.Put_Line ("Prologue:");
       Dump_Element (Prologue, 0);
-      Out_Flow.Put_Line ("Elements tree:");
+      Out_Flow.Put_Line ("Elements:");
       Dump_Element (Root, 0);
       Out_Flow.Put_Line ("Unparsed entities:");
       Dump_Unparsed_Entities;

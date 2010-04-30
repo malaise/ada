@@ -12,7 +12,7 @@ with Queues, Trees, Unique_List, Text_Char, Dynamic_List, Unlimited_Pool,
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "21";
+  Major_Version : constant String := "22";
   function Version return String;
 
   -----------
@@ -107,8 +107,9 @@ package Xml_Parser is
   -- Is_Mixed on element if this element has mixed content
   -- In_Mixed on anything if within a Is_Mixed element
   --  indent shall be skipped
+  type Stage_List is (Prologue, Elements, Tail);
   type Node_Update is new Ada.Finalization.Limited_Controlled with record
-    In_Prologue : Boolean:= True;
+    Stage : Stage_List := Prologue;
     Line_No : Natural := 0;
     Level : Natural := 0;
     Name : Ada.Strings.Unbounded.Unbounded_String;

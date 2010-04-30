@@ -524,7 +524,7 @@ package body Parse_Mng  is
 
   -- Call Callback of creation if requested
   procedure Call_Callback (Ctx : in out Ctx_Type;
-                           In_Prologue : in Boolean;
+                           Stage : Stage_List;
                            Creation : in Boolean;
                            Has_Children : in Boolean := False;
                            In_Mixed : in Boolean := False) is
@@ -533,12 +533,12 @@ package body Parse_Mng  is
     if Ctx.Callback = null then
       return;
     end if;
-    if In_Prologue then
+    if Stage = Prologue then
       Tree_Mng.Build_Update (Ctx.Prologue.all, Upd, Creation);
     else
       Tree_Mng.Build_Update (Ctx.Elements.all, Upd, Creation);
     end if;
-    Upd.In_Prologue := In_Prologue;
+    Upd.Stage := Stage;
     Upd.Has_Children := Has_Children;
     Upd.In_Mixed := In_Mixed;
     Upd.Level := Ctx.Level;
@@ -690,7 +690,7 @@ package body Parse_Mng  is
     -- Callback creation if Xml has been created here
     if not Ok then
       -- In prologue, Creation of the XML directive
-      Call_Callback (Ctx, True, True);
+      Call_Callback (Ctx, Prologue, True);
       Ctx.Level := 1;
     end if;
   end Check_Xml;
@@ -727,7 +727,7 @@ package body Parse_Mng  is
         end if;
         Check_Xml_Attributes (Ctx, True);
         -- In prologue, Creation of the XML directive
-        Call_Callback (Ctx, True, True);
+        Call_Callback (Ctx, Prologue, True);
         Ctx.Level := 1;
         Trace ("Parsed xml declaration");
         return;
@@ -782,19 +782,19 @@ package body Parse_Mng  is
       Tree_Mng.Add_Pi (Ctx.Prologue.all, Name, Value,
                        Util.Get_Line_No(Ctx.Flow));
       -- In_Prologue, Creation of the PI
-      Call_Callback (Ctx, True, True);
+      Call_Callback (Ctx, Prologue, True);
     else
       Tree_Mng.Add_Pi (Ctx.Elements.all, Name, Value,
                        Util.Get_Line_No(Ctx.Flow));
       -- Add this child
       if Children /= null then
         -- In Elements, Creation of the PI
-        Call_Callback (Ctx, False, True,
+        Call_Callback (Ctx, Elements, True,
                        In_Mixed => Children.Is_Mixed);
         Add_Child (Ctx, Adtd, Children);
       else
         -- In tail, Creation of the PI
-        Call_Callback (Ctx, False, True);
+        Call_Callback (Ctx, Tail, True);
       end if;
       Move_Del (Ctx, In_Prologue);
     end if;
@@ -909,7 +909,7 @@ package body Parse_Mng  is
       Dtd.Init (Adtd);
     end if;
     -- In prologue, Creation of the Doctype
-    Call_Callback (Ctx, True, True);
+    Call_Callback (Ctx, Prologue, True);
     Move_Del (Ctx, True);
     Trace ("Parsed <!DOCTYPE ... >");
   end Parse_Doctype;
@@ -949,19 +949,19 @@ package body Parse_Mng  is
           Tree_Mng.Add_Comment (Ctx.Prologue.all, Comment,
                                 Util.Get_Line_No (Ctx.Flow));
           -- In prologue, creation of the comment
-          Call_Callback (Ctx, True, True);
+          Call_Callback (Ctx, Prologue, True);
         else
           Tree_Mng.Add_Comment (Ctx.Elements.all, Comment,
                                 Util.Get_Line_No (Ctx.Flow));
           -- Add this child
           if Children /= null then
             -- In elements, creation of the comment
-            Call_Callback (Ctx, False, True,
+            Call_Callback (Ctx, Elements, True,
                            In_Mixed => Children.Is_Mixed);
             Add_Child (Ctx, Adtd, Children);
           else
             -- In tail, creation of the comment
-            Call_Callback (Ctx, False, True);
+            Call_Callback (Ctx, Tail, True);
           end if;
         end if;
         Move_Del (Ctx, Tree_Mng.Is_Empty (Ctx.Elements.all));
@@ -1248,7 +1248,7 @@ package body Parse_Mng  is
           Tree_Mng.Set_Is_Mixed (Ctx.Elements.all, True);
           Children.Is_Mixed := True;
           Trace ("Txt setting mixed on father");
-          Call_Callback (Ctx, False, True, True,
+          Call_Callback (Ctx, Elements, True, True,
                          In_Mixed => Children.In_Mixed);
           Ctx.Level := Ctx.Level + 1;
           Children.Created := True;
@@ -1267,7 +1267,7 @@ package body Parse_Mng  is
           Add_Child (Ctx, Adtd, Children);
         end if;
         -- In elements, Creation of this text element
-        Call_Callback (Ctx, False, True, False,
+        Call_Callback (Ctx, Elements, True, False,
                        In_Mixed => Children.Is_Mixed);
         Move_Del (Ctx, False);
         Trace ("Txt added text >" & Asu_Ts (Head) & "<");
@@ -1306,7 +1306,7 @@ package body Parse_Mng  is
     begin
       if not Children.Created then
         -- Creation of element
-        Call_Callback (Ctx, False, True, Has_Children,
+        Call_Callback (Ctx, Elements, True, Has_Children,
                        In_Mixed => Children.In_Mixed);
         if Has_Children then
           Ctx.Level := Ctx.Level + 1;
@@ -1346,7 +1346,7 @@ package body Parse_Mng  is
           if Children.Created then
             -- Element was created, close it
             Ctx.Level := Ctx.Level - 1;
-            Call_Callback (Ctx, False, False, False,
+            Call_Callback (Ctx, Elements, False, False,
                            In_Mixed => Children.In_Mixed);
           else
             -- Empty element <elt></elt>: Create element and close it
@@ -1354,7 +1354,7 @@ package body Parse_Mng  is
             Children.Is_Mixed := True;
             Create (True);
             Ctx.Level := Ctx.Level - 1;
-            Call_Callback (Ctx, False, False, False,
+            Call_Callback (Ctx, Elements, False, False,
                            In_Mixed => Children.In_Mixed);
           end if;
           return;
@@ -1466,7 +1466,7 @@ package body Parse_Mng  is
       Dtd.Check_Attributes (Ctx, Adtd);
       Dtd.Check_Element (Ctx, Adtd,  My_Children);
       -- Create this element with no child (Close)
-      Call_Callback (Ctx, False, True, False,
+      Call_Callback (Ctx, Elements, True, False,
                      In_Mixed => Parent_Children.Is_Mixed);
       Move_Del (Ctx, False);
       Trace ("Parsed element " & Asu_Ts (Element_Name));
@@ -1525,9 +1525,10 @@ package body Parse_Mng  is
       Util.Get (Ctx.Flow, C2);
       case C2 is
         when Util.Instruction =>
+          -- Instruction in Tail
           Parse_Instruction (Ctx, Adtd, null);
         when Util.Directive =>
-          -- Directive : only comment
+          -- Directive in Tail: only comment
           Parse_Directive (Ctx, Adtd, Allow_Dtd => False, Children => null,
                                       Context => Ref_Xml);
         when others =>

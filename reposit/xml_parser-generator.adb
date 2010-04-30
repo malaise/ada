@@ -4,7 +4,7 @@ with Int_Image, Text_Line, Sys_Calls, Trees;
 package body Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "5";
+  Minor_Version : constant String := "6";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -1307,7 +1307,7 @@ package body Xml_Parser.Generator is
     Xml_Attr_Format : Format_Kind_List;
     use type Asu_Us;
   begin
-    if Update.In_Prologue then
+    if Update.Stage = Prologue then
       if Update.Level = 0 then
         -- The XML directive
         -- Put the xml directive if it has attributes
@@ -1355,8 +1355,9 @@ package body Xml_Parser.Generator is
 
     -- In elements tree
     if Format /= Raw
-      and then Update.Creation
-      and then Update.Level = 0 then
+    and then Update.Stage = Elements
+    and then Update.Creation
+    and then Update.Level = 0 then
       -- Creation of root, separate from prologue
       New_Line (Flow);
     end if;
