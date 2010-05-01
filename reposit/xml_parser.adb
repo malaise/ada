@@ -277,6 +277,7 @@ package body Xml_Parser is
                    Comments  : in Boolean := False;
                    Expand    : in Boolean := True;
                    Cdata     : in Cdata_Policy_List := Remove_Cdata_Markers;
+                   Normalize : in Boolean := True;
                    Use_Dtd   : in Boolean := True;
                    Dtd_File  : in String  := "";
                    Warn_Cb   : in Warning_Callback_Access := null;
@@ -305,6 +306,7 @@ package body Xml_Parser is
     Ctx.Parse_Comments := Comments;
     Ctx.Expand := Expand;
     Ctx.Cdata_Policy := Cdata;
+    Ctx.Normalize := Normalize;
     Ctx.Use_Dtd := Use_Dtd;
     Ctx.Dtd_File := Asu_Tus (Dtd_File);
     Ctx.Warnings := Warn_Cb;
@@ -378,6 +380,7 @@ package body Xml_Parser is
     Ctx.Parse_Comments := False;
     Ctx.Expand := True;
     Ctx.Cdata_Policy := Remove_Cdata_Markers;
+    Ctx.Normalize := True;
     Ctx.Use_Dtd := True;
     Ctx.Dtd_File := Asu_Null;
     Ctx.Warnings := null;
@@ -482,15 +485,16 @@ package body Xml_Parser is
   -- Parse the prologue of a string
   -- may raise Status_Error if Ctx is not clean
   --    Parse_Error while parsing the string
-  procedure Parse_Prologue (Ctx      : out Ctx_Type;
-                            Str      : in String;
-                            Ok       : out Boolean;
-                            Comments : in Boolean := False;
-                            Expand   : in Boolean := True;
-                            Cdata    : in Cdata_Policy_List
-                                     := Remove_Cdata_Markers;
-                            Warn_Cb  : in Warning_Callback_Access := null;
-                            Parse_Cb : in Parse_Callback_Access := null) is
+  procedure Parse_Prologue (Ctx       : out Ctx_Type;
+                            Str       : in String;
+                            Ok        : out Boolean;
+                            Comments  : in Boolean := False;
+                            Expand    : in Boolean := True;
+                            Cdata     : in Cdata_Policy_List
+                                      := Remove_Cdata_Markers;
+                            Normalize : in Boolean := True;
+                            Warn_Cb   : in Warning_Callback_Access := null;
+                            Parse_Cb  : in Parse_Callback_Access := null) is
   begin
     if Ctx.Status /= Clean then
       raise Status_Error;
@@ -513,6 +517,7 @@ package body Xml_Parser is
     Ctx.Parse_Comments := Comments;
     Ctx.Expand := Expand;
     Ctx.Cdata_Policy := Cdata;
+    Ctx.Normalize := Normalize;
     Ctx.Warnings := Warn_Cb;
     Ctx.Callback := Parse_Cb;
     Parse_Mng.Parse_Prologue (Ctx);

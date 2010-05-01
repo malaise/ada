@@ -252,7 +252,7 @@ package body Parse_Mng  is
     -- Save parsed text
     Util.Get_Curr_Str (Ctx.Flow, Value);
     -- Normalize attribute
-    if Ctx.Expand and then Context = Ref_Attribute then
+    if Ctx.Expand and then Ctx.Normalize and then Context = Ref_Attribute then
       Util.Normalize (Value);
     end if;
     -- Expand entities
@@ -369,7 +369,7 @@ package body Parse_Mng  is
         -- Keep first definition
         -- If expand, then Normalize separators of non CDATA attributes
         Dtd.Is_Cdata (Adtd, Elt_Name, Attribute_Name, Attr_Cdata);
-        if Ctx.Expand and then not Attr_Cdata then
+        if Ctx.Expand and then Ctx.Normalize and then not Attr_Cdata then
           Trace ("Attribute " & Asu_Ts (Attribute_Name) & " is not CDATA");
           Unnormalized := Attribute_Value;
           Util.Normalize_Spaces (Attribute_Value);
@@ -1110,7 +1110,7 @@ package body Parse_Mng  is
       end;
       Trace ("Txt Got text >" & Asu_Ts (Text) & "<");
 
-      if Ctx.Expand and then not Children.Preserve then
+      if Ctx.Expand and then Ctx.Normalize and then not Children.Preserve then
         Util.Normalize (Text);
       end if;
 
@@ -1213,7 +1213,8 @@ package body Parse_Mng  is
             Trace ("Txt appended >" & Asu_Ts (Head) & "<");
             -- Text is the remaining unexpanded text, fixed
             Asu.Delete (Text, 1, Index + Util.Cdata_End'Length - 1);
-            if Ctx.Expand and then not Children.Preserve then
+            if Ctx.Expand and then Ctx.Normalize
+            and then not Children.Preserve then
               Util.Normalize (Text);
             end if;
             -- And we loop
@@ -1240,7 +1241,8 @@ package body Parse_Mng  is
 
     if Head /= Asu_Null then
       -- If there are only separators, skip them
-      if Children.Preserve or else not Util.Is_Separators (Head) then
+      if not Ctx.Normalize or else Children.Preserve
+      or else not Util.Is_Separators (Head) then
         -- Notify on father creation if needed
         if not Children.Created then
           -- First text child of this element, so this element is mixed
@@ -1261,6 +1263,11 @@ package body Parse_Mng  is
           Tmp_Text := Head;
           Util.Remove_Entities (Tmp_Text);
           if Tmp_Text /= Asu_Null then
+            Add_Child (Ctx, Adtd, Children);
+          end if;
+        elsif not Ctx.Normalize then
+          -- When preserving spaces, add child only if not only separators
+          if not Util.Is_Separators (Head) then
             Add_Child (Ctx, Adtd, Children);
           end if;
         else

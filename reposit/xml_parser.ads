@@ -12,7 +12,7 @@ with Queues, Trees, Unique_List, Text_Char, Dynamic_List, Unlimited_Pool,
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "22";
+  Major_Version : constant String := "23";
   function Version return String;
 
   -----------
@@ -108,7 +108,7 @@ package Xml_Parser is
   -- In_Mixed on anything if within a Is_Mixed element
   --  indent shall be skipped
   type Stage_List is (Prologue, Elements, Tail);
-  type Node_Update is new Ada.Finalization.Limited_Controlled with record
+  type Node_Update is new Ada.Finalization.Controlled with record
     Stage : Stage_List := Prologue;
     Line_No : Natural := 0;
     Level : Natural := 0;
@@ -142,6 +142,7 @@ package Xml_Parser is
   -- On option, does not expand General entities nor set attributes with
   --  default values (usefull for formatter)
   -- On option skip CDATA sections or markers
+  -- On option keep separators unchanged (in attributes and text)
   -- On option does not check compliance with Dtd
   -- On option force a dtd file different from DOCTYPE directive
   -- If a warning callback is set then it is called for each warning detected
@@ -156,6 +157,7 @@ package Xml_Parser is
                    Comments  : in Boolean := False;
                    Expand    : in Boolean := True;
                    Cdata     : in Cdata_Policy_List := Remove_Cdata_Markers;
+                   Normalize : in Boolean := True;
                    Use_Dtd   : in Boolean := True;
                    Dtd_File  : in String  := "";
                    Warn_Cb   : in Warning_Callback_Access := null;
@@ -199,16 +201,19 @@ package Xml_Parser is
   --  (Calling Get_Root_Element will raise Use_Error);
   -- On option, allows retrieval of comments (usefull for formatter)
   -- On option, does not expand General entities (usefull for formatter)
-  -- may raise Status_Error if Ctx is not clean
-  procedure Parse_Prologue (Ctx      : out Ctx_Type;
-                            Str      : in String;
-                            Ok       : out Boolean;
-                            Comments : in Boolean := False;
-                            Expand   : in Boolean := True;
-                            Cdata    : in Cdata_Policy_List
-                                     := Remove_Cdata_Markers;
-                            Warn_Cb  : in Warning_Callback_Access := null;
-                            Parse_Cb : in Parse_Callback_Access := null);
+  -- On option skip CDATA sections or markers
+  -- On option keep separators (in attributes and text) unchanged
+  -- May raise Status_Error if Ctx is not clean
+  procedure Parse_Prologue (Ctx       : out Ctx_Type;
+                            Str       : in String;
+                            Ok        : out Boolean;
+                            Comments  : in Boolean := False;
+                            Expand    : in Boolean := True;
+                            Cdata     : in Cdata_Policy_List
+                                      := Remove_Cdata_Markers;
+                            Normalize : in Boolean := True;
+                            Warn_Cb   : in Warning_Callback_Access := null;
+                            Parse_Cb  : in Parse_Callback_Access := null);
 
   -- Parse the elements (after the prologue) and tail of a string with a dtd
   -- may raise Status_Error if Ctx is clean
@@ -633,6 +638,8 @@ private
     Expand : Boolean := True;
     -- What to do with CDATA sections
     Cdata_Policy : Cdata_Policy_List := Remove_Cdata_Markers;
+    -- Normalize separators in attributes and texts
+    Normalize : Boolean := True;
     -- Use Dtd
     Use_Dtd : Boolean := True;
     Dtd_File : Ada.Strings.Unbounded.Unbounded_String;
