@@ -189,6 +189,33 @@ procedure Agite is
     Encode_Dir;
   end Change_Dir;
 
+  -- To find current position back
+  function Match (Current, Criteria : Git_If.File_Entry_Rec) return Boolean is
+    use type Git_If.Asu_Us;
+  begin
+    return Current.Kind = Criteria.Kind and then Current.Name = Criteria.Name;
+  end Match;
+  procedure File_Search is new Git_If.File_Mng.Dyn_List.Search (Match);
+
+  -- Reread curent dir: change dir to "." and try to restore current pos
+  procedure Reread is
+    Current_File : Git_If.File_Entry_Rec;
+    Found : Boolean;
+  begin
+    -- Save current entry
+    Files.Move_At (Afpx.Line_List.Get_Position);
+    Files.Read (Current_File);
+    -- Re-build list
+    Change_Dir (".");
+    -- Search position back and move Afpx to it
+    File_Search (Files, Found, Current_File,
+                 From => Git_If.File_Mng.Dyn_List.Absolute);
+    if Found then
+      Afpx.Line_List.Move_At (Files.Get_Position);
+      Afpx.Update_List (Afpx.Center);
+    end if;
+  end Reread;
+
   -- Local host: "on (<host>)" if possible
   -- else "(<host>)" if possible
   -- else "<host>" if possible
@@ -375,8 +402,8 @@ begin
             -- Go (to dir)
             Change_Dir;
           when 13 =>
-            -- Reread (change dir .)
-            Change_Dir (".");
+            -- Reread (change dir . and restore pos)
+            Reread;
           when 14 =>
             -- Up (change dir ..)
             Change_Dir ("..");
