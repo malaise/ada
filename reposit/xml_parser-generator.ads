@@ -3,7 +3,7 @@ with Ada.Strings.Unbounded;
 package Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "7";
+  Major_Version : constant String := "8";
   function Version return String;
 
   type Ctx_Type is new Xml_Parser.Ctx_Type with private;
@@ -185,6 +185,7 @@ package Xml_Parser.Generator is
   type Format_Kind_List is (Raw, Fill_Width, One_Per_Line);
   Default_Format : constant Format_Kind_List := Fill_Width;
   Default_Width : constant Natural := 80;
+  Infinite_Width : constant Natural := 0;
   -- Put in a file (stdout if name is empty)
   -- Raises File_Error if Pb with file
   Stdout : constant String := "";
