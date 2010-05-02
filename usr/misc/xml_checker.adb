@@ -435,6 +435,7 @@ procedure Xml_Checker is
       end if;
       if Output_Kind /= Dump
       and then Output_Kind /= None
+      and then Output_Kind /= Canon
       and then Format /= Xml_Parser.Generator.Raw then
         -- Last Line feed
         Out_Flow.New_Line;
