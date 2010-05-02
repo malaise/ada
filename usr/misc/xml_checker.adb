@@ -3,7 +3,7 @@ with Argument, Argument_Parser, Xml_Parser.Generator, Normal, Basic_Proc,
      Text_Line, Sys_Calls, Parser;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V11.1";
+  Version : constant String := "V12.a";
 
   -- Ada.Strings.Unbounded and Ada.Exceptions re-definitions
   package Asu renames Ada.Strings.Unbounded;
@@ -23,18 +23,26 @@ procedure Xml_Checker is
   Keep_Comments, Keep_Expand, Keep_Cdata : Boolean;
   Cdata_Policy : Xml_Parser.Cdata_Policy_List;
 
+  -- Are these options set
+  Keep_Expand_Set : Boolean := False;
+  Keep_Comments_Set : Boolean := False;
+  Keep_Cdata_Set : Boolean := False;
+
   -- Argument error
   Arg_Error : exception;
   -- Abort loop of arguments
   Abort_Error : exception;
 
-  -- Kind of ouput: None, dump or Xml_Generator
-  type Output_Kind_List is (None, Dump, Gen);
+  -- Kind of ouput: None, dump, Xml_Generator or Canonical
+  type Output_Kind_List is (None, Dump, Gen, Canon);
   Output_Kind : Output_Kind_List;
 
   -- Xml_Generator descriptor and format
   Format : Xml_Parser.Generator.Format_Kind_List;
   Width  : Natural;
+
+  -- Normalize text
+  Normalize : Boolean;
 
   -- Flow of dump
   Out_Flow : Text_Line.File_Type;
@@ -62,8 +70,8 @@ procedure Xml_Checker is
     procedure Ple (Str : in String) renames Basic_Proc.Put_Line_Error;
   begin
     Ple ("Usage: " & Argument.Get_Program_Name & "[ { <option> } ] [ { <file> } ]");
-    Ple (" <option> ::= <silent> | <dump> | <raw> | <warnings>");
-    Ple ("            |  <width> | <one> | <keep> | <check_dtd> | <tree>");
+    Ple (" <option> ::= <silent> | <dump> | <raw> | <warnings> |  <width> | <one>");
+    Ple ("            | <keep> | <check_dtd> | <tree> | <canonical>");
     Ple ("            | <help> | <version>");
     Ple (" <silent>     ::= -s | --silent     -- No output, only exit code");
     Ple (" <dump>       ::= -d | --dump       -- Dump expanded Xml tree");
@@ -81,11 +89,13 @@ procedure Xml_Checker is
     Ple (" <check_dtd>  ::= -c [ <Dtd> ] | --check_dtd=[<Dtd>]");
     Ple ("                                    -- Check vs a specific dtd or none");
     Ple (" <tree>       ::= -t | --tree       -- Build tree then dump it");
+    Ple (" <canonical>  ::= -C | --canonical  -- Canonicalize xml");
     Ple (" <help>       ::= -h | --help       -- Put this help");
     Ple (" <version>    ::= -v | --version    -- Put versions");
     Ple ("Always expands general entities in dump.");
     Ple ("All options except keep, check_dtd, warnings and tree are exclusive.");
     Ple ("Keep not allowed on Dump mode, Dump => keep all.");
+    Ple ("Canonical only allows dtd, warnings and comment options.");
     Ple ("Empty Dtd leads to skip check of comformance to DTD.");
     Ple ("Default is -W" & Xml_Parser.Generator.Default_Width'Img
                          & " on stdout.");
@@ -106,7 +116,8 @@ procedure Xml_Checker is
     8 => ('k', Asu_Tus ("keep"), True, True),
     9 => ('c', Asu_Tus ("check_dtd"), False, True),
    10 => ('t', Asu_Tus ("tree"), False, False),
-   11 => ('w', Asu_Tus ("warnings"), False, False)
+   11 => ('w', Asu_Tus ("warnings"), False, False),
+   12 => ('C', Asu_Tus ("canonical"), False, False)
    );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
@@ -269,7 +280,8 @@ procedure Xml_Checker is
   end Get_File_Name;
 
   -- To store if Cb is in prologue/elements/tail for dump mode
-  Stage : Xml_Parser.Stage_List := Xml_Parser.Elements;
+  -- And for Canon_Callback filtering algorithms
+  Stage : Xml_Parser.Stage_List;
 
   -- To skip empty line before root if no prologue at all
   type Cb_Status_List is (Init, Skip, Done);
@@ -309,6 +321,7 @@ procedure Xml_Checker is
       Out_Flow.Put (Asu_Ts (Str));
       return;
     end if;
+
     -- Dump mode
     if not Node.Creation then
       return;
@@ -371,6 +384,10 @@ procedure Xml_Checker is
     end if;
     Out_Flow.New_Line;
   end Callback;
+
+  -- Callback for canonical processing
+  procedure Canon_Callback (Ctx  : in Xml_Parser.Ctx_Type;
+                            Node : in Xml_Parser.Node_Update) is separate;
   Callback_Acc : Xml_Parser.Parse_Callback_Access;
 
   -- Parse a file provided as arg or stdin
@@ -389,12 +406,14 @@ procedure Xml_Checker is
       Out_Flow.Flush;
     end if;
 
+    Stage := Xml_Parser.Elements;
     Cb_Status := Init;
     Ctx.Parse (Get_File_Name (Index, False),
                Parse_Ok,
                Comments => Keep_Comments,
                Expand => not Keep_Expand,
                Cdata  => Cdata_Policy,
+               Normalize => Normalize,
                Use_Dtd => Use_Dtd,
                Dtd_File => Asu_Ts (Dtd_File),
                Warn_Cb => Warnings,
@@ -454,11 +473,6 @@ procedure Xml_Checker is
     end if;
   end Close;
 
-  -- Are these options set
-  Keep_Expand_Set : Boolean := False;
-  Keep_Comments_Set : Boolean := False;
-  Keep_Cdata_Set : Boolean := False;
-
   use type Xml_Parser.Generator.Format_Kind_List;
   use type Asu_Us;
 begin
@@ -507,6 +521,7 @@ begin
   Keep_Expand := False;
   Keep_Comments := False;
   Keep_Cdata := False;
+  Normalize := True;
   Use_Dtd := True;
   Dtd_File := Asu_Null;
   Callback_Acc := null;
@@ -549,6 +564,8 @@ begin
     Keep_Cdata := True;
   elsif Arg_Dscr.Is_Set (3) then
     Format := Xml_Parser.Generator.Raw;
+  elsif Arg_Dscr.Is_Set (12) then
+    Output_Kind := Canon;
   end if;
 
   if Output_Kind = Gen then
@@ -633,6 +650,17 @@ begin
       -- If option set with empty dtd => no check
       Use_Dtd := False;
     end if;
+  end if;
+
+  if Arg_Dscr.Is_Set (12) then
+    if Arg_Dscr.Is_Set (10) or else Keep_Expand_Set or else Keep_Cdata_Set then
+      Ae_Re (Arg_Error'Identity, "Incompatible options");
+    end if;
+    Output_Kind := Canon;
+    Format := Xml_Parser.Generator.Fill_Width;
+    Width := Xml_Parser.Generator.Infinite_Width;
+    Normalize := False;
+    Callback_Acc := Canon_Callback'Unrestricted_Access;
   end if;
 
   -- Process other arguments
