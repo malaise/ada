@@ -774,8 +774,7 @@ package body Parse_Mng  is
     end if;
 
     -- Add node
-    Trace ("Parsed <?" & Asu_Ts (Name) & " "
-         & Asu_Ts (Value) & "?>");
+    Trace ("Parsed <?" & Asu_Ts (Name) & " " & Asu_Ts (Value) & "?>");
     if In_Prologue then
       -- No element => in prologue
       Tree_Mng.Move_Root (Ctx.Prologue.all);
