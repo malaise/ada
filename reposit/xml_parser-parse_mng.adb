@@ -548,7 +548,8 @@ package body Parse_Mng  is
     begin
       Ctx.Callback (Ctx, Upd);
     exception
-      when others =>
+      when Error:others =>
+        Trace ("Callback raised " & Ada.Exceptions.Exception_Name (Error));
         raise Callback_Error;
     end;
   end Call_Callback;
