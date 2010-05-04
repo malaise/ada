@@ -1,10 +1,47 @@
+with String_Mng, Sorts;
 separate (Xml_Checker)
-
 procedure Canon_Callback (Ctx  : in Xml_Parser.Ctx_Type;
                           Node : in Xml_Parser.Node_Update) is
   Clone : Xml_Parser.Node_Update;
   Str : Asu_Us;
   Len : Natural;
+  Col : Natural;
+  Done : Boolean;
+
+  -- Sorting attributes:
+  -- xmlns namespace has Prefix set to xmlns and Suffix set to the rest
+  -- simple attribute has Suffix set to it
+  -- attribute with prefix:suffix, but prefix not defined, is split
+  -- attribute with prefix:suffix and prefix defined has Uri and Suffix set
+  Xmlns : constant Asu_Us := Asu_Tus ("xmlns");
+  type Attr_Rec is record
+    -- Index in Node.Attributes
+    Index : Positive;
+    Uri : Asu_Us;
+    Prefix : Asu_Us;
+    Suffix : Asu_Us;
+  end record;
+  type Attr_Array is array (Positive range <>) of Attr_Rec;
+  function Less_Than (A, B : Attr_Rec) return Boolean is
+    use type Asu_Us;
+  begin
+    if A.Uri /= Asu_Null and then B.Uri  = Asu_Null then return False; end if;
+    if A.Uri  = Asu_Null and then B.Uri /= Asu_Null then return True;  end if;
+    if A.Uri /= Asu_Null then
+      if A.Uri /= B.Uri then return A.Uri < B.Uri;
+      else return A.Suffix < B.Suffix;
+      end if;
+    end if;
+    -- Uri is ""
+    if A.Prefix  = Xmlns and then B.Prefix /= Xmlns then return True;  end if;
+    if A.Prefix /= Xmlns and then B.Prefix  = Xmlns then return False; end if;
+    if A.Prefix = Xmlns then return A.Suffix < B.Suffix; end if;
+    -- No xmlns
+    if A.Prefix /= B.Prefix then return A.Prefix < B.Prefix; end if;
+    return A.Suffix < B.Suffix;
+  end Less_Than;
+  package Attr_Sort is new Sorts (Attr_Rec, Positive, Less_Than, Attr_Array);
+
   use type Xml_Parser.Node_Kind_List, Xml_Parser.Attributes_Access,
            Xml_Parser.Stage_List, Asu_Us;
 begin
@@ -20,8 +57,63 @@ begin
   -- Working copy of the node
   Clone := Node;
 
-  -- Sort attributes
-  -- @@@
+  -- Sort attributes:
+  -- Init table of Attrs
+  if Node.Attributes /= null and then Node.Attributes'Length > 1 then
+    declare
+      -- Local constant copy of original attributes
+      Node_Attrs : constant Xml_Parser.Attributes_Array (Node.Attributes'Range)
+                 := Node.Attributes.all;
+      Attrs : Attr_Array (Node_Attrs'Range);
+    begin
+      for I in Node_Attrs'Range loop
+        Attrs(I).Index := I;
+        if Node_Attrs(I).Name = Xmlns then
+          -- "xmlns"
+          Attrs(I).Prefix := Xmlns;
+          Done := True;
+        else
+          Col := String_Mng.Locate (Asu_Ts (Node_Attrs(I).Name), ":");
+          if Col = 0 then
+            -- Pure attribute
+            Attrs(I).Suffix := Node_Attrs(I).Name;
+            Done := True;
+          else
+            -- xmlns:suffix
+            Attrs(I).Prefix := Asu.Unbounded_Slice (Node_Attrs(I).Name,
+                                  1, Col - 1);
+            Attrs(I).Suffix := Asu.Unbounded_Slice (
+                                  Node_Attrs(I).Name,
+                                  Col + 1, Asu.Length (Node_Attrs(I).Name));
+            if Attrs(I).Prefix = Xmlns then
+              Done := True;
+            end if;
+          end if;
+        end if;
+        -- Now see if there is a matching Uri
+        if not Done then
+          for J in Node_Attrs'Range loop
+            if Node_Attrs(J).Name = Xmlns & ":" & Attrs(I).Prefix then
+              -- Yes, found it, store Uri, done for this one
+               Attrs(I).Uri := Node_Attrs(J).Value;
+               exit;
+            end if;
+          end loop;
+        end if;
+      end loop;
+      -- Now sort the table
+      if Attrs'Length < 5 then
+        Attr_Sort.Bubble_Sort (Attrs);
+      else
+        Attr_Sort.Quick_Sort (Attrs);
+      end if;
+      -- Finally sort the attributes according to the table
+      for I in Attrs'Range loop
+        Clone.Attributes(I) := Node_Attrs(Attrs(I).Index);
+      end loop;
+    end;
+  end if;
+
   -- Replace characters in attribute values and texts
   -- @@@
 
@@ -58,7 +150,7 @@ begin
     Asu.Delete (Str, 1, 1);
     Len := Len - 1;
   end if;
-  Cb_Status := Done;
+  Cb_Status := Xml_Checker.Done;
 
   -- Ensure last char is '>', not Lf
   -- Remove trailing Lf from root EndTag and from Tail items
