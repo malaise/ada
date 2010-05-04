@@ -204,7 +204,7 @@ procedure Agite is
   begin
     -- Save current entry
     Files.Move_At (Afpx.Line_List.Get_Position);
-    Files.Read (Current_File);
+    Files.Read (Current_File, Git_If.File_Mng.Dyn_List.Current);
     -- Re-build list
     Change_Dir (".");
     -- Search position back and move Afpx to it
