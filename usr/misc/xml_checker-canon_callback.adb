@@ -1,7 +1,12 @@
+with Ada.Characters.Latin_1;
 with String_Mng, Sorts;
 separate (Xml_Checker)
 procedure Canon_Callback (Ctx  : in Xml_Parser.Ctx_Type;
                           Node : in Xml_Parser.Node_Update) is
+  Line_Feed : constant Character := Text_Line.Line_Feed_Char;
+  Carriage_Return : constant Character := Ada.Characters.Latin_1.Cr;
+  Horiz_Tab : constant Character := Ada.Characters.Latin_1.Ht;
+
   Clone : Xml_Parser.Node_Update;
   Str : Asu_Us;
   Len : Natural;
@@ -41,6 +46,33 @@ procedure Canon_Callback (Ctx  : in Xml_Parser.Ctx_Type;
     return A.Suffix < B.Suffix;
   end Less_Than;
   package Attr_Sort is new Sorts (Attr_Rec, Positive, Less_Than, Attr_Array);
+
+  -- Fix text or attribute value
+  procedure Fix_Chars (Str : in out Asu_Us; Is_Text : in Boolean) is
+    Len : Natural := Asu.Length (Str);
+    I : Positive;
+    procedure Subchar (S : in String) is
+    begin
+      Asu.Replace_Slice (Str, I, I, S);
+      Len := Len + S'Length - 1;
+    end Subchar;
+  begin
+    I := 1;
+    loop
+      exit when I > Len;
+      case Asu.Element (Str, I) is
+        when '&' => Subchar ("&amp;");
+        when '<' => Subchar ("&lt;");
+        when Carriage_Return => Subchar ("&#xD;");
+        when '"' => if not Is_Text then Subchar ("&quot;"); end if;
+        when Line_Feed => if not Is_Text then Subchar ("&#xA;"); end if;
+        when Horiz_Tab => if not Is_Text then Subchar ("&#x9;"); end if;
+        when '>' => if Is_Text then Subchar ("&gt;"); end if;
+        when others => null;
+      end case;
+      I := I + 1;
+    end loop;
+  end Fix_Chars;
 
   use type Xml_Parser.Node_Kind_List, Xml_Parser.Attributes_Access,
            Xml_Parser.Stage_List, Asu_Us;
@@ -115,7 +147,13 @@ begin
   end if;
 
   -- Replace characters in attribute values and texts
-  -- @@@
+  if Clone.Kind = Xml_Parser.Element and then Clone.Attributes /= null then
+    for I in Clone.Attributes'Range loop
+      Fix_Chars (Clone.Attributes(I).Value, False);
+    end loop;
+  elsif Clone.Kind = Xml_Parser.Text then
+    Fix_Chars (Clone.Name, True);
+  end if;
 
   -- Empty element: Replace EmptyElmTag by StartTag and EndTag
   if Node.Creation and then Stage = Xml_Parser.Elements
@@ -145,7 +183,7 @@ begin
   and then Clone.Kind = Xml_Parser.Element
   -- Starting by Lf
   and then Len >= 1
-  and then Asu.Element (Str, 1) = Text_Line.Line_Feed_Char then
+  and then Asu.Element (Str, 1) = Line_Feed then
     -- Leading Line_Feed of root: remove it
     Asu.Delete (Str, 1, 1);
     Len := Len - 1;
@@ -160,14 +198,14 @@ begin
   and then not Clone.Creation)
   or else Clone.Stage = Xml_Parser.Tail then
     if Len >= 1
-    and then Asu.Element (Str, Len) = Text_Line.Line_Feed_Char then
+    and then Asu.Element (Str, Len) = Line_Feed then
       Asu.Delete (Str, Len, Len);
       Len := Len - 1;
     end if;
   end if;
   -- Prepend Lf to Tail items
   if Clone.Stage = Xml_Parser.Tail then
-    Str := Text_Line.Line_Feed_Char & Str;
+    Str := Line_Feed & Str;
     Len := Len + 1;
   end if;
 
