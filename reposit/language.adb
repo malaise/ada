@@ -1,5 +1,5 @@
 with Ada.Strings.Unbounded, Ada.Strings.Wide_Unbounded;
-with Environ, Utf_8, String_Mng;
+with Environ, Utf_8, String_Mng, Lower_Str;
 package body Language is
 
   -- When ENV, UTF_8 is set if a Getenv on "LANG" gives a value
@@ -12,10 +12,11 @@ package body Language is
 
   -- Gess Lang from Environ
   procedure Getenv_Lang is
-    Lang_Str : constant String := Environ.Getenv ("LANG");
+    Lang_Str : constant String := Lower_Str (Environ.Getenv ("LANG"));
   begin
-    if Lang_Str'Length > 6
-    and then String_Mng.Locate (Lang_Str, "UTF-8") /= 0 then
+    if String_Mng.Locate (Lang_Str, "utf8") /= 0 then
+      Lang := Lang_Utf_8;
+    elsif String_Mng.Locate (Lang_Str, "utf-8") /= 0 then
       Lang := Lang_Utf_8;
     else
       Lang := Lang_C;
