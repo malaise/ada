@@ -47,7 +47,7 @@ package body Git_If is
   -- Current Git version
   function Get_Version return Version_Rec is
     Cmd : Asu_Us;
-    D1, D2 : Natural;
+    D1, D2, D3 : Natural;
     Result : Version_Rec;
   begin
     -- Git --version
@@ -73,16 +73,20 @@ package body Git_If is
     -- Parse number
     D1 := String_Mng.Locate (Asu_Ts (Out_Flow_3.Str), ".", Occurence => 1);
     D2 := String_Mng.Locate (Asu_Ts (Out_Flow_3.Str), ".", Occurence => 2);
+    D3 := String_Mng.Locate (Asu_Ts (Out_Flow_3.Str), ".", Occurence => 3);
     if D1 <= 1 or else D2 <= D1 + 1
     or else D2 = Asu.Length (Out_Flow_3.Str) then
       -- Incorrect format
       Basic_Proc.Put_Line_Error ("git --version: " & Asu_Ts (Out_Flow_3.Str));
       raise No_Git;
     end if;
+    if D3 = 0 then
+      -- Only major, minor and sub
+      D3 := Asu.Length (Out_Flow_3.Str) + 1;
+    end if;
     Result.Major  := Natural'Value (Asu.Slice (Out_Flow_3.Str, 1, D1 - 1));
     Result.Medium := Natural'Value (Asu.Slice (Out_Flow_3.Str, D1 + 1, D2 - 1));
-    Result.Minor  := Natural'Value (Asu.Slice (Out_Flow_3.Str, D2 + 1,
-                                               Asu.Length (Out_Flow_3.Str)));
+    Result.Minor  := Natural'Value (Asu.Slice (Out_Flow_3.Str, D2 + 1, D3 - 1));
     return Result;
   exception
     when Error:others =>
