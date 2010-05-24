@@ -938,7 +938,7 @@ package body Xml_Parser.Generator is
       if I /= Attributes'First
       and then (Format = One_Per_Line
          or else (Format = Fill_Width
-                  and then Width /= 0
+                  and then Width /= Infinite_Width
                   and then Cur_Col + Att_Width > Width) ) then
         New_Line (Flow);
         Put (Flow, Pad);
