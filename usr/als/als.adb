@@ -2,7 +2,7 @@ with Ada.Calendar, Ada.Strings.Unbounded;
 with Basic_Proc, Argument, Argument_Parser;
 with Entities, Output, Targets, Lister;
 procedure Als is
-  Version : constant String  := "V5.2";
+  Version : constant String  := "V5.3";
 
   -- Exit codes
   Found_Exit_Code : constant Natural := 0;
@@ -151,10 +151,20 @@ begin
       return;
     end if;
   end if;
-  if Arg_Dscr.Get_Nb_Embedded_Arguments /= 0 then
-    -- Any path/file spec must be after options
-    Error;
-  end if;
+
+  -- Any path/file spec must be after options
+  -- Only empty arguments are allowed to be embedded
+  for I in 1 .. Arg_Dscr.Get_Nb_Embedded_Arguments loop
+    declare
+      -- Index of this non_key
+      Arg_Pos : constant Positive
+              := Arg_Dscr.Get_Position (Argument_Parser.No_Key_Index, I);
+    begin
+      if Argument.Get_Parameter (Arg_Pos, Argument.Any_Arg) /= "" then
+        Error;
+      end if;
+    end;
+  end loop;
 
   -- Parse options
   List_Roots_And_Dots := Arg_Dscr.Is_Set (01);
