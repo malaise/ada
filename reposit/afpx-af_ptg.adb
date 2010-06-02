@@ -27,7 +27,7 @@ package body Af_Ptg is
   -- Time and list Id of first click
   Last_Selected_Id : Natural;
   Last_Selection_Time : Ada.Calendar.Time;
-  Double_Click_Delay  : constant Ada.Calendar.Day_Duration := 0.2;
+  Double_Click_Delay  : constant Ada.Calendar.Day_Duration := 0.3;
 
   -- Field and Col of selection request
   Selection_Field : Afpx_Typ.Field_Range;
