@@ -6,6 +6,8 @@
 #include "timeval.h"
 #include "wait_evt.h"
 
+/* OK/ERR status are those of wait_evt */
+
 /* New kind of event (fd) added to the list */
 /*  of wait_evt (NO_EVENT, SIG_EVENT, WAKE_EVENT) */
 #define X_EVENT (-10)

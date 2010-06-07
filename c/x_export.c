@@ -61,9 +61,9 @@ extern int x_select (int *p_fd, boolean *p_read, timeout_t *timeout) {
     if (res > 0) {
       *p_fd = X_EVENT;
       *p_read = TRUE;
-      return (OK);
+      return (WAIT_OK);
     } else if (res < 0) {
-      return (ERR);
+      return (WAIT_ERR);
     }
   }
 
@@ -84,8 +84,8 @@ extern int x_select (int *p_fd, boolean *p_read, timeout_t *timeout) {
 
     /* Call the real select */
     res = evt_wait (p_fd, p_read, timeout);
-    if (res == ERR) {
-      return (ERR);
+    if (res == WAIT_ERR) {
+      return (WAIT_ERR);
     }
 
     if (*p_fd != NO_EVENT) {
@@ -96,13 +96,13 @@ extern int x_select (int *p_fd, boolean *p_read, timeout_t *timeout) {
       }
       /* Done */
       evt_time_remaining (timeout, &exp_time);
-      return (OK);
+      return (WAIT_OK);
     } else {
       /* Timeout. Check expiration */
       if (timeout_is_active && time_is_reached (&exp_time) ) {
         timeout->tv_sec = 0;
         timeout->tv_usec = 0;
-        return (OK);
+        return (WAIT_OK);
       }
     }
 
@@ -119,13 +119,13 @@ extern int x_initialise (const char *server_name,
     int result;
 
     /* Open display */
-    result = (lin_initialise (server_name) ? OK : ERR);
-    if (result == OK) {
+    result = (lin_initialise (server_name) ? WAIT_OK : WAIT_ERR);
+    if (result == WAIT_OK) {
       result = evt_add_fd (ConnectionNumber(local_server.x_server), TRUE);
     }
 
     /* Init color names if set */
-    if ( (result == OK) && (color_names != NULL) ) {
+    if ( (result == WAIT_OK) && (color_names != NULL) ) {
       col_set_names (color_names);
     }
 
@@ -138,7 +138,7 @@ extern int x_suspend (void) {
 
     /* Check that display is init */
     if (local_server.x_server == NULL) {
-        return (ERR);
+        return (WAIT_ERR);
     }
     result = evt_del_fd (ConnectionNumber(local_server.x_server), TRUE);
     return (result);
@@ -150,7 +150,7 @@ extern int x_resume (void) {
 
     /* Check that display is init */
     if (local_server.x_server == NULL) {
-        return (ERR);
+        return (WAIT_ERR);
     }
     result = evt_add_fd (ConnectionNumber(local_server.x_server), TRUE);
     return (result);
@@ -167,9 +167,9 @@ extern int x_open_line (int screen_id, int row, int column,
       height, width, background, border, no_font);
     if (line != NULL) {
         *p_line_id = (void*) line;
-        return (OK);
+        return (WAIT_OK);
     } else {
-        return (ERR);
+        return (WAIT_ERR);
     }
 }
 
@@ -178,7 +178,7 @@ extern int x_open_line (int screen_id, int row, int column,
 extern int x_close_line (void *line_id) {
     int result;
 
-    result = (lin_close( (t_window*) line_id) ? OK : ERR);
+    result = (lin_close( (t_window*) line_id) ? WAIT_OK : WAIT_ERR);
 
     return (result);
 }
@@ -191,13 +191,13 @@ extern int x_set_line_name (void *line_id, const char *line_name) {
 
     /* Check that window is open */
     if (! lin_check(win_id)) {
-        return (ERR);
+        return (WAIT_ERR);
     }
 
     result = XStoreName(local_server.x_server, win_id->x_window, line_name);
     /* Strange: it works but returns error */
-    /*    return ((result == Success) ? OK : ERR); */
-    return (OK);
+    /*    return ((result == Success) ? WAIT_OK : WAIT_ERR); */
+    return (WAIT_OK);
 }
 
 
@@ -207,13 +207,13 @@ extern int x_flush (void) {
 
     /* Check that display is init */
     if (local_server.x_server == NULL) {
-        return (ERR);
+        return (WAIT_ERR);
     }
 
     /* Flush the outputs */
     XFlush (local_server.x_server);
 
-    return (OK);
+    return (WAIT_OK);
 }
 
 /* Clears a line */
@@ -221,7 +221,7 @@ extern int x_clear_line (void *line_id) {
     int result;
 
 
-    result = (lin_clear( (t_window*) line_id) ? OK : ERR);
+    result = (lin_clear( (t_window*) line_id) ? WAIT_OK : WAIT_ERR);
 
     return(result);
 }
@@ -237,12 +237,12 @@ extern int x_set_attributes (void *line_id, int paper, int ink,
 
     /* Check that window is open */
         if (! lin_check(win_id)) {
-        return (ERR);
+        return (WAIT_ERR);
     }
 
     /* Checks that the colors are valid */
     if ( (! col_check (paper)) || (! col_check (ink)) ) {
-        return (ERR);
+        return (WAIT_ERR);
     }
 
     /* Store underline and superbright attribute */
@@ -256,7 +256,7 @@ extern int x_set_attributes (void *line_id, int paper, int ink,
       lin_get_font(win_id), win_id->screen->color_id,
       paper, ink, reverse);
 
-    return (OK);
+    return (WAIT_OK);
 
 }
 
@@ -266,7 +266,7 @@ extern int x_set_xor_mode (void *line_id, boolean xor_mode) {
 
     /* Check that window is open */
     if (! lin_check(win_id)) {
-        return (ERR);
+        return (WAIT_ERR);
     }
 
     if (xor_mode) {
@@ -277,7 +277,7 @@ extern int x_set_xor_mode (void *line_id, boolean xor_mode) {
                      win_id->x_graphic_context, GXcopy);
     }
     win_id->xor_mode = xor_mode;
-    return (OK);
+    return (WAIT_OK);
 }
 
 /* Writes a char whith the attributes previously set */
@@ -292,7 +292,7 @@ extern int x_put_char (void *line_id, int car, int row, int column) {
 
     /* Check that window is open */
     if (! lin_check(win_id)) {
-        return (ERR);
+        return (WAIT_ERR);
     }
 
     /* Compute pixels */
@@ -315,7 +315,7 @@ extern int x_put_char (void *line_id, int car, int row, int column) {
           win_id->x_graphic_context, win_id->x_window, x, y);
     }
 
-    return (OK);
+    return (WAIT_OK);
 }
 
 /* Writes a char whith the attributes previously set */
@@ -331,7 +331,7 @@ extern int x_overwrite_char (void *line_id, int car, int row, int column) {
 
     /* Check that window is open */
     if (! lin_check(win_id)) {
-        return (ERR);
+        return (WAIT_ERR);
     }
 
     /* Compute pixels */
@@ -348,7 +348,7 @@ extern int x_overwrite_char (void *line_id, int car, int row, int column) {
       win_id->server->x_font_set[lin_get_font(win_id)],
       x, y, (char)car);
 
-    return (OK);
+    return (WAIT_OK);
 }
 
 
@@ -366,7 +366,7 @@ extern int x_put_string (void *line_id, const char *p_char, int number,
 
     /* Check that window is open */
     if (! lin_check(win_id)) {
-        return (ERR);
+        return (WAIT_ERR);
     }
 
     /* Compute pixels */
@@ -388,7 +388,7 @@ extern int x_put_string (void *line_id, const char *p_char, int number,
           win_id->x_graphic_context, win_id->x_window, x, y, number);
     }
 
-    return (OK);
+    return (WAIT_OK);
 }
 
 /* Writes a char on a line with specified characteristics */
@@ -398,8 +398,8 @@ extern int x_put_char_attributes (void *line_id, int car, int row, int column,
   boolean superbright, boolean underline, boolean reverse) {
 
     if (x_set_attributes (line_id, paper, ink,
-                   superbright, underline, reverse) == ERR) {
-        return (ERR);
+                   superbright, underline, reverse) == WAIT_ERR) {
+        return (WAIT_ERR);
     }
 
     return (x_put_char (line_id, car, row, column));
@@ -415,7 +415,7 @@ extern int x_draw_area (void *line_id, int width, int height,
 
     /* Check that window is open */
     if (! lin_check(win_id)) {
-        return (ERR);
+        return (WAIT_ERR);
     }
 
     /* Compute pixels */
@@ -433,7 +433,7 @@ extern int x_draw_area (void *line_id, int width, int height,
       win_id->x_graphic_context,
       win_id->x_window, x_from, y_from, pix_width, pix_height);
 
-    return (OK);
+    return (WAIT_OK);
 }
 
 /* Give graphic characteristics of the windows and its font */
@@ -446,7 +446,7 @@ extern int x_get_graph_charact (void *line_id, int *p_w_width, int *p_w_height,
 
     /* Check that window is open */
     if (! lin_check(win_id)) {
-        return (ERR);
+        return (WAIT_ERR);
     }
 
     *p_w_width  = win_id->wwidth;
@@ -455,7 +455,7 @@ extern int x_get_graph_charact (void *line_id, int *p_w_width, int *p_w_height,
     *p_f_height = fon_get_height (win_id->server->x_font[no_font]);
     *p_f_offset = fon_get_offset (win_id->server->x_font[no_font]);
 
-    return (OK);
+    return (WAIT_OK);
 }
 
 /* Writes a char on a line (characteristics are previously set) */
@@ -468,7 +468,7 @@ extern int x_put_char_pixels (void *line_id, int car, int x, int y) {
 
     /* Check that window is open */
     if (! lin_check(win_id)) {
-        return (ERR);
+        return (WAIT_ERR);
     }
 
     /* Put char */
@@ -485,7 +485,7 @@ extern int x_put_char_pixels (void *line_id, int car, int x, int y) {
       win_id->x_window, x, y);
     }
 
-    return (OK);
+    return (WAIT_OK);
 }
 
 /* Draw a point at x,y */
@@ -494,12 +494,12 @@ extern int x_draw_point (void *line_id, int x, int y) {
 
     /* Check that window is open */
     if (! lin_check(win_id)) {
-        return (ERR);
+        return (WAIT_ERR);
     }
 
     XDrawPoint (win_id->server->x_server, win_id->x_window,
                 win_id->x_graphic_context, x, y);
-    return (OK);
+    return (WAIT_OK);
 }
 
 /* Draw a line between  x1y1 and x2y2 */
@@ -508,7 +508,7 @@ extern int x_draw_line (void *line_id, int x1, int y1, int x2, int y2) {
 
     /* Check that window is open */
     if (! lin_check(win_id)) {
-        return (ERR);
+        return (WAIT_ERR);
     }
 
     /* Draw */
@@ -516,7 +516,7 @@ extern int x_draw_line (void *line_id, int x1, int y1, int x2, int y2) {
       win_id->x_window,
       win_id->x_graphic_context, x1, y1, x2, y2);
 
-    return (OK);
+    return (WAIT_OK);
 
 }
 
@@ -529,7 +529,7 @@ extern int x_draw_rectangle (void *line_id, int x1, int y1, int x2, int y2) {
 
     /* Check that window is open */
     if (! lin_check(win_id)) {
-        return (ERR);
+        return (WAIT_ERR);
     }
 
     /* Set xy upper left, positive width and height */
@@ -553,7 +553,7 @@ extern int x_draw_rectangle (void *line_id, int x1, int y1, int x2, int y2) {
       win_id->x_window,
       win_id->x_graphic_context, x, y, width, height);
 
-    return (OK);
+    return (WAIT_OK);
 
 }
 
@@ -566,7 +566,7 @@ extern int x_fill_rectangle (void *line_id, int x1, int y1, int x2, int y2) {
 
     /* Check that window is open */
     if (! lin_check(win_id)) {
-        return (ERR);
+        return (WAIT_ERR);
     }
 
     /* Set xy upper left, positive width and height */
@@ -590,7 +590,7 @@ extern int x_fill_rectangle (void *line_id, int x1, int y1, int x2, int y2) {
       win_id->x_window,
       win_id->x_graphic_context, x, y, width, height);
 
-    return (OK);
+    return (WAIT_OK);
 
 }
 
@@ -605,7 +605,7 @@ extern int x_draw_points (void *line_id, int x1, int y1, int width, int height,
 
     /* Check that window is open */
     if (! lin_check(win_id)) {
-        return (ERR);
+        return (WAIT_ERR);
     }
 
     /* Draw points if set in array */
@@ -619,7 +619,7 @@ extern int x_draw_points (void *line_id, int x1, int y1, int width, int height,
         p++;
       }
     }
-    return (OK);
+    return (WAIT_OK);
 }
 
 
@@ -631,12 +631,12 @@ extern int x_fill_area (void *line_id, int xys[], int nb_points) {
 
     /* Check that window is open */
     if (! lin_check(win_id)) {
-        return (ERR);
+        return (WAIT_ERR);
     }
 
     /* Check and copy points */
     if (nb_points <= 2) {
-      return (ERR);
+      return (WAIT_ERR);
     }
 
     p_points = malloc (nb_points * sizeof(XPoint));
@@ -644,7 +644,7 @@ extern int x_fill_area (void *line_id, int xys[], int nb_points) {
 #ifdef DEBUG
         printf ("X_EXPORT : Can't alloc memory for points to fill.\n");
 #endif
-        return (ERR);
+        return (WAIT_ERR);
     }
 
     for (i = 0; i < nb_points; i++) {
@@ -656,7 +656,7 @@ extern int x_fill_area (void *line_id, int xys[], int nb_points) {
                   win_id->x_graphic_context, p_points, nb_points,
                   Complex, CoordModeOrigin);
     free (p_points);
-    return (OK);
+    return (WAIT_OK);
 }
 
 static void grab_pointer (Window window, Cursor cursor) {
@@ -671,7 +671,7 @@ extern int x_set_graphic_pointer (void *line_id, boolean graphic, boolean grab) 
 
     /* Check that window is open */
     if (! lin_check(win_id)) {
-        return (ERR);
+        return (WAIT_ERR);
     }
     if (graphic) {
       cursor = XCreateFontCursor(local_server.x_server, XC_tcross);
@@ -686,7 +686,7 @@ extern int x_set_graphic_pointer (void *line_id, boolean graphic, boolean grab) 
     } else {
       XUngrabPointer (local_server.x_server, CurrentTime);
     }
-    return (OK);
+    return (WAIT_OK);
 }
 
 
@@ -699,7 +699,7 @@ extern int x_hide_graphic_pointer (void *line_id, boolean grab) {
 
     /* Check that window is open */
     if (! lin_check(win_id)) {
-        return (ERR);
+        return (WAIT_ERR);
     }
 
     /* Make a blank cursor from blank pixmap*/
@@ -709,7 +709,7 @@ extern int x_hide_graphic_pointer (void *line_id, boolean grab) {
 #ifdef DEBUG
         printf ("X_EXPORT : Can't create blank cursor.\n");
 #endif
-      return (ERR);
+      return (WAIT_ERR);
     }
     cursor = XCreatePixmapCursor(local_server.x_server, blank, blank,
                                  &dummy, &dummy, 0, 0);
@@ -723,7 +723,7 @@ extern int x_hide_graphic_pointer (void *line_id, boolean grab) {
     } else {
       XUngrabPointer (local_server.x_server, CurrentTime);
     }
-    return (OK);
+    return (WAIT_OK);
 }
 
 
@@ -759,13 +759,13 @@ extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
     int i;
     boolean found;
 
-  if (local_server.x_server == NULL) return (ERR);
+  if (local_server.x_server == NULL) return (WAIT_ERR);
 
   /* Loop from which exit is done when */
   /*  - no more event */
-  /*  - Event OK */
-  result = ERR;
-  while (result == ERR) {
+  /*  - Event WAIT_OK */
+  result = WAIT_ERR;
+  while (result == WAIT_ERR) {
 
     if (prev_event_set) {
       /* An event has already been got and stored (for skipping multi expose) */
@@ -779,14 +779,14 @@ extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
       if (n_events == 0) {
         *p_kind = DISCARD;
         *p_next = False;
-        result = OK;
+        result = WAIT_OK;
         break;
       }
       /* Error ? Exit from loop */
       if (n_events < 0) {
         *p_kind = DISCARD;
         *p_next = False;
-        result = ERR;
+        result = WAIT_ERR;
         break;
       }
 
@@ -814,7 +814,7 @@ extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
           /* Key is valid */
           *p_line_id = (void*)win_id;
           *p_kind = KEYBOARD;
-          result = OK;
+          result = WAIT_OK;
         }
       break;
       case ButtonPress :
@@ -873,7 +873,7 @@ extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
         } else {
           *p_kind = TID_RELEASE;
         }
-        result = OK;
+        result = WAIT_OK;
       break;
       case MotionNotify :
         /* Find the window of event */
@@ -891,7 +891,7 @@ extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
 
         *p_line_id = (void*) win_id;
         *p_kind = TID_MOTION;
-        result = OK;
+        result = WAIT_OK;
       break;
       case Expose:
         /* Find the window of event */
@@ -917,7 +917,7 @@ extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
         }
         *p_line_id = (void*) win_id;
         *p_kind = REFRESH;
-        result = OK;
+        result = WAIT_OK;
       break;
       case EnterNotify:
         /* Find the window of event */
@@ -927,7 +927,7 @@ extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
         }
         *p_line_id = (void*) win_id;
         *p_kind = REFRESH;
-        result = OK;
+        result = WAIT_OK;
       break;
       case ClientMessage:
         /* Find the window of event */
@@ -943,7 +943,7 @@ extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
                      == local_server.delete_code)) {
           *p_line_id = (void*) win_id;
           *p_kind = EXIT_REQ;
-          result = OK;
+          result = WAIT_OK;
         }
         XFree (str);
       break;
@@ -1046,14 +1046,14 @@ extern int x_process_event (void **p_line_id, int *p_kind, boolean *p_next) {
             win_id->select_index = SELEC_NONE;
             *p_line_id = (void*) win_id;
             *p_kind = SELECTION;
-            result = OK;
+            result = WAIT_OK;
           }
         } else {
           /* Success */
           (win_id->select_index) += SELEC_STORED;
           *p_line_id = (void*) win_id;
           *p_kind = SELECTION;
-          result = OK;
+          result = WAIT_OK;
         }
       break;
       default :
@@ -1082,7 +1082,7 @@ extern int x_read_tid (void *line_id, boolean row_col,
 
     /* Check that window is open */
     if (! lin_check(win_id)) {
-        return (ERR);
+        return (WAIT_ERR);
     }
 
 
@@ -1098,7 +1098,7 @@ extern int x_read_tid (void *line_id, boolean row_col,
     }
     *p_button = win_id->button;
 
-    return (OK);
+    return (WAIT_OK);
 }
 
 
@@ -1114,12 +1114,12 @@ extern int x_read_key (void *line_id, boolean *p_control, boolean *p_shift,
 
     /* Check that window is open */
     if (! lin_check(win_id)) {
-        return (ERR);
+        return (WAIT_ERR);
     }
 
     /* Check that there is a key to read */
     if (win_id->nbre_key == 0) {
-        return (ERR);
+        return (WAIT_ERR);
     }
 
     /* Read the key */
@@ -1135,7 +1135,7 @@ extern int x_read_key (void *line_id, boolean *p_control, boolean *p_shift,
     /* All is read now */
     win_id->nbre_key = 0;
 
-    return (OK);
+    return (WAIT_OK);
 }
 
 extern int x_enable_motion_events (void *line_id, boolean enable_motion) {
@@ -1145,7 +1145,7 @@ extern int x_enable_motion_events (void *line_id, boolean enable_motion) {
 
     /* Check that window is open */
     if (! lin_check(win_id)) {
-        return (ERR);
+        return (WAIT_ERR);
     }
     /* Set new attributes */
     valuemask = CWEventMask;
@@ -1161,7 +1161,7 @@ extern int x_enable_motion_events (void *line_id, boolean enable_motion) {
        None, CurrentTime);
     XFlush(win_id->server->x_server);
     win_id->motion_enabled = enable_motion;
-    return (OK);
+    return (WAIT_OK);
 }
 
 /* Reads the current position on TID in pixels */
@@ -1177,7 +1177,7 @@ extern int x_get_pointer_pos (void *line_id, int *p_x, int *p_y) {
 
     /* Check that window is open */
     if (! lin_check(win_id)) {
-        return (ERR);
+        return (WAIT_ERR);
     }
 
     result = XQueryPointer (win_id->server->x_server, win_id->x_window,
@@ -1189,7 +1189,7 @@ extern int x_get_pointer_pos (void *line_id, int *p_x, int *p_y) {
         *p_y = -1;
     }
 
-    return (OK);
+    return (WAIT_OK);
 }
 
 /* Propose selection to other applis (cancel if selection if NULL) */
@@ -1198,7 +1198,7 @@ extern int x_set_selection (void *line_id, const char *selection) {
 
     /* Check that window is open */
     if (! lin_check(win_id)) {
-        return (ERR);
+        return (WAIT_ERR);
     }
 
     /* Clear selection buffer */
@@ -1218,7 +1218,7 @@ extern int x_set_selection (void *line_id, const char *selection) {
                                 None, CurrentTime);
             (win_id->nbre_drop_clear)++;
          }
-         return OK;
+         return WAIT_OK;
      }
      /* Set owner of selection */
      XSetSelectionOwner (win_id->server->x_server, XA_PRIMARY,
@@ -1227,12 +1227,12 @@ extern int x_set_selection (void *line_id, const char *selection) {
      if (XGetSelectionOwner(win_id->server->x_server, XA_PRIMARY)
                             != win_id->x_window) {
          /* We didn't get the selection ownership */
-         return (ERR);
+         return (WAIT_ERR);
      }
      /* Store new selection */
      win_id->selection = malloc (strlen(selection) + 1);
      strcpy (win_id->selection, selection);
-     return (OK);
+     return (WAIT_OK);
 }
 
 
@@ -1242,7 +1242,7 @@ extern int x_request_selection (void *line_id) {
 
     /* Check that window is open */
     if (! lin_check(win_id)) {
-        return (ERR);
+        return (WAIT_ERR);
     }
 
     /* Clean previous selection if any */
@@ -1251,7 +1251,7 @@ extern int x_request_selection (void *line_id) {
     /* Request with first possible target type */
     win_id->select_index = 0;
     x_request_in_selection (win_id);
-    return (OK);
+    return (WAIT_OK);
 }
 
 /* Read and clean selection associated to SELECTION event */
@@ -1266,10 +1266,10 @@ extern int x_get_selection (void *line_id, char *p_selection, int len) {
 
     /* Check that window is open */
     if (! lin_check(win_id)) {
-        return (ERR);
+        return (WAIT_ERR);
     }
-    if (p_selection == NULL) return (ERR);
-    if (win_id->select_index < SELEC_STORED) return (ERR);
+    if (p_selection == NULL) return (WAIT_ERR);
+    if (win_id->select_index < SELEC_STORED) return (WAIT_ERR);
 
     /* Get the selection (delete it) */
     res = XGetWindowProperty (win_id->server->x_server, win_id->x_window,
@@ -1281,7 +1281,7 @@ extern int x_get_selection (void *line_id, char *p_selection, int len) {
     win_id->select_index = SELEC_NONE;
     if (res != Success) {
       x_clear_in_selection (win_id);
-      return ERR;
+      return WAIT_ERR;
     }
 
     /* Trunc to len characters (including '\0') */
@@ -1302,7 +1302,7 @@ extern int x_get_selection (void *line_id, char *p_selection, int len) {
 
     /* Clear */
     if (data != NULL) XFree (data);
-    return (OK);
+    return (WAIT_OK);
 }
 
 /* Rings a bell on the display */
@@ -1311,7 +1311,7 @@ extern int x_bell (int nbre_bell) {
     XKeyboardControl keyboard_state;
     int i;
 
-    if (local_server.x_server == NULL) return (ERR);
+    if (local_server.x_server == NULL) return (WAIT_ERR);
 
     /* Volume maxi, 400 Hz, and 100 ms */
     keyboard_state.bell_percent = 100;
@@ -1328,7 +1328,7 @@ extern int x_bell (int nbre_bell) {
         XBell (local_server.x_server, 100);
     }
 
-    return (OK);
+    return (WAIT_OK);
 
 }
 

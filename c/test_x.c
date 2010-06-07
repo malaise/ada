@@ -301,7 +301,7 @@ boolean read;
       strcat (stre, digits);
 
     } else if (k == SELECTION) {
-      if (x_get_selection (line, selection, sizeof(selection)) != OK) {
+      if (x_get_selection (line, selection, sizeof(selection)) != WAIT_OK) {
         printf ("Reading selection failed\n");
       } else {
         printf ("Selection -> %s\n", selection);
