@@ -4,8 +4,8 @@
 #include "timeval.h"
 
 /* The result of each call except get_signal is 0 if success, -1 if error */
-#define OK        0
-#define ERR      -1
+#define WAIT_OK        0
+#define WAIT_ERR      -1
 
 /* Add/Del fd to the WaitSet, either for read or write*/
 extern int evt_add_fd (int fd, boolean read);

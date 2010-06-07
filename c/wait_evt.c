@@ -20,7 +20,7 @@ static int prev_fd = -1;
 
 int evt_add_fd (int fd, boolean read) {
   if (fd < 0) {
-    return (ERR);
+    return (WAIT_ERR);
   }
   if (last_fd == -1) {
     FD_ZERO(&global_read_mask);
@@ -34,7 +34,7 @@ int evt_add_fd (int fd, boolean read) {
   if (fd > last_fd) {
     last_fd = fd;
   }
-  return (OK);
+  return (WAIT_OK);
 }
 
 int evt_del_fd (int fd, boolean read) {
@@ -42,10 +42,10 @@ int evt_del_fd (int fd, boolean read) {
   fd_set *mask;
 
   if (fd < 0) {
-    return (ERR);
+    return (WAIT_ERR);
   }
   if (last_fd == -1) {
-    return (ERR);
+    return (WAIT_ERR);
   }
 
   if (read) {
@@ -55,7 +55,7 @@ int evt_del_fd (int fd, boolean read) {
   }
 
   if (!FD_ISSET(fd, mask)) {
-    return (ERR);
+    return (WAIT_ERR);
   }
   FD_CLR (fd, mask);
 
@@ -63,16 +63,16 @@ int evt_del_fd (int fd, boolean read) {
     if ( FD_ISSET(i, &global_read_mask)
       || FD_ISSET(i, &global_write_mask) ) {
       last_fd = i;
-      return (OK);
+      return (WAIT_OK);
     }
   }
   last_fd = 0;
-  return (OK);
+  return (WAIT_OK);
 }
 
 extern boolean evt_fd_set (int fd, boolean read) {
   if (fd < 0) {
-    return (ERR);
+    return (WAIT_ERR);
   }
   if (last_fd == -1) {
     return (FALSE);
@@ -250,7 +250,7 @@ extern int evt_wait (int *p_fd, boolean *p_read, timeout_t *timeout) {
       sig_received = SIG_NONE;
       *p_fd = SIG_EVENT;
       evt_time_remaining (timeout, &exp_time);
-      return (OK);
+      return (WAIT_OK);
     }
 
     /* Copy select mask */
@@ -307,7 +307,7 @@ extern int evt_wait (int *p_fd, boolean *p_read, timeout_t *timeout) {
 #ifdef DEBUG
         fprintf (stderr, "No fd found\n");
 #endif
-        return (ERR);
+        return (WAIT_ERR);
       }
 
       prev_fd = *p_fd;
@@ -316,7 +316,7 @@ extern int evt_wait (int *p_fd, boolean *p_read, timeout_t *timeout) {
         prev_fd = -1;
       }
       evt_time_remaining (timeout, &exp_time);
-      return (OK);
+      return (WAIT_OK);
 
     } else if (n < 0) {
       if (errno != EINTR) {
@@ -324,7 +324,7 @@ extern int evt_wait (int *p_fd, boolean *p_read, timeout_t *timeout) {
 #ifdef DEBUG
           perror ("select");
 #endif
-        return (ERR);
+        return (WAIT_ERR);
       }
     }
 
@@ -336,7 +336,7 @@ extern int evt_wait (int *p_fd, boolean *p_read, timeout_t *timeout) {
       *p_fd = NO_EVENT;
       timeout->tv_sec = 0;
       timeout->tv_usec = 0;
-      return (OK);
+      return (WAIT_OK);
     }
 
   } /* for (;;) */
