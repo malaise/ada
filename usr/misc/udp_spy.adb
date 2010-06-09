@@ -5,20 +5,30 @@ with Argument, Basic_Proc, Text_Handler, Date_Image, Normal, Int_Image,
 
 procedure Udp_Spy is
 
+  -- Argument error
   Arg_Error : exception;
 
+  -- Parsed Host and Port
   Host_Name : Text_Handler.Text (80);
   Host : Tcp_Util.Remote_Host;
   Port_Name : Text_Handler.Text (80);
   Port : Tcp_Util.Remote_Port;
   Port_Num : Socket.Port_Num;
+
+  -- Kind of dump
   type Dump_Kind_List is (Header, Short, Full, Binary);
-  Put_Host_Name : Boolean;
-  Nb_Options : Natural;
   Dump_Mode : Dump_Kind_List;
-  Iface : Tcp_Util.Remote_Host;
-  File : Text_Line.File_Type;
   Short_Data_Len : constant Natural := 64;
+  Put_Host_Name : Boolean;
+
+  -- Optional interface
+  Iface : Tcp_Util.Remote_Host;
+  -- For parsing arguments
+  Nb_Options : Natural;
+
+  -- Stdout through Text_Line
+  File : Text_Line.File_Type;
+
   use type Socket.Host_Id;
   use type Tcp_Util.Remote_Port_List, Tcp_Util.Remote_Host_List;
 
@@ -27,7 +37,9 @@ procedure Udp_Spy is
   function Port_Image is new Int_Image (Socket.Port_Num);
   function Inte_Image is new Int_Image (Integer);
 
-  function Dest_Image (S : Socket.Socket_Dscr; Allow_Name : Boolean) return String is
+  -- Put host (name or IP @) that has send last message on socket
+  function Dest_Image (S : Socket.Socket_Dscr; Allow_Name : Boolean)
+           return String is
     Host_Id : constant Socket.Host_Id := Socket.Get_Destination_Host (S);
   begin
     if Put_Host_Name and then Allow_Name then
@@ -55,6 +67,7 @@ procedure Udp_Spy is
     return "At " & Date (9 .. Date'Last);
   end Curr_Date_Image;
 
+  -- The socket and its fd
   Soc : Socket.Socket_Dscr;
   Fd  : Event_Mng.File_Desc := 0;
 
@@ -84,7 +97,7 @@ procedure Udp_Spy is
   Packet_Received_Code : constant := 1;
   No_Packet_Code : constant := 0;
 
-  -- Data
+  -- Data received on socket
   type Data_Type is array (1 .. 9999) of Socket.Byte;
   Data : Data_Type;
   procedure My_Receive is new Socket.Receive (Data_Type);
@@ -136,6 +149,7 @@ procedure Udp_Spy is
     end loop;
   end Dump_Data;
 
+  -- Callback on socket reception
   function Call_Back (F : in Event_Mng.File_Desc; Read : in Boolean)
                      return Boolean is
     pragma Unreferenced (Read);
@@ -185,7 +199,7 @@ begin
     raise Arg_Error;
   end if;
 
-  -- Dump mode
+  -- Parse Dump mode
   -- Default
   Dump_Mode := Short;
   begin
@@ -209,7 +223,7 @@ begin
       null;
   end;
 
-  -- Put_Host_Name
+  -- Parse Put_Host_Name option
   Put_Host_Name := False;
   begin
     if Argument.Get_Parameter (1, "h") = "n" then
@@ -223,7 +237,7 @@ begin
       null;
   end;
 
-  -- Interface
+  -- Parse Interface
   -- Default
   begin
     Iface := Ip_Addr.Parse (Argument.Get_Parameter (1, "i"));
@@ -235,7 +249,7 @@ begin
       raise Arg_Error;
   end;
 
-  -- Timeout
+  -- Parse Timeout
   if Argument.Is_Set (1, "t") then
     Nb_Options := Nb_Options + 1;
     begin
@@ -252,7 +266,7 @@ begin
   end if;
 
   -- No other options are supported
-  --  only one extra arg, the address that is parsed here after
+  --  only one extra arg, the address, which is parsed here after
   if Argument.Get_Nbre_Arg /= Nb_Options + 1 then
     raise Arg_Error;
   end if;
@@ -271,7 +285,7 @@ begin
       raise Arg_Error;
   end;
 
-  -- Open output flow
+  -- Open output flow (stdout)
   begin
     Text_Line.Open (File, Text_Line.Out_File, Sys_Calls.Stdout);
   exception
@@ -280,9 +294,8 @@ begin
       raise;
   end;
 
-  -- Create socket, add callback
+  -- Create socket, add socket and sigterm callbacks
   Socket.Open (Soc, Socket.Udp);
-
   Fd := Socket.Fd_Of (Soc);
   Event_Mng.Add_Fd_Callback (Fd, True, Call_Back'Unrestricted_Access);
   Event_Mng.Set_Sig_Term_Callback (Signal_Cb'Unrestricted_Access);
@@ -339,7 +352,7 @@ begin
   end if;
   Socket.Link_Port (Soc, Port_Num);
 
-  -- Put Ready on...
+  -- Put "Ready on..." end-of-init message
   Basic_Proc.Put_Error (Curr_Date_Image & " listening on ");
   Basic_Proc.Put_Error (Dest_Image (Soc, False));
   if Iface.Id /= Socket.No_Host then
@@ -359,7 +372,7 @@ begin
   end case;
   Basic_Proc.Put_Line_Error (" dumps.");
 
-  -- Main loop
+  -- Main loop until sigterm/sigint or timeout
   loop
     Event_Mng.Wait (-1);
     exit when Signal or else Timeout;
@@ -372,6 +385,7 @@ begin
     Socket.Close (Soc);
   end if;
 
+  -- Put cause of exit
   if Signal then
     Basic_Proc.Put_Line_Error (Curr_Date_Image & " stopped.");
   elsif Timeout then
@@ -380,6 +394,7 @@ begin
     Basic_Proc.Put_Line_Error (Curr_Date_Image & " aborted?");
   end if;
 
+  -- Set exit code v.s. at least a packet has been received
   if Packet_Received then
     Basic_Proc.Set_Exit_Code (Packet_Received_Code);
   else
