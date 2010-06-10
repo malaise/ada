@@ -85,26 +85,26 @@ package body Computer is
     if not Not_Persistent then
       -- Delete all
       Trace ("Deleting all variables");
-      Var_Mng.Delete_List (Var_List);
+      Var_List.Delete_List;
       return;
     end if;
     -- Make list of names of volatile variables
-    Var_Mng.Iterate (Var_List, List_Iter'Access);
+    Var_List.Iterate (List_Iter'Access);
     -- Delete each volatile variable
-    Parser.Set (Iter, Asu_Ts (Vol_List),
-                Parser.Is_Space_Or_Htab_Function'Access);
+    Iter.Set (Asu_Ts (Vol_List),
+              Parser.Is_Space_Or_Htab_Function'Access);
     loop
       declare
-        Name : constant String := Parser.Next_Word (Iter);
+        Name : constant String := Iter.Next_Word;
       begin
         exit when Name = "";
         Var.Name := Asu_Tus (Name);
         Var.Persistent := False;
         Trace ("Deleting volatile " & Image (Var));
-        Var_Mng.Delete (Var_List, Var);
+        Var_List.Delete (Var);
       end;
     end loop;
-    Parser.Del (Iter);
+    Iter.Del;
   end Reset;
 
   -- Set (store), maybe overwrite a variable
@@ -121,9 +121,9 @@ package body Computer is
     -- Check if this variable exists (persistent or not) and is modifiable
     Var.Name := Asu_Tus (Name);
     Var.Persistent := False;
-    Var_Mng.Search (Var_List, Var, Found);
+    Var_List.Search (Var, Found);
     if Found then
-      Var_Mng.Read (Var_List, Var, Var);
+      Var_List.Read (Var, Var);
       if not Var.Modifiable
       or else not Modifiable then
         -- One of the original and of the new (or both)
@@ -132,9 +132,9 @@ package body Computer is
       end if;
     end if;
     Var.Persistent := True;
-    Var_Mng.Search (Var_List, Var, Found);
+    Var_List.Search (Var, Found);
     if Found then
-      Var_Mng.Read (Var_List, Var, Var);
+      Var_List.Read (Var, Var);
       if not Var.Modifiable
       or else not Modifiable then
         -- One of the original and of the new (or both)
@@ -146,7 +146,7 @@ package body Computer is
     Var.Persistent := Persistent;
     Var.Value := Asu_Tus (Value);
     Var.Modifiable := Modifiable;
-    Var_Mng.Insert (Var_List, Var);
+    Var_List.Insert (Var);
     if Modifiable then
       Trace ("Inserted variable " & Image (Var) & ", " & Value);
     else
@@ -165,13 +165,13 @@ package body Computer is
     -- First check if variable is volatile
     Crit.Name := Asu_Tus (Name);
     Crit.Persistent := False;
-    Var_Mng.Search (Var_List, Crit, Found);
+    Var_List.Search (Crit, Found);
     if Found then
       return True;
     end if;
     -- Then check if it is persistent
     Crit.Persistent := True;
-    Var_Mng.Search (Var_List, Crit, Found);
+    Var_List.Search (Crit, Found);
     return Found;
   end Is_Set;
 
@@ -188,15 +188,15 @@ package body Computer is
     -- First check if variable is volatile
     Res.Name := Asu_Tus (Name);
     Res.Persistent := False;
-    Var_Mng.Search (Var_List, Res, Found);
+    Var_List.Search (Res, Found);
     if Found then
-      Var_Mng.Read (Var_List, Res, Res);
+      Var_List.Read (Res, Res);
       Trace ("Read >" & Asu_Ts (Res.Value) & "<");
       return Res;
     end if;
     -- Then try to read this variable as persistent
     Res.Persistent := True;
-    Var_Mng.Read (Var_List, Res, Res);
+    Var_List.Read (Res, Res);
     Trace ("Read >" & Asu_Ts (Res.Value) & "<");
     return Res;
   exception
@@ -323,59 +323,73 @@ package body Computer is
   -- Parse the expression into a list of members
   procedure Parse (Exp : in String) is
     Iter : Parser.Iterator;
-    -- Can +X or -X  be unary
-    Unary : Boolean;
+    -- Must +X or -X be binary (after a ')' or a Val)
+    Must_Be_Binary : Boolean;
     First_Char : Character;
     Member : Member_Rec;
   begin
-    Parser.Set (Iter, Exp, Parser.Is_Space_Or_Htab_Function'Access);
-    Unary := True;
+    Iter.Set (Exp, Parser.Is_Space_Or_Htab_Function'Access);
+    -- Expression starting with +X means +X
+    Must_Be_Binary := False;
     loop
       declare
-        Word : constant String := Parser.Next_Word (Iter);
+        Word : constant String := Iter.Next_Word;
       begin
         exit when Word = "";
         First_Char :=  Word(Word'First);
         if Word'Length = 1 then
           case First_Char is
-            when '+' => Member := (Kind => Add);
-            when '-' => Member := (Kind => Sub);
-            when '*' => Member := (Kind => Mult);
-            when '/' => Member := (Kind => Div);
-            when '(' => Member := (Kind => Open);
-            when ')' => Member := (Kind => Close);
+            when '+' =>
+              Member := (Kind => Add);
+              Must_Be_Binary := False;
+            when '-' =>
+              Member := (Kind => Sub);
+              Must_Be_Binary := False;
+            when '*' =>
+              Member := (Kind => Mult);
+              Must_Be_Binary := False;
+            when '/' =>
+              Member := (Kind => Div);
+              Must_Be_Binary := False;
+            when '(' =>
+              Member := (Kind => Open);
+              Must_Be_Binary := False;
+            when ')' =>
+              Member := (Kind => Close);
+              Must_Be_Binary := True;
             when '0' .. '9' =>
+              Must_Be_Binary := True;
               Member := (Kind => Val, Value => Integer'Value (Word));
             when others =>
               raise Invalid_Expression;
           end case;
-        elsif not Unary
-        and then (First_Char = '+' or else First_Char = '-') then
-          -- Someting like Y -X, parse -X as two members
+        elsif (First_Char = '+' or else First_Char = '-')
+        and then Must_Be_Binary then
+          -- Someting like Y -X or ) -X => parse -X as two members
           if First_Char = '+' then
-            Members_Mng.Insert (Members_List, (Kind => Add));
+            Members_List.Insert ((Kind => Add));
           else
-            Members_Mng.Insert (Members_List, (Kind => Sub));
+            Members_List.Insert ((Kind => Sub));
           end if;
           Member := (Kind => Val,
                      Value => Integer'Value (
                         Word (Positive'Succ(Word'First) .. Word'Last)));
+          Must_Be_Binary := True;
         else
           Member := (Kind => Val, Value => Integer'Value (Word));
+          Must_Be_Binary := True;
         end if;
       end;
-      Members_Mng.Insert (Members_List, Member);
-      -- Next can be unary if current is not a value
-      Unary := Member.Kind /= Val;
+      Members_List.Insert (Member);
     end loop;
-    Parser.Del (Iter);
-    if not Members_Mng.Is_Empty (Members_List) then
-      Members_Mng.Rewind (Members_List);
+    Iter.Del;
+    if not Members_List.Is_Empty then
+      Members_List.Rewind;
     end if;
   exception
     when Constraint_Error =>
-      if Parser.Is_Set (Iter) then
-        Parser.Del (Iter);
+      if Iter.Is_Set then
+        Iter.Del;
       end if;
       Trace ("Constraint Error when parsing");
       raise Invalid_Expression;
@@ -386,19 +400,19 @@ package body Computer is
   function Get_Member return Member_Rec is
     Member : Member_Rec;
   begin
-    if Members_Mng.Is_Empty (Members_List) then
+    if Members_List.Is_Empty then
       -- Members_List is empty
       raise Invalid_Expression;
     elsif End_Reached then
       -- End of expression is reached
       return (Kind => None);
-    elsif Members_Mng.Check_Move (Members_List) then
+    elsif Members_List.Check_Move then
       -- Next (not last) member
-      Members_Mng.Read (Members_List, Member);
+      Members_List.Read (Member);
     else
       -- Last member
       End_Reached := True;
-      Members_Mng.Read (Members_List, Member, Members_Mng.Current);
+      Members_List.Read (Member, Members_Mng.Current);
     end if;
     return Member;
   end Get_Member;
@@ -409,7 +423,7 @@ package body Computer is
     if End_Reached then
       End_Reached := False;
     else
-      Members_Mng.Move_To (Members_List, Members_Mng.Prev);
+      Members_List.Move_To (Members_Mng.Prev);
     end if;
   end Unget_Member;
 
@@ -488,7 +502,7 @@ package body Computer is
         Trace ("Level++");
         Tmp := Compute (Level + 1, False);
       elsif M3.Kind /= Val then
-        Trace ("Invalid M2 " & M2.Kind'Img);
+        Trace ("Invalid M3 " & M3.Kind'Img);
         raise Invalid_Expression;
       else
         Tmp := M3.Value;
@@ -569,7 +583,7 @@ package body Computer is
     -- Compute
     Result := Compute (0, False);
     -- Clean parsing
-    Members_Mng.Delete_List (Members_List);
+    Members_List.Delete_List;
     -- Done
     return Result;
   end Compute;
