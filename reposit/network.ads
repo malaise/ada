@@ -62,7 +62,7 @@ package Network is
   -- Raises No_Connection if incorrect index
   procedure Set_Data (Of_Node : in out Node_Type;
                       Index : in Connection_Index;
-                      Of_Conn_Data : Conn_Data_Type);
+                      Of_Conn_Data : in Conn_Data_Type);
 
   -- Delete a connection of Of_Node, specify index
   --  Beware that connection index may change (when some are deleted)

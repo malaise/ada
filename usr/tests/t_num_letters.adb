@@ -20,7 +20,7 @@ begin
 
     if Ok then
       begin
-        Ada.Text_Io.Put_Line (Num_Letters.Letters_Of (N) & "<");
+        Ada.Text_Io.Put_Line (Num_Letters.Letters_Of (N) & " <");
       exception
         when Error:others =>
           Ada.Text_Io.Put_Line ("exception "

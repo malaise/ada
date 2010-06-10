@@ -123,7 +123,7 @@ package body Network is
   -- Raises No_Connection if incorrect index
   procedure Set_Data (Of_Node : in out Node_Type;
                       Index : in Connection_Index;
-                      Of_Conn_Data : Conn_Data_Type) is
+                      Of_Conn_Data : in Conn_Data_Type) is
   begin
     -- Check Index is valid
     if Index > Nb_Connections (Of_Node) then

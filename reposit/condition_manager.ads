@@ -37,7 +37,7 @@ package Condition_Manager is
   procedure Wait (A_Condition  : in Condition);
 
 
-  -- Unblock at least one of the waiting tasks
+  -- Unblock one of the waiting tasks
   procedure Signal (A_Condition  : in Condition);
 
   -- Unblock all the waiting tasks
