@@ -17,15 +17,24 @@ package body Multiget is
   -- The buffer, in which current position is the "next to unget"
   --  when Offset is 0.
   -- When Offset is 1, there is no next to unget any more. This way:
-  -- Get_Position (From_First) - Offset is the number of possible ungets
-  -- Get_Position (From_Last)  - 1 is the number of possible re-gets
+  -- Get_Position (From_First) - Offset is the number of possible ungets.
+  -- Get_Position (From_Last)  - 1 is the number of possible re-gets.
+  -- Items from current (included, except when Offset = 1) to first included
+  --  are the ones that can be ungot. So ungetting consists in moving current
+  --  position backwards.
+  -- Items from current excluded to last included are the ones to be got.
+  --  So getting consists in moving current position forward if possible, and
+  --  otherwise in getting from "outside" and appending to list.
+  -- When recoding is inactive there cannot be any unget (previous items are
+  --  removed from buffer) and getting consists in taking current item if
+  --  possible, and otherwise getting from "outside".
   package Item_Dyn_List_Mng is new Dynamic_List (Item_Type);
   package Item_List_Mng renames Item_Dyn_List_Mng.Dyn_List;
   Item_List : Item_List_Mng.List_Type;
 
   -- The virtual offset of current position vs first
   -- Because, when at pos 1 and ungetting, virtual position becomes 0
-  -- Only significant when Item_List is not empty
+  -- Only significant when Item_List is not empy
   subtype Offset_Range is Natural range 0 .. 1;
   Offset : Offset_Range := 0;
 

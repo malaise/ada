@@ -12,7 +12,7 @@ package Parser.All_In_One is
   type Parsed_Array is array (Positive range <>) of Parsed_Element_Rec;
 
 
-  -- Reset the iterator, parse all words and seprators, reset the iterator
+  -- Reset the iterator, parse all words and separators, reset the iterator
   --  and return the parsed array.
   -- May raise Constraint_Error if Iter is not set.
   function Parse_All (Iter : Iterator) return Parsed_Array;
