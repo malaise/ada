@@ -343,6 +343,16 @@ package body Afpx is
     Af_Dscr.Current_Dscr.Modified := True;
   end Reset_Field;
 
+  -- Field Height
+  function Get_Field_Height (Field_No : Absolute_Field_Range)
+                             return Height_Range is
+    Fn : constant Afpx_Typ.Absolute_Field_Range
+       := Afpx_Typ.Absolute_Field_Range(Field_No);
+  begin
+    Af_Dscr.Check(Fn);
+    return Af_Dscr.Fields(Fn).Height;
+  end Get_Field_Height;
+
   -- Field width
   function Get_Field_Width (Field_No : in Absolute_Field_Range)
                             return Width_Range is
@@ -594,8 +604,7 @@ package body Afpx is
   -- Get field kind
   -- Exceptions : No_Descriptor, Invalid_Field
   -- type Field_Kind_List is (Put, Button, Get);
-  function Get_Field_Kind (Field_No : in Absolute_Field_Range)
-                          return Field_Kind_List is
+  function Get_Field_Kind (Field_No : in Field_Range) return Field_Kind_List is
     Fn : constant Afpx_Typ.Absolute_Field_Range
        := Afpx_Typ.Absolute_Field_Range(Field_No);
   begin
@@ -607,17 +616,17 @@ package body Afpx is
     end case;
   end Get_Field_Kind;
 
-  function Is_Put_Kind    (Field_No : in Absolute_Field_Range) return Boolean is
+  function Is_Put_Kind    (Field_No : in Field_Range) return Boolean is
   begin
     return Get_Field_Kind (Field_No) = Put;
   end Is_Put_Kind;
 
-  function Is_Button_Kind (Field_No : in Absolute_Field_Range) return Boolean is
+  function Is_Button_Kind (Field_No : in Field_Range) return Boolean is
   begin
     return Get_Field_Kind (Field_No) = Button;
   end Is_Button_Kind;
 
-  function Is_Get_Kind    (Field_No : in Absolute_Field_Range) return Boolean is
+  function Is_Get_Kind    (Field_No : in Field_Range) return Boolean is
   begin
     return Get_Field_Kind (Field_No) = Get;
   end Is_Get_Kind;
@@ -686,7 +695,7 @@ package body Afpx is
       else
         Ret_No := 1;
       end if;
-      -- Cehck it is a cursor field
+      -- Check it is a cursor field
       if Af_Dscr.Fields(Ret_No).Kind = Afpx_Typ.Get
           and then Af_Dscr.Fields(Ret_No).Activated
           and then not Af_Dscr.Fields(Ret_No).Isprotected then

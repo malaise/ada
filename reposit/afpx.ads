@@ -54,13 +54,14 @@ package Afpx is
   function Is_Suspended return Boolean;
 
   -- Get descriptor background color
+  -- Exceptions : No_Descriptor (no Descriptor in use)
   function Get_Descriptor_Background return Con_Io.Effective_Colors;
 
   -- Check if current descriptor defines a list
   -- Exceptions : No_Descriptor (no Descriptor in use)
   function Has_List return Boolean;
 
-  -- Returns the number of fields of current descriptor
+  -- Returns the number of fields (not the list) of current descriptor
   -- Exceptions : No_Descriptor (no Descriptor in use)
   function Nb_Fields return Absolute_Field_Range;
 
@@ -72,21 +73,20 @@ package Afpx is
   -- Reset the field from initial definition in file
   --  colors and / or  content,
   -- The field becomes activated and not protected.
+  -- Reset_String is meaningless if Field_No is List_Field_No
   -- Exceptions : No_Descriptor (no Descriptor in use),
   --              Invalid_Field (Field_No too big)
   procedure Reset_Field (Field_No : in Absolute_Field_Range;
                          Reset_Colors : in Boolean := True;
                          Reset_String : in Boolean := True);
 
-  -- Width of a field
+  -- Height and width of a field
   -- Exceptions : No_Descriptor (no Descriptor in use),
   --              Invalid_Field (Field_No too big)
+  function Get_Field_Height (Field_No : Absolute_Field_Range)
+                             return Height_Range;
   function Get_Field_Width (Field_No : Absolute_Field_Range)
                             return Width_Range;
-
-  -- Width and height of a field
-  -- Exceptions : No_Descriptor (no Descriptor in use),
-  --              Invalid_Field (Field_No too big)
   procedure Get_Field_Size (Field_No : in Absolute_Field_Range;
                             Height : out Height_Range;
                             Width  : out Width_Range);
@@ -167,11 +167,10 @@ package Afpx is
   -- Get field kind
   -- Exceptions : No_Descriptor, Invalid_Field
   type Field_Kind_List is (Put, Button, Get);
-  function Get_Field_Kind (Field_No : in Absolute_Field_Range)
-                          return Field_Kind_List;
-  function Is_Put_Kind    (Field_No : in Absolute_Field_Range) return Boolean;
-  function Is_Button_Kind (Field_No : in Absolute_Field_Range) return Boolean;
-  function Is_Get_Kind    (Field_No : in Absolute_Field_Range) return Boolean;
+  function Get_Field_Kind (Field_No : in Field_Range) return Field_Kind_List;
+  function Is_Put_Kind    (Field_No : in Field_Range) return Boolean;
+  function Is_Button_Kind (Field_No : in Field_Range) return Boolean;
+  function Is_Get_Kind    (Field_No : in Field_Range) return Boolean;
 
   -- Erase all the fields of the descriptor from the screen
   --  (Fill them with current screen's background color)
@@ -187,6 +186,7 @@ package Afpx is
   --  The criteria is the next unprotected and active get field
   --  If From is 0, then the first field matching is returned
   --  Else the next matching after From is returned
+  -- When the last field is reached the search reastarts from beginning
   -- 0 is returned if no matching field is found
   function Next_Cursor_Field (From : Absolute_Field_Range)
                               return Absolute_Field_Range;
@@ -293,23 +293,25 @@ package Afpx is
   -- In List:
   --   mouse click changes current list element (or Id_Selected_Right),
   --   Up/Down arrow, Page Up/Down, Ctrl Page Up/Down scrolls the list,
-  --   double click terminates Put_Then Get.
+  --   double click terminates Put_Then Get (Mouse_Button, List_Field_No).
   -- In Put fields: nothing.
   -- In Get fields:
   --    Right/Left arrow, character, Backspace, Delete,
   --      Home, End, Ctrl Delete or Insert edits the field,
   --    Tab or Ctrl Tab changes field (like Next:Prev_Cursor_Field),
-  --    Return / Esc / Break terminates Put_Then_Get,
+  --    Return / Esc / Break terminates Put_Then_Get (Keyboard,
+  --     (Return_Key / Escape_Key / Break_Key)
   --    mouse click moves to the field.
-  -- In Button fields: mouse click then release terminates Put_Then_Get.
+  -- In Button fields: mouse click then release terminates Put_Then_Get,
+  --  (Mouse_Button, Field_No).
   -- This call affects the content of Get fields, the cursor field and col,
   --  and the current element of the list, it calls Modification_Ack on the
   --  Line_List (see Dynamic_List).
   -- If no field is Get (or all protected or desactivated,
   --  then cursor field and col are not significant, otherwise
-  --  they are used at initialisation and set before the end.
+  --  they are used at initialisation and set before retrurning.
   -- No call to Put_Then_Get are allowed while already in Put_Then_Get
-  --  (i.e. from an Event callback or Cursor_Col_Cb).
+  --  (i.e. from an Event callback or Cursor_Col_Cb or List_Change_Cb).
   -- Exceptions :  No_Descriptor,
   --               Invalid_Field, Invalid_Col (for cursor),
   --               String_Too_Long (if an item in list is too long),
@@ -333,7 +335,7 @@ package Afpx is
   -- Ring a bell on screen
   procedure Bell (Repeat : in Positive := 1);
 
-  -- Propose (mouse) selection to to other applications
+  -- Propose (mouse) selection to other applications
   -- Clears if empty string
   procedure Set_Selection (Selection : in String);
 
@@ -344,7 +346,6 @@ package Afpx is
   -- On call
   No_Descriptor, Invalid_Field, Invalid_Square, Invalid_Row, Invalid_Col,
   String_Too_Long, Invalid_Color, List_In_Put, In_Put_Then_Get : exception;
-
 
 end Afpx;
 

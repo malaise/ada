@@ -15,7 +15,7 @@ package Afpx.List_Manager is
     with package Element_List is new Dynamic_List(Element_Type);
     -- How to set the Afpx line from Element_Type
     with procedure Set (Line : in out Line_Rec; From : in Element_Type);
-  -- Initialize Afpx list from From list
+  -- Initialize Afpx list from From list, move to current position of From
   procedure Init_List (From : in out Element_List.Dyn_List.List_Type);
 
 end Afpx.List_Manager;
