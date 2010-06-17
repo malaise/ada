@@ -5,12 +5,13 @@ package Arbitrary.Fractions is
   -- Constructor
   function Set (Numerator, Denominator : Number) return Fraction;
 
-  -- Image
+  -- Image: "Numerator:Denominator"
   function Image (F : Fraction) return String;
 
   -- Basic "constants"
   function Zero return Fraction;
   function One  return Fraction;
+  function Two  return Fraction;
 
   -- Extractors
   function Numerator (F : Fraction) return Number;

@@ -13,10 +13,14 @@ package Arbitrary is
   -- Basic "constants"
   function Zero return Number;
   function One  return Number;
+  function Two  return Number;
 
   -- Image: +xxx or -xxx
   function Image (V : Number) return String;
   function Length (V : Number) return Natural;
+
+  -- Is a Number positive (True for 0)
+  function Is_Positive (V : Number) return Boolean;
 
   -- Basic unitary operations
   function "abs" (A : Number) return Number;

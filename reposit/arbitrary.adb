@@ -439,6 +439,7 @@ package body Arbitrary is
 
   Number_Zero : constant Number := Set_Uncheck ("0");
   Number_One  : constant Number := Set_Uncheck ("1");
+  Number_Two  : constant Number := Set_Uncheck ("2");
 
   function Set (V : String) return Number is
     N : constant Number := Set_Uncheck (V);
@@ -487,6 +488,11 @@ package body Arbitrary is
     return Number_One;
   end One;
 
+  function Two  return Number is
+  begin
+    return Number_Two;
+  end Two;
+
   -- Image
   function Image (V : Number) return String is
   begin
@@ -497,6 +503,12 @@ package body Arbitrary is
   begin
     return Unb.Length (Unbstr(V));
   end Length;
+
+  -- Is a Number positive (True for 0)
+  function Is_Positive (V : Number) return Boolean is
+  begin
+    return Basic.Check_Is_Pos (V);
+  end Is_Positive;
 
   -- Absolute and Neg
   function "abs" (A : Number) return Number is
@@ -732,7 +744,6 @@ package body Arbitrary is
 
   function "**" (A, B : Number) return Number is
     Pb : constant Boolean := Basic.Check_Is_Pos (B);
-    One : constant Number := Set_Uncheck ("1");
     R : Number := One;
     I : Number := B;
   begin
@@ -743,7 +754,7 @@ package body Arbitrary is
     loop
       exit when I = Number_Zero;
       R := R * A;
-      I := I - One;
+      I := I - Number_One;
     end loop;
     return R;
   end "**";

@@ -72,6 +72,11 @@ package body Arbitrary.Fractions is
     return (One, One);
   end One;
 
+  function Two  return Fraction is
+  begin
+    return (Two, One);
+  end Two;
+
 
   -- Extractors
   function Numerator (F : Fraction) return Number is
