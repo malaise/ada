@@ -10,8 +10,8 @@ package body Arbitrary.Prime_List is
   -- Rewind the list of prime numbers found so far
   procedure Rewind is
   begin
-    Need_Search := The_List.Is_Empty;
     The_List.Rewind (False);
+    Need_Search := The_List.Is_Empty;
   end Rewind;
 
   -- Read item from list
@@ -59,7 +59,7 @@ package body Arbitrary.Prime_List is
   begin
     -- Need to search?
     if not Need_Search then
-      -- If read last. Next will require search
+      -- If reading last then next call will require search
       The_List.Read (Res, Prime_List_Mng.Next, Moved);
       Need_Search := not Moved;
       return Res;
@@ -68,7 +68,6 @@ package body Arbitrary.Prime_List is
     -- Empty list, add 1
     if The_List.Is_Empty then
       Append (One);
-      Need_Search := True;
       return One;
     end if;
 
@@ -77,25 +76,38 @@ package body Arbitrary.Prime_List is
     -- Loop on Res
     Search_Loop:
     loop
-      Res := Res + One;
-      Is_Prime := True;
+      -- Optim: if Res=1 or 2, then Next=Res+1 (2 or 3) and is prime
+      -- otherwise Res is odd and next is odd, so at least Res+2
+      if The_List.Get_Position <= 2 then
+        Res := Res + One;
+        Append (Res);
+        return Res;
+      else
+        Res := Res + Two;
+      end if;
       Square := Sqrt(Res);
-      Rewind;
 
-      -- Loop on list
+      -- Loop on list of primes to find a divisor
+      -- Because the case of Res=1, 2 and 3 is already done, we are sure that
+      --  Square > 1, so this loop always exits before exhausting the list
+      --  so Is_Prime is always set
+      Rewind;
       Divisor_Loop:
       for I in 1 .. The_List.List_Length loop
         Tmp := Read;
         if Tmp > Square then
+          -- We have reached sqrt(Res), so Tmp * Tmp > Res,
+          --  so Tmp cannot be a factor of Res, so Res is prime
+          Is_Prime := True;
           exit Divisor_Loop;
         end if;
-        if Tmp /= One and then Res rem Tmp = Zero then
+        if Tmp /= One and then (Res rem Tmp) = Zero then
+          -- Res = Tmp * X, so Res is not prime
           Is_Prime := False;
           exit Divisor_Loop;
         end if;
       end loop Divisor_Loop;
 
-      Need_Search := True;
       if Is_Prime then
         Append (Res);
         return Res;
