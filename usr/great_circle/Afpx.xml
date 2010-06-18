@@ -24,9 +24,9 @@
     </Field>
 
     <Field Num="4" Kind="Put">
-      <Geometry Up="5" Left="50" Low="5" Right="54"/>
+      <Geometry Up="5" Left="50" Low="5" Right="55"/>
       <Colors Foreground="Cyan" Background="Black"/>
-      <Init Row="0" Col="0">Route</Init>
+      <Init Row="0" Col="0">Routes</Init>
     </Field>
 
     <Field Num="5" Kind="Put">
@@ -210,14 +210,19 @@
       <Init Row="0" Col="0">NM</Init>
     </Field>
 
+    <Field Num="37" Kind="Put">
+      <Geometry Up="7" Left="50" Low="7" Right="59"/>
+      <Colors Foreground="Light_Grey" Background="Black"/>
+    </Field>
+
     <!-- Compute and Exit buttons -->
-    <Field Num="37" Kind="Button">
+    <Field Num="38" Kind="Button">
       <Geometry Up="8" Left="3" Low="10" Right="11"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="1" Col="1">COMPUTE</Init>
     </Field>
 
-    <Field Num="38" Kind="Button">
+    <Field Num="39" Kind="Button">
       <Geometry Up="8" Left="16" Low="10" Right="21"/>
       <Colors Foreground="Cyan" Background="Brown"/>
       <Init Row="1" Col="1">EXIT</Init>

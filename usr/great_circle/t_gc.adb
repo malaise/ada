@@ -26,10 +26,11 @@ procedure T_Gc is
 
   subtype A_Flds is Afpx.Field_Range range 06 .. 19;
   subtype B_Flds is Afpx.Field_Range range 20 .. 33;
-  Heading_Field  : constant Afpx.Field_Range := 34;
+  Heading_Ab_Field  : constant Afpx.Field_Range := 34;
   Distance_Field  : constant Afpx.Field_Range := 35;
-  Compute_Field  : constant Afpx.Field_Range := 37;
-  Exit_Field  : constant Afpx.Field_Range := 38;
+  Heading_Ba_Field  : constant Afpx.Field_Range := 37;
+  Compute_Field  : constant Afpx.Field_Range := 38;
+  Exit_Field  : constant Afpx.Field_Range := 39;
 
   Decode_Ok : Boolean;
   Need_Clean : Boolean := False;
@@ -37,6 +38,13 @@ procedure T_Gc is
   Redisplay : Boolean;
 
   use type Afpx.Field_Range, Afpx.Event_List, Afpx.Keyboard_Key_List;
+
+  procedure Clear_Result is
+  begin
+    Afpx.Clear_Field (Heading_Ab_Field);
+    Afpx.Clear_Field (Distance_Field);
+    Afpx.Clear_Field (Heading_Ba_Field);
+  end Clear_Result;
 
   -- Clear result fields during input
   function Next_Field_Cb (Cursor_Field : Afpx.Field_Range;
@@ -48,8 +56,7 @@ procedure T_Gc is
     use type Afpx.Enter_Field_Cause_List;
   begin
     if Need_Clean then
-      Afpx.Clear_Field (Heading_Field);
-      Afpx.Clear_Field (Distance_Field);
+      Clear_Result;
       Need_Clean := False;
     end if;
     if Enter_Field_Cause = Afpx.Left then
@@ -98,11 +105,18 @@ procedure T_Gc is
       Cursor := First_Fld;
   end Decode_Point;
 
-  procedure Clear_Result is
+  procedure Encode_Heading (F : in Afpx.Field_Range;
+                            H : in Conv.Geo_Coord_Rec) is
+    Str : constant String := String_Util.Angle2Str(H);
+    -- Will append " and set ° and ' instead of 2 first .
+    Wstr : Wide_String (1 .. Str'Length + 1);
   begin
-    Afpx.Clear_Field (Heading_Field);
-    Afpx.Clear_Field (Distance_Field);
-  end Clear_Result;
+    Wstr := Language.String_To_Wide (Str) & '"';
+    Wstr(4) := Language.Char_To_Wide (
+                 Ada.Characters.Latin_1.Degree_Sign);
+    Wstr(7) := ''';
+    Afpx.Encode_Wide_Field (F, (0, 0), Wstr);
+ end Encode_Heading;
 
 begin
 
@@ -181,20 +195,16 @@ begin
           Decode_Point (B_Flds'First, B_Flds'Last, B, Decode_Ok, Cursor_Field);
         end if;
         if Decode_Ok then
-          Great_Circle.Compute_Route(A, B, Heading, Distance);
-          declare
-            Str : constant String := String_Util.Angle2Str(Heading);
-            -- Will append " and set ° and ' instead of 2 first .
-            Wstr : Wide_String (1 .. Str'Length + 1);
-          begin
-            Wstr := Language.String_To_Wide (Str) & '"';
-            Wstr(4) := Language.Char_To_Wide (
-                         Ada.Characters.Latin_1.Degree_Sign);
-            Wstr(7) := ''';
-            Afpx.Encode_Wide_Field (Heading_Field, (0, 0), Wstr);
-          end;
+          Great_Circle.Compute_Route(A => A, B => B,
+                                     Heading => Heading,
+                                     Distance => Distance);
+          Encode_Heading (Heading_Ab_Field, Heading);
           Afpx.Encode_Field (Distance_Field, (0, 0),
                              String_Util.Dist2Str(Distance));
+          Great_Circle.Compute_Route(A => B, B => A,
+                                     Heading => Heading,
+                                     Distance => Distance);
+          Encode_Heading (Heading_Ba_Field, Heading);
           -- Clean the result fields at next cursor change field
           Need_Clean := True;
         end if;
