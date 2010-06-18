@@ -4,48 +4,33 @@ package body C_Nbres is
 
   use My_Math;
 
-  -- Angles in radian
-  package Polar is
+  ------------------
+  -- COMPLEX TYPE --
+  ------------------
+  function Create_Complex (Real_Part, Imag_Part : Real) return Complex is
+  begin
+    return (Part_Real => Real_Part, Part_Imag => Imag_Part);
+  end Create_Complex;
 
-    type Polar is record
-      Module   : Real;
-      Argument : Real;
-    end record;
+  function Create_Complex (Real_Part : Real) return Complex is
+  begin
+    return (Part_Real => Real_Part, Part_Imag => 0.0);
+  end Create_Complex;
 
-    function To_Polar   (X : Complex) return Polar;
-    function To_Complex (X : Polar)   return Complex;
+  function Part_Real (C : Complex) return Real is
+  begin
+    return C.Part_Real;
+  end Part_Real;
 
-  end Polar;
-
-  package body Polar is
-
-    function To_Polar (X : Complex) return Polar is
-      X_Pol : Polar;
-    begin
-      X_Pol.Module := Sqrt
-       (X.Part_Real * X.Part_Real + X.Part_Imag * X.Part_Imag);
-      if (X.Part_Real /= 0.0) then
-        X_Pol.Argument := Arc_Tg (X.Part_Imag / X.Part_Real);
-      else
-        X_Pol.Argument := Pi / 2.0;
-      end if;
-      if X.Part_Real < 0.0 then
-        X_Pol.Argument := X_Pol.Argument + Pi;
-      end if;
-      return (X_Pol);
-    end To_Polar;
-
-    function To_Complex (X : Polar)  return Complex is
-      X_Cart : Complex;
-    begin
-      X_Cart.Part_Real := X.Module * Cos (X.Argument);
-      X_Cart.Part_Imag := X.Module * Sin (X.Argument);
-      return (X_Cart);
-    end To_Complex;
-
-  end Polar;
+  function Part_Imag (C : Complex) return Real is
+  begin
+    return C.Part_Imag;
+  end Part_Imag;
 
 
+  ---------------------
+  -- TYPES FOR POLAR --
+  ---------------------
   function Reduct (A : Radian) return Reducted_Radian is
     N : Inte;
     Two_Pi : constant Radian := Reducted_Radian'Last;
@@ -85,58 +70,66 @@ package body C_Nbres is
   end To_Radian;
 
 
-  function Create_Complex (M : Typ_Module; A : Radian) return Complex is
+  --------------------------
+  -- POLAR REPRESENTATION --
+  --------------------------
+  function Create_Polar (M : Typ_Module; A : Radian) return Polar is
   begin
-    return Polar.To_Complex (
-     (Module => Real(M), Argument => Real(Reduct(A))));
-  end Create_Complex;
+    return (Module => M, Argument => Reduct(A));
+  end Create_Polar;
 
-  function Create_Complex (M : Typ_Module; A : Degree) return Complex is
+  function Create_Polar (M : Typ_Module; A : Degree) return Polar is
   begin
-    return Polar.To_Complex (
-     (Module => Real(M), Argument => Real(To_Radian(A))) );
-  end Create_Complex;
+    return (Module => M, Argument => To_Radian(A));
+  end Create_Polar;
 
-  function Module (C : Complex) return Typ_Module is
-    M : constant Real := Polar.To_Polar (C).Module;
+  function Module (P : Polar) return Typ_Module is
   begin
-    return Typ_Module (abs(M));
+    return P.Module;
   end Module;
 
-  function Angle_Radian (C : Complex) return Reducted_Radian is
+  function Angle_Radian (P : Polar) return Reducted_Radian is
   begin
-    return Reduct(Radian(Polar.To_Polar(C).Argument));
+    return P.Argument;
   end Angle_Radian;
 
-  function Angle_Degree (C : Complex) return Reducted_Degree is
+  function Angle_Degree (P : Polar) return Reducted_Degree is
   begin
-    return Reduct (To_Degree(Angle_Radian(C)));
+    return To_Degree (P.Argument);
   end Angle_Degree;
 
 
-
-  function Part_Real (C : Complex) return Real is
+  ----------------
+  -- CONVERSION --
+  ----------------
+  function To_Polar (C : Complex) return Polar is
+    X_Pol : Polar;
   begin
-    return C.Part_Real;
-  end Part_Real;
+    X_Pol.Module := Sqrt
+     (C.Part_Real * C.Part_Real + C.Part_Imag * C.Part_Imag);
+    if (C.Part_Real /= 0.0) then
+      X_Pol.Argument := Reducted_Radian(Arc_Tg (C.Part_Imag / C.Part_Real));
+    else
+      X_Pol.Argument := Pi / 2.0;
+    end if;
+    if C.Part_Real < 0.0 then
+      X_Pol.Argument := X_Pol.Argument + Pi;
+    end if;
+    return (X_Pol);
+  end To_Polar;
 
-  function Part_Imag (C : Complex) return Real is
+  function To_Complex (P : Polar)  return Complex is
+    X_Cart : Complex;
   begin
-    return C.Part_Imag;
-  end Part_Imag;
+    X_Cart.Part_Real := Real(P.Module) * Cos (Real(P.Argument));
+    X_Cart.Part_Imag := Real(P.Module) * Sin (Real(P.Argument));
+    return (X_Cart);
+  end To_Complex;
 
-  function Create_Complex (Real_Part, Imag_Part : Real) return Complex is
-  begin
-    return (Part_Real => Real_Part, Part_Imag => Imag_Part);
-  end Create_Complex;
 
-  function Create_Complex (Real_Part : Real) return Complex is
-  begin
-    return (Part_Real => Real_Part, Part_Imag => 0.0);
-  end Create_Complex;
-
-  -----------------------------------------------------------------------------
-
+  ----------------
+  -- OPERATIONS --
+  ----------------
   function "+" (X, Y : Complex) return Complex is
   begin
     return (Part_Real => X.Part_Real + Y.Part_Real,
@@ -252,43 +245,50 @@ package body C_Nbres is
   -----------------------------------------------------------------------------
 
   function "**" (X : Complex; Y : Real) return Complex is
-    X_Polar : Polar.Polar;
+    X_Polar : Polar;
     Res_Complex : Complex;
   begin
-    X_Polar := Polar.To_Polar (X);
+    X_Polar := To_Polar (X);
     X_Polar := (Module   => X_Polar.Module ** Y,
-                Argument => X_Polar.Argument *  Y);
-    Res_Complex := Polar.To_Complex (X_Polar);
+                Argument => Reduct (X_Polar.Argument * Radian(Y)) );
+    Res_Complex := To_Complex (X_Polar);
     return Res_Complex;
   end "**";
 
   -------------------------------------------------------------------------------
   package My_Real_Io is new Ada.Text_Io.Float_Io (My_Math.Real);
-  use My_Real_Io;
 
-  procedure Put (C : in Complex) is
+  -- Width of Fore . Aft E Exp
+  Str_Width : constant Positive := My_Real_Io.Default_Fore + 1
+                                 + My_Real_Io.Default_Aft + 1
+                                 + My_Real_Io.Default_Exp;
+  subtype Image_Str is String (1 .. Str_Width);
+
+  function Put (C : Complex) return String is
     Imag_Part : constant Real := Part_Imag (C);
+    Real_Str, Imag_Str : Image_Str;
+    Sign : Character;
   begin
-    Put (Part_Real (C) );
+    My_Real_Io.Put (Real_Str, Part_Real (C) );
     if (Imag_Part >= 0.0) then
-      Ada.Text_Io.Put (" +");
+      Sign := '+';
     else
-      Ada.Text_Io.Put (" -");
+      Sign := '-';
     end if;
-    Put ( abs (Imag_Part) );
-    Ada.Text_Io.Put (" * i ");
+    My_Real_Io.Put (Imag_Str, abs (Imag_Part) );
+    return Real_Str & ' ' & Sign & " i *" & Imag_Str;
   end Put;
 
-  procedure Get (C : out Complex) is
+  function Get (X, Y : String) return Complex is
     Real_Part, Imag_Part : Real;
+    Last : Positive;
+    C : Complex;
   begin
-    Ada.Text_Io.Put ("Reel? ");
-    Get (Real_Part);
-    Ada.Text_Io.Put ("Imag? ");
-    Get (Imag_Part);
+    My_Real_Io.Get (X, Real_Part, Last);
+    My_Real_Io.Get (Y, Imag_Part, Last);
     C := Create_Complex (Real_Part, Imag_Part);
+    return C;
   end Get;
-
 
 end C_Nbres;
 
