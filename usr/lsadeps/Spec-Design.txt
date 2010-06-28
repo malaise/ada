@@ -1,0 +1,67 @@
+1. Usage
+lsadeps [ <display_mode> ] [ <file_mode> ] [ <include_dirs> ] <target>
+ <display_mode> ::= <list> | <tree> | <revert> // Default: list
+ <list>   ::= -l | -list                       // List dependencies of target
+ <tree>   ::= -t | --tree                      // Tree of dependencies of target
+ <revert> ::= -r | --revert                    // List units depending on target
+ <file_mode>    ::= -f | --files               // Show files i.o. units
+ <include_dirs> ::= { -I <dir> | --directory=<dir> }
+ <target> := <unit>
+
+2. Output
+There are 3 different modes of output:
+- default mode: list parent units then withed units of target...
+- tree: show tree of dependencies (parents and withed units)
+- revert: list units that with the target, directly or not
+Local units are listed first, then "remote" ones in alphabetical order.
+In "revert" display mode it lists all the [<path>/]<unit> that with (directly
+or not) the <target>, which must be a unit.
+
+On option, lists the files (specs/bodies/sub-units) instead of units.
+
+By default the search is restricted to local directory, but additional
+directories can be added to search path.
+
+3. High level design, steps
+a. Parse and check arguments
+  - target must have no '.'
+  - include dirs must exist
+
+b. List and parse all ada sources in current and included dirs. For each file,
+store in a list
+  - kind: UnitSpec/UnitBody/ChildSpec/ChildBody/SubUnit (US/UB/CS/CB/SU)
+  - Unit_Name, Mixed_Str.
+  - Full file path and name
+  - StandAlone indicator, boolean, if spec without body or body without spec
+  - Unit_Name of parent (if CS, CB or SU)
+  - List of withed unit names: @Name@Name...@
+"Unit_Name@Kind" is the unique access key, a duplicated key (remote unit hidden
+by a local or remote unit) is discarded.
+A CS, CB or SU without parent is an error
+A spec (US or CS), its body (UB or CB) and its SUs must be colocated
+No check that withed units exist but check that target is listed (as spec or
+standalone body).
+
+c. Build and display outputs
+c.1. Tree mode
+Start from target, process dependancies recursively in this order:
+ unit - ParentUnit
+      - WithsOfSpec
+      - WithsOfBody
+      - WithsOfSububits
+In case of file mode, list for each unit the corresponding file(s):
+ UnitSpec - UnitBody - WithsSpecs...
+          - SubUbits - WithsSpecs...
+          - ParentSpec - WithsSpecs...
+          - WithsSpecs - WithsSpecs...
+
+c.2. Default mode
+Build the tree of units/files and dump it is a list.
+Sort by unit/file path (local first).
+ 
+c.3. Revert mode
+Build a unique list of units that list targets, of units that list these
+units...
+If file mode, replace each unit by spec+body+subunits
+Sort (local first) and output 
+
