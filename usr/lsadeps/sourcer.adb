@@ -166,9 +166,9 @@ package body Sourcer is
       Basic_Proc.Put_Line_Output ("  unit: " & Asu_Ts (Dscr.Unit));
       Basic_Proc.Put_Line_Output ("  kind: " & Mixed_Str (Dscr.Kind'Img));
       Basic_Proc.Put_Line_Output ("  parent: " & Asu_Ts (Dscr.Parent));
-      Basic_Proc.Put_Line_Output ("  Standalone: "
+      Basic_Proc.Put_Line_Output ("  standalone: "
              & Mixed_Str (Dscr.Standalone'Img));
-      Basic_Proc.Put_Line_Output ("  Withed: " & Asu_Ts (Dscr.Witheds));
+      Basic_Proc.Put_Line_Output ("  withed: " & Asu_Ts (Dscr.Witheds));
     end if;
   exception
     when Error:others =>
