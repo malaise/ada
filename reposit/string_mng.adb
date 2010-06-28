@@ -134,7 +134,7 @@ package body String_Mng is
         end if;
       end loop;
     else
-      for I in reverse Index .. Within'Last - Fragment'Length + 1 loop
+      for I in reverse Within'First .. Index - Fragment'Length + 1 loop
         if Within(I .. I + Fragment'Length - 1) = Fragment then
           Found_Occurence := Found_Occurence + 1;
           if Found_Occurence = Occurence then
@@ -144,6 +144,9 @@ package body String_Mng is
       end loop;
     end if;
     return 0;
+  exception
+    when Constraint_Error =>
+      return 0;
   end Locate;
 
   -- Remove Nb_Char characters from the string From at index At_Index.
