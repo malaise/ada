@@ -30,7 +30,7 @@ package String_Mng is
            return String;
 
   -- Locate Nth occurence of a fragment within a string,
-  --  between a given index (first if 0) and the end of string,
+  --  between a given index (first/last if 0) and the end/beginning of string,
   --  searching forward or backward
   -- Returns index in Within of char matching start of Fragment
   --  or 0 if not found or if Within or Fragment is empty

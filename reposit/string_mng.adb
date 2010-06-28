@@ -94,7 +94,7 @@ package body String_Mng is
 
 
   -- Locate Nth occurence of a fragment within a string,
-  --  between a given index (first if 0) and the end of string,
+  --  between a given index (first/last if 0) and the end/beginning of string,
   --  searching forward or backward
   -- Returns index in Within of char matching start of Fragment
   --  or 0 if not found or if Within or Fragment is empty
@@ -109,7 +109,11 @@ package body String_Mng is
   begin
     -- Fix Index
     if From_Index = 0 then
-      Index := Within'First;
+      if Forward then
+        Index := Within'First;
+      else
+        Index := Within'Last;
+      end if;
     else
       Index := From_Index;
     end if;
