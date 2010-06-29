@@ -35,7 +35,7 @@ store in a list
   - StandAlone indicator, boolean, if spec without body or body without spec
   - Unit_Name of parent (if CS, CB or SU)
   - List of withed unit names: @Name@Name...@
-"Unit_Name@Kind" is the unique access key, a duplicated key (remote unit hidden
+"Unit_Name#Kind" is the unique access key, a duplicated key (remote unit hidden
 by a local or remote unit) is discarded.
 A CS, CB or SU without parent is an error
 A spec (US or CS), its body (UB or CB) and its SUs must be colocated
@@ -50,8 +50,8 @@ Start from target, process dependancies recursively in this order:
       - WithsOfBody
       - WithsOfSububits
 In case of file mode, list for each unit the corresponding file(s):
- UnitSpec - UnitBody - WithsSpecs...
-          - SubUbits - WithsSpecs...
+ UnitSpec - UnitBody - Subunits - WithSpecs
+                     - WithsSpecs...
           - ParentSpec - WithsSpecs...
           - WithsSpecs - WithsSpecs...
 

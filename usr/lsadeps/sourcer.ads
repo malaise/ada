@@ -1,6 +1,6 @@
 -- List of ada source files parsed
 with Ada.Strings.Unbounded;
-with Argument_Parser, Dynamic_List;
+with Argument_Parser, Unique_List;
 package Sourcer is
 
   -- Ada unbounded strings
@@ -8,12 +8,10 @@ package Sourcer is
   subtype Asu_Us is Asu.Unbounded_String;
 
   -- Kind of ada source
-  type Src_Kind_List is (Unit_Spec, Unit_Body, Child_Spec, Child_Body, Subunit);
+  type Src_Kind_List is (Unit_Spec, Unit_Body, Subunit);
 
-  -- Code of an ada source US/UB/CS/CB/SU
-  subtype Src_Code is String (1 .. 2);
-  Src_Codes : constant array (Src_Kind_List) of Src_Code
-           := ("US", "UB", "CS", "CB", "SU");
+  -- Separator of units
+  Separator : constant Character := '@';
 
   -- A parsed source descriptor
   type Src_Dscr is record
@@ -27,19 +25,29 @@ package Sourcer is
     Standalone : Boolean;
     -- Unit name of parent (if Child or subunit)
     Parent : Asu_Us;
-    -- List of withed units - @unit@unit...@unit@"
+    -- List of withed units - @unit@unit...@unit@
     Witheds : Asu_Us;
+    -- List of subunits (if Body or subunit)  - @unit@unit...@unit@
+    Subunits : Asu_Us;
   end record;
 
-  -- List of parsed source descriptors
-  package Src_Dyn_List_Mng is new Dynamic_List (Src_Dscr);
-  package Src_List_Mng renames Src_Dyn_List_Mng.Dyn_List;
+  -- Unique list of parsed source descriptors
+  type Src_Dscr_Access is access all Src_Dscr;
+  procedure Set (To : out Src_Dscr; Val : in Src_Dscr);
+  function "=" (Current : Src_Dscr; Criteria : Src_Dscr) return Boolean;
+  function Image (Element : Src_Dscr) return String;
+  package Src_List_Mng is new Unique_List (Src_Dscr, Src_Dscr_Access,
+                                           Set, "=" , Image);
   List : Src_List_Mng.List_Type;
 
   -- Parse sources and build list
   -- Reports errors on stderr and raises Error
-  Error : exception;
+  Error_Raised : exception;
   procedure Build_List (Args : in Argument_Parser.Parsed_Dscr);
+
+  -- Some utilities
+  -- Does a unit name contain a '.'
+  function Has_Dot (Unit : in Asu_Us) return Boolean;
 
 end Sourcer;
 

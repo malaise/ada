@@ -1,6 +1,6 @@
 with Ada.Exceptions, Ada.Strings.Unbounded;
-with Argument, Argument_Parser, Basic_Proc;
-with Sourcer;
+with Argument, Argument_Parser, Basic_Proc, Mixed_Str;
+with Debug, Sourcer, Tree_Mng;
 procedure Lsadeps is
 
   -- Ada unbounded strings
@@ -35,11 +35,12 @@ procedure Lsadeps is
      "   <target> := <unit>");
   end Usage;
 
+  Error_Raised : exception renames Sourcer.Error_Raised;
   procedure Error (Msg : in String) is
   begin
     Basic_Proc.Put_Line_Error ("ERROR: " & Msg & ".");
     Usage;
-    Basic_Proc.Set_Error_Exit_Code;
+    raise Error_Raised;
   end Error;
 
   -- The keys and descriptor of parsed keys
@@ -58,6 +59,11 @@ procedure Lsadeps is
   Target : Asu_Us;
   Dir : Asu_Us;
 
+  -- Unit descriptor
+  Unit : Sourcer.Src_Dscr;
+  Found : Boolean;
+  use type Sourcer.Src_Kind_List;
+
 begin
   ---------------------
   -- PARSE ARGUMENTS --
@@ -66,7 +72,6 @@ begin
   Arg_Dscr := Argument_Parser.Parse (Keys);
   if not Arg_Dscr.Is_Ok then
     Error (Arg_Dscr.Get_Error);
-    return;
   end if;
 
   -- Mode: at most once
@@ -111,12 +116,42 @@ begin
   -- BUILD LIST OF SOURCES --
   ---------------------------
   Sourcer.Build_List (Arg_Dscr);
+  -- Check that target is found, as spec or standalone body and is local
+  Unit.Unit := Asu_Tus (Mixed_Str (Asu_Ts (Target)));
+  Unit.Kind := Sourcer.Unit_Spec;
+  Sourcer.List.Search (Unit, Found);
+  if not Found then
+    Unit.Kind := Sourcer.Unit_Body;
+    Sourcer.List.Search (Unit, Found);
+  end if;
+  if not Found then
+    Error ("Target unit " & Asu_Ts (Unit.Unit) & " not found");
+  end if;
+  Sourcer.List.Read (Unit, Unit);
+  if Unit.Kind = Sourcer.Unit_Body and then not Unit.Standalone then
+    Error ("Target unit, if a body, must be standalone");
+  end if;
+  if Debug.Is_Set then
+    Basic_Proc.Put_Line_Output ("Target checked: " & Sourcer.Image (Unit));
+  end if;
+
+  ----------------------------
+  -- BUILD TREE OF SOURCES --
+  ----------------------------
+  if Mode = List or else Mode = Tree then
+    Tree_Mng.Build (Unit);
+    if Debug.Is_Set then
+      Basic_Proc.Put_Line_Output ("Dumping tree:");
+      Tree_Mng.Dump;
+    end if;
+  end if;
 
 exception
-  when Sourcer.Error =>
+  when Error_Raised | Sourcer.Error_Raised =>
     Basic_Proc.Set_Error_Exit_Code;
   when Err:others =>
     Error ("Exception " & Ada.Exceptions.Exception_Name (Err)
           & " raised");
+    Basic_Proc.Set_Error_Exit_Code;
 end Lsadeps;
 
