@@ -952,15 +952,14 @@ package body Trees is
     ----------
     procedure Put (Me        : in out Cell_Access;
                    Level     : in Natural;
-                   Image_Acc :  access
-      function (Element : Element_Type;
-                Level   : Natural) return String;
-                   File      : in Ada.Text_Io.File_Type;
+                   Put_Acc :  access
+      procedure (Element : in Element_Type;
+                 Level   : in Natural);
                    Elder     : in Boolean) is
       Next : Cell_Access;
     begin
       -- Put me at proper level
-      Ada.Text_Io.Put_Line (Image_Acc (Me.Data.all, Level));
+      Put_Acc.all (Me.Data.all, Level);
 
       -- Put children, oldest first if Elder
       if Elder then
@@ -970,7 +969,7 @@ package body Trees is
       end if;
       if Level /= Natural'Last then
         while Next /= null loop
-          Put (Next, Level + 1, Image_Acc, File, Elder);
+          Put (Next, Level + 1, Put_Acc, Elder);
         end loop;
       end if;
 
@@ -983,10 +982,9 @@ package body Trees is
     end Put;
 
     procedure Dump (The_Tree  : in Tree_Type;
-                    Image_Acc :  access
-      function (Element : Element_Type;
-                Level   : Natural) return String;
-                    File      : in Ada.Text_Io.File_Type;
+                    Put_Acc :  access
+      procedure (Element : in Element_Type;
+                 Level   : in Natural);
                     Elder     : in Boolean := True) is
       Cell_Acc : Cell_Access;
     begin
@@ -999,7 +997,7 @@ package body Trees is
         return;
       end if;
       Cell_Acc := The_Tree.Curr;
-      Put (Cell_Acc, 0, Image_Acc, File, Elder);
+      Put (Cell_Acc, 0, Put_Acc, Elder);
     end Dump;
 
     -- Iterate on current and children

@@ -1,4 +1,4 @@
-with Ada.Text_Io, Ada.Finalization;
+with Ada.Finalization;
 with Unlimited_Pool;
 package Trees is
 
@@ -219,10 +219,9 @@ package Trees is
     -- Dump current then children data (oldest first by default)
     -- Nothing if tree is empty
     procedure Dump (The_Tree  : in Tree_Type;
-                    Image_Acc :  access
-      function (Element : Element_Type;
-                Level   : Natural) return String;
-                    File      : in Ada.Text_Io.File_Type;
+                    Put_Acc :  access
+      procedure (Element : in Element_Type;
+                 Level   : in Natural);
                     Elder     : in Boolean := True);
 
     -- Iterate --

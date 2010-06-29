@@ -1,4 +1,4 @@
-with Ada.Strings.Unbounded, Ada.Text_Io;
+with Ada.Strings.Unbounded;
 with Basic_Proc, Parser;
 package body Tree_Mng is
 
@@ -107,21 +107,21 @@ package body Tree_Mng is
   end Build;
 
   -- Dump one element of the tree
-  function Dump (Dscr : Sourcer.Src_Dscr;
-                 Level : Natural) return String is
+  procedure Dump_One (Dscr : in Sourcer.Src_Dscr;
+                      Level : in Natural) is
     Str : Asu_Us;
   begin
     for I in 1 .. Level loop
-      Asu.Append (Str, ' ');
+      Asu.Append (Str, "  ");
     end loop;
     Asu.Append (Str, Sourcer.Image (Dscr));
-    return Asu_Ts (Str);
-  end Dump;
-
+    Basic_Proc.Put_Line_Output (Asu_Ts (Str));
+  end Dump_One;
 
   procedure Dump is
   begin
-    Tree.Dump (Dump'Access, Ada.Text_Io.Standard_Output);
+    Tree.Dump (Dump_One'Access);
   end Dump;
+
 end Tree_Mng;
 
