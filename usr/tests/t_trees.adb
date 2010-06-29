@@ -7,19 +7,18 @@ procedure T_Trees is
   T, T1 : My_Tree.Tree_Type;
 
   Spaces : constant String (1 .. 132) := (others => ' ');
-  function Image (Elt : in Natural;
-                  Level : in Natural) return String is
+  procedure Put (Elt : in Natural;
+                 Level : in Natural) is
   begin
-    return Spaces (1 .. Level*3) & Elt'Img;
-  end Image;
+    Ada.Text_Io.Put_Line (Spaces (1 .. Level*3) & Elt'Img);
+  end Put;
 
   -- Dumps the full tree. Sets Saved_Position to current
   procedure  Dump_Tree (T : in out My_Tree.Tree_Type) is
   begin
     My_Tree.Save_Position (T);
     My_Tree.Move_Root (T);
-    My_Tree.Dump (T, Image'Access,
-                  Ada.Text_Io.Standard_Output, Elder => False);
+    My_Tree.Dump (T, Put'Access, Elder => False);
     Ada.Text_Io.New_Line;
     My_Tree.Restore_Position (T);
   end Dump_Tree;
