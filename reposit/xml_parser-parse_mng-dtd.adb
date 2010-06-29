@@ -1189,7 +1189,7 @@ package body Dtd is
       -- Make a string list of notations used by unparsed entities
       Ctx.Unparsed_List.Rewind;
       loop
-        Ctx.Unparsed_List.Read (Unparsed_Rec, Moved => Ok);
+        Ctx.Unparsed_List.Read_Next (Unparsed_Rec, Moved => Ok);
         Asu.Append (Entities, Unparsed_Rec.Name & Info_Sep);
         Asu.Append (Lines, Line_Image(Unparsed_Rec.Line_No) & Info_Sep);
         Asu.Append (Notations, Unparsed_Rec.Notation & Info_Sep);
@@ -1305,7 +1305,7 @@ package body Dtd is
     -- Read all Infos
     Adtd.Info_List.Rewind;
     loop
-      Adtd.Info_List.Read (Info, Moved => Moved);
+      Adtd.Info_List.Read_Next (Info, Moved => Moved);
       Info_Kind := Asu.Slice (Info.Name, 1, 3);
       if Info_Kind = "Elt" then
         -- Elt directive, need to parse children if Mixed of Children

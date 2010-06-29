@@ -42,21 +42,23 @@ package body Unique_List is
   end Search;
 
   -- Insert or replace an item
+  -- Optionally drops new Item if one already exists
   -- May raise Full_List (no more memory)
   procedure Insert (List : in out List_Type;
-                    Item : in Element_Type) is
+                    Item : in Element_Type;
+                    Drop : in Boolean := False) is
     Acc : Element_Access;
   begin
     Locate (List, Item, Acc);
-    if Acc /= null then
-      -- This element exists, overwrite it
-      Set (Acc.all, Item);
-    else
+    if Acc = null then
       -- Insert new element in list and hashing
       List.List.Insert (Item);
       Hash_Mng.Store (List.Table,
                       Key_Image(Item),
                       Element_Access (List.List.Access_Current));
+    elsif not Drop then
+      -- This element exists, overwrite it
+      Set (Acc.all, Item);
     end if;
   exception
     when List_Mng.Full_List =>
@@ -210,10 +212,10 @@ package body Unique_List is
     end if;
   end Rewind;
 
-  procedure Read (List : in out List_Type;
-                  Item : out Element_Type;
-                  From : in Reference := From_First;
-                  Moved : out Boolean) is
+  procedure Read_Next (List : in out List_Type;
+                       Item : out Element_Type;
+                       Moved : out Boolean;
+                      From : in Reference := From_First) is
   begin
     if List.List.Is_Empty then
       raise Not_In_List;
@@ -223,7 +225,7 @@ package body Unique_List is
     else
       List.List.Read (Item, List_Mng.Prev, Moved);
     end if;
-  end Read;
+  end Read_Next;
 
   overriding procedure Finalize (List : in out List_Type) is
   begin

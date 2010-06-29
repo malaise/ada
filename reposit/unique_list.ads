@@ -33,9 +33,11 @@ package Unique_List is
                     Found : out Boolean);
 
   -- Insert or replace an item
+  -- Optionally drops new Item if one already exists
   -- May raise Full_List (no more memory)
   procedure Insert (List : in out List_Type;
-                    Item : in Element_Type);
+                    Item : in Element_Type;
+                    Drop : in Boolean := False);
 
   -- Read the element matching in the list
   -- May raise Not_In_List
@@ -81,6 +83,9 @@ package Unique_List is
   procedure Modification_Ack (List : in out List_Type);
 
 
+  -- Iterating and sequential reading are compatible with search and read
+  --  but not with insertion and deletion
+
   -- Called with each matching element, which can be updated.
   -- Processing of Iterate can be stopped by resetting Go_On to False
   --  (it is initialised to True).
@@ -100,10 +105,10 @@ package Unique_List is
                     From : in Reference := From_First);
   -- Read successive items
   -- May raise Not_In_List if list is empty
-  procedure Read (List : in out List_Type;
-                  Item : out Element_Type;
-                  From : in Reference := From_First;
-                  Moved : out Boolean);
+  procedure Read_Next (List : in out List_Type;
+                       Item : out Element_Type;
+                       Moved : out Boolean;
+                       From : in Reference := From_First);
 
 
   -- EXCEPTIONS
