@@ -115,7 +115,7 @@ begin
         Parse_To_End (Parser_Ada.Delimiter, ";", Level);
         Fix_Comment (Level);
         Output.Put_Line ("package " & Asu.To_String (Name)
-                  & " is new" & Words.Concat, True, Level, True);
+                  & " is new " & Words.Concat, True, Level, True);
         Words.Reset;
         return;
       elsif Str = "type"

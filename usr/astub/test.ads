@@ -105,6 +105,9 @@ package Test is
   procedure Proc4 (A : in Integer) renames Proc1;
   function Func3 return Integer renames Func2;
 
+  -- Package instanciation
+  package Pack4 is new Ada.Text_Io.Integer_Io (Integer);
+
   -- Some OO features
   type Otyp6 is limited interface;
   subtype Otyp7 is Integer;
