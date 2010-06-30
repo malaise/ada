@@ -99,16 +99,11 @@ package body Tree_Mng is
         Rope.Insert (Origin);
       end if;
     end if;
-    if Origin.Kind = Sourcer.Unit_Spec then
-      -- A spec: Insert body
-      Kind := Asu_Tus ("body");
-      if not Origin.Standalone then
-        Child.Unit := Origin.Unit;
-        Child.Kind := Sourcer.Unit_Body;
-        Sourcer.List.Read (Child, Child);
-        Build (Child);
-      end if;
-    end if;
+
+    -- Any unit: Insert withed units
+    Kind :=  Asu_Tus ("withed");
+    Build_Children (Origin.Witheds, Sourcer.Unit_Spec, False);
+
     if (Origin.Kind = Sourcer.Unit_Spec
        or else (Origin.Kind = Sourcer.Unit_Body and then Origin.Standalone) )
     and then Sourcer.Has_Dot (Origin.Unit) then
@@ -119,14 +114,24 @@ package body Tree_Mng is
       Sourcer.List.Read (Child, Child);
       Build (Child);
     end if;
+
+    if Origin.Kind = Sourcer.Unit_Spec then
+      -- A spec: Insert body
+      Kind := Asu_Tus ("body");
+      if not Origin.Standalone then
+        Child.Unit := Origin.Unit;
+        Child.Kind := Sourcer.Unit_Body;
+        Sourcer.List.Read (Child, Child);
+        Build (Child);
+      end if;
+    end if;
+
     if Origin.Kind = Sourcer.Unit_Body then
       -- A Body: Insert subunits
       Kind := Asu_Tus ("subunit");
       Build_Children (Origin.Subunits, Sourcer.Subunit);
     end if;
-    -- Any unit: Insert withed units
-    Kind :=  Asu_Tus ("withed");
-    Build_Children (Origin.Witheds, Sourcer.Unit_Spec);
+
     -- Done, move up
     if Tree.Has_Father then
       Tree.Move_Father;
