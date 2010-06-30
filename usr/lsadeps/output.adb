@@ -7,28 +7,56 @@ package body Output is
   -- TREE --
   ----------
   -- Dump Units of tree
-  function Tree_Unit_Iterator (Dscr : Tree_Mng.Src_Dscr;
-                               Level : Natural) return Boolean is
+  Level : Natural := 0;
+  procedure Tree_Unit_Iterator is
+    Dscr : Tree_Mng.Src_Dscr;
     Str : Asu_Us;
+    Incr : Boolean := False; 
     use type Sourcer.Src_Kind_List;
   begin
-    -- Discard Looping info. Keep spec or standalone body
-    if Dscr.Looping
-    or else Dscr.Dscr.Kind = Sourcer.Subunit
-    or else (Dscr.Dscr.Kind = Sourcer.Unit_Body
-             and then not Dscr.Dscr.Standalone) then
-      return True;
+    -- Get current item
+    Tree_Mng.Tree.Read (Dscr);
+
+    -- Discard Looping info
+    if Dscr.Looping then
+      return;
     end if;
-    for I in 1 .. Level loop
-      Asu.Append (Str, "  ");
-    end loop;
-    -- PathOfFile / UnitName
-    Asu.Append (Str, Directory.Build_File_Name (
-            Directory.Dirname (Asu_Ts (Dscr.Dscr.File)),
-            Asu_Ts (Dscr.Dscr.Unit),
-            ""));
-    Basic_Proc.Put_Line_Output (Asu_Ts (Str));
-    return True;
+
+    -- Update level
+    if Dscr.Dscr.Kind = Sourcer.Unit_Spec
+    or else (Dscr.Dscr.Kind = Sourcer.Unit_Body
+             and then Dscr.Dscr.Standalone) then
+      Level := Level + 1;
+      Incr := True;
+      for I in 1 .. Level - 1 loop
+        Asu.Append (Str, "  ");
+      end loop;
+      -- PathOfFile / UnitName
+      Asu.Append (Str, Directory.Build_File_Name (
+              Directory.Dirname (Asu_Ts (Dscr.Dscr.File)),
+              Asu_Ts (Dscr.Dscr.Unit),
+              ""));
+      Basic_Proc.Put_Line_Output (Asu_Ts (Str));
+    end if;
+
+    -- Iterate on first child
+    if Tree_Mng.Tree.Children_Number /= 0 then
+      Tree_Mng.Tree.Move_Child (False);
+      Tree_Unit_Iterator;
+      Tree_Mng.Tree.Move_Father;
+    end if;
+
+    -- Restore initial level for brothers
+    if Incr then
+      Level := Level - 1;
+    end if;
+
+    -- Iterate on brother
+    if Tree_Mng.Tree.Has_Brother then
+      Tree_Mng.Tree.Move_Brother;
+      Tree_Unit_Iterator;
+    end if;
+
   end Tree_Unit_Iterator;
 
   -- Dump files of tree
@@ -54,9 +82,9 @@ package body Output is
   procedure Put_Tree (Units : in Boolean) is
   begin
     if Units then
-      Tree_Mng.Tree.Iterate (Tree_Unit_Iterator'Access);
+      Tree_Unit_Iterator;
     else
-      Tree_Mng.Tree.Iterate (Tree_File_Iterator'Access);
+      Tree_Mng.Tree.Iterate (Tree_File_Iterator'Access, False);
     end if;
   end Put_Tree;
 
