@@ -11,7 +11,7 @@ package body Output is
   procedure Tree_Unit_Iterator is
     Dscr : Tree_Mng.Src_Dscr;
     Str : Asu_Us;
-    Incr : Boolean := False; 
+    Incr : Boolean := False;
     use type Sourcer.Src_Kind_List;
   begin
     -- Get current item
