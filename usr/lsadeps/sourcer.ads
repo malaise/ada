@@ -1,11 +1,7 @@
 -- List of ada source files parsed
-with Ada.Strings.Unbounded;
 with Argument_Parser, Unique_List;
+with As.U; use As.U;
 package Sourcer is
-
-  -- Ada unbounded strings
-  package Asu renames Ada.Strings.Unbounded;
-  subtype Asu_Us is Asu.Unbounded_String;
 
   -- Kind of ada source
   type Src_Kind_List is (Unit_Spec, Unit_Body, Subunit);

@@ -21,6 +21,9 @@ package body Tree_Mng is
     raise Error_Raised;
   end Error;
 
+  -- List of direct With from first Origin to current
+  Rope : Sourcer.Src_List_Mng.List_Type;
+
   -- For parsing list of With / subunits
   function Is_Sep (C : Character) return Boolean is
   begin
@@ -59,15 +62,27 @@ package body Tree_Mng is
 
   -- Build a node
   procedure Build (Origin : in Sourcer.Src_Dscr) is
+    Found : Boolean;
     Child : Sourcer.Src_Dscr;
     Kind : Asu_Us;
   begin
     -- Insert ourself
     if Tree.Is_Empty then
       -- First node
-      Tree.Insert_Father (Origin);
+      Tree.Insert_Father ((Origin, False));
+      Rope.Insert (Origin);
     else
-      Tree.Insert_Child (Origin);
+      Rope.Search (Origin, Found);
+      if Found then
+        -- Current Origin already exists => Looping
+        Tree.Insert_Child ((Origin, True));
+        Tree.Move_Father;
+        return;
+      else
+        -- Normal insertion of a new node
+        Tree.Insert_Child ((Origin, False));
+        Rope.Insert (Origin);
+      end if;
     end if;
     if Origin.Kind = Sourcer.Unit_Spec then
       -- A spec: Insert body
@@ -100,6 +115,7 @@ package body Tree_Mng is
     -- Done, move up
     if Tree.Has_Father then
       Tree.Move_Father;
+      Rope.Delete (Origin);
     end if;
   exception
     when Sourcer.Src_List_Mng.Not_In_List =>
@@ -107,20 +123,24 @@ package body Tree_Mng is
   end Build;
 
   -- Dump one element of the tree
-  procedure Dump_One (Dscr : in Sourcer.Src_Dscr;
-                      Level : in Natural) is
+  function Dump_One (Dscr : in Src_Dscr;
+                     Level : in Natural) return Boolean is
     Str : Asu_Us;
   begin
     for I in 1 .. Level loop
       Asu.Append (Str, "  ");
     end loop;
-    Asu.Append (Str, Sourcer.Image (Dscr));
+    Asu.Append (Str, Sourcer.Image (Dscr.Dscr));
+    if Dscr.Looping then
+      Asu.Append (Str, " -->X");
+    end if;
     Basic_Proc.Put_Line_Output (Asu_Ts (Str));
+    return True;
   end Dump_One;
 
   procedure Dump is
   begin
-    Tree.Dump (Dump_One'Access);
+    Tree.Iterate (Dump_One'Access);
   end Dump;
 
 end Tree_Mng;

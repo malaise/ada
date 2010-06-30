@@ -1,16 +1,9 @@
-with Ada.Exceptions, Ada.Strings.Unbounded;
+with Ada.Exceptions;
 with Argument, Argument_Parser, Basic_Proc, Mixed_Str;
-with Debug, Sourcer, Tree_Mng;
+with As.U; use As.U;
+with Debug, Sourcer, Tree_Mng, Output;
 procedure Lsadeps is
 
-  -- Ada unbounded strings
-  package Asu renames Ada.Strings.Unbounded;
-  subtype Asu_Us is Asu.Unbounded_String;
-  Asu_Null : constant Asu_Us := Asu.Null_Unbounded_String;
-  function Asu_Tus (Str : String) return Asu_Us
-                   renames Asu.To_Unbounded_String;
-  function Asu_Ts (Str : Asu_Us) return String
-                   renames Asu.To_String;
   use type Asu_Us;
 
   -- Usage and Error
@@ -22,7 +15,7 @@ procedure Lsadeps is
     Basic_Proc.Put_Line_Error (
      "  <display> ::= <list> | <tree> | <revert> // Default: list");
     Basic_Proc.Put_Line_Error (
-     "   <list>   ::= -l | -list                 // List dependencies of target");
+     "   <list>   ::= -l | --list                // List dependencies of target");
     Basic_Proc.Put_Line_Error (
      "   <tree>   ::= -t | --tree                // Tree of dependencies of target");
     Basic_Proc.Put_Line_Error (
@@ -49,7 +42,8 @@ procedure Lsadeps is
    02 => ('t', Asu_Tus ("tree"), False, False),
    03 => ('r', Asu_Tus ("revert"), False, False),
    04 => ('f', Asu_Tus ("files"), False, False),
-   05 => ('I', Asu_Tus ("include"), True, True));
+   05 => ('I', Asu_Tus ("include"), True, True),
+   06 => ('h', Asu_Tus ("help"), False, False));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
   -- Option management
@@ -72,6 +66,13 @@ begin
   Arg_Dscr := Argument_Parser.Parse (Keys);
   if not Arg_Dscr.Is_Ok then
     Error (Arg_Dscr.Get_Error);
+  end if;
+
+  -- Help
+  if Arg_Dscr.Is_Set (6) then
+    Usage;
+    Basic_Proc.Set_Error_Exit_Code;
+    return;
   end if;
 
   -- Mode: at most once
@@ -145,6 +146,18 @@ begin
       Tree_Mng.Dump;
     end if;
   end if;
+
+  --------------------------------------------------
+  -- PUT LIST/TREE OF DEPENDANCIES OR REVERT LIST --
+  --------------------------------------------------
+  case Mode is
+    when Tree =>
+      Output.Put_Tree (Units);
+    when List =>
+      Output.Put_List (Units);
+    when Revert =>
+      Output.Put_Revert_List (Unit, Units);
+  end case;
 
 exception
   when Error_Raised | Sourcer.Error_Raised =>

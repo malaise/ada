@@ -4,13 +4,7 @@ with Basic_Proc, Directory, Sys_Calls, Text_Char, Ada_Parser, String_Mng,
 with Debug;
 package body Sourcer is
 
-  -- Unbounded string
   use type Asu_Us;
-  Asu_Null : constant Asu_Us := Asu.Null_Unbounded_String;
-  function Asu_Tus (Str : String) return Asu_Us
-                   renames Asu.To_Unbounded_String;
-  function Asu_Ts (Str : Asu_Us) return String
-                   renames Asu.To_String;
 
   -- Operations for Unique_list managmeent
   subtype Src_Code is String (1 .. 2);
@@ -164,6 +158,7 @@ package body Sourcer is
             Error ("Unexpected separate in unit");
           end if;
           Dscr.Kind := Subunit;
+          exit;
         end if;
         -- Skip other keywords
 
