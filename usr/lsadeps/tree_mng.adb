@@ -62,7 +62,7 @@ package body Tree_Mng is
               -- Found a body without spec and not standalone
               raise Sourcer.Src_List_Mng.Not_In_List;
             end if;
-          end if;  
+          end if;
         end if;
       else
         Found := True;
