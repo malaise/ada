@@ -947,67 +947,18 @@ package body Trees is
     end Copy_Tree;
 
 
-    ----------
-    -- Dump --
-    ----------
-    procedure Put (Me        : in out Cell_Access;
-                   Level     : in Natural;
-                   Put_Acc :  access
-      procedure (Element : in Element_Type;
-                 Level   : in Natural);
-                   Elder     : in Boolean) is
-      Next : Cell_Access;
-    begin
-      -- Put me at proper level
-      Put_Acc.all (Me.Data.all, Level);
-
-      -- Put children, oldest first if Elder
-      if Elder then
-        Next := Me.Children(Old);
-      else
-        Next := Me.Children(Young);
-      end if;
-      if Level /= Natural'Last then
-        while Next /= null loop
-          Put (Next, Level + 1, Put_Acc, Elder);
-        end loop;
-      end if;
-
-      -- Move to brother, younger if Elder
-      if Elder then
-        Me := Me.Brothers(Young);
-      else
-        Me := Me.Brothers(Old);
-      end if;
-    end Put;
-
-    procedure Dump (The_Tree  : in Tree_Type;
-                    Put_Acc :  access
-      procedure (Element : in Element_Type;
-                 Level   : in Natural);
-                    Elder     : in Boolean := True) is
-      Cell_Acc : Cell_Access;
-    begin
-      -- Not in callback
-      if The_Tree.In_Cb then
-         raise In_Callback;
-      end if;
-      -- No empty tree
-      if The_Tree.Root = null then
-        return;
-      end if;
-      Cell_Acc := The_Tree.Curr;
-      Put (Cell_Acc, 0, Put_Acc, Elder);
-    end Dump;
-
+    -------------
+    -- Iterate --
+    -------------
     -- Iterate on current and children
     procedure Recurs (Me         : in out Cell_Access;
+                      Level      : in Natural;
                       Do_One_Acc : in Do_One_Access;
                       Elder      : in Boolean) is
       Next : Cell_Access;
     begin
       -- Do_One on me, stop if it returns False
-      if not Do_One_Acc (Me.Data.all) then
+      if not Do_One_Acc (Me.Data.all, Level) then
         return;
       end if;
 
@@ -1018,7 +969,7 @@ package body Trees is
         Next := Me.Children(Young);
       end if;
       while Next /= null loop
-        Recurs (Next, Do_One_Acc, Elder);
+        Recurs (Next, Level + 1, Do_One_Acc, Elder);
       end loop;
 
       -- Move to younger (if Eldest) older brother
@@ -1031,7 +982,7 @@ package body Trees is
 
     procedure Iterate (The_Tree   : in out Tree_Type;
                        Do_One_Acc : access
-      function (Element : Element_Type) return Boolean;
+      function (Element : Element_Type; Level : Natural) return Boolean;
                        Elder      : in Boolean := True) is
 
       Cell_Acc : Cell_Access;
@@ -1047,7 +998,7 @@ package body Trees is
       -- Do it
       The_Tree.In_Cb := True;
       Cell_Acc := The_Tree.Curr;
-      Recurs (Cell_Acc, Do_One_Acc, Elder);
+      Recurs (Cell_Acc, 0, Do_One_Acc, Elder);
       The_Tree.In_Cb := False;
     end Iterate;
 

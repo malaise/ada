@@ -211,31 +211,19 @@ package Trees is
                          From_Tree : in Tree_Type;
                          Child     : in Boolean;
                          Elder     : in Boolean := True);
-    -- Dump --
-    ----------
-    -- Image of an element at a depth (level)
-    type Image_Access is access function (Element : Element_Type;
-                                          Level   : Natural) return String;
-    -- Dump current then children data (oldest first by default)
-    -- Nothing if tree is empty
-    procedure Dump (The_Tree  : in Tree_Type;
-                    Put_Acc :  access
-      procedure (Element : in Element_Type;
-                 Level   : in Natural);
-                    Elder     : in Boolean := True);
 
     -- Iterate --
     -------------
     -- What to do on current item
     -- Iteration will continue as long as returning True
-    type Do_One_Access is access function (Element : Element_Type)
-                                          return Boolean;
+    type Do_One_Access is access
+         function (Element : Element_Type; Level : Natural) return Boolean;
 
     -- Iterate on current and children (old to young by default)
     -- Nothing if tree is empty
     procedure Iterate (The_Tree   : in out Tree_Type;
                        Do_One_Acc : access
-      function (Element : Element_Type) return Boolean;
+      function (Element : Element_Type; Level : Natural) return Boolean;
                        Elder      : in Boolean := True);
 
   private
