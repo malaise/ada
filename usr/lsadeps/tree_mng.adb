@@ -32,29 +32,44 @@ package body Tree_Mng is
 
   -- Build the children (subunits or withed specs)
   procedure Build_Children (List : in Asu_Us;
-                            Kind : in Sourcer.Src_Kind_List;
-                            Mandatory : in Boolean) is
+                            Kind : in Sourcer.Src_Kind_List) is
     Iter : Parser.Iterator;
     Crit : Sourcer.Src_Dscr;
-    Read : Boolean;
+    Found : Boolean;
   begin
     if List = Asu_Null then
       return;
     end if;
     -- Parse list with Parser and insert nodes
     Iter.Set (Asu_Ts (List), Is_Sep'Access);
-    Crit.Kind := Kind;
     loop
+      Crit.Kind := Kind;
       Crit.Unit := Asu_Tus (Iter.Next_Word);
       exit when Crit.Unit = Asu_Null;
       -- Look for unit and insert it in tree
-      if not Mandatory then
-        Sourcer.List.Search (Crit, Read);
+      if Kind = Sourcer.Unit_Spec then
+        -- Look for spec or standalone body
+        Sourcer.List.Search (Crit, Found);
+        if Found then
+          Sourcer.List.Read (Crit, Crit);
+        else
+          Crit.Kind := Sourcer.Unit_Body;
+          Sourcer.List.Search (Crit, Found);
+          -- Found a body, read to raise ERROR if not standalone
+          if Found then
+            Sourcer.List.Read (Crit, Crit);
+            if not Crit.Standalone then
+              -- Found a body without spec and not standalone
+              raise Sourcer.Src_List_Mng.Not_In_List;
+            end if;
+          end if;  
+        end if;
       else
-        Read := True;
-      end if;
-      if Read then
+        Found := True;
         Sourcer.List.Read (Crit, Crit);
+      end if;
+      if Found then
+        -- Record is found and read
         Build (Crit);
       end if;
     end loop;
@@ -107,11 +122,11 @@ package body Tree_Mng is
     if Origin.Kind = Sourcer.Unit_Body then
       -- A Body: Insert subunits
       Kind := Asu_Tus ("subunit");
-      Build_Children (Origin.Subunits, Sourcer.Subunit, True);
+      Build_Children (Origin.Subunits, Sourcer.Subunit);
     end if;
     -- Any unit: Insert withed units
     Kind :=  Asu_Tus ("withed");
-    Build_Children (Origin.Witheds, Sourcer.Unit_Spec, False);
+    Build_Children (Origin.Witheds, Sourcer.Unit_Spec);
     -- Done, move up
     if Tree.Has_Father then
       Tree.Move_Father;
