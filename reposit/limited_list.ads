@@ -325,6 +325,9 @@ package Limited_List is
   -- When modifying List in an application callback
   In_Callback : exception;
 
+  -- When sorting, most often because Less_Than is not strict
+  Sort_Error : exception;
+
 private
   type Cell;
   type Link is access Cell;

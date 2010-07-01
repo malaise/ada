@@ -16,7 +16,7 @@
 --  The exception Sort_Error is raised in any exception             --
 --   circumstance (i.e. memory overflow)                            --
 -- WARNING : It is mandarory for the "<" function to be strict      --
---       (A < A MUST return False)                                  --
+--       (A < A MUST return False), other Sort_Error may be raised  --
 ----------------------------------------------------------------------
 
 generic
@@ -35,3 +35,4 @@ package Sorts is
   Sort_Error : exception;
 
 end Sorts;
+

@@ -896,6 +896,8 @@ package body Limited_List is
     -- Move to first item
     Rewind (List, True, Next);
     List.Modified := True;
+  exception
+    when others => raise Sort_Error;
   end Sort;
 
   overriding procedure Finalize (List : in out List_Type) is
