@@ -146,24 +146,16 @@ begin
   ----------------------------
   -- BUILD TREE OF SOURCES --
   ----------------------------
-  if Mode = List or else Mode = Tree then
-    Tree_Mng.Build (Unit);
-    if Debug.Is_Set then
-      Basic_Proc.Put_Line_Output ("Dumping tree:");
-      Tree_Mng.Dump;
-    end if;
-  end if;
+  Tree_Mng.Build (Unit, Mode = Revert);
 
-  --------------------------------------------------
-  -- PUT LIST/TREE OF DEPENDANCIES OR REVERT LIST --
-  --------------------------------------------------
+  -------------------
+  -- PUT LIST/TREE --
+  -------------------
   case Mode is
     when Tree =>
       Output.Put_Tree (Units);
-    when List =>
-      Output.Put_List (Units);
-    when Revert =>
-      Output.Put_Revert_List (Unit, Units);
+    when List | Revert =>
+      Output.Put_List (Mode = Revert, Units);
   end case;
 
 exception

@@ -245,7 +245,7 @@ package body Sourcer is
     -- Process local then include dirs
     Parse_Dir (".");
     for I in 1 .. Args.Get_Nb_Occurences (Incl_Key) loop
-      Parse_Dir (Directory.make_Full_Path (Args.Get_Option (Incl_Key, I)));
+      Parse_Dir (Directory.Make_Full_Path (Args.Get_Option (Incl_Key, I)));
     end loop;
     if Debug.Is_Set then
       Basic_Proc.Put_Line_Output ("Parsing completed.");
@@ -350,6 +350,31 @@ package body Sourcer is
   begin
     return String_Mng.Locate (Asu_Ts (Unit), ".") /= 0;
   end Has_Dot;
+
+  -- Get name of library unit parent (of a subunit)
+  function Get_Root (Sub : in Src_Dscr) return Src_Dscr is
+    Crit : Src_Dscr;
+    Found : Boolean;
+  begin
+    Crit := Sub;
+    loop
+      -- Search parent
+      Crit.Unit := Crit.Parent;
+      -- Search a unit body
+      Crit.Kind := Unit_Body;
+      List.Search (Crit, Found);
+      exit when Found;
+      -- Search a subunit
+      Crit.Kind := Subunit;
+      List.Search (Crit, Found);
+      if not Found then
+        Error ("Not parent body for " & Asu_Ts (Crit.Unit));
+      end if;
+    end loop;
+    -- Read it
+    List.Read (Crit, Crit);
+    return Crit;
+  end Get_Root;
 
 end Sourcer;
 

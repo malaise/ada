@@ -45,5 +45,8 @@ package Sourcer is
   -- Does a unit name contain a '.'
   function Has_Dot (Unit : in Asu_Us) return Boolean;
 
+  -- Get name of library unit parent (of a subunit)
+  function Get_Root (Sub : in Src_Dscr) return Src_Dscr;
+
 end Sourcer;
 

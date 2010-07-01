@@ -1,5 +1,6 @@
 with Ada.Strings.Unbounded;
-with Basic_Proc, Parser;
+with String_Mng, Dynamic_List;
+with Debug, Basic_Proc, Parser;
 package body Tree_Mng is
 
   -- Ada unbounded strings
@@ -30,15 +31,23 @@ package body Tree_Mng is
     return C = Sourcer.Separator;
   end Is_Sep;
 
+  -- Build a node
+  procedure Build_Node (Origin : in Sourcer.Src_Dscr;
+                        Revert : in Boolean);
+
   -- Build the children (subunits or withed specs)
   procedure Build_Children (List : in Asu_Us;
-                            Kind : in Sourcer.Src_Kind_List) is
+                            Kind : in Sourcer.Src_Kind_List;
+                            Revert : in Boolean) is
     Iter : Parser.Iterator;
     Crit : Sourcer.Src_Dscr;
     Found : Boolean;
   begin
     if List = Asu_Null then
       return;
+    end if;
+    if Revert and then Kind = Sourcer.Unit_Spec then
+      Error ("Looking for withed units in revert mode");
     end if;
     -- Parse list with Parser and insert nodes
     Iter.Set (Asu_Ts (List), Is_Sep'Access);
@@ -51,11 +60,12 @@ package body Tree_Mng is
         -- Look for spec or standalone body
         Sourcer.List.Search (Crit, Found);
         if Found then
+          -- Got a spec
           Sourcer.List.Read (Crit, Crit);
         else
           Crit.Kind := Sourcer.Unit_Body;
           Sourcer.List.Search (Crit, Found);
-          -- Found a body, read to raise ERROR if not standalone
+          -- Found a body, read it to raise ERROR if not standalone
           if Found then
             Sourcer.List.Read (Crit, Crit);
             if not Crit.Standalone then
@@ -65,18 +75,53 @@ package body Tree_Mng is
           end if;
         end if;
       else
+        -- Subunit
         Found := True;
         Sourcer.List.Read (Crit, Crit);
       end if;
       if Found then
         -- Record is found and read
-        Build (Crit);
+        Build_Node (Crit, Revert);
       end if;
     end loop;
   end Build_Children;
 
+  -- Build wihing units (in revert mode)
+  -- The temporary local dynamic lists are necessary because
+  --  here we call Build_Node, which itself calls us recursively
+  package Src_List_Mng is new Dynamic_List (Sourcer.Src_Dscr);
+  package Src_Dyn_List_Mng renames Src_List_Mng.Dyn_List;
+
+  procedure Build_Withings (Name : in String) is
+    Dscr : Sourcer.Src_Dscr;
+    Moved : Boolean;
+    Crit : constant String := Sourcer.Separator & Name & Sourcer.Separator;
+    List : Src_Dyn_List_Mng.List_Type;
+  begin
+    -- Scan all known units
+    Sourcer.List.Rewind;
+    loop
+      Sourcer.List.Read_Next (Dscr, Moved);
+      -- See if its Witheds contains us
+      if String_Mng.Locate (Asu_Ts (Dscr.Witheds), Crit) /= 0 then
+        -- Yesss, add it to our list
+        List.Insert (Dscr);
+      end if;
+      exit when not Moved;
+    end loop;
+    -- Insert in the tree each node of the list
+    if not List.Is_Empty then
+      List.Rewind;
+      loop
+        List.Read (Dscr, Moved => Moved);
+        Build_Node (Dscr, True);
+        exit when not Moved;
+      end loop;
+    end if;
+  end Build_Withings;
+
   -- Build a node
-  procedure Build (Origin : in Sourcer.Src_Dscr) is
+  procedure Build_Node (Origin : in Sourcer.Src_Dscr; Revert : in Boolean) is
     Found : Boolean;
     Child : Sourcer.Src_Dscr;
     Kind : Asu_Us;
@@ -100,36 +145,45 @@ package body Tree_Mng is
       end if;
     end if;
 
-    -- Any unit: Insert withed units
-    Kind :=  Asu_Tus ("withed");
-    Build_Children (Origin.Witheds, Sourcer.Unit_Spec);
+    -- Any unit: Insert withed
+    -- In revert:  insert units withing spec or standalone body
+    if not Revert then
+      Kind :=  Asu_Tus ("withed");
+      Build_Children (Origin.Witheds, Sourcer.Unit_Spec, Revert);
+    elsif Origin.Kind = Sourcer.Unit_Spec
+          or else (Origin.Kind = Sourcer.Unit_Body
+                   and then Origin.Standalone) then
+      Kind :=  Asu_Tus ("withing");
+      Build_Withings (Asu_Ts (Origin.Unit));
+    end if;
 
-    if (Origin.Kind = Sourcer.Unit_Spec
+    -- A Child (spec or standalone body): Insert parent spec if not revert
+    if not Revert
+    and then (Origin.Kind = Sourcer.Unit_Spec
        or else (Origin.Kind = Sourcer.Unit_Body and then Origin.Standalone) )
     and then Sourcer.Has_Dot (Origin.Unit) then
-      -- A Child (spec or standalone body): Insert parent spec
       Kind := Asu_Tus ("parent");
       Child.Unit := Origin.Parent;
       Child.Kind := Sourcer.Unit_Spec;
       Sourcer.List.Read (Child, Child);
-      Build (Child);
+      Build_Node (Child, Revert);
     end if;
 
+    -- A spec: Insert body
     if Origin.Kind = Sourcer.Unit_Spec then
-      -- A spec: Insert body
       Kind := Asu_Tus ("body");
       if not Origin.Standalone then
         Child.Unit := Origin.Unit;
         Child.Kind := Sourcer.Unit_Body;
         Sourcer.List.Read (Child, Child);
-        Build (Child);
+        Build_Node (Child, Revert);
       end if;
     end if;
 
+    -- A Body: Insert subunits
     if Origin.Kind = Sourcer.Unit_Body then
-      -- A Body: Insert subunits
       Kind := Asu_Tus ("subunit");
-      Build_Children (Origin.Subunits, Sourcer.Subunit);
+      Build_Children (Origin.Subunits, Sourcer.Subunit, Revert);
     end if;
 
     -- Done, move up
@@ -140,7 +194,7 @@ package body Tree_Mng is
   exception
     when Sourcer.Src_List_Mng.Not_In_List =>
       Error ("Cannot find " & Asu_Ts (Kind) & " of " & Sourcer.Image (Origin));
-  end Build;
+  end Build_Node;
 
   -- Dump one element of the tree
   function Dump_One (Dscr : in Src_Dscr;
@@ -158,10 +212,15 @@ package body Tree_Mng is
     return True;
   end Dump_One;
 
-  procedure Dump is
+  -- Build the tree of source dependencies of Origin
+  procedure Build (Origin : in Sourcer.Src_Dscr; Revert : in Boolean) is
   begin
-    Tree.Iterate (Dump_One'Access);
-  end Dump;
+    Build_Node (Origin, Revert);
+    if Debug.Is_Set then
+      Basic_Proc.Put_Line_Output ("Dumping tree:");
+      Tree.Iterate (Dump_One'Access);
+    end if;
+  end Build;
 
 end Tree_Mng;
 

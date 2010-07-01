@@ -13,10 +13,7 @@ package Tree_Mng is
   Tree : Tree_Mng.Tree_Type;
 
   -- Build the tree of source dependencies of Origin
-  procedure Build (Origin : in Sourcer.Src_Dscr);
-
-  -- Dump the tree
-  procedure Dump;
+  procedure Build (Origin : in Sourcer.Src_Dscr; Revert : in Boolean);
 
 end Tree_Mng;
 

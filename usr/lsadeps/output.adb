@@ -1,6 +1,6 @@
 with Basic_Proc, Directory;
 with As.U; use As.U;
-with Debug, Tree_Mng, Sort;
+with Debug, Sourcer, Tree_Mng, Sort;
 package body Output is
 
   ----------
@@ -92,6 +92,8 @@ package body Output is
   ----------
   -- LIST --
   ----------
+  -- Are we in revert mode
+  Revert : Boolean := False;
   -- Unique list of entries (units or files)
   Ulist : Asu_Unique_List_Mng.List_Type;
   -- Dynamic list of sorted entries (units or files)
@@ -100,20 +102,34 @@ package body Output is
   function List_Unit_Iterator (Dscr : Tree_Mng.Src_Dscr;
                                Level : Natural) return Boolean is
     pragma Unreferenced (Level);
+    Name : Asu_Us;
     use type Sourcer.Src_Kind_List;
   begin
-    -- Discard Looping info. Keep spec or standalone body
-    if Dscr.Looping
-    or else Dscr.Dscr.Kind = Sourcer.Subunit
-    or else (Dscr.Dscr.Kind = Sourcer.Unit_Body
-             and then not Dscr.Dscr.Standalone) then
+    -- Discard Looping info
+    if Dscr.Looping then
       return True;
+    end if;
+    if not Revert then
+      -- Keep only spec or standalone body
+      if Dscr.Dscr.Kind = Sourcer.Subunit
+         or else (Dscr.Dscr.Kind = Sourcer.Unit_Body
+                  and then not Dscr.Dscr.Standalone) then
+        return True;
+      end if;
+      Name := Dscr.Dscr.Unit;
+    else
+      -- Put unit name, parent of subunit
+      if Dscr.Dscr.Kind = Sourcer.Subunit then
+        Name := Sourcer.Get_Root (Dscr.Dscr).Unit;
+      else
+        Name := Dscr.Dscr.Unit;
+      end if;
     end if;
     -- PathOfFile / UnitName
     Ulist.Insert (Asu_Tus (
         Directory.Build_File_Name (
             Directory.Dirname (Asu_Ts (Dscr.Dscr.File)),
-            Asu_Ts (Dscr.Dscr.Unit),
+            Asu_Ts (Name),
             "")));
     return True;
   end List_Unit_Iterator;
@@ -134,7 +150,7 @@ package body Output is
   end List_File_Iterator;
 
   -- Put list of units or files
-  procedure Put_List (Units : in Boolean) is
+  procedure Put_List (Revert : in Boolean; Units : in Boolean) is
     Str : Asu_Us;
     Moved : Boolean;
   begin
@@ -142,6 +158,7 @@ package body Output is
     if Debug.Is_Set then
       Basic_Proc.Put_Line_Output ("Scanning tree");
     end if;
+    Output.Revert := Revert;
     if Units then
       Tree_Mng.Tree.Iterate (List_Unit_Iterator'Access);
     else
@@ -163,7 +180,7 @@ package body Output is
     Sort.Sort (Dlist);
     -- Put entries
     if Debug.Is_Set then
-      Basic_Proc.Put_Line_Output ("Listing");
+      Basic_Proc.Put_Line_Output ("Listing:");
     end if;
     Dlist.Rewind;
     loop
@@ -172,17 +189,6 @@ package body Output is
       exit when not Moved;
     end loop;
   end Put_List;
-
-  -----------------
-  -- REVERT LIST --
-  -----------------
-  -- Put revert list of units or files
-  procedure Put_Revert_List (Unit : in Sourcer.Src_Dscr;
-                             Units : in Boolean) is
-  begin
-    -- @@@
-    null;
-  end Put_Revert_List;
 
 end Output;
 
