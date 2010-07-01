@@ -261,7 +261,7 @@ package body Directory is
   -- - then recusively replace any leading "/.." by ""
   function Normalize_Path (Path : String) return String is
     Res : Asu_Us;
-    Start, First, Second : Natural;
+    Start, First, Second, Init : Natural;
     Sep_Char : constant Character := '/';
     Sep_Str : constant String := Sep_Char & "";
   begin
@@ -290,10 +290,11 @@ package body Directory is
 
     -- "<name>/../" -> "" recusively
     -- Start at first significant char
-    Start := 1;
-    if Asu.Element (Res, 1) = Sep_Char then
-      Start := Start + 1;
+    Init := 1;
+    if Asu.Length (Res) > 0 and then Asu.Element (Res, 1) = Sep_Char then
+      Init := Init + 1;
     end if;
+    Start := Init;
     loop
       -- Locate next separator
       First := String_Mng.Locate (Asu_Ts (Res), Sep_Str, Start + 1);
@@ -303,8 +304,9 @@ package body Directory is
       exit when Second = 0;
       if Asu.Slice (Res, First + 1, Second - 1) = ".."
       and then Asu.Slice (Res, Start, First - 1) /= ".." then
-        -- Delete "<name>/../", and restart from here
+        -- Delete "<name>/../", and restart from beginning
         Asu.Delete (Res, Start, Second);
+        Start := Init;
       else
         -- Skip
         Start := First + 1;
