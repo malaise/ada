@@ -245,7 +245,7 @@ package body Sourcer is
     -- Process local then include dirs
     Parse_Dir (".");
     for I in 1 .. Args.Get_Nb_Occurences (Incl_Key) loop
-      Parse_Dir (Args.Get_Option (Incl_Key, I));
+      Parse_Dir (Directory.make_Full_Path (Args.Get_Option (Incl_Key, I)));
     end loop;
     if Debug.Is_Set then
       Basic_Proc.Put_Line_Output ("Parsing completed.");

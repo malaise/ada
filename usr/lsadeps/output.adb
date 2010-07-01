@@ -1,6 +1,6 @@
 with Basic_Proc, Directory;
 with As.U; use As.U;
-with Tree_Mng;
+with Debug, Tree_Mng, Sort;
 package body Output is
 
   ----------
@@ -94,6 +94,8 @@ package body Output is
   ----------
   -- Unique list of entries (units or files)
   Ulist : Asu_Unique_List_Mng.List_Type;
+  -- Dynamic list of sorted entries (units or files)
+  Dlist : Asu_Dyn_List_Mng.List_Type;
   -- List Units of tree
   function List_Unit_Iterator (Dscr : Tree_Mng.Src_Dscr;
                                Level : Natural) return Boolean is
@@ -137,22 +139,39 @@ package body Output is
     Moved : Boolean;
   begin
     -- Build unique list of entries
+    if Debug.Is_Set then
+      Basic_Proc.Put_Line_Output ("Scanning tree");
+    end if;
     if Units then
       Tree_Mng.Tree.Iterate (List_Unit_Iterator'Access);
     else
       Tree_Mng.Tree.Iterate (List_File_Iterator'Access);
     end if;
     -- Sort this list
-    -- @@@
-    -- Put entries
+    if Debug.Is_Set then
+      Basic_Proc.Put_Line_Output ("Copying list");
+    end if;
     Ulist.Rewind;
     loop
       Ulist.Read_Next (Str, Moved);
+      Dlist.Insert (Str);
+      exit when not Moved;
+    end loop;
+    if Debug.Is_Set then
+      Basic_Proc.Put_Line_Output ("Sorting list");
+    end if;
+    Sort.Sort (Dlist);
+    -- Put entries
+    if Debug.Is_Set then
+      Basic_Proc.Put_Line_Output ("Listing");
+    end if;
+    Dlist.Rewind;
+    loop
+      Dlist.Read (Str, Moved => Moved);
       Basic_Proc.Put_Line_Output (Asu_Ts (Str));
       exit when not Moved;
     end loop;
   end Put_List;
-
 
   -----------------
   -- REVERT LIST --

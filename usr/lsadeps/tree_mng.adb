@@ -102,7 +102,7 @@ package body Tree_Mng is
 
     -- Any unit: Insert withed units
     Kind :=  Asu_Tus ("withed");
-    Build_Children (Origin.Witheds, Sourcer.Unit_Spec, False);
+    Build_Children (Origin.Witheds, Sourcer.Unit_Spec);
 
     if (Origin.Kind = Sourcer.Unit_Spec
        or else (Origin.Kind = Sourcer.Unit_Body and then Origin.Standalone) )

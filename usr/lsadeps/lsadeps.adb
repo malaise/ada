@@ -1,7 +1,7 @@
 with Ada.Exceptions;
 with Argument, Argument_Parser, Basic_Proc, Mixed_Str;
 with As.U; use As.U;
-with Debug, Sourcer, Tree_Mng, Output;
+with Debug, Sourcer, Tree_Mng, Sort, Output;
 procedure Lsadeps is
 
   use type Asu_Us;
@@ -136,6 +136,13 @@ begin
     Basic_Proc.Put_Line_Output ("Target checked: " & Sourcer.Image (Unit));
   end if;
 
+  ---------------------------
+  -- SET PRIORITY OF PATHS --
+  ---------------------------
+  for I in 1 .. Arg_Dscr.Get_Nb_Occurences (5) loop
+    Sort.Set_Prio (Asu_Tus (Arg_Dscr.Get_Option (5, I)), I);
+  end loop;
+
   ----------------------------
   -- BUILD TREE OF SOURCES --
   ----------------------------
@@ -163,8 +170,8 @@ exception
   when Error_Raised | Sourcer.Error_Raised =>
     Basic_Proc.Set_Error_Exit_Code;
   when Err:others =>
-    Error ("Exception " & Ada.Exceptions.Exception_Name (Err)
-          & " raised");
+    Basic_Proc.Put_Line_Error ("ERROR: " &
+      "Exception " & Ada.Exceptions.Exception_Name (Err) & " raised");
     Basic_Proc.Set_Error_Exit_Code;
 end Lsadeps;
 
