@@ -11,17 +11,19 @@ procedure Lsadeps is
   begin
     Basic_Proc.Put_Line_Error (
      "Usage: " & Argument.Get_Program_Name
-      & " [ <display> ] [ <file_mode> ] [ <include_dirs> ] <target>");
+      & " [ <display> ] [ <revert_mode> ] [ <file_mode> ] [ <include_dirs> ] <target>");
     Basic_Proc.Put_Line_Error (
-     "  <display> ::= <list> | <tree> | <revert> // Default: list");
+     "  <display> ::= <list> | <tree>     // Default: list");
     Basic_Proc.Put_Line_Error (
-     "   <list>   ::= -l | --list                // List dependencies of target");
+     "   <list>   ::= -l | --list         // List dependencies");
     Basic_Proc.Put_Line_Error (
-     "   <tree>   ::= -t | --tree                // Tree of dependencies of target");
+     "   <tree>   ::= -t | --tree         // Tree of dependencies");
     Basic_Proc.Put_Line_Error (
-     "   <revert> ::= -r | --revert              // List units depending on target");
+     "   <revert_mode> ::= -r | --revert  // List units depending on target");
     Basic_Proc.Put_Line_Error (
-     "   <file_mode>    ::= -f | --files         // Show files i.o. units");
+     "                                    //   i.o. units withed by target");
+    Basic_Proc.Put_Line_Error (
+     "   <file_mode>    ::= -f | --files  // Show files i.o. units");
     Basic_Proc.Put_Line_Error (
      "   <include_dirs> ::= { -I <dir> | --directory=<dir> }");
     Basic_Proc.Put_Line_Error (
@@ -47,9 +49,9 @@ procedure Lsadeps is
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
   -- Option management
-  type Mode_List is (List, Tree, Revert);
-  Mode : Mode_List := List;
-  Units : Boolean := True;
+  Tree_Mode : Boolean := False;
+  Revert_Mode : Boolean := False;
+  File_Mode : Boolean := False;
   Target : Asu_Us;
   Dir : Asu_Us;
 
@@ -76,25 +78,19 @@ begin
   end if;
 
   -- Mode: at most once
-  if Arg_Dscr.Is_Set (1) then
-    if Arg_Dscr.Is_Set (2) or else Arg_Dscr.Is_Set (3) then
-      Error ("At most one display mode expected");
-    end if;
-    Mode := List;
-  end if;
   if Arg_Dscr.Is_Set (2) then
-    if Arg_Dscr.Is_Set (3) then
+    if Arg_Dscr.Is_Set (1) then
       Error ("At most one display mode expected");
     end if;
-    Mode := Tree;
+    Tree_Mode := True;
   end if;
   if Arg_Dscr.Is_Set (3) then
-    Mode := Revert;
+    Revert_Mode := True;
   end if;
 
   -- File mode
   if Arg_Dscr.Is_Set (4) then
-    Units := False;
+    File_Mode := True;
   end if;
 
   -- Target: only once and at the end
@@ -106,11 +102,13 @@ begin
   Target := Asu_Tus (Arg_Dscr.Get_Option (Argument_Parser.No_Key_Index));
 
   -- Includes: must not be empty
+  -- Declare include priorities
   for I in 1 .. Arg_Dscr.Get_Nb_Occurences (5) loop
     Dir := Asu_Tus (Arg_Dscr.Get_Option (5, I));
     if Dir = Asu_Null then
       Error ("Missing include dir");
     end if;
+    Sort.Set_Prio (Asu_Tus (Arg_Dscr.Get_Option (5, I)), I);
   end loop;
 
   ---------------------------
@@ -136,27 +134,15 @@ begin
     Basic_Proc.Put_Line_Output ("Target checked: " & Sourcer.Image (Unit));
   end if;
 
-  ---------------------------
-  -- SET PRIORITY OF PATHS --
-  ---------------------------
-  for I in 1 .. Arg_Dscr.Get_Nb_Occurences (5) loop
-    Sort.Set_Prio (Asu_Tus (Arg_Dscr.Get_Option (5, I)), I);
-  end loop;
-
   ----------------------------
   -- BUILD TREE OF SOURCES --
   ----------------------------
-  Tree_Mng.Build (Unit, Mode = Revert);
+  Tree_Mng.Build (Unit, Revert_Mode);
 
   -------------------
   -- PUT LIST/TREE --
   -------------------
-  case Mode is
-    when Tree =>
-      Output.Put_Tree (Units);
-    when List | Revert =>
-      Output.Put_List (Mode = Revert, Units);
-  end case;
+  Output.Put (Tree_Mode, Revert_Mode, File_Mode);
 
 exception
   when Error_Raised | Sourcer.Error_Raised =>

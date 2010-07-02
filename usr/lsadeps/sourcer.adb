@@ -370,6 +370,7 @@ package body Sourcer is
       if not Found then
         Error ("Not parent body for " & Asu_Ts (Crit.Unit));
       end if;
+      List.Read (Crit, Crit);
     end loop;
     -- Read it
     List.Read (Crit, Crit);

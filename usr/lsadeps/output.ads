@@ -1,8 +1,7 @@
 package Output is
 
-  procedure Put_Tree (Units : in Boolean);
-
-  procedure Put_List (Revert : in Boolean; Units : in Boolean);
+  -- Put list/tree, normal/revert of units/files
+  procedure Put (Tree_Mode, Revert_Mode, File_Mode : in Boolean);
 
 end Output;
 

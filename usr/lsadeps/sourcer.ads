@@ -12,13 +12,13 @@ package Sourcer is
   -- A parsed source descriptor
   type Src_Dscr is record
     -- Kind of unit in file
-    Kind : Src_Kind_List;
+    Kind : Src_Kind_List := Unit_Spec;
     -- Full unit name - MixedStr
     Unit : Asu_Us;
     -- Full file path name
     File : Asu_Us;
     -- Standalone indicator: spec without body or body without spec
-    Standalone : Boolean;
+    Standalone : Boolean := False;
     -- Unit name of parent (if Child or subunit)
     Parent : Asu_Us;
     -- List of withed units - @unit@unit...@unit@

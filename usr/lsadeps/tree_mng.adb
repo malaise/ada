@@ -218,7 +218,7 @@ package body Tree_Mng is
     Build_Node (Origin, Revert);
     if Debug.Is_Set then
       Basic_Proc.Put_Line_Output ("Dumping tree:");
-      Tree.Iterate (Dump_One'Access);
+      Tree.Iterate (Dump_One'Access, False);
     end if;
   end Build;
 
