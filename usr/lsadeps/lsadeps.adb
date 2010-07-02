@@ -1,7 +1,7 @@
 with Ada.Exceptions;
 with Argument, Argument_Parser, Basic_Proc, Mixed_Str;
 with As.U; use As.U;
-with Debug, Sourcer, Tree_Mng, Sort, Output;
+with Debug, Sourcer, Tree_Mng, Sort, Output, Checker;
 procedure Lsadeps is
 
   use type Asu_Us;
@@ -13,21 +13,25 @@ procedure Lsadeps is
      "Usage: " & Argument.Get_Program_Name
       & " [ <display> ] [ <revert_mode> ] [ <file_mode> ] [ <include_dirs> ] <target>");
     Basic_Proc.Put_Line_Error (
-     "  <display> ::= <list> | <tree>     // Default: list");
+     "   or: " & Argument.Get_Program_Name & " <check>");
     Basic_Proc.Put_Line_Error (
-     "   <list>   ::= -l | --list         // List dependencies");
+     "  <display>       ::= <list> | <tree> // Default: list");
     Basic_Proc.Put_Line_Error (
-     "   <tree>   ::= -t | --tree         // Tree of dependencies");
+     "   <list>         ::= -l | --list     // List dependencies");
     Basic_Proc.Put_Line_Error (
-     "   <revert_mode> ::= -r | --revert  // List units depending on target");
+     "   <tree>         ::= -t | --tree     // Tree of dependencies");
     Basic_Proc.Put_Line_Error (
-     "                                    //   i.o. units withed by target");
+     "   <revert_mode>  ::= -r | --revert   // List units depending on target");
     Basic_Proc.Put_Line_Error (
-     "   <file_mode>    ::= -f | --files  // Show files i.o. units");
+     "                                      //   i.o. units withed by target");
+    Basic_Proc.Put_Line_Error (
+     "   <file_mode>    ::= -f | --files    // Show files i.o. units");
     Basic_Proc.Put_Line_Error (
      "   <include_dirs> ::= { -I <dir> | --directory=<dir> }");
     Basic_Proc.Put_Line_Error (
-     "   <target> := <unit>");
+     "   <target>       ::= <unit>");
+    Basic_Proc.Put_Line_Error (
+     "   <check>        ::= -c | --check    // Detects redundant withs");
   end Usage;
 
   Error_Raised : exception renames Sourcer.Error_Raised;
@@ -45,13 +49,15 @@ procedure Lsadeps is
    03 => ('r', Asu_Tus ("revert"), False, False),
    04 => ('f', Asu_Tus ("files"), False, False),
    05 => ('I', Asu_Tus ("include"), True, True),
-   06 => ('h', Asu_Tus ("help"), False, False));
+   06 => ('h', Asu_Tus ("help"), False, False),
+   07 => ('c', Asu_Tus ("check"), False, False));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
   -- Option management
   Tree_Mode : Boolean := False;
   Revert_Mode : Boolean := False;
   File_Mode : Boolean := False;
+  Check_Mode : Boolean := False;
   Target : Asu_Us;
   Dir : Asu_Us;
 
@@ -93,13 +99,28 @@ begin
     File_Mode := True;
   end if;
 
-  -- Target: only once and at the end
-  if Arg_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) /= 1 then
-    Error ("One and only one target required");
-  elsif Arg_Dscr.Get_Nb_Embedded_Arguments /= 0 then
-    Error ("Invalid argument");
+  -- Check mode
+  if Arg_Dscr.Is_Set (7) then
+    if Tree_Mode or else Revert_Mode or else File_Mode then
+      Error ("Check mode is exclusive with other modes");
+    end if;
+    Check_Mode := True;
   end if;
-  Target := Asu_Tus (Arg_Dscr.Get_Option (Argument_Parser.No_Key_Index));
+
+  if Check_Mode then
+    -- No target
+    if Arg_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) /= 0 then
+      Error ("Check mode is exclusive with target");
+    end if;
+  else
+    -- Target: only once and at the end
+    if Arg_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) /= 1 then
+      Error ("One and only one target required");
+    elsif Arg_Dscr.Get_Nb_Embedded_Arguments /= 0 then
+      Error ("Invalid argument");
+    end if;
+    Target := Asu_Tus (Arg_Dscr.Get_Option (Argument_Parser.No_Key_Index));
+  end if;
 
   -- Includes: must not be empty
   -- Declare include priorities
@@ -115,6 +136,21 @@ begin
   -- BUILD LIST OF SOURCES --
   ---------------------------
   Sourcer.Build_List (Arg_Dscr);
+
+  -----------------
+  -- CHECK UNITS --
+  -----------------
+  if Check_Mode then
+    if not Checker.Check then
+      -- Check failed
+      Basic_Proc.Set_Error_Exit_Code;
+    end if;
+    return;
+  end if;
+
+  ------------------
+  -- CHECK TARGET --
+  ------------------
   -- Check that target is found, as spec or standalone body and is local
   Unit.Unit := Asu_Tus (Mixed_Str (Asu_Ts (Target)));
   Unit.Kind := Sourcer.Unit_Spec;

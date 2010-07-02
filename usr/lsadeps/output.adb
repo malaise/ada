@@ -63,9 +63,9 @@ package body Output is
           -- Don't display this entry
           Name := Asu_Null;
         else
-          -- Put unit name, parent of subunit
+          -- Put unit name, body ancestor of the subunit
           if Dscr.Dscr.Kind = Sourcer.Subunit then
-            Name := Sourcer.Get_Root (Dscr.Dscr).Unit;
+            Name := Sourcer.Get_Body (Dscr.Dscr).Unit;
           else
             Name := Dscr.Dscr.Unit;
           end if;
@@ -165,9 +165,9 @@ package body Output is
       end if;
       Name := Dscr.Dscr.Unit;
     else
-      -- Put unit name, parent of subunit
+      -- Put unit name, body ancestor of the subunit
       if Dscr.Dscr.Kind = Sourcer.Subunit then
-        Name := Sourcer.Get_Root (Dscr.Dscr).Unit;
+        Name := Sourcer.Get_Body (Dscr.Dscr).Unit;
       else
         Name := Dscr.Dscr.Unit;
       end if;

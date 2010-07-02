@@ -142,8 +142,6 @@ package body Sourcer is
       if Lexic = Ada_Parser.Reserved_Word then
         if Asu_Ts (Word) = "with" then
           In_With := True;
-        elsif Asu_Ts (Word) = "use" then
-          In_With := True;
         elsif Asu_Ts (Word) = "procedure"
         or else Asu_Ts (Word) = "function"
         or else Asu_Ts (Word) = "package"
@@ -164,6 +162,9 @@ package body Sourcer is
 
       elsif Lexic = Ada_Parser.Delimiter then
         Prev_Dot := Asu_Ts (Word) = ".";
+        if Asu_Ts (Word) = ";" then
+          In_With := False;
+        end if;
       elsif In_With then
         -- Identifier in "with" statement, append in list of withed
         if Prev_Dot then
@@ -249,6 +250,9 @@ package body Sourcer is
     end loop;
     if Debug.Is_Set then
       Basic_Proc.Put_Line_Output ("Parsing completed.");
+    end if;
+    if List.Is_Empty then
+      return;
     end if;
 
     -- Sanity checks:
@@ -351,31 +355,54 @@ package body Sourcer is
     return String_Mng.Locate (Asu_Ts (Unit), ".") /= 0;
   end Has_Dot;
 
-  -- Get name of library unit parent (of a subunit)
-  function Get_Root (Sub : in Src_Dscr) return Src_Dscr is
+  -- Get parent of Dscr (body or subunit)
+  -- Return Dscr itself if it is a Unit_Spec
+  function Get_Parent (Dscr : in Src_Dscr) return Src_Dscr is
     Crit : Src_Dscr;
     Found : Boolean;
   begin
-    Crit := Sub;
-    loop
-      -- Search parent
-      Crit.Unit := Crit.Parent;
-      -- Search a unit body
-      Crit.Kind := Unit_Body;
-      List.Search (Crit, Found);
-      exit when Found;
-      -- Search a subunit
+    case Dscr.Kind is
+      when Unit_Spec =>
+        return Dscr;
+      when Unit_Body =>
+        if Dscr.Standalone then
+          return Dscr;
+        end if;
+        Crit.Unit := Dscr.Unit;
+        Crit.Kind := Unit_Spec;
+      when Subunit =>
+        Crit.Unit := Dscr.Parent;
+        Crit.Kind := Unit_Body;
+    end case;
+    List.Search (Crit, Found);
+    if not Found and then Dscr.Kind = Subunit then
+      -- No body parent of the subunit: Look for parent subunit
       Crit.Kind := Subunit;
       List.Search (Crit, Found);
-      if not Found then
-        Error ("Not parent body for " & Asu_Ts (Crit.Unit));
-      end if;
-      List.Read (Crit, Crit);
-    end loop;
-    -- Read it
+    end if;
+    if not Found then
+      Error ("Not parent for " & Image (Dscr));
+    end if;
     List.Read (Crit, Crit);
     return Crit;
-  end Get_Root;
+  end Get_Parent;
+
+  -- Get Unit_Body of a subunit
+  function Get_Body (Sub : in Src_Dscr) return Src_Dscr is
+    Parent : Src_Dscr;
+  begin
+    if Sub.Kind /= Subunit then
+      Error ("Cannot get root of " & Image (Sub));
+    end if;
+    -- Get parents until it is a body
+    Parent := Sub;
+    loop
+      -- Get direct parent
+      Parent := Get_Parent (Parent);
+      exit when Parent.Kind = Unit_Body;
+    end loop;
+    return Parent;
+  end Get_Body;
 
 end Sourcer;
 
