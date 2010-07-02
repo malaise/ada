@@ -68,7 +68,11 @@ package body Checker is
             Parents.Rewind;
             Check_All_Parents: loop
               Parents.Read (Parent, Moved => Parent_Moved);
-              if String_Mng.Locate (Asu_Ts (Parent.Witheds), Awith) /= 0 then
+              if String_Mng.Locate (Asu_Ts (Parent.Witheds), Awith) /= 0
+              and then
+                 String_Mng.Locate (Asu_Ts (Current.Useds), Awith) = 0 then
+                -- This local "with" appears in a parent
+                --   and there is no local "use"
                 Basic_Proc.Put_Line_Output ("Unit " & Sourcer.Image (Current)
                   & " withes " & Word
                   & " already withed by parent " & Sourcer.Image (Parent));

@@ -31,6 +31,7 @@ package body Sourcer is
            & Mixed_Str (Dscr.Standalone'Img));
     Basic_Proc.Put_Line_Output (", parent: " & Asu_Ts (Dscr.Parent));
     Basic_Proc.Put_Line_Output ("  withed: " & Asu_Ts (Dscr.Witheds));
+    Basic_Proc.Put_Line_Output ("  used  : " & Asu_Ts (Dscr.Useds));
   end Dump;
 
   -- Report an error and raise exception
@@ -81,8 +82,9 @@ package body Sourcer is
     Word : Asu_Us;
     Lexic : Ada_Parser.Lexical_Kind_List;
     use type Ada_Parser.Lexical_Kind_List;
-    -- Are we in a with statement
+    -- Are we in a with / a use statement
     In_With : Boolean;
+    In_Use : Boolean;
     -- Is prev delimiter a "."
     Prev_Dot : Boolean;
   begin
@@ -142,6 +144,8 @@ package body Sourcer is
       if Lexic = Ada_Parser.Reserved_Word then
         if Asu_Ts (Word) = "with" then
           In_With := True;
+        elsif Asu_Ts (Word) = "use" then
+          In_Use := True;
         elsif Asu_Ts (Word) = "procedure"
         or else Asu_Ts (Word) = "function"
         or else Asu_Ts (Word) = "package"
@@ -164,6 +168,7 @@ package body Sourcer is
         Prev_Dot := Asu_Ts (Word) = ".";
         if Asu_Ts (Word) = ";" then
           In_With := False;
+          In_Use := False;
         end if;
       elsif In_With then
         -- Identifier in "with" statement, append in list of withed
@@ -173,6 +178,14 @@ package body Sourcer is
           Asu.Append (Dscr.Witheds, Separator);
         end if;
         Asu.Append (Dscr.Witheds, Word);
+      elsif In_Use then
+        -- Identifier in "use" statement, append in list of withed
+        if Prev_Dot then
+          Asu.Append (Dscr.Useds, ".");
+        else
+          Asu.Append (Dscr.Useds, Separator);
+        end if;
+        Asu.Append (Dscr.Useds, Word);
       end if;
       -- Skip other (used) keywords
     end loop;
@@ -180,6 +193,9 @@ package body Sourcer is
     -- Done: store and close
     if Dscr.Witheds /= Asu_Null then
       Asu.Append (Dscr.Witheds, Separator);
+    end if;
+    if Dscr.Useds /= Asu_Null then
+      Asu.Append (Dscr.Useds, Separator);
     end if;
     -- Drop new version of this unit if one already exists
     List.Insert (Dscr, Drop => True);

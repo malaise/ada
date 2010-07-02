@@ -23,6 +23,8 @@ package Sourcer is
     Parent : Asu_Us;
     -- List of withed units - @unit@unit...@unit@
     Witheds : Asu_Us;
+    -- List of used units - @unit@unit...@unit@
+    Useds : Asu_Us;
     -- List of subunits (if Body or subunit)  - @unit@unit...@unit@
     Subunits : Asu_Us;
   end record;
