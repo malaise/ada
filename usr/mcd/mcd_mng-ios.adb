@@ -1,5 +1,5 @@
 with Ada.Text_Io;
-with My_Math, Normal, Bool_Io, Mixed_Str, String_Mng;
+with Normal, Bool_Io, Mixed_Str, String_Mng;
 with Inte_Io, Real_Io, Io_Flow;
 separate (Mcd_Mng)
 

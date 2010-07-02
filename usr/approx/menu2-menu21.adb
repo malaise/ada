@@ -1,5 +1,4 @@
-with Con_Io, Afpx, Curve;
-with Points, Screen, Dialog, Point_Str;
+with Point_Str;
 separate(Menu2)
 package body Menu21 is
 

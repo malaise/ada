@@ -1,4 +1,3 @@
-with Con_Io;
 separate (Action)
 procedure Treat_Release (Go_On, Exit_Game : out Boolean) is
 

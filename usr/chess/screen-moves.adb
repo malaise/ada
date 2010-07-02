@@ -1,4 +1,3 @@
-with Image;
 separate (Screen)
 
 package body Moves is

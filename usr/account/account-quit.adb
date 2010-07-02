@@ -1,4 +1,3 @@
-with Screen;
 separate (Account)
 procedure Quit is
 begin

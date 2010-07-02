@@ -1,4 +1,3 @@
-with My_Math;
 separate (Nav_Data)
 
 -- if Drift is known, compute plan angle or traj angles before
