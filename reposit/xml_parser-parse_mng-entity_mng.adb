@@ -1,5 +1,4 @@
-with Ada.Characters.Latin_1;
-with Unique_List, Int_Io, Utf_8, Utf_16;
+with Int_Io, Utf_8, Utf_16;
 separate (Xml_Parser.Parse_Mng)
 -- Entity management
 package body Entity_Mng is

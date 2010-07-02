@@ -1,5 +1,5 @@
 with Ada.Direct_Io, Ada.Text_Io;
-with Environ, Text_Handler;
+with Environ;
 separate (Afpx)
 package body Af_Dscr is
 

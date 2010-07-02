@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1;
-with Text_Handler, Con_Io, Afpx, Directory, Dir_Mng, String_Mng, Language;
+with Text_Handler, Con_Io, Directory, Dir_Mng, String_Mng, Language;
 function Select_File (Descriptor   : Afpx.Descriptor_Range;
                       Current_File : String;
                       For_Read     : Boolean) return String is

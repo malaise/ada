@@ -1,4 +1,4 @@
-with Date_Image, C_Types, Timeval;
+with Date_Image, Timeval;
 
 separate (X_Mng)
 package body Dispatch is

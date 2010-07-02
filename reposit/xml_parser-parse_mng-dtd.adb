@@ -1,4 +1,4 @@
-with Regular_Expressions, Parser, Int_Image, Mixed_Str;
+with Regular_Expressions, Parser, Int_Image;
 separate (Xml_Parser.Parse_Mng)
 package body Dtd is
 
