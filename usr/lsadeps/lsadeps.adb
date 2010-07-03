@@ -122,15 +122,22 @@ begin
     Target := Asu_Tus (Arg_Dscr.Get_Option (Argument_Parser.No_Key_Index));
   end if;
 
-  -- Includes: must not be empty
-  -- Declare include priorities
-  for I in 1 .. Arg_Dscr.Get_Nb_Occurences (5) loop
-    Dir := Asu_Tus (Arg_Dscr.Get_Option (5, I));
-    if Dir = Asu_Null then
-      Error ("Missing include dir");
+  if Check_Mode then
+    -- No target
+    if Arg_Dscr.Get_Nb_Occurences (5) /= 0 then
+      Error ("Check mode is exclusive with includes");
     end if;
-    Sort.Set_Prio (Asu_Tus (Arg_Dscr.Get_Option (5, I)), I);
-  end loop;
+  else
+    -- Includes: must not be empty
+    -- Declare include priorities
+    for I in 1 .. Arg_Dscr.Get_Nb_Occurences (5) loop
+      Dir := Asu_Tus (Arg_Dscr.Get_Option (5, I));
+      if Dir = Asu_Null then
+        Error ("Missing include dir");
+      end if;
+      Sort.Set_Prio (Asu_Tus (Arg_Dscr.Get_Option (5, I)), I);
+    end loop;
+  end if;
 
   ---------------------------
   -- BUILD LIST OF SOURCES --
