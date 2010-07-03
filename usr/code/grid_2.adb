@@ -16,7 +16,7 @@ package body Grid_2 is
 
   begin
     R := My_Math.Real(Key_Length) + My_Math.Real(Text_Length);
-    Dimension := My_Math.Inte(Trunc(My_Math.Sqrt(R))) + 1;
+    Dimension := Trunc(My_Math.Sqrt(R)) + 1;
     First_Row := Key_Length / Dimension + 1;
     First_Col := Key_Length mod Dimension + 1;
     Last_Row :=

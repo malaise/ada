@@ -198,7 +198,9 @@ begin
   -- Main loop
   loop
      Event_Mng.Wait (-1);
+     pragma Warnings (Off, "variable ""Done"" is not modified in loop body");
      exit when Done;
+     pragma Warnings (On, "variable ""Done"" is not modified in loop body");
   end loop;
 
   -- Restore stdin

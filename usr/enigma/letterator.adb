@@ -138,8 +138,8 @@ begin
     end;
     if Encode_Mode then
       Pair := Encode (Byte);
-      Io_Manager.Write (Io_Manager.Byte(Cpos(Pair.Row)));
-      Io_Manager.Write (Io_Manager.Byte(Cpos(Pair.Col)));
+      Io_Manager.Write (Cpos(Pair.Row));
+      Io_Manager.Write (Cpos(Pair.Col));
     else
       Even := not Even;
       if not Even then

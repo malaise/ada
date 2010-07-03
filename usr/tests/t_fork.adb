@@ -66,7 +66,9 @@ begin
 
     loop
       Event_Mng.Pause (Event_Mng.Infinite_Ms);
+      pragma Warnings (Off, "variable ""Done"" is not modified in loop body");
       exit when Done;
+      pragma Warnings (On, "variable ""Done"" is not modified in loop body");
     end loop;
 
   end if;

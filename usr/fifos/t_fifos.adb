@@ -119,7 +119,9 @@ begin
     & " is open");
 
   loop
+    pragma Warnings (Off, "variable ""Signal"" is not modified in loop body");
     exit when Signal;
+    pragma Warnings (On, "variable ""Signal"" is not modified in loop body");
     Event_Mng.Wait (-1);
   end loop;
 
