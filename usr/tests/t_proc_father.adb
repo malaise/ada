@@ -115,9 +115,9 @@ begin
 
   loop
     Event_Mng.Pause (Event_Mng.Infinite_Ms);
-    pragma Warnings (Off, "variable ""Done"" is not modified in loop body");
+    pragma Warnings (Off, "variable * is not modified in loop body");
     exit when Done;
-    pragma Warnings (On, "variable ""Done"" is not modified in loop body");
+    pragma Warnings (On, "variable * is not modified in loop body");
   end loop;
 
 end T_Proc_Father;

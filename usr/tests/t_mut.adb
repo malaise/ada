@@ -166,9 +166,9 @@ procedure T_Mut is
       -- Work until termination requested in Critical
       loop
         Schedule;
-        pragma Warnings (Off, "variable ""Index"" is not modified in loop body");
+        pragma Warnings (Off, "variable * is not modified in loop body");
         exit when not Critical (Index);
-        pragma Warnings (On, "variable ""Index"" is not modified in loop body");
+        pragma Warnings (On,  "variable * is not modified in loop body");
       end loop;
       -- Ready to end
       accept Done;

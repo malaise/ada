@@ -2,9 +2,9 @@ with Unchecked_Conversion;
 
 -- Suppress warning than System.Bit_Ops is an internal GNAT unit
 --  thus not portable
-pragma Warnings(Off);
+pragma Warnings (Off, "* is an internal GNAT unit");
 with System.Bit_Ops;
-pragma Warnings(On);
+pragma Warnings (On,  "* is an internal GNAT unit");
 
 with Interfaces;
 

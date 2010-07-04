@@ -30,11 +30,6 @@ package body Socket is
   C_Soc_Read_0         : constant Result := -26;
   C_Soc_Reply_Iface    : constant Result := -27;
 
-  -- GNAT GPL2008 erroneously complains that this is a 8-bits Ada Boolean
-  --  and that char should be used instead in C
-  -- pragma Warnings (Off, Boolean_For_C);
-
-
   type Word is new C_Types.Uint16;
   for Word'Size use 2 * Byte_Size;
 
