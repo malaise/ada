@@ -184,10 +184,10 @@ procedure Alook is
       use type Char_Io.Count;
 
       procedure Cp2Bloc (Str : in String;
-                            From_Id : Positive;
-                            Nb : Natural;
-                            Bloc : in out Char_Io.Element_Array;
-                            To_Index : in Positive_Count) is
+                         From_Id : Positive;
+                         Nb : Natural;
+                         Bloc : in out Char_Io.Element_Array;
+                         To_Index : in Positive_Count) is
         I : Natural;
         J : Positive_Count;
       begin

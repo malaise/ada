@@ -57,7 +57,7 @@ procedure G is
   end Rand;
 
   procedure Div (N : in Number;
-   New_N : out Number; Res : out Div_Res) is
+                 New_N : out Number; Res : out Div_Res) is
     N0 : Natural;
   begin
     N0 := N rem 3;
