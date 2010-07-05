@@ -180,8 +180,9 @@ package body Tree_Mng is
       end if;
     end if;
 
-    -- A Body: Insert subunits
-    if Origin.Kind = Sourcer.Unit_Body then
+    -- A Body or subunit: Insert subunits
+    if Origin.Kind = Sourcer.Unit_Body
+    or else Origin.Kind = Sourcer.Subunit then
       Kind := Asu_Tus ("subunit");
       Build_Children (Origin.Subunits, Sourcer.Subunit, Revert);
     end if;
