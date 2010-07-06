@@ -79,6 +79,12 @@ package body Command is
       raise Already_Parsed;
     end if;
 
+    -- Help mode
+    if Argument.Get_Nbre_Arg = 1
+    and then  Argument.Get_Parameter (1) = "-h" then
+      raise Help;
+    end if;
+
     -- Search and check wether first argument is a pexec option
     --  sets the out parameters and Pexec_Options
     declare
@@ -89,7 +95,7 @@ package body Command is
       begin
         -- Search a key
         Argument.Get_Param_And_Pos (Parameter => Arg, Position => First_Pos,
-         Occurence => 1, Param_Key => "");
+         Occurence => 1, Param_Key => Argument.Any_Key);
       exception
         when Argument.Argument_Not_Found =>
           raise Wrong_Pexec_Opt;

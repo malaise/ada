@@ -19,6 +19,7 @@ package Command is
 
   Already_Parsed, Not_Parsed : exception;
   No_Command : exception;
+  Help : exception;
 
 end Command;
 

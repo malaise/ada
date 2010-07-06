@@ -70,6 +70,9 @@ exception
     My_Io.Put_Line ("No command line to pexec.");
     Command.Print_Usage;
     Restore;
+  when Command.Help =>
+    Command.Print_Usage;
+    Restore;
   when others =>
     My_Io.New_Line;
     My_Io.Put_Line ("Unexpected error.");
