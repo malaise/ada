@@ -12,8 +12,7 @@ package body Command is
   Parsed : Boolean := False;
 
   -- Commands
-  Nb_Commands : Command_Nb_Range;
-  Commands : array (Command_No_Range) of Asu_Us;
+  Commands : Asu_Dyn_List_Mng.List_Type;
 
   procedure Print_Usage is
   begin
@@ -192,7 +191,6 @@ package body Command is
       use type Asu_Us;
     begin
       Iter.Set (Asu_Ts (Str), Is_Sep'Access);
-      Nb_Commands := 0;
       loop
         Tmp := Asu_Tus (Iter.Next_Word);
         exit when Tmp = Asu_Null;
@@ -201,11 +199,7 @@ package body Command is
           Stop  := String_Mng.Parse_Spaces (Asu_Ts (Tmp), False);
           if Start /= 0 then
             -- Not Full of spaces => Store
-            if Nb_Commands = Command_Nb_Range'Last then
-              raise Too_Many_Commands;
-            end if;
-            Nb_Commands := Nb_Commands + 1;
-            Commands (Nb_Commands) := Asu.Unbounded_Slice (Tmp, Start, Stop);
+            Commands.Insert (Asu.Unbounded_Slice (Tmp, Start, Stop));
             end if;
       end loop;
 
@@ -224,24 +218,27 @@ package body Command is
   end Parse;
 
 
-  function Nbre_Commands return Command_Nb_Range is
+  function Nbre_Commands return Natural is
   begin
     if not Parsed then
       raise Not_Parsed;
     end if;
-    return Nb_Commands;
+    return Commands.List_Length;
   end Nbre_Commands;
 
-  function Nth_Command (N : Command_No_Range) return String is
+  function Nth_Command (N : Positive) return String is
+    Command : Asu_Us;
   begin
     if not Parsed then
       raise Not_Parsed;
     end if;
-    if N <= Nbre_Commands then
-      return Asu_Ts (Commands(N));
-    else
-      return "";
+    if N > Commands.List_Length then
+      raise Constraint_Error;
     end if;
+    -- Read the command
+    Commands.Move_At (N);
+    Commands.Read (Command, Asu_Dyn_List_Mng.Current);
+    return Asu_Ts (Command);
   end Nth_Command;
 
 end Command;

@@ -12,9 +12,10 @@ package Command is
                    No_Stop_On_Error, Follow_Links : out Boolean);
 
   -- These 2 must be called after Parse (or Not_Parsed is raised).
-  -- They give info about the command_line (Nth_Command may return "").
+  -- Number of commands
   function Nbre_Commands return Natural;
 
+  -- A command (may raise Constraint_Error if N > Nbre_Commands)
   function Nth_Command (N : Positive) return String;
 
   Already_Parsed, Not_Parsed : exception;

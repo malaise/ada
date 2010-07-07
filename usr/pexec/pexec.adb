@@ -74,12 +74,6 @@ exception
     Command.Print_Usage;
     Restore;
     Basic_Proc.Set_Error_Exit_Code;
-  when Command.Too_Many_Commands =>
-    Basic_Proc.New_Line_Error;
-    Basic_Proc.Put_Line_Error ("Too many commands to pexec.");
-    Command.Print_Usage;
-    Restore;
-    Basic_Proc.Set_Error_Exit_Code;
   when Command.Help =>
     Command.Print_Usage;
     Restore;
