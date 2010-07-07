@@ -2,8 +2,10 @@
 --  under the current
 -- Syntax: pexec command [ { ;command } ]
 --  each command can contain spaces
+with Ada.Exceptions;
 with Directory;
-with My_Io, Text_Handler, Recurs, Sys_Calls;
+with As.U; use As.U;
+with Recurs, Sys_Calls, Basic_Proc;
 with Command;
 procedure Pexec is
 
@@ -15,32 +17,31 @@ procedure Pexec is
   No_Stop_On_Error : Boolean;
   Follow_Links : Boolean;
 
-  Initial_Dir : Text_Handler.Text (Directory.Max_Dir_Name_Len);
+  Initial_Dir : Asu_Us;
 
+  -- Restore saved current dir
   procedure Restore is
   begin
-    Directory.Change_Current (Text_Handler.Value (Initial_Dir));
+    Directory.Change_Current (Asu_Ts(Initial_Dir));
   exception
     when Directory.Name_Error =>
-      My_Io.Put_Line ("Error going back to original directory.");
+      Basic_Proc.Put_Line_Error ("Error going back to original directory.");
   end Restore;
 
-
+  -- What to do in each dir
   function Execute return Boolean is
     Exec_Return : Integer;
-    To_Call : Text_Handler.Text (1024);
   begin
     for I in 1 .. Command.Nbre_Commands loop
-      Text_Handler.Set (To_Call, Command.Nth_Command (I));
       if not No_Action then
-        My_Io.Put_Line("--> " & Text_Handler.Value (To_Call));
+        Basic_Proc.Put_Line_Output ("--> " & Command.Nth_Command (I));
       end if;
 
-      Exec_Return := Sys_Calls.Call_System (Text_Handler.Value (To_Call));
+      Exec_Return := Sys_Calls.Call_System (Command.Nth_Command (I));
 
       if Exec_Return /= 0 then
-        My_Io.Put_Line ("Error executing command "
-                      & Text_Handler.Value (To_Call) );
+        Basic_Proc.Put_Line_Error ("Error executing command "
+                      & Command.Nth_Command (I));
         return False;
       end if;
 
@@ -51,33 +52,44 @@ procedure Pexec is
   procedure My_Recurs is new Recurs (Do_In_Dir => Execute);
 
 begin
-  Directory.Get_Current (Initial_Dir);
 
+  -- Parse command line
   Command.Parse (No_Action, No_Name_Of_Dir, Not_In_Current, First_Level_Only,
                  Leaves_Only, No_Stop_On_Error, Follow_Links);
 
+  -- Save current dir, Recurs, restore current dir
+  Initial_Dir := Asu_Tus (Directory.Get_Current);
   My_Recurs (Name_Of_Dir      => not No_Name_Of_Dir,
              In_Current       => not Not_In_Current,
              First_Level_Only => First_Level_Only,
              Leaves_Only      => Leaves_Only,
              Stop_On_Error    => not No_Stop_On_Error,
              Follow_Links     => Follow_Links);
-
   Restore;
+
 exception
   when Command.No_Command =>
-    My_Io.New_Line;
-    My_Io.Put_Line ("No command line to pexec.");
+    Basic_Proc.New_Line_Error;
+    Basic_Proc.Put_Line_Error ("No command line to pexec.");
     Command.Print_Usage;
     Restore;
+    Basic_Proc.Set_Error_Exit_Code;
+  when Command.Too_Many_Commands =>
+    Basic_Proc.New_Line_Error;
+    Basic_Proc.Put_Line_Error ("Too many commands to pexec.");
+    Command.Print_Usage;
+    Restore;
+    Basic_Proc.Set_Error_Exit_Code;
   when Command.Help =>
     Command.Print_Usage;
     Restore;
-  when others =>
-    My_Io.New_Line;
-    My_Io.Put_Line ("Unexpected error.");
+  when Err:others =>
+    Basic_Proc.New_Line_Error;
+    Basic_Proc.Put_Line_Error ("Unexpected error "
+                             & Ada.Exceptions.Exception_Name (Err) & ".");
     Command.Print_Usage;
     Restore;
+    Basic_Proc.Set_Error_Exit_Code;
     raise;
 end Pexec;
 
