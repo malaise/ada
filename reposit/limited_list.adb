@@ -336,7 +336,7 @@ package body Limited_List is
   begin
     Check_Cb(List);
     Check(List);
-    -- Start from
+    -- Start from current or first/last
     if From_Current then
       New_Pos := List.Current;
       New_Pos_First := List.Pos_First;
@@ -382,7 +382,20 @@ package body Limited_List is
                      Position : in Positive;
                      Where    : in Direction := Next) is
   begin
-    Move_To (List, Where, Position - 1, False);
+    Check(List);
+    -- Optim when next/prev of current: Move relative
+    if      (Where = Next and then Position = List.Pos_First + 1)
+    or else (Where = Prev and then Position = List.Pos_Last  - 1) then
+      -- Move 1 step forward
+      Move_To (List, Next, +1, True);
+    elsif   (Where = Next and then Position = List.Pos_First - 1)
+    or else (Where = Prev and then Position = List.Pos_Last  + 1) then
+      -- Move 1 step backwards
+      Move_To (List, Prev, +1, True);
+    else
+      -- Move absolute
+      Move_To (List, Where, Position - 1, False);
+    end if;
   end Move_At;
 
   -- Move to beginning/end of list: Move_To (List, Where, 0, False);
@@ -411,9 +424,26 @@ package body Limited_List is
 
   -- Permute two elements knowing links to them
   --  (internal procedure for permute and sort)
+  -- Does List.Current point to one of the permuted elements
+  --  so does it need to be updated
+  type Current_Status_List is (Is_Left, Is_Right, Is_None);
   procedure Permute (List : in out List_Type; Left, Right : in Link) is
     Tmp_Next, Tmp_Prev : Link;
+    Current_Status : Current_Status_List;
   begin
+
+    if Left = Right then
+      return;
+    end if;
+
+    -- Check if current is one the swapped cells
+    if List.Current = Left then
+      Current_Status := Is_Left;
+    elsif List.Current = Right then
+      Current_Status := Is_Right;
+    else
+      Current_Status := Is_None;
+    end if;
 
     Tmp_Prev := Left.Prev;
     Tmp_Next := Left.Next;
@@ -485,7 +515,16 @@ package body Limited_List is
       Right.Prev := Left;
       Right.Next := Tmp_Next;
     else
+      -- Impossible
       raise Program_Error;
+    end if;
+
+    -- If necessary, update List.Current so that it still points
+    --  consistently with Pos_First and Pos_Last
+    if Current_Status = Is_Left then
+      List.Current := Right;
+    elsif Current_Status = Is_Right then
+      List.Current := Left;
     end if;
     List.Modified := True;
   end Permute;
@@ -796,10 +835,18 @@ package body Limited_List is
     Go_On : Boolean;
   begin
     Check_Cb(List);
+    if List.Is_Empty then
+      return;
+    end if;
     -- By default
     Go_On := True;
     -- Search first matching item
-    Search_Match (List, Found, Match, Criteria, Where, 1, From);
+    if Match /= null then
+      Search_Match (List, Found, Match, Criteria, Where, 1, From);
+    else
+      Rewind (List, Where => Where);
+      Found := True;
+    end if;
     loop
       exit when not Found;
       if Iteration /= null then
@@ -813,7 +860,16 @@ package body Limited_List is
         exit when not Go_On;
       end if;
       -- Search next matching item
-      Search_Match (List, Found, Match, Criteria, Where, 1, Skip_Current);
+      if Match /= null then
+        Search_Match (List, Found, Match, Criteria, Where, 1, Skip_Current);
+      else
+        if Check_Move (List, Where) then
+          Move_To (List, Where);
+          Found := True;
+        else
+          Found := False;
+        end if;
+      end if;
     end loop;
   end Iterate;
 

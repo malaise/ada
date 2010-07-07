@@ -13,6 +13,7 @@ procedure T_Dl is
   Acc : My_Dyn_List.Element_Access;
   Found : Boolean;
   Moved : Boolean;
+  Count : Natural;
 
   procedure Put (I : in Integer; New_Line : in Boolean := False) is
   begin
@@ -30,12 +31,12 @@ procedure T_Dl is
       Ada.Text_Io.Put (" is even");
     end if;
     if Current > 10 then
-      Ada.Text_Io.Put_Line (" and stopping iteration.");
+      Ada.Text_Io.Put_Line (" and stopping iteration");
       begin
         List.Read (Item);
       exception
         when My_List.In_Callback =>
-          Ada.Text_Io.Put_Line ("IN CALLBACK");
+          Ada.Text_Io.Put_Line ("Read raises In_Callback, OK");
       end;
       Go_On := False;
     else
@@ -165,11 +166,12 @@ begin
   Ada.Text_Io.Put_Line("Seach 50, skipping current");
   My_Search (List, Found, 50, From => My_List.Skip_Current);
   if not Found then
-    Ada.Text_Io.Put_Line ("NOT FOUND");
+    Ada.Text_Io.Put_Line ("Returns not Found, OK");
   end if;
 
   -- Dump the list
   begin
+    Count := 0;
     loop
       Ada.Text_Io.Put("Pos from first: ");
       Put (List.Get_Position, False);
@@ -181,10 +183,15 @@ begin
       Ada.Text_Io.Put("Current item, go to next: ");
       List.Read(Item);
       Put(Item, True);
+      Count := Count + 1;
     end loop;
   exception
     when My_List.Not_In_List =>
-      Ada.Text_Io.Put_Line("NOT IN LIST");
+      if Count = 2 then
+        Ada.Text_Io.Put_Line("raises Not_In_List, OK");
+      else
+        Ada.Text_Io.Put_Line("==> NOT IN LIST");
+      end if;
   end;
 
   Ada.Text_Io.Put("Pos from first: ");
@@ -214,14 +221,24 @@ begin
     Put(List.Get_Position, True);
   exception
     when My_List.Empty_List =>
-      Ada.Text_Io.Put_Line("EMPTY LIST");
+      Ada.Text_Io.Put_Line("raises Empty_List, OK");
   end;
 
   -- List length
   Ada.Text_Io.Put("List length: ");
   Put(List.List_Length, True);
 
-  -- Sort
+  -- Sort fixed list
+  Ada.Text_Io.Put("Sort the list: 30 50 42 35: ");
+  List.Insert (30);
+  List.Insert (50);
+  List.Insert (42);
+  List.Insert (35);
+  My_Sort(List);
+  Dump;
+  List.Delete_List;
+
+  -- Sort random list
   Ada.Text_Io.Put ("Make the following random list: ");
   Rnd.Randomize;
   for I in 1 .. Rnd.Int_Random (0, 10) loop
