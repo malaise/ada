@@ -3,7 +3,6 @@ include $(HOME)/Makefiles/common.mk
 include $(TEMPLATES)/units.mk
 
 ADAVIEW := $(REPOSIT)
-ADAWARN := true
 AFPX := true
 EXES := $(filter-out t_smart_int, $(UNITS))
 

@@ -1,7 +1,6 @@
 include $(HOME)/Makefiles/common.mk
 
 ADAVIEW := $(REPOSIT)
-ADAWARN := true
 AFPX := true
 EXES := account import export account.stat
 

@@ -1,7 +1,5 @@
 include $(HOME)/Makefiles/common.mk
 
-ADAWARN := true
-
 include $(TEMPLATES)/units.mk
 SUBUNITS := afpx-af_dscr afpx-af_list afpx-af_ptg \
   arbitrary-prime_list channels-file \

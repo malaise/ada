@@ -2,7 +2,6 @@
 include $(HOME)/Makefiles/common.mk
 
 ADAVIEW := $(REPOSIT)
-ADAWARN := true
 EXES := als als.stat
 
 CLIBS := cutil
