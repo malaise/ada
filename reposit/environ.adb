@@ -72,7 +72,7 @@ package body Environ is
     use type Asu_Us;
   begin
     Res := Asu_Tus (Sys_Calls.Getenv (Name));
-    if Res = Asu_Null then
+    if Res /= Asu_Null then
       Result := Res;
     end if;
   exception
