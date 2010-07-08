@@ -1,5 +1,6 @@
 with Ada.Text_Io, Ada.Direct_Io, Ada.Strings.Unbounded;
-with Generic_Con_Io, Con_Io, Text_Handler, Normal, Argument, Directory,
+with As.U; use As.U;
+with Generic_Con_Io, Con_Io, Normal, Argument,
      Mixed_Str, Basic_Proc, Xml_Parser,
      Ada_Words, Parser, String_Mng, Computer, Int_Image,
      Language;
@@ -28,7 +29,7 @@ procedure Afpx_Bld is
 
   -- Inputs name
   Default_List_File_Name : constant String := "Afpx.xml";
-  List_File_Name : Text_Handler.Text (Directory.Max_Dir_Name_Len * 2);
+  List_File_Name : Asu_Us;
 
   -- Direct_Io of descriptors, fields, init strings
   package Dscr_Io is new Ada.Direct_Io (Afpx_Typ.Descriptors_Array);
@@ -120,7 +121,7 @@ procedure Afpx_Bld is
     Basic_Proc.Put_Error ("Error: " & Msg);
     Basic_Proc.Put_Line_Error (
           " at line" & Positive'Image (Ctx.Get_Line_No (Node))
-        & " of file " & Text_Handler.Value(List_File_Name));
+        & " of file " & Asu_Ts (List_File_Name));
     raise File_Syntax_Error;
   end File_Error;
 
@@ -937,33 +938,33 @@ procedure Afpx_Bld is
     if not Check_Only then
       begin
         Dscr_Io.Open (Dscr_File, Dscr_Io.In_File,
-                      Text_Handler.Value(Afpx_Typ.Dest_Path) & Afpx_Typ.Dscr_File_Name);
+                      Asu_Ts(Afpx_Typ.Dest_Path) & Afpx_Typ.Dscr_File_Name);
         Dscr_Io.Delete (Dscr_File);
       exception
         when Dscr_Io.Name_Error => null;
       end;
       Dscr_Io.Create (Dscr_File, Dscr_Io.Out_File,
-                      Text_Handler.Value(Afpx_Typ.Dest_Path) & Afpx_Typ.Dscr_File_Name);
+                      Asu_Ts(Afpx_Typ.Dest_Path) & Afpx_Typ.Dscr_File_Name);
 
       begin
         Fld_Io.Open (Fld_File, Fld_Io.In_File,
-                     Text_Handler.Value(Afpx_Typ.Dest_Path) & Afpx_Typ.Fld_File_Name);
+                     Asu_Ts(Afpx_Typ.Dest_Path) & Afpx_Typ.Fld_File_Name);
         Fld_Io.Delete (Fld_File);
       exception
         when Fld_Io.Name_Error => null;
       end;
       Fld_Io.Create (Fld_File, Fld_Io.Out_File,
-                     Text_Handler.Value(Afpx_Typ.Dest_Path) & Afpx_Typ.Fld_File_Name);
+                     Asu_Ts(Afpx_Typ.Dest_Path) & Afpx_Typ.Fld_File_Name);
 
       begin
         Init_Io.Open (Init_File, Init_Io.In_File,
-                      Text_Handler.Value(Afpx_Typ.Dest_Path) & Afpx_Typ.Init_File_Name);
+                      Asu_Ts(Afpx_Typ.Dest_Path) & Afpx_Typ.Init_File_Name);
         Init_Io.Delete (Init_File);
       exception
         when Init_Io.Name_Error => null;
       end;
       Init_Io.Create (Init_File, Init_Io.Out_File,
-                      Text_Handler.Value(Afpx_Typ.Dest_Path) & Afpx_Typ.Init_File_Name);
+                      Asu_Ts(Afpx_Typ.Dest_Path) & Afpx_Typ.Init_File_Name);
     end if;
 
     -- Parse size
@@ -1042,7 +1043,7 @@ procedure Afpx_Bld is
 begin
   -- Help
   begin
-    Argument.Get_Parameter (List_File_Name, Param_Key => "h");
+    List_File_Name := Asu_Tus (Argument.Get_Parameter (Param_Key => "h"));
     Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
                         & " [ -l<afpx_list_file> ] [ -d<destination_dir> ]");
     return;
@@ -1054,29 +1055,29 @@ begin
   -- Source file and dest path arguments
   Expected_Args := 0;
   begin
-    Argument.Get_Parameter (List_File_Name, Param_Key => "l");
-    if Text_Handler.Empty (List_File_Name) then
+    List_File_Name := Asu_Tus (Argument.Get_Parameter (Param_Key => "l"));
+    if List_File_Name = Asu_Null then
       raise Argument_Error;
     end if;
     -- Argument found
     Expected_Args := Expected_Args + 1;
   exception
     when Argument.Argument_Not_Found =>
-      Text_Handler.Set (List_File_Name, Default_List_File_Name);
+      List_File_Name := Asu_Tus (Default_List_File_Name);
     when others =>
       raise Argument_Error;
   end;
 
   begin
-    Argument.Get_Parameter (Afpx_Typ.Dest_Path, Param_Key => "d");
-    if Text_Handler.Empty (Afpx_Typ.Dest_Path) then
+    Afpx_Typ.Dest_Path := Asu_Tus (Argument.Get_Parameter (Param_Key => "d"));
+    if Afpx_Typ.Dest_Path = Asu_Null then
       raise Argument_Error;
     end if;
     -- Argument found
     Expected_Args := Expected_Args + 1;
   exception
     when Argument.Argument_Not_Found =>
-      Text_Handler.Set (Afpx_Typ.Dest_Path, ".");
+      Afpx_Typ.Dest_Path := Asu_Tus (".");
     when others =>
       raise Argument_Error;
   end;
@@ -1085,16 +1086,16 @@ begin
     raise Argument_Error;
   end if;
 
-  Ada.Text_Io.Put_Line ("Reading " & Text_Handler.Value(List_File_Name));
-  Ada.Text_Io.Put_Line ("Writing in " & Text_Handler.Value(Afpx_Typ.Dest_Path));
-  Text_Handler.Append (Afpx_Typ.Dest_Path, "/");
+  Ada.Text_Io.Put_Line ("Reading " & Asu_Ts(List_File_Name));
+  Ada.Text_Io.Put_Line ("Writing in " & Asu_Ts(Afpx_Typ.Dest_Path));
+  Asu.Append (Afpx_Typ.Dest_Path, "/");
 
   -- First check
   Ada.Text_Io.Put_Line ("Parsing:");
   declare
     Parse_Ok : Boolean;
   begin
-    Ctx.Parse (Text_Handler.Value(List_File_Name), Parse_Ok);
+    Ctx.Parse (Asu_Ts(List_File_Name), Parse_Ok);
     if not Parse_Ok then
       Basic_Proc.Put_Line_Error (Ctx.Get_Parse_Error_Message);
       raise File_Syntax_Error;
@@ -1103,7 +1104,7 @@ begin
   exception
     when Xp.File_Error =>
       Basic_Proc.Put_Line_Error ("Error accessing file "
-                            & Text_Handler.Value(List_File_Name));
+                            & Asu_Ts(List_File_Name));
       raise File_Not_Found;
   end;
 

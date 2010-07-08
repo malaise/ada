@@ -48,7 +48,6 @@ package body Environ is
     Free (Ptr);
   end Get_Str;
 
-
   procedure Get_Txt (Name : String; Result : in out Text_Handler.Text) is
     Ptr : String_Access;
     Env_Set   : Boolean;
@@ -67,6 +66,20 @@ package body Environ is
 
     Free (Ptr);
   end Get_Txt;
+
+  procedure Get_Us (Name : String; Result : in out Asu_Us) is
+    Res : Asu_Us;
+    use type Asu_Us;
+  begin
+    Res := Asu_Tus (Sys_Calls.Getenv (Name));
+    if Res = Asu_Null then
+      Result := Res;
+    end if;
+  exception
+     when Sys_Calls.Env_Not_Set =>
+       -- Leave Result unchanged
+       null;
+  end Get_Us;
 
   -- Getenv an Integer
   function  Get_Int (Name : String; Default : Integer) return Integer is

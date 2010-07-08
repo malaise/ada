@@ -1,5 +1,5 @@
 with Ada.Finalization;
-with Text_Handler;
+with As.U;
 package Parser is
 
   -- The function to define separating characters
@@ -16,7 +16,6 @@ package Parser is
   -- Initialise the iterator Iter with the string to parse and the criteria.
   -- Previous content of Iter is overwritten.
   -- May raise Constraint_Error if Is_Sep is null
-  --  or if Str is too long (see Text_Handler.Max_Len_Range).
   procedure Set (Iter : in out Iterator;
                  Str : in String;
                  Is_Sep : in Separing_Function := Space_Htab);
@@ -85,6 +84,7 @@ package Parser is
                  return String;
 
 private
+  use As.U;
 
   type Iter_State_List is (Parsing, Parsed, Finished);
 
@@ -94,8 +94,9 @@ private
   --   Separators is Str (Sep .. First - 1);
   -- If Word is not empty then, Indexes are First and Last
   --  + Start - 1, else 1 and 0.
-  type Iter_Rec (Len : Text_Handler.Max_Len_Range := 0) is record
-    Str : String (1 .. Len) := (others => ' ');
+  type Iter_Rec is record
+    Str : Asu_Us := Asu_Null;
+    Len : Natural := 0;
     Start : Positive := 1;
     Is_Sep : Separing_Function := null;
     State : Iter_State_List := Parsing;

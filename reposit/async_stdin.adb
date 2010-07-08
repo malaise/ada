@@ -1,8 +1,7 @@
-with Ada.Calendar, Ada.Characters.Latin_1, Ada.Strings.Unbounded;
-with Text_Handler, Event_Mng, Sys_Calls, Console, Dynamic_List, Environ;
+with Ada.Calendar, Ada.Characters.Latin_1;
+with As.U; use As.U;
+with Event_Mng, Sys_Calls, Console, Dynamic_List, Environ;
 package body Async_Stdin is
-
-  package Unb renames Ada.Strings.Unbounded;
 
   -- The user callback
   Cb : User_Callback_Access := null;
@@ -12,7 +11,6 @@ package body Async_Stdin is
   Stdio_Is_A_Tty : Boolean;
   -- Is the input flow to be activated
   Active : Boolean := True;
-
 
   package Line is
     -- Init (getenv history size)
@@ -35,7 +33,7 @@ package body Async_Stdin is
 
     package History is
       -- Buffer for exchanges (in/out with caller)
-      Buf : Unb.Unbounded_String;
+      Buf : Asu_Us;
 
       -- List default len.
       History_Size : Positive := 20;
@@ -51,20 +49,20 @@ package body Async_Stdin is
       -- Found any?
       function Search (Init : Boolean) return Boolean;
 
-      -- Unb.Append Buf as new record
+      -- Asu.Append Buf as new record
       procedure Add;
     end History;
 
     package body History is
-      subtype Rec is Unb.Unbounded_String;
+      subtype Rec is Asu_Us;
       package Dyn_List_Mng is new Dynamic_List (Rec);
       package List_Mng renames Dyn_List_Mng.Dyn_List;
       List : List_Mng.List_Type;
       function Match (Curr, Crit : Rec) return Boolean is
       begin
         -- Record in list starts like criteria
-        return Unb.Length (Curr) >= Unb.Length (Crit)
-        and then Unb.Slice (Curr, 1, Unb.Length (Crit)) = Unb.To_String (Crit);
+        return Asu.Length (Curr) >= Asu.Length (Crit)
+        and then Asu.Slice (Curr, 1, Asu.Length (Crit)) = Asu_Ts (Crit);
       end Match;
       procedure Search is new List_Mng.Search (Match);
 
@@ -89,7 +87,7 @@ package body Async_Stdin is
       -- Clear Buf
       procedure Clear is
       begin
-        Buf := Unb.Null_Unbounded_String;
+        Buf := Asu_Null;
       end Clear;
 
       -- Movements
@@ -176,7 +174,7 @@ package body Async_Stdin is
           List.Rewind;
           List.Delete;
         end if;
-        -- Unb.Append at the end of list
+        -- Append at the end of list
         Copy_Buf (R);
         List.Rewind (False, List_Mng.Prev);
         List.Insert (R);
@@ -191,7 +189,7 @@ package body Async_Stdin is
 
     -- Current line of text and cursor position in it
     Ind : Positive := 1;
-    Txt : Unb.Unbounded_String;
+    Txt : Asu_Us;
 
     -- Are we searching (Tab, Tab, Tab...)
     Searching : Boolean := False;
@@ -199,8 +197,9 @@ package body Async_Stdin is
     -- Have we just stored a new string, so prev shall be last
     At_Last : Boolean := True;
 
-    -- Current sequence characters
-    Seq : Text_Handler.Text (4);
+    -- Current sequence characters: Esc + 3
+    Seq_Max_Length : constant := 4;
+    Seq : Asu_Us;
     -- After this delay from Esc, we give up
     Seq_Delay   : constant Duration := 0.25;
     Escape_Time : Ada.Calendar.Time;
@@ -216,15 +215,17 @@ package body Async_Stdin is
     Page_Down_Seq     : constant String := "[6~";
     Insert_Seq        : constant String := "[2~";
 
+    use type Asu_Us;
+
     -- Copy Buf and move to end of line
     procedure Update is
     begin
-      if Unb.Length (History.Buf) /= 0 then
+      if Asu.Length (History.Buf) /= 0 then
         Console.Set_Col (1);
         Console.Erase_Line;
         Txt := History.Buf;
-        Sys_Calls.Put_Output (Unb.To_String (Txt));
-        Ind := Unb.Length (Txt) + 1;
+        Sys_Calls.Put_Output (Asu_Ts (Txt));
+        Ind := Asu.Length (Txt) + 1;
       end if;
     end Update;
 
@@ -236,14 +237,16 @@ package body Async_Stdin is
       At_Last := True;
     end Store;
 
+    -- Add a character. Store it until a sequence or flush
+    -- return true if end of get
     function Add (C : Character) return Boolean is
        Saved_Searching : Boolean;
     begin
       -- Simplistic treatment when stdin/out is not a tty
       if not Stdio_Is_A_Tty then
-        Unb.Append (Txt, C);
+        Asu.Append (Txt, C);
         -- Done when extra character or buffer full
-        return C not in ' ' .. '~' or else Unb.Length(Txt) = Max;
+        return C not in ' ' .. '~' or else Asu.Length(Txt) = Max;
       end if;
 
       -- Save current searching status
@@ -253,9 +256,9 @@ package body Async_Stdin is
       case C is
         when Latin_1.Bs | Latin_1.Del =>
           -- Backspace
-          if not Text_Handler.Empty (Seq) then
+          if Seq /= Asu_Null then
             Store;
-            Unb.Append (Txt, Latin_1.Esc);
+            Asu.Append (Txt, Latin_1.Esc);
             return True;
           end if;
           if Ind = 1 then
@@ -263,20 +266,20 @@ package body Async_Stdin is
           else
             -- Move one left, shift tail
             Ind := Ind - 1;
-            Txt := Unb.To_Unbounded_String (
-                      Unb.Slice (Txt, 1, Ind - 1)
-                    & Unb.Slice (Txt, Ind + 1, Unb.Length(Txt)));
+            Txt := Asu_Tus (
+                      Asu.Slice (Txt, 1, Ind - 1)
+                    & Asu.Slice (Txt, Ind + 1, Asu.Length(Txt)));
             Console.Left;
             Console.Delete;
           end if;
         when Latin_1.Ht =>
           -- Search
-          if not Text_Handler.Empty (Seq) then
+          if Seq /= Asu_Null then
             Store;
-            Unb.Append (Txt, Latin_1.Esc);
+            Asu.Append (Txt, Latin_1.Esc);
             return True;
           end if;
-          if Unb.Length (Txt) = 0 then
+          if Asu.Length (Txt) = 0 then
             return False;
           end if;
           if not Saved_Searching then
@@ -291,36 +294,34 @@ package body Async_Stdin is
           Searching := True;
         when Latin_1.Esc =>
           -- Escape, validate previous escape
-          if not Text_Handler.Empty (Seq) then
+          if Seq /= Asu_Null then
             Store;
-            Unb.Append (Txt, Latin_1.Esc);
+            Asu.Append (Txt, Latin_1.Esc);
             return True;
           end if;
-          Text_Handler.Set (Seq, C);
+          Seq := Asu_Tus (C);
           Escape_Time := Ada.Calendar.Clock;
         when ' ' .. '~' =>
-          if Text_Handler.Empty (Seq) then
+          if Seq = Asu_Null then
             -- Insert C at current position and move 1 right
-            Txt := Unb.To_Unbounded_String (
-                      Unb.Slice (Txt, 1, Ind - 1)
+            Txt := Asu_Tus (
+                      Asu.Slice (Txt, 1, Ind - 1)
                     & C
-                    & Unb.Slice (Txt, Ind, Unb.Length(Txt)));
+                    & Asu.Slice (Txt, Ind, Asu.Length(Txt)));
             Ind := Ind + 1;
-            Sys_Calls.Put_Output (Unb.Slice (Txt, Ind - 1, Unb.Length(Txt)));
-            for I in 1 .. Unb.Length(Txt) - Ind + 1 loop
+            Sys_Calls.Put_Output (Asu.Slice (Txt, Ind - 1, Asu.Length(Txt)));
+            for I in 1 .. Asu.Length(Txt) - Ind + 1 loop
               Console.Left;
             end loop;
-            if Unb.Length(Txt) = Max then
+            if Asu.Length(Txt) = Max then
               Store;
               return True;
             end if;
-            return False;
           else
             -- Add C in sequence try to find one
-            Text_Handler.Append (Seq, C);
+            Asu.Append (Seq, C);
             declare
-              Str : constant String
-                  := Text_Handler.Value(Seq)(2 .. Text_Handler.Length(Seq));
+              Str : constant String := Asu.Slice (Seq, 2, Asu.Length (Seq));
             begin
               if Str = Arrow_Left_Seq then
                 -- Left if not at first
@@ -330,36 +331,36 @@ package body Async_Stdin is
                   Ind := Ind - 1;
                   Console.Left;
                 end if;
-                Text_Handler.Empty (Seq);
+                Seq := Asu_Null;
               elsif Str = Arrow_Right_Seq then
                 -- Right if not at Last
-                if Ind = Unb.Length (Txt) + 1 then
+                if Ind = Asu.Length (Txt) + 1 then
                   Sys_Calls.Put_Output (Bell);
                 else
                   Ind := Ind + 1;
                   Console.Right;
                 end if;
-                Text_Handler.Empty (Seq);
+                Seq := Asu_Null;
               elsif Str = Home_Seq then
                 -- Home
                 Ind := 1;
                 Console.Set_Col(1);
-                Text_Handler.Empty (Seq);
+                Seq := Asu_Null;
               elsif Str = End_Seq then
                 -- End
-                Ind := Unb.Length(Txt) + 1;
+                Ind := Asu.Length(Txt) + 1;
                 Console.Set_Col(Ind);
-                Text_Handler.Empty (Seq);
+                Seq := Asu_Null;
               elsif Str = Delete_Seq then
                 -- Del
-                if Ind /= Unb.Length (Txt) + 1 then
+                if Ind /= Asu.Length (Txt) + 1 then
                   -- Move shift tail
-                  Txt := Unb.To_Unbounded_String (
-                          Unb.Slice (Txt, 1, Ind - 1)
-                        & Unb.Slice (Txt, Ind + 1, Unb.Length(Txt)));
+                  Txt := Asu_Tus (
+                          Asu.Slice (Txt, 1, Ind - 1)
+                        & Asu.Slice (Txt, Ind + 1, Asu.Length(Txt)));
                   Console.Delete;
                 end if;
-                Text_Handler.Empty (Seq);
+                Seq := Asu_Null;
               elsif Str = Arrow_Up_Seq then
                 -- Up
                 if At_Last then
@@ -370,7 +371,7 @@ package body Async_Stdin is
                 end if;
                 At_Last := False;
                 Update;
-                Text_Handler.Empty (Seq);
+                Seq := Asu_Null;
               elsif Str = Arrow_Down_Seq then
                 -- Down
                 if not At_Last then
@@ -378,37 +379,46 @@ package body Async_Stdin is
                   History.Next;
                   Update;
                 end if;
-                Text_Handler.Empty (Seq);
+                Seq := Asu_Null;
               elsif Str = Page_Up_Seq then
                 -- Page Up
                 History.First;
                 At_Last := False;
                 Update;
-                Text_Handler.Empty (Seq);
+                Seq := Asu_Null;
               elsif Str = Page_Down_Seq then
                 -- Page Down
                 History.Last;
                 At_Last := False;
                 Update;
-                Text_Handler.Empty (Seq);
+                Seq := Asu_Null;
               elsif Str = Insert_Seq then
                 -- Discard Insert
-                Text_Handler.Empty (Seq);
-              elsif Unb.Length(Txt) + Text_Handler.Length(Seq) = Max then
-                -- Not enough final space to store sequence
+                Seq := Asu_Null;
+              -- No sequence identified
+              elsif Asu.Length(Seq) = Seq_Max_Length then
+                -- Sequence is full and will not be recognized
+                Seq := Asu_Null;
                 Store;
-                Unb.Append (Txt, Latin_1.Esc);
+                Asu.Append (Txt, Latin_1.Esc);
                 return True;
+              elsif Asu.Length(Txt) + Asu.Length(Seq) = Max then
+                -- Not enough final space to store sequence
+                Seq := Asu_Null;
+                Store;
+                Asu.Append (Txt, Latin_1.Esc);
+                return True;
+              -- else C is stored in Seq and we return False
               end if;
             end;
           end if;
         when others =>
           -- Other char
           Store;
-          if not Text_Handler.Empty (Seq) then
-            Unb.Append (Txt, Latin_1.Esc);
+          if Seq /= Asu_Null then
+            Asu.Append (Txt, Latin_1.Esc);
           else
-            Unb.Append (Txt, C);
+            Asu.Append (Txt, C);
           end if;
           return True;
       end case;
@@ -418,11 +428,11 @@ package body Async_Stdin is
     function Flush return Boolean is
       use type Ada.Calendar.Time;
     begin
-      if not Text_Handler.Empty (Seq)
+      if Seq /= Asu_Null
       and then Ada.Calendar.Clock - Escape_Time > Seq_Delay then
         -- Client wants to flush and Esc is getting old
-        Unb.Append (Txt, Latin_1.Esc);
-        Text_Handler.Empty (Seq);
+        Asu.Append (Txt, Latin_1.Esc);
+        Seq := Asu_Null;
         return True;
       end if;
       return False;
@@ -430,8 +440,8 @@ package body Async_Stdin is
 
     procedure Clear is
     begin
-      Text_Handler.Empty (Seq);
-      Txt := Unb.Null_Unbounded_String;
+      Seq := Asu_Null;
+      Txt := Asu_Null;
       Ind := 1;
       if Stdio_Is_A_Tty then
         Console.Set_Col(1);
@@ -440,9 +450,9 @@ package body Async_Stdin is
 
     function Get return String is
     begin
-      Unb.Append (Txt, Text_Handler.Value(Seq));
-      Text_Handler.Empty (Seq);
-      return Unb.To_String (Txt);
+      Asu.Append (Txt, Seq);
+      Seq := Asu_Null;
+      return Asu.To_String (Txt);
     end Get;
 
   end Line;

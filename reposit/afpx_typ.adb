@@ -1,4 +1,3 @@
-with Ada.Strings.Unbounded;
 with String_Mng;
 package body Afpx_Typ is
 
@@ -29,8 +28,7 @@ package body Afpx_Typ is
     -- Set the colors when using the first descriptor
     for I in Colors'Range loop
       Last := String_Mng.Parse_Spaces (Names(I), False);
-      Colors(I) := Ada.Strings.Unbounded.To_Unbounded_String (
-               Names(I)(1 .. Last));
+      Colors(I) := Asu_Tus (Names(I)(1 .. Last));
     end loop;
     return Colors;
   end To_Def;
@@ -40,8 +38,7 @@ package body Afpx_Typ is
     Names : Color_Names := (others => No_Color);
   begin
     for I in Names'Range loop
-      Names(I)(1 .. Ada.Strings.Unbounded.Length (Defs(I))) :=
-           Ada.Strings.Unbounded.To_String (Defs(I));
+      Names(I)(1 .. Asu.Length (Defs(I))) := Asu_Ts (Defs(I));
     end loop;
     return Names;
   end To_Names;

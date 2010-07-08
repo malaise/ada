@@ -1,5 +1,10 @@
 package body As.U is
 
+  function Asu_Tus (Char : Character) return Asu_Us is
+  begin
+    return Asu_Tus ("" & Char);
+  end Asu_Tus;
+
   procedure Set (To : out Asu_Us; Val : in Asu_Us) is
   begin
     To := Val;

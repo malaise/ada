@@ -1,3 +1,4 @@
+with As.U; use As.U;
 with Text_Handler;
 package Environ is
 
@@ -15,6 +16,9 @@ package Environ is
                                     Length : in out Natural);
   -- Getenv for a Text.
   procedure Get_Txt (Name : String; Result : in out Text_Handler.Text);
+
+  -- Getenv for a unbounded string
+  procedure Get_Us (Name : String; Result : in out Asu_Us);
 
   -- Getenv an Integer
   function  Get_Int (Name : String; Default : Integer) return Integer;

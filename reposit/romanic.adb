@@ -1,4 +1,4 @@
-with Text_Handler;
+with As.U; use As.U;
 package body Romanic is
   -- Convert a romanic number into arabic
   -- May raise Invalid_Roman
@@ -165,7 +165,7 @@ package body Romanic is
     -- Index in Type_Def_Array, init to last power of 10 (odd)
     Index : Digits_Range := Digits_Range'Last;
     -- Result string
-    Result : Text_Handler.Text (3 * Nb_Digits);
+    Result : Asu_Us;
     N : Natural;
     Div : Positive;
   begin
@@ -178,22 +178,22 @@ package body Romanic is
         raise Program_Error;
       elsif N = 9 then
         -- Current then Next_Next
-        Text_Handler.Append (Result, Typo_Def_Array(Index).Typo
-                                   & Typo_Def_Array(Index+2).Typo);
+        Asu.Append (Result, Typo_Def_Array(Index).Typo
+                          & Typo_Def_Array(Index+2).Typo);
       elsif N >= 5 then
         -- Next then N times current
-        Text_Handler.Append (Result, Typo_Def_Array(Index+1).Typo);
+        Asu.Append (Result, Typo_Def_Array(Index+1).Typo);
         for I in 6 .. N loop
-          Text_Handler.Append (Result, Typo_Def_Array(Index).Typo);
+          Asu.Append (Result, Typo_Def_Array(Index).Typo);
         end loop;
       elsif N = 4 then
         -- Current then Next
-        Text_Handler.Append (Result, Typo_Def_Array(Index).Typo
-                                   & Typo_Def_Array(Index+1).Typo);
+        Asu.Append (Result, Typo_Def_Array(Index).Typo
+                          & Typo_Def_Array(Index+1).Typo);
       else
         -- N times current
         for I in 1 .. N loop
-          Text_Handler.Append (Result, Typo_Def_Array(Index).Typo);
+          Asu.Append (Result, Typo_Def_Array(Index).Typo);
         end loop;
       end if;
 
@@ -205,7 +205,7 @@ package body Romanic is
       Index := Index - 2;
     end loop;
 
-    return Text_Handler.Value(Result);
+    return Asu_Ts (Result);
   end Arabic2Romanic;
 
 end Romanic;

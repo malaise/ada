@@ -418,6 +418,13 @@ package body Afpx is
     Encode_Field (Field_No, From_Pos, Text_Handler.Value (Str));
   end Encode_Field;
 
+  procedure Encode_Field (Field_No : in Field_Range;
+                          From_Pos : in Con_Io.Full_Square;
+                          Str      : in Asu_Us) is
+  begin
+    Encode_Field (Field_No, From_Pos, Asu_Ts (Str));
+  end Encode_Field;
+
   -- Encode a string in a line for the list
   -- Exceptions : String_Too_Long
   procedure Encode_Line (Line : in out Line_Rec;
@@ -496,6 +503,14 @@ package body Afpx is
                           Adjust   : in Boolean := True) is
   begin
     Text_Handler.Set (Str, Decode_Field (Field_No, Row, Adjust));
+  end Decode_Field;
+
+  procedure Decode_Field (Field_No : in Field_Range;
+                          Row      : in Con_Io.Full_Row_Range;
+                          Str      : in out Asu_Us;
+                          Adjust   : in Boolean := True) is
+  begin
+    Str := Asu_Tus (Decode_Field (Field_No, Row, Adjust));
   end Decode_Field;
 
   -- Get field colors

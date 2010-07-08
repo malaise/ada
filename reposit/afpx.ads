@@ -1,3 +1,4 @@
+with As.U; use As.U;
 with Text_Handler, Con_Io, Dynamic_List;
 
 package Afpx is
@@ -105,6 +106,9 @@ package Afpx is
   procedure Encode_Field (Field_No : in Field_Range;
                           From_Pos : in Con_Io.Full_Square;
                           Str      : in Str_Txt);
+  procedure Encode_Field (Field_No : in Field_Range;
+                          From_Pos : in Con_Io.Full_Square;
+                          Str      : in Asu_Us);
 
   -- Decode the content of a row of a field
   -- If Adjust is set, then only Width string characters are
@@ -121,6 +125,10 @@ package Afpx is
   procedure Decode_Field (Field_No : in Field_Range;
                           Row      : in Con_Io.Full_Row_Range;
                           Str      : in out Str_Txt;
+                          Adjust   : in Boolean := True);
+  procedure Decode_Field (Field_No : in Field_Range;
+                          Row      : in Con_Io.Full_Row_Range;
+                          Str      : in out Asu_Us;
                           Adjust   : in Boolean := True);
 
 

@@ -138,22 +138,22 @@ begin
     File_Dir_Env_Name : constant String := "AFPX_DATA_DIR";
     Default_Path : constant String := ".";
   begin
-    Text_Handler.Set (Afpx_Typ.Dest_Path, Default_Path);
-    Environ.Get_Txt (File_Dir_Env_Name, Afpx_Typ.Dest_Path);
-    Text_Handler.Append (Afpx_Typ.Dest_Path, "/");
+    Afpx_Typ.Dest_Path := Asu_Tus (Default_Path);
+    Environ.Get_Us (File_Dir_Env_Name, Afpx_Typ.Dest_Path);
+    Asu.Append (Afpx_Typ.Dest_Path, "/");
 
     Dscr_Io.Open (Dscr_File, Dscr_Io.In_File,
-                  Text_Handler.Value(Afpx_Typ.Dest_Path) & Afpx_Typ.Dscr_File_Name);
+                  Asu_Ts (Afpx_Typ.Dest_Path) & Afpx_Typ.Dscr_File_Name);
     Fld_Io.Open  (Fld_File,  Fld_Io.In_File,
-                  Text_Handler.Value(Afpx_Typ.Dest_Path) & Afpx_Typ.Fld_File_Name);
+                  Asu_Ts (Afpx_Typ.Dest_Path) & Afpx_Typ.Fld_File_Name);
     Init_Io.Open (Init_File, Init_Io.In_File,
-                  Text_Handler.Value(Afpx_Typ.Dest_Path) & Afpx_Typ.Init_File_Name);
+                  Asu_Ts (Afpx_Typ.Dest_Path) & Afpx_Typ.Init_File_Name);
   exception
     when others =>
       Ada.Text_Io.Put ("AFPX ERROR: Can't read descriptors. For info, "
                       & File_Dir_Env_Name & " is ");
       if Environ.Is_Set (File_Dir_Env_Name) then
-        Ada.Text_Io.Put_Line (Text_Handler.Value(Afpx_Typ.Dest_Path));
+        Ada.Text_Io.Put_Line (Asu_Ts (Afpx_Typ.Dest_Path));
       else
         Ada.Text_Io.Put_Line ("not set.");
       end if;
@@ -173,3 +173,4 @@ begin
     raise Afpx_File_Version_Error;
   end if;
 end Af_Dscr;
+

@@ -1,11 +1,12 @@
-with Generic_Con_Io, Con_Io, Text_Handler, Directory;
+with As.U; use As.U;
+with Generic_Con_Io, Con_Io;
 package Afpx_Typ is
 
   -- Version of Afpx
   Afpx_Version : constant Float := 4.2;
 
   -- Files path
-  Dest_Path : Text_Handler.Text (Directory.Max_Dir_Name_Len + 1);
+  Dest_Path : Asu_Us;
 
   -- Files name
   Dscr_File_Name : constant String := "AFPX.DSC";
