@@ -178,7 +178,7 @@ package body Xml_Parser is
   -- If file path is relative and father null, use current dir
   function Build_Full_Name (In_File : in Asu_Us;
                             Father  : in Asu_Us := Asu_Null) return Asu_Us is
-    use Asu;
+    use type Asu_Us;
   begin
     -- If Stdin or string or full path: keep it
     if Asu_Is_Null (In_File) or else Asu.Element (In_File, 1) = '/' then

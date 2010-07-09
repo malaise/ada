@@ -1,5 +1,5 @@
 with System;
-with Ada.Strings.Unbounded;
+with As.U; use As.U;
 with Timers;
 package X_Mng is
 
@@ -11,8 +11,7 @@ package X_Mng is
   for Byte'Size use System.Storage_Unit;
 
   subtype Color       is Natural range 0 .. 13;
-  type Color_Definition is array (Color)
-        of Ada.Strings.Unbounded.Unbounded_String;
+  type Color_Definition is array (Color) of Asu_Us;
   subtype Font        is Natural range 0 .. 3;
   subtype Bell_Repeat is Positive range 1 .. 5;
 

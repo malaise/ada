@@ -10,16 +10,6 @@ package body Xml_Parser.Generator is
     return "V" & Major_Version & "." & Minor_Version;
   end Version;
 
-
-  -- Ada unbounded strings
-  package Asu renames Ada.Strings.Unbounded;
-  subtype Asu_Us is Asu.Unbounded_String;
-  Asu_Null : constant Asu_Us := Asu.Null_Unbounded_String;
-  function Asu_Tus (Str : String) return Asu_Us
-                   renames Asu.To_Unbounded_String;
-  function Asu_Ts (Str : Asu_Us) return String
-                   renames Asu.To_String;
-
   -- Image for xml version
   function Vers_Image is new Int_Image (Natural);
 
@@ -846,7 +836,7 @@ package body Xml_Parser.Generator is
   end Set;
 
   procedure Set (Ctx : in Ctx_Type;
-                 Str : out Ada.Strings.Unbounded.Unbounded_String;
+                 Str : out Asu_Us;
                  Format : in Format_Kind_List := Default_Format;
                  Width  : in Natural := Default_Width) is
     Flow : Flow_Dscr(Use_File => False);
@@ -1422,7 +1412,7 @@ package body Xml_Parser.Generator is
 
   procedure Set_Image (Ctx    : in Xml_Parser.Ctx_Type;
                        Update : in Node_Update;
-                       Str    : out Ada.Strings.Unbounded.Unbounded_String;
+                       Str    : out Asu_Us;
                        Format : in Format_Kind_List := Default_Format;
                        Width  : in Natural := Default_Width) is
   begin

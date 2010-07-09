@@ -214,7 +214,7 @@ package body Tree_Mng is
     Cell.Line_No := Line;
     Cell.Kind := Element;
     Cell.Nb_Attributes := 0;
-    Cell.Name := Asu.To_Unbounded_String ("xml");
+    Cell.Name := Asu_Tus ("xml");
     Cell.Value := Asu_Null;
     -- Update root
     Prologue.Replace (Cell);

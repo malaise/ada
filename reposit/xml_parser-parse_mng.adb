@@ -423,8 +423,7 @@ package body Parse_Mng  is
     -- In Dtd: [ Version ] Encode
     -- Check Version
     Tree_Mng.Find_Xml_Attribute (Ctx.Prologue.all,
-           Asu.To_Unbounded_String ("version"),
-           Attribute_Index, Attribute_Value);
+           Asu_Tus ("version"), Attribute_Index, Attribute_Value);
     if (Attribute_Index /= 0 and then Attribute_Index /= Next_Index)
     or else (Of_Xml and then Attribute_Index = 0) then
       Util.Error (Ctx.Flow, "Missing or invalid xml version attribute");
@@ -443,8 +442,7 @@ package body Parse_Mng  is
 
     -- Check Encoding
     Tree_Mng.Find_Xml_Attribute (Ctx.Prologue.all,
-           Asu.To_Unbounded_String ("encoding"),
-           Attribute_Index, Attribute_Value);
+           Asu_Tus ("encoding"), Attribute_Index, Attribute_Value);
     if (Attribute_Index /= 0 and then Attribute_Index /= Next_Index)
     or else (not Of_Xml and then Attribute_Index = 0) then
       Util.Error (Ctx.Flow, "Missing or invalid xml encoding attribute");
@@ -491,8 +489,7 @@ package body Parse_Mng  is
 
     -- Check Standalone
     Tree_Mng.Find_Xml_Attribute (Ctx.Prologue.all,
-           Asu.To_Unbounded_String ("standalone"),
-           Attribute_Index, Attribute_Value);
+           Asu_Tus ("standalone"), Attribute_Index, Attribute_Value);
     if (Attribute_Index /= 0 and then Attribute_Index /= Next_Index)
     or else (not Of_Xml and then Attribute_Index /= 0) then
       Util.Error (Ctx.Flow, "Missing or invalid xml standalone attribute");
@@ -1190,7 +1187,7 @@ package body Parse_Mng  is
               Util.Error (Ctx.Flow, "Unterminated CDATA section");
             end if;
             -- Extract Cdata and apply policy
-            Cdata := Asu.Unbounded_Slice (Text,
+            Cdata := Asu_Uslice (Text,
                      Start_Index +  Util.Cdata_Start'Length,
                      Index - 1);
             case Ctx.Cdata_Policy is

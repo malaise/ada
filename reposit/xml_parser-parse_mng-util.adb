@@ -903,7 +903,7 @@ package body Util is
       end if;
 
       -- Got an entity name: get value if it exists (skip % & ;)
-      Name := Asu.Unbounded_Slice (Result, Istart + 1, Istop - 1);
+      Name := Asu_Uslice (Result, Istart + 1, Istop - 1);
 
       Entity_Mng.Exists (Dtd.Entity_List,
                            Name, Starter = Ent_Param, Found);

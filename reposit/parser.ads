@@ -1,5 +1,5 @@
 with Ada.Finalization;
-with As.U;
+with As.U; use As.U;
 package Parser is
 
   -- The function to define separating characters

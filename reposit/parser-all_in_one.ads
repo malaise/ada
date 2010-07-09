@@ -1,5 +1,4 @@
 package Parser.All_In_One is
-  use As.U;
 
   -- The array of parsed element
   -- A parsed element is either a word or some separators

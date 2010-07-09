@@ -2,13 +2,6 @@ with Ada.Calendar, Ada.Characters.Latin_1;
 with C_Types, My_Io, Address_Ops, Environ, Perpet, Event_Mng, Virtual_Time;
 package body X_Mng is
 
-   -- Asu = Ada.Strings.Unbounded
-  package Asu renames Ada.Strings.Unbounded;
-  subtype Asu_Us is Ada.Strings.Unbounded.Unbounded_String;
-  function Asu_Ts (Asu_Str : Asu_Us) return String
-                   renames Asu.To_String;
-
-
   -- Maximum successive X events
   Max_Successive_X : constant Positive := 21;
 

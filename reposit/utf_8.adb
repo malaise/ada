@@ -1,4 +1,4 @@
-with Ada.Strings.Unbounded;
+with As.U; use As.U;
 with Bit_Ops, Unbounded_Arrays;
 -- Utf_8 encoding/decoding
 package body Utf_8 is
@@ -224,12 +224,12 @@ package body Utf_8 is
 
   -- Encodes a Unicode sequence as a Utf-8 sequence (of sequecnes)
   function Encode (Unicode : Unicode_Sequence) return Sequence is
-    Result : Ada.Strings.Unbounded.Unbounded_String;
+    Result : Asu_Us;
   begin
     for I in Unicode'Range loop
-      Ada.Strings.Unbounded.Append (Result, Encode (Unicode(I)));
+      Asu.Append (Result, Encode (Unicode(I)));
     end loop;
-    return Ada.Strings.Unbounded.To_String (Result);
+    return Asu_Ts (Result);
   end Encode;
 
 
