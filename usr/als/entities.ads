@@ -1,8 +1,8 @@
-with Ada.Calendar, Ada.Strings.Unbounded;
+with Ada.Calendar;
+with As.U; use As.U;
 with Directory, Sys_Calls, Dynamic_List;
 package Entities is
 
-  subtype Asu_Us is Ada.Strings.Unbounded.Unbounded_String;
 
   -- An entry in directory
   type Entity is record

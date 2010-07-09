@@ -1,10 +1,6 @@
+with As.U; use As.U;
 with Dynamic_List, Sys_Calls;
-with Utils;
 package Git_If is
-
-  -- Asu stuff
-  package Asu renames Utils.Asu;
-  subtype Asu_Us is Utils.Asu_Us;
 
   -- Git version
   -- No_Git is call to "git --version" fails

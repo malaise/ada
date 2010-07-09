@@ -1,21 +1,18 @@
-with Ada.Text_Io, Ada.Strings.Unbounded;
-with Argument, Sys_Calls, Text_Line, Temp_File, Dynamic_List,
-     Regular_Expressions, Directory, Copy_File, File_Access, Mixed_Str,
-     Int_Image;
+with Ada.Text_Io;
+with As.U; use As.U;
+with Argument, Sys_Calls, Text_Line, Temp_File, Regular_Expressions, Directory,
+     Copy_File, File_Access, Mixed_Str, Int_Image;
 with Search_Pattern, Replace_Pattern, Debug;
 package body Substit is
 
-  package Asu renames Ada.Strings.Unbounded;
-
   -- List of strings
-  package Line_List_Dyn_Mng is new Dynamic_List (Asu.Unbounded_String);
-  package Line_List_Mng renames Line_List_Dyn_Mng.Dyn_List;
+  package Line_List_Mng renames Asu_Dyn_List_Mng;
   Line_List : Line_List_Mng.List_Type;
-  subtype Str_Access is Line_List_Dyn_Mng.Element_Access;
+  subtype Str_Access is Asu_List_Mng.Element_Access;
 
   -- File names
-  In_File_Name : Asu.Unbounded_String;
-  Out_File_Name : Asu.Unbounded_String;
+  In_File_Name : Asu_Us;
+  Out_File_Name : Asu_Us;
 
   -- Files
   In_File : Text_Line.File_Type;
@@ -29,7 +26,7 @@ package body Substit is
   Is_Iterative : Boolean;
 
   -- Line or block separator
-  Delimiter : Asu.Unbounded_String;
+  Delimiter : Asu_Us;
 
   -- Current line number
   Line_No : Long_Long_Natural;
@@ -145,9 +142,9 @@ package body Substit is
     pragma Unreferenced (Dummy);
   begin
     if Asu.Length (Out_File_Name) /= 0
-    and then Sys_Calls.File_Check (Asu.To_String (Out_File_Name)) then
+    and then Sys_Calls.File_Check (Asu_Ts (Out_File_Name)) then
       -- File exists => remove
-      Dummy := Sys_Calls.Unlink (Asu.To_String (Out_File_Name));
+      Dummy := Sys_Calls.Unlink (Asu_Ts (Out_File_Name));
     end if;
   exception
     when others => null;
@@ -158,11 +155,11 @@ package body Substit is
   begin
     if Backup then
       -- Copy in file as .asu if Backup
-      Result := Copy_File (Asu.To_String (In_File_Name),
-                           Asu.To_String (In_File_Name) & ".asu");
+      Result := Copy_File (Asu_Ts (In_File_Name),
+                           Asu_Ts (In_File_Name) & ".asu");
       if not Result then
-        Error ("Cannot copy " & Asu.To_String (In_File_Name)
-             & " to " & Asu.To_String (In_File_Name) & ".asu");
+        Error ("Cannot copy " & Asu_Ts (In_File_Name)
+             & " to " & Asu_Ts (In_File_Name) & ".asu");
         Clean;
         return;
       end if;
@@ -170,32 +167,32 @@ package body Substit is
 
     -- Propagate access rights from In_File to Out_File
     begin
-      Sys_Calls.Set_Rights (Asu.To_String (Out_File_Name),
-          Sys_Calls.File_Stat (Asu.To_String (In_File_Name)).Rights);
+      Sys_Calls.Set_Rights (Asu_Ts (Out_File_Name),
+          Sys_Calls.File_Stat (Asu_Ts (In_File_Name)).Rights);
     exception
       when others =>
-        Error ("Cannot propagate rights of " & Asu.To_String (In_File_Name)
-             & " to " & Asu.To_String (Out_File_Name));
+        Error ("Cannot propagate rights of " & Asu_Ts (In_File_Name)
+             & " to " & Asu_Ts (Out_File_Name));
     end;
 
     -- Rename out file as in file
-    Result := Sys_Calls.Rename (Asu.To_String (Out_File_Name),
-                                Asu.To_String (In_File_Name));
+    Result := Sys_Calls.Rename (Asu_Ts (Out_File_Name),
+                                Asu_Ts (In_File_Name));
     if not Result then
       -- Rename failed, perhaps not the same file system
       -- Try a Copy then Delete
-      Result := Copy_File (Asu.To_String (Out_File_Name),
-                                Asu.To_String (In_File_Name));
+      Result := Copy_File (Asu_Ts (Out_File_Name),
+                           Asu_Ts (In_File_Name));
       if not Result then
-        Error ("Cannot move " & Asu.To_String (Out_File_Name)
-             & " to " & Asu.To_String (In_File_Name));
+        Error ("Cannot move " & Asu_Ts (Out_File_Name)
+             & " to " & Asu_Ts (In_File_Name));
       end if;
       -- This should work, anyway not a real problem if it fails
-      Result := Sys_Calls.Unlink (Asu.To_String (Out_File_Name));
+      Result := Sys_Calls.Unlink (Asu_Ts (Out_File_Name));
       if not Result then
         Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
           & " WARNING: Cannot remove temporary file "
-          & Asu.To_String (Out_File_Name) & ".");
+          & Asu_Ts (Out_File_Name) & ".");
       end if;
     end if;
 
@@ -206,16 +203,15 @@ package body Substit is
                   Tmp_Dir   : in String;
                   For_Write : in Boolean) is
     In_Fd, Out_Fd : Sys_Calls.File_Desc;
-    File_Dir : Asu.Unbounded_String;
-    use type Asu.Unbounded_String;
+    File_Dir : Asu_Us;
   begin
-    In_File_Name := Asu.To_Unbounded_String (File_Name);
+    In_File_Name := Asu_Tus (File_Name);
     Is_Stdin := File_Name = Std_In_Out;
     -- Open In fd and Out file if not stdin/stdout
     if Is_Stdin then
       In_Fd := Sys_Calls.Stdin;
       Out_Fd := Sys_Calls.Stdout;
-      Out_File_Name := Asu.Null_Unbounded_String;
+      Out_File_Name := Asu_Null;
     else
       -- Check access rights (rw) of this file
       Check_File (File_Name, For_Write);
@@ -229,33 +225,31 @@ package body Substit is
         -- Build out file dir
         if Tmp_Dir = "" then
           -- Current dir
-          File_Dir := Asu.To_Unbounded_String (Directory.Dirname (File_Name));
-          if File_Dir /= Asu.Null_Unbounded_String then
+          File_Dir := Asu_Tus (Directory.Dirname (File_Name));
+          if not Asu_Is_Null (File_Dir) then
             -- Remove trailing /
-            File_Dir := Asu.To_Unbounded_String (
-              Asu.Slice (File_Dir, 1, Asu.Length(File_Dir) - 1));
+            File_Dir := Asu_Tus (
+                    Asu.Slice (File_Dir, 1, Asu.Length(File_Dir) - 1));
           else
-            File_Dir := Asu.To_Unbounded_String (".");
+            File_Dir := Asu_Tus (".");
           end if;
         else
           -- Tmp dir specified as argument
-          File_Dir := Asu.To_Unbounded_String (Tmp_Dir);
+          File_Dir := Asu_Tus (Tmp_Dir);
         end if;
         -- Create out file
         begin
-          Out_File_Name := Asu.To_Unbounded_String (
-                           Temp_File.Create (Asu.To_String (File_Dir)));
+          Out_File_Name := Asu_Tus (Temp_File.Create (Asu_Ts (File_Dir)));
         exception
           when others =>
-            Error ("Cannot create temp file in """ & Asu.To_String (File_Dir)
+            Error ("Cannot create temp file in """ & Asu_Ts (File_Dir)
                  & """");
         end;
         begin
-          Out_Fd := Sys_Calls.Open (Asu.To_String (Out_File_Name),
-                                    Sys_Calls.Out_File);
+          Out_Fd := Sys_Calls.Open (Asu_Ts (Out_File_Name), Sys_Calls.Out_File);
         exception
           when Sys_Calls.Name_Error =>
-            Error ("Cannot open temp file " & Asu.To_String (Out_File_Name));
+            Error ("Cannot open temp file " & Asu_Ts (Out_File_Name));
         end;
       end if;
     end if;
@@ -289,10 +283,9 @@ package body Substit is
   Trail_Line_Feed : Boolean := False;
   function Read return Boolean is
     Nb_To_Read : Natural;
-    Line : Asu.Unbounded_String;
+    Line : Asu_Us;
     Len : Natural;
-    Line_Feed : constant Asu.Unbounded_String
-              :=  Asu.To_Unbounded_String (Text_Line.Get_Line_Feed (In_File));
+    Line_Feed : constant Asu_Us := Asu_Tus (Text_Line.Get_Line_Feed (In_File));
   begin
     -- Move to end
     Line_List.Rewind (False, Line_List_Mng.Prev);
@@ -313,7 +306,7 @@ package body Substit is
       Line := Text_Line.Get (In_File);
       Len := Asu.Length (Line);
       if Debug.Set then
-        Sys_Calls.Put_Line_Error ("Read >" &  Asu.To_String (Line) & "<");
+        Sys_Calls.Put_Line_Error ("Read >" &  Asu_Ts (Line) & "<");
       end if;
       if Len = 0 then
         -- We reached the end of file
@@ -324,7 +317,7 @@ package body Substit is
       and then Asu.Element(Line, Len) = Text_Line.Line_Feed_Char then
         -- Line (possibly empty) and Line_Feed
         -- Insert line (without Lf)
-        Line_List.Insert (Asu.To_Unbounded_String (Asu.Slice (Line, 1, Len-1)));
+        Line_List.Insert (Asu_Tus (Asu.Slice (Line, 1, Len-1)));
         Nb_To_Read := Nb_To_Read - 1;
         Line_No := Line_No + 1;
         if Nb_To_Read = 0 then
@@ -384,7 +377,7 @@ package body Substit is
     -- Init buffer of lines
     Line_List.Delete_List;
     Trail_Line_Feed := False;
-    Substit.Delimiter := Asu.To_Unbounded_String (Delimiter);
+    Substit.Delimiter := Asu_Tus (Delimiter);
     -- Init substitution by reading Nb_Pattern lines and Newlines
     -- Loop on substit
     Nb_Subst := 0;
@@ -455,7 +448,7 @@ package body Substit is
     loop
       -- Search a Match from Current to Last
       -- Exit when no (more) match
-      exit when not Search_Pattern.Check (Asu.To_String (Line.all),
+      exit when not Search_Pattern.Check (Asu_Ts (Line.all),
                         Current, Search => True, Regex_Index => 1);
 
       -- Found a match
@@ -512,14 +505,14 @@ package body Substit is
               if Loc_Subst = 1
               and then not Is_Stdin
               and then Grep_File_Name then
-                Ada.Text_Io.Put (Asu.To_String (In_File_Name) & ":");
+                Ada.Text_Io.Put (Asu_Ts (In_File_Name) & ":");
                 if Grep_Line_Nb then
                   Ada.Text_Io.Put (Line_Image(Line_No) & ":");
                 end if;
               end if;
               if Replace_Pattern.Is_Empty then
                 -- Display once each matching line
-                Ada.Text_Io.Put_Line (Asu.To_String (Line.all));
+                Ada.Text_Io.Put_Line (Asu_Ts (Line.all));
                 exit;
               else
                 -- Display each replaced (line feed is handled in Do_One_File)
@@ -553,15 +546,15 @@ package body Substit is
     if not Grep then
       -- Put the (modified) line
       if Debug.Set then
-        Sys_Calls.Put_Line_Error ("Putting >" & Asu.To_String (Line.all) & "<");
+        Sys_Calls.Put_Line_Error ("Putting >" & Asu_Ts (Line.all) & "<");
       end if;
-      Text_Line.Put (Out_File, Asu.To_String (Line.all));
+      Text_Line.Put (Out_File, Asu_Ts (Line.all));
     end if;
     -- Delete all
     Line_List.Delete_List (False);
   exception
     when Constraint_Error =>
-      Error ("String too long substituting " & Asu.To_String (Line.all));
+      Error ("String too long substituting " & Asu_Ts (Line.all));
       return;
   end Subst_One_Line;
 
@@ -573,13 +566,10 @@ package body Substit is
     if not Line_List.Is_Empty then
       Line_List.Rewind;
       while not Line_List.Is_Empty loop
-        Text_Line.Put (Out_File,
-                 Asu.To_String (Line_List.Access_Current.all));
+        Text_Line.Put (Out_File, Asu_Ts (Line_List.Access_Current.all));
         if Debug.Set then
           Sys_Calls.Put_Line_Error (
-              "Flushing >"
-            & Asu.To_String (Line_List.Access_Current.all)
-            & "<");
+             "Flushing >" & Asu_Ts (Line_List.Access_Current.all) & "<");
         end if;
         Line_List.Delete;
       end loop;
@@ -615,7 +605,7 @@ package body Substit is
       if Last_Line = First_Line then
         -- Handle specific case of only one line
         if Complete then
-          Ada.Text_Io.Put (Asu.To_String (Last_Line.all));
+          Ada.Text_Io.Put (Asu_Ts (Last_Line.all));
         else
           Ada.Text_Io.Put (Asu.Slice (Last_Line.all,
                            Match_Res.First_Offset,
@@ -625,7 +615,7 @@ package body Substit is
       end if;
 
       if Complete then
-        Ada.Text_Io.Put (Asu.To_String (First_Line.all));
+        Ada.Text_Io.Put (Asu_Ts (First_Line.all));
       else
         Ada.Text_Io.Put (Asu.Slice (First_Line.all,
                                     Match_Res.First_Offset,
@@ -635,10 +625,10 @@ package body Substit is
       for I in 2 .. Nb_Pattern - 1 loop
         Line_List.Move_To;
         Line := Line_List.Access_Current;
-        Ada.Text_Io.Put (Asu.To_String (Line.all));
+        Ada.Text_Io.Put (Asu_Ts (Line.all));
       end loop;
       if Complete then
-        Ada.Text_Io.Put (Asu.To_String (Last_Line.all));
+        Ada.Text_Io.Put (Asu_Ts (Last_Line.all));
       else
         Ada.Text_Io.Put (Asu.Slice (Last_Line.all,
                         1, Match_Res.Last_Offset_Stop));
@@ -660,18 +650,18 @@ package body Substit is
     for I in 1 .. Nb_Pattern loop
       -- Check this read line
       Line := Line_List.Access_Current;
-      Matches := Search_Pattern.Check (Asu.To_String (Line.all), 1,
+      Matches := Search_Pattern.Check (Asu_Ts (Line.all), 1,
                  Search => True, Regex_Index => I);
       if not Matches then
         -- This one does not match
         if Debug.Set then
           Sys_Calls.Put_Line_Error ("Not match " & I'Img
-                  & " with >" & Asu.To_String (Line.all) & "<");
+                  & " with >" & Asu_Ts (Line.all) & "<");
         end if;
         exit;
       end if;
       if Debug.Set then
-        Sys_Calls.Put_Line_Error ("Line >" & Asu.To_String (Line.all)
+        Sys_Calls.Put_Line_Error ("Line >" & Asu_Ts (Line.all)
                                 & "< matches pattern No" & I'Img);
       end if;
       -- Move to next input line
@@ -689,11 +679,11 @@ package body Substit is
         -- Check this read line
         Line := Line_List.Access_Current;
         if I = 1 then
-          Matches := Search_Pattern.Check (Asu.To_String (Line.all),
+          Matches := Search_Pattern.Check (Asu_Ts (Line.all),
                      Start =>  Match_Res.First_Offset,
                      Search => False, Regex_Index => I);
         elsif I /= Nb_Pattern then
-          Matches := Search_Pattern.Check (Asu.To_String (Line.all),
+          Matches := Search_Pattern.Check (Asu_Ts (Line.all),
                      Start => 1,
                      Search => False, Regex_Index => I);
         else
@@ -708,7 +698,7 @@ package body Substit is
           exit;
         end if;
         if Debug.Set then
-          Sys_Calls.Put_Line_Error ("Line >" & Asu.To_String (Line.all)
+          Sys_Calls.Put_Line_Error ("Line >" & Asu_Ts (Line.all)
                                   & "< matches exclusion No" & I'Img);
         end if;
         -- Move to next input line
@@ -721,7 +711,7 @@ package body Substit is
         if Debug.Set then
           Line_List.Rewind;
           Line := Line_List.Access_Current;
-          Sys_Calls.Put_Line_Error ("Line >" & Asu.To_String (Line.all)
+          Sys_Calls.Put_Line_Error ("Line >" & Asu_Ts (Line.all)
                                   & "< is excluded");
         end if;
         Matches := False;
@@ -737,7 +727,7 @@ package body Substit is
 
       if not Matches then
         if Debug.Set then
-          Sys_Calls.Put_Line_Error ("Line >" & Asu.To_String (Line.all)
+          Sys_Calls.Put_Line_Error ("Line >" & Asu_Ts (Line.all)
                & "< discarded because out of matching range");
         end if;
       end if;
@@ -756,11 +746,11 @@ package body Substit is
       --                   + End of last line
       declare
         Str_Replacing : constant String := Replace_Pattern.Replace;
-        Str_Replaced : Asu.Unbounded_String;
-        use type Asu.Unbounded_String;
+        Str_Replaced : Asu_Us;
+        use type Asu_Us;
       begin
         -- Set result: beginning of first line + replacing + end of last line
-        Str_Replaced := Asu.To_Unbounded_String (
+        Str_Replaced := Asu_Tus (
                  Asu.Slice (First_Line.all, 1, Match_Res.First_Offset - 1))
                & Str_Replacing;
         if Match_Res.Last_Offset_Stop < Asu.Length (Last_Line.all) then
@@ -781,7 +771,7 @@ package body Substit is
         elsif Grep then
           -- Display grep result
           if not Is_Stdin and then Grep_File_Name then
-            Ada.Text_Io.Put (Asu.To_String (In_File_Name & ":"));
+            Ada.Text_Io.Put (Asu_Ts (In_File_Name & ":"));
             if Grep_Line_Nb then
               Ada.Text_Io.Put (Line_Image(Line_No) & ":");
             end if;
@@ -796,9 +786,10 @@ package body Substit is
         if not Test then
           -- Write result
           if Debug.Set then
-            Sys_Calls.Put_Line_Error ("Putting >" & Asu.To_String (Str_Replaced) & "<");
+            Sys_Calls.Put_Line_Error ("Putting >" & Asu_Ts (Str_Replaced)
+                                    & "<");
           end if;
-          Text_Line.Put (Out_File, Asu.To_String (Str_Replaced));
+          Text_Line.Put (Out_File, Asu_Ts (Str_Replaced));
           -- Delete all
           Line_List.Delete_List (False);
         end if;
@@ -810,9 +801,9 @@ package body Substit is
       Line := Line_List.Access_Current;
       if not Grep then
         if Debug.Set then
-          Sys_Calls.Put_Line_Error ("Putting >" & Asu.To_String (Line.all) & "<");
+          Sys_Calls.Put_Line_Error ("Putting >" & Asu_Ts (Line.all) & "<");
         end if;
-        Text_Line.Put (Out_File, Asu.To_String (Line.all));
+        Text_Line.Put (Out_File, Asu_Ts (Line.all));
       end if;
       Line_List.Delete;
     end if;

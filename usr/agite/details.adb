@@ -1,4 +1,5 @@
 with Ada.Characters.Latin_1, Ada.Exceptions;
+with As.U; use As.U;
 with Con_Io, Afpx.List_Manager, String_Mng, Directory, Basic_Proc;
 with Utils, View, History, Config;
 package body Details is
@@ -8,7 +9,7 @@ package body Details is
                  From : in Git_If.Commit_Entry_Rec) is
   begin
     Afpx.Encode_Line (Line, String_Mng.Procuste (
-          From.Status & " " & Utils.Asu_Ts (From.File),
+          From.Status & " " & Asu_Ts (From.File),
           List_Width,
           Trunc_Head => False));
   exception
@@ -66,7 +67,7 @@ package body Details is
       for I in 1 .. Comment_Height loop
         begin
           Afpx.Encode_Field (12, (I - 1, 0),
-               String_Mng.Procuste (Utils.Asu_Ts (Comment(I)),
+               String_Mng.Procuste (Asu_Ts (Comment(I)),
                                     Comment_Width,
                                     Trunc_Head => False));
         exception
@@ -91,21 +92,18 @@ package body Details is
       Commits.Move_At (Pos);
       Commits.Read (Commit, Git_If.Commit_File_Mng.Dyn_List.Current);
       declare
-        Path : constant String
-             := Directory.Dirname (Utils.Asu_Ts (Commit.File));
-        File : constant String
-             := Directory.Basename (Utils.Asu_Ts (Commit.File));
+        Path : constant String := Directory.Dirname (Asu_Ts (Commit.File));
+        File : constant String := Directory.Basename (Asu_Ts (Commit.File));
       begin
         case What is
           when Show_View =>
             -- Only files except leading "/"
-            if Utils.Asu_Ts (Commit.File) /= "/" then
-              View (Utils.Asu_Ts (Commit.File), Hash);
+            if Asu_Ts (Commit.File) /= "/" then
+              View (Asu_Ts (Commit.File), Hash);
             end if;
             Redisplay := True;
           when Show_Hist =>
-            History.Handle (Root, Path, File,
-                            Utils.Asu_Ts (Commit.File) /= "/",
+            History.Handle (Root, Path, File, Asu_Ts (Commit.File) /= "/",
                             Hash);
             -- Re init sreen
             Init (False);
@@ -119,20 +117,20 @@ package body Details is
 
     -- Copy Comments as X selection
     procedure Copy_Selection is
-      Result : Utils.Asu_Us;
-      use type Utils.Asu_Us;
+      Result : Asu_Us;
+      use type Asu_Us;
     begin
       -- Skip tailing empty lines. No LineFeed after last line
       for I in reverse Comment'Range loop
-        if Comment(I) /= Utils.Asu_Null or else Result /= Utils.Asu_Null then
-          if Result = Utils.Asu_Null then
+        if not Asu_Is_Null (Comment(I)) or else not Asu_Is_Null (Result) then
+          if Asu_Is_Null (Result) then
             Result := Comment(I);
           else
             Result := Comment(I) & Ada.Characters.Latin_1.Lf & Result;
           end if;
         end if;
       end loop;
-      Afpx.Set_Selection (Utils.Asu_Ts (Result));
+      Afpx.Set_Selection (Asu_Ts (Result));
     end Copy_Selection;
 
   begin

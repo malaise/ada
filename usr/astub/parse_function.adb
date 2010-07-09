@@ -1,11 +1,10 @@
-with Ada.Strings.Unbounded;
+with As.U; use As.U;
 with Common, Output, Words, Parse_To_End, Parse_To_Ends,
      Parser_Ada, Parse_Name, Fix_Comment, Put_Comments;
 
 procedure Parse_Function (Level : in Natural;
                           Generated : in out Boolean) is
-    package Asu renames Ada.Strings.Unbounded;
-  Name, Args : Asu.Unbounded_String;
+  Name, Args : Asu_Us;
   Word : Parser_Ada.Word_Rec;
   In_Parent, In_Id : Boolean;
   use type Parser_Ada.Lexical_Kind_List;
@@ -18,8 +17,8 @@ begin
   -- Next (significant) word is either '(' or "return". Get it
   Parse_To_Ends (
       End_Criteria => (
-          (Parser_Ada.Delimiter, Asu.To_Unbounded_String("(")),
-          (Parser_Ada.Reserved_Word, Asu.To_Unbounded_String("return")) ),
+          (Parser_Ada.Delimiter, Asu_Tus("(")),
+          (Parser_Ada.Reserved_Word, Asu_Tus("return")) ),
       Level => Level,
       Put_Comments => True,
       Up_To_Next_Significant => False);

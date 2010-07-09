@@ -1,20 +1,19 @@
-with Ada.Strings.Unbounded;
+with As.U; use As.U;
 with Common, Output, Words, Parser_Ada, Parse_To_End,
      Parse_Procedure, Parse_Function, Parse_Entry, Fix_Comment, Put_Comments;
 
 procedure Parse_Protected (Level : in Natural) is
-    package Asu renames Ada.Strings.Unbounded;
-  Name : Asu.Unbounded_String;
+  Name : Asu_Us;
   Word : Parser_Ada.Word_Rec;
   Dummy : Boolean := True;
-  use type Parser_Ada.Lexical_Kind_List, Asu.Unbounded_String;
+  use type Parser_Ada.Lexical_Kind_List, Asu_Us;
 begin
 
   -- Read until protected name, skip "type"
   loop
     Word := Parser_Ada.Multiparse.Get (True);
     declare
-      Str : constant String := Asu.To_String (Word.Text);
+      Str : constant String := Asu_Ts (Word.Text);
     begin
       if Word.Lexic = Parser_Ada.Comment then
         -- Put comment
@@ -31,14 +30,13 @@ begin
         null;
       else
         -- Unexpected word
-        Common.Error (Asu.To_String (Name));
+        Common.Error (Asu_Ts (Name));
       end if;
     end;
   end loop;
 
-
   -- Output protected body <name> is
-  Output.Put_Line (Words.Concat & "protected body " & Asu.To_String (Name)
+  Output.Put_Line (Words.Concat & "protected body " & Asu_Ts (Name)
                  & " is", False, Level);
 
   -- Skip until "is", put comments
@@ -49,14 +47,14 @@ begin
   loop
     Word := Parser_Ada.Multiparse.Get (True);
     declare
-      Str : constant String := Ada.Strings.Unbounded.To_String (Word.Text);
+      Str : constant String := Asu_Ts (Word.Text);
     begin
       if Word.Lexic = Parser_Ada.Comment then
-        Output.Put (Words.Concat & Asu.To_String (Word.Text), False);
+        Output.Put (Words.Concat & Asu_Ts (Word.Text), False);
         Words.Reset;
       elsif Word.Lexic = Parser_Ada.Separator then
         -- Within the protected, Output Line_Feed, save other separators
-        if Word.Text = String'(Common.Line_Feed) then
+        if Word.Text = Asu_Us'(Common.Line_Feed) then
           Output.Put_Line (Words.Concat, False);
           Words.Reset;
         else
@@ -105,6 +103,6 @@ begin
   Words.Reset;
 
   -- end <name>;
-  Output.Put_Line ("end " & Asu.To_String (Name) & ";", False, Level, True);
+  Output.Put_Line ("end " & Asu_Ts (Name) & ";", False, Level, True);
 end Parse_Protected;
 

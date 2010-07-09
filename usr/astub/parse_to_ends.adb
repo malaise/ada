@@ -4,7 +4,7 @@
 -- For reserved word/delimiter, text must match
 -- For separator Line_fine must match line_feed
 --   space or htab matches space or htab
-with Ada.Strings.Unbounded;
+with As.U; use As.U;
 with Common, Words, Get_Separators, Output, Parser_Ada;
 
 procedure Parse_To_Ends (End_Criteria : in Words.Word_Array;
@@ -12,9 +12,8 @@ procedure Parse_To_Ends (End_Criteria : in Words.Word_Array;
                          Put_Comments : in Boolean;
                          Up_To_Next_Significant : in Boolean) is
   Parent : Natural := 0;
-    Word : Parser_Ada.Word_Rec;
-  use type Parser_Ada.Lexical_Kind_List,
-           Ada.Strings.Unbounded.Unbounded_String;
+  Word : Parser_Ada.Word_Rec;
+  use type Parser_Ada.Lexical_Kind_List, Asu_Us;
 begin
   -- Loop until End_Char outside parentheses (Level = 0)
   Parse_Word:
@@ -42,13 +41,13 @@ begin
               exit Parse_Word;
             end if;
           elsif Word.Lexic = Parser_Ada.Separator then
-            if Word.Text = String'(Common.Line_Feed) then
-              if End_Criteria(I).Text = String'(Common.Line_Feed) then
+            if Word.Text = Asu_Us'(Common.Line_Feed) then
+              if End_Criteria(I).Text = Asu_Us'(Common.Line_Feed) then
                 -- Line feed matches line_feed
                 exit Parse_Word;
               end if;
             else
-              if End_Criteria(I).Text /= String'(Common.Line_Feed) then
+              if End_Criteria(I).Text /= Asu_Us'(Common.Line_Feed) then
                 -- Not line feed matches not line_feed
                 exit Parse_Word;
               end if;
@@ -62,16 +61,16 @@ begin
     end if;
 
     -- Handle specific words, put comments
-    if Ada.Strings.Unbounded.To_String (Word.Text) = "(" then
+    if Asu_Ts (Word.Text) = "(" then
       -- keep Level of parentheses
       Parent := Parent + 1;
-    elsif Ada.Strings.Unbounded.To_String (Word.Text) = ")" then
+    elsif Asu_Ts (Word.Text) = ")" then
       Parent := Parent - 1;
     elsif Word.Lexic = Parser_Ada.Comment and then Put_Comments then
       -- Put this comment with preceeding separators
       Words.Del;
       Output.Put_Line (
-         Get_Separators & Ada.Strings.Unbounded.To_String (Word.Text),
+         Get_Separators & Asu_Ts (Word.Text),
          True, Level);
     end if;
   end loop Parse_Word;
@@ -92,13 +91,13 @@ begin
       -- Put this comment with preceeding separators
       Words.Del;
       Output.Put_Line (
-         Get_Separators & Ada.Strings.Unbounded.To_String (Word.Text),
+         Get_Separators & Asu_Ts (Word.Text),
          True, Level);
     end if;
     -- Exit when significant word or line_feed
     exit when Word.Lexic /= Parser_Ada.Comment
     and then Word.Lexic /= Parser_Ada.Separator;
-    exit when Word.Text = String'(Common.Line_Feed);
+    exit when Word.Text = Asu_Us'(Common.Line_Feed);
   end loop;
 
   -- Unget this significant word

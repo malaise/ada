@@ -1,5 +1,5 @@
 -- Stores the words and allows retrieval
-with Ada.Strings.Unbounded;
+with As.U; use As.U;
 with Parser_Ada;
 package Words is
 
@@ -11,9 +11,8 @@ package Words is
 
   -- Empty word array
   No_Word : constant Word_Array (1 .. 0)
-          := (others => (
-     Lexic => Parser_Ada.Comment,
-     Text => Ada.Strings.Unbounded.To_Unbounded_String ("")));
+          := (others => (Lexic => Parser_Ada.Comment,
+                         Text => Asu_Tus ("")));
 
   -- Reset the stored words
   procedure Reset;
@@ -26,23 +25,20 @@ package Words is
   -- If Index is 0 then read last
   -- Returns "" (and Separator) if no such word
   function Read (Index : in Natural := 0) return Word_Rec;
-  function Read (Index : in Natural := 0)
-                return Ada.Strings.Unbounded.Unbounded_String;
+  function Read (Index : in Natural := 0) return Asu_Us;
   function Read (Index : in Natural := 0) return String;
 
   -- Retrieves and removes one word
   -- If Index is 0 then read last
   -- Returns "" (and Separator) if no such word
   function Get (Index : in Natural := 0) return Word_Rec;
-  function Get (Index : in Natural := 0)
-                return Ada.Strings.Unbounded.Unbounded_String;
+  function Get (Index : in Natural := 0) return Asu_Us;
   function Get (Index : in Natural := 0) return String;
 
   -- Retrieve and concatenate several words,
   --  from From_Index to To_Index (0 for last) included
   function Concat (From_Index : in Positive := 1;
-                   To_Index : Natural := 0)
-           return Ada.Strings.Unbounded.Unbounded_String;
+                   To_Index : Natural := 0) return Asu_Us;
   function Concat (From_Index : in Positive := 1;
                    To_Index : Natural := 0) return String;
 
@@ -51,8 +47,7 @@ package Words is
 
   -- Store (appends) one word
   procedure Add (Word : in Word_Rec);
-  procedure Add (Lexic : in Parser_Ada.Lexical_Kind_List;
-                 Text : in Ada.Strings.Unbounded.Unbounded_String);
+  procedure Add (Lexic : in Parser_Ada.Lexical_Kind_List; Text : in Asu_Us);
   procedure Add (Lexic : in Parser_Ada.Lexical_Kind_List;
                  Text : in String);
 
@@ -62,7 +57,7 @@ package Words is
   function Search (Word : Word_Rec;
                    From_Index : Positive := 1) return Natural;
   function Search (Lexic : in Parser_Ada.Lexical_Kind_List;
-                   Word : in Ada.Strings.Unbounded.Unbounded_String;
+                   Word : in Asu_Us;
                    From_Index : Positive := 1) return Natural;
   function Search (Lexic : Parser_Ada.Lexical_Kind_List;
                    Word : String;

@@ -1,4 +1,4 @@
-with Ada.Strings.Unbounded;
+with As.U; use As.U;
 with Output, Words, Parser_Ada, Parse_To_End, Parse_To_Ends, Fix_Comment;
 
 -- Parse type definition or representation clause
@@ -6,7 +6,6 @@ procedure Parse_Type (Level : in Natural) is
   Word : Parser_Ada.Word_Rec;
   Paren_Level : Natural := 0;
   use type Parser_Ada.Lexical_Kind_List,
-           Ada.Strings.Unbounded.Unbounded_String,
            Words.Word_Rec;
 
 begin
@@ -19,7 +18,7 @@ begin
   loop
     Word := Parser_Ada.Multiparse.Get (True);
     declare
-      Str : constant String := Ada.Strings.Unbounded.To_String (Word.Text);
+      Str : constant String := Asu_Ts (Word.Text);
     begin
       -- In any case, save this word
       Words.Add (Word);
@@ -59,7 +58,7 @@ begin
   loop
     Word := Parser_Ada.Multiparse.Get (True);
     declare
-      Str : constant String := Ada.Strings.Unbounded.To_String (Word.Text);
+      Str : constant String := Asu_Ts (Word.Text);
     begin
       -- In any case, save this word
       Words.Add (Word);

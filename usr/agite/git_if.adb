@@ -1,11 +1,7 @@
 with Ada.Exceptions, Ada.Characters.Latin_1;
 with Environ, Basic_Proc, Many_Strings, Command, Directory, Dir_Mng, String_Mng;
+with Utils;
 package body Git_If is
-
-  -- Asu
-  function Asu_Ts (Str : Asu_Us) return String renames Utils.Asu_Ts;
-  function Asu_Tus (Str : String) return Asu_Us renames Utils.Asu_Tus;
-  Asu_Null : constant Asu_Us := Utils.Asu_Null;
 
   -- For Command
   -- Two ouput flows as lists
@@ -383,7 +379,7 @@ package body Git_If is
       Assert (Asu.Slice (Line, 1, 4) = "    ");
       -- Copy first comments
       if Ind <= Comments'Last then
-        Comments(Ind) := Asu.Unbounded_Slice (Line, 5,  Asu.Length (Line));
+        Comments(Ind) := Asu_Uslice (Line, 5,  Asu.Length (Line));
       end if;
       exit when not Done;
     end loop;
@@ -419,7 +415,7 @@ package body Git_If is
         Assert (Asu.Length (Line) > 2);
         Assert (Asu.Element (Line, 2) = Ada.Characters.Latin_1.Ht);
         File.Status := Asu.Element (Line, 1);
-        File.File := Asu.Unbounded_Slice (Line, 3, Asu.Length (Line));
+        File.File := Asu_Uslice (Line, 3, Asu.Length (Line));
         Files.Insert (File);
       end if;
       exit when not Done;
@@ -509,7 +505,7 @@ package body Git_If is
     -- Encode info
     if Out_Flow_1.List.Is_Empty then
       Date := (others => ' ');
-      Comment := (others => Utils.Asu_Null);
+      Comment := (others => Asu_Null);
       Commit.Delete_List;
     else
       Out_Flow_1.List.Rewind;
@@ -518,8 +514,7 @@ package body Git_If is
     end if;
     if not Commit.Is_Empty then
       Commit.Rewind;
-      Commit.Insert ((' ', Utils.Asu_Tus ("/")),
-                     Commit_File_Mng.Dyn_List.Prev);
+      Commit.Insert ((' ', Asu_Tus ("/")), Commit_File_Mng.Dyn_List.Prev);
     end if;
 
   end List_Commit;

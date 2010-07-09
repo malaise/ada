@@ -1,4 +1,4 @@
-with Ada.Strings.Unbounded;
+with As.U; use As.U;
 with Directory, Argument, Basic_Proc;
 with Lister, Output;
 package body Targets is
@@ -18,7 +18,7 @@ package body Targets is
       Found : Boolean;
       Moved : Boolean;
       Subdirs : Lister.Dir_List;
-      Subdir : Ada.Strings.Unbounded.Unbounded_String;
+      Subdir : Asu_Us;
     begin
       Found := False;
       -- Do this dir
@@ -55,9 +55,7 @@ package body Targets is
         Subdirs.Read (Subdir, Moved => Moved);
         -- Recursive invocation
         Found := Found or Do_Dir (Directory.Build_File_Name (
-             Dir, Ada.Strings.Unbounded.To_String (Subdir), ""),
-             True,
-             Level + 1);
+             Dir, Asu_Ts (Subdir), ""), True, Level + 1);
         exit when not Moved;
       end loop;
       Subdirs.Delete_List (Deallocate => False);

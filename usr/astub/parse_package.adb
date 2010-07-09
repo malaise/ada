@@ -1,34 +1,35 @@
-with Ada.Strings.Unbounded;
+with As.U; use As.U;
 with Common, Output, Words, Parser_Ada, Parse_To_End, Parse_Type,
      Parse_Procedure, Parse_Function, Parse_Task, Parse_Protected,
      Parse_Name, Put_Comments, Fix_Comment;
 
 procedure Parse_Package (Level : in Natural;
                          Generated : in out Boolean) is
-    package Asu renames Ada.Strings.Unbounded;
-  Name : Asu.Unbounded_String;
+  Name : Asu_Us;
   Word : Parser_Ada.Word_Rec;
-  use type Parser_Ada.Lexical_Kind_List, Asu.Unbounded_String;
+  use type Parser_Ada.Lexical_Kind_List;
 
   -- Put current "package body <name> is" and comments read ahead
   -- Because called due to a keyword (procedure/function...)
   Body_Put : Boolean := False;
   procedure Put_Body is
+    use type Asu_Us;
   begin
     if not Body_Put then
-      Output.Put_Line ("package body " & Asu.To_String (Name) & " is",
+      Output.Put_Line ("package body " & Asu_Ts (Name) & " is",
                         False, Level, True);
       Output.New_Line;
       -- Put comments and line_feeds saved so far, keep separators in words
       Put_Comments;
       -- Remove any leading line_feed, just keep indent
-      while String'(Words.Read (1)) = String'(Common.Line_Feed) loop
+      while Asu_Us'(Words.Read (1)) = Asu_Us'(Common.Line_Feed) loop
          Words.Del (1);
       end loop;
       Body_Put := True;
     end if;
   end Put_Body;
 
+  use type Asu_Us;
 begin
 
   -- Get package name
@@ -39,12 +40,12 @@ begin
   loop
     Word := Parser_Ada.Multiparse.Get (True);
     declare
-      Str : constant String := Asu.To_String (Word.Text);
+      Str : constant String := Asu_Ts (Word.Text);
     begin
       if Word.Lexic = Parser_Ada.Comment then
         if Body_Put then
           -- Within the package, Output comments
-          Output.Put (Words.Concat & Asu.To_String (Word.Text), False);
+          Output.Put (Words.Concat & Asu_Ts (Word.Text), False);
           Words.Reset;
         else
           -- Not knowing yet if this is a real package
@@ -54,7 +55,7 @@ begin
       elsif Word.Lexic = Parser_Ada.Separator then
         if Body_Put then
           -- Within the package, Output Line_Feed, save other separators
-          if Word.Text = String'(Common.Line_Feed) then
+          if Word.Text = Asu_Us'(Common.Line_Feed) then
             Output.New_Line;
             Words.Reset;
           else
@@ -105,7 +106,7 @@ begin
         -- Reset to "package <name> renames" and put as comment
         Parse_To_End (Parser_Ada.Delimiter, ";", Level);
         Fix_Comment (Level);
-        Output.Put_Line ("package " & Asu.To_String (Name)
+        Output.Put_Line ("package " & Asu_Ts (Name)
                   & " renames" & Words.Concat, True, Level, True);
         Words.Reset;
         return;
@@ -114,7 +115,7 @@ begin
         -- Reset to "package <name> is new" and put as comment
         Parse_To_End (Parser_Ada.Delimiter, ";", Level);
         Fix_Comment (Level);
-        Output.Put_Line ("package " & Asu.To_String (Name)
+        Output.Put_Line ("package " & Asu_Ts (Name)
                   & " is new " & Words.Concat, True, Level, True);
         Words.Reset;
         return;
@@ -143,6 +144,6 @@ begin
   Words.Reset;
 
   -- end <name>;
-  Output.Put_Line ("end " & Asu.To_String (Name) & ";", False, Level, True);
+  Output.Put_Line ("end " & Asu_Ts (Name) & ";", False, Level, True);
 end Parse_Package;
 

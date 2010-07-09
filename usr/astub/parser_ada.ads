@@ -1,4 +1,4 @@
-with Ada.Strings.Unbounded;
+with As.U; use As.U;
 with Ada_Parser, Multiget;
 package Parser_Ada is
 
@@ -10,7 +10,7 @@ package Parser_Ada is
   -- A Word
   type Word_Rec is record
     Lexic : Lexical_Kind_List;
-    Text  : Ada.Strings.Unbounded.Unbounded_String;
+    Text  : Asu_Us;
   end record;
 
   -- Get a Word from Ada_Parser

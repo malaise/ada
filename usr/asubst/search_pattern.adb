@@ -1,9 +1,8 @@
-with Ada.Characters.Latin_1, Ada.Strings.Unbounded;
+with Ada.Characters.Latin_1;
+with As.U; use As.U;
 with Sys_Calls, Argument, Unique_List, String_Mng, Text_Line, Debug,
      Char_To_Hexa, Language;
 package body Search_Pattern is
-
-  package Asu renames Ada.Strings.Unbounded;
 
   -- 0 to 16 substring indexes
   subtype Substr_Array is Regular_Expressions.Match_Array (Nb_Sub_String_Range);
@@ -16,9 +15,9 @@ package body Search_Pattern is
     Is_Delim : Boolean;
     -- Regex or string to search (depending on Is_regex)
     Pat : Regular_Expressions.Compiled_Pattern;
-    Find_Str : Asu.Unbounded_String;
+    Find_Str : Asu_Us;
     -- The complete string from input flow that matches
-    Match_Str : Asu.Unbounded_String;
+    Match_Str : Asu_Us;
     -- Number of sub-matching strings
     Nb_Substr : Nb_Sub_String_Range := 0;
     -- Indexes of matching string (at index 0),
@@ -73,11 +72,11 @@ package body Search_Pattern is
   Line_Feed : constant String := Text_Line.Line_Feed_Str;
 
   -- Delimiter
-  Delimiter : Asu.Unbounded_String;
+  Delimiter : Asu_Us;
   -- Get the delimiter
   function Get_Delimiter return String is
   begin
-    return Asu.To_String (Delimiter);
+    return Asu_Ts (Delimiter);
   end Get_Delimiter;
 
   -- Reports a parsing error
@@ -112,7 +111,7 @@ package body Search_Pattern is
   begin
     -- Compute new pattern number and type
     Upat.Num := Unique_Pattern.List_Length (List) + 1;
-    Upat.Is_Delim := Crit = Asu.To_String (Delimiter);
+    Upat.Is_Delim := Crit = Asu_Ts (Delimiter);
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Search adding regex "
              &  Upat.Num'Img & " >" & Crit & "<");
@@ -125,7 +124,7 @@ package body Search_Pattern is
     end if;
     -- Store string if this is not a regex
     if not Is_Regex then
-      Upat.Find_Str := Asu.To_Unbounded_String (Crit);
+      Upat.Find_Str := Asu_Tus (Crit);
       Upat.Nb_Substr := 0;
       Unique_Pattern.Insert (List, Upat);
       return;
@@ -173,7 +172,7 @@ package body Search_Pattern is
                        Split : in Boolean;
                        List : in out Unique_Pattern.List_Type) is
 
-    The_Pattern : Asu.Unbounded_String;
+    The_Pattern : Asu_Us;
 
     -- Check and get an hexa code from The_Pattern (Index .. Index + 1)
     subtype Byte is Natural range 0 .. 255;
@@ -254,7 +253,7 @@ package body Search_Pattern is
       Sys_Calls.Put_Line_Error ("Search parsing pattern >" & Pattern & "<");
     end if;
     -- Reset pattern characteristics
-    The_Pattern := Asu.To_Unbounded_String (Pattern);
+    The_Pattern := Asu_Tus (Pattern);
     Unique_Pattern.Delete_List (List);
     Is_Iterative := False;
     Check_Completed := False;
@@ -267,7 +266,7 @@ package body Search_Pattern is
     Stop_Index := 1;
     loop
       -- Locate sequence
-      Stop_Index := String_Mng.Locate_Escape (Asu.To_String (The_Pattern),
+      Stop_Index := String_Mng.Locate_Escape (Asu_Ts (The_Pattern),
                                Stop_Index,
                                "\nstxABCDEFGHIJKLMNOPQRSTUVWXYZ");
       exit when Stop_Index = 0;
@@ -312,7 +311,7 @@ package body Search_Pattern is
       Start_Index := 1;
       Prev_Delim := False;
       loop
-        Stop_Index := String_Mng.Locate (Asu.To_String (The_Pattern),
+        Stop_Index := String_Mng.Locate (Asu_Ts (The_Pattern),
                                          Line_Feed, Start_Index);
         if Stop_Index = Start_Index then
           -- A Delim
@@ -325,7 +324,7 @@ package body Search_Pattern is
               Add ("", Case_Sensitive, List);
             end if;
           end if;
-          Add (Asu.To_String (Delimiter), Case_Sensitive, List);
+          Add (Asu_Ts (Delimiter), Case_Sensitive, List);
           Prev_Delim := True;
         else
           -- A Regex: see if it is followed by a delim (always,
@@ -373,8 +372,8 @@ package body Search_Pattern is
             and then not Next_Delim
             and then Asu.Element (The_Pattern, Start_Index) /= Start_Char
             and then (Asu.Element (The_Pattern, Stop_Index) /= Stop_Char
-              or else String_Mng.Is_Backslashed (Asu.To_String (The_Pattern),
-                                                    Stop_Index) ) then
+              or else String_Mng.Is_Backslashed (Asu_Ts (The_Pattern),
+                                                 Stop_Index) ) then
               Is_Iterative := True;
             end if;
           else
@@ -394,9 +393,9 @@ package body Search_Pattern is
     else
       -- No split
       if Regex_Mode then
-        Add (Asu.To_String (The_Pattern), Case_Sensitive, List);
+        Add (Asu_Ts (The_Pattern), Case_Sensitive, List);
       else
-        Add (Asu.To_String (The_Pattern), True, List);
+        Add (Asu_Ts (The_Pattern), True, List);
       end if;
       Is_Iterative := True;
     end if;
@@ -412,14 +411,14 @@ package body Search_Pattern is
   begin
     -- Optim and safe way
     if Delim = Line_Feed then
-      Delimiter := Asu.To_Unbounded_String (Line_Feed);
+      Delimiter := Asu_Tus (Line_Feed);
       return True;
     elsif Delim = "" then
       -- Empty delimiter
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Search, parsed empty delimiter");
       end if;
-      Delimiter := Asu.Null_Unbounded_String;
+      Delimiter := Asu_Null;
       return False;
     end if;
     if Debug.Set then
@@ -435,7 +434,7 @@ package body Search_Pattern is
     Delimiter := Acc.Find_Str;
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Search, parsed delimiter >"
-           & Asu.To_String (Delimiter) & "<");
+           & Asu_Ts (Delimiter) & "<");
     end if;
     return False;
   end Parse_Delimiter;
@@ -617,7 +616,7 @@ package body Search_Pattern is
     end if;
     -- Delimiter matches delimiter
     if Upat_Access.Is_Delim then
-      if Str = Asu.To_String (Delimiter) then
+      if Str = Asu_Ts (Delimiter) then
         Upat_Access.Nb_Substr := 0;
         Upat_Access.Substrs(0) := (1, 1, 1);
         Upat_Access.Match_Str := Delimiter;
@@ -639,7 +638,7 @@ package body Search_Pattern is
         end if;
         return False;
       end if;
-    elsif Str = Asu.To_String (Delimiter) then
+    elsif Str = Asu_Ts (Delimiter) then
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Search check pattern is not delim vs delim");
       end if;
@@ -657,8 +656,7 @@ package body Search_Pattern is
                                   Nmatch, Match);
       else
         -- Not a regex, locate string
-        Nmatch := String_Mng.Locate (Str,
-                     Asu.To_String (Upat_Access.Find_Str), Start);
+        Nmatch := String_Mng.Locate (Str, Asu_Ts (Upat_Access.Find_Str), Start);
         if Nmatch /= 0 then
           -- Fill matching info as if from a regex
           Match(1) := (
@@ -666,7 +664,7 @@ package body Search_Pattern is
            Last_Offset_Start => Nmatch + Asu.Length (Upat_Access.Find_Str) - 1,
            Last_Offset_Stop  => Nmatch + Asu.Length (Upat_Access.Find_Str) - 1);
           Nmatch := 1;
-        elsif Str = "" and then Asu.To_String (Upat_Access.Find_Str) = "" then
+        elsif Str = "" and then Asu_Ts (Upat_Access.Find_Str) = "" then
           -- Empty string versus empty pattern
           Match(1) := (Start, 0, 0);
           Nmatch := 1;
@@ -681,7 +679,7 @@ package body Search_Pattern is
         Upat_Access.Substrs(0) := Match(1);
         Upat_Access.Substrs(1 .. Upat_Access.Nb_Substr)
                    := Match(2 .. Nmatch);
-        Upat_Access.Match_Str := Asu.To_Unbounded_String (Str);
+        Upat_Access.Match_Str := Asu_Tus (Str);
         if Regex_Index = Unique_Pattern.List_Length (List.all) then
           -- Last pattern and matches
           Store_Index (1, True);
@@ -753,12 +751,12 @@ package body Search_Pattern is
   -- May raise Substr_Len_Error if Utf8 sequence leads to exceed
   --  string length
   function Allstring return String is
-    Result : Asu.Unbounded_String;
+    Result : Asu_Us;
   begin
     for I in 1 .. Number loop
       Asu.Append (Result, Substring (I, 0));
     end loop;
-    return Asu.To_String (Result);
+    return Asu_Ts (Result);
   end Allstring;
 
   -- Returns the Match_Cell of the complete matching string

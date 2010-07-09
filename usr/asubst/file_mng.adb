@@ -1,4 +1,4 @@
-with Ada.Strings.Unbounded;
+with As.U; use As.U;
 with Argument, Sys_Calls, Text_Line;
 package body File_Mng is
 
@@ -9,7 +9,7 @@ package body File_Mng is
         & " ERROR: " & Msg & ".");
   end Error;
 
-  File_Name_Str : Ada.Strings.Unbounded.Unbounded_String;
+  File_Name_Str : Asu_Us;
 
   -- Open the file of files
   -- May raise Open_Error
@@ -23,7 +23,7 @@ package body File_Mng is
       Fd := Sys_Calls.Open (File_Name, Sys_Calls.In_File);
     end if;
     File.Open (Text_Line.In_File, Fd);
-    File_Name_Str := Ada.Strings.Unbounded.To_Unbounded_String (File_Name);
+    File_Name_Str := Asu_Tus (File_Name);
   exception
     when others =>
       Error ("Cannot open file of files " & File_Name);
@@ -49,17 +49,17 @@ package body File_Mng is
   -- Get next file name from file
   -- May raise End_Error or Io_Error (and closes file)
   function Get_Next_File return String is
-    Str : Ada.Strings.Unbounded.Unbounded_String;
+    Str : Asu_Us;
     Len : Natural;
   begin
     Str := Text_Line.Get (File);
-    Len :=  Ada.Strings.Unbounded.Length (Str);
+    Len :=  Asu.Length (Str);
     if Len /= 0
-    and then Ada.Strings.Unbounded.Element (Str, Len)
+    and then Asu.Element (Str, Len)
            = Text_Line.Line_Feed_Char then
       -- Normal lines (all but last) of Text_Line end with Line_Feed
       -- Explicitly remove it
-      Ada.Strings.Unbounded.Delete (Str, Len, Len);
+      Asu.Delete (Str, Len, Len);
       Len := Len - 1;
     end if;
     if Len = 0 then
@@ -67,14 +67,13 @@ package body File_Mng is
       Close;
       raise End_Error;
     end if;
-    return Ada.Strings.Unbounded.To_String (Str);
+    return Asu_Ts (Str);
   exception
     when End_Error =>
       raise;
     when others =>
       -- Error
-      Error ("processing file of files "
-           & Ada.Strings.Unbounded.To_String(File_Name_Str));
+      Error ("processing file of files " & Asu_Ts (File_Name_Str));
       Close;
       raise Io_Error;
   end Get_Next_File;

@@ -1,10 +1,9 @@
-with Ada.Strings.Unbounded;
+with As.U; use As.U;
 with Output, Words, Parser_Ada, Parse_To_End, Parse_Name, Fix_Comment;
 
 procedure Parse_Procedure (Level : in Natural;
                            Generated : in out Boolean) is
-    package Asu renames Ada.Strings.Unbounded;
-  Name : Asu.Unbounded_String;
+  Name : Asu_Us;
 begin
 
   -- Parse name
@@ -40,7 +39,6 @@ begin
   -- end <name>;
   Output.Put_Line ("begin", False, Level, True);
   Output.Put_Line ("null;", False, Level + 1, True);
-  Output.Put_Line ("end " & Asu.To_String (Name) & ";",
-                   False, Level, True);
+  Output.Put_Line ("end " & Asu_Ts (Name) & ";", False, Level, True);
 end Parse_Procedure;
 

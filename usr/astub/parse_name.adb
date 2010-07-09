@@ -1,18 +1,17 @@
-with Ada.Strings.Unbounded;
-with Common, Words, Parse_To_Ends, Put_Comments, Parser_Ada;
+with As.U; use As.U;
+with Words, Parse_To_Ends, Put_Comments, Parser_Ada;
 
   -- Read until identifier, save it in Name, put intermediate comments at Level
 procedure Parse_Name (Level : in Natural;
-                      Name : out Ada.Strings.Unbounded.Unbounded_String) is
-  package Asu renames Ada.Strings.Unbounded;
+                      Name : out Asu_Us) is
   Word : Words.Word_Rec;
   use type Parser_Ada.Lexical_Kind_List;
 begin
 
   -- Read until identifier or string literal
   Parse_To_Ends (
-      End_Criteria => ( (Parser_Ada.Identifier, Common.Null_String),
-                        (Parser_Ada.String_Literal, Common.Null_String)),
+      End_Criteria => ( (Parser_Ada.Identifier, Asu_Null),
+                        (Parser_Ada.String_Literal, Asu_Null)),
       Level => Level,
       Put_Comments => False,
       Up_To_Next_Significant => False);
@@ -26,7 +25,7 @@ begin
     Words.Add (Word);
     exit when Word.Lexic /= Parser_Ada.Identifier
     and then  Word.Lexic /= Parser_Ada.String_Literal
-    and then Asu.To_String (Word.Text) /= ".";
+    and then Asu_Ts (Word.Text) /= ".";
       Asu.Append (Name, Word.Text);
   end loop;
   Words.Del;

@@ -5,12 +5,11 @@ package body Common is
 
   Lfc : constant Character := Text_Line.Line_Feed_Char;
   Lfs : constant String := Text_Line.Line_Feed_Str;
-  Lfu : constant Ada.Strings.Unbounded.Unbounded_String
-      := Ada.Strings.Unbounded.To_Unbounded_String (Lfs);
+  Lfu : constant Asu_Us := Asu_Tus (Lfs);
 
 
   -- Line feed string
-  function Line_Feed return Ada.Strings.Unbounded.Unbounded_String is
+  function Line_Feed return Asu_Us is
   begin
     return Lfu;
   end Line_Feed;
@@ -39,8 +38,7 @@ package body Common is
                             & Natural'Image (Words.Length));
     for I in 1 .. Words.Length loop
       Word := Words.Read (I);
-      Sys_Calls.Put_Line_Error (Word.Lexic'Img & ":"
-         & Ada.Strings.Unbounded.To_String (Word.Text));
+      Sys_Calls.Put_Line_Error (Word.Lexic'Img & ":" & Asu_Ts (Word.Text));
     end loop;
   end Dump_Words;
 

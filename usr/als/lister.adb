@@ -1,13 +1,11 @@
 with Ada.Calendar;
-with Basic_Proc, Argument, Sys_Calls, Regular_Expressions, Directory;
+with Basic_Proc, Argument, Sys_Calls, Regular_Expressions, Directory,
+     Dynamic_List;
 package body Lister is
-
-  -- type Dots_Kind_List is (Basic, Basic_Dots, Basic_Dots_Roots);
-  package Asu renames Ada.Strings.Unbounded;
 
   -- List of file templates
   type Tmpl_Rec is record
-    Template : Asu.Unbounded_String;
+    Template : Asu_Us;
     Regex : Boolean;
   end record;
   package Tmpl_Dyn_List_Mng is new Dynamic_List (Tmpl_Rec);
@@ -75,14 +73,14 @@ package body Lister is
   procedure Add_Match (Template : in String; Regex : in Boolean) is
   begin
     if Check_Template (Template, Regex) then
-      Matches.Insert ((Asu.To_Unbounded_String (Template), Regex));
+      Matches.Insert ((Asu_Tus (Template), Regex));
     end if;
   end Add_Match;
 
   procedure Add_Exclude (Template : in String; Regex : in Boolean) is
   begin
     if Check_Template (Template, Regex) then
-      Excludes.Insert ( (Asu.To_Unbounded_String (Template), Regex) );
+      Excludes.Insert ( (Asu_Tus (Template), Regex) );
     end if;
   end Add_Exclude;
 
@@ -155,8 +153,8 @@ package body Lister is
       Excludes.Rewind;
       loop
         Excludes.Read (Tmpl, Moved => Moved);
-        if Match (Asu.To_String (Ent.Name),
-                  Asu.To_String (Tmpl.Template), Tmpl.Regex) then
+        if Match (Asu_Ts (Ent.Name),
+                  Asu_Ts (Tmpl.Template), Tmpl.Regex) then
           -- The file matches this exclusion template
           return False;
         end if;
@@ -171,8 +169,8 @@ package body Lister is
     Matches.Rewind;
     loop
       Matches.Read (Tmpl, Moved => Moved);
-      if Match (Asu.To_String (Ent.Name),
-                Asu.To_String (Tmpl.Template), Tmpl.Regex) then
+      if Match (Asu_Ts (Ent.Name),
+                Asu_Ts (Tmpl.Template), Tmpl.Regex) then
         -- The file matches this matching template
         return True;
       end if;
@@ -185,17 +183,16 @@ package body Lister is
   -- Read link Name and fill Ent.Link, Ent.Link_Ok, Ent.Link_Kind and
   --  Ent.Link_Rights
   procedure Read_Link (Name : in String; Ent : in out Entities.Entity) is
-    Link_Target : Asu.Unbounded_String;
+    Link_Target : Asu_Us;
     Stat : Sys_Calls.File_Stat_Rec;
-    use type Asu.Unbounded_String;
   begin
     -- Read link direct target
     begin
-      Ent.Link := Asu.To_Unbounded_String (Directory.Read_Link (
+      Ent.Link := Asu_Tus (Directory.Read_Link (
           File_Name => Name, Recursive => False));
     exception
       when Directory.Name_Error | Directory.Access_Error =>
-        Ent.Link := Asu.Null_Unbounded_String;
+        Ent.Link := Asu_Null;
         Ent.Link_Ok := False;
         Ent.Link_Kind := Directory.Unknown;
         Ent.Link_Rights := 0;
@@ -203,9 +200,9 @@ package body Lister is
     end;
     -- Check if final target exists (and is reachable), and store its kind
     begin
-      Link_Target := Asu.To_Unbounded_String (Directory.Read_Link (
+      Link_Target := Asu_Tus (Directory.Read_Link (
           File_Name => Name, Recursive => True));
-      Stat := Sys_Calls.File_Stat (Asu.To_String (Link_Target));
+      Stat := Sys_Calls.File_Stat (Asu_Ts (Link_Target));
       Ent.Link_Ok := True;
       Ent.Link_Kind := Directory.File_Kind_List (Stat.Kind);
       Ent.Link_Rights := Stat.Rights;
@@ -224,7 +221,7 @@ package body Lister is
         Ent.Link := Link_Target;
         Ent.Size := Stat.Size;
       else
-        Ent.Link := Asu.Null_Unbounded_String;
+        Ent.Link := Asu_Null;
         Ent.Size := 0;
       end if;
     end if;
@@ -250,15 +247,15 @@ package body Lister is
     end;
 
     -- Fill entity
-    Ent.Name := Asu.To_Unbounded_String (Directory.Basename(File));
+    Ent.Name := Asu_Tus (Directory.Basename(File));
     Ent.Kind := Directory.File_Kind_List (Stat.Kind);
     Ent.Modif_Time := Sys_Calls.Time_Of (Stat.Modif_Time);
-    Ent.Path := Asu.To_Unbounded_String (Directory.Dirname(File));
+    Ent.Path := Asu_Tus (Directory.Dirname(File));
     Ent.Rights := Stat.Rights;
     Ent.User_Id := Stat.User_Id;
     Ent.Group_Id := Stat.Group_Id;
     Ent.Size := Stat.Size;
-    Ent.Link := Asu.Null_Unbounded_String;
+    Ent.Link := Asu_Null;
     if Ent.Kind = Directory.Link then
       Read_Link (File, Ent);
     end if;
@@ -286,7 +283,7 @@ package body Lister is
     -- Prepare list for appending
     Ent_List.Rewind (False, Entities.Entity_List_Mng.Prev);
     -- Init Ent with path
-    Ent.Path := Asu.To_Unbounded_String (Dir);
+    Ent.Path := Asu_Tus (Dir);
     -- Open
     begin
       Desc := Directory.Open (Dir);
@@ -313,7 +310,7 @@ package body Lister is
       begin
         -- Read next entry
         begin
-          Ent.Name := Asu.To_Unbounded_String (Directory.Next_Entry (Desc));
+          Ent.Name := Asu_Tus (Directory.Next_Entry (Desc));
         exception
           when Directory.End_Error =>
             -- Done
@@ -322,7 +319,7 @@ package body Lister is
 
         -- Check if file name matches dot criteria
         declare
-          Str : constant String := Asu.To_String (Ent.Name);
+          Str : constant String := Asu_Ts (Ent.Name);
         begin
           if (Str = "." or else Str = "..")
           and then Dots /= Entities.Basic_Dots_Roots then
@@ -338,7 +335,7 @@ package body Lister is
         begin
           -- Read file stat
           Stat := Sys_Calls.File_Stat (
-             Directory.Build_File_Name (Dir, Asu.To_String (Ent.Name), ""));
+             Directory.Build_File_Name (Dir, Asu_Ts (Ent.Name), ""));
         exception
           when Sys_Calls.Name_Error | Sys_Calls.Access_Error =>
             -- Skip this file
@@ -352,10 +349,9 @@ package body Lister is
         Ent.User_Id := Stat.User_Id;
         Ent.Group_Id := Stat.Group_Id;
         Ent.Size := Stat.Size;
-        Ent.Link := Asu.Null_Unbounded_String;
+        Ent.Link := Asu_Null;
         if Ent.Kind = Directory.Link then
-          Read_Link (Directory.Build_File_Name (Dir,
-                                    Asu.To_String (Ent.Name), ""),
+          Read_Link (Directory.Build_File_Name (Dir, Asu_Ts (Ent.Name), ""),
                      Ent);
         end if;
 
@@ -389,14 +385,14 @@ package body Lister is
   procedure Add_Dir_Match   (Template : in String; Regex : in Boolean) is
   begin
     if Check_Template (Template, Regex) then
-      Dir_Match.Insert ((Asu.To_Unbounded_String (Template), Regex));
+      Dir_Match.Insert ((Asu_Tus (Template), Regex));
     end if;
   end Add_Dir_Match;
 
   procedure Add_Dir_Exclude (Template : in String; Regex : in Boolean) is
   begin
     if Check_Template (Template, Regex) then
-      Dir_Exclude.Insert ((Asu.To_Unbounded_String (Template), Regex));
+      Dir_Exclude.Insert ((Asu_Tus (Template), Regex));
     end if;
   end Add_Dir_Exclude;
 
@@ -410,7 +406,7 @@ package body Lister is
       Dir_Exclude.Rewind;
       loop
         Dir_Exclude.Read (Tmpl, Moved => Moved);
-        if Match (Dir, Asu.To_String (Tmpl.Template), Tmpl.Regex) then
+        if Match (Dir, Asu_Ts (Tmpl.Template), Tmpl.Regex) then
           -- The file matches this exclusion template
           return False;
         end if;
@@ -425,7 +421,7 @@ package body Lister is
     Dir_Match.Rewind;
     loop
       Dir_Match.Read (Tmpl, Moved => Moved);
-      if Match (Dir, Asu.To_String (Tmpl.Template), Tmpl.Regex) then
+      if Match (Dir, Asu_Ts (Tmpl.Template), Tmpl.Regex) then
         -- The file matches this matching template
         return True;
       end if;
@@ -439,7 +435,7 @@ package body Lister is
   procedure List_Dirs (Dir : in String;
                        List : out Dir_List) is
     Desc : Directory.Dir_Desc;
-    Str : Asu.Unbounded_String;
+    Str : Asu_Us;
     use type Directory.File_Kind_List;
   begin
     -- Prepare list
@@ -462,7 +458,7 @@ package body Lister is
     -- For each entry
     loop
       begin
-        Str := Asu.To_Unbounded_String (Directory.Next_Entry (Desc));
+        Str := Asu_Tus (Directory.Next_Entry (Desc));
       exception
         when Directory.End_Error =>
           -- Done
@@ -471,7 +467,7 @@ package body Lister is
 
       -- Check if it is a directory and matches
       declare
-        Lstr : constant String := Asu.To_String (Str);
+        Lstr : constant String := Asu_Ts (Str);
       begin
         if Lstr /= "."
         and then Lstr /= ".."

@@ -110,7 +110,6 @@ package body Config is
   -- Bookmarks
   function Get_Bookmarks return Bookmark_Array is
     Bookmark : Xml_Parser.Element_Type;
-    use type Utils.Asu_Us;
   begin
     Load;
     declare
@@ -119,17 +118,16 @@ package body Config is
       for I in Result'Range loop
         Bookmark := Ctx.Get_Child (Bookmarks, I);
         if Ctx.Get_Nb_Attributes (Bookmark) = 0 then
-          Result(I).Name := Utils.Asu_Null;
+          Result(I).Name := Asu_Null;
         else
           Result(I).Name := Ctx.Get_Attribute (Bookmark, 1).Value;
         end if;
         if Ctx.Get_Nb_Children (Bookmark) /= 1 then
           -- No bookmark text: Separator
-          Result(I).Path := Utils.Asu_Null;
+          Result(I).Path := Asu_Null;
         else
           -- Some bookmark text: full bookmark
-          Result(I).Path := Utils.Asu_Us'
-               (Ctx.Get_Text (Ctx.Get_Child (Bookmark, 1)));
+          Result(I).Path := Asu_Us'(Ctx.Get_Text (Ctx.Get_Child (Bookmark, 1)));
         end if;
       end loop;
       return Result;

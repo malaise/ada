@@ -1,9 +1,8 @@
-with Ada.Strings.Unbounded;
+with As.U; use As.U;
 with Common,  Output, Words, Parser_Ada;
 
 procedure Parse_Entry (Level : in Natural) is
-  package Asu renames Ada.Strings.Unbounded;
-  Name, Family, Last_Id : Asu.Unbounded_String;
+  Name, Family, Last_Id : Asu_Us;
   Word : Parser_Ada.Word_Rec;
   In_Id, In_Parent : Boolean;
   use type Parser_Ada.Lexical_Kind_List;
@@ -20,13 +19,13 @@ begin
   end loop;
   if Word.Lexic /= Parser_Ada.Identifier
   and then Word.Lexic /= Parser_Ada.String_Literal then
-    Common.Error (Asu.To_String (Word.Text));
+    Common.Error (Asu_Ts (Word.Text));
   end if;
 
   -- Put "entry <name>"
   Name := Words.Get;
   Words.Reset;
-  Output.Put ("entry " & Asu.To_String (Name), False, Level);
+  Output.Put ("entry " & Asu_Ts (Name), False, Level);
 
   -- Parse family and arguments, store Family
   -- Store arguments lexical elements in words
@@ -35,10 +34,10 @@ begin
   loop
     Word := Parser_Ada.Multiparse.Get (True);
     Words.Add (Word);
-    if Asu.To_String (Word.Text) = "(" then
+    if Asu_Ts (Word.Text) = "(" then
       In_Parent := True;
       In_Id := True;
-    elsif Asu.To_String (Word.Text) = ")" then
+    elsif Asu_Ts (Word.Text) = ")" then
       In_Parent := False;
       if In_Id then
         -- Identifier was not followed by ':', it was the family
@@ -49,10 +48,10 @@ begin
     if In_Id and then Word.Lexic = Parser_Ada.Identifier then
       -- Save this adentifier, it might be the entry family
       Last_Id := Word.Text;
-    elsif Asu.To_String (Word.Text) = ":" then
+    elsif Asu_Ts (Word.Text) = ":" then
       -- End of argument formal names (entering in | out | inout ...)
       In_Id := False;
-    elsif Asu.To_String (Word.Text) = ";" then
+    elsif Asu_Ts (Word.Text) = ";" then
       if In_Parent then
         -- End of previous argument, expecting a new one
         In_Id := True;
@@ -68,7 +67,7 @@ begin
 
   -- Put Family if set
   if Asu.Length (Family) /= 0 then
-    Output.Put (" (for I in " & Asu.To_String (Family) & ")", False);
+    Output.Put (" (for I in " & Asu_Ts (Family) & ")", False);
   end if;
   -- Put Args if set
   if Words.Length /= 0 then
@@ -83,6 +82,6 @@ begin
   -- end <name>;
   Output.Put_Line ("begin", False, Level, True);
   Output.Put_Line ("null;", False, Level + 1, True);
-  Output.Put_Line ("end " & Asu.To_String (Name) & ";", False, Level, True);
+  Output.Put_Line ("end " & Asu_Ts (Name) & ";", False, Level, True);
 end Parse_Entry;
 

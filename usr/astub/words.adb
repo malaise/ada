@@ -39,8 +39,7 @@ package body Words is
   begin
     if Words_List.Is_Empty
     or else Index > Length then
-      return (Parser_Ada.Separator,
-              Ada.Strings.Unbounded.To_Unbounded_String (""));
+      return (Parser_Ada.Separator, Asu_Tus (""));
     end if;
     if Index /= 0 then
       Read_Index := Index;
@@ -54,15 +53,14 @@ package body Words is
     return Word;
   end Read;
 
-  function Read (Index : in Natural := 0)
-                return Ada.Strings.Unbounded.Unbounded_String is
+  function Read (Index : in Natural := 0) return Asu_Us is
   begin
     return Read (Index).Text;
   end Read;
 
   function Read (Index : in Natural := 0) return String is
   begin
-    return Ada.Strings.Unbounded.To_String (Read (Index));
+    return Asu_Ts (Read (Index));
   end Read;
 
   -- Get --
@@ -74,22 +72,20 @@ package body Words is
     return Word;
   end Get;
 
-  function Get (Index : in Natural := 0)
-                return Ada.Strings.Unbounded.Unbounded_String is
+  function Get (Index : in Natural := 0) return Asu_Us is
   begin
     return Get (Index).Text;
   end Get;
 
   function Get (Index : in Natural := 0) return String is
   begin
-    return Ada.Strings.Unbounded.To_String (Get (Index));
+    return Asu_Ts (Get (Index));
   end Get;
 
   -- Concat --
   function Concat (From_Index : in Positive := 1;
-                   To_Index : Natural := 0)
-           return Ada.Strings.Unbounded.Unbounded_String is
-    Result : Ada.Strings.Unbounded.Unbounded_String;
+                   To_Index : Natural := 0) return Asu_Us is
+    Result : Asu_Us;
     Last : Natural;
   begin
     if To_Index /= 0 then
@@ -99,7 +95,7 @@ package body Words is
     end if;
 
     for I in From_Index .. Last loop
-      Ada.Strings.Unbounded.Append (Result, String'(Read (I)));
+      Asu.Append (Result, Asu_Us'(Read (I)));
     end loop;
     return Result;
   end Concat;
@@ -107,7 +103,7 @@ package body Words is
   function Concat (From_Index : in Positive := 1;
                    To_Index : Natural := 0) return String is
   begin
-    return Ada.Strings.Unbounded.To_String (Concat (From_Index, To_Index));
+    return Asu_Ts (Concat (From_Index, To_Index));
   end Concat;
 
 
@@ -125,8 +121,7 @@ package body Words is
     Words_List.Insert (Word);
   end Add;
 
-  procedure Add (Lexic : in Parser_Ada.Lexical_Kind_List;
-                 Text : in Ada.Strings.Unbounded.Unbounded_String) is
+  procedure Add (Lexic : in Parser_Ada.Lexical_Kind_List; Text : in Asu_Us) is
   begin
     Add ( (Lexic, Text) );
   end Add;
@@ -134,7 +129,7 @@ package body Words is
   procedure Add (Lexic : in Parser_Ada.Lexical_Kind_List;
                  Text : in String) is
   begin
-    Add (Lexic, Ada.Strings.Unbounded.To_Unbounded_String (Text));
+    Add (Lexic, Asu_Tus (Text));
   end Add;
 
   -- Search --
@@ -160,7 +155,7 @@ package body Words is
   end Search;
 
   function Search (Lexic : in Parser_Ada.Lexical_Kind_List;
-                   Word : in Ada.Strings.Unbounded.Unbounded_String;
+                   Word : in Asu_Us;
                    From_Index : Positive := 1) return Natural is
 
   begin
@@ -172,7 +167,7 @@ package body Words is
                    From_Index : Positive := 1) return Natural is
   begin
     return Search (Lexic,
-                   Ada.Strings.Unbounded.To_Unbounded_String (Word),
+                   Asu_Tus (Word),
                    From_Index);
   end Search;
 

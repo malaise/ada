@@ -7,13 +7,6 @@ package body Output is
   Env_Max_To_Sort : constant String := "ALS_MAX_TO_SORT";
   Max_To_Sort : Natural := 5_000;
 
-  -- Asu
-  package Asu renames Ada.Strings.Unbounded;
-  subtype Asu_Us is Asu.Unbounded_String;
-  function Asu_Tus (Source : in String) return Asu_Us
-                   renames Asu.To_Unbounded_String;
-  function Asu_Ts (Source : in Asu_Us) return String renames Asu.To_String;
-
   -- Images
   function Nat_Image is new Int_Image (Natural);
   function Size_Image is new Int_Image (Sys_Calls.Size_T);
@@ -25,7 +18,7 @@ package body Output is
   Format_Kind : Format_Kind_List;
   Put_Path : Boolean;
   Full_Path : Boolean;
-  Separator : Asu.Unbounded_String;
+  Separator : Asu_Us;
   Classify : Boolean;
   Default_Separator : constant String := "  ";
 
@@ -40,7 +33,7 @@ package body Output is
              Put_Path    : in Boolean;
              Full_Path   : in Boolean;
              Classify    : in Boolean;
-             Separator   : in Ada.Strings.Unbounded.Unbounded_String) is
+             Separator   : in Asu_Us) is
   begin
     Output.Sort_Kind := Sort_Kind;
     Output.Revert := Revert;
@@ -107,21 +100,17 @@ package body Output is
     end if;
     -- Sort including full path if required
     if Full_Path then
-      C1.Name := Asu.To_Unbounded_String (
-        Directory.Build_File_Name (
+      C1.Name := Asu_Tus (Directory.Build_File_Name (
            Make_Full_Path (Asu_Ts (C1.Path)),
            Asu_Ts (C1.Name), "") );
-      C2.Name := Asu.To_Unbounded_String (
-        Directory.Build_File_Name (
+      C2.Name := Asu_Tus (Directory.Build_File_Name (
            Make_Full_Path (Asu_Ts (C2.Path)),
            Asu_Ts (C2.Name), "") );
     elsif Put_Path then
-      C1.Name := Asu.To_Unbounded_String (
-        Directory.Build_File_Name (
+      C1.Name := Asu_Tus (Directory.Build_File_Name (
            Asu_Ts (C1.Path),
            Asu_Ts (C1.Name), "") );
-      C2.Name := Asu.To_Unbounded_String (
-        Directory.Build_File_Name (
+      C2.Name := Asu_Tus (Directory.Build_File_Name (
            Asu_Ts (C2.Path),
            Asu_Ts (C2.Name), "") );
     end if;
@@ -165,9 +154,8 @@ package body Output is
 
   -- Is separator explicitely set (or is it the default)
   function Separator_Set return Boolean is
-    use type Asu.Unbounded_String;
   begin
-    return Separator /= Asu.Null_Unbounded_String;
+    return not Asu_Is_Null (Separator);
   end Separator_Set;
 
   -- Return current separator

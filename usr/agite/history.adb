@@ -1,4 +1,5 @@
 with Ada.Exceptions;
+with As.U; use As.U;
 with Con_Io, Afpx.List_Manager, String_Mng, Basic_Proc, Normal;
 with Utils, Config, Details, View;
 package body History is
@@ -24,7 +25,7 @@ package body History is
         -- "YYYY-MM-DD HH:MM:SS" -> "YYMMDD HH:MM "
         From.Date(03 .. 04) & From.Date(06 .. 07) & From.Date(09 .. 10) & '-'
       & From.Date(12 .. 13) & From.Date(15 .. 16) & ' '
-      & Procuste (Utils.Asu_Ts (From.Comment(1))) );
+      & Procuste (Asu_Ts (From.Comment(1))) );
   exception
     when Error:others =>
       Basic_Proc.Put_Line_Error ("Exception "

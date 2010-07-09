@@ -1,14 +1,14 @@
-with Ada.Strings.Unbounded, Ada.Characters.Latin_1, Ada.Exceptions;
+with Ada.Characters.Latin_1, Ada.Exceptions;
+with As.U; use As.U;
 with Argument, Sys_Calls, String_Mng, Text_Line, Unique_List, Debug,
      Char_To_Hexa, Upper_Str, Lower_Str, Mixed_Str, Command, Int_Image;
 with Search_Pattern;
 package body Replace_Pattern is
 
-  package Asu renames Ada.Strings.Unbounded;
   function Code_Image is new Int_Image (Command.Exit_Code_Range);
 
   -- The pattern to replace
-  The_Pattern : Asu.Unbounded_String;
+  The_Pattern : Asu_Us;
 
   -- The character in the pattern that code a substitution
   Subst_Char : constant Character := Ada.Characters.Latin_1.Bs;
@@ -152,7 +152,7 @@ package body Replace_Pattern is
       Sys_Calls.Put_Line_Error ("Replace parsing pattern >" & Pattern & "<");
     end if;
     -- Store pattern
-    The_Pattern := Asu.To_Unbounded_String (Pattern);
+    The_Pattern := Asu_Tus (Pattern);
     -- Replace escape sequences by coding chars
     Start := 1;
     Case_Action := Stop_Case;
@@ -160,7 +160,7 @@ package body Replace_Pattern is
     In_Command := False;
     loop
       -- Locate an escape sequence, exit when no more
-      Got := String_Mng.Locate_Escape (Asu.To_String (The_Pattern),
+      Got := String_Mng.Locate_Escape (Asu_Ts (The_Pattern),
                                        Start, "\acefiKklmnoRrstux");
       exit when Got = 0;
       -- Set corresponding code
@@ -359,15 +359,14 @@ package body Replace_Pattern is
     end if;
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Replace stored pattern >"
-                               & Asu.To_String (The_Pattern) & "<");
+                               & Asu_Ts (The_Pattern) & "<");
     end if;
   end Parse;
 
   -- Returns if pattern is empty
   function Is_Empty return Boolean is
-    use type Asu.Unbounded_String;
   begin
-    return The_Pattern = Asu.Null_Unbounded_String;
+    return Asu_Is_Null (The_Pattern);
   end Is_Empty;
 
   -- Extract a substring of string matching a regex
@@ -429,7 +428,7 @@ package body Replace_Pattern is
   -- Return the replacing string
   type If_Status_List is (None, If_Ok, If_Ko, In_Else);
   function Replace return String is
-    Result : Asu.Unbounded_String;
+    Result : Asu_Us;
     -- Current index in result
     Start : Positive;
     -- Index of next Subst_Char in result
@@ -477,7 +476,7 @@ package body Replace_Pattern is
     If_Status := None;
     loop
       -- Locate replace code
-      Got := String_Mng.Locate (Asu.To_String (Result),
+      Got := String_Mng.Locate (Asu_Ts (Result),
                                 Subst_Char & "", Start);
       exit when Got = 0;
       -- Check that this is a match action record
@@ -690,9 +689,9 @@ package body Replace_Pattern is
     end loop;
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Replace, replacing by >"
-         & Asu.To_String (Result) & "<");
+         & Asu_Ts (Result) & "<");
     end if;
-    return Asu.To_String (Result);
+    return Asu_Ts (Result);
   exception
     when Replace_Error =>
       raise;
@@ -705,7 +704,7 @@ package body Replace_Pattern is
                                & " INTERNAL ERROR: "
                                & Ada.Exceptions.Exception_Name (Error)
                                & " while replacing string by >"
-                               & Asu.To_String (The_Pattern) & "<");
+                               & Asu_Ts (The_Pattern) & "<");
       raise Replace_Error;
   end Replace;
 

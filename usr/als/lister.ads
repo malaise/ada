@@ -1,12 +1,9 @@
-with Ada.Strings.Unbounded;
-with Dynamic_List;
+with As.U; use As.U;
 with Entities;
 package Lister is
 
   -- List of strings
-  package Str_Dyn_List_Mng is new Dynamic_List
-             (Ada.Strings.Unbounded.Unbounded_String);
-  package Str_List_Mng renames Str_Dyn_List_Mng.Dyn_List;
+  package Str_List_Mng renames Asu_Dyn_List_Mng;
 
   -- Set selection criteria
   type Link_Criteria_List is (All_Links, Broken_Links, No_Link);

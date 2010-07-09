@@ -1,17 +1,8 @@
-with Ada.Strings.Unbounded;
+with As.U; use As.U;
 with String_Mng, Dynamic_List;
 with Debug, Basic_Proc, Parser;
 package body Tree_Mng is
 
-  -- Ada unbounded strings
-  package Asu renames Ada.Strings.Unbounded;
-  subtype Asu_Us is Asu.Unbounded_String;
-  Asu_Null : constant Asu_Us := Asu.Null_Unbounded_String;
-  function Asu_Tus (Str : String) return Asu_Us
-                   renames Asu.To_Unbounded_String;
-  function Asu_Ts (Str : Asu_Us) return String
-                   renames Asu.To_String;
-  use type Asu_Us;
   use type Sourcer.Src_Kind_List;
 
   -- Error
@@ -43,7 +34,7 @@ package body Tree_Mng is
     Crit : Sourcer.Src_Dscr;
     Found : Boolean;
   begin
-    if List = Asu_Null then
+    if Asu_Is_Null (List) then
       return;
     end if;
     if Revert and then Kind = Sourcer.Unit_Spec then
@@ -54,7 +45,7 @@ package body Tree_Mng is
     loop
       Crit.Kind := Kind;
       Crit.Unit := Asu_Tus (Iter.Next_Word);
-      exit when Crit.Unit = Asu_Null;
+      exit when Asu_Is_Null (Crit.Unit);
       -- Look for unit and insert it in tree
       if Kind = Sourcer.Unit_Spec then
         -- Look for spec or standalone body

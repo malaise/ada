@@ -1,15 +1,11 @@
 -- Parses command line and returns enigma definition
-with Ada.Strings.Unbounded, Ada.Exceptions;
+with Ada.Exceptions;
+with As.U; use As.U;
 with Argument, Xml_Parser, Environ, String_Mng, Parser, Int_Image;
 with Io_Manager;
 package body Definition is
 
   function Pimage is new Int_Image (Positive);
-
-  -- Ada.Strings.Unbounded and Ada.Exceptions re-definitions
-  package Asu renames Ada.Strings.Unbounded;
-  subtype Asu_Us is Asu.Unbounded_String;
-  function Asu_Ts (Str : Asu_Us) return String renames Asu.To_String;
 
   -- Is the definition loaded
   Initialized : Boolean := False;

@@ -1,12 +1,7 @@
-with Ada.Strings.Unbounded;
+with As.U; use As.U;
 with Xml_Parser, Environ;
 separate (Def_Enigma)
 package body Xml is
-
-  -- Ada.Strings.Unbounded and Ada.Exceptions re-definitions
-  package Asu renames Ada.Strings.Unbounded;
-  subtype Asu_Us is Asu.Unbounded_String;
-  function Asu_Ts (Str : Asu_Us) return String renames Asu.To_String;
 
   -- The configuration file name.
   Default_File_Name : constant String := "enigma.xml";

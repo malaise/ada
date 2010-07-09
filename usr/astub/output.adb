@@ -1,4 +1,4 @@
-with Ada.Strings.Unbounded;
+with As.U; use As.U;
 with Environ, Text_Handler, Text_Line, String_Mng.Regex, Ada_Words;
 with Common, Files;
 package body Output is
@@ -17,11 +17,6 @@ package body Output is
   Length : Positive := Def_Length;
   -- Mini lenght for String_Mng.Truncate
   Mini_Len : constant := 40;
-
-  package Asu renames Ada.Strings.Unbounded;
-  subtype Asu_Us is Asu.Unbounded_String;
-  function Asu_Ts (Str : Asu_Us) return String renames Asu.To_String;
-  Asu_Null : constant Asu_Us := Asu.Null_Unbounded_String;
 
   -- get envir variables if first call
   procedure Getenv is
@@ -56,7 +51,7 @@ package body Output is
 
   -- Return the indentation of a given level
   function Get_Indent (Level : in Natural) return String is
-    Result : Asu.Unbounded_String;
+    Result : Asu_Us;
   begin
     Getenv;
     for I in 1 .. Level loop
@@ -82,7 +77,7 @@ package body Output is
   begin
     -- Prepend previous tail and replace any sequence of 3 or more
     -- line_feeds by only 2
-    Ustr := Asu.To_Unbounded_String (
+    Ustr := Asu_Tus (
       String_Mng.Regex.Replace (Asu_Ts (Prev_Tail) & Str, "\n{3,}",
       Line_Feed_Char & Line_Feed_Char));
     Prev_Tail := Asu_Null;
@@ -101,7 +96,7 @@ package body Output is
     end loop;
     -- Remove and save tailing line feeds if any
     if Found /= 0 then
-      Prev_Tail := Asu.Unbounded_Slice (Ustr, Found,  Asu.Length (Ustr));
+      Prev_Tail := Asu_Uslice (Ustr, Found,  Asu.Length (Ustr));
       Asu.Delete (Ustr, Found, Asu.Length (Ustr));
     end if;
     -- Put remaining
@@ -122,7 +117,7 @@ package body Output is
     -- Must we add the "-- "?
     Add_Comment : Boolean := Comment;
     -- Line to put
-    Line2Put : Asu.Unbounded_String;
+    Line2Put : Asu_Us;
     -- Index where to start / where to cut
     Index : Natural;
     -- Index of "--" in string

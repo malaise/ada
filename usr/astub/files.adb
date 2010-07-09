@@ -1,13 +1,11 @@
-with Ada.Strings.Unbounded;
+with As.U; use As.U;
 with Sys_Calls, String_Mng, Environ;
 package body Files is
-
-  package Asu renames Ada.Strings.Unbounded;
 
   -- File names
   Spec_Suffix : constant String := ".ads";
   Body_Suffix :  constant String := ".adb";
-  Body_File_Name : Asu.Unbounded_String;
+  Body_File_Name : Asu_Us;
 
   -- Environ STUB_KEEP_ON_ERROR
   Keep_Name : constant String := "ASTUB_KEEP_ON_ERROR";
@@ -35,7 +33,7 @@ package body Files is
     Text_Char.Open (In_File, Fd);
 
     -- Create Out file for Text_line
-    Body_File_Name := Asu.To_Unbounded_String (
+    Body_File_Name := Asu_Tus (
           String_Mng.Cut (Spec_File_Name, Spec_Suffix'Length, False)
         & Body_Suffix);
 
@@ -50,7 +48,7 @@ package body Files is
     exception
       when Sys_Calls.Access_Error =>
         -- Raised by File_Check or failure of Unlink
-        Body_File_Name := Asu.Null_Unbounded_String;
+        Body_File_Name := Asu_Null;
         Close (Remove);
         raise Out_Error;
     end;
@@ -59,7 +57,7 @@ package body Files is
     begin
       Fd := Sys_Calls.Open (Asu.To_String (Body_File_Name), Sys_Calls.In_File);
       Sys_Calls.Close (Fd);
-      Body_File_Name := Asu.Null_Unbounded_String;
+      Body_File_Name := Asu_Null;
       Close (Remove);
       raise Out_Error;
     exception
@@ -73,7 +71,7 @@ package body Files is
       Fd := Sys_Calls.Create (Asu.To_String (Body_File_Name));
     exception
       when Sys_Calls.Name_Error =>
-        Body_File_Name := Asu.Null_Unbounded_String;
+        Body_File_Name := Asu_Null;
         Close (Remove);
         raise Out_Error;
     end;
