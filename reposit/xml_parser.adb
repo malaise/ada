@@ -9,15 +9,6 @@ package body Xml_Parser is
     return "V" & Major_Version & "." & Minor_Version;
   end Version;
 
-  -- Ada unbounded strings
-  package Asu renames Ada.Strings.Unbounded;
-  subtype Asu_Us is Asu.Unbounded_String;
-  Asu_Null : constant Asu_Us := Asu.Null_Unbounded_String;
-  function Asu_Tus (Str : String) return Asu_Us
-                   renames Asu.To_Unbounded_String;
-  function Asu_Ts (Str : Asu_Us) return String
-                   renames Asu.To_String;
-
   -- Used in Tree_Mng when building a new update
   procedure Deallocate is new Ada.Unchecked_Deallocation
    (Attributes_Array, Attributes_Access);
@@ -175,7 +166,7 @@ package body Xml_Parser is
   end Set;
   function Image (Element : Info_Rec) return String is
   begin
-    return  Ada.Strings.Unbounded.To_String (Element.Name);
+    return  Asu_Ts (Element.Name);
   end Image;
   function "=" (Current : Info_Rec; Criteria : Info_Rec) return Boolean is
     use type Asu_Us;
@@ -187,13 +178,13 @@ package body Xml_Parser is
   -- If file path is relative and father null, use current dir
   function Build_Full_Name (In_File : in Asu_Us;
                             Father  : in Asu_Us := Asu_Null) return Asu_Us is
-    use type Asu_Us;
+    use Asu;
   begin
     -- If Stdin or string or full path: keep it
-    if In_File = Asu_Null or else Asu.Element (In_File, 1) = '/' then
+    if Asu_Is_Null (In_File) or else Asu.Element (In_File, 1) = '/' then
       return In_File;
     end if;
-    if Father /= Asu_Null then
+    if not Asu_Is_Null (Father) then
       -- Father path & Current file path
       return Asu_Tus (Directory.Dirname (Asu_Ts (Father))) & In_File;
     else
@@ -438,7 +429,7 @@ package body Xml_Parser is
       File_Name : in String;
       Warn_Cb   : in Warning_Callback_Access := null;
       Dtd       : out Dtd_Type;
-      Error     : out Ada.Strings.Unbounded.Unbounded_String) is
+      Error     : out Asu_Us) is
     Ctx : Ctx_Type;
   begin
     Clean_Dtd (Dtd);
@@ -455,7 +446,7 @@ package body Xml_Parser is
       Str     : in String;
       Warn_Cb : in Warning_Callback_Access := null;
       Dtd     : out Dtd_Type;
-      Error   : out Ada.Strings.Unbounded.Unbounded_String) is
+      Error   : out Asu_Us) is
     Ctx : Ctx_Type;
   begin
     Clean_Dtd (Dtd);
@@ -690,19 +681,18 @@ package body Xml_Parser is
 
   -- Get Doctype characteristics (prologue must have been parsed)
   procedure Get_Doctype (Ctx : in Ctx_Type;
-       Name    : out Ada.Strings.Unbounded.Unbounded_String;
+       Name    : out Asu_Us;
        Public  : out Boolean;
-       Pub_Id  : out Ada.Strings.Unbounded.Unbounded_String;
-       File    : out Ada.Strings.Unbounded.Unbounded_String;
-       Int_Def : out Ada.Strings.Unbounded.Unbounded_String) is
-    use type Asu_Us;
+       Pub_Id  : out Asu_Us;
+       File    : out Asu_Us;
+       Int_Def : out Asu_Us) is
   begin
     if Ctx.Status = Error then
       raise Parse_Error;
     elsif Ctx.Status = Clean then
       raise Status_Error;
     end if;
-    if Ctx.Doctype.Name = Asu_Null then
+    if Asu_Is_Null (Ctx.Doctype.Name) then
       raise Doctype_Not_Set;
     end if;
     Name    := Ctx.Doctype.Name;
@@ -721,7 +711,7 @@ package body Xml_Parser is
 
   function Get_Target (Ctx     : Ctx_Type;
                        Pi_Node : Pi_Type)
-                    return Ada.Strings.Unbounded.Unbounded_String is
+                    return Asu_Us is
     Cell : constant My_Tree_Cell
          := Get_Cell (Get_Tree (Ctx, Pi_Node), Pi_Node);
   begin
@@ -742,7 +732,7 @@ package body Xml_Parser is
 
   function Get_Pi (Ctx : in Ctx_Type;
                    Pi_Node : Pi_Type)
-           return Ada.Strings.Unbounded.Unbounded_String is
+           return Asu_Us is
     Cell : constant My_Tree_Cell
          := Get_Cell (Get_Tree (Ctx, Pi_Node), Pi_Node);
   begin
@@ -808,7 +798,7 @@ package body Xml_Parser is
 
   function Get_Name (Ctx     : Ctx_Type;
                      Element : Element_Type)
-                     return Ada.Strings.Unbounded.Unbounded_String is
+                     return Asu_Us is
     Cell : constant My_Tree_Cell
          := Get_Cell (Get_Tree (Ctx, Element), Element);
   begin
@@ -1085,7 +1075,7 @@ package body Xml_Parser is
 
   function Get_Text (Ctx  : Ctx_Type;
                      Text : Text_Type)
-                     return Ada.Strings.Unbounded.Unbounded_String is
+                     return Asu_Us is
     Cell : constant My_Tree_Cell
          := Get_Cell (Get_Tree (Ctx, Text), Text);
   begin
@@ -1105,7 +1095,7 @@ package body Xml_Parser is
 
   function Get_Comment (Ctx     : Ctx_Type;
                         Comment : Comment_Type)
-                        return Ada.Strings.Unbounded.Unbounded_String is
+                        return Asu_Us is
     Cell : constant My_Tree_Cell
          := Get_Cell (Get_Tree (Ctx, Comment), Comment);
   begin

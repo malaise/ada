@@ -238,7 +238,6 @@ package body Parse_Mng  is
                          Adtd : in out Dtd_Type;
                          Context : in Context_List;
                          Value : out Asu_Us) is
-    use type Asu_Us;
     Char : Character;
   begin
     Util.Get (Ctx.Flow, Char);
@@ -579,7 +578,6 @@ package body Parse_Mng  is
                        Adtd : in out Dtd_Type;
                        Children : access Children_Desc) is
     Cell : My_Tree_Cell;
-    use type Asu_Us;
   begin
     if not Adtd.Set or else Children = null then
       -- In Prologue (Pi or directive) => no check
@@ -612,12 +610,10 @@ package body Parse_Mng  is
     Char : Character;
     Dummy : My_Tree_Cell;
     Is_Recorded : Boolean;
-
-    use type Asu_Us;
   begin
     Trace ("Ext expanding external entity " & Asu_Ts (Name) & " with URI "
          & Asu_Ts (Uri));
-    if Uri = Asu_Null then
+    if Asu_Is_Null (Uri) then
       Util.Error (Ctx.Flow, "Invalid external entity URI " & Asu_Ts (Uri)
                           & " for entity " & Asu_Ts (Name) & ".");
     end if;
@@ -812,10 +808,9 @@ package body Parse_Mng  is
     Ok : Boolean;
     Char : Character;
     Len : Natural;
-    use type Asu_Us;
   begin
     -- Only one DOCTYPE allowed
-    if Ctx.Doctype.Name /= Asu_Null then
+    if not Asu_Is_Null (Ctx.Doctype.Name) then
       Util.Error (Ctx.Flow, "Invalid second DOCTYPE directive");
     end if;
     -- Parse and check name
@@ -866,7 +861,7 @@ package body Parse_Mng  is
       Util.Get_Curr_Str (Ctx.Flow, Doctype_File);
       Util.Skip_Separators (Ctx.Flow);
       if Ctx.Use_Dtd
-      and then Ctx.Dtd_File = Asu_Null then
+      and then Asu_Is_Null (Ctx.Dtd_File) then
         -- Parse dtd file of doctype directive if no alternate file
         Util.Push_Flow (Ctx.Flow);
         Full_File := Build_Full_Name (Doctype_File, Ctx.Flow.Curr_Flow.Name);
@@ -889,7 +884,7 @@ package body Parse_Mng  is
       -- Remove last ']'
       Len := Asu.Length (Ctx.Doctype.Int_Def);
       Asu.Delete (Ctx.Doctype.Int_Def, Len, Len);
-      if Ctx.Dtd_File /= Asu_Null then
+      if not Asu_Is_Null (Ctx.Dtd_File) then
         -- This Dtd internal definition is overriden by an alternate file
         Trace ("Dtd internal def overwritten by external");
         Clean_Dtd (Adtd);
@@ -925,7 +920,6 @@ package body Parse_Mng  is
     Index : Natural;
     Ok : Boolean;
     Comment : Asu_Us;
-    use type Asu_Us;
   begin
 
     -- Comment?
@@ -1001,7 +995,6 @@ package body Parse_Mng  is
                             Adtd : in out Dtd_Type;
                             Allow_Dtd : in Boolean) is
     C1, C2 : Character;
-    use type Asu_Us;
   begin
     -- Autodetect encoding and check
     if Ctx.Flow.Curr_Flow.Is_File then
@@ -1045,7 +1038,7 @@ package body Parse_Mng  is
     Check_Xml (Ctx);
     -- Parse dtd alternate file if requested to do so
     if Ctx.Use_Dtd
-    and then Ctx.Dtd_File /= Asu_Null then
+    and then not Asu_Is_Null (Ctx.Dtd_File) then
       Util.Push_Flow (Ctx.Flow);
       -- Parse dtd file provided instead of doctype directive
       Dtd.Parse (Ctx, Adtd, Build_Full_Name (Ctx.Dtd_File,
@@ -1103,7 +1096,7 @@ package body Parse_Mng  is
         when Util.End_Error =>
           -- End of flow, save text
           Util.Get_Curr_Str (Ctx.Flow, Text);
-          if Text = Asu_Null then
+          if Asu_Is_Null (Text) then
             -- End of flow and no text
             exit Cdata_In_Flow;
           end if;
@@ -1137,14 +1130,14 @@ package body Parse_Mng  is
           when Remove_Cdata_Section =>
             Cdata := Asu_Null;
         end case;
-        if Text = Asu_Null then
+        if Asu_Is_Null (Text) then
           -- No text: This is fixed (in Head), and we will re-loop reading
           Head := Head & Cdata;
         else
           -- Some text: This will be appended to expanded text
           Tail := Cdata;
         end if;
-      elsif Text = Asu_Null then
+      elsif Asu_Is_Null (Text) then
         -- A valid '<' read and no text before it
         exit Cdata_In_Flow;
       end if;
@@ -1156,7 +1149,7 @@ package body Parse_Mng  is
       Cdata_In_Text:
       loop
         -- Done when no more text to expand
-        exit Cdata_In_Text when Text = Asu_Null;
+        exit Cdata_In_Text when Asu_Is_Null (Text);
         if Ctx.Expand then
           -- Expand Text and check if it generated a '<'
           Util.Expand_Text (Ctx, Adtd, Text, Ref_Xml, Index);
@@ -1168,7 +1161,7 @@ package body Parse_Mng  is
           Tmp_Text := Text;
           Util.Remove_Entities (Tmp_Text);
         end if;
-        if Tmp_Text /= Asu_Null then
+        if not Asu_Is_Null (Tmp_Text) then
           -- Expansion or text without entities lead to something => not empty
           Children.Is_Empty := False;
         end if;
@@ -1209,7 +1202,7 @@ package body Parse_Mng  is
                 Cdata := Asu_Null;
             end case;
             -- Head takes the expanded text and the CDATA section
-            Head := Head & Asu.Slice (Text, 1, Start_Index - 1) & Cdata;
+            Head := Head & Asu_Uslice (Text, 1, Start_Index - 1) & Cdata;
             Trace ("Txt appended >" & Asu_Ts (Head) & "<");
             -- Text is the remaining unexpanded text, fixed
             Asu.Delete (Text, 1, Index + Util.Cdata_End'Length - 1);
@@ -1239,7 +1232,7 @@ package body Parse_Mng  is
     Trace ("Txt expanded text >" & Asu_Ts (Head)
          & "< tail >" & Asu_Ts (Tail) & "<");
 
-    if Head /= Asu_Null then
+    if not Asu_Is_Null (Head) then
       -- If there are only separators, skip them
       if not Ctx.Normalize or else Children.Preserve
       or else not Util.Is_Separators (Head) then
@@ -1262,7 +1255,7 @@ package body Parse_Mng  is
           -- When not expanding, add child only if not empty
           Tmp_Text := Head;
           Util.Remove_Entities (Tmp_Text);
-          if Tmp_Text /= Asu_Null then
+          if not Asu_Is_Null (Tmp_Text) then
             Add_Child (Ctx, Adtd, Children);
           end if;
         elsif not Ctx.Normalize then
@@ -1282,7 +1275,7 @@ package body Parse_Mng  is
     end if;
 
     -- Now handle tail if not empty
-    if Tail = Asu_Null then
+    if Asu_Is_Null (Tail) then
       return;
     end if;
     -- Save current flow
@@ -1421,7 +1414,7 @@ package body Parse_Mng  is
       Util.Error (Ctx.Flow, "Invalid element name " & Asu_Ts (Element_Name));
     end if;
     if Root
-    and then Ctx.Doctype.Name /= Asu_Null
+    and then not Asu_Is_Null (Ctx.Doctype.Name)
     and then Element_Name /= Ctx.Doctype.Name then
       -- Root name must match DOCTYPE name
       Util.Error (Ctx.Flow, "Element name " & Asu_Ts (Element_Name)
@@ -1643,21 +1636,20 @@ package body Parse_Mng  is
   -- Check a Ctx versus its Dtd
   procedure Check (Ctx : in out Ctx_Type) is
     Adtd : Dtd_Type;
-    use type Asu_Us;
   begin
     -- Reset Dtd
     Dtd.Init (Adtd);
     Util.Push_Flow (Ctx.Flow);
     -- Parse Dtd
-    if Ctx.Dtd_File /= Asu_Null then
+    if not Asu_Is_Null (Ctx.Dtd_File) then
       -- Parse alternate Dtd provided by caller
       Dtd.Parse (Ctx, Adtd, Build_Full_Name (Ctx.Dtd_File));
-    elsif Ctx.Doctype.Name /= Asu_Null then
-      if Ctx.Doctype.File /= Asu_Null then
+    elsif not Asu_Is_Null (Ctx.Doctype.Name) then
+      if not Asu_Is_Null (Ctx.Doctype.File) then
         -- Parse Dtd file set in DOCTYPE of Xml
         Dtd.Parse (Ctx, Adtd, Build_Full_Name (Ctx.Doctype.File));
       end if;
-      if Ctx.Doctype.Int_Def /= Asu_Null then
+      if not Asu_Is_Null (Ctx.Doctype.Int_Def) then
         -- Parse internal defs
         Ctx.Flow.Curr_Flow.Is_File := False;
         Ctx.Flow.Curr_Flow.Kind := Dtd_Flow;

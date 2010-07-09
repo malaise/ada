@@ -6,11 +6,15 @@ package As.U is
   package Asu renames Ada.Strings.Unbounded;
   subtype Asu_Us is Asu.Unbounded_String;
   Asu_Null : constant Asu_Us := Asu.Null_Unbounded_String;
+  function Asu_Is_Null (Str : Asu_Us) return Boolean;
   function Asu_Tus (Str : String) return Asu_Us
                    renames Asu.To_Unbounded_String;
   function Asu_Tus (Char : Character) return Asu_Us;
   function Asu_Ts (Str : Asu_Us) return String
                    renames Asu.To_String;
+  function Asu_Uslice (Source : Asu_Us; Low : Positive;
+                       High   : Natural) return Asu_Us
+                       renames Asu.Unbounded_Slice;
 
   -- Dynamic_List of Asu_Us
   package Asu_List_Mng is new Dynamic_List (Asu_Us);

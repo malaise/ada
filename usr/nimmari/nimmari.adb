@@ -1,4 +1,5 @@
 with Ada.Text_Io;
+with As.U; use As.U;
 with Argument, Argument_Parser;
 with Common, Screen, Text, Compute;
 procedure Nimmari is
@@ -13,8 +14,6 @@ procedure Nimmari is
   -- Change game after end of a game
   Change_Game : Boolean;
 
-  function Asu_Tus (Source : in String) return Argument_Parser.Asu_Us
-                   renames Argument_Parser.Asu.To_Unbounded_String;
   Keys : constant Argument_Parser.The_Keys_Type := (
    01 => ('h', Asu_Tus ("help"), False, False),
    02 => ('n', Asu_Tus ("nim"), False, False),

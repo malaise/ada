@@ -1,9 +1,7 @@
-with Ada.Strings.Unbounded, Ada.Exceptions;
+with Ada.Exceptions;
+with As.U; use As.U;
 with Argument, Basic_Proc, Xml_Parser;
 procedure Dtd_Checker is
-
-  -- Ada.Strings.Unbounded and Ada.Exceptions re-definitions
-  package Asu renames Ada.Strings.Unbounded;
 
   -- Xml Parser dtd
   Dtd : Xml_Parser.Dtd_Type;
@@ -36,7 +34,6 @@ procedure Dtd_Checker is
 
   File_Pos : Natural := 1;
 
-  use type Asu.Unbounded_String;
 begin
   -- Parse arguments
   if Argument.Get_Nbre_Arg = 0
@@ -73,7 +70,7 @@ begin
                      & " not found.");
   end;
 
-  if Error_Msg /= Asu.Null_Unbounded_String then
+  if not Asu_Is_Null (Error_Msg) then
     Basic_Proc.Put_Line_Error (Asu.To_String (Error_Msg));
     Basic_Proc.Set_Error_Exit_Code;
   end if;
@@ -88,3 +85,4 @@ exception
     Usage;
     Basic_Proc.Set_Error_Exit_Code;
 end Dtd_Checker;
+

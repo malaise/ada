@@ -46,7 +46,6 @@ package body Tree_Mng is
   procedure Insert_Attribute (In_Tree : in out My_Tree.Tree_Type;
                               Attr : in My_Tree_Cell) is
     Nb_Attrs : Natural;
-    use type Asu_Us;
   begin
     -- Optim, if current cell has only attributes or only elements, append
     Nb_Attrs := In_Tree.Read.Nb_Attributes;
@@ -293,13 +292,12 @@ package body Tree_Mng is
   procedure Xml_Existst (Prologue : in out My_Tree.Tree_Type;
                          Exists : out Boolean) is
    Cell : My_Tree_Cell;
-    use type Asu_Us;
   begin
     if Prologue.Is_Empty then
       Exists := False;
     else
       Prologue.Read (Cell);
-      Exists := Cell.Name /= "";
+      Exists := not Asu_Is_Null (Cell.Name);
     end if;
   end Xml_Existst;
 

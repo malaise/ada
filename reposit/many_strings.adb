@@ -13,10 +13,9 @@ package body Many_Strings is
     Text_Handler.Append (To, Sep & What);
   end Cat;
 
-  procedure Cat (To : in out Ada.Strings.Unbounded.Unbounded_String;
-                 What : in String) is
+  procedure Cat (To : in out Asu_Us; What : in String) is
   begin
-    Ada.Strings.Unbounded.Append (To, Sep & What);
+    Asu.Append (To, Sep & What);
   end Cat;
 
   -- Decode
@@ -80,5 +79,4 @@ package body Many_Strings is
   end Nth;
 
 end Many_Strings;
-
 

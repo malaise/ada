@@ -1,4 +1,5 @@
-with Ada.Calendar, Ada.Strings.Unbounded;
+with Ada.Calendar;
+with As.U; use As.U;
 with Basic_Proc, Argument, Argument_Parser;
 with Entities, Output, Targets, Lister;
 procedure Als is
@@ -57,10 +58,6 @@ procedure Als is
     raise Error_Exception;
   end Error;
 
-  package Asu renames Argument_Parser.Asu;
-  function Asu_Tus (Source : in String) return Argument_Parser.Asu_Us
-                   renames Asu.To_Unbounded_String;
-
   -- The keys and descriptor of parsed keys
   Keys : constant Argument_Parser.The_Keys_Type := (
    01 => ('a', Asu_Tus ("all"), False, False),
@@ -110,7 +107,7 @@ procedure Als is
   No_Sorting : Boolean;
   Merge_Lists : Boolean;
   Date1, Date2 : Entities.Date_Spec_Rec;
-  Separator : Ada.Strings.Unbounded.Unbounded_String;
+  Separator : Asu_Us;
   Put_Total : Boolean;
   Classify : Boolean;
   Depth : Natural;
@@ -265,8 +262,7 @@ begin
     if Arg_Dscr.Get_Option (20) = "" then
       Error ("Empty separator");
     end if;
-    Separator := Ada.Strings.Unbounded.To_Unbounded_String
-     (Arg_Dscr.Get_Option (20));
+    Separator := Asu_Tus (Arg_Dscr.Get_Option (20));
   end if;
   -- Put total size
   Put_Total := Arg_Dscr.Is_Set (21);

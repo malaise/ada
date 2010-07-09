@@ -304,7 +304,7 @@ package body Util is
         Asu.Append (Err_Msg, " external entity");
     end case;
     if Flow.Curr_Flow.Kind /= Xml_Flow
-    and then Flow.Curr_Flow.Name /= Asu_Null then
+    and then not Asu_Is_Null (Flow.Curr_Flow.Name) then
       Asu.Append (Err_Msg, " " & Flow.Curr_Flow.Name);
     end if;
     Asu.Append (Err_Msg, ": " & Msg & ".");

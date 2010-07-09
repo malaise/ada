@@ -13,13 +13,13 @@ package body Network is
   -- Set name of a node
   procedure Set_Name (Of_Node : in out Node_Type; Name : in String) is
   begin
-    Of_Node.Name := Ada.Strings.Unbounded.To_Unbounded_String (Name);
+    Of_Node.Name := Asu_Tus (Name);
   end Set_Name;
 
   -- Returns the name of a node
   function Get_Name (Of_Node : Node_Type) return String is
   begin
-    return Ada.Strings.Unbounded.To_String (Of_Node.Name);
+    return Asu_Ts (Of_Node.Name);
   end Get_Name;
 
   -- Set data of a node

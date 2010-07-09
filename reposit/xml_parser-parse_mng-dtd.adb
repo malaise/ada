@@ -295,7 +295,7 @@ package body Dtd is
 
     -- If in internal dtd and not in include, add @element to Internals
     if Ctx.Flow.Curr_Flow.Kind = Int_Dtd_Flow then
-      if Adtd.Internals = Asu_Null then
+      if Asu_Is_Null (Adtd.Internals) then
         Asu.Append (Adtd.Internals, Info_Sep);
       end if;
       Asu.Append (Adtd.Internals,
@@ -449,7 +449,7 @@ package body Dtd is
         Util.Parse_Until_Char (Ctx.Flow, ")");
         Util.Get_Curr_Str (Ctx.Flow, Enum);
         Util.Remove_Separators (Enum, "()|");
-        if Enum = Asu_Null then
+        if Asu_Is_Null (Enum) then
           Util.Error (Ctx.Flow, "Empty enumeration");
         end if;
         -- Check that everything between "|" are
@@ -610,21 +610,21 @@ package body Dtd is
         end if;
         if Typ_Char = 'N' then
           -- Append Elt##Attr# to the list of notation attributes
-          if Adtd.Notation_Attrs = Asu_Null then
+          if Asu_Is_Null (Adtd.Notation_Attrs) then
             Adtd.Notation_Attrs := Asu_Tus ("" & Info_Sep);
           end if;
           Asu.Append (Adtd.Notation_Attrs,
               Elt_Name & Info_Sep & Info_Sep & Att_Name & Info_Sep);
         end if;
         -- Append this attribute in list: #attribute##td#attribute##td#...
-        if Info.List = Asu_Null then
+        if Asu_Is_Null (Info.List) then
           Asu.Append (Info.List, Info_Sep);
         end if;
         Asu.Append (Info.List, Att_Name
                   & Info_Sep & Info_Sep & Typ_Char & Def_Char & Info_Sep);
         -- If in internal dtd and not in include, add it to internals
         if Ctx.Flow.Curr_Flow.Kind = Int_Dtd_Flow then
-          if Adtd.Internals = Asu_Null then
+          if Asu_Is_Null (Adtd.Internals) then
             Asu.Append (Adtd.Internals, Info_Sep);
           end if;
           Asu.Append (Adtd.Internals,
@@ -827,7 +827,6 @@ package body Dtd is
     -- Unparsed entity rec
     Unparsed_Rec : Unparsed_Type;
     Char : Character;
-    use type Asu_Us;
   begin
     -- Parse notation name
     Util.Skip_Separators (Ctx.Flow);
@@ -1369,7 +1368,7 @@ package body Dtd is
       Info.Name := "Elt" & Info_Sep & Elt_Ref.Child;
       Adtd.Info_List.Search (Info, Found);
       if not Found then
-        if Elt_Ref.Father /= Asu_Null then
+        if not Asu_Is_Null (Elt_Ref.Father) then
           Util.Warning (Ctx,
             "Element " & Asu_Ts (Elt_Ref.Father) & " references unknown child "
                        &  Asu_Ts (Elt_Ref.Child),
@@ -1584,9 +1583,9 @@ package body Dtd is
     if Info_Found then
       Adtd.Info_List.Read (Info, Info);
     end if;
-    if not Info_Found or else Info.List = Asu_Null then
+    if not Info_Found or else Asu_Is_Null (Info.List) then
       -- No or empty ATTLIST for this element
-      if Attributes = Asu_Null then
+      if Asu_Is_Null (Attributes) then
         Trace ("Dtd checked element " & Asu_Ts (Name)
              & " with no attributes, versus no or empty attlist");
         return;
@@ -1788,7 +1787,7 @@ package body Dtd is
             Trace (" Check, adding IDREFs " & Asu_Ts (Xml_Val));
             loop
               Idcell.Name := Asu_Tus (Iter_Xml.Next_Word);
-              exit when Idcell.Name = Asu_Null;
+              exit when Asu_Is_Null (Idcell.Name);
               Ctx.Idrefs.Insert (Idcell);
               Trace (" Check, added IDREF " & Asu_Ts (Idcell.Name));
             end loop;
@@ -1947,7 +1946,7 @@ package body Dtd is
     if Info_Found then
       Adtd.Info_List.Read (Info, Info);
     end if;
-    if not Info_Found or else Info.List = Asu_Null then
+    if not Info_Found or else Asu_Is_Null (Info.List) then
       return;
     end if;
     -- Locate attribute name in List
@@ -2069,7 +2068,6 @@ package body Dtd is
     Cell : My_Tree_Cell;
     Children : Children_Desc;
     Is_Root : constant Boolean := not Ctx.Elements.Has_Father;
-    use type Asu_Us;
   begin
     -- Check current element, attributes then children
     Check_Attributes (Ctx, Adtd);
@@ -2096,7 +2094,7 @@ package body Dtd is
       Ctx.Elements.Read (Cell);
       -- Skip Text, Comments and tail
       if Cell.Kind = Element then
-        if Is_Root and then Cell.Name = Asu_Null
+        if Is_Root and then Asu_Is_Null (Cell.Name)
         and then not Ctx.Elements.Has_Brother (False) then
           Check_Tail (Ctx);
         else

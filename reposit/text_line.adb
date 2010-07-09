@@ -16,8 +16,7 @@ package body Text_Line is
     File.Acc := new File_Type_Rec'(
        Fd => Fd,
        Mode => Mode,
-       Line_Feed =>
-            Ada.Strings.Unbounded.To_Unbounded_String (Line_Feed_Str),
+       Line_Feed => Asu_Tus (Line_Feed_Str),
        Buffer_Len => 0,
        Buffer_Index => 0,
        Buffer => (others => Ada.Characters.Latin_1.Nul) );
@@ -60,7 +59,7 @@ package body Text_Line is
     if Str'Length > Max_Line_Feed_Len then
       raise Status_Error;
     end if;
-    File.Acc.Line_Feed := Ada.Strings.Unbounded.To_Unbounded_String (Str);
+    File.Acc.Line_Feed := Asu_Tus (Str);
   end Set_Line_Feed;
 
   function Get_Line_Feed (File : in File_Type) return String is
@@ -68,7 +67,7 @@ package body Text_Line is
     if File.Acc = null then
       raise Status_Error;
     end if;
-    return Ada.Strings.Unbounded.To_String (File.Acc.Line_Feed);
+    return Asu_Ts (File.Acc.Line_Feed);
   end Get_Line_Feed;
 
   -- Read next text line from File
@@ -82,7 +81,7 @@ package body Text_Line is
   -- May raise Read_Error if IO error
   function Get (File : File_Type) return String is
   begin
-    return Ada.Strings.Unbounded.To_String (Get (File));
+    return Asu_Ts (Get (File));
   end Get;
 
   -- Internal procedure that reads a buffer (or up to end of file)
@@ -103,12 +102,10 @@ package body Text_Line is
 
 
   function Get (File : File_Type)
-                return Ada.Strings.Unbounded.Unbounded_String is
-    package Asu renames Ada.Strings.Unbounded;
-    Str : Asu.Unbounded_String;
+                return Asu_Us is
+    Str : Asu_Us;
     Stop_Index : Buffer_Index_Range;
     Done : Boolean;
-    use type Ada.Strings.Unbounded.Unbounded_String;
   begin
     -- Check file is open and in read mode
     if File.Acc = null or else File.Acc.Mode /= In_File then
@@ -116,7 +113,7 @@ package body Text_Line is
     end if;
 
     -- Specif case of no Line_Feed, read all
-    if File.Acc.Line_Feed = Asu.Null_Unbounded_String then
+    if Asu_Is_Null (File.Acc.Line_Feed) then
       loop
         Read (File, Done);
         -- Done when read -> 0
@@ -225,7 +222,7 @@ package body Text_Line is
     if File.Acc = null or else File.Acc.Mode /= Out_File then
       raise Status_Error;
     end if;
-    Put (File, Text & Ada.Strings.Unbounded.To_String (File.Acc.Line_Feed));
+    Put (File, Text & Asu_Ts (File.Acc.Line_Feed));
   end Put_Line;
 
   -- Put a New_Line
@@ -236,7 +233,7 @@ package body Text_Line is
     if File.Acc = null or else File.Acc.Mode /= Out_File then
       raise Status_Error;
     end if;
-    Put (File, Ada.Strings.Unbounded.To_String (File.Acc.Line_Feed));
+    Put (File, Asu_Ts (File.Acc.Line_Feed));
   end New_Line;
 
   -- Flush the remaining of text put on file

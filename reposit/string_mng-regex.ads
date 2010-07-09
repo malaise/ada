@@ -1,7 +1,7 @@
 -- More powerfull search and substitution in strings,
 --  based on regular expressions (extended, case sensitive and matching
 --  newline).
-with Ada.Strings.Unbounded;
+with As.U; use As.U;
 with Regular_Expressions;
 package String_Mng.Regex is
 
@@ -63,8 +63,7 @@ package String_Mng.Regex is
   -- Split Str into several substrings that match the substrings "(...)"
   --  of the criteria.
   -- Returns the array of slices (empty array if Str does not strictly match).
-  type String_Slice is array (Positive range <>)
-      of Ada.Strings.Unbounded.Unbounded_String;
+  type String_Slice is array (Positive range <>) of Asu_Us;
   function Split (Str : String;
                   Criteria : String;
                   Max_Slices : Positive) return String_Slice;

@@ -296,12 +296,11 @@ package body Xml_Parser.Generator is
                          Append_Next : in Boolean := True) is
     Tree : Tree_Acc;
     Cell : My_Tree_Cell;
-    use type Asu_Us;
   begin
     if not Node.In_Prologue then
       raise Invalid_Node;
     end if;
-    if Ctx.Doctype.Name /= Asu_Null then
+    if not Asu_Is_Null (Ctx.Doctype.Name) then
       raise Doctype_Already_Set;
     end if;
     Check_Name (Name);
@@ -961,7 +960,6 @@ package body Xml_Parser.Generator is
                             Has_Children : in Boolean) is
     Cell : My_Tree_Cell;
     Nb_Attributes : Natural;
-    use type Asu_Us;
   begin
     -- Read number of attribtues
     Element.Read (Cell);
@@ -1010,26 +1008,25 @@ package body Xml_Parser.Generator is
   procedure Put_Doctype (Flow    : in out Flow_Dscr;
                          Doctype : in Doctype_Type;
                          Format  : in Format_Kind_List) is
-    use type Asu_Us;
   begin
     -- Put DOCTYPE, name
     Put (Flow, "<!DOCTYPE " & Asu_Ts (Doctype.Name));
-    if Doctype.Name = Asu_Null then
+    if Asu_Is_Null (Doctype.Name) then
       raise Internal_Error;
     end if;
     -- Public or System external reference
     if Doctype.Public then
       -- Public and public Id
       Put (Flow, " PUBLIC """ & Asu_Ts (Doctype.Pub_Id) & """");
-    elsif Doctype.File /= Asu_Null then
+    elsif not Asu_Is_Null (Doctype.File) then
       Put (Flow, " SYSTEM");
     end if;
     -- Public or System URI
-    if Doctype.File /= Asu_Null then
+    if not Asu_Is_Null (Doctype.File) then
       Put (Flow, " """  & Asu_Ts (Doctype.File) & """");
     end if;
     -- Internal definition
-    if Doctype.Int_Def /= Asu_Null then
+    if not Asu_Is_Null (Doctype.Int_Def) then
       if Format /= Raw then
         Put (Flow, " [" & Asu_Ts (Doctype.Int_Def) & "] ");
       else
@@ -1074,7 +1071,7 @@ package body Xml_Parser.Generator is
       end if;
       Closed := True;
     end Close;
-    use type Asu_Us, My_Tree.Position_Access;
+    use type My_Tree.Position_Access;
   begin
     if Level = Prologue_Level then
       -- A prologue
@@ -1126,7 +1123,7 @@ package body Xml_Parser.Generator is
           when Xml_Parser.Pi =>
             -- Put xml or PI
             Put (Flow, "<?" & Asu_Ts (Child.Name));
-            if Child.Value /= Asu_Null then
+            if not Asu_Is_Null (Child.Value) then
               Put (Flow, " " & Asu_Ts (Child.Value));
             end if;
             Put (Flow, "?>");
@@ -1152,7 +1149,7 @@ package body Xml_Parser.Generator is
     end if;
 
     -- In Elements or in tail
-    In_Tail := Level = 1 and then Cell.Name = Asu_Null;
+    In_Tail := Level = 1 and then Asu_Is_Null (Cell.Name);
 
     if not In_Tail then
       -- Put element, attributes and children recursively
@@ -1191,7 +1188,7 @@ package body Xml_Parser.Generator is
       -- End Father for child or not (just a tail)
       Child := Element.Read;
       if not In_Tail then
-        if Child.Name /= Asu_Null then
+        if not Asu_Is_Null (Child.Name) then
           -- There is a significant child
           Put (Flow, ">");
           if not Is_Mixed and then Format /= Raw then
@@ -1222,7 +1219,7 @@ package body Xml_Parser.Generator is
             -- Impossibe
             raise Internal_Error;
           end if;
-          if Level = 0 and then Child.Name = Asu_Null then
+          if Level = 0 and then Asu_Is_Null (Child.Name) then
             -- Start of Tail
             Close;
           end if;
@@ -1246,7 +1243,7 @@ package body Xml_Parser.Generator is
             Put (Flow, Indent1);
           end if;
           Put (Flow, "<?" & Asu_Ts (Child.Name));
-          if Child.Value /= Asu_Null then
+          if not Asu_Is_Null (Child.Value) then
             Put (Flow, " " & Asu_Ts (Child.Value));
           end if;
           Put (Flow, "?>");
@@ -1306,7 +1303,6 @@ package body Xml_Parser.Generator is
     Flow : Flow_Dscr(Use_File => False);
     Indent : constant String (1 .. 2 * Update.Level) := (others => ' ');
     Xml_Attr_Format : Format_Kind_List;
-    use type Asu_Us;
   begin
     if Update.Stage = Prologue then
       if Update.Level = 0 then
@@ -1338,7 +1334,7 @@ package body Xml_Parser.Generator is
           when Xml_Parser.Pi =>
             -- Put PI
             Put (Flow, "<?" & Asu_Ts (Update.Name));
-            if Update.Value /= Asu_Null then
+            if not Asu_Is_Null (Update.Value) then
               Put (Flow, " " & Asu_Ts (Update.Value));
             end if;
             Put (Flow, "?>");
@@ -1368,7 +1364,7 @@ package body Xml_Parser.Generator is
       and then not Update.In_Mixed
       and then Update.Kind /= Xml_Parser.Text
       and then (Update.Kind /= Xml_Parser.Element
-              or else Update.Name /= Asu_Null) then
+              or else not Asu_Is_Null (Update.Name)) then
         -- Creation of a new node: Indent if not within mixed, if not text
         --  and if not at beginning of tail
         Put (Flow, Indent);
@@ -1379,7 +1375,7 @@ package body Xml_Parser.Generator is
     end if;
     case Update.Kind is
       when Xml_Parser.Element =>
-        if Update.Creation and then Update.Name /= Asu_Null then
+        if Update.Creation and then not Asu_Is_Null (Update.Name) then
           -- Put element and attributes
           Put (Flow, "<" & Asu_Ts(Update.Name));
           if Update.Attributes /= null then
@@ -1399,7 +1395,7 @@ package body Xml_Parser.Generator is
             end if;
             return Asu_Ts (Flow.Us);
           end if;
-        elsif  Update.Name /= Asu_Null then
+        elsif not Asu_Is_Null (Update.Name) then
           -- End of element with children
           Put (Flow, "</" & Asu_Ts (Update.Name) & ">");
         end if;
@@ -1409,7 +1405,7 @@ package body Xml_Parser.Generator is
       when Pi =>
         -- Put PI
         Put (Flow, "<?" & Asu_Ts (Update.Name));
-        if Update.Value /= Asu_Null then
+        if not Asu_Is_Null (Update.Value) then
           Put (Flow, " " & Asu_Ts (Update.Value));
         end if;
         Put (Flow, "?>");

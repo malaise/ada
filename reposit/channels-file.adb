@@ -1,4 +1,4 @@
-with Ada.Strings.Unbounded;
+with As.U; use As.U;
 with Xml_Parser;
 
 separate (Channels)
@@ -29,7 +29,7 @@ package body File is
     begin
       for I in Channels'Range loop
         Name := Ctx.Get_Attribute (Channels(I), 1);
-        if Ada.Strings.Unbounded.To_String (Name.Value) = Channel_Name then
+        if Asu_Ts (Name.Value) = Channel_Name then
           Chn := Channels(I);
           Nod := Xml_Parser.No_Node;
           exit;

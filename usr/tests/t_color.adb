@@ -1,4 +1,5 @@
 with Ada.Text_Io;
+with As.U; use As.U;
 with Generic_Con_Io, Con_Io, Argument;
 procedure T_Color is
   Colors : Generic_Con_Io.Colors_Definition;
@@ -13,7 +14,7 @@ begin
   Ic := Generic_Con_Io.Effective_Colors'First;
   for I in 1 .. Argument.Get_Nbre_Arg loop
     if Argument.Get_Parameter (Occurence => I) /= "-" then
-      Colors(Ic) := Generic_Con_Io.Asu_Tus (Argument.Get_Parameter (Occurence => I));
+      Colors(Ic) := Asu_Tus (Argument.Get_Parameter (Occurence => I));
     end if;
     Ic := Generic_Con_Io.Effective_Colors'Succ (Ic);
   end loop;

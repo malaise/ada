@@ -1,4 +1,5 @@
 with Ada.Text_Io, Ada.Exceptions;
+with As.U; use As.U;
 with Argument, Argument_Parser, Sys_Calls, Mixed_Str;
 with Common, Files, Parse_Context;
 procedure Astub is
@@ -21,9 +22,6 @@ procedure Astub is
   end Error;
 
   -- The keys and descriptor of parsed keys
-  function Asu_Tus (Source : in String) return Argument_Parser.Asu_Us
-                   renames Argument_Parser.Asu.To_Unbounded_String;
-
   Keys : constant Argument_Parser.The_Keys_Type := (
    01 => ('f', Asu_Tus ("force"), False, False),
    02 => ('k', Asu_Tus ("keep"), False, False));

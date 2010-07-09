@@ -215,8 +215,6 @@ package body Async_Stdin is
     Page_Down_Seq     : constant String := "[6~";
     Insert_Seq        : constant String := "[2~";
 
-    use type Asu_Us;
-
     -- Copy Buf and move to end of line
     procedure Update is
     begin
@@ -256,7 +254,7 @@ package body Async_Stdin is
       case C is
         when Latin_1.Bs | Latin_1.Del =>
           -- Backspace
-          if Seq /= Asu_Null then
+          if not Asu_Is_Null (Seq) then
             Store;
             Asu.Append (Txt, Latin_1.Esc);
             return True;
@@ -274,7 +272,7 @@ package body Async_Stdin is
           end if;
         when Latin_1.Ht =>
           -- Search
-          if Seq /= Asu_Null then
+          if not Asu_Is_Null (Seq) then
             Store;
             Asu.Append (Txt, Latin_1.Esc);
             return True;
@@ -294,7 +292,7 @@ package body Async_Stdin is
           Searching := True;
         when Latin_1.Esc =>
           -- Escape, validate previous escape
-          if Seq /= Asu_Null then
+          if not Asu_Is_Null (Seq) then
             Store;
             Asu.Append (Txt, Latin_1.Esc);
             return True;
@@ -302,7 +300,7 @@ package body Async_Stdin is
           Seq := Asu_Tus (C);
           Escape_Time := Ada.Calendar.Clock;
         when ' ' .. '~' =>
-          if Seq = Asu_Null then
+          if Asu_Is_Null (Seq) then
             -- Insert C at current position and move 1 right
             Txt := Asu_Tus (
                       Asu.Slice (Txt, 1, Ind - 1)
@@ -415,7 +413,7 @@ package body Async_Stdin is
         when others =>
           -- Other char
           Store;
-          if Seq /= Asu_Null then
+          if not Asu_Is_Null (Seq) then
             Asu.Append (Txt, Latin_1.Esc);
           else
             Asu.Append (Txt, C);
@@ -428,7 +426,7 @@ package body Async_Stdin is
     function Flush return Boolean is
       use type Ada.Calendar.Time;
     begin
-      if Seq /= Asu_Null
+      if not Asu_Is_Null (Seq)
       and then Ada.Calendar.Clock - Escape_Time > Seq_Delay then
         -- Client wants to flush and Esc is getting old
         Asu.Append (Txt, Latin_1.Esc);

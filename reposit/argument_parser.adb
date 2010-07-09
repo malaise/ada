@@ -5,11 +5,6 @@ package body Argument_Parser is
   -- Image without leading space
   function Image is new Int_Image (Natural);
 
-  function Asu_Tus (Source : in String) return Asu.Unbounded_String
-           renames Asu.To_Unbounded_String;
-  function Asu_Ts (Source : in Asu.Unbounded_String) return String
-           renames Asu.To_String;
-
   No_Match : constant String := "" & Ada.Characters.Latin_1.Nul;
   -- The result of parsing of an arg
   -- If Index is not 0, then it is a single (Char or else string) key

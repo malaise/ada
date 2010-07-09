@@ -1,5 +1,5 @@
 -- Arbitrary precision numbers
-with Ada.Strings.Unbounded;
+with As.U; use As.U;
 package Arbitrary is
   type Number is private;
 
@@ -54,6 +54,6 @@ package Arbitrary is
   function Last_Digit (A : Number) return Digit;
 
 private
-  type Number is new Ada.Strings.Unbounded.Unbounded_String;
+  type Number is new Asu_Us;
 end Arbitrary;
 

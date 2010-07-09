@@ -1,4 +1,5 @@
-with Ada.Strings.Unbounded, Ada.Strings.Wide_Unbounded;
+with Ada.Strings.Wide_Unbounded;
+with As.U; use As.U;
 with Environ, Utf_8, String_Mng, Lower_Str;
 package body Language is
 
@@ -125,25 +126,25 @@ package body Language is
   end String_To_Wide;
 
   function Wide_To_String (Str : Wide_String) return String is
-    S : Ada.Strings.Unbounded.Unbounded_String;
+    S : Asu_Us;
     W : Wide_Character;
   begin
     if Get_Language /= Lang_Utf_8 then
       for I in Str'Range loop
-        Ada.Strings.Unbounded.Append (S, Wide_To_Char (Str(I)));
+        Asu.Append (S, Wide_To_Char (Str(I)));
       end loop;
     else
       for I in Str'Range loop
         W := Str(I);
         if W <= Last_Char then
           -- Optim
-          Ada.Strings.Unbounded.Append (S, Wide_To_Char (Str(I)));
+          Asu.Append (S, Wide_To_Char (Str(I)));
         else
-          Ada.Strings.Unbounded.Append (S, Utf_8.Encode (Str(I)));
+          Asu.Append (S, Utf_8.Encode (Str(I)));
         end if;
       end loop;
     end if;
-    return Ada.Strings.Unbounded.To_String (S);
+    return Asu_Ts (S);
   end Wide_To_String;
 
   function "&" (Left : String; Right : Wide_String) return String is

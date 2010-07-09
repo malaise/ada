@@ -1,7 +1,7 @@
 -- The ada parser analyses the input flow, separates words, delimiters...
 --  identifies and returns them through a callback.
 -- It stops at the end of the input flow.
-with Ada.Strings.Unbounded;
+with As.U; use As.U;
 with Text_Char;
 package Ada_Parser is
 
@@ -35,7 +35,7 @@ package Ada_Parser is
   --  or raises End_Error
   -- May raise Syntax_Error
   procedure Parse_Next (File : in Text_Char.File_Type;
-                        Text : out Ada.Strings.Unbounded.Unbounded_String;
+                        Text : out Asu_Us;
                         Lexic : out Lexical_Kind_List;
                         Raise_End : in Boolean := False);
 

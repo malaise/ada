@@ -1,5 +1,5 @@
 -- Allows navigation (lookup chars) within a string
-with Ada.Strings.Unbounded;
+with As.U; use As.U;
 package String_Mng.Navigator is
 
   -- Returned when out of string
@@ -50,7 +50,7 @@ package String_Mng.Navigator is
 private
 
   type Navigator_Type is tagged record
-    Str : Ada.Strings.Unbounded.Unbounded_String;
+    Str : Asu_Us;
     Start : Natural := 0;
     Current : Integer := 0;
     No_Char : Character := Default_No_Char;

@@ -2,7 +2,7 @@
 -- Where oper is +, -, * or /,
 --  a and b are integers or ${Variable}
 -- Supports parentheses.
-with Ada.Strings.Unbounded;
+with As.U; use As.U;
 with Environ, Basic_Proc, Unique_List,
      String_Mng, Dynamic_List, Parser;
 package body Computer is
@@ -19,15 +19,6 @@ package body Computer is
       Basic_Proc.Put_Line_Error ("COMP:  " & Msg);
     end if;
   end Trace;
-
-  -- Unbounded strings
-  package Asu renames Ada.Strings.Unbounded;
-  subtype Asu_Us is Ada.Strings.Unbounded.Unbounded_String;
-  function Asu_Ts (Source : in Asu_Us) return String
-                  renames Asu.To_String;
-  function Asu_Tus (Source : in String) return Asu_Us
-                  renames Asu.To_Unbounded_String;
-
 
   -- List of variables
   type Var_Rec is record

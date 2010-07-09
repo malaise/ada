@@ -2,12 +2,6 @@ with Ada.Text_Io;
 with Sys_Calls, Environ, Many_Strings, Proc_Family, Event_Mng, Text_Line;
 package body Command is
 
-  -- Asu stuff
-  function Asu_Ts (Str : Asu_Us) return String renames Asu.To_String;
-  function Asu_Tus (Str : String) return Asu_Us
-           renames Asu.To_Unbounded_String;
-  Asu_Null :  constant Asu_Us := Asu.Null_Unbounded_String;
-
   -- Debug option
   Debug_Init : Boolean := False;
   Command_Debug_Name : constant String := "COMMAND_DEBUG";
@@ -108,7 +102,7 @@ package body Command is
     Flow : Text_Line.File_Type;
     Line : Asu_Us;
     Got : Boolean;
-    use type Asu_Us, Sys_Calls.File_Desc;
+    use type Sys_Calls.File_Desc;
   begin
     if Debug then
       if Fd = Output_Fd then
@@ -127,7 +121,7 @@ package body Command is
     -- Read lines and store in Output/Error_Result
     loop
       Line := Flow.Get;
-      exit when Line = Asu_Null;
+      exit when Asu_Is_Null (Line);
       -- Got at least an event
       Got := True;
       -- Apply policy to flow

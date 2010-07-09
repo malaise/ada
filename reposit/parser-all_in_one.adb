@@ -12,7 +12,7 @@ package body Parser.All_In_One is
 
   -- type Parsed_Element_Rec is record
   --   Kind : Parsed_Element_Kind_List;
-  --   Str : Ada.Strings.Unbounded.Unbounded_String;
+  --   Str : Asu_Us;
   -- end record;
 
 
@@ -25,25 +25,22 @@ package body Parser.All_In_One is
   -- May raise Constraint_Error if Iter is not set.
   function Parse_All (Iter : Iterator) return Parsed_Array is
     Word_Elt, Seps_Elt : Parsed_Element_Rec;
-    use type Ada.Strings.Unbounded.Unbounded_String;
   begin
     -- Parse Iterator, store separators then word into list
     Reset (Iter);
     Word_Elt.Kind := Word;
     Seps_Elt.Kind := Separators;
     loop
-      Word_Elt.Str := Ada.Strings.Unbounded.To_Unbounded_String (
-                      Next_Word (Iter));
-      Seps_Elt.Str := Ada.Strings.Unbounded.To_Unbounded_String (
-                      Prev_Separators (Iter));
+      Word_Elt.Str := Asu_Tus (Next_Word (Iter));
+      Seps_Elt.Str := Asu_Tus (Prev_Separators (Iter));
       -- Store previous seperators if any (may not be the case before first
       --  word or after last word)
-      if Seps_Elt.Str /= Ada.Strings.Unbounded.Null_Unbounded_String then
+      if not Asu_Is_Null (Seps_Elt.Str) then
         Parsed_List.Insert (Seps_Elt);
       end if;
       -- Store word if any, note that an empty string leads to both empty Elts
       --  then to an empty list
-      if Word_Elt.Str /= Ada.Strings.Unbounded.Null_Unbounded_String then
+      if not Asu_Is_Null (Word_Elt.Str) then
         Parsed_List.Insert (Word_Elt);
       else
         -- No more word: exit loop
@@ -68,5 +65,4 @@ package body Parser.All_In_One is
   end Parse_All;
 
 end Parser.All_In_One;
-
 

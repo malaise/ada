@@ -1,16 +1,10 @@
-with Ada.Strings.Unbounded, Ada.Exceptions;
+with Ada.Exceptions;
+with As.U; use As.U;
 with Argument, Argument_Parser, Xml_Parser.Generator, Normal, Basic_Proc,
      Text_Line, Sys_Calls, Parser;
 procedure Xml_Checker is
   -- Current version
   Version : constant String := "V12.0";
-
-  -- Ada.Strings.Unbounded and Ada.Exceptions re-definitions
-  package Asu renames Ada.Strings.Unbounded;
-  subtype Asu_Us is Asu.Unbounded_String;
-  function Asu_Ts (Str : Asu_Us) return String renames Asu.To_String;
-  function Asu_Tus (Str : String) return Asu_Us renames Asu.To_Unbounded_String;
-  Asu_Null : constant Asu_Us := Asu.Null_Unbounded_String;
 
   procedure Ae_Re (E : in Ada.Exceptions.Exception_Id;
                    M : in String := "")
@@ -301,7 +295,7 @@ procedure Xml_Checker is
       -- Use the Image of Xml_Parser.Generator
       Str := Asu_Tus (Xml_Parser.Generator.Image (Ctx, Node, Format, Width));
       if Cb_Status = Init then
-        if Str = Asu_Null then
+        if Asu_Is_Null (Str) then
           -- Dummy Xml node when no xml directive, we will need to skip
           --  the leading Line_Feed of root if any
           Cb_Status := Skip;
@@ -475,7 +469,6 @@ procedure Xml_Checker is
   end Close;
 
   use type Xml_Parser.Generator.Format_Kind_List;
-  use type Asu_Us;
 begin
   -- Open output flow
   Out_Flow.Open (Text_Line.Out_File, Sys_Calls.Stdout);
@@ -647,7 +640,7 @@ begin
   if Arg_Dscr.Is_Set (9) then
     -- Check dtd file
     Dtd_File := Asu_Tus (Arg_Dscr.Get_Option (9));
-    if Dtd_File = Asu_Null then
+    if Asu_Is_Null (Dtd_File) then
       -- If option set with empty dtd => no check
       Use_Dtd := False;
     end if;

@@ -1,4 +1,5 @@
-with Ada.Strings.Unbounded, Ada.Finalization;
+with Ada.Finalization;
+with As.U; use As.U;
 with Sys_Calls, Text_Line;
 package Text_Char is
 
@@ -51,11 +52,11 @@ private
     --  a new line must be read from Text_Line file
     -- If Line_Got is not empty, then Line_Got(Get_Index+1) can be read,
     --  there is never Get_Index = Length(Line_Got), except 0
-    Line_Got : Ada.Strings.Unbounded.Unbounded_String;
+    Line_Got : Asu_Us;
     Get_Index : Natural := 0;
 
     -- Ungot chars appended one after the other
-    Ungot_Chars : Ada.Strings.Unbounded.Unbounded_String;
+    Ungot_Chars : Asu_Us;
   end record;
 
   type Rec_Access is access File_Type_Rec;
@@ -66,4 +67,5 @@ private
   overriding procedure Finalize (File : in out File_Type);
 
 end Text_Char;
+
 

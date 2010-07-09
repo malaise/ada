@@ -1,13 +1,11 @@
 -- Allows navigation (lookup chars) within a string
--- with Ada.Strings.Unbounded;
 
 package body String_Mng.Navigator is
-  package Asu renames Ada.Strings.Unbounded;
 
   -- Constructor, re-inits position to start of string
   procedure Set (Navig : in out Navigator_Type; Str : in String) is
   begin
-    Navig.Str := Asu.To_Unbounded_String (Str);
+    Navig.Str := Asu_Tus (Str);
     Navig.Start := Str'First;
     Navig.Current := Str'First;
     Navig.No_Char := Default_No_Char;

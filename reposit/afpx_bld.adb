@@ -1,4 +1,4 @@
-with Ada.Text_Io, Ada.Direct_Io, Ada.Strings.Unbounded;
+with Ada.Text_Io, Ada.Direct_Io;
 with As.U; use As.U;
 with Generic_Con_Io, Con_Io, Normal, Argument,
      Mixed_Str, Basic_Proc, Xml_Parser,
@@ -17,11 +17,6 @@ procedure Afpx_Bld is
   Ctx : Xp.Ctx_Type;
 
   -- Unbounded strings
-  package Asu renames Ada.Strings.Unbounded;
-  subtype Asu_Us is Asu.Unbounded_String;
-  use type Asu_Us;
-  function Asu_Ts (Us : Asu_Us) return String renames Asu.To_String;
-  function Asu_Tus (S : String) return Asu_Us renames Asu.To_Unbounded_String;
   function "&" (Str : String; Us : Asu_Us) return String is
   begin
     return Str & Asu_Ts (Us);
@@ -771,8 +766,8 @@ procedure Afpx_Bld is
           if Child_Child.Kind /= Xp.Text then
             File_Error (Child_Child, "Invalid init string");
           end if;
-          Finit_String := Asu.To_Unbounded_String (Computer.Eval
-                   (Asu_Ts (Ctx.Get_Text (Child_Child))));
+          Finit_String := Asu_Tus (Computer.Eval (
+                   Asu_Ts (Ctx.Get_Text (Child_Child))));
           -- Length in term of put positions (also in term of wide characters)
           Finit_Length := Language.Put_Length (Asu_Ts (Finit_String));
           -- Check Finit col + string length compatible with field width
@@ -1056,7 +1051,7 @@ begin
   Expected_Args := 0;
   begin
     List_File_Name := Asu_Tus (Argument.Get_Parameter (Param_Key => "l"));
-    if List_File_Name = Asu_Null then
+    if Asu_Is_Null (List_File_Name) then
       raise Argument_Error;
     end if;
     -- Argument found
@@ -1070,7 +1065,7 @@ begin
 
   begin
     Afpx_Typ.Dest_Path := Asu_Tus (Argument.Get_Parameter (Param_Key => "d"));
-    if Afpx_Typ.Dest_Path = Asu_Null then
+    if Asu_Is_Null (Afpx_Typ.Dest_Path) then
       raise Argument_Error;
     end if;
     -- Argument found

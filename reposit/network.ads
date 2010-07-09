@@ -1,5 +1,6 @@
 -- Network of nodes
-with Ada.Strings.Unbounded, Ada.Finalization;
+with Ada.Finalization;
+with As.U; use As.U;
 with Limited_List;
 generic
   -- The data to store in each node
@@ -147,7 +148,7 @@ private
   -- The exported node type
   type Node_Type is limited new Ada.Finalization.Limited_Controlled with record
     -- Node name. Empty when node is deleted
-    Name : Ada.Strings.Unbounded.Unbounded_String;
+    Name : Asu_Us;
     -- List of node's connections
     Connections : Connections_Access := null;
     -- Node data

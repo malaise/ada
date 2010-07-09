@@ -1,7 +1,5 @@
-with Ada.Strings.Unbounded;
+with As.U; use As.U;
 package body String_Mng is
-
-  package Asu renames Ada.Strings.Unbounded;
 
   -- Parces spaces and tabs (latin_1.Ht) from the head/tail of a string
   -- Returns the position of the first/last character or 0 if
@@ -333,7 +331,7 @@ package body String_Mng is
 
 
     -- The string to work on
-    Ustr : Asu.Unbounded_String;
+    Ustr : Asu_Us;
     -- Last index of Ustr
     Last_Index : Natural;
 
@@ -360,7 +358,7 @@ package body String_Mng is
         return False;
       end if;
       if Skip_Backslashed
-      and then Is_Backslashed (Asu.To_String (Ustr), Str_Index) then
+      and then Is_Backslashed (Asu_Ts (Ustr), Str_Index) then
         -- Matches but backslashed
         return False;
       end if;
@@ -390,7 +388,7 @@ package body String_Mng is
     end if;
 
     -- Store input string and its last index
-    Ustr := Asu.To_Unbounded_String (Str);
+    Ustr := Asu_Tus (Str);
     Last_Index := Str'Length;
     Level := 0;
 
@@ -469,16 +467,14 @@ package body String_Mng is
 
     -- Remove backslash for delimiters if they have been skipped
     if Skip_Backslashed then
-      Ustr := Asu.To_Unbounded_String (
-         Replace (Asu.To_String (Ustr), "\" & Start_Delimiter,
+      Ustr := Asu_Tus (Replace (Asu_Ts (Ustr), "\" & Start_Delimiter,
                   Start_Delimiter));
-      Ustr := Asu.To_Unbounded_String (
-         Replace (Asu.To_String (Ustr), "\" & Stop_Delimiter,
+      Ustr := Asu_Tus (Replace (Asu_Ts (Ustr), "\" & Stop_Delimiter,
                   Stop_Delimiter));
     end if;
 
     -- Done
-    return Asu.To_String (Ustr);
+    return Asu_Ts (Ustr);
   end Eval_Variables;
 
   -- Locate an escape sequence within the Within string,
@@ -552,17 +548,17 @@ package body String_Mng is
   --  then replaces '\' & Separator by Separator
   function Split (Str       : String;
                   Separator : Character) return Many_Strings.Many_String is
-    Result : Asu.Unbounded_String;
+    Result : Asu_Us;
     Index : Natural;
   begin
-    Result := Asu.To_Unbounded_String (Str);
+    Result := Asu_Tus (Str);
     -- Do in reverse so the result of subst does no affect
     --  Is_Backslashed or index
     Index := Asu.Length (Result);
     loop
       exit when Index = 0;
       if Asu.Element (Result, Index) = Separator then
-        if Is_Backslashed (Asu.To_String (Result), Index) then
+        if Is_Backslashed (Asu_Ts (Result), Index) then
           -- Replace '\' & Separator by Separator
           Asu.Replace_Slice (Result, Index - 1, Asu.Length (Result),
                              Asu.Slice (Result, Index, Asu.Length (Result)) );
@@ -574,7 +570,7 @@ package body String_Mng is
       end if;
       Index := Index - 1;
     end loop;
-    return Asu.To_String (Result);
+    return Asu_Ts (Result);
   end Split;
 
   -- Locate where to cut Str so that is best matches the requested line Length
@@ -655,8 +651,7 @@ package body String_Mng is
     Len : constant Natural := What'Length;
     Last : constant Natural := Str'Last;
     I : Positive;
-    Result : Ada.Strings.Unbounded.Unbounded_String;
-    use type Ada.Strings.Unbounded.Unbounded_String;
+    Result : Asu_Us;
   begin
     -- Nothing if what is empty or Str too short
     if Len = 0 or else Str'Length < Len then
@@ -667,20 +662,20 @@ package body String_Mng is
       -- See if there are enough chars remaining. If yes, check if match
       if I + Len - 1 > Last then
         -- Str cannot match any more (not enough chars)
-        Ada.Strings.Unbounded.Append (Result, Str(I .. Last));
+        Asu.Append (Result, Str(I .. Last));
         exit;
       elsif Str(I .. I + Len - 1) = What
       and then (not Skip_Backslashed or else not Is_Backslashed (Str, I)) then
         -- Match, replace
-        Ada.Strings.Unbounded.Append (Result, By);
+        Asu.Append (Result, By);
         I := I + Len;
       else
         -- No match, move one char forward
-        Ada.Strings.Unbounded.Append (Result, Str(I));
+        Asu.Append (Result, Str(I));
         I := I + 1;
       end if;
     end loop;
-    return Ada.Strings.Unbounded.To_String (Result);
+    return Asu_Ts (Result);
   end Replace;
 
   -- Return a String (1 .. N)

@@ -104,9 +104,8 @@ package body Entity_Mng is
                  Internal : in Boolean;
                  Intern_Dtd : in Boolean;
                  Parsed : in Boolean) is
-    use type Asu_Us;
   begin
-    if Name = Asu_Null then
+    if Asu_Is_Null (Name) then
       Trace ("Storing an empty entity name");
       raise Internal_Error;
     end if;
@@ -122,10 +121,9 @@ package body Entity_Mng is
     Code : Natural;
     pragma Unreferenced (Code);
     Entity : Entity_Type;
-    use type Asu_Us;
   begin
     -- Resolve Character reference
-    if not Parameter and then Name /= Asu_Null
+    if not Parameter and then not Asu_Is_Null (Name)
     and then Asu.Element (Name, 1) = '#' then
       -- To check validity
       Code := Code_Of (Asu_Ts (Name));
@@ -151,7 +149,7 @@ package body Entity_Mng is
     use type Asu_Us;
   begin
     -- Resolve Character reference
-    if not Parameter and then Name /= Asu_Null
+    if not Parameter and then not Asu_Is_Null (Name)
     and then Asu.Element (Name, 1) = '#' then
       if Context = Ref_Dtd then
         Trace ("Forbidden character entity reference " & Asu_Ts (Name)

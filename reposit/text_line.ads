@@ -1,4 +1,5 @@
-with Ada.Strings.Unbounded, Ada.Characters.Latin_1, Ada.Finalization;
+with Ada.Characters.Latin_1, Ada.Finalization;
+with As.U; use As.U;
 with Sys_Calls;
 package Text_Line is
 
@@ -49,7 +50,7 @@ package Text_Line is
   -- May raise Status_Error if File is not open or not In_File
   -- May raise Io_Error if IO error
   function Get (File : File_Type) return String;
-  function Get (File : File_Type) return Ada.Strings.Unbounded.Unbounded_String;
+  function Get (File : File_Type) return Asu_Us;
 
   -- Put some text in file
   -- This text will either be flushed explicitely
@@ -82,7 +83,7 @@ private
   type File_Type_Rec is record
     Fd : Sys_Calls.File_Desc;
     Mode : File_Mode;
-    Line_Feed : Ada.Strings.Unbounded.Unbounded_String;
+    Line_Feed : Asu_Us;
     Buffer_Len : Buffer_Index_Range;
     Buffer_Index : Buffer_Index_Range;
     Buffer : Buffer_Array;

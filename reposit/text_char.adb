@@ -2,7 +2,6 @@ with Unchecked_Deallocation;
 package body Text_Char is
 
   procedure Free is new Unchecked_Deallocation (File_Type_Rec, Rec_Access);
-  package Asu renames Ada.Strings.Unbounded;
 
   -- Associate a file desc to a Txt_Char file
   -- May raise Status_Error if File is already open
@@ -26,8 +25,8 @@ package body Text_Char is
     end if;
     -- Close Text_Line file and free file
     Text_Line.Close (File.Acc.Line_File);
-    File.Acc.Line_Got := Ada.Strings.Unbounded.Null_Unbounded_String;
-    File.Acc.Ungot_Chars := Ada.Strings.Unbounded.Null_Unbounded_String;
+    File.Acc.Line_Got := Asu_Null;
+    File.Acc.Ungot_Chars := Asu_Null;
     Free (File.Acc);
     File.Acc := null;
   end Close;
@@ -88,7 +87,7 @@ package body Text_Char is
       Char := Asu.Element (File.Acc.Line_Got, File.Acc.Get_Index);
       if File.Acc.Get_Index = Len then
         -- Reset if end of read line
-        File.Acc.Line_Got := Asu.Null_Unbounded_String;
+        File.Acc.Line_Got := Asu_Null;
         Len := 0;
         File.Acc.Get_Index := 0;
       end if;

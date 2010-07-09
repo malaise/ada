@@ -1,13 +1,6 @@
-with Ada.Strings.Unbounded;
+with As.U; use As.U;
 with X_Mng, Timers;
 package Generic_Con_Io is
-  -- Asu = Ada.Strings.Unbounded
-  package Asu renames Ada.Strings.Unbounded;
-  subtype Asu_Us is Ada.Strings.Unbounded.Unbounded_String;
-  function Asu_Tus (Str : String) return Asu_Us
-                   renames Asu.To_Unbounded_String;
-  function Asu_Ts (Asu_Str : Asu_Us) return String
-                   renames Asu.To_String;
 
   -- The Font
   subtype Font_No_Range is Natural range 0 .. 3;

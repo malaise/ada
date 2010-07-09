@@ -1,8 +1,7 @@
-with Ada.Strings.Unbounded;
+with As.U; use As.U;
 with Xml_Parser;
 package body Byte_To_Unicode is
 
-  package Asu renames Ada.Strings.Unbounded;
 
   function Value (Str : String) return Natural is
   begin
@@ -45,7 +44,7 @@ package body Byte_To_Unicode is
       Child := Ctx.Get_Child (Node, I+1);
       -- Get code, first attribute
       Attr := Ctx.Get_Attribute (Child, 1);
-      Code := Value (Asu.To_String (Attr.Value));
+      Code := Value (Asu_Ts (Attr.Value));
       if Set(Code) then
         -- This Code already set
         raise Parse_Error;

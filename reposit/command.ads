@@ -1,11 +1,7 @@
 -- Executes a command (fork/exec) and retrieves its outputs
-with Ada.Strings.Unbounded;
+with As.U; use As.U;
 with Dynamic_List;
 package Command is
-
-  -- Asu stuff
-  package Asu renames Ada.Strings.Unbounded;
-  subtype Asu_Us is Asu.Unbounded_String;
 
   -- Output and error flow, either a list (one item per line) or a Asu_Us
   type Flow_Format_Kind_List is (Str, List);

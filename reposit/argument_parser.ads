@@ -21,17 +21,13 @@
 --    is considered as No_Key (even another "--").
 -- - an argument "-" is considered as a not a key (either option or No_Key).
 
-with Ada.Strings.Unbounded, Ada.Finalization;
+with Ada.Finalization;
+with As.U; use As.U;
 with Argument;
 package Argument_Parser is
 
   -- Max length of an argument
   Max_Arg_Len : constant := Argument.Max_Len_Arg;
-
-  -- Usefull renaming for Unbounded Strings
-  package Asu renames Ada.Strings.Unbounded;
-  subtype Asu_Us is Asu.Unbounded_String;
-  Asu_Null : constant  Asu_Us := Asu.Null_Unbounded_String;
 
   -- No key when character key, when string key
   No_Key_Char : constant Character := ' ';

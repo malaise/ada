@@ -1,5 +1,6 @@
 with Ada.Characters.Latin_1, Ada.Exceptions;
-with Argument, Text_Handler, Event_Mng, Sys_Calls, Async_Stdin, Text_Line;
+with As.U; use As.U;
+with Argument, Event_Mng, Sys_Calls, Async_Stdin, Text_Line;
 with Fifos;
 with Debug, Io_Data;
 package body Io_Flow is
@@ -8,7 +9,7 @@ package body Io_Flow is
 
   -- Init, get fifo name or leave empty for stdin
   Init_Done : Boolean := False;
-  Fifo_Name : Text_Handler.Text (Fifos.Max_Fifo_Name_Len);
+  Fifo_Name : Asu_Us;
 
   -- Input flow when not a fifo nor a tty
   Input_Flow : Text_Line.File_Type;
@@ -41,11 +42,10 @@ package body Io_Flow is
 
     -- Get fifo name argument if set
     begin
-      Argument.Get_Parameter (Fifo_Name, 1, "f");
+      Fifo_Name := Asu_Tus (Argument.Get_Parameter (1, "f"));
       -- Fifo
       if Debug.Debug_Level_Array(Debug.Flow) then
-        Async_Stdin.Put_Line_Err ("Flow: init on fifo "
-                            & Text_Handler.Value (Fifo_Name));
+        Async_Stdin.Put_Line_Err ("Flow: init on fifo " & Asu_Ts (Fifo_Name));
       end if;
       Open_Fifo (True);
       return;
@@ -56,7 +56,7 @@ package body Io_Flow is
     end;
 
     -- Stdin
-    Text_Handler.Empty (Fifo_Name);
+    Fifo_Name := Asu_Null;
     if Debug.Debug_Level_Array(Debug.Flow) then
       Async_Stdin.Put_Line_Err ("Flow: init on stdio");
     end if;
@@ -90,7 +90,7 @@ package body Io_Flow is
     use type Mcd_Fifos.Fifo_Id;
   begin
     Init;
-    if Text_Handler.Empty (Fifo_Name) and then not Stdio_Is_A_Tty then
+    if Asu_Is_Null (Fifo_Name) and then not Stdio_Is_A_Tty then
       Input_Data := Unb.To_Unbounded_String ("");
       -- Get next non empty line from Stdin (not a tty)
       loop
@@ -167,7 +167,7 @@ package body Io_Flow is
     F, L : Natural;
     use type Mcd_Fifos.Fifo_Id;
   begin
-    if Text_Handler.Empty (Fifo_Name) then
+    if Asu_Is_Null (Fifo_Name) then
       -- Put on stdout (tty or not)
       Async_Stdin.Put_Out (Str);
     elsif Client_Id /= Mcd_Fifos.No_Fifo then
@@ -206,7 +206,7 @@ package body Io_Flow is
   procedure Close is
     use type Mcd_Fifos.Fifo_Id;
   begin
-    if Text_Handler.Empty (Fifo_Name) then
+    if Asu_Is_Null (Fifo_Name) then
       if Stdio_Is_A_Tty then
         -- Reset tty blocking
         Async_Stdin.Set_Async;
@@ -282,17 +282,16 @@ package body Io_Flow is
 
   procedure Open_Fifo (Active : in Boolean) is
   begin
-    if Text_Handler.Empty (Fifo_Name) then
+    if Asu_Is_Null (Fifo_Name) then
       if Debug.Debug_Level_Array(Debug.Flow) then
         Async_Stdin.Put_Line_Err ("Flow: Opening empty fifo discarded");
       end if;
       raise Fifo_Error;
     end if;
     if Debug.Debug_Level_Array(Debug.Flow) then
-      Async_Stdin.Put_Line_Err ("Flow: Opening fifo "
-                          & Text_Handler.Value (Fifo_Name));
+      Async_Stdin.Put_Line_Err ("Flow: Opening fifo " & Asu_Ts (Fifo_Name));
     end if;
-    Acc_Id := Mcd_Fifos.Open (Text_Handler.Value (Fifo_Name),
+    Acc_Id := Mcd_Fifos.Open (Asu_Ts (Fifo_Name),
                               False,
                               Conn_Cb'Access,
                               Rece_Cb'Access,

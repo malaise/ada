@@ -17,8 +17,9 @@
 -- Debug displays the modified words.
 
 with Ada.Text_Io, Ada.Direct_Io, Ada.Exceptions, Ada.Characters.Latin_1;
+with As.U; use As.U;
 
-with Argument, Bloc_Io, Text_Handler, Ada_Words,
+with Argument, Bloc_Io, Ada_Words,
      Lower_Str, Mixed_Str, Upper_Str, Basic_Proc;
 
 procedure Alook is
@@ -266,13 +267,6 @@ procedure Alook is
 
   end Reading;
 
-  -- These ones are static because they are big
-  -- Current line for warnings
-  Line : Text_Handler.Text (Text_Handler.Max_Len_Range'Last);
-  -- Current word and exception when it is full
-  Word_Error : exception;
-  Word : Text_Handler.Text (Text_Handler.Max_Len_Range'Last);
-
   -- This is the exit code. Like diff:
   -- An  exit status of 0 means no change,
   --  1 means some files have been (or would be if test) modified,
@@ -319,6 +313,15 @@ procedure Alook is
     -- End of file reached
     End_Of_File : Boolean;
 
+    -- Current line for warnings
+    Line : Asu_Us;
+
+    -- Current word and exception when it is filled
+    Word_Error : exception;
+    Word : Asu_Us;
+
+    use type Asu_Us;
+
     -- Is Char an upper case
     function Is_Upper (Char : Character) return Boolean is
     begin
@@ -327,7 +330,7 @@ procedure Alook is
 
     -- Check if word case is correct
     procedure Check_Word is
-      Str : constant String := Text_Handler.Value (Word);
+      Str : constant String := Asu_Ts (Word);
       Is_Keyword : Boolean;
       procedure Change_Word (New_Str : in String) is
       begin
@@ -379,11 +382,11 @@ procedure Alook is
       if Warnings then
         Ada.Text_Io.Put_Line("Warning. In file " & File_Name
                            & " at line" & Line_No'Img);
-        Ada.Text_Io.Put_Line("--> " & Text_Handler.Value (Line));
+        Ada.Text_Io.Put_Line("--> " & Asu_Ts (Line));
         Warnings := False;
       end if;
-      Text_Handler.Empty (Line);
-      Text_Handler.Empty (Word);
+      Line := Asu_Null;
+      Word := Asu_Null;
     end Check_Line;
 
   begin
@@ -416,6 +419,8 @@ procedure Alook is
     Line_No := 1;
     Prev_Tick := False;
     End_Of_File := False;
+    Line := Asu_Null;
+    Word := Asu_Null;
 
     -- Conversion loop:
     -- If upper_case and previous also upper_case, write lower_case
@@ -443,7 +448,7 @@ procedure Alook is
       -- Update line char for warnings if possible
       if Char /= Reading.New_Line and then not End_Of_File then
         begin
-          Text_Handler.Append (Line, Char);
+          Asu.Append (Line, Char);
         exception
           when Constraint_Error =>
             -- Line is too to big for Line text!
@@ -460,9 +465,9 @@ procedure Alook is
         or else Char = Reading.Carriage_Return
         or else End_Of_File then
           -- End of word, check it
-          if Text_Handler.Empty (Word)
+          if Word = Asu_Null
           -- Avoid checking character literal
-          or else (Text_Handler.Length (Word) = 1
+          or else (Asu.Length (Word) = 1
                    and then Prev_Prev_Char = ''' and then Char = ''' )then
             null;
           else
@@ -472,18 +477,18 @@ procedure Alook is
             Prev_Tick := False;
           end if;
           -- Not in word
-          Text_Handler.Empty (Word);
+          Word := Asu_Null;
           -- Store tick if not in character literal
           if not Prev_Tick then
             Prev_Tick := Char = ''' and then Prev_Prev_Char /= ''';
           end if;
         else
           -- In word: append if possible
-          if Text_Handler.Empty (Word) then
+          if Word = Asu_Null then
             Word_Index := Reading.Curr_Index;
           end if;
           begin
-            Text_Handler.Append (Word, Char);
+            Asu.Append (Word, Char);
           exception
             when Constraint_Error =>
               raise Word_Error;
@@ -500,7 +505,7 @@ procedure Alook is
         -- Entering comment
         In_Comment := True;
         Proceed := False;
-        Text_Handler.Empty (Word);
+        Word := Asu_Null;
       end if;
 
       -- Check in string. Update Proceed
@@ -508,7 +513,7 @@ procedure Alook is
         if not In_String and then Prev_Char /= ''' then
           -- Entering string
           In_String := True;
-          Text_Handler.Empty (Word);
+          Word := Asu_Null;
         elsif In_String then
           -- Leaving String
           In_String := False;
@@ -576,8 +581,8 @@ procedure Alook is
            & ", exception " & Ada.Exceptions.Exception_Name (Error)
            & ". Skipping.");
       Reading.Close;
-      Text_Handler.Empty (Line);
-      Text_Handler.Empty (Word);
+      Line := Asu_Null;
+      Word := Asu_Null;
       Exit_Code := Problem;
       return Modified;
   end Do_One;

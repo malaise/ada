@@ -1,4 +1,5 @@
-with Ada.Exceptions, Ada.Text_Io, Ada.Strings.Unbounded;
+with Ada.Exceptions, Ada.Text_Io;
+with As.U; use As.U;
 with Environ, Argument, Argument_Parser, Sys_Calls, Language, Mixed_Str, Text_Line;
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
@@ -176,12 +177,6 @@ procedure Asubst is
     Sys_Calls.Set_Exit_Code (Error_Exit_Code);
   end Error;
 
-  package Asu renames Argument_Parser.Asu;
-  function Asu_Tus (Source : in String) return Argument_Parser.Asu_Us
-                   renames Asu.To_Unbounded_String;
-  function Asu_Ts (Source : in Argument_Parser.Asu_Us) return String
-                   renames Asu.To_String;
-
   -- For getenv
   Utf8_Var_Name : constant String := "ASUBST_UTF8";
   -- The keys and descriptor of parsed keys
@@ -213,11 +208,11 @@ procedure Asubst is
 
   -- Option management
   Display : Boolean := False;
-  Exclude : Ada.Strings.Unbounded.Unbounded_String;
+  Exclude : Asu_Us;
   File_Of_Files : Boolean := False;
   Case_Sensitive : Boolean := True;
-  Match_Range : Ada.Strings.Unbounded.Unbounded_String;
-  Tmp_Dir : Ada.Strings.Unbounded.Unbounded_String;
+  Match_Range : Asu_Us;
+  Tmp_Dir : Asu_Us;
   type Verbose_List is (Quiet, Put_File_Name, Put_Subst_Nb, Verbose);
   Verbosity : Verbose_List := Put_File_Name;
   Grep : Boolean := False;
@@ -226,9 +221,7 @@ procedure Asubst is
   Backup : Boolean := False;
   Is_Regex : Boolean := True;
   Test : Boolean := False;
-  Delimiter : Ada.Strings.Unbounded.Unbounded_String
-            := Ada.Strings.Unbounded.To_Unbounded_String
-               (Text_Line.Line_Feed_Str);
+  Delimiter : Asu_Us := Asu_Tus (Text_Line.Line_Feed_Str);
   -- Overall result to summarize error and if any subst/search done
   Ok : Boolean;
   Found : Boolean;
@@ -352,10 +345,8 @@ begin
   if Arg_Dscr.Is_Set (02) then
     -- Specific delimiter instead of '\n'
     begin
-      Delimiter := Ada.Strings.Unbounded.To_Unbounded_String
-                 (Arg_Dscr.Get_Option (02));
-      if Ada.Strings.Unbounded.Length (Delimiter)
-         > Text_Line.Max_Line_Feed_Len then
+      Delimiter := Asu_Tus (Arg_Dscr.Get_Option (02));
+      if Asu.Length (Delimiter) > Text_Line.Max_Line_Feed_Len then
         raise Constraint_Error;
       end if;
     exception
@@ -366,8 +357,7 @@ begin
         return;
     end;
     if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Option delimiter = "
-          & Ada.Strings.Unbounded.To_String (Delimiter));
+      Sys_Calls.Put_Line_Error ("Option delimiter = " & Asu_Ts (Delimiter));
     end if;
   end if;
   if Arg_Dscr.Is_Set (03) then
@@ -380,9 +370,8 @@ begin
   if Arg_Dscr.Is_Set (04) then
     -- Exclude text matching exclude_regexp
     begin
-      Exclude := Ada.Strings.Unbounded.To_Unbounded_String
-                 (Arg_Dscr.Get_Option (04));
-      if Ada.Strings.Unbounded.Length(Exclude) = 0 then
+      Exclude := Asu_Tus (Arg_Dscr.Get_Option (04));
+      if Asu.Length(Exclude) = 0 then
         raise Constraint_Error;
       end if;
     exception
@@ -393,8 +382,7 @@ begin
         return;
     end;
     if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Option exclude = "
-          & Ada.Strings.Unbounded.To_String (Exclude));
+      Sys_Calls.Put_Line_Error ("Option exclude = " & Asu_Ts (Exclude));
     end if;
   end if;
   if Arg_Dscr.Is_Set (05) then
@@ -514,9 +502,8 @@ begin
   if Arg_Dscr.Is_Set (19) then
     -- Tmp_Dir for temporary files
     begin
-      Tmp_Dir := Ada.Strings.Unbounded.To_Unbounded_String
-                 (Arg_Dscr.Get_Option (19));
-      if Ada.Strings.Unbounded.Length(Tmp_Dir) = 0 then
+      Tmp_Dir := Asu_Tus (Arg_Dscr.Get_Option (19));
+      if Asu.Length(Tmp_Dir) = 0 then
         raise Constraint_Error;
       end if;
     exception
@@ -527,8 +514,7 @@ begin
         return;
     end;
     if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Option tmp_dir = "
-          & Ada.Strings.Unbounded.To_String (Tmp_Dir));
+      Sys_Calls.Put_Line_Error ("Option tmp_dir = " & Asu_Ts (Tmp_Dir));
     end if;
   end if;
   if Arg_Dscr.Is_Set (20) then
@@ -550,8 +536,8 @@ begin
   begin
     Search_Pattern.Parse (
          Arg_Dscr.Get_Option (No_Key_Index, 1),
-         Ada.Strings.Unbounded.To_String (Exclude),
-         Ada.Strings.Unbounded.To_String (Delimiter),
+         Asu_Ts (Exclude),
+         Asu_Ts (Delimiter),
          Case_Sensitive, Is_Regex);
   exception
     when Search_Pattern.Parse_Error =>

@@ -69,10 +69,9 @@ package body Environ is
 
   procedure Get_Us (Name : String; Result : in out Asu_Us) is
     Res : Asu_Us;
-    use type Asu_Us;
   begin
     Res := Asu_Tus (Sys_Calls.Getenv (Name));
-    if Res /= Asu_Null then
+    if not Asu_Is_Null (Res) then
       Result := Res;
     end if;
   exception

@@ -90,12 +90,6 @@ package body String_Mng.Regex is
     return No_Match;
   end Locate;
 
-  -- Tools for replace
-  package Asu renames Ada.Strings.Unbounded;
-  subtype Asu_Us is Asu.Unbounded_String;
-  function Asu_Ts (Us : Asu_Us) return String renames Asu.To_String;
-  function Asu_Tus (Str : String) return Asu_Us renames Asu.To_Unbounded_String;
-
   -- Replace Working(Info(1).First_Offset .. Info(1).End_Offset)
   -- by By.
   -- In By, \i (0 <= i <= 9) is replaced by
@@ -352,8 +346,7 @@ package body String_Mng.Regex is
     or else  Cells(1).First_Offset /= Str'First
     or else  Cells(1).Last_Offset_Stop /= Str'Last then
       declare
-        Result : constant String_Slice (1 .. 0)
-               := (others => Ada.Strings.Unbounded.Null_Unbounded_String);
+        Result : constant String_Slice (1 .. 0) := (others => Asu_Null);
       begin
         return Result;
       end;
@@ -363,7 +356,7 @@ package body String_Mng.Regex is
       Result : String_Slice (1 .. N_Matched - 1);
     begin
       for I in Result'Range loop
-        Result(I) := Ada.Strings.Unbounded.To_Unbounded_String (
+        Result(I) := Asu_Tus (
          Str(Cells(I + 1).First_Offset .. Cells(I + 1).Last_Offset_Stop));
       end loop;
       return Result;

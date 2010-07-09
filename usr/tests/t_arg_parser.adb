@@ -1,4 +1,5 @@
 with Ada.Text_Io, Ada.Characters.Latin_1;
+with As.U; use As.U;
 with Argument, Argument_Parser, Environ, Basic_Proc, Int_Image, Sys_Calls,
      Command, Many_Strings, Parser, Event_Mng;
 
@@ -6,13 +7,6 @@ procedure T_Arg_Parser is
 
   -- Image of Natural
   function Image is new Int_Image (Natural);
-
-  -- Unbounded Strings
-  package Asu renames Argument_Parser.Asu;
-  function Asu_Tus (Source : in String) return Argument_Parser.Asu_Us
-                   renames Asu.To_Unbounded_String;
-  function Asu_Ts (Source : in Argument_Parser.Asu_Us) return String
-                   renames Asu.To_String;
 
   -- The env var set on auto test
   Auto_Env_Name : constant String := "T_ARG_PARSER_AUTO_TEST";
@@ -58,7 +52,7 @@ procedure T_Arg_Parser is
   -- Build Many_Strings command line
   function Build (Str : String) return Many_Strings.Many_String is
     Iter : Parser.Iterator;
-    Res : Argument_Parser.Asu_Us;
+    Res : Asu_Us;
   begin
     Iter.Set (Str);
     loop

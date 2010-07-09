@@ -1,13 +1,8 @@
-with Ada.Strings.Unbounded, Ada.Characters.Latin_1;
+with Ada.Characters.Latin_1;
+with As.U; use As.U;
 with C_Types, String_Mng;
 package body Directory is
   use System;
-
-  package Asu renames Ada.Strings.Unbounded;
-  subtype Asu_Us is Asu.Unbounded_String;
-  function Asu_Tus (Source : in String) return Asu_Us
-                 renames Asu.To_Unbounded_String;
-  function Asu_Ts (Source : in Asu_Us) return String renames Asu.To_String;
 
   subtype Dir_Str is String (1 .. 256);
 
