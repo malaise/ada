@@ -71,7 +71,7 @@ package body Ios is
         return '@' & Arbitrary.Fractions.Image (Item.Val_Frac);
       when Inte | Real | Bool | Chrs =>
         Str := Strof (Item);
-        return Unb.To_String(Str.Val_Text);
+        return Asu_Ts (Str.Val_Text);
       when others =>
         raise Invalid_Argument;
     end case;
@@ -99,12 +99,11 @@ package body Ios is
     if S.Kind /= Chrs then
       raise Invalid_Argument;
     end if;
-    Len :=  Unb.Length (S.Val_Text);
-    if Len < 2 or else Unb.Element (S.Val_Text, 1) /= '@' then
+    Len :=  Asu.Length (S.Val_Text);
+    if Len < 2 or else Asu.Element (S.Val_Text, 1) /= '@' then
       raise Invalid_Argument;
     end if;
-    Res.Val_Arbi := Arbitrary.Set ( Unb.To_String (
-                                      Unb.Tail (S.Val_Text, Len - 1)));
+    Res.Val_Arbi := Arbitrary.Set (Asu_Ts (Asu.Tail (S.Val_Text, Len - 1)));
     return Res;
   exception
     when Invalid_Argument =>
@@ -122,19 +121,20 @@ package body Ios is
     if S.Kind /= Chrs then
       raise Invalid_Argument;
     end if;
-    Len :=  Unb.Length (S.Val_Text);
+    Len :=  Asu.Length (S.Val_Text);
     -- Locate @
-    if Len < 2 or else Unb.Element (S.Val_Text, 1) /= '@' then
+    if Len < 2 or else Asu.Element (S.Val_Text, 1) /= '@' then
       raise Invalid_Argument;
     end if;
     -- Locate :
-    Sep := String_Mng.Locate (Unb.To_String (S.Val_Text), ":");
+    Sep := String_Mng.Locate (Asu_Ts (S.Val_Text), ":");
     if Sep <= 2 then
       raise Invalid_Argument;
     end if;
     -- Parse N and D
-    N := Arbitrary.Set (Unb.Slice(S.Val_Text, 2, Sep - 1));
-    D := Arbitrary.Set (Unb.Slice(S.Val_Text, Sep + 1, Unb.Length(S.Val_Text)));
+    N := Arbitrary.Set (Asu.Slice (S.Val_Text, 2, Sep - 1));
+    D := Arbitrary.Set (Asu.Slice (S.Val_Text, Sep + 1,
+                                   Asu.Length(S.Val_Text)));
     -- Make fraction
     Res.Val_Frac := Arbitrary.Fractions.Set (N, D);
     return Res;
@@ -152,8 +152,8 @@ package body Ios is
     if S.Kind /= Chrs then
       raise Invalid_Argument;
     end if;
-    Inte_Io.Get (Unb.To_String(S.Val_Text), Res.Val_Inte, Last);
-    if Last /= Unb.Length (S.Val_Text) then
+    Inte_Io.Get (Asu_Ts (S.Val_Text), Res.Val_Inte, Last);
+    if Last /= Asu.Length (S.Val_Text) then
       raise Invalid_Argument;
     end if;
     return Res;
@@ -169,8 +169,8 @@ package body Ios is
     if S.Kind /= Chrs then
       raise Invalid_Argument;
     end if;
-    Real_Io.Get (Unb.To_String(S.Val_Text), Res.Val_Real, Last);
-    if Last /= Unb.Length (S.Val_Text) then
+    Real_Io.Get (Asu_Ts (S.Val_Text), Res.Val_Real, Last);
+    if Last /= Asu.Length (S.Val_Text) then
       raise Invalid_Argument;
     end if;
     return Res;
@@ -186,8 +186,8 @@ package body Ios is
     if S.Kind /= Chrs then
       raise Invalid_Argument;
     end if;
-    Bool_Io.Get (Unb.To_String(S.Val_Text), Res.Val_Bool, Last);
-    if Last /= Unb.Length (S.Val_Text) then
+    Bool_Io.Get (Asu_Ts (S.Val_Text), Res.Val_Bool, Last);
+    if Last /= Asu.Length (S.Val_Text) then
       raise Invalid_Argument;
     end if;
     return Res;
@@ -202,11 +202,11 @@ package body Ios is
     if S.Kind /= Chrs then
       raise Invalid_Argument;
     end if;
-    if Unb.Length (S.Val_Text) /= 1 or
-    else not Is_Register (Unb.Element(S.Val_Text, 1)) then
+    if Asu.Length (S.Val_Text) /= 1 or
+    else not Is_Register (Asu.Element(S.Val_Text, 1)) then
       raise Invalid_Argument;
     end if;
-    Res.Val_Regi := Unb.Element(S.Val_Text, 1);
+    Res.Val_Regi := Asu.Element(S.Val_Text, 1);
     return Res;
   exception
     when others =>
@@ -264,30 +264,29 @@ package body Ios is
 
     case Item.Kind is
       when Arbi =>
-        Res.Val_Text := Unb.To_Unbounded_String (
-                         '@' & Arbitrary.Image (Item.Val_Arbi));
+        Res.Val_Text := Asu_Tus ('@' & Arbitrary.Image (Item.Val_Arbi));
       when Frac =>
-        Res.Val_Text := Unb.To_Unbounded_String (
-                         '@' & Arbitrary.Fractions.Image (Item.Val_Frac));
+        Res.Val_Text := Asu_Tus ('@' & Arbitrary.Fractions.Image (
+                                             Item.Val_Frac));
       when Inte =>
         Image_Str := (others => ' ');
         Inte_Io.Put(Image_Str, Item.Val_Inte);
         Fix_Size (Inte_Io.Default_Width);
-        Res.Val_Text := Unb.To_Unbounded_String ( Image_Str (1 .. Image_Len));
+        Res.Val_Text := Asu_Tus ( Image_Str (1 .. Image_Len));
       when Real =>
         Image_Str := (others => ' ');
         Real_Io.Put(Image_Str, Item.Val_Real);
         Fix_Size (Real_Io.Default_Fore + 1 + Real_Io.Default_Aft
                   + Real_Io.Default_Exp);
-        Res.Val_Text := Unb.To_Unbounded_String ( Image_Str (1 .. Image_Len));
+        Res.Val_Text := Asu_Tus ( Image_Str (1 .. Image_Len));
       when Bool  =>
-        Res.Val_Text := Unb.To_Unbounded_String ( Mixed_Str(Item.Val_Bool'Img));
+        Res.Val_Text := Asu_Tus (Mixed_Str(Item.Val_Bool'Img));
       when Chrs =>
         Res := Item;
       when Prog =>
         Res.Val_Text := Item.Val_Text;
       when Regi =>
-        Res.Val_Text := Unb.To_Unbounded_String ( Item.Val_Regi & "");
+        Res.Val_Text := Asu_Tus (Item.Val_Regi & "");
       when Oper =>
         raise Invalid_Argument;
     end case;
@@ -315,7 +314,7 @@ package body Ios is
     if Len.Kind /= Inte
     or else Len.Val_Inte <= 0
     or else Gap.Kind /= Chrs
-    or else Unb.Length(Gap.Val_Text) /= 1 then
+    or else Asu.Length(Gap.Val_Text) /= 1 then
       raise Invalid_Argument;
     end if;
     -- Check right is boolean for int, positive for real
@@ -341,9 +340,9 @@ package body Ios is
       -- Call Normal
       declare
         Str : constant String := Normal (Int, Lint, Right_Len.Val_Bool,
-                                         Unb.To_String (Gap.Val_Text)(1));
+                                         Asu_Ts (Gap.Val_Text)(1));
       begin
-        Res.Val_Text := Unb.To_Unbounded_String(Str);
+        Res.Val_Text := Asu_Tus (Str);
       end;
     else
       -- Check range of ints
@@ -359,12 +358,11 @@ package body Ios is
           raise Invalid_Argument;
       end;
       declare
-        Str : constant String := Normal(Int, Lint, True,
-                                        Unb.To_String (Gap.Val_Text)(1))
-                               & "."
-                               & Normal(Frac, Lfrac, True, '0') ;
+        Str : constant String
+            := Normal(Int, Lint, True, Asu_Ts (Gap.Val_Text)(1))
+             & "." & Normal(Frac, Lfrac, True, '0') ;
       begin
-        Res.Val_Text := Unb.To_Unbounded_String(Str);
+        Res.Val_Text := Asu_Tus (Str);
       end;
     end if;
     return Res;

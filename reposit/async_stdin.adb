@@ -450,7 +450,7 @@ package body Async_Stdin is
     begin
       Asu.Append (Txt, Seq);
       Seq := Asu_Null;
-      return Asu.To_String (Txt);
+      return Asu_Ts (Txt);
     end Get;
 
   end Line;

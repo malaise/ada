@@ -158,7 +158,7 @@ begin
           Ada.Text_Io.Put ("Arguments not key are");
         else
           Ada.Text_Io.Put ("Key " & Keys(I).Key_Char & " "
-            & Asu.To_String (Keys(I).Key_String) & " is");
+            & Asu_Ts (Keys(I).Key_String) & " is");
         end if;
         Ada.Text_Io.Put_Line (" found on" & Dscr.Get_Nb_Occurences (I)'Img
              & " occurences.");

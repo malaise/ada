@@ -370,8 +370,7 @@ package body Operations is
   -- Arbi,Arbi->Bool or Frac,Frac->Bool or Inte,Inte->Bool or Real,Real->Bool or
   -- Bool,Bool->Bool or Regi,Regi->Bool or Chars,Chars->Bool
   function Equal   (L, R : Item_Rec) return Item_Rec is
-    use type Arbitrary.Number, Arbitrary.Fractions.Fraction,
-             Unb.Unbounded_String;
+    use type Arbitrary.Number, Arbitrary.Fractions.Fraction, Asu_Us;
   begin
     if      not Is_Arbi_Or_Frac_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
     or else not Is_Arbi_Or_Frac_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(R) then
@@ -403,8 +402,7 @@ package body Operations is
   end Equal;
 
   function Diff    (L, R : Item_Rec) return Item_Rec is
-    use type Arbitrary.Number, Arbitrary.Fractions.Fraction,
-             Unb.Unbounded_String;
+    use type Arbitrary.Number, Arbitrary.Fractions.Fraction, Asu_Us;
   begin
     if      not Is_Arbi_Or_Frac_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
     or else not Is_Arbi_Or_Frac_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(R) then
@@ -436,8 +434,7 @@ package body Operations is
   end Diff;
 
   function Greater (L, R : Item_Rec) return Item_Rec is
-    use type Arbitrary.Number, Arbitrary.Fractions.Fraction,
-             Unb.Unbounded_String;
+    use type Arbitrary.Number, Arbitrary.Fractions.Fraction, Asu_Us;
   begin
     if      not Is_Arbi_Or_Frac_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
     or else not Is_Arbi_Or_Frac_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(R) then
@@ -469,8 +466,7 @@ package body Operations is
   end Greater;
 
   function Smaller (L, R : Item_Rec) return Item_Rec is
-    use type Arbitrary.Number, Arbitrary.Fractions.Fraction,
-             Unb.Unbounded_String;
+    use type Arbitrary.Number, Arbitrary.Fractions.Fraction, Asu_Us;
   begin
     if      not Is_Arbi_Or_Frac_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
     or else not Is_Arbi_Or_Frac_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(R) then
@@ -502,8 +498,7 @@ package body Operations is
   end Smaller;
 
   function Greateq (L, R : Item_Rec) return Item_Rec is
-    use type Arbitrary.Number, Arbitrary.Fractions.Fraction,
-             Unb.Unbounded_String;
+    use type Arbitrary.Number, Arbitrary.Fractions.Fraction, Asu_Us;
   begin
     if      not Is_Arbi_Or_Frac_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
     or else not Is_Arbi_Or_Frac_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(R) then
@@ -535,8 +530,7 @@ package body Operations is
   end Greateq;
 
   function Smalleq (L, R : Item_Rec) return Item_Rec is
-    use type Arbitrary.Number, Arbitrary.Fractions.Fraction,
-             Unb.Unbounded_String;
+    use type Arbitrary.Number, Arbitrary.Fractions.Fraction, Asu_Us;
   begin
     if      not Is_Arbi_Or_Frac_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(L)
     or else not Is_Arbi_Or_Frac_Or_Inte_Or_Real_Or_Bool_Or_Chars_Or_Regi(R) then

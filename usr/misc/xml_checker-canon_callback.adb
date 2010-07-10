@@ -112,10 +112,8 @@ begin
             Done := True;
           else
             -- xmlns:suffix
-            Attrs(I).Prefix := Asu.Unbounded_Slice (Node_Attrs(I).Name,
-                                  1, Col - 1);
-            Attrs(I).Suffix := Asu.Unbounded_Slice (
-                                  Node_Attrs(I).Name,
+            Attrs(I).Prefix := Asu_Uslice (Node_Attrs(I).Name, 1, Col - 1);
+            Attrs(I).Suffix := Asu_Uslice ( Node_Attrs(I).Name,
                                   Col + 1, Asu.Length (Node_Attrs(I).Name));
             if Attrs(I).Prefix = Xmlns then
               Done := True;

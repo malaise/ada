@@ -793,7 +793,7 @@ package body Xml_Parser is
   function Get_Name (Ctx     : Ctx_Type;
                      Element : Element_Type) return String is
   begin
-    return Asu.To_String (Get_Name (Ctx, Element));
+    return Asu_Ts (Get_Name (Ctx, Element));
   end Get_Name;
 
   function Get_Name (Ctx     : Ctx_Type;

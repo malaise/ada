@@ -1,4 +1,5 @@
-with Ada.Text_Io, Ada.Strings.Unbounded;
+with Ada.Text_Io;
+with As.U; use As.U;
 with Argument, Text_Line, Sys_Calls, Xml_Parser, Computer, Environ, Int_Image;
 procedure Comp_Vars is
 
@@ -34,7 +35,6 @@ procedure Comp_Vars is
   -- Parses one file (or input flow)
   -- Return True if parsing OK
   function Do_One (File_Name : String) return Boolean is
-    package Asu renames Ada.Strings.Unbounded;
     Ctx : Xml_Parser.Ctx_Type;
     Step_Parsing : Boolean;
     -- Log an error
@@ -75,9 +75,9 @@ procedure Comp_Vars is
     Attr1, Attr2 : Xml_Parser.Attribute_Rec;
     -- Is variable an int or a string
     Var_Is_Int : Boolean;
-    Text : Asu.Unbounded_String;
+    Text : Asu_Us;
     -- Result of evaluation
-    Result : Asu.Unbounded_String;
+    Result : Asu_Us;
     use type Xml_Parser.Node_Kind_List;
   begin
     -- Parse
@@ -130,7 +130,7 @@ procedure Comp_Vars is
         -- Two attributes
         Attr1 := Ctx.Get_Attribute (Var, 1);
         Attr2 := Ctx.Get_Attribute (Var, 2);
-        if Asu.To_String (Attr1.Name) = "Type" then
+        if Asu_Ts (Attr1.Name) = "Type" then
           -- Swap so that Attr1 is Name and Attr2 is Type
           declare
             Attrt : constant Xml_Parser.Attribute_Rec := Attr1;
@@ -140,19 +140,19 @@ procedure Comp_Vars is
           end;
         end if;
         -- Second attribute must be type
-        if Asu.To_String (Attr2.Name) /= "Type" then
-          Error ("Invalid attribute " & Asu.To_String (Attr2.Name)
+        if Asu_Ts (Attr2.Name) /= "Type" then
+          Error ("Invalid attribute " & Asu_Ts (Attr2.Name)
                & " to Variable.", Var);
           return False;
         end if;
 
         -- Check Type is Int or Str
-        if Asu.To_String (Attr2.Value) = "Int" then
+        if Asu_Ts (Attr2.Value) = "Int" then
           Var_Is_Int := True;
-        elsif Asu.To_String (Attr2.Value) = "Str" then
+        elsif Asu_Ts (Attr2.Value) = "Str" then
           Var_Is_Int := False;
         else
-          Error ("Invalid type " & Asu.To_String (Attr2.Value)
+          Error ("Invalid type " & Asu_Ts (Attr2.Value)
                & " to Variable.", Var);
           return False;
         end if;
@@ -162,8 +162,8 @@ procedure Comp_Vars is
         return False;
       end if;
       -- First attribute must be Name
-      if Asu.To_String (Attr1.Name) /= "Name" then
-        Error ("Invalid attribute " & Asu.To_String (Attr1.Name)
+      if Asu_Ts (Attr1.Name) /= "Name" then
+        Error ("Invalid attribute " & Asu_Ts (Attr1.Name)
              & " to Variable.", Var);
         return False;
       end if;
@@ -172,7 +172,7 @@ procedure Comp_Vars is
       if Ctx.Get_Nb_Children (Var) = 0
       and then not Var_Is_Int then
         -- Empty string
-        Text := Asu.Null_Unbounded_String;
+        Text := Asu_Null;
       elsif Ctx.Get_Nb_Children (Var) = 1 then
         Val := Ctx.Get_Child (Var, 1);
         Text := Ctx.Get_Text (Val);
@@ -184,13 +184,12 @@ procedure Comp_Vars is
       -- Eval or compute
       Step_Parsing := False;
       declare
-        Expr : constant String := Asu.To_String (Text);
+        Expr : constant String := Asu_Ts (Text);
       begin
         if Var_Is_Int then
-          Result := Asu.To_Unbounded_String (
-                    Comp_Image (Computer.Compute (Expr)));
+          Result := Asu_Tus (Comp_Image (Computer.Compute (Expr)));
         else
-          Result := Asu.To_Unbounded_String (Computer.Eval (Expr));
+          Result := Asu_Tus (Computer.Eval (Expr));
         end if;
       exception
         when Computer.Unknown_Variable =>
@@ -202,27 +201,27 @@ procedure Comp_Vars is
       end;
 
       -- Store Result
-      Computer.Set (Name  => Asu.To_String (Attr1.Value),
-                    Value => Asu.To_String (Result),
+      Computer.Set (Name  => Asu_Ts (Attr1.Value),
+                    Value => Asu_Ts (Result),
                     Modifiable => True, Persistent => False);
       -- Display result
       if Xml_Format then
         Out_File.Put ("  <Var "
-          & "Name=""" & Asu.To_String (Attr1.Value) & """ "
+          & "Name=""" & Asu_Ts (Attr1.Value) & """ "
           & "Type=""");
         if Var_Is_Int then
           Out_File.Put ("Int");
         else
           Out_File.Put ("Str");
         end if;
-        Out_File.Put_Line (""">" & Asu.To_String (Result) & "</Var>");
+        Out_File.Put_Line (""">" & Asu_Ts (Result) & "</Var>");
       else
-        Out_File.Put ("export " & Asu.To_String (Attr1.Value)
+        Out_File.Put ("export " & Asu_Ts (Attr1.Value)
            & "=");
         if Var_Is_Int then
-          Out_File.Put_Line (Asu.To_String (Result));
+          Out_File.Put_Line (Asu_Ts (Result));
         else
-          Out_File.Put_Line ("""" & Asu.To_String (Result) & """");
+          Out_File.Put_Line ("""" & Asu_Ts (Result) & """");
         end if;
       end if;
 

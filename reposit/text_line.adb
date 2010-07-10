@@ -128,7 +128,7 @@ package body Text_Line is
 
     -- Locate next Line_Feed
     declare
-      Loc_Line_Feed : constant String := Asu.To_String (File.Acc.Line_Feed);
+      Loc_Line_Feed : constant String := Asu_Ts (File.Acc.Line_Feed);
       Loc_Line_Len : constant Natural := Loc_Line_Feed'Length;
     begin
       loop

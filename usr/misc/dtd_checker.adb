@@ -5,7 +5,7 @@ procedure Dtd_Checker is
 
   -- Xml Parser dtd
   Dtd : Xml_Parser.Dtd_Type;
-  Error_Msg : Asu.Unbounded_String;
+  Error_Msg : Asu_Us;
 
   -- Program help
   procedure Usage is
@@ -71,7 +71,7 @@ begin
   end;
 
   if not Asu_Is_Null (Error_Msg) then
-    Basic_Proc.Put_Line_Error (Asu.To_String (Error_Msg));
+    Basic_Proc.Put_Line_Error (Asu_Ts (Error_Msg));
     Basic_Proc.Set_Error_Exit_Code;
   end if;
 exception

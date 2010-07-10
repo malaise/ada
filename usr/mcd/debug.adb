@@ -1,8 +1,6 @@
-with Ada.Strings.Unbounded;
+with As.U; use As.U;
 with Environ, Bool_Io, Arbitrary.Fractions, Async_Stdin;
 package body Debug is
-
-  package Unb renames Ada.Strings.Unbounded;
 
   procedure Init is
   begin
@@ -37,9 +35,9 @@ package body Debug is
       when Bool =>
         Bool_Io.Put(Item.Val_Bool);
       when Chrs =>
-        Async_Stdin.Put_Err ("""" & Unb.To_String (Item.Val_Text) & """");
+        Async_Stdin.Put_Err ("""" & Asu_Ts (Item.Val_Text) & """");
       when Prog =>
-        Async_Stdin.Put_Err ("[ " & Unb.To_String (Item.Val_Text) & " ]");
+        Async_Stdin.Put_Err ("[ " & Asu_Ts (Item.Val_Text) & " ]");
       when Regi =>
         Async_Stdin.Put_Err (Item.Val_Regi & "");
       when Oper =>

@@ -87,7 +87,7 @@ package body Dates is
     Day_Mng.Split (Seconds, Hours, Mins, Secs, Millis);
 
     -- Format result in string
-    Date.Val_Text := Unb.To_Unbounded_String (
+    Date.Val_Text := Asu_Tus (
             Normal (Year,  4, Gap => '0')
       & "/" & Normal (Month, 2, Gap => '0')
       & "/" & Normal (Day,   2, Gap => '0')
@@ -111,7 +111,7 @@ package body Dates is
     Secs   : Day_Mng.T_Seconds;
     Millis : Day_Mng.T_Millisec;
     Date  : Item_Rec (Chrs);
-    use type Unb.Unbounded_String;
+    use type Asu_Us;
   begin
     if Time.Kind /= Inte or else Time.Val_Inte < 0 then
       raise Invalid_Argument;
@@ -122,7 +122,6 @@ package body Dates is
     Tmp_Inte := Time.Val_Inte rem Millisecs_Per_Day;
     Seconds := Ada.Calendar.Day_Duration(Tmp_Inte / 1000)
              + Ada.Calendar.Day_Duration(Tmp_Inte rem 1000) / 1000.0;
-
 
     -- Get image (using format) of days
     Days_Image := Ios.Strof ((Kind => Inte,
@@ -154,28 +153,28 @@ package body Dates is
     Res_Time : Item_Rec(Inte);
   begin
     -- Check kind and length
-    if Date.Kind /= Chrs or else Unb.Length (Date.Val_Text) /= Date_Length then
+    if Date.Kind /= Chrs or else Asu.Length (Date.Val_Text) /= Date_Length then
       raise Invalid_Argument;
     end if;
 
     -- Check format
-    if      Unb.Element (Date.Val_Text, 05) /= '/'
-    or else Unb.Element (Date.Val_Text, 08) /= '/'
-    or else Unb.Element (Date.Val_Text, 11) /= '-'
-    or else Unb.Element (Date.Val_Text, 14) /= ':'
-    or else Unb.Element (Date.Val_Text, 17) /= ':'
-    or else Unb.Element (Date.Val_Text, 20) /= '.' then
+    if      Asu.Element (Date.Val_Text, 05) /= '/'
+    or else Asu.Element (Date.Val_Text, 08) /= '/'
+    or else Asu.Element (Date.Val_Text, 11) /= '-'
+    or else Asu.Element (Date.Val_Text, 14) /= ':'
+    or else Asu.Element (Date.Val_Text, 17) /= ':'
+    or else Asu.Element (Date.Val_Text, 20) /= '.' then
       raise Invalid_Argument;
     end if;
 
     -- Extract
-    Year  := Ada.Calendar.Year_Number'Value  (Unb.Slice (Date.Val_Text, 01, 04));
-    Month := Ada.Calendar.Month_Number'Value (Unb.Slice (Date.Val_Text, 06, 07));
-    Day   := Ada.Calendar.Day_Number'Value   (Unb.Slice (Date.Val_Text, 09, 10));
-    Hours := Day_Mng.T_Hours'Value           (Unb.Slice (Date.Val_Text, 12, 13));
-    Mins  := Day_Mng.T_Minutes'Value         (Unb.Slice (Date.Val_Text, 15, 16));
-    Secs  := Day_Mng.T_Seconds'Value         (Unb.Slice (Date.Val_Text, 18, 19));
-    Millis := Day_Mng.T_Millisec'Value       (Unb.Slice (Date.Val_Text, 21, 23));
+    Year  := Ada.Calendar.Year_Number'Value  (Asu.Slice (Date.Val_Text, 01, 04));
+    Month := Ada.Calendar.Month_Number'Value (Asu.Slice (Date.Val_Text, 06, 07));
+    Day   := Ada.Calendar.Day_Number'Value   (Asu.Slice (Date.Val_Text, 09, 10));
+    Hours := Day_Mng.T_Hours'Value           (Asu.Slice (Date.Val_Text, 12, 13));
+    Mins  := Day_Mng.T_Minutes'Value         (Asu.Slice (Date.Val_Text, 15, 16));
+    Secs  := Day_Mng.T_Seconds'Value         (Asu.Slice (Date.Val_Text, 18, 19));
+    Millis := Day_Mng.T_Millisec'Value       (Asu.Slice (Date.Val_Text, 21, 23));
 
     -- Compute Time for the day
     Cal_Time := Ada.Calendar.Time_Of (Year, Month, Day);

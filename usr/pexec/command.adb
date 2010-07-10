@@ -199,7 +199,7 @@ package body Command is
           Stop  := String_Mng.Parse_Spaces (Asu_Ts (Tmp), False);
           if Start /= 0 then
             -- Not Full of spaces => Store
-            Commands.Insert (Asu.Unbounded_Slice (Tmp, Start, Stop));
+            Commands.Insert (Asu_Uslice (Tmp, Start, Stop));
             end if;
       end loop;
 

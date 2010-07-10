@@ -18,22 +18,22 @@ package body Misc is
     end if;
     if Call_Stack.Level /= 0 then
       -- Save context;
-      Call_Entry := Unb.To_Unbounded_String (Input_Dispatcher.Get_Remaining);
+      Call_Entry := Asu_Tus (Input_Dispatcher.Get_Remaining);
       -- Even if end of subprog, this is not stdin
-      if Unb.Length (Call_Entry) = 0 then
-        Call_Entry := Unb.To_Unbounded_String (" ");
+      if Asu.Length (Call_Entry) = 0 then
+        Call_Entry := Asu_Tus (" ");
       end if;
       Call_Stack.Push (Call_Entry);
     else
       -- Dummy context
-      Call_Stack.Push (Unb.To_Unbounded_String (""));
+      Call_Stack.Push (Asu_Null);
     end if;
     -- Call
-    if Unb.Length (A.Val_Text) = 0 then
+    if Asu_Is_Null (A.Val_Text) then
       -- Empty subprogram : not stdin
       Input_Dispatcher.Set_Input(" ");
     else
-      Input_Dispatcher.Set_Input (Unb.To_String (A.Val_Text));
+      Input_Dispatcher.Set_Input (Asu_Ts (A.Val_Text));
     end if;
     S := A;
   end Do_Call;
@@ -136,8 +136,8 @@ package body Misc is
     if Pattern.Kind /= Chrs or else Str.Kind /= Chrs then
       raise Invalid_Argument;
     end if;
-    Res := Regular_Expressions.Match (Unb.To_String (Pattern.Val_Text),
-                                     Unb.To_String (Str.Val_Text));
+    Res := Regular_Expressions.Match (Asu_Ts (Pattern.Val_Text),
+                                      Asu_Ts (Str.Val_Text));
     if Res = Regular_Expressions.No_Match then
       return (Kind => Inte, Val_Inte => 0);
     else
@@ -158,13 +158,13 @@ package body Misc is
       raise Invalid_Argument;
     end if;
     Len := Env_Str'Length;
-    Sys_Calls.Getenv (Unb.To_String (Item.Val_Text), Set, Trunc,
+    Sys_Calls.Getenv (Asu_Ts (Item.Val_Text), Set, Trunc,
                       Env_Str, Len);
     if not Set then
       return (Kind => Bool, Val_Bool => False);
     end if;
     return (Kind => Chrs,
-            Val_Text => Unb.To_Unbounded_String(Env_Str(1 .. Len)));
+            Val_Text => Asu_Tus (Env_Str(1 .. Len)));
   end Getenv;
 
   procedure Set_Exit_Code (Code : Item_Rec) is

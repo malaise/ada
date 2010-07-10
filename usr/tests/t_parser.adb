@@ -1,4 +1,5 @@
-with Ada.Text_Io, Ada.Strings.Unbounded;
+with Ada.Text_Io;
+with As.U; use As.U;
 with Basic_Proc, Parser, Parser.All_In_One, Argument, Mixed_Str;
 procedure T_Parser is
 
@@ -79,8 +80,7 @@ begin
            := Parser.All_In_One.Parse_All (It);
   begin
     for I in Parsed'Range loop
-      Ada.Text_Io.Put_Line ("Got >"
-       & Ada.Strings.Unbounded.To_String (Parsed(I).Str)
+      Ada.Text_Io.Put_Line ("Got >" & Asu_Ts (Parsed(I).Str)
        & "< of kind " & Mixed_Str (Parsed(I).Kind'Img) );
     end loop;
   end;

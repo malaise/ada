@@ -1,8 +1,8 @@
 with Ada.Text_Io, Ada.Characters.Latin_1;
-with Environ, Many_Strings, Common, String_Mng;
+with Environ, Many_Strings, String_Mng;
+with As.U; use As.U;
 package body Cmd is
 
-  use Common;
   -- Path to Words
   Words_Path_Env_Name : constant String := "WORDS_PATH";
   Words_Path_Init : Boolean := False;
@@ -91,7 +91,7 @@ package body Cmd is
       if Debug then
         Ada.Text_Io.Put_Line ("Adding spwan error");
       end if;
-      Res.Insert (Common.Asu_Tus ("Spawn error"));
+      Res.Insert (Asu_Tus ("Spawn error"));
     end if;
   end Exec;
 

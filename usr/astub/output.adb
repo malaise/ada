@@ -57,7 +57,7 @@ package body Output is
     for I in 1 .. Level loop
       Asu.Append (Result, Text_Handler.Value (Spaces));
     end loop;
-    return Asu.To_String (Result);
+    return Asu_Ts (Result);
   end Get_Indent;
 
   -- Is character a separator of Ada statement
@@ -165,12 +165,12 @@ package body Output is
 
     -- Put comment without truncating
     if Comment or else Comment_Index /= 0 then
-       Low_Put (Asu.To_String (Line2Put));
+       Low_Put (Asu_Ts (Line2Put));
       return;
     end if;
 
     -- Not a comment: split line if too long
-    Index := String_Mng.Truncate (Asu.To_String (Line2Put),
+    Index := String_Mng.Truncate (Asu_Ts (Line2Put),
                                   Length, Mini_Len, Length,
                                   Separates'Access);
 

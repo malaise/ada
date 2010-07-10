@@ -219,7 +219,7 @@ package body Argument_Parser is
       end if;
       -- Long key must not contain space or unprintable character nor be "--"
       declare
-        Str : constant String := Asu.To_String (The_Keys(I).Key_String);
+        Str : constant String := Asu_Ts (The_Keys(I).Key_String);
       begin
         if The_Keys(I).Key_String /= No_Key_String
         and then Str(Str'First) = '-' then
@@ -400,7 +400,7 @@ package body Argument_Parser is
     if Dscr.Ok then
       return "OK.";
     else
-      return Asu.To_String (Dscr.Error);
+      return Asu_Ts (Dscr.Error);
     end if;
   end Get_Error;
 
@@ -490,7 +490,7 @@ package body Argument_Parser is
       else
         Len := Len - 1;
       end if;
-      if Str(3 .. Len) /= Asu.To_String (Key.Key_String) then
+      if Str(3 .. Len) /= Asu_Ts (Key.Key_String) then
         return No_Match;
       else
         -- Return the option if any

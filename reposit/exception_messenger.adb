@@ -50,7 +50,7 @@ package body Exception_Messenger is
     -- Get message from pool, return "" if not found
     begin
       Res := Pool.Get (Key);
-      return Asu.To_String (Res);
+      return Asu_Ts (Res);
     exception
       when Msg_Pool.Not_Found =>
         return "";

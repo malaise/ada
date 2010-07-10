@@ -1,4 +1,4 @@
-with Ada.Strings.Unbounded;
+with As.U; use As.U;
 package Io_Flow is
 
   -- Data to output
@@ -7,7 +7,7 @@ package Io_Flow is
   procedure New_Line;
 
   -- Input data
-  procedure Next_Line (Str : out Ada.Strings.Unbounded.Unbounded_String);
+  procedure Next_Line (Str : out Asu_Us);
 
   -- Close io flows
   procedure Close;

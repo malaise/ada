@@ -1,11 +1,10 @@
-with Ada.Text_Io, Ada.Strings.Unbounded, Ada.Exceptions;
+with Ada.Text_Io, Ada.Exceptions;
+with As.U; use As.U;
 with Argument, Xml_Parser, Normal, Basic_Proc, Sys_Calls, Text_Line,
      String_Mng.Regex, Directory, Dir_Mng, Upper_Str, Rnd;
 procedure T_Xml_String is
   Ctx : Xml_Parser.Ctx_Type;
   Prologue, Root : Xml_Parser.Element_Type;
-  package Asu renames Ada.Strings.Unbounded;
-  subtype Asu_Us is Asu.Unbounded_String;
 
   Data_Dir : constant String := "data";
 
@@ -54,7 +53,7 @@ procedure T_Xml_String is
     end loop;
     Text_Line.Close (File);
     Sys_Calls.Close (Fd);
-    return Asu.To_String (Res);
+    return Asu_Ts (Res);
   exception
     when Sys_Calls.Name_Error =>
       Basic_Proc.Put_Line_Error ("Cannot open file " & Name);
@@ -76,7 +75,7 @@ procedure T_Xml_String is
         -- Indent
         Ada.Text_Io.Put (Indent);
       end if;
-      Ada.Text_Io.Put (" " & Asu.To_String (Attrs(I).Name
+      Ada.Text_Io.Put (" " & Asu_Ts (Attrs(I).Name
                      & "=""" & Attrs(I).Value) & """");
       if I /= Attrs'Last then
         Ada.Text_Io.New_Line;
@@ -86,8 +85,8 @@ procedure T_Xml_String is
 
 
   procedure Put_Pi (Pi : in Xml_Parser.Pi_Type) is
-    Target : constant String := Asu.To_String(Ctx.Get_Target (Pi));
-    Text : constant String := Asu.To_String(Ctx.Get_Pi (Pi));
+    Target : constant String := Asu_Ts (Ctx.Get_Target (Pi));
+    Text : constant String := Asu_Ts (Ctx.Get_Pi (Pi));
   begin
     Ada.Text_Io.Put ("<?" & Target);
     if Text /= ""  then
@@ -110,7 +109,7 @@ procedure T_Xml_String is
         if Strs'Length /= 2 then
           raise Interface_Error;
         end if;
-        Dtd_Index := Natural'Value (Asu.To_String (Strs (1)));
+        Dtd_Index := Natural'Value (Asu_Ts (Strs (1)));
       exception
         when others =>
           Basic_Proc.Put_Line_Error ("Error. Invalid interface version "
@@ -124,11 +123,11 @@ procedure T_Xml_String is
   Prologue_Level : constant := -1;
   procedure Put_Element (Elt : in Xml_Parser.Element_Type;
                          Level : in Integer) is
-    Name : constant String := Asu.To_String(Ctx.Get_Name (Elt));
+    Name : constant String := Asu_Ts (Ctx.Get_Name (Elt));
     Children : constant Xml_Parser.Nodes_Array := Ctx.Get_Children (Elt);
     Indent : constant String (1 .. 2 * Level) := (others => ' ');
     Prev_Is_Text : Boolean;
-    use type Xml_Parser.Node_Kind_List, Asu_Us;
+    use type Xml_Parser.Node_Kind_List;
   begin
     if Level = Prologue_Level then
       if Name /= "" then
@@ -261,9 +260,9 @@ begin
         Xml_Parser.Parse_Dtd_String (Read_File (File_Name), null, Dtds(I),
                                      Error_Msg);
       end if;
-      if Error_Msg /= Asu.Null_Unbounded_String then
+      if not Asu_Is_Null (Error_Msg) then
         Basic_Proc.Put_Line_Error (
-             "Error. Invalid Dtd: " & Asu.To_String (Error_Msg));
+             "Error. Invalid Dtd: " & Asu_Ts (Error_Msg));
         raise Dtd_Error;
       end if;
     end;

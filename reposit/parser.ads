@@ -84,7 +84,6 @@ package Parser is
                  return String;
 
 private
-  use As.U;
 
   type Iter_State_List is (Parsing, Parsed, Finished);
 

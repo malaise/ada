@@ -490,7 +490,7 @@ package body Arbitrary is
   -- Image
   function Image (V : Number) return String is
   begin
-    return Asu.To_String (Asu_Us(V));
+    return Asu_Ts (Asu_Us(V));
   end Image;
 
   function Length (V : Number) return Natural is

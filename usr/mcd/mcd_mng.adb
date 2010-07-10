@@ -12,8 +12,7 @@ package body Mcd_Mng is
   S : Item_Rec := Invalid_Item;
 
   -- Subprogram called
-  package Unb renames Ada.Strings.Unbounded;
-  Call_Entry : Unb.Unbounded_String;
+  Call_Entry : Asu_Us;
 
   package Stack is
     -- What can we store in stack
@@ -233,8 +232,8 @@ package body Mcd_Mng is
 
   package Call_Stack is
 
-    procedure Push (Item : in Unb.Unbounded_String);
-    function  Pop return Unb.Unbounded_String;
+    procedure Push (Item : in Asu_Us);
+    function  Pop return Asu_Us;
 
     function Level return Natural;
 
@@ -343,7 +342,7 @@ package body Mcd_Mng is
         -- Restart form previous context
         Call_Entry := Call_Stack.Pop;
       end loop;
-      Input_Dispatcher.Set_Input(Unb.To_String (Call_Entry));
+      Input_Dispatcher.Set_Input(Asu_Ts (Call_Entry));
     end Do_Retn;
 
     procedure Do_Retall is

@@ -171,11 +171,11 @@ package body Stack is
       History.Discard_Last;
       Sitem := Ios.Strof (Litem);
       if Litem.Kind = Chrs then
-        Basic_Proc.Put_Error ('"' & Unb.To_String (Sitem.Val_Text) &'"');
+        Basic_Proc.Put_Error ('"' & Asu_Ts (Sitem.Val_Text) &'"');
       elsif Litem.Kind = Prog then
-        Basic_Proc.Put_Error ("[ " & Unb.To_String (Sitem.Val_Text) & " ]");
+        Basic_Proc.Put_Error ("[ " & Asu_Ts (Sitem.Val_Text) & " ]");
       else
-        Basic_Proc.Put_Error (Unb.To_String (Sitem.Val_Text));
+        Basic_Proc.Put_Error (Asu_Ts (Sitem.Val_Text));
       end if;
       if I /= Len then
         Basic_Proc.Put_Error (" ");

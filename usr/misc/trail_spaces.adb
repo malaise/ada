@@ -1,4 +1,5 @@
-with Ada.Exceptions, Ada.Strings.Unbounded, Ada.Characters.Latin_1;
+with Ada.Exceptions, Ada.Characters.Latin_1;
+with As.U; use As.U;
 with Argument, Sys_Calls, Temp_File, Text_Line;
 procedure Trail_Spaces is
 
@@ -28,22 +29,20 @@ procedure Trail_Spaces is
       when others => null;
     end Close;
 
-    package Asu renames Ada.Strings.Unbounded;
-
     -- Temporary out file name
     Out_File_Name : constant String := Temp_File.Create(".");
     -- In and out file desc
     In_File : Text_Line.File_Type;
     Out_File : Text_Line.File_Type;
     -- Line of input
-    Line : Ada.Strings.Unbounded.Unbounded_String;
+    Line : Asu_Us;
     -- Is file modified
     Modified : Boolean;
     -- Dummy result for Sys calls
     Dummy : Boolean;
     pragma Unreferenced (Dummy);
 
-    use type Asu.Unbounded_String;
+    use type Asu_Us;
 
   begin
     -- Open in-file read only and associate in Text_Line
@@ -106,7 +105,7 @@ procedure Trail_Spaces is
       and then Asu.Element (Line, Asu.Length (Line) - 1)
          = Ada.Characters.Latin_1.Cr then
         Line := Asu.Slice (Line, 1, Asu.Length (Line) - 2)
-              & Asu.To_Unbounded_String (Text_Line.Line_Feed_Char & "");
+              & Asu_Tus (Text_Line.Line_Feed_Char & "");
         Modified := True;
       end if;
       -- Trail spaces of line

@@ -81,7 +81,7 @@ package body Ada_Parser is
 
     -- End of identifier, check validity
     declare
-      Str : constant String := Asu.To_String (Text);
+      Str : constant String := Asu_Ts (Text);
       Is_Reserved : Ada_Words.Keyword_Res_List;
       use type Ada_Words.Keyword_Res_List;
     begin
@@ -94,7 +94,7 @@ package body Ada_Parser is
       if Is_Reserved = Ada_Words.May_Be_Keyword then
         -- Access, delta, digits or range,
         -- see if prev significant lexical element is "'"
-        if Asu.To_String (Prev_Lex) = "'" then
+        if Asu_Ts (Prev_Lex) = "'" then
           -- Prev was "'", so current is a qualifier
           Is_Reserved := Ada_Words.Is_Not_Keyword;
         else
@@ -322,7 +322,7 @@ package body Ada_Parser is
       Parse_Next (File, Text, Lexic);
       exit when Asu_Is_Null (Text);
       -- Call callback
-      Cb (Asu.To_String (Text), Lexic);
+      Cb (Asu_Ts (Text), Lexic);
     end loop;
   end Parse;
 

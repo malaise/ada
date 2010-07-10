@@ -1,11 +1,8 @@
 with Ada.Characters.Latin_1, Ada.Exceptions;
-with As.U; use As.U;
 with Argument, Event_Mng, Sys_Calls, Async_Stdin, Text_Line;
 with Fifos;
 with Debug, Io_Data;
 package body Io_Flow is
-
-  package Unb renames Ada.Strings.Unbounded;
 
   -- Init, get fifo name or leave empty for stdin
   Init_Done : Boolean := False;
@@ -15,10 +12,10 @@ package body Io_Flow is
   Input_Flow : Text_Line.File_Type;
 
   -- Data read from stdin tty or fifo
-  Input_Data : Unb.Unbounded_String;
+  Input_Data : Asu_Us;
 
   -- Concatenated fifo messages until one lasts with Cr or Lf
-  Fifo_Data : Unb.Unbounded_String;
+  Fifo_Data : Asu_Us;
 
   -- Fifo
   package Mcd_Fifos is new Fifos.Fifo (Io_Data.Message_Type);
@@ -83,7 +80,7 @@ package body Io_Flow is
   ----------------------------------------------------
   -- Get data from fifo or stdin
   ----------------------------------------------------
-  procedure Next_Line (Str : out Ada.Strings.Unbounded.Unbounded_String) is
+  procedure Next_Line (Str : out Asu_Us) is
     Evt : Event_Mng.Out_Event_List;
     Len : Natural;
     use type Event_Mng.Out_Event_List;
@@ -91,17 +88,17 @@ package body Io_Flow is
   begin
     Init;
     if Asu_Is_Null (Fifo_Name) and then not Stdio_Is_A_Tty then
-      Input_Data := Unb.To_Unbounded_String ("");
+      Input_Data := Asu_Null;
       -- Get next non empty line from Stdin (not a tty)
       loop
         -- Get next line
         Input_Data := Input_Flow.Get;
         -- End of flow when got an empty line
-        Len := Unb.Length (Input_Data);
+        Len := Asu.Length (Input_Data);
         exit when Len = 0;
         -- Remove trailing Line_Feed
-        if Unb.Element (Input_Data, Len) = Text_Line.Line_Feed_Char then
-          Unb.Delete (Input_Data, Len, Len);
+        if Asu.Element (Input_Data, Len) = Text_Line.Line_Feed_Char then
+          Asu.Delete (Input_Data, Len, Len);
           Len := Len - 1;
         end if;
         -- This line is Ok if not empty
@@ -110,19 +107,19 @@ package body Io_Flow is
     else
       -- Get next data on Tty stdin or Fifo
       loop
-        Input_Data := Unb.To_Unbounded_String ("");
+        Input_Data := Asu_Null;
         if Debug.Debug_Level_Array(Debug.Flow) then
           Async_Stdin.Put_Line_Err ("Flow: Waiting on fifo/tty");
         end if;
         Evt := Event_Mng.Wait (Event_Mng.Infinite_Ms);
 
         if Evt = Event_Mng.Fd_Event
-        and then Unb.To_String (Input_Data) /= "" then
+        and then not Asu_Is_Null (Input_Data) then
           -- New string
           exit;
         elsif Evt = Event_Mng.Signal_Event then
           -- Give up on signal
-          Input_Data := Unb.To_Unbounded_String ("");
+          Input_Data := Asu_Null;
           exit;
         end if;
       end loop;
@@ -135,7 +132,7 @@ package body Io_Flow is
       Async_Stdin.Activate (True);
     end if;
     if Debug.Debug_Level_Array(Debug.Flow) then
-      Async_Stdin.Put_Line_Err ("Flow: Next_Line -> " & Unb.To_String (Str));
+      Async_Stdin.Put_Line_Err ("Flow: Next_Line -> " & Asu_Ts (Str));
     end if;
   end Next_Line;
 
@@ -269,12 +266,12 @@ package body Io_Flow is
       return;
     end if;
     -- Add this chunk
-    Unb.Append (Fifo_Data, Message(1 .. Length));
+    Asu.Append (Fifo_Data, Message(1 .. Length));
     if      Message(Length) = Ada.Characters.Latin_1.Cr
     or else Message(Length) = Ada.Characters.Latin_1.Lf then
       -- Validate the overall string
       Input_Data := Fifo_Data;
-      Fifo_Data := Unb.Null_Unbounded_String;
+      Fifo_Data := Asu_Null;
       -- Freeze fifo to prevent Input_Data to be overwritten
       Mcd_Fifos.Activate (Client_Id, False);
     end if;
@@ -319,16 +316,16 @@ package body Io_Flow is
   begin
     if Str = "" then
       -- Error or end
-      Input_Data := Unb.To_Unbounded_String (Str);
+      Input_Data := Asu_Tus (Str);
       return True;
     else
-      Input_Data := Unb.To_Unbounded_String (Str);
+      Input_Data := Asu_Tus (Str);
     end if;
     -- Prevent overwritting of Input_Data by freezing Stdin
     Async_Stdin.Activate (False);
     if Debug.Debug_Level_Array(Debug.Flow) then
       Async_Stdin.Put_Line_Err ("Flow: Stdin_Cb set >"
-                           & Unb.To_String (Input_Data)
+                           & Asu_Ts (Input_Data)
                            & "<");
     end if;
     return True;

@@ -131,13 +131,11 @@ procedure Xml_Checker is
   begin
     for I in Attrs'Range loop
       if not Attrs(I).Unparsed then
-        Out_Flow.Put (" " & Asu.To_String (Attrs(I).Name
-                       & "=" & Attrs(I).Value));
+        Out_Flow.Put (" " & Asu_Ts (Attrs(I).Name & "=" & Attrs(I).Value));
       else
-        Out_Flow.Put (" " & Asu.To_String (Attrs(I).Name
-                       & "=U=" & Attrs(I).Value));
+        Out_Flow.Put (" " & Asu_Ts (Attrs(I).Name & "=U=" & Attrs(I).Value));
         -- Maybe several entities here
-        Asu.Append (Unparsed_Entities, Asu.To_String (Attrs(I).Value) & ' ');
+        Asu.Append (Unparsed_Entities, Asu_Ts (Attrs(I).Value) & ' ');
       end if;
     end loop;
   end Dump_Attributes;
@@ -180,7 +178,7 @@ procedure Xml_Checker is
       end if;
       Put_Mixed (Elt, In_Mixed);
       Out_Flow.Put (Indent);
-      Out_Flow.Put (Asu.To_String(Ctx.Get_Name (Elt)));
+      Out_Flow.Put (Asu_Ts(Ctx.Get_Name (Elt)));
       if Ctx.Get_Nb_Attributes (Elt) /= 0 then
         Out_Flow.Put (" :" );
       end if;
@@ -349,30 +347,30 @@ procedure Xml_Checker is
     Out_Flow.Put (Indent);
     case Node.Kind is
       when Xml_Parser.Element =>
-        Out_Flow.Put (Asu.To_String(Node.Name));
+        Out_Flow.Put (Asu_Ts (Node.Name));
       when Xml_Parser.Pi =>
-        Out_Flow.Put ("<?" & Asu.To_String(Node.Name));
+        Out_Flow.Put ("<?" & Asu_Ts (Node.Name));
         if Asu.Length (Node.Value) /= 0 then
-          Out_Flow.Put (" " & Asu.To_String(Node.Value));
+          Out_Flow.Put (" " & Asu_Ts (Node.Value));
         end if;
         Out_Flow.Put ("?>");
       when Xml_Parser.Comment =>
-        Out_Flow.Put ("<!--" & Asu.To_String(Node.Name) & "-->");
+        Out_Flow.Put ("<!--" & Asu_Ts (Node.Name) & "-->");
       when Xml_Parser.Text =>
-        Out_Flow.Put ("=>" & Asu.To_String(Node.Name) & "<=");
+        Out_Flow.Put ("=>" & Asu_Ts (Node.Name) & "<=");
     end case;
     if Node.Attributes /= null
     and then Node.Attributes.all'Length /= 0 then
       Out_Flow.Put (" :");
       for I in  Node.Attributes.all'Range loop
         if not Node.Attributes(I).Unparsed then
-          Out_Flow.Put (" " & Asu.To_String (Node.Attributes(I).Name
+          Out_Flow.Put (" " & Asu_Ts (Node.Attributes(I).Name
                       & "=" & Node.Attributes(I).Value));
         else
-          Out_Flow.Put (" " & Asu.To_String (Node.Attributes(I).Name
+          Out_Flow.Put (" " & Asu_Ts (Node.Attributes(I).Name
                       & "=U=" & Node.Attributes(I).Value));
           Asu.Append (Unparsed_Entities,
-                      Asu.To_String (Node.Attributes(I).Value) & ' ');
+                      Asu_Ts (Node.Attributes(I).Value) & ' ');
         end if;
       end loop;
     end if;

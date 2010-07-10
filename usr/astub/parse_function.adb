@@ -24,7 +24,7 @@ begin
       Up_To_Next_Significant => False);
   Word := Words.Read;
 
-  if Asu.To_String (Word.Text) = "(" then
+  if Asu_Ts (Word.Text) = "(" then
     -- Like Parse_To_End ("return"); but
     -- store argument formal names in Args, separated by ", "
     In_Id := True;
@@ -32,9 +32,9 @@ begin
     loop
       Word := Parser_Ada.Multiparse.Get (True);
       Words.Add (Word);
-      if Asu.To_String (Word.Text) = "(" then
+      if Asu_Ts (Word.Text) = "(" then
         Common.Error ("(");
-      elsif Asu.To_String (Word.Text) = ")" then
+      elsif Asu_Ts (Word.Text) = ")" then
         if In_Id or else not In_Parent then
            Common.Error (")");
         end if;
@@ -46,18 +46,18 @@ begin
           Asu.Append (Args, ", ");
         end if;
         Asu.Append (Args, Word.Text);
-      elsif Asu.To_String (Word.Text) = ":" then
+      elsif Asu_Ts (Word.Text) = ":" then
         -- End of argument formal names (entering in | out | inout ...)
         In_Id := False;
-      elsif Asu.To_String (Word.Text) = "return" then
+      elsif Asu_Ts (Word.Text) = "return" then
         exit;
-      elsif Asu.To_String (Word.Text) = ";" then
+      elsif Asu_Ts (Word.Text) = ";" then
         if In_Parent then
           -- End of previous argument, expecting a new one
           In_Id := True;
         else
           -- ; out of () but before "return"
-          Common.Error (Asu.To_String (Word.Text));
+          Common.Error (Asu_Ts (Word.Text));
         end if;
       end if;
     end loop;
@@ -66,11 +66,11 @@ begin
   end if;
 
   -- Parse return
-  if Asu.To_String (Word.Text) = "return" then
+  if Asu_Ts (Word.Text) = "return" then
     Parse_To_End (Parser_Ada.Delimiter, ";", Level, Put_Comments => False,
                   Up_To_Next_Significant => False);
   else
-    Common.Error (Asu.To_String (Word.Text));
+    Common.Error (Asu_Ts (Word.Text));
   end if;
 
   -- If a renames or generic instanciation, put as comment
@@ -99,12 +99,12 @@ begin
   --   return <name> (<args>);
   -- end <name>;
   Output.Put_Line ("begin", False, Level, True);
-  Output.Put ("return " & Asu.To_String (Name), False, Level + 1, True);
+  Output.Put ("return " & Asu_Ts (Name), False, Level + 1, True);
   if Asu.Length (Args) /= 0 then
-    Output.Put (" (" & Asu.To_String (Args) & ")", False);
+    Output.Put (" (" & Asu_Ts (Args) & ")", False);
   end if;
   Output.Put_Line (";", False);
-  Output.Put_Line ("end " & Asu.To_String (Name) & ";", False, Level, True);
+  Output.Put_Line ("end " & Asu_Ts (Name) & ";", False, Level, True);
 
 end Parse_Function;
 

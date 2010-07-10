@@ -125,7 +125,7 @@ procedure Agite is
       if Asu_Is_Null (Root) then
         Git_If.Get_Root_And_Path (Root, Path);
       end if;
-      Git_If.List_Files (Asu.To_String (Path), Files);
+      Git_If.List_Files (Asu_Ts (Path), Files);
       Afpx.Resume;
     exception
       when Git_If.No_Git =>
@@ -133,7 +133,7 @@ procedure Agite is
         Root := Asu_Null;
         Path := Asu_Null;
         -- List dir content the normal way
-        List_Files (Asu.To_String (Path), Files);
+        List_Files (Asu_Ts (Path), Files);
         Afpx.Resume;
       when others =>
         Afpx.Resume;

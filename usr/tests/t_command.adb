@@ -1,13 +1,6 @@
-with Ada.Strings.Unbounded;
+with As.U; use As.U;
 with Argument, Many_Strings, Basic_Proc, Command;
 procedure T_Command is
-
-   -- Asu stuff
-  package Asu renames Ada.Strings.Unbounded;
-  subtype Asu_Us is Asu.Unbounded_String;
-  function Asu_Ts (Str : Asu_Us) return String renames Asu.To_String;
-  function Asu_Tus (Str : String) return Asu_Us renames Asu.To_Unbounded_String;
-
 
   procedure Usage is
   begin
@@ -42,7 +35,7 @@ begin
     Usage;
     return;
   end if;
-  Cmd := Asu_Tus (Argument.Get_Parameter (Narg));
+  Cmd := Asu_Tus (Argument.Get_Parameter (Occurence => Narg));
   for I in Narg + 1 .. Argument.Get_Nbre_Arg loop
     Many_Strings.Cat (Cmd, Argument.Get_Parameter (I));
   end loop;

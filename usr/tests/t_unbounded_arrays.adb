@@ -1,4 +1,5 @@
-with Ada.Text_Io, Ada.Strings.Unbounded;
+with Ada.Text_Io;
+with As.U; use As.U;
 with Unbounded_Arrays, Int_Image;
 procedure T_Unbounded_Arrays is
 
@@ -12,15 +13,15 @@ procedure T_Unbounded_Arrays is
   N1, N2 : Natua.Unbounded_Array;
 
   function Image (A : Nat_Array) return String is
-    Res : Ada.Strings.Unbounded.Unbounded_String;
+    Res : Asu_Us;
   begin
     for I in A'Range loop
-      Ada.Strings.Unbounded.Append (Res, Image (A(I)));
+      Asu.Append (Res, Image (A(I)));
       if I /= A'Last then
-        Ada.Strings.Unbounded.Append (Res, ", ");
+        Asu.Append (Res, ", ");
       end if;
     end loop;
-    return Ada.Strings.Unbounded.To_String (Res);
+    return Asu_Ts (Res);
   end Image;
 
   function Image (N : Natua.Unbounded_Array) return String is

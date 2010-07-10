@@ -1,7 +1,8 @@
 with Ada.Text_Io;
+with As.U; use As.U;
 with Argument, Con_Io, Afpx, Basic_Proc, Language, Many_Strings, String_Mng,
      Lower_Str;
-with Common, Cmd;
+with Cmd;
 procedure Xwords is
 
   procedure Error is
@@ -43,15 +44,15 @@ procedure Xwords is
   Moved : Boolean;
 
   -- A line of text
-  Line : Common.Asu_Us;
+  Line : Asu_Us;
 
   -- Us to Afpx line
-  function Us2Afpx (Us : Common.Asu_Us) return Afpx.Line_Rec is
+  function Us2Afpx (Us : Asu_Us) return Afpx.Line_Rec is
     Rec : Afpx.Line_Rec;
     List_Width : constant Afpx.Width_Range
                := Afpx.Get_Field_Width (Afpx.List_Field_No);
     Wstr : constant Wide_String
-         := Language.String_To_Wide (Common.Asu_Ts (Us));
+         := Language.String_To_Wide (Asu_Ts (Us));
   begin
     Rec.Len := Wstr'Length;
     -- Procuste
@@ -73,31 +74,31 @@ procedure Xwords is
   -- Build and launch a Words command
   procedure Do_Command (Num : Afpx.Field_Range) is
     Result : Cmd.Res_List;
-    Com, Word, Arg : Common.Asu_Us;
+    Com, Word, Arg : Asu_Us;
     Command_Ok : Boolean;
     First : Boolean;
-    use type Afpx.Field_Range, Common.Asu_Us;
+    use type Afpx.Field_Range, Asu_Us;
   begin
     -- Clear result
     Afpx.Line_List.Delete_List (Deallocate => False);
 
     -- Build command
-    Word := Common.Asu_Tus (Strip (Afpx.Decode_Field (Get_Fld, 0, False)));
+    Word := Asu_Tus (Strip (Afpx.Decode_Field (Get_Fld, 0, False)));
     case Num is
       when Search_Fld | Research_Fld =>
-        Com := Common.Asu_Tus ("ws");
+        Com := Asu_Tus ("ws");
       when Add_Word_Fld | Add_Noun_Fld =>
-        Com := Common.Asu_Tus ("wa");
+        Com := Asu_Tus ("wa");
       when Del_Word_Fld | Del_Noun_Fld =>
-        Com := Common.Asu_Tus ("wd");
+        Com := Asu_Tus ("wd");
       when others =>
         Status := Error;
         return;
     end case;
     if Num = Research_Fld then
-      Arg := Common.Asu_Tus (Many_Strings.Cat ("-re", Common.Asu_Ts (Word)));
+      Arg := Asu_Tus (Many_Strings.Cat ("-re", Asu_Ts (Word)));
     elsif Num = Add_Noun_Fld or else Num = Del_Noun_Fld then
-      Arg := Common.Asu_Tus (Many_Strings.Cat ("-noun", Common.Asu_Ts (Word)));
+      Arg := Asu_Tus (Many_Strings.Cat ("-noun", Asu_Ts (Word)));
     else
       Arg := Word;
     end if;
@@ -105,8 +106,7 @@ procedure Xwords is
     -- Prevent X events to interfere with the Command internal loop
     --  and execute command
     Afpx.Suspend;
-    Cmd.Exec (Common.Asu_Ts (Com), Common.Asu_Ts (Arg),
-                  Command_Ok, Result);
+    Cmd.Exec (Asu_Ts (Com), Asu_Ts (Arg), Command_Ok, Result);
     Afpx.Resume;
 
     -- Set status
@@ -120,17 +120,17 @@ procedure Xwords is
 
     -- Store in history and selection if search
     if (Num = Search_Fld or else Num = Research_Fld)
-    and then Arg /= Common.Asu_Null then
+    and then not Asu_Is_Null (Arg) then
       History.Insert (Word);
     end if;
 
     -- Log request if needed
     if Log then
       Line := Com;
-      for I in 1 .. Many_Strings.Nb (Common.Asu_Ts (Arg)) loop
-        Line := Line & " " & Many_Strings.Nth (Common.Asu_Ts (Arg), I);
+      for I in 1 .. Many_Strings.Nb (Asu_Ts (Arg)) loop
+        Line := Line & " " & Many_Strings.Nth (Asu_Ts (Arg), I);
       end loop;
-      Ada.Text_Io.Put_Line (Common.Asu_Ts (Line));
+      Ada.Text_Io.Put_Line (Asu_Ts (Line));
     end if;
 
     -- Encode result, set first word as selection
@@ -138,7 +138,7 @@ procedure Xwords is
     if Result.Is_Empty then
       if Status = Found then
         -- Set selection to search word/pattern
-        Afpx.Set_Selection (Lower_Str (Common.Asu_Ts (Word)));
+        Afpx.Set_Selection (Lower_Str (Asu_Ts (Word)));
       else
         -- Reset selection for case where no result or error
         Afpx.Set_Selection ("");
@@ -148,12 +148,12 @@ procedure Xwords is
       loop
         Result.Read (Line, Moved => Moved);
         if Status = Found and then First then
-          Afpx.Set_Selection (Lower_Str (Common.Asu_Ts (Line)));
+          Afpx.Set_Selection (Lower_Str (Asu_Ts (Line)));
           First := False;
         end if;
         Afpx.Line_List.Insert (Us2Afpx (Line));
         if Log then
-          Ada.Text_Io.Put_Line (Common.Asu_Ts (Line));
+          Ada.Text_Io.Put_Line (Asu_Ts (Line));
         end if;
         exit when not Moved;
       end loop;
@@ -174,7 +174,7 @@ procedure Xwords is
     Afpx.Clear_Field (Get_Fld);
     if not History.Is_Empty then
       History.Read (Line, Cmd.Res_Mng.Dyn_List.Current);
-      Afpx.Encode_Field (Get_Fld, (0, 0), Lower_Str (Common.Asu_Ts (Line)));
+      Afpx.Encode_Field (Get_Fld, (0, 0), Lower_Str (Asu_Ts (Line)));
     end if;
   end Do_Recall;
 

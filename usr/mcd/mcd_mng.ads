@@ -1,4 +1,4 @@
-with Ada.Strings.Unbounded;
+with As.U; use As.U;
 with My_Math, Arbitrary, Arbitrary.Fractions;
 package Mcd_Mng is
 
@@ -181,7 +181,7 @@ package Mcd_Mng is
       when Bool =>
         Val_Bool : Boolean;
       when Chrs | Prog =>
-        Val_Text : Ada.Strings.Unbounded.Unbounded_String;
+        Val_Text : Asu_Us;
       when Regi =>
         Val_Regi : Register_List;
       when Oper =>

@@ -1,4 +1,4 @@
-with Ada.Strings.Unbounded;
+with As.U; use As.U;
 with Common, Output, Words, Parser_Ada,
      Parse_To_End, Parse_Procedure, Parse_Function, Parse_Package, Fix_Comment;
 
@@ -15,7 +15,7 @@ begin
   loop
     Word := Parser_Ada.Multiparse.Get (False);
     declare
-      Str : constant String := Ada.Strings.Unbounded.To_String (Word.Text);
+      Str : constant String := Asu_Ts (Word.Text);
     begin
       if Str = "" then
         -- End of file
