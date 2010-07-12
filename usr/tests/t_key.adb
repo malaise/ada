@@ -10,7 +10,7 @@ begin
   Con_Io.Init;
   Con_Io.Reset_Term;
   Con_Io.Set_Foreground (Con_Io.Color_Of("Black"));
-  Con_Io.Set_Background (Con_Io.Color_Of("Light_Gray"));
+  Con_Io.Set_Background (Con_Io.Color_Of("Light_Grey"));
   Con_Io.Clear;
   Got := (Mvt => Con_Io.Refresh);
   loop

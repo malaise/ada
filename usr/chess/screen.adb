@@ -18,7 +18,7 @@ package body Screen is
   Fore_White : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("Orange");
   Fore_Black : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("Red");
   Back_White : constant Con_Io.Effective_Colors
-             := Con_Io.Color_Of ("Light_Gray");
+             := Con_Io.Color_Of ("Light_Grey");
   Back_Black : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("Black");
 
   Main_Fore : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("White");

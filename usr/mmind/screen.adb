@@ -43,13 +43,13 @@ package body Screen is
        3 => Con_Io.Color_Of ("Cyan"),
        4 => Con_Io.Color_Of ("Red"),
        5 => Con_Io.Color_Of ("Magenta"),
-       6 => Con_Io.Color_Of ("Light_Gray"),
+       6 => Con_Io.Color_Of ("Light_Grey"),
        7 => Con_Io.Color_Of ("Orange"),
        8 => Con_Io.Color_Of ("Yellow"));
   White : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("White");
 
   Foreground_Color  : constant Con_Io.Effective_Colors
-                    := Con_Io.Color_Of ("Dark_Gray");
+                    := Con_Io.Color_Of ("Grey");
   Background_Color  : constant Con_Io.Effective_Colors :=
    Color_Definition(0);
 
@@ -57,7 +57,7 @@ package body Screen is
   Try_Color : constant Con_Io.Effective_Colors := White;
   -- When click in try or menu window
   Background_Select : constant Con_Io.Effective_Colors
-                    := Con_Io.Color_Of ("Light_Gray");
+                    := Con_Io.Color_Of ("Light_Grey");
   -- Used to answer
   Ok_Color  : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("Black");
   Nok_Color : constant Con_Io.Effective_Colors := White;

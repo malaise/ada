@@ -264,7 +264,7 @@ package body Sok_Display is
     Blue : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("Blue");
   begin
     if not Selected then
-      Color := Con_Io.Color_Of ("Light_Gray");
+      Color := Con_Io.Color_Of ("Light_Grey");
     else
       Color := Con_Io.Color_Of ("Red");
     end if;
@@ -418,7 +418,7 @@ package body Sok_Display is
     loop
       Con_Io.Move ( (01, 34), Get_Win);
       Con_Io.Put_Then_Get (Str, Last, Stat, Pos, Ins, Get_Win,
-       Foreground => Con_Io.Color_Of ("Light_Gray"),
+       Foreground => Con_Io.Color_Of ("Light_Grey"),
        Background => Con_Io.Color_Of ("Black"),
        Time_Out => (Delay_Kind    => Timers.Delay_Sec,
                     Clock         => null,
