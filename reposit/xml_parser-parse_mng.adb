@@ -858,7 +858,8 @@ package body Parse_Mng  is
       Util.Get_Curr_Str (Ctx.Flow, Doctype_File);
       Util.Skip_Separators (Ctx.Flow);
       if Ctx.Use_Dtd
-      and then Asu_Is_Null (Ctx.Dtd_File) then
+      and then Asu_Is_Null (Ctx.Dtd_File)
+      and then not Asu_Is_Null (Doctype_File) then
         -- Parse dtd file of doctype directive if no alternate file
         Util.Push_Flow (Ctx.Flow);
         Full_File := Build_Full_Name (Doctype_File, Ctx.Flow.Curr_Flow.Name);
