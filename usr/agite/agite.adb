@@ -11,10 +11,13 @@ procedure Agite is
       Basic_Proc.Put_Line_Error ("ERROR: " & Msg & ".");
     end if;
     Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
-                             & " <path> | --previous");
+                             & " [ <path> | --previous | --no_history ]");
     Basic_Proc.Set_Error_Exit_Code;
     raise Utils.Exit_Requested;
   end Error;
+
+  -- Save history or not
+  Update_History : Boolean := True;
 
   -- Version Stuff
   Version : Git_If.Version_Rec;
@@ -86,31 +89,6 @@ procedure Agite is
     Files.Rewind;
   end List_Files;
 
-  -- Encode current directory and root
-  procedure Encode_Dir is
-    Curr : constant String := Directory.Get_Current;
-    Width : constant Afpx.Width_Range := Afpx.Get_Field_Width (Dir_Field);
-  begin
-    Afpx.Clear_Field (Dir_Field);
-    Afpx.Encode_Field (Dir_Field, (0, 0), Utils.Normalize (Curr, Width));
-    -- Move cursor col on last significant char
-    Cursor_Col := 0;
-    declare
-      Wstr : constant Wide_String := Afpx.Decode_Wide_Field (Dir_Field, 0);
-    begin
-      for I in reverse Wstr'Range loop
-        if Wstr(I) /= ' ' then
-          Cursor_Col := I;
-          exit;
-        end if;
-      end loop;
-    end;
-    -- Full field => last col
-    if Cursor_Col >= Width then
-      Cursor_Col := Width - 1;
-    end if;
-  end Encode_Dir;
-
   -- Encode files
   procedure Encode_Files is
     Background : constant Con_Io.Effective_Colors
@@ -169,24 +147,45 @@ procedure Agite is
     Str : constant String
         := Utils.Parse_Spaces (Afpx.Decode_Field (Dir_Field, 0, False));
     Cur_Dir : constant String := Directory.Get_Current;
+    Width : constant Afpx.Width_Range := Afpx.Get_Field_Width (Dir_Field);
   begin
     begin
       if New_Dir = "" then
-        Directory.Change_Current (Str);
+        if Str /= "" then
+          Directory.Change_Current (Str);
+        end if;
       else
         Directory.Change_Current (New_Dir);
       end if;
       -- Success, reset root path for re-evaluation, save current dir
       Root := Asu_Null;
-      Config.Save_Curr_Dir (Directory.Get_Current);
+      if Update_History then
+        Config.Save_Curr_Dir (Directory.Get_Current);
+      end if;
       Encode_Files;
     exception
       when others =>
         -- Cannot change to new dir or cannot process files (No_Git?)
         Directory.Change_Current (Cur_Dir);
     end;
-    -- Put new dir or restore current
-    Encode_Dir;
+    Afpx.Clear_Field (Dir_Field);
+    Afpx.Encode_Field (Dir_Field, (0, 0), Utils.Normalize (Cur_Dir, Width));
+    -- Move cursor col on last significant char
+    Cursor_Col := 0;
+    declare
+      Wstr : constant Wide_String := Afpx.Decode_Wide_Field (Dir_Field, 0);
+    begin
+      for I in reverse Wstr'Range loop
+        if Wstr(I) /= ' ' then
+          Cursor_Col := I;
+          exit;
+        end if;
+      end loop;
+    end;
+    -- Full field => last col
+    if Cursor_Col >= Width then
+      Cursor_Col := Width - 1;
+    end if;
   end Change_Dir;
 
   -- To find current position back
@@ -253,7 +252,7 @@ procedure Agite is
     Insert := False;
     Redisplay := False;
     Afpx.Encode_Field (17, (0, 0), Host_Str);
-    Encode_Dir;
+    Change_Dir;
     Encode_Files;
   end;
 
@@ -325,6 +324,8 @@ begin
         if Config.Prev_Dir /= "" then
           Directory.Change_Current (Config.Prev_Dir);
         end if;
+      elsif Argument.Get_Parameter (Occurence => 1) = "--no_history" then
+        Update_History := False;
       elsif Argument.Get_Parameter = "-h"
       or else Argument.Get_Parameter = "--help" then
         Error ("");
