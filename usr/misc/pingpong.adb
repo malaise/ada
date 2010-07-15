@@ -1,19 +1,62 @@
+-- Send ping-pong between hosts
+-- By default send a ping each period and replies to ping
+-- On option only sends pings or only replies pong
 with Ada.Exceptions, Ada.Calendar;
-with Argument, Socket, Tcp_Util, Ip_Addr, Event_Mng, Date_Image, String_Mng,
-     Basic_Proc;
+with As.U; use As.U;
+with Argument, Argument_Parser,
+     Basic_Proc,
+     Date_Image, Dur_Image, String_Mng, Mixed_Str,
+     Socket, Tcp_Util, Ip_Addr, Event_Mng, Timers,
+     Unique_List;
 procedure Pingpong is
-  Arg_Error : exception;
+
+  -- Argument parsing
+  Keys : constant Argument_Parser.The_Keys_Type := (
+    1 => ('h', Asu_Tus ("help"), False, False),
+    2 => ('i', Asu_Tus ("interface"), False, True),
+    3 => ('p', Asu_Tus ("period"), False, True),
+    4 => ('r', Asu_Tus ("reply"), False, False),
+    5 => ('s', Asu_Tus ("send"), False, False),
+    6 => ('a', Asu_Tus ("average"), False, False),
+    7 => ('d', Asu_Tus ("debug"), False, False));
+  Arg_Dscr : Argument_Parser.Parsed_Dscr;
+
   Soc : Socket.Socket_Dscr;
   Fd  : Event_Mng.File_Desc := 0;
-  Nb_Options : Natural;
+  Use_Iface : Boolean;
   Iface : Tcp_Util.Remote_Host;
-  Period : Positive;
-  Send_Mode, Receive_Mode : Boolean;
+  One_Shot : Boolean;
+  Period : Timers.Period_Range;
+  Send_Mode : Boolean;
+  Average : Boolean;
+  Debug : Boolean;
+
+  -- Usage and Error
+  procedure Usage is
+  begin
+    Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
+      & " [ { <option> } ] <mode> <ipm_addr>:<port_num>");
+    Basic_Proc.Put_Line_Error (
+        "  <option> ::= <interface> | <period> | <time>");
+    Basic_Proc.Put_Line_Error ("  <mode> ::= -r | --reply | -s | --send");
+    Basic_Proc.Put_Line_Error ("  <interface>  ::= -i<interf_name> | --interface=<inter_name>");
+    Basic_Proc.Put_Line_Error ("  <period>     ::= -p<period_float> | --period=<period_float>");
+    Basic_Proc.Put_Line_Error ("  <time>       ::= -t | --time_delta");
+  end Usage;
+
+  Abort_Error : exception;
+  procedure Error (Msg : in String) is
+  begin
+    Basic_Proc.Put_Line_Error ("ERROR: " & Msg & ".");
+    Usage;
+    Basic_Proc.Set_Error_Exit_Code;
+    raise Abort_Error;
+  end Error;
 
   procedure Put (Message : in String) is
   begin
-    Basic_Proc.Put_Line_Output (Date_Image (Ada.Calendar.Clock)
-                              & " PingPong -> " & Message);
+    Basic_Proc.Put_Line_Output ("PingPong at "
+      & Date_Image (Ada.Calendar.Clock) & ": " & Message);
   end Put;
 
   -- Signal callback
@@ -22,17 +65,17 @@ procedure Pingpong is
     Put ("Aborted.");
   end Signal_Cb;
 
-  -- Ping request is "Ping" "<ping_sender>"
-  -- Pong reply   is "Pong" "<pong_sender>"
-  subtype Ping_Kind is String (1 ..4);
-  Ping : constant Ping_Kind := "Ping";
-  Pong : constant Ping_Kind := "Pong";
+  -- Message exchanged
+  -- Ping request is Ping Ping_Sender Ping_Stamp
+  -- Pong reply   is Pong Pong_Sender Ping_Stamp Pong_Stamp
   subtype Host_Str is String (1 .. 255);
+  type Ping_Kind_List is (Ping, Pong);
   type Message_Type is record
-    Kind : Ping_Kind;
+    Kind : Ping_Kind_List;
     Host_Id : Socket.Host_Id;
-    Host_Name_Len : Natural;
     Host_Name : Host_Str;
+    Host_Name_Len : Positive;
+    Ping_Stamp, Pong_Stamp : Ada.Calendar.Time;
   end record;
 
   procedure My_Send is new Socket.Send (Message_Type);
@@ -47,19 +90,55 @@ procedure Pingpong is
     Message.Host_Name (1 .. Message.Host_Name_Len) := Local_Host_Name;
   end Fill_Host;
 
+  -- Average delta time info on each remote host
+  type Info_Type is record
+    Host : Message_Type;
+    Nb_Samples : Natural;
+    Average_Delta : Duration;
+  end record;
+  type Info_Access is access all Info_Type;
+  procedure Set (To : out Info_Type; Val : in Info_Type) is
+  begin
+    To := Val;
+  end Set;
+  function "=" (Current : Info_Type; Criteria : Info_Type) return Boolean is
+  begin
+    return Current.Host.Host_Name_Len = Criteria.Host.Host_Name_Len
+    and then Current.Host.Host_Name(1 .. Current.Host.Host_Name_Len)
+           = Criteria.Host.Host_Name(1 .. Criteria.Host.Host_Name_Len);
+  end "=";
+  function Key_Image (Element : Info_Type) return String is
+  begin
+    return Element.Host.Host_Name(1 .. Element.Host.Host_Name_Len);
+  end Key_Image;
+  package Info_List_Mng is new Unique_List (Info_Type, Info_Access, Set,
+                                            "=", Key_Image);
+  Info_List : Info_List_Mng.List_Type;
+
+  -- Message reception (ping or pong)
   function Call_Back (F : in Event_Mng.File_Desc; Read : in Boolean)
                      return Boolean is
     pragma Unreferenced (Read);
-    use type Event_Mng.File_Desc, Socket.Host_Id;
+    use type Event_Mng.File_Desc, Socket.Host_Id, Ada.Calendar.Time;
     Message : Message_Type;
     Message_Len : Natural;
+    End_Stamp : Ada.Calendar.Time;
+    Delta_Time : Duration;
+    Found : Boolean;
+    Info : Info_Type;
+    Info_Acc : Info_Access;
+    Txt : Asu_Us;
   begin
     if F /= Fd then
       Put ("Not same Fd");
       raise Program_Error;
     end if;
+    if Debug then
+      Put ("Receiving");
+    end if;
     begin
-      My_Receive (Soc, Message, Message_Len, Set_For_Reply => False);
+      My_Receive (Soc, Message, Message_Len, Set_For_Reply => not Send_Mode,
+                  Set_Ipm_Iface => Use_Iface);
     exception
       when Socket.Soc_Conn_Lost =>
         Put ("Receives disconnection");
@@ -69,83 +148,156 @@ procedure Pingpong is
       -- No answer nor log of our own ping or pong
      return False;
     end if;
-    Put ("Receives: " & Message.Kind & " from "
-       & Message.Host_Name (1 .. Message.Host_Name_Len));
-    if Message.Kind = Pong then
-      -- No answer to Pong
+    if Debug then
+      Put ("Receives: " & Mixed_Str (Message.Kind'Img) & " from "
+         & Message.Host_Name (1 .. Message.Host_Name_Len));
+    end if;
+    if Message.Kind = Ping then
+      if not Send_Mode then
+        -- Reply mode: answer to Ping if not only Send_mode
+        if Debug then
+          Put ("Sends Pong");
+        end if;
+        Message.Kind := Pong;
+        Fill_Host (Message);
+        Message.Pong_Stamp := Ada.Calendar.Clock;
+        My_Send (Soc, Message);
+      end if;
       return False;
     end if;
-    if Send_Mode then
-      -- Answer to Ping if not only receive_mode
-      Message.Kind := Pong;
-      Fill_Host (Message);
-      My_Send (Soc, Message);
+    -- Handle Pong
+    End_Stamp := Ada.Calendar.Clock;
+    -- Compute delta Pong - (Ping + End) / 2
+    Delta_Time := ( (Message.Pong_Stamp - Message.Ping_Stamp)
+                  + (Message.Pong_Stamp - End_Stamp) ) / 2.0;
+    if Average then
+      -- Compute average
+      Info.Host := Message;
+      Info_List.Search (Info, Found);
+      if not Found then
+        -- First insertion
+        Info.Nb_Samples := 1;
+        Info.Average_Delta := Delta_Time;
+        Info_List.Insert (Info);
+      else
+        Info_List.Get_Access (Info, Info_Acc);
+        -- Average with previous value
+        Info_Acc.Average_Delta :=
+          (Info_Acc.Average_Delta * Info.Nb_Samples + Delta_Time)
+          / Duration (Info_Acc.Nb_Samples + 1);
+        Info_Acc.Nb_Samples := Info_Acc.Nb_Samples + 1;
+        Delta_Time := Info_Acc.Average_Delta;
+      end if;
+      Txt := Asu_Tus ("Average delta");
+    else
+      Txt := Asu_Tus ("Current delta");
     end if;
+    Put (Asu_Ts (Txt) & " of " & Message.Host_Name (1 .. Message.Host_Name_Len)
+         & " is " & Dur_Image (Delta_Time, 3, True));
     return False;
   end Call_Back;
 
   procedure Send_Ping is
     Message : Message_Type;
   begin
+    if Debug then
+      Put ("Sends Ping");
+    end if;
     Message.Kind := Ping;
     Fill_Host (Message);
-    Put ("Sends Ping");
+    Message.Ping_Stamp := Ada.Calendar.Clock;
     My_Send (Soc, Message);
   end Send_Ping;
 
   use type Tcp_Util.Remote_Host_List;
+
 begin
+
   -- Parse arguments
-  Nb_Options := 0;
+  Arg_Dscr := Argument_Parser.Parse (Keys);
+  if not Arg_Dscr.Is_Ok then
+    Error (Arg_Dscr.Get_Error);
+  end if;
+
+  -- Help
+  if Arg_Dscr.Is_Set (1) then
+    Usage;
+    return;
+  end if;
 
   -- Interface
-  begin
-    Iface := Ip_Addr.Parse (Argument.Get_Parameter (1, "i"));
-    Nb_Options := Nb_Options + 1;
-  exception
-    when Argument.Argument_Not_Found =>
-      Iface := (Kind => Tcp_Util.Host_Id_Spec, Id => Socket.No_Host);
-    when others =>
-      raise Arg_Error;
-  end;
+  if Arg_Dscr.Is_Set (2) then
+    begin
+      Iface := Ip_Addr.Parse (Arg_Dscr.Get_Option (2, 1));
+    exception
+      when others =>
+        Error ("Invalid interface specification");
+    end;
+    Use_Iface := True;
+  else
+    -- Default interface
+    Iface := (Kind => Tcp_Util.Host_Id_Spec, Id => Socket.No_Host);
+    Use_Iface := False;
+  end if;
 
   -- Period
-  begin
-    Period := Positive'Value (Argument.Get_Parameter (1, "p"));
-    Nb_Options := Nb_Options + 1;
-  exception
-    when Argument.Argument_Not_Found =>
-      Period := 1;
-  end;
+  if Arg_Dscr.Is_Set (3) then
+    begin
+      Period := Timers.Period_Range'Value (Arg_Dscr.Get_Option (3, 1));
+    exception
+      when others =>
+        Error ("Invalid period specification");
+    end;
+  else
+    -- No period => single shot
+    Period := 0.0;
+  end if;
 
   -- Mode
   Send_Mode := True;
-  Receive_Mode := True;
-  if Argument.Is_Set (1, "s") then
-   if Argument.Get_Parameter (1, "s") /= "" then
-     raise Arg_Error;
-   end if;
-   -- Only send
-   Receive_Mode := False;
-   Nb_Options := Nb_Options + 1;
+  if Arg_Dscr.Is_Set (4) then
+    if Arg_Dscr.Is_Set (5) then
+      Error ("Send and reply modes are mutually exclusive");
+    end if;
+    -- Only receive
+    Send_Mode := False;
+    if Arg_Dscr.Is_Set (3) then
+      Error ("Reply mode and period options are mutually exclusive");
+    end if;
+  elsif Arg_Dscr.Is_Set (5) then
+    -- Only send
+    Send_Mode := True;
+  else
+    Error ("Send or reply mode is required");
   end if;
-  if Argument.Is_Set (1, "r") then
-   if Argument.Get_Parameter (1, "r") /= "" then
-     raise Arg_Error;
-   end if;
-   if Argument.Is_Set (1, "s") then
-     -- Not both
-     raise Arg_Error;
-   end if;
-   -- Only receive
-   Send_Mode := False;
-   Nb_Options := Nb_Options + 1;
+
+  -- Single shot
+  if Period /= 0.0 then
+    One_Shot := False;
+  else
+    One_Shot := Send_Mode;
+    Period := 1.0;
   end if;
+
+  -- Average mode
+  Average := Arg_Dscr.Is_Set (6);
+  if Average and then not Send_Mode then
+    Error ("Average requires sending");
+  end if;
+  if Average and then One_Shot then
+    Error ("Average requires non null period");
+  end if;
+
+  Debug := Arg_Dscr.Is_Set (7);
 
   -- No other options are supported
   --  only one extra arg, the address that is parsed here after
-  if Argument.Get_Nbre_Arg /= Nb_Options + 1 then
-    raise Arg_Error;
+  -- Muust be after options
+  if Arg_Dscr.Get_Nb_Embedded_Arguments /= 0 then
+    Error ("Address and port must appear after options");
+  end if;
+  if Arg_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) /= 1 then
+    Error ("Address and port must be defined once and only once");
   end if;
 
   -- Set interface from host
@@ -157,8 +309,7 @@ begin
           Id => Socket.Host_Id_Of (Tcp_Util.Name_Of (Iface.Name)));
     exception
       when Socket.Soc_Name_Not_Found =>
-        Basic_Proc.Put_Line_Error ("Error: Unknown interface name "
-                                 & Tcp_Util.Name_Of (Iface.Name));
+        Error("Unknown interface name " & Tcp_Util.Name_Of (Iface.Name));
       raise;
     end;
   end if;
@@ -172,7 +323,7 @@ begin
   -- Ipm address and port
   declare
     Addr : constant String
-         := Argument.Get_Parameter (Param_Key => Argument.Not_Key);
+         := Arg_Dscr.Get_Option (Argument_Parser.No_Key_Index);
     Index : constant Natural := String_Mng.Locate (Addr, ":");
     Lan : constant Tcp_Util.Remote_Host
         := Ip_Addr.Parse (Addr(1 .. Index - 1));
@@ -188,8 +339,7 @@ begin
                                         Socket.Udp);
       exception
         when Socket.Soc_Name_Not_Found =>
-          Basic_Proc.Put_Line_Error ("Error: Unknown port name "
-                                 & Tcp_Util.Name_Of (Port.Name));
+          Error ("Unknown port name " & Tcp_Util.Name_Of (Port.Name));
           raise;
       end;
     else
@@ -197,33 +347,29 @@ begin
     end if;
 
     -- Set interface
-    if Iface.Id /= Socket.No_Host then
+    if Use_Iface then
       if Send_Mode then
         Socket.Set_Sending_Ipm_Interface (Soc, Iface.Id);
-      end if;
-      if Receive_Mode then
+      else
         Socket.Set_Reception_Ipm_Interface (Soc, Iface.Id);
       end if;
     end if;
 
-    -- Always set dist
+    -- Always set dest
     if Lan.Kind = Tcp_Util.Host_Name_Spec then
       begin
         Socket.Set_Destination_Name_And_Port (Soc, True,
                  Tcp_Util.Name_Of (Lan.Name), Port_Num);
       exception
         when Socket.Soc_Name_Not_Found =>
-          Basic_Proc.Put_Line_Error ("Error: Unknown LAN name "
-                                   & Tcp_Util.Name_Of (Lan.Name));
+          Error ("Unknown LAN name " & Tcp_Util.Name_Of (Lan.Name));
           raise;
       end;
     else
       Socket.Set_Destination_Host_And_Port (Soc, Lan.Id, Port_Num);
     end if;
-    -- Bind if reeive
-    if Receive_Mode then
-      Socket.Link_Port (Soc, Port_Num);
-    end if;
+    -- Bind
+    Socket.Link_Port (Soc, Port_Num);
   end;
   Put ("Initialized on " & Local_Host_Name);
 
@@ -232,7 +378,8 @@ begin
     if Send_Mode then
       Send_Ping;
     end if;
-    exit when Event_Mng.Wait (Period * 1_000);
+    exit when Event_Mng.Wait (Integer (Period * 1000.0))
+    or else One_Shot;
   end loop;
 
   -- Close
@@ -242,9 +389,9 @@ begin
   end if;
 
 exception
-  when Error:others =>
-    Put ("Exception: " & Ada.Exceptions.Exception_Name (Error) & " raised");
-    Put ("Invalid arguments. Usage: " & Argument.Get_Program_Name
-  & " <ipm_addr>:<port_num> [ -i<interface> ] [ -p<period_sec> ] [ -s | -r ]");
+  when Abort_Error =>
+    null;
+  when Err:others =>
+    Error ("Exception " & Ada.Exceptions.Exception_Name (Err) & " raised.");
 end Pingpong;
 
