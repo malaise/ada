@@ -17,9 +17,11 @@ package body Mesu_Sel is
   begin
     -- Delete dest list
     To.Delete_List;
-    To.Insert_Copy (From);
-    -- Set same pos
-    To.Move_At (From.Get_Position);
+    if not From.Is_Empty then
+      To.Insert_Copy (From);
+      -- Set same pos
+      To.Move_At (From.Get_Position);
+    end if;
   end Copy_List;
 
   procedure Save_List is
