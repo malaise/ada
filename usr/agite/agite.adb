@@ -1,23 +1,33 @@
 with As.U; use As.U;
 with Con_Io, Afpx.List_Manager, Basic_Proc, Int_Image, Directory, Dir_Mng,
-     Sys_Calls, Argument, Socket, String_Mng;
+     Sys_Calls, Argument, Argument_Parser, Socket, String_Mng;
 with Utils, Git_If, Config, Bookmarks, History;
 procedure Agite is
 
-  -- Error message
+  -- Usage and Error message
+  procedure Usage is
+  begin
+    Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
+       & " [ -n | --no_history ] [ <path> | -p | --previous ]");
+  end Usage;
   procedure Error (Msg : in String) is
   begin
-    if Msg /= "" then
-      Basic_Proc.Put_Line_Error ("ERROR: " & Msg & ".");
-    end if;
-    Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
-                             & " [ <path> | --previous | --no_history ]");
+    Basic_Proc.Put_Line_Error ("ERROR: " & Msg & ".");
+    Usage;
     Basic_Proc.Set_Error_Exit_Code;
     raise Utils.Exit_Requested;
   end Error;
 
-  -- Save history or not
-  Update_History : Boolean := True;
+  -- Options
+  Keys : constant Argument_Parser.The_Keys_Type := (
+    1 => ('h', Asu_Tus ("help"), False, False),
+    2 => ('n', Asu_Tus ("no_history"), False, False),
+    3 => ('p', Asu_Tus ("previous"), False, False));
+  Arg_Dscr : Argument_Parser.Parsed_Dscr;
+
+  -- Got to previous dir (if any) / Save history
+  Goto_Previous : Boolean;
+  Update_History : Boolean;
 
   -- Version Stuff
   Version : Git_If.Version_Rec;
@@ -316,37 +326,47 @@ procedure Agite is
 
 begin
   -- Check/Parse arguments
-  if Argument.Get_Nbre_Arg > 1 then
-    Error ("Invalid arguments");
-  elsif Argument.Get_Nbre_Arg = 1 then
-    begin
-      if Argument.Get_Parameter (Occurence => 1) = "--previous" then
-        if Config.Prev_Dir /= "" then
-          Directory.Change_Current (Config.Prev_Dir);
-        end if;
-      elsif Argument.Get_Parameter (Occurence => 1) = "--no_history" then
-        Update_History := False;
-      elsif Argument.Get_Parameter = "-h"
-      or else Argument.Get_Parameter = "--help" then
-        Error ("");
-      else
-         Directory.Change_Current (Argument.Get_Parameter (Occurence => 1));
-      end if;
-    exception
-      when Directory.Name_Error =>
-        null;
-    end;
-
+   Arg_Dscr := Argument_Parser.Parse (Keys);
+  if not Arg_Dscr.Is_Ok then
+    Error (Arg_Dscr.Get_Error);
   end if;
+
+  if Arg_Dscr.Is_Set (1) then
+    -- Help
+    Usage;
+    return;
+  end if;
+
+  -- No history
+  Update_History := not Arg_Dscr.Is_Set (2);
+
+  -- Goto previous or provided path
+  Goto_Previous := Arg_Dscr.Is_Set (3);
+  begin
+    if Arg_Dscr.Is_Set (Argument_Parser.No_Key_Index) then
+      if Goto_Previous then
+        Error ("""Previous"" option and path are mutually exclusive");
+      end if;
+      -- Go to path
+      Directory.Change_Current (Arg_Dscr.Get_Option (
+                           Argument_Parser.No_Key_Index));
+    elsif Goto_Previous then
+      -- Goto previous if possible
+      if Config.Prev_Dir /= "" then
+        Directory.Change_Current (Config.Prev_Dir);
+      end if;
+    end if;
+  exception
+    when Directory.Name_Error =>
+        null;
+  end;
 
   -- Get and check version
   begin
     Version := Git_If.Get_Version;
   exception
     when Git_If.No_Git =>
-      Basic_Proc.Put_Line_Error ("Can't find Git");
-      Basic_Proc.Set_Error_Exit_Code;
-      return;
+      Error ("Can't find Git");
   end;
   if Version.Major < Ref_Version.Major then
     raise Incorrect_Version;
