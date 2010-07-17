@@ -3,7 +3,8 @@ with Dynamic_List, Sys_Calls;
 package Git_If is
 
   -- Git version
-  -- No_Git is call to "git --version" fails
+  -- No_Git is raised if "git --version" fails
+  -- Calls Command
   type Version_Rec is record
     Major, Medium, Minor : Natural;
   end record;

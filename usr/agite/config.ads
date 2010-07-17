@@ -25,9 +25,10 @@ package Config is
   type Bookmark_Array is array (Positive range <>) of Bookmark_Rec;
 
   function Get_Bookmarks return Bookmark_Array;
+  function Get_Bookmark (Index : Positive) return Bookmark_Rec;
 
   procedure Del_Bookmark (Index : in Positive);
-  procedure Add_Bookmark (After_Index : in Natural; Name, Path : in String);
+  procedure Add_Bookmark (After_Index : in Natural; Bookmark : in Bookmark_Rec);
   procedure Move_Bookmark (Index : in Positive; Up : in Boolean);
 
   Invalid_Config : exception;

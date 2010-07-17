@@ -124,30 +124,37 @@ package body Config is
 
   -- Bookmarks
   function Get_Bookmarks return Bookmark_Array is
-    Bookmark : Xml_Parser.Element_Type;
   begin
     Load;
     declare
       Result : Bookmark_Array (1 .. Ctx.Get_Nb_Children (Bookmarks));
     begin
       for I in Result'Range loop
-        Bookmark := Ctx.Get_Child (Bookmarks, I);
-        if Ctx.Get_Nb_Attributes (Bookmark) = 0 then
-          Result(I).Name := Asu_Null;
-        else
-          Result(I).Name := Ctx.Get_Attribute (Bookmark, 1).Value;
-        end if;
-        if Ctx.Get_Nb_Children (Bookmark) /= 1 then
-          -- No bookmark text: Separator
-          Result(I).Path := Asu_Null;
-        else
-          -- Some bookmark text: full bookmark
-          Result(I).Path := Asu_Us'(Ctx.Get_Text (Ctx.Get_Child (Bookmark, 1)));
-        end if;
+        Result(I) := Get_Bookmark (I);
       end loop;
       return Result;
     end;
   end Get_Bookmarks;
+
+  function Get_Bookmark (Index : Positive) return Bookmark_Rec is
+    Bookmark : Xml_Parser.Element_Type;
+    Result : Bookmark_Rec;
+  begin
+    Bookmark := Ctx.Get_Child (Bookmarks, Index);
+    if Ctx.Get_Nb_Attributes (Bookmark) = 0 then
+      Result.Name := Asu_Null;
+    else
+      Result.Name := Ctx.Get_Attribute (Bookmark, 1).Value;
+    end if;
+    if Ctx.Get_Nb_Children (Bookmark) /= 1 then
+      -- No bookmark text: Separator
+      Result.Path := Asu_Null;
+    else
+      -- Some bookmark text: full bookmark
+      Result.Path := Asu_Us'(Ctx.Get_Text (Ctx.Get_Child (Bookmark, 1)));
+    end if;
+    return Result;
+  end Get_Bookmark;
 
   procedure Del_Bookmark (Index : in Positive) is
     Bookmark : Xml_Parser.Element_Type;
@@ -159,7 +166,8 @@ package body Config is
     Save;
   end Del_Bookmark;
 
-  procedure Add_Bookmark (After_Index : in Natural; Name, Path : in String) is
+  procedure Add_Bookmark (After_Index : in Natural;
+                          Bookmark : in Bookmark_Rec) is
     New_Node : Xml_Parser.Node_Type;
   begin
     Load;
@@ -174,13 +182,16 @@ package body Config is
       Ctx.Add_Brother (New_Node, "bookmark", Xml_Parser.Element,
                        New_Node, True);
     end if;
+    -- Bookmarks can be empty (when separators)
+    Ctx.Set_Put_Empty (New_Node, True);
     -- Add its name attribute
-    if Name /= "" then
-      Ctx.Add_Attribute (New_Node, "Name", Name);
+    if not Asu_Is_Null (Bookmark.Name) then
+      Ctx.Add_Attribute (New_Node, "Name", Asu_Ts (Bookmark.Name));
     end if;
     -- Add its text
-    if Path /= "" then
-      Ctx.Add_Child (New_Node, Path, Xml_Parser.Text, New_Node);
+    if not Asu_Is_Null (Bookmark.Path) then
+      Ctx.Add_Child (New_Node, Asu_Ts (Bookmark.Path), Xml_Parser.Text,
+                     New_Node);
     end if;
     Save;
   end Add_Bookmark;
@@ -204,9 +215,9 @@ package body Config is
     Ctx.Delete_Node (Bookmark, Bookmark);
     -- Insert after new index
     if Up then
-      Add_Bookmark (Index - 2, Asu_Ts (Name), Asu_Ts (Path));
+      Add_Bookmark (Index - 2, (Name,Path));
     else
-      Add_Bookmark (Index, Asu_Ts (Name), Asu_Ts (Path));
+      Add_Bookmark (Index, (Name, Path));
     end if;
   end Move_Bookmark;
 

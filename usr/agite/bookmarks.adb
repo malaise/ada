@@ -9,6 +9,7 @@ package body Bookmarks is
     return Asu_Ts (Config.Get_Bookmarks (Index).Path);
   end Dir_Of;
 
+  -- Insert in Afpx list
   procedure Insert_List (Str : in String) is
     Line : Afpx.Line_Rec;
   begin
@@ -16,6 +17,49 @@ package body Bookmarks is
          Utils.Normalize (Str, Afpx.Get_Field_Width (Afpx.List_Field_No)) );
     Afpx.Line_List.Insert (Line);
   end Insert_List;
+
+  -- Image of a bookmark
+  function Image (Bookmark : Config.Bookmark_Rec) return String is
+    Res : Asu_Us;
+    use type Asu_Us;
+  begin
+    if not Asu_Is_Null (Bookmark.Path) then
+      -- Regular bookmark
+      if not Asu_Is_Null (Bookmark.Name) then
+        -- Regular bookmark with name
+        Res := "(" & Bookmark.Name & ") " & Bookmark.Path;
+      else
+        -- Regular bookmark without name
+        Res := Bookmark.Path;
+      end if;
+    elsif not Asu_Is_Null (Bookmark.Name) then
+      -- Separator with name
+      Res := "----- " & Bookmark.Name & " -----";
+    else
+      -- Emty separator
+      null;
+    end if;
+    return Asu_Ts (Res);
+  end Image;
+
+  -- Re- set the list of bookmarks
+  procedure Load_List is
+    Bookmarks : constant Config.Bookmark_Array := Config.Get_Bookmarks;
+  begin
+    Afpx.Line_List.Delete_List;
+    for I in Bookmarks'Range loop
+      Insert_List (Image (Bookmarks(I)));
+    end loop;
+    if not Afpx.Line_List.Is_Empty then
+      Afpx.Line_List.Rewind;
+    end if;
+  end Load_List;
+
+  -- Bookmark name (from Get field)
+  function Get_Name return String is
+  begin
+    return Utils.Parse_Spaces (Afpx.Decode_Field (12, 0, False));
+  end Get_Name;
 
   -- Handle Bookmarks screen
   -- Returns new dir to change to, or "" if unchanged
@@ -32,6 +76,12 @@ package body Bookmarks is
     Curr_Dir : constant String := Directory.Get_Current;
     Dir_Width : constant Afpx.Width_Range := Afpx.Get_Field_Width (10);
 
+    -- Current position in Afpx list
+    Position : Positive;
+
+    -- Bookmark
+    Bookmark : Config.Bookmark_Rec;
+
     Dummy : Boolean;
 
   begin
@@ -47,36 +97,7 @@ package body Bookmarks is
     Afpx.Encode_Field (10, (0, 0), Utils.Normalize (Curr_Dir, Dir_Width));
 
     -- Encode Bookmarks
-    Afpx.Line_List.Delete_List;
-    declare
-      Bookmarks : constant Config.Bookmark_Array := Config.Get_Bookmarks;
-      Mark : Asu_Us;
-      use type Asu_Us;
-    begin
-      for I in Bookmarks'Range loop
-        Mark := Asu_Null;
-        if not Asu_Is_Null (Bookmarks(I).Path) then
-          -- Regular bookmark
-          if not Asu_Is_Null (Bookmarks(I).Name) then
-            -- Regular bookmark with name
-            Mark := "(" & Bookmarks(I).Name & ") " & Bookmarks(I).Path;
-          else
-            -- Regular bookmark without name
-            Mark := Bookmarks(I).Path;
-          end if;
-        elsif not Asu_Is_Null (Bookmarks(I).Name) then
-          -- Separator with name
-          Mark := "----- " & Bookmarks(I).Name & " -----";
-        else
-          -- Emty separator
-          null;
-        end if;
-        Insert_List (Asu_Ts (Mark));
-      end loop;
-    end;
-    if not Afpx.Line_List.Is_Empty then
-      Afpx.Line_List.Rewind;
-    end if;
+    Load_List;
 
     -- Main loop
     loop
@@ -125,19 +146,46 @@ package body Bookmarks is
               -- Scroll list
               Afpx.List_Manager.Scroll(Ptg_Result.Field_No
                                      - Utils.List_Scroll_Fld_Range'First + 1);
+            when 13 =>
+              -- Add current
+              Bookmark := (Asu_Tus (Get_Name), Asu_Tus (Directory.Get_Current));
+              if Afpx.Line_List.Is_Empty then
+                Config.Add_Bookmark (0, Bookmark);
+              else
+                Config.Add_Bookmark (Afpx.Line_List.Get_Position, Bookmark);
+              end if;
+              Insert_List (Image (Bookmark));
+            when 14 =>
+              -- Add separator
+              Bookmark := (Asu_Tus (Get_Name), Asu_Null);
+              if Afpx.Line_List.Is_Empty then
+                Config.Add_Bookmark (0, Bookmark);
+              else
+                Config.Add_Bookmark (Afpx.Line_List.Get_Position, Bookmark);
+              end if;
+              Insert_List (Image (Bookmark));
+
+            when 16 =>
+              -- Move bookmark up
+              Position := Afpx.Line_List.Get_Position;
+              if Position /= 1 then
+                Config.Move_Bookmark (Position, Up => True);
+                Load_List;
+                Afpx.Line_List.Move_At (Position - 1);
+              end if;
+            when 17 =>
+              -- Move bookmark down
+              Position := Afpx.Line_List.Get_Position;
+              if Position /= Afpx.Line_List.List_Length then
+                Config.Move_Bookmark (Position, Up => False);
+                Load_List;
+                Afpx.Line_List.Move_At (Position + 1);
+              end if;
+
             when 18 =>
               -- Del
               Config.Del_Bookmark (Afpx.Line_List.Get_Position);
               Afpx.Line_List.Delete (Moved => Dummy);
-            when 13 =>
-              -- Add current
-              if Afpx.Line_List.Is_Empty then
-                Config.Add_Bookmark (0, "", Directory.Get_Current);
-              else
-                Config.Add_Bookmark (Afpx.Line_List.Get_Position,
-                                     "", Directory.Get_Current);
-              end if;
-              Insert_List (Directory.Get_Current);
             when 19 =>
               -- Back
               return "";

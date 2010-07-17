@@ -256,7 +256,6 @@ procedure Agite is
     Redisplay := False;
     Afpx.Encode_Field (17, (0, 0), Host_Str);
     Change_Dir;
-    Encode_Files;
   end;
 
   procedure Edit (File_Name : in String) is
