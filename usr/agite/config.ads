@@ -27,7 +27,8 @@ package Config is
   function Get_Bookmarks return Bookmark_Array;
 
   procedure Del_Bookmark (Index : in Positive);
-  procedure Add_Bookmark (After_Index : in Natural; Bookmark : in String);
+  procedure Add_Bookmark (After_Index : in Natural; Name, Path : in String);
+  procedure Move_Bookmark (Index : in Positive; Up : in Boolean);
 
   Invalid_Config : exception;
 

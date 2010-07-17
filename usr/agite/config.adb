@@ -51,6 +51,21 @@ package body Config is
     end loop;
   end Load;
 
+  -- Save the conf
+  procedure Save is
+    Ok : Boolean;
+  begin
+    -- Check Ctx, it is Ok for sure but this correctly sets
+    --  Is_Mixed to False on inserted bookmarks
+    Ctx.Check (Ok, null);
+    if not Ok then
+      Basic_Proc.Put_Line_Error ("Check error on config: "
+                                 & Ctx.Get_Parse_Error_Message);
+      raise Invalid_Config;
+    end if;
+    Ctx.Put (File_Name);
+  end Save;
+
   -- X terminal
   function Xterminal return String is
   begin
@@ -91,7 +106,7 @@ package body Config is
       Ctx.Delete_Children (Prev);
     end if;
     Ctx.Add_Child (Prev, Dir, Xml_Parser.Text, New_Node);
-    Ctx.Put (File_Name);
+    Save;
   end Save_Curr_Dir;
 
   function Prev_Dir return String is
@@ -141,10 +156,10 @@ package body Config is
     Bookmark := Ctx.Get_Child (Bookmarks, Index);
     -- Del Bookmark marker and its text
     Ctx.Delete_Node (Bookmark, Bookmark);
-    Ctx.Put (File_Name);
+    Save;
   end Del_Bookmark;
 
-  procedure Add_Bookmark (After_Index : in Natural; Bookmark : in String) is
+  procedure Add_Bookmark (After_Index : in Natural; Name, Path : in String) is
     New_Node : Xml_Parser.Node_Type;
   begin
     Load;
@@ -159,10 +174,41 @@ package body Config is
       Ctx.Add_Brother (New_Node, "bookmark", Xml_Parser.Element,
                        New_Node, True);
     end if;
+    -- Add its name attribute
+    if Name /= "" then
+      Ctx.Add_Attribute (New_Node, "Name", Name);
+    end if;
     -- Add its text
-    Ctx.Add_Child (New_Node, Bookmark, Xml_Parser.Text, New_Node);
-    Ctx.Put (File_Name);
+    if Path /= "" then
+      Ctx.Add_Child (New_Node, Path, Xml_Parser.Text, New_Node);
+    end if;
+    Save;
   end Add_Bookmark;
+
+  procedure Move_Bookmark (Index : in Positive; Up : in Boolean) is
+    Bookmark : Xml_Parser.Element_Type;
+    Name, Path : Asu_Us;
+  begin
+    -- Move to bookmark at index
+    Load;
+    Bookmark := Ctx.Get_Child (Bookmarks, Index);
+    -- Read its name and path
+    if Ctx.Get_Nb_Attributes (Bookmark) /= 0 then
+      Name := Ctx.Get_Attribute (Bookmark, 1).Value;
+    end if;
+    if Ctx.Get_Nb_Children (Bookmark) /= 0 then
+      Path := Ctx.Get_Text (Ctx.Get_Child (Bookmark, 1));
+    end if;
+
+    -- Delete this bookmark
+    Ctx.Delete_Node (Bookmark, Bookmark);
+    -- Insert after new index
+    if Up then
+      Add_Bookmark (Index - 2, Asu_Ts (Name), Asu_Ts (Path));
+    else
+      Add_Bookmark (Index, Asu_Ts (Name), Asu_Ts (Path));
+    end if;
+  end Move_Bookmark;
 
 end Config;
 

@@ -375,7 +375,7 @@ package Xml_Parser is
                           Element : Element_Type) return Boolean;
 
   -- Is this element Mixed: either Mixed in Dtd or its first child is Text
-  -- Set by the parsing or during the Generator.Check
+  -- Set by the parsing or by calling Check
   function Get_Is_Mixed (Ctx     : Ctx_Type;
                          Element : Element_Type) return Boolean;
 

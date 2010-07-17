@@ -186,6 +186,9 @@ package Xml_Parser.Generator is
   Default_Width : constant Natural := 80;
   Infinite_Width : constant Natural := 0;
   -- Put in a file (stdout if name is empty)
+  -- It is important (but not mandatory) that the Ctx has been checked
+  --  (Xml_Parser.Check) before being put if new nodes have been inserted
+  --  so that their Is_Mixed attribute is set correctly
   -- Raises File_Error if Pb with file
   Stdout : constant String := "";
   procedure Put (Ctx       : in out Ctx_Type;
@@ -194,6 +197,7 @@ package Xml_Parser.Generator is
                  Width     : in Natural := Default_Width);
 
   -- Dumps in a string
+  -- Same as for Put, the Ctx should be checked before if new nodes
   function Set (Ctx    : Ctx_Type;
                 Format : Format_Kind_List := Default_Format;
                 Width  : Natural := Default_Width) return String;

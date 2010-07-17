@@ -26,7 +26,6 @@ package body Bookmarks is
     Insert       : Boolean;
     Redisplay    : Boolean;
     Ptg_Result   : Afpx.Result_Rec;
-    Background : Con_Io.Effective_Colors;
     use type Afpx.Absolute_Field_Range;
 
     -- Current dir
@@ -38,7 +37,7 @@ package body Bookmarks is
   begin
     -- Init Afpx
     Afpx.Use_Descriptor (2);
-    Cursor_Field := 1;
+    Cursor_Field := Afpx.Next_Cursor_Field (0);
     Cursor_Col := 0;
     Insert := False;
     Redisplay := True;
@@ -81,18 +80,17 @@ package body Bookmarks is
 
     -- Main loop
     loop
-      -- No Goto nor Del if no Bookmark
+      -- No Goto nor Del nor Move if no Bookmark
       if Afpx.Line_List.Is_Empty then
-        Background := Afpx.Get_Descriptor_Background;
-        Afpx.Set_Field_Protection (11, True);
-        Afpx.Set_Field_Colors (11, Foreground => Con_Io.Color_Of ("Black"),
-                                   Background => Background);
-        Afpx.Set_Field_Protection (12, True);
-        Afpx.Set_Field_Colors (12, Foreground => Con_Io.Color_Of ("Black"),
-                                   Background => Background);
+        Utils.Protect_Field (15);
+        Utils.Protect_Field (16);
+        Utils.Protect_Field (17);
+        Utils.Protect_Field (18);
       else
-        Afpx.Reset_Field (11);
-        Afpx.Reset_Field (12);
+        Afpx.Reset_Field (15);
+        Afpx.Reset_Field (16);
+        Afpx.Reset_Field (17);
+        Afpx.Reset_Field (18);
       end if;
 
       Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
@@ -113,7 +111,7 @@ package body Bookmarks is
 
         when Afpx.Mouse_Button =>
           case Ptg_Result.Field_No is
-            when Afpx.List_Field_No | 11 =>
+            when Afpx.List_Field_No | 15 =>
               -- Double click or Goto => move to bookmark
               declare
                 Dir : constant String := Dir_Of (Afpx.Line_List.Get_Position);
@@ -127,20 +125,20 @@ package body Bookmarks is
               -- Scroll list
               Afpx.List_Manager.Scroll(Ptg_Result.Field_No
                                      - Utils.List_Scroll_Fld_Range'First + 1);
-            when 12 =>
+            when 18 =>
               -- Del
               Config.Del_Bookmark (Afpx.Line_List.Get_Position);
               Afpx.Line_List.Delete (Moved => Dummy);
             when 13 =>
               -- Add current
               if Afpx.Line_List.Is_Empty then
-                Config.Add_Bookmark (0, Directory.Get_Current);
+                Config.Add_Bookmark (0, "", Directory.Get_Current);
               else
                 Config.Add_Bookmark (Afpx.Line_List.Get_Position,
-                                     Directory.Get_Current);
+                                     "", Directory.Get_Current);
               end if;
               Insert_List (Directory.Get_Current);
-            when 14 =>
+            when 19 =>
               -- Back
               return "";
             when others =>

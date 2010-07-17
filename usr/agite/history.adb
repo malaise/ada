@@ -65,7 +65,6 @@ package body History is
 
     -- Init Afpx
     procedure Init is
-      Background : Con_Io.Effective_Colors;
     begin
       Afpx.Use_Descriptor (3);
       Cursor_Field := 1;
@@ -90,12 +89,7 @@ package body History is
                  Utils.Normalize ("/" , Afpx.Get_Field_Width (10)));
         end if;
         -- Lock button View
-        Background := Afpx.Get_Descriptor_Background;
-        Afpx.Set_Field_Protection (17, True);
-        Afpx.Set_Field_Colors (17,
-          Foreground => Con_Io.Color_Of ("Black"),
-          Background => Background);
-
+        Utils.Protect_Field (17);
       end if;
     end Init;
 
