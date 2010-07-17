@@ -13,6 +13,8 @@
 static fd_set global_read_mask;
 static fd_set global_write_mask;
 
+/* Highest fd even set */
+static int highest_fd = -1;
 /* Highest fd set in mask */
 static int last_fd = -1;
 /* Fd previously returned */
@@ -34,6 +36,13 @@ int evt_add_fd (int fd, boolean read) {
   if (fd > last_fd) {
     last_fd = fd;
   }
+  if (last_fd > highest_fd) {
+    highest_fd = last_fd;
+  }
+#ifdef DEBUG
+  fprintf (stderr, "Added fd %d, last %d, highest %d\n",
+                   fd, last_fd, highest_fd);
+#endif
   return (WAIT_OK);
 }
 
@@ -59,14 +68,18 @@ int evt_del_fd (int fd, boolean read) {
   }
   FD_CLR (fd, mask);
 
-  for (i = NFDBITS - 1; i >= 0; i--) {
+  last_fd = 0;
+  for (i = highest_fd; i >= 0; i--) {
     if ( FD_ISSET(i, &global_read_mask)
       || FD_ISSET(i, &global_write_mask) ) {
       last_fd = i;
-      return (WAIT_OK);
+      break;
     }
   }
-  last_fd = 0;
+#ifdef DEBUG
+  fprintf (stderr, "Deleted fd %d, last %d, highest %d\n",
+                   fd, last_fd, highest_fd);
+#endif
   return (WAIT_OK);
 }
 
