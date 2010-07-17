@@ -149,7 +149,6 @@ procedure Agite is
   procedure Change_Dir (New_Dir : in String := "") is
     Str : constant String
         := Utils.Parse_Spaces (Afpx.Decode_Field (Dir_Field, 0, False));
-    Cur_Dir : constant String := Directory.Get_Current;
     Width : constant Afpx.Width_Range := Afpx.Get_Field_Width (Dir_Field);
   begin
     begin
@@ -169,10 +168,11 @@ procedure Agite is
     exception
       when others =>
         -- Cannot change to new dir or cannot process files (No_Git?)
-        Directory.Change_Current (Cur_Dir);
+        Directory.Change_Current (Directory.Get_Current);
     end;
     Afpx.Clear_Field (Dir_Field);
-    Afpx.Encode_Field (Dir_Field, (0, 0), Utils.Normalize (Cur_Dir, Width));
+    Afpx.Encode_Field (Dir_Field, (0, 0),
+           Utils.Normalize (Directory.Get_Current, Width));
     -- Move cursor col on last significant char
     Cursor_Col := 0;
     declare
@@ -350,7 +350,7 @@ begin
     end if;
   exception
     when Directory.Name_Error =>
-        null;
+      null;
   end;
 
   -- Get and check version
