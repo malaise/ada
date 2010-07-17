@@ -237,6 +237,10 @@ package body Command is
     Command.Mix_Policy := Mix_Policy;
     Event_Mng.Add_Fd_Callback (Spawn_Result.Fd_Out, True, Fd_Cb'Access);
     Event_Mng.Add_Fd_Callback (Spawn_Result.Fd_Err, True, Fd_Cb'Access);
+    if Debug then
+      Ada.Text_Io.Put_Line ("Command: Fds are: " & Spawn_Result.Fd_Out'Img
+                           & " and " & Spawn_Result.Fd_Err'Img);
+    end if;
 
     -- Wait until child ends and no more out/err data
     --  or aborted by sigterm
