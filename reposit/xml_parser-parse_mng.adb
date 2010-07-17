@@ -1642,11 +1642,13 @@ package body Parse_Mng  is
     -- Parse Dtd
     if not Asu_Is_Null (Ctx.Dtd_File) then
       -- Parse alternate Dtd provided by caller
-      Dtd.Parse (Ctx, Adtd, Build_Full_Name (Ctx.Dtd_File));
+      Dtd.Parse (Ctx, Adtd, Build_Full_Name (Ctx.Dtd_File,
+                                       Ctx.Flow.Curr_Flow.Name));
     elsif not Asu_Is_Null (Ctx.Doctype.Name) then
       if not Asu_Is_Null (Ctx.Doctype.File) then
         -- Parse Dtd file set in DOCTYPE of Xml
-        Dtd.Parse (Ctx, Adtd, Build_Full_Name (Ctx.Doctype.File));
+        Dtd.Parse (Ctx, Adtd, Build_Full_Name (Ctx.Doctype.File,
+                                         Ctx.Flow.Curr_Flow.Name));
       end if;
       if not Asu_Is_Null (Ctx.Doctype.Int_Def) then
         -- Parse internal defs
