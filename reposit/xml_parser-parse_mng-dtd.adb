@@ -1121,6 +1121,7 @@ package body Dtd is
                    Adtd : in out Dtd_Type;
                    File_Name : in Asu_Us;
                    Name_Raise_Parse : in Boolean := True) is
+    Close_File : Boolean := False;
     use type Asu_Us;
   begin
     if File_Name = String_Flow then
@@ -1142,6 +1143,7 @@ package body Dtd is
       Ctx.Flow.Curr_Flow.File := new Text_Char.File_Type;
       Ctx.Flow.Files.Push (Ctx.Flow.Curr_Flow.File);
       File_Mng.Open (Asu_Ts (File_Name), Ctx.Flow.Curr_Flow.File.all);
+      Close_File := True;
       Ctx.Flow.Curr_Flow.Is_File := True;
       Ctx.Flow.Curr_Flow.Kind := Dtd_Flow;
       Ctx.Flow.Curr_Flow.Name := File_Name;
@@ -1157,8 +1159,14 @@ package body Dtd is
       Check_Warnings (Ctx, Adtd);
       Trace ("Dtd checked warnings");
     end if;
+    if Close_File then
+      File_Mng.Close (Ctx.Flow.Curr_Flow.File.all);
+    end if;
   exception
     when File_Error =>
+      if Close_File then
+        File_Mng.Close (Ctx.Flow.Curr_Flow.File.all);
+      end if;
       -- Can only be raised if not internal nor string flow
       if Name_Raise_Parse then
         Util.Error (Ctx.Flow, "Cannot open dtd file " & Asu_Ts (File_Name));
@@ -1166,6 +1174,9 @@ package body Dtd is
         raise;
       end if;
     when Entity_Mng.Entity_Forbidden =>
+      if Close_File then
+        File_Mng.Close (Ctx.Flow.Curr_Flow.File.all);
+      end if;
       Util.Error (Ctx.Flow, "Forbidden entity reference in dtd");
   end Parse;
 

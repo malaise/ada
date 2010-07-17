@@ -661,6 +661,7 @@ package body Parse_Mng  is
     Trace ("Ext expanded as >" & Asu_Ts(Text) & "<");
 
     -- Done: restore flow
+    File_Mng.Close (Ctx.Flow.Curr_Flow.File.all);
     Reset (Ctx.Flow.Curr_Flow);
     Util.Pop_Flow (Ctx.Flow);
     Ctx.Flow.Recording := Is_Recorded;
