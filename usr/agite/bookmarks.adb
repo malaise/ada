@@ -56,9 +56,14 @@ package body Bookmarks is
   end Load_List;
 
   -- Bookmark name (from Get field)
+  Cursor_Col : Con_Io.Col_Range;
   function Get_Name return String is
+    Str : constant String
+        := Utils.Parse_Spaces (Afpx.Decode_Field (12, 0, False));
   begin
-    return Utils.Parse_Spaces (Afpx.Decode_Field (12, 0, False));
+    Afpx.Clear_Field (12);
+    Cursor_Col := 0;
+    return Str;
   end Get_Name;
 
   -- Handle Bookmarks screen
@@ -66,7 +71,6 @@ package body Bookmarks is
   function Handle return String is
     -- Afpx stuff
     Cursor_Field : Afpx.Field_Range;
-    Cursor_Col   : Con_Io.Col_Range;
     Insert       : Boolean;
     Redisplay    : Boolean;
     Ptg_Result   : Afpx.Result_Rec;
