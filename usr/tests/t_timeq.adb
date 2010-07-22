@@ -1,6 +1,6 @@
 -- Test timed queue
 with Ada.Text_Io, Ada.Calendar, Ada.Characters.Latin_1;
-with Argument, Queues.Timed, Basic_Proc, Get_Float;
+with Argument, Queues.Timed, Basic_Proc, Get_Float, Lower_Char;
 procedure T_Timeq is
 
   procedure Usage is
@@ -47,10 +47,10 @@ procedure T_Timeq is
     Val_Queue.Push (Vals, 4, 4.0);
     Val_Queue.Push (Vals, 5, 5.0);
     delay 3.0;
-    Ada.Text_Io.Put_Line ("Getting first without expire");
+    Ada.Text_Io.Put_Line ("Popping first without expire");
     Val_Queue.Pop (Vals, V);
     Ada.Text_Io.Put_Line ("Got" & Val_Range'Image(V));
-    Ada.Text_Io.Put_Line ("Putting 66 then getting all");
+    Ada.Text_Io.Put_Line ("Putting 66 then popping all");
     Val_Queue.Push (Vals, 6, (0, 6.0));
     Pop;
     -- Step 2, test auto expire on get
@@ -75,11 +75,11 @@ procedure T_Timeq is
     Val_Queue.Push (Vals, 1, (0, 1.0));
     Val_Queue.Push (Vals, 3, (0, 3.0));
     delay 1.0;
-    Ada.Text_Io.Put_Line ("Expiring then getting all");
+    Ada.Text_Io.Put_Line ("Expiring then popping all");
     Val_Queue.Expire (Vals);
     Pop;
     -- Step 4, test clear
-    Ada.Text_Io.Put_Line ("Putting 11 and 66, cleaning then getting all");
+    Ada.Text_Io.Put_Line ("Putting 11 and 66, cleaning then popping all");
     Val_Queue.Push (Vals, 1, (0, 1.0));
     Val_Queue.Push (Vals, 6, (0, 6.0));
     Val_Queue.Clear (Vals);
@@ -94,17 +94,19 @@ procedure T_Timeq is
   B : Boolean;
   D : Ada.Calendar.Day_Duration;
 begin
-
+    Ada.Text_Io.Put_Line (
+      "Insert(Value, Duration) Pop Get(Value) Expire Clear eXit Autotest> ");
   loop
-    Ada.Text_Io.Put ("> ");
+    Ada.Text_Io.Put ("Ivd | P | Gv | E | C | X | A ? ");
     Ada.Text_Io.Get_Line (Str, Len);
     if Len = 0 then
       C := Ada.Characters.Latin_1.Nul;
     else
-      C := Str(1);
+      C := Lower_Char (Str(1));
     end if;
     case C is
       when 'i' =>
+        -- Insert
         -- Parse value and duration
         if Len < 3 then
           raise Constraint_Error;
@@ -117,7 +119,8 @@ begin
           when Val_Queue.Timed_Full =>
             Ada.Text_Io.Put_Line ("EXCEPTION Timed_Full");
         end;
-      when 'o' =>
+      when 'p' =>
+        -- Pop
         begin
           Val_Queue.Pop (Vals, V);
           Ada.Text_Io.Put_Line ("Popped " & V'Img);
@@ -126,6 +129,7 @@ begin
             Ada.Text_Io.Put_Line ("EXCEPTION Timed_Empty");
         end;
       when 'g' =>
+        -- Get
         -- Parse value
         if Len < 2 then
           raise Constraint_Error;
@@ -138,10 +142,13 @@ begin
           Ada.Text_Io.Put_Line ("Not data matches " & Str(2 .. 2));
         end if;
       when 'e' =>
+        -- Expire
         Val_Queue.Expire (Vals);
       when 'c' =>
+        -- Clear
         Val_Queue.Clear (Vals);
       when 'x' =>
+        -- Exit
         exit;
       when 'a' =>
         -- Run autotest
