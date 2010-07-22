@@ -1,0 +1,34 @@
+# Take a random number of digits D, from 1 to Argument (or 78)
+ssize 0 = [ 78 ] ifcall
+m popr
+# Make a random arbitrary A of D digits
+# Loop on A = sqrt(A) until A = 1
+# Sleep A
+# Do it again
+
+# Function do make a random arbitrary a
+[ "@" a popr 1 format
+m pushr toreal rnd * trunc 1 + i popr
+[ 9 toreal rnd * trunc 1 + strof a pushr swap strcat a popr
+i pushr 1 - i copyr 0 = ifret A pushr retacal 
+] A popr
+A pushr call a pushr strarbi a popr
+] R popr
+
+# Function to put Sqrt (a) successively until 1 A  = 1
+[ a pushr dup putl sqrt a copyr
+@+1 = [ a pushr putl 2 retn ] ifcall S pushr retacal
+] S popr
+
+# Infinite main loop
+[
+R pushr call
+S pushr call
+newl
+1.0 sleep
+M pushr retacal
+] M popr
+
+# Call main loop
+M pushr call
+
