@@ -65,6 +65,7 @@ begin
   begin
     if Nb_Arg = 0 then
       Usage;
+      return;
     elsif Nb_Arg = 1 then
       -- A Unicode
       declare
