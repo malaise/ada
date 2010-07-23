@@ -70,6 +70,7 @@ package body Utf_16 is
     Val1 := Wide_Character'Pos (Seq(Seq'First));
     if Len = 1 then
       Unicode := Val1;
+      return;
     end if;
 
     Val2 := Wide_Character'Pos (Seq(Seq'First + 1));
