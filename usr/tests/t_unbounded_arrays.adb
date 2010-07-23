@@ -40,14 +40,14 @@ begin
   Ada.Text_Io.Put_Line ("Image " & Image(N1));
   Ada.Text_Io.New_Line;
 
-  Ada.Text_Io.Put_Line ("Array of 1, 3 5:");
+  Ada.Text_Io.Put_Line ("Array of 1, 3, 5:");
   N1 := Natua.To_Unbounded_Array ( (1, 3, 5) );
   Ada.Text_Io.Put_Line ("Length " & Image(N1.Length));
   Ada.Text_Io.Put_Line ("Content " & Image(N1.To_Array));
   Ada.Text_Io.Put_Line ("Image " & Image(N1));
-  Ada.Text_Io.Put_Line ("Element 2 " & Image(N1.Element (2)));
+  Ada.Text_Io.Put_Line ("Element 2: " & Image(N1.Element (2)));
   N1.Replace_Element (2, 21);
-  Ada.Text_Io.Put_Line ("Replaced by 21 " & Image(N1.Element (2)));
+  Ada.Text_Io.Put_Line ("Replaced by 21: " & Image(N1.Element (2)));
   Ada.Text_Io.Put_Line ("Image " & Image(N1));
   Ada.Text_Io.New_Line;
 
@@ -103,7 +103,7 @@ begin
   Ada.Text_Io.Put_Line ("Image " & Image(N1));
   Ada.Text_Io.New_Line;
 
-  Ada.Text_Io.Put_Line ("Check GC");
+  Ada.Text_Io.Put_Line ("Check Finalization");
   declare
     N3 : Natua.Unbounded_Array;
   begin
