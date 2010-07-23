@@ -148,7 +148,7 @@ package body Unbounded_Arrays is
   begin
     if New_Item.Last <= Source.Reference'Length - Source.Last then
       -- Optim: no copy if New_Item fits
-      Source.Reference(Source.Last .. Source.Last +  New_Item.Last - 1) :=
+      Source.Reference(Source.Last + 1 .. Source.Last +  New_Item.Last) :=
           New_Item.Reference(1 .. New_Item.Last);
       Source.Last := Source.Last + New_Item.Last;
     else
@@ -162,7 +162,7 @@ package body Unbounded_Arrays is
   begin
     if New_Item'Length <= Source.Reference'Length - Source.Last then
       -- Optim: no copy if New_Item fits
-      Source.Reference(Source.Last .. Source.Last +  New_Item'Length - 1) :=
+      Source.Reference(Source.Last + 1 .. Source.Last +  New_Item'Length) :=
           New_Item;
       Source.Last := Source.Last + New_Item'Length;
     else
