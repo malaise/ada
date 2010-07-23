@@ -1,5 +1,5 @@
 -- Handles the initialisation of state while
---  events (to modify state) arrive
+--  events arrive (that aim to modify state)
 generic
 
   type Event_Type is private;

@@ -46,6 +46,7 @@ begin
     Ada.Text_Io.Put_Line ("Initialized");
     Mng.Set_Handler (Evt_Handle'Unrestricted_Access);
     delay 2.0;
+    Ada.Text_Io.New_Line;
   end loop;
   Ada.Text_Io.Put_Line ("Terminating");
   Evt_Gen.Stop;
