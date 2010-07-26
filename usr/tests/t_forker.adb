@@ -1,14 +1,11 @@
 with Ada.Text_Io, Ada.Characters.Latin_1;
 
-with Sys_Calls;
-with Argument;
-with Lower_Str;
-with Socket;
-with Forker;
+with Sys_Calls, Argument, Lower_Str, Socket, Forker, Ip_Addr, Tcp_Util;
 
 procedure T_Forker is
 
   Soc : Socket.Socket_Dscr;
+  Host : Tcp_Util.Remote_Host;
   Port : Socket.Port_Num;
 
   Buff : String (1 .. 500);
@@ -43,33 +40,45 @@ procedure T_Forker is
     raise Program_Error;
   end Cat_Str;
 
-  use type Socket.Port_Num;
+  use type Socket.Port_Num, Tcp_Util.Remote_Host_List;
 begin
 
   -- Ada.Text_Io.Put_Line ("Req_size: " & Integer'Image(Forker.Request_Rec'Size));
   -- Ada.Text_Io.Put_Line ("Rep_size: " & Integer'Image(Forker.Report_Rec'Size));
 
   if Argument.Get_Nbre_Arg /= 2 then
-    Ada.Text_Io.Put_Line ("Error. Two args <hostname> <port_name/num> expected.");
+    Ada.Text_Io.Put_Line ("ERROR: Two args <dest> <port_name/num> expected.");
+    Ada.Text_Io.Put_Line ("  <dest> ::= <host_name/addr> | <lan_addr>");
     Sys_Calls.Set_Error_Exit_Code;
     return;
   end if;
 
   Socket.Open (Soc, Socket.Udp);
-  Socket.Link_Dynamic (Soc);
+
+  Host := Ip_Addr.Parse (Argument.Get_Parameter(1));
   begin
     Port := Socket.Port_Num'Value (Argument.Get_Parameter(2));
   exception
     when others =>
       Port := 0;
   end;
+
   if Port = 0 then
-    Socket.Set_Destination_Name_And_Service (Soc, False,
-       Argument.Get_Parameter(1), Argument.Get_Parameter(2));
+    if Host.Kind = Tcp_Util.Host_Name_Spec then
+      Socket.Set_Destination_Name_And_Service (Soc, False,
+         Argument.Get_Parameter(1), Argument.Get_Parameter(2));
+    else
+      Socket.Set_Destination_Host_And_Service (Soc, Host.Id, Argument.Get_Parameter(2));
+    end if;
   else
-    Socket.Set_Destination_Name_And_Port (Soc, False,
-       Argument.Get_Parameter(1), Port);
+    if Host.Kind = Tcp_Util.Host_Name_Spec then
+      Socket.Set_Destination_Name_And_Port (Soc, False,
+         Argument.Get_Parameter(1), Port);
+    else
+      Socket.Set_Destination_Host_And_Port (Soc, Host.Id, Port);
+    end if;
   end if;
+  Socket.Link_Dynamic (Soc);
   Socket.Set_Blocking (Soc, False);
   Ada.Text_Io.Put_Line (
       "My host is "
