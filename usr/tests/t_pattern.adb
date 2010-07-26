@@ -1,4 +1,5 @@
 with Ada.Text_Io;
+with As.U; use As.U;
 with Parser, Pattern, Lower_Str;
 procedure T_Pattern is
 
@@ -6,6 +7,48 @@ procedure T_Pattern is
 
   Mr, Rule : Pattern.Rule_No;
   High_Id : Pattern.Pattern_Id := Pattern.Pattern_Id'First;
+
+  type Cb_Data_Rec is record
+    Ru : Pattern.Rule_No;
+    Pa : Pattern.Pattern_Id;
+    Nb : Natural;
+    Tail : Asu_Us;
+  end record;
+  Last_Data : Cb_Data_Rec;
+
+  function Check_Data (Ru : Pattern.Rule_No;
+                       Pa : Pattern.Pattern_Id;
+                       Nb :  Natural;
+                       Tail : String) return Boolean is
+    use type Pattern.Rule_No, Pattern.Pattern_Id;
+  begin
+    if Ru /= Last_Data.Ru then
+      Ada.Text_Io.Put_Line ("Error: Cb Ru " & Pattern.Image (Last_Data.Ru)
+                     & " differs from expected " & Pattern.Image (Ru));
+      Done := True;
+      return False;
+    end if;
+    if Pa /= Last_Data.Pa then
+      Ada.Text_Io.Put_Line ("Error: Cb Pa " & Last_Data.Pa'Img
+                     & " differs from expected " & Pa'Img);
+      Done := True;
+      return False;
+    end if;
+    if Nb /= Last_Data.Nb then
+      Ada.Text_Io.Put_Line ("Error: Cb Nb " & Last_Data.Nb'Img
+                     & " differs from expected " & Nb'Img);
+      Done := True;
+      return False;
+    end if;
+    if Tail /= Asu_Ts (Last_Data.Tail) then
+      Ada.Text_Io.Put_Line ("Error: Cb Tail " & Asu_Ts (Last_Data.Tail)
+                     & " differs from expected " & Tail);
+      Done := True;
+      return False;
+    end if;
+    Ada.Text_Io.Put_Line ("OK");
+    return True;
+  end Check_Data;
 
   function Cli (Ru : in Pattern.Rule_No;
                 Pa : in Pattern.Pattern_Id;
@@ -15,8 +58,16 @@ procedure T_Pattern is
     Ada.Text_Io.Put ("Called Cb (" & Pattern.Image (Ru) & ","
                                    & Pa'Img & ","
                                    & Nb'Img & ", tail: ");
+    Last_Data.Ru := Ru;
+    Last_Data.Pa := Pa;
+    Last_Data.Nb := Nb;
+    Last_Data.Tail := Asu_Null;
     while Parser.Current_Word (It) /= "" loop
       Ada.Text_Io.Put (">" & Parser.Current_Word (It) & "<");
+      if not Asu_Is_Null (Last_Data.Tail) then
+        Asu.Append (Last_Data.Tail, " ");
+      end if;
+      Asu.Append (Last_Data.Tail, Parser.Current_Word (It));
       Parser.Next_Word (It);
     end loop;
     Ada.Text_Io.Put_Line (").");
@@ -185,6 +236,7 @@ procedure T_Pattern is
     Ada.Text_Io.Put_Line ("  del <id>");
     Ada.Text_Io.Put_Line ("  put [ <id> ]");
     Ada.Text_Io.Put_Line ("  check <string>");
+    Ada.Text_Io.Put_Line ("  auto");
     Ada.Text_Io.Put_Line ("  exit, quit or q");
     return False;
   end Hel;
@@ -218,6 +270,48 @@ procedure T_Pattern is
     return False;
   end Exi;
 
+  function Auto (Ru : in Pattern.Rule_No;
+                 Pa : in Pattern.Pattern_Id;
+                 Nb : in Natural;
+                 It : in Parser.Iterator) return Boolean is
+    R : Pattern.Rule_No;
+  begin
+    if Parser.Current_Word (It) /= "" then
+      Parser.Reset (It);
+      Parser.Next_Word (It);
+      return Def (Ru, Pa, Nb, It);
+    end if;
+    R := Pattern.Get_Free_Rule;
+    R.Set (10, "get alias", Cli'Unrestricted_Access);
+    R.Set (20, "get", Cli'Unrestricted_Access);
+    R.Set (30, "notify", Cli'Unrestricted_Access);
+    R.Set (40, "quit", Cli'Unrestricted_Access);
+    R.Set (41, "exit", Cli'Unrestricted_Access, 40);
+    R.Set (100, "", Cli'Unrestricted_Access);
+    R.Check ("get foo");
+    if not Check_Data (R, 20, 1, "foo") then return False; end if;
+    R.Check ("get alias foo");
+    if not Check_Data (R, 10, 2, "foo") then return False; end if;
+    R.Check ("notify alias");
+    if not Check_Data (R, 30, 1, "alias") then return False; end if;
+    R.Check ("notif alias");
+    if not Check_Data (R, 100, 0, "notif alias") then return False; end if;
+    R.Check ("quit");
+    if not Check_Data (R, 40, 1, "") then return False; end if;
+    R.Check ("exit");
+    if not Check_Data (R, 40, 1, "") then return False; end if;
+
+    R.Del (10);
+    R.Set (10, "get [ alias ]", Cli'Unrestricted_Access);
+    R.Del (20);
+    R.Del (30);
+    R.Check ("get foo  ");
+    if not Check_Data (R, 10, 1, "foo") then return False; end if;
+    R.Check ("get   alias foo");
+    if not Check_Data (R, 10, 2, "foo") then return False; end if;
+    Ada.Text_Io.Put_Line ("Auto test OK.");
+    return True;
+  end Auto;
 
   Buf : String (1 .. 1024);
   Len : Natural;
@@ -226,7 +320,7 @@ begin
 
   -- Hook parser (rule 1)
   Mr := Pattern.Get_Free_Rule;
-  Pattern.Set (Mr, 10, "set",   Set'Unrestricted_Access);
+  Pattern.Set (Mr, 10, "set",   T_Pattern.Set'Unrestricted_Access);
   Pattern.Set (Mr, 20, "del",   Del'Unrestricted_Access);
   Pattern.Set (Mr, 30, "check", Che'Unrestricted_Access);
   Pattern.Set (Mr, 40, "help",  Hel'Unrestricted_Access);
@@ -235,6 +329,7 @@ begin
   Pattern.Set (Mr, 51, "quit",  Exi'Unrestricted_Access, 50);
   Pattern.Set (Mr, 52, "q",     Exi'Unrestricted_Access, 50);
   Pattern.Set (Mr, 70, "put",   Put'Unrestricted_Access);
+  Pattern.Set (Mr, 60, "auto",  Auto'Unrestricted_Access);
 
   -- Set rule
   Rule := Pattern.Get_Free_Rule;
