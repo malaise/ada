@@ -44,7 +44,7 @@ begin
       exception
         when others=> Put_Line ("Exception");
       end;
-      Put_Line ("Angles en radian");
+      Put_Line ("Angles in radian");
       begin
         Put ("sin (R1) "); Put( Sin (R)); New_Line;
       exception
