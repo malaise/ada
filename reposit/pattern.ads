@@ -103,6 +103,7 @@ package Pattern is
   -- Check (R, "notif alias")   calls Default (R, 100, 0);   tail: notif alias
   -- Check (R, "quit")          calls Quit (R, 40, 1);       tail:
   -- Check (R, "exit")          calls Quit (R, 40, 1);       tail:
+  -- Del (R, 10);
   -- Set (R, 10, "get [ alias ]", Cb);
   -- Del (R, 20);
   -- Del (R, 30);
