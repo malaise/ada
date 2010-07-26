@@ -207,7 +207,7 @@ package body Network is
       raise No_Connection;
     end if;
     -- Move to the proper connection and read it
-    Of_Node.Connections.Move_At (Index - 1);
+    Of_Node.Connections.Move_At (Index);
     Of_Node.Connections.Read (Connection, Move => Connection_Mng.Current);
     -- Delete one partner's connection to us
     Asym_Delete_Connection (Connection.Node.all,
