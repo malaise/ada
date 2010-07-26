@@ -16,6 +16,7 @@ begin
   loop
     if Got.Mvt = Con_Io.Refresh then
       -- Refresh
+      Con_Io.Clear;
       Con_Io.Move;
       Con_Io.Put_Line ("Exit with Ctrl C");
     end if;
