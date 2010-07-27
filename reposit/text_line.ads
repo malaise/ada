@@ -12,7 +12,7 @@ package Text_Line is
   Max_Line_Feed_Len : constant := 10;
 
   -- The File mode
-  type File_Mode is (In_File, Out_File);
+  type File_Mode is (In_File, Inout_File, Out_File);
 
   -- Associate a file desc to a Txt_Line file
   -- May raise Status_Error if File is already open
@@ -22,7 +22,7 @@ package Text_Line is
 
   -- Dissociate a file desc from a Txt_Line file
   -- May raise Status_Error if File is not open
-  -- May raise Io_Error if IO error (flushing Out_File)
+  -- May raise Io_Error if IO error (flushing Out_File and Inout_File)
   procedure Close (File : in out File_Type);
 
   -- Returns if a file is open
@@ -47,7 +47,7 @@ package Text_Line is
   --  Or the string does not end with Line_Feed (or is empty) and
   --   the end of file has been reached.
   -- Further calls after the end of file will return an empty string.
-  -- May raise Status_Error if File is not open or not In_File
+  -- May raise Status_Error if File is not open or Out_File
   -- May raise Io_Error if IO error
   function Get (File : File_Type) return String;
   function Get (File : File_Type) return Asu_Us;
@@ -55,7 +55,7 @@ package Text_Line is
   -- Put some text in file
   -- This text will either be flushed explicitely
   --  or on close (or each N characters)
-  -- May raise Status_Error if File is not open or not Out_File
+  -- May raise Status_Error if File is not open or In_File
   -- May raise Io_Error if IO error
   procedure Put (File : in File_Type; Text : in String);
 

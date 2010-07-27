@@ -29,7 +29,7 @@ package body Text_Line is
     if not Is_Open (File) then
       raise Status_Error;
     end if;
-    if File.Acc.Mode = Out_File then
+    if File.Acc.Mode = Out_File or else File.Acc.Mode = Inout_File then
       Flush (File);
     end if;
     Free (File.Acc);
@@ -77,7 +77,7 @@ package body Text_Line is
   --  another get can be performed,
   -- Or the strings does not end with Latin_Nl (empty or not) and
   --  the end of file has been reached.
-  -- May raise Status_Error if File is not open
+  -- May raise Status_Error if File is not open of Out_File
   -- May raise Read_Error if IO error
   function Get (File : File_Type) return String is
   begin
@@ -108,7 +108,7 @@ package body Text_Line is
     Done : Boolean;
   begin
     -- Check file is open and in read mode
-    if File.Acc = null or else File.Acc.Mode /= In_File then
+    if File.Acc = null or else File.Acc.Mode = Out_File then
       raise Status_Error;
     end if;
 
@@ -178,13 +178,13 @@ package body Text_Line is
   -- Put some text in file
   -- This text will either be flushed explicitely
   --  or on close (or each N characters)
-  -- May raise Status_Error if File is not open or not Out_File
+  -- May raise Status_Error if File is not open or In_File
   -- May raise Io_Error if IO error
   procedure Put (File : in File_Type; Text : in String) is
     Tmp : Natural;
   begin
     -- Check file is open and in write mode
-    if File.Acc = null or else File.Acc.Mode /= Out_File then
+    if File.Acc = null or else File.Acc.Mode = In_File then
       raise Status_Error;
     end if;
 
@@ -219,7 +219,7 @@ package body Text_Line is
   procedure Put_Line (File : in File_Type; Text : in String) is
   begin
     -- Check file is open and in write mode
-    if File.Acc = null or else File.Acc.Mode /= Out_File then
+    if File.Acc = null or else File.Acc.Mode = In_File then
       raise Status_Error;
     end if;
     Put (File, Text & Asu_Ts (File.Acc.Line_Feed));
@@ -230,7 +230,7 @@ package body Text_Line is
   procedure New_Line (File : in File_Type) is
   begin
     -- Check file is open and in write mode
-    if File.Acc = null or else File.Acc.Mode /= Out_File then
+    if File.Acc = null or else File.Acc.Mode = In_File then
       raise Status_Error;
     end if;
     Put (File, Asu_Ts (File.Acc.Line_Feed));
@@ -242,11 +242,11 @@ package body Text_Line is
   procedure Flush (File : in File_Type) is
     Result : Natural;
   begin
-    -- File must be open, Out_File and buffer not empty
+    -- File must be open, Out_File or inout_File, and buffer not empty
     if File.Acc = null then
       raise Status_Error;
     end if;
-    if File.Acc.Mode /= Out_File or else File.Acc.Buffer_Len = 0 then
+    if File.Acc.Mode = In_File or else File.Acc.Buffer_Len = 0 then
       return;
     end if;
     -- Write and reset size
