@@ -1,4 +1,3 @@
-with Ada.Text_Io;
 with Round_At;
 package body C_Nbres is
 
@@ -256,12 +255,11 @@ package body C_Nbres is
   end "**";
 
   -------------------------------------------------------------------------------
-  package My_Real_Io is new Ada.Text_Io.Float_Io (My_Math.Real);
 
   -- Width of Fore . Aft E Exp
-  Str_Width : constant Positive := My_Real_Io.Default_Fore + 1
-                                 + My_Real_Io.Default_Aft + 1
-                                 + My_Real_Io.Default_Exp;
+  Str_Width : constant Positive := My_Math.Real_Io.Default_Fore + 1
+                                 + My_Math.Real_Io.Default_Aft + 1
+                                 + My_Math.Real_Io.Default_Exp;
   subtype Image_Str is String (1 .. Str_Width);
 
   function Put (C : Complex) return String is
@@ -269,13 +267,13 @@ package body C_Nbres is
     Real_Str, Imag_Str : Image_Str;
     Sign : Character;
   begin
-    My_Real_Io.Put (Real_Str, Part_Real (C) );
+    My_Math.Real_Io.Put (Real_Str, Part_Real (C) );
     if (Imag_Part >= 0.0) then
       Sign := '+';
     else
       Sign := '-';
     end if;
-    My_Real_Io.Put (Imag_Str, abs (Imag_Part) );
+    My_Math.Real_Io.Put (Imag_Str, abs (Imag_Part) );
     return Real_Str & ' ' & Sign & " i *" & Imag_Str;
   end Put;
 
@@ -284,8 +282,8 @@ package body C_Nbres is
     Last : Positive;
     C : Complex;
   begin
-    My_Real_Io.Get (X, Real_Part, Last);
-    My_Real_Io.Get (Y, Imag_Part, Last);
+    My_Math.Real_Io.Get (X, Real_Part, Last);
+    My_Math.Real_Io.Get (Y, Imag_Part, Last);
     C := Create_Complex (Real_Part, Imag_Part);
     return C;
   end Get;

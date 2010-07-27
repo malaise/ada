@@ -1,4 +1,3 @@
-with Ada.Text_Io;
 with C_Types;
 package body My_Math is
 
@@ -42,8 +41,6 @@ package body My_Math is
   -- Integer part of a real
   function Int (X : Real) return Real is
 
-    package Real_Text_Io is new Ada.Text_Io.Float_Io(Real);
-
     Neg   : Boolean := False;
     Dig   : constant Positive := 15;  -- digits of real
     Exp   : constant Positive := 4;  -- +123
@@ -61,7 +58,7 @@ package body My_Math is
     end if;
 
     -- store  x in a string
-    Real_Text_Io.Put(Str_Aux, abs(X), Dig - 1, Exp);
+    Real_Io.Put(Str_Aux, abs(X), Dig - 1, Exp);
 
     -- compute exponent
     Str_Exp(1 .. Exp) := Str_Aux(Total - Exp + 1 .. Total);
@@ -78,7 +75,7 @@ package body My_Math is
       end loop;
 
       -- convert result to real
-      Real_Text_Io.Get(Str_Aux, Result, Index_Str);
+      Real_Io.Get(Str_Aux, Result, Index_Str);
     else
 
       -- no fraction part (number to big)

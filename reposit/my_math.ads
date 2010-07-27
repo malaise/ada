@@ -1,10 +1,14 @@
-with Ada.Numerics;
+with Ada.Numerics, Ada.Text_Io;
 package My_Math is
 
   subtype Inte is Long_Long_Integer;
   -- This should generate the overflow checks
   --  (was subtype Real is Long_Float;)
   type Real is digits 15 range -1.79E308 .. 1.79E308;
+
+  -- IOs of Inte and real
+  package Inte_Io is new Ada.Text_Io.Integer_Io (Inte); 
+  package Real_Io is new Ada.Text_Io.Float_Io (Real);
 
   -- Types and constants for trigonometry
   -- pi constant

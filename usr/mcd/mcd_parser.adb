@@ -1,7 +1,7 @@
 with My_Math, Queues, Basic_Proc, Lower_Str, Argument, Bool_Io, Arbitrary,
      Arbitrary.Fractions, Async_Stdin, String_Mng;
 with As.U; use As.U;
-with Debug, Input_Dispatcher, Inte_Io, Real_Io, Io_Flow;
+with Debug, Input_Dispatcher, Inte_Io, Io_Flow;
 package body Mcd_Parser is
   use Mcd_Mng;
 
@@ -375,7 +375,7 @@ package body Mcd_Parser is
     end;
 
     begin
-      Real_Io.Get (Asu_Ts (Txt), R, L);
+      My_Math.Real_Io.Get (Asu_Ts (Txt), R, L);
       if L = Asu.Length (Txt)
       and then Asu.Element (Txt, L) /= '.' then
         Instr_Stack.Push (Stack, Item_Chrs);

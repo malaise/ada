@@ -1,5 +1,4 @@
 -- Purpose: solve a.x2 + b.x + c = 0
-with Ada.Text_Io;
 with Argument, My_Io, My_Math, Get_Float;
 use My_Math;
 procedure Second is
@@ -9,7 +8,7 @@ procedure Second is
   -- Discriminant
   D : My_Math.Real;
 
-  package Real_Io is new Ada.Text_Io.Float_Io (My_Math.Real);
+  package Real_Io renames My_Math.Real_Io;
 
 begin
 

@@ -1,11 +1,12 @@
 with Ada.Text_Io;
 with Normal, Bool_Io, Mixed_Str, String_Mng;
-with Inte_Io, Real_Io, Io_Flow;
+with Inte_Io, Io_Flow;
 separate (Mcd_Mng)
 
 package body Ios is
 
   use My_Math;
+  package Real_Io renames My_Math.Real_Io;
 
   -- Max len for int/real image
   Max_Image_Len : constant := 1024;

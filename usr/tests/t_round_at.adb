@@ -37,7 +37,14 @@ begin
 
   -- Round and put
   Res := Round_At (R, I);
-  Ada.Text_Io.Put_Line (Res'Img);
+  Ada.Text_Io.Put_Line ("Image -> " & Res'Img);
+  Ada.Text_Io.Put ("Real_Io -> ");
+  if I > 0 then
+    My_Math.Real_Io.Put (Res, Fore => I);
+  else
+    My_Math.Real_Io.Put (Res, Aft => -I);
+  end if;
+  Ada.Text_Io.New_Line;
 
 exception
   when End_Error =>

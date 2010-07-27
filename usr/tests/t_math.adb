@@ -1,10 +1,7 @@
-with Ada.Text_Io;
 with My_Math, My_Io;
 procedure T_Math is
 
-  package Real_Io is new Ada.Text_Io.Float_Io (My_Math.Real);
-
-  use My_Math, My_Io, Real_Io;
+  use My_Math, My_Io, My_Math.Real_Io;
 
   subtype Real is My_Math.Real;
   R, Rp : Real;

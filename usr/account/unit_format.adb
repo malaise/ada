@@ -5,7 +5,7 @@ package body Unit_Format is
   Current_Unit : Units_List := Default_Unit;
 
   package Amount_Io is new Ada.Text_Io.Float_Io(Oper_Def.Amount_Range);
-  package Real_Io is new Ada.Text_Io.Float_Io(My_Math.Real);
+  package Real_Io renames My_Math.Real_Io;
   package Inte_Io is new Ada.Text_Io.Integer_Io(My_Math.Inte);
 
   package Mef is new Euro_Franc(Oper_Def.Amount_Range, Oper_Def.Amount_Range);
