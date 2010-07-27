@@ -1,14 +1,13 @@
 with Ada.Exceptions, Ada.Characters.Latin_1;
-with Argument, Socket, Event_Mng, Async_Stdin;
+with Argument, Event_Mng, Sys_Calls, Async_Stdin, Text_Line;
 
 procedure T_Stdin is
 
   Arg_Error : exception;
 
-  Port : Socket.Port_Num;
-
-  Soc : Socket.Socket_Dscr;
-  Fd : Event_Mng.File_Desc := 0;
+  -- Fd and File to pipe
+  Fd : Sys_Calls.File_Desc;
+  File : Text_Line.File_Type;
 
   Go_On : Boolean;
 
@@ -22,36 +21,7 @@ procedure T_Stdin is
     Sig := True;
   end Signal_Cb;
 
-
-  subtype Message_Type is String(1 .. 1024);
-  procedure My_Send is new Socket.Send(Message_Type);
-  procedure My_Receive is new Socket.Receive(Message_Type);
-
-  function Socket_Cb(F : in Event_Mng.File_Desc; Read : in Boolean)
-                     return Boolean is
-    pragma Unreferenced (Read);
-    use type Event_Mng.File_Desc;
-    Message : Message_Type;
-    Message_Len : Natural;
-  begin
-    if F /= Fd then
-      return False;
-    end if;
-    begin
-      My_Receive(Soc, Message, Message_Len, False);
-    exception
-      when Socket.Soc_Conn_Lost | Socket.Soc_Read_0 =>
-        Async_Stdin.Put_Line_Out("Disconnected");
-        Go_On := False;
-        return True;
-    end;
-    Async_Stdin.Put_Out (Message(1 .. Message_Len));
-    return False;
-  end Socket_Cb;
-
-
   function Stdin_Cb(Str : in String) return Boolean is
-    Message : Message_Type;
     Len : Natural := Str'Length;
     Last : Natural := Str'Last;
   begin
@@ -64,24 +34,35 @@ procedure T_Stdin is
       Last := Last - 1;
       Go_On := False;
     end if;
-    Message (1 .. Len) := Str (Str'First .. Last);
-    My_Send(Soc, Message, Len);
+    File.Put (Str);
+    File.Flush;
     return True;
   end Stdin_Cb;
 
+  procedure Close is
+  begin
+    if File.Is_Open then
+      File.Close;
+    end if;
+    Sys_Calls.Close (Fd);
+  end Close;
+
 begin
 
-  -- Check arguments and get port
-  if Argument.Get_Nbre_Arg = 2 then
-    begin
-      Port := Socket.Port_Num'Value(Argument.Get_Parameter(2));
-    exception
-      when others =>
-        raise Arg_Error;
-    end;
-  else
+  -- Check argument
+  if Argument.Get_Nbre_Arg /= 1 then
     raise Arg_Error;
   end if;
+  begin
+    Fd := Sys_Calls.Open (Argument.Get_Parameter, Sys_Calls.Out_File);
+  exception
+    when others =>
+      Async_Stdin.Put_Line_Err ("Can't open pipe file "
+                               & Argument.Get_Parameter);
+      Sys_Calls.Set_Error_Exit_Code;
+      return;
+  end;
+  File.Open (Text_Line.Out_File, Fd);
 
   -- Set async stdin
   begin
@@ -89,28 +70,12 @@ begin
   exception
     when Async_Stdin.Error =>
       Async_Stdin.Put_Line_Out("Cannot set stdin async");
+      Close;
+      Sys_Calls.Set_Error_Exit_Code;
       return;
   end;
 
-  -- Connect
-  Socket.Open(Soc, Socket.Tcp_Header);
-  Fd := Socket.Fd_Of(Soc);
-  Async_Stdin.Put_Line_Out("Connecting to Host "
-                & Argument.Get_Parameter(Occurence => 1)
-                & " Port" & Socket.Port_Num'Image(Port));
-  begin
-    Socket.Set_Destination_Name_And_Port(Soc,
-             False, Argument.Get_Parameter(1), Port);
-  exception
-    when Socket.Soc_Conn_Refused =>
-      Async_Stdin.Put_Line_Out("Connection refused");
-      Socket.Close(Soc);
-      Async_Stdin.Set_Async;
-      return;
-  end;
-  Event_Mng.Add_Fd_Callback(Fd, True, Socket_Cb'Unrestricted_Access);
   Event_Mng.Set_Sig_Term_Callback (Signal_Cb'Unrestricted_Access);
-
 
   -- Main loop
   Go_On := True;
@@ -121,19 +86,18 @@ begin
     exit when Sig;
   end loop;
 
-  if Event_Mng.Fd_Callback_Set (Fd, True) then
-    Event_Mng.Del_Fd_Callback(Fd, True);
-    Socket.Close(Soc);
-  end if;
   Async_Stdin.Set_Async;
+  Close;
 
 exception
   when Arg_Error =>
     Async_Stdin.Put_Line_Err ("Usage: " & Argument.Get_Program_Name
-                   & " <host_name> <port_num>");
-
+                   & " <pipe_file>");
+    Sys_Calls.Set_Error_Exit_Code;
   when Error : others =>
     Async_Stdin.Put_Line_Err ("Exception: " & Ada.Exceptions.Exception_Name(Error));
     Async_Stdin.Set_Async;
+    Close;
+    Sys_Calls.Set_Error_Exit_Code;
 end T_Stdin;
 
