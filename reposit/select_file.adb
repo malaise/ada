@@ -236,7 +236,7 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
     Cursor_Col := 0;
     Insert := False;
 
-    -- change dir
+    -- Change dir
     Directory.Change_Current(New_Dir);
     -- Title
     if Directory.Get_Current = "/" then
@@ -254,7 +254,7 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
     Dir_Mng.File_Sort (Dir_List);
     Dir_List.Rewind;
     -- Clear Afpx list
-    Afpx.Line_List_Mng.Delete_List(Afpx.Line_List);
+    Afpx.Line_List.Delete_List;
     loop
       Dir_List.Read (Dir_Item, Dir_Mng.File_List_Mng.Current);
       case Dir_Item.Kind is
@@ -279,15 +279,45 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
         Language.String_To_Wide (
         String_Mng.Procuste (Dir_Item.Name (1 .. Dir_Item.Len) & ' ' & Char,
                              Width) );
-      Afpx.Line_List_Mng.Insert (Afpx.Line_List, Afpx_Item);
+      Afpx.Line_List.Insert (Afpx_Item);
       exit when not Dir_List.Check_Move;
       Dir_List.Move_To;
     end loop;
     -- Move to beginning of Afpx list
-    Afpx.Line_List_Mng.Rewind (Afpx.Line_List);
+    Afpx.Line_List.Rewind;
     Afpx.Update_List(Afpx.Top);
 
   end Change_Dir;
+
+  -- To find current position back
+  function Match (Current, Criteria : Dir_Mng.File_Entry_Rec) return Boolean is
+    use type Dir_Mng.File_Kind_List;
+  begin
+    return Current.Kind = Criteria.Kind
+    and then Current.Name(1 .. Current.Len) = Criteria.Name(1 .. Criteria.Len);
+  end Match;
+  procedure File_Search is new Dir_Mng.File_List_Mng.Search (Match);
+
+
+  -- Reread current directory, try to restore current
+  procedure Reread is
+    Dir_Item : Dir_Mng.File_Entry_Rec;
+    Found : Boolean;
+  begin
+    -- Dave current entry
+    Dir_List.Move_At (Afpx.Line_List.Get_Position);
+    Dir_List.Read (Dir_Item, Dir_Mng.File_List_Mng.Current);
+    -- Rebuild list
+    Change_Dir(".");
+    -- Search position back and move Afpx to it
+    File_Search (Dir_List, Found, Dir_Item,
+                 From => Dir_Mng.File_List_Mng.Absolute);
+    if Found then
+      Afpx.Line_List.Move_At (Dir_List.Get_Position);
+      Afpx.Update_List (Afpx.Center);
+    end if;
+
+  end Reread;
 
 begin
   Afpx.Use_Descriptor(Descriptor);
@@ -405,7 +435,7 @@ begin
             exit;
           when Reread_Fld =>
             -- Reread current directory
-            Change_Dir(".");
+            Reread;
           when others => null;
         end case;
       when Afpx.Fd_Event =>
