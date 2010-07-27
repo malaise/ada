@@ -1,4 +1,5 @@
 with Ada.Characters.Latin_1, Ada.Exceptions;
+with As.U; use As.U;
 with My_Io, String_Mng, String_Mng.Regex, Many_Strings,
      Upper_Str, Lower_Str, Mixed_Str, Upper_Char, Environ;
 procedure T_String is
@@ -103,8 +104,9 @@ begin
       My_Io.Put_Line ("17 Regex locate");
       My_Io.Put_Line ("18 Regex replace");
       My_Io.Put_Line ("19 Split");
+      My_Io.Put_Line ("20 Regex split");
 
-      My_Io.Put ("Choice (0 .. 19) ? "); Nat_Get (Action, True);
+      My_Io.Put ("Choice (0 .. 20) ? "); Nat_Get (Action, True);
       My_Io.New_Line;
 
       begin
@@ -327,6 +329,21 @@ begin
               My_Io.Put_Line ("Split into: ");
               for I in 1 .. Many_Strings.Nb (Lstr) loop
                 My_Io.Put_Line (">" & Many_Strings.Nth (Lstr, I) & "<");
+              end loop;
+            end;
+
+          when 20 =>
+            My_Io.Put_Line ("20 Regex split");
+            My_Io.Put ("Separator (String)? "); My_Io.Get_Line (Str1, Nat1);
+            My_Io.Put ("Max_Slices (Pos)? "); Nat_Get (Pos1, False);
+            declare
+              Lstr : constant String_Mng.Regex.String_Slice
+                   := String_Mng.Regex.Split (Str(1 .. Str_Len),
+                                              Str1(1 .. Nat1), Pos1);
+            begin
+              My_Io.Put_Line ("Split into: ");
+              for I in Lstr'Range loop
+                My_Io.Put_Line (">" & Asu_Ts (Lstr(I)) & "<");
               end loop;
             end;
 
