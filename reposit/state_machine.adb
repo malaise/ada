@@ -138,8 +138,9 @@ package body State_Machine is
       The_Current_State := Start_State;
       Do_Trues (False);
     end loop;
+    -- Reset state to first of State_List (Do_Trues may have changed it).
     -- Do and report true transitions from initial state.
-    -- The_Current_State is first of State_List now.
+    The_Current_State := State_List'First;
     Do_Trues (True);
   end End_Declaration;
 
