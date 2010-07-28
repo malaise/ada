@@ -111,11 +111,11 @@ begin
 -- For true_loop detection
 --My_Add_Transition (Ok,       True,      Failed)  ;
 --My_Add_Transition (Failed,   True,      Ok)      ;
-  My_Io.Put_Line("End of state machine definition.");
-  My_Io.New_Line;
-  My_Io.Put_Line("Reports on State=Unknown and Event=Default");
+  My_Io.Put_Line("Reports set on State=Unknown and Event=Default");
   Msm.Add_State_Report(Unknown, Report_State'Unrestricted_Access);
   Msm.Add_Event_Report(Default, Report_Event'Unrestricted_Access);
+  My_Io.Put_Line("End of state machine definition.");
+  My_Io.New_Line;
   End_Declaration;
 
   My_Io.Put_Line ("Initial state : " & State_List'Image(Current_State));
