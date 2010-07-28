@@ -29,13 +29,14 @@ package Queues.Timed is
   -- Remove expired items
   procedure Expire (Queue : in out Timed_Type);
 
-  -- Remove expired items and retreive the first item pushed that matches
+  -- Remove expired items and read the first item pushed that matches
   --  criteria
-  procedure Get (Queue : in out Timed_Type;
-                 Crit  : in Item;
-                 Equal : access function (X, Criteria : Item) return Boolean;
-                 X     : out Item;
-                 Done  : out Boolean);
+  procedure Read (Queue  : in out Timed_Type;
+                  Crit   : in Item;
+                  Equal  : access function (X, Criteria : Item) return Boolean;
+                  X      : out Item;
+                  Found  : out Boolean);
+  --
 
   -- Remove all items if any (no exception)
   procedure Clear (Queue : in out Timed_Type);

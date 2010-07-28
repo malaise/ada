@@ -95,14 +95,13 @@ package body Queues.Timed is
     Queue.List.Rewind (False);
   end Expire;
 
-   -- Remove expired items and retreive the first item pushed that matches
+   -- Remove expired items and read the first item pushed that matches
   --  criteria
-  procedure Get (Queue : in out Timed_Type;
-                 Crit  : in Item;
-                 Equal : access function (X, Criteria : Item) return Boolean;
-                 X     : out Item;
-                 Done  : out Boolean) is
-    Moved : Boolean;
+  procedure Read (Queue  : in out Timed_Type;
+                  Crit   : in Item;
+                  Equal  : access function (X, Criteria : Item) return Boolean;
+                  X      : out Item;
+                  Found  : out Boolean) is
     Litem : Loc_Item;
     function Lequal (Current, Criteria : Loc_Item) return Boolean is
     begin
@@ -113,17 +112,15 @@ package body Queues.Timed is
     Expire (Queue);
     -- Search
     Litem.Data := Crit;
-    Queue.List.Search_Match (Done, Lequal'Access, Litem,
+    Queue.List.Search_Match (Found, Lequal'Access, Litem,
                              From => Item_List_Mng.Absolute);
-    -- Get
-    if Done then
-      Queue.List.Get (Litem, Moved => Moved);
-      Litem.Timer.Stop;
-      Free_Timer (Litem.Timer);
+    -- Read
+    if Found then
+      Queue.List.Read (Litem, Item_List_Mng.Current);
       X := Litem.Data;
     end if;
     Queue.List.Rewind (False);
-  end Get;
+  end Read;
 
   -- Remove all items
   procedure Clear (Queue : in out Timed_Type) is
