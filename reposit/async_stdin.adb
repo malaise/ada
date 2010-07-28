@@ -210,6 +210,8 @@ package body Async_Stdin is
     Arrow_Down_Seq    : constant String := "[B";
     Home_Seq          : constant String := "[1~";
     End_Seq           : constant String := "[4~";
+    Home1_Seq         : constant String := "OH";
+    End1_Seq          : constant String := "OF";
     Delete_Seq        : constant String := "[3~";
     Page_Up_Seq       : constant String := "[5~";
     Page_Down_Seq     : constant String := "[6~";
@@ -339,12 +341,14 @@ package body Async_Stdin is
                   Console.Right;
                 end if;
                 Seq := Asu_Null;
-              elsif Str = Home_Seq then
+              elsif Str = Home_Seq
+              or else Str = Home1_Seq then
                 -- Home
                 Ind := 1;
                 Console.Set_Col(1);
                 Seq := Asu_Null;
-              elsif Str = End_Seq then
+              elsif Str = End_Seq
+              or else Str = End1_Seq then
                 -- End
                 Ind := Asu.Length(Txt) + 1;
                 Console.Set_Col(Ind);
