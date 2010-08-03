@@ -1,7 +1,7 @@
 with As.U; use As.U;
 with Con_Io, Afpx.List_Manager, Basic_Proc, Int_Image, Directory, Dir_Mng,
      Sys_Calls, Argument, Argument_Parser, Socket, String_Mng;
-with Utils, Git_If, Config, Bookmarks, History;
+with Utils, Git_If, Config, Bookmarks, History, Confirm;
 procedure Agite is
 
   -- Usage and Error message
@@ -263,7 +263,7 @@ procedure Agite is
     Utils.Launch (Asu_Ts (Editor) & " " & File_Name);
   end Edit;
 
-  procedure Hist (Name : in String; Is_File : in Boolean) is
+  procedure Do_History (Name : in String; Is_File : in Boolean) is
     Pos : Positive;
   begin
     -- Call history and restore current entry
@@ -272,10 +272,24 @@ procedure Agite is
     Init;
     Afpx.Line_List.Move_At (Pos);
     Afpx.Update_List (Afpx.Center);
-  end Hist;
+  end Do_History;
+
+  procedure Do_Revert (Name : in String) is
+    Pos : Positive;
+  begin
+    -- Call Confirm and restore current entry
+    Pos := Afpx.Line_List.Get_Position;
+    if Confirm ("Ready to revert "
+              & Directory.Build_File_Name (Asu_Ts (Path), Name, "")) then
+      Git_If.Do_Revert (Name);
+    end if;
+    Init;
+    Afpx.Line_List.Move_At (Pos);
+    Afpx.Update_List (Afpx.Center);
+  end Do_Revert;
 
   -- List action on File or Dir
-  type Action_List is (Default, Edit, Diff, History);
+  type Action_List is (Default, Edit, Diff, History, Revert);
   procedure List_Action (Action : in Action_List) is
 
     File : Git_If.File_Entry_Rec;
@@ -284,33 +298,39 @@ procedure Agite is
     Files.Move_At (Afpx.Line_List.Get_Position);
     Files.Read (File, Git_If.File_Mng.Dyn_List.Current);
     declare
-      Str : constant String := Asu_Ts (File.Name);
+      File_Name : constant String := Asu_Ts (File.Name);
     begin
       if File.Kind = '/' then
         case Action is
           when Default =>
-            Change_Dir (Str);
+            Change_Dir (File_Name);
           when Edit  =>
             null;
           when Diff =>
-            if Str = "." then
-              Git_If.Launch_Diff (Asu_Ts (Differator), Str);
+            if File_Name = "." then
+              Git_If.Launch_Diff (Asu_Ts (Differator), File_Name);
             end if;
           when History =>
-            if Str = "." then
-              Hist ("", False);
-            elsif Str /= ".." then
-              Hist (Str, False);
+            if File_Name = "." then
+              Do_History ("", False);
+            elsif File_Name /= ".." then
+              Do_History (File_Name, False);
+            end if;
+          when Revert =>
+            if File_Name /= ".." then
+              Do_Revert (File_Name);
             end if;
         end case;
       elsif File.Kind /= '@' and then File.Kind /= '?' then
         case Action is
           when Edit | Default =>
-            Edit (Str);
+            Edit (File_Name);
           when Diff =>
-            Git_If.Launch_Diff (Asu_Ts (Differator), Str);
+            Git_If.Launch_Diff (Asu_Ts (Differator), File_Name);
           when History =>
-           Hist (Str, True);
+            Do_History (File_Name, True);
+          when Revert =>
+            Do_Revert (File_Name);
         end case;
       end if;
     end;
@@ -382,7 +402,6 @@ begin
   -- Main loop
   loop
 
-
     Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
                        Ptg_Result, Redisplay);
     Redisplay := False;
@@ -446,6 +465,9 @@ begin
             -- History
             List_Action (History);
           when 23 =>
+            -- Revert
+            List_Action (Revert);
+          when 24 =>
             -- Exit
             raise Utils.Exit_Requested;
           when others =>

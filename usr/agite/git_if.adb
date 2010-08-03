@@ -553,5 +553,23 @@ package body Git_If is
           & " " & Ref_Rev & " " & Comp_Rev & " -- " & File_Name);
   end Launch_Delta;
 
+   -- Launch a revert (checkout) synchronous
+  procedure Do_Revert (File : in String) is
+    Cmd : Asu_Us;
+  begin
+    Cmd := Asu_Tus ("git");
+    Many_Strings.Cat (Cmd, "checkout");
+    Many_Strings.Cat (Cmd, File);
+    Command.Execute (
+        Asu_Ts (Cmd),
+        True, Command.Both,
+        Out_Flow_3'Access, Err_Flow'Access, Exit_Code);
+    -- Handle error
+    if Exit_Code /= 0 then
+      Basic_Proc.Put_Line_Error ("git checkout: " & Asu_Ts (Err_Flow.Str));
+      return;
+    end if;
+  end Do_Revert;
+
 end Git_If;
 

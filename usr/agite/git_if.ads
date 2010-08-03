@@ -82,5 +82,8 @@ package Git_If is
   procedure Launch_Delta (Differator, File_Name : in String;
                           Ref_Rev, Comp_Rev : in String);
 
+  -- Launch a revert (checkout) synchronous
+  procedure Do_Revert (File : in String);
+
 end Git_If;
 

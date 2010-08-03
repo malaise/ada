@@ -3,7 +3,7 @@
 
 <!-- For agite -->
 <Afpx_Descriptors Height="44" Width="55">
-  <Var Name="Version" Value="V2.5"/>
+  <Var Name="Version" Value="V2.6"/>
   <Color_Definitions>
     <Color_Definition Name="Color09">Dark_Grey</Color_Definition>
   </Color_Definitions>
@@ -121,7 +121,7 @@
       <Colors Foreground="Black" Background="Light_Grey" />
     </Field>
 
-    <!-- GUI, Xtem, Edit, Diff, History, Exit... -->
+    <!-- GUI, Xtem, Edit, Diff, History, Revert, Exit. -->
     <Field Num="18" Kind="Button">
       <Geometry Up="${Field_13.Up}" Left="${LmLeft}"
                 Height="1" Width="${LmWidth}"/>
@@ -148,11 +148,17 @@
     </Field>
     <Field Num="22" Kind="Button">
       <Geometry Up="${Field_21.Low}+2" Left="${LmLeft}"
-                Height="3" Width="${LmWidth}"/>
+                Height="1" Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="1" Col="2">Hist</Init>
+      <Init Row="0" Col="2">Hist</Init>
     </Field>
     <Field Num="23" Kind="Button">
+      <Geometry Up="${Field_22.Low}+2" Left="${LmLeft}"
+                Height="1" Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="1">Revert</Init>
+    </Field>
+    <Field Num="24" Kind="Button">
       <Geometry Height="1" Left="${LmLeft}" Low="${List.Low}"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
@@ -525,6 +531,34 @@
     </Field>
   </Descriptor>
 
+
+  <!-- Confirmation screen -->
+  <Descriptor Num="5" Background="Light_Grey">
+
+    <Field Num="1" Kind="Put">
+      <Geometry Up="0" Left="15" Height="1" Width="9"/>
+      <Colors Foreground="Black" Background="Light_Grey" />
+      <Init Row="0" Col="0">A G I T E</Init>
+    </Field>
+
+    <!-- Sub title and current file/dir-->
+    <Field Num="2" Kind="Put">
+      <Geometry Up="${Field_1.Low}+2" Left="1" Height="1"
+                Right="${Screen.Right}-1"/>
+      <Colors Foreground="Black" Background="Light_Grey" />
+    </Field>
+    <Field Num="3" Kind="Button">
+      <Geometry Up="${Field_2.Low}+3" Left="20" Height="3" Width="6"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="1" Col="2">OK</Init>
+    </Field>
+    <Field Num="4" Kind="Button">
+      <Geometry Up="${Field_3.Up}" Left="${Field_3.Right}+2"
+                Height="3" Width="8"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="1" Col="1">Cancel</Init>
+    </Field>
+  </Descriptor>
 
 </Afpx_Descriptors>
 
