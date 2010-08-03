@@ -181,5 +181,12 @@ package String_Mng is
   -- Return a String (1 .. N)
   function Normalize (Str : String) return String;
 
+  -- Center a String Str in a fixed size
+  -- if Str <= Size pad with Gap before then after Str
+  -- if Str > Size  raise Constraint_Error
+  function Center (Str : String;
+                   Len : Positive;
+                   Gap : Character := ' ') return String;
+
 end String_Mng;
 

@@ -105,8 +105,9 @@ begin
       My_Io.Put_Line ("18 Regex replace");
       My_Io.Put_Line ("19 Split");
       My_Io.Put_Line ("20 Regex split");
+      My_Io.Put_Line ("21 Center");
 
-      My_Io.Put ("Choice (0 .. 20) ? "); Nat_Get (Action, True);
+      My_Io.Put ("Choice (0 .. 21) ? "); Nat_Get (Action, True);
       My_Io.New_Line;
 
       begin
@@ -346,6 +347,14 @@ begin
                 My_Io.Put_Line (">" & Asu_Ts (Lstr(I)) & "<");
               end loop;
             end;
+          when 21 =>
+            My_Io.Put_Line ("21 Center");
+            My_Io.Put ("Len (Pos)? "); Nat_Get (Pos1, False);
+            My_Io.Put ("Gap (Char)? "); My_Io.Get(Char1); My_Io.Skip_Line;
+            My_Io.Put_Line (
+                "Center: |"
+              & String_Mng.Center(Str(1 .. Str_Len), Len => Pos1, Gap => Char1)
+              & "|" );
 
           when others => null;
 

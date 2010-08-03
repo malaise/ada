@@ -685,5 +685,31 @@ package body String_Mng is
     return Lstr;
   end Normalize;
 
+  -- Center a String Str in a fixed size
+  -- if Str <= Size pad with Gap before then after Str
+  -- if Str > Size  raise Constraint_Error
+  function Center (Str : String;
+                   Len : Positive;
+                   Gap : Character := ' ') return String is
+    Start : Positive;
+  begin
+    if Str'Length > Len then
+      raise Constraint_Error;
+    end if;
+    -- Start position
+    Start := (Len - Str'Length) / 2 + 1;
+    -- Pad before first rather than after last
+    if (Len - Str'Length) rem 2 = 1 then
+      Start := Start + 1;
+    end if;
+    -- Copy
+    declare
+      Res : String(1 .. Len) := (others => Gap);
+    begin
+      Copy (Str, Res (Start .. Len));
+      return Res;
+    end;
+  end Center;
+
 end String_Mng;
 
