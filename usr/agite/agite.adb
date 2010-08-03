@@ -279,8 +279,8 @@ procedure Agite is
   begin
     -- Call Confirm and restore current entry
     Pos := Afpx.Line_List.Get_Position;
-    if Confirm ("Ready to revert "
-              & Directory.Build_File_Name (Asu_Ts (Path), Name, "")) then
+    if Confirm ("Ready to revert:",
+                Directory.Build_File_Name (Asu_Ts (Path), Name, "")) then
       Git_If.Do_Revert (Name);
     end if;
     Init;

@@ -162,6 +162,8 @@ package body History is
       if Status.Id_Top = 0 then
         -- Empty list
         Percent := 0;
+      elsif Afpx.Line_List.List_Length <= List_Height then
+        Percent := 100;
       else
         -- At which percent is the bottom shown
         -- Top index when at bottom

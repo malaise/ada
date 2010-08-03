@@ -3,7 +3,7 @@
 
 <!-- For agite -->
 <Afpx_Descriptors Height="44" Width="55">
-  <Var Name="Version" Value="V2.6"/>
+  <Var Name="Version" Value="V2.7"/>
   <Color_Definitions>
     <Color_Definition Name="Color09">Dark_Grey</Color_Definition>
   </Color_Definitions>
@@ -536,7 +536,7 @@
   <Descriptor Num="5" Background="Light_Grey">
 
     <Field Num="1" Kind="Put">
-      <Geometry Up="0" Left="15" Height="1" Width="9"/>
+      <Geometry Up="0" Left="23" Height="1" Width="9"/>
       <Colors Foreground="Black" Background="Light_Grey" />
       <Init Row="0" Col="0">A G I T E</Init>
     </Field>
@@ -547,13 +547,18 @@
                 Right="${Screen.Right}-1"/>
       <Colors Foreground="Black" Background="Light_Grey" />
     </Field>
-    <Field Num="3" Kind="Button">
-      <Geometry Up="${Field_2.Low}+3" Left="20" Height="3" Width="6"/>
+    <Field Num="3" Kind="Put">
+      <Geometry Up="${Field_2.Low}+2" Left="1" Height="1"
+                Right="${Screen.Right}-1"/>
+      <Colors Foreground="Black" Background="Light_Grey" />
+    </Field>
+    <Field Num="4" Kind="Button">
+      <Geometry Up="${Field_3.Low}+3" Left="20" Height="3" Width="6"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="2">OK</Init>
     </Field>
-    <Field Num="4" Kind="Button">
-      <Geometry Up="${Field_3.Up}" Left="${Field_3.Right}+2"
+    <Field Num="5" Kind="Button">
+      <Geometry Up="${Field_4.Up}" Left="${Field_4.Right}+2"
                 Height="3" Width="8"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">Cancel</Init>

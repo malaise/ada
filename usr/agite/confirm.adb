@@ -1,6 +1,6 @@
 with Con_Io, Afpx, String_Mng;
 with Utils;
-function Confirm (Msg : String) return Boolean is
+function Confirm (Title, Msg : String) return Boolean is
   -- Afpx stuff
   Cursor_Field : Afpx.Field_Range;
   Cursor_Col   : Con_Io.Col_Range;
@@ -9,12 +9,14 @@ function Confirm (Msg : String) return Boolean is
   Ptg_Result   : Afpx.Result_Rec;
 
 begin
-    Afpx.Use_Descriptor (5);
-    Cursor_Field := 1;
-    Cursor_Col := 0;
-    Insert := False;
-    Redisplay := False;
-    Afpx.Encode_Field (2, (0, 0),
+  Afpx.Use_Descriptor (5);
+  Cursor_Field := 1;
+  Cursor_Col := 0;
+  Insert := False;
+  Redisplay := False;
+  Afpx.Encode_Field (2, (0, 0),
+        String_Mng.Center (Title, Afpx.Get_Field_Width (2)));
+  Afpx.Encode_Field (3, (0, 0),
           String_Mng.Center (Msg, Afpx.Get_Field_Width (2)));
 
   -- Main loop
@@ -37,10 +39,10 @@ begin
 
       when Afpx.Mouse_Button =>
         case Ptg_Result.Field_No is
-          when 3 =>
+          when 4 =>
             -- OK
             return True;
-          when 4 =>
+          when 5 =>
             -- OK
             return False;
         when others =>
