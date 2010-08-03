@@ -56,9 +56,6 @@ package body Xml_Parser.Generator is
   procedure Init_Ctx (Ctx : in out Ctx_Type) is
     Cell : My_Tree_Cell;
   begin
-    if Ctx.Status = Error then
-      Clean (Ctx);
-    end if;
     if Ctx.Status = Clean then
       Ctx.Magic := Get_Magic;
       -- Init prologue: a xml node
@@ -72,6 +69,8 @@ package body Xml_Parser.Generator is
       Ctx.Elements.Insert_Father (Cell);
       Ctx.Status := Init;
     end if;
+    -- Reset to init (in case of error...)
+    Ctx.Status := Init;
   end Init_Ctx;
 
   -- Move to Node in tree

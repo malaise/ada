@@ -14,6 +14,14 @@ procedure T_Xml_Gen is
   end Warning;
   Warnings : Xml_Parser.Warning_Callback_Access := null;
 
+  procedure Clean is
+    Dummy : Boolean;
+    pragma Unreferenced (Dummy);
+  begin
+    Dscr.Clean;
+    Dummy := Sys_Calls.Unlink (Dtd_Name);
+  end Clean;
+
   use Xml_Parser, Xml_Parser.Generator;
 begin
   -- Show warnings if "-w"
@@ -91,6 +99,19 @@ begin
        " Comp_var will report error if variable SET_ME is not set ",
        Xml_Parser.Comment, New_Node, Next => False);
 
+  -- Add an invalid entry
+  Dscr.Add_Brother (Fail_Node, "Var1", Xml_Parser.Element, New_Node);
+  -- Check tree
+  Dscr.Check (Ok, Warnings);
+  if Ok then
+    Basic_Proc.Put_Line_Error ("Check failed to detect invalid element name");
+    Basic_Proc.Set_Error_Exit_Code;
+    Clean;
+    return;
+  end if;
+  -- Del invalid entry
+  Dscr.Delete_Node (New_Node, New_Node);
+
   -- Add a comment in the tail
   -- Tail indicator is an empty element
   Dscr.Add_Brother (Fail_Node, "", Xml_Parser.Element, Tail_Node);
@@ -102,11 +123,13 @@ begin
   if not Ok then
     Basic_Proc.Put_Line_Error (Dscr.Get_Parse_Error_Message);
     Basic_Proc.Set_Error_Exit_Code;
-    Dscr.Clean;
+    Clean;
     return;
   end if;
 
   -- Display Tree
   Dscr.Put (Xml_Parser.Generator.Stdout);
+
+  Clean;
 end T_Xml_Gen;
 
