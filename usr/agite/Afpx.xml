@@ -3,7 +3,7 @@
 
 <!-- For agite -->
 <Afpx_Descriptors Height="44" Width="55">
-  <Var Name="Version" Value="V2.7"/>
+  <Var Name="Version" Value="V2.8"/>
   <Color_Definitions>
     <Color_Definition Name="Color09">Dark_Grey</Color_Definition>
   </Color_Definitions>
@@ -419,6 +419,11 @@
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="2">Back</Init>
     </Field>
+    <Field Num="21" Kind="Put">
+      <Geometry Up="${List.Up}" Right="${List.Left}-1" Width="1" Low="${List.Low}"/>
+      <Colors Foreground="Black" Background="Light_Grey" />
+    </Field>
+
   </Descriptor>
 
   <!-- Commit details -->

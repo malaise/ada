@@ -157,12 +157,21 @@ package body History is
       pragma Unreferenced (Action);
       Percent : Afpx.Percent_Range;
     begin
+      -- Put percent value and "scroll bar"
       Percent := Afpx.Get_List_Percent;
+      Afpx.Clear_Field (21);
       if Percent /= 0 then
         Afpx.Encode_Field (11, (0, 0), Normal (Percent, 3, True));
+        -- 0 <-> 1% and Height-1 <-> 100%
+        -- (Percent-1)/99 = Row/(Height-1)
+        Afpx.Encode_Field (21,
+           (Row => (Afpx.Get_Field_Height (21) - 1) * (Percent - 1) / 99,
+            Col => 0),
+           "-");
       else
         Afpx.Encode_Field (11, (0, 0), " - ");
       end if;
+      -- Put Ids selected
       Afpx.Encode_Field (14, (0, 0),
            Normal (Status.Ids_Selected(Afpx.List_Left),
                    Afpx.Get_Field_Width (14), False));
