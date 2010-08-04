@@ -155,24 +155,14 @@ package body History is
     procedure List_Change (Action : in Afpx.List_Change_List;
                            Status : in Afpx.List_Status_Rec) is
       pragma Unreferenced (Action);
-      Percent : Natural;
-      Last_Top : Integer;
+      Percent : Afpx.Percent_Range;
     begin
-      -- Compute %
-      if Status.Id_Top = 0 then
-        -- Empty list
-        Percent := 0;
-      elsif Afpx.Line_List.List_Length <= List_Height then
-        Percent := 100;
+      Percent := Afpx.Get_List_Percent;
+      if Percent /= 0 then
+        Afpx.Encode_Field (11, (0, 0), Normal (Percent, 3, True));
       else
-        -- At which percent is the bottom shown
-        -- Top index when at bottom
-        Last_Top := Afpx.Line_List.List_Length - List_Height + 1;
-        -- Factor = (100 - 1) / (LastTop - 1)
-        -- Percent - 1 = (Top - 1) * Factor
-        Percent := (Status.Id_Top - 1) * (100 - 1) / (Last_Top - 1)  + 1;
+        Afpx.Encode_Field (11, (0, 0), " - ");
       end if;
-      Afpx.Encode_Field (11, (0, 0), Normal (Percent, 3, True));
       Afpx.Encode_Field (14, (0, 0),
            Normal (Status.Ids_Selected(Afpx.List_Left),
                    Afpx.Get_Field_Width (14), False));
