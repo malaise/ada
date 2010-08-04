@@ -295,6 +295,12 @@ package Afpx is
     procedure (Action : in List_Change_List;
                Status : in List_Status_Rec);
 
+  -- Percent of position of list in list field
+  -- 0 when list is shorter than field (including empty list)
+  -- 1 => Top, 100 => Bottom
+  subtype Percent_Range is Natural range 0 .. 100;
+  function Get_List_Percent return Percent_Range;
+
   -- Print the fields and the list (if Redisplay), then gets.
   -- Redisplay should be set if modif of some other screen actions (con_io)
   --  justify a redisplay, by instance when Result.Event was Refresh.

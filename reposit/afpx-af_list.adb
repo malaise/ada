@@ -399,6 +399,27 @@ package body Af_List is
     return Status;
   end Get_Status;
 
+  -- Percent of position of list in list field
+  function Get_Percent return Percent_Range is
+    Last_Top : Integer;
+    Height : constant Positive := Af_Dscr.Fields(Lfn).Height;
+  begin
+    if not Af_Dscr.Has_List then
+      -- No list field
+      return 0;
+    elsif Line_List.List_Length <= Height then
+      -- List shorter than field
+      return 0;
+    end if;
+
+    -- At which percent is the bottom shown
+    -- Top index when at bottom
+    Last_Top := Line_List.List_Length - Height + 1;
+    -- Factor = (100 - 1) / (LastTop - 1)
+    -- Percent - 1 = (Top - 1) * Factor
+    return (Get_Status.Id_Top - 1) * (100 - 1) / (Last_Top - 1)  + 1;
+  end Get_Percent;
+
   procedure Set_Current is
   begin
     if not Opened then

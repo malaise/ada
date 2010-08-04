@@ -199,6 +199,11 @@ package body Afpx is
     -- Get current status of the list (what is shown, what is selected)
     function Get_Status return List_Status_Rec;
 
+    -- Percent of position of list in field
+    -- 0 when list is shorter than field (including empty list)
+    -- 1 => Top, 100 => Bottom
+    function Get_Percent return Percent_Range;
+
     -- Set current item of list according to Ids_Selected(Left)
     procedure Set_Current;
 
@@ -787,6 +792,11 @@ package body Afpx is
       return N - Str'First + 1;
     end if;
   end Last_Index;
+
+   -- Percent of position of list in list field
+  -- 0 when list is shorter than field (including empty list)
+  -- 1 => Top, 100 => Bottom
+  function Get_List_Percent return Percent_Range renames Af_List.Get_Percent;
 
   -- Print the fields and the list, then gets
   procedure Put_Then_Get (Cursor_Field  : in out Field_Range;
