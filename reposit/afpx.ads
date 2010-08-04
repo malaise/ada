@@ -276,7 +276,7 @@ package Afpx is
   -- Call back called by Put_Then_Get when something is changed in the list:
   --  - change of left or right selection
   --  - scroll by keyboard or wheel
-  --  - Put_Then_Get redisplays list (list modified)
+  --  - Put_Then_Get is called or redisplays list (list modified)
   type List_Change_List is (Left_Selection, Right_Selection, Scroll,
                             List_Modified);
   type List_Button_List is (List_Left, List_Right);
