@@ -5,7 +5,7 @@
 <Afpx_Descriptors Height="44" Width="55">
   <Var Name="Version" Value="V2.8"/>
   <Color_Definitions>
-    <Color_Definition Name="Color09">Dark_Grey</Color_Definition>
+    <Color_Definition Id="Color09" Color="Dark_Grey"/>
   </Color_Definitions>
 
   <!-- Main screen: explorator -->

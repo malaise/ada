@@ -324,24 +324,22 @@ procedure Afpx_Bld is
 
   -- Parse the (optional) definition of color names
   procedure Define_Color_Names (Node : in Xp.Node_Type) is
-    Text : Xp.Text_Type;
-    Color : Xp.Element_Type;
-    Name, Val : Asu_Us;
+    Attrs : Xp.Attributes_Array (1 .. 2);
+    Id, Color : Asu_Us;
     Index : Generic_Con_Io.Effective_Colors;
   begin
-    -- Overwrite some
+    -- Overwrite some colors
     for I in 1 .. Ctx.Get_Nb_Children (Node) loop
-      Color := Ctx.Get_Child (Node, I);
-      begin
-        Name := Ctx.Get_Attribute (Color, 1).Value;
-        Index := Generic_Con_Io.Effective_Colors'Value(Asu_Ts (Name));
-        Text := Ctx.Get_Child (Color, 1);
-        Val := Asu_Tus (Computer.Eval (Ctx.Get_Text (Text)));
-        Color_Defs(Index) := (Val);
-      exception
-        when others =>
-          File_Error (Color, "Invalid color re-definition");
-      end;
+      Attrs := Ctx.Get_Attributes (Ctx.Get_Child (Node, I));
+      if Asu_Ts (Attrs(1).Name) = "Id" then
+        Id := Attrs(1).Value;
+        Color := Attrs(2).Value;
+      else
+        Color := Attrs(1).Value;
+        Id := Attrs(2).Value;
+      end if;
+      Index := Generic_Con_Io.Effective_Colors'Value(Asu_Ts (Id));
+      Color_Defs(Index) := Color;
     end loop;
 
     Color_Names := Afpx_Typ.To_Names (Color_Defs);

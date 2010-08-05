@@ -18,7 +18,7 @@
 <!ATTLIST Afpx_Descriptors Width CDATA #IMPLIED
                            Height CDATA #IMPLIED>
 <!-- The Afpx_Descriptors is made of several descriptors. -->
-<!-- Before descriptors it is possible to re-define any of 14 color names. -->
+<!-- Before descriptors it is possible to re-define any of 14 color. -->
 <!--  The constants Color01 to Color14 are automatically created after this -->
 <!--  definition or before the first descriptor. -->
 <!-- Before descriptors, it is possible to define and overwrite variables. -->
@@ -38,9 +38,9 @@
                    Grey | Light_Blue | Lime_Green  |Orange |
                    Yellow | White">
 <!ELEMENT Color_Definitions (Color_Definition*)>
-<!ATTLIST Color_Definition Name ID #REQUIRED>
-<!ELEMENT Color_Definition (#PCDATA)>
-
+<!ELEMENT Color_Definition EMPTY>
+<!ATTLIST Color_Definition Id ID #REQUIRED
+                           Color CDATA #REQUIRED>
 
 <!-- A descriptor Num has to be positive range 1 .. 50 and sole (no double). -->
 <!-- It cannot be a variable. -->
