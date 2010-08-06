@@ -1,79 +1,126 @@
 with Ada.Characters.Latin_1, Ada.Exceptions;
-with Argument, Event_Mng, Sys_Calls, Async_Stdin, Text_Line;
+with Argument, Event_Mng, Sys_Calls, Async_Stdin, Text_Line, Socket, Tcp_Util;
 with Fifos;
 with Debug, Io_Data;
 package body Io_Flow is
 
-  -- Init, get fifo name or leave empty for stdin
-  Init_Done : Boolean := False;
-  Fifo_Name : Asu_Us;
+  -- Io mode
+  type Io_Mode_List is (
+    Unknown,
+    Stdio_Tty,
+    Stdio_Not_Tty,
+    Udp,
+    Tcp,
+    Fifo);
+  Io_Mode : Io_Mode_List := Unknown;
 
-  -- Input flow when not a fifo nor a tty
-  Input_Flow : Text_Line.File_Type;
-
-  -- Data read from stdin tty or fifo
+  -- Data read
   Input_Data : Asu_Us;
 
-  -- Concatenated fifo messages until one lasts with Cr or Lf
-  Fifo_Data : Asu_Us;
+  -- Udp or tcp socket
+  Soc : Socket.Socket_Dscr;
 
   -- Fifo
+  Fifo_Name : Asu_Us;
   package Mcd_Fifos is new Fifos.Fifo (Io_Data.Message_Type);
   Acc_Id, Client_Id : Mcd_Fifos.Fifo_Id := Mcd_Fifos.No_Fifo;
   procedure Open_Fifo (Active : in Boolean);
+  -- Concatenated fifo messages until one lasts with Cr or Lf
+  Fifo_Data : Asu_Us;
 
-  -- Stdin
-  Stdio_Is_A_Tty : Boolean := False;
+  -- Async Stdin
   function Stdin_Cb (Str : in String) return Boolean;
 
+  -- Input flow when stdin is not a tty
+  Input_Flow : Text_Line.File_Type;
+
   ----------------------------------------------------
-  -- Init fifo or stdin
+  -- Init fifo, tcp, udp or stdin (async or not)
   ----------------------------------------------------
-  procedure Init is
+  -- Default init when sync stdin or forced
+  procedure Init_Default is
+  begin
+    Io_Mode := Stdio_Not_Tty;
+    Input_Flow.Open (Text_Line.In_File, Sys_Calls.Stdin);
+  end Init_Default;
+  procedure Init (Default : in Boolean := False) is
     use type Sys_Calls.File_Desc_Kind_List;
   begin
-    if Init_Done then
+    if Io_Mode /= Unknown then
       return;
     end if;
-    Init_Done  := True;
+    if Default then
+      Init_Default;
+      return;
+    end if;
 
     -- Get fifo name argument if set
-    begin
+    if Argument.Is_Set (1, "f") then
+      if Argument.Is_Set (2, "f") or else Io_Mode /= Unknown then
+        Async_Stdin.Put_Line_Err ("Too many options.");
+        raise Init_Error;
+      end if;
       Fifo_Name := Asu_Tus (Argument.Get_Parameter (1, "f"));
-      -- Fifo
+      if Asu_Is_Null (Fifo_Name) then
+        Async_Stdin.Put_Line_Err ("Missing fifo name.");
+        raise Init_Error;
+      end if;
       if Debug.Debug_Level_Array(Debug.Flow) then
         Async_Stdin.Put_Line_Err ("Flow: init on fifo " & Asu_Ts (Fifo_Name));
       end if;
       Open_Fifo (True);
+      Io_Mode := Fifo;
+    end if;
+
+    -- Get tcp port if set
+    if Argument.Is_Set (1, "t") then
+      if Argument.Is_Set (2, "t") or else Io_Mode /= Unknown then
+        Async_Stdin.Put_Line_Err ("Too many options.");
+        raise Init_Error;
+      end if;
+      Async_Stdin.Put_Line_Err ("Not Implemented.");
+      raise Init_Error;
+      Io_Mode := Tcp;
+    end if;
+
+    -- Get udp/ipm spec if set
+    if Argument.Is_Set (1, "u") then
+      if Argument.Is_Set (2, "u") or else Io_Mode /= Unknown then
+        Async_Stdin.Put_Line_Err ("Too many options.");
+        raise Init_Error;
+      end if;
+      Async_Stdin.Put_Line_Err ("Not Implemented.");
+      raise Init_Error;
+      Io_Mode := Udp;
+    end if;
+
+    -- If no arg => Stdin
+    if Argument.Get_Nbre_Arg /= 0 then
+      Async_Stdin.Put_Line_Err ("Invalid argument.");
+      raise Init_Error;
+    end if;
+    if Io_Mode /= Unknown then
       return;
-    exception
-      when Argument.Argument_Not_Found =>
-        -- No fifo arg. Continue on Stdin
-        null;
-    end;
+    end if;
 
     -- Stdin
-    Fifo_Name := Asu_Null;
     if Debug.Debug_Level_Array(Debug.Flow) then
       Async_Stdin.Put_Line_Err ("Flow: init on stdio");
     end if;
     -- Set stdin/out asynchronous if it is a Tty
-    Stdio_Is_A_Tty :=
-        Sys_Calls.File_Desc_Kind (Sys_Calls.Stdin)  = Sys_Calls.Tty
-      and then
-        Sys_Calls.File_Desc_Kind (Sys_Calls.Stdout) = Sys_Calls.Tty;
-    if Stdio_Is_A_Tty then
+    if Sys_Calls.File_Desc_Kind (Sys_Calls.Stdin)  = Sys_Calls.Tty
+    and then Sys_Calls.File_Desc_Kind (Sys_Calls.Stdout) = Sys_Calls.Tty then
+      Io_Mode := Stdio_Tty;
       Async_Stdin.Set_Async (Stdin_Cb'Access, 0);
       if Debug.Debug_Level_Array(Debug.Flow) then
         Async_Stdin.Put_Line_Err ("Flow: stdio is a tty");
       end if;
     else
-      Input_Flow.Open (Text_Line.In_File, Sys_Calls.Stdin);
+      Init_Default;
       if Debug.Debug_Level_Array(Debug.Flow) then
         Async_Stdin.Put_Line_Err ("Flow: stdio is a not a tty");
       end if;
     end if;
-    return;
 
   end Init;
 
@@ -86,8 +133,7 @@ package body Io_Flow is
     use type Event_Mng.Out_Event_List;
     use type Mcd_Fifos.Fifo_Id;
   begin
-    Init;
-    if Asu_Is_Null (Fifo_Name) and then not Stdio_Is_A_Tty then
+    if Io_Mode = Stdio_Not_Tty then
       Input_Data := Asu_Null;
       -- Get next non empty line from Stdin (not a tty)
       loop
@@ -126,11 +172,16 @@ package body Io_Flow is
     end if;
     Str := Input_Data;
     -- Allow input data to be overwritten
-    if Client_Id /= Mcd_Fifos.No_Fifo then
-      Mcd_Fifos.Activate (Client_Id, True);
-    elsif Stdio_Is_A_Tty then
-      Async_Stdin.Activate (True);
-    end if;
+    case Io_Mode is
+      when Stdio_Tty =>
+        Async_Stdin.Activate (True);
+      when Fifo =>
+        if Client_Id /= Mcd_Fifos.No_Fifo then
+          Mcd_Fifos.Activate (Client_Id, True);
+        end if;
+      when others =>
+        null;
+    end case;
     if Debug.Debug_Level_Array(Debug.Flow) then
       Async_Stdin.Put_Line_Err ("Flow: Next_Line -> " & Asu_Ts (Str));
     end if;
@@ -164,28 +215,33 @@ package body Io_Flow is
     F, L : Natural;
     use type Mcd_Fifos.Fifo_Id;
   begin
-    if Asu_Is_Null (Fifo_Name) then
-      -- Put on stdout (tty or not)
-      Async_Stdin.Put_Out (Str);
-    elsif Client_Id /= Mcd_Fifos.No_Fifo then
-      -- Send on fifo several messages
-      F := Str'First;
-      loop
-        L := F + Io_Data.Max_Message_Len - 1;
-        if L > Str'Last then
-          L := Str'Last;
+    case Io_Mode is
+      when Stdio_Tty | Stdio_Not_Tty =>
+        -- Put on stdout (tty or not)
+        Async_Stdin.Put_Out (Str);
+      when Fifo =>
+        if Client_Id /= Mcd_Fifos.No_Fifo then
+          -- Send on fifo several messages
+          F := Str'First;
+          loop
+            L := F + Io_Data.Max_Message_Len - 1;
+            if L > Str'Last then
+              L := Str'Last;
+            end if;
+            if Debug.Debug_Level_Array(Debug.Flow) then
+              Async_Stdin.Put_Line_Err ("Flow: Sending -> " & Str(F .. L));
+            end if;
+            Send_Message (Str(F .. L));
+            if Debug.Debug_Level_Array(Debug.Flow) then
+              Async_Stdin.Put_Line_Err ("Flow: Sent -> " & Str(F .. L));
+            end if;
+            exit when L = Str'Last;
+            F := L + 1;
+          end loop;
         end if;
-        if Debug.Debug_Level_Array(Debug.Flow) then
-          Async_Stdin.Put_Line_Err ("Flow: Sending -> " & Str(F .. L));
-        end if;
-        Send_Message (Str(F .. L));
-        if Debug.Debug_Level_Array(Debug.Flow) then
-          Async_Stdin.Put_Line_Err ("Flow: Sent -> " & Str(F .. L));
-        end if;
-        exit when L = Str'Last;
-        F := L + 1;
-      end loop;
-    end if;
+      when others =>
+        null;
+    end case;
   end Put;
 
   procedure New_Line is
@@ -203,29 +259,30 @@ package body Io_Flow is
   procedure Close is
     use type Mcd_Fifos.Fifo_Id;
   begin
-    if Asu_Is_Null (Fifo_Name) then
-      if Stdio_Is_A_Tty then
+    case Io_Mode is
+      when Stdio_Tty =>
         -- Reset tty blocking
         Async_Stdin.Set_Async;
-      else
+      when Stdio_Not_Tty =>
         -- Close input flow
         Input_Flow.Close;
-      end if;
-      return;
-    end if;
-    if Debug.Debug_Level_Array(Debug.Flow) then
-      Async_Stdin.Put_Line_Err ("Flow: Closing fifo");
-    end if;
-    Closing := True;
-    if Client_Id /= Mcd_Fifos.No_Fifo then
-      Mcd_Fifos.Close (Client_Id);
-    end if;
-    if Acc_Id /= Mcd_Fifos.No_Fifo then
-      Mcd_Fifos.Close (Acc_Id);
-    end if;
-    if Debug.Debug_Level_Array(Debug.Flow) then
-      Async_Stdin.Put_Line_Err ("Flow: Closed fifo");
-    end if;
+      when Fifo =>
+        if Debug.Debug_Level_Array(Debug.Flow) then
+          Async_Stdin.Put_Line_Err ("Flow: Closing fifo");
+        end if;
+        Closing := True;
+        if Client_Id /= Mcd_Fifos.No_Fifo then
+          Mcd_Fifos.Close (Client_Id);
+        end if;
+        if Acc_Id /= Mcd_Fifos.No_Fifo then
+          Mcd_Fifos.Close (Acc_Id);
+        end if;
+        if Debug.Debug_Level_Array(Debug.Flow) then
+          Async_Stdin.Put_Line_Err ("Flow: Closed fifo");
+        end if;
+      when others =>
+        null;
+    end case;
   end Close;
 
   ----------------------------------------------------
@@ -279,12 +336,6 @@ package body Io_Flow is
 
   procedure Open_Fifo (Active : in Boolean) is
   begin
-    if Asu_Is_Null (Fifo_Name) then
-      if Debug.Debug_Level_Array(Debug.Flow) then
-        Async_Stdin.Put_Line_Err ("Flow: Opening empty fifo discarded");
-      end if;
-      raise Fifo_Error;
-    end if;
     if Debug.Debug_Level_Array(Debug.Flow) then
       Async_Stdin.Put_Line_Err ("Flow: Opening fifo " & Asu_Ts (Fifo_Name));
     end if;
@@ -309,7 +360,7 @@ package body Io_Flow is
   end Open_Fifo;
 
   ----------------------------------------------------
-  -- Stdin callback
+  -- Async stdin callback
   ----------------------------------------------------
   function Stdin_Cb (Str : in String) return Boolean is
     use type Mcd_Fifos.Fifo_Id;

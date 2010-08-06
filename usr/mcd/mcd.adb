@@ -33,38 +33,24 @@ begin
   Basic_Proc.Set_Ok_Exit_Code;
   Debug.Init;
 
-  -- Check at most one arg
-  if Argument.Get_Nbre_Arg > 1 then
+  if Argument.Get_Nbre_Arg = 1
+  and then (Argument.Get_Parameter (1) = "-h"
+            or else Argument.Get_Parameter (1) = "--help"
+            or else Argument.Get_Parameter (1) = "help") then
+    Io_Flow.Init (Default => True);
     Mcd_Parser.Print_Help;
     Set_Error_Code;
     return;
   end if;
 
-  -- Check for fifo
+  -- Let Io_Flow init according to arguments
   begin
-    declare
-      Str : constant String := Argument.Get_Parameter (1, "f");
-    begin
-      -- -f. A fifo must be provided
-      if Str = "" then
-        Mcd_Parser.Print_Help;
-        Set_Error_Code;
-        return;
-      end if;
-      -- A fifo is provided
-    end;
+    Io_Flow.Init;
   exception
-    when Argument.Argument_Not_Found =>
-      if Argument.Get_Nbre_Arg /= 0 then
-        -- Unrecognised argument
-        Mcd_Parser.Print_Help;
-        Set_Error_Code;
-        return;
-      end if;
     when others =>
+      Io_Flow.Init (Default => True);
       Mcd_Parser.Print_Help;
-      Set_Error_Code;
-      return;
+      raise;
   end;
 
   -- Main loop
@@ -103,10 +89,12 @@ exception
     Error ("String length error");
   when Mcd_Mng.File_Error =>
     Error ("File IO error");
+  when Io_Flow.Init_Error =>
+    Error ("Initialization error");
+  when Io_Flow.Fifo_Error =>
+    Error ("Fifo opening error");
   when Mcd_Parser.Parsing_Error =>
     Error ("Parsing error");
-  when Io_Flow.Fifo_Error =>
-    Error ("Fifo error");
   when Except:others =>
     Error ("Exception "
               & Mixed_Str(Ada.Exceptions.Exception_Name (Except))

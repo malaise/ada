@@ -400,8 +400,6 @@ package body Mcd_Parser is
     raise Parsing_Error;
 
   exception
-    when Io_Flow.Fifo_Error =>
-      raise;
     when others =>
       raise Parsing_Error;
   end Next_Item;
@@ -410,7 +408,10 @@ package body Mcd_Parser is
   procedure Print_Help is
     Ope_Name : String (1 .. Ope_Len);
   begin
-    Io_Flow.Put_Line ("Usage: " & Argument.Get_Program_Name & " [ -f<fifo_name> | -h ]");
+    Io_Flow.Put_Line ("Usage: " & Argument.Get_Program_Name & " [ -f<fifo_name> | -u<udp_spec> | -t<tcp_port> | -h ]");
+    Io_Flow.Put_Line ("  <udp_spec> ::= [<ipm_lan_name_or_num>]:<udp_port>");
+    Io_Flow.Put_Line ("  <port>     ::= <port_name> | <port_num>");
+    Io_Flow.New_Line;
     Io_Flow.Put_Line ("Commands are strings read from standard input or from a fifo.");
     Io_Flow.Put_Line ("Separators are space and horizontal tab.");
     Io_Flow.Put_Line ("Comments start by '#', up to the end of line");
