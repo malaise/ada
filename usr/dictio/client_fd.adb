@@ -29,7 +29,7 @@ package body Client_Fd is
     Found : Boolean;
   begin
     Rec.Soc := Client;
-    Rec.Fd := Socket.Fd_Of (Client);
+    Rec.Fd := Client.Get_Fd;
     Search_Fd (Client_List, Found, Rec, From => Client_List_Mng.Absolute);
     if Found then
       raise Client_Error;
@@ -53,12 +53,12 @@ package body Client_Fd is
     end if;
 
     Client_List.Read (Rec, Client_List_Mng.Current);
-    if Rec.Fd /= Socket.Fd_Of (Client) then
+    if Rec.Fd /= Client.Get_Fd then
       raise Client_Error;
     end if;
     Client_List.Delete (Moved => Ok);
     Event_Mng.Del_Fd_Callback (Rec.Fd, True);
-    Socket.Close (Rec.Soc);
+    Rec.Soc.Close;
   end Del_Client;
 
   procedure Del_All is
@@ -72,7 +72,7 @@ package body Client_Fd is
     loop
       Client_List.Read (Rec, Client_List_Mng.Current);
       Event_Mng.Del_Fd_Callback (Rec.Fd, True);
-      Socket.Close (Rec.Soc);
+      Rec.Soc.Close;
       Client_List.Delete;
       exit when Client_List.Is_Empty;
     end loop;

@@ -141,16 +141,16 @@ package body Client_Mng is
       declare
         Close_Dscr : Socket.Socket_Dscr := New_Dscr;
       begin
-        Socket.Close (Close_Dscr);
+        Close_Dscr.Close;
       end;
       return;
     end if;
     if Dictio_Debug.Level_Array(Dictio_Debug.Client) then
       Dictio_Debug.Put ("Client: new client accepted -> "
-               & Event_Mng.File_Desc'Image(Socket.Fd_Of (New_Dscr)));
+               & Event_Mng.File_Desc'Image(New_Dscr.Get_Fd));
     end if;
     Client_Fd.Add_Client (New_Dscr);
-    Event_Mng.Add_Fd_Callback (Socket.Fd_Of (New_Dscr), True, Read_Cb'Access);
+    Event_Mng.Add_Fd_Callback (New_Dscr.Get_Fd, True, Read_Cb'Access);
 
     -- Send version and status
     declare
@@ -173,7 +173,7 @@ package body Client_Mng is
       when Socket.Soc_Conn_Lost =>
         if Dictio_Debug.Level_Array(Dictio_Debug.Client) then
           Dictio_Debug.Put ("Client: lost connection with "
-                   & Event_Mng.File_Desc'Image(Socket.Fd_Of (New_Dscr)));
+                   & Event_Mng.File_Desc'Image(New_Dscr.Get_Fd));
         end if;
         Client_Fd.Del_Client (New_Dscr);
     end;

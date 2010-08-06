@@ -3,7 +3,7 @@ with Sys_Calls, C_Types;
 package Socket is
 
   -- A socket descriptor
-  type Socket_Dscr is private;
+  type Socket_Dscr is tagged private;
   No_Socket : constant Socket_Dscr;
 
   -- Available protocols on socket
@@ -86,7 +86,7 @@ package Socket is
   function Is_Blocking (Socket : in Socket_Dscr) return Boolean;
 
   -- Get the Fd of a socket (for use in X_Mng. Add/Del _Callback)
-  function Fd_Of (Socket : in Socket_Dscr) return Sys_Calls.File_Desc;
+  function Get_Fd (Socket : in Socket_Dscr) return Sys_Calls.File_Desc;
 
   -------------------------------------
   -- RECEPTION PORT - FD - RECEPTION --
@@ -278,16 +278,14 @@ package Socket is
 
 private
 
-  type Socket_Dscr is record
+  type Socket_Dscr is tagged record
     Soc_Addr : System.Address := System.Null_Address;
   end record;
-
-  No_Socket : constant Socket_Dscr := (Soc_Addr => System.Null_Address);
 
   type Host_Id is new C_Types.Uint32;
   for Host_Id'Size use 4 * System.Storage_Unit; -- As Ip_Addr
   No_Host : constant Host_Id := 0;
 
+  No_Socket : constant Socket_Dscr := (Soc_Addr => System.Null_Address);
 end Socket;
-
 

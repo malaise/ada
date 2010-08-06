@@ -74,16 +74,16 @@ package body Connection is
 
   procedure Close is
   begin
-    if Socket.Is_Open (Soc) then
+    if Soc.Is_Open then
       Event_Mng.Del_Fd_Callback (Fd, True);
-      Socket.Close (Soc);
+      Soc.Close;
     end if;
   end Close;
 
   -- May handle Lost_conn/Reconn via a timer
   procedure My_Send (Message : in Message_Type) is
   begin
-    if Socket.Is_Open (Soc) then
+    if Soc.Is_Open then
       Chess_Send (Soc, Message);
     end if;
   exception
@@ -102,7 +102,7 @@ package body Connection is
       Ada.Text_Io.Put_Line ("Connect callback");
     end if;
     Soc := Dscr;
-    Fd := Socket.Fd_Of (Soc);
+    Fd := Soc.Get_Fd;
     Event_Mng.Add_Fd_Callback (Fd, True, Rec_Call_Back'Access);
     My_Send ((Init, Own_Color));
   end Con_Call_Back;
@@ -138,7 +138,7 @@ package body Connection is
     end if;
     Tcp_Util.Abort_Accept (Socket.Tcp_Header, Local_Port_Num);
     Soc := New_Dscr;
-    Fd := Socket.Fd_Of (Soc);
+    Fd := Soc.Get_Fd;
     Event_Mng.Add_Fd_Callback (Fd, True, Rec_Call_Back'Access);
   end Acc_Call_Back;
 

@@ -92,9 +92,9 @@ package body Tcp_Util is
   -- Dscr is open and non blocking, or No_Socket if failure
   -- Sets connected if connection established
   procedure Try_Connect (
-           Protocol : in Tcp_Protocol_List;
-           Host     : in Remote_Host;
-           Port     : in Remote_Port;
+           Protocol  : in Tcp_Protocol_List;
+           Host      : in Remote_Host;
+           Port      : in Remote_Port;
            Dscr      : in out Socket.Socket_Dscr;
            Connected : out Boolean) is
     use type  Socket.Socket_Dscr;
@@ -104,8 +104,8 @@ package body Tcp_Util is
       My_Io.Put_Line ("  Tcp_Util.Try_Connect start");
     end if;
     -- Open non blocking
-    Socket.Open (Dscr, Protocol);
-    Socket.Set_Blocking (Dscr, False);
+    Dscr.Open (Protocol);
+    Dscr.Set_Blocking (False);
     if Debug_Connect then
       My_Io.Put_Line ("  Tcp_Util.Try_Connect socket open");
     end if;
@@ -115,26 +115,24 @@ package body Tcp_Util is
       when Host_Name_Spec =>
         case Port.Kind is
           when Port_Name_Spec =>
-            Socket.Set_Destination_Name_And_Service (Dscr, False,
+            Dscr.Set_Destination_Name_And_Service (False,
                                    Name_Of (Host.Name), Name_Of (Port.Name));
           when Port_Num_Spec =>
-            Socket.Set_Destination_Name_And_Port (Dscr, False,
+            Dscr.Set_Destination_Name_And_Port (False,
                                    Name_Of (Host.Name), Port.Num);
         end case;
       when Host_Id_Spec =>
         case Port.Kind is
           when Port_Name_Spec =>
-            Socket.Set_Destination_Host_And_Service (Dscr,
-                                   Host.Id, Name_Of(Port.Name));
+            Dscr.Set_Destination_Host_And_Service (Host.Id, Name_Of(Port.Name));
           when Port_Num_Spec =>
-            Socket.Set_Destination_Host_And_Port (Dscr,
-                                   Host.Id, Port.Num);
+            Dscr.Set_Destination_Host_And_Port (Host.Id, Port.Num);
         end case;
     end case;
-    if Socket.Is_Connected (Dscr) then
+    if Dscr.Is_Connected then
       Connected := True;
     else
-      Socket.Close (Dscr);
+      Dscr.Close;
       Connected := False;
     end if;
     if Debug_Connect then
@@ -143,8 +141,8 @@ package body Tcp_Util is
   exception
     when Socket.Soc_Conn_Refused =>
       -- Not open or not connected
-      if Socket.Is_Open (Dscr) then
-        Socket.Close (Dscr);
+      if Dscr.Is_Open then
+        Dscr.Close;
       end if;
       if Debug_Connect then
         My_Io.Put_Line ("  Tcp_Util.Try_Connect refused");
@@ -179,14 +177,14 @@ package body Tcp_Util is
       Timers.Delete (Rec.Timer);
     end if;
     Delete_Current_Con;
-    if Socket.Is_Open (Rec.Dscr) then
+    if Rec.Dscr.Is_Open then
       -- Connected
       if Debug_Connect then
         My_Io.Put_Line ("  Tcp_Util.Handle_Current_Result connected");
       end if;
-      Host := Socket.Get_Destination_Host (Rec.Dscr);
-      Port := Socket.Get_Destination_Port (Rec.Dscr);
-      Socket.Set_Blocking (Rec.Dscr, True);
+      Host := Rec.Dscr.Get_Destination_Host;
+      Port := Rec.Dscr.Get_Destination_Port;
+      Rec.Dscr.Set_Blocking (True);
     else
       -- Giving up
       if Debug_Connect then
@@ -218,7 +216,7 @@ package body Tcp_Util is
     end if;
     -- Inform client
     if Rec.Cb /= null then
-      Rec.Cb (Port, Host,  Socket.Is_Open (Rec.Dscr), Rec.Dscr);
+      Rec.Cb (Port, Host,  Rec.Dscr.Is_Open, Rec.Dscr);
       if Debug_Connect then
         My_Io.Put_Line ("  Tcp_Util.Handle_Current_Result Cb called");
       end if;
@@ -247,11 +245,11 @@ package body Tcp_Util is
     Event_Mng.Del_Fd_Callback (Rec.Fd, False);
 
     -- Close if failure and still open
-    if not Success and then Socket.Is_Open (Rec.Dscr) then
+    if not Success and then Rec.Dscr.Is_Open then
       if Debug_Connect then
         My_Io.Put_Line ("  Tcp_Util.End_Async_Connect closing socket");
       end if;
-      Socket.Close (Rec.Dscr);
+      Rec.Dscr.Close;
       Rec.Fd_Set := False;
     end if;
 
@@ -259,7 +257,7 @@ package body Tcp_Util is
     --  is silently handled here as a failure
 
     -- Success or failure
-    if Socket.Is_Open (Rec.Dscr) then
+    if Rec.Dscr.Is_Open then
       -- Connection success
       if Debug_Connect then
         My_Io.Put_Line ("  Tcp_Util.End_Async_Connect success");
@@ -307,7 +305,7 @@ package body Tcp_Util is
     end if;
 
     -- This try result?
-    if not Socket.Is_Connected (Rec.Dscr) then
+    if not Rec.Dscr.Is_Connected then
       -- Cancel and close
       if Debug_Connect then
         My_Io.Put_Line ("  Tcp_Util.Connection_Fd_Cb not connected");
@@ -377,7 +375,7 @@ package body Tcp_Util is
     -- Rec.Curr_Try is current try number
 
     -- Cancel pending async connect
-    if Socket.Is_Open (Rec.Dscr) then
+    if Rec.Dscr.Is_Open then
       if Debug_Connect then
         My_Io.Put_Line ("  Tcp_Util.Connection_Timer_Cb is open");
       end if;
@@ -391,14 +389,14 @@ package body Tcp_Util is
     Try_Connect (Rec.Protocol, Rec.Host, Rec.Port, Rec.Dscr, Connected);
     Rec.Curr_Try :=  Rec.Curr_Try + 1;
 
-    if Socket.Is_Open (Rec.Dscr) and then Connected then
+    if Rec.Dscr.Is_Open and then Connected then
       -- Connected synchronous success
       if Debug_Connect then
         My_Io.Put_Line ("  Tcp_Util.Connection_Timer_Cb synchronous success");
       end if;
       Handle_Current_Result (Rec);
       return True;
-    elsif not Socket.Is_Open (Rec.Dscr) then
+    elsif not Rec.Dscr.Is_Open then
       -- Connect synchronous failure: Check number of tries
       if Debug_Connect then
         My_Io.Put_Line ("  Tcp_Util.Connection_Timer_Cb synchronous failure");
@@ -416,10 +414,10 @@ package body Tcp_Util is
     if Debug_Connect then
       My_Io.Put_Line ("  Tcp_Util.Connection_Timer_Cb pending");
     end if;
-    if Socket.Is_Open (Rec.Dscr) then
+    if Rec.Dscr.Is_Open then
       -- Connection pending
       -- Save Dscr, Fd and pending status
-      Rec.Fd := Socket.Fd_Of (Rec.Dscr);
+      Rec.Fd := Rec.Dscr.Get_Fd;
       Rec.Fd_Set := True;
       -- Add callback on fd
       Event_Mng.Add_Fd_Callback (Rec.Fd, True, Connection_Fd_Cb'Access);
@@ -549,7 +547,7 @@ package body Tcp_Util is
       end if;
       Event_Mng.Del_Fd_Callback (Rec.Fd, True);
       Event_Mng.Del_Fd_Callback (Rec.Fd, False);
-      Socket.Close (Rec.Dscr);
+      Rec.Dscr.Close;
     end if;
     -- Cancel timer
     if Debug_Connect then
@@ -617,7 +615,7 @@ package body Tcp_Util is
 
     -- Accept
     begin
-      Socket.Accept_Connection (Rec.Dscr, New_Dscr);
+      Rec.Dscr.Accept_Connection (New_Dscr);
     exception
       when Socket.Soc_Would_Block =>
         -- Connection is not avlid any more: discard
@@ -631,8 +629,8 @@ package body Tcp_Util is
     end if;
 
     -- Call callback
-    Host := Socket.Get_Destination_Host (New_Dscr);
-    Port := Socket.Get_Destination_Port (New_Dscr);
+    Host := New_Dscr.Get_Destination_Host;
+    Port := New_Dscr.Get_Destination_Port;
     if Rec.Cb /= null then
       Rec.Cb (Rec.Port, Rec.Dscr, Port, Host, New_Dscr);
       if Debug_Accept then
@@ -668,19 +666,19 @@ package body Tcp_Util is
     Rec.Dscr := Socket.No_Socket;
 
     -- Open socket
-    Socket.Open (Dscr, Protocol);
+    Dscr.Open (Protocol);
     Rec.Dscr := Dscr;
-    Rec.Fd := Socket.Fd_Of (Rec.Dscr);
+    Rec.Fd := Rec.Dscr.Get_Fd;
     -- Bind socket
     case Port.Kind is
       when Port_Name_Spec =>
-        Socket.Link_Service (Rec.Dscr, Name_Of(Port.Name));
+        Rec.Dscr.Link_Service (Name_Of(Port.Name));
       when Port_Num_Spec =>
-        Socket.Link_Port (Rec.Dscr, Port.Num);
+        Rec.Dscr.Link_Port (Port.Num);
       when Port_Dynamic_Spec =>
-        Socket.Link_Dynamic (Rec.Dscr);
+        Rec.Dscr.Link_Dynamic;
     end case;
-    Rec.Port := Socket.Get_Linked_To(Rec.Dscr);
+    Rec.Port := Rec.Dscr.Get_Linked_To;
     Num := Rec.Port;
     if Debug_Accept then
       My_Io.Put_Line ("  Tcp_Util.Accept_From linked");
@@ -699,8 +697,8 @@ package body Tcp_Util is
   exception
     when others =>
       -- Not open or not bind
-      if Socket.Is_Open (Dscr) then
-        Socket.Close (Dscr);
+      if Dscr.Is_Open then
+        Dscr.Close;
       end if;
       raise;
   end Accept_From;
@@ -731,7 +729,7 @@ package body Tcp_Util is
     end if;
     -- Del callback, close and delete rec
     Event_Mng.Del_Fd_Callback (Rec.Fd, True);
-    Socket.Close (Rec.Dscr);
+    Rec.Dscr.Close;
     Acc_List.Delete (Moved => Ok);
     if Debug_Accept then
       My_Io.Put_Line ("  Tcp_Util.Abort_Accept socket closed and rec deleted");
@@ -794,7 +792,7 @@ package body Tcp_Util is
 
     -- Try to re send
     begin
-      Socket.Re_Send (Rec.Dscr);
+      Rec.Dscr.Re_Send;
     exception
       when Socket.Soc_Would_Block =>
         -- Still in overflow
@@ -857,7 +855,7 @@ package body Tcp_Util is
       My_Io.Put_Line ("  Tcp_Util.Send oveflow");
     end if;
     Rec.Dscr := Dscr;
-    Rec.Fd := Socket.Fd_Of (Dscr);
+    Rec.Fd := Dscr.Get_Fd;
     Rec.Cb := End_Of_Overflow_Cb;
     Sen_List.Insert (Rec);
     if Debug_Overflow then
@@ -909,7 +907,7 @@ package body Tcp_Util is
     Delete_Current_Sen;
 
     -- Close
-    Socket.Close (Dscr);
+    Dscr.Close;
     if Debug_Overflow then
       My_Io.Put_Line ("  Tcp_Util.Abort_Send_and_Close done");
     end if;
@@ -969,7 +967,7 @@ package body Tcp_Util is
         Abort_Send_And_Close (Rec.Dscr);
       exception
         when No_Such =>
-          Socket.Close (Rec.Dscr);
+          Rec.Dscr.Close;
       end;
     end Close_Current;
 
@@ -1041,19 +1039,19 @@ package body Tcp_Util is
       The_Rec : Rece_Rec;
     begin
       Init_Debug;
-      if not Socket.Is_Open (Dscr) then
+      if not Dscr.Is_Open then
         raise No_Such;
       end if;
 
       The_Rec.Dscr := Dscr;
-      The_Rec.Fd := Socket.Fd_Of (Dscr);
+      The_Rec.Fd := Dscr.Get_Fd;
       The_Rec.Read_Cb := Reception_Cb;
       The_Rec.Discon_Cb := Disconnection_Cb;
 
       -- Append to list
       Rece_List.Insert (The_Rec);
 
-      Event_Mng.Add_Fd_Callback (Socket.Fd_Of (Dscr), True,
+      Event_Mng.Add_Fd_Callback (Dscr.Get_Fd, True,
                  Read_Cb'Unrestricted_Access);
 
       if Debug_Reception then
@@ -1077,10 +1075,10 @@ package body Tcp_Util is
       end if;
 
       if Active then
-        Event_Mng.Add_Fd_Callback (Socket.Fd_Of (Dscr), True,
+        Event_Mng.Add_Fd_Callback (Dscr.Get_Fd, True,
                    Read_Cb'Unrestricted_Access);
       else
-        Event_Mng.Del_Fd_Callback (Socket.Fd_Of (Dscr), True);
+        Event_Mng.Del_Fd_Callback (Dscr.Get_Fd, True);
       end if;
     end Activate_Callbacks;
 
@@ -1098,7 +1096,7 @@ package body Tcp_Util is
         raise No_Such;
       end if;
 
-      return Event_Mng.Fd_Callback_Set (Socket.Fd_Of (Dscr), True);
+      return Event_Mng.Fd_Callback_Set (Dscr.Get_Fd, True);
     end Callbacks_Active;
 
     procedure Remove_Callbacks (Dscr : in Socket.Socket_Dscr) is
@@ -1119,7 +1117,7 @@ package body Tcp_Util is
       if Debug_Reception then
         My_Io.Put_Line ("  Tcp_Util.Remove_Callbacks on Fd " & The_Rec.Fd'Img);
       end if;
-      Event_Mng.Del_Fd_Callback (Socket.Fd_Of (Dscr), True);
+      Event_Mng.Del_Fd_Callback (Dscr.Get_Fd, True);
     end Remove_Callbacks;
 
   end Reception;

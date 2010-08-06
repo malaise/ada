@@ -233,13 +233,13 @@ package body Socket is
   end Is_Blocking;
 
   -- Get the Fd of a socket (for use in X_Mng. Add/Del _Callback)
-  function Fd_Of (Socket : in Socket_Dscr) return Sys_Calls.File_Desc is
+  function Get_Fd (Socket : in Socket_Dscr) return Sys_Calls.File_Desc is
     Fd : Integer;
   begin
     Res := Soc_Get_Id (Socket.Soc_Addr, Fd'Address);
     Check_Ok;
     return Sys_Calls.File_Desc(Fd);
-  end Fd_Of;
+  end Get_Fd;
 
 
 

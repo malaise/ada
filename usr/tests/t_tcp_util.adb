@@ -48,7 +48,7 @@ procedure T_Tcp_Util is
 
   function Send (Msg : in String) return Boolean is
   begin
-    if not Socket.Is_Open (The_Dscr) then
+    if not The_Dscr.Is_Open then
       Ada.Text_Io.Put_Line (Msg & " not sending cause not open");
       return False;
     end if;
@@ -108,12 +108,12 @@ procedure T_Tcp_Util is
   begin
     if Connected then
       The_Dscr := Dscr;
-      Event_Mng.Add_Fd_Callback (Socket.Fd_Of(Dscr),
+      Event_Mng.Add_Fd_Callback (Dscr.Get_Fd,
                             True,
                             Read_Cb'Unrestricted_Access);
-      Socket.Set_Blocking (The_Dscr, False);
+      The_Dscr.Set_Blocking (False);
       Ada.Text_Io.Put ("Connected and ");
-      if not Socket.Is_Blocking (The_Dscr) then
+      if not The_Dscr.Is_Blocking then
         Ada.Text_Io.Put ("non ");
       end if;
       Ada.Text_Io.Put_Line ("blocking");
@@ -154,15 +154,15 @@ procedure T_Tcp_Util is
     if The_Dscr /= Socket.No_Socket then
       Ada.Text_Io.Put_Line ("Rejected");
       Tmp_Dscr := New_Dscr;
-      Socket.Close (Tmp_Dscr);
+      Tmp_Dscr.Close;
     else
       The_Dscr := New_Dscr;
-      Event_Mng.Add_Fd_Callback (Socket.Fd_Of(New_Dscr),
+      Event_Mng.Add_Fd_Callback (New_Dscr.Get_Fd,
                             True,
                             Read_Cb'Unrestricted_Access);
-      Socket.Set_Blocking (The_Dscr, False);
+      The_Dscr.Set_Blocking (False);
       Ada.Text_Io.Put ("Accepted and ");
-      if not Socket.Is_Blocking (The_Dscr) then
+      if not The_Dscr.Is_Blocking then
         Ada.Text_Io.Put ("non ");
       end if;
       Ada.Text_Io.Put_Line ("blocking");
@@ -191,7 +191,7 @@ procedure T_Tcp_Util is
     else
       Ada.Text_Io.Put ("Client: ");
     end if;
-    if not Socket.Is_Open (The_Dscr) or else Fd /= Socket.Fd_Of (The_Dscr) then
+    if not The_Dscr.Is_Open or else Fd /= The_Dscr.Get_Fd then
       Ada.Text_Io.Put_Line ("Read Cb -> Unknown fd");
       return False;
     end if;
@@ -207,7 +207,7 @@ procedure T_Tcp_Util is
           Tcp_Util.Abort_Send_And_Close (The_Dscr);
           In_Ovf := False;
         else
-          Socket.Close (The_Dscr);
+          The_Dscr.Close;
         end if;
         if not Server then
           Ada.Text_Io.Put_Line (" - Waiting");
@@ -352,14 +352,14 @@ begin
     when Tcp_Util.No_Such => null;
   end;
 
-  if Socket.Is_Open (The_Dscr) then
-    if Event_Mng.Fd_Callback_Set (Socket.Fd_Of(The_Dscr), True) then
-      Event_Mng.Del_Fd_Callback (Socket.Fd_Of(The_Dscr), True);
+  if The_Dscr.Is_Open then
+    if Event_Mng.Fd_Callback_Set (The_Dscr.Get_Fd, True) then
+      Event_Mng.Del_Fd_Callback (The_Dscr.Get_Fd, True);
     end if;
-    if Event_Mng.Fd_Callback_Set (Socket.Fd_Of(The_Dscr), False) then
-      Event_Mng.Del_Fd_Callback (Socket.Fd_Of(The_Dscr), False);
+    if Event_Mng.Fd_Callback_Set (The_Dscr.Get_Fd, False) then
+      Event_Mng.Del_Fd_Callback (The_Dscr.Get_Fd, False);
     end if;
-    Socket.Close (The_Dscr);
+    The_Dscr.Close;
   end if;
 exception
   when Arg_Error =>

@@ -104,14 +104,14 @@ begin
   end if;
 
   -- Create socket, add callback
-  Socket.Open (Soc, Socket.Udp);
+  Soc.Open (Socket.Udp);
   My_Io.Put ("Socket created and ");
-  if not Socket.Is_Blocking (Soc) then
+  if not Soc.Is_Blocking then
     My_Io.Put ("non ");
   end if;
   My_Io.Put_Line ("blocking");
 
-  Fd := Socket.Fd_Of (Soc);
+  Fd := Soc.Get_Fd;
   Event_Mng.Add_Fd_Callback (Fd, True, Call_Back'Unrestricted_Access);
   Event_Mng.Set_Sig_Term_Callback (Signal_Cb'Unrestricted_Access);
 
@@ -120,28 +120,28 @@ begin
   if Server then
     if not Text_Handler.Empty (Server_Name) then
       -- Ipm lan
-      Socket.Set_Destination_Name_And_Service (Soc,
+      Soc.Set_Destination_Name_And_Service (
            True, Text_Handler.Value (Server_Name),
            Text_Handler.Value(Port_Name));
     end if;
-    Socket.Link_Service (Soc, Text_Handler.Value(Port_Name));
+    Soc.Link_Service (Text_Handler.Value(Port_Name));
 
   else
-    Socket.Link_Dynamic (Soc);
+    Soc.Link_Dynamic;
     -- Check host
     declare
       Dest_Host_Id : Socket.Host_Id;
       pragma Unreferenced (Dest_Host_Id);
     begin
       Dest_Host_Id := Socket.Host_Id_Of (Text_Handler.Value (Server_Name));
-      Socket.Set_Destination_Name_And_Service (Soc,
-         False, Text_Handler.Value (Server_Name),
+      Soc.Set_Destination_Name_And_Service ( False,
+         Text_Handler.Value (Server_Name),
          Text_Handler.Value(Port_Name));
     exception
       when Socket.Soc_Name_Not_Found =>
-        Socket.Set_Destination_Name_And_Service (Soc,
-         True, Text_Handler.Value (Server_Name),
-         Text_Handler.Value(Port_Name));
+        Soc.Set_Destination_Name_And_Service (True,
+           Text_Handler.Value (Server_Name),
+           Text_Handler.Value(Port_Name));
     end;
     Message.Num := 1;
     Send;
@@ -166,7 +166,7 @@ begin
 
   if Event_Mng.Fd_Callback_Set (Fd, True) then
     Event_Mng.Del_Fd_Callback (Fd, True);
-    Socket.Close (Soc);
+    Soc.Close;
   end if;
 
 exception

@@ -315,8 +315,8 @@ begin
   end if;
 
   -- Create socket, add callback
-  Socket.Open (Soc, Socket.Udp);
-  Fd := Socket.Fd_Of (Soc);
+  Soc.Open (Socket.Udp);
+  Fd := Soc.Get_Fd;
   Event_Mng.Add_Fd_Callback (Fd, True, Call_Back'Unrestricted_Access);
   Event_Mng.Set_Sig_Term_Callback (Signal_Cb'Unrestricted_Access);
 
@@ -349,16 +349,16 @@ begin
     -- Set interface
     if Use_Iface then
       if Send_Mode then
-        Socket.Set_Sending_Ipm_Interface (Soc, Iface.Id);
+        Soc.Set_Sending_Ipm_Interface (Iface.Id);
       else
-        Socket.Set_Reception_Ipm_Interface (Soc, Iface.Id);
+        Soc.Set_Reception_Ipm_Interface (Iface.Id);
       end if;
     end if;
 
     -- Always set dest
     if Lan.Kind = Tcp_Util.Host_Name_Spec then
       begin
-        Socket.Set_Destination_Name_And_Port (Soc, True,
+        Soc.Set_Destination_Name_And_Port (True,
                  Tcp_Util.Name_Of (Lan.Name), Port_Num);
       exception
         when Socket.Soc_Name_Not_Found =>
@@ -366,10 +366,10 @@ begin
           raise;
       end;
     else
-      Socket.Set_Destination_Host_And_Port (Soc, Lan.Id, Port_Num);
+      Soc.Set_Destination_Host_And_Port (Lan.Id, Port_Num);
     end if;
     -- Bind
-    Socket.Link_Port (Soc, Port_Num);
+    Soc.Link_Port (Port_Num);
   end;
   Put ("Initialized on " & Local_Host_Name);
 
@@ -385,7 +385,7 @@ begin
   -- Close
   if Event_Mng.Fd_Callback_Set (Fd, True) then
     Event_Mng.Del_Fd_Callback (Fd, True);
-    Socket.Close (Soc);
+    Soc.Close;
   end if;
 
 exception

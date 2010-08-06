@@ -41,7 +41,7 @@ package body Notify is
     if Dictio_Debug.Level_Array(Dictio_Debug.Client_Notify) then
       Dictio_Debug.Put ("Client-notify.add: " & Parse(Item)
                & " kind " & Kind
-               & " on " & Event_Mng.File_Desc'Image(Socket.Fd_Of(Client)));
+               & " on " & Event_Mng.File_Desc'Image(Client.Get_Fd));
     end if;
     Notif_List.Insert ((Client, Item, Kind));
   end Add;
@@ -66,14 +66,14 @@ package body Notify is
       if Dictio_Debug.Level_Array(Dictio_Debug.Client_Notify) then
         Dictio_Debug.Put ("Client-notify.del: not found " & Parse(Item)
              & " kind " & Kind
-             & " on " & Event_Mng.File_Desc'Image(Socket.Fd_Of(Client)));
+             & " on " & Event_Mng.File_Desc'Image(Client.Get_Fd));
       end if;
       return;
     end if;
     if Dictio_Debug.Level_Array(Dictio_Debug.Client_Notify) then
       Dictio_Debug.Put ("Client-notify.del: " & Parse(Item)
                & " kind " & Kind
-               & " on " & Event_Mng.File_Desc'Image(Socket.Fd_Of(Client)));
+               & " on " & Event_Mng.File_Desc'Image(Client.Get_Fd));
     end if;
     Delete_Current;
   end Del;
@@ -94,7 +94,7 @@ package body Notify is
         Notif_List.Read (Rec, Notif_List_Mng.Current);
         Dictio_Debug.Put ("Client-notify.del_client: " & Parse(Rec.Item)
                & " kind " & Rec.Kind
-               & " on " & Event_Mng.File_Desc'Image(Socket.Fd_Of(Rec.Client)));
+               & " on " & Event_Mng.File_Desc'Image(Rec.Client.Get_Fd));
       end if;
       Delete_Current;
       Client_Search (Notif_List, Found, Rec,
@@ -132,7 +132,7 @@ package body Notify is
     end if;
     loop
       Notif_List.Read (Rec, Notif_List_Mng.Current);
-      Fd := Socket.Fd_Of (Rec.Client);
+      Fd := Rec.Client.Get_Fd;
       declare
         Dummy : Boolean;
         pragma Unreferenced (Dummy);

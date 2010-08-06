@@ -209,12 +209,12 @@ package body Fifos is
         if May_Be_Sending then
           Tcp_Util.Abort_Send_And_Close (Dscr);
         else
-          Socket.Close (Dscr);
+          Dscr.Close;
         end if;
       exception
         when Tcp_Util.No_Such =>
           -- May_Be_Sending but was not
-          Socket.Close (Dscr);
+          Dscr.Close;
       end Close_Socket;
 
       -------------------------------------------------------------------------

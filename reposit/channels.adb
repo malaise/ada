@@ -92,7 +92,7 @@ package body Channels is
     Tcp_Util.Abort_Send_And_Close (Dscr);
   exception
     when Tcp_Util.No_Such =>
-      Socket.Close (Dscr);
+      Dscr.Close;
   end Close;
 
   -- Remove tailing spaces of a string
@@ -302,7 +302,7 @@ package body Channels is
         declare
           Tmp_Socket : Socket.Socket_Dscr := New_Dscr;
         begin
-          Socket.Close (Tmp_Socket);
+          Tmp_Socket.Close;
         exception
           when others => null;
         end;
@@ -310,14 +310,14 @@ package body Channels is
       else
         -- Insert new sender
         Channel_Dscr.Sends.Insert ( (Dscr => New_Dscr,
-                                     Fd   => Socket.Fd_Of (New_Dscr)));
+                                     Fd   => New_Dscr.Get_Fd));
 
         -- Hook fd to receive data
         if Channel_Dscr.Active then
-          Event_Mng.Add_Fd_Callback (Socket.Fd_Of (New_Dscr), True,
+          Event_Mng.Add_Fd_Callback (New_Dscr.Get_Fd, True,
                                 Rec_Read_Cb'Unrestricted_Access);
         end if;
-        Socket.Set_Blocking (New_Dscr, False);
+        New_Dscr.Set_Blocking (False);
       end if;
     end Accept_Cb;
 
@@ -368,7 +368,7 @@ package body Channels is
         loop
           Channel_Dscr.Sends.Read (Rec, Send_List_Mng.Current);
           -- Unhook fd receiving data
-          Event_Mng.Del_Fd_Callback (Socket.Fd_Of (Rec.Dscr), True);
+          Event_Mng.Del_Fd_Callback (Rec.Dscr.Get_Fd, True);
           Close (Rec.Dscr);
           exit when not Channel_Dscr.Sends.Check_Move;
           Channel_Dscr.Sends.Move_To;
@@ -401,22 +401,22 @@ package body Channels is
                       From => Dest_List_Mng.Absolute);
       if not Found then
         -- Bug?
-        Socket.Close (Dest.Dscr);
+        Dest.Dscr.Close;
         return;
       end if;
 
       -- Update Dscr and Fd
       Channel_Dscr.Dests.Read (Dest, Dest_List_Mng.Current);
       Dest.Dscr := Dscr;
-      Dest.Fd := Socket.Fd_Of (Dscr);
+      Dest.Fd := Dscr.Get_Fd;
       Channel_Dscr.Dests.Modify (Dest, Dest_List_Mng.Current);
 
       -- Hook fd to receive data (replies)
       if Channel_Dscr.Active then
-        Event_Mng.Add_Fd_Callback (Socket.Fd_Of (Dscr), True,
+        Event_Mng.Add_Fd_Callback (Dscr.Get_Fd, True,
                               Snd_Read_Cb'Unrestricted_Access);
       end if;
-      Socket.Set_Blocking (Dscr, False);
+      Dscr.Set_Blocking (False);
     end Connect_Cb;
 
 
@@ -630,10 +630,10 @@ package body Channels is
           Channel_Dscr.Sends.Read (Send, Send_List_Mng.Current);
           -- (Un)hook fd receiving data
           if Allow_Reception then
-            Event_Mng.Add_Fd_Callback (Socket.Fd_Of (Send.Dscr), True,
+            Event_Mng.Add_Fd_Callback (Send.Dscr.Get_Fd, True,
                                   Rec_Read_Cb'Unrestricted_Access);
           else
-            Event_Mng.Del_Fd_Callback (Socket.Fd_Of (Send.Dscr), True);
+            Event_Mng.Del_Fd_Callback (Send.Dscr.Get_Fd, True);
           end if;
           exit when not Channel_Dscr.Sends.Check_Move;
           Channel_Dscr.Sends.Move_To;
@@ -648,10 +648,10 @@ package body Channels is
           Channel_Dscr.Dests.Read (Dest, Dest_List_Mng.Current);
           -- (Un)hook fd receiving data
           if Allow_Reception then
-            Event_Mng.Add_Fd_Callback (Socket.Fd_Of (Dest.Dscr), True,
+            Event_Mng.Add_Fd_Callback (Dest.Dscr.Get_Fd, True,
                                   Snd_Read_Cb'Unrestricted_Access);
           else
-            Event_Mng.Del_Fd_Callback (Socket.Fd_Of (Dest.Dscr), True);
+            Event_Mng.Del_Fd_Callback (Dest.Dscr.Get_Fd, True);
           end if;
           exit when not Channel_Dscr.Dests.Check_Move;
           Channel_Dscr.Dests.Move_To;
@@ -878,13 +878,13 @@ package body Channels is
       Len  : Natural;
       use type Event_Mng.File_Desc;
     begin
-      if Fd = Socket.Fd_Of (Bus_Dscr.Rece_Dscr) then
+      if Fd = Bus_Dscr.Rece_Dscr.Get_Fd then
         if Bus_Dscr.Subscribed then
           Dscr := Bus_Dscr.Rece_Dscr;
         else
           Assertion.Assert (False, "Channel.Bus receiving on rece but not subscribed");
         end if;
-      elsif Fd = Socket.Fd_Of (Bus_Dscr.Send_Dscr) then
+      elsif Fd = Bus_Dscr.Send_Dscr.Get_Fd then
         if Bus_Dscr.Joined then
           Dscr := Bus_Dscr.Send_Dscr;
         else
@@ -901,7 +901,7 @@ package body Channels is
           Assertion.Assert (False, "Channel.Bus reading error");
           return False;
       end;
-      Bus_Dscr.Replies.Insert (Socket.Get_Destination_Host (Dscr));
+      Bus_Dscr.Replies.Insert (Dscr.Get_Destination_Host);
       Read_Cb (Msg.Data, Len - (Msg.Diff'Size / Byte_Size), Msg.Diff);
       Bus_Dscr.Replies.Delete (Bus_Reply_List_Mng.Prev);
       return True;
@@ -913,12 +913,11 @@ package body Channels is
 
     procedure Set_Dest_Bus (Dscr : in out Socket.Socket_Dscr) is
     begin
-      Socket.Set_Destination_Name_And_Service (
-         Dscr,
+      Dscr.Set_Destination_Name_And_Service (
          True,
          Text_Handler.Value (Bus_Dscr.Dest_Name),
          Text_Handler.Value (Bus_Dscr.Bus_Name));
-      Bus_Dscr.Bus_Id := Socket.Get_Destination_Host (Dscr);
+      Bus_Dscr.Bus_Id := Dscr.Get_Destination_Host;
     exception
       when Socket.Soc_Name_Not_Found =>
         declare
@@ -948,11 +947,10 @@ package body Channels is
       Init;
       Bus_Dscr.Active := True;
       Bus_Dscr.Subscribed := True;
-      Socket.Open (Bus_Dscr.Rece_Dscr, Socket.Udp);
+      Bus_Dscr.Rece_Dscr.Open (Socket.Udp);
       Set_Dest_Bus (Bus_Dscr.Rece_Dscr);
-      Socket.Link_Service (Bus_Dscr.Rece_Dscr,
-            Text_Handler.Value (Bus_Dscr.Bus_Name));
-      Event_Mng.Add_Fd_Callback (Socket.Fd_Of (Bus_Dscr.Rece_Dscr),
+      Bus_Dscr.Rece_Dscr.Link_Service (Text_Handler.Value (Bus_Dscr.Bus_Name));
+      Event_Mng.Add_Fd_Callback (Bus_Dscr.Rece_Dscr.Get_Fd,
                                  True, Loc_Read_Cb'Unrestricted_Access);
     end Subscribe;
 
@@ -963,8 +961,8 @@ package body Channels is
       if not Bus_Dscr.Subscribed then
         raise Not_Subscribed;
       end if;
-      Event_Mng.Del_Fd_Callback (Socket.Fd_Of (Bus_Dscr.Rece_Dscr), True);
-      Socket.Close (Bus_Dscr.Rece_Dscr);
+      Event_Mng.Del_Fd_Callback (Bus_Dscr.Rece_Dscr.Get_Fd, True);
+      Bus_Dscr.Rece_Dscr.Close;
       Bus_Dscr.Subscribed := False;
     end Unsubscribe;
 
@@ -981,11 +979,11 @@ package body Channels is
       Init;
       Bus_Dscr.Active := True;
       Bus_Dscr.Joined := True;
-      Socket.Open (Bus_Dscr.Send_Dscr, Socket.Udp);
+      Bus_Dscr.Send_Dscr.Open (Socket.Udp);
       Set_Dest_Bus (Bus_Dscr.Send_Dscr);
       -- This is for receiving replies
-      Socket.Link_Dynamic (Bus_Dscr.Send_Dscr);
-      Event_Mng.Add_Fd_Callback (Socket.Fd_Of (Bus_Dscr.Send_Dscr),
+      Bus_Dscr.Send_Dscr.Link_Dynamic;
+      Event_Mng.Add_Fd_Callback (Bus_Dscr.Send_Dscr.Get_Fd,
                                  True, Loc_Read_Cb'Unrestricted_Access);
     end Join;
 
@@ -996,8 +994,8 @@ package body Channels is
       if not Bus_Dscr.Joined then
         raise Not_Joined;
       end if;
-      Event_Mng.Del_Fd_Callback (Socket.Fd_Of (Bus_Dscr.Send_Dscr), True);
-      Socket.Close (Bus_Dscr.Send_Dscr);
+      Event_Mng.Del_Fd_Callback (Bus_Dscr.Send_Dscr.Get_Fd, True);
+      Bus_Dscr.Send_Dscr.Close;
       Bus_Dscr.Joined := False;
     end Leave;
 
@@ -1029,7 +1027,7 @@ package body Channels is
         raise Not_Joined;
       end if;
       -- Dest may have been changed by a send or by reading a reply
-      Socket.Change_Destination_Host (Bus_Dscr.Send_Dscr, Bus_Dscr.Bus_Id);
+      Bus_Dscr.Send_Dscr.Change_Destination_Host (Bus_Dscr.Bus_Id);
       Send (Bus_Dscr.Send_Dscr, True, Message, Length);
     exception
       when Socket.Soc_Conn_Lost | Socket.Soc_Would_Block =>
@@ -1053,7 +1051,7 @@ package body Channels is
       end if;
       Bus_Dscr.Replies.Read (Id, Bus_Reply_List_Mng.Current);
       -- Reply to it
-      Socket.Change_Destination_Host (Bus_Dscr.Rece_Dscr, Id);
+      Bus_Dscr.Rece_Dscr.Change_Destination_Host (Id);
       Send (Bus_Dscr.Rece_Dscr, False, Message, Length);
     exception
       when others =>
@@ -1074,7 +1072,7 @@ package body Channels is
 
       -- Use send port
       begin
-        Socket.Change_Destination_Name (Bus_Dscr.Send_Dscr, False, Host_Name);
+        Bus_Dscr.Send_Dscr.Change_Destination_Name (False, Host_Name);
       exception
         when Socket.Soc_Name_Not_Found =>
           raise Unknown_Destination;

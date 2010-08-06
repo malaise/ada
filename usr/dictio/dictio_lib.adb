@@ -28,9 +28,9 @@ package body Dictio_Lib is
     if Dictio_Debug.Level_Array(Dictio_Debug.Lib) then
       Dictio_Debug.Put ("Dictio_Lib: closing");
     end if;
-    if Socket.Is_Open (Dictio_Dscr) then
-      Event_Mng.Del_Fd_Callback (Socket.Fd_Of (Dictio_Dscr), True);
-      Socket.Close (Dictio_Dscr);
+    if Dictio_Dscr.Is_Open then
+      Event_Mng.Del_Fd_Callback (Dictio_Dscr.Get_Fd, True);
+      Dictio_Dscr.Close;
     else
       begin
         Tcp_Util.Abort_Connect (Host, Port);
@@ -178,7 +178,7 @@ package body Dictio_Lib is
       Dictio_Debug.Put ("Dictio_Lib: connected");
     end if;
     Dictio_Dscr := Dscr;
-    Event_Mng.Add_Fd_Callback (Socket.Fd_Of (Dictio_Dscr), True, Read_Cb'Access);
+    Event_Mng.Add_Fd_Callback (Dictio_Dscr.Get_Fd, True, Read_Cb'Access);
 
     Msg.Action := Client_Com.Version;
     Msg.Item.Name := (others => ' ');

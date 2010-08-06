@@ -40,13 +40,13 @@ procedure Udp_Spy is
   -- Put host (name or IP @) that has send last message on socket
   function Dest_Image (S : Socket.Socket_Dscr; Allow_Name : Boolean)
            return String is
-    Host_Id : constant Socket.Host_Id := Socket.Get_Destination_Host (S);
+    Host_Id : constant Socket.Host_Id := S.Get_Destination_Host;
   begin
     if Put_Host_Name and then Allow_Name then
       -- Try to get host name and put it
       begin
         return Socket.Host_Name_Of (Host_Id)
-           & ":" & Port_Image (Socket.Get_Destination_Port (S));
+           & ":" & Port_Image (S.Get_Destination_Port);
       exception
         when Socket.Soc_Name_Not_Found =>
           -- Will put IP address instead of host name
@@ -55,7 +55,7 @@ procedure Udp_Spy is
     end if;
     -- Put host IP address
     return Ip_Addr.Image (Socket.Id2Addr (Host_Id))
-         & ":" & Port_Image (Socket.Get_Destination_Port (S));
+         & ":" & Port_Image (S.Get_Destination_Port);
   end Dest_Image;
 
   -- Current date image
@@ -295,8 +295,8 @@ begin
   end;
 
   -- Create socket, add socket and sigterm callbacks
-  Socket.Open (Soc, Socket.Udp);
-  Fd := Socket.Fd_Of (Soc);
+  Soc.Open (Socket.Udp);
+  Fd := Soc.Get_Fd;
   Event_Mng.Add_Fd_Callback (Fd, True, Call_Back'Unrestricted_Access);
   Event_Mng.Set_Sig_Term_Callback (Signal_Cb'Unrestricted_Access);
 
@@ -315,7 +315,7 @@ begin
     end;
   end if;
   if Iface.Id /= Socket.No_Host then
-    Socket.Set_Reception_Ipm_Interface (Soc, Iface.Id);
+    Soc.Set_Reception_Ipm_Interface (Iface.Id);
   end if;
 
   -- Set port num
@@ -339,7 +339,7 @@ begin
   -- See if Server is Id or Name, if it is a Host or LAN name
   if Host.Kind = Tcp_Util.Host_Name_Spec then
     begin
-      Socket.Set_Destination_Name_And_Port (Soc, True,
+      Soc.Set_Destination_Name_And_Port (True,
                Tcp_Util.Name_Of (Host.Name), Port_Num);
     exception
       when Socket.Soc_Name_Not_Found =>
@@ -348,9 +348,9 @@ begin
         raise;
     end;
   else
-    Socket.Set_Destination_Host_And_Port (Soc, Host.Id, Port_Num);
+    Soc.Set_Destination_Host_And_Port (Host.Id, Port_Num);
   end if;
-  Socket.Link_Port (Soc, Port_Num);
+  Soc.Link_Port (Port_Num);
 
   -- Put "Ready on..." end-of-init message
   Basic_Proc.Put_Error (Curr_Date_Image & " listening on ");
@@ -382,7 +382,7 @@ begin
   Text_Line.Close (File);
   if Event_Mng.Fd_Callback_Set (Fd, True) then
     Event_Mng.Del_Fd_Callback (Fd, True);
-    Socket.Close (Soc);
+    Soc.Close;
   end if;
 
   -- Put cause of exit

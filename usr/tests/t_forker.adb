@@ -53,7 +53,7 @@ begin
     return;
   end if;
 
-  Socket.Open (Soc, Socket.Udp);
+  Soc.Open (Socket.Udp);
 
   Host := Ip_Addr.Parse (Argument.Get_Parameter(1));
   begin
@@ -65,26 +65,26 @@ begin
 
   if Port = 0 then
     if Host.Kind = Tcp_Util.Host_Name_Spec then
-      Socket.Set_Destination_Name_And_Service (Soc, False,
+      Soc.Set_Destination_Name_And_Service (False,
          Argument.Get_Parameter(1), Argument.Get_Parameter(2));
     else
-      Socket.Set_Destination_Host_And_Service (Soc, Host.Id, Argument.Get_Parameter(2));
+      Soc.Set_Destination_Host_And_Service (Host.Id, Argument.Get_Parameter(2));
     end if;
   else
     if Host.Kind = Tcp_Util.Host_Name_Spec then
-      Socket.Set_Destination_Name_And_Port (Soc, False,
+      Soc.Set_Destination_Name_And_Port (False,
          Argument.Get_Parameter(1), Port);
     else
-      Socket.Set_Destination_Host_And_Port (Soc, Host.Id, Port);
+      Soc.Set_Destination_Host_And_Port (Host.Id, Port);
     end if;
   end if;
-  Socket.Link_Dynamic (Soc);
-  Socket.Set_Blocking (Soc, False);
+  Soc.Link_Dynamic;
+  Soc.Set_Blocking (False);
   Ada.Text_Io.Put_Line (
       "My host is "
     & Socket.Host_Name_Of(Socket.Local_Host_Id)
     & " and my port is "
-    & Socket.Port_Num'Image(Socket.Get_Linked_To (Soc)));
+    & Socket.Port_Num'Image(Soc.Get_Linked_To));
 
   Req_Num := 0;
   loop

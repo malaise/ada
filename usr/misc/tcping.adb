@@ -94,19 +94,12 @@ procedure Tcping is
     end if;
     Ada.Text_Io.Put_Line (Str);
   end Put_Line;
-  -- 1 to 3 digits of a byte
-  function Image (B : Socket.Byte) return String is
-    Str : constant String := Socket.Byte'Image(B);
-  begin
-    return Str (2 .. Str'Last);
-  end Image;
 
   -- "xxx.yyy.zzz.ttt" from Host_Id
   function Image (Id : Socket.Host_Id) return String is
     Addr : constant Socket.Ip_Address := Socket.Id2Addr (Id);
   begin
-    return Image (Addr.A) & "." & Image (Addr.B) & "." &
-           Image (Addr.C) & "." & Image (Addr.D);
+    return Ip_Addr.Image (Addr);
   end Image;
 
   -- Cancel immediate timer Cb
@@ -151,7 +144,7 @@ procedure Tcping is
       Int :=  My_Math.Trunc (R);
       Frac := Integer(My_Math.Trunc (My_Math.Frac (R) * 1000.0));
 
-      Socket.Close (Loc_Dscr);
+      Loc_Dscr.Close;
       Put_Line (
          "Connected to " & Image (Remote_Host_Id) &
          " port" & Socket.Port_Num'Image(Remote_Port_Num) &
