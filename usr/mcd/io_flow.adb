@@ -1,5 +1,6 @@
 with Ada.Characters.Latin_1, Ada.Exceptions;
-with Argument, Event_Mng, Sys_Calls, Async_Stdin, Text_Line, Socket, Tcp_Util;
+with Argument, Event_Mng, Sys_Calls, Async_Stdin, Text_Line,
+     Socket, Socket_Util,Tcp_Util, Ip_Addr;
 with Fifos;
 with Debug, Io_Data;
 package body Io_Flow is
@@ -43,8 +44,12 @@ package body Io_Flow is
     Io_Mode := Stdio_Not_Tty;
     Input_Flow.Open (Text_Line.In_File, Sys_Calls.Stdin);
   end Init_Default;
+
   procedure Init (Default : in Boolean := False) is
+    Host : Tcp_Util.Remote_Host;
+    Port : Tcp_Util.Remote_Port;
     use type Sys_Calls.File_Desc_Kind_List;
+    use type Tcp_Util.Remote_Host_List, Tcp_Util.Remote_Port_List;
   begin
     if Io_Mode /= Unknown then
       return;
@@ -89,8 +94,22 @@ package body Io_Flow is
         Async_Stdin.Put_Line_Err ("Too many options.");
         raise Init_Error;
       end if;
-      Async_Stdin.Put_Line_Err ("Not Implemented.");
-      raise Init_Error;
+      -- Parse spec
+      begin
+        Ip_Addr.Parse (Argument.Get_Parameter (1, "u"), Host, Port);
+      exception
+        when Ip_Addr.Parse_Error =>
+          Async_Stdin.Put_Line_Err ("Invalid udp spec");
+          raise Init_Error;
+      end;
+      Soc.Open (Socket.Udp);
+      if Host.Kind = Tcp_Util.Host_Id_Spec
+      or else Host.Name(Host.Name'First) /= ' ' then
+        -- An address specified => Ipm
+        -- Use Set_Dest to indicate Imp address
+        Socket_Util.Set_Destination (Soc, True, Host, Port);
+      end if;
+      Socket_Util.Link (Soc, Port);
       Io_Mode := Udp;
     end if;
 
