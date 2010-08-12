@@ -29,6 +29,11 @@ package body String_Mng is
     end if;
   end Parse_Spaces;
 
+  -- Remove tailing spaces and tabs
+  function Strip (Str : String) return String is
+  begin
+    return Str(Str'First .. Parse_Spaces (Str, False));
+  end Strip;
 
   -- Puts a string Str in a string of fixed length Len.
   -- If Str is shorter than Len, it is aligned at right or left and padded

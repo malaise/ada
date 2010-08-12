@@ -8,6 +8,9 @@ package String_Mng is
   function Parse_Spaces (Str : String; From_Head : Boolean := True)
            return Natural;
 
+  -- Remove tailing spaces and tabs
+  function Strip (Str : String) return String;
+
   -- Puts a string str in a string of fixed length Len.
   -- If Str is shorter than Len, it is aligned at right or left and padded
   -- If Str is longer  than Len, it's head ot tail is truncated
