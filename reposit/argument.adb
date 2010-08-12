@@ -7,8 +7,6 @@ package body Argument is
 
   Path_Separator : constant Character := '/';
 
-  Str : String (1 .. Max_Len_Arg);
-
   function Not_Key return String is
   begin
     return "" & Ada.Characters.Latin_1.Del;
@@ -24,42 +22,9 @@ package body Argument is
     return " ";
   end Any_Key;
 
-
-  function Get_Parameter (
-   Occurence : in Natural := 1;
-   Param_Key : in String := Any_Arg) return String is
-    Len : Natural;
-  begin
-    Get_Parameter (Str, Len, Occurence, Param_Key);
-    return Str (1 .. Len);
-  end Get_Parameter;
-
-  procedure Get_Parameter (
-   Parameter : out String;
-   Param_Length : out Natural;
-   Occurence : in Natural := 1;
-   Param_Key : in String := Any_Arg) is
-    Position : Natural;
-  begin
-    Get_Param_And_Pos (Parameter, Param_Length, Position,
-     Occurence, Param_Key);
-  end Get_Parameter;
-
-  procedure Get_Parameter (
-   Parameter : in out Text_Handler.Text;
-   Occurence : in Natural := 1;
-   Param_Key : in String := Any_Arg) is
-    Position : Natural;
-  begin
-    Get_Param_And_Pos (Parameter, Position,
-     Occurence, Param_Key);
-  end;
-
-
-
+  -- The common "heart" procedure
   procedure Get_Param_And_Pos (
-   Parameter : out String;
-   Param_Length : out Natural;
+   Parameter : out Asu_Us;
    Position : out Natural;
    Occurence : in Natural := 1;
    Param_Key : in String := Any_Arg) is
@@ -68,7 +33,6 @@ package body Argument is
     First_Char : Positive;
   begin
     -- Init result for case of error
-    Param_Length := 0;
     Position := 0;
 
     -- test if occurence is 0
@@ -76,12 +40,8 @@ package body Argument is
       if Param_Key /= Any_Arg and then Param_Key /= Not_Key then
         raise Argument_Not_Found;
       end if;
-      if Parameter'Length < Data(0)'Length then
-        raise Argument_Too_Long;
-      end if;
       -- affect string
-      Param_Length := Data(0)'Length;
-      String_Mng.Copy (Data(0), Parameter);
+      Parameter := Asu_Tus (Data(0));
       Position := 0;
       return;
     end if;
@@ -119,27 +79,68 @@ package body Argument is
       end if;
 
       if Comform_Occurence = Occurence then
-        -- Comforming occurence is found. Check length
-        if Parameter'Length < Data(I)'Length - (First_Char-1) then
-          raise Argument_Too_Long;
-        else
-          -- Affect string (First_Char..Len)
-          Param_Length := Data(I)'Length - (First_Char-1);
-          String_Mng.Copy (Data(I)(First_Char .. Data(I)'Length), Parameter);
-          Position := I;
-          return;
-        end if;
+        -- Comforming occurence is found. Affect string (First_Char..Len)
+        Parameter := Asu_Tus (Data(I)(First_Char .. Data(I)'Length));
+        Position := I;
+        return;
       end if;
       -- Next argument
     end loop;
     raise Argument_Not_Found;
   exception
     -- Propagate the cause of problem.
-    when Argument_Too_Long | Argument_Not_Found =>
+    when Argument_Not_Found =>
       raise;
     when others =>
       -- In case of other problem : not found.
       raise Argument_Not_Found;
+  end Get_Param_And_Pos;
+
+
+  function Get_Parameter (
+   Occurence : in Natural := 1;
+   Param_Key : in String := Any_Arg) return String is
+    Str : Asu_Us;
+    Position : Natural;
+  begin
+    Get_Param_And_Pos (Str, Position, Occurence, Param_Key);
+    return Asu_Ts (Str);
+  end Get_Parameter;
+
+  procedure Get_Parameter (
+   Parameter : out String;
+   Param_Length : out Natural;
+   Occurence : in Natural := 1;
+   Param_Key : in String := Any_Arg) is
+    Position : Natural;
+  begin
+    Get_Param_And_Pos (Parameter, Param_Length, Position, Occurence, Param_Key);
+  end Get_Parameter;
+
+  procedure Get_Parameter (
+   Parameter : in out Text_Handler.Text;
+   Occurence : in Natural := 1;
+   Param_Key : in String := Any_Arg) is
+    Position : Natural;
+  begin
+    Get_Param_And_Pos (Parameter, Position, Occurence, Param_Key);
+  end;
+
+
+  procedure Get_Param_And_Pos (
+   Parameter : out String;
+   Param_Length : out Natural;
+   Position : out Natural;
+   Occurence : in Natural := 1;
+   Param_Key : in String := Any_Arg) is
+    Str : Asu_Us;
+  begin
+    Get_Param_And_Pos (Str, Position, Occurence, Param_Key);
+    if Parameter'Length < Asu.Length (Str) then
+      raise Argument_Too_Long;
+    end if;
+    String_Mng.Copy (Asu_Ts(Str), Parameter);
+    Param_Length := Asu.Length (Str);
   end Get_Param_And_Pos;
 
   procedure Get_Param_And_Pos (
@@ -147,7 +148,7 @@ package body Argument is
    Position : out Natural;
    Occurence : in Natural := 1;
    Param_Key : in String := Any_Arg) is
-    Str : String (1..Parameter.Max_Len);
+    Str : String (1 .. Parameter.Max_Len);
     Len : Natural;
   begin
     Get_Param_And_Pos (Str, Len, Position, Occurence, Param_Key);
@@ -157,14 +158,14 @@ package body Argument is
   function Is_Set (
    Occurence : in Natural := 1;
    Param_Key : in String := Any_Arg) return Boolean is
-    Len : Natural;
+    Str : Asu_Us;
     Pos : Natural;
   begin
     if Occurence = 0
     and then (Param_Key = Any_Arg or else Param_Key = Not_Key) then
       return True;
     end if;
-    Get_Param_And_Pos (Str, Len, Pos, Occurence, Param_Key);
+    Get_Param_And_Pos (Str, Pos, Occurence, Param_Key);
     return True;
   exception
     when Argument_Not_Found =>
@@ -174,10 +175,10 @@ package body Argument is
  function Get_Position (
    Occurence : in Natural := 1;
    Param_Key : in String := Any_Arg) return Natural is
-    Len : Natural;
+    Str : Asu_Us;
     Pos : Natural;
   begin
-    Get_Param_And_Pos (Str, Len, Pos, Occurence, Param_Key);
+    Get_Param_And_Pos (Str, Pos, Occurence, Param_Key);
     return Pos;
   end Get_Position;
 
@@ -188,7 +189,7 @@ package body Argument is
 
   -- Analyse of argument(0)
 
-  -- Path of program from Arg(0) (wirh last /)
+  -- Path of program from Arg(0) (with last /)
   function Last_Delimiter (Path_Prog : String) return Natural is
   begin
     for I in reverse Path_Prog'Range loop
@@ -201,22 +202,25 @@ package body Argument is
 
 
   function Get_Program_Path return String is
-    Len : Natural;
-  begin
-    -- Program path
-    Get_Program_Path (Str, Len);
-    return Str (1 .. Len);
-  end Get_Program_Path;
-
-  procedure Get_Program_Path (Path : out String; Path_Length : out Natural) is
+    Str : Asu_Us;
+    Pos : Natural;
     Len : Natural;
   begin
     -- Program path and name
-    Get_Parameter (Str, Len, 0, Any_Arg);
-    Len := Last_Delimiter(Str (1 .. Len));
+    Get_Param_And_Pos (Str, Pos, 0, Any_Arg);
+    Len := Last_Delimiter (Asu_Ts (Str));
+    return Asu.Slice (Str, 1, Len);
+  end Get_Program_Path;
 
+  procedure Get_Program_Path (Path : out String; Path_Length : out Natural) is
+    Str : Asu_Us;
+    Pos : Natural;
+    Len : Natural;
+  begin
+    Get_Param_And_Pos (Str, Pos, 0, Any_Arg);
+    Len := Last_Delimiter (Asu_Ts (Str));
+    String_Mng.Copy (Asu.Slice (Str, 1, Len), Path);
     Path_Length := Len;
-    String_Mng.Copy (Str(1 .. Len), Path);
   end Get_Program_Path;
 
   procedure Get_Program_Path (Path : in out Text_Handler.Text) is
@@ -226,24 +230,32 @@ package body Argument is
 
   -- Name of program from Argument(0)
   function Get_Program_Name return String is
+    Str : Asu_Us;
+    Pos : Natural;
     Len : Natural;
+    Start : Natural;
   begin
     -- Program name
-    Get_Program_Name (Str, Len);
-    return Str (Str'First .. Len);
+    Get_Param_And_Pos (Str, Pos, 0, Any_Arg);
+    Len := Asu.Length (Str);
+    Start := Last_Delimiter(Asu_Ts (Str)) + 1;
+
+    return Asu.Slice (Str, Start, Len);
   end Get_Program_Name;
 
   procedure Get_Program_Name (Name : out String;
                               Name_Length : out Natural) is
+    Str : Asu_Us;
+    Pos : Natural;
     Len : Natural;
     Start : Natural;
   begin
-    -- Program path and name
-    Get_Parameter (Str, Len, 0, Any_Arg);
-    Start := Last_Delimiter(Str (1 .. Len)) + 1;
+    Get_Param_And_Pos (Str, Pos, 0, Any_Arg);
+    Len := Asu.Length (Str);
+    Start := Last_Delimiter(Asu_Ts (Str)) + 1;
 
+    String_Mng.Copy (Asu.Slice (Str, Start, Len), Name);
     Name_Length := Len - Start + 1;
-    String_Mng.Copy (Str(Start .. Len), Name);
   end Get_Program_Name;
 
 

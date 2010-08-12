@@ -8,13 +8,14 @@ procedure T_Arg is
 
   Occ : Natural;
 
-  Key : Text_Handler.Text(Argument.Max_Len_Arg);
-  Arg : Text_Handler.Text(Argument.Max_Len_Arg);
+  Max_Len_Arg : constant := 1024;
+  Key : Text_Handler.Text(Max_Len_Arg);
+  Arg : Text_Handler.Text(Max_Len_Arg);
 
   Pos : Natural;
 
-  Prog_Path : String (1 .. Argument.Max_Len_Arg);
-  Prog_Name : String (1 .. Argument.Max_Len_Arg);
+  Prog_Path : String (1 .. Max_Len_Arg);
+  Prog_Name : String (1 .. Max_Len_Arg);
   Len : Natural;
 
   procedure Get_Txt (Txt : in out Text_Handler.Text) is

@@ -23,11 +23,7 @@
 
 with Ada.Finalization;
 with As.U; use As.U;
-with Argument;
 package Argument_Parser is
-
-  -- Max length of an argument
-  Max_Arg_Len : constant := Argument.Max_Len_Arg;
 
   -- No key when character key, when string key
   No_Key_Char : constant Character := ' ';

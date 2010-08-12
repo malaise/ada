@@ -1,5 +1,5 @@
 with Ada.Unchecked_Deallocation, Ada.Characters.Latin_1;
-with String_Mng, Int_Image;
+with Argument, String_Mng, Int_Image;
 package body Argument_Parser is
 
   -- Image without leading space

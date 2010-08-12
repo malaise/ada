@@ -1,5 +1,5 @@
+with As.U; use As.U;
 with Text_Handler;
-
 package Argument is
 
   -- Extracts arguments from command line:
@@ -56,10 +56,6 @@ package Argument is
   --  is not empty.
 
 
-  -- The maximum length supported for one argument
-  Max_Len_Arg : constant := 1024;
-
-
   -- Key to get any key argument (-<anything>)
   function Any_Key return String;
   -- Key to get any not key argument (with no '-' at the beginning)
@@ -91,6 +87,13 @@ package Argument is
   procedure Get_Param_And_Pos (
    Parameter : out String;
    Param_Length : out Natural;
+   Position : out Natural;
+   Occurence : in Natural := 1;
+   Param_Key : in String := Any_Arg);
+
+  -- Result is unbounded string and position
+  procedure Get_Param_And_Pos (
+   Parameter : out Asu_Us;
    Position : out Natural;
    Occurence : in Natural := 1;
    Param_Key : in String := Any_Arg);
