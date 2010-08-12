@@ -110,6 +110,10 @@ package body Ip_Addr is
       raise Parse_Error;
   end Parse;
 
+  -- Image of a port
+  function Port_Image is new Int_Image (Socket.Port_Num);
+  function Image (Port : Socket.Port_Num) return String renames Port_Image;
+
   -- Parse a string at format <addr>:<port> where <addr> and <port>
   --  are processed as in both Parse functions above
   -- :<port> and <port> are supported (<addr> leads to empty host name)
@@ -120,7 +124,7 @@ package body Ip_Addr is
     Colon : Natural;
   begin
     Colon := String_Mng.Locate (Addr_Port, ":");
-    if Colon = 0 then
+    if Colon <= 1 then
       Host := (Tcp_Util.Host_Name_Spec, (others => ' '));
     else
       Host := Parse (Addr_Port (Addr_Port'First .. Colon - 1));

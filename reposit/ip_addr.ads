@@ -18,6 +18,9 @@ package Ip_Addr is
   -- End if
   function Parse (Port : String) return Tcp_Util.Remote_Port;
 
+  -- Image of a port
+  function Image (Port : Socket.Port_Num) return String;
+
   -- Parse a string at format <addr>:<port> where <addr> and <port>
   --  are processed as in both Parse functions above
   -- :<port> and <port> are supported (<addr> leads to empty host name)
