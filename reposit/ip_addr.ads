@@ -18,6 +18,14 @@ package Ip_Addr is
   -- End if
   function Parse (Port : String) return Tcp_Util.Remote_Port;
 
+  -- Parse a string at format <addr>:<port> where <addr> and <port>
+  --  are processed as in both Parse functions above
+  -- :<port> and <port> are supported (<addr> leads to empty host name)
+  -- <addr>: raises Parse_Error
+  procedure Parse (Addr_Port : in String;
+                   Host : out Tcp_Util.Remote_Host;
+                   Port : out Tcp_Util.Remote_Port);
+
   Parse_Error : exception;
 
 end Ip_Addr;

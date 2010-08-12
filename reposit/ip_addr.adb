@@ -1,4 +1,4 @@
-with Text_Handler, Int_Image;
+with Text_Handler, Int_Image, String_Mng;
 package body Ip_Addr is
 
   function Byte_Image is new Int_Image (Socket.Byte);
@@ -28,6 +28,9 @@ package body Ip_Addr is
     Ip_Addr : Socket.Ip_Address;
     Result : Tcp_Util.Remote_Host;
   begin
+    if Addr = "" then
+      raise Parse_Error;
+    end if;
     -- Try to parse Host_Id
     begin
       Text_Handler.Set (Txt, Addr);
@@ -86,6 +89,9 @@ package body Ip_Addr is
   function Parse (Port : String) return Tcp_Util.Remote_Port is
     Result : Tcp_Util.Remote_Port;
   begin
+    if Port = "" then
+      raise Parse_Error;
+    end if;
     -- Try to parse Port_Num
     begin
       return (Kind => Tcp_Util.Port_Num_Spec,
@@ -102,6 +108,24 @@ package body Ip_Addr is
   exception
     when others =>
       raise Parse_Error;
+  end Parse;
+
+  -- Parse a string at format <addr>:<port> where <addr> and <port>
+  --  are processed as in both Parse functions above
+  -- :<port> and <port> are supported (<addr> leads to empty host name)
+  -- <addr>: raises Parse_Error
+  procedure Parse (Addr_Port : in String;
+                   Host : out Tcp_Util.Remote_Host;
+                   Port : out Tcp_Util.Remote_Port) is
+    Colon : Natural;
+  begin
+    Colon := String_Mng.Locate (Addr_Port, ":");
+    if Colon = 0 then
+      Host := (Tcp_Util.Host_Name_Spec, (others => ' '));
+    else
+      Host := Parse (Addr_Port (Addr_Port'First .. Colon - 1));
+    end if;
+    Port := Parse (Addr_Port (Colon + 1 .. Addr_Port'Last));
   end Parse;
 
 end Ip_Addr;
