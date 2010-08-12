@@ -104,32 +104,32 @@ package body Substit is
   procedure Close is
   begin
     -- Close in file
-    if Text_Line.Is_Open (In_File) then
+    if In_File.Is_Open then
       if not Is_Stdin then
         begin
-          Sys_Calls.Close (Text_Line.Get_Fd (In_File));
+          Sys_Calls.Close (In_File.Get_Fd);
         exception
           when others => null;
         end;
       end if;
       begin
-        Text_Line.Close (In_File);
+        In_File.Close;
       exception
         when others => null;
       end;
     end if;
     -- Flush and close Out file
-    if Text_Line.Is_Open (Out_File) then
-      Text_Line.Flush (Out_File);
+    if Out_File.Is_Open then
+      Out_File.Flush;
       if not Is_Stdin then
         begin
-          Sys_Calls.Close (Text_Line.Get_Fd (Out_File));
+          Sys_Calls.Close (Out_File.Get_Fd);
         exception
           when others => null;
         end;
       end if;
       begin
-        Text_Line.Close (Out_File);
+        Out_File.Close;
       exception
         when others => null;
       end;
@@ -254,11 +254,11 @@ package body Substit is
       end if;
     end if;
     -- Associate fds to files
-    Text_Line.Open (In_File,  Text_Line.In_File,  In_Fd);
+    In_File.Open (Text_Line.In_File, In_Fd);
     -- Set specific delimited of In_File
-    Text_Line.Set_Line_Feed (In_File, Search_Pattern.Get_Delimiter);
+    In_File.Set_Line_Feed (Search_Pattern.Get_Delimiter);
     if For_Write then
-      Text_Line.Open (Out_File, Text_Line.Out_File, Out_Fd);
+      Out_File.Open (Text_Line.Out_File, Out_Fd);
     end if;
     -- Get Search pattern characteristics
     Nb_Pattern := Search_Pattern.Number;
@@ -285,7 +285,7 @@ package body Substit is
     Nb_To_Read : Natural;
     Line : Asu_Us;
     Len : Natural;
-    Line_Feed : constant Asu_Us := Asu_Tus (Text_Line.Get_Line_Feed (In_File));
+    Line_Feed : constant Asu_Us := Asu_Tus (In_File.Get_Line_Feed);
   begin
     -- Move to end
     Line_List.Rewind (False, Line_List_Mng.Prev);
@@ -303,7 +303,7 @@ package body Substit is
 
     -- Read and append remaining amount, save trailing newline
     while Nb_To_Read /= 0 loop
-      Line := Text_Line.Get (In_File);
+      Line := In_File.Get;
       Len := Asu.Length (Line);
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Read >" &  Asu_Ts (Line) & "<");
@@ -548,7 +548,7 @@ package body Substit is
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Putting >" & Asu_Ts (Line.all) & "<");
       end if;
-      Text_Line.Put (Out_File, Asu_Ts (Line.all));
+      Out_File.Put (Asu_Ts (Line.all));
     end if;
     -- Delete all
     Line_List.Delete_List (False);
@@ -566,7 +566,7 @@ package body Substit is
     if not Line_List.Is_Empty then
       Line_List.Rewind;
       while not Line_List.Is_Empty loop
-        Text_Line.Put (Out_File, Asu_Ts (Line_List.Access_Current.all));
+        Out_File.Put (Asu_Ts (Line_List.Access_Current.all));
         if Debug.Set then
           Sys_Calls.Put_Line_Error (
              "Flushing >" & Asu_Ts (Line_List.Access_Current.all) & "<");
@@ -577,10 +577,10 @@ package body Substit is
     --  Put lines that have not been read
     loop
       declare
-        Str : constant String := Text_Line.Get (In_File);
+        Str : constant String := In_File.Get;
       begin
         exit when Str = "";
-        Text_Line.Put (Out_File, Str);
+        Out_File.Put (Str);
       end;
     end loop;
   end Flush_Lines;
@@ -789,7 +789,7 @@ package body Substit is
             Sys_Calls.Put_Line_Error ("Putting >" & Asu_Ts (Str_Replaced)
                                     & "<");
           end if;
-          Text_Line.Put (Out_File, Asu_Ts (Str_Replaced));
+          Out_File.Put (Asu_Ts (Str_Replaced));
           -- Delete all
           Line_List.Delete_List (False);
         end if;
@@ -803,7 +803,7 @@ package body Substit is
         if Debug.Set then
           Sys_Calls.Put_Line_Error ("Putting >" & Asu_Ts (Line.all) & "<");
         end if;
-        Text_Line.Put (Out_File, Asu_Ts (Line.all));
+        Out_File.Put (Asu_Ts (Line.all));
       end if;
       Line_List.Delete;
     end if;

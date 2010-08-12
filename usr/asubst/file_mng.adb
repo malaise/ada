@@ -34,7 +34,7 @@ package body File_Mng is
     Fd : Sys_Calls.File_Desc;
     use type Sys_Calls.File_Desc;
   begin
-    if not Text_Line.Is_Open (File) then
+    if not File.Is_Open then
       return;
     end if;
     Fd := File.Get_Fd;
@@ -52,7 +52,7 @@ package body File_Mng is
     Str : Asu_Us;
     Len : Natural;
   begin
-    Str := Text_Line.Get (File);
+    Str := File.Get;
     Len :=  Asu.Length (Str);
     if Len /= 0
     and then Asu.Element (Str, Len)

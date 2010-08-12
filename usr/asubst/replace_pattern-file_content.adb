@@ -1,0 +1,51 @@
+separate (Replace_Pattern)
+
+function File_Content (Path : String) return String is
+  Txt, Line : Asu_Us;
+  Fd : Sys_Calls.File_Desc;
+  File : Text_Line.File_Type;
+
+  procedure Close is
+  begin
+    if File.Is_Open then
+      Sys_Calls.Close (Fd);
+      File.Close;
+    end if;
+  end Close;
+
+begin
+  if Debug.Set then
+    Sys_Calls.Put_Line_Error ("Replace, inserting file: >" & Path & "<");
+  end if;
+
+  -- Open
+  begin
+    Fd := Sys_Calls.Open (Path, Sys_Calls.In_File);
+  exception
+    when others =>
+      Put_Error ("Replace, opening file " & Path & " has failed");
+      raise File_Error;
+  end;
+  File.Open (Text_Line.In_File, Fd);
+
+  -- Read and concat
+  loop
+    Line := File.Get;
+    exit when Asu_Is_Null (Line);
+    Asu.Append (Txt, Line);
+  end loop;
+
+  -- Done
+  Close;
+  return Asu_Ts (Txt);
+
+exception
+  when File_Error =>
+    Close;
+    raise;
+  when others =>
+    Sys_Calls.Put_Line_Error ("Replace, file insertion failed");
+    Close;
+    raise File_Error;
+end File_Content;
+

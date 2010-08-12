@@ -65,6 +65,7 @@
 "\ntoto\ntiti\ntata"   "^toto\ntiti$"                 "\u\R01\R02\R03"            "\nTOTO\nTITI\ntata"
 "\ntoto\ntiti\ntata"   "toto\ntiti"                   "\R01\u\R02\R03"            "\ntoto\nTITI\ntata"
 "toto:010"              "([0-9]+)"                    "\Kbash -c 'let i=$0+1;echo $i' \r11\k"       "toto:9"
+"matutubo\n"            "tutu"                        "\Ptstfile.ins\p"           "matoto\nlebo\n"
 "\n"                    ".$"                          "t"                         ""
 "\n"                    "(.?)$"                       "\r11t"                     "t"
 "a\n"                   "(.?)$"                       "\r11t"                     "at"

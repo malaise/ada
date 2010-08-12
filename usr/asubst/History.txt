@@ -1,5 +1,8 @@
 History of Asubst:
 ------------------
+11/08/2010 V11.0
+Add: Replace string command (\P...\p) to insert content of a file
+
 26/11/2009 V10.1
 Add: Improve dir and file right access check when not writting
 

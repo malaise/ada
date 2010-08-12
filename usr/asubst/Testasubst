@@ -6,6 +6,19 @@ export ASUBST_UTF8=Y
 # Display current version
 type asubst
 asubst --version
+sleep 1
+
+# Various file names, reference (in), expected result
+#  tested (in/out), list, saved, inserted
+export FR=tstfile.ref
+export FE=tstfile.exp
+export FT=tstfile.tst
+export FL=tstfile.lst
+export FS=tstfile.tst.asu
+export FI=tstfile.ins
+
+# Prepare  inserted file
+echo -en "toto\nle" > $FI
 
 # Play scenario
 export STEP="Test scenario"
@@ -17,13 +30,6 @@ fi
 echo "$STEP OK."
 echo ""
 
-# Various file names, reference (in), expected result
-#  tested (in/out), list, saved
-export FR=tstfile.ref
-export FE=tstfile.exp
-export FT=tstfile.tst
-export FL=tstfile.lst
-export FS=tstfile.tst.asu
 
 # Initial cleanup of files
 rm -rf $FS Temp_File.*
@@ -287,6 +293,6 @@ fi
 echo "$STEP OK."
 
 # Cleanup test files
-rm -rf $FR $FT $FS $FE $FL
+rm -rf $FR $FT $FS $FE $FL $FI
 echo "Test OK."
 

@@ -30,7 +30,7 @@ begin
   return Asu_Ts (Out_Flow.Str);
 exception
   when Command.Spawn_Error =>
-    Sys_Calls.Put_Line_Error ("Replace, command spawning failed");
+    Put_Error ("Replace, command spawning failed");
     raise Command_Error;
   when Command.Terminate_Request =>
     raise Terminate_Request;

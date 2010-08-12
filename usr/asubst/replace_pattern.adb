@@ -31,6 +31,7 @@ package body Replace_Pattern is
        -- These ones don't
        Else_Match_Substring, End_If_Match_Substring,
        Start_Command, Stop_Command,
+       Start_File, Stop_File,
        Start_Uppercase, Start_Lowercase, Start_Mixedcase, Stop_Case);
   -- Substring extraction kind
   subtype Extraction_List is Subtit_Action_List
@@ -65,11 +66,17 @@ package body Replace_Pattern is
   subtype Case_Mode_List is Subtit_Action_List
             range Start_Uppercase .. Stop_Case;
 
-  -- Reports a parsing error
-  procedure Error (Msg : in String) is
+  -- Put error message (no raise)
+  procedure Put_Error (Msg : in String) is
   begin
     Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
         & " ERROR: " & Msg & ".");
+  end Put_Error;
+
+  -- Reports a parsing error
+  procedure Error (Msg : in String) is
+  begin
+    Put_Error (Msg);
     raise Parse_Error;
   end Error;
 
@@ -144,8 +151,8 @@ package body Replace_Pattern is
     type If_Mode_List is (None, In_If, In_Else);
     If_Mode : If_Mode_List;
     If_Index : Positive;
-    -- Currently in command
-    In_Command : Boolean;
+    -- Currently in command, in file
+    In_Command, In_File : Boolean;
 
   begin
     if Debug.Set then
@@ -157,17 +164,25 @@ package body Replace_Pattern is
     Start := 1;
     Case_Action := Stop_Case;
     If_Mode := None;
+    In_File := False;
     In_Command := False;
     loop
       -- Locate an escape sequence, exit when no more
       Got := String_Mng.Locate_Escape (Asu_Ts (The_Pattern),
-                                       Start, "\acefiKklmnoRrstux");
+                                       Start, "\acefiKklmnoPpRrstux");
       exit when Got = 0;
       -- Set corresponding code
       Esc_Char := Asu.Element (The_Pattern, Got);
-      -- In command, skip unexpected characters. Handle k, R and r
+      -- In command or file, skip unexpected characters. Handle k|p, R and r
       if In_Command and then
         (Esc_Char /= 'k'and then Esc_Char /= 'R' and then Esc_Char /= 'r') then
+        -- Skip this char by settting Esc_Char tu Subst_Char, which:
+        --  should not be in the original replace pattern
+        --  is not in the Locate_Escape above
+        --  is not in the case statement below
+        Esc_Char := Subst_Char;
+      elsif In_File and then
+        (Esc_Char /= 'p'and then Esc_Char /= 'R' and then Esc_Char /= 'r') then
         -- Skip this char by settting Esc_Char tu Subst_Char, which:
         --  should not be in the original replace pattern
         --  is not in the Locate_Escape above
@@ -230,6 +245,24 @@ package body Replace_Pattern is
           Asu.Replace_Slice (The_Pattern, Subst.Index, Subst.Index + 1,
                              Subst_Char & "");
           In_Command := False;
+        when 'P' =>
+          -- "\P" to start file insertion
+          Subst.Action := Start_File;
+          Substites_List.Insert (Substites, Subst);
+          Asu.Replace_Slice (The_Pattern, Subst.Index, Subst.Index + 1,
+                             Subst_Char & "");
+          In_File := True;
+        when 'p' =>
+          -- "\p" to stop file insertion
+          Subst.Action := Stop_File;
+          if not In_File then
+            Error ("Invalid " & Mixed_Str (Subst.Action'Img)
+                 & " while not in file");
+          end if;
+          Substites_List.Insert (Substites, Subst);
+          Asu.Replace_Slice (The_Pattern, Subst.Index, Subst.Index + 1,
+                             Subst_Char & "");
+          In_File := False;
         when 'l' =>
           -- "\l" lower_case switch on
           Subst.Action := Start_Lowercase;
@@ -353,7 +386,10 @@ package body Replace_Pattern is
     if If_Mode /= None then
       Error ("Un-terminated 'if', 'elsif' or 'else' directive");
     end if;
-    -- Check not in command section
+    -- Check not in command or file section
+    if In_File then
+      Error ("Un-terminated file insertion");
+    end if;
     if In_Command then
       Error ("Un-terminated command");
     end if;
@@ -404,9 +440,13 @@ package body Replace_Pattern is
   end Matchstring;
 
   -- Issue a Shell command and return its stdout, raises Command_Error
-  --  if command did not exit with coide 0
+  --  if command did not exit with code 0
   Out_Flow, Err_Flow : aliased Command.Flow_Rec (Command.Str);
   function Shell_Command (Cmd : String) return String is separate;
+
+  -- Open a file and return its content, raises File_Error
+  -- open, read or close fails
+  function File_Content (Path : String) return String is separate;
 
   -- Apply XXX case conversion to Str(Start .. Stop)
   -- Return the converted Str(Start .. Stop)
@@ -448,6 +488,8 @@ package body Replace_Pattern is
     Start_Skip : Natural;
     -- Command start index (0 if none)
     Command_Index : Natural;
+    -- File start index (0 if none)
+    File_Index : Natural;
     -- None outside If (\i), then If_Ko as long as no If is OK,
     -- then Is_Ok if a If is Ok, then possible Else_Ok, then None
     If_Status : If_Status_List;
@@ -473,6 +515,8 @@ package body Replace_Pattern is
     Case_Index := 0;
     Case_Mode := Stop_Case;
     Start_Skip := 0;
+    Command_Index := 0;
+    File_Index := 0;
     If_Status := None;
     loop
       -- Locate replace code
@@ -609,8 +653,21 @@ package body Replace_Pattern is
           when Stop_Command =>
             if Start_Skip = 0 then
               Asu.Replace_Slice (Result, Command_Index, Got,
-                Shell_Command (Asu.Slice (Result, Command_Index + 1,
-                                                  Got - 1)));
+                Shell_Command (Asu.Slice (Result, Command_Index + 1, Got - 1)));
+            else
+              -- Go on searching from next char
+              Start := Got + 1;
+            end if;
+          when Start_File =>
+            if Start_Skip = 0 then
+              File_Index := Got;
+              -- Go on searching from next char
+              Start := Got + 1;
+            end if;
+          when Stop_File =>
+            if Start_Skip = 0 then
+              Asu.Replace_Slice (Result, File_Index, Got,
+                File_Content (Asu.Slice (Result, File_Index + 1, Got - 1)));
             else
               -- Go on searching from next char
               Start := Got + 1;
@@ -694,6 +751,8 @@ package body Replace_Pattern is
     return Asu_Ts (Result);
   exception
     when Replace_Error =>
+      raise;
+    when File_Error =>
       raise;
     when Command_Error =>
       raise;

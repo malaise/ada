@@ -1,5 +1,5 @@
                                  Asubst
-                                  V10.1
+                                  V11.0
 
 
 1. General syntax
@@ -165,6 +165,8 @@ The following '\' sequences are supported:
 - "\K"<shell command>"\k", within which "\RIJ" and "\rIJ" are first replaced,
   then the command is launched (and must exit with 0), then the command
   directive is replaced by the command output.
+- "\P"<file path>"\p",  within which "\RIJ" and "\rIJ" are first replaced,
+  then the content of the file is inserted as is.
 - "\u", "\l", "\m" for starting an UPPER, lower or Mixed case conversion. "\c"
   for stopping a case conversion. A conversion ends when a new starts, on "\c"
   or at the end of replace string.

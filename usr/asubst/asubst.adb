@@ -4,7 +4,7 @@ with Environ, Argument, Argument_Parser, Sys_Calls, Language, Mixed_Str, Text_Li
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
-  Version : constant String  := "V10.1";
+  Version : constant String  := "V11.0";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -126,6 +126,10 @@ procedure Asubst is
      "      then the command is launched (and must exit with 0), then the command");
     Sys_Calls.Put_Line_Error (
      "      directive is replaced by the command output.");
+    Sys_Calls.Put_Line_Error (
+     "    ""\P""<file path>""\p"", within which ""\RIJ"" and ""\rIJ"" are first replaced,");
+    Sys_Calls.Put_Line_Error (
+     "      then the content of the file is inserted as is.");
     Sys_Calls.Put_Line_Error (
      "    ""\u"" (start UPPERCASE conversion), ""\l"" (lowercase), ""\m"" (Mixed_Case),");
     Sys_Calls.Put_Line_Error (

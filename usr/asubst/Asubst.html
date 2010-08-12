@@ -3,14 +3,17 @@
 <HEAD>
 	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
 	<TITLE>Asubst</TITLE>
-	<META NAME="GENERATOR" CONTENT="OpenOffice.org 2.4  (Linux)">
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 2.3  (Unix)">
 	<META NAME="AUTHOR" CONTENT="MALAISE Pascal">
 	<META NAME="CREATED" CONTENT="20060414;18573000">
+	<META NAME="CHANGEDBY" CONTENT="Pascal Malaise">
+	<META NAME="CHANGED" CONTENT="20100812;9353000">
+	<META NAME="CHANGEDBY" CONTENT="Pascal Malaise">
+	<META NAME="CHANGEDBY" CONTENT="Pascal Malaise">
 	<META NAME="CHANGEDBY" CONTENT="Pascal MALAISE">
-	<META NAME="CHANGED" CONTENT="20091111;8395300">
 </HEAD>
 <BODY LANG="en-US" DIR="LTR">
-<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><FONT SIZE=6><B>V10.1</B></FONT></FONT></FONT></P>
+<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><FONT SIZE=6><B>V11.0</B></FONT></FONT></FONT></P>
 <H1 LANG="en-GB"><FONT FACE="monospace">1. General syntax</FONT></H1>
 <P LANG="en-GB"><FONT FACE="monospace">Usage: asubst [ { &lt;option&gt;
 } ] &lt;find_pattern&gt; &lt;replace_string&gt; [ { &lt;file&gt; }
@@ -184,11 +187,13 @@ number I (0 &lt; I), J = 0 for the complete string, (so &quot;\R0x&quot;
 = &quot;\rx0&quot;).<BR>- &quot;\K&quot;&lt;shell command&gt;&quot;\k&quot;,
 within which &quot;\RIJ&quot; and &quot;\rIJ&quot; are first
 replaced, then the command is launched (and must exit with 0), then
-the command directive is replaced by the command output.<BR>- &quot;\u&quot;,
-&quot;\l&quot;, &quot;\m&quot; for starting an UPPER, lower or Mixed
-case conversion. &quot;\c&quot; for stopping a case conversion. A
-conversion ends when a new starts, on &quot;\c&quot; or at the end of
-replace string.</FONT></P>
+the command directive is replaced by the command output.<BR>-
+&quot;\P&quot;&lt;file path&gt;&quot;\p&quot;, within which &quot;\RIJ&quot;
+and &quot;\rIJ&quot; are first replaced, then the content of the file
+is inserted as is.<BR>- &quot;\u&quot;, &quot;\l&quot;, &quot;\m&quot;
+for starting an UPPER, lower or Mixed case conversion. &quot;\c&quot;
+for stopping a case conversion. A conversion ends when a new starts,
+on &quot;\c&quot; or at the end of replace string.</FONT></P>
 <P LANG="en-GB"><FONT FACE="Monospace">Note that substrings are
 numbered in the order of the opening parenthesis, left to right.<BR>Note
 that &quot;\r0i&quot; and &quot;\i0i&quot; are forbidden.<BR>Conditions
@@ -241,14 +246,15 @@ like other regex specific characters (including &quot;^&quot; and
 forbidden (no substring).</FONT></P>
 <H1 LANG="en-GB"><FONT FACE="Monospace">11. File list</FONT></H1>
 <P LANG="en-GB"><FONT FACE="Monospace">Option -F &lt;file_list&gt; or
---file_list=&lt;file_list&gt; allows specifying a file that contains
+--file_list=&lt;file_list&gt; allows specifying a file that contains
 the list of files to process, instead of specifying these files as
-arguments. In this case no &lt;file&gt; argument is accepted.<BR>The
+arguments. In this case no &lt;file&gt; argument is accepted. <BR>The
 &lt;file_list&gt; must contain one file name per line and empty lines
-are skipped (so it is impossible to specify stdin in the file
-list).<BR>&quot;-&quot; as &lt;file_list&gt; denotes stdin.</FONT></P>
-<P LANG="en-GB"><FONT FACE="Monospace">Examples:<BR>asubst -F list
-toto titi<BR>echo -e &quot;file1\nfile2&quot; | asubst -F - toto
+are skipped (so it is impossible to specify stdin in the file list).
+<BR>&quot;-&quot; as &lt;file_list&gt; denotes stdin. </FONT>
+</P>
+<P LANG="en-GB"><FONT FACE="Monospace">Examples: <BR>asubst -F list
+toto titi <BR>echo -e &quot;file1\nfile2&quot; | asubst -F - toto
 titi</FONT></P>
 <H1 LANG="en-GB"><FONT FACE="Monospace">12. Exit code</FONT></H1>
 <P LANG="en-GB"><FONT FACE="Monospace">asubst exits with 0 if some
