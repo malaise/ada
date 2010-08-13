@@ -26,9 +26,11 @@ package body Io_Flow is
   Port : Tcp_Util.Remote_Port;
   Is_Ipm : Boolean;
   Soc : Socket.Socket_Dscr;
+  Accepting_Soc : Socket.Socket_Dscr;
   function Socket_Is_Active return Boolean;
   procedure Activate_Socket (Active : in Boolean);
-  procedure Open_Socket (And_Activate : in Boolean);
+  procedure Open_Udp_Socket (And_Activate : in Boolean);
+  procedure Open_Tcp_Socket (And_Activate : in Boolean);
   procedure Soc_Send is new Socket.Send (Io_Data.Message_Type);
   procedure Soc_Receive is new Socket.Receive (Io_Data.Message_Type);
 
@@ -77,7 +79,7 @@ package body Io_Flow is
         raise Init_Error;
       end if;
       if Debug.Debug_Level_Array(Debug.Flow) then
-        Async_Stdin.Put_Line_Err ("Flow: init on fifo " & Asu_Ts (Fifo_Name));
+        Async_Stdin.Put_Line_Err ("Flow: Init on fifo " & Asu_Ts (Fifo_Name));
       end if;
       Open_Fifo (True);
       Io_Mode := Fifo;
@@ -89,8 +91,19 @@ package body Io_Flow is
         Async_Stdin.Put_Line_Err ("Too many options.");
         raise Init_Error;
       end if;
-      Async_Stdin.Put_Line_Err ("Not Implemented.");
-      raise Init_Error;
+      -- Parse spec
+      begin
+        Port := Ip_Addr.Parse (Argument.Get_Parameter (1, "t"));
+      exception
+        when Ip_Addr.Parse_Error =>
+          Async_Stdin.Put_Line_Err ("Invalid tcp port");
+          raise Init_Error;
+      end;
+      Open_Tcp_Socket (True);
+      if Debug.Debug_Level_Array(Debug.Flow) then
+        Async_Stdin.Put_Line_Err ("Flow: Init on tcp port " &
+          Ip_Addr.Image (Accepting_Soc.Get_Linked_To));
+      end if;
       Io_Mode := Tcp;
       return;
     end if;
@@ -109,9 +122,9 @@ package body Io_Flow is
           Async_Stdin.Put_Line_Err ("Invalid udp spec");
           raise Init_Error;
       end;
-      Open_Socket (True);
+      Open_Udp_Socket (True);
       if Debug.Debug_Level_Array(Debug.Flow) then
-        Async_Stdin.Put_Err ("Flow: init on ");
+        Async_Stdin.Put_Err ("Flow: Init on ");
         if Is_Ipm then
           Async_Stdin.Put_Err ("ipm LAN " &
             Ip_Addr.Image (Socket.Id2Addr (Soc.Get_Destination_Host)) & " ");
@@ -136,7 +149,7 @@ package body Io_Flow is
 
     -- Stdin
     if Debug.Debug_Level_Array(Debug.Flow) then
-      Async_Stdin.Put_Line_Err ("Flow: init on stdio");
+      Async_Stdin.Put_Line_Err ("Flow: Init on stdio");
     end if;
     -- Set stdin/out asynchronous if it is a Tty
     if Sys_Calls.File_Desc_Kind (Sys_Calls.Stdin)  = Sys_Calls.Tty
@@ -144,12 +157,12 @@ package body Io_Flow is
       Io_Mode := Stdio_Tty;
       Async_Stdin.Set_Async (Stdin_Cb'Access, 0);
       if Debug.Debug_Level_Array(Debug.Flow) then
-        Async_Stdin.Put_Line_Err ("Flow: stdio is a tty");
+        Async_Stdin.Put_Line_Err ("Flow: Stdio is a tty");
       end if;
     else
       Init_Default;
       if Debug.Debug_Level_Array(Debug.Flow) then
-        Async_Stdin.Put_Line_Err ("Flow: stdio is a not a tty");
+        Async_Stdin.Put_Line_Err ("Flow: Stdio is a not a tty");
       end if;
     end if;
 
@@ -251,12 +264,14 @@ package body Io_Flow is
     end if;
   exception
     when Fifos.In_Overflow =>
+      -- FIFO
       Mcd_Fifos.Close (Client_Id);
       Open_Fifo (Active);
     when Socket.Soc_Would_Block =>
+      -- TCP
       Activate_Socket (False);
       Soc.Close;
-      Open_Socket (Active);
+      Open_Tcp_Socket (Active);
   end Send_Message;
 
   -- Put or send string
@@ -343,6 +358,18 @@ package body Io_Flow is
             Activate_Socket (False);
           end if;
           Soc.Close;
+        end if;
+      when Tcp =>
+        if Debug.Debug_Level_Array(Debug.Flow) then
+          Async_Stdin.Put_Line_Err ("Flow: Closing tcp");
+        end if;
+        if Soc.Is_Open then
+          Activate_Socket (False);
+          Soc.Close;
+        end if;
+        if Accepting_Soc.Is_Open then
+          Event_Mng.Del_Fd_Callback (Accepting_Soc.Get_Fd, True);
+          Accepting_Soc.Close;
         end if;
       when others =>
         null;
@@ -452,13 +479,48 @@ package body Io_Flow is
   ----------------------------------------------------
   -- Socket operations
   ----------------------------------------------------
+  Tcp_Active : Boolean;
+  function Socket_Connect_Cb (Fd : in Event_Mng.File_Desc; Read : in Boolean)
+                          return Boolean is
+    pragma Unreferenced (Fd, Read);
+  begin
+    -- Accept re-connection
+    Accepting_Soc.Accept_Connection (Soc);
+    -- Detach and close accepting socket
+    Event_Mng.Del_Fd_Callback (Accepting_Soc.Get_Fd, True);
+    Accepting_Soc.Close;
+    -- Activate socket if it was requested by open
+    if Tcp_Active then
+      Activate_Socket (True);
+    end if;
+    if Debug.Debug_Level_Array(Debug.Flow) then
+      Async_Stdin.Put_Err ("Flow: Tcp socket accepted and ");
+      if Tcp_Active then
+        Async_Stdin.Put_Line_Err ("active");
+      else
+        Async_Stdin.Put_Line_Err ("inactive");
+      end if;
+    end if;
+    return False;
+  end Socket_Connect_Cb;
+
   function Socket_Rece_Cb (Fd : in Event_Mng.File_Desc; Read : in Boolean)
                           return Boolean is
     pragma Unreferenced (Fd, Read);
     Message : Io_Data.Message_Type;
     Length : Natural;
   begin
-    Soc_Receive (Soc, Message, Length, Io_Mode = Udp, False);
+    begin
+      Soc_Receive (Soc, Message, Length, Io_Mode = Udp, False);
+    exception
+      when Socket.Soc_Read_0 =>
+        -- Tcp Disconnection: close and accept new
+        Async_Stdin.Put_Line_Err ("Flow: Socket_Rece_Cb disconnection");
+        Activate_Socket (False);
+        Soc.Close;
+        Open_Tcp_Socket (True);
+        return False;
+    end;
     if Length = 0 then
       return False;
     end if;
@@ -483,7 +545,11 @@ package body Io_Flow is
 
   function Socket_Is_Active return Boolean is
   begin
-    return Soc.Is_Open and then Event_Mng.Fd_Callback_Set (Soc.Get_Fd, True);
+    if not Soc.Is_Open and then Io_Mode = Tcp then
+      return Tcp_Active;
+    else
+      return Soc.Is_Open and then Event_Mng.Fd_Callback_Set (Soc.Get_Fd, True);
+    end if;
   end Socket_Is_Active;
 
   procedure Activate_Socket (Active : in Boolean) is
@@ -491,14 +557,36 @@ package body Io_Flow is
     if Active = Socket_Is_Active then
       return;
     end if;
-    if Active then
+    if not Soc.Is_Open and then Io_Mode = Tcp then
+      Tcp_Active := Active;
+    elsif Active then
       Event_Mng.Add_Fd_Callback (Soc.Get_Fd, True, Socket_Rece_Cb'Access);
     else
       Event_Mng.Del_Fd_Callback (Soc.Get_Fd, True);
     end if;
   end Activate_Socket;
 
-  procedure Open_Socket (And_Activate : in Boolean) is
+  procedure Open_Tcp_Socket (And_Activate : in Boolean) is
+  begin
+    -- Create accepting socket
+    Accepting_Soc.Open (Socket.Tcp);
+    -- Listen and activate
+    Socket_Util.Link (Accepting_Soc, Port);
+    Event_Mng.Add_Fd_Callback (Accepting_Soc.Get_Fd, True,
+                               Socket_Connect_Cb'Access);
+    -- Remember activation of the accepted socket
+    Tcp_Active := And_Activate;
+    if Debug.Debug_Level_Array(Debug.Flow) then
+      Async_Stdin.Put_Err ("Flow: Tcp socket open and ");
+      if And_Activate then
+        Async_Stdin.Put_Line_Err ("active");
+      else
+        Async_Stdin.Put_Line_Err ("inactive");
+      end if;
+    end if;
+  end Open_Tcp_Socket;
+
+  procedure Open_Udp_Socket (And_Activate : in Boolean) is
     use type Tcp_Util.Remote_Host_List, Tcp_Util.Remote_Port_List;
   begin
     Soc.Open (Socket.Udp);
@@ -514,7 +602,15 @@ package body Io_Flow is
     if And_Activate then
       Activate_Socket (True);
     end if;
-  end Open_Socket;
+    if Debug.Debug_Level_Array(Debug.Flow) then
+      Async_Stdin.Put_Err ("Flow: Udp socket open and ");
+      if And_Activate then
+        Async_Stdin.Put_Line_Err ("active");
+      else
+        Async_Stdin.Put_Line_Err ("inactive");
+      end if;
+    end if;
+  end Open_Udp_Socket;
 
 end Io_Flow;
 
