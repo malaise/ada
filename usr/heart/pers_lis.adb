@@ -62,12 +62,10 @@ package body Pers_Lis is
       Afpx.Encode_Field (11, (00, 00), Person.Name);
       Afpx.Encode_Field (13, (00, 00), Person.Activity);
       for I in 1 .. 6 loop
-        Afpx.Encode_Field (Afpx.Field_Range (I + 15), (00, 00),
+        Afpx.Encode_Field (Afpx.Field_Range (I + 16), (00, 00),
                            Str_Mng.To_Str(Person.Tz(I)) );
       end loop;
     end Encode_Person;
-
-
 
     -- Check a field
     procedure Check_Field (Current_Field : in out Afpx.Absolute_Field_Range;
@@ -96,10 +94,10 @@ package body Pers_Lis is
           Locok := not Str_Mng.Is_Spaces (Person.Activity);
           if Locok then
             Afpx.Encode_Field (13, (00, 00), Person.Activity);
-            Current_Field := 16;
+            Current_Field := 17;
           end if;
 
-        when 16 | 17 | 18 | 19 | 20 | 21 =>
+        when 17 | 18 | 19 | 20 | 21 | 22 =>
           Locok := True;
           Tz_S := Afpx.Decode_Field (Current_Field, 00);
           begin
@@ -109,21 +107,21 @@ package body Pers_Lis is
               Locok := False;
           end;
           if Locok then
-            Person.Tz (Integer(Current_Field) - 15) := Tz;
+            Person.Tz (Integer(Current_Field) - 16) := Tz;
           end if;
           if Locok then
             Locok := Tz /= Pers_Def.Bpm_Range'First;
           end if;
           if Locok then
             -- Tz must be crescent
-            if Current_Field /= 16
+            if Current_Field /= 17
             and then Tz /= Pers_Def.Bpm_Range'First then
-              Locok := Tz > Person.Tz (Integer(Current_Field) - 16);
+              Locok := Tz > Person.Tz (Integer(Current_Field) - 17);
             end if;
           end if;
           if Locok then
             Afpx.Encode_Field (Current_Field, (00, 00), Str_Mng.To_Str(Tz) );
-            if Current_Field = 21 then
+            if Current_Field = 22 then
               Current_Field := First_Field;
             else
               Current_Field := Current_Field + 1;
@@ -140,21 +138,42 @@ package body Pers_Lis is
 
     end Check_Field;
 
-    function Check_Compute return Boolean is
-      Tz_S  : Str_Mng.Bpm_Str;
+    function Compute return Boolean is
+      Tzr_S, Tzm_S  : Str_Mng.Bpm_Str;
+      Tzr, Tzd : Pers_Def.Bpm_Range;
       use type Pers_Def.Bpm_Range;
     begin
       -- Last field must not be empty and valid
       -- Other fields can be filled
-      Cursor_Field := 21;
+      Cursor_Field := 22;
       Cursor_Col := 0;
       Insert := False;
-      Tz_S := Afpx.Decode_Field (21, 00);
-      Person.Tz(6) := Str_Mng.To_Bpm(Tz_S);
-      return Person.Tz(6) /= Pers_Def.Bpm_Range'First;
+      Tzm_S := Afpx.Decode_Field (22, 00);
+      Person.Tz(6) := Str_Mng.To_Bpm(Tzm_S);
+      if Person.Tz(6) = Pers_Def.Bpm_Range'First then
+        -- TZ6 is empty
+        return False;
+      end if;
+      Tzr_S := Afpx.Decode_Field (16, 00);
+      Tzr := Str_Mng.To_Bpm(Tzr_S);
+      if Tzr = Pers_Def.Bpm_Range'First then
+        -- Rest rate is empty: 50% .. 90% of Max rate (Tz(6))
+        for I in 1 .. 5 loop
+          Person.Tz(I) := Person.Tz(6) * (Pers_Def.Bpm_Range(I) + 4) / 10;
+        end loop;
+      else
+        -- Rest rate is set: Karvonen:
+        -- Max rate + 50% .. 90% of (Max rate - Rest rate)
+        Tzd := Person.Tz(6) - Tzr;
+        for I in 1 .. 5 loop
+          Person.Tz(I) := Tzr + Tzd * (Pers_Def.Bpm_Range(I) + 4) / 10;
+        end loop;
+      end if;
+      Afpx.Clear_Field (16);
+      return True;
     exception
       when others => return False;
-    end Check_Compute;
+    end Compute;
 
    use type Pers_Def.Bpm_Range;
 
@@ -186,7 +205,7 @@ package body Pers_Lis is
       Afpx.Set_Field_Activation (08, Act);
       -- Edit if edit
       Act := State /= In_List;
-      for I in Afpx.Field_Range'(10) .. 23 loop
+      for I in Afpx.Field_Range'(10) .. 25 loop
         Afpx.Set_Field_Activation (I, Act);
       end loop;
       -- Un protect person name & activity if in create
@@ -201,8 +220,9 @@ package body Pers_Lis is
       Set_Protection (19, not Act);
       Set_Protection (20, not Act);
       Set_Protection (21, not Act);
+      Set_Protection (22, not Act);
       -- Compute if in edit or create
-      Afpx.Set_Field_Activation (24, Act);
+      Afpx.Set_Field_Activation (23, Act);
       -- Confirm if Valid
       Afpx.Set_Field_Activation (09, State = In_Delete);
       -- Lock list if not in list
@@ -271,7 +291,7 @@ package body Pers_Lis is
             when 00 | 08 =>
               -- Edit
               State := In_Edit;
-              First_Field := 16;
+              First_Field := 17;
               Cursor_Field := First_Field;
               Cursor_Col := 0;
               Insert := False;
@@ -284,7 +304,21 @@ package body Pers_Lis is
               Read (Pers_Def.The_Persons, Person,
                     Pers_Def.Person_List_Mng.Current);
               Encode_Person;
-            when 22 =>
+            when 23 =>
+              -- Compute
+              Ok := Compute;
+              if Ok then
+                -- Decode name & activity, then rencode all
+                Cursor_Field := 11;
+                Check_Field (Cursor_Field, Ok);
+                Cursor_Field := 13;
+                Check_Field (Cursor_Field, Ok);
+                Encode_Person;
+                Cursor_Field := 17;
+                Cursor_Col := 0;
+                Insert := False;
+              end if;
+            when 24 =>
               -- Valid
               if State /= In_Delete then
                 Cursor_Field := First_Field;
@@ -324,29 +358,9 @@ package body Pers_Lis is
                 Pers_Fil.Save;
                 State := In_List;
               end if;
-            when 23 =>
+            when 25 =>
               -- Cancel
               State := In_List;
-            when 24 =>
-              -- Compute
-              Ok := Check_Compute;
-              if Ok then
-                -- 50% .. 90% of Max rate (Tz(6))
-                for I in 1 .. 5 loop
-                  Person.Tz(I) := Person.Tz(6)
-                                * (Pers_Def.Bpm_Range(I) + 4) / 10;
-                end loop;
-                -- Decode name & activity, then rencode all
-                Cursor_Field := 11;
-                Check_Field (Cursor_Field, Ok);
-                Cursor_Field := 13;
-                Check_Field (Cursor_Field, Ok);
-                Encode_Person;
-
-                Cursor_Field := 16;
-                Cursor_Col := 0;
-                Insert := False;
-              end if;
             when others =>
               null;
           end case;
@@ -359,3 +373,4 @@ package body Pers_Lis is
   end List;
 
 end Pers_Lis;
+

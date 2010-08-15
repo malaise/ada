@@ -301,13 +301,15 @@
 
     <!-- TZ edit numbers -->
     <Field Num="14" Kind="Put">
-      <Geometry Up="22" Left="15" Low="22" Right="38"/>
+      <Geometry Up="22" Left="15" Low="22" Right="43"/>
       <Colors Foreground="Light_Grey" Background="Black"/>
-      <Init Row="00" Col="01">50</Init>
-      <Init Row="00" Col="05">60</Init>
-      <Init Row="00" Col="09">70</Init>
-      <Init Row="00" Col="13">80</Init>
-      <Init Row="00" Col="17">90</Init>
+      <Init Row="00" Col="00">Res</Init>
+      <Init Row="00" Col="05">50</Init>
+      <Init Row="00" Col="09">60</Init>
+      <Init Row="00" Col="13">70</Init>
+      <Init Row="00" Col="17">80</Init>
+      <Init Row="00" Col="21">90</Init>
+      <Init Row="00" Col="24">100%</Init>
     </Field>
 
     <!-- TZ edit tittle -->
@@ -317,61 +319,67 @@
       <Init Row="00" Col="00">Training Zones</Init>
     </Field>
 
-    <!-- TZ1 get -->
+    <!-- Rest get -->
     <Field Num="16" Kind="Get">
       <Geometry Up="23" Left="15" Low="23" Right="17"/>
       <Colors Foreground="Light_Grey" Background="Blue" Selected="Dark_Green"/>
     </Field>
 
-    <!-- TZ2 get -->
+    <!-- TZ1 get -->
     <Field Num="17" Kind="Get">
       <Geometry Up="23" Left="19" Low="23" Right="21"/>
       <Colors Foreground="Light_Grey" Background="Blue" Selected="Dark_Green"/>
     </Field>
 
-    <!-- TZ3 get -->
+    <!-- TZ2 get -->
     <Field Num="18" Kind="Get">
       <Geometry Up="23" Left="23" Low="23" Right="25"/>
       <Colors Foreground="Light_Grey" Background="Blue" Selected="Dark_Green"/>
     </Field>
 
-    <!-- TZ4 get -->
+    <!-- TZ3 get -->
     <Field Num="19" Kind="Get">
       <Geometry Up="23" Left="27" Low="23" Right="29"/>
       <Colors Foreground="Light_Grey" Background="Blue" Selected="Dark_Green"/>
     </Field>
 
-    <!-- TZ5 get -->
+    <!-- TZ4 get -->
     <Field Num="20" Kind="Get">
       <Geometry Up="23" Left="31" Low="23" Right="33"/>
       <Colors Foreground="Light_Grey" Background="Blue" Selected="Dark_Green"/>
     </Field>
 
-    <!-- TZ6 get -->
+    <!-- TZ5 get -->
     <Field Num="21" Kind="Get">
       <Geometry Up="23" Left="35" Low="23" Right="37"/>
       <Colors Foreground="Light_Grey" Background="Blue" Selected="Dark_Green"/>
     </Field>
 
-    <!-- Valid button -->
-    <Field Num="22" Kind="Button">
-      <Geometry Up="17" Left="52" Low="19" Right="59"/>
-      <Colors Foreground="Brown" Background="Blue"/>
-      <Init Row="01" Col="01">Valid</Init>
-    </Field>
-
-    <!-- Cancel button -->
-    <Field Num="23" Kind="Button">
-      <Geometry Up="21" Left="52" Low="23" Right="59"/>
-      <Colors Foreground="Brown" Background="Blue"/>
-      <Init Row="01" Col="01">Cancel</Init>
+    <!-- TZ6 get -->
+    <Field Num="22" Kind="Get">
+      <Geometry Up="23" Left="39" Low="23" Right="41"/>
+      <Colors Foreground="Light_Grey" Background="Blue" Selected="Dark_Green"/>
     </Field>
 
     <!-- Compute button -->
-    <Field Num="24" Kind="Button">
-      <Geometry Up="23" Left="41" Low="23" Right="49"/>
+    <Field Num="23" Kind="Button">
+      <Geometry Up="23" Left="44" Low="23" Right="52"/>
       <Colors Foreground="Brown" Background="Blue"/>
       <Init Row="00" Col="01">Compute</Init>
+    </Field>
+
+    <!-- Valid button -->
+    <Field Num="24" Kind="Button">
+      <Geometry Up="17" Left="57" Low="19" Right="64"/>
+      <Colors Foreground="Brown" Background="Blue"/>
+      <Init Row="01" Col="02">Valid</Init>
+    </Field>
+
+    <!-- Cancel button -->
+    <Field Num="25" Kind="Button">
+      <Geometry Up="21" Left="57" Low="23" Right="64"/>
+      <Colors Foreground="Brown" Background="Blue"/>
+      <Init Row="01" Col="01">Cancel</Init>
     </Field>
 
   </Descriptor>
