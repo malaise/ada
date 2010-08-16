@@ -11,7 +11,7 @@ fi
 # Help or version
 if [ $# -eq 1 ] ; then
   if [ \( "$1" = "-h" \) -o \( "$1" = "--help" \) ] ; then
-    echo "Usage: `basename $0` [ -l | --line ] [ -i | --ignorecase ] [ { <file> } ]" >&2
+    echo "Usage: `basename $0` [ <asubst_option> ] <pattern> [ { <file> } ]" >&2
     echo "    or `basename $0` -V | --version" >&2
     exit 2
   elif [ \( "$1" = "-V" \) -o \( "$1" = "-h" \) ] ; then
@@ -23,19 +23,19 @@ fi
 # Options
 export opt=""
 while [ "$1" != "" ] ; do
- case "$1" in
-    "-l" | "--line")
-      opt="$opt $1"
-      shift
-    ;;
-    "-i" | "--ignorecase")
-      opt="$opt $1"
-      shift
-    ;;
-    *)
-     break
-    ;;
-  esac
+ if [ "$1" == "--" ] ; then
+    break
+ fi
+ if [[ $1 =~ "^-.*$" ]] ; then
+   if [[ $1 =~ "^-(D|e||F|m|p)$" ]] ; then
+     opt="$opt $1"
+     shift
+   fi
+   opt="$opt $1"
+   shift
+ else
+   break
+ fi
 done
 
 # Find pattern
