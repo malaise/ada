@@ -4,7 +4,7 @@ with Environ, Argument, Argument_Parser, Sys_Calls, Language, Mixed_Str, Text_Li
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
-  Version : constant String  := "V11.0";
+  Version : constant String  := "V11.1";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -162,7 +162,7 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
      "    text), otherwise the full line of the matching text is put (as grep would");
     Sys_Calls.Put_Line_Error (
-     "    do), possibly with line number (""-l"").");
+     "    do), possibly possibly with file name (""-f"") and with line number (""-fl"").");
 
     Sys_Calls.Put_Line_Error (
      "  Warning: regex are powerfull (see ""man 3 pcre"" and ""man 1 perlre"") and");

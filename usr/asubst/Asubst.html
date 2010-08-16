@@ -7,13 +7,14 @@
 	<META NAME="AUTHOR" CONTENT="MALAISE Pascal">
 	<META NAME="CREATED" CONTENT="20060414;18573000">
 	<META NAME="CHANGEDBY" CONTENT="Pascal Malaise">
-	<META NAME="CHANGED" CONTENT="20100812;9353000">
+	<META NAME="CHANGED" CONTENT="20100816;16125600">
+	<META NAME="CHANGEDBY" CONTENT="Pascal Malaise">
 	<META NAME="CHANGEDBY" CONTENT="Pascal Malaise">
 	<META NAME="CHANGEDBY" CONTENT="Pascal Malaise">
 	<META NAME="CHANGEDBY" CONTENT="Pascal MALAISE">
 </HEAD>
 <BODY LANG="en-US" DIR="LTR">
-<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><FONT SIZE=6><B>V11.0</B></FONT></FONT></FONT></P>
+<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><FONT SIZE=6><B>V11.1</B></FONT></FONT></FONT></P>
 <H1 LANG="en-GB"><FONT FACE="monospace">1. General syntax</FONT></H1>
 <P LANG="en-GB"><FONT FACE="monospace">Usage: asubst [ { &lt;option&gt;
 } ] &lt;find_pattern&gt; &lt;replace_string&gt; [ { &lt;file&gt; }
@@ -224,6 +225,9 @@ number in input file) but does not alter the files.</FONT></P>
 imposes quiet, test and no-backup modes. File_name and line_nb modes
 are allowed in grep mode only, and line_nb mode requires file_name
 mode.</FONT></P>
+<P LANG="en-GB"><FONT FACE="Monospace">Note that it is possible to
+get the result of &quot;grep -l &lt;pattern&quot; with simply
+&quot;asubst -t &lt;pattern&gt; ''&quot;. </FONT></P>
 <P LANG="en-GB"><FONT FACE="Monospace">It is possible to provide a
 non empty replace_string (if file_name mode is not active), so that
 asubst displays it. Of course, this is especially useful if it

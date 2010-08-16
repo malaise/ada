@@ -1,5 +1,5 @@
                                  Asubst
-                                  V11.0
+                                  V11.1
 
 
 1. General syntax
@@ -193,6 +193,8 @@ input file) but does not alter the files.
 As a consequence, grep mode imposes quiet, test and no-backup modes. File_name
 and line_nb modes are allowed in grep mode only, and line_nb mode requires
 file_name mode.
+Note that it is possible to get the result of "grep -l <pattern" with simply
+"asubst -t <pattern> ''".
 It is possible to provide a non empty replace_string (if file_name mode is not
 active), so that asubst displays it. Of course, this is especially useful if it
 contains some "\RIJ" or "\rIJ".
