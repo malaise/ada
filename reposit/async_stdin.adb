@@ -415,14 +415,17 @@ package body Async_Stdin is
             end;
           end if;
         when others =>
-          -- Other char
+          -- Other char: ASCII control (< ' ') or UTF-8 (> Del)
           Store;
           if not Asu_Is_Null (Seq) then
             Asu.Append (Txt, Latin_1.Esc);
           else
             Asu.Append (Txt, C);
           end if;
-          return True;
+          if C <= Latin_1.Del or else Asu.Length(Txt) = Max then
+            -- Any ASCII control char, or UTF-8 reaching max length
+            return True;
+          end if;
       end case;
       return False;
     end Add;
