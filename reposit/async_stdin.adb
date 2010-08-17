@@ -1,6 +1,6 @@
-with Ada.Calendar, Ada.Characters.Latin_1;
-with As.U; use As.U;
-with Event_Mng, Sys_Calls, Console, Dynamic_List, Environ;
+with Ada.Calendar, Ada.Characters.Latin_1, Ada.Strings.Wide_Unbounded,
+     Ada.Characters.Conversions;
+with Event_Mng, Sys_Calls, Console, Dynamic_List, Environ, Utf_8, Language;
 package body Async_Stdin is
 
   -- The user callback
@@ -16,13 +16,13 @@ package body Async_Stdin is
     -- Init (getenv history size)
     procedure Init;
 
-    -- Add a character. Store it until a sequence or flush
+    -- Add a wide character. Store it until a sequence or flush
     -- return true if end of get
-    function Add (C : Character) return Boolean;
+    function Add (W : Wide_Character) return Boolean;
     function Flush return Boolean;
 
     -- Get / clear result
-    function Get return String;
+    function Get return Wide_String;
     procedure Clear;
 
   end Line;
@@ -30,10 +30,11 @@ package body Async_Stdin is
   package body Line is
     package Latin_1 renames Ada.Characters.Latin_1;
     Bell : constant String := Latin_1.Bel & "";
+    package Awu renames Ada.Strings.Wide_Unbounded;
 
     package History is
       -- Buffer for exchanges (in/out with caller)
-      Buf : Asu_Us;
+      Buf : Awu.Unbounded_Wide_String;
 
       -- List default len.
       History_Size : Positive := 20;
@@ -54,15 +55,16 @@ package body Async_Stdin is
     end History;
 
     package body History is
-      subtype Rec is Asu_Us;
+      subtype Rec is Awu.Unbounded_Wide_String;
       package Dyn_List_Mng is new Dynamic_List (Rec);
       package List_Mng renames Dyn_List_Mng.Dyn_List;
       List : List_Mng.List_Type;
       function Match (Curr, Crit : Rec) return Boolean is
+        use type Awu.Unbounded_Wide_String;
       begin
         -- Record in list starts like criteria
-        return Asu.Length (Curr) >= Asu.Length (Crit)
-        and then Asu.Slice (Curr, 1, Asu.Length (Crit)) = Asu_Ts (Crit);
+        return Awu.Length (Curr) >= Awu.Length (Crit)
+        and then Awu.Unbounded_Slice (Curr, 1, Awu.Length (Crit)) = Crit;
       end Match;
       procedure Search is new List_Mng.Search (Match);
 
@@ -87,7 +89,7 @@ package body Async_Stdin is
       -- Clear Buf
       procedure Clear is
       begin
-        Buf := Asu_Null;
+        Buf := Awu.Null_Unbounded_Wide_String;
       end Clear;
 
       -- Movements
@@ -184,12 +186,12 @@ package body Async_Stdin is
 
     procedure Init is
     begin
-      Environ.Get_Pos ("Async_Stdin_History_Size", History.History_Size);
+      Environ.Get_Pos ("ASYNC_STDIN_HISTORY_SIZE", History.History_Size);
     end Init;
 
     -- Current line of text and cursor position in it
     Ind : Positive := 1;
-    Txt : Asu_Us;
+    Txt : Awu.Unbounded_Wide_String;
 
     -- Are we searching (Tab, Tab, Tab...)
     Searching : Boolean := False;
@@ -199,33 +201,35 @@ package body Async_Stdin is
 
     -- Current sequence characters: Esc + 3
     Seq_Max_Length : constant := 4;
-    Seq : Asu_Us;
+    Seq : Awu.Unbounded_Wide_String;
+
     -- After this delay from Esc, we give up
     Seq_Delay   : constant Duration := 0.25;
     Escape_Time : Ada.Calendar.Time;
     -- Supported sequences
-    Arrow_Left_Seq    : constant String := "[D";
-    Arrow_Right_Seq   : constant String := "[C";
-    Arrow_Up_Seq      : constant String := "[A";
-    Arrow_Down_Seq    : constant String := "[B";
-    Home_Seq          : constant String := "[1~";
-    End_Seq           : constant String := "[4~";
-    Home1_Seq         : constant String := "OH";
-    End1_Seq          : constant String := "OF";
-    Delete_Seq        : constant String := "[3~";
-    Page_Up_Seq       : constant String := "[5~";
-    Page_Down_Seq     : constant String := "[6~";
-    Insert_Seq        : constant String := "[2~";
+    Arrow_Left_Seq    : constant Wide_String := "[D";
+    Arrow_Right_Seq   : constant Wide_String := "[C";
+    Arrow_Up_Seq      : constant Wide_String := "[A";
+    Arrow_Down_Seq    : constant Wide_String := "[B";
+    Home_Seq          : constant Wide_String := "[1~";
+    End_Seq           : constant Wide_String := "[4~";
+    Home1_Seq         : constant Wide_String := "OH";
+    End1_Seq          : constant Wide_String := "OF";
+    Delete_Seq        : constant Wide_String := "[3~";
+    Page_Up_Seq       : constant Wide_String := "[5~";
+    Page_Down_Seq     : constant Wide_String := "[6~";
+    Insert_Seq        : constant Wide_String := "[2~";
 
     -- Copy Buf and move to end of line
     procedure Update is
     begin
-      if Asu.Length (History.Buf) /= 0 then
+      if Awu.Length (History.Buf) /= 0 then
         Console.Set_Col (1);
         Console.Erase_Line;
         Txt := History.Buf;
-        Sys_Calls.Put_Output (Asu_Ts (Txt));
-        Ind := Asu.Length (Txt) + 1;
+        Sys_Calls.Put_Output (Language.Wide_To_String (Awu.To_Wide_String (
+                                Txt)));
+        Ind := Awu.Length (Txt) + 1;
       end if;
     end Update;
 
@@ -237,16 +241,59 @@ package body Async_Stdin is
       At_Last := True;
     end Store;
 
+    -- Some usefull definitions
+    Esc : constant Wide_Character
+        := Ada.Characters.Conversions.To_Wide_Character (Latin_1.Esc);
+    Del : constant Wide_Character
+        := Ada.Characters.Conversions.To_Wide_Character (Latin_1.Del);
+    Awu_Null : constant Awu.Unbounded_Wide_String
+             := Awu.Null_Unbounded_Wide_String;
+    function Awu_Is_Null (Str : Awu.Unbounded_Wide_String) return Boolean is
+      use type Awu.Unbounded_Wide_String;
+    begin
+      return Str = Awu_Null;
+    end Awu_Is_Null;
+
+    -- Insert and put a wide character
+    function Insert_Put (W : in Wide_Character) return Boolean is
+    begin
+      -- Insert C at current position and move 1 right
+      Txt := Awu.To_Unbounded_Wide_String (
+                Awu.Slice (Txt, 1, Ind - 1)
+              & W
+              & Awu.Slice (Txt, Ind, Awu.Length(Txt)));
+      Ind := Ind + 1;
+      Sys_Calls.Put_Output (Language.Wide_To_String (
+                             Awu.Slice (Txt, Ind - 1, Awu.Length(Txt))));
+      for I in 1 .. Awu.Length(Txt) - Ind + 1 loop
+        Console.Left;
+      end loop;
+      if Awu.Length(Txt) = Max then
+        Store;
+        return True;
+      else
+        return False;
+      end if;
+    end Insert_Put;
+
     -- Add a character. Store it until a sequence or flush
     -- return true if end of get
-    function Add (C : Character) return Boolean is
+    function Add (W : Wide_Character) return Boolean is
        Saved_Searching : Boolean;
+       C : Character;
     begin
       -- Simplistic treatment when stdin/out is not a tty
       if not Stdio_Is_A_Tty then
-        Asu.Append (Txt, C);
-        -- Done when extra character or buffer full
-        return C not in ' ' .. '~' or else Asu.Length(Txt) = Max;
+        Awu.Append (Txt, W);
+        -- Done when control character or buffer full
+        return W < ' ' or else Awu.Length(Txt) = Max;
+      end if;
+
+      -- Optim: Set C to character of W or to Nul
+      if W <= Del then
+        C := Ada.Characters.Conversions.To_Character (W, Latin_1.Nul);
+      else
+        C := Latin_1.Nul;
       end if;
 
       -- Save current searching status
@@ -256,9 +303,9 @@ package body Async_Stdin is
       case C is
         when Latin_1.Bs | Latin_1.Del =>
           -- Backspace
-          if not Asu_Is_Null (Seq) then
+          if not Awu_Is_Null (Seq) then
             Store;
-            Asu.Append (Txt, Latin_1.Esc);
+            Awu.Append (Txt, Esc);
             return True;
           end if;
           if Ind = 1 then
@@ -266,20 +313,20 @@ package body Async_Stdin is
           else
             -- Move one left, shift tail
             Ind := Ind - 1;
-            Txt := Asu_Tus (
-                      Asu.Slice (Txt, 1, Ind - 1)
-                    & Asu.Slice (Txt, Ind + 1, Asu.Length(Txt)));
+            Txt := Awu.To_Unbounded_Wide_String (
+                      Awu.Slice (Txt, 1, Ind - 1)
+                    & Awu.Slice (Txt, Ind + 1, Awu.Length(Txt)));
             Console.Left;
             Console.Delete;
           end if;
         when Latin_1.Ht =>
           -- Search
-          if not Asu_Is_Null (Seq) then
+          if not Awu_Is_Null (Seq) then
             Store;
-            Asu.Append (Txt, Latin_1.Esc);
+            Awu.Append (Txt, Esc);
             return True;
           end if;
-          if Asu.Length (Txt) = 0 then
+          if Awu.Length (Txt) = 0 then
             return False;
           end if;
           if not Saved_Searching then
@@ -294,34 +341,23 @@ package body Async_Stdin is
           Searching := True;
         when Latin_1.Esc =>
           -- Escape, validate previous escape
-          if not Asu_Is_Null (Seq) then
+          if not Awu_Is_Null (Seq) then
             Store;
-            Asu.Append (Txt, Latin_1.Esc);
+            Awu.Append (Txt, Esc);
             return True;
           end if;
-          Seq := Asu_Tus (C);
+          Seq := Awu.To_Unbounded_Wide_String (W & "");
           Escape_Time := Ada.Calendar.Clock;
         when ' ' .. '~' =>
-          if Asu_Is_Null (Seq) then
-            -- Insert C at current position and move 1 right
-            Txt := Asu_Tus (
-                      Asu.Slice (Txt, 1, Ind - 1)
-                    & C
-                    & Asu.Slice (Txt, Ind, Asu.Length(Txt)));
-            Ind := Ind + 1;
-            Sys_Calls.Put_Output (Asu.Slice (Txt, Ind - 1, Asu.Length(Txt)));
-            for I in 1 .. Asu.Length(Txt) - Ind + 1 loop
-              Console.Left;
-            end loop;
-            if Asu.Length(Txt) = Max then
-              Store;
-              return True;
-            end if;
+          if Awu_Is_Null (Seq) then
+            -- Valid ASCII character
+            return Insert_Put (W);
           else
             -- Add C in sequence try to find one
-            Asu.Append (Seq, C);
+            Awu.Append (Seq, W);
             declare
-              Str : constant String := Asu.Slice (Seq, 2, Asu.Length (Seq));
+              Str : constant Wide_String
+                  := Awu.Slice (Seq, 2, Awu.Length (Seq));
             begin
               if Str = Arrow_Left_Seq then
                 -- Left if not at first
@@ -331,38 +367,38 @@ package body Async_Stdin is
                   Ind := Ind - 1;
                   Console.Left;
                 end if;
-                Seq := Asu_Null;
+                Seq := Awu_Null;
               elsif Str = Arrow_Right_Seq then
                 -- Right if not at Last
-                if Ind = Asu.Length (Txt) + 1 then
+                if Ind = Awu.Length (Txt) + 1 then
                   Sys_Calls.Put_Output (Bell);
                 else
                   Ind := Ind + 1;
                   Console.Right;
                 end if;
-                Seq := Asu_Null;
+                Seq := Awu_Null;
               elsif Str = Home_Seq
               or else Str = Home1_Seq then
                 -- Home
                 Ind := 1;
                 Console.Set_Col(1);
-                Seq := Asu_Null;
+                Seq := Awu_Null;
               elsif Str = End_Seq
               or else Str = End1_Seq then
                 -- End
-                Ind := Asu.Length(Txt) + 1;
+                Ind := Awu.Length(Txt) + 1;
                 Console.Set_Col(Ind);
-                Seq := Asu_Null;
+                Seq := Awu_Null;
               elsif Str = Delete_Seq then
                 -- Del
-                if Ind /= Asu.Length (Txt) + 1 then
+                if Ind /= Awu.Length (Txt) + 1 then
                   -- Move shift tail
-                  Txt := Asu_Tus (
-                          Asu.Slice (Txt, 1, Ind - 1)
-                        & Asu.Slice (Txt, Ind + 1, Asu.Length(Txt)));
+                  Txt := Awu.To_Unbounded_Wide_String (
+                          Awu.Slice (Txt, 1, Ind - 1)
+                        & Awu.Slice (Txt, Ind + 1, Awu.Length(Txt)));
                   Console.Delete;
                 end if;
-                Seq := Asu_Null;
+                Seq := Awu_Null;
               elsif Str = Arrow_Up_Seq then
                 -- Up
                 if At_Last then
@@ -373,7 +409,7 @@ package body Async_Stdin is
                 end if;
                 At_Last := False;
                 Update;
-                Seq := Asu_Null;
+                Seq := Awu_Null;
               elsif Str = Arrow_Down_Seq then
                 -- Down
                 if not At_Last then
@@ -381,48 +417,59 @@ package body Async_Stdin is
                   History.Next;
                   Update;
                 end if;
-                Seq := Asu_Null;
+                Seq := Awu_Null;
               elsif Str = Page_Up_Seq then
                 -- Page Up
                 History.First;
                 At_Last := False;
                 Update;
-                Seq := Asu_Null;
+                Seq := Awu_Null;
               elsif Str = Page_Down_Seq then
                 -- Page Down
                 History.Last;
                 At_Last := False;
                 Update;
-                Seq := Asu_Null;
+                Seq := Awu_Null;
               elsif Str = Insert_Seq then
                 -- Discard Insert
-                Seq := Asu_Null;
+                Seq := Awu_Null;
               -- No sequence identified
-              elsif Asu.Length(Seq) = Seq_Max_Length then
+              elsif Awu.Length(Seq) = Seq_Max_Length then
                 -- Sequence is full and will not be recognized
-                Seq := Asu_Null;
+                Seq := Awu_Null;
                 Store;
-                Asu.Append (Txt, Latin_1.Esc);
+                Awu.Append (Txt, Esc);
                 return True;
-              elsif Asu.Length(Txt) + Asu.Length(Seq) = Max then
+              elsif Awu.Length(Txt) + Awu.Length(Seq) = Max then
                 -- Not enough final space to store sequence
-                Seq := Asu_Null;
+                Seq := Awu_Null;
                 Store;
-                Asu.Append (Txt, Latin_1.Esc);
+                Awu.Append (Txt, Esc);
                 return True;
-              -- else C is stored in Seq and we return False
+              -- else W is stored in Seq and we return False
               end if;
             end;
+          end if;
+        when Latin_1.Nul =>
+          -- Non ASCII (UTF-8) character
+          if Awu_Is_Null (Seq) then
+            return Insert_Put (W);
+          else
+            -- Drop
+            Seq := Awu_Null;
+            Store;
+            Awu.Append (Txt, Esc);
+            return True;
           end if;
         when others =>
           -- Other char: ASCII control (< ' ') or UTF-8 (> Del)
           Store;
-          if not Asu_Is_Null (Seq) then
-            Asu.Append (Txt, Latin_1.Esc);
+          if not Awu_Is_Null (Seq) then
+            Awu.Append (Txt, Esc);
           else
-            Asu.Append (Txt, C);
+            Awu.Append (Txt, W);
           end if;
-          if C <= Latin_1.Del or else Asu.Length(Txt) = Max then
+          if W <= Del or else Awu.Length(Txt) = Max then
             -- Any ASCII control char, or UTF-8 reaching max length
             return True;
           end if;
@@ -433,11 +480,11 @@ package body Async_Stdin is
     function Flush return Boolean is
       use type Ada.Calendar.Time;
     begin
-      if not Asu_Is_Null (Seq)
+      if not Awu_Is_Null (Seq)
       and then Ada.Calendar.Clock - Escape_Time > Seq_Delay then
         -- Client wants to flush and Esc is getting old
-        Asu.Append (Txt, Latin_1.Esc);
-        Seq := Asu_Null;
+        Awu.Append (Txt, Esc);
+        Seq := Awu_Null;
         return True;
       end if;
       return False;
@@ -445,19 +492,19 @@ package body Async_Stdin is
 
     procedure Clear is
     begin
-      Seq := Asu_Null;
-      Txt := Asu_Null;
+      Seq := Awu_Null;
+      Txt := Awu_Null;
       Ind := 1;
       if Stdio_Is_A_Tty then
         Console.Set_Col(1);
       end if;
     end Clear;
 
-    function Get return String is
+    function Get return Wide_String is
     begin
-      Asu.Append (Txt, Seq);
-      Seq := Asu_Null;
-      return Asu_Ts (Txt);
+      Awu.Append (Txt, Seq);
+      Seq := Awu_Null;
+      return Awu.To_Wide_String (Txt);
     end Get;
 
   end Line;
@@ -468,14 +515,38 @@ package body Async_Stdin is
     pragma Unreferenced (Read);
     Status : Sys_Calls.Get_Status_List;
     C : Character;
+    Str : String (1 .. Utf_8.Max_Chars);
+    W : Wide_Character;
+    Len : Natural;
+    Pos : Positive;
     Result : Boolean;
 
   begin
+    Len := 0;
     loop
       Sys_Calls.Get_Immediate (Fd, Status, C);
       case Status is
         when Sys_Calls.Got =>
-          exit when Line.Add (C);
+          if Len = 0 then
+            -- First char: compute length
+            Len := Language.Nb_Chars (C);
+            Pos := 1;
+          else
+            Pos := Pos + 1;
+          end if;
+          Str(Pos) := C;
+          if Pos = Len then
+            -- End of sequence
+            if Len = 1 then
+              -- Optim for single characters
+              W := Ada.Characters.Conversions.To_Wide_Character (C);
+            else
+              -- First wide char of string to wide conversion
+              W := Language.String_To_Wide( Str(1 .. Len))(1);
+            end if;
+            Len := 0;
+            exit when Line.Add (W);
+          end if;
         when Sys_Calls.None =>
           -- No more char
           exit when Line.Flush;
@@ -494,7 +565,7 @@ package body Async_Stdin is
       Sys_Calls.New_Line_Output;
     end if;
 
-    Result := Cb (Line.Get);
+    Result := Cb (Language.Wide_To_String (Line.Get));
     Line.Clear;
     return Result;
 
