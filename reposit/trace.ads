@@ -4,6 +4,6 @@ package Trace is
   procedure Activate (On : in Boolean := True);
 
   -- Traces the number of call and the message, if activated
-  procedure Put (Message : in String := "");
+  procedure Put (Message : in String := ""; Flush : in Boolean := False);
 
 end Trace;

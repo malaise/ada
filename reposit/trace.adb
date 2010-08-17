@@ -24,7 +24,7 @@ package body Trace is
     Created := True;
   end Create;
 
-  procedure Put (Message : in String := "") is
+  procedure Put (Message : in String := ""; Flush : in Boolean := False) is
   begin
     if not Activated then
       return;
@@ -34,6 +34,9 @@ package body Trace is
     end if;
     Ada.Text_Io.Put_Line (File => File,
                           Item => Normal(Count, 5) & " ->" & Message & "<");
+    if Flush then
+      Ada.Text_Io.Flush (File);
+    end if;
     if Count /= Positive'Last then
       Count := Positive'Succ(Count);
     else
