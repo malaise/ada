@@ -776,6 +776,7 @@ package body Tcp_Util is
   function Sending_Cb (Fd : in Event_Mng.File_Desc; Read : in Boolean)
   return Boolean is
     Rec : Sending_Rec;
+    Done : Boolean;
   begin
     if Debug_Overflow then
       My_Io.Put_Line ("  Tcp_Util.Sending_Cb start with fd " & Fd'Img
@@ -792,7 +793,9 @@ package body Tcp_Util is
 
     -- Try to re send
     begin
+      Done := False;
       Rec.Dscr.Re_Send;
+      Done := True;
     exception
       when Socket.Soc_Would_Block =>
         -- Still in overflow
@@ -823,7 +826,7 @@ package body Tcp_Util is
         My_Io.Put_Line ("  Tcp_Util.Sending_Cb Cb called");
       end if;
     end if;
-    return False;
+    return Done;
   exception
     when Sen_List_Mng.Not_In_List =>
       if Debug_Overflow then
@@ -1009,6 +1012,7 @@ package body Tcp_Util is
           if Debug_Reception then
             My_Io.Put_Line ("  Tcp_Util.Read_Cb disconnection on fd " & Fd'Img);
           end if;
+          -- Notify and close
           Close_Current;
           Free_Message (Msg);
           return True;
