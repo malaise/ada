@@ -1,4 +1,4 @@
-with Ada.Exceptions;
+with Ada.Exceptions, Ada.Characters.Latin_1;
 with Argument, Basic_Proc, Async_Stdin, Event_Mng, Socket, Tcp_Util, Ip_Addr;
 procedure T_Async is
 
@@ -13,6 +13,7 @@ procedure T_Async is
   Tcp_Soc : Socket.Socket_Dscr;
   In_Overflow : Boolean;
   procedure Open;
+  procedure Close;
 
   -- End of sending overflow
   procedure End_Ovf_Cb (Dscr : in  Socket.Socket_Dscr) is
@@ -46,7 +47,13 @@ procedure T_Async is
                      Len : in Natural) is
     pragma Unreferenced (Dscr);
   begin
-    Async_Stdin.Put_Out (Msg(1 .. Len));
+    if Len = 1 and then Msg(1) = Ada.Characters.Latin_1.Eot then
+      -- Single Ctrl D => Close connection
+      Close;
+      Open;
+    else
+      Async_Stdin.Put_Out (Msg(1 .. Len));
+    end if;
   end Read_Cb;
   package My_Rece is new Tcp_Util.Reception (Message_Type);
 
@@ -96,6 +103,31 @@ procedure T_Async is
     end loop;
   end Open;
 
+  procedure Close is
+  begin
+    begin
+      Tcp_Util.Abort_Accept (Socket.Tcp, Port_Num);
+    exception
+      when Tcp_Util.No_Such =>
+        null;
+    end;
+    begin
+      My_Rece.Remove_Callbacks (Tcp_Soc);
+    exception
+     when Tcp_Util.No_Such =>
+       null;
+    end;
+    begin
+      Tcp_Util.Abort_Send_And_Close (Tcp_Soc);
+    exception
+     when Tcp_Util.No_Such =>
+       null;
+    end;
+    if Tcp_Soc.Is_Open then
+      Tcp_Soc.Close;
+    end if;
+  end Close;
+
   -- Async stdin stuff
   Give_Up : Boolean := False;
   function Async_Cb (Str : String) return Boolean is
@@ -114,7 +146,6 @@ procedure T_Async is
   -- Signal callback
   procedure Signal_Cb is
   begin
-    Async_Stdin.Put_Line_Err ("Aborted.");
     Give_Up := True;
   end Signal_Cb;
 
@@ -151,27 +182,7 @@ begin
   end loop;
 
   -- Close
-  begin
-    Tcp_Util.Abort_Accept (Socket.Tcp, Port_Num);
-  exception
-    when Tcp_Util.No_Such =>
-      null;
-  end;
-  begin
-    My_Rece.Remove_Callbacks (Tcp_Soc);
-  exception
-   when Tcp_Util.No_Such =>
-     null;
-  end;
-  begin
-    Tcp_Util.Abort_Send_And_Close (Tcp_Soc);
-  exception
-   when Tcp_Util.No_Such =>
-     null;
-  end;
-  if Tcp_Soc.Is_Open then
-    Tcp_Soc.Close;
-  end if;
+  Close;
   Async_Stdin.Set_Async (null);
 
 exception
