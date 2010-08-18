@@ -13,6 +13,9 @@ package Async_Stdin is
   --  or at each control char (i.e. before space)
   -- User callback is called with empty string in case of error
   -- Set null callback to restore normal behaviour
+  -- Asynchronous mode relies on a Event_Mng Fd Callback which
+  --  returns the result of the User_Callback. So Event_Mng will report
+  --  a Fd_Event if User_Callback returns True
   procedure Set_Async (User_Callback : in User_Callback_Access := null;
                        Max_Chars : in Max_Chars_Range := 1);
 

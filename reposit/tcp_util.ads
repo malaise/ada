@@ -3,7 +3,13 @@ package Tcp_Util is
 
   -- GENERAL CONVENTIONS --
   -------------------------
-  -- Padd strings with spaces in records.
+  -- Pad strings with spaces in records.
+  -- All services rely on Even_Mng-Fd and/or Timer callbacks, which return
+  --  True at completion of the service. So Event_Mng will report:
+  -- For Connection: Fd_Event or Timer_Event when connection success or failure
+  -- For Acception: Fd_Event when a connection is accepted
+  -- For Sending : Fd_Event when end of overflow
+  -- For Receiving: Fd_Event when data read or connection closed
 
 
   -- PROTOCOL DEFINITION --

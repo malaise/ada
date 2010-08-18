@@ -43,6 +43,9 @@ package Proc_Family is
   --  opening com channel if New_Fds
   -- If not empty, Mutation has to follow Many_Strings format
   -- If Death_Callback is set, it will be called on child's death
+  -- Spawn relies internally on a Event_Mng callback on Sig_Child, so
+  --  - A Signal_Event is generated on the death of children
+  --  - Programs using Spawn shall not set their own Sig_Child callback
   type Comm_Kind_List is (None, Std_Fds, New_Fds);
   function Spawn (Mutation     : String := "";
                   Comm         : Comm_Kind_List := None;

@@ -1,5 +1,11 @@
 package Channels is
 
+  -----------------
+  -- CONVENTIONS --
+  -----------------
+  -- Some services rely on Even_Mng-Fd callbacks that return true at least when
+  --  Read_Cb is called (other internal events, see Tcp_Util may lead to
+  --  positive Fd_Event reports
 
   -----------------
   -- DEFINITIONS --
