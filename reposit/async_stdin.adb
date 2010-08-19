@@ -25,6 +25,10 @@ package body Async_Stdin is
     function Get return Wide_String;
     procedure Clear;
 
+    -- Read current content of buffer and current cursor col
+    function Read_Buffer return Wide_String;
+    function Read_Col return Positive;
+
   end Line;
 
   package body Line is
@@ -507,6 +511,20 @@ package body Async_Stdin is
       return Awu.To_Wide_String (Txt);
     end Get;
 
+    -- Read current content of buffer and current cursor col
+    function Read_Buffer return Wide_String is
+      Res : Awu.Unbounded_Wide_String;
+      use type Awu.Unbounded_Wide_String;
+    begin
+      Res := Txt & Seq;
+      return Awu.To_Wide_String (Res);
+    end Read_Buffer;
+
+    function Read_Col return Positive is
+    begin
+      return Ind;
+    end Read_Col;
+
   end Line;
 
   -- Our callback
@@ -542,7 +560,7 @@ package body Async_Stdin is
               W := Ada.Characters.Conversions.To_Wide_Character (C);
             else
               -- First wide char of string to wide conversion
-              W := Language.String_To_Wide( Str(1 .. Len))(1);
+              W := Language.String_To_Wide (Str(1 .. Len))(1);
             end if;
             Len := 0;
             exit when Line.Add (W);
@@ -661,7 +679,19 @@ package body Async_Stdin is
   begin
     if Cb /= null then
       Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
-      Sys_Calls.Put_Output (Str);
+      declare
+        Buf : constant Wide_String := Line.Read_Buffer;
+      begin
+        if Buf /= "" then
+          Sys_Calls.New_Line_Output;
+        end if;
+        Sys_Calls.Put_Output (Str);
+        if Buf /= "" then
+          -- Put buffer, move cursor
+          Sys_Calls.Put_Output (Language.Wide_To_String (Buf));
+          Console.Set_Col (Line.Read_Col);
+        end if;
+      end;
       Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False);
     else
       Sys_Calls.Put_Output (Str);
@@ -669,29 +699,13 @@ package body Async_Stdin is
   end Put_Out;
 
   procedure Put_Line_Out (Str : in String) is
-    Result : Boolean;
-    pragma Unreferenced (Result);
   begin
-    if Cb /= null then
-      Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
-      Sys_Calls.Put_Line_Output (Str);
-      Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False);
-    else
-      Sys_Calls.Put_Line_Output (Str);
-    end if;
+    Put_Out (Str & Ada.Characters.Latin_1.Lf);
   end Put_Line_Out;
 
   procedure New_Line_Out is
-    Result : Boolean;
-    pragma Unreferenced (Result);
   begin
-    if Cb /= null then
-      Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
-      Sys_Calls.New_Line_Output;
-      Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False);
-    else
-      Sys_Calls.New_Line_Output;
-    end if;
+    Put_Out ("" & Ada.Characters.Latin_1.Lf);
   end New_Line_Out;
 
   -- Put on stderr when in async
