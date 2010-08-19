@@ -504,6 +504,13 @@ package body Io_Flow is
     return False;
   end Socket_Connect_Cb;
 
+  procedure Disconnect_Socket is
+  begin
+    Activate_Socket (False);
+    Soc.Close;
+    Open_Tcp_Socket (True);
+  end Disconnect_Socket;
+
   function Socket_Rece_Cb (Fd : in Event_Mng.File_Desc; Read : in Boolean)
                           return Boolean is
     pragma Unreferenced (Fd, Read);
@@ -515,13 +522,24 @@ package body Io_Flow is
     exception
       when Socket.Soc_Read_0 =>
         -- Tcp Disconnection: close and accept new
-        Async_Stdin.Put_Line_Err ("Flow: Socket_Rece_Cb disconnection");
-        Activate_Socket (False);
-        Soc.Close;
-        Open_Tcp_Socket (True);
+        if Debug.Debug_Level_Array(Debug.Flow) then
+          Async_Stdin.Put_Line_Err ("Flow: Socket_Rece_Cb disconnection");
+        end if;
+        Disconnect_Socket;
         return False;
     end;
     if Length = 0 then
+      return False;
+    end if;
+    -- Cancel Tcp connection when receiveing CtrlD
+    if Io_Mode = Tcp
+    and then Length = 1
+    and then Message(1) = Ada.Characters.Latin_1.Eot then
+      -- Tcp Disconnection: close and accept new
+      if Debug.Debug_Level_Array(Debug.Flow) then
+        Async_Stdin.Put_Line_Err ("Flow: Socket_Rece_Cb disconnecting");
+      end if;
+      Disconnect_Socket;
       return False;
     end if;
     -- Add this chunk
