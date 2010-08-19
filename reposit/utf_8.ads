@@ -1,4 +1,5 @@
 -- Utf_8 encoding/decoding
+with Unicode;
 package Utf_8 is
 
   -- Utf-8 sequence of bytes, String of 1 to 4 chars
@@ -7,7 +8,7 @@ package Utf_8 is
   subtype Sequence is String;
 
   -- Unicode
-  subtype Unicode_Number is Natural range 0 .. 16#10FFFF#;
+  subtype Unicode_Number is Unicode.Unicode_Number;
 
   -- Raised if incorrect UTF-8 Sequence or incorrect First_Char
   Invalid_Sequence : exception;
@@ -31,11 +32,11 @@ package Utf_8 is
   -- Encodes a Unicode as a Utf-8 sequence
   function Encode (Unicode : Unicode_Number) return Sequence;
 
-  type Unicode_Sequence is array (Positive range <>) of Unicode_Number;
+  subtype Unicode_Sequence is Unicode.Unicode_Sequence;
   -- Decodes a Utf-8 sequence (of sequences) to Unicode sequence.
   -- May raise Invalid_Sequence
   function Decode (Seq : Sequence) return Unicode_Sequence;
-  -- Encodes a Unicode sequence as a Utf-8 sequencei (of sequecnes)
+  -- Encodes a Unicode sequence as a Utf-8 sequence (of sequences)
   function Encode (Unicode : Unicode_Sequence) return Sequence;
 
 

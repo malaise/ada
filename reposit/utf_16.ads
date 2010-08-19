@@ -1,4 +1,4 @@
-with Utf_8;
+with Unicode;
 -- Utf_16 encoding/decoding
 package Utf_16 is
 
@@ -8,7 +8,7 @@ package Utf_16 is
   subtype Sequence is Wide_String;
 
   -- Unicode: Natural range 0 .. 16#10FFFF#;
-  subtype Unicode_Number is Utf_8.Unicode_Number;
+  subtype Unicode_Number is Unicode.Unicode_Number;
 
   -- All the following operations suppose that the UTF-16 sequence
   --  is in big endian (UTF-16BE)
@@ -33,11 +33,11 @@ package Utf_16 is
   -- Encodes a Unicode as a Utf-16 sequence
   function Encode (Unicode : Unicode_Number) return Sequence;
 
-  type Unicode_Sequence is array (Positive range <>) of Unicode_Number;
+  subtype Unicode_Sequence is Unicode.Unicode_Sequence;
   -- Decodes a Utf-16 sequence (of sequences) to Unicode sequence.
   -- May raise Invalid_Sequence
   function Decode (Seq : Sequence) return Unicode_Sequence;
-  -- Encodes a Unicode sequence as a Utf-16 sequencei (of sequecnes)
+  -- Encodes a Unicode sequence as a Utf-16 sequence (of sequences)
   function Encode (Unicode : Unicode_Sequence) return Sequence;
 
   -- Raised if a Utf-16 sequence leads to a Unicode above last

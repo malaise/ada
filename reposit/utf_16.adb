@@ -1,10 +1,8 @@
 with Ada.Strings.Wide_Unbounded;
-with Bit_Ops, Unbounded_Arrays;
+with Bit_Ops;
 package body Utf_16 is
 
-  package Unbounded_Unicode is new Unbounded_Arrays (Unicode_Number,
-                                                     Unicode_Sequence);
-
+  package Unbounded_Unicode renames Unicode.Unbounded_Unicode;
 
   -- Returns the number of chars of a sequence (coded in the 1st char)
   function Nb_Chars (First_Char : Wide_Character) return Len_Range is

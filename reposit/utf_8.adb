@@ -1,10 +1,9 @@
 with As.U; use As.U;
-with Bit_Ops, Unbounded_Arrays;
+with Bit_Ops;
 -- Utf_8 encoding/decoding
 package body Utf_8 is
 
-  package Unbounded_Unicode is new Unbounded_Arrays (Unicode_Number,
-                                                     Unicode_Sequence);
+  package Unbounded_Unicode renames Unicode.Unbounded_Unicode;
 
   -- Returns the number of chars of a sequence (coded in the 1st char)
   function Nb_Chars (First_Char : Character) return Len_Range is

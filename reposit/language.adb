@@ -1,6 +1,6 @@
 with Ada.Strings.Wide_Unbounded;
 with As.U; use As.U;
-with Environ, Utf_8, String_Mng, Lower_Str;
+with Environ, String_Mng, Lower_Str, Unbounded_Arrays;
 package body Language is
 
   -- When ENV, UTF_8 is set if a Getenv on "LANG" gives a value
@@ -73,23 +73,70 @@ package body Language is
   -- Raw translation from Wide_Character to and from Character
   function Is_Char (W : Wide_Character) return Boolean is
   begin
-    return W <= Last_Char;
+    return W <= Last_Wide_Char;
+  end Is_Char;
+  function Is_Char (U : Unicode_Number) return Boolean is
+  begin
+    return U <= Last_Unicode_Char;
   end Is_Char;
   function Char_To_Wide (C : Character) return Wide_Character is
   begin
     return Wide_Character'Val (Character'Pos (C));
   end Char_To_Wide;
+  function Char_To_Unicode (C : Character) return Unicode_Number is
+  begin
+    return Character'Pos (C);
+  end;
   function Wide_To_Char (W : Wide_Character) return Character is
   begin
-    if W <= Last_Char then
+    if W <= Last_Wide_Char then
       return Character'Val (Wide_Character'Pos (W));
     else
       return Default_Char;
     end if;
   end Wide_To_Char;
+  function Unicode_To_Char (U : Unicode_Number) return Character is
+  begin
+    if U <= Last_Unicode_Char then
+      return Character'Val (U);
+    else
+      return Default_Char;
+    end if;
+  end Unicode_To_Char;
 
   -- Convertion to and from wide string
   -- May raise Utf_8 exceptions
+  function Wide_To_String (Str : Wide_String) return String is
+    S : Asu_Us;
+    W : Wide_Character;
+  begin
+    if Get_Language /= Lang_Utf_8 then
+      for I in Str'Range loop
+        Asu.Append (S, Wide_To_Char (Str(I)));
+      end loop;
+    else
+      for I in Str'Range loop
+        W := Str(I);
+        if W <= Last_Wide_Char then
+          -- Optim
+          Asu.Append (S, Wide_To_Char (Str(I)));
+        else
+          Asu.Append (S, Utf_8.Encode (Str(I)));
+        end if;
+      end loop;
+    end if;
+    return Asu_Ts (S);
+  end Wide_To_String;
+
+  function "&" (Left : String; Right : Wide_String) return String is
+  begin
+    return Left & Wide_To_String (Right);
+  end "&";
+  function "&" (Left : Wide_String; Right : String) return String is
+  begin
+    return Wide_To_String (Left) & Right;
+  end "&";
+
   function String_To_Wide (Str : String) return Wide_String is
     Ws : Ada.Strings.Wide_Unbounded.Unbounded_Wide_String;
     Wc : Wide_Character;
@@ -125,37 +172,6 @@ package body Language is
     return Ada.Strings.Wide_Unbounded.To_Wide_String (Ws);
   end String_To_Wide;
 
-  function Wide_To_String (Str : Wide_String) return String is
-    S : Asu_Us;
-    W : Wide_Character;
-  begin
-    if Get_Language /= Lang_Utf_8 then
-      for I in Str'Range loop
-        Asu.Append (S, Wide_To_Char (Str(I)));
-      end loop;
-    else
-      for I in Str'Range loop
-        W := Str(I);
-        if W <= Last_Char then
-          -- Optim
-          Asu.Append (S, Wide_To_Char (Str(I)));
-        else
-          Asu.Append (S, Utf_8.Encode (Str(I)));
-        end if;
-      end loop;
-    end if;
-    return Asu_Ts (S);
-  end Wide_To_String;
-
-  function "&" (Left : String; Right : Wide_String) return String is
-  begin
-    return Left & Wide_To_String (Right);
-  end "&";
-  function "&" (Left : Wide_String; Right : String) return String is
-  begin
-    return Wide_To_String (Left) & Right;
-  end "&";
-
   function "&" (Left : String; Right : Wide_String) return Wide_String is
   begin
     return String_To_Wide (Left) & Right;
@@ -171,6 +187,98 @@ package body Language is
   function "=" (Left : Wide_String; Right : String) return Boolean is
   begin
     return Left = String_To_Wide (Right);
+  end "=";
+
+  -- Conversion to and from unicode sequence according to language
+  function Unicode_To_String (Str : Unicode_Sequence) return String is
+    S : Asu_Us;
+    U : Unicode_Number;
+  begin
+    if Get_Language /= Lang_Utf_8 then
+      for I in Str'Range loop
+        Asu.Append (S, Unicode_To_Char (Str(I)));
+      end loop;
+    else
+      for I in Str'Range loop
+        U := Str(I);
+        if U <= Last_Unicode_Char then
+          -- Optim
+          Asu.Append (S, Unicode_To_Char (Str(I)));
+        else
+          Asu.Append (S, Utf_8.Encode (Str(I)));
+        end if;
+      end loop;
+    end if;
+    return Asu_Ts (S);
+  end Unicode_To_String;
+
+  function "&" (Left : String; Right : Unicode_Sequence) return String is
+  begin
+    return Left & Unicode_To_String (Right);
+  end "&";
+  function "&" (Left : Unicode_Sequence; Right : String) return String is
+  begin
+    return Unicode_To_String (Left) & Right;
+  end "&";
+
+  package Unbounded_Unicode is new Unbounded_Arrays (Unicode_Number,
+                                                     Unicode_Sequence);
+  function String_To_Unicode (Str : String) return Unicode_Sequence is
+    Us : Unbounded_Unicode.Unbounded_Array;
+    U : Unicode_Number;
+    Index : Natural;
+    Nb : Utf_8.Len_Range;
+  begin
+    if Get_Language /= Lang_Utf_8 then
+      for I in Str'Range loop
+        Unbounded_Unicode.Append (Us, Char_To_Unicode (Str(I)));
+      end loop;
+    else
+      -- Encode Utf_8 sequences
+      Index := Str'First;
+      loop
+        exit when Index > Str'Last;
+        -- Encode the Nb_Chars of this sequence
+        begin
+          Nb := Utf_8.Nb_Chars (Str(Index));
+          if Nb = 1 then
+            -- Optim
+            U := Char_To_Unicode (Str(Index));
+          else
+            U := Utf_8.Decode (Str(Index .. Index + Nb - 1));
+          end if;
+        exception
+          when Utf_8.Invalid_Sequence =>
+            U := Char_To_Unicode (Default_Char);
+        end;
+        Unbounded_Unicode.Append (Us, U);
+        Index := Index + Nb;
+      end loop;
+    end if;
+    return Unbounded_Unicode.To_Array (Us);
+  end String_To_Unicode;
+
+  function "&" (Left : String; Right : Unicode_Sequence)
+               return Unicode_Sequence is
+    use type Unicode.Unicode_Sequence;
+  begin
+    return String_To_Unicode (Left) & Right;
+  end "&";
+  function "&" (Left : Unicode_Sequence; Right : String)
+               return Unicode_Sequence is
+    use type Unicode.Unicode_Sequence;
+  begin
+    return Left & String_To_Unicode (Right);
+  end "&";
+  function "=" (Left : String; Right : Unicode_Sequence) return Boolean is
+    use type Unicode.Unicode_Sequence;
+  begin
+    return String_To_Unicode (Left) = Right;
+  end "=";
+  function "=" (Left : Unicode_Sequence; Right : String) return Boolean is
+    use type Unicode.Unicode_Sequence;
+  begin
+    return Left = String_To_Unicode (Right);
   end "=";
 
 
