@@ -139,6 +139,7 @@ package Tcp_Util is
   -- Accept connections to a local port
   -- Dscr is open and set to the accepting connections
   -- Num is its port num (usefull when dynamical).
+  -- May raise Name_Error if Port.Name is unknown
   procedure Accept_From (Protocol     : in Tcp_Protocol_List;
                          Port         : in Local_Port;
                          Acception_Cb : in Acception_Callback_Access;

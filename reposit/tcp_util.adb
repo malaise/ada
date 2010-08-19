@@ -672,7 +672,12 @@ package body Tcp_Util is
     -- Bind socket
     case Port.Kind is
       when Port_Name_Spec =>
-        Rec.Dscr.Link_Service (Name_Of(Port.Name));
+        begin
+          Rec.Dscr.Link_Service (Name_Of(Port.Name));
+        exception
+          when Socket.Soc_Name_Not_Found =>
+            raise Name_Error;
+        end;
       when Port_Num_Spec =>
         Rec.Dscr.Link_Port (Port.Num);
       when Port_Dynamic_Spec =>
