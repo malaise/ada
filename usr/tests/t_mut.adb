@@ -45,9 +45,9 @@ procedure T_Mut is
         My_Io.Put (Current_I, 3);
         if Mut_Kind /= Mutex_Manager.Simple then
           Ada.Text_Io.Put (" : Read, Write, Terminate");
-          Ada.Text_Io.Put (" : Bloqued, Immediate, Wait (5s) ? ");
+          Ada.Text_Io.Put (" : Bloqued, Immediate, Wait (3s) ? ");
         else
-          Ada.Text_Io.Put (" : Bloqued, Immediate, Wait (5s), Terminate ? ");
+          Ada.Text_Io.Put (" : Bloqued, Immediate, Wait (3s), Terminate ? ");
         end if;
         Ada.Text_Io.Flush;
         Prompt_Lock.Release;
@@ -212,6 +212,7 @@ begin -- T_Mut
 
   if N_Args < 1 then
     Error ("Argument <mutex_kind> expected.");
+    return;
   elsif Argument.Get_Parameter (1) = "s" then
     M_Kind := Mutex_Manager.Simple;
   elsif Argument.Get_Parameter (1) = "rw" then
@@ -237,6 +238,7 @@ begin -- T_Mut
     Exec(M_Kind, N_Tasks);
   else
     Error ("Too few or too many arguments");
+    return;
   end if;
 
 exception
