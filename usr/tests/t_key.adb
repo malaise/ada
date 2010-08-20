@@ -3,6 +3,7 @@ with Con_Io, My_Io, Language;
 procedure T_Key is
 
   Got : Con_Io.Get_Result;
+  Seq : Con_Io.Unicode_Sequence (1 .. 1);
 
   use type Con_Io.Curs_Mvt;
 begin
@@ -26,11 +27,14 @@ begin
 
     if Got.Mvt = Con_Io.Full then
       My_Io.Put (Got.Char, Base => 16);
-      Ada.Wide_Text_Io.Put (" >" & Language.Unicode_To_Wide (Got.Char) & "<");
+      Ada.Wide_Text_Io.Put ( " " & Language.Unicode_To_Wide (Got.Char));
+      Seq(1) := Got.Char;
+      My_Io.Put ( " >" & Language.Unicode_To_String (Seq) & "<");
     elsif Got.Mvt = Con_Io.Break then
       exit;
     end if;
     My_Io.New_Line;
+
   end loop;
   My_Io.New_Line;
 end T_Key;
