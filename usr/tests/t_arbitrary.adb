@@ -103,6 +103,7 @@ begin
     Ada.Text_Io.Put_Line ("A is        " & Arbitrary.Image(A));
     Ada.Text_Io.Put_Line ("abs A is    " & Arbitrary.Image(abs A));
     Ada.Text_Io.Put_Line ("-A is       " & Arbitrary.Image(-A));
+    Ada.Text_Io.Put_Line ("A positive  " & Image(Arbitrary.Is_Positive(A)));
     begin
       Ada.Text_Io.Put_Line ("Sqrt(A)     " & Arbitrary.Image(Arbitrary.Sqrt(A)));
     exception
@@ -125,6 +126,7 @@ begin
     Ada.Text_Io.Put_Line ("B is        " & Arbitrary.Image(B));
     Ada.Text_Io.Put_Line ("abs B is    " & Arbitrary.Image(abs B));
     Ada.Text_Io.Put_Line ("-B is       " & Arbitrary.Image(-B));
+    Ada.Text_Io.Put_Line ("B positive  " & Image(Arbitrary.Is_Positive(A)));
     begin
       Arbitrary.Sqrt(B, C, D);
     exception
@@ -296,6 +298,7 @@ begin
 
     -- Sleep a bit when B is 0
     if Ib = 0 then
+      Ada.Text_Io.Put_Line ("Waiting a bit");
       delay 1.0;
     end if;
   end loop;
