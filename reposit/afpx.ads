@@ -1,5 +1,5 @@
 with As.U; use As.U;
-with Text_Handler, Con_Io, Dynamic_List;
+with Unicode, Text_Handler, Con_Io, Dynamic_List;
 
 package Afpx is
 
@@ -15,6 +15,8 @@ package Afpx is
   subtype Width_Range  is Positive range 1 .. Con_Io.Full_Col_Range_Last + 1;
 
   -- The content of one row of one field (encode, decode)
+  subtype Unicode_Number is Unicode.Unicode_Number;
+  subtype Unicode_Sequence is Unicode.Unicode_Sequence;
   subtype Str_Txt is Text_Handler.Text (Width_Range'Last);
 
   -- Width and height of the screen
@@ -105,6 +107,9 @@ package Afpx is
                                Str      : in Wide_String);
   procedure Encode_Field (Field_No : in Field_Range;
                           From_Pos : in Con_Io.Full_Square;
+                          Str      : in Unicode_Sequence);
+  procedure Encode_Field (Field_No : in Field_Range;
+                          From_Pos : in Con_Io.Full_Square;
                           Str      : in Str_Txt);
   procedure Encode_Field (Field_No : in Field_Range;
                           From_Pos : in Con_Io.Full_Square;
@@ -122,6 +127,9 @@ package Afpx is
   function Decode_Wide_Field (Field_No : Field_Range;
                               Row      : Con_Io.Full_Row_Range)
                               return Wide_String;
+  function Decode_Field (Field_No : Field_Range;
+                         Row      : Con_Io.Full_Row_Range)
+                         return Unicode_Sequence;
   procedure Decode_Field (Field_No : in Field_Range;
                           Row      : in Con_Io.Full_Row_Range;
                           Str      : in out Str_Txt;
@@ -206,7 +214,7 @@ package Afpx is
   -- List of items to put in list field in Put_Then_Get
   subtype Line_Len_Range is Natural range 0 .. Con_Io.Full_Col_Range'Last+1;
   type Line_Rec is record
-    Str : Wide_String (1 .. Line_Len_Range'Last);
+    Str : Unicode_Sequence (1 .. Line_Len_Range'Last);
     Len : Line_Len_Range;
   end record;
 
@@ -216,6 +224,8 @@ package Afpx is
                          Str  : in String);
   procedure Encode_Wide_Line (Line : in out Line_Rec;
                          Str  : in Wide_String);
+  procedure Encode_Line (Line : in out Line_Rec;
+                         Str  : in Unicode_Sequence);
   procedure Encode_Line (Line : in out Line_Rec;
                          Str  : in Str_Txt);
 
@@ -264,13 +274,13 @@ package Afpx is
                  New_Field : Boolean;
                  Cursor_Col : Con_Io.Full_Col_Range;
                  Enter_Field_Cause : Enter_Field_Cause_List;
-                 Str : Wide_String) return Con_Io.Full_Col_Range;
+                 Str : Unicode_Sequence) return Con_Io.Full_Col_Range;
 
   -- Returns the index (from 0 to Str'Last-1) of the last character of Str
   --  or, if Significant, the index following last significant character
   --  (skipping trailing spaces and htabs).
   -- This can be usefully called by Cursor_Set_Col_Cb.
-  function Last_Index (Str : Wide_String; Significant : Boolean)
+  function Last_Index (Str : Unicode_Sequence; Significant : Boolean)
                        return Con_Io.Full_Col_Range;
 
   -- Call back called by Put_Then_Get when something is changed in the list:
@@ -341,7 +351,7 @@ package Afpx is
                  New_Field : Boolean;
                  Cursor_Col : Con_Io.Full_Col_Range;
                  Enter_Field_Cause : Enter_Field_Cause_List;
-                 Str : Wide_String) return Con_Io.Full_Col_Range := null;
+                 Str : Unicode_Sequence) return Con_Io.Full_Col_Range := null;
                           List_Change_Cb : access
        procedure (Action : in List_Change_List;
                   Status : in List_Status_Rec) := null);

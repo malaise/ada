@@ -1,5 +1,5 @@
 with Ada.Text_Io;
-with Generic_Con_Io, Normal, Upper_Char;
+with Unicode, Language, Generic_Con_Io, Normal, Upper_Char;
 package body Curve is
   use My_Math;
 
@@ -327,7 +327,7 @@ package body Curve is
       Mouse_Bounds : T_Screen_Boundaries;
 
       -- For waiting for an event
-      Str  : Wide_String (1 .. 1);
+      Str  : Unicode.Unicode_Sequence (1 .. 1);
       Last : Natural;
       Stat : Cur_Con_Io.Curs_Mvt;
       Pos  : Positive;
@@ -872,7 +872,7 @@ package body Curve is
             -- Key pressed,
             -- Con_Io default char (Wide_Def_Char = '#') is rejected here,
             --  so we can use Con_Io "weak" conversion
-            Char := Cur_Con_Io.Wide_To_Char (Str(1));
+            Char := Language.Unicode_To_Char (Str(1));
             if Upper_Char(Char) = 'A' then
               -- Toggle axes
               Draw_Axes;

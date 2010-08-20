@@ -52,7 +52,8 @@ package body Af_List is
 
   procedure Put (Row : in Af_Con_Io.Row_Range; State : in Af_Ptg.State_List;
                  Item : in Line_Rec) is
-    Str : Wide_String (1 .. Af_Dscr.Fields(Lfn).Width) := (others => ' ');
+    Str : Unicode_Sequence (1 .. Af_Dscr.Fields(Lfn).Width)
+        := (others => Con_Io.Space);
     Foreground : Con_Io.Effective_Colors;
     Background : Con_Io.Effective_Colors;
   begin
@@ -68,7 +69,7 @@ package body Af_List is
     -- Move
     Af_Con_Io.Move ( (Row, 0), List_Window);
     -- Put
-    Af_Con_Io.Putw (
+    Af_Con_Io.Putu (
      S => Str,
      Name => List_Window,
      Foreground => Af_Con_Io.Colors(Foreground),

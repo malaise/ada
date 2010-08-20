@@ -67,18 +67,20 @@ package body Language is
     end if;
   end Nb_Chars;
 
-  -- Character when translation Wide <-> Char fails
-  Default_Char : constant Character := '#';
-
   -- Raw translation from Wide_Character to and from Character
   function Is_Char (W : Wide_Character) return Boolean is
   begin
-    return W <= Last_Wide_Char;
+    return W <= Wide_Last_Char;
   end Is_Char;
   function Is_Char (U : Unicode_Number) return Boolean is
   begin
-    return U <= Last_Unicode_Char;
+    return U <= Unicode_Last_Char;
   end Is_Char;
+  function Is_Wide (U : Unicode_Number) return Boolean is
+  begin
+    return U <= Unicode_Last_Wide;
+  end Is_Wide;
+
   function Char_To_Wide (C : Character) return Wide_Character is
   begin
     return Wide_Character'Val (Character'Pos (C));
@@ -87,9 +89,14 @@ package body Language is
   begin
     return Character'Pos (C);
   end;
+  function Wide_To_Unicode (W : Wide_Character) return Unicode_Number is
+  begin
+    return Wide_Character'Pos (W);
+  end Wide_To_Unicode;
+
   function Wide_To_Char (W : Wide_Character) return Character is
   begin
-    if W <= Last_Wide_Char then
+    if W <= Wide_Last_Char then
       return Character'Val (Wide_Character'Pos (W));
     else
       return Default_Char;
@@ -97,12 +104,69 @@ package body Language is
   end Wide_To_Char;
   function Unicode_To_Char (U : Unicode_Number) return Character is
   begin
-    if U <= Last_Unicode_Char then
+    if U <= Unicode_Last_Char then
       return Character'Val (U);
     else
       return Default_Char;
     end if;
   end Unicode_To_Char;
+  function Unicode_To_Wide (U : Unicode_Number) return Wide_Character is
+  begin
+    if U <= Unicode_Last_Wide then
+      return Wide_Character'Val (U);
+    else
+      return Char_To_Wide (Default_Char);
+    end if;
+  end Unicode_To_Wide;
+
+  function Copy (W : Wide_String) return String is
+    S : String (W'Range);
+  begin
+    for I in W'Range loop
+      S(I) := Wide_To_Char (W(I));
+    end loop;
+    return S;
+  end Copy;
+  function Copy (S : String) return Wide_String is
+    W : Wide_String (S'Range);
+  begin
+    for I in S'Range loop
+      W(I) := Char_To_Wide (S(I));
+    end loop;
+    return W;
+  end Copy;
+  function Copy (U : Unicode_Sequence) return String is
+    S : String (U'Range);
+  begin
+    for I in U'Range loop
+      S(I) := Unicode_To_Char (U(I));
+    end loop;
+    return S;
+  end Copy;
+  function Copy (S : String) return Unicode_Sequence is
+    U : Unicode_Sequence (S'Range);
+  begin
+    for I in S'Range loop
+      U(I) := Char_To_Unicode (S(I));
+    end loop;
+    return U;
+  end Copy;
+  function Copy (U : Unicode_Sequence) return Wide_String is
+    W : Wide_String (U'Range);
+  begin
+    for I in U'Range loop
+      W(I) := Unicode_To_Wide (U(I));
+    end loop;
+    return W;
+  end Copy;
+  function Copy (W : Wide_String) return Unicode_Sequence  is
+    U : Unicode_Sequence (W'Range);
+  begin
+    for I in W'Range loop
+      U(I) := Wide_To_Unicode (W(I));
+    end loop;
+    return U;
+  end Copy;
 
   -- Convertion to and from wide string
   -- May raise Utf_8 exceptions
@@ -117,7 +181,7 @@ package body Language is
     else
       for I in Str'Range loop
         W := Str(I);
-        if W <= Last_Wide_Char then
+        if W <= Wide_Last_Char then
           -- Optim
           Asu.Append (S, Wide_To_Char (Str(I)));
         else
@@ -201,7 +265,7 @@ package body Language is
     else
       for I in Str'Range loop
         U := Str(I);
-        if U <= Last_Unicode_Char then
+        if U <= Unicode_Last_Char then
           -- Optim
           Asu.Append (S, Unicode_To_Char (Str(I)));
         else

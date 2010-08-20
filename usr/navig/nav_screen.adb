@@ -149,12 +149,12 @@ package body Nav_Screen is
                  Pos : in out Positive;
                  Insert : in out Boolean;
                  Next : out Movement) is
-    Lstr : Wide_String (1 .. Str'Length);
+    Lstr : Con_Io.Unicode_Sequence (1 .. Str'Length);
     Last : Natural;
     Nxt : Movement;
     use type Con_Io.Curs_Mvt;
   begin
-    Lstr := Language.String_To_Wide (Str);
+    Lstr := Language.Copy (Str);
     for I in 1 .. Time_Out_Get loop
       Con_Io.Move ( (Fld_Row(Field), Fld_Col(Field)), W_Get);
       if Blink then
@@ -168,7 +168,7 @@ package body Nav_Screen is
       exit when Nxt /= Con_Io.Timeout;
     end loop;
     Next := Nxt;
-    Str := Con_Io.Wide_To_String (Lstr);
+    Str := Language.Copy (Lstr);
   end Get;
 
   -- Put the formated field when successfully got
@@ -217,7 +217,7 @@ package body Nav_Screen is
   end Clear_Line;
 
   function Get_Action return Action is
-    Str : Wide_String (1 .. 0);
+    Str : Con_Io.Unicode_Sequence (1 .. 0);
     Last : Natural;
     Stat : Con_Io.Curs_Mvt;
     Pos : Positive;
@@ -324,7 +324,7 @@ package body Nav_Screen is
 
   -- Ask the operator wether he realy wants to quit
   function Confirm_Quit return Boolean is
-    Str : Wide_String (1 .. 0);
+    Str : Con_Io.Unicode_Sequence (1 .. 0);
     Last : Natural;
     Stat : Con_Io.Curs_Mvt;
     Pos : Positive;
@@ -351,7 +351,7 @@ package body Nav_Screen is
 
   -- Displays the help screen
   procedure Put_Help is
-    Str : Wide_String (1..0);
+    Str : Con_Io.Unicode_Sequence (1..0);
     Lst : Natural;
     Stat : Con_Io.Curs_Mvt;
     Pos : Positive;

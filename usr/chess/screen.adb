@@ -1,6 +1,6 @@
 with Ada.Calendar;
 
-with Big_Con_Io, Normal, Lower_Str, Upper_Char, Day_Mng, Timers;
+with Big_Con_Io, Normal, Lower_Str, Upper_Char, Day_Mng, Timers, Language;
 
 with Pieces, Space.Board, Image;
 
@@ -324,12 +324,12 @@ package body Screen is
           Str(Str'Length) := ' ';
         end if;
 
-        if Lower_Str (Con_Io.Wide_To_String (Str)) = "exit " then
+        if Lower_Str (Language.Wide_To_String (Str)) = "exit " then
           Erase;
           return (Valid => False);
         end if;
         declare
-          S : constant String := Con_Io.Wide_To_String (Str);
+          S : constant String := Language.Wide_To_String (Str);
         begin
           From.Col := Space.Col_Range'Value(S(1..1));
           From.Row := Space.Row_Range'Value(S(2..2));
@@ -347,7 +347,7 @@ package body Screen is
           else
             Conv_Ok := False;
             for Piece in Pieces.Promotion_Piece_List loop
-              if Upper_Char(Con_Io.Wide_To_String (Str)(5))
+              if Upper_Char(Language.Wide_To_String (Str)(5))
                           = Image.Piece_Image(Piece)(1) then
                 Promo := Piece;
                 Conv_Ok := True;

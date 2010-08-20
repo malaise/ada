@@ -518,7 +518,8 @@ package body Mesu_Edi is
                 and then Cursor_Field <= 124 then
             -- Insert a sample
             for I in reverse Cursor_Field + 1 .. 124 loop
-              Afpx.Encode_Field (I, (0, 0), Afpx.Decode_Field(I - 1, 0));
+              Afpx.Encode_Field (I, (0, 0),
+                 Afpx.Unicode_Sequence'(Afpx.Decode_Field(I - 1, 0)));
             end loop;
             Afpx.Clear_Field(Cursor_Field);
 
@@ -527,7 +528,8 @@ package body Mesu_Edi is
                 and then Cursor_Field <= 124 then
             -- Suppress a sample
             for I in Cursor_Field .. 123 loop
-              Afpx.Encode_Field (I, (0, 0), Afpx.Decode_Field(I + 1, 0));
+              Afpx.Encode_Field (I, (0, 0),
+                 Afpx.Unicode_Sequence'(Afpx.Decode_Field(I + 1, 0)));
             end loop;
             Afpx.Clear_Field(124);
 

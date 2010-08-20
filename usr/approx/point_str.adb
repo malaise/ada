@@ -60,16 +60,16 @@ package body Point_Str is
     Rec : Afpx.Line_Rec;
   begin
     Rec.Len := 2 * Coordinate_String_Len + 1;
-    Rec.Str (1 .. Rec.Len) := Language.String_To_Wide (
+    Rec.Str (1 .. Rec.Len) := Language.Copy (
         Coordinate_Image(Point.X) & " " & Coordinate_Image(Point.Y));
     return Rec;
   end Encode_Rec;
 
   function Decode_Rec (Rec : Afpx.Line_Rec) return Points.P_T_One_Point is
   begin
-    return (X => Coordinate_Value(Language.Wide_To_String (
+    return (X => Coordinate_Value(Language.Copy (
        Rec.Str(1 .. Coordinate_String_Len))),
-            Y => Coordinate_Value(Language.Wide_To_String (
+            Y => Coordinate_Value(Language.Copy (
        Rec.Str(Coordinate_String_Len + 2 ..  2 * Coordinate_String_Len + 1))) );
   end Decode_Rec;
 

@@ -431,7 +431,8 @@ package body Edition is
                        New_Field : Boolean;
                        Col   : Con_Io.Full_Col_Range;
                        Cause : Afpx.Enter_Field_Cause_List;
-                       Str   : Wide_String) return Con_Io.Full_Col_Range is
+                       Str   : Afpx.Unicode_Sequence)
+           return Con_Io.Full_Col_Range is
     pragma Unreferenced (Field, New_Field, Col);
     use type Afpx.Enter_Field_Cause_List, Afpx.Field_Range;
   begin

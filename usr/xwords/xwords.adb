@@ -51,16 +51,16 @@ procedure Xwords is
     Rec : Afpx.Line_Rec;
     List_Width : constant Afpx.Width_Range
                := Afpx.Get_Field_Width (Afpx.List_Field_No);
-    Wstr : constant Wide_String
-         := Language.String_To_Wide (Asu_Ts (Us));
+    Ustr : constant Language.Unicode_Sequence
+         := Language.String_To_Unicode (Asu_Ts (Us));
   begin
-    Rec.Len := Wstr'Length;
+    Rec.Len := Ustr'Length;
     -- Procuste
-    Rec.Str := (others => ' ');
+    Rec.Str := (others => Con_Io.Space);
     if Rec.Len > List_Width then
       Rec.Len := List_Width;
     end if;
-    Rec.Str (1 .. Rec.Len) := Wstr(1 .. Rec.Len);
+    Rec.Str (1 .. Rec.Len) := Ustr(1 .. Rec.Len);
     return Rec;
   end Us2Afpx;
 
@@ -216,7 +216,7 @@ begin
     end case;
 
     -- Set cursor at last significant char of the Get field
-    Cursor_Col := Afpx.Last_Index (Afpx.Decode_Wide_Field (Get_Fld, 0), True);
+    Cursor_Col := Afpx.Last_Index (Afpx.Decode_Field (Get_Fld, 0), True);
     Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result, Redisplay);
     Redisplay := False;
 
@@ -238,8 +238,8 @@ begin
             Afpx.Line_List.Read (Afpx_Item, Afpx.Line_List_Mng.Current);
             declare
               Str : constant String
-                  := Language.Wide_To_String (Afpx_Item.Str (1 ..
-                                                           Afpx_Item.Len));
+                  := Language.Unicode_To_String (
+                          Afpx_Item.Str (1 ..  Afpx_Item.Len));
             begin
               Afpx.Set_Selection (Strip (Lower_Str (Str)));
             end;

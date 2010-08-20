@@ -1,5 +1,5 @@
 with As.U; use As.U;
-with X_Mng, Timers;
+with X_Mng, Timers, Unicode, Language;
 package Generic_Con_Io is
 
   -- The Font
@@ -218,15 +218,10 @@ package Generic_Con_Io is
     -- Rings a bell
     procedure Bell (Repeat : in Positive := 1);
 
-    -- Wide character tool for basic compatibility
-    -- See also Language for international support
-    -- These operations set '#' when a Wide_Character is not a Character
-    Wide_Def_Char : constant Character := '#';
-    function Wide_To_Char (W : Wide_Character) return Character;
-    function Wide_To_String (Str : Wide_String) return String;
-    function "&" (Left : String; Right : Wide_String) return String;
-    function "&" (Left : Wide_String; Right : String) return String;
-
+    -- Unicode propagation
+    subtype Unicode_Number is Unicode.Unicode_Number;
+    subtype Unicode_Sequence is Unicode.Unicode_Sequence;
+    Space : constant Unicode_Number := Language.Char_To_Unicode (' ');
 
     -- Writes a character at the current cursor position and with the
     --  curent attributes. Position can be set by using move.
@@ -262,7 +257,7 @@ package Generic_Con_Io is
                     Move       : in Boolean := True);
 
     -- Idem with a wide string
-    procedure Putw(S          : in Wide_String;
+    procedure Putw (S          : in Wide_String;
                     Name       : in Window := Screen;
                     Foreground : in Colors := Current;
                     Background : in Colors := Current;
@@ -274,6 +269,25 @@ package Generic_Con_Io is
                          Foreground : in Colors := Current;
                          Background : in Colors := Current);
 
+    -- Idem with a unicode number
+    procedure Putu (U          : in Unicode_Number;
+                    Name       : in Window := Screen;
+                    Foreground : in Colors := Current;
+                    Background : in Colors := Current;
+                    Move       : in Boolean := True);
+
+    -- Idem with a unicode sequence
+    procedure Putu (S          : in Unicode_Sequence;
+                    Name       : in Window := Screen;
+                    Foreground : in Colors := Current;
+                    Background : in Colors := Current;
+                    Move       : in Boolean := True);
+
+    -- Idem but appends a Lf
+    procedure Putu_Line (S          : in Unicode_Sequence;
+                         Name       : in Window := Screen;
+                         Foreground : in Colors := Current;
+                         Background : in Colors := Current);
     -- Puts Lf
     procedure New_Line (Name   : in Window := Screen;
                         Number : in Positive := 1);
@@ -340,7 +354,7 @@ package Generic_Con_Io is
                       Full, Tab, Stab, Ret, Esc, Break,
                       Mouse_Button, Selection, Timeout, Fd_Event, Timer_Event,
                       Signal_Event, Refresh);
-    procedure Get (Str        : out Wide_String;
+    procedure Get (Str        : out Unicode_Sequence;
                    Last       : out Natural;
                    Stat       : out Curs_Mvt;
                    Pos        : out Positive;
@@ -353,6 +367,18 @@ package Generic_Con_Io is
 
     -- Idem but the get is initialised with the initial content of the string
     --  and cursor's initial location can be set
+    procedure Put_Then_Get (Str        : in out Unicode_Sequence;
+                            Last       : out Natural;
+                            Stat       : out Curs_Mvt;
+                            Pos        : in out Positive;
+                            Insert     : in out Boolean;
+                            Name       : in Window := Screen;
+                            Foreground : in Colors := Current;
+                            Background : in Colors := Current;
+                            Time_Out   : in Delay_Rec :=  Infinite_Delay;
+                            Echo       : in Boolean := True);
+
+    -- Idem but with a Wide_String
     procedure Put_Then_Get (Str        : in out Wide_String;
                             Last       : out Natural;
                             Stat       : out Curs_Mvt;
@@ -368,7 +394,7 @@ package Generic_Con_Io is
     type Get_Result (Mvt : Curs_Mvt := Full) is record
       case Mvt is
         when Full =>
-          Char : Wide_Character;
+          Char : Unicode_Number;
         when others =>
           null;
       end case;

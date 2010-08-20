@@ -68,7 +68,7 @@ begin
   end if;
 
   for I in 1 .. 999 loop
-    Line.Str(1 .. 3) := Language.String_To_Wide (Normal(I, 3, Gap => '0'));
+    Line.Str(1 .. 3) := Language.Copy (Normal(I, 3, Gap => '0'));
     Line.Len := 3;
     Afpx.Line_List.Insert (Line);
   end loop;

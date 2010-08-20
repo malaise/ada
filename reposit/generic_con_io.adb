@@ -1,5 +1,5 @@
 with Ada.Calendar, Ada.Characters.Latin_1;
-with Argument, Dyn_Data, Environ, Language, Lower_Str, Event_Mng, String_Mng;
+with Argument, Dyn_Data, Environ, Lower_Str, Event_Mng, String_Mng;
 package body Generic_Con_Io is
 
   X_Init_Done : Boolean := False;
@@ -492,37 +492,6 @@ package body Generic_Con_Io is
       Set_Attributes (Fg, Bg, Name.Current_Xor_Mode);
     end Set_Attributes_From_Window;
 
-    -- Raw conversion, no exception but Wide_Def_Char
-    function Wide_To_Char (W : Wide_Character) return Character is
-    begin
-      if Language.Is_Char (W) then
-        return Language.Wide_To_Char (W);
-      else
-        return Wide_Def_Char;
-      end if;
-    end Wide_To_Char;
-    function Wide_To_String (Str : Wide_String) return String is
-      Res : String (1 .. Str'Length);
-      Index : Positive;
-    begin
-      Index := Res'First;
-      for I in Str'Range loop
-        Res(Index) := Wide_To_Char (Str(I));
-        Index := Index + 1;
-      end loop;
-      return Res;
-    end Wide_To_String;
-
-    function "&" (Left : String; Right : Wide_String) return String is
-    begin
-      return Left & Wide_To_String (Right);
-    end "&";
-
-    function "&" (Left : Wide_String; Right : String) return String is
-    begin
-      return Wide_To_String (Left) & Right;
-    end "&";
-
     -- Increment col by one or row by one...
     procedure Move_1 (Name : in Window := Screen) is
     begin
@@ -720,6 +689,38 @@ package body Generic_Con_Io is
            Name, Foreground, Background);
     end Putw_Line;
 
+    -- Idem with a unicode number
+    procedure Putu (U          : in Unicode_Number;
+                    Name       : in Window := Screen;
+                    Foreground : in Colors := Current;
+                    Background : in Colors := Current;
+                    Move       : in Boolean := True) is
+      S : constant Unicode_Sequence (1 .. 1) := (1 => U);
+    begin
+      Put (Language.Unicode_To_String (S),
+           Name, Foreground, Background, Move);
+    end Putu;
+
+    -- Idem with a unicode sequence
+    procedure Putu (S          : in Unicode_Sequence;
+                    Name       : in Window := Screen;
+                    Foreground : in Colors := Current;
+                    Background : in Colors := Current;
+                    Move       : in Boolean := True) is
+    begin
+      Put (Language.Unicode_To_String (S),
+           Name, Foreground, Background, Move);
+    end Putu;
+
+    -- Idem but appends a Lf
+    procedure Putu_Line (S          : in Unicode_Sequence;
+                         Name       : in Window := Screen;
+                         Foreground : in Colors := Current;
+                         Background : in Colors := Current) is
+    begin
+      Put_Line (Language.Unicode_To_String (S),
+           Name, Foreground, Background);
+    end Putu_Line;
 
     -- Puts CR
     procedure New_Line (Name   : in Window := Screen;
@@ -907,7 +908,7 @@ package body Generic_Con_Io is
 
     -- Idem but the get is initialised with the initial content of the string
     --  and cursor's initial location can be set
-    procedure Put_Then_Get (Str        : in out Wide_String;
+    procedure Put_Then_Get (Str        : in out Unicode_Sequence;
                             Last       : out Natural;
                             Stat       : out Curs_Mvt;
                             Pos        : in out Positive;
@@ -918,7 +919,7 @@ package body Generic_Con_Io is
                             Time_Out   : in Delay_Rec :=  Infinite_Delay;
                             Echo       : in Boolean := True) is
       -- Local string for working on
-      Lstr        : Asu_Us := Asu_Tus (Language.Wide_To_String (Str));
+      Lstr        : Asu_Us := Asu_Tus (Language.Unicode_To_String (Str));
       -- Indexes in Lstr of put positions
       Indexes     : Language.Index_Array
                   := Language.All_Indexes_Of (Asu_Ts(Lstr));
@@ -1314,11 +1315,30 @@ package body Generic_Con_Io is
        end if;
        exit when Done;
       end loop;
-      Str := Language.String_To_Wide (Asu_Ts (Lstr));
+      Str := Language.String_To_Unicode (Asu_Ts (Lstr));
+    end Put_Then_Get;
+
+    -- Idem but with a Wide_String
+    procedure Put_Then_Get (Str        : in out Wide_String;
+                            Last       : out Natural;
+                            Stat       : out Curs_Mvt;
+                            Pos        : in out Positive;
+                            Insert     : in out Boolean;
+                            Name       : in Window := Screen;
+                            Foreground : in Colors := Current;
+                            Background : in Colors := Current;
+                            Time_Out   : in Delay_Rec :=  Infinite_Delay;
+                            Echo       : in Boolean := True) is
+      -- Copy keeps the same range
+      Seq : Unicode_Sequence := Language.Copy (Str);
+    begin
+      Put_Then_Get (Seq, Last, Stat, Pos, Insert, Name, Foreground,
+                    Background, Time_Out, Echo);
+      Str := Language.Copy (Seq);
     end Put_Then_Get;
 
     -- Gets a string of at most width characters
-    procedure Get (Str        : out Wide_String;
+    procedure Get (Str        : out Unicode_Sequence;
                    Last       : out Natural;
                    Stat       : out Curs_Mvt;
                    Pos        : out Positive;
@@ -1328,14 +1348,14 @@ package body Generic_Con_Io is
                    Background : in Colors := Current;
                    Time_Out   : in Delay_Rec :=  Infinite_Delay;
                    Echo       : in Boolean := True) is
-      Lstr : Wide_String(Str'Range ) := (others => ' ');
+      Lstr : Unicode_Sequence(Str'Range ) := (others => Space);
       Lpos : Positive;
       Lins : Boolean;
     begin
       Lpos := 1;
       Lins := False;
       -- Init empty
-      Put_Then_Get(Lstr, Last, Stat, Lpos, Lins, Name,
+      Put_Then_Get (Lstr, Last, Stat, Lpos, Lins, Name,
           Foreground, Background, Time_Out, Echo);
       Str := Lstr;
       Pos := Lpos;
@@ -1345,7 +1365,7 @@ package body Generic_Con_Io is
     function Get (Name     : in Window := Screen;
                   Time_Out : in Delay_Rec := Infinite_Delay)
              return Get_Result is
-      Str    : Wide_String (1 .. 1);
+      Str    : Unicode_Sequence (1 .. 1);
       Last   : Natural;
       Stat   : Curs_Mvt;
       Pos    : Positive;
@@ -1410,7 +1430,7 @@ package body Generic_Con_Io is
 
     -- Take first character of keyboard buffer (no echo) or refresh event
     procedure Pause is
-      Str  : Wide_String (1 .. 0);
+      Str  : Unicode_Sequence (1 .. 0);
       Last : Natural;
       Stat : Curs_Mvt;
       Pos  : Positive;

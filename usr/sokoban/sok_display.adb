@@ -1,4 +1,4 @@
-with Normal, Day_Mng, Con_Io, Timers;
+with Normal, Day_Mng, Con_Io, Timers, Language;
 with Sok_Input, Sok_Time;
 
 -- displaying of sokoban
@@ -397,7 +397,7 @@ package body Sok_Display is
   procedure Get_No_Frame (No : out Sok_Types.Frame_Range;
                           Result : out Get_Result_List) is
 
-    Str : Wide_String (1..2) := (others => ' ');
+    Str : Con_Io.Unicode_Sequence(1..2) := (others => Con_Io.Space);
     Last : Natural;
     Stat : Con_Io.Curs_Mvt;
     Pos  : Positive := 1;
@@ -443,7 +443,8 @@ package body Sok_Display is
         when Con_Io.Ret =>
           -- Digit or space allowed
           for I in Str'Range loop
-            if Str(I) not in '0' .. '9' and then Str(I) /= ' ' then
+            if Language.Unicode_To_Char (Str(I)) not in '0' .. '9'
+            and then Language.Unicode_To_Char (Str(I)) /= ' ' then
               raise Format_Error;
             end if;
           end loop;
@@ -454,7 +455,7 @@ package body Sok_Display is
           end if;
           begin
             No := Sok_Types.Frame_Range'Value (
-              Con_Io.Wide_To_String (Str (1..Last)));
+              Language.Unicode_To_String (Str(1 .. Last)));
             Result := Set;
             exit;
           exception

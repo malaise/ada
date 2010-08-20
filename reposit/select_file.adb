@@ -276,7 +276,7 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
       end case;
       Afpx_Item.Len := Width;
       Afpx_Item.Str (1 .. Width) :=
-        Language.String_To_Wide (
+        Language.String_To_Unicode (
         String_Mng.Procuste (Dir_Item.Name (1 .. Dir_Item.Len) & ' ' & Char,
                              Width) );
       Afpx.Line_List.Insert (Afpx_Item);

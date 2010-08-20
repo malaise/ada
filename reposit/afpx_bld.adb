@@ -782,7 +782,7 @@ procedure Afpx_Bld is
          + Finit_Square.Row * Fields(No).Width
          + Finit_Square.Col;
         Init_Str (Finit_Index .. Finit_Index + Finit_Length - 1) :=
-          Language.String_To_Wide (Asu_Ts (Finit_String));
+          Language.String_To_Unicode (Asu_Ts (Finit_String));
       end if;
     end loop;
   end Loc_Load_Field;
@@ -879,7 +879,7 @@ procedure Afpx_Bld is
     Descriptors(Dscr_No).Dscr_Index := Dscr_Index;
     Descriptors(Dscr_No).Nb_Fields := 0;
     Init_Index := 1;
-    Init_Str := (others => ' ');
+    Init_Str := (others => Con_Io.Space);
     Fields(0).Kind := Afpx_Typ.Put;
 
     List_Allowed := True;

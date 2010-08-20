@@ -39,6 +39,17 @@ procedure T_Afpx is
     end if;
   end Next_Field;
 
+  procedure Encode_Status (U : in Language.Unicode_Sequence) is
+    use type Language.Unicode_Sequence;
+  begin
+    Afpx.Encode_Field (2, (1, 0),
+      Language.Char_To_Unicode ('>') & U & Language.Char_To_Unicode ('<'));
+  end Encode_Status;
+  procedure Encode_Status (S : in String) is
+  begin
+    Encode_Status (Language.String_To_Unicode (S));
+  end Encode_Status;
+
 begin
   Afpx.Get_Screen_Size (Height, Width);
   Basic_Proc.Put_Line_Output ("Screen geometry is "
@@ -73,12 +84,12 @@ begin
   loop
     Dir_List.Read (Dir_Item, Dir_Mng.File_List_Mng.Current);
     Afpx_Item.Len := Dir_Item.Len;
-    Afpx_Item.Str := (others => ' ');
+    Afpx_Item.Str := (others => Con_Io.Space);
     Afpx_Item.Str(1 .. Afpx_Item.Len) :=
-          Language.String_To_Wide (Dir_Item.Name (1 .. Dir_Item.Len));
-    Afpx_Item.Str(Afpx_Item.Len+1) := '>';
+          Language.String_To_Unicode (Dir_Item.Name (1 .. Dir_Item.Len));
+    Afpx_Item.Str(Afpx_Item.Len+1) := Language.Char_To_Unicode ('>');
     Afpx_Item.Str(Afpx_Item.Len+2) :=
-       Language.Char_To_Wide (Dir_Mng.File_Kind_List'Image(Dir_Item.Kind)(1));
+      Language.Char_To_Unicode (Dir_Mng.File_Kind_List'Image(Dir_Item.Kind)(1));
     Afpx_Item.Len := Afpx_Item.Len + 2;
     Afpx.Line_List.Insert (Afpx_Item);
     exit when not Dir_List.Check_Move;
@@ -88,8 +99,7 @@ begin
 
   Afpx.Line_List.Read (Afpx_Item, Afpx.Line_List_Mng.Current);
 
-  Afpx.Encode_Wide_Field (2, (1, 0),
-                     ">" & Afpx_Item.Str (1 .. Afpx_Item.Len) & "<");
+  Encode_Status (Afpx_Item.Str (1 .. Afpx_Item.Len));
 
   Cursor_Field := 1;
   Cursor_Col := 0;
@@ -114,21 +124,18 @@ begin
             if Afpx.Decode_Field(Cursor_Field, 0)(1 .. 4) = "exit" then
               Afpx.Set_Field_Activation (Cursor_Field, False);
               Afpx.Clear_Field (2);
-              Afpx.Encode_Wide_Field (2, (1, 0), ">" &
-                           Afpx.Decode_Wide_Field(Cursor_Field, 0) & "<");
+              Encode_Status (U => Decode_Field(Cursor_Field, 0));
               Next_Field (Cursor_Field);
               Cursor_Col := 0;
               Insert := False;
             else
               Afpx.Clear_Field (2);
-              Afpx.Encode_Field (2, (1, 0), ">" &
-                                 Afpx.Decode_Field(Cursor_Field, 0) & "<");
+              Encode_Status (U => Decode_Field(Cursor_Field, 0));
             end if;
           when Afpx.Escape_Key =>
             Afpx.Clear_Field (Cursor_Field);
             Afpx.Clear_Field (2);
-            Afpx.Encode_Field (2, (1, 0), ">" &
-                               Afpx.Decode_Field(Cursor_Field, 0) & "<");
+            Encode_Status (U => Decode_Field(Cursor_Field, 0));
             Cursor_Col := 0;
             Insert := False;
           when Afpx.Break_Key =>
@@ -142,8 +149,7 @@ begin
           when 5 | Afpx.List_Field_No =>
             Afpx.Line_List.Read (Afpx_Item, Afpx.Line_List_Mng.Current);
             Afpx.Clear_Field (2);
-            Afpx.Encode_Wide_Field (2, (1, 0),
-                        ">" & Afpx_Item.Str (1 .. Afpx_Item.Len) & "<");
+            Encode_Status (U => Decode_Field(Cursor_Field, 0));
           when 8 =>
             Afpx.Update_List(Afpx.Up);
           when 9 =>
@@ -163,13 +169,13 @@ begin
         end case;
       when Afpx.Fd_Event =>
         Afpx.Clear_Field (2);
-        Afpx.Encode_Field (2, (1, 0), ">> Fd Event <<");
+        Encode_Status ("> Fd Event <");
       when Afpx.Timer_Event =>
         Afpx.Clear_Field (2);
-        Afpx.Encode_Field (2, (1, 0), ">> Timer Event <<");
+        Encode_Status ("> Timer Event <");
       when Afpx.Signal_Event =>
         Afpx.Clear_Field (2);
-        Afpx.Encode_Field (2, (1, 0), ">> Signal Event <<");
+        Encode_Status ("> Signal Event <");
       when Afpx.Refresh =>
         Redisplay := True;
     end case;

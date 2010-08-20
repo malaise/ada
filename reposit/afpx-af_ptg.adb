@@ -71,7 +71,7 @@ package body Af_Ptg is
     for I in 1 .. Field.Height loop
       -- Go to row, left of field
       Af_Con_Io.Move (Field.Upper_Left.Row + I - 1, Field.Upper_Left.Col);
-      Af_Con_Io.Putw (
+      Af_Con_Io.Putu (
        S          => Af_Dscr.Chars(Char_Index .. Char_Index + Field.Width - 1),
        Name       => Af_Con_Io.Screen,
        Foreground => Af_Con_Io.Colors(Foreground),
@@ -87,17 +87,18 @@ package body Af_Ptg is
   -- Erase a field (screen_background, screen_background)
   procedure Erase_Field (Field_No : in Afpx_Typ.Absolute_Field_Range) is
     Field : constant Afpx_Typ.Field_Rec := Af_Dscr.Fields(Field_No);
-    Spaces : constant String (1 .. Field.Width) := (others => ' ');
+    Spaces : constant Unicode_Sequence (1 .. Field.Width)
+           := (others => Af_Con_Io.Space);
   begin
     -- Put spaces in each row
     for I in 1 .. Field.Height loop
       -- Go to row, left of field
       Af_Con_Io.Move (Field.Upper_Left.Row + I - 1, Field.Upper_Left.Col);
-      Af_Con_Io.Put (S          => Spaces,
-                     Name       => Af_Con_Io.Screen,
-                     Foreground => Af_Con_Io.Get_Background(Af_Con_Io.Screen),
-                     Background => Af_Con_Io.Get_Background(Af_Con_Io.Screen),
-                     Move       => False);
+      Af_Con_Io.Putu (S          => Spaces,
+                      Name       => Af_Con_Io.Screen,
+                      Foreground => Af_Con_Io.Get_Background(Af_Con_Io.Screen),
+                      Background => Af_Con_Io.Get_Background(Af_Con_Io.Screen),
+                      Move       => False);
     end loop;
   end Erase_Field;
 
@@ -105,7 +106,7 @@ package body Af_Ptg is
   function Last_Col (Field_No :  Afpx_Typ.Field_Range)
            return Af_Con_Io.Full_Col_Range is
     Field : constant Afpx_Typ.Field_Rec := Af_Dscr.Fields(Field_No);
-    Str : constant Wide_String (1 .. Field.Width)
+    Str : constant Unicode_Sequence (1 .. Field.Width)
         := Af_Dscr.Chars
               (Field.Char_Index .. Field.Char_Index + Field.Width - 1);
   begin
@@ -193,7 +194,7 @@ package body Af_Ptg is
 
   function Wait_Release (Button : List_Button_List)
                         return Af_Con_Io.Full_Square is
-    Str : Wide_String (1 .. 0);
+    Str : Unicode_Sequence (1 .. 0);
     Last : Natural;
     Stat : Af_Con_Io.Curs_Mvt;
     Pos : Positive;
@@ -472,7 +473,7 @@ package body Af_Ptg is
     -- Field and its initial content
     Field : constant Afpx_Typ.Field_Rec
           := Af_Dscr.Fields(Selection_Field);
-    Str : Wide_String (1 .. Field.Width)
+    Str : Unicode_Sequence (1 .. Field.Width)
         := Af_Dscr.Chars
               (Field.Char_Index .. Field.Char_Index + Field.Width - 1);
     Available : Natural;
@@ -485,7 +486,8 @@ package body Af_Ptg is
     -- Amount of available columns remaining in field (for pasting selection)
     Available := Field.Width - Selection_Col;
     declare
-      Sel : constant Wide_String := Language.String_To_Wide (Selection);
+      Sel : constant Unicode_Sequence
+          := Language.String_To_Unicode (Selection);
     begin
       if Sel'Length >= Available then
         -- Cursor will leave field (including when Sel'Length >= Available):
@@ -498,9 +500,10 @@ package body Af_Ptg is
         if Selection_Insert then
           -- Insert Sel: Overwrite up to Width with Sel and a Tail
           declare
-            Tail : constant Wide_String
+            Tail : constant Unicode_Sequence
                  := Str(Selection_Col + 1 ..
                         Selection_Col + Available - Sel'Length);
+            use type Unicode_Sequence;
           begin
             Str(Selection_Col + 1 .. Field.Width) := Sel & Tail;
           end;
@@ -538,7 +541,7 @@ package body Af_Ptg is
               New_Field : Boolean;
               Cursor_Col : Con_Io.Full_Col_Range;
               Enter_Field_Cause : Enter_Field_Cause_List;
-              Str : Wide_String) return Con_Io.Full_Col_Range)
+              Str : Unicode_Sequence) return Con_Io.Full_Col_Range)
   return Af_Con_Io.Full_Col_Range is
     Field : constant Afpx_Typ.Field_Rec := Af_Dscr.Fields (Field_No);
     Result : Af_Con_Io.Col_Range;
@@ -569,7 +572,7 @@ package body Af_Ptg is
     -- The user Cb will appreciate a string (1 .. Len)
     --  so make a local copy
     declare
-      Str : constant Wide_String (1 .. Field.Width)
+      Str : constant Unicode_Sequence (1 .. Field.Width)
           := Af_Dscr.Chars
               (Field.Char_Index .. Field.Char_Index + Field.Width - 1);
     begin
@@ -603,7 +606,8 @@ package body Af_Ptg is
                New_Field : Boolean;
                Cursor_Col : Con_Io.Full_Col_Range;
                Enter_Field_Cause : Enter_Field_Cause_List;
-               Str : Wide_String) return Con_Io.Full_Col_Range := null;
+               Str : Unicode_Sequence)
+               return Con_Io.Full_Col_Range := null;
 
                  List_Change_Cb : access
      procedure (Action : in List_Change_List;

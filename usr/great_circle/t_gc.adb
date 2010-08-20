@@ -51,7 +51,7 @@ procedure T_Gc is
                           New_Field : Boolean;
                           Cursor_Col : Con_Io.Full_Col_Range;
                           Enter_Field_Cause : Afpx.Enter_Field_Cause_List;
-                          Str : Wide_String) return Con_Io.Full_Col_Range is
+                          Str : Afpx.Unicode_Sequence) return Con_Io.Full_Col_Range is
     pragma Unreferenced (Cursor_Field, New_Field, Cursor_Col);
     use type Afpx.Enter_Field_Cause_List;
   begin

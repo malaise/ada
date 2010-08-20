@@ -168,7 +168,7 @@ package body Afpx is
                 New_Field : Boolean;
                 Cursor_Col : Con_Io.Full_Col_Range;
                 Enter_Field_Cause : Enter_Field_Cause_List;
-                Str : Wide_String) return Con_Io.Full_Col_Range := null;
+                Str : Unicode_Sequence) return Con_Io.Full_Col_Range := null;
                    List_Change_Cb : access
       procedure (Action : in List_Change_List;
                  Status : in List_Status_Rec) := null);
@@ -331,7 +331,7 @@ package body Afpx is
     Field_Size := Field.Height * Field.Width;
     -- Copy the nb_chars from init_str to char_str
     for I in Field.Char_Index .. Field.Char_Index + Field_Size - 1 loop
-      Af_Dscr.Chars(I) := ' ';
+      Af_Dscr.Chars(I) := Af_Con_Io.Space;
     end loop;
     Af_Dscr.Current_Dscr.Modified := True;
    end Clear_Field;
@@ -385,12 +385,23 @@ package body Afpx is
                           From_Pos : in Con_Io.Full_Square;
                           Str      : in String) is
   begin
-    Encode_Wide_Field (Field_No, From_Pos, Language.String_To_Wide (Str));
+    Encode_Field (Field_No, From_Pos, Language.String_To_Unicode (Str));
   end Encode_Field;
 
   procedure Encode_Wide_Field (Field_No : in Field_Range;
                                From_Pos : in Con_Io.Full_Square;
                                Str      : in Wide_String) is
+    Ustr : Unicode_Sequence (Str'Range);
+  begin
+    for I in Ustr'Range loop
+      Ustr(I) := Language.Wide_To_Unicode (Str(I));
+    end loop;
+    Encode_Field (Field_No, From_Pos, Ustr);
+  end Encode_Wide_Field;
+
+  procedure Encode_Field (Field_No : in Field_Range;
+                          From_Pos : in Con_Io.Full_Square;
+                          Str      : in Unicode_Sequence) is
     Fn : constant Afpx_Typ.Field_Range := Afpx_Typ.Field_Range(Field_No);
     Field : Afpx_Typ.Field_Rec;
     Init_Index : Afpx_Typ.Char_Str_Range;
@@ -414,7 +425,7 @@ package body Afpx is
           + From_Pos.Col;
     Af_Dscr.Chars (Init_Index .. Init_Index + Str'Length - 1) := Str;
     Af_Dscr.Current_Dscr.Modified := True;
-  end Encode_Wide_Field;
+  end Encode_Field;
 
   procedure Encode_Field (Field_No : in Field_Range;
                           From_Pos : in Con_Io.Full_Square;
@@ -435,17 +446,27 @@ package body Afpx is
   procedure Encode_Line (Line : in out Line_Rec;
                          Str  : in String) is
   begin
-    Encode_Wide_Line (Line, Language.String_To_Wide (Str));
+    Encode_Line (Line, Language.String_To_Unicode (Str));
   end Encode_Line;
 
-  procedure Encode_Wide_Line (Line : in out Line_Rec;
-                              Str  : in Wide_String) is
+  procedure Encode_Line (Line : in out Line_Rec;
+                         Str  : in Unicode_Sequence) is
   begin
     if Str'Length > Af_Dscr.Fields(Lfn).Width then
       raise String_Too_Long;
     end if;
     Line.Len := Str'Length;
     Line.Str (1 .. Line.Len) := Str;
+  end Encode_Line;
+
+  procedure Encode_Wide_Line (Line : in out Line_Rec;
+                              Str  : in Wide_String) is
+    Ustr : Unicode_Sequence (Str'Range);
+  begin
+    for I in Ustr'Range loop
+      Ustr(I) := Language.Wide_To_Unicode (Str(I));
+    end loop;
+    Encode_Line (Line, Ustr);
   end Encode_Wide_Line;
 
   procedure Encode_Line (Line : in out Line_Rec;
@@ -459,7 +480,7 @@ package body Afpx is
                          Row      : Con_Io.Full_Row_Range;
                          Adjust   : Boolean := True) return String is
     Str : constant String
-        := Language.Wide_To_String (Decode_Wide_Field (Field_No, Row));
+        := Language.Unicode_To_String (Decode_Field (Field_No, Row));
     Fn : constant Afpx_Typ.Absolute_Field_Range
        := Afpx_Typ.Absolute_Field_Range(Field_No);
     Width : constant Width_Range := Af_Dscr.Fields(Fn).Width;
@@ -481,6 +502,14 @@ package body Afpx is
   function Decode_Wide_Field (Field_No : Field_Range;
                               Row      : Con_Io.Full_Row_Range)
                               return Wide_String is
+    Ustr : constant Unicode_Sequence := Decode_Field (Field_No, Row);
+  begin
+    return Language.Copy (Ustr);
+  end Decode_Wide_Field;
+
+  function Decode_Field (Field_No : Field_Range;
+                         Row      : Con_Io.Full_Row_Range)
+                         return Unicode_Sequence is
     Fn : constant Afpx_Typ.Field_Range := Afpx_Typ.Field_Range(Field_No);
     Field : Afpx_Typ.Field_Rec;
     Init_Index : Afpx_Typ.Char_Str_Range;
@@ -495,12 +524,12 @@ package body Afpx is
     Init_Index := Field.Char_Index + Row * Field.Width;
     -- Return characters in a String (1 .. N)
     declare
-      Wstr : constant Wide_String (1 .. Field.Width)
+      Str : constant Unicode_Sequence (1 .. Field.Width)
            := Af_Dscr.Chars (Init_Index .. Init_Index + Field.Width - 1);
     begin
-      return Wstr;
+      return Str;
     end;
-  end Decode_Wide_Field;
+  end Decode_Field;
 
   procedure Decode_Field (Field_No : in Field_Range;
                           Row      : in Con_Io.Full_Row_Range;
@@ -765,7 +794,7 @@ package body Afpx is
   --  or, if Significant, the index following last significant character
   --  (skipping trailing spaces and htabs).
   -- This can be usefully called by Cursor_Set_Col_Cb.
-  function Last_Index (Str : Wide_String; Significant : Boolean)
+  function Last_Index (Str : Unicode_Sequence; Significant : Boolean)
                        return Con_Io.Full_Col_Range is
     N : Natural;
   begin
@@ -775,8 +804,9 @@ package body Afpx is
     -- Locate last significant character
     N := 0;
     for I in reverse Str'Range loop
-      if Str (I) /= ' '
-      and then Str(I) /= Language.Char_To_Wide (Ada.Characters.Latin_1.Ht) then
+      if Str (I) /= Af_Con_Io.Space
+      and then Str(I) /= Language.Char_To_Unicode
+                            (Ada.Characters.Latin_1.Ht) then
         N := I;
         exit;
       end if;
@@ -810,7 +840,7 @@ package body Afpx is
                  New_Field : Boolean;
                  Cursor_Col : Con_Io.Full_Col_Range;
                  Enter_Field_Cause : Enter_Field_Cause_List;
-                 Str : Wide_String) return Con_Io.Full_Col_Range := null;
+                 Str : Unicode_Sequence) return Con_Io.Full_Col_Range := null;
                           List_Change_Cb : access
        procedure (Action : in List_Change_List;
                   Status : in List_Status_Rec) := null) is

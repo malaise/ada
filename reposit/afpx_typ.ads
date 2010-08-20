@@ -1,9 +1,9 @@
 with As.U; use As.U;
-with Generic_Con_Io, Con_Io;
+with Unicode, Language, Generic_Con_Io, Con_Io;
 package Afpx_Typ is
 
   -- Version of Afpx
-  Afpx_Version : constant Float := 4.2;
+  Afpx_Version : constant Float := 5.0;
 
   -- Files path
   Dest_Path : Asu_Us;
@@ -89,8 +89,7 @@ package Afpx_Typ is
   type Fields_Array is array (Absolute_Field_Range) of Field_Rec;
 
   -- The init/current characters of current descriptor
-  subtype Char_Str is Wide_String (Char_Str_Range);
-
+  subtype Char_Str is Unicode.Unicode_Sequence (Char_Str_Range);
 
   -- Check is square (relative to field) is in field
   function In_Field (Field  : in Field_Rec;

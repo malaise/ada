@@ -21,15 +21,28 @@ package Language is
   -- Last wide character and last unicode number can be casted to character
   --   without decoding
   subtype Unicode_Number is Unicode.Unicode_Number;
-  Last_Wide_Char : constant Wide_Character := Wide_Character'Val (16#7F#);
-  Last_Unicode_Char : constant Unicode_Number := 16#7F#;
+  subtype Unicode_Sequence is Unicode.Unicode_Sequence;
+  Wide_Last_Char : constant Wide_Character := Wide_Character'Val (16#7F#);
+  Unicode_Last_Char : constant Unicode_Number := 16#7F#;
+  Unicode_Last_Wide : constant Unicode_Number := 16#FFFF#;
   function Is_Char (W : Wide_Character) return Boolean;
   function Is_Char (U : Unicode_Number) return Boolean;
+  function Is_Wide (U : Unicode_Number) return Boolean;
   function Char_To_Wide (C : Character) return Wide_Character;
   function Char_To_Unicode (C : Character) return Unicode_Number;
-  -- Return '#' if not Is_Char
+  function Wide_To_Unicode (W : Wide_Character) return Unicode_Number;
+  -- Character when translation Unicode/Wide -> Char or Unicode->Wide fails
+  Default_Char : constant Character := '#';
   function Wide_To_Char (W : Wide_Character) return Character;
   function Unicode_To_Char (U : Unicode_Number) return Character;
+  function Unicode_To_Wide (U : Unicode_Number) return Wide_Character;
+  -- Output has same range (so same len) as input
+  function Copy (W : Wide_String) return String;
+  function Copy (S : String) return Wide_String;
+  function Copy (U : Unicode_Sequence) return String;
+  function Copy (S : String) return Unicode_Sequence;
+  function Copy (U : Unicode_Sequence) return Wide_String;
+  function Copy (W : Wide_String) return Unicode_Sequence;
 
 
   -- Dependant from language
@@ -40,7 +53,7 @@ package Language is
   function "&" (Left : String; Right : Wide_String) return String;
   function "&" (Left : Wide_String; Right : String) return String;
   -- Conversion to wide string according to language
-  -- May raise Utf_8.Invalid_Sequence exception
+  -- May raise Utf_8.Invalid_Sequence or Utf_8.Not_Wide_Character exception
   function String_To_Wide (Str : String) return Wide_String;
   function "&" (Left : String; Right : Wide_String) return Wide_String;
   function "&" (Left : Wide_String; Right : String) return Wide_String;
@@ -48,7 +61,6 @@ package Language is
   function "=" (Left : Wide_String; Right : String) return Boolean;
 
   -- Conversion from unicode sequence
-  subtype Unicode_Sequence is Unicode.Unicode_Sequence;
   function Unicode_To_String (Str : Unicode_Sequence) return String;
   function "&" (Left : String; Right : Unicode_Sequence) return String;
   function "&" (Left : Unicode_Sequence; Right : String) return String;

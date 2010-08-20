@@ -20,11 +20,12 @@ procedure T_Con is
     Me : Positive;
 
     W1, W2, W3 : Con_Io.Window;
-    Str : Wide_String (1..25);
+    Str : Language.Unicode_Sequence (1..25);
     Last : Natural;
     Col : Natural;
     Stat : Con_Io.Curs_Mvt;
-    Str_Exit : constant Wide_String := "exit";
+    Str_Exit : constant Language.Unicode_Sequence
+             := Language.Copy (String'("exit"));
     Width : Natural;
     Delt : constant Con_Io.Delay_Rec(Timers.Delay_Sec)
          := (Delay_Kind    => Timers.Delay_Sec,
@@ -57,6 +58,7 @@ procedure T_Con is
       Show_Clock;
     end Redraw;
 
+    use type Con_Io.Unicode_Sequence;
   begin
     begin
       Col := 1;
@@ -93,14 +95,17 @@ procedure T_Con is
        W1, Con_Io.Current, Con_Io.Color_Of ("Red"), Delt);
     loop
         Con_Io.Clear (W2);
-        Con_Io.Putw (">" & Str(1..Last) & "<"
-            & Language.String_To_Wide (Con_Io.Curs_Mvt'Image(Stat)), W2);
+        Con_Io.Putu (
+              Language.Char_To_Unicode ('>')
+            & Str(1..Last)
+            & Language.Char_To_Unicode ('<')
+            & Language.String_To_Unicode (Con_Io.Curs_Mvt'Image(Stat)), W2);
         My_Io.Put_Line (Positive'Image(Me)
-                      & " >" & Con_Io.Wide_To_String (Str(1..Last))
+                      & " >" & Language.Unicode_To_String (Str(1 .. Last))
                       & "<" & Con_Io.Curs_Mvt'Image(Stat));
         case Stat is
           when Con_Io.Esc =>
-            Str (1 .. Width) := (others => ' ');
+            Str (1 .. Width) := (others => Con_Io.Space);
             Pos := 1;
             Ins := False;
           when Con_Io.Refresh =>

@@ -1,5 +1,5 @@
 with Ada.Wide_Text_Io;
-with Con_Io, My_Io;
+with Con_Io, My_Io, Language;
 procedure T_Key is
 
   Got : Con_Io.Get_Result;
@@ -25,8 +25,8 @@ begin
     My_Io.Put (Got.Mvt'Img);
 
     if Got.Mvt = Con_Io.Full then
-      My_Io.Put (Integer'(Wide_Character'Pos (Got.Char)), Base => 16);
-      Ada.Wide_Text_Io.Put (" >" & Got.Char & "<");
+      My_Io.Put (Got.Char, Base => 16);
+      Ada.Wide_Text_Io.Put (" >" & Language.Unicode_To_Wide (Got.Char) & "<");
     elsif Got.Mvt = Con_Io.Break then
       exit;
     end if;

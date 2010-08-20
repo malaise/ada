@@ -1,6 +1,6 @@
 with Ada.Text_Io, Ada.Calendar;
 with Text_Handler, Dynamic_List, Directory, Afpx, Select_File, Normal,
-     Oper_Def, Environ, Sys_Calls, Date_Image, Language, Perpet;
+     Oper_Def, Environ, Sys_Calls, Date_Image, Language, Perpet, Con_Io;
 with File_Mng, Oper_Dyn_List_Mng, Screen, Unit_Format;
 
 -- Manage the whole acount status
@@ -68,17 +68,17 @@ package body Mng is
     Wsep : constant Wide_String := Language.String_To_Wide (Sep);
   begin
     Line.Len := Afpx.Get_Field_Width(8);
-    Line.Str := (others => ' ');
-    Line.Str(1 .. 34) := Language.String_To_Wide (
+    Line.Str := (others => Language.Char_To_Unicode (' '));
+    Line.Str(1 .. 34) := Language.Copy (
                 Normal(No, 4) & Sep                                     -- 5
               & Unit_Format.Short_Date_Image(Oper.Date) & Sep           -- 9
               & Unit_Format.Short_Image(Oper.Amount) & Sep              -- 10
               & ' ' & Unit_Format.Short_Status_Image(Oper.Status) & Sep -- 5
               & Unit_Format.Short_Kind_Image(Oper.Kind) & Sep);         -- 5
-    Line.Str(35 .. 71) :=
+    Line.Str(35 .. 71) := Language.Copy (
            Oper.Destination(1 .. 10) & Wsep
          & Oper.Comment(1 .. 15) & Wsep
-         & Oper.Reference;
+         & Oper.Reference);
     return Line;
   end Oper_To_Line;
 

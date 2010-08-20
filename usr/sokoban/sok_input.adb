@@ -1,4 +1,4 @@
-with Con_Io, Timers;
+with Con_Io, Timers, Language, Lower_Char;
 with Sok_Time;
 package body Sok_Input is
 
@@ -10,7 +10,7 @@ package body Sok_Input is
                 Delay_Seconds => 1.0);
 
   function Get_Key return Key_List is
-    Str  : Wide_String (1 .. 1);
+    Str  : Con_Io.Unicode_Sequence (1 .. 1);
     Last : Natural;
     Stat : Con_Io.Curs_Mvt;
     Pos  : Positive;
@@ -35,17 +35,22 @@ package body Sok_Input is
           when Left => return Left;
           when Right => return Right;
           when Full =>
-            case Con_Io.Wide_To_String(Str)(1) is
-              when 'u' | 'U' =>
-                return Undo;
-              when 'w' | 'W' =>
-                Play := not Play;
-                Con_Io.Clear;
-                Sok_Time.Stop_Time;
-              when ' '  =>
-                return Next;
-              when others => null;
-            end case; -- on char
+            declare
+              Lstr : constant String := Language.Copy(Str);
+              C : constant Character := Lower_Char (Lstr(1));
+            begin
+              case C is
+                when 'u' =>
+                  return Undo;
+                when 'w' =>
+                  Play := not Play;
+                  Con_Io.Clear;
+                  Sok_Time.Stop_Time;
+                when ' '  =>
+                  return Next;
+                when others => null;
+              end case; -- on char
+            end;
           when Tab | Stab  => null;
           when Ret => return Next;
           when Esc => return Esc;
@@ -60,7 +65,7 @@ package body Sok_Input is
         end case;
       else
         if Stat = Full
-        and then (Str(1) = 'w' or else Str(1) = 'W') then
+        and then Lower_Char (Language.Unicode_To_Char (Str(1))) = 'w' then
           Play := not Play;
           Sok_Time.Start_Time;
           return Refresh;
@@ -70,7 +75,7 @@ package body Sok_Input is
   end Get_Key;
 
   procedure Pause is
-    Str  : Wide_String (1 .. 0);
+    Str  : Con_Io.Unicode_Sequence (1 .. 0);
     Last : Natural;
     Stat : Con_Io.Curs_Mvt;
     Pos  : Positive;

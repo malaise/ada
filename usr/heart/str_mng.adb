@@ -264,17 +264,17 @@ package body Str_Mng is
   procedure Format_Person_To_List (Person    : in Pers_Def.Person_Rec;
                                    List_Pers : out Afpx.Line_Rec) is
   begin
-    List_Pers.Str := (others => ' ');
+    List_Pers.Str := (others => Language.Char_To_Unicode (' '));
     List_Pers.Len := 32;
-    List_Pers.Str (01 .. 20) := Language.String_To_Wide (Person.Name);
-    List_Pers.Str (22 .. 31) := Language.String_To_Wide (Person.Activity);
+    List_Pers.Str (01 .. 20) := Language.Copy (Person.Name);
+    List_Pers.Str (22 .. 31) := Language.Copy (Person.Activity);
   end Format_Person_To_List;
 
   procedure Format_List_To_Person (List_Pers : in Afpx.Line_Rec;
                                    Person    : out Pers_Def.Person_Rec) is
   begin
-    Person.Name := Language.Wide_To_String (List_Pers.Str (01 .. 20));
-    Person.Activity := Language.Wide_To_String (List_Pers.Str (23 .. 32));
+    Person.Name := Language.Copy (List_Pers.Str (01 .. 20));
+    Person.Activity := Language.Copy (List_Pers.Str (23 .. 32));
   end Format_List_To_Person;
 
 
@@ -286,20 +286,20 @@ package body Str_Mng is
   begin
     Format_Person_To_List (Person, List_Mesu);
     List_Mesu.Len := 71;
-    List_Mesu.Str(35 .. 44) := Language.String_To_Wide (To_Printed_Str (Mesure.Date));
-    List_Mesu.Str(46 .. 65) := Language.String_To_Wide (Mesure.Comment);
-    List_Mesu.Str(67 .. 69) := Language.String_To_Wide (Pid_Str(Person.Pid));
-    List_Mesu.Str(70 .. 71) := Language.String_To_Wide (Mesu_No);
+    List_Mesu.Str(35 .. 44) := Language.Copy (To_Printed_Str (Mesure.Date));
+    List_Mesu.Str(46 .. 65) := Language.Copy (Mesure.Comment);
+    List_Mesu.Str(67 .. 69) := Language.Copy (Pid_Str(Person.Pid));
+    List_Mesu.Str(70 .. 71) := Language.Copy (Mesu_No);
   end Format_Mesure_To_List;
 
   procedure Format_List_To_Mesure (List_Mesu : in Afpx.Line_Rec;
                                    File_Name : out Mesu_Nam.File_Name_Str) is
     Date : constant Printed_Date_Str
-         := Language.Wide_To_String (List_Mesu.Str(35 .. 44));
+         := Language.Copy (List_Mesu.Str(35 .. 44));
     No   : constant Mesu_Nam.File_No_Str
-         := Language.Wide_To_String (List_Mesu.Str(70 .. 71));
+         := Language.Copy (List_Mesu.Str(70 .. 71));
     Pid  : constant Mesu_Nam.File_Pid_Str
-         := Language.Wide_To_String (List_Mesu.Str(67 .. 69));
+         := Language.Copy (List_Mesu.Str(67 .. 69));
 
   begin
     File_Name :=

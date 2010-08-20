@@ -1,5 +1,5 @@
 with Ada.Text_Io, Ada.Exceptions;
-with Afpx, Con_Io, Normal, My_Math, Text_Handler;
+with Afpx, Con_Io, Normal, My_Math, Text_Handler, Language;
 with Mesu_Def, Str_Mng, Mesu_Nam, Pers_Mng, Pers_Def, Mesu_Fil;
 use Pers_Def;
 package body Mesu_Gra is
@@ -480,9 +480,7 @@ package body Mesu_Gra is
       -- Get key
       Get_Res := Con_Io.Get;
       if Get_Res.Mvt = Con_Io.Full then
-        Char := Con_Io.Wide_To_Char (Get_Res.Char);
-      else
-        Char := Con_Io.Wide_Def_Char;
+        Char := Language.Unicode_To_Char (Get_Res.Char);
       end if;
 
       -- Exit when Escape

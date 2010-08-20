@@ -342,7 +342,7 @@ package body Menu1 is
                 if Ptg_Result.Field_No = 26 then
                   -- Delete a point
                   Screen.Put_Title(Screen.Suppress_1);
-                  Afpx.Encode_Wide_Field (Screen.Get_Fld, (0, 0),
+                  Afpx.Encode_Field (Screen.Get_Fld, (0, 0),
                       Point_Str.Encode_Rec(A_Point).Str(1 .. Screen.Get_Get_Width));
                   Afpx.Set_Field_Activation(Screen.Get_Fld, True);
                   if Screen.Confirm(Screen.C_Delete_Point, True) then

@@ -244,7 +244,7 @@ package body Dialog is
       Rec : Afpx.Line_Rec;
     begin
       Rec.Len := Str'Length;
-      Rec.Str (1 .. Rec.Len) := Language.String_To_Wide (Str);
+      Rec.Str (1 .. Rec.Len) := Language.String_To_Unicode (Str);
       Afpx.Line_List.Insert (Rec);
     end Insert;
   begin

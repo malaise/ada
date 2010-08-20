@@ -1,4 +1,4 @@
-with Timers;
+with Timers, Language;
 separate (Screen)
 
 -- Get an event
@@ -16,7 +16,7 @@ separate (Screen)
 --  end record;
 
 function Get_Event (Wait : in Duration) return Evt_Rec is
-  Str    : Wide_String (1 .. 1);
+  Str    : Con_Io.Unicode_Sequence (1 .. 1);
   Last   : Natural;
   Stat   : Con_Io.Curs_Mvt;
   Pos    : Positive;
@@ -76,11 +76,11 @@ begin
       when Con_Io.Tab | Con_Io.Ret =>
         return (Evt => Next);
       when Con_Io.Full =>
-        if Str(1) = 'g' then
+        if Str(1) = Language.Char_To_Unicode ('g') then
           -- Grab / ungrab pointer
           Pointer_Grabbed := not Pointer_Grabbed;
           Con_Io.Set_Pointer_Shape (Con_Io.None, Pointer_Grabbed);
-        elsif Str(1) = ' ' then
+        elsif Str(1) = Language.Char_To_Unicode (' ') then
           -- Pause / resume game
           return (Evt => Pause);
         end if;
