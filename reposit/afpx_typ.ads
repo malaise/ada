@@ -1,5 +1,5 @@
 with As.U; use As.U;
-with Unicode, Language, Generic_Con_Io, Con_Io;
+with Unicode, Generic_Con_Io, Con_Io;
 package Afpx_Typ is
 
   -- Version of Afpx
