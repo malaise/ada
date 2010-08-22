@@ -18,7 +18,7 @@ procedure T_Async is
   Give_Up : Boolean := False;
 
   -- Common message type
-  subtype Message_Type is String (1 .. 1024);
+  subtype Message_Type is String (1 .. 1024*1024);
 
   -- TCP stuff
   Local_Port_Def : Tcp_Util.Local_Port;
@@ -241,7 +241,7 @@ begin
       when others =>
         raise Arg_Error;
     end;
-  else
+  elsif Argument.Get_Parameter (1) = "-c" then
     begin
       Server_Mode := False;
       Ip_Addr.Parse (Argument.Get_Parameter (2),
@@ -250,6 +250,8 @@ begin
       when others =>
         raise Arg_Error;
     end;
+  else
+    raise Arg_Error;
   end if;
 
   -- Init
