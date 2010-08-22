@@ -713,6 +713,19 @@ package body Async_Stdin is
     Put_Out ("" & Ada.Characters.Latin_1.Lf);
   end New_Line_Out;
 
+  procedure Flush_Out is
+    Result : Boolean;
+    pragma Unreferenced (Result);
+  begin
+    if Cb /= null then
+      Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
+      Sys_Calls.Flush_Output;
+      Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False);
+    else
+      Sys_Calls.Flush_Output;
+    end if;
+  end Flush_Out;
+
   -- Put on stderr when in async
   procedure Put_Err (Str : in String) is
     Result : Boolean;
@@ -752,6 +765,19 @@ package body Async_Stdin is
       Sys_Calls.New_Line_Error;
     end if;
   end New_Line_Err;
+
+  procedure Flush_Err is
+    Result : Boolean;
+    pragma Unreferenced (Result);
+  begin
+    if Cb /= null then
+      Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, True);
+      Sys_Calls.Flush_Error;
+      Result := Sys_Calls.Set_Blocking (Sys_Calls.Stdin, False);
+    else
+      Sys_Calls.Flush_Error;
+    end if;
+  end Flush_Err;
 
 end Async_Stdin;
 

@@ -29,6 +29,12 @@ package body Basic_Proc is
     New_Line_Output;
   end Put_Line_Output;
 
+  procedure Flush_Output is
+    I : Interfaces.C_Streams.Int;
+  begin
+    I := Interfaces.C_Streams.Fflush (Interfaces.C_Streams.Stdout);
+  end Flush_Output;
+
   -- Put line on stderr
   procedure Put_Error (Str : in String) is
     I : Interfaces.C_Streams.Int;
@@ -54,6 +60,12 @@ package body Basic_Proc is
     Put_Error (Str);
     New_Line_Error;
   end Put_Line_Error;
+
+  procedure Flush_Error is
+    I : Interfaces.C_Streams.Int;
+  begin
+    I := Interfaces.C_Streams.Fflush (Interfaces.C_Streams.Stderr);
+  end Flush_Error;
 
   -- Set exit code
   procedure Set_Exit_Code (Code : in Natural) is

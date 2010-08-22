@@ -25,9 +25,11 @@ package Sys_Calls is
   procedure Put_Output (Str : in String);
   procedure Put_Line_Output (Str : in String);
   procedure New_Line_Output;
+  procedure Flush_Output;
   procedure Put_Error (Str : in String);
   procedure Put_Line_Error (Str : in String);
   procedure New_Line_Error;
+  procedure Flush_Error;
 
   -- Basic getenv, raises Env_Not_Set
   function Getenv (Env_Name : String) return String;

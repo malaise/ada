@@ -4,11 +4,13 @@ package Basic_Proc is
   procedure Put_Output (Str : in String);
   procedure Put_Line_Output (Str : in String);
   procedure New_Line_Output;
+  procedure Flush_Output;
 
   -- Put line on stderr
   procedure Put_Error (Str : in String);
   procedure Put_Line_Error (Str : in String);
   procedure New_Line_Error;
+  procedure Flush_Error;
 
   -- Set exit code
   procedure Set_Exit_Code (Code : in Natural);

@@ -27,11 +27,13 @@ package Async_Stdin is
   procedure Put_Out (Str : in String);
   procedure Put_Line_Out (Str : in String);
   procedure New_Line_Out;
+  procedure Flush_Out;
 
   -- Put on stderr when in async
   procedure Put_Err (Str : in String);
   procedure Put_Line_Err (Str : in String);
   procedure New_Line_Err;
+  procedure Flush_Err;
 
   -- Error in Set_Async
   Error : exception;
