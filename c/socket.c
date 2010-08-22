@@ -1622,8 +1622,13 @@ static int rec1 (soc_ptr soc, char *buffer, int total_len) {
       free (soc->rece_head);
       soc->rece_head = NULL;
       soc->rece_len = 0;
+      return (SOC_OK);
+    } else if ( (soc->protocol == udp_protocol) || (soc->tcp_kind == tcp_msg) ) {
+      return (SOC_OK);
+    } else {
+      /* Tcp no header */
+      return (res);
     }
-    return (SOC_OK);
   } else {
     /* Underflow */
     if ( (soc->protocol == tcp_protocol) && (soc->tcp_kind == tcp_raw) ) {
