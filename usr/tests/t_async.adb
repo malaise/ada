@@ -18,7 +18,7 @@ procedure T_Async is
   Give_Up : Boolean := False;
 
   -- Common message type
-  subtype Message_Type is String (1 .. 1024*1024);
+  subtype Message_Type is String (1 .. 1024);
 
   -- TCP stuff
   Local_Port_Def : Tcp_Util.Local_Port;
