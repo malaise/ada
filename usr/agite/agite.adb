@@ -159,17 +159,18 @@ procedure Agite is
       else
         Directory.Change_Current (New_Dir);
       end if;
-      -- Success, reset root path for re-evaluation, save current dir
-      Root := Asu_Null;
-      if Update_History then
-        Config.Save_Curr_Dir (Directory.Get_Current);
-      end if;
-      Encode_Files;
     exception
       when others =>
         -- Cannot change to new dir or cannot process files (No_Git?)
         Directory.Change_Current (Directory.Get_Current);
     end;
+    -- Success, reset root path for re-evaluation, save current dir
+    Root := Asu_Null;
+    if Update_History then
+      Config.Save_Curr_Dir (Directory.Get_Current);
+    end if;
+    Encode_Files;
+
     Afpx.Clear_Field (Dir_Field);
     Afpx.Encode_Field (Dir_Field, (0, 0),
            Utils.Normalize (Directory.Get_Current, Width));
