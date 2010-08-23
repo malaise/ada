@@ -36,7 +36,7 @@ package Command is
   -- Because it waits for asynchronous exit of child, this function uses   --
   --  Event_Mng.Wait, which sets signal handlers. As a consequence:        --
   --  * Non interactive programs shall call                                --
-  --    Event_Mng.Reset_Default_Signal_Policy after using this function    --
+  --    Event_Mng.Reset_Default_Signals_Policy after using this function   --
   --  * X11 programs shall Suspend ALL the X objects X_Line/Con_Io/Afpx    --
   --    before calling this function, then Resume the X objects.           --
   ---------------------------------------------------------------------------
