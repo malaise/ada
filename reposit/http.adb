@@ -64,26 +64,7 @@ package body Http is
     pragma Unreferenced (Id, Data);
   begin
     Debug ("HTTP: Timeout");
-    -- Cancel connect if connecting
-    begin
-      Tcp_Util.Abort_Connect (Host, Port);
-    exception
-      when Tcp_Util.No_Such =>
-        null;
-    end;
-    -- Cancel reception if receiving
-    if Soc.Is_Open then
-      begin
-        My_Rece.Remove_Callbacks (Soc);
-      exception
-        when Tcp_Util.No_Such =>
-          null;
-      end;
-    end if;
-    -- Close if open
-    if Soc.Is_Open then
-      Soc.Close;
-    end if;
+    Timer_Id := Timers.No_Timer;
     Result := (Client_Error, Timeout);
     Done := True;
     return True;
@@ -125,7 +106,7 @@ package body Http is
 
     -- See if line break is Lf or Cr+Lf, set New_Line
     Ind := String_Mng.Locate (Asu_Ts (Buffer), Lf);
-    if ind = 0 then
+    if Ind = 0 then
       Debug ("HTTP: No line feed at all");
       return;
     end if;
@@ -388,7 +369,9 @@ package body Http is
     Close;
 
     -- Check data received
-    Check;
+    if Result.Kind = Ok then
+      Check;
+    end if;
 
     -- Done
     Debug ("HTTP: Done");
