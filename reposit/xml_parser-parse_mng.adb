@@ -1712,7 +1712,6 @@ package body Parse_Mng  is
           Trace ("Parsing http dtd");
         end if;
         Dtd.Parse (Ctx, Adtd, Full_File);
-        Util.Pop_Flow (Ctx.Flow);
       end if;
       if not Asu_Is_Null (Ctx.Doctype.Int_Def) then
         -- Parse internal defs
