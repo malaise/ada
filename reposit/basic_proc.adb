@@ -31,6 +31,7 @@ package body Basic_Proc is
 
   procedure Flush_Output is
     I : Interfaces.C_Streams.Int;
+    pragma Unreferenced (I);
   begin
     I := Interfaces.C_Streams.Fflush (Interfaces.C_Streams.Stdout);
   end Flush_Output;
@@ -63,6 +64,7 @@ package body Basic_Proc is
 
   procedure Flush_Error is
     I : Interfaces.C_Streams.Int;
+    pragma Unreferenced (I);
   begin
     I := Interfaces.C_Streams.Fflush (Interfaces.C_Streams.Stderr);
   end Flush_Error;
