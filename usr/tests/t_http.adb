@@ -1,5 +1,5 @@
 with As.U; use As.U;
-with Basic_Proc, Argument, Http, Mixed_Str, Int_Image;
+with Basic_Proc, Argument, Http, Mixed_Str, Int_Image, Event_Mng;
 procedure T_Http is
   function Code_Image is new Int_Image (Http.Server_Code_Range);
   Result : Http.Result_Type;
@@ -12,6 +12,7 @@ begin
   end if;
 
   Result := Http.Get (Argument.Get_Parameter (1));
+  Event_Mng.Reset_Default_Signals_Policy;
   case Result.Kind is
     when Http.Ok =>
       Basic_Proc.Put_Output (Asu_Ts (Result.Content));
