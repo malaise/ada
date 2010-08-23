@@ -17,7 +17,7 @@ package body Http is
       end if;
     end if;
     if Debug_Status = Set then
-      Basic_Proc.Put_Line_Error (Msg);
+      Basic_Proc.Put_Line_Output (Msg);
     end if;
   end Debug;
 
@@ -41,6 +41,14 @@ package body Http is
 
   -- The socket
   Soc : Socket.Socket_Dscr;
+
+  -- Buffer of incoming data
+  Buffer : Asu_Us;
+
+  -- Line terminators
+  Lf : constant String := Ada.Characters.Latin_1.Lf & "";
+  Cr : constant String := Ada.Characters.Latin_1.Cr & "";
+  Crlf : constant String := Cr & Lf;
 
   -- Send/receive Msg
   -- Shall be large enough to receive the whole reply header
@@ -88,38 +96,59 @@ package body Http is
   end Is_Space;
 
   -- Message reception Cb
-  Line_Feed : constant String := Ada.Characters.Latin_1.Lf & "";
-  In_Content : Boolean;
-  Expected_Length : Integer;
   procedure Read_Cb (Dscr : in Socket.Socket_Dscr;
                      Msg : in Message_Type;
                      Len : in Natural) is
     pragma Unreferenced (Dscr);
-    Ind : Natural;
-    Text : Asu_Us;
   begin
-    if Result.Kind /= Ok then
-      -- Already on error => Drop
-      return;
-    end if;
-    -- CrLf -> Lf
-    Text := Asu_Tus (String_Mng.Replace (Msg(1 .. Len),
-                            Ada.Characters.Latin_1.Cr & Line_Feed,
-                            Line_Feed));
-    if In_Content then
-      -- Not first Msg, append content to result
-      Asu.Append (Result.Content, Text);
-      Debug ("HTTP: Appended content len:" & Integer'Image (Asu.Length (Text)));
+    Debug ("HTTP: Reading");
+    Asu.Append (Buffer, Msg(1 .. Len));
+  end Read_Cb;
+
+  -- Check received Data, set Result
+  Expected_Length : Natural;
+  procedure Check is
+    New_Line : Asu_Us;
+    Ind : Natural;
+    Header : Asu_Us;
+    use type Asu_Us;
+  begin
+    Debug ("HTTP: Checking");
+
+    -- Parse buffer, init default result
+    Result := (Client_Error, Invalid_Answer);
+
+    if Asu_Is_Null (Buffer) then
+      Debug ("HTTP: No anwser at all");
       return;
     end if;
 
-    -- Parse header, init default result
-    Result := (Client_Error, Invalid_Answer);
-    Done := True;
+    -- See if line break is Lf or Cr+Lf, set New_Line
+    Ind := String_Mng.Locate (Asu_Ts (Buffer), Lf);
+    if ind = 0 then
+      Debug ("HTTP: No line feed at all");
+      return;
+    end if;
+    if Ind = 1
+    or else Asu.Element (Buffer, Ind - 1) & "" /= Cr then
+      New_Line := Asu_Tus (Lf);
+    else
+      New_Line := Asu_Tus (Crlf);
+    end if;
+
+    -- Locate end of header: 2 consecutive New_Lines, Isolate header
+    Ind := String_Mng.Locate (Asu_Ts (Buffer), Asu_Ts (New_Line & New_Line));
+    Header := Asu.Unbounded_Slice (Buffer, 1, Ind - 1);
+    Ind := Ind + 2 * Asu.Length (New_Line);
+    Asu.Delete (Buffer, 1, Ind - 1);
+    -- CrLf -> Lf in Header
+    Header := Asu_Tus (String_Mng.Replace (Asu_Ts (Header),
+               Asu_Ts (New_Line), Lf));
 
     -- First line of header reply: status
-    Ind := String_Mng.Locate (Asu_Ts (Text), Line_Feed);
+    Ind := String_Mng.Locate (Asu_Ts (Header), Lf);
     if Ind = 0 then
+      Debug ("HTTP: No header line feed:" & Asu_Ts (Header));
       return;
     end if;
     declare
@@ -127,7 +156,7 @@ package body Http is
       Word : Asu_Us;
       Http_Header : constant String := "HTTP/";
     begin
-      Iter.Set (Msg (1 .. Ind - 1), Is_Space'Access);
+      Iter.Set (Asu.Slice (Header, 1, Ind - 1), Is_Space'Access);
       -- First word: HTTP/<vers>
       Word := Asu_Tus (Iter.Next_Word);
       if Asu.Length (Word) < Http_Header'Length
@@ -168,11 +197,11 @@ package body Http is
       return;
     end if;
 
-    -- Locate content length header
-    Ind := String_Mng.Locate (Asu_Ts (Text), "Content-Length:");
+    -- Locate content-length header
+    Ind := String_Mng.Locate (Asu_Ts (Header), "Content-Length:");
     if Ind = 0 then
       Result := (Client_Error, Missing_Length);
-      Debug ("HTTP: Invalid reply (no length): " & Asu_Ts (Text));
+      Debug ("HTTP: Invalid reply (no length): " & Asu_Ts (Header));
       return;
     end if;
     declare
@@ -180,8 +209,8 @@ package body Http is
       Word : Asu_Us;
       Ind1 : Natural;
     begin
-      Ind1 := String_Mng.Locate (Asu_Ts (Text), Line_Feed, Ind);
-      Iter.Set (Asu.Slice (Text, Ind, Ind1 - 1), Is_Space'Access);
+      Ind1 := String_Mng.Locate (Asu_Ts (Header), Lf, Ind);
+      Iter.Set (Asu.Slice (Header, Ind, Ind1 - 1), Is_Space'Access);
       -- Skip "Content-Length:", get value
       Word := Asu_Tus (Iter.Next_Word);
       Word := Asu_Tus (Iter.Next_Word);
@@ -193,24 +222,49 @@ package body Http is
         Result := (Client_Error, Invalid_Answer);
         return;
     end;
-
-    -- Locate end of header: Empty line
-    Ind := String_Mng.Locate (Asu_Ts (Text), Line_Feed & Line_Feed);
-    if Ind = 0 then
-      Debug ("HTTP: Missing break");
-      Result := (Client_Error, Invalid_Answer);
+    if Expected_Length > Max_Msg_Len then
+      Debug ("HTTP: Message too long:" & Expected_Length'Img);
+      Result := (Client_Error, Msg_Too_Long);
       return;
     end if;
-    In_Content := True;
-    Result := (Ok, Asu_Null);
-    if Ind /= Asu.Length (Text) - 1 then
-      -- There is content
-      Asu.Unbounded_Slice (Text, Result.Content, Ind + 2, Asu.Length (Text));
-      Done := False;
-      Debug ("HTTP: Got content len:"
-           & Integer'Image (Asu.Length (Result.Content)));
+
+    -- OK
+    Result := (Ok, Buffer);
+  end Check;
+
+  procedure Close is
+    use type Timers.Timer_Id;
+  begin
+    Debug ("HTTP: Closing");
+    -- Cancel timer
+    if Timer_Id /= Timers.No_Timer then
+      Timers.Delete (Timer_Id);
+      Timer_Id := Timers.No_Timer;
     end if;
-  end Read_Cb;
+    begin
+      Tcp_Util.Abort_Connect (Host, Port);
+    exception
+      when Tcp_Util.No_Such =>
+        null;
+    end;
+    if Soc.Is_Open then
+      begin
+        My_Rece.Remove_Callbacks (Soc);
+      exception
+       when Tcp_Util.No_Such =>
+         null;
+      end;
+      begin
+        Tcp_Util.Abort_Send_And_Close (Soc);
+      exception
+       when Tcp_Util.No_Such =>
+         null;
+      end;
+    end if;
+    if Soc.Is_Open then
+      Soc.Close;
+    end if;
+  end Close;
 
   -- When Soc_Read_0
   procedure Disconnection_Cb (Dscr : in Socket.Socket_Dscr) is
@@ -220,22 +274,6 @@ package body Http is
     Debug ("HTTP: Disconnection");
     -- Tcp_Util closes the socket
     Soc := Socket.No_Socket;
-    -- Cancel timer
-    if Timer_Id /= Timers.No_Timer then
-      Timers.Delete (Timer_Id);
-      Timer_Id := Timers.No_Timer;
-    end if;
-    -- Check length and set result
-    if Result.Kind = Ok then
-      if not In_Content then
-        Debug ("HTTP: Disconnection with no content");
-        Result := (Client_Error, Invalid_Answer);
-      elsif Asu.Length (Result.Content) /= Expected_Length then
-        Debug ("HTTP: Disconnection with length:"
-             & Natural'Image (Asu.Length (Result.Content)));
-        Result := (Client_Error, Wrong_Length);
-      end if;
-    end if;
     Done := True;
   end Disconnection_Cb;
 
@@ -267,7 +305,7 @@ package body Http is
     end loop;
     -- Set not blocking and hook receptions
     Soc.Set_Blocking (False);
-    In_Content := False;
+    Buffer := Asu_Null;
     My_Rece.Set_Callbacks (Soc,
                            Read_Cb'Unrestricted_Access,
                            Disconnection_Cb'Unrestricted_Access);
@@ -323,7 +361,6 @@ package body Http is
     -- Store request and connect
     declare
       Connect_Timeout : Integer;
-      Lf : constant Character := Ada.Characters.Latin_1.Lf;
       Dummy : Boolean;
       pragma Unreferenced (Dummy);
     begin
@@ -331,7 +368,7 @@ package body Http is
       Connect_Timeout := Environ.Get_Int (Connect_Timeout_Var,
                                           Default_Connect_Timeout);
       -- Init request and result
-      Request := Asu_Tus ("GET " & Url & " HTTP/1.0" & Lf & Lf);
+      Request := Asu_Tus ("GET " & Url & " HTTP/1.0" & Crlf & Crlf);
       -- Connect: infinite retries each Connect_Timeout sec
       Soc := Socket.No_Socket;
       Debug ("HTTP: Connecting each" & Connect_Timeout'Img);
@@ -346,6 +383,12 @@ package body Http is
       Event_Mng.Wait (Event_Mng.Infinite_Ms);
       exit when Done;
     end loop;
+
+    -- Close Timer and Tcp
+    Close;
+
+    -- Check data received
+    Check;
 
     -- Done
     Debug ("HTTP: Done");

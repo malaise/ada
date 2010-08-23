@@ -4,11 +4,13 @@ package Http is
   -------------------------------
   -- Result of the Get request --
   -------------------------------
+  Max_Msg_Len : constant := 1024 * 1024 * 1024;
   type Result_Kind_List is (Ok, Client_Error, Server_Error);
   type Client_Error_List is (
     Invalid_Url,    -- Not "http://<host>/<opt_content>
     Invalid_Answer, -- Not "HTTP/<vers> <code> <text>"
     Missing_Length, -- No "Content-Length:" in answer
+    Msg_Too_Long,   -- Answer message is too long (above Max_Msg_Len)
     Wrong_Length,   -- Length received (before disconnection) /= Content-Length
     Timeout);       -- Timeout expired before completion
   subtype Server_Code_Range is Positive range 100 .. 999;
