@@ -356,6 +356,11 @@ package body Http is
       Dummy := Tcp_Util.Connect_To (Socket.Tcp, Host, Port,
                                     Duration(Connect_Timeout) / 1000.0, 0,
                                     Connection_Cb'Access);
+    exception
+      when Tcp_Util.Name_Error =>
+        -- Host or "http" not found
+        Close;
+        return (Client_Error, Name_Error);
     end;
 
     -- Loop and wait until Done

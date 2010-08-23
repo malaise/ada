@@ -8,6 +8,7 @@ package Http is
   type Result_Kind_List is (Ok, Client_Error, Server_Error);
   type Client_Error_List is (
     Invalid_Url,    -- Not "http://<host>/<opt_content>
+    Name_Error,     -- Host or port "http" not found
     Invalid_Answer, -- Not "HTTP/<vers> <code> <text>"
     Missing_Length, -- No "Content-Length:" in answer
     Msg_Too_Long,   -- Answer message is too long (above Max_Msg_Len)
@@ -33,7 +34,7 @@ package Http is
   -- Because it waits for replies from HTTp server, this function uses     --
   --  Event_Mng.Wait, which sets signal handlers. As a consequence:        --
   --  * Non interactive programs shall call                                --
-  --    Event_Mng.Reset_Default_Signal_Policy after using this function    --
+  --    Event_Mng.Reset_Default_Signals_Policy after using this function   --
   --  * X11 programs shall Suspend ALL the X objects X_Line/Con_Io/Afpx    --
   --    before calling this function, then Resume the X objects.           --
   ---------------------------------------------------------------------------
