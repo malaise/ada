@@ -219,6 +219,13 @@ package body Event_Mng is
     Sig := C_Reset_Default_Signals;
     return Sig = C_Sig_Terminate;
   end Reset_Default_Signals_Policy;
+  procedure Reset_Default_Signals_Policy is
+    Sigterm : constant := 15;
+  begin
+    if Reset_Default_Signals_Policy then
+      Sys_Calls.Kill (Sys_Calls.Get_Pid, Sigterm);
+    end if;
+  end Reset_Default_Signals_Policy;
 
   -- PRIVATE. Get kind of last signal
   type Signal_Kind_List is (Unknown_Sig, No_Sig, Dummy_Sig,

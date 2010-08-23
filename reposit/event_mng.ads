@@ -58,6 +58,9 @@ package Event_Mng is
   -- Reset signal handling to default UNIX behaviour
   -- Returns True if a Sig Term was received but not handled
   function Reset_Default_Signals_Policy return Boolean;
+  -- Reset signal handling to default UNIX behaviour
+  -- Kill ourself SIGTERM if a Sig Term was received but not handled
+  procedure Reset_Default_Signals_Policy;
 
   -------------------
   -- Waiting point --
