@@ -18,7 +18,7 @@ package body Parse_Mng  is
   -- Expand the content of an external parsed entity
   -- Non recursive
   procedure Expand_External_Entity (Ctx : in out Ctx_Type;
-                                    Dtd : in out Dtd_Type;
+                                    Adtd : in out Dtd_Type;
                                     Name, Uri : in Asu_Us;
                                     Text : out Asu_Us);
 
@@ -205,6 +205,16 @@ package body Parse_Mng  is
 
   package body Entity_Mng is separate;
   package body Util is separate;
+
+  -- Resolve an URI:
+  -- if not "://" -> Build_Full_Name (Uri), return File
+  -- if "file://" -> Build_Full_Name (Tail), return File
+  -- if "http://" -> Fetch content, return String
+  -- Else Error: unsupported URI scheme
+  procedure Resolve_Uri (Ctx : in out Ctx_Type;
+                         Uri : in Asu_Us;
+                         Is_File : out Boolean;
+                         Content : out Asu_Us) is separate;
 
   -- Descriptor of list of children found
   type Children_Desc is record
@@ -598,15 +608,16 @@ package body Parse_Mng  is
   end Add_Child;
 
   -- Expand the content of an external parsed entity
-  procedure Expand_External_Entity (Ctx : in out Ctx_Type;
-                                    Dtd : in out Dtd_Type;
+  procedure Expand_External_Entity (Ctx  : in out Ctx_Type;
+                                    Adtd : in out Dtd_Type;
                                     Name, Uri : in Asu_Us;
                                     Text : out Asu_Us) is
-    File_Name : Asu_Us;
+    Full_File : Asu_Us;
     Ok : Boolean;
     Char : Character;
     Dummy : My_Tree_Cell;
     Is_Recorded : Boolean;
+    Is_File : Boolean;
   begin
     Trace ("Ext expanding external entity " & Asu_Ts (Name) & " with URI "
          & Asu_Ts (Uri));
@@ -615,16 +626,34 @@ package body Parse_Mng  is
                           & " for entity " & Asu_Ts (Name) & ".");
     end if;
     Util.Push_Flow (Ctx.Flow);
+
     -- Init Flow
-    File_Name := Build_Full_Name (Uri, Ctx.Flow.Curr_Flow.Name);
-    Ctx.Flow.Curr_Flow.File := new Text_Char.File_Type;
-    Ctx.Flow.Files.Push (Ctx.Flow.Curr_Flow.File);
-    File_Mng.Open (Asu_Ts (File_Name), Ctx.Flow.Curr_Flow.File.all);
-    Ctx.Flow.Curr_Flow.Is_File := True;
+    -- Check validity of Uri
+    Full_File := Build_Full_Name (Uri, Ctx.Flow.Curr_Flow.Name);
+    if Asu_Ts (Full_File) = Dtd.String_Flow
+    or else Asu_Ts (Full_File) = Dtd.Internal_Flow then
+      Util.Error (Ctx.Flow, "Invalid external entity file name");
+    end if;
+    -- Expand URI
+    Resolve_Uri (Ctx, Uri, Is_File, Full_File);
+    if not Is_File then
+      -- Full_File is the content of the Dtd fetched (by http)
+      Ctx.Flow.Curr_Flow.File := null;
+      Ctx.Flow.Curr_Flow.In_Str := Full_File;
+      Ctx.Flow.Curr_Flow.In_Stri := 0;
+      Trace ("Ext parsing http result");
+    else
+      Ctx.Flow.Curr_Flow.File := new Text_Char.File_Type;
+      Ctx.Flow.Files.Push (Ctx.Flow.Curr_Flow.File);
+      File_Mng.Open (Asu_Ts (Full_File), Ctx.Flow.Curr_Flow.File.all);
+      Trace ("Ext parsing file");
+    end if;
+    Ctx.Flow.Curr_Flow.Is_File := Is_File;
     Ctx.Flow.Curr_Flow.Kind := Ext_Flow;
     Ctx.Flow.Curr_Flow.Name := Uri;
     Ctx.Flow.Curr_Flow.Line := 1;
     Ctx.Flow.Curr_Flow.Same_Line := False;
+
     -- Suspend recording
     Is_Recorded := Ctx.Flow.Recording;
     Ctx.Flow.Recording := False;
@@ -648,7 +677,7 @@ package body Parse_Mng  is
       else
         Ctx.Prologue.Insert_Child (Dummy, False);
       end if;
-      Parse_Attributes (Ctx, Dtd, Of_Xml => True);
+      Parse_Attributes (Ctx, Adtd, Of_Xml => True);
       Check_Xml_Attributes (Ctx, False);
       Ctx.Prologue.Delete_Tree;
       Trace ("Ext parsed xml instruction");
@@ -661,14 +690,15 @@ package body Parse_Mng  is
     Trace ("Ext expanded as >" & Asu_Ts(Text) & "<");
 
     -- Done: restore flow
-    File_Mng.Close (Ctx.Flow.Curr_Flow.File.all);
-    Reset (Ctx.Flow.Curr_Flow);
+    if Is_File then
+      File_Mng.Close (Ctx.Flow.Curr_Flow.File.all);
+    end if;
     Util.Pop_Flow (Ctx.Flow);
     Ctx.Flow.Recording := Is_Recorded;
   exception
     when File_Error =>
-     Util.Error (Ctx.Flow, "Cannot open external entity file "
-                         & Asu_Ts (File_Name));
+      Util.Error (Ctx.Flow, "Cannot open external entity file "
+                         & Asu_Ts (Full_File));
   end Expand_External_Entity;
 
   -- Check that XML instruction is set, create one
@@ -806,6 +836,7 @@ package body Parse_Mng  is
     Ok : Boolean;
     Char : Character;
     Len : Natural;
+    Is_File : Boolean;
   begin
     -- Only one DOCTYPE allowed
     if not Asu_Is_Null (Ctx.Doctype.Name) then
@@ -863,10 +894,23 @@ package body Parse_Mng  is
       and then not Asu_Is_Null (Doctype_File) then
         -- Parse dtd file of doctype directive if no alternate file
         Util.Push_Flow (Ctx.Flow);
+        -- Check validity of dtd file
         Full_File := Build_Full_Name (Doctype_File, Ctx.Flow.Curr_Flow.Name);
         if Asu_Ts (Full_File) = Dtd.String_Flow
         or else Asu_Ts (Full_File) = Dtd.Internal_Flow then
           Util.Error (Ctx.Flow, "Invalid Dtd file name");
+        end if;
+        -- Expand URI
+        Resolve_Uri (Ctx, Doctype_File, Is_File, Full_File);
+        if not Is_File then
+          -- Full_File is the content of the Dtd fetched (by http)
+          Ctx.Flow.Curr_Flow.Name := Doctype_File;
+          Ctx.Flow.Curr_Flow.Line := 1;
+          Ctx.Flow.Curr_Flow.Same_Line := False;
+          Ctx.Flow.Curr_Flow.In_Str := Full_File;
+          Ctx.Flow.Curr_Flow.In_Stri := 0;
+          Full_File := Asu_Tus (Dtd.String_Flow);
+          Trace ("Parsing http dtd");
         end if;
         Dtd.Parse (Ctx, Adtd, Full_File);
         Util.Pop_Flow (Ctx.Flow);
@@ -1635,6 +1679,8 @@ package body Parse_Mng  is
   -- Check a Ctx versus its Dtd
   procedure Check (Ctx : in out Ctx_Type) is
     Adtd : Dtd_Type;
+    Full_File : Asu_Us;
+    Is_File : Boolean;
   begin
     -- Reset Dtd
     Dtd.Init (Adtd);
@@ -1646,9 +1692,27 @@ package body Parse_Mng  is
                                        Ctx.Flow.Curr_Flow.Name));
     elsif not Asu_Is_Null (Ctx.Doctype.Name) then
       if not Asu_Is_Null (Ctx.Doctype.File) then
-        -- Parse Dtd file set in DOCTYPE of Xml
-        Dtd.Parse (Ctx, Adtd, Build_Full_Name (Ctx.Doctype.File,
-                                         Ctx.Flow.Curr_Flow.Name));
+        -- Check validity of dtd file
+        Full_File := Build_Full_Name (Ctx.Doctype.File,
+                                      Ctx.Flow.Curr_Flow.Name);
+        if Asu_Ts (Full_File) = Dtd.String_Flow
+        or else Asu_Ts (Full_File) = Dtd.Internal_Flow then
+          Util.Error (Ctx.Flow, "Invalid Dtd file name");
+        end if;
+        -- Expand URI
+        Resolve_Uri (Ctx, Ctx.Doctype.File, Is_File, Full_File);
+        if not Is_File then
+          -- Full_File is the content of the Dtd fetched (by http)
+          Ctx.Flow.Curr_Flow.Name := Ctx.Doctype.File;
+          Ctx.Flow.Curr_Flow.Line := 1;
+          Ctx.Flow.Curr_Flow.Same_Line := False;
+          Ctx.Flow.Curr_Flow.In_Str := Full_File;
+          Ctx.Flow.Curr_Flow.In_Stri := 0;
+          Full_File := Asu_Tus (Dtd.String_Flow);
+          Trace ("Parsing http dtd");
+        end if;
+        Dtd.Parse (Ctx, Adtd, Full_File);
+        Util.Pop_Flow (Ctx.Flow);
       end if;
       if not Asu_Is_Null (Ctx.Doctype.Int_Def) then
         -- Parse internal defs

@@ -7,13 +7,14 @@ with Queues, Trees, Unique_List, Text_Char, Dynamic_List, Unlimited_Pool,
 -- Limitations:
 --  * Only the System Id of the DOCTYPE and of external parsed ENTITY is used,
 --    Public Id (if any) is skipped.
---  * Only local file reference is fetched, no http :-) (parsing error).
+--  * Only local file, "file://" and "http://" schemes are supported in URIs
+--    (parsing error).
 --  * Only UTF-8, UTF-16 and ISO-8859-1 are natively supported, other character
 --    maps can be defined in $XML_PARSER_MAP_DIR.
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "23";
+  Major_Version : constant String := "24";
   function Version return String;
 
   -----------

@@ -1021,7 +1021,7 @@ package body Dtd is
     Is_Recorded : Boolean;
     use type Asu_Us;
   begin
-    if External and then Ctx.Flow.Curr_Flow.Is_File then
+    if External then
       -- Autodetect encoding and check
       Util.Guess_Encoding (Ctx.Flow);
       Trace ("Detected dtd encoding format "
