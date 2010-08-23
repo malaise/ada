@@ -17,7 +17,7 @@ package body Http is
       end if;
     end if;
     if Debug_Status = Set then
-      Basic_Proc.Put_Line_Output (Msg);
+      Basic_Proc.Put_Line_Error (Msg);
     end if;
   end Debug;
 
@@ -109,6 +109,7 @@ package body Http is
     if In_Content then
       -- Not first Msg, append content to result
       Asu.Append (Result.Content, Text);
+      Debug ("HTTP: Appended content len:" & Integer'Image (Asu.Length (Text)));
       return;
     end if;
 
@@ -206,7 +207,8 @@ package body Http is
       -- There is content
       Asu.Unbounded_Slice (Text, Result.Content, Ind + 2, Asu.Length (Text));
       Done := False;
-      Debug ("HTTP: Getting content");
+      Debug ("HTTP: Got content len:"
+           & Integer'Image (Asu.Length (Result.Content)));
     end if;
   end Read_Cb;
 
@@ -226,8 +228,11 @@ package body Http is
     -- Check length and set result
     if Result.Kind = Ok then
       if not In_Content then
+        Debug ("HTTP: Disconnection with no content");
         Result := (Client_Error, Invalid_Answer);
       elsif Asu.Length (Result.Content) /= Expected_Length then
+        Debug ("HTTP: Disconnection with length:"
+             & Natural'Image (Asu.Length (Result.Content)));
         Result := (Client_Error, Wrong_Length);
       end if;
     end if;
