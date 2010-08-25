@@ -4,7 +4,7 @@ with Argument, Argument_Parser, Xml_Parser.Generator, Normal, Basic_Proc,
      Text_Line, Sys_Calls, Parser;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V12.0";
+  Version : constant String := "V12.1";
 
   procedure Ae_Re (E : in Ada.Exceptions.Exception_Id;
                    M : in String := "")
@@ -611,7 +611,7 @@ begin
           Keep_Expand_Set := True;
         elsif (Chr and then Opt = "c")
         or else (not Chr and then Opt = "comments") then
-          if Keep_Comments_Set or else Keep_Cdata_Set then
+          if Keep_Comments_Set then
             Ae_Re (Arg_Error'Identity, "Incompatible ""keep"" options");
           end if;
           Keep_Comments := True;
