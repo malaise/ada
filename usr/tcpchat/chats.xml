@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<!DOCTYPE chats SYSTEM "chats.dtd">
+<!-- Example of TCP chat script -->
+
+<chats>
+  <chat Name="httpTopic">
+    <receive>GET http://localhost/${HOME}/tmp/Topic_Type.dtd</receive>
+    <receive></receive>
+    <send><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<!ELEMENT publishers (publisher)*>
+
+<!ELEMENT publisher (topic)*>
+<!ATTLIST publisher Name CDATA #REQUIRED>
+
+<!ELEMENT topic (type)*>
+<!ATTLIST topic Name CDATA #REQUIRED>
+
+<!ELEMENT type (key)+>
+<!ATTLIST type Name CDATA #REQUIRED>
+
+<!ELEMENT key EMPTY>
+<!ATTLIST key Field CDATA "localID">]]></send>
+    <close/>
+  </chat>
+  <chat Name="testWaitClose">
+    <receive>close</receive>
+    <wait Ms="1000"/>
+    <close/>
+  </chat>
+</chats>
+

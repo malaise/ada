@@ -1,0 +1,20 @@
+1. General description
+tcpchat takes 2 arguments: a TCP port name or num and a chats file name.
+It listens on the port and accepts one TCP connection at a time: new connections are not
+accepted while one client is connected.
+It expects to receive one or several sentences (a sentence is one line terminated by Lf)
+and replies by one or several sentences.
+
+
+2. Chat file and behaviour
+The chat file describes several alternative chats.
+Each chat script starts with one or several expected sentences (keyword "receive").
+It is an error if two different chat scripts expect the same first sentence.
+If tcpchat recevies an unexpected sentence it closes the TCP connection and listens again.
+The list of expected sentences ends with the list of actions to perform: either wait some
+milliseconds or send a sentence. The list can contain several actions or be empty.
+The list of actions ends when: 
+- either one (or several) new expected sentence is defined, then tcpchat expects them,
+then performs actions...
+- or with a close directive, then tcpchat closes the connection,
+- or end of the chat, then tcpchat goes back expecting any chat.

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!ELEMENT chats (chat)*>
+<!ELEMENT chat ((receive+, (wait|send)*)+,close?)>
+<!ATTLIST chat Name ID #REQUIRED>
+<!ELEMENT receive (#PCDATA)>
+<!ELEMENT wait EMPTY>
+<!ATTLIST wait Ms CDATA #REQUIRED>
+<!ELEMENT send (#PCDATA)>
+<!ELEMENT close EMPTY>
+
