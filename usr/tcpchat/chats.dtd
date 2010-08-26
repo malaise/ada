@@ -1,11 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- DTD of a chats file of tcpchat                                     -->
+<!--                                                                    -->
+<!-- A File containts several chats.                                    -->
+<!-- Each chat is made of a sequence of statements, which are either    -->
+<!--  sentences to read or to send, waiting statements...               -->
+<!-- A chat has a unique name. It can define global timeout for its     -->
+<!--  and execution (default infinite) and a default timeout for all    -->
+<!--  its read statements (default infinite).                           -->
+<!-- A chat starts by a "expect" statement. It defines the string that, -->
+<!--  if read, will lead this chat script to be selected. It is thus a  -->
+<!--  semantic error if two chats have the same expect sentence.        -->
+<!-- Once the chat is selected it follows a script made of either:      -->
+<!--  - select: A select is like a sub-chat but with no name nor        -->
+<!--    attibute. It allows to select a subscript according to the      -->
+<!--    reception of an expected string.                                -->
+<!--  - read: Read next sentence and check that it mathes the one       -->
+<!--    provided.                                                       -->
+<!--  - send: Send the sentence provided.                               -->
+<!--  - wait: Wait the specified delay.                                 -->
+<!--  - call: Call the shell to execute the command and arguments       -->
+<!--    provided. Send the output flow of the command.                  -->
+<!-- A chat script ends on either:                                      -->
+<!--  - a exec statement: Exec the command and arguments provided,      -->
+<!--    forwarding current connection to it (Close_On_Exec=True).       -->
+<!--  - a close statement: Close current connection and go back         -->
+<!--    expecting a chat script selection.                              -->
+<!--  - nothing: Keep connection open and go back expecting a chat      -->
+<!--    script selection.                                               -->
+<!--                                                                    -->
+<!-- The expiration of a timeout (either global to the chat script or   -->
+<!--  applying to a read) and the reception of a non expected string    -->
+<!--  (either in chats-expect, select-expect or read) leads to the      -->
+<!--  closure of the connection (like a close statement).               -->
 
-<!ELEMENT chats (chat)*>
-<!ELEMENT chat ((receive+, (wait|send)*)+,close?)>
-<!ATTLIST chat Name ID #REQUIRED>
-<!ELEMENT receive (#PCDATA)>
+<!ELEMENT chats (chat)+>
+<!ENTITY % SEQUENCE "(expect,script)+">
+<!ELEMENT chat (%SEQUENCE;)>
+<!ATTLIST chat Name ID #REQUIRED
+               TimeoutMs CDATA #IMPLIED
+               ReadDefaultTimeoutMs CDATA #IMPLIED>
+
+<!ELEMENT expect (#PCDATA)>
+<!ELEMENT script ((select|read|wait|send|call)*,(exec|close)?)>
+<!ELEMENT select (%SEQUENCE;)>
+<!ELEMENT read (#PCDATA)>
+<!ATTLIST read TimeoutMs CDATA #IMPLIED>
 <!ELEMENT wait EMPTY>
-<!ATTLIST wait Ms CDATA #REQUIRED>
+<!ATTLIST wait DelayMs CDATA #REQUIRED>
 <!ELEMENT send (#PCDATA)>
+<!ELEMENT call (#PCDATA)>
+<!ELEMENT exec (#PCDATA)>
 <!ELEMENT close EMPTY>
 

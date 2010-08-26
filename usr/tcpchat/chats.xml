@@ -4,9 +4,10 @@
 
 <chats>
   <chat Name="httpTopic">
-    <receive>GET http://localhost/${HOME}/tmp/Topic_Type.dtd</receive>
-    <receive></receive>
-    <send><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+    <expect>GET http://localhost/${HOME}/tmp/Topic_Type.dtd</expect>
+    <script>
+      <read></read>
+      <send><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <!ELEMENT publishers (publisher)*>
 
 <!ELEMENT publisher (topic)*>
@@ -20,12 +21,56 @@
 
 <!ELEMENT key EMPTY>
 <!ATTLIST key Field CDATA "localID">]]></send>
-    <close/>
+      <close/>
+    </script>
   </chat>
   <chat Name="testWaitClose">
-    <receive>close</receive>
-    <wait Ms="1000"/>
-    <close/>
+    <expect>close</expect>
+    <script>
+      <wait DelayMs="1000"/>
+      <close/>
+    </script>
+  </chat>
+  <chat Name="testPpp">
+    <expect>login</expect>
+    <script>
+      <send>me</send>
+      <read>password</read>
+      <send>pass</send>
+      <read>logged</read>
+      <wait DelayMs="2000"/>
+      <send>bye</send>
+      <read>bye</read>
+      <wait DelayMs="500"/>
+      <close/>
+    </script>
+  </chat>
+  <chat Name="testMulti">
+    <!-- A chat is like a select, but with attibutes (Name...) -->
+    <expect>testMulti</expect>
+    <script>
+      <send></send>
+      <select>
+        <expect>login</expect>
+        <script>
+          <send>me</send>
+          <select>
+            <expect>password</expect>
+            <script>
+              <send>pass</send>
+            </script>
+          </select>
+          <read>PASSWORD</read>
+          <send>PASS</send>
+        </script>
+        <expect>LOGIN</expect>
+        <script>
+          <send>ME</send>
+          <read>PASSWORD</read>
+          <send>PASS</send>
+        </script>
+      </select>
+    </script>
   </chat>
 </chats>
 
