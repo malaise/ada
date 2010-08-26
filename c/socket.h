@@ -132,6 +132,11 @@ extern int soc_set_blocking (soc_token token, boolean blocking);
 /* Is the socket in blocking mode or not */
 extern int soc_is_blocking (soc_token token, boolean *blocking);
 
+/* Set the socket close on exec tag */
+/*  (for passing the Fd to children) */
+/* Socket has close on exec tag set at creation */
+extern int soc_set_close_on_exec (soc_token token, boolean close_on_exec);
+
 /*-------------------------------------*/
 /* Emission                            */
 /* No broadcast nor change dest in tcp */
