@@ -52,9 +52,6 @@ package body Socket is
   function Soc_Is_Blocking (S_Addr : System.Address;
                             Block  : System.Address) return Result;
   pragma Import (C, Soc_Is_Blocking, "soc_is_blocking");
-  function Soc_Set_Close_On_Exec (S_Addr : System.Address;
-                            Cloexec : C_Types.Bool) return Result;
-  pragma Import (C, Soc_Set_Close_On_Exec, "soc_set_close_on_exec");
 
   function Soc_Set_Rece_Ipm_Interface (S_Addr : System.Address;
                                        Host   : System.Address) return Result;
@@ -234,15 +231,6 @@ package body Socket is
     Check_Ok;
     return Boolean(Bool);
   end Is_Blocking;
-
-  -- Set the socket close on exec tag
-  procedure Set_Close_On_Exec (Socket : in Socket_Dscr;
-                               Set_Close_On_Exec : in Boolean) is
-  begin
-    Res := Soc_Set_Close_On_Exec (Socket.Soc_Addr,
-                                  C_Types.Bool(Set_Close_On_Exec));
-    Check_Ok;
-  end Set_Close_On_Exec;
 
   -- Get the Fd of a socket (for use in X_Mng. Add/Del _Callback)
   function Get_Fd (Socket : in Socket_Dscr) return Sys_Calls.File_Desc is

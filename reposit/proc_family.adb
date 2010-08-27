@@ -151,12 +151,16 @@ package body Proc_Family is
     else
       begin
         Sys_Calls.Pipe (Child.Fd_In, Result.Fd_In);
+        Sys_Calls.Set_Cloexec (Child.Fd_In, False);
+        Sys_Calls.Set_Cloexec (Result.Fd_In, False);
       exception
         when Sys_Calls.System_Error =>
           return Failure;
       end;
       begin
         Sys_Calls.Pipe (Result.Fd_Out, Child.Fd_Out);
+        Sys_Calls.Set_Cloexec (Child.Fd_Out, False);
+        Sys_Calls.Set_Cloexec (Result.Fd_Out, False);
       exception
         when Sys_Calls.System_Error =>
           Close (Child.Fd_In);
@@ -165,6 +169,8 @@ package body Proc_Family is
       end;
       begin
         Sys_Calls.Pipe (Result.Fd_Err, Child.Fd_Err);
+        Sys_Calls.Set_Cloexec (Child.Fd_Err, False);
+        Sys_Calls.Set_Cloexec (Result.Fd_Err, False);
       exception
         when Sys_Calls.System_Error =>
           Close (Child.Fd_In);
@@ -226,8 +232,11 @@ package body Proc_Family is
         -- Reroute standard Fds is needed: Close and dup2
         if Comm = Std_Fds then
           Child.Fd_In  := Sys_Calls.Dup2 (Child.Fd_In,  Sys_Calls.Stdin);
+          Sys_Calls.Set_Cloexec (Child.Fd_In, False);
           Child.Fd_Out := Sys_Calls.Dup2 (Child.Fd_Out, Sys_Calls.Stdout);
+          Sys_Calls.Set_Cloexec (Child.Fd_Out, False);
           Child.Fd_Err := Sys_Calls.Dup2 (Child.Fd_Err, Sys_Calls.Stderr);
+          Sys_Calls.Set_Cloexec (Child.Fd_Err, False);
         end if;
         -- Export Fds and Mutate
         Putenv (Result.Child_Pid, Child.Fd_In, Child.Fd_Out, Child.Fd_Err);

@@ -569,6 +569,7 @@ package body Sys_Calls is
     if Res = -1 then
       raise Name_Error;
     end if;
+    Set_Cloexec (File_Desc(Res), True);
     return File_Desc(Res);
   end Create;
 
@@ -589,6 +590,7 @@ package body Sys_Calls is
     if Res = -1 then
       raise Name_Error;
     end if;
+    Set_Cloexec (File_Desc(Res), True);
     return File_Desc(Res);
   end Open;
 
@@ -628,7 +630,6 @@ package body Sys_Calls is
   end Write;
 
   -- Close
-
   procedure Close (Fd : in File_Desc) is
     function C_Fd_Close (Fd : C_Types.Int) return C_Types.Int;
     pragma Import (C, C_Fd_Close, "fd_close");
@@ -646,6 +647,8 @@ package body Sys_Calls is
     if C_Fd_Pipe (Fd1'Address, Fd2'Address) /= 0 then
       raise System_Error;
     end if;
+    Set_Cloexec (Fd1, True);
+    Set_Cloexec (Fd2, True);
   end Pipe;
 
   -- Duplicate a file descriptor, using smallest or Start_At
@@ -662,18 +665,49 @@ package body Sys_Calls is
     return File_Desc (Res);
   end Dup;
 
-  function Dup2 (To_Copy, Start_At : in File_Desc) return File_Desc is
+  function Dup2 (To_Copy, Set_Fd : in File_Desc) return File_Desc is
    function C_Dup2 (Oldfd : in C_Types.Int; Newfd : C_Types.Int)
                    return C_Types.Int;
     pragma Import (C, C_Dup2, "dup2");
     Res : Integer;
   begin
-    Res := C_Dup2 (Integer (To_Copy), Integer (Start_At));
+    Res := C_Dup2 (C_Types.Int (To_Copy), C_Types.Int (Set_Fd));
     if Res = -1 then
       raise System_Error;
     end if;
+    Set_Cloexec (File_Desc(Res), True);
     return File_Desc (Res);
   end Dup2;
+
+  -- Set CLOEXEC to true on Fd
+  procedure Set_Cloexec (Fd : in File_Desc; On : in Boolean) is
+    function C_Fcntl (Fd : in Integer; Cmd : in Integer; Arg : C_Types.Long)
+             return C_Types.Int;
+    pragma Import (C, C_Fcntl, "fcntl");
+    Stat, Res : Integer;
+    C_F_Getfd : constant C_Types.Int := 1;
+    C_F_Setfd : constant C_Types.Int := 2;
+    C_Fd_Cloexec : constant C_Types.Int := 1;
+    use Bit_Ops;
+  begin
+    -- Get status
+    Stat := C_Fcntl (Integer(Fd), C_F_Getfd, 0);
+    if Stat = C_Error then
+      raise System_Error;
+    end if;
+    -- Change status
+    if On then
+      Stat := Stat or C_Fd_Cloexec;
+    else
+      Stat := Stat and not C_Fd_Cloexec;
+    end if;
+    -- Update status
+Put_Line_Error (Get_Pid'Img & ":" & Fd'Img & " ===> " & Stat'Img);
+    Res := C_Fcntl (Integer(Fd), C_F_Setfd, C_Types.Long(Stat));
+    if Res = C_Error then
+      raise System_Error;
+    end if;
+  end Set_Cloexec;
 
   -- Get current / parent pid
   function Get_Pid return Pid is

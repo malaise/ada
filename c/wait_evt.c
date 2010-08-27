@@ -6,6 +6,7 @@
 #include <signal.h>
 #include <errno.h>
 #include <string.h>
+#include <fcntl.h>
 
 #include "wait_evt.h"
 
@@ -169,6 +170,8 @@ static void init_sig_and_wake_up (void) {
   (void) signal(SIGPIPE, SIG_IGN);
   if (wake_up_fds[0] == -1) {
     (void) pipe (wake_up_fds);
+    (void) fcntl (wake_up_fds[0], F_SETFD, FD_CLOEXEC);
+    (void) fcntl (wake_up_fds[1], F_SETFD, FD_CLOEXEC);
     (void) evt_add_fd (wake_up_fds[0], TRUE);
   }
 }

@@ -157,7 +157,8 @@ package Sys_Calls is
            return Natural;
 
   -- Open / Create
-  -- May raise Name_Error
+  -- Fd has CLOEXEC set
+  -- May raise Name_Error or System_Error
   type File_Mode is (In_File, Inout_File, Out_File);
   function Create (Name : String) return File_Desc;
   function Open   (Name : String; Mode : File_Mode) return File_Desc;
@@ -167,13 +168,19 @@ package Sys_Calls is
   procedure Close (Fd : in File_Desc);
 
   -- Create a pipe
+  -- Fds have CLOEXEC set
   -- May raise System_Error
   procedure Pipe (Fd1, Fd2 : out File_Desc);
 
   -- Duplicate a file descriptor, using smallest or Start_At
+  -- Fd has CLOEXEC set
   -- May raise System_Error
   function Dup (To_Copy : in File_Desc) return File_Desc;
-  function Dup2 (To_Copy, Start_At : in File_Desc) return File_Desc;
+  function Dup2 (To_Copy, Set_Fd : in File_Desc) return File_Desc;
+
+  -- Set CLOEXEC to true on Fd
+  -- May raise System_Error
+  procedure Set_Cloexec (Fd : in File_Desc; On : in Boolean);
 
   type Pid is new Integer;
 

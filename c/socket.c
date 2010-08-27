@@ -386,41 +386,6 @@ extern int soc_is_blocking (soc_token token, boolean *blocking) {
 }
 
 
-/* Set the socket close on exec tag */
-/*  (for passing the Fd to children) */
-/* Socket has close on exec tag set at creation */
-extern int soc_set_close_on_exec (soc_token token, boolean close_on_exec) {
-  soc_ptr soc = (soc_ptr) token;
-  long flag;
-
-  /* Check that socket is open */
-  if (soc == NULL) return (SOC_USE_ERR);
-  LOCK;
-
-  /* Read current flag */
-  if ((flag = fcntl(soc->socket_id, F_GETFD, 0)) < 0) {
-    perror("fcntl_getfd");
-    UNLOCK;
-    return (SOC_SYS_ERR);
-  }
-
-  /* Update flag */
-  if (close_on_exec) {
-    flag |= FD_CLOEXEC;
-  } else {
-    flag &= ~FD_CLOEXEC;
-  }
-
-  /* Set flag */
-  if (fcntl(soc->socket_id, F_SETFD, flag) < 0) {
-    perror("fcntl_cloexec_set");
-    UNLOCK;
-    return (SOC_SYS_ERR);
-  }
-  UNLOCK;
-  return (SOC_OK);
-}
-
 /* Do the connection */
 static int do_connect (soc_ptr soc) {
 
