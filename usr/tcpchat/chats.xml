@@ -59,9 +59,13 @@
             <script>
               <send>pass</send>
             </script>
+            <expect>PASSWORD</expect>
+            <script>
+              <send>PASS</send>
+            </script>
           </select>
-          <read>PASSWORD</read>
-          <send>PASS</send>
+          <wait DelayMs="10"/>
+          <send>ls</send>
         </script>
         <expect>LOGIN</expect>
         <script>
@@ -70,6 +74,8 @@
           <send>PASS</send>
         </script>
       </select>
+      <wait DelayMs="1000"/>
+      <close/>
     </script>
   </chat>
 </chats>
