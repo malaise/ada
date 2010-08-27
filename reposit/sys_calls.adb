@@ -702,7 +702,6 @@ package body Sys_Calls is
       Stat := Stat and not C_Fd_Cloexec;
     end if;
     -- Update status
-Put_Line_Error (Get_Pid'Img & ":" & Fd'Img & " ===> " & Stat'Img);
     Res := C_Fcntl (Integer(Fd), C_F_Setfd, C_Types.Long(Stat));
     if Res = C_Error then
       raise System_Error;
