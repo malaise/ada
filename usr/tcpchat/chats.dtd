@@ -43,6 +43,8 @@
       - The failure when calling or executing an external command.
 -->
 
+<!ENTITY % boolean "(true|false)">
+
 <!ELEMENT chats (chat)+>
 <!ATTLIST chats TimeoutMs CDATA #IMPLIED>
 <!ENTITY % SEQUENCE "(expect,script)+,(default, script)?">
@@ -63,6 +65,7 @@
 <!ELEMENT wait EMPTY>
 <!ATTLIST wait DelayMs CDATA #REQUIRED>
 <!ELEMENT send (#PCDATA)>
+<!ATTLIST send NewLine %boolean; "true">
 <!ELEMENT call (#PCDATA)>
 <!ELEMENT exec (#PCDATA)>
 <!ELEMENT close EMPTY>
