@@ -5,7 +5,6 @@ procedure T_Proc_Child is
 
   Str : String (1 .. 1024);
   Fd_In, Fd_Out, Fd_Err : Sys_Calls.File_Desc;
-  Msg: constant String := "Child 2 Father";
   Res : Natural;
   First : Boolean := True;
 
@@ -49,17 +48,21 @@ begin
   end;
 
   Event_Mng.Add_Fd_Callback (Fd_In, True, Fd_Cb'Unrestricted_Access);
-  Sys_Calls.Put_Line_Error("Child: Fds are " & Fd_In'Img
-                       & ", " &  Fd_Out'Img
-                       & " and " & Fd_Err'Img);
 
-  Res := Sys_Calls.Write (Fd_Out, Msg'Address, Msg'Length);
-  if Res /= Msg'Length then
-    Sys_Calls.Put_Line_Error ("Child: Cannot write "
-             & Natural'Image(Msg'Length)
-             & " on out fd");
-    return;
-  end if;
+
+  declare
+    Msg : constant String := "Child: Fds are " & Fd_In'Img
+                       & ", " &  Fd_Out'Img
+                       & " and " & Fd_Err'Img;
+  begin
+    Res := Sys_Calls.Write (Fd_Out, Msg'Address, Msg'Length);
+    if Res /= Msg'Length then
+      Sys_Calls.Put_Line_Error ("Child: Cannot write "
+               & Natural'Image(Msg'Length)
+               & " on out fd");
+      return;
+    end if;
+  end;
 
   Event_Mng.Pause (Event_Mng.Infinite_Ms);
 

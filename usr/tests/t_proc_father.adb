@@ -1,6 +1,19 @@
 with Ada.Text_Io;
 with Sys_Calls, Proc_Family, Many_Strings, Argument, Text_Handler, Event_Mng;
 
+-- Note on lsof result
+-- Father: 0r, 1w, 2w: stdin, stdout and stderr
+--         3r, 4r: Fd1 and Fd2 on Program_Name
+--         5r, 6w: Event_Mng pipe for dummy signal (see wait_evt.c)
+--         8w, 9r, 11r: the pipes to/from in, out err of child
+--                      (7r, 10w and 12w are closed after procreation)
+-- Child: 0r, 1w, 2w: stdin, stdout and stderr, dups of 7r, 10w and 12w
+--        3r, 5w: Event_Mng pipe (Fd1=3r of father has been closed on exec,
+--                 so it is reused)
+--        4r: Fd2 of father that does has have close on exec
+--        7r, 10w, 12w: the pipes from/to father (8w, 9r, 11r are closed
+--                      after procreation)
+
 procedure T_Proc_Father is
 
   Str : Text_Handler.Text(1024);
@@ -47,6 +60,7 @@ procedure T_Proc_Father is
     Ada.Text_Io.Put_Line ("Father: Read >" & Buf(1 .. Res) & "<");
     Buf(1 .. Reply'Length) := Reply;
     begin
+      -- Reply "F2C"
       Res := Sys_Calls.Write (Spawn_Result.Fd_In, Buf'Address, Reply'Length);
     exception
       when Sys_Calls.System_Error =>
@@ -62,7 +76,15 @@ procedure T_Proc_Father is
 
   I_Am_Father : Boolean;
 
+  Fd1, Fd2 : Sys_Calls.File_Desc;
+
 begin
+  -- Fd1 should be closed on child but not fd2
+  Fd1 := Sys_Calls.Open (Argument.Get_Program_Name, Sys_Calls.In_File);
+  Fd2 := Sys_Calls.Open (Argument.Get_Program_Name, Sys_Calls.In_File);
+  Sys_Calls.Set_Cloexec (Fd2, False);
+  Ada.Text_Io.Put_Line ("Father: " & Fd1'Img
+       & " should be closed in child but not " & Fd2'Img & ".");
 
   -- Build String (may raise Constraint_Error if args too long)
   for I in 1 .. Argument.Get_Nbre_Arg loop
