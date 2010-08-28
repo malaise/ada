@@ -3,10 +3,40 @@
 <!-- Example of TCP chat script -->
 
 <chats>
-  <chat Name="httpTopic">
+  <chat Name="httpTopic0.9">
     <expect>GET http://localhost/${HOME}/tmp/Topic_Type.dtd</expect>
     <script>
+      <send><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<!ELEMENT publishers (publisher)*>
+
+<!ELEMENT publisher (topic)*>
+<!ATTLIST publisher Name CDATA #REQUIRED>
+
+<!ELEMENT topic (type)*>
+<!ATTLIST topic Name CDATA #REQUIRED>
+
+<!ELEMENT type (key)+>
+<!ATTLIST type Name CDATA #REQUIRED>
+
+<!ELEMENT key EMPTY>
+<!ATTLIST key Field CDATA "localID">]]></send>
+      <close/>
+    </script>
+  </chat>
+  <chat Name="httpTopic1.0">
+    <expect>GET http://localhost/${HOME}/tmp/Topic_Type.dtd HTTP/1.0</expect>
+    <script>
       <read></read>
+      <send>HTTP/1.1 200 OK</send>
+      <send>Date: Sat, 28 Aug 2010 07:04:35 GMT</send>
+      <send>Server: Apache/ProXad [Aug  9 2008 02:45:09]</send>
+      <send>Last-Modified: Mon, 23 Aug 2010 18:00:15 GMT</send>
+      <send>ETag: "6f332b-125-4c72b72f"</send>
+      <send>Connection: close</send>
+      <send>Accept-Ranges: bytes</send>
+      <send>Content-Length: 293</send>
+      <send>Content-Type: application/xml-dtd</send>
+      <send></send>
       <send><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <!ELEMENT publishers (publisher)*>
 
