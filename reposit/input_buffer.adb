@@ -60,6 +60,12 @@ package body Input_Buffer is
     Asu.Append (Buf.Acc.Text, Text);
     Flush (Buf);
   end Push;
+  procedure Push (Buf : in Buffer; Char : in Character) is
+  begin
+    Check_Set (Buf);
+    Asu.Append (Buf.Acc.Text, Char);
+    Flush (Buf);
+  end Push;
 
   -- Get the tail of the buffer Buf (text not ending with Delimiter)
   function Tail (Buf : Buffer) return String is

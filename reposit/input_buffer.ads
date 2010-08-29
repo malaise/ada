@@ -33,6 +33,7 @@ package Input_Buffer is
   -- Can lead the notifier to be invoqued once or several times
   -- May raise Status_Error if Buf is not set
   procedure Push (Buf : in Buffer; Text : in String);
+  procedure Push (Buf : in Buffer; Char : in Character);
 
   ----------------------
   -- OTHER OPERATIONS --
