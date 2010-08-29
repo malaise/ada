@@ -17,21 +17,21 @@ procedure Lsadeps is
     Basic_Proc.Put_Line_Error (
      "  <display>       ::= <list> | <tree> // Default: list");
     Basic_Proc.Put_Line_Error (
-     "   <list>         ::= -l | --list     // List dependencies");
+     "    <list>        ::= -l | --list     // List dependencies");
     Basic_Proc.Put_Line_Error (
-     "   <tree>         ::= -t | --tree     // Tree of dependencies");
+     "    <tree>        ::= -t | --tree     // Tree of dependencies");
     Basic_Proc.Put_Line_Error (
-     "   <revert_mode>  ::= -r | --revert   // List units depending on target");
+     "  <revert_mode>   ::= -r | --revert   // List units depending on target");
     Basic_Proc.Put_Line_Error (
      "                                      //   i.o. units withed by target");
     Basic_Proc.Put_Line_Error (
-     "   <file_mode>    ::= -f | --files    // Show files i.o. units");
+     "  <file_mode>     ::= -f | --files    // Show files i.o. units");
     Basic_Proc.Put_Line_Error (
-     "   <include_dirs> ::= { -I <dir> | --directory=<dir> }");
+     "  <include_dirs>  ::= { -I <dir> | --directory=<dir> }");
     Basic_Proc.Put_Line_Error (
-     "   <target>       ::= <unit>");
+     "  <target>        ::= <unit>");
     Basic_Proc.Put_Line_Error (
-     "   <check>        ::= -c | --check    // Detects redundant withs");
+     "  <check>         ::= -c | --check    // Detects redundant withs");
   end Usage;
 
   Error_Raised : exception renames Sourcer.Error_Raised;
@@ -123,7 +123,7 @@ begin
   end if;
 
   if Check_Mode then
-    -- No target
+    -- No include
     if Arg_Dscr.Get_Nb_Occurences (5) /= 0 then
       Error ("Check mode is exclusive with includes");
     end if;
