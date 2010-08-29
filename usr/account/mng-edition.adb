@@ -1,4 +1,3 @@
-with Con_Io;
 separate (Mng)
 package body Edition is
 
