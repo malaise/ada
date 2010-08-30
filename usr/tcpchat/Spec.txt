@@ -1,20 +1,97 @@
 1. General description
 tcpchat takes 2 arguments: a TCP port name or num and a chats file name.
-It listens on the port and accepts one TCP connection at a time: new connections are not
-accepted while one client is connected.
-It expects to receive one or several sentences (a sentence is one line terminated by Lf)
-and replies by one or several sentences.
+It listens on the port and accepts one TCP connection at a time: new
+connections are not accepted while one client is connected.
+It expects to receive one or several sentences (a sentence is one line
+terminated by Lf) and replies by one or several sentences.
 
 
 2. Chat file and behaviour
 The chat file describes several alternative chats.
-Each chat script starts with one or several expected sentences (keyword "receive").
-It is an error if two different chat scripts expect the same first sentence.
-If tcpchat recevies an unexpected sentence it closes the TCP connection and listens again.
-The list of expected sentences ends with the list of actions to perform: either wait some
-milliseconds or send a sentence. The list can contain several actions or be empty.
-The list of actions ends when: 
-- either one (or several) new expected sentence is defined, then tcpchat expects them,
-then performs actions...
-- or with a close directive, then tcpchat closes the connection,
-- or end of the chat, then tcpchat goes back expecting any chat.
+Each chat script starts with one expected sentence (keyword "expect") followed
+by a script of expected sentences and/or actions.
+The text of sentences et are expected, read or sent and of commands that are
+called or executed has its variables ${VAR} expanded according to Environment
+variable.
+See Dtd for more information.
+Its a fatal error at startup if 2 expected sentences of the chats or of a
+select are identical. It is also an error if an referenced ENV variable does not
+exist.
+
+
+3. General Design
+There are 3 main modules:
+- TCP: in charge of managing the TCP connections (accepting, closing, sending,
+  receiving). Reception is coupled with an input buffer to provide sentences.
+  Cr are removed if sentence ends with rLf.
+- Tree: in charge of storing the tree of chat scripts events and actions.
+- Heart: in charge of navigating in the tree, waiting for events and executing
+  the actions.
+
+There 3 main steps of execution:
+a. Parsing the xml file into our own tree. Raise init fatal errors.
+b. Accepting connections. Raise init fatal errors
+c. Main loop: Event => action
+
+
+4. Design of the tree
+Each node of the tree contains:
+- Kind (Enum): Selec, Read, Default, Skip, Wait, Send, Call, Exec, Close.
+  Chat and expect statements are mapped as Read nodes, children of a Selec.
+- Name (Asu_Us): For a chat, its name
+- Text (Asu_Us). For a Read the sentence expected, for a Send/Call/Exec the
+  sentence to send, for a Call/Exec the command and arguments to invoque.
+  Chats is a Selec, expect is a Read (child of a Selec)
+- Timeout (Ms). For a Selec (including chats) a read or skip it's a failure if
+  it expires (no matching / not matching / nothing received). For a chat it's
+  a failure if it expires before the end of the chat. For a Wait it is the
+  dealy to wait. Not that the chat InputDefaultTimeoutMs is not stored in the
+  tree. It is kept in memory (while buildling the tree) and set in the
+  Selec/Read/Skip nodes that have no timeout defined.
+- Next: The reference to the node that implements the following of the script:
+  It is the statement following the current statement if there is one.
+  Otherwise, it is the statement following ancestor select...
+  Exec and Close have no Next. Other nodes have at least Next pointing to the
+  chats node (root).
+  Ex. Selec1 has 2 Expects and is followed by a Read. Expect1 leads to
+  Select11 that is not followed. Expect2 leads to Select21 that is followed by
+  a Wait. Branches of Select11 end with Next=Read, while branches of Selec21
+  end with Next=Wait. Branch of the Read ends with Next=Root.
+
+Nodes, children, Next:
+- Root is a Selec node (the chats statement) with no Next
+- A node of kind Exec or Close has no child and no Next
+- A Selec node has one (Read) child for each of its chat or expect, then
+  possibly one (Default) child for the default, then possibly a child: the next
+  statement following the select (in this case, Next points to it).
+- Other nodes may have one child: the statement following current (in this
+  case, Next points to it) or no child (in this case, Next points to the same
+  node as the first non null Next of a parent Selec, or ultimately to root).
+- Statements chat and expect are mapped as Read nodes, children of a Selec.
+
+5. Parsing of the tree
+First the Xml file is parser with Xml_Parser.
+
+Then the tree is build by navigating through the XML tree with a recursive
+operation that creates nodes with Kind, Text, and Timeout.
+- Kind: see above
+- Name: see above
+- Text: ENV variables are expanded, possibly leading to error.
+When parsing a "chat" XML node, a global variable is set to the default
+timeout it defines or infinite. When parsing a select, read or skip, local
+timeout is set to local value if defined, or to the global default.
+After creating a Selec node, its Next is set to its last child if is is the
+statement following the select, and to null otherwise.
+After creating a Selec node, a test verifies that all its children, except
+of kind Default and except Next, have different Text.
+
+Then a second pass calls a recusive operation, passing to it Next initialized
+to root. When arriving on a Selec node, the local Next, if null, is set to the
+value received. the local Next is passed recursively when parsing children.
+When arriving on a node with no child, set it Next to the value receive if
+it type is not Close or Exec.
+
+
+6. Execution
+How to handle Selec, timer management, Next.
+
