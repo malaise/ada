@@ -1,0 +1,3 @@
+#!/bin/bash
+export TCPCHAT_DEBUG=Y
+tcpchat -p 50000 -f chats.xml

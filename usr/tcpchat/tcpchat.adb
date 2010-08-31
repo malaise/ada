@@ -1,0 +1,78 @@
+with As.U; use As.U;
+with Basic_Proc, Argument, Argument_Parser;
+with Debug, Ios, Tree;
+procedure Tcpchat is
+  procedure Usage is
+  begin
+    Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
+      & "-p <tcp_port> -f <chat_file>");
+  end Usage;
+
+  procedure Error (Msg : in String) is
+  begin
+    Basic_Proc.Put_Line_Error ("ERROR: " & Msg & ".");
+    Usage;
+    Basic_Proc.Set_Error_Exit_Code;
+  end Error;
+
+  -- The keys and descriptor of parsed keys
+  Keys : constant Argument_Parser.The_Keys_Type := (
+   01 => ('h', Asu_Tus ("help"), False, False),
+   02 => ('p', Asu_Tus ("port"), False, True),
+   03 => ('f', Asu_Tus ("file"), False, True));
+  Arg_Dscr : Argument_Parser.Parsed_Dscr;
+
+  Port : Asu_Us;
+  File : Asu_Us;
+
+begin
+
+  -- Parse keys and options
+  Arg_Dscr := Argument_Parser.Parse (Keys);
+  if not Arg_Dscr.Is_Ok then
+    Error (Arg_Dscr.Get_Error);
+    return;
+  end if;
+
+  -- Help
+  if Arg_Dscr.Is_Set (1) then
+    Usage;
+    Basic_Proc.Set_Error_Exit_Code;
+    return;
+  end if;
+
+  -- Port
+  if Arg_Dscr.Get_Nb_Occurences (2) /= 1
+  or else Arg_Dscr.Get_Option (2) = "" then
+    Error ("Missing ""port"" argument");
+    return;
+  end if;
+  Port := Asu_Tus (Arg_Dscr.Get_Option (2));
+
+  -- File
+  if Arg_Dscr.Get_Nb_Occurences (3) /= 1
+  or else Arg_Dscr.Get_Option (3) = "" then
+    Error ("Missing ""file"" argument");
+    return;
+  end if;
+  File := Asu_Tus (Arg_Dscr.Get_Option (3));
+
+  -- No other arg
+  if Arg_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) /= 0
+  or else Arg_Dscr.Get_Nb_Embedded_Arguments /= 0 then
+    Error ("Invalid arguments");
+    return;
+  end if;
+
+  Debug.Log ("Arguments parsed OK.");
+
+  -- Parse file
+  Tree.Parse (File);
+
+  -- Init Ios
+  Ios.Init (Port);
+
+  Debug.Log ("Init OK.");
+
+end Tcpchat;
+
