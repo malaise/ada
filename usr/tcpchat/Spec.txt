@@ -21,9 +21,12 @@ exist.
 
 3. General Design
 There are 3 main modules:
-- TCP: in charge of managing the TCP connections (accepting, closing, sending,
+- IOs: in charge of managing the TCP connections (accepting, closing, sending,
   receiving). Reception is coupled with an input buffer to provide sentences.
-  Cr are removed if sentence ends with rLf.
+  Cr are removed if sentence ends with CrLf.
+  API is: init wait read send reset and close. Read takes a timeout
+  and returns either a timeout event or a sentence. Wait takes a timeout.
+  Timeouts can be infinite. Wait, read and send can raise/return Disconnection.
 - Tree: in charge of storing the tree of chat scripts events and actions.
 - Heart: in charge of navigating in the tree, waiting for events and executing
   the actions.
@@ -45,7 +48,7 @@ Each node of the tree contains:
 - Timeout (Ms). For a Selec (including chats) a read or skip it's a failure if
   it expires (no matching / not matching / nothing received). For a chat it's
   a failure if it expires before the end of the chat. For a Wait it is the
-  dealy to wait. Not that the chat InputDefaultTimeoutMs is not stored in the
+  delay to wait. Note that the chat InputDefaultTimeoutMs is not stored in the
   tree. It is kept in memory (while buildling the tree) and set in the
   Selec/Read/Skip nodes that have no timeout defined.
 - Next: The reference to the node that implements the following of the script:
@@ -93,5 +96,5 @@ it type is not Close or Exec.
 
 
 6. Execution
-How to handle Selec, timer management, Next.
+How to handle Selec, Next.
 
