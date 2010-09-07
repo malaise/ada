@@ -10,9 +10,9 @@ terminated by Lf) and replies by one or several sentences.
 The chat file describes several alternative chats.
 Each chat script starts with one expected sentence (keyword "expect") followed
 by a script of expected sentences and/or actions.
-The text of sentences et are expected, read or sent and of commands that are
+The text of sentences that are expected, read or sent and of commands that are
 called or executed has its variables ${VAR} expanded according to Environment
-variable.
+variables.
 See Dtd for more information.
 Its a fatal error at startup if 2 expected sentences of the chats or of a
 select are identical. It is also an error if an referenced ENV variable does not
@@ -70,7 +70,7 @@ Nodes, children, Next:
 - Other nodes may have one child: the statement following current (in this
   case, Next points to it) or no child (in this case, Next points to the same
   node as the first non null Next of a parent Selec, or ultimately to root).
-- Statements chat and expect are mapped as Read nodes, children of a Selec.
+- Statements chat and expect are mapped as Read nodes.
 
 5. Parsing of the tree
 First the Xml file is parser with Xml_Parser.
@@ -83,7 +83,7 @@ operation that creates nodes with Kind, Text, and Timeout.
 When parsing a "chat" XML node, a global variable is set to the default
 timeout it defines or infinite. When parsing a select, read or skip, local
 timeout is set to local value if defined, or to the global default.
-After creating a Selec node, its Next is set to its last child if is is the
+After creating a Selec node, its Next is set to its last child if it is the
 statement following the select, and to null otherwise.
 After creating a Selec node, a test verifies that all its children, except
 of kind Default and except Next, have different Text.

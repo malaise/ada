@@ -34,7 +34,7 @@
   The following situations lead to the termination (closure) of current
      script:
       - The expiration of the timeout global to the chat script.
-      - The expiration of the tmeout on the whole chats selection, on a select,
+      - The expiration of the timeout on the whole chats selection, on a select,
         on a read or on a skip.
       - the reception of a non expected string by a read.
       - The reception of a non expected string by a chats-expect or a
@@ -47,17 +47,16 @@
 
 <!ELEMENT chats (chat)+>
 <!ATTLIST chats TimeoutMs CDATA #IMPLIED>
-<!ENTITY % SEQUENCE "(expect,script)+,(default, script)?">
+<!ENTITY % SEQUENCE "expect,script">
 <!ELEMENT chat (%SEQUENCE;)>
 <!ATTLIST chat Name ID #REQUIRED
                TimeoutMs CDATA #IMPLIED
                InputDefaultTimeoutMs CDATA #IMPLIED>
-
 <!ELEMENT expect (#PCDATA)>
-<!ELEMENT default EMPTY>
 <!ELEMENT script ((select|read|skip|wait|send|call)*,(exec|close)?)>
-<!ELEMENT select (%SEQUENCE;)>
+<!ELEMENT select ((%SEQUENCE;)+,(default, script)?)>
 <!ATTLIST select TimeoutMs CDATA #IMPLIED>
+<!ELEMENT default EMPTY>
 <!ELEMENT read (#PCDATA)>
 <!ATTLIST read TimeoutMs CDATA #IMPLIED>
 <!ELEMENT skip EMPTY>
