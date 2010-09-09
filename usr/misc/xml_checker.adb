@@ -79,7 +79,7 @@ procedure Xml_Checker is
     Ple ("                                    --  and attributes with default");
     Ple ("                                    -- Keep comments");
     Ple ("                                    -- Keep CDATA sections");
-    Ple ("                                    -- Keep all (default)");
+    Ple ("                                    -- Keep all (default is keep none)");
     Ple (" <check_dtd>  ::= -c [ <Dtd> ] | --check_dtd=[<Dtd>]");
     Ple ("                                    -- Check vs a specific dtd or none");
     Ple (" <tree>       ::= -t | --tree       -- Build tree then dump it");
