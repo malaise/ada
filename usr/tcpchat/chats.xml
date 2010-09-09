@@ -3,10 +3,9 @@
 <!-- Example of TCP chat script -->
 
 <chats>
-  <chat Name="httpTopic0.9">
-    <expect>GET http://localhost/${HOME}/tmp/Topic_Type.dtd</expect>
-    <script>
-      <send><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+  <chat Name="httpTopic0.9">GET http://localhost/${HOME}/tmp/Topic_Type.dtd</chat>
+  <script>
+    <send><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <!ELEMENT publishers (publisher)*>
 
 <!ELEMENT publisher (topic)*>
@@ -20,24 +19,22 @@
 
 <!ELEMENT key EMPTY>
 <!ATTLIST key Field CDATA "localID">]]></send>
-      <close/>
-    </script>
-  </chat>
-  <chat Name="httpTopic1.0">
-    <expect>GET http://localhost/${HOME}/tmp/Topic_Type.dtd HTTP/1.0</expect>
-    <script>
-      <read></read>
-      <send>HTTP/1.1 200 OK</send>
-      <send>Date: Sat, 28 Aug 2010 07:04:35 GMT</send>
-      <send>Server: Apache/ProXad [Aug  9 2008 02:45:09]</send>
-      <send>Last-Modified: Mon, 23 Aug 2010 18:00:15 GMT</send>
-      <send>ETag: "6f332b-125-4c72b72f"</send>
-      <send>Connection: close</send>
-      <send>Accept-Ranges: bytes</send>
-      <send>Content-Length: 293</send>
-      <send>Content-Type: application/xml-dtd</send>
-      <send></send>
-      <send><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+    <close/>
+  </script>
+  <chat Name="httpTopic1.0">GET http://localhost/${HOME}/tmp/Topic_Type.dtd HTTP/1.0</chat>
+  <script>
+    <read></read>
+    <send>HTTP/1.1 200 OK</send>
+    <send>Date: Sat, 28 Aug 2010 07:04:35 GMT</send>
+    <send>Server: Apache/ProXad [Aug  9 2008 02:45:09]</send>
+    <send>Last-Modified: Mon, 23 Aug 2010 18:00:15 GMT</send>
+    <send>ETag: "6f332b-125-4c72b72f"</send>
+    <send>Connection: close</send>
+    <send>Accept-Ranges: bytes</send>
+    <send>Content-Length: 293</send>
+    <send>Content-Type: application/xml-dtd</send>
+    <send></send>
+    <send><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <!ELEMENT publishers (publisher)*>
 
 <!ELEMENT publisher (topic)*>
@@ -51,62 +48,59 @@
 
 <!ELEMENT key EMPTY>
 <!ATTLIST key Field CDATA "localID">]]></send>
-      <close/>
-    </script>
-  </chat>
-  <chat Name="testWaitClose">
-    <expect>close</expect>
-    <script>
-      <wait DelayMs="1000"/>
-      <close/>
-    </script>
-  </chat>
-  <chat Name="testPpp">
-    <expect>login</expect>
-    <script>
-      <send>me</send>
-      <read>password</read>
-      <send>pass</send>
-      <read>logged</read>
-      <wait DelayMs="2000"/>
-      <send>bye</send>
-      <read>bye</read>
-      <wait DelayMs="500"/>
-      <close/>
-    </script>
-  </chat>
-  <chat Name="testMulti">
-    <!-- A chat is like a select, but with attibutes (Name...) -->
-    <expect>testMulti</expect>
-    <script>
-      <send></send>
-      <select>
-        <expect>login</expect>
-        <script>
-          <send>me</send>
-          <select>
-            <expect>password</expect>
-            <script>
-              <send>pass</send>
-            </script>
-            <expect>PASSWORD</expect>
-            <script>
-              <send>PASS</send>
-            </script>
-          </select>
-          <wait DelayMs="10"/>
-          <send>ls</send>
-        </script>
-        <expect>LOGIN</expect>
-        <script>
-          <send>ME</send>
-          <read>PASSWORD</read>
-          <send>PASS</send>
-        </script>
-      </select>
-      <wait DelayMs="1000"/>
-      <close/>
-    </script>
-  </chat>
+    <close/>
+  </script>
+  <chat Name="testWaitClose">close</chat>
+  <script>
+    <wait DelayMs="1000"/>
+    <close/>
+  </script>
+  <chat Name="testPpp">login</chat>
+  <script>
+    <send>me</send>
+    <read>password</read>
+    <send>pass</send>
+    <read>logged</read>
+    <wait DelayMs="2000"/>
+    <send>bye</send>
+    <read>bye</read>
+    <wait DelayMs="500"/>
+    <close/>
+  </script>
+  <chat Name="testMulti">testMulti</chat>
+    <!-- A chat is like a expect, but with attibutes (Name...) -->
+  <script>
+    <send></send>
+    <select>
+      <expect>login</expect>
+      <script>
+        <send>me</send>
+        <select>
+          <expect>password</expect>
+          <script>
+            <send>pass</send>
+          </script>
+          <expect>PASSWORD</expect>
+          <script>
+            <send>PASS</send>
+          </script>
+          <default/>
+          <script>
+            <close/>
+          </script>
+        </select>
+        <wait DelayMs="10"/>
+        <send>ls</send>
+      </script>
+      <expect>LOGIN</expect>
+      <script>
+        <send>ME</send>
+        <read>PASSWORD</read>
+        <send>PASS</send>
+      </script>
+    </select>
+    <wait DelayMs="1000"/>
+    <close/>
+  </script>
 </chats>
 

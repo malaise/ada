@@ -122,12 +122,12 @@ package body Tree is
       -- This is the overall timeout of the chat script
       Node.Timeout := Get_Timeout (Xnode, Infinite_Ms);
       -- Get expect text
-      Node.Text := Get_Text (Ctx.Get_Child (Xnode, 1));
+      Node.Text := Get_Text (Xnode);
       Chats.Insert_Child (Node, False);
       -- For children
       Default_Timeout := Get_Timeout (Xnode, Timeout, "InputDefaultTimeoutMs");
       -- Move to script first entry
-      Child := Ctx.Get_Child (Ctx.Get_Child (Xnode, 2), 1);
+      Child := Ctx.Get_Child (Ctx.Get_Brother (Xnode), 1);
     elsif Name = "select" then
       Node.Kind := Selec;
       Node.Timeout := Get_Timeout (Xnode, Timeout);
@@ -141,13 +141,13 @@ package body Tree is
       Node.Text := Get_Text (Xnode);
       Chats.Insert_Child (Node, False);
       -- Move to script first entry
-      Child := Ctx.Get_Child (Ctx.Get_Child (Xnode, 2), 1);
+      Child := Ctx.Get_Child (Ctx.Get_Brother (Xnode), 1);
     elsif Name = "default" then
       -- The default of a select
       Node.Kind := Default;
       Chats.Insert_Child (Node, False);
       -- Move to script first entry
-      Child := Ctx.Get_Child (Ctx.Get_Child (Xnode, 2), 1);
+      Child := Ctx.Get_Child (Ctx.Get_Brother (Xnode), 1);
     elsif Name = "read" then
       Node.Kind := Read;
       Node.Timeout := Get_Timeout (Xnode, Timeout);
@@ -198,9 +198,17 @@ package body Tree is
       -- Insert each entry
       Debug.Log ("  Inserting entries of select");
       for I in 1 .. Ctx.Get_Nb_Children (Xnode) loop
-        Child := Ctx.Get_Child (Xnode, I);
-        Insert_Node (Child, Default_Timeout);
+        -- Chats and select are made of (expect, script) pairs
+        -- Only insert "expect"
+        if I rem 2 = 1 then
+          Child := Ctx.Get_Child (Xnode, I);
+          Debug.Log ("    Inserting entry of select");
+          Insert_Node (Child, Default_Timeout);
+        end if;
       end loop;
+      Debug.Log ("  End of entries of select");
+      -- Check unicity of entries of select
+      -- @@@
       -- Child may already be set for other kinds
       Child := Xml_Parser.No_Node;
     end if;

@@ -4,7 +4,7 @@
   A File containts several chats.
   Each chat is made of a sequence of statements, which are either sentences to
    read or to send, waiting statements...
-  A chat has a unique name. It can define global timeout for its and execution
+  A chat has a unique name. It can define global timeout for its execution
    (default infinite) and a default timeout for all its statements when an
    input is expected: chats, select, read, skip (default infinite).
   A chat starts by a "expect" statement. It defines the string that, if read,
@@ -12,7 +12,7 @@
    two chats have the same expect sentence.
   Once the chat is selected it follows a script made of instructions:
    - select: A select is like a sub-chat but with no name nor attibute. It
-     allows to select a subscript according to the reception of an expected
+     allows selecting a subscript according to the reception of an expected
      sentence. If the select has a default entry, it is selected when the
      sentence does not match any expected string.
    - read: Read next sentence and check that it mathes the one provided.
@@ -45,17 +45,16 @@
 
 <!ENTITY % boolean "(true|false)">
 
-<!ELEMENT chats (chat)+>
+<!ELEMENT chats (chat,script)+>
 <!ATTLIST chats TimeoutMs CDATA #IMPLIED>
-<!ENTITY % SEQUENCE "expect,script">
-<!ELEMENT chat (%SEQUENCE;)>
+<!ELEMENT chat (#PCDATA)>
 <!ATTLIST chat Name ID #REQUIRED
                TimeoutMs CDATA #IMPLIED
                InputDefaultTimeoutMs CDATA #IMPLIED>
-<!ELEMENT expect (#PCDATA)>
 <!ELEMENT script ((select|read|skip|wait|send|call)*,(exec|close)?)>
-<!ELEMENT select ((%SEQUENCE;)+,(default, script)?)>
+<!ELEMENT select ((expect,script)+,(default,script)?)>
 <!ATTLIST select TimeoutMs CDATA #IMPLIED>
+<!ELEMENT expect (#PCDATA)>
 <!ELEMENT default EMPTY>
 <!ELEMENT read (#PCDATA)>
 <!ATTLIST read TimeoutMs CDATA #IMPLIED>

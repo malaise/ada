@@ -8,8 +8,8 @@ terminated by Lf) and replies by one or several sentences.
 
 2. Chat file and behaviour
 The chat file describes several alternative chats.
-Each chat script starts with one expected sentence (keyword "expect") followed
-by a script of expected sentences and/or actions.
+Each chat script starts with one expected sentence followed by a script of
+expected sentences and/or actions.
 The text of sentences that are expected, read or sent and of commands that are
 called or executed has its variables ${VAR} expanded according to Environment
 variables.
