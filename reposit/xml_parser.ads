@@ -14,7 +14,7 @@ with Queues, Trees, Unique_List, Text_Char, Dynamic_List, Unlimited_Pool,
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "24";
+  Major_Version : constant String := "25";
   function Version return String;
 
   -----------
@@ -317,6 +317,9 @@ package Xml_Parser is
   -- Get a brother of an node
   -- May raise No_Brother
   No_Brother : exception;
+  function Has_Brother (Ctx  : Ctx_Type;
+                        Node : Node_Type;
+                        Next : Boolean := True) return Boolean;
   function Get_Brother (Ctx  : Ctx_Type;
                         Node : Node_Type;
                         Next : Boolean := True) return Node_Type;

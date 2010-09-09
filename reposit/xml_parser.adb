@@ -992,6 +992,14 @@ package body Xml_Parser is
   end Get_Child;
 
   -- May raise No_Brother
+  function Has_Brother (Ctx  : Ctx_Type;
+                        Node : Node_Type;
+                        Next : Boolean := True) return Boolean is
+    Tree : constant Tree_Acc := Get_Tree (Ctx, Node);
+  begin
+    return Tree.Has_Brother (not Next);
+  end Has_Brother;
+
   function Get_Brother (Ctx  : Ctx_Type;
                         Node : Node_Type;
                         Next : Boolean := True) return Node_Type is
@@ -1025,7 +1033,7 @@ package body Xml_Parser is
               Magic => Node.Magic,
               In_Prologue => Node.In_Prologue,
               Tree_Access => Tree.Get_Position);
-      when  Xml_Parser.Attribute =>
+      when Xml_Parser.Attribute =>
         -- Attribute
         Trace ("Expecting kind element or text or comment, found attribute");
         raise Internal_Error;
