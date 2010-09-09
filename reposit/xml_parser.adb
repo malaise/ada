@@ -991,15 +991,16 @@ package body Xml_Parser is
     return N;
   end Get_Child;
 
-  -- May raise No_Brother
   function Has_Brother (Ctx  : Ctx_Type;
                         Node : Node_Type;
                         Next : Boolean := True) return Boolean is
     Tree : constant Tree_Acc := Get_Tree (Ctx, Node);
   begin
+    Tree.Set_Position (Node.Tree_Access);
     return Tree.Has_Brother (not Next);
   end Has_Brother;
 
+  -- May raise No_Brother
   function Get_Brother (Ctx  : Ctx_Type;
                         Node : Node_Type;
                         Next : Boolean := True) return Node_Type is
