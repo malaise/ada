@@ -1,4 +1,4 @@
-with Basic_Proc, Xml_Parser, String_Mng, Environ;
+with Basic_Proc, Xml_Parser, String_Mng, Environ, Text_Line, Mixed_Str;
 with Debug;
 package body Tree is
 
@@ -37,9 +37,16 @@ package body Tree is
   end Get_Timeout;
 
   -- Expand ENV variables in text
-  function Expand (Xnode : Xml_Parser.Text_Type;
-                   Text : Asu_Us) return Asu_Us is
+  function Get_Text (Xnode : Xml_Parser.Element_Type) return Asu_Us is
+    Tnode : Xml_Parser.Text_Type;
+    Text : Asu_Us;
   begin
+    if Ctx.Get_Nb_Children (Xnode) = 0 then
+      -- Empty text => no child
+      return Asu_Null;
+    end if;
+    Tnode := Ctx.Get_Child (Xnode, 1);
+    Text := Ctx.Get_Text (Tnode);
     return Asu_Tus (String_Mng.Eval_Variables (
               Asu_Ts (Text), "${", "}", Environ.Getenv_If_Set'Access,
               Muliple_Passes => False,
@@ -52,21 +59,47 @@ package body Tree is
     when String_Mng.Inv_Delimiter | String_Mng.Delimiter_Mismatch =>
       Error (Xnode, "Invalide variable reference");
       raise Parse_Error;
-  end Expand;
+  end Get_Text;
 
-  -------------
-  -- Parsing --
-  -------------
+  -- For dump of our tree
+  function Dump (Node : Node_Rec; Level : Natural) return Boolean is
+    Tab : constant String (1 .. 2 * Level) := (others => ' ');
+  begin
+    Basic_Proc.Put_Error (Tab & Mixed_Str (Node.Kind'Img) & ": " );
+    if not Asu_Is_Null (Node.Name) then
+      Basic_Proc.Put_Error (Asu_Ts (Node.Name) & " ");
+    end if;
+    case Node.Kind is
+      when Read | Send | Call | Exec =>
+        Basic_Proc.Put_Error ("Text: >" & Asu_Ts (Node.Text) & "< ");
+      when others =>
+        null;
+    end case;
+    case Node.Kind is
+      when Selec | Read | Skip | Wait =>
+        Basic_Proc.Put_Error ("Timeout: " & Node.Timeout'Img);
+      when others =>
+        null;
+    end case;
+    Basic_Proc.New_Line_Error;
+    return True;
+  end Dump;
+
+  -----------------------
+  -- Building own tree --
+  -----------------------
   -- Recursive insertion of a node
   procedure Insert_Node (Xnode : in Xml_Parser.Element_Type;
                          Timeout : in Integer) is
     Name : constant String := Ctx.Get_Name (Xnode);
     Node : Node_Rec;
     Default_Timeout : Integer;
-    Child : Xml_Parser.Element_Type;
-    Text : Xml_Parser.Text_Type;
+    Child : Xml_Parser.Node_Type := Xml_Parser.No_Node;
+    Dummy : Boolean;
+    pragma Unreferenced (Dummy);
   begin
     -- Insert current node
+    Debug.Log ("Getting node " & Name);
     if Name = "chats" then
       Node.Kind := Selec;
       Node.Timeout := Get_Timeout (Xnode, Timeout);
@@ -89,9 +122,8 @@ package body Tree is
       -- This is the overall timeout of the chat script
       Node.Timeout := Get_Timeout (Xnode, Infinite_Ms);
       -- Get expect text
-      Text := Ctx.Get_Child (Ctx.Get_Child (Xnode, 1), 1);
-      Node.Text := Expand (Text, Ctx.Get_Text (Text));
-      Chats.Insert_Child (Node);
+      Node.Text := Get_Text (Ctx.Get_Child (Xnode, 1));
+      Chats.Insert_Child (Node, False);
       -- For children
       Default_Timeout := Get_Timeout (Xnode, Timeout, "InputDefaultTimeoutMs");
       -- Move to script first entry
@@ -99,40 +131,109 @@ package body Tree is
     elsif Name = "select" then
       Node.Kind := Selec;
       Node.Timeout := Get_Timeout (Xnode, Timeout);
-      Chats.Insert_Child (Node);
+      Chats.Insert_Child (Node, False);
       -- For children
       Default_Timeout := Timeout;
     elsif Name = "expect" then
-      -- The expect of a select => Read
+      -- The expect of a select => Read without timeout
       Node.Kind := Read;
       -- Get expect text
-      Text := Ctx.Get_Child (Ctx.Get_Child (Xnode, 1), 1);
-      Node.Text := Expand (Text, Ctx.Get_Text (Text));
-      Chats.Insert_Child (Node);
+      Node.Text := Get_Text (Xnode);
+      Chats.Insert_Child (Node, False);
       -- Move to script first entry
       Child := Ctx.Get_Child (Ctx.Get_Child (Xnode, 2), 1);
     elsif Name = "default" then
       -- The default of a select
       Node.Kind := Default;
-      Chats.Insert_Child (Node);
+      Chats.Insert_Child (Node, False);
       -- Move to script first entry
       Child := Ctx.Get_Child (Ctx.Get_Child (Xnode, 2), 1);
     elsif Name = "read" then
-      -- @@@
-      null;
+      Node.Kind := Read;
+      Node.Timeout := Get_Timeout (Xnode, Timeout);
+      -- Get text
+      Node.Text := Get_Text (Xnode);
+      Chats.Insert_Child (Node, False);
+    elsif Name = "skip" then
+      Node.Kind := Skip;
+      Node.Timeout := Get_Timeout (Xnode, Timeout);
+      Chats.Insert_Child (Node, False);
+    elsif Name = "wait" then
+      Node.Kind := Wait;
+      -- Delay is mandatory
+      Node.Timeout := Get_Timeout (Xnode, Infinite_Ms, "DelayMs");
+      Chats.Insert_Child (Node, False);
+    elsif Name = "send" then
+      Node.Kind := Send;
+      -- Get text
+      Node.Text := Get_Text (Xnode);
+      -- See if Newline
+      if Asu_Ts (Ctx.Get_Attribute (Xnode, 1).Value) = "true" then
+        Asu.Append (Node.Text, Text_Line.Line_Feed_Str);
+      end if;
+      Chats.Insert_Child (Node, False);
+    elsif Name = "call" then
+      Node.Kind := Call;
+      -- Get text
+      Node.Text := Get_Text (Xnode);
+      Chats.Insert_Child (Node, False);
+    elsif Name = "exec" then
+      Node.Kind := Exec;
+      -- Get text
+      Node.Text := Get_Text (Xnode);
+      Chats.Insert_Child (Node, False);
+    elsif Name = "close" then
+      Node.Kind := Close;
+      Chats.Insert_Child (Node, False);
     else
       Error (Xnode, "Unexpected node " & Name);
     end if;
 
-    -- Now insert children of chats/select
-    -- @@@
-    --  or child of other node
-    Insert_Node (Child, Default_Timeout);
-    -- Update Next of Selec
+    if Debug.Is_On then
+      Dummy := Dump (Node, 1);
+    end if;
+
+    -- Now insert entries of chats/select
+    if Node.Kind = Selec then
+      -- Insert each entry
+      Debug.Log ("  Inserting entries of select");
+      for I in 1 .. Ctx.Get_Nb_Children (Xnode) loop
+        Child := Ctx.Get_Child (Xnode, I);
+        Insert_Node (Child, Default_Timeout);
+      end loop;
+      -- Child may already be set for other kinds
+      Child := Xml_Parser.No_Node;
+    end if;
+
+    -- See if there is a following statement
+    declare
+      use type Xml_Parser.Node_Type;
+    begin
+      if Child = Xml_Parser.No_Node
+      and then Ctx.Has_Brother (Xnode) then
+        Child := Ctx.Get_Brother (Xnode);
+      end if;
+      if Child /= Xml_Parser.No_Node then
+        Debug.Log ("  Inserting next statement");
+        Insert_Node (Child, Default_Timeout);
+      end if;
+    end;
+
+    if Node.Kind = Selec then
+      -- Update Next of Selec
+      -- @@@
+      null;
+    end if;
+
+    -- Move back to father
+    if Chats.Has_Father then
+      Chats.Move_Father;
+    end if;
   end Insert_Node;
 
-
-  -- Parse file and build tree
+  -------------------------------
+  -- Parse file and build tree --
+  -------------------------------
   procedure Parse (File_Name : in Asu_Us) is
     Ok : Boolean;
     Xnode : Xml_Parser.Element_Type;
@@ -155,34 +256,17 @@ package body Tree is
     -- Build Tree
     Xnode := Ctx.Get_Root_Element;
     Insert_Node (Xnode, Infinite_Ms);
+    Chats.Move_Root;
+
+    -- Dump
+    Debug.Log ("Dump:");
+    if Debug.Is_On then
+      Chats.Iterate (Dump'Access);
+    end if;
 
     -- Clean up
     Ctx.Clean;
   end Parse;
-
-
-  -- Kind of node
-  -- type Node_Kind is (Selec, Read, Default, Skip, Wait, Send, Call, Exec, Close);
-
-  -- Infinite timeout
-  -- Infinite_Ms : constant Integer := Event_Mng.Infinite_Ms;
-
-  -- Node
-  -- type Node_Rec;
-
-  -- type Node_Access is access all Node_Rec;
-
-  -- type Node_Rec is record
-  --   Kind : Node_Kind := Close;
-    -- For chat (kind Read)
-  --   Name : Asu_Us;
-    -- For Read, Send, Call or Exec
-  --   Text : Asu_Us;
-    -- For Selec, Read, Skip, Wait
-  --   Timeout : Integer := Infinite_Ms;
-    -- Next node
-  --   Next : Node_Access := null;
-  -- end record;
 
 end Tree;
 

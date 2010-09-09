@@ -14,8 +14,8 @@ package Tree is
   Infinite_Ms : constant Integer := Event_Mng.Infinite_Ms;
 
   -- Node
-  type Node_Rec;
-  type Node_Access is access all Node_Rec;
+  type Position_Access;
+  type Node_Access is access Position_Access;
   type Node_Rec is record
     Kind : Node_Kind := Close;
     -- For chat (kind Read)
@@ -24,12 +24,14 @@ package Tree is
     Text : Asu_Us;
     -- For Selec, Read, Skip, Wait
     Timeout : Integer := Infinite_Ms;
-    -- Next node
+    -- Next statement
     Next : Node_Access := null;
   end record;
 
   package Tree_Mng is new Trees.Tree (Node_Rec);
   Chats : Tree_Mng.Tree_Type;
+
+  type Position_Access is new Tree_Mng.Position_Access;
 
 end Tree;
 

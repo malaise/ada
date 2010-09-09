@@ -5,7 +5,7 @@ procedure Tcpchat is
   procedure Usage is
   begin
     Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
-      & "-p <tcp_port> -f <chat_file>");
+      & " -p <tcp_port> -f <chat_file>");
   end Usage;
 
   procedure Error (Msg : in String) is

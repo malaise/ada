@@ -5,18 +5,27 @@ package body Debug is
   Debug_Status : Debug_Status_List := Unknown;
   Debug_Var : constant String := "TCPCHAT_DEBUG";
 
-  procedure Log (Msg : in String; New_Line : in Boolean := True) is
+  function Is_On return Boolean is
   begin
     if Debug_Status = Off then
-      return;
+      return False;
     end if;
+    -- First call
     if Debug_Status = Unknown then
       if Environ.Is_Set (Debug_Var) then
         Debug_Status := On;
       else
         Debug_Status := Off;
-        return;
       end if;
+    end if;
+    return Debug_Status = On;
+  end Is_On;
+
+
+  procedure Log (Msg : in String; New_Line : in Boolean := True) is
+  begin
+    if not Is_On then
+      return;
     end if;
     if New_Line then
       Basic_Proc.Put_Line_Error (Msg);
