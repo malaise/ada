@@ -2,7 +2,7 @@
 <!DOCTYPE chats SYSTEM "chats.dtd">
 <!-- Example of TCP chat script -->
 
-<chats>
+<chats TimeoutMs="10_000">
   <chat Name="httpTopic0.9">GET http://localhost/${HOME}/tmp/Topic_Type.dtd</chat>
   <script>
     <send><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
@@ -55,10 +55,12 @@
     <wait DelayMs="1000"/>
     <close/>
   </script>
-  <chat Name="testPpp">login</chat>
+  <chat Name="testPpp"
+        InputDefaultTimeoutMs="5_000"
+        TimeoutMs="21_000">login</chat>
   <script>
     <send>me</send>
-    <read>password</read>
+    <read TimeoutMs="10_000">password</read>
     <send>pass</send>
     <read>logged</read>
     <wait DelayMs="2000"/>
@@ -67,7 +69,8 @@
     <wait DelayMs="500"/>
     <close/>
   </script>
-  <chat Name="testMulti">testMulti</chat>
+  <chat Name="testMulti"
+        InputDefaultTimeoutMs="1_000">testMulti</chat>
     <!-- A chat is like a expect, but with attibutes (Name...) -->
   <script>
     <send></send>

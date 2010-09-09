@@ -100,13 +100,13 @@ package body Tree is
   begin
     -- Insert current node
     Debug.Log ("Getting node " & Name);
+    -- Propagate default timeout from father
+    Default_Timeout := Timeout;
     if Name = "chats" then
       Node.Kind := Selec;
-      Node.Timeout := Get_Timeout (Xnode, Timeout);
+      Node.Timeout := Get_Timeout (Xnode, Infinite_Ms);
       -- Insert root
       Chats.Insert_Father (Node);
-      -- For children
-      Default_Timeout := Infinite_Ms;
     elsif Name = "chat" then
       -- Chat is a Read. Get name, timeout and default timeout
       Node.Kind := Read;
@@ -124,16 +124,15 @@ package body Tree is
       -- Get expect text
       Node.Text := Get_Text (Xnode);
       Chats.Insert_Child (Node, False);
-      -- For children
-      Default_Timeout := Get_Timeout (Xnode, Timeout, "InputDefaultTimeoutMs");
+      -- Set default timeout for children
+      Default_Timeout := Get_Timeout (Xnode, Infinite_Ms,
+                                      "InputDefaultTimeoutMs");
       -- Move to script first entry
       Child := Ctx.Get_Child (Ctx.Get_Brother (Xnode), 1);
     elsif Name = "select" then
       Node.Kind := Selec;
       Node.Timeout := Get_Timeout (Xnode, Timeout);
       Chats.Insert_Child (Node, False);
-      -- For children
-      Default_Timeout := Timeout;
     elsif Name = "expect" then
       -- The expect of a select => Read without timeout
       Node.Kind := Read;
