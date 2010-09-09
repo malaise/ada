@@ -19,10 +19,6 @@ package Trees is
     -- A tree
     type Tree_Type is tagged limited private;
 
-    -- Access to current data
-    type Element_Access is access all Element_Type;
-
-
     -- All operations that modify the tree, plus Dump and Iterate, may raise
     --  In_Callback if already in a callback (Dump or Iterate)
 
@@ -243,6 +239,9 @@ package Trees is
     -- Workaround of a gvd bug
     for Order use (1, 2);
     type Cell_Pair is array (Order) of Cell_Access;
+
+    -- Access to current data
+    type Element_Access is access all Element_Type;
 
     -- A cell of tree
     type Cell_Rec is record
