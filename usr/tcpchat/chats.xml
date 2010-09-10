@@ -3,25 +3,14 @@
 <!-- Example of TCP chat script -->
 
 <chats TimeoutMs="10_000">
-  <chat Name="httpTopic0.9">GET http://localhost/${HOME}/tmp/Topic_Type.dtd</chat>
+  <chat Name="httpTopic0.9"
+        >GET http://localhost/${HOME}/tmp/Topic_Type\.dtd</chat>
   <script>
-    <send><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
-<!ELEMENT publishers (publisher)*>
-
-<!ELEMENT publisher (topic)*>
-<!ATTLIST publisher Name CDATA #REQUIRED>
-
-<!ELEMENT topic (type)*>
-<!ATTLIST topic Name CDATA #REQUIRED>
-
-<!ELEMENT type (key)+>
-<!ATTLIST type Name CDATA #REQUIRED>
-
-<!ELEMENT key EMPTY>
-<!ATTLIST key Field CDATA "localID">]]></send>
+    <call>cat Topic_Type.dtd</call>
     <close/>
   </script>
-  <chat Name="httpTopic1.0">GET http://localhost/${HOME}/tmp/Topic_Type.dtd HTTP/1.0</chat>
+  <chat Name="httpTopic1."
+        >GET http://localhost/${HOME}/tmp/Topic_Type\.dtd HTTP/1\.(0|1)</chat>
   <script>
     <read></read>
     <send>HTTP/1.1 200 OK</send>
@@ -34,20 +23,7 @@
     <send>Content-Length: 293</send>
     <send>Content-Type: application/xml-dtd</send>
     <send></send>
-    <send><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
-<!ELEMENT publishers (publisher)*>
-
-<!ELEMENT publisher (topic)*>
-<!ATTLIST publisher Name CDATA #REQUIRED>
-
-<!ELEMENT topic (type)*>
-<!ATTLIST topic Name CDATA #REQUIRED>
-
-<!ELEMENT type (key)+>
-<!ATTLIST type Name CDATA #REQUIRED>
-
-<!ELEMENT key EMPTY>
-<!ATTLIST key Field CDATA "localID">]]></send>
+    <call>cat Topic_Type.dtd</call>
     <close/>
   </script>
   <chat Name="testWaitClose">close</chat>

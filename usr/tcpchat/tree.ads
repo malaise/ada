@@ -6,9 +6,8 @@ package Tree is
   procedure Parse (File_Name : in Asu_Us);
   Parse_Error : exception;
 
-
   -- Kind of node
-  type Node_Kind is (Selec, Read, Default, Skip, Wait, Send, Call, Exec, Close);
+  type Node_Kind is (Selec, Read, Default, Skip, Wait, Send, Call, Close);
 
   -- Infinite timeout
   Infinite_Ms : constant Integer := Event_Mng.Infinite_Ms;

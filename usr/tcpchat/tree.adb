@@ -4,6 +4,7 @@ package body Tree is
 
   -- "Global" variables
   Ctx : Xml_Parser.Ctx_Type;
+  Line_Feed : constant String := Text_Line.Line_Feed_Str;
 
   ----------------------
   -- Common utilities --
@@ -37,27 +38,44 @@ package body Tree is
   end Get_Timeout;
 
   -- Expand ENV variables in text
-  function Get_Text (Xnode : Xml_Parser.Element_Type) return Asu_Us is
+  function Get_Text (Xnode : Xml_Parser.Element_Type;
+                     Regexp : Boolean) return Asu_Us is
     Tnode : Xml_Parser.Text_Type;
     Text : Asu_Us;
+    use type Asu_Us;
   begin
     if Ctx.Get_Nb_Children (Xnode) = 0 then
       -- Empty text => no child
-      return Asu_Null;
+      Text := Asu_Null;
+    else
+      -- Get text
+      Tnode := Ctx.Get_Child (Xnode, 1);
+      Text := Ctx.Get_Text (Tnode);
+      -- No Line feed accepted
+      if String_Mng.Locate (Asu_Ts (Text), Line_Feed) /= 0 then
+        Error (Xnode, "Invalid line-feed character in text");
+        raise Parse_Error;
+      end if;
+      -- Expand ENV variables of text
+      Text := Asu_Tus (String_Mng.Eval_Variables (
+                Asu_Ts (Text), "${", "}", Environ.Getenv_If_Set'Access,
+                Muliple_Passes => False,
+                No_Check_Stop => False,
+                Skip_Backslashed => True));
+      -- Restore baslashed delimiters
+      Text := Asu_Tus (String_Mng.Replace (Asu_Ts (Text), "\${", "${"));
+      Text := Asu_Tus (String_Mng.Replace (Asu_Ts (Text), "\}", "}"));
     end if;
-    Tnode := Ctx.Get_Child (Xnode, 1);
-    Text := Ctx.Get_Text (Tnode);
-    return Asu_Tus (String_Mng.Eval_Variables (
-              Asu_Ts (Text), "${", "}", Environ.Getenv_If_Set'Access,
-              Muliple_Passes => False,
-              No_Check_Stop => False,
-              Skip_Backslashed => True));
+    if Regexp then
+      Text := "^" & Text & "$";
+    end if;
+    return Text;
   exception
     when Environ.Name_Error =>
       Error (Xnode, "Unknown variable");
       raise Parse_Error;
     when String_Mng.Inv_Delimiter | String_Mng.Delimiter_Mismatch =>
-      Error (Xnode, "Invalide variable reference");
+      Error (Xnode, "Invalid variable reference");
       raise Parse_Error;
   end Get_Text;
 
@@ -70,8 +88,11 @@ package body Tree is
       Basic_Proc.Put_Error (Asu_Ts (Node.Name) & " ");
     end if;
     case Node.Kind is
-      when Read | Send | Call | Exec =>
+      when Read | Call =>
         Basic_Proc.Put_Error ("Text: >" & Asu_Ts (Node.Text) & "< ");
+      when Send =>
+        Basic_Proc.Put_Error ("Text: >" & 
+          String_Mng.Replace (Asu_Ts (Node.Text), Line_Feed, "[LF]") &  "< ");
       when others =>
         null;
     end case;
@@ -122,7 +143,7 @@ package body Tree is
       -- This is the overall timeout of the chat script
       Node.Timeout := Get_Timeout (Xnode, Infinite_Ms);
       -- Get expect text
-      Node.Text := Get_Text (Xnode);
+      Node.Text := Get_Text (Xnode, True);
       Chats.Insert_Child (Node, False);
       -- Set default timeout for children
       Default_Timeout := Get_Timeout (Xnode, Infinite_Ms,
@@ -137,7 +158,7 @@ package body Tree is
       -- The expect of a select => Read without timeout
       Node.Kind := Read;
       -- Get expect text
-      Node.Text := Get_Text (Xnode);
+      Node.Text := Get_Text (Xnode, True);
       Chats.Insert_Child (Node, False);
       -- Move to script first entry
       Child := Ctx.Get_Child (Ctx.Get_Brother (Xnode), 1);
@@ -151,7 +172,7 @@ package body Tree is
       Node.Kind := Read;
       Node.Timeout := Get_Timeout (Xnode, Timeout);
       -- Get text
-      Node.Text := Get_Text (Xnode);
+      Node.Text := Get_Text (Xnode, True);
       Chats.Insert_Child (Node, False);
     elsif Name = "skip" then
       Node.Kind := Skip;
@@ -165,21 +186,16 @@ package body Tree is
     elsif Name = "send" then
       Node.Kind := Send;
       -- Get text
-      Node.Text := Get_Text (Xnode);
+      Node.Text := Get_Text (Xnode, False);
       -- See if Newline
       if Asu_Ts (Ctx.Get_Attribute (Xnode, 1).Value) = "true" then
-        Asu.Append (Node.Text, Text_Line.Line_Feed_Str);
+        Asu.Append (Node.Text, Line_Feed);
       end if;
       Chats.Insert_Child (Node, False);
     elsif Name = "call" then
       Node.Kind := Call;
       -- Get text
-      Node.Text := Get_Text (Xnode);
-      Chats.Insert_Child (Node, False);
-    elsif Name = "exec" then
-      Node.Kind := Exec;
-      -- Get text
-      Node.Text := Get_Text (Xnode);
+      Node.Text := Get_Text (Xnode, False);
       Chats.Insert_Child (Node, False);
     elsif Name = "close" then
       Node.Kind := Close;

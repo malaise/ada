@@ -7,12 +7,11 @@
   A chat has a unique name. It can define global timeout for its execution
    (default infinite) and a default timeout for all its statements when an
    input is expected: chats, select, read, skip (default infinite).
-  A chat starts by a "expect" statement. It defines the string that, if read,
-   will lead this chat script to be selected. It is thus a semantic error if
-   two chats have the same expect sentence.
+  A chat starts by a "expect" statement. It defines a regexp that will lead
+   this chat script to be selected if the input string matches the regexp.
   Once the chat is selected it follows a script made of instructions:
    - select: A select is like a sub-chat but with no name nor attibute. It
-     allows selecting a subscript according to the reception of an expected
+     allows selecting a subscript according to the reception of a matching
      sentence. If the select has a default entry, it is selected when the
      sentence does not match any expected string.
    - read: Read next sentence and check that it mathes the one provided.
@@ -24,8 +23,6 @@
   When a subscript reaches its end, the execution continues from the instruction
    that follows the select that lead to this subscript (if any).
   A chat script ends on either:
-   - a exec statement: Exec the command and arguments provided, forwarding
-     current connection to it (Close_On_Exec=True).
    - a close statement: Close current connection and go back expecting a chat
      script selection.
    - nothing else to do: Keep connection open and go back expecting a chat
@@ -51,7 +48,7 @@
 <!ATTLIST chat Name ID #REQUIRED
                TimeoutMs CDATA #IMPLIED
                InputDefaultTimeoutMs CDATA #IMPLIED>
-<!ELEMENT script ((select|read|skip|wait|send|call)*,(exec|close)?)>
+<!ELEMENT script ((select|read|skip|wait|send|call)*,close?)>
 <!ELEMENT select ((expect,script)+,(default,script)?)>
 <!ATTLIST select TimeoutMs CDATA #IMPLIED>
 <!ELEMENT expect (#PCDATA)>

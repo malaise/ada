@@ -12,11 +12,10 @@ Each chat script starts with one expected sentence followed by a script of
 expected sentences and/or actions.
 The text of sentences that are expected, read or sent and of commands that are
 called or executed has its variables ${VAR} expanded according to Environment
-variables.
+variables.  It is an error if an referenced ENV variable does not exist.
+The text of chat, read and expect statement are regexp with which the input
+sentence must completely match (i.e. <input_string> matches "^<regex>$").
 See Dtd for more information.
-Its a fatal error at startup if 2 expected sentences of the chats or of a
-select are identical. It is also an error if an referenced ENV variable does not
-exist.
 
 
 3. General Design
@@ -39,12 +38,13 @@ c. Main loop: Event => action
 
 4. Design of the tree
 Each node of the tree contains:
-- Kind (Enum): Selec, Read, Default, Skip, Wait, Send, Call, Exec, Close.
+- Kind (Enum): Selec, Read, Default, Skip, Wait, Send, Call, Close.
   Chat and expect statements are mapped as Read nodes, children of a Selec.
 - Name (Asu_Us): For a chat, its name
-- Text (Asu_Us). For a Read the sentence expected, for a Send/Call/Exec the
-  sentence to send, for a Call/Exec the command and arguments to invoque.
-  Chats is a Selec, expect is a Read (child of a Selec)
+- Text (Asu_Us). For a Read the sentence expected, for a Send/Call/ the
+  sentence to send, for a Call the command and arguments to invoque.
+  Chats is a Selec, chat is an expect, expect is mapped as a Read (child of a
+  Selec)
 - Timeout (Ms). For a Selec (including chats) a read or skip it's a failure if
   it expires (no matching / not matching / nothing received). For a chat it's
   a failure if it expires before the end of the chat. For a Wait it is the
@@ -54,7 +54,7 @@ Each node of the tree contains:
 - Next: The reference to the node that implements the following of the script:
   It is the statement following the current statement if there is one.
   Otherwise, it is the statement following ancestor select...
-  Exec and Close have no Next. Other nodes have at least Next pointing to the
+  Close has no Next. Other nodes have at least Next pointing to the
   chats node (root).
   Ex. Selec1 has 2 Expects and is followed by a Read. Expect1 leads to
   Select11 that is not followed. Expect2 leads to Select21 that is followed by
@@ -63,7 +63,7 @@ Each node of the tree contains:
 
 Nodes, children, Next:
 - Root is a Selec node (the chats statement) with no Next
-- A node of kind Exec or Close has no child and no Next
+- A node of kind Close has no child and no Next
 - A Selec node has one (Read) child for each of its chat or expect, then
   possibly one (Default) child for the default, then possibly a child: the next
   statement following the select (in this case, Next points to it).
@@ -92,7 +92,7 @@ Then a second pass calls a recusive operation, passing to it Next initialized
 to root. When arriving on a Selec node, the local Next, if null, is set to the
 value received. the local Next is passed recursively when parsing children.
 When arriving on a node with no child, set it Next to the value receive if
-it type is not Close or Exec.
+it type is not Close.
 
 
 6. Execution
