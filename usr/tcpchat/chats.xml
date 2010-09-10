@@ -2,7 +2,7 @@
 <!DOCTYPE chats SYSTEM "chats.dtd">
 <!-- Example of TCP chat script -->
 
-<chats TimeoutMs="10_000">
+<chats TimeoutMs="21_000">
   <chat Name="httpTopic0.9"
         >GET http://localhost/${HOME}/tmp/Topic_Type\.dtd</chat>
   <script>
@@ -33,7 +33,7 @@
   </script>
   <chat Name="testPpp"
         InputDefaultTimeoutMs="5_000"
-        TimeoutMs="21_000">login</chat>
+        TimeoutMs="2_100">login</chat>
   <script>
     <send>me</send>
     <read TimeoutMs="10_000">password</read>
@@ -78,7 +78,7 @@
         <send>PASS</send>
       </script>
     </select>
-    <wait DelayMs="1000"/>
+    <wait DelayMs="1_000"/>
     <close/>
   </script>
 </chats>

@@ -91,7 +91,7 @@ package body Tree is
       when Read | Call =>
         Basic_Proc.Put_Error ("Text: >" & Asu_Ts (Node.Text) & "< ");
       when Send =>
-        Basic_Proc.Put_Error ("Text: >" & 
+        Basic_Proc.Put_Error ("Text: >" &
           String_Mng.Replace (Asu_Ts (Node.Text), Line_Feed, "[LF]") &  "< ");
       when others =>
         null;
@@ -119,15 +119,15 @@ package body Tree is
     Dummy : Boolean;
     pragma Unreferenced (Dummy);
   begin
-    -- Insert current node
+    -- Fill new node
     Debug.Log ("Getting node " & Name);
+    -- Init Node's next
+    Node.Next := new Position_Access'(Position_Access(Tree_Mng.No_Position));
     -- Propagate default timeout from father
     Default_Timeout := Timeout;
     if Name = "chats" then
       Node.Kind := Selec;
       Node.Timeout := Get_Timeout (Xnode, Infinite_Ms);
-      -- Insert root
-      Chats.Insert_Father (Node);
     elsif Name = "chat" then
       -- Chat is a Read. Get name, timeout and default timeout
       Node.Kind := Read;
@@ -144,7 +144,6 @@ package body Tree is
       Node.Timeout := Get_Timeout (Xnode, Infinite_Ms);
       -- Get expect text
       Node.Text := Get_Text (Xnode, True);
-      Chats.Insert_Child (Node, False);
       -- Set default timeout for children
       Default_Timeout := Get_Timeout (Xnode, Infinite_Ms,
                                       "InputDefaultTimeoutMs");
@@ -153,19 +152,16 @@ package body Tree is
     elsif Name = "select" then
       Node.Kind := Selec;
       Node.Timeout := Get_Timeout (Xnode, Timeout);
-      Chats.Insert_Child (Node, False);
     elsif Name = "expect" then
       -- The expect of a select => Read without timeout
       Node.Kind := Read;
       -- Get expect text
       Node.Text := Get_Text (Xnode, True);
-      Chats.Insert_Child (Node, False);
       -- Move to script first entry
       Child := Ctx.Get_Child (Ctx.Get_Brother (Xnode), 1);
     elsif Name = "default" then
       -- The default of a select
       Node.Kind := Default;
-      Chats.Insert_Child (Node, False);
       -- Move to script first entry
       Child := Ctx.Get_Child (Ctx.Get_Brother (Xnode), 1);
     elsif Name = "read" then
@@ -173,16 +169,13 @@ package body Tree is
       Node.Timeout := Get_Timeout (Xnode, Timeout);
       -- Get text
       Node.Text := Get_Text (Xnode, True);
-      Chats.Insert_Child (Node, False);
     elsif Name = "skip" then
       Node.Kind := Skip;
       Node.Timeout := Get_Timeout (Xnode, Timeout);
-      Chats.Insert_Child (Node, False);
     elsif Name = "wait" then
       Node.Kind := Wait;
       -- Delay is mandatory
       Node.Timeout := Get_Timeout (Xnode, Infinite_Ms, "DelayMs");
-      Chats.Insert_Child (Node, False);
     elsif Name = "send" then
       Node.Kind := Send;
       -- Get text
@@ -191,17 +184,22 @@ package body Tree is
       if Asu_Ts (Ctx.Get_Attribute (Xnode, 1).Value) = "true" then
         Asu.Append (Node.Text, Line_Feed);
       end if;
-      Chats.Insert_Child (Node, False);
     elsif Name = "call" then
       Node.Kind := Call;
       -- Get text
       Node.Text := Get_Text (Xnode, False);
-      Chats.Insert_Child (Node, False);
     elsif Name = "close" then
       Node.Kind := Close;
-      Chats.Insert_Child (Node, False);
     else
       Error (Xnode, "Unexpected node " & Name);
+    end if;
+
+    -- Insert node
+    if Name = "chats" then
+      -- Insert root
+      Chats.Insert_Father (Node);
+    else
+      Chats.Insert_Child (Node, False);
     end if;
 
     if Debug.Is_On then
@@ -222,8 +220,6 @@ package body Tree is
         end if;
       end loop;
       Debug.Log ("  End of entries of select");
-      -- Check unicity of entries of select
-      -- @@@
       -- Child may already be set for other kinds
       Child := Xml_Parser.No_Node;
     end if;
@@ -231,6 +227,7 @@ package body Tree is
     -- See if there is a following statement
     declare
       use type Xml_Parser.Node_Type;
+      Child_Pos : Tree_Mng.Position_Access;
     begin
       if Child = Xml_Parser.No_Node
       and then Ctx.Has_Brother (Xnode) then
@@ -239,14 +236,14 @@ package body Tree is
       if Child /= Xml_Parser.No_Node then
         Debug.Log ("  Inserting next statement");
         Insert_Node (Child, Default_Timeout);
+        -- Update Next
+        Chats.Move_Child (False);
+        Child_Pos := Chats.Get_Position;
+        Chats.Move_Father;
+        Node.Next.all := Position_Access(Child_Pos);
+        Chats.Replace (Node);
       end if;
     end;
-
-    if Node.Kind = Selec then
-      -- Update Next of Selec
-      -- @@@
-      null;
-    end if;
 
     -- Move back to father
     if Chats.Has_Father then
@@ -254,12 +251,93 @@ package body Tree is
     end if;
   end Insert_Node;
 
+  -- Recursive update of Next for the leafs
+  function Update_Next (Next : in Position_Access) return Boolean is
+    Node, Ref_Node : Node_Rec;
+    Lnext : Position_Access;
+    Dummy : Boolean;
+    pragma Unreferenced (Dummy);
+  begin
+    if Next = No_Position then
+      -- We are root, everything will ultimately arrive here
+      Debug.Log ("Updating Next of root");
+      Lnext := Position_Access (Chats.Get_Position);
+    else
+      Lnext := Next;
+    end if;
+
+    -- Update current Next if needed
+    Chats.Read (Node);
+    if Node.Next.all = No_Position then
+      Node.Next.all := Lnext;
+      Chats.Replace (Node);
+      if Debug.Is_On then
+        Chats.Save_Position;
+        Set_Position (Lnext);
+        Chats.Read (Ref_Node);
+        Chats.Restore_Position;
+        Debug.Log ("Updating Next of ", False);
+        Dummy := Dump (Node, 0);
+        Debug.Log ("  to ", False);
+        Dummy := Dump (Ref_Node, 0);
+      end if;
+    else
+      if Debug.Is_On then
+        Chats.Save_Position;
+        Set_Position (Node.Next.all);
+        Chats.Read (Ref_Node);
+        Chats.Restore_Position;
+        Debug.Log ("Next is OK for ", False);
+        Dummy := Dump (Node, 0);
+        Debug.Log ("  to ", False);
+        Dummy := Dump (Ref_Node, 0);
+      end if;
+      -- For leaf children of entries of a Selec, Next is the next of the Selec
+      --  but not for its following statement
+      if Node.Kind = Selec then
+        Lnext := Node.Next.all;
+        if Debug.Is_On then
+          Debug.Log ("Updating Next for children of selec");
+        end if;
+      end if;
+    end if;
+
+    -- Iterate on all children
+    if Chats.Children_Number /= 0 then
+      Chats.Move_Child (True);
+      loop
+        if Position_Access(Chats.Get_Position) = Lnext then
+          -- Here we are passing to a child: itself!
+          -- This can only occur when, on the last child of a Selec,
+          -- we are in fact switching to its next statement.
+          -- In this case, the next should be the one of the Selec.
+          Lnext := Next;
+        end if;
+        exit when not Update_Next (Lnext);
+      end loop;
+    end if;
+
+    -- Move to brother if any
+    if Chats.Has_Brother (False) then
+      Chats.Move_Brother (False) ;
+      return True;
+    else
+      -- No more brother => back to father
+      if Chats.Has_Father then
+        Chats.Move_Father;
+      end if;
+      return False;
+    end if;
+  end Update_Next;
+
   -------------------------------
   -- Parse file and build tree --
   -------------------------------
   procedure Parse (File_Name : in Asu_Us) is
     Ok : Boolean;
     Xnode : Xml_Parser.Element_Type;
+    Dummy : Boolean;
+    pragma Unreferenced (Dummy);
   begin
     begin
       Ctx.Parse (Asu_Ts (File_Name), Ok);
@@ -277,8 +355,12 @@ package body Tree is
     Debug.Log ("File " & Asu_Ts (File_Name) & " parsed OK.");
 
     -- Build Tree
+    Debug.Log ("Building tree:");
     Xnode := Ctx.Get_Root_Element;
     Insert_Node (Xnode, Infinite_Ms);
+    Chats.Move_Root;
+    Debug.Log ("Updating Next:");
+    Dummy := Update_Next (No_Position);
     Chats.Move_Root;
 
     -- Dump
@@ -290,6 +372,14 @@ package body Tree is
     -- Clean up
     Ctx.Clean;
   end Parse;
+
+  -------------
+  -- Utility --
+  -------------
+  procedure Set_Position (Position : in Position_Access) is
+  begin
+    Chats.Set_Position (Tree_Mng.Position_Access(Position));
+  end Set_Position;
 
 end Tree;
 

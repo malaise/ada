@@ -31,6 +31,9 @@ package Tree is
   Chats : Tree_Mng.Tree_Type;
 
   type Position_Access is new Tree_Mng.Position_Access;
+  No_Position : constant Position_Access
+              := Position_Access(Tree_Mng.No_Position);
 
+  procedure Set_Position (Position : in Position_Access);
 end Tree;
 
