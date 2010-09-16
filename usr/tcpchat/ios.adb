@@ -19,10 +19,11 @@ package body Ios is
   Buffer : Input_Buffer.Buffer;
 
   -- Events
-  package Sentences_Mng is new Unlimited_Pool (Asu_Us, Lifo => False);
-  Sentences : Sentences_Mng.Pool_Type;
   Event : Event_Type;
   No_Event : constant Event_Type (Got_Sentence) := (Got_Sentence, Asu_Null);
+  -- Event is never set with a sentence. Sentences are stored in a Fifo
+  package Sentences_Mng is new Unlimited_Pool (Asu_Us, Lifo => False);
+  Sentences : Sentences_Mng.Pool_Type;
 
   -- Global timer
   Global_Tid : Timers.Timer_Id;
@@ -60,6 +61,15 @@ package body Ios is
     end if;
     return True;
   end Timer_Cb;
+
+  -- Reset event if not exit requested and not diconnection
+  procedure Reset_Event is
+  begin
+    if Event.Kind /= Exit_Requested
+    and then Event.Kind /= Disconnection then
+      Event := No_event;
+    end if;
+  end Reset_Event;
 
   -- Sentence reception Cb
   procedure Sentence_Cb (Sentence : in String) is
@@ -123,7 +133,6 @@ package body Ios is
     Buffer.Set (Sentence_Cb'Access);
     Event := No_Event;
     Sentences.Clear;
-    Stop_Global_Timer;
     -- Accept connections
     loop
       begin
@@ -158,6 +167,13 @@ package body Ios is
       Evt := Event_Mng.Wait (Exp);
       exit when Evt = Event_Mng.No_Event;
     end loop;
+    if Event /= No_Event then
+      Debug.log ("Wait event exiting cause event is " & Event.Kind'Img);
+    elsif Stop_On_Sentence and then not Sentences.Is_Empty then
+      Debug.log ("Wait event exiting cause sentence got");
+    else
+      Debug.log ("Wait event exiting cause Evt is " & Evt'Img);
+    end if;
   end Wait_Event;
 
   -----------------------
@@ -205,13 +221,17 @@ package body Ios is
 
   -- Wait during Timeout (or up to global timeout or disconnection)
   function Wait (Timeout_Ms : Integer) return Event_Type is
+    Loc_Event : Event_Type;
   begin
     Wait_Event (Timeout_Ms, False);
     if Event /= No_Event then
       -- Something occured
-      return Event;
+      Loc_Event := Event;
+    else
+      Loc_Event := (Kind => Local_Timeout);
     end if;
-    return (Kind => Local_Timeout);
+    Reset_Event;
+    return Loc_Event;
   end Wait;
 
   -- Read next sentence. Wait up to Timeout
@@ -219,24 +239,28 @@ package body Ios is
   -- Elsif Timeout, other parameters is not significant
   -- Else Text is significant
   function Read (Timeout_Ms : in Integer) return Event_Type is
+    Loc_Event : Event_Type;
   begin
     Wait_Event (0, False);
     if Event /= No_Event then
       -- Something occured
-      return Event;
+      Loc_Event := Event;
+      Reset_Event;
+      return Loc_Event;
     end if;
     Wait_Event (Timeout_Ms, True);
     if Event /= No_Event then
       -- Something occured
-      return Event;
+      Loc_Event := Event;
     elsif not Sentences.Is_Empty then
       -- A sentence has been received
-      Sentences.Pop (Event.Sentence);
-      return Event;
+      Sentences.Pop (Loc_Event.Sentence);
     else
       -- Local timeout
-      return (Kind => Local_Timeout);
+      Loc_Event := (Kind => Local_Timeout);
     end if;
+    Reset_Event;
+    return Loc_Event;
   end Read;
 
   -- Send a sentence. Disconnection if error or overflow
@@ -300,6 +324,7 @@ package body Ios is
     if Tcp_Soc.Is_Open then
       Tcp_Soc.Close;
     end if;
+    Stop_Global_Timer;
  end Close;
 
 end Ios;
