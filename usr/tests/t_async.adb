@@ -5,7 +5,7 @@ procedure T_Async is
   procedure Usage is
   begin
     Async_Stdin.Put_Line_Err ("Usage: "
-       & Argument.Get_Program_Name & "-c <host>:<port>  |  -s <port>");
+       & Argument.Get_Program_Name & " -c <host>:<port>  |  -s <port>");
     Async_Stdin.Put_Line_Err ("  <host> ::= <host_name> | <host_address>");
     Async_Stdin.Put_Line_Err ("  <port> ::= <port_name> | <port_num>");
   end Usage;

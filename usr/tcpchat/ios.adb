@@ -43,6 +43,7 @@ package body Ios is
   -- Handle signal
   procedure Signal_Cb is
   begin
+    Debug.Log ("Signal");
     Event := (Kind => Exit_Requested);
   end Signal_Cb;
 
@@ -52,6 +53,7 @@ package body Ios is
            return Boolean is
     pragma Unreferenced (Id, Data);
   begin
+    Debug.Log ("Global timeout");
     if Event.Kind /= Exit_Requested
     and then Event.Kind /= Disconnection then
       Event := (Kind => Global_Timeout);
@@ -63,6 +65,7 @@ package body Ios is
   procedure Sentence_Cb (Sentence : in String) is
   begin
     -- Store
+    Debug.Log ("Got sentence " & Sentence);
     Sentences.Push (Asu_Tus (Sentence));
   end Sentence_Cb;
 
@@ -74,6 +77,7 @@ package body Ios is
                      Len : in Natural) is
     pragma Unreferenced (Dscr);
   begin
+    Debug.Log ("Read " & Msg(1 .. Len));
     Buffer.Push (String_Mng.Replace (Msg(1 .. Len), Crlf, Lf));
   end Read_Cb;
 
@@ -148,10 +152,11 @@ package body Ios is
     Exp.Expiration_Time := Ada.Calendar.Clock + Duration(Timeout_Ms) / 1_000.0;
     loop
       -- Wait until timeout or an event
-      Evt := Event_Mng.Wait (Exp);
-      exit when Evt = Event_Mng.No_Event or else Event /= No_Event;
+      exit when Event /= No_Event;
       -- On option wait until sentence ready
       exit when Stop_On_Sentence and then not Sentences.Is_Empty;
+      Evt := Event_Mng.Wait (Exp);
+      exit when Evt = Event_Mng.No_Event;
     end loop;
   end Wait_Event;
 
@@ -242,6 +247,10 @@ package body Ios is
     Len : Natural;
     Msg : Message_Type;
   begin
+    if not Tcp_Soc.Is_Open then
+      Disconnection := True;
+      return;
+    end if;
     Disconnection := False;
     Txt := Text;
     -- Send slices of Message_Type

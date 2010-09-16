@@ -1,9 +1,9 @@
 include $(HOME)/Makefiles/common.mk
 
 ADAVIEW := $(REPOSIT)
-EXES := tcpchat
+EXES := tcpchat tios
 
-CLIBS_tcpchat := cutil posix2pcre pcre
+CLIBS := cutil posix2pcre pcre
 
 include $(TEMPLATES)/ada.mk
 
