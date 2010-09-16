@@ -5,18 +5,32 @@ package Ios is
   procedure Init (Port : in Asu_Us);
   Init_Error : exception;
 
-  -- Wait during Timemout (or up to disconnection)
-  procedure Wait (Timeout_Ms : in Integer;
-                  Disconnection : out Boolean);
+  -- Kind of event
+  type Event_Kind_List is (
+    Exit_Requested, -- User has hit Ctrl C
+    Disconnection,  -- Tcp connection broken
+    Global_Timeout, -- Global timeout has expired without sentence
+    Local_Timeout,  -- Read timeout without sentence, or end of Wait
+    Got_Sentence);  -- Got a sentence
+  type Event_Type (Kind : Event_Kind_List := Got_Sentence) is record
+    case Kind is
+      when Got_Sentence =>
+        Sentence : Asu_Us;
+      when others =>
+        null;
+    end case;
+  end record;
+
+  -- Arm / cancel global timer
+  procedure Start_Global_Timer (Timeout_Ms : Integer);
+  procedure Stop_Global_Timer;
+
+  -- Wait during Timeout (or up to global timeout or disconnection)
+  -- Normaly returns Local_Timeout
+  function Wait (Timeout_Ms : Integer) return Event_Type;
 
   -- Read next sentence. Wait up to Timeout
-  -- If Disconnection, other parameters are not significant
-  -- Elsif Timeout, other parameters is not significant
-  -- Else Text is significant
-  procedure Read (Timeout_Ms : in Integer;
-                  Disconnection : out Boolean;
-                  Timeout : out Boolean;
-                  Text : out Asu_Us);
+  function Read (Timeout_Ms : in Integer) return Event_Type;
 
   -- Send a sentence. Disconnection if error
   procedure Send (Text : in Asu_Us;
