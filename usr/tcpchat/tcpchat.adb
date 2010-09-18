@@ -1,6 +1,7 @@
+with Ada.Exceptions;
 with As.U; use As.U;
 with Basic_Proc, Argument, Argument_Parser;
-with Debug, Ios, Tree;
+with Debug, Ios, Tree, Events;
 procedure Tcpchat is
   procedure Usage is
   begin
@@ -63,16 +64,29 @@ begin
     Error ("Invalid arguments");
     return;
   end if;
-
   Debug.Log ("Arguments parsed OK.");
 
   -- Parse file
   Tree.Parse (File);
+  Debug.Log ("Tree file parsed OK.");
 
   -- Init Ios
   Ios.Init (Port);
-
   Debug.Log ("Init OK.");
 
+  -- Handle events
+  Events.Handle;
+
+  Debug.Log ("Done.");
+
+exception
+  when Tree.Parse_Error =>
+    Error ("Cannot parse Tree");
+  when Ios.Init_Error =>
+    Error ("Cannot init TCP connection");
+  when Error:others =>
+    Basic_Proc.Put_Line_Error ("ERROR: Exception "
+       & Ada.Exceptions.Exception_Name (Error) & " raised.");
+    raise;
 end Tcpchat;
 

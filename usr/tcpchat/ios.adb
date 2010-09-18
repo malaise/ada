@@ -1,7 +1,7 @@
 with Ada.Characters.Latin_1, Ada.Calendar;
 with Event_Mng, Ip_Addr, Socket, Tcp_Util, Input_Buffer, String_Mng,
      Unlimited_Pool, Timers;
-with Debug;
+with Debug, Tree;
 package body Ios is
 
   ------------------------
@@ -67,16 +67,16 @@ package body Ios is
   begin
     if Event.Kind /= Exit_Requested
     and then Event.Kind /= Disconnection then
-      Event := No_event;
+      Event := No_Event;
     end if;
   end Reset_Event;
 
   -- Sentence reception Cb
   procedure Sentence_Cb (Sentence : in String) is
   begin
-    -- Store
+    -- Store sentence without Lf
     Debug.Log ("Got sentence " & Sentence);
-    Sentences.Push (Asu_Tus (Sentence));
+    Sentences.Push (Asu_Tus (String_Mng.Replace (Sentence, Lf, "")));
   end Sentence_Cb;
 
   -- Message reception Cb
@@ -154,25 +154,36 @@ package body Ios is
   -- Possibly stop waiting if a sentence is ready
   procedure Wait_Event (Timeout_Ms : in Integer;
                        Stop_On_Sentence : in Boolean) is
+    Wait_Def : Timers.Delay_Rec;
+    Inf : Timers.Delay_Rec(Timers.Delay_Sec);
     Exp : Timers.Delay_Rec(Timers.Delay_Exp);
     Evt : Event_Mng.Out_Event_List;
     use type Ada.Calendar.Time, Event_Mng.Out_Event_List;
   begin
-    Exp.Expiration_Time := Ada.Calendar.Clock + Duration(Timeout_Ms) / 1_000.0;
+    -- Set infinite timeout sec or compute expiration time
+    if Timeout_Ms = Tree.Infinite_Ms then
+      Inf.Delay_Seconds := Timers.Infinite_Seconds;
+      Wait_Def := Inf;
+    else
+      Exp.Expiration_Time := Ada.Calendar.Clock
+                           + Duration(Timeout_Ms) / 1_000.0;
+      Wait_Def := Exp;
+    end if;
+
     loop
       -- Wait until timeout or an event
       exit when Event /= No_Event;
       -- On option wait until sentence ready
       exit when Stop_On_Sentence and then not Sentences.Is_Empty;
-      Evt := Event_Mng.Wait (Exp);
+      Evt := Event_Mng.Wait (Wait_Def);
       exit when Evt = Event_Mng.No_Event;
     end loop;
     if Event /= No_Event then
-      Debug.log ("Wait event exiting cause event is " & Event.Kind'Img);
+      Debug.Log ("Wait event exiting cause event is " & Event.Kind'Img);
     elsif Stop_On_Sentence and then not Sentences.Is_Empty then
-      Debug.log ("Wait event exiting cause sentence got");
+      Debug.Log ("Wait event exiting cause sentence got");
     else
-      Debug.log ("Wait event exiting cause Evt is " & Evt'Img);
+      Debug.Log ("Wait event exiting cause Evt is " & Evt'Img);
     end if;
   end Wait_Event;
 
@@ -197,6 +208,8 @@ package body Ios is
     -- Init Cbs
     Event_Mng.Set_Sig_Term_Callback (Signal_Cb'Access);
     Open;
+
+    Debug.Log ("Ios open OK");
   exception
     when others =>
       raise Init_Error;
@@ -206,8 +219,10 @@ package body Ios is
   procedure Start_Global_Timer (Timeout_Ms : Integer) is
     Exp : Timers.Delay_Rec(Timers.Delay_Sec);
   begin
-    Exp.Delay_Seconds := Duration(Timeout_Ms) / 1_000.0;
-    Global_Tid := Timers.Create (Exp, Timer_Cb'Access);
+    if Timeout_Ms /= Tree.Infinite_Ms then
+      Exp.Delay_Seconds := Duration(Timeout_Ms) / 1_000.0;
+      Global_Tid := Timers.Create (Exp, Timer_Cb'Access);
+    end if;
   end Start_Global_Timer;
 
   procedure Stop_Global_Timer is
@@ -223,6 +238,7 @@ package body Ios is
   function Wait (Timeout_Ms : Integer) return Event_Type is
     Loc_Event : Event_Type;
   begin
+    Debug.Log ("Wait " & Timeout_Ms'Img);
     Wait_Event (Timeout_Ms, False);
     if Event /= No_Event then
       -- Something occured
@@ -241,6 +257,7 @@ package body Ios is
   function Read (Timeout_Ms : in Integer) return Event_Type is
     Loc_Event : Event_Type;
   begin
+    Debug.Log ("Read " & Timeout_Ms'Img);
     Wait_Event (0, False);
     if Event /= No_Event then
       -- Something occured
