@@ -1,10 +1,15 @@
+with Ada.Calendar;
 with As.U; use As.U;
-with Basic_Proc, Regular_Expressions, Command;
+with Basic_Proc, Regular_Expressions, Command, Date_Image;
 with Tree, Ios;
 package body Events is
 
   -- Report progress
-  procedure Put_Line (Str : in String) renames Basic_Proc.Put_Line_Output;
+  procedure Put_Line (Str : in String) is
+  begin
+    Basic_Proc.Put_Line_Output (Date_Image (Ada.Calendar.Clock)
+                              & " => " & Str & ".");
+  end Put_Line;
 
   -- Output flow of called command
   Flow : aliased Command.Flow_Rec(Command.Str);
@@ -82,7 +87,7 @@ package body Events is
                   if Child.Kind = Read
                   and then not Asu_Is_Null (Child.Text) then
                     -- This is the start of a new chat
-                    Put_Line ("Starting chat " & Asu_ts (Child.Text));
+                    Put_Line ("Starting chat " & Asu_Ts (Child.Name));
                     Ios.Start_Global_Timer (Child.Timeout);
                   end if;
                   -- Move to the child of this select entry

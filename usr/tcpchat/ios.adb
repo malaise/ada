@@ -59,6 +59,7 @@ package body Ios is
     and then Event.Kind /= Disconnection then
       Event := (Kind => Global_Timeout);
     end if;
+    Global_Tid := Timers.No_Timer;
     return True;
   end Timer_Cb;
 

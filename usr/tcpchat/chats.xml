@@ -4,13 +4,13 @@
 
 <chats TimeoutMs="21_000">
   <chat Name="httpTopic0.9"
-        >GET http://localhost/${HOME}/tmp/Topic_Type\.dtd</chat>
+        >GET http://localhost${HOME}/tmp/Topic_Type\.dtd</chat>
   <script>
     <call>cat Topic_Type.dtd</call>
     <close/>
   </script>
   <chat Name="httpTopic1."
-        >GET http://localhost/${HOME}/tmp/Topic_Type\.dtd HTTP/1\.(0|1)</chat>
+        >GET http://localhost${HOME}/tmp/Topic_Type\.dtd HTTP/1\.(0|1)</chat>
   <script>
     <read></read>
     <send>HTTP/1.1 200 OK</send>
@@ -32,8 +32,8 @@
     <close/>
   </script>
   <chat Name="testPpp"
-        InputDefaultTimeoutMs="5_000"
-        TimeoutMs="2_100">login</chat>
+        InputDefaultTimeoutMs="60_000"
+        >login</chat>
   <script>
     <send>me</send>
     <read TimeoutMs="10_000">password</read>
