@@ -186,11 +186,15 @@ package body Command is
     end if;
 
     -- Init results and 'global' exchange variables
+    if Mix_Policy /= None then
+      Reset_Flow (Out_Flow.all);
+    end if;
+    if Mix_Policy = Both then
+      Reset_Flow (Err_Flow.all);
+    end if;
     Output_Done := False;
-    Reset_Flow (Out_Flow.all);
     Output_Result := Out_Flow;
     Error_Done := False;
-    Reset_Flow (Err_Flow.all);
     Error_Result := Err_Flow;
     Child_Done := False;
     Exit_Code := Error;
