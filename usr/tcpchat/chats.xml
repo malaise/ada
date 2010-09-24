@@ -40,19 +40,31 @@
     <close/>
   </script>
   <!-- TEST simulate a ppp login chat -->
-  <chat Name="testPpp"
-        InputDefaultTimeoutMs="60_000"
-        >login</chat>
+  <chat Name="testPpp">ppp</chat>
   <script>
-    <send>me</send>
-    <read TimeoutMs="10_000">password</read>
-    <send>pass</send>
-    <read>logged</read>
-    <wait DelayMs="2000"/>
-    <send>bye</send>
-    <read>bye</read>
-    <wait DelayMs="500"/>
-    <close/>
+    <send>AT</send>
+    <read TimeoutMs="5_000">OK</read>
+    <send>ATQ0 V1 E1 S0=0 &amp;C1 &amp;D2 +FCLASS=0</send>
+    <read TimeoutMs="5_000">OK</read>
+    <send>ATDT0860922000</send>
+    <select TimeoutMs="60_000">
+      <expect>BUSY|ERROR|NO CARRIER|VOICE|NO DIAL ?TONE|NO ANSWER|DELAYED</expect>
+      <script>
+        <close/>
+      </script>
+      <expect>CONNECT( [0-9]+)?</expect>
+      <script>
+        <read TimeoutMs="30_000">.ogin</read>
+        <send>malaise</send>
+        <read TimeoutMs="10_000">.{4}word</read>
+        <send>${PASSWORD}</send>
+        <send>Working: Please wait...</send>
+        <wait DelayMs="5_000"/>
+        <send>Done. Please logout.</send>
+        <read TimeoutMs="10_000">logout</read>
+        <close/>
+      </script>
+    </select>
   </script>
   <!-- TEST multiple select -->
   <chat Name="testMulti"

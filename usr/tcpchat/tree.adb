@@ -14,7 +14,7 @@ package body Tree is
                    Msg : in String) is
   begin
     Basic_Proc.Put_Line_Error ("XML ERROR at line "
-      & Natural'Image (Ctx.Get_Line_No (Xnode)) & ": " & Msg);
+      & Natural'Image (Ctx.Get_Line_No (Xnode)) & ": " & Msg & ".");
     raise Parse_Error;
   end Error;
 
@@ -37,7 +37,7 @@ package body Tree is
     return Default_Timeout;
   exception
     when Constraint_Error =>
-      Error (Xnode, "Invalid timeout value for " & Name & ".");
+      Error (Xnode, "Invalid timeout value for " & Name);
       raise Parse_Error;
   end Get_Timeout;
 
@@ -64,7 +64,7 @@ package body Tree is
       Text := Asu_Tus (String_Mng.Eval_Variables (
                 Asu_Ts (Text), "${", "}", Environ.Getenv_If_Set'Access,
                 Muliple_Passes => False,
-                No_Check_Stop => False,
+                No_Check_Stop => True,
                 Skip_Backslashed => True));
       -- Restore baslashed delimiters
       Text := Asu_Tus (String_Mng.Replace (Asu_Ts (Text), "\${", "${"));
@@ -349,14 +349,13 @@ package body Tree is
     begin
       Ctx.Parse (Asu_Ts (File_Name), Ok);
       if not Ok then
-        Basic_Proc.Put_Line_Error ("XML ERROR: "
-             & Ctx.Get_Parse_Error_Message & ".");
+        Basic_Proc.Put_Line_Error ("XML ERROR: " & Ctx.Get_Parse_Error_Message);
         raise Parse_Error;
       end if;
     exception
       when Xml_Parser.File_Error =>
         Basic_Proc.Put_Line_Error ("XML ERROR: Cannot access to file "
-          & Asu_Ts (File_Name));
+          & Asu_Ts (File_Name) & ".");
         raise Parse_Error;
     end;
     Debug.Log ("File " & Asu_Ts (File_Name) & " parsed OK.");
