@@ -26,7 +26,8 @@
    - a close statement: Close current connection and go back expecting a chat
      script selection.
    - nothing else to do: Keep connection open and go back expecting a chat
-     script selection.
+     script selection. The chat timeout, if any, remains active until a new
+     chat is selected.
 
   The following situations lead to the termination (closure) of current
      script:
@@ -43,7 +44,6 @@
 <!ENTITY % boolean "(true|false)">
 
 <!ELEMENT chats (chat,script)+>
-<!ATTLIST chats TimeoutMs CDATA #IMPLIED>
 <!ELEMENT chat (#PCDATA)>
 <!ATTLIST chat Name ID #REQUIRED
                TimeoutMs CDATA #IMPLIED

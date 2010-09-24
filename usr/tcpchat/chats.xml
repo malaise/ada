@@ -2,7 +2,7 @@
 <!DOCTYPE chats SYSTEM "chats.dtd">
 <!-- Example of TCP chat script -->
 
-<chats TimeoutMs="1_000">
+<chats>
   <!-- HTTP 0.9: Send file -->
   <chat Name="httpTopic0.9"
         >GET http://localhost${HOME}/t_xml/Topic_Type\.dtd</chat>
@@ -56,7 +56,7 @@
   </script>
   <!-- TEST multiple select -->
   <chat Name="testMulti"
-        InputDefaultTimeoutMs="10_000">testMulti</chat>
+        InputDefaultTimeoutMs="None">testMulti</chat>
     <!-- A chat is like a expect, but with attibutes (Name...) -->
   <script>
     <send></send>

@@ -27,7 +27,11 @@ package body Tree is
   begin
     for I in Attrs'Range loop
       if Asu_Ts (Attrs(I).Name) = Name then
-        return Integer'Value (Asu_Ts (Attrs(I).Value));
+        if Asu_Ts (Attrs(I).Value) = "None" then
+          return Infinite_Ms;
+        else
+          return Integer'Value (Asu_Ts (Attrs(I).Value));
+        end if;
       end if;
     end loop;
     return Default_Timeout;
@@ -176,6 +180,9 @@ package body Tree is
       Node.Kind := Wait;
       -- Delay is mandatory
       Node.Timeout := Get_Timeout (Xnode, Infinite_Ms, "DelayMs");
+      if Node.Timeout < 0 then
+        Error (Xnode, "Invalid delay");
+      end if;
     elsif Name = "send" then
       Node.Kind := Send;
       -- Get text
@@ -357,7 +364,7 @@ package body Tree is
     -- Build Tree
     Debug.Log ("Building tree:");
     Xnode := Ctx.Get_Root_Element;
-    Insert_Node (Xnode, Infinite_Ms);
+Insert_Node (Xnode, Infinite_Ms);
     Chats.Move_Root;
     Debug.Log ("Updating Next:");
     Dummy := Update_Next (No_Position);

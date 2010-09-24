@@ -42,15 +42,11 @@ package body Events is
       case Node.Kind is
         when Selec =>
           -- If we are root
-          --  Cancel previous chat timeout if we are in chat
+          --  Keep previous chat timeout if we are in chat
           --  No select timeout if we are not in chat (no useless reset)
           Timeout := Node.Timeout;
-          if not Chats.Has_Father then
-            if In_Chat then
-              Ios.Stop_Global_Timer;
-            else
-              Timeout := Infinite_Ms;
-            end if;
+          if not Chats.Has_Father and then not In_Chat then
+            Timeout := Infinite_Ms;
           end if;
           -- Read a sentence
           Event := Ios.Read (Timeout);
@@ -93,9 +89,10 @@ package body Events is
                            Strict   => True) ) then
                   -- This read child matches (or is default)
                   if Child.Kind = Read
-                  and then not Asu_Is_Null (Child.Text) then
+                  and then not Asu_Is_Null (Child.Name) then
                     -- This is the start of a new chat
                     Put_Line ("Starting chat " & Asu_Ts (Child.Name));
+                    Ios.Stop_Global_Timer;
                     Ios.Start_Global_Timer (Child.Timeout);
                   end if;
                   -- Move to the child of this select entry
