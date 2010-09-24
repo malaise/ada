@@ -41,10 +41,16 @@ package body Events is
       Node := Chats.Read;
       case Node.Kind is
         when Selec =>
-          -- No timeout if we are root and not in chat
+          -- If we are root
+          --  Cancel previous chat timeout if we are in chat
+          --  No select timeout if we are not in chat (no useless reset)
           Timeout := Node.Timeout;
-          if not Chats.Has_Father and then not In_Chat then
-            Timeout := Infinite_Ms;
+          if not Chats.Has_Father then
+            if In_Chat then
+              Ios.Stop_Global_Timer;
+            else
+              Timeout := Infinite_Ms;
+            end if;
           end if;
           -- Read a sentence
           Event := Ios.Read (Timeout);
@@ -53,7 +59,9 @@ package body Events is
               Put_Line ("Exit requested");
               return;
             when Ios.Disconnection =>
-              Put_Line ("Disconnection");
+              if In_Chat then
+                Put_Line ("Disconnection");
+              end if;
               Reset;
             when Ios.Global_Timeout =>
               Put_Line ("Timeout on chat script");
@@ -92,6 +100,7 @@ package body Events is
                   end if;
                   -- Move to the child of this select entry
                   Set_Position (Child.Next.all);
+                  In_Chat := True;
                   exit Children;
                 elsif not Chats.Has_Brother (False) then
                   -- No more child

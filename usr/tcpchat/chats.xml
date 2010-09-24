@@ -2,15 +2,17 @@
 <!DOCTYPE chats SYSTEM "chats.dtd">
 <!-- Example of TCP chat script -->
 
-<chats TimeoutMs="21_000">
+<chats TimeoutMs="1_000">
+  <!-- HTTP 0.9: Send file -->
   <chat Name="httpTopic0.9"
-        >GET http://localhost${HOME}/tmp/Topic_Type\.dtd</chat>
+        >GET http://localhost${HOME}/t_xml/Topic_Type\.dtd</chat>
   <script>
-    <call>cat Topic_Type.dtd</call>
+    <call>cat ${HOME}/t_xml/Topic_Type.dtd</call>
     <close/>
   </script>
-  <chat Name="httpTopic1."
-        >GET http://localhost${HOME}/tmp/Topic_Type\.dtd HTTP/1\.(0|1)</chat>
+  <!-- HTTP 1.0 or 1.1: Send header + file -->
+  <chat Name="httpTopic1." TimeoutMs="1_000"
+        >GET http://localhost${HOME}/t_xml/Topic_Type\.dtd HTTP/1\.(0|1)</chat>
   <script>
     <read></read>
     <send>HTTP/1.1 200 OK</send>
@@ -23,14 +25,21 @@
     <send>Content-Length: 293</send>
     <send>Content-Type: application/xml-dtd</send>
     <send></send>
-    <call>cat Topic_Type.dtd</call>
+    <call>cat ${HOME}/t_xml/Topic_Type.dtd</call>
     <close/>
   </script>
+  <!-- Tcping: Send pong and leav connected -->
+  <chat Name="tcping" TimeoutMs="1_000">(tc)?ping</chat>
+  <script>
+    <send>pong</send>
+  </script>
+  <!-- TEST wait then close -->
   <chat Name="testWaitClose">close</chat>
   <script>
     <wait DelayMs="1000"/>
     <close/>
   </script>
+  <!-- TEST simulate a ppp login chat -->
   <chat Name="testPpp"
         InputDefaultTimeoutMs="60_000"
         >login</chat>
@@ -45,8 +54,9 @@
     <wait DelayMs="500"/>
     <close/>
   </script>
+  <!-- TEST multiple select -->
   <chat Name="testMulti"
-        InputDefaultTimeoutMs="1_000">testMulti</chat>
+        InputDefaultTimeoutMs="10_000">testMulti</chat>
     <!-- A chat is like a expect, but with attibutes (Name...) -->
   <script>
     <send></send>

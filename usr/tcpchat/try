@@ -1,3 +1,5 @@
 #!/bin/bash
-export TCPCHAT_DEBUG=Y
+if [ "$1" = "-d" ] ; then
+  export TCPCHAT_DEBUG=Y
+fi
 tcpchat -p 50000 -f chats.xml
