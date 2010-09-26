@@ -39,8 +39,8 @@
     <wait DelayMs="1000"/>
     <close/>
   </script>
-  <!-- TEST simulate a ppp login chat -->
-  <chat Name="testPpp">ppp</chat>
+  <!-- TEST simulate a ppp login chat user side -->
+  <chat Name="testPpp1">ppp1</chat>
   <script>
     <send>AT</send>
     <read TimeoutMs="5_000">OK</read>
@@ -65,6 +65,27 @@
         <close/>
       </script>
     </select>
+  </script>
+  <!-- TEST simulate a ppp login chat modem side -->
+  <chat Name="testPpp2">ppp2</chat>
+  <script>
+    <read>AT</read>
+    <send>OK</send>
+    <read>ATQ0 V1 E1 S0=0 &amp;C1 &amp;D2 \+FCLASS=0</read>
+    <send>OK</send>
+    <read>ATDT0860922000</read>
+    <wait DelayMs="21_000"/>
+    <send>CONNECT 56000</send>
+    <wait DelayMs="10_000"/>
+    <send>login</send>
+    <read>malaise</read>
+    <send>password</send>
+    <read>${PASSWORD}</read>
+    <send>Working: Please wait...</send>
+    <wait DelayMs="5_000"/>
+    <send>Done. Please logout.</send>
+    <read TimeoutMs="10_000">logout</read>
+    <close/>
   </script>
   <!-- TEST multiple select -->
   <chat Name="testMulti"
