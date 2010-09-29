@@ -3,4 +3,4 @@ if [ "$1" = "-d" ] ; then
   export TCPCHAT_DEBUG=Y
 fi
 export PASSWORD="userpass"
-tcpchat -p 50000 -f chats.xml
+exec tcpchat -p 50000 -f chats.xml

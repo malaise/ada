@@ -1,5 +1,5 @@
-with Basic_Proc, Xml_Parser, String_Mng, Environ, Text_Line, Mixed_Str;
-with Debug;
+with Basic_Proc, Xml_Parser, String_Mng, Text_Line, Mixed_Str;
+with Debug, Variables;
 package body Tree is
 
   -- "Global" variables
@@ -41,7 +41,7 @@ package body Tree is
       raise Parse_Error;
   end Get_Timeout;
 
-  -- Expand ENV variables in text
+  -- Get text (PCDATA) of a node
   function Get_Text (Xnode : Xml_Parser.Element_Type;
                      Regexp : Boolean) return Asu_Us is
     Tnode : Xml_Parser.Text_Type;
@@ -60,26 +60,16 @@ package body Tree is
         Error (Xnode, "Invalid line-feed character in text");
         raise Parse_Error;
       end if;
-      -- Expand ENV variables of text
-      Text := Asu_Tus (String_Mng.Eval_Variables (
-                Asu_Ts (Text), "${", "}", Environ.Getenv_If_Set'Access,
-                Muliple_Passes => False,
-                No_Check_Stop => True,
-                Skip_Backslashed => True));
-      -- Restore baslashed delimiters
-      Text := Asu_Tus (String_Mng.Replace (Asu_Ts (Text), "\${", "${"));
-      Text := Asu_Tus (String_Mng.Replace (Asu_Ts (Text), "\}", "}"));
+      -- Check that text expands correctly
+      Variables.Check (Text);
     end if;
     if Regexp then
       Text := "^" & Text & "$";
     end if;
     return Text;
   exception
-    when Environ.Name_Error =>
-      Error (Xnode, "Unknown variable");
-      raise Parse_Error;
-    when String_Mng.Inv_Delimiter | String_Mng.Delimiter_Mismatch =>
-      Error (Xnode, "Invalid variable reference");
+    when Variables.Check_Error =>
+      Error (Xnode, "Invalid expression");
       raise Parse_Error;
   end Get_Text;
 
