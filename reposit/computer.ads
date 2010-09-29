@@ -9,9 +9,8 @@ package Computer is
   -- Reset not persistent or all variables
   procedure Reset (Not_Persistent : in Boolean);
   -- Set (store), maybe overwrite a variable
-  -- May raise Constant_Exists if Modifiable is set and a variable
-  --  with this name already exists, or if Modifiable is not set but a
-  --  non modifiable variable with this name already exists.
+  -- May raise Constant_Exists if a variable with this name already exists
+  --  and if either previous value or new value is not Modifiable
   procedure Set (Name : in String;
                  Value : in String;
                  Modifiable : in Boolean;
