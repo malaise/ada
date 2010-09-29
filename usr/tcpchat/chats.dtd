@@ -44,7 +44,7 @@
 <!ENTITY % boolean "(true|false)">
 <!ENTITY None "None">
 
-<!ENTITY % ReadDef "IsRegexp %boolean; 'false'
+<!ENTITY % ReadDef "Regexp %boolean; 'false'
                     Assign CDATA #IMPLIED">
 
 <!ELEMENT chats (chat,script)+>

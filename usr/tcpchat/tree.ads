@@ -23,6 +23,9 @@ package Tree is
     Text : Asu_Us;
     -- For Selec, Read, Skip, Wait
     Timeout : Integer := Infinite_Ms;
+    -- For chat, read
+    Regexp : Boolean := False;
+    Assign : Asu_Us;
     -- Next statement
     Next : Node_Access := null;
   end record;

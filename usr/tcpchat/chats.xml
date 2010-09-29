@@ -4,15 +4,15 @@
 
 <chats>
   <!-- HTTP 0.9: Send file -->
-  <chat Name="httpTopic0.9" TimeoutMs="&None;"
-        >GET http://localhost${HOME}/t_xml/Topic_Type\.dtd</chat>
+  <chat Name="httpTopic0.9" TimeoutMs="&None;" Regexp="true" Assign="FILE=${1}"
+        >GET http://localhost([^ ]+)</chat>
   <script>
-    <call>cat ${HOME}/t_xml/Topic_Type.dtd</call>
+    <call>cat ${FILE}</call>
     <close/>
   </script>
   <!-- HTTP 1.0 or 1.1: Send header + file -->
-  <chat Name="httpTopic1." TimeoutMs="1_000"
-        >GET http://localhost${HOME}/t_xml/Topic_Type\.dtd HTTP/1\.(0|1)</chat>
+  <chat Name="httpTopic1." TimeoutMs="1_000" Regexp="true" Assign="FILE=${1}"
+        >GET http://localhost([^ ]+) +HTTP/1\.(0|1)</chat>
   <script>
     <read></read>
     <send>HTTP/1.1 200 OK</send>
@@ -25,11 +25,11 @@
     <send>Content-Length: 293</send>
     <send>Content-Type: application/xml-dtd</send>
     <send></send>
-    <call>cat ${HOME}/t_xml/Topic_Type.dtd</call>
+    <call>cat ${FILE}</call>
     <close/>
   </script>
   <!-- Tcping: Send pong and leav connected -->
-  <chat Name="tcping" TimeoutMs="1_000">(tc)?ping</chat>
+  <chat Name="tcping" TimeoutMs="1_000" Regexp="true">(tc)?ping</chat>
   <script>
     <send>pong</send>
   </script>
@@ -52,11 +52,11 @@
       <script>
         <close/>
       </script>
-      <expect>CONNECT( [0-9]+)?</expect>
+      <expect Regexp="true">CONNECT( [0-9]+)?</expect>
       <script>
         <read TimeoutMs="30_000">.ogin</read>
         <send>malaise</send>
-        <read TimeoutMs="10_000">.{4\}word</read>
+        <read TimeoutMs="10_000" Regexp="true">.{4\}word</read>
         <send>${PASSWORD}</send>
         <send>Working: Please wait...</send>
         <wait DelayMs="5_000"/>

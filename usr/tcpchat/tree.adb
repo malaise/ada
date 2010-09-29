@@ -1,5 +1,5 @@
-with Basic_Proc, Xml_Parser, String_Mng, Text_Line, Mixed_Str;
-with Debug, Variables;
+with Basic_Proc, Xml_Parser, String_Mng.Regex, Text_Line, Mixed_Str;
+with Debug, Variables, Matcher;
 package body Tree is
 
   -- "Global" variables
@@ -42,35 +42,60 @@ package body Tree is
   end Get_Timeout;
 
   -- Get text (PCDATA) of a node
-  function Get_Text (Xnode : Xml_Parser.Element_Type;
-                     Regexp : Boolean) return Asu_Us is
+  -- Get other attributes (Regexp, Assign)
+  -- Check consistency
+  procedure Get_Text (Xnode : in Xml_Parser.Element_Type;
+                      Node : in out Node_Rec) is
     Tnode : Xml_Parser.Text_Type;
-    Text : Asu_Us;
-    use type Asu_Us;
+    Attrs : constant Xml_Parser.Attributes_Array
+          := Ctx.Get_Attributes (Xnode);
+    Dummy : Boolean;
+    pragma Unreferenced (Dummy);
   begin
+    -- Get Text from child
     if Ctx.Get_Nb_Children (Xnode) = 0 then
-      -- Empty text => no child
-      Text := Asu_Null;
+      -- No child => Empty text
+      Node.Text := Asu_Null;
     else
-      -- Get text
+      -- Text child
       Tnode := Ctx.Get_Child (Xnode, 1);
-      Text := Ctx.Get_Text (Tnode);
+      Node.Text := Ctx.Get_Text (Tnode);
       -- No Line feed accepted
-      if String_Mng.Locate (Asu_Ts (Text), Line_Feed) /= 0 then
+      if String_Mng.Locate (Asu_Ts (Node.Text), Line_Feed) /= 0 then
         Error (Xnode, "Invalid line-feed character in text");
         raise Parse_Error;
       end if;
-      -- Check that text expands correctly
-      Variables.Check (Text);
     end if;
-    if Regexp then
-      Text := "^" & Text & "$";
+
+    -- Get Regexp and Assign attributes
+    for I in Attrs'Range loop
+      if Asu_Ts (Attrs(I).Name) = "Regexp" then
+        if Asu_Ts (Attrs(I).Value) = "true" then
+          Node.Regexp := True;
+        end if;
+      elsif Asu_Ts (Attrs(I).Name) = "Assign" then
+        Node.Assign := Attrs(I).Value;
+      end if;
+    end loop;
+    if not Node.Regexp and then not Asu_Is_Null (Node.Assign) then
+      Error (Xnode, "Assignment is only allowed with Regex expressions");
     end if;
-    return Text;
+
+    -- Normalize Assign to a sequence of "Var=${Val}" separated by a space
+    if not Asu_Is_Null (Node.Assign) then
+      Node.Assign := Asu_Tus (String_Mng.Regex.Replace (Asu_Ts (Node.Assign),
+                                                "\n| |\t", " "));
+      while Asu.Element (Node.Assign, 1) = ' ' loop
+        Asu.Delete (Node.Assign, 1, 1);
+      end loop;
+      Node.Assign := Asu_Tus (String_Mng.Strip (Asu_Ts (Node.Assign)));
+    end if;
+
+    -- Check expansion and maybe Regexp
+    Dummy := Matcher.Match (Node, Asu_Tus ("Dummy"), Check_Only => True);
   exception
-    when Variables.Check_Error =>
-      Error (Xnode, "Invalid expression");
-      raise Parse_Error;
+    when Variables.Expand_Error =>
+      Error (Xnode, "Invalid expresssion");
   end Get_Text;
 
   -- For dump of our tree
@@ -92,10 +117,16 @@ package body Tree is
     end case;
     case Node.Kind is
       when Selec | Read | Skip | Wait =>
-        Basic_Proc.Put_Error ("Timeout: " & Node.Timeout'Img);
+        Basic_Proc.Put_Error ("Timeout: " & Node.Timeout'Img & " ");
       when others =>
         null;
     end case;
+    if Node.Regexp then
+      Basic_Proc.Put_Error ("Regexp ");
+    end if;
+    if not Asu_Is_Null (Node.Assign) then
+      Basic_Proc.Put_Error ("Assign: >" & Asu_Ts (Node.Assign) & "< ");
+    end if;
     Basic_Proc.New_Line_Error;
     return True;
   end Dump;
@@ -137,7 +168,7 @@ package body Tree is
       -- This is the overall timeout of the chat script
       Node.Timeout := Get_Timeout (Xnode, Infinite_Ms);
       -- Get expect text
-      Node.Text := Get_Text (Xnode, True);
+      Get_Text (Xnode, Node);
       -- Set default timeout for children
       Default_Timeout := Get_Timeout (Xnode, Infinite_Ms,
                                       "InputDefaultTimeoutMs");
@@ -150,7 +181,7 @@ package body Tree is
       -- The expect of a select => Read without timeout
       Node.Kind := Read;
       -- Get expect text
-      Node.Text := Get_Text (Xnode, True);
+      Get_Text (Xnode, Node);
       -- Move to script first entry
       Child := Ctx.Get_Child (Ctx.Get_Brother (Xnode), 1);
     elsif Name = "default" then
@@ -162,7 +193,7 @@ package body Tree is
       Node.Kind := Read;
       Node.Timeout := Get_Timeout (Xnode, Timeout);
       -- Get text
-      Node.Text := Get_Text (Xnode, True);
+      Get_Text (Xnode, Node);
     elsif Name = "skip" then
       Node.Kind := Skip;
       Node.Timeout := Get_Timeout (Xnode, Timeout);
@@ -176,7 +207,7 @@ package body Tree is
     elsif Name = "send" then
       Node.Kind := Send;
       -- Get text
-      Node.Text := Get_Text (Xnode, False);
+      Get_Text (Xnode, Node);
       -- See if Newline
       if Asu_Ts (Ctx.Get_Attribute (Xnode, 1).Value) = "true" then
         Asu.Append (Node.Text, Line_Feed);
@@ -184,7 +215,7 @@ package body Tree is
     elsif Name = "call" then
       Node.Kind := Call;
       -- Get text
-      Node.Text := Get_Text (Xnode, False);
+      Get_Text (Xnode, Node);
     elsif Name = "close" then
       Node.Kind := Close;
     else
@@ -353,7 +384,7 @@ package body Tree is
     -- Build Tree
     Debug.Log ("Building tree:");
     Xnode := Ctx.Get_Root_Element;
-Insert_Node (Xnode, Infinite_Ms);
+    Insert_Node (Xnode, Infinite_Ms);
     Chats.Move_Root;
     Debug.Log ("Updating Next:");
     Dummy := Update_Next (No_Position);

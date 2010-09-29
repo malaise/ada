@@ -1,7 +1,7 @@
 with Ada.Calendar;
 with As.U; use As.U;
-with Basic_Proc, Regular_Expressions, Command, Date_Image;
-with Variables, Tree, Ios;
+with Basic_Proc, Command, Date_Image;
+with Variables, Tree, Ios, Matcher;
 package body Events is
 
   -- Report progress
@@ -85,10 +85,7 @@ package body Events is
                     exit Children;
                   elsif Child.Kind = Default
                   or else (Child.Kind = Read and then
-                           Regular_Expressions.Match (
-                             Criteria => Variables.Expand (Child.Text),
-                             Str      => Asu_Ts (Event.Sentence),
-                             Strict   => True) ) then
+                           Matcher.Match (Child, Event.Sentence) ) then
                     -- This read child matches (or is default)
                     if Child.Kind = Read
                     and then not Asu_Is_Null (Child.Name) then
@@ -127,10 +124,7 @@ package body Events is
                 Reset;
               when Ios.Got_Sentence =>
                 -- Check match
-                if Regular_Expressions.Match (
-                     Criteria => Asu_Ts (Variables.Expand (Node.Text)),
-                     Str      => Asu_Ts (Event.Sentence),
-                     Strict   => True) then
+                if Matcher.Match (Node, Event.Sentence) then
                   Set_Position (Node.Next.all);
                 else
                   Put_Line ("Read mismatch");
@@ -229,7 +223,7 @@ package body Events is
         end case;
       exception
         when Variables.Expand_Error =>
-          Put_Line ("ERROR expanding expression");
+          Put_Line ("ERROR expanding expression, variable not found");
           Reset;
       end;
     end loop;
