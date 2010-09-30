@@ -1,5 +1,5 @@
 with As.U; use As.U;
-with Trees, Event_Mng;
+with Trees, Event_Mng, Property_Def;
 package Tree is
 
   -- Parse file and build tree
@@ -11,6 +11,10 @@ package Tree is
 
   -- Infinite timeout
   Infinite_Ms : constant Integer := Event_Mng.Infinite_Ms;
+
+  -- Max nb of assignments
+  Max_Assignments : constant Positive := 9;
+  subtype Assignments is Property_Def.Properties (1 .. Max_Assignments);
 
   -- Node
   type Position_Access;
@@ -25,7 +29,7 @@ package Tree is
     Timeout : Integer := Infinite_Ms;
     -- For chat, read
     Regexp : Boolean := False;
-    Assign : Asu_Us;
+    Assign : Assignments;
     -- Next statement
     Next : Node_Access := null;
   end record;

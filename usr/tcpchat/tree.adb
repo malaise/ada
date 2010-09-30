@@ -1,5 +1,5 @@
-with Basic_Proc, Xml_Parser, String_Mng.Regex, Text_Line, Mixed_Str;
-with Debug, Variables, Matcher;
+with Basic_Proc, Xml_Parser, String_Mng, Text_Line, Mixed_Str, Any_Def;
+with Debug, Matcher;
 package body Tree is
 
   -- "Global" variables
@@ -49,8 +49,7 @@ package body Tree is
     Tnode : Xml_Parser.Text_Type;
     Attrs : constant Xml_Parser.Attributes_Array
           := Ctx.Get_Attributes (Xnode);
-    Dummy : Boolean;
-    pragma Unreferenced (Dummy);
+    Assign : Asu_Us;
   begin
     -- Get Text from child
     if Ctx.Get_Nb_Children (Xnode) = 0 then
@@ -74,33 +73,24 @@ package body Tree is
           Node.Regexp := True;
         end if;
       elsif Asu_Ts (Attrs(I).Name) = "Assign" then
-        Node.Assign := Attrs(I).Value;
+        Assign := Attrs(I).Value;
       end if;
     end loop;
-    if not Node.Regexp and then not Asu_Is_Null (Node.Assign) then
+    if not Node.Regexp and then not Asu_Is_Null (Assign) then
       Error (Xnode, "Assignment is only allowed with Regex expressions");
     end if;
 
-    -- Normalize Assign to a sequence of "Var=${Val}" separated by a space
-    if not Asu_Is_Null (Node.Assign) then
-      Node.Assign := Asu_Tus (String_Mng.Regex.Replace (Asu_Ts (Node.Assign),
-                                                "\n| |\t", " "));
-      while Asu.Element (Node.Assign, 1) = ' ' loop
-        Asu.Delete (Node.Assign, 1, 1);
-      end loop;
-      Node.Assign := Asu_Tus (String_Mng.Strip (Asu_Ts (Node.Assign)));
-    end if;
-
     -- Check expansion and maybe Regexp
-    Dummy := Matcher.Match (Node, Asu_Tus ("Dummy"), Check_Only => True);
+    Matcher.Check (Node, Assign);
   exception
-    when Variables.Expand_Error =>
+    when Matcher.Match_Error =>
       Error (Xnode, "Invalid expresssion");
   end Get_Text;
 
   -- For dump of our tree
   function Dump (Node : Node_Rec; Level : Natural) return Boolean is
     Tab : constant String (1 .. 2 * Level) := (others => ' ');
+    use type Any_Def.Any_Kind_List;
   begin
     Basic_Proc.Put_Error (Tab & Mixed_Str (Node.Kind'Img) & ": " );
     if not Asu_Is_Null (Node.Name) then
@@ -123,9 +113,12 @@ package body Tree is
     end case;
     if Node.Regexp then
       Basic_Proc.Put_Error ("Regexp ");
-    end if;
-    if not Asu_Is_Null (Node.Assign) then
-      Basic_Proc.Put_Error ("Assign: >" & Asu_Ts (Node.Assign) & "< ");
+      Basic_Proc.Put_Error ("Assign: " );
+      for I in Node.Assign'Range loop
+        exit when Node.Assign(I).Value.Kind = ANy_Def.None_Kind;
+        Basic_Proc.Put_Error (Asu_Ts (Node.Assign(I).Name) & "="
+                            & Asu_Ts (Node.Assign(I).Value.Str));
+      end loop;
     end if;
     Basic_Proc.New_Line_Error;
     return True;

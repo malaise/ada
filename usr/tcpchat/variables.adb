@@ -1,5 +1,5 @@
 with Computer, Environ;
-with Debug;
+with Debug, Error;
 package body Variables is
 
   -- Dummy variable resolver for check
@@ -14,7 +14,7 @@ package body Variables is
     return Environ.Getenv_If_Set (Name);
   exception
     when Environ.Name_Error =>
-      Debug.Log ("ENV variable " & Name & " not found");
+      Error ("ENV variable " & Name & " not found");
       raise Expand_Error;
   end Getenv;
 
@@ -46,10 +46,10 @@ package body Variables is
     else
       Computer.External_Resolver := Getenv'Access;
     end if;
-    Debug.Log ("  Expanding " & Asu_Ts (Text));
     return Asu_Tus (Computer.Eval (Asu_Ts (Text)));
   exception
     when others =>
+      Error ("Cannot expand " & Asu_Ts (Text));
       raise Expand_Error;
   end Expand;
 

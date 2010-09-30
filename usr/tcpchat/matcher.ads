@@ -1,16 +1,18 @@
 with As.U; use As.U;
-with Variables, Tree;
+with Tree;
 package Matcher is
-  -- Expand Node.Text (maybe Check_Only)
+  -- Expand Node.Text in mode check
+  -- Compile and test regex with a Dummy text
+  -- Compute Node.Assign properties from Assign string
+  procedure Check (Node : in out Tree.Node_Rec;
+                  Assign : in Asu_Us);
+  -- Expand Node.Text
   -- See if Str matches Node.Text: string comparison if not Node.Regex
   --  or Regular_Expressions.Exec)
   function Match (Node : Tree.Node_Rec;
-                  Str : Asu_Us;
-                  Check_Only : Boolean := False) return Boolean;
+                  Str : Asu_Us) return Boolean;
 
-  Expand_Error : exception renames Variables.Expand_Error;
-  Regexp_Error : exception;
-  Assign_Error : exception;
+  Match_Error : exception;
 
 end Matcher;
 
