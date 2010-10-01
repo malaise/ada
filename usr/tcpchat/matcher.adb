@@ -43,7 +43,9 @@ package body Matcher is
     end if;
     Debug.Log ("Regex match " & N_Matched'Img);
 
-    if not Check_Only then
+    -- Assign variables after real Match, if any
+    if not Check_Only
+    and then Node.Assign(1).Value.Kind /= Any_Def.None_Kind then
       -- Set volatile variables to matching substring
       for I in 1 .. N_Matched loop
         -- ${0} is first match ...

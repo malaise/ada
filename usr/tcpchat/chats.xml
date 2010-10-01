@@ -11,7 +11,7 @@
     <close/>
   </script>
   <!-- HTTP 1.0 or 1.1: Send header + file -->
-  <chat Name="httpTopic1." TimeoutMs="1_000" Regexp="true" Assign="FILE=${1}"
+  <chat Name="httpTopic1.0" TimeoutMs="1_000" Regexp="true" Assign="FILE=${1}"
         >GET http://localhost([^ ]+) +HTTP/1\.(0|1)</chat>
   <script>
     <read></read>
@@ -54,7 +54,7 @@
       </script>
       <expect Regexp="true">CONNECT( [0-9]+)?</expect>
       <script>
-        <read TimeoutMs="30_000">.ogin</read>
+        <read TimeoutMs="30_000"Regexp="true">.ogin</read>
         <send>malaise</send>
         <read TimeoutMs="10_000" Regexp="true">.{4\}word</read>
         <send>${PASSWORD}</send>
@@ -71,7 +71,7 @@
   <script>
     <read>AT</read>
     <send>OK</send>
-    <read>ATQ0 V1 E1 S0=0 &amp;C1 &amp;D2 \+FCLASS=0</read>
+    <read>ATQ0 V1 E1 S0=0 &amp;C1 &amp;D2 +FCLASS=0</read>
     <send>OK</send>
     <read>ATDT0860922000</read>
     <wait DelayMs="21_000"/>
