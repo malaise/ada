@@ -8,6 +8,11 @@ package Variables is
   Invalid_Name : exception;
   procedure Set (Name, Value : in Asu_Us);
 
+  -- Set a volatile variable : Clean all volatile variables
+  procedure Set_Volatile (Name, Value : in Asu_Us);
+  procedure Clear_Volatiles;
+
+
   -- Expand the expression, using defined variables
   --  or env variables (or dummy variables if check)
   Expand_Error : exception;

@@ -1,6 +1,9 @@
-with Regular_Expressions, String_Mng.Regex, Any_Def;
+with Regular_Expressions, String_Mng.Regex, Any_Def, Int_Image;
 with Variables, Debug, Error;
 package body Matcher is
+
+  function Nat_Image is new Int_Image (Natural);
+
   -- Expand Node.Text (maybe Check_Only)
   -- See if Str matches Node.Text: string comparison if not Node.Regex
   --  or Regular_Expressions.Exec)
@@ -41,6 +44,16 @@ package body Matcher is
     Debug.Log ("Regex match " & N_Matched'Img);
 
     if not Check_Only then
+      -- Set volatile variables to matching substring
+      for I in 1 .. N_Matched loop
+        -- ${0} is first match ...
+        Expanding := Asu_Tus (Nat_Image (I - 1));
+        Expanded := Asu.Unbounded_Slice (Str, Match_Info(I).First_Offset,
+                                              Match_Info(I).Last_Offset_Stop);
+        Variables.Set_Volatile (Expanding, Expanded);
+        Debug.Log ("Volatile " & Asu_Ts (Expanding)
+                 & "=" & Asu_Ts (Expanded));
+      end loop;
       -- Assign variables
       for I in Node.Assign'Range loop
         exit when Node.Assign(I).Value.Kind = Any_Def.None_Kind;
@@ -50,6 +63,7 @@ package body Matcher is
         Debug.Log ("Assigned " & Asu_Ts (Node.Assign(I).Name)
                  & "=" & Asu_Ts (Expanded));
       end loop;
+      Variables.Clear_Volatiles;
     end if;
     return True;
   exception
@@ -76,8 +90,8 @@ package body Matcher is
                  Str  => Asu.Unbounded_Slice (Statement,
                            Index + 1, Asu.Length (Statement))));
     -- Name cannot be "0", "1"...
-    if Regular_Expressions.Match (Asu_Ts (Node.Assign(I).Name),
-                                  "[0-9]+", True) then
+    if Regular_Expressions.Match ("[0-9]+", Asu_Ts (Node.Assign(I).Name),
+                                  True) then
       Error ("Invalid variable name in assignment "
            & Asu_Ts (Node.Assign(I).Name));
       raise Match_Error;
@@ -95,8 +109,8 @@ package body Matcher is
         raise Match_Error;
     end;
     -- Check that value does not contain refs > 9 ("\$\{[0-9][0-9]+\})
-    if Regular_Expressions.Match (Asu_Ts (Node.Assign(I).Value.Str),
-         "\$\{[0-9][0-9]+\}", False) then
+    if Regular_Expressions.Match ("\$\{[0-9][0-9]+\}",
+            Asu_Ts (Node.Assign(I).Value.Str), False) then
       Error ("Invalid value in assignment "
            & Asu_Ts (Node.Assign(I).Value.Str));
       raise Match_Error;
@@ -114,15 +128,28 @@ package body Matcher is
     pragma Unreferenced (Dummy);
   begin
     Dummy := Compute (Node, Asu_Tus ("Dummy"), True);
+    if Asu_Is_Null (Assign) then
+      return;
+    end if;
+    if not Node.Regexp then
+      Error ("Assignment only allowed with regexp");
+      raise Match_Error;
+    end if;
+
     -- Check and compute Assign
     declare
+      -- Split into assignments
       Statements : constant String_Mng.Regex.String_Slice
                  := String_Mng.Regex.Split (Asu_Ts (Assign),
                                            "(\n|\t| )+", 10);
     begin
+      Debug.Log ("Found " & Natural'Image (Statements'Length)
+               & " assignments");
       if Statements'Length = 0 then
+        -- No séparator => Parse the whole Assign string
         Parse_Assign (Node, 1, Assign);
       else
+        -- Parse each assignment
         for I in Statements'Range loop
           Parse_Assign (Node, I, Statements(I));
         end loop;

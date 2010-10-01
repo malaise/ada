@@ -34,6 +34,21 @@ package body Variables is
       raise Invalid_Name;
   end Set;
 
+  -- Set a volatile variable : Clean all volatile variables
+  procedure Set_Volatile (Name, Value : in Asu_Us) is
+begin
+    Computer.Set (Asu_Ts (Name), Asu_Ts (Value),
+                  Modifiable => True, Persistent => False);
+  exception
+    when Computer.Invalid_Variable =>
+      raise Invalid_Name;
+  end Set_Volatile;
+
+  procedure Clear_Volatiles is
+  begin
+    Computer.Reset (Not_Persistent => True);
+  end Clear_Volatiles;
+
   -- Expand the expression
   function Expand (Text : Asu_Us;
                    Check_Only : Boolean := False) return String is

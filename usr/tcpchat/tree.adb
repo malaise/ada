@@ -1,5 +1,5 @@
 with Basic_Proc, Xml_Parser, String_Mng, Text_Line, Mixed_Str, Any_Def;
-with Debug, Matcher;
+with Debug, Matcher, Variables;
 package body Tree is
 
   -- "Global" variables
@@ -382,6 +382,7 @@ package body Tree is
     Debug.Log ("Updating Next:");
     Dummy := Update_Next (No_Position);
     Chats.Move_Root;
+    Variables.Reset;
 
     -- Dump
     Debug.Log ("Dump:");
