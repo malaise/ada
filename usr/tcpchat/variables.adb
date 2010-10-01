@@ -1,5 +1,5 @@
 with Computer, Environ;
-with Debug, Error;
+with Error;
 package body Variables is
 
   -- Dummy variable resolver for check
@@ -29,6 +29,9 @@ package body Variables is
   begin
     Computer.Set (Asu_Ts (Name), Asu_Ts (Value),
                   Modifiable => True, Persistent => True);
+  exception
+    when Computer.Invalid_Variable =>
+      raise Invalid_Name;
   end Set;
 
   -- Expand the expression

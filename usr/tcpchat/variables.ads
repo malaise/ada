@@ -5,6 +5,7 @@ package Variables is
   procedure Reset;
 
   -- Set a variable
+  Invalid_Name : exception;
   procedure Set (Name, Value : in Asu_Us);
 
   -- Expand the expression, using defined variables

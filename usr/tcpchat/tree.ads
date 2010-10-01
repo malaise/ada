@@ -14,7 +14,8 @@ package Tree is
 
   -- Max nb of assignments
   Max_Assignments : constant Positive := 9;
-  subtype Assignments is Property_Def.Properties (1 .. Max_Assignments);
+  subtype Assignments_Range is Positive range 1 .. Max_Assignments;
+  subtype Assignments is Property_Def.Properties (Assignments_Range);
 
   -- Node
   type Position_Access;

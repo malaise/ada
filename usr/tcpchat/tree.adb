@@ -115,7 +115,7 @@ package body Tree is
       Basic_Proc.Put_Error ("Regexp ");
       Basic_Proc.Put_Error ("Assign: " );
       for I in Node.Assign'Range loop
-        exit when Node.Assign(I).Value.Kind = ANy_Def.None_Kind;
+        exit when Node.Assign(I).Value.Kind = Any_Def.None_Kind;
         Basic_Proc.Put_Error (Asu_Ts (Node.Assign(I).Name) & "="
                             & Asu_Ts (Node.Assign(I).Value.Str));
       end loop;

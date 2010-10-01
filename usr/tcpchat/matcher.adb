@@ -1,5 +1,5 @@
-with Regular_Expressions, String_Mng.Regex;
-with Variables, Error;
+with Regular_Expressions, String_Mng.Regex, Any_Def;
+with Variables, Debug, Error;
 package body Matcher is
   -- Expand Node.Text (maybe Check_Only)
   -- See if Str matches Node.Text: string comparison if not Node.Regex
@@ -7,14 +7,16 @@ package body Matcher is
   function Compute (Node : Tree.Node_Rec;
                     Str : Asu_Us;
                     Check_Only : Boolean) return Boolean is
-    Expanded : Asu_Us;
+    Expanding, Expanded : Asu_Us;
     Compiled : Regular_Expressions.Compiled_Pattern;
     Ok : Boolean;
     N_Matched : Natural;
     Match_Info : Regular_Expressions.Match_Array (1 .. 10);
-    use type Asu_Us, Regular_Expressions.Match_Cell;
+    use type Asu_Us, Regular_Expressions.Match_Cell, Any_Def.Any_Kind_List;
   begin
-    Expanded := Variables.Expand (Node.Text, Check_Only);
+    -- Expand expression
+    Expanding := Node.Text;
+    Expanded := Variables.Expand (Expanding, Check_Only);
     if not Node.Regexp then
       -- Pure string comparison
       return Str = Expanded;
@@ -28,30 +30,86 @@ package body Matcher is
         & " : " & Regular_Expressions.Error (Compiled));
       raise Match_Error;
     end if;
+    Debug.Log ("Regex compiled " & Asu_Ts (Expanded));
 
     -- Execute the regexp
     Regular_Expressions.Exec (Compiled, Asu_Ts (Str), N_Matched, Match_Info);
     if Match_Info(1) = Regular_Expressions.No_Match then
+      Debug.Log ("Regex no match");
       return False;
     end if;
+    Debug.Log ("Regex match " & N_Matched'Img);
 
     if not Check_Only then
       -- Assign variables
-      -- @@@
-      null;
+      for I in Node.Assign'Range loop
+        exit when Node.Assign(I).Value.Kind = Any_Def.None_Kind;
+        Expanding := Node.Assign(I).Value.Str;
+        Expanded := Variables.Expand (Expanding);
+        Variables.Set (Node.Assign(I).Name, Expanded);
+        Debug.Log ("Assigned " & Asu_Ts (Node.Assign(I).Name)
+                 & "=" & Asu_Ts (Expanded));
+      end loop;
     end if;
     return True;
   exception
     when Variables.Expand_Error =>
+      Error ("Cannot expand expression " & Asu_Ts (Node.Text));
       raise Match_Error;
   end Compute;
 
+  procedure Parse_Assign (Node : in out Tree.Node_Rec;
+                          I : in Tree.Assignments_Range;
+                          Statement : in Asu_Us) is
+    Index : Natural;
+  begin
+
+    Index := String_Mng.Locate (Asu_Ts (Statement), "=");
+    if Index <= 1 or else Index = Asu.Length (Statement) then
+      Error ("Invalid assignment " & Asu_Ts (Statement));
+      raise Match_Error;
+    end if;
+    -- Name <- the head (before the "=") and Value <- the tail
+    Node.Assign(I) := (
+       Name => Asu.Unbounded_Slice (Statement, 1, Index - 1),
+       Value => (Kind => Any_Def.Str_Kind,
+                 Str  => Asu.Unbounded_Slice (Statement,
+                           Index + 1, Asu.Length (Statement))));
+    -- Name cannot be "0", "1"...
+    if Regular_Expressions.Match (Asu_Ts (Node.Assign(I).Name),
+                                  "[0-9]+", True) then
+      Error ("Invalid variable name in assignment "
+           & Asu_Ts (Node.Assign(I).Name));
+      raise Match_Error;
+    end if;
+    -- Check the value expands properly
+    declare
+      Expanded : Asu_Us;
+      pragma Unreferenced (Expanded);
+    begin
+      Expanded := Variables.Expand (Node.Assign(I).Value.Str, True);
+    exception
+      when Variables.Expand_Error =>
+        Error ("Invalid value in assignment "
+             & Asu_Ts (Node.Assign(I).Value.Str));
+        raise Match_Error;
+    end;
+    -- Check that value does not contain refs > 9 ("\$\{[0-9][0-9]+\})
+    if Regular_Expressions.Match (Asu_Ts (Node.Assign(I).Value.Str),
+         "\$\{[0-9][0-9]+\}", False) then
+      Error ("Invalid value in assignment "
+           & Asu_Ts (Node.Assign(I).Value.Str));
+      raise Match_Error;
+    end if;
+    Debug.Log ("Parsed assignement " & Asu_Ts (Node.Assign(I).Name)
+             & "=" & Asu_Ts (Node.Assign(I).Value.Str));
+  end Parse_Assign;
 
   -- Expand Node.Text in mode check
   -- Compile and test regex with a Dummy text
   -- Compute Node.Assign properties from Assign string
   procedure Check (Node : in out Tree.Node_Rec;
-                  Assign : in Asu_Us) is
+                   Assign : in Asu_Us) is
     Dummy : Boolean;
     pragma Unreferenced (Dummy);
   begin
@@ -60,10 +118,15 @@ package body Matcher is
     declare
       Statements : constant String_Mng.Regex.String_Slice
                  := String_Mng.Regex.Split (Asu_Ts (Assign),
-                                           "\n|\t| ", 10);
+                                           "(\n|\t| )+", 10);
     begin
-      -- @@@
-      null;
+      if Statements'Length = 0 then
+        Parse_Assign (Node, 1, Assign);
+      else
+        for I in Statements'Range loop
+          Parse_Assign (Node, I, Statements(I));
+        end loop;
+      end if;
     end;
   end Check;
 

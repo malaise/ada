@@ -13,7 +13,7 @@ package Any_Def is
       when Real_Kind  => Real : My_Math.Real;
       when Str_Kind   => Str  : Asu_Us;
     end case;
-  end Record;
+  end record;
 
 end Any_Def;
 
