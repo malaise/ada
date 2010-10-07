@@ -233,18 +233,20 @@ package body Async_Stdin is
     -- Copy Buf and move to end of line
     procedure Update is
     begin
-      if Uu.Length (History.Buf) /= 0 then
-        Console.Set_Col (1);
-        Console.Erase_Line;
-        Txt := History.Buf;
-        Sys_Calls.Put_Output (Language.Unicode_To_String (Uu.To_Array (Txt)));
-        Ind := Uu.Length (Txt) + 1;
-      end if;
+      Console.Set_Col (1);
+      Console.Erase_Line;
+      Txt := History.Buf;
+      Sys_Calls.Put_Output (Language.Unicode_To_String (Uu.To_Array (Txt)));
+      Ind := Uu.Length (Txt) + 1;
     end Update;
 
     -- Store Txt in history
     procedure Store is
     begin
+      -- Don't store empty line
+      if Uu.Length (Txt) = 0 then
+        return;
+      end if;
       History.Buf := Txt;
       History.Add;
       At_Last := True;
@@ -594,32 +596,6 @@ package body Async_Stdin is
 
   end Fd_Callback;
 
-  -- Activate asynchronous data to trigger callback
-  procedure Activate (Allow_Input : Boolean := True) is
-  begin
-    -- Check if something changes
-    if Allow_Input = Active then
-      return;
-    end if;
-    -- Update status
-    Active := Allow_Input;
-    if Cb = null then
-      -- Not in async mode at the moment
-      return;
-    end if;
-    if Active then
-      Event_Mng.Add_Fd_Callback (Sys_Calls.Stdin, True,
-                                 Fd_Callback'Access);
-    else
-      Event_Mng.Del_Fd_Callback (Sys_Calls.Stdin, True);
-    end if;
-  end Activate;
-
-  function Is_Active return Boolean is
-  begin
-    return Active;
-  end Is_Active;
-
   -- Set asynchronous mode for stdin
   -- User callback is called when Max_Chars characters are entered
   --  or at each new line
@@ -659,7 +635,6 @@ package body Async_Stdin is
         Result := True;
       end if;
       if Result then
-        Cb := User_Callback;
         if Max_Chars /= 0 then
           Max := Max_Chars;
         else
@@ -667,15 +642,53 @@ package body Async_Stdin is
         end if;
         Line.Init;
         Line.Clear;
-        if Active then
+        if Active and then Cb = null then
           Event_Mng.Add_Fd_Callback (Sys_Calls.Stdin, True,
                                      Fd_Callback'Access);
         end if;
+        Cb := User_Callback;
       else
         raise Error;
       end if;
     end if;
   end Set_Async;
+
+  function Is_Set return Boolean is
+  begin
+    return Cb /= null;
+  end Is_Set;
+
+  -- Activate asynchronous data to trigger callback
+  procedure Activate (Allow_Input : Boolean := True) is
+  begin
+    -- Check if something changes
+    if Allow_Input = Active then
+      return;
+    end if;
+    -- Update status
+    Active := Allow_Input;
+    if Cb = null then
+      -- Not in async mode at the moment
+      return;
+    end if;
+    if Active then
+      Event_Mng.Add_Fd_Callback (Sys_Calls.Stdin, True,
+                                 Fd_Callback'Access);
+    else
+      Event_Mng.Del_Fd_Callback (Sys_Calls.Stdin, True);
+    end if;
+  end Activate;
+
+  function Is_Active return Boolean is
+  begin
+    return Active;
+  end Is_Active;
+
+  -- Clear internal buffer of pending characters
+  procedure Clear is
+  begin
+    Line.Clear;
+  end Clear;
 
   -- Put on stdout when in async
   procedure Put_Out (Str : in String) is

@@ -18,10 +18,14 @@ package Async_Stdin is
   --  a Fd_Event if User_Callback returns True
   procedure Set_Async (User_Callback : in User_Callback_Access := null;
                        Max_Chars : in Max_Chars_Range := 1);
+  function Is_Set return Boolean;
 
   -- Activate asynchronous data to trigger callback
   procedure Activate (Allow_Input : Boolean := True);
   function Is_Active return Boolean;
+
+  -- Clear internal buffer of pending characters
+  procedure Clear;
 
   -- Put on stdout when in async
   procedure Put_Out (Str : in String);
