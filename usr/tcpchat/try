@@ -1,6 +1,18 @@
 #!/bin/bash
+export PASSWORD="userpass"
+
 if [ "$1" = "-d" ] ; then
   export TCPCHAT_DEBUG=Y
+  shift
 fi
-export PASSWORD="userpass"
-exec tcpchat -p 50000 -f chats.xml
+
+if [ "$1" != "" ] ; then
+  echo "On port $1"
+  port="$1"
+else
+  echo "On stdio"
+  port="-"
+fi
+
+exec tcpchat -p $port -f chats.xml
+

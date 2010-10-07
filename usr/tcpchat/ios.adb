@@ -1,12 +1,15 @@
 with Ada.Characters.Latin_1, Ada.Calendar;
 with Event_Mng, Ip_Addr, Socket, Tcp_Util, Input_Buffer, String_Mng,
-     Unlimited_Pool, Timers;
+     Unlimited_Pool, Timers, Async_Stdin;
 with Debug, Tree;
 package body Ios is
 
   ------------------------
   -- GLOBAl DEFINITIONS --
   ------------------------
+
+  -- Is communication on stdio or tcp
+  Stdio : Boolean;
 
   -- The port on which we accept
   Port_Def : Tcp_Util.Local_Port;
@@ -124,6 +127,12 @@ package body Ios is
     Tcp_Util.Abort_Accept (Socket.Tcp, Port_Num);
   end Accept_Cb;
 
+  function Async_Cb (Str : String) return Boolean is
+  begin
+    Buffer.Push (Str);
+    return True;
+  end Async_Cb;
+
   -- Start accepting connections
   procedure Open is
     Acc_Soc : Socket.Socket_Dscr;
@@ -134,6 +143,15 @@ package body Ios is
     Buffer.Set (Sentence_Cb'Access);
     Event := No_Event;
     Sentences.Clear;
+
+    if Stdio then
+      if not Async_Stdin.Is_Set then
+        -- First Open
+        Async_Stdin.Set_Async (Async_Cb'Access, 256);
+      end if;
+      return;
+    end if;
+
     -- Accept connections
     loop
       begin
@@ -150,6 +168,33 @@ package body Ios is
       end;
     end loop;
   end Open;
+
+  -- Clear for re-open
+  procedure Clear is
+  begin
+    Stop_Global_Timer;
+    if Stdio then
+      Async_Stdin.Clear;
+      return;
+    end if;
+    begin
+      Tcp_Util.Abort_Accept (Socket.Tcp, Port_Num);
+    exception
+      when Tcp_Util.No_Such =>
+        null;
+    end;
+    if Tcp_Soc.Is_Open then
+      begin
+        My_Rece.Remove_Callbacks (Tcp_Soc);
+      exception
+       when Tcp_Util.No_Such =>
+         null;
+      end;
+    end if;
+    if Tcp_Soc.Is_Open then
+      Tcp_Soc.Close;
+    end if;
+ end Clear;
 
   -- Wait during Timeout or up to significant event
   -- Possibly stop waiting if a sentence is ready
@@ -198,12 +243,16 @@ package body Ios is
 
     use type Tcp_Util.Remote_Port_List;
   begin
-    -- Parse port name or num
-    Remote_Port_Def := Ip_Addr.Parse (Asu_Ts (Port));
-    if Remote_Port_Def.Kind = Tcp_Util.Port_Name_Spec then
-      Port_Def := (Tcp_Util.Port_Name_Spec, Remote_Port_Def.Name);
-    else
-      Port_Def := (Tcp_Util.Port_Num_Spec, Remote_Port_Def.Num);
+
+    Stdio := Asu_Ts (Port) = "-";
+    if not Stdio then
+      -- Parse port name or num
+      Remote_Port_Def := Ip_Addr.Parse (Asu_Ts (Port));
+      if Remote_Port_Def.Kind = Tcp_Util.Port_Name_Spec then
+        Port_Def := (Tcp_Util.Port_Name_Spec, Remote_Port_Def.Name);
+      else
+        Port_Def := (Tcp_Util.Port_Num_Spec, Remote_Port_Def.Num);
+      end if;
     end if;
 
     -- Init Cbs
@@ -289,6 +338,11 @@ package body Ios is
     Len : Natural;
     Msg : Message_Type;
   begin
+    if Stdio then
+      Async_Stdin.Put_Out (Asu_Ts (Text));
+      Disconnection := False;
+      return;
+    end if;
     if not Tcp_Soc.Is_Open then
       Disconnection := True;
       return;
@@ -315,34 +369,20 @@ package body Ios is
       Disconnection := True;
   end Send;
 
-  -- Close and re-open
+  -- Clear and re-open
   procedure Reset is
   begin
-    Close;
+    Clear;
     Open;
   end Reset;
 
-  -- Close
+  -- Final close
   procedure Close is
   begin
-    begin
-      Tcp_Util.Abort_Accept (Socket.Tcp, Port_Num);
-    exception
-      when Tcp_Util.No_Such =>
-        null;
-    end;
-    if Tcp_Soc.Is_Open then
-      begin
-        My_Rece.Remove_Callbacks (Tcp_Soc);
-      exception
-       when Tcp_Util.No_Such =>
-         null;
-      end;
+    Clear;
+    if Stdio then
+      Async_Stdin.Set_Async (null);
     end if;
-    if Tcp_Soc.Is_Open then
-      Tcp_Soc.Close;
-    end if;
-    Stop_Global_Timer;
  end Close;
 
 end Ios;

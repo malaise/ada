@@ -7,7 +7,7 @@ package body Events is
   -- Report progress
   procedure Put_Line (Str : in String) is
   begin
-    Basic_Proc.Put_Line_Output (Date_Image (Ada.Calendar.Clock)
+    Basic_Proc.Put_Line_Error (Date_Image (Ada.Calendar.Clock)
                               & " => " & Str & ".");
   end Put_Line;
 
@@ -37,7 +37,7 @@ package body Events is
     use type Ios.Event_Kind_List;
   begin
     Put_Line ("Ready");
-    loop
+    Main : loop
       begin
         -- Where are we?
         Node := Chats.Read;
@@ -55,7 +55,7 @@ package body Events is
             case Event.Kind is
               when Ios.Exit_Requested =>
                 Put_Line ("Exit requested");
-                return;
+                exit Main;
               when Ios.Disconnection =>
                 if In_Chat then
                   Put_Line ("Disconnection");
@@ -112,7 +112,7 @@ package body Events is
             case Event.Kind is
               when Ios.Exit_Requested =>
                 Put_Line ("Exit requested");
-                return;
+                exit Main;
               when Ios.Disconnection =>
                 Put_Line ("Disconnection");
                 Reset;
@@ -141,7 +141,7 @@ package body Events is
             case Event.Kind is
               when Ios.Exit_Requested =>
                 Put_Line ("Exit requested");
-                return;
+                exit Main;
               when Ios.Disconnection =>
                 Put_Line ("Disconnection");
                 Reset;
@@ -161,7 +161,7 @@ package body Events is
             case Event.Kind is
               when Ios.Exit_Requested =>
                 Put_Line ("Exit requested");
-                return;
+                exit Main;
               when Ios.Disconnection =>
                 Put_Line ("Disconnection");
                 Reset;
@@ -212,7 +212,7 @@ package body Events is
             exception
               when Command.Terminate_Request =>
                 Put_Line ("Exit requested");
-                return;
+                exit Main;
               when Command.Spawn_Error =>
                 Put_Line ("Command error");
                 Reset;
@@ -226,7 +226,9 @@ package body Events is
           Put_Line ("ERROR expanding expression, variable not found");
           Reset;
       end;
-    end loop;
+    end loop Main;
+
+    Ios.Close;
   end Handle;
 
 end Events;
