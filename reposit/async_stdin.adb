@@ -8,7 +8,7 @@ package body Async_Stdin is
   -- Max len of result
   Max : Max_Chars_Range := 1;
   -- Are stdin/out a console (or a pipe)
-  Stdio_Is_A_Tty : Boolean;
+  Stdio_Is_A_Tty : Boolean := False;
   -- Is the input flow to be activated
   Active : Boolean := True;
 
