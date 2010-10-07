@@ -173,10 +173,14 @@ package body Ios is
   procedure Clear is
   begin
     Stop_Global_Timer;
+
     if Stdio then
-      Async_Stdin.Clear;
+      if Async_Stdin.Is_Set then
+        Async_Stdin.Clear;
+      end if;
       return;
     end if;
+
     begin
       Tcp_Util.Abort_Accept (Socket.Tcp, Port_Num);
     exception

@@ -87,6 +87,7 @@ exception
   when Error:others =>
     Basic_Proc.Put_Line_Error ("ERROR: Exception "
        & Ada.Exceptions.Exception_Name (Error) & " raised.");
+    Ios.Close;
     raise;
 end Tcpchat;
 
