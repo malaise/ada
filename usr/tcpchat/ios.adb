@@ -342,6 +342,7 @@ package body Ios is
     Len : Natural;
     Msg : Message_Type;
   begin
+    Debug.Log ("Send " & String_Mng.Replace (Asu_Ts (Text), Lf, "[LF]"));
     if Stdio then
       Async_Stdin.Put_Out (Asu_Ts (Text));
       Disconnection := False;
