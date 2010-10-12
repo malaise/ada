@@ -1,0 +1,124 @@
+#!/bin/bash
+# Automatic test of Tcpchat
+
+#export TCPCHAT_DEBUG=Y
+
+# Prepare env
+export SPACE='#'
+export PASSWORD="userpass"
+export PIPE=pipe
+export RES=result
+export EXPECTED=expected
+if [ ! -p $PIPE ] ; then
+  mknod $PIPE p
+fi
+
+# Send text (on the pipe) / and sleep...
+function send {
+  sleep 1
+  while [ "$1" != "" ] ; do
+    str="`echo -e "$1" | asubst ${SPACE} ' '`"
+    echo -e "$str"
+    shift
+    if [ "$1" = "" ] ; then
+      return
+    fi
+    sleep $1
+    shift
+  done
+}
+
+# A test.
+# $1 is the file with expected result
+# Other args are series of sentences to send and delay to wait
+function try {
+  local expected="$1"
+  shift
+
+  # Start tcpchat
+  tcpchat -p - -f chats.xml <$PIPE >$RES 2>/dev/null &
+  PID=$!
+
+  # Send stimulus and stop
+  send $@ > $PIPE
+  kill $PID
+
+  # Compare with expected
+  cmp -s $RES "$expected"
+  if [ $? -ne 0 ] ; then
+    echo "ERROR: Result $RES differs from expected $expected" 2>&1
+    clean
+    exit 1
+  else
+    echo "OK"
+  fi
+  rm $RES
+}
+
+# Clean
+function clean {
+  rm $PIPE
+}
+
+# Ping
+echo -n "Test ping: "
+echo "pong" > $EXPECTED
+try $EXPECTED ping 1
+rm $EXPECTED
+
+# HTTP 0.9
+echo -n "Test http: "
+try chats.xml "GET${SPACE}http://localhost$PWD/chats.xml" 1
+
+# Ppp1 ok
+echo -n "Test ppp1 ok: "
+echo -en "AT\nATQ0 V1 E1 S0=0 &C1 &D2 +FCLASS=0\nATDT0860922000\nmalaise\n$PASSWORD\nWorking: Please wait...\nDone. Please logout.\n" > $EXPECTED
+try $EXPECTED ppp1 0 OK 0 OK 0 CONNECT${SPACE}56000 0 login 0 password 6 logout
+rm $EXPECTED
+
+# Ppp1 error
+echo -n "Test ppp1 error: "
+echo -en "AT\nATQ0 V1 E1 S0=0 &C1 &D2 +FCLASS=0\nATDT0860922000\n" > $EXPECTED
+try $EXPECTED ppp1 0 OK 0 OK 0 NO${SPACE}DIALTONE
+rm $EXPECTED
+
+# Ppp2
+echo -n "Test ppp2: "
+echo -en  "OK\nOK\nCONNECT 56000\nlogin\npassword\nWorking: Please wait...\nDone. Please logout.\n" > $EXPECTED
+try $EXPECTED ppp2 0 AT 0 "ATQ0${SPACE}V1${SPACE}E1${SPACE}S0=0${SPACE}&C1${SPACE}&D2${SPACE}+FCLASS=0" 0 ATDT0860922000 32 malaise 0 $PASSWORD 6 logout
+rm $EXPECTED
+
+# Multi 1
+echo -n "Test Multi 1: "
+echo -en  "\nme\npass\nls\n" > $EXPECTED
+try $EXPECTED testMulti 0 login 0 password 2
+rm $EXPECTED
+
+# Multi 2
+echo -n "Test Multi 2: "
+echo -en  "\nme\nPASS\nls\n" > $EXPECTED
+try $EXPECTED testMulti 0 login 0 PASSWORD 2
+rm $EXPECTED
+
+# Multi 3
+echo -n "Test Multi 3: "
+echo -en  "\nme\n" > $EXPECTED
+try $EXPECTED testMulti 0 login 0 Password
+rm $EXPECTED
+
+# Multi 4
+echo -n "Test Multi 4: "
+echo -en  "\nME\nPASS\n" > $EXPECTED
+try $EXPECTED testMulti 0 LOGIN 0 PASSWORD 2
+rm $EXPECTED
+
+# Multi 5
+echo -n "Test Multi 5: "
+echo -en  "\n" > $EXPECTED
+try $EXPECTED testMulti 0 Login
+rm $EXPECTED
+
+# Clean
+clean
+echo "Done."
+
