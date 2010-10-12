@@ -48,7 +48,7 @@
     <read TimeoutMs="5_000">OK</read>
     <send>ATDT0860922000</send>
     <select TimeoutMs="60_000">
-      <expect>BUSY|ERROR|NO CARRIER|VOICE|NO DIAL ?TONE|NO ANSWER|DELAYED</expect>
+      <expect Regexp="true">BUSY|ERROR|NO CARRIER|VOICE|NO DIAL ?TONE|NO ANSWER|DELAYED</expect>
       <script>
         <close/>
       </script>
