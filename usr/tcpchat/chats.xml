@@ -15,6 +15,7 @@
         >GET http://localhost([^ ]+) +HTTP/1\.(0|1)</chat>
   <script>
     <read></read>
+    <eval Variable="SIZE">ls -al ${FILE} | awk '{printf "%s",$5\}'</eval>
     <send>HTTP/1.1 200 OK</send>
     <send>Date: Sat, 28 Aug 2010 07:04:35 GMT</send>
     <send>Server: Apache/ProXad [Aug  9 2008 02:45:09]</send>
@@ -22,7 +23,7 @@
     <send>ETag: "6f332b-125-4c72b72f"</send>
     <send>Connection: close</send>
     <send>Accept-Ranges: bytes</send>
-    <send>Content-Length: 293</send>
+    <send>Content-Length: ${SIZE}</send>
     <send>Content-Type: application/xml-dtd</send>
     <send></send>
     <call>cat ${FILE}</call>

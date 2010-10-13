@@ -66,17 +66,22 @@ package body Tree is
       end if;
     end if;
 
-    -- Get Regexp and Assign attributes
+    -- Get Regexp, Assign, Variable and NewLine attributes
     for I in Attrs'Range loop
       if Asu_Ts (Attrs(I).Name) = "Regexp" then
         if Asu_Ts (Attrs(I).Value) = "true" then
           Node.Regexp := True;
         end if;
-      elsif Asu_Ts (Attrs(I).Name) = "Assign" then
+      elsif Asu_Ts (Attrs(I).Name) = "Assign"
+      or else Asu_Ts (Attrs(I).Name) = "Variable" then
         Assign := Attrs(I).Value;
+      elsif Asu_Ts (Attrs(I).Name) = "NewLine" then
+        Asu.Append (Node.Text, Line_Feed);
       end if;
     end loop;
-    if not Node.Regexp and then not Asu_Is_Null (Assign) then
+    if Node.Kind /= Eval
+    and then not Node.Regexp
+    and then not Asu_Is_Null (Assign) then
       Error (Xnode, "Assignment is only allowed with Regex expressions");
     end if;
 
@@ -97,7 +102,7 @@ package body Tree is
       Basic_Proc.Put_Error (Asu_Ts (Node.Name) & " ");
     end if;
     case Node.Kind is
-      when Read | Call =>
+      when Read | Call | Eval =>
         Basic_Proc.Put_Error ("Text: >" & Asu_Ts (Node.Text) & "< ");
       when Send =>
         Basic_Proc.Put_Error ("Text: >" &
@@ -108,6 +113,10 @@ package body Tree is
     case Node.Kind is
       when Selec | Read | Skip | Wait =>
         Basic_Proc.Put_Error ("Timeout: " & Node.Timeout'Img & " ");
+      when Eval =>
+        Basic_Proc.Put_Error ("Variable: " );
+          Basic_Proc.Put_Error (Asu_Ts (Node.Assign(Node.Assign'First).Name)
+                              & " ");
       when others =>
         null;
     end case;
@@ -182,6 +191,15 @@ package body Tree is
       Node.Kind := Default;
       -- Move to script first entry
       Child := Ctx.Get_Child (Ctx.Get_Brother (Xnode), 1);
+    elsif Name = "cond" then
+      -- @@@ Not supported yet
+      Error (Xnode, "Not supported yet");
+    elsif Name = "if" then
+      -- @@@ Not supported yet
+      Error (Xnode, "Not supported yet");
+    elsif Name = "else" then
+      -- @@@ Not supported yet
+      Error (Xnode, "Not supported yet");
     elsif Name = "read" then
       Node.Kind := Read;
       Node.Timeout := Get_Timeout (Xnode, Timeout);
@@ -207,6 +225,10 @@ package body Tree is
       end if;
     elsif Name = "call" then
       Node.Kind := Call;
+      -- Get text
+      Get_Text (Xnode, Node);
+    elsif Name = "eval" then
+      Node.Kind := Eval;
       -- Get text
       Get_Text (Xnode, Node);
     elsif Name = "close" then

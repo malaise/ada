@@ -15,11 +15,28 @@ package body Matcher is
     Ok : Boolean;
     N_Matched : Natural;
     Match_Info : Regular_Expressions.Match_Array (1 .. 10);
-    use type Asu_Us, Regular_Expressions.Match_Cell, Any_Def.Any_Kind_List;
+    use type Asu_Us, Regular_Expressions.Match_Cell, Any_Def.Any_Kind_List,
+             Tree.Node_Kind;
   begin
+    -- Case of the Eval statement: One variable to assign
+    if Node.Kind = Tree.Eval then
+      -- Expand variable name
+      Expanding := Node.Assign(Node.Assign'First).Name;
+      Expanded := Variables.Expand (Expanding, Check_Only);
+      if not Check_Only then
+        -- Set variable
+        Debug.Log ("Variable " & Asu_Ts (Expanded) & " set to "
+                 & Asu_Ts (Str));
+        Variables.Set (Expanded, Str);
+      end if;
+      return True;
+    end if;
+
+    -- Other case of assign (chat/expect/read => tree kind Read)
     -- Expand expression
     Expanding := Node.Text;
     Expanded := Variables.Expand (Expanding, Check_Only);
+
     if not Node.Regexp then
       -- Pure string comparison
       return Str = Expanded;
@@ -128,8 +145,32 @@ package body Matcher is
                    Assign : in Asu_Us) is
     Dummy : Boolean;
     pragma Unreferenced (Dummy);
+    use type Tree.Node_Kind;
   begin
     Dummy := Compute (Node, Asu_Tus ("Dummy"), True);
+
+
+    -- Case of the Eval statement: One variable to assign
+    if Node.Kind = Tree.Eval then
+      -- Check that variable expands OK
+      declare
+        Expanded : Asu_Us;
+        pragma Unreferenced (Expanded);
+      begin
+        Expanded := Variables.Expand (Assign, True);
+      exception
+        when Variables.Expand_Error =>
+        Error ("Cannot expand expression " & Asu_Ts (Assign));
+        raise Match_Error;
+      end;
+      -- Set it as first assign name
+      Node.Assign(Node.Assign'First) := (
+         Name => Assign,
+         Value => (Kind => Any_Def.None_Kind) );
+      return;
+    end if;
+
+    -- Other case of assign (chat/expect/read => tree kind Read)
     if Asu_Is_Null (Assign) then
       return;
     end if;
@@ -148,7 +189,7 @@ package body Matcher is
       Debug.Log ("Found " & Natural'Image (Statements'Length)
                & " assignments");
       if Statements'Length = 0 then
-        -- No séparator => Parse the whole Assign string
+        -- No separator => Parse the whole Assign string
         Parse_Assign (Node, 1, Assign);
       else
         -- Parse each assignment

@@ -14,12 +14,15 @@
      allows selecting a subscript according to the reception of a matching
      sentence. If the select has a default entry, it is selected when the
      sentence does not match any expected string.
+   - cond: execute a sub-chat on condition (variable matching a criteria)
    - read: Read next sentence and check that it mathes the one provided.
    - skip: Read next sequence whatever it is.
    - send: Send the sentence provided.
    - wait: Wait the specified delay.
    - call: Call the shell to execute the command and arguments provided. Send
      the output flow of the command.
+   - eval: Call the shell to execute the command and arguments provided. Set a
+     variable to the output flow of the command.
   When a subscript reaches its end, the execution continues from the instruction
    that follows the select that lead to this subscript (if any).
   A chat script ends on either:
@@ -44,8 +47,9 @@
 <!ENTITY % boolean "(true|false)">
 <!ENTITY None "None">
 
-<!ENTITY % ReadDef "Regexp %boolean; 'false'
-                    Assign CDATA #IMPLIED">
+<!ENTITY % Regexp "Regexp %boolean; 'false'">
+
+<!ENTITY % ReadDef "%Regexp; Assign CDATA #IMPLIED">
 
 <!ELEMENT chats (chat,script)+>
 <!ELEMENT chat (#PCDATA)>
@@ -53,12 +57,20 @@
                TimeoutMs CDATA #IMPLIED
                InputDefaultTimeoutMs CDATA #IMPLIED
                %ReadDef;>
-<!ELEMENT script ((select|read|skip|wait|send|call)*,close?)>
+<!ELEMENT script ((select|cond|read|skip|wait|send|call|eval)*,close?)>
+
 <!ELEMENT select ((expect,script)+,(default,script)?)>
 <!ATTLIST select TimeoutMs CDATA #IMPLIED>
 <!ELEMENT expect (#PCDATA)>
 <!ATTLIST expect %ReadDef;>
 <!ELEMENT default EMPTY>
+
+<!ELEMENT cond (if,script,(else,script)?)>
+<!ELEMENT if (#PCDATA)>
+<!ATTLIST if Variable CDATA #REQUIRED
+             %Regexp;>
+<!ELEMENT else EMPTY>
+
 <!ELEMENT read (#PCDATA)>
 <!ATTLIST read TimeoutMs CDATA #IMPLIED
                %ReadDef;>
@@ -67,8 +79,9 @@
 <!ELEMENT wait EMPTY>
 <!ATTLIST wait DelayMs CDATA #REQUIRED>
 <!ELEMENT send (#PCDATA)>
-<!ATTLIST send NewLine %boolean; "true">
+<!ATTLIST send NewLine %boolean; "false">
 <!ELEMENT call (#PCDATA)>
-<!ELEMENT exec (#PCDATA)>
+<!ELEMENT eval (#PCDATA)>
+<!ATTLIST eval Variable CDATA #REQUIRED>
 <!ELEMENT close EMPTY>
 

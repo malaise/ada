@@ -107,6 +107,10 @@ package body Events is
                 end loop Children;
             end case;
 
+          when Cond =>
+            -- @@@ Not implemented
+            null;
+
           when Read =>
             Event := Ios.Read (Node.Timeout);
             case Event.Kind is
@@ -217,13 +221,45 @@ package body Events is
                 Put_Line ("Command error");
                 Reset;
             end;
+
+          when Eval =>
+            declare
+              Exit_Code : Command.Exit_Code_Range;
+            begin
+              Command.Execute (
+                Cmd => Variables.Expand (Node.Text),
+                Use_Sh => True,
+                Mix_Policy => Command.Only_Out,
+                Out_Flow => Flow'Access,
+                Err_Flow => null,
+                Exit_Code => Exit_Code);
+              if Exit_Code = 0 then
+                -- Command OK, load the variable
+                if Matcher.Match (Node, Flow.Str) then
+                  Set_Position (Node.Next.all);
+                else
+                  Put_Line ("Invalid evaluation");
+                end if;
+              else
+                Put_Line ("Command error");
+                Reset;
+              end if;
+            exception
+              when Command.Terminate_Request =>
+                Put_Line ("Exit requested");
+                exit Main;
+              when Command.Spawn_Error =>
+                Put_Line ("Command error");
+                Reset;
+            end;
+
           when Close =>
             Reset;
             Put_Line ("Closed");
         end case;
       exception
         when Variables.Expand_Error =>
-          Put_Line ("ERROR expanding expression, variable not found");
+          Put_Line ("ERROR expanding expression");
           Reset;
       end;
     end loop Main;
