@@ -85,11 +85,17 @@ cp chats.xml $EXPECTED
 try $EXPECTED "GET${SPACE}http://localhost$PWD/chats.xml" 1
 
 # HTTP 1.0
+# If we are close to the end of the minute, we must wait for next minute
+let min=0+`date +%S`
+if [ $min -ge 57 ] ; then
+  sleep 5
+fi
 export SIZE=`ls -al chats.xml | awk '{print $5}'`
+export DATE=`date "+%a, %d %b %Y %H:%M:00 %Z"`
 echo -n "Test http 1.0: "
-echo -en "HTTP/1.1 200 OK\nDate: Sat, 28 Aug 2010 07:04:35 GMT\nServer: Apache/ProXad [Aug  9 2008 02:45:09]\n" > $EXPECTED
-echo -en "Last-Modified: Mon, 23 Aug 2010 18:00:15 GMT\nETag: \"6f332b-125-4c72b72f\"\nConnection: close\n" >> $EXPECTED
-echo -en "Accept-Ranges: bytes\nContent-Length: ${SIZE}\nContent-Type: application/xml-dtd\n\n" >> $EXPECTED
+echo -en "HTTP/1.1 200 OK\nDate: $DATE\nServer: tcpchat\n" > $EXPECTED
+echo -en "Connection: close\nAccept-Ranges: bytes\n" >> $EXPECTED
+echo -en "Content-Length: ${SIZE}\nContent-Type: text/plain\n\n" >> $EXPECTED
 cat chats.xml >> $EXPECTED
 try $EXPECTED "GET${SPACE}http://localhost$PWD/chats.xml${SPACE}HTTP/1.0" 0 "${NONE}" 1
 

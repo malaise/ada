@@ -16,15 +16,14 @@
   <script>
     <read></read>
     <eval Variable="SIZE">ls -al ${FILE} | awk '{printf "%s",$5\}'</eval>
+    <eval Variable="DATE">echo -n `date "+%a, %d %b %Y %H:%M:00 %Z"`</eval>
     <send>HTTP/1.1 200 OK</send>
-    <send>Date: Sat, 28 Aug 2010 07:04:35 GMT</send>
-    <send>Server: Apache/ProXad [Aug  9 2008 02:45:09]</send>
-    <send>Last-Modified: Mon, 23 Aug 2010 18:00:15 GMT</send>
-    <send>ETag: "6f332b-125-4c72b72f"</send>
+    <send>Date: ${DATE}</send>
+    <send>Server: tcpchat</send>
     <send>Connection: close</send>
     <send>Accept-Ranges: bytes</send>
     <send>Content-Length: ${SIZE}</send>
-    <send>Content-Type: application/xml-dtd</send>
+    <send>Content-Type: text/plain</send>
     <send></send>
     <call>cat ${FILE}</call>
     <close/>
