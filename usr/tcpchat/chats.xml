@@ -57,7 +57,7 @@
         <read TimeoutMs="30_000"Regexp="true">.ogin</read>
         <send>malaise</send>
         <read TimeoutMs="10_000" Regexp="true">.{4\}word</read>
-        <send>${PASSWORD}</send>
+        <send>${$PASSWORD}</send>
         <send>Working: Please wait...</send>
         <wait DelayMs="5_000"/>
         <send>Done. Please logout.</send>
@@ -80,7 +80,7 @@
     <send>login</send>
     <read>malaise</read>
     <send>password</send>
-    <read>${PASSWORD}</read>
+    <read>${$PASSWORD}</read>
     <send>Working: Please wait...</send>
     <wait DelayMs="5_000"/>
     <send>Done. Please logout.</send>

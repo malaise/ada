@@ -33,15 +33,25 @@
      chat is selected.
 
   The following situations lead to the termination (closure) of current
-     script:
-      - The expiration of the timeout global to the chat script.
-      - The expiration of the timeout on the whole chats selection, on a select,
-        on a read or on a skip.
-      - the reception of a non expected string by a read.
-      - The reception of a non expected string by a chats-expect or a
-        select-expect when it has no default.
-      - A transmission error (closure, overflow).
-      - The failure when calling or executing an external command.
+   script:
+   - The expiration of the timeout global to the chat script.
+   - The expiration of the timeout on the whole chats selection, on a select,
+      on a read or on a skip.
+   - The reception of a non expected string by a read.
+   - The reception of a non expected string by a chats-expect or a
+      select-expect when it has no default.
+   - A transmission error (closure, overflow).
+   - The failure when calling or executing an external command.
+
+  Variables:
+   - Assignments (after chat, read or expect) have the form "VAR=... VAR=..."
+   - References have the form ${name} where:
+     - ${0} denotes the full string matching the regexp
+     - ${1} to ${9} denote the substrings (matching "(...)" int the regexp)
+     - ${$name} denotes ENV variables
+     - Internal variables names cannot be numbers nor start by "$"
+   So any occurence of "${" or "}" that does't denote a variable must be
+    backslashed.
 -->
 
 <!ENTITY % boolean "(true|false)">
