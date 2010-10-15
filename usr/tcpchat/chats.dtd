@@ -67,7 +67,7 @@
                TimeoutMs CDATA #IMPLIED
                InputDefaultTimeoutMs CDATA #IMPLIED
                %ReadDef;>
-<!ELEMENT script ((select|cond|read|skip|wait|send|call|eval)*,close?)>
+<!ELEMENT script ((select|cond|read|skip|wait|send|call|set|eval)*,close?)>
 
 <!ELEMENT select ((expect,script)+,(default,script)?)>
 <!ATTLIST select TimeoutMs CDATA #IMPLIED>
@@ -93,5 +93,7 @@
 <!ELEMENT call (#PCDATA)>
 <!ELEMENT eval (#PCDATA)>
 <!ATTLIST eval Variable CDATA #REQUIRED>
+<!ELEMENT set (#PCDATA)>
+<!ATTLIST set Variable CDATA #REQUIRED>
 <!ELEMENT close EMPTY>
 
