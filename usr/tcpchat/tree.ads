@@ -7,8 +7,8 @@ package Tree is
   Parse_Error : exception;
 
   -- Kind of node
-  type Node_Kind is (Selec, Cond, Read, Default, Skip, Wait, Send,
-                     Call, Eval, Close);
+  type Node_Kind is (Nop, Selec, Cond, Read, Default, Skip, Wait, Send,
+                     Call, Eval, Set, Close);
 
   -- Infinite timeout
   Infinite_Ms : constant Integer := Event_Mng.Infinite_Ms;
@@ -22,10 +22,10 @@ package Tree is
   type Position_Access;
   type Node_Access is access Position_Access;
   type Node_Rec is record
-    Kind : Node_Kind := Close;
+    Kind : Node_Kind := Nop;
     -- For chat (kind Read)
     Name : Asu_Us;
-    -- For Cond, Read, Send, Call or Exec
+    -- For Cond, read, send, call or eval
     Text : Asu_Us;
     -- For Selec, Read, Skip, Wait
     Timeout : Integer := Infinite_Ms;

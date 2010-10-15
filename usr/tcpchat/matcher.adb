@@ -18,8 +18,9 @@ package body Matcher is
     use type Asu_Us, Regular_Expressions.Match_Cell, Any_Def.Any_Kind_List,
              Tree.Node_Kind;
   begin
-    -- Case of the Eval statement: One variable to assign
-    if Node.Kind = Tree.Eval then
+    -- Case of the Eval/Set statement: One variable to assign
+    if Node.Kind = Tree.Eval
+    or else Node.Kind = Tree.Set then
       -- Expand variable name
       Expanding := Node.Assign(Node.Assign'First).Name;
       Expanded := Variables.Expand (Expanding, Check_Only);
@@ -33,6 +34,7 @@ package body Matcher is
     end if;
 
     -- Other case of assign (chat/expect/read => tree kind Read)
+    --  or Cond
     -- Expand expression
     Expanding := Node.Text;
     Expanded := Variables.Expand (Expanding, Check_Only);
@@ -59,6 +61,11 @@ package body Matcher is
       return False;
     end if;
     Debug.Log ("Regex match " & N_Matched'Img);
+
+    -- Case of the Cond: One variable to compare
+    if Node.Kind = Tree.Cond then
+      return True;
+    end if;
 
     -- Assign variables after real Match, if any
     if not Check_Only
@@ -147,22 +154,13 @@ package body Matcher is
     pragma Unreferenced (Dummy);
     use type Tree.Node_Kind;
   begin
+    -- Check
     Dummy := Compute (Node, Asu_Tus ("Dummy"), True);
 
-
-    -- Case of the Eval statement: One variable to assign
-    if Node.Kind = Tree.Eval then
-      -- Check that variable expands OK
-      declare
-        Expanded : Asu_Us;
-        pragma Unreferenced (Expanded);
-      begin
-        Expanded := Variables.Expand (Assign, True);
-      exception
-        when Variables.Expand_Error =>
-        Error ("Cannot expand expression " & Asu_Ts (Assign));
-        raise Match_Error;
-      end;
+    -- Case of the Eval/Set/Cond statement: One variable to assign
+    if Node.Kind = Tree.Eval
+    or else Node.Kind = Tree.Set
+    or else Node.Kind = Tree.Cond then
       -- Set it as first assign name
       Node.Assign(Node.Assign'First) := (
          Name => Assign,

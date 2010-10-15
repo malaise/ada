@@ -42,6 +42,10 @@ package body Events is
         -- Where are we?
         Node := Chats.Read;
         case Node.Kind is
+          when Nop =>
+            -- no operation (empty "if" or "expect"
+            Set_Position (Node.Next.all);
+
           when Selec =>
             -- If we are root
             --  Keep previous chat timeout if we are in chat
@@ -252,6 +256,15 @@ package body Events is
                 Put_Line ("Command error");
                 Reset;
             end;
+
+          when Set =>
+            -- Load the variable
+            if Matcher.Match (Node, Variables.Expand (Node.Text)) then
+              Set_Position (Node.Next.all);
+            else
+              Put_Line ("Invalid evaluation");
+              Reset;
+            end if;
 
           when Close =>
             Reset;

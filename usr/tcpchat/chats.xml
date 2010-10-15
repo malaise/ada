@@ -4,27 +4,32 @@
 
 <chats>
   <!-- HTTP 0.9: Send file -->
-  <chat Name="httpTopic0.9" TimeoutMs="&None;" Regexp="true" Assign="FILE=${1}"
-        >GET http://localhost([^ ]+)</chat>
-  <script>
-    <call>cat ${FILE}</call>
-    <close/>
-  </script>
   <!-- HTTP 1.0 or 1.1: Send header + file -->
-  <chat Name="httpTopic1.0" TimeoutMs="1_000" Regexp="true" Assign="FILE=${1}"
-        >GET http://localhost([^ ]+) +HTTP/1\.(0|1)</chat>
+  <chat Name="http" TimeoutMs="&None;" Regexp="true"
+        Assign="FILE=${1} VERS=${2}"
+        >GET http://localhost([^ ]+)( +HTTP/1\.(0|1))</chat>
   <script>
-    <read></read>
-    <eval Variable="SIZE">ls -al ${FILE} | awk '{printf "%s",$5\}'</eval>
-    <eval Variable="DATE">echo -n `date "+%a, %d %b %Y %H:%M:00 %Z"`</eval>
-    <send>HTTP/1.1 200 OK</send>
-    <send>Date: ${DATE}</send>
-    <send>Server: tcpchat</send>
-    <send>Connection: close</send>
-    <send>Accept-Ranges: bytes</send>
-    <send>Content-Length: ${SIZE}</send>
-    <send>Content-Type: text/plain</send>
-    <send></send>
+    <cond>
+      <if Variable="VERS"></if>
+      <!-- No vers => 0.9 -->
+      <script></script>
+      <else/>
+      <script>
+        <!-- Vers 1.x => expect empty line and send header -->
+        <read></read>
+        <eval Variable="SIZE">ls -al ${FILE} | awk '{printf "%s",$5\}'</eval>
+        <eval Variable="DATE">echo -n `date "+%a, %d %b %Y %H:%M:00 %Z"`</eval>
+        <set Variable="SERVER_ID">tcpchat/V1.1</set>
+        <send>HTTP/1.1 200 OK</send>
+        <send>Date: ${DATE}</send>
+        <send>Server: ${SERVER_ID}</send>
+        <send>Connection: close</send>
+        <send>Accept-Ranges: bytes</send>
+        <send>Content-Length: ${SIZE}</send>
+        <send>Content-Type: text/plain</send>
+        <send></send>
+      </script>
+    </cond>
     <call>cat ${FILE}</call>
     <close/>
   </script>
