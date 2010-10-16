@@ -7,7 +7,7 @@
   <!-- HTTP 1.0 or 1.1: Send header + file -->
   <chat Name="http" TimeoutMs="&None;" Regexp="true"
         Assign="FILE=${1} VERS=${2}"
-        >GET http://localhost([^ ]+)( +HTTP/1\.(0|1))</chat>
+        >GET http://localhost([^ ]+)( +HTTP/1\.(0|1))?</chat>
   <script>
     <cond>
       <if Variable="VERS"></if>

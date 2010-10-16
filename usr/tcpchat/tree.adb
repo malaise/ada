@@ -6,10 +6,6 @@ package body Tree is
   Ctx : Xml_Parser.Ctx_Type;
   Line_Feed : constant String := Text_Line.Line_Feed_Str;
 
-  -- Nop node
-  Tmp_Node : Node_Rec;
-  Nop_Node : constant Node_Rec := Tmp_Node;
-
   ----------------------
   -- Common utilities --
   ----------------------
@@ -155,17 +151,29 @@ package body Tree is
   procedure Insert_Node (Xnode : in Xml_Parser.Element_Type;
                          Timeout : in Integer) is
     Name : constant String := Ctx.Get_Name (Xnode);
-    Node : Node_Rec;
+    Node, Nop_Node : Node_Rec;
     Default_Timeout : Integer;
     Child : Xml_Parser.Node_Type;
     Dummy : Boolean;
     Next_Is_Script : Boolean;
     Child_Pos : Tree_Mng.Position_Access;
+    procedure Init_Next (N : in out Node_Rec) is
+    begin
+      N.Next := new Position_Access'(Position_Access(Tree_Mng.No_Position));
+    end Init_Next;
+    procedure Link_Next (Node : in out Node_Rec) is
+    begin
+      Chats.Move_Child (False);
+      Child_Pos := Chats.Get_Position;
+      Chats.Move_Father;
+      Node.Next.all := Position_Access(Child_Pos);
+      Chats.Replace (Node);
+    end Link_Next;
   begin
     -- Fill new node
     Debug.Log ("Getting node " & Name);
     -- Init Node's next
-    Node.Next := new Position_Access'(Position_Access(Tree_Mng.No_Position));
+    Init_Next (Node);
     -- Propagate default timeout from father
     Default_Timeout := Timeout;
     -- Default flags: Dummy is for "if" and "else"
@@ -308,8 +316,10 @@ package body Tree is
         Debug.Log ("  Inserting child of " & Mixed_Str (Node.Kind'Img));
         Child := Ctx.Get_Child (Ctx.Get_Brother (Xnode), 1);
         Insert_Node (Child, Default_Timeout);
+        Link_Next (Node);
       else
         Debug.Log ("  Inserting Nop child of " & Mixed_Str (Node.Kind'Img));
+        Init_Next (Nop_Node);
         Chats.Insert_Child (Nop_Node, False);
         Chats.Move_Father;
       end if;
@@ -319,12 +329,7 @@ package body Tree is
       -- Insert next statement
       Debug.Log ("  Inserting next of " & Mixed_Str (Node.Kind'Img));
       Insert_Node (Child, Default_Timeout);
-      -- Update Next
-      Chats.Move_Child (False);
-      Child_Pos := Chats.Get_Position;
-      Chats.Move_Father;
-      Node.Next.all := Position_Access(Child_Pos);
-      Chats.Replace (Node);
+      Link_Next (Node);
     end if;
 
     -- Move back to father
@@ -386,17 +391,23 @@ package body Tree is
     end if;
 
     -- Iterate on all children
-    if Chats.Children_Number /= 0 then
+    if Chats.Children_Number = 1 then
+      -- Single child = next instruction
+      Chats.Move_Child (True);
+      Debug.Log ("Updating direct child");
+      Dummy := Update_Next (Lnext);
+    elsif Chats.Children_Number > 1 then
+      -- Selec or Cond
       Chats.Move_Child (True);
       loop
         if Position_Access(Chats.Get_Position) = Lnext then
           -- Here we are passing to a child: itself!
-          -- This can only occur when, on the last child of a Selec,
+          -- This can only occur when, on the last child of a Selec/Cond,
           -- we are in fact switching to its next statement.
-          -- In this case, the next should be the one of the Selec.
+          -- In this case, the next should be the one of the Selec/Cond.
           Lnext := Next;
         end if;
-        Debug.Log ("Updating child");
+        Debug.Log ("Updating multiple child");
         exit when not Update_Next (Lnext);
       end loop;
     end if;
@@ -444,8 +455,6 @@ package body Tree is
     Xnode := Ctx.Get_Root_Element;
     Insert_Node (Xnode, Infinite_Ms);
     Chats.Move_Root;
-Chats.Iterate (Dump'Access);
-Chats.Move_Root;
     Debug.Log ("Updating Next:");
     Dummy := Update_Next (No_Position);
     Chats.Move_Root;

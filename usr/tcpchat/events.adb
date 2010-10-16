@@ -1,7 +1,7 @@
 with Ada.Calendar;
 with As.U; use As.U;
 with Basic_Proc, Command, Date_Image;
-with Variables, Tree, Ios, Matcher;
+with Variables, Tree, Ios, Matcher, Debug;
 package body Events is
 
   -- Report progress
@@ -82,6 +82,7 @@ package body Events is
                     Chats.Move_Brother (False);
                   end if;
                   Child := Chats.Read;
+                  Debug.Log ("Trying " & Asu_Ts (Child.Name));
                   if Child.Next.all = Next then
                     -- Last child is Next => no match
                     Put_Line ("No match on select");

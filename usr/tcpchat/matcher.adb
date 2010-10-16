@@ -71,14 +71,18 @@ package body Matcher is
     if not Check_Only
     and then Node.Assign(1).Value.Kind /= Any_Def.None_Kind then
       -- Set volatile variables to matching substring
-      for I in 1 .. N_Matched loop
+      for I in Match_Info'Range  loop
         -- ${0} is first match ...
         Expanding := Asu_Tus (Nat_Image (I - 1));
-        Expanded := Asu.Unbounded_Slice (Str, Match_Info(I).First_Offset,
-                                              Match_Info(I).Last_Offset_Stop);
+        if I <= N_Matched then
+          Expanded := Asu.Unbounded_Slice (Str, Match_Info(I).First_Offset,
+                                                Match_Info(I).Last_Offset_Stop);
+        else
+          Expanded := Asu_Null;
+        end if;
         Variables.Set_Volatile (Expanding, Expanded);
         Debug.Log ("Volatile " & Asu_Ts (Expanding)
-                 & "=" & Asu_Ts (Expanded));
+                   & "=" & Asu_Ts (Expanded));
       end loop;
       -- Assign variables
       for I in Node.Assign'Range loop
