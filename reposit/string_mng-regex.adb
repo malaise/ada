@@ -3,24 +3,15 @@
 with Char_To_Hexa, Upper_Str, Lower_Str, Mixed_Str;
 package body String_Mng.Regex is
 
-
-  -- Locate a fragment of Within string matching the regexp Criteria.
-  -- Search is performed between the given From_Index (first if 0) and
-  --  the To_Index (last if 0) indexes of Within string.
-  -- Search is performed forward or backward, and returns the
-  --  Nth matching Occurence.
-  -- Returns Start and Stop indexes in Within, of chars matching the criteria.
-  -- Returns Start=1 and Stop=0 (No_Match) if no corresponding match found.
+  -- Internal Locate with Regex compiled
   function Locate (Within     : String;
-                   Criteria   : String;
-                   From_Index : Natural := 0;
-                   To_Index   : Natural := 0;
-                   Forward    : Boolean := True;
-                   Occurence  : Positive := 1)
-           return Search_Result is
+                   Compiled : Regular_Expressions.Compiled_Pattern;
+                   From_Index : Natural;
+                   To_Index   : Natural;
+                   Forward    : Boolean;
+                   Occurence  : Positive)
+           return Regular_Expressions.Match_Cell is
     I1, I2 : Natural;
-    Compiled : Regular_Expressions.Compiled_Pattern;
-    Ok : Boolean;
     Occ : Natural;
     N_Match : Natural;
     Info, Prev : Regular_Expressions.One_Match_Array;
@@ -28,7 +19,7 @@ package body String_Mng.Regex is
   begin
     -- Empty Within => No_match
     if Within'Length = 0 then
-      return No_Match;
+      return Regular_Expressions.No_Match;
     end if;
     -- Initialise indexes
     if From_Index = 0 then
@@ -46,12 +37,6 @@ package body String_Mng.Regex is
       raise Invalid_Index;
     end if;
 
-    -- Compile regex
-    Regular_Expressions.Compile (Compiled, Ok, Criteria);
-    if not Ok then
-      raise Invalid_Regular_Expression;
-    end if;
-
     Occ := 0;
     Prev(1) := Regular_Expressions.Match_Cell(No_Match);
     if Forward then
@@ -59,13 +44,13 @@ package body String_Mng.Regex is
       for I in I1 .. I2 loop
         Regular_Expressions.Exec (Compiled, Within(I .. I2), N_Match, Info);
         if N_Match = 0 then
-          return No_Match;
+          return Regular_Expressions.No_Match;
         elsif Info /= Prev then
           -- One new matching occurence
           Occ := Occ + 1;
           if Occ = Occurence then
             -- Correct occurence number
-            return Search_Result(Info(1));
+            return Info(1);
           end if;
           Prev := Info;
         end if;
@@ -79,15 +64,42 @@ package body String_Mng.Regex is
           Occ := Occ + 1;
           if Occ = Occurence then
             -- Correct occurence number
-            return Search_Result(Info(1));
+            return Info(1);
           end if;
           Prev := Info;
         end if;
       end loop;
-      return No_Match;
+      return Regular_Expressions.No_Match;
     end if;
     -- Just to be safe
-    return No_Match;
+    return Regular_Expressions.No_Match;
+  end Locate;
+
+
+  -- Locate a fragment of Within string matching the regexp Criteria.
+  -- Search is performed between the given From_Index (first if 0) and
+  --  the To_Index (last if 0) indexes of Within string.
+  -- Search is performed forward or backward, and returns the
+  --  Nth matching Occurence.
+  -- Returns Start and Stop indexes in Within, of chars matching the criteria.
+  -- Returns Start=1 and Stop=0 (No_Match) if no corresponding match found.
+  function Locate (Within     : String;
+                   Criteria   : String;
+                   From_Index : Natural := 0;
+                   To_Index   : Natural := 0;
+                   Forward    : Boolean := True;
+                   Occurence  : Positive := 1)
+           return Search_Result is
+    Compiled : Regular_Expressions.Compiled_Pattern;
+    Ok : Boolean;
+  begin
+    -- Compile regex
+    Regular_Expressions.Compile (Compiled, Ok, Criteria);
+    if not Ok then
+      raise Invalid_Regular_Expression;
+    end if;
+    return Search_Result (Locate (Within, Compiled, From_Index, To_Index,
+                          Forward, Occurence));
   end Locate;
 
   -- Replace Working(Info(1).First_Offset .. Info(1).End_Offset)
@@ -363,6 +375,71 @@ package body String_Mng.Regex is
     end;
   end Split;
 
-end String_Mng.Regex;
+  -- Split Str into several substrings separated by strings matching the
+  --  separator.
+  -- Returns the array of slices (Str if no match).
+  function Split_Sep (Str : String;
+                      Separator : String;
+                      Max_Slices : Slice_Sep_Range) return String_Slice is
+    -- Regex compilation
+    Ok : Boolean;
+    Compiled : Regular_Expressions.Compiled_Pattern;
+    -- The maximum result
+    Cells : Regular_Expressions.Match_Array (1 .. Max_Slices);
+    N_Matched : Natural;
+    Result : String_Slice (1 .. Max_Slices);
+    -- For Locate
+    From_Index : Natural;
+    use type  Regular_Expressions.Match_Cell;
+  begin
+    -- Compile regex
+    Regular_Expressions.Compile (Compiled, Ok, Separator);
+    if not Ok then
+      raise Invalid_Regular_Expression;
+    end if;
+    -- Find successive occurences of Separator
+    N_Matched := 0;
+    From_Index := Str'First;
+    for I in 1 .. Max_Slices loop
+      -- First occurent in tail
+      Cells(I) := Locate (Str, Compiled, From_Index, 0, True, 1);
+      if Cells(I) /= Regular_Expressions.No_Match then
+        -- A match
+        if Cells(I).Last_Offset_Stop = Str'Last then
+          -- Str ends by a match, return previous slices (maybe none)
+          return Result (1 .. I - 1);
+        elsif I = Max_Slices then
+          -- Not enough slices to store all substrings
+          raise Not_Enough_Slices;
+        else
+          -- Store this slice
+          N_Matched := N_Matched + 1;
+          Result (N_Matched) := Asu_Tus (Str (
+              Cells(I - 1).Last_Offset_Stop + 1 .. Cells(I).First_Offset + 1));
+          -- Tail starts after this separator
+          From_Index := Cells(I).Last_Offset_Stop + 1;
+        end if;
+      else
+        -- No match
+        if I = 1 then
+          -- No match at all
+          Result(I) := Asu_Tus (Str);
+          return Result (I .. I);
+        elsif I = Max_Slices then
+          -- No more match : there is space for tail
+          Result(I) := Asu_Tus (Str(
+             Cells(I - 1).Last_Offset_Stop + 1 .. Str'Last));
+          return Result (1 .. I);
+        end if;
+      end if;
+    end loop;
+    -- Just to be safe
+    raise Not_Enough_Slices;
+  exception
+    when others =>
+      -- Just to be safe
+      raise Not_Enough_Slices;
+  end Split_Sep;
 
+end String_Mng.Regex;
 

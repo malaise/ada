@@ -68,5 +68,16 @@ package String_Mng.Regex is
                   Criteria : String;
                   Max_Slices : Positive) return String_Slice;
 
+  -- Split Str into several substrings separated by strings matching the
+  --  separator.
+  -- Returns the array of slices (Str at pos 1 if no match, empty slices if
+  --  Str at all matches Separator).
+  -- Raises Not_Enough_Slices if Max_Slices is not big enough
+  Not_Enough_Slices : exception;
+  subtype Slice_Sep_Range is Positive range 2 .. Positive'Last;
+  function Split_Sep (Str : String;
+                      Separator : String;
+                      Max_Slices : Slice_Sep_Range) return String_Slice;
+
 end String_Mng.Regex;
 
