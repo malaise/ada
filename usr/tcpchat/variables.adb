@@ -1,5 +1,5 @@
 with Computer, Environ, Regular_Expressions;
-with Error;
+with Error, Debug;
 package body Variables is
 
   Ext_Ref : constant Character := '$';
@@ -38,6 +38,7 @@ package body Variables is
   -- Reset all variables
   procedure Reset is
   begin
+    Debug.Log ("Resetting variables");
     Computer.Reset (Not_Persistent => False);
   end Reset;
 
@@ -77,6 +78,7 @@ package body Variables is
 
   procedure Clear_Volatiles is
   begin
+    Debug.Log ("Resetting volatiles");
     Computer.Reset (Not_Persistent => True);
   end Clear_Volatiles;
 

@@ -34,7 +34,8 @@ package body Events is
     Next : Position_Access;
     Event : Ios.Event_Type;
     Disconnection : Boolean;
-    use type Ios.Event_Kind_List;
+    Expanded : Asu_Us;
+    use type Ios.Event_Kind_List, Asu_Us;
   begin
     Put_Line ("Ready");
     Main : loop
@@ -113,8 +114,20 @@ package body Events is
             end case;
 
           when Cond =>
-            -- @@@ Not implemented
-            null;
+            -- Resolv variable
+            Expanded := Variables.Expand (
+                  "${" & Node.Assign(Node.Assign'First).Name & "}");
+            -- Go to the first child, the "if" part
+            Chats.Move_Child;
+            -- See if variable content matches
+            if Matcher.Match (Node, Expanded) then
+              -- Mach, we are already in the if block
+              null;
+            else
+              -- No mach, move to brother, either the else part or
+              -- the next statement after Cond
+              Chats.Move_Brother (False);
+            end if;
 
           when Read =>
             Event := Ios.Read (Node.Timeout);

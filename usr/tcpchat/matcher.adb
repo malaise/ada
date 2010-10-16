@@ -185,8 +185,8 @@ package body Matcher is
     declare
       -- Split into assignments
       Statements : constant String_Mng.Regex.String_Slice
-                 := String_Mng.Regex.Split (Asu_Ts (Assign),
-                                           "(\n|\t| )+", 10);
+                 := String_Mng.Regex.Split_Sep (Asu_Ts (Assign),
+                                                "[^\n\t ]+", 10);
     begin
       Debug.Log ("Found " & Natural'Image (Statements'Length)
                & " assignments");

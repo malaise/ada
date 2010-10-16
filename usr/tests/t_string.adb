@@ -335,7 +335,7 @@ begin
 
           when 20 =>
             My_Io.Put_Line ("20 Regex split");
-            My_Io.Put ("Separator (String)? "); My_Io.Get_Line (Str1, Nat1);
+            My_Io.Put ("Criteria (String)? "); My_Io.Get_Line (Str1, Nat1);
             My_Io.Put ("Max_Slices (Pos)? "); Nat_Get (Pos1, False);
             declare
               Lstr : constant String_Mng.Regex.String_Slice
