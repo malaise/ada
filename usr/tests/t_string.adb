@@ -106,8 +106,9 @@ begin
       My_Io.Put_Line ("19 Split");
       My_Io.Put_Line ("20 Regex split");
       My_Io.Put_Line ("21 Center");
+      My_Io.Put_Line ("22 Regex split on sep");
 
-      My_Io.Put ("Choice (0 .. 21) ? "); Nat_Get (Action, True);
+      My_Io.Put ("Choice (0 .. 22) ? "); Nat_Get (Action, True);
       My_Io.New_Line;
 
       begin
@@ -332,7 +333,6 @@ begin
                 My_Io.Put_Line (">" & Many_Strings.Nth (Lstr, I) & "<");
               end loop;
             end;
-
           when 20 =>
             My_Io.Put_Line ("20 Regex split");
             My_Io.Put ("Criteria (String)? "); My_Io.Get_Line (Str1, Nat1);
@@ -355,6 +355,18 @@ begin
                 "Center: |"
               & String_Mng.Center(Str(1 .. Str_Len), Len => Pos1, Gap => Char1)
               & "|" );
+          when 22 =>
+            My_Io.Put_Line ("22 Regex split on sep");
+            My_Io.Put ("Separator (Str)? "); My_Io.Get_Line (Str1, Nat1);
+            declare
+              Slices : constant Asu_Ua.Unb_Array
+                     := String_Mng.Regex.Split_Sep (Str(1 .. Str_Len),
+                                                    Str1(1 .. Nat1));
+            begin
+              for I in 1 .. Slices.Length loop
+                My_Io.Put_Line (">" & Asu_Ts (Slices.Element (I)) & "<");
+              end loop;
+            end;
 
           when others => null;
 
