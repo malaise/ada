@@ -378,16 +378,15 @@ package body String_Mng.Regex is
   -- Split Str into several substrings separated by strings matching the
   --  separator.
   -- Returns the array of slices (Str if no match).
-  function Split_Sep (Str : String;
-                      Separator : String;
-                      Max_Slices : Slice_Sep_Range) return String_Slice is
+  function Split_Sep (Str : String; Separator : String)
+           return Asu_Ua.Unb_Array is
     -- Regex compilation
     Ok : Boolean;
     Compiled : Regular_Expressions.Compiled_Pattern;
-    -- The maximum result
-    Cells : Regular_Expressions.Match_Array (1 .. Max_Slices);
-    N_Matched : Natural;
-    Result : String_Slice (1 .. Max_Slices);
+    -- The match results
+    Cell : Regular_Expressions.Match_Cell;
+    -- Result
+    Result : Asu_Ua.Unb_Array;
     -- For Locate
     From_Index : Natural;
     use type  Regular_Expressions.Match_Cell;
@@ -397,48 +396,35 @@ package body String_Mng.Regex is
     if not Ok then
       raise Invalid_Regular_Expression;
     end if;
+
+    -- Prepare for successive searches
+    From_Index := 1;
+
     -- Find successive occurences of Separator
-    N_Matched := 0;
-    From_Index := Str'First;
-    for I in 1 .. Max_Slices loop
+    loop
       -- First occurent in tail
-      Cells(I) := Locate (Str, Compiled, From_Index, 0, True, 1);
-      if Cells(I) /= Regular_Expressions.No_Match then
+      Cell := Locate (Str, Compiled, From_Index, 0, True, 1);
+      if Cell /= Regular_Expressions.No_Match then
         -- A match
-        if Cells(I).Last_Offset_Stop = Str'Last then
+        if Cell.Last_Offset_Stop = Str'Last then
           -- Str ends by a match, return previous slices (maybe none)
-          return Result (1 .. I - 1);
-        elsif I = Max_Slices then
-          -- Not enough slices to store all substrings
-          raise Not_Enough_Slices;
+          return Result;
         else
-          -- Store this slice
-          N_Matched := N_Matched + 1;
-          Result (N_Matched) := Asu_Tus (Str (
-              Cells(I - 1).Last_Offset_Stop + 1 .. Cells(I).First_Offset + 1));
+          -- Append this slice
+          Result.Append(Asu_Tus (Str(From_Index .. Cell.First_Offset - 1)));
           -- Tail starts after this separator
-          From_Index := Cells(I).Last_Offset_Stop + 1;
+          From_Index := Cell.Last_Offset_Stop + 1;
         end if;
+      elsif From_Index = Str'First then
+        -- No match at all
+        Result := Asu_Ua.To_Unb_Array (Asu_Tus (Str));
+        return Result;
       else
-        -- No match
-        if I = 1 then
-          -- No match at all
-          Result(I) := Asu_Tus (Str);
-          return Result (I .. I);
-        elsif I = Max_Slices then
-          -- No more match : there is space for tail
-          Result(I) := Asu_Tus (Str(
-             Cells(I - 1).Last_Offset_Stop + 1 .. Str'Last));
-          return Result (1 .. I);
-        end if;
+        -- No more match: Append tail
+        Result.Append(Asu_Tus (Str(From_Index .. Str'Last)));
+        return Result;
       end if;
     end loop;
-    -- Just to be safe
-    raise Not_Enough_Slices;
-  exception
-    when others =>
-      -- Just to be safe
-      raise Not_Enough_Slices;
   end Split_Sep;
 
 end String_Mng.Regex;

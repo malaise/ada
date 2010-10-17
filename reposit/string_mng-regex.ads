@@ -70,14 +70,9 @@ package String_Mng.Regex is
 
   -- Split Str into several substrings separated by strings matching the
   --  separator.
-  -- Returns the array of slices (Str at pos 1 if no match, empty slices if
-  --  Str at all matches Separator).
-  -- Raises Not_Enough_Slices if Max_Slices is not big enough
-  Not_Enough_Slices : exception;
-  subtype Slice_Sep_Range is Positive range 2 .. Positive'Last;
-  function Split_Sep (Str : String;
-                      Separator : String;
-                      Max_Slices : Slice_Sep_Range) return String_Slice;
-
+  -- Returns the array of slices (Str at pos 1 if no match,
+  --   empty slice if Str at all matches Separator).
+  function Split_Sep (Str : String; Separator : String)
+           return Asu_Ua.Unb_Array;
 end String_Mng.Regex;
 
