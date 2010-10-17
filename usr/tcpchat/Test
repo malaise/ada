@@ -1,6 +1,8 @@
 #!/bin/bash
 # Automatic test of Tcpchat
 
+export VERS="V2.1"
+
 export DBG=1
 
 if [ $DBG -eq 1 ] ; then
@@ -93,11 +95,11 @@ fi
 export SIZE=`ls -al chats.xml | awk '{print $5}'`
 export DATE=`date "+%a, %d %b %Y %H:%M:00 %Z"`
 echo -n "Test http 1.0: "
-echo -en "HTTP/1.1 200 OK\nDate: $DATE\nServer: tcpchat\n" > $EXPECTED
+echo -en "HTTP/1.1 200 OK\nDate: ${DATE}\nServer: tcpchat/${VERS}\n" > $EXPECTED
 echo -en "Connection: close\nAccept-Ranges: bytes\n" >> $EXPECTED
 echo -en "Content-Length: ${SIZE}\nContent-Type: text/plain\n\n" >> $EXPECTED
 cat chats.xml >> $EXPECTED
-try $EXPECTED "GET${SPACE}http://localhost$PWD/chats.xml${SPACE}HTTP/1.0" 0 "${NONE}" 1
+try $EXPECTED "GET${SPACE}http://localhost${PWD}/chats.xml${SPACE}HTTP/1.0" 0 "${NONE}" 1
 
 # Ppp1 ok
 echo -n "Test ppp1 ok: "

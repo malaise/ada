@@ -184,19 +184,18 @@ package body Matcher is
     -- Check and compute Assign
     declare
       -- Split into assignments
-      Statements : constant String_Mng.Regex.String_Slice
-                 := String_Mng.Regex.Split_Sep (Asu_Ts (Assign),
-                                                "[^\n\t ]+", 10);
+      Statements : constant Asu_Ua.Unb_Array
+                 := String_Mng.Regex.Split_Sep (Asu_Ts (Assign), "[\n\t ]+");
     begin
-      Debug.Log ("Found " & Natural'Image (Statements'Length)
+      Debug.Log ("Found " & Natural'Image (Statements.Length)
                & " assignments");
-      if Statements'Length = 0 then
+      if Statements.Length = 0 then
         -- No separator => Parse the whole Assign string
         Parse_Assign (Node, 1, Assign);
       else
         -- Parse each assignment
-        for I in Statements'Range loop
-          Parse_Assign (Node, I, Statements(I));
+        for I in 1 .. Statements.Length loop
+          Parse_Assign (Node, I, Statements.Element(I));
         end loop;
       end if;
     end;

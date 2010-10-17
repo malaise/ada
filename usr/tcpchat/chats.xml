@@ -19,7 +19,7 @@
         <read></read>
         <eval Variable="SIZE">ls -al ${FILE} | awk '{printf "%s",$5\}'</eval>
         <eval Variable="DATE">echo -n `date "+%a, %d %b %Y %H:%M:00 %Z"`</eval>
-        <set Variable="SERVER_ID">tcpchat/V1.1</set>
+        <set Variable="SERVER_ID">tcpchat/V2.1</set>
         <send>HTTP/1.1 200 OK</send>
         <send>Date: ${DATE}</send>
         <send>Server: ${SERVER_ID}</send>
