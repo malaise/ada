@@ -1,5 +1,5 @@
 with Ada.Strings.Unbounded;
-with Dynamic_List, Unique_List;
+with Dynamic_List, Unique_List, Unbounded_Arrays;
 package As.U is
 
   -- Ada unbounded strings
@@ -26,6 +26,11 @@ package As.U is
   function Image (Element : Asu_Us) return String;
   package Asu_Unique_List_Mng is new Unique_List (
        Asu_Us, Asu_Us_Access, Set, Asu."=" , Image);
+
+  -- Unbounded array of Asu_Us
+  type Asu_Array is array (Positive range <>) of Asu_Us;
+  package Asu_Unbounded_Arrays is new Unbounded_Arrays (Asu_Us, Asu_Array);
+  package Asu_Ua renames Asu_Unbounded_Arrays;
 
 end As.U;
 
