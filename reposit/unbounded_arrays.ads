@@ -14,8 +14,10 @@ package Unbounded_Arrays is
   type Array_Access is access all Element_Array;
 
   type Unbounded_Array is tagged private;
+  subtype Unb_Array is Unbounded_Array;
 
   Null_Unbounded_Array : constant Unbounded_Array;
+  Null_Unb_Array : constant Unbounded_Array;
 
   Index_Error : exception;
 
@@ -29,7 +31,11 @@ package Unbounded_Arrays is
 
   -- Conversions
   function To_Unbounded_Array (Source : Element_Type)  return Unbounded_Array;
+  function To_Unb_Array (Source : Element_Type)  return Unbounded_Array
+                                                 renames To_Unbounded_Array;
   function To_Unbounded_Array (Source : Element_Array) return Unbounded_Array;
+  function To_Unb_Array (Source : Element_Array) return Unbounded_Array
+                                                 renames To_Unbounded_Array;
   function To_Array (Source : Unbounded_Array) return Element_Array;
 
   -- Prepend, Append, concat
@@ -86,6 +92,10 @@ package Unbounded_Arrays is
   function Unbounded_Slice (Source : Unbounded_Array;
                             Low    : Positive;
                             High   : Natural) return Unbounded_Array;
+  function Unb_Slice (Source : Unbounded_Array;
+                      Low    : Positive;
+                      High   : Natural) return Unbounded_Array
+                                        renames Unbounded_Slice;
 
   -- Comparisons
   function "=" (Left  : Unbounded_Array;
@@ -113,6 +123,7 @@ private
   Null_Unbounded_Array : constant Unbounded_Array :=
      (Ada.Finalization.Controlled with Reference => Null_Array'Access,
                                        Last      => 0);
+  Null_Unb_Array : constant Unbounded_Array := Null_Unbounded_Array;
 
 
 end Unbounded_Arrays;
