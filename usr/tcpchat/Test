@@ -15,6 +15,7 @@ fi
 # Prepare env
 export SPACE='µ'
 export NONE='£'
+export HOSTNAME
 export PASSWORD="userpass"
 export PIPE=pipe
 export RES=result
@@ -66,14 +67,14 @@ function try {
     echo "OK"
   fi
   rm $RES $EXPECTED
-  if [ $DBG  -eq 1 ] ; then
-    rm $DEBUG
-  fi
 }
 
 # Clean
 function clean {
   rm $PIPE
+  if [ $DBG  -eq 1 ] ; then
+    rm $DEBUG
+  fi
 }
 
 # Ping
@@ -99,7 +100,8 @@ echo -en "HTTP/1.1 200 OK\nDate: ${DATE}\nServer: tcpchat/${VERS}\n" > $EXPECTED
 echo -en "Connection: close\nAccept-Ranges: bytes\n" >> $EXPECTED
 echo -en "Content-Length: ${SIZE}\nContent-Type: text/plain\n\n" >> $EXPECTED
 cat chats.xml >> $EXPECTED
-try $EXPECTED "GET${SPACE}http://localhost${PWD}/chats.xml${SPACE}HTTP/1.0" 0 "${NONE}" 1
+try $EXPECTED "GET${SPACE}http://localhost${PWD}/chats.xml${SPACE}HTTP/1.0" 0 "Host:${SPACE}${HOSTNAME}" 0 \
+"Connection:${SPACE}close" 0 "${NONE}" 1
 
 # Ppp1 ok
 echo -n "Test ppp1 ok: "
