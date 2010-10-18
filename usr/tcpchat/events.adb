@@ -75,6 +75,7 @@ package body Events is
                 Reset;
               when Ios.Got_Sentence =>
                 -- Dispatch to child, avoid Next
+                Debug.Log ("Selec got: " & Asu_Ts (Event.Sentence));
                 Next := Node.Next.all;
                 Children:
                 for I in 1 .. Chats.Children_Number loop
@@ -93,7 +94,11 @@ package body Events is
                   elsif Child.Kind = Default
                   or else (Child.Kind = Read and then
                            Matcher.Match (Child, Event.Sentence) ) then
-                    Debug.Log ("Selec match: " & Asu_Ts (Child.Text));
+                    if Child.Kind = Default then
+                      Debug.Log ("Selec default");
+                    else
+                      Debug.Log ("Selec match: " & Asu_Ts (Child.Text));
+                    end if;
                     -- This read child matches (or is default)
                     if Child.Kind = Read
                     and then not Asu_Is_Null (Child.Name) then
@@ -167,6 +172,7 @@ package body Events is
                 Put_Line ("Timeout on Read");
                 Reset;
               when Ios.Got_Sentence =>
+                Debug.Log ("Read got: " & Asu_Ts (Event.Sentence));
                 -- Check match
                 if Matcher.Match (Node, Event.Sentence) then
                   Set_Position (Node.Next.all);
@@ -197,6 +203,7 @@ package body Events is
                 Reset;
               when Ios.Got_Sentence =>
                 -- Skip
+                Debug.Log ("Skip got: " & Asu_Ts (Event.Sentence));
                 Set_Position (Node.Next.all);
             end case;
 
@@ -241,6 +248,7 @@ package body Events is
                 Exit_Code => Exit_Code);
               if Exit_Code = 0 then
                 -- Command OK, send its out flow
+                Debug.Log ("Call got: " & Asu_Ts (Flow.Str));
                 Ios.Send (Flow.Str, Disconnection);
                 if Disconnection then
                   Put_Line ("Disconnection");
@@ -274,6 +282,7 @@ package body Events is
                 Err_Flow => null,
                 Exit_Code => Exit_Code);
               if Exit_Code = 0 then
+                Debug.Log ("Eval got: " & Asu_Ts (Flow.Str));
                 -- Command OK, load the variable
                 if Matcher.Match (Node, Flow.Str) then
                   Set_Position (Node.Next.all);
