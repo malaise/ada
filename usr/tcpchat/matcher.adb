@@ -34,7 +34,7 @@ package body Matcher is
     end if;
 
     -- Other case of assign (chat/expect/read => tree kind Read)
-    --  or Cond
+    --  or Cond or Repeat
     -- Expand expression
     Expanding := Node.Text;
     Expanded := Variables.Expand (Expanding, Check_Only);
@@ -62,8 +62,9 @@ package body Matcher is
     end if;
     Debug.Log ("Regex match " & N_Matched'Img);
 
-    -- Case of the Cond: One variable to compare
-    if Node.Kind = Tree.Cond then
+    -- Case of the Cond or Repeat: One variable to compare
+    if Node.Kind = Tree.Cond
+    or else Node.Kind = Tree.Repeat then
       return True;
     end if;
 
@@ -74,7 +75,8 @@ package body Matcher is
       for I in Match_Info'Range  loop
         -- ${0} is first match ...
         Expanding := Asu_Tus (Nat_Image (I - 1));
-        if I <= N_Matched then
+        if I <= N_Matched
+        and then Regular_Expressions.Valid_Match (Match_Info(I)) then
           Expanded := Asu.Unbounded_Slice (Str, Match_Info(I).First_Offset,
                                                 Match_Info(I).Last_Offset_Stop);
         else
@@ -161,10 +163,11 @@ package body Matcher is
     -- Check
     Dummy := Compute (Node, Asu_Tus ("Dummy"), True);
 
-    -- Case of the Eval/Set/Cond statement: One variable to assign
+    -- Case of the Eval/Set/Cond/Repeat statement: One variable to assign
     if Node.Kind = Tree.Eval
     or else Node.Kind = Tree.Set
-    or else Node.Kind = Tree.Cond then
+    or else Node.Kind = Tree.Cond
+    or else Node.Kind = Tree.Repeat then
       -- Set it as first assign name
       Node.Assign(Node.Assign'First) := (
          Name => Assign,

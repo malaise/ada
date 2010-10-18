@@ -55,6 +55,7 @@ package body Events is
             if not Chats.Has_Father and then not In_Chat then
               Timeout := Infinite_Ms;
             end if;
+
             -- Read a sentence
             Event := Ios.Read (Timeout);
             case Event.Kind is
@@ -83,7 +84,7 @@ package body Events is
                     Chats.Move_Brother (False);
                   end if;
                   Child := Chats.Read;
-                  Debug.Log ("Trying " & Asu_Ts (Child.Name));
+                  Debug.Log ("Selec trying: " & Asu_Ts (Child.Text));
                   if Child.Next.all = Next then
                     -- Last child is Next => no match
                     Put_Line ("No match on select");
@@ -92,6 +93,7 @@ package body Events is
                   elsif Child.Kind = Default
                   or else (Child.Kind = Read and then
                            Matcher.Match (Child, Event.Sentence) ) then
+                    Debug.Log ("Selec match: " & Asu_Ts (Child.Text));
                     -- This read child matches (or is default)
                     if Child.Kind = Read
                     and then not Asu_Is_Null (Child.Name) then
@@ -117,16 +119,36 @@ package body Events is
             -- Resolv variable
             Expanded := Variables.Expand (
                   "${" & Node.Assign(Node.Assign'First).Name & "}");
-            -- Go to the first child, the "if" part
+            -- Cond has 2 or 3 children. We will go to the first ("if")
+            --  or the second ("else" or next)
+            -- So go to the first child, the "if" part
             Chats.Move_Child;
             -- See if variable content matches
             if Matcher.Match (Node, Expanded) then
               -- Mach, we are already in the if block
-              null;
+              Debug.Log ("Cond true: " & Asu_Ts (Node.Text));
             else
               -- No mach, move to brother, either the else part or
               -- the next statement after Cond
+              Debug.Log ("Cond false: " & Asu_Ts (Node.Text));
               Chats.Move_Brother (False);
+            end if;
+
+          when Repeat =>
+            -- Resolv variable
+            Expanded := Variables.Expand (
+                  "${" & Node.Assign(Node.Assign'First).Name & "}");
+            -- Repeat has 2 children, the first instruction of the loop
+            --  and the next instruction after the loop
+            -- See if variable content matches
+            if Matcher.Match (Node, Expanded) then
+              -- Match, go to the first child of the loop
+              Debug.Log ("Repeat true: " & Asu_Ts (Node.Text));
+              Chats.Move_Child (True);
+            else
+              Debug.Log ("Repeat false: " & Asu_Ts (Node.Text));
+              -- No mach, move to end of loop
+              Chats.Move_Child (False);
             end if;
 
           when Read =>

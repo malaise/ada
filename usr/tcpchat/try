@@ -1,5 +1,6 @@
 #!/bin/bash
 export PASSWORD="userpass"
+export HOSTNAME="$HOSTNAME"
 
 if [ "$1" = "-d" ] ; then
   export TCPCHAT_DEBUG=Y

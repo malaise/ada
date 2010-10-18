@@ -6,8 +6,8 @@
   <!-- HTTP 0.9: Send file -->
   <!-- HTTP 1.0 or 1.1: Send header + file -->
   <chat Name="http" TimeoutMs="&None;" Regexp="true"
-        Assign="FILE=${1} VERS=${2}"
-        >GET http://localhost([^ ]+)( +HTTP/1\.(0|1))?</chat>
+        Assign="FILE=${4} VERS=${5}"
+        >GET ((http:/)?/(localhost|${$HOSTNAME}))?([^ ]+)( +HTTP/1\.(0|1))?</chat>
   <script>
     <cond>
       <if Variable="VERS"></if>
@@ -15,8 +15,23 @@
       <script></script>
       <else/>
       <script>
-        <!-- Vers 1.x => expect empty line and send header -->
-        <read></read>
+        <!-- Vers 1.x => skip inputs until empty line -->
+        <set Variable="DONE">false</set>
+        <repeat>
+          <while Variable="DONE">false</while>
+          <script>
+            <!-- Put a timeout here -->
+            <select TimeoutMs="&None;">
+              <expect></expect>
+              <script>
+                <set Variable="DONE">true</set>
+              </script>
+              <default/>
+              <script></script>
+            </select>
+          </script>
+        </repeat>
+        <!-- And send header -->
         <eval Variable="SIZE">ls -al ${FILE} | awk '{printf "%s",$5\}'</eval>
         <eval Variable="DATE">echo -n `date "+%a, %d %b %Y %H:%M:00 %Z"`</eval>
         <set Variable="SERVER_ID">tcpchat/V2.1</set>

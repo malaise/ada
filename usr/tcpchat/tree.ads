@@ -7,7 +7,7 @@ package Tree is
   Parse_Error : exception;
 
   -- Kind of node
-  type Node_Kind is (Nop, Selec, Cond, Read, Default, Skip, Wait, Send,
+  type Node_Kind is (Nop, Selec, Cond, Repeat, Read, Default, Skip, Wait, Send,
                      Call, Eval, Set, Close);
 
   -- Infinite timeout

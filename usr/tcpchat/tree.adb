@@ -89,6 +89,7 @@ package body Tree is
     if Node.Kind /= Eval
     and then Node.Kind /= Set
     and then Node.Kind /= Cond
+    and then Node.Kind /= Repeat
     and then not Node.Regexp
     and then not Asu_Is_Null (Assign) then
       Error (Xnode, "Assignment is only allowed with Regex expressions");
@@ -111,7 +112,7 @@ package body Tree is
       Basic_Proc.Put_Error (Asu_Ts (Node.Name) & " ");
     end if;
     case Node.Kind is
-      when Cond | Read | Call | Eval | Set =>
+      when Cond | Repeat | Read | Call | Eval | Set =>
         Basic_Proc.Put_Error ("Text: >" & Asu_Ts (Node.Text) & "< ");
       when Send =>
         Basic_Proc.Put_Error ("Text: >" &
@@ -122,7 +123,7 @@ package body Tree is
     case Node.Kind is
       when Selec | Read | Skip | Wait =>
         Basic_Proc.Put_Error ("Timeout: " & Node.Timeout'Img & " ");
-      when Cond | Eval | Set =>
+      when Cond | Repeat | Eval | Set =>
         Basic_Proc.Put_Error ("Variable: " );
           Basic_Proc.Put_Error (Asu_Ts (Node.Assign(Node.Assign'First).Name)
                               & " ");
@@ -131,7 +132,7 @@ package body Tree is
     end case;
     if Node.Regexp then
       Basic_Proc.Put_Error ("Regexp ");
-      if Node.Kind /= Cond then
+      if Node.Kind /= Cond and then Node.Kind /= Repeat then
         Basic_Proc.Put_Error ("Assign: " );
         for I in Node.Assign'Range loop
           exit when Node.Assign(I).Value.Kind = Any_Def.None_Kind;
@@ -156,12 +157,12 @@ package body Tree is
     Child : Xml_Parser.Node_Type;
     Dummy : Boolean;
     Next_Is_Script : Boolean;
-    Child_Pos : Tree_Mng.Position_Access;
     procedure Init_Next (N : in out Node_Rec) is
     begin
       N.Next := new Position_Access'(Position_Access(Tree_Mng.No_Position));
     end Init_Next;
     procedure Link_Next (Node : in out Node_Rec) is
+      Child_Pos : Tree_Mng.Position_Access;
     begin
       Chats.Move_Child (False);
       Child_Pos := Chats.Get_Position;
@@ -217,6 +218,7 @@ package body Tree is
       -- The default of a select
       Node.Kind := Default;
       Next_Is_Script := True;
+
     elsif Name = "cond" then
       Node.Kind := Cond;
       -- Move to "if" to get Varable name and text
@@ -231,6 +233,18 @@ package body Tree is
       Node.Kind := Cond;
       Dummy := True;
       Next_Is_Script := True;
+
+    elsif Name = "repeat" then
+      Node.Kind := Repeat;
+      -- Move to "while" to get Variable name and text
+      Child := Ctx.Get_Child (Xnode, 1);
+      Get_Text (Child, Node, True);
+      Child := Xml_Parser.No_Node;
+    elsif Name = "while" then
+      Node.Kind := Repeat;
+      Dummy := True;
+      Next_Is_Script := True;
+
     elsif Name = "read" then
       Node.Kind := Read;
       Node.Timeout := Get_Timeout (Xnode, Timeout);
@@ -272,7 +286,7 @@ package body Tree is
       Error (Xnode, "Unexpected node " & Name);
     end if;
 
-    -- Insert node
+    -- Insert current node
     if not Dummy then
       if Name = "chats" then
         -- Insert root
@@ -287,9 +301,11 @@ package body Tree is
       end if;
     end if;
 
-    -- Now insert entries of chats/select or cond
-    if Node.Kind = Selec
-    or else (Node.Kind = Cond and then not Dummy) then
+    -- Now insert entries of Select, Cond or Repeat
+    if not Dummy
+    and then (Node.Kind = Selec
+              or else Node.Kind = Cond
+              or else Node.Kind = Repeat) then
       -- Insert each entry
       Debug.Log ("  Inserting entries of " & Mixed_Str (Node.Kind'Img));
       for I in 1 .. Ctx.Get_Nb_Children (Xnode) loop
@@ -308,8 +324,8 @@ package body Tree is
 
     -- Go to next instruction
     if Next_Is_Script then
-      -- For the read of a Selec ("select" or "chats") and for the "if" and
-      --  the "else", next Xml node is a "script".
+      -- For the read of a Selec ("select" or "chats"), for the "if" and
+      --  the "else" and for the "while" next Xml node is a "script".
       -- Jump in it if not empty, else insert a Nop node
       -- In both cases, there is no next instruction
       if Ctx.Get_Nb_Children (Ctx.Get_Brother (Xnode)) /= 0 then
@@ -322,6 +338,7 @@ package body Tree is
         Init_Next (Nop_Node);
         Chats.Insert_Child (Nop_Node, False);
         Chats.Move_Father;
+        Link_Next (Node);
       end if;
     elsif Ctx.Has_Brother (Xnode) then
       -- Normal (non script) instruction : jump to Xml brother if any
@@ -341,26 +358,30 @@ package body Tree is
   -- Recursive update of Next for the leafs
   function Update_Next (Next : in Position_Access) return Boolean is
     Node, Ref_Node : Node_Rec;
-    Lnext : Position_Access;
+    -- The Next comming from parent
+    Pnext : Position_Access;
+    -- The Next of all intermediate children (not the following statement)
+    Inext : Position_Access;
+    -- Are we a leaf (Next not yet set)
     Dummy : Boolean;
     pragma Unreferenced (Dummy);
   begin
     if Next = No_Position then
       -- We are root, everything will ultimately arrive here
       Debug.Log ("On root");
-      Lnext := Position_Access (Chats.Get_Position);
+      Pnext := Position_Access (Chats.Get_Position);
     else
-      Lnext := Next;
+      Pnext := Next;
     end if;
 
-    -- Update current Next if needed
+    -- If not set, update current Next to the one comming from parent
     Chats.Read (Node);
     if Node.Next.all = No_Position then
-      Node.Next.all := Lnext;
+      Node.Next.all := Pnext;
       Chats.Replace (Node);
       if Debug.Is_On then
         Chats.Save_Position;
-        Set_Position (Lnext);
+        Set_Position (Pnext);
         Chats.Read (Ref_Node);
         Chats.Restore_Position;
         Debug.Log ("Updating Next of ", False);
@@ -369,6 +390,7 @@ package body Tree is
         Dummy := Dump (Ref_Node, 0);
       end if;
     else
+      -- Don't change current Next if already set
       if Debug.Is_On then
         Chats.Save_Position;
         Set_Position (Node.Next.all);
@@ -379,36 +401,38 @@ package body Tree is
         Debug.Log ("  to ", False);
         Dummy := Dump (Ref_Node, 0);
       end if;
-      -- For leaf children of entries of a Selec, Next is the next of the Selec
-      -- For leaf children of if/else of a Cond, Next is the next of the Cond
-      --  but not for its following statement
-      if Node.Kind = Selec
-      or else Node.Kind = Cond then
-        Lnext := Node.Next.all;
-        Debug.Log ("Updating Next for children of "
-                   & Mixed_Str (Node.Kind'Img));
-      end if;
+    end if;
+
+    -- Set Onext depending on kind of multiplexor
+    if Node.Kind = Selec
+    or else Node.Kind = Cond then
+      -- For leaf children of entries of a Selec, Next is the next of Selec
+      -- For leaf children of if/else of a Cond, Next is the next of Cond
+      Inext := Node.Next.all;
+    elsif Node.Kind = Repeat then
+      -- For leaf child of a Repeat, Next is the Repeat
+      Inext := Position_Access(Chats.Get_Position);
     end if;
 
     -- Iterate on all children
     if Chats.Children_Number = 1 then
       -- Single child = next instruction
       Chats.Move_Child (True);
-      Debug.Log ("Updating direct child");
-      Dummy := Update_Next (Lnext);
+      Debug.Log ("Updating single child");
+      Dummy := Update_Next (Pnext);
     elsif Chats.Children_Number > 1 then
-      -- Selec or Cond
+      -- Selec, Cond or Repeat
       Chats.Move_Child (True);
       loop
-        if Position_Access(Chats.Get_Position) = Lnext then
-          -- Here we are passing to a child: itself!
-          -- This can only occur when, on the last child of a Selec/Cond,
-          -- we are in fact switching to its next statement.
-          -- In this case, the next should be the one of the Selec/Cond.
-          Lnext := Next;
+        if Node.Next.all /= Position_Access(Chats.Get_Position) then
+          -- Any intermediate child
+          Debug.Log ("Updating intermediate child");
+          exit when not Update_Next (Inext);
+        else
+          -- Last child of a Selec/Cond/Repeat, any single child
+          Debug.Log ("Updating last child");
+          exit when not Update_Next (Pnext);
         end if;
-        Debug.Log ("Updating multiple child");
-        exit when not Update_Next (Lnext);
       end loop;
     end if;
 

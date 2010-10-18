@@ -57,43 +57,51 @@
 <!ENTITY % boolean "(true|false)">
 <!ENTITY None "None">
 
+<!ENTITY % TimeoutMs "TimeoutMs CDATA #IMPLIED">
+
 <!ENTITY % Regexp "Regexp %boolean; 'false'">
+
+<!ENTITY % Variable_Set "Variable CDATA #REQUIRED">
+<!ENTITY % Variable_Ref "Variable CDATA #REQUIRED %Regexp;">
 
 <!ENTITY % ReadDef "%Regexp; Assign CDATA #IMPLIED">
 
 <!ELEMENT chats (chat,script)+>
 <!ELEMENT chat (#PCDATA)>
 <!ATTLIST chat Name ID #REQUIRED
-               TimeoutMs CDATA #IMPLIED
+               %TimeoutMs;
                InputDefaultTimeoutMs CDATA #IMPLIED
                %ReadDef;>
-<!ELEMENT script ((select|cond|read|skip|wait|send|call|set|eval)*,close?)>
+<!ELEMENT script ((select|cond|repeat|read|skip|wait|send|call|set|eval)*,close?)>
 
 <!ELEMENT select ((expect,script)+,(default,script)?)>
-<!ATTLIST select TimeoutMs CDATA #IMPLIED>
+<!ATTLIST select %TimeoutMs;>
 <!ELEMENT expect (#PCDATA)>
 <!ATTLIST expect %ReadDef;>
 <!ELEMENT default EMPTY>
 
 <!ELEMENT cond (if,script,(else,script)?)>
 <!ELEMENT if (#PCDATA)>
-<!ATTLIST if Variable CDATA #REQUIRED
-             %Regexp;>
+<!ATTLIST if %Variable_Ref;>
 <!ELEMENT else EMPTY>
 
+<!ELEMENT repeat (while,script)>
+<!ELEMENT while (#PCDATA)>
+<!ATTLIST while %Variable_Ref;>
+
 <!ELEMENT read (#PCDATA)>
-<!ATTLIST read TimeoutMs CDATA #IMPLIED
+<!ATTLIST read %TimeoutMs;
                %ReadDef;>
 <!ELEMENT skip EMPTY>
-<!ATTLIST skip TimeoutMs CDATA #IMPLIED>
+<!ATTLIST skip %TimeoutMs;>
 <!ELEMENT wait EMPTY>
 <!ATTLIST wait DelayMs CDATA #REQUIRED>
 <!ELEMENT send (#PCDATA)>
 <!ATTLIST send NewLine %boolean; "false">
 <!ELEMENT call (#PCDATA)>
 <!ELEMENT eval (#PCDATA)>
-<!ATTLIST eval Variable CDATA #REQUIRED>
+<!ATTLIST eval %Variable_Set;>
 <!ELEMENT set (#PCDATA)>
-<!ATTLIST set Variable CDATA #REQUIRED>
+<!ATTLIST set %Variable_Set;>
 <!ELEMENT close EMPTY>
 
