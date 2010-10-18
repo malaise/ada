@@ -36,6 +36,9 @@ package Regular_Expressions is
   -- Check a regex, return True if OK
   function Check (Criteria : String) return Boolean;
 
+  -- Check that a Match_Cell can be used to extract matching (sub) string
+  function Valid_Match (Cell : Match_Cell) return Boolean;
+
   -- Execute a regex
   -- If Mach_Info is empty, N_Matched is set to 1 (match) or 0 (not match)
   -- Otherwise N_Matched is set to 0 (not match) or to the last non empty slot
@@ -47,6 +50,7 @@ package Regular_Expressions is
   -- Also beware that an empty To_Check can match a Criteria that is
   --  only made of optional patterns (e.g. '' matches 't*'). In this
   --  case Match_Info is one cell of Any_Match.
+  -- Use Valid_Match to check if you can use it to extract substrings.
   No_Criteria : exception;
   procedure Exec (Criteria : in Compiled_Pattern;
                   To_Check : in String;

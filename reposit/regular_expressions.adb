@@ -144,6 +144,14 @@ package body Regular_Expressions is
       null;
   end Adjust_Utf8;
 
+  -- Check that a Match_Cell can be used to extract matching (sub) string
+  function Valid_Match (Cell : Match_Cell) return Boolean is
+  begin
+    return Cell.First_Offset /= 0
+           and then Cell.Last_Offset_Stop >= Cell.First_Offset;
+  end Valid_Match;
+
+  -- Exec regex
   procedure Exec (Criteria : in Compiled_Pattern;
                   To_Check : in String;
                   N_Matched : out Natural;
