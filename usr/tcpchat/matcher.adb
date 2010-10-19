@@ -10,7 +10,7 @@ package body Matcher is
   function Compute (Node : Tree.Node_Rec;
                     Str : Asu_Us;
                     Check_Only : Boolean) return Boolean is
-    Expanding, Expanded : Asu_Us;
+    Expanding, Expanded, Result : Asu_Us;
     Compiled : Regular_Expressions.Compiled_Pattern;
     Ok : Boolean;
     N_Matched : Natural;
@@ -24,11 +24,19 @@ package body Matcher is
       -- Expand variable name
       Expanding := Node.Assign(Node.Assign'First).Name;
       Expanded := Variables.Expand (Expanding, Check_Only);
-      if not Check_Only then
+      if Check_Only then
+        -- Check that content expands OK
+        Result := Variables.Expand (Str, True);
+      else
         -- Set variable
+        if Node.Compute then
+          Result := Variables.Compute (Str);
+        else
+          Result := Variables.Expand (Str, False);
+        end if;
         Debug.Log ("Variable " & Asu_Ts (Expanded) & " set to "
-                 & Asu_Ts (Str));
-        Variables.Set (Expanded, Str);
+                 & Asu_Ts (Result));
+        Variables.Set (Expanded, Result);
       end if;
       return True;
     end if;
@@ -63,7 +71,7 @@ package body Matcher is
     Debug.Log ("Regex match " & N_Matched'Img);
 
     -- Case of the Cond or Repeat: One variable to compare
-    if Node.Kind = Tree.Cond
+    if Node.Kind = Tree.Condif
     or else Node.Kind = Tree.Repeat then
       return True;
     end if;
@@ -166,7 +174,7 @@ package body Matcher is
     -- Case of the Eval/Set/Cond/Repeat statement: One variable to assign
     if Node.Kind = Tree.Eval
     or else Node.Kind = Tree.Set
-    or else Node.Kind = Tree.Cond
+    or else Node.Kind = Tree.Condif
     or else Node.Kind = Tree.Repeat then
       -- Set it as first assign name
       Node.Assign(Node.Assign'First) := (

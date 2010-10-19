@@ -18,23 +18,33 @@ package body Tree is
     raise Parse_Error;
   end Error;
 
-  -- Get TimeoutMs or Name if set, else default
-  function Get_Timeout (Xnode : Xml_Parser.Element_Type;
-                        Default_Timeout : Integer;
-                        Name : String := "TimeoutMs") return Integer is
+  -- Get attribute if set, else return default
+  function Get_Attribute (Xnode   : Xml_Parser.Element_Type;
+                          Name    : String;
+                          Default : String) return String is
     Attrs : constant Xml_Parser.Attributes_Array
           := Ctx.Get_Attributes (Xnode);
   begin
     for I in Attrs'Range loop
       if Asu_Ts (Attrs(I).Name) = Name then
-        if Asu_Ts (Attrs(I).Value) = "None" then
-          return Infinite_Ms;
-        else
-          return Integer'Value (Asu_Ts (Attrs(I).Value));
-        end if;
+        return Asu_Ts (Attrs(I).Value);
       end if;
     end loop;
-    return Default_Timeout;
+    return Default;
+  end Get_Attribute;
+
+  -- Get TimeoutMs or Name if set, else default
+  function Get_Timeout (Xnode : Xml_Parser.Element_Type;
+                        Default_Timeout : Integer;
+                        Name : String := "TimeoutMs") return Integer is
+    Val : Asu_Us;
+  begin
+    Val := Asu_Tus (Get_Attribute (Xnode, Name, Default_Timeout'Img));
+    if Asu_Ts (Val) = "None" then
+      return Infinite_Ms;
+    else
+      return Integer'Value (Asu_Ts (Val));
+    end if;
   exception
     when Constraint_Error =>
       Error (Xnode, "Invalid timeout value for " & Name);
@@ -88,7 +98,7 @@ package body Tree is
     end loop;
     if Node.Kind /= Eval
     and then Node.Kind /= Set
-    and then Node.Kind /= Cond
+    and then Node.Kind /= Condif
     and then Node.Kind /= Repeat
     and then not Node.Regexp
     and then not Asu_Is_Null (Assign) then
@@ -112,7 +122,7 @@ package body Tree is
       Basic_Proc.Put_Error (Asu_Ts (Node.Name) & " ");
     end if;
     case Node.Kind is
-      when Cond | Repeat | Read | Call | Eval | Set =>
+      when Condif | Repeat | Read | Call | Eval | Set =>
         Basic_Proc.Put_Error ("Text: >" & Asu_Ts (Node.Text) & "< ");
       when Send =>
         Basic_Proc.Put_Error ("Text: >" &
@@ -123,7 +133,7 @@ package body Tree is
     case Node.Kind is
       when Selec | Read | Skip | Wait =>
         Basic_Proc.Put_Error ("Timeout: " & Node.Timeout'Img & " ");
-      when Cond | Repeat | Eval | Set =>
+      when Condif | Repeat | Eval | Set =>
         Basic_Proc.Put_Error ("Variable: " );
           Basic_Proc.Put_Error (Asu_Ts (Node.Assign(Node.Assign'First).Name)
                               & " ");
@@ -132,7 +142,7 @@ package body Tree is
     end case;
     if Node.Regexp then
       Basic_Proc.Put_Error ("Regexp ");
-      if Node.Kind /= Cond and then Node.Kind /= Repeat then
+      if Node.Kind /= Condif and then Node.Kind /= Repeat then
         Basic_Proc.Put_Error ("Assign: " );
         for I in Node.Assign'Range loop
           exit when Node.Assign(I).Value.Kind = Any_Def.None_Kind;
@@ -154,8 +164,10 @@ package body Tree is
     Name : constant String := Ctx.Get_Name (Xnode);
     Node, Nop_Node : Node_Rec;
     Default_Timeout : Integer;
-    Child : Xml_Parser.Node_Type;
+    Xchild : Xml_Parser.Node_Type;
+    Dummy_Node : Boolean;
     Dummy : Boolean;
+    pragma Unreferenced (Dummy);
     Next_Is_Script : Boolean;
     procedure Init_Next (N : in out Node_Rec) is
     begin
@@ -179,7 +191,7 @@ package body Tree is
     Default_Timeout := Timeout;
     -- Default flags: Dummy is for "if" and "else"
     -- Next_Is_Script is for the "read" of select, "default", "if", "else"
-    Dummy := False;
+    Dummy_Node := False;
     Next_Is_Script := False;
 
     if Name = "chats" then
@@ -189,12 +201,7 @@ package body Tree is
       -- Chat is a Read. Get name, timeout and default timeout
       Node.Kind := Read;
       Next_Is_Script := True;
-      for I in 1 .. Ctx.Get_Nb_Attributes (Xnode) loop
-        if Asu_Ts (Ctx.Get_Attribute (Xnode, I).Name) = "Name" then
-          Node.Name := Ctx.Get_Attribute (Xnode, I).Value;
-          exit;
-        end if;
-      end loop;
+      Node.Name := Asu_Tus (Get_Attribute (Xnode, "Name", ""));
       if Asu_Is_Null (Node.Name) then
         Error (Xnode, "Empty chat name");
       end if;
@@ -221,28 +228,24 @@ package body Tree is
 
     elsif Name = "cond" then
       Node.Kind := Cond;
-      -- Move to "if" to get Varable name and text
-      Child := Ctx.Get_Child (Xnode, 1);
-      Get_Text (Child, Node, True);
-      Child := Xml_Parser.No_Node;
-    elsif Name = "if" then
-      Node.Kind := Cond;
-      Dummy := True;
+    elsif Name = "if"
+    or else Name = "elsif" then
+      Node.Kind := Condif;
+      Get_Text (Xnode, Node, True);
       Next_Is_Script := True;
     elsif Name = "else" then
-      Node.Kind := Cond;
-      Dummy := True;
+      Node.Kind := Condelse;
       Next_Is_Script := True;
 
     elsif Name = "repeat" then
       Node.Kind := Repeat;
       -- Move to "while" to get Variable name and text
-      Child := Ctx.Get_Child (Xnode, 1);
-      Get_Text (Child, Node, True);
-      Child := Xml_Parser.No_Node;
+      Xchild := Ctx.Get_Child (Xnode, 1);
+      Get_Text (Xchild, Node, True);
     elsif Name = "while" then
       Node.Kind := Repeat;
-      Dummy := True;
+      -- There is no "while" node: the criteria is attached to the Repeat
+      Dummy_Node := True;
       Next_Is_Script := True;
 
     elsif Name = "read" then
@@ -265,7 +268,7 @@ package body Tree is
       -- Get text
       Get_Text (Xnode, Node, True);
       -- See if Newline
-      if Asu_Ts (Ctx.Get_Attribute (Xnode, 1).Value) = "true" then
+      if Get_Attribute (Xnode, "NewLine", "false") = "true" then
         Asu.Append (Node.Text, Line_Feed);
       end if;
     elsif Name = "call" then
@@ -276,10 +279,15 @@ package body Tree is
       Node.Kind := Eval;
       -- Get text
       Get_Text (Xnode, Node, False);
+      -- Get_Attribute IfUnset
+      Node.Ifunset := Get_Attribute (Xnode, "IfUnset", "false") = "true";
     elsif Name = "set" then
       Node.Kind := Set;
       -- Get text
       Get_Text (Xnode, Node, True);
+      -- Get_Attributes Compute and IfUnset
+      Node.Compute := Get_Attribute (Xnode, "Compute", "false") = "true";
+      Node.Ifunset := Get_Attribute (Xnode, "IfUnset", "false") = "true";
     elsif Name = "close" then
       Node.Kind := Close;
     else
@@ -287,7 +295,7 @@ package body Tree is
     end if;
 
     -- Insert current node
-    if not Dummy then
+    if not Dummy_Node then
       if Name = "chats" then
         -- Insert root
         Chats.Insert_Father (Node);
@@ -297,12 +305,11 @@ package body Tree is
 
       if Debug.Is_On then
         Dummy := Dump (Node, 1);
-        Dummy := False;
       end if;
     end if;
 
     -- Now insert entries of Select, Cond or Repeat
-    if not Dummy
+    if not Dummy_Node
     and then (Node.Kind = Selec
               or else Node.Kind = Cond
               or else Node.Kind = Repeat) then
@@ -310,16 +317,14 @@ package body Tree is
       Debug.Log ("  Inserting entries of " & Mixed_Str (Node.Kind'Img));
       for I in 1 .. Ctx.Get_Nb_Children (Xnode) loop
         -- Chats and select are made of (expect, script) pairs: insert "expect"
-        -- Cond is made of (if/else, script) pairs: insert "if/else"
+        -- Cond is made of (if/elsif/else, script) pairs: insert "if/elsif/else"
         if I rem 2 = 1 then
           Debug.Log ("    Inserting entry of " & Mixed_Str (Node.Kind'Img));
-          Child := Ctx.Get_Child (Xnode, I);
-          Insert_Node (Child, Default_Timeout);
+          Xchild := Ctx.Get_Child (Xnode, I);
+          Insert_Node (Xchild, Default_Timeout);
         end if;
       end loop;
       Debug.Log ("  End of entries of " & Mixed_Str (Node.Kind'Img));
-      -- Child may already be set for other kinds
-      Child := Xml_Parser.No_Node;
     end if;
 
     -- Go to next instruction
@@ -330,8 +335,8 @@ package body Tree is
       -- In both cases, there is no next instruction
       if Ctx.Get_Nb_Children (Ctx.Get_Brother (Xnode)) /= 0 then
         Debug.Log ("  Inserting child of " & Mixed_Str (Node.Kind'Img));
-        Child := Ctx.Get_Child (Ctx.Get_Brother (Xnode), 1);
-        Insert_Node (Child, Default_Timeout);
+        Xchild := Ctx.Get_Child (Ctx.Get_Brother (Xnode), 1);
+        Insert_Node (Xchild, Default_Timeout);
         Link_Next (Node);
       else
         Debug.Log ("  Inserting Nop child of " & Mixed_Str (Node.Kind'Img));
@@ -342,15 +347,15 @@ package body Tree is
       end if;
     elsif Ctx.Has_Brother (Xnode) then
       -- Normal (non script) instruction : jump to Xml brother if any
-      Child := Ctx.Get_Brother (Xnode);
+      Xchild := Ctx.Get_Brother (Xnode);
       -- Insert next statement
       Debug.Log ("  Inserting next of " & Mixed_Str (Node.Kind'Img));
-      Insert_Node (Child, Default_Timeout);
+      Insert_Node (Xchild, Default_Timeout);
       Link_Next (Node);
     end if;
 
     -- Move back to father
-    if not Dummy and then Chats.Has_Father then
+    if not Dummy_Node and then Chats.Has_Father then
       Chats.Move_Father;
     end if;
   end Insert_Node;
@@ -362,7 +367,6 @@ package body Tree is
     Pnext : Position_Access;
     -- The Next of all intermediate children (not the following statement)
     Inext : Position_Access;
-    -- Are we a leaf (Next not yet set)
     Dummy : Boolean;
     pragma Unreferenced (Dummy);
   begin

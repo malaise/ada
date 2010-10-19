@@ -7,6 +7,7 @@ package Variables is
   -- Set a variable
   Invalid_Name : exception;
   procedure Set (Name, Value : in Asu_Us);
+  function Is_Set (Name : Asu_Us) return Boolean;
 
   -- Set a volatile variable : Clean all volatile variables
   procedure Set_Volatile (Name, Value : in Asu_Us);
@@ -18,6 +19,8 @@ package Variables is
   Expand_Error : exception;
   function Expand (Text : Asu_Us; Check_Only : Boolean := False) return String;
   function Expand (Text : Asu_Us; Check_Only : Boolean := False) return Asu_Us;
+  -- Compute a numeric expression
+  function Compute (Text : Asu_Us) return Asu_Us;
 
 end Variables;
 

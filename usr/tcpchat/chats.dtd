@@ -15,6 +15,7 @@
      sentence. If the select has a default entry, it is selected when the
      sentence does not match any expected string.
    - cond: execute a sub-chat on condition (variable matching a criteria)
+   - repeat: loop executing a chat while a condition is true
    - read: Read next sentence and check that it mathes the one provided.
    - skip: Read next sequence whatever it is.
    - send: Send the sentence provided.
@@ -23,8 +24,8 @@
      the output flow of the command.
    - eval: Call the shell to execute the command and arguments provided. Set a
      variable to the output flow of the command.
-  When a subscript reaches its end, the execution continues from the instruction
-   that follows the select that lead to this subscript (if any).
+  When a subscript reaches its end, the execution continues at the instruction
+   that follows the instruction that leads to this subscript (if any).
   A chat script ends on either:
    - a close statement: Close current connection and go back expecting a chat
      script selection.
@@ -50,7 +51,9 @@
      - ${1} to ${9} denote the substrings (matching "(...)" int the regexp)
      - ${$name} denotes ENV variables
      - Internal variables names cannot be numbers nor start by "$"
-   So any occurence of "${" or "}" that does't denote a variable must be
+     - Set with Compute converts an expression (possibly refering to variables)
+       to an integer and back to a string stored in a variable
+   Any occurence of "${" or "}" that does't denote a variable must be
     backslashed.
 -->
 
@@ -80,9 +83,11 @@
 <!ATTLIST expect %ReadDef;>
 <!ELEMENT default EMPTY>
 
-<!ELEMENT cond (if,script,(else,script)?)>
+<!ELEMENT cond ((if,script),(elsif,script)*,(else,script)?)>
 <!ELEMENT if (#PCDATA)>
 <!ATTLIST if %Variable_Ref;>
+<!ELEMENT elsif (#PCDATA)>
+<!ATTLIST elsif %Variable_Ref;>
 <!ELEMENT else EMPTY>
 
 <!ELEMENT repeat (while,script)>
@@ -100,8 +105,9 @@
 <!ATTLIST send NewLine %boolean; "false">
 <!ELEMENT call (#PCDATA)>
 <!ELEMENT eval (#PCDATA)>
-<!ATTLIST eval %Variable_Set;>
+<!ATTLIST eval %Variable_Set; IfUnset %boolean; "false">
 <!ELEMENT set (#PCDATA)>
-<!ATTLIST set %Variable_Set;>
+<!ATTLIST set %Variable_Set; Compute %boolean; "false"
+              IfUnset %boolean; "false">
 <!ELEMENT close EMPTY>
 

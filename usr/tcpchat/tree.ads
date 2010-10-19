@@ -7,8 +7,8 @@ package Tree is
   Parse_Error : exception;
 
   -- Kind of node
-  type Node_Kind is (Nop, Selec, Cond, Repeat, Read, Default, Skip, Wait, Send,
-                     Call, Eval, Set, Close);
+  type Node_Kind is (Nop, Selec, Cond, Condif, Condelse, Repeat, Read, Default,
+                     Skip, Wait, Send, Call, Eval, Set, Close);
 
   -- Infinite timeout
   Infinite_Ms : constant Integer := Event_Mng.Infinite_Ms;
@@ -31,6 +31,10 @@ package Tree is
     Timeout : Integer := Infinite_Ms;
     -- For chat, cond, read
     Regexp : Boolean := False;
+    -- For Set
+    Compute : Boolean := False;
+    -- For Set and Eval
+    Ifunset : Boolean := False;
     -- For chat, cond, read, eval
     Assign : Assignments;
     -- Next statement

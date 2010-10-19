@@ -1,8 +1,9 @@
-with Computer, Environ, Regular_Expressions;
+with Computer, Environ, Regular_Expressions, Int_Image;
 with Error, Debug;
 package body Variables is
 
   Ext_Ref : constant Character := '$';
+  function Image is new Int_Image (Integer);
 
   -- Dummy variable resolver for check
   function Dummy (Name : String) return String is
@@ -60,6 +61,22 @@ package body Variables is
       raise Invalid_Name;
   end Set;
 
+  function Is_Set (Name : Asu_Us) return Boolean is
+  begin
+    -- Must not be empty, start by '$' or be a number
+    if Asu_Is_Null (Name)
+    or else Asu.Element (Name, 1) = Ext_Ref
+    or else Regular_Expressions.Match ("[0-9]+", Asu_Ts (Name), True) then
+      Error ("Invalid variable name" & Asu_Ts (Name));
+      raise Invalid_Name;
+    end if;
+    return Computer.Is_Set (Asu_Ts (Name));
+  exception
+    when Computer.Invalid_Variable =>
+      Error ("Invalid variable name" & Asu_Ts (Name));
+      raise Invalid_Name;
+  end Is_Set;
+
   -- Set a volatile variable : Clean all volatile variables
   procedure Set_Volatile (Name, Value : in Asu_Us) is
   begin
@@ -103,6 +120,19 @@ package body Variables is
       Error ("Cannot expand " & Asu_Ts (Text));
       raise Expand_Error;
   end Expand;
+
+  -- Compute a numeric expression
+  function Compute (Text : Asu_Us) return Asu_Us is
+    I : Integer;
+  begin
+    Computer.External_Resolver := Getenv'Access;
+    I := Computer.Compute (Asu_Ts (Text));
+    return Asu_Tus (Image (I));
+  exception
+    when others =>
+      Error ("Cannot compute " & Asu_Ts (Text));
+      raise Expand_Error;
+  end Compute;
 
 end Variables;
 

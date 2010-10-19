@@ -1,6 +1,6 @@
 with Ada.Calendar;
 with As.U; use As.U;
-with Basic_Proc, Command, Date_Image;
+with Basic_Proc, Command, Date_Image, Mixed_Str;
 with Variables, Tree, Ios, Matcher, Debug;
 package body Events is
 
@@ -23,10 +23,26 @@ package body Events is
   begin
     In_Chat := False;
     Ios.Reset;
+    Variables.Reset;
     Tree.Chats.Move_Root;
   end Reset;
 
+  -- See if a variable must be set
+  -- (IfUnset not set or Var not set)
+  function Set_Var (Node : in Tree.Node_Rec) return Boolean is
+    Name : Asu_Us;
+  begin
+    if not Node.Ifunset then
+      -- Always set var here
+      return True;
+    end if;
+    -- See if Var is set
+    Name := Variables.Expand (Node.Assign(Node.Assign'First).Name, False);
+    return not Variables.Is_Set (Name);
+  end Set_Var;
+
   -- Handle events
+  Internal_Error : exception;
   procedure Handle is
     use Tree;
     Node, Child : Node_Rec;
@@ -42,6 +58,7 @@ package body Events is
       begin
         -- Where are we?
         Node := Chats.Read;
+        Debug.Log ("Node is " & Mixed_Str (Node.Kind'Img));
         case Node.Kind is
           when Nop =>
             -- no operation (empty "if" or "expect"
@@ -77,7 +94,7 @@ package body Events is
                 -- Dispatch to child, avoid Next
                 Debug.Log ("Selec got: " & Asu_Ts (Event.Sentence));
                 Next := Node.Next.all;
-                Children:
+                Selec_Children:
                 for I in 1 .. Chats.Children_Number loop
                   if I = 1 then
                     Chats.Move_Child;
@@ -90,7 +107,7 @@ package body Events is
                     -- Last child is Next => no match
                     Put_Line ("No match on select");
                     Reset;
-                    exit Children;
+                    exit Selec_Children;
                   elsif Child.Kind = Default
                   or else (Child.Kind = Read and then
                            Matcher.Match (Child, Event.Sentence) ) then
@@ -110,34 +127,67 @@ package body Events is
                     -- Move to the child of this select entry
                     Set_Position (Child.Next.all);
                     In_Chat := True;
-                    exit Children;
+                    exit Selec_Children;
                   elsif not Chats.Has_Brother (False) then
                     -- No more child
                     Put_Line ("No match on select");
                     Reset;
-                    exit Children;
+                    exit Selec_Children;
                   end if;
-                end loop Children;
+                end loop Selec_Children;
             end case;
 
           when Cond =>
-            -- Resolv variable
-            Expanded := Variables.Expand (
-                  "${" & Node.Assign(Node.Assign'First).Name & "}");
-            -- Cond has 2 or 3 children. We will go to the first ("if")
-            --  or the second ("else" or next)
-            -- So go to the first child, the "if" part
-            Chats.Move_Child;
-            -- See if variable content matches
-            if Matcher.Match (Node, Expanded) then
-              -- Mach, we are already in the if block
-              Debug.Log ("Cond true: " & Asu_Ts (Node.Text));
-            else
-              -- No mach, move to brother, either the else part or
-              -- the next statement after Cond
-              Debug.Log ("Cond false: " & Asu_Ts (Node.Text));
-              Chats.Move_Brother (False);
-            end if;
+            -- Dispatch to child, avoid Next
+            Next := Node.Next.all;
+            Cond_Children:
+            for I in 1 .. Chats.Children_Number loop
+              if I = 1 then
+                Chats.Move_Child;
+              else
+                Chats.Move_Brother (False);
+              end if;
+              Child := Chats.Read;
+              -- Resolv variable
+              if Child.Next.all = Next then
+                -- Last child is Next => no match
+                Debug.Log ("Cond no match");
+                Set_Position (Next);
+                exit Cond_Children;
+              elsif Child.Kind = Condif then
+                Expanded := Variables.Expand (
+                      "${" & Child.Assign(Child.Assign'First).Name & "}");
+                Debug.Log ("Condif trying: " & Asu_Ts (Expanded)
+                         & " match " & Asu_Ts (Child.Text));
+                if Matcher.Match (Child, Expanded) then
+                  Debug.Log ("Condif match");
+                  -- Move to the child of this select entry
+                  Set_Position (Child.Next.all);
+                  exit Cond_Children;
+                elsif Chats.Has_Brother (False) then
+                  -- The only case when we continue
+                  Debug.Log ("Condif not match");
+                else
+                  -- No more child
+                  Debug.Log ("Cond no match");
+                  Set_Position (Next);
+                  exit Cond_Children;
+                end if;
+              elsif Child.Kind = Condelse then
+                Debug.Log ("Condelse");
+                -- Move to the child of this select entry
+                Set_Position (Child.Next.all);
+                exit Cond_Children;
+              else
+                -- This child is the next
+                Debug.Log ("Cond no match");
+                Set_Position (Next);
+                exit Cond_Children;
+              end if;
+            end loop Cond_Children;
+          when Condif | Condelse =>
+            -- Should not occur
+            raise Internal_Error;
 
           when Repeat =>
             -- Resolv variable
@@ -184,7 +234,7 @@ package body Events is
 
           when Default =>
             -- Should not occur
-            null;
+            raise Internal_Error;
 
           when Skip =>
             Event := Ios.Read (Node.Timeout);
@@ -271,44 +321,54 @@ package body Events is
             end;
 
           when Eval =>
-            declare
-              Exit_Code : Command.Exit_Code_Range;
-            begin
-              Command.Execute (
-                Cmd => Variables.Expand (Node.Text),
-                Use_Sh => True,
-                Mix_Policy => Command.Only_Out,
-                Out_Flow => Flow'Access,
-                Err_Flow => null,
-                Exit_Code => Exit_Code);
-              if Exit_Code = 0 then
-                Debug.Log ("Eval got: " & Asu_Ts (Flow.Str));
-                -- Command OK, load the variable
-                if Matcher.Match (Node, Flow.Str) then
-                  Set_Position (Node.Next.all);
+            if Set_Var (Node) then
+              declare
+                Exit_Code : Command.Exit_Code_Range;
+              begin
+                Command.Execute (
+                  Cmd => Variables.Expand (Node.Text),
+                  Use_Sh => True,
+                  Mix_Policy => Command.Only_Out,
+                  Out_Flow => Flow'Access,
+                  Err_Flow => null,
+                  Exit_Code => Exit_Code);
+                if Exit_Code = 0 then
+                  Debug.Log ("Eval got: " & Asu_Ts (Flow.Str));
+                  -- Command OK, load the variable
+                  if Matcher.Match (Node, Flow.Str) then
+                    Set_Position (Node.Next.all);
+                  else
+                    Put_Line ("Invalid evaluation");
+                  end if;
                 else
-                  Put_Line ("Invalid evaluation");
+                  Put_Line ("Command error");
+                  Reset;
                 end if;
-              else
-                Put_Line ("Command error");
-                Reset;
-              end if;
-            exception
-              when Command.Terminate_Request =>
-                Put_Line ("Exit requested");
-                exit Main;
-              when Command.Spawn_Error =>
-                Put_Line ("Command error");
-                Reset;
-            end;
+              exception
+                when Command.Terminate_Request =>
+                  Put_Line ("Exit requested");
+                  exit Main;
+                when Command.Spawn_Error =>
+                  Put_Line ("Command error");
+                  Reset;
+              end;
+            else
+              -- Skip
+              Set_Position (Node.Next.all);
+            end if;
 
           when Set =>
-            -- Load the variable
-            if Matcher.Match (Node, Variables.Expand (Node.Text)) then
-              Set_Position (Node.Next.all);
+            if Set_Var (Node) then
+              -- Load the variable
+              if Matcher.Match (Node, Variables.Expand (Node.Text)) then
+                Set_Position (Node.Next.all);
+              else
+                Put_Line ("Invalid evaluation");
+                Reset;
+              end if;
             else
-              Put_Line ("Invalid evaluation");
-              Reset;
+              -- Skip
+              Set_Position (Node.Next.all);
             end if;
 
           when Close =>
