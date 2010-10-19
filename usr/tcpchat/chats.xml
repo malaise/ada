@@ -146,7 +146,7 @@
   <!-- TEST a login -->
   <chat Name="login" TimeoutMs="60_000">login</chat>
   <script>
-    <set Variable="COUNT">1</set>
+    <set Variable="COUNT">0</set>
     <set Variable="RES">try</set>
     <repeat>
       <while Variable="RES">try</while>
@@ -186,11 +186,11 @@
     <cond>
       <if Variable="RES">success</if>
       <script>
-        <send>User ${USER} logged in.</send>
+        <send>User ${USER} logged in</send>
       </script>
       <else/>
       <script>
-        <send>Login failed.</send>
+        <send>Login failed</send>
         <set Variable="USER"></set>
          <close/>
       </script>
@@ -204,10 +204,9 @@
       <script></script>
       <else/>
       <script>
-        <set Variable="USER">${USER} </set>
+        <send>User ${USER} logged out</send>
       </script> 
     </cond>
-    <send>User ${USER}logged out.</send>
     <close/>
   </script>
 </chats>
