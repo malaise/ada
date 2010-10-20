@@ -103,6 +103,10 @@ package body Matcher is
         exit when Node.Assign(I).Value.Kind = Any_Def.None_Kind;
         Expanding := Node.Assign(I).Value.Str;
         Expanded := Variables.Expand (Expanding);
+        if String_Mng.Locate (Asu_Ts (Expanded), "=") /= 0 then
+          Error ("Invalid value in assignment " & Asu_Ts (Expanded));
+          raise Match_Error;
+        end if;
         Variables.Set (Node.Assign(I).Name, Expanded);
         Debug.Log ("Assigned " & Asu_Ts (Node.Assign(I).Name)
                  & "=" & Asu_Ts (Expanded));
