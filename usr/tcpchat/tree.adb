@@ -22,15 +22,11 @@ package body Tree is
   function Get_Attribute (Xnode   : Xml_Parser.Element_Type;
                           Name    : String;
                           Default : String) return String is
-    Attrs : constant Xml_Parser.Attributes_Array
-          := Ctx.Get_Attributes (Xnode);
   begin
-    for I in Attrs'Range loop
-      if Asu_Ts (Attrs(I).Name) = Name then
-        return Asu_Ts (Attrs(I).Value);
-      end if;
-    end loop;
-    return Default;
+    return Asu_Ts (Ctx.Get_Attribute (Xnode, Name).Value);
+  exception
+    when Xml_Parser.Attribute_Not_Found =>
+      return Default;
   end Get_Attribute;
 
   -- Get TimeoutMs or Name if set, else default
