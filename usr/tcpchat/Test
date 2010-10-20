@@ -109,7 +109,7 @@ echo -en "AT\nATQ0 V1 E1 S0=0 &C1 &D2 +FCLASS=0\nATDT0860922000\nmalaise\n$PASSW
 try $EXPECTED ppp1 0 OK 0 OK 0 CONNECT${SPACE}56000 0 login 0 password 6 logout
 
 # Ppp1 error
-echo -n "Test ppp1 error: "
+echo -n "Test ppp1 ko: "
 echo -en "AT\nATQ0 V1 E1 S0=0 &C1 &D2 +FCLASS=0\nATDT0860922000\n" > $EXPECTED
 try $EXPECTED ppp1 0 OK 0 OK 0 NO${SPACE}DIALTONE
 
@@ -144,17 +144,17 @@ echo -en  "\n" > $EXPECTED
 try $EXPECTED testMulti 0 Login
 
 # Login OK
-echo -n "Test login OK: "
+echo -n "Test login ok: "
 echo -en  "login:\npassword:\nlogin:\npassword:\nUser malaise logged in\nUser malaise logged out\n" > $EXPECTED
 try $EXPECTED login 0 user 0 password 0 malaise 0 ${PASSWORD} 3 logout
 
 # Login KO
-echo -n "Test login KO: "
+echo -n "Test login ko: "
 echo -en  "login:\npassword:\nlogin:\npassword:\nlogin:\npassword:\nlogin:\npassword:\nlogin:\npassword:\nLogin failed\n" > $EXPECTED
 try $EXPECTED login 0 user 0 password 0 user 0 password 0  user 0 password 0 user 0 password 0 user 0 password 1 logout
 
 # Logout KO
-echo -n "Test logout KO: "
+echo -n "Test logout ko: "
 echo -en  "" > $EXPECTED
 try $EXPECTED logout
 
