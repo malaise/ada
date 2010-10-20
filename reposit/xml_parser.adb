@@ -863,6 +863,20 @@ package body Xml_Parser is
     return (Cell.Name, Cell.Value, Cell.Unparsed);
   end Get_Attribute;
 
+  -- May raise Attribute_Not_Found
+  function Get_Attribute (Ctx     : Ctx_Type;
+                          Element : Element_Type;
+                          Name    : String) return Attribute_Rec is
+    Attributes : constant Attributes_Array
+               := Get_Attributes (Ctx, Element);
+  begin
+    for I in Attributes'Range loop
+      if Asu_Ts (Attributes(I).Name) = Name then
+        return Attributes(I);
+      end if;
+    end loop;
+    raise Attribute_Not_Found;
+  end Get_Attribute;
 
   ----------------
   -- NAVIGATION --

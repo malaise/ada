@@ -14,7 +14,7 @@ with Queues, Trees, Unique_List, Text_Char, Dynamic_List, Unlimited_Pool,
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "25";
+  Major_Version : constant String := "26";
   function Version return String;
 
   -----------
@@ -287,8 +287,7 @@ package Xml_Parser is
   function Get_Name (Ctx     : Ctx_Type;
                      Element : Element_Type) return String;
   function Get_Name (Ctx     : Ctx_Type;
-                     Element : Element_Type)
-                    return Asu_Us;
+                     Element : Element_Type) return Asu_Us;
   -- Get the attributes of an element
   function Get_Attributes (Ctx     : Ctx_Type;
                            Element : Element_Type) return Attributes_Array;
@@ -299,6 +298,12 @@ package Xml_Parser is
                           Element : Element_Type;
                           Index   : Positive) return Attribute_Rec;
   Invalid_Index : exception;
+  -- May raise Attribute_Not_Found
+  function Get_Attribute (Ctx     : Ctx_Type;
+                          Element : Element_Type;
+                          Name    : String) return Attribute_Rec;
+  Attribute_Not_Found : exception;
+
 
   ----------------
   -- NAVIGATION --
