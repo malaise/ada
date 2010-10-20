@@ -89,7 +89,7 @@ try $EXPECTED "GET${SPACE}http://localhost$PWD/chats.xml" 1
 
 # HTTP 1.0
 # If we are close to the end of the minute, we must wait for next minute
-let min=0+`date +%S`
+let min=0+`date +%-S`
 if [ $min -ge 57 ] ; then
   sleep 5
 fi
@@ -142,6 +142,21 @@ try $EXPECTED testMulti 0 LOGIN 0 PASSWORD 2
 echo -n "Test Multi 5: "
 echo -en  "\n" > $EXPECTED
 try $EXPECTED testMulti 0 Login
+
+# Login OK
+echo -n "Test login OK: "
+echo -en  "login:\npassword:\nlogin:\npassword:\nUser malaise logged in\nUser malaise logged out\n" > $EXPECTED
+try $EXPECTED login 0 user 0 password 0 malaise 0 ${PASSWORD} 3 logout
+
+# Login KO
+echo -n "Test login KO: "
+echo -en  "login:\npassword:\nlogin:\npassword:\nlogin:\npassword:\nlogin:\npassword:\nlogin:\npassword:\nLogin failed\n" > $EXPECTED
+try $EXPECTED login 0 user 0 password 0 user 0 password 0  user 0 password 0 user 0 password 0 user 0 password 1 logout
+
+# Logout KO
+echo -n "Test logout KO: "
+echo -en  "" > $EXPECTED
+try $EXPECTED logout
 
 # Clean
 clean
