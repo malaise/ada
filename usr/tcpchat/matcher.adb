@@ -33,6 +33,10 @@ package body Matcher is
           Result := Variables.Compute (Str);
         else
           Result := Variables.Expand (Str, False);
+          if String_Mng.Locate (Asu_Ts (Result), "=") /= 0 then
+            Error ("Invalid value in assignment " & Asu_Ts (Result));
+            raise Match_Error;
+          end if;
         end if;
         Debug.Log ("Variable " & Asu_Ts (Expanded) & " set to "
                  & Asu_Ts (Result));
@@ -148,8 +152,9 @@ package body Matcher is
              & Asu_Ts (Node.Assign(I).Value.Str));
         raise Match_Error;
     end;
-    -- Check that value does not contain refs > 9 ("\$\{[0-9][0-9]+\})
-    if Regular_Expressions.Match ("\$\{[0-9][0-9]+\}",
+    -- Check that value does not contain refs > 9 ("\$\{[0-9][0-9]+\}")
+    --  and does not contain "="
+    if Regular_Expressions.Match ("(\$\{[0-9][0-9]+\}|=)",
             Asu_Ts (Node.Assign(I).Value.Str), False) then
       Error ("Invalid value in assignment "
            & Asu_Ts (Node.Assign(I).Value.Str));

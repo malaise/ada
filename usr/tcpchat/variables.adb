@@ -43,16 +43,23 @@ package body Variables is
     Computer.Reset (Not_Persistent => False);
   end Reset;
 
-  -- Set a variable
-  procedure Set (Name, Value : in Asu_Us) is
+  -- Chek that a name is valid
+  procedure Check (Name : in Asu_Us) is
   begin
-    -- Must not be empty, start by '$' or be a number
+    -- Must not be empty, start by '$', contain a '=' or be a number
     if Asu_Is_Null (Name)
     or else Asu.Element (Name, 1) = Ext_Ref
+    or else Regular_Expressions.Match ("=", Asu_Ts (Name), False)
     or else Regular_Expressions.Match ("[0-9]+", Asu_Ts (Name), True) then
       Error ("Invalid variable name" & Asu_Ts (Name));
       raise Invalid_Name;
     end if;
+  end Check;
+
+  -- Set a variable
+  procedure Set (Name, Value : in Asu_Us) is
+  begin
+    Check (Name);
     Computer.Set (Asu_Ts (Name), Asu_Ts (Value),
                   Modifiable => True, Persistent => True);
   exception
@@ -63,13 +70,7 @@ package body Variables is
 
   function Is_Set (Name : Asu_Us) return Boolean is
   begin
-    -- Must not be empty, start by '$' or be a number
-    if Asu_Is_Null (Name)
-    or else Asu.Element (Name, 1) = Ext_Ref
-    or else Regular_Expressions.Match ("[0-9]+", Asu_Ts (Name), True) then
-      Error ("Invalid variable name" & Asu_Ts (Name));
-      raise Invalid_Name;
-    end if;
+    Check (Name);
     return Computer.Is_Set (Asu_Ts (Name));
   exception
     when Computer.Invalid_Variable =>
