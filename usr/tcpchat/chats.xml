@@ -198,9 +198,8 @@
   </script>
   <chat Name="logout">logout</chat>
   <script>
-    <set Variable="USER" IfUnset="true"></set>
     <cond>
-      <if Variable="USER"></if>
+      <if Variable="USER" IfUnset="true"></if>
       <script></script>
       <else/>
       <script>

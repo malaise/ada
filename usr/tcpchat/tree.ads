@@ -1,4 +1,5 @@
 with As.U; use As.U;
+with Trilean;
 with Trees, Event_Mng, Property_Def;
 package Tree is
 
@@ -33,8 +34,8 @@ package Tree is
     Regexp : Boolean := False;
     -- For Set
     Compute : Boolean := False;
-    -- For Set and Eval
-    Ifunset : Boolean := False;
+    -- For Set, Eval, Condif
+    Ifunset : Trilean.Trilean := Trilean.False;
     -- For chat, cond, read, eval
     Assign : Assignments;
     -- Next statement

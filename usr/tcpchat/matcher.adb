@@ -1,4 +1,4 @@
-with Regular_Expressions, String_Mng.Regex, Any_Def, Int_Image;
+with Regular_Expressions, String_Mng.Regex, Any_Def, Int_Image, Trilean;
 with Variables, Debug, Error;
 package body Matcher is
 
@@ -16,7 +16,7 @@ package body Matcher is
     N_Matched : Natural;
     Match_Info : Regular_Expressions.Match_Array (1 .. 10);
     use type Asu_Us, Regular_Expressions.Match_Cell, Any_Def.Any_Kind_List,
-             Tree.Node_Kind;
+             Tree.Node_Kind, Trilean.Trilean;
   begin
     -- Case of the Eval/Set statement: One variable to assign
     if Node.Kind = Tree.Eval
@@ -46,14 +46,27 @@ package body Matcher is
     end if;
 
     -- Other case of assign (chat/expect/read => tree kind Read)
-    --  or Cond or Repeat
+    --  or Condif or Repeat
     -- Expand expression
     Expanding := Node.Text;
     Expanded := Variables.Expand (Expanding, Check_Only);
 
+    -- Case of the Cond or Repeat: maybe fixed result if unset
+    if Node.Kind = Tree.Condif
+    or else Node.Kind = Tree.Repeat then
+      if not Variables.Is_Set (Str)
+      and then Node.Ifunset /= Trilean.Other then
+        -- Var is not set and IfUnset is set
+        return Trilean.Tri2Boo (Node.Ifunset);
+      end if;
+      Result := Variables.Expand ("${" & Str & "}", True);
+    else
+      Result := Variables.Expand (Str, True);
+    end if;
+
+    -- Pure string comparison or regexp?
     if not Node.Regexp then
-      -- Pure string comparison
-      return Str = Expanded;
+      return Result = Expanded;
     end if;
 
     -- This is a Regexp, compile it
@@ -67,7 +80,7 @@ package body Matcher is
     Debug.Log ("Regex compiled " & Asu_Ts (Expanded));
 
     -- Execute the regexp
-    Regular_Expressions.Exec (Compiled, Asu_Ts (Str), N_Matched, Match_Info);
+    Regular_Expressions.Exec (Compiled, Asu_Ts (Result), N_Matched, Match_Info);
     if Match_Info(1) = Regular_Expressions.No_Match then
       Debug.Log ("Regex no match");
       return False;
@@ -89,7 +102,7 @@ package body Matcher is
         Expanding := Asu_Tus (Nat_Image (I - 1));
         if I <= N_Matched
         and then Regular_Expressions.Valid_Match (Match_Info(I)) then
-          Expanded := Asu.Unbounded_Slice (Str, Match_Info(I).First_Offset,
+          Expanded := Asu.Unbounded_Slice (Result, Match_Info(I).First_Offset,
                                                 Match_Info(I).Last_Offset_Stop);
         else
           Expanded := Asu_Null;

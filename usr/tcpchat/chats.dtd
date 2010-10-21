@@ -50,22 +50,31 @@
      - ${0} denotes the full string matching the regexp
      - ${1} to ${9} denote the substrings (matching "(...)" int the regexp)
      - ${$name} denotes ENV variables
-     - Internal variables names cannot be numbers nor start by "$"
+     - Internal variables names cannot be numbers nor start by "$" nor contain
+       "="
      - Set with Compute converts an expression (possibly refering to variables)
        to an integer and back to a string stored in a variable
+     - Set and Eval with IfUnset will set the variable only if it is not
+       set yet
+     - If, elsif and while may raise error, return true or false depending on
+       IfUnset
    Any occurence of "${" or "}" that does't denote a variable must be
     backslashed.
 -->
 
 <!ENTITY % boolean "(true|false)">
+
 <!ENTITY None "None">
 
 <!ENTITY % TimeoutMs "TimeoutMs CDATA #IMPLIED">
 
 <!ENTITY % Regexp "Regexp %boolean; 'false'">
 
+<!ENTITY % IfUnset "(true|false|error) 'error'">
+
 <!ENTITY % Variable_Set "Variable CDATA #REQUIRED">
-<!ENTITY % Variable_Ref "Variable CDATA #REQUIRED %Regexp;">
+<!ENTITY % Variable_Ref "Variable CDATA #REQUIRED
+                        %Regexp; IfUnset %IfUnset;">
 
 <!ENTITY % ReadDef "%Regexp; Assign CDATA #IMPLIED">
 

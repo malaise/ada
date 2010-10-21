@@ -1,6 +1,6 @@
 with Ada.Calendar;
 with As.U; use As.U;
-with Basic_Proc, Command, Date_Image, Mixed_Str;
+with Basic_Proc, Command, Date_Image, Mixed_Str, Trilean;
 with Variables, Tree, Ios, Matcher, Debug;
 package body Events is
 
@@ -32,7 +32,7 @@ package body Events is
   function Set_Var (Node : in Tree.Node_Rec) return Boolean is
     Name : Asu_Us;
   begin
-    if not Node.Ifunset then
+    if not Trilean.Tri2Boo (Node.Ifunset) then
       -- Always set var here
       return True;
     end if;
@@ -50,8 +50,8 @@ package body Events is
     Next : Position_Access;
     Event : Ios.Event_Type;
     Disconnection : Boolean;
-    Expanded : Asu_Us;
-    use type Ios.Event_Kind_List, Asu_Us;
+    Variable : Asu_Us;
+    use type Ios.Event_Kind_List;
   begin
     Put_Line ("Ready");
     Main : loop
@@ -155,11 +155,10 @@ package body Events is
                 Set_Position (Next);
                 exit Cond_Children;
               elsif Child.Kind = Condif then
-                Expanded := Variables.Expand (
-                      "${" & Child.Assign(Child.Assign'First).Name & "}");
-                Debug.Log ("Condif trying: " & Asu_Ts (Expanded)
+                Variable := Child.Assign(Child.Assign'First).Name;
+                Debug.Log ("Condif trying: " & Asu_Ts (Variable)
                          & " match " & Asu_Ts (Child.Text));
-                if Matcher.Match (Child, Expanded) then
+                if Matcher.Match (Child, Variable) then
                   Debug.Log ("Condif match");
                   -- Move to the child of this select entry
                   Set_Position (Child.Next.all);
@@ -191,12 +190,11 @@ package body Events is
 
           when Repeat =>
             -- Resolv variable
-            Expanded := Variables.Expand (
-                  "${" & Node.Assign(Node.Assign'First).Name & "}");
+            Variable := Node.Assign(Node.Assign'First).Name;
             -- Repeat has 2 children, the first instruction of the loop
             --  and the next instruction after the loop
             -- See if variable content matches
-            if Matcher.Match (Node, Expanded) then
+            if Matcher.Match (Node, Variable) then
               -- Match, go to the first child of the loop
               Debug.Log ("Repeat true: " & Asu_Ts (Node.Text));
               Chats.Move_Child (True);

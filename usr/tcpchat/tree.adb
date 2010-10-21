@@ -20,13 +20,9 @@ package body Tree is
 
   -- Get attribute if set, else return default
   function Get_Attribute (Xnode   : Xml_Parser.Element_Type;
-                          Name    : String;
-                          Default : String) return String is
+                          Name    : String) return String is
   begin
     return Asu_Ts (Ctx.Get_Attribute (Xnode, Name).Value);
-  exception
-    when Xml_Parser.Attribute_Not_Found =>
-      return Default;
   end Get_Attribute;
 
   -- Get TimeoutMs or Name if set, else default
@@ -35,17 +31,35 @@ package body Tree is
                         Name : String := "TimeoutMs") return Integer is
     Val : Asu_Us;
   begin
-    Val := Asu_Tus (Get_Attribute (Xnode, Name, Default_Timeout'Img));
+    Val := Asu_Tus (Get_Attribute (Xnode, Name));
     if Asu_Ts (Val) = "None" then
       return Infinite_Ms;
     else
       return Integer'Value (Asu_Ts (Val));
     end if;
   exception
+    when Xml_Parser.Attribute_Not_Found =>
+      return Default_Timeout;
     when Constraint_Error =>
       Error (Xnode, "Invalid timeout value for " & Name);
       raise Parse_Error;
   end Get_Timeout;
+
+  -- Get IfUnset Trilean
+  function Get_Ifunset (Xnode : Xml_Parser.Element_Type)
+                       return Trilean.Trilean is
+    Txt : constant Asu_Us := Asu_Tus (Get_Attribute (Xnode, "IfUnset"));
+  begin
+    if Asu_Ts (Txt) = "error" then
+      return Trilean.Other;
+    elsif Asu_Ts (Txt) = "false" then
+      return Trilean.False;
+    elsif Asu_Ts (Txt) = "true" then
+      return Trilean.True;
+    else
+      raise Constraint_Error;
+    end if;
+  end Get_Ifunset;
 
   -- Get text (PCDATA) of a node
   -- Get other attributes (Regexp, Assign)
@@ -111,7 +125,7 @@ package body Tree is
   -- For dump of our tree
   function Dump (Node : Node_Rec; Level : Natural) return Boolean is
     Tab : constant String (1 .. 2 * Level) := (others => ' ');
-    use type Any_Def.Any_Kind_List;
+    use type Any_Def.Any_Kind_List, Trilean.Trilean;
   begin
     Basic_Proc.Put_Error (Tab & Mixed_Str (Node.Kind'Img) & ": " );
     if not Asu_Is_Null (Node.Name) then
@@ -133,6 +147,21 @@ package body Tree is
         Basic_Proc.Put_Error ("Variable: " );
           Basic_Proc.Put_Error (Asu_Ts (Node.Assign(Node.Assign'First).Name)
                               & " ");
+      when others =>
+        null;
+    end case;
+    if Node.Compute then
+      Basic_Proc.Put_Error ("Compute ");
+    end if;
+    case Node.Kind is
+      when Set | Eval =>
+        if Node.Ifunset = Trilean.True then
+          Basic_Proc.Put_Error ("IfUnset ");
+        end if;
+      when Condif =>
+        if Node.Ifunset /= Trilean.Other then
+          Basic_Proc.Put_Error ("IfUnset: " & Mixed_Str (Node.Ifunset'Img));
+        end if;
       when others =>
         null;
     end case;
@@ -197,7 +226,7 @@ package body Tree is
       -- Chat is a Read. Get name, timeout and default timeout
       Node.Kind := Read;
       Next_Is_Script := True;
-      Node.Name := Asu_Tus (Get_Attribute (Xnode, "Name", ""));
+      Node.Name := Asu_Tus (Get_Attribute (Xnode, "Name"));
       if Asu_Is_Null (Node.Name) then
         Error (Xnode, "Empty chat name");
       end if;
@@ -228,6 +257,7 @@ package body Tree is
     or else Name = "elsif" then
       Node.Kind := Condif;
       Get_Text (Xnode, Node, True);
+      Node.Ifunset := Get_Ifunset (Xnode);
       Next_Is_Script := True;
     elsif Name = "else" then
       Node.Kind := Condelse;
@@ -238,6 +268,7 @@ package body Tree is
       -- Move to "while" to get Variable name and text
       Xchild := Ctx.Get_Child (Xnode, 1);
       Get_Text (Xchild, Node, True);
+      Node.Ifunset := Get_Ifunset (Xchild);
     elsif Name = "while" then
       Node.Kind := Repeat;
       -- There is no "while" node: the criteria is attached to the Repeat
@@ -264,7 +295,7 @@ package body Tree is
       -- Get text
       Get_Text (Xnode, Node, True);
       -- See if Newline
-      if Get_Attribute (Xnode, "NewLine", "false") = "true" then
+      if Get_Attribute (Xnode, "NewLine") = "true" then
         Asu.Append (Node.Text, Line_Feed);
       end if;
     elsif Name = "call" then
@@ -276,14 +307,16 @@ package body Tree is
       -- Get text
       Get_Text (Xnode, Node, False);
       -- Get_Attribute IfUnset
-      Node.Ifunset := Get_Attribute (Xnode, "IfUnset", "false") = "true";
+      Node.Ifunset := Trilean.Boo2Tri (
+               Get_Attribute (Xnode, "IfUnset") = "true");
     elsif Name = "set" then
       Node.Kind := Set;
       -- Get text
       Get_Text (Xnode, Node, True);
       -- Get_Attributes Compute and IfUnset
-      Node.Compute := Get_Attribute (Xnode, "Compute", "false") = "true";
-      Node.Ifunset := Get_Attribute (Xnode, "IfUnset", "false") = "true";
+      Node.Compute := Get_Attribute (Xnode, "Compute") = "true";
+      Node.Ifunset := Trilean.Boo2Tri (
+               Get_Attribute (Xnode, "IfUnset") = "true");
     elsif Name = "close" then
       Node.Kind := Close;
     else
