@@ -39,7 +39,7 @@
           </script>
         </eval>
         <cond>
-         <if Variable="SIZE"></if>
+          <if Variable="SIZE"></if>
           <script>
             <send>HTTP/1.0 404 Not Found</send>
             <close/>
