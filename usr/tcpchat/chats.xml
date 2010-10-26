@@ -31,10 +31,25 @@
           </script>
         </repeat>
         <!-- And send header -->
-        <eval Variable="SIZE">ls -al ${FILE} | awk '{printf "%s",$5\}'</eval>
-        <eval Variable="DATE">echo -n `date "+%a, %d %b %Y %H:%M:00 %Z"`</eval>
+        <eval Variable="SIZE">
+          <command>ls -al ${FILE} | awk '{printf "%s",$5\}'</command>
+          <error/>
+          <script>
+            <set Variable="SIZE"></set>
+          </script>
+        </eval>
+        <cond>
+         <if Variable="SIZE"></if>
+          <script>
+            <send>HTTP/1.0 404 Not Found</send>
+            <close/>
+          </script>
+        </cond> 
+        <eval Variable="DATE">
+          <command>echo -n `date "+%a, %d %b %Y %H:%M:00 %Z"`</command>
+        </eval>
         <set Variable="SERVER_ID">tcpchat/V2.1</set>
-        <send>HTTP/1.1 200 OK</send>
+        <send>HTTP/1.0 200 OK</send>
         <send>Date: ${DATE}</send>
         <send>Server: ${SERVER_ID}</send>
         <send>Connection: close</send>
@@ -44,7 +59,20 @@
         <send></send>
       </script>
     </cond>
-    <call>cat ${FILE}</call>
+    <call>
+      <command>cat ${FILE}</command>
+      <error/>
+      <script>
+        <cond>
+          <if Variable="VERS"></if>
+          <script></script>
+          <else/>
+          <script>
+            <send>HTTP/1.0 404 Not Found</send>
+          </script>
+      </cond>
+      </script>
+    </call>
     <close/>
   </script>
   <!-- Tcping: Send pong and remain connected -->

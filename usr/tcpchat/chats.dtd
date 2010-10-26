@@ -42,7 +42,8 @@
    - The reception of a non expected string by a chats-expect or a
       select-expect when it has no default.
    - A transmission error (closure, overflow).
-   - The failure when calling or executing an external command.
+   - The failure when calling or executing an external command if there is no
+     "error" block to handle the failure.
 
   Variables:
    - Assignments (after chat, read or expect) have the form "VAR=... VAR=..."
@@ -78,6 +79,8 @@
 
 <!ENTITY % ReadDef "%Regexp; Assign CDATA #IMPLIED">
 
+<!ENTITY % error "(error,script)">
+
 <!ELEMENT chats (chat,script)+>
 <!ELEMENT chat (#PCDATA)>
 <!ATTLIST chat Name ID #REQUIRED
@@ -112,8 +115,10 @@
 <!ATTLIST wait DelayMs CDATA #REQUIRED>
 <!ELEMENT send (#PCDATA)>
 <!ATTLIST send NewLine %boolean; "false">
-<!ELEMENT call (#PCDATA)>
-<!ELEMENT eval (#PCDATA)>
+<!ELEMENT call (command,%error;?)>
+<!ELEMENT command (#PCDATA)>
+<!ELEMENT error EMPTY>
+<!ELEMENT eval (command,%error;?)>
 <!ATTLIST eval %Variable_Set; IfUnset %boolean; "false">
 <!ELEMENT set (#PCDATA)>
 <!ATTLIST set %Variable_Set; Compute %boolean; "false"

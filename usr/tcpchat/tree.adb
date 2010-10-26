@@ -64,21 +64,33 @@ package body Tree is
   -- Get text (PCDATA) of a node
   -- Get other attributes (Regexp, Assign)
   -- Check consistency
+  -- Allow empty text or not
+  -- Look for text in child (command) of current node or in current node
   procedure Get_Text (Xnode : in Xml_Parser.Element_Type;
                       Node : in out Node_Rec;
-                      Empty_Allowed : in Boolean) is
+                      Empty_Allowed : in Boolean;
+                      Command : in Boolean := False) is
+    Text_Node : Xml_Parser.Element_Type;
     Tnode : Xml_Parser.Text_Type;
     Attrs : constant Xml_Parser.Attributes_Array
           := Ctx.Get_Attributes (Xnode);
     Assign : Asu_Us;
   begin
+    -- Current node hosts the attributes
+    if Command then
+      -- A child "command" of current node hosts the text
+      Text_Node := Ctx.Get_Child (Xnode, 1);
+    else
+      -- Current node hosts the text
+      Text_Node := Xnode;
+    end if;
     -- Get Text from child
-    if Ctx.Get_Nb_Children (Xnode) = 0 then
+    if Ctx.Get_Nb_Children (Text_Node) = 0 then
       -- No child => Empty text
       Node.Text := Asu_Null;
     else
       -- Text child
-      Tnode := Ctx.Get_Child (Xnode, 1);
+      Tnode := Ctx.Get_Child (Text_Node, 1);
       Node.Text := Ctx.Get_Text (Tnode);
       -- No Line feed accepted
       if String_Mng.Locate (Asu_Ts (Node.Text), Line_Feed) /= 0 then
@@ -300,12 +312,13 @@ package body Tree is
       end if;
     elsif Name = "call" then
       Node.Kind := Call;
-      -- Get text
-      Get_Text (Xnode, Node, False);
+      -- Move to "command" to get text
+      Xchild := Ctx.Get_Child (Xnode, 1);
+      Get_Text (Xchild, Node, False);
     elsif Name = "eval" then
       Node.Kind := Eval;
-      -- Get text
-      Get_Text (Xnode, Node, False);
+      -- Get text of child "command" and current attributes
+      Get_Text (Xnode, Node, False, Command => True);
       -- Get_Attribute IfUnset
       Node.Ifunset := Trilean.Boo2Tri (
                Get_Attribute (Xnode, "IfUnset") = "true");
@@ -317,6 +330,10 @@ package body Tree is
       Node.Compute := Get_Attribute (Xnode, "Compute") = "true";
       Node.Ifunset := Trilean.Boo2Tri (
                Get_Attribute (Xnode, "IfUnset") = "true");
+    elsif Name = "error" then
+      -- Begin of error handling block
+      Dummy_Node := True;
+      Next_Is_Script := True;
     elsif Name = "close" then
       Node.Kind := Close;
     else
@@ -354,12 +371,22 @@ package body Tree is
         end if;
       end loop;
       Debug.Log ("  End of entries of " & Mixed_Str (Node.Kind'Img));
+    elsif Node.Kind = Call or else Node.Kind = Eval then
+      -- Call and Eval are a command then an optional error handler
+      -- Insert error handler if any
+      if Ctx.Get_Nb_Children (Xnode) = 3 then
+        Debug.Log ("    Inserting error handler of "
+                 & Mixed_Str (Node.Kind'Img));
+        Xchild := Ctx.Get_Child (Xnode, 2);
+        Insert_Node (Xchild, Default_Timeout);
+      end if;
     end if;
 
     -- Go to next instruction
     if Next_Is_Script then
       -- For the read of a Selec ("select" or "chats"), for the "if" and
-      --  the "else" and for the "while" next Xml node is a "script".
+      --  the "else", for the "while", for the "error",
+      -- next Xml node is a "script".
       -- Jump in it if not empty, else insert a Nop node
       -- In both cases, there is no next instruction
       if Ctx.Get_Nb_Children (Ctx.Get_Brother (Xnode)) /= 0 then
@@ -438,9 +465,12 @@ package body Tree is
 
     -- Set Onext depending on kind of multiplexor
     if Node.Kind = Selec
-    or else Node.Kind = Cond then
+    or else Node.Kind = Cond
+    or else Node.Kind = Call
+    or else Node.Kind = Eval then
       -- For leaf children of entries of a Selec, Next is the next of Selec
       -- For leaf children of if/else of a Cond, Next is the next of Cond
+      -- For leaf children of Call or Eval, Next is the next of Call/Eval
       Inext := Node.Next.all;
     elsif Node.Kind = Repeat then
       -- For leaf child of a Repeat, Next is the Repeat

@@ -27,6 +27,29 @@ package body Events is
     Tree.Chats.Move_Root;
   end Reset;
 
+  -- See if node has an error handler
+  -- True if it has 2 children or if it has one child that is not Next
+  function Has_Error_Handler (Node : in Tree.Node_Rec) return Boolean is
+    Nb_Children : constant Natural := Tree.Chats.Children_Number;
+    Child_Position : Tree.Position_Access;
+    use type Tree.Position_Access;
+  begin
+    if Nb_Children = 0 then
+      -- No child => no error handler
+      return False;
+    elsif Nb_Children = 2 then
+      -- 2 children => an error handler
+      return True;
+    else
+      -- One child, get its position
+      Tree.Chats.Move_Child;
+      Child_Position := Tree.Position_Access(Tree.Chats.Get_Position);
+      Tree.Chats.Move_Father;
+      -- Child is the error handler if it is not Next
+      return Child_Position /= Node.Next.all;
+    end if;
+  end Has_Error_Handler;
+
   -- See if a variable must be set
   -- (IfUnset not set or Var not set)
   function Set_Var (Node : in Tree.Node_Rec) return Boolean is
@@ -305,6 +328,10 @@ package body Events is
                   -- Call and send OK
                   Set_Position (Node.Next.all);
                 end if;
+              elsif Has_Error_Handler (Node) then
+                -- First child is error handler
+                Debug.Log ("Call handling error");
+                Chats.Move_Child;
               else
                 Put_Line ("Command error");
                 Reset;
@@ -338,6 +365,10 @@ package body Events is
                   else
                     Put_Line ("Invalid evaluation");
                   end if;
+                elsif Has_Error_Handler (Node) then
+                  -- First child is error handler
+                  Debug.Log ("Eval handling error");
+                  Chats.Move_Child;
                 else
                   Put_Line ("Command error");
                   Reset;
@@ -374,6 +405,9 @@ package body Events is
             Put_Line ("Closed");
         end case;
       exception
+        when Matcher.Match_Error =>
+          Put_Line ("ERROR matching expression");
+          Reset;
         when Variables.Expand_Error =>
           Put_Line ("ERROR expanding expression");
           Reset;

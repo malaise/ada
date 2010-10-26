@@ -42,6 +42,11 @@ function send {
   done
 }
 
+# Clean
+function clean {
+  rm $PIPE
+}
+
 # A test.
 # $1 is the file with expected result
 # Other args are series of sentences to send and delay to wait
@@ -69,25 +74,17 @@ function try {
   rm $RES $EXPECTED
 }
 
-# Clean
-function clean {
-  rm $PIPE
-  if [ $DBG  -eq 1 ] ; then
-    rm $DEBUG
-  fi
-}
-
 # Ping
 echo -n "Test ping: "
 echo "pong" > $EXPECTED
 try $EXPECTED ping 1
 
-# HTTP 0.9
-echo -n "Test http 0.9: "
+# HTTP 0.9 ok
+echo -n "Test http 0.9 ok: "
 cp chats.xml $EXPECTED
-try $EXPECTED "GET${SPACE}http://localhost$PWD/chats.xml" 1
+try $EXPECTED "GET${SPACE}http://localhost${PWD}/chats.xml" 1
 
-# HTTP 1.0
+# HTTP 1.0 ok
 # If we are close to the end of the minute, we must wait for next minute
 let min=0+`date +%-S`
 if [ $min -ge 57 ] ; then
@@ -95,13 +92,23 @@ if [ $min -ge 57 ] ; then
 fi
 export SIZE=`ls -al chats.xml | awk '{print $5}'`
 export DATE=`date "+%a, %d %b %Y %H:%M:00 %Z"`
-echo -n "Test http 1.0: "
-echo -en "HTTP/1.1 200 OK\nDate: ${DATE}\nServer: tcpchat/${VERS}\n" > $EXPECTED
+echo -n "Test http 1.0 ok: "
+echo -en "HTTP/1.0 200 OK\nDate: ${DATE}\nServer: tcpchat/${VERS}\n" > $EXPECTED
 echo -en "Connection: close\nAccept-Ranges: bytes\n" >> $EXPECTED
 echo -en "Content-Length: ${SIZE}\nContent-Type: text/plain\n\n" >> $EXPECTED
 cat chats.xml >> $EXPECTED
 try $EXPECTED "GET${SPACE}http://localhost${PWD}/chats.xml${SPACE}HTTP/1.0" 0 "Host:${SPACE}${HOSTNAME}" 0 \
 "Connection:${SPACE}close" 0 "${NONE}" 1
+
+# HTTP 0.9 ko
+echo -n "Test http 0.9 ko: "
+echo -en "" > $EXPECTED
+try $EXPECTED "GET${SPACE}http://localhost${PWD}/chats.XML" 1
+
+# HTTP 1.0 ko
+echo -n "Test http 1.0 ko: "
+echo -en "HTTP/1.0 404 Not Found\n" > $EXPECTED
+try $EXPECTED "GET${SPACE}http://localhost${PWD}/chats.XML${SPACE}HTTP/1.0" 0 "${NONE}" 1
 
 # Ppp1 ok
 echo -n "Test ppp1 ok: "
@@ -160,5 +167,8 @@ try $EXPECTED logout
 
 # Clean
 clean
+if [ $DBG  -eq 1 ] ; then
+  rm $DEBUG
+fi
 echo "Done."
 
