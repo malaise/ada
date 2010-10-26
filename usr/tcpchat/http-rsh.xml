@@ -1,0 +1,104 @@
+<?xml version="1.0"?>
+<!DOCTYPE chats SYSTEM "chats.dtd">
+<!-- TCP chat script for handling http and rsh -->
+
+<chats>
+  <!-- HTTP 0.9: Send file and close -->
+  <!-- HTTP 1.0 or 1.1: Skip noise, send header + file -->
+  <chat Name="http" TimeoutMs="&None;" Regexp="true"
+        Assign="FILE=${4} VERS=${5}"
+        >GET ((http:/)?/(localhost|${$HOSTNAME}))?([^ ]+)( +HTTP/1\.(0|1))?</chat>
+  <script>
+    <cond>
+      <if Variable="VERS"></if>
+      <!-- No vers => 0.9 -->
+      <script></script>
+      <else/>
+      <script>
+        <!-- Vers 1.x => skip inputs until empty line -->
+        <set Variable="DONE">false</set>
+        <repeat>
+          <while Variable="DONE">false</while>
+          <script>
+            <select TimeoutMs="1000">
+              <expect></expect>
+              <script>
+                <set Variable="DONE">true</set>
+              </script>
+              <default/>
+              <script></script>
+            </select>
+          </script>
+        </repeat>
+        <!-- And send header -->
+        <eval Variable="SIZE">
+          <command>ls -al ${FILE} | awk '{printf "%s",$5\}'</command>
+          <error/>
+          <script>
+            <set Variable="SIZE"></set>
+          </script>
+        </eval>
+        <cond>
+          <if Variable="SIZE"></if>
+          <script>
+            <send>HTTP/1.0 404 Not Found</send>
+            <close/>
+          </script>
+         </cond>
+        <eval Variable="DATE">
+          <command>echo -n `date "+%a, %d %b %Y %H:%M:00 %Z"`</command>
+        </eval>
+        <set Variable="SERVER_ID">tcpchat/V2.1</set>
+        <send>HTTP/1.1 200 OK</send>
+        <send>Date: ${DATE}</send>
+        <send>Server: ${SERVER_ID}</send>
+        <send>Connection: close</send>
+        <send>Accept-Ranges: bytes</send>
+        <send>Content-Length: ${SIZE}</send>
+        <send>Content-Type: text/plain</send>
+        <send></send>
+      </script>
+    </cond>
+    <call>
+      <command>cat ${FILE}</command>
+      <error/>
+      <script>
+        <cond>
+          <if Variable="VERS"></if>
+          <script></script>
+          <else/>
+          <script>
+            <send>HTTP/1.0 404 Not Found</send>
+          </script>
+        </cond>
+      </script>
+    </call>
+    <!-- Close if 0.9 -->
+    <cond>
+      <if Variable="VERS"></if>
+      <script>
+        <close/>
+      </script>
+    </cond>
+  </script>
+
+  <!-- Rsh : execude command -->
+  <chat Name="rsh" Regexp="true" Assign="COMMAND=${2}"
+    >rsh( (.*))?</chat>
+  <script>
+    <cond>
+      <if Variable="COMMAND"></if>
+      <script></script>
+      <else/>
+      <script>
+        <call>
+          <command>${COMMAND}</command>
+          <error/>
+          <script></script>
+        </call>
+      </script>
+    </cond>
+    <close/>
+  </script>
+</chats>
+
