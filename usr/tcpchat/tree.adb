@@ -332,6 +332,7 @@ package body Tree is
                Get_Attribute (Xnode, "IfUnset") = "true");
     elsif Name = "error" then
       -- Begin of error handling block
+      Node := Chats.Read;
       Dummy_Node := True;
       Next_Is_Script := True;
     elsif Name = "close" then
@@ -372,7 +373,7 @@ package body Tree is
       end loop;
       Debug.Log ("  End of entries of " & Mixed_Str (Node.Kind'Img));
     elsif Node.Kind = Call or else Node.Kind = Eval then
-      -- Call and Eval are a command then an optional error handler
+      -- Call and Eval are a command then an opt handler (error+script)
       -- Insert error handler if any
       if Ctx.Get_Nb_Children (Xnode) = 3 then
         Debug.Log ("    Inserting error handler of "
