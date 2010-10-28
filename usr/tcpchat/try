@@ -7,12 +7,18 @@ if [ "$1" = "-d" ] ; then
   shift
 fi
 
-if [ "$1" != "" ] ; then
-  echo "On port $1"
+if [ "$1" = "http" ] ; then
+  port="www"
+  file=http-rsh.xml
+  echo "On port $port"
+elif [ "$1" != "" ] ; then
   port="$1"
+  file=chats.xml
+  echo "On port $port"
 else
-  echo "On stdio"
   port="-"
+  file=chats.xml
+  echo "On stdio"
 fi
 
 exec tcpchat -p $port -f chats.xml
