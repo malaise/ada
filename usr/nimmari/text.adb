@@ -174,10 +174,11 @@ package body Text is
     end if;
     loop
       if Common.Get_Game_Kind = Common.Nim then
-        Put ("Enter M to play Marienbad or Return to go on playing Nim: ");
+        Put ("Enter M to play Marienbad, Return to go on playing Nim");
       else
-        Put ("Enter N to play Nim or Return to go on playing Marienbad: ");
+        Put ("Enter N to play Nim, Return to go on playing Marienbad");
       end if;
+      Put (" or Q or X to Quit: ");
       Str := Upper_Str (Get (1));
       if (Common.Get_Game_Kind = Common.Marienbad and then Str(1) = 'N')
       or else (Common.Get_Game_Kind = Common.Nim and then Str(1) = 'M') then
