@@ -5,7 +5,8 @@ AFPX := true
 
 EXES := adand add_nums alook arbipas beep comp_vars ddir \
  dtd_checker dtd_checker.stat e2f fact full_path g hanoi impot_04 \
- mlbx_overflow one_of_arg pascal pingpong prime random relay rndsok renamer \
+ mlbx_overflow one_of_arg pascal pingpong prime \
+ random relay rndsok renamer renardeau \
  second stat statfile status strcase tcping trail_spaces udp_spy \
  wait xml_checker pingpong.stat tcping.stat udp_spy.stat xml_checker.stat
 
