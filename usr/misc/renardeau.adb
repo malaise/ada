@@ -85,7 +85,7 @@ procedure Renardeau is
   end Put_Outputs;
 
   -- Set the outputs array
-  function Set_Outputs (Result : Cell_Access) 
+  function Set_Outputs (Result : Cell_Access)
            return Unbounded_Ouputs.Unbounded_Array is
     Outputs : Unbounded_Ouputs.Unbounded_Array;
     procedure Add_Output (C : in Cell_Access) is
@@ -133,7 +133,7 @@ procedure Renardeau is
     case Operation is
       when Add => Value := Left.Value + Right.Value;
       when Mul => Value := Left.Value * Right.Value;
-      when Sub => 
+      when Sub =>
         if Left.Value = Right.Value then
           -- Prevent reaching 0
           return null;
@@ -156,7 +156,7 @@ procedure Renardeau is
   end Combine;
 
   -- Combine all operations between 2 Cells, append them
-  procedure Append (Current : in out Cell_Access;
+  procedure Append (Start, Current : in out Cell_Access;
                     Left, Right : in Cell_Access) is
     Reuse_Ok : Boolean;
     Used : Used_Mask;
@@ -182,6 +182,9 @@ procedure Renardeau is
       if Result /= null then
         Result.Used := Used;
         -- Chain and point to new
+        if Start = null then
+          Start := Current;
+        end if;
         if Current /= null then
           Current.Next := Result;
         end if;
@@ -247,10 +250,7 @@ begin
     while Left /= null loop
       Right := Left.Next;
       while Right /= null loop
-        Append (Curr, Left, Right);
-        if Results(2) = null then
-          Results(2) := Curr;
-        end if;
+        Append (Results(2), Curr, Left, Right);
         Right := Right.Next;
       end loop;
       Left := Left.Next;
@@ -261,10 +261,7 @@ begin
     while Left /= null loop
       Right := Results(1);
       while Right /= null loop
-        Append (Curr, Left, Right);
-        if Results(3) = null then
-          Results(3) := Curr;
-        end if;
+        Append (Results(3), Curr, Left, Right);
         Right := Right.Next;
       end loop;
       Left := Left.Next;
@@ -276,10 +273,7 @@ begin
     while Left /= null loop
       Right := Left.Next;
       while Right /= null loop
-        Append (Curr, Left, Right);
-        if Results(4) = null then
-          Results(4) := Curr;
-        end if;
+        Append (Results(4), Curr, Left, Right);
         Right := Right.Next;
       end loop;
       Left := Left.Next;
@@ -288,10 +282,7 @@ begin
     while Left /= null loop
       Right := Results(1);
       while Right /= null loop
-        Append (Curr, Left, Right);
-        if Results(4) = null then
-          Results(4) := Curr;
-        end if;
+        Append (Results(4), Curr, Left, Right);
         Right := Right.Next;
       end loop;
       Left := Left.Next;
@@ -303,10 +294,7 @@ begin
     while Left /= null loop
       Right := Results(2);
       while Right /= null loop
-        Append (Curr, Left, Right);
-        if Results(5) = null then
-          Results(5) := Curr;
-        end if;
+        Append (Results(5), Curr, Left, Right);
         Right := Right.Next;
       end loop;
       Left := Left.Next;
@@ -315,10 +303,7 @@ begin
     while Left /= null loop
       Right := Results(1);
       while Right /= null loop
-        Append (Curr, Left, Right);
-        if Results(5) = null then
-          Results(5) := Curr;
-        end if;
+        Append (Results(5), Curr, Left, Right);
         Right := Right.Next;
       end loop;
       Left := Left.Next;
@@ -331,10 +316,7 @@ begin
     while Left /= null loop
       Right := Left.Next;
       while Right /= null loop
-        Append (Curr, Left, Right);
-        if Results(6) = null then
-          Results(6) := Curr;
-        end if;
+        Append (Results(6), Curr, Left, Right);
         Right := Right.Next;
       end loop;
       Left := Left.Next;
@@ -343,10 +325,7 @@ begin
     while Left /= null loop
       Right := Results(2);
       while Right /= null loop
-        Append (Curr, Left, Right);
-        if Results(6) = null then
-          Results(6) := Curr;
-        end if;
+        Append (Results(6), Curr, Left, Right);
         Right := Right.Next;
       end loop;
       Left := Left.Next;
@@ -355,15 +334,12 @@ begin
     while Left /= null loop
       Right := Results(1);
       while Right /= null loop
-        Append (Curr, Left, Right);
-        if Results(6) = null then
-          Results(6) := Curr;
-        end if;
+        Append (Results(6), Curr, Left, Right);
         Right := Right.Next;
       end loop;
       Left := Left.Next;
     end loop;
-  
+
     -- Search best result with lowest complexity
     declare
       Lowest_Complexity : Natural := Lowest_Complexity_Init;
@@ -388,7 +364,7 @@ begin
           end if;
           Curr := Curr.Next;
         end loop;
-     end loop; 
+     end loop;
    end;
 
     -- Output result
@@ -398,6 +374,6 @@ begin
     -- Cleanup
 
   end loop;
-  
+
 end Renardeau;
 
