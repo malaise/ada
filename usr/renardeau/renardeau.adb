@@ -1,6 +1,10 @@
+with Unchecked_Deallocation;
 with Argument, Int_Image, Bit_Ops, Unbounded_Arrays, Basic_Proc;
 procedure Renardeau is
   function Image is new Int_Image (Natural);
+
+  -- Internal representation
+  subtype Num is Long_Long_Integer range 0 .. Long_Long_Integer'Last;
 
   -- Number of base number
   Nb_Bases : constant := 6;
@@ -19,25 +23,49 @@ procedure Renardeau is
   type Cell;
   type Cell_Access is access Cell;
   type Cell is record
-    Value : Natural := 0;
+    Value : Num := 0;
     Left : Cell_Access;
     Operation : Operations := Nop;
     Right : Cell_Access;
     Used : Used_Mask := 0;
     Next : Cell_Access;
   end record;
+  procedure Free is new Unchecked_Deallocation (Cell, Cell_Access);
+
+  -- X mode
+  type Bases_Array is array (Bases_Range) of Positive;
+  type Output_Rec is record
+    Left : Positive;
+    Operation : Real_Operations;
+    Right : Positive;
+    Result : Positive;
+  end record;
+  type Output_Array is array (Positive range <>) of Output_Rec;
+  package Unbounded_Ouputs is new Unbounded_Arrays (Output_Rec, Output_Array);
+  package X is
+    procedure Get_Inputs (Bases : out Bases_Array;
+                          Target : out Positive;
+                          Cancel : out Boolean);
+    procedure Put_Outputs (Found : Boolean;
+                           Outputs : in Unbounded_Ouputs.Unbounded_Array;
+                           Finish : out Boolean);
+  end X;
+  package body X is separate;
 
   -- Inputs
-  type Bases_Array is array (Bases_Range) of Positive;
   Invalid_Argument : exception;
-  Afpx_Mode : Boolean;
-  procedure Get_Inputs (Bases : out Bases_Array; Target : out Positive) is
+  X_Mode : Boolean;
+  procedure Get_Inputs (Bases : out Bases_Array;
+                        Target : out Positive;
+                        Cancel : out Boolean) is
   begin
+    X_Mode := Argument.Get_Nbre_Arg = 1
+              and then Argument.Get_Parameter (1) = "-x";
     -- Afpx option
-    Afpx_Mode := False;
-    if Afpx_Mode then
-      null;
+    if X_Mode then
+      X.Get_Inputs (Bases, Target, Cancel);
     else
+      Cancel := False;
       if Argument.Get_Nbre_Arg /= 7 then
         Basic_Proc.Put_Line_Error ("Invalid arguments.");
         raise Invalid_Argument;
@@ -73,35 +101,27 @@ procedure Renardeau is
   end Get_Inputs;
 
   -- Output
-  type Output_Rec is record
-    Left : Positive;
-    Operation : Real_Operations;
-    Right : Positive;
-    Result : Positive;
-  end record;
-  type Output_Array is array (Positive range <>) of Output_Rec;
-  package Unbounded_Ouputs is new Unbounded_Arrays (Output_Rec, Output_Array);
   procedure Put_Outputs (Found : Boolean;
                          Outputs : in Unbounded_Ouputs.Unbounded_Array;
-                         Done : out Boolean) is
+                         Finish : out Boolean) is
     Output : Output_Rec;
   begin
     -- Afpx_Option
-    if Afpx_Mode then
-      null;
+    if X_Mode then
+      X.Put_Outputs (Found, Outputs, Finish);
     else
+      Finish := True;
       if Found then
         Basic_Proc.Put_Line_Output ("Found");
       else
         Basic_Proc.Put_Line_Output ("Closest");
       end if;
       for I in 1 .. Outputs.Length loop
-        Output := Outputs.Element (I);
+        Output := Outputs.Element(I);
         Basic_Proc.Put_Line_Output (
           Image (Output.Left) & " " & Operations_Images (Output.Operation) & " "
         & Image (Output.Right) & " = " & Image (Output.Result));
       end loop;
-      Done := True;
     end if;
   end Put_Outputs;
 
@@ -118,10 +138,10 @@ procedure Renardeau is
       Add_Output (C.Left);
       Add_Output (C.Right);
       -- Append current cell
-      Outputs.Append (Output_Rec'(Left => C.Left.Value,
+      Outputs.Append (Output_Rec'(Left => Natural(C.Left.Value),
                                   Operation => C.Operation,
-                                  Right => C.Right.Value,
-                                  Result => C.Value));
+                                  Right => Natural(C.Right.Value),
+                                  Result => Natural(C.Value)));
     end Add_Output;
   begin
     Add_Output (Result);
@@ -149,7 +169,7 @@ procedure Renardeau is
   -- /!\ MUST Left.Value >= Right.Value
   function Combine (Left, Right : Cell_Access;
                     Operation : Real_Operations) return Cell_Access is
-    Value : Positive;
+    Value : Num;
   begin
     case Operation is
       when Add => Value := Left.Value + Right.Value;
@@ -238,7 +258,7 @@ procedure Renardeau is
 
   -- Lowest result
   Lowest_Result_Init : constant := 1000;
-  Lowest_Result : Natural;
+  Lowest_Result : Num;
 
   -- Current, Previous, Left, Right, Result Cells
   Curr, Prev, Left, Right, Result : Cell_Access;
@@ -248,13 +268,14 @@ procedure Renardeau is
 begin
   loop
     -- Get inputs
-    Get_Inputs (Bases, Target);
+    Get_Inputs (Bases, Target, Done);
+    exit when Done;
 
     -- Init Results(0) with a list of Base numbers
     Prev := null;
     for I in Bases_Range loop
       Curr := new Cell;
-      Curr.Value := Bases(I);
+      Curr.Value := Num(Bases(I));
       Curr.Used := Bit_Ops.Shl (1, I - 1);
       if Prev = null then
         Results(1) := Curr;
@@ -365,17 +386,18 @@ begin
     declare
       Lowest_Complexity : Natural := Lowest_Complexity_Init;
       Complexity : Natural;
+      Num_Target : constant Num := Num(Target);
     begin
       Lowest_Result := Lowest_Result_Init;
       for I in Results'Range loop
         Curr := Results(I);
         while Curr /= null loop
-          if abs (Curr.Value - Target) < Lowest_Result then
+          if abs (Curr.Value - Num_Target) < Lowest_Result then
             -- Store if best result so far
             Result := Curr;
-            Lowest_Result := abs (Curr.Value - Target);
+            Lowest_Result := abs (Curr.Value - Num_Target);
           end if;
-          if Curr.Value = Target then
+          if Curr.Value = Num_Target then
             -- Store if Target reached and best complexity so far
             Complexity := Compute_Complexity (Curr);
             if Complexity < Lowest_Complexity then
@@ -390,9 +412,23 @@ begin
 
     -- Output result
     Put_Outputs (Lowest_Result = 0, Set_Outputs(Result), Done);
-    exit when Done;
 
     -- Cleanup
+    for I in Results'Range loop
+      Prev := null;
+      Curr := Results(I);
+      Results(I) := null;
+      loop
+        if Prev /= null then
+          Free (Prev);
+        end if;
+        exit when Curr = null;
+        Prev := Curr;
+        Curr := Curr.Next;
+      end loop;
+    end loop;
+
+    exit when Done;
 
   end loop;
 exception
