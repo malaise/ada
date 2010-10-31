@@ -30,9 +30,25 @@ package body String_Mng is
   end Parse_Spaces;
 
   -- Remove tailing spaces and tabs
-  function Strip (Str : String) return String is
+  function Strip (Str : String; From : Strip_Kind := Tail) return String is
+    Start, Stop : Natural;
   begin
-    return Str(Str'First .. Parse_Spaces (Str, False));
+    case From is
+      when Tail =>
+        Start := Str'First;
+        Stop  := Parse_Spaces (Str, False);
+      when Head =>
+        Start := Parse_Spaces (Str, True);
+        Stop  := Str'Last;
+      when Both =>
+        Start := Parse_Spaces (Str, True);
+        Stop  := Parse_Spaces (Str, False);
+    end case;
+    if Start = 0 then
+      return "";
+    else
+      return Str(Start .. Stop);
+    end if;
   end Strip;
 
   -- Puts a string Str in a string of fixed length Len.

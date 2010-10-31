@@ -9,7 +9,8 @@ package String_Mng is
            return Natural;
 
   -- Remove tailing spaces and tabs
-  function Strip (Str : String) return String;
+  type Strip_Kind is (Tail, Head, Both);
+  function Strip (Str : String; From : Strip_Kind := Tail) return String;
 
   -- Puts a string str in a string of fixed length Len.
   -- If Str is shorter than Len, it is aligned at right or left and padded
