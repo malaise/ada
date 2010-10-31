@@ -39,13 +39,17 @@ procedure Renardeau is
       null;
     else
       if Argument.Get_Nbre_Arg /= 7 then
-        Basic_Proc.Put_Line_Error ( "Invalid arguments. "
-                 & "Expecting 6 bases and 1 target numbers.");
+        Basic_Proc.Put_Line_Error ("Invalid arguments.");
         raise Invalid_Argument;
       end if;
       for I in Bases'Range loop
         begin
           Bases(I) := Positive'Value(Argument.Get_Parameter (I));
+          if (Bases(I) < 1 or else Bases(I) > 9)
+          and then Bases(I) /= 25 and then Bases(I) /= 50
+          and then Bases(I) /= 75 and then Bases(I) /= 100 then
+            raise Constraint_Error;
+          end if;
         exception
           when Constraint_Error =>
             Basic_Proc.Put_Line_Error ("Invalid argument "
@@ -55,6 +59,9 @@ procedure Renardeau is
       end loop;
       begin
         Target := Positive'Value(Argument.Get_Parameter (Nb_Bases + 1));
+        if Target < 100 or else Target > 999 then
+          raise Constraint_Error;
+        end if;
       exception
         when Constraint_Error =>
           Basic_Proc.Put_Line_Error ("Invalid argument "
@@ -390,6 +397,9 @@ begin
   end loop;
 exception
   when Invalid_Argument =>
+    Basic_Proc.Put_Line_Error ("Expecting 6 bases and 1 target numbers.");
+    Basic_Proc.Put_Line_Error ("Bases must be from 1 to 9 or 25, 50, 75 or 100.");
+    Basic_Proc.Put_Line_Error ("Target must be from 100 to 999.");
     Basic_Proc.Set_Error_Exit_Code;
 end Renardeau;
 
