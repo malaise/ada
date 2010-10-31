@@ -68,7 +68,7 @@
       <Geometry Up="${Field_2.Low}+2" Left="${Field_9.Right}+2"
                 Height="3" Width="4"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="1" Col="1">50</Init>
+      <Init Row="1" Col="1">25</Init>
     </Field>
     <Field Num="11" Kind="Button">
       <Geometry Up="${Field_2.Low}+2" Left="${Field_10.Right}+2"
