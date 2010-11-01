@@ -40,8 +40,18 @@ procedure Renardeau is
     Right : Positive;
     Result : Positive;
   end record;
+  No_Operation : constant Output_Rec := (1, Sub, 1, 1);
+  function Is_No_Operation (Output : Output_Rec) return Boolean is
+    Tmp : Output_Rec := Output;
+  begin
+    Tmp.Result := No_Operation.Result;
+    return Tmp = No_Operation;
+  end Is_No_Operation;
+
   type Output_Array is array (Positive range <>) of Output_Rec;
   package Unbounded_Ouputs is new Unbounded_Arrays (Output_Rec, Output_Array);
+
+
   package X is
     procedure Get_Inputs (Bases : out Bases_Array;
                           Target : out Positive;
@@ -117,16 +127,23 @@ procedure Renardeau is
       else
         Basic_Proc.Put_Line_Output ("Closest");
       end if;
-      for I in 1 .. Outputs.Length loop
-        Output := Outputs.Element(I);
+      if Is_No_Operation (Outputs.Element(1)) then
         Basic_Proc.Put_Line_Output (
-          Image (Output.Left) & " " & Operations_Images (Output.Operation) & " "
-        & Image (Output.Right) & " = " & Image (Output.Result));
-      end loop;
+                 Image (Outputs.Element(1).Result));
+      else
+        for I in 1 .. Outputs.Length loop
+          Output := Outputs.Element(I);
+          Basic_Proc.Put_Line_Output (
+            Image (Output.Left) & " " & Operations_Images (Output.Operation) & " "
+          & Image (Output.Right) & " = " & Image (Output.Result));
+        end loop;
+      end if;
     end if;
   end Put_Outputs;
 
   -- Set the outputs array
+  -- If no computation necessary, then set one output with 1 - 1
+  --  and the result set
   function Set_Outputs (Result : Cell_Access)
            return Unbounded_Ouputs.Unbounded_Array is
     Outputs : Unbounded_Ouputs.Unbounded_Array;
@@ -144,8 +161,15 @@ procedure Renardeau is
                                   Right => Natural(C.Right.Value),
                                   Result => Natural(C.Value)));
     end Add_Output;
+    Output : Output_Rec;
   begin
     Add_Output (Result);
+    if Outputs.Length = 0 then
+      -- No operation necessary
+      Output := No_Operation;
+      Output.Result := Positive(Result.Value);
+      Outputs.Append (Output);
+    end if;
     return Outputs;
   end Set_Outputs;
 

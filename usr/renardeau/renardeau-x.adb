@@ -247,15 +247,19 @@ package body X is
     Encode (Result_F, 0, Outputs.Element(Outputs.Length).Result);
 
     -- Put computation
-    for I in 1 .. Outputs.Length loop
-      Field := Compute_Fs + Absolute_Field_Range(I - 1);
-      Output := Outputs.Element(I);
-      Encode (Field, 0, Output.Left);
-      Encode_Field (Field, (0, 4), Operations_Images (Output.Operation) & "");
-      Encode (Field, 6, Output.Right);
-      Encode_Field (Field, (0, 10), "=");
-      Encode (Field, 12, Output.Result);
-    end loop;
+    if Is_No_Operation (Outputs.Element(1)) then
+      Encode (Compute_Fs, 12, Outputs.Element(1).Result);
+    else
+      for I in 1 .. Outputs.Length loop
+        Field := Compute_Fs + Absolute_Field_Range(I - 1);
+        Output := Outputs.Element(I);
+        Encode (Field, 0, Output.Left);
+        Encode_Field (Field, (0, 4), Operations_Images (Output.Operation) & "");
+        Encode (Field, 6, Output.Right);
+        Encode_Field (Field, (0, 10), "=");
+        Encode (Field, 12, Output.Result);
+      end loop;
+    end if;
 
     Redisplay := False;
     loop
