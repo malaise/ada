@@ -25,10 +25,8 @@ package body X is
   Result_F : constant Field_Range := 27;
   -- First of computations
   Compute_Fs : constant Field_Range := 28;
-  -- OK
-  Ok_F : constant Field_Range := 33;
   -- Exit
-  Exit_F : constant Field_Range := 34;
+  Exit_F : constant Field_Range := 33;
 
   -- For PTG Get field (there is none here)
   Cursor_Field : Field_Range := 1;
@@ -39,6 +37,83 @@ package body X is
   Redisplay    : Boolean;
 
   Deactivated : constant Con_Io.Colors := Con_Io.Color_Of ("Red");
+
+  -- Status while getting
+  type Status_List is (B1, B2, B3, B4, B5, B6, T1, T2, T3, Ready, Done);
+  pragma Unreferenced (B3, B4, B5);
+
+  -- Memory of previous status
+  Number_Act, Digit_Act, Zero_Act, Enter_Act, Clear_Act : Boolean := False;
+
+  procedure Activate_Fields (Status : in Status_List; Force : in Boolean) is
+    -- Field active
+    Active : Boolean;
+  begin
+    -- Activate buttons depending on status
+    -- Numbers: only when getting bases
+    Active := Status in B1 .. B6;
+    if Number_Act /= Active or else Force then
+      for I in Number_Fs .. Number_Fs + 4 loop
+        Set_Field_Protection (I, not Active);
+        if Active then
+          Reset_Field (I, Reset_String => False);
+        else
+          Set_Field_Colors (I, Deactivated);
+        end if;
+      end loop;
+      Number_Act := Active;
+    end if;
+
+    -- Digits: when getting bases and target
+    Active := Status in B1 .. T3;
+    if Digit_Act /= Active or else Force then
+      for I in Digit_Fs .. Digit_Fs + 8 loop
+        Set_Field_Protection (I, not Active);
+        if Active then
+          Reset_Field (I, Reset_String => False);
+        else
+          Set_Field_Colors (I, Deactivated);
+        end if;
+      end loop;
+      Digit_Act := Active;
+    end if;
+
+    -- Zero: when getting target tenth and unit
+    Active := Status in T2 .. T3;
+    if Zero_Act /= Active or else Force then
+      Set_Field_Protection (Zero_F, not Active);
+      if Active then
+        Reset_Field (Zero_F, Reset_String => False);
+       else
+        Set_Field_Colors (Zero_F, Deactivated);
+      end if;
+      Zero_Act := Active;
+    end if;
+
+    -- Enter: when got target
+    Active := Status = Ready or else Status = Done;
+    if Enter_Act /= Active or else Force then
+      Set_Field_Protection (Enter_F, not Active);
+      if Active then
+        Reset_Field (Enter_F, Reset_String => False);
+       else
+        Set_Field_Colors (Enter_F, Deactivated);
+      end if;
+      Enter_Act := Active;
+    end if;
+
+    -- Clear: when getting bases and target
+    Active := Status in B2 .. Ready;
+    if Clear_Act /= Active or else Force then
+      Set_Field_Protection (Clear_F, not Active);
+      if Active then
+        Reset_Field (Clear_F, Reset_String => False);
+      else
+        Set_Field_Colors (Clear_F, Deactivated);
+      end if;
+      Clear_Act := Active;
+    end if;
+  end Activate_Fields;
 
   procedure Get_Inputs (Bases : out Bases_Array;
                         Target : out Positive;
@@ -62,75 +137,23 @@ package body X is
     end Put_Base;
 
     -- Status
-    type Status_List is (B1, B2, B3, B4, B5, B6, T1, T2, T3, Ready, Done);
-    pragma Unreferenced (B3, B4, B5);
     Status : Status_List;
-    -- Field active
-    Active : Boolean;
     -- A value
     Value : Natural;
     -- Offset in target, base...
     Offset : Natural;
+    -- First pass of the loop (Force reset)
+    First : Boolean;
   begin
     -- General init
     Redisplay := False;
     Use_Descriptor (1);
     Status := B1;
+    First := True;
     loop
-
-      -- Activate buttons depending on status
-      -- Numbers: only when getting bases
-      for I in Number_Fs .. Number_Fs + 4 loop
-        Active := Status in B1 .. B6;
-        Set_Field_Protection (I, not Active);
-        if Active then
-          Reset_Field (I, Reset_String => False);
-        else
-          Set_Field_Colors (I, Deactivated);
-        end if;
-      end loop;
-      -- Digits: when getting bases and target
-      for I in Digit_Fs .. Digit_Fs + 8 loop
-        Active := Status in B1 .. T3;
-        Set_Field_Protection (I, not Active);
-        if Active then
-          Reset_Field (I, Reset_String => False);
-        else
-          Set_Field_Colors (I, Deactivated);
-        end if;
-      end loop;
-      -- Zero: when getting target tenth and unit
-      Active := Status in T2 .. T3;
-      Set_Field_Protection (Zero_F, not Active);
-      if Active then
-        Reset_Field (Zero_F, Reset_String => False);
-       else
-        Set_Field_Colors (Zero_F, Deactivated);
-      end if;
-      -- Enter: when got target
-      Active := Status = Ready;
-      Set_Field_Protection (Enter_F, not Active);
-      if Active then
-        Reset_Field (Enter_F, Reset_String => False);
-       else
-        Set_Field_Colors (Enter_F, Deactivated);
-      end if;
-      -- Clear: when getting bases and target
-      Active := Status in B2 .. Ready;
-      Set_Field_Protection (Clear_F, not Active);
-      if Active then
-        Reset_Field (Clear_F, Reset_String => False);
-      else
-        Set_Field_Colors (Clear_F, Deactivated);
-      end if;
-      -- Ok done
-      Active := Status = Done;
-      Set_Field_Protection (Ok_F, not Active);
-      if Active then
-        Reset_Field (Ok_F, Reset_String => False);
-      else
-        Set_Field_Colors (Ok_F, Deactivated);
-      end if;
+      -- Activate the fields according to Status
+      Activate_Fields (Status, First);
+      First := False;
 
       -- Ptg
       Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result,
@@ -212,15 +235,11 @@ package body X is
     Field : Field_Range;
     Output : Output_Rec;
   begin
-    -- Allow only Ok or Exit
+    -- Allow Reset and Exit
     Set_Field_Protection (Enter_F, False);
     Set_Field_Colors (Enter_F, Deactivated);
     Set_Field_Protection (Clear_F, False);
     Set_Field_Colors (Clear_F, Deactivated);
-    Set_Field_Protection (Reset_F, False);
-    Set_Field_Colors (Reset_F, Deactivated);
-    Set_Field_Protection (Ok_F, True);
-    Reset_Field (Ok_F, Reset_String => False);
     -- Set color of Result to Blue if not found, put result
     if not Found then
       Set_Field_Colors (Result_F, Con_Io.Color_Of ("Blue"));
@@ -254,7 +273,7 @@ package body X is
           end case;
         when Mouse_Button =>
           case Ptg_Result.Field_No is
-            when Ok_F =>
+            when Reset_F =>
               Finish := False;
               return;
             when Exit_F =>
