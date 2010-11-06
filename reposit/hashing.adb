@@ -33,54 +33,66 @@ package body Hashing is
                        Key   : in String;
                        Data  : in Data_Acess) is
         I : constant Hash_Range := Hash_Func(Key);
-        Ca, N : Cell_Access;
+        Ca : Cell_Access;
       begin
         Ca := Dyn_Hash.Allocate ((Data => Data, Next  => null));
 
         -- Append
         if Table.Arr(I).First = null then
           Table.Arr(I).First := Ca;
+          Table.Arr(I).Last := Ca;
         else
-          N := Table.Arr(I).First;
-          while N.Next /= null loop
-            N := N.Next;
-          end loop;
-          N.Next := Ca;
+          Table.Arr(I).Last.Next := Ca;
+          Table.Arr(I).Last := Ca;
         end if;
 
       end Store;
 
       -- To remove a stored association Key <-> Index
       procedure Remove (Table : in out Hash_Table;
-                        Key   : in String) is
-        I : constant Hash_Range := Hash_Func(Key);
-        Ca : Cell_Access;
+                        Index : in Hash_Range) is
+        Cp : Cell_Access;
         Cu : Cell_Access;
+        Cf : Cell_Access;
       begin
-        Cu := Table.Arr(I).Current;
-        Ca := Table.Arr(I).First;
+        Cu := Table.Arr(Index).Current;
+        Cf := Table.Arr(Index).First;
         -- Empty or not found
-        if Ca = null or else Cu = null then
+        if Cf = null or else Cu = null then
           raise Not_Found;
         end if;
 
         -- Reset current
-        Table.Arr(I).Current := null;
+        Table.Arr(Index).Current := null;
 
-        if Ca = Cu then
+        if Cf = Cu then
           -- Special case when current is first
-          Table.Arr(I).First := Ca.Next;
+          Table.Arr(Index).First := Cf.Next;
+          Cp := null;
         else
-          -- Find previous of current
-          while Ca.Next /= Cu loop
-            Ca := Ca.Next;
+          -- Find previous of current and chain it
+          Cp := Cf;
+          while Cp.Next /= Cu loop
+            Cp := Cp.Next;
           end loop;
-          Ca.Next := Cu.Next;
+          Cp.Next := Cu.Next;
+        end if;
+
+        -- Handle case when current is last
+        if Table.Arr(Index).Last = Cu then
+          Table.Arr(Index).Last := Cp;
         end if;
 
         -- Get rid of current
         Dyn_Hash.Free (Cu);
 
+      end Remove;
+
+      procedure Remove (Table : in out Hash_Table;
+                        Key   : in String) is
+        I : constant Hash_Range := Hash_Func(Key);
+      begin
+        Remove (Table, I);
       end Remove;
 
       -- To reset finding index for matching Key
@@ -123,18 +135,18 @@ package body Hashing is
         Find_Next (Table, Hash_Func(Key), Found);
       end Find_Next;
 
+      -- Dump hash value of key and lists all data found for key
       procedure Dump (Table : in Hash_Table;
-                      Key   : in String) is
-        I : constant Hash_Range := Hash_Func(Key);
-        Ca : Cell_Access := Table.Arr(I).First;
+                      Index : in Hash_Range) is
+        Ca : Cell_Access := Table.Arr(Index).First;
       begin
-        My_Io.Put_Line ("Hash " & Hash_Range'Image(I));
+        My_Io.Put_Line ("Hash " & Hash_Range'Image(Index));
         if Ca = null then
           My_Io.Put_Line (" No data found");
         end if;
         while Ca /= null loop
           My_Io.Put (" Data found ");
-          if Ca = Table.Arr(I).Current then
+          if Ca = Table.Arr(Index).Current then
             My_Io.Put (" => ");
           else
             My_Io.Put (" -> ");
@@ -144,6 +156,13 @@ package body Hashing is
           My_Io.New_Line;
           Ca := Ca.Next;
         end loop;
+      end Dump;
+
+      procedure Dump (Table : in Hash_Table;
+                      Key   : in String) is
+        I : constant Hash_Range := Hash_Func(Key);
+      begin
+        Dump (Table, I);
       end Dump;
 
       procedure Clear_All (Table : in out Hash_Table) is

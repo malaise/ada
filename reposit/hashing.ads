@@ -82,11 +82,17 @@ package Hashing is
 
       -- To remove last found association Key <-> Index
       -- Last found is reset
+      -- Beware that this can be expensive in time/cpu if the hash tree
+      --  depth is important
       -- May raise Not_Found if last found is reset
+      procedure Remove (Table : in out Hash_Table;
+                        Index : in Hash_Range);
       procedure Remove (Table : in out Hash_Table;
                         Key   : in String);
 
       -- Dump hash value of key and lists all data found for key
+      procedure Dump (Table : in Hash_Table;
+                      Index : in Hash_Range);
       procedure Dump (Table : in Hash_Table;
                       Key   : in String);
 
@@ -109,6 +115,7 @@ package Hashing is
       type First_Cell_Rec is record
         First     : Cell_Access := null;
         Current   : Cell_Access := null;
+        Last      : Cell_Access := null;
       end record;
 
 
