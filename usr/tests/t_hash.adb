@@ -1,7 +1,7 @@
 with Console;
 with Upper_Str;
 with Normal;
-with Hash;
+with Hashing;
 with My_Io;
 with Text_Handler;
 procedure T_Hash is
@@ -9,7 +9,8 @@ procedure T_Hash is
   subtype Data_Access is Positive;
   procedure Dump (I : in Data_Access);
 
-  package My_Hash is new Hash.Hash_Mng (512, Data_Access, Dump);
+  package Hash is new Hashing.Sized_Hash (512);
+  package My_Hash is new Hash.Hash_Mng (Data_Access, Dump);
   Ht : My_Hash.Hash_Table;
 
   subtype Txt_P is Text_Handler.Text(500);

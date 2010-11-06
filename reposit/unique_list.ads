@@ -129,8 +129,7 @@ private
   -- Element hashing
   procedure Dump (Data : in Element_Access);
   package Hash_Mng is
-          new Hash.Hash_Mng (Hash.Max_Hash_Value,
-                             Element_Access,
+          new Hash.Hash_Mng (Element_Access,
                              Dump);
   -- A unique list
   type List_Type is limited new Ada.Finalization.Limited_Controlled with record
