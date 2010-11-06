@@ -18,10 +18,10 @@ package As.U is
 
   -- Dynamic_List of Asu_Us
   package Asu_List_Mng is new Dynamic_List (Asu_Us);
+  subtype Asu_Us_Access is Asu_List_Mng.Element_Access;
   package Asu_Dyn_List_Mng renames Asu_List_Mng.Dyn_List;
 
   -- Unique_List of Asu_Us
-  type Asu_Us_Access is access all Asu_Us;
   procedure Set (To : out Asu_Us; Val : in Asu_Us);
   function Image (Element : Asu_Us) return String;
   package Asu_Unique_List_Mng is new Unique_List (
