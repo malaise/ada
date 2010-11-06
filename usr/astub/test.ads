@@ -65,6 +65,16 @@ package Test is
   -- Another function
   function Func2 return Integer;
 
+  -- A procedure and function with access
+  procedure Proca (A : in Integer;
+                   P : access procedure (I : Integer);
+                   F : access function (I : Integer) return Boolean;
+                   B : in Integer);
+  function Funca (A : Integer;
+                  P : access procedure (I : Integer);
+                  F : access function (I : Integer) return Boolean;
+                  B : Integer) return Integer;
+
   -- A package
   package Pack1 is
     -- A function

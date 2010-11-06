@@ -88,6 +88,23 @@ package body Test is
     return Func2;
   end Func2;
 
+  -- A procedure and function with access
+  procedure Proca (A : in Integer;
+                   P : access procedure (I : Integer);
+                   F : access function (I : Integer) return Boolean;
+                   B : in Integer) is
+  begin
+    null;
+  end Proca;
+
+  function Funca (A : Integer;
+                  P : access procedure (I : Integer);
+                  F : access function (I : Integer) return Boolean;
+                  B : Integer) return Integer is
+  begin
+    return Funca (A, P, F, B);
+  end Funca;
+
   -- A package
   package body Pack1 is
 

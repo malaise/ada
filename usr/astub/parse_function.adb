@@ -6,7 +6,8 @@ procedure Parse_Function (Level : in Natural;
                           Generated : in out Boolean) is
   Name, Args : Asu_Us;
   Word : Parser_Ada.Word_Rec;
-  In_Parent, In_Id : Boolean;
+  In_Id : Boolean;
+  Nb_Parent : Natural;
   use type Parser_Ada.Lexical_Kind_List;
 begin
 
@@ -28,37 +29,33 @@ begin
     -- Like Parse_To_End ("return"); but
     -- store argument formal names in Args, separated by ", "
     In_Id := True;
-    In_Parent := True;
+    Nb_Parent := 1;
     loop
       Word := Parser_Ada.Multiparse.Get (True);
       Words.Add (Word);
       if Asu_Ts (Word.Text) = "(" then
-        Common.Error ("(");
+        Nb_Parent := Nb_Parent + 1;
       elsif Asu_Ts (Word.Text) = ")" then
-        if In_Id or else not In_Parent then
+        if Nb_Parent = 0 then
            Common.Error (")");
         end if;
         -- End or arguments. Now parsing return type.
-        In_Parent := False;
-      elsif In_Id and then Word.Lexic = Parser_Ada.Identifier then
+        Nb_Parent := Nb_Parent - 1;
+      elsif In_Id and then Nb_Parent = 1
+      and then Word.Lexic = Parser_Ada.Identifier then
         -- Append this argument name
         if Asu.Length (Args) /= 0 then
           Asu.Append (Args, ", ");
         end if;
         Asu.Append (Args, Word.Text);
-      elsif Asu_Ts (Word.Text) = ":" then
-        -- End of argument formal names (entering in | out | inout ...)
+      elsif Asu_Ts (Word.Text) = ":" and then Nb_Parent = 1 then
+        -- End of argument formal names (entering in | out | inout | access ...)
         In_Id := False;
-      elsif Asu_Ts (Word.Text) = "return" then
+      elsif Asu_Ts (Word.Text) = "return" and then Nb_Parent = 0 then
         exit;
-      elsif Asu_Ts (Word.Text) = ";" then
-        if In_Parent then
-          -- End of previous argument, expecting a new one
-          In_Id := True;
-        else
-          -- ; out of () but before "return"
-          Common.Error (Asu_Ts (Word.Text));
-        end if;
+      elsif Asu_Ts (Word.Text) = ";" and then Nb_Parent = 1 then
+        -- End of previous argument, expecting a new one
+        In_Id := True;
       end if;
     end loop;
     -- Flush comments
