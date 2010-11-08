@@ -1,5 +1,6 @@
 #!/bin/bash
 export WORDS_PATH=${HOME}/words
+export DICTIO_FILE=${WORDS_PATH}/french_words
 export XWORDS_DIR=${HOME}/ada/usr/xwords
 export AFPX_DATA_DIR=${XWORDS_DIR}
 

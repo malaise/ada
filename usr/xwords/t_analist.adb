@@ -6,10 +6,15 @@ procedure T_Analist is
   Anagrams : Asu_Ua.Unb_Array;
 
 begin
+  if Argument.Get_Nbre_Arg = 0 then
+    Basic_Proc.Put_Line_Output ("Usage: " & Argument.Get_Program_Name
+                              & " <dictio_file> { <letters> }");
+    return;
+  end if;
   Basic_Proc.Put_Line_Output ("Loading...");
-  Analist.Init ("Dictio.txt");
+  Analist.Init (Argument.Get_Parameter (1));
   Basic_Proc.Put_Line_Output ("Loaded.");
-  for I in 1 .. Argument.Get_Nbre_Arg loop
+  for I in 2 .. Argument.Get_Nbre_Arg loop
     Analist.List (Argument.Get_Parameter (I), Anagrams);
     Basic_Proc.Put_Line_Output (Argument.Get_Parameter (Occurence => I)
                                 & " -->");

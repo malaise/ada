@@ -1,13 +1,16 @@
-with Ada.Text_Io;
 with As.U; use As.U;
 with Argument, Con_Io, Afpx, Basic_Proc, Language, Many_Strings, String_Mng,
-     Lower_Str;
-with Cmd;
+     Lower_Str, Environ;
+with Cmd, Analist;
 procedure Xwords is
+
+  -- Name of ENV variable for anagrams dictionary
+  Dictio_Env_Name : constant String := "DICTIO_FILE";
 
   procedure Error is
   begin
-    Ada.Text_Io.Put_Line ("Usage : " & Argument.Get_Program_Name & " [ -l ]");
+    Basic_Proc.Put_Line_Error ("Usage : "
+                             & Argument.Get_Program_Name & " [ -l ]");
     Basic_Proc.Set_Error_Exit_Code;
   end Error;
 
@@ -28,16 +31,17 @@ procedure Xwords is
   Clear_Fld : constant Afpx.Field_Range := 3;
   Recall_Fld : constant Afpx.Field_Range := 4;
   Get_Fld : constant Afpx.Field_Range := 5;
-  Search_Fld : constant Afpx.Field_Range := 6;
-  Research_Fld : constant Afpx.Field_Range := 7;
-  Add_Word_Fld : constant Afpx.Field_Range := 10;
-  Add_Noun_Fld : constant Afpx.Field_Range := 11;
-  Del_Word_Fld : constant Afpx.Field_Range := 12;
-  Del_Noun_Fld : constant Afpx.Field_Range := 13;
-  History_Fld : constant Afpx.Field_Range := 14;
-  Clear_List_Fld : constant Afpx.Field_Range := 15;
-  Lmng_Fld : constant Afpx.Field_Range := 17;
-  Exit_Fld : constant Afpx.Field_Range := 16;
+  Anagrams_Fld : constant Afpx.Field_Range := 6;
+  Search_Fld : constant Afpx.Field_Range := 7;
+  Research_Fld : constant Afpx.Field_Range := 8;
+  Add_Word_Fld : constant Afpx.Field_Range := 11;
+  Add_Noun_Fld : constant Afpx.Field_Range := 12;
+  Del_Word_Fld : constant Afpx.Field_Range := 13;
+  Del_Noun_Fld : constant Afpx.Field_Range := 14;
+  History_Fld : constant Afpx.Field_Range := 15;
+  Clear_List_Fld : constant Afpx.Field_Range := 16;
+  Lmng_Fld : constant Afpx.Field_Range := 18;
+  Exit_Fld : constant Afpx.Field_Range := 17;
 
   -- History of search requests
   History : Cmd.Res_List;
@@ -70,6 +74,55 @@ procedure Xwords is
   begin
     return Str(Str'First .. Last);
   end Strip;
+
+  -- List anagrams of word
+  procedure Do_Anagrams is
+    Anagrams : Asu_Ua.Unb_Array;
+    Word : Asu_Us;
+    Char : Character;
+  begin
+    -- Clear result
+    Status := Ok;
+    Afpx.Line_List.Delete_List (Deallocate => False);
+    -- Get word and check it
+    Word := Asu_Tus (Strip (Afpx.Decode_Field (Get_Fld, 0, False)));
+    if Asu_Is_Null (Word) then
+      return;
+    end if;
+    for I in 1 .. Asu.Length (Word) loop
+      Char := Asu.Element (Word, I);
+      if Char < 'a' or else Char > 'z' then
+        Afpx.Line_List.Insert (Us2Afpx (
+            Asu_Tus ("ERROR: Invalid character in word.")));
+        Status := Error;
+        return;
+      end if;
+    end loop;
+
+    -- Get list
+    Analist.List (Strip (Afpx.Decode_Field (Get_Fld, 0, False)),
+                  Anagrams);
+    History.Insert (Word);
+
+    -- Copy in Afpx list
+    for I in 1 .. Anagrams.Length loop
+      Afpx.Line_List.Insert (Us2Afpx (Anagrams.Element(I)));
+    end loop;
+    Afpx.Line_List.Rewind;
+    Afpx.Update_List(Afpx.Top);
+
+    -- Update Status
+    if Anagrams.Length = 1 then
+      Status := Ok;
+    else
+      Status := Found;
+    end if;
+
+  exception
+    when Analist.Too_Long =>
+      Afpx.Line_List.Insert (Us2Afpx (
+          Asu_Tus ("ERROR: Word too long.")));
+  end Do_Anagrams;
 
   -- Build and launch a Words command
   procedure Do_Command (Num : Afpx.Field_Range) is
@@ -130,7 +183,7 @@ procedure Xwords is
       for I in 1 .. Many_Strings.Nb (Asu_Ts (Arg)) loop
         Line := Line & " " & Many_Strings.Nth (Asu_Ts (Arg), I);
       end loop;
-      Ada.Text_Io.Put_Line (Asu_Ts (Line));
+      Basic_Proc.Put_Line_Output (Asu_Ts (Line));
     end if;
 
     -- Encode result, set first word as selection
@@ -153,7 +206,7 @@ procedure Xwords is
         end if;
         Afpx.Line_List.Insert (Us2Afpx (Line));
         if Log then
-          Ada.Text_Io.Put_Line (Asu_Ts (Line));
+          Basic_Proc.Put_Line_Output (Asu_Ts (Line));
         end if;
         exit when not Moved;
       end loop;
@@ -193,13 +246,26 @@ begin
     end if;
   end if;
 
+  -- Init Afpx
   Afpx.Use_Descriptor (1);
   Cursor_Field := Get_Fld;
   Insert := False;
   Redisplay := False;
 
-  Status := Ok;
+  -- Init Anagram dictio
+  begin
+    Analist.Init (Environ.Getenv_If_Set (Dictio_Env_Name));
+  exception
+    when Environ.Name_Error =>
+      -- Dictio env name not set => Disable anagrams button
+      Afpx.Set_Field_Activation (Anagrams_Fld, False);
+    when Analist.Init_Error =>
+      Basic_Proc.Put_Line_Error ("Error initializing anagrams dictionary");
+      Basic_Proc.Set_Error_Exit_Code;
+      return;
+  end;
 
+  Status := Ok;
 
   loop
     -- Color and protection of result list according to status
@@ -244,13 +310,22 @@ begin
               Afpx.Set_Selection (Strip (Lower_Str (Str)));
             end;
 
-          -- Clear get
+          -- Clear get and error
           when Clear_Fld =>
             Afpx.Clear_Field (Get_Fld);
+            if Status = Error then
+              Afpx.Reset_Field (Afpx.List_Field_No, Reset_String => False);
+              Afpx.Line_List.Delete_List (Deallocate => False);
+              Status := Ok;
+            end if;
 
           -- Recall last request
           when Recall_Fld =>
             Do_Recall;
+
+          -- Search anagrams
+          when Anagrams_Fld =>
+            Do_Anagrams;
 
           -- Words commands
           when Search_Fld .. Del_Noun_Fld =>
