@@ -1,17 +1,19 @@
 with As.U; use As.U;
-with File_Hash;
 package Analist is
 
-  -- The result: list of words of each lenght
-  -- From Letters'Length to Min included
-  Result : array (1 .. File_Hash.Max_Str_Len) of Asu_Ua.Unb_Array;
+  -- The maximum length supported
+  -- Longer words of the dictionnary are discarded
+  Max_Len : constant := 15;
 
-  -- List the various combinations in Letters that pass Check
-  -- Discard words of length below Min
-  type Check_Access is access function (Word : String) return Boolean;
+  -- Init database from a dictionnary (file with one word per line)
+  -- Reset it if already init
+  Init_Error : exception;
+  procedure Init (File_Name : in String);
 
+  -- List the anagrams of Letters in the database
+  Too_Long : exception;
   procedure List (Letters : in String;
-                  Check : in Check_Access := null;
-                  Min : in Positive := 1);
+                  Anagrams : out Asu_Ua.Unb_Array);
+
 end Analist;
 
