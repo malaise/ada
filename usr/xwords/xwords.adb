@@ -339,12 +339,12 @@ begin
               History.Rewind;
               loop
                 History.Read (Line, Moved => Moved);
-                Afpx.Line_List.Insert (Us2Afpx (Line));
+                Afpx.Line_List.Insert (Us2Afpx (Line), Afpx.Line_List_Mng.Prev);
                 exit when not Moved;
               end loop;
               -- Move to Bottom
-              Afpx.Line_List.Rewind (True, Afpx.Line_List_Mng.Prev);
-              Afpx.Update_List(Afpx.Bottom);
+              Afpx.Line_List.Rewind (True);
+              Afpx.Update_List(Afpx.Top);
               History.Rewind (True, Cmd.Res_Mng.Dyn_List.Prev);
             end if;
             Status := Found;
