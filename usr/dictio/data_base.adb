@@ -1,4 +1,4 @@
-with Dynamic_List, Normal, Crc_10, Hash;
+with Dynamic_List, Normal, Hash_Function, Hash;
 with Parse;
 pragma Elaborate (Hash);
 package body Data_Base is
@@ -41,17 +41,15 @@ package body Data_Base is
   end H_Get;
 
   -- Crc image
-  function Image (Crc : Crc_10.Max_Crc_Range) return Item_Crc is
+  function Image (Crc : Hash.Hash_Range) return Item_Crc is
   begin
     return Normal (Integer(Crc), Item_Crc'Length, Gap => '0');
   end Image;
 
   -- Crc of a string
   function Crc_Of (Str : String) return Item_Crc is
-    Crc : Crc_10.Crc_Type;
   begin
-    Crc.Add (Str);
-    return Image (Crc.Get);
+    return Image (Hash.Hash_Def_Func (Str));
   end Crc_Of;
 
   procedure Set (Item : in Item_Rec) is
@@ -165,7 +163,8 @@ package body Data_Base is
   function Get_Crc return Item_Crc is
     Pos : Positive;
     Item : Item_Rec;
-    Crc : Crc_10.Crc_Type;
+    Buffer : Hash_Function.Hash_Buffer;
+    use type Hash_Function.Hash_Range;
   begin
     if Item_List.Is_Empty then
       return Default_Crc;
@@ -175,12 +174,12 @@ package body Data_Base is
     Read_First (Item);
     loop
       exit when Item = No_Item;
-      Crc.Add (Item.Crc);
+      Buffer.Add (Item.Crc);
       Read_Next (Item);
     end loop;
 
     Item_List.Move_At (Pos);
-    return Image (Crc.Get);
+    return Image (Buffer.Get rem Hash.Hash_Range'Last);
   end Get_Crc;
 
 end Data_Base;

@@ -3,21 +3,20 @@ with Dyn_Data;
 pragma Elaborate (Dyn_Data);
 package body Hashing is
 
-  -- The function provided by Crc_10: default
+  -- The function to hash at default size default
   function Def_Max_Hash_Func (Key : String) return Def_Max_Hash_Range is
-    Crc : Crc_10.Crc_Type;
-    use type Crc_10.Max_Crc_Range;
+    use type Hash_Function.Hash_Range;
   begin
-    Crc.Add (Key);
-    return Max_Hash_Range(Crc.Get);
+    return Hash_Function.Hash (Key) rem Def_Max_Hash_Value;
   end Def_Max_Hash_Func;
 
   package body Sized_Hash is
 
-    -- Call Crc_10 and trunk
+    -- Call Hash and trunk
     function Hash_Def_Func (Key : String) return Hash_Range is
+      use type Hash_Function.Hash_Range;
     begin
-      return Def_Max_Hash_Func (Key) rem Hash_Max;
+      return Hash_Function.Hash (Key) rem Hash_Max;
     end Hash_Def_Func;
 
     package body Hash_Mng is

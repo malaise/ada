@@ -2,20 +2,20 @@
 -- The user needs to associate a unique acess to each data
 --  (index in an array, acess type...)
 with Ada.Finalization;
-with Crc_10;
+with Hash_Function;
 package Hashing is
-  -- Maxmum size of the primary hash table, reasonnable
-  type Max_Hash_Range is new Natural range 0 .. 16#FFFFFF#;
+  -- Maxmum size of the primary hash table (16_777_215)
+  subtype Max_Hash_Range is Hash_Function.Hash_Range;
   Max_Hash_Value : constant Max_Hash_Range := Max_Hash_Range'Last;
 
   -- Raised on Remove if last found is not set
   Not_Found : exception;
 
-  -- Default hashing function is Crc_10
-  -- Default maximum size of primary hash table due to the default hashing
-  --  function
+  -- Default maximum size of primary hash table (4095)
   subtype Def_Max_Hash_Range is Max_Hash_Range
-          range 0 .. Max_Hash_Range(Crc_10.Max_Crc_Value);
+          range 0 .. 16#FFF#;
+  Def_Max_Hash_Value : constant Def_Max_Hash_Range := Def_Max_Hash_Range'Last;
+  function Def_Max_Hash_Func (Key : String) return Def_Max_Hash_Range;
 
   generic
     -- Size of primary hash table
