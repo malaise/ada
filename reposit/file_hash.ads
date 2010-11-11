@@ -1,17 +1,23 @@
+with As.U; use As.U;
+with Hashing, Hashed_List;
 package File_Hash is
 
-  -- The goal is to store the hash of word (0 to 3FF) and a reasonable length
-  --  of the word (x?) in FFFF, so x is on 3F (IIII II) => 63
+  -- The goal is to store the hash of word (0 to FFF) and a reasonable length
+  --  of the word (x?) in *FFF, so x is either F (15!) of FF (255) which is OK
   -- Longer names are not stored
-  Max_Str_Len : constant := 16#3F#;
+  Max_Str_Len : constant := 16#FF#;
 
-  -- Init the table from a file
+  Hash_Max : constant Hashing.Max_Hash_Range := 16#FFFFF#;
+  function Hash_Func (Key : String) return Hashing.Max_Hash_Range;
+
+  package List_Mng is new Hashed_List (
+       Asu_Us, Asu_Us_Access, Set, Asu."=" , Image, Hash_Max, Hash_Func);
+
+
+  -- Load the content of the file in the list
   Init_Error : exception;
-  procedure Init (File_Name : in String);
-
-  -- See if a word exists
-  Too_Long : exception;
-  function Exists (Word : String) return Boolean;
+  procedure Load (File_Name : in String;
+                  List : in out List_Mng.List_Type);
 
 end File_Hash;
 
