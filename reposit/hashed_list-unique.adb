@@ -49,13 +49,13 @@ package body Hashed_List.Unique is
     if Acc = null then
       Insert (List_Type(List), Item);
     else
-      Replace (List, Item);
+      Replace_Current (List_Type(List), Item);
     end if;
   end Insert;
 
   -- Read the element matching in the list
   -- May raise Not_In_List
-  procedure Read (List : in out List_Type;
+  procedure Read (List : in out Unique_List_Type;
                   Item : in out Element_Type) is
     Acc : Element_Access;
   begin
@@ -65,7 +65,7 @@ package body Hashed_List.Unique is
       raise Not_In_List;
     end if;
     -- Read (List, Item);
-    Set (Item, Get_Access (List).all);
+    Set (Item, Get_Access_Current (List_Type(List)).all);
   end Read;
 
 end Hashed_List.Unique;

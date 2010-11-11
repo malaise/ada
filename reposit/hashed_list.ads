@@ -63,26 +63,26 @@ package Hashed_List is
 
   -- Read the last element searched/found
   -- May raise Not_In_List
-  procedure Read (List : in List_Type;
-                  Item : out Element_Type);
+  procedure Read_Current (List : in List_Type;
+                          Item : out Element_Type);
 
   -- Get direct access to the last element searched/found
   -- May raise Not_In_List
-  procedure Get_Access (List : in List_Type;
-                        Item_Access : out Element_Access);
-  function Get_Access (List : List_Type) return Element_Access;
+  procedure Get_Access_Current (List : in List_Type;
+                                Item_Access : out Element_Access);
+  function Get_Access_Current (List : List_Type) return Element_Access;
 
   -- Suppress the last element searched/found (which is reset)
   -- Note that this operation leads to a sequenctial scan of the list
   --   of elements
   -- May raise Not_In_List
-  procedure Delete (List : in out List_Type);
+  procedure Delete_Current (List : in out List_Type);
 
   -- Read the last element searched/found
   -- May raise Not_Equal if Item is not "=" to the element searched/found
   -- May raise Not_In_List
-  procedure Replace (List : in out List_Type;
-                     Item : in Element_Type);
+  procedure Replace_Current (List : in out List_Type;
+                             Item : in Element_Type);
 
   -- Delete the full list
   --  deallocate or not the free list
