@@ -167,7 +167,7 @@ package body Hashed_List is
     List.List.Rewind;
     List.List.Read (First_Element, List_Mng.Current);
     List.List.Modify (First_Element, List_Mng.Current);
-  end Replace_CUrrent;
+  end Replace_Current;
 
   -- Delete the full list
   --  deallocate or not the free list
