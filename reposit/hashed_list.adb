@@ -92,38 +92,38 @@ package body Hashed_List is
 
   -- Read the element matching in the list
   -- May raise Not_In_List
-  procedure Read (List : in List_Type;
-                  Item : out Element_Type) is
+  procedure Read_Current (List : in List_Type;
+                          Item : out Element_Type) is
   begin
     -- Set element or raise Not_In_List
-    Set (Item, Get_Access (List).all);
-  end Read;
+    Set (Item, Get_Access_Current (List).all);
+  end Read_Current;
 
   -- Get direct access to element matching in the list
   -- May raise Not_In_List
-  procedure Get_Access (List : in List_Type;
-                        Item_Access : out Element_Access) is
+  procedure Get_Access_Current (List : in List_Type;
+                                Item_Access : out Element_Access) is
   begin
     if List.Current = null then
       raise Not_In_List;
     end if;
     Item_Access := List.Current;
-  end Get_Access;
-  function Get_Access (List : List_Type) return Element_Access is
+  end Get_Access_Current;
+  function Get_Access_Current (List : List_Type) return Element_Access is
   begin
     if List.Current = null then
       raise Not_In_List;
     end if;
     return List.Current;
-  end Get_Access;
+  end Get_Access_Current;
 
   -- Suppress the last element found (which is reset)
   -- May raise Not_In_List
-  procedure Delete (List : in out List_Type) is
+  procedure Delete_Current (List : in out List_Type) is
     Acc : Element_Access;
     Dummy : Boolean;
   begin
-    Get_Access (List, Acc);
+    Get_Access_Current (List, Acc);
 
     -- Locate in list the item that has this access
     List.List.Rewind;
@@ -142,17 +142,17 @@ package body Hashed_List is
     when List_Mng.Not_In_List =>
       -- Move_To reached the end without finding
       raise Internal_Error;
-  end Delete;
+  end Delete_Current;
 
   -- Read the last element searched/found
   -- May raise Not_Equal if Item is not "=" to the element searched/found
   -- May raise Not_In_List
-  procedure Replace (List : in out List_Type;
-                     Item : in Element_Type) is
+  procedure Replace_Current (List : in out List_Type;
+                             Item : in Element_Type) is
     Acc : Element_Access;
     First_Element : Element_Type;
   begin
-    Get_Access (List, Acc);
+    Get_Access_Current (List, Acc);
 
     -- Check that Item is "=" to current element
     if Item /= Acc.all then
@@ -167,7 +167,7 @@ package body Hashed_List is
     List.List.Rewind;
     List.List.Read (First_Element, List_Mng.Current);
     List.List.Modify (First_Element, List_Mng.Current);
-  end Replace;
+  end Replace_CUrrent;
 
   -- Delete the full list
   --  deallocate or not the free list

@@ -44,7 +44,7 @@ package Hashed_List.Unique is
 
   -- Read the element matching in the list
   -- May raise Not_In_List
-  procedure Read (List : in out List_Type;
+  procedure Read (List : in out Unique_List_Type;
                   Item : in out Element_Type);
 
   ----------------
