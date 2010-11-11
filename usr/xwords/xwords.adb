@@ -1,6 +1,6 @@
 with As.U; use As.U;
 with Argument, Con_Io, Afpx, Basic_Proc, Language, Many_Strings, String_Mng,
-     Lower_Str, Environ;
+     Lower_Str, Environ, Int_Image;
 with Cmd, Analist;
 procedure Xwords is
 
@@ -50,6 +50,8 @@ procedure Xwords is
   -- A line of text
   Line : Asu_Us;
 
+  function Image is new Int_Image (Integer);
+
   -- Us to Afpx line
   function Us2Afpx (Us : Asu_Us) return Afpx.Line_Rec is
     Rec : Afpx.Line_Rec;
@@ -80,6 +82,7 @@ procedure Xwords is
     Anagrams : Asu_Ua.Unb_Array;
     Word : Asu_Us;
     Char : Character;
+    Length : Natural;
   begin
     -- Clear result
     Status := Ok;
@@ -105,7 +108,13 @@ procedure Xwords is
     History.Insert (Word);
 
     -- Copy in Afpx list
+    Length := 0;
     for I in 1 .. Anagrams.Length loop
+      if Asu.Length (Anagrams.Element(I)) /= Length then
+        Length := Asu.Length (Anagrams.Element(I));
+        Afpx.Line_List.Insert (Us2Afpx (Asu_Tus (
+             "-- " & Image (Length) & " --")));
+      end if;
       Afpx.Line_List.Insert (Us2Afpx (Anagrams.Element(I)));
     end loop;
     Afpx.Line_List.Rewind;
