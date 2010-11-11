@@ -28,7 +28,7 @@ package Hashed_List.Unique is
 
   -- Get access to the element matching in the list
   -- May raise Not_In_List
-  procedure Get_Access (List : in out List_Type;
+  procedure Get_Access (List : in out Unique_List_Type;
                         Item : in Element_Type;
                         Item_Access : out Element_Access);
 
