@@ -26,12 +26,10 @@ package Hashed_List.Unique is
 
   -- Of course Search_Next and Find_Next will set not Found / raise Not_In_List
 
-  -- Insert or replace an item
-  -- Optionally drops new Item if one already exists
+  -- Insert an item if does not already exists
   -- May raise Full_List (no more memory)
-  procedure Insert (List : in out Unique_List_Type;
-                    Item : in Element_Type;
-                    Drop : in Boolean := False);
+  procedure Insert_If_New (List : in out Unique_List_Type;
+                           Item : in Element_Type);
   -- Insert or replace an item
   -- May raise Full_List (no more memory)
   -- This ensures that Hased_List.Insert is not called on a Unique_List

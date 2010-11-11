@@ -11,21 +11,18 @@ package body Hashed_List.Unique is
   --  - drop the new value and keep the original
   -- type Unique_List_Type is new List_Type with null record;
 
-  -- Insert or replace an item
-  -- Optionally drops new Item if one already exists
+  -- Insert an item if does not already exists
   -- May raise Full_List (no more memory)
-  procedure Insert (List : in out Unique_List_Type;
-                    Item : in Element_Type;
-                    Drop : in Boolean := False) is
+  procedure Insert_If_New (List : in out Unique_List_Type;
+                           Item : in Element_Type) is
     Acc : Element_Access;
   begin
     Locate (List, Item, True, Acc);
     if Acc = null then
       Insert (List_Type(List), Item);
-    elsif not Drop then
-      Replace (List, Item);
+      -- Else drop
     end if;
-  end Insert;
+  end Insert_If_New;
 
   -- Insert or replace an item
   -- May raise Full_List (no more memory)
