@@ -1344,7 +1344,7 @@ package body Dtd is
         In_Name := False;
         for I in 2 .. Asu.Length (Info.List) loop
           C := Asu.Element (Info.List, I);
-          -- Names are delimited by Info_Sep or any valid character  in the
+          -- Names are delimited by Info_Sep or any valid character in the
           -- definition of children
           if C = Info_Sep
           or else String_Mng.Locate (Info_Sep & "?*+()|,", "" & C) /= 0 then
