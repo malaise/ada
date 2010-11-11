@@ -41,5 +41,20 @@ package Hashed_List.Unique is
   procedure Read (List : in out List_Type;
                   Item : in out Element_Type);
 
+  ----------------
+  -- EXCEPTIONS --
+  ----------------
+  -- When inserting
+  Full_List : exception renames Hashed_List.Full_List;
+
+  -- When deleting, reading
+  Not_In_List : exception renames Hashed_List.Not_In_List;
+
+  -- When modifying List in an application callback
+  In_Callback : exception renames Hashed_List.In_Callback;
+
+  -- If internal inconsistency (on delete)
+  Internal_Error : exception renames Hashed_List.Internal_Error;
+
 end Hashed_List.Unique;
 
