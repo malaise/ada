@@ -151,6 +151,7 @@ package body Hashed_List is
                              Item : in Element_Type) is
     Acc : Element_Access;
     First_Element : Element_Type;
+    Position : Positive;
   begin
     Get_Access_Current (List, Acc);
 
@@ -163,10 +164,12 @@ package body Hashed_List is
     Set (Acc.all, Item);
 
     -- Replace first element by itself so that the list is (marked as) modified
-    -- The list is not emptu for sure (Get_Access passed)
+    -- The list is not empty for sure (Get_Access passed)
+    Position := List.List.Get_Position;
     List.List.Rewind;
     List.List.Read (First_Element, List_Mng.Current);
     List.List.Modify (First_Element, List_Mng.Current);
+    List.List.Move_At (Position);
   end Replace_Current;
 
   -- Delete the full list
