@@ -26,6 +26,12 @@ package Hashed_List.Unique is
 
   -- Of course Search_Next and Find_Next will set not Found / raise Not_In_List
 
+  -- Get access to the element matching in the list
+  -- May raise Not_In_List
+  procedure Get_Access (List : in out List_Type;
+                        Item : in Element_Type;
+                        Item_Access : out Element_Access);
+
   -- Insert an item if does not already exists
   -- May raise Full_List (no more memory)
   procedure Insert_If_New (List : in out Unique_List_Type;

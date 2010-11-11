@@ -11,6 +11,20 @@ package body Hashed_List.Unique is
   --  - drop the new value and keep the original
   -- type Unique_List_Type is new List_Type with null record;
 
+  -- Get access to the element matching in the list
+  -- May raise Not_In_List
+  procedure Get_Access (List : in out List_Type;
+                        Item : in Element_Type;
+                        Item_Access : out Element_Access) is
+    Acc : Element_Access;
+  begin
+    Locate (List_Type(List), Item, True, Acc);
+    if Acc = null then
+      raise Not_In_List;
+    end if;
+    Item_Access := List.Current;
+  end Get_Access;
+
   -- Insert an item if does not already exists
   -- May raise Full_List (no more memory)
   procedure Insert_If_New (List : in out Unique_List_Type;
