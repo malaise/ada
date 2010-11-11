@@ -68,5 +68,36 @@ package body Hashed_List.Unique is
     Set (Item, Get_Access_Current (List_Type(List)).all);
   end Read;
 
+  -- Suppress the element matching in the list
+  -- May raise Not_In_List
+  procedure Delete (List : in out Unique_List_Type;
+                    Crit : in Element_Type) is
+    Acc : Element_Access;
+  begin
+    -- Find (List, Item);
+    Locate (List_Type(List), Crit, True, Acc);
+    if Acc = null then
+      raise Not_In_List;
+    end if;
+    Delete_Current (List_Type(List));
+  end Delete;
+
+  -- Delete anyway. Set Done to True if matching item was found
+  --  and deletion was done
+  procedure Delete (List : in out Unique_List_Type;
+                    Crit : in Element_Type;
+                    Done : out Boolean) is
+    Acc : Element_Access;
+  begin
+    -- Find (List, Item);
+    Locate (List_Type(List), Crit, True, Acc);
+    if Acc = null then
+      Done := False;
+      return;
+    end if;
+    Delete_Current (List_Type(List));
+    Done := True;
+  end Delete;
+
 end Hashed_List.Unique;
 

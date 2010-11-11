@@ -47,6 +47,17 @@ package Hashed_List.Unique is
   procedure Read (List : in out Unique_List_Type;
                   Item : in out Element_Type);
 
+  -- Suppress the element matching in the list
+  -- May raise Not_In_List
+  procedure Delete (List : in out Unique_List_Type;
+                    Crit : in Element_Type);
+
+  -- Delete anyway. Set Done to True if matching item was found
+  --  and deletion was done
+  procedure Delete (List : in out Unique_List_Type;
+                    Crit : in Element_Type;
+                    Done : out Boolean);
+
   ----------------
   -- EXCEPTIONS --
   ----------------
