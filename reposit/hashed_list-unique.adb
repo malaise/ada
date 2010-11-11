@@ -17,7 +17,7 @@ package body Hashed_List.Unique is
                            Item : in Element_Type) is
     Acc : Element_Access;
   begin
-    Locate (List, Item, True, Acc);
+    Locate (List_Type(List), Item, True, Acc);
     if Acc = null then
       Insert (List_Type(List), Item);
       -- Else drop
@@ -31,7 +31,7 @@ package body Hashed_List.Unique is
                        Item : in Element_Type) is
     Acc : Element_Access;
   begin
-    Locate (List, Item, True, Acc);
+    Locate (List_Type(List), Item, True, Acc);
     if Acc = null then
       Insert (List_Type(List), Item);
     else
@@ -46,7 +46,7 @@ package body Hashed_List.Unique is
     Acc : Element_Access;
   begin
     -- Find (List, Item);
-    Locate (List, Item, True, Acc);
+    Locate (List_Type(List), Item, True, Acc);
     if Acc = null then
       raise Not_In_List;
     end if;
