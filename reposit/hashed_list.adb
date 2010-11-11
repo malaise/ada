@@ -81,7 +81,7 @@ package body Hashed_List is
                     Item : in Element_Type) is
   begin
     -- Insert new element in list (append for more determinism) and in hashing
-    List.List.Rewind (Where => List_Mng.Prev);
+    List.List.Rewind (False, List_Mng.Prev);
     List.List.Insert (Item);
     Hash_Mng.Store (List.Table,
                     Key_Image(Item),
