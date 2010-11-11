@@ -181,8 +181,7 @@ package body Tree_Mng is
     -- Done, move up
     if Tree.Has_Father then
       Tree.Move_Father;
-      Rope.Find (Origin);
-      Rope.Delete;
+      Rope.Delete (origin);
     end if;
   exception
     when Sourcer.Src_List_Mng.Not_In_List =>

@@ -94,8 +94,7 @@ package body Computer is
         Var.Name := Asu_Tus (Name);
         Var.Persistent := False;
         Trace ("Deleting volatile " & Image (Var));
-        Var_List.Find (Var);
-        Var_List.Delete;
+        Var_List.Delete (Var);
       end;
     end loop;
     Iter.Del;

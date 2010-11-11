@@ -181,7 +181,7 @@ procedure Pingpong is
         Info.Average_Delta := Delta_Time;
         Info_List.Insert (Info);
       else
-        Info_List.Get_Access (Info_Acc);
+        Info_List.Get_Access_Current (Info_Acc);
         -- Average with previous value
         Info_Acc.Average_Delta :=
           (Info_Acc.Average_Delta * Info.Nb_Samples + Delta_Time)
