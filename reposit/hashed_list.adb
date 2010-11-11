@@ -56,6 +56,24 @@ package body Hashed_List is
     Locate (List, Crit, False, Acc);
     Found := Acc /= null;
   end Search_Next;
+  procedure Find_First (List : in out List_Type;
+                        Crit : in Element_Type) is
+    Acc : Element_Access;
+  begin
+    Locate (List, Crit, True, Acc);
+    if Acc = null then
+      raise Not_In_List;
+    end if;
+  end Find_First;
+  procedure Find_Next (List : in out List_Type;
+                       Crit : in Element_Type) is
+    Acc : Element_Access;
+  begin
+    Locate (List, Crit, False, Acc);
+    if Acc = null then
+      raise Not_In_List;
+    end if;
+  end Find_Next;
 
   -- Insert an item
   -- May raise Full_List (no more memory)
@@ -125,6 +143,31 @@ package body Hashed_List is
       -- Move_To reached the end without finding
       raise Internal_Error;
   end Delete;
+
+  -- Read the last element searched/found
+  -- May raise Not_Equal if Item is not "=" to the element searched/found
+  -- May raise Not_In_List
+  procedure Replace (List : in out List_Type;
+                     Item : in Element_Type) is
+    Acc : Element_Access;
+    First_Element : Element_Type;
+  begin
+    Get_Access (List, Acc);
+
+    -- Check that Item is "=" to current element
+    if Item /= Acc.all then
+      raise Not_Equal;
+    end if;
+
+    -- Overwrite current element
+    Set (Acc.all, Item);
+
+    -- Replace first element by itself so that the list is (marked as) modified
+    -- The list is not emptu for sure (Get_Access passed)
+    List.List.Rewind;
+    List.List.Read (First_Element, List_Mng.Current);
+    List.List.Modify (First_Element, List_Mng.Current);
+  end Replace;
 
   -- Delete the full list
   --  deallocate or not the free list

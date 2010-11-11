@@ -23,6 +23,13 @@ generic
 
 package Hashed_List is
 
+  -----------------
+  -- HASHED_LIST --
+  -----------------
+  -- A hashed list is a storage of elements that are accessed through hashing
+  -- Several elements with the same value (in the sense of "=") can be stored
+  --  a retrieved successively.
+
   type List_Type is tagged limited private;
 
   -- For Iterator
@@ -40,25 +47,42 @@ package Hashed_List is
                          Crit : in Element_Type;
                          Found : out Boolean);
 
+  -- Check if an element matching Crit exists in the list
+  -- May raise Not_In_List
+  procedure Find_First (List : in out List_Type;
+                        Crit : in Element_Type);
+  -- Check if another element matching Crit exists in the list
+  -- May raise Not_In_List
+  procedure Find_Next (List : in out List_Type;
+                       Crit : in Element_Type);
+
   -- Insert an item
   -- May raise Full_List (no more memory)
   procedure Insert (List : in out List_Type;
                     Item : in Element_Type);
 
-  -- Read the last element found
+  -- Read the last element searched/found
   -- May raise Not_In_List
   procedure Read (List : in List_Type;
                   Item : out Element_Type);
 
-  -- Get direct access to the last element found
+  -- Get direct access to the last element searched/found
   -- May raise Not_In_List
   procedure Get_Access (List : in List_Type;
                         Item_Access : out Element_Access);
   function Get_Access (List : List_Type) return Element_Access;
 
-  -- Suppress the last element found (which is reset)
+  -- Suppress the last element searched/found (which is reset)
+  -- Note that this operation leads to a sequenctial scan of the list
+  --   of elements
   -- May raise Not_In_List
   procedure Delete (List : in out List_Type);
+
+  -- Read the last element searched/found
+  -- May raise Not_Equal if Item is not "=" to the element searched/found
+  -- May raise Not_In_List
+  procedure Replace (List : in out List_Type;
+                     Item : in Element_Type);
 
   -- Delete the full list
   --  deallocate or not the free list
@@ -82,7 +106,7 @@ package Hashed_List is
 
 
   -- Iterating and sequential reading are compatible with search and read
-  --  but not with insertion and deletion
+  --  but not with insertion, replacement and deletion
 
   -- Called with each matching element, which can be updated.
   -- Processing of Iterate can be stopped by resetting Go_On to False
@@ -108,12 +132,17 @@ package Hashed_List is
                        Moved : out Boolean;
                        From : in Reference := From_First);
 
-  -- EXCEPTIONS
+  ----------------
+  -- EXCEPTIONS --
+  ----------------
   -- When inserting
   Full_List : exception;
 
   -- When deleting, reading
   Not_In_List : exception;
+
+  -- When replacing with a "different" element
+  Not_Equal : exception;
 
   -- When modifying List in an application callback
   In_Callback : exception;
@@ -139,6 +168,12 @@ private
     Hash_Index : Hash_Mng.Hash_Range := 0;
   end record;
   overriding procedure Finalize (List : in out List_Type);
+
+  -- For children
+  procedure Locate (List : in out List_Type;
+                    Crit : in Element_Type;
+                    Reset : in Boolean;
+                    Element : out Element_Access);
 
 end Hashed_List;
 
