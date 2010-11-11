@@ -1,5 +1,5 @@
 with Ada.Strings.Unbounded;
-with Dynamic_List, Unique_List, Unbounded_Arrays;
+with Dynamic_List, Hashed_List.Unique, Unbounded_Arrays;
 package As.U is
 
   -- Ada unbounded strings
@@ -21,11 +21,12 @@ package As.U is
   subtype Asu_Us_Access is Asu_List_Mng.Element_Access;
   package Asu_Dyn_List_Mng renames Asu_List_Mng.Dyn_List;
 
-  -- Unique_List of Asu_Us
+  -- Hahsed_List and Unique_List of Asu_Us
   procedure Set (To : out Asu_Us; Val : in Asu_Us);
   function Image (Element : Asu_Us) return String;
-  package Asu_Unique_List_Mng is new Unique_List (
+  package Asu_Hashed_List_Mng is new Hashed_List (
        Asu_Us, Asu_Us_Access, Set, Asu."=" , Image);
+  package Asu_Unique_List_Mng is new Asu_Hashed_List_Mng.Unique;
 
   -- Unbounded array of Asu_Us
   type Asu_Array is array (Positive range <>) of Asu_Us;

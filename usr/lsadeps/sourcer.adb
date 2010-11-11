@@ -198,7 +198,7 @@ package body Sourcer is
       Asu.Append (Dscr.Useds, Separator);
     end if;
     -- Drop new version of this unit if one already exists
-    List.Insert (Dscr, Drop => True);
+    List.Insert_If_New (Dscr);
     Txt.Close;
     Sys_Calls.Close (Fd);
 
@@ -299,7 +299,7 @@ package body Sourcer is
       else
         -- Unit and counterpart must have same dirname
         begin
-          List.Read (Crit, Crit);
+          List.Read (Crit);
         exception
           when Src_List_Mng.Not_In_List =>
             Error ("Unit " & Image (Dscr) & " has no counterpart");
@@ -333,7 +333,7 @@ package body Sourcer is
         end if;
         -- Unit and parent must have same dirname
         begin
-          List.Read (Crit, Crit);
+          List.Read (Crit);
         exception
           when Src_List_Mng.Not_In_List =>
             Error ("Unit " & Image (Dscr) & " has no parent");
@@ -399,7 +399,7 @@ package body Sourcer is
     if not Found then
       Error ("Not parent for " & Image (Dscr));
     end if;
-    List.Read (Crit, Crit);
+    List.Read (Crit);
     return Crit;
   end Get_Parent;
 

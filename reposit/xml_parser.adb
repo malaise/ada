@@ -1147,7 +1147,7 @@ package body Xml_Parser is
     Rec.Is_Entity := True;
     Rec.Name := Asu_Tus (Entity);
     begin
-      Ctx.Unparsed_List.Read (Rec, Rec);
+      Ctx.Unparsed_List.Read (Rec);
     exception
       when Unparsed_List_Mng.Not_In_List =>
         raise Unknown_Entity;
@@ -1159,7 +1159,7 @@ package body Xml_Parser is
     Rec.Is_Entity := False;
     Rec.Name := Rec.Notation;
     begin
-      Ctx.Unparsed_List.Read (Rec, Rec);
+      Ctx.Unparsed_List.Read (Rec);
     exception
       when Unparsed_List_Mng.Not_In_List =>
         -- Should not occur (checked at end of Dtd parsing)
@@ -1193,7 +1193,7 @@ package body Xml_Parser is
   procedure Deallocate is new Ada.Unchecked_Deallocation
    (My_Tree.Tree_Type, Tree_Acc);
   procedure Deallocate is new Ada.Unchecked_Deallocation
-   (Id_List_Mng.List_Type, Id_List_Access);
+   (Id_List_Mng.Unique_List_Type, Id_List_Access);
   procedure Deallocate is new Ada.Unchecked_Deallocation
    (Idref_List_Mng.List_Type, Idref_List_Access);
   overriding procedure Finalize (Ctx : in out Ctx_Type) is

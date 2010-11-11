@@ -359,7 +359,7 @@ package body Dtd is
     -- Attribute list of this element may already exist => merge
     Adtd.Info_List.Search (Info, Found);
     if Found then
-      Adtd.Info_List.Read (Info, Info);
+      Adtd.Info_List.Read (Info);
       Trace ("Dtd retrieved previous ATTLIST -> " & Asu_Ts (Info.Name)
            & " " & Asu_Ts (Info.List));
       Util.Warning (Ctx, "Attlist already defined at line "
@@ -1252,7 +1252,7 @@ package body Dtd is
         -- Read info with the list of enum values
        Trace ("Checking notation attribute " & Att & " of element " & Elt);
         Info.Name := Asu_Tus ("Att" & Info_Sep & Elt & Info_Sep & Att);
-        Adtd.Info_List.Read (Info, Info);
+        Adtd.Info_List.Read (Info);
         Iter1.Set (Asu_Ts (Info.List), Is_Sep'Access);
         declare
           Val : constant String := Iter1.Next_Word;
@@ -1276,7 +1276,7 @@ package body Dtd is
 
         -- Read element, must not be EMPTY
         Info.Name := Asu_Tus ("Elt" & Info_Sep & Elt);
-        Adtd.Info_List.Read (Info, Info);
+        Adtd.Info_List.Read (Info);
         if Asu.Element (Info.List, 1) = 'E' then
           Util.Error (Ctx.Flow,
             "Element " & Elt & " defined at line " & Line_Image (Info.Line)
@@ -1439,7 +1439,7 @@ package body Dtd is
     -- Read its element def
     Info.Name := "Elt" & Info_Sep & Name;
     begin
-      Adtd.Info_List.Read (Info, Info);
+      Adtd.Info_List.Read (Info);
     exception
       when Info_Mng.Not_In_List =>
         -- Should have been detected by Check_Attributes
@@ -1592,7 +1592,7 @@ package body Dtd is
     Info.Name := "Atl" & Info_Sep & Name;
     Adtd.Info_List.Search (Info, Info_Found);
     if Info_Found then
-      Adtd.Info_List.Read (Info, Info);
+      Adtd.Info_List.Read (Info);
     end if;
     if not Info_Found or else Asu_Is_Null (Info.List) then
       -- No or empty ATTLIST for this element
@@ -1662,7 +1662,7 @@ package body Dtd is
         or else Td(2) = 'F' or else Td(2) = 'D' then
           Attinfo.Name := "Att" & Info_Sep & Name & Info_Sep & Attr;
           Error_Name := Attinfo.Name;
-          Adtd.Info_List.Read (Attinfo, Attinfo);
+          Adtd.Info_List.Read (Attinfo);
         end if;
         -- Does this attribute appear in xml
         Att_Set := String_Mng.Locate (Asu_Ts (Attributes),
@@ -1773,7 +1773,7 @@ package body Dtd is
             Idcell.Line_No := Line_No;
             Ctx.Ids.Search (Idcell, Found);
             if Found then
-              Ctx.Ids.Read (Idcell, Idcell);
+              Ctx.Ids.Read (Idcell);
               Util.Error (Ctx.Flow,
                  "ID " & Asu_Ts (Xml_Val)
                        & " already defined at line "
@@ -1896,7 +1896,7 @@ package body Dtd is
     Info.Name := Asu_Tus ("Elt" & Info_Sep) & Elt;
     Adtd.Info_List.Search (Info, Info_Found);
     if Info_Found then
-      Adtd.Info_List.Read (Info, Info);
+      Adtd.Info_List.Read (Info);
     else
       -- Not found => Elt not defined
       return;
@@ -1923,7 +1923,7 @@ package body Dtd is
     Info.Name := Asu_Tus ("Elt" & Info_Sep) & Elt;
     Adtd.Info_List.Search (Info, Info_Found);
     if Info_Found then
-      Adtd.Info_List.Read (Info, Info);
+      Adtd.Info_List.Read (Info);
     else
       -- Not found => Elt not defined
       return;
@@ -1955,7 +1955,7 @@ package body Dtd is
     Info.Name := Asu_Tus ("Atl" & Info_Sep) & Elt;
     Adtd.Info_List.Search (Info, Info_Found);
     if Info_Found then
-      Adtd.Info_List.Read (Info, Info);
+      Adtd.Info_List.Read (Info);
     end if;
     if not Info_Found or else Asu_Is_Null (Info.List) then
       return;

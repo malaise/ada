@@ -2,13 +2,13 @@
 -- Modifies and retrieve list entries according to arguments
 --  <name> | <name>=<value> | dump
 with Ada.Text_Io;
-with Unique_List, Argument, Text_Handler, String_Mng, Sys_Calls;
+with Hashed_List.Unique, Argument, Text_Handler, String_Mng, Sys_Calls;
 procedure T_Ul is
 
   -- A stored variable (name, value)
   -- Name is the "identifier"
   subtype Name_Txt is Text_Handler.Text (80);
-  subtype Val_Txt is Text_Handler.Text (1024);
+  subtype Val_Txt is Text_Handler.Text (8024);
   type Var_Rec is record
     Name : Name_Txt;
     Val : Val_Txt;
@@ -30,8 +30,9 @@ procedure T_Ul is
     return Current.Name = Criteria.Name;
   end "=";
 
-  package My_Ul is new Unique_List (Var_Rec, Var_Acc, Set, "=", Image);
-  Ul : My_Ul.List_Type;
+  package H_Ul is new Hashed_List (Var_Rec, Var_Acc, Set, "=", Image);
+  package My_Ul is new H_Ul.Unique;
+  Ul : My_Ul.Unique_List_Type;
 
   -- Store a env var (from string "name=val")
   function Store_Env (Str : in String) return Boolean is
@@ -100,7 +101,7 @@ begin
       end;
       if Go_On then
         begin
-          My_Ul.Read (Ul, Var, Var);
+          Ul.Read (Var);
           Ada.Text_Io.Put ("Got ");
           Put (Var);
           Ada.Text_Io.New_Line;

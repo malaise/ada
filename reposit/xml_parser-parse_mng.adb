@@ -25,16 +25,17 @@ package body Parse_Mng  is
   -- Entity management
   package Entity_Mng is
     -- Initialise with default entities
-    procedure Initialise (The_Entities : in out Entity_List_Mng.List_Type);
+    procedure Initialise (
+          The_Entities : in out Entity_List_Mng.Unique_List_Type);
     -- Store an entity
-    procedure Add (The_Entities : in out Entity_List_Mng.List_Type;
+    procedure Add (The_Entities : in out Entity_List_Mng.Unique_List_Type;
                    Name, Value : in Asu_Us;
                    Parameter : in Boolean;
                    Internal : in Boolean;
                    Intern_Dtd : in Boolean;
                    Parsed : in Boolean);
     -- Check if an entity exists. May raise Invalid_Char_Code
-    procedure Exists (The_Entities : in out Entity_List_Mng.List_Type;
+    procedure Exists (The_Entities : in out Entity_List_Mng.Unique_List_Type;
                       Name : in Asu_Us;
                       Parameter : in Boolean;
                       Found : out Boolean);

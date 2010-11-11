@@ -142,7 +142,7 @@ package body Output is
   -- LIST --
   ----------
   -- Unique list of entries (units or files)
-  Ulist : Asu_Unique_List_Mng.List_Type;
+  Ulist : Asu_Unique_List_Mng.Unique_List_Type;
   -- Dynamic list of sorted entries (units or files)
   Dlist : Asu_Dyn_List_Mng.List_Type;
   -- List Units of tree

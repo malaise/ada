@@ -4,7 +4,7 @@ separate (Xml_Parser.Parse_Mng)
 package body Entity_Mng is
 
   -- Store an entity
-  procedure Store (The_Entities : in out Entity_List_Mng.List_Type;
+  procedure Store (The_Entities : in out Entity_List_Mng.Unique_List_Type;
                    Name, Value : in Asu_Us;
                    Parameter : in Boolean;
                    Internal : in Boolean;
@@ -78,14 +78,16 @@ package body Entity_Mng is
   end Code_Of;
 
   -- Store predefined (non parameter, internal, parsed) entity, no log
-  procedure Store_Predefined (The_Entities : in out Entity_List_Mng.List_Type;
-                              Name, Value : in Asu_Us) is
+  procedure Store_Predefined (
+          The_Entities : in out Entity_List_Mng.Unique_List_Type;
+          Name, Value : in Asu_Us) is
   begin
     Store (The_Entities, Name, Value, False, True, True, True, False);
   end Store_Predefined;
 
   -- Initialise with default entities
-  procedure Initialise (The_Entities : in out Entity_List_Mng.List_Type) is
+  procedure Initialise (The_Entities : in out Entity_List_Mng.Unique_List_Type)
+                       is
   begin
     -- Reset all entities
     Entity_List_Mng.Delete_List (The_Entities);
@@ -98,7 +100,7 @@ package body Entity_Mng is
   end Initialise;
 
   -- Store an entity
-  procedure Add (The_Entities : in out Entity_List_Mng.List_Type;
+  procedure Add (The_Entities : in out Entity_List_Mng.Unique_List_Type;
                  Name, Value : in Asu_Us;
                  Parameter : in Boolean;
                  Internal : in Boolean;
@@ -114,7 +116,7 @@ package body Entity_Mng is
   end Add;
 
   -- Check if an entity exists
-  procedure Exists (The_Entities : in out Entity_List_Mng.List_Type;
+  procedure Exists (The_Entities : in out Entity_List_Mng.Unique_List_Type;
                     Name : in Asu_Us;
                     Parameter : in Boolean;
                     Found : out Boolean) is
@@ -164,7 +166,7 @@ package body Entity_Mng is
     -- Read entity with the given name
     Entity.Parameter := Parameter;
     Entity.Name := Name;
-    Entity_List_Mng.Read (Dtd.Entity_List, Entity, Entity);
+    Dtd.Entity_List.Read (Entity);
     if Parameter then
       Trace ("Read parameter entity name " & Asu_Ts (Entity.Name)
            & " value " & Asu_Ts (Entity.Value));

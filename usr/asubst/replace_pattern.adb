@@ -1,6 +1,6 @@
 with Ada.Characters.Latin_1, Ada.Exceptions;
 with As.U; use As.U;
-with Argument, Sys_Calls, String_Mng, Text_Line, Unique_List, Debug,
+with Argument, Sys_Calls, String_Mng, Text_Line, Hashed_List.Unique, Debug,
      Char_To_Hexa, Upper_Str, Lower_Str, Mixed_Str, Command, Int_Image;
 with Search_Pattern;
 package body Replace_Pattern is
@@ -58,9 +58,10 @@ package body Replace_Pattern is
   begin
     return Current.Index = Criteria.Index;
   end "=";
-  package Substites_List is new Unique_List (Substit_Action_Rec,
+  package H_Substites_List is new Hashed_List (Substit_Action_Rec,
                     Substit_Action_Access, Set, "=", Image);
-  Substites : Substites_List.List_Type;
+  package Substites_List is new H_Substites_List.Unique;
+  Substites : Substites_List.Unique_List_Type;
 
   -- What is current case substitution mode
   subtype Case_Mode_List is Subtit_Action_List
@@ -126,7 +127,7 @@ package body Replace_Pattern is
            & " while already in this case conversion");
     end if;
     -- Activate
-    Substites_List.Insert (Substites, Subst);
+    Substites.Insert (Subst);
     Asu.Replace_Slice (The_Pattern,
                        Subst.Index, Subst.Index + 1,
                        Subst_Char & "");
@@ -212,7 +213,7 @@ package body Replace_Pattern is
             Error ("Invalid " & Mixed_Str (Subst.Action'Img)
                  & " while not in condition");
           end if;
-          Substites_List.Insert (Substites, Subst);
+          Substites.Insert (Subst);
           Asu.Replace_Slice (The_Pattern, Subst.Index, Subst.Index + 1,
                              Subst_Char & "");
           If_Mode := In_Else;
@@ -223,14 +224,14 @@ package body Replace_Pattern is
             Error ("Invalid " & Mixed_Str (Subst.Action'Img)
                  & " while not in condition or else part");
           end if;
-          Substites_List.Insert (Substites, Subst);
+          Substites.Insert (Subst);
           Asu.Replace_Slice (The_Pattern, Subst.Index, Subst.Index + 1,
                              Subst_Char & "");
           If_Mode := None;
         when 'K' =>
           -- "\K" to start command
           Subst.Action := Start_Command;
-          Substites_List.Insert (Substites, Subst);
+          Substites.Insert (Subst);
           Asu.Replace_Slice (The_Pattern, Subst.Index, Subst.Index + 1,
                              Subst_Char & "");
           In_Command := True;
@@ -241,14 +242,14 @@ package body Replace_Pattern is
             Error ("Invalid " & Mixed_Str (Subst.Action'Img)
                  & " while not in command");
           end if;
-          Substites_List.Insert (Substites, Subst);
+          Substites.Insert (Subst);
           Asu.Replace_Slice (The_Pattern, Subst.Index, Subst.Index + 1,
                              Subst_Char & "");
           In_Command := False;
         when 'P' =>
           -- "\P" to start file insertion
           Subst.Action := Start_File;
-          Substites_List.Insert (Substites, Subst);
+          Substites.Insert (Subst);
           Asu.Replace_Slice (The_Pattern, Subst.Index, Subst.Index + 1,
                              Subst_Char & "");
           In_File := True;
@@ -259,7 +260,7 @@ package body Replace_Pattern is
             Error ("Invalid " & Mixed_Str (Subst.Action'Img)
                  & " while not in file");
           end if;
-          Substites_List.Insert (Substites, Subst);
+          Substites.Insert (Subst);
           Asu.Replace_Slice (The_Pattern, Subst.Index, Subst.Index + 1,
                              Subst_Char & "");
           In_File := False;
@@ -277,7 +278,7 @@ package body Replace_Pattern is
             -- Case substitution stops with the line, add subst marker
             Case_Action := Stop_Case;
             Subst.Action := Stop_Case;
-            Substites_List.Insert (Substites, Subst);
+            Substites.Insert (Subst);
             Asu.Replace_Slice (The_Pattern, Got - 1, Got, Subst_Char & Line_Feed);
           else
             Asu.Replace_Slice (The_Pattern, Got - 1, Got, Line_Feed);
@@ -363,7 +364,7 @@ package body Replace_Pattern is
             end if;
           end if;
           -- Store that, at this index, there is a (sub) string match
-          Substites_List.Insert (Substites, Subst);
+          Substites.Insert (Subst);
           Asu.Replace_Slice (The_Pattern, Got - 1, Got + 2,
                              Subst_Char & "");
         when others =>
@@ -379,7 +380,7 @@ package body Replace_Pattern is
       Subst.Action := Stop_Case;
       Subst.Index := Asu.Length (The_Pattern) + 1;
       Subst.Info := 0;
-      Substites_List.Insert (Substites, Subst);
+      Substites.Insert (Subst);
       Asu.Append (The_Pattern, Subst_Char & "");
     end if;
     -- Check not in conditional section
@@ -527,7 +528,7 @@ package body Replace_Pattern is
       Try_Subst:
       begin
         Subst.Index := Got - Offset;
-        Substites_List.Read (Substites, Subst, Subst);
+        Substites.Read (Subst);
         Valid_Subst := True;
       exception
         when Substites_List.Not_In_List =>

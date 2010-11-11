@@ -7,7 +7,7 @@ with Argument, Argument_Parser,
      Basic_Proc,
      Date_Image, Dur_Image, String_Mng, Mixed_Str,
      Socket, Tcp_Util, Ip_Addr, Event_Mng, Timers,
-     Unique_List;
+     Hashed_List.Unique;
 procedure Pingpong is
 
   -- Argument parsing
@@ -111,9 +111,10 @@ procedure Pingpong is
   begin
     return Element.Host.Host_Name(1 .. Element.Host.Host_Name_Len);
   end Key_Image;
-  package Info_List_Mng is new Unique_List (Info_Type, Info_Access, Set,
+  package H_Info_List_Mng is new Hashed_List (Info_Type, Info_Access, Set,
                                             "=", Key_Image);
-  Info_List : Info_List_Mng.List_Type;
+  package Info_List_Mng is new H_Info_List_Mng.Unique;
+  Info_List : Info_List_Mng.Unique_List_Type;
 
   -- Message reception (ping or pong)
   function Call_Back (F : in Event_Mng.File_Desc; Read : in Boolean)
@@ -180,7 +181,7 @@ procedure Pingpong is
         Info.Average_Delta := Delta_Time;
         Info_List.Insert (Info);
       else
-        Info_List.Get_Access (Info, Info_Acc);
+        Info_List.Get_Access (Info_Acc);
         -- Average with previous value
         Info_Acc.Average_Delta :=
           (Info_Acc.Average_Delta * Info.Nb_Samples + Delta_Time)

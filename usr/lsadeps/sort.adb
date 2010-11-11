@@ -1,5 +1,5 @@
 with Directory;
-with Unique_List;
+with Hashed_List.Unique;
 package body Sort is
   -- Unique list of prios
   type Prio_Rec is record
@@ -20,9 +20,10 @@ package body Sort is
   begin
     return Asu_Ts (Elt.Path);
   end Image;
-  package Prio_List_Mng is new Unique_List (
+  package H_Prio_List_Mng is new Hashed_List (
        Prio_Rec, Prio_Access, Set, "=" , Image);
-  Prio_List : Prio_List_Mng.List_Type;
+  package Prio_List_Mng is new H_Prio_List_Mng.Unique;
+  Prio_List : Prio_List_Mng.Unique_List_Type;
 
   -- Set the priority level of a path (1 = Higest)
   procedure Set_Prio (Path : Asu_Us; Prio : Positive) is
@@ -73,7 +74,7 @@ package body Sort is
       Asu.Delete (R.Path, Asu.Length(R.Path), Asu.Length(R.Path));
       Prio_List.Search (R, Found);
       if Found then
-        Prio_List.Read (R, R);
+        Prio_List.Read (R);
       else
         R.Prio := Positive'Last;
       end if;

@@ -14,7 +14,7 @@ package body Tree_Mng is
   end Error;
 
   -- List of direct With from first Origin to current
-  Rope : Sourcer.Src_List_Mng.List_Type;
+  Rope : Sourcer.Src_List_Mng.Unique_List_Type;
 
   -- For parsing list of With / subunits
   function Is_Sep (C : Character) return Boolean is
@@ -52,13 +52,13 @@ package body Tree_Mng is
         Sourcer.List.Search (Crit, Found);
         if Found then
           -- Got a spec
-          Sourcer.List.Read (Crit, Crit);
+          Sourcer.List.Read (Crit);
         else
           Crit.Kind := Sourcer.Unit_Body;
           Sourcer.List.Search (Crit, Found);
           -- Found a body, read it to raise ERROR if not standalone
           if Found then
-            Sourcer.List.Read (Crit, Crit);
+            Sourcer.List.Read (Crit);
             if not Crit.Standalone then
               -- Found a body without spec and not standalone
               raise Sourcer.Src_List_Mng.Not_In_List;
@@ -68,7 +68,7 @@ package body Tree_Mng is
       else
         -- Subunit
         Found := True;
-        Sourcer.List.Read (Crit, Crit);
+        Sourcer.List.Read (Crit);
       end if;
       if Found then
         -- Record is found and read
@@ -156,7 +156,7 @@ package body Tree_Mng is
       Kind := Asu_Tus ("parent");
       Child.Unit := Origin.Parent;
       Child.Kind := Sourcer.Unit_Spec;
-      Sourcer.List.Read (Child, Child);
+      Sourcer.List.Read (Child);
       Build_Node (Child, Revert);
     end if;
 
@@ -166,7 +166,7 @@ package body Tree_Mng is
       if not Origin.Standalone then
         Child.Unit := Origin.Unit;
         Child.Kind := Sourcer.Unit_Body;
-        Sourcer.List.Read (Child, Child);
+        Sourcer.List.Read (Child);
         Build_Node (Child, Revert);
       end if;
     end if;
@@ -181,7 +181,8 @@ package body Tree_Mng is
     -- Done, move up
     if Tree.Has_Father then
       Tree.Move_Father;
-      Rope.Delete (Origin);
+      Rope.Find (Origin);
+      Rope.Delete;
     end if;
   exception
     when Sourcer.Src_List_Mng.Not_In_List =>

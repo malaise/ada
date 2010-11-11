@@ -1,7 +1,7 @@
 with Ada.Finalization;
 with As.U; use As.U;
-with Queues, Trees, Unique_List, Text_Char, Dynamic_List, Unlimited_Pool,
-     Byte_To_Unicode;
+with Queues, Trees, Hashed_List.Unique, Text_Char, Dynamic_List,
+     Unlimited_Pool, Byte_To_Unicode;
 -- Parse Xml file or string.
 -- Call callback while parsing or provide read access to the tree after parsing.
 -- Limitations:
@@ -523,8 +523,9 @@ private
   procedure Set (To : out Entity_Type; Val : in Entity_Type);
   function "=" (Current : Entity_Type; Criteria : Entity_Type) return Boolean;
   function Image (Entity : Entity_Type) return String;
-  package Entity_List_Mng is new Unique_List (Entity_Type, Entity_Access,
+  package H_Entity_List_Mng is new Hashed_List (Entity_Type, Entity_Access,
              Set, "=", Image);
+  package Entity_List_Mng is new H_Entity_List_Mng.Unique;
 
   -- Dtd info rec
   type Info_Rec is record
@@ -550,7 +551,9 @@ private
   procedure Set (To : out Info_Rec; Val : in Info_Rec);
   function Image (Element : Info_Rec) return String;
   function "=" (Current : Info_Rec; Criteria : Info_Rec) return Boolean;
-  package Info_Mng is new Unique_List (Info_Rec, Info_Access, Set, "=", Image);
+  package H_Info_Mng is new Hashed_List (Info_Rec, Info_Access,
+                                         Set, "=", Image);
+  package Info_Mng is new H_Info_Mng.Unique;
 
   -- Unparsed entity or notation info
   type Unparsed_Type is record
@@ -571,8 +574,9 @@ private
   function "=" (Current : Unparsed_Type; Criteria : Unparsed_Type)
                return Boolean;
   function Image (Unparsed : Unparsed_Type) return String;
-  package Unparsed_List_Mng is new Unique_List (Unparsed_Type, Unparsed_Access,
-             Set, "=", Image);
+  package H_Unparsed_List_Mng is new Hashed_List (Unparsed_Type,
+             Unparsed_Access, Set, "=", Image);
+  package Unparsed_List_Mng is new H_Unparsed_List_Mng.Unique;
 
 
   type Dtd_Type is record
@@ -583,9 +587,9 @@ private
     -- Encoding directive of dtd
     Encoding :  Asu_Us;
     -- Parsed info
-    Info_List : Info_Mng.List_Type;
+    Info_List : Info_Mng.Unique_List_Type;
     -- Parsed entities
-    Entity_List : Entity_List_Mng.List_Type;
+    Entity_List : Entity_List_Mng.Unique_List_Type;
     -- Notation attributes: #Elt##Attr#Elt##Attr#...
     Notation_Attrs : Asu_Us;
     -- Internal elements #@Elt# or attributes #Elt##Attr#
@@ -610,9 +614,10 @@ private
   function "=" (Current : Id_Cell; Criteria : Id_Cell) return Boolean;
 
   -- Unique list of IDs
-  package Id_List_Mng is new Unique_List (Id_Cell, Id_Cell_Access,
+  package H_Id_List_Mng is new Hashed_List (Id_Cell, Id_Cell_Access,
                                           Set, "=", Image);
-  type Id_List_Access is access Id_List_Mng.List_Type;
+  package Id_List_Mng is new H_Id_List_Mng.Unique;
+  type Id_List_Access is access Id_List_Mng.Unique_List_Type;
 
   -- List of IDREFs found
   package Idref_Dyn_List_Mng is new Dynamic_List (Id_Cell);
@@ -666,11 +671,11 @@ private
     -- Standalone
     Standalone : Boolean := False;
     -- Unique list of Ids
-    Ids : Id_List_Access := new Id_List_Mng.List_Type;
+    Ids : Id_List_Access := new Id_List_Mng.Unique_List_Type;
     -- List of Idrefs
     Idrefs : Idref_List_Access := new Idref_List_Mng.List_Type;
     -- Unparsed entities and Notations
-    Unparsed_List : Unparsed_List_Mng.List_Type;
+    Unparsed_List : Unparsed_List_Mng.Unique_List_Type;
   end record;
   overriding procedure Finalize (Ctx : in out Ctx_Type);
 

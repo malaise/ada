@@ -3,7 +3,7 @@
 --  a and b are integers or ${Variable}
 -- Supports parentheses.
 with As.U; use As.U;
-with Environ, Basic_Proc, Unique_List,
+with Environ, Basic_Proc, Hashed_List.Unique,
      String_Mng, Dynamic_List, Parser;
 package body Computer is
 
@@ -53,8 +53,10 @@ package body Computer is
     return Current.Persistent = Criteria.Persistent
     and then Current.Name = Criteria.Name;
   end "=";
-  package Var_Mng is new Unique_List (Var_Rec, Var_Access, Set, "=", Image);
-  Var_List : Var_Mng.List_Type;
+  package Var_List_Mng is new Hashed_List (Var_Rec, Var_Access,
+                                           Set, "=", Image);
+  package Var_Mng is new Var_List_Mng.Unique;
+  Var_List : Var_Mng.Unique_List_Type;
 
   -- Variable management
   ----------------------
@@ -92,7 +94,8 @@ package body Computer is
         Var.Name := Asu_Tus (Name);
         Var.Persistent := False;
         Trace ("Deleting volatile " & Image (Var));
-        Var_List.Delete (Var);
+        Var_List.Find (Var);
+        Var_List.Delete;
       end;
     end loop;
     Iter.Del;
@@ -114,7 +117,7 @@ package body Computer is
     Var.Persistent := False;
     Var_List.Search (Var, Found);
     if Found then
-      Var_List.Read (Var, Var);
+      Var_List.Read (Var);
       if not Var.Modifiable
       or else not Modifiable then
         -- One of the original and of the new (or both)
@@ -125,7 +128,7 @@ package body Computer is
     Var.Persistent := True;
     Var_List.Search (Var, Found);
     if Found then
-      Var_List.Read (Var, Var);
+      Var_List.Read (Var);
       if not Var.Modifiable
       or else not Modifiable then
         -- One of the original and of the new (or both)
@@ -181,13 +184,13 @@ package body Computer is
     Res.Persistent := False;
     Var_List.Search (Res, Found);
     if Found then
-      Var_List.Read (Res, Res);
+      Var_List.Read (Res);
       Trace ("Read >" & Asu_Ts (Res.Value) & "<");
       return Res;
     end if;
     -- Then try to read this variable as persistent
     Res.Persistent := True;
-    Var_List.Read (Res, Res);
+    Var_List.Read (Res);
     Trace ("Read >" & Asu_Ts (Res.Value) & "<");
     return Res;
   exception

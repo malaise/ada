@@ -1,5 +1,5 @@
 -- List of ada source files parsed
-with Argument_Parser, Unique_List;
+with Argument_Parser, Hashed_List.Unique;
 with As.U; use As.U;
 package Sourcer is
 
@@ -34,9 +34,10 @@ package Sourcer is
   procedure Set (To : out Src_Dscr; Val : in Src_Dscr);
   function "=" (Current : Src_Dscr; Criteria : Src_Dscr) return Boolean;
   function Image (Element : Src_Dscr) return String;
-  package Src_List_Mng is new Unique_List (Src_Dscr, Src_Dscr_Access,
+  package H_Src_List_Mng is new Hashed_List (Src_Dscr, Src_Dscr_Access,
                                            Set, "=" , Image);
-  List : Src_List_Mng.List_Type;
+  package Src_List_Mng is new H_Src_List_Mng.Unique;
+  List : Src_List_Mng.Unique_List_Type;
 
   -- Parse sources and build list
   -- Reports errors on stderr and raises Error

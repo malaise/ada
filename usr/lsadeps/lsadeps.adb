@@ -169,7 +169,7 @@ begin
   if not Found then
     Error ("Target unit " & Asu_Ts (Unit.Unit) & " not found");
   end if;
-  Sourcer.List.Read (Unit, Unit);
+  Sourcer.List.Read (Unit);
   if Unit.Kind = Sourcer.Unit_Body and then not Unit.Standalone then
     Error ("Target unit, if a body, must be standalone");
   end if;

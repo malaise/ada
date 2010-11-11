@@ -1,4 +1,4 @@
-with Unique_List, Normal;
+with Hashed_List.Unique, Normal;
 separate (Mcd_Mng)
 
 package body Registers is
@@ -191,9 +191,10 @@ package body Registers is
   begin
     return Current.Key = Criteria.Key;
   end "=";
-  package List_Mng is new Unique_List (Storage_Rec, Storage_Access, Set,
+  package H_List_Mng is new Hashed_List (Storage_Rec, Storage_Access, Set,
                                        "=", Key_Image);
-  Array_List : List_Mng.List_Type;
+  package List_Mng is new H_List_Mng.Unique;
+  Array_List : List_Mng.Unique_List_Type;
 
   procedure Store_Array (Val : in Item_Rec;
                          To_Reg : in Item_Rec; Index : in Item_Rec) is
@@ -212,7 +213,7 @@ package body Registers is
     Storage : Storage_Rec;
   begin
     Storage.Key := Key_Of (To_Reg, Index);
-    Array_List.Read (Storage, Storage);
+    Array_List.Read (Storage);
     return Storage.Data;
   exception
     when List_Mng.Not_In_List =>
