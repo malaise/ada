@@ -100,6 +100,7 @@ extern boolean evt_fd_set (int fd, boolean read) {
 
 
 /***** Sig Management   *****/
+#define SIGDUMMY SIGUSR1
 static int map_signal (int sig_num) {
   if (sig_num == SIGINT) {
     return (SIG_TERMINATE);
@@ -107,7 +108,7 @@ static int map_signal (int sig_num) {
     return (SIG_TERMINATE);
   } else if (sig_num == SIGCHLD) {
     return (SIG_CHILD);
-  } else if (sig_num == SIG_DUMMY) {
+  } else if (sig_num == SIGDUMMY) {
     return (SIG_DUMMY);
   } else if (sig_num == SIG_NONE) {
     return (SIG_NONE);
@@ -131,7 +132,8 @@ static void signal_handler (int sig) {
 }
 
 extern void send_signal (int sig) {
-  signal_handler (sig);
+  if (sig == SIG_DUMMY) sig = SIGDUMMY;
+  (void) kill (getpid(), sig);
 }
 
 extern int get_signal (void) {
@@ -182,6 +184,7 @@ extern void activate_signal_handling (void) {
     (void) signal(SIGINT, signal_handler);
     (void) signal(SIGTERM, signal_handler);
     (void) signal(SIGCHLD, signal_handler);
+    (void) signal(SIGDUMMY, signal_handler);
     sig_handled = TRUE;
   }
 }
@@ -195,6 +198,7 @@ extern int reset_default_signals (void) {
     (void) signal(SIGINT, SIG_DFL);
     (void) signal(SIGTERM, SIG_DFL);
     (void) signal(SIGCHLD, SIG_DFL);
+    (void) signal(SIGDUMMY, SIG_DFL);
     sig_handled = FALSE;
   }
   return res;
