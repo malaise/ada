@@ -1,6 +1,6 @@
 with As.U; use As.U;
 with Argument, Con_Io, Afpx, Basic_Proc, Language, Many_Strings, String_Mng,
-     Lower_Str, Environ, Int_Image;
+     Lower_Str, Environ, Int_Image, Event_Mng;
 with Cmd, Analist;
 procedure Xwords is
 
@@ -49,6 +49,10 @@ procedure Xwords is
 
   -- A line of text
   Line : Asu_Us;
+
+  -- Dictio init status
+  Dictio_File_Name : Asu_Us;
+  Loading_Anagrams : Boolean;
 
   function Image is new Int_Image (Integer);
 
@@ -240,6 +244,60 @@ procedure Xwords is
     end if;
   end Do_Recall;
 
+  -- Task to load anagrams in background
+  task Load_Anagrams is
+    entry Start (File_Name : in String);
+    entry Stop;
+    entry Done (Ok : out Boolean);
+  end Load_Anagrams;
+
+  task body Load_Anagrams is
+    File_Name : Asu_Us;
+    Load : Boolean;
+    Ok : Boolean;
+  begin
+
+    select
+      -- Load: Get file name
+      accept Start (File_Name : in String) do
+        Load_Anagrams.File_Name := Asu_Tus (File_Name);
+      end Start;
+      Load := True;
+    or
+      -- Do not load
+      accept Stop;
+      Load := False;
+    or
+      -- If main returns without calling
+      terminate;
+    end select;
+
+    if Load then
+      -- Load dictionnary
+      begin
+        Analist.Init (Asu_Ts (File_Name));
+        Ok := True;
+      exception
+        when Analist.Init_Error =>
+          Ok := False;
+      end;
+
+      -- Wake up main task
+      Event_Mng.Send_Dummy_Signal;
+      -- Report status
+      select
+        accept Done (Ok : out Boolean) do
+          Ok := Load_Anagrams.Ok;
+        end Done;
+      or
+        -- If main returns without calling
+        terminate;
+      end select;
+
+   end if;
+   -- Done
+  end Load_Anagrams;
+
   use type Afpx.Field_Range;
 begin
   -- Parse option for Log
@@ -261,22 +319,48 @@ begin
   Insert := False;
   Redisplay := False;
 
-  -- Init Anagram dictio
+  -- Load Anagram dictio
   begin
-    Analist.Init (Environ.Getenv_If_Set (Dictio_Env_Name));
+    -- Button is inactive until dictio is loaded OK
+    Afpx.Set_Field_Activation (Anagrams_Fld, False);
+    Dictio_File_Name := Asu_Tus (Environ.Getenv_If_Set (Dictio_Env_Name));
+    Load_Anagrams.Start (Asu_Ts (Dictio_File_Name));
+    Loading_Anagrams := True;
   exception
     when Environ.Name_Error =>
-      -- Dictio env name not set => Disable anagrams button
-      Afpx.Set_Field_Activation (Anagrams_Fld, False);
-    when Analist.Init_Error =>
-      Basic_Proc.Put_Line_Error ("Error initializing anagrams dictionary");
-      Basic_Proc.Set_Error_Exit_Code;
-      return;
+      -- No Env variable => no diction => no anagram, stop task
+      Load_Anagrams.Stop;
+      Loading_Anagrams := False;
   end;
 
   Status := Ok;
 
   loop
+    -- Get result of loading the dictio: polling
+    if Loading_Anagrams then
+      declare
+        Ok : Boolean;
+      begin
+        select
+          Load_Anagrams.Done (Ok);
+          Loading_Anagrams := False;
+          if Ok then
+            -- Dictio loaded OK, enable
+            Afpx.Set_Field_Activation (Anagrams_Fld, True);
+          else
+            Basic_Proc.Put_Line_Error (
+                 "Error while loading anagrams dictionary: "
+                & Asu_Ts (Dictio_File_Name) & ".");
+
+            Basic_Proc.Set_Error_Exit_Code;
+           return;
+          end if;
+        or
+          delay 0.0;
+        end select;
+      end;
+    end if;
+
     -- Color and protection of result list according to status
     case Status is
       when Found =>
