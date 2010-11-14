@@ -99,7 +99,7 @@ extern boolean evt_fd_set (int fd, boolean read) {
 }
 
 
-/***** Sig Management   *****/
+/***** Sig Management *****/
 #define SIGDUMMY SIGUSR1
 static int map_signal (int sig_num) {
   if (sig_num == SIGINT) {
@@ -117,18 +117,15 @@ static int map_signal (int sig_num) {
   }
 }
 
-static int sig_received = SIG_NONE;
-static int last_sig = SIG_NONE;
-static boolean sig_handled = FALSE;
+static int signal_received[3];
+static boolean sig_received = FALSE;
 static void signal_handler (int sig) {
   int new_sig = map_signal (sig);
   /* Discard NONE or UNKNOWN */
-  if (sig < SIG_DUMMY) return;
-  /* Discard new signal if a more urgent is pending */
-  /* DUMMY < CHILD < TERM */
-  if (new_sig <= sig_received) return;
+  if (new_sig < SIG_DUMMY) return;
   /* Store signal received */
-  sig_received = new_sig;
+  signal_received[new_sig] = TRUE;
+  sig_received = TRUE;
 }
 
 extern void send_signal (int sig) {
@@ -136,8 +133,39 @@ extern void send_signal (int sig) {
   (void) kill (getpid(), sig);
 }
 
+/* Return highest prio received and reset it */
 extern int get_signal (void) {
-  return last_sig;
+  int i, res;
+  res = SIG_NONE;
+
+  /* Sig_receive is re-evaluated set to TRUE if another signal is pending */
+  sig_received = FALSE;
+  for (i = SIG_TERMINATE; i >= SIG_DUMMY; i--) {
+    if (signal_received[i]) {
+      if (res == SIG_NONE) {
+        res = i;
+        signal_received[i] = FALSE;
+      } else {
+        /* Another (lower prio) signal is pending */
+        sig_received = TRUE;
+      }
+    }
+  }
+  return res;
+}
+
+/* Check if a signal has been received */
+static boolean check_signal (void) {
+  return sig_received;
+}
+
+/* Reset */
+static void reset_signal (void) {
+  int i;
+  for (i = SIG_TERMINATE; i >= SIG_DUMMY; i--) {
+    signal_received[i] = FALSE;
+  }
+  sig_received = FALSE;
 }
 
 /***** WakeUp Management   *****/
@@ -177,7 +205,9 @@ static void init_sig_and_wake_up (void) {
     (void) evt_add_fd (wake_up_fds[0], TRUE);
   }
 }
+
 /* Activate signal handling and reporting */
+static boolean sig_handled = FALSE;
 extern void activate_signal_handling (void) {
   /* Set handler if not set */
   if (! sig_handled) {
@@ -185,6 +215,7 @@ extern void activate_signal_handling (void) {
     (void) signal(SIGTERM, signal_handler);
     (void) signal(SIGCHLD, signal_handler);
     (void) signal(SIGDUMMY, signal_handler);
+    reset_signal();
     sig_handled = TRUE;
   }
 }
@@ -192,8 +223,8 @@ extern void activate_signal_handling (void) {
 /* Reset default unix behaviour */
 extern int reset_default_signals (void) {
   int res;
-  res = sig_received;
-  sig_received = SIG_NONE;
+  res = get_signal();
+  reset_signal();
   if (sig_handled) {
     (void) signal(SIGINT, SIG_DFL);
     (void) signal(SIGTERM, SIG_DFL);
@@ -265,9 +296,7 @@ extern int evt_wait (int *p_fd, boolean *p_read, timeout_t *timeout) {
   for (;;) {
 
     /* Check for signal */
-    if (sig_received != SIG_NONE) {
-      last_sig = sig_received;
-      sig_received = SIG_NONE;
+    if (sig_handled && check_signal() ) {
       *p_fd = SIG_EVENT;
       evt_time_remaining (timeout, &exp_time);
       return (WAIT_OK);
@@ -349,8 +378,8 @@ extern int evt_wait (int *p_fd, boolean *p_read, timeout_t *timeout) {
     }
 
     /* Check for timeout reached */
-    if ( (sig_received == SIG_NONE)
-        && (timeout_is_active)
+    if ( (!check_signal())
+        && timeout_is_active
         && time_is_reached (&exp_time) ) {
       /* Done on timeout */
       *p_fd = NO_EVENT;
