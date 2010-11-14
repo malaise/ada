@@ -399,6 +399,7 @@ begin
 
   -- Init Afpx
   Init;
+  Sys_Calls.Unsetenv ("AFPX_DATA_DIR");
 
   -- Main loop
   loop

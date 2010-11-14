@@ -43,7 +43,7 @@ package body Utils is
   procedure Launch (Command : in String) is
     Cmd : constant String
         := Many_Strings.Cat ("/bin/sh",
-             Many_Strings.Cat ("-c", "unset AFPX_DATA_DIR; " & Command));
+             Many_Strings.Cat ("-c", Command));
     Res : Proc_Family.Spawn_Result_Rec;
     pragma Unreferenced (Res);
   begin
