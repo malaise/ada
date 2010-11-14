@@ -46,9 +46,10 @@ package Sys_Calls is
   -- Nth env variable ("name=value" or "")
   function Environ_Val (Index : Positive) return String;
 
-  -- Putenv (causes a memory leak)
+  -- Setenv / Unsetenv
   -- May raise System_Error
-  procedure Putenv (Env_Name : in String; Env_Value : in String);
+  procedure Setenv (Env_Name : in String; Env_Value : in String);
+  procedure Unsetenv (Env_Name : in String);
 
   -- Set exit code
   procedure Set_Exit_Code (Code : in Natural);

@@ -223,15 +223,15 @@ begin
   -- 4 ints: Number_Keys Last_Pos_Of_Keys First_Pos_After_Keys Nb_Embedded
   -- For each key: <Char><Nb_Occurences> { <Position> [ <Option> ] }
   -- For each arg: <Position> <Arg>
-  Sys_Calls.Putenv (Auto_Env_Name, "Yes");
+  Sys_Calls.Setenv (Auto_Env_Name, "Yes");
   Basic_Proc.Put_Line_Output ("Test with no key");
-  Sys_Calls.Putenv (Empty_Env_Name, "Yes");
+  Sys_Calls.Setenv (Empty_Env_Name, "Yes");
   Try ("", "0 0 0 0");
   Try ("f1 f2", "0 0 1 0 1 f1 2 f2");
   Try ("f1 -o f2", "Argument -o at pos 2 is not expected");
 
   Basic_Proc.Put_Line_Output ("Test with keys");
-  Sys_Calls.Putenv (Empty_Env_Name, "No");
+  Sys_Calls.Setenv (Empty_Env_Name, "No");
   Try ("", "0 0 0 0");
   Try ("-o", "1 1 0 0 o1 1");
   Try ("-o opt", "1 1 0 0 o1 1 opt");

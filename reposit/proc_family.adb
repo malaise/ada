@@ -119,9 +119,9 @@ package body Proc_Family is
   procedure Putenv (Proc_Id : in Sys_Calls.Pid;
                     Fd_In, Fd_Out, Fd_Err : in Sys_Calls.File_Desc) is
   begin
-    Sys_Calls.Putenv (Var_Name(Proc_Id, In_Fd),  Image (Natural(Fd_In)));
-    Sys_Calls.Putenv (Var_Name(Proc_Id, Out_Fd), Image (Natural(Fd_Out)));
-    Sys_Calls.Putenv (Var_Name(Proc_Id, Err_Fd), Image (Natural(Fd_Err)));
+    Sys_Calls.Setenv (Var_Name(Proc_Id, In_Fd),  Image (Natural(Fd_In)));
+    Sys_Calls.Setenv (Var_Name(Proc_Id, Out_Fd), Image (Natural(Fd_Out)));
+    Sys_Calls.Setenv (Var_Name(Proc_Id, Err_Fd), Image (Natural(Fd_Err)));
   end Putenv;
 
   -- Spawn a process (with mutation if mutation /= "")

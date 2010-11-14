@@ -250,26 +250,28 @@ package body Sys_Calls is
     end;
   end Environ_Val;
 
-  -- Putenv
-
-  -- Declare access type in package scope instead of procedure putenv scope,
-  -- so that variables that are put in env remain in heap.
-  -- This is an unavoidable memory leak, because putenv does not copy
-  --  the string itself.
-  type Str_Ptr_Leak is access String;
-
-  procedure Putenv (Env_Name : in String; Env_Value : in String) is
-    function C_Putenv (Str : System.Address) return C_Types.Int;
-    pragma Import (C, C_Putenv, "putenv");
-    -- The memory leak is here: this string must remain in the heap
-    Ptr_Leak : constant Str_Ptr_Leak
-             := new String'(Env_Name & "=" & Env_Value
-                          & Ada.Characters.Latin_1.Nul);
+  -- Setenv / Unsetenv
+  procedure Setenv (Env_Name : in String; Env_Value : in String) is
+    function C_Setenv (Name : System.Address; Value : System.Address;
+                       Overwrite : Integer) return Integer;
+    pragma Import (C, C_Setenv, "setenv");
+    Name4C : constant String := Str_For_C (Env_Name);
+    Value4C : constant String := Str_For_C (Env_Value);
   begin
-    if C_Putenv (Ptr_Leak.all'Address) /= 0 then
+    if C_Setenv (Name4C'Address, Value4C'Address, 1) /= 0 then
       raise System_Error;
     end if;
-  end Putenv;
+  end Setenv;
+
+  procedure Unsetenv (Env_Name : in String) is
+    function C_Unsetenv (Name : System.Address) return Integer;
+    pragma Import (C, C_Unsetenv, "unsetenv");
+    Name4C : constant String := Str_For_C (Env_Name);
+  begin
+    if C_Unsetenv (Name4C'Address) /= 0 then
+      raise System_Error;
+    end if;
+  end Unsetenv;
 
   -- Set exit code
   procedure Set_Exit_Code (Code : in Natural) renames Basic_Proc.Set_Exit_Code;
