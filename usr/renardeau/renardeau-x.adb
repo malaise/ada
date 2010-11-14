@@ -227,10 +227,10 @@ package body X is
                          Finish : out Boolean) is
     -- Put a value (on 3 digits) in a field at a row
     procedure Encode (Field : in Field_Range;
-                   Col : in Con_Io.Full_Col_Range;
-                   Value : in Natural) is
+                      Col : in Con_Io.Full_Col_Range;
+                      Value : in Natural) is
     begin
-      Encode_Field (Field, (0, Col), Normal (Value, 3));
+      Encode_Field (Field, (0, Col), Normal (Value, 4));
     end Encode;
     Field : Field_Range;
     Output : Output_Rec;
@@ -254,10 +254,10 @@ package body X is
         Field := Compute_Fs + Absolute_Field_Range(I - 1);
         Output := Outputs.Element(I);
         Encode (Field, 0, Output.Left);
-        Encode_Field (Field, (0, 4), Operations_Images (Output.Operation) & "");
-        Encode (Field, 6, Output.Right);
-        Encode_Field (Field, (0, 10), "=");
-        Encode (Field, 12, Output.Result);
+        Encode_Field (Field, (0, 5), Operations_Images (Output.Operation) & "");
+        Encode (Field, 7, Output.Right);
+        Encode_Field (Field, (0, 12), "=");
+        Encode (Field, 14, Output.Result);
       end loop;
     end if;
 

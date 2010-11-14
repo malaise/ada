@@ -10,7 +10,7 @@
   <!-- Main screen -->
   <Descriptor Num="1" Background="Light_Grey">
 
-    <Var Name="TxtStart"  Value="${Screen.Width}-16"/>
+    <Var Name="TxtStart"  Value="${Screen.Width}-19"/>
 
     <!-- Title -->
     <Field Num="1" Kind="Put">
@@ -172,35 +172,37 @@
       <Init Row="1" Col="1">RST</Init>
     </Field>
 
-    <!-- Result and computation -->
+    <!-- Computation -->
     <Field Num="27" Kind="Put">
-      <Geometry Up="${Field_14.Up}" Left="${Field_8.Left}"
-                Height="1" Width="3"/>
+      <Geometry Up="${Field_14.Up}" Left="${Field_8.Left}-1"
+                Height="1" Width="4"/>
       <Colors Foreground="Lime_Green" Background="Light_Grey" />
     </Field>
+
+    <!-- Computation -->
     <Field Num="28" Kind="Put">
       <Geometry Up="${Field_27.Low}+2" Left="${TxtStart}"
-                Height="1" Width="15"/>
+                Height="1" Width="18"/>
       <Colors Foreground="Black" Background="Light_Grey" />
     </Field>
     <Field Num="29" Kind="Put">
       <Geometry Up="${Field_28.Low}+2" Left="${TxtStart}"
-                Height="1" Width="15"/>
+                Height="1" Width="18"/>
       <Colors Foreground="Black" Background="Light_Grey" />
     </Field>
     <Field Num="30" Kind="Put">
       <Geometry Up="${Field_29.Low}+2" Left="${TxtStart}"
-                Height="1" Width="15"/>
+                Height="1" Width="18"/>
       <Colors Foreground="Black" Background="Light_Grey" />
     </Field>
     <Field Num="31" Kind="Put">
       <Geometry Up="${Field_30.Low}+2" Left="${TxtStart}"
-                Height="1" Width="15"/>
+                Height="1" Width="18"/>
       <Colors Foreground="Black" Background="Light_Grey" />
     </Field>
     <Field Num="32" Kind="Put">
       <Geometry Up="${Field_31.Low}+2" Left="${TxtStart}"
-                Height="1" Width="15"/>
+                Height="1" Width="18"/>
       <Colors Foreground="Black" Background="Light_Grey" />
     </Field>
 
