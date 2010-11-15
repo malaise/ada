@@ -204,6 +204,7 @@ package body X is
               Redisplay := False;
               Use_Descriptor (1);
               Status := B1;
+              First := True;
             when Enter_F =>
               Cancel := False;
               return;
