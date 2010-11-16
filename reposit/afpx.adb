@@ -287,8 +287,8 @@ package body Afpx is
   begin
     Af_Dscr.Check;
     Af_Con_Io.Resume;
-    -- Trigger a refresh
-    Af_Dscr.Current_Dscr.Modified := True;
+    -- Trigger a complete refresh
+    Af_Dscr.Current_Dscr.Redisplay := True;
   end Resume;
 
   function Is_Suspended return Boolean is

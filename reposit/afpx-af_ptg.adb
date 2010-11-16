@@ -633,15 +633,16 @@ package body Af_Ptg is
     -- Reset last selection for double click
     Last_Selected_Id := 0;
 
-    -- Erase potential garbage if redisplay
-    if Redisplay then
+    -- Need complete redisplay of window?
+    Need_Redisplay := Redisplay or else Af_Dscr.Current_Dscr.Redisplay;
+
+    -- Erase potential garbage and set Dscr background if redisplay
+    if Need_Redisplay then
       Af_Con_Io.Clear (Af_Con_Io.Screen);
     end if;
 
     -- A new field at start up if some get field
     New_Field := Get_Active;
-
-    Need_Redisplay := Redisplay;
 
     -- The infinite loop
     loop
@@ -713,10 +714,11 @@ package body Af_Ptg is
           end if;
         end loop;
       end if;
-      Af_Dscr.Current_Dscr.Modified := False;
 
       -- No more forced redisplay
       Need_Redisplay := False;
+      Af_Dscr.Current_Dscr.Modified := False;
+      Af_Dscr.Current_Dscr.Redisplay := False;
 
       -- Get field, set colors when field changes
       if New_Field then

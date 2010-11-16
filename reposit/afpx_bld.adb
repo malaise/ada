@@ -876,6 +876,7 @@ procedure Afpx_Bld is
     end if;
     -- Init dscr and fields array. No list at init
     Descriptors(Dscr_No).Modified := True;
+    Descriptors(Dscr_No).Redisplay := True;
     Descriptors(Dscr_No).Dscr_Index := Dscr_Index;
     Descriptors(Dscr_No).Nb_Fields := 0;
     Init_Index := 1;

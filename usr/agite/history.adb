@@ -189,7 +189,6 @@ package body History is
 
     -- Get history
     Afpx.Suspend;
-    Redisplay := True;
     begin
       Git_If.List_Log (Root & Path & Name, Logs);
       Afpx.Resume;

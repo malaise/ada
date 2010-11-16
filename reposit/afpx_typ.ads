@@ -3,7 +3,7 @@ with Unicode, Generic_Con_Io, Con_Io;
 package Afpx_Typ is
 
   -- Version of Afpx
-  Afpx_Version : constant Float := 5.0;
+  Afpx_Version : constant Float := 6.0;
 
   -- Files path
   Dest_Path : Asu_Us;
@@ -33,6 +33,8 @@ package Afpx_Typ is
     Size : Con_Io.Full_Square;
     -- To generate refresh. True in file if used
     Modified   : Boolean;
+    -- To generate a complete redisplay of the window
+    Redisplay   : Boolean;
     -- In the file: index of the dscr for fields and init.
     -- In memory, its No
     Dscr_Index : Descriptor_Range;
