@@ -37,6 +37,7 @@ package body X is
   Redisplay    : Boolean;
 
   Deactivated : constant Con_Io.Colors := Con_Io.Color_Of ("Red");
+  Activated : Con_Io.Colors;
 
   -- Status while getting
   type Status_List is (B1, B2, B3, B4, B5, B6, T1, T2, T3, Ready, Done);
@@ -56,7 +57,7 @@ package body X is
       for I in Number_Fs .. Number_Fs + 4 loop
         Set_Field_Protection (I, not Active);
         if Active then
-          Reset_Field (I, Reset_String => False);
+          Set_Field_Colors (I, Activated);
         else
           Set_Field_Colors (I, Deactivated);
         end if;
@@ -70,7 +71,7 @@ package body X is
       for I in Digit_Fs .. Digit_Fs + 8 loop
         Set_Field_Protection (I, not Active);
         if Active then
-          Reset_Field (I, Reset_String => False);
+          Set_Field_Colors (I, Activated);
         else
           Set_Field_Colors (I, Deactivated);
         end if;
@@ -83,7 +84,7 @@ package body X is
     if Zero_Act /= Active or else Force then
       Set_Field_Protection (Zero_F, not Active);
       if Active then
-        Reset_Field (Zero_F, Reset_String => False);
+        Set_Field_Colors (Zero_F, Activated);
        else
         Set_Field_Colors (Zero_F, Deactivated);
       end if;
@@ -95,7 +96,7 @@ package body X is
     if Enter_Act /= Active or else Force then
       Set_Field_Protection (Enter_F, not Active);
       if Active then
-        Reset_Field (Enter_F, Reset_String => False);
+        Set_Field_Colors (Enter_F, Activated);
        else
         Set_Field_Colors (Enter_F, Deactivated);
       end if;
@@ -107,7 +108,7 @@ package body X is
     if Clear_Act /= Active or else Force then
       Set_Field_Protection (Clear_F, not Active);
       if Active then
-        Reset_Field (Clear_F, Reset_String => False);
+        Set_Field_Colors (Clear_F, Activated);
       else
         Set_Field_Colors (Clear_F, Deactivated);
       end if;
@@ -142,18 +143,28 @@ package body X is
     Value : Natural;
     -- Offset in target, base...
     Offset : Natural;
-    -- First pass of the loop (Force reset)
-    First : Boolean;
+    -- Force reset of activation
+    Reset : Boolean;
   begin
-    -- General init
-    Redisplay := False;
+    -- Init / Reset
     Use_Descriptor (1);
+    Reset := True;
+
+    -- Get foreground color
+    declare
+      Background : Con_Io.Effective_Colors;
+      Selected   : Con_Io.Effective_Colors;
+    begin
+      Get_Field_Colors (Exit_F, Activated, Background, Selected);
+    end;
+
+    -- Init for loop
+    Redisplay := False;
     Status := B1;
-    First := True;
     loop
       -- Activate the fields according to Status
-      Activate_Fields (Status, First);
-      First := False;
+      Activate_Fields (Status, Reset);
+      Reset := False;
 
       -- Ptg
       Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result,
@@ -201,10 +212,10 @@ package body X is
                 Status := T1;
               end if;
             when Reset_F =>
-              Redisplay := False;
               Use_Descriptor (1);
+              Reset := True;
+              Redisplay := False;
               Status := B1;
-              First := True;
             when Enter_F =>
               Cancel := False;
               return;
