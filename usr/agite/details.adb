@@ -47,7 +47,6 @@ package body Details is
 
       -- Get commit details
       if Cet_Details then
-        Redisplay := True;
         Afpx.Suspend;
         begin
           Git_If.List_Commit (Hash, Date, Comment, Commits);
