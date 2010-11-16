@@ -260,7 +260,7 @@ package body X is
 
     -- Put computation
     if Is_No_Operation (Outputs.Element(1)) then
-      Encode (Compute_Fs, 12, Outputs.Element(1).Result);
+      Encode (Compute_Fs, 14, Outputs.Element(1).Result);
     else
       for I in 1 .. Outputs.Length loop
         Field := Compute_Fs + Absolute_Field_Range(I - 1);
