@@ -98,6 +98,8 @@ package body Screen is
     -- Reset screen and hide mouse
     Con_Io.Init;
     Con_Io.Reset_Term;
+    Con_Io.Set_Background (Con_Io.Color_Of ("Black"));
+    Con_Io.Clear;
     begin
       if Argument.Get_Parameter (1, "g") = "" then
         -- "-g": Grab
@@ -437,12 +439,12 @@ package body Screen is
     Con_Io.Set_Foreground (Con_Io.Color_Of ("Light_Grey"));
     case Reason is
       when Flight.Landed | Flight.Safe_Landed =>
-        Center ("Hit any key or click middle button for a new game",
+        Center ("Hit Return or click middle button for a new game",
                 Y_Text - Y_Offset * 2);
         Center ("or hit Shit-Tab to redo this game", Y_Text - Y_Offset * 3);
         Factor := 4;
       when Flight.Lost | Flight.Crashed =>
-        Center ("Hit any key or click middle button to retry",
+        Center ("Hit Return or click middle button to retry",
                 Y_Text - Y_Offset * 2);
         Factor := 3;
     end case;

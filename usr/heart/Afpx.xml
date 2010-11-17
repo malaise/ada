@@ -1,6 +1,12 @@
 <?xml version="1.1"?>
 <!DOCTYPE Afpx_Descriptors SYSTEM "../../reposit/Afpx.dtd">
 <Afpx_Descriptors>
+ <Color_Definitions>
+    <Color_Definition Id="Color01" Color="Black"/>
+    <Color_Definition Id="Color08" Color="Light_Grey"/>
+    <Color_Definition Id="Color09" Color="Grey"/>
+  </Color_Definitions>
+
 
   <!-- Record selection screen -->
   <!-- ======================= -->

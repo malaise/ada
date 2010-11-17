@@ -33,15 +33,15 @@ package Generic_Con_Io is
   -- Default colors
   type Colors_Definition is array (Effective_Colors) of Asu_Us;
   Default_Colors : constant Colors_Definition
-                 := (Color01 => Asu_Tus ("Black"),
+                 := (Color01 => Asu_Tus ("Light_Grey"),
                      Color02 => Asu_Tus ("Blue"),
                      Color03 => Asu_Tus ("Dark_Green"),
                      Color04 => Asu_Tus ("Cyan"),
                      Color05 => Asu_Tus ("Red"),
                      Color06 => Asu_Tus ("Magenta"),
                      Color07 => Asu_Tus ("Brown"),
-                     Color08 => Asu_Tus ("Light_Grey"),
-                     Color09 => Asu_Tus ("Grey"),
+                     Color08 => Asu_Tus ("Black"),
+                     Color09 => Asu_Tus ("Dark_Grey"),
                      Color10 => Asu_Tus ("Light_Blue"),
                      Color11 => Asu_Tus ("Lime_Green"),
                      Color12 => Asu_Tus ("Orange"),
@@ -51,7 +51,7 @@ package Generic_Con_Io is
   -- Set_Colors raises Already_Init if called after Initialise
   Already_Init : exception;
   procedure Set_Colors (Color_Names : in Colors_Definition);
-  -- Color_Of raises Unknown_Color ti this color is not found
+  -- Color_Of raises Unknown_Color if this color is not found
   Unknown_Color : exception;
   function Color_Of (Name : String) return Effective_Colors;
   function Color_Name_Of (Color : Effective_Colors) return String;

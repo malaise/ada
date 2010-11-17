@@ -5,6 +5,8 @@ package Screen is
   -------------------
   -- GLOBAL SCREEN --
   -------------------
+  -- Global init (of colors)
+  procedure Init;
   -- init the screen
   procedure Init (Level  : in Common.Last_Level_Range);
 

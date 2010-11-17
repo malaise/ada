@@ -1,4 +1,5 @@
-with Normal;
+with As.U; use As.U;
+with Normal, Generic_Con_Io;
 package body Screen is
 
   -------------------------------
@@ -49,7 +50,7 @@ package body Screen is
   White : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("White");
 
   Foreground_Color  : constant Con_Io.Effective_Colors
-                    := Con_Io.Color_Of ("Grey");
+                    := Con_Io.Color_Of ("Dark_Grey");
   Background_Color  : constant Con_Io.Effective_Colors :=
    Color_Definition(0);
 
@@ -114,10 +115,19 @@ package body Screen is
   end Frame;
 
   -- Init the screen, the windows, draw borders
+  procedure Init is
+    Colors : Generic_Con_Io.Colors_Definition := Generic_Con_Io.Default_Colors;
+  begin
+    -- Set Colors
+    Colors(Generic_Con_Io.Color09) := Asu_Tus ("Grey");
+    Generic_Con_Io.Set_Colors (Colors);
+  end Init;
+
   procedure Init (Level : in Common.Last_Level_Range) is
     Square : Con_Io.Square;
     use Common;
   begin
+
     if not Con_Io.Is_Open (Global_Win) then
       Con_Io.Reset_Term;
       -- Open windows

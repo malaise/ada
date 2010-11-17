@@ -16,7 +16,7 @@ package Common is
   Max_Level : constant Last_Level_Range := Last_Level_Range'Last;
 
 
-  -- Number of availble colors
+  -- Number of available colors
   type Color_Range is new Natural range 0 .. 8;
   Max_Number_Color : constant Color_Range := Color_Range'Last;
   subtype Eff_Color_Range is Color_Range range 1 .. Max_Number_Color;

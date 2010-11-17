@@ -33,9 +33,9 @@
               Value CDATA   #REQUIRED>
 
 <!-- This defines default colors, if not re-defined by ColorDefinitions -->
-<!ENTITY % Colors "Black | Blue | Dark_Green | Cyan |
-                   Red | Magenta | Brown | Light_Grey |
-                   Grey | Light_Blue | Lime_Green  |Orange |
+<!ENTITY % Colors "Light_Grey | Blue | Dark_Green | Cyan |
+                   Red | Magenta | Brown | Black |
+                   Dark_Grey | Light_Blue | Lime_Green  |Orange |
                    Yellow | White">
 <!ELEMENT Color_Definitions (Color_Definition*)>
 <!ELEMENT Color_Definition EMPTY>

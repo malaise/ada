@@ -14,6 +14,7 @@ package body Action is
 
   procedure Init is
   begin
+    Screen.Init;
     Con_Io.Init;
     Rnd.Randomize;
     Level := Common.Get_Level;
