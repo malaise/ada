@@ -2,7 +2,7 @@
 <!DOCTYPE Afpx_Descriptors SYSTEM "../../reposit/Afpx.dtd">
 <!-- Afpx.xml file for Nimmari -->
 <Afpx_Descriptors>
-  <Descriptor Num="1">
+  <Descriptor Num="1" Background="Black">
 
     <!-- Title, presentation, rules -->
 
@@ -58,7 +58,7 @@
 
   </Descriptor>
 
-  <Descriptor Num="2">
+  <Descriptor Num="2" Background="Black">
 
     <!-- First row -->
     <Field Num="1" Kind="Button">

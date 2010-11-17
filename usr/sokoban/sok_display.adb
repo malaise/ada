@@ -21,37 +21,50 @@ package body Sok_Display is
   Current_Allow_Write : Boolean;
 
   procedure Init is
+    Black : constant Con_Io.Effective_Colors
+          := Con_Io.Color_Of ("Black");
   begin
     Con_Io.Init;
     Con_Io.Reset_Term;
+    Con_Io.Set_Background (Black);
+    Con_Io.Clear;
 
     -- Title      : row 00 to 00 col 00 to 57 (01 row, 57 col)
     Con_Io.Open (Title_Win, (00, 00), (00, 55) );
+    Con_Io.Set_Background (Black, Title_Win);
 
     -- Time zone  : row 00 to 00 col 57 to 76 (01 row 20 col)
     Con_Io.Open (Time_Win,  (00, 57), (00, 76) );
+    Con_Io.Set_Background (Black, Time_Win);
 
     -- Frame      : row 02 to 17 col 05 to 42 (16 row 38 col) (38=19*2)
     Con_Io.Open (Frame_Win, (02, 05), (17, 42) );
+    Con_Io.Set_Background (Black, Frame_Win);
 
     -- State line : row 20 to 20 col 10 to 75 (01 row 66 col)
     Con_Io.Open (Line_Win,  (20, 10), (20, 75) );
+    Con_Io.Set_Background (Black, Line_Win);
 
     -- Score line : row 21 to 20 col 10 to 75 (01 row 66 col)
     Con_Io.Open (Score_Win,  (21, 10), (21, 75) );
+    Con_Io.Set_Background (Black, Score_Win);
 
     -- Help beside: row 05 to 15 col 55 to 77 (left to frame)
     Con_Io.Open (Help_Win,  (05, 55), (15, 77) );
     Con_Io.Set_Foreground (Con_Io.Color_Of ("Lime_Green"), Name => Help_Win);
+    Con_Io.Set_Background (Black, Help_Win);
 
     -- Menu       : row 19 to 21 col 02 to 79 (bottom)
     Con_Io.Open (Menu_Win,  (19, 00), (21, 79) );
+    Con_Io.Set_Background (Black, Menu_Win);
 
     -- Error      : row 19 to 21 col 02 to 79 (bottom)
     Con_Io.Open (Error_Win, (19, 00), (21, 79) );
+    Con_Io.Set_Background (Black, Error_Win);
 
     -- Get        : row 22 to 25 col 19 to 59 (bottom)
     Con_Io.Open (Get_Win,   (22, 19), (24, 59) );
+    Con_Io.Set_Background (Black, Get_Win);
 
   end Init;
 
@@ -124,6 +137,7 @@ package body Sok_Display is
   procedure Put_Frame (Frame : in Sok_Types.Frame_Tab) is
   begin
     Con_Io.Reset_Term;
+    Con_Io.Clear;
     Con_Io.Move ( (00, 20), Name => Title_Win);
     Con_Io.Put ("S O K O B A N", Title_Win,
      Foreground => Con_Io.Color_Of ("White"), Move => False);
@@ -467,7 +481,7 @@ package body Sok_Display is
         end case;
     end loop;
 
-    Con_Io.Set_Background (Con_Io.Default_Background, Get_Win);
+    Con_Io.Set_Background (Con_Io.Color_Of ("Black"), Get_Win);
     Con_Io.Clear (Get_Win);
 
   exception
