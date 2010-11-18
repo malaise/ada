@@ -18,9 +18,10 @@
 <!ATTLIST Afpx_Descriptors Width CDATA #IMPLIED
                            Height CDATA #IMPLIED>
 <!-- The Afpx_Descriptors is made of several descriptors. -->
-<!-- Before descriptors it is possible to re-define any of 14 color. -->
+<!-- Before descriptors it is possible to re-define any of the 14 color. -->
 <!--  The constants Color01 to Color14 are automatically created after this -->
-<!--  definition or before the first descriptor. -->
+<!--  definition or before the first descriptor. It is also possible to -->
+<!--  define the default background for descriptors (default Color01). -->
 <!-- Before descriptors, it is possible to define and overwrite variables. -->
 <!-- These variables are valid for all the following descriptors. -->
 <!ELEMENT Afpx_Descriptors (Var*,Color_Definitions?,Var*,Descriptor*)>
@@ -37,15 +38,20 @@
                    Red | Magenta | Brown | Black |
                    Dark_Grey | Light_Blue | Lime_Green  |Orange |
                    Yellow | White">
-<!ELEMENT Color_Definitions (Color_Definition*)>
+<!ELEMENT Color_Definitions (Color_Definition*,Default_Background?)>
 <!ELEMENT Color_Definition EMPTY>
 <!ATTLIST Color_Definition Id ID #REQUIRED
                            Color CDATA #REQUIRED>
+<!ELEMENT Default_Background EMPTY>
+<!ATTLIST Default_Background Color CDATA #REQUIRED>
 
 <!-- A descriptor Num has to be positive range 1 .. 50 and sole (no double). -->
 <!-- It cannot be a variable. -->
 <!-- It is possible to define the background color of the descriptor -->
-<!--  (default Color01). -->
+<!--  (default Default_Background). -->
+<!-- As soon as this descriptor declaration is parsed, a constant -->
+<!--  defining current descriptor background is defined and valid for the -->
+<!-- rest of the descriptor (e.g. Dscr_1.Background). -->
 <!ATTLIST Descriptor Num NMTOKEN #REQUIRED Background CDATA #IMPLIED>
 <!-- A descriptor allows defining one optional list, then fields. -->
 <!-- Before and between them, it is possible to define and overwrite -->

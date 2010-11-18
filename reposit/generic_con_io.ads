@@ -114,9 +114,9 @@ package Generic_Con_Io is
 
 
     -- Standard attributes when reset
-    Default_Foreground : constant Effective_Colors := Effective_Colors'Last;
-    Default_Background : constant Effective_Colors := Effective_Colors'First;
-    Default_Xor_Mode   : constant Effective_Xor_Modes := Xor_Off;
+    Default_Foreground : Effective_Colors := Effective_Colors'Last;
+    Default_Background : Effective_Colors := Effective_Colors'First;
+    Default_Xor_Mode   : Effective_Xor_Modes := Xor_Off;
 
     type Window is limited private;
 

@@ -136,6 +136,7 @@ package body Generic_Con_Io is
       and then Font_No /= Font_No_Range'Last then
         Line.No_Font := Font_No + 1;
       end if;
+      Line.Background := Colors'Pos(Default_Background) - 1;
       X_Mng.X_Open_Line (Line, Id);
       X_Mng.X_Set_Line_Name (Id, Argument.Get_Program_Name);
       Mouse_Status := Mouse_Discard;

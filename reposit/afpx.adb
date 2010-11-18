@@ -250,11 +250,13 @@ package body Afpx is
       Generic_Con_Io.Initialise;
       Initialised := True;
     end if;
+    -- Set descriptor background
+    Af_Con_Io.Default_Background := (Af_Con_Io.Effective_Colors(
+               Af_Dscr.Current_Dscr.Background));
     Af_Con_Io.Init;
     Af_List.Open;
     Af_Dscr.Current_Dscr.Modified := True;
-    Af_Con_Io.Set_Background (Af_Con_Io.Effective_Colors(
-               Af_Dscr.Current_Dscr.Background));
+    Af_Con_Io.Set_Background (Af_Con_Io.Default_Background);
     if Clear_Screen then
       Af_Con_Io.Clear (Af_Con_Io.Screen);
     end if;

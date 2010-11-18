@@ -430,7 +430,7 @@ int lin_clear (t_window *p_window) {
     /* Reset graphic context */
     scr_set_attrib (p_window->server->x_server, p_window->x_graphic_context,
       p_window->server->x_font, p_window->no_font,
-      p_window->screen->color_id, 1, False, False);
+      p_window->screen->color_id, 1, 0, False);
 
     return(True);
 }
