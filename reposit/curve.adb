@@ -1086,6 +1086,7 @@ package body Curve is
 
   begin -- Draw
     -- Initialise graphics
+    Cur_Con_Io.Default_Background := Cur_Con_Io.Color_Of ("Black");
     Cur_Con_Io.Init;
 
     Cur_Con_Io.Set_Xor_Mode (Cur_Con_Io.Xor_On);
@@ -1140,6 +1141,7 @@ package body Curve is
 
   function Init return Boolean is
   begin
+    Cur_Con_Io.Default_Background := Cur_Con_Io.Color_Of ("Black");
     Cur_Con_Io.Init;
     return True;
   exception

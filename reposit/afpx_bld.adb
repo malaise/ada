@@ -34,9 +34,10 @@ procedure Afpx_Bld is
   package Init_Io is new Ada.Direct_Io (Afpx_Typ.Char_Str);
   Init_File : Init_Io.File_Type;
 
-  -- The color names
+  -- The color names and default background
   Color_Names : Afpx_Typ.Color_Names := (others => Afpx_Typ.No_Color);
   Color_Defs : Generic_Con_Io.Colors_Definition;
+  Default_Background : Con_Io.Effective_Colors;
   Colors_Loaded : Boolean;
 
   -- List of descriptors
@@ -323,27 +324,38 @@ procedure Afpx_Bld is
   end Load_Color_Names;
 
   -- Parse the (optional) definition of color names
-  procedure Define_Color_Names (Node : in Xp.Node_Type) is
+  procedure Define_Color_Names (Node : in Xp.Element_Type) is
+    Child : Xp.Element_Type;
     Attrs : Xp.Attributes_Array (1 .. 2);
     Id, Color : Asu_Us;
     Index : Generic_Con_Io.Effective_Colors;
   begin
     -- Overwrite some colors
     for I in 1 .. Ctx.Get_Nb_Children (Node) loop
-      Attrs := Ctx.Get_Attributes (Ctx.Get_Child (Node, I));
-      if Asu_Ts (Attrs(1).Name) = "Id" then
-        Id := Attrs(1).Value;
-        Color := Attrs(2).Value;
+      Child := Ctx.Get_Child (Node, I);
+      if Ctx.Get_Name (Child) = "Color_Definition" then
+        -- Color_Definition: attributes Id and Color
+        Attrs := Ctx.Get_Attributes (Child);
+        if Asu_Ts (Attrs(1).Name) = "Id" then
+          Id := Attrs(1).Value;
+          Color := Attrs(2).Value;
+        else
+          Color := Attrs(1).Value;
+          Id := Attrs(2).Value;
+        end if;
+        Index := Generic_Con_Io.Effective_Colors'Value(Asu_Ts (Id));
+        Color_Defs(Index) := Asu_Tus (Computer.Eval (Asu_Ts (Color)));
       else
+        -- Default_Background: attribute Color
+        -- Last child
+        Attrs(1) := Ctx.Get_Attribute (Child, 1);
         Color := Attrs(1).Value;
-        Id := Attrs(2).Value;
       end if;
-      Index := Generic_Con_Io.Effective_Colors'Value(Asu_Ts (Id));
-      Color_Defs(Index) := Color;
     end loop;
 
     Color_Names := Afpx_Typ.To_Names (Color_Defs);
     Generic_Con_Io.Set_Colors (Color_Defs);
+    Default_Background := Con_Io.Color_Of (Computer.Eval (Asu_Ts (Color)));
     Load_Color_Names (Node);
   exception
     when File_Syntax_Error =>
@@ -818,6 +830,7 @@ procedure Afpx_Bld is
   end Check_Overlap;
 
   -- Load a descriptor (at a given index)
+  function Dscr_Image is new Int_Image (Afpx_Typ.Descriptor_Range);
   procedure Load_Dscr (Node : in Xp.Element_Type;
                        Dscr_Index : in Afpx_Typ.Descriptor_Range;
                        Screen_Size : in Con_Io.Full_Square)  is
@@ -872,8 +885,13 @@ procedure Afpx_Bld is
     end if;
     -- Set default background
     if not Background then
-      Descriptors(Dscr_No).Background := Con_Io.Default_Background;
+      Descriptors(Dscr_No).Background := Default_Background;
     end if;
+    Add_Variable (Node, "Dscr_" & Dscr_Image (Dscr_No) & ".Background",
+        Mixed_Str (Con_Io.Effective_Colors'Image (
+                      Descriptors(Dscr_No).Background)),
+        False, False);
+
     -- Init dscr and fields array. No list at init
     Descriptors(Dscr_No).Modified := True;
     Descriptors(Dscr_No).Redisplay := True;
@@ -965,6 +983,7 @@ procedure Afpx_Bld is
     Screen_Size := Load_Size (Root);
     -- Init colors with default
     Color_Defs := Generic_Con_Io.Default_Colors;
+    Default_Background := Con_Io.Effective_Colors'First;
 
     -- Initialize the descriptors array as not used
     for I in Afpx_Typ.Descriptor_Range loop
