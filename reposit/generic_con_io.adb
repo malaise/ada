@@ -149,6 +149,9 @@ package body Generic_Con_Io is
       Y_Max := Y_Max - 1;
       Set_Attributes (Default_Foreground, Default_Background,
                       Default_Xor_Mode, Forced => True);
+      Screen_Window.Current_Foreground := Default_Foreground;
+      Screen_Window.Current_Background := Default_Background;
+      Screen_Window.Current_Xor_Mode   := Default_Xor_Mode;
       Flush;
     exception
       when others =>
