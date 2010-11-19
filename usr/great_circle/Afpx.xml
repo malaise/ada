@@ -1,230 +1,233 @@
 <?xml version="1.1"?>
 <!DOCTYPE Afpx_Descriptors SYSTEM "../../reposit/Afpx.dtd">
 <Afpx_Descriptors>
-  <Descriptor Num="1">
+  <Color_Definitions>
+    <Color_Definition Id="Color07" Color="Brown4"/>
+  </Color_Definitions>
 
+  <Descriptor Num="1">
     <!-- Title -->
     <Field Num="1" Kind="Put">
       <Geometry Up="0" Left="25" Low="0" Right="48"/>
-      <Colors Foreground="Light_Grey" Background="Black"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">GREAT CIRCLE</Init>
     </Field>
 
     <!-- Point A, Point B, heading and distance columns -->
     <Field Num="2" Kind="Put">
       <Geometry Up="5" Left="1" Low="5" Right="8"/>
-      <Colors Foreground="Cyan" Background="Black"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">From</Init>
     </Field>
 
     <Field Num="3" Kind="Put">
       <Geometry Up="5" Left="24" Low="5" Right="25"/>
-      <Colors Foreground="Cyan" Background="Black"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">To</Init>
     </Field>
 
     <Field Num="4" Kind="Put">
       <Geometry Up="5" Left="50" Low="5" Right="55"/>
-      <Colors Foreground="Cyan" Background="Black"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">Routes</Init>
     </Field>
 
     <Field Num="5" Kind="Put">
       <Geometry Up="5" Left="62" Low="5" Right="69"/>
-      <Colors Foreground="Cyan" Background="Black"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">Distance</Init>
     </Field>
 
     <!-- Point A Lat/Lon -->
     <Field Num="6" Kind="Get">
       <Geometry Up="6" Left="1" Low="6" Right="1"/>
-      <Colors Foreground="Cyan" Background="Brown" Selected="Brown"/>
+      <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
       <Init Row="0" Col="0">N</Init>
     </Field>
 
     <Field Num="7" Kind="Get">
       <Geometry Up="6" Left="2" Low="6" Right="3"/>
-      <Colors Foreground="Cyan" Background="Brown" Selected="Brown"/>
+      <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
     </Field>
 
     <Field Num="8" Kind="Put">
       <Geometry Up="6" Left="4" Low="6" Right="4"/>
-      <Colors Foreground="Cyan" Background="Black"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">°</Init>
     </Field>
 
     <Field Num="9" Kind="Get">
       <Geometry Up="6" Left="5" Low="6" Right="6"/>
-      <Colors Foreground="Cyan" Background="Brown" Selected="Brown"/>
+      <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
     </Field>
 
     <Field Num="10" Kind="Put">
       <Geometry Up="6" Left="7" Low="6" Right="7"/>
-      <Colors Foreground="Cyan" Background="Black"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">'</Init>
     </Field>
 
     <Field Num="11" Kind="Get">
       <Geometry Up="6" Left="8" Low="6" Right="9"/>
-      <Colors Foreground="Cyan" Background="Brown" Selected="Brown"/>
+      <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
     </Field>
 
     <Field Num="12" Kind="Put">
       <Geometry Up="6" Left="10" Low="6" Right="11"/>
-      <Colors Foreground="Cyan" Background="Black"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">"/</Init>
     </Field>
 
     <Field Num="13" Kind="Get">
       <Geometry Up="6" Left="12" Low="6" Right="12"/>
-      <Colors Foreground="Cyan" Background="Brown" Selected="Brown"/>
+      <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
       <Init Row="0" Col="0">W</Init>
     </Field>
 
     <Field Num="14" Kind="Get">
       <Geometry Up="6" Left="13" Low="6" Right="15"/>
-      <Colors Foreground="Cyan" Background="Brown" Selected="Brown"/>
+      <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
     </Field>
 
     <Field Num="15" Kind="Put">
       <Geometry Up="6" Left="16" Low="6" Right="16"/>
-      <Colors Foreground="Cyan" Background="Black"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">°</Init>
     </Field>
 
     <Field Num="16" Kind="Get">
       <Geometry Up="6" Left="17" Low="6" Right="18"/>
-      <Colors Foreground="Cyan" Background="Brown" Selected="Brown"/>
+      <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
     </Field>
 
     <Field Num="17" Kind="Put">
       <Geometry Up="6" Left="19" Low="6" Right="19"/>
-      <Colors Foreground="Cyan" Background="Black"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">'</Init>
     </Field>
 
     <Field Num="18" Kind="Get">
       <Geometry Up="6" Left="20" Low="6" Right="21"/>
-      <Colors Foreground="Cyan" Background="Brown" Selected="Brown"/>
+      <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
     </Field>
 
     <Field Num="19" Kind="Put">
       <Geometry Up="6" Left="22" Low="6" Right="22"/>
-      <Colors Foreground="Cyan" Background="Black"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">"</Init>
     </Field>
 
     <!-- Point B Lat/Lon -->
     <Field Num="20" Kind="Get">
       <Geometry Up="6" Left="24" Low="6" Right="24"/>
-      <Colors Foreground="Cyan" Background="Brown" Selected="Brown"/>
+      <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
       <Init Row="0" Col="0">N</Init>
     </Field>
 
     <Field Num="21" Kind="Get">
       <Geometry Up="6" Left="25" Low="6" Right="26"/>
-      <Colors Foreground="Cyan" Background="Brown" Selected="Brown"/>
+      <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
     </Field>
 
     <Field Num="22" Kind="Put">
       <Geometry Up="6" Left="27" Low="6" Right="27"/>
-      <Colors Foreground="Cyan" Background="Black"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">°</Init>
     </Field>
 
     <Field Num="23" Kind="Get">
       <Geometry Up="6" Left="28" Low="6" Right="29"/>
-      <Colors Foreground="Cyan" Background="Brown" Selected="Brown"/>
+      <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
     </Field>
 
     <Field Num="24" Kind="Put">
       <Geometry Up="6" Left="30" Low="6" Right="30"/>
-      <Colors Foreground="Cyan" Background="Black"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">'</Init>
     </Field>
 
     <Field Num="25" Kind="Get">
       <Geometry Up="6" Left="31" Low="6" Right="32"/>
-      <Colors Foreground="Cyan" Background="Brown" Selected="Brown"/>
+      <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
     </Field>
 
     <Field Num="26" Kind="Put">
       <Geometry Up="6" Left="33" Low="6" Right="34"/>
-      <Colors Foreground="Cyan" Background="Black"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">"/</Init>
     </Field>
 
     <Field Num="27" Kind="Get">
       <Geometry Up="6" Left="35" Low="6" Right="35"/>
-      <Colors Foreground="Cyan" Background="Brown" Selected="Brown"/>
+      <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
       <Init Row="0" Col="0">W</Init>
     </Field>
 
     <Field Num="28" Kind="Get">
       <Geometry Up="6" Left="36" Low="6" Right="38"/>
-      <Colors Foreground="Cyan" Background="Brown" Selected="Brown"/>
+      <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
     </Field>
 
     <Field Num="29" Kind="Put">
       <Geometry Up="6" Left="39" Low="6" Right="39"/>
-      <Colors Foreground="Cyan" Background="Black"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">°</Init>
     </Field>
 
     <Field Num="30" Kind="Get">
       <Geometry Up="6" Left="40" Low="6" Right="41"/>
-      <Colors Foreground="Cyan" Background="Brown" Selected="Brown"/>
+      <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
     </Field>
 
     <Field Num="31" Kind="Put">
       <Geometry Up="6" Left="42" Low="6" Right="42"/>
-      <Colors Foreground="Cyan" Background="Black"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">'</Init>
     </Field>
 
     <Field Num="32" Kind="Get">
       <Geometry Up="6" Left="43" Low="6" Right="44"/>
-      <Colors Foreground="Cyan" Background="Brown" Selected="Brown"/>
+      <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
     </Field>
 
     <Field Num="33" Kind="Put">
       <Geometry Up="6" Left="45" Low="6" Right="45"/>
-      <Colors Foreground="Cyan" Background="Black"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">"</Init>
     </Field>
 
     <!-- Route and distance -->
     <Field Num="34" Kind="Put">
       <Geometry Up="6" Left="50" Low="6" Right="59"/>
-      <Colors Foreground="Light_Grey" Background="Black"/>
+      <Colors Foreground="Dark_Green" Background="Light_Grey"/>
     </Field>
 
     <Field Num="35" Kind="Put">
       <Geometry Up="6" Left="62" Low="6" Right="66"/>
-      <Colors Foreground="Light_Grey" Background="Black"/>
+      <Colors Foreground="Dark_Green" Background="Light_Grey"/>
     </Field>
 
     <Field Num="36" Kind="Put">
       <Geometry Up="6" Left="68" Low="6" Right="69"/>
-      <Colors Foreground="Cyan" Background="Black"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">NM</Init>
     </Field>
 
     <Field Num="37" Kind="Put">
       <Geometry Up="7" Left="50" Low="7" Right="59"/>
-      <Colors Foreground="Light_Grey" Background="Black"/>
+      <Colors Foreground="Dark_Green" Background="Light_Grey"/>
     </Field>
 
     <!-- Compute and Exit buttons -->
     <Field Num="38" Kind="Button">
       <Geometry Up="8" Left="3" Low="10" Right="11"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Black" Background="Lime_Green"/>
       <Init Row="1" Col="1">COMPUTE</Init>
     </Field>
 
     <Field Num="39" Kind="Button">
       <Geometry Up="8" Left="16" Low="10" Right="21"/>
-      <Colors Foreground="Cyan" Background="Brown"/>
+      <Colors Foreground="Black" Background="Lime_Green"/>
       <Init Row="1" Col="1">EXIT</Init>
     </Field>
 

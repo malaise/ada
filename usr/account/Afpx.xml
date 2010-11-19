@@ -5,7 +5,6 @@
 
   <Color_Definitions>
     <Color_Definition Id="Color07" Color="Brown4"/>
-    <Color_Definition Id="Color09" Color="Dark_Grey"/>
     <Color_Definition Id="Color13" Color="YellowGreen"/>
   </Color_Definitions>
 

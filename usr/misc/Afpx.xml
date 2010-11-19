@@ -2,8 +2,11 @@
 <!DOCTYPE Afpx_Descriptors SYSTEM "../../reposit/Afpx.dtd">
 <!-- File selection for Renamer -->
 <Afpx_Descriptors>
-  <Descriptor Num="1">
+  <Color_Definitions>
+    <Default_Background Color="Black"/>
+  </Color_Definitions>
 
+  <Descriptor Num="1">
     <List>
       <Geometry Up="2" Left="11" Low="21" Right="65"/>
       <Colors Foreground="Cyan" Background="Brown" Selected="Red"/>
