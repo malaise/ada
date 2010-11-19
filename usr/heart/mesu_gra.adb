@@ -358,6 +358,7 @@ package body Mesu_Gra is
     -- Here we only use Afpx.Line_List, no pb to suspend for
     --  a Con_Io
     Afpx.Suspend;
+    Con_Io.Default_Background := Con_Io.Color_Of ("Black");
     Con_Io.Init;
 
     -- Screen scale
@@ -463,8 +464,8 @@ package body Mesu_Gra is
     X_Factor := Float(Xs_First - Xs_Last) / Float(X_First - X_Last);
 
     -- Graphic mode
+    Con_Io.Default_Xor_Mode := Con_Io.Xor_On;
     Con_Io.Reset_Term;
-    Con_Io.Set_Xor_Mode(Con_Io.Xor_On);
 
     Draw_Layout;
     Tz_Drown := False;
@@ -481,6 +482,8 @@ package body Mesu_Gra is
       Get_Res := Con_Io.Get;
       if Get_Res.Mvt = Con_Io.Full then
         Char := Language.Unicode_To_Char (Get_Res.Char);
+      else
+        Char := '#';
       end if;
 
       -- Exit when Escape
@@ -526,7 +529,7 @@ package body Mesu_Gra is
       elsif Get_Res.Mvt = Con_Io.Refresh then
         -- Refresh
         Con_Io.Reset_Term;
-        Con_Io.Set_Xor_Mode(Con_Io.Xor_On);
+        Con_Io.Clear;
         Draw_Layout;
         -- Redraw mesures
         for I in 1 .. Nb_Mesure loop
@@ -543,7 +546,7 @@ package body Mesu_Gra is
 
     -- Back to text mode
     Con_Io.Reset_Term;
-    Con_Io.Set_Xor_Mode(Con_Io.Xor_Off);
+    Con_Io.Default_Xor_Mode := Con_Io.Xor_Off;
     -- Close Con_Io and restore Afpx
     Con_Io.Destroy;
     Afpx.Resume;
