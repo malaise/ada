@@ -1,22 +1,21 @@
-with My_Math;
-use My_Math;
-with Normal;
+with My_Math, Normal, Round_At;
 -- to convert got strings in data fields, and fields in string to be put
 package body Nav_Format is
-
-
 
   -- from speed to string
   function Imag (Speed : Nav_Types.T_Speed; Set : Boolean := True)
    return String is
+    Lspeed : My_Math.Real;
     Str_Unset : constant String := "???.?";
     Str : String (1 .. Str_Unset'Last);
     I : Integer;
+    use type My_Math.Real;
   begin
     if Set then
-      Str (1 .. 3) := Normal (Integer (My_Math.Trunc (My_Math.Real(Speed))), 3, True, ' ');
+      Lspeed := Round_At (My_Math.Real(Speed), -1);
+      Str (1 .. 3) := Normal (Integer (My_Math.Trunc (Lspeed)), 3, True, ' ');
       Str (4) := '.';
-      I := Integer (My_Math.Round (My_Math.Frac(My_Math.Real(Speed)) * 10.0));
+      I := Integer (My_Math.Round (My_Math.Frac(Lspeed) * 10.0));
       Str (5 .. 5) := Normal (I, 1, False, '0');
       return Str;
     else
@@ -24,7 +23,7 @@ package body Nav_Format is
     end if;
   end Imag;
 
-  -- from string to angle
+  -- from angle to string
   function Imag (Angle : Nav_Types.T_Angle; Set : Boolean := True)
    return String is
     Str_Unset : constant String := "???.??";
@@ -40,7 +39,7 @@ package body Nav_Format is
     end if;
   end Imag;
 
-  -- from string to drift
+  -- from drift to string
   function Imag (Drift : Nav_Types.T_Drift; Set : Boolean := True)
    return String is
     Str_Unset : constant String := "????.??";
