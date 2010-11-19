@@ -327,7 +327,7 @@ procedure Afpx_Bld is
   procedure Define_Color_Names (Node : in Xp.Element_Type) is
     Child : Xp.Element_Type;
     Attrs : Xp.Attributes_Array (1 .. 2);
-    Id, Color : Asu_Us;
+    Id, Color, Default_Background_Name : Asu_Us;
     Index : Generic_Con_Io.Effective_Colors;
   begin
     -- Overwrite some colors
@@ -349,13 +349,16 @@ procedure Afpx_Bld is
         -- Default_Background: attribute Color
         -- Last child
         Attrs(1) := Ctx.Get_Attribute (Child, 1);
-        Color := Attrs(1).Value;
+        Default_Background_Name := Attrs(1).Value;
       end if;
     end loop;
 
     Color_Names := Afpx_Typ.To_Names (Color_Defs);
     Generic_Con_Io.Set_Colors (Color_Defs);
-    Default_Background := Con_Io.Color_Of (Computer.Eval (Asu_Ts (Color)));
+    if not Asu_Is_Null (Default_Background_Name) then
+      Default_Background := Con_Io.Color_Of (Computer.Eval (Asu_Ts (
+                                 Default_Background_Name)));
+    end if;
     Load_Color_Names (Node);
   exception
     when File_Syntax_Error =>
