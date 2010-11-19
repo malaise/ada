@@ -3,9 +3,6 @@
 
 <!-- For renardeau -->
 <Afpx_Descriptors Height="25" Width="40">
-  <Color_Definitions>
-    <Color_Definition Id="Color09" Color="Dark_Grey"/>
-  </Color_Definitions>
 
   <!-- Main screen -->
   <Descriptor Num="1" Background="Light_Grey">

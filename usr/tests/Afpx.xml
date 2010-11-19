@@ -2,6 +2,10 @@
 <!DOCTYPE Afpx_Descriptors SYSTEM "../../reposit/Afpx.dtd">
 <!-- for T_Afpx -->
 <Afpx_Descriptors>
+  <Color_Definitions>
+    <Default_Background Color="Dark_Grey"/>
+  </Color_Definitions>
+
   <Descriptor Num="1" Background="Brown">
 
     <List>

@@ -2,10 +2,6 @@
 <!DOCTYPE Afpx_Descriptors SYSTEM "../../reposit/Afpx.dtd">
 <!-- for Xwords -->
 <Afpx_Descriptors Height="42" Width="55">
-  <Color_Definitions>
-    <Color_Definition Id="Color09" Color="Dark_Grey"/>
-  </Color_Definitions>
-
 
   <Descriptor Num="1" Background="Light_Grey">
 
