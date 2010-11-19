@@ -5,15 +5,33 @@
 #include "x_file.h"
 
 
-static const char *default_font_name[NBRE_FONT] = {
-   "-b&h-lucidatypewriter-medium-*-normal-sans-12-120-75-75-m-70-iso10646-1",
-     "-b&h-lucidatypewriter-bold-*-normal-sans-12-120-75-75-m-70-iso10646-1",
-   "-b&h-lucidatypewriter-medium-*-normal-sans-14-140-75-75-m-90-iso10646-1",
-     "-b&h-lucidatypewriter-bold-*-normal-sans-14-140-75-75-m-90-iso10646-1",
-   "-b&h-lucidatypewriter-medium-*-normal-sans-18-180-75-75-m-110-iso10646-1",
-     "-b&h-lucidatypewriter-bold-*-normal-sans-18-180-75-75-m-110-iso10646-1",
-   "-b&h-lucidatypewriter-medium-*-normal-sans-25-180-100-100-m-150-iso10646-1",
-     "-b&h-lucidatypewriter-bold-*-normal-sans-25-180-100-100-m-150-iso10646-1"};
+static const char *lucidatypewriter[NBRE_FONT] = {
+   "-b&h-lucidatypewriter-medium-*-normal-sans-12-120-75-75-m-70-iso10646-*",
+     "-b&h-lucidatypewriter-bold-*-normal-sans-12-120-75-75-m-70-iso10646-*",
+   "-b&h-lucidatypewriter-medium-*-normal-sans-14-140-75-75-m-90-iso10646-*",
+     "-b&h-lucidatypewriter-bold-*-normal-sans-14-140-75-75-m-90-iso10646-*",
+   "-b&h-lucidatypewriter-medium-*-normal-sans-18-180-75-75-m-110-iso10646-*",
+     "-b&h-lucidatypewriter-bold-*-normal-sans-18-180-75-75-m-110-iso10646-*",
+   "-b&h-lucidatypewriter-medium-*-normal-sans-25-180-100-100-m-150-iso10646-*",
+     "-b&h-lucidatypewriter-bold-*-normal-sans-25-180-100-100-m-150-iso10646-*"};
+static const char *courrier[NBRE_FONT] = {
+   "-adobe-courier-medium-r-normal--12-120-75-75-m-70-iso10646-*",
+     "-adobe-courier-bold-r-normal--12-120-75-75-m-70-iso10646-*",
+   "-adobe-courier-medium-r-normal--14-140-75-75-m-90-iso10646-*",
+     "-adobe-courier-bold-r-normal--14-140-75-75-m-90-iso10646-*",
+   "-adobe-courier-medium-r-normal--18-180-75-75-m-110-iso10646-*",
+     "-adobe-courier-bold-r-normal--18-180-75-75-m-110-iso10646-*",
+   "-adobe-courier-medium-r-normal--25-180-100-100-m-150-iso10646-*",
+     "-adobe-courier-bold-r-normal--25-180-100-100-m-150-iso10646-*" };
+static const char *fixed[NBRE_FONT] = {
+   "-misc-fixed-medium-r-normal--13-120-75-75-c-70-iso10646-*",
+     "-misc-fixed-bold-r-normal--13-120-75-75-c-70-iso10646-*",
+   "-misc-fixed-medium-r-normal--14-130-75-75-c-70-iso10646-*",
+     "-misc-fixed-bold-r-normal--14-130-75-75-c-70-iso10646-*",
+   "-misc-fixed-medium-r-normal--15-140-75-75-c-90-iso10646-*",
+     "-misc-fixed-bold-r-normal--15-140-75-75-c-90-iso10646-*",
+   "-misc-fixed-medium-r-normal--18-120-100-100-c-90-iso10646-*",
+     "-misc-fixed-bold-r-normal--18-120-100-100-c-90-iso10646-*"};
 
 #define FONT_NAME "X_FONT_"
 
@@ -22,6 +40,25 @@ void set_from_env (int font_index, char *env_name);
 boolean fil_init (void) {
     int i;
     char env_name[10];
+    const char **default_font_name;
+    char *p;
+
+
+    /* Set X font kind */
+    default_font_name = lucidatypewriter;
+    p = getenv("X_FONT_KIND");
+    if (p != NULL) {
+      if (strcmp (p , "courrier") == 0) {
+        default_font_name = courrier;
+      } else if (strcmp (p , "lucidatypewriter") == 0) {
+        default_font_name = lucidatypewriter;
+      } else if (strcmp (p , "fixed") == 0) {
+        default_font_name = fixed;
+      }
+    }
+
+
+
 
     /* Set to default values */
     for (i=0; i<NBRE_FONT; i++) {
