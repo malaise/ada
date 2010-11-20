@@ -307,6 +307,11 @@ procedure Afpx_Bld is
     end if;
   end Name_Of;
 
+  function Color_Image (Color : Con_Io.Effective_Colors) return String is
+  begin
+    return Mixed_Str (Con_Io.Color_Name_Of (Color));
+  end Color_Image;
+
   -- Load the variables with names of colors
   procedure Load_Color_Names (Node : in Xp.Node_Type) is
   begin
@@ -321,6 +326,8 @@ procedure Afpx_Bld is
                     Mixed_Str (Generic_Con_Io.Effective_Colors'Image (I)),
                     Asu_Ts (Color_Defs(I)), False, True);
     end loop;
+    Add_Variable (Node, "Default_Background", Color_Image (Default_Background),
+                  False, True);
   end Load_Color_Names;
 
   -- Parse the (optional) definition of color names
@@ -545,8 +552,7 @@ procedure Afpx_Bld is
           Fields(Fn).Colors.Foreground := Con_Io.Color_Of (
                  Computer.Eval (Asu_Ts (Attrs(I).Value)));
           Add_Variable (Node, Name_Of (Fn) & "." & "Foreground",
-              Mixed_Str (Con_Io.Effective_Colors'Image (
-                  Fields(Fn).Colors.Foreground)), False, False);
+              Color_Image (Fields(Fn).Colors.Foreground), False, False);
         elsif Match (Attrs(I).Name, "Background") then
           if Background then
             File_Error (Node, "Duplicated Color " & Attrs(I).Name);
@@ -555,8 +561,7 @@ procedure Afpx_Bld is
           Fields(Fn).Colors.Background := Con_Io.Color_Of (
                  Computer.Eval (Asu_Ts (Attrs(I).Value)));
           Add_Variable (Node, Name_Of (Fn) & "." & "Background",
-              Mixed_Str (Con_Io.Effective_Colors'Image (
-                  Fields(Fn).Colors.Background)), False, False);
+              Color_Image (Fields(Fn).Colors.Background), False, False);
         elsif Match (Attrs(I).Name, "Selected") then
           if Selected then
             File_Error (Node, "Duplicated Color " & Attrs(I).Name);
@@ -565,8 +570,7 @@ procedure Afpx_Bld is
           Fields(Fn).Colors.Selected := Con_Io.Color_Of (
                  Computer.Eval (Asu_Ts (Attrs(I).Value)));
           Add_Variable (Node, Name_Of (Fn) & "." & "Selected",
-              Mixed_Str (Con_Io.Effective_Colors'Image (
-                  Fields(Fn).Colors.Selected)), False, False);
+              Color_Image (Fields(Fn).Colors.Selected), False, False);
         else
           File_Error (Node, "Invalid Color " & Attrs(I).Name);
         end if;
@@ -588,8 +592,7 @@ procedure Afpx_Bld is
         end if;
         Fields(Fn).Colors.Selected := Fields(Fn).Colors.Background;
         Add_Variable (Node, Name_Of (Fn) & "." & "Selected",
-            Mixed_Str (Con_Io.Effective_Colors'Image (
-                Fields(Fn).Colors.Selected)), False, False);
+            Color_Image (Fields(Fn).Colors.Selected), False, False);
       elsif Fields(Fn).Kind = Afpx_Typ.Button then
         if Ctx.Get_Nb_Attributes (Node) /= 2
         or else not (Foreground and then Background)
@@ -599,8 +602,7 @@ procedure Afpx_Bld is
         end if;
         Fields(Fn).Colors.Selected := Fields(Fn).Colors.Background;
         Add_Variable (Node, Name_Of (Fn) & "." & "Selected",
-            Mixed_Str (Con_Io.Effective_Colors'Image (
-                Fields(Fn).Colors.Selected)), False, False);
+            Color_Image (Fields(Fn).Colors.Selected), False, False);
       end if;
     exception
       when File_Syntax_Error =>
@@ -891,9 +893,9 @@ procedure Afpx_Bld is
       Descriptors(Dscr_No).Background := Default_Background;
     end if;
     Add_Variable (Node, "Dscr_" & Dscr_Image (Dscr_No) & ".Background",
-        Mixed_Str (Con_Io.Effective_Colors'Image (
-                      Descriptors(Dscr_No).Background)),
-        False, False);
+        Color_Image (Descriptors(Dscr_No).Background), False, True);
+    Add_Variable (Node, "Descriptor.Background",
+        Color_Image (Descriptors(Dscr_No).Background), False, False);
 
     -- Init dscr and fields array. No list at init
     Descriptors(Dscr_No).Modified := True;

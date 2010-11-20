@@ -22,6 +22,8 @@
 <!--  The constants Color01 to Color14 are automatically created after this -->
 <!--  definition or before the first descriptor. It is also possible to -->
 <!--  define the default background for descriptors (default Color01). -->
+<!-- As soon as the Afpx descriptors declaration is parsed a constant -->
+<!--  Default_Background is defined. -->
 <!-- Before descriptors, it is possible to define and overwrite variables. -->
 <!-- These variables are valid for all the following descriptors. -->
 <!ELEMENT Afpx_Descriptors (Var*,Color_Definitions?,Var*,Descriptor*)>
@@ -50,8 +52,10 @@
 <!-- It is possible to define the background color of the descriptor -->
 <!--  (default Default_Background). -->
 <!-- As soon as this descriptor declaration is parsed, a constant -->
-<!--  defining current descriptor background is defined and valid for the -->
-<!-- rest of the descriptor (e.g. Dscr_1.Background). -->
+<!--  named Descriptor.Background and with current descriptor background is -->
+<!--  defined for the rest of the descriptor. -->
+<!--  Another constant with a specific name and the same value is defined -->
+<!--  for the rest of the descriptors (e.g. Dscr_1.Background). -->
 <!ATTLIST Descriptor Num NMTOKEN #REQUIRED Background CDATA #IMPLIED>
 <!-- A descriptor allows defining one optional list, then fields. -->
 <!-- Before and between them, it is possible to define and overwrite -->
