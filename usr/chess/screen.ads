@@ -3,6 +3,7 @@ with Space, Players, Game;
 package Screen is
 
   -- (Re)display the board
+  Font_Too_Small, Font_Too_Big : exception;
   procedure Display_Board (Color : Space.Color_List);
 
   -- Update some squares of the board

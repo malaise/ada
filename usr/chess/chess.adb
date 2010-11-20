@@ -1,7 +1,7 @@
 with Ada.Text_Io;
 with Debug, Lower_Str, Argument, Text_Handler, Tcp_Util;
 
-with Space, Connection, Human, File;
+with Space, Connection, Human, File, Screen;
 
 procedure Chess is
 
@@ -225,5 +225,9 @@ exception
     Ada.Text_Io.Put_Line ("File I/O error.");
   when File.Format_Error =>
     Ada.Text_Io.Put_Line ("File format error.");
+  when Screen.Font_Too_Small =>
+    Ada.Text_Io.Put_Line ("Current font is too small.");
+  when Screen.Font_Too_Big =>
+    Ada.Text_Io.Put_Line ("Current font is too big.");
 end Chess;
 

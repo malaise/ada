@@ -139,10 +139,21 @@ package body Graphic is
 
     use type Space.Color_List;
   begin
+    -- Y0 = Y_Max - XO - Len + Size is the center if lowest row
+    -- Y0 - Size is the pos of lower text "a b c d .."
+    -- Y0 - Size - Height should be the text "Move:"
+    -- Y0 - Size - 2 * Height must be positive, otherwise the font is too small
+    if Con_Io.Graphics.Y_Max < X0 + Len + 2 * Con_Io.Graphics.Font_Height then
+      raise Font_Too_Small;
+    end if;
+    if Con_Io.Graphics.Font_Height >= Size then
+      raise Font_Too_Big;
+    end if;
     -- Compute offsets
     Y0 := Con_Io.Graphics.Y_Max - X0 - Len + Size;
     X_Offset := Con_Io.Graphics.Font_Width  / 2;
-    Y_Offset := (Con_Io.Graphics.Font_Height - Con_Io.Graphics.Font_Offset) / 2 + 4;
+    Y_Offset := (Con_Io.Graphics.Font_Height
+               - Con_Io.Graphics.Font_Offset) / 2 + 4;
     Promotion_Y_Offset := Y0 + Size;
 
     -- Print Rows/Cols names
