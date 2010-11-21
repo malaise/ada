@@ -1,11 +1,11 @@
 #!/bin/bash
 export Src=/usr/local/account/data
 export Dst=/aux/account
-export Rep=/root/account
+export Rep=/root/GIT/account
 if [ \( -d $Src \) -a \( -d $Dst \) ] ; then
-  /bin/cp -r $Src/* $Dst
+  /bin/cp -r $Src $Dst
 fi
 if [ \( -d $Rep \) -a \( -d $Dst \) ] ; then
-  /bin/cp -pPr $Rep $Dst/SVN_account
+  /bin/cp -r $Rep $Dst/GIT
 fi
 
