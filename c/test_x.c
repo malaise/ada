@@ -11,7 +11,7 @@
 
 #define NBRE_COLOR 14
 
-#define T1 "Usage is: test_x display [back border font] (0-9 0-9 0-3)."
+#define T1 "Usage is: test_x [display [back border font]] (0-9 0-9 0-3)."
 #define T2 "Use any mouse button to simulate TID. m to enable motion."
 #define T3 "Use s, u, b and r keys to change attributes."
 #define T4 "Use + - keys to shift inks and * / keys to shift backgrounds."
@@ -44,8 +44,7 @@ static void put(void *line, const char *string, int row, int column) {
 }
 
 static void title (void *line) {
-  unsigned char str[80];
-  char tit[80];
+  unsigned char str[4];
 
   (void) x_clear_line (line);
   (void) x_set_attributes (line, back, 13, 0, 0, 0);
@@ -54,13 +53,8 @@ static void title (void *line) {
   put (line, T3, TITLE_LNE + 3, 2);
   put (line, T4, TITLE_LNE + 4, 2);
   put (line, T5, TITLE_LNE + 6, 2);
-  /* € and œ */
-  str[0]=0xE2; str[1]=0x82; str[2]=0xAC;
-  str[3]=0xC5; str[4]=0x93; str[5]='\0';
-  /* Other french letters */
-  strcpy (tit, "àâéêëèîïôùûüç ");
-  strcat (tit, (char*)str);
-  put (line, (char*)tit, 0, 30);
+  str[0]=0xE2; str[1]=0x82; str[2]=0xAC; str[3]='\0';
+  put (line, (char*)str, 0, 40);
 
 }
 
@@ -88,13 +82,24 @@ boolean read;
   font = 0;
   s = 0; u = 0; r = 0;
 
-  if (argc == 2) {
+  if (argc == 1) {
+    if (getenv("DISPLAY") == NULL) {
+      printf ("DISPLAY not set.\n");
+      exit(1);
+    }
+    strcpy (name, getenv("DISPLAY"));
+    back = 0;
+    bord = 1;
+    font = 0;
+  } else if (argc == 2) {
     strcpy (name, argv[1]);
+    strcat (name, ":0.0");
     back = 0;
     bord = 1;
     font = 0;
   } else if (argc == 5) {
     strcpy (name, argv[1]);
+    strcat (name, ":0.0");
     back = atoi (argv[2]);
     bord = atoi (argv[3]);
     font = atoi (argv[4]);
@@ -111,7 +116,6 @@ boolean read;
 
 
   /* Init */
-  strcat (name, ":0.0");
   if (x_initialise (name, NULL) != 0) {
     printf ("ERROR INITIALISE\n");
     exit(1);
