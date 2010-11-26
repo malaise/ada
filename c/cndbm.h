@@ -2,7 +2,7 @@
 #define _CNDBM_H_
 
 #ifdef Linux
-#  include <gdbm/ndbm.h>
+#  include <gdbm-ndbm.h>
 #else
 #  include <ndbm.h>
 #endif
