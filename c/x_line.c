@@ -493,7 +493,9 @@ t_screen *p_screen;
 
     /* Loads and inits colors */
     if (! col_open (p_screen->server->x_server, p_screen->x_screen,
-                    p_screen->color_id, &(p_screen->colormap)) ) {
+                    p_screen->color_id,
+                    p_screen->xft_colors,
+                   &(p_screen->colormap)) ) {
         free (p_screen);
         return (NULL);
     }
@@ -508,7 +510,9 @@ void close_screen (t_screen *p_screen) {
 
 
     /* Free colors */
-    col_close (p_screen->server->x_server, p_screen->color_id,
+    col_close (p_screen->server->x_server, p_screen->x_screen,
+               p_screen->color_id,
+               p_screen->xft_colors,
                p_screen->colormap);
 
     /* Free memory */
