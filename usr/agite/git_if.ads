@@ -85,5 +85,8 @@ package Git_If is
   -- Launch a revert (checkout) synchronous
   procedure Do_Revert (File : in String);
 
+  -- Get current branch name
+  function Current_Branch return String;
+
 end Git_If;
 

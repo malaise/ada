@@ -44,7 +44,8 @@ static void put(void *line, const char *string, int row, int column) {
 }
 
 static void title (void *line) {
-  unsigned char str[4];
+  unsigned char str[80];
+  char tit[80];
 
   (void) x_clear_line (line);
   (void) x_set_attributes (line, back, 13, 0, 0, 0);
@@ -53,8 +54,13 @@ static void title (void *line) {
   put (line, T3, TITLE_LNE + 3, 2);
   put (line, T4, TITLE_LNE + 4, 2);
   put (line, T5, TITLE_LNE + 6, 2);
-  str[0]=0xE2; str[1]=0x82; str[2]=0xAC; str[3]='\0';
-  put (line, (char*)str, 0, 40);
+  /* € and œ */
+  str[0]=0xE2; str[1]=0x82; str[2]=0xAC;
+  str[3]=0xC5; str[4]=0x93; str[5]='\0';
+  /* Other french letters */
+  strcpy (tit, "àâéêëèîïôùûüç ");
+  strcat (tit, (char*)str);
+  put (line, (char*)tit, 0, 30);
 
 }
 

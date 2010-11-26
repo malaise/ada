@@ -571,5 +571,42 @@ package body Git_If is
     end if;
   end Do_Revert;
 
+  -- Get current branch name
+  function Current_Branch return String is
+    Cmd : Asu_Us;
+    Branch : Asu_Us;
+    Moved : Boolean;
+  begin
+    Cmd := Asu_Tus ("git");
+    Many_Strings.Cat (Cmd, "branch");
+    Command.Execute (
+        Asu_Ts (Cmd),
+        True, Command.Both,
+        Out_Flow_1'Access, Err_Flow'Access, Exit_Code);
+    -- Handle error
+    if Exit_Code /= 0 then
+      Basic_Proc.Put_Line_Error ("git branch: " & Asu_Ts (Err_Flow.Str));
+      return "ERROR.";
+    end if;
+    -- Look for "* "
+    if not Out_Flow_1.List.Is_Empty then
+      Out_Flow_1.List.Rewind;
+      loop
+        Out_Flow_1.List.Read (Branch, Moved => Moved);
+        if Asu.Length (Branch) > 2
+        and then Asu.Slice (Branch, 1, 2) = "* " then
+          return Asu.Slice (Branch, 3, Asu.Length (Branch));
+        end if;
+        exit when not Moved;
+      end loop;
+    end if;
+    -- No active branch???
+    -- Even in the middle of a rebase there is a "* " and "(no branch)"
+    return "ERROR.";
+  exception
+    when others =>
+      return "ERROR.";
+  end Current_Branch;
+
 end Git_If;
 
