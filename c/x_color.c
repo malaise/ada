@@ -54,9 +54,7 @@ static void get_envs (void) {
 }
 
 /* Loads the colors in the server */
-boolean col_open(Display *x_server, int x_screen,
-                 unsigned long color_id[],
-                 XftColor xft_colors[],
+boolean col_open(Display *x_server, int x_screen, unsigned long color_id[],
                  Colormap *colormap) {
   int i, cr;
   unsigned long plane_mask[1];
@@ -115,31 +113,13 @@ boolean col_open(Display *x_server, int x_screen,
     }
   }
 
-  /* Allocate XftColors */
-  for (i = 0; i < NBRE_COLOR; i++) {
-    if (!XftColorAllocName (x_server, DefaultVisual(x_server, x_screen),
-                            *colormap, color_name[i], &xft_colors[i]) ) {
-#ifdef DEBUG
-        printf ("X_COLOR : X can't alloc Xft color named %s\n", color_name[i]);
-#endif
-      return (False);
-    }
-  }
-
-
   return (True);
 }
 
 
-void col_close(Display *x_server, int x_screen,
-               unsigned long color_id[],
-               XftColor xft_colors[],
+void col_close(Display *x_server, unsigned long color_id[],
                Colormap colormap) {
-  int i;
-  for (i = 0; i < NBRE_COLOR; i++) {
-    XftColorFree (x_server, DefaultVisual(x_server, x_screen),
-                  colormap, &xft_colors[i]);
-  }
+
   XFreeColors (x_server, colormap, color_id, NBRE_COLOR, 0);
 }
 

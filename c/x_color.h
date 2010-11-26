@@ -11,15 +11,8 @@
 void col_set_names (const char* names[]);
 
 /* Loads and init colors, close and free colors (for each screen) */
-boolean col_open(Display *x_server, int x_screen,
-                 unsigned long color_id[],
-                 XftColor xft_colors[],
-                 Colormap *colormap);
-
-void col_close(Display *x_server, int x_screen,
-               unsigned long color_id[],
-               XftColor xft_colors[],
-               Colormap colormap);
+boolean col_open(Display *x_server, int x_screen, unsigned long color_id[], Colormap *colormap);
+void col_close(Display *x_server, unsigned long color_id[], Colormap colormap);
 
 /* Checks a color number (in attributes) */
 boolean col_check(int color_id);
