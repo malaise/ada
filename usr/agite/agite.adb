@@ -101,6 +101,7 @@ procedure Agite is
 
   -- Encode files
   procedure Encode_Files is
+    Branch : Asu_Us;
   begin
     List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No) - 4;
     -- Get info: Path if needed and list
@@ -110,6 +111,7 @@ procedure Agite is
       if Asu_Is_Null (Root) then
         Git_If.Get_Root_And_Path (Root, Path);
       end if;
+      Branch := Asu_Tus (Git_If.Current_Branch);
       Git_If.List_Files (Asu_Ts (Path), Files);
       Afpx.Resume;
     exception
@@ -134,13 +136,21 @@ procedure Agite is
     Afpx.Encode_Field (10, (0, 0),
        Utils.Normalize (Asu_Ts (Root), Afpx.Get_Field_Width (12)));
 
+   -- Encode current branch
+   Afpx.Clear_Field (16);
+   if Asu_Ts (Branch) = ("(no branch)") then
+     Branch := Asu_Tus ("None.");
+   end if;
+   Afpx.Encode_Field (16, (0, 0),
+         Utils.Normalize ("Br: " & Asu_Ts (Branch), Afpx.Get_Field_Width (16)));
+
     -- De-activate Diff and history if no in Git
     if Asu_Is_Null (Root) then
-      Utils.Protect_Field (21);
       Utils.Protect_Field (22);
+      Utils.Protect_Field (23);
     else
-      Afpx.Reset_Field (21);
       Afpx.Reset_Field (22);
+      Afpx.Reset_Field (23);
     end if;
 
   end Encode_Files;
@@ -226,7 +236,7 @@ procedure Agite is
   Local_Host : Asu_Us;
   function Host_Str return String is
     use type Asu_Us;
-    Len : constant Positive := Afpx.Get_Field_Width (17);
+    Len : constant Positive := Afpx.Get_Field_Width (18);
   begin
     if Local_Host /= Asu_Null then
       return Asu_Ts (Local_Host);
@@ -255,7 +265,7 @@ procedure Agite is
     Cursor_Col := 0;
     Insert := False;
     Redisplay := False;
-    Afpx.Encode_Field (17, (0, 0), Host_Str);
+    Afpx.Encode_Field (18, (0, 0), Host_Str);
     Change_Dir;
   end;
 
@@ -451,25 +461,25 @@ begin
                 Change_Dir (New_Dir);
               end if;
             end;
-          when 18 =>
+          when 19 =>
             -- GUI
             Utils.Launch ("git gui");
-          when 19 =>
+          when 20 =>
             -- XTerm
             Utils.Launch (Config.Xterminal);
-          when 20 =>
+          when 21 =>
             -- Edit (file)
             List_Action (Edit);
-          when 21 =>
+          when 22 =>
             -- Diff
             List_Action (Diff);
-          when 22 =>
+          when 23 =>
             -- History
             List_Action (History);
-          when 23 =>
+          when 24 =>
             -- Revert
             List_Action (Revert);
-          when 24 =>
+          when 25 =>
             -- Exit
             raise Utils.Exit_Requested;
           when others =>
