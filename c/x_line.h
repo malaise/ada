@@ -38,6 +38,7 @@ typedef struct {
     /* X color pixels */
     unsigned long color_id[MAX_SIZE_TAB_COLOR];
     Colormap colormap;
+    XftColor xft_colors[MAX_SIZE_TAB_COLOR];
 }t_screen;
 
 /* Specific values of select_index, other (natural) values
