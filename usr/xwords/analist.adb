@@ -40,6 +40,53 @@ package body Analist is
       raise Init_Error;
   end Init;
 
+  -- Add a word in the database if does not exist
+  procedure Add (Word : in Asu_Us) is
+    Moved : Boolean;
+    Uword : Asu_Us;
+    use type Asu_Us;
+  begin
+    -- Verify that word does not exist
+    if not Data_Base.Is_Empty then
+      -- Iterate on all words
+      Data_Base.Rewind;
+      loop
+        -- Get the Word
+        Data_Base.Read (Uword, Moved => Moved);
+        if Word = Uword then
+          -- This word already exists
+          return;
+        end if;
+        exit when not Moved;
+      end loop;
+    end if;
+    -- Insert word
+    Data_Base.Insert (Word);
+  end Add;
+
+  -- Delete a word from the database if it exists
+  procedure Del (Word : in Asu_Us) is
+    Moved : Boolean;
+    Uword : Asu_Us;
+    use type Asu_Us;
+  begin
+    -- Find the word if it exists
+    if Data_Base.Is_Empty then
+      return;
+    end if;
+    -- Iterate on all words
+    Data_Base.Rewind;
+    loop
+      -- Get the word
+      Data_Base.Read (Uword, Moved => Moved);
+      if Word = Uword then
+        -- The word exists
+        Data_Base.Delete (Moved => Moved);
+      end if;
+      exit when not Moved;
+    end loop;
+  end Del;
+
   -- For sorting result
   -- Longer words first, then in alphabetical
   function Less_Than (El1, El2 : Asu_Us) return Boolean is

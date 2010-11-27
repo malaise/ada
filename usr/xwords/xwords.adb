@@ -184,6 +184,15 @@ procedure Xwords is
       Status := Ok;
     end if;
 
+    -- Add normal word to anagram list
+    if Status = Ok then
+      if Num = Add_Word_Fld then
+        Analist.Add (Word);
+      elsif Num = Del_Word_Fld then
+        Analist.Del (Word);
+      end if;
+    end if;
+
     -- Store in history and selection if search
     if (Num = Search_Fld or else Num = Research_Fld)
     and then not Asu_Is_Null (Arg) then

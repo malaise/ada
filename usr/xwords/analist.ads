@@ -10,6 +10,11 @@ package Analist is
   Init_Error : exception;
   procedure Init (File_Name : in String);
 
+  -- Add a word in the database if it does not exist
+  procedure Add (Word : in Asu_Us);
+  -- Delete a word from the database if it exists
+  procedure Del (Word : in Asu_Us);
+
   -- List the anagrams of Letters in the database
   Too_Long : exception;
   procedure List (Letters : in String;
