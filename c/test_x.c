@@ -13,7 +13,7 @@
 
 #define T1 "Usage is: test_x [display [back border font]] (0-9 0-9 0-3)."
 #define T2 "Use any mouse button to simulate TID. m to enable motion."
-#define T3 "Use s, u, b and r keys to change attributes."
+#define T3 "Use s, u and r keys to change attributes."
 #define T4 "Use + - keys to shift inks and * / keys to shift backgrounds."
 #define T5 "To exit, touch TID (or click/release) in row 1 col 1."
 #define YES_STR " Yes. "
