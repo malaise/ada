@@ -9,7 +9,7 @@ OBJS_libposix2pcre := posix2pcre.o
 OBJS_libx_mng := x_color.o x_font.o x_line.o x_export.o x_file.o x_key.o \
                  x_screen.o
 
-LARGS_test_x := -lx_mng -lcutil -lX11 -lm
+LARGS_test_x := ./lib_Linux/libx_mng.so ./lib_Linux/libcutil.so -lX11
 
 DEST_LIBS := /usr/local/lib
 INST_LIBS := $(LIBS)
