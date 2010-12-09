@@ -1,8 +1,15 @@
 with Unlimited_Pool, Mutex_Manager;
 package body Init_Manager is
 
-  -- The mutex to protect pool and handler
-  Mutex : Mutex_Manager.Simple_Mutex;
+  -- The WR_Mutex is used for general protection
+  -- Writers lock is used to accept new event, which ensures that several
+  --  new events are accepted even if some events are to be delivered
+  -- Readers lock is used to deliver an event to the handler (if there
+  --  is not new event to accept)
+  Wr_Mutex : Mutex_Manager.Mutex (Mutex_Manager.Write_Read, False);
+  -- The Read_Mutex is used to protect the pool for event delivery
+  --  because WR_Lutext allows several simultaneous readers
+  R_Mutex : Mutex_Manager.Simple_Mutex;
 
   -- The pool of pending events: Fifo
   package Event_Pool_Mng is new Unlimited_Pool (Event_Type, Lifo => False);
@@ -11,11 +18,9 @@ package body Init_Manager is
   -- The event handler
   The_Handler : Event_Handler := null;
 
-  -- Deliver the event to the handler, mutex must be acquired
+  -- Deliver the event to the handler
   procedure Deliver (Event : in Event_Type) is
   begin
-    -- No lock while calling handler
-    Mutex.Release;
     -- Call handler and mask exception
     begin
       The_Handler (Event);
@@ -23,28 +28,7 @@ package body Init_Manager is
       when others =>
         null;
     end;
-    -- Re-acquire mutex
-    Mutex.Get;
   end Deliver;
-
-  -- Flush pending events, mutex must be acquired and is released
-  procedure Flush is
-    Event : Event_Type;
-  begin
-    while The_Handler /= null and then not Event_Pool.Is_Empty loop
-      -- Handler is set: deliver pending events
-      Event_Pool.Pop (Event);
-      Deliver (Event);
-    end loop;
-  end Flush;
-
-  -- Clean mutex if acquired
-  procedure Clean is
-  begin
-    if Mutex.Is_Owner then
-      Mutex.Release;
-    end if;
-  end Clean;
 
   -- Declare the event handler (overwrites any previous),
   -- As long as there as no handler, new events are bufferized
@@ -52,38 +36,62 @@ package body Init_Manager is
   --  then with any new event when init stopped
   -- type Event_Handler is access procedure (Event : in Event_Type);
   procedure Set_Handler (Handler : Event_Handler) is
+    Event : Event_Type;
   begin
-    Mutex.Get;
+    -- Acquire exclusive access if no event waiting to be accepted
+    --  and set new handler
+    Wr_Mutex.Get (Mutex_Manager.Read);
+    R_Mutex.Get;
     The_Handler := Handler;
-    Flush;
+    -- Deliver pending events as long as no new event pending
+    while The_Handler /= null and then not Event_Pool.Is_Empty loop
+      -- Get pending event with exclusive access
+      Event_Pool.Pop (Event);
+      -- Release access for delivery
+      R_Mutex.Release;
+      Wr_Mutex.Release;
+      Deliver (Event);
+      -- Re-acquire exclusive access if no event waiting to be accepted
+      Wr_Mutex.Get (Mutex_Manager.Read);
+      R_Mutex.Get;
+    end loop;
     -- Final release
-    Mutex.Release;
+    R_Mutex.Release;
+    Wr_Mutex.Release;
   exception
     when others =>
       -- Always release
-      Clean;
+      if R_Mutex.Is_Owner then
+        R_Mutex.Release;
+      end if;
+      if Wr_Mutex.Is_Owner then
+        Wr_Mutex.Release;
+      end if;
       raise;
   end Set_Handler;
 
-  -- Inject a new event
+  -- Accept a new event
   procedure New_Event (Event : in Event_Type) is
   begin
-    Mutex.Get;
+    -- Acquire exclusive access with high prio
+    Wr_Mutex.Get (Mutex_Manager.Write);
     if The_Handler /= null and then Event_Pool.Is_Empty then
-      -- Handler set and no pending events => deliver
+      -- Handler is set and no pending events => deliver directly
+      Wr_Mutex.Release;
       Deliver (Event);
-      Mutex.Release;
     else
       -- Either handler is null (then event will be flushed when setting it)
       -- Or pool is not empty (then flush is running and will flush event)
       -- Push the event and release
       Event_Pool.Push (Event);
-      Mutex.Release;
+      Wr_Mutex.Release;
     end if;
   exception
     when others =>
       -- Always release
-      Clean;
+      if Wr_Mutex.Is_Owner then
+        Wr_Mutex.Release;
+      end if;
       raise;
   end New_Event;
 
