@@ -4,6 +4,8 @@ with Ada.Finalization, Ada.Calendar;
 with Perpet, Day_Mng, Virtual_Time;
 package Chronos is
 
+  -- The inheritance and procedure Notify must be public so that
+  --  Passive_Timers can rely on a Chrono_Type
   type Chrono_Type is new Ada.Finalization.Controlled
                       and Virtual_Time.Observer with private;
 

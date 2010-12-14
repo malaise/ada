@@ -32,23 +32,17 @@ package body Assertion is
     end if;
   end Init;
 
-
+  -- Set/Change action (preempts env variable)
   procedure Set (Action : in Action_List) is
   begin
-    if not Init_Done then
-      -- Init is necessary
-      Init;
-    end if;
     Assertion.Action := Set.Action;
+    Init_Done := True;
   end Set;
 
   -- Get action value
   function Get return Action_List is
   begin
-    if not Init_Done then
-      -- Init is necessary
-      Init;
-    end if;
+    Init;
     return Action;
   end Get;
 
@@ -63,6 +57,7 @@ package body Assertion is
       -- Assertion is True
       return;
     end if;
+    -- Optim, avoid function call if init already done
     if not Init_Done then
       -- Init is necessary
       Init;
