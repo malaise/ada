@@ -4,10 +4,7 @@ with Ada.Finalization, Ada.Calendar;
 with Perpet, Day_Mng, Virtual_Time;
 package Chronos is
 
-  -- The inheritance and procedure Notify must be public so that
-  --  Passive_Timers can rely on a Chrono_Type
-  type Chrono_Type is new Ada.Finalization.Controlled
-                      and Virtual_Time.Observer with private;
+  type Chrono_Type is new Virtual_Time.Observer with private;
 
   -- The time read at a chronometer (days and seconds)
   subtype Time_Rec is Perpet.Delta_Rec;
@@ -65,12 +62,6 @@ package Chronos is
   --  chronometer (real time)
   procedure Detach (A_Chrono : in out Chrono_Type);
 
-  -- Interface for the virtual clock, don'use
-  procedure Notify (An_Observer : in out Chrono_Type;
-                    Rtime, Vtime : in Virtual_Time.Time;
-                    Speed : in Virtual_Time.Speed_Range;
-                    A_Clock : in Virtual_Time.Clock_Access);
-
 private
 
   type Chrono_Type is new Ada.Finalization.Controlled
@@ -84,6 +75,12 @@ private
     -- Virtual clock (when attached)
     Clock : Virtual_Time.Clock_Access := null;
   end record;
+
+  -- Interface for the virtual clock
+  overriding procedure Notify (An_Observer : in out Chrono_Type;
+                               Rtime, Vtime : in Virtual_Time.Time;
+                               Speed : in Virtual_Time.Speed_Range;
+                               A_Clock : in Virtual_Time.Clock_Access);
 
   overriding procedure Finalize (Chrono : in out Chrono_Type);
 

@@ -1,5 +1,5 @@
 -- Queue of items that are kept only for a limited time
-with Perpet, Dynamic_List, Virtual_Time, Passive_Timers;
+with Perpet, Dynamic_List, Virtual_Time, Chronos.Passive_Timers;
 generic
   -- Size of the queue, 0 for infinite
   Size : Natural;
@@ -60,7 +60,7 @@ package Queues.Timed is
   Timed_Not_Empty : exception;
 private
   -- Item and its expiration time
-  type Timer_Access is access Passive_Timers.Passive_Timer;
+  type Timer_Access is access Chronos.Passive_Timers.Passive_Timer;
   type Loc_Item is record
     Timer : Timer_Access;
     Data : Item;

@@ -1,5 +1,5 @@
 with Ada.Text_Io;
-with Date_Image, Virtual_Time, Chronos, Timers, Event_Mng, Passive_Timers,
+with Date_Image, Virtual_Time, Chronos, Timers, Event_Mng, Chronos.Passive_Timers,
      Queues.Timed;
 procedure T_Virtual is
 
@@ -39,8 +39,8 @@ procedure T_Virtual is
   My_Chrono : Chronos.Chrono_Type;
 
   -- The passive timer and check of expiration
-  My_Pt : Passive_Timers.Passive_Timer;
-  function Check_Pt (Pt : Passive_Timers.Passive_Timer;
+  My_Pt : Chronos.Passive_Timers.Passive_Timer;
+  function Check_Pt (Pt : Chronos.Passive_Timers.Passive_Timer;
                      Name : String := "") return Boolean is
     Res : Boolean;
   begin
@@ -57,7 +57,7 @@ procedure T_Virtual is
     return Res;
   end Check_Pt;
 
-  procedure Check_Pt (Pt : in Passive_Timers.Passive_Timer;
+  procedure Check_Pt (Pt : in Chronos.Passive_Timers.Passive_Timer;
                       Name : in String := "") is
     Dummy : Boolean;
     pragma Unreferenced (Dummy);
