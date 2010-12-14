@@ -4,7 +4,7 @@ with Timers;
 package body Queues.Timed is
 
   procedure Free_Timer is new Ada.Unchecked_Deallocation (
-    Object => Passive_Timers.Passive_Timer,
+    Object => Chronos.Passive_Timers.Passive_Timer,
     Name => Timer_Access);
 
   -- Check length before pushing (raise Timed_Full if list lenght is size)
@@ -40,7 +40,7 @@ package body Queues.Timed is
     Check_Length (Queue);
     -- Init record and timer access
     Item.Data := X;
-    Item.Timer := new Passive_Timers.Passive_Timer;
+    Item.Timer := new Chronos.Passive_Timers.Passive_Timer;
     Timer := Item.Timer;
     -- Append record and rewind
     Queue.List.Rewind (False, Item_List_Mng.Prev);

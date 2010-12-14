@@ -1,4 +1,4 @@
--- Converts an hexadecimal character (0..9 | 'a' .. 'f' | 'A' .. 'F'
+-- Converts an hexadecimal character (0..9 | 'a' .. 'f' | 'A' .. 'F')
 --  into its value (0 .. 15).
 -- Raises Constraint_Error if invalid character.
 function Char_To_Hexa (C : Character) return Natural is

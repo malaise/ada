@@ -8,10 +8,10 @@ package body Chronos is
   end Current_Time;
 
   -- Clock has changed at Vtime
-  procedure Notify (An_Observer : in out Chrono_Type;
-                    Rtime, Vtime : Virtual_Time.Time;
-                    Speed : in Virtual_Time.Speed_Range;
-                    A_Clock : in Virtual_Time.Clock_Access) is
+  overriding procedure Notify (An_Observer : in out Chrono_Type;
+                               Rtime, Vtime : Virtual_Time.Time;
+                               Speed : in Virtual_Time.Speed_Range;
+                               A_Clock : in Virtual_Time.Clock_Access) is
     pragma Unreferenced (Rtime, Speed);
     use type Virtual_Time.Time;
     Rt, Vt : Virtual_Time.Time;

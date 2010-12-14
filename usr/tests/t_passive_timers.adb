@@ -1,5 +1,5 @@
 with Ada.Text_Io;
-with Passive_Timers, Timers;
+with Chronos.Passive_Timers, Timers;
 
 procedure T_Passive_Timers is
 
@@ -12,14 +12,14 @@ procedure T_Passive_Timers is
     Ada.Text_Io.Put_Line ("Expired");
   end Put;
 
-  T1 : Passive_Timers.Passive_Timer;
+  T1 : Chronos.Passive_Timers.Passive_Timer;
 
 begin
 
   T1.Start ( (Timers.Delay_Sec, null, 10.0, 10.0) );
 
   declare
-    T2 : Passive_Timers.Passive_Timer;
+    T2 : Chronos.Passive_Timers.Passive_Timer;
   begin
     T2.Start ( (Timers.Delay_Sec, null, 2.0, 2.0) );
     while not T1.Has_Expired loop
@@ -38,7 +38,7 @@ begin
 
   -- Test Timer_Expired
   declare
-    T3 : Passive_Timers.Passive_Timer;
+    T3 : Chronos.Passive_Timers.Passive_Timer;
   begin
     T3.Start ( (Timers.Delay_Sec, null, 0.0, 1.0) );
     delay 0.5;
@@ -47,7 +47,7 @@ begin
     Put ("T3", T3.Has_Expired);
     Put ("T3", T3.Has_Expired);
   exception
-    when Passive_Timers.Timer_Expired =>
+    when Chronos.Passive_Timers.Timer_Expired =>
       Ada.Text_Io.Put_Line ("Exception Timer_Expired (OK)");
       T3.Stop;
   end;

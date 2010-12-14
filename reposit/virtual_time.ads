@@ -60,7 +60,7 @@ package Virtual_Time is
 
   -- Observers interface
   type Observer is limited interface;
-  -- Tho observer is notified with the time of change (clock before the change)
+  -- The observer is notified with the time of change (clock before the change)
   -- and the new clock
   procedure Notify (An_Observer : in out Observer;
                     Prev_Reference_Time : in Time;
