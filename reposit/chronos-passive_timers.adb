@@ -1,6 +1,6 @@
 with Ada.Unchecked_Deallocation;
 with Virtual_Time, Perpet;
-package body Passive_Timers is
+package body Chronos.Passive_Timers is
 
   procedure Free is new Ada.Unchecked_Deallocation (Timer_Rec, Timer_Access);
 
@@ -107,5 +107,5 @@ package body Passive_Timers is
     Free (Timer.Acc);
   end Finalize;
 
-end Passive_Timers;
+end Chronos.Passive_Timers;
 

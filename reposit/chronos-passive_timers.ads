@@ -1,6 +1,6 @@
 with Ada.Finalization;
 with Chronos, Timers;
-package Passive_Timers is
+package Chronos.Passive_Timers is
 
   type Passive_Timer is tagged limited private;
 
@@ -47,5 +47,5 @@ private
 
   overriding procedure Finalize (Timer : in out Passive_Timer);
 
-end Passive_Timers;
+end Chronos.Passive_Timers;
 
