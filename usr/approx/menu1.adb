@@ -1,10 +1,11 @@
-with Con_Io, Afpx, Directory, Text_Handler, Select_File, Normal;
+with As.U; use As.U;
+with Con_Io, Afpx, Directory, Select_File, Normal;
 with Points, Screen, Set_Points_List, Dialog, Point_Str, Menu2;
 package body Menu1 is
 
   type Restore_List is (None, Partial, Full);
   Cursor_Field : Afpx.Field_Range;
-  File_Name_Txt : Text_Handler.Text (Directory.Max_Dir_Name_Len);
+  File_Name_Txt : Asu_Us;
 
   procedure Put_Point_Status is
     -- Width of nb_point
@@ -65,7 +66,7 @@ package body Menu1 is
     Encode_File_In_Get (File_Name);
     if File.F_Exists(File_Name) then
       Screen.Put_Title (Screen.Read_Points);
-      Text_Handler.Set (File_Name_Txt, File_Name);
+      File_Name_Txt := Asu_Tus (File_Name);
       begin
         -- Get data in points and list
         Points.P_Store (File.F_Read(File_Name));
@@ -78,7 +79,7 @@ package body Menu1 is
           -- Error reading. Prev data is lost :-(
           Points.P_Clear;
           Set_Points_List;
-          Text_Handler.Empty (File_Name_Txt);
+          File_Name_Txt := Asu_Null;
           Error(Screen.E_Io_Error);
       end;
     else
@@ -89,7 +90,7 @@ package body Menu1 is
   end Read_File;
 
   procedure Load_Save (Load : in Boolean; Restore : out Restore_List) is
-    Tmp_File_Name : Text_Handler.Text (Directory.Max_Dir_Name_Len);
+    Tmp_File_Name : Asu_Us;
   begin
     Restore := None;
     -- Title
@@ -117,24 +118,22 @@ package body Menu1 is
       Kind : Directory.File_Kind_List;
       use Directory;
     begin
-      Text_Handler.Set (Tmp_File_Name,
-                      My_Select_File(2, Text_Handler.Value(File_Name_Txt),
-                                     Load));
-      if Text_Handler.Empty (Tmp_File_Name) then
+      Tmp_File_Name := Asu_Tus (My_Select_File(2, Asu_Ts (File_Name_Txt),
+                                               Load));
+      if Asu_Is_Null (Tmp_File_Name) then
         -- Cancelled
        return;
       end if;
-      Kind := Directory.File_Kind (Text_Handler.Value(Tmp_File_Name));
+      Kind := Directory.File_Kind (Asu_Ts (Tmp_File_Name));
       if Kind = Directory.Link then
         -- Follow link recursively
         begin
-          Directory.Read_Link (Text_Handler.Value(Tmp_File_Name),
-                               Tmp_File_Name);
+          Directory.Read_Link (Asu_Ts (Tmp_File_Name), Tmp_File_Name);
         exception
           when others =>
             Error (Screen.E_Io_Error);
         end;
-        Kind := Directory.File_Kind (Text_Handler.Value(Tmp_File_Name));
+        Kind := Directory.File_Kind (Asu_Ts (Tmp_File_Name));
       end if;
     end;
 
@@ -142,25 +141,25 @@ package body Menu1 is
     Afpx.Use_Descriptor(1);
     Set_Points_List;
     Screen.Init_For_Main1 (Cursor_Field);
-    Screen.Put_File (Text_Handler.Value(File_Name_Txt));
-    Encode_File_In_Get (Text_Handler.Value(Tmp_File_Name));
+    Screen.Put_File (Asu_Ts (File_Name_Txt));
+    Encode_File_In_Get (Asu_Ts (Tmp_File_Name));
     Restore := Partial;
     -- load or save
     if Load then
-      if Read_File (Text_Handler.Value(Tmp_File_Name)) then
+      if Read_File (Asu_Ts (Tmp_File_Name)) then
         -- Done,
-        Text_Handler.Set (File_Name_Txt, Tmp_File_Name);
+        File_Name_Txt := Tmp_File_Name;
         -- Else kept or lost
       end if;
     else
-      if File.F_Exists(Text_Handler.Value(Tmp_File_Name))
+      if File.F_Exists(Asu_Ts (Tmp_File_Name))
       and then not Screen.Confirm(Screen.C_File_Exists, True) then
         return;
       end if;
       begin
-        File.F_Write(Text_Handler.Value(Tmp_File_Name), Points.P_The_Points);
+        File.F_Write(Asu_Ts (Tmp_File_Name), Points.P_The_Points);
         Points.P_Saved;
-        Text_Handler.Set (File_Name_Txt, Tmp_File_Name);
+        File_Name_Txt := Tmp_File_Name;
       exception
         when others =>
           Error (Screen.E_Io_Error);
@@ -206,7 +205,7 @@ package body Menu1 is
   begin
     Afpx.Use_Descriptor(1);
     Screen.Init_For_Main1 (Cursor_Field);
-    Text_Handler.Empty (File_Name_Txt);
+    File_Name_Txt := Asu_Null;
     Screen.Put_File ("");
 
     -- Get field width
@@ -214,7 +213,7 @@ package body Menu1 is
     -- File?
     if Init_File_Name /= "" then
       if Read_File (Init_File_Name) then
-        Text_Handler.Set (File_Name_Txt, Init_File_Name);
+        File_Name_Txt := Asu_Tus (Init_File_Name);
       end if;
       Restore := Partial;
     else
@@ -241,7 +240,7 @@ package body Menu1 is
               Afpx.Update_List (Afpx.Center);
             end if;
             Screen.Init_For_Main1 (Cursor_Field);
-            Screen.Put_File (Text_Handler.Value(File_Name_Txt));
+            Screen.Put_File (Asu_Ts (File_Name_Txt));
           when Full =>
             Afpx.Use_Descriptor(1);
             Set_Points_List;
@@ -250,7 +249,7 @@ package body Menu1 is
               Afpx.Update_List (Afpx.Center);
             end if;
             Screen.Init_For_Main1 (Cursor_Field);
-            Screen.Put_File (Text_Handler.Value(File_Name_Txt));
+            Screen.Put_File (Asu_Ts (File_Name_Txt));
         end case;
 
         -- Delete/modify/approximation/sort
@@ -312,9 +311,8 @@ package body Menu1 is
                 if Dialog.Confirm_Lost then
                   Points.P_Clear;
                   Set_Points_List;
-                  Text_Handler.Empty(File_Name_Txt);
                   -- Update file_name, nb of points and save_status
-                  Text_Handler.Empty (File_Name_Txt);
+                  File_Name_Txt := Asu_Null;
                 end if;
                 Data_Changed := True;
                 Restore := Partial;

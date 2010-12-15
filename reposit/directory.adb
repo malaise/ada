@@ -1,5 +1,4 @@
 with Ada.Characters.Latin_1;
-with As.U; use As.U;
 with C_Types, String_Mng;
 package body Directory is
   use System;
@@ -40,9 +39,9 @@ package body Directory is
     return Result (1 .. Len);
   end Get_Current;
 
-  procedure Get_Current (Cur_Dir : in out Text_Handler.Text) is
+  procedure Get_Current (Cur_Dir : in out Asu_Us) is
   begin
-    Text_Handler.Set (Cur_Dir, Get_Current);
+    Cur_Dir := Asu_Tus (Get_Current);
   end Get_Current;
 
   function C_Chdir (Path : System.Address) return C_Types.Int;
@@ -107,9 +106,9 @@ package body Directory is
     return Dir_Name(1 .. Len);
   end Next_Entry;
 
-  procedure Next_Entry (Desc : in Dir_Desc; Dir_Entry : in out Text_Handler.Text) is
+  procedure Next_Entry (Desc : in Dir_Desc; Dir_Entry : in out Asu_Us) is
   begin
-    Text_Handler.Set (Dir_Entry, Next_Entry (Desc));
+    Dir_Entry := Asu_Tus (Next_Entry (Desc));
   end Next_Entry;
 
   procedure C_Rewinddir (Dir : System.Address);
@@ -172,7 +171,6 @@ package body Directory is
     Orig, Src, Dest : Asu_Us;
     Iter : Positive;
     Threshold : constant := 1024;
-    use Text_Handler;
     use type Sys_Calls.File_Kind_List, Asu_Us;
   begin
     -- Check file_name  is a link
@@ -216,10 +214,10 @@ package body Directory is
 
 
   procedure Read_Link (File_Name : in String;
-                       Target : in out Text_Handler.Text;
+                       Target : in out Asu_Us;
                        Recursive : in Boolean := True) is
   begin
-    Text_Handler.Set (Target, Read_Link(File_Name, Recursive));
+    Target := Asu_Tus (Read_Link(File_Name, Recursive));
   end Read_Link;
 
 

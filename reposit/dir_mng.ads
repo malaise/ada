@@ -1,20 +1,15 @@
-with Text_Handler;
-with Dynamic_List;
-with Directory;
+with As.U; use As.U;
+with Dynamic_List, Directory;
 package Dir_Mng is
-
-  subtype File_Str_Range is Positive range 1 .. Directory.Max_Dir_Name_Len;
-  subtype File_Str is String (File_Str_Range);
-  subtype File_Txt is Text_Handler.Text (Directory.Max_Dir_Name_Len);
 
   subtype File_Kind_List is Directory.File_Kind_List;
 
   type File_Entry_Rec is record
-    Name : File_Str;
-    Len  : File_Str_Range;
+    Name : Asu_Us;
     Kind : File_Kind_List;
   end record;
-  package File_Dyn_List_Mng is new Dynamic_List (Element_Type => File_Entry_Rec);
+  package File_Dyn_List_Mng is
+          new Dynamic_List (Element_Type => File_Entry_Rec);
   package File_List_Mng renames File_Dyn_List_Mng.Dyn_List;
 
   -- List files of a directory
@@ -27,8 +22,8 @@ package Dir_Mng is
                       Dir  : in String := "";
                       Template : in String := "");
   procedure List_Dir (List : in out File_List_Mng.List_Type;
-                      Dir  : in File_Txt := Text_Handler.Empty_Text;
-                      Template : in File_Txt := Text_Handler.Empty_Text);
+                      Dir  : in Asu_Us := Asu_Null;
+                      Template : in Asu_Us := Asu_Null);
 
   -- To sort files. Directories, then others, by name.
   function Less_Than (El1, El2 : in File_Entry_Rec) return Boolean;

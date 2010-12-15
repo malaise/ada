@@ -431,13 +431,6 @@ package body Afpx is
 
   procedure Encode_Field (Field_No : in Field_Range;
                           From_Pos : in Con_Io.Full_Square;
-                          Str      : in Str_Txt) is
-  begin
-    Encode_Field (Field_No, From_Pos, Text_Handler.Value (Str));
-  end Encode_Field;
-
-  procedure Encode_Field (Field_No : in Field_Range;
-                          From_Pos : in Con_Io.Full_Square;
                           Str      : in Asu_Us) is
   begin
     Encode_Field (Field_No, From_Pos, Asu_Ts (Str));
@@ -470,12 +463,6 @@ package body Afpx is
     end loop;
     Encode_Line (Line, Ustr);
   end Encode_Wide_Line;
-
-  procedure Encode_Line (Line : in out Line_Rec;
-                         Str  : in Str_Txt) is
-  begin
-    Encode_Line (Line, Text_Handler.Value (Str));
-  end Encode_Line;
 
   -- Decode the content of a row of a field
   function Decode_Field (Field_No : Field_Range;
@@ -531,14 +518,6 @@ package body Afpx is
     begin
       return Str;
     end;
-  end Decode_Field;
-
-  procedure Decode_Field (Field_No : in Field_Range;
-                          Row      : in Con_Io.Full_Row_Range;
-                          Str      : in out Str_Txt;
-                          Adjust   : in Boolean := True) is
-  begin
-    Text_Handler.Set (Str, Decode_Field (Field_No, Row, Adjust));
   end Decode_Field;
 
   procedure Decode_Field (Field_No : in Field_Range;

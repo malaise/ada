@@ -277,7 +277,7 @@ begin
       File_List.Move_At (Rnd.Int_Random (1, File_List.List_Length));
       File_List.Read (File_Entry, Dir_Mng.File_List_Mng.Current);
       if File_Entry.Kind = Directory.File then
-        Do_One (Data_Dir & "/" & File_Entry.Name (1 .. File_Entry.Len));
+        Do_One (Data_Dir & "/" & Asu_Ts (File_Entry.Name));
       end if;
     end loop;
   else

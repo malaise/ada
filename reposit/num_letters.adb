@@ -1,4 +1,4 @@
-with Text_Handler;
+with As.U; use As.U;
 package body Num_Letters is
 
   -- Conversion Number -> letters
@@ -17,12 +17,12 @@ package body Num_Letters is
   -- Result
   -- Should store "seventy seven thousand seven hundred seventy seven"
   --  or same with eight
-  Txt : Text_Handler.Text (60);
+  Txt : Asu_Us;
 
   Initialized : Boolean := False;
   procedure Init is
   begin
-    Text_Handler.Empty (Txt);
+    Txt := Asu_Null;
     if Initialized then
       return;
     end if;
@@ -121,11 +121,10 @@ package body Num_Letters is
 
     -- Generate thousands, leave hundreds
     if Last = 5 then
-      Text_Handler.Set (Txt, Make2 (Rev(5) & Rev(4))
-                      & " " & Tenth(3).all);
+      Txt := Asu_Tus (Make2 (Rev(5) & Rev(4)) & " " & Tenth(3).all);
       Last := 3;
     elsif Last = 4 then
-      Text_Handler.Set (Txt, Make1 (Rev(4 .. 4)) & " " & Tenth(3).all);
+      Txt := Asu_Tus (Make1 (Rev(4 .. 4)) & " " & Tenth(3).all);
       Last := 3;
     end if;
 
@@ -137,10 +136,10 @@ package body Num_Letters is
     -- Generate hundreds, leave tenths
     if Last = 3 then
       -- Add separator from thousands
-      if not Text_Handler.Empty (Txt) then
-        Text_Handler.Append (Txt, " ");
+      if not Asu_Is_Null (Txt) then
+        Asu.Append (Txt, " ");
       end if;
-      Text_Handler.Append (Txt, Make1 (Rev(3 .. 3)) & " " & Tenth(2).all);
+      Asu.Append (Txt, Make1 (Rev(3 .. 3)) & " " & Tenth(2).all);
       Last := 2;
     end if;
 
@@ -152,19 +151,19 @@ package body Num_Letters is
     -- Generate tenths or unit
     if Last = 2 then
       -- Add separator from hundreds
-      if not Text_Handler.Empty (Txt) then
-        Text_Handler.Append (Txt, " ");
+      if not Asu_Is_Null (Txt) then
+        Asu.Append (Txt, " ");
       end if;
-      Text_Handler.Append (Txt, Make2 (Rev(2) & Rev(1)));
+      Asu.Append (Txt, Make2 (Rev(2) & Rev(1)));
     elsif Rev(1) /= '0' then
       -- Add separator from hundreds
-      if not Text_Handler.Empty (Txt) then
-        Text_Handler.Append (Txt, " ");
+      if not Asu_Is_Null (Txt) then
+        Asu.Append (Txt, " ");
       end if;
-      Text_Handler.Append (Txt, Make1 (Rev(1 .. 1)));
+      Asu.Append (Txt, Make1 (Rev(1 .. 1)));
     end if;
 
-    return Text_Handler.Value (Txt);
+    return Asu_Ts (Txt);
   end Letters_Of;
 
 end Num_Letters;

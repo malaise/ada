@@ -1,3 +1,4 @@
+with As.U; use As.U;
 with Socket;
 package Tcp_Util is
 
@@ -25,8 +26,7 @@ package Tcp_Util is
                      range Port_Name_Spec .. Port_Num_Spec;
 
   -- Port name and num
-  Max_Port_Name_Len : constant := 64;
-  subtype Port_Name is String (1 .. Max_Port_Name_Len);
+  subtype Port_Name is Asu_Us;
   subtype Port_Num is Socket.Port_Num;
 
 
@@ -34,7 +34,7 @@ package Tcp_Util is
   type Local_Port (Kind : Local_Port_List := Port_Name_Spec) is record
     case Kind is
       when Port_Name_Spec =>
-        Name : Port_Name := (others => ' ');
+        Name : Port_Name := Asu_Null;
       when Port_Num_Spec =>
         Num : Port_Num := 0;
       when Port_Dynamic_Spec =>
@@ -47,7 +47,7 @@ package Tcp_Util is
   type Remote_Port (Kind : Remote_Port_List := Port_Name_Spec) is record
     case Kind is
       when Port_Name_Spec =>
-        Name : Port_Name := (others => ' ');
+        Name : Port_Name := Asu_Null;
       when Port_Num_Spec =>
         Num : Port_Num := 0;
     end case;
@@ -59,8 +59,7 @@ package Tcp_Util is
   -- Kinds of host definition
   type Remote_Host_List is (Host_Name_Spec, Host_Id_Spec);
   -- Host name and id
-  Max_Host_Name_Len : constant := 64;
-  subtype Host_Name is String (1 .. Max_Host_Name_Len);
+  subtype Host_Name is Asu_Us;
   subtype Host_Id is Socket.Host_Id;
 
 
@@ -68,17 +67,11 @@ package Tcp_Util is
   type Remote_Host (Kind : Remote_Host_List := Host_Name_Spec) is record
     case Kind is
       when Host_Name_Spec =>
-        Name : Host_Name := (others => ' ');
+        Name : Host_Name := Asu_Null;
       when Host_Id_Spec =>
         Id : Host_Id := Socket.No_Host;
     end case;
   end record;
-
-
-  -- NAME EXTRACTION --
-  ---------------------
-  -- Remove trailing spaces of a name
-  function Name_Of (Name : String) return String;
 
   -- CALLBACKS --
   ---------------

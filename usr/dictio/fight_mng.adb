@@ -1,3 +1,4 @@
+with As.U; use As.U;
 with Timers;
 with Dictio_Debug, Parse, Errors, Versions, Intra_Dictio;
 package body Fight_Mng is
@@ -80,7 +81,7 @@ package body Fight_Mng is
 
     Nodes.Set (From, Stat, Sync, Prio);
     if Dictio_Debug.Level_Array(Dictio_Debug.Fight) then
-      Dictio_Debug.Put ("Fight: received status from: " & Parse (From)
+      Dictio_Debug.Put ("Fight: received status from: " & Asu_Ts (From)
                & "/" & Stat'Img & "-" & Prio);
     end if;
   end Event;

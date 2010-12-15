@@ -1,4 +1,3 @@
-with As.U; use As.U;
 with Xml_Parser;
 
 separate (Channels)
@@ -74,11 +73,7 @@ package body File is
 
     -- The Text node
     Txt := Ctx.Get_Child (Nod, 1);
-    declare
-      Str : constant String := Ctx.Get_Text (Txt);
-    begin
-      Host.Name(1 .. Str'Length) := Str;
-    end;
+    Host.Name := Ctx.Get_Text (Txt);
     return Host;
 
   exception

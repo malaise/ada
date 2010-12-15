@@ -1,6 +1,6 @@
 with Ada.Text_Io;
-
-with Text_Handler, Argument, Upper_Char, Get_Float, My_Math, Euro_Franc;
+with As.U; use As.U;
+with Argument, Upper_Char, Get_Float, My_Math, Euro_Franc, String_Mng;
 use type My_Math.Real;
 
 procedure E2F is
@@ -11,7 +11,7 @@ procedure E2F is
   Amount : My_Math.Real;
   To_Francs : Boolean;
 
-  The_Argument : Text_Handler.Text(20);
+  The_Argument : Asu_Us;
 
   procedure Help is
     use Ada.Text_Io;
@@ -40,40 +40,35 @@ begin
 
   -- Get it
   declare
-    Len : Natural;
     Unit : Character;
     Dot : Natural;
   begin
-    Argument.Get_Parameter(The_Argument);
+    The_Argument := Asu_Tus (Argument.Get_Parameter);
 
     -- Check unit, get way of conversion
-    Len := Text_Handler.Length(The_Argument);
-    Unit := Upper_Char(Text_Handler.Value(The_Argument)(Len));
+    Unit := Upper_Char(Asu.Element(The_Argument, Asu.Length (The_Argument)));
     if Unit = 'E' then
       To_Francs := True;
-      Len := Len - 1;
+      Asu.Delete (The_Argument, Asu.Length (The_Argument),
+                                Asu.Length (The_Argument));
     elsif Unit = 'F' then
       To_Francs := False;
-      Len := Len - 1;
+      Asu.Delete (The_Argument, Asu.Length (The_Argument),
+                                Asu.Length (The_Argument));
     elsif Unit in '0' .. '9' then
        To_Francs := True;
     else
       raise Constraint_Error;
     end if;
 
-    -- Isolate the value
-    Text_Handler.Set(The_Argument,
-                     Text_Handler.Value(The_Argument)(1 .. Len));
-
     -- If value is float, must have 2 digits for cents
-    Dot := Text_Handler.Locate(The_Argument, '.', 1);
-    if Dot /= 0 and then Dot + 2 /= Len then
+    Dot := String_Mng.Locate (Asu_Ts (The_Argument), ".", 1);
+    if Dot /= 0 and then Dot + 2 /= Asu.Length (The_Argument) then
       raise Constraint_Error;
     end if;
 
     -- Get it in Real format
-    Amount := My_Math.Real(Get_Float.Get_Float(
-                   Text_Handler.Value(The_Argument)));
+    Amount := My_Math.Real(Get_Float.Get_Float(Asu_Ts (The_Argument)));
 
   exception
     when others =>

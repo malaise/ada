@@ -8,11 +8,6 @@ package body Many_Strings is
     return To & Sep & What;
   end Cat;
 
-  procedure Cat (To : in out Text_Handler.Text; What : in String) is
-  begin
-    Text_Handler.Append (To, Sep & What);
-  end Cat;
-
   procedure Cat (To : in out Asu_Us; What : in String) is
   begin
     Asu.Append (To, Sep & What);

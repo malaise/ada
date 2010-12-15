@@ -1,12 +1,13 @@
 with Ada.Exceptions;
-with My_Io, Argument, Socket, Event_Mng, Text_Handler;
+with As.U; use As.U;
+with My_Io, Argument, Socket, Event_Mng;
 
 procedure T_Udp is
 
   Arg_Error : exception;
   Server : Boolean;
-  Server_Name : Text_Handler.Text (80);
-  Port_Name : Text_Handler.Text (80);
+  Server_Name : Asu_Us;
+  Port_Name : Asu_Us;
 
   Soc : Socket.Socket_Dscr;
   Fd  : Event_Mng.File_Desc := 0;
@@ -86,7 +87,7 @@ begin
   or else Argument.Get_Parameter (Occurence => 1) /= "-p" then
     raise Arg_Error;
   end if;
-  Argument.Get_Parameter (Port_Name, 2);
+  Port_Name := Asu_Tus (Argument.Get_Parameter (Occurence => 2));
 
   if Argument.Get_Nbre_Arg = 3
   and then Argument.Get_Parameter (Occurence => 3) = "-s" then
@@ -94,11 +95,11 @@ begin
   elsif Argument.Get_Nbre_Arg = 4
   and then Argument.Get_Parameter (Occurence => 3) = "-s" then
     Server := True;
-    Argument.Get_Parameter (Server_Name, 4);
+    Server_Name := Asu_Tus (Argument.Get_Parameter (Occurence => 4));
   elsif Argument.Get_Nbre_Arg = 4
   and then Argument.Get_Parameter (Occurence => 3) = "-c" then
     Server := False;
-    Argument.Get_Parameter (Server_Name, 4);
+    Server_Name := Asu_Tus (Argument.Get_Parameter (Occurence => 4));
   else
     raise Arg_Error;
   end if;
@@ -118,13 +119,12 @@ begin
 
   -- Link, set server dest in client, client sends
   if Server then
-    if not Text_Handler.Empty (Server_Name) then
+    if not Asu_Is_Null (Server_Name) then
       -- Ipm lan
       Soc.Set_Destination_Name_And_Service (
-           True, Text_Handler.Value (Server_Name),
-           Text_Handler.Value(Port_Name));
+           True, Asu_Ts (Server_Name), Asu_Ts (Port_Name));
     end if;
-    Soc.Link_Service (Text_Handler.Value(Port_Name));
+    Soc.Link_Service (Asu_Ts (Port_Name));
 
   else
     Soc.Link_Dynamic;
@@ -133,15 +133,13 @@ begin
       Dest_Host_Id : Socket.Host_Id;
       pragma Unreferenced (Dest_Host_Id);
     begin
-      Dest_Host_Id := Socket.Host_Id_Of (Text_Handler.Value (Server_Name));
-      Soc.Set_Destination_Name_And_Service ( False,
-         Text_Handler.Value (Server_Name),
-         Text_Handler.Value(Port_Name));
+      Dest_Host_Id := Socket.Host_Id_Of (Asu_Ts (Server_Name));
+      Soc.Set_Destination_Name_And_Service (False,
+         Asu_Ts (Server_Name), Asu_Ts (Port_Name));
     exception
       when Socket.Soc_Name_Not_Found =>
         Soc.Set_Destination_Name_And_Service (True,
-           Text_Handler.Value (Server_Name),
-           Text_Handler.Value(Port_Name));
+           Asu_Ts (Server_Name), Asu_Ts (Port_Name));
     end;
     Message.Num := 1;
     Send;

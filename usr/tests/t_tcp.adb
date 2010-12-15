@@ -1,11 +1,12 @@
 with Ada.Exceptions;
-with My_Io, Argument, Socket, Event_Mng, Text_Handler;
+with As.U; use As.U;
+with My_Io, Argument, Socket, Event_Mng;
 
 procedure T_Tcp is
 
   Arg_Error : exception;
   Server : Boolean;
-  Server_Name : Text_Handler.Text (80);
+  Server_Name : Asu_Us;
 
   Soc, Accept_Soc : Socket.Socket_Dscr;
   Fd, Accept_Fd : Event_Mng.File_Desc := 0;
@@ -115,7 +116,7 @@ procedure T_Tcp is
     My_Io.Put_Line ("Client connecting");
     begin
       Soc.Set_Destination_Name_And_Service (False,
-             Text_Handler.Value (Server_Name), Server_Port_Name);
+             Asu_Ts (Server_Name), Server_Port_Name);
     exception
       when Socket.Soc_Conn_Refused =>
         My_Io.Put_Line ("Client connection has failed. Closing");
@@ -155,7 +156,7 @@ begin
     Server := True;
   elsif Argument.Get_Nbre_Arg = 2 and then Argument.Get_Parameter = "-c" then
     Server := False;
-    Argument.Get_Parameter (Server_Name, 2);
+    Server_Name := Asu_Tus (Argument.Get_Parameter (Occurence => 2));
   else
     raise Arg_Error;
   end if;

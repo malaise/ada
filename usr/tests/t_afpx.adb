@@ -1,3 +1,4 @@
+with As.U; use As.U;
 with Argument, Afpx, Con_Io, Dir_Mng, Timers, Language, Basic_Proc;
 procedure T_Afpx is
 
@@ -83,10 +84,10 @@ begin
 
   loop
     Dir_List.Read (Dir_Item, Dir_Mng.File_List_Mng.Current);
-    Afpx_Item.Len := Dir_Item.Len;
+    Afpx_Item.Len := Asu.Length (Dir_Item.Name);
     Afpx_Item.Str := (others => Con_Io.Space);
     Afpx_Item.Str(1 .. Afpx_Item.Len) :=
-          Language.String_To_Unicode (Dir_Item.Name (1 .. Dir_Item.Len));
+          Language.String_To_Unicode (Asu_Ts (Dir_Item.Name));
     Afpx_Item.Str(Afpx_Item.Len+1) := Language.Char_To_Unicode ('>');
     Afpx_Item.Str(Afpx_Item.Len+2) :=
       Language.Char_To_Unicode (Dir_Mng.File_Kind_List'Image(Dir_Item.Kind)(1));

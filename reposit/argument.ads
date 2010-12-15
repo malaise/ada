@@ -1,5 +1,4 @@
 with As.U; use As.U;
-with Text_Handler;
 package Argument is
 
   -- Extracts arguments from command line:
@@ -76,13 +75,6 @@ package Argument is
    Occurence : in Natural := 1;
    Param_Key : in String := Any_Arg);
 
-  -- Same with text
-  procedure Get_Parameter (
-   Parameter : in out Text_Handler.Text;
-   Occurence : in Natural := 1;
-   Param_Key : in String := Any_Arg);
-
-
   -- Result is string and position
   procedure Get_Param_And_Pos (
    Parameter : out String;
@@ -94,13 +86,6 @@ package Argument is
   -- Result is unbounded string and position
   procedure Get_Param_And_Pos (
    Parameter : out Asu_Us;
-   Position : out Natural;
-   Occurence : in Natural := 1;
-   Param_Key : in String := Any_Arg);
-
-  -- Result is text and position
-  procedure Get_Param_And_Pos (
-   Parameter : in out Text_Handler.Text;
    Position : out Natural;
    Occurence : in Natural := 1;
    Param_Key : in String := Any_Arg);
@@ -126,13 +111,11 @@ package Argument is
   function Get_Program_Path return String;
   procedure Get_Program_Path (Path : out String;
                               Path_Length : out Natural);
-  procedure Get_Program_Path (Path : in out Text_Handler.Text);
 
   -- Name of program from Argument(0)
   function Get_Program_Name return String;
   procedure Get_Program_Name (Name : out String;
                               Name_Length : out Natural);
-  procedure Get_Program_Name (Name : in out Text_Handler.Text);
 
   Argument_Not_Found, Argument_Too_Long : exception;
 

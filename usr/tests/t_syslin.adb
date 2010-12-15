@@ -3,15 +3,12 @@
 -- Solve linear system and put solution
 
 with Ada.Text_Io;
-with Text_Handler, Argument, Normal, Syslin, Flo_Io, Get_Line, Get_Float;
+with As.U; use As.U;
+with Argument, Normal, Syslin, Flo_Io, Get_Line, Get_Float;
 
 procedure T_Syslin is
 
   package My_Syslin is new Syslin(Float);
-
-  Max_Line_Len : constant := 1024;
-  Max_Word_Nb  : constant := 500;
-  Max_Word_Len : constant := 15;
 
   -- Matrix dimension
   Dim : Positive := 1;
@@ -27,14 +24,10 @@ begin
   end if;
 
   declare
-    package My_Get_Line is new Get_Line (
-      Max_Word_Len => Max_Word_Len,
-      Max_Word_Nb  => Max_Word_Nb,
-      Max_Line_Len => Max_Line_Len,
-      Comment => "#");
+    package My_Get_Line is new Get_Line (Comment => "#");
 
-    Line  : My_Get_Line.Line_Array;
     Whole_Line : My_Get_Line.Line_Txt;
+    Line : Asu_Ua.Unbounded_Array;
 
     procedure Read_Next_Significant_Line is
     begin
@@ -80,16 +73,16 @@ begin
         -- Parse current line in matrix and vector
         begin
           for J in 1 .. Dim loop
-            Matrix (I, J) := Get_Float.Get_Float(Text_Handler.Value(Line(J)));
+            Matrix (I, J) := Get_Float.Get_Float(Asu_Ts (Line.Element (J)));
           end loop;
-          Vector (I) := Get_Float.Get_Float(Text_Handler.Value(Line(Dim+1)));
+          Vector (I) := Get_Float.Get_Float(Asu_Ts (Line.Element (Dim+1)));
         exception
           when others =>
             Ada.Text_Io.Put_Line ("ERROR, when reading data at line "
                               & Integer'Image(My_Get_Line.Get_Word_Number) & ".");
             raise File_Error;
         end;
-        Ada.Text_Io.Put_Line (">" & Text_Handler.Value(Whole_Line) & "<");
+        Ada.Text_Io.Put_Line (">" & Asu_Ts (Whole_Line) & "<");
 
         if I /= Dim then
           -- read next not empty line
@@ -113,7 +106,7 @@ begin
         My_Get_Line.Close;
         raise File_Error;
       exception
-        when My_Get_Line.No_More_Line =>
+        when My_Get_Line.End_Error =>
           My_Get_Line.Close;
       end;
 

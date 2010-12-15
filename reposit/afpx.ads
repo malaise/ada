@@ -1,5 +1,5 @@
 with As.U; use As.U;
-with Unicode, Text_Handler, Con_Io, Dynamic_List;
+with Unicode, Con_Io, Dynamic_List;
 
 package Afpx is
 
@@ -17,7 +17,6 @@ package Afpx is
   -- The content of one row of one field (encode, decode)
   subtype Unicode_Number is Unicode.Unicode_Number;
   subtype Unicode_Sequence is Unicode.Unicode_Sequence;
-  subtype Str_Txt is Text_Handler.Text (Width_Range'Last);
 
   -- Width and height of the screen
   procedure Get_Screen_Size (Height : out Height_Range;
@@ -110,9 +109,6 @@ package Afpx is
                           Str      : in Unicode_Sequence);
   procedure Encode_Field (Field_No : in Field_Range;
                           From_Pos : in Con_Io.Full_Square;
-                          Str      : in Str_Txt);
-  procedure Encode_Field (Field_No : in Field_Range;
-                          From_Pos : in Con_Io.Full_Square;
                           Str      : in Asu_Us);
 
   -- Decode the content of a row of a field
@@ -130,10 +126,6 @@ package Afpx is
   function Decode_Field (Field_No : Field_Range;
                          Row      : Con_Io.Full_Row_Range)
                          return Unicode_Sequence;
-  procedure Decode_Field (Field_No : in Field_Range;
-                          Row      : in Con_Io.Full_Row_Range;
-                          Str      : in out Str_Txt;
-                          Adjust   : in Boolean := True);
   procedure Decode_Field (Field_No : in Field_Range;
                           Row      : in Con_Io.Full_Row_Range;
                           Str      : in out Asu_Us;
@@ -226,8 +218,6 @@ package Afpx is
                          Str  : in Wide_String);
   procedure Encode_Line (Line : in out Line_Rec;
                          Str  : in Unicode_Sequence);
-  procedure Encode_Line (Line : in out Line_Rec;
-                         Str  : in Str_Txt);
 
   package Line_Dyn_List_Mng is new Dynamic_List (Line_Rec);
   package Line_List_Mng renames Line_Dyn_List_Mng.Dyn_List;

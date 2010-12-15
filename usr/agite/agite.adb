@@ -90,7 +90,7 @@ procedure Agite is
         File.S2 := '?';
         File.S3 := '?';
       end if;
-      File.Name := Asu_Tus (Dir_File.Name (1 .. Dir_File.Len));
+      File.Name := Dir_File.Name;
       File.Kind := Git_If.Char_Of (
              Sys_Calls.File_Desc_Kind_List(Dir_File.Kind));
       Files.Insert (File);

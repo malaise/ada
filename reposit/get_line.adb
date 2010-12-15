@@ -1,30 +1,43 @@
 with Ada.Characters.Latin_1;
+with Sys_Calls;
 package body Get_Line is
 
-  F : Ada.Text_Io.File_Type;
-  Current_Line : Line_Array;
-  Nb_Words : Word_Count;
-  Current_Line_No : Ada.Text_Io.Count;
+  F : Text_Line.File_Type;
+  Fd : Sys_Calls.File_Desc;
+  Current_Line : Asu_Ua.Unbounded_Array;
+  Current_Line_No : Count;
   Cur : Positive;
   Current_Whole_Line : Line_Txt;
   First_Word : Line_Txt;
   Parsed : Boolean;
-  Buff : String (1 .. Max_Line_Len+1);
+  Buff : Asu_Us;
   Word : Word_Txt;
-  Last : Natural;
 
   -- Opens the file. Exceptions are the one of Ada.Text_Io.Open (In_File)
   -- Loads the first line
   procedure Open (File_Name : in String) is
   begin
     Current_Line_No := 0;
-    Ada.Text_Io.Open (F, Ada.Text_Io.In_File, File_Name);
+    if F.Is_Open then
+      raise Status_Error;
+    end if;
+    Fd := Sys_Calls.Open (File_Name, Sys_Calls.In_File);
+    F.Open (Text_Line.In_File, Fd);
     Read_Next_Line;
+  exception
+    when Sys_Calls.Name_Error =>
+      raise Name_Error;
+    when Sys_Calls.System_Error =>
+      raise Io_Error;
   end Open;
 
   procedure Close is
   begin
-    Ada.Text_Io.Close (F);
+    if not F.Is_Open then
+      raise Status_Error;
+    end if;
+    F.Close;
+    Sys_Calls.Close (Fd);
   end Close;
 
   function Is_Separator (C : Character) return Boolean is
@@ -37,26 +50,26 @@ package body Get_Line is
     F, L : Positive;
     In_Word : Boolean := True;
   begin
-    if Cur > Last then
+    if Cur > Asu.Length (Buff) then
       return "";
     end if;
     F := Cur;
-    for I in Cur .. Last loop
-      if Is_Separator (Buff(I)) then
+    for I in Cur .. Asu.Length (Buff) loop
+      if Is_Separator (Asu.Element (Buff, I)) then
         if In_Word then
           L := I;
           In_Word := False;
         end if;
       else
         if not In_Word then
-            Cur := I;
-            return Buff (F .. L-1);
+          Cur := I;
+          return Asu.Slice (Buff, F, L - 1);
         end if;
       end if;
     end loop;
-    Cur := Last + 1;
+    Cur := Asu.Length (Buff) + 1;
     if In_Word then
-      return Buff (F .. Last);
+      return Asu.Slice (Buff, F, Asu.Length (Buff));
     else
       return "";
     end if;
@@ -65,23 +78,23 @@ package body Get_Line is
   -- Reset Cur and parse leading spaces
   procedure Reset_Word is
   begin
-    Nb_Words := 0;
-    for I in 1 .. Last loop
-      if Is_Separator (Buff(I)) then
+    Current_Line := Asu_Ua.Null_Unbounded_Array;
+    for I in 1 .. Asu.Length (Buff) loop
+      if Is_Separator (Asu.Element (Buff, I)) then
         null;
       else
         Cur := I;
         return;
       end if;
     end loop;
-    Cur := Last + 1;
+    Cur := Asu.Length (Buff) + 1;
   end Reset_Word;
 
   -- Current line number
-  function Get_Line_No return Ada.Text_Io.Positive_Count is
+  function Get_Line_No return Positive_Count is
   begin
-    if not Ada.Text_Io.Is_Open (F) then
-      raise Not_Open;
+    if not F.Is_Open then
+      raise Status_Error;
     end if;
     return Current_Line_No;
   end Get_Line_No;
@@ -90,51 +103,48 @@ package body Get_Line is
   procedure Read_Next_Line is
   begin
     Parsed := False;
-    if not Ada.Text_Io.Is_Open (F) then
-      raise Not_Open;
+    if not F.Is_Open then
+      raise Status_Error;
     end if;
 
     loop
-      -- Get line from file
-      begin
-        Ada.Text_Io.Get_Line (F, Buff, Last);
-      exception
-        when Ada.Text_Io.End_Error =>
-          raise No_More_Line;
-      end;
+      -- Get line from file, may raise End_Error
+      Buff := F.Get;
+      if Asu_Is_Null (Buff) then
+        raise End_Error;
+      end if;
+      Current_Line_No := Current_Line_No + 1;
 
-      Current_Line_No := Ada.Text_Io. "+" (Current_Line_No, 1);
-
-      -- Check got line length
-      if Last = Buff'Last then
-        raise Line_Too_Long;
+      -- Strip tailing Lf is there is
+      if Asu.Element (Buff, Asu.Length (Buff)) = Text_Line.Line_Feed_Char then
+        Asu.Delete (Buff, Asu.Length (Buff), Asu.Length (Buff));
       end if;
 
       -- Store the line as it is in Current_Whole_Line
-      Text_Handler.Set (Current_Whole_Line, Buff(1 .. Last));
+      Current_Whole_Line := Buff;
 
       -- Remove trailing spaces
-      while Last > 0 and then Is_Separator (Buff(Last)) loop
-        Last := Last - 1;
+      while not Asu_Is_Null (Buff)
+      and then Is_Separator (Asu.Element (Buff, Asu.Length (Buff))) loop
+        Asu.Delete (Buff, Asu.Length (Buff), Asu.Length (Buff));
       end loop;
 
       -- Remove leading spaces
       Reset_Word;
 
       -- Parse first word
-      Text_Handler.Set (First_Word, Get_Next_Word);
+      First_Word := Asu_Tus (Get_Next_Word);
 
       -- Done when no check of comments
       exit when Comment = "";
 
       -- Done when not empty
       --  and then neither first word nor first letters are the comment
-      exit when not Text_Handler.Empty(First_Word)
-      and then Text_Handler.Value(First_Word) /= Comment
+      exit when not Asu_Is_Null (First_Word)
+      and then Asu_Ts (First_Word) /= Comment
       and then
-       (Text_Handler.Length(Current_Whole_Line) < Comment'Length
-        or else Text_Handler.Value(Current_Whole_Line)(1 .. Comment'Length)
-                                      /= Comment);
+       (Asu.Length(Current_Whole_Line) < Comment'Length
+        or else Asu.Slice (Current_Whole_Line, 1, Comment'Length) /= Comment);
     end loop;
 
   end Read_Next_Line;
@@ -143,21 +153,23 @@ package body Get_Line is
   -- Get the whole line (not parsed)
   procedure Get_Whole_Line (Line : in out Line_Txt) is
   begin
-    Text_Handler.Set (Line, Current_Whole_Line);
+    if not F.Is_Open then
+      raise Status_Error;
+    end if;
+    Line := Current_Whole_Line;
   end Get_Whole_Line;
 
 
-    -- Get the first significant word of the line (not parsed)
+  -- Get the first significant word of the line (not parsed)
   function Get_First_Word return String is
   begin
-    if not Ada.Text_Io.Is_Open (F) then
-      raise Not_Open;
+    if not F.Is_Open then
+      raise Status_Error;
     end if;
-    return Text_Handler.Value(First_Word);
+    return Asu_Ts (First_Word);
   end Get_First_Word;
 
-
-
+  -- Internal
   procedure Parse_Words is
   begin
     if Parsed then
@@ -167,26 +179,15 @@ package body Get_Line is
     -- Parse words
     loop
       -- Check word length
-      begin
-        Text_Handler.Set (Word, Get_Next_Word);
-      exception
-        when Constraint_Error =>
-          raise Word_Too_Long;
-      end;
+      Word := Asu_Tus (Get_Next_Word);
 
       -- Check no more word in line
-      if Text_Handler.Length(Word) = 0 then
+      if Asu_Is_Null (Word) then
         exit;
       end if;
 
-      -- Check word count
-      if Nb_Words = Word_Range'Last then
-        raise Too_Many_Words;
-      end if;
-
       -- Store word
-      Nb_Words := Nb_Words + 1;
-      Text_Handler.Set (Current_Line(Nb_Words), Word);
+      Current_Line.Append (Word);
     end loop;
     Parsed := True;
   end Parse_Words;
@@ -195,29 +196,31 @@ package body Get_Line is
   -- Number of words in currently loaded line
   function Get_Word_Number return Word_Count is
   begin
-    if not Ada.Text_Io.Is_Open (F) then
-      raise Not_Open;
+    if not F.Is_Open then
+      raise Status_Error;
     end if;
     Parse_Words;
-    return Nb_Words;
+    return Current_Line.Length;
   end Get_Word_Number;
 
-
   -- Words of the currently loaded line
-  procedure Get_Words (Line : in out Line_Array) is
+  function Get_Words return Line_Array is
   begin
-    if not Ada.Text_Io.Is_Open (F) then
-      raise Not_Open;
+    if not F.Is_Open then
+      raise Status_Error;
     end if;
     Parse_Words;
-    for I in 1 .. Nb_Words loop
-      Text_Handler.Set (Line(I), Current_Line(I));
-    end loop;
-    for I in Integer(Nb_Words) + 1 .. Word_Range'Last loop
-      Text_Handler.Set (Line(I), "");
-    end loop;
+    return Current_Line.To_Array;
   end Get_Words;
 
+  procedure Get_Words (Line : in out Asu_Ua.Unbounded_Array) is
+  begin
+   if not F.Is_Open then
+      raise Status_Error;
+    end if;
+    Parse_Words;
+    Line := Current_Line;
+  end Get_Words;
 
 end Get_Line;
 

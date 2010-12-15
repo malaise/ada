@@ -1,4 +1,4 @@
-with Text_Handler;
+with As.U; use As.U;
 with Points, Screen, Resol;
 package Dialog is
 
@@ -6,8 +6,7 @@ package Dialog is
   function Confirm_Lost return Boolean;
 
   -- Remove trailing spaces. No heading nor intermediate spaces allowed
-  procedure Parse_Spaces (Txt : in out Text_Handler.Text;
-                          Ok : out Boolean);
+  procedure Parse_Spaces (Txt : in out Asu_Us; Ok : out Boolean);
 
   -- Get a coordinate
   --  If Set is set in, then a Put_Then_Get is performed, else a get

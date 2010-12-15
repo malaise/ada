@@ -48,25 +48,6 @@ package body Environ is
     Free (Ptr);
   end Get_Str;
 
-  procedure Get_Txt (Name : String; Result : in out Text_Handler.Text) is
-    Ptr : String_Access;
-    Env_Set   : Boolean;
-    Env_Trunc : Boolean;
-    Env_Len   : Natural;
-  begin
-    if Result.Max_Len = 0 then
-      return;
-    end if;
-    Ptr := new String(1 .. Result.Max_Len);
-
-    Sys_Calls.Getenv (Name, Env_Set, Env_Trunc, Ptr.all, Env_Len);
-    if Env_Set and then not Env_Trunc and then Env_Len /= 0 then
-      Text_Handler.Set (Result, Ptr.all(1 .. Env_Len));
-    end if;
-
-    Free (Ptr);
-  end Get_Txt;
-
   procedure Get_Us (Name : String; Result : in out Asu_Us) is
     Res : Asu_Us;
   begin
@@ -171,22 +152,22 @@ package body Environ is
 
   -- Is variable set and its lower case is "y" or "yes"
   function Is_Yes (Name : String) return Boolean is
-    Txt : Text_Handler.Text(3);
+    Str : Asu_Us;
   begin
-    Text_Handler.Set (Txt, "-");
-    Get_Txt (Name, Txt);
-    return  Lower_Str (Text_Handler.Value (Txt)) = "yes"
-    or else Lower_Str (Text_Handler.Value (Txt)) = "y";
+    Get_Us (Name, Str);
+    Str := Asu_Tus (Lower_Str (Asu_Ts (Str)));
+    return  Asu_Ts (Str) = "yes"
+    or else Asu_Ts (Str) = "y";
   end Is_Yes;
 
   -- Is variable set and its lower case is "n" or "no"
   function Is_No (Name : String) return Boolean is
-    Txt : Text_Handler.Text(2);
+    Str : Asu_Us;
   begin
-    Text_Handler.Set (Txt, "-");
-    Get_Txt (Name, Txt);
-    return  Lower_Str (Text_Handler.Value (Txt)) = "no"
-    or else Lower_Str (Text_Handler.Value (Txt)) = "n";
+    Get_Us (Name, Str);
+    Str := Asu_Tus (Lower_Str (Asu_Ts (Str)));
+    return  Asu_Ts (Str) = "no"
+    or else Asu_Ts (Str) = "n";
   end Is_No;
 
 end Environ;

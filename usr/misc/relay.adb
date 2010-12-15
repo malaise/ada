@@ -3,8 +3,8 @@
 
 with System;
 with Ada.Text_Io, Ada.Characters.Latin_1;
-with Text_Handler, Argument, Sys_Calls, Event_Mng,
-     Socket, Tcp_Util, Channels, Async_Stdin, String_Mng;
+with As.U; use As.U;
+with Argument, Sys_Calls, Event_Mng, Socket, Channels, Async_Stdin, String_Mng;
 procedure Relay is
 
   -- Message type
@@ -22,7 +22,7 @@ procedure Relay is
   Message : Message_Type;
 
   -- Name of the Channel
-  Channel_Name : Text_Handler.Text(Tcp_Util.Max_Port_Name_Len);
+  Channel_Name : Asu_Us;
   -- Suffix to build destinations file name
   File_Name_Suffix : constant String := ".xml";
 
@@ -139,7 +139,7 @@ begin
 
   -- Store channel_name
   begin
-    Argument.Get_Parameter (Channel_Name);
+    Channel_Name := Asu_Tus (Argument.Get_Parameter);
   exception
    when others =>
      Sys_Calls.Put_Line_Error ("Invalid channel_name "
@@ -149,20 +149,18 @@ begin
   end;
 
   -- Subscribe and add destinations from file except ourself
-  My_Channel.Change_Channel_Name (Text_Handler.Value(Channel_Name));
+  My_Channel.Change_Channel_Name (Asu_Ts (Channel_Name));
   My_Channel.Subscribe;
   begin
-    My_Channel.Add_Destinations (Text_Handler.Value(Channel_Name) &
-                                   File_Name_Suffix);
+    My_Channel.Add_Destinations (Asu_Ts (Channel_Name) & File_Name_Suffix);
   exception
     when Channels.Unknown_Channel =>
-      Sys_Calls.Put_Line_Error ("Unknown channel "
-                              & Text_Handler.Value(Channel_Name));
+      Sys_Calls.Put_Line_Error ("Unknown channel " & Asu_Ts (Channel_Name));
       Sys_Calls.Set_Error_Exit_Code;
       return;
     when Channels.File_Error =>
       Sys_Calls.Put_Line_Error ("Error processing destinations file "
-                              & Text_Handler.Value(Channel_Name)
+                              & Asu_Ts (Channel_Name)
                               & File_Name_Suffix);
       Sys_Calls.Set_Error_Exit_Code;
       return;

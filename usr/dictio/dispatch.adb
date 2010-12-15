@@ -1,3 +1,4 @@
+with As.U; use As.U;
 with Tcp_Util, Event_Mng;
 with Status, Data_Base, Intra_Dictio, Init_Mng, Online_Mng, Client_Mng, Args,
      Sync_Mng, Dictio_Debug, Versions, Parse, Fight_Mng, Errors;
@@ -67,7 +68,7 @@ package body Dispatch is
               and then Stat /= Status.Slave
               and then Stat /= Status.Dead then
         if Dictio_Debug.Level_Array(Dictio_Debug.Fight) then
-          Dictio_Debug.Put ("Dispatch: reply status to: " & Parse(From)
+          Dictio_Debug.Put ("Dispatch: reply status to: " & Asu_Ts (From)
                    & "/" & Stat'Img & "-" & Prio);
         end if;
         Intra_Dictio.Reply_Status (Intra_Dictio.Extra_Ver & Versions.Intra);
