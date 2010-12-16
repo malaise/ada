@@ -139,7 +139,7 @@ begin
 
   -- Store channel_name
   begin
-    Channel_Name := Asu_Tus (Argument.Get_Parameter);
+    Argument.Get_Parameter (Channel_Name);
   exception
    when others =>
      Sys_Calls.Put_Line_Error ("Invalid channel_name "

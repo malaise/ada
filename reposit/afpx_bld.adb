@@ -1061,7 +1061,7 @@ procedure Afpx_Bld is
 begin
   -- Help
   begin
-    List_File_Name := Asu_Tus (Argument.Get_Parameter (Param_Key => "h"));
+    Argument.Get_Parameter (List_File_Name, Param_Key => "h");
     Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
                         & " [ -l<afpx_list_file> ] [ -d<destination_dir> ]");
     return;
@@ -1073,7 +1073,7 @@ begin
   -- Source file and dest path arguments
   Expected_Args := 0;
   begin
-    List_File_Name := Asu_Tus (Argument.Get_Parameter (Param_Key => "l"));
+    Argument.Get_Parameter (List_File_Name, Param_Key => "l");
     if Asu_Is_Null (List_File_Name) then
       raise Argument_Error;
     end if;
@@ -1087,7 +1087,7 @@ begin
   end;
 
   begin
-    Afpx_Typ.Dest_Path := Asu_Tus (Argument.Get_Parameter (Param_Key => "d"));
+    Argument.Get_Parameter (Afpx_Typ.Dest_Path, Param_Key => "d");
     if Asu_Is_Null (Afpx_Typ.Dest_Path) then
       raise Argument_Error;
     end if;

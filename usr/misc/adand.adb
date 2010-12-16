@@ -35,12 +35,12 @@ begin
 
   -- parse arguments (file_name, lines, indentation)
   begin
-    File_Name := Asu_Tus (Argument.Get_Parameter (1, Argument.Not_Key));
+    Argument.Get_Parameter (File_Name, 1, Argument.Not_Key);
   exception
     when Argument.Argument_Not_Found =>
 
       begin
-        File_Name := Asu_Tus (Argument.Get_Parameter (1, "F"));
+        Argument.Get_Parameter (File_Name, 1, "F");
       exception
         when Argument.Argument_Not_Found =>
           Usage;
@@ -56,7 +56,7 @@ begin
   end;
 
   begin
-    Tld := Asu_Tus (Argument.Get_Parameter (1, "f"));
+    Argument.Get_Parameter (Tld, 1, "f");
     Line_Deb := Positive'Value (Asu_Ts (Tld));
   exception
     when Argument.Argument_Not_Found =>
@@ -67,7 +67,7 @@ begin
   end;
 
   begin
-    Tlf := Asu_Tus (Argument.Get_Parameter (1, "l"));
+    Argument.Get_Parameter (Tlf, 1, "l");
     Line_Fin := Positive'Value (Asu_Ts (Tlf));
   exception
     when Argument.Argument_Not_Found =>
@@ -78,7 +78,7 @@ begin
   end;
 
   begin
-    Ti := Asu_Tus (Argument.Get_Parameter (1, "i"));
+    Argument.Get_Parameter (Ti, 1, "i");
     Ind := Indent_Range'Value (Asu_Ts (Ti));
   exception
     when Argument.Argument_Not_Found =>

@@ -35,7 +35,7 @@ begin
     Usage;
     return;
   end if;
-  Cmd := Asu_Tus (Argument.Get_Parameter (Occurence => Narg));
+  Argument.Get_Parameter (Cmd, Occurence => Narg);
   for I in Narg + 1 .. Argument.Get_Nbre_Arg loop
     Many_Strings.Cat (Cmd, Argument.Get_Parameter (I));
   end loop;

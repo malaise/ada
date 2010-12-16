@@ -14,7 +14,7 @@ begin
   Ic := Generic_Con_Io.Effective_Colors'First;
   for I in 1 .. Argument.Get_Nbre_Arg loop
     if Argument.Get_Parameter (Occurence => I) /= "-" then
-      Colors(Ic) := Asu_Tus (Argument.Get_Parameter (Occurence => I));
+      Argument.Get_Parameter (Colors(Ic), Occurence => I);
     end if;
     Ic := Generic_Con_Io.Effective_Colors'Succ (Ic);
   end loop;

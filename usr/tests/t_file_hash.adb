@@ -16,7 +16,7 @@ begin
   File_Hash.Load (Argument.Get_Parameter (1), List);
 
   for I in 2 .. Argument.Get_Nbre_Arg loop
-    Word := Asu_Tus (Argument.Get_Parameter (Occurence => I));
+    Argument.Get_Parameter (Word, Occurence => I);
     Basic_Proc.Put_Line_Output (Asu_Ts (Word) & " -> ");
     List.Search_First (Word, Found);
     if Found then

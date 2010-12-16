@@ -87,7 +87,7 @@ begin
   or else Argument.Get_Parameter (Occurence => 1) /= "-p" then
     raise Arg_Error;
   end if;
-  Port_Name := Asu_Tus (Argument.Get_Parameter (Occurence => 2));
+  Argument.Get_Parameter (Port_Name, Occurence => 2);
 
   if Argument.Get_Nbre_Arg = 3
   and then Argument.Get_Parameter (Occurence => 3) = "-s" then
@@ -95,11 +95,11 @@ begin
   elsif Argument.Get_Nbre_Arg = 4
   and then Argument.Get_Parameter (Occurence => 3) = "-s" then
     Server := True;
-    Server_Name := Asu_Tus (Argument.Get_Parameter (Occurence => 4));
+    Argument.Get_Parameter (Server_Name, Occurence => 4);
   elsif Argument.Get_Nbre_Arg = 4
   and then Argument.Get_Parameter (Occurence => 3) = "-c" then
     Server := False;
-    Server_Name := Asu_Tus (Argument.Get_Parameter (Occurence => 4));
+    Argument.Get_Parameter (Server_Name, Occurence => 4);
   else
     raise Arg_Error;
   end if;

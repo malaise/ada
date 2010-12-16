@@ -43,7 +43,7 @@ begin
     Unit : Character;
     Dot : Natural;
   begin
-    The_Argument := Asu_Tus (Argument.Get_Parameter);
+    Argument.Get_Parameter(The_Argument);
 
     -- Check unit, get way of conversion
     Unit := Upper_Char(Asu.Element(The_Argument, Asu.Length (The_Argument)));
