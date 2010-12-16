@@ -1,6 +1,6 @@
-with Text_Handler, Argument, My_Io, Upper_Char;
+with As.U; use As.U;
+with Argument, My_Io, Upper_Char;
 use  My_Io;
-
 procedure T_Arg is
 
   subtype Rep_Key_Range is Character;
@@ -9,8 +9,8 @@ procedure T_Arg is
   Occ : Natural;
 
   Max_Len_Arg : constant := 1024;
-  Key : Text_Handler.Text(Max_Len_Arg);
-  Arg : Text_Handler.Text(Max_Len_Arg);
+  Key : Asu_Us;
+  Arg : Asu_Us;
 
   Pos : Natural;
 
@@ -18,13 +18,13 @@ procedure T_Arg is
   Prog_Name : String (1 .. Max_Len_Arg);
   Len : Natural;
 
-  procedure Get_Txt (Txt : in out Text_Handler.Text) is
-    Str : String (1 .. Txt.Max_Len);
+  procedure Get_Txt (Txt : in out Asu_Us) is
+    Str : String (1 .. Max_Len_Arg);
     Len : Natural;
   begin
     Skip_Line;
     Get_Line (Str, Len);
-    Text_Handler.Set (Txt, Str(1..Len));
+    Txt := Asu_Tus (Str(1..Len));
   exception
     when others => raise Constraint_Error;
   end Get_Txt;
@@ -72,11 +72,11 @@ begin
           end;
         end loop;
       when 'Y' =>
-        Text_Handler.Set (Key, Argument.Any_Key);
+        Key := Asu_Tus (Argument.Any_Key);
       when 'N' =>
-        Text_Handler.Set (Key, Argument.Not_Key);
+        Key := Asu_Tus (Argument.Not_Key);
       when 'A' =>
-        Text_Handler.Set (Key, Argument.Any_Arg);
+        Key := Asu_Tus (Argument.Any_Arg);
       when others =>
         null;
     end case;
@@ -92,11 +92,11 @@ begin
       end;
     end loop;
     begin
-      Argument.Get_Param_And_Pos (Arg, Pos, Occ, Text_Handler.Value(Key));
-      Put_Line ("Argument : >" & Text_Handler.Value(Arg) & "<");
-      for I in 1 .. Text_Handler.Length(Arg) loop
-        Put_Line ("Char ->" & Text_Handler.Value(Arg)(I) & "< " &
-         Integer'Image (Character'Pos(Text_Handler.Value(Arg)(I)) ) );
+      Argument.Get_Param_And_Pos (Arg, Pos, Occ, Asu_Ts (Key));
+      Put_Line ("Argument : >" & Asu_Ts (Arg) & "<");
+      for I in 1 .. Asu.Length (Arg) loop
+        Put_Line ("Char ->" & Asu.Element (Arg, I) & "< " &
+         Integer'Image (Character'Pos(Asu.Element (Arg, I))) );
       end loop;
 
       Put (" found at position "); Put_Line (Pos, 3);
@@ -111,3 +111,4 @@ begin
     New_Line;
   end loop;
 end T_Arg;
+

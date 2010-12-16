@@ -1,4 +1,5 @@
-with Text_Handler, Int_Image, String_Mng;
+with As.U; use As.U;
+with Int_Image, String_Mng;
 package body Ip_Addr is
 
   function Byte_Image is new Int_Image (Socket.Byte);
@@ -23,7 +24,7 @@ package body Ip_Addr is
   --   return the Tcp_Util.Remote_Host (Tcp_Util.Host_Name_Spec)
   -- End if
   function Parse (Addr : String) return Tcp_Util.Remote_Host is
-    Txt : Text_Handler.Text (Tcp_Util.Max_Host_Name_Len);
+    Txt : Asu_Us;
     Dots : array (1 .. 3) of Natural;
     Ip_Addr : Socket.Ip_Address;
     Result : Tcp_Util.Remote_Host;
@@ -33,28 +34,28 @@ package body Ip_Addr is
     end if;
     -- Try to parse Host_Id
     begin
-      Text_Handler.Set (Txt, Addr);
+      Txt := Asu_Tus (Addr);
       -- 3 and only three dots, not contiguous
-      if Text_Handler.Locate (Txt, '.', 4) /= 0 then
+      if String_Mng.Locate (Asu_Ts (Txt), ".", Occurence => 4) /= 0 then
         raise Parse_Error;
       end if;
-      Dots(1) := Text_Handler.Locate (Txt, '.', 1);
-      Dots(2) := Text_Handler.Locate (Txt, '.', 2);
-      Dots(3) := Text_Handler.Locate (Txt, '.', 3);
+      Dots(1) := String_Mng.Locate (Asu_Ts (Txt), ".", Occurence => 1);
+      Dots(2) := String_Mng.Locate (Asu_Ts (Txt), ".", Occurence => 2);
+      Dots(3) := String_Mng.Locate (Asu_Ts (Txt), ".", Occurence => 3);
       if Dots(1) = 1 or else Dots(2) = Dots(1)+1 or else
-         Dots(3) = Dots(2)+1 or else Dots(3) = Text_Handler.Length(Txt) then
+         Dots(3) = Dots(2)+1 or else Dots(3) = Asu.Length(Txt) then
         raise Parse_Error;
       end if;
 
       -- 4 bytes
       Ip_Addr.A := Socket.Byte(To_Natural(
-            Text_Handler.Value(Txt)(1 .. Dots(1)-1)));
+            Asu.Slice (Txt, 1, Dots(1)-1)));
       Ip_Addr.B := Socket.Byte(To_Natural(
-            Text_Handler.Value(Txt)(Dots(1)+1 .. Dots(2)-1)));
+            Asu.Slice (Txt, Dots(1)+1, Dots(2)-1)));
       Ip_Addr.C := Socket.Byte(To_Natural(
-            Text_Handler.Value(Txt)(Dots(2)+1 .. Dots(3)-1)));
+            Asu.Slice (Txt, Dots(2)+1, Dots(3)-1)));
       Ip_Addr.D := Socket.Byte(To_Natural(
-            Text_Handler.Value(Txt)(Dots(3)+1 .. Text_Handler.Length(Txt))));
+            Asu.Slice (Txt, Dots(3)+1,  Asu.Length(Txt))));
       return (Kind => Tcp_Util.Host_Id_Spec,
               Id   => Socket.Addr2Id (Ip_Addr) );
     exception
@@ -63,7 +64,7 @@ package body Ip_Addr is
     end;
 
     -- Try to parse Host_Name
-    Result.Name (1 .. Addr'Length) := Addr;
+    Result.Name := Asu_Tus (Addr);
     return Result;
 
   exception
@@ -102,7 +103,7 @@ package body Ip_Addr is
     end;
 
     -- Try to parse Port_Name
-    Result.Name (1 .. Port'Length) := Port;
+    Result.Name := Asu_Tus (Port);
     return Result;
 
   exception
@@ -125,7 +126,7 @@ package body Ip_Addr is
   begin
     Colon := String_Mng.Locate (Addr_Port, ":");
     if Colon <= 1 then
-      Host := (Tcp_Util.Host_Name_Spec, (others => ' '));
+      Host := (Tcp_Util.Host_Name_Spec, Asu_Null);
     else
       Host := Parse (Addr_Port (Addr_Port'First .. Colon - 1));
     end if;

@@ -1,9 +1,10 @@
-with My_Io, Argument, Text_Handler, Directory;
+with As.U; use As.U;
+with My_Io, Argument, Directory;
 procedure Ddir is
 
   procedure Ddir_One (Dir_Name : in String) is
     Dir_Dsc : Directory.Dir_Desc;
-    Entry_Name : Text_Handler.Text (Directory.Max_Dir_Name_Len);
+    Entry_Name : Asu_Us;
     Kind : Directory.File_Kind_List;
     use Directory;
   begin
@@ -27,17 +28,16 @@ procedure Ddir is
           exit;
       end;
       begin
-        Kind := Directory.File_Kind (
-            Dir_Name & "/" & Text_Handler.Value(Entry_Name));
+        Kind := Directory.File_Kind (Dir_Name & "/" & Asu_Ts (Entry_Name));
       exception
         when Directory.Name_Error | Directory.Access_Error =>
           -- A link to nowhere?
           Kind := Directory.Unknown;
       end;
       if Kind = Directory.Dir
-      and then Text_Handler.Value(Entry_Name) /= "."
-      and then Text_Handler.Value(Entry_Name) /= ".." then
-        My_Io.Put_Line (Text_Handler.Value(Entry_Name));
+      and then Asu_Ts (Entry_Name) /= "."
+      and then Asu_Ts (Entry_Name) /= ".." then
+        My_Io.Put_Line (Asu_Ts (Entry_Name));
       end if;
     end loop;
     Directory.Close(Dir_Dsc);

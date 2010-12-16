@@ -1,5 +1,6 @@
 with Ada.Text_Io, Ada.Direct_Io, Ada.Characters.Latin_1;
-with Text_Handler, Get_Line;
+with As.U; use As.U;
+with Get_Line;
 
 with Space;
 
@@ -7,7 +8,7 @@ package body File is
 
   Lf : Character renames Ada.Characters.Latin_1.Lf;
 
-  File_Name_Txt : Text_Handler.Text (Max_File_Name_Len);
+  File_Name_Txt : Asu_Us;
 
   -- Have we finished reading
   type State_List is (Closed, Reading, Empty, Writting);
@@ -21,14 +22,10 @@ package body File is
   -- Have we written
   Written : Boolean;
 
-  package My_Get_Line is new Get_Line (
-      Max_Word_Len => Image.Move_Str'Length,
-      Max_Word_Nb  => 2,
-      Max_Line_Len => 132,
-      Comment      => "#");
+  package My_Get_Line is new Get_Line (Comment => "#");
   Line : My_Get_Line.Line_Txt;
-  Line_Array : My_Get_Line.Line_Array;
-  Line_No : Ada.Text_Io.Count;
+  Line_Array : Asu_Ua.Unbounded_Array;
+  Line_No : My_Get_Line.Count;
   End_Reached : Boolean;
 
   -- Delete a file if it exists
@@ -62,16 +59,13 @@ package body File is
       when Ada.Text_Io.Name_Error =>
         Chess_Io.Create (The_File, Chess_Io.Out_File, File_Name);
         State := Empty;
-      when My_Get_Line.No_More_Line =>
+      when My_Get_Line.End_Error =>
         My_Get_Line.Close;
         Chess_Io.Open (The_File, Chess_Io.Out_File, File_Name);
         State := Empty;
-      when My_Get_Line.Line_Too_Long =>
-        Ada.Text_Io.Put_Line ("Format error at beginning of file");
-        raise Format_Error;
     end;
     Move_Num := 0;
-    Text_Handler.Set (File_Name_Txt, File_Name);
+    File_Name_Txt := Asu_Tus (File_Name);
   exception
     when others =>
       raise File_Error;
@@ -82,11 +76,11 @@ package body File is
   begin
     if not Read then
       -- Error during reading
-      Ada.Text_Io.Put_Line ("Format error after line" & Ada.Text_Io.Count'Image (Line_No));
+      Ada.Text_Io.Put_Line ("Format error after line" & Line_No'Img);
     else
       -- Line has been read
-      Ada.Text_Io.Put_Line ("Format error at line" & Ada.Text_Io.Count'Image (Line_No)
-         & ": " & Text_Handler.Value(Line));
+      Ada.Text_Io.Put_Line ("Format error at line"
+          & Line_No'Img & ": " & Asu_Ts (Line));
     end if;
     if Msg /= "" then
        Ada.Text_Io.Put_Line (Msg & '.');
@@ -113,12 +107,9 @@ package body File is
         begin
           My_Get_Line.Read_Next_Line;
         exception
-          when My_Get_Line.No_More_Line =>
+          when My_Get_Line.End_Error =>
             Action := (Valid => False);
             return;
-          when My_Get_Line.Line_Too_Long =>
-            Log_Error (False, "Line too long");
-            raise Format_Error;
         end;
       end if;
       Line_No := My_Get_Line.Get_Line_No;
@@ -149,8 +140,8 @@ package body File is
     -- Parse the word
     begin
       Str := (others => ' ');
-      Str(1 .. Text_Handler.Length(Line_Array(Word_Num))) :=
-        Text_Handler.Value(Line_Array(Word_Num));
+      Str(1 .. Asu.Length (Line_Array.Element (Word_Num))) :=
+          Asu_Ts (Line_Array.Element (Word_Num));
     exception
       when others =>
         Log_Error (True, "Wrong word value");
@@ -179,18 +170,11 @@ package body File is
         Log_Error (True, "End of file expected");
         raise Format_Error;
       exception
-        when My_Get_Line.No_More_Line =>
+        when My_Get_Line.End_Error =>
           End_Reached := True;
       end;
     end if;
 
-  exception
-    when My_Get_Line.Too_Many_Words =>
-      Log_Error (True, "Too many words");
-      raise Format_Error;
-    when  My_Get_Line.Word_Too_Long =>
-      Log_Error (True, "Word too long");
-      raise Format_Error;
   end Read_One;
 
 
@@ -250,8 +234,7 @@ package body File is
       if not Action.Valid then
         -- End of read
         My_Get_Line.Close;
-        Chess_Io.Open (The_File, Chess_Io.Inout_File,
-                          Text_Handler.Value(File_Name_Txt));
+        Chess_Io.Open (The_File, Chess_Io.Inout_File, Asu_Ts (File_Name_Txt));
         Prepare_To_Append;
         State := Writting;
         return (Valid => False);

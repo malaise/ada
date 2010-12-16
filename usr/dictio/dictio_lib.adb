@@ -1,4 +1,5 @@
 with Ada.Exceptions, Ada.Calendar;
+with As.U; use As.U;
 with Socket, Tcp_Util, Event_Mng, Sys_Calls, Timers, Environ;
 with Dictio_Debug, Parse, Client_Com, Versions, Status, Names;
 package body Dictio_Lib is
@@ -231,7 +232,6 @@ package body Dictio_Lib is
 
   procedure Init is
     Local_Host : Tcp_Util.Remote_Host(Tcp_Util.Host_Name_Spec);
-    Env_Len : Natural;
     Expiration : Ada.Calendar.Time;
     use type Event_Mng.Out_Event_List, Ada.Calendar.Time, Tcp_Util.Remote_Host;
   begin
@@ -242,32 +242,27 @@ package body Dictio_Lib is
     Dictio_Debug.Init;
 
     -- Getenv host and port
-    Host.Name := (others => ' ');
-    Host.Name (1 .. Default_Host'Length) := Default_Host;
-    Env_Len := Host.Name'Length;
-    Environ.Get_Str (Dictio_Env_Host, Host.Name, Env_Len);
-    for I in Env_Len + 1 .. Host.Name'Last loop
-      Host.Name(I) := ' ';
-    end loop;
-    Local_Host.Name := (others => ' ');
-    Local_Host.Name(1 .. Local_Host_Name'Length) := Local_Host_Name;
+    if Environ.Is_Set (Dictio_Env_Host) then
+      Environ.Get_Us (Dictio_Env_Host, Host.Name);
+    else
+      Host.Name := Asu_Tus (Default_Host);
+    end if;
+    Local_Host.Name := Asu_Tus (Local_Host_Name);
     if Host = Local_Host then
       Protocol := Socket.Tcp_Header_Afux;
     else
       Protocol := Socket.Tcp_Header;
     end if;
 
-    Port.Name := (others => ' ');
-    Port.Name (1 .. Default_Port'Length) := Default_Port;
-    Env_Len := Port.Name'Length;
-    Environ.Get_Str (Dictio_Env_Port, Port.Name, Env_Len);
-    for I in Env_Len + 1 .. Port.Name'Last loop
-      Port.Name(I) := ' ';
-    end loop;
+    if Environ.Is_Set (Dictio_Env_Port) then
+      Environ.Get_Us (Dictio_Env_Port, Port.Name);
+    else
+      Port.Name := Asu_Tus (Default_Port);
+    end if;
 
     if Dictio_Debug.Level_Array(Dictio_Debug.Lib) then
-      Dictio_Debug.Put ("Dictio_Lib: init to " & Parse(Host.Name)
-               & " / " & Parse(Port.Name));
+      Dictio_Debug.Put ("Dictio_Lib: init to " & Asu_Ts (Host.Name)
+               & " / " & Asu_Ts (Port.Name));
     end if;
 
     Connect_To_Dictio;

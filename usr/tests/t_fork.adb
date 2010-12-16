@@ -1,8 +1,9 @@
+with As.U; use As.U;
 with Ada.Text_Io;
-with Sys_Calls, Text_Handler, Argument, Many_Strings, Event_Mng;
+with Sys_Calls, Argument, Many_Strings, Event_Mng;
 
 procedure T_Fork is
-  Str : Text_Handler.Text(1024);
+  Str : Asu_Us;
 
   Child : Boolean;
   Child_Pid : Sys_Calls.Pid;
@@ -42,7 +43,7 @@ begin
   -- Build String (may raise Constraint_Error if args too long)
   for I in 1 .. Argument.Get_Nbre_Arg loop
     if I = 1 then
-      Text_Handler.Set (Str, Argument.Get_Parameter (Occurence => I));
+      Str := Asu_Tus (Argument.Get_Parameter (Occurence => I));
     else
       Many_Strings.Cat (Str, Argument.Get_Parameter (Occurence => I));
     end if;
@@ -54,7 +55,7 @@ begin
   if Child then
     Ada.Text_Io.Put_Line ("I am child  pid " & Child_Pid'Img
          & " of father pid " & Sys_Calls.Get_Parent_Pid'Img);
-    Sys_Calls.Mutate (Text_Handler.Value(Str));
+    Sys_Calls.Mutate (Asu_Ts (Str));
     Ada.Text_Io.Put_Line ("Child mutation has failed!");
   else
 

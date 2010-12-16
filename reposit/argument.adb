@@ -118,13 +118,13 @@ package body Argument is
   end Get_Parameter;
 
   procedure Get_Parameter (
-   Parameter : in out Text_Handler.Text;
+   Parameter : out Asu_Us;
    Occurence : in Natural := 1;
    Param_Key : in String := Any_Arg) is
     Position : Natural;
   begin
     Get_Param_And_Pos (Parameter, Position, Occurence, Param_Key);
-  end;
+  end Get_Parameter;
 
 
   procedure Get_Param_And_Pos (
@@ -143,17 +143,6 @@ package body Argument is
     Param_Length := Asu.Length (Str);
   end Get_Param_And_Pos;
 
-  procedure Get_Param_And_Pos (
-   Parameter : in out Text_Handler.Text;
-   Position : out Natural;
-   Occurence : in Natural := 1;
-   Param_Key : in String := Any_Arg) is
-    Str : String (1 .. Parameter.Max_Len);
-    Len : Natural;
-  begin
-    Get_Param_And_Pos (Str, Len, Position, Occurence, Param_Key);
-    Text_Handler.Set (Parameter, Str(1 .. Len));
-  end Get_Param_And_Pos;
 
   function Is_Set (
    Occurence : in Natural := 1;
@@ -223,11 +212,6 @@ package body Argument is
     Path_Length := Len;
   end Get_Program_Path;
 
-  procedure Get_Program_Path (Path : in out Text_Handler.Text) is
-  begin
-    Text_Handler.Set (Path, Get_Program_Path);
-  end Get_Program_Path;
-
   -- Name of program from Argument(0)
   function Get_Program_Name return String is
     Str : Asu_Us;
@@ -258,11 +242,6 @@ package body Argument is
     Name_Length := Len - Start + 1;
   end Get_Program_Name;
 
-
-  procedure Get_Program_Name (Name : in out Text_Handler.Text) is
-  begin
-    Text_Handler.Set (Name, Get_Program_Name);
-  end Get_Program_Name;
 
 end Argument;
 

@@ -307,10 +307,10 @@ begin
     begin
       Iface := (
           Kind => Tcp_Util.Host_Id_Spec,
-          Id => Socket.Host_Id_Of (Tcp_Util.Name_Of (Iface.Name)));
+          Id => Socket.Host_Id_Of (Asu_Ts (Iface.Name)));
     exception
       when Socket.Soc_Name_Not_Found =>
-        Error("Unknown interface name " & Tcp_Util.Name_Of (Iface.Name));
+        Error("Unknown interface name " & Asu_Ts (Iface.Name));
       raise;
     end;
   end if;
@@ -336,11 +336,10 @@ begin
     -- Compute port num
     if Port.Kind /= Tcp_Util.Port_Num_Spec then
       begin
-        Port_Num := Socket.Port_Num_Of (Tcp_Util.Name_Of (Port.Name),
-                                        Socket.Udp);
+        Port_Num := Socket.Port_Num_Of (Asu_Ts (Port.Name), Socket.Udp);
       exception
         when Socket.Soc_Name_Not_Found =>
-          Error ("Unknown port name " & Tcp_Util.Name_Of (Port.Name));
+          Error ("Unknown port name " & Asu_Ts (Port.Name));
           raise;
       end;
     else
@@ -359,11 +358,10 @@ begin
     -- Always set dest
     if Lan.Kind = Tcp_Util.Host_Name_Spec then
       begin
-        Soc.Set_Destination_Name_And_Port (True,
-                 Tcp_Util.Name_Of (Lan.Name), Port_Num);
+        Soc.Set_Destination_Name_And_Port (True, Asu_Ts (Lan.Name), Port_Num);
       exception
         when Socket.Soc_Name_Not_Found =>
-          Error ("Unknown LAN name " & Tcp_Util.Name_Of (Lan.Name));
+          Error ("Unknown LAN name " & Asu_Ts (Lan.Name));
           raise;
       end;
     else

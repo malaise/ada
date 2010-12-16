@@ -1,15 +1,10 @@
-
 -- One argument : file name
 -- Tests get_line
-
 with Ada.Text_Io;
-with Text_Handler, Argument, Get_Line, Normal;
+with As.U; use As.U;
+with Argument, Get_Line, Normal;
 
 procedure T_Get_Line is
-
-  Max_Line_Len : constant := 1024;
-  Max_Word_Nb  : constant := 500;
-  Max_Word_Len : constant := 30;
 
 begin
   -- Check syntax
@@ -19,13 +14,7 @@ begin
   end if;
 
   declare
-    package My_Get_Line is new Get_Line (
-      Max_Word_Len => Max_Word_Len,
-      Max_Word_Nb  => Max_Word_Nb,
-      Max_Line_Len => Max_Line_Len,
-      Comment      => "--");
-
-    Line  : My_Get_Line.Line_Array;
+    package My_Get_Line is new Get_Line ("--");
 
   begin
 
@@ -40,18 +29,21 @@ begin
 
 
     loop
-      My_Get_Line.Get_Words (Line);
       Ada.Text_Io.Put (Normal (Integer (My_Get_Line.Get_Line_No), 3, Gap => '0') & " -> ");
       Ada.Text_Io.Put (Normal (My_Get_Line.Get_Word_Number, 3) & ":");
-      for I in 1 .. My_Get_Line.Get_Word_Number loop
-        Ada.Text_Io.Put (">" & Text_Handler.Value (Line(I)) & "<");
-      end loop;
+      declare
+        Line : constant My_Get_Line.Line_Array := My_Get_Line.Get_Words;
+      begin
+        for I in 1 .. My_Get_Line.Get_Word_Number loop
+          Ada.Text_Io.Put (">" & Asu_Ts (Line(I)) & "<");
+        end loop;
+      end;
       Ada.Text_Io.New_Line;
       My_Get_Line.Read_Next_Line;
     end loop;
 
   exception
-    when My_Get_Line.No_More_Line =>
+    when My_Get_Line.End_Error =>
       My_Get_Line.Close;
       Ada.Text_Io.Put_Line ("Done.");
   end;

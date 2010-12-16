@@ -1,4 +1,3 @@
-with Ada.Text_Io; -- For exception trace
 with My_Io;
 with Grid_2;
 

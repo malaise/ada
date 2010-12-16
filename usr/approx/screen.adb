@@ -1,4 +1,5 @@
-with Con_Io, Normal, Text_Handler;
+with As.U; use As.U;
+with Con_Io, Normal;
 with Points, Resol;
 package body Screen is
 
@@ -10,7 +11,7 @@ package body Screen is
 
   Degree_Fld : constant Afpx.Field_Range := 21;
 
-  Stored_File_Name : Text_Handler.Text (Afpx.Width_Range'Last);
+  Stored_File_Name : Asu_Us;
 
   Get_Width : Natural := 0;
 
@@ -331,7 +332,7 @@ package body Screen is
 
   procedure Put_File is
   begin
-    Put_File (Text_Handler.Value(Stored_File_Name));
+    Put_File (Asu_Ts (Stored_File_Name));
   end Put_File;
 
   procedure Put_Degree is

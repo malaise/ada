@@ -61,14 +61,12 @@ package body Common is
     end loop;
     Nb_Square := 0;
 
-    Text_Handler.Set (File_Name, Normal (Dim, 1, True) & "_MAGIC.DAT");
+    File_Name.Set (Normal (Dim, 1, True) & "_MAGIC.DAT");
     begin
-      Ada.Text_Io.Open (File, Ada.Text_Io.Out_File,
-                        Text_Handler.Value(File_Name));
+      Ada.Text_Io.Open (File, Ada.Text_Io.Out_File, File_Name.Value);
     exception
       when Ada.Text_Io.Name_Error =>
-        Ada.Text_Io.Create (File, Ada.Text_Io.Out_File,
-                            Text_Handler.Value(File_Name));
+        Ada.Text_Io.Create (File, Ada.Text_Io.Out_File, File_Name.Value);
     end;
 
     -- Start searching

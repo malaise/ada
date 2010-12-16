@@ -1,22 +1,26 @@
-with Parse;
+with As.U; use As.U;
+with Tcp_Util;
 package body Local_Host_Name is
 
-  Lhn : Tcp_Util.Host_Name := (others => ' ');
+  Lhn : Tcp_Util.Host_Name := Asu_Null;
 
   procedure Set (Name : in String) is
   begin
-    Lhn :=  (others => ' ');
-    Lhn(1 .. Name'Length) := Name;
+    if Name'Length = 0 or else Name'Length > Max_Host_Name_Length then
+      raise Constraint_Error;
+    end if;
+    Lhn := Asu_Tus (Name);
   end Set;
 
   function Get return String is
   begin
-    return Parse (Lhn);
+    return Asu_Ts (Lhn);
   end Get;
 
-  procedure Get (Name : out Tcp_Util.Host_Name) is
+  procedure Get (Name : out Host_Name) is
   begin
-    Name := Lhn;
+    Name := (others => ' ');
+    Name(1 .. Asu.Length (Lhn)) := Asu_Ts (Lhn);
   end Get;
 
 end Local_Host_Name;

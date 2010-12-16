@@ -85,7 +85,7 @@ package body Edition is
   procedure Prepare (Edit_Type : in Edit_List) is
   begin
     Afpx.Use_Descriptor(3);
-    Screen.Encode_File_Name(Text_Handler.Value(Account_Name));
+    Screen.Encode_File_Name(Account_Name.Value);
     Screen.Encode_Nb_Oper(Oper_List.List_Length,
                           Sel_List.List_Length);
     Screen.Encode_Saved(Account_Saved);

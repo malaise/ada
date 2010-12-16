@@ -1,6 +1,6 @@
 with Unchecked_Deallocation;
 with Ada.Exceptions;
-with Environ, Dynamic_List, Timers, Event_Mng, My_Io, String_Mng;
+with Environ, Dynamic_List, Timers, Event_Mng, My_Io;
 package body Tcp_Util is
 
   -- Debugging
@@ -32,12 +32,6 @@ package body Tcp_Util is
     Set_Debug (Debug_Reception_Name, Debug_Reception);
     Debug_Init := True;
   end Init_Debug;
-
-  -- Name extraction --
-  function Name_Of (Name : String) return String is
-  begin
-    return Name (Name'First .. String_Mng.Parse_Spaces (Name, False));
-  end Name_Of;
 
   -- Connecting connection
   type Connecting_Rec is record
@@ -116,15 +110,15 @@ package body Tcp_Util is
         case Port.Kind is
           when Port_Name_Spec =>
             Dscr.Set_Destination_Name_And_Service (False,
-                                   Name_Of (Host.Name), Name_Of (Port.Name));
+                                   Asu_Ts (Host.Name), Asu_Ts (Port.Name));
           when Port_Num_Spec =>
             Dscr.Set_Destination_Name_And_Port (False,
-                                   Name_Of (Host.Name), Port.Num);
+                                   Asu_Ts (Host.Name), Port.Num);
         end case;
       when Host_Id_Spec =>
         case Port.Kind is
           when Port_Name_Spec =>
-            Dscr.Set_Destination_Host_And_Service (Host.Id, Name_Of(Port.Name));
+            Dscr.Set_Destination_Host_And_Service (Host.Id, Asu_Ts(Port.Name));
           when Port_Num_Spec =>
             Dscr.Set_Destination_Host_And_Port (Host.Id, Port.Num);
         end case;
@@ -193,8 +187,7 @@ package body Tcp_Util is
       if Rec.Port.Kind = Port_Name_Spec then
         begin
           -- Services may have changed since Connect_To checks
-          Port := Socket.Port_Num_Of (Name_Of (Rec.Port.Name),
-                                      Rec.Protocol);
+          Port := Socket.Port_Num_Of (Asu_Ts (Rec.Port.Name), Rec.Protocol);
         exception
           when others =>
             Port := 0;
@@ -205,7 +198,7 @@ package body Tcp_Util is
       if Rec.Host.Kind = Host_Name_Spec then
         begin
           -- Hosts may have changed since Connect_To checks
-          Host := Socket.Host_Id_Of (Name_Of (Rec.Host.Name));
+          Host := Socket.Host_Id_Of (Asu_Ts (Rec.Host.Name));
         exception
           when others =>
             Host := Socket.No_Host;
@@ -479,7 +472,7 @@ package body Tcp_Util is
         Num : Port_Num;
         pragma Unreferenced (Num);
       begin
-        Num := Socket.Port_Num_Of (Name_Of (Port.Name), Protocol);
+        Num := Socket.Port_Num_Of (Asu_Ts (Port.Name), Protocol);
       exception
         when others =>
           raise Name_Error;
@@ -490,7 +483,7 @@ package body Tcp_Util is
         Id : Host_Id;
         pragma Unreferenced (Id);
       begin
-        Id := Socket.Host_Id_Of (Name_Of (Host.Name));
+        Id := Socket.Host_Id_Of (Asu_Ts (Host.Name));
       exception
         when others =>
           raise Name_Error;
@@ -673,7 +666,7 @@ package body Tcp_Util is
     case Port.Kind is
       when Port_Name_Spec =>
         begin
-          Rec.Dscr.Link_Service (Name_Of(Port.Name));
+          Rec.Dscr.Link_Service (Asu_Ts (Port.Name));
         exception
           when Socket.Soc_Name_Not_Found =>
             raise Name_Error;

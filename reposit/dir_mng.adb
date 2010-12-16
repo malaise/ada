@@ -10,7 +10,7 @@ package body Dir_Mng is
      (El1.Kind = Directory.Dir or else El2.Kind = Directory.Dir) then
       return El1.Kind = Directory.Dir;
     else
-      return El1.Name (1 .. El1.Len) < El2.Name (1 .. El2.Len);
+      return Asu_Ts (El1.Name) < Asu_Ts (El2.Name);
     end if;
   end Less_Than;
 
@@ -20,7 +20,7 @@ package body Dir_Mng is
                       Template : in String := "") is
     Dir_Desc : Directory.Dir_Desc;
     File_Rec : File_Entry_Rec;
-    File_Name : File_Txt;
+    File_Name : Asu_Us;
   begin
 
     if Dir = "" then
@@ -30,20 +30,17 @@ package body Dir_Mng is
     end if;
 
     loop
-      Text_Handler.Set (File_Name, Directory.Next_Entry (Dir_Desc));
+      Directory.Next_Entry (Dir_Desc, File_Name);
 
       if Template = ""
-      or else Directory.File_Match(Text_Handler.Value (File_Name),
-                                   Template) then
-        File_Rec.Len := Text_Handler.Length (File_Name);
-        File_Rec.Name (1 .. File_Rec.Len) := Text_Handler.Value (File_Name);
+      or else Directory.File_Match(Asu_Ts (File_Name), Template) then
+        File_Rec.Name := File_Name;
         begin
           if Dir = "" then
-            File_Rec.Kind := Directory.File_Kind (
-               Text_Handler.Value (File_Name));
+            File_Rec.Kind := Directory.File_Kind (Asu_Ts (File_Name));
           else
             File_Rec.Kind := Directory.File_Kind (
-             Dir & Path_Separator & Text_Handler.Value (File_Name));
+             Dir & Path_Separator & Asu_Ts (File_Name));
           end if;
         exception
           when Directory.Name_Error | Directory.Access_Error =>
@@ -58,12 +55,11 @@ package body Dir_Mng is
   end List_Dir;
 
   procedure List_Dir (List : in out File_List_Mng.List_Type;
-                      Dir  : in File_Txt := Text_Handler.Empty_Text;
-                      Template : in File_Txt := Text_Handler.Empty_Text) is
+                      Dir  : in Asu_Us := Asu_Null;
+                      Template : in Asu_Us := Asu_Null) is
   begin
-    List_Dir (List, Text_Handler.Value(Dir), Text_Handler.Value(Template));
+    List_Dir (List, Asu_Ts (Dir), Asu_Ts (Template));
   end List_Dir;
-
 
 end Dir_Mng;
 

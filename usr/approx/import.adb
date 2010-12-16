@@ -1,18 +1,15 @@
+with As.U; use As.U;
 with Ada.Text_Io;
-with Argument, Text_Handler, Get_Line;
+with Argument, Get_Line;
 with Points, Point_Str, File;
 
 procedure Import is
 
   Point : Points.P_T_One_Point;
 
-  package My_Get_Line is new Get_Line (
-     Max_Word_Len => 40,
-     Max_Word_Nb  => 3,
-     Max_Line_Len => 132,
-     Comment      => "#");
+  package My_Get_Line is new Get_Line (Comment      => "#");
 
-  Line  : My_Get_Line.Line_Array;
+  Line  : Asu_Ua.Unbounded_Array;
 
   procedure Error (Msg : in String)  is
   begin
@@ -48,19 +45,21 @@ begin
   loop
     My_Get_Line.Get_Words (Line);
     if My_Get_Line.Get_Word_Number /= 2 then
-      Error ("At line " & Ada.Text_Io.Positive_Count'Image(My_Get_Line.Get_Line_No)
-                        & " two reals expected");
+      Error ("At line "
+          & My_Get_Line.Positive_Count'Image(My_Get_Line.Get_Line_No)
+          & " two reals expected");
       My_Get_Line.Close;
       return;
     end if;
 
     begin
-      Point.X := Point_Str.Coordinate_Value(Text_Handler.Value(Line(1)));
-      Point.Y := Point_Str.Coordinate_Value(Text_Handler.Value(Line(2)));
+      Point.X := Point_Str.Coordinate_Value(Asu_Ts (Line.Element (1)));
+      Point.Y := Point_Str.Coordinate_Value(Asu_Ts (Line.Element (2)));
     exception
       when others =>
-        Error ("At line " & Ada.Text_Io.Positive_Count'Image(My_Get_Line.Get_Line_No)
-                          & " two reals expected");
+        Error ("At line "
+           & My_Get_Line.Positive_Count'Image(My_Get_Line.Get_Line_No)
+           & " two reals expected");
         My_Get_Line.Close;
         return;
     end;
@@ -71,9 +70,10 @@ begin
   end loop;
 
 exception
-  when My_Get_Line.No_More_Line =>
+  when My_Get_Line.End_Error =>
     My_Get_Line.Close;
     File.F_Write(Argument.Get_Parameter(Occurence => 2),
                  Points.P_The_Points);
     Ada.Text_Io.Put_Line ("Done.");
 end Import;
+

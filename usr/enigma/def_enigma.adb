@@ -78,17 +78,17 @@ procedure Def_Enigma is
   Month : Ada.Calendar.Month_Number;
   Year  : Ada.Calendar.Year_Number;
   T : Ada.Calendar.Time;
-  Txt : Text_Handler.Text (256);
+  Txt : Text_Handler.Text(256);
 
-  Day_Month : Text_Handler.Text (18); -- WEDNESDAYSEPTEMBER
+  Day_Month : Text_Handler.Text(18); -- WEDNESDAYSEPTEMBER
   -- The reflector used when generating from date
   Reflector_Num : Positive;
 
   -- For all
-  Switch : Text_Handler.Text (26);
-  Reflector : Text_Handler.Text (2);
-  Rotors : Text_Handler.Text (8); -- 1 letter for rotor Id and 1 for ring
-  Init_Offset : Text_Handler.Text (4);
+  Switch : Text_Handler.Text(26);
+  Reflector : Text_Handler.Text(2);
+  Rotors : Text_Handler.Text(8); -- 1 letter for rotor Id and 1 for ring
+  Init_Offset : Text_Handler.Text(4);
   Nb_Rotors : Natural;
 
   -- For unicity of rotors
@@ -104,7 +104,7 @@ procedure Def_Enigma is
   Got_Letters : array (1 .. 2) of Types.Letter;
 
   -- For Key parsing
-  Reflector_Txt, Rotors_Txt, Init_Txt, Switches_Txt : Text_Handler.Text (256);
+  Reflector_Txt, Rotors_Txt, Init_Txt, Switches_Txt : Text_Handler.Text(256);
   Key_Error : exception;
 
   -- Input: N in 1 .. 10, to insert at Index
@@ -225,27 +225,27 @@ begin
       if Is_Set (2, Not_Key) then
         raise Key_Error;
       end if;
-      Get_Parameter (Reflector_Txt, 1, Not_Key);
+      Reflector_Txt.Set (Get_Parameter (1, Not_Key));
       Nb_Arg := Other_Arg;
       if Is_Set (1, Rotor_Key) then
         if Is_Set (2, Rotor_Key) then
           raise Key_Error;
         end if;
-        Get_Parameter (Rotors_Txt, 1, Rotor_Key);
+        Rotors_Txt.Set (Get_Parameter (1, Rotor_Key));
         Nb_Arg := Nb_Arg + 1;
       end if;
       if Is_Set (1, Init_Key) then
         if Is_Set (2, Init_Key) then
           raise Key_Error;
         end if;
-        Get_Parameter (Init_Txt, 1, Init_Key);
+        Init_Txt.Set (Get_Parameter (1, Init_Key));
         Nb_Arg := Nb_Arg + 1;
       end if;
       if Is_Set (1, Switches_Key) then
         if Is_Set (2, Switches_Key) then
           raise Key_Error;
         end if;
-        Get_Parameter (Switches_Txt, 1, Switches_Key);
+        Switches_Txt.Set (Get_Parameter (1, Switches_Key));
         Nb_Arg := Nb_Arg + 1;
       end if;
       if Get_Nbre_Arg /= Nb_Arg then
@@ -273,33 +273,33 @@ begin
       begin
         Ada.Calendar.Split (T, Year, Month, Day, Dummy_Duration);
       end;
-      Text_Handler.Set (Txt, Normal (Day,   2, Gap => '0') & "/"
-                           & Normal (Month, 2, Gap => '0') & "/"
-                           & Normal (Year,  4, Gap => '0') );
+      Txt.Set (Normal (Day,   2, Gap => '0') & "/"
+             & Normal (Month, 2, Gap => '0') & "/"
+             & Normal (Year,  4, Gap => '0') );
 
     when Parse_Date =>
       -- Parse date: set Year Month Day for further generation
       begin
-        Argument.Get_Parameter (Txt, Occurence => Other_Arg);
+        Txt.Set (Argument.Get_Parameter (Occurence => Other_Arg));
       exception
         when Argument.Argument_Too_Long =>
           Usage;
           return;
       end;
-      if Text_Handler.Length (Txt) = 10
-      and then Text_Handler.Value (Txt)(3) = '/'
-      and then Text_Handler.Value (Txt)(6) = '/' then
-        if not Is_Digit (Text_Handler.Value (Txt)(1 .. 2))
-        or else not Is_Digit (Text_Handler.Value (Txt)(4 .. 5))
-        or else not Is_Digit (Text_Handler.Value (Txt)(7 .. 10)) then
+      if Txt.Length = 10
+      and then Txt.Value(3) = '/'
+      and then Txt.Value(6) = '/' then
+        if not Is_Digit (Txt.Value(1 .. 2))
+        or else not Is_Digit (Txt.Value(4 .. 5))
+        or else not Is_Digit (Txt.Value(7 .. 10)) then
           Usage;
           return;
         end if;
 
         begin
-          Day   := Ada.Calendar.Day_Number'Value   (Text_Handler.Value (Txt)(1 .. 2));
-          Month := Ada.Calendar.Month_Number'Value (Text_Handler.Value (Txt)(4 .. 5));
-          Year  := Ada.Calendar.Year_Number'Value  (Text_Handler.Value (Txt)(7 .. 10));
+          Day   := Ada.Calendar.Day_Number'Value   (Txt.Value(1 .. 2));
+          Month := Ada.Calendar.Month_Number'Value (Txt.Value(4 .. 5));
+          Year  := Ada.Calendar.Year_Number'Value  (Txt.Value(7 .. 10));
         exception
           when others =>
             Usage;
@@ -325,13 +325,13 @@ begin
             -- Skip identity and dual definition
             if To_Letter(I) /= Str(I)
             and then Used(I) = ' ' then
-              Text_Handler.Append (Switch, To_Letter (I) & Str(I));
+              Switch.Append (To_Letter (I) & Str(I));
               Used(I) := Str(I);
               Used(To_Id (Str(I))) := To_Letter (I);
             end if;
           end loop;
         end;
-        exit when not Text_Handler.Empty (Switch);
+        exit when not Switch.Is_Empty;
       end loop;
 
       -- Set random number (3 to 4) of random rotors and rotor settings
@@ -349,26 +349,23 @@ begin
             Rot_Num := Rnd.Int_Random (1, 2);
           end if;
           Rot_Num := Store (Rot_Num, I);
-          Text_Handler.Append (Rotors,
-             To_Letter (Rot_Num) & To_Letter (Id_Random));
-          Text_Handler.Append (Init_Offset, To_Letter (Id_Random));
+          Rotors.Append (To_Letter (Rot_Num) & To_Letter (Id_Random));
+          Init_Offset.Append (To_Letter (Id_Random));
         end loop;
       end;
 
       -- Set random reflector, no offset
       if Nb_Rotors /= 4 then
         -- 3 rotors: Reflector A to C
-        Text_Handler.Set (Reflector,
-           To_Letter (Rnd.Int_Random (1, 3)) & 'A');
+        Reflector.Set (To_Letter (Rnd.Int_Random (1, 3)) & 'A');
       else
         -- 4 rotors: Reflectors Bthin or Cthin
-        Text_Handler.Set (Reflector,
-            To_Letter (Rnd.Int_Random (4, 5)) & 'A');
+        Reflector.Set (To_Letter (Rnd.Int_Random (4, 5)) & 'A');
       end if;
 
     when Extract =>
       begin
-        Argument.Get_Parameter (Txt, Occurence => Other_Arg);
+        Txt.Set (Argument.Get_Parameter (Occurence => Other_Arg));
       exception
         when Argument.Argument_Too_Long =>
           Usage;
@@ -376,13 +373,13 @@ begin
       end;
       -- Locate separator between switch and scramblers
       -- This cannot be "JJJJJ", but can be "xJJJJ"!
-      Start := Text_Handler.Locate (Txt, Separator(1) & Separator);
+      Start := Txt.Locate (Separator(1) & Separator);
       if Start /= 0 then
         -- Yes it is, the real separator is after the first "J"
         Start := Start + 1;
       else
         -- This is "xyJJJ"
-        Start := Text_Handler.Locate (Txt, Separator);
+        Start := Txt.Locate (Separator);
       end if;
 
       -- Pairs of letters before separator (=> separator found)
@@ -390,15 +387,15 @@ begin
         Usage;
         return;
       end if;
-      Text_Handler.Set (Switch, Text_Handler.Value(Txt) (1 .. Start - 1));
+      Switch.Set (Txt.Value(1 .. Start - 1));
       -- Skip the separator
       Start := Start + Separator'Length;
       -- Look for scramblers
       Prev_Scrambler := 0;
       Got_Letters := (others => 'A');
       loop
-        if Text_Handler.Length(Txt) >= Start
-        and then Text_Handler.Value(Txt)(Start) = 'Z' then
+        if Txt.Length >= Start
+        and then Txt.Value(Start) = 'Z' then
           if Prev_Scrambler = 0 then
             -- Empty definition!
             Usage;
@@ -410,15 +407,14 @@ begin
             Usage;
             return;
           end if;
-          Text_Handler.Set (Reflector,
-                    To_Letter (Prev_Scrambler) & Got_Letters(1));
+          Reflector.Set (To_Letter (Prev_Scrambler) & Got_Letters(1));
           -- Will exit with code = last significant index
           Start := Start + 1;
           exit;
         end if;
 
         -- Look for scrambler num in letter
-        Get_Number (Text_Handler.Value(Txt), Start, Stop, Got_Scrambler);
+        Get_Number (Txt.Value, Start, Stop, Got_Scrambler);
         if Stop = 0 then
           Usage;
           return;
@@ -426,14 +422,13 @@ begin
         if Prev_Scrambler /= 0 then
           -- Prev rotor parsed ok: store rotor num and ring offset,
           -- and rotor initial offset
-          Text_Handler.Append (Rotors,
-                  To_Letter (Prev_Scrambler) & Got_Letters(1));
-          Text_Handler.Append (Init_Offset, Got_Letters(2));
+          Rotors.Append (To_Letter (Prev_Scrambler) & Got_Letters(1));
+          Init_Offset.Append (Got_Letters(2));
         end if;
         -- Two letters (ring offset and initial offset,
         --  or twice the reflector offset)
         begin
-          Got_Letters(1) := Text_Handler.Value(Txt)(Stop + 1);
+          Got_Letters(1) := Txt.Value(Stop + 1);
         exception
           when Constraint_Error =>
             -- No more char or no a letter
@@ -441,7 +436,7 @@ begin
             return;
         end;
         begin
-          Got_Letters(2) := Text_Handler.Value(Txt)(Stop + 2);
+          Got_Letters(2) := Txt.Value(Stop + 2);
         exception
           when Constraint_Error =>
             -- No more char or no a letter
@@ -455,8 +450,8 @@ begin
   when Key =>
     -- Get rotors init, get Nb of rotors
     begin
-      Text_Handler.Set (Init_Offset, Init_Txt);
-      Nb_Rotors := Text_Handler.Length (Init_Offset);
+      Init_Offset.Set (Init_Txt);
+      Nb_Rotors := Init_Offset.Length;
       if Nb_Rotors > 4 then
         raise Key_Error;
       end if;
@@ -467,7 +462,7 @@ begin
 
     -- Extract reflector
     declare
-      Reflector_Str : constant String := Text_Handler.Value (Reflector_Txt);
+      Reflector_Str : constant String := Reflector_Txt.Value;
       Arob : Natural;
       Id : Natural;
     begin
@@ -479,7 +474,7 @@ begin
       if Id = 0 then
         raise Key_Error;
       end if;
-      Text_Handler.Set (Reflector, To_Letter (Id) & Reflector_Str(Arob + 1));
+      Reflector.Set (To_Letter (Id) & Reflector_Str(Arob + 1));
     exception
       when others =>
         raise Key_Error;
@@ -497,7 +492,7 @@ begin
     begin
       -- Parse the Rotors definition
       -- <Name>@<OffsetLetter> [ { #<Name>@<OffsetLetter> } ]
-      Iter.Set (Text_Handler.Value (Rotors_Txt), Separing'Unrestricted_Access);
+      Iter.Set (Rotors_Txt.Value, Separing'Unrestricted_Access);
       for I in 1 .. Nb_Rotors loop
         declare
           Str : constant String := Iter.Next_Word;
@@ -514,7 +509,7 @@ begin
           if Str(Str'Last) not in Types.Letter then
             raise Key_Error;
           end if;
-          if Text_Handler.Value (Init_Offset)(I) not in Types.Letter then
+          if Init_Offset.Value(I) not in Types.Letter then
             raise Key_Error;
           end if;
           -- Check and adjust rotor num
@@ -522,7 +517,7 @@ begin
           if Id = 0 then
             raise Key_Error;
           end if;
-          Text_Handler.Append (Rotors, To_Letter (Id) & Str(Str'Last));
+          Rotors.Append (To_Letter (Id) & Str(Str'Last));
         end;
       end loop;
 
@@ -538,11 +533,11 @@ begin
 
     -- Extract and check switches
     declare
-      Str : constant String := Text_Handler.Value (Switches_Txt);
+      Str : constant String := Switches_Txt.Value;
       Init_Str : String (1 .. Types.Nb_Letters);
     begin
-      Text_Handler.Set (Switch, Switches_Txt);
-      if Text_Handler.Length (Switch) mod 2 /= 0 then
+      Switch.Set (Switches_Txt);
+      if Switch.Length mod 2 /= 0 then
         raise Key_Error;
       end if;
       Init_Str := (others => ' ');
@@ -584,14 +579,14 @@ begin
     end;
     -- Switch definition from Day, Month and Year
     -- Concatenate day and month names in uppercase
-    Text_Handler.Set (Day_Month,
+    Day_Month.Set (
       Upper_Str (Perpet.Day_Of_Week_List'Image (Perpet.Get_Day_Of_Week (T))));
-    Text_Handler.Append (Day_Month,
+    Day_Month.Append (
       Upper_Str (Perpet.Month_Name_List'Image (Perpet.Get_Month_Name (Month))));
 
     -- Unicity of each letter
     declare
-      Str : String := Text_Handler.Value(Day_Month);
+      Str : String := Day_Month.Value;
       I, J, L : Natural;
     begin
       I := 1;
@@ -619,12 +614,12 @@ begin
       if L > Id_Range'Last / 2 then
         L := Id_Range'Last / 2;
       end if;
-      Text_Handler.Set (Switch, Str(1 .. L));
+      Switch.Set (Str(1 .. L));
     end;
 
     -- Reflector: daynum 1 -> A, 2 -> B, 3 -> C, 1 -> A...
     Reflector_Num := ((Day - 1) rem 3) + 1;
-    Text_Handler.Set (Reflector, To_Letter (Reflector_Num) & 'A');
+    Reflector.Set (To_Letter (Reflector_Num) & 'A');
 
     declare
       Month_3 : String (1 .. 3);
@@ -639,60 +634,59 @@ begin
 
       -- First rotor: day modulo 1 .. 10
       Num := Store (((Day - 1) rem 10) + 1, 1);
-      Text_Handler.Set (Rotors, To_Letter (Num) & Day_3(1));
-      Text_Handler.Set (Init_Offset, Month_3(1));
+      Rotors.Set (To_Letter (Num) & Day_3(1));
+      Init_Offset.Set (Month_3(1));
       -- Second rotor Month / 10
       Num := Store ((Day / 10) + 1, 2);
-      Text_Handler.Append (Rotors, To_Letter (Num) & Day_3(2));
-      Text_Handler.Append (Init_Offset, Month_3(2));
+      Rotors.Append (To_Letter (Num) & Day_3(2));
+      Init_Offset.Append (Month_3(2));
       -- Third rotor
       Num := Store (((Month - 1) rem 10) + 1, 3);
-      Text_Handler.Append (Rotors, To_Letter (Num) & Day_3(3));
-      Text_Handler.Append (Init_Offset, Month_3(3));
+      Rotors.Append (To_Letter (Num) & Day_3(3));
+      Init_Offset.Append (Month_3(3));
     end;
   end if;
 
   -- Put setting in internal format
   if Debug then
     Sys_Calls.Put_Line_Error (
-                 Text_Handler.Value (Reflector)
-       & " r=" & Text_Handler.Value (Rotors)
-       & " i=" & Text_Handler.Value (Init_Offset)
-       & " s=" & Text_Handler.Value (Switch));
+                 Reflector.Value
+       & " r=" & Rotors.Value
+       & " i=" & Init_Offset.Value
+       & " s=" & Switch.Value);
   end if;
 
   -- Result
   -- Put normal enigma keys
   declare
-    Num : constant Positive
-        := To_Id (Text_Handler.Value (Reflector)(1));
+    Num : constant Positive := To_Id (Reflector.Value(1));
   begin
     Ada.Text_Io.Put (Xml.Get_Name (False, Num) & '@'
-                   & Text_Handler.Value (Reflector)(2));
+                   & Reflector.Value(2));
   end;
 
-  if not Text_Handler.Empty (Init_Offset) then
+  if not Init_Offset.Is_Empty then
     Ada.Text_Io.Put (" -r");
-    for I in 1 .. Text_Handler.Length (Rotors) loop
+    for I in 1 .. Rotors.Length loop
       if I mod 2 = 1 then
         if I /= 1 then
           Ada.Text_Io.Put ('#');
         end if;
         declare
           Name : constant String
-               := Xml.Get_Name (True, To_Id (Text_Handler.Value (Rotors)(I)));
+               := Xml.Get_Name (True, To_Id (Rotors.Value(I)));
         begin
           Ada.Text_Io.Put (Name & '@');
         end;
       else
-        Ada.Text_Io.Put (Text_Handler.Value (Rotors)(I));
+        Ada.Text_Io.Put (Rotors.Value(I));
       end if;
     end loop;
-    Ada.Text_Io.Put (" -i" & Text_Handler.Value (Init_Offset));
+    Ada.Text_Io.Put (" -i" & Init_Offset.Value);
   end if;
 
-  if not Text_Handler.Empty (Switch) then
-    Ada.Text_Io.Put (" -s" & Text_Handler.Value (Switch));
+  if not Switch.Is_Empty then
+    Ada.Text_Io.Put (" -s" & Switch.Value);
   end if;
 
   -- Result
@@ -701,33 +695,33 @@ begin
     Ada.Text_Io.Put (" ");
     -- Key coded onto text
     -- Switch and separator
-    Ada.Text_Io.Put (Text_Handler.Value (Switch) & Separator);
-    for I in 1 .. Text_Handler.Length (Rotors) loop
+    Ada.Text_Io.Put (Switch.Value & Separator);
+    for I in 1 .. Rotors.Length loop
       if I rem 2 = 1 then
         -- Rotor letter
         declare
           Num : constant Positive
-              := Positive (To_Id (Text_Handler.Value (Rotors)(I)) );
+              := Positive (To_Id (Rotors.Value(I)) );
         begin
           Ada.Text_Io.Put (Upper_Str (Num_Letters.Letters_Of (Num)));
         end;
         -- Ring offset
-        Ada.Text_Io.Put (Text_Handler.Value (Rotors)(I + 1));
+        Ada.Text_Io.Put (Rotors.Value(I + 1));
         -- Initial offset
-        Ada.Text_Io.Put (Text_Handler.Value (Init_Offset)((I - 1) / 2 + 1));
+        Ada.Text_Io.Put (Init_Offset.Value((I - 1) / 2 + 1));
       end if;
     end loop;
     -- Reflector: Num, offset, offset and zero
     declare
       Reflector_Num : constant Positive
-               := Positive (To_Id (Text_Handler.Value (Reflector)(1)));
+                    := Positive (To_Id (Reflector.Value(1)));
 
       Reflector_Str : constant String
                 := Upper_Str (Num_Letters.Letters_Of (Reflector_Num));
     begin
       Ada.Text_Io.Put (Reflector_Str);
-      Ada.Text_Io.Put (Text_Handler.Value (Reflector)(2));
-      Ada.Text_Io.Put (Text_Handler.Value (Reflector)(2));
+      Ada.Text_Io.Put (Reflector.Value(2));
+      Ada.Text_Io.Put (Reflector.Value(2));
       Ada.Text_Io.Put ('Z');
     end;
   end if;

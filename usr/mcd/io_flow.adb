@@ -610,7 +610,7 @@ package body Io_Flow is
     Soc.Open (Socket.Udp);
     Is_Ipm := False;
     if Host.Kind = Tcp_Util.Host_Id_Spec
-    or else Host.Name(Host.Name'First) /= ' ' then
+    or else Asu_Is_Null (Host.Name) then
       -- An address specified => Ipm
       -- Use Set_Dest to indicate Imp address
       Socket_Util.Set_Destination (Soc, True, Host, Port);

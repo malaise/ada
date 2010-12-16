@@ -271,12 +271,12 @@ package body Git_If is
       loop
         Dir_List.Read (Dir_Entry, Moved => Moved);
         if Dir_Entry.Kind = Directory.Dir
-        and then Dir_Entry.Name (1 .. Dir_Entry.Len) /= "."
-        and then Dir_Entry.Name (1 .. Dir_Entry.Len) /= ".." then
+        and then Asu_Ts (Dir_Entry.Name) /= "."
+        and then Asu_Ts (Dir_Entry.Name) /= ".." then
           File_Entry.S2 := ' ';
           File_Entry.S3 := ' ';
           File_Entry.Kind := '/';
-          File_Entry.Name := Asu_Tus (Dir_Entry.Name (1 .. Dir_Entry.Len));
+          File_Entry.Name := Dir_Entry.Name;
           Files.Insert (File_Entry);
         end if;
         exit when not Moved;

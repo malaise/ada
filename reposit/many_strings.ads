@@ -1,6 +1,5 @@
 with Ada.Characters.Latin_1;
 with As.U; use As.U;
-with Text_Handler;
 -- Store several strings in one, using Ascii Nul as separator.
 package Many_Strings is
 
@@ -13,7 +12,6 @@ package Many_Strings is
 
   -- Concatenation
   function Cat (To : Many_String; What : String) return Many_String;
-  procedure Cat (To : in out Text_Handler.Text; What : in String);
   procedure Cat (To : in out Asu_Us; What : in String);
 
   -- Decode (String_Error is raised by Nth if N > Nb)

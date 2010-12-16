@@ -1,6 +1,6 @@
 with System, Ada.Calendar;
-with Text_Handler, Environ, Socket, Tcp_Util, Dynamic_List,
-     Event_Mng, Assertion;
+with As.U; use As.U;
+with Environ, Socket, Tcp_Util, Dynamic_List, Event_Mng, Assertion;
 pragma Elaborate (Tcp_Util);
 package body Channels is
 
@@ -76,7 +76,7 @@ package body Channels is
   -- The channel
   type Channel_Rec is record
     Init : Boolean := False;
-    Name : Text_Handler.Text (Tcp_Util.Max_Port_Name_Len);
+    Name : Tcp_Util.Host_Name;
     Period : Ada.Calendar.Day_Duration;
     Accept_Num : Tcp_Util.Port_Num := 0;
     Dests : Dest_List_Mng.List_Type;
@@ -94,17 +94,6 @@ package body Channels is
     when Tcp_Util.No_Such =>
       Dscr.Close;
   end Close;
-
-  -- Remove tailing spaces of a string
-  function Parse (Str : String) return String is
-  begin
-    for I in reverse Str'Range loop
-      if Str(I) /= ' ' then
-        return Str (Str'First .. I);
-      end if;
-    end loop;
-    return Str;
-  end Parse;
 
   function Get_Period (Channel : String) return Ada.Calendar.Day_Duration is
     Default_Period : constant Ada.Calendar.Day_Duration := 1.0;
@@ -157,7 +146,7 @@ package body Channels is
       if Channel_Dscr.Init then
         return;
       end if;
-      Text_Handler.Set (Channel_Dscr.Name, Channel_Name);
+      Channel_Dscr.Name := Asu_Tus (Channel_Name);
       Channel_Dscr.Period := Get_Period (Channel_Name);
       Channel_Dscr.Init := True;
       Channel_Dscr.Active := True;
@@ -178,7 +167,7 @@ package body Channels is
         raise Channel_Active;
       end if;
       -- Store new name
-      Text_Handler.Set (Channel_Dscr.Name, New_Channel_Name);
+      Channel_Dscr.Name := Asu_Tus (New_Channel_Name);
       Channel_Dscr.Period := Get_Period (New_Channel_Name);
       Channel_Dscr.Init := True;
     exception
@@ -247,8 +236,7 @@ package body Channels is
               D_Rec.Fd := 0;
               Channel_Dscr.Dests.Modify (D_Rec, Dest_List_Mng.Current);
               -- Retry to connect
-              Port.Name (1 .. Text_Handler.Length (Channel_Dscr.Name))
-                    := Text_Handler.Value (Channel_Dscr.Name);
+              Port.Name := Channel_Dscr.Name;
               Res := Tcp_Util.Connect_To (Socket.Tcp_Header,
                                           D_Rec.Host_Name, Port,
                                           Channel_Dscr.Period, 0,
@@ -334,8 +322,7 @@ package body Channels is
         raise Already_Subscribed;
       end if;
       -- Build port record
-      Port.Name (1 .. Text_Handler.Length (Channel_Dscr.Name))
-          := Text_Handler.Value (Channel_Dscr.Name);
+      Port.Name := Channel_Dscr.Name;
 
       -- Accept
       begin
@@ -425,14 +412,8 @@ package body Channels is
                                Port : out Tcp_Util.Remote_Port) is
     begin
       -- Build host and port records
-      if Host_Name'Length > Tcp_Util.Max_Host_Name_Len then
-        raise Name_Too_Long;
-      end if;
-      Host := (Kind => Tcp_Util.Host_Name_Spec, Name => (others => ' '));
-      Host.Name (1 .. Host_Name'Length) := Host_Name;
-      Port := (Kind => Tcp_Util.Port_Name_Spec, Name => (others => ' '));
-      Port.Name (1 .. Text_Handler.Length (Channel_Dscr.Name))
-          := Text_Handler.Value (Channel_Dscr.Name);
+      Host := (Kind => Tcp_Util.Host_Name_Spec, Name => Asu_Tus (Host_Name));
+      Port := (Kind => Tcp_Util.Port_Name_Spec, Name => Channel_Dscr.Name);
     end Build_Host_Port;
 
     -- Add destinations from file
@@ -441,7 +422,7 @@ package body Channels is
       List : Host_List_Mng.List_Type;
     begin
       -- Store hosts (fully parse file)
-      File.Open (File_Name, Text_Handler.Value (Channel_Dscr.Name) );
+      File.Open (File_Name, Asu_Ts (Channel_Dscr.Name) );
       loop
         begin
           Host := File.Next_Host;
@@ -465,7 +446,7 @@ package body Channels is
       loop
         List.Read (Host, Host_List_Mng.Current);
         begin
-          Add_Destination (Parse (Host.Name));
+          Add_Destination (Asu_Ts (Host.Name));
         exception
           when Destination_Already | Unknown_Destination =>
             null;
@@ -713,7 +694,7 @@ package body Channels is
           Res := False;
         end if;
         if Send_Cb /= null then
-          Send_Cb (Parse (Dest.Host_Name.Name), Res);
+          Send_Cb (Asu_Ts (Dest.Host_Name.Name), Res);
         end if;
         exit when not Channel_Dscr.Dests.Check_Move;
         Channel_Dscr.Dests.Move_To;
@@ -801,8 +782,7 @@ package body Channels is
       Found : Boolean;
     begin
       -- Find destination from host name
-      D_Rec.Host_Name.Name := (others => ' ');
-      D_Rec.Host_Name.Name(1 .. Host_Name'Length) := Host_Name;
+      D_Rec.Host_Name.Name := Asu_Tus (Host_Name);
       Host_Name_Search (Channel_Dscr.Dests, Found, D_Rec,
                         From => Dest_List_Mng.Absolute);
       if not Found then
@@ -827,8 +807,8 @@ package body Channels is
       Active : Boolean := False;
       Subscribed : Boolean := False;
       Joined : Boolean := False;
-      Bus_Name : Text_Handler.Text (Tcp_Util.Max_Port_Name_Len);
-      Dest_Name : Text_Handler.Text (Tcp_Util.Max_Host_Name_Len);
+      Bus_Name : Tcp_Util.Port_Name;
+      Dest_Name : Tcp_Util.Host_Name;
       Send_Dscr : Socket.Socket_Dscr;
       Rece_Dscr : Socket.Socket_Dscr;
       Bus_Id : Socket.Host_Id;
@@ -846,8 +826,8 @@ package body Channels is
       if Bus_Dscr.Init then
         return;
       end if;
-      Text_Handler.Set (Bus_Dscr.Bus_Name, Bus_Name);
-      Text_Handler.Set (Bus_Dscr.Dest_Name, Destination_Name);
+      Bus_Dscr.Bus_Name := Asu_Tus (Bus_Name);
+      Bus_Dscr.Dest_Name := Asu_Tus (Destination_Name);
       Bus_Dscr.Init := True;
     exception
       when Constraint_Error =>
@@ -862,8 +842,8 @@ package body Channels is
       if Bus_Dscr.Active then
         raise Bus_Active;
       end if;
-      Text_Handler.Set (Bus_Dscr.Bus_Name, New_Bus_Name);
-      Text_Handler.Set (Bus_Dscr.Dest_Name, New_Destination_Name);
+      Bus_Dscr.Bus_Name := Asu_Tus (New_Bus_Name);
+      Bus_Dscr.Dest_Name := Asu_Tus (New_Destination_Name);
       Bus_Dscr.Init := True;
     exception
       when Constraint_Error =>
@@ -914,9 +894,7 @@ package body Channels is
     procedure Set_Dest_Bus (Dscr : in out Socket.Socket_Dscr) is
     begin
       Dscr.Set_Destination_Name_And_Service (
-         True,
-         Text_Handler.Value (Bus_Dscr.Dest_Name),
-         Text_Handler.Value (Bus_Dscr.Bus_Name));
+         True, Asu_Ts (Bus_Dscr.Dest_Name), Asu_Ts (Bus_Dscr.Bus_Name));
       Bus_Dscr.Bus_Id := Dscr.Get_Destination_Host;
     exception
       when Socket.Soc_Name_Not_Found =>
@@ -924,8 +902,7 @@ package body Channels is
           Num : Socket.Port_Num;
           pragma Unreferenced (Num);
         begin
-          Num := Socket.Port_Num_Of (Text_Handler.Value (Bus_Dscr.Bus_Name),
-                                     Socket.Udp);
+          Num := Socket.Port_Num_Of (Asu_Ts (Bus_Dscr.Bus_Name), Socket.Udp);
         exception
            when Socket.Soc_Name_Not_Found =>
              raise Unknown_Bus;
@@ -949,7 +926,7 @@ package body Channels is
       Bus_Dscr.Subscribed := True;
       Bus_Dscr.Rece_Dscr.Open (Socket.Udp);
       Set_Dest_Bus (Bus_Dscr.Rece_Dscr);
-      Bus_Dscr.Rece_Dscr.Link_Service (Text_Handler.Value (Bus_Dscr.Bus_Name));
+      Bus_Dscr.Rece_Dscr.Link_Service (Asu_Ts (Bus_Dscr.Bus_Name));
       Event_Mng.Add_Fd_Callback (Bus_Dscr.Rece_Dscr.Get_Fd,
                                  True, Loc_Read_Cb'Unrestricted_Access);
     end Subscribe;

@@ -103,12 +103,12 @@ begin
         null;
       when X_Mng.Keyboard =>
         X_Mng.X_Read_Key(Id, Control, Shift, Code, Kbd_Codes);
-        Text_Handler.Set (Txt, X_Mng.Event_Kind'Image(Kind));
-        Text_Handler.Append (Txt, " " & Control'Img & " " & Shift'Img & " " & Code'Img);
+        Txt.Set (X_Mng.Event_Kind'Image(Kind));
+        Txt.Append (" " & Control'Img & " " & Shift'Img & " " & Code'Img);
         for I in 1 .. Kbd_Codes.Nbre loop
-           Text_Handler.Append (Txt, " " & X_Mng.Byte'Image(Kbd_Codes.Tab(I)));
+           Txt.Append (" " & X_Mng.Byte'Image(Kbd_Codes.Tab(I)));
         end loop;
-        Put (Text_Handler.Value(Txt));
+        Put (Txt.Value);
         -- Ctrl C
         exit Main_Loop when Kbd_Codes.Nbre = 2
              and then Kbd_Codes.Tab(1) = 255 and then Kbd_Codes.Tab(2) = 27;

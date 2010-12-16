@@ -4,13 +4,13 @@ package Text_Handler is
 
   subtype Max_Len_Range is Integer range 0 .. 32*1024;
 
-  type Text (Max_Len : Max_Len_Range) is limited private;
+  type Text (Max_Len : Max_Len_Range) is tagged private;
 
   Empty_Text : constant Text;
 
   function Length (T : Text) return Max_Len_Range;
-  function Value  (T : Text) return String;
-  function Empty  (T : Text) return Boolean;
+  function Value (T : Text) return String;
+  function Is_Empty (T : Text) return Boolean;
 
   procedure Empty (T : in out Text);
 
@@ -60,7 +60,7 @@ package Text_Handler is
 
 private
 
-  type Text (Max_Len : Max_Len_Range) is record
+  type Text (Max_Len : Max_Len_Range) is tagged record
     Len : Max_Len_Range := 0;
     Val : String (1..Max_Len);
   end record;

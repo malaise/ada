@@ -1,10 +1,6 @@
 with Ada.Text_Io;
-
-with Text_Handler;
-with My_Math;
-
-with Get_Line;
-with Get_Float;
+with As.U; use As.U;
+with My_Math, Get_Line, Get_Float;
 
 package body File is
 
@@ -16,8 +12,7 @@ package body File is
   type Float_Cell_Range is digits 5 range 0.00 .. 100.00;
   type Input_Row_Tab is array (1 .. Max_Dim) of Float_Cell_Range;
   type Input_Row_Tab_Access is access Input_Row_Tab;
-  type Input_Mattrix_Tab is array (1 .. Max_Dim) of
-    Input_Row_Tab_Access;
+  type Input_Mattrix_Tab is array (1 .. Max_Dim) of Input_Row_Tab_Access;
   Input_Mattrix : constant Input_Mattrix_Tab
                 := (others => new Input_Row_Tab);
 
@@ -25,12 +20,8 @@ package body File is
 
   function Read (File_Name : String) return Types.Mattrix_Rec is
 
-    package My_Get_Line is new Get_Line(
-      Max_Word_Len => 6, -- 100.00
-      Max_Word_Nb => Max_Dim,
-      Max_Line_Len => 1024,
-      Comment      => "#");
-    Line  : My_Get_Line.Line_Array;
+    package My_Get_Line is new Get_Line(Comment => "#");
+    Line  : Asu_Ua.Unbounded_Array;
     Dim : Positive;
     F   : Float_Cell_Range;
 
@@ -55,7 +46,7 @@ package body File is
     begin
       My_Get_Line.Get_Words (Line);
     exception
-      when My_Get_Line.No_More_Line =>
+      when My_Get_Line.End_Error =>
         Ada.Text_Io.Put_Line ("ERROR in file " & File_Name
                           & ". File is empty.");
         My_Get_Line.Close;
@@ -68,7 +59,7 @@ package body File is
       raise Read_Error;
     end if;
     begin
-      Loc_Kind := Types.Mattrix_Kind_List'Value (Text_Handler.Value(Line(1)));
+      Loc_Kind := Types.Mattrix_Kind_List'Value (Asu_Ts (Line.Element (1)));
     exception
       when others =>
         Ada.Text_Io.Put_Line ("ERROR in file " & File_Name
@@ -83,8 +74,7 @@ package body File is
       Dim := My_Get_Line.Get_Word_Number;
     exception
       when Ada.Text_Io.End_Error =>
-        Ada.Text_Io.Put_Line ("ERROR in file " & File_Name
-                          & ", no mattrix.");
+        Ada.Text_Io.Put_Line ("ERROR in file " & File_Name & ", no mattrix.");
         My_Get_Line.Close;
         raise Read_Error;
       when others =>
@@ -100,9 +90,9 @@ package body File is
       begin
         for J in 1 .. Dim loop
           F := Float_Cell_Range (Get_Float.Get_Float(
-                       Text_Handler.Value(Line(J))));
+                       Asu_Ts (Line.Element (J))));
           if F > 100.00
-          or else My_Math.Frac(My_Math.Real(F)) * 100.0 > 100.0 then
+          or else My_Math.Frac (My_Math.Real (F)) * 100.0 > 100.0 then
             My_Get_Line.Close;
             raise Read_Error;
           end if;
@@ -111,7 +101,7 @@ package body File is
       exception
         when others =>
           Ada.Text_Io.Put_Line ("ERROR, when reading data at line "
-                & Ada.Text_Io.Count'Image(My_Get_Line.Get_Line_No)
+                & My_Get_Line.Count'Image (My_Get_Line.Get_Line_No)
                 & " of file " & File_Name);
           My_Get_Line.Close;
           raise Read_Error;
@@ -124,7 +114,7 @@ package body File is
         -- Check number of words
         if My_Get_Line.Get_Word_Number /= Dim then
           Ada.Text_Io.Put_Line ("ERROR in file. Wrong number of words at line "
-                & Ada.Text_Io.Count'Image(My_Get_Line.Get_Line_No)
+                & My_Get_Line.Count'Image(My_Get_Line.Get_Line_No)
                 & " of file " & File_Name);
           My_Get_Line.Close;
           raise Read_Error;
@@ -137,12 +127,12 @@ package body File is
     begin
       Read_Next_Significant_Line;
       Ada.Text_Io.Put_Line ("ERROR. Unexpected data at line "
-            & Ada.Text_Io.Count'Image(My_Get_Line.Get_Line_No)
+            & My_Get_Line.Count'Image (My_Get_Line.Get_Line_No)
             & " of file " & File_Name);
       My_Get_Line.Close;
       raise Read_Error;
     exception
-      when My_Get_Line.No_More_Line =>
+      when My_Get_Line.End_Error =>
         -- Ok, go on
         My_Get_Line.Close;
     end;

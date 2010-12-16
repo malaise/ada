@@ -161,17 +161,17 @@ begin
       exit;
     end if;
   end loop;
-  Text_Handler.Set (Key, Buff (1 .. Len));
+  Key.Set (Buff (1 .. Len));
 
   -- Initialize coding
-  Grid_1.Initialize(Text_Handler.Value(Key));
+  Grid_1.Initialize(Key.Value);
 
   if Code then
     -- Code through code 1
     Sl := 1;
     -- Code key
-    Len := Text_Handler.Length (Key);
-    Buff(1 .. Len) := Text_Handler.Value(Key);
+    Len := Key.Length;
+    Buff(1 .. Len) := Key.Value;
     Code_1;
     -- Code input file
     loop
@@ -187,10 +187,10 @@ begin
     Sl := Sl - 1;
 
     -- Code through code 2
-    Str (1 .. Sl) := Grid_2.Encode(Text_Handler.Value(Key), Str(1 .. Sl));
+    Str (1 .. Sl) := Grid_2.Encode(Key.Value, Str(1 .. Sl));
 
     -- Code through vigenere
-    Vigenere.Encode (Text_Handler.Value(Key), Str(1 .. Sl));
+    Vigenere.Encode (Key.Value, Str(1 .. Sl));
 
   else
 
@@ -212,13 +212,13 @@ begin
 
     -- Decode through vigenere
     begin
-      Vigenere.Decode (Text_Handler.Value(Key), Str(1 .. Sl));
+      Vigenere.Decode (Key.Value, Str(1 .. Sl));
     exception
       when Vigenere.Decode_Error =>
         return;
     end;
     -- Decode through code 2
-    Str(1 .. Sl) := Grid_2.Decode(Text_Handler.Value(Key), Str(1 .. Sl));
+    Str(1 .. Sl) := Grid_2.Decode (Key.Value, Str(1 .. Sl));
 
   end if;
 
@@ -242,7 +242,7 @@ begin
     begin
       Si := 1;
       Decode_1;
-      if Buff(1 .. Len-1) = Text_Handler.Value (Key) then
+      if Buff(1 .. Len-1) = Key.Value then
         -- Decode if key matches
         loop
           Decode_1;

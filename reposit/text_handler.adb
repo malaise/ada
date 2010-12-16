@@ -11,10 +11,10 @@ package body Text_Handler is
     return T.Val (1 .. Length(T));
   end Value;
 
-  function Empty  (T : Text) return Boolean is
+  function Is_Empty  (T : Text) return Boolean is
   begin
     return Length (T) = 0;
-  end Empty;
+  end Is_Empty;
 
   procedure Empty (T : in out Text) is
   begin

@@ -1,13 +1,14 @@
 with Ada.Exceptions, Ada.Text_Io;
-with Text_Handler, Argument, Lower_Str, Event_Mng, Socket, Tcp_Util;
+with As.U; use As.U;
+with Argument, Lower_Str, Event_Mng, Socket, Tcp_Util;
 procedure T_Tcp_Util is
   Arg_Error : exception;
 
   Protocol : constant Socket.Protocol_List := Socket.Tcp_Header;
   -- Protocol : constant Socket.Protocol_List := Socket.Tcp_Header_Afux;
   Server : Boolean;
-  Server_Name : Text_Handler.Text (80);
-  Server_Port_Name : Text_Handler.Text (80);
+  Server_Name : Asu_Us;
+  Server_Port_Name : Asu_Us;
   Server_Port_Num : Socket.Port_Num;
   Local_Port : Tcp_Util.Local_Port;
   Remote_Port : Tcp_Util.Remote_Port;
@@ -132,8 +133,7 @@ procedure T_Tcp_Util is
     Result : Boolean;
     pragma Unreferenced (Result);
   begin
-    Host.Name (1 .. Text_Handler.Length(Server_Name))
-         := Text_Handler.Value(Server_Name);
+    Host.Name := Server_Name;
     Result := Tcp_Util.Connect_To (Protocol,
                                    Host, Remote_Port,
                                    Delay_Try, Nb_Try,
@@ -262,12 +262,12 @@ procedure T_Tcp_Util is
 begin
   -- Server or client
   begin
-    Argument.Get_Parameter (Server_Name, 1, "c");
+    Server_Name := Asu_Tus (Argument.Get_Parameter (1, "c"));
     Server := False;
   exception
     when Argument.Argument_Not_Found =>
     begin
-      Argument.Get_Parameter (Server_Name, 1, "s");
+      Server_Name := Asu_Tus (Argument.Get_Parameter (1, "s"));
       Server := True;
     exception
       when others =>
@@ -276,16 +276,16 @@ begin
     when others =>
       raise Arg_Error;
   end;
-  if Server and then not Text_Handler.Empty (Server_Name) then
+  if Server and then not Asu_Is_Null (Server_Name) then
     raise Arg_Error;
-  elsif not Server and then Text_Handler.Empty (Server_Name) then
+  elsif not Server and then Asu_Is_Null (Server_Name) then
     raise Arg_Error;
   end if;
 
   -- Port name or num
   begin
-    Argument.Get_Parameter (Server_Port_Name, 1, "P");
-    if Text_Handler.Empty (Server_Port_Name) then
+    Server_Port_Name := Asu_Tus (Argument.Get_Parameter (1, "P"));
+    if Asu_Is_Null (Server_Port_Name) then
       raise Arg_Error;
     end if;
   exception
@@ -301,12 +301,9 @@ begin
   end;
 
   -- Set ports
-  if not Text_Handler.Empty (Server_Port_Name) then
-    Local_Port := (Kind => Tcp_Util.Port_Name_Spec, Name => (others => ' '));
-    Remote_Port := (Kind => Tcp_Util.Port_Name_Spec, Name => (others => ' '));
-    Local_Port.Name (1 .. Text_Handler.Length(Server_Port_Name)) :=
-       Text_Handler.Value(Server_Port_Name);
-     Remote_Port.Name := Local_Port.Name;
+  if not Asu_Is_Null (Server_Port_Name) then
+    Local_Port := (Kind => Tcp_Util.Port_Name_Spec, Name => Server_Port_Name);
+    Remote_Port := (Kind => Tcp_Util.Port_Name_Spec, Name => Local_Port.Name);
   else
     Local_Port := (Kind => Tcp_Util.Port_Num_Spec, Num => Server_Port_Num);
     Remote_Port := (Kind => Tcp_Util.Port_Num_Spec, Num => Server_Port_Num);

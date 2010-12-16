@@ -7,7 +7,7 @@ package body Output is
   Spaces_Name : constant String := "ASTUB_INDENT";
   Def_Nb_Spaces : constant := 2;
   Max_Nb_Spaces : constant := 10;
-  Spaces : Text_Handler.Text (Max_Nb_Spaces);
+  Spaces : Text_Handler.Text(Max_Nb_Spaces);
 
   -- Line length
   Length_Name : constant String := "ASTUB_LENGTH";
@@ -22,7 +22,7 @@ package body Output is
   procedure Getenv is
   begin
     -- Check if spaces is set
-    if Text_Handler.Empty (Spaces) then
+    if Spaces.Is_Empty then
       -- Getenv Nb_Spaces
       declare
         Nb_Spaces : Positive := Def_Nb_Spaces;
@@ -34,7 +34,7 @@ package body Output is
         end if;
         -- Set Spaces
         for I in 1 .. Nb_Spaces loop
-         Text_Handler.Append (Spaces, ' ');
+         Spaces.Append (' ');
         end loop;
       end;
 
@@ -55,7 +55,7 @@ package body Output is
   begin
     Getenv;
     for I in 1 .. Level loop
-      Asu.Append (Result, Text_Handler.Value (Spaces));
+      Asu.Append (Result, Spaces.Value);
     end loop;
     return Asu_Ts (Result);
   end Get_Indent;
@@ -151,7 +151,7 @@ package body Output is
     -- Indent
     if Indent then
       for I in 1 .. Level loop
-        Asu.Append (Line2Put, Text_Handler.Value (Spaces));
+        Asu.Append (Line2Put, Spaces.Value);
       end loop;
     end if;
 

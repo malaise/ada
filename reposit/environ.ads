@@ -1,5 +1,4 @@
 with As.U; use As.U;
-with Text_Handler;
 package Environ is
 
   -- Getenv for a String. Returns empty string if not set.
@@ -14,9 +13,6 @@ package Environ is
   -- otherwise set them.
   procedure Get_Str (Name : String; Result : in out String;
                                     Length : in out Natural);
-  -- Getenv for a Text.
-  procedure Get_Txt (Name : String; Result : in out Text_Handler.Text);
-
   -- Getenv for a unbounded string
   procedure Get_Us (Name : String; Result : in out Asu_Us);
 

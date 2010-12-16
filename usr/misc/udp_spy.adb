@@ -1,5 +1,6 @@
 with Ada.Exceptions, Ada.Text_Io, Ada.Calendar;
-with Argument, Basic_Proc, Text_Handler, Date_Image, Normal, Int_Image,
+with As.U; use As.U;
+with Argument, Basic_Proc, Date_Image, Normal, Int_Image,
      Upper_Str, String_Mng, Text_Line, Sys_Calls,
      Socket, Event_Mng, Ip_Addr, Tcp_Util, Timers;
 
@@ -9,9 +10,9 @@ procedure Udp_Spy is
   Arg_Error : exception;
 
   -- Parsed Host and Port
-  Host_Name : Text_Handler.Text (80);
+  Host_Name : Asu_Us;
   Host : Tcp_Util.Remote_Host;
-  Port_Name : Text_Handler.Text (80);
+  Port_Name : Asu_Us;
   Port : Tcp_Util.Remote_Port;
   Port_Num : Socket.Port_Num;
 
@@ -278,8 +279,8 @@ begin
     Index : Natural;
   begin
     Index := String_Mng.Locate (Address, ":");
-    Text_Handler.Set (Host_Name, Address(1 .. Index - 1));
-    Text_Handler.Set (Port_Name, Address(Index + 1 .. Address'Last));
+    Host_Name := Asu_Tus (Address(1 .. Index - 1));
+    Port_Name := Asu_Tus (Address(Index + 1 .. Address'Last));
   exception
     when others =>
       raise Arg_Error;
@@ -306,11 +307,11 @@ begin
     begin
       Iface := (
           Kind => Tcp_Util.Host_Id_Spec,
-          Id => Socket.Host_Id_Of (Tcp_Util.Name_Of (Iface.Name)));
+          Id => Socket.Host_Id_Of (Asu_Ts (Iface.Name)));
     exception
       when Socket.Soc_Name_Not_Found =>
         Basic_Proc.Put_Line_Error ("Error: Unknown interface name "
-                                 & Tcp_Util.Name_Of (Iface.Name));
+                                 & Asu_Ts (Iface.Name));
       raise;
     end;
   end if;
@@ -319,15 +320,14 @@ begin
   end if;
 
   -- Set port num
-  Port := Ip_Addr.Parse (Text_Handler.Value(Port_Name));
+  Port := Ip_Addr.Parse (Asu_Ts (Port_Name));
   if Port.Kind = Tcp_Util.Port_Name_Spec then
     begin
-      Port_Num := Socket.Port_Num_Of (Tcp_Util.Name_Of (Port.Name),
-               Socket.Udp);
+      Port_Num := Socket.Port_Num_Of (Asu_Ts (Port.Name), Socket.Udp);
     exception
       when Socket.Soc_Name_Not_Found =>
         Basic_Proc.Put_Line_Error ("Error: Unknown port name "
-                                 & Tcp_Util.Name_Of (Port.Name));
+                                 & Asu_Ts (Port.Name));
         raise;
     end;
   else
@@ -335,16 +335,15 @@ begin
   end if;
 
   -- Link to Lan name or num
-  Host := Ip_Addr.Parse (Text_Handler.Value (Host_Name));
+  Host := Ip_Addr.Parse (Asu_Ts (Host_Name));
   -- See if Server is Id or Name, if it is a Host or LAN name
   if Host.Kind = Tcp_Util.Host_Name_Spec then
     begin
-      Soc.Set_Destination_Name_And_Port (True,
-               Tcp_Util.Name_Of (Host.Name), Port_Num);
+      Soc.Set_Destination_Name_And_Port (True, Asu_Ts (Host.Name), Port_Num);
     exception
       when Socket.Soc_Name_Not_Found =>
         Basic_Proc.Put_Line_Error ("Error: Unknown LAN name "
-                                 & Tcp_Util.Name_Of (Host.Name));
+                                 & Asu_Ts (Host.Name));
         raise;
     end;
   else

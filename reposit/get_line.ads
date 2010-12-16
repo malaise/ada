@@ -1,15 +1,9 @@
 -- Opens a file and reads lines
 -- Parses words separated by space or tab
-with Ada.Text_Io;
-with Text_Handler;
-
+with As.U; use As.U;
+with Text_Line;
 generic
 
-  -- These two are used while parsing the line
-  Max_Word_Len : in Positive;
-  Max_Word_Nb  : in Positive;
-  -- Only this one is used while loading a line
-  Max_Line_Len : in Positive;
   -- If this comment string is set, then only significant lines
   -- (not empty nor starting with comment nor with comment as first word)
   -- are loaded
@@ -17,27 +11,26 @@ generic
 
 package Get_Line is
 
-  subtype Word_Txt is Text_Handler.Text(Max_Len => Max_Word_Len);
-  subtype Word_Range is Positive range 1 .. Max_Word_Nb;
-  subtype Word_Count is Natural  range 0 .. Max_Word_Nb;
-  type Line_Array is array (Word_Range) of Word_Txt;
-  subtype Line_Txt is Text_Handler.Text(Max_Len => Max_Line_Len);
+  subtype Word_Txt is Asu_Us;
+  subtype Word_Range is Positive;
+  subtype Word_Count is Natural;
+  subtype Line_Array is Asu_Array;
+  subtype Line_Txt is Asu_Us;
 
-  -- Opens the file. Exceptions are the one of Ada.Text_Io.Open (In_File)
+  Name_Error : exception;
+  Status_Error : exception renames Text_Line.Status_Error;
+  Io_Error : exception renames Text_Line.Io_Error;
+  End_Error : exception;
+
+  -- Opens the file.
   -- Loads the first line
   procedure Open (File_Name : in String);
 
   -- Closes the file
-  -- Exceptions are the one of Ada.Text_Io.Close
   procedure Close;
-
-  -- The following features may raise
-  Not_Open : exception;
 
   -- Loads next line of file
   procedure Read_Next_Line;
-  No_More_Line   : exception;
-  Line_Too_Long  : exception;
 
   --------------------------------------------------
   -- As soon as a line is loaded the following
@@ -45,7 +38,9 @@ package Get_Line is
   --------------------------------------------------
 
   -- Current line number (not parsed)
-  function Get_Line_No return Ada.Text_Io.Positive_Count;
+  subtype Count is Long_Long_Integer range 0 .. Long_Long_Integer'Last;
+  subtype Positive_Count is Count range 1 .. Count'Last;
+  function Get_Line_No return Positive_Count;
 
   -- Get the whole line (not parsed)
   procedure Get_Whole_Line (Line : in out Line_Txt);
@@ -53,18 +48,16 @@ package Get_Line is
   -- Get the first significant word of the line (not parsed)
   function Get_First_Word return String;
 
-  --------------------------------------------------
-  -- The two following features trigger a parsing
-  --  of the loaded line and may raise
-  --------------------------------------------------
-  Too_Many_Words : exception;
-  Word_Too_Long  : exception;
+  ------------------------------------------------------------------
+  -- The two following features trigger a parsing of the loaded line
+  ------------------------------------------------------------------
 
   -- Number of words in currently loaded line
   function Get_Word_Number return Word_Count;
 
   -- Words of the currently loaded line
-  procedure Get_Words (Line : in out Line_Array);
+  function Get_Words return Line_Array;
+  procedure Get_Words (Line : in out Asu_Ua.Unbounded_Array);
 
 end Get_Line;
 

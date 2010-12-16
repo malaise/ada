@@ -1,20 +1,20 @@
 with Ada.Calendar;
-with My_Io, Int_Io, Directory, Sys_Calls,
-     Text_Handler, Argument, Day_Mng, Normal;
+with As.U; use As.U;
+with My_Io, Int_Io, Directory, Sys_Calls, Argument, Day_Mng, Normal;
 procedure T_Dir is
-  File_Name : Text_Handler.Text(Directory.Max_Dir_Name_Len);
-  Dir_Name : Text_Handler.Text(Directory.Max_Dir_Name_Len);
+  File_Name : Asu_Us;
+  Dir_Name : Asu_Us;
   Fstat : Sys_Calls.File_Stat_Rec;
   Max_Len : constant := 50;
-  Pad : constant String (1 .. Max_Len) := (others => ' ');
+  Pad : constant String(1 .. Max_Len) := (others => ' ');
 
   function Get_New_Dir return String is
-    Str : String (1 .. 1024);
+    Str : String(1 .. 1024);
     Len : Natural;
   begin
     My_Io.Put ("Enter new directory: ");
     My_Io.Get_Line (Str, Len);
-    return Str (1 .. Len);
+    return Str(1 .. Len);
   end  Get_New_Dir;
 
   procedure Put_Rights (Rights : in Natural) is
@@ -37,18 +37,18 @@ procedure T_Dir is
       end if;
     end loop;
 
-    Zstr(4-L+F .. 4) := Str(F .. L);
+    Zstr(4 - L + F .. 4) := Str(F .. L);
     My_Io.Put(Zstr);
   end Put_Rights;
 
   procedure Put_Id (Id : in Natural) is
   begin
-    My_Io.Put(" " & Normal(Id, 4));
+    My_Io.Put (" " & Normal (Id, 4));
   end Put_Id;
 
   procedure Put_Size (Size : in Sys_Calls.Size_T) is
   begin
-    My_Io.Put(" " & Normal(Integer(Size), 10));
+    My_Io.Put(" " & Normal (Integer(Size), 10));
   end Put_Size;
 
   procedure Put_Date (Mtime : in Sys_Calls.Time_T) is
@@ -62,16 +62,16 @@ procedure T_Dir is
     Seconds  : Day_Mng.T_Seconds;
     Millisec : Day_Mng.T_Millisec;
   begin
-    T := Sys_Calls.Time_Of(Mtime);
+    T := Sys_Calls.Time_Of (Mtime);
     Ada.Calendar.Split (T, Year, Month, Day, Dur);
     Day_Mng.Split (Dur, Hours, Minutes, Seconds, Millisec);
-    My_Io.Put(" " &
-              Normal(Year, 4, Gap =>'0') & '/' &
-              Normal(Month, 2, Gap =>'0') & '/' &
-              Normal(Day, 2, Gap =>'0') & ' '  &
-              Normal(Hours, 2, Gap =>'0') & ':'  &
-              Normal(Minutes, 2, Gap =>'0') & ':'  &
-              Normal(Seconds, 2, Gap =>'0') );
+    My_Io.Put (" " &
+               Normal (Year, 4, Gap =>'0') & '/' &
+               Normal (Month, 2, Gap =>'0') & '/' &
+               Normal (Day, 2, Gap =>'0') & ' '  &
+               Normal (Hours, 2, Gap =>'0') & ':'  &
+               Normal (Minutes, 2, Gap =>'0') & ':'  &
+               Normal (Seconds, 2, Gap =>'0') );
   end Put_Date;
 
   use type Sys_Calls.File_Kind_List;
@@ -85,22 +85,21 @@ begin
       Dsc : Directory.Dir_Desc;
     begin
       if Argument.Get_Nbre_Arg /= 0 then
-        Argument.Get_Parameter(Dir_Name);
+        Dir_Name := Asu_Tus (Argument.Get_Parameter);
       else
-        Directory.Get_Current(Dir_Name);
+        Directory.Get_Current (Dir_Name);
       end if;
-      Dsc := Directory.Open(Text_Handler.Value(Dir_Name));
-      if Text_Handler.Value(Dir_Name) = "/" then
-        Text_Handler.Empty(Dir_Name);
+      Dsc := Directory.Open (Asu_Ts (Dir_Name));
+      if Asu_Ts (Dir_Name) = "/" then
+        Dir_Name := Asu_Null;
       end if;
       loop
-        Directory.Next_Entry(Dsc, File_Name);
-        My_Io.Put ("  ---->" & Text_Handler.Value (File_Name) & "< ");
-        My_Io.Put (Pad(1 .. Max_Len - Text_Handler.Length(File_Name)));
+        Directory.Next_Entry (Dsc, File_Name);
+        My_Io.Put ("  ---->" & Asu_Ts (File_Name) & "< ");
+        My_Io.Put (Pad(1 .. Max_Len - Asu.Length (File_Name)));
         begin
           Fstat := Sys_Calls.File_Stat (
-             Text_Handler.Value (Dir_Name) & '/' &
-             Text_Handler.Value (File_Name));
+             Asu_Ts (Dir_Name) & '/' & Asu_Ts (File_Name));
           Put_Id (Fstat.User_Id);
           Put_Id (Fstat.Group_Id);
           Put_Rights (Fstat.Rights);
@@ -112,8 +111,7 @@ begin
           elsif Fstat.Kind = Sys_Calls.Link then
             My_Io.New_Line;
             My_Io.Put_Line ("    ++++>" & Directory.Read_Link (
-                Text_Handler.Value (Dir_Name) & '/' &
-                Text_Handler.Value (File_Name)) & '<');
+                Asu_Ts (Dir_Name) & '/' & Asu_Ts (File_Name)) & '<');
           else
             My_Io.New_Line;
           end if;
@@ -137,7 +135,7 @@ begin
     My_Io.New_Line;
     loop
       begin
-        Directory.Change_Current(Get_New_Dir);
+        Directory.Change_Current (Get_New_Dir);
         exit;
       exception
         when Directory.Name_Error =>

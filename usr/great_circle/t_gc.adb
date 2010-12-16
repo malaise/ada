@@ -73,27 +73,24 @@ procedure T_Gc is
     -- Two '"' added in Afpx screen
     Point_Txt : Text_Handler.Text(String_Util.Coord_Str'Length+2);
   begin
-    Text_Handler.Empty(Point_Txt);
+    Point_Txt.Empty;
     for Field in First_Fld .. Last_Fld loop
-      Text_Handler.Append(Point_Txt, Afpx.Decode_Field(Field, 0));
+      Point_Txt.Append (Afpx.Decode_Field(Field, 0));
     end loop;
     if Debug then
-      Ada.Text_Io.Put_Line ("Decoded point: " & Text_Handler.Value (Point_Txt));
+      Ada.Text_Io.Put_Line ("Decoded point: " & Point_Txt.Value);
     end if;
     -- Replace Ndd°mm'ss"/Eddd°mm'ss" by Ndd.mm.ss/Eddd.mm.ss
     -- "°" has already been replaced by " " in Afpx.Decode_Field
-    Text_Handler.Set (Point_Txt, String_Mng.Replace (
-            Text_Handler.Value (Point_Txt), " ", "."));
-    Text_Handler.Set (Point_Txt, String_Mng.Replace (
-            Text_Handler.Value (Point_Txt), "'", "."));
-    Text_Handler.Set (Point_Txt, String_Mng.Replace (
-            Text_Handler.Value (Point_Txt), """", ""));
+    Point_Txt.Set (String_Mng.Replace (Point_Txt.Value, " ", "."));
+    Point_Txt.Set (String_Mng.Replace (Point_Txt.Value, "'", "."));
+    Point_Txt.Set (String_Mng.Replace (Point_Txt.Value, """", ""));
     if Debug then
-      Ada.Text_Io.Put_Line ("Parsed point: " & Text_Handler.Value (Point_Txt));
+      Ada.Text_Io.Put_Line ("Parsed point: " & Point_Txt.Value);
     end if;
-    Point := String_Util.Str2Geo(Text_Handler.Value(Point_Txt));
+    Point := String_Util.Str2Geo(Point_Txt.Value);
     if Debug then
-      Ada.Text_Io.Put_Line ("Got point OK: " & Text_Handler.Value (Point_Txt));
+      Ada.Text_Io.Put_Line ("Got point OK: " & Point_Txt.Value);
     end if;
     Ok := True;
   exception

@@ -1,7 +1,8 @@
 -- Open a TCP connection to the provided host and port
 with Ada.Text_Io, Ada.Calendar, Ada.Exceptions;
 
-with Text_Handler, Argument, Basic_Proc, Ip_Addr,
+with As.U; use As.U;
+with Argument, Basic_Proc, Ip_Addr,
      Normal, My_Math, Round_At, Timers, Socket, Tcp_Util, Event_Mng;
 
 procedure Tcping is
@@ -51,7 +52,7 @@ procedure Tcping is
   end Put_Arg_Error;
 
   -- Argument parsed
-  Txt : Text_Handler.Text (Tcp_Util.Max_Host_Name_Len);
+  Txt : Asu_Us;
   Host : Tcp_Util.Remote_Host;
   Port : Tcp_Util.Remote_Port;
 
@@ -213,16 +214,16 @@ begin
     Put_Arg_Error;
   end if;
   begin
-    Argument.Get_Parameter (Txt, 3, Argument.Not_Key);
-    Put_Arg_Error (Text_Handler.Value (Txt));
-    Argument.Get_Parameter (Txt, 2, "t");
-    Put_Arg_Error (Text_Handler.Value (Txt));
-    Argument.Get_Parameter (Txt, 2, "d");
-    Put_Arg_Error (Text_Handler.Value (Txt));
-    Argument.Get_Parameter (Txt, 2, "n");
-    Put_Arg_Error (Text_Handler.Value (Txt));
-    Argument.Get_Parameter (Txt, 2, "s");
-    Put_Arg_Error (Text_Handler.Value (Txt));
+    Txt := Asu_Tus (Argument.Get_Parameter (3, Argument.Not_Key));
+    Put_Arg_Error (Asu_Ts (Txt));
+    Txt := Asu_Tus (Argument.Get_Parameter (2, "t"));
+    Put_Arg_Error (Asu_Ts (Txt));
+    Txt := Asu_Tus (Argument.Get_Parameter (2, "d"));
+    Put_Arg_Error (Asu_Ts (Txt));
+    Txt := Asu_Tus (Argument.Get_Parameter (2, "n"));
+    Put_Arg_Error (Asu_Ts (Txt));
+    Txt := Asu_Tus (Argument.Get_Parameter (2, "s"));
+    Put_Arg_Error (Asu_Ts (Txt));
   exception
     when Argument.Argument_Not_Found =>
       null;

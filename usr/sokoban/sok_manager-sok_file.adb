@@ -104,7 +104,7 @@ package body Sok_File is
     Sok_File : Sok_File_Mng.File_Type;
     File_Frame : File_Frame_Tab;
   begin
-    if Text_Handler.Empty(Sok_File_Dir) then
+    if Sok_File_Dir.Is_Empty then
       declare
         Env_Set   : Boolean;
         Env_Trunc : Boolean;
@@ -114,17 +114,17 @@ package body Sok_File is
         Sys_Calls.Getenv (Sok_File_Dir_Env_Name, Env_Set, Env_Trunc,
                           Env_Value, Env_Len);
         if Env_Set and then not Env_Trunc then
-          Text_Handler.Set (Sok_File_Dir, Env_Value(1 .. Env_Len));
+          Sok_File_Dir.Set (Env_Value(1 .. Env_Len));
         else
-          Text_Handler.Set (Sok_File_Dir, ".");
+          Sok_File_Dir.Set (".");
         end if;
-        Text_Handler.Append (Sok_File_Dir, "/");
+        Sok_File_Dir.Append ("/");
       end;
     end if;
 
     begin
       Sok_File_Mng.Open (Sok_File, Sok_File_Mng.In_File,
-        Text_Handler.Value (Sok_File_Dir) & Sok_File_Name);
+        Sok_File_Dir.Value & Sok_File_Name);
     exception
       when Sok_File_Mng.Name_Error =>
         raise Data_File_Not_Found;

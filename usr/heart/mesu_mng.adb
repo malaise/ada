@@ -1,4 +1,5 @@
 with Con_Io, Afpx, Normal, Dir_Mng;
+with As.U; use As.U;
 with Mesu_Edi, Pers_Mng, Mesu_Def, Mesu_Sel, Mesu_Nam, Pers_Lis, Mesu_Fil,
      Mesu_Prt, Mesu_Gra;
 use Afpx;
@@ -398,7 +399,7 @@ package body Mesu_Mng is
     The_Files.Rewind;
     loop
       The_Files.Read (File, Dir_Mng.File_List_Mng.Current);
-      File_Name := File.Name(1 .. File.Len);
+      File_Name := Asu_Ts (File.Name);
       begin
         Mesu_Sel.Rem_Selection (File_Name);
       exception

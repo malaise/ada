@@ -1,4 +1,4 @@
-with String_Mng;
+with As.U; use As.U;
 package body Socket_Util is
 
   -- Set destination host/lan name or Ip address, and port name or num
@@ -13,19 +13,17 @@ package body Socket_Util is
         case Port.Kind is
           when Tcp_Util.Port_Name_Spec =>
             Soc.Set_Destination_Name_And_Service (Lan,
-                  String_Mng.Strip (Host.Name), String_Mng.Strip (Port.Name));
+                  Asu_Ts (Host.Name), Asu_Ts (Port.Name));
           when Tcp_Util.Port_Num_Spec =>
             Soc.Set_Destination_Name_And_Port (Lan,
-                  String_Mng.Strip (Host.Name), Port.Num);
+                  Asu_Ts (Host.Name), Port.Num);
         end case;
       when Tcp_Util.Host_Id_Spec =>
         case Port.Kind is
           when Tcp_Util.Port_Name_Spec =>
-            Soc.Set_Destination_Host_And_Service (
-                   Host.Id, String_Mng.Strip (Port.Name));
+            Soc.Set_Destination_Host_And_Service (Host.Id, Asu_Ts (Port.Name));
           when Tcp_Util.Port_Num_Spec =>
-            Soc.Set_Destination_Host_And_Port (
-                   Host.Id, Port.Num);
+            Soc.Set_Destination_Host_And_Port (Host.Id, Port.Num);
         end case;
     end case;
   end Set_Destination;
@@ -38,7 +36,7 @@ package body Socket_Util is
   begin
     case Host.Kind is
       when Tcp_Util.Host_Name_Spec =>
-        Soc.Change_Destination_Name (Lan, String_Mng.Strip (Host.Name));
+        Soc.Change_Destination_Name (Lan, Asu_Ts (Host.Name));
       when Tcp_Util.Host_Id_Spec =>
         Soc.Change_Destination_Host (Host.Id);
     end case;
@@ -50,7 +48,7 @@ package body Socket_Util is
   begin
     case Port.Kind is
       when Tcp_Util.Port_Name_Spec =>
-        Soc.Change_Destination_Service (String_Mng.Strip (Port.Name));
+        Soc.Change_Destination_Service (Asu_Ts (Port.Name));
       when Tcp_Util.Port_Num_Spec =>
         Soc.Change_Destination_Port (Port.Num);
     end case;
@@ -62,7 +60,7 @@ package body Socket_Util is
   begin
     case Port.Kind is
       when Tcp_Util.Port_Name_Spec =>
-        Soc.Link_Service (String_Mng.Strip (Port.Name));
+        Soc.Link_Service (Asu_Ts (Port.Name));
       when Tcp_Util.Port_Num_Spec =>
         Soc.Link_Port (Port.Num);
     end case;

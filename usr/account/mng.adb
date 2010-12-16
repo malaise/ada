@@ -238,7 +238,7 @@ package body Mng is
   type List_Update_List is (Bottom, Center, Unchanged);
   procedure Refresh_Screen (List_Update : in List_Update_List) is
   begin
-    Screen.Encode_File_Name(Text_Handler.Value(Account_Name));
+    Screen.Encode_File_Name(Account_Name.Value);
     Screen.Encode_Nb_Oper(Oper_List.List_Length,
                           Sel_List.List_Length);
     Screen.Encode_Saved(Account_Saved);
@@ -338,7 +338,7 @@ package body Mng is
     if File_Name /= "" then
       -- Store file name
       begin
-        Text_Handler.Set(Loaded_Name, File_Name);
+        Loaded_Name.Set (File_Name);
       exception
         when Constraint_Error =>
           Screen.Ack_Error(Screen.File_Name_Too_Long);
@@ -348,16 +348,16 @@ package body Mng is
     else
       -- Let user select file
       Loading := True;
-      Text_Handler.Set(Loaded_Name, Account_Select_File(2, "", True));
+      Loaded_Name.Set (Account_Select_File(2, "", True));
       Screen.Reset;
       Screen.Set_Sublist(False);
       Refresh_Screen(Bottom);
     end if;
 
-    if not Text_Handler.Empty(Loaded_Name) then
+    if not Loaded_Name.Is_Empty then
       -- Load
       begin
-        File_Mng.Load(Text_Handler.Value(Loaded_Name), Oper_List, Can_Write);
+        File_Mng.Load(Loaded_Name.Value, Oper_List, Can_Write);
       exception
         when File_Mng.F_Access_Error =>
           Screen.Ack_Error(Screen.File_Access);
@@ -372,7 +372,7 @@ package body Mng is
       Sort(Oper_List);
       List_Util.Reset_Selection;
       -- Set data
-      Text_Handler.Set (Account_Name, Loaded_Name);
+      Account_Name.Set (Loaded_Name);
       Account_Saved := True;
       Compute_Amounts;
       -- Set screen
@@ -405,28 +405,28 @@ package body Mng is
     -- Confirm file overwritting
     --  or select file
     Loading := False;
-    if Text_Handler.Empty(Account_Name)
+    if Account_Name.Is_Empty
     or else not Screen.Confirm_Action(Screen.Overwrite_File) then
       -- User discards overwritting
       if Mode = Cancel then
         return;
       end if;
-      Text_Handler.Set(Tmp_Name, Account_Select_File(2, "", False));
+      Tmp_Name.Set (Account_Select_File(2, "", False));
       Screen.Reset;
       Screen.Set_Sublist(False);
       Refresh_Screen(Center);
-      if Text_Handler.Empty(Tmp_Name) then
+      if Tmp_Name.Is_Empty then
         -- User discards selecting new file name
         return;
       end if;
-      Text_Handler.Set(Account_Name, Tmp_Name);
-      Screen.Encode_File_Name(Text_Handler.Value(Account_Name));
+      Account_Name.Set (Tmp_Name);
+      Screen.Encode_File_Name (Account_Name.Value);
     end if;
     -- Insert root amount
     List_Util.Insert_Amount(Root_Amount);
     -- Save
     begin
-      File_Mng.Save(Text_Handler.Value(Account_Name), Oper_List);
+      File_Mng.Save(Account_Name.Value, Oper_List);
     exception
       when File_Mng.F_Access_Error =>
         Screen.Ack_Error(Screen.File_Access);
@@ -450,7 +450,7 @@ package body Mng is
       return;
     end if;
     -- Set data
-    Text_Handler.Empty(Account_Name);
+    Account_Name.Empty;
     Sel_List.Delete_List(Deallocate => False);
     Oper_List.Delete_List;
     Root_Amount := 0.0;
@@ -500,7 +500,7 @@ package body Mng is
         Refresh_Screen(Center);
         return;
     end;
-    Put_Line(Pf, "Account: " & Text_Handler.Value(Account_Name)
+    Put_Line(Pf, "Account: " & Account_Name.Value
                & "     at: " & Date_Image(Ada.Calendar.Clock) (1 .. 16));
     Put_Line(Pf, Page_Title);
     Line := 3;

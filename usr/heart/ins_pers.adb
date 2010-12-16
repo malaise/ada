@@ -4,8 +4,8 @@ with Pers_Def, Pers_Fil, Pers_Mng;
 procedure Ins_Pers is
   Person, Got_Person : Pers_Def.Person_Rec;
   Nn, Na, Nt : Positive;
-  Name_Txt : Text_Handler.Text (Person.Name'Length);
-  Acti_Txt : Text_Handler.Text (Person.Activity'Length);
+  Name_Txt : Text_Handler.Text(Person.Name'Length);
+  Acti_Txt : Text_Handler.Text(Person.Activity'Length);
   Pos : Natural;
   C : Character;
   List_Length : Natural;
@@ -68,19 +68,19 @@ begin
     raise Constraint_Error;
   end if;
   for I in 2 .. Na - 1 loop
-    Text_Handler.Append (Name_Txt, String'(Argument.Get_Parameter (I)));
+    Name_Txt.Append (String'(Argument.Get_Parameter (I)));
     if I /= Na - 1 then
-      Text_Handler.Append (Name_Txt, ' ');
+      Name_Txt.Append (' ');
     end if;
   end loop;
-  Person.Name(1 .. Text_Handler.Length(Name_Txt)) := Text_Handler.Value (Name_Txt);
+  Person.Name(1 .. Name_Txt.Length) := Name_Txt.Value;
   for I in Na + 1 .. Nt - 1 loop
-    Text_Handler.Append (Acti_Txt, String'(Argument.Get_Parameter (I)));
+    Acti_Txt.Append (String'(Argument.Get_Parameter (I)));
     if I /= Nt - 1 then
-      Text_Handler.Append (Acti_Txt, ' ');
+      Acti_Txt.Append (' ');
     end if;
   end loop;
-  Person.Activity(1 .. Text_Handler.Length(Acti_Txt)) := Text_Handler.Value (Acti_Txt);
+  Person.Activity(1 .. Acti_Txt.Length) := Acti_Txt.Value;
   for I in Nt + 1 .. Argument.Get_Nbre_Arg loop
     Person.Tz(I-Nt) := Pers_Def.Bpm_Range'Value(Argument.Get_Parameter(I));
   end loop;

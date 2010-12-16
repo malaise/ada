@@ -1,4 +1,3 @@
-with Ada.Text_Io; -- For exception trace
 with Text_Handler, Argument, My_Io;
 
 with Grid_1;
@@ -10,12 +9,12 @@ procedure Tg1 is
   Rec : Grid_1.Coordinate_Rec;
 begin
 
-  Text_Handler.Set(Text, "");
+  Text.Empty;
   for I in 2 .. Argument.Get_Nbre_Arg loop
-    Argument.Get_Parameter(Dummy, I);
-    Text_Handler.Append (Text, Dummy);
+    Dummy.Set (Argument.Get_Parameter(Occurence => I));
+    Text.Append (Dummy);
     if I /= Argument.Get_Nbre_Arg then
-      Text_Handler.Append (Text, " ");
+      Text.Append (" ");
     end if;
   end loop;
 
@@ -25,26 +24,25 @@ begin
   My_Io.New_Line;
 
 
-  My_Io.Put_Line ("Text : " & Text_Handler.Value(Text));
-  Text_Handler.Set (Code, "");
-  for I in 1 .. Text_Handler.Length(Text) loop
-    Rec := Grid_1.Encode (Text_Handler.Value(Text)(I));
-    Text_Handler.Append (Code, Rec.Row);
-    Text_Handler.Append (Code, Rec.Col);
+  My_Io.Put_Line ("Text : " & Text.Value);
+  Code.Empty;
+  for I in 1 .. Text.Length loop
+    Rec := Grid_1.Encode (Text.Value(I));
+    Code.Append (Rec.Row);
+    Code.Append (Rec.Col);
   end loop;
-  My_Io.Put_Line ("Code : " & Text_Handler.Value(Code));
+  My_Io.Put_Line ("Code : " & Code.Value);
 
-  Text_Handler.Set (Text, "");
-  for I in 1 .. Text_Handler.Length(Code) loop
+  Text.Empty;
+  for I in 1 .. Code.Length loop
     if I mod 2 = 1 then
-      Rec.Row := Text_Handler.Value(Code)(I);
+      Rec.Row := Code.Value(I);
     else
-      Rec.Col := Text_Handler.Value(Code)(I);
-      Text_Handler.Append (Text, Grid_1.Decode(Rec));
+      Rec.Col := Code.Value(I);
+      Text.Append (Grid_1.Decode(Rec));
     end if;
   end loop;
-  My_Io.Put_Line ("Text : " & Text_Handler.Value(Text));
-
+  My_Io.Put_Line ("Text : " & Text.Value);
 
 end Tg1;
 

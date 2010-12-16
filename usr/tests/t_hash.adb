@@ -23,7 +23,7 @@ procedure T_Hash is
 
   function Str (Txt : Txt_P) return String is
   begin
-    return Text_Handler.Value(Txt) (3 .. Text_Handler.Length(Txt));
+    return Txt.Value(3 .. Txt.Length);
   exception
     when others =>
       return "";
@@ -47,9 +47,9 @@ begin
 
     My_Io.Put ("Store <>, Zreset <>, Find <>, Remove <>, Dump <>, Clear all, EXIT ? ");
     My_Io.Get_Line (Input, Len);
-    Text_Handler.Set (Txt, Input(1 .. Len));
-    if Text_Handler.Length(Txt) >= 3 and then Text_Handler.Value(Txt)(2) = ' ' then
-      case Text_Handler.Value(Txt)(1) is
+    Txt.Set (Input(1 .. Len));
+    if Txt.Length >= 3 and then Txt.Value(2) = ' ' then
+      case Txt.Value(1) is
         when 'S' | 's' =>
           My_Hash.Store (Ht, Str(Txt), I);
           My_Io.Put_Line (Image(I) & " stored with key >" & Str(Txt) & "<.");
@@ -79,10 +79,10 @@ begin
         when others =>
           Console.Sound;
       end case;
-    elsif Upper_Str (Text_Handler.Value(Txt)) = "C" then
+    elsif Upper_Str (Txt.Value) = "C" then
       My_Hash.Clear_All (Ht);
       My_Io.Put_Line ("Storage cleared.");
-    elsif Upper_Str (Text_Handler.Value(Txt)) = "EXIT" then
+    elsif Upper_Str (Txt.Value) = "EXIT" then
       exit;
     else
       Console.Sound;
