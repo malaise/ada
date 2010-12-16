@@ -1,6 +1,6 @@
 with As.U; use As.U;
 with Timers;
-with Dictio_Debug, Parse, Errors, Versions, Intra_Dictio;
+with Dictio_Debug, Errors, Versions, Intra_Dictio;
 package body Fight_Mng is
 
   Tid : Timers.Timer_Id := Timers.No_Timer;

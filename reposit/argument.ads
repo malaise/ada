@@ -75,6 +75,12 @@ package Argument is
    Occurence : in Natural := 1;
    Param_Key : in String := Any_Arg);
 
+  -- Same but with unbounded string
+  procedure Get_Parameter (
+   Parameter : out Asu_Us;
+   Occurence : in Natural := 1;
+   Param_Key : in String := Any_Arg);
+
   -- Result is string and position
   procedure Get_Param_And_Pos (
    Parameter : out String;

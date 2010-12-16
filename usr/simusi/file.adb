@@ -1,19 +1,15 @@
-with Ada.Text_Io;
-with Text_Handler, Argument, Basic_Proc, Get_Line, Get_Float;
+with As.U; use As.U;
+with Argument, Basic_Proc, Get_Line, Get_Float;
 pragma Elaborate (Argument);
 with Arg_Parsing;
 package body File is
 
-  package Cote_Get_Line is new Get_Line (
-    Max_Word_Len => 20,
-    Max_Word_Nb  => 4,
-    Max_Line_Len => 80,
-    Comment      => "#");
+  package Cote_Get_Line is new Get_Line (Comment => "#");
 
-  Line : Cote_Get_Line.Line_Array;
+  Line : Asu_Ua.Unbounded_Array;
 
   subtype Loc_Cote_Range is Natural range 0 .. Max_Cote;
-  type Cote_Line_Array is array (Cote_Range) of Ada.Text_Io.Count;
+  type Cote_Line_Array is array (Cote_Range) of Cote_Get_Line.Count;
   Cote_Line : Cote_Line_Array := (others => 0);
 
   Load_Ok : Boolean := False;
@@ -41,7 +37,7 @@ package body File is
     Basic_Proc.Put_Error ( "Error in file " & Filename);
     if Cote_No /= 0 then
       Basic_Proc.Put_Line_Error (
-       " at line " & Ada.Text_Io.Count'Image(Cote_Line(Cote_No)));
+       " at line " & Cote_Get_Line.Count'Image (Cote_Line(Cote_No)));
     else
       Basic_Proc.New_Line_Error;
     end if;
@@ -60,7 +56,7 @@ package body File is
         Basic_Proc.Put_Line_Error ("Start equal stop.");
       when Duplicate =>
         Basic_Proc.Put_Line_Error ("Cote already exists at line "
-          & Ada.Text_Io.Count'Image(Cote_Line(No2)));
+          & Cote_Get_Line.Count'Image(Cote_Line(No2)));
       when No_Cote =>
         Basic_Proc.Put_Line_Error ("Line " & Natural'Image(No2) & " has no cote");
     end case;
@@ -86,7 +82,7 @@ package body File is
       begin
         Read_Next_Significant_Line;
       exception
-        when Cote_Get_Line.No_More_Line =>
+        when Cote_Get_Line.End_Error =>
           Result := End_Of_File;
           return;
       end;
@@ -112,13 +108,13 @@ package body File is
       end if;
     end if;
     -- Parse line
-    Cote.Start := Line_Range'Value(Text_Handler.Value(Line(1)));
-    Cote.Stop  := Line_Range'Value(Text_Handler.Value(Line(2)));
+    Cote.Start := Line_Range'Value(Asu_Ts (Line.Element (1)));
+    Cote.Stop  := Line_Range'Value(Asu_Ts (Line.Element (2)));
     if Kind = Design then
-      Cote.Value := Get_Float.Get_Float(Text_Handler.Value(Line(3)));
-      Cote.Inter := Get_Float.Get_Float(Text_Handler.Value(Line(4)));
+      Cote.Value := Get_Float.Get_Float(Asu_Ts (Line.Element (3)));
+      Cote.Inter := Get_Float.Get_Float(Asu_Ts (Line.Element (4)));
     else
-      Cote.Inter := Get_Float.Get_Float(Text_Handler.Value(Line(3)));
+      Cote.Inter := Get_Float.Get_Float(Asu_Ts (Line.Element (3)));
     end if;
     -- Error if start=stop. Set start < stop
     if Cote.Start = Cote.Stop then

@@ -1,5 +1,6 @@
 with Ada.Text_Io;
-with Debug, Lower_Str, Argument, Text_Handler, Tcp_Util;
+with As.U; use As.U;
+with Debug, Lower_Str, Argument, Tcp_Util;
 
 with Space, Connection, Human, File, Screen;
 
@@ -7,9 +8,9 @@ procedure Chess is
 
   Mode : Human.Play_Mode;
   Color : Space.Color_List;
-  Name : Text_Handler.Text (File.Max_File_Name_Len);
-  Init : Text_Handler.Text (File.Max_File_Name_Len);
-  Tmp_Txt : Text_Handler.Text (File.Max_File_Name_Len);
+  Name : Asu_Us;
+  Init : Asu_Us;
+  Tmp_Txt : Asu_Us;
   Wait : Boolean;
   Port : Tcp_Util.Remote_Port;
   Invalid_Argument : exception;
@@ -115,15 +116,14 @@ begin
   -- Port if not both
   Port := (Kind => Tcp_Util.Port_Num_Spec, Num => 0);
   if Mode /= Human.Both then
-    declare
-      Len : Natural;
     begin
-      Port.Num := Tcp_Util.Port_Num'Value(Argument.Get_Parameter(Param_Key => "p"));
+      Port.Num := Tcp_Util.Port_Num'Value(Argument.Get_Parameter
+                     (Param_Key => "p"));
     exception
       when Argument.Argument_Not_Found =>
-        Port := (Kind => Tcp_Util.Port_Name_Spec, Name => (others => ' '));
+        Port := (Kind => Tcp_Util.Port_Name_Spec, Name => Asu_Null);
         begin
-          Argument.Get_Parameter(Port.Name, Len, Param_Key => "P");
+          Argument.Get_Parameter(Port.Name, Param_Key => "P");
         exception
           when others =>
             raise Invalid_Argument;
@@ -146,7 +146,7 @@ begin
       Argument.Get_Parameter (Name, 1, "f");
     exception
       when Argument.Argument_Not_Found =>
-        Text_Handler.Empty (Name);
+        Name := Asu_Null;
     end;
   else
     begin
@@ -158,7 +158,7 @@ begin
     end;
     begin
       Argument.Get_Parameter (Name, 1, "s");
-      if Text_Handler.Empty (Name) then
+      if Asu_Is_Null (Name) then
         raise Invalid_Argument;
       end if;
     exception
@@ -168,7 +168,7 @@ begin
   end if;
 
   -- Wait
-  if Mode = Human.Client or else Text_Handler.Empty (Name) then
+  if Mode = Human.Client or else Asu_Is_Null (Name) then
     begin
       Argument.Get_Parameter (Tmp_Txt, 1, "w");
       raise Invalid_Argument;
@@ -179,7 +179,7 @@ begin
   else
     begin
       Argument.Get_Parameter (Tmp_Txt, 1, "w");
-      if not Text_Handler.Empty (Tmp_Txt) then
+      if not Asu_Is_Null (Tmp_Txt) then
         raise Invalid_Argument;
       end if;
       Wait := True;
@@ -190,12 +190,12 @@ begin
   end if;
 
   -- Init file
-  if Mode = Human.Both and then Text_Handler.Empty (Name) then
+  if Mode = Human.Both and then Asu_Is_Null (Name) then
     begin
       Argument.Get_Parameter (Init, 1, "i");
     exception
       when Argument.Argument_Not_Found =>
-        Text_Handler.Empty (Init);
+        Init := Asu_Null;
     end;
   else
     begin
@@ -208,15 +208,15 @@ begin
   end if;
 
 
-  Human.Play (Mode, Color, Text_Handler.Value (Name), Port,
-              Text_Handler.Value (Init), Wait);
+  Human.Play (Mode, Color, Asu_Ts (Name), Port, Asu_Ts (Init), Wait);
 
 exception
   when Invalid_Argument | Argument.Argument_Not_Found =>
     Usage;
   when Connection.Color_Error =>
-    Ada.Text_Io.Put_Line ("Server uses " & Lower_Str (Argument.Get_Parameter (1, "c"))
-                                         & ". Try alternate color.");
+    Ada.Text_Io.Put_Line ("Server uses "
+            & Lower_Str (Argument.Get_Parameter (1, "c"))
+            & ". Try alternate color.");
   when Connection.Busy_Error =>
     Ada.Text_Io.Put_Line ("Server is busy.");
   when Human.Load_Error =>

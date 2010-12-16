@@ -117,6 +117,15 @@ package body Argument is
     Get_Param_And_Pos (Parameter, Param_Length, Position, Occurence, Param_Key);
   end Get_Parameter;
 
+  procedure Get_Parameter (
+   Parameter : out Asu_Us;
+   Occurence : in Natural := 1;
+   Param_Key : in String := Any_Arg) is
+    Position : Natural;
+  begin
+    Get_Param_And_Pos (Parameter, Position, Occurence, Param_Key);
+  end Get_Parameter;
+
 
   procedure Get_Param_And_Pos (
    Parameter : out String;

@@ -65,7 +65,7 @@ begin
                          & Normal (Year,  4, Gap => '0') );
   elsif Argument.Get_Nbre_Arg = 1 then
     -- Get date from arg 1
-    Argument.Get_Parameter (Txt);
+    Text_Handler.Set (Txt, Argument.Get_Parameter);
     if Text_Handler.Length (Txt) /= 10
     or else Text_Handler.Value (Txt)(3) /= '/'
     or else Text_Handler.Value (Txt)(6) /= '/' then

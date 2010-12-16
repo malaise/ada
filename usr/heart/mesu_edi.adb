@@ -1,4 +1,5 @@
-with Con_Io, Afpx, Normal, Get_Line, Text_Handler;
+with Con_Io, Afpx, Normal, Get_Line;
+with As.U; use As.U;
 with Pers_Def, Pers_Mng, Mesu_Def, Mesu_Fil, Str_Mng;
 use Afpx;
 -- with Mesu_Nam;
@@ -53,12 +54,8 @@ package body Mesu_Edi is
     Samples : Mesu_Def.Max_Sample_Array
             := (others => Pers_Def.Bpm_Range'First);
     Samples_Index : Mesu_Def.Sample_Nb_Range := Mesu_Def.Sample_Nb_Range'First;
-    package Get_Sample is new Get_Line (
-                       Max_Word_Len => 100,
-                       Max_Word_Nb => 40,
-                       Max_Line_Len => 132,
-                       Comment => "#");
-    Sample_Line : Get_Sample.Line_Array;
+    package Get_Sample is new Get_Line (Comment => "#");
+    Sample_Line : Asu_Ua.Unbounded_Array;
   begin
     Ok := False;
     -- Check if file name is empty
@@ -91,7 +88,7 @@ package body Mesu_Edi is
       for I in 1 .. Get_Sample.Get_Word_Number loop
         -- Decode a Bpm
         Samples(Samples_Index) := Pers_Def.Bpm_Range'Value (
-                                     Text_Handler.Value (Sample_Line(I)));
+                                     Asu_Ts (Sample_Line.Element(I)));
         Samples_Index := Samples_Index + 1;
       end loop;
 
@@ -99,7 +96,7 @@ package body Mesu_Edi is
       begin
         Get_Sample.Read_Next_Line;
       exception
-        when Get_Sample.No_More_Line =>
+        when Get_Sample.End_Error =>
           exit;
       end;
     end loop;

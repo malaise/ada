@@ -1,14 +1,14 @@
 with Ada.Exceptions, Ada.Text_Io;
-
-with Text_Handler, Get_Line;
+with As.U; use As.U;
+with Get_Line;
 
 with Space.Board, Pieces, Image;
 
 package body Set_Up is
 
   -- WPe1 = White Pawn at e1
-  package My_Get_Line is new Get_Line (4, 132, 132, "#");
-  Line : My_Get_Line.Line_Array;
+  package My_Get_Line is new Get_Line ("#");
+  Line : Asu_Ua.Unbounded_Array;
 
   -- Load_Error : exception;
   function Load (File_Name : in String) return Space.Color_List is
@@ -28,7 +28,7 @@ package body Set_Up is
       when Ada.Text_Io.Name_Error =>
         Ada.Text_Io.Put_Line ("Error. Cannot find set-up file " & File_Name);
         return Space.White;
-      when My_Get_Line.No_More_Line =>
+      when My_Get_Line.End_Error =>
         Ada.Text_Io.Put_Line ("Warning. Empty set-up file " & File_Name);
         My_Get_Line.Close;
         return Space.White;
@@ -44,45 +44,50 @@ package body Set_Up is
 
       One_Word:
       for I in 1 .. My_Get_Line.Get_Word_Number loop
-        if Text_Handler.Length (Line(I)) /= 4 then
-          Ada.Text_Io.Put_Line ("Error. Invalid definition " & Text_Handler.Value (Line(I))
-           & " at line " & Ada.Text_Io.Positive_Count'Image (My_Get_Line.Get_Line_No) );
+        if Asu.Length (Line.Element (I)) /= 4 then
+          Ada.Text_Io.Put_Line ("Error. Invalid definition "
+              & Asu_Ts (Line.Element (I))
+              & " at line "
+              & My_Get_Line.Positive_Count'Image (My_Get_Line.Get_Line_No) );
            raise Load_Error;
         end if;
 
         -- Read color char
-        Char := Text_Handler.Value (Line(I))(1);
+        Char := Asu.Element (Line.Element (I), 1);
         if Char = 'W' then
           Decoded_Id.Id.Color := Space.White;
         elsif Char = 'B' then
           Decoded_Id.Id.Color := Space.Black;
         else
           Ada.Text_Io.Put_Line ("Error. Invalid color " & Char
-           & " at line " & Ada.Text_Io.Positive_Count'Image (My_Get_Line.Get_Line_No) );
+             & " at line "
+             & My_Get_Line.Positive_Count'Image (My_Get_Line.Get_Line_No) );
            raise Load_Error;
         end if;
 
         -- Read kind char
-        Char := Text_Handler.Value (Line(I))(2);
+        Char := Asu.Element (Line.Element (I), 2);
         if Char = 'P' then
           Decoded_Id.Id.Kind := Pieces.Pawn;
         else
           Decoded_Id.Id.Kind := Image.Piece_Value (Char);
           if Decoded_Id.Id.Kind = Pieces.Pawn then
             Ada.Text_Io.Put_Line ("Error. Invalid piece " & Char
-             & " at line " & Ada.Text_Io.Positive_Count'Image (My_Get_Line.Get_Line_No) );
+                & " at line "
+                & My_Get_Line.Positive_Count'Image (My_Get_Line.Get_Line_No) );
             raise Load_Error;
           end if;
         end if;
 
         -- Read square
-        Str2 :=  Text_Handler.Value (Line(I))(3 ..4);
+        Str2 := Asu.Slice (Line.Element (I), 3, 4);
         begin
           Decoded_Square := Image.Square_Value (Str2);
         exception
           when Image.Value_Error =>
             Ada.Text_Io.Put_Line ("Error. Invalid square " & Str2
-             & " at line " & Ada.Text_Io.Positive_Count'Image (My_Get_Line.Get_Line_No) );
+                & " at line "
+                & My_Get_Line.Positive_Count'Image (My_Get_Line.Get_Line_No) );
             raise Load_Error;
         end;
 
@@ -93,8 +98,10 @@ package body Set_Up is
                                     Has_Moved => Orig_Id /= Decoded_Id);
         exception
           when others =>
-            Ada.Text_Io.Put_Line ("Error. Non empty square " & Text_Handler.Value (Line(I))
-             & " at line " & Ada.Text_Io.Positive_Count'Image (My_Get_Line.Get_Line_No) );
+            Ada.Text_Io.Put_Line ("Error. Non empty square "
+                & Asu_Ts (Line.Element (I))
+                & " at line "
+                & My_Get_Line.Positive_Count'Image (My_Get_Line.Get_Line_No) );
             raise Load_Error;
         end;
       end loop One_Word;
@@ -103,7 +110,7 @@ package body Set_Up is
       begin
         My_Get_Line.Read_Next_Line;
       exception
-        when My_Get_Line.No_More_Line =>
+        when My_Get_Line.End_Error =>
           My_Get_Line.Close;
           return Decoded_Id.Id.Color;
       end Try_Line;
@@ -115,7 +122,8 @@ package body Set_Up is
       raise;
     when Error : others =>
       Ada.Text_Io.Put_Line ("Error reading file " & File_Name
-         & " at line " & Ada.Text_Io.Positive_Count'Image (My_Get_Line.Get_Line_No)
+         & " at line "
+         & My_Get_Line.Positive_Count'Image (My_Get_Line.Get_Line_No)
          & " exception " &  Ada.Exceptions.Exception_Name (Error));
       begin
         My_Get_Line.Close;

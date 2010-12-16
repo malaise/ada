@@ -225,27 +225,27 @@ begin
       if Is_Set (2, Not_Key) then
         raise Key_Error;
       end if;
-      Get_Parameter (Reflector_Txt, 1, Not_Key);
+      Text_Handler.Set (Reflector_Txt, Get_Parameter (1, Not_Key));
       Nb_Arg := Other_Arg;
       if Is_Set (1, Rotor_Key) then
         if Is_Set (2, Rotor_Key) then
           raise Key_Error;
         end if;
-        Get_Parameter (Rotors_Txt, 1, Rotor_Key);
+        Text_Handler.Set (Rotors_Txt, Get_Parameter (1, Rotor_Key));
         Nb_Arg := Nb_Arg + 1;
       end if;
       if Is_Set (1, Init_Key) then
         if Is_Set (2, Init_Key) then
           raise Key_Error;
         end if;
-        Get_Parameter (Init_Txt, 1, Init_Key);
+        Text_Handler.Set (Init_Txt, Get_Parameter (1, Init_Key));
         Nb_Arg := Nb_Arg + 1;
       end if;
       if Is_Set (1, Switches_Key) then
         if Is_Set (2, Switches_Key) then
           raise Key_Error;
         end if;
-        Get_Parameter (Switches_Txt, 1, Switches_Key);
+        Text_Handler.Set (Switches_Txt, Get_Parameter (1, Switches_Key));
         Nb_Arg := Nb_Arg + 1;
       end if;
       if Get_Nbre_Arg /= Nb_Arg then
@@ -280,7 +280,7 @@ begin
     when Parse_Date =>
       -- Parse date: set Year Month Day for further generation
       begin
-        Argument.Get_Parameter (Txt, Occurence => Other_Arg);
+        Text_Handler.Set (Txt, Argument.Get_Parameter (Occurence => Other_Arg));
       exception
         when Argument.Argument_Too_Long =>
           Usage;
@@ -368,7 +368,7 @@ begin
 
     when Extract =>
       begin
-        Argument.Get_Parameter (Txt, Occurence => Other_Arg);
+        Text_Handler.Set (Txt, Argument.Get_Parameter (Occurence => Other_Arg));
       exception
         when Argument.Argument_Too_Long =>
           Usage;

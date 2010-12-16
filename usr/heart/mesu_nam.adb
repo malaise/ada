@@ -1,4 +1,5 @@
 with Ada.Calendar;
+with As.U; use As.U;
 with Perpet, Normal, Text_Handler, Dir_Mng;
 with Pers_Def;
 package body Mesu_Nam is
@@ -178,6 +179,7 @@ package body Mesu_Nam is
     File_Name : File_Name_Str;
 
     function Less_Than (L, R : Dir_Mng.File_Entry_Rec) return Boolean is
+      use type Asu_Us;
     begin
       return L.Name < R.Name;
     end Less_Than;
@@ -207,7 +209,7 @@ package body Mesu_Nam is
     loop
       -- Get file name
       List.Read (File, Dir_Mng.File_List_Mng.Current);
-      File_Name := File.Name (1 .. File.Len);
+      File_Name := Asu_Ts (File.Name);
       Split_File_Name(File_Name, L_Date, L_No, L_Pid);
 
       if L_No /= Ret_No then

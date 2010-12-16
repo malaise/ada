@@ -2,8 +2,6 @@ with Players, Game, Image;
 
 package File is
 
-  Max_File_Name_Len : constant := 512;
-
   -- File manipulation error
   File_Error : exception;
 
