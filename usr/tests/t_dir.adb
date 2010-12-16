@@ -85,7 +85,7 @@ begin
       Dsc : Directory.Dir_Desc;
     begin
       if Argument.Get_Nbre_Arg /= 0 then
-        Dir_Name := Asu_Tus (Argument.Get_Parameter);
+        Argument.Get_Parameter (Dir_Name);
       else
         Directory.Get_Current (Dir_Name);
       end if;

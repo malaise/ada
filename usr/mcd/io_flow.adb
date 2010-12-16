@@ -73,7 +73,7 @@ package body Io_Flow is
         Async_Stdin.Put_Line_Err ("Too many options.");
         raise Init_Error;
       end if;
-      Fifo_Name := Asu_Tus (Argument.Get_Parameter (1, "f"));
+      Argument.Get_Parameter (Fifo_Name, 1, "f");
       if Asu_Is_Null (Fifo_Name) then
         Async_Stdin.Put_Line_Err ("Missing fifo name.");
         raise Init_Error;

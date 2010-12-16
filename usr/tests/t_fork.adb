@@ -43,7 +43,7 @@ begin
   -- Build String (may raise Constraint_Error if args too long)
   for I in 1 .. Argument.Get_Nbre_Arg loop
     if I = 1 then
-      Str := Asu_Tus (Argument.Get_Parameter (Occurence => I));
+      Argument.Get_Parameter (Str, Occurence => I);
     else
       Many_Strings.Cat (Str, Argument.Get_Parameter (Occurence => I));
     end if;

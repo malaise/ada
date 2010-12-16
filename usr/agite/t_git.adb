@@ -46,7 +46,7 @@ begin
   if Argument.Get_Nbre_Arg = 0 then
     Path := Asu_Tus (".");
   else
-    Path := Asu_Tus (Argument.Get_Parameter (Occurence => 1));
+    Argument.Get_Parameter (Path, Occurence => 1);
   end if;
   Git_If.List_Log (Asu_Ts (Path), Logs);
   if Logs.Is_Empty then

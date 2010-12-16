@@ -72,7 +72,7 @@ package body Command is
 
     -- Help mode
     if Argument.Get_Nbre_Arg = 1
-    and then  Argument.Get_Parameter (1) = "-h" then
+    and then Argument.Get_Parameter (1) = "-h" then
       raise Help;
     end if;
 
@@ -86,7 +86,7 @@ package body Command is
 
       begin
         -- Search a char key
-        Str := Asu_Tus (Argument.Get_Parameter (Occurence => 1));
+        Argument.Get_Parameter (Str, Occurence => 1);
         if Asu.Length (Str) < 2
         or else Asu.Element (Str, 1) /= '-'
         or else Asu.Length (Str) > Nbre_Max_Opt  + 1 then

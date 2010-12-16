@@ -262,12 +262,12 @@ procedure T_Tcp_Util is
 begin
   -- Server or client
   begin
-    Server_Name := Asu_Tus (Argument.Get_Parameter (1, "c"));
+    Argument.Get_Parameter (Server_Name, 1, "c");
     Server := False;
   exception
     when Argument.Argument_Not_Found =>
     begin
-      Server_Name := Asu_Tus (Argument.Get_Parameter (1, "s"));
+      Argument.Get_Parameter (Server_Name, 1, "s");
       Server := True;
     exception
       when others =>
@@ -284,7 +284,7 @@ begin
 
   -- Port name or num
   begin
-    Server_Port_Name := Asu_Tus (Argument.Get_Parameter (1, "P"));
+    Argument.Get_Parameter (Server_Port_Name, 1, "P");
     if Asu_Is_Null (Server_Port_Name) then
       raise Arg_Error;
     end if;

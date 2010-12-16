@@ -214,15 +214,15 @@ begin
     Put_Arg_Error;
   end if;
   begin
-    Txt := Asu_Tus (Argument.Get_Parameter (3, Argument.Not_Key));
+    Argument.Get_Parameter (Txt, 3, Argument.Not_Key);
     Put_Arg_Error (Asu_Ts (Txt));
-    Txt := Asu_Tus (Argument.Get_Parameter (2, "t"));
+    Argument.Get_Parameter (Txt, 2, "t");
     Put_Arg_Error (Asu_Ts (Txt));
-    Txt := Asu_Tus (Argument.Get_Parameter (2, "d"));
+    Argument.Get_Parameter (Txt, 2, "d");
     Put_Arg_Error (Asu_Ts (Txt));
-    Txt := Asu_Tus (Argument.Get_Parameter (2, "n"));
+    Argument.Get_Parameter (Txt, 2, "n");
     Put_Arg_Error (Asu_Ts (Txt));
-    Txt := Asu_Tus (Argument.Get_Parameter (2, "s"));
+    Argument.Get_Parameter (Txt, 2, "s");
     Put_Arg_Error (Asu_Ts (Txt));
   exception
     when Argument.Argument_Not_Found =>

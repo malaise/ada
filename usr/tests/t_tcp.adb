@@ -156,7 +156,7 @@ begin
     Server := True;
   elsif Argument.Get_Nbre_Arg = 2 and then Argument.Get_Parameter = "-c" then
     Server := False;
-    Server_Name := Asu_Tus (Argument.Get_Parameter (Occurence => 2));
+    Argument.Get_Parameter (Server_Name, Occurence => 2);
   else
     raise Arg_Error;
   end if;
