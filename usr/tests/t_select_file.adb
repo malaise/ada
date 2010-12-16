@@ -14,9 +14,9 @@ begin
   Read := True;
 
   loop
-    Text_Handler.Set (File, My_Select_File (10, Text_Handler.Value(File), Read));
-    Ada.Text_Io.Put_Line (Text_Handler.Value(File));
-    exit when Text_Handler.Empty(File);
+    File.Set (My_Select_File (10, File.Value, Read));
+    Ada.Text_Io.Put_Line (File.Value);
+    exit when File.Is_Empty;
     Read := not Read;
   end loop;
 end T_Select_File;

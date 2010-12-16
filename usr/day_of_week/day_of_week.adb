@@ -60,30 +60,30 @@ begin
     begin
       Ada.Calendar.Split (T, Year, Month, Day, Dummy_Duration);
     end;
-    Text_Handler.Set (Txt, Normal (Day,   2, Gap => '0') & "/"
-                         & Normal (Month, 2, Gap => '0') & "/"
-                         & Normal (Year,  4, Gap => '0') );
+    Txt.Set (Normal (Day,   2, Gap => '0') & "/"
+           & Normal (Month, 2, Gap => '0') & "/"
+           & Normal (Year,  4, Gap => '0') );
   elsif Argument.Get_Nbre_Arg = 1 then
     -- Get date from arg 1
-    Text_Handler.Set (Txt, Argument.Get_Parameter);
-    if Text_Handler.Length (Txt) /= 10
-    or else Text_Handler.Value (Txt)(3) /= '/'
-    or else Text_Handler.Value (Txt)(6) /= '/' then
+    Txt.Set (Argument.Get_Parameter);
+    if Txt.Length /= 10
+    or else Txt.Value(3) /= '/'
+    or else Txt.Value(6) /= '/' then
       Usage;
       return;
     end if;
 
-    if not Is_Digit (Text_Handler.Value (Txt)(1 .. 2))
-    or else not Is_Digit (Text_Handler.Value (Txt)(4 .. 5))
-    or else not Is_Digit (Text_Handler.Value (Txt)(7 .. 10)) then
+    if not Is_Digit (Txt.Value(1 .. 2))
+    or else not Is_Digit (Txt.Value(4 .. 5))
+    or else not Is_Digit (Txt.Value(7 .. 10)) then
       Usage;
       return;
     end if;
 
     begin
-      Day   := Ada.Calendar.Day_Number'Value   (Text_Handler.Value (Txt)(1 .. 2));
-      Month := Ada.Calendar.Month_Number'Value (Text_Handler.Value (Txt)(4 .. 5));
-      Year  := Ada.Calendar.Year_Number'Value  (Text_Handler.Value (Txt)(7 .. 10));
+      Day   := Ada.Calendar.Day_Number'Value   (Txt.Value(1 .. 2));
+      Month := Ada.Calendar.Month_Number'Value (Txt.Value(4 .. 5));
+      Year  := Ada.Calendar.Year_Number'Value  (Txt.Value(7 .. 10));
     exception
       when others =>
         Usage;
@@ -114,11 +114,11 @@ begin
     use type Ada.Calendar.Time;
   begin
     if T < Today then
-      Text_Handler.Set (Verb, "was");
+      Verb.Set ("was");
     elsif T = Today then
-      Text_Handler.Set (Verb, "is");
+      Verb.Set ("is");
     else
-      Text_Handler.Set (Verb, "will be");
+      Verb.Set ("will be");
     end if;
   end;
 
@@ -158,15 +158,15 @@ begin
   end if;
 
   if Delta_Date_1.Days <= 1 then
-    Text_Handler.Set (Days, "day");
+    Days.Set ("day");
   else
-    Text_Handler.Set (Days, "days");
+    Days.Set ("days");
   end if;
 
   -- Display result
-  Ada.Text_Io.Put_Line (Text_Handler.Value (Txt)
+  Ada.Text_Io.Put_Line (Txt.Value
        & " "
-       & Text_Handler.Value (Verb)
+       & Verb.Value
        & " "
        & Mixed_Str (Perpet.Day_Of_Week_List'Image (Perpet.Get_Day_Of_Week (T)))
        & " "
@@ -183,7 +183,7 @@ begin
        & Th
        & " day of the year,"
        & Perpet.Day_Range'Image (Delta_Date_1.Days)
-       & " " & Text_Handler.Value (Days)
+       & " " & Days.Value
        & " remaining.");
 
 end Day_Of_Week;

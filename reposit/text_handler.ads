@@ -9,8 +9,8 @@ package Text_Handler is
   Empty_Text : constant Text;
 
   function Length (T : Text) return Max_Len_Range;
-  function Value  (T : Text) return String;
-  function Empty  (T : Text) return Boolean;
+  function Value (T : Text) return String;
+  function Is_Empty (T : Text) return Boolean;
 
   procedure Empty (T : in out Text);
 

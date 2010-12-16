@@ -7,8 +7,8 @@ procedure T_Ul is
 
   -- A stored variable (name, value)
   -- Name is the "identifier"
-  subtype Name_Txt is Text_Handler.Text (80);
-  subtype Val_Txt is Text_Handler.Text (8024);
+  subtype Name_Txt is Text_Handler.Text(80);
+  subtype Val_Txt is Text_Handler.Text(8024);
   type Var_Rec is record
     Name : Name_Txt;
     Val : Val_Txt;
@@ -17,12 +17,12 @@ procedure T_Ul is
 
   procedure Set (To : out Var_Rec; Val : in Var_Rec) is
   begin
-    Text_Handler.Set (To.Name, Val.Name);
-    Text_Handler.Set (To.Val, Val.Val);
+    To.Name.Set (Val.Name);
+    To.Val.Set (Val.Val);
   end Set;
   function Image (Element : Var_Rec) return String is
   begin
-    return Text_Handler.Value (Element.Name);
+    return Element.Name.Value;
   end Image;
   function "=" (Current : Var_Rec; Criteria : Var_Rec) return Boolean is
     use type Text_Handler.Text;
@@ -43,8 +43,8 @@ procedure T_Ul is
     if L = 0 then
       return False;
     end if;
-    Text_Handler.Set (Var.Name, Str (Str'First .. L - 1));
-    Text_Handler.Set (Var.Val, Str (L + 1 .. Str'Last));
+    Var.Name.Set (Str (Str'First .. L - 1));
+    Var.Val.Set (Str (L + 1 .. Str'Last));
     My_Ul.Insert (Ul, Var);
     return True;
   exception
@@ -55,8 +55,7 @@ procedure T_Ul is
 
   procedure Put (Var : in Var_Rec) is
   begin
-    Ada.Text_Io.Put (">" & Text_Handler.Value(Var.Name)
-                 & "<->" & Text_Handler.Value(Var.Val) & "<");
+    Ada.Text_Io.Put (">" & Var.Name.Value & "<->" & Var.Val.Value & "<");
   end Put;
   procedure Iteration (Current : Var_Rec; Go_On : in out Boolean) is
     pragma Unreferenced (Go_On);
@@ -91,7 +90,7 @@ begin
     else
       -- Try to fetch the variable
       begin
-        Text_Handler.Set (Var.Name, Argument.Get_Parameter (Occurence => I));
+        Var.Name.Set (Argument.Get_Parameter (Occurence => I));
         Go_On := True;
       exception
         when others =>
@@ -107,8 +106,7 @@ begin
           Ada.Text_Io.New_Line;
         exception
           when My_Ul.Not_In_List =>
-            Ada.Text_Io.Put_Line ("Var >" & Text_Handler.Value (Var.Name)
-                               &  "< is not set.");
+            Ada.Text_Io.Put_Line ("Var >" & Var.Name.Value &  "< is not set.");
         end;
       end if;
     end if;

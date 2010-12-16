@@ -268,7 +268,7 @@ package body Mesu_Gra is
     Sec1, Sec2 : Natural;
     Bpm1, Bpm2 : Pers_Def.Bpm_Range;
     Mesure : Mesu_Def.Mesure_Rec renames Mesure_Array(No).Mesure;
-    Title_Txt : Text_Handler.Text (Con_Io.Col_Range'Last);
+    Title_Txt : Text_Handler.Text(Con_Io.Col_Range'Last);
   begin
     Con_Io.Set_Foreground (Colors(No));
     -- Person and date
@@ -276,17 +276,17 @@ package body Mesu_Gra is
     if Mesure.Samples(1) = Pers_Def.Bpm_Range'First or else
        Mesure.Samples(2) = Pers_Def.Bpm_Range'First then
       -- 0 or only 1 sample. Cannot draw this one
-      Text_Handler.Set (Title_Txt, "(*)");
+      Title_Txt.Set ("(*)");
     else
-      Text_Handler.Set (Title_Txt, "   ");
+      Title_Txt.Set ("   ");
     end if;
-    Text_Handler.Append (Title_Txt,
+    Title_Txt.Append (
            Normal(No, 1) & ":"
          & Mesure_Array(No).Person.Name & " "
          & Mesure_Array(No).Person.Activity & " "
          & Str_Mng.To_Printed_Str(Mesure.Date) & " "
          & Mesure.Comment);
-    Con_Io.Put (Text_Handler.Value (Title_Txt));
+    Con_Io.Put (Title_Txt.Value);
 
     if Mesure.Samples(2) = Pers_Def.Bpm_Range'First then
       return;

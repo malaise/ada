@@ -29,16 +29,16 @@ begin
 
   loop
     -- Get (orig or new) file name
-    Text_Handler.Set (File, My_Select_File (1, Text_Handler.Value(File), Read));
-    exit when Text_Handler.Empty(File);
+    File.Set (My_Select_File (1, File.Value, Read));
+    exit when File.Is_Empty;
     Ok := True;
 
     -- Check if no /
-    if Text_Handler.Locate (File, '/') /= 0 then
+    if File.Locate ('/') /= 0 then
       Ada.Text_Io.Put_Line (Me & ": File name contains '/'. Skipping.");
       Ok := False;
       Read := True;
-      Text_Handler.Empty (File);
+      File.Empty;
     end if;
 
     -- Save original name or check new name is new
@@ -46,26 +46,26 @@ begin
       begin
         if Read then
           -- Check file exists and is accessible
-          if File_Exists (Text_Handler.Value(File)) then
+          if File_Exists (File.Value) then
             -- Save original file name
-            Text_Handler.Set(Prev_File, File);
+            Prev_File.Set(File);
             Read := False;
             Ok := False;
           else
             Ada.Text_Io.Put_Line (Me & ": File not found "
-                                     & Text_Handler.Value(File)
+                                     & File.Value
                                      & ". Skipping.");
           end if;
         else
           -- Check file does not exist and is accessible
-          if File_Exists (Text_Handler.Value(File)) then
+          if File_Exists (File.Value) then
             Ada.Text_Io.Put_Line (Me & ": New name "
-                                     & Text_Handler.Value(File)
+                                     & File.Value
                                      & " already exists. Skipping.");
             Ok := False;
           elsif Text_Handler."=" (Prev_File, File) then
             Ada.Text_Io.Put_Line (Me & ": New name "
-                                     & Text_Handler.Value(File)
+                                     & File.Value
                                      & " is prev name. Skipping.");
             Ok := False;
           end if;
@@ -74,7 +74,7 @@ begin
       exception
         when Access_Error =>
           Ada.Text_Io.Put_Line (Me & ": Cannot access file "
-                                   & Text_Handler.Value(File)
+                                   & File.Value
                                    & ". Skipping.");
           Ok := False;
           Read := True;
@@ -83,16 +83,15 @@ begin
 
     -- Rename
     if Ok then
-      Ok := Sys_Calls.Rename (Text_Handler.Value(Prev_File),
-                              Text_Handler.Value(File));
+      Ok := Sys_Calls.Rename (Prev_File.Value, File.Value);
       if Ok then
-        Ada.Text_Io.Put_Line (Me & ": " & Text_Handler.Value(Prev_File) &
-                              " renamed to " & Text_Handler.Value(File));
+        Ada.Text_Io.Put_Line (Me & ": " & Prev_File.Value &
+                              " renamed to " & File.Value);
       else
-        Ada.Text_Io.Put_Line (Me & ": Failed to rename " & Text_Handler.Value(Prev_File) &
-                              " to " & Text_Handler.Value(File));
+        Ada.Text_Io.Put_Line (Me & ": Failed to rename " & Prev_File.Value &
+                              " to " & File.Value);
       end if;
-      Text_Handler.Empty(File);
+      File.Empty;
     end if;
   end loop;
 

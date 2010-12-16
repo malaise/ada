@@ -42,48 +42,48 @@ package body Image is
     use type Space.Col_Range;
     use type Pieces.Action_Kind_List;
   begin
-    Text_Handler.Set (Res, Piece_Image (Action.Piece));
+    Res.Set (Piece_Image (Action.Piece));
     case Action.To.Kind is
       when Pieces.Move =>
-        Text_Handler.Append (Res, Image (Action.From) & "-" & Image (Action.To.Dest) );
+        Res.Append (Image (Action.From) & "-" & Image (Action.To.Dest) );
       when Pieces.Take =>
-        Text_Handler.Append (Res, Image (Action.From) & "X" & Image (Action.To.Dest) );
+        Res.Append (Image (Action.From) & "X" & Image (Action.To.Dest) );
       when Pieces.Take_En_Passant =>
-        Text_Handler.Append (Res, Image (Action.From) & "X" & Image (Action.To.Dest) & "ep");
+        Res.Append (Image (Action.From) & "X" & Image (Action.To.Dest) & "ep");
       when Pieces.Castle =>
         -- Overwrite piece
         if Action.To.Rook_From.Col = Space.H then
           -- Small castle
-          Text_Handler.Set (Res, "o-o");
+          Res.Set ("o-o");
         else
           -- Big castle
-           Text_Handler.Set (Res, "o-o-o");
+           Res.Set ("o-o-o");
         end if;
       when Pieces.Promote =>
         -- Overwrite piece
-        Text_Handler.Set (Res, Image (Action.From) & "-" & Image (Action.To.Dest)
+        Res.Set (Image (Action.From) & "-" & Image (Action.To.Dest)
                                & "=" & Piece_Image (Action.To.New_Piece) );
       when Pieces.Take_And_Promote =>
         -- Overwrite piece
-        Text_Handler.Set (Res, Image (Action.From) & "X" & Image (Action.To.Dest)
+        Res.Set (Image (Action.From) & "X" & Image (Action.To.Dest)
                           & "=" & Piece_Image(Action.To.New_Piece) );
       when Pieces.Cover =>
-        Text_Handler.Set (Res, "Cover");
+        Res.Set ("Cover");
     end case;
     -- Check, checkmate, stalemate
     case Result is
       when Game.Nok =>
-        Text_Handler.Append (Res, "Nk");
+        Res.Append ("Nk");
       when Game.Ok =>
         null;
       when Game.Check =>
-        Text_Handler.Append (Res, "+");
+        Res.Append ("+");
       when Game.Stalemate =>
-        Text_Handler.Append (Res, "==");
+        Res.Append ("==");
       when Game.Checkmate =>
-        Text_Handler.Append (Res, "+=");
+        Res.Append ("+=");
     end case;
-    Str (1 .. Text_Handler.Length(Res)) := Text_Handler.Value (Res);
+    Str (1 .. Res.Length) := Res.Value;
     return Str;
   end Move_Image;
 

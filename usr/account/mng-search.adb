@@ -233,7 +233,7 @@ begin
   -- Not in sublist: get criteria
   -- Init screen
   Afpx.Use_Descriptor(4);
-  Screen.Encode_File_Name(Text_Handler.Value(Account_Name));
+  Screen.Encode_File_Name(Account_Name.Value);
   Screen.Encode_Nb_Oper(Oper_List.List_Length, Sel_List.List_Length);
   Afpx.Set_Field_Activation(Screen.Selected_Fld, True);
   Screen.Encode_Saved(Account_Saved);

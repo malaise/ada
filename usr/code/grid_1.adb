@@ -26,12 +26,12 @@ package body Grid_1 is
     Row : Row_Coordinate;
     Col : Col_Coordinate;
     Char : Character;
-    Stripped_Key : Text_Handler.Text (80);
+    Stripped_Key : Text_Handler.Text(80);
 
     -- Store a char in data, checking if it is in Stripped_Key
     procedure Store (Char : in Character; Check : in Boolean) is
     begin
-      if Check and then Text_Handler.Locate (Stripped_Key, Char) /= 0 then
+      if Check and then Stripped_Key.Locate (Char) /= 0 then
         return;
       end if;
       Data (Row, Col) := Char;
@@ -44,21 +44,20 @@ package body Grid_1 is
     end Store;
 
   begin
-    Text_Handler.Set (Stripped_Key, "");
+    Stripped_Key.Empty;
     -- Store stripped key
     for I in Key'Range loop
       Char := Filter(Key(I));
       if Char /= Ada.Characters.Latin_1.Nul then
-        if Text_Handler.Locate (Stripped_Key, Char) = 0 then
-          Text_Handler.Append (Stripped_Key, Char);
+        if Stripped_Key.Locate (Char) = 0 then
+          Stripped_Key.Append (Char);
         end if;
       end if;
     end loop;
 
     -- Sort characters of Key
     declare
-      Sorted_Key : String (1 .. Text_Handler.Length (Stripped_Key))
-                 := Text_Handler.Value (Stripped_Key);
+      Sorted_Key : String(1 .. Stripped_Key.Length) := Stripped_Key.Value;
     begin
       Char_Sort.Bubble_Sort (Sorted_Key);
 
