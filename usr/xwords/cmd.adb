@@ -44,6 +44,7 @@ package body Cmd is
                   Arg : in String;
                   Ok : out Boolean;
                   Res : in out Res_List) is
+    Cmd : Many_Strings.Many_String;
     use type Asu_Us;
   begin
     -- Init path to Words if first call and ENV set
@@ -60,9 +61,9 @@ package body Cmd is
       Ada.Text_Io.Put_Line ("Executing >" & Asu_Ts (Words_Path) & Com
                                          & "<>" & Arg & "<");
     end if;
-    Command.Execute (
-        Many_Strings.Cat (Asu_Ts (Words_Path) & Com, Arg),
-        False, Command.Both,
+    Cmd.Set (Words_Path & Com);
+    Cmd.Cat (Arg);
+    Command.Execute (Cmd, False, Command.Both,
         Output_Flow'Access, Error_Flow'Access, Exit_Code);
 
     if Exit_Code = Command.Error then

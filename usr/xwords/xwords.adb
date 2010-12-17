@@ -140,7 +140,8 @@ procedure Xwords is
   -- Build and launch a Words command
   procedure Do_Command (Num : Afpx.Field_Range) is
     Result : Cmd.Res_List;
-    Com, Word, Arg : Asu_Us;
+    Com, Arg : Many_Strings.Many_String;
+    Word : Asu_Us;
     Command_Ok : Boolean;
     First : Boolean;
     use type Afpx.Field_Range, Asu_Us;
@@ -152,27 +153,26 @@ procedure Xwords is
     Word := Asu_Tus (Strip (Afpx.Decode_Field (Get_Fld, 0, False)));
     case Num is
       when Search_Fld | Research_Fld =>
-        Com := Asu_Tus ("ws");
+        Com.Set ("ws");
       when Add_Word_Fld | Add_Noun_Fld =>
-        Com := Asu_Tus ("wa");
+        Com.Set ("wa");
       when Del_Word_Fld | Del_Noun_Fld =>
-        Com := Asu_Tus ("wd");
+        Com.Set ("wd");
       when others =>
         Status := Error;
         return;
     end case;
     if Num = Research_Fld then
-      Arg := Asu_Tus (Many_Strings.Cat ("-re", Asu_Ts (Word)));
+      Arg.Set ("-re");
     elsif Num = Add_Noun_Fld or else Num = Del_Noun_Fld then
-      Arg := Asu_Tus (Many_Strings.Cat ("-noun", Asu_Ts (Word)));
-    else
-      Arg := Word;
+      Arg.Set ("-noun");
     end if;
+    Arg.Cat (Word);
 
     -- Prevent X events to interfere with the Command internal loop
     --  and execute command
     Afpx.Suspend;
-    Cmd.Exec (Asu_Ts (Com), Asu_Ts (Arg), Command_Ok, Result);
+    Cmd.Exec (Com.Image, Arg.Image, Command_Ok, Result);
     Afpx.Resume;
 
     -- Set status
@@ -195,15 +195,15 @@ procedure Xwords is
 
     -- Store in history and selection if search
     if (Num = Search_Fld or else Num = Research_Fld)
-    and then not Asu_Is_Null (Arg) then
+    and then not Asu_Is_Null (Arg.Image) then
       History.Insert (Word);
     end if;
 
     -- Log request if needed
     if Log then
-      Line := Com;
-      for I in 1 .. Many_Strings.Nb (Asu_Ts (Arg)) loop
-        Line := Line & " " & Many_Strings.Nth (Asu_Ts (Arg), I);
+      Line := Com.Image;
+      for I in 1 .. Arg.Nb loop
+        Line := Line & " " & Asu_Us'(Arg.Nth (I));
       end loop;
       Basic_Proc.Put_Line_Output (Asu_Ts (Line));
     end if;
