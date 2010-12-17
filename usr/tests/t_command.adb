@@ -10,7 +10,7 @@ procedure T_Command is
 
   Narg : Positive;
   Use_Sh : Boolean;
-  Cmd : Asu_Us;
+  Cmd : Many_Strings.Many_String;
 
   Stdout : aliased Command.Flow_Rec(Command.List);
   Stderr : aliased Command.Flow_Rec(Command.Str);
@@ -35,13 +35,12 @@ begin
     Usage;
     return;
   end if;
-  Argument.Get_Parameter (Cmd, Occurence => Narg);
-  for I in Narg + 1 .. Argument.Get_Nbre_Arg loop
-    Many_Strings.Cat (Cmd, Argument.Get_Parameter (I));
+  for I in Narg .. Argument.Get_Nbre_Arg loop
+    Cmd.Cat (Argument.Get_Parameter (I));
   end loop;
 
   -- Execute
-  Command.Execute (Asu_Ts (Cmd), Use_Sh, Command.Both,
+  Command.Execute (Cmd, Use_Sh, Command.Both,
                    Stdout'Unrestricted_Access,
                    Stderr'Unrestricted_Access,
                    Exit_Code);

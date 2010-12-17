@@ -591,7 +591,7 @@ package body String_Mng is
       end if;
       Index := Index - 1;
     end loop;
-    return Asu_Ts (Result);
+    return Many_Strings.Set (Result);
   end Split;
 
   -- Locate where to cut Str so that is best matches the requested line Length

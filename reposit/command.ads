@@ -1,6 +1,6 @@
 -- Executes a command (fork/exec) and retrieves its outputs
 with As.U; use As.U;
-with Dynamic_List;
+with Dynamic_List, Many_Strings;
 package Command is
 
   -- Output and error flow, either a list (one item per line) or a Asu_Us
@@ -28,8 +28,11 @@ package Command is
   subtype Exit_Code_Range is Integer range -1 .. Integer'Last;
   Error : constant Exit_Code_Range := -1;
 
-  -- Call command, which have to follow Many_Strings format
-  -- If Use_Sh, then issue a 'sh -c "Cmd"'
+  -- Call command,
+  -- If not Use_Sh, then Cmd must be the program then its arguments
+  --   concatenated in a Many_String
+  -- If Use_Sh, then issue a 'sh -c "Cmd"'. Cmd can then be either a
+  --   Many_String as above or the program and arguments separated by spaces
   -- Report or propagate output/error flow with proper kind
   -- Set resulting exit code
   ---------------------------------------------------------------------------
@@ -40,7 +43,7 @@ package Command is
   --  * X11 programs shall Suspend ALL the X objects X_Line/Con_Io/Afpx    --
   --    before calling this function, then Resume the X objects.           --
   ---------------------------------------------------------------------------
-  procedure Execute (Cmd : in String;
+  procedure Execute (Cmd : in Many_Strings.Many_String;
                      Use_Sh : in Boolean;
                      Mix_Policy : in Flow_Mixing_Policies;
                      Out_Flow : in Flow_Access;

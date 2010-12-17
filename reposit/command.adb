@@ -1,5 +1,5 @@
 with Ada.Text_Io;
-with Sys_Calls, Environ, Many_Strings, Proc_Family, Event_Mng, Text_Line;
+with Sys_Calls, Environ, Proc_Family, Event_Mng, Text_Line;
 package body Command is
 
   -- Debug option
@@ -167,13 +167,14 @@ package body Command is
   end Fd_Cb;
 
   -- Execute Cmd
-  procedure Execute (Cmd : in String;
+  procedure Execute (Cmd : in Many_Strings.Many_String;
                      Use_Sh : in Boolean;
                      Mix_Policy : in Flow_Mixing_Policies;
                      Out_Flow : in Flow_Access;
                      Err_Flow : in Flow_Access;
                      Exit_Code : out Exit_Code_Range) is
-    Cmd_Line : Asu_Us;
+    Cmd_Line : Many_Strings.Many_String;
+    Str : Asu_Us;
     Nb_Substr : Positive;
     Spawn_Result : Proc_Family.Spawn_Result_Rec;
     Prev_Term_Cb : aliased Event_Mng.Sig_Callback;
@@ -206,25 +207,25 @@ package body Command is
 
     -- Build command line
     if Use_Sh then
-      Cmd_Line := Asu_Tus (
-         Many_Strings.Cat (
-           Many_Strings.Cat ("/bin/sh", "-c"), ""));
+      Cmd_Line.Set ("/bin/sh");
+      Cmd_Line.Cat ("-c");
       -- Extract substrings and concatenante with spaces
       Nb_Substr := Many_Strings.Nb (Cmd);
       for I in 1 .. Nb_Substr loop
-        Asu.Append (Cmd_Line, Many_Strings.Nth (Cmd, I));
+        Asu.Append (Str, Asu_Us'(Many_Strings.Nth (Cmd, I)));
         if I /= Nb_Substr then
-          Asu.Append (Cmd_Line, " ");
+          Asu.Append (Str, " ");
         end if;
       end loop;
+      Cmd_Line.Cat (Str);
     else
-      Cmd_Line := Asu_Tus (Cmd);
+      Cmd_Line := Cmd;
     end if;
     -- Spawn
     if Debug then
-      Ada.Text_Io.Put_Line ("Command: Spwaning >" & Asu_Ts (Cmd_Line) & "<");
+      Ada.Text_Io.Put_Line ("Command: Spwaning >" & Cmd_Line.Image & "<");
     end if;
-    Spawn_Result := Proc_Family.Spawn (Asu_Ts (Cmd_Line),
+    Spawn_Result := Proc_Family.Spawn (Cmd_Line.Image,
                                        Proc_Family.Std_Fds,
                                        Death_Cb'Access);
     if not Spawn_Result.Ok or else not Spawn_Result.Open then

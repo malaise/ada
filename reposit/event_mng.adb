@@ -129,6 +129,24 @@ package body Event_Mng is
     Put_Debug ("Event_Mng.Del_Fd_Callback " & Fd'Img & " " & Read'Img);
   end Del_Fd_Callback;
 
+  function Get_Fd_Callback (Fd : in File_Desc; Read : in Boolean)
+           return Fd_Callback is
+    Res : Boolean;
+    Cb_Searched : Cb_Rec;
+  begin
+    -- Get from list
+    Cb_Searched.Fd := Fd;
+    Cb_Searched.Read := Read;
+    Cb_Searched.Cb := null;
+    Cb_Search (Cb_List, Res, Cb_Searched, Cb_Mng.Prev,
+               From => Cb_Mng.Absolute);
+    if not Res then
+      return null;
+    end if;
+    Cb_List.Read (Cb_Searched, Cb_Mng.Current);
+    return Cb_Searched.Cb;
+  end Get_Fd_Callback;
+
   function Fd_Callback_Set (Fd : in File_Desc; Read : in Boolean)
   return Boolean is
     Res : C_Types.Bool;
@@ -136,7 +154,6 @@ package body Event_Mng is
     Res := C_Fd_Set (Integer(Fd), C_Types.Bool(Read));
     return Boolean(Res);
   end Fd_Callback_Set;
-
 
   ------------------------------------------------------------------
 
