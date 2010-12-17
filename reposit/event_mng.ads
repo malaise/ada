@@ -17,6 +17,10 @@ package Event_Mng is
   -- Raises Fd_Cb_Error if this Fd has already a Callback
   procedure Add_Fd_Callback (Fd : in File_Desc; Read : in Boolean;
                              Callback : in Fd_Callback);
+  -- Get current callback on a fd for read or write.
+  -- Returns null if no Callback is set for this Fd on this mode
+  function Get_Fd_Callback (Fd : in File_Desc; Read : in Boolean)
+           return Fd_Callback;
   -- Unregister the callback from a fd in a mode
   -- Raises Fd_Cb_Error if this Fd has no Callback
   procedure Del_Fd_Callback (Fd : in File_Desc; Read : in Boolean);
@@ -33,7 +37,9 @@ package Event_Mng is
   -- Register a callback on signal
   -- Wait will generate Signal_Event as soon as there is a callback, so:
   --   Unregister with null, then no Signal_Event will be returned,
-  --   Register an empty procedure for the event only. This is the default.
+  --   Register an empty procedure for only the generation of the event.
+  -- By default (at init), signal policy is the UNIX default behaviour
+  --  (see Reset_Default_Signals_Policy).
   procedure Set_Sig_Term_Callback (Callback : in Sig_Callback);
   procedure Set_Sig_Child_Callback (Callback : in Sig_Callback);
 
@@ -53,6 +59,7 @@ package Event_Mng is
 
   -- Activate signal handling (capability to catch SigTerm (and Sigint) and
   --  SigChild and report them
+  -- Automatically done when setting a signal callback
   procedure Activate_Signal_Handling;
 
   -- Reset signal handling to default UNIX behaviour
