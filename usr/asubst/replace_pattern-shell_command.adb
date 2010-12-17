@@ -1,4 +1,4 @@
-with Event_Mng;
+with Event_Mng, Many_Strings;
 separate (Replace_Pattern)
 
 function Shell_Command (Cmd : String) return String is
@@ -10,7 +10,7 @@ begin
   end if;
 
   -- Execute command and check exit code
-  Command.Execute (Cmd, True, Command.Only_Out,
+  Command.Execute (Many_Strings.Set (Cmd), True, Command.Only_Out,
      Out_Flow'Access, Err_Flow'Access, Code);
   if Event_Mng.Reset_Default_Signals_Policy then
     -- Sig term received after event

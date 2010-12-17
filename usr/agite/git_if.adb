@@ -42,16 +42,14 @@ package body Git_If is
 
   -- Current Git version
   function Get_Version return Version_Rec is
-    Cmd : Asu_Us;
+    Cmd : Many_Strings.Many_String;
     D1, D2, D3 : Natural;
     Result : Version_Rec;
   begin
     -- Git --version
-    Cmd := Asu_Tus ("git");
-    Many_Strings.Cat (Cmd, "--version");
-    Command.Execute (
-        Asu_Ts (Cmd),
-        True, Command.Both,
+    Cmd.Set ("git");
+    Cmd.Cat ("--version");
+    Command.Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
@@ -176,7 +174,7 @@ package body Git_If is
   -- List the files and status
   procedure List_Files (Current_Path : in String;
                         Files : in out File_List) is
-    Cmd : Asu_Us;
+    Cmd : Many_Strings.Many_String;
     Str : Asu_Us;
     File_Entry : File_Entry_Rec;
     Moved : Boolean;
@@ -189,11 +187,9 @@ package body Git_If is
     Files.Delete_List;
 
     -- Git ls-files
-    Cmd := Asu_Tus ("git");
-    Many_Strings.Cat (Cmd, "ls-files");
-    Command.Execute (
-        Asu_Ts (Cmd),
-        True, Command.Both,
+    Cmd.Set ("git");
+    Cmd.Cat ("ls-files");
+    Command.Execute (Cmd, True, Command.Both,
         Out_Flow_1'Access, Err_Flow'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
@@ -202,13 +198,11 @@ package body Git_If is
     end if;
 
     -- Git status --uno --porcelain"
-    Cmd := Asu_Tus ("git");
-    Many_Strings.Cat (Cmd, "status");
-    Many_Strings.Cat (Cmd, "--porcelain");
-    Many_Strings.Cat (Cmd, ".");
-    Command.Execute (
-        Asu_Ts (Cmd),
-        True, Command.Both,
+    Cmd.Set ("git");
+    Cmd.Cat ("status");
+    Cmd.Cat ("--porcelain");
+    Cmd.Cat (".");
+    Command.Execute (Cmd, True, Command.Both,
         Out_Flow_2'Access, Err_Flow'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
@@ -434,7 +428,7 @@ package body Git_If is
   -- List the log of a dir or file
   procedure List_Log (Path : in String;
                       Log : in out Log_List) is
-    Cmd : Asu_Us;
+    Cmd : Many_Strings.Many_String;
     Done : Boolean;
     Log_Entry : Log_Entry_Rec;
   begin
@@ -442,15 +436,13 @@ package body Git_If is
     Log.Delete_List;
 
     -- Git ls-files
-    Cmd := Asu_Tus ("git");
-    Many_Strings.Cat (Cmd, "log");
-    Many_Strings.Cat (Cmd, "--date=iso");
-    Many_Strings.Cat (Cmd, "--topo-order");
-    Many_Strings.Cat (Cmd, "--");
-    Many_Strings.Cat (Cmd, Path);
-    Command.Execute (
-        Asu_Ts (Cmd),
-        True, Command.Both,
+    Cmd.Set ("git");
+    Cmd.Cat ("log");
+    Cmd.Cat ("--date=iso");
+    Cmd.Cat ("--topo-order");
+    Cmd.Cat ("--");
+    Cmd.Cat (Path);
+    Command.Execute (Cmd, True, Command.Both,
         Out_Flow_1'Access, Err_Flow'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
@@ -479,22 +471,20 @@ package body Git_If is
                          Date : out Iso_Date;
                          Comment : out Comment_Array;
                          Commit : in out Commit_List) is
-    Cmd : Asu_Us;
+    Cmd : Many_Strings.Many_String;
     Dummy_Hash : Git_Hash;
     pragma Unreferenced (Dummy_Hash);
     Dummy_Done : Boolean;
     pragma Unreferenced (Dummy_Done);
   begin
-    Cmd := Asu_Tus ("git");
-    Many_Strings.Cat (Cmd, "log");
-    Many_Strings.Cat (Cmd, "--name-status");
-    Many_Strings.Cat (Cmd, "--date=iso");
-    Many_Strings.Cat (Cmd, "-n");
-    Many_Strings.Cat (Cmd, "1");
-    Many_Strings.Cat (Cmd, Hash);
-    Command.Execute (
-        Asu_Ts (Cmd),
-        True, Command.Both,
+    Cmd.Set ("git");
+    Cmd.Cat ("log");
+    Cmd.Cat ("--name-status");
+    Cmd.Cat ("--date=iso");
+    Cmd.Cat ("-n");
+    Cmd.Cat ("1");
+    Cmd.Cat (Hash);
+    Command.Execute (Cmd, True, Command.Both,
         Out_Flow_1'Access, Err_Flow'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
@@ -521,15 +511,13 @@ package body Git_If is
 
   -- Cat a file at a Hash in a file
   procedure Cat (Name : in String; Hash : in Git_Hash; File : in String) is
-    Cmd : Asu_Us;
+    Cmd : Many_Strings.Many_String;
   begin
-    Cmd := Asu_Tus ("git");
-    Many_Strings.Cat (Cmd, "show");
-    Many_Strings.Cat (Cmd, Hash & ":" & Name);
-    Many_Strings.Cat (Cmd, ">" & File);
-    Command.Execute (
-        Asu_Ts (Cmd),
-        True, Command.Both,
+    Cmd.Set ("git");
+    Cmd.Cat ("show");
+    Cmd.Cat (Hash & ":" & Name);
+    Cmd.Cat (">" & File);
+    Command.Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
@@ -555,14 +543,12 @@ package body Git_If is
 
    -- Launch a revert (checkout) synchronous
   procedure Do_Revert (File : in String) is
-    Cmd : Asu_Us;
+    Cmd : Many_Strings.Many_String;
   begin
-    Cmd := Asu_Tus ("git");
-    Many_Strings.Cat (Cmd, "checkout");
-    Many_Strings.Cat (Cmd, File);
-    Command.Execute (
-        Asu_Ts (Cmd),
-        True, Command.Both,
+    Cmd.Set ("git");
+    Cmd.Cat ("checkout");
+    Cmd.Cat (File);
+    Command.Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
@@ -573,15 +559,13 @@ package body Git_If is
 
   -- Get current branch name
   function Current_Branch return String is
-    Cmd : Asu_Us;
+    Cmd : Many_Strings.Many_String;
     Branch : Asu_Us;
     Moved : Boolean;
   begin
-    Cmd := Asu_Tus ("git");
-    Many_Strings.Cat (Cmd, "branch");
-    Command.Execute (
-        Asu_Ts (Cmd),
-        True, Command.Both,
+    Cmd.Set ("git");
+    Cmd.Cat ("branch");
+    Command.Execute (Cmd, True, Command.Both,
         Out_Flow_1'Access, Err_Flow'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then

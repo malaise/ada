@@ -1,6 +1,6 @@
 with Ada.Calendar;
 with As.U; use As.U;
-with Basic_Proc, Command, Date_Image, Mixed_Str, Trilean;
+with Basic_Proc, Command, Many_Strings, Date_Image, Mixed_Str, Trilean;
 with Variables, Tree, Ios, Matcher, Debug;
 package body Events is
 
@@ -311,7 +311,8 @@ package body Events is
               Exit_Code : Command.Exit_Code_Range;
             begin
               Command.Execute (
-                Cmd => Variables.Expand (Node.Text),
+                Cmd => Many_Strings.Set (Asu_Us'(
+                    Variables.Expand (Node.Text))),
                 Use_Sh => True,
                 Mix_Policy => Command.Only_Out,
                 Out_Flow => Flow'Access,
@@ -351,7 +352,8 @@ package body Events is
                 Exit_Code : Command.Exit_Code_Range;
               begin
                 Command.Execute (
-                  Cmd => Variables.Expand (Node.Text),
+                  Cmd => Many_Strings.Set (Asu_Us'(
+                      Variables.Expand (Node.Text))),
                   Use_Sh => True,
                   Mix_Policy => Command.Only_Out,
                   Out_Flow => Flow'Access,

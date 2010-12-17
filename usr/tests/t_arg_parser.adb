@@ -52,7 +52,7 @@ procedure T_Arg_Parser is
   -- Build Many_Strings command line
   function Build (Str : String) return Many_Strings.Many_String is
     Iter : Parser.Iterator;
-    Res : Asu_Us;
+    Res : Many_Strings.Many_String;
   begin
     Iter.Set (Str);
     loop
@@ -60,16 +60,16 @@ procedure T_Arg_Parser is
         Word : constant String := Iter.Next_Word;
       begin
         exit when Word = "";
-        Many_Strings.Cat (Res, Word);
+        Res.Cat (Word);
       end;
     end loop;
-    return Asu_Ts (Res);
+    return Res;
   end Build;
 
   -- Check that Cmd produces Res
   procedure Try (Args : in String; Res : in String) is
-    Cmd : constant String := Build ("./" & Argument.Get_Program_Name
-                                  & " " & Args);
+    Cmd : constant Many_Strings.Many_String
+        := Build ("./" & Argument.Get_Program_Name & " " & Args);
     Flow : aliased Command.Flow_Rec (Command.Str);
     Code : Command.Exit_Code_Range;
     Len : Natural;

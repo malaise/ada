@@ -41,13 +41,14 @@ package body Utils is
 
   -- Start a command in background
   procedure Launch (Command : in String) is
-    Cmd : constant String
-        := Many_Strings.Cat ("/bin/sh",
-             Many_Strings.Cat ("-c", Command));
+    Cmd : Many_Strings.Many_String;
     Res : Proc_Family.Spawn_Result_Rec;
     pragma Unreferenced (Res);
   begin
-    Res := Proc_Family.Spawn (Cmd);
+    Cmd.Set ("/bin/sh");
+    Cmd.Cat ("-c");
+    Cmd.Cat (Command);
+    Res := Proc_Family.Spawn (Cmd.Image);
   end Launch;
 
 end Utils;

@@ -1,5 +1,4 @@
 with Ada.Text_Io;
-with As.U; use As.U;
 with Generic_Con_Io, Con_Io, Argument;
 procedure T_Color is
   Colors : Generic_Con_Io.Colors_Definition;

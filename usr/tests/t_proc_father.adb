@@ -1,5 +1,4 @@
 with Ada.Text_Io;
-with As.U; use As.U;
 with Sys_Calls, Proc_Family, Many_Strings, Argument, Event_Mng;
 
 -- Note on lsof result
@@ -17,7 +16,7 @@ with Sys_Calls, Proc_Family, Many_Strings, Argument, Event_Mng;
 
 procedure T_Proc_Father is
 
-  Str : Asu_Us;
+  Str : Many_Strings.Many_String;
   Spawn_Result : Proc_Family.Spawn_Result_Rec;
 
   procedure Death_Cb (Death_Report : in Proc_Family.Death_Rec) is
@@ -89,15 +88,11 @@ begin
 
   -- Build String (may raise Constraint_Error if args too long)
   for I in 1 .. Argument.Get_Nbre_Arg loop
-    if I = 1 then
-      Argument.Get_Parameter (Str, Occurence => I);
-    else
-      Many_Strings.Cat (Str, Argument.Get_Parameter (Occurence => I));
-    end if;
+    Str.Cat (Argument.Get_Parameter (Occurence => I));
   end loop;
 
 
-  Spawn_Result := Proc_Family.Spawn (Asu_Ts (Str),
+  Spawn_Result := Proc_Family.Spawn (Str.Image,
                                      Proc_Family.Std_Fds,
                                      Death_Cb'Unrestricted_Access);
   if not Spawn_Result.Ok then
