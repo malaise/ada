@@ -1,3 +1,4 @@
+with Ada.Characters.Latin_1;
 with As.U; use As.U;
 with X_Mng, Timers, Unicode, Language;
 package Generic_Con_Io is
@@ -221,7 +222,10 @@ package Generic_Con_Io is
     -- Unicode propagation
     subtype Unicode_Number is Unicode.Unicode_Number;
     subtype Unicode_Sequence is Unicode.Unicode_Sequence;
-    Space : constant Unicode_Number := Language.Char_To_Unicode (' ');
+    Space : constant Unicode_Number
+          := Language.Char_To_Unicode (Ada.Characters.Latin_1.Space);
+    Htab  : constant Unicode_Number
+          := Language.Char_To_Unicode (Ada.Characters.Latin_1.Ht);
 
     -- Writes a character at the current cursor position and with the
     --  curent attributes. Position can be set by using move.

@@ -550,7 +550,7 @@ package body Af_Ptg is
     -- Call Cb if set
     if Cursor_Col_Cb = null then
       case Enter_Field_Cause is
-        when Right_Full | Tab | Stab=>
+        when Right_Full | Tab | Stab =>
           -- Start of field if Right_Full, Tab or Stab
           return Con_Io.Full_Col_Range'First;
         when Left =>
@@ -591,6 +591,22 @@ package body Af_Ptg is
     when others =>
       return Field.Width - 1;
   end Get_Cursor_Col;
+
+  function Significant_Char (Field_No : Afpx_Typ.Field_Range;
+                             From_Head : Boolean)
+           return Af_Con_Io.Full_Col_Range is
+    Field : constant Afpx_Typ.Field_Rec := Af_Dscr.Fields (Field_No);
+    Str : constant Unicode_Sequence (1 .. Field.Width)
+        := Af_Dscr.Chars (Field.Char_Index ..
+                          Field.Char_Index + Field.Width - 1);
+  begin
+    if From_Head then
+      return First_Index (Str, True);
+    else
+      return Last_Index (Str, True);
+    end if;
+  end Significant_Char;
+
 
   -- Print the fields and the list, then gets
   procedure Ptg (Cursor_Field  : in out Afpx_Typ.Field_Range;
@@ -803,19 +819,6 @@ package body Af_Ptg is
             New_Field := True;
             Insert := False;
           end if;
-        when Af_Con_Io.Tab | Af_Con_Io.Ctrl_Right =>
-          if Get_Active then
-            -- Tab in previous field
-            -- Restore normal color of previous field
-            Put_Field (Cursor_Field, Normal);
-            Cursor_Field := Next_Get_Field (Cursor_Field);
-            Cursor_Col := Get_Cursor_Col (Cursor_Field,
-                                          True,
-                                          Af_Con_Io.Col_Range'First,
-                                          Tab, Cursor_Col_Cb);
-            New_Field := True;
-            Insert := False;
-          end if;
         when Af_Con_Io.Left =>
           if Get_Active then
             -- Left on previous field
@@ -829,7 +832,20 @@ package body Af_Ptg is
             New_Field := True;
             Insert := False;
           end if;
-        when Af_Con_Io.Stab | Af_Con_Io.Ctrl_Left =>
+        when Af_Con_Io.Tab =>
+          if Get_Active then
+            -- Tab in previous field
+            -- Restore normal color of previous field
+            Put_Field (Cursor_Field, Normal);
+            Cursor_Field := Next_Get_Field (Cursor_Field);
+            Cursor_Col := Get_Cursor_Col (Cursor_Field,
+                                          True,
+                                          Af_Con_Io.Col_Range'First,
+                                          Tab, Cursor_Col_Cb);
+            New_Field := True;
+            Insert := False;
+          end if;
+        when Af_Con_Io.Stab =>
           if Get_Active then
             -- Beginning of prev get field
             -- Restore normal color of previous field
@@ -841,6 +857,14 @@ package body Af_Ptg is
                                           Stab, Cursor_Col_Cb);
             New_Field := True;
             Insert := False;
+          end if;
+        when Af_Con_Io.Ctrl_Right =>
+          if Get_Active then
+            Cursor_Col := Significant_Char (Cursor_Field, False);
+          end if;
+        when Af_Con_Io.Ctrl_Left =>
+          if Get_Active then
+            Cursor_Col := Significant_Char (Cursor_Field, True);
           end if;
         when Af_Con_Io.Ret =>
           -- End put_then_get on keyboard ret

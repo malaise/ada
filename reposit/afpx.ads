@@ -266,7 +266,14 @@ package Afpx is
                  Enter_Field_Cause : Enter_Field_Cause_List;
                  Str : Unicode_Sequence) return Con_Io.Full_Col_Range;
 
-  -- Returns the index (from 0 to Str'Last-1) of the last character of Str
+  -- Returns the index (from 0 to Str'Length-1) of the first character of Str
+  --  or, if Significant, the index preceeding first significant character
+  --  (skipping heading spaces and htabs).
+  -- This can be usefully called by Cursor_Set_Col_Cb.
+  function First_Index (Str : Unicode_Sequence; Significant : Boolean)
+                        return Con_Io.Full_Col_Range;
+
+  -- Returns the index (from 0 to Str'Length-1) of the last character of Str
   --  or, if Significant, the index following last significant character
   --  (skipping trailing spaces and htabs).
   -- This can be usefully called by Cursor_Set_Col_Cb.

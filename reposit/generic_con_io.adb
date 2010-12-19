@@ -1,4 +1,4 @@
-with Ada.Calendar, Ada.Characters.Latin_1;
+with Ada.Calendar;
 with Argument, Dyn_Data, Environ, Lower_Str, Event_Mng, String_Mng;
 package body Generic_Con_Io is
 
