@@ -1,4 +1,3 @@
-with Ada.Characters.Latin_1;
 with Generic_Con_Io, Language;
 with Afpx_Typ;
 package body Afpx is
@@ -771,7 +770,38 @@ package body Afpx is
     Dummy := Af_List.Update(Action, Display => False);
   end Update_List;
 
-  -- Returns the index (from 0 to Str'Last-1) of the last character of Str
+  -- Returns the index (from 0 to Str'Length-1) of the first character of Str
+  --  or, if Significant, the index preceeding first significant character
+  --  (skipping heading spaces and htabs).
+  -- This can be usefully called by Cursor_Set_Col_Cb.
+  function First_Index (Str : Unicode_Sequence; Significant : Boolean)
+                        return Con_Io.Full_Col_Range is
+    N : Natural;
+  begin
+    if not Significant then
+      return 0;
+    end if;
+    -- Locate first significant character
+    N := 0;
+    for I in Str'Range loop
+      if Str (I) /= Af_Con_Io.Space and then Str(I) /= Af_Con_Io.Htab then
+        N := I;
+        exit;
+      end if;
+    end loop;
+    if N = 0 then
+      -- Not found: All is space/tab
+      return 0;
+    elsif N = Str'First then
+      -- First char is significant, stay on it
+      return 0;
+    else
+      -- Set to space before N
+      return N - Str'First - 1;
+    end if;
+  end First_Index;
+
+  -- Returns the index (from 0 to Str'Length-1) of the last character of Str
   --  or, if Significant, the index following last significant character
   --  (skipping trailing spaces and htabs).
   -- This can be usefully called by Cursor_Set_Col_Cb.
@@ -785,15 +815,13 @@ package body Afpx is
     -- Locate last significant character
     N := 0;
     for I in reverse Str'Range loop
-      if Str (I) /= Af_Con_Io.Space
-      and then Str(I) /= Language.Char_To_Unicode
-                            (Ada.Characters.Latin_1.Ht) then
+      if Str (I) /= Af_Con_Io.Space and then Str(I) /= Af_Con_Io.Htab then
         N := I;
         exit;
       end if;
     end loop;
     if N = 0 then
-      -- All is space/tab
+      -- Not found: All is space/tab
       return 0;
     elsif N = Str'Last then
       -- Last character is significant. That's it.
