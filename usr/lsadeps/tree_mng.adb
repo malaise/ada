@@ -34,18 +34,18 @@ package body Tree_Mng is
     Crit : Sourcer.Src_Dscr;
     Found : Boolean;
   begin
-    if Asu_Is_Null (List) then
+    if List.Is_Null then
       return;
     end if;
     if Revert and then Kind = Sourcer.Unit_Spec then
       Error ("Looking for withed units in revert mode");
     end if;
     -- Parse list with Parser and insert nodes
-    Iter.Set (Asu_Ts (List), Is_Sep'Access);
+    Iter.Set (List.Image, Is_Sep'Access);
     loop
       Crit.Kind := Kind;
-      Crit.Unit := Asu_Tus (Iter.Next_Word);
-      exit when Asu_Is_Null (Crit.Unit);
+      Crit.Unit := Tus (Iter.Next_Word);
+      exit when Crit.Unit.Is_Null;
       -- Look for unit and insert it in tree
       if Kind = Sourcer.Unit_Spec then
         -- Look for spec or standalone body
@@ -94,7 +94,7 @@ package body Tree_Mng is
     loop
       Sourcer.List.Read_Next (Dscr, Moved);
       -- See if its Witheds contains us
-      if String_Mng.Locate (Asu_Ts (Dscr.Witheds), Crit) /= 0 then
+      if String_Mng.Locate (Dscr.Witheds.Image, Crit) /= 0 then
         -- Yesss, add it to our list
         List.Insert (Dscr);
       end if;
@@ -139,13 +139,13 @@ package body Tree_Mng is
     -- Any unit: Insert withed
     -- In revert:  insert units withing spec or standalone body
     if not Revert then
-      Kind :=  Asu_Tus ("withed");
+      Kind :=  Tus ("withed");
       Build_Children (Origin.Witheds, Sourcer.Unit_Spec, Revert);
     elsif Origin.Kind = Sourcer.Unit_Spec
           or else (Origin.Kind = Sourcer.Unit_Body
                    and then Origin.Standalone) then
-      Kind :=  Asu_Tus ("withing");
-      Build_Withings (Asu_Ts (Origin.Unit));
+      Kind :=  Tus ("withing");
+      Build_Withings (Origin.Unit.Image);
     end if;
 
     -- A Child (spec or standalone body): Insert parent spec if not revert
@@ -153,7 +153,7 @@ package body Tree_Mng is
     and then (Origin.Kind = Sourcer.Unit_Spec
        or else (Origin.Kind = Sourcer.Unit_Body and then Origin.Standalone) )
     and then Sourcer.Has_Dot (Origin.Unit) then
-      Kind := Asu_Tus ("parent");
+      Kind := Tus ("parent");
       Child.Unit := Origin.Parent;
       Child.Kind := Sourcer.Unit_Spec;
       Sourcer.List.Read (Child);
@@ -162,7 +162,7 @@ package body Tree_Mng is
 
     -- A spec: Insert body
     if Origin.Kind = Sourcer.Unit_Spec then
-      Kind := Asu_Tus ("body");
+      Kind := Tus ("body");
       if not Origin.Standalone then
         Child.Unit := Origin.Unit;
         Child.Kind := Sourcer.Unit_Body;
@@ -174,7 +174,7 @@ package body Tree_Mng is
     -- A Body or subunit: Insert subunits
     if Origin.Kind = Sourcer.Unit_Body
     or else Origin.Kind = Sourcer.Subunit then
-      Kind := Asu_Tus ("subunit");
+      Kind := Tus ("subunit");
       Build_Children (Origin.Subunits, Sourcer.Subunit, Revert);
     end if;
 
@@ -185,7 +185,7 @@ package body Tree_Mng is
     end if;
   exception
     when Sourcer.Src_List_Mng.Not_In_List =>
-      Error ("Cannot find " & Asu_Ts (Kind) & " of " & Sourcer.Image (Origin));
+      Error ("Cannot find " & Kind.Image & " of " & Sourcer.Image (Origin));
   end Build_Node;
 
   -- Dump one element of the tree
@@ -194,13 +194,13 @@ package body Tree_Mng is
     Str : Asu_Us;
   begin
     for I in 1 .. Level loop
-      Asu.Append (Str, "  ");
+      Str.Append ("  ");
     end loop;
-    Asu.Append (Str, Sourcer.Image (Dscr.Dscr));
+    Str.Append (Sourcer.Image (Dscr.Dscr));
     if Dscr.Looping then
-      Asu.Append (Str, " -->X");
+      Str.Append (" -->X");
     end if;
-    Basic_Proc.Put_Line_Output (Asu_Ts (Str));
+    Basic_Proc.Put_Line_Output (Str.Image);
     return True;
   end Dump_One;
 

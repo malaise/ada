@@ -138,22 +138,22 @@ begin
     File_Dir_Env_Name : constant String := "AFPX_DATA_DIR";
     Default_Path : constant String := ".";
   begin
-    Afpx_Typ.Dest_Path := Asu_Tus (Default_Path);
+    Afpx_Typ.Dest_Path := Tus (Default_Path);
     Environ.Get_Us (File_Dir_Env_Name, Afpx_Typ.Dest_Path);
-    Asu.Append (Afpx_Typ.Dest_Path, "/");
+    Afpx_Typ.Dest_Path.Append ("/");
 
     Dscr_Io.Open (Dscr_File, Dscr_Io.In_File,
-                  Asu_Ts (Afpx_Typ.Dest_Path) & Afpx_Typ.Dscr_File_Name);
+                  Afpx_Typ.Dest_Path.Image & Afpx_Typ.Dscr_File_Name);
     Fld_Io.Open  (Fld_File,  Fld_Io.In_File,
-                  Asu_Ts (Afpx_Typ.Dest_Path) & Afpx_Typ.Fld_File_Name);
+                  Afpx_Typ.Dest_Path.Image & Afpx_Typ.Fld_File_Name);
     Init_Io.Open (Init_File, Init_Io.In_File,
-                  Asu_Ts (Afpx_Typ.Dest_Path) & Afpx_Typ.Init_File_Name);
+                  Afpx_Typ.Dest_Path.Image & Afpx_Typ.Init_File_Name);
   exception
     when others =>
       Ada.Text_Io.Put ("AFPX ERROR: Can't read descriptors. For info, "
                       & File_Dir_Env_Name & " is ");
       if Environ.Is_Set (File_Dir_Env_Name) then
-        Ada.Text_Io.Put_Line (Asu_Ts (Afpx_Typ.Dest_Path));
+        Ada.Text_Io.Put_Line (Afpx_Typ.Dest_Path.Image);
       else
         Ada.Text_Io.Put_Line ("not set.");
       end if;

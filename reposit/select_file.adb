@@ -61,7 +61,7 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
   -- Remove trailing spaces. No heading nor intermediate spaces allowed
   procedure Parse_Spaces (Txt : in out Asu_Us;
                           Ok : out Boolean) is
-    Str : constant String := Asu_Ts (Txt);
+    Str : constant String := Txt.Image;
     L : Natural;
   begin
     L := 0;
@@ -81,7 +81,7 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
       end if;
     end loop;
     -- If all spaces, L = 0 => empty
-    Txt := Asu_Tus (Str(1 .. L));
+    Txt := Tus (Str(1 .. L));
     Ok := True;
   end Parse_Spaces;
 
@@ -217,11 +217,11 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
     File_Txt : Asu_Us;
     use Directory;
   begin
-    File_Txt := Asu_Tus (File);
-    Kind := Directory.File_Kind (Asu_Ts (File_Txt));
+    File_Txt := Tus (File);
+    Kind := Directory.File_Kind (File_Txt.Image);
     if Kind = Directory.Link then
-      File_Txt := Asu_Tus (Directory.Read_Link (Asu_Ts (File_Txt)));
-      Kind := Directory.File_Kind (Asu_Ts (File_Txt));
+      File_Txt := Tus (Directory.Read_Link (File_Txt.Image));
+      Kind := Directory.File_Kind (File_Txt.Image);
     end if;
     return Kind = Directory.Dir;
   end Is_Dir;
@@ -279,7 +279,7 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
       Afpx_Item.Str (1 .. Width) :=
           Language.String_To_Unicode (
               String_Mng.Procuste (
-                  Asu_Ts (Dir_Item.Name) & ' ' & Char, Width) );
+                  Dir_Item.Name.Image & ' ' & Char, Width) );
       Afpx.Line_List.Insert (Afpx_Item);
       exit when not Dir_List.Check_Move;
       Dir_List.Move_To;
@@ -292,7 +292,7 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
 
   -- To find current position back
   function Match (Current, Criteria : Dir_Mng.File_Entry_Rec) return Boolean is
-    use type Dir_Mng.File_Kind_List, Asu_Us;
+    use type Dir_Mng.File_Kind_List;
   begin
     return Current.Kind = Criteria.Kind
     and then Current.Name = Criteria.Name;
@@ -346,7 +346,7 @@ begin
   if Current_File'Length > Get_Get_Width then
     Get_Content := Asu_Null;
   else
-    Get_Content := Asu_Tus (
+    Get_Content := Tus (
       String_Mng.Procuste (Current_File, Get_Get_Width));
   end if;
   Afpx.Encode_Field (Get_Fld, (0, 0), Get_Content);
@@ -366,18 +366,18 @@ begin
           when Afpx.Return_Key =>
             Afpx.Decode_Field (Get_Fld, 0, Get_Content);
             Parse_Spaces (Get_Content, Get_Ok);
-            Get_Ok := Get_Ok and then not Asu_Is_Null (Get_Content);
+            Get_Ok := Get_Ok and then not Get_Content.Is_Null;
             if not Get_Ok then
               Error (E_File_Name);
             else
               -- Value to return if not dir
               File_Rec.Name := Get_Content;
               begin
-                Is_A_Dir := Is_Dir (Asu_Ts (Get_Content));
+                Is_A_Dir := Is_Dir (Get_Content.Image);
                 if Is_A_Dir then
                   -- Change dir
                   Afpx.Clear_Field (Get_Fld);
-                  Change_Dir (Asu_Ts (Get_Content));
+                  Change_Dir (Get_Content.Image);
                 else
                   -- Valid file entered
                   Valid := True;
@@ -416,9 +416,9 @@ begin
             Dir_List.Move_At(Pos_In_List);
             Dir_List.Read(File_Rec, Dir_Mng.File_List_Mng.Current);
             begin
-              if Is_Dir (Asu_Ts (File_Rec.Name)) then
+              if Is_Dir (File_Rec.Name.Image) then
                 Afpx.Clear_Field (Get_Fld);
-                Change_Dir( Asu_Ts (File_Rec.Name));
+                Change_Dir (File_Rec.Name.Image);
               else
                 -- File selected
                 Valid := True;
@@ -451,7 +451,7 @@ begin
   Dir_List.Delete_List;
   Afpx.Line_List_Mng.Delete_List(Afpx.Line_List);
   if Valid then
-    return Asu_Ts (File_Rec.Name);
+    return File_Rec.Name.Image;
   else
     return "";
   end if;

@@ -11,36 +11,36 @@ procedure Resolve_Uri (Ctx : in out Ctx_Type;
                        Is_File : out Boolean;
                        Content : out Asu_Us) is
   Ind1, Ind2 : Natural;
-  Scheme : Asu_Us;
+  Scheme, Luri : Asu_Us;
   File_Scheme : constant String := "file";
   Http_Scheme : constant String := "http";
   Result : Http.Result_Type;
   function Code_Image is new Int_Image (Http.Server_Code_Range);
 begin
-  Trace ("URI expanding " & Asu_Ts (Uri));
+  Trace ("URI expanding " & Uri.Image);
   -- See if first '/' (if any) is ":/"
-  Ind1 := String_Mng.Locate (Asu_Ts (Uri), "/");
-  Ind2 := String_Mng.Locate (Asu_Ts (Uri), "://");
+  Ind1 := String_Mng.Locate (Uri.Image, "/");
+  Ind2 := String_Mng.Locate (Uri.Image, "://");
   if Ind2 = 0 or else Ind1 /= Ind2 + 1 then
     Content := Build_Full_Name (Uri, Ctx.Flow.Curr_Flow.Name);
     Is_File := True;
-    Trace ("URI is file " & Asu_Ts (Content));
+    Trace ("URI is file " & Content.Image);
     return;
   end if;
   -- Now its is xxx://
-  Scheme := Asu.Unbounded_Slice (Uri, 1, Ind2 - 1);
+  Scheme := Uri.Uslice (1, Ind2 - 1);
   -- Handle "file" scheme
-  if Asu_Ts (Scheme) = File_Scheme then
+  if Scheme.Image = File_Scheme then
     -- Remove "file://" and build file name with tail
-    Content := Build_Full_Name (
-       Asu.Delete (Uri, 1, File_Scheme'Length + 3),
-       Ctx.Flow.Curr_Flow.Name);
+    Luri := Uri;
+    Luri.Delete (1, File_Scheme'Length + 3);
+    Content := Build_Full_Name (Luri, Ctx.Flow.Curr_Flow.Name);
     Is_File := True;
-    Trace ("URI expanded as file " & Asu_Ts (Content));
-  elsif Asu_Ts (Scheme) = Http_Scheme then
-    Trace ("URI fetching through http " & Asu_Ts (Uri));
+    Trace ("URI expanded as file " & Content.Image);
+  elsif Scheme.Image = Http_Scheme then
+    Trace ("URI fetching through http " & Uri.Image);
     -- Handle "http" scheme
-    Result := Http.Get (Asu_Ts (Uri));
+    Result := Http.Get (Uri.Image);
     -- If Sigterm/Sigint occured, resend
     Event_Mng.Reset_Default_Signals_Policy;
     case Result.Kind is
@@ -49,15 +49,15 @@ begin
         Is_File := False;
         Content := Result.Content;
       when Http.Client_Error =>
-        Util.Error (Ctx.Flow, "Http client error on URI " & Asu_Ts (Uri)
+        Util.Error (Ctx.Flow, "Http client error on URI " & Uri.Image
                   & " : " & Mixed_Str (Result.Error'Img));
       when Http.Server_Error =>
-        Util.Error (Ctx.Flow, "Http server error on URI " & Asu_Ts (Uri)
+        Util.Error (Ctx.Flow, "Http server error on URI " & Uri.Image
                  & " : " & Code_Image (Result.Code)
-                 & " " & Asu_Ts (Result.Message));
+                 & " " & Result.Message.Image);
     end case;
   else
-    Util.Error (Ctx.Flow, "Unsupported URI scheme " & Asu_Ts (Scheme));
+    Util.Error (Ctx.Flow, "Unsupported URI scheme " & Scheme.Image);
   end if;
 end Resolve_Uri;
 

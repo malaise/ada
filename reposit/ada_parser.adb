@@ -17,11 +17,11 @@ package body Ada_Parser is
   -- Set Char or string in a Us
   procedure Set (U : in out Asu_Us; C : in Character) is
   begin
-    U := Asu_Tus (C & "");
+    U.Set (C & "");
   end Set;
   procedure Set (U : in out Asu_Us; S : in String) is
   begin
-    U := Asu_Tus (S);
+    U.Set (S);
   end Set;
 
   -- Got a word. Save it as Prev_Lex if needed
@@ -35,11 +35,11 @@ package body Ada_Parser is
   end Got_Text;
   function Got_Text (Text : String; Kind : Lexical_Kind_List) return Asu_Us is
   begin
-    return Got_Text (Asu_Tus (Text), Kind);
+    return Got_Text (Tus (Text), Kind);
   end Got_Text;
   function Got_Text (Text : Character; Kind : Lexical_Kind_List) return Asu_Us is
   begin
-    return Got_Text (Asu_Tus (Text & ""), Kind);
+    return Got_Text (Tus (Text & ""), Kind);
   end Got_Text;
 
   -- Read next char, skipping Cr
@@ -71,7 +71,7 @@ package body Ada_Parser is
       or else (Cc >= 'A' and then Cc <= 'Z')
       or else (Cc >= '0' and then Cc <= '9')
       or else Cc = '_' then
-        Asu.Append (Text, Cc);
+        Text.Append (Cc);
       else
         exit;
       end if;
@@ -81,7 +81,7 @@ package body Ada_Parser is
 
     -- End of identifier, check validity
     declare
-      Str : constant String := Asu_Ts (Text);
+      Str : constant String := Text.Image;
       Is_Reserved : Ada_Words.Keyword_Res_List;
       use type Ada_Words.Keyword_Res_List;
     begin
@@ -94,7 +94,7 @@ package body Ada_Parser is
       if Is_Reserved = Ada_Words.May_Be_Keyword then
         -- Access, delta, digits or range,
         -- see if prev significant lexical element is "'"
-        if Asu_Ts (Prev_Lex) = "'" then
+        if Prev_Lex.Image = "'" then
           -- Prev was "'", so current is a qualifier
           Is_Reserved := Ada_Words.Is_Not_Keyword;
         else
@@ -136,12 +136,12 @@ package body Ada_Parser is
       or else Cc = '_'
       or else Cc = 'E'
       or else Cc = 'e' then
-        Asu.Append (Text, Cc);
+        Text.Append (Cc);
       elsif Cc = '+' or else Cc = '-' then
         -- This is an operator ending the literal, except if after 'e' or 'E'
-        if Upper_Char (Asu.Element (Text, Asu.Length (Text))) = 'E' then
+        if Upper_Char (Text.Element (Text.Length)) = 'E' then
           -- Sign after 'E' or 'e'
-          Asu.Append (Text, Cc);
+          Text.Append (Cc);
         else
           -- Operator + or - after the literal
           exit;
@@ -177,7 +177,7 @@ package body Ada_Parser is
         return Text;
       end if;
       -- Still in comment
-      Asu.Append (Text, Cc);
+      Text.Append (Cc);
     end loop;
   end Parse_Comment;
 
@@ -289,7 +289,7 @@ package body Ada_Parser is
       loop
         -- Read until same as Nc
         Cc := Text_Char_Get (File);
-        Asu.Append (Text, Cc);
+        Text.Append (Cc);
         if Cc = Lf then
           -- Should not get Lf within string literal
           raise Syntax_Error;
@@ -320,9 +320,9 @@ package body Ada_Parser is
     -- Loop until end of file
     loop
       Parse_Next (File, Text, Lexic);
-      exit when Asu_Is_Null (Text);
+      exit when Text.Is_Null;
       -- Call callback
-      Cb (Asu_Ts (Text), Lexic);
+      Cb (Text.Image, Lexic);
     end loop;
   end Parse;
 

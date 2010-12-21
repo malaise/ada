@@ -51,8 +51,8 @@ package body Environ is
   procedure Get_Us (Name : String; Result : in out Asu_Us) is
     Res : Asu_Us;
   begin
-    Res := Asu_Tus (Sys_Calls.Getenv (Name));
-    if not Asu_Is_Null (Res) then
+    Res := Tus (Sys_Calls.Getenv (Name));
+    if not Res.Is_Null then
       Result := Res;
     end if;
   exception
@@ -155,9 +155,9 @@ package body Environ is
     Str : Asu_Us;
   begin
     Get_Us (Name, Str);
-    Str := Asu_Tus (Lower_Str (Asu_Ts (Str)));
-    return  Asu_Ts (Str) = "yes"
-    or else Asu_Ts (Str) = "y";
+    Str := Tus (Lower_Str (Str.Image));
+    return  Str.Image = "yes"
+    or else Str.Image = "y";
   end Is_Yes;
 
   -- Is variable set and its lower case is "n" or "no"
@@ -165,9 +165,9 @@ package body Environ is
     Str : Asu_Us;
   begin
     Get_Us (Name, Str);
-    Str := Asu_Tus (Lower_Str (Asu_Ts (Str)));
-    return  Asu_Ts (Str) = "no"
-    or else Asu_Ts (Str) = "n";
+    Str := Tus (Lower_Str (Str.Image));
+    return  Str.Image = "no"
+    or else Str.Image = "n";
   end Is_No;
 
 end Environ;

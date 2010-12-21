@@ -5,7 +5,7 @@ package body String_Mng.Navigator is
   -- Constructor, re-inits position to start of string
   procedure Set (Navig : in out Navigator_Type; Str : in String) is
   begin
-    Navig.Str := Asu_Tus (Str);
+    Navig.Str := Tus (Str);
     Navig.Start := Str'First;
     Navig.Current := Str'First;
     Navig.No_Char := Default_No_Char;
@@ -14,7 +14,7 @@ package body String_Mng.Navigator is
   -- Length
   function Length (Navig : Navigator_Type) return Natural is
   begin
-    return Asu.Length (Navig.Str);
+    return Navig.Str.Length;
   end Length;
 
   -- Current position. Index is relative to the string
@@ -30,7 +30,7 @@ package body String_Mng.Navigator is
     -- Index in Str (from 1 to ...)
     Index : constant Integer := Navig.Current - Navig.Start + 1 + Offset;
   begin
-    return Index >= 1 and then Index <= Asu.Length (Navig.Str);
+    return Index >= 1 and then Index <= Navig.Str.Length;
   end In_Bounds;
 
   -- Move forward or backwards
@@ -50,12 +50,12 @@ package body String_Mng.Navigator is
   procedure Rewind (Navig : in out Navigator_Type;
                     To_Start : in Boolean := True) is
   begin
-    if To_Start or else Asu.Length (Navig.Str) = 0 then
+    if To_Start or else Navig.Str.Length = 0 then
       -- Rewind to start or empty string
       Navig.Current := Navig.Start;
     else
       -- Rewind to end of not empty string
-      Navig.Current := Navig.Start + Asu.Length (Navig.Str) - 1;
+      Navig.Current := Navig.Start + Navig.Str.Length - 1;
     end if;
   end Rewind;
 
@@ -83,14 +83,14 @@ package body String_Mng.Navigator is
     Index : constant Integer := Navig.Current - Navig.Start + 1 + Offset;
   begin
     -- Check if Index is within string
-    if Index < 1 or else Index > Asu.Length (Navig.Str) then
+    if Index < 1 or else Index > Navig.Str.Length then
       if Check then
         raise Out_Of_Bounds;
       else
         return Navig.No_Char;
       end if;
     else
-      return Asu.Element (Navig.Str, Index);
+      return Navig.Str.Element (Index);
     end if;
   end Lookup;
 

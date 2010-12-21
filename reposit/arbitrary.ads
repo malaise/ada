@@ -54,6 +54,6 @@ package Arbitrary is
   function Last_Digit (A : Number) return Digit;
 
 private
-  type Number is new Asu_Us;
+  type Number is new Asu_Us with null record;
 end Arbitrary;
 

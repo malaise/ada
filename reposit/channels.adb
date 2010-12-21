@@ -146,7 +146,7 @@ package body Channels is
       if Channel_Dscr.Init then
         return;
       end if;
-      Channel_Dscr.Name := Asu_Tus (Channel_Name);
+      Channel_Dscr.Name := Tus (Channel_Name);
       Channel_Dscr.Period := Get_Period (Channel_Name);
       Channel_Dscr.Init := True;
       Channel_Dscr.Active := True;
@@ -167,7 +167,7 @@ package body Channels is
         raise Channel_Active;
       end if;
       -- Store new name
-      Channel_Dscr.Name := Asu_Tus (New_Channel_Name);
+      Channel_Dscr.Name := Tus (New_Channel_Name);
       Channel_Dscr.Period := Get_Period (New_Channel_Name);
       Channel_Dscr.Init := True;
     exception
@@ -412,7 +412,7 @@ package body Channels is
                                Port : out Tcp_Util.Remote_Port) is
     begin
       -- Build host and port records
-      Host := (Kind => Tcp_Util.Host_Name_Spec, Name => Asu_Tus (Host_Name));
+      Host := (Kind => Tcp_Util.Host_Name_Spec, Name => Tus (Host_Name));
       Port := (Kind => Tcp_Util.Port_Name_Spec, Name => Channel_Dscr.Name);
     end Build_Host_Port;
 
@@ -422,7 +422,7 @@ package body Channels is
       List : Host_List_Mng.List_Type;
     begin
       -- Store hosts (fully parse file)
-      File.Open (File_Name, Asu_Ts (Channel_Dscr.Name) );
+      File.Open (File_Name, Channel_Dscr.Name.Image);
       loop
         begin
           Host := File.Next_Host;
@@ -446,7 +446,7 @@ package body Channels is
       loop
         List.Read (Host, Host_List_Mng.Current);
         begin
-          Add_Destination (Asu_Ts (Host.Name));
+          Add_Destination (Host.Name.Image);
         exception
           when Destination_Already | Unknown_Destination =>
             null;
@@ -694,7 +694,7 @@ package body Channels is
           Res := False;
         end if;
         if Send_Cb /= null then
-          Send_Cb (Asu_Ts (Dest.Host_Name.Name), Res);
+          Send_Cb (Dest.Host_Name.Name.Image, Res);
         end if;
         exit when not Channel_Dscr.Dests.Check_Move;
         Channel_Dscr.Dests.Move_To;
@@ -782,7 +782,7 @@ package body Channels is
       Found : Boolean;
     begin
       -- Find destination from host name
-      D_Rec.Host_Name.Name := Asu_Tus (Host_Name);
+      D_Rec.Host_Name.Name := Tus (Host_Name);
       Host_Name_Search (Channel_Dscr.Dests, Found, D_Rec,
                         From => Dest_List_Mng.Absolute);
       if not Found then
@@ -826,8 +826,8 @@ package body Channels is
       if Bus_Dscr.Init then
         return;
       end if;
-      Bus_Dscr.Bus_Name := Asu_Tus (Bus_Name);
-      Bus_Dscr.Dest_Name := Asu_Tus (Destination_Name);
+      Bus_Dscr.Bus_Name := Tus (Bus_Name);
+      Bus_Dscr.Dest_Name := Tus (Destination_Name);
       Bus_Dscr.Init := True;
     exception
       when Constraint_Error =>
@@ -842,8 +842,8 @@ package body Channels is
       if Bus_Dscr.Active then
         raise Bus_Active;
       end if;
-      Bus_Dscr.Bus_Name := Asu_Tus (New_Bus_Name);
-      Bus_Dscr.Dest_Name := Asu_Tus (New_Destination_Name);
+      Bus_Dscr.Bus_Name := Tus (New_Bus_Name);
+      Bus_Dscr.Dest_Name := Tus (New_Destination_Name);
       Bus_Dscr.Init := True;
     exception
       when Constraint_Error =>
@@ -894,7 +894,7 @@ package body Channels is
     procedure Set_Dest_Bus (Dscr : in out Socket.Socket_Dscr) is
     begin
       Dscr.Set_Destination_Name_And_Service (
-         True, Asu_Ts (Bus_Dscr.Dest_Name), Asu_Ts (Bus_Dscr.Bus_Name));
+         True, Bus_Dscr.Dest_Name.Image, Bus_Dscr.Bus_Name.Image);
       Bus_Dscr.Bus_Id := Dscr.Get_Destination_Host;
     exception
       when Socket.Soc_Name_Not_Found =>
@@ -902,7 +902,7 @@ package body Channels is
           Num : Socket.Port_Num;
           pragma Unreferenced (Num);
         begin
-          Num := Socket.Port_Num_Of (Asu_Ts (Bus_Dscr.Bus_Name), Socket.Udp);
+          Num := Socket.Port_Num_Of (Bus_Dscr.Bus_Name.Image, Socket.Udp);
         exception
            when Socket.Soc_Name_Not_Found =>
              raise Unknown_Bus;
@@ -926,7 +926,7 @@ package body Channels is
       Bus_Dscr.Subscribed := True;
       Bus_Dscr.Rece_Dscr.Open (Socket.Udp);
       Set_Dest_Bus (Bus_Dscr.Rece_Dscr);
-      Bus_Dscr.Rece_Dscr.Link_Service (Asu_Ts (Bus_Dscr.Bus_Name));
+      Bus_Dscr.Rece_Dscr.Link_Service (Bus_Dscr.Bus_Name.Image);
       Event_Mng.Add_Fd_Callback (Bus_Dscr.Rece_Dscr.Get_Fd,
                                  True, Loc_Read_Cb'Unrestricted_Access);
     end Subscribe;

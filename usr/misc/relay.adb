@@ -149,18 +149,18 @@ begin
   end;
 
   -- Subscribe and add destinations from file except ourself
-  My_Channel.Change_Channel_Name (Asu_Ts (Channel_Name));
+  My_Channel.Change_Channel_Name (Channel_Name.Image);
   My_Channel.Subscribe;
   begin
-    My_Channel.Add_Destinations (Asu_Ts (Channel_Name) & File_Name_Suffix);
+    My_Channel.Add_Destinations (Channel_Name.Image & File_Name_Suffix);
   exception
     when Channels.Unknown_Channel =>
-      Sys_Calls.Put_Line_Error ("Unknown channel " & Asu_Ts (Channel_Name));
+      Sys_Calls.Put_Line_Error ("Unknown channel " & Channel_Name.Image);
       Sys_Calls.Set_Error_Exit_Code;
       return;
     when Channels.File_Error =>
       Sys_Calls.Put_Line_Error ("Error processing destinations file "
-                              & Asu_Ts (Channel_Name)
+                              & Channel_Name.Image
                               & File_Name_Suffix);
       Sys_Calls.Set_Error_Exit_Code;
       return;

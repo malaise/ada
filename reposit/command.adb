@@ -73,13 +73,13 @@ package body Command is
     Len : Natural;
   begin
     if Flow.Kind = Str then
-      Asu.Append (Flow.Str, Loc_Line);
+      Flow.Str.Append (Loc_Line);
     else
-      Len := Asu.Length (Loc_Line);
+      Len := Loc_Line.Length;
       -- Remove trailing Line_Feed
       if Len /= 0
-      and then Asu.Element (Loc_Line, Len) = Text_Line.Line_Feed_Char then
-        Asu.Delete (Loc_Line, Len, Len);
+      and then Loc_Line.Element (Len) = Text_Line.Line_Feed_Char then
+        Loc_Line.Delete (Len, Len);
       end if;
       Flow.List.Insert (Loc_Line);
     end if;
@@ -121,14 +121,14 @@ package body Command is
     -- Read lines and store in Output/Error_Result
     loop
       Line := Flow.Get;
-      exit when Asu_Is_Null (Line);
+      exit when Line.Is_Null;
       -- Got at least an event
       Got := True;
       -- Apply policy to flow
       if Fd = Output_Fd then
         if Mix_Policy = None then
           -- Stdout -> Stdout
-          Sys_Calls.Put_Output (Asu_Ts (Line));
+          Sys_Calls.Put_Output (Line.Image);
         else
           -- Stdout -> Output
           Add_Flow (Output_Result.all, Line);
@@ -136,14 +136,14 @@ package body Command is
       else
         if Mix_Policy /= Both then
           -- Stderr -> Stderr
-          Sys_Calls.Put_Error (Asu_Ts (Line));
+          Sys_Calls.Put_Error (Line.Image);
         else
           -- Stderr -> Error
           Add_Flow (Error_Result.all, Line);
         end if;
       end if;
       if Debug then
-        Ada.Text_Io.Put_Line ("Command: Fd Cb got >" & Asu_Ts (Line) & "<");
+        Ada.Text_Io.Put_Line ("Command: Fd Cb got >" & Line.Image & "<");
       end if;
     end loop;
     Flow.Close;
@@ -212,9 +212,9 @@ package body Command is
       -- Extract substrings and concatenante with spaces
       Nb_Substr := Many_Strings.Nb (Cmd);
       for I in 1 .. Nb_Substr loop
-        Asu.Append (Str, Asu_Us'(Many_Strings.Nth (Cmd, I)));
+        Str.Append (Asu_Us'(Many_Strings.Nth (Cmd, I)));
         if I /= Nb_Substr then
-          Asu.Append (Str, " ");
+          Str.Append (" ");
         end if;
       end loop;
       Cmd_Line.Cat (Str);

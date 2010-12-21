@@ -13,13 +13,13 @@ package body Network is
   -- Set name of a node
   procedure Set_Name (Of_Node : in out Node_Type; Name : in String) is
   begin
-    Of_Node.Name := Asu_Tus (Name);
+    Of_Node.Name := Tus (Name);
   end Set_Name;
 
   -- Returns the name of a node
   function Get_Name (Of_Node : Node_Type) return String is
   begin
-    return Asu_Ts (Of_Node.Name);
+    return Of_Node.Name.Image;
   end Get_Name;
 
   -- Set data of a node

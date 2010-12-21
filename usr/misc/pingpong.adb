@@ -12,13 +12,13 @@ procedure Pingpong is
 
   -- Argument parsing
   Keys : constant Argument_Parser.The_Keys_Type := (
-    1 => ('h', Asu_Tus ("help"), False, False),
-    2 => ('i', Asu_Tus ("interface"), False, True),
-    3 => ('p', Asu_Tus ("period"), False, True),
-    4 => ('r', Asu_Tus ("reply"), False, False),
-    5 => ('s', Asu_Tus ("send"), False, False),
-    6 => ('a', Asu_Tus ("average"), False, False),
-    7 => ('d', Asu_Tus ("debug"), False, False));
+    1 => ('h', Tus ("help"), False, False),
+    2 => ('i', Tus ("interface"), False, True),
+    3 => ('p', Tus ("period"), False, True),
+    4 => ('r', Tus ("reply"), False, False),
+    5 => ('s', Tus ("send"), False, False),
+    6 => ('a', Tus ("average"), False, False),
+    7 => ('d', Tus ("debug"), False, False));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
   Soc : Socket.Socket_Dscr;
@@ -189,11 +189,11 @@ procedure Pingpong is
         Info_Acc.Nb_Samples := Info_Acc.Nb_Samples + 1;
         Delta_Time := Info_Acc.Average_Delta;
       end if;
-      Txt := Asu_Tus ("Average delta");
+      Txt := Tus ("Average delta");
     else
-      Txt := Asu_Tus ("Current delta");
+      Txt := Tus ("Current delta");
     end if;
-    Put (Asu_Ts (Txt) & " of " & Message.Host_Name (1 .. Message.Host_Name_Len)
+    Put (Txt.Image & " of " & Message.Host_Name (1 .. Message.Host_Name_Len)
          & " is " & Dur_Image (Delta_Time, 3, True));
     return False;
   end Call_Back;
@@ -307,10 +307,10 @@ begin
     begin
       Iface := (
           Kind => Tcp_Util.Host_Id_Spec,
-          Id => Socket.Host_Id_Of (Asu_Ts (Iface.Name)));
+          Id => Socket.Host_Id_Of (Iface.Name.Image));
     exception
       when Socket.Soc_Name_Not_Found =>
-        Error("Unknown interface name " & Asu_Ts (Iface.Name));
+        Error("Unknown interface name " & Iface.Name.Image);
       raise;
     end;
   end if;
@@ -336,10 +336,10 @@ begin
     -- Compute port num
     if Port.Kind /= Tcp_Util.Port_Num_Spec then
       begin
-        Port_Num := Socket.Port_Num_Of (Asu_Ts (Port.Name), Socket.Udp);
+        Port_Num := Socket.Port_Num_Of (Port.Name.Image, Socket.Udp);
       exception
         when Socket.Soc_Name_Not_Found =>
-          Error ("Unknown port name " & Asu_Ts (Port.Name));
+          Error ("Unknown port name " & Port.Name.Image);
           raise;
       end;
     else
@@ -358,10 +358,10 @@ begin
     -- Always set dest
     if Lan.Kind = Tcp_Util.Host_Name_Spec then
       begin
-        Soc.Set_Destination_Name_And_Port (True, Asu_Ts (Lan.Name), Port_Num);
+        Soc.Set_Destination_Name_And_Port (True, Lan.Name.Image, Port_Num);
       exception
         when Socket.Soc_Name_Not_Found =>
-          Error ("Unknown LAN name " & Asu_Ts (Lan.Name));
+          Error ("Unknown LAN name " & Lan.Name.Image);
           raise;
       end;
     else

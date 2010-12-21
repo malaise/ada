@@ -1,7 +1,7 @@
 -- More powerfull search and substitution in strings,
 --  based on regular expressions (extended, case sensitive and matching
 --  newline).
-with As.U; use As.U;
+with As.U.Utils; use As.U, As.U.Utils;
 with Regular_Expressions;
 package String_Mng.Regex is
 

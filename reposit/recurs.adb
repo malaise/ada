@@ -25,7 +25,7 @@ procedure Recurs (Name_Of_Dir : in Boolean := True;
       if Name_Of_Dir then
         My_Io.New_Line;
         My_Io.Put ("==> ");
-        My_Io.Put (Asu_Ts (Full_Curr_Name));
+        My_Io.Put (Full_Curr_Name.Image);
         My_Io.Put_Line (" <==");
       end if;
 
@@ -53,7 +53,7 @@ procedure Recurs (Name_Of_Dir : in Boolean := True;
         end if;
     end;
 
-    Full_Curr_Name := Asu_Tus (Directory.Get_Current);
+    Full_Curr_Name := Tus (Directory.Get_Current);
 
     -- Do current dir when not Leaves_Only
     if not Leaves_Only then
@@ -69,16 +69,16 @@ procedure Recurs (Name_Of_Dir : in Boolean := True;
 
     -- Go to next sub dir
     Nb_Sons := 0;
-    Dir_Dsc := Directory.Open (Asu_Ts (Full_Curr_Name));
+    Dir_Dsc := Directory.Open (Full_Curr_Name.Image);
     loop
       begin
-        New_Name := Asu_Tus (Directory.Next_Entry (Dir_Dsc));
+        New_Name := Tus (Directory.Next_Entry (Dir_Dsc));
       exception
         when Directory.End_Error =>
           exit;
       end;
       begin
-        Kind := Directory.File_Kind (Asu_Ts (New_Name));
+        Kind := Directory.File_Kind (New_Name.Image);
       exception
         when Directory.Name_Error | Directory.Access_Error =>
           -- A link to nowhere?
@@ -87,8 +87,8 @@ procedure Recurs (Name_Of_Dir : in Boolean := True;
       -- Follow link recursively
       if Follow_Links and then Kind = Directory.Link then
         begin
-          New_Name := Asu_Tus (Directory.Read_Link (Asu_Ts (New_Name), True));
-          Kind := Directory.File_Kind (Asu_Ts (New_Name));
+          New_Name := Tus (Directory.Read_Link (New_Name.Image, True));
+          Kind := Directory.File_Kind (New_Name.Image);
         exception
           when Directory.Name_Error | Directory.Access_Error =>
             -- A link to nowhere?
@@ -97,14 +97,14 @@ procedure Recurs (Name_Of_Dir : in Boolean := True;
       end if;
 
       if Kind = Directory.Dir
-      and then Asu_Ts (New_Name) /= Dot_Dir
-      and then Asu_Ts (New_Name) /= Dot_Dot_Dir then
+      and then New_Name.Image /= Dot_Dir
+      and then New_Name.Image /= Dot_Dot_Dir then
         -- Restart with next son if not First_Level_Only
         if Current_Level /= 1 or else not First_Level_Only then
           Current_Level := Current_Level + 1;
-          Explore (Asu_Ts (New_Name));
+          Explore (New_Name.Image);
           Current_Level := Current_Level - 1;
-          Directory.Change_Current (Asu_Ts (Full_Curr_Name));
+          Directory.Change_Current (Full_Curr_Name.Image);
         end if;
         Nb_Sons := Nb_Sons + 1;
       end if;
@@ -124,7 +124,7 @@ procedure Recurs (Name_Of_Dir : in Boolean := True;
     when Abort_Explore =>
       if Current_Level = 0 then
         -- Back to start directory
-        Directory.Change_Current (Asu_Ts (Full_Curr_Name));
+        Directory.Change_Current (Full_Curr_Name.Image);
       else
         Current_Level := Current_Level - 1;
         raise;

@@ -44,7 +44,7 @@ package body Byte_To_Unicode is
       Child := Ctx.Get_Child (Node, I+1);
       -- Get code, first attribute
       Attr := Ctx.Get_Attribute (Child, 1);
-      Code := Value (Asu_Ts (Attr.Value));
+      Code := Value (Attr.Value.Image);
       if Set(Code) then
         -- This Code already set
         raise Parse_Error;

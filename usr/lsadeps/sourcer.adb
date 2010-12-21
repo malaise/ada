@@ -4,8 +4,6 @@ with Basic_Proc, Directory, Sys_Calls, Text_Char, Ada_Parser, String_Mng,
 with Debug;
 package body Sourcer is
 
-  use type Asu_Us;
-
   -- Operations for Unique_list managmeent
   subtype Src_Code is String (1 .. 2);
   Src_Codes : constant array (Src_Kind_List) of Src_Code := ("US", "UB", "SU");
@@ -20,7 +18,7 @@ package body Sourcer is
   end "=";
   function Image (Element : Src_Dscr) return String is
   begin
-    return Asu_Ts (Element.Unit) & "#" & Src_Codes(Element.Kind);
+    return Element.Unit.Image & "#" & Src_Codes(Element.Kind);
   end Image;
 
   -- Dump a unit dscr
@@ -29,9 +27,9 @@ package body Sourcer is
     Basic_Proc.Put_Output ("  " & Image (Dscr));
     Basic_Proc.Put_Output (", standalone: "
            & Mixed_Str (Dscr.Standalone'Img));
-    Basic_Proc.Put_Line_Output (", parent: " & Asu_Ts (Dscr.Parent));
-    Basic_Proc.Put_Line_Output ("  withed: " & Asu_Ts (Dscr.Witheds));
-    Basic_Proc.Put_Line_Output ("  used  : " & Asu_Ts (Dscr.Useds));
+    Basic_Proc.Put_Line_Output (", parent: " & Dscr.Parent.Image);
+    Basic_Proc.Put_Line_Output ("  withed: " & Dscr.Witheds.Image);
+    Basic_Proc.Put_Line_Output ("  used  : " & Dscr.Useds.Image);
   end Dump;
 
   -- Report an error and raise exception
@@ -90,20 +88,20 @@ package body Sourcer is
   begin
     -- Store local or full file name
     if Dir = "." then
-      Dscr.File := Asu_Tus (File);
+      Dscr.File := Tus (File);
     else
-      Dscr.File := Asu_Tus (Directory.Build_File_Name (Dir, File, ""));
+      Dscr.File := Tus (Directory.Build_File_Name (Dir, File, ""));
     end if;
 
     -- Set Kind according to file name, check if standalone
-    Root_File := Asu_Tus (Directory.Build_File_Name (Dir,
+    Root_File := Tus (Directory.Build_File_Name (Dir,
                             Directory.File_Prefix (File), ""));
     if Directory.File_Suffix (File) = ".ads" then
       Dscr.Kind := Unit_Spec;
-      Dscr.Standalone := not File_Exists (Asu_Ts (Root_File), "adb");
+      Dscr.Standalone := not File_Exists (Root_File.Image, "adb");
     else
       Dscr.Kind := Unit_Body;
-      Dscr.Standalone := not File_Exists (Asu_Ts (Root_File), "ads");
+      Dscr.Standalone := not File_Exists (Root_File.Image, "ads");
     end if;
 
     -- Store Unit and parent
@@ -111,29 +109,29 @@ package body Sourcer is
     Minus := String_Mng.Locate (File, "-", Forward => False);
     if Minus = 0 then
       Dscr.Parent := Asu_Null;
-      Dscr.Unit := Asu_Tus (Directory.File_Prefix (File));
+      Dscr.Unit := Tus (Directory.File_Prefix (File));
     else
       -- '-' indicates either a child unit or a subunit
       -- Parsing "separate" will identify subunits
       -- Full unit name (parent.unit) without suffix
-      Dscr.Parent := Asu_Tus (Mixed_Str (
+      Dscr.Parent := Tus (Mixed_Str (
          String_Mng.Replace (File(File'First .. Minus - 1), "-", ".")));
       Dscr.Unit := Dscr.Parent & "."
                & Directory.File_Prefix (File(Minus+1 .. File'Last));
     end if;
-    Dscr.Unit := Asu_Tus (Mixed_Str (Asu_Ts (Dscr.Unit)));
+    Dscr.Unit := Tus (Mixed_Str (Dscr.Unit.Image));
     Dscr.Witheds := Asu_Null;
 
     if Debug.Is_Set then
-      Basic_Proc.Put_Line_Output ("Parsing file " & Asu_Ts (Dscr.File));
+      Basic_Proc.Put_Line_Output ("Parsing file " & Dscr.File.Image);
     end if;
 
     -- Open
     begin
-      Fd := Sys_Calls.Open (Asu_Ts (Dscr.File), Sys_Calls.In_File);
+      Fd := Sys_Calls.Open (Dscr.File.Image, Sys_Calls.In_File);
     exception
       when Sys_Calls.Name_Error =>
-        Error ("Cannot open file " & Asu_Ts (Dscr.File));
+        Error ("Cannot open file " & Dscr.File.Image);
     end;
     Txt.Open (Fd);
 
@@ -142,17 +140,17 @@ package body Sourcer is
       -- Get next keywork or identifier
       Next_Word (Txt, Word, Lexic);
       if Lexic = Ada_Parser.Reserved_Word then
-        if Asu_Ts (Word) = "with" then
+        if Word.Image = "with" then
           In_With := True;
-        elsif Asu_Ts (Word) = "use" then
+        elsif Word.Image = "use" then
           In_Use := True;
-        elsif Asu_Ts (Word) = "procedure"
-        or else Asu_Ts (Word) = "function"
-        or else Asu_Ts (Word) = "package"
-        or else Asu_Ts (Word) = "generic" then
+        elsif Word.Image = "procedure"
+        or else Word.Image = "function"
+        or else Word.Image = "package"
+        or else Word.Image = "generic" then
           -- End of context clause of unit (or child)
           exit;
-        elsif Asu_Ts (Word) = "separate" then
+        elsif Word.Image = "separate" then
           -- End of context clause of subunit
           -- Parsing of file name must have led to child body
           if Dscr.Kind /= Unit_Body
@@ -165,37 +163,37 @@ package body Sourcer is
         -- Skip other keywords
 
       elsif Lexic = Ada_Parser.Delimiter then
-        Prev_Dot := Asu_Ts (Word) = ".";
-        if Asu_Ts (Word) = ";" then
+        Prev_Dot := Word.Image = ".";
+        if Word.Image = ";" then
           In_With := False;
           In_Use := False;
         end if;
       elsif In_With then
         -- Identifier in "with" statement, append in list of withed
         if Prev_Dot then
-          Asu.Append (Dscr.Witheds, ".");
+          Dscr.Witheds.Append (".");
         else
-          Asu.Append (Dscr.Witheds, Separator);
+          Dscr.Witheds.Append (Separator);
         end if;
-        Asu.Append (Dscr.Witheds, Word);
+        Dscr.Witheds.Append (Word);
       elsif In_Use then
         -- Identifier in "use" statement, append in list of withed
         if Prev_Dot then
-          Asu.Append (Dscr.Useds, ".");
+          Dscr.Useds.Append (".");
         else
-          Asu.Append (Dscr.Useds, Separator);
+          Dscr.Useds.Append (Separator);
         end if;
-        Asu.Append (Dscr.Useds, Word);
+        Dscr.Useds.Append (Word);
       end if;
       -- Skip other (used) keywords
     end loop;
 
     -- Done: store and close
-    if Dscr.Witheds /= Asu_Null then
-      Asu.Append (Dscr.Witheds, Separator);
+    if not Dscr.Witheds.Is_Null then
+      Dscr.Witheds.Append (Separator);
     end if;
-    if Dscr.Useds /= Asu_Null then
-      Asu.Append (Dscr.Useds, Separator);
+    if not Dscr.Useds.Is_Null then
+      Dscr.Witheds.Append (Separator);
     end if;
     -- Drop new version of this unit if one already exists
     List.Insert_If_New (Dscr);
@@ -209,7 +207,7 @@ package body Sourcer is
   exception
     when Err:others =>
       Error ("Exception " & Ada.Exceptions.Exception_Name (Err)
-                 & " raised while parsing file " & Asu_Ts (Dscr.File));
+                 & " raised while parsing file " & Dscr.File.Image);
   end Parse_File;
 
   -- Parse the files of a dir
@@ -229,7 +227,7 @@ package body Sourcer is
     loop
       -- Get entry
       begin
-        File_Name := Asu_Tus (Directory.Next_Entry (Dir_Desc));
+        File_Name := Tus (Directory.Next_Entry (Dir_Desc));
       exception
         when Directory.End_Error =>
           -- End of this dir
@@ -237,12 +235,12 @@ package body Sourcer is
       end;
       -- File and matches ada source?
       if Directory.File_Kind (
-             Directory.Build_File_Name (Dir, Asu_Ts (File_Name), "") )
+             Directory.Build_File_Name (Dir, File_Name.Image, "") )
          = Directory.File
-      and then (Directory.File_Match (Asu_Ts (File_Name), "*.ads")
-        or else Directory.File_Match (Asu_Ts (File_Name), "*.adb") ) then
+      and then (Directory.File_Match (File_Name.Image, "*.ads")
+        or else Directory.File_Match (File_Name.Image, "*.adb") ) then
         -- Yes, process it
-        Parse_File (Dir, Asu_Ts (File_Name));
+        Parse_File (Dir, File_Name.Image);
       end if;
     end loop;
 
@@ -304,8 +302,8 @@ package body Sourcer is
           when Src_List_Mng.Not_In_List =>
             Error ("Unit " & Image (Dscr) & " has no counterpart");
         end;
-        if Directory.Dirname (Asu_Ts (Dscr.File))
-        /= Directory.Dirname (Asu_Ts (Crit.File)) then
+        if Directory.Dirname (Dscr.File.Image)
+        /= Directory.Dirname (Crit.File.Image) then
           Error ("Unit " & Image (Dscr)
                      & " not in same dir as its counterpart");
         end if;
@@ -338,17 +336,17 @@ package body Sourcer is
           when Src_List_Mng.Not_In_List =>
             Error ("Unit " & Image (Dscr) & " has no parent");
         end;
-        if Directory.Dirname (Asu_Ts (Dscr.File))
-        /= Directory.Dirname (Asu_Ts (Crit.File)) then
+        if Directory.Dirname (Dscr.File.Image)
+        /= Directory.Dirname (Crit.File.Image) then
           Error ("Unit " & Image (Dscr)
                      & " not in same dir as its parent");
         end if;
         -- Update list of subunits of parent
         if Dscr.Kind = Subunit then
-          if Crit.Subunits = Asu_Null then
-            Crit.Subunits := Asu_Tus (Separator & "");
+          if Crit.Subunits.Is_Null then
+            Crit.Subunits := Tus (Separator & "");
           end if;
-          Asu.Append (Crit.Subunits, Dscr.Unit & Separator);
+          Crit.Subunits.Append (Dscr.Unit & Separator);
           List.Insert (Crit);
           if Debug.Is_Set then
             Basic_Proc.Put_Line_Output ("Adding subunit " & Image (Dscr)
@@ -368,7 +366,7 @@ package body Sourcer is
   -- Does a unit name contain a '.'
   function Has_Dot (Unit : in Asu_Us) return Boolean is
   begin
-    return String_Mng.Locate (Asu_Ts (Unit), ".") /= 0;
+    return String_Mng.Locate (Unit.Image, ".") /= 0;
   end Has_Dot;
 
   -- Get parent of Dscr (body or subunit)

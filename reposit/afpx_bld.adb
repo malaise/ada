@@ -1,5 +1,5 @@
 with Ada.Text_Io, Ada.Direct_Io;
-with As.U; use As.U;
+with As.U;
 with Generic_Con_Io, Con_Io, Normal, Argument,
      Mixed_Str, Basic_Proc, Xml_Parser,
      Ada_Words, Parser, String_Mng, Computer, Int_Image,
@@ -17,9 +17,10 @@ procedure Afpx_Bld is
   Ctx : Xp.Ctx_Type;
 
   -- Unbounded strings
+  subtype Asu_Us is As.U.Asu_Us;
   function "&" (Str : String; Us : Asu_Us) return String is
   begin
-    return Str & Asu_Ts (Us);
+    return Str & Us.Image;
   end "&";
 
   -- Inputs name
@@ -109,7 +110,7 @@ procedure Afpx_Bld is
   function Match (Str : Asu_Us; Keyword : String) return Boolean is
   begin
     -- Maybe one day we allow uppercase and lowercase keywords?
-    return Asu_Ts (Str) = Keyword;
+    return Str.Image = Keyword;
   end Match;
 
   procedure File_Error (Node : in Xp.Node_Type; Msg : in String) is
@@ -117,7 +118,7 @@ procedure Afpx_Bld is
     Basic_Proc.Put_Error ("Error: " & Msg);
     Basic_Proc.Put_Line_Error (
           " at line" & Positive'Image (Ctx.Get_Line_No (Node))
-        & " of file " & Asu_Ts (List_File_Name));
+        & " of file " & List_File_Name.Image);
     raise File_Syntax_Error;
   end File_Error;
 
@@ -220,7 +221,7 @@ procedure Afpx_Bld is
             File_Error (Root, "Duplicated height " & Attrs(I).Name);
           end if;
           Height := True;
-          P := Computer.Compute (Asu_Ts (Attrs(I).Value));
+          P := Computer.Compute (Attrs(I).Value.Image);
           Size.Row := Con_Io.Full_Row_Range(P - 1);
           -- Add constant persistent
           Add_Variable (Root, "Screen.Height", Geo_Image (Size.Row + 1), False, True);
@@ -229,7 +230,7 @@ procedure Afpx_Bld is
             File_Error (Root, "Duplicated width " & Attrs(I).Name);
           end if;
           Width := True;
-          P := Computer.Compute (Asu_Ts (Attrs(I).Value));
+          P := Computer.Compute (Attrs(I).Value.Image);
           Size.Col := Con_Io.Full_Col_Range(P - 1);
           -- Add constant persistent
           Add_Variable (Root, "Screen.Width", Geo_Image (Size.Col + 1), False, True);
@@ -242,7 +243,7 @@ procedure Afpx_Bld is
         raise;
       when Computer.Unknown_Variable =>
         File_Error (Root, "Unknown variable when evaluating "
-                        & Asu_Ts (Err_Val));
+                        & Err_Val.Image);
       when others =>
         File_Error (Root, "Invalid size");
         raise File_Syntax_Error;
@@ -275,13 +276,13 @@ procedure Afpx_Bld is
     begin
       if Match (Attrs(1).Name, "Name")
       and then Match (Attrs(2).Name, "Value") then
-        Add_Variable (Node, Asu_Ts (Attrs(1).Value),
-                            Asu_Ts (Attrs(2).Value),
+        Add_Variable (Node, Attrs(1).Value.Image,
+                            Attrs(2).Value.Image,
                             True, Persistent);
       elsif Match (Attrs(1).Name, "Value")
       and then Match (Attrs(2).Name, "Name") then
-        Add_Variable (Node, Asu_Ts (Attrs(2).Value),
-                            Asu_Ts (Attrs(1).Value),
+        Add_Variable (Node, Attrs(2).Value.Image,
+                            Attrs(1).Value.Image,
                             True, Persistent);
       else
         File_Error (Node,
@@ -324,7 +325,7 @@ procedure Afpx_Bld is
     for I in Generic_Con_Io.Effective_Colors'Range loop
       Add_Variable (Node,
                     Mixed_Str (Generic_Con_Io.Effective_Colors'Image (I)),
-                    Asu_Ts (Color_Defs(I)), False, True);
+                    Color_Defs(I).Image, False, True);
     end loop;
     Add_Variable (Node, "Default_Background", Color_Image (Default_Background),
                   False, True);
@@ -343,15 +344,15 @@ procedure Afpx_Bld is
       if Ctx.Get_Name (Child) = "Color_Definition" then
         -- Color_Definition: attributes Id and Color
         Attrs := Ctx.Get_Attributes (Child);
-        if Asu_Ts (Attrs(1).Name) = "Id" then
+        if Attrs(1).Name.Image = "Id" then
           Id := Attrs(1).Value;
           Color := Attrs(2).Value;
         else
           Color := Attrs(1).Value;
           Id := Attrs(2).Value;
         end if;
-        Index := Generic_Con_Io.Effective_Colors'Value(Asu_Ts (Id));
-        Color_Defs(Index) := Asu_Tus (Computer.Eval (Asu_Ts (Color)));
+        Index := Generic_Con_Io.Effective_Colors'Value(Id.Image);
+        Color_Defs(Index) := As.U.Tus (Computer.Eval (Color.Image));
       else
         -- Default_Background: attribute Color
         -- Last child
@@ -362,9 +363,9 @@ procedure Afpx_Bld is
 
     Color_Names := Afpx_Typ.To_Names (Color_Defs);
     Generic_Con_Io.Set_Colors (Color_Defs);
-    if not Asu_Is_Null (Default_Background_Name) then
-      Default_Background := Con_Io.Color_Of (Computer.Eval (Asu_Ts (
-                                 Default_Background_Name)));
+    if not Default_Background_Name.Is_Null then
+      Default_Background := Con_Io.Color_Of (Computer.Eval (
+                                 Default_Background_Name.Image));
     end if;
     Load_Color_Names (Node);
   exception
@@ -408,7 +409,7 @@ procedure Afpx_Bld is
           Up := True;
           Nb_Verti := Nb_Verti + 1;
           Fields(Fn).Upper_Left.Row :=
-               Computer.Compute (Asu_Ts (Attrs(I).Value));
+               Computer.Compute (Attrs(I).Value.Image);
           Add_Geo ("Up", Fields(Fn).Upper_Left.Row);
         elsif Match (Attrs(I).Name, "Left") then
           if Left then
@@ -417,7 +418,7 @@ procedure Afpx_Bld is
           Left := True;
           Nb_Horiz := Nb_Horiz + 1;
           Fields(Fn).Upper_Left.Col :=
-               Computer.Compute (Asu_Ts (Attrs(I).Value));
+               Computer.Compute (Attrs(I).Value.Image);
           Add_Geo ("Left", Fields(Fn).Upper_Left.Col);
         elsif Match (Attrs(I).Name, "Low") then
           if Low then
@@ -426,7 +427,7 @@ procedure Afpx_Bld is
           Low := True;
           Nb_Verti := Nb_Verti + 1;
           Fields(Fn).Lower_Right.Row :=
-               Computer.Compute (Asu_Ts (Attrs(I).Value));
+               Computer.Compute (Attrs(I).Value.Image);
           Add_Geo ("Low", Fields(Fn).Lower_Right.Row);
         elsif Match (Attrs(I).Name, "Right") then
           if Right then
@@ -435,7 +436,7 @@ procedure Afpx_Bld is
           Right := True;
           Nb_Horiz := Nb_Horiz + 1;
           Fields(Fn).Lower_Right.Col :=
-               Computer.Compute (Asu_Ts (Attrs(I).Value));
+               Computer.Compute (Attrs(I).Value.Image);
           Add_Geo ("Right", Fields(Fn).Lower_Right.Col);
         elsif Match (Attrs(I).Name, "Height") then
           if Height then
@@ -444,7 +445,7 @@ procedure Afpx_Bld is
           Height := True;
           Nb_Verti := Nb_Verti + 1;
           Fields(Fn).Height :=
-               Computer.Compute (Asu_Ts (Attrs(I).Value));
+               Computer.Compute (Attrs(I).Value.Image);
           Add_Geo ("Height", Fields(Fn).Height);
         elsif Match (Attrs(I).Name, "Width") then
           if Width then
@@ -453,7 +454,7 @@ procedure Afpx_Bld is
           Width := True;
           Nb_Horiz := Nb_Horiz + 1;
           Fields(Fn).Width :=
-               Computer.Compute (Asu_Ts (Attrs(I).Value));
+               Computer.Compute (Attrs(I).Value.Image);
           Add_Geo ("Width", Fields(Fn).Width);
         else
           File_Error (Node, "Invalid geometry " & Attrs(I).Name);
@@ -464,7 +465,7 @@ procedure Afpx_Bld is
         raise;
       when Computer.Unknown_Variable =>
         File_Error (Node, "Unknown variable when evaluating "
-                        & Asu_Ts (Err_Val));
+                        & Err_Val.Image);
       when others =>
         File_Error (Node, "Invalid geometry");
     end;
@@ -550,7 +551,7 @@ procedure Afpx_Bld is
           end if;
           Foreground := True;
           Fields(Fn).Colors.Foreground := Con_Io.Color_Of (
-                 Computer.Eval (Asu_Ts (Attrs(I).Value)));
+                 Computer.Eval (Attrs(I).Value.Image));
           Add_Variable (Node, Name_Of (Fn) & "." & "Foreground",
               Color_Image (Fields(Fn).Colors.Foreground), False, False);
         elsif Match (Attrs(I).Name, "Background") then
@@ -559,7 +560,7 @@ procedure Afpx_Bld is
           end if;
           Background := True;
           Fields(Fn).Colors.Background := Con_Io.Color_Of (
-                 Computer.Eval (Asu_Ts (Attrs(I).Value)));
+                 Computer.Eval (Attrs(I).Value.Image));
           Add_Variable (Node, Name_Of (Fn) & "." & "Background",
               Color_Image (Fields(Fn).Colors.Background), False, False);
         elsif Match (Attrs(I).Name, "Selected") then
@@ -568,7 +569,7 @@ procedure Afpx_Bld is
           end if;
           Selected := True;
           Fields(Fn).Colors.Selected := Con_Io.Color_Of (
-                 Computer.Eval (Asu_Ts (Attrs(I).Value)));
+                 Computer.Eval (Attrs(I).Value.Image));
           Add_Variable (Node, Name_Of (Fn) & "." & "Selected",
               Color_Image (Fields(Fn).Colors.Selected), False, False);
         else
@@ -609,7 +610,7 @@ procedure Afpx_Bld is
         raise;
       when Computer.Unknown_Variable =>
         File_Error (Node, "Unknown variable when evaluating "
-                        & Asu_Ts (Err_Val));
+                        & Err_Val.Image);
       when others =>
         File_Error (Node, "Invalid colors specification");
     end;
@@ -660,7 +661,7 @@ procedure Afpx_Bld is
         end if;
         Num := True;
         begin
-          if Afpx_Typ.Field_Range'Value(Asu_Ts (Attrs(I).Value)) /= No then
+          if Afpx_Typ.Field_Range'Value(Attrs(I).Value.Image) /= No then
             raise Constraint_Error;
           end if;
         exception
@@ -679,7 +680,7 @@ procedure Afpx_Bld is
           File_Error (Node, "Invalid field kind. Put, Get or Button expected");
         end if;
         Fields(No).Kind := Afpx_Typ.Field_Kind_List'Value(
-                                  Asu_Ts (Attrs(I).Value));
+                                  Attrs(I).Value.Image);
       else
         File_Error (Node, "Invalid field attribute " & Attrs(I).Name);
       end if;
@@ -726,14 +727,14 @@ procedure Afpx_Bld is
             end if;
             Row := True;
             Finit_Square.Row :=
-             Computer.Compute(Asu_Ts (Child_Attrs(I).Value));
+             Computer.Compute(Child_Attrs(I).Value.Image);
           elsif Match (Child_Attrs(I).Name, "Col") then
             if Col then
               File_Error (Child, "Duplicated coordinate");
             end if;
             Col := True;
             Finit_Square.Col :=
-             Computer.Compute(Asu_Ts (Child_Attrs(I).Value));
+             Computer.Compute(Child_Attrs(I).Value.Image);
           elsif Match (Child_Attrs(I).Name, "xml:space") then
             -- Discard
             null;
@@ -750,7 +751,7 @@ procedure Afpx_Bld is
           raise;
         when Computer.Unknown_Variable =>
           File_Error (Node, "Unknown variable when evaluating "
-                          & Asu_Ts (Err_Val));
+                          & Err_Val.Image);
         when others =>
           File_Error (Child, "Invalid init row or col");
       end;
@@ -781,10 +782,10 @@ procedure Afpx_Bld is
           if Child_Child.Kind /= Xp.Text then
             File_Error (Child_Child, "Invalid init string");
           end if;
-          Finit_String := Asu_Tus (Computer.Eval (
-                   Asu_Ts (Ctx.Get_Text (Child_Child))));
+          Finit_String := As.U.Tus (Computer.Eval (
+                   Ctx.Get_Text (Child_Child)));
           -- Length in term of put positions (also in term of wide characters)
-          Finit_Length := Language.Put_Length (Asu_Ts (Finit_String));
+          Finit_Length := Language.Put_Length (Finit_String.Image);
           -- Check Finit col + string length compatible with field width
           if not Afpx_Typ.In_Field (Fields(No),
              (Finit_Square.Row, Finit_Square.Col + Finit_Length - 1)) then
@@ -799,7 +800,7 @@ procedure Afpx_Bld is
          + Finit_Square.Row * Fields(No).Width
          + Finit_Square.Col;
         Init_Str (Finit_Index .. Finit_Index + Finit_Length - 1) :=
-          Language.String_To_Unicode (Asu_Ts (Finit_String));
+          Language.String_To_Unicode (Finit_String.Image);
       end if;
     end loop;
   end Loc_Load_Field;
@@ -853,7 +854,7 @@ procedure Afpx_Bld is
         Num := True;
         begin
           Dscr_No := Afpx_Typ.Descriptor_Range'Value (
-                      Asu_Ts (Ctx.Get_Attribute (Node, 1).Value));
+                      Ctx.Get_Attribute (Node, 1).Value.Image);
         exception
           when others =>
             File_Error (Node, "Invalid descriptor num");
@@ -873,11 +874,11 @@ procedure Afpx_Bld is
         Background := True;
         begin
           Descriptors(Dscr_No).Background :=
-              Con_Io.Color_Of (Computer.Eval (Asu_Ts (Attrs(I).Value)));
+              Con_Io.Color_Of (Computer.Eval (Attrs(I).Value.Image));
         exception
           when Computer.Unknown_Variable =>
             File_Error (Node, "Unknown variable when evaluating "
-                            & Asu_Ts (Attrs(I).Value));
+                            & Attrs(I).Value.Image);
           when others =>
             File_Error (Node, "Invalid background specification");
         end;
@@ -955,33 +956,33 @@ procedure Afpx_Bld is
     if not Check_Only then
       begin
         Dscr_Io.Open (Dscr_File, Dscr_Io.In_File,
-                      Asu_Ts(Afpx_Typ.Dest_Path) & Afpx_Typ.Dscr_File_Name);
+                      Afpx_Typ.Dest_Path.Image & Afpx_Typ.Dscr_File_Name);
         Dscr_Io.Delete (Dscr_File);
       exception
         when Dscr_Io.Name_Error => null;
       end;
       Dscr_Io.Create (Dscr_File, Dscr_Io.Out_File,
-                      Asu_Ts(Afpx_Typ.Dest_Path) & Afpx_Typ.Dscr_File_Name);
+                      Afpx_Typ.Dest_Path.Image & Afpx_Typ.Dscr_File_Name);
 
       begin
         Fld_Io.Open (Fld_File, Fld_Io.In_File,
-                     Asu_Ts(Afpx_Typ.Dest_Path) & Afpx_Typ.Fld_File_Name);
+                     Afpx_Typ.Dest_Path.Image & Afpx_Typ.Fld_File_Name);
         Fld_Io.Delete (Fld_File);
       exception
         when Fld_Io.Name_Error => null;
       end;
       Fld_Io.Create (Fld_File, Fld_Io.Out_File,
-                     Asu_Ts(Afpx_Typ.Dest_Path) & Afpx_Typ.Fld_File_Name);
+                     Afpx_Typ.Dest_Path.Image & Afpx_Typ.Fld_File_Name);
 
       begin
         Init_Io.Open (Init_File, Init_Io.In_File,
-                      Asu_Ts(Afpx_Typ.Dest_Path) & Afpx_Typ.Init_File_Name);
+                      Afpx_Typ.Dest_Path.Image & Afpx_Typ.Init_File_Name);
         Init_Io.Delete (Init_File);
       exception
         when Init_Io.Name_Error => null;
       end;
       Init_Io.Create (Init_File, Init_Io.Out_File,
-                      Asu_Ts(Afpx_Typ.Dest_Path) & Afpx_Typ.Init_File_Name);
+                      Afpx_Typ.Dest_Path.Image & Afpx_Typ.Init_File_Name);
     end if;
 
     -- Parse size
@@ -1074,28 +1075,28 @@ begin
   Expected_Args := 0;
   begin
     Argument.Get_Parameter (List_File_Name, Param_Key => "l");
-    if Asu_Is_Null (List_File_Name) then
+    if List_File_Name.Is_Null then
       raise Argument_Error;
     end if;
     -- Argument found
     Expected_Args := Expected_Args + 1;
   exception
     when Argument.Argument_Not_Found =>
-      List_File_Name := Asu_Tus (Default_List_File_Name);
+      List_File_Name := As.U.Tus (Default_List_File_Name);
     when others =>
       raise Argument_Error;
   end;
 
   begin
     Argument.Get_Parameter (Afpx_Typ.Dest_Path, Param_Key => "d");
-    if Asu_Is_Null (Afpx_Typ.Dest_Path) then
+    if Afpx_Typ.Dest_Path.Is_Null then
       raise Argument_Error;
     end if;
     -- Argument found
     Expected_Args := Expected_Args + 1;
   exception
     when Argument.Argument_Not_Found =>
-      Afpx_Typ.Dest_Path := Asu_Tus (".");
+      Afpx_Typ.Dest_Path := As.U.Tus (".");
     when others =>
       raise Argument_Error;
   end;
@@ -1104,16 +1105,16 @@ begin
     raise Argument_Error;
   end if;
 
-  Ada.Text_Io.Put_Line ("Reading " & Asu_Ts(List_File_Name));
-  Ada.Text_Io.Put_Line ("Writing in " & Asu_Ts(Afpx_Typ.Dest_Path));
-  Asu.Append (Afpx_Typ.Dest_Path, "/");
+  Ada.Text_Io.Put_Line ("Reading " & List_File_Name.Image);
+  Ada.Text_Io.Put_Line ("Writing in " & Afpx_Typ.Dest_Path.Image);
+  Afpx_Typ.Dest_Path.Append ("/");
 
   -- First check
   Ada.Text_Io.Put_Line ("Parsing:");
   declare
     Parse_Ok : Boolean;
   begin
-    Ctx.Parse (Asu_Ts(List_File_Name), Parse_Ok);
+    Ctx.Parse (List_File_Name.Image, Parse_Ok);
     if not Parse_Ok then
       Basic_Proc.Put_Line_Error (Ctx.Get_Parse_Error_Message);
       raise File_Syntax_Error;
@@ -1122,7 +1123,7 @@ begin
   exception
     when Xp.File_Error =>
       Basic_Proc.Put_Line_Error ("Error accessing file "
-                            & Asu_Ts(List_File_Name));
+                            & List_File_Name.Image);
       raise File_Not_Found;
   end;
 

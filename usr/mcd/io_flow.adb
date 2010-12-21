@@ -74,12 +74,12 @@ package body Io_Flow is
         raise Init_Error;
       end if;
       Argument.Get_Parameter (Fifo_Name, 1, "f");
-      if Asu_Is_Null (Fifo_Name) then
+      if Fifo_Name.Is_Null then
         Async_Stdin.Put_Line_Err ("Missing fifo name.");
         raise Init_Error;
       end if;
       if Debug.Debug_Level_Array(Debug.Flow) then
-        Async_Stdin.Put_Line_Err ("Flow: Init on fifo " & Asu_Ts (Fifo_Name));
+        Async_Stdin.Put_Line_Err ("Flow: Init on fifo " & Fifo_Name.Image);
       end if;
       Open_Fifo (True);
       Io_Mode := Fifo;
@@ -184,11 +184,11 @@ package body Io_Flow is
         -- Get next line
         Input_Data := Input_Flow.Get;
         -- End of flow when got an empty line
-        Len := Asu.Length (Input_Data);
+        Len := Input_Data.Length;
         exit when Len = 0;
         -- Remove trailing Line_Feed
-        if Asu.Element (Input_Data, Len) = Text_Line.Line_Feed_Char then
-          Asu.Delete (Input_Data, Len, Len);
+        if Input_Data.Element (Len) = Text_Line.Line_Feed_Char then
+          Input_Data.Delete (Len, Len);
           Len := Len - 1;
         end if;
         -- This line is Ok if not empty
@@ -204,7 +204,7 @@ package body Io_Flow is
         Evt := Event_Mng.Wait (Event_Mng.Infinite_Ms);
 
         if Evt = Event_Mng.Fd_Event
-        and then not Asu_Is_Null (Input_Data) then
+        and then not Input_Data.Is_Null then
           -- New string
           exit;
         elsif Evt = Event_Mng.Signal_Event then
@@ -236,7 +236,7 @@ package body Io_Flow is
         null;
     end case;
     if Debug.Debug_Level_Array(Debug.Flow) then
-      Async_Stdin.Put_Line_Err ("Flow: Next_Line -> " & Asu_Ts (Str));
+      Async_Stdin.Put_Line_Err ("Flow: Next_Line -> " & Str.Image);
     end if;
   end Next_Line;
 
@@ -414,7 +414,7 @@ package body Io_Flow is
       return;
     end if;
     -- Add this chunk
-    Asu.Append (Tmp_Data, Message(1 .. Length));
+    Tmp_Data.Append (Message(1 .. Length));
     if      Message(Length) = Ada.Characters.Latin_1.Cr
     or else Message(Length) = Ada.Characters.Latin_1.Lf then
       -- Validate the overall string
@@ -424,7 +424,7 @@ package body Io_Flow is
       Mcd_Fifos.Activate (Client_Id, False);
       if Debug.Debug_Level_Array(Debug.Flow) then
         Async_Stdin.Put_Line_Err ("Flow: Fifo_Rece_Cb set >"
-                             & Asu_Ts (Input_Data) & "<");
+                             & Input_Data.Image & "<");
       end if;
     end if;
   end Fifo_Rece_Cb;
@@ -432,9 +432,9 @@ package body Io_Flow is
   procedure Open_Fifo (Active : in Boolean) is
   begin
     if Debug.Debug_Level_Array(Debug.Flow) then
-      Async_Stdin.Put_Line_Err ("Flow: Opening fifo " & Asu_Ts (Fifo_Name));
+      Async_Stdin.Put_Line_Err ("Flow: Opening fifo " & Fifo_Name.Image);
     end if;
-    Acc_Id := Mcd_Fifos.Open (Asu_Ts (Fifo_Name),
+    Acc_Id := Mcd_Fifos.Open (Fifo_Name.Image,
                               False,
                               Fifo_Conn_Cb'Access,
                               Fifo_Rece_Cb'Access,
@@ -462,16 +462,16 @@ package body Io_Flow is
   begin
     if Str = "" then
       -- Error or end
-      Input_Data := Asu_Tus (Str);
+      Input_Data := Tus (Str);
       return True;
     else
-      Input_Data := Asu_Tus (Str);
+      Input_Data := Tus (Str);
     end if;
     -- Prevent overwritting of Input_Data by freezing Stdin
     Async_Stdin.Activate (False);
     if Debug.Debug_Level_Array(Debug.Flow) then
       Async_Stdin.Put_Line_Err ("Flow: Stdin_Cb set >"
-                           & Asu_Ts (Input_Data) & "<");
+                           & Input_Data.Image & "<");
     end if;
     return True;
   end Stdin_Cb;
@@ -543,7 +543,7 @@ package body Io_Flow is
       return False;
     end if;
     -- Add this chunk
-    Asu.Append (Tmp_Data, Message(1 .. Length));
+    Tmp_Data.Append (Message(1 .. Length));
     if      Message(Length) = Ada.Characters.Latin_1.Cr
     or else Message(Length) = Ada.Characters.Latin_1.Lf then
       -- Validate the overall string
@@ -553,7 +553,7 @@ package body Io_Flow is
       Activate_Socket (False);
       if Debug.Debug_Level_Array(Debug.Flow) then
         Async_Stdin.Put_Line_Err ("Flow: Socket_Rece_Cb set >"
-                             & Asu_Ts (Input_Data) & "<");
+                             & Input_Data.Image & "<");
       end if;
       return True;
     else
@@ -610,7 +610,7 @@ package body Io_Flow is
     Soc.Open (Socket.Udp);
     Is_Ipm := False;
     if Host.Kind = Tcp_Util.Host_Id_Spec
-    or else Asu_Is_Null (Host.Name) then
+    or else Host.Name.Is_Null then
       -- An address specified => Ipm
       -- Use Set_Dest to indicate Imp address
       Socket_Util.Set_Destination (Soc, True, Host, Port);

@@ -214,7 +214,7 @@ package body Client_Mng is
     if Dictio_Debug.Level_Array(Dictio_Debug.Client) then
       Dictio_Debug.Put ("Client: start");
     end if;
-    Port.Name := Asu_Tus (Port_Name);
+    Port.Name := Tus (Port_Name);
     Tcp_Util.Accept_From (Socket.Tcp_Header, Port, Accept_Cb'Access,
                           Dscr, Accept_Port);
     Tcp_Util.Accept_From (Socket.Tcp_Header_Afux, Port, Accept_Cb'Access,

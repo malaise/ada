@@ -6,7 +6,7 @@ package body Bookmarks is
   -- Strip potential leading "(name) " of bookmark
   function Dir_Of (Index : in Positive) return String is
   begin
-    return Asu_Ts (Config.Get_Bookmarks (Index).Path);
+    return As.U.Image (Config.Get_Bookmarks (Index).Path);
   end Dir_Of;
 
   -- Insert in Afpx list
@@ -21,25 +21,24 @@ package body Bookmarks is
   -- Image of a bookmark
   function Image (Bookmark : Config.Bookmark_Rec) return String is
     Res : Asu_Us;
-    use type Asu_Us;
   begin
-    if not Asu_Is_Null (Bookmark.Path) then
+    if not Bookmark.Path.Is_Null then
       -- Regular bookmark
-      if not Asu_Is_Null (Bookmark.Name) then
+      if not Bookmark.Name.Is_Null then
         -- Regular bookmark with name
         Res := "(" & Bookmark.Name & ") " & Bookmark.Path;
       else
         -- Regular bookmark without name
         Res := Bookmark.Path;
       end if;
-    elsif not Asu_Is_Null (Bookmark.Name) then
+    elsif not Bookmark.Name.Is_Null then
       -- Separator with name
       Res := "----- " & Bookmark.Name & " -----";
     else
       -- Emty separator
       null;
     end if;
-    return Asu_Ts (Res);
+    return Res.Image;
   end Image;
 
   -- Re- set the list of bookmarks
@@ -152,7 +151,7 @@ package body Bookmarks is
                                      - Utils.List_Scroll_Fld_Range'First + 1);
             when 13 =>
               -- Add current
-              Bookmark := (Asu_Tus (Get_Name), Asu_Tus (Directory.Get_Current));
+              Bookmark := (Tus (Get_Name), Tus (Directory.Get_Current));
               if Afpx.Line_List.Is_Empty then
                 Config.Add_Bookmark (0, Bookmark);
               else
@@ -161,7 +160,7 @@ package body Bookmarks is
               Insert_List (Image (Bookmark));
             when 14 =>
               -- Add separator
-              Bookmark := (Asu_Tus (Get_Name), Asu_Null);
+              Bookmark := (Tus (Get_Name), Asu_Null);
               if Afpx.Line_List.Is_Empty then
                 Config.Add_Bookmark (0, Bookmark);
               else

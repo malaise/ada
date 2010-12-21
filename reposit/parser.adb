@@ -42,7 +42,7 @@ package body Parser is
         raise Constraint_Error;
     end;
     Clear (Iter);
-    Iter.Acc := new Iter_Rec'(Asu_Tus (Str), Str'Length,
+    Iter.Acc := new Iter_Rec'(Tus (Str), Str'Length,
                     Str'First, Is_Sep, Parsing,
                     Init_Rec.First, Init_Rec.Last, Init_Rec.Sep);
   end Set;
@@ -126,12 +126,11 @@ package body Parser is
     -- Init search of next character (non sep)
     Iter.Acc.First := Iter.Acc.Last + 1;
 
-    if Iter.Acc.Is_Sep (Asu.Element (Iter.Acc.Str, Iter.Acc.First)) then
+    if Iter.Acc.Is_Sep (Iter.Acc.Str.Element (Iter.Acc.First)) then
       -- Skip separators
       Iter.Acc.Sep := Iter.Acc.First;
       loop
-        exit when not Iter.Acc.Is_Sep (
-                      Asu.Element (Iter.Acc.Str, Iter.Acc.First));
+        exit when not Iter.Acc.Is_Sep (Iter.Acc.Str.Element (Iter.Acc.First));
         if Iter.Acc.First = Iter.Acc.Len then
           -- String is terminating with separators
           Iter.Acc.State := Parsed;
@@ -151,7 +150,7 @@ package body Parser is
         Iter.Acc.State := Parsed;
         exit;
       end if;
-      exit when Iter.Acc.Is_Sep (Asu.Element (Iter.Acc.Str, Iter.Acc.Last + 1));
+      exit when Iter.Acc.Is_Sep (Iter.Acc.Str.Element (Iter.Acc.Last + 1));
       Iter.Acc.Last := Iter.Acc.Last + 1;
     end loop;
 
@@ -177,7 +176,7 @@ package body Parser is
   function Prev_Separators (Iter : Iterator) return String is
   begin
     Check (Iter);
-    return Asu.Slice (Iter.Acc.Str, Iter.Acc.Sep,  Iter.Acc.First - 1);
+    return Iter.Acc.Str.Slice (Iter.Acc.Sep,  Iter.Acc.First - 1);
   end Prev_Separators;
 
 
@@ -187,7 +186,7 @@ package body Parser is
   function Current_Word (Iter : Iterator) return String is
   begin
     Check (Iter);
-    return Asu.Slice (Iter.Acc.Str, Iter.Acc.First, Iter.Acc.Last);
+    return Iter.Acc.Str.Slice (Iter.Acc.First, Iter.Acc.Last);
   end Current_Word;
 
   -- Reset and parse first word
@@ -236,12 +235,12 @@ package body Parser is
   begin
     Check (Iter);
     if Normalize then
-      return Asu.Slice (Iter.Acc.Str, 1, Iter.Acc.Len);
+      return Iter.Acc.Str.Slice (1, Iter.Acc.Len);
     else
       -- Return a string from Start to N
       declare
         Str : constant String (Iter.Acc.Start .. Iter.Acc.Start+Iter.Acc.Len-1)
-            := Asu.Slice (Iter.Acc.Str, 1, Iter.Acc.Len);
+            := Iter.Acc.Str.Slice (1, Iter.Acc.Len);
       begin
         return Str;
       end;

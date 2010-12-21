@@ -16,7 +16,7 @@ package body Many_Strings is
   -- Init
   function Set (To : String) return Many_String is
   begin
-    return (Ustr => Asu_Tus (To));
+    return (Ustr => Tus (To));
   end Set;
   function Set (To : Asu_Us) return Many_String is
   begin
@@ -24,7 +24,7 @@ package body Many_Strings is
   end Set;
   procedure Set (Str : in out Many_String; To : in String) is
   begin
-    Str.Ustr := Asu_Tus (To);
+    Str.Ustr := Tus (To);
   end Set;
   procedure Set (Str : in out Many_String; To : in Asu_Us) is
   begin
@@ -33,64 +33,59 @@ package body Many_Strings is
 
   -- Concatenation
   function Cat (Str : Many_String; What : String) return Many_String is
-    use type Asu_Us;
   begin
-    if Asu_Is_Null (Str.Ustr) then
-      return (Ustr => Asu_Tus (What));
+    if Str.Ustr.Is_Null then
+      return (Ustr => Tus (What));
     else
-      return (Ustr => Str.Ustr & Asu_Tus (Sep) & What);
+      return (Ustr => Str.Ustr & Tus (Sep) & What);
     end if;
   end Cat;
   function Cat (Str : Many_String; What : Asu_Us) return Many_String is
-    use type Asu_Us;
   begin
-    if Asu_Is_Null (Str.Ustr) then
+    if Str.Ustr.Is_Null then
       return (Ustr => What);
     else
-      return (Ustr => Str.Ustr & Asu_Tus (Sep) & What);
+      return (Ustr => Str.Ustr & Tus (Sep) & What);
     end if;
   end Cat;
   function Cat (Str : Many_String; What : Many_String) return Many_String is
-    use type Asu_Us;
   begin
-    if Asu_Is_Null (Str.Ustr) then
+    if Str.Ustr.Is_Null then
       return What;
     else
-      return (Ustr => Str.Ustr & Asu_Tus (Sep) & What.Ustr);
+      return (Ustr => Str.Ustr & Tus (Sep) & What.Ustr);
     end if;
   end Cat;
 
   procedure Cat (Str : in out Many_String; What : in String) is
   begin
-    if Asu_Is_Null (Str.Ustr) then
-      Str.Ustr := Asu_Tus (What);
+    if Str.Ustr.Is_Null then
+      Str.Ustr := Tus (What);
     else
-      Asu.Append (Str.Ustr, Sep & What);
+      Str.Ustr.Append (Sep & What);
     end if;
   end Cat;
   procedure Cat (Str : in out Many_String; What : in Asu_Us) is
-    use type Asu_Us;
   begin
-    if Asu_Is_Null (Str.Ustr) then
+    if Str.Ustr.Is_Null then
       Str.Ustr := What;
     else
-      Asu.Append (Str.Ustr, Sep & What);
+      Str.Ustr.Append (Sep & What);
     end if;
   end Cat;
   procedure Cat (Str : in out Many_String; What : in Many_String) is
-    use type Asu_Us;
   begin
-    if Asu_Is_Null (Str.Ustr) then
+    if Str.Ustr.Is_Null then
       Str := What;
     else
-      Asu.Append (Str.Ustr, Sep & What.Ustr);
+      Str.Ustr.Append (Sep & What.Ustr);
     end if;
   end Cat;
 
   -- String image
   function Image (Str : Many_String) return String is
   begin
-    return Asu_Ts (Str.Ustr);
+    return Str.Ustr.Image;
   end Image;
   function Image (Str : Many_String) return Asu_Us is
   begin
@@ -102,8 +97,8 @@ package body Many_Strings is
     N : Natural;
   begin
     N := 1;
-    for I in 1 .. Asu.Length (Str.Ustr) loop
-      if Asu.Element (Str.Ustr, I) = Sep then
+    for I in 1 .. Str.Ustr.Length loop
+      if Str.Ustr.Element (I) = Sep then
         N := N + 1;
       end if;
     end loop;
@@ -164,22 +159,22 @@ package body Many_Strings is
     Start : Positive;
     Stop : Natural;
   begin
-    Indexes (Asu_Ts (Str.Ustr), N, Start, Stop);
+    Indexes (Str.Ustr.Image, N, Start, Stop);
     if Stop = 0 then
       return "";
     else
-      return Asu.Slice (Str.Ustr, Start, Stop);
+      return Str.Ustr.Slice (Start, Stop);
     end if;
   end Nth;
   function Nth (Str : Many_String; N : Positive) return Asu_Us is
     Start : Positive;
     Stop : Natural;
   begin
-    Indexes (Asu_Ts (Str.Ustr), N, Start, Stop);
+    Indexes (Str.Ustr.Image, N, Start, Stop);
     if Stop = 0 then
       return Asu_Null;
     else
-      return Asu.Unbounded_Slice (Str.Ustr, Start, Stop);
+      return Str.Ustr.Uslice (Start, Stop);
     end if;
   end Nth;
 

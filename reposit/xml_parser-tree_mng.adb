@@ -10,7 +10,6 @@ package body Tree_Mng is
                             Value : out Asu_Us) is
     Nb : Trees.Child_Range;
     Cell : My_Tree_Cell;
-    use type Asu_Us;
   begin
     Index := 0;
     Value := Asu_Null;
@@ -110,7 +109,7 @@ package body Tree_Mng is
     Cell : My_Tree_Cell;
   begin
     Elements.Read (Cell);
-    Asu.Append (Cell.Value, Tuning & " ");
+    Cell.Value.Append (Tuning & " ");
     Elements.Replace (Cell);
   end Add_Tuning;
 
@@ -119,7 +118,7 @@ package body Tree_Mng is
     Cell : My_Tree_Cell;
   begin
     Elements.Read (Cell);
-    return Asu_Ts (Cell.Value);
+    return Cell.Value.Image;
   end Get_Tuning;
 
   -- Set Put_Empty to False
@@ -214,7 +213,7 @@ package body Tree_Mng is
     Cell.Line_No := Line;
     Cell.Kind := Element;
     Cell.Nb_Attributes := 0;
-    Cell.Name := Asu_Tus ("xml");
+    Cell.Name := Tus ("xml");
     Cell.Value := Asu_Null;
     -- Update root
     Prologue.Replace (Cell);
@@ -241,7 +240,6 @@ package body Tree_Mng is
   procedure Set_Xml_Attribute (Prologue : in out My_Tree.Tree_Type;
                   Name : in Asu_Us; Index : in Positive; Value : in Asu_Us) is
     Pro_Cell, Cell, Tmp_Cell : My_Tree_Cell;
-    use type Asu_Us;
   begin
     Cell.Line_No := 0;
     Cell.Kind := Attribute;
@@ -251,7 +249,7 @@ package body Tree_Mng is
     -- Read root and check
     Prologue.Read (Pro_Cell);
     if Index > Pro_Cell.Nb_Attributes + 1 then
-       Trace ("Inserting/replacing XML attribute " & Asu_Ts (Name)
+       Trace ("Inserting/replacing XML attribute " & Name.Image
             & " at index " & Index'Img & " while having "
             & Pro_Cell.Nb_Attributes'Img & " attributes");
       raise Internal_Error;
@@ -297,7 +295,7 @@ package body Tree_Mng is
       Exists := False;
     else
       Prologue.Read (Cell);
-      Exists := not Asu_Is_Null (Cell.Name);
+      Exists := not Cell.Name.Is_Null;
     end if;
   end Xml_Existst;
 
@@ -387,8 +385,7 @@ package body Tree_Mng is
       when Comment =>
         Update.Kind := Comment;
       when Attribute =>
-        Trace ("Building a node update from an attribute "
-             & Asu_Ts (Cell.Name));
+        Trace ("Building a node update from an attribute " & Cell.Name.Image);
         raise Internal_Error;
     end case;
     Deallocate (Update.Attributes);
@@ -396,8 +393,7 @@ package body Tree_Mng is
     -- Case of deletion, no build of attribtues
     if not Creation then
       if Cell.Kind /= Element then
-        Trace ("Building deletion but not of element "
-             & Asu_Ts (Cell.Name));
+        Trace ("Building deletion but not of element " & Cell.Name.Image);
         raise Internal_Error;
       end if;
       return;

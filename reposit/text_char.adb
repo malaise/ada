@@ -54,7 +54,7 @@ package body Text_Char is
     -- Read next line
     File.Acc.Line_Got := Text_Line.Get (File.Acc.Line_File);
     -- Check end of file
-    if Asu.Length (File.Acc.Line_Got) = 0 then
+    if File.Acc.Line_Got.Is_Null then
       -- End of file
       File.Acc.Get_Index := 1;
     else
@@ -84,7 +84,7 @@ package body Text_Char is
     procedure Read_Char is
     begin
       File.Acc.Get_Index := File.Acc.Get_Index + 1;
-      Char := Asu.Element (File.Acc.Line_Got, File.Acc.Get_Index);
+      Char := File.Acc.Line_Got.Element (File.Acc.Get_Index);
       if File.Acc.Get_Index = Len then
         -- Reset if end of read line
         File.Acc.Line_Got := Asu_Null;
@@ -98,15 +98,15 @@ package body Text_Char is
       raise Status_Error;
     end if;
     -- Check if there are ungot chars
-    Len := Asu.Length (File.Acc.Ungot_Chars);
+    Len := File.Acc.Ungot_Chars.Length;
     if Len /= 0 then
-      Char := Asu.Element (File.Acc.Ungot_Chars, Len);
+      Char := File.Acc.Ungot_Chars.Element (Len);
       -- Delete this last char
-      Asu.Delete (File.Acc.Ungot_Chars, Len, Len);
+      File.Acc.Ungot_Chars.Delete (Len, Len);
       return;
     end if;
     -- Check if there are read chars to get
-    Len := Asu.Length (File.Acc.Line_Got);
+    Len := File.Acc.Line_Got.Length;
     if Len /= 0 then
       -- There are chars to read in Line_Got
       Read_Char;
@@ -122,7 +122,7 @@ package body Text_Char is
       if File.Acc.Get_Index /= 0 then
         raise End_Error;
       end if;
-      Len := Asu.Length (File.Acc.Line_Got);
+      Len := File.Acc.Line_Got.Length;
       Read_Char;
     end if;
   end Get;
@@ -135,7 +135,7 @@ package body Text_Char is
       raise Status_Error;
     end if;
     -- Just append char to the string of ungot chars
-    Asu.Append (File.Acc.Ungot_Chars, Char);
+    File.Acc.Ungot_Chars.Append (Char);
   end Unget;
 
   -- Returns if the end of file is reached
@@ -146,11 +146,11 @@ package body Text_Char is
       raise Status_Error;
     end if;
     -- Check if there are ungot chars
-    if Asu.Length (File.Acc.Ungot_Chars) /= 0 then
+    if not File.Acc.Ungot_Chars.Is_Null then
       return False;
     end if;
     -- Check if there are read chars to get
-    if Asu.Length (File.Acc.Line_Got) /= 0 then
+    if not File.Acc.Line_Got.Is_Null then
       return False;
     end if;
     -- Check if end of file was already reached

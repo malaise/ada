@@ -374,12 +374,12 @@ package body String_Mng is
         return False;
       end if;
       -- Check match
-      if Asu.Slice (Ustr, Str_Index, Stop_Index) /= Delimiter then
+      if Ustr.Slice (Str_Index, Stop_Index) /= Delimiter then
         -- Not match
         return False;
       end if;
       if Skip_Backslashed
-      and then Is_Backslashed (Asu_Ts (Ustr), Str_Index) then
+      and then Is_Backslashed (Ustr.Image, Str_Index) then
         -- Matches but backslashed
         return False;
       end if;
@@ -409,7 +409,7 @@ package body String_Mng is
     end if;
 
     -- Store input string and its last index
-    Ustr := Asu_Tus (Str);
+    Ustr := Tus (Str);
     Last_Index := Str'Length;
     Level := 0;
 
@@ -450,18 +450,18 @@ package body String_Mng is
                 declare
                   -- Variable value
                   Val : constant String
-                      := Resolv (Asu.Slice (Ustr, Start_Var, Stop_Var));
+                      := Resolv (Ustr.Slice (Start_Var, Stop_Var));
                   -- Correction to current and last index
                   Offset : constant Integer
                          := Val'Length - (Stop_Index - Start_Index + 1);
                 begin
-                  Asu.Replace_Slice (Ustr, Start_Index, Stop_Index, Val);
+                  Ustr.Replace (Start_Index, Stop_Index, Val);
                   Curr_Index := Curr_Index + Offset;
                   Last_Index := Last_Index + Offset;
                 end;
               else
                 -- No resolving => empty string
-                Asu.Replace_Slice (Ustr, Start_Index, Stop_Index, "");
+                Ustr.Replace (Start_Index, Stop_Index, "");
                 Curr_Index := Curr_Index - (Stop_Index - Start_Index + 1);
                 Last_Index := Last_Index - (Stop_Index - Start_Index + 1);
               end if;
@@ -488,14 +488,14 @@ package body String_Mng is
 
     -- Remove backslash for delimiters if they have been skipped
     if Skip_Backslashed then
-      Ustr := Asu_Tus (Replace (Asu_Ts (Ustr), "\" & Start_Delimiter,
+      Ustr := Tus (Replace (Ustr.Image, "\" & Start_Delimiter,
                   Start_Delimiter));
-      Ustr := Asu_Tus (Replace (Asu_Ts (Ustr), "\" & Stop_Delimiter,
+      Ustr := Tus (Replace (Ustr.Image, "\" & Stop_Delimiter,
                   Stop_Delimiter));
     end if;
 
     -- Done
-    return Asu_Ts (Ustr);
+    return Ustr.Image;
   end Eval_Variables;
 
   -- Locate an escape sequence within the Within string,
@@ -572,21 +572,21 @@ package body String_Mng is
     Result : Asu_Us;
     Index : Natural;
   begin
-    Result := Asu_Tus (Str);
+    Result := Tus (Str);
     -- Do in reverse so the result of subst does no affect
     --  Is_Backslashed or index
-    Index := Asu.Length (Result);
+    Index := Result.Length;
     loop
       exit when Index = 0;
-      if Asu.Element (Result, Index) = Separator then
-        if Is_Backslashed (Asu_Ts (Result), Index) then
+      if Result.Element (Index) = Separator then
+        if Is_Backslashed (Result.Image, Index) then
           -- Replace '\' & Separator by Separator
-          Asu.Replace_Slice (Result, Index - 1, Asu.Length (Result),
-                             Asu.Slice (Result, Index, Asu.Length (Result)) );
+          Result.Replace (Index - 1, Result.Length,
+                          Result.Slice (Index, Result.Length) );
           Index := Index - 1;
         else
           -- Replace Separator by Many_Strings.Separator
-          Asu.Replace_Element (Result, Index, Many_Strings.Separator);
+          Result.Replace_Element (Index, Many_Strings.Separator);
         end if;
       end if;
       Index := Index - 1;
@@ -683,20 +683,20 @@ package body String_Mng is
       -- See if there are enough chars remaining. If yes, check if match
       if I + Len - 1 > Last then
         -- Str cannot match any more (not enough chars)
-        Asu.Append (Result, Str(I .. Last));
+        Result.Append (Str(I .. Last));
         exit;
       elsif Str(I .. I + Len - 1) = What
       and then (not Skip_Backslashed or else not Is_Backslashed (Str, I)) then
         -- Match, replace
-        Asu.Append (Result, By);
+        Result.Append (By);
         I := I + Len;
       else
         -- No match, move one char forward
-        Asu.Append (Result, Str(I));
+        Result.Append (Str(I));
         I := I + 1;
       end if;
     end loop;
-    return Asu_Ts (Result);
+    return Result.Image;
   end Replace;
 
   -- Return a String (1 .. N)

@@ -16,7 +16,7 @@ package body Input_Buffer is
       Buf.Acc := new Buffer_Rec;
     end if;
     Buf.Acc.Notif := Notifier;
-    Buf.Acc.Delim := Asu_Tus (Delimiter);
+    Buf.Acc.Delim := Tus (Delimiter);
     Buf.Acc.Text := Asu_Null;
     Buf.Acc.Susp := False;
   end Set;
@@ -39,16 +39,16 @@ package body Input_Buffer is
     end if;
     -- Several notifs
     loop
-      Ind := String_Mng.Locate (Asu_Ts (Buf.Acc.Text), Asu_Ts (Buf.Acc.Delim));
+      Ind := String_Mng.Locate (Buf.Acc.Text.Image, Buf.Acc.Delim.Image);
       exit when Ind = 0;
       -- Move to end of sentence (end of delim)
-      Ind := Ind + Asu.Length (Buf.Acc.Delim) - 1;
-      Head := Asu.Unbounded_Slice (Buf.Acc.Text, 1, Ind);
+      Ind := Ind + Buf.Acc.Delim.Length - 1;
+      Head := Buf.Acc.Text.Uslice (1, Ind);
       -- Del head
-      Asu.Delete (Buf.Acc.Text, 1, Ind);
+      Buf.Acc.Text.Delete (1, Ind);
       -- Finally notify (after the delete so that exception in Notifier
       --  don't lead to infinite loop if ignored by push/resume.)
-      Buf.Acc.Notif (Asu_Ts (Head));
+      Buf.Acc.Notif (Head.Image);
     end loop;
   end Flush;
 
@@ -57,13 +57,13 @@ package body Input_Buffer is
   procedure Push (Buf : in Buffer; Text : in String) is
   begin
     Check_Set (Buf);
-    Asu.Append (Buf.Acc.Text, Text);
+    Buf.Acc.Text.Append (Text);
     Flush (Buf);
   end Push;
   procedure Push (Buf : in Buffer; Char : in Character) is
   begin
     Check_Set (Buf);
-    Asu.Append (Buf.Acc.Text, Char);
+    Buf.Acc.Text.Append (Char);
     Flush (Buf);
   end Push;
 
@@ -71,7 +71,7 @@ package body Input_Buffer is
   function Tail (Buf : Buffer) return String is
   begin
     Check_Set (Buf);
-    return Asu_Ts (Buf.Acc.Text);
+    return Buf.Acc.Text.Image;
   end Tail;
 
   -- Suspend the buffer Buf

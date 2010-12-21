@@ -320,8 +320,6 @@ procedure Alook is
     Word_Error : exception;
     Word : Asu_Us;
 
-    use type Asu_Us;
-
     -- Is Char an upper case
     function Is_Upper (Char : Character) return Boolean is
     begin
@@ -330,7 +328,7 @@ procedure Alook is
 
     -- Check if word case is correct
     procedure Check_Word is
-      Str : constant String := Asu_Ts (Word);
+      Str : constant String := Word.Image;
       Is_Keyword : Boolean;
       procedure Change_Word (New_Str : in String) is
       begin
@@ -382,7 +380,7 @@ procedure Alook is
       if Warnings then
         Ada.Text_Io.Put_Line("Warning. In file " & File_Name
                            & " at line" & Line_No'Img);
-        Ada.Text_Io.Put_Line("--> " & Asu_Ts (Line));
+        Ada.Text_Io.Put_Line("--> " & Line.Image);
         Warnings := False;
       end if;
       Line := Asu_Null;
@@ -448,7 +446,7 @@ procedure Alook is
       -- Update line char for warnings if possible
       if Char /= Reading.New_Line and then not End_Of_File then
         begin
-          Asu.Append (Line, Char);
+          Line.Append (Char);
         exception
           when Constraint_Error =>
             -- Line is too to big for Line text!
@@ -467,7 +465,7 @@ procedure Alook is
           -- End of word, check it
           if Word = Asu_Null
           -- Avoid checking character literal
-          or else (Asu.Length (Word) = 1
+          or else (Word.Length = 1
                    and then Prev_Prev_Char = ''' and then Char = ''' )then
             null;
           else
@@ -488,7 +486,7 @@ procedure Alook is
             Word_Index := Reading.Curr_Index;
           end if;
           begin
-            Asu.Append (Word, Char);
+            Word.Append (Char);
           exception
             when Constraint_Error =>
               raise Word_Error;

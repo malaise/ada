@@ -342,7 +342,7 @@ package body Mcd_Mng is
         -- Restart form previous context
         Call_Entry := Call_Stack.Pop;
       end loop;
-      Input_Dispatcher.Set_Input(Asu_Ts (Call_Entry));
+      Input_Dispatcher.Set_Input(Call_Entry.Image);
     end Do_Retn;
 
     procedure Do_Retall is

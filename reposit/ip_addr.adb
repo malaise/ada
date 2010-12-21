@@ -34,28 +34,28 @@ package body Ip_Addr is
     end if;
     -- Try to parse Host_Id
     begin
-      Txt := Asu_Tus (Addr);
+      Txt := Tus (Addr);
       -- 3 and only three dots, not contiguous
-      if String_Mng.Locate (Asu_Ts (Txt), ".", Occurence => 4) /= 0 then
+      if String_Mng.Locate (Txt.Image, ".", Occurence => 4) /= 0 then
         raise Parse_Error;
       end if;
-      Dots(1) := String_Mng.Locate (Asu_Ts (Txt), ".", Occurence => 1);
-      Dots(2) := String_Mng.Locate (Asu_Ts (Txt), ".", Occurence => 2);
-      Dots(3) := String_Mng.Locate (Asu_Ts (Txt), ".", Occurence => 3);
+      Dots(1) := String_Mng.Locate (Txt.Image, ".", Occurence => 1);
+      Dots(2) := String_Mng.Locate (Txt.Image, ".", Occurence => 2);
+      Dots(3) := String_Mng.Locate (Txt.Image, ".", Occurence => 3);
       if Dots(1) = 1 or else Dots(2) = Dots(1)+1 or else
-         Dots(3) = Dots(2)+1 or else Dots(3) = Asu.Length(Txt) then
+         Dots(3) = Dots(2)+1 or else Dots(3) = Txt.Length then
         raise Parse_Error;
       end if;
 
       -- 4 bytes
       Ip_Addr.A := Socket.Byte(To_Natural(
-            Asu.Slice (Txt, 1, Dots(1)-1)));
+            Txt.Slice (1, Dots(1)-1)));
       Ip_Addr.B := Socket.Byte(To_Natural(
-            Asu.Slice (Txt, Dots(1)+1, Dots(2)-1)));
+            Txt.Slice (Dots(1)+1, Dots(2)-1)));
       Ip_Addr.C := Socket.Byte(To_Natural(
-            Asu.Slice (Txt, Dots(2)+1, Dots(3)-1)));
+            Txt.Slice (Dots(2)+1, Dots(3)-1)));
       Ip_Addr.D := Socket.Byte(To_Natural(
-            Asu.Slice (Txt, Dots(3)+1,  Asu.Length(Txt))));
+            Txt.Slice (Dots(3)+1, Txt.Length)));
       return (Kind => Tcp_Util.Host_Id_Spec,
               Id   => Socket.Addr2Id (Ip_Addr) );
     exception
@@ -64,7 +64,7 @@ package body Ip_Addr is
     end;
 
     -- Try to parse Host_Name
-    Result.Name := Asu_Tus (Addr);
+    Result.Name := Tus (Addr);
     return Result;
 
   exception
@@ -103,7 +103,7 @@ package body Ip_Addr is
     end;
 
     -- Try to parse Port_Name
-    Result.Name := Asu_Tus (Port);
+    Result.Name := Tus (Port);
     return Result;
 
   exception

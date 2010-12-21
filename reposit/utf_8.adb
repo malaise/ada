@@ -226,9 +226,9 @@ package body Utf_8 is
     Result : Asu_Us;
   begin
     for I in Unicode'Range loop
-      Asu.Append (Result, Encode (Unicode(I)));
+      Result.Append (Encode (Unicode(I)));
     end loop;
-    return Asu_Ts (Result);
+    return Result.Image;
   end Encode;
 
 

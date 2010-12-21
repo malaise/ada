@@ -432,7 +432,7 @@ package body Afpx is
                           From_Pos : in Con_Io.Full_Square;
                           Str      : in Asu_Us) is
   begin
-    Encode_Field (Field_No, From_Pos, Asu_Ts (Str));
+    Encode_Field (Field_No, From_Pos, Str.Image);
   end Encode_Field;
 
   -- Encode a string in a line for the list
@@ -524,7 +524,7 @@ package body Afpx is
                           Str      : in out Asu_Us;
                           Adjust   : in Boolean := True) is
   begin
-    Str := Asu_Tus (Decode_Field (Field_No, Row, Adjust));
+    Str := Tus (Decode_Field (Field_No, Row, Adjust));
   end Decode_Field;
 
   -- Get field colors

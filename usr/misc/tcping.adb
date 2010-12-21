@@ -215,15 +215,15 @@ begin
   end if;
   begin
     Argument.Get_Parameter (Txt, 3, Argument.Not_Key);
-    Put_Arg_Error (Asu_Ts (Txt));
+    Put_Arg_Error (Txt.Image);
     Argument.Get_Parameter (Txt, 2, "t");
-    Put_Arg_Error (Asu_Ts (Txt));
+    Put_Arg_Error (Txt.Image);
     Argument.Get_Parameter (Txt, 2, "d");
-    Put_Arg_Error (Asu_Ts (Txt));
+    Put_Arg_Error (Txt.Image);
     Argument.Get_Parameter (Txt, 2, "n");
-    Put_Arg_Error (Asu_Ts (Txt));
+    Put_Arg_Error (Txt.Image);
     Argument.Get_Parameter (Txt, 2, "s");
-    Put_Arg_Error (Asu_Ts (Txt));
+    Put_Arg_Error (Txt.Image);
   exception
     when Argument.Argument_Not_Found =>
       null;

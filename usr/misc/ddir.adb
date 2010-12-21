@@ -28,16 +28,16 @@ procedure Ddir is
           exit;
       end;
       begin
-        Kind := Directory.File_Kind (Dir_Name & "/" & Asu_Ts (Entry_Name));
+        Kind := Directory.File_Kind (Dir_Name & "/" & Entry_Name.Image);
       exception
         when Directory.Name_Error | Directory.Access_Error =>
           -- A link to nowhere?
           Kind := Directory.Unknown;
       end;
       if Kind = Directory.Dir
-      and then Asu_Ts (Entry_Name) /= "."
-      and then Asu_Ts (Entry_Name) /= ".." then
-        My_Io.Put_Line (Asu_Ts (Entry_Name));
+      and then Entry_Name.Image /= "."
+      and then Entry_Name.Image /= ".." then
+        My_Io.Put_Line (Entry_Name.Image);
       end if;
     end loop;
     Directory.Close(Dir_Dsc);

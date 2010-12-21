@@ -12,13 +12,12 @@ package body Sort is
     To := Val;
   end Set;
   function "=" (L, R : Prio_Rec) return Boolean is
-    use type Asu_Us;
   begin
     return L.Path = R.Path;
   end "=";
   function Image (Elt : Prio_Rec) return String is
   begin
-    return Asu_Ts (Elt.Path);
+    return Elt.Path.Image;
   end Image;
   package H_Prio_List_Mng is new Hashed_List (
        Prio_Rec, Prio_Access, Set, "=" , Image);
@@ -31,11 +30,11 @@ package body Sort is
     L : Natural;
   begin
     -- Remove trailing '/' if not "/"
-    R.Path := Asu_Tus (Directory.Make_Full_Path (Asu_Ts (Path)));
+    R.Path := Tus (Directory.Make_Full_Path (Path.Image));
     R.Prio := Prio;
-    L := Asu.Length(R.Path);
-    if L > 1 and then Asu.Element (R.Path, L) = '/' then
-      Asu.Delete (R.Path, L, L);
+    L := R.Path.Length;
+    if L > 1 and then R.Path.Element (L) = '/' then
+      R.Path.Delete (L, L);
     end if;
     if L /= 0 then
       Prio_List.Insert (R);
@@ -48,13 +47,13 @@ package body Sort is
   --  Then the entries without prio
   --  At each level in alpha order, but .ads then .adb
   function Less_Than (E1, E2 : Asu_Us) return Boolean is
-    D1 : constant String := Directory.Dirname (Asu_Ts (E1));
-    D2 : constant String := Directory.Dirname (Asu_Ts (E2));
+    D1 : constant String := Directory.Dirname (E1.Image);
+    D2 : constant String := Directory.Dirname (E2.Image);
     R1, R2 : Prio_Rec;
     -- Compare files: prefix then suffix (with specific .ads < .adb)
     function File_Less_Than return Boolean is
-      F1 : constant String := Directory.Basename (Asu_Ts (E1));
-      F2 : constant String := Directory.Basename (Asu_Ts (E2));
+      F1 : constant String := Directory.Basename (E1.Image);
+      F2 : constant String := Directory.Basename (E2.Image);
       P1 : constant String := Directory.File_Prefix (F1);
       P2 : constant String := Directory.File_Prefix (F2);
       S1 : constant String := Directory.File_Suffix (F1);
@@ -70,8 +69,8 @@ package body Sort is
       Found : Boolean;
     begin
      -- Search Dir without last '/'
-      R.Path := Asu_Tus (D);
-      Asu.Delete (R.Path, Asu.Length(R.Path), Asu.Length(R.Path));
+      R.Path := Tus (D);
+      R.Path.Delete (R.Path.Length, R.Path.Length);
       Prio_List.Search (R, Found);
       if Found then
         Prio_List.Read (R);

@@ -11,11 +11,11 @@ begin
   D := Duration (Round_At (My_Math.Real (Dur), -Nb_Digits));
 
   -- Locate Dot
-  Str := Asu_Tus (D'Img);
-  Dot := String_Mng.Locate (Asu_Ts (Str), ".");
+  Str := Tus (D'Img);
+  Dot := String_Mng.Locate (Str.Image, ".");
   if Dot = 0 then
     -- No dot!?
-    return Asu_Ts (Str);
+    return Str.Image;
   end if;
 
   -- Remove tail
@@ -23,23 +23,23 @@ begin
     -- 0 digits => Remove dot
     -- Else remove from Dot + NbDigits + 1
     Dot := Dot + Nb_Digits + 1;
-    if Dot > Asu.Length (Str) then
+    if Dot > Str.Length then
       -- Less digits than required
       Dot := 0;
     end if;
   end if;
   if Dot /= 0 then
-    Asu.Delete (Str, Dot, Asu.Length (Str));
+    Str.Delete (Dot, Str.Length);
   end if;
 
   -- Strip leading space or put a '+'
-  if Asu.Element (Str, 1) = ' ' then
+  if Str.Element (1) = ' ' then
     if Plus then
-      Asu.Replace_Element (Str, 1, '+');
+      Str.Replace_Element (1, '+');
     else
-      Asu.Delete (Str, 1, 1);
+      Str.Delete (1, 1);
     end if;
   end if;
-  return Asu_Ts (Str);
+  return Str.Image;
 end Dur_Image;
 

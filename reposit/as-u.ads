@@ -1,37 +1,110 @@
-with Ada.Strings.Unbounded;
-with Dynamic_List, Hashed_List.Unique, Unbounded_Arrays;
+with Ada.Finalization;
 package As.U is
 
-  -- Ada unbounded strings
-  package Asu renames Ada.Strings.Unbounded;
-  subtype Asu_Us is Asu.Unbounded_String;
-  Asu_Null : constant Asu_Us := Asu.Null_Unbounded_String;
-  function Asu_Is_Null (Str : Asu_Us) return Boolean;
-  function Asu_Tus (Str : String) return Asu_Us
-                   renames Asu.To_Unbounded_String;
-  function Asu_Tus (Char : Character) return Asu_Us;
-  function Asu_Ts (Str : Asu_Us) return String
-                   renames Asu.To_String;
-  function Asu_Uslice (Source : Asu_Us; Low : Positive;
-                       High   : Natural) return Asu_Us
-                       renames Asu.Unbounded_Slice;
+  -- Unbounded strings
+  type Asu_Us is tagged private;
 
-  -- Dynamic_List of Asu_Us
-  package Asu_List_Mng is new Dynamic_List (Asu_Us);
-  subtype Asu_Us_Access is Asu_List_Mng.Element_Access;
-  package Asu_Dyn_List_Mng renames Asu_List_Mng.Dyn_List;
+  Asu_Null : constant Asu_Us;
+  function Is_Null (Source : Asu_Us) return Boolean;
+  function Length (Source : Asu_Us) return Natural;
 
-  -- Hahsed_List and Unique_List of Asu_Us
-  procedure Set (To : out Asu_Us; Val : in Asu_Us);
-  function Image (Element : Asu_Us) return String;
-  package Asu_Hashed_List_Mng is new Hashed_List (
-       Asu_Us, Asu_Us_Access, Set, Asu."=" , Image);
-  package Asu_Unique_List_Mng is new Asu_Hashed_List_Mng.Unique;
+  function Tus (Str : String) return Asu_Us;
+  function Tus (Char : Character) return Asu_Us;
+  function Image (Str : Asu_Us) return String;
+  procedure Set (Target : in out Asu_Us; Str : in String);
+  procedure Set (Target : in out Asu_Us; Char : in Character);
 
-  -- Unbounded array of Asu_Us
-  type Asu_Array is array (Positive range <>) of Asu_Us;
-  package Asu_Unbounded_Arrays is new Unbounded_Arrays (Asu_Us, Asu_Array);
-  package Asu_Ua renames Asu_Unbounded_Arrays;
+  function Uslice (Source : Asu_Us;
+                   Low : Positive; High : Natural) return Asu_Us;
+  procedure Uslice (Source : in Asu_Us; Target : out Asu_Us;
+                    Low : in Positive; High : in Natural);
+  function Slice (Source : Asu_Us;
+                  Low : Positive; High : Natural) return String;
 
+  procedure Append (Source : in out Asu_Us; New_Item : in Asu_Us);
+  procedure Append (Source : in out Asu_Us; New_Item : in String);
+  procedure Append (Source : in out Asu_Us; New_Item : in Character);
+  function "&" (Left, Right : Asu_Us) return Asu_Us;
+  function "&" (Left : Asu_Us; Right : String) return Asu_Us;
+  function "&" (Left : String; Right : Asu_Us) return Asu_Us;
+  function "&" (Left : Asu_Us; Right : Character) return Asu_Us;
+  function "&" (Left : Character; Right : Asu_Us) return Asu_Us;
+
+  function Element (Source : Asu_Us; Index : Positive) return Character;
+  procedure Replace_Element (Source : in out Asu_Us;
+                             Index  : in Positive;
+                             By     : in Character);
+
+  function "="  (Left, Right : Asu_Us) return Boolean;
+  function "="  (Left : Asu_Us; Right : String) return Boolean;
+  function "="  (Left : String; Right : Asu_Us) return Boolean;
+  function "<"  (Left, Right : Asu_Us) return Boolean;
+  function "<"  (Left : Asu_Us; Right : String) return Boolean;
+  function "<"  (Left : String; Right : Asu_Us) return Boolean;
+  function "<=" (Left, Right : Asu_Us) return Boolean;
+  function "<=" (Left : Asu_Us; Right : String) return Boolean;
+  function "<=" (Left : String; Right : Asu_Us) return Boolean;
+  function ">"  (Left, Right : Asu_Us) return Boolean;
+  function ">"  (Left : Asu_Us; Right : String) return Boolean;
+  function ">"  (Left : String; Right : Asu_Us) return Boolean;
+  function ">=" (Left, Right : Asu_Us) return Boolean;
+  function ">=" (Left : Asu_Us; Right : String) return Boolean;
+  function ">=" (Left : String; Right : Asu_Us) return Boolean;
+
+  function Locate (Within     : Asu_Us;
+                   Fragment   : String;
+                   From_Index : Natural := 0;
+                   Forward    : Boolean := True;
+                   Occurence  : Positive := 1) return Natural;
+  function Count (Source   : Asu_Us;
+                  Pattern : String) return Natural;
+
+  procedure Replace (Source   : in out Asu_Us;
+                     Low      : in Positive;
+                     High     : in Natural;
+                     By       : in Asu_Us);
+  procedure Replace (Source   : in out Asu_Us;
+                     Low      : in Positive;
+                     High     : in Natural;
+                     By       : in String);
+
+  procedure Insert (Source   : in out Asu_Us;
+                    Before   : in Positive;
+                    New_Item : in Asu_Us);
+  procedure Insert (Source   : in out Asu_Us;
+                    Before   : in Positive;
+                    New_Item : in String);
+
+  procedure Delete (Source  : in out Asu_Us;
+                    From    : in Positive;
+                    Through : in Natural);
+
+  function Head (Source : Asu_Us; Count : Natural; Pad : Character := Space)
+          return Asu_Us;
+  function Tail (Source : Asu_Us; Count : Natural; Pad : Character := Space)
+          return Asu_Us;
+
+  function "*" (Left  : Natural; Right : Character) return Asu_Us;
+  function "*" (Left  : Natural; Right : String) return Asu_Us;
+  function "*" (Left  : Natural; Right : Asu_Us) return Asu_Us;
+
+private
+  type String_Access is access all String;
+  Empty_String : String(1 .. 0);
+
+  Null_String : aliased String := Empty_String;
+
+  type Asu_Us is new Ada.Finalization.Controlled with record
+    Ref : String_Access := Null_String'Access;
+    Last : Natural := 0;
+  end record;
+
+  overriding procedure Initialize (Object : in out Asu_Us);
+  overriding procedure Adjust (Object : in out Asu_Us);
+  overriding procedure Finalize (Object : in out Asu_Us);
+
+  Asu_Null : constant Asu_Us :=
+     (Ada.Finalization.Controlled with Ref  => Null_String'Access,
+                                       Last => 0);
 end As.U;
 

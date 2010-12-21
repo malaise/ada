@@ -16,7 +16,6 @@ package body Nodes is
   Node_List : Node_Mng.List_Type;
 
   function Name_Match (El1, El2 : Node_Rec) return Boolean is
-    use type Asu_Us;
   begin
     return El1.Name = El2.Name;
   end Name_Match;
@@ -28,7 +27,7 @@ package body Nodes is
     N : Tcp_Util.Host_Name;
   begin
     Node_List.Delete_List (Deallocate => True);
-    N := Asu_Tus (Local_Host_Name.Get);
+    N := Tus (Local_Host_Name.Get);
     Set (N, Status.Get, Status.Sync, Args.Get_Prio);
   end Init_List;
 
@@ -75,7 +74,7 @@ package body Nodes is
   end Set;
 
   function Less_Than (El1, El2 : Node_Rec) return Boolean is
-    use type Status.Status_List, Asu_Us;
+    use type Status.Status_List;
   begin
     -- Master is better
     if El1.Stat = Status.Master and then El2.Stat /= Status.Master then
@@ -110,7 +109,7 @@ package body Nodes is
     Rec : Node_Rec;
     Own_Name : Tcp_Util.Host_Name;
     Will_Be_Master : Boolean;
-    use type Status.Status_List, Asu_Us;
+    use type Status.Status_List;
     Result : Check_Result_List;
   begin
 
@@ -119,7 +118,7 @@ package body Nodes is
       return No_Master_Slave;
     end if;
 
-    Own_Name := Asu_Tus (Local_Host_Name.Get);
+    Own_Name := Tus (Local_Host_Name.Get);
 
     -- First is the best
     Sort (Node_List);
@@ -133,7 +132,7 @@ package body Nodes is
 
     loop
       if Dictio_Debug.Level_Array(Dictio_Debug.Fight) then
-        Dictio_Debug.Put ("Fight.Check: " & Asu_Ts (Rec.Name)
+        Dictio_Debug.Put ("Fight.Check: " & Rec.Name.Image
                  & "/" & Rec.Stat'Img & "-" & Rec.Prio
                  & " Sync: " & Rec.Sync'Img);
       end if;

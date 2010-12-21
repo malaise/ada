@@ -185,12 +185,12 @@ package body Config is
     -- Bookmarks can be empty (when separators)
     Ctx.Set_Put_Empty (New_Node, True);
     -- Add its name attribute
-    if not Asu_Is_Null (Bookmark.Name) then
-      Ctx.Add_Attribute (New_Node, "Name", Asu_Ts (Bookmark.Name));
+    if not Bookmark.Name.Is_Null then
+      Ctx.Add_Attribute (New_Node, "Name", Bookmark.Name.Image);
     end if;
     -- Add its text
-    if not Asu_Is_Null (Bookmark.Path) then
-      Ctx.Add_Child (New_Node, Asu_Ts (Bookmark.Path), Xml_Parser.Text,
+    if not Bookmark.Path.Is_Null then
+      Ctx.Add_Child (New_Node, Bookmark.Path.Image, Xml_Parser.Text,
                      New_Node);
     end if;
     Save;

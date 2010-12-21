@@ -178,22 +178,22 @@ package body Romanic is
         raise Program_Error;
       elsif N = 9 then
         -- Current then Next_Next
-        Asu.Append (Result, Typo_Def_Array(Index).Typo
-                          & Typo_Def_Array(Index+2).Typo);
+        Result.Append (Typo_Def_Array(Index).Typo
+                     & Typo_Def_Array(Index+2).Typo);
       elsif N >= 5 then
         -- Next then N times current
-        Asu.Append (Result, Typo_Def_Array(Index+1).Typo);
+        Result.Append (Typo_Def_Array(Index+1).Typo);
         for I in 6 .. N loop
-          Asu.Append (Result, Typo_Def_Array(Index).Typo);
+          Result.Append (Typo_Def_Array(Index).Typo);
         end loop;
       elsif N = 4 then
         -- Current then Next
-        Asu.Append (Result, Typo_Def_Array(Index).Typo
+        Result.Append (Typo_Def_Array(Index).Typo
                           & Typo_Def_Array(Index+1).Typo);
       else
         -- N times current
         for I in 1 .. N loop
-          Asu.Append (Result, Typo_Def_Array(Index).Typo);
+          Result.Append (Typo_Def_Array(Index).Typo);
         end loop;
       end if;
 
@@ -205,7 +205,7 @@ package body Romanic is
       Index := Index - 2;
     end loop;
 
-    return Asu_Ts (Result);
+    return Result.Image;
   end Arabic2Romanic;
 
 end Romanic;

@@ -81,7 +81,7 @@ package body Fight_Mng is
 
     Nodes.Set (From, Stat, Sync, Prio);
     if Dictio_Debug.Level_Array(Dictio_Debug.Fight) then
-      Dictio_Debug.Put ("Fight: received status from: " & Asu_Ts (From)
+      Dictio_Debug.Put ("Fight: received status from: " & From.Image
                & "/" & Stat'Img & "-" & Prio);
     end if;
   end Event;

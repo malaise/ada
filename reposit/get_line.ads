@@ -1,6 +1,6 @@
 -- Opens a file and reads lines
 -- Parses words separated by space or tab
-with As.U; use As.U;
+with As.U.Utils; use As.U, As.U.Utils;
 with Text_Line;
 generic
 

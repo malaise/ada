@@ -41,7 +41,7 @@ package body Directory is
 
   procedure Get_Current (Cur_Dir : in out Asu_Us) is
   begin
-    Cur_Dir := Asu_Tus (Get_Current);
+    Cur_Dir := Tus (Get_Current);
   end Get_Current;
 
   function C_Chdir (Path : System.Address) return C_Types.Int;
@@ -108,7 +108,7 @@ package body Directory is
 
   procedure Next_Entry (Desc : in Dir_Desc; Dir_Entry : in out Asu_Us) is
   begin
-    Dir_Entry := Asu_Tus (Next_Entry (Desc));
+    Dir_Entry := Tus (Next_Entry (Desc));
   end Next_Entry;
 
   procedure C_Rewinddir (Dir : System.Address);
@@ -171,7 +171,7 @@ package body Directory is
     Orig, Src, Dest : Asu_Us;
     Iter : Positive;
     Threshold : constant := 1024;
-    use type Sys_Calls.File_Kind_List, Asu_Us;
+    use type Sys_Calls.File_Kind_List;
   begin
     -- Check file_name  is a link
     if Sys_Calls.File_Stat (File_Name).Kind /= Sys_Calls.Link then
@@ -181,18 +181,18 @@ package body Directory is
       return Read_One_Link(File_Name);
     end if;
 
-    Src := Asu_Tus (Make_Full_Path (File_Name));
+    Src := Tus (Make_Full_Path (File_Name));
     Iter := 1;
     loop
       -- Current is a link, read it,
-      Dest := Asu_Tus (Read_One_Link(Asu_Ts (Src)));
-      if Asu.Length (Dest) >= 1 and then Asu.Element (Dest, 1) /= Separator then
+      Dest := Tus (Read_One_Link(Src.Image));
+      if Dest.Length >= 1 and then Dest.Element (1) /= Separator then
         -- Link is relative, append apth of source
-        Dest := Asu_Tus (Dirname (Asu_Ts (Src))) & Dest;
+        Dest := Tus (Dirname (Src.Image)) & Dest;
       end if;
-      Dest := Asu_Tus (Make_Full_Path (Asu_Ts (Dest)));
+      Dest := Tus (Make_Full_Path (Dest.Image));
       -- Done when not a link
-      exit when Sys_Calls.File_Stat (Asu_Ts (Dest)).Kind /= Sys_Calls.Link;
+      exit when Sys_Calls.File_Stat (Dest.Image).Kind /= Sys_Calls.Link;
 
       -- Detec recursion
       if Dest = Src then
@@ -209,7 +209,7 @@ package body Directory is
       Iter := Iter + 1;
       Src := Dest;
     end loop;
-    return Asu_Ts (Dest);
+    return Dest.Image;
   end Read_Link;
 
 
@@ -217,7 +217,7 @@ package body Directory is
                        Target : in out Asu_Us;
                        Recursive : in Boolean := True) is
   begin
-    Target := Asu_Tus (Read_Link(File_Name, Recursive));
+    Target := Tus (Read_Link(File_Name, Recursive));
   end Read_Link;
 
 
@@ -259,65 +259,65 @@ package body Directory is
     Sep_Str : constant String := Sep_Char & "";
   begin
     -- Append a "/" if ending by "/." or "/.."
-    Res := Asu_Tus (Path);
+    Res := Tus (Path);
     if (Path'Length >= 2
         and then Path(Path'Last - 1 .. Path'Last) = "/.")
     or else (Path'Length >= 3
              and then Path(Path'Last - 2 .. Path'Last) = "/..") then
-      Asu.Append (Res, Sep_Char);
+      Res.Append (Sep_Char);
     end if;
 
     -- "//" -> "/" recursively
     loop
-      Start := String_Mng.Locate (Asu_Ts (Res), Sep_Char & Sep_Char);
+      Start := String_Mng.Locate (Res.Image, Sep_Char & Sep_Char);
       exit when Start = 0;
-      Asu.Delete (Res, Start, Start);
+      Res.Delete (Start, Start);
     end loop;
 
     -- "/./" -> "/"
     loop
-      Start := String_Mng.Locate (Asu_Ts (Res), Sep_Char & '.' & Sep_Char);
+      Start := String_Mng.Locate (Res.Image, Sep_Char & '.' & Sep_Char);
       exit when Start = 0;
-      Asu.Delete (Res, Start, Start + 1);
+      Res.Delete (Start, Start + 1);
     end loop;
 
     -- "<name>/../" -> "" recusively
     -- Start at first significant char
     Init := 1;
-    if Asu.Length (Res) > 0 and then Asu.Element (Res, 1) = Sep_Char then
+    if Res.Length > 0 and then Res.Element (1) = Sep_Char then
       Init := Init + 1;
     end if;
     Start := Init;
     loop
       -- Locate next separator
-      First := String_Mng.Locate (Asu_Ts (Res), Sep_Str, Start + 1);
+      First := String_Mng.Locate (Res.Image, Sep_Str, Start + 1);
       exit when First = 0;
       -- Locate next separator
-      Second := String_Mng.Locate (Asu_Ts (Res), Sep_Str, First + 1);
+      Second := String_Mng.Locate (Res.Image, Sep_Str, First + 1);
       exit when Second = 0;
-      if Asu.Slice (Res, First + 1, Second - 1) = ".."
-      and then Asu.Slice (Res, Start, First - 1) /= ".." then
+      if Res.Slice (First + 1, Second - 1) = ".."
+      and then Res.Slice (Start, First - 1) /= ".." then
         -- Delete "<name>/../", and restart from beginning
-        Asu.Delete (Res, Start, Second);
+        Res.Delete (Start, Second);
         Start := Init;
       else
         -- Skip
         Start := First + 1;
       end if;
-      exit when Start >= Asu.Length (Res);
+      exit when Start >= Res.Length;
     end loop;
 
     -- "^/.." -> ""
     loop
-      if String_Mng.Locate (Asu_Ts (Res), Sep_Char & "..") = 1 then
-        Asu.Delete (Res, Start, 3);
+      if String_Mng.Locate (Res.Image, Sep_Char & "..") = 1 then
+        Res.Delete (Start, 3);
       else
         exit;
       end if;
     end loop;
 
     -- Done
-    return Asu_Ts (Res);
+    return Res.Image;
 
   end Normalize_Path;
 

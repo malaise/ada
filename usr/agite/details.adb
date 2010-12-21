@@ -9,7 +9,7 @@ package body Details is
                  From : in Git_If.Commit_Entry_Rec) is
   begin
     Afpx.Encode_Line (Line, String_Mng.Procuste (
-          From.Status & " " & Asu_Ts (From.File),
+          From.Status & " " & From.File.Image,
           List_Width,
           Trunc_Head => False));
   exception
@@ -66,7 +66,7 @@ package body Details is
       for I in 1 .. Comment_Height loop
         begin
           Afpx.Encode_Field (12, (I - 1, 0),
-               String_Mng.Procuste (Asu_Ts (Comment(I)),
+               String_Mng.Procuste (Comment(I).Image,
                                     Comment_Width,
                                     Trunc_Head => False));
         exception
@@ -91,18 +91,18 @@ package body Details is
       Commits.Move_At (Pos);
       Commits.Read (Commit, Git_If.Commit_File_Mng.Dyn_List.Current);
       declare
-        Path : constant String := Directory.Dirname (Asu_Ts (Commit.File));
-        File : constant String := Directory.Basename (Asu_Ts (Commit.File));
+        Path : constant String := Directory.Dirname (Commit.File.Image);
+        File : constant String := Directory.Basename (Commit.File.Image);
       begin
         case What is
           when Show_View =>
             -- Only files except leading "/"
-            if Asu_Ts (Commit.File) /= "/" then
-              View (Asu_Ts (Commit.File), Hash);
+            if Commit.File.Image /= "/" then
+              View (Commit.File.Image, Hash);
             end if;
             Redisplay := True;
           when Show_Hist =>
-            History.Handle (Root, Path, File, Asu_Ts (Commit.File) /= "/",
+            History.Handle (Root, Path, File, Commit.File.Image /= "/",
                             Hash);
             -- Re init sreen
             Init (False);
@@ -117,19 +117,18 @@ package body Details is
     -- Copy Comments as X selection
     procedure Copy_Selection is
       Result : Asu_Us;
-      use type Asu_Us;
     begin
       -- Skip tailing empty lines. No LineFeed after last line
       for I in reverse Comment'Range loop
-        if not Asu_Is_Null (Comment(I)) or else not Asu_Is_Null (Result) then
-          if Asu_Is_Null (Result) then
+        if not Comment(I).Is_Null or else not Result.Is_Null then
+          if Result.Is_Null then
             Result := Comment(I);
           else
             Result := Comment(I) & Ada.Characters.Latin_1.Lf & Result;
           end if;
         end if;
       end loop;
-      Afpx.Set_Selection (Asu_Ts (Result));
+      Afpx.Set_Selection (Result.Image);
     end Copy_Selection;
 
   begin

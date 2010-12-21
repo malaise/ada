@@ -27,35 +27,35 @@ begin
                       & Vers.Minor'Img);
 
   Git_If.Get_Root_And_Path (Root, Path);
-  Ada.Text_Io.Put_Line ("Root is >" & Asu_Ts (Root) & "<");
-  Ada.Text_Io.Put_Line ("Path is >" & Asu_Ts (Path) & "<");
+  Ada.Text_Io.Put_Line ("Root is >" & Root.Image & "<");
+  Ada.Text_Io.Put_Line ("Path is >" & Path.Image & "<");
 
-  Git_If.List_Files (Asu_Ts (Path), Files);
+  Git_If.List_Files (Path.Image, Files);
   if Files.Is_Empty then
     Ada.Text_Io.Put_Line ("No file");
   else
     loop
       Files.Read (File_Entry, Moved => Moved);
       Ada.Text_Io.Put_Line (File_Entry.S2 & File_Entry.S3 & " "
-                          & Asu_Ts (File_Entry.Name)
+                          & File_Entry.Name.Image
                           & File_Entry.Kind);
       exit when not Moved;
     end loop;
   end if;
 
   if Argument.Get_Nbre_Arg = 0 then
-    Path := Asu_Tus (".");
+    Path := Tus (".");
   else
     Argument.Get_Parameter (Path, Occurence => 1);
   end if;
-  Git_If.List_Log (Asu_Ts (Path), Logs);
+  Git_If.List_Log (Path.Image, Logs);
   if Logs.Is_Empty then
     Ada.Text_Io.Put_Line ("No log");
   else
     loop
       Logs.Read (Log_Entry, Moved => Moved);
       Ada.Text_Io.Put_Line (Log_Entry.Hash & " " & Log_Entry.Date);
-      Ada.Text_Io.Put_Line (Asu_Ts (Log_Entry.Comment(1)));
+      Ada.Text_Io.Put_Line (Log_Entry.Comment(1).Image);
       Ada.Text_Io.New_Line;
       exit when not Moved;
     end loop;
@@ -69,7 +69,7 @@ begin
                       Date, Comment, Commits);
   Ada.Text_Io.Put_Line (Date);
   for I in Comment'Range loop
-    Ada.Text_Io.Put_Line (Asu_Ts (Comment(I)));
+    Ada.Text_Io.Put_Line (Comment(I).image);
   end loop;
   if Commits.Is_Empty then
      Ada.Text_Io.Put_Line ("No File");
@@ -77,7 +77,7 @@ begin
     loop
       Commits.Read (Commit_Entry, Moved => Moved);
       Ada.Text_Io.Put_Line (Commit_Entry.Status & " "
-                          & Asu_Ts (Commit_Entry.File));
+                          & Commit_Entry.File.Image);
       exit when not Moved;
     end loop;
   end if;

@@ -18,10 +18,10 @@ package body Misc is
     end if;
     if Call_Stack.Level /= 0 then
       -- Save context;
-      Call_Entry := Asu_Tus (Input_Dispatcher.Get_Remaining);
+      Call_Entry := Tus (Input_Dispatcher.Get_Remaining);
       -- Even if end of subprog, this is not stdin
-      if Asu.Length (Call_Entry) = 0 then
-        Call_Entry := Asu_Tus (" ");
+      if Call_Entry.Length = 0 then
+        Call_Entry := Tus (" ");
       end if;
       Call_Stack.Push (Call_Entry);
     else
@@ -29,11 +29,11 @@ package body Misc is
       Call_Stack.Push (Asu_Null);
     end if;
     -- Call
-    if Asu_Is_Null (A.Val_Text) then
+    if A.Val_Text.Is_Null then
       -- Empty subprogram : not stdin
       Input_Dispatcher.Set_Input(" ");
     else
-      Input_Dispatcher.Set_Input (Asu_Ts (A.Val_Text));
+      Input_Dispatcher.Set_Input (A.Val_Text.Image);
     end if;
     S := A;
   end Do_Call;
@@ -136,8 +136,8 @@ package body Misc is
     if Pattern.Kind /= Chrs or else Str.Kind /= Chrs then
       raise Invalid_Argument;
     end if;
-    Res := Regular_Expressions.Match (Asu_Ts (Pattern.Val_Text),
-                                      Asu_Ts (Str.Val_Text));
+    Res := Regular_Expressions.Match (Pattern.Val_Text.Image,
+                                      Str.Val_Text.Image);
     if Res = Regular_Expressions.No_Match then
       return (Kind => Inte, Val_Inte => 0);
     else
@@ -158,13 +158,13 @@ package body Misc is
       raise Invalid_Argument;
     end if;
     Len := Env_Str'Length;
-    Sys_Calls.Getenv (Asu_Ts (Item.Val_Text), Set, Trunc,
+    Sys_Calls.Getenv (Item.Val_Text.Image, Set, Trunc,
                       Env_Str, Len);
     if not Set then
       return (Kind => Bool, Val_Bool => False);
     end if;
     return (Kind => Chrs,
-            Val_Text => Asu_Tus (Env_Str(1 .. Len)));
+            Val_Text => Tus (Env_Str(1 .. Len)));
   end Getenv;
 
   procedure Set_Exit_Code (Code : Item_Rec) is

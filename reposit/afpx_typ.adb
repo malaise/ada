@@ -28,7 +28,7 @@ package body Afpx_Typ is
     -- Set the colors when using the first descriptor
     for I in Colors'Range loop
       Last := String_Mng.Parse_Spaces (Names(I), False);
-      Colors(I) := Asu_Tus (Names(I)(1 .. Last));
+      Colors(I) := Tus (Names(I)(1 .. Last));
     end loop;
     return Colors;
   end To_Def;
@@ -38,7 +38,7 @@ package body Afpx_Typ is
     Names : Color_Names := (others => No_Color);
   begin
     for I in Names'Range loop
-      Names(I)(1 .. Asu.Length (Defs(I))) := Asu_Ts (Defs(I));
+      Names(I)(1 .. Defs(I).Length) := Defs(I).Image;
     end loop;
     return Names;
   end To_Names;

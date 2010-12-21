@@ -31,16 +31,16 @@ package body Parser.All_In_One is
     Word_Elt.Kind := Word;
     Seps_Elt.Kind := Separators;
     loop
-      Word_Elt.Str := Asu_Tus (Next_Word (Iter));
-      Seps_Elt.Str := Asu_Tus (Prev_Separators (Iter));
+      Word_Elt.Str := Tus (Next_Word (Iter));
+      Seps_Elt.Str := Tus (Prev_Separators (Iter));
       -- Store previous seperators if any (may not be the case before first
       --  word or after last word)
-      if not Asu_Is_Null (Seps_Elt.Str) then
+      if not Seps_Elt.Str.Is_Null then
         Parsed_List.Insert (Seps_Elt);
       end if;
       -- Store word if any, note that an empty string leads to both empty Elts
       --  then to an empty list
-      if not Asu_Is_Null (Word_Elt.Str) then
+      if not Word_Elt.Str.Is_Null then
         Parsed_List.Insert (Word_Elt);
       else
         -- No more word: exit loop
