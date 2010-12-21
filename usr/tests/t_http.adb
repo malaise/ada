@@ -15,7 +15,7 @@ begin
   Event_Mng.Reset_Default_Signals_Policy;
   case Result.Kind is
     when Http.Ok =>
-      Basic_Proc.Put_Output (Asu_Ts (Result.Content));
+      Basic_Proc.Put_Output (Result.Content.Image);
       Basic_Proc.Flush_Output;
     when Http.Client_Error =>
       Basic_Proc.Put_Line_Error ("Client error: "
@@ -24,7 +24,7 @@ begin
     when Http.Server_Error =>
       Basic_Proc.Put_Line_Error ("Server error: "
                                 & Code_Image (Result.Code)
-                                & " " & Asu_Ts (Result.Message));
+                                & " " & Result.Message.Image);
       Basic_Proc.Set_Error_Exit_Code;
   end case;
 

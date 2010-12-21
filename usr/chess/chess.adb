@@ -158,7 +158,7 @@ begin
     end;
     begin
       Argument.Get_Parameter (Name, 1, "s");
-      if Asu_Is_Null (Name) then
+      if Name.Is_Null then
         raise Invalid_Argument;
       end if;
     exception
@@ -168,7 +168,7 @@ begin
   end if;
 
   -- Wait
-  if Mode = Human.Client or else Asu_Is_Null (Name) then
+  if Mode = Human.Client or else Name.Is_Null then
     begin
       Argument.Get_Parameter (Tmp_Txt, 1, "w");
       raise Invalid_Argument;
@@ -179,7 +179,7 @@ begin
   else
     begin
       Argument.Get_Parameter (Tmp_Txt, 1, "w");
-      if not Asu_Is_Null (Tmp_Txt) then
+      if not Tmp_Txt.Is_Null then
         raise Invalid_Argument;
       end if;
       Wait := True;
@@ -190,7 +190,7 @@ begin
   end if;
 
   -- Init file
-  if Mode = Human.Both and then Asu_Is_Null (Name) then
+  if Mode = Human.Both and then Name.Is_Null then
     begin
       Argument.Get_Parameter (Init, 1, "i");
     exception
@@ -208,7 +208,7 @@ begin
   end if;
 
 
-  Human.Play (Mode, Color, Asu_Ts (Name), Port, Asu_Ts (Init), Wait);
+  Human.Play (Mode, Color, Name.Image, Port, Init.Image, Wait);
 
 exception
   when Invalid_Argument | Argument.Argument_Not_Found =>

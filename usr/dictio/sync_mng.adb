@@ -123,7 +123,7 @@ package body Sync_Mng is
   package Sync_Dyn_List_Mng is new Dynamic_List (Tcp_Util.Host_Name);
   package Sync_List_Mng renames Sync_Dyn_List_Mng.Dyn_List;
   Sync_List : Sync_List_Mng.List_Type;
-  procedure Sync_Search is new Sync_List_Mng.Search (Asu."=");
+  procedure Sync_Search is new Sync_List_Mng.Search (As.U."=");
 
 
   function Timer_Sen_Cb (Id : Timers.Timer_Id;
@@ -135,7 +135,7 @@ package body Sync_Mng is
     if Sending_Status = Send then
       -- Reject new dest if already syncing
       if Dictio_Debug.Level_Array(Dictio_Debug.Sync) then
-        Dictio_Debug.Put ("Sync: Rejecting dest " & Asu_Ts (To)
+        Dictio_Debug.Put ("Sync: Rejecting dest " & To.Image
                         & " cause sending");
       end if;
       return;
@@ -150,7 +150,7 @@ package body Sync_Mng is
       Sending_Status := Init;
     end if;
     if Dictio_Debug.Level_Array(Dictio_Debug.Sync) then
-      Dictio_Debug.Put ("Sync: Adding dest " & Asu_Ts (To));
+      Dictio_Debug.Put ("Sync: Adding dest " & To.Image);
     end if;
     Sync_Search (Sync_List, Found, To, From => Sync_List_Mng.Absolute);
     if not Found then
@@ -231,13 +231,13 @@ package body Sync_Mng is
         Retries:
         for I in 1 .. Max_Retry loop
           -- Try to send
-          Reply_Result := Intra_Dictio.Send_Sync_Data (Asu_Ts (Dest), Item);
+          Reply_Result := Intra_Dictio.Send_Sync_Data (Dest.Image, Item);
           if Reply_Result = Intra_Dictio.Overflow then
             Curr_Timeout := Ovf_Timeout;
             -- Increase timeout for next retry
             Ovf_Timeout := Ovf_Timeout * Timeout_Factor;
             if Dictio_Debug.Level_Array(Dictio_Debug.Sync) then
-              Dictio_Debug.Put ("Sync: Overflow to " & Asu_Ts (Dest));
+              Dictio_Debug.Put ("Sync: Overflow to " & Dest.Image);
             end if;
           else
             -- Ok or error
@@ -261,7 +261,7 @@ package body Sync_Mng is
         if Reply_Result /= Intra_Dictio.Ok then
           -- Give up with this destination if too many overflows or other error
           if Dictio_Debug.Level_Array(Dictio_Debug.Sync) then
-            Dictio_Debug.Put ("Sync: Giving up " & Asu_Ts (Dest) & " due to "
+            Dictio_Debug.Put ("Sync: Giving up " & Dest.Image & " due to "
                      & Reply_Result'Img);
           end if;
           Sync_List.Delete (Sync_List_Mng.Prev, Moved);

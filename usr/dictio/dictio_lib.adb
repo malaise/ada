@@ -245,9 +245,9 @@ package body Dictio_Lib is
     if Environ.Is_Set (Dictio_Env_Host) then
       Environ.Get_Us (Dictio_Env_Host, Host.Name);
     else
-      Host.Name := Asu_Tus (Default_Host);
+      Host.Name := Tus (Default_Host);
     end if;
-    Local_Host.Name := Asu_Tus (Local_Host_Name);
+    Local_Host.Name := Tus (Local_Host_Name);
     if Host = Local_Host then
       Protocol := Socket.Tcp_Header_Afux;
     else
@@ -257,12 +257,12 @@ package body Dictio_Lib is
     if Environ.Is_Set (Dictio_Env_Port) then
       Environ.Get_Us (Dictio_Env_Port, Port.Name);
     else
-      Port.Name := Asu_Tus (Default_Port);
+      Port.Name := Tus (Default_Port);
     end if;
 
     if Dictio_Debug.Level_Array(Dictio_Debug.Lib) then
-      Dictio_Debug.Put ("Dictio_Lib: init to " & Asu_Ts (Host.Name)
-               & " / " & Asu_Ts (Port.Name));
+      Dictio_Debug.Put ("Dictio_Lib: init to " & Host.Name.Image
+               & " / " & Port.Name.Image);
     end if;
 
     Connect_To_Dictio;

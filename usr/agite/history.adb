@@ -25,7 +25,7 @@ package body History is
         -- "YYYY-MM-DD HH:MM:SS" -> "YYMMDD HH:MM "
         From.Date(03 .. 04) & From.Date(06 .. 07) & From.Date(09 .. 10) & '-'
       & From.Date(12 .. 13) & From.Date(15 .. 16) & ' '
-      & Procuste (Asu_Ts (From.Comment(1))) );
+      & Procuste (From.Comment(1).Image) );
   exception
     when Error:others =>
       Basic_Proc.Put_Line_Error ("Exception "

@@ -19,13 +19,13 @@ begin
   end loop;
   if Word.Lexic /= Parser_Ada.Identifier
   and then Word.Lexic /= Parser_Ada.String_Literal then
-    Common.Error (Asu_Ts (Word.Text));
+    Common.Error (Word.Text.Image);
   end if;
 
   -- Put "entry <name>"
   Name := Words.Get;
   Words.Reset;
-  Output.Put ("entry " & Asu_Ts (Name), False, Level);
+  Output.Put ("entry " & Name.Image, False, Level);
 
   -- Parse family and arguments, store Family
   -- Store arguments lexical elements in words
@@ -34,10 +34,10 @@ begin
   loop
     Word := Parser_Ada.Multiparse.Get (True);
     Words.Add (Word);
-    if Asu_Ts (Word.Text) = "(" then
+    if Word.Text.Image = "(" then
       In_Parent := True;
       In_Id := True;
-    elsif Asu_Ts (Word.Text) = ")" then
+    elsif Word.Text.Image = ")" then
       In_Parent := False;
       if In_Id then
         -- Identifier was not followed by ':', it was the family
@@ -48,10 +48,10 @@ begin
     if In_Id and then Word.Lexic = Parser_Ada.Identifier then
       -- Save this adentifier, it might be the entry family
       Last_Id := Word.Text;
-    elsif Asu_Ts (Word.Text) = ":" then
+    elsif Word.Text.Image = ":" then
       -- End of argument formal names (entering in | out | inout ...)
       In_Id := False;
-    elsif Asu_Ts (Word.Text) = ";" then
+    elsif Word.Text.Image = ";" then
       if In_Parent then
         -- End of previous argument, expecting a new one
         In_Id := True;
@@ -66,8 +66,8 @@ begin
   Words.Del;
 
   -- Put Family if set
-  if Asu.Length (Family) /= 0 then
-    Output.Put (" (for I in " & Asu_Ts (Family) & ")", False);
+  if Family.Length /= 0 then
+    Output.Put (" (for I in " & Family.Image & ")", False);
   end if;
   -- Put Args if set
   if Words.Length /= 0 then
@@ -82,6 +82,6 @@ begin
   -- end <name>;
   Output.Put_Line ("begin", False, Level, True);
   Output.Put_Line ("null;", False, Level + 1, True);
-  Output.Put_Line ("end " & Asu_Ts (Name) & ";", False, Level, True);
+  Output.Put_Line ("end " & Name.Image & ";", False, Level, True);
 end Parse_Entry;
 

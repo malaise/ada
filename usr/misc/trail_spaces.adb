@@ -42,8 +42,6 @@ procedure Trail_Spaces is
     Dummy : Boolean;
     pragma Unreferenced (Dummy);
 
-    use type Asu_Us;
-
   begin
     -- Open in-file read only and associate in Text_Line
     declare
@@ -87,37 +85,37 @@ procedure Trail_Spaces is
     loop
       -- Read a line until the end
       Line := Text_Line.Get (In_File);
-      exit when Asu.Length (Line) = 0;
+      exit when Line.Length = 0;
       -- Append a Line_Feed if missing
-      if Asu.Element (Line, Asu.Length (Line)) /= Text_Line.Line_Feed_Char then
-        Asu.Append (Line, Text_Line.Line_Feed_Char);
+      if Line.Element (Line.Length) /= Text_Line.Line_Feed_Char then
+        Line.Append (Text_Line.Line_Feed_Char);
         Modified := True;
       end if;
       -- Replace horiz tabs by spaces
-      for I in 1 .. Asu.Length (Line) - 1 loop
-        if Asu.Element (Line, I) = Ada.Characters.Latin_1.Ht then
-          Asu.Replace_Element (Line, I, ' ');
+      for I in 1 .. Line.Length - 1 loop
+        if Line.Element (I) = Ada.Characters.Latin_1.Ht then
+          Line.Replace_Element (I, ' ');
           Modified := True;
         end if;
       end loop;
       -- Remove Cr if Cr then Lf
-      if Asu.Length (Line) > 1
-      and then Asu.Element (Line, Asu.Length (Line) - 1)
+      if Line.Length > 1
+      and then Line.Element (Line.Length - 1)
          = Ada.Characters.Latin_1.Cr then
-        Line := Asu.Slice (Line, 1, Asu.Length (Line) - 2)
-              & Asu_Tus (Text_Line.Line_Feed_Char & "");
+        Line := Line.Slice (1, Line.Length - 2)
+              & Tus (Text_Line.Line_Feed_Char & "");
         Modified := True;
       end if;
       -- Trail spaces of line
-      if Asu.Length (Line) = 1 then
+      if Line.Length = 1 then
         -- Redisplay empty lines
         Text_Line.New_Line (Out_File);
       else
         -- Trail spaces of line
-        for I in reverse 1 .. Asu.Length (Line) - 1 loop
-          if Asu.Element (Line, I) /= ' ' then
-            Text_Line.Put_Line (Out_File, Asu.Slice (Line, 1, I));
-            if I /= Asu.Length (Line) - 1 then
+        for I in reverse 1 .. Line.Length - 1 loop
+          if Line.Element (I) /= ' ' then
+            Text_Line.Put_Line (Out_File, Line.Slice (1, I));
+            if I /= Line.Length - 1 then
               -- File has been modified
               Modified := True;
             end if;

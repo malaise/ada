@@ -332,7 +332,7 @@ package body Screen is
 
   procedure Put_File is
   begin
-    Put_File (Asu_Ts (Stored_File_Name));
+    Put_File (Stored_File_Name.Image);
   end Put_File;
 
   procedure Put_Degree is

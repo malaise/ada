@@ -14,7 +14,7 @@ package body Fifos is
   procedure Host_Name2Id (Host : in out Tcp_Util.Remote_Host) is
     Id : Tcp_Util.Host_Id;
   begin
-    Id := Socket.Host_Id_Of (Asu_Ts (Host.Name));
+    Id := Socket.Host_Id_Of (Host.Name.Image);
     Host := (Kind => Tcp_Util.Host_Id_Spec, Id => Id);
   exception
     when Socket.Soc_Name_Not_Found =>
@@ -507,11 +507,11 @@ package body Fifos is
       Dictio_State : Dictio_Lib.Dictio_State_List := Dictio_Lib.Unavailable;
 
       function Fifo_Name_Of (Item_Name : String) return String is
-        Suff_Len : constant Integer := Asu.Length (Name_Prefix);
+        Suff_Len : constant Integer := Name_Prefix.Length;
       begin
         if Item_Name'Length <= Suff_Len
         or else Item_Name(Item_Name'First .. Item_Name'First + Suff_Len - 1)
-             /= Asu_Ts (Name_Prefix) then
+             /= Name_Prefix.Image then
           raise Data_Error;
         end if;
         return Item_Name(Suff_Len+1 .. Item_Name'Last);
@@ -524,16 +524,16 @@ package body Fifos is
         Txt : Asu_Us;
         Sep_Index : Natural;
       begin
-        Txt := Asu_Tus (Data);
-        Sep_Index := String_Mng.Locate (Asu_Ts (Txt), Separator);
-        if Sep_Index <= 1 or else Sep_Index = Asu.Length (Txt) then
+        Txt := Tus (Data);
+        Sep_Index := String_Mng.Locate (Txt.Image, Separator);
+        if Sep_Index <= 1 or else Sep_Index = Txt.Length then
           raise Data_Error;
         end if;
 
         begin
-          Host := Asu.Unbounded_Slice (Txt, 1, Sep_Index - 1);
+          Host := Txt.Uslice (1, Sep_Index - 1);
           Port := Tcp_Util.Port_Num'Value(
-            Asu.Slice (Txt, Sep_Index + 1, Asu.Length(Txt)) );
+            Txt.Slice (Sep_Index + 1, Txt.Length) );
         exception
           when others =>
             raise Data_Error;
@@ -608,11 +608,11 @@ package body Fifos is
         if Environ.Is_Set (Name_Prefix_Name) then
           Environ.Get_Us (Name_Prefix_Name, Name_Prefix);
         else
-          Name_Prefix := Asu_Tus (Default_Name_Prefix);
+          Name_Prefix := Tus (Default_Name_Prefix);
         end if;
         -- Check a name based on this prefix is accepted by dictio
-        if not Dictio_Lib.Is_Valid_Item_Name (Asu_Ts (Name_Prefix) & "a") then
-          Name_Prefix := Asu_Tus (Default_Name_Prefix);
+        if not Dictio_Lib.Is_Valid_Item_Name (Name_Prefix.Image & "a") then
+          Name_Prefix := Tus (Default_Name_Prefix);
         end if;
 
         Init_Done := True;
@@ -630,11 +630,11 @@ package body Fifos is
                                             Port : in Tcp_Util.Port_Num) is
       begin
         Init;
-        if Asu.Length (Name_Prefix) + Fifo_Name'Length >
+        if Name_Prefix.Length + Fifo_Name'Length >
                      Dictio_Lib.Max_Name_Len then
           raise Name_Too_Long;
         end if;
-        Dictio_Lib.Set (Asu_Ts (Name_Prefix)
+        Dictio_Lib.Set (Name_Prefix.Image
                       & Fifo_Name, Host & Separator
                       & Normal (Integer(Port), 5, Gap => '0'));
       exception
@@ -657,13 +657,13 @@ package body Fifos is
       begin
         Init;
         Got := False;
-        if Asu.Length (Name_Prefix) + Fifo_Name'Length
+        if Name_Prefix.Length + Fifo_Name'Length
                > Dictio_Lib.Max_Name_Len then
           raise Name_Too_Long;
         end if;
 
         begin
-          Split (Dictio_Lib.Get (Asu_Ts (Name_Prefix) & Fifo_Name),
+          Split (Dictio_Lib.Get (Name_Prefix.Image & Fifo_Name),
                  Host, Port);
         exception
           when Dictio_Lib.No_Dictio =>
@@ -686,11 +686,11 @@ package body Fifos is
       procedure Notify (Fifo_Name : in String; On : in Boolean) is
       begin
         Init;
-        if Asu.Length (Name_Prefix) + Fifo_Name'Length
+        if Name_Prefix.Length + Fifo_Name'Length
                   > Dictio_Lib.Max_Name_Len then
           raise Name_Too_Long;
         end if;
-        Dictio_Lib.Notify (Asu_Ts (Name_Prefix) & Fifo_Name, True, On);
+        Dictio_Lib.Notify (Name_Prefix.Image & Fifo_Name, True, On);
       exception
         when Dictio_Lib.No_Dictio =>
           raise No_Dictio;
@@ -770,7 +770,7 @@ package body Fifos is
       else
         -- Accept
         Rec.State := Connected;
-        Rec.Port.Name := Asu_Tus (Fifo_Name);
+        Rec.Port.Name := Tus (Fifo_Name);
         Acc := List.Insert (Rec);
         Connection.Accepte (Acc);
         -- Set dictio

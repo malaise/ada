@@ -8,9 +8,9 @@ procedure Tios is
   Disco : Boolean;
   use type Ios.Event_Kind_List;
 begin
-  Txt := Asu_Tus (Port'Img);
-  Asu.Delete (Txt, 1, 1);
-  Basic_Proc.Put_Line_Output ("Initializing on port " & Asu_Ts (Txt));
+  Txt := Tus (Port'Img);
+  Txt.Delete (1, 1);
+  Basic_Proc.Put_Line_Output ("Initializing on port " & Txt.Image);
   Ios.Init (Txt);
 
   Basic_Proc.Put_Line_Output ("Arming timer for 1 min");
@@ -32,7 +32,7 @@ begin
       when Ios.Local_Timeout =>
         null;
       when Ios.Got_Sentence =>
-        Basic_Proc.Put_Line_Output ("  >" & Asu_Ts (Evt.Sentence) & "<");
+        Basic_Proc.Put_Line_Output ("  >" & Evt.Sentence.Image & "<");
       when Ios.Global_Timeout =>
         exit;
       when Ios.Disconnection =>
@@ -44,8 +44,8 @@ begin
     end case;
   end loop;
 
-  Txt := Asu_Tus ("Toto");
-  Basic_Proc.Put_Line_Output ("Sending """ & Asu_Ts (Txt) & """");
+  Txt := Tus ("Toto");
+  Basic_Proc.Put_Line_Output ("Sending """ & Txt.Image & """");
   Ios.Send (Txt, Disco);
   if Disco then
     Basic_Proc.Put_Line_Output ("Disconnected");

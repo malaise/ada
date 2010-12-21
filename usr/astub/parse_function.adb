@@ -18,14 +18,14 @@ begin
   -- Next (significant) word is either '(' or "return". Get it
   Parse_To_Ends (
       End_Criteria => (
-          (Parser_Ada.Delimiter, Asu_Tus("(")),
-          (Parser_Ada.Reserved_Word, Asu_Tus("return")) ),
+          (Parser_Ada.Delimiter, Tus ("(")),
+          (Parser_Ada.Reserved_Word, Tus ("return")) ),
       Level => Level,
       Put_Comments => True,
       Up_To_Next_Significant => False);
   Word := Words.Read;
 
-  if Asu_Ts (Word.Text) = "(" then
+  if Word.Text.Image = "(" then
     -- Like Parse_To_End ("return"); but
     -- store argument formal names in Args, separated by ", "
     In_Id := True;
@@ -33,9 +33,9 @@ begin
     loop
       Word := Parser_Ada.Multiparse.Get (True);
       Words.Add (Word);
-      if Asu_Ts (Word.Text) = "(" then
+      if Word.Text.Image = "(" then
         Nb_Parent := Nb_Parent + 1;
-      elsif Asu_Ts (Word.Text) = ")" then
+      elsif Word.Text.Image = ")" then
         if Nb_Parent = 0 then
            Common.Error (")");
         end if;
@@ -44,16 +44,16 @@ begin
       elsif In_Id and then Nb_Parent = 1
       and then Word.Lexic = Parser_Ada.Identifier then
         -- Append this argument name
-        if Asu.Length (Args) /= 0 then
-          Asu.Append (Args, ", ");
+        if Args.Length /= 0 then
+          Args.Append (", ");
         end if;
-        Asu.Append (Args, Word.Text);
-      elsif Asu_Ts (Word.Text) = ":" and then Nb_Parent = 1 then
+        Args.Append (Word.Text);
+      elsif Word.Text.Image = ":" and then Nb_Parent = 1 then
         -- End of argument formal names (entering in | out | inout | access ...)
         In_Id := False;
-      elsif Asu_Ts (Word.Text) = "return" and then Nb_Parent = 0 then
+      elsif Word.Text.Image = "return" and then Nb_Parent = 0 then
         exit;
-      elsif Asu_Ts (Word.Text) = ";" and then Nb_Parent = 1 then
+      elsif Word.Text.Image = ";" and then Nb_Parent = 1 then
         -- End of previous argument, expecting a new one
         In_Id := True;
       end if;
@@ -63,11 +63,11 @@ begin
   end if;
 
   -- Parse return
-  if Asu_Ts (Word.Text) = "return" then
+  if Word.Text.Image = "return" then
     Parse_To_End (Parser_Ada.Delimiter, ";", Level, Put_Comments => False,
                   Up_To_Next_Significant => False);
   else
-    Common.Error (Asu_Ts (Word.Text));
+    Common.Error (Word.Text.Image);
   end if;
 
   -- If a renames or generic instanciation, put as comment
@@ -96,12 +96,12 @@ begin
   --   return <name> (<args>);
   -- end <name>;
   Output.Put_Line ("begin", False, Level, True);
-  Output.Put ("return " & Asu_Ts (Name), False, Level + 1, True);
-  if Asu.Length (Args) /= 0 then
-    Output.Put (" (" & Asu_Ts (Args) & ")", False);
+  Output.Put ("return " & Name.Image, False, Level + 1, True);
+  if Args.Length /= 0 then
+    Output.Put (" (" & Args.Image & ")", False);
   end if;
   Output.Put_Line (";", False);
-  Output.Put_Line ("end " & Asu_Ts (Name) & ";", False, Level, True);
+  Output.Put_Line ("end " & Name.Image & ";", False, Level, True);
 
 end Parse_Function;
 

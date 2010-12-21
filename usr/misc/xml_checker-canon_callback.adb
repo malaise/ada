@@ -18,7 +18,7 @@ procedure Canon_Callback (Ctx  : in Xml_Parser.Ctx_Type;
   -- simple attribute has Suffix set to it
   -- attribute with prefix:suffix, but prefix not defined, is split
   -- attribute with prefix:suffix and prefix defined has Uri and Suffix set
-  Xmlns : constant Asu_Us := Asu_Tus ("xmlns");
+  Xmlns : constant Asu_Us := Tus ("xmlns");
   type Attr_Rec is record
     -- Index in Node.Attributes
     Index : Positive;
@@ -28,11 +28,10 @@ procedure Canon_Callback (Ctx  : in Xml_Parser.Ctx_Type;
   end record;
   type Attr_Array is array (Positive range <>) of Attr_Rec;
   function Less_Than (A, B : Attr_Rec) return Boolean is
-    use type Asu_Us;
   begin
-    if A.Uri /= Asu_Null and then B.Uri  = Asu_Null then return False; end if;
-    if A.Uri  = Asu_Null and then B.Uri /= Asu_Null then return True;  end if;
-    if A.Uri /= Asu_Null then
+    if not A.Uri.Is_Null and then     B.Uri.Is_Null then return False; end if;
+    if     A.Uri.Is_Null and then not B.Uri.Is_Null then return True;  end if;
+    if not A.Uri.Is_Null then
       if A.Uri /= B.Uri then return A.Uri < B.Uri;
       else return A.Suffix < B.Suffix;
       end if;
@@ -49,18 +48,18 @@ procedure Canon_Callback (Ctx  : in Xml_Parser.Ctx_Type;
 
   -- Fix text or attribute value
   procedure Fix_Chars (Str : in out Asu_Us; Is_Text : in Boolean) is
-    Len : Natural := Asu.Length (Str);
+    Len : Natural := Str.Length;
     I : Positive;
     procedure Subchar (S : in String) is
     begin
-      Asu.Replace_Slice (Str, I, I, S);
+      Str.Replace (I, I, S);
       Len := Len + S'Length - 1;
     end Subchar;
   begin
     I := 1;
     loop
       exit when I > Len;
-      case Asu.Element (Str, I) is
+      case Str.Element (I) is
         when '&' => Subchar ("&amp;");
         when '<' => Subchar ("&lt;");
         when Carriage_Return => Subchar ("&#xD;");
@@ -75,11 +74,11 @@ procedure Canon_Callback (Ctx  : in Xml_Parser.Ctx_Type;
   end Fix_Chars;
 
   use type Xml_Parser.Node_Kind_List, Xml_Parser.Attributes_Access,
-           Xml_Parser.Stage_List, Asu_Us;
+           Xml_Parser.Stage_List;
 begin
   -- Skip xml and DOCTYPE
   if Node.Stage = Xml_Parser.Prologue then
-    if Node.Kind = Xml_Parser.Element and then Asu_Ts (Node.Name) = "xml" then
+    if Node.Kind = Xml_Parser.Element and then Node.Name.Image = "xml" then
       return;
     elsif Node.Kind = Xml_Parser.Text then
       return;
@@ -105,16 +104,16 @@ begin
           Attrs(I).Prefix := Xmlns;
           Done := True;
         else
-          Col := String_Mng.Locate (Asu_Ts (Node_Attrs(I).Name), ":");
+          Col := String_Mng.Locate (Node_Attrs(I).Name.Image, ":");
           if Col = 0 then
             -- Pure attribute
             Attrs(I).Suffix := Node_Attrs(I).Name;
             Done := True;
           else
             -- xmlns:suffix
-            Attrs(I).Prefix := Asu_Uslice (Node_Attrs(I).Name, 1, Col - 1);
-            Attrs(I).Suffix := Asu_Uslice ( Node_Attrs(I).Name,
-                                  Col + 1, Asu.Length (Node_Attrs(I).Name));
+            Attrs(I).Prefix := Node_Attrs(I).Name.Uslice (1, Col - 1);
+            Attrs(I).Suffix := Node_Attrs(I).Name.Uslice (
+                                  Col + 1, Node_Attrs(I).Name.Length);
             if Attrs(I).Prefix = Xmlns then
               Done := True;
             end if;
@@ -160,16 +159,16 @@ begin
     Clone.Has_Children := True;
     Clone.Is_Mixed := True;
     -- Start Tag
-    Str := Asu_Tus (Xml_Parser.Generator.Image (Ctx, Clone, Format, Width));
-    Out_Flow.Put (Asu_Ts (Str));
+    Str := Tus (Xml_Parser.Generator.Image (Ctx, Clone, Format, Width));
+    Out_Flow.Put (Str.Image);
     -- End Tag
     Clone.Creation := False;
     Clone.Attributes := null;
   end if;
 
   -- Use the Image of Xml_Parser.Generator
-  Str := Asu_Tus (Xml_Parser.Generator.Image (Ctx, Clone, Format, Width));
-  Len := Asu.Length (Str);
+  Str := Tus (Xml_Parser.Generator.Image (Ctx, Clone, Format, Width));
+  Len := Str.Length;
 
   -- Remove Leading Line_Feed before Root
   -- No prologue at all
@@ -181,9 +180,9 @@ begin
   and then Clone.Kind = Xml_Parser.Element
   -- Starting by Lf
   and then Len >= 1
-  and then Asu.Element (Str, 1) = Line_Feed then
+  and then Str.Element (1) = Line_Feed then
     -- Leading Line_Feed of root: remove it
-    Asu.Delete (Str, 1, 1);
+    Str.Delete (1, 1);
     Len := Len - 1;
   end if;
   Cb_Status := Xml_Checker.Done;
@@ -196,8 +195,8 @@ begin
   and then not Clone.Creation)
   or else Clone.Stage = Xml_Parser.Tail then
     if Len >= 1
-    and then Asu.Element (Str, Len) = Line_Feed then
-      Asu.Delete (Str, Len, Len);
+    and then Str.Element (Len) = Line_Feed then
+      Str.Delete (Len, Len);
       Len := Len - 1;
     end if;
   end if;
@@ -208,7 +207,7 @@ begin
   end if;
 
   -- Final put
-  Out_Flow.Put (Asu_Ts (Str));
+  Out_Flow.Put (Str.Image);
 
   -- Update for next call
   Stage := Clone.Stage;

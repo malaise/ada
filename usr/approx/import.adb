@@ -1,4 +1,4 @@
-with As.U; use As.U;
+with As.U.Utils; use As.U, As.U.Utils;
 with Ada.Text_Io;
 with Argument, Get_Line;
 with Points, Point_Str, File;
@@ -53,8 +53,8 @@ begin
     end if;
 
     begin
-      Point.X := Point_Str.Coordinate_Value(Asu_Ts (Line.Element (1)));
-      Point.Y := Point_Str.Coordinate_Value(Asu_Ts (Line.Element (2)));
+      Point.X := Point_Str.Coordinate_Value(Line.Element (1).Image);
+      Point.Y := Point_Str.Coordinate_Value(Line.Element (2).Image);
     exception
       when others =>
         Error ("At line "

@@ -4,8 +4,6 @@ with As.U; use As.U;
 with Debug, Sourcer, Tree_Mng, Sort, Output, Checker;
 procedure Lsadeps is
 
-  use type Asu_Us;
-
   -- Usage and Error
   procedure Usage is
   begin
@@ -44,13 +42,13 @@ procedure Lsadeps is
 
   -- The keys and descriptor of parsed keys
   Keys : constant Argument_Parser.The_Keys_Type := (
-   01 => ('l', Asu_Tus ("list"), False, False),
-   02 => ('t', Asu_Tus ("tree"), False, False),
-   03 => ('r', Asu_Tus ("revert"), False, False),
-   04 => ('f', Asu_Tus ("files"), False, False),
-   05 => ('I', Asu_Tus ("include"), True, True),
-   06 => ('h', Asu_Tus ("help"), False, False),
-   07 => ('c', Asu_Tus ("check"), False, False));
+   01 => ('l', Tus ("list"), False, False),
+   02 => ('t', Tus ("tree"), False, False),
+   03 => ('r', Tus ("revert"), False, False),
+   04 => ('f', Tus ("files"), False, False),
+   05 => ('I', Tus ("include"), True, True),
+   06 => ('h', Tus ("help"), False, False),
+   07 => ('c', Tus ("check"), False, False));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
   -- Option management
@@ -119,7 +117,7 @@ begin
     elsif Arg_Dscr.Get_Nb_Embedded_Arguments /= 0 then
       Error ("Invalid argument");
     end if;
-    Target := Asu_Tus (Arg_Dscr.Get_Option (Argument_Parser.No_Key_Index));
+    Target := Tus (Arg_Dscr.Get_Option (Argument_Parser.No_Key_Index));
   end if;
 
   if Check_Mode then
@@ -131,11 +129,11 @@ begin
     -- Includes: must not be empty
     -- Declare include priorities
     for I in 1 .. Arg_Dscr.Get_Nb_Occurences (5) loop
-      Dir := Asu_Tus (Arg_Dscr.Get_Option (5, I));
-      if Dir = Asu_Null then
+      Dir := Tus (Arg_Dscr.Get_Option (5, I));
+      if Dir.Is_Null then
         Error ("Missing include dir");
       end if;
-      Sort.Set_Prio (Asu_Tus (Arg_Dscr.Get_Option (5, I)), I);
+      Sort.Set_Prio (Tus (Arg_Dscr.Get_Option (5, I)), I);
     end loop;
   end if;
 
@@ -159,7 +157,7 @@ begin
   -- CHECK TARGET --
   ------------------
   -- Check that target is found, as spec or standalone body and is local
-  Unit.Unit := Asu_Tus (Mixed_Str (Asu_Ts (Target)));
+  Unit.Unit := Tus (Mixed_Str (Target.Image));
   Unit.Kind := Sourcer.Unit_Spec;
   Sourcer.List.Search (Unit, Found);
   if not Found then
@@ -167,7 +165,7 @@ begin
     Sourcer.List.Search (Unit, Found);
   end if;
   if not Found then
-    Error ("Target unit " & Asu_Ts (Unit.Unit) & " not found");
+    Error ("Target unit " & Unit.Unit.Image & " not found");
   end if;
   Sourcer.List.Read (Unit);
   if Unit.Kind = Sourcer.Unit_Body and then not Unit.Standalone then

@@ -276,16 +276,16 @@ begin
     when others =>
       raise Arg_Error;
   end;
-  if Server and then not Asu_Is_Null (Server_Name) then
+  if Server and then not Server_Name.Is_Null then
     raise Arg_Error;
-  elsif not Server and then Asu_Is_Null (Server_Name) then
+  elsif not Server and then Server_Name.Is_Null then
     raise Arg_Error;
   end if;
 
   -- Port name or num
   begin
     Argument.Get_Parameter (Server_Port_Name, 1, "P");
-    if Asu_Is_Null (Server_Port_Name) then
+    if Server_Port_Name.Is_Null then
       raise Arg_Error;
     end if;
   exception
@@ -301,7 +301,7 @@ begin
   end;
 
   -- Set ports
-  if not Asu_Is_Null (Server_Port_Name) then
+  if not Server_Port_Name.Is_Null then
     Local_Port := (Kind => Tcp_Util.Port_Name_Spec, Name => Server_Port_Name);
     Remote_Port := (Kind => Tcp_Util.Port_Name_Spec, Name => Local_Port.Name);
   else

@@ -1,4 +1,4 @@
-with As.U; use As.U;
+with As.U.Utils; use As.U, As.U.Utils;
 with Basic_Proc, Argument;
 with Analist;
 procedure T_Analist is
@@ -19,7 +19,7 @@ begin
     Basic_Proc.Put_Line_Output (Argument.Get_Parameter (Occurence => I)
                                 & " -->");
     for J in 1 .. Anagrams.Length loop
-      Basic_Proc.Put_Line_Output (Asu_Ts (Anagrams.Element (J)));
+      Basic_Proc.Put_Line_Output (Anagrams.Element(J).Image);
     end loop;
   end loop;
 end T_Analist;

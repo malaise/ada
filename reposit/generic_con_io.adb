@@ -21,9 +21,9 @@ package body Generic_Con_Io is
          Xi := Colors'Pos(I) - Colors'Pos(Color01);
          X_Colors(Xi) := The_Color_Names(I);
          -- Lower case and '_' -> ' '
-         X_Colors(Xi) := Asu_Tus (Lower_Str (Asu_Ts (X_Colors(Xi))));
-         X_Colors(Xi) := Asu_Tus (String_Mng.Replace (Asu_Ts (X_Colors(Xi)),
-                                                       "_", " "));
+         X_Colors(Xi) := Tus (Lower_Str (X_Colors(Xi).Image));
+         X_Colors(Xi) := Tus (String_Mng.Replace (
+             X_Colors(Xi).Image, "_", " "));
       end loop;
       X_Mng.X_Initialise ("", X_Colors);
       -- Because we handle Ctrl-C in (Get_Key_Time) we shall handle signals
@@ -41,10 +41,9 @@ package body Generic_Con_Io is
   end Set_Colors;
 
   function Color_Of (Name : String) return Effective_Colors is
-    use type Asu_Us;
   begin
     for I in The_Color_Names'Range loop
-      if Asu_Ts (The_Color_Names(I)) = Name then
+      if The_Color_Names(I).Image = Name then
         return I;
       end if;
     end loop;
@@ -53,7 +52,7 @@ package body Generic_Con_Io is
 
   function Color_Name_Of (Color : Effective_Colors) return String is
   begin
-    return Asu_Ts (The_Color_Names(Color));
+    return The_Color_Names(Color).Image;
   end Color_Name_Of;
 
   package body One_Con_Io is
@@ -923,10 +922,10 @@ package body Generic_Con_Io is
                             Time_Out   : in Delay_Rec :=  Infinite_Delay;
                             Echo       : in Boolean := True) is
       -- Local string for working on
-      Lstr        : Asu_Us := Asu_Tus (Language.Unicode_To_String (Str));
+      Lstr        : Asu_Us := Tus (Language.Unicode_To_String (Str));
       -- Indexes in Lstr of put positions
       Indexes     : Language.Index_Array
-                  := Language.All_Indexes_Of (Asu_Ts(Lstr));
+                  := Language.All_Indexes_Of (Lstr.Image);
       -- Constant put width
       Width       : constant Natural
                   := Indexes'Length;
@@ -953,15 +952,14 @@ package body Generic_Con_Io is
         if Position > Indexes'Last then
           return 0;
         end if;
-        Last_Char_Nb := Language.Nb_Chars (
-                             Asu.Element (Lstr, Indexes(Position)));
+        Last_Char_Nb := Language.Nb_Chars (Lstr.Element (Indexes(Position)));
         return Indexes(Position) + Last_Char_Nb - 1;
       end End_Index_Of;
       -- Return index of last significant char of Str
       function Parse return Natural is
       begin
         for I in reverse 1 .. Width loop
-          if Asu.Element (Lstr, Indexes(I)) /= ' ' then
+          if Lstr.Element (Indexes(I)) /= ' ' then
             -- This character is the last meaningfull
             return End_Index_Of (I);
           end if;
@@ -977,7 +975,7 @@ package body Generic_Con_Io is
         if Last_Pos < First_Pos then
           return "";
         else
-          return Asu.Slice (Lstr, Indexes(First_Pos), End_Index_Of (Last_Pos));
+          return Lstr.Slice (Indexes(First_Pos), End_Index_Of (Last_Pos));
         end if;
       end Slice;
 
@@ -994,8 +992,8 @@ package body Generic_Con_Io is
         end if;
         Ifirst := Indexes (At_Pos);
         Ilast := End_Index_Of (At_Pos + Len - 1);
-        Asu.Replace_Slice (Lstr, Ifirst, Ilast, By);
-        Indexes := Language.All_Indexes_Of (Asu_Ts(Lstr));
+        Lstr.Replace (Ifirst, Ilast, By);
+        Indexes := Language.All_Indexes_Of (Lstr.Image);
       end Overwrite;
 
       procedure Cursor (Show : in Boolean) is
@@ -1019,7 +1017,6 @@ package body Generic_Con_Io is
 
       use type Timers.Delay_Rec, Timers.Delay_List;
       use type X_Mng.Byte;
-      use type Asu_Us;
     begin
       -- Time at which the get ends
       if Time_Out = Timers.Infinite_Delay
@@ -1145,8 +1142,7 @@ package body Generic_Con_Io is
       -- Put the string
       Move(First_Pos, Name);
       if Echo then
-        Put(Asu_Ts(Lstr), Name,
-            Foreground, Background, Move => False);
+        Put(Lstr.Image, Name, Foreground, Background, Move => False);
       end if;
 
       Done := False;
@@ -1277,7 +1273,7 @@ package body Generic_Con_Io is
                 -- Ctrl Suppr : clear field + home
                 Pos := 1;
                 Lstr := Width * ' ';
-                Indexes := Language.All_Indexes_Of (Asu_Ts(Lstr));
+                Indexes := Language.All_Indexes_Of (Lstr.Image);
                 Redraw := True;
               end if;
             when others =>
@@ -1314,12 +1310,11 @@ package body Generic_Con_Io is
         -- Redraw if necessary
         if Redraw and then Echo then
           Move(First_Pos, Name);
-          Put(Asu_Ts(Lstr), Name,
-              Foreground, Background, Move => False);
+          Put(Lstr.Image, Name, Foreground, Background, Move => False);
        end if;
        exit when Done;
       end loop;
-      Str := Language.String_To_Unicode (Asu_Ts (Lstr));
+      Str := Language.String_To_Unicode (Lstr.Image);
     end Put_Then_Get;
 
     -- Idem but with a Wide_String

@@ -42,13 +42,12 @@ package body Computer is
   function Image (Element : Var_Rec) return String is
   begin
     if Element.Persistent then
-      return "P " & Asu_Ts (Element.Name);
+      return "P " & Element.Name.Image;
     else
-      return "V " & Asu_Ts (Element.Name);
+      return "V " & Element.Name.Image;
     end if;
   end Image;
   function "=" (Current : Var_Rec ; Criteria : Var_Rec ) return Boolean is
-    use type Asu_Us;
   begin
     return Current.Persistent = Criteria.Persistent
     and then Current.Name = Criteria.Name;
@@ -69,7 +68,7 @@ package body Computer is
       pragma Unreferenced (Go_On);
     begin
       if not Current.Persistent then
-        Asu.Append (Vol_List, Asu_Ts (Current.Name) & " ");
+        Vol_List.Append (Current.Name.Image & " ");
       end if;
     end List_Iter;
     Iter : Parser.Iterator;
@@ -84,14 +83,13 @@ package body Computer is
     -- Make list of names of volatile variables
     Var_List.Iterate (List_Iter'Access);
     -- Delete each volatile variable
-    Iter.Set (Asu_Ts (Vol_List),
-              Parser.Is_Space_Or_Htab_Function'Access);
+    Iter.Set (Vol_List.Image, Parser.Is_Space_Or_Htab_Function'Access);
     loop
       declare
         Name : constant String := Iter.Next_Word;
       begin
         exit when Name = "";
-        Var.Name := Asu_Tus (Name);
+        Var.Name := Tus (Name);
         Var.Persistent := False;
         Trace ("Deleting volatile " & Image (Var));
         Var_List.Delete (Var);
@@ -112,7 +110,7 @@ package body Computer is
       raise Invalid_Variable;
     end if;
     -- Check if this variable exists (persistent or not) and is modifiable
-    Var.Name := Asu_Tus (Name);
+    Var.Name := Tus (Name);
     Var.Persistent := False;
     Var_List.Search (Var, Found);
     if Found then
@@ -137,7 +135,7 @@ package body Computer is
     end if;
     -- Insert or overwrite modifiable variable, or insert new constant
     Var.Persistent := Persistent;
-    Var.Value := Asu_Tus (Value);
+    Var.Value := Tus (Value);
     Var.Modifiable := Modifiable;
     Var_List.Insert (Var);
     if Modifiable then
@@ -156,7 +154,7 @@ package body Computer is
       raise Invalid_Variable;
     end if;
     -- First check if variable is volatile
-    Crit.Name := Asu_Tus (Name);
+    Crit.Name := Tus (Name);
     Crit.Persistent := False;
     Var_List.Search (Crit, Found);
     if Found then
@@ -179,18 +177,18 @@ package body Computer is
       raise Invalid_Variable;
     end if;
     -- First check if variable is volatile
-    Res.Name := Asu_Tus (Name);
+    Res.Name := Tus (Name);
     Res.Persistent := False;
     Var_List.Search (Res, Found);
     if Found then
       Var_List.Read (Res);
-      Trace ("Read >" & Asu_Ts (Res.Value) & "<");
+      Trace ("Read >" & Res.Value.Image & "<");
       return Res;
     end if;
     -- Then try to read this variable as persistent
     Res.Persistent := True;
     Var_List.Read (Res);
-    Trace ("Read >" & Asu_Ts (Res.Value) & "<");
+    Trace ("Read >" & Res.Value.Image & "<");
     return Res;
   exception
     when Var_Mng.Not_In_List =>
@@ -203,7 +201,7 @@ package body Computer is
   begin
     Trace ("Getting >" & Name & "<");
     Var := Read (Name);
-    return Asu_Ts (Var.Value);
+    return Var.Value.Image;
   end Get;
 
    -- Get characteristics
@@ -262,7 +260,7 @@ package body Computer is
     Exp : Asu_Us;
   begin
     -- Replace each operator and parenthese 'op' by ' op '
-    Exp := Asu_Tus (Expression);
+    Exp := Tus (Expression);
     -- No space not Htab
     for I in Expression'Range loop
       if Parser.Is_Space_Or_Htab_Function (Expression(I)) then
@@ -270,28 +268,28 @@ package body Computer is
       end if;
     end loop;
     -- Variables must not follow one each other (${var}${var})
-    if String_Mng.Locate (Asu_Ts (Exp), "}$") /= 0 then
+    if String_Mng.Locate (Exp.Image, "}$") /= 0 then
       raise Invalid_Expression;
     end if;
     -- Isolate variables
-    Exp := Asu_Tus (String_Mng.Replace (Asu_Ts (Exp), "${", " ${"));
-    Exp := Asu_Tus (String_Mng.Replace (Asu_Ts (Exp), "}", "} "));
+    Exp := Tus (String_Mng.Replace (Exp.Image, "${", " ${"));
+    Exp := Tus (String_Mng.Replace (Exp.Image, "}", "} "));
     -- Expand variables
-    Exp := Asu_Tus (Eval (Asu_Ts (Exp)));
+    Exp := Tus (Eval (Exp.Image));
 
     -- +X and -X will be analysed while parsing
-    Exp := Asu_Tus (String_Mng.Replace (Asu_Ts (Exp), "+", " +"));
-    Exp := Asu_Tus (String_Mng.Replace (Asu_Ts (Exp), "-", " -"));
-    Exp := Asu_Tus (String_Mng.Replace (Asu_Ts (Exp), "*", " * "));
-    Exp := Asu_Tus (String_Mng.Replace (Asu_Ts (Exp), "/", " / "));
-    Exp := Asu_Tus (String_Mng.Replace (Asu_Ts (Exp), "(", " ( "));
-    Exp := Asu_Tus (String_Mng.Replace (Asu_Ts (Exp), ")", " ) "));
+    Exp := Tus (String_Mng.Replace (Exp.Image, "+", " +"));
+    Exp := Tus (String_Mng.Replace (Exp.Image, "-", " -"));
+    Exp := Tus (String_Mng.Replace (Exp.Image, "*", " * "));
+    Exp := Tus (String_Mng.Replace (Exp.Image, "/", " / "));
+    Exp := Tus (String_Mng.Replace (Exp.Image, "(", " ( "));
+    Exp := Tus (String_Mng.Replace (Exp.Image, ")", " ) "));
     -- Replace each "  " by " "
-    while String_Mng.Locate (Asu_Ts (Exp), "  ") /= 0 loop
-      Exp := Asu_Tus (String_Mng.Replace (Asu_Ts (Exp), "  ", " "));
+    while String_Mng.Locate (Exp.Image, "  ") /= 0 loop
+      Exp := Tus (String_Mng.Replace (Exp.Image, "  ", " "));
     end loop;
-    Trace ("Fixed expression: " & Asu_Ts (Exp));
-    return Asu_Ts (Exp);
+    Trace ("Fixed expression: " & Exp.Image);
+    return Exp.Image;
   end Fix;
 
   -- List of members of parsed expression

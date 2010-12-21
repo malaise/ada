@@ -34,20 +34,20 @@ package Generic_Con_Io is
   -- Default colors
   type Colors_Definition is array (Effective_Colors) of Asu_Us;
   Default_Colors : constant Colors_Definition
-                 := (Color01 => Asu_Tus ("Light_Grey"),
-                     Color02 => Asu_Tus ("Blue"),
-                     Color03 => Asu_Tus ("Dark_Green"),
-                     Color04 => Asu_Tus ("Cyan"),
-                     Color05 => Asu_Tus ("Red"),
-                     Color06 => Asu_Tus ("Magenta"),
-                     Color07 => Asu_Tus ("Brown"),
-                     Color08 => Asu_Tus ("Black"),
-                     Color09 => Asu_Tus ("Dark_Grey"),
-                     Color10 => Asu_Tus ("Light_Blue"),
-                     Color11 => Asu_Tus ("Lime_Green"),
-                     Color12 => Asu_Tus ("Orange"),
-                     Color13 => Asu_Tus ("Yellow"),
-                     Color14 => Asu_Tus ("White") );
+                 := (Color01 => Tus ("Light_Grey"),
+                     Color02 => Tus ("Blue"),
+                     Color03 => Tus ("Dark_Green"),
+                     Color04 => Tus ("Cyan"),
+                     Color05 => Tus ("Red"),
+                     Color06 => Tus ("Magenta"),
+                     Color07 => Tus ("Brown"),
+                     Color08 => Tus ("Black"),
+                     Color09 => Tus ("Dark_Grey"),
+                     Color10 => Tus ("Light_Blue"),
+                     Color11 => Tus ("Lime_Green"),
+                     Color12 => Tus ("Orange"),
+                     Color13 => Tus ("Yellow"),
+                     Color14 => Tus ("White") );
 
   -- Set_Colors raises Already_Init if called after Initialise
   Already_Init : exception;

@@ -116,7 +116,7 @@ procedure T_Tcp is
     My_Io.Put_Line ("Client connecting");
     begin
       Soc.Set_Destination_Name_And_Service (False,
-             Asu_Ts (Server_Name), Server_Port_Name);
+             Server_Name.Image, Server_Port_Name);
     exception
       when Socket.Soc_Conn_Refused =>
         My_Io.Put_Line ("Client connection has failed. Closing");

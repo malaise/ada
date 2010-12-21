@@ -35,7 +35,7 @@ package body Intra_Dictio is
     use type Args.Channel_Mode_List;
   begin
     Local_Host_Name.Set(Socket.Local_Host_Name);
-    Local_Name := Asu_Tus (Local_Host_Name.Get);
+    Local_Name := Tus (Local_Host_Name.Get);
 
     Mode := Channel_Mode_List(Args.Get_Mode);
 
@@ -68,7 +68,7 @@ package body Intra_Dictio is
       end;
 
       begin
-        Dictio_Channel.Del_Destination (Asu_Ts (Local_Name));
+        Dictio_Channel.Del_Destination (Local_Name.Image);
       exception
         when Error: others =>
           Dictio_Debug.Put_Error ("Cannot remove local host from destinations of "
@@ -207,7 +207,7 @@ package body Intra_Dictio is
   pragma Unreferenced (Length);
   begin
     -- Discard own message
-    if Mode = Bus and then Asu_Ts (Local_Name) = Parse (Message.Head.From) then
+    if Mode = Bus and then Local_Name.Image = Parse (Message.Head.From) then
       return;
     end if;
     if Dictio_Debug.Level_Array(Dictio_Debug.Intra) then
@@ -225,7 +225,7 @@ package body Intra_Dictio is
                  Status.Status_List'Val(Character'Pos(Message.Head.Stat)),
                  Boolean'Val(Character'Pos(Message.Head.Sync)),
                  Message.Head.Prio,
-                 Asu_Tus (Parse (Message.Head.From)),
+                 Tus (Parse (Message.Head.From)),
                  Message.Head.Kind,
                  Message.Item);
     end if;

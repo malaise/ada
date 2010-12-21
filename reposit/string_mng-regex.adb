@@ -124,15 +124,15 @@ package body String_Mng.Regex is
     Case_Char : Character;
   begin
     -- Compute Newby, insert matching substrings and hexa byte
-    Newby := Asu_Tus (By);
+    Newby := Tus (By);
     From := 1;
     loop
-      Esc := Locate_Escape (Asu_Ts (Newby), From, "\\0123456789x");
+      Esc := Locate_Escape (Newby.Image, From, "\\0123456789x");
       exit when Esc = 0;
-      Char := Asu.Element (Newby, Esc);
+      Char := Newby.Element (Esc);
       if Char = '\' then
         -- "\\" -> "\"
-        Newby := Asu.Delete (Newby, Esc, Esc);
+        Newby.Delete (Esc, Esc);
         From := Esc;
       elsif Char >= '0' and then Char <= '9' then
         -- "\i" -> matching slice of Working:
@@ -142,25 +142,24 @@ package body String_Mng.Regex is
         or else (Linfo(Info_Index).First_Offset = 1
                  and then Linfo(Info_Index).Last_Offset_Stop = 0) then
           -- "\i" -> "" if no such matching info
-          Newby := Asu.Delete (Newby, Esc - 1, Esc);
+          Newby.Delete (Esc - 1, Esc);
         else
-          Newby := Asu.Replace_Slice (Newby, Esc - 1, Esc,
-                     Asu.Slice (Working, Linfo(Info_Index).First_Offset,
-                                         Linfo(Info_Index).Last_Offset_Stop));
+          Newby.Replace (Esc - 1, Esc,
+                     Working.Slice (Linfo(Info_Index).First_Offset,
+                                    Linfo(Info_Index).Last_Offset_Stop));
           -- Move forward by the length of new string.
           -- One back to \ then length forward
           From := Esc + Linfo(Info_Index).Last_Offset_Stop
                       - Linfo(Info_Index).First_Offset;
         end if;
-      elsif Char = 'x' and then Esc <= Asu.Length (Newby) - 2 then
+      elsif Char = 'x' and then Esc <= Newby.Length - 2 then
         declare
           Byte : Integer;
         begin
-          Byte := 16#10# * Char_To_Hexa (Asu.Element (Newby, Esc + 1))
-                        +  Char_To_Hexa (Asu.Element (Newby, Esc + 2));
+          Byte := 16#10# * Char_To_Hexa (Newby.Element (Esc + 1))
+                        +  Char_To_Hexa (Newby.Element (Esc + 2));
           -- Replace "\xIJ" by the code
-          Newby := Asu.Replace_Slice (Newby, Esc - 1, Esc + 2,
-                        Character'Val (Byte) & "");
+          Newby.Replace (Esc - 1, Esc + 2, Character'Val (Byte) & "");
           From := Esc;
         exception
           when others =>
@@ -171,7 +170,7 @@ package body String_Mng.Regex is
         -- "\*" unchanged
         From := Esc;
       end if;
-      exit when From > Asu.Length (Newby);
+      exit when From > Newby.Length;
     end loop;
 
     -- Apply case switches to replacement string
@@ -179,7 +178,7 @@ package body String_Mng.Regex is
     Case_Char := 'c';
     From := 1;
     loop
-      Esc := Locate_Escape (Asu_Ts (Newby), From, "\umlc");
+      Esc := Locate_Escape (Newby.Image, From, "\umlc");
       if Esc = 0 then
         -- No more escape
         if Case_Char = 'c' then
@@ -188,12 +187,12 @@ package body String_Mng.Regex is
         else
           -- Apply last conversion: simulate an appended "\c"
           Char := 'c';
-          Esc := Asu.Length (Newby) + 2;
+          Esc := Newby.Length + 2;
         end if;
       else
         -- Store the new char and delete this sequence
-        Char := Asu.Element (Newby, Esc);
-        Newby := Asu.Delete (Newby, Esc - 1, Esc);
+        Char := Newby.Element (Esc);
+        Newby.Delete (Esc - 1, Esc);
         From := Esc - 1;
       end if;
       if Char = Case_Char then
@@ -206,36 +205,36 @@ package body String_Mng.Regex is
       elsif Case_Char = 'u' then
         -- Replace from Case_Start to \u by UPPERCASE
         --  of str from Case_Start to before \
-        Newby := Asu.Replace_Slice (Newby, Case_Start, Esc - 2,
-          Upper_Str (Asu.Slice (Newby, Case_Start, Esc - 2)));
+        Newby.Replace (Case_Start, Esc - 2,
+            Upper_Str (Newby.Slice (Case_Start, Esc - 2)));
         Case_Start := Esc - 1;
         Case_Char := Char;
       elsif Case_Char = 'm' then
         -- Replace from Case_Start to \u by Mixed
         --  of str from Case_Start to before \
-        Newby := Asu.Replace_Slice (Newby, Case_Start, Esc - 2,
-          Mixed_Str (Asu.Slice (Newby, Case_Start, Esc - 2)));
+        Newby.Replace (Case_Start, Esc - 2,
+            Mixed_Str (Newby.Slice (Case_Start, Esc - 2)));
         Case_Start := Esc - 1;
         Case_Char := Char;
       elsif Case_Char = 'l' then
         -- Replace from Case_Start to \u by lowercase
         --  of str from Case_Start to before \
-        Newby := Asu.Replace_Slice (Newby, Case_Start, Esc - 2,
-          Lower_Str (Asu.Slice (Newby, Case_Start, Esc - 2)));
+        Newby.Replace (Case_Start, Esc - 2,
+            Lower_Str (Newby.Slice (Case_Start, Esc - 2)));
         Case_Start := Esc - 1;
         Case_Char := Char;
       else
          -- Impossible, bug in Locate_Escape
          null;
       end if;
-      exit when From > Asu.Length (Newby);
+      exit when From > Newby.Length;
     end loop;
 
     -- Replace the matching slice of Working by the Newby
-    Asu.Replace_Slice (Working, Linfo(1).First_Offset, Linfo(1).Last_Offset_Stop,
-                       Asu_Ts (Newby));
+    Working.Replace (Linfo(1).First_Offset, Linfo(1).Last_Offset_Stop,
+                           Newby.Image);
     -- Update Start to the first character after the matching slice
-    Start := Linfo(1).First_Offset + Asu.Length (Newby);
+    Start := Linfo(1).First_Offset + Newby.Length;
   end Substit;
 
   -- Replace in Within all occurences of Criteria by By.
@@ -290,7 +289,7 @@ package body String_Mng.Regex is
       raise Invalid_Index;
     end if;
     -- Extract working string
-    Working := Asu_Tus (Within(I1 .. I2));
+    Working := Tus (Within(I1 .. I2));
 
     -- Compile regex
     Regular_Expressions.Compile (Compiled, Ok, Criteria);
@@ -304,20 +303,20 @@ package body String_Mng.Regex is
     loop
       -- Scan the string from start to end
       Start := 1;
-      Last := Asu.Length (Working);
+      Last := Working.Length;
       -- Substitutions may lead to empty string
       exit Cycles when Last = 0;
       Match_Found := False;
       Pass:
       loop
-        Regular_Expressions.Exec (Compiled, Asu_Ts (Working) (Start .. Last),
+        Regular_Expressions.Exec (Compiled, Working.Image(Start .. Last),
           N_Match, Info);
         -- No (more) match?
         exit Pass when N_Match = 0;
         -- A match, substitute and recompute Last
         Substit (Working, N_Match, Info, By, Start);
         Match_Found := True;
-        Last := Asu.Length (Working);
+        Last := Working.Length;
         -- Done with this pass
         exit Pass when Start > Last;
       end loop Pass;
@@ -328,7 +327,7 @@ package body String_Mng.Regex is
     end loop Cycles;
     -- Build and return result
     return Within (Within'First .. I1 - 1)
-         & Asu_Ts (Working)
+         & Working.Image
          & Within (I2 + 1 .. Within'Last);
   end Replace;
 
@@ -368,7 +367,7 @@ package body String_Mng.Regex is
       Result : String_Slice (1 .. N_Matched - 1);
     begin
       for I in Result'Range loop
-        Result(I) := Asu_Tus (
+        Result(I) := Tus (
          Str(Cells(I + 1).First_Offset .. Cells(I + 1).Last_Offset_Stop));
       end loop;
       return Result;
@@ -411,17 +410,17 @@ package body String_Mng.Regex is
           return Result;
         else
           -- Append this slice
-          Result.Append(Asu_Tus (Str(From_Index .. Cell.First_Offset - 1)));
+          Result.Append(Tus (Str(From_Index .. Cell.First_Offset - 1)));
           -- Tail starts after this separator
           From_Index := Cell.Last_Offset_Stop + 1;
         end if;
       elsif From_Index = Str'First then
         -- No match at all
-        Result := Asu_Ua.To_Unb_Array (Asu_Tus (Str));
+        Result := Asu_Ua.To_Unb_Array (Tus (Str));
         return Result;
       else
         -- No more match: Append tail
-        Result.Append(Asu_Tus (Str(From_Index .. Str'Last)));
+        Result.Append(Tus (Str(From_Index .. Str'Last)));
         return Result;
       end if;
     end loop;

@@ -18,7 +18,7 @@ begin
   loop
     Word := Parser_Ada.Multiparse.Get (True);
     declare
-      Str : constant String := Asu_Ts (Word.Text);
+      Str : constant String := Word.Text.Image;
     begin
       -- In any case, save this word
       Words.Add (Word);
@@ -58,7 +58,7 @@ begin
   loop
     Word := Parser_Ada.Multiparse.Get (True);
     declare
-      Str : constant String := Asu_Ts (Word.Text);
+      Str : constant String := Word.Text.Image;
     begin
       -- In any case, save this word
       Words.Add (Word);

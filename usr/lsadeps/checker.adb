@@ -46,7 +46,7 @@ package body Checker is
       end if;
 
       -- Extract each with of current unit
-      Iter.Set (Asu_Ts (Current.Witheds), Is_Sep'Access);
+      Iter.Set (Current.Witheds.Image, Is_Sep'Access);
       Check_All_Withs: loop
         One_With: declare
           Word : constant String := Iter.Next_Word;
@@ -56,8 +56,8 @@ package body Checker is
           exit Check_All_Withs when Word = "";
 
           -- Check that there is no duplicated with in Witheds
-          if String_Mng.Locate (Asu_Ts (Current.Witheds), Awith,
-                               Occurence => 2) /= 0 then
+          if String_Mng.Locate (Current.Witheds.Image, Awith,
+                                Occurence => 2) /= 0 then
             Basic_Proc.Put_Line_Output ("Unit " & Sourcer.Image (Current)
               & " withes twice " & Word);
             Result := False;
@@ -68,9 +68,9 @@ package body Checker is
             Parents.Rewind;
             Check_All_Parents: loop
               Parents.Read (Parent, Moved => Parent_Moved);
-              if String_Mng.Locate (Asu_Ts (Parent.Witheds), Awith) /= 0
+              if String_Mng.Locate (Parent.Witheds.Image, Awith) /= 0
               and then
-                 String_Mng.Locate (Asu_Ts (Current.Useds), Awith) = 0 then
+                 String_Mng.Locate (Current.Useds.Image, Awith) = 0 then
                 -- This local "with" appears in a parent
                 --   and there is no local "use"
                 Basic_Proc.Put_Line_Output ("Unit " & Sourcer.Image (Current)

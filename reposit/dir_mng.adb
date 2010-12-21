@@ -10,7 +10,7 @@ package body Dir_Mng is
      (El1.Kind = Directory.Dir or else El2.Kind = Directory.Dir) then
       return El1.Kind = Directory.Dir;
     else
-      return Asu_Ts (El1.Name) < Asu_Ts (El2.Name);
+      return El1.Name.Image < El2.Name.Image;
     end if;
   end Less_Than;
 
@@ -33,14 +33,14 @@ package body Dir_Mng is
       Directory.Next_Entry (Dir_Desc, File_Name);
 
       if Template = ""
-      or else Directory.File_Match(Asu_Ts (File_Name), Template) then
+      or else Directory.File_Match(File_Name.Image, Template) then
         File_Rec.Name := File_Name;
         begin
           if Dir = "" then
-            File_Rec.Kind := Directory.File_Kind (Asu_Ts (File_Name));
+            File_Rec.Kind := Directory.File_Kind (File_Name.Image);
           else
             File_Rec.Kind := Directory.File_Kind (
-             Dir & Path_Separator & Asu_Ts (File_Name));
+             Dir & Path_Separator & File_Name.Image);
           end if;
         exception
           when Directory.Name_Error | Directory.Access_Error =>
@@ -58,7 +58,7 @@ package body Dir_Mng is
                       Dir  : in Asu_Us := Asu_Null;
                       Template : in Asu_Us := Asu_Null) is
   begin
-    List_Dir (List, Asu_Ts (Dir), Asu_Ts (Template));
+    List_Dir (List, Dir.Image, Template.Image);
   end List_Dir;
 
 end Dir_Mng;

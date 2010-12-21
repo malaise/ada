@@ -1,4 +1,4 @@
-with As.U; use As.U;
+with As.U.Utils; use As.U, As.U.Utils;
 with Argument, Con_Io, Afpx, Basic_Proc, Language, Many_Strings, String_Mng,
      Lower_Str, Environ, Int_Image, Event_Mng;
 with Cmd, Analist;
@@ -62,7 +62,7 @@ procedure Xwords is
     List_Width : constant Afpx.Width_Range
                := Afpx.Get_Field_Width (Afpx.List_Field_No);
     Ustr : constant Language.Unicode_Sequence
-         := Language.String_To_Unicode (Asu_Ts (Us));
+         := Language.String_To_Unicode (Us.Image);
   begin
     Rec.Len := Ustr'Length;
     -- Procuste
@@ -92,15 +92,15 @@ procedure Xwords is
     Status := Ok;
     Afpx.Line_List.Delete_List (Deallocate => False);
     -- Get word and check it
-    Word := Asu_Tus (Strip (Afpx.Decode_Field (Get_Fld, 0, False)));
-    if Asu_Is_Null (Word) then
+    Word := Tus (Strip (Afpx.Decode_Field (Get_Fld, 0, False)));
+    if Word.Is_Null then
       return;
     end if;
-    for I in 1 .. Asu.Length (Word) loop
-      Char := Asu.Element (Word, I);
+    for I in 1 .. Word.Length loop
+      Char := Word.Element (I);
       if Char < 'a' or else Char > 'z' then
         Afpx.Line_List.Insert (Us2Afpx (
-            Asu_Tus ("ERROR: Invalid character in word.")));
+            Tus ("ERROR: Invalid character in word.")));
         Status := Error;
         return;
       end if;
@@ -114,9 +114,9 @@ procedure Xwords is
     -- Copy in Afpx list
     Length := 0;
     for I in 1 .. Anagrams.Length loop
-      if Asu.Length (Anagrams.Element(I)) /= Length then
-        Length := Asu.Length (Anagrams.Element(I));
-        Afpx.Line_List.Insert (Us2Afpx (Asu_Tus (
+      if Anagrams.Element(I).Length /= Length then
+        Length := Anagrams.Element(I).Length;
+        Afpx.Line_List.Insert (Us2Afpx (Tus (
              "-- " & Image (Length) & " --")));
       end if;
       Afpx.Line_List.Insert (Us2Afpx (Anagrams.Element(I)));
@@ -134,7 +134,7 @@ procedure Xwords is
   exception
     when Analist.Too_Long =>
       Afpx.Line_List.Insert (Us2Afpx (
-          Asu_Tus ("ERROR: Word too long.")));
+          Tus ("ERROR: Word too long.")));
   end Do_Anagrams;
 
   -- Build and launch a Words command
@@ -144,13 +144,13 @@ procedure Xwords is
     Word : Asu_Us;
     Command_Ok : Boolean;
     First : Boolean;
-    use type Afpx.Field_Range, Asu_Us;
+    use type Afpx.Field_Range;
   begin
     -- Clear result
     Afpx.Line_List.Delete_List (Deallocate => False);
 
     -- Build command
-    Word := Asu_Tus (Strip (Afpx.Decode_Field (Get_Fld, 0, False)));
+    Word := Tus (Strip (Afpx.Decode_Field (Get_Fld, 0, False)));
     case Num is
       when Search_Fld | Research_Fld =>
         Com.Set ("ws");
@@ -195,7 +195,7 @@ procedure Xwords is
 
     -- Store in history and selection if search
     if (Num = Search_Fld or else Num = Research_Fld)
-    and then not Asu_Is_Null (Arg.Image) then
+    and then not Arg.Image.Is_Null then
       History.Insert (Word);
     end if;
 
@@ -205,7 +205,7 @@ procedure Xwords is
       for I in 1 .. Arg.Nb loop
         Line := Line & " " & Asu_Us'(Arg.Nth (I));
       end loop;
-      Basic_Proc.Put_Line_Output (Asu_Ts (Line));
+      Basic_Proc.Put_Line_Output (Line.Image);
     end if;
 
     -- Encode result, set first word as selection
@@ -213,7 +213,7 @@ procedure Xwords is
     if Result.Is_Empty then
       if Status = Found then
         -- Set selection to search word/pattern
-        Afpx.Set_Selection (Lower_Str (Asu_Ts (Word)));
+        Afpx.Set_Selection (Lower_Str (Word.Image));
       else
         -- Reset selection for case where no result or error
         Afpx.Set_Selection ("");
@@ -223,12 +223,12 @@ procedure Xwords is
       loop
         Result.Read (Line, Moved => Moved);
         if Status = Found and then First then
-          Afpx.Set_Selection (Lower_Str (Asu_Ts (Line)));
+          Afpx.Set_Selection (Lower_Str (Line.Image));
           First := False;
         end if;
         Afpx.Line_List.Insert (Us2Afpx (Line));
         if Log then
-          Basic_Proc.Put_Line_Output (Asu_Ts (Line));
+          Basic_Proc.Put_Line_Output (Line.Image);
         end if;
         exit when not Moved;
       end loop;
@@ -249,7 +249,7 @@ procedure Xwords is
     Afpx.Clear_Field (Get_Fld);
     if not History.Is_Empty then
       History.Read (Line, Cmd.Res_Mng.Dyn_List.Current);
-      Afpx.Encode_Field (Get_Fld, (0, 0), Lower_Str (Asu_Ts (Line)));
+      Afpx.Encode_Field (Get_Fld, (0, 0), Lower_Str (Line.Image));
     end if;
   end Do_Recall;
 
@@ -269,7 +269,7 @@ procedure Xwords is
     select
       -- Load: Get file name
       accept Start (File_Name : in String) do
-        Load_Anagrams.File_Name := Asu_Tus (File_Name);
+        Load_Anagrams.File_Name := Tus (File_Name);
       end Start;
       Load := True;
     or
@@ -284,7 +284,7 @@ procedure Xwords is
     if Load then
       -- Load dictionnary
       begin
-        Analist.Init (Asu_Ts (File_Name));
+        Analist.Init (File_Name.Image);
         Ok := True;
       exception
         when Analist.Init_Error =>
@@ -332,8 +332,8 @@ begin
   begin
     -- Button is inactive until dictio is loaded OK
     Afpx.Set_Field_Activation (Anagrams_Fld, False);
-    Dictio_File_Name := Asu_Tus (Environ.Getenv_If_Set (Dictio_Env_Name));
-    Load_Anagrams.Start (Asu_Ts (Dictio_File_Name));
+    Dictio_File_Name := Tus (Environ.Getenv_If_Set (Dictio_Env_Name));
+    Load_Anagrams.Start (Dictio_File_Name.Image);
     Loading_Anagrams := True;
   exception
     when Environ.Name_Error =>
@@ -359,7 +359,7 @@ begin
           else
             Basic_Proc.Put_Line_Error (
                  "Error while loading anagrams dictionary: "
-                & Asu_Ts (Dictio_File_Name) & ".");
+                & Dictio_File_Name.Image & ".");
 
             Basic_Proc.Set_Error_Exit_Code;
            return;

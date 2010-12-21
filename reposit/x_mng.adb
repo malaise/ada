@@ -471,7 +471,7 @@ package body X_Mng is
     if Colors_Set then
       Max_Len := 1;
       for I in Colors'Range loop
-        Len := Asu.Length (Colors(I));
+        Len :=Colors(I).Length;
         if Len = 0 then
           if Debug then
             My_Io.Put_Line ("X_Initialise, incorrect empty color at " & I'Img);
@@ -488,8 +488,8 @@ package body X_Mng is
         Colors4C : array (Colors'Range) of System.Address;
       begin
         for I in Colors'Range loop
-          Color_Names(I) (1 .. Asu.Length (Colors(I)) + 1) :=
-             Asu_Ts (Colors(I)) & Ada.Characters.Latin_1.Nul;
+          Color_Names(I) (1 .. Colors(I).Length + 1) :=
+             Colors(I).Image & Ada.Characters.Latin_1.Nul;
           Colors4C(I) := Color_Names(I)(Color_Names(I)'First)'Address;
         end loop;
         Res := X_Initialise (Serv_Name_For_C(Serv_Name_For_C'First)'Address,

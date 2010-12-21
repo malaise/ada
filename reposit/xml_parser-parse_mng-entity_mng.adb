@@ -1,4 +1,4 @@
-with Int_Io, Utf_8, Utf_16;
+with Int_Io, Utf_8;
 separate (Xml_Parser.Parse_Mng)
 -- Entity management
 package body Entity_Mng is
@@ -20,9 +20,9 @@ package body Entity_Mng is
     if Found then
       if Log then
         if Parameter then
-          Trace ("Parameter entity " & Asu_Ts (Name) & " redefined");
+          Trace ("Parameter entity " & Name.Image & " redefined");
         else
-          Trace ("Entity " & Asu_Ts (Name) & " redefined");
+          Trace ("Entity " & Name.Image & " redefined");
         end if;
       end if;
       return;
@@ -30,7 +30,7 @@ package body Entity_Mng is
     Entity_List_Mng.Insert (The_Entities, Entity);
     if Log then
       Trace ("Stored entity name " & Image (Entity)
-           & " value " & Asu_Ts (Value));
+           & " value " & Value.Image);
     end if;
   end Store;
 
@@ -92,11 +92,11 @@ package body Entity_Mng is
     -- Reset all entities
     Entity_List_Mng.Delete_List (The_Entities);
     -- Load predefined entities
-    Store_Predefined (The_Entities, Asu_Tus ("amp"),  Asu_Tus ("&#38;"));
-    Store_Predefined (The_Entities, Asu_Tus ("lt"),   Asu_Tus ("&#60;"));
-    Store_Predefined (The_Entities, Asu_Tus ("gt"),   Asu_Tus (">"));
-    Store_Predefined (The_Entities, Asu_Tus ("quot"), Asu_Tus (""""));
-    Store_Predefined (The_Entities, Asu_Tus ("apos"), Asu_Tus ("'"));
+    Store_Predefined (The_Entities, Tus ("amp"),  Tus ("&#38;"));
+    Store_Predefined (The_Entities, Tus ("lt"),   Tus ("&#60;"));
+    Store_Predefined (The_Entities, Tus ("gt"),   Tus (">"));
+    Store_Predefined (The_Entities, Tus ("quot"), Tus (""""));
+    Store_Predefined (The_Entities, Tus ("apos"), Tus ("'"));
   end Initialise;
 
   -- Store an entity
@@ -107,7 +107,7 @@ package body Entity_Mng is
                  Intern_Dtd : in Boolean;
                  Parsed : in Boolean) is
   begin
-    if Asu_Is_Null (Name) then
+    if Name.Is_Null then
       Trace ("Storing an empty entity name");
       raise Internal_Error;
     end if;
@@ -125,10 +125,10 @@ package body Entity_Mng is
     Entity : Entity_Type;
   begin
     -- Resolve Character reference
-    if not Parameter and then not Asu_Is_Null (Name)
-    and then Asu.Element (Name, 1) = '#' then
+    if not Parameter and then not Name.Is_Null
+    and then Name.Element (1) = '#' then
       -- To check validity
-      Code := Code_Of (Asu_Ts (Name));
+      Code := Code_Of (Name.Image);
       Found := True;
       return;
     end if;
@@ -148,18 +148,17 @@ package body Entity_Mng is
                  Got : out Asu_Us) is
     Code : Natural;
     Entity : Entity_Type;
-    use type Asu_Us;
   begin
     -- Resolve Character reference
-    if not Parameter and then not Asu_Is_Null (Name)
-    and then Asu.Element (Name, 1) = '#' then
+    if not Parameter and then not Name.Is_Null
+    and then Name.Element (1) = '#' then
       if Context = Ref_Dtd then
-        Trace ("Forbidden character entity reference " & Asu_Ts (Name)
+        Trace ("Forbidden character entity reference " & Name.Image
              & " in dtd");
         raise Entity_Forbidden;
       end if;
-      Code := Code_Of (Asu_Ts (Name));
-      Got := Asu_Tus (Utf_8.Encode (Code));
+      Code := Code_Of (Name.Image);
+      Got := Tus (Utf_8.Encode (Code));
       return;
     end if;
 
@@ -168,11 +167,11 @@ package body Entity_Mng is
     Entity.Name := Name;
     Dtd.Entity_List.Read (Entity);
     if Parameter then
-      Trace ("Read parameter entity name " & Asu_Ts (Entity.Name)
-           & " value " & Asu_Ts (Entity.Value));
+      Trace ("Read parameter entity name " & Entity.Name.Image
+           & " value " & Entity.Value.Image);
     else
-      Trace ("Read entity name " & Asu_Ts (Entity.Name)
-           & " value " & Asu_Ts (Entity.Value));
+      Trace ("Read entity name " & Entity.Name.Image
+           & " value " & Entity.Value.Image);
     end if;
     Got := Entity.Value;
 
@@ -184,17 +183,17 @@ package body Entity_Mng is
     case Context is
       when Ref_Xml | Ref_Attribute =>
         if Parameter then
-          Trace ("Forbidden parameter entity reference " & Asu_Ts (Name)
+          Trace ("Forbidden parameter entity reference " & Name.Image
                & " in xml");
           raise Entity_Forbidden;
         end if;
         if Context = Ref_Attribute and then not Entity.Internal then
-          Trace ("Forbidden external entity reference " & Asu_Ts (Name)
+          Trace ("Forbidden external entity reference " & Name.Image
                & " in attribute value");
           raise Entity_Forbidden;
         end if;
         if not Entity.Parsed then
-          Trace ("Forbidden unparsed entity reference " & Asu_Ts (Name)
+          Trace ("Forbidden unparsed entity reference " & Name.Image
                & " in xml");
           raise Entity_Forbidden;
         end if;
@@ -207,17 +206,17 @@ package body Entity_Mng is
         if not Parameter then
           if Entity.Parsed then
             -- Bypass => return the "&name;"
-            Trace ("Bypassing entity " & Asu_Ts (Name));
+            Trace ("Bypassing entity " & Name.Image);
             Got := "&" & Entity.Name & ";";
           else
-            Trace ("Unexpected unparsed entity reference " & Asu_Ts (Name)
+            Trace ("Unexpected unparsed entity reference " & Name.Image
                  & " in entity value");
             raise Entity_Forbidden;
           end if;
         end if;
       when Ref_Dtd | Ref_Dtd_Mark | Ref_Dtd_Content =>
         if not Parameter then
-          Trace ("Forbidden non parameter entity reference " & Asu_Ts (Name)
+          Trace ("Forbidden non parameter entity reference " & Name.Image
               & " in dtd");
           raise Entity_Forbidden;
         end if;
@@ -228,7 +227,7 @@ package body Entity_Mng is
     and then Ctx.Flow.Curr_Flow.Kind = Int_Dtd_Flow
     and then (Context = Ref_Dtd_Mark or else Context = Ref_Dtd_Content
               or else Context = Ref_Entity) then
-      Trace ("Forbidden parameter entity reference " & Asu_Ts (Name)
+      Trace ("Forbidden parameter entity reference " & Name.Image
            & " within markup in internal dtd subset");
       raise Entity_Forbidden;
     end if;
@@ -245,7 +244,7 @@ package body Entity_Mng is
 
   exception
     when Entity_List_Mng.Not_In_List =>
-      Trace ("Unknown entity name " & Asu_Ts (Entity.Name));
+      Trace ("Unknown entity name " & Entity.Name.Image);
       raise Entity_Not_Found;
   end Get;
 

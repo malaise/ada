@@ -68,7 +68,7 @@ package body Dispatch is
               and then Stat /= Status.Slave
               and then Stat /= Status.Dead then
         if Dictio_Debug.Level_Array(Dictio_Debug.Fight) then
-          Dictio_Debug.Put ("Dispatch: reply status to: " & Asu_Ts (From)
+          Dictio_Debug.Put ("Dispatch: reply status to: " & From.Image
                    & "/" & Stat'Img & "-" & Prio);
         end if;
         Intra_Dictio.Reply_Status (Intra_Dictio.Extra_Ver & Versions.Intra);

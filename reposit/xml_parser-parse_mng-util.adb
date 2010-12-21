@@ -132,15 +132,15 @@ package body Util is
   function Is_Valid_Encoding (Name : Asu_Us) return Boolean is
     Char : Character;
   begin
-    if Asu.Length (Name) = 0 then
+    if Name.Length = 0 then
       return False;
     end if;
-    Char := Asu.Element (Name, 1);
+    Char := Name.Element (1);
     if not Is_Letter (Char) then
       return False;
     end if;
-    for I in 2 .. Asu.Length (Name) loop
-      Char := Asu.Element (Name, I);
+    for I in 2 .. Name.Length loop
+      Char := Name.Element (I);
       if not Is_Letter (Char)
       and then (Char < '0' or else '9' < Char)
       and then Char /= '.'
@@ -185,12 +185,12 @@ package body Util is
                     Allow_Token : Boolean := False) return Boolean is
   begin
     -- Must not be empty
-    if Asu.Length (Name) = 0 then
+    if Name.Length = 0 then
       return False;
     end if;
     declare
       Unicodes : constant Utf_8.Unicode_Sequence
-               := Utf_8.Decode (Asu_Ts (Name));
+               := Utf_8.Decode (Name.Image);
     begin
       -- For true name (not token) first char must be Valid_Start
       if not Allow_Token
@@ -214,7 +214,7 @@ package body Util is
   function Names_Ok (Str : Asu_Us;
                      Seps : String;
                      Allow_Token : Boolean := False) return Boolean is
-    S : constant String(1 .. Asu.Length (Str)) := Asu_Ts (Str);
+    S : constant String(1 .. Str.Length) := Str.Image;
     I1, I2 : Natural;
     function Is_Sep (C : Character) return Boolean is
     begin
@@ -246,7 +246,7 @@ package body Util is
         exit when I2 > S'Last or else Is_Sep (S(I2));
       end loop;
       -- Check word
-      if not Name_Ok (Asu_Tus (S(I1 .. I2 - 1)), Allow_Token) then
+      if not Name_Ok (Tus (S(I1 .. I2 - 1)), Allow_Token) then
         return False;
       end if;
       -- Done
@@ -273,42 +273,41 @@ package body Util is
                         Line_No : in Natural) return String is
     Err_Msg : Asu_Us;
     Put_Line_No : Natural := 0;
-    use type Asu_Us;
   begin
     if Line_No = 0 then
       Put_Line_No := Get_Line_No(Flow);
     else
       Put_Line_No := Line_No;
     end if;
-    Err_Msg := Asu_Tus ("Xml_Parser");
+    Err_Msg := Tus ("Xml_Parser");
     if Is_Error then
-      Asu.Append (Err_Msg, " error");
+      Err_Msg.Append (" error");
     else
-      Asu.Append (Err_Msg, " warning");
+      Err_Msg.Append (" warning");
     end if;
     if Put_Line_No /= 0 then
-      Asu.Append (Err_Msg, " at line" & Put_Line_No'Img);
+      Err_Msg.Append (" at line" & Put_Line_No'Img);
     end if;
     -- Xml, Dtd or external entity
     if Put_Line_No /= 0 then
-      Asu.Append (Err_Msg, " of");
+      Err_Msg.Append (" of");
     else
-      Asu.Append (Err_Msg, " in");
+      Err_Msg.Append (" in");
     end if;
     case Flow.Curr_Flow.Kind is
       when Xml_Flow | Int_Dtd_Flow =>
-        Asu.Append (Err_Msg, " xml");
+        Err_Msg.Append (" xml");
       when Dtd_Flow =>
-        Asu.Append (Err_Msg, " dtd");
+        Err_Msg.Append (" dtd");
       when Ext_Flow =>
-        Asu.Append (Err_Msg, " external entity");
+        Err_Msg.Append (" external entity");
     end case;
     if Flow.Curr_Flow.Kind /= Xml_Flow
-    and then not Asu_Is_Null (Flow.Curr_Flow.Name) then
-      Asu.Append (Err_Msg, " " & Flow.Curr_Flow.Name);
+    and then not Flow.Curr_Flow.Name.Is_Null then
+      Err_Msg.Append (" " & Flow.Curr_Flow.Name);
     end if;
-    Asu.Append (Err_Msg, ": " & Msg & ".");
-    return Asu_Ts (Err_Msg);
+    Err_Msg.Append (": " & Msg & ".");
+    return Err_Msg.Image;
   end Build_Error;
 
   procedure Error (Flow : in out Flow_Type;
@@ -354,11 +353,11 @@ package body Util is
     if Flow.Curr_Flow.Is_File then
       Char := Flow.Curr_Flow.File.Get;
     else
-      if Flow.Curr_Flow.In_Stri = Asu.Length (Flow.Curr_Flow.In_Str) then
+      if Flow.Curr_Flow.In_Stri = Flow.Curr_Flow.In_Str.Length then
         raise End_Error;
       end if;
       Flow.Curr_Flow.In_Stri := Flow.Curr_Flow.In_Stri + 1;
-      Char := Asu.Element (Flow.Curr_Flow.In_Str, Flow.Curr_Flow.In_Stri);
+      Char := Flow.Curr_Flow.In_Str.Element (Flow.Curr_Flow.In_Stri);
     end if;
   end;
 
@@ -418,27 +417,27 @@ package body Util is
     end if;
 
     -- Get a Utf8 sequence
-    Seq8 := Asu_Tus (Utf_8.Encode (Unicode));
+    Seq8 := Tus (Utf_8.Encode (Unicode));
 
-    if Asu.Length (Seq8) /= 1 then
+    if Seq8.Length /= 1 then
       -- Re-insert in flow all but first character
       if Flow.Curr_Flow.Is_File then
-        for I in reverse 2 .. Asu.Length (Seq8) loop
-          Flow.Curr_Flow.File.Unget (Asu.Element (Seq8, I));
+        for I in reverse 2 .. Seq8.Length loop
+          Flow.Curr_Flow.File.Unget (Seq8.Element (I));
         end loop;
         Flow.Curr_Flow.Nb_Bytes := Flow.Curr_Flow.Nb_Bytes
-                                 + Asu.Length (Seq8) - 1;
+                                 + Seq8.Length - 1;
       else
         -- Insert Seq8 (2 .. Last) at current index of In_String
-        Asu.Insert (Flow.Curr_Flow.In_Str, Flow.Curr_Flow.In_Stri,
-                    Asu.Slice (Seq8, 2, Asu.Length (Seq8)) );
+        Flow.Curr_Flow.In_Str.Insert (Flow.Curr_Flow.In_Stri,
+                    Seq8.Slice (2, Seq8.Length) );
         Flow.Curr_Flow.Nb_Bytes := Flow.Curr_Flow.Nb_Bytes
-                                 + Asu.Length (Seq8) - 1;
+                                 + Seq8.Length - 1;
       end if;
     end if;
 
     -- Return First Char
-    Char := Asu.Element (Seq8, 1);
+    Char := Seq8.Element (1);
   exception
     when End_Error =>
       raise;
@@ -473,7 +472,7 @@ package body Util is
         -- 0: all Get to skip have been skipped (but an unget
         --  still shall be skipped). -1: No more skip
         -- Record this get
-        Asu.Append (Flow.Recorded, Char);
+        Flow.Recorded.Append (Char);
       end if;
       if Flow.Skip_Recording /= No_Skip_Rec then
         -- Skip recording this get
@@ -519,9 +518,9 @@ package body Util is
       if Flow.Recording then
         if Flow.Skip_Recording = No_Skip_Rec then
           -- Record this unget (remove the recorded get)
-          Len := Asu.Length (Flow.Recorded);
+          Len := Flow.Recorded.Length;
           if Len /= 0 then
-            Asu.Delete (Flow.Recorded, Len, Len);
+            Flow.Recorded.Delete (Len, Len);
           end if;
         else
           -- Skip next Get of this char
@@ -559,7 +558,7 @@ package body Util is
       end loop;
     else
       -- Insert Str after current pos (last read)
-      Asu.Insert (Flow.Curr_Flow.In_Str, Flow.Curr_Flow.In_Stri + 1, Str);
+      Flow.Curr_Flow.In_Str.Insert (Flow.Curr_Flow.In_Stri + 1, Str);
     end if;
     Flow.Curr_Flow.Nb_Bytes := Flow.Curr_Flow.Nb_Bytes + Str'Length;
     -- The inserted characters shall not be recorded (when got/ungot)
@@ -586,8 +585,8 @@ package body Util is
 
   function Is_Separators (Str : Asu_Us) return Boolean is
   begin
-    for I in 1 .. Asu.Length (Str) loop
-      if not Is_Separator (Asu.Element (Str, I) ) then
+    for I in 1 .. Str.Length loop
+      if not Is_Separator (Str.Element (I) ) then
         return False;
       end if;
     end loop;
@@ -638,7 +637,6 @@ package body Util is
   procedure Parse_Until_Str (Flow : in out Flow_Type; Criteria : in String) is
     Str : String (Criteria'Range);
     Char : Character;
-    use type Asu_Us;
   begin
     if Criteria'Length > Max_Buf_Len then
       Trace ("Parsing until Str with a too long criteria");
@@ -666,7 +664,6 @@ package body Util is
   -- Sets Curr_Str, consumes all separators if this is the criteria
   procedure Parse_Until_Char (Flow : in out Flow_Type; Criteria : in String) is
     Char : Character;
-    use type Asu_Us;
   begin
     if Criteria'Length = 0 then
       raise Constraint_Error;
@@ -698,7 +695,6 @@ package body Util is
   -- Sets Curr_Str
   procedure Parse_Until_End (Flow : in out Flow_Type) is
     Char : Character;
-    use type Asu_Us;
   begin
     loop
       Get (Flow, Char);
@@ -713,7 +709,6 @@ package body Util is
   procedure Parse_Until_Close (Flow : in out Flow_Type) is
     Char : Character;
     Nb : Natural;
-    use type Asu_Us;
   begin
     -- One '(' already got
     Nb := 1;
@@ -764,7 +759,7 @@ package body Util is
   -- List of names of entities expanding to each other, to detect recursion
   package Name_Dyn_List_Mng is new Dynamic_List (Asu_Us);
   package Name_List_Mng renames Name_Dyn_List_Mng.Dyn_List;
-  procedure Search_Name is new Name_List_Mng.Search (Asu."=");
+  procedure Search_Name is new Name_List_Mng.Search (As.U."=");
 
   -- INTERNAL: Verify propoer nesting of parenths
   function Check_Nesting (Str : String) return Boolean is
@@ -811,7 +806,6 @@ package body Util is
     Found : Boolean;
     -- Entity list is empty
     Stack_Empty : Boolean;
-    use type Asu_Us;
 
   begin
     Start_Index := 0;
@@ -830,15 +824,15 @@ package body Util is
     -- Normalize separators if attribute
     if Context = Ref_Attribute then
       declare
-        Str : String := Asu_Ts (Result);
+        Str : String := Result.Image;
       begin
         Fix_Spaces (Str);
-        Result := Asu_Tus (Str);
+        Result := Tus (Str);
       end;
     end if;
 
     loop
-      Last := Asu.Length (Result);
+      Last := Result.Length;
 
       -- Default: not found
       Istart := 0;
@@ -848,7 +842,7 @@ package body Util is
       -- Will need to restart if more that one starter
       for I in Sstart .. Last loop
         -- Locate start of var name '%' or "&#"
-        Char := Asu.Element (Result, I);
+        Char := Result.Element (I);
         if Char = Ent_Param and then In_Dtd (Context) then
           -- Parameter entity
           Istart := I;
@@ -856,12 +850,12 @@ package body Util is
         elsif Char = Ent_Other then
           if not In_Dtd (Context)
              and then (I = Last
-               or else Asu.Element (Result, I + 1) /= Ent_Char) then
+               or else Result.Element (I + 1) /= Ent_Char) then
             -- General entity in Xml
             Istart := I;
             Starter := Ent_Other;
           elsif I /= Last
-          and then Asu.Element (Result, I + 1) = Ent_Char then
+          and then Result.Element (I + 1) = Ent_Char then
             -- Character entity everywhere
             Istart := I;
             Starter := Ent_Char;
@@ -893,25 +887,25 @@ package body Util is
 
       if Istop = 0 then
         -- A start with no stop => Error
-        Error (Ctx.Flow, "Unterminated entity reference " & Asu_Ts (Text));
+        Error (Ctx.Flow, "Unterminated entity reference " & Text.Image);
       end if;
 
       -- Check that a stop is big enough
       if Istop = Istart + 1 then
         -- "%;" or "&;"
-        Error (Ctx.Flow, "Emtpy entity reference " & Asu_Ts (Text));
+        Error (Ctx.Flow, "Emtpy entity reference " & Text.Image);
       end if;
 
       -- Got an entity name: get value if it exists (skip % & ;)
-      Name := Asu_Uslice (Result, Istart + 1, Istop - 1);
+      Name := Result.Uslice (Istart + 1, Istop - 1);
 
       Entity_Mng.Exists (Dtd.Entity_List,
                            Name, Starter = Ent_Param, Found);
       if not Found then
         if Starter = Ent_Param then
-          Error (Ctx.Flow, "Unknown entity " & Ent_Param & " " & Asu_Ts (Name));
+          Error (Ctx.Flow, "Unknown entity " & Ent_Param & " " & Name.Image);
         else
-          Error (Ctx.Flow, "Unknown entity " & Asu_Ts (Name));
+          Error (Ctx.Flow, "Unknown entity " & Name.Image);
         end if;
       end if;
 
@@ -920,7 +914,7 @@ package body Util is
                      From => Name_List_Mng.Absolute);
       if Found then
         Error (Ctx.Flow, "Recursive reference to entity "
-                       & Asu_Ts (Starter & Name));
+                       & Starter & Name.Image);
       end if;
 
       Entity_Mng.Get (Ctx, Dtd, Context, Name, Starter = Ent_Param, Val);
@@ -929,29 +923,29 @@ package body Util is
       -- Skip when this is a character entity or
       --  in Dtd and too short to get an expansion (< 3 chars)
       if Starter /= Ent_Char
-      and then (Context /= Ref_Entity or else Asu.Length (Val) >= 3) then
+      and then (Context /= Ref_Entity or else Val.Length >= 3) then
         Stack_Empty := Name_Stack.Is_Empty;
         if not Stack_Empty then
           -- Push this entity name in the stack
           Name_Stack.Rewind;
         end if;
         Name_Stack.Insert ( (Starter & Name), Name_List_Mng.Prev);
-        Trace ("Expanding >" & Asu_Ts (Val) & "<");
+        Trace ("Expanding >" & Val.Image & "<");
         Expand_Internal (Ctx, Dtd, Val, Context, Start_Index, Name_Stack);
-        Trace ("Expanded >" & Asu_Ts (Name) & "< as >" & Asu_Ts (Val) & "<");
+        Trace ("Expanded >" & Name.Image & "< as >" & Val.Image & "<");
         -- Pop this entity name from the stack
         Name_Stack.Rewind;
         Name_Stack.Delete;
       end if;
       -- Verify nesting of parentheses if within content (children) description
       if Context = Ref_Dtd_Content
-      and then not Check_Nesting (Asu_Ts (Val)) then
+      and then not Check_Nesting (Val.Image) then
         Error (Ctx.Flow, "Incorrect nesting of parentheses in entity "
-                       & Asu_Ts (Val));
+                       & Val.Image);
       end if;
 
       -- Substitute from start to stop
-      Asu.Replace_Slice (Result, Istart, Istop, Asu_Ts (Val));
+      Result.Replace (Istart, Istop, Val.Image);
 
       -- Is a Start localized?
       if Start_Index /= 0 then
@@ -962,7 +956,7 @@ package body Util is
       end if;
 
       -- Go on parsing after expansion
-      Sstart := Istart + Asu.Length (Val);
+      Sstart := Istart + Val.Length;
 
     end loop;
 
@@ -971,12 +965,12 @@ package body Util is
 
   exception
     when Entity_Mng.Entity_Not_Found =>
-      Error (Ctx.Flow, "Unknown entity " & Asu_Ts (Name));
+      Error (Ctx.Flow, "Unknown entity " & Name.Image);
     when Entity_Mng.Invalid_Char_Code =>
-      Error (Ctx.Flow, "Invalid Char code " & Asu_Ts (Name));
+      Error (Ctx.Flow, "Invalid Char code " & Name.Image);
     when Entity_Mng.Entity_Standalone =>
       Error (Ctx.Flow, "Invalid reference in standalone document to entity "
-           & Asu_Ts (Name) & " defined in external markup declaration");
+           & Name.Image & " defined in external markup declaration");
   end Expand_Internal;
 
   -- Expand text (expand vars) returns the index of localized '<'
@@ -1012,7 +1006,7 @@ package body Util is
                          Dtd : in out Dtd_Type;
                          Text : in out Asu_Us;
                          Context : in Context_List) is
-    Str : constant String := Asu_Ts (Text);
+    Str : constant String := Text.Image;
     Len : constant Natural := Str'Length;
     Ne, Np, Ns: Natural;
 
@@ -1042,11 +1036,11 @@ package body Util is
 
   -- Fix text: replace any separator by a space
   procedure Normalize (Text : in out Asu_Us) is
-    Res : String (1 .. Asu.Length (Text)) := Asu_Ts (Text);
+    Res : String(1 .. Text.Length) := Text.Image;
   begin
     -- Replace "{ Lf | Tab | Space }" by a space
     Fix_Spaces (Res);
-    Text := Asu_Tus (Res);
+    Text := Tus (Res);
   end Normalize;
 
   -- Replace any sequence of spaces by a space
@@ -1057,22 +1051,22 @@ package body Util is
     -- Will skip leading spaces
     Prev_Is_Space : Boolean := True;
   begin
-    for I in 1 .. Asu.Length (Text) loop
-      Char := Asu.Element (Text, I);
+    for I in 1 .. Text.Length loop
+      Char := Text.Element (I);
       if Char = Space then
         if not Prev_Is_Space then
-          Asu.Append (Res, Util.Space);
+          Res.Append (Util.Space);
           Prev_Is_Space := True;
         end if;
       else
-        Asu.Append (Res, Char);
+        Res.Append (Char);
         Prev_Is_Space := False;
       end if;
     end loop;
     -- Remove trailing space
-    if Asu.Length (Res) > 1
-    and then Asu.Element (Res, Asu.Length (Res)) = Util.Space then
-      Asu.Delete (Res, Asu.Length (Res), Asu.Length (Res));
+    if Res.Length > 1
+    and then Res.Element (Res.Length) = Util.Space then
+      Res.Delete (Res.Length, Res.Length);
     end if;
     Text := Res;
   end Normalize_Spaces;
@@ -1081,7 +1075,6 @@ package body Util is
   procedure Remove_Separators (Text : in out Asu_Us; Seps : in String) is
     Lseps : Asu_Us;
     Index : Natural;
-    use type Asu_Us;
   begin
     -- No char of Seps can be separator
     -- No dup
@@ -1102,21 +1095,21 @@ package body Util is
 
     -- Build the "find" pattern
     if Seps = "" then
-      Text := Asu_Tus (String_Mng.Replace (Asu_Ts (Text), " ", ""));
+      Text := Tus (String_Mng.Replace (Text.Image, " ", ""));
     else
       -- One char: no problem
-      Lseps := Asu_Tus (Seps);
+      Lseps := Tus (Seps);
       if Seps'Length /= 1 then
         -- Will use "[Seps]",
         -- Avoid "^x" => move '^' at the end
-        if Asu.Element (Lseps, 1) = '^' then
-          Asu.Delete (Lseps, 1, 1);
-          Asu.Append (Lseps, '^');
+        if Lseps.Element (1) = '^' then
+          Lseps.Delete (1, 1);
+          Lseps.Append ('^');
         end if;
         -- Move "-" at the beginning
-        Index := String_Mng.Locate (Asu_Ts (Lseps), "-");
+        Index := String_Mng.Locate (Lseps.Image, "-");
         if Index /= 0 then
-          Asu.Delete (Lseps, Index, 1);
+          Lseps.Delete (Index, 1);
           Lseps := "-" & Lseps;
         end if;
         Lseps := '[' & Lseps & ']';
@@ -1124,8 +1117,8 @@ package body Util is
     end if;
 
     -- Replace " ?([seps]) ?" by \1
-    Text := Asu_Tus (String_Mng.Regex.Replace (Asu_Ts (Text),
-        " ?(" & Asu_Ts (Lseps) & ") ?", "\1"));
+    Text := Tus (String_Mng.Regex.Replace (Text.Image,
+        " ?(" & Lseps.Image & ") ?", "\1"));
 
   end Remove_Separators;
 
@@ -1136,15 +1129,15 @@ package body Util is
     Char : Character;
   begin
     In_Entity := False;
-    for I in 1 .. Asu.Length (Text) loop
-      Char := Asu.Element (Text, I);
+    for I in 1 .. Text.Length loop
+      Char := Text.Element (I);
       if not In_Entity then
         if Char = Ent_Param or else Char = Ent_Other then
           -- Beginning of entity reference
           In_Entity := True;
         else
           -- Out of entity
-          Asu.Append (Result, Char);
+          Result.Append (Char);
         end if;
       else
         if Char = Ent_End then

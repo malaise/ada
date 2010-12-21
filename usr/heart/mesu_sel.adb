@@ -151,7 +151,7 @@ package body Mesu_Sel is
     The_Files.Rewind;
     loop
       The_Files.Read (File, Dir_Mng.File_List_Mng.Current);
-      File_Name := Asu_Ts (File.Name);
+      File_Name := File.Name.Image;
       Mesu_Nam.Split_File_Name (File_Name, Date_S, No_S, Pid_S);
       -- check date
      Ok := Date_Match (Date_S, Criteria.Date_Aft, Criteria.Date_Bef);

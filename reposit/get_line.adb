@@ -50,12 +50,12 @@ package body Get_Line is
     F, L : Positive;
     In_Word : Boolean := True;
   begin
-    if Cur > Asu.Length (Buff) then
+    if Cur > Buff.Length then
       return "";
     end if;
     F := Cur;
-    for I in Cur .. Asu.Length (Buff) loop
-      if Is_Separator (Asu.Element (Buff, I)) then
+    for I in Cur .. Buff.Length loop
+      if Is_Separator (Buff.Element (I)) then
         if In_Word then
           L := I;
           In_Word := False;
@@ -63,13 +63,13 @@ package body Get_Line is
       else
         if not In_Word then
           Cur := I;
-          return Asu.Slice (Buff, F, L - 1);
+          return Buff.Slice (F, L - 1);
         end if;
       end if;
     end loop;
-    Cur := Asu.Length (Buff) + 1;
+    Cur := Buff.Length + 1;
     if In_Word then
-      return Asu.Slice (Buff, F, Asu.Length (Buff));
+      return Buff.Slice (F, Buff.Length);
     else
       return "";
     end if;
@@ -79,15 +79,15 @@ package body Get_Line is
   procedure Reset_Word is
   begin
     Current_Line := Asu_Ua.Null_Unbounded_Array;
-    for I in 1 .. Asu.Length (Buff) loop
-      if Is_Separator (Asu.Element (Buff, I)) then
+    for I in 1 .. Buff.Length loop
+      if Is_Separator (Buff.Element (I)) then
         null;
       else
         Cur := I;
         return;
       end if;
     end loop;
-    Cur := Asu.Length (Buff) + 1;
+    Cur := Buff.Length + 1;
   end Reset_Word;
 
   -- Current line number
@@ -110,41 +110,41 @@ package body Get_Line is
     loop
       -- Get line from file, may raise End_Error
       Buff := F.Get;
-      if Asu_Is_Null (Buff) then
+      if Buff.Is_Null then
         raise End_Error;
       end if;
       Current_Line_No := Current_Line_No + 1;
 
       -- Strip tailing Lf is there is
-      if Asu.Element (Buff, Asu.Length (Buff)) = Text_Line.Line_Feed_Char then
-        Asu.Delete (Buff, Asu.Length (Buff), Asu.Length (Buff));
+      if Buff.Element (Buff.Length) = Text_Line.Line_Feed_Char then
+        Buff.Delete (Buff.Length, Buff.Length);
       end if;
 
       -- Store the line as it is in Current_Whole_Line
       Current_Whole_Line := Buff;
 
       -- Remove trailing spaces
-      while not Asu_Is_Null (Buff)
-      and then Is_Separator (Asu.Element (Buff, Asu.Length (Buff))) loop
-        Asu.Delete (Buff, Asu.Length (Buff), Asu.Length (Buff));
+      while not Buff.Is_Null
+      and then Is_Separator (Buff.Element (Buff.Length)) loop
+        Buff.Delete (Buff.Length, Buff.Length);
       end loop;
 
       -- Remove leading spaces
       Reset_Word;
 
       -- Parse first word
-      First_Word := Asu_Tus (Get_Next_Word);
+      First_Word := Tus (Get_Next_Word);
 
       -- Done when no check of comments
       exit when Comment = "";
 
       -- Done when not empty
       --  and then neither first word nor first letters are the comment
-      exit when not Asu_Is_Null (First_Word)
-      and then Asu_Ts (First_Word) /= Comment
+      exit when not First_Word.Is_Null
+      and then First_Word.Image /= Comment
       and then
-       (Asu.Length(Current_Whole_Line) < Comment'Length
-        or else Asu.Slice (Current_Whole_Line, 1, Comment'Length) /= Comment);
+       (Current_Whole_Line.Length < Comment'Length
+        or else Current_Whole_Line.Slice (1, Comment'Length) /= Comment);
     end loop;
 
   end Read_Next_Line;
@@ -166,7 +166,7 @@ package body Get_Line is
     if not F.Is_Open then
       raise Status_Error;
     end if;
-    return Asu_Ts (First_Word);
+    return First_Word.Image;
   end Get_First_Word;
 
   -- Internal
@@ -179,10 +179,10 @@ package body Get_Line is
     -- Parse words
     loop
       -- Check word length
-      Word := Asu_Tus (Get_Next_Word);
+      Word := Tus (Get_Next_Word);
 
       -- Check no more word in line
-      if Asu_Is_Null (Word) then
+      if Word.Is_Null then
         exit;
       end if;
 

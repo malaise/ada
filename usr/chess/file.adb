@@ -1,5 +1,5 @@
 with Ada.Text_Io, Ada.Direct_Io, Ada.Characters.Latin_1;
-with As.U; use As.U;
+with As.U.Utils; use As.U, As.U.Utils;
 with Get_Line;
 
 with Space;
@@ -65,7 +65,7 @@ package body File is
         State := Empty;
     end;
     Move_Num := 0;
-    File_Name_Txt := Asu_Tus (File_Name);
+    File_Name_Txt := Tus (File_Name);
   exception
     when others =>
       raise File_Error;
@@ -80,7 +80,7 @@ package body File is
     else
       -- Line has been read
       Ada.Text_Io.Put_Line ("Format error at line"
-          & Line_No'Img & ": " & Asu_Ts (Line));
+          & Line_No'Img & ": " & Line.Image);
     end if;
     if Msg /= "" then
        Ada.Text_Io.Put_Line (Msg & '.');
@@ -140,8 +140,8 @@ package body File is
     -- Parse the word
     begin
       Str := (others => ' ');
-      Str(1 .. Asu.Length (Line_Array.Element (Word_Num))) :=
-          Asu_Ts (Line_Array.Element (Word_Num));
+      Str(1 .. Line_Array.Element (Word_Num).Length) :=
+          Line_Array.Element (Word_Num).Image;
     exception
       when others =>
         Log_Error (True, "Wrong word value");
@@ -234,7 +234,7 @@ package body File is
       if not Action.Valid then
         -- End of read
         My_Get_Line.Close;
-        Chess_Io.Open (The_File, Chess_Io.Inout_File, Asu_Ts (File_Name_Txt));
+        Chess_Io.Open (The_File, Chess_Io.Inout_File, File_Name_Txt.Image);
         Prepare_To_Append;
         State := Writting;
         return (Valid => False);

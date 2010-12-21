@@ -41,7 +41,7 @@ package body Argument is
         raise Argument_Not_Found;
       end if;
       -- affect string
-      Parameter := Asu_Tus (Data(0));
+      Parameter := Tus (Data(0));
       Position := 0;
       return;
     end if;
@@ -80,7 +80,7 @@ package body Argument is
 
       if Comform_Occurence = Occurence then
         -- Comforming occurence is found. Affect string (First_Char..Len)
-        Parameter := Asu_Tus (Data(I)(First_Char .. Data(I)'Length));
+        Parameter := Tus (Data(I)(First_Char .. Data(I)'Length));
         Position := I;
         return;
       end if;
@@ -104,7 +104,7 @@ package body Argument is
     Position : Natural;
   begin
     Get_Param_And_Pos (Str, Position, Occurence, Param_Key);
-    return Asu_Ts (Str);
+    return Str.Image;
   end Get_Parameter;
 
   procedure Get_Parameter (
@@ -136,11 +136,11 @@ package body Argument is
     Str : Asu_Us;
   begin
     Get_Param_And_Pos (Str, Position, Occurence, Param_Key);
-    if Parameter'Length < Asu.Length (Str) then
+    if Parameter'Length < Str.Length then
       raise Argument_Too_Long;
     end if;
-    String_Mng.Copy (Asu_Ts(Str), Parameter);
-    Param_Length := Asu.Length (Str);
+    String_Mng.Copy (Str.Image, Parameter);
+    Param_Length := Str.Length;
   end Get_Param_And_Pos;
 
 
@@ -197,8 +197,8 @@ package body Argument is
   begin
     -- Program path and name
     Get_Param_And_Pos (Str, Pos, 0, Any_Arg);
-    Len := Last_Delimiter (Asu_Ts (Str));
-    return Asu.Slice (Str, 1, Len);
+    Len := Last_Delimiter (Str.Image);
+    return Str.Slice (1, Len);
   end Get_Program_Path;
 
   procedure Get_Program_Path (Path : out String; Path_Length : out Natural) is
@@ -207,8 +207,8 @@ package body Argument is
     Len : Natural;
   begin
     Get_Param_And_Pos (Str, Pos, 0, Any_Arg);
-    Len := Last_Delimiter (Asu_Ts (Str));
-    String_Mng.Copy (Asu.Slice (Str, 1, Len), Path);
+    Len := Last_Delimiter (Str.Image);
+    String_Mng.Copy (Str.Slice (1, Len), Path);
     Path_Length := Len;
   end Get_Program_Path;
 
@@ -221,10 +221,10 @@ package body Argument is
   begin
     -- Program name
     Get_Param_And_Pos (Str, Pos, 0, Any_Arg);
-    Len := Asu.Length (Str);
-    Start := Last_Delimiter(Asu_Ts (Str)) + 1;
+    Len := Str.Length;
+    Start := Last_Delimiter(Str.Image) + 1;
 
-    return Asu.Slice (Str, Start, Len);
+    return Str.Slice (Start, Len);
   end Get_Program_Name;
 
   procedure Get_Program_Name (Name : out String;
@@ -235,10 +235,10 @@ package body Argument is
     Start : Natural;
   begin
     Get_Param_And_Pos (Str, Pos, 0, Any_Arg);
-    Len := Asu.Length (Str);
-    Start := Last_Delimiter(Asu_Ts (Str)) + 1;
+    Len := Str.Length;
+    Start := Last_Delimiter(Str.Image) + 1;
 
-    String_Mng.Copy (Asu.Slice (Str, Start, Len), Name);
+    String_Mng.Copy (Str.Slice (Start, Len), Name);
     Name_Length := Len - Start + 1;
   end Get_Program_Name;
 

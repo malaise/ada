@@ -46,15 +46,13 @@ begin
     Argument.Get_Parameter(The_Argument);
 
     -- Check unit, get way of conversion
-    Unit := Upper_Char(Asu.Element(The_Argument, Asu.Length (The_Argument)));
+    Unit := Upper_Char(The_Argument.Element (The_Argument.Length));
     if Unit = 'E' then
       To_Francs := True;
-      Asu.Delete (The_Argument, Asu.Length (The_Argument),
-                                Asu.Length (The_Argument));
+      The_Argument.Delete (The_Argument.Length, The_Argument.Length);
     elsif Unit = 'F' then
       To_Francs := False;
-      Asu.Delete (The_Argument, Asu.Length (The_Argument),
-                                Asu.Length (The_Argument));
+      The_Argument.Delete (The_Argument.Length, The_Argument.Length);
     elsif Unit in '0' .. '9' then
        To_Francs := True;
     else
@@ -62,13 +60,13 @@ begin
     end if;
 
     -- If value is float, must have 2 digits for cents
-    Dot := String_Mng.Locate (Asu_Ts (The_Argument), ".", 1);
-    if Dot /= 0 and then Dot + 2 /= Asu.Length (The_Argument) then
+    Dot := String_Mng.Locate (The_Argument.Image, ".", 1);
+    if Dot /= 0 and then Dot + 2 /= The_Argument.Length then
       raise Constraint_Error;
     end if;
 
     -- Get it in Real format
-    Amount := My_Math.Real(Get_Float.Get_Float(Asu_Ts (The_Argument)));
+    Amount := My_Math.Real(Get_Float.Get_Float(The_Argument.Image));
 
   exception
     when others =>

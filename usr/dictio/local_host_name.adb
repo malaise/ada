@@ -9,18 +9,18 @@ package body Local_Host_Name is
     if Name'Length = 0 or else Name'Length > Max_Host_Name_Length then
       raise Constraint_Error;
     end if;
-    Lhn := Asu_Tus (Name);
+    Lhn := Tus (Name);
   end Set;
 
   function Get return String is
   begin
-    return Asu_Ts (Lhn);
+    return Lhn.Image;
   end Get;
 
   procedure Get (Name : out Host_Name) is
   begin
     Name := (others => ' ');
-    Name(1 .. Asu.Length (Lhn)) := Asu_Ts (Lhn);
+    Name(1 .. Lhn.Length) := Lhn.Image;
   end Get;
 
 end Local_Host_Name;

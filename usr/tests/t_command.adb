@@ -55,14 +55,14 @@ begin
     Stdout.List.Rewind;
     loop
       Stdout.List.Get (Str);
-      Basic_Proc.Put_Line_Output (">" & Asu_Ts (Str) & "<");
+      Basic_Proc.Put_Line_Output (">" & Str.Image & "<");
       exit when Stdout.List.Is_Empty;
     end loop;
   end if;
 
   Basic_Proc.New_Line_Output;
   Basic_Proc.Put_Line_Output ("Error flow:");
-  Basic_Proc.Put_Line_Output (">" & Asu_Ts (Stderr.Str) & "<");
+  Basic_Proc.Put_Line_Output (">" & Stderr.Str.Image & "<");
 
   Basic_Proc.New_Line_Output;
   Basic_Proc.Put_Line_Output ("Exit code: " & Exit_Code'Img);

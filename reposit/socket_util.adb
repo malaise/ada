@@ -13,15 +13,15 @@ package body Socket_Util is
         case Port.Kind is
           when Tcp_Util.Port_Name_Spec =>
             Soc.Set_Destination_Name_And_Service (Lan,
-                  Asu_Ts (Host.Name), Asu_Ts (Port.Name));
+                  Host.Name.Image, Port.Name.Image);
           when Tcp_Util.Port_Num_Spec =>
             Soc.Set_Destination_Name_And_Port (Lan,
-                  Asu_Ts (Host.Name), Port.Num);
+                  Host.Name.Image, Port.Num);
         end case;
       when Tcp_Util.Host_Id_Spec =>
         case Port.Kind is
           when Tcp_Util.Port_Name_Spec =>
-            Soc.Set_Destination_Host_And_Service (Host.Id, Asu_Ts (Port.Name));
+            Soc.Set_Destination_Host_And_Service (Host.Id, Port.Name.Image);
           when Tcp_Util.Port_Num_Spec =>
             Soc.Set_Destination_Host_And_Port (Host.Id, Port.Num);
         end case;
@@ -36,7 +36,7 @@ package body Socket_Util is
   begin
     case Host.Kind is
       when Tcp_Util.Host_Name_Spec =>
-        Soc.Change_Destination_Name (Lan, Asu_Ts (Host.Name));
+        Soc.Change_Destination_Name (Lan, Host.Name.Image);
       when Tcp_Util.Host_Id_Spec =>
         Soc.Change_Destination_Host (Host.Id);
     end case;
@@ -48,7 +48,7 @@ package body Socket_Util is
   begin
     case Port.Kind is
       when Tcp_Util.Port_Name_Spec =>
-        Soc.Change_Destination_Service (Asu_Ts (Port.Name));
+        Soc.Change_Destination_Service (Port.Name.Image);
       when Tcp_Util.Port_Num_Spec =>
         Soc.Change_Destination_Port (Port.Num);
     end case;
@@ -60,7 +60,7 @@ package body Socket_Util is
   begin
     case Port.Kind is
       when Tcp_Util.Port_Name_Spec =>
-        Soc.Link_Service (Asu_Ts (Port.Name));
+        Soc.Link_Service (Port.Name.Image);
       when Tcp_Util.Port_Num_Spec =>
         Soc.Link_Port (Port.Num);
     end case;

@@ -84,10 +84,10 @@ begin
 
   loop
     Dir_List.Read (Dir_Item, Dir_Mng.File_List_Mng.Current);
-    Afpx_Item.Len := Asu.Length (Dir_Item.Name);
+    Afpx_Item.Len := Dir_Item.Name.Length;
     Afpx_Item.Str := (others => Con_Io.Space);
     Afpx_Item.Str(1 .. Afpx_Item.Len) :=
-          Language.String_To_Unicode (Asu_Ts (Dir_Item.Name));
+          Language.String_To_Unicode (Dir_Item.Name.Image);
     Afpx_Item.Str(Afpx_Item.Len+1) := Language.Char_To_Unicode ('>');
     Afpx_Item.Str(Afpx_Item.Len+2) :=
       Language.Char_To_Unicode (Dir_Mng.File_Kind_List'Image(Dir_Item.Kind)(1));

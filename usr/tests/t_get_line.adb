@@ -35,7 +35,7 @@ begin
         Line : constant My_Get_Line.Line_Array := My_Get_Line.Get_Words;
       begin
         for I in 1 .. My_Get_Line.Get_Word_Number loop
-          Ada.Text_Io.Put (">" & Asu_Ts (Line(I)) & "<");
+          Ada.Text_Io.Put (">" & Line(I).Image & "<");
         end loop;
       end;
       Ada.Text_Io.New_Line;

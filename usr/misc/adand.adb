@@ -57,7 +57,7 @@ begin
 
   begin
     Argument.Get_Parameter (Tld, 1, "f");
-    Line_Deb := Positive'Value (Asu_Ts (Tld));
+    Line_Deb := Positive'Value (Tld.Image);
   exception
     when Argument.Argument_Not_Found =>
       Line_Deb := 1;
@@ -68,7 +68,7 @@ begin
 
   begin
     Argument.Get_Parameter (Tlf, 1, "l");
-    Line_Fin := Positive'Value (Asu_Ts (Tlf));
+    Line_Fin := Positive'Value (Tlf.Image);
   exception
     when Argument.Argument_Not_Found =>
       Line_Fin := Positive'Last;
@@ -79,7 +79,7 @@ begin
 
   begin
     Argument.Get_Parameter (Ti, 1, "i");
-    Ind := Indent_Range'Value (Asu_Ts (Ti));
+    Ind := Indent_Range'Value (Ti.Image);
   exception
     when Argument.Argument_Not_Found =>
       Ind := 2;
@@ -94,19 +94,19 @@ begin
   begin
     -- build .bak file name
     File_Suf := File_Name;
-    Asu.Append (File_Suf, Sav_Suf);
+    File_Suf.Append (Sav_Suf);
 
     -- eventualy remove .bak file
-    No_Err := Sys_Calls.Unlink (Asu_Ts (File_Suf));
+    No_Err := Sys_Calls.Unlink (File_Suf.Image);
     -- rename file to file.bak
-    No_Err := Sys_Calls.Rename (Asu_Ts (File_Name), Asu_Ts (File_Suf));
+    No_Err := Sys_Calls.Rename (File_Name.Image, File_Suf.Image);
     if not No_Err then
       raise System_Call_Error;
     end if;
   exception
     when System_Call_Error =>
       My_Io.Put_Line ("ERROR : " & Sys_Calls.Str_Error (Sys_Calls.Errno)
-       & " renaming file " & Asu_Ts (File_Name) & " to " & Asu_Ts (File_Suf));
+       & " renaming file " & File_Name.Image & " to " & File_Suf.Image);
       raise;
     when Constraint_Error =>
       My_Io.Put_Line ("File name too long to build commands.");
@@ -115,17 +115,17 @@ begin
 
   -- open file.bak file and create file
   begin
-    Ada.Text_Io.Open (Fb, Ada.Text_Io.In_File, Asu_Ts (File_Suf));
+    Ada.Text_Io.Open (Fb, Ada.Text_Io.In_File, File_Suf.Image);
   exception
     when others =>
-      My_Io.Put_Line ("Error opening file " & Asu_Ts (File_Suf));
+      My_Io.Put_Line ("Error opening file " & File_Suf.Image);
       raise;
   end;
   begin
-    Ada.Text_Io.Create (F, Ada.Text_Io.Out_File, Asu_Ts (File_Name));
+    Ada.Text_Io.Create (F, Ada.Text_Io.Out_File, File_Name.Image);
   exception
     when others =>
-      My_Io.Put_Line ("Error creating file " & Asu_Ts (File_Name));
+      My_Io.Put_Line ("Error creating file " & File_Name.Image);
   end;
 
   L := 0;
@@ -171,7 +171,7 @@ begin
 exception
   when Error:others =>
     My_Io.Put_Line ("Exception " & Ada.Exceptions.Exception_Name (Error)
-     & " raised when processing file " & Asu_Ts (File_Name));
+     & " raised when processing file " & File_Name.Image);
     raise;
 end Adand;
 

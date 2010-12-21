@@ -53,34 +53,34 @@ package body Git_If is
         Out_Flow_3'Access, Err_Flow'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git --version: " & Asu_Ts (Err_Flow.Str));
+      Basic_Proc.Put_Line_Error ("git --version: " & Err_Flow.Str.Image);
       raise No_Git;
     end if;
     -- Remove tailing line feed - Check and remove heading string
-    Asu.Delete (Out_Flow_3.Str, Asu.Length (Out_Flow_3.Str),
-                                Asu.Length (Out_Flow_3.Str));
-    if Asu.Slice (Out_Flow_3.Str, 1, 12) /= "git version " then
-      Basic_Proc.Put_Line_Error ("git --version: " & Asu_Ts (Out_Flow_3.Str));
+    Out_Flow_3.Str.Delete (Out_Flow_3.Str.Length,
+                           Out_Flow_3.Str.Length);
+    if Out_Flow_3.Str.Slice (1, 12) /= "git version " then
+      Basic_Proc.Put_Line_Error ("git --version: " & Out_Flow_3.Str.Image);
       raise No_Git;
     end if;
-    Asu.Delete (Out_Flow_3.Str, 1, 12);
+    Out_Flow_3.Str.Delete (1, 12);
     -- Parse number
-    D1 := String_Mng.Locate (Asu_Ts (Out_Flow_3.Str), ".", Occurence => 1);
-    D2 := String_Mng.Locate (Asu_Ts (Out_Flow_3.Str), ".", Occurence => 2);
-    D3 := String_Mng.Locate (Asu_Ts (Out_Flow_3.Str), ".", Occurence => 3);
+    D1 := String_Mng.Locate (Out_Flow_3.Str.Image, ".", Occurence => 1);
+    D2 := String_Mng.Locate (Out_Flow_3.Str.Image, ".", Occurence => 2);
+    D3 := String_Mng.Locate (Out_Flow_3.Str.Image, ".", Occurence => 3);
     if D1 <= 1 or else D2 <= D1 + 1
-    or else D2 = Asu.Length (Out_Flow_3.Str) then
+    or else D2 = Out_Flow_3.Str.Length then
       -- Incorrect format
-      Basic_Proc.Put_Line_Error ("git --version: " & Asu_Ts (Out_Flow_3.Str));
+      Basic_Proc.Put_Line_Error ("git --version: " & Out_Flow_3.Str.Image);
       raise No_Git;
     end if;
     if D3 = 0 then
       -- Only major, minor and sub
-      D3 := Asu.Length (Out_Flow_3.Str) + 1;
+      D3 := Out_Flow_3.Str.Length + 1;
     end if;
-    Result.Major  := Natural'Value (Asu.Slice (Out_Flow_3.Str, 1, D1 - 1));
-    Result.Medium := Natural'Value (Asu.Slice (Out_Flow_3.Str, D1 + 1, D2 - 1));
-    Result.Minor  := Natural'Value (Asu.Slice (Out_Flow_3.Str, D2 + 1, D3 - 1));
+    Result.Major  := Natural'Value (Out_Flow_3.Str.Slice (1, D1 - 1));
+    Result.Medium := Natural'Value (Out_Flow_3.Str.Slice (D1 + 1, D2 - 1));
+    Result.Minor  := Natural'Value (Out_Flow_3.Str.Slice (D2 + 1, D3 - 1));
     return Result;
   exception
     when Error:others =>
@@ -94,22 +94,22 @@ package body Git_If is
     Git_Dir : Asu_Us;
     Kind : Sys_Calls.File_Kind_List;
     Dir : Asu_Us;
-    use type Asu_Us, Sys_Calls.File_Kind_List;
+    use type Sys_Calls.File_Kind_List;
   begin
-    Git_Dir := Asu_Tus (Environ.Getenv ("GIT_DIR"));
+    Git_Dir := Tus (Environ.Getenv ("GIT_DIR"));
     if Git_Dir /= Asu_Null then
       -- Get basename
-      Git_Dir := Asu_Tus (Directory.Basename (Asu_Ts (Git_Dir)));
+      Git_Dir := Tus (Directory.Basename (Git_Dir.Image));
     else
-      Git_Dir := Asu_Tus (".git");
+      Git_Dir := Tus (".git");
     end if;
 
     -- Look for ".git" in current then upper directories
-    Root := Asu_Tus (Directory.Get_Current);
+    Root := Tus (Directory.Get_Current);
     Path := Asu_Null;
     loop
       begin
-        Kind := Kind_Of (Asu_Ts (Root & "/" & Git_Dir));
+        Kind := Kind_Of (Root.Image & "/" & Git_Dir.Image);
         -- Found?
         exit when Kind = Sys_Calls.Dir;
       exception
@@ -118,16 +118,15 @@ package body Git_If is
       end;
       -- Not found here
       -- Can we get above?
-      if Asu_Ts (Root) = "" then
+      if Root.Image = "" then
         raise No_Git;
       end if;
       -- Append current Dir to Result, remove it from Path (cd ..)
-      Dir := Asu_Tus (Directory.Basename (Asu_Ts (Root)));
+      Dir := Tus (Directory.Basename (Root.Image));
       Path := Dir & "/" & Path;
-      Asu.Delete (Root, Asu.Length (Root) - Asu.Length (Dir),
-                        Asu.Length (Root));
+      Root.Delete (Root.Length - Dir.Length, Root.Length);
     end loop;
-    Asu.Append (Root, "/");
+    Root.Append ("/");
   end Get_Root_And_Path;
 
   -- LIST OF FILES AND STATUS
@@ -145,13 +144,11 @@ package body Git_If is
 
   -- For searching a file in File_List and sorting File_List
   function Match (Current, Criteria : File_Entry_Rec) return Boolean is
-    use type Asu_Us;
   begin
     return Current.Name = Criteria.Name;
   end Match;
   procedure File_Search is new File_Mng.Dyn_List.Search (Match);
   function Less_Than (El1, El2 : File_Entry_Rec) return Boolean is
-    use type Asu_Us;
   begin
     if El1.Kind = El2.Kind then
       return El1.Name < El2.Name;
@@ -193,7 +190,7 @@ package body Git_If is
         Out_Flow_1'Access, Err_Flow'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git ls-files: " & Asu_Ts (Err_Flow.Str));
+      Basic_Proc.Put_Line_Error ("git ls-files: " & Err_Flow.Str.Image);
       return;
     end if;
 
@@ -206,7 +203,7 @@ package body Git_If is
         Out_Flow_2'Access, Err_Flow'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git status: " & Asu_Ts (Err_Flow.Str));
+      Basic_Proc.Put_Line_Error ("git status: " & Err_Flow.Str.Image);
       return;
     end if;
 
@@ -215,11 +212,11 @@ package body Git_If is
       Out_Flow_1.List.Rewind;
       loop
         Out_Flow_1.List.Read (Str, Moved => Moved);
-        if Directory.Dirname (Asu_Ts (Str)) = "" then
+        if Directory.Dirname (Str.Image) = "" then
           File_Entry.Name := Str;
           File_Entry.S2 := ' ';
           File_Entry.S3 := ' ';
-          File_Entry.Kind := Char_Of (Asu_Ts (Str));
+          File_Entry.Kind := Char_Of (Str.Image);
           Files.Insert (File_Entry);
         end if;
         exit when not Moved;
@@ -231,17 +228,17 @@ package body Git_If is
       Out_Flow_2.List.Rewind;
       loop
         Out_Flow_2.List.Read (Str, Moved => Moved);
-        File_Entry.S2 := Asu.Element (Str, 1);
-        File_Entry.S3 := Asu.Element (Str, 2);
-        if Asu.Element (Str, Asu.Length (Str)) /= '/'
+        File_Entry.S2 := Str.Element (1);
+        File_Entry.S3 := Str.Element (2);
+        if Str.Element (Str.Length) /= '/'
         and then (File_Entry.S2 /= ' ' or else File_Entry.S3 /= ' ') then
           -- This is a file, and in 2nd or 3rd stage or untracked
           -- Remove "XY "
-          Asu.Delete (Str, 1, 3);
-          if Directory.Dirname (Asu_Ts (Str)) = Current_Path then
+          Str.Delete (1, 3);
+          if Directory.Dirname (Str.Image) = Current_Path then
             -- This file is in current dir, look for it
-            File_Entry.Name := Asu_Tus (Directory.Basename (Asu_Ts (Str)));
-            File_Entry.Kind := Char_Of (Asu_Ts (File_Entry.Name));
+            File_Entry.Name := Tus (Directory.Basename (Str.Image));
+            File_Entry.Kind := Char_Of (File_Entry.Name.Image);
             File_Search (Files, Found, File_Entry,
                          From => File_Mng.Dyn_List.Absolute);
             if Found then
@@ -265,8 +262,8 @@ package body Git_If is
       loop
         Dir_List.Read (Dir_Entry, Moved => Moved);
         if Dir_Entry.Kind = Directory.Dir
-        and then Asu_Ts (Dir_Entry.Name) /= "."
-        and then Asu_Ts (Dir_Entry.Name) /= ".." then
+        and then Dir_Entry.Name.Image /= "."
+        and then Dir_Entry.Name.Image /= ".." then
           File_Entry.S2 := ' ';
           File_Entry.S3 := ' ';
           File_Entry.Kind := '/';
@@ -285,9 +282,9 @@ package body Git_If is
     File_Entry.S2 := ' ';
     File_Entry.S3 := ' ';
     File_Entry.Kind := '/';
-    File_Entry.Name := Asu_Tus ("..");
+    File_Entry.Name := Tus ("..");
     Files.Insert (File_Entry, File_Mng.Dyn_List.Prev);
-    File_Entry.Name := Asu_Tus (".");
+    File_Entry.Name := Tus (".");
     Files.Insert (File_Entry, File_Mng.Dyn_List.Prev);
     Files.Rewind;
 
@@ -325,22 +322,22 @@ package body Git_If is
   begin
     -- commit <hash>
     Flow.Read (Line);
-    Assert (Asu.Length (Line) = 47);
-    Assert (Asu.Slice (Line, 1, 7) = "commit ");
-    Hash := Asu.Slice (Line, 8, 47);
+    Assert (Line.Length = 47);
+    Assert (Line.Slice (1, 7) = "commit ");
+    Hash := Line.Slice (8, 47);
 
     -- possible "Merge:... ..." then Author: ...
     Flow.Read (Line);
-    if Asu.Slice (Line, 1, 7) = "Merge: " then
+    if Line.Slice (1, 7) = "Merge: " then
       Flow.Read (Line);
     end if;
-    Assert (Asu.Slice (Line, 1, 8) = "Author: ");
+    Assert (Line.Slice (1, 8) = "Author: ");
 
     -- Date:   YYYY-MM-DD HH:MM:SS ...
     Flow.Read (Line, Moved => Done);
-    Assert (Asu.Length (Line) >= 27);
-    Assert (Asu.Slice (Line, 1, 8) = "Date:   ");
-    Date := Asu.Slice (Line, 9, 27);
+    Assert (Line.Length >= 27);
+    Assert (Line.Slice (1, 8) = "Date:   ");
+    Date := Line.Slice (9, 27);
     if not Done then
       -- No comment and last block
       Done := not Done;
@@ -349,17 +346,17 @@ package body Git_If is
 
     -- Empty line then a comment
     Flow.Read (Line);
-    Assert (Asu.Length (Line) = 0);
+    Assert (Line.Length = 0);
 
     -- Several comments until empty line
     Ind := 0;
     Comments := (others => Asu_Null);
     loop
       Flow.Read (Line, Moved => Done);
-      exit when Asu.Length (Line) = 0;
+      exit when Line.Length = 0;
       Ind := Ind + 1;
-      if Ind = 1 and then Asu.Length (Line) >= 2
-      and then Asu.Slice (Line, 1, 2) /= "  " then
+      if Ind = 1 and then Line.Length >= 2
+      and then Line.Slice (1, 2) /= "  " then
         -- No Comment at all in short mode (=> next commit)
         -- No Comment at all in detailed mode (=> modified files)
         if Done then
@@ -369,17 +366,17 @@ package body Git_If is
         end if;
         exit;
       end if;
-      Assert (Asu.Length (Line) >= 4);
-      Assert (Asu.Slice (Line, 1, 4) = "    ");
+      Assert (Line.Length >= 4);
+      Assert (Line.Slice (1, 4) = "    ");
       -- Copy first comments
       if Ind <= Comments'Last then
-        Comments(Ind) := Asu_Uslice (Line, 5,  Asu.Length (Line));
+        Comments(Ind) := Line.Uslice (5,  Line.Length);
       end if;
       exit when not Done;
     end loop;
 
     -- No files if no detail
-    if (Asu.Length (Line) = 0 or else not Done) and then not Details then
+    if (Line.Length = 0 or else not Done) and then not Details then
       -- The Dyn_List.Read Done is set to False when reaching the end
       -- Our Done shall be True as long as not the end
       Done := not Done;
@@ -397,19 +394,19 @@ package body Git_If is
     end if;
     loop
       Flow.Read (Line, Moved => Done);
-      exit when Asu.Length (Line) = 0;
+      exit when Line.Length = 0;
       Ind := Ind + 1;
-      if Ind = 1 and then Asu.Length (Line) = 47
-      and then Asu.Slice (Line, 1, 7) = "commit " then
+      if Ind = 1 and then Line.Length = 47
+      and then Line.Slice (1, 7) = "commit " then
         -- No change at all
         Flow.Move_To (Command.Res_Mng.Dyn_List.Prev);
         exit;
       end if;
       if Details then
-        Assert (Asu.Length (Line) > 2);
-        Assert (Asu.Element (Line, 2) = Ada.Characters.Latin_1.Ht);
-        File.Status := Asu.Element (Line, 1);
-        File.File := Asu_Uslice (Line, 3, Asu.Length (Line));
+        Assert (Line.Length > 2);
+        Assert (Line.Element (2) = Ada.Characters.Latin_1.Ht);
+        File.Status := Line.Element (1);
+        File.File := Line.Uslice (3, Line.Length);
         Files.Insert (File);
       end if;
       exit when not Done;
@@ -446,7 +443,7 @@ package body Git_If is
         Out_Flow_1'Access, Err_Flow'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git log: " & Asu_Ts (Err_Flow.Str));
+      Basic_Proc.Put_Line_Error ("git log: " & Err_Flow.Str.Image);
       return;
     end if;
 
@@ -488,7 +485,7 @@ package body Git_If is
         Out_Flow_1'Access, Err_Flow'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git log1: " & Asu_Ts (Err_Flow.Str));
+      Basic_Proc.Put_Line_Error ("git log1: " & Err_Flow.Str.Image);
       return;
     end if;
 
@@ -504,7 +501,7 @@ package body Git_If is
     end if;
     if not Commit.Is_Empty then
       Commit.Rewind;
-      Commit.Insert ((' ', Asu_Tus ("/")), Commit_File_Mng.Dyn_List.Prev);
+      Commit.Insert ((' ', Tus ("/")), Commit_File_Mng.Dyn_List.Prev);
     end if;
 
   end List_Commit;
@@ -521,7 +518,7 @@ package body Git_If is
         Out_Flow_3'Access, Err_Flow'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git show: " & Asu_Ts (Err_Flow.Str));
+      Basic_Proc.Put_Line_Error ("git show: " & Err_Flow.Str.Image);
       return;
     end if;
   end Cat;
@@ -552,7 +549,7 @@ package body Git_If is
         Out_Flow_3'Access, Err_Flow'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git checkout: " & Asu_Ts (Err_Flow.Str));
+      Basic_Proc.Put_Line_Error ("git checkout: " & Err_Flow.Str.Image);
       return;
     end if;
   end Do_Revert;
@@ -569,7 +566,7 @@ package body Git_If is
         Out_Flow_1'Access, Err_Flow'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git branch: " & Asu_Ts (Err_Flow.Str));
+      Basic_Proc.Put_Line_Error ("git branch: " & Err_Flow.Str.Image);
       return "ERROR.";
     end if;
     -- Look for "* "
@@ -577,9 +574,9 @@ package body Git_If is
       Out_Flow_1.List.Rewind;
       loop
         Out_Flow_1.List.Read (Branch, Moved => Moved);
-        if Asu.Length (Branch) > 2
-        and then Asu.Slice (Branch, 1, 2) = "* " then
-          return Asu.Slice (Branch, 3, Asu.Length (Branch));
+        if Branch.Length > 2
+        and then Branch.Slice (1, 2) = "* " then
+          return Branch.Slice (3, Branch.Length);
         end if;
         exit when not Moved;
       end loop;

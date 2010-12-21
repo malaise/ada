@@ -1,4 +1,4 @@
-with As.U; use As.U;
+with As.U.Utils; use As.U, As.U.Utils;
 with Hashing, Hashed_List;
 package File_Hash is
 
@@ -11,7 +11,7 @@ package File_Hash is
   function Hash_Func (Key : String) return Hashing.Max_Hash_Range;
 
   package List_Mng is new Hashed_List (
-       Asu_Us, Asu_Us_Access, Set, Asu."=" , Image, Hash_Max, Hash_Func);
+       Asu_Us, Asu_Us_Access, Set, As.U."=", As.U.Image, Hash_Max, Hash_Func);
 
 
   -- Load the content of the file in the list

@@ -16,7 +16,7 @@ package body Dialog is
 
   -- Remove trailing spaces. No heading nor intermediate spaces allowed
   procedure Parse_Spaces (Txt : in out Asu_Us; Ok : out Boolean) is
-    Str : constant String := Asu_Ts (Txt);
+    Str : constant String := Txt.Image;
     L : Natural;
   begin
     L := 0;
@@ -36,7 +36,7 @@ package body Dialog is
       end if;
     end loop;
     -- If all spaces, L = 0 => empty
-    Txt := Asu_Tus (Str(1 .. L));
+    Txt := Tus (Str(1 .. L));
     Ok := True;
   end Parse_Spaces;
 
@@ -81,7 +81,7 @@ package body Dialog is
       Parse_Spaces(Buff, Ok);
       if Ok then
         begin
-          Coordinate := Point_Str.Coordinate_Value (Asu_Ts (Buff));
+          Coordinate := Point_Str.Coordinate_Value (Buff.Image);
         exception
           when Constraint_Error =>
             Ok := False;
@@ -172,7 +172,7 @@ package body Dialog is
       Parse_Spaces(Buff, Ok);
       if Ok then
         begin
-          Degree := Natural'Value(Asu_Ts (Buff));
+          Degree := Natural'Value(Buff.Image);
           if Degree < Points.P_Nb then
             Resol.R_Set_Degree(Degree);
           else

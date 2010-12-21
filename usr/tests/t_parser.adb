@@ -80,7 +80,7 @@ begin
            := Parser.All_In_One.Parse_All (It);
   begin
     for I in Parsed'Range loop
-      Ada.Text_Io.Put_Line ("Got >" & Asu_Ts (Parsed(I).Str)
+      Ada.Text_Io.Put_Line ("Got >" & Parsed(I).Str.Image
        & "< of kind " & Mixed_Str (Parsed(I).Kind'Img) );
     end loop;
   end;

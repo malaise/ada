@@ -1,3 +1,4 @@
+with As.U.Utils; use As.U.Utils;
 separate (Mcd_Mng)
 
 package body Call_Stack is
@@ -8,7 +9,7 @@ package body Call_Stack is
   begin
     List.Insert (Item);
     if Debug.Debug_Level_Array(Debug.Call) then
-      Async_Stdin.Put_Line_Err ("Call_stack: Pushing >" & Asu_Ts (Item) & "<"
+      Async_Stdin.Put_Line_Err ("Call_stack: Pushing >" & Item.Image & "<"
         & "   Level is " & Integer'Image(List.List_Length));
     end if;
   end Push;
@@ -18,7 +19,7 @@ package body Call_Stack is
   begin
     List.Get(Item, Asu_Dyn_List_Mng.Prev);
     if Debug.Debug_Level_Array(Debug.Call) then
-      Async_Stdin.Put_Line_Err ("Call_stack: Poping >" & Asu_Ts (Item) & "<"
+      Async_Stdin.Put_Line_Err ("Call_stack: Poping >" & Item.Image & "<"
         & "   Level is " & Integer'Image(List.List_Length));
     end if;
     return Item;

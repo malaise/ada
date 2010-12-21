@@ -24,7 +24,7 @@ procedure T_Arg is
   begin
     Skip_Line;
     Get_Line (Str, Len);
-    Txt := Asu_Tus (Str(1..Len));
+    Txt := Tus (Str(1..Len));
   exception
     when others => raise Constraint_Error;
   end Get_Txt;
@@ -72,11 +72,11 @@ begin
           end;
         end loop;
       when 'Y' =>
-        Key := Asu_Tus (Argument.Any_Key);
+        Key := Tus (Argument.Any_Key);
       when 'N' =>
-        Key := Asu_Tus (Argument.Not_Key);
+        Key := Tus (Argument.Not_Key);
       when 'A' =>
-        Key := Asu_Tus (Argument.Any_Arg);
+        Key := Tus (Argument.Any_Arg);
       when others =>
         null;
     end case;
@@ -92,11 +92,11 @@ begin
       end;
     end loop;
     begin
-      Argument.Get_Param_And_Pos (Arg, Pos, Occ, Asu_Ts (Key));
-      Put_Line ("Argument : >" & Asu_Ts (Arg) & "<");
-      for I in 1 .. Asu.Length (Arg) loop
-        Put_Line ("Char ->" & Asu.Element (Arg, I) & "< " &
-         Integer'Image (Character'Pos(Asu.Element (Arg, I))) );
+      Argument.Get_Param_And_Pos (Arg, Pos, Occ, Key.Image);
+      Put_Line ("Argument : >" & Arg.Image & "<");
+      for I in 1 .. Arg.Length loop
+        Put_Line ("Char ->" & Arg.Element (I) & "< " &
+         Integer'Image (Character'Pos(Arg.Element (I))) );
       end loop;
 
       Put (" found at position "); Put_Line (Pos, 3);

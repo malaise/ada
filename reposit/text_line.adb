@@ -16,7 +16,7 @@ package body Text_Line is
     File.Acc := new File_Type_Rec'(
        Fd => Fd,
        Mode => Mode,
-       Line_Feed => Asu_Tus (Line_Feed_Str),
+       Line_Feed => Tus (Line_Feed_Str),
        Buffer_Len => 0,
        Buffer_Index => 0,
        Buffer => (others => Ada.Characters.Latin_1.Nul) );
@@ -59,7 +59,7 @@ package body Text_Line is
     if Str'Length > Max_Line_Feed_Len then
       raise Status_Error;
     end if;
-    File.Acc.Line_Feed := Asu_Tus (Str);
+    File.Acc.Line_Feed := Tus (Str);
   end Set_Line_Feed;
 
   function Get_Line_Feed (File : in File_Type) return String is
@@ -67,7 +67,7 @@ package body Text_Line is
     if File.Acc = null then
       raise Status_Error;
     end if;
-    return Asu_Ts (File.Acc.Line_Feed);
+    return File.Acc.Line_Feed.Image;
   end Get_Line_Feed;
 
   -- Read next text line from File
@@ -81,7 +81,7 @@ package body Text_Line is
   -- May raise Read_Error if IO error
   function Get (File : File_Type) return String is
   begin
-    return Asu_Ts (Get (File));
+    return Get (File).Image;
   end Get;
 
   -- Internal procedure that reads a buffer (or up to end of file)
@@ -113,13 +113,13 @@ package body Text_Line is
     end if;
 
     -- Specif case of no Line_Feed, read all
-    if Asu_Is_Null (File.Acc.Line_Feed) then
+    if File.Acc.Line_Feed.Is_Null then
       loop
         Read (File, Done);
         -- Done when read -> 0
         exit when Done;
         -- Append read chars to Str
-        Asu.Append (Str, File.Acc.Buffer(1 .. File.Acc.Buffer_Len));
+        Str.Append (File.Acc.Buffer(1 .. File.Acc.Buffer_Len));
         File.Acc.Buffer_Len := 0;
         File.Acc.Buffer_Index := 0;
       end loop;
@@ -128,7 +128,7 @@ package body Text_Line is
 
     -- Locate next Line_Feed
     declare
-      Loc_Line_Feed : constant String := Asu_Ts (File.Acc.Line_Feed);
+      Loc_Line_Feed : constant String := File.Acc.Line_Feed.Image;
       Loc_Line_Len : constant Natural := Loc_Line_Feed'Length;
     begin
       loop
@@ -138,7 +138,7 @@ package body Text_Line is
            -- Done when read -> 0
            if Done then
               -- Cat remaining of buffer
-              Asu.Append (Str, File.Acc.Buffer(1 .. File.Acc.Buffer_Len));
+              Str.Append (File.Acc.Buffer(1 .. File.Acc.Buffer_Len));
               File.Acc.Buffer_Index := 0;
               File.Acc.Buffer_Len := 0;
               exit;
@@ -155,14 +155,14 @@ package body Text_Line is
         end loop;
         if Stop_Index /= 0 then
           -- A newline sequence is found: append it and return
-          Asu.Append (Str, File.Acc.Buffer(File.Acc.Buffer_Index + 1
+          Str.Append (File.Acc.Buffer(File.Acc.Buffer_Index + 1
                                    .. Stop_Index + Loc_Line_Len - 1));
           File.Acc.Buffer_Index := Stop_Index + Loc_Line_Len - 1;
           exit;
         else
           -- No newline was found: append buffer and go on reading
-          Asu.Append (Str, File.Acc.Buffer(File.Acc.Buffer_Index + 1
-                               .. File.Acc.Buffer_Len - Loc_Line_Len + 1));
+          Str.Append (File.Acc.Buffer(File.Acc.Buffer_Index + 1
+                                   .. File.Acc.Buffer_Len - Loc_Line_Len + 1));
           File.Acc.Buffer(1 .. Loc_Line_Len - 1) :=
               File.Acc.Buffer(File.Acc.Buffer_Len - Loc_Line_Len + 2
                            .. File.Acc.Buffer_Len);
@@ -222,7 +222,7 @@ package body Text_Line is
     if File.Acc = null or else File.Acc.Mode = In_File then
       raise Status_Error;
     end if;
-    Put (File, Text & Asu_Ts (File.Acc.Line_Feed));
+    Put (File, Text & File.Acc.Line_Feed.Image);
   end Put_Line;
 
   -- Put a New_Line
@@ -233,7 +233,7 @@ package body Text_Line is
     if File.Acc = null or else File.Acc.Mode = In_File then
       raise Status_Error;
     end if;
-    Put (File, Asu_Ts (File.Acc.Line_Feed));
+    Put (File, File.Acc.Line_Feed.Image);
   end New_Line;
 
   -- Flush the remaining of text put on file

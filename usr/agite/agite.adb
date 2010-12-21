@@ -20,9 +20,9 @@ procedure Agite is
 
   -- Options
   Keys : constant Argument_Parser.The_Keys_Type := (
-    1 => ('h', Asu_Tus ("help"), False, False),
-    2 => ('n', Asu_Tus ("no_history"), False, False),
-    3 => ('p', Asu_Tus ("previous"), False, False));
+    1 => ('h', Tus ("help"), False, False),
+    2 => ('n', Tus ("no_history"), False, False),
+    3 => ('p', Tus ("previous"), False, False));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
   -- Got to previous dir (if any) / Save history
@@ -62,7 +62,7 @@ procedure Agite is
   begin
     Afpx.Encode_Line (Line,
         From.S2 & From.S3 & ' '
-      & Utils.Normalize (Asu_Ts (From.Name), List_Width) & From.Kind);
+      & Utils.Normalize (From.Name.Image, List_Width) & From.Kind);
   end Set;
   procedure Init_List is new Afpx.List_Manager.Init_List (
     Git_If.File_Entry_Rec, Git_If.File_Mng, Set);
@@ -108,11 +108,11 @@ procedure Agite is
     Afpx.Suspend;
     Redisplay := True;
     begin
-      if Asu_Is_Null (Root) then
+      if Root.Is_Null then
         Git_If.Get_Root_And_Path (Root, Path);
       end if;
-      Branch := Asu_Tus (Git_If.Current_Branch);
-      Git_If.List_Files (Asu_Ts (Path), Files);
+      Branch := Tus (Git_If.Current_Branch);
+      Git_If.List_Files (Path.Image, Files);
       Afpx.Resume;
     exception
       when Git_If.No_Git =>
@@ -120,7 +120,7 @@ procedure Agite is
         Root := Asu_Null;
         Path := Asu_Null;
         -- List dir content the normal way
-        List_Files (Asu_Ts (Path), Files);
+        List_Files (Path.Image, Files);
         Afpx.Resume;
       when others =>
         Afpx.Resume;
@@ -134,18 +134,18 @@ procedure Agite is
     -- Encode root dir
     Afpx.Clear_Field (10);
     Afpx.Encode_Field (10, (0, 0),
-       Utils.Normalize (Asu_Ts (Root), Afpx.Get_Field_Width (12)));
+       Utils.Normalize (Root.Image, Afpx.Get_Field_Width (12)));
 
    -- Encode current branch
    Afpx.Clear_Field (16);
-   if Asu_Ts (Branch) = ("(no branch)") then
-     Branch := Asu_Tus ("None.");
+   if Branch.Image = ("(no branch)") then
+     Branch := Tus ("None.");
    end if;
    Afpx.Encode_Field (16, (0, 0),
-         Utils.Normalize ("Br: " & Asu_Ts (Branch), Afpx.Get_Field_Width (16)));
+         Utils.Normalize ("Br: " & Branch.Image, Afpx.Get_Field_Width (16)));
 
     -- De-activate Diff and history if no in Git
-    if Asu_Is_Null (Root) then
+    if Root.Is_Null then
       Utils.Protect_Field (22);
       Utils.Protect_Field (23);
     else
@@ -204,7 +204,6 @@ procedure Agite is
 
   -- To find current position back
   function Match (Current, Criteria : Git_If.File_Entry_Rec) return Boolean is
-    use type Asu_Us;
   begin
     return Current.Kind = Criteria.Kind and then Current.Name = Criteria.Name;
   end Match;
@@ -235,26 +234,25 @@ procedure Agite is
   -- else ">tail"
   Local_Host : Asu_Us;
   function Host_Str return String is
-    use type Asu_Us;
     Len : constant Positive := Afpx.Get_Field_Width (18);
   begin
     if Local_Host /= Asu_Null then
-      return Asu_Ts (Local_Host);
+      return Local_Host.Image;
     end if;
-    Local_Host := Asu_Tus (Socket.Local_Host_Name);
-    if Asu.Length (Local_Host) + 5 <= Len then
+    Local_Host := Tus (Socket.Local_Host_Name);
+    if Local_Host.Length + 5 <= Len then
       Local_Host := "(on " & Local_Host & ")";
-    elsif Asu.Length (Local_Host) + 2 <= Len then
+    elsif Local_Host.Length + 2 <= Len then
       Local_Host := "(" & Local_Host & ")";
     end if;
-    Local_Host := Asu_Tus (String_Mng.Procuste (
-        Asu_Ts (Local_Host),
+    Local_Host := Tus (String_Mng.Procuste (
+        Local_Host.Image,
         Len,
         Align_Left => False,
         Gap => ' ',
         Trunc_Head => True,
         Show_Trunc => True));
-    return Asu_Ts (Local_Host);
+    return Local_Host.Image;
   end Host_Str;
 
   -- Init Afpx
@@ -271,7 +269,7 @@ procedure Agite is
 
   procedure Edit (File_Name : in String) is
   begin
-    Utils.Launch (Asu_Ts (Editor) & " " & File_Name);
+    Utils.Launch (Editor.Image & " " & File_Name);
   end Edit;
 
   procedure Do_History (Name : in String; Is_File : in Boolean) is
@@ -279,7 +277,7 @@ procedure Agite is
   begin
     -- Call history and restore current entry
     Pos := Afpx.Line_List.Get_Position;
-    History.Handle (Asu_Ts (Root), Asu_Ts (Path), Name, Is_File);
+    History.Handle (Root.Image, Path.Image, Name, Is_File);
     Init;
     Afpx.Line_List.Move_At (Pos);
     Afpx.Update_List (Afpx.Center);
@@ -291,7 +289,7 @@ procedure Agite is
     -- Call Confirm and restore current entry
     Pos := Afpx.Line_List.Get_Position;
     if Confirm ("Ready to revert:",
-                Directory.Build_File_Name (Asu_Ts (Path), Name, "")) then
+                Directory.Build_File_Name (Path.Image, Name, "")) then
       Git_If.Do_Revert (Name);
     end if;
     Init;
@@ -304,12 +302,11 @@ procedure Agite is
   procedure List_Action (Action : in Action_List) is
 
     File : Git_If.File_Entry_Rec;
-    use type Asu_Us;
   begin
     Files.Move_At (Afpx.Line_List.Get_Position);
     Files.Read (File, Git_If.File_Mng.Dyn_List.Current);
     declare
-      File_Name : constant String := Asu_Ts (File.Name);
+      File_Name : constant String := File.Name.Image;
     begin
       if File.Kind = '/' then
         case Action is
@@ -319,7 +316,7 @@ procedure Agite is
             null;
           when Diff =>
             if File_Name = "." then
-              Git_If.Launch_Diff (Asu_Ts (Differator), File_Name);
+              Git_If.Launch_Diff (Differator.Image, File_Name);
             end if;
           when History =>
             if File_Name = "." then
@@ -337,7 +334,7 @@ procedure Agite is
           when Edit | Default =>
             Edit (File_Name);
           when Diff =>
-            Git_If.Launch_Diff (Asu_Ts (Differator), File_Name);
+            Git_If.Launch_Diff (Differator.Image, File_Name);
           when History =>
             Do_History (File_Name, True);
           when Revert =>
@@ -404,8 +401,8 @@ begin
   end if;
 
   -- Get or init config
-  Editor := Asu_Tus (Config.Editor);
-  Differator := Asu_Tus (Config.Differator);
+  Editor := Tus (Config.Editor);
+  Differator := Tus (Config.Differator);
 
   -- Init Afpx
   Init;
@@ -441,7 +438,7 @@ begin
                                    - Utils.List_Scroll_Fld_Range'First + 1);
           when 10 =>
             -- Root (change dir to)
-            Change_Dir (Asu_Ts (Root));
+            Change_Dir (Root.Image);
           when 11 =>
             -- Go (to dir)
             Change_Dir;

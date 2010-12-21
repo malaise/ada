@@ -12,7 +12,7 @@ package Words is
   -- Empty word array
   No_Word : constant Word_Array (1 .. 0)
           := (others => (Lexic => Parser_Ada.Comment,
-                         Text => Asu_Tus ("")));
+                         Text => Tus ("")));
 
   -- Reset the stored words
   procedure Reset;

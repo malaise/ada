@@ -327,17 +327,18 @@ package body Unbounded_Arrays is
   function "=" (Left  : Unbounded_Array;
                 Right : Unbounded_Array) return Boolean is
   begin
-    return Left.Reference.all = Right.Reference.all;
+    return Left.Reference.all(1 .. Left.Last) =
+           Right.Reference.all(1 .. Right.Last);
   end "=";
   function "=" (Left  : Unbounded_Array;
                 Right : Element_Array) return Boolean is
   begin
-    return Left.Reference.all = Right;
+    return Left.Reference.all(1 .. Left.Last) = Right;
   end "=";
   function "=" (Left  : Element_Array;
                 Right : Unbounded_Array) return Boolean is
   begin
-    return Left = Right.Reference.all;
+    return Left = Right.Reference.all(1 .. Right.Last);
   end "=";
 
   -- Life cycle

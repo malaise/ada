@@ -70,8 +70,8 @@ begin
                      & " not found.");
   end;
 
-  if not Asu_Is_Null (Error_Msg) then
-    Basic_Proc.Put_Line_Error (Asu_Ts (Error_Msg));
+  if not Error_Msg.Is_Null then
+    Basic_Proc.Put_Line_Error (Error_Msg.Image);
     Basic_Proc.Set_Error_Exit_Code;
   end if;
 exception

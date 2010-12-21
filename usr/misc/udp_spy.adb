@@ -279,8 +279,8 @@ begin
     Index : Natural;
   begin
     Index := String_Mng.Locate (Address, ":");
-    Host_Name := Asu_Tus (Address(1 .. Index - 1));
-    Port_Name := Asu_Tus (Address(Index + 1 .. Address'Last));
+    Host_Name := Tus (Address(1 .. Index - 1));
+    Port_Name := Tus (Address(Index + 1 .. Address'Last));
   exception
     when others =>
       raise Arg_Error;
@@ -307,11 +307,11 @@ begin
     begin
       Iface := (
           Kind => Tcp_Util.Host_Id_Spec,
-          Id => Socket.Host_Id_Of (Asu_Ts (Iface.Name)));
+          Id => Socket.Host_Id_Of (Iface.Name.Image));
     exception
       when Socket.Soc_Name_Not_Found =>
         Basic_Proc.Put_Line_Error ("Error: Unknown interface name "
-                                 & Asu_Ts (Iface.Name));
+                                 & Iface.Name.Image);
       raise;
     end;
   end if;
@@ -320,14 +320,14 @@ begin
   end if;
 
   -- Set port num
-  Port := Ip_Addr.Parse (Asu_Ts (Port_Name));
+  Port := Ip_Addr.Parse (Port_Name.Image);
   if Port.Kind = Tcp_Util.Port_Name_Spec then
     begin
-      Port_Num := Socket.Port_Num_Of (Asu_Ts (Port.Name), Socket.Udp);
+      Port_Num := Socket.Port_Num_Of (Port.Name.Image, Socket.Udp);
     exception
       when Socket.Soc_Name_Not_Found =>
         Basic_Proc.Put_Line_Error ("Error: Unknown port name "
-                                 & Asu_Ts (Port.Name));
+                                 & Port.Name.Image);
         raise;
     end;
   else
@@ -335,15 +335,15 @@ begin
   end if;
 
   -- Link to Lan name or num
-  Host := Ip_Addr.Parse (Asu_Ts (Host_Name));
+  Host := Ip_Addr.Parse (Host_Name.Image);
   -- See if Server is Id or Name, if it is a Host or LAN name
   if Host.Kind = Tcp_Util.Host_Name_Spec then
     begin
-      Soc.Set_Destination_Name_And_Port (True, Asu_Ts (Host.Name), Port_Num);
+      Soc.Set_Destination_Name_And_Port (True, Host.Name.Image, Port_Num);
     exception
       when Socket.Soc_Name_Not_Found =>
         Basic_Proc.Put_Line_Error ("Error: Unknown LAN name "
-                                 & Asu_Ts (Host.Name));
+                                 & Host.Name.Image);
         raise;
     end;
   else

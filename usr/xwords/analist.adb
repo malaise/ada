@@ -26,7 +26,7 @@ package body Analist is
         end if;
         -- Store word in Data_Base
         if Len < Max_Len then
-          Data_Base.Insert (Asu_Tus (Word(1 .. Len)));
+          Data_Base.Insert (Tus (Word(1 .. Len)));
         end if;
       end;
     end loop;
@@ -44,7 +44,6 @@ package body Analist is
   procedure Add (Word : in Asu_Us) is
     Moved : Boolean;
     Uword : Asu_Us;
-    use type Asu_Us;
   begin
     -- Verify that word does not exist
     if not Data_Base.Is_Empty then
@@ -68,7 +67,6 @@ package body Analist is
   procedure Del (Word : in Asu_Us) is
     Moved : Boolean;
     Uword : Asu_Us;
-    use type Asu_Us;
   begin
     -- Find the word if it exists
     if Data_Base.Is_Empty then
@@ -92,10 +90,10 @@ package body Analist is
   function Less_Than (El1, El2 : Asu_Us) return Boolean is
     L1, L2 : Natural;
   begin
-    L1 := Asu.Length (El1);
-    L2 := Asu.Length (El2);
+    L1 := El1.Length;
+    L2 := El2.Length;
     if L1 = L2 then
-      return Asu_Ts (El1) < Asu_Ts (El2);
+      return El1.Image < El2.Image;
     else
       -- Longer words come first
       return L1 > L2;
@@ -123,7 +121,7 @@ package body Analist is
       -- Get the Word
       Data_Base.Read (Uword, Moved => Moved);
       declare
-        Word : constant String := Asu_Ts (Uword);
+        Word : constant String := Uword.Image;
       begin
         -- Process word only if its length  is compatible
         if Word'Length <= Letters'Length then
@@ -166,7 +164,6 @@ package body Analist is
     -- Previous and current word
     Prev, Curr : Asu_Us;
     Moved : Boolean;
-    use type Asu_Us;
   begin
     Anagrams := Asu_Ua.Null_Unb_Array;
     if Letters'Length > Max_Len then

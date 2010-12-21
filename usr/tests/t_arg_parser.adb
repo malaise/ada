@@ -15,17 +15,17 @@ procedure T_Arg_Parser is
 
   -- The keys
   Keys : constant Argument_Parser.The_Keys_Type := (
-   (Key_Char => 'f', Key_String => Asu_Tus ("first"),
+   (Key_Char => 'f', Key_String => Tus ("first"),
     Key_Can_Multiple => False, Key_Can_Option => False),
-   (Key_Char => 's', Key_String => Asu_Tus ("second"),
+   (Key_Char => 's', Key_String => Tus ("second"),
     Key_Can_Multiple => False, Key_Can_Option => False),
-   (Key_Char => 't', Key_String => Asu_Tus ("third"),
+   (Key_Char => 't', Key_String => Tus ("third"),
     Key_Can_Multiple => False, Key_Can_Option => False),
-   (Key_Char => 'm', Key_String => Asu_Tus ("multi"),
+   (Key_Char => 'm', Key_String => Tus ("multi"),
     Key_Can_Multiple => True, Key_Can_Option => False),
-   (Key_Char => 'o', Key_String => Asu_Tus ("opt"),
+   (Key_Char => 'o', Key_String => Tus ("opt"),
     Key_Can_Multiple => False, Key_Can_Option => True),
-   (Key_Char => 'c', Key_String => Asu_Tus ("combine"),
+   (Key_Char => 'c', Key_String => Tus ("combine"),
     Key_Can_Multiple => True, Key_Can_Option => True) );
 
   No_Keys : constant Argument_Parser.The_Keys_Type (1 .. 0)
@@ -86,27 +86,27 @@ procedure T_Arg_Parser is
 
     if Code = Command.Error then
       -- Command returns error
-      Basic_Proc.Put_Line_Error ("ERROR: " & Asu_Ts (Flow.Str));
+      Basic_Proc.Put_Line_Error ("ERROR: " & Flow.Str.Image);
       raise Stop_Error;
     end if;
     -- Raw mode appends [ a space ] and a line feed, remove them
-    Len := Asu.Length (Flow.Str);
+    Len := Flow.Str.Length;
     if Len >= 1
-    and then Asu.Element (Flow.Str, Len) = Ada.Characters.Latin_1.Lf then
-      Asu.Delete (Flow.Str, Len, Len);
+    and then Flow.Str.Element (Len) = Ada.Characters.Latin_1.Lf then
+      Flow.Str.Delete (Len, Len);
     end if;
-    Len := Asu.Length (Flow.Str);
+    Len := Flow.Str.Length;
     if Len >= 1
-    and then Asu.Element (Flow.Str, Len) = ' ' then
-      Asu.Delete (Flow.Str, Len, Len);
+    and then Flow.Str.Element (Len) = ' ' then
+      Flow.Str.Delete (Len, Len);
     end if;
     -- Check result
-    if Asu_Ts (Flow.Str) = Res then
+    if Flow.Str.Image = Res then
       -- Expected result
       Basic_Proc.Put_Line_Output (Args & " -> " & Res);
     else
       Basic_Proc.Put_Line_Error ("ERROR: " & Args);
-      Basic_Proc.Put_Line_Error (" ----->" & Asu_Ts (Flow.Str) & "<");
+      Basic_Proc.Put_Line_Error (" ----->" & Flow.Str.Image & "<");
       Basic_Proc.Put_Line_Error (" i.o. >" & Res & "<");
       raise Stop_Error;
     end if;
@@ -158,7 +158,7 @@ begin
           Ada.Text_Io.Put ("Arguments not key are");
         else
           Ada.Text_Io.Put ("Key " & Keys(I).Key_Char & " "
-            & Asu_Ts (Keys(I).Key_String) & " is");
+            & Keys(I).Key_String.Image & " is");
         end if;
         Ada.Text_Io.Put_Line (" found on" & Dscr.Get_Nb_Occurences (I)'Img
              & " occurences.");

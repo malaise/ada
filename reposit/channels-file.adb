@@ -28,7 +28,7 @@ package body File is
     begin
       for I in Channels'Range loop
         Name := Ctx.Get_Attribute (Channels(I), 1);
-        if Asu_Ts (Name.Value) = Channel_Name then
+        if Name.Value.Image = Channel_Name then
           Chn := Channels(I);
           Nod := Xml_Parser.No_Node;
           exit;

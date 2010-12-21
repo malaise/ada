@@ -160,13 +160,13 @@
       <Geometry Up="${Field_24.Up}" Left="${Field_24.Right}+3"
                 Height="3" Width="5"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="1" Col="1">CLR</Init>
+      <Init Row="1" Col="1">UND</Init>
     </Field>
     <Field Num="26" Kind="Button">
       <Geometry Up="${Field_25.Up}" Left="${Field_25.Right}+2"
                 Height="3" Width="5"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="1" Col="1">RST</Init>
+      <Init Row="1" Col="1">CLR</Init>
     </Field>
 
     <!-- Computation -->

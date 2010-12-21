@@ -66,7 +66,7 @@ package body Menu1 is
     Encode_File_In_Get (File_Name);
     if File.F_Exists(File_Name) then
       Screen.Put_Title (Screen.Read_Points);
-      File_Name_Txt := Asu_Tus (File_Name);
+      File_Name_Txt := Tus (File_Name);
       begin
         -- Get data in points and list
         Points.P_Store (File.F_Read(File_Name));
@@ -118,22 +118,22 @@ package body Menu1 is
       Kind : Directory.File_Kind_List;
       use Directory;
     begin
-      Tmp_File_Name := Asu_Tus (My_Select_File(2, Asu_Ts (File_Name_Txt),
+      Tmp_File_Name := Tus (My_Select_File(2, File_Name_Txt.Image,
                                                Load));
-      if Asu_Is_Null (Tmp_File_Name) then
+      if Tmp_File_Name.Is_Null then
         -- Cancelled
        return;
       end if;
-      Kind := Directory.File_Kind (Asu_Ts (Tmp_File_Name));
+      Kind := Directory.File_Kind (Tmp_File_Name.Image);
       if Kind = Directory.Link then
         -- Follow link recursively
         begin
-          Directory.Read_Link (Asu_Ts (Tmp_File_Name), Tmp_File_Name);
+          Directory.Read_Link (Tmp_File_Name.Image, Tmp_File_Name);
         exception
           when others =>
             Error (Screen.E_Io_Error);
         end;
-        Kind := Directory.File_Kind (Asu_Ts (Tmp_File_Name));
+        Kind := Directory.File_Kind (Tmp_File_Name.Image);
       end if;
     end;
 
@@ -141,23 +141,23 @@ package body Menu1 is
     Afpx.Use_Descriptor(1);
     Set_Points_List;
     Screen.Init_For_Main1 (Cursor_Field);
-    Screen.Put_File (Asu_Ts (File_Name_Txt));
-    Encode_File_In_Get (Asu_Ts (Tmp_File_Name));
+    Screen.Put_File (File_Name_Txt.Image);
+    Encode_File_In_Get (Tmp_File_Name.Image);
     Restore := Partial;
     -- load or save
     if Load then
-      if Read_File (Asu_Ts (Tmp_File_Name)) then
+      if Read_File (Tmp_File_Name.Image) then
         -- Done,
         File_Name_Txt := Tmp_File_Name;
         -- Else kept or lost
       end if;
     else
-      if File.F_Exists(Asu_Ts (Tmp_File_Name))
+      if File.F_Exists(Tmp_File_Name.Image)
       and then not Screen.Confirm(Screen.C_File_Exists, True) then
         return;
       end if;
       begin
-        File.F_Write(Asu_Ts (Tmp_File_Name), Points.P_The_Points);
+        File.F_Write(Tmp_File_Name.Image, Points.P_The_Points);
         Points.P_Saved;
         File_Name_Txt := Tmp_File_Name;
       exception
@@ -213,7 +213,7 @@ package body Menu1 is
     -- File?
     if Init_File_Name /= "" then
       if Read_File (Init_File_Name) then
-        File_Name_Txt := Asu_Tus (Init_File_Name);
+        File_Name_Txt := Tus (Init_File_Name);
       end if;
       Restore := Partial;
     else
@@ -240,7 +240,7 @@ package body Menu1 is
               Afpx.Update_List (Afpx.Center);
             end if;
             Screen.Init_For_Main1 (Cursor_Field);
-            Screen.Put_File (Asu_Ts (File_Name_Txt));
+            Screen.Put_File (File_Name_Txt.Image);
           when Full =>
             Afpx.Use_Descriptor(1);
             Set_Points_List;
@@ -249,7 +249,7 @@ package body Menu1 is
               Afpx.Update_List (Afpx.Center);
             end if;
             Screen.Init_For_Main1 (Cursor_Field);
-            Screen.Put_File (Asu_Ts (File_Name_Txt));
+            Screen.Put_File (File_Name_Txt.Image);
         end case;
 
         -- Delete/modify/approximation/sort

@@ -100,18 +100,18 @@ procedure Xml_Checker is
 
   -- The argument keys and descriptor of parsed keys
   Keys : constant Argument_Parser.The_Keys_Type := (
-    1 => ('s', Asu_Tus ("silent"), False, False),
-    2 => ('d', Asu_Tus ("dump"), False, False),
-    3 => ('r', Asu_Tus ("raw"), False, False),
-    4 => ('W', Asu_Tus ("width"), False, True),
-    5 => ('1', Asu_Tus ("one"), False, False),
-    6 => ('h', Asu_Tus ("help"), False, False),
-    7 => ('v', Asu_Tus ("version"), False, False),
-    8 => ('k', Asu_Tus ("keep"), True, True),
-    9 => ('c', Asu_Tus ("check_dtd"), False, True),
-   10 => ('t', Asu_Tus ("tree"), False, False),
-   11 => ('w', Asu_Tus ("warnings"), False, False),
-   12 => ('C', Asu_Tus ("canonical"), False, False)
+    1 => ('s', Tus ("silent"), False, False),
+    2 => ('d', Tus ("dump"), False, False),
+    3 => ('r', Tus ("raw"), False, False),
+    4 => ('W', Tus ("width"), False, True),
+    5 => ('1', Tus ("one"), False, False),
+    6 => ('h', Tus ("help"), False, False),
+    7 => ('v', Tus ("version"), False, False),
+    8 => ('k', Tus ("keep"), True, True),
+    9 => ('c', Tus ("check_dtd"), False, True),
+   10 => ('t', Tus ("tree"), False, False),
+   11 => ('w', Tus ("warnings"), False, False),
+   12 => ('C', Tus ("canonical"), False, False)
    );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
@@ -127,15 +127,14 @@ procedure Xml_Checker is
 
   procedure Dump_Attributes (Elt : in Xml_Parser.Element_Type) is
     Attrs : constant Xml_Parser.Attributes_Array := Ctx.Get_Attributes (Elt);
-    use type Asu_Us;
   begin
     for I in Attrs'Range loop
       if not Attrs(I).Unparsed then
-        Out_Flow.Put (" " & Asu_Ts (Attrs(I).Name & "=" & Attrs(I).Value));
+        Out_Flow.Put (" " & Attrs(I).Name.Image & "=" & Attrs(I).Value.Image);
       else
-        Out_Flow.Put (" " & Asu_Ts (Attrs(I).Name & "=U=" & Attrs(I).Value));
+        Out_Flow.Put (" " & Attrs(I).Name.Image & "=U=" & Attrs(I).Value.Image);
         -- Maybe several entities here
-        Asu.Append (Unparsed_Entities, Asu_Ts (Attrs(I).Value) & ' ');
+        Unparsed_Entities.Append (Attrs(I).Value.Image & ' ');
       end if;
     end loop;
   end Dump_Attributes;
@@ -146,7 +145,7 @@ procedure Xml_Checker is
     Indent : constant String (1 .. Level + 1) := (others => ' ');
     In_Mixed : Boolean;
     In_Tail : Boolean;
-    use type Xml_Parser.Node_Kind_List, Asu_Us;
+    use type Xml_Parser.Node_Kind_List;
     procedure Put_Mixed (N : in Xml_Parser.Node_Type;
                          Inm : in Boolean) is
     begin
@@ -178,7 +177,7 @@ procedure Xml_Checker is
       end if;
       Put_Mixed (Elt, In_Mixed);
       Out_Flow.Put (Indent);
-      Out_Flow.Put (Asu_Ts(Ctx.Get_Name (Elt)));
+      Out_Flow.Put (Ctx.Get_Name (Elt).Image);
       if Ctx.Get_Nb_Attributes (Elt) /= 0 then
         Out_Flow.Put (" :" );
       end if;
@@ -216,7 +215,7 @@ procedure Xml_Checker is
             Out_Flow.Put (Indent);
           end if;
           Out_Flow.Put (" <?" & Ctx.Get_Target (Children(I)));
-          if Asu.Length (Ctx.Get_Pi (Children(I))) /= 0 then
+          if Ctx.Get_Pi (Children(I)).Length /= 0 then
             Out_Flow.Put (" " & Ctx.Get_Pi (Children(I)));
           end if;
           Out_Flow.Put_Line ("?>");
@@ -238,7 +237,7 @@ procedure Xml_Checker is
     Iter : Parser.Iterator;
     Info : Xml_Parser.Unparsed_Entity_Info_Rec;
   begin
-    Iter.Set (Asu_Ts (Unparsed_Entities));
+    Iter.Set (Unparsed_Entities.Image);
     loop
       declare
         Entity : constant String := Iter.Next_Word;
@@ -246,11 +245,11 @@ procedure Xml_Checker is
         exit when Entity = "";
         Ctx.Get_Unparsed_Entity_Info (Entity, Info);
         Out_Flow.Put_Line ("Entity: " & Entity
-                         & ", System_Id=" & Asu_Ts (Info.Entity_System_Id)
-                         & ", Public_Id=" & Asu_Ts (Info.Entity_System_Id));
-        Out_Flow.Put_Line (" Notation: " & Asu_Ts (Info.Notation_Name)
-                         & ", System_Id=" & Asu_Ts (Info.Notation_System_Id)
-                         & ", Public_Id=" & Asu_Ts (Info.Notation_Public_Id));
+                         & ", System_Id=" & Info.Entity_System_Id.Image
+                         & ", Public_Id=" & Info.Entity_System_Id.Image);
+        Out_Flow.Put_Line (" Notation: " & Info.Notation_Name.Image
+                         & ", System_Id=" & Info.Notation_System_Id.Image
+                         & ", Public_Id=" & Info.Notation_Public_Id.Image);
       end;
     end loop;
     Iter.Del;
@@ -285,15 +284,15 @@ procedure Xml_Checker is
     Str : Asu_Us;
     Indent : constant String (1 .. Node.Level + 1) := (others => ' ');
     use type Xml_Parser.Node_Kind_List, Xml_Parser.Attributes_Access,
-             Xml_Parser.Stage_List, Asu_Us;
+             Xml_Parser.Stage_List;
   begin
     if Output_Kind = None then
       return;
     elsif Output_Kind /= Dump then
       -- Use the Image of Xml_Parser.Generator
-      Str := Asu_Tus (Xml_Parser.Generator.Image (Ctx, Node, Format, Width));
+      Str := Tus (Xml_Parser.Generator.Image (Ctx, Node, Format, Width));
       if Cb_Status = Init then
-        if Asu_Is_Null (Str) then
+        if Str.Is_Null then
           -- Dummy Xml node when no xml directive, we will need to skip
           --  the leading Line_Feed of root if any
           Cb_Status := Skip;
@@ -304,13 +303,13 @@ procedure Xml_Checker is
         end if;
       end if;
       if Cb_Status = Skip
-      and then Asu.Length (Str) >= 1
-      and then Asu.Element (Str, 1) = Text_Line.Line_Feed_Char then
+      and then Str.Length >= 1
+      and then Str.Element (1) = Text_Line.Line_Feed_Char then
         -- Leading Line_Feed (of root when no prologue): remove it
-        Asu.Delete (Str, 1, 1);
+        Str.Delete (1, 1);
       end if;
       Cb_Status := Done;
-      Out_Flow.Put (Asu_Ts (Str));
+      Out_Flow.Put (Str.Image);
       return;
     end if;
 
@@ -347,30 +346,29 @@ procedure Xml_Checker is
     Out_Flow.Put (Indent);
     case Node.Kind is
       when Xml_Parser.Element =>
-        Out_Flow.Put (Asu_Ts (Node.Name));
+        Out_Flow.Put (Node.Name.Image);
       when Xml_Parser.Pi =>
-        Out_Flow.Put ("<?" & Asu_Ts (Node.Name));
-        if Asu.Length (Node.Value) /= 0 then
-          Out_Flow.Put (" " & Asu_Ts (Node.Value));
+        Out_Flow.Put ("<?" & Node.Name.Image);
+        if Node.Value.Length /= 0 then
+          Out_Flow.Put (" " & Node.Value.Image);
         end if;
         Out_Flow.Put ("?>");
       when Xml_Parser.Comment =>
-        Out_Flow.Put ("<!--" & Asu_Ts (Node.Name) & "-->");
+        Out_Flow.Put ("<!--" & Node.Name.Image & "-->");
       when Xml_Parser.Text =>
-        Out_Flow.Put ("=>" & Asu_Ts (Node.Name) & "<=");
+        Out_Flow.Put ("=>" & Node.Name.Image & "<=");
     end case;
     if Node.Attributes /= null
     and then Node.Attributes.all'Length /= 0 then
       Out_Flow.Put (" :");
       for I in  Node.Attributes.all'Range loop
         if not Node.Attributes(I).Unparsed then
-          Out_Flow.Put (" " & Asu_Ts (Node.Attributes(I).Name
-                      & "=" & Node.Attributes(I).Value));
+          Out_Flow.Put (" " & Node.Attributes(I).Name.Image
+                      & "=" & Node.Attributes(I).Value.Image);
         else
-          Out_Flow.Put (" " & Asu_Ts (Node.Attributes(I).Name
-                      & "=U=" & Node.Attributes(I).Value));
-          Asu.Append (Unparsed_Entities,
-                      Asu_Ts (Node.Attributes(I).Value) & ' ');
+          Out_Flow.Put (" " & Node.Attributes(I).Name.Image
+                      & "=U=" & Node.Attributes(I).Value.Image);
+          Unparsed_Entities.Append (Node.Attributes(I).Value.Image & ' ');
         end if;
       end loop;
     end if;
@@ -407,7 +405,7 @@ procedure Xml_Checker is
                Cdata  => Cdata_Policy,
                Normalize => Normalize,
                Use_Dtd => Use_Dtd,
-               Dtd_File => Asu_Ts (Dtd_File),
+               Dtd_File => Dtd_File.Image,
                Warn_Cb => Warnings,
                Parse_Cb => Callback_Acc);
     if not Parse_Ok then
@@ -637,8 +635,8 @@ begin
 
   if Arg_Dscr.Is_Set (9) then
     -- Check dtd file
-    Dtd_File := Asu_Tus (Arg_Dscr.Get_Option (9));
-    if Asu_Is_Null (Dtd_File) then
+    Dtd_File := Tus (Arg_Dscr.Get_Option (9));
+    if Dtd_File.Is_Null then
       -- If option set with empty dtd => no check
       Use_Dtd := False;
     end if;

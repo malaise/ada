@@ -7,7 +7,7 @@ procedure Put_Comments is
   Word : Words.Word_Rec;
   Prev_Lf : Boolean;
   Prev_Index : Natural;
-  use type Parser_Ada.Lexical_Kind_List, Asu_Us;
+  use type Parser_Ada.Lexical_Kind_List;
   Text : Asu_Us;
 begin
   -- Put comments with line feeds
@@ -26,13 +26,13 @@ begin
       end loop;
       -- Concat indent and comment
       Start := Start + 1;
-      Text := Asu_Tus ("");
+      Text := Tus ("");
       for J in Start .. Index loop
         -- Del and put.
         Word := Words.Get (Start);
-        Asu.Append (Text, Word.Text);
+        Text.Append (Word.Text);
       end loop;
-      Output.Put_Line (Asu_Ts (Text), False, 0);
+      Output.Put_Line (Text.Image, False, 0);
       -- Next word will be at same Index
     else
       -- Next word

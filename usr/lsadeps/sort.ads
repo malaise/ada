@@ -1,4 +1,4 @@
-with As.U; use As.U;
+with As.U.Utils; use As.U, As.U.Utils;
 package Sort is
 
   -- Set the priority level of a path (1 = Higest)

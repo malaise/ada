@@ -25,8 +25,8 @@ begin
     Words.Add (Word);
     exit when Word.Lexic /= Parser_Ada.Identifier
     and then  Word.Lexic /= Parser_Ada.String_Literal
-    and then Asu_Ts (Word.Text) /= ".";
-      Asu.Append (Name, Word.Text);
+    and then Word.Text.Image /= ".";
+      Name.Append (Word.Text);
   end loop;
   Words.Del;
   Parser_Ada.Multiparse.Unget;

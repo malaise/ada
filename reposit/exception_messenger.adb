@@ -15,7 +15,7 @@ package body Exception_Messenger is
     else
       -- Insert in pool
       begin
-        Key := Pool.Store (Asu_Tus (Message));
+        Key := Pool.Store (Tus (Message));
       exception
         when others =>
           -- Cannot insert in pool!
@@ -50,7 +50,7 @@ package body Exception_Messenger is
     -- Get message from pool, return "" if not found
     begin
       Res := Pool.Get (Key);
-      return Asu_Ts (Res);
+      return Res.Image;
     exception
       when Msg_Pool.Not_Found =>
         return "";

@@ -22,7 +22,7 @@ procedure Pexec is
   -- Restore saved current dir
   procedure Restore is
   begin
-    Directory.Change_Current (Asu_Ts(Initial_Dir));
+    Directory.Change_Current (Initial_Dir.Image);
   exception
     when Directory.Name_Error =>
       Basic_Proc.Put_Line_Error ("Error going back to original directory.");
@@ -58,7 +58,7 @@ begin
                  Leaves_Only, No_Stop_On_Error, Follow_Links);
 
   -- Save current dir, Recurs, restore current dir
-  Initial_Dir := Asu_Tus (Directory.Get_Current);
+  Initial_Dir := Tus (Directory.Get_Current);
   My_Recurs (Name_Of_Dir      => not No_Name_Of_Dir,
              In_Current       => not Not_In_Current,
              First_Level_Only => First_Level_Only,

@@ -1,5 +1,5 @@
 with Con_Io, Afpx, Normal, Get_Line;
-with As.U; use As.U;
+with As.U.Utils; use As.U, As.U.Utils;
 with Pers_Def, Pers_Mng, Mesu_Def, Mesu_Fil, Str_Mng;
 use Afpx;
 -- with Mesu_Nam;
@@ -88,7 +88,7 @@ package body Mesu_Edi is
       for I in 1 .. Get_Sample.Get_Word_Number loop
         -- Decode a Bpm
         Samples(Samples_Index) := Pers_Def.Bpm_Range'Value (
-                                     Asu_Ts (Sample_Line.Element(I)));
+                                     Sample_Line.Element(I).Image);
         Samples_Index := Samples_Index + 1;
       end loop;
 

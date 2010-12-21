@@ -20,10 +20,9 @@ package body Xml_Parser is
   end Set;
   function Image (Element : Id_Cell) return String is
   begin
-    return Asu_Ts (Element.Name);
+    return Element.Name.Image;
   end Image;
   function "=" (Current : Id_Cell; Criteria : Id_Cell) return Boolean is
-    use type Asu_Us;
   begin
     return Current.Name = Criteria.Name;
   end "=";
@@ -126,15 +125,14 @@ package body Xml_Parser is
   function Image (Entity : Entity_Type) return String is
   begin
     if Entity.Parameter then
-      return "%" & Asu_Ts (Entity.Name);
+      return "%" & Entity.Name.Image;
     else
-      return Asu_Ts (Entity.Name);
+      return Entity.Name.Image;
     end if;
   end Image;
   -- Entities differ if one is parameter and not the other
   --  or if names differ
   function "=" (Current : Entity_Type; Criteria : Entity_Type) return Boolean is
-    use type Asu_Us;
   begin
     return Current.Parameter = Criteria.Parameter
     and then Current.Name = Criteria.Name;
@@ -147,14 +145,13 @@ package body Xml_Parser is
   function Image (Unparsed : Unparsed_Type) return String is
   begin
     if Unparsed.Is_Entity then
-      return "E:" & Asu_Ts (Unparsed.Name);
+      return "E:" & Unparsed.Name.Image;
     else
-      return "N:" & Asu_Ts (Unparsed.Name);
+      return "N:" & Unparsed.Name.Image;
     end if;
   end Image;
   function "=" (Current : Unparsed_Type; Criteria : Unparsed_Type)
                return Boolean is
-    use type Asu_Us;
   begin
     return Current.Is_Entity = Criteria.Is_Entity
     and then Current.Name = Criteria.Name;
@@ -166,10 +163,9 @@ package body Xml_Parser is
   end Set;
   function Image (Element : Info_Rec) return String is
   begin
-    return  Asu_Ts (Element.Name);
+    return Element.Name.Image;
   end Image;
   function "=" (Current : Info_Rec; Criteria : Info_Rec) return Boolean is
-    use type Asu_Us;
   begin
     return Current.Name = Criteria.Name;
   end "=";
@@ -178,18 +174,17 @@ package body Xml_Parser is
   -- If file path is relative and father null, use current dir
   function Build_Full_Name (In_File : in Asu_Us;
                             Father  : in Asu_Us := Asu_Null) return Asu_Us is
-    use type Asu_Us;
   begin
     -- If Stdin or string or full path: keep it
-    if Asu_Is_Null (In_File) or else Asu.Element (In_File, 1) = '/' then
+    if In_File.Is_Null or else In_File.Element (1) = '/' then
       return In_File;
     end if;
-    if not Asu_Is_Null (Father) then
+    if not Father.Is_Null then
       -- Father path & Current file path
-      return Asu_Tus (Directory.Dirname (Asu_Ts (Father))) & In_File;
+      return Tus (Directory.Dirname (Father.Image)) & In_File;
     else
       -- Current dir & Current file path
-      return Asu_Tus (Directory.Get_Current) & '/' & In_File;
+      return Tus (Directory.Get_Current) & '/' & In_File;
     end if;
   end Build_Full_Name;
 
@@ -288,7 +283,7 @@ package body Xml_Parser is
     -- Open file of Xml flow
     Ctx.Flow.Curr_Flow.Is_File := True;
     Ctx.Flow.Curr_Flow.Kind := Xml_Flow;
-    Ctx.Flow.Curr_Flow.Name := Build_Full_Name (Asu_Tus (File_Name));
+    Ctx.Flow.Curr_Flow.Name := Build_Full_Name (Tus (File_Name));
     Ctx.Flow.Curr_Flow.File := new Text_Char.File_Type;
     Ctx.Flow.Files.Push (Ctx.Flow.Curr_Flow.File);
     Ctx.Flow.Curr_Flow.Line := 1;
@@ -299,7 +294,7 @@ package body Xml_Parser is
     Ctx.Cdata_Policy := Cdata;
     Ctx.Normalize := Normalize;
     Ctx.Use_Dtd := Use_Dtd;
-    Ctx.Dtd_File := Asu_Tus (Dtd_File);
+    Ctx.Dtd_File := Tus (Dtd_File);
     Ctx.Warnings := Warn_Cb;
     Ctx.Callback := Parse_Cb;
     Parse_Mng.Parse_Xml (Ctx);
@@ -316,7 +311,7 @@ package body Xml_Parser is
     when Error_Occ:Parse_Error =>
       -- Retrieve and store parsing error message
       Ctx.Status := Error;
-      Ctx.Flow.Err_Msg := Asu_Tus (
+      Ctx.Flow.Err_Msg := Tus (
         Exception_Messenger.Exception_Message(
           Ada.Exceptions.Save_Occurrence (Error_Occ)));
       Ok := False;
@@ -340,7 +335,7 @@ package body Xml_Parser is
       when Clean | Init | Parsed_Prologue_Cb =>
         raise Status_Error;
       when Parsed_Prologue | Parsed_Elements | Error =>
-        return Asu_Ts (Ctx.Flow.Err_Msg);
+        return Ctx.Flow.Err_Msg.Image;
     end case;
   end Get_Parse_Error_Message;
 
@@ -417,7 +412,7 @@ package body Xml_Parser is
     when Parse_Occ:Parse_Error =>
       -- Retrieve and set parsing error message
       Clean (Ctx);
-      Error := Asu_Tus (
+      Error := Tus (
         Exception_Messenger.Exception_Message(
           Ada.Exceptions.Save_Occurrence (Parse_Occ)));
     when Error_Occ:others =>
@@ -436,7 +431,7 @@ package body Xml_Parser is
     -- Flow is file
     Ctx.Flow.Curr_Flow.Is_File := True;
     Ctx.Flow.Curr_Flow.Kind := Dtd_Flow;
-    Ctx.Flow.Curr_Flow.Name := Build_Full_Name (Asu_Tus (File_Name));
+    Ctx.Flow.Curr_Flow.Name := Build_Full_Name (Tus (File_Name));
     -- File Name_Error raises File_Error
     Ctx.Warnings := Warn_Cb;
     Parse_Dtd_Internal (Ctx, Dtd, Error);
@@ -453,8 +448,8 @@ package body Xml_Parser is
     -- Flow is string
     Ctx.Flow.Curr_Flow.Is_File := False;
     Ctx.Flow.Curr_Flow.Kind := Dtd_Flow;
-    Ctx.Flow.Curr_Flow.Name := Asu_Tus (Parse_Mng.String_Flow);
-    Ctx.Flow.Curr_Flow.In_Str := Asu_Tus (Str);
+    Ctx.Flow.Curr_Flow.Name := Tus (Parse_Mng.String_Flow);
+    Ctx.Flow.Curr_Flow.In_Str := Tus (Str);
     Ctx.Flow.Curr_Flow.Line := 1;
     Ctx.Flow.Curr_Flow.Same_Line := False;
     Ctx.Warnings := Warn_Cb;
@@ -501,8 +496,8 @@ package body Xml_Parser is
     -- Parse the prologue string
     Ctx.Flow.Curr_Flow.Is_File := False;
     Ctx.Flow.Curr_Flow.Kind := Xml_Flow;
-    Ctx.Flow.Curr_Flow.Name := Asu_Tus (Parse_Mng.String_Flow);
-    Ctx.Flow.Curr_Flow.In_Str := Asu_Tus (Str);
+    Ctx.Flow.Curr_Flow.Name := Tus (Parse_Mng.String_Flow);
+    Ctx.Flow.Curr_Flow.In_Str := Tus (Str);
     Ctx.Flow.Curr_Flow.Line := 1;
     Ctx.Flow.Curr_Flow.Same_Line := False;
     Ctx.Parse_Comments := Comments;
@@ -525,7 +520,7 @@ package body Xml_Parser is
     when Error_Occ:Parse_Error =>
       -- Retrieve and store parsing error message
       Ctx.Status := Error;
-      Ctx.Flow.Err_Msg := Asu_Tus (
+      Ctx.Flow.Err_Msg := Tus (
         Exception_Messenger.Exception_Message(
           Ada.Exceptions.Save_Occurrence (Error_Occ)));
       Ok := False;
@@ -579,7 +574,7 @@ package body Xml_Parser is
     when Error_Occ:Parse_Error =>
       -- Retrieve and store parsing error message
       Ctx.Status := Error;
-      Ctx.Flow.Err_Msg := Asu_Tus (
+      Ctx.Flow.Err_Msg := Tus (
         Exception_Messenger.Exception_Message(
           Ada.Exceptions.Save_Occurrence (Error_Occ)));
       Ok := False;
@@ -623,7 +618,7 @@ package body Xml_Parser is
     when Error_Occ:Parse_Error =>
       -- Retrieve and store parsing error message
       Ctx.Status := Error;
-      Ctx.Flow.Err_Msg := Asu_Tus (
+      Ctx.Flow.Err_Msg := Tus (
         Exception_Messenger.Exception_Message(
           Ada.Exceptions.Save_Occurrence (Error_Occ)));
       Ok := False;
@@ -692,7 +687,7 @@ package body Xml_Parser is
     elsif Ctx.Status = Clean then
       raise Status_Error;
     end if;
-    if Asu_Is_Null (Ctx.Doctype.Name) then
+    if Ctx.Doctype.Name.Is_Null then
       raise Doctype_Not_Set;
     end if;
     Name    := Ctx.Doctype.Name;
@@ -706,12 +701,11 @@ package body Xml_Parser is
   function Get_Target (Ctx     : Ctx_Type;
                        Pi_Node : Pi_Type) return String is
   begin
-    return Asu_Ts (Get_Target (Ctx, Pi_Node));
+    return Get_Target (Ctx, Pi_Node).Image;
   end Get_Target;
 
   function Get_Target (Ctx     : Ctx_Type;
-                       Pi_Node : Pi_Type)
-                    return Asu_Us is
+                       Pi_Node : Pi_Type) return Asu_Us is
     Cell : constant My_Tree_Cell
          := Get_Cell (Get_Tree (Ctx, Pi_Node), Pi_Node);
   begin
@@ -727,12 +721,11 @@ package body Xml_Parser is
   function Get_Pi (Ctx : in Ctx_Type;
                    Pi_Node : Pi_Type) return String is
   begin
-    return Asu_Ts (Get_Pi (Ctx, Pi_Node));
+    return Get_Pi (Ctx, Pi_Node).Image;
   end Get_Pi;
 
   function Get_Pi (Ctx : in Ctx_Type;
-                   Pi_Node : Pi_Type)
-           return Asu_Us is
+                   Pi_Node : Pi_Type) return Asu_Us is
     Cell : constant My_Tree_Cell
          := Get_Cell (Get_Tree (Ctx, Pi_Node), Pi_Node);
   begin
@@ -793,12 +786,11 @@ package body Xml_Parser is
   function Get_Name (Ctx     : Ctx_Type;
                      Element : Element_Type) return String is
   begin
-    return Asu_Ts (Get_Name (Ctx, Element));
+    return Get_Name (Ctx, Element).Image;
   end Get_Name;
 
   function Get_Name (Ctx     : Ctx_Type;
-                     Element : Element_Type)
-                     return Asu_Us is
+                     Element : Element_Type) return Asu_Us is
     Cell : constant My_Tree_Cell
          := Get_Cell (Get_Tree (Ctx, Element), Element);
   begin
@@ -871,7 +863,7 @@ package body Xml_Parser is
                := Get_Attributes (Ctx, Element);
   begin
     for I in Attributes'Range loop
-      if Asu_Ts (Attributes(I).Name) = Name then
+      if Attributes(I).Name.Image = Name then
         return Attributes(I);
       end if;
     end loop;
@@ -1093,12 +1085,11 @@ package body Xml_Parser is
   function  Get_Text (Ctx  : Ctx_Type;
                       Text : Text_Type) return String is
   begin
-    return Asu_Ts (Get_Text (Ctx, Text));
+    return Get_Text (Ctx, Text).Image;
   end Get_Text;
 
   function Get_Text (Ctx  : Ctx_Type;
-                     Text : Text_Type)
-                     return Asu_Us is
+                     Text : Text_Type) return Asu_Us is
     Cell : constant My_Tree_Cell
          := Get_Cell (Get_Tree (Ctx, Text), Text);
   begin
@@ -1113,12 +1104,11 @@ package body Xml_Parser is
   function Get_Comment (Ctx     : Ctx_Type;
                         Comment : Comment_Type) return String is
   begin
-    return Asu_Ts (Get_Comment (Ctx, Comment));
+    return Get_Comment (Ctx, Comment).Image;
   end Get_Comment;
 
   function Get_Comment (Ctx     : Ctx_Type;
-                        Comment : Comment_Type)
-                        return Asu_Us is
+                        Comment : Comment_Type) return Asu_Us is
     Cell : constant My_Tree_Cell
          := Get_Cell (Get_Tree (Ctx, Comment), Comment);
   begin
@@ -1145,7 +1135,7 @@ package body Xml_Parser is
     end case;
     -- Get entity
     Rec.Is_Entity := True;
-    Rec.Name := Asu_Tus (Entity);
+    Rec.Name := Tus (Entity);
     begin
       Ctx.Unparsed_List.Read (Rec);
     exception

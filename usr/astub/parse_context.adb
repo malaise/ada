@@ -15,7 +15,7 @@ begin
   loop
     Word := Parser_Ada.Multiparse.Get (False);
     declare
-      Str : constant String := Asu_Ts (Word.Text);
+      Str : constant String := Word.Text.Image;
     begin
       if Str = "" then
         -- End of file

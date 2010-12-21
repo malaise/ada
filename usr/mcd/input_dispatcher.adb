@@ -96,16 +96,16 @@ package body Input_Dispatcher is
     In_Lit : Boolean := False;
   begin
     -- Skip separators
-    while Cur_Index <= Asu.Length (Cur_Str)
-    and then Is_Separator(Asu.Element (Cur_Str, Cur_Index)) loop
+    while Cur_Index <= Cur_Str.Length
+    and then Is_Separator (Cur_Str.Element (Cur_Index)) loop
       Cur_Index := Cur_Index + 1;
     end loop;
-    if Cur_Index > Asu.Length (Cur_Str) then
+    if Cur_Index > Cur_Str.Length then
       -- No more word
       return Asu_Null;
     end if;
 
-    if Asu.Element (Cur_Str, Cur_Index) = '#' then
+    if Cur_Str.Element (Cur_Index) = '#' then
       -- Comment: skip line
       return Asu_Null;
     end if;
@@ -113,28 +113,28 @@ package body Input_Dispatcher is
     -- Got a start of word
     Tmp_Index := Cur_Index;
 
-    In_Lit := Asu.Element (Cur_Str, Tmp_Index) = Sd;
+    In_Lit := Cur_Str.Element (Tmp_Index) = Sd;
     if In_Lit then
       Stop_Index := Tmp_Index + 1;
       -- Parse string literal, look for Sd-Sep or Sd-End
       Parse_Lit:
       loop
-        if Asu.Element (Cur_Str, Stop_Index) = Sd then
-          if Stop_Index = Asu.Length (Cur_Str)
-          or else Is_Separator(Asu.Element (Cur_Str, Stop_Index + 1)) then
+        if Cur_Str.Element (Stop_Index) = Sd then
+          if Stop_Index = Cur_Str.Length
+          or else Is_Separator(Cur_Str.Element (Stop_Index + 1)) then
             -- End of String literal
             exit Parse_Lit;
-          elsif Asu.Element (Cur_Str, Stop_Index + 1) = Sd
-          and then Stop_Index + 1 /= Asu.Length (Cur_Str) then
+          elsif Cur_Str.Element (Stop_Index + 1) = Sd
+          and then Stop_Index + 1 /= Cur_Str.Length then
             -- Two successive Sd in the middle: keep
             Stop_Index := Stop_Index + 1;
           else
             -- One Sd in middle of string
             raise String_Error;
           end if;
-        elsif Stop_Index = Asu.Length (Cur_Str) then
+        elsif Stop_Index = Cur_Str.Length then
           -- No Sd before end of line
-          Stop_Index := Asu.Length (Cur_Str);
+          Stop_Index := Cur_Str.Length;
           raise String_Error;
         end if;
         -- In the middle of a string: go on
@@ -147,8 +147,8 @@ package body Input_Dispatcher is
     else
       -- Parse string, look for separator or end of string
       Stop_Index := Tmp_Index + 1;
-      while Stop_Index <= Asu.Length (Cur_Str)
-      and then not Is_Separator(Asu.Element (Cur_Str, Stop_Index)) loop
+      while Stop_Index <= Cur_Str.Length
+      and then not Is_Separator (Cur_Str.Element (Stop_Index)) loop
         Stop_Index := Stop_Index + 1;
       end loop;
       -- This is the next start
@@ -157,7 +157,7 @@ package body Input_Dispatcher is
       Stop_Index := Stop_Index - 1;
     end if;
 
-    return Asu_Tus (Asu.Slice (Cur_Str, Tmp_Index, Stop_Index));
+    return Tus (Cur_Str.Slice (Tmp_Index, Stop_Index));
 
   end Next_Str_Word;
 
@@ -165,13 +165,13 @@ package body Input_Dispatcher is
   --  if Next_Str_Word raised String_Error
   function Current_String return String is
   begin
-   return Asu.Slice (Cur_Str, Cur_Index , Stop_Index);
+   return Cur_Str.Slice (Cur_Index , Stop_Index);
   end Current_String;
 
   -- Extract first word of current or new (Str) string
   function First_Str_Word (Str : Asu_Us := Asu_Null) return Asu_Us is
   begin
-    if Asu.Length (Str) /= 0 then
+    if Str.Length /= 0 then
       Cur_Str := Str;
     end if;
     Cur_Index := 1;
@@ -189,7 +189,7 @@ package body Input_Dispatcher is
     end if;
     if Str = "" then
       Curr_Is_Stdin := True;
-      if Asu.Length (Str_Stdin) /= 0 then
+      if Str_Stdin.Length /= 0 then
         -- Restore Cur_Index to Ind_Stdin when back from prog to stdin
         Cur_Index := Ind_Stdin;
         Cur_Str := Str_Stdin;
@@ -201,13 +201,13 @@ package body Input_Dispatcher is
         Ind_Stdin := Cur_Index;
       end if;
       Curr_Is_Stdin := False;
-      Cur_Str := Asu_Tus (Str);
+      Cur_Str := Tus (Str);
       Str_Parsed := False;
     end if;
     if Debug.Debug_Level_Array(Debug.Input) then
       Async_Stdin.Put_Line_Err ("Input_dispacher: Input set to >"
-       & Asu_Ts (Cur_Str) & "< at " & Integer'Image(Cur_Index)
-       & " len " & Natural'Image(Asu.Length (Cur_Str)));
+       & Cur_Str.Image & "< at " & Integer'Image(Cur_Index)
+       & " len " & Natural'Image(Cur_Str.Length));
     end if;
   end Set_Input;
 
@@ -226,16 +226,16 @@ package body Input_Dispatcher is
       -- Current string is not be parsed (retacal) return all
       if Debug.Debug_Level_Array(Debug.Input) then
         Async_Stdin.Put_Line_Err ("Input_dispacher: Remaining is >"
-         & Asu_Ts (Cur_Str) & "<");
+         & Cur_Str.Image & "<");
       end if;
-      return Asu_Ts (Cur_Str);
+      return Cur_Str.Image;
     else
       -- Return remaining
       if Debug.Debug_Level_Array(Debug.Input) then
         Async_Stdin.Put_Line_Err ("Input_dispacher: Remaining is >"
-         & Asu.Slice (Cur_Str, Cur_Index, Asu.Length(Cur_Str)) & "<");
+         & Cur_Str.Slice (Cur_Index, Cur_Str.Length) & "<");
       end if;
-      return Asu.Slice (Cur_Str, Cur_Index, Asu.Length(Cur_Str));
+      return Cur_Str.Slice (Cur_Index, Cur_Str.Length);
     end if;
   end Get_Remaining;
 
@@ -247,18 +247,18 @@ package body Input_Dispatcher is
 
       -- In stdin
       loop
-        if Asu.Length (Str_Stdin) = 0 then
+        if Str_Stdin.Length = 0 then
           -- End if string. Need to get a new string
           Io_Flow.Next_Line (Str_Stdin);
-          if Asu.Length (Str_Stdin) = 0 then
+          if Str_Stdin.Length = 0 then
               return "";
           end if;
           -- Got a new string, parse it, skip empty lines
           Word := First_Str_Word (Str_Stdin);
-          exit when Asu.Length (Word) /= 0;
+          exit when Word.Length /= 0;
         else
           Word := Next_Str_Word;
-          exit when Asu.Length (Word) /= 0;
+          exit when Word.Length /= 0;
           -- End of string
           Str_Stdin := Asu_Null;
         end if;
@@ -275,7 +275,7 @@ package body Input_Dispatcher is
 
     end if;
 
-    return Asu_Ts (Word);
+    return Word.Image;
   end Next_Word;
 
 

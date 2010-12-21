@@ -3,7 +3,7 @@ with Common, Words, Parser_Ada;
 -- Get the trailing separators (space or htab) of Words
 function Get_Separators return String is
   Word : Words.Word_Rec;
-  use type Parser_Ada.Lexical_Kind_List, Asu_Us;
+  use type Parser_Ada.Lexical_Kind_List;
   Len : constant Natural := Words.Length;
   Start : Natural := Len;
   Result : Asu_Us;
@@ -24,8 +24,8 @@ begin
   -- Start is the last char before the trailing spaces or htabs
   -- Get and append all what follows I
   for I in Start + 1 .. Words.Length loop
-    Asu.Append (Result, Words.Get (Start + 1).Text);
+    Result.Append (Words.Get (Start + 1).Text);
   end loop;
-  return Asu_Ts (Result);
+  return Result.Image;
 end Get_Separators;
 

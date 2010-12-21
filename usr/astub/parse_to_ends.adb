@@ -13,7 +13,7 @@ procedure Parse_To_Ends (End_Criteria : in Words.Word_Array;
                          Up_To_Next_Significant : in Boolean) is
   Parent : Natural := 0;
   Word : Parser_Ada.Word_Rec;
-  use type Parser_Ada.Lexical_Kind_List, Asu_Us;
+  use type Parser_Ada.Lexical_Kind_List;
 begin
   -- Loop until End_Char outside parentheses (Level = 0)
   Parse_Word:
@@ -61,16 +61,16 @@ begin
     end if;
 
     -- Handle specific words, put comments
-    if Asu_Ts (Word.Text) = "(" then
+    if Word.Text.Image = "(" then
       -- keep Level of parentheses
       Parent := Parent + 1;
-    elsif Asu_Ts (Word.Text) = ")" then
+    elsif Word.Text.Image = ")" then
       Parent := Parent - 1;
     elsif Word.Lexic = Parser_Ada.Comment and then Put_Comments then
       -- Put this comment with preceeding separators
       Words.Del;
       Output.Put_Line (
-         Get_Separators & Asu_Ts (Word.Text),
+         Get_Separators & Word.Text.Image,
          True, Level);
     end if;
   end loop Parse_Word;
@@ -91,7 +91,7 @@ begin
       -- Put this comment with preceeding separators
       Words.Del;
       Output.Put_Line (
-         Get_Separators & Asu_Ts (Word.Text),
+         Get_Separators & Word.Text.Image,
          True, Level);
     end if;
     -- Exit when significant word or line_feed

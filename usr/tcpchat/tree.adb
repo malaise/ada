@@ -22,7 +22,7 @@ package body Tree is
   function Get_Attribute (Xnode   : Xml_Parser.Element_Type;
                           Name    : String) return String is
   begin
-    return Asu_Ts (Ctx.Get_Attribute (Xnode, Name).Value);
+    return Ctx.Get_Attribute (Xnode, Name).Value.Image;
   end Get_Attribute;
 
   -- Get TimeoutMs or Name if set, else default
@@ -31,11 +31,11 @@ package body Tree is
                         Name : String := "TimeoutMs") return Integer is
     Val : Asu_Us;
   begin
-    Val := Asu_Tus (Get_Attribute (Xnode, Name));
-    if Asu_Ts (Val) = "None" then
+    Val := Tus (Get_Attribute (Xnode, Name));
+    if Val.Image = "None" then
       return Infinite_Ms;
     else
-      return Integer'Value (Asu_Ts (Val));
+      return Integer'Value (Val.Image);
     end if;
   exception
     when Xml_Parser.Attribute_Not_Found =>
@@ -48,13 +48,13 @@ package body Tree is
   -- Get IfUnset Trilean
   function Get_Ifunset (Xnode : Xml_Parser.Element_Type)
                        return Trilean.Trilean is
-    Txt : constant Asu_Us := Asu_Tus (Get_Attribute (Xnode, "IfUnset"));
+    Txt : constant Asu_Us := Tus (Get_Attribute (Xnode, "IfUnset"));
   begin
-    if Asu_Ts (Txt) = "error" then
+    if Txt.Image = "error" then
       return Trilean.Other;
-    elsif Asu_Ts (Txt) = "false" then
+    elsif Txt.Image = "false" then
       return Trilean.False;
-    elsif Asu_Ts (Txt) = "true" then
+    elsif Txt.Image = "true" then
       return Trilean.True;
     else
       raise Constraint_Error;
@@ -93,29 +93,29 @@ package body Tree is
       Tnode := Ctx.Get_Child (Text_Node, 1);
       Node.Text := Ctx.Get_Text (Tnode);
       -- No Line feed accepted
-      if String_Mng.Locate (Asu_Ts (Node.Text), Line_Feed) /= 0 then
+      if String_Mng.Locate (Node.Text.Image, Line_Feed) /= 0 then
         Error (Xnode, "Invalid line-feed character in text");
         raise Parse_Error;
       end if;
     end if;
 
     -- Empty text forbidden
-    if not Empty_Allowed and then Asu_Is_Null (Node.Text) then
+    if not Empty_Allowed and then Node.Text.Is_Null then
       Error (Xnode, "Empty text");
       raise Parse_Error;
     end if;
 
     -- Get Regexp, Assign, Variable and NewLine attributes
     for I in Attrs'Range loop
-      if Asu_Ts (Attrs(I).Name) = "Regexp" then
-        if Asu_Ts (Attrs(I).Value) = "true" then
+      if Attrs(I).Name.Image = "Regexp" then
+        if Attrs(I).Value.Image = "true" then
           Node.Regexp := True;
         end if;
-      elsif Asu_Ts (Attrs(I).Name) = "Assign"
-      or else Asu_Ts (Attrs(I).Name) = "Variable" then
+      elsif Attrs(I).Name.Image = "Assign"
+      or else Attrs(I).Name.Image = "Variable" then
         Assign := Attrs(I).Value;
-      elsif Asu_Ts (Attrs(I).Name) = "NewLine" then
-        Asu.Append (Node.Text, Line_Feed);
+      elsif Attrs(I).Name.Image = "NewLine" then
+        Node.Text.Append (Line_Feed);
       end if;
     end loop;
     if Node.Kind /= Eval
@@ -123,7 +123,7 @@ package body Tree is
     and then Node.Kind /= Condif
     and then Node.Kind /= Repeat
     and then not Node.Regexp
-    and then not Asu_Is_Null (Assign) then
+    and then not Assign.Is_Null then
       Error (Xnode, "Assignment is only allowed with Regex expressions");
     end if;
 
@@ -140,15 +140,15 @@ package body Tree is
     use type Any_Def.Any_Kind_List, Trilean.Trilean;
   begin
     Basic_Proc.Put_Error (Tab & Mixed_Str (Node.Kind'Img) & ": " );
-    if not Asu_Is_Null (Node.Name) then
-      Basic_Proc.Put_Error (Asu_Ts (Node.Name) & " ");
+    if not Node.Name.Is_Null then
+      Basic_Proc.Put_Error (Node.Name.Image & " ");
     end if;
     case Node.Kind is
       when Condif | Repeat | Read | Call | Eval | Set =>
-        Basic_Proc.Put_Error ("Text: >" & Asu_Ts (Node.Text) & "< ");
+        Basic_Proc.Put_Error ("Text: >" & Node.Text.Image & "< ");
       when Send =>
         Basic_Proc.Put_Error ("Text: >" &
-          String_Mng.Replace (Asu_Ts (Node.Text), Line_Feed, "[LF]") &  "< ");
+          String_Mng.Replace (Node.Text.Image, Line_Feed, "[LF]") &  "< ");
       when others =>
         null;
     end case;
@@ -157,7 +157,7 @@ package body Tree is
         Basic_Proc.Put_Error ("Timeout: " & Node.Timeout'Img & " ");
       when Condif | Repeat | Eval | Set =>
         Basic_Proc.Put_Error ("Variable: " );
-          Basic_Proc.Put_Error (Asu_Ts (Node.Assign(Node.Assign'First).Name)
+          Basic_Proc.Put_Error (Node.Assign(Node.Assign'First).Name.Image
                               & " ");
       when others =>
         null;
@@ -183,8 +183,8 @@ package body Tree is
         Basic_Proc.Put_Error ("Assign: " );
         for I in Node.Assign'Range loop
           exit when Node.Assign(I).Value.Kind = Any_Def.None_Kind;
-          Basic_Proc.Put_Error (Asu_Ts (Node.Assign(I).Name) & "="
-                              & Asu_Ts (Node.Assign(I).Value.Str));
+          Basic_Proc.Put_Error (Node.Assign(I).Name.Image & "="
+                              & Node.Assign(I).Value.Str.Image);
         end loop;
       end if;
     end if;
@@ -238,8 +238,8 @@ package body Tree is
       -- Chat is a Read. Get name, timeout and default timeout
       Node.Kind := Read;
       Next_Is_Script := True;
-      Node.Name := Asu_Tus (Get_Attribute (Xnode, "Name"));
-      if Asu_Is_Null (Node.Name) then
+      Node.Name := Tus (Get_Attribute (Xnode, "Name"));
+      if Node.Name.Is_Null then
         Error (Xnode, "Empty chat name");
       end if;
       -- This is the overall timeout of the chat script
@@ -308,7 +308,7 @@ package body Tree is
       Get_Text (Xnode, Node, True);
       -- See if Newline
       if Get_Attribute (Xnode, "NewLine") = "true" then
-        Asu.Append (Node.Text, Line_Feed);
+        Node.Text.Append (Line_Feed);
       end if;
     elsif Name = "call" then
       Node.Kind := Call;
@@ -525,7 +525,7 @@ package body Tree is
     pragma Unreferenced (Dummy);
   begin
     begin
-      Ctx.Parse (Asu_Ts (File_Name), Ok);
+      Ctx.Parse (File_Name.Image, Ok);
       if not Ok then
         Basic_Proc.Put_Line_Error ("XML ERROR: " & Ctx.Get_Parse_Error_Message);
         raise Parse_Error;
@@ -533,10 +533,10 @@ package body Tree is
     exception
       when Xml_Parser.File_Error =>
         Basic_Proc.Put_Line_Error ("XML ERROR: Cannot access to file "
-          & Asu_Ts (File_Name) & ".");
+          & File_Name.Image & ".");
         raise Parse_Error;
     end;
-    Debug.Log ("File " & Asu_Ts (File_Name) & " parsed OK.");
+    Debug.Log ("File " & File_Name.Image & " parsed OK.");
 
     -- Build Tree
     Debug.Log ("Building tree:");

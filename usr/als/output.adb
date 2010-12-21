@@ -23,7 +23,7 @@ package body Output is
   Default_Separator : constant String := "  ";
 
   -- Current directory path
-  Curdir : constant Asu_Us := Asu_Tus (Directory.Get_Current);
+  Curdir : constant Asu_Us := Tus (Directory.Get_Current);
 
   -- Set (store) sorting and format style
   procedure Set_Style (
@@ -49,13 +49,13 @@ package body Output is
   function Make_Full_Path (Path : String) return String is
   begin
     if Path = "" then
-      return Directory.Normalize_Path (Asu_Ts (Curdir));
+      return Directory.Normalize_Path (Curdir.Image);
     elsif Path(Path'First) = '/' then
       -- Path is already absolute => Normalize
       return Directory. Normalize_Path (Path);
     else
       -- Path is relative, prepend current path & Normalize
-      return Directory.Normalize_Path (Asu_Ts (Curdir) & "/" & Path);
+      return Directory.Normalize_Path (Curdir.Image & "/" & Path);
     end if;
   end Make_Full_Path;
 
@@ -64,14 +64,14 @@ package body Output is
     Len : Natural;
     C1, C2 : Character;
   begin
-    if Asu.Length (S1) <= Asu.Length (S2) then
-      Len := Asu.Length (S1);
+    if S1.Length <= S2.Length then
+      Len := S1.Length;
     else
-      Len := Asu.Length (S2);
+      Len := S2.Length;
     end if;
     for I in 1 .. Len loop
-      C1 := Asu.Element (S1, I);
-      C2 := Asu.Element (S2, I);
+      C1 := S1.Element (I);
+      C2 := S2.Element (I);
       if C1 /= C2 then
         if C1 = '/' or else C1 = '.' then
           return True;
@@ -82,12 +82,12 @@ package body Output is
         end if;
       end if;
     end loop;
-    return Asu.Length (S1) < Asu.Length (S2);
+    return S1.Length < S2.Length;
   end "<";
 
   -- Sorting function for 2 entities according to output format
   function Less_Than (El1, El2 : Entities.Entity) return Boolean is
-    use type Ada.Calendar.Time, Asu_Us;
+    use type Ada.Calendar.Time;
     use type Sys_Calls.Size_T;
     C1, C2 : Entities.Entity;
   begin
@@ -100,23 +100,19 @@ package body Output is
     end if;
     -- Sort including full path if required
     if Full_Path then
-      C1.Name := Asu_Tus (Directory.Build_File_Name (
-           Make_Full_Path (Asu_Ts (C1.Path)),
-           Asu_Ts (C1.Name), "") );
-      C2.Name := Asu_Tus (Directory.Build_File_Name (
-           Make_Full_Path (Asu_Ts (C2.Path)),
-           Asu_Ts (C2.Name), "") );
+      C1.Name := Tus (Directory.Build_File_Name (
+           Make_Full_Path (C1.Path.Image), C1.Name.Image, "") );
+      C2.Name := Tus (Directory.Build_File_Name (
+           Make_Full_Path (C2.Path.Image), C2.Name.Image, "") );
     elsif Put_Path then
-      C1.Name := Asu_Tus (Directory.Build_File_Name (
-           Asu_Ts (C1.Path),
-           Asu_Ts (C1.Name), "") );
-      C2.Name := Asu_Tus (Directory.Build_File_Name (
-           Asu_Ts (C2.Path),
-           Asu_Ts (C2.Name), "") );
+      C1.Name := Tus (Directory.Build_File_Name (
+           C1.Path.Image, C1.Name.Image, "") );
+      C2.Name := Tus (Directory.Build_File_Name (
+           C2.Path.Image, C2.Name.Image, "") );
     end if;
     -- Alpha sort case insensitive, and letters before ponctuation
-    C1.Name := Asu_Tus (Upper_Str (Asu_Ts (C1.Name)));
-    C2.Name := Asu_Tus (Upper_Str (Asu_Ts (C2.Name)));
+    C1.Name := Tus (Upper_Str (C1.Name.Image));
+    C2.Name := Tus (Upper_Str (C2.Name.Image));
     case Sort_Kind is
       when None =>
         return True;
@@ -155,14 +151,14 @@ package body Output is
   -- Is separator explicitely set (or is it the default)
   function Separator_Set return Boolean is
   begin
-    return not Asu_Is_Null (Separator);
+    return not Separator.Is_Null;
   end Separator_Set;
 
   -- Return current separator
   function Get_Separator return String is
   begin
     if Separator_Set then
-      return Asu_Ts (Separator);
+      return Separator.Image;
     else
       return Default_Separator;
     end if;
@@ -201,14 +197,12 @@ package body Output is
    First_Entry := True;
    if Full_Path then
       return Directory.Build_File_Name (
-           Make_Full_Path (Asu_Ts (Entity.Path)),
-           Asu_Ts (Entity.Name), "");
+           Make_Full_Path (Entity.Path.Image), Entity.Name.Image, "");
     elsif Put_Path then
       return Directory.Build_File_Name (
-           Asu_Ts (Entity.Path),
-           Asu_Ts (Entity.Name), "");
+           Entity.Path.Image, Entity.Name.Image, "");
     else
-      return Asu_Ts (Entity.Name);
+      return Entity.Name.Image;
     end if;
   end Name_Image;
 
@@ -496,7 +490,7 @@ package body Output is
       else
         Ada.Text_Io.Put (" => ");
       end if;
-      Ada.Text_Io.Put (Asu_Ts (Entity.Link));
+      Ada.Text_Io.Put (Entity.Link.Image);
       if Classify and then Entity.Link_Ok
       and then Char_Of (Entity.Link_Kind, Entity.Link_Rights)
                        /= Default_Char then

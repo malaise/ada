@@ -39,7 +39,7 @@ package body Words is
   begin
     if Words_List.Is_Empty
     or else Index > Length then
-      return (Parser_Ada.Separator, Asu_Tus (""));
+      return (Parser_Ada.Separator, Tus (""));
     end if;
     if Index /= 0 then
       Read_Index := Index;
@@ -60,7 +60,7 @@ package body Words is
 
   function Read (Index : in Natural := 0) return String is
   begin
-    return Asu_Ts (Read (Index));
+    return Read (Index).Image;
   end Read;
 
   -- Get --
@@ -79,7 +79,7 @@ package body Words is
 
   function Get (Index : in Natural := 0) return String is
   begin
-    return Asu_Ts (Get (Index));
+    return Get (Index).Image;
   end Get;
 
   -- Concat --
@@ -95,7 +95,7 @@ package body Words is
     end if;
 
     for I in From_Index .. Last loop
-      Asu.Append (Result, Asu_Us'(Read (I)));
+      Result.Append (Asu_Us'(Read (I)));
     end loop;
     return Result;
   end Concat;
@@ -103,7 +103,7 @@ package body Words is
   function Concat (From_Index : in Positive := 1;
                    To_Index : Natural := 0) return String is
   begin
-    return Asu_Ts (Concat (From_Index, To_Index));
+    return Concat (From_Index, To_Index).Image;
   end Concat;
 
 
@@ -129,7 +129,7 @@ package body Words is
   procedure Add (Lexic : in Parser_Ada.Lexical_Kind_List;
                  Text : in String) is
   begin
-    Add (Lexic, Asu_Tus (Text));
+    Add (Lexic, Tus (Text));
   end Add;
 
   -- Search --
@@ -166,9 +166,7 @@ package body Words is
                    Word : String;
                    From_Index : Positive := 1) return Natural is
   begin
-    return Search (Lexic,
-                   Asu_Tus (Word),
-                   From_Index);
+    return Search (Lexic, Tus (Word), From_Index);
   end Search;
 
 end Words;

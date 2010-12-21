@@ -176,20 +176,20 @@ package body Language is
   begin
     if Get_Language /= Lang_Utf_8 then
       for I in Str'Range loop
-        Asu.Append (S, Wide_To_Char (Str(I)));
+        S.Append (Wide_To_Char (Str(I)));
       end loop;
     else
       for I in Str'Range loop
         W := Str(I);
         if W <= Wide_Last_Char then
           -- Optim
-          Asu.Append (S, Wide_To_Char (Str(I)));
+          S.Append (Wide_To_Char (Str(I)));
         else
-          Asu.Append (S, Utf_8.Encode (Str(I)));
+          S.Append (Utf_8.Encode (Str(I)));
         end if;
       end loop;
     end if;
-    return Asu_Ts (S);
+    return S.Image;
   end Wide_To_String;
 
   function "&" (Left : String; Right : Wide_String) return String is
@@ -260,20 +260,20 @@ package body Language is
   begin
     if Get_Language /= Lang_Utf_8 then
       for I in Str'Range loop
-        Asu.Append (S, Unicode_To_Char (Str(I)));
+        S.Append (Unicode_To_Char (Str(I)));
       end loop;
     else
       for I in Str'Range loop
         U := Str(I);
         if U <= Unicode_Last_Char then
           -- Optim
-          Asu.Append (S, Unicode_To_Char (Str(I)));
+          S.Append (Unicode_To_Char (Str(I)));
         else
-          Asu.Append (S, Utf_8.Encode (Str(I)));
+          S.Append (Utf_8.Encode (Str(I)));
         end if;
       end loop;
     end if;
-    return Asu_Ts (S);
+    return S.Image;
   end Unicode_To_String;
 
   function "&" (Left : String; Right : Unicode_Sequence) return String is

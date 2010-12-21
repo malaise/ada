@@ -121,10 +121,10 @@ package body Num_Letters is
 
     -- Generate thousands, leave hundreds
     if Last = 5 then
-      Txt := Asu_Tus (Make2 (Rev(5) & Rev(4)) & " " & Tenth(3).all);
+      Txt := Tus (Make2 (Rev(5) & Rev(4)) & " " & Tenth(3).all);
       Last := 3;
     elsif Last = 4 then
-      Txt := Asu_Tus (Make1 (Rev(4 .. 4)) & " " & Tenth(3).all);
+      Txt := Tus (Make1 (Rev(4 .. 4)) & " " & Tenth(3).all);
       Last := 3;
     end if;
 
@@ -136,10 +136,10 @@ package body Num_Letters is
     -- Generate hundreds, leave tenths
     if Last = 3 then
       -- Add separator from thousands
-      if not Asu_Is_Null (Txt) then
-        Asu.Append (Txt, " ");
+      if not Txt.Is_Null then
+        Txt.Append (" ");
       end if;
-      Asu.Append (Txt, Make1 (Rev(3 .. 3)) & " " & Tenth(2).all);
+      Txt.Append (Make1 (Rev(3 .. 3)) & " " & Tenth(2).all);
       Last := 2;
     end if;
 
@@ -151,19 +151,19 @@ package body Num_Letters is
     -- Generate tenths or unit
     if Last = 2 then
       -- Add separator from hundreds
-      if not Asu_Is_Null (Txt) then
-        Asu.Append (Txt, " ");
+      if not Txt.Is_Null then
+        Txt.Append (" ");
       end if;
-      Asu.Append (Txt, Make2 (Rev(2) & Rev(1)));
+      Txt.Append (Make2 (Rev(2) & Rev(1)));
     elsif Rev(1) /= '0' then
       -- Add separator from hundreds
-      if not Asu_Is_Null (Txt) then
-        Asu.Append (Txt, " ");
+      if not Txt.Is_Null then
+        Txt.Append (" ");
       end if;
-      Asu.Append (Txt, Make1 (Rev(1 .. 1)));
+      Txt.Append (Make1 (Rev(1 .. 1)));
     end if;
 
-    return Asu_Ts (Txt);
+    return Txt.Image;
   end Letters_Of;
 
 end Num_Letters;

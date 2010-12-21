@@ -1,5 +1,5 @@
 with Basic_Proc, Directory;
-with As.U; use As.U;
+with As.U.Utils; use As.U, As.U.Utils;
 with Debug, Sourcer, Tree_Mng, Sort;
 package body Output is
 
@@ -12,9 +12,8 @@ package body Output is
   -- Is Dscr a parent (spec for a body, body of a subunit)
   --  of current tree element
   function Is_Parent  (Parent, Current : Sourcer.Src_Dscr) return Boolean is
-    use type Asu_Us;
   begin
-    if Parent.Unit = Asu_Null then
+    if Parent.Unit.Is_Null then
       -- Tree root
       return False;
     end if;
@@ -39,7 +38,7 @@ package body Output is
     Incr : Boolean := False;
     Name : Asu_Us;
     Nb_Children : Natural;
-    use type Asu_Us, Sourcer.Src_Kind_List;
+    use type Sourcer.Src_Kind_List;
   begin
     -- Get current item
     Tree_Mng.Tree.Read (Dscr);
@@ -73,15 +72,15 @@ package body Output is
       else
         Name := Dscr.Dscr.Unit;
       end if;
-      if Name /= Asu_Null then
+      if not Name.Is_Null then
         for I in 1 .. Level - 1 loop
-          Asu.Append (Str, "  ");
+          Str.Append ("  ");
         end loop;
-        Asu.Append (Str, Directory.Build_File_Name (
-                Directory.Dirname (Asu_Ts (Dscr.Dscr.File)),
-                Asu_Ts (Name),
+        Str.Append (Directory.Build_File_Name (
+                Directory.Dirname (Dscr.Dscr.File.Image),
+                Name.Image,
                 ""));
-        Basic_Proc.Put_Line_Output (Asu_Ts (Str));
+        Basic_Proc.Put_Line_Output (Str.Image);
       end if;
     end if;
 
@@ -118,11 +117,11 @@ package body Output is
       return True;
     end if;
     for I in 1 .. Level loop
-      Asu.Append (Str, "  ");
+      Str.Append ("  ");
     end loop;
     -- File
-    Asu.Append (Str, Dscr.Dscr.File);
-    Basic_Proc.Put_Line_Output (Asu_Ts (Str));
+    Str.Append (Dscr.Dscr.File);
+    Basic_Proc.Put_Line_Output (Str.Image);
     return True;
   end Tree_File_Iterator;
 
@@ -173,11 +172,9 @@ package body Output is
       end if;
     end if;
     -- PathOfFile / UnitName
-    Ulist.Insert (Asu_Tus (
+    Ulist.Insert (Tus (
         Directory.Build_File_Name (
-            Directory.Dirname (Asu_Ts (Dscr.Dscr.File)),
-            Asu_Ts (Name),
-            "")));
+            Directory.Dirname (Dscr.Dscr.File.Image), Name.Image, "")));
     return True;
   end List_Unit_Iterator;
 
@@ -231,7 +228,7 @@ package body Output is
     Dlist.Rewind;
     loop
       Dlist.Read (Str, Moved => Moved);
-      Basic_Proc.Put_Line_Output (Asu_Ts (Str));
+      Basic_Proc.Put_Line_Output (Str.Image);
       exit when not Moved;
     end loop;
   end Put_List;

@@ -72,7 +72,7 @@ package body Ios is
         return '@' & Arbitrary.Fractions.Image (Item.Val_Frac);
       when Inte | Real | Bool | Chrs =>
         Str := Strof (Item);
-        return Asu_Ts (Str.Val_Text);
+        return Str.Val_Text.Image;
       when others =>
         raise Invalid_Argument;
     end case;
@@ -100,11 +100,11 @@ package body Ios is
     if S.Kind /= Chrs then
       raise Invalid_Argument;
     end if;
-    Len :=  Asu.Length (S.Val_Text);
-    if Len < 2 or else Asu.Element (S.Val_Text, 1) /= '@' then
+    Len :=  S.Val_Text.Length;
+    if Len < 2 or else S.Val_Text.Element (1) /= '@' then
       raise Invalid_Argument;
     end if;
-    Res.Val_Arbi := Arbitrary.Set (Asu_Ts (Asu.Tail (S.Val_Text, Len - 1)));
+    Res.Val_Arbi := Arbitrary.Set (S.Val_Text.Tail (Len - 1).Image);
     return Res;
   exception
     when Invalid_Argument =>
@@ -122,20 +122,19 @@ package body Ios is
     if S.Kind /= Chrs then
       raise Invalid_Argument;
     end if;
-    Len :=  Asu.Length (S.Val_Text);
+    Len :=  S.Val_Text.Length;
     -- Locate @
-    if Len < 2 or else Asu.Element (S.Val_Text, 1) /= '@' then
+    if Len < 2 or else S.Val_Text.Element (1) /= '@' then
       raise Invalid_Argument;
     end if;
     -- Locate :
-    Sep := String_Mng.Locate (Asu_Ts (S.Val_Text), ":");
+    Sep := String_Mng.Locate (S.Val_Text.Image, ":");
     if Sep <= 2 then
       raise Invalid_Argument;
     end if;
     -- Parse N and D
-    N := Arbitrary.Set (Asu.Slice (S.Val_Text, 2, Sep - 1));
-    D := Arbitrary.Set (Asu.Slice (S.Val_Text, Sep + 1,
-                                   Asu.Length(S.Val_Text)));
+    N := Arbitrary.Set (S.Val_Text.Slice (2, Sep - 1));
+    D := Arbitrary.Set (S.Val_Text.Slice (Sep + 1, S.Val_Text.Length));
     -- Make fraction
     Res.Val_Frac := Arbitrary.Fractions.Set (N, D);
     return Res;
@@ -153,8 +152,8 @@ package body Ios is
     if S.Kind /= Chrs then
       raise Invalid_Argument;
     end if;
-    Inte_Io.Get (Asu_Ts (S.Val_Text), Res.Val_Inte, Last);
-    if Last /= Asu.Length (S.Val_Text) then
+    Inte_Io.Get (S.Val_Text.Image, Res.Val_Inte, Last);
+    if Last /= S.Val_Text.Length then
       raise Invalid_Argument;
     end if;
     return Res;
@@ -170,8 +169,8 @@ package body Ios is
     if S.Kind /= Chrs then
       raise Invalid_Argument;
     end if;
-    Real_Io.Get (Asu_Ts (S.Val_Text), Res.Val_Real, Last);
-    if Last /= Asu.Length (S.Val_Text) then
+    Real_Io.Get (S.Val_Text.Image, Res.Val_Real, Last);
+    if Last /= S.Val_Text.Length then
       raise Invalid_Argument;
     end if;
     return Res;
@@ -187,8 +186,8 @@ package body Ios is
     if S.Kind /= Chrs then
       raise Invalid_Argument;
     end if;
-    Bool_Io.Get (Asu_Ts (S.Val_Text), Res.Val_Bool, Last);
-    if Last /= Asu.Length (S.Val_Text) then
+    Bool_Io.Get (S.Val_Text.Image, Res.Val_Bool, Last);
+    if Last /= S.Val_Text.Length then
       raise Invalid_Argument;
     end if;
     return Res;
@@ -203,11 +202,11 @@ package body Ios is
     if S.Kind /= Chrs then
       raise Invalid_Argument;
     end if;
-    if Asu.Length (S.Val_Text) /= 1 or
-    else not Is_Register (Asu.Element(S.Val_Text, 1)) then
+    if S.Val_Text.Length /= 1 or
+    else not Is_Register (S.Val_Text.Element (1)) then
       raise Invalid_Argument;
     end if;
-    Res.Val_Regi := Asu.Element(S.Val_Text, 1);
+    Res.Val_Regi := S.Val_Text.Element (1);
     return Res;
   exception
     when others =>
@@ -265,29 +264,29 @@ package body Ios is
 
     case Item.Kind is
       when Arbi =>
-        Res.Val_Text := Asu_Tus ('@' & Arbitrary.Image (Item.Val_Arbi));
+        Res.Val_Text := Tus ('@' & Arbitrary.Image (Item.Val_Arbi));
       when Frac =>
-        Res.Val_Text := Asu_Tus ('@' & Arbitrary.Fractions.Image (
+        Res.Val_Text := Tus ('@' & Arbitrary.Fractions.Image (
                                              Item.Val_Frac));
       when Inte =>
         Image_Str := (others => ' ');
         Inte_Io.Put(Image_Str, Item.Val_Inte);
         Fix_Size (Inte_Io.Default_Width);
-        Res.Val_Text := Asu_Tus ( Image_Str (1 .. Image_Len));
+        Res.Val_Text := Tus ( Image_Str (1 .. Image_Len));
       when Real =>
         Image_Str := (others => ' ');
         Real_Io.Put(Image_Str, Item.Val_Real);
         Fix_Size (Real_Io.Default_Fore + 1 + Real_Io.Default_Aft
                   + Real_Io.Default_Exp);
-        Res.Val_Text := Asu_Tus ( Image_Str (1 .. Image_Len));
+        Res.Val_Text := Tus ( Image_Str (1 .. Image_Len));
       when Bool  =>
-        Res.Val_Text := Asu_Tus (Mixed_Str(Item.Val_Bool'Img));
+        Res.Val_Text := Tus (Mixed_Str(Item.Val_Bool'Img));
       when Chrs =>
         Res := Item;
       when Prog =>
         Res.Val_Text := Item.Val_Text;
       when Regi =>
-        Res.Val_Text := Asu_Tus (Item.Val_Regi & "");
+        Res.Val_Text := Tus (Item.Val_Regi & "");
       when Oper =>
         raise Invalid_Argument;
     end case;
@@ -315,7 +314,7 @@ package body Ios is
     if Len.Kind /= Inte
     or else Len.Val_Inte <= 0
     or else Gap.Kind /= Chrs
-    or else Asu.Length(Gap.Val_Text) /= 1 then
+    or else Gap.Val_Text.Length /= 1 then
       raise Invalid_Argument;
     end if;
     -- Check right is boolean for int, positive for real
@@ -341,9 +340,9 @@ package body Ios is
       -- Call Normal
       declare
         Str : constant String := Normal (Int, Lint, Right_Len.Val_Bool,
-                                         Asu_Ts (Gap.Val_Text)(1));
+                                         Gap.Val_Text.Element(1));
       begin
-        Res.Val_Text := Asu_Tus (Str);
+        Res.Val_Text := Tus (Str);
       end;
     else
       -- Check range of ints
@@ -360,10 +359,10 @@ package body Ios is
       end;
       declare
         Str : constant String
-            := Normal(Int, Lint, True, Asu_Ts (Gap.Val_Text)(1))
+            := Normal(Int, Lint, True, Gap.Val_Text.Element(1))
              & "." & Normal(Frac, Lfrac, True, '0') ;
       begin
-        Res.Val_Text := Asu_Tus (Str);
+        Res.Val_Text := Tus (Str);
       end;
     end if;
     return Res;

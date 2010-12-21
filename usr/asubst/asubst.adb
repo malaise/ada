@@ -185,26 +185,26 @@ procedure Asubst is
   Utf8_Var_Name : constant String := "ASUBST_UTF8";
   -- The keys and descriptor of parsed keys
   Keys : constant Argument_Parser.The_Keys_Type := (
-   01 => ('a', Asu_Tus ("ascii"), False, False),
-   02 => ('D', Asu_Tus ("delimiter"), False, True),
-   03 => ('d', Asu_Tus ("display"), False, False),
-   04 => ('e', Asu_Tus ("exclude"), False, True),
-   05 => ('F', Asu_Tus ("file_list"), False, True),
-   06 => ('g', Asu_Tus ("grep"), False, False),
-   07 => ('h', Asu_Tus ("help"), False, False),
-   08 => ('i', Asu_Tus ("ignorecase"), False, False),
-   09 => ('l', Asu_Tus ("line"), False, False),
-   10 => ('m', Asu_Tus ("match"), False, True),
-   11 => ('n', Asu_Tus ("number"), False, False),
-   12 => ('q', Asu_Tus ("quiet"), False, False),
-   13 => ('s', Asu_Tus ("save"), False, False),
-   14 => ('t', Asu_Tus ("test"), False, False),
-   15 => ('u', Asu_Tus ("utf8"), False, False),
-   16 => ('v', Asu_Tus ("verbose"), False, False),
-   17 => ('V', Asu_Tus ("version"), False, False),
-   18 => ('x', Asu_Tus ("noregex"), False, False),
-   19 => ('p', Asu_Tus ("tmp"), False, True),
-   20 => ('f', Asu_Tus ("file"), False, False)
+   01 => ('a', Tus ("ascii"), False, False),
+   02 => ('D', Tus ("delimiter"), False, True),
+   03 => ('d', Tus ("display"), False, False),
+   04 => ('e', Tus ("exclude"), False, True),
+   05 => ('F', Tus ("file_list"), False, True),
+   06 => ('g', Tus ("grep"), False, False),
+   07 => ('h', Tus ("help"), False, False),
+   08 => ('i', Tus ("ignorecase"), False, False),
+   09 => ('l', Tus ("line"), False, False),
+   10 => ('m', Tus ("match"), False, True),
+   11 => ('n', Tus ("number"), False, False),
+   12 => ('q', Tus ("quiet"), False, False),
+   13 => ('s', Tus ("save"), False, False),
+   14 => ('t', Tus ("test"), False, False),
+   15 => ('u', Tus ("utf8"), False, False),
+   16 => ('v', Tus ("verbose"), False, False),
+   17 => ('V', Tus ("version"), False, False),
+   18 => ('x', Tus ("noregex"), False, False),
+   19 => ('p', Tus ("tmp"), False, True),
+   20 => ('f', Tus ("file"), False, False)
    );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
@@ -225,7 +225,7 @@ procedure Asubst is
   Backup : Boolean := False;
   Is_Regex : Boolean := True;
   Test : Boolean := False;
-  Delimiter : Asu_Us := Asu_Tus (Text_Line.Line_Feed_Str);
+  Delimiter : Asu_Us := Tus (Text_Line.Line_Feed_Str);
   -- Overall result to summarize error and if any subst/search done
   Ok : Boolean;
   Found : Boolean;
@@ -258,9 +258,9 @@ procedure Asubst is
     end if;
     Nb_Subst := Substit.Do_One_File (
                   File_Name,
-                  Asu_Ts (Tmp_Dir),
-                  Asu_Ts (Delimiter),
-                  Asu_Ts (Match_Range),
+                  Tmp_Dir.Image,
+                  Delimiter.Image,
+                  Match_Range.Image,
                   Backup, Verbosity = Verbose, Grep,
                   Grep_Line_Nb, Grep_File_Name, Test);
     if Nb_Subst /= 0 then
@@ -349,8 +349,8 @@ begin
   if Arg_Dscr.Is_Set (02) then
     -- Specific delimiter instead of '\n'
     begin
-      Delimiter := Asu_Tus (Arg_Dscr.Get_Option (02));
-      if Asu.Length (Delimiter) > Text_Line.Max_Line_Feed_Len then
+      Delimiter := Tus (Arg_Dscr.Get_Option (02));
+      if Delimiter.Length > Text_Line.Max_Line_Feed_Len then
         raise Constraint_Error;
       end if;
     exception
@@ -361,7 +361,7 @@ begin
         return;
     end;
     if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Option delimiter = " & Asu_Ts (Delimiter));
+      Sys_Calls.Put_Line_Error ("Option delimiter = " & Delimiter.Image);
     end if;
   end if;
   if Arg_Dscr.Is_Set (03) then
@@ -374,8 +374,8 @@ begin
   if Arg_Dscr.Is_Set (04) then
     -- Exclude text matching exclude_regexp
     begin
-      Exclude := Asu_Tus (Arg_Dscr.Get_Option (04));
-      if Asu.Length(Exclude) = 0 then
+      Exclude := Tus (Arg_Dscr.Get_Option (04));
+      if Exclude.Length = 0 then
         raise Constraint_Error;
       end if;
     exception
@@ -386,7 +386,7 @@ begin
         return;
     end;
     if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Option exclude = " & Asu_Ts (Exclude));
+      Sys_Calls.Put_Line_Error ("Option exclude = " & Exclude.Image);
     end if;
   end if;
   if Arg_Dscr.Is_Set (05) then
@@ -423,8 +423,8 @@ begin
       Dummy : Boolean;
       pragma Unreferenced (Dummy);
     begin
-      Match_Range := Asu_Tus (Arg_Dscr.Get_Option (10));
-      Dummy := Substit.Subst_Match.Matches (0, Asu_Ts (Match_Range));
+      Match_Range := Tus (Arg_Dscr.Get_Option (10));
+      Dummy := Substit.Subst_Match.Matches (0, Match_Range.Image);
     exception
       when others =>
         Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
@@ -433,11 +433,11 @@ begin
         return;
     end;
     if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Option match =" & Asu_Ts (Match_Range));
+      Sys_Calls.Put_Line_Error ("Option match =" & Match_Range.Image);
     end if;
   else
     -- No criteria
-    Match_Range := Asu_Tus ("-");
+    Match_Range := Tus ("-");
   end if;
   if Arg_Dscr.Is_Set (11) then
     -- Put number of substitutions
@@ -506,8 +506,8 @@ begin
   if Arg_Dscr.Is_Set (19) then
     -- Tmp_Dir for temporary files
     begin
-      Tmp_Dir := Asu_Tus (Arg_Dscr.Get_Option (19));
-      if Asu.Length(Tmp_Dir) = 0 then
+      Tmp_Dir := Tus (Arg_Dscr.Get_Option (19));
+      if Tmp_Dir.Length = 0 then
         raise Constraint_Error;
       end if;
     exception
@@ -518,7 +518,7 @@ begin
         return;
     end;
     if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Option tmp_dir = " & Asu_Ts (Tmp_Dir));
+      Sys_Calls.Put_Line_Error ("Option tmp_dir = " & Tmp_Dir.Image);
     end if;
   end if;
   if Arg_Dscr.Is_Set (20) then
@@ -540,8 +540,8 @@ begin
   begin
     Search_Pattern.Parse (
          Arg_Dscr.Get_Option (No_Key_Index, 1),
-         Asu_Ts (Exclude),
-         Asu_Ts (Delimiter),
+         Exclude.Image,
+         Delimiter.Image,
          Case_Sensitive, Is_Regex);
   exception
     when Search_Pattern.Parse_Error =>
@@ -607,9 +607,8 @@ begin
   if Display then
     Ada.Text_Io.Put_Line ("Search pattern: >"
        & Arg_Dscr.Get_Option (No_Key_Index, 1) & "<");
-    if Asu_Ts (Exclude) /= "" then
-      Ada.Text_Io.Put_Line ("Exclude pattern: >"
-         & Asu_Ts (Exclude) & "<");
+    if Exclude.Image /= "" then
+      Ada.Text_Io.Put_Line ("Exclude pattern: >" & Exclude.Image & "<");
     end if;
     if not Grep then
       Ada.Text_Io.Put_Line ("Replace string: >"
@@ -652,9 +651,9 @@ begin
       begin
         Nb_Subst := Substit.Do_One_File (
             File_Name      => Substit.Std_In_Out,
-            Tmp_Dir        => Asu_Ts (Tmp_Dir),
-            Delimiter      => Asu_Ts (Delimiter),
-            Match_Range    => Asu_Ts (Match_Range),
+            Tmp_Dir        => Tmp_Dir.Image,
+            Delimiter      => Delimiter.Image,
+            Match_Range    => Match_Range.Image,
             Backup         => False,
             Verbose        => False,
             Grep           => Grep,

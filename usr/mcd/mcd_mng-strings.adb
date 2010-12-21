@@ -20,7 +20,6 @@ package body Strings is
 
   function Strcat (S1, S2 : Item_Rec) return Item_Rec is
     Res : Item_Rec(Chrs);
-    use type Asu_Us;
   begin
     Check_Chrs(S1);
     Check_Chrs(S2);
@@ -45,15 +44,15 @@ package body Strings is
     end if;
 
     if I1.Val_Inte < 1
-    or else I1.Val_Inte > My_Math.Inte(Asu.Length (S.Val_Text)) then
+    or else I1.Val_Inte > My_Math.Inte(S.Val_Text.Length) then
       raise Argument_Mismatch;
     end if;
     if I2.Val_Inte < 1
-    or else I2.Val_Inte > My_Math.Inte(Asu.Length (S.Val_Text)) then
+    or else I2.Val_Inte > My_Math.Inte(S.Val_Text.Length) then
       raise Argument_Mismatch;
     end if;
-    Res.Val_Text := Asu_Uslice (S.Val_Text, Positive(I1.Val_Inte),
-                                            Natural(I2.Val_Inte));
+    Res.Val_Text := S.Val_Text.Uslice (Positive(I1.Val_Inte),
+                                       Natural(I2.Val_Inte));
     return Res;
   end Strsub;
 
@@ -69,8 +68,8 @@ package body Strings is
     end if;
 
     Res.Val_Inte := My_Math.Inte(
-            String_Mng.Locate (Asu_Ts (S.Val_Text),
-                               Asu_Ts (Pat.Val_Text),
+            String_Mng.Locate (S.Val_Text.Image,
+                               Pat.Val_Text.Image,
                                Occurence => Positive(Occ.Val_Inte)));
     return Res;
   end Strloc;
@@ -83,26 +82,27 @@ package body Strings is
     Check_Inte(I);
 
     if I.Val_Inte < 1
-    or else I.Val_Inte > My_Math.Inte(Asu.Length (S.Val_Text)) then
+    or else I.Val_Inte > My_Math.Inte(S.Val_Text.Length) then
       raise Argument_Mismatch;
     end if;
-
-    Res.Val_Text := Asu.Overwrite (S.Val_Text, Positive (I.Val_Inte),
-                                   Asu_Ts (Pat.Val_Text));
+    Res := S;
+    Res.Val_Text.Replace (Positive (I.Val_Inte),
+                          Positive (I.Val_Inte) + S.Val_Text.Length,
+                          Pat.Val_Text.Image);
     return Res;
   end Strrep;
 
   function Strlen (S : Item_Rec) return Item_Rec is
   begin
     Check_Chrs(S);
-    return (Kind => Inte, Val_Inte => My_Math.Inte(Asu.Length (S.Val_Text)));
+    return (Kind => Inte, Val_Inte => My_Math.Inte(S.Val_Text.Length));
   end Strlen;
 
   function Strupp (S : Item_Rec) return Item_Rec is
     Res : Item_Rec(Chrs);
   begin
     Check_Chrs(S);
-    Res.Val_Text := Asu_Tus (Upper_Str (Asu_Ts (S.Val_Text)));
+    Res.Val_Text := Tus (Upper_Str (S.Val_Text.Image));
     return Res;
   end Strupp;
 
@@ -110,7 +110,7 @@ package body Strings is
     Res : Item_Rec(Chrs);
   begin
     Check_Chrs(S);
-    Res.Val_Text := Asu_Tus (Lower_Str (Asu_Ts (S.Val_Text)));
+    Res.Val_Text := Tus (Lower_Str (S.Val_Text.Image));
     return Res;
   end Strlow;
 
@@ -118,7 +118,7 @@ package body Strings is
     Res : Item_Rec(Chrs);
   begin
     Check_Chrs(S);
-    Res.Val_Text := Asu_Tus (Mixed_Str (Asu_Ts (S.Val_Text)));
+    Res.Val_Text := Tus (Mixed_Str (S.Val_Text.Image));
     return Res;
   end Strmix;
 

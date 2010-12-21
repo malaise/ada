@@ -1,5 +1,5 @@
 with Ada.Text_Io;
-with As.U; use As.U;
+with As.U.Utils; use As.U, As.U.Utils;
 with My_Math, Get_Line, Get_Float;
 
 package body File is
@@ -59,7 +59,7 @@ package body File is
       raise Read_Error;
     end if;
     begin
-      Loc_Kind := Types.Mattrix_Kind_List'Value (Asu_Ts (Line.Element (1)));
+      Loc_Kind := Types.Mattrix_Kind_List'Value (Line.Element (1).Image);
     exception
       when others =>
         Ada.Text_Io.Put_Line ("ERROR in file " & File_Name
@@ -89,8 +89,7 @@ package body File is
       -- Parse current line in matrix and vector
       begin
         for J in 1 .. Dim loop
-          F := Float_Cell_Range (Get_Float.Get_Float(
-                       Asu_Ts (Line.Element (J))));
+          F := Float_Cell_Range (Get_Float.Get_Float (Line.Element (J).Image));
           if F > 100.00
           or else My_Math.Frac (My_Math.Real (F)) * 100.0 > 100.0 then
             My_Get_Line.Close;

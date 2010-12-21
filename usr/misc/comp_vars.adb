@@ -130,7 +130,7 @@ procedure Comp_Vars is
         -- Two attributes
         Attr1 := Ctx.Get_Attribute (Var, 1);
         Attr2 := Ctx.Get_Attribute (Var, 2);
-        if Asu_Ts (Attr1.Name) = "Type" then
+        if Attr1.Name.Image = "Type" then
           -- Swap so that Attr1 is Name and Attr2 is Type
           declare
             Attrt : constant Xml_Parser.Attribute_Rec := Attr1;
@@ -140,19 +140,19 @@ procedure Comp_Vars is
           end;
         end if;
         -- Second attribute must be type
-        if Asu_Ts (Attr2.Name) /= "Type" then
-          Error ("Invalid attribute " & Asu_Ts (Attr2.Name)
+        if Attr2.Name.Image /= "Type" then
+          Error ("Invalid attribute " & Attr2.Name.Image
                & " to Variable.", Var);
           return False;
         end if;
 
         -- Check Type is Int or Str
-        if Asu_Ts (Attr2.Value) = "Int" then
+        if Attr2.Value.Image = "Int" then
           Var_Is_Int := True;
-        elsif Asu_Ts (Attr2.Value) = "Str" then
+        elsif Attr2.Value.Image = "Str" then
           Var_Is_Int := False;
         else
-          Error ("Invalid type " & Asu_Ts (Attr2.Value)
+          Error ("Invalid type " & Attr2.Value.Image
                & " to Variable.", Var);
           return False;
         end if;
@@ -162,8 +162,8 @@ procedure Comp_Vars is
         return False;
       end if;
       -- First attribute must be Name
-      if Asu_Ts (Attr1.Name) /= "Name" then
-        Error ("Invalid attribute " & Asu_Ts (Attr1.Name)
+      if Attr1.Name.Image /= "Name" then
+        Error ("Invalid attribute " & Attr1.Name.Image
              & " to Variable.", Var);
         return False;
       end if;
@@ -184,12 +184,12 @@ procedure Comp_Vars is
       -- Eval or compute
       Step_Parsing := False;
       declare
-        Expr : constant String := Asu_Ts (Text);
+        Expr : constant String := Text.Image;
       begin
         if Var_Is_Int then
-          Result := Asu_Tus (Comp_Image (Computer.Compute (Expr)));
+          Result := Tus (Comp_Image (Computer.Compute (Expr)));
         else
-          Result := Asu_Tus (Computer.Eval (Expr));
+          Result := Tus (Computer.Eval (Expr));
         end if;
       exception
         when Computer.Unknown_Variable =>
@@ -201,27 +201,27 @@ procedure Comp_Vars is
       end;
 
       -- Store Result
-      Computer.Set (Name  => Asu_Ts (Attr1.Value),
-                    Value => Asu_Ts (Result),
+      Computer.Set (Name  => Attr1.Value.Image,
+                    Value => Result.Image,
                     Modifiable => True, Persistent => False);
       -- Display result
       if Xml_Format then
         Out_File.Put ("  <Var "
-          & "Name=""" & Asu_Ts (Attr1.Value) & """ "
+          & "Name=""" & Attr1.Value.Image & """ "
           & "Type=""");
         if Var_Is_Int then
           Out_File.Put ("Int");
         else
           Out_File.Put ("Str");
         end if;
-        Out_File.Put_Line (""">" & Asu_Ts (Result) & "</Var>");
+        Out_File.Put_Line (""">" & Result.Image & "</Var>");
       else
-        Out_File.Put ("export " & Asu_Ts (Attr1.Value)
+        Out_File.Put ("export " & Attr1.Value.Image
            & "=");
         if Var_Is_Int then
-          Out_File.Put_Line (Asu_Ts (Result));
+          Out_File.Put_Line (Result.Image);
         else
-          Out_File.Put_Line ("""" & Asu_Ts (Result) & """");
+          Out_File.Put_Line ("""" & Result.Image & """");
         end if;
       end if;
 

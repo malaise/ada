@@ -86,33 +86,33 @@ package body Replace_Pattern is
    Result : Byte;
   begin
     -- First digit: 16 * C
-    if Index > Asu.Length (The_Pattern) then
+    if Index > The_Pattern.Length then
       Error ("No hexadecimal sequence at the end of replace pattern");
     end if;
     begin
-      Result := 16#10# * Char_To_Hexa (Asu.Element (The_Pattern, Index));
+      Result := 16#10# * Char_To_Hexa (The_Pattern.Element (Index));
     exception
       when Constraint_Error =>
         Error ("Invalid hexadecimal sequence "
-             & Asu.Slice (The_Pattern, Index, Index + 1)
+             & The_Pattern.Slice (Index, Index + 1)
              & " in replace pattern");
     end;
     -- First digit: 1 * C
-    if Index + 1 > Asu.Length (The_Pattern) then
+    if Index + 1 > The_Pattern.Length then
       Error ("Uncomplete hexadecimal sequence at the end of replace pattern");
       raise Parse_Error;
     end if;
     begin
-      Result := Result + Char_To_Hexa (Asu.Element (The_Pattern, Index + 1));
+      Result := Result + Char_To_Hexa (The_Pattern.Element (Index + 1));
     exception
       when Constraint_Error =>
         Error ("Invalid hexadecimal sequence "
-             & Asu.Slice (The_Pattern, Index, Index + 1)
+             & The_Pattern.Slice (Index, Index + 1)
              & " in replace pattern");
     end;
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Replace, got hexadecimal sequence "
-                               & Asu.Slice (The_Pattern, Index, Index + 1));
+                               & The_Pattern.Slice (Index, Index + 1));
     end if;
     return Result;
   end Get_Hexa;
@@ -128,9 +128,7 @@ package body Replace_Pattern is
     end if;
     -- Activate
     Substites.Insert (Subst);
-    Asu.Replace_Slice (The_Pattern,
-                       Subst.Index, Subst.Index + 1,
-                       Subst_Char & "");
+    The_Pattern.Replace (Subst.Index, Subst.Index + 1, Subst_Char & "");
     Case_Action := Subst.Action;
   end Switch_Case;
 
@@ -160,7 +158,7 @@ package body Replace_Pattern is
       Sys_Calls.Put_Line_Error ("Replace parsing pattern >" & Pattern & "<");
     end if;
     -- Store pattern
-    The_Pattern := Asu_Tus (Pattern);
+    The_Pattern := Tus (Pattern);
     -- Replace escape sequences by coding chars
     Start := 1;
     Case_Action := Stop_Case;
@@ -169,11 +167,11 @@ package body Replace_Pattern is
     In_Command := False;
     loop
       -- Locate an escape sequence, exit when no more
-      Got := String_Mng.Locate_Escape (Asu_Ts (The_Pattern),
+      Got := String_Mng.Locate_Escape (The_Pattern.Image,
                                        Start, "\acefiKklmnoPpRrstux");
       exit when Got = 0;
       -- Set corresponding code
-      Esc_Char := Asu.Element (The_Pattern, Got);
+      Esc_Char := The_Pattern.Element (Got);
       -- In command or file, skip unexpected characters. Handle k|p, R and r
       if In_Command and then
         (Esc_Char /= 'k'and then Esc_Char /= 'R' and then Esc_Char /= 'r') then
@@ -201,7 +199,7 @@ package body Replace_Pattern is
       case Esc_Char is
         when '\' =>
           -- "\\" replaced by '\'
-          Asu.Replace_Slice (The_Pattern, Got - 1, Got, "\");
+          The_Pattern.Replace (Got - 1, Got, "\");
         when 'c' =>
           -- "\c" XXX case switch off
           Subst.Action := Stop_Case;
@@ -214,8 +212,8 @@ package body Replace_Pattern is
                  & " while not in condition");
           end if;
           Substites.Insert (Subst);
-          Asu.Replace_Slice (The_Pattern, Subst.Index, Subst.Index + 1,
-                             Subst_Char & "");
+          The_Pattern.Replace (Subst.Index, Subst.Index + 1,
+                                     Subst_Char & "");
           If_Mode := In_Else;
         when 'f' =>
           -- "\f" end of if
@@ -225,15 +223,15 @@ package body Replace_Pattern is
                  & " while not in condition or else part");
           end if;
           Substites.Insert (Subst);
-          Asu.Replace_Slice (The_Pattern, Subst.Index, Subst.Index + 1,
-                             Subst_Char & "");
+          The_Pattern.Replace (Subst.Index, Subst.Index + 1,
+                                     Subst_Char & "");
           If_Mode := None;
         when 'K' =>
           -- "\K" to start command
           Subst.Action := Start_Command;
           Substites.Insert (Subst);
-          Asu.Replace_Slice (The_Pattern, Subst.Index, Subst.Index + 1,
-                             Subst_Char & "");
+          The_Pattern.Replace (Subst.Index, Subst.Index + 1,
+                                     Subst_Char & "");
           In_Command := True;
         when 'k' =>
           -- "\k" to stop command
@@ -243,15 +241,15 @@ package body Replace_Pattern is
                  & " while not in command");
           end if;
           Substites.Insert (Subst);
-          Asu.Replace_Slice (The_Pattern, Subst.Index, Subst.Index + 1,
-                             Subst_Char & "");
+          The_Pattern.Replace (Subst.Index, Subst.Index + 1,
+                                     Subst_Char & "");
           In_Command := False;
         when 'P' =>
           -- "\P" to start file insertion
           Subst.Action := Start_File;
           Substites.Insert (Subst);
-          Asu.Replace_Slice (The_Pattern, Subst.Index, Subst.Index + 1,
-                             Subst_Char & "");
+          The_Pattern.Replace (Subst.Index, Subst.Index + 1,
+                                     Subst_Char & "");
           In_File := True;
         when 'p' =>
           -- "\p" to stop file insertion
@@ -261,8 +259,8 @@ package body Replace_Pattern is
                  & " while not in file");
           end if;
           Substites.Insert (Subst);
-          Asu.Replace_Slice (The_Pattern, Subst.Index, Subst.Index + 1,
-                             Subst_Char & "");
+          The_Pattern.Replace (Subst.Index, Subst.Index + 1,
+                                     Subst_Char & "");
           In_File := False;
         when 'l' =>
           -- "\l" lower_case switch on
@@ -279,17 +277,16 @@ package body Replace_Pattern is
             Case_Action := Stop_Case;
             Subst.Action := Stop_Case;
             Substites.Insert (Subst);
-            Asu.Replace_Slice (The_Pattern, Got - 1, Got, Subst_Char & Line_Feed);
+            The_Pattern.Replace (Got - 1, Got, Subst_Char & Line_Feed);
           else
-            Asu.Replace_Slice (The_Pattern, Got - 1, Got, Line_Feed);
+            The_Pattern.Replace (Got - 1, Got, Line_Feed);
           end if;
         when 's' =>
           -- "\s" replaced by Space
-          Asu.Replace_Slice (The_Pattern, Got - 1, Got, " ");
+          The_Pattern.Replace (Got - 1, Got, " ");
         when 't' =>
           -- "\t" replaced by (horiz) tab
-          Asu.Replace_Slice (The_Pattern, Got - 1, Got,
-                             Ada.Characters.Latin_1.Ht & "");
+          The_Pattern.Replace (Got - 1, Got, Ada.Characters.Latin_1.Ht & "");
         when 'u' =>
           -- "\u" UPPER_CASE switch on
           Subst.Action := Start_Uppercase;
@@ -297,8 +294,8 @@ package body Replace_Pattern is
         when 'x' =>
           -- "\xIJ" hexa replaced by byte
           Hexa_Byte := Get_Hexa (Got + 1);
-          Asu.Replace_Slice (The_Pattern, Got - 1, Got + 2,
-                             Character'Val (Hexa_Byte) & "");
+          The_Pattern.Replace (Got - 1, Got + 2,
+                               Character'Val (Hexa_Byte) & "");
         when 'R' | 'r' | 'i' | 'a' | 'o' =>
           -- "\RIJ" or \rIJ, IJ in hexa, replaced by matching (sub) string
           -- "\iIJ", IJ in hexa, replaced by text if substring is matching
@@ -309,7 +306,7 @@ package body Replace_Pattern is
             -- Replace by regex index IJ, check IJ
             if Hexa_Byte > Search_Pattern.Number then
               Error ( "Invalid (null or too high) regex index "
-                & Asu.Slice (The_Pattern, Got + 1, Got + 2)
+                & The_Pattern.Slice (Got + 1, Got + 2)
                 & " in replace pattern");
             end if;
             Subst.Action := Replace_Match_Regex;
@@ -319,15 +316,15 @@ package body Replace_Pattern is
             if Hexa_Byte / 16#10# = 0
             or else Hexa_Byte / 16#10# > Search_Pattern.Number then
               Error ( "Invalid (null or too high) regex index "
-                & Asu.Element (The_Pattern, Got + 1)
+                & The_Pattern.Element (Got + 1)
                 & " in replace pattern");
             end if;
             -- Check J
             if Hexa_Byte rem 16#10#
                > Search_Pattern.Nb_Substrings (Hexa_Byte / 16#10#) then
               Error ("Invalid (too high) substr index "
-                & Asu.Element (The_Pattern, Got + 2)
-                & " of regex index " & Asu.Element (The_Pattern, Got + 1)
+                & The_Pattern.Element (Got + 2)
+                & " of regex index " & The_Pattern.Element (Got + 1)
                 & " in replace pattern");
             end if;
             if Esc_Char = 'r' then
@@ -365,23 +362,22 @@ package body Replace_Pattern is
           end if;
           -- Store that, at this index, there is a (sub) string match
           Substites.Insert (Subst);
-          Asu.Replace_Slice (The_Pattern, Got - 1, Got + 2,
-                             Subst_Char & "");
+          The_Pattern.Replace (Got - 1, Got + 2, Subst_Char & "");
         when others =>
           -- Impossible or a \* to skip within command
           -- Leave sequence as it is, skip it
           Start := Got + 1;
       end case;
       -- Also done if end of pattern
-      exit when Start >= Asu.Length (The_Pattern);
+      exit when Start >= The_Pattern.Length;
     end loop;
     -- Stop case substitution at end of line, add subst marker
     if Case_Action /= Stop_Case then
       Subst.Action := Stop_Case;
-      Subst.Index := Asu.Length (The_Pattern) + 1;
+      Subst.Index := The_Pattern.Length + 1;
       Subst.Info := 0;
       Substites.Insert (Subst);
-      Asu.Append (The_Pattern, Subst_Char & "");
+      The_Pattern.Append (Subst_Char & "");
     end if;
     -- Check not in conditional section
     if If_Mode /= None then
@@ -396,14 +392,14 @@ package body Replace_Pattern is
     end if;
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Replace stored pattern >"
-                               & Asu_Ts (The_Pattern) & "<");
+                               & The_Pattern.Image & "<");
     end if;
   end Parse;
 
   -- Returns if pattern is empty
   function Is_Empty return Boolean is
   begin
-    return Asu_Is_Null (The_Pattern);
+    return The_Pattern.Is_Null;
   end Is_Empty;
 
   -- Extract a substring of string matching a regex
@@ -501,11 +497,11 @@ package body Replace_Pattern is
     Result := The_Pattern;
     if Debug.Set then
       Sys_Calls.Put_Error ("Replace, working with >");
-      for I in 1 .. Asu.Length (Result) loop
-        if Asu.Element (Result, I) = Subst_Char then
+      for I in 1 .. Result.Length loop
+        if Result.Element (I) = Subst_Char then
           Sys_Calls.Put_Error ("<Subst>");
         else
-          Sys_Calls.Put_Error (Asu.Element (Result, I) & "");
+          Sys_Calls.Put_Error (Result.Element (I) & "");
         end if;
       end loop;
       Sys_Calls.Put_Line_Error ("<");
@@ -521,8 +517,7 @@ package body Replace_Pattern is
     If_Status := None;
     loop
       -- Locate replace code
-      Got := String_Mng.Locate (Asu_Ts (Result),
-                                Subst_Char & "", Start);
+      Got := String_Mng.Locate (Result.Image, Subst_Char & "", Start);
       exit when Got = 0;
       -- Check that this is a match action record
       Try_Subst:
@@ -542,13 +537,13 @@ package body Replace_Pattern is
             -- End of a previous section to skip?
             if Start_Skip /= 0 then
               -- Delete from Start_Skip to current
-              Asu.Delete (Result, Start_Skip, Got);
+              Result.Delete (Start_Skip, Got);
               Offset := Offset - (Got - Start_Skip);
               -- Start_Skip remains unchanged
               Got := Start_Skip;
             else
               -- Remove this tag
-              Asu.Delete (Result, Got, Got);
+              Result.Delete (Got, Got);
             end if;
             -- Restart locate from first char after case switch
             Start_Skip := Got;
@@ -653,8 +648,8 @@ package body Replace_Pattern is
             end if;
           when Stop_Command =>
             if Start_Skip = 0 then
-              Asu.Replace_Slice (Result, Command_Index, Got,
-                Shell_Command (Asu.Slice (Result, Command_Index + 1, Got - 1)));
+              Result.Replace (Command_Index, Got,
+                  Shell_Command (Result.Slice (Command_Index + 1, Got - 1)));
             else
               -- Go on searching from next char
               Start := Got + 1;
@@ -667,8 +662,8 @@ package body Replace_Pattern is
             end if;
           when Stop_File =>
             if Start_Skip = 0 then
-              Asu.Replace_Slice (Result, File_Index, Got,
-                File_Content (Asu.Slice (Result, File_Index + 1, Got - 1)));
+              Result.Replace (File_Index, Got,
+                  File_Content (Result.Slice (File_Index + 1, Got - 1)));
             else
               -- Go on searching from next char
               Start := Got + 1;
@@ -685,7 +680,7 @@ package body Replace_Pattern is
                   Sys_Calls.Put_Line_Error ("Replace, got match string >"
                                           & Sub_Str & "<");
                 end if;
-                Asu.Replace_Slice (Result, Got, Got, Sub_Str);
+                Result.Replace (Got, Got, Sub_Str);
                 -- Restart locate from first char after replacement
                 Start := Got + Sub_Str'Length;
                 Offset := Offset + Sub_Str'Length - 1;
@@ -701,22 +696,21 @@ package body Replace_Pattern is
                 -- End of a casing: apply
                 if Debug.Set then
                   Sys_Calls.Put_Line_Error ("Replace, converting >"
-                         & Asu.Slice (Result, Case_Index, Got - 1) & "< to "
+                         & Result.Slice (Case_Index, Got - 1) & "< to "
                          & Mixed_Str(Case_Mode'Img));
                 end if;
                 -- New or stop casing: replace from Start to Subst_Char
                 -- This is compatible with utf8 without explicit checks
                 declare
                   Case_Str : constant String
-                           := Casestring (Asu.Slice (Result, Case_Index,
-                                                             Got - 1),
+                           := Casestring (Result.Slice (Case_Index, Got - 1),
                                           Case_Mode);
                 begin
-                  Asu.Replace_Slice (Result, Case_Index, Got, Case_Str);
+                  Result.Replace (Case_Index, Got, Case_Str);
                 end;
               else
                 -- No casing active: remove subst tag
-                Asu.Delete (Result, Got, Got);
+                Result.Delete (Got, Got);
               end if;
               if Subst.Action = Stop_Case then
                 -- Stop casing
@@ -746,10 +740,9 @@ package body Replace_Pattern is
       end if;
     end loop;
     if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Replace, replacing by >"
-         & Asu_Ts (Result) & "<");
+      Sys_Calls.Put_Line_Error ("Replace, replacing by >" & Result.Image & "<");
     end if;
-    return Asu_Ts (Result);
+    return Result.Image;
   exception
     when Replace_Error =>
       raise;
@@ -764,7 +757,7 @@ package body Replace_Pattern is
                                & " INTERNAL ERROR: "
                                & Ada.Exceptions.Exception_Name (Error)
                                & " while replacing string by >"
-                               & Asu_Ts (The_Pattern) & "<");
+                               & The_Pattern.Image & "<");
       raise Replace_Error;
   end Replace;
 

@@ -35,9 +35,9 @@ package body Debug is
       when Bool =>
         Bool_Io.Put(Item.Val_Bool);
       when Chrs =>
-        Async_Stdin.Put_Err ("""" & Asu_Ts (Item.Val_Text) & """");
+        Async_Stdin.Put_Err ("""" & Item.Val_Text.Image & """");
       when Prog =>
-        Async_Stdin.Put_Err ("[ " & Asu_Ts (Item.Val_Text) & " ]");
+        Async_Stdin.Put_Err ("[ " & Item.Val_Text.Image & " ]");
       when Regi =>
         Async_Stdin.Put_Err (Item.Val_Regi & "");
       when Oper =>

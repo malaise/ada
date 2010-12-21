@@ -119,12 +119,12 @@ begin
 
   -- Link, set server dest in client, client sends
   if Server then
-    if not Asu_Is_Null (Server_Name) then
+    if not Server_Name.Is_Null then
       -- Ipm lan
       Soc.Set_Destination_Name_And_Service (
-           True, Asu_Ts (Server_Name), Asu_Ts (Port_Name));
+           True, Server_Name.Image, Port_Name.Image);
     end if;
-    Soc.Link_Service (Asu_Ts (Port_Name));
+    Soc.Link_Service (Port_Name.Image);
 
   else
     Soc.Link_Dynamic;
@@ -133,13 +133,13 @@ begin
       Dest_Host_Id : Socket.Host_Id;
       pragma Unreferenced (Dest_Host_Id);
     begin
-      Dest_Host_Id := Socket.Host_Id_Of (Asu_Ts (Server_Name));
+      Dest_Host_Id := Socket.Host_Id_Of (Server_Name.Image);
       Soc.Set_Destination_Name_And_Service (False,
-         Asu_Ts (Server_Name), Asu_Ts (Port_Name));
+         Server_Name.Image, Port_Name.Image);
     exception
       when Socket.Soc_Name_Not_Found =>
         Soc.Set_Destination_Name_And_Service (True,
-           Asu_Ts (Server_Name), Asu_Ts (Port_Name));
+           Server_Name.Image, Port_Name.Image);
     end;
     Message.Num := 1;
     Send;

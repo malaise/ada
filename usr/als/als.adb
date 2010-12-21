@@ -60,35 +60,35 @@ procedure Als is
 
   -- The keys and descriptor of parsed keys
   Keys : constant Argument_Parser.The_Keys_Type := (
-   01 => ('a', Asu_Tus ("all"), False, False),
-   02 => ('A', Asu_Tus ("All"), False, False),
-   03 => ('l', Asu_Tus ("list"), False, False),
-   04 => ('1', Asu_Tus ("1row"), False, False),
-   05 => ('D', Asu_Tus ("directories"), False, False),
-   06 => ('r', Asu_Tus ("reverse"), False, False),
-   07 => ('R', Asu_Tus ("recursive"), False, False),
-   08 => ('s', Asu_Tus ("size"), False, False),
-   09 => ('t', Asu_Tus ("time"), False, False),
-   10 => ('M', Asu_Tus ("merge"), False, False),
-   11 => ('d', Asu_Tus ("date"), True, True),
-   12 => (Argument_Parser.No_Key_Char, Asu_Tus ("help"), False, False),
-   13 => ('v', Asu_Tus ("version"), False, False),
-   14 => ('L', Asu_Tus ("links"), False, False),
-   15 => ('F', Asu_Tus ("files"), False, False),
-   16 => ('m', Asu_Tus ("match"), True, True),
-   17 => ('e', Asu_Tus ("exclude"), True, True),
-   18 => (Argument_Parser.No_Key_Char, Asu_Tus ("match_dir"), True, True),
-   19 => (Argument_Parser.No_Key_Char, Asu_Tus ("exclude_dir"), True, True),
-   20 => ('S', Asu_Tus ("separator"), False, True),
-   21 => ('T', Asu_Tus ("total"), False, False),
-   22 => ('n', Asu_Tus ("newer"), False, True),
-   23 => ('c', Asu_Tus ("classify"), False, False),
-   24 => (Argument_Parser.No_Key_Char, Asu_Tus ("depth"), False, True),
-   25 => ('h', Asu_Tus ("human"), False, False),
-   26 => ('N', Asu_Tus ("no_sort"), False, False),
-   27 => ('f', Asu_Tus ("full_path"), False, False),
-   28 => ('B', Asu_Tus ("broken_links"), False, False),
-   29 => (Argument_Parser.No_Key_Char, Asu_Tus ("follow_links"), False, False) );
+   01 => ('a', Tus ("all"), False, False),
+   02 => ('A', Tus ("All"), False, False),
+   03 => ('l', Tus ("list"), False, False),
+   04 => ('1', Tus ("1row"), False, False),
+   05 => ('D', Tus ("directories"), False, False),
+   06 => ('r', Tus ("reverse"), False, False),
+   07 => ('R', Tus ("recursive"), False, False),
+   08 => ('s', Tus ("size"), False, False),
+   09 => ('t', Tus ("time"), False, False),
+   10 => ('M', Tus ("merge"), False, False),
+   11 => ('d', Tus ("date"), True, True),
+   12 => (Argument_Parser.No_Key_Char, Tus ("help"), False, False),
+   13 => ('v', Tus ("version"), False, False),
+   14 => ('L', Tus ("links"), False, False),
+   15 => ('F', Tus ("files"), False, False),
+   16 => ('m', Tus ("match"), True, True),
+   17 => ('e', Tus ("exclude"), True, True),
+   18 => (Argument_Parser.No_Key_Char, Tus ("match_dir"), True, True),
+   19 => (Argument_Parser.No_Key_Char, Tus ("exclude_dir"), True, True),
+   20 => ('S', Tus ("separator"), False, True),
+   21 => ('T', Tus ("total"), False, False),
+   22 => ('n', Tus ("newer"), False, True),
+   23 => ('c', Tus ("classify"), False, False),
+   24 => (Argument_Parser.No_Key_Char, Tus ("depth"), False, True),
+   25 => ('h', Tus ("human"), False, False),
+   26 => ('N', Tus ("no_sort"), False, False),
+   27 => ('f', Tus ("full_path"), False, False),
+   28 => ('B', Tus ("broken_links"), False, False),
+   29 => (Argument_Parser.No_Key_Char, Tus ("follow_links"), False, False) );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   -- Option management
   List_Dots, List_Roots_And_Dots : Boolean;
@@ -262,7 +262,7 @@ begin
     if Arg_Dscr.Get_Option (20) = "" then
       Error ("Empty separator");
     end if;
-    Separator := Asu_Tus (Arg_Dscr.Get_Option (20));
+    Separator := Tus (Arg_Dscr.Get_Option (20));
   end if;
   -- Put total size
   Put_Total := Arg_Dscr.Is_Set (21);
