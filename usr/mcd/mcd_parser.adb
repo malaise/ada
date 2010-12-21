@@ -334,7 +334,7 @@ package body Mcd_Parser is
     declare
       Op : Mcd_Mng.Operator_List;
     begin
-      Op := Mcd_Mng.Operator_List'Value (Txt.image);
+      Op := Mcd_Mng.Operator_List'Value (Txt.Image);
       -- Allow string only if no symbol defined
       if Words(Op).Word = Nosy then
         Instr_Stack.Push (Stack, Item_Chrs);

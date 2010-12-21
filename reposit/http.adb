@@ -110,7 +110,7 @@ package body Http is
       return;
     end if;
     if Ind = 1
-    or else BUffer.Element (Ind - 1) & "" /= Cr then
+    or else Buffer.Element (Ind - 1) & "" /= Cr then
       New_Line := Tus (Lf);
     else
       New_Line := Tus (Crlf);
@@ -120,7 +120,7 @@ package body Http is
     Ind := String_Mng.Locate (Buffer.Image, New_Line.Image & New_Line.Image);
     Header := Buffer.Uslice (1, Ind - 1);
     Ind := Ind + 2 * New_Line.Length;
-    BUffer.Delete (1, Ind - 1);
+    Buffer.Delete (1, Ind - 1);
     -- CrLf -> Lf in Header
     Header := Tus (String_Mng.Replace (Header.Image, New_Line.Image, Lf));
 

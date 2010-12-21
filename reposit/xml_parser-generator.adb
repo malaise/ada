@@ -1303,7 +1303,7 @@ package body Xml_Parser.Generator is
           else
             Xml_Attr_Format := Format;
           end if;
-          Put (Flow, "<?" & Update.Name.image);
+          Put (Flow, "<?" & Update.Name.Image);
           Put_Attributes (Flow, Xml_Attr_Format, Width, Update.Attributes.all,
                           0, 2 + Update.Name.Length, False);
           Put (Flow, "?>");

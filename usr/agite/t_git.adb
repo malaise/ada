@@ -69,7 +69,7 @@ begin
                       Date, Comment, Commits);
   Ada.Text_Io.Put_Line (Date);
   for I in Comment'Range loop
-    Ada.Text_Io.Put_Line (Comment(I).image);
+    Ada.Text_Io.Put_Line (Comment(I).Image);
   end loop;
   if Commits.Is_Empty then
      Ada.Text_Io.Put_Line ("No File");

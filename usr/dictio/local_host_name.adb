@@ -20,7 +20,7 @@ package body Local_Host_Name is
   procedure Get (Name : out Host_Name) is
   begin
     Name := (others => ' ');
-    Name(1 .. Lhn.Length) := Lhn.image;
+    Name(1 .. Lhn.Length) := Lhn.Image;
   end Get;
 
 end Local_Host_Name;

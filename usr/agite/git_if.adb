@@ -118,7 +118,7 @@ package body Git_If is
       end;
       -- Not found here
       -- Can we get above?
-      if Root.image = "" then
+      if Root.Image = "" then
         raise No_Git;
       end if;
       -- Append current Dir to Result, remove it from Path (cd ..)
