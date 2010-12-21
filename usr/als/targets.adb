@@ -55,7 +55,7 @@ package body Targets is
         Subdirs.Read (Subdir, Moved => Moved);
         -- Recursive invocation
         Found := Found or Do_Dir (Directory.Build_File_Name (
-             Dir, Asu_Ts (Subdir), ""), True, Level + 1);
+             Dir, Subdir.Image, ""), True, Level + 1);
         exit when not Moved;
       end loop;
       Subdirs.Delete_List (Deallocate => False);

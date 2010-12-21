@@ -10,7 +10,7 @@ procedure Parse_To_End (End_Lexic : in Parser_Ada.Lexical_Kind_List;
 begin
   Parse_To_Ends (
     End_Criteria => Words.Word_Array'(1 =>
-          (End_Lexic, Asu_Tus (End_String))),
+          (End_Lexic, Tus (End_String))),
    Level => Level,
    Put_Comments => Put_Comments,
    Up_To_Next_Significant => Up_To_Next_Significant);

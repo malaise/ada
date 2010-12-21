@@ -40,8 +40,8 @@ procedure T_Pattern is
       Done := True;
       return False;
     end if;
-    if Tail /= Asu_Ts (Last_Data.Tail) then
-      Ada.Text_Io.Put_Line ("Error: Cb Tail " & Asu_Ts (Last_Data.Tail)
+    if Tail /= Last_Data.Tail.Image then
+      Ada.Text_Io.Put_Line ("Error: Cb Tail " & Last_Data.Tail.Image
                      & " differs from expected " & Tail);
       Done := True;
       return False;
@@ -64,10 +64,10 @@ procedure T_Pattern is
     Last_Data.Tail := Asu_Null;
     while Parser.Current_Word (It) /= "" loop
       Ada.Text_Io.Put (">" & Parser.Current_Word (It) & "<");
-      if not Asu_Is_Null (Last_Data.Tail) then
-        Asu.Append (Last_Data.Tail, " ");
+      if not Last_Data.Tail.Is_Null then
+        Last_Data.Tail.Append (" ");
       end if;
-      Asu.Append (Last_Data.Tail, Parser.Current_Word (It));
+      Last_Data.Tail.Append (Parser.Current_Word (It));
       Parser.Next_Word (It);
     end loop;
     Ada.Text_Io.Put_Line (").");

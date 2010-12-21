@@ -399,7 +399,7 @@ package body Mesu_Mng is
     The_Files.Rewind;
     loop
       The_Files.Read (File, Dir_Mng.File_List_Mng.Current);
-      File_Name := Asu_Ts (File.Name);
+      File_Name := File.Name.Image;
       begin
         Mesu_Sel.Rem_Selection (File_Name);
       exception

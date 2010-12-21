@@ -80,7 +80,7 @@ package body Ios is
   begin
     -- Store sentence without Lf
     Debug.Log ("Got sentence " & Sentence);
-    Sentences.Push (Asu_Tus (String_Mng.Replace (Sentence, Lf, "")));
+    Sentences.Push (Tus (String_Mng.Replace (Sentence, Lf, "")));
   end Sentence_Cb;
 
   -- Message reception Cb
@@ -248,10 +248,10 @@ package body Ios is
     use type Tcp_Util.Remote_Port_List;
   begin
 
-    Stdio := Asu_Ts (Port) = "-";
+    Stdio := Port.Image = "-";
     if not Stdio then
       -- Parse port name or num
-      Remote_Port_Def := Ip_Addr.Parse (Asu_Ts (Port));
+      Remote_Port_Def := Ip_Addr.Parse (Port.Image);
       if Remote_Port_Def.Kind = Tcp_Util.Port_Name_Spec then
         Port_Def := (Tcp_Util.Port_Name_Spec, Remote_Port_Def.Name);
       else
@@ -342,9 +342,9 @@ package body Ios is
     Len : Natural;
     Msg : Message_Type;
   begin
-    Debug.Log ("Send " & String_Mng.Replace (Asu_Ts (Text), Lf, "[LF]"));
+    Debug.Log ("Send " & String_Mng.Replace (Text.Image, Lf, "[LF]"));
     if Stdio then
-      Async_Stdin.Put_Out (Asu_Ts (Text));
+      Async_Stdin.Put_Out (Text.Image);
       Disconnection := False;
       return;
     end if;
@@ -356,13 +356,13 @@ package body Ios is
     Txt := Text;
     -- Send slices of Message_Type
     loop
-      Len := Asu.Length (Txt);
+      Len := Txt.Length;
       exit when Len = 0;
       if Len > Message_Type'Length then
         Len := Message_Type'Length;
       end if;
-      Msg(1 .. Len) := Asu.Slice (Txt, 1, Len);
-      Asu.Delete (Txt, 1, Len);
+      Msg(1 .. Len) := Txt.Slice (1, Len);
+      Txt.Delete (1, Len);
       My_Send (Tcp_Soc, Msg, Len);
     end loop;
   exception

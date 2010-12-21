@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1, Ada.Exceptions;
-with As.U; use As.U;
+with As.U.Utils; use As.U, As.U.Utils;
 with My_Io, String_Mng, String_Mng.Regex, Many_Strings,
      Upper_Str, Lower_Str, Mixed_Str, Upper_Char, Environ;
 procedure T_String is
@@ -344,7 +344,7 @@ begin
             begin
               My_Io.Put_Line ("Split into: ");
               for I in Lstr'Range loop
-                My_Io.Put_Line (">" & Asu_Ts (Lstr(I)) & "<");
+                My_Io.Put_Line (">" & Lstr(I).Image & "<");
               end loop;
             end;
           when 21 =>
@@ -364,7 +364,7 @@ begin
                                                     Str1(1 .. Nat1));
             begin
               for I in 1 .. Slices.Length loop
-                My_Io.Put_Line (">" & Asu_Ts (Slices.Element (I)) & "<");
+                My_Io.Put_Line (">" & Slices.Element (I).Image & "<");
               end loop;
             end;
 

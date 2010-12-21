@@ -31,13 +31,13 @@ begin
   -- Read and concat
   loop
     Line := File.Get;
-    exit when Asu_Is_Null (Line);
-    Asu.Append (Txt, Line);
+    exit when Line.Is_Null;
+    Txt.Append (Line);
   end loop;
 
   -- Done
   Close;
-  return Asu_Ts (Txt);
+  return Txt.Image;
 
 exception
   when File_Error =>

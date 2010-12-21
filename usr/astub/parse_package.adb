@@ -13,10 +13,9 @@ procedure Parse_Package (Level : in Natural;
   -- Because called due to a keyword (procedure/function...)
   Body_Put : Boolean := False;
   procedure Put_Body is
-    use type Asu_Us;
   begin
     if not Body_Put then
-      Output.Put_Line ("package body " & Asu_Ts (Name) & " is",
+      Output.Put_Line ("package body " & Name.Image & " is",
                         False, Level, True);
       Output.New_Line;
       -- Put comments and line_feeds saved so far, keep separators in words
@@ -29,7 +28,6 @@ procedure Parse_Package (Level : in Natural;
     end if;
   end Put_Body;
 
-  use type Asu_Us;
 begin
 
   -- Get package name
@@ -40,12 +38,12 @@ begin
   loop
     Word := Parser_Ada.Multiparse.Get (True);
     declare
-      Str : constant String := Asu_Ts (Word.Text);
+      Str : constant String := Word.Text.Image;
     begin
       if Word.Lexic = Parser_Ada.Comment then
         if Body_Put then
           -- Within the package, Output comments
-          Output.Put (Words.Concat & Asu_Ts (Word.Text), False);
+          Output.Put (Words.Concat & Word.Text.Image, False);
           Words.Reset;
         else
           -- Not knowing yet if this is a real package
@@ -106,7 +104,7 @@ begin
         -- Reset to "package <name> renames" and put as comment
         Parse_To_End (Parser_Ada.Delimiter, ";", Level);
         Fix_Comment (Level);
-        Output.Put_Line ("package " & Asu_Ts (Name)
+        Output.Put_Line ("package " & Name.Image
                   & " renames" & Words.Concat, True, Level, True);
         Words.Reset;
         return;
@@ -115,7 +113,7 @@ begin
         -- Reset to "package <name> is new" and put as comment
         Parse_To_End (Parser_Ada.Delimiter, ";", Level);
         Fix_Comment (Level);
-        Output.Put_Line ("package " & Asu_Ts (Name)
+        Output.Put_Line ("package " & Name.Image
                   & " is new " & Words.Concat, True, Level, True);
         Words.Reset;
         return;
@@ -144,6 +142,6 @@ begin
   Words.Reset;
 
   -- end <name>;
-  Output.Put_Line ("end " & Asu_Ts (Name) & ";", False, Level, True);
+  Output.Put_Line ("end " & Name.Image & ";", False, Level, True);
 end Parse_Package;
 

@@ -271,7 +271,7 @@ package body Connection is
     -- Init parameters and socket
     if Server_Name /= "" then
       Server := False;
-      Server_Host.Name := Asu_Tus (Server_Name);
+      Server_Host.Name := Tus (Server_Name);
       Remote_Port := Port;
       Connect_Server;
     else

@@ -3,7 +3,7 @@
 -- Solve linear system and put solution
 
 with Ada.Text_Io;
-with As.U; use As.U;
+with As.U.Utils; use As.U, As.U.Utils;
 with Argument, Normal, Syslin, Flo_Io, Get_Line, Get_Float;
 
 procedure T_Syslin is
@@ -73,16 +73,16 @@ begin
         -- Parse current line in matrix and vector
         begin
           for J in 1 .. Dim loop
-            Matrix (I, J) := Get_Float.Get_Float(Asu_Ts (Line.Element (J)));
+            Matrix (I, J) := Get_Float.Get_Float(Line.Element (J).Image);
           end loop;
-          Vector (I) := Get_Float.Get_Float(Asu_Ts (Line.Element (Dim+1)));
+          Vector (I) := Get_Float.Get_Float(Line.Element (Dim+1).Image);
         exception
           when others =>
             Ada.Text_Io.Put_Line ("ERROR, when reading data at line "
                               & Integer'Image(My_Get_Line.Get_Word_Number) & ".");
             raise File_Error;
         end;
-        Ada.Text_Io.Put_Line (">" & Asu_Ts (Whole_Line) & "<");
+        Ada.Text_Io.Put_Line (">" & Whole_Line.Image & "<");
 
         if I /= Dim then
           -- read next not empty line

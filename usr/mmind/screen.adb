@@ -119,7 +119,7 @@ package body Screen is
     Colors : Generic_Con_Io.Colors_Definition := Generic_Con_Io.Default_Colors;
   begin
     -- Set Colors
-    Colors(Generic_Con_Io.Color09) := Asu_Tus ("Grey");
+    Colors(Generic_Con_Io.Color09) := Tus ("Grey");
     Generic_Con_Io.Set_Colors (Colors);
   end Init;
 

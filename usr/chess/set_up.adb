@@ -1,5 +1,5 @@
 with Ada.Exceptions, Ada.Text_Io;
-with As.U; use As.U;
+with As.U.Utils; use As.U, As.U.Utils;
 with Get_Line;
 
 with Space.Board, Pieces, Image;
@@ -44,16 +44,16 @@ package body Set_Up is
 
       One_Word:
       for I in 1 .. My_Get_Line.Get_Word_Number loop
-        if Asu.Length (Line.Element (I)) /= 4 then
+        if Line.Element (I).Length /= 4 then
           Ada.Text_Io.Put_Line ("Error. Invalid definition "
-              & Asu_Ts (Line.Element (I))
+              & Line.Element (I).Image
               & " at line "
               & My_Get_Line.Positive_Count'Image (My_Get_Line.Get_Line_No) );
            raise Load_Error;
         end if;
 
         -- Read color char
-        Char := Asu.Element (Line.Element (I), 1);
+        Char := Line.Element (I).Element (1);
         if Char = 'W' then
           Decoded_Id.Id.Color := Space.White;
         elsif Char = 'B' then
@@ -66,7 +66,7 @@ package body Set_Up is
         end if;
 
         -- Read kind char
-        Char := Asu.Element (Line.Element (I), 2);
+        Char := Line.Element (I).Element (2);
         if Char = 'P' then
           Decoded_Id.Id.Kind := Pieces.Pawn;
         else
@@ -80,7 +80,7 @@ package body Set_Up is
         end if;
 
         -- Read square
-        Str2 := Asu.Slice (Line.Element (I), 3, 4);
+        Str2 := Line.Element (I).Slice (3, 4);
         begin
           Decoded_Square := Image.Square_Value (Str2);
         exception
@@ -99,7 +99,7 @@ package body Set_Up is
         exception
           when others =>
             Ada.Text_Io.Put_Line ("Error. Non empty square "
-                & Asu_Ts (Line.Element (I))
+                & Line.Element (I).Image
                 & " at line "
                 & My_Get_Line.Positive_Count'Image (My_Get_Line.Get_Line_No) );
             raise Load_Error;

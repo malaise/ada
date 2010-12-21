@@ -52,20 +52,21 @@ package body Xml is
   begin
     Index := 0;
     for I in Children'Range loop
-      if Rotor and then Ctx.Get_Name (Children(I)) = "Rotor" then
+      if Rotor and then String'(Ctx.Get_Name (Children(I))) = "Rotor" then
         Index := Index + 1;
         Attrs := Ctx.Get_Attributes (Children(I));
-        if Asu_Ts (Attrs(1).Name) = "Name" then
+        if Attrs(1).Name.Image = "Name" then
           Attr := Attrs(1);
         else
           Attr := Attrs(2);
         end if;
-      elsif not Rotor and then Ctx.Get_Name (Children(I)) = "Reflector" then
+      elsif not Rotor
+      and then String'(Ctx.Get_Name (Children(I))) = "Reflector" then
         Index := Index + 1;
         Attr := Ctx.Get_Attribute (Children(I), 1);
       end if;
       if Index = Id then
-        return Asu_Ts (Attr.Value);
+        return Attr.Value.Image;
       end if;
     end loop;
     return "";
@@ -82,21 +83,22 @@ package body Xml is
     Index := 0;
     for I in Children'Range loop
       Match := True;
-      if Rotor and then Ctx.Get_Name (Children(I)) = "Rotor" then
+      if Rotor and then String'(Ctx.Get_Name (Children(I))) = "Rotor" then
         Index := Index + 1;
         Attrs := Ctx.Get_Attributes (Children(I));
-        if Asu_Ts (Attrs(1).Name) = "Name" then
+        if Attrs(1).Name.Image = "Name" then
           Attr := Attrs(1);
         else
           Attr := Attrs(2);
         end if;
-      elsif not Rotor and then Ctx.Get_Name (Children(I)) = "Reflector" then
+      elsif not Rotor
+      and then String'(Ctx.Get_Name (Children(I))) = "Reflector" then
         Index := Index + 1;
         Attr := Ctx.Get_Attribute (Children(I), 1);
       else
         Match := False;
       end if;
-      if Match and then Asu_Ts (Attr.Value) = Name then
+      if Match and then Attr.Value.Image = Name then
         return Index;
       end if;
     end loop;

@@ -33,15 +33,15 @@ package body Files is
     Text_Char.Open (In_File, Fd);
 
     -- Create Out file for Text_line
-    Body_File_Name := Asu_Tus (
+    Body_File_Name := Tus (
           String_Mng.Cut (Spec_File_Name, Spec_Suffix'Length, False)
         & Body_Suffix);
 
     -- Check if body file exists and delete it if requested
     begin
-      if Sys_Calls.File_Check (Asu_Ts (Body_File_Name))
+      if Sys_Calls.File_Check (Body_File_Name.Image)
       and then Delete_Body then
-        if not Sys_Calls.Unlink (Asu_Ts (Body_File_Name)) then
+        if not Sys_Calls.Unlink (Body_File_Name.Image) then
           raise Sys_Calls.Access_Error;
         end if;
       end if;
@@ -55,7 +55,7 @@ package body Files is
 
     -- Check that Out file does not exist
     begin
-      Fd := Sys_Calls.Open (Asu_Ts (Body_File_Name), Sys_Calls.In_File);
+      Fd := Sys_Calls.Open (Body_File_Name.Image, Sys_Calls.In_File);
       Sys_Calls.Close (Fd);
       Body_File_Name := Asu_Null;
       Close (Remove);
@@ -68,7 +68,7 @@ package body Files is
 
     -- Create Out file
     begin
-      Fd := Sys_Calls.Create (Asu_Ts (Body_File_Name));
+      Fd := Sys_Calls.Create (Body_File_Name.Image);
     exception
       when Sys_Calls.Name_Error =>
         Body_File_Name := Asu_Null;
@@ -106,11 +106,11 @@ package body Files is
 
     -- Delete result if it was created
     -- and if needed
-    if Asu.Length (Body_File_Name) /= 0
+    if Body_File_Name.Length /= 0
     and then (Action = Remove
         or else (Action = Remove_If_Not_Keep
             and then not Environ.Is_Yes (Keep_Name)) ) then
-      Dummy := Sys_Calls.Unlink (Asu_Ts (Body_File_Name));
+      Dummy := Sys_Calls.Unlink (Body_File_Name.Image);
     end if;
 
   end Close;

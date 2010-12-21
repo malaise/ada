@@ -55,9 +55,9 @@ package body Output is
   begin
     Getenv;
     for I in 1 .. Level loop
-      Asu.Append (Result, Spaces.Value);
+      Result.Append (Spaces.Value);
     end loop;
-    return Asu_Ts (Result);
+    return Result.Image;
   end Get_Indent;
 
   -- Is character a separator of Ada statement
@@ -73,22 +73,21 @@ package body Output is
     Ustr : Asu_Us;
     Found : Natural;
     Line_Feed_Char : constant Character := Common.Line_Feed;
-    use type Asu_Us;
   begin
     -- Prepend previous tail and replace any sequence of 3 or more
     -- line_feeds by only 2
-    Ustr := Asu_Tus (
-      String_Mng.Regex.Replace (Asu_Ts (Prev_Tail) & Str, "\n{3,}",
+    Ustr := Tus (
+      String_Mng.Regex.Replace (Prev_Tail.Image & Str, "\n{3,}",
       Line_Feed_Char & Line_Feed_Char));
     Prev_Tail := Asu_Null;
-    if Ustr = Asu_Null then
+    if Ustr.Is_Null then
       -- Nothing to put
       return;
     end if;
     -- Locate any tailing line feeds (1 or 2)
     Found := 0;
-    for I in reverse 1 .. Asu.Length (Ustr) loop
-      if Asu.Element (Ustr, I) = Common.Line_Feed then
+    for I in reverse 1 .. Ustr.Length loop
+      if Ustr.Element (I) = Common.Line_Feed then
         Found := I;
       else
         exit;
@@ -96,16 +95,16 @@ package body Output is
     end loop;
     -- Remove and save tailing line feeds if any
     if Found /= 0 then
-      Prev_Tail := Asu_Uslice (Ustr, Found,  Asu.Length (Ustr));
-      Asu.Delete (Ustr, Found, Asu.Length (Ustr));
+      Prev_Tail := Ustr.Uslice (Found,  Ustr.Length);
+      Ustr.Delete (Found, Ustr.Length);
     end if;
     -- Put remaining
-    Text_Line.Put (Files.Out_File, Asu_Ts(Ustr));
+    Text_Line.Put (Files.Out_File, Ustr.Image);
   end Low_Put;
 
   procedure Flush is
   begin
-    Text_Line.Put (Files.Out_File, Asu_Ts(Prev_Tail));
+    Text_Line.Put (Files.Out_File, Prev_Tail.Image);
     Prev_Tail := Asu_Null;
   end Flush;
 
@@ -151,37 +150,37 @@ package body Output is
     -- Indent
     if Indent then
       for I in 1 .. Level loop
-        Asu.Append (Line2Put, Spaces.Value);
+        Line2Put.Append (Spaces.Value);
       end loop;
     end if;
 
     -- Append comment if needed
     if Add_Comment then
-      Asu.Append (Line2Put, "-- ");
+      Line2Put.Append ("-- ");
     end if;
 
     -- Append text
-    Asu.Append (Line2Put, Str);
+    Line2Put.Append (Str);
 
     -- Put comment without truncating
     if Comment or else Comment_Index /= 0 then
-       Low_Put (Asu_Ts (Line2Put));
+       Low_Put (Line2Put.Image);
       return;
     end if;
 
     -- Not a comment: split line if too long
-    Index := String_Mng.Truncate (Asu_Ts (Line2Put),
+    Index := String_Mng.Truncate (Line2Put.Image,
                                   Length, Mini_Len, Length,
                                   Separates'Access);
 
     -- Put the first chunk 1 .. Index
-    Low_Put (Asu.Slice (Line2Put, 1, Index));
+    Low_Put (Line2Put.Slice (1, Index));
 
-    if Index /= Asu.Length (Line2Put) then
+    if Index /= Line2Put.Length then
       -- Line2Put is split. First chunk is Put_Line
       Low_Put (Common.Line_Feed);
       -- Format the remaining: Index + 1 .. Last
-      Format (Asu.Slice (Line2Put, Index + 1, Asu.Length (Line2Put)),
+      Format (Line2Put.Slice (Index + 1, Line2Put.Length),
               False, Level, True);
     end if;
 

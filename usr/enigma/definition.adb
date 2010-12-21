@@ -68,12 +68,12 @@ package body Definition is
     Attrs : Xml_Parser.Attributes_Array (1 ..2);
   begin
     Attrs := Ctx.Get_Attributes (Node);
-    if Asu_Ts (Attrs(1).Name) = "Carries" then
+    if Attrs(1).Name.Image = "Carries" then
       -- Carries is first attribute
-      return Asu_Ts (Attrs(1).Value);
+      return Attrs(1).Value.Image;
     else
       -- Carries is second attribute
-      return Asu_Ts (Attrs(2).Value);
+      return Attrs(2).Value.Image;
     end if;
   end Get_Carries;
 
@@ -114,7 +114,7 @@ package body Definition is
     use type Types.Lid;
   begin
     for I in Children'Range loop
-      if Ctx.Get_Name (Children(I)) = "Rotor" then
+      if String'(Ctx.Get_Name (Children(I))) = "Rotor" then
         -- Check the Carries has no dup
         if not Check_Dup (Get_Carries (Children(I))) then
           Ple ("ERROR: Invalid Carries definition at line"
@@ -131,7 +131,7 @@ package body Definition is
         -- Set the scrambler, checks length
         Set (Scrambler, Get_Def (Children(I)));
         -- Verify symetry of reflector
-        if Ctx.Get_Name (Children(I)) = "Reflector" then
+        if String'(Ctx.Get_Name (Children(I))) = "Reflector" then
           Reverted := Revert (Scrambler);
           if Reverted /= Scrambler then
             -- Not symetrical
@@ -202,12 +202,12 @@ package body Definition is
     Attrs : Xml_Parser.Attributes_Array (1 ..2);
   begin
     Attrs := Ctx.Get_Attributes (Node);
-    if Asu_Ts (Attrs(1).Name) = "Name" then
+    if Attrs(1).Name.Image = "Name" then
       -- Name is first attribute
-      return Asu_Ts (Attrs(1).Value);
+      return Attrs(1).Value.Image;
     else
       -- Name is second attribute
-      return Asu_Ts (Attrs(2).Value);
+      return Attrs(2).Value.Image;
     end if;
   end Get_Rotor_Name;
 
@@ -216,7 +216,7 @@ package body Definition is
     Attr : Xml_Parser.Attribute_Rec;
   begin
     Attr := Ctx.Get_Attribute (Node, 1);
-    return Asu_Ts (Attr.Value);
+    return Attr.Value.Image;
   end Get_Reflector_Name;
 
   -- Set a rotor
@@ -230,7 +230,7 @@ package body Definition is
     -- Find the correct child
     Found := 0;
     for I in Children'Range loop
-      if Ctx.Get_Name (Children(I)) = "Rotor"
+      if String'(Ctx.Get_Name (Children(I))) = "Rotor"
       and then Get_Rotor_Name (Children(I)) = Name then
         Found := I;
         exit;
@@ -350,7 +350,7 @@ package body Definition is
     -- Find the correct child
     Found := 0;
     for I in Children'Range loop
-      if Ctx.Get_Name (Children(I)) = "Reflector"
+      if String'(Ctx.Get_Name (Children(I))) = "Reflector"
       and then Get_Reflector_Name (Children(I))
                = Str(Str'First .. Arob  - 1) then
         Found := I;

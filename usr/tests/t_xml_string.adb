@@ -42,18 +42,17 @@ procedure T_Xml_String is
     Fd : Sys_Calls.File_Desc;
     File : Text_Line.File_Type;
     Str, Res : Asu_Us;
-    use type Asu_Us;
   begin
     Fd := Sys_Calls.Open (Name, Sys_Calls.In_File);
     Text_Line.Open (File, Text_Line.In_File, Fd);
     loop
       Str := File.Get;
-      exit when Asu.Length (Str) = 0;
+      exit when Str.Length = 0;
       Res := Res & Str;
     end loop;
     Text_Line.Close (File);
     Sys_Calls.Close (Fd);
-    return Asu_Ts (Res);
+    return Res.Image;
   exception
     when Sys_Calls.Name_Error =>
       Basic_Proc.Put_Line_Error ("Cannot open file " & Name);
@@ -68,15 +67,14 @@ procedure T_Xml_String is
                             Offset : in Positive) is
     Attrs : constant Xml_Parser.Attributes_Array := Ctx.Get_Attributes (Elt);
     Indent : constant String (1 .. 2 * Level + Offset) := (others => ' ');
-    use type Asu_Us;
   begin
     for I in Attrs'Range loop
       if I /= 1 then
         -- Indent
         Ada.Text_Io.Put (Indent);
       end if;
-      Ada.Text_Io.Put (" " & Asu_Ts (Attrs(I).Name
-                     & "=""" & Attrs(I).Value) & """");
+      Ada.Text_Io.Put (" " & Attrs(I).Name.Image
+                     & "=""" & Attrs(I).Value.Image & """");
       if I /= Attrs'Last then
         Ada.Text_Io.New_Line;
       end if;
@@ -85,8 +83,8 @@ procedure T_Xml_String is
 
 
   procedure Put_Pi (Pi : in Xml_Parser.Pi_Type) is
-    Target : constant String := Asu_Ts (Ctx.Get_Target (Pi));
-    Text : constant String := Asu_Ts (Ctx.Get_Pi (Pi));
+    Target : constant String := Ctx.Get_Target (Pi).Image;
+    Text : constant String := Ctx.Get_Pi (Pi).Image;
   begin
     Ada.Text_Io.Put ("<?" & Target);
     if Text /= ""  then
@@ -109,7 +107,7 @@ procedure T_Xml_String is
         if Strs'Length /= 2 then
           raise Interface_Error;
         end if;
-        Dtd_Index := Natural'Value (Asu_Ts (Strs (1)));
+        Dtd_Index := Natural'Value (Strs (1).Image);
       exception
         when others =>
           Basic_Proc.Put_Line_Error ("Error. Invalid interface version "
@@ -123,7 +121,7 @@ procedure T_Xml_String is
   Prologue_Level : constant := -1;
   procedure Put_Element (Elt : in Xml_Parser.Element_Type;
                          Level : in Integer) is
-    Name : constant String := Asu_Ts (Ctx.Get_Name (Elt));
+    Name : constant String := Ctx.Get_Name (Elt).Image;
     Children : constant Xml_Parser.Nodes_Array := Ctx.Get_Children (Elt);
     Indent : constant String (1 .. 2 * Level) := (others => ' ');
     Prev_Is_Text : Boolean;
@@ -233,7 +231,6 @@ procedure T_Xml_String is
     Ctx.Clean;
   end Do_One;
 
-  use type Asu_Us;
 begin
   if Argument.Get_Nbre_Arg = 0 then
     Usage;
@@ -260,9 +257,9 @@ begin
         Xml_Parser.Parse_Dtd_String (Read_File (File_Name), null, Dtds(I),
                                      Error_Msg);
       end if;
-      if not Asu_Is_Null (Error_Msg) then
+      if not Error_Msg.Is_Null then
         Basic_Proc.Put_Line_Error (
-             "Error. Invalid Dtd: " & Asu_Ts (Error_Msg));
+             "Error. Invalid Dtd: " & Error_Msg.Image);
         raise Dtd_Error;
       end if;
     end;
@@ -277,7 +274,7 @@ begin
       File_List.Move_At (Rnd.Int_Random (1, File_List.List_Length));
       File_List.Read (File_Entry, Dir_Mng.File_List_Mng.Current);
       if File_Entry.Kind = Directory.File then
-        Do_One (Data_Dir & "/" & Asu_Ts (File_Entry.Name));
+        Do_One (Data_Dir & "/" & File_Entry.Name.Image);
       end if;
     end loop;
   else

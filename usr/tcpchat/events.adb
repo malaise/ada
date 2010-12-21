@@ -115,7 +115,7 @@ package body Events is
                 Reset;
               when Ios.Got_Sentence =>
                 -- Dispatch to child, avoid Next
-                Debug.Log ("Selec got: " & Asu_Ts (Event.Sentence));
+                Debug.Log ("Selec got: " & Event.Sentence.Image);
                 Next := Node.Next.all;
                 Selec_Children:
                 for I in 1 .. Chats.Children_Number loop
@@ -125,7 +125,7 @@ package body Events is
                     Chats.Move_Brother (False);
                   end if;
                   Child := Chats.Read;
-                  Debug.Log ("Selec trying: " & Asu_Ts (Child.Text));
+                  Debug.Log ("Selec trying: " & Child.Text.Image);
                   if Child.Next.all = Next then
                     -- Last child is Next => no match
                     Put_Line ("No match on select");
@@ -137,13 +137,13 @@ package body Events is
                     if Child.Kind = Default then
                       Debug.Log ("Selec default");
                     else
-                      Debug.Log ("Selec match: " & Asu_Ts (Child.Text));
+                      Debug.Log ("Selec match: " & Child.Text.Image);
                     end if;
                     -- This read child matches (or is default)
                     if Child.Kind = Read
-                    and then not Asu_Is_Null (Child.Name) then
+                    and then not Child.Name.Is_Null then
                       -- This is the start of a new chat
-                      Put_Line ("Starting chat " & Asu_Ts (Child.Name));
+                      Put_Line ("Starting chat " & Child.Name.Image);
                       Ios.Stop_Global_Timer;
                       Ios.Start_Global_Timer (Child.Timeout);
                     end if;
@@ -179,8 +179,8 @@ package body Events is
                 exit Cond_Children;
               elsif Child.Kind = Condif then
                 Variable := Child.Assign(Child.Assign'First).Name;
-                Debug.Log ("Condif trying: " & Asu_Ts (Variable)
-                         & " match " & Asu_Ts (Child.Text));
+                Debug.Log ("Condif trying: " & Variable.Image
+                         & " match " & Child.Text.Image);
                 if Matcher.Match (Child, Variable) then
                   Debug.Log ("Condif match");
                   -- Move to the child of this select entry
@@ -219,10 +219,10 @@ package body Events is
             -- See if variable content matches
             if Matcher.Match (Node, Variable) then
               -- Match, go to the first child of the loop
-              Debug.Log ("Repeat true: " & Asu_Ts (Node.Text));
+              Debug.Log ("Repeat true: " & Node.Text.Image);
               Chats.Move_Child (True);
             else
-              Debug.Log ("Repeat false: " & Asu_Ts (Node.Text));
+              Debug.Log ("Repeat false: " & Node.Text.Image);
               -- No mach, move to end of loop
               Chats.Move_Child (False);
             end if;
@@ -243,7 +243,7 @@ package body Events is
                 Put_Line ("Timeout on Read");
                 Reset;
               when Ios.Got_Sentence =>
-                Debug.Log ("Read got: " & Asu_Ts (Event.Sentence));
+                Debug.Log ("Read got: " & Event.Sentence.Image);
                 -- Check match
                 if Matcher.Match (Node, Event.Sentence) then
                   Set_Position (Node.Next.all);
@@ -274,7 +274,7 @@ package body Events is
                 Reset;
               when Ios.Got_Sentence =>
                 -- Skip
-                Debug.Log ("Skip got: " & Asu_Ts (Event.Sentence));
+                Debug.Log ("Skip got: " & Event.Sentence.Image);
                 Set_Position (Node.Next.all);
             end case;
 
@@ -320,7 +320,7 @@ package body Events is
                 Exit_Code => Exit_Code);
               if Exit_Code = 0 then
                 -- Command OK, send its out flow
-                Debug.Log ("Call got: " & Asu_Ts (Flow.Str));
+                Debug.Log ("Call got: " & Flow.Str.Image);
                 Ios.Send (Flow.Str, Disconnection);
                 if Disconnection then
                   Put_Line ("Disconnection");
@@ -360,7 +360,7 @@ package body Events is
                   Err_Flow => null,
                   Exit_Code => Exit_Code);
                 if Exit_Code = 0 then
-                  Debug.Log ("Eval got: " & Asu_Ts (Flow.Str));
+                  Debug.Log ("Eval got: " & Flow.Str.Image);
                   -- Command OK, load the variable
                   if Matcher.Match (Node, Flow.Str) then
                     Set_Position (Node.Next.all);

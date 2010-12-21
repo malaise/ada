@@ -15,10 +15,10 @@ procedure Nimmari is
   Change_Game : Boolean;
 
   Keys : constant Argument_Parser.The_Keys_Type := (
-   01 => ('h', Asu_Tus ("help"), False, False),
-   02 => ('n', Asu_Tus ("nim"), False, False),
-   03 => ('m', Asu_Tus ("marienbad"), False, False),
-   04 => ('t', Asu_Tus ("text"), False, False));
+   01 => ('h', Tus ("help"), False, False),
+   02 => ('n', Tus ("nim"), False, False),
+   03 => ('m', Tus ("marienbad"), False, False),
+   04 => ('t', Tus ("text"), False, False));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
   procedure Usage is

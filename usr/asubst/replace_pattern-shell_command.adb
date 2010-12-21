@@ -23,11 +23,11 @@ begin
   end if;
   if Debug.Set then
     Sys_Calls.Put_Line_Error ("Replace, command returned: >"
-      & Asu_Ts (Out_Flow.Str) & "<");
+      & Out_Flow.Str.Image & "<");
   end if;
 
   -- Return result
-  return Asu_Ts (Out_Flow.Str);
+  return Out_Flow.Str.Image;
 exception
   when Command.Spawn_Error =>
     Put_Error ("Replace, command spawning failed");

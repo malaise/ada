@@ -23,8 +23,8 @@ procedure Astub is
 
   -- The keys and descriptor of parsed keys
   Keys : constant Argument_Parser.The_Keys_Type := (
-   01 => ('f', Asu_Tus ("force"), False, False),
-   02 => ('k', Asu_Tus ("keep"), False, False));
+   01 => ('f', Tus ("force"), False, False),
+   02 => ('k', Tus ("keep"), False, False));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
   -- The options

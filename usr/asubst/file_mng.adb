@@ -23,7 +23,7 @@ package body File_Mng is
       Fd := Sys_Calls.Open (File_Name, Sys_Calls.In_File);
     end if;
     File.Open (Text_Line.In_File, Fd);
-    File_Name_Str := Asu_Tus (File_Name);
+    File_Name_Str := Tus (File_Name);
   exception
     when others =>
       Error ("Cannot open file of files " & File_Name);
@@ -53,13 +53,13 @@ package body File_Mng is
     Len : Natural;
   begin
     Str := File.Get;
-    Len :=  Asu.Length (Str);
+    Len :=  Str.Length;
     if Len /= 0
-    and then Asu.Element (Str, Len)
+    and then Str.Element (Len)
            = Text_Line.Line_Feed_Char then
       -- Normal lines (all but last) of Text_Line end with Line_Feed
       -- Explicitly remove it
-      Asu.Delete (Str, Len, Len);
+      Str.Delete (Len, Len);
       Len := Len - 1;
     end if;
     if Len = 0 then
@@ -67,13 +67,13 @@ package body File_Mng is
       Close;
       raise End_Error;
     end if;
-    return Asu_Ts (Str);
+    return Str.Image;
   exception
     when End_Error =>
       raise;
     when others =>
       -- Error
-      Error ("processing file of files " & Asu_Ts (File_Name_Str));
+      Error ("processing file of files " & File_Name_Str.Image);
       Close;
       raise Io_Error;
   end Get_Next_File;

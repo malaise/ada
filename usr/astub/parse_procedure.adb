@@ -39,6 +39,6 @@ begin
   -- end <name>;
   Output.Put_Line ("begin", False, Level, True);
   Output.Put_Line ("null;", False, Level + 1, True);
-  Output.Put_Line ("end " & Asu_Ts (Name) & ";", False, Level, True);
+  Output.Put_Line ("end " & Name.Image & ";", False, Level, True);
 end Parse_Procedure;
 

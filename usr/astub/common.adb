@@ -5,7 +5,7 @@ package body Common is
 
   Lfc : constant Character := Text_Line.Line_Feed_Char;
   Lfs : constant String := Text_Line.Line_Feed_Str;
-  Lfu : constant Asu_Us := Asu_Tus (Lfs);
+  Lfu : constant Asu_Us := Tus (Lfs);
 
 
   -- Line feed string
@@ -38,7 +38,7 @@ package body Common is
                             & Natural'Image (Words.Length));
     for I in 1 .. Words.Length loop
       Word := Words.Read (I);
-      Sys_Calls.Put_Line_Error (Word.Lexic'Img & ":" & Asu_Ts (Word.Text));
+      Sys_Calls.Put_Line_Error (Word.Lexic'Img & ":" & Word.Text.Image);
     end loop;
   end Dump_Words;
 

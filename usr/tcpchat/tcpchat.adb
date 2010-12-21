@@ -18,9 +18,9 @@ procedure Tcpchat is
 
   -- The keys and descriptor of parsed keys
   Keys : constant Argument_Parser.The_Keys_Type := (
-   01 => ('h', Asu_Tus ("help"), False, False),
-   02 => ('p', Asu_Tus ("port"), False, True),
-   03 => ('f', Asu_Tus ("file"), False, True));
+   01 => ('h', Tus ("help"), False, False),
+   02 => ('p', Tus ("port"), False, True),
+   03 => ('f', Tus ("file"), False, True));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
   Port : Asu_Us;
@@ -48,7 +48,7 @@ begin
     Error ("Missing ""port"" argument");
     return;
   end if;
-  Port := Asu_Tus (Arg_Dscr.Get_Option (2));
+  Port := Tus (Arg_Dscr.Get_Option (2));
 
   -- File
   if Arg_Dscr.Get_Nb_Occurences (3) /= 1
@@ -56,7 +56,7 @@ begin
     Error ("Missing ""file"" argument");
     return;
   end if;
-  File := Asu_Tus (Arg_Dscr.Get_Option (3));
+  File := Tus (Arg_Dscr.Get_Option (3));
 
   -- No other arg
   if Arg_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) /= 0

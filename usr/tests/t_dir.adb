@@ -89,17 +89,16 @@ begin
       else
         Directory.Get_Current (Dir_Name);
       end if;
-      Dsc := Directory.Open (Asu_Ts (Dir_Name));
-      if Asu_Ts (Dir_Name) = "/" then
+      Dsc := Directory.Open (Dir_Name.Image);
+      if Dir_Name.Image = "/" then
         Dir_Name := Asu_Null;
       end if;
       loop
         Directory.Next_Entry (Dsc, File_Name);
-        My_Io.Put ("  ---->" & Asu_Ts (File_Name) & "< ");
-        My_Io.Put (Pad(1 .. Max_Len - Asu.Length (File_Name)));
+        My_Io.Put ("  ---->" & File_Name.Image & "< ");
+        My_Io.Put (Pad(1 .. Max_Len - File_Name.Length));
         begin
-          Fstat := Sys_Calls.File_Stat (
-             Asu_Ts (Dir_Name) & '/' & Asu_Ts (File_Name));
+          Fstat := Sys_Calls.File_Stat (Dir_Name.Image & '/' & File_Name.Image);
           Put_Id (Fstat.User_Id);
           Put_Id (Fstat.Group_Id);
           Put_Rights (Fstat.Rights);
@@ -111,7 +110,7 @@ begin
           elsif Fstat.Kind = Sys_Calls.Link then
             My_Io.New_Line;
             My_Io.Put_Line ("    ++++>" & Directory.Read_Link (
-                Asu_Ts (Dir_Name) & '/' & Asu_Ts (File_Name)) & '<');
+                Dir_Name.Image & '/' & File_Name.Image) & '<');
           else
             My_Io.New_Line;
           end if;

@@ -16,12 +16,12 @@ procedure T_Unbounded_Arrays is
     Res : Asu_Us;
   begin
     for I in A'Range loop
-      Asu.Append (Res, Image (A(I)));
+      Res.Append (Image (A(I)));
       if I /= A'Last then
-        Asu.Append (Res, ", ");
+        Res.Append (", ");
       end if;
     end loop;
-    return Asu_Ts (Res);
+    return Res.Image;
   end Image;
 
   function Image (N : Natua.Unbounded_Array) return String is

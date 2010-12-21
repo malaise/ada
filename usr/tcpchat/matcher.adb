@@ -1,3 +1,4 @@
+with As.U.Utils; use As.U.Utils;
 with Regular_Expressions, String_Mng.Regex, Any_Def, Int_Image, Trilean;
 with Variables, Debug, Error;
 package body Matcher is
@@ -15,7 +16,7 @@ package body Matcher is
     Ok : Boolean;
     N_Matched : Natural;
     Match_Info : Regular_Expressions.Match_Array (1 .. 10);
-    use type Asu_Us, Regular_Expressions.Match_Cell, Any_Def.Any_Kind_List,
+    use type Regular_Expressions.Match_Cell, Any_Def.Any_Kind_List,
              Tree.Node_Kind, Trilean.Trilean;
   begin
     -- Case of the Eval/Set statement: One variable to assign
@@ -33,13 +34,12 @@ package body Matcher is
           Result := Variables.Compute (Str);
         else
           Result := Variables.Expand (Str, False);
-          if String_Mng.Locate (Asu_Ts (Result), "=") /= 0 then
-            Error ("Invalid value in assignment " & Asu_Ts (Result));
+          if String_Mng.Locate (Result.Image, "=") /= 0 then
+            Error ("Invalid value in assignment " & Result.Image);
             raise Match_Error;
           end if;
         end if;
-        Debug.Log ("Variable " & Asu_Ts (Expanded) & " set to "
-                 & Asu_Ts (Result));
+        Debug.Log ("Variable " & Expanded.Image & " set to " & Result.Image);
         Variables.Set (Expanded, Result);
       end if;
       return True;
@@ -71,16 +71,16 @@ package body Matcher is
 
     -- This is a Regexp, compile it
     Expanded := "^"  & Expanded & "$";
-    Regular_Expressions.Compile (Compiled, Ok, Asu_Ts (Expanded));
+    Regular_Expressions.Compile (Compiled, Ok, Expanded.Image);
     if not Ok then
-      Error ("Cannot compile regex " & Asu_Ts (Expanded)
+      Error ("Cannot compile regex " & Expanded.Image
         & " : " & Regular_Expressions.Error (Compiled));
       raise Match_Error;
     end if;
-    Debug.Log ("Regex compiled " & Asu_Ts (Expanded));
+    Debug.Log ("Regex compiled " & Expanded.Image);
 
     -- Execute the regexp
-    Regular_Expressions.Exec (Compiled, Asu_Ts (Result), N_Matched, Match_Info);
+    Regular_Expressions.Exec (Compiled, Result.Image, N_Matched, Match_Info);
     if Match_Info(1) = Regular_Expressions.No_Match then
       Debug.Log ("Regex no match");
       return False;
@@ -99,37 +99,36 @@ package body Matcher is
       -- Set volatile variables to matching substring
       for I in Match_Info'Range  loop
         -- ${0} is first match ...
-        Expanding := Asu_Tus (Nat_Image (I - 1));
+        Expanding := Tus (Nat_Image (I - 1));
         if I <= N_Matched
         and then Regular_Expressions.Valid_Match (Match_Info(I)) then
-          Expanded := Asu.Unbounded_Slice (Result, Match_Info(I).First_Offset,
-                                                Match_Info(I).Last_Offset_Stop);
+          Expanded := Result.Uslice (Match_Info(I).First_Offset,
+                                     Match_Info(I).Last_Offset_Stop);
         else
           Expanded := Asu_Null;
         end if;
         Variables.Set_Volatile (Expanding, Expanded);
-        Debug.Log ("Volatile " & Asu_Ts (Expanding)
-                   & "=" & Asu_Ts (Expanded));
+        Debug.Log ("Volatile " & Expanding.Image & "=" & Expanded.Image);
       end loop;
       -- Assign variables
       for I in Node.Assign'Range loop
         exit when Node.Assign(I).Value.Kind = Any_Def.None_Kind;
         Expanding := Node.Assign(I).Value.Str;
         Expanded := Variables.Expand (Expanding);
-        if String_Mng.Locate (Asu_Ts (Expanded), "=") /= 0 then
-          Error ("Invalid value in assignment " & Asu_Ts (Expanded));
+        if String_Mng.Locate (Expanded.Image, "=") /= 0 then
+          Error ("Invalid value in assignment " & Expanded.Image);
           raise Match_Error;
         end if;
         Variables.Set (Node.Assign(I).Name, Expanded);
-        Debug.Log ("Assigned " & Asu_Ts (Node.Assign(I).Name)
-                 & "=" & Asu_Ts (Expanded));
+        Debug.Log ("Assigned " & Node.Assign(I).Name.Image
+                 & "=" & Expanded.Image);
       end loop;
       Variables.Clear_Volatiles;
     end if;
     return True;
   exception
     when Variables.Expand_Error =>
-      Error ("Cannot expand expression " & Asu_Ts (Node.Text));
+      Error ("Cannot expand expression " & Node.Text.Image);
       raise Match_Error;
   end Compute;
 
@@ -139,22 +138,21 @@ package body Matcher is
     Index : Natural;
   begin
 
-    Index := String_Mng.Locate (Asu_Ts (Statement), "=");
-    if Index <= 1 or else Index = Asu.Length (Statement) then
-      Error ("Invalid assignment " & Asu_Ts (Statement));
+    Index := String_Mng.Locate (Statement.Image, "=");
+    if Index <= 1 or else Index = Statement.Length then
+      Error ("Invalid assignment " & Statement.Image);
       raise Match_Error;
     end if;
     -- Name <- the head (before the "=") and Value <- the tail
     Node.Assign(I) := (
-       Name => Asu.Unbounded_Slice (Statement, 1, Index - 1),
+       Name => Statement.Uslice (1, Index - 1),
        Value => (Kind => Any_Def.Str_Kind,
-                 Str  => Asu.Unbounded_Slice (Statement,
-                           Index + 1, Asu.Length (Statement))));
+                 Str  => Statement.Uslice (Index + 1, Statement.Length)));
     -- Name cannot be "0", "1"...
-    if Regular_Expressions.Match ("[0-9]+", Asu_Ts (Node.Assign(I).Name),
+    if Regular_Expressions.Match ("[0-9]+", Node.Assign(I).Name.Image,
                                   True) then
       Error ("Invalid variable name in assignment "
-           & Asu_Ts (Node.Assign(I).Name));
+           & Node.Assign(I).Name.Image);
       raise Match_Error;
     end if;
     -- Check the value expands properly
@@ -166,19 +164,19 @@ package body Matcher is
     exception
       when Variables.Expand_Error =>
         Error ("Invalid value in assignment "
-             & Asu_Ts (Node.Assign(I).Value.Str));
+             & Node.Assign(I).Value.Str.Image);
         raise Match_Error;
     end;
     -- Check that value does not contain refs > 9 ("\$\{[0-9][0-9]+\}")
     --  and does not contain "="
     if Regular_Expressions.Match ("(\$\{[0-9][0-9]+\}|=)",
-            Asu_Ts (Node.Assign(I).Value.Str), False) then
+            Node.Assign(I).Value.Str.Image, False) then
       Error ("Invalid value in assignment "
-           & Asu_Ts (Node.Assign(I).Value.Str));
+           & Node.Assign(I).Value.Str.Image);
       raise Match_Error;
     end if;
-    Debug.Log ("Parsed assignement " & Asu_Ts (Node.Assign(I).Name)
-             & "=" & Asu_Ts (Node.Assign(I).Value.Str));
+    Debug.Log ("Parsed assignement " & Node.Assign(I).Name.Image
+             & "=" & Node.Assign(I).Value.Str.Image);
   end Parse_Assign;
 
   -- Expand Node.Text in mode check
@@ -191,7 +189,7 @@ package body Matcher is
     use type Tree.Node_Kind;
   begin
     -- Check
-    Dummy := Compute (Node, Asu_Tus ("Dummy"), True);
+    Dummy := Compute (Node, Tus ("Dummy"), True);
 
     -- Case of the Eval/Set/Cond/Repeat statement: One variable to assign
     if Node.Kind = Tree.Eval
@@ -206,7 +204,7 @@ package body Matcher is
     end if;
 
     -- Other case of assign (chat/expect/read => tree kind Read)
-    if Asu_Is_Null (Assign) then
+    if Assign.Is_Null then
       return;
     end if;
     if not Node.Regexp then
@@ -218,7 +216,7 @@ package body Matcher is
     declare
       -- Split into assignments
       Statements : constant Asu_Ua.Unb_Array
-                 := String_Mng.Regex.Split_Sep (Asu_Ts (Assign), "[\n\t ]+");
+                 := String_Mng.Regex.Split_Sep (Assign.Image, "[\n\t ]+");
     begin
       Debug.Log ("Found " & Natural'Image (Statements.Length)
                & " assignments");

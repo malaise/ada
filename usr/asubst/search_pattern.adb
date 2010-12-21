@@ -77,7 +77,7 @@ package body Search_Pattern is
   -- Get the delimiter
   function Get_Delimiter return String is
   begin
-    return Asu_Ts (Delimiter);
+    return Delimiter.Image;
   end Get_Delimiter;
 
   -- Reports a parsing error
@@ -112,7 +112,7 @@ package body Search_Pattern is
   begin
     -- Compute new pattern number and type
     Upat.Num := List.List_Length + 1;
-    Upat.Is_Delim := Crit = Asu_Ts (Delimiter);
+    Upat.Is_Delim := Crit = Delimiter.Image;
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Search adding regex "
              &  Upat.Num'Img & " >" & Crit & "<");
@@ -125,7 +125,7 @@ package body Search_Pattern is
     end if;
     -- Store string if this is not a regex
     if not Is_Regex then
-      Upat.Find_Str := Asu_Tus (Crit);
+      Upat.Find_Str := Tus (Crit);
       Upat.Nb_Substr := 0;
       List.Insert (Upat);
       return;
@@ -181,38 +181,38 @@ package body Search_Pattern is
      Result : Byte;
     begin
       -- First digit: 16 * C
-      if Index > Asu.Length (The_Pattern) then
+      if Index > The_Pattern.Length then
         Error ("No hexadecimal sequence at the end of pattern");
       end if;
       begin
-        Result := 16#10# * Char_To_Hexa (Asu.Element (The_Pattern, Index));
+        Result := 16#10# * Char_To_Hexa (The_Pattern.Element (Index));
       exception
         when Constraint_Error =>
           Error ("Invalid hexadecimal sequence "
-               & Asu.Slice (The_Pattern, Index, Index + 1)
+               & The_Pattern.Slice (Index, Index + 1)
                & " in pattern");
       end;
       -- First digit: 1 * C
-      if Index + 1 > Asu.Length (The_Pattern) then
+      if Index + 1 > The_Pattern.Length then
         Error ("Uncomplete hexadecimal sequence at the end of pattern");
         raise Parse_Error;
       end if;
       begin
-        Result := Result + Char_To_Hexa (Asu.Element (The_Pattern, Index + 1));
+        Result := Result + Char_To_Hexa (The_Pattern.Element (Index + 1));
       exception
         when Constraint_Error =>
           Error ("Invalid hexadecimal sequence "
-               & Asu.Slice (The_Pattern, Index, Index + 1)
+               & The_Pattern.Slice (Index, Index + 1)
                & " in pattern");
       end;
       if Result = 0 and then Regex_Mode then
         Error ("Invalid null hexadecimal sequence in regex"
-             & Asu.Slice (The_Pattern, Index, Index + 1)
+             & The_Pattern.Slice (Index, Index + 1)
              & " in pattern");
       end if;
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Search, got hexadecimal sequence "
-                                 & Asu.Slice (The_Pattern, Index, Index + 1));
+                                 & The_Pattern.Slice (Index, Index + 1));
       end if;
       return Result;
     end Get_Hexa;
@@ -254,7 +254,7 @@ package body Search_Pattern is
       Sys_Calls.Put_Line_Error ("Search parsing pattern >" & Pattern & "<");
     end if;
     -- Reset pattern characteristics
-    The_Pattern := Asu_Tus (Pattern);
+    The_Pattern := Tus (Pattern);
     List.Delete_List;
     Is_Iterative := False;
     Check_Completed := False;
@@ -267,44 +267,44 @@ package body Search_Pattern is
     Stop_Index := 1;
     loop
       -- Locate sequence
-      Stop_Index := String_Mng.Locate_Escape (Asu_Ts (The_Pattern),
+      Stop_Index := String_Mng.Locate_Escape (The_Pattern.Image,
                                Stop_Index,
                                "\nstxABCDEFGHIJKLMNOPQRSTUVWXYZ");
       exit when Stop_Index = 0;
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Search, found Esc char >"
-                                & Asu.Element (The_Pattern, Stop_Index) & "<");
+                                & The_Pattern.Element (Stop_Index) & "<");
       end if;
       -- Replace sequence
-      case Asu.Element (The_Pattern, Stop_Index) is
+      case The_Pattern.Element (Stop_Index) is
         when 'n' =>
           -- "\n" replaced by line_feed
-          Asu.Replace_Slice (The_Pattern, Stop_Index - 1, Stop_Index, Line_Feed);
+          The_Pattern.Replace (Stop_Index - 1, Stop_Index, Line_Feed);
         when 's' =>
           -- "\s" replaced by space
-          Asu.Replace_Slice (The_Pattern, Stop_Index - 1, Stop_Index, " ");
+          The_Pattern.Replace (Stop_Index - 1, Stop_Index, " ");
         when 't' =>
           -- "\t" replaced by (horiz) tab
-          Asu.Replace_Slice (The_Pattern, Stop_Index - 1, Stop_Index,
+          The_Pattern.Replace (Stop_Index - 1, Stop_Index,
                              Ada.Characters.Latin_1.Ht & "");
         when 'x' =>
           -- "\xIJ" hexa replaced by byte or "\n"
-          Asu.Replace_Slice (The_Pattern, Stop_Index - 1, Stop_Index + 2,
+          The_Pattern.Replace (Stop_Index - 1, Stop_Index + 2,
                              Character'Val (Get_Hexa (Stop_Index + 1)) & "");
         when 'A' .. 'Z' =>
           -- Some \A to \Z replaced by [:<CharClass>:]
           declare
             Class : constant String := Char_Class_Of (
-                    Asu.Element (The_Pattern, Stop_Index));
+                    The_Pattern.Element (Stop_Index));
           begin
-            Asu.Replace_Slice (The_Pattern, Stop_Index - 1, Stop_Index, Class);
+            The_Pattern.Replace (Stop_Index - 1, Stop_Index, Class);
             Stop_Index := Stop_Index + Class'Length - 1;
           end;
         when others =>
           -- Impossible. Leave sequence as it is, skip it
           Stop_Index := Stop_Index + 1;
       end case;
-      exit when Stop_Index >= Asu.Length (The_Pattern);
+      exit when Stop_Index >= The_Pattern.Length;
     end loop;
 
     if Split then
@@ -312,7 +312,7 @@ package body Search_Pattern is
       Start_Index := 1;
       Prev_Delim := False;
       loop
-        Stop_Index := String_Mng.Locate (Asu_Ts (The_Pattern),
+        Stop_Index := String_Mng.Locate (The_Pattern.Image,
                                          Line_Feed, Start_Index);
         if Stop_Index = Start_Index then
           -- A Delim
@@ -325,7 +325,7 @@ package body Search_Pattern is
               Add ("", Case_Sensitive, List);
             end if;
           end if;
-          Add (Asu_Ts (Delimiter), Case_Sensitive, List);
+          Add (Delimiter.Image, Case_Sensitive, List);
           Prev_Delim := True;
         else
           -- A Regex: see if it is followed by a delim (always,
@@ -333,14 +333,14 @@ package body Search_Pattern is
           Next_Delim := Stop_Index /= 0;
           -- Make Stop_Index be the last index of regex,
           if Stop_Index = 0 then
-            Stop_Index := Asu.Length (The_Pattern);
+            Stop_Index := The_Pattern.Length;
           else
             -- This delim will be located at next iteration of the loop
             Stop_Index := Stop_Index - 1;
           end if;
           declare
             Slice : constant String
-                  := Asu.Slice (The_Pattern, Start_Index, Stop_Index);
+                  := The_Pattern.Slice (Start_Index, Stop_Index);
             Needs_Start, Needs_Stop : Boolean;
           begin
             if Regex_Mode then
@@ -371,9 +371,9 @@ package body Search_Pattern is
             --  is handled as iterative
             if not Prev_Delim
             and then not Next_Delim
-            and then Asu.Element (The_Pattern, Start_Index) /= Start_Char
-            and then (Asu.Element (The_Pattern, Stop_Index) /= Stop_Char
-              or else String_Mng.Is_Backslashed (Asu_Ts (The_Pattern),
+            and then The_Pattern.Element (Start_Index) /= Start_Char
+            and then (The_Pattern.Element (Stop_Index) /= Stop_Char
+              or else String_Mng.Is_Backslashed (The_Pattern.Image,
                                                  Stop_Index) ) then
               Is_Iterative := True;
             end if;
@@ -388,15 +388,15 @@ package body Search_Pattern is
           Prev_Delim := False;
         end if;
         -- Done
-        exit when Stop_Index = Asu.Length (The_Pattern);
+        exit when Stop_Index = The_Pattern.Length;
         Start_Index := Stop_Index + 1;
       end loop;
     else
       -- No split
       if Regex_Mode then
-        Add (Asu_Ts (The_Pattern), Case_Sensitive, List);
+        Add (The_Pattern.Image, Case_Sensitive, List);
       else
-        Add (Asu_Ts (The_Pattern), True, List);
+        Add (The_Pattern.Image, True, List);
       end if;
       Is_Iterative := True;
     end if;
@@ -412,7 +412,7 @@ package body Search_Pattern is
   begin
     -- Optim and safe way
     if Delim = Line_Feed then
-      Delimiter := Asu_Tus (Line_Feed);
+      Delimiter := Tus (Line_Feed);
       return True;
     elsif Delim = "" then
       -- Empty delimiter
@@ -435,7 +435,7 @@ package body Search_Pattern is
     Delimiter := Acc.Find_Str;
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Search, parsed delimiter >"
-           & Asu_Ts (Delimiter) & "<");
+           & Delimiter.Image & "<");
     end if;
     return False;
   end Parse_Delimiter;
@@ -616,7 +616,7 @@ package body Search_Pattern is
     end if;
     -- Delimiter matches delimiter
     if Upat_Access.Is_Delim then
-      if Str = Asu_Ts (Delimiter) then
+      if Str = Delimiter.Image then
         Upat_Access.Nb_Substr := 0;
         Upat_Access.Substrs(0) := (1, 1, 1);
         Upat_Access.Match_Str := Delimiter;
@@ -638,7 +638,7 @@ package body Search_Pattern is
         end if;
         return False;
       end if;
-    elsif Str = Asu_Ts (Delimiter) then
+    elsif Str = Delimiter.Image then
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Search check pattern is not delim vs delim");
       end if;
@@ -656,15 +656,15 @@ package body Search_Pattern is
                                   Nmatch, Match);
       else
         -- Not a regex, locate string
-        Nmatch := String_Mng.Locate (Str, Asu_Ts (Upat_Access.Find_Str), Start);
+        Nmatch := String_Mng.Locate (Str, Upat_Access.Find_Str.Image, Start);
         if Nmatch /= 0 then
           -- Fill matching info as if from a regex
           Match(1) := (
            First_Offset => Nmatch,
-           Last_Offset_Start => Nmatch + Asu.Length (Upat_Access.Find_Str) - 1,
-           Last_Offset_Stop  => Nmatch + Asu.Length (Upat_Access.Find_Str) - 1);
+           Last_Offset_Start => Nmatch + Upat_Access.Find_Str.Length - 1,
+           Last_Offset_Stop  => Nmatch + Upat_Access.Find_Str.Length - 1);
           Nmatch := 1;
-        elsif Str = "" and then Asu_Ts (Upat_Access.Find_Str) = "" then
+        elsif Str = "" and then Upat_Access.Find_Str.Image = "" then
           -- Empty string versus empty pattern
           Match(1) := (Start, 0, 0);
           Nmatch := 1;
@@ -679,7 +679,7 @@ package body Search_Pattern is
         Upat_Access.Substrs(0) := Match(1);
         Upat_Access.Substrs(1 .. Upat_Access.Nb_Substr)
                    := Match(2 .. Nmatch);
-        Upat_Access.Match_Str := Asu_Tus (Str);
+        Upat_Access.Match_Str := Tus (Str);
         if Regex_Index = List.all.List_Length then
           -- Last pattern and matches
           Store_Index (1, True);
@@ -729,7 +729,7 @@ package body Search_Pattern is
     end if;
     Cell := Upat_Access.Substrs(Sub_String_Index);
     -- Check if end of cell is the start of a Utf8 sequence
-    if Cell.Last_Offset_Stop > Asu.Length (Upat_Access.Match_Str) then
+    if Cell.Last_Offset_Stop > Upat_Access.Match_Str.Length then
       raise Substr_Len_Error;
     end if;
     -- Return the slice
@@ -737,7 +737,7 @@ package body Search_Pattern is
       -- Empty match
       return "";
     else
-      return Asu.Slice (Upat_Access.Match_Str,
+      return Upat_Access.Match_Str.Slice (
                         Cell.First_Offset, Cell.Last_Offset_Stop);
     end if;
   exception
@@ -754,9 +754,9 @@ package body Search_Pattern is
     Result : Asu_Us;
   begin
     for I in 1 .. Number loop
-      Asu.Append (Result, Substring (I, 0));
+      Result.Append (Substring (I, 0));
     end loop;
-    return Asu_Ts (Result);
+    return Result.Image;
   end Allstring;
 
   -- Returns the Match_Cell of the complete matching string
@@ -797,7 +797,7 @@ package body Search_Pattern is
 
     -- Apply UTF8 correction
     -- Check if end of cell is the start of a Utf8 sequence
-    if Cell.Last_Offset_Stop > Asu.Length (Upat_Access.Match_Str) then
+    if Cell.Last_Offset_Stop > Upat_Access.Match_Str.Length then
       raise Substr_Len_Error;
     end if;
     return Cell;

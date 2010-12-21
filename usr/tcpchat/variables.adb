@@ -47,11 +47,11 @@ package body Variables is
   procedure Check (Name : in Asu_Us) is
   begin
     -- Must not be empty, start by '$', contain a '=' or be a number
-    if Asu_Is_Null (Name)
-    or else Asu.Element (Name, 1) = Ext_Ref
-    or else Regular_Expressions.Match ("=", Asu_Ts (Name), False)
-    or else Regular_Expressions.Match ("[0-9]+", Asu_Ts (Name), True) then
-      Error ("Invalid variable name" & Asu_Ts (Name));
+    if Name.Is_Null
+    or else Name.Element (1) = Ext_Ref
+    or else Regular_Expressions.Match ("=", Name.Image, False)
+    or else Regular_Expressions.Match ("[0-9]+", Name.Image, True) then
+      Error ("Invalid variable name" & Name.Image);
       raise Invalid_Name;
     end if;
   end Check;
@@ -60,21 +60,21 @@ package body Variables is
   procedure Set (Name, Value : in Asu_Us) is
   begin
     Check (Name);
-    Computer.Set (Asu_Ts (Name), Asu_Ts (Value),
+    Computer.Set (Name.Image, Value.Image,
                   Modifiable => True, Persistent => True);
   exception
     when Computer.Invalid_Variable =>
-      Error ("Invalid variable name" & Asu_Ts (Name));
+      Error ("Invalid variable name" & Name.Image);
       raise Invalid_Name;
   end Set;
 
   function Is_Set (Name : Asu_Us) return Boolean is
   begin
     Check (Name);
-    return Computer.Is_Set (Asu_Ts (Name));
+    return Computer.Is_Set (Name.Image);
   exception
     when Computer.Invalid_Variable =>
-      Error ("Invalid variable name" & Asu_Ts (Name));
+      Error ("Invalid variable name" & Name.Image);
       raise Invalid_Name;
   end Is_Set;
 
@@ -82,15 +82,15 @@ package body Variables is
   procedure Set_Volatile (Name, Value : in Asu_Us) is
   begin
     -- Must be a number
-    if not Regular_Expressions.Match ("[0-9]+", Asu_Ts (Name), True) then
-      Error ("Invalid volatile variable name" & Asu_Ts (Name));
+    if not Regular_Expressions.Match ("[0-9]+", Name.Image, True) then
+      Error ("Invalid volatile variable name" & Name.Image);
       raise Invalid_Name;
     end if;
-    Computer.Set (Asu_Ts (Name), Asu_Ts (Value),
+    Computer.Set (Name.Image, Value.Image,
                   Modifiable => True, Persistent => False);
   exception
     when Computer.Invalid_Variable =>
-      Error ("Invalid volatile variable name" & Asu_Ts (Name));
+      Error ("Invalid volatile variable name" & Name.Image);
       raise Invalid_Name;
   end Set_Volatile;
 
@@ -104,7 +104,7 @@ package body Variables is
   function Expand (Text : Asu_Us;
                    Check_Only : Boolean := False) return String is
   begin
-    return Asu_Ts (Expand (Text, Check_Only));
+    return Expand (Text, Check_Only).Image;
   end Expand;
 
   function Expand (Text : Asu_Us;
@@ -115,10 +115,10 @@ package body Variables is
     else
       Computer.External_Resolver := Getenv'Access;
     end if;
-    return Asu_Tus (Computer.Eval (Asu_Ts (Text)));
+    return Tus (Computer.Eval (Text.Image));
   exception
     when others =>
-      Error ("Cannot expand " & Asu_Ts (Text));
+      Error ("Cannot expand " & Text.Image);
       raise Expand_Error;
   end Expand;
 
@@ -127,11 +127,11 @@ package body Variables is
     I : Integer;
   begin
     Computer.External_Resolver := Getenv'Access;
-    I := Computer.Compute (Asu_Ts (Text));
-    return Asu_Tus (Image (I));
+    I := Computer.Compute (Text.Image);
+    return Tus (Image (I));
   exception
     when others =>
-      Error ("Cannot compute " & Asu_Ts (Text));
+      Error ("Cannot compute " & Text.Image);
       raise Expand_Error;
   end Compute;
 

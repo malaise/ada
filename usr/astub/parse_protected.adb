@@ -6,14 +6,14 @@ procedure Parse_Protected (Level : in Natural) is
   Name : Asu_Us;
   Word : Parser_Ada.Word_Rec;
   Dummy : Boolean := True;
-  use type Parser_Ada.Lexical_Kind_List, Asu_Us;
+  use type Parser_Ada.Lexical_Kind_List;
 begin
 
   -- Read until protected name, skip "type"
   loop
     Word := Parser_Ada.Multiparse.Get (True);
     declare
-      Str : constant String := Asu_Ts (Word.Text);
+      Str : constant String := Word.Text.Image;
     begin
       if Word.Lexic = Parser_Ada.Comment then
         -- Put comment
@@ -30,13 +30,13 @@ begin
         null;
       else
         -- Unexpected word
-        Common.Error (Asu_Ts (Name));
+        Common.Error (Name.Image);
       end if;
     end;
   end loop;
 
   -- Output protected body <name> is
-  Output.Put_Line (Words.Concat & "protected body " & Asu_Ts (Name)
+  Output.Put_Line (Words.Concat & "protected body " & Name.Image
                  & " is", False, Level);
 
   -- Skip until "is", put comments
@@ -47,10 +47,10 @@ begin
   loop
     Word := Parser_Ada.Multiparse.Get (True);
     declare
-      Str : constant String := Asu_Ts (Word.Text);
+      Str : constant String := Word.Text.Image;
     begin
       if Word.Lexic = Parser_Ada.Comment then
-        Output.Put (Words.Concat & Asu_Ts (Word.Text), False);
+        Output.Put (Words.Concat & Word.Text.Image, False);
         Words.Reset;
       elsif Word.Lexic = Parser_Ada.Separator then
         -- Within the protected, Output Line_Feed, save other separators
@@ -103,6 +103,6 @@ begin
   Words.Reset;
 
   -- end <name>;
-  Output.Put_Line ("end " & Asu_Ts (Name) & ";", False, Level, True);
+  Output.Put_Line ("end " & Name.Image & ";", False, Level, True);
 end Parse_Protected;
 

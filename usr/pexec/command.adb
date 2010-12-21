@@ -1,4 +1,4 @@
-with As.U; use As.U;
+with As.U.Utils; use As.U, As.U.Utils;
 with Argument, Basic_Proc, Parser, String_Mng;
 package body Command is
 
@@ -87,9 +87,9 @@ package body Command is
       begin
         -- Search a char key
         Argument.Get_Parameter (Str, Occurence => 1);
-        if Asu.Length (Str) < 2
-        or else Asu.Element (Str, 1) /= '-'
-        or else Asu.Length (Str) > Nbre_Max_Opt  + 1 then
+        if Str.Length < 2
+        or else Str.Element (1) /= '-'
+        or else Str.Length > Nbre_Max_Opt  + 1 then
           raise Wrong_Pexec_Opt;
         end if;
       exception
@@ -99,13 +99,13 @@ package body Command is
 
       -- Each option must appear once or not.
       -- check that any letter is a pexec option
-      for I in 2 .. Asu.Length (Str) loop
+      for I in 2 .. Str.Length loop
         -- Check a letter
         declare
           Ok_So_Far : Boolean := False;
         begin
           -- Check that Str(I) is a pexec option
-          Char := Asu.Element (Str, I);
+          Char := Str.Element (I);
           for J in Index_Opt loop
             if Char = Opt_Key(J) then
               -- Character is found within pexec options
@@ -115,9 +115,9 @@ package body Command is
           end loop;
           if not Ok_So_Far then raise Wrong_Pexec_Opt; end if;
           -- Current letter is an option: it must appear once.
-          if I /= Asu.Length (Str) then
-            for J in I + 1 .. Asu.Length (Str) loop
-              if Asu.Element (Str, J) = Char then
+          if I /= Str.Length then
+            for J in I + 1 .. Str.Length loop
+              if Str.Element (J) = Char then
                 -- Character appears twice
                 Ok_So_Far := False;
                 exit;
@@ -170,15 +170,15 @@ package body Command is
       -- Concatenate all the command line in Str
       Str := Asu_Null;
       for I in First_Com .. Argument.Get_Nbre_Arg loop
-        Asu.Append (Str, " " & Argument.Get_Parameter (Occurence => I));
+        Str.Append (" " & Argument.Get_Parameter (Occurence => I));
       end loop;
-      Asu.Delete (Str, 1, 1);
+      Str.Delete (1, 1);
 
       -- Remove first and last "
-      if Asu.Element (Str, 1) = '"'
-      and then Asu.Element (Str, Asu.Length (Str)) = '"' then
-        Asu.Delete (Str, Asu.Length (Str), Asu.Length (Str));
-        Asu.Delete (Str, 1, 1);
+      if Str.Element (1) = '"'
+      and then Str.Element (Str.Length) = '"' then
+        Str.Delete (Str.Length, Str.Length);
+        Str.Delete (1, 1);
       end if;
     end;
 
@@ -188,18 +188,17 @@ package body Command is
       Iter : Parser.Iterator;
       Tmp : Asu_Us;
       Start, Stop : Natural;
-      use type Asu_Us;
     begin
-      Iter.Set (Asu_Ts (Str), Is_Sep'Access);
+      Iter.Set (Str.Image, Is_Sep'Access);
       loop
-        Tmp := Asu_Tus (Iter.Next_Word);
+        Tmp := Tus (Iter.Next_Word);
         exit when Tmp = Asu_Null;
           -- Skip leading and tailing spaces
-          Start := String_Mng.Parse_Spaces (Asu_Ts (Tmp), True);
-          Stop  := String_Mng.Parse_Spaces (Asu_Ts (Tmp), False);
+          Start := String_Mng.Parse_Spaces (Tmp.Image, True);
+          Stop  := String_Mng.Parse_Spaces (Tmp.Image, False);
           if Start /= 0 then
             -- Not Full of spaces => Store
-            Commands.Insert (Asu_Uslice (Tmp, Start, Stop));
+            Commands.Insert (Tmp.Uslice (Start, Stop));
             end if;
       end loop;
 
@@ -238,7 +237,7 @@ package body Command is
     -- Read the command
     Commands.Move_At (N);
     Commands.Read (Command, Asu_Dyn_List_Mng.Current);
-    return Asu_Ts (Command);
+    return Command.Image;
   end Nth_Command;
 
 end Command;
