@@ -11,8 +11,9 @@ package As.U is
   function Tus (Str : String) return Asu_Us;
   function Tus (Char : Character) return Asu_Us;
   function Image (Str : Asu_Us) return String;
-  procedure Set (Target : in out Asu_Us; Str : in String);
-  procedure Set (Target : in out Asu_Us; Char : in Character);
+  procedure Set (Target : out Asu_Us; Val : in Asu_Us);
+  procedure Set (Target : out Asu_Us; Val : in String);
+  procedure Set (Target : out Asu_Us; Val : in Character);
 
   function Uslice (Source : Asu_Us;
                    Low : Positive; High : Natural) return Asu_Us;

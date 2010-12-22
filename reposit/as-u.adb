@@ -137,22 +137,30 @@ package body As.U is
     return Str.Ref (1 .. Str.Last);
   end Image;
 
-  procedure Set (Target : in out Asu_Us; Str : in String) is
+  procedure Set (Target : out Asu_Us; Val : in Asu_Us) is
   begin
-    Free (Target.Ref);
-    if Str'Length = 0 then
+    if Val.Last = 0 then
       Target := Asu_Null;
     else
-      Target.Ref := new String(1 .. Str'Length);
-      Target.Ref.all := Str;
-      Target.Last := Str'Length;
+      Target.Ref := new String(1 .. Val.Last);
+      Target.Ref.all := Val.Ref(1 .. Val.Last);
+      Target.Last := Val.Last;
     end if;
   end Set;
-  procedure Set (Target : in out Asu_Us; Char : in Character) is
+  procedure Set (Target : out Asu_Us; Val : in String) is
   begin
-    Free (Target.Ref);
+    if Val'Length = 0 then
+      Target := Asu_Null;
+    else
+      Target.Ref := new String(1 .. Val'Length);
+      Target.Ref.all := Val;
+      Target.Last := Val'Length;
+    end if;
+  end Set;
+  procedure Set (Target : out Asu_Us; Val : in Character) is
+  begin
     Target.Ref := new String(1 .. 1);
-    Target.Ref(1) := Char;
+    Target.Ref(1) := Val;
     Target.Last := 1;
   end Set;
 
