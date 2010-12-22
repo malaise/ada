@@ -176,7 +176,21 @@ package body As.U is
     return Source.Ref.all(Low .. High);
   end Slice;
 
+  procedure Prepend (Source : in out Asu_Us; New_Item : in Asu_Us) is
+  begin
+    Store (Source, New_Item.Ref.all & Source.Ref(1 .. Source.Last));
+  end Prepend;
+  procedure Prepend (Source : in out Asu_Us; New_Item : in String) is
+  begin
+    Store (Source, New_Item & Source.Ref(1 .. Source.Last));
+  end Prepend;
+  procedure Prepend (Source : in out Asu_Us; New_Item : in Character) is
+  begin
+    Store (Source, New_Item & Source.Ref(1 .. Source.Last));
+  end Prepend;
+
   procedure Append (Source : in out Asu_Us; New_Item : in Asu_Us) is
+
   begin
     if New_Item.Last <= Source.Ref'Length - Source.Last then
       -- Optim: no copy if New_Item fits

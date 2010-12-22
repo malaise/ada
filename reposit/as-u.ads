@@ -21,6 +21,9 @@ package As.U is
   function Slice (Source : Asu_Us;
                   Low : Positive; High : Natural) return String;
 
+  procedure Prepend (Source : in out Asu_Us; New_Item : in Asu_Us);
+  procedure Prepend (Source : in out Asu_Us; New_Item : in String);
+  procedure Prepend (Source : in out Asu_Us; New_Item : in Character);
   procedure Append (Source : in out Asu_Us; New_Item : in Asu_Us);
   procedure Append (Source : in out Asu_Us; New_Item : in String);
   procedure Append (Source : in out Asu_Us; New_Item : in Character);
