@@ -7,7 +7,6 @@ package As.U.Utils is
   package Asu_Dyn_List_Mng renames Asu_List_Mng.Dyn_List;
 
   -- Hahsed_List and Unique_List of Asu_Us
-  function Image (Element : Asu_Us) return String;
   package Asu_Hashed_List_Mng is new Hashed_List (
        Asu_Us, Asu_Us_Access, Set, As.U."=" , Image);
   package Asu_Unique_List_Mng is new Asu_Hashed_List_Mng.Unique;
