@@ -17,10 +17,10 @@ package body X is
   Zero_F : constant Field_Range := 23;
   -- Enter
   Enter_F : constant Field_Range := 24;
-  -- Clear
-  Clear_F : constant Field_Range := 25;
+  -- Undo
+  Undo_F : constant Field_Range := 25;
   -- Reset
-  Reset_F : constant Field_Range := 26;
+  Clear_F : constant Field_Range := 26;
   -- Result
   Result_F : constant Field_Range := 27;
   -- First of computations
@@ -106,11 +106,11 @@ package body X is
     -- Clear: when getting bases and target
     Active := Status in B2 .. Ready;
     if Clear_Act /= Active or else Force then
-      Set_Field_Protection (Clear_F, not Active);
+      Set_Field_Protection (Undo_F, not Active);
       if Active then
-        Set_Field_Colors (Clear_F, Activated);
+        Set_Field_Colors (Undo_F, Activated);
       else
-        Set_Field_Colors (Clear_F, Deactivated);
+        Set_Field_Colors (Undo_F, Deactivated);
       end if;
       Clear_Act := Active;
     end if;
@@ -201,7 +201,7 @@ package body X is
               if Status = Ready then
                 Target := Get_Value (Target_F, 0);
               end if;
-            when Clear_F =>
+            when Undo_F =>
               if Status in B2 .. T1 then
                 Offset := Bases_Range (Status_List'Pos(Status)
                                      - Status_List'Pos(B1));
@@ -211,7 +211,7 @@ package body X is
                 Clear_Field (Target_F);
                 Status := T1;
               end if;
-            when Reset_F =>
+            when Clear_F =>
               Use_Descriptor (1);
               Reset := True;
               Redisplay := False;
@@ -248,10 +248,10 @@ package body X is
     Output : Output_Rec;
   begin
     -- Allow Reset and Exit
-    Set_Field_Protection (Enter_F, False);
+    Set_Field_Protection (Enter_F, True);
     Set_Field_Colors (Enter_F, Deactivated);
-    Set_Field_Protection (Clear_F, False);
-    Set_Field_Colors (Clear_F, Deactivated);
+    Set_Field_Protection (Undo_F, True);
+    Set_Field_Colors (Undo_F, Deactivated);
     -- Set color of Result to Blue if not found, put result
     if not Found then
       Set_Field_Colors (Result_F, Con_Io.Color_Of ("Blue"));
@@ -289,7 +289,7 @@ package body X is
           end case;
         when Mouse_Button =>
           case Ptg_Result.Field_No is
-            when Reset_F =>
+            when Clear_F =>
               Finish := False;
               return;
             when Exit_F =>
