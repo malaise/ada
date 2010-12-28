@@ -509,7 +509,7 @@ procedure Replace (Source   : in out Asu_Us;
   begin
     Init (Result, Count);
     if Count <= Source.Last then
-      Result.Ref.all := Source.Ref(Source.Last - Count - 1 .. Source.Last);
+      Result.Ref.all := Source.Ref(Source.Last - Count + 1 .. Source.Last);
     else
       for I in 1 .. Count - Source.Last loop
         Result.Ref(I) := Pad;
