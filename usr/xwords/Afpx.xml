@@ -149,6 +149,16 @@
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="${LmSta}">Bottom</Init>
     </Field>
+    <Field Num="25" Kind="Put">
+      <Geometry Up="${Field_5.Up}-1" Left="${Field_5.Left}" Height="1" Right="${Field_5.Right}"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Init Row="0" Col="0">         |         |         |         |</Init>
+    </Field>
+    <Field Num="26" Kind="Put">
+      <Geometry Up="${Field_5.Up}+1" Left="${Field_5.Left}" Height="1" Right="${Field_5.Right}"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Init Row="0" Col="0">         |         |         |         |</Init>
+    </Field>
   </Descriptor>
 
 </Afpx_Descriptors>
