@@ -1,14 +1,13 @@
 with Ada.Characters.Latin_1, Ada.Exceptions;
-with As.U; use As.U;
-with Argument, Sys_Calls, String_Mng, Text_Line, Hashed_List.Unique, Debug,
+with As.U, Argument, Sys_Calls, String_Mng, Text_Line, Hashed_List.Unique,
      Char_To_Hexa, Upper_Str, Lower_Str, Mixed_Str, Command, Int_Image;
-with Search_Pattern;
+with Search_Pattern, Debug;
 package body Replace_Pattern is
 
   function Code_Image is new Int_Image (Command.Exit_Code_Range);
 
   -- The pattern to replace
-  The_Pattern : Asu_Us;
+  The_Pattern : As.U.Asu_Us;
 
   -- The character in the pattern that code a substitution
   Subst_Char : constant Character := Ada.Characters.Latin_1.Bs;
@@ -158,7 +157,7 @@ package body Replace_Pattern is
       Sys_Calls.Put_Line_Error ("Replace parsing pattern >" & Pattern & "<");
     end if;
     -- Store pattern
-    The_Pattern := Tus (Pattern);
+    The_Pattern := As.U.Tus (Pattern);
     -- Replace escape sequences by coding chars
     Start := 1;
     Case_Action := Stop_Case;
@@ -465,7 +464,7 @@ package body Replace_Pattern is
   -- Return the replacing string
   type If_Status_List is (None, If_Ok, If_Ko, In_Else);
   function Replace return String is
-    Result : Asu_Us;
+    Result : As.U.Asu_Us;
     -- Current index in result
     Start : Positive;
     -- Index of next Subst_Char in result

@@ -1,7 +1,7 @@
 separate (Replace_Pattern)
 
 function File_Content (Path : String) return String is
-  Txt, Line : Asu_Us;
+  Txt, Line : As.U.Asu_Us;
   Fd : Sys_Calls.File_Desc;
   File : Text_Line.File_Type;
 

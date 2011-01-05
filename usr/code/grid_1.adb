@@ -1,6 +1,5 @@
 with Ada.Characters.Latin_1;
-with As.B; use As.B;
-with My_Io, Sorts;
+with As.B, My_Io, Sorts;
 package body Grid_1 is
 
 
@@ -27,7 +26,7 @@ package body Grid_1 is
     Row : Row_Coordinate;
     Col : Col_Coordinate;
     Char : Character;
-    Stripped_Key : Asb_Bs(80);
+    Stripped_Key : As.B.Asb_Bs(80);
 
     -- Store a char in data, checking if it is in Stripped_Key
     procedure Store (Char : in Character; Check : in Boolean) is

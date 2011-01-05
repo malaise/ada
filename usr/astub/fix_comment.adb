@@ -1,12 +1,13 @@
 -- Because we put type text, constant, pragma, renames...
 --  in comment (appending an indented "--")
 -- Try to remove any " " at beginning of lines (of Words)
-with As.U; use As.U;
+with As.U;
 with Common, Words, Parser_Ada, Output;
 procedure Fix_Comment (Level : in Natural) is
   Index, Length : Natural;
   Word, Space : Words.Word_Rec;
   Ok : Boolean;
+  use type As.U.Asu_Us;
 begin
   -- Get number of spaces to look for and exit if 0
   Length := Output.Get_Indent(Level)'Length;
@@ -26,7 +27,7 @@ begin
     end if;
     -- Exit when no more word
     exit when Word.Text.Is_Null;
-    if Word.Text = Asu_Us'(Common.Line_Feed) then
+    if Word.Text = As.U.Asu_Us'(Common.Line_Feed) then
       -- Read Length following words (Words returns "" if no more word)
       -- Stop if not a space
       for I in 1 .. Length loop

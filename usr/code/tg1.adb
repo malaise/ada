@@ -1,11 +1,10 @@
-with As.B; use As.B;
-with Argument, My_Io;
+with As.B, Argument, My_Io;
 with Grid_1;
 procedure Tg1 is
   Key : constant String := Argument.Get_Parameter(1);
-  Text : Asb_Bs(500);
-  Dummy : Asb_Bs(80);
-  Code : Asb_Bs(Text.Max * 2);
+  Text : As.B.Asb_Bs(500);
+  Dummy : As.B.Asb_Bs(80);
+  Code : As.B.Asb_Bs(Text.Max * 2);
   Rec : Grid_1.Coordinate_Rec;
 begin
 

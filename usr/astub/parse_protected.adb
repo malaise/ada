@@ -1,12 +1,12 @@
-with As.U; use As.U;
+with As.U;
 with Common, Output, Words, Parser_Ada, Parse_To_End,
      Parse_Procedure, Parse_Function, Parse_Entry, Fix_Comment, Put_Comments;
 
 procedure Parse_Protected (Level : in Natural) is
-  Name : Asu_Us;
+  Name : As.U.Asu_Us;
   Word : Parser_Ada.Word_Rec;
   Dummy : Boolean := True;
-  use type Parser_Ada.Lexical_Kind_List;
+  use type As.U.Asu_Us, Parser_Ada.Lexical_Kind_List;
 begin
 
   -- Read until protected name, skip "type"
@@ -54,7 +54,7 @@ begin
         Words.Reset;
       elsif Word.Lexic = Parser_Ada.Separator then
         -- Within the protected, Output Line_Feed, save other separators
-        if Word.Text = Asu_Us'(Common.Line_Feed) then
+        if Word.Text = As.U.Asu_Us'(Common.Line_Feed) then
           Output.Put_Line (Words.Concat, False);
           Words.Reset;
         else

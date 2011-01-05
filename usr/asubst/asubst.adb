@@ -1,6 +1,6 @@
 with Ada.Exceptions, Ada.Text_Io;
-with As.U; use As.U;
-with Environ, Argument, Argument_Parser, Sys_Calls, Language, Mixed_Str, Text_Line;
+with As.U, Environ, Argument, Argument_Parser, Sys_Calls, Language, Mixed_Str,
+     Text_Line;
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
@@ -185,26 +185,26 @@ procedure Asubst is
   Utf8_Var_Name : constant String := "ASUBST_UTF8";
   -- The keys and descriptor of parsed keys
   Keys : constant Argument_Parser.The_Keys_Type := (
-   01 => ('a', Tus ("ascii"), False, False),
-   02 => ('D', Tus ("delimiter"), False, True),
-   03 => ('d', Tus ("display"), False, False),
-   04 => ('e', Tus ("exclude"), False, True),
-   05 => ('F', Tus ("file_list"), False, True),
-   06 => ('g', Tus ("grep"), False, False),
-   07 => ('h', Tus ("help"), False, False),
-   08 => ('i', Tus ("ignorecase"), False, False),
-   09 => ('l', Tus ("line"), False, False),
-   10 => ('m', Tus ("match"), False, True),
-   11 => ('n', Tus ("number"), False, False),
-   12 => ('q', Tus ("quiet"), False, False),
-   13 => ('s', Tus ("save"), False, False),
-   14 => ('t', Tus ("test"), False, False),
-   15 => ('u', Tus ("utf8"), False, False),
-   16 => ('v', Tus ("verbose"), False, False),
-   17 => ('V', Tus ("version"), False, False),
-   18 => ('x', Tus ("noregex"), False, False),
-   19 => ('p', Tus ("tmp"), False, True),
-   20 => ('f', Tus ("file"), False, False)
+   01 => ('a', As.U.Tus ("ascii"), False, False),
+   02 => ('D', As.U.Tus ("delimiter"), False, True),
+   03 => ('d', As.U.Tus ("display"), False, False),
+   04 => ('e', As.U.Tus ("exclude"), False, True),
+   05 => ('F', As.U.Tus ("file_list"), False, True),
+   06 => ('g', As.U.Tus ("grep"), False, False),
+   07 => ('h', As.U.Tus ("help"), False, False),
+   08 => ('i', As.U.Tus ("ignorecase"), False, False),
+   09 => ('l', As.U.Tus ("line"), False, False),
+   10 => ('m', As.U.Tus ("match"), False, True),
+   11 => ('n', As.U.Tus ("number"), False, False),
+   12 => ('q', As.U.Tus ("quiet"), False, False),
+   13 => ('s', As.U.Tus ("save"), False, False),
+   14 => ('t', As.U.Tus ("test"), False, False),
+   15 => ('u', As.U.Tus ("utf8"), False, False),
+   16 => ('v', As.U.Tus ("verbose"), False, False),
+   17 => ('V', As.U.Tus ("version"), False, False),
+   18 => ('x', As.U.Tus ("noregex"), False, False),
+   19 => ('p', As.U.Tus ("tmp"), False, True),
+   20 => ('f', As.U.Tus ("file"), False, False)
    );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
@@ -212,11 +212,11 @@ procedure Asubst is
 
   -- Option management
   Display : Boolean := False;
-  Exclude : Asu_Us;
+  Exclude : As.U.Asu_Us;
   File_Of_Files : Boolean := False;
   Case_Sensitive : Boolean := True;
-  Match_Range : Asu_Us;
-  Tmp_Dir : Asu_Us;
+  Match_Range : As.U.Asu_Us;
+  Tmp_Dir : As.U.Asu_Us;
   type Verbose_List is (Quiet, Put_File_Name, Put_Subst_Nb, Verbose);
   Verbosity : Verbose_List := Put_File_Name;
   Grep : Boolean := False;
@@ -225,7 +225,7 @@ procedure Asubst is
   Backup : Boolean := False;
   Is_Regex : Boolean := True;
   Test : Boolean := False;
-  Delimiter : Asu_Us := Tus (Text_Line.Line_Feed_Str);
+  Delimiter : As.U.Asu_Us := As.U.Tus (Text_Line.Line_Feed_Str);
   -- Overall result to summarize error and if any subst/search done
   Ok : Boolean;
   Found : Boolean;
@@ -349,7 +349,7 @@ begin
   if Arg_Dscr.Is_Set (02) then
     -- Specific delimiter instead of '\n'
     begin
-      Delimiter := Tus (Arg_Dscr.Get_Option (02));
+      Delimiter := As.U.Tus (Arg_Dscr.Get_Option (02));
       if Delimiter.Length > Text_Line.Max_Line_Feed_Len then
         raise Constraint_Error;
       end if;
@@ -374,7 +374,7 @@ begin
   if Arg_Dscr.Is_Set (04) then
     -- Exclude text matching exclude_regexp
     begin
-      Exclude := Tus (Arg_Dscr.Get_Option (04));
+      Exclude := As.U.Tus (Arg_Dscr.Get_Option (04));
       if Exclude.Length = 0 then
         raise Constraint_Error;
       end if;
@@ -423,7 +423,7 @@ begin
       Dummy : Boolean;
       pragma Unreferenced (Dummy);
     begin
-      Match_Range := Tus (Arg_Dscr.Get_Option (10));
+      Match_Range := As.U.Tus (Arg_Dscr.Get_Option (10));
       Dummy := Substit.Subst_Match.Matches (0, Match_Range.Image);
     exception
       when others =>
@@ -437,7 +437,7 @@ begin
     end if;
   else
     -- No criteria
-    Match_Range := Tus ("-");
+    Match_Range := As.U.Tus ("-");
   end if;
   if Arg_Dscr.Is_Set (11) then
     -- Put number of substitutions
@@ -506,7 +506,7 @@ begin
   if Arg_Dscr.Is_Set (19) then
     -- Tmp_Dir for temporary files
     begin
-      Tmp_Dir := Tus (Arg_Dscr.Get_Option (19));
+      Tmp_Dir := As.U.Tus (Arg_Dscr.Get_Option (19));
       if Tmp_Dir.Length = 0 then
         raise Constraint_Error;
       end if;

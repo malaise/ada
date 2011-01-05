@@ -1,6 +1,5 @@
 with Ada.Text_Io, Ada.Direct_Io, Ada.Characters.Latin_1;
-with As.U.Utils; use As.U, As.U.Utils;
-with Get_Line;
+with As.U.Utils, Get_Line;
 
 with Space;
 
@@ -8,7 +7,7 @@ package body File is
 
   Lf : Character renames Ada.Characters.Latin_1.Lf;
 
-  File_Name_Txt : Asu_Us;
+  File_Name_Txt : As.U.Asu_Us;
 
   -- Have we finished reading
   type State_List is (Closed, Reading, Empty, Writting);
@@ -24,7 +23,7 @@ package body File is
 
   package My_Get_Line is new Get_Line (Comment => "#");
   Line : My_Get_Line.Line_Txt;
-  Line_Array : Asu_Ua.Unbounded_Array;
+  Line_Array : As.U.Utils.Asu_Ua.Unbounded_Array;
   Line_No : My_Get_Line.Count;
   End_Reached : Boolean;
 
@@ -65,7 +64,7 @@ package body File is
         State := Empty;
     end;
     Move_Num := 0;
-    File_Name_Txt := Tus (File_Name);
+    File_Name_Txt := As.U.Tus (File_Name);
   exception
     when others =>
       raise File_Error;

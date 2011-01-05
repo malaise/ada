@@ -1,13 +1,13 @@
-with As.U; use As.U;
+with As.U;
 with Common, Output, Words, Parser_Ada, Parse_To_End, Parse_Type,
      Parse_Procedure, Parse_Function, Parse_Task, Parse_Protected,
      Parse_Name, Put_Comments, Fix_Comment;
 
 procedure Parse_Package (Level : in Natural;
                          Generated : in out Boolean) is
-  Name : Asu_Us;
+  Name : As.U.Asu_Us;
   Word : Parser_Ada.Word_Rec;
-  use type Parser_Ada.Lexical_Kind_List;
+  use type As.U.Asu_Us, Parser_Ada.Lexical_Kind_List;
 
   -- Put current "package body <name> is" and comments read ahead
   -- Because called due to a keyword (procedure/function...)
@@ -21,7 +21,7 @@ procedure Parse_Package (Level : in Natural;
       -- Put comments and line_feeds saved so far, keep separators in words
       Put_Comments;
       -- Remove any leading line_feed, just keep indent
-      while Asu_Us'(Words.Read (1)) = Asu_Us'(Common.Line_Feed) loop
+      while As.U.Asu_Us'(Words.Read (1)) = As.U.Asu_Us'(Common.Line_Feed) loop
          Words.Del (1);
       end loop;
       Body_Put := True;
@@ -53,7 +53,7 @@ begin
       elsif Word.Lexic = Parser_Ada.Separator then
         if Body_Put then
           -- Within the package, Output Line_Feed, save other separators
-          if Word.Text = Asu_Us'(Common.Line_Feed) then
+          if Word.Text = As.U.Asu_Us'(Common.Line_Feed) then
             Output.New_Line;
             Words.Reset;
           else

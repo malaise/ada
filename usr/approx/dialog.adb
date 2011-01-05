@@ -15,7 +15,7 @@ package body Dialog is
 
 
   -- Remove trailing spaces. No heading nor intermediate spaces allowed
-  procedure Parse_Spaces (Txt : in out Asu_Us; Ok : out Boolean) is
+  procedure Parse_Spaces (Txt : in out As.U.Asu_Us; Ok : out Boolean) is
     Str : constant String := Txt.Image;
     L : Natural;
   begin
@@ -36,7 +36,7 @@ package body Dialog is
       end if;
     end loop;
     -- If all spaces, L = 0 => empty
-    Txt := Tus (Str(1 .. L));
+    Txt := As.U.Tus (Str(1 .. L));
     Ok := True;
   end Parse_Spaces;
 
@@ -74,7 +74,7 @@ package body Dialog is
     end Encode;
 
     function Decode return Boolean is
-      Buff : Asu_Us;
+      Buff : As.U.Asu_Us;
       Ok : Boolean;
     begin
       Afpx.Decode_Field (Screen.Get_Fld, 0, Buff);
@@ -165,7 +165,7 @@ package body Dialog is
     end Encode;
 
     function Decode return Boolean is
-      Buff : Asu_Us;
+      Buff : As.U.Asu_Us;
       Ok : Boolean;
     begin
       Afpx.Decode_Field (Screen.Get_Fld, 0, Buff);

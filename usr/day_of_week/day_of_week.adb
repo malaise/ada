@@ -1,22 +1,21 @@
 with Ada.Calendar, Ada.Text_Io;
-with As.B; use As.B;
-with Perpet, Argument, Day_Mng, Normal, Mixed_Str;
+with As.B, Perpet, Argument, Day_Mng, Normal, Mixed_Str;
 procedure Day_Of_Week is
 
   Day   : Ada.Calendar.Day_Number;
   Month : Ada.Calendar.Month_Number;
   Year  : Ada.Calendar.Year_Number;
   -- dd/mm/yyyy
-  Txt : Asb_Bs(10);
+  Txt : As.B.Asb_Bs(10);
   -- "is", "was" or "will be"
-  Verb : Asb_Bs(7);
+  Verb : As.B.Asb_Bs(7);
   Today, T : Ada.Calendar.Time;
   -- From 1st Jan to today and from today to 31th Dec
   Delta_Date_0 : Perpet.Delta_Rec;
   Delta_Date_1 : Perpet.Delta_Rec;
   Day_No : Perpet.Day_Range;
   Th : String(1 .. 2);
-  Days : Asb_Bs(4);
+  Days : As.B.Asb_Bs(4);
 
   procedure Usage is
   begin

@@ -1,9 +1,9 @@
 -- Common definitions
-with As.U; use As.U;
+with As.U;
 package Common is
 
   -- Line feed string
-  function Line_Feed return Asu_Us;
+  function Line_Feed return As.U.Asu_Us;
   function Line_Feed return String;
   function Line_Feed return Character;
 

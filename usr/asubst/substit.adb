@@ -1,18 +1,18 @@
 with Ada.Text_Io;
-with As.U.Utils; use As.U, As.U.Utils;
+with As.U.Utils;
 with Argument, Sys_Calls, Text_Line, Temp_File, Regular_Expressions, Directory,
      Copy_File, File_Access, Mixed_Str, Int_Image;
 with Search_Pattern, Replace_Pattern, Debug;
 package body Substit is
 
   -- List of strings
-  package Line_List_Mng renames Asu_Dyn_List_Mng;
+  package Line_List_Mng renames As.U.Utils.Asu_Dyn_List_Mng;
   Line_List : Line_List_Mng.List_Type;
-  subtype Str_Access is Asu_List_Mng.Element_Access;
+  subtype Str_Access is As.U.Utils.Asu_List_Mng.Element_Access;
 
   -- File names
-  In_File_Name : Asu_Us;
-  Out_File_Name : Asu_Us;
+  In_File_Name : As.U.Asu_Us;
+  Out_File_Name : As.U.Asu_Us;
 
   -- Files
   In_File : Text_Line.File_Type;
@@ -26,7 +26,7 @@ package body Substit is
   Is_Iterative : Boolean;
 
   -- Line or block separator
-  Delimiter : Asu_Us;
+  Delimiter : As.U.Asu_Us;
 
   -- Current line number
   Line_No : Long_Long_Natural;
@@ -203,15 +203,15 @@ package body Substit is
                   Tmp_Dir   : in String;
                   For_Write : in Boolean) is
     In_Fd, Out_Fd : Sys_Calls.File_Desc;
-    File_Dir : Asu_Us;
+    File_Dir : As.U.Asu_Us;
   begin
-    In_File_Name := Tus (File_Name);
+    In_File_Name := As.U.Tus (File_Name);
     Is_Stdin := File_Name = Std_In_Out;
     -- Open In fd and Out file if not stdin/stdout
     if Is_Stdin then
       In_Fd := Sys_Calls.Stdin;
       Out_Fd := Sys_Calls.Stdout;
-      Out_File_Name := Asu_Null;
+      Out_File_Name := As.U.Asu_Null;
     else
       -- Check access rights (rw) of this file
       Check_File (File_Name, For_Write);
@@ -225,20 +225,20 @@ package body Substit is
         -- Build out file dir
         if Tmp_Dir = "" then
           -- Current dir
-          File_Dir := Tus (Directory.Dirname (File_Name));
+          File_Dir := As.U.Tus (Directory.Dirname (File_Name));
           if not File_Dir.Is_Null then
             -- Remove trailing /
-            File_Dir := Tus (File_Dir.Slice (1, File_Dir.Length - 1));
+            File_Dir := As.U.Tus (File_Dir.Slice (1, File_Dir.Length - 1));
           else
-            File_Dir := Tus (".");
+            File_Dir := As.U.Tus (".");
           end if;
         else
           -- Tmp dir specified as argument
-          File_Dir := Tus (Tmp_Dir);
+          File_Dir := As.U.Tus (Tmp_Dir);
         end if;
         -- Create out file
         begin
-          Out_File_Name := Tus (Temp_File.Create (File_Dir.Image));
+          Out_File_Name := As.U.Tus (Temp_File.Create (File_Dir.Image));
         exception
           when others =>
             Error ("Cannot create temp file in """ & File_Dir.Image
@@ -282,9 +282,9 @@ package body Substit is
   Trail_Line_Feed : Boolean := False;
   function Read return Boolean is
     Nb_To_Read : Natural;
-    Line : Asu_Us;
+    Line : As.U.Asu_Us;
     Len : Natural;
-    Line_Feed : constant Asu_Us := Tus (In_File.Get_Line_Feed);
+    Line_Feed : constant As.U.Asu_Us := As.U.Tus (In_File.Get_Line_Feed);
   begin
     -- Move to end
     Line_List.Rewind (False, Line_List_Mng.Prev);
@@ -316,7 +316,7 @@ package body Substit is
       and then Line.Element(Len) = Text_Line.Line_Feed_Char then
         -- Line (possibly empty) and Line_Feed
         -- Insert line (without Lf)
-        Line_List.Insert (Tus (Line.Slice (1, Len-1)));
+        Line_List.Insert (As.U.Tus (Line.Slice (1, Len-1)));
         Nb_To_Read := Nb_To_Read - 1;
         Line_No := Line_No + 1;
         if Nb_To_Read = 0 then
@@ -376,7 +376,7 @@ package body Substit is
     -- Init buffer of lines
     Line_List.Delete_List;
     Trail_Line_Feed := False;
-    Substit.Delimiter := Tus (Delimiter);
+    Substit.Delimiter := As.U.Tus (Delimiter);
     -- Init substitution by reading Nb_Pattern lines and Newlines
     -- Loop on substit
     Nb_Subst := 0;
@@ -744,10 +744,11 @@ package body Substit is
       --                   + End of last line
       declare
         Str_Replacing : constant String := Replace_Pattern.Replace;
-        Str_Replaced : Asu_Us;
+        Str_Replaced : As.U.Asu_Us;
+        use type As.U.Asu_Us;
       begin
         -- Set result: beginning of first line + replacing + end of last line
-        Str_Replaced := Tus (
+        Str_Replaced := As.U.Tus (
                  First_Line.all.Slice (1, Match_Res.First_Offset - 1))
                & Str_Replacing;
         if Match_Res.Last_Offset_Stop < Last_Line.all.Length then

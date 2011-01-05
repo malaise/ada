@@ -1,4 +1,3 @@
-with As.U; use As.U;
 with Output, Words, Parser_Ada, Parse_To_End, Parse_To_Ends, Fix_Comment;
 
 -- Parse type definition or representation clause

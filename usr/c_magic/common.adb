@@ -1,6 +1,5 @@
 with Ada.Text_Io, Ada.Calendar;
-with As.B; use As.B;
-with Normal, Sorts, My_Math;
+with As.B, Normal, Sorts, My_Math;
 package body Common is
   -- The dimension of square
   Dim : Dim_Range;
@@ -22,7 +21,7 @@ package body Common is
 
   -- Output file
   File : Ada.Text_Io.File_Type;
-  File_Name : Asb_Bs(80);
+  File_Name : As.B.Asb_Bs(80);
 
   -- Real -> integer : round or trunc
   function Trunc (X : in Float) return Integer is

@@ -1,5 +1,4 @@
-with As.U; use As.U;
-with Ada_Parser, Multiget;
+with As.U, Ada_Parser, Multiget;
 package Parser_Ada is
 
   -- Rename types and exceptions from Ada_Parser
@@ -10,7 +9,7 @@ package Parser_Ada is
   -- A Word
   type Word_Rec is record
     Lexic : Lexical_Kind_List;
-    Text  : Asu_Us;
+    Text  : As.U.Asu_Us;
   end record;
 
   -- Get a Word from Ada_Parser

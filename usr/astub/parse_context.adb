@@ -1,4 +1,3 @@
-with As.U; use As.U;
 with Common, Output, Words, Parser_Ada,
      Parse_To_End, Parse_Procedure, Parse_Function, Parse_Package, Fix_Comment;
 

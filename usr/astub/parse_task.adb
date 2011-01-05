@@ -1,9 +1,9 @@
-with As.U; use As.U;
-with Common, Output, Words,  Parser_Ada, Parse_To_End;
+with As.U;
+with Common, Output, Words, Parser_Ada, Parse_To_End;
 
 procedure Parse_Task (Level : in Natural) is
   Word : Parser_Ada.Word_Rec;
-  Name : Asu_Us;
+  Name : As.U.Asu_Us;
   use type Parser_Ada.Lexical_Kind_List;
 begin
   -- Read until task name, skip "type"

@@ -1,6 +1,5 @@
 with Ada.Text_Io, Ada.Characters.Latin_1;
-with As.B; use As.B;
-with Sys_Calls, My_Io, Argument, Upper_Str, Normal, My_Math;
+with As.B, Sys_Calls, My_Io, Argument, Upper_Str, Normal, My_Math;
 with Grid_1, Grid_2, Vigenere;
 
 procedure Code is
@@ -20,7 +19,7 @@ procedure Code is
   Len : Line_Index;
   Min_Key_Len : constant Line_Index := 8;
   Line_Too_Long : exception;
-  Key : Asb_Bs(80);
+  Key : As.B.Asb_Bs(80);
   In_File  : Ada.Text_Io.File_Type;
   Out_File : Ada.Text_Io.File_Type;
   Sl : Vigenere.Long_Positive;

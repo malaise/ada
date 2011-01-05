@@ -1,6 +1,5 @@
 with Ada.Text_Io, Ada.Exceptions;
-with As.U; use As.U;
-with Argument, Argument_Parser, Sys_Calls, Mixed_Str;
+with As.U, Argument, Argument_Parser, Sys_Calls, Mixed_Str;
 with Common, Files, Parse_Context;
 procedure Astub is
 
@@ -23,8 +22,8 @@ procedure Astub is
 
   -- The keys and descriptor of parsed keys
   Keys : constant Argument_Parser.The_Keys_Type := (
-   01 => ('f', Tus ("force"), False, False),
-   02 => ('k', Tus ("keep"), False, False));
+   01 => ('f', As.U.Tus ("force"), False, False),
+   02 => ('k', As.U.Tus ("keep"), False, False));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
   -- The options

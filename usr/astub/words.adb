@@ -39,7 +39,7 @@ package body Words is
   begin
     if Words_List.Is_Empty
     or else Index > Length then
-      return (Parser_Ada.Separator, Tus (""));
+      return (Parser_Ada.Separator, As.U.Tus (""));
     end if;
     if Index /= 0 then
       Read_Index := Index;
@@ -53,7 +53,7 @@ package body Words is
     return Word;
   end Read;
 
-  function Read (Index : in Natural := 0) return Asu_Us is
+  function Read (Index : in Natural := 0) return As.U.Asu_Us is
   begin
     return Read (Index).Text;
   end Read;
@@ -72,7 +72,7 @@ package body Words is
     return Word;
   end Get;
 
-  function Get (Index : in Natural := 0) return Asu_Us is
+  function Get (Index : in Natural := 0) return As.U.Asu_Us is
   begin
     return Get (Index).Text;
   end Get;
@@ -84,8 +84,8 @@ package body Words is
 
   -- Concat --
   function Concat (From_Index : in Positive := 1;
-                   To_Index : Natural := 0) return Asu_Us is
-    Result : Asu_Us;
+                   To_Index : Natural := 0) return As.U.Asu_Us is
+    Result : As.U.Asu_Us;
     Last : Natural;
   begin
     if To_Index /= 0 then
@@ -95,7 +95,7 @@ package body Words is
     end if;
 
     for I in From_Index .. Last loop
-      Result.Append (Asu_Us'(Read (I)));
+      Result.Append (As.U.Asu_Us'(Read (I)));
     end loop;
     return Result;
   end Concat;
@@ -121,7 +121,8 @@ package body Words is
     Words_List.Insert (Word);
   end Add;
 
-  procedure Add (Lexic : in Parser_Ada.Lexical_Kind_List; Text : in Asu_Us) is
+  procedure Add (Lexic : in Parser_Ada.Lexical_Kind_List;
+                 Text : in As.U.Asu_Us) is
   begin
     Add ( (Lexic, Text) );
   end Add;
@@ -129,7 +130,7 @@ package body Words is
   procedure Add (Lexic : in Parser_Ada.Lexical_Kind_List;
                  Text : in String) is
   begin
-    Add (Lexic, Tus (Text));
+    Add (Lexic, As.U.Tus (Text));
   end Add;
 
   -- Search --
@@ -155,7 +156,7 @@ package body Words is
   end Search;
 
   function Search (Lexic : in Parser_Ada.Lexical_Kind_List;
-                   Word : in Asu_Us;
+                   Word : in As.U.Asu_Us;
                    From_Index : Positive := 1) return Natural is
 
   begin
@@ -166,7 +167,7 @@ package body Words is
                    Word : String;
                    From_Index : Positive := 1) return Natural is
   begin
-    return Search (Lexic, Tus (Word), From_Index);
+    return Search (Lexic, As.U.Tus (Word), From_Index);
   end Search;
 
 end Words;

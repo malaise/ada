@@ -1,4 +1,4 @@
-with As.U, with Con_Io, Afpx, Directory, Select_File, Normal;
+with As.U, Con_Io, Afpx, Directory, Select_File, Normal;
 with Points, Screen, Set_Points_List, Dialog, Point_Str, Menu2;
 package body Menu1 is
 
@@ -65,7 +65,7 @@ package body Menu1 is
     Encode_File_In_Get (File_Name);
     if File.F_Exists(File_Name) then
       Screen.Put_Title (Screen.Read_Points);
-      File_Name_Txt := Tus (File_Name);
+      File_Name_Txt := As.U.Tus (File_Name);
       begin
         -- Get data in points and list
         Points.P_Store (File.F_Read(File_Name));
@@ -117,7 +117,7 @@ package body Menu1 is
       Kind : Directory.File_Kind_List;
       use Directory;
     begin
-      Tmp_File_Name := Tus (My_Select_File(2, File_Name_Txt.Image,
+      Tmp_File_Name := As.U.Tus (My_Select_File(2, File_Name_Txt.Image,
                                                Load));
       if Tmp_File_Name.Is_Null then
         -- Cancelled
@@ -212,7 +212,7 @@ package body Menu1 is
     -- File?
     if Init_File_Name /= "" then
       if Read_File (Init_File_Name) then
-        File_Name_Txt := Tus (Init_File_Name);
+        File_Name_Txt := As.U.Tus (Init_File_Name);
       end if;
       Restore := Partial;
     else

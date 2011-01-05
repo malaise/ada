@@ -1,6 +1,5 @@
 with Ada.Exceptions, Ada.Text_Io;
-with As.U.Utils; use As.U, As.U.Utils;
-with Get_Line;
+with As.U.Utils, Get_Line;
 
 with Space.Board, Pieces, Image;
 
@@ -8,7 +7,7 @@ package body Set_Up is
 
   -- WPe1 = White Pawn at e1
   package My_Get_Line is new Get_Line ("#");
-  Line : Asu_Ua.Unbounded_Array;
+  Line : As.U.Utils.Asu_Ua.Unbounded_Array;
 
   -- Load_Error : exception;
   function Load (File_Name : in String) return Space.Color_List is

@@ -1,6 +1,4 @@
-with As.U; use As.U;
-with As.B; use As.B;
-with Environ, Text_Line, String_Mng.Regex, Ada_Words;
+with As.U, As.B, Environ, Text_Line, String_Mng.Regex, Ada_Words;
 with Common, Files;
 package body Output is
 
@@ -8,7 +6,7 @@ package body Output is
   Spaces_Name : constant String := "ASTUB_INDENT";
   Def_Nb_Spaces : constant := 2;
   Max_Nb_Spaces : constant := 10;
-  Spaces : Asb_Bs(Max_Nb_Spaces);
+  Spaces : As.B.Asb_Bs(Max_Nb_Spaces);
 
   -- Line length
   Length_Name : constant String := "ASTUB_LENGTH";
@@ -52,7 +50,7 @@ package body Output is
 
   -- Return the indentation of a given level
   function Get_Indent (Level : in Natural) return String is
-    Result : Asu_Us;
+    Result : As.U.Asu_Us;
   begin
     Getenv;
     for I in 1 .. Level loop
@@ -69,18 +67,18 @@ package body Output is
   end Separates;
 
   -- Low level output procedure to filter successive Line_Feed
-  Prev_Tail : Asu_Us;
+  Prev_Tail : As.U.Asu_Us;
   procedure Low_Put (Str : in String) is
-    Ustr : Asu_Us;
+    Ustr : As.U.Asu_Us;
     Found : Natural;
     Line_Feed_Char : constant Character := Common.Line_Feed;
   begin
     -- Prepend previous tail and replace any sequence of 3 or more
     -- line_feeds by only 2
-    Ustr := Tus (
+    Ustr := As.U.Tus (
       String_Mng.Regex.Replace (Prev_Tail.Image & Str, "\n{3,}",
       Line_Feed_Char & Line_Feed_Char));
-    Prev_Tail := Asu_Null;
+    Prev_Tail := As.U.Asu_Null;
     if Ustr.Is_Null then
       -- Nothing to put
       return;
@@ -106,7 +104,7 @@ package body Output is
   procedure Flush is
   begin
     Text_Line.Put (Files.Out_File, Prev_Tail.Image);
-    Prev_Tail := Asu_Null;
+    Prev_Tail := As.U.Asu_Null;
   end Flush;
 
   -- Put one line (after flow has been cut according to Line_Feeds)
@@ -117,7 +115,7 @@ package body Output is
     -- Must we add the "-- "?
     Add_Comment : Boolean := Comment;
     -- Line to put
-    Line2Put : Asu_Us;
+    Line2Put : As.U.Asu_Us;
     -- Index where to start / where to cut
     Index : Natural;
     -- Index of "--" in string

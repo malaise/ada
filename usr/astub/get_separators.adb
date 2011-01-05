@@ -1,4 +1,4 @@
-with As.U; use As.U;
+with As.U;
 with Common, Words, Parser_Ada;
 -- Get the trailing separators (space or htab) of Words
 function Get_Separators return String is
@@ -6,13 +6,14 @@ function Get_Separators return String is
   use type Parser_Ada.Lexical_Kind_List;
   Len : constant Natural := Words.Length;
   Start : Natural := Len;
-  Result : Asu_Us;
+  Result : As.U.Asu_Us;
+  use type As.U.Asu_Us;
 begin
   -- Locate last non separator (or Line_Feed)
   for I in reverse 1 .. Len loop
     Word := Words.Read (I);
     exit when Word.Lexic /= Parser_Ada.Separator
-    or else Word.Text = Asu_Us'(Common.Line_Feed);
+    or else Word.Text = As.U.Asu_Us'(Common.Line_Feed);
     Start := I - 1;
   end loop;
 

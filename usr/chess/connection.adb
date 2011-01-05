@@ -1,6 +1,6 @@
 with Ada.Text_Io, Ada.Exceptions;
-with As.U; use As.U;
-with Socket, Event_Mng, Debug, Dynamic_List;
+with As.U, Socket, Event_Mng, Dynamic_List;
+with Debug;
 package body Connection is
 
   Server : Boolean := True;
@@ -271,7 +271,7 @@ package body Connection is
     -- Init parameters and socket
     if Server_Name /= "" then
       Server := False;
-      Server_Host.Name := Tus (Server_Name);
+      Server_Host.Name := As.U.Tus (Server_Name);
       Remote_Port := Port;
       Connect_Server;
     else

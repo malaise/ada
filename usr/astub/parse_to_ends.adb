@@ -4,7 +4,7 @@
 -- For reserved word/delimiter, text must match
 -- For separator Line_fine must match line_feed
 --   space or htab matches space or htab
-with As.U; use As.U;
+with As.U;
 with Common, Words, Get_Separators, Output, Parser_Ada;
 
 procedure Parse_To_Ends (End_Criteria : in Words.Word_Array;
@@ -13,7 +13,7 @@ procedure Parse_To_Ends (End_Criteria : in Words.Word_Array;
                          Up_To_Next_Significant : in Boolean) is
   Parent : Natural := 0;
   Word : Parser_Ada.Word_Rec;
-  use type Parser_Ada.Lexical_Kind_List;
+  use type As.U.Asu_Us, Parser_Ada.Lexical_Kind_List;
 begin
   -- Loop until End_Char outside parentheses (Level = 0)
   Parse_Word:
@@ -41,13 +41,13 @@ begin
               exit Parse_Word;
             end if;
           elsif Word.Lexic = Parser_Ada.Separator then
-            if Word.Text = Asu_Us'(Common.Line_Feed) then
-              if End_Criteria(I).Text = Asu_Us'(Common.Line_Feed) then
+            if Word.Text = As.U.Asu_Us'(Common.Line_Feed) then
+              if End_Criteria(I).Text = As.U.Asu_Us'(Common.Line_Feed) then
                 -- Line feed matches line_feed
                 exit Parse_Word;
               end if;
             else
-              if End_Criteria(I).Text /= Asu_Us'(Common.Line_Feed) then
+              if End_Criteria(I).Text /= As.U.Asu_Us'(Common.Line_Feed) then
                 -- Not line feed matches not line_feed
                 exit Parse_Word;
               end if;
@@ -97,7 +97,7 @@ begin
     -- Exit when significant word or line_feed
     exit when Word.Lexic /= Parser_Ada.Comment
     and then Word.Lexic /= Parser_Ada.Separator;
-    exit when Word.Text = Asu_Us'(Common.Line_Feed);
+    exit when Word.Text = As.U.Asu_Us'(Common.Line_Feed);
   end loop;
 
   -- Unget this significant word

@@ -1,9 +1,9 @@
-with As.U; use As.U;
+with As.U;
 with Output, Words, Parser_Ada, Parse_To_End, Parse_Name, Fix_Comment;
 
 procedure Parse_Procedure (Level : in Natural;
                            Generated : in out Boolean) is
-  Name : Asu_Us;
+  Name : As.U.Asu_Us;
 begin
 
   -- Parse name

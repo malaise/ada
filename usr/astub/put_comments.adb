@@ -1,4 +1,4 @@
-with As.U; use As.U;
+with As.U;
 with Common, Words, Output, Parser_Ada;
 -- Output comments and delete them and separators from words
 -- Keep last indent
@@ -7,8 +7,8 @@ procedure Put_Comments is
   Word : Words.Word_Rec;
   Prev_Lf : Boolean;
   Prev_Index : Natural;
-  use type Parser_Ada.Lexical_Kind_List;
-  Text : Asu_Us;
+  Text : As.U.Asu_Us;
+  use type As.U.Asu_Us, Parser_Ada.Lexical_Kind_List;
 begin
   -- Put comments with line feeds
   Index := 1;
@@ -22,11 +22,11 @@ begin
         exit when Start = 0;
         Word := Words.Read (Start);
         exit when Word.Lexic /= Parser_Ada.Separator
-        or else Word.Text = Asu_Us'(Common.Line_Feed);
+        or else Word.Text = As.U.Asu_Us'(Common.Line_Feed);
       end loop;
       -- Concat indent and comment
       Start := Start + 1;
-      Text := Tus ("");
+      Text := As.U.Tus ("");
       for J in Start .. Index loop
         -- Del and put.
         Word := Words.Get (Start);
@@ -48,7 +48,7 @@ begin
   for I in 1 .. Words.Length loop
     Word := Words.Read (Index);
     if Word.Lexic = Parser_Ada.Separator then
-      if Word.Text = Asu_Us'(Common.Line_Feed) then
+      if Word.Text = As.U.Asu_Us'(Common.Line_Feed) then
         -- A line_feed
         if Prev_Lf then
           -- This one follows a line_feed (or is separated only by separators)

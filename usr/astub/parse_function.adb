@@ -1,10 +1,10 @@
-with As.U; use As.U;
+with As.U;
 with Common, Output, Words, Parse_To_End, Parse_To_Ends,
      Parser_Ada, Parse_Name, Fix_Comment, Put_Comments;
 
 procedure Parse_Function (Level : in Natural;
                           Generated : in out Boolean) is
-  Name, Args : Asu_Us;
+  Name, Args : As.U.Asu_Us;
   Word : Parser_Ada.Word_Rec;
   In_Id : Boolean;
   Nb_Parent : Natural;
@@ -18,8 +18,8 @@ begin
   -- Next (significant) word is either '(' or "return". Get it
   Parse_To_Ends (
       End_Criteria => (
-          (Parser_Ada.Delimiter, Tus ("(")),
-          (Parser_Ada.Reserved_Word, Tus ("return")) ),
+          (Parser_Ada.Delimiter, As.U.Tus ("(")),
+          (Parser_Ada.Reserved_Word, As.U.Tus ("return")) ),
       Level => Level,
       Put_Comments => True,
       Up_To_Next_Significant => False);

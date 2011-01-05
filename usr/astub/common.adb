@@ -5,11 +5,11 @@ package body Common is
 
   Lfc : constant Character := Text_Line.Line_Feed_Char;
   Lfs : constant String := Text_Line.Line_Feed_Str;
-  Lfu : constant Asu_Us := Tus (Lfs);
+  Lfu : constant As.U.Asu_Us := As.U.Tus (Lfs);
 
 
   -- Line feed string
-  function Line_Feed return Asu_Us is
+  function Line_Feed return As.U.Asu_Us is
   begin
     return Lfu;
   end Line_Feed;

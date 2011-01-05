@@ -1,7 +1,7 @@
 with Ada.Characters.Latin_1;
-with As.U; use As.U;
-with Sys_Calls, Argument, Hashed_List.Unique, String_Mng, Text_Line, Debug,
+with As.U, Sys_Calls, Argument, Hashed_List.Unique, String_Mng, Text_Line,
      Char_To_Hexa, Language;
+with Debug;
 package body Search_Pattern is
 
   -- 0 to 16 substring indexes
@@ -15,9 +15,9 @@ package body Search_Pattern is
     Is_Delim : Boolean;
     -- Regex or string to search (depending on Is_regex)
     Pat : Regular_Expressions.Compiled_Pattern;
-    Find_Str : Asu_Us;
+    Find_Str : As.U.Asu_Us;
     -- The complete string from input flow that matches
-    Match_Str : Asu_Us;
+    Match_Str : As.U.Asu_Us;
     -- Number of sub-matching strings
     Nb_Substr : Nb_Sub_String_Range := 0;
     -- Indexes of matching string (at index 0),
@@ -73,7 +73,7 @@ package body Search_Pattern is
   Line_Feed : constant String := Text_Line.Line_Feed_Str;
 
   -- Delimiter
-  Delimiter : Asu_Us;
+  Delimiter : As.U.Asu_Us;
   -- Get the delimiter
   function Get_Delimiter return String is
   begin
@@ -125,7 +125,7 @@ package body Search_Pattern is
     end if;
     -- Store string if this is not a regex
     if not Is_Regex then
-      Upat.Find_Str := Tus (Crit);
+      Upat.Find_Str := As.U.Tus (Crit);
       Upat.Nb_Substr := 0;
       List.Insert (Upat);
       return;
@@ -173,7 +173,7 @@ package body Search_Pattern is
                        Split : in Boolean;
                        List : in out Unique_Pattern.Unique_List_Type) is
 
-    The_Pattern : Asu_Us;
+    The_Pattern : As.U.Asu_Us;
 
     -- Check and get an hexa code from The_Pattern (Index .. Index + 1)
     subtype Byte is Natural range 0 .. 255;
@@ -254,7 +254,7 @@ package body Search_Pattern is
       Sys_Calls.Put_Line_Error ("Search parsing pattern >" & Pattern & "<");
     end if;
     -- Reset pattern characteristics
-    The_Pattern := Tus (Pattern);
+    The_Pattern := As.U.Tus (Pattern);
     List.Delete_List;
     Is_Iterative := False;
     Check_Completed := False;
@@ -412,14 +412,14 @@ package body Search_Pattern is
   begin
     -- Optim and safe way
     if Delim = Line_Feed then
-      Delimiter := Tus (Line_Feed);
+      Delimiter := As.U.Tus (Line_Feed);
       return True;
     elsif Delim = "" then
       -- Empty delimiter
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Search, parsed empty delimiter");
       end if;
-      Delimiter := Asu_Null;
+      Delimiter := As.U.Asu_Null;
       return False;
     end if;
     if Debug.Set then
@@ -679,7 +679,7 @@ package body Search_Pattern is
         Upat_Access.Substrs(0) := Match(1);
         Upat_Access.Substrs(1 .. Upat_Access.Nb_Substr)
                    := Match(2 .. Nmatch);
-        Upat_Access.Match_Str := Tus (Str);
+        Upat_Access.Match_Str := As.U.Tus (Str);
         if Regex_Index = List.all.List_Length then
           -- Last pattern and matches
           Store_Index (1, True);
@@ -751,7 +751,7 @@ package body Search_Pattern is
   -- May raise Substr_Len_Error if Utf8 sequence leads to exceed
   --  string length
   function Allstring return String is
-    Result : Asu_Us;
+    Result : As.U.Asu_Us;
   begin
     for I in 1 .. Number loop
       Result.Append (Substring (I, 0));

@@ -1,16 +1,14 @@
 with Ada.Text_Io;
-with As.U; use As.U;
-with Debug, Lower_Str, Argument, Tcp_Util;
-
-with Space, Connection, Human, File, Screen;
+with As.U, Lower_Str, Argument, Tcp_Util;
+with Debug, Space, Connection, Human, File, Screen;
 
 procedure Chess is
 
   Mode : Human.Play_Mode;
   Color : Space.Color_List;
-  Name : Asu_Us;
-  Init : Asu_Us;
-  Tmp_Txt : Asu_Us;
+  Name : As.U.Asu_Us;
+  Init : As.U.Asu_Us;
+  Tmp_Txt : As.U.Asu_Us;
   Wait : Boolean;
   Port : Tcp_Util.Remote_Port;
   Invalid_Argument : exception;
@@ -121,7 +119,7 @@ begin
                      (Param_Key => "p"));
     exception
       when Argument.Argument_Not_Found =>
-        Port := (Kind => Tcp_Util.Port_Name_Spec, Name => Asu_Null);
+        Port := (Kind => Tcp_Util.Port_Name_Spec, Name => As.U.Asu_Null);
         begin
           Argument.Get_Parameter(Port.Name, Param_Key => "P");
         exception
@@ -146,7 +144,7 @@ begin
       Argument.Get_Parameter (Name, 1, "f");
     exception
       when Argument.Argument_Not_Found =>
-        Name := Asu_Null;
+        Name := As.U.Asu_Null;
     end;
   else
     begin
@@ -195,7 +193,7 @@ begin
       Argument.Get_Parameter (Init, 1, "i");
     exception
       when Argument.Argument_Not_Found =>
-        Init := Asu_Null;
+        Init := As.U.Asu_Null;
     end;
   else
     begin

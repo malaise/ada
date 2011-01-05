@@ -1,5 +1,4 @@
-with As.U; use As.U;
-with Argument, Sys_Calls, Text_Line;
+with As.U, Argument, Sys_Calls, Text_Line;
 package body File_Mng is
 
   -- Reports an error
@@ -9,7 +8,7 @@ package body File_Mng is
         & " ERROR: " & Msg & ".");
   end Error;
 
-  File_Name_Str : Asu_Us;
+  File_Name_Str : As.U.Asu_Us;
 
   -- Open the file of files
   -- May raise Open_Error
@@ -23,7 +22,7 @@ package body File_Mng is
       Fd := Sys_Calls.Open (File_Name, Sys_Calls.In_File);
     end if;
     File.Open (Text_Line.In_File, Fd);
-    File_Name_Str := Tus (File_Name);
+    File_Name_Str := As.U.Tus (File_Name);
   exception
     when others =>
       Error ("Cannot open file of files " & File_Name);
@@ -49,7 +48,7 @@ package body File_Mng is
   -- Get next file name from file
   -- May raise End_Error or Io_Error (and closes file)
   function Get_Next_File return String is
-    Str : Asu_Us;
+    Str : As.U.Asu_Us;
     Len : Natural;
   begin
     Str := File.Get;

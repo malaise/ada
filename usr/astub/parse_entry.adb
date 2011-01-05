@@ -1,8 +1,8 @@
-with As.U; use As.U;
+with As.U;
 with Common,  Output, Words, Parser_Ada;
 
 procedure Parse_Entry (Level : in Natural) is
-  Name, Family, Last_Id : Asu_Us;
+  Name, Family, Last_Id : As.U.Asu_Us;
   Word : Parser_Ada.Word_Rec;
   In_Id, In_Parent : Boolean;
   use type Parser_Ada.Lexical_Kind_List;

@@ -1,5 +1,4 @@
-with As.B; use As.B;
-with Normal, Lower_Str;
+with As.B, Normal, Lower_Str;
 package body Image is
 
   function Piece_Image (Piece_Kind : Pieces.Piece_Kind_List) return String is
@@ -29,7 +28,7 @@ package body Image is
   function Move_Image (Action : Game.Valid_Action_Rec;
                        Result : Game.Move_Status_List) return Move_Str is
     -- Result
-    Res : Asb_Bs(10);
+    Res : As.B.Asb_Bs(10);
     Str : Move_Str := (others => ' ');
 
     function Image (Square : in Space.Square_Coordinate) return String is
