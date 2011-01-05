@@ -1,6 +1,5 @@
 -- List of ada source files parsed
-with Argument_Parser, Hashed_List.Unique;
-with As.U; use As.U;
+with As.U, Argument_Parser, Hashed_List.Unique;
 package Sourcer is
 
   -- Kind of ada source
@@ -14,19 +13,19 @@ package Sourcer is
     -- Kind of unit in file
     Kind : Src_Kind_List := Unit_Spec;
     -- Full unit name - MixedStr
-    Unit : Asu_Us;
+    Unit : As.U.Asu_Us;
     -- Full file path name
-    File : Asu_Us;
+    File : As.U.Asu_Us;
     -- Standalone indicator: spec without body or body without spec
     Standalone : Boolean := False;
     -- Unit name of parent (if Child or subunit)
-    Parent : Asu_Us;
+    Parent : As.U.Asu_Us;
     -- List of withed units - @unit@unit...@unit@
-    Witheds : Asu_Us;
+    Witheds : As.U.Asu_Us;
     -- List of used units - @unit@unit...@unit@
-    Useds : Asu_Us;
+    Useds : As.U.Asu_Us;
     -- List of subunits (if Body or subunit)  - @unit@unit...@unit@
-    Subunits : Asu_Us;
+    Subunits : As.U.Asu_Us;
   end record;
 
   -- Unique list of parsed source descriptors
@@ -46,7 +45,7 @@ package Sourcer is
 
   -- Some utilities
   -- Does a unit name contain a '.'
-  function Has_Dot (Unit : in Asu_Us) return Boolean;
+  function Has_Dot (Unit : in As.U.Asu_Us) return Boolean;
 
   -- Get parent of Dscr (body or subunit)
   -- Return Dscr itself if it is a Unit_Spec

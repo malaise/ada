@@ -1,5 +1,5 @@
 with Ada.Text_Io, Ada.Exceptions;
-with Afpx, Con_Io, Normal, My_Math, Text_Handler, Language;
+with Afpx, Con_Io, Normal, My_Math, As.B, Language;
 with Mesu_Def, Str_Mng, Mesu_Nam, Pers_Mng, Pers_Def, Mesu_Fil;
 use Pers_Def;
 package body Mesu_Gra is
@@ -268,7 +268,7 @@ package body Mesu_Gra is
     Sec1, Sec2 : Natural;
     Bpm1, Bpm2 : Pers_Def.Bpm_Range;
     Mesure : Mesu_Def.Mesure_Rec renames Mesure_Array(No).Mesure;
-    Title_Txt : Text_Handler.Text(Con_Io.Col_Range'Last);
+    Title_Txt : As.B.Asb_Bs(Con_Io.Col_Range'Last);
   begin
     Con_Io.Set_Foreground (Colors(No));
     -- Person and date
@@ -286,7 +286,7 @@ package body Mesu_Gra is
          & Mesure_Array(No).Person.Activity & " "
          & Str_Mng.To_Printed_Str(Mesure.Date) & " "
          & Mesure.Comment);
-    Con_Io.Put (Title_Txt.Value);
+    Con_Io.Put (Title_Txt.Image);
 
     if Mesure.Samples(2) = Pers_Def.Bpm_Range'First then
       return;

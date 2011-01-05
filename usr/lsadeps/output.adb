@@ -1,5 +1,4 @@
-with Basic_Proc, Directory;
-with As.U.Utils; use As.U, As.U.Utils;
+with As.U.Utils, Basic_Proc, Directory;
 with Debug, Sourcer, Tree_Mng, Sort;
 package body Output is
 
@@ -12,6 +11,7 @@ package body Output is
   -- Is Dscr a parent (spec for a body, body of a subunit)
   --  of current tree element
   function Is_Parent  (Parent, Current : Sourcer.Src_Dscr) return Boolean is
+    use type As.U.Asu_Us;
   begin
     if Parent.Unit.Is_Null then
       -- Tree root
@@ -34,9 +34,9 @@ package body Output is
   Level : Natural := 0;
   procedure Tree_Unit_Iterator (Parent : in Sourcer.Src_Dscr) is
     Dscr : Tree_Mng.Src_Dscr;
-    Str : Asu_Us;
+    Str : As.U.Asu_Us;
     Incr : Boolean := False;
-    Name : Asu_Us;
+    Name : As.U.Asu_Us;
     Nb_Children : Natural;
     use type Sourcer.Src_Kind_List;
   begin
@@ -60,7 +60,7 @@ package body Output is
         -- Discard if we are body or subunit of parent
         if Is_Parent (Parent, Dscr.Dscr) then
           -- Don't display this entry
-          Name := Asu_Null;
+          Name := As.U.Asu_Null;
         else
           -- Put unit name, body ancestor of the subunit
           if Dscr.Dscr.Kind = Sourcer.Subunit then
@@ -109,7 +109,7 @@ package body Output is
   -- Dump files of tree
   function Tree_File_Iterator (Dscr : Tree_Mng.Src_Dscr;
                                Level : Natural) return Boolean is
-    Str : Asu_Us;
+    Str : As.U.Asu_Us;
     use type Sourcer.Src_Kind_List;
   begin
     -- Discard Looping info
@@ -141,14 +141,14 @@ package body Output is
   -- LIST --
   ----------
   -- Unique list of entries (units or files)
-  Ulist : Asu_Unique_List_Mng.Unique_List_Type;
+  Ulist : As.U.Utils.Asu_Unique_List_Mng.Unique_List_Type;
   -- Dynamic list of sorted entries (units or files)
-  Dlist : Asu_Dyn_List_Mng.List_Type;
+  Dlist : As.U.Utils.Asu_Dyn_List_Mng.List_Type;
   -- List Units of tree
   function List_Unit_Iterator (Dscr : Tree_Mng.Src_Dscr;
                                Level : Natural) return Boolean is
     pragma Unreferenced (Level);
-    Name : Asu_Us;
+    Name : As.U.Asu_Us;
     use type Sourcer.Src_Kind_List;
   begin
     -- Discard Looping info
@@ -172,7 +172,7 @@ package body Output is
       end if;
     end if;
     -- PathOfFile / UnitName
-    Ulist.Insert (Tus (
+    Ulist.Insert (As.U.Tus (
         Directory.Build_File_Name (
             Directory.Dirname (Dscr.Dscr.File.Image), Name.Image, "")));
     return True;
@@ -195,7 +195,7 @@ package body Output is
 
   -- Put list of units or files
   procedure Put_List (File_Mode : in Boolean) is
-    Str : Asu_Us;
+    Str : As.U.Asu_Us;
     Moved : Boolean;
   begin
     -- Build unique list of entries

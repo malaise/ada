@@ -1,5 +1,5 @@
 with Ada.Text_Io;
-with As.U.Utils; use As.U, As.U.Utils;
+with As.U.Utils;
 with My_Math, Get_Line, Get_Float;
 
 package body File is
@@ -21,7 +21,7 @@ package body File is
   function Read (File_Name : String) return Types.Mattrix_Rec is
 
     package My_Get_Line is new Get_Line(Comment => "#");
-    Line  : Asu_Ua.Unbounded_Array;
+    Line  : As.U.Utils.Asu_Ua.Unbounded_Array;
     Dim : Positive;
     F   : Float_Cell_Range;
 

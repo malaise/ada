@@ -1,11 +1,11 @@
-with Text_Handler, Argument, My_Io, Normal;
+with As.B, Argument, My_Io, Normal;
 with Pers_Def, Pers_Fil, Pers_Mng;
 
 procedure Ins_Pers is
   Person, Got_Person : Pers_Def.Person_Rec;
   Nn, Na, Nt : Positive;
-  Name_Txt : Text_Handler.Text(Person.Name'Length);
-  Acti_Txt : Text_Handler.Text(Person.Activity'Length);
+  Name_Txt : As.B.Asb_Bs(Person.Name'Length);
+  Acti_Txt : As.B.Asb_Bs(Person.Activity'Length);
   Pos : Natural;
   C : Character;
   List_Length : Natural;
@@ -73,14 +73,14 @@ begin
       Name_Txt.Append (' ');
     end if;
   end loop;
-  Person.Name(1 .. Name_Txt.Length) := Name_Txt.Value;
+  Person.Name(1 .. Name_Txt.Length) := Name_Txt.Image;
   for I in Na + 1 .. Nt - 1 loop
     Acti_Txt.Append (String'(Argument.Get_Parameter (I)));
     if I /= Nt - 1 then
       Acti_Txt.Append (' ');
     end if;
   end loop;
-  Person.Activity(1 .. Acti_Txt.Length) := Acti_Txt.Value;
+  Person.Activity(1 .. Acti_Txt.Length) := Acti_Txt.Image;
   for I in Nt + 1 .. Argument.Get_Nbre_Arg loop
     Person.Tz(I-Nt) := Pers_Def.Bpm_Range'Value(Argument.Get_Parameter(I));
   end loop;

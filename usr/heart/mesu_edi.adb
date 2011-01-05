@@ -1,5 +1,5 @@
 with Con_Io, Afpx, Normal, Get_Line;
-with As.U.Utils; use As.U, As.U.Utils;
+with As.U.Utils;
 with Pers_Def, Pers_Mng, Mesu_Def, Mesu_Fil, Str_Mng;
 use Afpx;
 -- with Mesu_Nam;
@@ -55,7 +55,7 @@ package body Mesu_Edi is
             := (others => Pers_Def.Bpm_Range'First);
     Samples_Index : Mesu_Def.Sample_Nb_Range := Mesu_Def.Sample_Nb_Range'First;
     package Get_Sample is new Get_Line (Comment => "#");
-    Sample_Line : Asu_Ua.Unbounded_Array;
+    Sample_Line : As.U.Utils.Asu_Ua.Unbounded_Array;
   begin
     Ok := False;
     -- Check if file name is empty

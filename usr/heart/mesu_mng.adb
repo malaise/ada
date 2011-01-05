@@ -1,5 +1,4 @@
 with Con_Io, Afpx, Normal, Dir_Mng;
-with As.U; use As.U;
 with Mesu_Edi, Pers_Mng, Mesu_Def, Mesu_Sel, Mesu_Nam, Pers_Lis, Mesu_Fil,
      Mesu_Prt, Mesu_Gra;
 use Afpx;

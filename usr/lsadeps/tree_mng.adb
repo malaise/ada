@@ -1,5 +1,4 @@
-with As.U; use As.U;
-with String_Mng, Dynamic_List;
+with As.U, String_Mng, Dynamic_List;
 with Debug, Basic_Proc, Parser;
 package body Tree_Mng is
 
@@ -27,7 +26,7 @@ package body Tree_Mng is
                         Revert : in Boolean);
 
   -- Build the children (subunits or withed specs)
-  procedure Build_Children (List : in Asu_Us;
+  procedure Build_Children (List : in As.U.Asu_Us;
                             Kind : in Sourcer.Src_Kind_List;
                             Revert : in Boolean) is
     Iter : Parser.Iterator;
@@ -44,7 +43,7 @@ package body Tree_Mng is
     Iter.Set (List.Image, Is_Sep'Access);
     loop
       Crit.Kind := Kind;
-      Crit.Unit := Tus (Iter.Next_Word);
+      Crit.Unit := As.U.Tus (Iter.Next_Word);
       exit when Crit.Unit.Is_Null;
       -- Look for unit and insert it in tree
       if Kind = Sourcer.Unit_Spec then
@@ -115,7 +114,7 @@ package body Tree_Mng is
   procedure Build_Node (Origin : in Sourcer.Src_Dscr; Revert : in Boolean) is
     Found : Boolean;
     Child : Sourcer.Src_Dscr;
-    Kind : Asu_Us;
+    Kind : As.U.Asu_Us;
   begin
     -- Insert ourself
     if Tree.Is_Empty then
@@ -139,12 +138,12 @@ package body Tree_Mng is
     -- Any unit: Insert withed
     -- In revert:  insert units withing spec or standalone body
     if not Revert then
-      Kind :=  Tus ("withed");
+      Kind :=  As.U.Tus ("withed");
       Build_Children (Origin.Witheds, Sourcer.Unit_Spec, Revert);
     elsif Origin.Kind = Sourcer.Unit_Spec
           or else (Origin.Kind = Sourcer.Unit_Body
                    and then Origin.Standalone) then
-      Kind :=  Tus ("withing");
+      Kind :=  As.U.Tus ("withing");
       Build_Withings (Origin.Unit.Image);
     end if;
 
@@ -153,7 +152,7 @@ package body Tree_Mng is
     and then (Origin.Kind = Sourcer.Unit_Spec
        or else (Origin.Kind = Sourcer.Unit_Body and then Origin.Standalone) )
     and then Sourcer.Has_Dot (Origin.Unit) then
-      Kind := Tus ("parent");
+      Kind := As.U.Tus ("parent");
       Child.Unit := Origin.Parent;
       Child.Kind := Sourcer.Unit_Spec;
       Sourcer.List.Read (Child);
@@ -162,7 +161,7 @@ package body Tree_Mng is
 
     -- A spec: Insert body
     if Origin.Kind = Sourcer.Unit_Spec then
-      Kind := Tus ("body");
+      Kind := As.U.Tus ("body");
       if not Origin.Standalone then
         Child.Unit := Origin.Unit;
         Child.Kind := Sourcer.Unit_Body;
@@ -174,7 +173,7 @@ package body Tree_Mng is
     -- A Body or subunit: Insert subunits
     if Origin.Kind = Sourcer.Unit_Body
     or else Origin.Kind = Sourcer.Subunit then
-      Kind := Tus ("subunit");
+      Kind := As.U.Tus ("subunit");
       Build_Children (Origin.Subunits, Sourcer.Subunit, Revert);
     end if;
 
@@ -191,7 +190,7 @@ package body Tree_Mng is
   -- Dump one element of the tree
   function Dump_One (Dscr : in Src_Dscr;
                      Level : in Natural) return Boolean is
-    Str : Asu_Us;
+    Str : As.U.Asu_Us;
   begin
     for I in 1 .. Level loop
       Str.Append ("  ");

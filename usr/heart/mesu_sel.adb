@@ -1,5 +1,4 @@
 with Ada.Sequential_Io;
-with As.U; use As.U;
 with Dir_Mng;
 with Pers_Mng, Str_Mng, Mesu_Fil;
 

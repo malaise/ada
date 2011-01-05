@@ -1,6 +1,5 @@
 with Ada.Exceptions;
-with Argument, Argument_Parser, Basic_Proc, Mixed_Str;
-with As.U; use As.U;
+with As.U, Argument, Argument_Parser, Basic_Proc, Mixed_Str;
 with Debug, Sourcer, Tree_Mng, Sort, Output, Checker;
 procedure Lsadeps is
 
@@ -42,13 +41,13 @@ procedure Lsadeps is
 
   -- The keys and descriptor of parsed keys
   Keys : constant Argument_Parser.The_Keys_Type := (
-   01 => ('l', Tus ("list"), False, False),
-   02 => ('t', Tus ("tree"), False, False),
-   03 => ('r', Tus ("revert"), False, False),
-   04 => ('f', Tus ("files"), False, False),
-   05 => ('I', Tus ("include"), True, True),
-   06 => ('h', Tus ("help"), False, False),
-   07 => ('c', Tus ("check"), False, False));
+   01 => ('l', As.U.Tus ("list"), False, False),
+   02 => ('t', As.U.Tus ("tree"), False, False),
+   03 => ('r', As.U.Tus ("revert"), False, False),
+   04 => ('f', As.U.Tus ("files"), False, False),
+   05 => ('I', As.U.Tus ("include"), True, True),
+   06 => ('h', As.U.Tus ("help"), False, False),
+   07 => ('c', As.U.Tus ("check"), False, False));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
   -- Option management
@@ -56,8 +55,8 @@ procedure Lsadeps is
   Revert_Mode : Boolean := False;
   File_Mode : Boolean := False;
   Check_Mode : Boolean := False;
-  Target : Asu_Us;
-  Dir : Asu_Us;
+  Target : As.U.Asu_Us;
+  Dir : As.U.Asu_Us;
 
   -- Unit descriptor
   Unit : Sourcer.Src_Dscr;
@@ -117,7 +116,7 @@ begin
     elsif Arg_Dscr.Get_Nb_Embedded_Arguments /= 0 then
       Error ("Invalid argument");
     end if;
-    Target := Tus (Arg_Dscr.Get_Option (Argument_Parser.No_Key_Index));
+    Target := As.U.Tus (Arg_Dscr.Get_Option (Argument_Parser.No_Key_Index));
   end if;
 
   if Check_Mode then
@@ -129,11 +128,11 @@ begin
     -- Includes: must not be empty
     -- Declare include priorities
     for I in 1 .. Arg_Dscr.Get_Nb_Occurences (5) loop
-      Dir := Tus (Arg_Dscr.Get_Option (5, I));
+      Dir := As.U.Tus (Arg_Dscr.Get_Option (5, I));
       if Dir.Is_Null then
         Error ("Missing include dir");
       end if;
-      Sort.Set_Prio (Tus (Arg_Dscr.Get_Option (5, I)), I);
+      Sort.Set_Prio (As.U.Tus (Arg_Dscr.Get_Option (5, I)), I);
     end loop;
   end if;
 
@@ -157,7 +156,7 @@ begin
   -- CHECK TARGET --
   ------------------
   -- Check that target is found, as spec or standalone body and is local
-  Unit.Unit := Tus (Mixed_Str (Target.Image));
+  Unit.Unit := As.U.Tus (Mixed_Str (Target.Image));
   Unit.Kind := Sourcer.Unit_Spec;
   Sourcer.List.Search (Unit, Found);
   if not Found then

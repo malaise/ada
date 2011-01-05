@@ -12,6 +12,7 @@ package body Sourcer is
     To := Val;
   end Set;
   function "=" (Current : Src_Dscr; Criteria : Src_Dscr) return Boolean is
+    use type As.U.Asu_Us;
   begin
     return Current.Kind = Criteria.Kind
     and then Current.Unit = Criteria.Unit;
@@ -53,7 +54,7 @@ package body Sourcer is
   -- Get next significant word (reserved or identifier or delimiter)
   -- (skips comments, separators, literals)
   procedure Next_Word (Txt : in Text_Char.File_Type;
-                       Word : out Asu_Us;
+                       Word : out As.U.Asu_Us;
                        Lexic : out Ada_Parser.Lexical_Kind_List) is
     use type Ada_Parser.Lexical_Kind_List;
   begin
@@ -73,28 +74,28 @@ package body Sourcer is
     Fd : Sys_Calls.File_Desc;
     Txt : Text_Char.File_Type;
     -- File root: path/prefix
-    Root_File : Asu_Us;
+    Root_File : As.U.Asu_Us;
     -- Last Minus '-' separator index in file name
     Minus : Natural;
     -- Ada_Parser stuff
-    Word : Asu_Us;
+    Word : As.U.Asu_Us;
     Lexic : Ada_Parser.Lexical_Kind_List;
-    use type Ada_Parser.Lexical_Kind_List;
     -- Are we in a with / a use statement
     In_With : Boolean;
     In_Use : Boolean;
     -- Is prev delimiter a "."
     Prev_Dot : Boolean;
+    use type As.U.Asu_Us, Ada_Parser.Lexical_Kind_List;
   begin
     -- Store local or full file name
     if Dir = "." then
-      Dscr.File := Tus (File);
+      Dscr.File := As.U.Tus (File);
     else
-      Dscr.File := Tus (Directory.Build_File_Name (Dir, File, ""));
+      Dscr.File := As.U.Tus (Directory.Build_File_Name (Dir, File, ""));
     end if;
 
     -- Set Kind according to file name, check if standalone
-    Root_File := Tus (Directory.Build_File_Name (Dir,
+    Root_File := As.U.Tus (Directory.Build_File_Name (Dir,
                             Directory.File_Prefix (File), ""));
     if Directory.File_Suffix (File) = ".ads" then
       Dscr.Kind := Unit_Spec;
@@ -108,19 +109,19 @@ package body Sourcer is
     -- Locate last '-' if any, save parent
     Minus := String_Mng.Locate (File, "-", Forward => False);
     if Minus = 0 then
-      Dscr.Parent := Asu_Null;
-      Dscr.Unit := Tus (Directory.File_Prefix (File));
+      Dscr.Parent := As.U.Asu_Null;
+      Dscr.Unit := As.U.Tus (Directory.File_Prefix (File));
     else
       -- '-' indicates either a child unit or a subunit
       -- Parsing "separate" will identify subunits
       -- Full unit name (parent.unit) without suffix
-      Dscr.Parent := Tus (Mixed_Str (
+      Dscr.Parent := As.U.Tus (Mixed_Str (
          String_Mng.Replace (File(File'First .. Minus - 1), "-", ".")));
       Dscr.Unit := Dscr.Parent & "."
                & Directory.File_Prefix (File(Minus+1 .. File'Last));
     end if;
-    Dscr.Unit := Tus (Mixed_Str (Dscr.Unit.Image));
-    Dscr.Witheds := Asu_Null;
+    Dscr.Unit := As.U.Tus (Mixed_Str (Dscr.Unit.Image));
+    Dscr.Witheds := As.U.Asu_Null;
 
     if Debug.Is_Set then
       Basic_Proc.Put_Line_Output ("Parsing file " & Dscr.File.Image);
@@ -154,7 +155,7 @@ package body Sourcer is
           -- End of context clause of subunit
           -- Parsing of file name must have led to child body
           if Dscr.Kind /= Unit_Body
-          or else Dscr.Parent = Asu_Null then
+          or else Dscr.Parent = As.U.Asu_Null then
             Error ("Unexpected separate in unit");
           end if;
           Dscr.Kind := Subunit;
@@ -213,7 +214,7 @@ package body Sourcer is
   -- Parse the files of a dir
   procedure Parse_Dir (Dir : in String) is
     Dir_Desc : Directory.Dir_Desc;
-    File_Name : Asu_Us;
+    File_Name : As.U.Asu_Us;
     use type Directory.File_Kind_List;
   begin
     begin
@@ -227,7 +228,7 @@ package body Sourcer is
     loop
       -- Get entry
       begin
-        File_Name := Tus (Directory.Next_Entry (Dir_Desc));
+        File_Name := As.U.Tus (Directory.Next_Entry (Dir_Desc));
       exception
         when Directory.End_Error =>
           -- End of this dir
@@ -256,6 +257,7 @@ package body Sourcer is
     -- Unique list indicators
     Moved : Boolean;
     Found : Boolean;
+    use type As.U.Asu_Us;
   begin
     -- Process local then include dirs
     Parse_Dir (".");
@@ -344,7 +346,7 @@ package body Sourcer is
         -- Update list of subunits of parent
         if Dscr.Kind = Subunit then
           if Crit.Subunits.Is_Null then
-            Crit.Subunits := Tus (Separator & "");
+            Crit.Subunits := As.U.Tus (Separator & "");
           end if;
           Crit.Subunits.Append (Dscr.Unit & Separator);
           List.Insert (Crit);
@@ -364,7 +366,7 @@ package body Sourcer is
   end Build_List;
 
   -- Does a unit name contain a '.'
-  function Has_Dot (Unit : in Asu_Us) return Boolean is
+  function Has_Dot (Unit : in As.U.Asu_Us) return Boolean is
   begin
     return String_Mng.Locate (Unit.Image, ".") /= 0;
   end Has_Dot;

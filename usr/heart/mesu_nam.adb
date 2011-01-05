@@ -1,6 +1,5 @@
 with Ada.Calendar;
-with As.U; use As.U;
-with Perpet, Normal, Text_Handler, Dir_Mng;
+with As.U, As.B, Perpet, Normal, Dir_Mng;
 with Pers_Def;
 package body Mesu_Nam is
 
@@ -179,6 +178,7 @@ package body Mesu_Nam is
     File_Name : File_Name_Str;
 
     function Less_Than (L, R : Dir_Mng.File_Entry_Rec) return Boolean is
+      use type As.U.Asu_Us;
     begin
       return L.Name < R.Name;
     end Less_Than;
@@ -187,8 +187,8 @@ package body Mesu_Nam is
 
   begin
     -- Check no wild_char
-    if      Text_Handler.Locate (Text_Handler.To_Text(Date), Wild_Char) /= 0
-    or else Text_Handler.Locate (Text_Handler.To_Text(Pid),  Wild_Char) /= 0 then
+    if      As.B.Locate (As.B.Tbs (Date), Wild_Char & "" ) /= 0
+    or else As.B.Locate (As.B.Tbs (Pid),  Wild_Char & "" ) /= 0 then
       raise File_Name_Error;
     end if;
     -- build date??.pid

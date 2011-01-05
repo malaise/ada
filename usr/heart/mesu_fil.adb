@@ -1,5 +1,5 @@
 with Ada.Direct_Io;
-with Normal, Text_Handler;
+with Normal, As.B;
 with Pers_Def;
 package body Mesu_Fil is
 
@@ -108,7 +108,7 @@ package body Mesu_Fil is
   procedure Delete (File_Name : in Mesu_Nam.File_Name_Str) is
   begin
     -- No space in file_name
-    if Text_Handler.Locate (Text_Handler.To_Text(File_Name), ' ') /= 0 then
+    if As.B.Locate (As.B.Tbs (File_Name), " ") /= 0 then
       raise File_Name_Error;
     end if;
     Open (File_Name);

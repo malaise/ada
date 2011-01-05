@@ -1,6 +1,5 @@
 -- Parses command line and returns enigma definition
 with Ada.Exceptions;
-with As.U; use As.U;
 with Argument, Xml_Parser, Environ, String_Mng, Parser, Int_Image;
 with Io_Manager;
 package body Definition is

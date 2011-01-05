@@ -1,5 +1,5 @@
 with Ada.Text_Io, Ada.Characters.Latin_1;
-with Argument, Basic_Proc, Text_Handler, Con_Io, Afpx, String_Mng, Language;
+with As.B, Argument, Basic_Proc, Con_Io, Afpx, String_Mng, Language;
 with Conv, Lat_Lon, String_Util, Great_Circle;
 
 procedure T_Gc is
@@ -71,26 +71,26 @@ procedure T_Gc is
                           Ok : out Boolean;
                           Cursor : in out Afpx.Field_Range) is
     -- Two '"' added in Afpx screen
-    Point_Txt : Text_Handler.Text(String_Util.Coord_Str'Length+2);
+    Point_Txt : As.B.Asb_Bs(String_Util.Coord_Str'Length+2);
   begin
-    Point_Txt.Empty;
+    Point_Txt.Set_Null;
     for Field in First_Fld .. Last_Fld loop
       Point_Txt.Append (Afpx.Decode_Field(Field, 0));
     end loop;
     if Debug then
-      Ada.Text_Io.Put_Line ("Decoded point: " & Point_Txt.Value);
+      Ada.Text_Io.Put_Line ("Decoded point: " & Point_Txt.Image);
     end if;
     -- Replace Ndd°mm'ss"/Eddd°mm'ss" by Ndd.mm.ss/Eddd.mm.ss
     -- "°" has already been replaced by " " in Afpx.Decode_Field
-    Point_Txt.Set (String_Mng.Replace (Point_Txt.Value, " ", "."));
-    Point_Txt.Set (String_Mng.Replace (Point_Txt.Value, "'", "."));
-    Point_Txt.Set (String_Mng.Replace (Point_Txt.Value, """", ""));
+    Point_Txt.Set (String_Mng.Replace (Point_Txt.Image, " ", "."));
+    Point_Txt.Set (String_Mng.Replace (Point_Txt.Image, "'", "."));
+    Point_Txt.Set (String_Mng.Replace (Point_Txt.Image, """", ""));
     if Debug then
-      Ada.Text_Io.Put_Line ("Parsed point: " & Point_Txt.Value);
+      Ada.Text_Io.Put_Line ("Parsed point: " & Point_Txt.Image);
     end if;
-    Point := String_Util.Str2Geo(Point_Txt.Value);
+    Point := String_Util.Str2Geo(Point_Txt.Image);
     if Debug then
-      Ada.Text_Io.Put_Line ("Got point OK: " & Point_Txt.Value);
+      Ada.Text_Io.Put_Line ("Got point OK: " & Point_Txt.Image);
     end if;
     Ok := True;
   exception

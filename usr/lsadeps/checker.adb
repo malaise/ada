@@ -1,5 +1,4 @@
 with Basic_Proc, String_Mng, Dynamic_List, Parser;
- with As.U; use As.U;
 with Sourcer;
 package body Checker is
 

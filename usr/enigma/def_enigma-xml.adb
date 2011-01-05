@@ -1,4 +1,3 @@
-with As.U; use As.U;
 with Xml_Parser, Environ;
 separate (Def_Enigma)
 package body Xml is

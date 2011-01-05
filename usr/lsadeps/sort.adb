@@ -3,7 +3,7 @@ with Hashed_List.Unique;
 package body Sort is
   -- Unique list of prios
   type Prio_Rec is record
-    Path : Asu_Us;
+    Path : As.U.Asu_Us;
     Prio : Positive;
   end record;
   type Prio_Access is access all Prio_Rec;
@@ -12,6 +12,7 @@ package body Sort is
     To := Val;
   end Set;
   function "=" (L, R : Prio_Rec) return Boolean is
+   use type As.U.Asu_Us;
   begin
     return L.Path = R.Path;
   end "=";
@@ -25,12 +26,12 @@ package body Sort is
   Prio_List : Prio_List_Mng.Unique_List_Type;
 
   -- Set the priority level of a path (1 = Higest)
-  procedure Set_Prio (Path : Asu_Us; Prio : Positive) is
+  procedure Set_Prio (Path : As.U.Asu_Us; Prio : Positive) is
     R : Prio_Rec;
     L : Natural;
   begin
     -- Remove trailing '/' if not "/"
-    R.Path := Tus (Directory.Make_Full_Path (Path.Image));
+    R.Path := As.U.Tus (Directory.Make_Full_Path (Path.Image));
     R.Prio := Prio;
     L := R.Path.Length;
     if L > 1 and then R.Path.Element (L) = '/' then
@@ -46,7 +47,7 @@ package body Sort is
   --  Then in order of prio
   --  Then the entries without prio
   --  At each level in alpha order, but .ads then .adb
-  function Less_Than (E1, E2 : Asu_Us) return Boolean is
+  function Less_Than (E1, E2 : As.U.Asu_Us) return Boolean is
     D1 : constant String := Directory.Dirname (E1.Image);
     D2 : constant String := Directory.Dirname (E2.Image);
     R1, R2 : Prio_Rec;
@@ -69,7 +70,7 @@ package body Sort is
       Found : Boolean;
     begin
      -- Search Dir without last '/'
-      R.Path := Tus (D);
+      R.Path := As.U.Tus (D);
       R.Path.Delete (R.Path.Length, R.Path.Length);
       Prio_List.Search (R, Found);
       if Found then
@@ -92,9 +93,9 @@ package body Sort is
     return File_Less_Than;
   end Less_Than;
 
-  procedure Path_Sort is new Asu_Dyn_List_Mng.Sort (Less_Than);
+  procedure Path_Sort is new As.U.Utils.Asu_Dyn_List_Mng.Sort (Less_Than);
 
-  procedure Sort (List : in out Asu_Dyn_List_Mng.List_Type) is
+  procedure Sort (List : in out As.U.Utils.Asu_Dyn_List_Mng.List_Type) is
   begin
     Path_Sort (List);
   end Sort;
