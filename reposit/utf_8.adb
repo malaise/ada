@@ -1,5 +1,4 @@
-with As.U; use As.U;
-with Bit_Ops;
+with As.U, Bit_Ops;
 -- Utf_8 encoding/decoding
 package body Utf_8 is
 
@@ -223,7 +222,7 @@ package body Utf_8 is
 
   -- Encodes a Unicode sequence as a Utf-8 sequence (of sequecnes)
   function Encode (Unicode : Unicode_Sequence) return Sequence is
-    Result : Asu_Us;
+    Result : As.U.Asu_Us;
   begin
     for I in Unicode'Range loop
       Result.Append (Encode (Unicode(I)));

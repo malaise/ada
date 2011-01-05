@@ -1,6 +1,5 @@
 with Ada.Characters.Latin_1;
-with As.U; use As.U;
-with X_Mng, Timers, Unicode, Language;
+with As.U, X_Mng, Timers, Unicode, Language;
 package Generic_Con_Io is
 
   -- The Font
@@ -32,22 +31,22 @@ package Generic_Con_Io is
   subtype Effective_Colors is Colors range Color01 .. Colors'Last;
 
   -- Default colors
-  type Colors_Definition is array (Effective_Colors) of Asu_Us;
+  type Colors_Definition is array (Effective_Colors) of As.U.Asu_Us;
   Default_Colors : constant Colors_Definition
-                 := (Color01 => Tus ("Light_Grey"),
-                     Color02 => Tus ("Blue"),
-                     Color03 => Tus ("Dark_Green"),
-                     Color04 => Tus ("Cyan"),
-                     Color05 => Tus ("Red"),
-                     Color06 => Tus ("Magenta"),
-                     Color07 => Tus ("Brown"),
-                     Color08 => Tus ("Black"),
-                     Color09 => Tus ("Dark_Grey"),
-                     Color10 => Tus ("Light_Blue"),
-                     Color11 => Tus ("Lime_Green"),
-                     Color12 => Tus ("Orange"),
-                     Color13 => Tus ("Yellow"),
-                     Color14 => Tus ("White") );
+                 := (Color01 => As.U.Tus ("Light_Grey"),
+                     Color02 => As.U.Tus ("Blue"),
+                     Color03 => As.U.Tus ("Dark_Green"),
+                     Color04 => As.U.Tus ("Cyan"),
+                     Color05 => As.U.Tus ("Red"),
+                     Color06 => As.U.Tus ("Magenta"),
+                     Color07 => As.U.Tus ("Brown"),
+                     Color08 => As.U.Tus ("Black"),
+                     Color09 => As.U.Tus ("Dark_Grey"),
+                     Color10 => As.U.Tus ("Light_Blue"),
+                     Color11 => As.U.Tus ("Lime_Green"),
+                     Color12 => As.U.Tus ("Orange"),
+                     Color13 => As.U.Tus ("Yellow"),
+                     Color14 => As.U.Tus ("White") );
 
   -- Set_Colors raises Already_Init if called after Initialise
   Already_Init : exception;

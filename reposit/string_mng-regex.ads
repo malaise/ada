@@ -1,7 +1,7 @@
 -- More powerfull search and substitution in strings,
 --  based on regular expressions (extended, case sensitive and matching
 --  newline).
-with As.U.Utils; use As.U, As.U.Utils;
+with As.U.Utils;
 with Regular_Expressions;
 package String_Mng.Regex is
 
@@ -63,7 +63,7 @@ package String_Mng.Regex is
   -- Split Str into several substrings that match the substrings "(...)"
   --  of the criteria.
   -- Returns the array of slices (empty array if Str does not strictly match).
-  type String_Slice is array (Positive range <>) of Asu_Us;
+  type String_Slice is array (Positive range <>) of As.U.Asu_Us;
   function Split (Str : String;
                   Criteria : String;
                   Max_Slices : Positive) return String_Slice;
@@ -73,6 +73,6 @@ package String_Mng.Regex is
   -- Returns the array of slices (Str at pos 1 if no match,
   --   empty slice if Str at all matches Separator).
   function Split_Sep (Str : String; Separator : String)
-           return Asu_Ua.Unb_Array;
+           return As.U.Utils.Asu_Ua.Unb_Array;
 end String_Mng.Regex;
 

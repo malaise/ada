@@ -39,9 +39,9 @@ package body Directory is
     return Result (1 .. Len);
   end Get_Current;
 
-  procedure Get_Current (Cur_Dir : in out Asu_Us) is
+  procedure Get_Current (Cur_Dir : in out As.U.Asu_Us) is
   begin
-    Cur_Dir := Tus (Get_Current);
+    Cur_Dir := As.U.Tus (Get_Current);
   end Get_Current;
 
   function C_Chdir (Path : System.Address) return C_Types.Int;
@@ -106,9 +106,9 @@ package body Directory is
     return Dir_Name(1 .. Len);
   end Next_Entry;
 
-  procedure Next_Entry (Desc : in Dir_Desc; Dir_Entry : in out Asu_Us) is
+  procedure Next_Entry (Desc : in Dir_Desc; Dir_Entry : in out As.U.Asu_Us) is
   begin
-    Dir_Entry := Tus (Next_Entry (Desc));
+    Dir_Entry := As.U.Tus (Next_Entry (Desc));
   end Next_Entry;
 
   procedure C_Rewinddir (Dir : System.Address);
@@ -168,10 +168,10 @@ package body Directory is
 
   function Read_Link (File_Name : String;
                       Recursive : Boolean := True) return String is
-    Orig, Src, Dest : Asu_Us;
+    Orig, Src, Dest : As.U.Asu_Us;
     Iter : Positive;
     Threshold : constant := 1024;
-    use type Sys_Calls.File_Kind_List;
+    use type As.U.Asu_Us, Sys_Calls.File_Kind_List;
   begin
     -- Check file_name  is a link
     if Sys_Calls.File_Stat (File_Name).Kind /= Sys_Calls.Link then
@@ -181,16 +181,16 @@ package body Directory is
       return Read_One_Link(File_Name);
     end if;
 
-    Src := Tus (Make_Full_Path (File_Name));
+    Src := As.U.Tus (Make_Full_Path (File_Name));
     Iter := 1;
     loop
       -- Current is a link, read it,
-      Dest := Tus (Read_One_Link(Src.Image));
+      Dest := As.U.Tus (Read_One_Link(Src.Image));
       if Dest.Length >= 1 and then Dest.Element (1) /= Separator then
         -- Link is relative, append apth of source
-        Dest := Tus (Dirname (Src.Image)) & Dest;
+        Dest := As.U.Tus (Dirname (Src.Image)) & Dest;
       end if;
-      Dest := Tus (Make_Full_Path (Dest.Image));
+      Dest := As.U.Tus (Make_Full_Path (Dest.Image));
       -- Done when not a link
       exit when Sys_Calls.File_Stat (Dest.Image).Kind /= Sys_Calls.Link;
 
@@ -214,10 +214,10 @@ package body Directory is
 
 
   procedure Read_Link (File_Name : in String;
-                       Target : in out Asu_Us;
+                       Target : in out As.U.Asu_Us;
                        Recursive : in Boolean := True) is
   begin
-    Target := Tus (Read_Link(File_Name, Recursive));
+    Target := As.U.Tus (Read_Link(File_Name, Recursive));
   end Read_Link;
 
 
@@ -253,13 +253,13 @@ package body Directory is
   -- - then recusively replace any "<name>/.." by "" (<name> /= "..")
   -- - then recusively replace any leading "/.." by ""
   function Normalize_Path (Path : String) return String is
-    Res : Asu_Us;
+    Res : As.U.Asu_Us;
     Start, First, Second, Init : Natural;
     Sep_Char : constant Character := '/';
     Sep_Str : constant String := Sep_Char & "";
   begin
     -- Append a "/" if ending by "/." or "/.."
-    Res := Tus (Path);
+    Res := As.U.Tus (Path);
     if (Path'Length >= 2
         and then Path(Path'Last - 1 .. Path'Last) = "/.")
     or else (Path'Length >= 3

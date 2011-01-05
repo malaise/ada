@@ -1,4 +1,3 @@
-with As.U; use As.U;
 with Xml_Parser;
 package body Byte_To_Unicode is
 

@@ -1,4 +1,4 @@
-with As.U; use As.U;
+with As.U;
 package Argument is
 
   -- Extracts arguments from command line:
@@ -77,7 +77,7 @@ package Argument is
 
   -- Same but with unbounded string
   procedure Get_Parameter (
-   Parameter : out Asu_Us;
+   Parameter : out As.U.Asu_Us;
    Occurence : in Natural := 1;
    Param_Key : in String := Any_Arg);
 
@@ -91,7 +91,7 @@ package Argument is
 
   -- Result is unbounded string and position
   procedure Get_Param_And_Pos (
-   Parameter : out Asu_Us;
+   Parameter : out As.U.Asu_Us;
    Position : out Natural;
    Occurence : in Natural := 1;
    Param_Key : in String := Any_Arg);

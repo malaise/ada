@@ -1,4 +1,4 @@
-with As.U; use As.U;
+with As.U;
 package body String_Mng is
 
   -- Parces spaces and tabs (latin_1.Ht) from the head/tail of a string
@@ -352,7 +352,7 @@ package body String_Mng is
 
 
     -- The string to work on
-    Ustr : Asu_Us;
+    Ustr : As.U.Asu_Us;
     -- Last index of Ustr
     Last_Index : Natural;
 
@@ -409,7 +409,7 @@ package body String_Mng is
     end if;
 
     -- Store input string and its last index
-    Ustr := Tus (Str);
+    Ustr := As.U.Tus (Str);
     Last_Index := Str'Length;
     Level := 0;
 
@@ -488,10 +488,10 @@ package body String_Mng is
 
     -- Remove backslash for delimiters if they have been skipped
     if Skip_Backslashed then
-      Ustr := Tus (Replace (Ustr.Image, "\" & Start_Delimiter,
-                  Start_Delimiter));
-      Ustr := Tus (Replace (Ustr.Image, "\" & Stop_Delimiter,
-                  Stop_Delimiter));
+      Ustr := As.U.Tus (Replace (Ustr.Image, "\" & Start_Delimiter,
+                        Start_Delimiter));
+      Ustr := As.U.Tus (Replace (Ustr.Image, "\" & Stop_Delimiter,
+                        Stop_Delimiter));
     end if;
 
     -- Done
@@ -569,10 +569,10 @@ package body String_Mng is
   --  then replaces '\' & Separator by Separator
   function Split (Str       : String;
                   Separator : Character) return Many_Strings.Many_String is
-    Result : Asu_Us;
+    Result : As.U.Asu_Us;
     Index : Natural;
   begin
-    Result := Tus (Str);
+    Result := As.U.Tus (Str);
     -- Do in reverse so the result of subst does no affect
     --  Is_Backslashed or index
     Index := Result.Length;
@@ -672,7 +672,7 @@ package body String_Mng is
     Len : constant Natural := What'Length;
     Last : constant Natural := Str'Last;
     I : Positive;
-    Result : Asu_Us;
+    Result : As.U.Asu_Us;
   begin
     -- Nothing if what is empty or Str too short
     if Len = 0 or else Str'Length < Len then

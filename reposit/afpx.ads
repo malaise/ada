@@ -1,5 +1,4 @@
-with As.U; use As.U;
-with Unicode, Con_Io, Dynamic_List;
+with As.U, Unicode, Con_Io, Dynamic_List;
 
 package Afpx is
 
@@ -109,7 +108,7 @@ package Afpx is
                           Str      : in Unicode_Sequence);
   procedure Encode_Field (Field_No : in Field_Range;
                           From_Pos : in Con_Io.Full_Square;
-                          Str      : in Asu_Us);
+                          Str      : in As.U.Asu_Us);
 
   -- Decode the content of a row of a field
   -- If Adjust is set, then only Width string characters are
@@ -128,7 +127,7 @@ package Afpx is
                          return Unicode_Sequence;
   procedure Decode_Field (Field_No : in Field_Range;
                           Row      : in Con_Io.Full_Row_Range;
-                          Str      : in out Asu_Us;
+                          Str      : in out As.U.Asu_Us;
                           Adjust   : in Boolean := True);
 
 

@@ -1,11 +1,10 @@
-with As.U; use As.U;
-with Dynamic_List, Directory;
+with As.U, Dynamic_List, Directory;
 package Dir_Mng is
 
   subtype File_Kind_List is Directory.File_Kind_List;
 
   type File_Entry_Rec is record
-    Name : Asu_Us;
+    Name : As.U.Asu_Us;
     Kind : File_Kind_List;
   end record;
   package File_Dyn_List_Mng is
@@ -22,8 +21,8 @@ package Dir_Mng is
                       Dir  : in String := "";
                       Template : in String := "");
   procedure List_Dir (List : in out File_List_Mng.List_Type;
-                      Dir  : in Asu_Us := Asu_Null;
-                      Template : in Asu_Us := Asu_Null);
+                      Dir  : in As.U.Asu_Us := As.U.Asu_Null;
+                      Template : in As.U.Asu_Us := As.U.Asu_Null);
 
   -- To sort files. Directories, then others, by name.
   function Less_Than (El1, El2 : in File_Entry_Rec) return Boolean;

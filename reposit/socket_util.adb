@@ -1,4 +1,3 @@
-with As.U; use As.U;
 package body Socket_Util is
 
   -- Set destination host/lan name or Ip address, and port name or num

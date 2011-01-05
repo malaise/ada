@@ -129,7 +129,7 @@ package body Util is
     or else (Char >= 'A' and then Char <= 'Z');
   end Is_Letter;
 
-  function Is_Valid_Encoding (Name : Asu_Us) return Boolean is
+  function Is_Valid_Encoding (Name : As.U.Asu_Us) return Boolean is
     Char : Character;
   begin
     if Name.Length = 0 then
@@ -181,7 +181,7 @@ package body Util is
   end Is_Valid_In_Name;
 
   -- Check that a Name is correct
-  function Name_Ok (Name : Asu_Us;
+  function Name_Ok (Name : As.U.Asu_Us;
                     Allow_Token : Boolean := False) return Boolean is
   begin
     -- Must not be empty
@@ -211,7 +211,7 @@ package body Util is
   end Name_Ok;
 
   -- Check that Str defines valid names seprated by Sep
-  function Names_Ok (Str : Asu_Us;
+  function Names_Ok (Str : As.U.Asu_Us;
                      Seps : String;
                      Allow_Token : Boolean := False) return Boolean is
     S : constant String(1 .. Str.Length) := Str.Image;
@@ -246,7 +246,7 @@ package body Util is
         exit when I2 > S'Last or else Is_Sep (S(I2));
       end loop;
       -- Check word
-      if not Name_Ok (Tus (S(I1 .. I2 - 1)), Allow_Token) then
+      if not Name_Ok (As.U.Tus (S(I1 .. I2 - 1)), Allow_Token) then
         return False;
       end if;
       -- Done
@@ -271,15 +271,16 @@ package body Util is
                         Is_Error : in Boolean;
                         Msg : in String;
                         Line_No : in Natural) return String is
-    Err_Msg : Asu_Us;
+    Err_Msg : As.U.Asu_Us;
     Put_Line_No : Natural := 0;
+    use type As.U.Asu_Us;
   begin
     if Line_No = 0 then
       Put_Line_No := Get_Line_No(Flow);
     else
       Put_Line_No := Line_No;
     end if;
-    Err_Msg := Tus ("Xml_Parser");
+    Err_Msg := As.U.Tus ("Xml_Parser");
     if Is_Error then
       Err_Msg.Append (" error");
     else
@@ -335,16 +336,16 @@ package body Util is
   -- Start recording
   procedure Start_Recording (Flow : in out Flow_Type) is
   begin
-    Flow.Recorded := Asu_Null;
+    Flow.Recorded := As.U.Asu_Null;
     Flow.Recording := True;
   end Start_Recording;
 
   -- Stop recoding and retrieve recorded data
-  procedure Stop_Recording (Flow : in out Flow_Type; Recorded : out Asu_Us) is
+  procedure Stop_Recording (Flow : in out Flow_Type; Recorded : out As.U.Asu_Us) is
   begin
     Flow.Recording := False;
     Recorded := Flow.Recorded;
-    Flow.Recorded := Asu_Null;
+    Flow.Recorded := As.U.Asu_Null;
   end Stop_Recording;
 
   -- Internal: Get one char on current flow - Raw
@@ -366,7 +367,7 @@ package body Util is
   procedure Get_Char (Flow : in out Flow_Type; Char : out Character) is
     Str2 : Utf_8.Sequence(1 .. 2);
     Seq16 : Utf_16.Sequence(1 .. Utf_16.Max_Chars);
-    Seq8 : Asu_Us;
+    Seq8 : As.U.Asu_Us;
     Unicode : Utf_8.Unicode_Number;
   begin
     if Flow.Curr_Flow.Encod = Utf8 then
@@ -417,7 +418,7 @@ package body Util is
     end if;
 
     -- Get a Utf8 sequence
-    Seq8 := Tus (Utf_8.Encode (Unicode));
+    Seq8 := As.U.Tus (Utf_8.Encode (Unicode));
 
     if Seq8.Length /= 1 then
       -- Re-insert in flow all but first character
@@ -583,7 +584,7 @@ package body Util is
     or else Char = Ada.Characters.Latin_1.Ht;
   end Is_Separator;
 
-  function Is_Separators (Str : Asu_Us) return Boolean is
+  function Is_Separators (Str : As.U.Asu_Us) return Boolean is
   begin
     for I in 1 .. Str.Length loop
       if not Is_Separator (Str.Element (I) ) then
@@ -607,19 +608,19 @@ package body Util is
   end Skip_Separators;
 
   procedure Get_Curr_Str (Flow : in out Flow_Type;
-                          Str : out Asu_Us;
+                          Str : out As.U.Asu_Us;
                           Reset : in Boolean := True) is
 
   begin
     Str := Flow.Curr_Str;
     if Reset then
-      Flow.Curr_Str := Asu_Null;
+      Flow.Curr_Str := As.U.Asu_Null;
     end if;
   end Get_Curr_Str;
 
   procedure Reset_Curr_Str (Flow : in out Flow_Type) is
   begin
-    Flow.Curr_Str := Asu_Null;
+    Flow.Curr_Str := As.U.Asu_Null;
   end Reset_Curr_Str;
 
   -- Replace all separators by spaces
@@ -646,12 +647,12 @@ package body Util is
       Get (Flow, Char);
       if Criteria = "" then
         exit when Is_Separator (Char);
-        Flow.Curr_Str := Flow.Curr_Str & Char;
+        Flow.Curr_Str.Append (Char);
       else
         Read (Flow, Str);
         -- Space in Str matches any separator
         Fix_Spaces (Str);
-        Flow.Curr_Str := Flow.Curr_Str & Char;
+        Flow.Curr_Str.Append (Char);
         exit when Str = Criteria;
       end if;
     end loop;
@@ -679,7 +680,7 @@ package body Util is
           exit This_Char when Char = Criteria(I);
         end if;
       end loop;
-      Flow.Curr_Str := Flow.Curr_Str & Char;
+      Flow.Curr_Str.Append (Char);
     end loop This_Char;
     if Is_Separator (Char) then
       Skip_Separators (Flow);
@@ -698,7 +699,7 @@ package body Util is
   begin
     loop
       Get (Flow, Char);
-      Flow.Curr_Str := Flow.Curr_Str & Char;
+      Flow.Curr_Str.Append (Char);
     end loop;
   exception
     when End_Error => null;
@@ -721,7 +722,7 @@ package body Util is
         Nb := Nb - 1;
         exit when Nb = 0;
       end if;
-      Flow.Curr_Str := Flow.Curr_Str & Char;
+      Flow.Curr_Str.Append (Char);
     end loop;
   end Parse_Until_Close;
 
@@ -757,7 +758,7 @@ package body Util is
   end Try;
 
   -- List of names of entities expanding to each other, to detect recursion
-  package Name_Dyn_List_Mng is new Dynamic_List (Asu_Us);
+  package Name_Dyn_List_Mng is new Dynamic_List (As.U.Asu_Us);
   package Name_List_Mng renames Name_Dyn_List_Mng.Dyn_List;
   procedure Search_Name is new Name_List_Mng.Search (As.U."=");
 
@@ -786,11 +787,11 @@ package body Util is
   --  if any
   procedure Expand_Internal (Ctx : in out Ctx_Type;
                              Dtd : in out Dtd_Type;
-                             Text : in out Asu_Us;
+                             Text : in out As.U.Asu_Us;
                              Context : in Context_List;
                              Start_Index : out Natural;
                              Name_Stack : in out Name_List_Mng.List_Type) is
-    Result : Asu_Us;
+    Result : As.U.Asu_Us;
     -- Indexes of start of search
     Sstart : Positive;
     -- Indexes of start and stop of variable name
@@ -801,12 +802,13 @@ package body Util is
     -- Current character
     Char : Character;
     -- Entity name and value
-    Name, Val : Asu_Us;
+    Name, Val : As.U.Asu_Us;
     -- Entity found
     Found : Boolean;
     -- Entity list is empty
     Stack_Empty : Boolean;
 
+    use type As.U.Asu_Us;
   begin
     Start_Index := 0;
     if not In_Dtd (Context) and then not Ctx.Expand then
@@ -827,7 +829,7 @@ package body Util is
         Str : String := Result.Image;
       begin
         Fix_Spaces (Str);
-        Result := Tus (Str);
+        Result := As.U.Tus (Str);
       end;
     end if;
 
@@ -977,7 +979,7 @@ package body Util is
   --  if any
   procedure Expand_Text (Ctx : in out Ctx_Type;
                          Dtd : in out Dtd_Type;
-                         Text : in out Asu_Us;
+                         Text : in out As.U.Asu_Us;
                          Context : in Context_List;
                          Start_Index : out Natural) is
 
@@ -991,7 +993,7 @@ package body Util is
   -- Stop at '<' when in Xml content
   procedure Expand_Vars (Ctx : in out Ctx_Type;
                          Dtd : in out Dtd_Type;
-                         Text : in out Asu_Us;
+                         Text : in out As.U.Asu_Us;
                          Context : in Context_List) is
     Start_Index : Natural;
   begin
@@ -1004,7 +1006,7 @@ package body Util is
   -- Does nothing if not an entity reference
   procedure Expand_Name (Ctx : in out Ctx_Type;
                          Dtd : in out Dtd_Type;
-                         Text : in out Asu_Us;
+                         Text : in out As.U.Asu_Us;
                          Context : in Context_List) is
     Str : constant String := Text.Image;
     Len : constant Natural := Str'Length;
@@ -1035,18 +1037,18 @@ package body Util is
   end Expand_Name;
 
   -- Fix text: replace any separator by a space
-  procedure Normalize (Text : in out Asu_Us) is
+  procedure Normalize (Text : in out As.U.Asu_Us) is
     Res : String(1 .. Text.Length) := Text.Image;
   begin
     -- Replace "{ Lf | Tab | Space }" by a space
     Fix_Spaces (Res);
-    Text := Tus (Res);
+    Text := As.U.Tus (Res);
   end Normalize;
 
   -- Replace any sequence of spaces by a space
   -- Remove Leading and trailing spaces
-  procedure Normalize_Spaces (Text : in out Asu_Us) is
-    Res : Asu_Us;
+  procedure Normalize_Spaces (Text : in out As.U.Asu_Us) is
+    Res : As.U.Asu_Us;
     Char : Character;
     -- Will skip leading spaces
     Prev_Is_Space : Boolean := True;
@@ -1072,9 +1074,10 @@ package body Util is
   end Normalize_Spaces;
 
   -- Remove separators from text
-  procedure Remove_Separators (Text : in out Asu_Us; Seps : in String) is
-    Lseps : Asu_Us;
+  procedure Remove_Separators (Text : in out As.U.Asu_Us; Seps : in String) is
+    Lseps : As.U.Asu_Us;
     Index : Natural;
+    use type As.U.Asu_Us;
   begin
     -- No char of Seps can be separator
     -- No dup
@@ -1095,10 +1098,10 @@ package body Util is
 
     -- Build the "find" pattern
     if Seps = "" then
-      Text := Tus (String_Mng.Replace (Text.Image, " ", ""));
+      Text := As.U.Tus (String_Mng.Replace (Text.Image, " ", ""));
     else
       -- One char: no problem
-      Lseps := Tus (Seps);
+      Lseps := As.U.Tus (Seps);
       if Seps'Length /= 1 then
         -- Will use "[Seps]",
         -- Avoid "^x" => move '^' at the end
@@ -1117,14 +1120,14 @@ package body Util is
     end if;
 
     -- Replace " ?([seps]) ?" by \1
-    Text := Tus (String_Mng.Regex.Replace (Text.Image,
+    Text := As.U.Tus (String_Mng.Regex.Replace (Text.Image,
         " ?(" & Lseps.Image & ") ?", "\1"));
 
   end Remove_Separators;
 
   -- Remove (no expanded) entities from text
-  procedure Remove_Entities (Text : in out Asu_Us) is
-    Result : Asu_Us;
+  procedure Remove_Entities (Text : in out As.U.Asu_Us) is
+    Result : As.U.Asu_Us;
     In_Entity : Boolean;
     Char : Character;
   begin

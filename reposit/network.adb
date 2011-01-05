@@ -13,7 +13,7 @@ package body Network is
   -- Set name of a node
   procedure Set_Name (Of_Node : in out Node_Type; Name : in String) is
   begin
-    Of_Node.Name := Tus (Name);
+    Of_Node.Name := As.U.Tus (Name);
   end Set_Name;
 
   -- Returns the name of a node

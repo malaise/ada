@@ -1,6 +1,5 @@
 with Ada.Strings.Wide_Unbounded;
-with As.U; use As.U;
-with Environ, String_Mng, Lower_Str, Unbounded_Arrays;
+with As.U, Environ, String_Mng, Lower_Str, Unbounded_Arrays;
 package body Language is
 
   -- When ENV, UTF_8 is set if a Getenv on "LANG" gives a value
@@ -171,7 +170,7 @@ package body Language is
   -- Convertion to and from wide string
   -- May raise Utf_8 exceptions
   function Wide_To_String (Str : Wide_String) return String is
-    S : Asu_Us;
+    S : As.U.Asu_Us;
     W : Wide_Character;
   begin
     if Get_Language /= Lang_Utf_8 then
@@ -255,7 +254,7 @@ package body Language is
 
   -- Conversion to and from unicode sequence according to language
   function Unicode_To_String (Str : Unicode_Sequence) return String is
-    S : Asu_Us;
+    S : As.U.Asu_Us;
     U : Unicode_Number;
   begin
     if Get_Language /= Lang_Utf_8 then

@@ -1,4 +1,4 @@
-with As.U; use As.U;
+with As.U;
 package body Romanic is
   -- Convert a romanic number into arabic
   -- May raise Invalid_Roman
@@ -165,7 +165,7 @@ package body Romanic is
     -- Index in Type_Def_Array, init to last power of 10 (odd)
     Index : Digits_Range := Digits_Range'Last;
     -- Result string
-    Result : Asu_Us;
+    Result : As.U.Asu_Us;
     N : Natural;
     Div : Positive;
   begin

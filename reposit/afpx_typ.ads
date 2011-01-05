@@ -1,12 +1,11 @@
-with As.U; use As.U;
-with Unicode, Generic_Con_Io, Con_Io;
+with As.U, Unicode, Generic_Con_Io, Con_Io;
 package Afpx_Typ is
 
   -- Version of Afpx
   Afpx_Version : constant Float := 6.0;
 
   -- Files path
-  Dest_Path : Asu_Us;
+  Dest_Path : As.U.Asu_Us;
 
   -- Files name
   Dscr_File_Name : constant String := "AFPX.DSC";

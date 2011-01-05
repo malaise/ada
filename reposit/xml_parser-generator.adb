@@ -51,7 +51,7 @@ package body Xml_Parser.Generator is
     or else Char = Ada.Characters.Latin_1.Ht;
   end Is_Separator;
 
-  Xml_Name : constant Asu_Us := Tus ("xml");
+  Xml_Name : constant As.U.Asu_Us := As.U.Tus ("xml");
   -- Init prologue and empty root element if needed
   procedure Init_Ctx (Ctx : in out Ctx_Type) is
     Cell : My_Tree_Cell;
@@ -62,10 +62,10 @@ package body Xml_Parser.Generator is
       Cell.Kind := Element;
       Cell.Nb_Attributes := 0;
       Cell.Name := Xml_Name;
-      Cell.Value := Asu_Null;
+      Cell.Value := As.U.Asu_Null;
       Ctx.Prologue.Insert_Father (Cell);
       -- Init elements: an empty root element
-      Cell.Name := Asu_Null;
+      Cell.Name := As.U.Asu_Null;
       Ctx.Elements.Insert_Father (Cell);
       Ctx.Status := Init;
     end if;
@@ -87,9 +87,9 @@ package body Xml_Parser.Generator is
   -------------------------
   -- PROLOGUE OPERATIONS --
   -------------------------
-  Version_Name : constant Asu_Us := Tus ("version");
-  Encoding_Name : constant Asu_Us := Tus ("encoding");
-  Standalone_Name : constant Asu_Us := Tus ("standalone");
+  Version_Name : constant As.U.Asu_Us := As.U.Tus ("version");
+  Encoding_Name : constant As.U.Asu_Us := As.U.Tus ("encoding");
+  Standalone_Name : constant As.U.Asu_Us := As.U.Tus ("standalone");
   procedure Set_Version (Ctx   : in out Ctx_Type;
                          Major : in Major_Range;
                          Minor : in Minor_Range) is
@@ -100,7 +100,7 @@ package body Xml_Parser.Generator is
     -- Init version attribute
     Vers.Kind := Attribute;
     Vers.Name := Version_Name;
-    Vers.Value := Tus (Vers_Image (Major) & "." & Vers_Image (Minor));
+    Vers.Value := As.U.Tus (Vers_Image (Major) & "." & Vers_Image (Minor));
 
     -- Read Xml
     Ctx.Prologue.Move_Root;
@@ -132,6 +132,7 @@ package body Xml_Parser.Generator is
   procedure Set_Encoding (Ctx : in out Ctx_Type; Encoding : in String) is
     Cell : My_Tree_Cell;
     Encoding_Cell : My_Tree_Cell;
+    use type As.U.Asu_Us;
   begin
     Check_Name (Encoding);
     -- Read Xml
@@ -143,7 +144,7 @@ package body Xml_Parser.Generator is
     -- Set this attribute
     Encoding_Cell.Kind := Attribute;
     Encoding_Cell.Name := Encoding_Name;
-    Encoding_Cell.Value := Tus (Encoding);
+    Encoding_Cell.Value := As.U.Tus (Encoding);
     -- Add this attribute as brother of version
     Ctx.Prologue.Move_Child;
     if Ctx.Prologue.Has_Brother (False) then
@@ -166,6 +167,7 @@ package body Xml_Parser.Generator is
                             Standalone : in Boolean) is
     Cell : My_Tree_Cell;
     Standalone_Cell : My_Tree_Cell;
+    use type As.U.Asu_Us;
   begin
     -- Read Xml
     Init_Version (Ctx);
@@ -177,9 +179,9 @@ package body Xml_Parser.Generator is
     Standalone_Cell.Kind := Attribute;
     Standalone_Cell.Name := Standalone_Name;
     if Standalone then
-      Standalone_Cell.Value := Tus ("yes");
+      Standalone_Cell.Value := As.U.Tus ("yes");
     else
-      Standalone_Cell.Value := Tus ("no");
+      Standalone_Cell.Value := As.U.Tus ("no");
     end if;
     -- Add this attribute as brother of version or encoding
     -- Move to Version
@@ -303,11 +305,11 @@ package body Xml_Parser.Generator is
 
     -- Store all Doctype info
     Ctx.Doctype.Line_No := 0;
-    Ctx.Doctype.Name    := Tus (Name);
+    Ctx.Doctype.Name    := As.U.Tus (Name);
     Ctx.Doctype.Public  := Public;
-    Ctx.Doctype.Pub_Id  := Tus (Pub_Id);
-    Ctx.Doctype.File    := Tus (File);
-    Ctx.Doctype.Int_Def := Tus (Int_Def);
+    Ctx.Doctype.Pub_Id  := As.U.Tus (Pub_Id);
+    Ctx.Doctype.File    := As.U.Tus (File);
+    Ctx.Doctype.Int_Def := As.U.Tus (Int_Def);
     New_Node := (Kind => Text,
                  Magic => Ctx.Magic,
                  In_Prologue => True,
@@ -318,7 +320,7 @@ package body Xml_Parser.Generator is
   procedure Set_Dtd_File (Ctx      : in out Ctx_Type;
                           Dtd_File : in String) is
   begin
-    Ctx.Dtd_File := Tus (Dtd_File);
+    Ctx.Dtd_File := As.U.Tus (Dtd_File);
   end Set_Dtd_File;
 
   -- Internal: Split PI into Target (-> Name) and text (-> Value)
@@ -349,20 +351,20 @@ package body Xml_Parser.Generator is
     end loop;
     if Sep1 = 0 then
       -- All separators
-      Cell.Name := Asu_Null;
-      Cell.Value := Asu_Null;
+      Cell.Name := As.U.Asu_Null;
+      Cell.Value := As.U.Asu_Null;
     elsif Sep2 = 0 then
       -- No separator after first word
-      Cell.Name := Tus (Pi (Sep1 .. Pi'Last));
-      Cell.Value := Asu_Null;
+      Cell.Name := As.U.Tus (Pi (Sep1 .. Pi'Last));
+      Cell.Value := As.U.Asu_Null;
     elsif Sep3 = 0 then
       -- A target then only separators
-      Cell.Name := Tus (Pi (Sep1 .. Sep2));
-      Cell.Value := Asu_Null;
+      Cell.Name := As.U.Tus (Pi (Sep1 .. Sep2));
+      Cell.Value := As.U.Asu_Null;
     else
       -- A target then separators then ...
-      Cell.Name := Tus (Pi(Sep1 .. Sep2));
-      Cell.Value := Tus (Pi(Sep3 .. Pi'Last));
+      Cell.Name := As.U.Tus (Pi(Sep1 .. Sep2));
+      Cell.Value := As.U.Tus (Pi(Sep3 .. Pi'Last));
    end if;
   end Set_Pi;
 
@@ -410,7 +412,7 @@ package body Xml_Parser.Generator is
     -- Add this comment to prologue
     Cell.Kind := Xml_Parser.Comment;
     Cell.Nb_Attributes := 0;
-    Cell.Name := Tus (Comment);
+    Cell.Name := As.U.Tus (Comment);
     Insert_Cell (Tree, Cell, Append_Next);
     -- Done
     New_Node := (Kind => Xml_Parser.Comment,
@@ -429,12 +431,12 @@ package body Xml_Parser.Generator is
     Ctx.Prologue.Delete_Tree;
     -- Clear doctype
     Ctx.Doctype.Line_No := 0;
-    Ctx.Doctype.Name := Asu_Null;
+    Ctx.Doctype.Name := As.U.Asu_Null;
     -- Init prologue: a xml node
     Cell.Kind := Element;
     Cell.Nb_Attributes := 0;
     Cell.Name := Xml_Name;
-    Cell.Value := Asu_Null;
+    Cell.Value := As.U.Asu_Null;
     Ctx.Prologue.Insert_Father (Cell);
   end Clear_Prologue;
 
@@ -475,7 +477,7 @@ package body Xml_Parser.Generator is
     Move_To_Element (Ctx, Element, Tree);
     -- Update name
     Tree.Read (Cell);
-    Cell.Name := Tus (Name);
+    Cell.Name := As.U.Tus (Name);
     Tree.Replace (Cell);
   end Set_Name;
 
@@ -498,8 +500,8 @@ package body Xml_Parser.Generator is
     -- Add this attribute
     Cell.Kind := Attribute;
     Cell.Nb_Attributes := 0;
-    Cell.Name := Tus (Name);
-    Cell.Value := Tus (Value);
+    Cell.Name := As.U.Tus (Name);
+    Cell.Value := As.U.Tus (Value);
     if Nb_Attributes = 0 then
       -- As first child
       Tree.Insert_Child (Cell);
@@ -588,7 +590,7 @@ package body Xml_Parser.Generator is
     if Kind = Pi then
       Set_Pi (Cell, Name);
     else
-      Cell.Name := Tus (Name);
+      Cell.Name := As.U.Tus (Name);
     end if;
     if Append or else Father.Nb_Attributes = 0 then
       Tree.Insert_Child (Cell, not Append);
@@ -624,7 +626,7 @@ package body Xml_Parser.Generator is
     if Kind = Pi then
       Set_Pi (Cell, Name);
     else
-      Cell.Name := Tus (Name);
+      Cell.Name := As.U.Tus (Name);
     end if;
     Tree.Insert_Brother (Cell, not Next);
     New_Node := (Kind => Kind,
@@ -698,7 +700,7 @@ package body Xml_Parser.Generator is
     Move_To_Element (Ctx, Text, Tree);
     -- Update Text
     Tree.Read (Cell);
-    Cell.Name := Tus (Content);
+    Cell.Name := As.U.Tus (Content);
     Tree.Replace (Cell);
   end Set_Text;
 
@@ -713,7 +715,7 @@ package body Xml_Parser.Generator is
     Move_To_Element (Ctx, Comment, Tree);
     -- Update Text
     Tree.Read (Cell);
-    Cell.Name := Tus (Content);
+    Cell.Name := As.U.Tus (Content);
     Tree.Replace (Cell);
   end Set_Comment;
 
@@ -731,7 +733,7 @@ package body Xml_Parser.Generator is
     end if;
     -- Clean doctype info if node is the doctype (text of prologue)
     if Node.In_Prologue and then Node.Kind = Text then
-      Ctx.Doctype.Name := Asu_Null;
+      Ctx.Doctype.Name := As.U.Asu_Null;
     end if;
     Tree.Delete_Tree;
     -- Father is an element
@@ -752,7 +754,7 @@ package body Xml_Parser.Generator is
     Move_To (Ctx, Element, Tree);
     -- Clean doctype info if node is the prologue
     if Element.In_Prologue and then not Tree.Has_Father then
-      Ctx.Doctype.Name := Asu_Null;
+      Ctx.Doctype.Name := As.U.Asu_Null;
     end if;
     -- Delete all children
     Tree.Read (Cell);
@@ -768,7 +770,7 @@ package body Xml_Parser.Generator is
   type Flow_Dscr (Use_File : Boolean) is record
     case Use_File is
       when True => File : Text_Line.File_Type;
-      when False => Us : Asu_Us;
+      when False => Us : As.U.Asu_Us;
     end case;
   end record;
 
@@ -833,7 +835,7 @@ package body Xml_Parser.Generator is
   end Set;
 
   procedure Set (Ctx : in Ctx_Type;
-                 Str : out Asu_Us;
+                 Str : out As.U.Asu_Us;
                  Format : in Format_Kind_List := Default_Format;
                  Width  : in Natural := Default_Width) is
     Flow : Flow_Dscr(Use_File => False);
@@ -866,7 +868,7 @@ package body Xml_Parser.Generator is
 
   -- Replace any sequence of separators by a space
   function Normalize (Str : String) return String is
-    Res : Asu_Us;
+    Res : As.U.Asu_Us;
     Prev_Is_Space : Boolean := False;
     Char : Character;
   begin
@@ -1408,11 +1410,11 @@ package body Xml_Parser.Generator is
 
   procedure Set_Image (Ctx    : in Xml_Parser.Ctx_Type;
                        Update : in Node_Update;
-                       Str    : out Asu_Us;
+                       Str    : out As.U.Asu_Us;
                        Format : in Format_Kind_List := Default_Format;
                        Width  : in Natural := Default_Width) is
   begin
-    Str := Tus (Image (Ctx, Update, Format, Width));
+    Str := As.U.Tus (Image (Ctx, Update, Format, Width));
   end Set_Image;
 
 end Xml_Parser.Generator;

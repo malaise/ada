@@ -1,5 +1,4 @@
-with As.U; use As.U;
-with My_Io, Directory;
+with As.U, My_Io, Directory;
 procedure Recurs (Name_Of_Dir : in Boolean := True;
                   In_Current : in Boolean := True;
                   First_Level_Only : in Boolean := False;
@@ -14,7 +13,7 @@ procedure Recurs (Name_Of_Dir : in Boolean := True;
 
   procedure Explore (Curr_Name : in String) is
     Dir_Dsc : Directory.Dir_Desc;
-    Full_Curr_Name, New_Name : Asu_Us;
+    Full_Curr_Name, New_Name : As.U.Asu_Us;
     Kind : Directory.File_Kind_List;
     Nb_Sons : Natural;
     use Directory;
@@ -53,7 +52,7 @@ procedure Recurs (Name_Of_Dir : in Boolean := True;
         end if;
     end;
 
-    Full_Curr_Name := Tus (Directory.Get_Current);
+    Full_Curr_Name := As.U.Tus (Directory.Get_Current);
 
     -- Do current dir when not Leaves_Only
     if not Leaves_Only then
@@ -72,7 +71,7 @@ procedure Recurs (Name_Of_Dir : in Boolean := True;
     Dir_Dsc := Directory.Open (Full_Curr_Name.Image);
     loop
       begin
-        New_Name := Tus (Directory.Next_Entry (Dir_Dsc));
+        New_Name := As.U.Tus (Directory.Next_Entry (Dir_Dsc));
       exception
         when Directory.End_Error =>
           exit;
@@ -87,7 +86,7 @@ procedure Recurs (Name_Of_Dir : in Boolean := True;
       -- Follow link recursively
       if Follow_Links and then Kind = Directory.Link then
         begin
-          New_Name := Tus (Directory.Read_Link (New_Name.Image, True));
+          New_Name := As.U.Tus (Directory.Read_Link (New_Name.Image, True));
           Kind := Directory.File_Kind (New_Name.Image);
         exception
           when Directory.Name_Error | Directory.Access_Error =>

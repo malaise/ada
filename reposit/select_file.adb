@@ -1,6 +1,5 @@
 with Ada.Characters.Latin_1;
-with As.U; use As.U;
-with Con_Io, Directory, Dir_Mng, String_Mng, Language;
+with As.U, Con_Io, Directory, Dir_Mng, String_Mng, Language;
 function Select_File (Descriptor   : Afpx.Descriptor_Range;
                       Current_File : String;
                       For_Read     : Boolean) return String is
@@ -28,7 +27,7 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
   type Error_List is (E_File_Not_Found, E_Io_Error, E_File_Name);
 
   Get_Width    : Natural := 0;
-  Get_Content  : Asu_Us;
+  Get_Content  : As.U.Asu_Us;
   Get_Ok       : Boolean;
   Title_Width  : Natural := 0;
   Dir_List     : Dir_Mng.File_List_Mng.List_Type;
@@ -59,7 +58,7 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
   end Get_Title_Width;
 
   -- Remove trailing spaces. No heading nor intermediate spaces allowed
-  procedure Parse_Spaces (Txt : in out Asu_Us;
+  procedure Parse_Spaces (Txt : in out As.U.Asu_Us;
                           Ok : out Boolean) is
     Str : constant String := Txt.Image;
     L : Natural;
@@ -81,7 +80,7 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
       end if;
     end loop;
     -- If all spaces, L = 0 => empty
-    Txt := Tus (Str(1 .. L));
+    Txt := As.U.Tus (Str(1 .. L));
     Ok := True;
   end Parse_Spaces;
 
@@ -214,13 +213,13 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
 
   function Is_Dir (File : String) return Boolean is
     Kind : Directory.File_Kind_List;
-    File_Txt : Asu_Us;
+    File_Txt : As.U.Asu_Us;
     use Directory;
   begin
-    File_Txt := Tus (File);
+    File_Txt := As.U.Tus (File);
     Kind := Directory.File_Kind (File_Txt.Image);
     if Kind = Directory.Link then
-      File_Txt := Tus (Directory.Read_Link (File_Txt.Image));
+      File_Txt := As.U.Tus (Directory.Read_Link (File_Txt.Image));
       Kind := Directory.File_Kind (File_Txt.Image);
     end if;
     return Kind = Directory.Dir;
@@ -292,7 +291,7 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
 
   -- To find current position back
   function Match (Current, Criteria : Dir_Mng.File_Entry_Rec) return Boolean is
-    use type Dir_Mng.File_Kind_List;
+    use type Dir_Mng.File_Kind_List, As.U.Asu_Us;
   begin
     return Current.Kind = Criteria.Kind
     and then Current.Name = Criteria.Name;
@@ -344,9 +343,9 @@ begin
 
   -- Encode current file name in get field
   if Current_File'Length > Get_Get_Width then
-    Get_Content := Asu_Null;
+    Get_Content := As.U.Asu_Null;
   else
-    Get_Content := Tus (
+    Get_Content := As.U.Tus (
       String_Mng.Procuste (Current_File, Get_Get_Width));
   end if;
   Afpx.Encode_Field (Get_Fld, (0, 0), Get_Content);

@@ -24,7 +24,7 @@ package body Argument is
 
   -- The common "heart" procedure
   procedure Get_Param_And_Pos (
-   Parameter : out Asu_Us;
+   Parameter : out As.U.Asu_Us;
    Position : out Natural;
    Occurence : in Natural := 1;
    Param_Key : in String := Any_Arg) is
@@ -41,7 +41,7 @@ package body Argument is
         raise Argument_Not_Found;
       end if;
       -- affect string
-      Parameter := Tus (Data(0));
+      Parameter := As.U.Tus (Data(0));
       Position := 0;
       return;
     end if;
@@ -80,7 +80,7 @@ package body Argument is
 
       if Comform_Occurence = Occurence then
         -- Comforming occurence is found. Affect string (First_Char..Len)
-        Parameter := Tus (Data(I)(First_Char .. Data(I)'Length));
+        Parameter := As.U.Tus (Data(I)(First_Char .. Data(I)'Length));
         Position := I;
         return;
       end if;
@@ -100,7 +100,7 @@ package body Argument is
   function Get_Parameter (
    Occurence : in Natural := 1;
    Param_Key : in String := Any_Arg) return String is
-    Str : Asu_Us;
+    Str : As.U.Asu_Us;
     Position : Natural;
   begin
     Get_Param_And_Pos (Str, Position, Occurence, Param_Key);
@@ -118,7 +118,7 @@ package body Argument is
   end Get_Parameter;
 
   procedure Get_Parameter (
-   Parameter : out Asu_Us;
+   Parameter : out As.U.Asu_Us;
    Occurence : in Natural := 1;
    Param_Key : in String := Any_Arg) is
     Position : Natural;
@@ -133,7 +133,7 @@ package body Argument is
    Position : out Natural;
    Occurence : in Natural := 1;
    Param_Key : in String := Any_Arg) is
-    Str : Asu_Us;
+    Str : As.U.Asu_Us;
   begin
     Get_Param_And_Pos (Str, Position, Occurence, Param_Key);
     if Parameter'Length < Str.Length then
@@ -147,7 +147,7 @@ package body Argument is
   function Is_Set (
    Occurence : in Natural := 1;
    Param_Key : in String := Any_Arg) return Boolean is
-    Str : Asu_Us;
+    Str : As.U.Asu_Us;
     Pos : Natural;
   begin
     if Occurence = 0
@@ -164,7 +164,7 @@ package body Argument is
  function Get_Position (
    Occurence : in Natural := 1;
    Param_Key : in String := Any_Arg) return Natural is
-    Str : Asu_Us;
+    Str : As.U.Asu_Us;
     Pos : Natural;
   begin
     Get_Param_And_Pos (Str, Pos, Occurence, Param_Key);
@@ -191,7 +191,7 @@ package body Argument is
 
 
   function Get_Program_Path return String is
-    Str : Asu_Us;
+    Str : As.U.Asu_Us;
     Pos : Natural;
     Len : Natural;
   begin
@@ -202,7 +202,7 @@ package body Argument is
   end Get_Program_Path;
 
   procedure Get_Program_Path (Path : out String; Path_Length : out Natural) is
-    Str : Asu_Us;
+    Str : As.U.Asu_Us;
     Pos : Natural;
     Len : Natural;
   begin
@@ -214,7 +214,7 @@ package body Argument is
 
   -- Name of program from Argument(0)
   function Get_Program_Name return String is
-    Str : Asu_Us;
+    Str : As.U.Asu_Us;
     Pos : Natural;
     Len : Natural;
     Start : Natural;
@@ -229,7 +229,7 @@ package body Argument is
 
   procedure Get_Program_Name (Name : out String;
                               Name_Length : out Natural) is
-    Str : Asu_Us;
+    Str : As.U.Asu_Us;
     Pos : Natural;
     Len : Natural;
     Start : Natural;

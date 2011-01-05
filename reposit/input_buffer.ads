@@ -2,8 +2,7 @@
 -- Report the received string (text between separators)
 -- This is the same as Text_Line input except that the input flow is ourself
 with Ada.Finalization;
-with As.U; use As.U;
-with Text_Line;
+with As.U, Text_Line;
 package Input_Buffer is
 
   -------------------------
@@ -76,8 +75,8 @@ private
 
   type Buffer_Rec is record
     Notif : Sentence_Notifier := null;
-    Delim : Asu_Us;
-    Text : Asu_Us;
+    Delim : As.U.Asu_Us;
+    Text : As.U.Asu_Us;
     Susp : Boolean := False;
   end record;
 

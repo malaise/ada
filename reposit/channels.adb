@@ -1,6 +1,5 @@
 with System, Ada.Calendar;
-with As.U; use As.U;
-with Environ, Socket, Tcp_Util, Dynamic_List, Event_Mng, Assertion;
+with As.U, Environ, Socket, Tcp_Util, Dynamic_List, Event_Mng, Assertion;
 pragma Elaborate (Tcp_Util);
 package body Channels is
 
@@ -146,7 +145,7 @@ package body Channels is
       if Channel_Dscr.Init then
         return;
       end if;
-      Channel_Dscr.Name := Tus (Channel_Name);
+      Channel_Dscr.Name := As.U.Tus (Channel_Name);
       Channel_Dscr.Period := Get_Period (Channel_Name);
       Channel_Dscr.Init := True;
       Channel_Dscr.Active := True;
@@ -167,7 +166,7 @@ package body Channels is
         raise Channel_Active;
       end if;
       -- Store new name
-      Channel_Dscr.Name := Tus (New_Channel_Name);
+      Channel_Dscr.Name := As.U.Tus (New_Channel_Name);
       Channel_Dscr.Period := Get_Period (New_Channel_Name);
       Channel_Dscr.Init := True;
     exception
@@ -412,7 +411,7 @@ package body Channels is
                                Port : out Tcp_Util.Remote_Port) is
     begin
       -- Build host and port records
-      Host := (Kind => Tcp_Util.Host_Name_Spec, Name => Tus (Host_Name));
+      Host := (Kind => Tcp_Util.Host_Name_Spec, Name => As.U.Tus (Host_Name));
       Port := (Kind => Tcp_Util.Port_Name_Spec, Name => Channel_Dscr.Name);
     end Build_Host_Port;
 
@@ -782,7 +781,7 @@ package body Channels is
       Found : Boolean;
     begin
       -- Find destination from host name
-      D_Rec.Host_Name.Name := Tus (Host_Name);
+      D_Rec.Host_Name.Name := As.U.Tus (Host_Name);
       Host_Name_Search (Channel_Dscr.Dests, Found, D_Rec,
                         From => Dest_List_Mng.Absolute);
       if not Found then
@@ -826,8 +825,8 @@ package body Channels is
       if Bus_Dscr.Init then
         return;
       end if;
-      Bus_Dscr.Bus_Name := Tus (Bus_Name);
-      Bus_Dscr.Dest_Name := Tus (Destination_Name);
+      Bus_Dscr.Bus_Name := As.U.Tus (Bus_Name);
+      Bus_Dscr.Dest_Name := As.U.Tus (Destination_Name);
       Bus_Dscr.Init := True;
     exception
       when Constraint_Error =>
@@ -842,8 +841,8 @@ package body Channels is
       if Bus_Dscr.Active then
         raise Bus_Active;
       end if;
-      Bus_Dscr.Bus_Name := Tus (New_Bus_Name);
-      Bus_Dscr.Dest_Name := Tus (New_Destination_Name);
+      Bus_Dscr.Bus_Name := As.U.Tus (New_Bus_Name);
+      Bus_Dscr.Dest_Name := As.U.Tus (New_Destination_Name);
       Bus_Dscr.Init := True;
     exception
       when Constraint_Error =>

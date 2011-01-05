@@ -1,4 +1,4 @@
-with As.U; use As.U;
+with As.U;
 package body Num_Letters is
 
   -- Conversion Number -> letters
@@ -17,12 +17,12 @@ package body Num_Letters is
   -- Result
   -- Should store "seventy seven thousand seven hundred seventy seven"
   --  or same with eight
-  Txt : Asu_Us;
+  Txt : As.U.Asu_Us;
 
   Initialized : Boolean := False;
   procedure Init is
   begin
-    Txt := Asu_Null;
+    Txt := As.U.Asu_Null;
     if Initialized then
       return;
     end if;
@@ -121,10 +121,10 @@ package body Num_Letters is
 
     -- Generate thousands, leave hundreds
     if Last = 5 then
-      Txt := Tus (Make2 (Rev(5) & Rev(4)) & " " & Tenth(3).all);
+      Txt := As.U.Tus (Make2 (Rev(5) & Rev(4)) & " " & Tenth(3).all);
       Last := 3;
     elsif Last = 4 then
-      Txt := Tus (Make1 (Rev(4 .. 4)) & " " & Tenth(3).all);
+      Txt := As.U.Tus (Make1 (Rev(4 .. 4)) & " " & Tenth(3).all);
       Last := 3;
     end if;
 

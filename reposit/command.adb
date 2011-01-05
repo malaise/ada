@@ -68,8 +68,8 @@ package body Command is
   end Death_Cb;
 
   -- Add a string of flow to a out flow
-  procedure Add_Flow (Flow : in out Flow_Rec; Line : in Asu_Us) is
-    Loc_Line : Asu_Us := Line;
+  procedure Add_Flow (Flow : in out Flow_Rec; Line : in As.U.Asu_Us) is
+    Loc_Line : As.U.Asu_Us := Line;
     Len : Natural;
   begin
     if Flow.Kind = Str then
@@ -89,7 +89,7 @@ package body Command is
   procedure Reset_Flow (Flow : in out Flow_Rec) is
   begin
     if Flow.Kind = Str then
-      Flow.Str := Asu_Null;
+      Flow.Str := As.U.Asu_Null;
     else
       Flow.List.Delete_List;
     end if;
@@ -100,7 +100,7 @@ package body Command is
                   Read : in Boolean) return Boolean is
     pragma Unreferenced (Read);
     Flow : Text_Line.File_Type;
-    Line : Asu_Us;
+    Line : As.U.Asu_Us;
     Got : Boolean;
     use type Sys_Calls.File_Desc;
   begin
@@ -174,7 +174,7 @@ package body Command is
                      Err_Flow : in Flow_Access;
                      Exit_Code : out Exit_Code_Range) is
     Cmd_Line : Many_Strings.Many_String;
-    Str : Asu_Us;
+    Str : As.U.Asu_Us;
     Nb_Substr : Positive;
     Spawn_Result : Proc_Family.Spawn_Result_Rec;
     Prev_Term_Cb : aliased Event_Mng.Sig_Callback;
@@ -212,7 +212,7 @@ package body Command is
       -- Extract substrings and concatenante with spaces
       Nb_Substr := Many_Strings.Nb (Cmd);
       for I in 1 .. Nb_Substr loop
-        Str.Append (Asu_Us'(Many_Strings.Nth (Cmd, I)));
+        Str.Append (As.U.Asu_Us'(Many_Strings.Nth (Cmd, I)));
         if I /= Nb_Substr then
           Str.Append (" ");
         end if;

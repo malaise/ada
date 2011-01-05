@@ -25,8 +25,8 @@ package body Text_Char is
     end if;
     -- Close Text_Line file and free file
     Text_Line.Close (File.Acc.Line_File);
-    File.Acc.Line_Got := Asu_Null;
-    File.Acc.Ungot_Chars := Asu_Null;
+    File.Acc.Line_Got := As.U.Asu_Null;
+    File.Acc.Ungot_Chars := As.U.Asu_Null;
     Free (File.Acc);
     File.Acc := null;
   end Close;
@@ -87,7 +87,7 @@ package body Text_Char is
       Char := File.Acc.Line_Got.Element (File.Acc.Get_Index);
       if File.Acc.Get_Index = Len then
         -- Reset if end of read line
-        File.Acc.Line_Got := Asu_Null;
+        File.Acc.Line_Got := As.U.Asu_Null;
         Len := 0;
         File.Acc.Get_Index := 0;
       end if;

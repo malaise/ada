@@ -7,11 +7,11 @@ separate (Xml_Parser.Parse_Mng)
 -- if "http://" -> Fetch content, return String
 -- Else Error: unsupported URI scheme
 procedure Resolve_Uri (Ctx : in out Ctx_Type;
-                       Uri : in Asu_Us;
+                       Uri : in As.U.Asu_Us;
                        Is_File : out Boolean;
-                       Content : out Asu_Us) is
+                       Content : out As.U.Asu_Us) is
   Ind1, Ind2 : Natural;
-  Scheme, Luri : Asu_Us;
+  Scheme, Luri : As.U.Asu_Us;
   File_Scheme : constant String := "file";
   Http_Scheme : constant String := "http";
   Result : Http.Result_Type;

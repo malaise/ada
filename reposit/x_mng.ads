@@ -1,6 +1,5 @@
 with System;
-with As.U; use As.U;
-with Timers;
+with As.U, Timers;
 package X_Mng is
 
   ----- TYPES -----
@@ -11,7 +10,7 @@ package X_Mng is
   for Byte'Size use System.Storage_Unit;
 
   subtype Color       is Natural range 0 .. 13;
-  type Color_Definition is array (Color) of Asu_Us;
+  type Color_Definition is array (Color) of As.U.Asu_Us;
   subtype Font        is Natural range 0 .. 3;
   subtype Bell_Repeat is Positive range 1 .. 5;
 

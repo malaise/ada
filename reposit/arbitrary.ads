@@ -1,5 +1,5 @@
 -- Arbitrary precision numbers
-with As.U; use As.U;
+with As.U;
 package Arbitrary is
   type Number is private;
 
@@ -54,6 +54,6 @@ package Arbitrary is
   function Last_Digit (A : Number) return Digit;
 
 private
-  type Number is new Asu_Us with null record;
+  type Number is new As.U.Asu_Us with null record;
 end Arbitrary;
 

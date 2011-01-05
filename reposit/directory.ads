@@ -1,13 +1,12 @@
 with System;
-with As.U; use As.U;
-with Sys_Calls;
+with As.U, Sys_Calls;
 package Directory is
 
   Max_Dir_Name_Len : constant := 1024;
 
   -- Returns current working directory
   function Get_Current return String;
-  procedure Get_Current (Cur_Dir : in out Asu_Us);
+  procedure Get_Current (Cur_Dir : in out As.U.Asu_Us);
 
   -- Changes current working directory
   procedure Change_Current (New_Dir : in String);
@@ -24,7 +23,7 @@ package Directory is
 
   -- Gets next entry of the opened directory
   function Next_Entry (Desc : Dir_Desc) return String;
-  procedure Next_Entry (Desc : in Dir_Desc; Dir_Entry : in out Asu_Us);
+  procedure Next_Entry (Desc : in Dir_Desc; Dir_Entry : in out As.U.Asu_Us);
   -- May raise Open_Error if dir desc is not open
   -- Will raise End_Error if no more entry
 
@@ -40,7 +39,7 @@ package Directory is
   function Read_Link (File_Name : String; Recursive : Boolean := True)
                       return String;
   procedure Read_Link (File_Name : in String;
-                       Target : in out Asu_Us;
+                       Target : in out As.U.Asu_Us;
                        Recursive : in Boolean := True);
   -- May raise Name_Error if File_Name does not exist
   --           Access_Error if File_Name cannot be read

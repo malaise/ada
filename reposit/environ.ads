@@ -1,4 +1,4 @@
-with As.U; use As.U;
+with As.U;
 package Environ is
 
   -- Getenv for a String. Returns empty string if not set.
@@ -14,7 +14,7 @@ package Environ is
   procedure Get_Str (Name : String; Result : in out String;
                                     Length : in out Natural);
   -- Getenv for a unbounded string
-  procedure Get_Us (Name : String; Result : in out Asu_Us);
+  procedure Get_Us (Name : String; Result : in out As.U.Asu_Us);
 
   -- Getenv an Integer
   function  Get_Int (Name : String; Default : Integer) return Integer;

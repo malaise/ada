@@ -5,7 +5,7 @@ package body Entity_Mng is
 
   -- Store an entity
   procedure Store (The_Entities : in out Entity_List_Mng.Unique_List_Type;
-                   Name, Value : in Asu_Us;
+                   Name, Value : in As.U.Asu_Us;
                    Parameter : in Boolean;
                    Internal : in Boolean;
                    Intern_Dtd : in Boolean;
@@ -80,7 +80,7 @@ package body Entity_Mng is
   -- Store predefined (non parameter, internal, parsed) entity, no log
   procedure Store_Predefined (
           The_Entities : in out Entity_List_Mng.Unique_List_Type;
-          Name, Value : in Asu_Us) is
+          Name, Value : in As.U.Asu_Us) is
   begin
     Store (The_Entities, Name, Value, False, True, True, True, False);
   end Store_Predefined;
@@ -92,16 +92,16 @@ package body Entity_Mng is
     -- Reset all entities
     Entity_List_Mng.Delete_List (The_Entities);
     -- Load predefined entities
-    Store_Predefined (The_Entities, Tus ("amp"),  Tus ("&#38;"));
-    Store_Predefined (The_Entities, Tus ("lt"),   Tus ("&#60;"));
-    Store_Predefined (The_Entities, Tus ("gt"),   Tus (">"));
-    Store_Predefined (The_Entities, Tus ("quot"), Tus (""""));
-    Store_Predefined (The_Entities, Tus ("apos"), Tus ("'"));
+    Store_Predefined (The_Entities, As.U.Tus ("amp"),  As.U.Tus ("&#38;"));
+    Store_Predefined (The_Entities, As.U.Tus ("lt"),   As.U.Tus ("&#60;"));
+    Store_Predefined (The_Entities, As.U.Tus ("gt"),   As.U.Tus (">"));
+    Store_Predefined (The_Entities, As.U.Tus ("quot"), As.U.Tus (""""));
+    Store_Predefined (The_Entities, As.U.Tus ("apos"), As.U.Tus ("'"));
   end Initialise;
 
   -- Store an entity
   procedure Add (The_Entities : in out Entity_List_Mng.Unique_List_Type;
-                 Name, Value : in Asu_Us;
+                 Name, Value : in As.U.Asu_Us;
                  Parameter : in Boolean;
                  Internal : in Boolean;
                  Intern_Dtd : in Boolean;
@@ -117,7 +117,7 @@ package body Entity_Mng is
 
   -- Check if an entity exists
   procedure Exists (The_Entities : in out Entity_List_Mng.Unique_List_Type;
-                    Name : in Asu_Us;
+                    Name : in As.U.Asu_Us;
                     Parameter : in Boolean;
                     Found : out Boolean) is
     Code : Natural;
@@ -143,11 +143,12 @@ package body Entity_Mng is
   procedure Get (Ctx : in out Ctx_Type;
                  Dtd : in out Dtd_Type;
                  Context : in Context_List;
-                 Name : in Asu_Us;
+                 Name : in As.U.Asu_Us;
                  Parameter : in Boolean;
-                 Got : out Asu_Us) is
+                 Got : out As.U.Asu_Us) is
     Code : Natural;
     Entity : Entity_Type;
+    use type As.U.Asu_Us;
   begin
     -- Resolve Character reference
     if not Parameter and then not Name.Is_Null
@@ -158,7 +159,7 @@ package body Entity_Mng is
         raise Entity_Forbidden;
       end if;
       Code := Code_Of (Name.Image);
-      Got := Tus (Utf_8.Encode (Code));
+      Got := As.U.Tus (Utf_8.Encode (Code));
       return;
     end if;
 

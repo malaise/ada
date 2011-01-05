@@ -4,13 +4,13 @@ package body Get_Line is
 
   F : Text_Line.File_Type;
   Fd : Sys_Calls.File_Desc;
-  Current_Line : Asu_Ua.Unbounded_Array;
+  Current_Line : As.U.Utils.Asu_Ua.Unbounded_Array;
   Current_Line_No : Count;
   Cur : Positive;
   Current_Whole_Line : Line_Txt;
   First_Word : Line_Txt;
   Parsed : Boolean;
-  Buff : Asu_Us;
+  Buff : As.U.Asu_Us;
   Word : Word_Txt;
 
   -- Opens the file. Exceptions are the one of Ada.Text_Io.Open (In_File)
@@ -78,7 +78,7 @@ package body Get_Line is
   -- Reset Cur and parse leading spaces
   procedure Reset_Word is
   begin
-    Current_Line := Asu_Ua.Null_Unbounded_Array;
+    Current_Line := As.U.Utils.Asu_Ua.Null_Unbounded_Array;
     for I in 1 .. Buff.Length loop
       if Is_Separator (Buff.Element (I)) then
         null;
@@ -133,7 +133,7 @@ package body Get_Line is
       Reset_Word;
 
       -- Parse first word
-      First_Word := Tus (Get_Next_Word);
+      First_Word := As.U.Tus (Get_Next_Word);
 
       -- Done when no check of comments
       exit when Comment = "";
@@ -179,7 +179,7 @@ package body Get_Line is
     -- Parse words
     loop
       -- Check word length
-      Word := Tus (Get_Next_Word);
+      Word := As.U.Tus (Get_Next_Word);
 
       -- Check no more word in line
       if Word.Is_Null then
@@ -213,7 +213,7 @@ package body Get_Line is
     return Current_Line.To_Array;
   end Get_Words;
 
-  procedure Get_Words (Line : in out Asu_Ua.Unbounded_Array) is
+  procedure Get_Words (Line : in out As.U.Utils.Asu_Ua.Unbounded_Array) is
   begin
    if not F.Is_Open then
       raise Status_Error;

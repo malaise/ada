@@ -1,17 +1,16 @@
 -- Image of a duration (without leading space)
-with As.U; use As.U;
-with My_Math, Round_At, String_Mng;
+with As.U, My_Math, Round_At, String_Mng;
 function Dur_Image (Dur : Duration; Nb_Digits : Natural; Plus : Boolean)
                     return String is
    D : Duration;
-   Str : Asu_Us;
+   Str : As.U.Asu_Us;
    Dot : Natural;
 begin
   -- Round at Nb_Digits
   D := Duration (Round_At (My_Math.Real (Dur), -Nb_Digits));
 
   -- Locate Dot
-  Str := Tus (D'Img);
+  Str := As.U.Tus (D'Img);
   Dot := String_Mng.Locate (Str.Image, ".");
   if Dot = 0 then
     -- No dot!?

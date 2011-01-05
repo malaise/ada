@@ -22,16 +22,16 @@
 -- - an argument "-" is considered as a not a key (either option or No_Key).
 
 with Ada.Finalization;
-with As.U; use As.U;
+with As.U;
 package Argument_Parser is
 
   -- No key when character key, when string key
   No_Key_Char : constant Character := ' ';
-  No_Key_String : constant Asu_Us := Asu_Null;
+  No_Key_String : constant As.U.Asu_Us := As.U.Asu_Null;
   -- A key definition
   type A_Key_Type is record
     Key_Char : Character := No_Key_Char;
-    Key_String : Asu_Us := No_Key_String;
+    Key_String : As.U.Asu_Us := No_Key_String;
     Key_Can_Multiple : Boolean := False;
     Key_Can_Option : Boolean := False;
   end record;
@@ -128,7 +128,7 @@ private
 
   type Parsed_Dscr is new Ada.Finalization.Controlled with record
     Ok : Boolean := False;
-    Error : Asu_Us := Asu_Null;
+    Error : As.U.Asu_Us := As.U.Asu_Null;
     The_Keys : Keys_Access;
     Last_Pos_Key : Natural := 0;
     First_Pos_After_Keys : Natural := 0;

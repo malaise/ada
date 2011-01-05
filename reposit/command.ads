@@ -1,17 +1,16 @@
 -- Executes a command (fork/exec) and retrieves its outputs
-with As.U; use As.U;
-with Dynamic_List, Many_Strings;
+with As.U, Dynamic_List, Many_Strings;
 package Command is
 
   -- Output and error flow, either a list (one item per line) or a Asu_Us
   type Flow_Format_Kind_List is (Str, List);
-  subtype Line_Type is Asu_Us;
+  subtype Line_Type is As.U.Asu_Us;
   package Res_Mng is new Dynamic_List (Line_Type);
   subtype Res_List is Res_Mng.Dyn_List.List_Type;
   type Flow_Rec (Kind : Flow_Format_Kind_List) is record
     case Kind is
       when Str =>
-        Str : Asu_Us;
+        Str : As.U.Asu_Us;
       when List =>
         List : Res_List;
     end case;

@@ -16,8 +16,8 @@ package body Input_Buffer is
       Buf.Acc := new Buffer_Rec;
     end if;
     Buf.Acc.Notif := Notifier;
-    Buf.Acc.Delim := Tus (Delimiter);
-    Buf.Acc.Text := Asu_Null;
+    Buf.Acc.Delim := As.U.Tus (Delimiter);
+    Buf.Acc.Text := As.U.Asu_Null;
     Buf.Acc.Susp := False;
   end Set;
 
@@ -32,7 +32,7 @@ package body Input_Buffer is
   -- INTERNAL: Invoque the notifier if Buf is not suspended
   procedure Flush (Buf : in Buffer) is
     Ind : Natural;
-    Head : Asu_Us;
+    Head : As.U.Asu_Us;
   begin
     if Buf.Acc.Susp then
       return;

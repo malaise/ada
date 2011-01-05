@@ -5,7 +5,7 @@ package Parser.All_In_One is
   type Parsed_Element_Kind_List is (Word, Separators);
   type Parsed_Element_Rec is record
     Kind : Parsed_Element_Kind_List;
-    Str : Asu_Us;
+    Str : As.U.Asu_Us;
   end record;
 
   type Parsed_Array is array (Positive range <>) of Parsed_Element_Rec;

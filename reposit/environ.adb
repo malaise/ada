@@ -48,10 +48,10 @@ package body Environ is
     Free (Ptr);
   end Get_Str;
 
-  procedure Get_Us (Name : String; Result : in out Asu_Us) is
-    Res : Asu_Us;
+  procedure Get_Us (Name : String; Result : in out As.U.Asu_Us) is
+    Res : As.U.Asu_Us;
   begin
-    Res := Tus (Sys_Calls.Getenv (Name));
+    Res := As.U.Tus (Sys_Calls.Getenv (Name));
     if not Res.Is_Null then
       Result := Res;
     end if;
@@ -152,20 +152,20 @@ package body Environ is
 
   -- Is variable set and its lower case is "y" or "yes"
   function Is_Yes (Name : String) return Boolean is
-    Str : Asu_Us;
+    Str : As.U.Asu_Us;
   begin
     Get_Us (Name, Str);
-    Str := Tus (Lower_Str (Str.Image));
+    Str := As.U.Tus (Lower_Str (Str.Image));
     return  Str.Image = "yes"
     or else Str.Image = "y";
   end Is_Yes;
 
   -- Is variable set and its lower case is "n" or "no"
   function Is_No (Name : String) return Boolean is
-    Str : Asu_Us;
+    Str : As.U.Asu_Us;
   begin
     Get_Us (Name, Str);
-    Str := Tus (Lower_Str (Str.Image));
+    Str := As.U.Tus (Lower_Str (Str.Image));
     return  Str.Image = "no"
     or else Str.Image = "n";
   end Is_No;

@@ -1,8 +1,7 @@
-with As.U; use As.U;
-with Protected_Pool;
+with As.U, Protected_Pool;
 package body Exception_Messenger is
 
-  package Msg_Pool is new Protected_Pool (Asu_Us);
+  package Msg_Pool is new Protected_Pool (As.U.Asu_Us);
   Pool : Msg_Pool.Pool_Type;
 
   -- Raise an exception with a message
@@ -15,7 +14,7 @@ package body Exception_Messenger is
     else
       -- Insert in pool
       begin
-        Key := Pool.Store (Tus (Message));
+        Key := Pool.Store (As.U.Tus (Message));
       exception
         when others =>
           -- Cannot insert in pool!
@@ -32,7 +31,7 @@ package body Exception_Messenger is
                              return String is
     Str : constant String := Ada.Exceptions.Exception_Message (X.all);
     Key : Msg_Pool.Key_Type;
-    Res : Asu_Us;
+    Res : As.U.Asu_Us;
   begin
     if Str'Length < Key_Root'Length
     or else Str (1 .. Key_Root'Length) /= Key_Root then

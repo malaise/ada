@@ -430,7 +430,7 @@ package body Afpx is
 
   procedure Encode_Field (Field_No : in Field_Range;
                           From_Pos : in Con_Io.Full_Square;
-                          Str      : in Asu_Us) is
+                          Str      : in As.U.Asu_Us) is
   begin
     Encode_Field (Field_No, From_Pos, Str.Image);
   end Encode_Field;
@@ -521,10 +521,10 @@ package body Afpx is
 
   procedure Decode_Field (Field_No : in Field_Range;
                           Row      : in Con_Io.Full_Row_Range;
-                          Str      : in out Asu_Us;
+                          Str      : in out As.U.Asu_Us;
                           Adjust   : in Boolean := True) is
   begin
-    Str := Tus (Decode_Field (Field_No, Row, Adjust));
+    Str := As.U.Tus (Decode_Field (Field_No, Row, Adjust));
   end Decode_Field;
 
   -- Get field colors

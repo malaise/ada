@@ -20,7 +20,7 @@ package body Dir_Mng is
                       Template : in String := "") is
     Dir_Desc : Directory.Dir_Desc;
     File_Rec : File_Entry_Rec;
-    File_Name : Asu_Us;
+    File_Name : As.U.Asu_Us;
   begin
 
     if Dir = "" then
@@ -55,8 +55,8 @@ package body Dir_Mng is
   end List_Dir;
 
   procedure List_Dir (List : in out File_List_Mng.List_Type;
-                      Dir  : in Asu_Us := Asu_Null;
-                      Template : in Asu_Us := Asu_Null) is
+                      Dir  : in As.U.Asu_Us := As.U.Asu_Null;
+                      Template : in As.U.Asu_Us := As.U.Asu_Null) is
   begin
     List_Dir (List, Dir.Image, Template.Image);
   end List_Dir;

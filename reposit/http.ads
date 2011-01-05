@@ -1,4 +1,4 @@
-with As.U; use As.U;
+with As.U;
 package Http is
 
   -------------------------------
@@ -18,12 +18,12 @@ package Http is
   type Result_Type (Kind : Result_Kind_List := Ok) is record
     case Kind is
       when Ok =>
-        Content : Asu_Us;
+        Content : As.U.Asu_Us;
       when Client_Error =>
         Error : Client_Error_List;
       when Server_Error =>
         Code : Server_Code_Range;
-        Message : Asu_Us;
+        Message : As.U.Asu_Us;
     end case;
   end record;
 

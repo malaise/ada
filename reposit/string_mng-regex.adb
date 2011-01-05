@@ -107,13 +107,13 @@ package body String_Mng.Regex is
   -- In By, \i (0 <= i <= 9) is replaced by
   --  Working (Info(i-1).First_Offset .. Info(i-1).End_Offset)
   -- Start is set to the first char after new string (maybe above Working)
-  procedure Substit (Working : in out Asu_Us;
+  procedure Substit (Working : in out As.U.Asu_Us;
                      N_Match : in Positive;
                      Info    : in Regular_Expressions.Match_Array;
                      By      : in String;
                      Start   : out Natural) is
     -- New By after substitution of \0, \1...
-    Newby : Asu_Us;
+    Newby : As.U.Asu_Us;
     -- For build Newby
     Esc : Natural;
     From : Positive;
@@ -124,7 +124,7 @@ package body String_Mng.Regex is
     Case_Char : Character;
   begin
     -- Compute Newby, insert matching substrings and hexa byte
-    Newby := Tus (By);
+    Newby := As.U.Tus (By);
     From := 1;
     loop
       Esc := Locate_Escape (Newby.Image, From, "\\0123456789x");
@@ -255,7 +255,7 @@ package body String_Mng.Regex is
            return String is
     -- Working string
     I1, I2 : Natural;
-    Working : Asu_Us;
+    Working : As.U.Asu_Us;
     -- Regex compilation
     Compiled : Regular_Expressions.Compiled_Pattern;
     Ok : Boolean;
@@ -289,7 +289,7 @@ package body String_Mng.Regex is
       raise Invalid_Index;
     end if;
     -- Extract working string
-    Working := Tus (Within(I1 .. I2));
+    Working := As.U.Tus (Within(I1 .. I2));
 
     -- Compile regex
     Regular_Expressions.Compile (Compiled, Ok, Criteria);
@@ -357,7 +357,7 @@ package body String_Mng.Regex is
     or else  Cells(1).First_Offset /= Str'First
     or else  Cells(1).Last_Offset_Stop /= Str'Last then
       declare
-        Result : constant String_Slice (1 .. 0) := (others => Asu_Null);
+        Result : constant String_Slice (1 .. 0) := (others => As.U.Asu_Null);
       begin
         return Result;
       end;
@@ -367,7 +367,7 @@ package body String_Mng.Regex is
       Result : String_Slice (1 .. N_Matched - 1);
     begin
       for I in Result'Range loop
-        Result(I) := Tus (
+        Result(I) := As.U.Tus (
          Str(Cells(I + 1).First_Offset .. Cells(I + 1).Last_Offset_Stop));
       end loop;
       return Result;
@@ -378,14 +378,14 @@ package body String_Mng.Regex is
   --  separator.
   -- Returns the array of slices (Str if no match).
   function Split_Sep (Str : String; Separator : String)
-           return Asu_Ua.Unb_Array is
+           return As.U.Utils.Asu_Ua.Unb_Array is
     -- Regex compilation
     Ok : Boolean;
     Compiled : Regular_Expressions.Compiled_Pattern;
     -- The match results
     Cell : Regular_Expressions.Match_Cell;
     -- Result
-    Result : Asu_Ua.Unb_Array;
+    Result : As.U.Utils.Asu_Ua.Unb_Array;
     -- For Locate
     From_Index : Natural;
     use type  Regular_Expressions.Match_Cell;
@@ -410,17 +410,17 @@ package body String_Mng.Regex is
           return Result;
         else
           -- Append this slice
-          Result.Append(Tus (Str(From_Index .. Cell.First_Offset - 1)));
+          Result.Append (As.U.Tus (Str(From_Index .. Cell.First_Offset - 1)));
           -- Tail starts after this separator
           From_Index := Cell.Last_Offset_Stop + 1;
         end if;
       elsif From_Index = Str'First then
         -- No match at all
-        Result := Asu_Ua.To_Unb_Array (Tus (Str));
+        Result := As.U.Utils.Asu_Ua.To_Unb_Array (As.U.Tus (Str));
         return Result;
       else
         -- No more match: Append tail
-        Result.Append(Tus (Str(From_Index .. Str'Last)));
+        Result.Append(As.U.Tus (Str(From_Index .. Str'Last)));
         return Result;
       end if;
     end loop;

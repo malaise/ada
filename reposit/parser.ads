@@ -1,5 +1,5 @@
 with Ada.Finalization;
-with As.U; use As.U;
+with As.U;
 package Parser is
 
   -- The function to define separating characters
@@ -94,7 +94,7 @@ private
   -- If Word is not empty then, Indexes are First and Last
   --  + Start - 1, else 1 and 0.
   type Iter_Rec is record
-    Str : Asu_Us := Asu_Null;
+    Str : As.U.Asu_Us := As.U.Asu_Null;
     Len : Natural := 0;
     Start : Positive := 1;
     Is_Sep : Separing_Function := null;

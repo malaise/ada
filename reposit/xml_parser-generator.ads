@@ -202,7 +202,7 @@ package Xml_Parser.Generator is
                 Format : Format_Kind_List := Default_Format;
                 Width  : Natural := Default_Width) return String;
   procedure Set (Ctx    : in Ctx_Type;
-                 Str    : out Asu_Us;
+                 Str    : out As.U.Asu_Us;
                  Format : in Format_Kind_List := Default_Format;
                  Width  : in Natural := Default_Width);
 
@@ -214,7 +214,7 @@ package Xml_Parser.Generator is
                   Width  : Natural := Default_Width) return String;
   procedure Set_Image (Ctx    : in Xml_Parser.Ctx_Type;
                        Update : in Node_Update;
-                       Str    : out Asu_Us;
+                       Str    : out As.U.Asu_Us;
                        Format : in Format_Kind_List := Default_Format;
                        Width  : in Natural := Default_Width);
 

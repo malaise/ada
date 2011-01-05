@@ -138,7 +138,7 @@ begin
     File_Dir_Env_Name : constant String := "AFPX_DATA_DIR";
     Default_Path : constant String := ".";
   begin
-    Afpx_Typ.Dest_Path := Tus (Default_Path);
+    Afpx_Typ.Dest_Path := As.U.Tus (Default_Path);
     Environ.Get_Us (File_Dir_Env_Name, Afpx_Typ.Dest_Path);
     Afpx_Typ.Dest_Path.Append ("/");
 

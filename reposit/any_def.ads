@@ -1,5 +1,4 @@
-with As.U; use As.U;
-with My_Math;
+with As.U, My_Math;
 package Any_Def is
 
   type Any_Kind_List is (None_Kind, Bool_Kind, Inte_Kind, Real_Kind,
@@ -11,7 +10,7 @@ package Any_Def is
       when Bool_Kind  => Bool : Boolean;
       when Inte_Kind  => Inte : My_Math.Inte;
       when Real_Kind  => Real : My_Math.Real;
-      when Str_Kind   => Str  : Asu_Us;
+      when Str_Kind   => Str  : As.U.Asu_Us;
     end case;
   end record;
 

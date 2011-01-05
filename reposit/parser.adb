@@ -42,7 +42,7 @@ package body Parser is
         raise Constraint_Error;
     end;
     Clear (Iter);
-    Iter.Acc := new Iter_Rec'(Tus (Str), Str'Length,
+    Iter.Acc := new Iter_Rec'(As.U.Tus (Str), Str'Length,
                     Str'First, Is_Sep, Parsing,
                     Init_Rec.First, Init_Rec.Last, Init_Rec.Sep);
   end Set;

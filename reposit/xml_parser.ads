@@ -1,6 +1,5 @@
 with Ada.Finalization;
-with As.U; use As.U;
-with Queues, Trees, Hashed_List.Unique, Text_Char, Dynamic_List,
+with As.U, Queues, Trees, Hashed_List.Unique, Text_Char, Dynamic_List,
      Unlimited_Pool, Byte_To_Unicode;
 -- Parse Xml file or string.
 -- Call callback while parsing or provide read access to the tree after parsing.
@@ -37,8 +36,8 @@ package Xml_Parser is
 
   -- An attribute of an element
   type Attribute_Rec is record
-    Name : Asu_Us;
-    Value : Asu_Us;
+    Name : As.U.Asu_Us;
+    Value : As.U.Asu_Us;
     Unparsed : Boolean := False;
   end record;
   -- The attributes of an element
@@ -114,8 +113,8 @@ package Xml_Parser is
     Stage : Stage_List := Prologue;
     Line_No : Natural := 0;
     Level : Natural := 0;
-    Name : Asu_Us;
-    Value : Asu_Us;
+    Name : As.U.Asu_Us;
+    Value : As.U.Asu_Us;
     Creation : Boolean := True;
     Is_Mixed : Boolean := False;
     In_Mixed : Boolean := False;
@@ -187,13 +186,13 @@ package Xml_Parser is
       File_Name : in String;
       Warn_Cb   : in Warning_Callback_Access := null;
       Dtd       : out Dtd_Type;
-      Error     : out Asu_Us);
+      Error     : out As.U.Asu_Us);
 
   procedure Parse_Dtd_String (
       Str       : in String;
       Warn_Cb   : in Warning_Callback_Access := null;
       Dtd       : out Dtd_Type;
-      Error     : out Asu_Us);
+      Error     : out As.U.Asu_Us);
 
   -- Clean a dtd
   procedure Clean_Dtd (Dtd : in out Dtd_Type);
@@ -259,24 +258,24 @@ package Xml_Parser is
   -- Get Doctype characteristics (prologue must have been parsed)
   Doctype_Not_Set : exception;
   procedure Get_Doctype (Ctx : in Ctx_Type;
-       Name    : out Asu_Us;
+       Name    : out As.U.Asu_Us;
        Public  : out Boolean;
-       Pub_Id  : out Asu_Us;
-       File    : out Asu_Us;
-       Int_Def : out Asu_Us);
+       Pub_Id  : out As.U.Asu_Us;
+       File    : out As.U.Asu_Us;
+       Int_Def : out As.U.Asu_Us);
 
   -- Get the Target of a PI
   function Get_Target (Ctx     : Ctx_Type;
                        Pi_Node : Pi_Type) return String;
   function Get_Target (Ctx     : Ctx_Type;
                        Pi_Node : Pi_Type)
-                    return Asu_Us;
+                    return As.U.Asu_Us;
   -- Get a PI data
   function Get_Pi (Ctx : in Ctx_Type;
                    Pi_Node : Pi_Type) return String;
   function Get_Pi (Ctx : in Ctx_Type;
                    Pi_Node : Pi_Type)
-           return Asu_Us;
+           return As.U.Asu_Us;
 
   -- Get the line number of the beginning of the declaration of a node
   -- 0 if not the result of parsing of text
@@ -287,7 +286,7 @@ package Xml_Parser is
   function Get_Name (Ctx     : Ctx_Type;
                      Element : Element_Type) return String;
   function Get_Name (Ctx     : Ctx_Type;
-                     Element : Element_Type) return Asu_Us;
+                     Element : Element_Type) return As.U.Asu_Us;
   -- Get the attributes of an element
   function Get_Attributes (Ctx     : Ctx_Type;
                            Element : Element_Type) return Attributes_Array;
@@ -344,24 +343,24 @@ package Xml_Parser is
                      Text : Text_Type) return String;
   function Get_Text (Ctx  : Ctx_Type;
                      Text : Text_Type)
-                     return Asu_Us;
+                     return As.U.Asu_Us;
 
   function Get_Comment (Ctx     : Ctx_Type;
                         Comment : Comment_Type) return String;
   function Get_Comment (Ctx     : Ctx_Type;
                         Comment : Comment_Type)
-                        return Asu_Us;
+                        return As.U.Asu_Us;
 
   --------------------------
   -- UNPARSED ENTITY info --
   --------------------------
   -- URI and PudId of an unparsed entity
   type Unparsed_Entity_Info_Rec is record
-    Entity_System_Id : Asu_Us;
-    Entity_Public_Id : Asu_Us;
-    Notation_Name    : Asu_Us;
-    Notation_System_Id : Asu_Us;
-    Notation_Public_Id : Asu_Us;
+    Entity_System_Id : As.U.Asu_Us;
+    Entity_Public_Id : As.U.Asu_Us;
+    Notation_Name    : As.U.Asu_Us;
+    Notation_System_Id : As.U.Asu_Us;
+    Notation_Public_Id : As.U.Asu_Us;
   end record;
 
   -- Get info on an unparsed entity and its associated notation
@@ -409,9 +408,9 @@ private
     -- Number of attributes when Kind is Element
     Nb_Attributes : Natural := 0;
     -- Element name or Attribute name or text or comment...
-    Name : Asu_Us;
+    Name : As.U.Asu_Us;
     -- Attribute value or PI content
-    Value : Asu_Us;
+    Value : As.U.Asu_Us;
     -- Is this attribute an Unparsed entity or a list of unparsed entities
     Unparsed : Boolean := False;
     -- Put empty element with EmptyElemTag
@@ -458,7 +457,7 @@ private
     -- Is it a xml (or entity) or dtd
     Kind : Flow_Kind_List := Xml_Flow;
     -- File name (empty if stdin or string)
-    Name : Asu_Us;
+    Name : As.U.Asu_Us;
     -- Current line No
     Line : Natural := 0;
     -- Is it a string expanded in original flow
@@ -476,7 +475,7 @@ private
     -- If Flow is a file (Text_Char)
     File : File_Access;
     -- If Flow is a String
-    In_Str : Asu_Us;
+    In_Str : As.U.Asu_Us;
     In_Stri : Natural := 0;
   end record;
 
@@ -492,13 +491,13 @@ private
     -- Circular buffer of read characters
     Circ : My_Circ.Circ_Type;
     -- Error message
-    Err_Msg : Asu_Us;
+    Err_Msg : As.U.Asu_Us;
     -- Current significant string, loaded by Parse_Until_xxx
-    Curr_Str : Asu_Us;
+    Curr_Str : As.U.Asu_Us;
     -- Recorded input characters
     Recording : Boolean := False;
     Skip_Recording : Integer := No_Skip_Rec;
-    Recorded : Asu_Us;
+    Recorded : As.U.Asu_Us;
     -- Current flow
     Curr_Flow : Flow_Info_Type;
     -- Previous Xml flow, dtd flow, External entity flow, text flow...
@@ -512,8 +511,8 @@ private
   --------------
   -- The stored entities
   type Entity_Type is record
-    Name : Asu_Us;
-    Value : Asu_Us;
+    Name : As.U.Asu_Us;
+    Value : As.U.Asu_Us;
     Parameter : Boolean;
     Internal : Boolean;
     Intern_Dtd : Boolean;
@@ -531,7 +530,7 @@ private
   type Info_Rec is record
     -- Kind#Element_name[#Attribute_Name]
     -- Kind is Elt, Atl, Att
-    Name : Asu_Us;
+    Name : As.U.Asu_Us;
     -- Elt: Possible children, first chars is <type> ::= E|A|M|C
     --  (empty, any, mixed or children), then
     --  for Mixed the list of "#<name>#<name>#" without #PCDATA
@@ -544,7 +543,7 @@ private
     -- Att: for a fixed of any type or the default of not enum, the value
     --   for an Enum, the list of possible "<name>#" and, if there is a default
     --   this value is the first
-    List : Asu_Us;
+    List : As.U.Asu_Us;
     Line : Natural;
   end record;
   type Info_Access is access all Info_Rec;
@@ -560,14 +559,14 @@ private
     -- Entity or Notation
     Is_Entity : Boolean := True;
     -- Name
-    Name : Asu_Us;
+    Name : As.U.Asu_Us;
     -- Line where defined
     Line_No : Natural := 0;
     -- Ids
-    System_Id : Asu_Us;
-    Public_Id : Asu_Us;
+    System_Id : As.U.Asu_Us;
+    Public_Id : As.U.Asu_Us;
     -- Notation name (when this is an entity)
-    Notation : Asu_Us;
+    Notation : As.U.Asu_Us;
   end record;
   type Unparsed_Access is access all Unparsed_Type;
   procedure Set (To : out Unparsed_Type; Val : in Unparsed_Type);
@@ -585,16 +584,16 @@ private
     -- Is there already xml instruction found in the dtd
     Xml_Found : Boolean := False;
     -- Encoding directive of dtd
-    Encoding :  Asu_Us;
+    Encoding :  As.U.Asu_Us;
     -- Parsed info
     Info_List : Info_Mng.Unique_List_Type;
     -- Parsed entities
     Entity_List : Entity_List_Mng.Unique_List_Type;
     -- Notation attributes: #Elt##Attr#Elt##Attr#...
-    Notation_Attrs : Asu_Us;
+    Notation_Attrs : As.U.Asu_Us;
     -- Internal elements #@Elt# or attributes #Elt##Attr#
     -- ELEMENT or ATTLIST defined in internal dtd
-    Internals : Asu_Us;
+    Internals : As.U.Asu_Us;
     -- Are we in an INCLUDE directive
     In_Include : Boolean := False;
   end record;
@@ -606,7 +605,7 @@ private
     -- Line where the ID or IDREF is defined
     Line_No : Natural := 0;
     -- ID name
-    Name : Asu_Us;
+    Name : As.U.Asu_Us;
   end record;
   type Id_Cell_Access is access all Id_Cell;
   procedure Set (To : out Id_Cell;  Val : in Id_Cell);
@@ -632,11 +631,11 @@ private
     Line_No : Natural := 0;
     -- Name, file (ID+URI) and internal definition if any
     -- Empty name for no DOCTYPE
-    Name    : Asu_Us;
+    Name    : As.U.Asu_Us;
     Public  : Boolean := False;
-    Pub_Id  : Asu_Us;
-    File    : Asu_Us;
-    Int_Def : Asu_Us;
+    Pub_Id  : As.U.Asu_Us;
+    File    : As.U.Asu_Us;
+    Int_Def : As.U.Asu_Us;
   end record;
 
   ------------------
@@ -657,7 +656,7 @@ private
     Normalize : Boolean := True;
     -- Use Dtd
     Use_Dtd : Boolean := True;
-    Dtd_File : Asu_Us;
+    Dtd_File : As.U.Asu_Us;
     -- Check also and report warnings
     Warnings : Warning_Callback_Access := null;
     -- Call a callback i.o. feeding trees

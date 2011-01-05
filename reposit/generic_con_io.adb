@@ -21,8 +21,8 @@ package body Generic_Con_Io is
          Xi := Colors'Pos(I) - Colors'Pos(Color01);
          X_Colors(Xi) := The_Color_Names(I);
          -- Lower case and '_' -> ' '
-         X_Colors(Xi) := Tus (Lower_Str (X_Colors(Xi).Image));
-         X_Colors(Xi) := Tus (String_Mng.Replace (
+         X_Colors(Xi) := As.U.Tus (Lower_Str (X_Colors(Xi).Image));
+         X_Colors(Xi) := As.U.Tus (String_Mng.Replace (
              X_Colors(Xi).Image, "_", " "));
       end loop;
       X_Mng.X_Initialise ("", X_Colors);
@@ -922,7 +922,7 @@ package body Generic_Con_Io is
                             Time_Out   : in Delay_Rec :=  Infinite_Delay;
                             Echo       : in Boolean := True) is
       -- Local string for working on
-      Lstr        : Asu_Us := Tus (Language.Unicode_To_String (Str));
+      Lstr        : As.U.Asu_Us := As.U.Tus (Language.Unicode_To_String (Str));
       -- Indexes in Lstr of put positions
       Indexes     : Language.Index_Array
                   := Language.All_Indexes_Of (Lstr.Image);
@@ -1017,6 +1017,7 @@ package body Generic_Con_Io is
 
       use type Timers.Delay_Rec, Timers.Delay_List;
       use type X_Mng.Byte;
+      use type As.U.Asu_Us;
     begin
       -- Time at which the get ends
       if Time_Out = Timers.Infinite_Delay

@@ -12,20 +12,20 @@ package body Ada_Parser is
   -- for knowing if access, delta, digits or range are reserved words
   -- or qualifiers
   -- Set by Got_Text and used by Parse_Identifier
-  Prev_Lex : Asu_Us;
+  Prev_Lex : As.U.Asu_Us;
 
   -- Set Char or string in a Us
-  procedure Set (U : in out Asu_Us; C : in Character) is
+  procedure Set (U : in out As.U.Asu_Us; C : in Character) is
   begin
     U.Set (C & "");
   end Set;
-  procedure Set (U : in out Asu_Us; S : in String) is
+  procedure Set (U : in out As.U.Asu_Us; S : in String) is
   begin
     U.Set (S);
   end Set;
 
   -- Got a word. Save it as Prev_Lex if needed
-  function Got_Text (Text : Asu_Us; Kind : Lexical_Kind_List) return Asu_Us is
+  function Got_Text (Text : As.U.Asu_Us; Kind : Lexical_Kind_List) return As.U.Asu_Us is
   begin
     -- Save this lexical element if significant
     if Kind /= Separator and then Kind /= Comment then
@@ -33,13 +33,13 @@ package body Ada_Parser is
     end if;
     return Text;
   end Got_Text;
-  function Got_Text (Text : String; Kind : Lexical_Kind_List) return Asu_Us is
+  function Got_Text (Text : String; Kind : Lexical_Kind_List) return As.U.Asu_Us is
   begin
-    return Got_Text (Tus (Text), Kind);
+    return Got_Text (As.U.Tus (Text), Kind);
   end Got_Text;
-  function Got_Text (Text : Character; Kind : Lexical_Kind_List) return Asu_Us is
+  function Got_Text (Text : Character; Kind : Lexical_Kind_List) return As.U.Asu_Us is
   begin
-    return Got_Text (Tus (Text & ""), Kind);
+    return Got_Text (As.U.Tus (Text & ""), Kind);
   end Got_Text;
 
   -- Read next char, skipping Cr
@@ -57,7 +57,7 @@ package body Ada_Parser is
   -- so parse and return it
   procedure Parse_Identifier (C : in Character;
                               File : in Text_Char.File_Type;
-                              Text : out Asu_Us;
+                              Text : out As.U.Asu_Us;
                               Lexic : out Lexical_Kind_List) is
     -- Current Char
     Cc : Character;
@@ -115,11 +115,11 @@ package body Ada_Parser is
   -- C is a digit, so it starts a numeric literal
   -- so parse and return it
   function Parse_Numeric (C : Character;
-                          File : Text_Char.File_Type) return Asu_Us is
+                          File : Text_Char.File_Type) return As.U.Asu_Us is
     -- Current Char
     Cc : Character;
     -- Current text
-    Text : Asu_Us;
+    Text : As.U.Asu_Us;
   begin
     Set (Text, C);
     loop
@@ -159,9 +159,9 @@ package body Ada_Parser is
 
   -- The "--" of comment has been parsed.
   -- Parse the remaining of comment and return full comment (prepending "--")
-  function Parse_Comment (File : in Text_Char.File_Type) return Asu_Us is
+  function Parse_Comment (File : in Text_Char.File_Type) return As.U.Asu_Us is
     Cc : Character;
-    Text : Asu_Us;
+    Text : As.U.Asu_Us;
   begin
     -- Skip up to Lf
     Set (Text, "--");
@@ -184,7 +184,7 @@ package body Ada_Parser is
   -- Internal parsing of one word
   -- Sets Text to "" (and Lexic to Separator) when end of file
   procedure Parse_Next (File : in Text_Char.File_Type;
-                        Text : out Asu_Us;
+                        Text : out As.U.Asu_Us;
                         Lexic : out Lexical_Kind_List;
                         Raise_End : in Boolean := False) is
     -- Next and nextnext characters (read ahead)
@@ -201,7 +201,7 @@ package body Ada_Parser is
         raise End_Error;
       end if;
       Lexic := Separator;
-      Text := Asu_Null;
+      Text := As.U.Asu_Null;
       return;
     end if;
 
@@ -315,7 +315,7 @@ package body Ada_Parser is
     procedure (Text : in String;
                    Lexic : in Lexical_Kind_List)) is
     Lexic : Lexical_Kind_List;
-    Text : Asu_Us;
+    Text : As.U.Asu_Us;
   begin
     -- Loop until end of file
     loop

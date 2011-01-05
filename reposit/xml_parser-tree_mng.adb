@@ -5,14 +5,15 @@ package body Tree_Mng is
   --  element of the prologue or the tree
   -- Return it and its index, or Asu_Null and 0 if not
   procedure Find_Attribute (In_Tree : in out My_Tree.Tree_Type;
-                            Name : in Asu_Us;
+                            Name : in As.U.Asu_Us;
                             Index : out Natural;
-                            Value : out Asu_Us) is
+                            Value : out As.U.Asu_Us) is
     Nb : Trees.Child_Range;
     Cell : My_Tree_Cell;
+    use type As.U.Asu_Us;
   begin
     Index := 0;
-    Value := Asu_Null;
+    Value := As.U.Asu_Null;
     Nb := In_Tree.Children_Number;
     if Nb = 0 then
       return;
@@ -85,14 +86,14 @@ package body Tree_Mng is
 
   -- Insert an element
   procedure Add_Element (Elements : in out My_Tree.Tree_Type;
-                         Name : in Asu_Us; Line : in Natural) is
+                         Name : in As.U.Asu_Us; Line : in Natural) is
     Cell : My_Tree_Cell;
   begin
     Cell.Line_No := Line;
     Cell.Kind := Element;
     Cell.Nb_Attributes := 0;
     Cell.Name := Name;
-    Cell.Value := Asu_Null;
+    Cell.Value := As.U.Asu_Null;
     if Elements.Is_Empty then
       -- Insert root
       Elements.Insert_Father (Cell);
@@ -150,7 +151,7 @@ package body Tree_Mng is
   end Move_Root;
 
   procedure Add_Attribute (Elements : in out My_Tree.Tree_Type;
-                           Name, Value : in Asu_Us; Line : in Natural) is
+                           Name, Value : in As.U.Asu_Us; Line : in Natural) is
     Cell : My_Tree_Cell;
   begin
     Cell.Line_No := Line;
@@ -167,10 +168,10 @@ package body Tree_Mng is
   end Add_Attribute;
 
   procedure Attribute_Exists (Elements : in out My_Tree.Tree_Type;
-                              Name : in Asu_Us;
+                              Name : in As.U.Asu_Us;
                               Exists : out Boolean) is
     Index : Natural;
-    Value : Asu_Us;
+    Value : As.U.Asu_Us;
   begin
     Find_Attribute (Elements, Name, Index, Value);
     Exists := Index /= 0;
@@ -178,8 +179,8 @@ package body Tree_Mng is
 
   -- Get an attribute (if it exists, otherwise "")
   procedure Get_Attribute (Elements : in out My_Tree.Tree_Type;
-                           Name : in Asu_Us;
-                           Value : out Asu_Us) is
+                           Name : in As.U.Asu_Us;
+                           Value : out As.U.Asu_Us) is
     Index : Natural;
   begin
     Find_Attribute (Elements, Name, Index, Value);
@@ -199,8 +200,8 @@ package body Tree_Mng is
     Cell.Line_No := 1;
     Cell.Kind := Element;
     Cell.Nb_Attributes := 0;
-    Cell.Name := Asu_Null;
-    Cell.Value := Asu_Null;
+    Cell.Name := As.U.Asu_Null;
+    Cell.Value := As.U.Asu_Null;
       -- Insert root
     Prologue.Insert_Father (Cell);
   end Init_Prologue;
@@ -213,14 +214,14 @@ package body Tree_Mng is
     Cell.Line_No := Line;
     Cell.Kind := Element;
     Cell.Nb_Attributes := 0;
-    Cell.Name := Tus ("xml");
-    Cell.Value := Asu_Null;
+    Cell.Name := As.U.Tus ("xml");
+    Cell.Value := As.U.Asu_Null;
     -- Update root
     Prologue.Replace (Cell);
   end Set_Xml;
 
   procedure Add_Xml_Attribute (Prologue : in out My_Tree.Tree_Type;
-                               Name, Value : in Asu_Us; Line : in Natural) is
+                               Name, Value : in As.U.Asu_Us; Line : in Natural) is
     Cell : My_Tree_Cell;
   begin
     Cell.Line_No := Line;
@@ -238,8 +239,10 @@ package body Tree_Mng is
 
   -- Sets or overwrites a xml attribute at a given index
   procedure Set_Xml_Attribute (Prologue : in out My_Tree.Tree_Type;
-                  Name : in Asu_Us; Index : in Positive; Value : in Asu_Us) is
+                  Name : in As.U.Asu_Us; Index : in Positive;
+                  Value : in As.U.Asu_Us) is
     Pro_Cell, Cell, Tmp_Cell : My_Tree_Cell;
+    use type As.U.Asu_Us;
   begin
     Cell.Line_No := 0;
     Cell.Kind := Attribute;
@@ -300,9 +303,9 @@ package body Tree_Mng is
   end Xml_Existst;
 
   procedure Find_Xml_Attribute (Prologue : in out My_Tree.Tree_Type;
-                                Name : in Asu_Us;
+                                Name : in As.U.Asu_Us;
                                 Index : out Natural;
-                                Value : out Asu_Us) is
+                                Value : out As.U.Asu_Us) is
   begin
     Find_Attribute (Prologue, Name, Index, Value);
   end Find_Xml_Attribute;
@@ -315,7 +318,7 @@ package body Tree_Mng is
 
   -- Add a processing instruction
   procedure Add_Pi (Tree : in out My_Tree.Tree_Type;
-                    Name, Text : in Asu_Us; Line : in Natural) is
+                    Name, Text : in As.U.Asu_Us; Line : in Natural) is
     Cell : My_Tree_Cell;
   begin
     -- Insert the Element child of root
@@ -336,14 +339,14 @@ package body Tree_Mng is
   -- Add a comment to current cell (of elements or prologue)
   -- remain on current cell
   procedure Add_Text (Tree : in out My_Tree.Tree_Type;
-                      Text : in Asu_Us; Line : in Natural) is
+                      Text : in As.U.Asu_Us; Line : in Natural) is
     Cell : My_Tree_Cell;
   begin
     Cell.Line_No := Line;
     Cell.Kind := Xml_Parser.Text;
     Cell.Nb_Attributes := 0;
     Cell.Name := Text;
-    Cell.Value := Asu_Null;
+    Cell.Value := As.U.Asu_Null;
     -- Insert as child of current and remain current
     Tree.Insert_Child (Cell, False);
   end Add_Text;
@@ -351,14 +354,14 @@ package body Tree_Mng is
   -- Add a comment to current cell (of elements or prologue)
   -- remain on current cell
   procedure Add_Comment (Tree : in out My_Tree.Tree_Type;
-                         Comment : in Asu_Us; Line : in Natural) is
+                         Comment : in As.U.Asu_Us; Line : in Natural) is
     Cell : My_Tree_Cell;
   begin
     Cell.Line_No := Line;
     Cell.Kind := Xml_Parser.Comment;
     Cell.Nb_Attributes := 0;
     Cell.Name := Comment;
-    Cell.Value := Asu_Null;
+    Cell.Value := As.U.Asu_Null;
     -- Insert child
     Tree.Insert_Child (Cell, False);
   end Add_Comment;

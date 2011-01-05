@@ -1,7 +1,6 @@
 with Unchecked_Deallocation;
 package body Text_Line is
 
-
   procedure Free is new Unchecked_Deallocation (File_Type_Rec, Rec_Access);
 
   -- Associate a file desc to a Txt_Line file
@@ -16,7 +15,7 @@ package body Text_Line is
     File.Acc := new File_Type_Rec'(
        Fd => Fd,
        Mode => Mode,
-       Line_Feed => Tus (Line_Feed_Str),
+       Line_Feed => As.U.Tus (Line_Feed_Str),
        Buffer_Len => 0,
        Buffer_Index => 0,
        Buffer => (others => Ada.Characters.Latin_1.Nul) );
@@ -59,7 +58,7 @@ package body Text_Line is
     if Str'Length > Max_Line_Feed_Len then
       raise Status_Error;
     end if;
-    File.Acc.Line_Feed := Tus (Str);
+    File.Acc.Line_Feed := As.U.Tus (Str);
   end Set_Line_Feed;
 
   function Get_Line_Feed (File : in File_Type) return String is
@@ -102,8 +101,8 @@ package body Text_Line is
 
 
   function Get (File : File_Type)
-                return Asu_Us is
-    Str : Asu_Us;
+                return As.U.Asu_Us is
+    Str : As.U.Asu_Us;
     Stop_Index : Buffer_Index_Range;
     Done : Boolean;
   begin

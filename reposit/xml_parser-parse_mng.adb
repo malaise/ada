@@ -19,8 +19,8 @@ package body Parse_Mng  is
   -- Non recursive
   procedure Expand_External_Entity (Ctx : in out Ctx_Type;
                                     Adtd : in out Dtd_Type;
-                                    Name, Uri : in Asu_Us;
-                                    Text : out Asu_Us);
+                                    Name, Uri : in As.U.Asu_Us;
+                                    Text : out As.U.Asu_Us);
 
   -- Entity management
   package Entity_Mng is
@@ -29,14 +29,14 @@ package body Parse_Mng  is
           The_Entities : in out Entity_List_Mng.Unique_List_Type);
     -- Store an entity
     procedure Add (The_Entities : in out Entity_List_Mng.Unique_List_Type;
-                   Name, Value : in Asu_Us;
+                   Name, Value : in As.U.Asu_Us;
                    Parameter : in Boolean;
                    Internal : in Boolean;
                    Intern_Dtd : in Boolean;
                    Parsed : in Boolean);
     -- Check if an entity exists. May raise Invalid_Char_Code
     procedure Exists (The_Entities : in out Entity_List_Mng.Unique_List_Type;
-                      Name : in Asu_Us;
+                      Name : in As.U.Asu_Us;
                       Parameter : in Boolean;
                       Found : out Boolean);
 
@@ -45,9 +45,9 @@ package body Parse_Mng  is
     procedure Get (Ctx : in out Ctx_Type;
                    Dtd : in out Dtd_Type;
                    Context : in Context_List;
-                   Name : in Asu_Us;
+                   Name : in As.U.Asu_Us;
                    Parameter : in Boolean;
-                   Got : out Asu_Us);
+                   Got : out As.U.Asu_Us);
     Invalid_Char_Code : exception;
     Entity_Not_Found : exception;
     Entity_Forbidden : exception;
@@ -61,13 +61,13 @@ package body Parse_Mng  is
     -- Syntax check --
     ------------------
     -- Check if char is a letter
-    function Is_Valid_Encoding (Name : Asu_Us) return Boolean;
+    function Is_Valid_Encoding (Name : As.U.Asu_Us) return Boolean;
 
     -- Check that Name is valid
-    function Name_Ok (Name : Asu_Us;
+    function Name_Ok (Name : As.U.Asu_Us;
                       Allow_Token : Boolean := False) return Boolean;
     -- Check that Str defines valid names separated by Seps
-    function Names_Ok (Str : Asu_Us;
+    function Names_Ok (Str : As.U.Asu_Us;
                        Seps : String;
                        Allow_Token : Boolean := False) return Boolean;
     -- Report an error, raises Parsing_Error.
@@ -96,7 +96,8 @@ package body Parse_Mng  is
     -- Start recording
     procedure Start_Recording (Flow : in out Flow_Type);
     -- Stop recoding and retrieve recorded data
-    procedure Stop_Recording (Flow : in out Flow_Type; Recorded : out Asu_Us);
+    procedure Stop_Recording (Flow : in out Flow_Type;
+                              Recorded : out As.U.Asu_Us);
 
     -- Get character and store in queue
     End_Error : exception;
@@ -134,12 +135,12 @@ package body Parse_Mng  is
     Ent_End : constant Character := ';';
     -- Detect separator
     function Is_Separator (Char : Character) return Boolean;
-    function Is_Separators (Str : Asu_Us) return Boolean;
+    function Is_Separators (Str : As.U.Asu_Us) return Boolean;
     -- Skip separators until a significant char (not separator); got
     procedure Skip_Separators (Flow : in out Flow_Type);
     -- Current significant string, loaded by Parse_Until_xxx
     procedure Get_Curr_Str (Flow : in out Flow_Type;
-                            Str : out Asu_Us;
+                            Str : out As.U.Asu_Us;
                             Reset : in Boolean := True);
     -- Reset current string
     procedure Reset_Curr_Str (Flow : in out Flow_Type);
@@ -169,13 +170,13 @@ package body Parse_Mng  is
     -- Stop at '<' when in Xml content
     procedure Expand_Vars (Ctx : in out Ctx_Type;
                            Dtd : in out Dtd_Type;
-                           Text : in out Asu_Us;
+                           Text : in out As.U.Asu_Us;
                            Context : in Context_List);
     -- Expand text (expand vars) returns the index of localized '<'
     --  if any
     procedure Expand_Text (Ctx : in out Ctx_Type;
                            Dtd : in out Dtd_Type;
-                           Text : in out Asu_Us;
+                           Text : in out As.U.Asu_Us;
                            Context : in Context_List;
                            Start_Index : out Natural);
     -- Expand a name if it is a (parameter) entity reference
@@ -184,18 +185,18 @@ package body Parse_Mng  is
     -- Does nothing if not an entity reference
     procedure Expand_Name (Ctx : in out Ctx_Type;
                            Dtd : in out Dtd_Type;
-                           Text : in out Asu_Us;
+                           Text : in out As.U.Asu_Us;
                            Context : in Context_List);
     -- Fix text: replace any separator by a space
-    procedure Normalize (Text : in out Asu_Us);
+    procedure Normalize (Text : in out As.U.Asu_Us);
     -- Replace any sequence of spaces by a space
     -- Remove Leading and trailing spaces
-    procedure Normalize_Spaces (Text : in out Asu_Us);
+    procedure Normalize_Spaces (Text : in out As.U.Asu_Us);
     -- Remove from Text the separators around Seps
-    procedure Remove_Separators (Text : in out Asu_Us;
+    procedure Remove_Separators (Text : in out As.U.Asu_Us;
                                  Seps : in String);
     -- Remove (no expanded) entities from text
-    procedure Remove_Entities (Text : in out Asu_Us);
+    procedure Remove_Entities (Text : in out As.U.Asu_Us);
 
     -- Push current flow
     procedure Push_Flow (Flow : in out Flow_Type);
@@ -213,9 +214,9 @@ package body Parse_Mng  is
   -- if "http://" -> Fetch content, return String
   -- Else Error: unsupported URI scheme
   procedure Resolve_Uri (Ctx : in out Ctx_Type;
-                         Uri : in Asu_Us;
+                         Uri : in As.U.Asu_Us;
                          Is_File : out Boolean;
-                         Content : out Asu_Us) is separate;
+                         Content : out As.U.Asu_Us) is separate;
 
   -- Descriptor of list of children found
   type Children_Desc is record
@@ -223,11 +224,11 @@ package body Parse_Mng  is
     Space_Allowed : Boolean := True;
     -- Result of parsing of children
     Is_Empty : Boolean := True;
-    Children : Asu_Us;
+    Children : As.U.Asu_Us;
     Has_Text : Boolean := False;
     Is_Mixed : Boolean := False;
     -- Token passed along the parsing of children
-    Father : Asu_Us;
+    Father : As.U.Asu_Us;
     Created : Boolean := False;
     In_Mixed : Boolean := False;
     Preserve : Boolean := False;
@@ -248,7 +249,7 @@ package body Parse_Mng  is
   procedure Parse_Value (Ctx : in out Ctx_Type;
                          Adtd : in out Dtd_Type;
                          Context : in Context_List;
-                         Value : out Asu_Us) is
+                         Value : out As.U.Asu_Us) is
     Char : Character;
   begin
     Util.Get (Ctx.Flow, Char);
@@ -284,7 +285,7 @@ package body Parse_Mng  is
     Internal_Flow : constant String := ""  & Ada.Characters.Latin_1.Nul;
     procedure Parse (Ctx  : in out Ctx_Type;
                      Adtd : in out Dtd_Type;
-                     File_Name : in Asu_Us;
+                     File_Name : in As.U.Asu_Us;
                      Name_Raise_Parse : in Boolean := True);
     -- Perform final checks after DTD parsing: unparsed entities v.s. notations
     procedure Final_Dtd_Check (Ctx  : in out Ctx_Type; Adtd : in out Dtd_Type);
@@ -293,19 +294,20 @@ package body Parse_Mng  is
                                 Adtd : in out Dtd_Type);
     -- Is this element defined as Mixed
     procedure Is_Mixed (Adtd : in out Dtd_Type;
-                        Elt  : in Asu_Us;
+                        Elt  : in As.U.Asu_Us;
                         Yes  : out Boolean);
     -- Is this element defined in internal dtd or else has not Content def
     procedure Can_Have_Spaces (Adtd : in out Dtd_Type;
-                               Elt  : in Asu_Us;
+                               Elt  : in As.U.Asu_Us;
                                Yes  : out Boolean);
     -- Is this attribute of this element CDATA
     procedure Is_Cdata (Adtd      : in out Dtd_Type;
-                        Elt, Attr : in Asu_Us;
+                        Elt, Attr : in As.U.Asu_Us;
                         Yes       : out Boolean);
 
     -- Add current element to list of children
-    procedure Add_Current_Element (List : in out Asu_Us; Name : in Asu_Us);
+    procedure Add_Current_Element (List : in out As.U.Asu_Us;
+                                   Name : in As.U.Asu_Us);
     -- Check that list matches Dtd definition of current element
     procedure Check_Element (Ctx      : in out Ctx_Type;
                              Adtd     : in out Dtd_Type;
@@ -322,12 +324,13 @@ package body Parse_Mng  is
   procedure Parse_Attributes (Ctx : in out Ctx_Type;
                               Adtd : in out Dtd_Type;
                               Of_Xml : in Boolean;
-                              Elt_Name : in Asu_Us := Asu_Null) is
-    Attribute_Name, Attribute_Value, Unnormalized : Asu_Us;
+                              Elt_Name : in As.U.Asu_Us := As.U.Asu_Null) is
+    Attribute_Name, Attribute_Value, Unnormalized : As.U.Asu_Us;
     Attribute_Index : Natural;
     Char : Character;
     Line_No : Natural;
     Attr_Exists, Attr_Cdata : Boolean;
+    use type As.U.Asu_Us;
   begin
     -- Loop on several attributes
     loop
@@ -424,7 +427,7 @@ package body Parse_Mng  is
   --  in xml declaration of DTD or XML
   procedure Check_Xml_Attributes (Ctx : in out Ctx_Type;
                                   Of_Xml : in Boolean) is
-    Attribute_Value : Asu_Us;
+    Attribute_Value : As.U.Asu_Us;
     Attribute_Index, Next_Index : Natural;
     Nb_Attrs_Set : Natural;
   begin
@@ -433,7 +436,7 @@ package body Parse_Mng  is
     -- In Dtd: [ Version ] Encode
     -- Check Version
     Tree_Mng.Find_Xml_Attribute (Ctx.Prologue.all,
-           Tus ("version"), Attribute_Index, Attribute_Value);
+           As.U.Tus ("version"), Attribute_Index, Attribute_Value);
     if (Attribute_Index /= 0 and then Attribute_Index /= Next_Index)
     or else (Of_Xml and then Attribute_Index = 0) then
       Util.Error (Ctx.Flow, "Missing or invalid xml version attribute");
@@ -452,7 +455,7 @@ package body Parse_Mng  is
 
     -- Check Encoding
     Tree_Mng.Find_Xml_Attribute (Ctx.Prologue.all,
-           Tus ("encoding"), Attribute_Index, Attribute_Value);
+           As.U.Tus ("encoding"), Attribute_Index, Attribute_Value);
     if (Attribute_Index /= 0 and then Attribute_Index /= Next_Index)
     or else (not Of_Xml and then Attribute_Index = 0) then
       Util.Error (Ctx.Flow, "Missing or invalid xml encoding attribute");
@@ -499,7 +502,7 @@ package body Parse_Mng  is
 
     -- Check Standalone
     Tree_Mng.Find_Xml_Attribute (Ctx.Prologue.all,
-           Tus ("standalone"), Attribute_Index, Attribute_Value);
+           As.U.Tus ("standalone"), Attribute_Index, Attribute_Value);
     if (Attribute_Index /= 0 and then Attribute_Index /= Next_Index)
     or else (not Of_Xml and then Attribute_Index /= 0) then
       Util.Error (Ctx.Flow, "Missing or invalid xml standalone attribute");
@@ -610,14 +613,15 @@ package body Parse_Mng  is
   -- Expand the content of an external parsed entity
   procedure Expand_External_Entity (Ctx  : in out Ctx_Type;
                                     Adtd : in out Dtd_Type;
-                                    Name, Uri : in Asu_Us;
-                                    Text : out Asu_Us) is
-    Full_File : Asu_Us;
+                                    Name, Uri : in As.U.Asu_Us;
+                                    Text : out As.U.Asu_Us) is
+    Full_File : As.U.Asu_Us;
     Ok : Boolean;
     Char : Character;
     Dummy : My_Tree_Cell;
     Is_Recorded : Boolean;
     Is_File : Boolean;
+    use type As.U.Asu_Us;
   begin
     Trace ("Ext expanding external entity " & Name.Image & " with URI "
          & Uri.Image);
@@ -725,7 +729,7 @@ package body Parse_Mng  is
                                Adtd : in out Dtd_Type;
                                Children : access Children_Desc) is
     Char : Character;
-    Name, Value : Asu_Us;
+    Name, Value : As.U.Asu_Us;
     Ok : Boolean;
     Str_Xml : String (1 .. 5);
     In_Prologue : constant Boolean := Tree_Mng.Is_Empty (Ctx.Elements.all);
@@ -764,7 +768,7 @@ package body Parse_Mng  is
 
     -- Xml not allowed in prologue of elements, see if "xml?>" or "xml "
     Util.Get (Ctx.Flow, Str_Xml);
-    Name := Tus (Str_Xml);
+    Name := As.U.Tus (Str_Xml);
     Util.Normalize (Name);
     Str_Xml := Name.Image;
     if Lower_Str (Str_Xml) = "xml" & Util.Instruction & Util.Stop
@@ -832,7 +836,7 @@ package body Parse_Mng  is
   --  [ <Spc> ] [ "[" <IntSubset> "]" [ <Spc> ] ] "!>"
   procedure Parse_Doctype (Ctx : in out Ctx_Type;
                            Adtd : in out Dtd_Type) is
-    Doctype_Name, Doctype_File, Full_File : Asu_Us;
+    Doctype_Name, Doctype_File, Full_File : As.U.Asu_Us;
     Ok : Boolean;
     Char : Character;
     Len : Natural;
@@ -855,7 +859,8 @@ package body Parse_Mng  is
     Ctx.Doctype.Name := Doctype_Name;
     -- Insert an empty text in prologue
     Tree_Mng.Move_Root (Ctx.Prologue.all);
-    Tree_Mng.Add_Text (Ctx.Prologue.all, Asu_Null, Util.Get_Line_No (Ctx.Flow));
+    Tree_Mng.Add_Text (Ctx.Prologue.all, As.U.Asu_Null,
+                       Util.Get_Line_No (Ctx.Flow));
     -- What's next
     Util.Skip_Separators (Ctx.Flow);
     Util.Try (Ctx.Flow, "PUBLIC ", Ok);
@@ -909,7 +914,7 @@ package body Parse_Mng  is
           Ctx.Flow.Curr_Flow.Same_Line := False;
           Ctx.Flow.Curr_Flow.In_Str := Full_File;
           Ctx.Flow.Curr_Flow.In_Stri := 0;
-          Full_File := Tus (Dtd.String_Flow);
+          Full_File := As.U.Tus (Dtd.String_Flow);
           Trace ("Parsing http dtd");
         end if;
         Dtd.Parse (Ctx, Adtd, Full_File);
@@ -922,7 +927,7 @@ package body Parse_Mng  is
     if Char = '[' then
       -- Internal definition, record the parsing and copy it in Ctx
       Util.Start_Recording (Ctx.Flow);
-      Dtd.Parse (Ctx, Adtd, Tus (Dtd.Internal_Flow));
+      Dtd.Parse (Ctx, Adtd, As.U.Tus (Dtd.Internal_Flow));
       Util.Stop_Recording (Ctx.Flow, Ctx.Doctype.Int_Def);
       -- Remove last ']'
       Len := Ctx.Doctype.Int_Def.Length;
@@ -962,7 +967,7 @@ package body Parse_Mng  is
                              Children : access Children_Desc) is
     Index : Natural;
     Ok : Boolean;
-    Comment : Asu_Us;
+    Comment : As.U.Asu_Us;
   begin
 
     -- Comment?
@@ -1114,9 +1119,10 @@ package body Parse_Mng  is
   procedure Parse_Text (Ctx : in out Ctx_Type;
                         Adtd : in out Dtd_Type;
                         Children : access Children_Desc) is
-    Text, Tail, Head, Cdata, Tmp_Text : Asu_Us;
+    Text, Tail, Head, Cdata, Tmp_Text : As.U.Asu_Us;
     Start_Index, Index : Natural;
     Ok : Boolean;
+    use type As.U.Asu_Us;
   begin
     -- Concatenate blocks of expanded text and CDATA sections
 
@@ -1128,7 +1134,7 @@ package body Parse_Mng  is
 
       -- Parse until '<' or End of flow
       --  save Text, and save Cdata in Tail
-      Tail := Asu_Null;
+      Tail := As.U.Asu_Null;
       begin
         Util.Parse_Until_Char (Ctx.Flow, Util.Start & "");
         Util.Unget (Ctx.Flow);
@@ -1170,7 +1176,7 @@ package body Parse_Mng  is
           when Remove_Cdata_Markers =>
             null;
           when Remove_Cdata_Section =>
-            Cdata := Asu_Null;
+            Cdata := As.U.Asu_Null;
         end case;
         if Text.Is_Null then
           -- No text: This is fixed (in Head), and we will re-loop reading
@@ -1231,7 +1237,7 @@ package body Parse_Mng  is
               Util.Error (Ctx.Flow, "Unterminated CDATA section");
             end if;
             -- Extract Cdata and apply policy
-            Cdata := Uslice (Text,
+            Cdata := As.U.Uslice (Text,
                      Start_Index +  Util.Cdata_Start'Length,
                      Index - 1);
             case Ctx.Cdata_Policy is
@@ -1240,10 +1246,10 @@ package body Parse_Mng  is
               when Remove_Cdata_Markers =>
                 null;
               when Remove_Cdata_Section =>
-                Cdata := Asu_Null;
+                Cdata := As.U.Asu_Null;
             end case;
             -- Head takes the expanded text and the CDATA section
-            Head := Head & Uslice (Text, 1, Start_Index - 1) & Cdata;
+            Head := Head & As.U.Uslice (Text, 1, Start_Index - 1) & Cdata;
             Trace ("Txt appended >" & Head.Image & "<");
             -- Text is the remaining unexpanded text, fixed
             Text.Delete (1, Index + Util.Cdata_End'Length - 1);
@@ -1265,7 +1271,7 @@ package body Parse_Mng  is
           -- Head takes the expanded text and the initial CDATA
           Head := Head & Text & Tail;
           -- Nothing more to expand => Need to read from flow
-          Text := Asu_Null;
+          Text := As.U.Asu_Null;
         end if;
       end loop Cdata_In_Text;
 
@@ -1440,10 +1446,11 @@ package body Parse_Mng  is
                            Adtd : in out Dtd_Type;
                            Parent_Children : access Children_Desc;
                            Root : in Boolean) is
-    Element_Name, End_Name : Asu_Us;
+    Element_Name, End_Name : As.U.Asu_Us;
     Char : Character;
     Line_No : Natural;
     My_Children : aliased Children_Desc;
+    use type As.U.Asu_Us;
   begin
     Line_No := Util.Get_Line_No (Ctx.Flow);
     -- Parse name until /, > or a separator
@@ -1579,7 +1586,7 @@ package body Parse_Mng  is
           Parse_Element (Ctx, Adtd, My_Children'Access, Root => True);
           Root_Found := True;
           -- Insert dummy child for tail
-          Tree_Mng.Add_Element (Ctx.Elements.all, Asu_Null,
+          Tree_Mng.Add_Element (Ctx.Elements.all, As.U.Asu_Null,
                                 Util.Get_Line_No (Ctx.Flow));
       end case;
     end loop;
@@ -1675,7 +1682,7 @@ package body Parse_Mng  is
   -- Check a Ctx versus its Dtd
   procedure Check (Ctx : in out Ctx_Type) is
     Adtd : Dtd_Type;
-    Full_File : Asu_Us;
+    Full_File : As.U.Asu_Us;
     Is_File : Boolean;
   begin
     -- Reset Dtd
@@ -1704,7 +1711,7 @@ package body Parse_Mng  is
           Ctx.Flow.Curr_Flow.Same_Line := False;
           Ctx.Flow.Curr_Flow.In_Str := Full_File;
           Ctx.Flow.Curr_Flow.In_Stri := 0;
-          Full_File := Tus (Dtd.String_Flow);
+          Full_File := As.U.Tus (Dtd.String_Flow);
           Trace ("Parsing http dtd");
         end if;
         Dtd.Parse (Ctx, Adtd, Full_File);
@@ -1717,7 +1724,7 @@ package body Parse_Mng  is
         Ctx.Flow.Curr_Flow.In_Stri := 0;
         Ctx.Flow.Curr_Flow.Line := Ctx.Doctype.Line_No;
         Ctx.Flow.Curr_Flow.Same_Line := True;
-        Dtd.Parse (Ctx, Adtd, Tus (Dtd.String_Flow));
+        Dtd.Parse (Ctx, Adtd, As.U.Tus (Dtd.String_Flow));
       end if;
     end if;
     -- Restore flow

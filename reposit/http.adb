@@ -37,13 +37,13 @@ package body Http is
   -- The request
   Host : Tcp_Util.Remote_Host;
   Port : Tcp_Util.Remote_Port;
-  Request : Asu_Us;
+  Request : As.U.Asu_Us;
 
   -- The socket
   Soc : Socket.Socket_Dscr;
 
   -- Buffer of incoming data
-  Buffer : Asu_Us;
+  Buffer : As.U.Asu_Us;
 
   -- Line terminators
   Lf : constant String := Ada.Characters.Latin_1.Lf & "";
@@ -89,9 +89,9 @@ package body Http is
   -- Check received Data, set Result
   Expected_Length : Natural;
   procedure Check is
-    New_Line : Asu_Us;
+    New_Line : As.U.Asu_Us;
     Ind : Natural;
-    Header : Asu_Us;
+    Header : As.U.Asu_Us;
   begin
     Debug ("HTTP: Checking");
 
@@ -111,9 +111,9 @@ package body Http is
     end if;
     if Ind = 1
     or else Buffer.Element (Ind - 1) & "" /= Cr then
-      New_Line := Tus (Lf);
+      New_Line := As.U.Tus (Lf);
     else
-      New_Line := Tus (Crlf);
+      New_Line := As.U.Tus (Crlf);
     end if;
 
     -- Locate end of header: 2 consecutive New_Lines, Isolate header
@@ -122,7 +122,7 @@ package body Http is
     Ind := Ind + 2 * New_Line.Length;
     Buffer.Delete (1, Ind - 1);
     -- CrLf -> Lf in Header
-    Header := Tus (String_Mng.Replace (Header.Image, New_Line.Image, Lf));
+    Header := As.U.Tus (String_Mng.Replace (Header.Image, New_Line.Image, Lf));
 
     -- First line of header reply: status
     Ind := String_Mng.Locate (Header.Image, Lf);
@@ -132,19 +132,19 @@ package body Http is
     end if;
     declare
       Iter : Parser.Iterator;
-      Word : Asu_Us;
+      Word : As.U.Asu_Us;
       Http_Header : constant String := "HTTP/";
     begin
       Iter.Set (Header.Slice (1, Ind - 1), Is_Space'Access);
       -- First word: HTTP/<vers>
-      Word := Tus (Iter.Next_Word);
+      Word := As.U.Tus (Iter.Next_Word);
       if Word.Length < Http_Header'Length
       or else Word.Slice (1, Http_Header'Length) /= Http_Header
       or else Iter.Prev_Separators /= "" then
         Debug ("HTTP: Invalid reply (http/): " & Iter.Image);
         return;
       end if;
-      Result := (Server_Error, 400, Asu_Null);
+      Result := (Server_Error, 400, As.U.Asu_Null);
       -- Code
       Result.Code := Server_Code_Range'Value (Iter.Next_Word);
       if Iter.Prev_Separators /= " " then
@@ -153,8 +153,8 @@ package body Http is
         return;
       end if;
       -- Message: tail
-      Word := Tus (Iter.Next_Word);
-      Word := Tus (Iter.Image);
+      Word := As.U.Tus (Iter.Next_Word);
+      Word := As.U.Tus (Iter.Image);
       Result.Message := Word.Uslice (Iter.First_Index, Word.Length);
       Iter.Del;
     exception
@@ -167,7 +167,7 @@ package body Http is
     Debug ("HTTP: Status: " & Result.Code'Img & " " & Result.Message.Image);
     if Result.Code = 200 and then Result.Message.Image = "OK" then
       -- Ok, continue
-      Result := (Ok, Asu_Null);
+      Result := (Ok, As.U.Asu_Null);
     else
       -- Done on server error
       Debug ("HTTP: Server error:" & Result.Code'Img
@@ -184,14 +184,14 @@ package body Http is
     end if;
     declare
       Iter : Parser.Iterator;
-      Word : Asu_Us;
+      Word : As.U.Asu_Us;
       Ind1 : Natural;
     begin
       Ind1 := String_Mng.Locate (Header.Image, Lf, Ind);
       Iter.Set (Header.Slice (Ind, Ind1 - 1), Is_Space'Access);
       -- Skip "Content-Length:", get value
-      Word := Tus (Iter.Next_Word);
-      Word := Tus (Iter.Next_Word);
+      Word := As.U.Tus (Iter.Next_Word);
+      Word := As.U.Tus (Iter.Next_Word);
       Expected_Length := Natural'Value (Word.Image);
       Debug ("HTTP: Expected length: " & Expected_Length'Img);
     exception
@@ -283,7 +283,7 @@ package body Http is
     end loop;
     -- Set not blocking and hook receptions
     Soc.Set_Blocking (False);
-    Buffer := Asu_Null;
+    Buffer := As.U.Asu_Null;
     My_Rece.Set_Callbacks (Soc,
                            Read_Cb'Unrestricted_Access,
                            Disconnection_Cb'Unrestricted_Access);
@@ -302,7 +302,7 @@ package body Http is
     -- Init result
     Done := False;
     Timer_Id := Timers.No_Timer;
-    Result := (Kind => Ok, Content => Asu_Null);
+    Result := (Kind => Ok, Content => As.U.Asu_Null);
 
     -- Parse Url and set host and port
     declare
@@ -346,7 +346,7 @@ package body Http is
       Connect_Timeout := Environ.Get_Int (Connect_Timeout_Var,
                                           Default_Connect_Timeout);
       -- Init request and result
-      Request := Tus ("GET " & Url & " HTTP/1.0" & Crlf & Crlf);
+      Request := As.U.Tus ("GET " & Url & " HTTP/1.0" & Crlf & Crlf);
       -- Connect: infinite retries each Connect_Timeout sec
       Soc := Socket.No_Socket;
       Debug ("HTTP: Connecting each" & Connect_Timeout'Img);

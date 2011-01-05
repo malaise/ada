@@ -15,13 +15,13 @@ package body Argument_Parser is
   type Arg_Dscr is record
     Index : Natural;
     Char : Boolean;
-    List : Asu_Us;
-    Option : Asu_Us;
+    List : As.U.Asu_Us;
+    Option : As.U.Asu_Us;
   end record;
 
 
   -- Internal for parsing: get option at pos Pos if valid, else No_Match
-  function Get_Option (Pos : Positive) return Asu_Us is
+  function Get_Option (Pos : Positive) return As.U.Asu_Us is
   begin
     if Pos <= Argument.Get_Nbre_Arg then
       declare
@@ -32,11 +32,11 @@ package body Argument_Parser is
         or else Option = "-"
         or else Option = "" then
           -- Valid option
-          return Tus (Option);
+          return As.U.Tus (Option);
         end if;
       end;
     end if;
-    return Tus (No_Match);
+    return As.U.Tus (No_Match);
   end Get_Option;
 
   -- Internal for user: get option at pos Pos if valid, else ""
@@ -59,14 +59,15 @@ package body Argument_Parser is
                        A_Dscr : out Arg_Dscr) is
     Str : constant String := Argument.Get_Parameter (Arg_No);
     Len : Natural;
-    Crit : Asu_Us;
+    Crit : As.U.Asu_Us;
     Found : Boolean;
     Index : The_Keys_Range;
+    use type As.U.Asu_Us;
   begin
     P_Dscr.Ok := False;
     A_Dscr.Index := 0;
-    A_Dscr.List := Asu_Null;
-    A_Dscr.Option := Tus (No_Match);
+    A_Dscr.List := As.U.Asu_Null;
+    A_Dscr.Option := As.U.Tus (No_Match);
     if Str'Length >= 1 and then Str(1) = '-' then
       if Str = "-" then
         -- Just a "-": normal word
@@ -82,17 +83,17 @@ package body Argument_Parser is
         Len := String_Mng.Locate (Str, "=", 3);
         if Len = 3 then
           -- "--="
-          P_Dscr.Error := Tus ("Argument " & Str & " at pos "
+          P_Dscr.Error := As.U.Tus ("Argument " & Str & " at pos "
              & Image(Arg_No) & " is not valid");
           return;
         end if;
         -- Set Len to last of key string
         if Len = 0 then
-          Crit := Tus (Str(3 .. Str'Last));
+          Crit := As.U.Tus (Str(3 .. Str'Last));
         else
           -- An option: save it
-          A_Dscr.Option := Tus (Str(Len + 1 .. Str'Last));
-          Crit := Tus (Str(3 .. Len - 1));
+          A_Dscr.Option := As.U.Tus (Str(Len + 1 .. Str'Last));
+          Crit := As.U.Tus (Str(3 .. Len - 1));
         end if;
         -- Find matching key
         for I in The_Keys'Range loop
@@ -101,7 +102,7 @@ package body Argument_Parser is
             -- If it has an option and if it can
             if Len /= 0
             and then not The_Keys(I).Key_Can_Option then
-              P_Dscr.Error := Tus ("Argument " & Str & " at pos "
+              P_Dscr.Error := As.U.Tus ("Argument " & Str & " at pos "
                  & Image(Arg_No) & " cannot have option");
               return;
             end if;
@@ -112,14 +113,14 @@ package body Argument_Parser is
           end if;
         end loop;
         -- Not found
-        P_Dscr.Error := Tus ("Argument " & Str & " at pos "
+        P_Dscr.Error := As.U.Tus ("Argument " & Str & " at pos "
            & Image(Arg_No) & " is not expected");
         return;
       end if;
 
       -- Char key, no minus allowed
       if String_Mng.Locate (Str, "-", 2) /= 0 then
-        P_Dscr.Error := Tus ("Argument " & Str & " at pos "
+        P_Dscr.Error := As.U.Tus ("Argument " & Str & " at pos "
            & Image(Arg_No) & " contains minus");
         return;
       end if;
@@ -136,7 +137,7 @@ package body Argument_Parser is
         end loop;
         if A_Dscr.Index = 0 then
           -- Not found
-          P_Dscr.Error := Tus ("Argument " & Str & " at pos "
+          P_Dscr.Error := As.U.Tus ("Argument " & Str & " at pos "
              & Image(Arg_No) & " is not expected");
           return;
         end if;
@@ -158,7 +159,7 @@ package body Argument_Parser is
             end if;
           end loop;
           if not Found then
-            P_Dscr.Error := Tus ("Argument " & Str & " at pos "
+            P_Dscr.Error := As.U.Tus ("Argument " & Str & " at pos "
                & Image(Arg_No) & " has not expected key " & Str(I));
             return;
           end if;
@@ -170,7 +171,7 @@ package body Argument_Parser is
         end loop;
         A_Dscr.Index := 0;
         A_Dscr.Char := True;
-        A_Dscr.List := Tus (Str(2 .. Str'Last));
+        A_Dscr.List := As.U.Tus (Str(2 .. Str'Last));
         P_Dscr.Ok := True;
         return;
       end if;
@@ -190,6 +191,7 @@ package body Argument_Parser is
     Arg : Arg_Dscr;
     -- An indicator that next/current argument is an option
     Is_Option : Boolean;
+    use type As.U.Asu_Us;
   begin
     -- First check the keys
     for I in The_Keys'Range loop
@@ -239,7 +241,7 @@ package body Argument_Parser is
         end if;
       exception
         when Argument.Argument_Too_Long =>
-          Dscr.Error := Tus ("Argument at pos "
+          Dscr.Error := As.U.Tus ("Argument at pos "
              & Image(I) & " is too long");
           return Dscr;
       end;
@@ -253,7 +255,7 @@ package body Argument_Parser is
         -- Parse this argument
         Parse_Arg (The_Keys, I, Dscr, Arg);
         if not Dscr.Ok then
-          if Dscr.Error /= Asu_Null then
+          if Dscr.Error /= As.U.Asu_Null then
             -- Error detected
             return Dscr;
           end if;
@@ -261,7 +263,7 @@ package body Argument_Parser is
         end if;
       else
         Arg.Index := 0;
-        Arg.List := Asu_Null;
+        Arg.List := As.U.Asu_Null;
       end if;
 
       -- Check this arg for Key_Can_Multiple, set terminator indexes
@@ -271,7 +273,7 @@ package body Argument_Parser is
           Dscr.First_Occurence(Arg.Index) := I;
         elsif not The_Keys(Arg.Index).Key_Can_Multiple then
           Dscr.Ok := False;
-          Dscr.Error := Tus ("Argument "
+          Dscr.Error := As.U.Tus ("Argument "
              & Argument.Get_Parameter (Occurence => I)
              & " at pos "
              & Image(I) & " appears several times");
@@ -289,7 +291,7 @@ package body Argument_Parser is
           Dscr.First_Pos_After_Keys := I + 1;
           Is_Option := False;
         end if;
-      elsif Arg.List /= Asu_Null then
+      elsif Arg.List /= As.U.Asu_Null then
         -- A valid group of Char keys, check each char
         for J in 1 .. Arg.List.Length loop
           -- Locate the corresponding key (existence has already been checked)
@@ -299,7 +301,7 @@ package body Argument_Parser is
                 Dscr.First_Occurence(K) := I;
               elsif not The_Keys(K).Key_Can_Multiple then
                 Dscr.Ok := False;
-                Dscr.Error := Tus ("Argument "
+                Dscr.Error := As.U.Tus ("Argument "
                    & Argument.Get_Parameter (Occurence => I)
                    & " at pos "
                    & Image(I) & " makes key " & The_Keys(K).Key_Char
@@ -376,7 +378,7 @@ package body Argument_Parser is
     end if;
     Dscr.Ok := False;
     Dscr.The_Keys := null;
-    Dscr.Error := Asu_Null;
+    Dscr.Error := As.U.Asu_Null;
   end Reset;
 
   -- Was parsing OK

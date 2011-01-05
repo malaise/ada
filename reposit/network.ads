@@ -1,7 +1,6 @@
 -- Network of nodes
 with Ada.Finalization;
-with As.U; use As.U;
-with Limited_List;
+with As.U, Limited_List;
 generic
   -- The data to store in each node
   type Node_Data_Type is private;
@@ -148,7 +147,7 @@ private
   -- The exported node type
   type Node_Type is limited new Ada.Finalization.Limited_Controlled with record
     -- Node name. Empty when node is deleted
-    Name : Asu_Us;
+    Name : As.U.Asu_Us;
     -- List of node's connections
     Connections : Connections_Access := null;
     -- Node data

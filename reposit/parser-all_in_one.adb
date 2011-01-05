@@ -31,8 +31,8 @@ package body Parser.All_In_One is
     Word_Elt.Kind := Word;
     Seps_Elt.Kind := Separators;
     loop
-      Word_Elt.Str := Tus (Next_Word (Iter));
-      Seps_Elt.Str := Tus (Prev_Separators (Iter));
+      Word_Elt.Str := As.U.Tus (Next_Word (Iter));
+      Seps_Elt.Str := As.U.Tus (Prev_Separators (Iter));
       -- Store previous seperators if any (may not be the case before first
       --  word or after last word)
       if not Seps_Elt.Str.Is_Null then

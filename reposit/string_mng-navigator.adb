@@ -5,7 +5,7 @@ package body String_Mng.Navigator is
   -- Constructor, re-inits position to start of string
   procedure Set (Navig : in out Navigator_Type; Str : in String) is
   begin
-    Navig.Str := Tus (Str);
+    Navig.Str := As.U.Tus (Str);
     Navig.Start := Str'First;
     Navig.Current := Str'First;
     Navig.No_Char := Default_No_Char;

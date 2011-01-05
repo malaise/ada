@@ -1,6 +1,5 @@
 with Ada.Finalization;
-with As.U; use As.U;
-with Sys_Calls, Text_Line;
+with As.U, Sys_Calls, Text_Line;
 package Text_Char is
 
   -- The file type
@@ -52,11 +51,11 @@ private
     --  a new line must be read from Text_Line file
     -- If Line_Got is not empty, then Line_Got(Get_Index+1) can be read,
     --  there is never Get_Index = Length(Line_Got), except 0
-    Line_Got : Asu_Us;
+    Line_Got : As.U.Asu_Us;
     Get_Index : Natural := 0;
 
     -- Ungot chars appended one after the other
-    Ungot_Chars : Asu_Us;
+    Ungot_Chars : As.U.Asu_Us;
   end record;
 
   type Rec_Access is access File_Type_Rec;
