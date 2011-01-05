@@ -1,6 +1,5 @@
 with Ada.Text_Io;
-with As.U; use As.U;
-with Argument, Upper_Char, Get_Float, My_Math, Euro_Franc, String_Mng;
+with As.U, Argument, Upper_Char, Get_Float, My_Math, Euro_Franc, String_Mng;
 use type My_Math.Real;
 
 procedure E2F is
@@ -11,7 +10,7 @@ procedure E2F is
   Amount : My_Math.Real;
   To_Francs : Boolean;
 
-  The_Argument : Asu_Us;
+  The_Argument : As.U.Asu_Us;
 
   procedure Help is
     use Ada.Text_Io;

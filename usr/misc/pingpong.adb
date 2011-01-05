@@ -2,8 +2,8 @@
 -- By default send a ping each period and replies to ping
 -- On option only sends pings or only replies pong
 with Ada.Exceptions, Ada.Calendar;
-with As.U; use As.U;
-with Argument, Argument_Parser,
+with As.U,
+     Argument, Argument_Parser,
      Basic_Proc,
      Date_Image, Dur_Image, String_Mng, Mixed_Str,
      Socket, Tcp_Util, Ip_Addr, Event_Mng, Timers,
@@ -12,13 +12,13 @@ procedure Pingpong is
 
   -- Argument parsing
   Keys : constant Argument_Parser.The_Keys_Type := (
-    1 => ('h', Tus ("help"), False, False),
-    2 => ('i', Tus ("interface"), False, True),
-    3 => ('p', Tus ("period"), False, True),
-    4 => ('r', Tus ("reply"), False, False),
-    5 => ('s', Tus ("send"), False, False),
-    6 => ('a', Tus ("average"), False, False),
-    7 => ('d', Tus ("debug"), False, False));
+    1 => ('h', As.U.Tus ("help"), False, False),
+    2 => ('i', As.U.Tus ("interface"), False, True),
+    3 => ('p', As.U.Tus ("period"), False, True),
+    4 => ('r', As.U.Tus ("reply"), False, False),
+    5 => ('s', As.U.Tus ("send"), False, False),
+    6 => ('a', As.U.Tus ("average"), False, False),
+    7 => ('d', As.U.Tus ("debug"), False, False));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
   Soc : Socket.Socket_Dscr;
@@ -128,7 +128,7 @@ procedure Pingpong is
     Found : Boolean;
     Info : Info_Type;
     Info_Acc : Info_Access;
-    Txt : Asu_Us;
+    Txt : As.U.Asu_Us;
   begin
     if F /= Fd then
       Put ("Not same Fd");
@@ -189,9 +189,9 @@ procedure Pingpong is
         Info_Acc.Nb_Samples := Info_Acc.Nb_Samples + 1;
         Delta_Time := Info_Acc.Average_Delta;
       end if;
-      Txt := Tus ("Average delta");
+      Txt := As.U.Tus ("Average delta");
     else
-      Txt := Tus ("Current delta");
+      Txt := As.U.Tus ("Current delta");
     end if;
     Put (Txt.Image & " of " & Message.Host_Name (1 .. Message.Host_Name_Len)
          & " is " & Dur_Image (Delta_Time, 3, True));

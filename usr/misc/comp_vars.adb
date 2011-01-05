@@ -1,6 +1,6 @@
 with Ada.Text_Io;
-with As.U; use As.U;
-with Argument, Text_Line, Sys_Calls, Xml_Parser, Computer, Environ, Int_Image;
+with As.U, Argument, Text_Line, Sys_Calls, Xml_Parser, Computer, Environ,
+     Int_Image;
 procedure Comp_Vars is
 
   -- Image of a computed value
@@ -75,9 +75,9 @@ procedure Comp_Vars is
     Attr1, Attr2 : Xml_Parser.Attribute_Rec;
     -- Is variable an int or a string
     Var_Is_Int : Boolean;
-    Text : Asu_Us;
+    Text : As.U.Asu_Us;
     -- Result of evaluation
-    Result : Asu_Us;
+    Result : As.U.Asu_Us;
     use type Xml_Parser.Node_Kind_List;
   begin
     -- Parse
@@ -172,7 +172,7 @@ procedure Comp_Vars is
       if Ctx.Get_Nb_Children (Var) = 0
       and then not Var_Is_Int then
         -- Empty string
-        Text := Asu_Null;
+        Text := As.U.Asu_Null;
       elsif Ctx.Get_Nb_Children (Var) = 1 then
         Val := Ctx.Get_Child (Var, 1);
         Text := Ctx.Get_Text (Val);
@@ -187,9 +187,9 @@ procedure Comp_Vars is
         Expr : constant String := Text.Image;
       begin
         if Var_Is_Int then
-          Result := Tus (Comp_Image (Computer.Compute (Expr)));
+          Result := As.U.Tus (Comp_Image (Computer.Compute (Expr)));
         else
-          Result := Tus (Computer.Eval (Expr));
+          Result := As.U.Tus (Computer.Eval (Expr));
         end if;
       exception
         when Computer.Unknown_Variable =>

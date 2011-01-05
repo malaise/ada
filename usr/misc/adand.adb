@@ -1,7 +1,6 @@
 -- Source file indenter. See procedure Usage.
 with Ada.Text_Io, Ada.Exceptions;
-with As.U; use As.U;
-with Sys_Calls, My_Io, Argument;
+with As.U, Sys_Calls, My_Io, Argument;
 
 procedure Adand is
   Line_Deb, Line_Fin : Positive;
@@ -10,15 +9,15 @@ procedure Adand is
   subtype Indent_Range is Integer range -12 .. +12;
   Ind : Indent_Range;
 
-  File_Name : Asu_Us;
+  File_Name : As.U.Asu_Us;
   Sav_Suf : constant String := ".bak";
-  File_Suf : Asu_Us;
+  File_Suf : As.U.Asu_Us;
 
   Str_Max : constant := 500;
   Str : String(1..Str_Max+1);
   Lst : Natural;
 
-  Tld, Tlf, Ti : Asu_Us;
+  Tld, Tlf, Ti : As.U.Asu_Us;
 
   F, Fb : Ada.Text_Io.File_Type;
 

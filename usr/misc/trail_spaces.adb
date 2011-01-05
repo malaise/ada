@@ -1,6 +1,5 @@
 with Ada.Exceptions, Ada.Characters.Latin_1;
-with As.U; use As.U;
-with Argument, Sys_Calls, Temp_File, Text_Line;
+with As.U, Argument, Sys_Calls, Temp_File, Text_Line;
 procedure Trail_Spaces is
 
   -- This is the exit code. Like diff:
@@ -35,13 +34,13 @@ procedure Trail_Spaces is
     In_File : Text_Line.File_Type;
     Out_File : Text_Line.File_Type;
     -- Line of input
-    Line : Asu_Us;
+    Line : As.U.Asu_Us;
     -- Is file modified
     Modified : Boolean;
     -- Dummy result for Sys calls
     Dummy : Boolean;
     pragma Unreferenced (Dummy);
-
+    use type As.U.Asu_Us;
   begin
     -- Open in-file read only and associate in Text_Line
     declare
@@ -103,7 +102,7 @@ procedure Trail_Spaces is
       and then Line.Element (Line.Length - 1)
          = Ada.Characters.Latin_1.Cr then
         Line := Line.Slice (1, Line.Length - 2)
-              & Tus (Text_Line.Line_Feed_Char & "");
+              & As.U.Tus (Text_Line.Line_Feed_Char & "");
         Modified := True;
       end if;
       -- Trail spaces of line

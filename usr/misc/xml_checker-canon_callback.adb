@@ -8,7 +8,7 @@ procedure Canon_Callback (Ctx  : in Xml_Parser.Ctx_Type;
   Horiz_Tab : constant Character := Ada.Characters.Latin_1.Ht;
 
   Clone : Xml_Parser.Node_Update;
-  Str : Asu_Us;
+  Str : As.U.Asu_Us;
   Len : Natural;
   Col : Natural;
   Done : Boolean;
@@ -18,16 +18,17 @@ procedure Canon_Callback (Ctx  : in Xml_Parser.Ctx_Type;
   -- simple attribute has Suffix set to it
   -- attribute with prefix:suffix, but prefix not defined, is split
   -- attribute with prefix:suffix and prefix defined has Uri and Suffix set
-  Xmlns : constant Asu_Us := Tus ("xmlns");
+  Xmlns : constant As.U.Asu_Us := As.U.Tus ("xmlns");
   type Attr_Rec is record
     -- Index in Node.Attributes
     Index : Positive;
-    Uri : Asu_Us;
-    Prefix : Asu_Us;
-    Suffix : Asu_Us;
+    Uri : As.U.Asu_Us;
+    Prefix : As.U.Asu_Us;
+    Suffix : As.U.Asu_Us;
   end record;
   type Attr_Array is array (Positive range <>) of Attr_Rec;
   function Less_Than (A, B : Attr_Rec) return Boolean is
+    use type As.U.Asu_Us;
   begin
     if not A.Uri.Is_Null and then     B.Uri.Is_Null then return False; end if;
     if     A.Uri.Is_Null and then not B.Uri.Is_Null then return True;  end if;
@@ -47,7 +48,7 @@ procedure Canon_Callback (Ctx  : in Xml_Parser.Ctx_Type;
   package Attr_Sort is new Sorts (Attr_Rec, Positive, Less_Than, Attr_Array);
 
   -- Fix text or attribute value
-  procedure Fix_Chars (Str : in out Asu_Us; Is_Text : in Boolean) is
+  procedure Fix_Chars (Str : in out As.U.Asu_Us; Is_Text : in Boolean) is
     Len : Natural := Str.Length;
     I : Positive;
     procedure Subchar (S : in String) is
@@ -96,6 +97,7 @@ begin
       Node_Attrs : constant Xml_Parser.Attributes_Array (Node.Attributes'Range)
                  := Node.Attributes.all;
       Attrs : Attr_Array (Node_Attrs'Range);
+      use type As.U.Asu_Us;
     begin
       for I in Node_Attrs'Range loop
         Attrs(I).Index := I;
@@ -159,7 +161,7 @@ begin
     Clone.Has_Children := True;
     Clone.Is_Mixed := True;
     -- Start Tag
-    Str := Tus (Xml_Parser.Generator.Image (Ctx, Clone, Format, Width));
+    Str := As.U.Tus (Xml_Parser.Generator.Image (Ctx, Clone, Format, Width));
     Out_Flow.Put (Str.Image);
     -- End Tag
     Clone.Creation := False;
@@ -167,7 +169,7 @@ begin
   end if;
 
   -- Use the Image of Xml_Parser.Generator
-  Str := Tus (Xml_Parser.Generator.Image (Ctx, Clone, Format, Width));
+  Str := As.U.Tus (Xml_Parser.Generator.Image (Ctx, Clone, Format, Width));
   Len := Str.Length;
 
   -- Remove Leading Line_Feed before Root
@@ -202,7 +204,11 @@ begin
   end if;
   -- Prepend Lf to Tail items
   if Clone.Stage = Xml_Parser.Tail then
-    Str := Line_Feed & Str;
+    declare
+      use type As.U.Asu_Us;
+    begin
+      Str := Line_Feed & Str;
+    end;
     Len := Len + 1;
   end if;
 

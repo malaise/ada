@@ -1,10 +1,9 @@
-with As.U; use As.U;
-with My_Io, Argument, Directory;
+with As.U, My_Io, Argument, Directory;
 procedure Ddir is
 
   procedure Ddir_One (Dir_Name : in String) is
     Dir_Dsc : Directory.Dir_Desc;
-    Entry_Name : Asu_Us;
+    Entry_Name : As.U.Asu_Us;
     Kind : Directory.File_Kind_List;
     use Directory;
   begin

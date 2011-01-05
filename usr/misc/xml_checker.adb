@@ -1,6 +1,5 @@
 with Ada.Exceptions;
-with As.U; use As.U;
-with Argument, Argument_Parser, Xml_Parser.Generator, Normal, Basic_Proc,
+with As.U, Argument, Argument_Parser, Xml_Parser.Generator, Normal, Basic_Proc,
      Text_Line, Sys_Calls, Parser;
 procedure Xml_Checker is
   -- Current version
@@ -43,7 +42,7 @@ procedure Xml_Checker is
 
   -- Dtd options
   Use_Dtd : Boolean;
-  Dtd_File : Asu_Us;
+  Dtd_File : As.U.Asu_Us;
 
   -- Warning detection
   procedure Warning (Ctx : in  Xml_Parser.Ctx_Type; Msg : in String) is
@@ -57,7 +56,7 @@ procedure Xml_Checker is
   Max_Opt : Natural;
 
   -- String list of unparsed entities
-  Unparsed_Entities : Asu_Us;
+  Unparsed_Entities : As.U.Asu_Us;
 
   -- Program help
   procedure Usage is
@@ -100,18 +99,18 @@ procedure Xml_Checker is
 
   -- The argument keys and descriptor of parsed keys
   Keys : constant Argument_Parser.The_Keys_Type := (
-    1 => ('s', Tus ("silent"), False, False),
-    2 => ('d', Tus ("dump"), False, False),
-    3 => ('r', Tus ("raw"), False, False),
-    4 => ('W', Tus ("width"), False, True),
-    5 => ('1', Tus ("one"), False, False),
-    6 => ('h', Tus ("help"), False, False),
-    7 => ('v', Tus ("version"), False, False),
-    8 => ('k', Tus ("keep"), True, True),
-    9 => ('c', Tus ("check_dtd"), False, True),
-   10 => ('t', Tus ("tree"), False, False),
-   11 => ('w', Tus ("warnings"), False, False),
-   12 => ('C', Tus ("canonical"), False, False)
+    1 => ('s', As.U.Tus ("silent"), False, False),
+    2 => ('d', As.U.Tus ("dump"), False, False),
+    3 => ('r', As.U.Tus ("raw"), False, False),
+    4 => ('W', As.U.Tus ("width"), False, True),
+    5 => ('1', As.U.Tus ("one"), False, False),
+    6 => ('h', As.U.Tus ("help"), False, False),
+    7 => ('v', As.U.Tus ("version"), False, False),
+    8 => ('k', As.U.Tus ("keep"), True, True),
+    9 => ('c', As.U.Tus ("check_dtd"), False, True),
+   10 => ('t', As.U.Tus ("tree"), False, False),
+   11 => ('w', As.U.Tus ("warnings"), False, False),
+   12 => ('C', As.U.Tus ("canonical"), False, False)
    );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
@@ -281,7 +280,7 @@ procedure Xml_Checker is
   -- Callback for "on the flow" display
   procedure Callback (Ctx  : in Xml_Parser.Ctx_Type;
                       Node : in Xml_Parser.Node_Update) is
-    Str : Asu_Us;
+    Str : As.U.Asu_Us;
     Indent : constant String (1 .. Node.Level + 1) := (others => ' ');
     use type Xml_Parser.Node_Kind_List, Xml_Parser.Attributes_Access,
              Xml_Parser.Stage_List;
@@ -290,7 +289,7 @@ procedure Xml_Checker is
       return;
     elsif Output_Kind /= Dump then
       -- Use the Image of Xml_Parser.Generator
-      Str := Tus (Xml_Parser.Generator.Image (Ctx, Node, Format, Width));
+      Str := As.U.Tus (Xml_Parser.Generator.Image (Ctx, Node, Format, Width));
       if Cb_Status = Init then
         if Str.Is_Null then
           -- Dummy Xml node when no xml directive, we will need to skip
@@ -513,7 +512,7 @@ begin
   Keep_Cdata := False;
   Normalize := True;
   Use_Dtd := True;
-  Dtd_File := Asu_Null;
+  Dtd_File := As.U.Asu_Null;
   Callback_Acc := null;
   -- Get options and check max of options
   -- Only one option, one more for each keep, one more if check_dtd,
@@ -635,7 +634,7 @@ begin
 
   if Arg_Dscr.Is_Set (9) then
     -- Check dtd file
-    Dtd_File := Tus (Arg_Dscr.Get_Option (9));
+    Dtd_File := As.U.Tus (Arg_Dscr.Get_Option (9));
     if Dtd_File.Is_Null then
       -- If option set with empty dtd => no check
       Use_Dtd := False;

@@ -3,8 +3,8 @@
 
 with System;
 with Ada.Text_Io, Ada.Characters.Latin_1;
-with As.U; use As.U;
-with Argument, Sys_Calls, Event_Mng, Socket, Channels, Async_Stdin, String_Mng;
+with As.U, Argument, Sys_Calls, Event_Mng, Socket, Channels, Async_Stdin,
+     String_Mng;
 procedure Relay is
 
   -- Message type
@@ -22,7 +22,7 @@ procedure Relay is
   Message : Message_Type;
 
   -- Name of the Channel
-  Channel_Name : Asu_Us;
+  Channel_Name : As.U.Asu_Us;
   -- Suffix to build destinations file name
   File_Name_Suffix : constant String := ".xml";
 

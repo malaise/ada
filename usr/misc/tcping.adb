@@ -1,8 +1,7 @@
 -- Open a TCP connection to the provided host and port
 with Ada.Text_Io, Ada.Calendar, Ada.Exceptions;
 
-with As.U; use As.U;
-with Argument, Basic_Proc, Ip_Addr,
+with As.U, Argument, Basic_Proc, Ip_Addr,
      Normal, My_Math, Round_At, Timers, Socket, Tcp_Util, Event_Mng;
 
 procedure Tcping is
@@ -52,7 +51,7 @@ procedure Tcping is
   end Put_Arg_Error;
 
   -- Argument parsed
-  Txt : Asu_Us;
+  Txt : As.U.Asu_Us;
   Host : Tcp_Util.Remote_Host;
   Port : Tcp_Util.Remote_Port;
 

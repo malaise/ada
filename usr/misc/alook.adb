@@ -17,11 +17,8 @@
 -- Debug displays the modified words.
 
 with Ada.Text_Io, Ada.Direct_Io, Ada.Exceptions, Ada.Characters.Latin_1;
-with As.U; use As.U;
-
-with Argument, Bloc_Io, Ada_Words,
-     Lower_Str, Mixed_Str, Upper_Str, Basic_Proc;
-
+with As.U, Argument, Bloc_Io, Ada_Words, Lower_Str, Mixed_Str, Upper_Str,
+     Basic_Proc;
 procedure Alook is
 
   Debug : Boolean := False;
@@ -314,11 +311,11 @@ procedure Alook is
     End_Of_File : Boolean;
 
     -- Current line for warnings
-    Line : Asu_Us;
+    Line : As.U.Asu_Us;
 
     -- Current word and exception when it is filled
     Word_Error : exception;
-    Word : Asu_Us;
+    Word : As.U.Asu_Us;
 
     -- Is Char an upper case
     function Is_Upper (Char : Character) return Boolean is
@@ -383,8 +380,8 @@ procedure Alook is
         Ada.Text_Io.Put_Line("--> " & Line.Image);
         Warnings := False;
       end if;
-      Line := Asu_Null;
-      Word := Asu_Null;
+      Line := As.U.Asu_Null;
+      Word := As.U.Asu_Null;
     end Check_Line;
 
   begin
@@ -417,8 +414,8 @@ procedure Alook is
     Line_No := 1;
     Prev_Tick := False;
     End_Of_File := False;
-    Line := Asu_Null;
-    Word := Asu_Null;
+    Line := As.U.Asu_Null;
+    Word := As.U.Asu_Null;
 
     -- Conversion loop:
     -- If upper_case and previous also upper_case, write lower_case
@@ -463,7 +460,7 @@ procedure Alook is
         or else Char = Reading.Carriage_Return
         or else End_Of_File then
           -- End of word, check it
-          if Word = Asu_Null
+          if Word.Is_Null
           -- Avoid checking character literal
           or else (Word.Length = 1
                    and then Prev_Prev_Char = ''' and then Char = ''' )then
@@ -475,14 +472,14 @@ procedure Alook is
             Prev_Tick := False;
           end if;
           -- Not in word
-          Word := Asu_Null;
+          Word := As.U.Asu_Null;
           -- Store tick if not in character literal
           if not Prev_Tick then
             Prev_Tick := Char = ''' and then Prev_Prev_Char /= ''';
           end if;
         else
           -- In word: append if possible
-          if Word = Asu_Null then
+          if Word.Is_Null then
             Word_Index := Reading.Curr_Index;
           end if;
           begin
@@ -503,7 +500,7 @@ procedure Alook is
         -- Entering comment
         In_Comment := True;
         Proceed := False;
-        Word := Asu_Null;
+        Word := As.U.Asu_Null;
       end if;
 
       -- Check in string. Update Proceed
@@ -511,7 +508,7 @@ procedure Alook is
         if not In_String and then Prev_Char /= ''' then
           -- Entering string
           In_String := True;
-          Word := Asu_Null;
+          Word := As.U.Asu_Null;
         elsif In_String then
           -- Leaving String
           In_String := False;
@@ -579,8 +576,8 @@ procedure Alook is
            & ", exception " & Ada.Exceptions.Exception_Name (Error)
            & ". Skipping.");
       Reading.Close;
-      Line := Asu_Null;
-      Word := Asu_Null;
+      Line := As.U.Asu_Null;
+      Word := As.U.Asu_Null;
       Exit_Code := Problem;
       return Modified;
   end Do_One;

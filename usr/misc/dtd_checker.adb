@@ -1,11 +1,10 @@
 with Ada.Exceptions;
-with As.U; use As.U;
-with Argument, Basic_Proc, Xml_Parser;
+with As.U, Argument, Basic_Proc, Xml_Parser;
 procedure Dtd_Checker is
 
   -- Xml Parser dtd
   Dtd : Xml_Parser.Dtd_Type;
-  Error_Msg : Asu_Us;
+  Error_Msg : As.U.Asu_Us;
 
   -- Program help
   procedure Usage is

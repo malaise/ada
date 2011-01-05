@@ -1,12 +1,12 @@
 -- Use Select_File to rename files
 with Ada.Text_Io;
-with Text_Handler, Argument, Select_File, Sys_Calls;
+with As.B, Argument, Select_File, Sys_Calls;
 
 procedure Renamer is
 
   Read : Boolean;
   Ok : Boolean;
-  File, Prev_File : Text_Handler.Text(500);
+  File, Prev_File : As.B.Asb_Bs(500);
 
   function My_Select_File is
            new Select_File (Read_Title  => "Select file to rename",
@@ -29,16 +29,16 @@ begin
 
   loop
     -- Get (orig or new) file name
-    File.Set (My_Select_File (1, File.Value, Read));
-    exit when File.Is_Empty;
+    File.Set (My_Select_File (1, File.Image, Read));
+    exit when File.Is_Null;
     Ok := True;
 
     -- Check if no /
-    if File.Locate ('/') /= 0 then
+    if File.Locate ("/") /= 0 then
       Ada.Text_Io.Put_Line (Me & ": File name contains '/'. Skipping.");
       Ok := False;
       Read := True;
-      File.Empty;
+      File.Set_Null;
     end if;
 
     -- Save original name or check new name is new
@@ -46,26 +46,26 @@ begin
       begin
         if Read then
           -- Check file exists and is accessible
-          if File_Exists (File.Value) then
+          if File_Exists (File.Image) then
             -- Save original file name
             Prev_File.Set(File);
             Read := False;
             Ok := False;
           else
             Ada.Text_Io.Put_Line (Me & ": File not found "
-                                     & File.Value
+                                     & File.Image
                                      & ". Skipping.");
           end if;
         else
           -- Check file does not exist and is accessible
-          if File_Exists (File.Value) then
+          if File_Exists (File.Image) then
             Ada.Text_Io.Put_Line (Me & ": New name "
-                                     & File.Value
+                                     & File.Image
                                      & " already exists. Skipping.");
             Ok := False;
-          elsif Text_Handler."=" (Prev_File, File) then
+          elsif As.B."=" (Prev_File, File) then
             Ada.Text_Io.Put_Line (Me & ": New name "
-                                     & File.Value
+                                     & File.Image
                                      & " is prev name. Skipping.");
             Ok := False;
           end if;
@@ -74,7 +74,7 @@ begin
       exception
         when Access_Error =>
           Ada.Text_Io.Put_Line (Me & ": Cannot access file "
-                                   & File.Value
+                                   & File.Image
                                    & ". Skipping.");
           Ok := False;
           Read := True;
@@ -83,15 +83,15 @@ begin
 
     -- Rename
     if Ok then
-      Ok := Sys_Calls.Rename (Prev_File.Value, File.Value);
+      Ok := Sys_Calls.Rename (Prev_File.Image, File.Image);
       if Ok then
-        Ada.Text_Io.Put_Line (Me & ": " & Prev_File.Value &
-                              " renamed to " & File.Value);
+        Ada.Text_Io.Put_Line (Me & ": " & Prev_File.Image &
+                              " renamed to " & File.Image);
       else
-        Ada.Text_Io.Put_Line (Me & ": Failed to rename " & Prev_File.Value &
-                              " to " & File.Value);
+        Ada.Text_Io.Put_Line (Me & ": Failed to rename " & Prev_File.Image &
+                              " to " & File.Image);
       end if;
-      File.Empty;
+      File.Set_Null;
     end if;
   end loop;
 

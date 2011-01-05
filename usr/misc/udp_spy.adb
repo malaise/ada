@@ -1,6 +1,5 @@
 with Ada.Exceptions, Ada.Text_Io, Ada.Calendar;
-with As.U; use As.U;
-with Argument, Basic_Proc, Date_Image, Normal, Int_Image,
+with As.U, Argument, Basic_Proc, Date_Image, Normal, Int_Image,
      Upper_Str, String_Mng, Text_Line, Sys_Calls,
      Socket, Event_Mng, Ip_Addr, Tcp_Util, Timers;
 
@@ -10,9 +9,9 @@ procedure Udp_Spy is
   Arg_Error : exception;
 
   -- Parsed Host and Port
-  Host_Name : Asu_Us;
+  Host_Name : As.U.Asu_Us;
   Host : Tcp_Util.Remote_Host;
-  Port_Name : Asu_Us;
+  Port_Name : As.U.Asu_Us;
   Port : Tcp_Util.Remote_Port;
   Port_Num : Socket.Port_Num;
 
@@ -279,8 +278,8 @@ begin
     Index : Natural;
   begin
     Index := String_Mng.Locate (Address, ":");
-    Host_Name := Tus (Address(1 .. Index - 1));
-    Port_Name := Tus (Address(Index + 1 .. Address'Last));
+    Host_Name := As.U.Tus (Address(1 .. Index - 1));
+    Port_Name := As.U.Tus (Address(Index + 1 .. Address'Last));
   exception
     when others =>
       raise Arg_Error;
