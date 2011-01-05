@@ -88,7 +88,7 @@ package body As.B is
 
   procedure Set (Target : out Asb_Bs; Val : in Asb_Bs) is
   begin
-    if Val.Last >= Target.Max then
+    if Val.Last > Target.Max then
       raise Length_Error;
     else
       Target.Ref(1 .. Val.Last) := Val.Ref(1 .. Val.Last);
@@ -97,7 +97,7 @@ package body As.B is
   end Set;
   procedure Set (Target : out Asb_Bs; Val : in String) is
   begin
-    if Val'Length >= Target.Max then
+    if Val'Length > Target.Max then
       raise Length_Error;
     else
       Target.Ref(1 .. Val'Length) := Val;
@@ -106,7 +106,7 @@ package body As.B is
   end Set;
   procedure Set (Target : out Asb_Bs; Val : in Character) is
   begin
-    if 1 >= Target.Max then
+    if 1 > Target.Max then
       raise Length_Error;
     else
       Target.Ref(1) := Val;
