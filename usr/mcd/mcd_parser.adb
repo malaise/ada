@@ -1,6 +1,5 @@
-with My_Math, Queues, Basic_Proc, Lower_Str, Argument, Bool_Io, Arbitrary,
+with As.U, My_Math, Queues, Basic_Proc, Lower_Str, Argument, Bool_Io, Arbitrary,
      Arbitrary.Fractions, Async_Stdin, String_Mng;
-with As.U; use As.U;
 with Debug, Input_Dispatcher, Inte_Io, Io_Flow;
 package body Mcd_Parser is
   use Mcd_Mng;
@@ -13,7 +12,7 @@ package body Mcd_Parser is
   package Instr_Stack is new Queues.Circ(9, Item_Chrs_Rec);
   Stack : Instr_Stack.Circ_Type;
 
-  Txt, Txts : Asu_Us;
+  Txt, Txts : As.U.Asu_Us;
 
   -- Length of an operator
   Ope_Len : constant := 8;
@@ -207,15 +206,16 @@ package body Mcd_Parser is
     I : My_Math.Inte;
     R : My_Math.Real;
     L : Positive;
+    use type As.U.Asu_Us;
   begin
 
     -- Get a word
     begin
-      Txt := Tus (Input_Dispatcher.Next_Word);
+      Txt := As.U.Tus (Input_Dispatcher.Next_Word);
     exception
       when Input_Dispatcher.String_Error =>
         -- Impossible to parse a word
-        Item_Chrs.Val_Text := Tus (Input_Dispatcher.Current_String);
+        Item_Chrs.Val_Text := As.U.Tus (Input_Dispatcher.Current_String);
         Instr_Stack.Push (Stack, Item_Chrs);
       raise Parsing_Error;
     end;
@@ -229,7 +229,7 @@ package body Mcd_Parser is
       if Debug.Debug_Level_Array(Debug.Parser) then
         Async_Stdin.Put_Line_Err ("Parser: Eof");
       end if;
-      Item_Chrs.Val_Text := Tus ("EOF");
+      Item_Chrs.Val_Text := As.U.Tus ("EOF");
       Instr_Stack.Push (Stack, Item_Chrs);
       return (Kind => Oper, Val_Oper => Ret);
     end if;
@@ -244,7 +244,7 @@ package body Mcd_Parser is
       -- Remove first and last string delimiters, and replace
       --  pairs of delimiters by one delimiter
       begin
-        Item_Chrs.Val_Text := Tus (
+        Item_Chrs.Val_Text := As.U.Tus (
            Input_Dispatcher.Parse_Substring (Item_Chrs.Val_Text.Image));
       exception
         when Input_Dispatcher.String_Error =>
@@ -271,11 +271,11 @@ package body Mcd_Parser is
         return (Kind => Mcd_Mng.Regi, Val_Regi => C);
       elsif C = '[' then
         -- Parse subprogram(s)
-        Txts := Asu_Null;
+        Txts := As.U.Asu_Null;
         First_Word := True;
         Level := 1;
         while Level /= 0 loop
-          Txt := Tus (Input_Dispatcher.Next_Word);
+          Txt := As.U.Tus (Input_Dispatcher.Next_Word);
           if Debug.Debug_Level_Array(Debug.Parser) then
             Async_Stdin.Put_Line_Err ("Parser: Getting >"
                      & Txt.Image  & "<");
@@ -288,7 +288,7 @@ package body Mcd_Parser is
           elsif Txt.Image = "" then
             -- Unexpected Eof
             Item_Prog.Val_Text := Txts;
-            Item_Chrs.Val_Text := Tus ("[ ") & Txts;
+            Item_Chrs.Val_Text := As.U.Tus ("[ ") & Txts;
             Instr_Stack.Push (Stack, Item_Chrs);
             raise Parsing_Error;
           end if;
@@ -301,7 +301,7 @@ package body Mcd_Parser is
           Txts.Append (Txt);
         end loop;
         Item_Prog.Val_Text := Txts;
-        Item_Chrs.Val_Text := Tus ("[ ") & Txts & Tus (" ]");
+        Item_Chrs.Val_Text := As.U.Tus ("[ ") & Txts & As.U.Tus (" ]");
         Instr_Stack.Push (Stack, Item_Chrs);
         return Item_Prog;
       end if;

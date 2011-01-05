@@ -1,5 +1,4 @@
-with As.U; use As.U;
-with Dynamic_List, Sys_Calls;
+with As.U, Dynamic_List, Sys_Calls;
 package Git_If is
 
   -- Git version
@@ -13,14 +12,14 @@ package Git_If is
 
 
   -- Current Root and relative path to git, empty or "/" appended
-  procedure Get_Root_And_Path (Root, Path : out Asu_Us);
+  procedure Get_Root_And_Path (Root, Path : out As.U.Asu_Us);
 
   -- LIST OF FILES AND STATUS
   -- A file entry
   type File_Entry_Rec is record
     S2 : Character;
     S3 : Character;
-    Name : Asu_Us;
+    Name : As.U.Asu_Us;
     Kind : Character;
   end record;
   package File_Mng is new Dynamic_List (File_Entry_Rec);
@@ -34,7 +33,7 @@ package Git_If is
   function Char_Of (Kind : Sys_Calls.File_Kind_List) return Character;
 
   -- A comment of commit
-  type Comment_Array is array (Positive range <>) of Asu_Us;
+  type Comment_Array is array (Positive range <>) of As.U.Asu_Us;
   subtype Comment_1 is Comment_Array (1 .. 1);
 
   -- LOG HISTORY
@@ -61,7 +60,7 @@ package Git_If is
   -- A commit file entry
   type Commit_Entry_Rec is record
     Status : Character;
-    File : Asu_Us;
+    File : As.U.Asu_Us;
   end record;
   package Commit_File_Mng is new Dynamic_List (Commit_Entry_Rec);
   subtype Commit_List is Commit_File_Mng.Dyn_List.List_Type;

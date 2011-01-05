@@ -1,13 +1,12 @@
 with Ada.Text_Io;
-with As.U; use As.U;
-with Argument;
+with As.U, Argument;
 with Git_If;
 procedure T_Git is
 
   Moved : Boolean;
 
   Vers : Git_If.Version_Rec;
-  Root, Path : Asu_Us;
+  Root, Path : As.U.Asu_Us;
 
   Files : Git_If.File_List;
   File_Entry : Git_If.File_Entry_Rec;
@@ -44,7 +43,7 @@ begin
   end if;
 
   if Argument.Get_Nbre_Arg = 0 then
-    Path := Tus (".");
+    Path := As.U.Tus (".");
   else
     Argument.Get_Parameter (Path, Occurence => 1);
   end if;

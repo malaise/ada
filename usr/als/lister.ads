@@ -1,9 +1,9 @@
-with As.U.Utils; use As.U, As.U.Utils;
+with As.U.Utils;
 with Entities;
 package Lister is
 
   -- List of strings
-  package Str_List_Mng renames Asu_Dyn_List_Mng;
+  package Str_List_Mng renames As.U.Utils.Asu_Dyn_List_Mng;
 
   -- Set selection criteria
   type Link_Criteria_List is (All_Links, Broken_Links, No_Link);

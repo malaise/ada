@@ -1,4 +1,4 @@
-with As.U; use As.U;
+with As.U;
 package Io_Flow is
 
   -- Init or Next_Line can raise Fifo_Error if error (re)opening FIFO
@@ -15,7 +15,7 @@ package Io_Flow is
   procedure New_Line;
 
   -- Input data
-  procedure Next_Line (Str : out Asu_Us);
+  procedure Next_Line (Str : out As.U.Asu_Us);
 
   -- Close io flows
   procedure Close;

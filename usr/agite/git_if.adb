@@ -90,23 +90,23 @@ package body Git_If is
   end Get_Version;
 
   -- Current Root and relative path to git, empty or "/" appended
-  procedure Get_Root_And_Path (Root, Path : out Asu_Us) is
-    Git_Dir : Asu_Us;
+  procedure Get_Root_And_Path (Root, Path : out As.U.Asu_Us) is
+    Git_Dir : As.U.Asu_Us;
     Kind : Sys_Calls.File_Kind_List;
-    Dir : Asu_Us;
-    use type Sys_Calls.File_Kind_List;
+    Dir : As.U.Asu_Us;
+    use type As.U.Asu_Us, Sys_Calls.File_Kind_List;
   begin
-    Git_Dir := Tus (Environ.Getenv ("GIT_DIR"));
-    if Git_Dir /= Asu_Null then
+    Git_Dir := As.U.Tus (Environ.Getenv ("GIT_DIR"));
+    if Git_Dir /= As.U.Asu_Null then
       -- Get basename
-      Git_Dir := Tus (Directory.Basename (Git_Dir.Image));
+      Git_Dir := As.U.Tus (Directory.Basename (Git_Dir.Image));
     else
-      Git_Dir := Tus (".git");
+      Git_Dir := As.U.Tus (".git");
     end if;
 
     -- Look for ".git" in current then upper directories
-    Root := Tus (Directory.Get_Current);
-    Path := Asu_Null;
+    Root := As.U.Tus (Directory.Get_Current);
+    Path := As.U.Asu_Null;
     loop
       begin
         Kind := Kind_Of (Root.Image & "/" & Git_Dir.Image);
@@ -122,7 +122,7 @@ package body Git_If is
         raise No_Git;
       end if;
       -- Append current Dir to Result, remove it from Path (cd ..)
-      Dir := Tus (Directory.Basename (Root.Image));
+      Dir := As.U.Tus (Directory.Basename (Root.Image));
       Path := Dir & "/" & Path;
       Root.Delete (Root.Length - Dir.Length, Root.Length);
     end loop;
@@ -134,7 +134,7 @@ package body Git_If is
   -- type File_Entry_Rec is record
   --   S2 : Character;
   --   S3 : Character;
-  --   Name : Asu_Us;
+  --   Name : As.U.Asu_Us;
   -- end record;
 
   -- package File_Mng is newDynamic_List (File_Entry_Rec);
@@ -144,11 +144,13 @@ package body Git_If is
 
   -- For searching a file in File_List and sorting File_List
   function Match (Current, Criteria : File_Entry_Rec) return Boolean is
+    use type As.U.Asu_Us;
   begin
     return Current.Name = Criteria.Name;
   end Match;
   procedure File_Search is new File_Mng.Dyn_List.Search (Match);
   function Less_Than (El1, El2 : File_Entry_Rec) return Boolean is
+    use type As.U.Asu_Us;
   begin
     if El1.Kind = El2.Kind then
       return El1.Name < El2.Name;
@@ -172,7 +174,7 @@ package body Git_If is
   procedure List_Files (Current_Path : in String;
                         Files : in out File_List) is
     Cmd : Many_Strings.Many_String;
-    Str : Asu_Us;
+    Str : As.U.Asu_Us;
     File_Entry : File_Entry_Rec;
     Moved : Boolean;
     Found : Boolean;
@@ -237,7 +239,7 @@ package body Git_If is
           Str.Delete (1, 3);
           if Directory.Dirname (Str.Image) = Current_Path then
             -- This file is in current dir, look for it
-            File_Entry.Name := Tus (Directory.Basename (Str.Image));
+            File_Entry.Name := As.U.Tus (Directory.Basename (Str.Image));
             File_Entry.Kind := Char_Of (File_Entry.Name.Image);
             File_Search (Files, Found, File_Entry,
                          From => File_Mng.Dyn_List.Absolute);
@@ -282,9 +284,9 @@ package body Git_If is
     File_Entry.S2 := ' ';
     File_Entry.S3 := ' ';
     File_Entry.Kind := '/';
-    File_Entry.Name := Tus ("..");
+    File_Entry.Name := As.U.Tus ("..");
     Files.Insert (File_Entry, File_Mng.Dyn_List.Prev);
-    File_Entry.Name := Tus (".");
+    File_Entry.Name := As.U.Tus (".");
     Files.Insert (File_Entry, File_Mng.Dyn_List.Prev);
     Files.Rewind;
 
@@ -316,7 +318,7 @@ package body Git_If is
                         Comments : out Comment_Array;
                         Files : access Commit_List;
                         Done : out Boolean) is
-    Line : Asu_Us;
+    Line : As.U.Asu_Us;
     Ind : Natural;
     File : Commit_Entry_Rec;
   begin
@@ -350,7 +352,7 @@ package body Git_If is
 
     -- Several comments until empty line
     Ind := 0;
-    Comments := (others => Asu_Null);
+    Comments := (others => As.U.Asu_Null);
     loop
       Flow.Read (Line, Moved => Done);
       exit when Line.Length = 0;
@@ -492,7 +494,7 @@ package body Git_If is
     -- Encode info
     if Out_Flow_1.List.Is_Empty then
       Date := (others => ' ');
-      Comment := (others => Asu_Null);
+      Comment := (others => As.U.Asu_Null);
       Commit.Delete_List;
     else
       Out_Flow_1.List.Rewind;
@@ -501,7 +503,7 @@ package body Git_If is
     end if;
     if not Commit.Is_Empty then
       Commit.Rewind;
-      Commit.Insert ((' ', Tus ("/")), Commit_File_Mng.Dyn_List.Prev);
+      Commit.Insert ((' ', As.U.Tus ("/")), Commit_File_Mng.Dyn_List.Prev);
     end if;
 
   end List_Commit;
@@ -557,7 +559,7 @@ package body Git_If is
   -- Get current branch name
   function Current_Branch return String is
     Cmd : Many_Strings.Many_String;
-    Branch : Asu_Us;
+    Branch : As.U.Asu_Us;
     Moved : Boolean;
   begin
     Cmd.Set ("git");

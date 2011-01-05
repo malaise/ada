@@ -1,15 +1,14 @@
-with As.U; use As.U;
-with Tcp_Util;
+with As.U, Tcp_Util;
 package body Local_Host_Name is
 
-  Lhn : Tcp_Util.Host_Name := Asu_Null;
+  Lhn : Tcp_Util.Host_Name := As.U.Asu_Null;
 
   procedure Set (Name : in String) is
   begin
     if Name'Length = 0 or else Name'Length > Max_Host_Name_Length then
       raise Constraint_Error;
     end if;
-    Lhn := Tus (Name);
+    Lhn := As.U.Tus (Name);
   end Set;
 
   function Get return String is

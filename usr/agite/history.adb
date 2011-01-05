@@ -1,5 +1,4 @@
 with Ada.Exceptions;
-with As.U; use As.U;
 with Con_Io, Afpx.List_Manager, String_Mng, Basic_Proc, Normal;
 with Utils, Config, Details, View;
 package body History is

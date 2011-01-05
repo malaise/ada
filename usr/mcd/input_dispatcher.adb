@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1;
-with As.U; use As.U;
+with As.U;
 with Debug, Io_Flow, Async_Stdin;
 package body Input_Dispatcher is
 
@@ -7,17 +7,17 @@ package body Input_Dispatcher is
   Curr_Is_Stdin : Boolean := True;
 
   -- Data from stdin
-  Str_Stdin : Asu_Us;
+  Str_Stdin : As.U.Asu_Us;
   Ind_Stdin : Positive;
 
   -- Data from Stdin/Set_Input
-  Cur_Str : Asu_Us;
+  Cur_Str : As.U.Asu_Us;
 
   -- Is surrent string parsed (first word extracted)
   Str_Parsed : Boolean;
 
   -- Extracted word from current Str
-  Word : Asu_Us;
+  Word : As.U.Asu_Us;
 
   -- Get first/next word from a string
   Cur_Index : Positive;
@@ -91,7 +91,7 @@ package body Input_Dispatcher is
   end Parse_Substring;
 
   -- Extraxt next word (from Cur_Index) of Cur_Str
-  function Next_Str_Word return Asu_Us is
+  function Next_Str_Word return As.U.Asu_Us is
     Tmp_Index : Positive;
     In_Lit : Boolean := False;
   begin
@@ -102,12 +102,12 @@ package body Input_Dispatcher is
     end loop;
     if Cur_Index > Cur_Str.Length then
       -- No more word
-      return Asu_Null;
+      return As.U.Asu_Null;
     end if;
 
     if Cur_Str.Element (Cur_Index) = '#' then
       -- Comment: skip line
-      return Asu_Null;
+      return As.U.Asu_Null;
     end if;
 
     -- Got a start of word
@@ -157,7 +157,7 @@ package body Input_Dispatcher is
       Stop_Index := Stop_Index - 1;
     end if;
 
-    return Tus (Cur_Str.Slice (Tmp_Index, Stop_Index));
+    return As.U.Tus (Cur_Str.Slice (Tmp_Index, Stop_Index));
 
   end Next_Str_Word;
 
@@ -169,7 +169,8 @@ package body Input_Dispatcher is
   end Current_String;
 
   -- Extract first word of current or new (Str) string
-  function First_Str_Word (Str : Asu_Us := Asu_Null) return Asu_Us is
+  function First_Str_Word (Str : As.U.Asu_Us := As.U.Asu_Null)
+                          return As.U.Asu_Us is
   begin
     if Str.Length /= 0 then
       Cur_Str := Str;
@@ -201,7 +202,7 @@ package body Input_Dispatcher is
         Ind_Stdin := Cur_Index;
       end if;
       Curr_Is_Stdin := False;
-      Cur_Str := Tus (Str);
+      Cur_Str := As.U.Tus (Str);
       Str_Parsed := False;
     end if;
     if Debug.Debug_Level_Array(Debug.Input) then
@@ -260,7 +261,7 @@ package body Input_Dispatcher is
           Word := Next_Str_Word;
           exit when Word.Length /= 0;
           -- End of string
-          Str_Stdin := Asu_Null;
+          Str_Stdin := As.U.Asu_Null;
         end if;
       end loop;
 

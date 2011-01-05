@@ -1,11 +1,10 @@
-with As.U; use As.U;
-with Con_Io, Afpx, Directory, Select_File, Normal;
+with As.U, with Con_Io, Afpx, Directory, Select_File, Normal;
 with Points, Screen, Set_Points_List, Dialog, Point_Str, Menu2;
 package body Menu1 is
 
   type Restore_List is (None, Partial, Full);
   Cursor_Field : Afpx.Field_Range;
-  File_Name_Txt : Asu_Us;
+  File_Name_Txt : As.U.Asu_Us;
 
   procedure Put_Point_Status is
     -- Width of nb_point
@@ -79,7 +78,7 @@ package body Menu1 is
           -- Error reading. Prev data is lost :-(
           Points.P_Clear;
           Set_Points_List;
-          File_Name_Txt := Asu_Null;
+          File_Name_Txt := As.U.Asu_Null;
           Error(Screen.E_Io_Error);
       end;
     else
@@ -90,7 +89,7 @@ package body Menu1 is
   end Read_File;
 
   procedure Load_Save (Load : in Boolean; Restore : out Restore_List) is
-    Tmp_File_Name : Asu_Us;
+    Tmp_File_Name : As.U.Asu_Us;
   begin
     Restore := None;
     -- Title
@@ -205,7 +204,7 @@ package body Menu1 is
   begin
     Afpx.Use_Descriptor(1);
     Screen.Init_For_Main1 (Cursor_Field);
-    File_Name_Txt := Asu_Null;
+    File_Name_Txt := As.U.Asu_Null;
     Screen.Put_File ("");
 
     -- Get field width
@@ -312,7 +311,7 @@ package body Menu1 is
                   Points.P_Clear;
                   Set_Points_List;
                   -- Update file_name, nb of points and save_status
-                  File_Name_Txt := Asu_Null;
+                  File_Name_Txt := As.U.Asu_Null;
                 end if;
                 Data_Changed := True;
                 Restore := Partial;

@@ -18,15 +18,15 @@ package body Misc is
     end if;
     if Call_Stack.Level /= 0 then
       -- Save context;
-      Call_Entry := Tus (Input_Dispatcher.Get_Remaining);
+      Call_Entry := As.U.Tus (Input_Dispatcher.Get_Remaining);
       -- Even if end of subprog, this is not stdin
       if Call_Entry.Length = 0 then
-        Call_Entry := Tus (" ");
+        Call_Entry := As.U.Tus (" ");
       end if;
       Call_Stack.Push (Call_Entry);
     else
       -- Dummy context
-      Call_Stack.Push (Asu_Null);
+      Call_Stack.Push (As.U.Asu_Null);
     end if;
     -- Call
     if A.Val_Text.Is_Null then
@@ -164,7 +164,7 @@ package body Misc is
       return (Kind => Bool, Val_Bool => False);
     end if;
     return (Kind => Chrs,
-            Val_Text => Tus (Env_Str(1 .. Len)));
+            Val_Text => As.U.Tus (Env_Str(1 .. Len)));
   end Getenv;
 
   procedure Set_Exit_Code (Code : Item_Rec) is

@@ -1,5 +1,4 @@
-with As.U; use As.U;
-with Timers, Event_Mng, Dynamic_List, Environ;
+with As.U, Timers, Event_Mng, Dynamic_List, Environ;
 with Intra_Dictio, Data_Base, Dictio_Debug, Online_Mng, Args;
 package body Sync_Mng is
 

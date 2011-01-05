@@ -1,6 +1,5 @@
 with Ada.Exceptions, Ada.Calendar;
-with As.U; use As.U;
-with Socket, Tcp_Util, Event_Mng, Sys_Calls, Timers, Environ;
+with As.U, Socket, Tcp_Util, Event_Mng, Sys_Calls, Timers, Environ;
 with Dictio_Debug, Parse, Client_Com, Versions, Status, Names;
 package body Dictio_Lib is
 
@@ -245,9 +244,9 @@ package body Dictio_Lib is
     if Environ.Is_Set (Dictio_Env_Host) then
       Environ.Get_Us (Dictio_Env_Host, Host.Name);
     else
-      Host.Name := Tus (Default_Host);
+      Host.Name := As.U.Tus (Default_Host);
     end if;
-    Local_Host.Name := Tus (Local_Host_Name);
+    Local_Host.Name := As.U.Tus (Local_Host_Name);
     if Host = Local_Host then
       Protocol := Socket.Tcp_Header_Afux;
     else
@@ -257,7 +256,7 @@ package body Dictio_Lib is
     if Environ.Is_Set (Dictio_Env_Port) then
       Environ.Get_Us (Dictio_Env_Port, Port.Name);
     else
-      Port.Name := Tus (Default_Port);
+      Port.Name := As.U.Tus (Default_Port);
     end if;
 
     if Dictio_Debug.Level_Array(Dictio_Debug.Lib) then

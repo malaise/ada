@@ -1,4 +1,4 @@
-with As.U; use As.U;
+with As.U;
 with Entities, Lister;
 package Output is
 
@@ -11,7 +11,7 @@ package Output is
                        Put_Path    : in Boolean;
                        Full_Path   : in Boolean;
                        Classify    : in Boolean;
-                       Separator   : in Asu_Us);
+                       Separator   : in As.U.Asu_Us);
 
   -- Sort list and put according to style
   procedure Put (List : in out Entities.Entity_List;

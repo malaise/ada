@@ -1,5 +1,4 @@
-with As.U; use As.U;
-with Con_Io, Afpx.List_Manager, Basic_Proc, Int_Image, Directory, Dir_Mng,
+with As.U, Con_Io, Afpx.List_Manager, Basic_Proc, Int_Image, Directory, Dir_Mng,
      Sys_Calls, Argument, Argument_Parser, Socket, String_Mng;
 with Utils, Git_If, Config, Bookmarks, History, Confirm;
 procedure Agite is
@@ -20,9 +19,9 @@ procedure Agite is
 
   -- Options
   Keys : constant Argument_Parser.The_Keys_Type := (
-    1 => ('h', Tus ("help"), False, False),
-    2 => ('n', Tus ("no_history"), False, False),
-    3 => ('p', Tus ("previous"), False, False));
+    1 => ('h', As.U.Tus ("help"), False, False),
+    2 => ('n', As.U.Tus ("no_history"), False, False),
+    3 => ('p', As.U.Tus ("previous"), False, False));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
   -- Got to previous dir (if any) / Save history
@@ -45,12 +44,12 @@ procedure Agite is
   use type Afpx.Absolute_Field_Range;
 
   -- Current Git root and path referred to Git root
-  Root : Asu_Us;
-  Path : Asu_Us;
+  Root : As.U.Asu_Us;
+  Path : As.U.Asu_Us;
 
   -- Editor and Differator
-  Editor : Asu_Us;
-  Differator : Asu_Us;
+  Editor : As.U.Asu_Us;
+  Differator : As.U.Asu_Us;
 
   -- Files list
   Files : Git_If.File_List;
@@ -101,7 +100,7 @@ procedure Agite is
 
   -- Encode files
   procedure Encode_Files is
-    Branch : Asu_Us;
+    Branch : As.U.Asu_Us;
   begin
     List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No) - 4;
     -- Get info: Path if needed and list
@@ -111,14 +110,14 @@ procedure Agite is
       if Root.Is_Null then
         Git_If.Get_Root_And_Path (Root, Path);
       end if;
-      Branch := Tus (Git_If.Current_Branch);
+      Branch := As.U.Tus (Git_If.Current_Branch);
       Git_If.List_Files (Path.Image, Files);
       Afpx.Resume;
     exception
       when Git_If.No_Git =>
         -- This dir is not GIT
-        Root := Asu_Null;
-        Path := Asu_Null;
+        Root := As.U.Asu_Null;
+        Path := As.U.Asu_Null;
         -- List dir content the normal way
         List_Files (Path.Image, Files);
         Afpx.Resume;
@@ -139,7 +138,7 @@ procedure Agite is
    -- Encode current branch
    Afpx.Clear_Field (16);
    if Branch.Image = ("(no branch)") then
-     Branch := Tus ("None.");
+     Branch := As.U.Tus ("None.");
    end if;
    Afpx.Encode_Field (16, (0, 0),
          Utils.Normalize ("Br: " & Branch.Image, Afpx.Get_Field_Width (16)));
@@ -175,7 +174,7 @@ procedure Agite is
         Directory.Change_Current (Directory.Get_Current);
     end;
     -- Success, reset root path for re-evaluation, save current dir
-    Root := Asu_Null;
+    Root := As.U.Asu_Null;
     if Update_History then
       Config.Save_Curr_Dir (Directory.Get_Current);
     end if;
@@ -204,6 +203,7 @@ procedure Agite is
 
   -- To find current position back
   function Match (Current, Criteria : Git_If.File_Entry_Rec) return Boolean is
+    use type As.U.Asu_Us;
   begin
     return Current.Kind = Criteria.Kind and then Current.Name = Criteria.Name;
   end Match;
@@ -232,20 +232,21 @@ procedure Agite is
   -- else "(<host>)" if possible
   -- else "<host>" if possible
   -- else ">tail"
-  Local_Host : Asu_Us;
+  Local_Host : As.U.Asu_Us;
   function Host_Str return String is
     Len : constant Positive := Afpx.Get_Field_Width (18);
+    use type As.U.Asu_Us;
   begin
-    if Local_Host /= Asu_Null then
+    if Local_Host /= As.U.Asu_Null then
       return Local_Host.Image;
     end if;
-    Local_Host := Tus (Socket.Local_Host_Name);
+    Local_Host := As.U.Tus (Socket.Local_Host_Name);
     if Local_Host.Length + 5 <= Len then
       Local_Host := "(on " & Local_Host & ")";
     elsif Local_Host.Length + 2 <= Len then
       Local_Host := "(" & Local_Host & ")";
     end if;
-    Local_Host := Tus (String_Mng.Procuste (
+    Local_Host := As.U.Tus (String_Mng.Procuste (
         Local_Host.Image,
         Len,
         Align_Left => False,
@@ -401,8 +402,8 @@ begin
   end if;
 
   -- Get or init config
-  Editor := Tus (Config.Editor);
-  Differator := Tus (Config.Differator);
+  Editor := As.U.Tus (Config.Editor);
+  Differator := As.U.Tus (Config.Differator);
 
   -- Init Afpx
   Init;

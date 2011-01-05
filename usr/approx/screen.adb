@@ -1,5 +1,4 @@
-with As.U; use As.U;
-with Con_Io, Normal;
+with As.U, Con_Io, Normal;
 with Points, Resol;
 package body Screen is
 
@@ -11,7 +10,7 @@ package body Screen is
 
   Degree_Fld : constant Afpx.Field_Range := 21;
 
-  Stored_File_Name : Asu_Us;
+  Stored_File_Name : As.U.Asu_Us;
 
   Get_Width : Natural := 0;
 

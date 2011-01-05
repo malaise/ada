@@ -142,16 +142,16 @@ package body Config is
   begin
     Bookmark := Ctx.Get_Child (Bookmarks, Index);
     if Ctx.Get_Nb_Attributes (Bookmark) = 0 then
-      Result.Name := Asu_Null;
+      Result.Name := As.U.Asu_Null;
     else
       Result.Name := Ctx.Get_Attribute (Bookmark, 1).Value;
     end if;
     if Ctx.Get_Nb_Children (Bookmark) /= 1 then
       -- No bookmark text: Separator
-      Result.Path := Asu_Null;
+      Result.Path := As.U.Asu_Null;
     else
       -- Some bookmark text: full bookmark
-      Result.Path := Asu_Us'(Ctx.Get_Text (Ctx.Get_Child (Bookmark, 1)));
+      Result.Path := As.U.Asu_Us'(Ctx.Get_Text (Ctx.Get_Child (Bookmark, 1)));
     end if;
     return Result;
   end Get_Bookmark;
@@ -198,7 +198,7 @@ package body Config is
 
   procedure Move_Bookmark (Index : in Positive; Up : in Boolean) is
     Bookmark : Xml_Parser.Element_Type;
-    Name, Path : Asu_Us;
+    Name, Path : As.U.Asu_Us;
   begin
     -- Move to bookmark at index
     Load;

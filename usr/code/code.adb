@@ -1,5 +1,6 @@
 with Ada.Text_Io, Ada.Characters.Latin_1;
-with Sys_Calls, Text_Handler, My_Io, Argument, Upper_Str, Normal, My_Math;
+with As.B; use As.B;
+with Sys_Calls, My_Io, Argument, Upper_Str, Normal, My_Math;
 with Grid_1, Grid_2, Vigenere;
 
 procedure Code is
@@ -19,7 +20,7 @@ procedure Code is
   Len : Line_Index;
   Min_Key_Len : constant Line_Index := 8;
   Line_Too_Long : exception;
-  Key : Text_Handler.Text(80);
+  Key : Asb_Bs(80);
   In_File  : Ada.Text_Io.File_Type;
   Out_File : Ada.Text_Io.File_Type;
   Sl : Vigenere.Long_Positive;
@@ -164,14 +165,14 @@ begin
   Key.Set (Buff (1 .. Len));
 
   -- Initialize coding
-  Grid_1.Initialize(Key.Value);
+  Grid_1.Initialize(Key.Image);
 
   if Code then
     -- Code through code 1
     Sl := 1;
     -- Code key
     Len := Key.Length;
-    Buff(1 .. Len) := Key.Value;
+    Buff(1 .. Len) := Key.Image;
     Code_1;
     -- Code input file
     loop
@@ -187,10 +188,10 @@ begin
     Sl := Sl - 1;
 
     -- Code through code 2
-    Str (1 .. Sl) := Grid_2.Encode(Key.Value, Str(1 .. Sl));
+    Str (1 .. Sl) := Grid_2.Encode(Key.Image, Str(1 .. Sl));
 
     -- Code through vigenere
-    Vigenere.Encode (Key.Value, Str(1 .. Sl));
+    Vigenere.Encode (Key.Image, Str(1 .. Sl));
 
   else
 
@@ -212,13 +213,13 @@ begin
 
     -- Decode through vigenere
     begin
-      Vigenere.Decode (Key.Value, Str(1 .. Sl));
+      Vigenere.Decode (Key.Image, Str(1 .. Sl));
     exception
       when Vigenere.Decode_Error =>
         return;
     end;
     -- Decode through code 2
-    Str(1 .. Sl) := Grid_2.Decode (Key.Value, Str(1 .. Sl));
+    Str(1 .. Sl) := Grid_2.Decode (Key.Image, Str(1 .. Sl));
 
   end if;
 
@@ -242,7 +243,7 @@ begin
     begin
       Si := 1;
       Decode_1;
-      if Buff(1 .. Len-1) = Key.Value then
+      if Buff(1 .. Len-1) = Key.Image then
         -- Decode if key matches
         loop
           Decode_1;

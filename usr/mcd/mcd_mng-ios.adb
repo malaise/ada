@@ -264,29 +264,29 @@ package body Ios is
 
     case Item.Kind is
       when Arbi =>
-        Res.Val_Text := Tus ('@' & Arbitrary.Image (Item.Val_Arbi));
+        Res.Val_Text := As.U.Tus ('@' & Arbitrary.Image (Item.Val_Arbi));
       when Frac =>
-        Res.Val_Text := Tus ('@' & Arbitrary.Fractions.Image (
+        Res.Val_Text := As.U.Tus ('@' & Arbitrary.Fractions.Image (
                                              Item.Val_Frac));
       when Inte =>
         Image_Str := (others => ' ');
         Inte_Io.Put(Image_Str, Item.Val_Inte);
         Fix_Size (Inte_Io.Default_Width);
-        Res.Val_Text := Tus ( Image_Str (1 .. Image_Len));
+        Res.Val_Text := As.U.Tus ( Image_Str (1 .. Image_Len));
       when Real =>
         Image_Str := (others => ' ');
         Real_Io.Put(Image_Str, Item.Val_Real);
         Fix_Size (Real_Io.Default_Fore + 1 + Real_Io.Default_Aft
                   + Real_Io.Default_Exp);
-        Res.Val_Text := Tus ( Image_Str (1 .. Image_Len));
+        Res.Val_Text := As.U.Tus ( Image_Str (1 .. Image_Len));
       when Bool  =>
-        Res.Val_Text := Tus (Mixed_Str(Item.Val_Bool'Img));
+        Res.Val_Text := As.U.Tus (Mixed_Str(Item.Val_Bool'Img));
       when Chrs =>
         Res := Item;
       when Prog =>
         Res.Val_Text := Item.Val_Text;
       when Regi =>
-        Res.Val_Text := Tus (Item.Val_Regi & "");
+        Res.Val_Text := As.U.Tus (Item.Val_Regi & "");
       when Oper =>
         raise Invalid_Argument;
     end case;
@@ -342,7 +342,7 @@ package body Ios is
         Str : constant String := Normal (Int, Lint, Right_Len.Val_Bool,
                                          Gap.Val_Text.Element(1));
       begin
-        Res.Val_Text := Tus (Str);
+        Res.Val_Text := As.U.Tus (Str);
       end;
     else
       -- Check range of ints
@@ -362,7 +362,7 @@ package body Ios is
             := Normal(Int, Lint, True, Gap.Val_Text.Element(1))
              & "." & Normal(Frac, Lfrac, True, '0') ;
       begin
-        Res.Val_Text := Tus (Str);
+        Res.Val_Text := As.U.Tus (Str);
       end;
     end if;
     return Res;

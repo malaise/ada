@@ -1,4 +1,4 @@
-with As.U; use As.U;
+with As.U;
 with Points, Screen, Resol;
 package Dialog is
 
@@ -6,12 +6,13 @@ package Dialog is
   function Confirm_Lost return Boolean;
 
   -- Remove trailing spaces. No heading nor intermediate spaces allowed
-  procedure Parse_Spaces (Txt : in out Asu_Us; Ok : out Boolean);
+  procedure Parse_Spaces (Txt : in out As.U.Asu_Us; Ok : out Boolean);
 
   -- Get a coordinate
   --  If Set is set in, then a Put_Then_Get is performed, else a get
   --  Validity is checked and Set is set out according to the final result
-  subtype D_Coordinate_List is Screen.S_Info_List range Screen.I_X .. Screen.I_Ymax;
+  subtype D_Coordinate_List is
+          Screen.S_Info_List range Screen.I_X .. Screen.I_Ymax;
   procedure Read_Coordinate (Kind : in D_Coordinate_List;
            Set : in out Boolean; Coordinate : in out Points.P_T_Coordinate;
            Subtitle : in Boolean := False);

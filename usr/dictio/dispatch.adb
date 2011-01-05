@@ -1,4 +1,3 @@
-with As.U; use As.U;
 with Tcp_Util, Event_Mng;
 with Status, Data_Base, Intra_Dictio, Init_Mng, Online_Mng, Client_Mng, Args,
      Sync_Mng, Dictio_Debug, Versions, Parse, Fight_Mng, Errors;

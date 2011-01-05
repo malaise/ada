@@ -1,11 +1,11 @@
-with As.U.Utils; use As.U.Utils;
+with As.U.Utils;
 separate (Mcd_Mng)
 
 package body Call_Stack is
 
-  List : Asu_Dyn_List_Mng.List_Type;
+  List : As.U.Utils.Asu_Dyn_List_Mng.List_Type;
 
-  procedure Push (Item : in Asu_Us) is
+  procedure Push (Item : in As.U.Asu_Us) is
   begin
     List.Insert (Item);
     if Debug.Debug_Level_Array(Debug.Call) then
@@ -14,10 +14,10 @@ package body Call_Stack is
     end if;
   end Push;
 
-  function  Pop return Asu_Us is
-    Item : Asu_Us;
+  function  Pop return As.U.Asu_Us is
+    Item : As.U.Asu_Us;
   begin
-    List.Get(Item, Asu_Dyn_List_Mng.Prev);
+    List.Get(Item, As.U.Utils.Asu_Dyn_List_Mng.Prev);
     if Debug.Debug_Level_Array(Debug.Call) then
       Async_Stdin.Put_Line_Err ("Call_stack: Poping >" & Item.Image & "<"
         & "   Level is " & Integer'Image(List.List_Length));

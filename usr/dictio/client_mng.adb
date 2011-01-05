@@ -1,6 +1,5 @@
 with Ada.Calendar;
-with As.U; use As.U;
-with Socket, Tcp_Util, Event_Mng, Environ;
+with As.U, Socket, Tcp_Util, Event_Mng, Environ;
 with Args, Parse, Notify, Client_Fd, Client_Com, Dictio_Debug, Intra_Dictio,
      Versions, Status, Alias;
 package body Client_Mng is
@@ -214,7 +213,7 @@ package body Client_Mng is
     if Dictio_Debug.Level_Array(Dictio_Debug.Client) then
       Dictio_Debug.Put ("Client: start");
     end if;
-    Port.Name := Tus (Port_Name);
+    Port.Name := As.U.Tus (Port_Name);
     Tcp_Util.Accept_From (Socket.Tcp_Header, Port, Accept_Cb'Access,
                           Dscr, Accept_Port);
     Tcp_Util.Accept_From (Socket.Tcp_Header_Afux, Port, Accept_Cb'Access,

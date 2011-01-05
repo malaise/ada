@@ -1,5 +1,4 @@
-with As.U; use As.U;
-with Timers;
+with As.U, Timers;
 with Dictio_Debug, Intra_Dictio, Local_Host_Name, Nodes,
      Fight_Mng, Sync_Mng, Data_Base, Client_Mng;
 
@@ -39,7 +38,7 @@ package body Online_Mng is
     Tid := Timers.Create (T, Timer_Cb'Access);
   end Start_Slave_Timeout;
 
-  No_Master : constant Tcp_Util.Host_Name := Asu_Null;
+  No_Master : constant Tcp_Util.Host_Name := As.U.Asu_Null;
   Current_Master : Tcp_Util.Host_Name := No_Master;
 
   procedure Reset_Master is
@@ -59,7 +58,7 @@ package body Online_Mng is
       end if;
     elsif Status.Get = Status.Master then
       -- Master
-      Current_Master := Tus (Local_Host_Name.Get);
+      Current_Master := As.U.Tus (Local_Host_Name.Get);
       T.Delay_Seconds := 0.0;
       T.Period := Alive_Period;
       Tid := Timers.Create (T, Timer_Cb'Access);
@@ -88,9 +87,9 @@ package body Online_Mng is
                    Stat  : in Status.Status_List;
                    Sync  : in Boolean;
                    Extra : in String := "") is
-    use type Status.Status_List;
     Crc : constant String
         := Intra_Dictio.Extra_Of (Extra, Intra_Dictio.Extra_Crc);
+    use type As.U.Asu_Us, Status.Status_List;
   begin
     if Status.Get = Status.Slave then
       if Stat = Status.Master then

@@ -1,6 +1,5 @@
 with Ada.Exceptions;
-with As.U; use As.U;
-with Address_Ops, Socket, Channels, Mixed_Str;
+with As.U, Address_Ops, Socket, Channels, Mixed_Str;
 with Dictio_Debug, Parse, Local_Host_Name;
 pragma Elaborate (Channels);
 package body Intra_Dictio is
@@ -35,7 +34,7 @@ package body Intra_Dictio is
     use type Args.Channel_Mode_List;
   begin
     Local_Host_Name.Set(Socket.Local_Host_Name);
-    Local_Name := Tus (Local_Host_Name.Get);
+    Local_Name := As.U.Tus (Local_Host_Name.Get);
 
     Mode := Channel_Mode_List(Args.Get_Mode);
 
@@ -225,7 +224,7 @@ package body Intra_Dictio is
                  Status.Status_List'Val(Character'Pos(Message.Head.Stat)),
                  Boolean'Val(Character'Pos(Message.Head.Sync)),
                  Message.Head.Prio,
-                 Tus (Parse (Message.Head.From)),
+                 As.U.Tus (Parse (Message.Head.From)),
                  Message.Head.Kind,
                  Message.Item);
     end if;

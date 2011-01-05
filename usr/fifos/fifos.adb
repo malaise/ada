@@ -1,5 +1,4 @@
-with As.U; use As.U;
-with Assertion, String_Mng, Normal, Environ;
+with As.U, Assertion, String_Mng, Normal, Environ;
 with Dictio_Lib;
 package body Fifos is
 
@@ -498,7 +497,7 @@ package body Fifos is
 
     package body Dictio is
 
-      Name_Prefix : Asu_Us;
+      Name_Prefix : As.U.Asu_Us;
       Default_Name_Prefix : constant String := "Fifo.";
       Name_Prefix_Name : constant String := "FIFO_NAME_SUFFIX";
       Separator : constant String := ":";
@@ -521,10 +520,10 @@ package body Fifos is
 
       procedure Split (Data : in String; Host : out Tcp_Util.Host_Name;
                                          Port : out Tcp_Util.Port_Num) is
-        Txt : Asu_Us;
+        Txt : As.U.Asu_Us;
         Sep_Index : Natural;
       begin
-        Txt := Tus (Data);
+        Txt := As.U.Tus (Data);
         Sep_Index := String_Mng.Locate (Txt.Image, Separator);
         if Sep_Index <= 1 or else Sep_Index = Txt.Length then
           raise Data_Error;
@@ -573,7 +572,7 @@ package body Fifos is
         Connection.Close (Acc);
 
         -- Try to re-connect on new data
-        Acc.Host := (Kind => Tcp_Util.Host_Name_Spec, Name => Asu_Null);
+        Acc.Host := (Kind => Tcp_Util.Host_Name_Spec, Name => As.U.Asu_Null);
         Split (Data, Acc.Host.Name, Acc.Port.Num);
         begin
           Host_Name2Id (Acc.Host);
@@ -608,11 +607,11 @@ package body Fifos is
         if Environ.Is_Set (Name_Prefix_Name) then
           Environ.Get_Us (Name_Prefix_Name, Name_Prefix);
         else
-          Name_Prefix := Tus (Default_Name_Prefix);
+          Name_Prefix := As.U.Tus (Default_Name_Prefix);
         end if;
         -- Check a name based on this prefix is accepted by dictio
         if not Dictio_Lib.Is_Valid_Item_Name (Name_Prefix.Image & "a") then
-          Name_Prefix := Tus (Default_Name_Prefix);
+          Name_Prefix := As.U.Tus (Default_Name_Prefix);
         end if;
 
         Init_Done := True;
@@ -770,7 +769,7 @@ package body Fifos is
       else
         -- Accept
         Rec.State := Connected;
-        Rec.Port.Name := Tus (Fifo_Name);
+        Rec.Port.Name := As.U.Tus (Fifo_Name);
         Acc := List.Insert (Rec);
         Connection.Accepte (Acc);
         -- Set dictio

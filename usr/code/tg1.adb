@@ -1,15 +1,15 @@
-with Text_Handler, Argument, My_Io;
-
+with As.B; use As.B;
+with Argument, My_Io;
 with Grid_1;
 procedure Tg1 is
   Key : constant String := Argument.Get_Parameter(1);
-  Text : Text_Handler.Text(500);
-  Dummy : Text_Handler.Text(80);
-  Code : Text_Handler.Text(Text.Max_Len*2);
+  Text : Asb_Bs(500);
+  Dummy : Asb_Bs(80);
+  Code : Asb_Bs(Text.Max * 2);
   Rec : Grid_1.Coordinate_Rec;
 begin
 
-  Text.Empty;
+  Text.Set_Null;
   for I in 2 .. Argument.Get_Nbre_Arg loop
     Dummy.Set (Argument.Get_Parameter(Occurence => I));
     Text.Append (Dummy);
@@ -24,25 +24,25 @@ begin
   My_Io.New_Line;
 
 
-  My_Io.Put_Line ("Text : " & Text.Value);
-  Code.Empty;
+  My_Io.Put_Line ("Text : " & Text.Image);
+  Code.Set_Null;
   for I in 1 .. Text.Length loop
-    Rec := Grid_1.Encode (Text.Value(I));
+    Rec := Grid_1.Encode (Text.Element (I));
     Code.Append (Rec.Row);
     Code.Append (Rec.Col);
   end loop;
-  My_Io.Put_Line ("Code : " & Code.Value);
+  My_Io.Put_Line ("Code : " & Code.Image);
 
-  Text.Empty;
+  Text.Set_Null;
   for I in 1 .. Code.Length loop
     if I mod 2 = 1 then
-      Rec.Row := Code.Value(I);
+      Rec.Row := Code.Element (I);
     else
-      Rec.Col := Code.Value(I);
+      Rec.Col := Code.Element (I);
       Text.Append (Grid_1.Decode(Rec));
     end if;
   end loop;
-  My_Io.Put_Line ("Text : " & Text.Value);
+  My_Io.Put_Line ("Text : " & Text.Image);
 
 end Tg1;
 

@@ -1,14 +1,13 @@
 with Ada.Calendar;
-with As.U; use As.U;
-with Directory, Sys_Calls, Dynamic_List;
+with As.U, Directory, Sys_Calls, Dynamic_List;
 package Entities is
 
 
   -- An entry in directory
   type Entity is record
     -- The name of the entity itself and its path
-    Name : Asu_Us;
-    Path : Asu_Us;
+    Name : As.U.Asu_Us;
+    Path : As.U.Asu_Us;
     -- The kind (file, dir...)
     Kind : Directory.File_Kind_List;
     -- The access rights
@@ -20,7 +19,7 @@ package Entities is
     -- Size
     Size : Sys_Calls.Size_T;
     -- Symbolic link first target (if link)
-    Link : Asu_Us;
+    Link : As.U.Asu_Us;
     -- Symbolic link final target exists (if link)
     Link_Ok : Boolean;
     -- Symbolic link final target kind (if link and Ok)

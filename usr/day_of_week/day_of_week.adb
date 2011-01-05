@@ -1,21 +1,22 @@
 with Ada.Calendar, Ada.Text_Io;
-with Perpet, Argument, Day_Mng, Text_Handler, Normal, Mixed_Str;
+with As.B; use As.B;
+with Perpet, Argument, Day_Mng, Normal, Mixed_Str;
 procedure Day_Of_Week is
 
   Day   : Ada.Calendar.Day_Number;
   Month : Ada.Calendar.Month_Number;
   Year  : Ada.Calendar.Year_Number;
   -- dd/mm/yyyy
-  Txt : Text_Handler.Text(10);
+  Txt : Asb_Bs(10);
   -- "is", "was" or "will be"
-  Verb : Text_Handler.Text(7);
+  Verb : Asb_Bs(7);
   Today, T : Ada.Calendar.Time;
   -- From 1st Jan to today and from today to 31th Dec
   Delta_Date_0 : Perpet.Delta_Rec;
   Delta_Date_1 : Perpet.Delta_Rec;
   Day_No : Perpet.Day_Range;
   Th : String(1 .. 2);
-  Days : Text_Handler.Text(4);
+  Days : Asb_Bs(4);
 
   procedure Usage is
   begin
@@ -67,23 +68,23 @@ begin
     -- Get date from arg 1
     Txt.Set (Argument.Get_Parameter);
     if Txt.Length /= 10
-    or else Txt.Value(3) /= '/'
-    or else Txt.Value(6) /= '/' then
+    or else Txt.Element (3) /= '/'
+    or else Txt.Element (6) /= '/' then
       Usage;
       return;
     end if;
 
-    if not Is_Digit (Txt.Value(1 .. 2))
-    or else not Is_Digit (Txt.Value(4 .. 5))
-    or else not Is_Digit (Txt.Value(7 .. 10)) then
+    if not Is_Digit (Txt.Slice (1, 2))
+    or else not Is_Digit (Txt.Slice (4, 5))
+    or else not Is_Digit (Txt.Slice (7, 10)) then
       Usage;
       return;
     end if;
 
     begin
-      Day   := Ada.Calendar.Day_Number'Value   (Txt.Value(1 .. 2));
-      Month := Ada.Calendar.Month_Number'Value (Txt.Value(4 .. 5));
-      Year  := Ada.Calendar.Year_Number'Value  (Txt.Value(7 .. 10));
+      Day   := Ada.Calendar.Day_Number'Value   (Txt.Slice (1, 2));
+      Month := Ada.Calendar.Month_Number'Value (Txt.Slice (4, 5));
+      Year  := Ada.Calendar.Year_Number'Value  (Txt.Slice (7, 10));
     exception
       when others =>
         Usage;
@@ -164,9 +165,9 @@ begin
   end if;
 
   -- Display result
-  Ada.Text_Io.Put_Line (Txt.Value
+  Ada.Text_Io.Put_Line (Txt.Image
        & " "
-       & Verb.Value
+       & Verb.Image
        & " "
        & Mixed_Str (Perpet.Day_Of_Week_List'Image (Perpet.Get_Day_Of_Week (T)))
        & " "
@@ -183,7 +184,7 @@ begin
        & Th
        & " day of the year,"
        & Perpet.Day_Range'Image (Delta_Date_1.Days)
-       & " " & Days.Value
+       & " " & Days.Image
        & " remaining.");
 
 end Day_Of_Week;

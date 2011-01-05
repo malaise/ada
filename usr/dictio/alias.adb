@@ -1,8 +1,8 @@
-with Parser, Text_Handler;
+with As.B, Parser;
 with Parse, Names, Dictio_Debug;
 package body Alias is
 
-  subtype Tmp_Txt is Text_Handler.Text(Data_Base.Item_Data'Length);
+  subtype Tmp_Txt is As.B.Asb_Bs(Data_Base.Item_Data'Length);
 
   -- Get the highest alias for a name
   -- For a.b.c.d, look for a, then a.b, then a.b.c...
@@ -17,8 +17,8 @@ package body Alias is
   begin
 
     -- Init parsing
-    Parser.Set (Iter, Name.Value, Names.Is_Sep'Access);
-    Name.Empty;
+    Parser.Set (Iter, Name.Image, Names.Is_Sep'Access);
+    Name.Set_Null;
     Searching := True;
 
     loop
@@ -39,7 +39,7 @@ package body Alias is
       if Searching then
         -- Look for alias
         Look_Item := Data_Base.No_Item;
-        Look_Item.Name(1 .. Name.Length) := Name.Value;
+        Look_Item.Name(1 .. Name.Length) := Name.Image;
 
         Data_Base.Get (Look_Item.Name, Data_Base.Alias_Kind, Got_Item);
         if Got_Item.Data_Len /= 0 then
@@ -58,11 +58,11 @@ package body Alias is
 
     if Searching then
       -- Nothing found
-      Name.Empty;
+      Name.Set_Null;
     else
       -- Found. Append tail to found alias
       Name.Set (Got_Item.Data(1 .. Got_Item.Data_Len));
-      if not Tail.Is_Empty then
+      if not Tail.Is_Null then
         Name.Append (Names.Sep);
         Name.Append (Tail);
       end if;
@@ -71,7 +71,7 @@ package body Alias is
   exception
     when Constraint_Error =>
       -- While appending
-      Name.Empty;
+      Name.Set_Null;
       raise Len_Error;
   end Best_Alias;
 
@@ -79,7 +79,7 @@ package body Alias is
   -- Resolves an alias
   procedure Resolve (Item : in out Data_Base.Item_Rec) is
     Ini_Txt, Cur_Txt, Got_Txt : Tmp_Txt;
-    use type Text_Handler.Text;
+    use type As.B.Asb_Bs;
   begin
     -- Do not resolve aliases
     if Item.Kind = Data_Base.Alias_Kind then
@@ -98,25 +98,25 @@ package body Alias is
       Got_Txt.Set (Cur_Txt);
       Best_Alias (Got_Txt);
       -- No alias
-      exit when Got_Txt.Is_Empty;
+      exit when Got_Txt.Is_Null;
       -- Loop detected
       if Got_Txt = Ini_Txt then
-        Dictio_Debug.Put ("Client-alias.resolving loop: " & Ini_Txt.Value);
-        Cur_Txt.Empty;
+        Dictio_Debug.Put ("Client-alias.resolving loop: " & Ini_Txt.Image);
+        Cur_Txt.Set_Null;
         exit;
       end if;
       -- Switch to this one
       Cur_Txt.Set (Got_Txt);
       if Dictio_Debug.Level_Array(Dictio_Debug.Client_Alias) then
-        Dictio_Debug.Put ("Client-alias.resolving: " & Cur_Txt.Value);
+        Dictio_Debug.Put ("Client-alias.resolving: " & Cur_Txt.Image);
       end if;
     end loop;
 
     -- Accept final alias if one got and not too long
-    if not Cur_Txt.Is_Empty
+    if not Cur_Txt.Is_Null
     and then Cur_Txt.Length <= Item.Name'Length then
       Item.Name := (others => ' ');
-      Item.Name(1 .. Cur_Txt.Length) := Cur_Txt.Value;
+      Item.Name(1 .. Cur_Txt.Length) := Cur_Txt.Image;
     end if;
 
     if Dictio_Debug.Level_Array(Dictio_Debug.Client_Alias) then

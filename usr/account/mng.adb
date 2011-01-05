@@ -1,5 +1,6 @@
 with Ada.Text_Io, Ada.Calendar;
-with Text_Handler, Dynamic_List, Directory, Afpx, Select_File, Normal,
+with As.B;
+with Dynamic_List, Directory, Afpx, Select_File, Normal,
      Oper_Def, Environ, Sys_Calls, Date_Image, Language, Perpet, Con_Io;
 with File_Mng, Oper_Dyn_List_Mng, Screen, Unit_Format;
 
@@ -20,7 +21,7 @@ package body Mng is
   procedure Sort_Amounts is new Oper_List_Mng.Sort (Smaller);
 
   -- Name and status of current account
-  Account_Name : Text_Handler.Text(Directory.Max_Dir_Name_Len);
+  Account_Name : As.B.Asb_Bs(Directory.Max_Dir_Name_Len);
   Account_Saved : Boolean := True;
 
   -- The amount in first record of file (entered)
@@ -238,7 +239,7 @@ package body Mng is
   type List_Update_List is (Bottom, Center, Unchanged);
   procedure Refresh_Screen (List_Update : in List_Update_List) is
   begin
-    Screen.Encode_File_Name(Account_Name.Value);
+    Screen.Encode_File_Name(Account_Name.Image);
     Screen.Encode_Nb_Oper(Oper_List.List_Length,
                           Sel_List.List_Length);
     Screen.Encode_Saved(Account_Saved);
@@ -326,7 +327,7 @@ package body Mng is
 
   -- Load from file
   procedure Load (File_Name : in String) is
-    Loaded_Name : Text_Handler.Text(Account_Name.Max_Len);
+    Loaded_Name : As.B.Asb_Bs(Account_Name.Max);
     Can_Write : Boolean;
   begin
     if not Account_Saved
@@ -354,10 +355,10 @@ package body Mng is
       Refresh_Screen(Bottom);
     end if;
 
-    if not Loaded_Name.Is_Empty then
+    if not Loaded_Name.Is_Null then
       -- Load
       begin
-        File_Mng.Load(Loaded_Name.Value, Oper_List, Can_Write);
+        File_Mng.Load(Loaded_Name.Image, Oper_List, Can_Write);
       exception
         when File_Mng.F_Access_Error =>
           Screen.Ack_Error(Screen.File_Access);
@@ -388,7 +389,7 @@ package body Mng is
   end Load;
 
   procedure Save (Mode : Save_Mode_List) is
-    Tmp_Name : Text_Handler.Text(Directory.Max_Dir_Name_Len);
+    Tmp_Name : As.B.Asb_Bs(Directory.Max_Dir_Name_Len);
   begin
     -- The save button is also used for Copy_All when in Sublist
     if Screen.Is_Sublist then
@@ -405,7 +406,7 @@ package body Mng is
     -- Confirm file overwritting
     --  or select file
     Loading := False;
-    if Account_Name.Is_Empty
+    if Account_Name.Is_Null
     or else not Screen.Confirm_Action(Screen.Overwrite_File) then
       -- User discards overwritting
       if Mode = Cancel then
@@ -415,18 +416,18 @@ package body Mng is
       Screen.Reset;
       Screen.Set_Sublist(False);
       Refresh_Screen(Center);
-      if Tmp_Name.Is_Empty then
+      if Tmp_Name.Is_Null then
         -- User discards selecting new file name
         return;
       end if;
       Account_Name.Set (Tmp_Name);
-      Screen.Encode_File_Name (Account_Name.Value);
+      Screen.Encode_File_Name (Account_Name.Image);
     end if;
     -- Insert root amount
     List_Util.Insert_Amount(Root_Amount);
     -- Save
     begin
-      File_Mng.Save(Account_Name.Value, Oper_List);
+      File_Mng.Save(Account_Name.Image, Oper_List);
     exception
       when File_Mng.F_Access_Error =>
         Screen.Ack_Error(Screen.File_Access);
@@ -450,7 +451,7 @@ package body Mng is
       return;
     end if;
     -- Set data
-    Account_Name.Empty;
+    Account_Name.Set_Null;
     Sel_List.Delete_List(Deallocate => False);
     Oper_List.Delete_List;
     Root_Amount := 0.0;
@@ -500,7 +501,7 @@ package body Mng is
         Refresh_Screen(Center);
         return;
     end;
-    Put_Line(Pf, "Account: " & Account_Name.Value
+    Put_Line(Pf, "Account: " & Account_Name.Image
                & "     at: " & Date_Image(Ada.Calendar.Clock) (1 .. 16));
     Put_Line(Pf, Page_Title);
     Line := 3;

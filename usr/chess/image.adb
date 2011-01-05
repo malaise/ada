@@ -1,5 +1,5 @@
-with Normal, Lower_Str, Text_Handler;
-
+with As.B; use As.B;
+with Normal, Lower_Str;
 package body Image is
 
   function Piece_Image (Piece_Kind : Pieces.Piece_Kind_List) return String is
@@ -29,7 +29,7 @@ package body Image is
   function Move_Image (Action : Game.Valid_Action_Rec;
                        Result : Game.Move_Status_List) return Move_Str is
     -- Result
-    Res : Text_Handler.Text(10);
+    Res : Asb_Bs(10);
     Str : Move_Str := (others => ' ');
 
     function Image (Square : in Space.Square_Coordinate) return String is
@@ -83,7 +83,7 @@ package body Image is
       when Game.Checkmate =>
         Res.Append ("+=");
     end case;
-    Str (1 .. Res.Length) := Res.Value;
+    Str (1 .. Res.Length) := Res.Image;
     return Str;
   end Move_Image;
 

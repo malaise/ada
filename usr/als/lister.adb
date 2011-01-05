@@ -5,7 +5,7 @@ package body Lister is
 
   -- List of file templates
   type Tmpl_Rec is record
-    Template : Asu_Us;
+    Template : As.U.Asu_Us;
     Regex : Boolean;
   end record;
   package Tmpl_Dyn_List_Mng is new Dynamic_List (Tmpl_Rec);
@@ -73,14 +73,14 @@ package body Lister is
   procedure Add_Match (Template : in String; Regex : in Boolean) is
   begin
     if Check_Template (Template, Regex) then
-      Matches.Insert ((Tus (Template), Regex));
+      Matches.Insert ((As.U.Tus (Template), Regex));
     end if;
   end Add_Match;
 
   procedure Add_Exclude (Template : in String; Regex : in Boolean) is
   begin
     if Check_Template (Template, Regex) then
-      Excludes.Insert ( (Tus (Template), Regex) );
+      Excludes.Insert ( (As.U.Tus (Template), Regex) );
     end if;
   end Add_Exclude;
 
@@ -181,16 +181,16 @@ package body Lister is
   -- Read link Name and fill Ent.Link, Ent.Link_Ok, Ent.Link_Kind and
   --  Ent.Link_Rights
   procedure Read_Link (Name : in String; Ent : in out Entities.Entity) is
-    Link_Target : Asu_Us;
+    Link_Target : As.U.Asu_Us;
     Stat : Sys_Calls.File_Stat_Rec;
   begin
     -- Read link direct target
     begin
-      Ent.Link := Tus (Directory.Read_Link (
+      Ent.Link := As.U.Tus (Directory.Read_Link (
           File_Name => Name, Recursive => False));
     exception
       when Directory.Name_Error | Directory.Access_Error =>
-        Ent.Link := Asu_Null;
+        Ent.Link := As.U.Asu_Null;
         Ent.Link_Ok := False;
         Ent.Link_Kind := Directory.Unknown;
         Ent.Link_Rights := 0;
@@ -198,7 +198,7 @@ package body Lister is
     end;
     -- Check if final target exists (and is reachable), and store its kind
     begin
-      Link_Target := Tus (Directory.Read_Link (
+      Link_Target := As.U.Tus (Directory.Read_Link (
           File_Name => Name, Recursive => True));
       Stat := Sys_Calls.File_Stat (Link_Target.Image);
       Ent.Link_Ok := True;
@@ -219,7 +219,7 @@ package body Lister is
         Ent.Link := Link_Target;
         Ent.Size := Stat.Size;
       else
-        Ent.Link := Asu_Null;
+        Ent.Link := As.U.Asu_Null;
         Ent.Size := 0;
       end if;
     end if;
@@ -245,15 +245,15 @@ package body Lister is
     end;
 
     -- Fill entity
-    Ent.Name := Tus (Directory.Basename(File));
+    Ent.Name := As.U.Tus (Directory.Basename(File));
     Ent.Kind := Directory.File_Kind_List (Stat.Kind);
     Ent.Modif_Time := Sys_Calls.Time_Of (Stat.Modif_Time);
-    Ent.Path := Tus (Directory.Dirname(File));
+    Ent.Path := As.U.Tus (Directory.Dirname(File));
     Ent.Rights := Stat.Rights;
     Ent.User_Id := Stat.User_Id;
     Ent.Group_Id := Stat.Group_Id;
     Ent.Size := Stat.Size;
-    Ent.Link := Asu_Null;
+    Ent.Link := As.U.Asu_Null;
     if Ent.Kind = Directory.Link then
       Read_Link (File, Ent);
     end if;
@@ -281,7 +281,7 @@ package body Lister is
     -- Prepare list for appending
     Ent_List.Rewind (False, Entities.Entity_List_Mng.Prev);
     -- Init Ent with path
-    Ent.Path := Tus (Dir);
+    Ent.Path := As.U.Tus (Dir);
     -- Open
     begin
       Desc := Directory.Open (Dir);
@@ -308,7 +308,7 @@ package body Lister is
       begin
         -- Read next entry
         begin
-          Ent.Name := Tus (Directory.Next_Entry (Desc));
+          Ent.Name := As.U.Tus (Directory.Next_Entry (Desc));
         exception
           when Directory.End_Error =>
             -- Done
@@ -347,7 +347,7 @@ package body Lister is
         Ent.User_Id := Stat.User_Id;
         Ent.Group_Id := Stat.Group_Id;
         Ent.Size := Stat.Size;
-        Ent.Link := Asu_Null;
+        Ent.Link := As.U.Asu_Null;
         if Ent.Kind = Directory.Link then
           Read_Link (Directory.Build_File_Name (Dir, Ent.Name.Image, ""),
                      Ent);
@@ -383,14 +383,14 @@ package body Lister is
   procedure Add_Dir_Match   (Template : in String; Regex : in Boolean) is
   begin
     if Check_Template (Template, Regex) then
-      Dir_Match.Insert ((Tus (Template), Regex));
+      Dir_Match.Insert ((As.U.Tus (Template), Regex));
     end if;
   end Add_Dir_Match;
 
   procedure Add_Dir_Exclude (Template : in String; Regex : in Boolean) is
   begin
     if Check_Template (Template, Regex) then
-      Dir_Exclude.Insert ((Tus (Template), Regex));
+      Dir_Exclude.Insert ((As.U.Tus (Template), Regex));
     end if;
   end Add_Dir_Exclude;
 
@@ -433,7 +433,7 @@ package body Lister is
   procedure List_Dirs (Dir : in String;
                        List : out Dir_List) is
     Desc : Directory.Dir_Desc;
-    Str : Asu_Us;
+    Str : As.U.Asu_Us;
     use type Directory.File_Kind_List;
   begin
     -- Prepare list
@@ -456,7 +456,7 @@ package body Lister is
     -- For each entry
     loop
       begin
-        Str := Tus (Directory.Next_Entry (Desc));
+        Str := As.U.Tus (Directory.Next_Entry (Desc));
       exception
         when Directory.End_Error =>
           -- Done

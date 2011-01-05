@@ -18,12 +18,12 @@ package body Output is
   Format_Kind : Format_Kind_List;
   Put_Path : Boolean;
   Full_Path : Boolean;
-  Separator : Asu_Us;
+  Separator : As.U.Asu_Us;
   Classify : Boolean;
   Default_Separator : constant String := "  ";
 
   -- Current directory path
-  Curdir : constant Asu_Us := Tus (Directory.Get_Current);
+  Curdir : constant As.U.Asu_Us := As.U.Tus (Directory.Get_Current);
 
   -- Set (store) sorting and format style
   procedure Set_Style (
@@ -33,7 +33,7 @@ package body Output is
              Put_Path    : in Boolean;
              Full_Path   : in Boolean;
              Classify    : in Boolean;
-             Separator   : in Asu_Us) is
+             Separator   : in As.U.Asu_Us) is
   begin
     Output.Sort_Kind := Sort_Kind;
     Output.Revert := Revert;
@@ -60,7 +60,7 @@ package body Output is
   end Make_Full_Path;
 
   -- Sorting function for 2 paths
-  function "<" (S1, S2 : Asu_Us) return Boolean is
+  function "<" (S1, S2 : As.U.Asu_Us) return Boolean is
     Len : Natural;
     C1, C2 : Character;
   begin
@@ -90,6 +90,7 @@ package body Output is
     use type Ada.Calendar.Time;
     use type Sys_Calls.Size_T;
     C1, C2 : Entities.Entity;
+    use type As.U.Asu_Us;
   begin
     if not Revert then
       C1 := El1;
@@ -100,19 +101,19 @@ package body Output is
     end if;
     -- Sort including full path if required
     if Full_Path then
-      C1.Name := Tus (Directory.Build_File_Name (
+      C1.Name := As.U.Tus (Directory.Build_File_Name (
            Make_Full_Path (C1.Path.Image), C1.Name.Image, "") );
-      C2.Name := Tus (Directory.Build_File_Name (
+      C2.Name := As.U.Tus (Directory.Build_File_Name (
            Make_Full_Path (C2.Path.Image), C2.Name.Image, "") );
     elsif Put_Path then
-      C1.Name := Tus (Directory.Build_File_Name (
+      C1.Name := As.U.Tus (Directory.Build_File_Name (
            C1.Path.Image, C1.Name.Image, "") );
-      C2.Name := Tus (Directory.Build_File_Name (
+      C2.Name := As.U.Tus (Directory.Build_File_Name (
            C2.Path.Image, C2.Name.Image, "") );
     end if;
     -- Alpha sort case insensitive, and letters before ponctuation
-    C1.Name := Tus (Upper_Str (C1.Name.Image));
-    C2.Name := Tus (Upper_Str (C2.Name.Image));
+    C1.Name := As.U.Tus (Upper_Str (C1.Name.Image));
+    C2.Name := As.U.Tus (Upper_Str (C2.Name.Image));
     case Sort_Kind is
       when None =>
         return True;

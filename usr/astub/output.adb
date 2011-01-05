@@ -1,5 +1,6 @@
 with As.U; use As.U;
-with Environ, Text_Handler, Text_Line, String_Mng.Regex, Ada_Words;
+with As.B; use As.B;
+with Environ, Text_Line, String_Mng.Regex, Ada_Words;
 with Common, Files;
 package body Output is
 
@@ -7,7 +8,7 @@ package body Output is
   Spaces_Name : constant String := "ASTUB_INDENT";
   Def_Nb_Spaces : constant := 2;
   Max_Nb_Spaces : constant := 10;
-  Spaces : Text_Handler.Text(Max_Nb_Spaces);
+  Spaces : Asb_Bs(Max_Nb_Spaces);
 
   -- Line length
   Length_Name : constant String := "ASTUB_LENGTH";
@@ -22,7 +23,7 @@ package body Output is
   procedure Getenv is
   begin
     -- Check if spaces is set
-    if Spaces.Is_Empty then
+    if Spaces.Is_Null then
       -- Getenv Nb_Spaces
       declare
         Nb_Spaces : Positive := Def_Nb_Spaces;
@@ -55,7 +56,7 @@ package body Output is
   begin
     Getenv;
     for I in 1 .. Level loop
-      Result.Append (Spaces.Value);
+      Result.Append (Spaces.Image);
     end loop;
     return Result.Image;
   end Get_Indent;
@@ -150,7 +151,7 @@ package body Output is
     -- Indent
     if Indent then
       for I in 1 .. Level loop
-        Line2Put.Append (Spaces.Value);
+        Line2Put.Append (Spaces.Image);
       end loop;
     end if;
 

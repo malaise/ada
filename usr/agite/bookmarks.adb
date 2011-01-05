@@ -1,5 +1,4 @@
-with As.U; use As.U;
-with Directory, Con_Io, Afpx.List_Manager;
+with As.U, Directory, Con_Io, Afpx.List_Manager;
 with Utils, Config;
 package body Bookmarks is
 
@@ -20,7 +19,8 @@ package body Bookmarks is
 
   -- Image of a bookmark
   function Image (Bookmark : Config.Bookmark_Rec) return String is
-    Res : Asu_Us;
+    Res : As.U.Asu_Us;
+    use type As.U.Asu_Us;
   begin
     if not Bookmark.Path.Is_Null then
       -- Regular bookmark
@@ -151,7 +151,8 @@ package body Bookmarks is
                                      - Utils.List_Scroll_Fld_Range'First + 1);
             when 13 =>
               -- Add current
-              Bookmark := (Tus (Get_Name), Tus (Directory.Get_Current));
+              Bookmark := (As.U.Tus (Get_Name),
+                           As.U.Tus (Directory.Get_Current));
               if Afpx.Line_List.Is_Empty then
                 Config.Add_Bookmark (0, Bookmark);
               else
@@ -160,7 +161,7 @@ package body Bookmarks is
               Insert_List (Image (Bookmark));
             when 14 =>
               -- Add separator
-              Bookmark := (Tus (Get_Name), Asu_Null);
+              Bookmark := (As.U.Tus (Get_Name), As.U.Asu_Null);
               if Afpx.Line_List.Is_Empty then
                 Config.Add_Bookmark (0, Bookmark);
               else

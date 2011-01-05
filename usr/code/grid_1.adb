@@ -1,5 +1,6 @@
 with Ada.Characters.Latin_1;
-with Text_Handler, My_Io, Sorts;
+with As.B; use As.B;
+with My_Io, Sorts;
 package body Grid_1 is
 
 
@@ -26,12 +27,12 @@ package body Grid_1 is
     Row : Row_Coordinate;
     Col : Col_Coordinate;
     Char : Character;
-    Stripped_Key : Text_Handler.Text(80);
+    Stripped_Key : Asb_Bs(80);
 
     -- Store a char in data, checking if it is in Stripped_Key
     procedure Store (Char : in Character; Check : in Boolean) is
     begin
-      if Check and then Stripped_Key.Locate (Char) /= 0 then
+      if Check and then Stripped_Key.Locate (Char & "") /= 0 then
         return;
       end if;
       Data (Row, Col) := Char;
@@ -44,12 +45,12 @@ package body Grid_1 is
     end Store;
 
   begin
-    Stripped_Key.Empty;
+    Stripped_Key.Set_Null;
     -- Store stripped key
     for I in Key'Range loop
       Char := Filter(Key(I));
       if Char /= Ada.Characters.Latin_1.Nul then
-        if Stripped_Key.Locate (Char) = 0 then
+        if Stripped_Key.Locate (Char & "") = 0 then
           Stripped_Key.Append (Char);
         end if;
       end if;
@@ -57,7 +58,7 @@ package body Grid_1 is
 
     -- Sort characters of Key
     declare
-      Sorted_Key : String(1 .. Stripped_Key.Length) := Stripped_Key.Value;
+      Sorted_Key : String(1 .. Stripped_Key.Length) := Stripped_Key.Image;
     begin
       Char_Sort.Bubble_Sort (Sorted_Key);
 

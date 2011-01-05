@@ -1,6 +1,5 @@
 with Ada.Characters.Latin_1, Ada.Exceptions;
-with As.U; use As.U;
-with Con_Io, Afpx.List_Manager, String_Mng, Directory, Basic_Proc;
+with As.U, Con_Io, Afpx.List_Manager, String_Mng, Directory, Basic_Proc;
 with Utils, View, History, Config;
 package body Details is
 
@@ -116,7 +115,8 @@ package body Details is
 
     -- Copy Comments as X selection
     procedure Copy_Selection is
-      Result : Asu_Us;
+      Result : As.U.Asu_Us;
+      use type As.U.Asu_Us;
     begin
       -- Skip tailing empty lines. No LineFeed after last line
       for I in reverse Comment'Range loop

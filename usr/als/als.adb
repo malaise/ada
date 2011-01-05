@@ -1,6 +1,5 @@
 with Ada.Calendar;
-with As.U; use As.U;
-with Basic_Proc, Argument, Argument_Parser;
+with As.U, Basic_Proc, Argument, Argument_Parser;
 with Entities, Output, Targets, Lister;
 procedure Als is
   Version : constant String  := "V5.3";
@@ -60,35 +59,35 @@ procedure Als is
 
   -- The keys and descriptor of parsed keys
   Keys : constant Argument_Parser.The_Keys_Type := (
-   01 => ('a', Tus ("all"), False, False),
-   02 => ('A', Tus ("All"), False, False),
-   03 => ('l', Tus ("list"), False, False),
-   04 => ('1', Tus ("1row"), False, False),
-   05 => ('D', Tus ("directories"), False, False),
-   06 => ('r', Tus ("reverse"), False, False),
-   07 => ('R', Tus ("recursive"), False, False),
-   08 => ('s', Tus ("size"), False, False),
-   09 => ('t', Tus ("time"), False, False),
-   10 => ('M', Tus ("merge"), False, False),
-   11 => ('d', Tus ("date"), True, True),
-   12 => (Argument_Parser.No_Key_Char, Tus ("help"), False, False),
-   13 => ('v', Tus ("version"), False, False),
-   14 => ('L', Tus ("links"), False, False),
-   15 => ('F', Tus ("files"), False, False),
-   16 => ('m', Tus ("match"), True, True),
-   17 => ('e', Tus ("exclude"), True, True),
-   18 => (Argument_Parser.No_Key_Char, Tus ("match_dir"), True, True),
-   19 => (Argument_Parser.No_Key_Char, Tus ("exclude_dir"), True, True),
-   20 => ('S', Tus ("separator"), False, True),
-   21 => ('T', Tus ("total"), False, False),
-   22 => ('n', Tus ("newer"), False, True),
-   23 => ('c', Tus ("classify"), False, False),
-   24 => (Argument_Parser.No_Key_Char, Tus ("depth"), False, True),
-   25 => ('h', Tus ("human"), False, False),
-   26 => ('N', Tus ("no_sort"), False, False),
-   27 => ('f', Tus ("full_path"), False, False),
-   28 => ('B', Tus ("broken_links"), False, False),
-   29 => (Argument_Parser.No_Key_Char, Tus ("follow_links"), False, False) );
+   01 => ('a', As.U.Tus ("all"), False, False),
+   02 => ('A', As.U.Tus ("All"), False, False),
+   03 => ('l', As.U.Tus ("list"), False, False),
+   04 => ('1', As.U.Tus ("1row"), False, False),
+   05 => ('D', As.U.Tus ("directories"), False, False),
+   06 => ('r', As.U.Tus ("reverse"), False, False),
+   07 => ('R', As.U.Tus ("recursive"), False, False),
+   08 => ('s', As.U.Tus ("size"), False, False),
+   09 => ('t', As.U.Tus ("time"), False, False),
+   10 => ('M', As.U.Tus ("merge"), False, False),
+   11 => ('d', As.U.Tus ("date"), True, True),
+   12 => (Argument_Parser.No_Key_Char, As.U.Tus ("help"), False, False),
+   13 => ('v', As.U.Tus ("version"), False, False),
+   14 => ('L', As.U.Tus ("links"), False, False),
+   15 => ('F', As.U.Tus ("files"), False, False),
+   16 => ('m', As.U.Tus ("match"), True, True),
+   17 => ('e', As.U.Tus ("exclude"), True, True),
+   18 => (Argument_Parser.No_Key_Char, As.U.Tus ("match_dir"), True, True),
+   19 => (Argument_Parser.No_Key_Char, As.U.Tus ("exclude_dir"), True, True),
+   20 => ('S', As.U.Tus ("separator"), False, True),
+   21 => ('T', As.U.Tus ("total"), False, False),
+   22 => ('n', As.U.Tus ("newer"), False, True),
+   23 => ('c', As.U.Tus ("classify"), False, False),
+   24 => (Argument_Parser.No_Key_Char, As.U.Tus ("depth"), False, True),
+   25 => ('h', As.U.Tus ("human"), False, False),
+   26 => ('N', As.U.Tus ("no_sort"), False, False),
+   27 => ('f', As.U.Tus ("full_path"), False, False),
+   28 => ('B', As.U.Tus ("broken_links"), False, False),
+   29 => (Argument_Parser.No_Key_Char, As.U.Tus ("follow_links"), False, False) );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   -- Option management
   List_Dots, List_Roots_And_Dots : Boolean;
@@ -107,7 +106,7 @@ procedure Als is
   No_Sorting : Boolean;
   Merge_Lists : Boolean;
   Date1, Date2 : Entities.Date_Spec_Rec;
-  Separator : Asu_Us;
+  Separator : As.U.Asu_Us;
   Put_Total : Boolean;
   Classify : Boolean;
   Depth : Natural;
@@ -262,7 +261,7 @@ begin
     if Arg_Dscr.Get_Option (20) = "" then
       Error ("Empty separator");
     end if;
-    Separator := Tus (Arg_Dscr.Get_Option (20));
+    Separator := As.U.Tus (Arg_Dscr.Get_Option (20));
   end if;
   -- Put total size
   Put_Total := Arg_Dscr.Is_Set (21);

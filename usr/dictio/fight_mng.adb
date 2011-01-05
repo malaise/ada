@@ -1,4 +1,3 @@
-with As.U; use As.U;
 with Timers;
 with Dictio_Debug, Errors, Versions, Intra_Dictio;
 package body Fight_Mng is

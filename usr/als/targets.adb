@@ -1,5 +1,4 @@
-with As.U; use As.U;
-with Directory, Argument, Basic_Proc;
+with As.U, Directory, Argument, Basic_Proc;
 with Lister, Output;
 package body Targets is
 
@@ -18,7 +17,7 @@ package body Targets is
       Found : Boolean;
       Moved : Boolean;
       Subdirs : Lister.Dir_List;
-      Subdir : Asu_Us;
+      Subdir : As.U.Asu_Us;
     begin
       Found := False;
       -- Do this dir

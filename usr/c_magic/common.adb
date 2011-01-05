@@ -1,5 +1,6 @@
 with Ada.Text_Io, Ada.Calendar;
-with Normal, Text_Handler, Sorts, My_Math;
+with As.B; use As.B;
+with Normal, Sorts, My_Math;
 package body Common is
   -- The dimension of square
   Dim : Dim_Range;
@@ -21,7 +22,7 @@ package body Common is
 
   -- Output file
   File : Ada.Text_Io.File_Type;
-  File_Name : Text_Handler.Text(80);
+  File_Name : Asb_Bs(80);
 
   -- Real -> integer : round or trunc
   function Trunc (X : in Float) return Integer is
@@ -63,10 +64,10 @@ package body Common is
 
     File_Name.Set (Normal (Dim, 1, True) & "_MAGIC.DAT");
     begin
-      Ada.Text_Io.Open (File, Ada.Text_Io.Out_File, File_Name.Value);
+      Ada.Text_Io.Open (File, Ada.Text_Io.Out_File, File_Name.Image);
     exception
       when Ada.Text_Io.Name_Error =>
-        Ada.Text_Io.Create (File, Ada.Text_Io.Out_File, File_Name.Value);
+        Ada.Text_Io.Create (File, Ada.Text_Io.Out_File, File_Name.Image);
     end;
 
     -- Start searching

@@ -20,6 +20,7 @@ package body Strings is
 
   function Strcat (S1, S2 : Item_Rec) return Item_Rec is
     Res : Item_Rec(Chrs);
+    use type As.U.Asu_Us;
   begin
     Check_Chrs(S1);
     Check_Chrs(S2);
@@ -102,7 +103,7 @@ package body Strings is
     Res : Item_Rec(Chrs);
   begin
     Check_Chrs(S);
-    Res.Val_Text := Tus (Upper_Str (S.Val_Text.Image));
+    Res.Val_Text := As.U.Tus (Upper_Str (S.Val_Text.Image));
     return Res;
   end Strupp;
 
@@ -110,7 +111,7 @@ package body Strings is
     Res : Item_Rec(Chrs);
   begin
     Check_Chrs(S);
-    Res.Val_Text := Tus (Lower_Str (S.Val_Text.Image));
+    Res.Val_Text := As.U.Tus (Lower_Str (S.Val_Text.Image));
     return Res;
   end Strlow;
 
@@ -118,7 +119,7 @@ package body Strings is
     Res : Item_Rec(Chrs);
   begin
     Check_Chrs(S);
-    Res.Val_Text := Tus (Mixed_Str (S.Val_Text.Image));
+    Res.Val_Text := As.U.Tus (Mixed_Str (S.Val_Text.Image));
     return Res;
   end Strmix;
 

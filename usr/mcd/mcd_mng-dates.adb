@@ -87,7 +87,7 @@ package body Dates is
     Day_Mng.Split (Seconds, Hours, Mins, Secs, Millis);
 
     -- Format result in string
-    Date.Val_Text := Tus (
+    Date.Val_Text := As.U.Tus (
             Normal (Year,  4, Gap => '0')
       & "/" & Normal (Month, 2, Gap => '0')
       & "/" & Normal (Day,   2, Gap => '0')
@@ -111,6 +111,7 @@ package body Dates is
     Secs   : Day_Mng.T_Seconds;
     Millis : Day_Mng.T_Millisec;
     Date  : Item_Rec (Chrs);
+    use type As.U.Asu_Us;
   begin
     if Time.Kind /= Inte or else Time.Val_Inte < 0 then
       raise Invalid_Argument;

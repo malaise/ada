@@ -16,10 +16,10 @@ package body Io_Flow is
   Io_Mode : Io_Mode_List := Unknown;
 
   -- Data read
-  Input_Data : Asu_Us;
+  Input_Data : As.U.Asu_Us;
 
   -- Tempo data until Line Feed
-  Tmp_Data : Asu_Us;
+  Tmp_Data : As.U.Asu_Us;
 
   -- Udp or tcp socket
   Host : Tcp_Util.Remote_Host;
@@ -35,7 +35,7 @@ package body Io_Flow is
   procedure Soc_Receive is new Socket.Receive (Io_Data.Message_Type);
 
   -- Fifo
-  Fifo_Name : Asu_Us;
+  Fifo_Name : As.U.Asu_Us;
   package Mcd_Fifos is new Fifos.Fifo (Io_Data.Message_Type);
   Acc_Id, Client_Id : Mcd_Fifos.Fifo_Id := Mcd_Fifos.No_Fifo;
   procedure Open_Fifo (Active : in Boolean);
@@ -171,14 +171,14 @@ package body Io_Flow is
   ----------------------------------------------------
   -- Get data from fifo, tcp, udp or stdin (async or not)
   ----------------------------------------------------
-  procedure Next_Line (Str : out Asu_Us) is
+  procedure Next_Line (Str : out As.U.Asu_Us) is
     Evt : Event_Mng.Out_Event_List;
     Len : Natural;
     use type Event_Mng.Out_Event_List;
     use type Mcd_Fifos.Fifo_Id;
   begin
     if Io_Mode = Stdio_Not_Tty then
-      Input_Data := Asu_Null;
+      Input_Data := As.U.Asu_Null;
       -- Get next non empty line from Stdin (not a tty)
       loop
         -- Get next line
@@ -197,7 +197,7 @@ package body Io_Flow is
     else
       -- Get next data on async stdin, socket or Fifo
       loop
-        Input_Data := Asu_Null;
+        Input_Data := As.U.Asu_Null;
         if Debug.Debug_Level_Array(Debug.Flow) then
           Async_Stdin.Put_Line_Err ("Flow: Waiting on fifo/socket/tty");
         end if;
@@ -209,7 +209,7 @@ package body Io_Flow is
           exit;
         elsif Evt = Event_Mng.Signal_Event then
           -- Give up on signal
-          Input_Data := Asu_Null;
+          Input_Data := As.U.Asu_Null;
           if Debug.Debug_Level_Array(Debug.Flow) then
             Async_Stdin.Put_Line_Err ("Flow: Got signal");
           end if;
@@ -419,7 +419,7 @@ package body Io_Flow is
     or else Message(Length) = Ada.Characters.Latin_1.Lf then
       -- Validate the overall string
       Input_Data := Tmp_Data;
-      Tmp_Data := Asu_Null;
+      Tmp_Data := As.U.Asu_Null;
       -- Freeze fifo to prevent Input_Data to be overwritten
       Mcd_Fifos.Activate (Client_Id, False);
       if Debug.Debug_Level_Array(Debug.Flow) then
@@ -462,10 +462,10 @@ package body Io_Flow is
   begin
     if Str = "" then
       -- Error or end
-      Input_Data := Tus (Str);
+      Input_Data := As.U.Tus (Str);
       return True;
     else
-      Input_Data := Tus (Str);
+      Input_Data := As.U.Tus (Str);
     end if;
     -- Prevent overwritting of Input_Data by freezing Stdin
     Async_Stdin.Activate (False);
@@ -548,7 +548,7 @@ package body Io_Flow is
     or else Message(Length) = Ada.Characters.Latin_1.Lf then
       -- Validate the overall string
       Input_Data := Tmp_Data;
-      Tmp_Data := Asu_Null;
+      Tmp_Data := As.U.Asu_Null;
       -- Freeze fifo to prevent Input_Data to be overwritten
       Activate_Socket (False);
       if Debug.Debug_Level_Array(Debug.Flow) then

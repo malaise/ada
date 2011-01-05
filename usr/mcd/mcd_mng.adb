@@ -12,7 +12,7 @@ package body Mcd_Mng is
   S : Item_Rec := Invalid_Item;
 
   -- Subprogram called
-  Call_Entry : Asu_Us;
+  Call_Entry : As.U.Asu_Us;
 
   package Stack is
     -- What can we store in stack
@@ -232,8 +232,8 @@ package body Mcd_Mng is
 
   package Call_Stack is
 
-    procedure Push (Item : in Asu_Us);
-    function  Pop return Asu_Us;
+    procedure Push (Item : in As.U.Asu_Us);
+    function  Pop return As.U.Asu_Us;
 
     function Level return Natural;
 

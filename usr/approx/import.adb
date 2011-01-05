@@ -1,4 +1,4 @@
-with As.U.Utils; use As.U, As.U.Utils;
+with As.U.Utils;
 with Ada.Text_Io;
 with Argument, Get_Line;
 with Points, Point_Str, File;
@@ -9,7 +9,7 @@ procedure Import is
 
   package My_Get_Line is new Get_Line (Comment      => "#");
 
-  Line  : Asu_Ua.Unbounded_Array;
+  Line  : As.U.Utils.Asu_Ua.Unbounded_Array;
 
   procedure Error (Msg : in String)  is
   begin

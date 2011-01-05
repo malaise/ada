@@ -1,4 +1,4 @@
-with As.U; use As.U;
+with As.U;
 package Config is
 
   -- X terminal
@@ -19,8 +19,8 @@ package Config is
 
   -- Bookmarks
   type Bookmark_Rec is record
-    Name : Asu_Us;
-    Path : Asu_Us;
+    Name : As.U.Asu_Us;
+    Path : As.U.Asu_Us;
   end record;
   type Bookmark_Array is array (Positive range <>) of Bookmark_Rec;
 

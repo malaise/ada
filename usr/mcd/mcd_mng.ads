@@ -1,5 +1,4 @@
-with As.U; use As.U;
-with My_Math, Arbitrary, Arbitrary.Fractions;
+with As.U, My_Math, Arbitrary, Arbitrary.Fractions;
 package Mcd_Mng is
 
   type Item_Kind_List is (Arbi, Frac, Inte, Real, Bool, Chrs, Prog, Regi, Oper);
@@ -181,7 +180,7 @@ package Mcd_Mng is
       when Bool =>
         Val_Bool : Boolean;
       when Chrs | Prog =>
-        Val_Text : Asu_Us;
+        Val_Text : As.U.Asu_Us;
       when Regi =>
         Val_Regi : Register_List;
       when Oper =>
