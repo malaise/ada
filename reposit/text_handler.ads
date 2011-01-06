@@ -2,20 +2,21 @@
 with System;
 package Text_Handler is
 
-  subtype Max_Len_Range is Integer range 0 .. 32*1024;
+  Maximum : constant := 32*1024;
+  subtype Index is Integer range 0 .. Maximum;
 
-  type Text (Max_Len : Max_Len_Range) is tagged private;
+  type Text (Maximum_Length : Index) is limited private;
 
   Empty_Text : constant Text;
 
-  function Length (T : Text) return Max_Len_Range;
-  function Value (T : Text) return String;
-  function Is_Empty (T : Text) return Boolean;
+  function Length (T : Text) return Index;
+  function Value  (T : Text) return String;
+  function Empty  (T : Text) return Boolean;
 
   procedure Empty (T : in out Text);
 
-  function To_Text (S : String;    Max_Len : Max_Len_Range) return Text;
-  function To_Text (C : Character; Max_Len : Max_Len_Range) return Text;
+  function To_Text (S : String;    Max : Index) return Text;
+  function To_Text (C : Character; Max : Index) return Text;
   function To_Text (S : String)    return Text;
   function To_Text (C : Character) return Text;
 
@@ -39,33 +40,31 @@ package Text_Handler is
   procedure Append (To : in out Text; Tail : in String);
   procedure Append (To : in out Text; Tail : in Character);
 
-  procedure Amend (To : in out Text; By : in Text;
-                   Position : in Max_Len_Range);
-  procedure Amend (To : in out Text; By : in String;
-                   Position : in Max_Len_Range);
-  procedure Amend (To : in out Text; By : in Character;
-                   Position : in Max_Len_Range);
+  procedure Amend (To : in out Text; By : in Text; Position : in Index);
+  procedure Amend (To : in out Text; By : in String; Position : in Index);
+  procedure Amend (To : in out Text; By : in Character; Position : in Index);
 
   -- Return 0 if not found or if Within or Fragment is empty
-  function Locate (Within : Text; Fragment : Text; Occurence : Positive := 1)
-                   return Max_Len_Range;
-  function Locate (Within : Text; Fragment : String; Occurence : Positive := 1)
-                  return Max_Len_Range;
-  function Locate (Within : Text; Fragment : Character; Occurence : Positive := 1)
-                  return Max_Len_Range;
+  function Locate (Within : Text; Fragment : Text;
+                   Occurence : Positive := 1) return Index;
+  function Locate (Within : Text; Fragment : String;
+                   Occurence : Positive := 1) return Index;
+  function Locate (Within : Text; Fragment : Character;
+                   Occurence : Positive := 1) return Index;
 
   -- Appends Ascii Null to From.Val (From.Max_Len must be long enough).
   -- String_Address is From.Val'Address and can then be passed to a C function.
-  procedure String_For_C (From : in out Text; String_Address : out System.Address);
+  procedure String_For_C (From : in out Text;
+                          String_Address : out System.Address);
 
 private
 
-  type Text (Max_Len : Max_Len_Range) is tagged record
-    Len : Max_Len_Range := 0;
-    Val : String (1..Max_Len);
+  type Text (Maximum_Length : Index) is record
+    Len : Index := 0;
+    Val : String (1 .. Maximum_Length);
   end record;
 
-  Empty_Text : constant Text := (Max_Len => 0, Len => 0, Val => "");
+  Empty_Text : constant Text := (Maximum_Length => 0, Len => 0, Val => "");
 
 end Text_Handler;
 
