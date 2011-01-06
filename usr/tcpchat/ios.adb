@@ -23,9 +23,10 @@ package body Ios is
 
   -- Events
   Event : Event_Type;
-  No_Event : constant Event_Type (Got_Sentence) := (Got_Sentence, Asu_Null);
+  No_Event : constant Event_Type (Got_Sentence)
+           := (Got_Sentence, As.U.Asu_Null);
   -- Event is never set with a sentence. Sentences are stored in a Fifo
-  package Sentences_Mng is new Unlimited_Pool (Asu_Us, Lifo => False);
+  package Sentences_Mng is new Unlimited_Pool (As.U.Asu_Us, Lifo => False);
   Sentences : Sentences_Mng.Pool_Type;
 
   -- Global timer
@@ -80,7 +81,7 @@ package body Ios is
   begin
     -- Store sentence without Lf
     Debug.Log ("Got sentence " & Sentence);
-    Sentences.Push (Tus (String_Mng.Replace (Sentence, Lf, "")));
+    Sentences.Push (As.U.Tus (String_Mng.Replace (Sentence, Lf, "")));
   end Sentence_Cb;
 
   -- Message reception Cb
@@ -242,7 +243,7 @@ package body Ios is
   -----------------------
 
   -- Init the accepting of connections on port (name or num)
-  procedure Init (Port : in Asu_Us) is
+  procedure Init (Port : in As.U.Asu_Us) is
     Remote_Port_Def : Tcp_Util.Remote_Port;
 
     use type Tcp_Util.Remote_Port_List;
@@ -336,9 +337,9 @@ package body Ios is
 
   -- Send a sentence. Disconnection if error or overflow
   procedure My_Send is new Socket.Send (Message_Type);
-  procedure Send (Text : in Asu_Us;
+  procedure Send (Text : in As.U.Asu_Us;
                   Disconnection : out Boolean) is
-    Txt : Asu_Us;
+    Txt : As.U.Asu_Us;
     Len : Natural;
     Msg : Message_Type;
   begin

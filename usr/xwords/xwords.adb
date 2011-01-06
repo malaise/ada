@@ -1,6 +1,5 @@
-with As.U.Utils; use As.U, As.U.Utils;
-with Argument, Con_Io, Afpx, Basic_Proc, Language, Many_Strings, String_Mng,
-     Lower_Str, Environ, Int_Image, Event_Mng;
+with As.U.Utils, Argument, Con_Io, Afpx, Basic_Proc, Language, Many_Strings,
+     String_Mng, Lower_Str, Environ, Int_Image, Event_Mng;
 with Cmd, Analist;
 procedure Xwords is
 
@@ -48,16 +47,16 @@ procedure Xwords is
   Moved : Boolean;
 
   -- A line of text
-  Line : Asu_Us;
+  Line : As.U.Asu_Us;
 
   -- Dictio init status
-  Dictio_File_Name : Asu_Us;
+  Dictio_File_Name : As.U.Asu_Us;
   Loading_Anagrams : Boolean;
 
   function Image is new Int_Image (Integer);
 
   -- Us to Afpx line
-  function Us2Afpx (Us : Asu_Us) return Afpx.Line_Rec is
+  function Us2Afpx (Us : As.U.Asu_Us) return Afpx.Line_Rec is
     Rec : Afpx.Line_Rec;
     List_Width : constant Afpx.Width_Range
                := Afpx.Get_Field_Width (Afpx.List_Field_No);
@@ -83,8 +82,8 @@ procedure Xwords is
 
   -- List anagrams of word
   procedure Do_Anagrams is
-    Anagrams : Asu_Ua.Unb_Array;
-    Word : Asu_Us;
+    Anagrams : As.U.Utils.Asu_Ua.Unb_Array;
+    Word : As.U.Asu_Us;
     Char : Character;
     Length : Natural;
   begin
@@ -92,7 +91,7 @@ procedure Xwords is
     Status := Ok;
     Afpx.Line_List.Delete_List (Deallocate => False);
     -- Get word and check it
-    Word := Tus (Strip (Afpx.Decode_Field (Get_Fld, 0, False)));
+    Word := As.U.Tus (Strip (Afpx.Decode_Field (Get_Fld, 0, False)));
     if Word.Is_Null then
       return;
     end if;
@@ -100,7 +99,7 @@ procedure Xwords is
       Char := Word.Element (I);
       if Char < 'a' or else Char > 'z' then
         Afpx.Line_List.Insert (Us2Afpx (
-            Tus ("ERROR: Invalid character in word.")));
+            As.U.Tus ("ERROR: Invalid character in word.")));
         Status := Error;
         return;
       end if;
@@ -116,7 +115,7 @@ procedure Xwords is
     for I in 1 .. Anagrams.Length loop
       if Anagrams.Element(I).Length /= Length then
         Length := Anagrams.Element(I).Length;
-        Afpx.Line_List.Insert (Us2Afpx (Tus (
+        Afpx.Line_List.Insert (Us2Afpx (As.U.Tus (
              "-- " & Image (Length) & " --")));
       end if;
       Afpx.Line_List.Insert (Us2Afpx (Anagrams.Element(I)));
@@ -134,23 +133,23 @@ procedure Xwords is
   exception
     when Analist.Too_Long =>
       Afpx.Line_List.Insert (Us2Afpx (
-          Tus ("ERROR: Word too long.")));
+          As.U.Tus ("ERROR: Word too long.")));
   end Do_Anagrams;
 
   -- Build and launch a Words command
   procedure Do_Command (Num : Afpx.Field_Range) is
     Result : Cmd.Res_List;
     Com, Arg : Many_Strings.Many_String;
-    Word : Asu_Us;
+    Word : As.U.Asu_Us;
     Command_Ok : Boolean;
     First : Boolean;
-    use type Afpx.Field_Range;
+    use type As.U.Asu_Us, Afpx.Field_Range;
   begin
     -- Clear result
     Afpx.Line_List.Delete_List (Deallocate => False);
 
     -- Build command
-    Word := Tus (Strip (Afpx.Decode_Field (Get_Fld, 0, False)));
+    Word := As.U.Tus (Strip (Afpx.Decode_Field (Get_Fld, 0, False)));
     case Num is
       when Search_Fld | Research_Fld =>
         Com.Set ("ws");
@@ -203,7 +202,7 @@ procedure Xwords is
     if Log then
       Line := Com.Image;
       for I in 1 .. Arg.Nb loop
-        Line := Line & " " & Asu_Us'(Arg.Nth (I));
+        Line := Line & " " & As.U.Asu_Us'(Arg.Nth (I));
       end loop;
       Basic_Proc.Put_Line_Output (Line.Image);
     end if;
@@ -261,7 +260,7 @@ procedure Xwords is
   end Load_Anagrams;
 
   task body Load_Anagrams is
-    File_Name : Asu_Us;
+    File_Name : As.U.Asu_Us;
     Load : Boolean;
     Ok : Boolean;
   begin
@@ -269,7 +268,7 @@ procedure Xwords is
     select
       -- Load: Get file name
       accept Start (File_Name : in String) do
-        Load_Anagrams.File_Name := Tus (File_Name);
+        Load_Anagrams.File_Name := As.U.Tus (File_Name);
       end Start;
       Load := True;
     or
@@ -332,7 +331,7 @@ begin
   begin
     -- Button is inactive until dictio is loaded OK
     Afpx.Set_Field_Activation (Anagrams_Fld, False);
-    Dictio_File_Name := Tus (Environ.Getenv_If_Set (Dictio_Env_Name));
+    Dictio_File_Name := As.U.Tus (Environ.Getenv_If_Set (Dictio_Env_Name));
     Load_Anagrams.Start (Dictio_File_Name.Image);
     Loading_Anagrams := True;
   exception

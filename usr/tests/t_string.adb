@@ -1,6 +1,5 @@
 with Ada.Characters.Latin_1, Ada.Exceptions;
-with As.U.Utils; use As.U, As.U.Utils;
-with My_Io, String_Mng, String_Mng.Regex, Many_Strings,
+with As.U.Utils, My_Io, String_Mng, String_Mng.Regex, Many_Strings,
      Upper_Str, Lower_Str, Mixed_Str, Upper_Char, Environ;
 procedure T_String is
 
@@ -359,7 +358,7 @@ begin
             My_Io.Put_Line ("22 Regex split on sep");
             My_Io.Put ("Separator (Str)? "); My_Io.Get_Line (Str1, Nat1);
             declare
-              Slices : constant Asu_Ua.Unb_Array
+              Slices : constant As.U.Utils.Asu_Ua.Unb_Array
                      := String_Mng.Regex.Split_Sep (Str(1 .. Str_Len),
                                                     Str1(1 .. Nat1));
             begin

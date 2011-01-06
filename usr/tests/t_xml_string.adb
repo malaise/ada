@@ -1,6 +1,5 @@
 with Ada.Text_Io, Ada.Exceptions;
-with As.U; use As.U;
-with Argument, Xml_Parser, Normal, Basic_Proc, Sys_Calls, Text_Line,
+with As.U, Argument, Xml_Parser, Normal, Basic_Proc, Sys_Calls, Text_Line,
      String_Mng.Regex, Directory, Dir_Mng, Upper_Str, Rnd;
 procedure T_Xml_String is
   Ctx : Xml_Parser.Ctx_Type;
@@ -21,7 +20,7 @@ procedure T_Xml_String is
   If_Vers_Ok : Boolean := False;
   Dtd_Error : exception;
   Interface_Error : exception;
-  Error_Msg : Asu_Us;
+  Error_Msg : As.U.Asu_Us;
 
   File_List : Dir_Mng.File_List_Mng.List_Type;
   File_Entry : Dir_Mng.File_Entry_Rec;
@@ -41,7 +40,8 @@ procedure T_Xml_String is
   function Read_File  (Name : String) return String is
     Fd : Sys_Calls.File_Desc;
     File : Text_Line.File_Type;
-    Str, Res : Asu_Us;
+    Str, Res : As.U.Asu_Us;
+    use type As.U.Asu_Us;
   begin
     Fd := Sys_Calls.Open (Name, Sys_Calls.In_File);
     Text_Line.Open (File, Text_Line.In_File, Fd);

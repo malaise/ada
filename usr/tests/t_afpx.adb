@@ -1,4 +1,3 @@
-with As.U; use As.U;
 with Argument, Afpx, Con_Io, Dir_Mng, Timers, Language, Basic_Proc;
 procedure T_Afpx is
 

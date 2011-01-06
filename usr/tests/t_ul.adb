@@ -2,13 +2,13 @@
 -- Modifies and retrieve list entries according to arguments
 --  <name> | <name>=<value> | dump
 with Ada.Text_Io;
-with Hashed_List.Unique, Argument, Text_Handler, String_Mng, Sys_Calls;
+with Hashed_List.Unique, Argument, As.B, String_Mng, Sys_Calls;
 procedure T_Ul is
 
   -- A stored variable (name, value)
   -- Name is the "identifier"
-  subtype Name_Txt is Text_Handler.Text(80);
-  subtype Val_Txt is Text_Handler.Text(8024);
+  subtype Name_Txt is As.B.Asb_Bs(80);
+  subtype Val_Txt is As.B.Asb_Bs(8024);
   type Var_Rec is record
     Name : Name_Txt;
     Val : Val_Txt;
@@ -22,10 +22,10 @@ procedure T_Ul is
   end Set;
   function Image (Element : Var_Rec) return String is
   begin
-    return Element.Name.Value;
+    return Element.Name.Image;
   end Image;
   function "=" (Current : Var_Rec; Criteria : Var_Rec) return Boolean is
-    use type Text_Handler.Text;
+    use type As.B.Asb_Bs;
   begin
     return Current.Name = Criteria.Name;
   end "=";
@@ -55,7 +55,7 @@ procedure T_Ul is
 
   procedure Put (Var : in Var_Rec) is
   begin
-    Ada.Text_Io.Put (">" & Var.Name.Value & "<->" & Var.Val.Value & "<");
+    Ada.Text_Io.Put (">" & Var.Name.Image & "<->" & Var.Val.Image & "<");
   end Put;
   procedure Iteration (Current : Var_Rec; Go_On : in out Boolean) is
     pragma Unreferenced (Go_On);
@@ -106,7 +106,7 @@ begin
           Ada.Text_Io.New_Line;
         exception
           when My_Ul.Not_In_List =>
-            Ada.Text_Io.Put_Line ("Var >" & Var.Name.Value &  "< is not set.");
+            Ada.Text_Io.Put_Line ("Var >" & Var.Name.Image &  "< is not set.");
         end;
       end if;
     end if;

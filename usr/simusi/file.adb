@@ -1,12 +1,11 @@
-with As.U.Utils; use As.U, As.U.Utils;
-with Argument, Basic_Proc, Get_Line, Get_Float;
+with As.U.Utils, Argument, Basic_Proc, Get_Line, Get_Float;
 pragma Elaborate (Argument);
 with Arg_Parsing;
 package body File is
 
   package Cote_Get_Line is new Get_Line (Comment => "#");
 
-  Line : Asu_Ua.Unbounded_Array;
+  Line : As.U.Utils.Asu_Ua.Unbounded_Array;
 
   subtype Loc_Cote_Range is Natural range 0 .. Max_Cote;
   type Cote_Line_Array is array (Cote_Range) of Cote_Get_Line.Count;

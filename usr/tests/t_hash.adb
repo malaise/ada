@@ -1,9 +1,4 @@
-with Console;
-with Upper_Str;
-with Normal;
-with Hashing;
-with My_Io;
-with Text_Handler;
+with As.B, Console, Upper_Str, Normal, Hashing, My_Io;
 procedure T_Hash is
 
   subtype Data_Access is Positive;
@@ -13,9 +8,9 @@ procedure T_Hash is
   package My_Hash is new Hash.Hash_Mng (Data_Access, Dump);
   Ht : My_Hash.Hash_Table;
 
-  subtype Txt_P is Text_Handler.Text(500);
+  subtype Txt_P is As.B.Asb_Bs(500);
   Txt : Txt_P;
-  Input : String (1 .. Txt.Max_Len);
+  Input : String (1 .. Txt.Max);
   Len : Natural;
   I : Data_Access := 1;
 
@@ -23,7 +18,7 @@ procedure T_Hash is
 
   function Str (Txt : Txt_P) return String is
   begin
-    return Txt.Value(3 .. Txt.Length);
+    return Txt.Slice (3, Txt.Length);
   exception
     when others =>
       return "";
@@ -48,8 +43,8 @@ begin
     My_Io.Put ("Store <>, Zreset <>, Find <>, Remove <>, Dump <>, Clear all, EXIT ? ");
     My_Io.Get_Line (Input, Len);
     Txt.Set (Input(1 .. Len));
-    if Txt.Length >= 3 and then Txt.Value(2) = ' ' then
-      case Txt.Value(1) is
+    if Txt.Length >= 3 and then Txt.Element (2) = ' ' then
+      case Txt.Element (1) is
         when 'S' | 's' =>
           My_Hash.Store (Ht, Str(Txt), I);
           My_Io.Put_Line (Image(I) & " stored with key >" & Str(Txt) & "<.");
@@ -79,10 +74,10 @@ begin
         when others =>
           Console.Sound;
       end case;
-    elsif Upper_Str (Txt.Value) = "C" then
+    elsif Upper_Str (Txt.Image) = "C" then
       My_Hash.Clear_All (Ht);
       My_Io.Put_Line ("Storage cleared.");
-    elsif Upper_Str (Txt.Value) = "EXIT" then
+    elsif Upper_Str (Txt.Image) = "EXIT" then
       exit;
     else
       Console.Sound;

@@ -3,8 +3,7 @@
 -- Solve linear system and put solution
 
 with Ada.Text_Io;
-with As.U.Utils; use As.U, As.U.Utils;
-with Argument, Normal, Syslin, Flo_Io, Get_Line, Get_Float;
+with As.U.Utils, Argument, Normal, Syslin, Flo_Io, Get_Line, Get_Float;
 
 procedure T_Syslin is
 
@@ -27,7 +26,7 @@ begin
     package My_Get_Line is new Get_Line (Comment => "#");
 
     Whole_Line : My_Get_Line.Line_Txt;
-    Line : Asu_Ua.Unbounded_Array;
+    Line : As.U.Utils.Asu_Ua.Unbounded_Array;
 
     procedure Read_Next_Significant_Line is
     begin

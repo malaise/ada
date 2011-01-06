@@ -1,6 +1,5 @@
 with Ada.Calendar;
-with As.U; use As.U;
-with Basic_Proc, Command, Many_Strings, Date_Image, Mixed_Str, Trilean;
+with As.U, Basic_Proc, Command, Many_Strings, Date_Image, Mixed_Str, Trilean;
 with Variables, Tree, Ios, Matcher, Debug;
 package body Events is
 
@@ -53,7 +52,7 @@ package body Events is
   -- See if a variable must be set
   -- (IfUnset not set or Var not set)
   function Set_Var (Node : in Tree.Node_Rec) return Boolean is
-    Name : Asu_Us;
+    Name : As.U.Asu_Us;
   begin
     if not Trilean.Tri2Boo (Node.Ifunset) then
       -- Always set var here
@@ -73,7 +72,7 @@ package body Events is
     Next : Position_Access;
     Event : Ios.Event_Type;
     Disconnection : Boolean;
-    Variable : Asu_Us;
+    Variable : As.U.Asu_Us;
     use type Ios.Event_Kind_List;
   begin
     Put_Line ("Ready");
@@ -311,7 +310,7 @@ package body Events is
               Exit_Code : Command.Exit_Code_Range;
             begin
               Command.Execute (
-                Cmd => Many_Strings.Set (Asu_Us'(
+                Cmd => Many_Strings.Set (As.U.Asu_Us'(
                     Variables.Expand (Node.Text))),
                 Use_Sh => True,
                 Mix_Policy => Command.Only_Out,
@@ -352,7 +351,7 @@ package body Events is
                 Exit_Code : Command.Exit_Code_Range;
               begin
                 Command.Execute (
-                  Cmd => Many_Strings.Set (Asu_Us'(
+                  Cmd => Many_Strings.Set (As.U.Asu_Us'(
                       Variables.Expand (Node.Text))),
                   Use_Sh => True,
                   Mix_Policy => Command.Only_Out,

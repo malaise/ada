@@ -1,4 +1,4 @@
-with As.U.Utils; use As.U.Utils;
+with As.U.Utils;
 with Regular_Expressions, String_Mng.Regex, Any_Def, Int_Image, Trilean;
 with Variables, Debug, Error;
 package body Matcher is
@@ -9,15 +9,15 @@ package body Matcher is
   -- See if Str matches Node.Text: string comparison if not Node.Regex
   --  or Regular_Expressions.Exec)
   function Compute (Node : Tree.Node_Rec;
-                    Str : Asu_Us;
+                    Str : As.U.Asu_Us;
                     Check_Only : Boolean) return Boolean is
-    Expanding, Expanded, Result : Asu_Us;
+    Expanding, Expanded, Result : As.U.Asu_Us;
     Compiled : Regular_Expressions.Compiled_Pattern;
     Ok : Boolean;
     N_Matched : Natural;
     Match_Info : Regular_Expressions.Match_Array (1 .. 10);
     use type Regular_Expressions.Match_Cell, Any_Def.Any_Kind_List,
-             Tree.Node_Kind, Trilean.Trilean;
+             Tree.Node_Kind, Trilean.Trilean, As.U.Asu_Us;
   begin
     -- Case of the Eval/Set statement: One variable to assign
     if Node.Kind = Tree.Eval
@@ -99,13 +99,13 @@ package body Matcher is
       -- Set volatile variables to matching substring
       for I in Match_Info'Range  loop
         -- ${0} is first match ...
-        Expanding := Tus (Nat_Image (I - 1));
+        Expanding := As.U.Tus (Nat_Image (I - 1));
         if I <= N_Matched
         and then Regular_Expressions.Valid_Match (Match_Info(I)) then
           Expanded := Result.Uslice (Match_Info(I).First_Offset,
                                      Match_Info(I).Last_Offset_Stop);
         else
-          Expanded := Asu_Null;
+          Expanded := As.U.Asu_Null;
         end if;
         Variables.Set_Volatile (Expanding, Expanded);
         Debug.Log ("Volatile " & Expanding.Image & "=" & Expanded.Image);
@@ -134,7 +134,7 @@ package body Matcher is
 
   procedure Parse_Assign (Node : in out Tree.Node_Rec;
                           I : in Tree.Assignments_Range;
-                          Statement : in Asu_Us) is
+                          Statement : in As.U.Asu_Us) is
     Index : Natural;
   begin
 
@@ -157,7 +157,7 @@ package body Matcher is
     end if;
     -- Check the value expands properly
     declare
-      Expanded : Asu_Us;
+      Expanded : As.U.Asu_Us;
       pragma Unreferenced (Expanded);
     begin
       Expanded := Variables.Expand (Node.Assign(I).Value.Str, True);
@@ -183,13 +183,13 @@ package body Matcher is
   -- Compile and test regex with a Dummy text
   -- Compute Node.Assign properties from Assign string
   procedure Check (Node : in out Tree.Node_Rec;
-                   Assign : in Asu_Us) is
+                   Assign : in As.U.Asu_Us) is
     Dummy : Boolean;
     pragma Unreferenced (Dummy);
     use type Tree.Node_Kind;
   begin
     -- Check
-    Dummy := Compute (Node, Tus ("Dummy"), True);
+    Dummy := Compute (Node, As.U.Tus ("Dummy"), True);
 
     -- Case of the Eval/Set/Cond/Repeat statement: One variable to assign
     if Node.Kind = Tree.Eval
@@ -215,7 +215,7 @@ package body Matcher is
     -- Check and compute Assign
     declare
       -- Split into assignments
-      Statements : constant Asu_Ua.Unb_Array
+      Statements : constant As.U.Utils.Asu_Ua.Unb_Array
                  := String_Mng.Regex.Split_Sep (Assign.Image, "[\n\t ]+");
     begin
       Debug.Log ("Found " & Natural'Image (Statements.Length)
@@ -236,7 +236,7 @@ package body Matcher is
   -- See if Str matches Node.Text: string comparison if not Node.Regex
   --  or Regular_Expressions.Exec)
   function Match (Node : Tree.Node_Rec;
-                  Str : Asu_Us) return Boolean is
+                  Str : As.U.Asu_Us) return Boolean is
   begin
     return Compute (Node, Str, False);
   end Match;

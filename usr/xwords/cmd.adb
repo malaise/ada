@@ -1,12 +1,11 @@
 with Ada.Text_Io, Ada.Characters.Latin_1;
-with Environ, Many_Strings, String_Mng;
-with As.U; use As.U;
+with As.U, Environ, Many_Strings, String_Mng;
 package body Cmd is
 
   -- Path to Words
   Words_Path_Env_Name : constant String := "WORDS_PATH";
   Words_Path_Init : Boolean := False;
-  Words_Path : Asu_Us;
+  Words_Path : As.U.Asu_Us;
   -- Debug option
   Xwords_Debug_Name : constant String := "XWORDS_DEBUG";
   Debug : Boolean := False;
@@ -18,7 +17,7 @@ package body Cmd is
 
   -- Replace all LineFeeds by spaces
   procedure Normalize (List : in out Res_List) is
-    Line : Asu_Us;
+    Line : As.U.Asu_Us;
     Moved : Boolean;
   begin
     if List.Is_Empty then
@@ -28,7 +27,7 @@ package body Cmd is
     loop
       -- Replace for est Rec
       List.Read (Line, Res_Mng.Dyn_List.Current);
-      Line := Tus (String_Mng.Replace (
+      Line := As.U.Tus (String_Mng.Replace (
                 Line.Image, Ada.Characters.Latin_1.Lf & "", " "));
       List.Modify (Line, Moved => Moved);
       exit when not Moved;
@@ -45,11 +44,12 @@ package body Cmd is
                   Ok : out Boolean;
                   Res : in out Res_List) is
     Cmd : Many_Strings.Many_String;
+    use type As.U.Asu_Us;
   begin
     -- Init path to Words if first call and ENV set
     if not Words_Path_Init then
       if Environ.Is_Set (Words_Path_Env_Name) then
-        Words_Path := Tus (Environ.Getenv (Words_Path_Env_Name) & "/");
+        Words_Path := As.U.Tus (Environ.Getenv (Words_Path_Env_Name) & "/");
       end if;
       Debug := Environ.Is_Yes (Xwords_Debug_Name);
       Words_Path_Init := True;
@@ -69,7 +69,7 @@ package body Cmd is
       if Debug then
         Ada.Text_Io.Put_Line ("Execute error");
       end if;
-      Res.Insert (Tus ("Spawn error"));
+      Res.Insert (As.U.Tus ("Spawn error"));
       Ok := False;
       return;
     end if;
@@ -91,7 +91,7 @@ package body Cmd is
       if Debug then
         Ada.Text_Io.Put_Line ("Adding spwan error");
       end if;
-      Res.Insert (Tus ("Spawn error"));
+      Res.Insert (As.U.Tus ("Spawn error"));
     end if;
   end Exec;
 

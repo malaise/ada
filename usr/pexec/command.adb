@@ -1,5 +1,4 @@
-with As.U.Utils; use As.U, As.U.Utils;
-with Argument, Basic_Proc, Parser, String_Mng;
+with As.U.Utils, Argument, Basic_Proc, Parser, String_Mng;
 package body Command is
 
   -- Pexec options definitions
@@ -12,7 +11,7 @@ package body Command is
   Parsed : Boolean := False;
 
   -- Commands
-  Commands : Asu_Dyn_List_Mng.List_Type;
+  Commands : As.U.Utils.Asu_Dyn_List_Mng.List_Type;
 
   procedure Print_Usage is
   begin
@@ -43,7 +42,7 @@ package body Command is
     Pexec_Options : Boolean;
 
     -- String copy of Argument
-    Str : Asu_Us;
+    Str : As.U.Asu_Us;
 
     -- Local copies of out parameters
     La, Ld, Lc, Lf, Ll, Li, Ls : Boolean;
@@ -168,7 +167,7 @@ package body Command is
       end if;
 
       -- Concatenate all the command line in Str
-      Str := Asu_Null;
+      Str := As.U.Asu_Null;
       for I in First_Com .. Argument.Get_Nbre_Arg loop
         Str.Append (" " & Argument.Get_Parameter (Occurence => I));
       end loop;
@@ -186,13 +185,13 @@ package body Command is
     declare
       -- Parser iterator
       Iter : Parser.Iterator;
-      Tmp : Asu_Us;
+      Tmp : As.U.Asu_Us;
       Start, Stop : Natural;
     begin
       Iter.Set (Str.Image, Is_Sep'Access);
       loop
-        Tmp := Tus (Iter.Next_Word);
-        exit when Tmp = Asu_Null;
+        Tmp := As.U.Tus (Iter.Next_Word);
+        exit when Tmp.Is_Null;
           -- Skip leading and tailing spaces
           Start := String_Mng.Parse_Spaces (Tmp.Image, True);
           Stop  := String_Mng.Parse_Spaces (Tmp.Image, False);
@@ -226,7 +225,7 @@ package body Command is
   end Nbre_Commands;
 
   function Nth_Command (N : Positive) return String is
-    Command : Asu_Us;
+    Command : As.U.Asu_Us;
   begin
     if not Parsed then
       raise Not_Parsed;
@@ -236,7 +235,7 @@ package body Command is
     end if;
     -- Read the command
     Commands.Move_At (N);
-    Commands.Read (Command, Asu_Dyn_List_Mng.Current);
+    Commands.Read (Command, As.U.Utils.Asu_Dyn_List_Mng.Current);
     return Command.Image;
   end Nth_Command;
 

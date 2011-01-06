@@ -1,6 +1,5 @@
 with Ada.Exceptions;
-with As.U; use As.U;
-with Basic_Proc, Argument, Argument_Parser;
+with As.U, Basic_Proc, Argument, Argument_Parser;
 with Debug, Ios, Tree, Events;
 procedure Tcpchat is
   procedure Usage is
@@ -18,13 +17,13 @@ procedure Tcpchat is
 
   -- The keys and descriptor of parsed keys
   Keys : constant Argument_Parser.The_Keys_Type := (
-   01 => ('h', Tus ("help"), False, False),
-   02 => ('p', Tus ("port"), False, True),
-   03 => ('f', Tus ("file"), False, True));
+   01 => ('h', As.U.Tus ("help"), False, False),
+   02 => ('p', As.U.Tus ("port"), False, True),
+   03 => ('f', As.U.Tus ("file"), False, True));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
-  Port : Asu_Us;
-  File : Asu_Us;
+  Port : As.U.Asu_Us;
+  File : As.U.Asu_Us;
 
 begin
 
@@ -48,7 +47,7 @@ begin
     Error ("Missing ""port"" argument");
     return;
   end if;
-  Port := Tus (Arg_Dscr.Get_Option (2));
+  Port := As.U.Tus (Arg_Dscr.Get_Option (2));
 
   -- File
   if Arg_Dscr.Get_Nb_Occurences (3) /= 1
@@ -56,7 +55,7 @@ begin
     Error ("Missing ""file"" argument");
     return;
   end if;
-  File := Tus (Arg_Dscr.Get_Option (3));
+  File := As.U.Tus (Arg_Dscr.Get_Option (3));
 
   -- No other arg
   if Arg_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) /= 0

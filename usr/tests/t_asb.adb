@@ -1,16 +1,16 @@
 with Ada.Text_Io;
-with As.B; use As.B;
-with Int_Image;
+with As.B, Int_Image;
 procedure T_Asb is
 
   function Image is new Int_Image (Natural);
 
-  N1, N2 : Asb_Bs(128);
+  N1, N2 : As.B.Asb_Bs(128);
 
+  use type As.B.Asb_Bs;
 begin
 
   Ada.Text_Io.Put_Line ("Empty array:");
-  Set_Null (N1);
+  As.B.Set_Null (N1);
   Ada.Text_Io.Put_Line ("Length " & Image(N1.Length));
   Ada.Text_Io.Put_Line ("Image " & N1.Image);
   Ada.Text_Io.Put_Line ("Array of 3:");
@@ -41,7 +41,7 @@ begin
   N1.Append ("e");
   Ada.Text_Io.Put_Line ("Image " & N1.Image);
   Ada.Text_Io.Put_Line ("Same with reverse concat");
-  N2.Set (Tbs ("de"));
+  N2.Set (As.B.Tbs ("de"));
   N1.Set ("1u5abc" & N2);
   Ada.Text_Io.Put_Line ("Image " & N1.Image);
   Ada.Text_Io.Put_Line ("Same with prepend");
@@ -82,12 +82,12 @@ begin
 
   Ada.Text_Io.Put_Line ("Check Finalization");
   declare
-    N3 : Asb_Bs(1);
+    N3 : As.B.Asb_Bs(1);
   begin
-    N3 := Tbs ("B");
+    N3 := As.B.Tbs ("B");
     declare
-      N4 : constant Asb_Bs := Tbs ('C');
-      N5 : constant Asb_Bs := N3 & N4;
+      N4 : constant As.B.Asb_Bs := As.B.Tbs ('C');
+      N5 : constant As.B.Asb_Bs := N3 & N4;
     begin
      Ada.Text_Io.Put_Line ("Array of B, C");
      Ada.Text_Io.Put_Line ("Image " & N5.Image);

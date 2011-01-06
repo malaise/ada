@@ -1,5 +1,5 @@
 with Ada.Text_Io;
-with Text_Handler, Argument, Regex_Filters, Parser, Mixed_Str;
+with Argument, Regex_Filters, Parser, Mixed_Str;
 procedure T_Regex_Filters is
   procedure Usage is
   begin
@@ -10,8 +10,8 @@ procedure T_Regex_Filters is
   end Usage;
 
   Filter : Regex_Filters.Regex_Filter;
-  Str : String(1 .. Text_Handler.Max_Len_Range'Last);
-  Len : Text_Handler.Max_Len_Range;
+  Str : String(1 .. 32*1024);
+  Len : Natural;
   Iter : Parser.Iterator;
   Res : Boolean;
 begin

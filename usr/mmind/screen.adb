@@ -1,5 +1,4 @@
-with As.U; use As.U;
-with Normal, Generic_Con_Io;
+with As.U, Normal, Generic_Con_Io;
 package body Screen is
 
   -------------------------------
@@ -119,7 +118,7 @@ package body Screen is
     Colors : Generic_Con_Io.Colors_Definition := Generic_Con_Io.Default_Colors;
   begin
     -- Set Colors
-    Colors(Generic_Con_Io.Color09) := Tus ("Grey");
+    Colors(Generic_Con_Io.Color09) := As.U.Tus ("Grey");
     Generic_Con_Io.Set_Colors (Colors);
   end Init;
 

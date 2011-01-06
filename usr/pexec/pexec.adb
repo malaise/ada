@@ -3,9 +3,7 @@
 -- Syntax: pexec command [ { ;command } ]
 --  each command can contain spaces
 with Ada.Exceptions;
-with Directory;
-with As.U; use As.U;
-with Recurs, Sys_Calls, Basic_Proc;
+with As.U, Directory, Recurs, Sys_Calls, Basic_Proc;
 with Command;
 procedure Pexec is
 
@@ -17,7 +15,7 @@ procedure Pexec is
   No_Stop_On_Error : Boolean;
   Follow_Links : Boolean;
 
-  Initial_Dir : Asu_Us;
+  Initial_Dir : As.U.Asu_Us;
 
   -- Restore saved current dir
   procedure Restore is
@@ -58,7 +56,7 @@ begin
                  Leaves_Only, No_Stop_On_Error, Follow_Links);
 
   -- Save current dir, Recurs, restore current dir
-  Initial_Dir := Tus (Directory.Get_Current);
+  Initial_Dir := As.U.Tus (Directory.Get_Current);
   My_Recurs (Name_Of_Dir      => not No_Name_Of_Dir,
              In_Current       => not Not_In_Current,
              First_Level_Only => First_Level_Only,

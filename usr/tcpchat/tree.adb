@@ -29,9 +29,9 @@ package body Tree is
   function Get_Timeout (Xnode : Xml_Parser.Element_Type;
                         Default_Timeout : Integer;
                         Name : String := "TimeoutMs") return Integer is
-    Val : Asu_Us;
+    Val : As.U.Asu_Us;
   begin
-    Val := Tus (Get_Attribute (Xnode, Name));
+    Val := As.U.Tus (Get_Attribute (Xnode, Name));
     if Val.Image = "None" then
       return Infinite_Ms;
     else
@@ -48,7 +48,7 @@ package body Tree is
   -- Get IfUnset Trilean
   function Get_Ifunset (Xnode : Xml_Parser.Element_Type)
                        return Trilean.Trilean is
-    Txt : constant Asu_Us := Tus (Get_Attribute (Xnode, "IfUnset"));
+    Txt : constant As.U.Asu_Us := As.U.Tus (Get_Attribute (Xnode, "IfUnset"));
   begin
     if Txt.Image = "error" then
       return Trilean.Other;
@@ -74,7 +74,7 @@ package body Tree is
     Tnode : Xml_Parser.Text_Type;
     Attrs : constant Xml_Parser.Attributes_Array
           := Ctx.Get_Attributes (Xnode);
-    Assign : Asu_Us;
+    Assign : As.U.Asu_Us;
   begin
     -- Current node hosts the attributes
     if Command then
@@ -87,7 +87,7 @@ package body Tree is
     -- Get Text from child
     if Ctx.Get_Nb_Children (Text_Node) = 0 then
       -- No child => Empty text
-      Node.Text := Asu_Null;
+      Node.Text := As.U.Asu_Null;
     else
       -- Text child
       Tnode := Ctx.Get_Child (Text_Node, 1);
@@ -238,7 +238,7 @@ package body Tree is
       -- Chat is a Read. Get name, timeout and default timeout
       Node.Kind := Read;
       Next_Is_Script := True;
-      Node.Name := Tus (Get_Attribute (Xnode, "Name"));
+      Node.Name := As.U.Tus (Get_Attribute (Xnode, "Name"));
       if Node.Name.Is_Null then
         Error (Xnode, "Empty chat name");
       end if;
@@ -518,7 +518,7 @@ package body Tree is
   -------------------------------
   -- Parse file and build tree --
   -------------------------------
-  procedure Parse (File_Name : in Asu_Us) is
+  procedure Parse (File_Name : in As.U.Asu_Us) is
     Ok : Boolean;
     Xnode : Xml_Parser.Element_Type;
     Dummy : Boolean;

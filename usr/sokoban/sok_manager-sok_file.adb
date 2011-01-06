@@ -1,5 +1,5 @@
 with Ada.Direct_Io, Ada.Sequential_Io;
-with Text_Handler, Sys_Calls, Directory;
+with As.B, Sys_Calls, Directory;
 
 separate (Sok_Manager)
 -- Sokoban frames reading.
@@ -40,7 +40,7 @@ package body Sok_File is
 
   -- for setting frame file directory
   Sok_File_Dir_Env_Name : constant String := "SOKOBAN_DIR";
-  Sok_File_Dir : Text_Handler.Text(Directory.Max_Dir_Name_Len + 1);
+  Sok_File_Dir : As.B.Asb_Bs(Directory.Max_Dir_Name_Len + 1);
 
   -- for read frame
   Sok_File_Name : constant String := "SOKOBAN.DAT";
@@ -104,7 +104,7 @@ package body Sok_File is
     Sok_File : Sok_File_Mng.File_Type;
     File_Frame : File_Frame_Tab;
   begin
-    if Sok_File_Dir.Is_Empty then
+    if Sok_File_Dir.Is_Null then
       declare
         Env_Set   : Boolean;
         Env_Trunc : Boolean;
@@ -124,7 +124,7 @@ package body Sok_File is
 
     begin
       Sok_File_Mng.Open (Sok_File, Sok_File_Mng.In_File,
-        Sok_File_Dir.Value & Sok_File_Name);
+        Sok_File_Dir.Image & Sok_File_Name);
     exception
       when Sok_File_Mng.Name_Error =>
         raise Data_File_Not_Found;

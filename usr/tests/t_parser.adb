@@ -1,5 +1,4 @@
 with Ada.Text_Io;
-with As.U; use As.U;
 with Basic_Proc, Parser, Parser.All_In_One, Argument, Mixed_Str;
 procedure T_Parser is
 

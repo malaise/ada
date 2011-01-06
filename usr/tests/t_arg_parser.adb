@@ -1,6 +1,5 @@
 with Ada.Text_Io, Ada.Characters.Latin_1;
-with As.U; use As.U;
-with Argument, Argument_Parser, Environ, Basic_Proc, Int_Image, Sys_Calls,
+with As.U, Argument, Argument_Parser, Environ, Basic_Proc, Int_Image, Sys_Calls,
      Command, Many_Strings, Parser, Event_Mng;
 
 procedure T_Arg_Parser is
@@ -15,17 +14,17 @@ procedure T_Arg_Parser is
 
   -- The keys
   Keys : constant Argument_Parser.The_Keys_Type := (
-   (Key_Char => 'f', Key_String => Tus ("first"),
+   (Key_Char => 'f', Key_String => As.U.Tus ("first"),
     Key_Can_Multiple => False, Key_Can_Option => False),
-   (Key_Char => 's', Key_String => Tus ("second"),
+   (Key_Char => 's', Key_String => As.U.Tus ("second"),
     Key_Can_Multiple => False, Key_Can_Option => False),
-   (Key_Char => 't', Key_String => Tus ("third"),
+   (Key_Char => 't', Key_String => As.U.Tus ("third"),
     Key_Can_Multiple => False, Key_Can_Option => False),
-   (Key_Char => 'm', Key_String => Tus ("multi"),
+   (Key_Char => 'm', Key_String => As.U.Tus ("multi"),
     Key_Can_Multiple => True, Key_Can_Option => False),
-   (Key_Char => 'o', Key_String => Tus ("opt"),
+   (Key_Char => 'o', Key_String => As.U.Tus ("opt"),
     Key_Can_Multiple => False, Key_Can_Option => True),
-   (Key_Char => 'c', Key_String => Tus ("combine"),
+   (Key_Char => 'c', Key_String => As.U.Tus ("combine"),
     Key_Can_Multiple => True, Key_Can_Option => True) );
 
   No_Keys : constant Argument_Parser.The_Keys_Type (1 .. 0)

@@ -1,7 +1,7 @@
 with Sys_Calls, Text_Line;
 package body Analist is
 
-  Data_Base : Asu_Dyn_List_Mng.List_Type;
+  Data_Base : As.U.Utils.Asu_Dyn_List_Mng.List_Type;
 
   -- Init database from a dictionnary (file with one word per line)
   -- Reset it if already init
@@ -26,7 +26,7 @@ package body Analist is
         end if;
         -- Store word in Data_Base
         if Len < Max_Len then
-          Data_Base.Insert (Tus (Word(1 .. Len)));
+          Data_Base.Insert (As.U.Tus (Word(1 .. Len)));
         end if;
       end;
     end loop;
@@ -41,9 +41,10 @@ package body Analist is
   end Init;
 
   -- Add a word in the database if does not exist
-  procedure Add (Word : in Asu_Us) is
+  procedure Add (Word : in As.U.Asu_Us) is
     Moved : Boolean;
-    Uword : Asu_Us;
+    Uword : As.U.Asu_Us;
+    use type As.U.Asu_Us;
   begin
     -- Verify that word does not exist
     if not Data_Base.Is_Empty then
@@ -64,9 +65,10 @@ package body Analist is
   end Add;
 
   -- Delete a word from the database if it exists
-  procedure Del (Word : in Asu_Us) is
+  procedure Del (Word : in As.U.Asu_Us) is
     Moved : Boolean;
-    Uword : Asu_Us;
+    Uword : As.U.Asu_Us;
+    use type As.U.Asu_Us;
   begin
     -- Find the word if it exists
     if Data_Base.Is_Empty then
@@ -87,7 +89,7 @@ package body Analist is
 
   -- For sorting result
   -- Longer words first, then in alphabetical
-  function Less_Than (El1, El2 : Asu_Us) return Boolean is
+  function Less_Than (El1, El2 : As.U.Asu_Us) return Boolean is
     L1, L2 : Natural;
   begin
     L1 := El1.Length;
@@ -99,13 +101,13 @@ package body Analist is
       return L1 > L2;
     end if;
   end Less_Than;
-  procedure Sort is new Asu_Dyn_List_Mng.Sort (Less_Than);
+  procedure Sort is new As.U.Utils.Asu_Dyn_List_Mng.Sort (Less_Than);
 
   -- Search the anagrams of a given Length among Letters
-  procedure Try (Dlist : in out Asu_Dyn_List_Mng.List_Type;
+  procedure Try (Dlist : in out As.U.Utils.Asu_Dyn_List_Mng.List_Type;
                  Letters : in String) is
     Moved : Boolean;
-    Uword : Asu_Us;
+    Uword : As.U.Asu_Us;
     Word_Valid, Letter_Valid : Boolean;
     Used : array (1 .. Letters'Length) of Boolean;
   begin
@@ -157,15 +159,16 @@ package body Analist is
 
   -- List the anagrams of Letters in the database
   procedure List (Letters : in String;
-                  Anagrams : out Asu_Ua.Unb_Array) is
+                  Anagrams : out As.U.Utils.Asu_Ua.Unb_Array) is
 
     -- Dynamic list of words found
-    Dlist : Asu_Dyn_List_Mng.List_Type;
+    Dlist : As.U.Utils.Asu_Dyn_List_Mng.List_Type;
     -- Previous and current word
-    Prev, Curr : Asu_Us;
+    Prev, Curr : As.U.Asu_Us;
     Moved : Boolean;
+    use type As.U.Asu_Us;
   begin
-    Anagrams := Asu_Ua.Null_Unb_Array;
+    Anagrams := As.U.Utils.Asu_Ua.Null_Unb_Array;
     if Letters'Length > Max_Len then
       raise Too_Long;
     end if;

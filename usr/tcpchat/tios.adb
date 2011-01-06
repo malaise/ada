@@ -1,14 +1,13 @@
-with As.U; use As.U;
-with Basic_Proc;
+with As.U, Basic_Proc;
 with Ios;
 procedure Tios is
   Port : constant Positive := 50_000;
-  Txt : Asu_Us;
+  Txt : As.U.Asu_Us;
   Evt : Ios.Event_Type;
   Disco : Boolean;
   use type Ios.Event_Kind_List;
 begin
-  Txt := Tus (Port'Img);
+  Txt := As.U.Tus (Port'Img);
   Txt.Delete (1, 1);
   Basic_Proc.Put_Line_Output ("Initializing on port " & Txt.Image);
   Ios.Init (Txt);
@@ -44,7 +43,7 @@ begin
     end case;
   end loop;
 
-  Txt := Tus ("Toto");
+  Txt := As.U.Tus ("Toto");
   Basic_Proc.Put_Line_Output ("Sending """ & Txt.Image & """");
   Ios.Send (Txt, Disco);
   if Disco then

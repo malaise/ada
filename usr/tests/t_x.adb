@@ -1,6 +1,5 @@
 with Ada.Calendar;
-with X_Mng, Event_Mng, Timers, Argument, Text_Handler,
-     Null_Procedure, Language;
+with X_Mng, Event_Mng, Timers, Argument, As.B, Null_Procedure, Language;
 use X_Mng;
 procedure T_X is
 
@@ -27,7 +26,7 @@ procedure T_X is
   Char_Offset : X_Mng.Byte;
   Wchar : Wide_Character;
 
-  Txt : Text_Handler.Text(80);
+  Txt : As.B.Asb_Bs(80);
   subtype Row_Range is Natural range 10 .. 30;
   Row : Row_Range := Row_Range'First;
 
@@ -108,7 +107,7 @@ begin
         for I in 1 .. Kbd_Codes.Nbre loop
            Txt.Append (" " & X_Mng.Byte'Image(Kbd_Codes.Tab(I)));
         end loop;
-        Put (Txt.Value);
+        Put (Txt.Image);
         -- Ctrl C
         exit Main_Loop when Kbd_Codes.Nbre = 2
              and then Kbd_Codes.Tab(1) = 255 and then Kbd_Codes.Tab(2) = 27;

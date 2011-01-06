@@ -1,6 +1,5 @@
 with Ada.Text_Io;
-with As.U; use As.U;
-with Argument, Argument_Parser;
+with As.U, Argument, Argument_Parser;
 with Common, Screen, Text, Compute;
 procedure Nimmari is
   Debug : constant Boolean := False;
@@ -15,10 +14,10 @@ procedure Nimmari is
   Change_Game : Boolean;
 
   Keys : constant Argument_Parser.The_Keys_Type := (
-   01 => ('h', Tus ("help"), False, False),
-   02 => ('n', Tus ("nim"), False, False),
-   03 => ('m', Tus ("marienbad"), False, False),
-   04 => ('t', Tus ("text"), False, False));
+   01 => ('h', As.U.Tus ("help"), False, False),
+   02 => ('n', As.U.Tus ("nim"), False, False),
+   03 => ('m', As.U.Tus ("marienbad"), False, False),
+   04 => ('t', As.U.Tus ("text"), False, False));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
   procedure Usage is

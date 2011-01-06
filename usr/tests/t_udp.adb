@@ -1,13 +1,12 @@
 with Ada.Exceptions;
-with As.U; use As.U;
-with My_Io, Argument, Socket, Event_Mng;
+with As.U, My_Io, Argument, Socket, Event_Mng;
 
 procedure T_Udp is
 
   Arg_Error : exception;
   Server : Boolean;
-  Server_Name : Asu_Us;
-  Port_Name : Asu_Us;
+  Server_Name : As.U.Asu_Us;
+  Port_Name : As.U.Asu_Us;
 
   Soc : Socket.Socket_Dscr;
   Fd  : Event_Mng.File_Desc := 0;

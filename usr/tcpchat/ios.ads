@@ -1,8 +1,8 @@
-with As.U; use As.U;
+with As.U;
 package Ios is
 
   -- Init the accepting of connections on port (name or num)
-  procedure Init (Port : in Asu_Us);
+  procedure Init (Port : in As.U.Asu_Us);
   Init_Error : exception;
 
   -- Kind of event
@@ -15,7 +15,7 @@ package Ios is
   type Event_Type (Kind : Event_Kind_List := Got_Sentence) is record
     case Kind is
       when Got_Sentence =>
-        Sentence : Asu_Us;
+        Sentence : As.U.Asu_Us;
       when others =>
         null;
     end case;
@@ -33,7 +33,7 @@ package Ios is
   function Read (Timeout_Ms : in Integer) return Event_Type;
 
   -- Send a sentence. Disconnection if error
-  procedure Send (Text : in Asu_Us;
+  procedure Send (Text : in As.U.Asu_Us;
                   Disconnection : out Boolean);
 
   -- Close and re-open

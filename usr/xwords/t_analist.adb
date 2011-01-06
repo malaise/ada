@@ -1,9 +1,8 @@
-with As.U.Utils; use As.U, As.U.Utils;
-with Basic_Proc, Argument;
+with As.U.Utils, Basic_Proc, Argument;
 with Analist;
 procedure T_Analist is
 
-  Anagrams : Asu_Ua.Unb_Array;
+  Anagrams : As.U.Utils.Asu_Ua.Unb_Array;
 
 begin
   if Argument.Get_Nbre_Arg = 0 then

@@ -44,7 +44,7 @@ package body Variables is
   end Reset;
 
   -- Chek that a name is valid
-  procedure Check (Name : in Asu_Us) is
+  procedure Check (Name : in As.U.Asu_Us) is
   begin
     -- Must not be empty, start by '$', contain a '=' or be a number
     if Name.Is_Null
@@ -57,7 +57,7 @@ package body Variables is
   end Check;
 
   -- Set a variable
-  procedure Set (Name, Value : in Asu_Us) is
+  procedure Set (Name, Value : in As.U.Asu_Us) is
   begin
     Check (Name);
     Computer.Set (Name.Image, Value.Image,
@@ -68,7 +68,7 @@ package body Variables is
       raise Invalid_Name;
   end Set;
 
-  function Is_Set (Name : Asu_Us) return Boolean is
+  function Is_Set (Name : As.U.Asu_Us) return Boolean is
   begin
     Check (Name);
     return Computer.Is_Set (Name.Image);
@@ -79,7 +79,7 @@ package body Variables is
   end Is_Set;
 
   -- Set a volatile variable : Clean all volatile variables
-  procedure Set_Volatile (Name, Value : in Asu_Us) is
+  procedure Set_Volatile (Name, Value : in As.U.Asu_Us) is
   begin
     -- Must be a number
     if not Regular_Expressions.Match ("[0-9]+", Name.Image, True) then
@@ -101,21 +101,21 @@ package body Variables is
   end Clear_Volatiles;
 
   -- Expand the expression
-  function Expand (Text : Asu_Us;
+  function Expand (Text : As.U.Asu_Us;
                    Check_Only : Boolean := False) return String is
   begin
     return Expand (Text, Check_Only).Image;
   end Expand;
 
-  function Expand (Text : Asu_Us;
-                   Check_Only : Boolean := False) return Asu_Us is
+  function Expand (Text : As.U.Asu_Us;
+                   Check_Only : Boolean := False) return As.U.Asu_Us is
   begin
     if Check_Only then
       Computer.External_Resolver := Dummy'Access;
     else
       Computer.External_Resolver := Getenv'Access;
     end if;
-    return Tus (Computer.Eval (Text.Image));
+    return As.U.Tus (Computer.Eval (Text.Image));
   exception
     when others =>
       Error ("Cannot expand " & Text.Image);
@@ -123,12 +123,12 @@ package body Variables is
   end Expand;
 
   -- Compute a numeric expression
-  function Compute (Text : Asu_Us) return Asu_Us is
+  function Compute (Text : As.U.Asu_Us) return As.U.Asu_Us is
     I : Integer;
   begin
     Computer.External_Resolver := Getenv'Access;
     I := Computer.Compute (Text.Image);
-    return Tus (Image (I));
+    return As.U.Tus (Image (I));
   exception
     when others =>
       Error ("Cannot compute " & Text.Image);

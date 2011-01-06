@@ -1,9 +1,7 @@
 -- One argument : file name
 -- Tests get_line
 with Ada.Text_Io;
-with As.U; use As.U;
 with Argument, Get_Line, Normal;
-
 procedure T_Get_Line is
 
 begin

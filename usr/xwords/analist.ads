@@ -1,4 +1,4 @@
-with As.U.Utils; use As.U, As.U.Utils;
+with As.U.Utils;
 package Analist is
 
   -- The maximum length supported
@@ -11,14 +11,14 @@ package Analist is
   procedure Init (File_Name : in String);
 
   -- Add a word in the database if it does not exist
-  procedure Add (Word : in Asu_Us);
+  procedure Add (Word : in As.U.Asu_Us);
   -- Delete a word from the database if it exists
-  procedure Del (Word : in Asu_Us);
+  procedure Del (Word : in As.U.Asu_Us);
 
   -- List the anagrams of Letters in the database
   Too_Long : exception;
   procedure List (Letters : in String;
-                  Anagrams : out Asu_Ua.Unb_Array);
+                  Anagrams : out As.U.Utils.Asu_Ua.Unb_Array);
 
 end Analist;
 

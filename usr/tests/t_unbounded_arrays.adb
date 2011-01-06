@@ -1,6 +1,5 @@
 with Ada.Text_Io;
-with As.U; use As.U;
-with Unbounded_Arrays, Int_Image;
+with As.U, Unbounded_Arrays, Int_Image;
 procedure T_Unbounded_Arrays is
 
   type Nat_Array is array (Positive range <>) of Natural;
@@ -13,7 +12,7 @@ procedure T_Unbounded_Arrays is
   N1, N2 : Natua.Unbounded_Array;
 
   function Image (A : Nat_Array) return String is
-    Res : Asu_Us;
+    Res : As.U.Asu_Us;
   begin
     for I in A'Range loop
       Res.Append (Image (A(I)));

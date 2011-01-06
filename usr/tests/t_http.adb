@@ -1,4 +1,3 @@
-with As.U; use As.U;
 with Basic_Proc, Argument, Http, Mixed_Str, Int_Image, Event_Mng;
 procedure T_Http is
   function Code_Image is new Int_Image (Http.Server_Code_Range);

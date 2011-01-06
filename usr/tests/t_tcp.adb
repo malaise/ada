@@ -1,12 +1,11 @@
 with Ada.Exceptions;
-with As.U; use As.U;
-with My_Io, Argument, Socket, Event_Mng;
+with As.U, My_Io, Argument, Socket, Event_Mng;
 
 procedure T_Tcp is
 
   Arg_Error : exception;
   Server : Boolean;
-  Server_Name : Asu_Us;
+  Server_Name : As.U.Asu_Us;
 
   Soc, Accept_Soc : Socket.Socket_Dscr;
   Fd, Accept_Fd : Event_Mng.File_Desc := 0;

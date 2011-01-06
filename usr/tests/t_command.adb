@@ -1,5 +1,4 @@
-with As.U; use As.U;
-with Argument, Many_Strings, Basic_Proc, Command;
+with As.U, Argument, Many_Strings, Basic_Proc, Command;
 procedure T_Command is
 
   procedure Usage is
@@ -16,7 +15,7 @@ procedure T_Command is
   Stderr : aliased Command.Flow_Rec(Command.Str);
   Exit_Code : Command.Exit_Code_Range;
 
-  Str : Asu_Us;
+  Str : As.U.Asu_Us;
 begin
 
   -- Parse args

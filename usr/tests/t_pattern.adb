@@ -1,6 +1,5 @@
 with Ada.Text_Io;
-with As.U; use As.U;
-with Parser, Pattern, Lower_Str;
+with As.U, Parser, Pattern, Lower_Str;
 procedure T_Pattern is
 
   Done : Boolean := False;
@@ -12,7 +11,7 @@ procedure T_Pattern is
     Ru : Pattern.Rule_No;
     Pa : Pattern.Pattern_Id;
     Nb : Natural;
-    Tail : Asu_Us;
+    Tail : As.U.Asu_Us;
   end record;
   Last_Data : Cb_Data_Rec;
 
@@ -61,7 +60,7 @@ procedure T_Pattern is
     Last_Data.Ru := Ru;
     Last_Data.Pa := Pa;
     Last_Data.Nb := Nb;
-    Last_Data.Tail := Asu_Null;
+    Last_Data.Tail := As.U.Asu_Null;
     while Parser.Current_Word (It) /= "" loop
       Ada.Text_Io.Put (">" & Parser.Current_Word (It) & "<");
       if not Last_Data.Tail.Is_Null then

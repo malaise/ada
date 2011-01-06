@@ -1,5 +1,4 @@
-with As.U; use As.U;
-with Argument, My_Io, Upper_Char;
+with As.U, Argument, My_Io, Upper_Char;
 use  My_Io;
 procedure T_Arg is
 
@@ -9,8 +8,8 @@ procedure T_Arg is
   Occ : Natural;
 
   Max_Len_Arg : constant := 1024;
-  Key : Asu_Us;
-  Arg : Asu_Us;
+  Key : As.U.Asu_Us;
+  Arg : As.U.Asu_Us;
 
   Pos : Natural;
 
@@ -18,13 +17,13 @@ procedure T_Arg is
   Prog_Name : String (1 .. Max_Len_Arg);
   Len : Natural;
 
-  procedure Get_Txt (Txt : in out Asu_Us) is
+  procedure Get_Txt (Txt : in out As.U.Asu_Us) is
     Str : String (1 .. Max_Len_Arg);
     Len : Natural;
   begin
     Skip_Line;
     Get_Line (Str, Len);
-    Txt := Tus (Str(1..Len));
+    Txt := As.U.Tus (Str(1..Len));
   exception
     when others => raise Constraint_Error;
   end Get_Txt;
@@ -72,11 +71,11 @@ begin
           end;
         end loop;
       when 'Y' =>
-        Key := Tus (Argument.Any_Key);
+        Key := As.U.Tus (Argument.Any_Key);
       when 'N' =>
-        Key := Tus (Argument.Not_Key);
+        Key := As.U.Tus (Argument.Not_Key);
       when 'A' =>
-        Key := Tus (Argument.Any_Arg);
+        Key := As.U.Tus (Argument.Any_Arg);
       when others =>
         null;
     end case;

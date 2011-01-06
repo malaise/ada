@@ -1,8 +1,7 @@
-with As.U; use As.U;
-with Argument, Basic_Proc, File_Hash;
+with As.U, Argument, Basic_Proc, File_Hash;
 procedure T_File_Hash is
   List : File_Hash.List_Mng.List_Type;
-  Word : Asu_Us;
+  Word : As.U.Asu_Us;
   Found : Boolean;
 begin
 

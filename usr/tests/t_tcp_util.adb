@@ -1,14 +1,13 @@
 with Ada.Exceptions, Ada.Text_Io;
-with As.U; use As.U;
-with Argument, Lower_Str, Event_Mng, Socket, Tcp_Util;
+with As.U, Argument, Lower_Str, Event_Mng, Socket, Tcp_Util;
 procedure T_Tcp_Util is
   Arg_Error : exception;
 
   Protocol : constant Socket.Protocol_List := Socket.Tcp_Header;
   -- Protocol : constant Socket.Protocol_List := Socket.Tcp_Header_Afux;
   Server : Boolean;
-  Server_Name : Asu_Us;
-  Server_Port_Name : Asu_Us;
+  Server_Name : As.U.Asu_Us;
+  Server_Port_Name : As.U.Asu_Us;
   Server_Port_Num : Socket.Port_Num;
   Local_Port : Tcp_Util.Local_Port;
   Remote_Port : Tcp_Util.Remote_Port;

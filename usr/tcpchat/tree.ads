@@ -1,10 +1,9 @@
-with As.U; use As.U;
-with Trilean;
+with As.U, Trilean;
 with Trees, Event_Mng, Property_Def;
 package Tree is
 
   -- Parse file and build tree
-  procedure Parse (File_Name : in Asu_Us);
+  procedure Parse (File_Name : in As.U.Asu_Us);
   Parse_Error : exception;
 
   -- Kind of node
@@ -25,9 +24,9 @@ package Tree is
   type Node_Rec is record
     Kind : Node_Kind := Nop;
     -- For chat (kind Read)
-    Name : Asu_Us;
+    Name : As.U.Asu_Us;
     -- For Cond, read, send, call or eval
-    Text : Asu_Us;
+    Text : As.U.Asu_Us;
     -- For Selec, Read, Skip, Wait
     Timeout : Integer := Infinite_Ms;
     -- For chat, cond, read

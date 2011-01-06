@@ -1,9 +1,8 @@
 with Ada.Calendar;
-with As.U; use As.U;
-with My_Io, Int_Io, Directory, Sys_Calls, Argument, Day_Mng, Normal;
+with As.U, My_Io, Int_Io, Directory, Sys_Calls, Argument, Day_Mng, Normal;
 procedure T_Dir is
-  File_Name : Asu_Us;
-  Dir_Name : Asu_Us;
+  File_Name : As.U.Asu_Us;
+  Dir_Name : As.U.Asu_Us;
   Fstat : Sys_Calls.File_Stat_Rec;
   Max_Len : constant := 50;
   Pad : constant String(1 .. Max_Len) := (others => ' ');
@@ -91,7 +90,7 @@ begin
       end if;
       Dsc := Directory.Open (Dir_Name.Image);
       if Dir_Name.Image = "/" then
-        Dir_Name := Asu_Null;
+        Dir_Name := As.U.Asu_Null;
       end if;
       loop
         Directory.Next_Entry (Dsc, File_Name);
