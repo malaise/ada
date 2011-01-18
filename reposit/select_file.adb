@@ -34,7 +34,6 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
   File_Rec     : Dir_Mng.File_Entry_Rec;
   Valid        : Boolean;
   Pos_In_List  : Natural;
-  Is_A_Dir     : Boolean;
 
 
   -- Return width of Get field
@@ -89,9 +88,9 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
     Height : Afpx.Height_Range;
     Width  : Afpx.Width_Range;
   begin
-    Afpx.Get_Field_Size(File_Fld, Height, Width);
-    Afpx.Encode_Field(File_Fld, (0, 0),
-      String_Mng.Procuste(File_Name, Width));
+    Afpx.Get_Field_Size (File_Fld, Height, Width);
+    Afpx.Encode_Field (File_Fld, (0, 0),
+      String_Mng.Procuste (File_Name, Width));
   end Put_File;
 
   -- Encode in info field
@@ -105,13 +104,13 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
   procedure Scroll (Fld_No : in List_Scroll_Fld_Range) is
   begin
     case Fld_No is
-      when 07 => Afpx.Update_List(Afpx.Top);
-      when 08 => Afpx.Update_List(Afpx.Page_Up);
-      when 09 => Afpx.Update_List(Afpx.Up);
-      when Center_Fld => Afpx.Update_List(Afpx.Center);
-      when 11 => Afpx.Update_List(Afpx.Down);
-      when 12 => Afpx.Update_List(Afpx.Page_Down);
-      when 13 => Afpx.Update_List(Afpx.Bottom);
+      when 07 => Afpx.Update_List (Afpx.Top);
+      when 08 => Afpx.Update_List (Afpx.Page_Up);
+      when 09 => Afpx.Update_List (Afpx.Up);
+      when Center_Fld => Afpx.Update_List (Afpx.Center);
+      when 11 => Afpx.Update_List (Afpx.Down);
+      when 12 => Afpx.Update_List (Afpx.Page_Down);
+      when 13 => Afpx.Update_List (Afpx.Bottom);
     end case;
   end Scroll;
 
@@ -132,7 +131,7 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
     if not Get_Prot then
       Afpx.Set_Field_Protection (Get_Fld, True);
     end if;
-    Afpx.Set_Field_Colors(Get_Fld,
+    Afpx.Set_Field_Colors (Get_Fld,
          Background => Con_Io.Color_Of ("Black"));
     loop
       Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
@@ -153,7 +152,7 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
         when Afpx.Mouse_Button =>
           case Ptg_Result.Field_No is
             when List_Scroll_Fld_Range'First .. List_Scroll_Fld_Range'Last =>
-              Scroll(Ptg_Result.Field_No);
+              Scroll (Ptg_Result.Field_No);
             when Ok_Fld =>
               Res := True;
               exit;
@@ -187,7 +186,7 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
 
   procedure Error (Msg : in Error_List) is
   begin
-    Afpx.Bell(1);
+    Afpx.Bell (1);
     Afpx.Set_Field_Protection (Afpx.List_Field_No, True);
     Afpx.Set_Field_Activation (Center_Fld, False);
     Afpx.Set_Field_Activation (Reread_Fld, False);
@@ -203,7 +202,7 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
       null;
     end loop;
 
-    Afpx.Reset_Field(Info_Fld);
+    Afpx.Reset_Field (Info_Fld);
     Afpx.Set_Field_Activation (Cancel_Fld, True);
     Afpx.Set_Field_Activation (Reread_Fld, True);
     Afpx.Set_Field_Activation (Center_Fld, True);
@@ -237,7 +236,7 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
     Insert := False;
 
     -- Change dir
-    Directory.Change_Current(New_Dir);
+    Directory.Change_Current (New_Dir);
     -- Title
     if Directory.Get_Current = "/" then
       Put_File ("/*");
@@ -247,7 +246,7 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
 
     -- Set Afpx list
     -- Get list width
-    Afpx.Get_Field_Size(Afpx.List_Field_No, Height, Width);
+    Afpx.Get_Field_Size (Afpx.List_Field_No, Height, Width);
     -- Read dir and move to first
     Dir_List.Delete_List;
     Dir_Mng.List_Dir (Dir_List, ".");
@@ -298,7 +297,6 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
   end Match;
   procedure File_Search is new Dir_Mng.File_List_Mng.Search (Match);
 
-
   -- Reread current directory, try to restore current
   procedure Reread is
     Dir_Item : Dir_Mng.File_Entry_Rec;
@@ -318,6 +316,47 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
     end if;
 
   end Reread;
+
+  -- Get text from file get field and check it
+  procedure Handle_File_Text (Allow_Empty : in Boolean;
+                              Name : out As.U.Asu_Us;
+                              Ok : out Boolean) is
+  begin
+    Afpx.Decode_Field (Get_Fld, 0, Name);
+    Parse_Spaces (Get_Content, Ok);
+    if Ok and then not Allow_Empty and then Name.Is_Null then
+      Ok := False;
+    end if;
+    if not Ok then
+      Error (E_File_Name);
+      return;
+    end if;
+    begin
+      -- Value to return if not dir
+      if not Is_Dir (Name.Image) then
+        -- Valid file entered
+        return;
+      end if;
+      -- Change dir
+      Afpx.Clear_Field (Get_Fld);
+      Change_Dir (Name.Image);
+      Ok := False;
+    exception
+      when Directory.Name_Error =>
+        -- File not found
+        if For_Read then
+          -- Read non existing file
+          Ok := False;
+          Error (E_File_Not_Found);
+        else
+          -- Save on new file
+          return;
+        end if;
+      when others =>
+        Ok := False;
+        Error (E_Io_Error);
+    end;
+  end Handle_File_Text;
 
 begin
   Afpx.Use_Descriptor(Descriptor);
@@ -363,39 +402,12 @@ begin
       when Afpx.Keyboard =>
         case Ptg_Result.Keyboard_Key is
           when Afpx.Return_Key =>
-            Afpx.Decode_Field (Get_Fld, 0, Get_Content);
-            Parse_Spaces (Get_Content, Get_Ok);
-            Get_Ok := Get_Ok and then not Get_Content.Is_Null;
-            if not Get_Ok then
-              Error (E_File_Name);
-            else
-              -- Value to return if not dir
+            Handle_File_Text (False, Get_Content, Get_Ok);
+            if Get_Ok then
+              -- Valid file
               File_Rec.Name := Get_Content;
-              begin
-                Is_A_Dir := Is_Dir (Get_Content.Image);
-                if Is_A_Dir then
-                  -- Change dir
-                  Afpx.Clear_Field (Get_Fld);
-                  Change_Dir (Get_Content.Image);
-                else
-                  -- Valid file entered
-                  Valid := True;
-                  exit;
-                end if;
-              exception
-                when Directory.Name_Error =>
-                  -- File not found
-                  if For_Read then
-                    -- Read non existing file
-                    Error (E_File_Not_Found);
-                  else
-                    -- Save on new file
-                    Valid := True;
-                    exit;
-                  end if;
-                when others =>
-                  Error (E_Io_Error);
-              end;
+              Valid := True;
+              exit;
             end if;
           when Afpx.Escape_Key =>
             Valid := False;
@@ -407,13 +419,41 @@ begin
       when Afpx.Mouse_Button =>
         case Ptg_Result.Field_No is
           when List_Scroll_Fld_Range'First .. List_Scroll_Fld_Range'Last =>
-            Scroll(Ptg_Result.Field_No);
+            Scroll (Ptg_Result.Field_No);
 
-          -- Ok button or double click in list
-          when Ok_Fld | Afpx.List_Field_No =>
+          when Ok_Fld =>
+            -- Ok button
+            Handle_File_Text (True, Get_Content, Get_Ok);
+            if Get_Ok then
+              if not Get_Content.Is_Null then
+                -- Valid file
+                File_Rec.Name := Get_Content;
+                Valid := True;
+                exit;
+              end if;
+              Pos_In_List := Afpx.Line_List_Mng.Get_Position(Afpx.Line_List);
+              Dir_List.Move_At (Pos_In_List);
+              Dir_List.Read (File_Rec, Dir_Mng.File_List_Mng.Current);
+              begin
+                if Is_Dir (File_Rec.Name.Image) then
+                  Afpx.Clear_Field (Get_Fld);
+                  Change_Dir (File_Rec.Name.Image);
+                else
+                  -- File selected
+                  Valid := True;
+                  exit;
+                end if;
+              exception
+                when others =>
+                  Error (E_Io_Error);
+              end;
+            end if;
+
+          when Afpx.List_Field_No =>
+            -- Double click in list
             Pos_In_List := Afpx.Line_List_Mng.Get_Position(Afpx.Line_List);
-            Dir_List.Move_At(Pos_In_List);
-            Dir_List.Read(File_Rec, Dir_Mng.File_List_Mng.Current);
+            Dir_List.Move_At (Pos_In_List);
+            Dir_List.Read (File_Rec, Dir_Mng.File_List_Mng.Current);
             begin
               if Is_Dir (File_Rec.Name.Image) then
                 Afpx.Clear_Field (Get_Fld);
@@ -448,7 +488,7 @@ begin
   end loop;
 
   Dir_List.Delete_List;
-  Afpx.Line_List_Mng.Delete_List(Afpx.Line_List);
+  Afpx.Line_List_Mng.Delete_List (Afpx.Line_List);
   if Valid then
     return File_Rec.Name.Image;
   else

@@ -14,7 +14,7 @@ generic
 
 -- Handle the file selection screen
 -- Using the provided Afpx descriptor
--- Fills text input field with the provided Current_File (is not too long)
+-- Fills text input field with the provided Current_File (if not too long)
 -- Display title according to For_Read and the provided titles
 --  If titles are empty, display default title
 function Select_File (Descriptor   : Afpx.Descriptor_Range;
