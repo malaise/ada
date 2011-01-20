@@ -55,7 +55,7 @@ package body File is
       End_Reached := False;
       State := Reading;
     exception
-      when Ada.Text_Io.Name_Error =>
+      when My_Get_Line.Name_Error =>
         Chess_Io.Create (The_File, Chess_Io.Out_File, File_Name);
         State := Empty;
       when My_Get_Line.End_Error =>
