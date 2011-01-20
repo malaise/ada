@@ -96,7 +96,7 @@ package As.B is
 private
 
   type Asb_Bs (Max : Natural) is tagged record
-    Ref : String (1 .. Max);
+    Ref : String (1 .. Max) := (others => ' ');
     Last : Natural := 0;
   end record;
 
