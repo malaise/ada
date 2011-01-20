@@ -335,8 +335,13 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
   begin
     Afpx.Decode_Field (Get_Fld, 0, Name);
     Parse_Spaces (Get_Content, Ok);
-    if Ok and then not Allow_Empty and then Name.Is_Null then
-      Ok := False;
+    if Ok and then Name.Is_Null then
+      if Allow_Empty then
+        Name := As.U.Asu_Null;
+        return;
+      else
+        Ok := False;
+      end if;
     end if;
     if not Ok then
       Error (E_File_Name);
