@@ -1,0 +1,19 @@
+#!/bin/bash
+export FILE=code.adb
+export TMP=tmpfile
+export PASSWD=Melusine
+
+echo "Coding"
+echo "$PASSWD" | code -c $FILE $TMP.cod
+echo "Decoding"
+echo "$PASSWD" | code -d $TMP.cod $TMP.dec
+
+echo Comparing
+cmp -s $FILE $TMP.dec
+if [ $? -eq 0 ] ; then
+  echo "Test OK."
+  rm $TMP.cod $TMP.dec
+else
+  echo "Test s not OK. Please check the files."
+fi
+
