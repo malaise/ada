@@ -12,7 +12,7 @@ package body Menu1 is
     Width  : Afpx.Width_Range;
   begin
     Afpx.Get_Field_Size(17, Height, Width);
-    Afpx.Encode_Field(18, (0, 0), Normal(Points.P_Nb, Width));
+    Afpx.Encode_Field(17, (0, 0), Normal(Points.P_Nb, Width));
     if Points.P_Saved then
       Afpx.Clear_Field(19);
     else
