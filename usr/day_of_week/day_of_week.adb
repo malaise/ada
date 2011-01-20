@@ -65,7 +65,14 @@ begin
            & Normal (Year,  4, Gap => '0') );
   elsif Argument.Get_Nbre_Arg = 1 then
     -- Get date from arg 1
-    Txt.Set (Argument.Get_Parameter);
+    begin
+      Txt.Set (Argument.Get_Parameter);
+    exception
+      when As.B.Length_Error =>
+        -- Argument too long
+        Usage;
+        return;
+    end;
     if Txt.Length /= 10
     or else Txt.Element (3) /= '/'
     or else Txt.Element (6) /= '/' then
