@@ -29,7 +29,7 @@ begin
 
   loop
     -- Get (orig or new) file name
-    File.Set (My_Select_File (1, File.Image, Read));
+    File.Set (My_Select_File (1, File.Image, Read, True));
     exit when File.Is_Null;
     Ok := True;
 

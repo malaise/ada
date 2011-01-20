@@ -117,8 +117,11 @@ package body Menu1 is
       Kind : Directory.File_Kind_List;
       use Directory;
     begin
-      Tmp_File_Name := As.U.Tus (My_Select_File(2, File_Name_Txt.Image,
-                                               Load));
+      if not Load then
+        Tmp_File_Name := File_Name_Txt;
+      end if;
+      Tmp_File_Name := As.U.Tus (My_Select_File(2, Tmp_File_Name.Image,
+                                                Load, True));
       if Tmp_File_Name.Is_Null then
         -- Cancelled
        return;

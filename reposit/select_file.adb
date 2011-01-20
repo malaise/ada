@@ -2,7 +2,8 @@ with Ada.Characters.Latin_1;
 with As.U, Con_Io, Directory, Dir_Mng, String_Mng, Language;
 function Select_File (Descriptor   : Afpx.Descriptor_Range;
                       Current_File : String;
-                      For_Read     : Boolean) return String is
+                      For_Read     : Boolean;
+                      Try_Select   : Boolean) return String is
 
   Cursor_Field : Afpx.Field_Range;
   Cursor_Col   : Con_Io.Col_Range;
@@ -224,12 +225,13 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
     return Kind = Directory.Dir;
   end Is_Dir;
 
-  procedure Change_Dir (New_Dir : in String) is
+  procedure Change_Dir (New_Dir : in String; Try : in String) is
     Height : Afpx.Height_Range;
     Width  : Afpx.Width_Range;
     Dir_Item : Dir_Mng.File_Entry_Rec;
     Char : Character;
     Afpx_Item : Afpx.Line_Rec;
+    Selected : Natural := 0;
   begin
     -- Clear get field
     Cursor_Col := 0;
@@ -279,12 +281,21 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
               String_Mng.Procuste (
                   Dir_Item.Name.Image & ' ' & Char, Width) );
       Afpx.Line_List.Insert (Afpx_Item);
+      -- A file/dir name cannot be empty, so an empty try will never match
+      if Dir_Item.Name.Image = Try then
+        Selected := Afpx.Line_List.Get_Position;
+      end if;
       exit when not Dir_List.Check_Move;
       Dir_List.Move_To;
     end loop;
-    -- Move to beginning of Afpx list
-    Afpx.Line_List.Rewind;
-    Afpx.Update_List(Afpx.Top);
+
+    -- Move to Selected or beginning
+    if Selected /= 0 then
+      Afpx.Line_List.Move_At (Selected);
+    else
+      Afpx.Line_List.Rewind;
+    end if;
+    Afpx.Update_List(Afpx.Center);
 
   end Change_Dir;
 
@@ -302,11 +313,11 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
     Dir_Item : Dir_Mng.File_Entry_Rec;
     Found : Boolean;
   begin
-    -- Dave current entry
+    -- Save current entry
     Dir_List.Move_At (Afpx.Line_List.Get_Position);
     Dir_List.Read (Dir_Item, Dir_Mng.File_List_Mng.Current);
     -- Rebuild list
-    Change_Dir(".");
+    Change_Dir(".", "");
     -- Search position back and move Afpx to it
     File_Search (Dir_List, Found, Dir_Item,
                  From => Dir_Mng.File_List_Mng.Absolute);
@@ -339,7 +350,7 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
       end if;
       -- Change dir
       Afpx.Clear_Field (Get_Fld);
-      Change_Dir (Name.Image);
+      Change_Dir (Name.Image, "");
       Ok := False;
     exception
       when Directory.Name_Error =>
@@ -389,8 +400,12 @@ begin
   end if;
   Afpx.Encode_Field (Get_Fld, (0, 0), Get_Content);
 
-  -- File name
-  Change_Dir (".");
+  -- Build list
+  if Try_Select then
+    Change_Dir (".", Current_File);
+  else
+    Change_Dir (".", "");
+  end if;
 
   Cursor_Field := Get_Fld;
   Redisplay := False;
@@ -437,7 +452,7 @@ begin
               begin
                 if Is_Dir (File_Rec.Name.Image) then
                   Afpx.Clear_Field (Get_Fld);
-                  Change_Dir (File_Rec.Name.Image);
+                  Change_Dir (File_Rec.Name.Image, "");
                 else
                   -- File selected
                   Valid := True;
@@ -457,7 +472,7 @@ begin
             begin
               if Is_Dir (File_Rec.Name.Image) then
                 Afpx.Clear_Field (Get_Fld);
-                Change_Dir (File_Rec.Name.Image);
+                Change_Dir (File_Rec.Name.Image, "");
               else
                 -- File selected
                 Valid := True;

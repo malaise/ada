@@ -17,7 +17,11 @@ generic
 -- Fills text input field with the provided Current_File (if not too long)
 -- Display title according to For_Read and the provided titles
 --  If titles are empty, display default title
+-- Allows selection (in Get field) of non existing file if no For_Read
+-- Changes directory transparently
+-- Try or not to select Current_File if it is in list
 function Select_File (Descriptor   : Afpx.Descriptor_Range;
                       Current_File : String;
-                      For_Read     : Boolean) return String;
+                      For_Read     : Boolean;
+                      Try_Select   : Boolean) return String;
 

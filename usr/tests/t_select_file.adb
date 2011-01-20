@@ -13,7 +13,7 @@ begin
   Read := True;
 
   loop
-    File.Set (My_Select_File (10, File.Image, Read));
+    File.Set (My_Select_File (10, File.Image, Read, not Read));
     Ada.Text_Io.Put_Line (File.Image);
     exit when File.Is_Null;
     Read := not Read;

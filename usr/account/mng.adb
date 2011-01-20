@@ -349,7 +349,7 @@ package body Mng is
     else
       -- Let user select file
       Loading := True;
-      Loaded_Name.Set (Account_Select_File(2, "", True));
+      Loaded_Name.Set (Account_Select_File(2, "", True, False));
       Screen.Reset;
       Screen.Set_Sublist(False);
       Refresh_Screen(Bottom);
@@ -412,7 +412,7 @@ package body Mng is
       if Mode = Cancel then
         return;
       end if;
-      Tmp_Name.Set (Account_Select_File(2, "", False));
+      Tmp_Name.Set (Account_Select_File(2, "", False, False));
       Screen.Reset;
       Screen.Set_Sublist(False);
       Refresh_Screen(Center);
