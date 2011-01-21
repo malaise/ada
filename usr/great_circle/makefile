@@ -2,7 +2,7 @@ include $(HOME)/Makefiles/common.mk
 
 ADAVIEW := $(REPOSIT)
 AFPX := true
-EXES := t_gc
+EXES := gc
 
 CLIBS := x_mng cutil X11
 

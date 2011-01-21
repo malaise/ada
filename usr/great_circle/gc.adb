@@ -2,12 +2,12 @@ with Ada.Text_Io, Ada.Characters.Latin_1;
 with As.B, Argument, Basic_Proc, Con_Io, Afpx, String_Mng, Language;
 with Conv, Lat_Lon, String_Util, Great_Circle;
 
-procedure T_Gc is
+procedure Gc is
 
   procedure Usage is
   begin
     Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
-      & " add.mm.ss/oddd.mm.ss add.mm.ss/oddd.mm.ss");
+      & " [ add.mm.ss/oddd.mm.ss add.mm.ss/oddd.mm.ss ]");
     Ada.Text_Io.Put_Line (" where a is N or S and o is E or W.");
   end Usage;
 
@@ -214,5 +214,5 @@ begin
 
   end if;
 
-end T_Gc;
+end Gc;
 

@@ -40,11 +40,11 @@ while true ; do
   export heading=`readarg $L 3`
   export distance=`readarg $L 4`
   # Do test and save exit status
-  export result=`t_gc $from $to`
+  export result=`gc $from $to`
   export code=$?
   # Check exit status
   if [ $code -ne 0 ] ; then
-    echo "Error: t_gc exited with code $code"
+    echo "Error: gc exited with code $code"
     exit 1
   fi
   # Check that result is expected
