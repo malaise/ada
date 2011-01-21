@@ -325,7 +325,7 @@ package body Directory is
   function Make_Full_Path (Path : String) return String is
   begin
     if Path = "" then
-      return Normalize_Path (Get_Current);
+      return Normalize_Path (Get_Current & "/");
     elsif Path(Path'First) = '/' then
       -- Path is already absolute => Normalize
       return Normalize_Path (Path);
