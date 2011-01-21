@@ -508,10 +508,12 @@ package body Euristic is
 
   end Reduce;
 
-  procedure Search (Mattrix : in out Types.Mattrix_Rec; Nb_Iterations : out Positive) is
-    Done : Boolean;
+  procedure Search (Mattrix : in out Types.Mattrix_Rec;
+                    Nb_Iterations : out Positive;
+                    Done : out Boolean) is
     Transfer : Zero_Transfer_Tab (1 .. Mattrix.Dim, 1 .. Mattrix.Dim);
     Nb_Loop  : Positive := 1;
+    Max_Loop : constant Positive := Mattrix.Dim * Mattrix.Dim + 1;
   begin
     -- Init for search : one zero/row and / col
     Init_Search (Mattrix);
@@ -522,26 +524,30 @@ package body Euristic is
        end if;
        -- Try to search
        Euristic_Search (Mattrix, Done, Transfer);
-       exit when Done;
+       exit when Done or else Nb_Loop >= Max_Loop;
        -- Euristic failed : reduce
        Reduce (Mattrix, Transfer);
        Nb_Loop := Nb_Loop + 1;
     end loop;
     My_Io.New_Line;
-    -- Euristic success: set mattrix to 1 (affected) or 0 (not affected)
-    -- Affected if Transfer is squared
-    for Row in 1 .. Mattrix.Dim loop
-      for Col in 1 .. Mattrix.Dim loop
-        if Transfer(Row, Col) = Squared then
-          Mattrix.Notes(Row, Col) := 1;
-        else
-          Mattrix.Notes(Row, Col) := 0;
-        end if;
+    if Done then
+      -- Euristic success: set mattrix to 1 (affected) or 0 (not affected)
+      -- Affected if Transfer is squared
+      for Row in 1 .. Mattrix.Dim loop
+        for Col in 1 .. Mattrix.Dim loop
+          if Transfer(Row, Col) = Squared then
+            Mattrix.Notes(Row, Col) := 1;
+          else
+            Mattrix.Notes(Row, Col) := 0;
+          end if;
+        end loop;
       end loop;
-    end loop;
+    else
+      -- Euristic failure: set mattrix to 0
+      Mattrix.Notes := (others => (others => 0));
+    end if;
     Nb_Iterations := Nb_Loop;
   end Search;
-
 
 end Euristic;
 

@@ -25,88 +25,94 @@ begin
   declare
     Mattrix : constant Types.Mattrix_Rec_Access :=
       new Types.Mattrix_Rec'(File.Read (Argument.Get_Parameter));
+    Done : Boolean;
   begin
 
     Dim := Mattrix.Dim;
 
-    Euristic.Search (Mattrix.all, Nb_Iterations);
+    Euristic.Search (Mattrix.all, Nb_Iterations, Done);
 
-    My_Io.Put_Line ("Result:");
-    Sigma := 0.0;
-    Ideal_Note := 0.0;
-    for I in 1 .. Dim loop
-      if Types."=" (File.Get_Kind, Types.Regret) then
-        Loc_Ideal_Note := Float'Last;
-      else
-        Loc_Ideal_Note := Float'First;
-      end if;
-      for J in 1 .. Dim loop
+    if Done then
+      My_Io.Put_Line ("Result:");
+      Sigma := 0.0;
+      Ideal_Note := 0.0;
+      for I in 1 .. Dim loop
         if Types."=" (File.Get_Kind, Types.Regret) then
-          -- Lowest note of this row
-          if File.Get_Note(I, J) < Loc_Ideal_Note then
-            Loc_Ideal_Note := File.Get_Note(I, J);
-          end if;
+          Loc_Ideal_Note := Float'Last;
         else
-          -- Highest note of this row
-          if File.Get_Note(I, J) > Loc_Ideal_Note then
-            Loc_Ideal_Note := File.Get_Note(I, J);
+          Loc_Ideal_Note := Float'First;
+        end if;
+        for J in 1 .. Dim loop
+          if Types."=" (File.Get_Kind, Types.Regret) then
+            -- Lowest note of this row
+            if File.Get_Note(I, J) < Loc_Ideal_Note then
+              Loc_Ideal_Note := File.Get_Note(I, J);
+            end if;
+          else
+            -- Highest note of this row
+            if File.Get_Note(I, J) > Loc_Ideal_Note then
+              Loc_Ideal_Note := File.Get_Note(I, J);
+            end if;
           end if;
+          if Mattrix.Notes(I, J) = 1 then
+            -- Affectation found
+            Loc_J := J;
+          end if;
+        end loop;
+
+        -- Affectation
+        My_Io.Put ("row " & Normal(I, 3) & " column " & Normal(Loc_J, 3));
+        Loc_Note := File.Get_Note(I, Loc_J);
+        if Types."=" (File.Get_Kind, Types.Regret) then
+          My_Io.Put (" cost: ");
+        else
+          My_Io.Put (" note: ");
         end if;
-        if Mattrix.Notes(I, J) = 1 then
-          -- Affectation found
-          Loc_J := J;
+        My_Io.Put (Loc_Note, 3, 2, 0);
+        Sigma := Sigma + Loc_Note;
+
+        -- Ideal minimum cost
+        Ideal_Note := Ideal_Note + Loc_Ideal_Note;
+        My_Io.Put ("   Ideal: ");
+        My_Io.Put (Loc_Ideal_Note, 3, 2, 0);
+
+        -- Loss
+        if abs (Loc_Ideal_Note - Loc_Note) > File.Epsilon then
+          My_Io.Put (" Loss: ");
+          My_Io.Put (abs (Loc_Ideal_Note - Loc_Note), 3, 2, 0);
         end if;
+        My_Io.New_Line;
+
       end loop;
-
-      -- Affectation
-      My_Io.Put ("row " & Normal(I, 3) & " column " & Normal(Loc_J, 3));
-      Loc_Note := File.Get_Note(I, Loc_J);
-      if Types."=" (File.Get_Kind, Types.Regret) then
-        My_Io.Put (" cost: ");
-      else
-        My_Io.Put (" note: ");
-      end if;
-      My_Io.Put (Loc_Note, 3, 2, 0);
-      Sigma := Sigma + Loc_Note;
-
-      -- Ideal minimum cost
-      Ideal_Note := Ideal_Note + Loc_Ideal_Note;
-      My_Io.Put ("   Ideal: ");
-      My_Io.Put (Loc_Ideal_Note, 3, 2, 0);
-
-      -- Loss
-      if abs (Loc_Ideal_Note - Loc_Note) > File.Epsilon then
-        My_Io.Put (" Loss: ");
-        My_Io.Put (abs (Loc_Ideal_Note - Loc_Note), 3, 2, 0);
-      end if;
       My_Io.New_Line;
 
-    end loop;
-    My_Io.New_Line;
-
-    -- Total
-    if Types."=" (File.Get_Kind, Types.Regret) then
-      My_Io.Put ("Total cost: ");
-      My_Io.Put(Sigma, 6, 2, 0);
-      My_Io.Put ("  Ideal cost: ");
-      My_Io.Put(Ideal_Note, 6, 2, 0);
+      -- Total
+      if Types."=" (File.Get_Kind, Types.Regret) then
+        My_Io.Put ("Total cost: ");
+        My_Io.Put(Sigma, 6, 2, 0);
+        My_Io.Put ("  Ideal cost: ");
+        My_Io.Put(Ideal_Note, 6, 2, 0);
+      else
+        My_Io.Put ("Total note: ");
+        My_Io.Put(Sigma, 6, 2, 0);
+        My_Io.Put ("  Ideal note: ");
+        My_Io.Put(Ideal_Note, 6, 2, 0);
+      end if;
+      My_Io.Put ("  Total loss: ");
+      My_Io.Put (abs (Ideal_Note - Sigma), 6, 2, 0);
+      My_Io.New_Line;
     else
-      My_Io.Put ("Total note: ");
-      My_Io.Put(Sigma, 6, 2, 0);
-      My_Io.Put ("  Ideal note: ");
-      My_Io.Put(Ideal_Note, 6, 2, 0);
+      -- Not done
+      My_Io.Put_Line ("No solution found.");
     end if;
-    My_Io.Put ("  Total loss: ");
-    My_Io.Put (abs (Ideal_Note - Sigma), 6, 2, 0);
-    My_Io.New_Line;
-    My_Io.Put ("Iter: ");
-    if Positive'Image(Nb_Iterations)'Length - 1 >= Max_Iter_Digits then
-      My_Io.Put (Positive'Image(Nb_Iterations));
-    else
-      My_Io.Put (Normal (Nb_Iterations, Max_Iter_Digits));
-    end if;
-
   end Solve;
+
+  My_Io.Put ("Iter: ");
+  if Positive'Image(Nb_Iterations)'Length - 1 >= Max_Iter_Digits then
+    My_Io.Put (Positive'Image(Nb_Iterations));
+  else
+    My_Io.Put (Normal (Nb_Iterations, Max_Iter_Digits));
+  end if;
 
   Compute_Elapse:
   declare
