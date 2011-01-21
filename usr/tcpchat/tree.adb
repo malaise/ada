@@ -87,7 +87,7 @@ package body Tree is
     -- Get Text from child
     if Ctx.Get_Nb_Children (Text_Node) = 0 then
       -- No child => Empty text
-      Node.Text := As.U.Asu_Null;
+      Node.Text.Set_Null;
     else
       -- Text child
       Tnode := Ctx.Get_Child (Text_Node, 1);

@@ -97,7 +97,7 @@ package body Git_If is
     use type As.U.Asu_Us, Sys_Calls.File_Kind_List;
   begin
     Git_Dir := As.U.Tus (Environ.Getenv ("GIT_DIR"));
-    if Git_Dir /= As.U.Asu_Null then
+    if not Git_Dir.Is_Null then
       -- Get basename
       Git_Dir := As.U.Tus (Directory.Basename (Git_Dir.Image));
     else
@@ -106,7 +106,7 @@ package body Git_If is
 
     -- Look for ".git" in current then upper directories
     Root := As.U.Tus (Directory.Get_Current);
-    Path := As.U.Asu_Null;
+    Path.Set_Null;
     loop
       begin
         Kind := Kind_Of (Root.Image & "/" & Git_Dir.Image);

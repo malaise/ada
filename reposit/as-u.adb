@@ -100,6 +100,13 @@ package body As.U is
   -----------------------
   -- PUBLIC operations --
   -----------------------
+  procedure Set_Null (Target : in out Asu_Us) is
+  begin
+    -- Optim: avoid copying Asu_Null
+    Free (Target.Ref);
+    Target.Ref := Null_String'Access;
+    Target.Last := 0;
+  end Set_Null;
 
   function Is_Null (Source : Asu_Us) return Boolean is
   begin

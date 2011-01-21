@@ -17,7 +17,7 @@ package body Input_Buffer is
     end if;
     Buf.Acc.Notif := Notifier;
     Buf.Acc.Delim := As.U.Tus (Delimiter);
-    Buf.Acc.Text := As.U.Asu_Null;
+    Buf.Acc.Text.Set_Null;
     Buf.Acc.Susp := False;
   end Set;
 

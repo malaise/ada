@@ -205,14 +205,14 @@ package body Xml_Parser is
   begin
     Flow_Info.Is_File := True;
     Flow_Info.Kind := Xml_Flow;
-    Flow_Info.Name := As.U.Asu_Null;
+    Flow_Info.Name.Set_Null;
     Flow_Info.Line := 0;
     Flow_Info.Same_Line := False;
     Flow_Info.Encod := Utf8;
     Flow_Info.Nb_Bytes := 0;
     Flow_Info.Prev_Char_Was_Cr := False;
     Flow_Info.File := null;
-    Flow_Info.In_Str := As.U.Asu_Null;
+    Flow_Info.In_Str.Set_Null;
     Flow_Info.In_Stri := 0;
   end Reset;
 
@@ -286,7 +286,7 @@ package body Xml_Parser is
     Ctx.Magic := Get_Magic;
     -- In case of exception...
     Ctx.Status := Error;
-    Ctx.Flow.Err_Msg := As.U.Asu_Null;
+    Ctx.Flow.Err_Msg.Set_Null;
     Ok := False;
     -- Open file of Xml flow
     Ctx.Flow.Curr_Flow.Is_File := True;
@@ -355,11 +355,11 @@ package body Xml_Parser is
     -- Clean input flow
     Ctx.Flow.Nb_Got := 0;
     Ctx.Flow.Circ.Clear;
-    Ctx.Flow.Err_Msg := As.U.Asu_Null;
-    Ctx.Flow.Curr_Str := As.U.Asu_Null;
+    Ctx.Flow.Err_Msg.Set_Null;
+    Ctx.Flow.Curr_Str.Set_Null;
     Ctx.Flow.Recording := False;
     Ctx.Flow.Skip_Recording := No_Skip_Rec;
-    Ctx.Flow.Recorded := As.U.Asu_Null;
+    Ctx.Flow.Recorded.Set_Null;
     Ctx.Flow.Flows.Clear;
 
     -- Clear Current flow
@@ -376,7 +376,7 @@ package body Xml_Parser is
     Ctx.Cdata_Policy := Remove_Cdata_Markers;
     Ctx.Normalize := True;
     Ctx.Use_Dtd := True;
-    Ctx.Dtd_File := As.U.Asu_Null;
+    Ctx.Dtd_File.Set_Null;
     Ctx.Warnings := null;
     Ctx.Callback := null;
     Ctx.Level := 0;
@@ -392,11 +392,11 @@ package body Xml_Parser is
     end if;
     -- Clean Doctype info
     Ctx.Doctype.Line_No := 1;
-    Ctx.Doctype.Name    := As.U.Asu_Null;
+    Ctx.Doctype.Name.Set_Null;
     Ctx.Doctype.Public  := False;
-    Ctx.Doctype.Pub_Id  := As.U.Asu_Null;
-    Ctx.Doctype.File    := As.U.Asu_Null;
-    Ctx.Doctype.Int_Def := As.U.Asu_Null;
+    Ctx.Doctype.Pub_Id.Set_Null;
+    Ctx.Doctype.File.Set_Null;
+    Ctx.Doctype.Int_Def.Set_Null;
     -- Clean Standalone tag
     Ctx.Standalone := False;
     -- Clean IDs and unparsed entities
@@ -413,7 +413,7 @@ package body Xml_Parser is
                                 Dtd      : out Dtd_Type;
                                 Error    : out As.U.Asu_Us) is
   begin
-    Error := As.U.Asu_Null;
+    Error.Set_Null;
     Parse_Mng.Parse_Dtd (Ctx, Dtd);
     Clean (Ctx);
   exception
@@ -470,7 +470,7 @@ package body Xml_Parser is
     -- Clean Dtd
     Dtd.Set := False;
     Dtd.Xml_Found := False;
-    Dtd.Encoding := As.U.Asu_Null;
+    Dtd.Encoding.Set_Null;
     Dtd.In_Include := False;
     Info_Mng.Delete_List (Dtd.Info_List);
     Entity_List_Mng.Delete_List (Dtd.Entity_List);
@@ -499,7 +499,7 @@ package body Xml_Parser is
     Ctx.Magic := Get_Magic;
     -- In case of exception...
     Ctx.Status := Error;
-    Ctx.Flow.Err_Msg := As.U.Asu_Null;
+    Ctx.Flow.Err_Msg.Set_Null;
     Ok := False;
     -- Parse the prologue string
     Ctx.Flow.Curr_Flow.Is_File := False;
@@ -561,7 +561,7 @@ package body Xml_Parser is
     end case;
     -- In case of exception...
     Ctx.Status := Error;
-    Ctx.Flow.Err_Msg := As.U.Asu_Null;
+    Ctx.Flow.Err_Msg.Set_Null;
     Ok := False;
     -- Parse
     Parse_Mng.Parse_Elements (Ctx, Dtd);
@@ -610,7 +610,7 @@ package body Xml_Parser is
     end if;
     -- In case of exception...
     Ctx.Status := Error;
-    Ctx.Flow.Err_Msg := As.U.Asu_Null;
+    Ctx.Flow.Err_Msg.Set_Null;
     Ok := False;
     -- Check this context
     if not Ctx.Elements.Is_Empty then

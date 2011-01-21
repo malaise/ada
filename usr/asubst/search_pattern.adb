@@ -419,7 +419,7 @@ package body Search_Pattern is
       if Debug.Set then
         Sys_Calls.Put_Line_Error ("Search, parsed empty delimiter");
       end if;
-      Delimiter := As.U.Asu_Null;
+      Delimiter.Set_Null;
       return False;
     end if;
     if Debug.Set then

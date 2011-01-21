@@ -116,8 +116,8 @@ procedure Agite is
     exception
       when Git_If.No_Git =>
         -- This dir is not GIT
-        Root := As.U.Asu_Null;
-        Path := As.U.Asu_Null;
+        Root.Set_Null;
+        Path.Set_Null;
         -- List dir content the normal way
         List_Files (Path.Image, Files);
         Afpx.Resume;
@@ -174,7 +174,7 @@ procedure Agite is
         Directory.Change_Current (Directory.Get_Current);
     end;
     -- Success, reset root path for re-evaluation, save current dir
-    Root := As.U.Asu_Null;
+    Root.Set_Null;
     if Update_History then
       Config.Save_Curr_Dir (Directory.Get_Current);
     end if;
@@ -237,7 +237,7 @@ procedure Agite is
     Len : constant Positive := Afpx.Get_Field_Width (18);
     use type As.U.Asu_Us;
   begin
-    if Local_Host /= As.U.Asu_Null then
+    if not Local_Host.Is_Null then
       return Local_Host.Image;
     end if;
     Local_Host := As.U.Tus (Socket.Local_Host_Name);

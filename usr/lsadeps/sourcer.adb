@@ -109,7 +109,7 @@ package body Sourcer is
     -- Locate last '-' if any, save parent
     Minus := String_Mng.Locate (File, "-", Forward => False);
     if Minus = 0 then
-      Dscr.Parent := As.U.Asu_Null;
+      Dscr.Parent.Set_Null;
       Dscr.Unit := As.U.Tus (Directory.File_Prefix (File));
     else
       -- '-' indicates either a child unit or a subunit
@@ -121,7 +121,7 @@ package body Sourcer is
                & Directory.File_Prefix (File(Minus+1 .. File'Last));
     end if;
     Dscr.Unit := As.U.Tus (Mixed_Str (Dscr.Unit.Image));
-    Dscr.Witheds := As.U.Asu_Null;
+    Dscr.Witheds.Set_Null;
 
     if Debug.Is_Set then
       Basic_Proc.Put_Line_Output ("Parsing file " & Dscr.File.Image);
@@ -155,7 +155,7 @@ package body Sourcer is
           -- End of context clause of subunit
           -- Parsing of file name must have led to child body
           if Dscr.Kind /= Unit_Body
-          or else Dscr.Parent = As.U.Asu_Null then
+          or else Dscr.Parent.Is_Null then
             Error ("Unexpected separate in unit");
           end if;
           Dscr.Kind := Subunit;

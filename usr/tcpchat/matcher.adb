@@ -105,7 +105,7 @@ package body Matcher is
           Expanded := Result.Uslice (Match_Info(I).First_Offset,
                                      Match_Info(I).Last_Offset_Stop);
         else
-          Expanded := As.U.Asu_Null;
+          Expanded.Set_Null;
         end if;
         Variables.Set_Volatile (Expanding, Expanded);
         Debug.Log ("Volatile " & Expanding.Image & "=" & Expanded.Image);

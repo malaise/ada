@@ -336,7 +336,7 @@ package body Util is
   -- Start recording
   procedure Start_Recording (Flow : in out Flow_Type) is
   begin
-    Flow.Recorded := As.U.Asu_Null;
+    Flow.Recorded.Set_Null;
     Flow.Recording := True;
   end Start_Recording;
 
@@ -345,7 +345,7 @@ package body Util is
   begin
     Flow.Recording := False;
     Recorded := Flow.Recorded;
-    Flow.Recorded := As.U.Asu_Null;
+    Flow.Recorded.Set_Null;
   end Stop_Recording;
 
   -- Internal: Get one char on current flow - Raw
@@ -614,13 +614,13 @@ package body Util is
   begin
     Str := Flow.Curr_Str;
     if Reset then
-      Flow.Curr_Str := As.U.Asu_Null;
+      Flow.Curr_Str.Set_Null;
     end if;
   end Get_Curr_Str;
 
   procedure Reset_Curr_Str (Flow : in out Flow_Type) is
   begin
-    Flow.Curr_Str := As.U.Asu_Null;
+    Flow.Curr_Str.Set_Null;
   end Reset_Curr_Str;
 
   -- Replace all separators by spaces

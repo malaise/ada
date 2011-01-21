@@ -78,7 +78,7 @@ package body Menu1 is
           -- Error reading. Prev data is lost :-(
           Points.P_Clear;
           Set_Points_List;
-          File_Name_Txt := As.U.Asu_Null;
+          File_Name_Txt.Set_Null;
           Error(Screen.E_Io_Error);
       end;
     else
@@ -207,7 +207,7 @@ package body Menu1 is
   begin
     Afpx.Use_Descriptor(1);
     Screen.Init_For_Main1 (Cursor_Field);
-    File_Name_Txt := As.U.Asu_Null;
+    File_Name_Txt.Set_Null;
     Screen.Put_File ("");
 
     -- Get field width
@@ -314,7 +314,7 @@ package body Menu1 is
                   Points.P_Clear;
                   Set_Points_List;
                   -- Update file_name, nb of points and save_status
-                  File_Name_Txt := As.U.Asu_Null;
+                  File_Name_Txt.Set_Null;
                 end if;
                 Data_Changed := True;
                 Restore := Partial;

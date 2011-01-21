@@ -337,7 +337,7 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
     Parse_Spaces (Get_Content, Ok);
     if Ok and then Name.Is_Null then
       if Allow_Empty then
-        Name := As.U.Asu_Null;
+        Name.Set_Null;
         return;
       else
         Ok := False;
@@ -398,7 +398,7 @@ begin
 
   -- Encode current file name in get field
   if Current_File'Length > Get_Get_Width then
-    Get_Content := As.U.Asu_Null;
+    Get_Content.Set_Null;
   else
     Get_Content := As.U.Tus (
       String_Mng.Procuste (Current_File, Get_Get_Width));

@@ -172,7 +172,7 @@ procedure Comp_Vars is
       if Ctx.Get_Nb_Children (Var) = 0
       and then not Var_Is_Int then
         -- Empty string
-        Text := As.U.Asu_Null;
+        Text.Set_Null;
       elsif Ctx.Get_Nb_Children (Var) = 1 then
         Val := Ctx.Get_Child (Var, 1);
         Text := Ctx.Get_Text (Val);

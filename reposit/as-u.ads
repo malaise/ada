@@ -5,6 +5,7 @@ package As.U is
   type Asu_Us is tagged private;
 
   Asu_Null : constant Asu_Us;
+  procedure Set_Null (Target : in out Asu_Us);
   function Is_Null (Source : Asu_Us) return Boolean;
   function Length (Source : Asu_Us) return Natural;
 

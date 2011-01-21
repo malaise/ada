@@ -90,7 +90,7 @@ begin
       end if;
       Dsc := Directory.Open (Dir_Name.Image);
       if Dir_Name.Image = "/" then
-        Dir_Name := As.U.Asu_Null;
+        Dir_Name.Set_Null;
       end if;
       loop
         Directory.Next_Entry (Dsc, File_Name);

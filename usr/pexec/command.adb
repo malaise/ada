@@ -167,7 +167,7 @@ package body Command is
       end if;
 
       -- Concatenate all the command line in Str
-      Str := As.U.Asu_Null;
+      Str.Set_Null;
       for I in First_Com .. Argument.Get_Nbre_Arg loop
         Str.Append (" " & Argument.Get_Parameter (Occurence => I));
       end loop;

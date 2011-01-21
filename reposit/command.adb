@@ -89,7 +89,7 @@ package body Command is
   procedure Reset_Flow (Flow : in out Flow_Rec) is
   begin
     if Flow.Kind = Str then
-      Flow.Str := As.U.Asu_Null;
+      Flow.Str.Set_Null;
     else
       Flow.List.Delete_List;
     end if;

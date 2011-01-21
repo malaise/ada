@@ -5,7 +5,7 @@ package body Many_Strings is
   -- Clear
   procedure Reset (Str : in out Many_String) is
   begin
-    Str.Ustr := As.U.Asu_Null;
+    Str.Ustr.Set_Null;
   end Reset;
   function Empty return Many_String is
     Str : Many_String;

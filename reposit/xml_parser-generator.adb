@@ -62,10 +62,10 @@ package body Xml_Parser.Generator is
       Cell.Kind := Element;
       Cell.Nb_Attributes := 0;
       Cell.Name := Xml_Name;
-      Cell.Value := As.U.Asu_Null;
+      Cell.Value.Set_Null;
       Ctx.Prologue.Insert_Father (Cell);
       -- Init elements: an empty root element
-      Cell.Name := As.U.Asu_Null;
+      Cell.Name.Set_Null;
       Ctx.Elements.Insert_Father (Cell);
       Ctx.Status := Init;
     end if;
@@ -351,16 +351,16 @@ package body Xml_Parser.Generator is
     end loop;
     if Sep1 = 0 then
       -- All separators
-      Cell.Name := As.U.Asu_Null;
-      Cell.Value := As.U.Asu_Null;
+      Cell.Name.Set_Null;
+      Cell.Value.Set_Null;
     elsif Sep2 = 0 then
       -- No separator after first word
       Cell.Name := As.U.Tus (Pi (Sep1 .. Pi'Last));
-      Cell.Value := As.U.Asu_Null;
+      Cell.Value.Set_Null;
     elsif Sep3 = 0 then
       -- A target then only separators
       Cell.Name := As.U.Tus (Pi (Sep1 .. Sep2));
-      Cell.Value := As.U.Asu_Null;
+      Cell.Value.Set_Null;
     else
       -- A target then separators then ...
       Cell.Name := As.U.Tus (Pi(Sep1 .. Sep2));
@@ -431,12 +431,12 @@ package body Xml_Parser.Generator is
     Ctx.Prologue.Delete_Tree;
     -- Clear doctype
     Ctx.Doctype.Line_No := 0;
-    Ctx.Doctype.Name := As.U.Asu_Null;
+    Ctx.Doctype.Name.Set_Null;
     -- Init prologue: a xml node
     Cell.Kind := Element;
     Cell.Nb_Attributes := 0;
     Cell.Name := Xml_Name;
-    Cell.Value := As.U.Asu_Null;
+    Cell.Value.Set_Null;
     Ctx.Prologue.Insert_Father (Cell);
   end Clear_Prologue;
 
@@ -733,7 +733,7 @@ package body Xml_Parser.Generator is
     end if;
     -- Clean doctype info if node is the doctype (text of prologue)
     if Node.In_Prologue and then Node.Kind = Text then
-      Ctx.Doctype.Name := As.U.Asu_Null;
+      Ctx.Doctype.Name.Set_Null;
     end if;
     Tree.Delete_Tree;
     -- Father is an element
@@ -754,7 +754,7 @@ package body Xml_Parser.Generator is
     Move_To (Ctx, Element, Tree);
     -- Clean doctype info if node is the prologue
     if Element.In_Prologue and then not Tree.Has_Father then
-      Ctx.Doctype.Name := As.U.Asu_Null;
+      Ctx.Doctype.Name.Set_Null;
     end if;
     -- Delete all children
     Tree.Read (Cell);

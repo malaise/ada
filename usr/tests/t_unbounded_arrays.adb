@@ -31,6 +31,11 @@ procedure T_Unbounded_Arrays is
 begin
 
   Ada.Text_Io.Put_Line ("Empty array:");
+  N1.Set_Null;
+  if N1 /= N2 or else not N1.Is_Null or else not N2.Is_Null then
+    Ada.Text_Io.Put ("Init is not empty");
+    return;
+  end if;
   Ada.Text_Io.Put_Line ("Length " & Image(N1.Length));
   Ada.Text_Io.Put_Line ("Content " & Image(N1.To_Array));
   Ada.Text_Io.Put_Line ("Image " & Image(N1));

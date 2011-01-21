@@ -78,7 +78,7 @@ package body Get_Line is
   -- Reset Cur and parse leading spaces
   procedure Reset_Word is
   begin
-    Current_Line := As.U.Utils.Asu_Ua.Null_Unbounded_Array;
+    Current_Line.Set_Null;
     for I in 1 .. Buff.Length loop
       if Is_Separator (Buff.Element (I)) then
         null;

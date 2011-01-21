@@ -201,7 +201,7 @@ package body Ada_Parser is
         raise End_Error;
       end if;
       Lexic := Separator;
-      Text := As.U.Asu_Null;
+      Text.Set_Null;
       return;
     end if;
 

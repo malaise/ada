@@ -144,7 +144,7 @@ begin
       Argument.Get_Parameter (Name, 1, "f");
     exception
       when Argument.Argument_Not_Found =>
-        Name := As.U.Asu_Null;
+        Name.Set_Null;
     end;
   else
     begin
@@ -193,7 +193,7 @@ begin
       Argument.Get_Parameter (Init, 1, "i");
     exception
       when Argument.Argument_Not_Found =>
-        Init := As.U.Asu_Null;
+        Init.Set_Null;
     end;
   else
     begin

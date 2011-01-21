@@ -22,7 +22,7 @@ package body Num_Letters is
   Initialized : Boolean := False;
   procedure Init is
   begin
-    Txt := As.U.Asu_Null;
+    Txt.Set_Null;
     if Initialized then
       return;
     end if;

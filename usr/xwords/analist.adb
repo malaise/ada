@@ -168,7 +168,7 @@ package body Analist is
     Moved : Boolean;
     use type As.U.Asu_Us;
   begin
-    Anagrams := As.U.Utils.Asu_Ua.Null_Unb_Array;
+    Anagrams.Set_Null;
     if Letters'Length > Max_Len then
       raise Too_Long;
     end if;

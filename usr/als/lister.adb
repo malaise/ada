@@ -190,7 +190,7 @@ package body Lister is
           File_Name => Name, Recursive => False));
     exception
       when Directory.Name_Error | Directory.Access_Error =>
-        Ent.Link := As.U.Asu_Null;
+        Ent.Link.Set_Null;
         Ent.Link_Ok := False;
         Ent.Link_Kind := Directory.Unknown;
         Ent.Link_Rights := 0;
@@ -219,7 +219,7 @@ package body Lister is
         Ent.Link := Link_Target;
         Ent.Size := Stat.Size;
       else
-        Ent.Link := As.U.Asu_Null;
+        Ent.Link.Set_Null;
         Ent.Size := 0;
       end if;
     end if;
@@ -253,7 +253,7 @@ package body Lister is
     Ent.User_Id := Stat.User_Id;
     Ent.Group_Id := Stat.Group_Id;
     Ent.Size := Stat.Size;
-    Ent.Link := As.U.Asu_Null;
+    Ent.Link.Set_Null;
     if Ent.Kind = Directory.Link then
       Read_Link (File, Ent);
     end if;
@@ -347,7 +347,7 @@ package body Lister is
         Ent.User_Id := Stat.User_Id;
         Ent.Group_Id := Stat.Group_Id;
         Ent.Size := Stat.Size;
-        Ent.Link := As.U.Asu_Null;
+        Ent.Link.Set_Null;
         if Ent.Kind = Directory.Link then
           Read_Link (Directory.Build_File_Name (Dir, Ent.Name.Image, ""),
                      Ent);

@@ -13,7 +13,7 @@ package body Tree_Mng is
     use type As.U.Asu_Us;
   begin
     Index := 0;
-    Value := As.U.Asu_Null;
+    Value.Set_Null;
     Nb := In_Tree.Children_Number;
     if Nb = 0 then
       return;
@@ -93,7 +93,7 @@ package body Tree_Mng is
     Cell.Kind := Element;
     Cell.Nb_Attributes := 0;
     Cell.Name := Name;
-    Cell.Value := As.U.Asu_Null;
+    Cell.Value.Set_Null;
     if Elements.Is_Empty then
       -- Insert root
       Elements.Insert_Father (Cell);
@@ -200,8 +200,8 @@ package body Tree_Mng is
     Cell.Line_No := 1;
     Cell.Kind := Element;
     Cell.Nb_Attributes := 0;
-    Cell.Name := As.U.Asu_Null;
-    Cell.Value := As.U.Asu_Null;
+    Cell.Name.Set_Null;
+    Cell.Value.Set_Null;
       -- Insert root
     Prologue.Insert_Father (Cell);
   end Init_Prologue;
@@ -215,7 +215,7 @@ package body Tree_Mng is
     Cell.Kind := Element;
     Cell.Nb_Attributes := 0;
     Cell.Name := As.U.Tus ("xml");
-    Cell.Value := As.U.Asu_Null;
+    Cell.Value.Set_Null;
     -- Update root
     Prologue.Replace (Cell);
   end Set_Xml;
@@ -346,7 +346,7 @@ package body Tree_Mng is
     Cell.Kind := Xml_Parser.Text;
     Cell.Nb_Attributes := 0;
     Cell.Name := Text;
-    Cell.Value := As.U.Asu_Null;
+    Cell.Value.Set_Null;
     -- Insert as child of current and remain current
     Tree.Insert_Child (Cell, False);
   end Add_Text;
@@ -361,7 +361,7 @@ package body Tree_Mng is
     Cell.Kind := Xml_Parser.Comment;
     Cell.Nb_Attributes := 0;
     Cell.Name := Comment;
-    Cell.Value := As.U.Asu_Null;
+    Cell.Value.Set_Null;
     -- Insert child
     Tree.Insert_Child (Cell, False);
   end Add_Comment;

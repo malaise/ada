@@ -20,15 +20,15 @@ package body Dtd is
     -- No xml instruction found (yet)
     Adtd.Xml_Found := False;
     -- No encoding
-    Adtd.Encoding := As.U.Asu_Null;
+    Adtd.Encoding.Set_Null;
     -- Reset entities
     Entity_Mng.Initialise (Adtd.Entity_List);
     -- Reset info list
     Adtd.Info_List.Delete_List;
     -- Reset lists of attributes of type notation
-    Adtd.Notation_Attrs := As.U.Asu_Null;
+    Adtd.Notation_Attrs.Set_Null;
     -- Reset list of internal attlist and entity
-    Adtd.Internals := As.U.Asu_Null;
+    Adtd.Internals.Set_Null;
     -- Clean in iclude tag
     Adtd.In_Include := False;
   end Init;
@@ -220,7 +220,7 @@ package body Dtd is
         if Info.List.Image = "#PCDATA" then
           -- Possible '*' after ')', skip it
           Util.Try (Ctx.Flow, "*", Found);
-          Info.List := As.U.Asu_Null;
+          Info.List.Set_Null;
         elsif Info.List.Slice (1, 8) = "#PCDATA|" then
           -- Remove heading #PCDATA
           Info.List := As.U.Tus (
@@ -680,14 +680,14 @@ package body Dtd is
       else
         -- This is a reference to a parameter entity
         Parameter := False;
-        Parstr := As.U.Asu_Null;
+        Parstr.Set_Null;
         Util.Unget (Ctx.Flow, 2);
       end if;
     else
       -- This is a entity definition
       Util.Unget (Ctx.Flow);
       Parameter := False;
-      Parstr := As.U.Asu_Null;
+      Parstr.Set_Null;
     end if;
 
     -- Parse entity name
@@ -800,7 +800,7 @@ package body Dtd is
       Unparsed_Rec.Notation := Value;
       Ctx.Unparsed_List.Insert (Unparsed_Rec);
       -- Associated value will be empty
-      Value := As.U.Asu_Null;
+      Value.Set_Null;
     end if;
 
     -- Store entity
@@ -881,7 +881,7 @@ package body Dtd is
     -- When if is SYSTEM, the first field is the system Id
     if not Public then
       System_Id := Public_Id;
-      Public_Id := As.U.Asu_Null;
+      Public_Id.Set_Null;
     end if;
 
     -- Store notation
@@ -890,7 +890,7 @@ package body Dtd is
     Unparsed_Rec.Line_No := Util.Get_Line_No (Ctx.Flow);
     Unparsed_Rec.System_Id := System_Id;
     Unparsed_Rec.Public_Id := Public_Id;
-    Unparsed_Rec.Notation := As.U.Asu_Null;
+    Unparsed_Rec.Notation.Set_Null;
     Ctx.Unparsed_List.Insert (Unparsed_Rec);
     Trace ("Dtd parsed directive NOTATION -> " &  Name.Image);
   end Parse_Notation;
@@ -1335,7 +1335,7 @@ package body Dtd is
         -- Save name (skip "Elt#")
         Elt_Ref.Father := As.U.Tus (Info.Name.Slice (5, Info.Name.Length));
         Elt_Ref.Line := Info.Line;
-        Elt_Ref.Child := As.U.Asu_Null;
+        Elt_Ref.Child.Set_Null;
         -- Parse children names from list (skip first Char)
         In_Name := False;
         for I in 2 .. Info.List.Length loop
@@ -1348,7 +1348,7 @@ package body Dtd is
               -- End of name, completed
               -- Push this child
               Pool.Push (Elt_Ref);
-              Elt_Ref.Child := As.U.Asu_Null;
+              Elt_Ref.Child.Set_Null;
             end if;
             In_Name := False;
           else
@@ -1360,7 +1360,7 @@ package body Dtd is
 
       elsif Child_Kind = 'A' then
         -- This is a attlist, push an etry with empty Father
-        Elt_Ref.Father := As.U.Asu_Null;
+        Elt_Ref.Father.Set_Null;
         Elt_Ref.Line := Info.Line;
         Elt_Ref.Child := As.U.Tus (Info.Name.Slice (5, Info.Name.Length));
         Pool.Push (Elt_Ref);
@@ -1451,7 +1451,7 @@ package body Dtd is
       when 'E' =>
         Dtd_Empty := True;
         -- When Dtd_Empty and not Xml_Empty
-        Only := As.U.Asu_Null;
+        Only.Set_Null;
         -- Must be empty
         if not Children.Is_Empty then
           Util.Error (Ctx.Flow, "According to dtd, element " & Name.Image
@@ -2012,7 +2012,7 @@ package body Dtd is
     -- Read current element from tree and make its children lists
     Children.Is_Empty := True;
     Children.Has_Text := False;
-    Children.Children := As.U.Asu_Null;
+    Children.Children.Set_Null;
     if Ctx.Elements.Children_Number /= 0 then
       for I in 1 .. Ctx.Elements.Children_Number loop
         if I = 1 then

@@ -211,7 +211,7 @@ package body Substit is
     if Is_Stdin then
       In_Fd := Sys_Calls.Stdin;
       Out_Fd := Sys_Calls.Stdout;
-      Out_File_Name := As.U.Asu_Null;
+      Out_File_Name.Set_Null;
     else
       -- Check access rights (rw) of this file
       Check_File (File_Name, For_Write);

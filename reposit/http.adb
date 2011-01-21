@@ -283,7 +283,7 @@ package body Http is
     end loop;
     -- Set not blocking and hook receptions
     Soc.Set_Blocking (False);
-    Buffer := As.U.Asu_Null;
+    Buffer.Set_Null;
     My_Rece.Set_Callbacks (Soc,
                            Read_Cb'Unrestricted_Access,
                            Disconnection_Cb'Unrestricted_Access);

@@ -178,7 +178,7 @@ package body Io_Flow is
     use type Mcd_Fifos.Fifo_Id;
   begin
     if Io_Mode = Stdio_Not_Tty then
-      Input_Data := As.U.Asu_Null;
+      Input_Data.Set_Null;
       -- Get next non empty line from Stdin (not a tty)
       loop
         -- Get next line
@@ -197,7 +197,7 @@ package body Io_Flow is
     else
       -- Get next data on async stdin, socket or Fifo
       loop
-        Input_Data := As.U.Asu_Null;
+        Input_Data.Set_Null;
         if Debug.Debug_Level_Array(Debug.Flow) then
           Async_Stdin.Put_Line_Err ("Flow: Waiting on fifo/socket/tty");
         end if;
@@ -209,7 +209,7 @@ package body Io_Flow is
           exit;
         elsif Evt = Event_Mng.Signal_Event then
           -- Give up on signal
-          Input_Data := As.U.Asu_Null;
+          Input_Data.Set_Null;
           if Debug.Debug_Level_Array(Debug.Flow) then
             Async_Stdin.Put_Line_Err ("Flow: Got signal");
           end if;
@@ -419,7 +419,7 @@ package body Io_Flow is
     or else Message(Length) = Ada.Characters.Latin_1.Lf then
       -- Validate the overall string
       Input_Data := Tmp_Data;
-      Tmp_Data := As.U.Asu_Null;
+      Tmp_Data.Set_Null;
       -- Freeze fifo to prevent Input_Data to be overwritten
       Mcd_Fifos.Activate (Client_Id, False);
       if Debug.Debug_Level_Array(Debug.Flow) then
@@ -548,7 +548,7 @@ package body Io_Flow is
     or else Message(Length) = Ada.Characters.Latin_1.Lf then
       -- Validate the overall string
       Input_Data := Tmp_Data;
-      Tmp_Data := As.U.Asu_Null;
+      Tmp_Data.Set_Null;
       -- Freeze fifo to prevent Input_Data to be overwritten
       Activate_Socket (False);
       if Debug.Debug_Level_Array(Debug.Flow) then

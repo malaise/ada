@@ -261,7 +261,7 @@ package body Input_Dispatcher is
           Word := Next_Str_Word;
           exit when Word.Length /= 0;
           -- End of string
-          Str_Stdin := As.U.Asu_Null;
+          Str_Stdin.Set_Null;
         end if;
       end loop;
 

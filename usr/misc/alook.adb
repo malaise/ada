@@ -380,8 +380,8 @@ procedure Alook is
         Ada.Text_Io.Put_Line("--> " & Line.Image);
         Warnings := False;
       end if;
-      Line := As.U.Asu_Null;
-      Word := As.U.Asu_Null;
+      Line.Set_Null;
+      Word.Set_Null;
     end Check_Line;
 
   begin
@@ -414,8 +414,8 @@ procedure Alook is
     Line_No := 1;
     Prev_Tick := False;
     End_Of_File := False;
-    Line := As.U.Asu_Null;
-    Word := As.U.Asu_Null;
+    Line.Set_Null;
+    Word.Set_Null;
 
     -- Conversion loop:
     -- If upper_case and previous also upper_case, write lower_case
@@ -472,7 +472,7 @@ procedure Alook is
             Prev_Tick := False;
           end if;
           -- Not in word
-          Word := As.U.Asu_Null;
+          Word.Set_Null;
           -- Store tick if not in character literal
           if not Prev_Tick then
             Prev_Tick := Char = ''' and then Prev_Prev_Char /= ''';
@@ -500,7 +500,7 @@ procedure Alook is
         -- Entering comment
         In_Comment := True;
         Proceed := False;
-        Word := As.U.Asu_Null;
+        Word.Set_Null;
       end if;
 
       -- Check in string. Update Proceed
@@ -508,7 +508,7 @@ procedure Alook is
         if not In_String and then Prev_Char /= ''' then
           -- Entering string
           In_String := True;
-          Word := As.U.Asu_Null;
+          Word.Set_Null;
         elsif In_String then
           -- Leaving String
           In_String := False;
@@ -576,8 +576,8 @@ procedure Alook is
            & ", exception " & Ada.Exceptions.Exception_Name (Error)
            & ". Skipping.");
       Reading.Close;
-      Line := As.U.Asu_Null;
-      Word := As.U.Asu_Null;
+      Line.Set_Null;
+      Word.Set_Null;
       Exit_Code := Problem;
       return Modified;
   end Do_One;

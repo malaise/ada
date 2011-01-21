@@ -512,7 +512,7 @@ begin
   Keep_Cdata := False;
   Normalize := True;
   Use_Dtd := True;
-  Dtd_File := As.U.Asu_Null;
+  Dtd_File.Set_Null;
   Callback_Acc := null;
   -- Get options and check max of options
   -- Only one option, one more for each keep, one more if check_dtd,

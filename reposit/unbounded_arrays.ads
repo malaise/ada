@@ -16,12 +16,14 @@ package Unbounded_Arrays is
   type Unbounded_Array is tagged private;
   subtype Unb_Array is Unbounded_Array;
 
+  procedure Set_Null (Target : in out Unbounded_Array);
   Null_Unbounded_Array : constant Unbounded_Array;
   Null_Unb_Array : constant Unbounded_Array;
 
   Index_Error : exception;
 
   -- Length and element
+  function Is_Null (Source : Unbounded_Array) return Boolean;
   function Length (Source : Unbounded_Array) return Natural;
   function Element (Source : Unbounded_Array;
                     Index  : Positive) return Element_Type;

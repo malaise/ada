@@ -78,7 +78,7 @@ package body Output is
     Ustr := As.U.Tus (
       String_Mng.Regex.Replace (Prev_Tail.Image & Str, "\n{3,}",
       Line_Feed_Char & Line_Feed_Char));
-    Prev_Tail := As.U.Asu_Null;
+    Prev_Tail.Set_Null;
     if Ustr.Is_Null then
       -- Nothing to put
       return;
@@ -104,7 +104,7 @@ package body Output is
   procedure Flush is
   begin
     Text_Line.Put (Files.Out_File, Prev_Tail.Image);
-    Prev_Tail := As.U.Asu_Null;
+    Prev_Tail.Set_Null;
   end Flush;
 
   -- Put one line (after flow has been cut according to Line_Feeds)

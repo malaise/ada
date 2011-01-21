@@ -47,7 +47,7 @@ package body Files is
     exception
       when Sys_Calls.Access_Error =>
         -- Raised by File_Check or failure of Unlink
-        Body_File_Name := As.U.Asu_Null;
+        Body_File_Name.Set_Null;
         Close (Remove);
         raise Out_Error;
     end;
@@ -56,7 +56,7 @@ package body Files is
     begin
       Fd := Sys_Calls.Open (Body_File_Name.Image, Sys_Calls.In_File);
       Sys_Calls.Close (Fd);
-      Body_File_Name := As.U.Asu_Null;
+      Body_File_Name.Set_Null;
       Close (Remove);
       raise Out_Error;
     exception
@@ -70,7 +70,7 @@ package body Files is
       Fd := Sys_Calls.Create (Body_File_Name.Image);
     exception
       when Sys_Calls.Name_Error =>
-        Body_File_Name := As.U.Asu_Null;
+        Body_File_Name.Set_Null;
         Close (Remove);
         raise Out_Error;
     end;

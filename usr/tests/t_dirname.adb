@@ -29,6 +29,8 @@ begin
     & Directory.Normalize_Path ("/root/dir1/../dirok/./dir3/../toto.ads"));
   Ada.Text_Io.Put_Line ("Make_Full """": "
     & Directory.Make_Full_Path (""));
+  Ada.Text_Io.Put_Line ("Make_Full ""."": "
+    & Directory.Make_Full_Path ("."));
   Ada.Text_Io.Put_Line ("Make_Full dir1/../dirok/./dir3/../toto.ads: "
     & Directory.Make_Full_Path ("dir1/../dirok/./dir3/../toto.ads"));
 

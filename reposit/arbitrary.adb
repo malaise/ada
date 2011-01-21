@@ -387,7 +387,7 @@ package body Arbitrary is
       end if;
       -- Divide slices of lenght <= B'Length, so quotien is always
       --  one digit
-      Q := As.U.Asu_Null;
+      Q.Set_Null;
       N := Lb;
       T := A.Head(N);
       loop

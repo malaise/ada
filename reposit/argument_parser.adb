@@ -66,7 +66,7 @@ package body Argument_Parser is
   begin
     P_Dscr.Ok := False;
     A_Dscr.Index := 0;
-    A_Dscr.List := As.U.Asu_Null;
+    A_Dscr.List.Set_Null;
     A_Dscr.Option := As.U.Tus (No_Match);
     if Str'Length >= 1 and then Str(1) = '-' then
       if Str = "-" then
@@ -255,7 +255,7 @@ package body Argument_Parser is
         -- Parse this argument
         Parse_Arg (The_Keys, I, Dscr, Arg);
         if not Dscr.Ok then
-          if Dscr.Error /= As.U.Asu_Null then
+          if not Dscr.Error.Is_Null then
             -- Error detected
             return Dscr;
           end if;
@@ -263,7 +263,7 @@ package body Argument_Parser is
         end if;
       else
         Arg.Index := 0;
-        Arg.List := As.U.Asu_Null;
+        Arg.List.Set_Null;
       end if;
 
       -- Check this arg for Key_Can_Multiple, set terminator indexes
@@ -291,7 +291,7 @@ package body Argument_Parser is
           Dscr.First_Pos_After_Keys := I + 1;
           Is_Option := False;
         end if;
-      elsif Arg.List /= As.U.Asu_Null then
+      elsif not Arg.List.Is_Null then
         -- A valid group of Char keys, check each char
         for J in 1 .. Arg.List.Length loop
           -- Locate the corresponding key (existence has already been checked)
@@ -378,7 +378,7 @@ package body Argument_Parser is
     end if;
     Dscr.Ok := False;
     Dscr.The_Keys := null;
-    Dscr.Error := As.U.Asu_Null;
+    Dscr.Error.Set_Null;
   end Reset;
 
   -- Was parsing OK

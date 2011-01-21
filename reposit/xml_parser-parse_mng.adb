@@ -1134,7 +1134,7 @@ package body Parse_Mng  is
 
       -- Parse until '<' or End of flow
       --  save Text, and save Cdata in Tail
-      Tail := As.U.Asu_Null;
+      Tail.Set_Null;
       begin
         Util.Parse_Until_Char (Ctx.Flow, Util.Start & "");
         Util.Unget (Ctx.Flow);
@@ -1176,7 +1176,7 @@ package body Parse_Mng  is
           when Remove_Cdata_Markers =>
             null;
           when Remove_Cdata_Section =>
-            Cdata := As.U.Asu_Null;
+            Cdata.Set_Null;
         end case;
         if Text.Is_Null then
           -- No text: This is fixed (in Head), and we will re-loop reading
@@ -1246,7 +1246,7 @@ package body Parse_Mng  is
               when Remove_Cdata_Markers =>
                 null;
               when Remove_Cdata_Section =>
-                Cdata := As.U.Asu_Null;
+                Cdata.Set_Null;
             end case;
             -- Head takes the expanded text and the CDATA section
             Head := Head & As.U.Uslice (Text, 1, Start_Index - 1) & Cdata;
@@ -1271,7 +1271,7 @@ package body Parse_Mng  is
           -- Head takes the expanded text and the initial CDATA
           Head := Head & Text & Tail;
           -- Nothing more to expand => Need to read from flow
-          Text := As.U.Asu_Null;
+          Text.Set_Null;
         end if;
       end loop Cdata_In_Text;
 

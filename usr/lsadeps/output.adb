@@ -60,7 +60,7 @@ package body Output is
         -- Discard if we are body or subunit of parent
         if Is_Parent (Parent, Dscr.Dscr) then
           -- Don't display this entry
-          Name := As.U.Asu_Null;
+          Name.Set_Null;
         else
           -- Put unit name, body ancestor of the subunit
           if Dscr.Dscr.Kind = Sourcer.Subunit then

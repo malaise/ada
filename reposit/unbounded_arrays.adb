@@ -72,7 +72,20 @@ package body Unbounded_Arrays is
   -- PUBLIC operations --
   -----------------------
 
+  procedure Set_Null (Target : in out Unbounded_Array) is
+  begin
+   -- Optim: avoid copying Null_Unb_Array
+    Free (Target.Reference);
+    Target.Reference := Null_Array'Access;
+    Target.Last := 0;
+  end Set_Null;
+
   -- Length and element
+  function Is_Null (Source : Unbounded_Array) return Boolean is
+  begin
+    return Source = Null_Unbounded_Array;
+  end Is_Null;
+
   function Length (Source : Unbounded_Array) return Natural is
   begin
     return Source.Last;

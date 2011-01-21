@@ -60,7 +60,7 @@ procedure T_Pattern is
     Last_Data.Ru := Ru;
     Last_Data.Pa := Pa;
     Last_Data.Nb := Nb;
-    Last_Data.Tail := As.U.Asu_Null;
+    Last_Data.Tail.Set_Null;
     while Parser.Current_Word (It) /= "" loop
       Ada.Text_Io.Put (">" & Parser.Current_Word (It) & "<");
       if not Last_Data.Tail.Is_Null then

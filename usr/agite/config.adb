@@ -142,13 +142,13 @@ package body Config is
   begin
     Bookmark := Ctx.Get_Child (Bookmarks, Index);
     if Ctx.Get_Nb_Attributes (Bookmark) = 0 then
-      Result.Name := As.U.Asu_Null;
+      Result.Name.Set_Null;
     else
       Result.Name := Ctx.Get_Attribute (Bookmark, 1).Value;
     end if;
     if Ctx.Get_Nb_Children (Bookmark) /= 1 then
       -- No bookmark text: Separator
-      Result.Path := As.U.Asu_Null;
+      Result.Path.Set_Null;
     else
       -- Some bookmark text: full bookmark
       Result.Path := As.U.Asu_Us'(Ctx.Get_Text (Ctx.Get_Child (Bookmark, 1)));

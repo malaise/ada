@@ -271,7 +271,7 @@ package body Mcd_Parser is
         return (Kind => Mcd_Mng.Regi, Val_Regi => C);
       elsif C = '[' then
         -- Parse subprogram(s)
-        Txts := As.U.Asu_Null;
+        Txts.Set_Null;
         First_Word := True;
         Level := 1;
         while Level /= 0 loop
