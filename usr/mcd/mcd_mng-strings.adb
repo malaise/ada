@@ -88,7 +88,7 @@ package body Strings is
     end if;
     Res := S;
     Res.Val_Text.Replace (Positive (I.Val_Inte),
-                          Positive (I.Val_Inte) + S.Val_Text.Length,
+                          Positive (I.Val_Inte) + Pat.Val_Text.Length - 1,
                           Pat.Val_Text.Image);
     return Res;
   end Strrep;

@@ -1,7 +1,7 @@
 # if C <-> B, then A <-> x?
 
 # Function to handle error
-[ "expect 3 arguments a, b and c. Int or real." putl ssize popn retall ] E popr
+[ "Expect 3 arguments a, b and c, int or real (If a -> b then c -> result)." putl ssize popn retall ] E popr
 
 # Function to check and store an arg, pushes in estack if it is inte
 [ dup isinte copye [ toreal ] ifcall dup isreal ~ E pushr ifcall ] C popr

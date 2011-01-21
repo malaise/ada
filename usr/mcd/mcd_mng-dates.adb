@@ -51,6 +51,7 @@ package body Dates is
   end Clock;
 
   function Time_To_Date (Time : Item_Rec) return Item_Rec is
+    Neg : Boolean;
     Days : Perpet.Day_Range;
     Tmp_Inte : My_Math.Inte;
     Seconds : Ada.Calendar.Day_Duration;
@@ -65,19 +66,27 @@ package body Dates is
     Secs   : Day_Mng.T_Seconds;
     Millis : Day_Mng.T_Millisec;
   begin
-    if Time.Kind /= Inte or else Time.Val_Inte < 0 then
+    if Time.Kind /= Inte then
       raise Invalid_Argument;
     end if;
 
     -- Split Time in days and seconds
-    Days := Perpet.Day_Range (Time.Val_Inte / Millisecs_Per_Day);
-    Tmp_Inte := Time.Val_Inte rem Millisecs_Per_Day;
+    Neg := Time.Val_Inte < 0;
+    Days := Perpet.Day_Range (abs (Time.Val_Inte) / Millisecs_Per_Day);
+    Tmp_Inte := abs (Time.Val_Inte) rem Millisecs_Per_Day;
     Seconds := Ada.Calendar.Day_Duration(Tmp_Inte / 1000)
              + Ada.Calendar.Day_Duration(Tmp_Inte rem 1000) / 1000.0;
 
 
     -- Add time to ref_time
-    Cal_Time := Perpet."+" (Ref_Cal_Time, Days);
+    if not Neg then
+      Cal_Time := Perpet."+" (Ref_Cal_Time, Days);
+    elsif Seconds = 0.0 then
+      Cal_Time := Perpet."-" (Ref_Cal_Time, Days);
+    else
+      Cal_Time := Perpet."-" (Ref_Cal_Time, Days + 1);
+      Seconds := 24.0 * 3600.0 - Seconds;
+    end if;
 
     -- Split date and seconds
     Ada.Calendar.Split (Cal_Time, Year, Month, Day, Dur);
@@ -141,6 +150,7 @@ package body Dates is
   end Time_To_Days;
 
   function Date_To_Time (Date : Item_Rec) return Item_Rec is
+    Neg : Boolean;
     Year  : Ada.Calendar.Year_Number;
     Month : Ada.Calendar.Month_Number;
     Day   : Ada.Calendar.Day_Number;
@@ -180,7 +190,12 @@ package body Dates is
     Cal_Time := Ada.Calendar.Time_Of (Year, Month, Day);
 
     -- Compute delta days since reference
-    Delta_D := Perpet."-" (Cal_Time, Ref_Cal_Time);
+    Neg := Ada.Calendar."<" (Cal_Time, Ref_Cal_Time);
+    if not Neg then
+      Delta_D := Perpet."-" (Cal_Time, Ref_Cal_Time);
+    else
+      Delta_D := Perpet."-" (Ref_Cal_Time, Cal_Time);
+    end if;
 
     -- Convert to milliseconds
     Res_Time.Val_Inte := My_Math.Inte (Delta_D.Days);
@@ -189,7 +204,9 @@ package body Dates is
     Res_Time.Val_Inte :=   60 * Res_Time.Val_Inte + My_Math.Inte (Secs);
     Res_Time.Val_Inte := 1000 * Res_Time.Val_Inte + My_Math.Inte (Millis);
 
-
+    if Neg then
+    Res_Time.Val_Inte := - Res_Time.Val_Inte;
+    end if;
     return Res_Time;
   exception
     when Constraint_Error | Ada.Calendar.Time_Error =>

@@ -18,6 +18,7 @@ clock dateof d popr
 [
 # Reference date was a Thursday: 0 -> 3, 1 -> 2...
 3 + 7 %
+dup 0 < [ 7 + ] ifcall
 ] D popr
 
 # Replace TOS (date) by its week number
