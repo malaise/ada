@@ -9,7 +9,7 @@ procedure T_Unbounded_Arrays is
 
   use Natua;
 
-  N1, N2 : Natua.Unbounded_Array;
+  N1, N2, N3 : Natua.Unbounded_Array;
 
   function Image (A : Nat_Array) return String is
     Res : As.U.Asu_Us;
@@ -32,7 +32,11 @@ begin
 
   Ada.Text_Io.Put_Line ("Empty array:");
   N1.Set_Null;
-  if N1 /= N2 or else not N1.Is_Null or else not N2.Is_Null then
+  N3 := Natua.Null_Unb_Array;
+  if N1 /= N2 or else N1 /= N3
+  or else not N1.Is_Null or else not N2.Is_Null or else not N3.Is_Null
+  or else     N1 /= Natua.Null_Unb_Array or else N2 /= Natua.Null_Unb_Array
+  or else     N3 /= Natua.Null_Unb_Array then
     Ada.Text_Io.Put ("Init is not empty");
     return;
   end if;
