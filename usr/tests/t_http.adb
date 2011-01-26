@@ -5,7 +5,7 @@ procedure T_Http is
 begin
 
   if Argument.Get_Nbre_Arg /= 1 then
-    Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name & "<URL>");
+    Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name & " <URL>");
     Basic_Proc.Set_Error_Exit_Code;
     return;
   end if;
