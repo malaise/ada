@@ -11,7 +11,7 @@ procedure T_Round_At is
 
   Int_Float : Get_Float.Int_Float_Rec;
   R, Res : My_Math.Real;
-  I : Integer;
+  I, D : Integer;
 
 begin
 
@@ -35,14 +35,18 @@ begin
   end if;
   I := Int_Float.Int_Value;
 
+  -- Compute nb of digits before dot
+  D := Integer (My_Math.Trunc (My_Math.Log_10 (R))) + 1;
+  Ada.Text_Io.Put_Line ("Digits: " & D'Img);
+
   -- Round and put
   Res := Round_At (R, I);
   Ada.Text_Io.Put_Line ("Image -> " & Res'Img);
   Ada.Text_Io.Put ("Real_Io -> ");
-  if I > 0 then
-    My_Math.Real_Io.Put (Res, Fore => I);
+  if I >= 0 then
+    My_Math.Real_Io.Put (Res, Fore => 1, Aft => D);
   else
-    My_Math.Real_Io.Put (Res, Aft => -I);
+    My_Math.Real_Io.Put (Res, Fore => 1, Aft => D - I);
   end if;
   Ada.Text_Io.New_Line;
 
