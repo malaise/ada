@@ -404,15 +404,24 @@ package body String_Mng.Regex is
       -- First occurent in tail
       Cell := Locate (Str, Compiled, From_Index, 0, True, 1);
       if Cell /= Regular_Expressions.No_Match then
-        -- A match
-        if Cell.Last_Offset_Stop = Str'Last then
-          -- Str ends by a match, return previous slices (maybe none)
-          return Result;
-        else
-          -- Append this slice
-          Result.Append (As.U.Tus (Str(From_Index .. Cell.First_Offset - 1)));
-          -- Tail starts after this separator
+          -- A match
+        if Cell.Last_Offset_Start = Str'First then
+          -- Str starts by a match, insert Asu_Null
+          Result.Append (As.U.Asu_Null);
           From_Index := Cell.Last_Offset_Stop + 1;
+        else
+          -- A real match
+          if Cell.Last_Offset_Stop = Str'Last then
+            -- Str ends by a match, append this slice and Asu_Null and return
+            Result.Append (As.U.Tus (Str(From_Index .. Cell.First_Offset - 1)));
+            Result.Append (As.U.Asu_Null);
+            return Result;
+          else
+            -- Append this slice
+            Result.Append (As.U.Tus (Str(From_Index .. Cell.First_Offset - 1)));
+            -- Tail starts after this separator
+            From_Index := Cell.Last_Offset_Stop + 1;
+          end if;
         end if;
       elsif From_Index = Str'First then
         -- No match at all
@@ -423,7 +432,9 @@ package body String_Mng.Regex is
         Result.Append(As.U.Tus (Str(From_Index .. Str'Last)));
         return Result;
       end if;
+      exit when From_Index > Str'Last;
     end loop;
+    return Result;
   end Split_Sep;
 
 end String_Mng.Regex;

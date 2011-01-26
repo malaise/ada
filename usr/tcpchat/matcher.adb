@@ -137,7 +137,6 @@ package body Matcher is
                           Statement : in As.U.Asu_Us) is
     Index : Natural;
   begin
-
     Index := String_Mng.Locate (Statement.Image, "=");
     if Index <= 1 or else Index = Statement.Length then
       Error ("Invalid assignment " & Statement.Image);
@@ -185,6 +184,7 @@ package body Matcher is
   procedure Check (Node : in out Tree.Node_Rec;
                    Assign : in As.U.Asu_Us) is
     Dummy : Boolean;
+    Assign_Index : Positive;
     pragma Unreferenced (Dummy);
     use type Tree.Node_Kind;
   begin
@@ -225,8 +225,14 @@ package body Matcher is
         Parse_Assign (Node, 1, Assign);
       else
         -- Parse each assignment
+        Assign_Index := 1;
         for I in 1 .. Statements.Length loop
-          Parse_Assign (Node, I, Statements.Element(I));
+          if not Statements.Element(I).Is_Null then
+            -- Leading or trailing separator in assignments string
+            --  lead to empty elements, to be skipped
+            Parse_Assign (Node, Assign_Index, Statements.Element(I));
+            Assign_Index := Assign_Index + 1;
+          end if;
         end loop;
       end if;
     end;

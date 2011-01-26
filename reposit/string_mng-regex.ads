@@ -72,6 +72,8 @@ package String_Mng.Regex is
   --  separator.
   -- Returns the array of slices (Str at pos 1 if no match,
   --   empty slice if Str at all matches Separator).
+  -- Leading and trailing separators lead to leading and trailing empty strings
+  --  in the result.
   function Split_Sep (Str : String; Separator : String)
            return As.U.Utils.Asu_Ua.Unb_Array;
 end String_Mng.Regex;
