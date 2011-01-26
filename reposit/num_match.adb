@@ -24,7 +24,7 @@ package body Num_Match is
         if Index = 0 then
           Index := I;
         else
-          raise Constraint_Error;
+          raise Invalid_Criteria;
         end if;
       end if;
     end loop;
@@ -72,19 +72,19 @@ package body Num_Match is
           end if;
           if Parser.Prev_Separators (Iter) /= "" then
             -- Criteria starts with Sep(s)
-            raise Constraint_Error;
+            raise Invalid_Criteria;
           end if;
           First := False;
         elsif Cur_Spec /= "" then
           -- Not first word nor the end shall be separated by one Sep
           if Parser.Prev_Separators (Iter) /= Str_Spec_Sep then
             -- Not separated by Sep
-            raise Constraint_Error;
+            raise Invalid_Criteria;
           end if;
         else
           -- The end, last word shall not be followed by Seps(s)
           if Parser.Prev_Separators (Iter) /= "" then
-            raise Constraint_Error;
+            raise Invalid_Criteria;
           end if;
           exit All_Specs;
         end if;
@@ -93,7 +93,7 @@ package body Num_Match is
         Range_Index := Range_Sep_Index (Cur_Spec);
         Range_First := Natural_Type'First;
         Range_Last  := Natural_Type'Last;
-        -- Set the value(s) or raise Constraint_Error
+        -- Set the value(s) or raise Invalid_Criteria
         if Range_Index = 0 then
           -- No range
           Range_First := Natural_Type'Value(Cur_Spec);
@@ -131,6 +131,9 @@ package body Num_Match is
     -- Cleanup and Done
     Parser.Del (Iter);
     return Match;
+  exception
+    when others =>
+      raise Invalid_Criteria;
   end Matches;
 
 end Num_Match;
