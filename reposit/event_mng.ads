@@ -59,7 +59,7 @@ package Event_Mng is
 
   -- Activate signal handling (capability to catch SigTerm (and Sigint) and
   --  SigChild and report them
-  -- Automatically done when setting a signal callback
+  -- Automatically done when setting a signal callback or when calling Pause
   procedure Activate_Signal_Handling;
 
   -- Reset signal handling to default UNIX behaviour

@@ -430,6 +430,9 @@ package body Event_Mng is
   begin
     Set_Debug;
 
+    -- Pause is released by a Dummy signal
+    Activate_Signal_Handling;
+
     -- Increment global pause level and store ours
     Pause_Level := Pause_Level + 1;
     Loc_Level := Pause_Level;
