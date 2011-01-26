@@ -44,6 +44,9 @@ package String_Mng.Navigator is
                    Check  : Boolean := False)
            return Character;
 
+  -- Return the String (from 1 to Length) stored in the Navigator
+  function Image (Navig  : Navigator_Type) return String;
+
   -- Raised when Check is set and moving/look out of string
   Out_Of_Bounds : exception;
 

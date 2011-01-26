@@ -94,5 +94,11 @@ package body String_Mng.Navigator is
     end if;
   end Lookup;
 
+  -- Return the String (from 1 to Length) stored in the Navigator
+  function Image (Navig  : Navigator_Type) return String is
+  begin
+    return Navig.Str.Image;
+  end Image;
+
 end String_Mng.Navigator;
 
