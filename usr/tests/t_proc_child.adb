@@ -1,5 +1,5 @@
 with Ada.Exceptions;
-with Sys_Calls, Proc_Family, Event_Mng;
+with Sys_Calls, Proc_Family, Event_Mng, Trace;
 
 procedure T_Proc_Child is
 
@@ -14,13 +14,14 @@ procedure T_Proc_Child is
     Res : Natural;
     use type Sys_Calls.File_Desc;
   begin
+    Trace.Put ("Fd cb called", True);
     if Fd /= Fd_In then
-      Sys_Calls.Put_Line_Error ("Child: Fd Cb on invalid Fd");
+      Trace.Put ("Fd Cb on invalid Fd", True);
       return False;
     end if;
     Res := Sys_Calls.Read (Fd, Str'Address, Str'Length);
     if Res = 0 then
-      Sys_Calls.Put_Line_Error ("Child: Read 0");
+      Trace.Put ("Read 0", True);
       Event_Mng.Del_Fd_Callback (Fd_In, True);
       return False;
     end if;
@@ -28,17 +29,22 @@ procedure T_Proc_Child is
     delay 0.1;
 
     -- This is a write on the Fd to father
-    Sys_Calls.Put_Line_Output ("Child: Read >" & Str (1 .. Res) & "<");
+    Trace.Put ("Read >" & Str (1 .. Res) & "<", True);
+    Sys_Calls.Put_Output ("Child: Read >" & Str (1 .. Res) & "<");
 
     if First then
       -- Unlock the pause
+      Trace.Put ("Sending dummy signal", True);
       Event_Mng.Send_Dummy_Signal;
       First := False;
     end if;
+    Trace.Put ("End of Cb", True);
     return False;
   end Fd_Cb;
 
 begin
+  Trace.Activate (False);
+  Trace.Put ("Starting", True);
   begin
     Proc_Family.Child_Get_Fds (Fd_In, Fd_Out, Fd_Err);
   exception
@@ -47,6 +53,7 @@ begin
       return;
   end;
 
+  Trace.Put ("Adding fd Cb", True);
   Event_Mng.Add_Fd_Callback (Fd_In, True, Fd_Cb'Unrestricted_Access);
 
 
@@ -55,8 +62,10 @@ begin
                        & ", " &  Fd_Out'Img
                        & " and " & Fd_Err'Img;
   begin
+    Trace.Put ("Sending >" & Msg &  "<", True);
     Res := Sys_Calls.Write (Fd_Out, Msg'Address, Msg'Length);
     if Res /= Msg'Length then
+      Trace.Put ("Cannot send", True);
       Sys_Calls.Put_Line_Error ("Child: Cannot write "
                & Natural'Image(Msg'Length)
                & " on out fd");
@@ -64,13 +73,18 @@ begin
     end if;
   end;
 
+  Trace.Put ("Pausing", True);
   Event_Mng.Pause (Event_Mng.Infinite_Ms);
 
-  Event_Mng.Pause (60_000);
+  Trace.Put ("Pausing 10s", True);
+  Event_Mng.Pause (10_000);
+
+  Trace.Put ("Closing", True);
   Sys_Calls.Close (Fd_In);
   Sys_Calls.Put_Line_Error ("Child: Done.");
   Sys_Calls.Close (Fd_Out);
   Sys_Calls.Close (Fd_Err);
+  Trace.Put ("Done", True);
 
 exception
   when Error:others =>
