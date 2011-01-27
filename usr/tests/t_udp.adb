@@ -127,17 +127,14 @@ begin
 
   else
     Soc.Link_Dynamic;
-    -- Check host
-    declare
-      Dest_Host_Id : Socket.Host_Id;
-      pragma Unreferenced (Dest_Host_Id);
+    -- Check if it is a IPM/LAN first, because networks is unlikely resolved
+    --  by a DNS, so we get immediate result
     begin
-      Dest_Host_Id := Socket.Host_Id_Of (Server_Name.Image);
-      Soc.Set_Destination_Name_And_Service (False,
+      Soc.Set_Destination_Name_And_Service (True,
          Server_Name.Image, Port_Name.Image);
     exception
       when Socket.Soc_Name_Not_Found =>
-        Soc.Set_Destination_Name_And_Service (True,
+        Soc.Set_Destination_Name_And_Service (False,
            Server_Name.Image, Port_Name.Image);
     end;
     Message.Num := 1;
