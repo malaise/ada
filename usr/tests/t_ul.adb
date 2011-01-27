@@ -111,7 +111,6 @@ begin
       end if;
     end if;
   end loop;
-  Ada.Text_Io.New_Line;
 
 end T_Ul;
 
