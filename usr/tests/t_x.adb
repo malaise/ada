@@ -38,7 +38,7 @@ procedure T_X is
     else
       Row := Row_Range'First;
     end if;
-    X_Mng.X_Put_String (Id, "> " & Str & "                       ",
+    X_Mng.X_Put_String (Id, "> " & Str & "                 ",
                             Row, 8);
   end Put;
 
