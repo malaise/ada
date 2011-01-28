@@ -1,0 +1,67 @@
+#!/bin/bash
+# gnatmake, gnatstub and gnatls
+# Only "-noview" for gnatls is handled here
+#  other args are passed
+export GNATPATH=/usr/local/gnat/bin
+
+# Like makefiles
+export HOST=`uname -s`
+export LIB=lib_$HOST
+
+# Function to guess ADAVIEW if necessary and possible
+function guessview {
+  if [ -z "$ADAVIEW" ] ; then
+    if [ \( -f makefile \) -o \( -f Makefile \) ] ; then
+      export ADAVIEW=`make --no-print-directory echoadaview 2>/dev/null`
+      if [ $? -ne 0 ] ; then
+        export ADAVIEW=""
+      fi
+    fi
+  fi
+}
+
+# Function to make flags from ADAVIEW
+function mkflags {
+  if [ "$ADAVIEW" = "-" ] ; then
+    return
+  fi
+  for view in $ADAVIEW; do
+    GNATFLAGS=$GNATFLAGS" $1$view/$2"
+  done
+}
+
+# Default behaviour
+export COMMAND=`basename $0`
+guessview
+export GNATFLAGS=""
+mkflags -aI
+mkflags -aO $LIB
+
+# Modif from default
+if [ "$COMMAND" = "ada" ] ; then
+  # Specific mapping ada -> gcc
+  export COMMAND="gcc -c"
+  export GNATFLAGS="-gnat05"
+  mkflags -I
+elif [ "$COMMAND" = "gnatstub" ] ; then
+  # PATH and args for gnatstub
+  export PATH=$GNATPATH:$PATH
+  export ADAOPT="-gnaty2"
+  export ADAFLAGS=""
+  export GNATFLAGS="-gnat05"
+  mkflags -I
+elif [ "$COMMAND" = "gnatls" ] ; then
+  if [ "$1" = "-noview" ] ; then
+    export ADAVIEW=""
+    export GNATFLAGS=""
+    shift
+  else
+    guessview
+  fi
+  if [ -d $LIB ] ; then
+    export GNATFLAGS="-I$LIB $GNATFLAGS" 
+  fi
+fi
+
+exec $GNATPATH/$COMMAND $GNATFLAGS $ADAOPT $ADAFLAGS $*
+
