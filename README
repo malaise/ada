@@ -225,3 +225,9 @@ Xwords (2)
 ------
 A graphical lexicography of common words and nouns (french DB).
 
+5. cots directory
+-----------------
+This directory mainly contains copies of:
+- pragmarc and mine from http://pragmada.x10hosting.com/ (under GPL)
+- LinXtris from http://sourceforge.net/projects/linxtris (under GPL)
+
