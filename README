@@ -7,14 +7,19 @@ Some programs depend on PCRE (Perl Compatible Regular Expressions) and work
 with version 7.8 or above (8.11 is OK).
 Programs are rated from 1 (simple) to 3 (very complex), on subjective criteria.
 
-0. Bin directory
-----------------
-Some scripts that encapsulate some gnat commands and others that provide usefull
-tools. Untar bin.tgz in a directory where the PATH points to.
+0. Gnatmake (optional)
+-----------
+The script ada/gnatmake can be set in the PATH (you can copy it or make a link
+from $HOME/bin/gnatmake to it).
+Similarly, the commands "ada" and "gnatlink" can be in the path and be this
+gnatmake (you can copy it or make links from $HOME/bin/ada and
+$HOME/bin/gnatlink to it).
+Automatic generation by make (see next section) don't use them but these scripts
+are convenient.
 
-1. Makefiles directory
-----------------------
-This directory gathers several generic definitions for C and Ada generation.
+1. Makefiles project (MANDATORY)
+--------------------
+This project gathers several generic definitions for C and Ada generation.
 Several examples of usage can be found in the source directories.
 
 1.1 Relocation of the Makefiles directory
@@ -24,7 +29,7 @@ If the Makefiles installation directory is not $(HOME)/Makefiles,
 
 1.2 Relocation of C or Repository
 If the c or the repository directory are not in $(HOME)/ada, then the template
-path.mk must be modified.
+path.mk of Makefiles must be modified.
 
 1.3 Recursive make
 The content of the makefile for applying make to subdirecotries is:
