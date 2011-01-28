@@ -71,7 +71,7 @@ Many utility packages here. Some of them interdependant, the main dependency
 trees are:
 Graphic (X11) function: X_Mng <- (Genric_)Con_Io <- Afpx and Curve
 Communication, Timers: Socket, Timers and Event_Mng <- Tcp_Util <- Channels 
-See REPOSIT_LIST.txt for the list of packages.
+See reposit/REPOSIT_LIST for the list of packages.
 
 4. Usr directories
 ------------------
