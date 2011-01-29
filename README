@@ -67,14 +67,25 @@ Regular_Expressions Ada package.
 
 3. Reposit directory
 --------------------
-Many utility packages here. Some of them interdependant, the main dependency
-trees are:
-Graphic (X11) function: X_Mng <- (Genric_)Con_Io <- Afpx and Curve
-Communication, Timers: Socket, Timers and Event_Mng <- Tcp_Util <- Channels 
+Many utility packages here.
+Some of them are interdependant, the main dependency trees are:
+- Graphic (X11) function: X_Mng <- (Genric_)Con_Io <- Afpx and Curve
+- Communication, Timers: Socket, Timers and Event_Mng <- Tcp_Util <- Channels 
+The most complex is definitively the Xml_Parser.
 See reposit/REPOSIT_LIST for the list of packages.
 
 4. Usr directories
 ------------------
+Each ot them hosts a standalone project except tests (test programs of
+repository packages) and tasks (simple task examples).
+
+They all depend on C and Reposit and are independant from the others
+(except Mcd&Pipe -> Fifos -> Dictio).
+
+The more usefull are Agite, Alook, Astub, Asubst, Lsadeps, Mcd, Udp_Spy
+and Xml_Checker.
+
+Here is the full list and description:
 
 Account (3)
 -------
@@ -88,7 +99,7 @@ GUI for Git, dir oriented.
 Als (3)
 ---
 Lists, more or less the "ls" way, files and directories. Allow selection by
-date and type, merge of all outputs, and sorting.
+date, type, regexp. Allows merging of all outputs and sorting.
 
 Approx (3)
 ------
