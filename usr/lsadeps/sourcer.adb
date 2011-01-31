@@ -54,12 +54,13 @@ package body Sourcer is
   -- Get next significant word (reserved or identifier or delimiter)
   -- (skips comments, separators, literals)
   procedure Next_Word (Txt : in Text_Char.File_Type;
+                       Ctx : in out Ada_Parser.Parsing_Context;
                        Word : out As.U.Asu_Us;
                        Lexic : out Ada_Parser.Lexical_Kind_List) is
     use type Ada_Parser.Lexical_Kind_List;
   begin
     loop
-      Ada_Parser.Parse_Next (Txt, Word, Lexic, Raise_End => True);
+      Ada_Parser.Parse_Next (Txt, Ctx, Word, Lexic, Raise_End => True);
       exit when Lexic = Ada_Parser.Reserved_Word
       or else Lexic = Ada_Parser.Identifier
       or else Lexic = Ada_Parser.Delimiter;
@@ -78,6 +79,7 @@ package body Sourcer is
     -- Last Minus '-' separator index in file name
     Minus : Natural;
     -- Ada_Parser stuff
+    Context : Ada_Parser.Parsing_Context;
     Word : As.U.Asu_Us;
     Lexic : Ada_Parser.Lexical_Kind_List;
     -- Are we in a with / a use statement
@@ -139,7 +141,7 @@ package body Sourcer is
     -- Parse until start of unit
     loop
       -- Get next keywork or identifier
-      Next_Word (Txt, Word, Lexic);
+      Next_Word (Txt, Context, Word, Lexic);
       if Lexic = Ada_Parser.Reserved_Word then
         if Word.Image = "with" then
           In_With := True;

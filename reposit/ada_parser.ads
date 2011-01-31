@@ -25,15 +25,18 @@ package Ada_Parser is
                    Lexic : in Lexical_Kind_List);
 
   procedure Parse (File : in Text_Char.File_Type;
-                   Cb : access
-    procedure (Text : in String;
-               Lexic : in Lexical_Kind_List));
+                   Cb : access procedure (
+                     Text : in String;
+                     Lexic : in Lexical_Kind_List));
+
 
   -- Parse flow of File until next lexical element
   -- Set Text to "" (and Lexic to Separator) when end of file
   --  or raises End_Error
   -- May raise Syntax_Error
+  type Parsing_Context is private;
   procedure Parse_Next (File : in Text_Char.File_Type;
+                        Context : in out Parsing_Context;
                         Text : out As.U.Asu_Us;
                         Lexic : out Lexical_Kind_List;
                         Raise_End : in Boolean := False);
@@ -44,5 +47,13 @@ package Ada_Parser is
   -- Raise_End set and end of file reached
   End_Error : exception;
 
+private
+  type Parsing_Context is record
+    -- Previous significant lexical element (not comment nor separator)
+    -- for knowing if access, delta, digits or range are reserved words
+    -- or qualifiers
+    -- Set by Got_Text and used by Parse_Identifier
+    Prev_Lex : As.U.Asu_Us;
+  end record;
 end Ada_Parser;
 

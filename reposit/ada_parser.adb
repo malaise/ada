@@ -8,12 +8,6 @@ package body Ada_Parser is
   -- Carriage return (skipped)
   Cr : constant Character := Ada.Characters.Latin_1.Cr;
 
-  -- Previous significant lexical element (not comment nor separator)
-  -- for knowing if access, delta, digits or range are reserved words
-  -- or qualifiers
-  -- Set by Got_Text and used by Parse_Identifier
-  Prev_Lex : As.U.Asu_Us;
-
   -- Set Char or string in a Us
   procedure Set (U : in out As.U.Asu_Us; C : in Character) is
   begin
@@ -25,25 +19,35 @@ package body Ada_Parser is
   end Set;
 
   -- Got a word. Save it as Prev_Lex if needed
-  function Got_Text (Text : As.U.Asu_Us; Kind : Lexical_Kind_List) return As.U.Asu_Us is
+  procedure Get_Text (Text : in As.U.Asu_Us;
+                      Kind : in Lexical_Kind_List;
+                      Context : in out Parsing_Context;
+                      Got : out As.U.Asu_Us) is
   begin
     -- Save this lexical element if significant
     if Kind /= Separator and then Kind /= Comment then
-      Prev_Lex := Text;
+      Context.Prev_Lex := Text;
     end if;
-    return Text;
-  end Got_Text;
-  function Got_Text (Text : String; Kind : Lexical_Kind_List) return As.U.Asu_Us is
+    Got := Text;
+  end Get_Text;
+  procedure Get_Text (Text : in String;
+                      Kind : in Lexical_Kind_List;
+                      Context : in out Parsing_Context;
+                      Got : out As.U.Asu_Us) is
   begin
-    return Got_Text (As.U.Tus (Text), Kind);
-  end Got_Text;
-  function Got_Text (Text : Character; Kind : Lexical_Kind_List) return As.U.Asu_Us is
+    Get_Text (As.U.Tus (Text), Kind, Context, Got);
+  end Get_Text;
+  procedure Get_Text (Text : in Character;
+                      Kind : in Lexical_Kind_List;
+                      Context : in out Parsing_Context;
+                      Got : out As.U.Asu_Us) is
   begin
-    return Got_Text (As.U.Tus (Text & ""), Kind);
-  end Got_Text;
+    Get_Text (As.U.Tus (Text & ""), Kind, Context, Got);
+  end Get_Text;
 
   -- Read next char, skipping Cr
-  function Text_Char_Get (File : in Text_Char.File_Type) return Character is
+  function Text_Char_Get (File : in Text_Char.File_Type)
+                         return Character is
     C : Character;
   begin
     loop
@@ -57,6 +61,7 @@ package body Ada_Parser is
   -- so parse and return it
   procedure Parse_Identifier (C : in Character;
                               File : in Text_Char.File_Type;
+                              Context : in out Parsing_Context;
                               Text : out As.U.Asu_Us;
                               Lexic : out Lexical_Kind_List) is
     -- Current Char
@@ -94,7 +99,7 @@ package body Ada_Parser is
       if Is_Reserved = Ada_Words.May_Be_Keyword then
         -- Access, delta, digits or range,
         -- see if prev significant lexical element is "'"
-        if Prev_Lex.Image = "'" then
+        if Context.Prev_Lex.Image = "'" then
           -- Prev was "'", so current is a qualifier
           Is_Reserved := Ada_Words.Is_Not_Keyword;
         else
@@ -104,10 +109,10 @@ package body Ada_Parser is
       end if;
       if Is_Reserved = Ada_Words.Is_Keyword then
         Lexic := Reserved_Word;
-        Text := Got_Text (Lower_Str (Str), Lexic);
+        Get_Text (Lower_Str (Str), Lexic, Context, Text);
       else
         Lexic := Identifier;
-        Text := Got_Text (Mixed_Str (Str), Lexic);
+        Get_Text (Mixed_Str (Str), Lexic, Context, Text);
       end if;
     end;
   end Parse_Identifier;
@@ -184,6 +189,7 @@ package body Ada_Parser is
   -- Internal parsing of one word
   -- Sets Text to "" (and Lexic to Separator) when end of file
   procedure Parse_Next (File : in Text_Char.File_Type;
+                        Context : in out Parsing_Context;
                         Text : out As.U.Asu_Us;
                         Lexic : out Lexical_Kind_List;
                         Raise_End : in Boolean := False) is
@@ -217,7 +223,7 @@ package body Ada_Parser is
     -- Separator?
     if Ada_Words.Is_Separator (Cc) then
       Lexic := Separator;
-      Text := Got_Text (Cc, Lexic);
+      Get_Text (Cc, Lexic, Context, Text);
       return;
     end if;
 
@@ -229,14 +235,14 @@ package body Ada_Parser is
       if Nnc = ''' then
         -- A character literal, Cc, Nc and Nnc are consumed
         Lexic := Character_Literal;
-        Text := Got_Text (''' & Nc & ''', Lexic);
+        Get_Text (''' & Nc & ''', Lexic, Context, Text);
       else
         -- For Nc and Nnc we don't know
         Text_Char.Unget (File, Nnc);
         Text_Char.Unget (File, Nc);
         -- Cc is a qualifier or attribute prefix
         Lexic := Delimiter;
-        Text := Got_Text (Cc, Lexic);
+        Get_Text (Cc, Lexic, Context, Text);
       end if;
       return;
     end if;
@@ -251,17 +257,17 @@ package body Ada_Parser is
       or else Str2 = "**" or else Str2 = "/=" or else Str2 = ">="
       or else Str2 = "<=" or else Str2 = "<<" or else Str2 = ">>" then
         Lexic := Delimiter;
-        Text := Got_Text (Str2, Lexic);
+        Get_Text (Str2, Lexic, Context, Text);
       elsif Str2 = "--" then
         -- Skip Comments
         Lexic := Comment;
-        Text := Got_Text (Parse_Comment (File), Lexic);
+        Get_Text (Parse_Comment (File), Lexic, Context, Text);
       else
         -- For Nc we don't know
         Text_Char.Unget (File, Nc);
         -- Cc is a single char delimiter
         Lexic := Delimiter;
-        Text := Got_Text (Cc, Lexic);
+        Get_Text (Cc, Lexic, Context, Text);
       end if;
       return;
     end if;
@@ -269,15 +275,15 @@ package body Ada_Parser is
     -- Identifer?
     Uc := Upper_Char (Cc);
     if Uc >= 'A' and then Uc <= 'Z' then
-      Parse_Identifier (Cc, File, Text, Lexic);
-      Text := Got_Text (Text, Lexic);
+      Parse_Identifier (Cc, File, Context, Text, Lexic);
+      Get_Text (Text, Lexic, Context, Text);
       return;
     end if;
 
     -- Numeric literal?
     if Cc >= '0' and then Cc <= '9' then
       Lexic := Numeric_Literal;
-      Text := Got_Text (Parse_Numeric (Cc, File), Lexic);
+      Get_Text (Parse_Numeric (Cc, File), Lexic, Context, Text);
       return;
     end if;
 
@@ -299,7 +305,7 @@ package body Ada_Parser is
         end if;
       end loop;
       Lexic := String_Literal;
-      Text := Got_Text (Text, Lexic);
+      Get_Text (Text, Lexic, Context, Text);
       return;
     end if;
 
@@ -314,12 +320,13 @@ package body Ada_Parser is
                    Cb : access
     procedure (Text : in String;
                    Lexic : in Lexical_Kind_List)) is
+    Context : Parsing_Context;
     Lexic : Lexical_Kind_List;
     Text : As.U.Asu_Us;
   begin
     -- Loop until end of file
     loop
-      Parse_Next (File, Text, Lexic);
+      Parse_Next (File, Context, Text, Lexic);
       exit when Text.Is_Null;
       -- Call callback
       Cb (Text.Image, Lexic);
