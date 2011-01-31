@@ -16,20 +16,20 @@ package Bloc_Io is
   type Element_Array is array (Positive_Count range <>) of Element_Type;
 
   -- Create / Open / Close stuff
-  -- May rase Status or Name_Error
+  -- May raise Status or Name_Error
   procedure Create(File : in out File_Type;
                    Name : in String);
-  -- May rase Status or Name or Data_Error
+  -- May raise Status or Name or Data_Error
   procedure Open(File : in out File_Type;
                  Mode : in File_Mode;
                  Name : in String);
-  -- May rase Status or Device_Error
+  -- May raise Status or Device_Error
   procedure Close(File : in out File_Type);
   function Is_Open(File : in File_Type) return Boolean;
 
   -- Read Element_Array'Length Elements from file
   -- or raise End_Error
-  -- May rase Status, Device or End_Error
+  -- May raise Status, Device or End_Error
   procedure Read(File : in File_Type;
                  Item : in out Element_Array;
                  From : in Positive_Count);
@@ -38,7 +38,7 @@ package Bloc_Io is
 
   -- Write Element_Array'Length Elements to file
   -- May increase size
-  -- May rase Status or Device_Error
+  -- May raise Status or Device_Error
   procedure Write(File : in File_Type;
                   Item : in Element_Array;
                   To   : in Positive_Count);

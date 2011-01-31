@@ -21,6 +21,8 @@ package Async_Stdin is
   function Is_Set return Boolean;
 
   -- Activate asynchronous data to trigger callback
+  -- When not activated, input characters remain in stdin to be delivered
+  --  when activating
   procedure Activate (Allow_Input : Boolean := True);
   function Is_Active return Boolean;
 

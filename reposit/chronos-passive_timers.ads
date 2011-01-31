@@ -28,7 +28,7 @@ package Chronos.Passive_Timers is
   function Has_Expired (Timer : in Passive_Timer) return Boolean;
 
   -- When a timer has expired once and has no period (0.0) it is not re-armed
-  -- Calling Suspend, Resume or Has_Expired again on it will raise
+  -- Calling Suspend, Resume or Has_Expired again on it will raise:
   Timer_Expired : exception;
 
 private

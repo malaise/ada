@@ -7,11 +7,11 @@ package Assertion is
 
   Assert_Error : exception;
 
-  -- Action can be set by call to Set_Action,
-  --  or environment variable ASSERT_ACTION:
+  -- Action can be initialized by environment variable ASSERT_ACTION:
   --    If set to IGNORE, Ignore
   --    If set to TRACE, Put_Trace
   --    If set to RAISE, Raise_Exception
+  --  and can be set or modified by call to Set (Action),
 
   -- Set/Change action (preempts env variable)
   procedure Set (Action : in Action_List);
