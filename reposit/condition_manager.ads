@@ -4,13 +4,13 @@ package Condition_Manager is
   -- A condition is a waiting point on which one or several tasks may
   --  wait until un-blocked, either one by one (signal) or all together
   --  (broadcast).
-  type Condition is private;
+  type Condition is tagged private;
 
   -- Get access to the condition
   -- If delay is negative, wait until mutex is got
   -- If delay is null, try and give up if not free
   -- If delay is positive, try during the specified delay
-  -- Raises ALready_Got if current task already owns the access
+  -- Raises Already_Got if current task already owns the access
   Already_Got : exception;
   function Get (A_Condition : Condition;
                 Waiting_Time : Duration) return Boolean;
@@ -70,7 +70,7 @@ private
 
   type Condition_Access is access Condition_Protect;
 
-  type Condition is record
+  type Condition is tagged record
     Condition_Pointer : Condition_Access := new Condition_Protect;
   end record;
 

@@ -4,14 +4,14 @@ package Door_Manager is
   -- A door is a waiting point on which one or several tasks may
   --  wait until the required number of waiters is reached.
   -- Door is open at creation (Nb_Waiters = 1)
-  type Door is private;
+  type Door is tagged private;
 
   -- Get access to the door (prior getting or setting its number of waiters,
   --  or prior waiting)
   -- If delay is negative, wait until mutex is got
   -- If delay is null, try and give up if not free
   -- If delay is positive, try during the specified delay
-  -- Raises ALready_Got if current task already owns the access
+  -- Raises Already_Got if current task already owns the access
   Already_Got : exception renames Condition_Manager.Already_Got;
   function Get (A_Door : Door;
                 Waiting_Time : Duration) return Boolean;
@@ -64,7 +64,7 @@ private
 
   type Door_Access is access Door_Rec;
 
-  type Door is record
+  type Door is tagged record
     Door_Pointer : Door_Access := new Door_Rec;
   end record;
 
