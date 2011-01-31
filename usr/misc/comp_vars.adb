@@ -3,6 +3,9 @@ with As.U, Argument, Text_Line, Sys_Calls, Xml_Parser, Computer, Environ,
      Int_Image;
 procedure Comp_Vars is
 
+  -- Computer memory
+  Memory : Computer.Memory_Type;
+
   -- Image of a computed value
   function Comp_Image is new Int_Image (Integer);
 
@@ -187,9 +190,9 @@ procedure Comp_Vars is
         Expr : constant String := Text.Image;
       begin
         if Var_Is_Int then
-          Result := As.U.Tus (Comp_Image (Computer.Compute (Expr)));
+          Result := As.U.Tus (Comp_Image (Memory.Compute (Expr)));
         else
-          Result := As.U.Tus (Computer.Eval (Expr));
+          Result := As.U.Tus (Memory.Eval (Expr));
         end if;
       exception
         when Computer.Unknown_Variable =>
@@ -201,7 +204,7 @@ procedure Comp_Vars is
       end;
 
       -- Store Result
-      Computer.Set (Name  => Attr1.Value.Image,
+      Memory.Set (Name  => Attr1.Value.Image,
                     Value => Result.Image,
                     Modifiable => True, Persistent => False);
       -- Display result
@@ -237,7 +240,7 @@ procedure Comp_Vars is
 begin
 
   -- Init
-  Computer.External_Resolver := My_Getenv'Unrestricted_Access;
+  Memory.Set_External_Resolver (My_Getenv'Unrestricted_Access);
 
   -- Parse Help
   if Argument.Get_Nbre_Arg >= 1

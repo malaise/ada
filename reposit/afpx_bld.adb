@@ -16,6 +16,9 @@ procedure Afpx_Bld is
   use type Xp.Node_Kind_List;
   Ctx : Xp.Ctx_Type;
 
+  -- Computer memory
+  Memory : Computer.Memory_Type;
+
   -- Unbounded strings
   subtype Asu_Us is As.U.Asu_Us;
   function "&" (Str : String; Us : Asu_Us) return String is
@@ -159,7 +162,7 @@ procedure Afpx_Bld is
     end loop;
     Parser.Del (Iter);
     -- Checked OK, store
-    Computer.Set (Name, Value, Modifiable, Persistent);
+    Memory.Set (Name, Value, Modifiable, Persistent);
   exception
     when Computer.Constant_Exists =>
       if Modifiable then
@@ -221,7 +224,7 @@ procedure Afpx_Bld is
             File_Error (Root, "Duplicated height " & Attrs(I).Name);
           end if;
           Height := True;
-          P := Computer.Compute (Attrs(I).Value.Image);
+          P := Memory.Compute (Attrs(I).Value.Image);
           Size.Row := Con_Io.Full_Row_Range(P - 1);
           -- Add constant persistent
           Add_Variable (Root, "Screen.Height", Geo_Image (Size.Row + 1), False, True);
@@ -230,7 +233,7 @@ procedure Afpx_Bld is
             File_Error (Root, "Duplicated width " & Attrs(I).Name);
           end if;
           Width := True;
-          P := Computer.Compute (Attrs(I).Value.Image);
+          P := Memory.Compute (Attrs(I).Value.Image);
           Size.Col := Con_Io.Full_Col_Range(P - 1);
           -- Add constant persistent
           Add_Variable (Root, "Screen.Width", Geo_Image (Size.Col + 1), False, True);
@@ -352,7 +355,7 @@ procedure Afpx_Bld is
           Id := Attrs(2).Value;
         end if;
         Index := Generic_Con_Io.Effective_Colors'Value(Id.Image);
-        Color_Defs(Index) := As.U.Tus (Computer.Eval (Color.Image));
+        Color_Defs(Index) := As.U.Tus (Memory.Eval (Color.Image));
       else
         -- Default_Background: attribute Color
         -- Last child
@@ -364,7 +367,7 @@ procedure Afpx_Bld is
     Color_Names := Afpx_Typ.To_Names (Color_Defs);
     Generic_Con_Io.Set_Colors (Color_Defs);
     if not Default_Background_Name.Is_Null then
-      Default_Background := Con_Io.Color_Of (Computer.Eval (
+      Default_Background := Con_Io.Color_Of (Memory.Eval (
                                  Default_Background_Name.Image));
     end if;
     Load_Color_Names (Node);
@@ -409,7 +412,7 @@ procedure Afpx_Bld is
           Up := True;
           Nb_Verti := Nb_Verti + 1;
           Fields(Fn).Upper_Left.Row :=
-               Computer.Compute (Attrs(I).Value.Image);
+               Memory.Compute (Attrs(I).Value.Image);
           Add_Geo ("Up", Fields(Fn).Upper_Left.Row);
         elsif Match (Attrs(I).Name, "Left") then
           if Left then
@@ -418,7 +421,7 @@ procedure Afpx_Bld is
           Left := True;
           Nb_Horiz := Nb_Horiz + 1;
           Fields(Fn).Upper_Left.Col :=
-               Computer.Compute (Attrs(I).Value.Image);
+               Memory.Compute (Attrs(I).Value.Image);
           Add_Geo ("Left", Fields(Fn).Upper_Left.Col);
         elsif Match (Attrs(I).Name, "Low") then
           if Low then
@@ -427,7 +430,7 @@ procedure Afpx_Bld is
           Low := True;
           Nb_Verti := Nb_Verti + 1;
           Fields(Fn).Lower_Right.Row :=
-               Computer.Compute (Attrs(I).Value.Image);
+               Memory.Compute (Attrs(I).Value.Image);
           Add_Geo ("Low", Fields(Fn).Lower_Right.Row);
         elsif Match (Attrs(I).Name, "Right") then
           if Right then
@@ -436,7 +439,7 @@ procedure Afpx_Bld is
           Right := True;
           Nb_Horiz := Nb_Horiz + 1;
           Fields(Fn).Lower_Right.Col :=
-               Computer.Compute (Attrs(I).Value.Image);
+               Memory.Compute (Attrs(I).Value.Image);
           Add_Geo ("Right", Fields(Fn).Lower_Right.Col);
         elsif Match (Attrs(I).Name, "Height") then
           if Height then
@@ -445,7 +448,7 @@ procedure Afpx_Bld is
           Height := True;
           Nb_Verti := Nb_Verti + 1;
           Fields(Fn).Height :=
-               Computer.Compute (Attrs(I).Value.Image);
+               Memory.Compute (Attrs(I).Value.Image);
           Add_Geo ("Height", Fields(Fn).Height);
         elsif Match (Attrs(I).Name, "Width") then
           if Width then
@@ -454,7 +457,7 @@ procedure Afpx_Bld is
           Width := True;
           Nb_Horiz := Nb_Horiz + 1;
           Fields(Fn).Width :=
-               Computer.Compute (Attrs(I).Value.Image);
+               Memory.Compute (Attrs(I).Value.Image);
           Add_Geo ("Width", Fields(Fn).Width);
         else
           File_Error (Node, "Invalid geometry " & Attrs(I).Name);
@@ -551,7 +554,7 @@ procedure Afpx_Bld is
           end if;
           Foreground := True;
           Fields(Fn).Colors.Foreground := Con_Io.Color_Of (
-                 Computer.Eval (Attrs(I).Value.Image));
+                 Memory.Eval (Attrs(I).Value.Image));
           Add_Variable (Node, Name_Of (Fn) & "." & "Foreground",
               Color_Image (Fields(Fn).Colors.Foreground), False, False);
         elsif Match (Attrs(I).Name, "Background") then
@@ -560,7 +563,7 @@ procedure Afpx_Bld is
           end if;
           Background := True;
           Fields(Fn).Colors.Background := Con_Io.Color_Of (
-                 Computer.Eval (Attrs(I).Value.Image));
+                 Memory.Eval (Attrs(I).Value.Image));
           Add_Variable (Node, Name_Of (Fn) & "." & "Background",
               Color_Image (Fields(Fn).Colors.Background), False, False);
         elsif Match (Attrs(I).Name, "Selected") then
@@ -569,7 +572,7 @@ procedure Afpx_Bld is
           end if;
           Selected := True;
           Fields(Fn).Colors.Selected := Con_Io.Color_Of (
-                 Computer.Eval (Attrs(I).Value.Image));
+                 Memory.Eval (Attrs(I).Value.Image));
           Add_Variable (Node, Name_Of (Fn) & "." & "Selected",
               Color_Image (Fields(Fn).Colors.Selected), False, False);
         else
@@ -727,14 +730,14 @@ procedure Afpx_Bld is
             end if;
             Row := True;
             Finit_Square.Row :=
-             Computer.Compute(Child_Attrs(I).Value.Image);
+             Memory.Compute(Child_Attrs(I).Value.Image);
           elsif Match (Child_Attrs(I).Name, "Col") then
             if Col then
               File_Error (Child, "Duplicated coordinate");
             end if;
             Col := True;
             Finit_Square.Col :=
-             Computer.Compute(Child_Attrs(I).Value.Image);
+             Memory.Compute(Child_Attrs(I).Value.Image);
           elsif Match (Child_Attrs(I).Name, "xml:space") then
             -- Discard
             null;
@@ -782,7 +785,7 @@ procedure Afpx_Bld is
           if Child_Child.Kind /= Xp.Text then
             File_Error (Child_Child, "Invalid init string");
           end if;
-          Finit_String := As.U.Tus (Computer.Eval (
+          Finit_String := As.U.Tus (Memory.Eval (
                    Ctx.Get_Text (Child_Child)));
           -- Length in term of put positions (also in term of wide characters)
           Finit_Length := Language.Put_Length (Finit_String.Image);
@@ -874,7 +877,7 @@ procedure Afpx_Bld is
         Background := True;
         begin
           Descriptors(Dscr_No).Background :=
-              Con_Io.Color_Of (Computer.Eval (Attrs(I).Value.Image));
+              Con_Io.Color_Of (Memory.Eval (Attrs(I).Value.Image));
         exception
           when Computer.Unknown_Variable =>
             File_Error (Node, "Unknown variable when evaluating "
@@ -1031,7 +1034,7 @@ procedure Afpx_Bld is
                          Init_Io.Positive_Count(Dscr_Index));
         end if;
         -- Reset volatile variables and constants defined for this descriptor
-        Computer.Reset (Not_Persistent => True);
+        Memory.Reset (Not_Persistent => True);
         -- Ready for next descriptor
         Dscr_Index := Dscr_Index + 1;
       end if;
@@ -1044,7 +1047,7 @@ procedure Afpx_Bld is
     end loop;
 
     -- Reset all variables
-    Computer.Reset (Not_Persistent => False);
+    Memory.Reset (Not_Persistent => False);
 
     if not Check_Only then
       Dscr_Io.Write (Dscr_File, Descriptors);

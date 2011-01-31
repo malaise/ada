@@ -2,8 +2,8 @@
 -- Where oper is +, -, * or /,
 --  a and b are integers or ${Variable}
 -- Supports parentheses.
-with As.U, Environ, Basic_Proc, Hashed_List.Unique,
-     String_Mng, Dynamic_List, Parser;
+with Ada.Unchecked_Deallocation;
+with Environ, Basic_Proc, String_Mng, Dynamic_List, Parser;
 package body Computer is
 
   Debug_Read : Boolean := False;
@@ -19,21 +19,7 @@ package body Computer is
     end if;
   end Trace;
 
-  -- List of variables
-  type Var_Rec is record
-    -- Variable name
-    Name : As.U.Asu_Us;
-    -- Variable value
-    Value : As.U.Asu_Us;
-    -- Persistent:
-    -- If modifiable, at most one persistent and one volatile variables
-    --  of same name,
-    -- If not modifiable, either one persistent or one volatile
-    Persistent : Boolean;
-    -- Modifiable
-    Modifiable : Boolean;
-  end record;
-  type Var_Access is access all Var_Rec;
+  -- Operation on stored variables
   procedure Set (To : out Var_Rec; Val : in Var_Rec) is
   begin
     To := Val;
@@ -52,15 +38,11 @@ package body Computer is
     return Current.Persistent = Criteria.Persistent
     and then Current.Name = Criteria.Name;
   end "=";
-  package Var_List_Mng is new Hashed_List (Var_Rec, Var_Access,
-                                           Set, "=", Image);
-  package Var_Mng is new Var_List_Mng.Unique;
-  Var_List : Var_Mng.Unique_List_Type;
 
   -- Variable management
   ----------------------
   -- Reset all variables
-  procedure Reset (Not_Persistent : in Boolean) is
+  procedure Reset (Memory : in out Memory_Type; Not_Persistent : in Boolean) is
     Vol_List : As.U.Asu_Us;
     -- Iterator to build list of names of volatile variables
     procedure List_Iter (Current : in Var_Rec;
@@ -77,11 +59,11 @@ package body Computer is
     if not Not_Persistent then
       -- Delete all
       Trace ("Deleting all variables");
-      Var_List.Delete_List;
+      Memory.Var_List.Delete_List;
       return;
     end if;
     -- Make list of names of volatile variables
-    Var_List.Iterate (List_Iter'Access);
+    Memory.Var_List.Iterate (List_Iter'Access);
     -- Delete each volatile variable
     Iter.Set (Vol_List.Image, Parser.Is_Space_Or_Htab_Function'Access);
     loop
@@ -92,14 +74,15 @@ package body Computer is
         Var.Name := As.U.Tus (Name);
         Var.Persistent := False;
         Trace ("Deleting volatile " & Image (Var));
-        Var_List.Delete (Var);
+        Memory.Var_List.Delete (Var);
       end;
     end loop;
     Iter.Del;
   end Reset;
 
   -- Set (store), maybe overwrite a variable
-  procedure Set (Name : in String;
+  procedure Set (Memory : in out Memory_Type;
+                 Name : in String;
                  Value : in String;
                  Modifiable : in Boolean;
                  Persistent : in Boolean) is
@@ -112,9 +95,9 @@ package body Computer is
     -- Check if this variable exists (persistent or not) and is modifiable
     Var.Name := As.U.Tus (Name);
     Var.Persistent := False;
-    Var_List.Search (Var, Found);
+    Memory.Var_List.Search (Var, Found);
     if Found then
-      Var_List.Read (Var);
+      Memory.Var_List.Read (Var);
       if not Var.Modifiable
       or else not Modifiable then
         -- One of the original and of the new (or both)
@@ -123,9 +106,9 @@ package body Computer is
       end if;
     end if;
     Var.Persistent := True;
-    Var_List.Search (Var, Found);
+    Memory.Var_List.Search (Var, Found);
     if Found then
-      Var_List.Read (Var);
+      Memory.Var_List.Read (Var);
       if not Var.Modifiable
       or else not Modifiable then
         -- One of the original and of the new (or both)
@@ -137,7 +120,7 @@ package body Computer is
     Var.Persistent := Persistent;
     Var.Value := As.U.Tus (Value);
     Var.Modifiable := Modifiable;
-    Var_List.Insert (Var);
+    Memory.Var_List.Insert (Var);
     if Modifiable then
       Trace ("Inserted variable " & Image (Var) & ", " & Value);
     else
@@ -146,7 +129,7 @@ package body Computer is
   end Set;
 
   -- Check if a variable is set
-  function Is_Set (Name : String) return Boolean is
+  function Is_Set (Memory : Memory_Type; Name : String) return Boolean is
     Crit : Var_Rec;
     Found : Boolean;
   begin
@@ -156,19 +139,19 @@ package body Computer is
     -- First check if variable is volatile
     Crit.Name := As.U.Tus (Name);
     Crit.Persistent := False;
-    Var_List.Search (Crit, Found);
+    Memory.Var_List.Search (Crit, Found);
     if Found then
       return True;
     end if;
     -- Then check if it is persistent
     Crit.Persistent := True;
-    Var_List.Search (Crit, Found);
+    Memory.Var_List.Search (Crit, Found);
     return Found;
   end Is_Set;
 
   -- Read a variable rec (internal)
   -- May raise Unknown_Variable
-  function Read (Name : String) return Var_Rec is
+  function Read (Memory : Memory_Type; Name : String) return Var_Rec is
     Found : Boolean;
     Res : Var_Rec;
   begin
@@ -179,15 +162,15 @@ package body Computer is
     -- First check if variable is volatile
     Res.Name := As.U.Tus (Name);
     Res.Persistent := False;
-    Var_List.Search (Res, Found);
+    Memory.Var_List.Search (Res, Found);
     if Found then
-      Var_List.Read (Res);
+      Memory.Var_List.Read (Res);
       Trace ("Read >" & Res.Value.Image & "<");
       return Res;
     end if;
     -- Then try to read this variable as persistent
     Res.Persistent := True;
-    Var_List.Read (Res);
+    Memory.Var_List.Read (Res);
     Trace ("Read >" & Res.Value.Image & "<");
     return Res;
   exception
@@ -196,54 +179,61 @@ package body Computer is
   end Read;
 
   -- Get a variable
-  function Get (Name : String) return String is
+  function Get (Memory : Memory_Type; Name : String) return String is
     Var : Var_Rec;
   begin
     Trace ("Getting >" & Name & "<");
-    Var := Read (Name);
+    Var := Read (Memory, Name);
     return Var.Value.Image;
   end Get;
 
    -- Get characteristics
-  function Is_Modifiable (Name : String) return Boolean is
+  function Is_Modifiable (Memory : Memory_Type; Name : String) return Boolean is
     Var : Var_Rec;
   begin
-    Var := Read (Name);
+    Var := Read (Memory, Name);
     return Var.Modifiable;
   end Is_Modifiable;
 
-  function Is_Persistent (Name : String) return Boolean is
+  function Is_Persistent (Memory : Memory_Type; Name : String) return Boolean is
     Var : Var_Rec;
   begin
-    Var := Read (Name);
+    Var := Read (Memory, Name);
     return Var.Persistent;
   end Is_Persistent;
 
 
-  -- Get a variable, invokes external resolver if needed
-  function Ext_Get (Name : String) return String is
+  -- External resolver of variables:
+  procedure Set_External_Resolver (Memory : in out Memory_Type;
+                                   Resolver : in Resolver_Access) is
   begin
-    begin
-      -- Get internal variable if set
-      return Get (Name);
-    exception
-      when Unknown_Variable =>
-        if External_Resolver = null then
-          -- Variable is not set and no external resolver
-          raise;
-        end if;
-        -- Will go on trying external resolver
-    end;
-    begin
-      return External_Resolver.all (Name);
-    exception
-      when others =>
-        raise Unknown_Variable;
-    end;
-  end Ext_Get;
+    Memory.External_Resolver := Resolver;
+  end Set_External_Resolver;
+
 
   -- Resolv variables of an expresssion
-  function Eval (Expression : String) return String is
+  function Eval (Memory : Memory_Type; Expression : String) return String is
+    -- Get a variable, invokes external resolver if needed
+    function Ext_Get (Name : String) return String is
+    begin
+      begin
+        -- Get internal variable if set
+        return Get (Memory, Name);
+      exception
+        when Unknown_Variable =>
+          if Memory.External_Resolver = null then
+            -- Variable is not set and no external resolver
+            raise;
+          end if;
+          -- Will go on trying external resolver
+      end;
+      begin
+        return Memory.External_Resolver.all (Name);
+      exception
+        when others =>
+          raise Unknown_Variable;
+      end;
+    end Ext_Get;
   begin
     return String_Mng.Eval_Variables (
               Expression, "${", "}", Ext_Get'Access,
@@ -256,7 +246,7 @@ package body Computer is
   end Eval;
 
   -- Fix expression
-  function Fix (Expression : String) return String is
+  function Fix (Memory : Memory_Type; Expression : String) return String is
     Exp : As.U.Asu_Us;
   begin
     -- Replace each operator and parenthese 'op' by ' op '
@@ -275,7 +265,7 @@ package body Computer is
     Exp := As.U.Tus (String_Mng.Replace (Exp.Image, "${", " ${"));
     Exp := As.U.Tus (String_Mng.Replace (Exp.Image, "}", "} "));
     -- Expand variables
-    Exp := As.U.Tus (Eval (Exp.Image));
+    Exp := As.U.Tus (Eval (Memory, Exp.Image));
 
     -- +X and -X will be analysed while parsing
     Exp := As.U.Tus (String_Mng.Replace (Exp.Image, "+", " +"));
@@ -309,10 +299,10 @@ package body Computer is
   end record;
   package Members_List_Mng is new Dynamic_List (Member_Rec);
   package Members_Mng renames Members_List_Mng.Dyn_List;
-  Members_List : Members_Mng.List_Type;
 
   -- Parse the expression into a list of members
-  procedure Parse (Exp : in String) is
+  procedure Parse (Members_List : in out Members_Mng.List_Type;
+                   Exp : in String) is
     Iter : Parser.Iterator;
     -- Must +X or -X be binary (after a ')' or a Val)
     Must_Be_Binary : Boolean;
@@ -387,16 +377,16 @@ package body Computer is
   end Parse;
 
   -- Get member of list
-  End_Reached : Boolean;
-  function Get_Member return Member_Rec is
-    Member : Member_Rec;
+  procedure Get_Member (Members_List : in out Members_Mng.List_Type;
+                        End_Reached : in out Boolean;
+                        Member : out Member_Rec) is
   begin
     if Members_List.Is_Empty then
       -- Members_List is empty
       raise Invalid_Expression;
     elsif End_Reached then
       -- End of expression is reached
-      return (Kind => None);
+      Member := (Kind => None);
     elsif Members_List.Check_Move then
       -- Next (not last) member
       Members_List.Read (Member);
@@ -405,11 +395,11 @@ package body Computer is
       End_Reached := True;
       Members_List.Read (Member, Members_Mng.Current);
     end if;
-    return Member;
   end Get_Member;
 
   -- Unget some members got
-  procedure Unget_Member is
+  procedure Unget_Member (Members_List : in out Members_Mng.List_Type;
+                          End_Reached : in out Boolean) is
   begin
     if End_Reached then
       End_Reached := False;
@@ -436,19 +426,22 @@ package body Computer is
   -- Higher_Prio is set when low prio followed by high prio
   --  (e.g. X + Y * Z) require new evaluation.
   --  The way to return then differs
-  function Compute (Level : Natural;
-                 Higher_Prio : in Boolean) return Integer is
+  procedure Compute (Members_List : in out Members_Mng.List_Type;
+                     End_Reached : in out Boolean;
+                     Result : out Integer;
+                     Level : in Natural;
+                     Higher_Prio : in Boolean) is
     M1, M2, M3, M4 : Member_Rec;
-    Tmp, Result : Integer;
+    Tmp : Integer;
   begin
     if Level = 0 then
       End_Reached := False;
     end if;
-    M1 := Get_Member;
+    Get_Member (Members_List, End_Reached, M1);
     -- First member must be an int or a (
     if M1.Kind = Open then
       Trace ("Level++");
-      Result := Compute (Level + 1, False);
+      Compute (Members_List, End_Reached, Result, Level + 1, False);
     elsif M1.Kind = Val then
       Result := M1.Value;
       Trace ("Value " & Result'Img);
@@ -459,12 +452,12 @@ package body Computer is
 
     loop
       -- M1 was a value, M2 must be none or close or an operation
-      M2 := Get_Member;
+      Get_Member (Members_List, End_Reached, M2);
       if M2.Kind = None then
         if Level = 0 then
           -- Done
           Trace ("The end");
-          return Result;
+          return;
         else
           -- Unexpected end
           Trace ("Unexpected end");
@@ -477,7 +470,7 @@ package body Computer is
         else
           -- (X), return X
           Trace ("Level--");
-          return Result;
+          return;
         end if;
       elsif M2.Kind not in Oper_Kind_List then
         Trace ("Invalid M2 " & M2.Kind'Img);
@@ -488,10 +481,10 @@ package body Computer is
 
       -- We have a value and an oper
       -- Now we must have either a value, or an opening parenthese
-      M3 := Get_Member;
+      Get_Member (Members_List, End_Reached, M3);
       if M3.Kind = Open then
         Trace ("Level++");
-        Tmp := Compute (Level + 1, False);
+        Compute (Members_List, End_Reached, Tmp, Level + 1, False);
       elsif M3.Kind /= Val then
         Trace ("Invalid M3 " & M3.Kind'Img);
         raise Invalid_Expression;
@@ -503,27 +496,27 @@ package body Computer is
       -- Now we have a value, we need to see if it is followed
       --  by an operation of another level
       -- Here we must read an operation, a close or none
-      M4 := Get_Member;
+      Get_Member (Members_List, End_Reached, M4);
       if M4.Kind in Oper_Kind_List then
         if M4.Kind in High_Kind_List
         and then M2.Kind in Low_Kind_List then
           -- X + Y *, level increases due to prio,
           -- keep Y * for next level, unget this ope and value
-          Unget_Member;
-          Unget_Member;
+          Unget_Member (Members_List, End_Reached);
+          Unget_Member (Members_List, End_Reached);
           Trace ("Higher prio");
-          Tmp := Compute (Level, True);
+          Compute (Members_List, End_Reached, Tmp, Level, True);
           Result := Compute_One (Result, M2.Kind, Tmp);
         elsif M4.Kind in Low_Kind_List
         and then M2.Kind in High_Kind_List then
           -- X * Y +, compute X * Y,
-          Unget_Member;
+          Unget_Member (Members_List, End_Reached);
           Result := Compute_One (Result, M2.Kind, Tmp);
           -- Level decreases if current is due to higher prio
           -- e.g. T + X * Y +
           if Higher_Prio then
             Trace ("End of higher prio");
-            return Result;
+            return;
           else
             -- Current level was at high prio and becomes
             -- at low prio
@@ -532,7 +525,7 @@ package body Computer is
           end if;
         else
           -- X * Y /, same level, keep /
-          Unget_Member;
+          Unget_Member (Members_List, End_Reached);
           Trace ("Same prio");
           Result := Compute_One (Result, M2.Kind, Tmp);
         end if;
@@ -545,17 +538,19 @@ package body Computer is
           if Higher_Prio then
             -- T + X * Y ), let calling level process the Close
             Trace ("End of higher prio");
-            Unget_Member;
+            Unget_Member (Members_List, End_Reached);
           end if;
           Trace ("Level--");
-          return Compute_One (Result, M2.Kind, Tmp);
+          Result := Compute_One (Result, M2.Kind, Tmp);
+          return;
         end if;
       elsif M4.Kind = None then
         -- End of expression
         if Level = 0 then
           -- Level decreases
           Trace ("The end");
-          return Compute_One (Result, M2.Kind, Tmp);
+          Result := Compute_One (Result, M2.Kind, Tmp);
+          return;
         else
           -- Unexpected end
           Trace ("Unexpected end");
@@ -566,18 +561,32 @@ package body Computer is
   end Compute;
 
   -- Computation of expression
-  function Compute (Expression : String) return Integer is
+  function Compute (Memory : Memory_Type; Expression : String) return Integer is
     Result : Integer;
+    Members_List : Members_Mng.List_Type;
+    End_Reached : Boolean := False;
   begin
     -- Fix and Parse expression
-    Parse (Fix (Expression));
+    Parse (Members_List, Fix (Memory, Expression));
     -- Compute
-    Result := Compute (0, False);
+    Compute (Members_List, End_Reached, Result, 0, False);
     -- Clean parsing
     Members_List.Delete_List;
     -- Done
     return Result;
   end Compute;
+
+  -- Finalization
+  procedure Free is new Ada.Unchecked_Deallocation(
+         Object => Var_Mng.Unique_List_Type,
+         Name   => List_Access);
+  -- Automatic garbage collection
+  overriding procedure Finalize (Memory : in out Memory_Type) is
+  begin
+    if Memory.Var_List /= null then
+      Free (Memory.Var_List);
+    end if;
+  end Finalize;
 
 end Computer;
 

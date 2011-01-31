@@ -2,6 +2,8 @@ with Computer, Environ, Regular_Expressions, Int_Image;
 with Error, Debug;
 package body Variables is
 
+  Memory : Computer.Memory_Type;
+
   Ext_Ref : constant Character := '$';
   function Image is new Int_Image (Integer);
 
@@ -40,7 +42,7 @@ package body Variables is
   procedure Reset is
   begin
     Debug.Log ("Resetting variables");
-    Computer.Reset (Not_Persistent => False);
+    Memory.Reset (Not_Persistent => False);
   end Reset;
 
   -- Chek that a name is valid
@@ -60,8 +62,8 @@ package body Variables is
   procedure Set (Name, Value : in As.U.Asu_Us) is
   begin
     Check (Name);
-    Computer.Set (Name.Image, Value.Image,
-                  Modifiable => True, Persistent => True);
+    Memory.Set (Name.Image, Value.Image,
+                Modifiable => True, Persistent => True);
   exception
     when Computer.Invalid_Variable =>
       Error ("Invalid variable name" & Name.Image);
@@ -71,7 +73,7 @@ package body Variables is
   function Is_Set (Name : As.U.Asu_Us) return Boolean is
   begin
     Check (Name);
-    return Computer.Is_Set (Name.Image);
+    return Memory.Is_Set (Name.Image);
   exception
     when Computer.Invalid_Variable =>
       Error ("Invalid variable name" & Name.Image);
@@ -86,7 +88,7 @@ package body Variables is
       Error ("Invalid volatile variable name" & Name.Image);
       raise Invalid_Name;
     end if;
-    Computer.Set (Name.Image, Value.Image,
+    Memory.Set (Name.Image, Value.Image,
                   Modifiable => True, Persistent => False);
   exception
     when Computer.Invalid_Variable =>
@@ -97,7 +99,7 @@ package body Variables is
   procedure Clear_Volatiles is
   begin
     Debug.Log ("Resetting volatiles");
-    Computer.Reset (Not_Persistent => True);
+    Memory.Reset (Not_Persistent => True);
   end Clear_Volatiles;
 
   -- Expand the expression
@@ -111,11 +113,11 @@ package body Variables is
                    Check_Only : Boolean := False) return As.U.Asu_Us is
   begin
     if Check_Only then
-      Computer.External_Resolver := Dummy'Access;
+      Memory.Set_External_Resolver (Dummy'Access);
     else
-      Computer.External_Resolver := Getenv'Access;
+      Memory.Set_External_Resolver (Getenv'Access);
     end if;
-    return As.U.Tus (Computer.Eval (Text.Image));
+    return As.U.Tus (Memory.Eval (Text.Image));
   exception
     when others =>
       Error ("Cannot expand " & Text.Image);
@@ -126,8 +128,8 @@ package body Variables is
   function Compute (Text : As.U.Asu_Us) return As.U.Asu_Us is
     I : Integer;
   begin
-    Computer.External_Resolver := Getenv'Access;
-    I := Computer.Compute (Text.Image);
+    Memory.Set_External_Resolver (Getenv'Access);
+    I := Memory.Compute (Text.Image);
     return As.U.Tus (Image (I));
   exception
     when others =>
