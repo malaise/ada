@@ -10,15 +10,12 @@ package body Mng is
   -- Sorted operations
   package Oper_List_Mng renames Oper_Dyn_List_Mng.Dyn_List;
   Oper_List : Oper_List_Mng.List_Type;
+
+  -- Sort by date
   procedure Sort is new Oper_List_Mng.Sort (Oper_Def.Before);
 
   -- Sort by abs(amount)
-  function Smaller (Oper_1, Oper_2 : Oper_Def.Oper_Rec) return Boolean is
-    use type Oper_Def.Amount_Range;
-  begin
-    return abs(Oper_1.Amount) < abs(Oper_2.Amount);
-  end Smaller;
-  procedure Sort_Amounts is new Oper_List_Mng.Sort (Smaller);
+  procedure Sort_Amounts is new Oper_List_Mng.Sort (Oper_Def.Smaller);
 
   -- Name and status of current account
   Account_Name : As.B.Asb_Bs(Directory.Max_Dir_Name_Len);

@@ -61,8 +61,11 @@ package Oper_Def is
   procedure Convert (Read_Oper : in Oper_Def.Read_Oper_Rec;
                      Oper      : out Oper_Def.Oper_Rec);
 
-  -- Criteria for sorting opers: dates
+  -- Criteria for sorting opers by dates
   function Before (Oper_1, Oper_2 : Oper_Rec) return Boolean;
+
+  -- Criteria for sorting opers by amounts
+  function Smaller (Oper_1, Oper_2 : Oper_Rec) return Boolean;
 
 end Oper_Def;
 
