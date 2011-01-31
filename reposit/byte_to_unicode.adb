@@ -1,10 +1,11 @@
-with Xml_Parser;
+with Xml_Parser, Lower_Str;
 package body Byte_To_Unicode is
 
 
   function Value (Str : String) return Natural is
   begin
-    if Str'Length >= 2 and then Str (Str'First .. Str'First + 1) = "0x" then
+    if Str'Length >= 2
+    and then Lower_Str (Str(Str'First .. Str'First + 1)) = "0x" then
       declare
         New_Str : constant String
                 := "16#" & Str (Str'First + 2 .. Str'Last) & "#";
