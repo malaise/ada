@@ -78,12 +78,12 @@ package body Basic_Proc is
   -- Set ok or error exit code
   procedure Set_Ok_Exit_Code is
   begin
-    Set_Exit_Code(0);
+    Set_Exit_Code(Exit_Code_Ok);
   end Set_Ok_Exit_Code;
 
   procedure Set_Error_Exit_Code is
   begin
-    Set_Exit_Code(1);
+    Set_Exit_Code(Exit_Code_Error);
   end Set_Error_Exit_Code;
 
 end Basic_Proc;

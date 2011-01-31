@@ -14,7 +14,9 @@ package Basic_Proc is
 
   -- Set exit code
   procedure Set_Exit_Code (Code : in Natural);
-  -- Set ok or error exit code
+  -- Set exit code to ok (0) or error (1)
+  Exit_Code_Ok    : constant Natural := 0;
+  Exit_Code_Error : constant Natural := 1;
   procedure Set_Ok_Exit_Code;
   procedure Set_Error_Exit_Code;
 
