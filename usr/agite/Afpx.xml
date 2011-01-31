@@ -3,7 +3,7 @@
 
 <!-- For agite -->
 <Afpx_Descriptors Height="44" Width="55">
-  <Var Name="Version" Value="V3.0"/>
+  <Var Name="Version" Value="V3.1"/>
 
   <!-- Main screen: explorator -->
   <Descriptor Num="1" Background="Light_Grey">
@@ -504,7 +504,7 @@
     </Field>
     <Field Num="12" Kind="Put">
       <Geometry Up="${Field_11.Low}+1" Left="1"
-                Low="${List.Up}-1" Right="${Screen.Width}-2"/>
+                Low="${List.Up}-1" Right="${Screen.Right}-1"/>
       <Colors Foreground="Black" Background="Light_Grey" />
     </Field>
 
@@ -530,6 +530,12 @@
       <Init Row="1" Col="2">Back</Init>
     </Field>
     <Field Num="17" Kind="Button">
+      <Geometry Up="${Field_10.Up}" Height="1"
+                Width="8" Right="${Screen.Width}-2"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="2">Copy</Init>
+    </Field>
+    <Field Num="18" Kind="Button">
       <Geometry Up="${Field_11.Up}" Height="1"
                 Width="8" Right="${Screen.Width}-2"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>

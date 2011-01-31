@@ -113,22 +113,26 @@ package body Details is
       end;
     end Show;
 
-    -- Copy Comments as X selection
-    procedure Copy_Selection is
+    -- Copy Hash or Comment as X selection
+    procedure Copy_Selection (Copy_Comment : in Boolean) is
       Result : As.U.Asu_Us;
       use type As.U.Asu_Us;
     begin
-      -- Skip tailing empty lines. No LineFeed after last line
-      for I in reverse Comment'Range loop
-        if not Comment(I).Is_Null or else not Result.Is_Null then
-          if Result.Is_Null then
-            Result := Comment(I);
-          else
-            Result := Comment(I) & Ada.Characters.Latin_1.Lf & Result;
+      if Copy_Comment then
+        -- Skip tailing empty lines. No LineFeed after last line
+        for I in reverse Comment'Range loop
+          if not Comment(I).Is_Null or else not Result.Is_Null then
+            if Result.Is_Null then
+              Result := Comment(I);
+            else
+              Result := Comment(I) & Ada.Characters.Latin_1.Lf & Result;
+            end if;
           end if;
-        end if;
-      end loop;
-      Afpx.Set_Selection (Result.Image);
+        end loop;
+        Afpx.Set_Selection (Result.Image);
+      else
+        Afpx.Set_Selection (Hash);
+      end if;
     end Copy_Selection;
 
   begin
@@ -176,8 +180,11 @@ package body Details is
               -- Back
               return;
             when 17 =>
+              -- Copy hash to clipboard
+              Copy_Selection (False);
+            when 18 =>
               -- Copy commit comment to clipboard
-              Copy_Selection;
+              Copy_Selection (True);
             when others =>
               -- Other button?
               null;
