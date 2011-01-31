@@ -1,6 +1,6 @@
 with My_Math;
 package Curve is
-  -- What is a point, a point data set
+  -- What is a point, a point vector
   subtype T_Coordinate is My_Math.Real;
   type T_One_Point is record
     X : T_Coordinate;
@@ -8,8 +8,8 @@ package Curve is
   end record;
   type T_The_Points is array (Positive range <>) of T_One_Point;
 
-  -- use all screen, all screen same scale,
-  -- boundaries set all screen, boundaries set same scale
+  -- Use all screen, all screen same scale,
+  --  boundaries set all screen, or boundaries set same scale
   type T_Scale is (Curve_Screen, Curve_Normed, Free_Screen, Free_Normed);
 
   type T_Boundaries(Scale : T_Scale := Curve_Screen) is record
@@ -50,7 +50,7 @@ package Curve is
     -- Any action to do when a signal_event is received (see Afpx Fd_event)
     with procedure Signal_Callback is null;
 
-  -- Give boundaries and points array : It will draw the curves
+  -- Draw the curves, given boundaries and points array
   procedure Draw (Boundaries : in T_Boundaries; Points : in T_The_Points);
 end Curve;
 
