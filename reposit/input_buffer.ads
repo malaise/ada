@@ -1,6 +1,7 @@
 -- Bufferize input flow (strings) until separator is found
 -- Report the received string (text between separators)
--- This is the same as Text_Line input except that the input flow is ourself
+-- This is the same as Text_Line input except that the input flow is
+--  explicitly pushed by the application
 with Ada.Finalization;
 with As.U, Text_Line;
 package Input_Buffer is
@@ -37,14 +38,14 @@ package Input_Buffer is
   ----------------------
   -- OTHER OPERATIONS --
   ----------------------
-  -- Get the tail of the buffer Buf (text not ending with Delimiter)
+  -- Read the tail of the buffer Buf (text not ending with Delimiter)
   -- Beware that there may be Delimiters in the tail if the buffer is
   --  suspended
   -- May raise Status_Error if Buf is not set
   function Tail (Buf : Buffer) return String;
 
   -- Suspend the buffer Buf
-  -- It will store the text push but not notify
+  -- It will store the text pushed but not notify
   -- No effect if already suspended
   -- May raise Status_Error if Buf is not set
   procedure Suspend (Buf : in Buffer);
@@ -64,6 +65,14 @@ package Input_Buffer is
   ---------------
   -- Is the buffer Buf set?
   function Is_Set (Buf : Buffer) return Boolean;
+
+  -- Reset the buffer, which becomes not set
+  -- May raise Status_Error if Buf is not set
+  procedure Reset (Buf : in out Buffer);
+
+  -- Clean the current tail of the buffer
+  -- May raise Status_Error if Buf is not set
+  procedure Clean (Buf : in out Buffer);
 
   -- Copy the buffer Src_Buf to Dest_Buf
   -- Previous content of Dest_Buf is overwritten

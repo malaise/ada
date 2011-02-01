@@ -7,6 +7,13 @@ procedure T_Input_Buffer is
     Basic_Proc.Put_Line_Output (Str(Str'First .. Str'Last - 1));
   end Notifier;
 
+  -- Report an error
+  procedure Error (Msg : in String) is
+  begin
+    Basic_Proc.Put_Line_Error ("ERROR: " & Msg);
+    Basic_Proc.Set_Error_Exit_Code;
+  end Error;
+
   -- Flow of chars
   Fd : Sys_Calls.File_Desc;
   File : Text_Char.File_Type;
@@ -69,7 +76,7 @@ begin
     Tail : constant String := Buffer.Tail;
   begin
     if Tail /= "" then
-      Basic_Proc.Put_Line_Error ("Warning: Tail is >" & Tail & "<");
+      Basic_Proc.Put_Line_Error ("Warning: Tail is >" & Buffer.Tail & "<");
     end if;
     Basic_Proc.Put_Output (Tail);
   end;
@@ -80,6 +87,23 @@ begin
     Sys_Calls.Close (Fd);
   end if;
 
+  -- Test Clean versus Tail
+  Buffer.Clean;
+  if Buffer.Tail /= "" then
+    Error ("Tail should be empty after clean. >" & Buffer.Tail &"<");
+    return;
+  end if;
+  Buffer.Push ("foo");
+  if Buffer.Tail = "" then
+    Error ("Tail should not be empty after Push. >" & Buffer.Tail &"<");
+    return;
+  end if;
+  Buffer.Clean;
+  if Buffer.Tail /= "" then
+    Error ("Tail should be empty after push then clean. >" & Buffer.Tail &"<");
+    return;
+  end if;
+
   -- Test destructor
   declare
     B1, B2 : Input_Buffer.Buffer;
@@ -87,6 +111,13 @@ begin
   begin
     B1.Set (Notifier'Unrestricted_Access);
   end;
+
+  -- Test reset;
+  Buffer.Reset;
+  if Buffer.Is_Set then
+    Error ("Buffer should not be set after Reset");
+    return;
+  end if;
 
 end T_Input_Buffer;
 

@@ -102,6 +102,20 @@ package body Input_Buffer is
     return Buf.Acc /= null and then Buf.Acc.Notif /= null;
   end Is_Set;
 
+  -- Reset the buffer, which becomes not set
+  procedure Reset (Buf : in out Buffer) is
+  begin
+    Check_Set (Buf);
+    Finalize (Buf);
+  end Reset;
+
+  -- Clean the current tail of the buffer
+  procedure Clean (Buf : in out Buffer) is
+  begin
+    Check_Set (Buf);
+    Buf.Acc.Text.Set_Null;
+  end Clean;
+
   -- Copy the buffer Src_Buf to Dest_Buf
   procedure Copy (Dest_Buf : in out Buffer; Src_Buf : in Buffer) is
   begin
