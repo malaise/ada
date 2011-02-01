@@ -118,16 +118,23 @@ package body Http is
 
     -- Locate end of header: 2 consecutive New_Lines, Isolate header
     Ind := String_Mng.Locate (Buffer.Image, New_Line.Image & New_Line.Image);
-    Header := Buffer.Uslice (1, Ind - 1);
-    Ind := Ind + 2 * New_Line.Length;
-    Buffer.Delete (1, Ind - 1);
+    if Ind /= 0 then
+      Header := Buffer.Uslice (1, Ind - 1);
+      Ind := Ind + 2 * New_Line.Length;
+      Buffer.Delete (1, Ind - 1);
+    else
+      -- No header
+      Header := Buffer;
+      Buffer.Set_Null;
+      Debug ("HTTP: No header delimiter: " & Header.Image);
+    end if;
     -- CrLf -> Lf in Header
     Header := As.U.Tus (String_Mng.Replace (Header.Image, New_Line.Image, Lf));
 
     -- First line of header reply: status
     Ind := String_Mng.Locate (Header.Image, Lf);
     if Ind = 0 then
-      Debug ("HTTP: No header line feed:" & Header.Image);
+      Debug ("HTTP: No header line feed: " & Header.Image);
       return;
     end if;
     declare
