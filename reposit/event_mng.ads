@@ -26,7 +26,7 @@ package Event_Mng is
   procedure Del_Fd_Callback (Fd : in File_Desc; Read : in Boolean);
   -- Is a callback registered on a fd in a mode
   function Fd_Callback_Set (Fd : in File_Desc; Read : in Boolean)
-  return Boolean;
+                           return Boolean;
 
   -----------------------
   -- Signal management --
@@ -48,8 +48,8 @@ package Event_Mng is
   function Sig_Child_Callback_Set return Boolean;
 
   -- Return current callback on signal
-  function  Get_Sig_Term_Callback return Sig_Callback;
-  function  Get_Sig_Child_Callback return Sig_Callback;
+  function Get_Sig_Term_Callback return Sig_Callback;
+  function Get_Sig_Child_Callback return Sig_Callback;
 
   -- Send a dummy signal
   -- It always generates a Sig_Event but Callbacks are not called
@@ -76,9 +76,9 @@ package Event_Mng is
   -- * Non interactive programs shall call Reset_Default_Signal_Policy after
   --   using this function
   -- * X11 programs shall use the X waiting point (X_Wait_Event/Put_Then_Get)
-  --   instead. If they really need to use it, they shall Suspend ALL the X
-  --   objects (X_Line/Con_Io/Afpx) before calling this function, then Resume
-  --   the X objects.
+  --   instead. If they really need to use Wait, they shall Suspend ALL the X
+  --   objects (X_Line/Con_Io/Afpx) before calling it, then Resume the X
+  --   objects after it retruns.
   --
   -- Wait until a Terminate_Sig or Child_Sig with a callback set,
   --   or until a Dummy_Sig,
@@ -86,7 +86,7 @@ package Event_Mng is
   --   or until some fd event and its callback return True,
   --   or until timeout
   -- Any negative timeout means infinite
-  -- The four operation end on event or timeout
+  -- The four operations end on event or timeout
   type Out_Event_List is (Timer_Event, Fd_Event, Signal_Event, No_Event);
 
   -- This uses virtual time and allows various specifications of delay

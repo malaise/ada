@@ -1,8 +1,8 @@
 with Ada.Exceptions;
 -- In Ada.Exceptions, the string returned by Exception_Message may be truncated
 -- (to no less than 200 characters).
--- This package allows to store in a global pool a "long" message and
---  transfer a short access key as the exception message.
+-- This package allows storing in a global pool a "long" message and
+--  transfering a short access key as the exception message.
 
 -- A message of size below Max_Message_Length will be directly attached
 --  to the exception. Otherwise the message is stored on a (protected)

@@ -1,4 +1,6 @@
 -- Image of a duration (without leading space)
+-- Round at Nb_Digits decimals
+-- If Plus and Dur>=0 then put a '+' sign before result
 with As.U, My_Math, Round_At, String_Mng;
 function Dur_Image (Dur : Duration; Nb_Digits : Natural; Plus : Boolean)
                     return String is

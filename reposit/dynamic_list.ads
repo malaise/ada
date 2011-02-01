@@ -8,6 +8,7 @@ package Dynamic_List is
   type Element_Access is access all Element_Type;
   procedure Set (To : out Element_Type; Val : in Element_Type);
 
+  -- Instanciation of Limited_List with a private (non limited) type
   package Dyn_List is new Limited_List (Element_Type, Element_Access, Set);
 
 end Dynamic_List;

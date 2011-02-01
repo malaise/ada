@@ -5,18 +5,20 @@ package Environ is
   function Getenv (Env_Name : String) return String;
 
   -- Getenv for a String. Raises Name_Error if not set.
-  function Getenv_If_Set (Env_Name : String) return String;
   Name_Error : exception;
+  function Getenv_If_Set (Env_Name : String) return String;
 
   -- Getenv for a String.
   -- Leave result and length unchanged if not set or trunc or empty
-  -- otherwise set them.
+  --  otherwise set them.
   procedure Get_Str (Name : String; Result : in out String;
                                     Length : in out Natural);
   -- Getenv for a unbounded string
   procedure Get_Us (Name : String; Result : in out As.U.Asu_Us);
 
   -- Getenv an Integer
+  -- First variant returns Default if not set or trunc or empty
+  -- Second variant leaves Result unchanged
   function  Get_Int (Name : String; Default : Integer) return Integer;
   procedure Get_Int (Name : String; Result : in out Integer);
 
