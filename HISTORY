@@ -1,4 +1,5 @@
 Major changes:
+2011/02/01: Fix in http the decoding when server replies an error (no header)
 2011/01/31: Add make Ada_Parser and Computer re-entrant
 2011/01/28: Add Hosting in github
 2011/01/21: Add Set_Null in As.U and Unbounded_Arrays and use them
