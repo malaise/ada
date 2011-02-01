@@ -6,7 +6,7 @@ package body File_Hash is
   -- Longer names are not stored
   -- Max_Str_Len : constant := 16#FF#;
   -- Hash_Max : constant Hashing.Max_Hash_Range := 16#FFFFF#;
-  function Hash_Func (Key : String) return Hashing.Max_Hash_Range is
+  function Hash_Func (Key : String) return Max_Hash_Range is
     Len : constant Natural := Key'Length;
     use Bit_Ops;
   begin
