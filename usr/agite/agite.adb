@@ -1,5 +1,5 @@
-with As.U, Con_Io, Afpx.List_Manager, Basic_Proc, Int_Image, Directory, Dir_Mng,
-     Sys_Calls, Argument, Argument_Parser, Socket, String_Mng;
+with As.U, Con_Io, Afpx.List_Manager, Basic_Proc, Integer_Image, Directory,
+     Dir_Mng, Sys_Calls, Argument, Argument_Parser, Socket, String_Mng;
 with Utils, Git_If, Config, Bookmarks, History, Confirm;
 procedure Agite is
 
@@ -31,7 +31,6 @@ procedure Agite is
   -- Version Stuff
   Version : Git_If.Version_Rec;
   Ref_Version : constant Git_If.Version_Rec := (1, 7, 0);
-  function Image is new Int_Image (Integer);
   Incorrect_Version : exception;
 
   -- Afpx stuff
@@ -499,9 +498,9 @@ begin
 exception
   when Incorrect_Version =>
     Basic_Proc.Put_Line_Error ("Incorrect Git version. Minimum required: "
-      & Image (Ref_Version.Major) & "."
-      & Image (Ref_Version.Medium) & "."
-      & Image (Ref_Version.Minor) );
+      & Integer_Image (Ref_Version.Major) & "."
+      & Integer_Image (Ref_Version.Medium) & "."
+      & Integer_Image (Ref_Version.Minor) );
     Basic_Proc.Set_Error_Exit_Code;
   when Utils.Exit_Requested =>
     begin

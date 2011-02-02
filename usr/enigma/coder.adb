@@ -1,11 +1,10 @@
-with Int_Image, Environ;
+with Integer_Image, Environ;
 with Definition, Io_Manager;
 package body Coder is
 
-  function Nimage is new Int_Image (Natural);
   function Limage (L : Types.Lid) return String is
   begin
-    return Nimage (Natural (L));
+    return Integer_Image (Natural (L));
   end Limage;
   function Image (L : Types.Lid) return String is
   begin
@@ -92,32 +91,32 @@ package body Coder is
     Move;
     -- Init Lid
     X := Types.Id_Of (L);
-    Put ("Encoding " & Image(X) & ": ");
+    Put ("Encoding " & Image (X) & ": ");
     -- Encode through the switches
     X := Machine.Switches.Translate (X);
-    Put ("S->" & Image(X) & ", ");
+    Put ("S->" & Image (X) & ", ");
     -- Encode through the rotors
     for I in 1 .. Machine.Nb_Rotors loop
       X := X - Machine.Rotors(I).Offset + Machine.Rotors(I).Position;
       X := Machine.Rotors(I).Scrambler.Translate (X)
          + Machine.Rotors(I).Offset - Machine.Rotors(I).Position;
-      Put ("R" & Nimage(I) & "->" & Image(X) & ", ");
+      Put ("R" & Integer_Image (I) & "->" & Image (X) & ", ");
     end loop;
     -- Encode through the reflector
     X := X + Machine.Reflector.Position;
     X := Machine.Reflector.Scrambler.Translate (X);
     X := X - Machine.Reflector.Position;
-    Put ("F->" & Image(X) & ", ");
+    Put ("F->" & Image (X) & ", ");
     -- Encode backwards through the rotors
     for I in reverse 1 .. Machine.Nb_Rotors loop
       X := X - Machine.Rotors(I).Offset + Machine.Rotors(I).Position;
       X := Reverted(I).Translate (X)
          + Machine.Rotors(I).Offset - Machine.Rotors(I).Position;
-      Put ("R" & Nimage(I) & "->" & Image(X) & ", ");
+      Put ("R" & Integer_Image (I) & "->" & Image (X) & ", ");
     end loop;
     -- Encode through the switches
     X := Machine.Switches.Translate (X);
-    Putl ("S->" & Image(X));
+    Putl ("S->" & Image (X));
 
     -- Done
     return Types.Letter_Of (X);

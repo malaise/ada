@@ -1,7 +1,7 @@
 -- Read integers from stdin and add them
 -- Any not digit character is a separator
 with Ada.Text_Io, Ada.Exceptions;
-with Sys_Calls, Text_Line, Parser, Int_Image, Argument, Basic_Proc;
+with Sys_Calls, Text_Line, Parser, Integer_Image, Argument, Basic_Proc;
 procedure Add_Nums is
 
   -- Text_Line file
@@ -18,9 +18,6 @@ procedure Add_Nums is
   begin
     return C <= '0' or else C >= '9';
   end Separates;
-
-  -- For output
-  function Image is new Int_Image (Integer);
 
   -- Put usage
   procedure Usage is
@@ -101,7 +98,7 @@ begin
   -- Done, cleanup and put result
   Parser.Del (Iter);
   Text_Line.Close (File);
-  Ada.Text_Io.Put_Line (Image (Sum));
+  Ada.Text_Io.Put_Line (Integer_Image (Sum));
 
 exception
   when Err:others =>

@@ -1,6 +1,6 @@
 -- Generates a Xml file (or stdout), or string from a tree
 with Ada.Characters.Latin_1;
-with Int_Image, Text_Line, Sys_Calls, Trees;
+with Integer_Image, Text_Line, Sys_Calls, Trees;
 package body Xml_Parser.Generator is
 
   -- Version incremented at each significant change
@@ -9,9 +9,6 @@ package body Xml_Parser.Generator is
   begin
     return "V" & Major_Version & "." & Minor_Version;
   end Version;
-
-  -- Image for xml version
-  function Vers_Image is new Int_Image (Natural);
 
   -- Name validity check
   function Is_Valid_In_Name (Char : Character) return Boolean is
@@ -100,7 +97,8 @@ package body Xml_Parser.Generator is
     -- Init version attribute
     Vers.Kind := Attribute;
     Vers.Name := Version_Name;
-    Vers.Value := As.U.Tus (Vers_Image (Major) & "." & Vers_Image (Minor));
+    Vers.Value := As.U.Tus (Integer_Image (Major)
+                          & "." & Integer_Image (Minor));
 
     -- Read Xml
     Ctx.Prologue.Move_Root;

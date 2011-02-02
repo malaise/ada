@@ -1,9 +1,7 @@
 with Ada.Text_Io;
-with Argument, Regular_Expressions, Int_Image, String_Mng, Text_Line;
+with Argument, Regular_Expressions, Integer_Image, String_Mng, Text_Line;
 
 procedure T_Regexp is
-
-  function Image is new Int_Image (Integer);
 
   procedure Error is
   begin
@@ -85,9 +83,10 @@ begin
       Ada.Text_Io.Put ("matches at pos");
       -- List submatches
       for I in Match_Range'(1) .. N_Matched loop
-        Ada.Text_Io.Put (" [" & Image(Match_Info(I).First_Offset)
-                        & "-" & Image(Match_Info(I).Last_Offset_Start)
-                        & "/" & Image(Match_Info(I).Last_Offset_Stop) & "]");
+        Ada.Text_Io.Put (
+            " [" & Integer_Image(Match_Info(I).First_Offset)
+          & "-" & Integer_Image(Match_Info(I).Last_Offset_Start)
+          & "/" & Integer_Image(Match_Info(I).Last_Offset_Stop) & "]");
       end loop;
       Ada.Text_Io.New_Line;
     end if;

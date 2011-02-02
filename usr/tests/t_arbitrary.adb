@@ -1,5 +1,5 @@
 with Ada.Text_Io;
-with Argument, Arbitrary, Rnd, Int_Image, Mixed_Str, My_Math;
+with Argument, Arbitrary, Rnd, Integer_Image, Mixed_Str, My_Math;
 procedure T_Arbitrary is
 
 
@@ -30,15 +30,13 @@ procedure T_Arbitrary is
     return Rnd.Int_Random (-Max, Max);
   end Random;
 
-  function My_Image is new Int_Image (Integer);
-
   function Image (I : Integer) return String is
   begin
     if I < 0 then
-      return My_Image (I);
+      return Integer_Image (I);
     else
       -- Add the '+'
-      return '+' & My_Image (I);
+      return '+' & Integer_Image (I);
     end if;
   end Image;
 

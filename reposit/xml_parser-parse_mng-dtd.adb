@@ -1,9 +1,9 @@
-with Regular_Expressions, Parser, Int_Image;
+with Regular_Expressions, Parser, Integer_Image;
 separate (Xml_Parser.Parse_Mng)
 package body Dtd is
 
   -- Image of line_no without leading space
-  function Line_Image is new Int_Image (Natural);
+  function Line_Image (I : Integer) return String renames Integer_Image;
 
   -- Separator within Info name and list
   Info_Sep : constant Character := '#';

@@ -1,13 +1,10 @@
 with Ada.Text_Io;
 with As.U, Argument, Text_Line, Sys_Calls, Xml_Parser, Computer, Environ,
-     Int_Image;
+     Integer_Image;
 procedure Comp_Vars is
 
   -- Computer memory
   Memory : Computer.Memory_Type;
-
-  -- Image of a computed value
-  function Comp_Image is new Int_Image (Integer);
 
   -- Getenv raising exception if not set
   function My_Getenv (Name : String) return String is
@@ -190,7 +187,7 @@ procedure Comp_Vars is
         Expr : constant String := Text.Image;
       begin
         if Var_Is_Int then
-          Result := As.U.Tus (Comp_Image (Memory.Compute (Expr)));
+          Result := As.U.Tus (Integer_Image (Memory.Compute (Expr)));
         else
           Result := As.U.Tus (Memory.Eval (Expr));
         end if;

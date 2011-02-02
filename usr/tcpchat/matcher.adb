@@ -1,9 +1,7 @@
 with As.U.Utils;
-with Regular_Expressions, String_Mng.Regex, Any_Def, Int_Image, Trilean;
+with Regular_Expressions, String_Mng.Regex, Any_Def, Integer_Image, Trilean;
 with Variables, Debug, Error;
 package body Matcher is
-
-  function Nat_Image is new Int_Image (Natural);
 
   -- Expand Node.Text (maybe Check_Only)
   -- See if Str matches Node.Text: string comparison if not Node.Regex
@@ -99,7 +97,7 @@ package body Matcher is
       -- Set volatile variables to matching substring
       for I in Match_Info'Range  loop
         -- ${0} is first match ...
-        Expanding := As.U.Tus (Nat_Image (I - 1));
+        Expanding := As.U.Tus (Integer_Image (I - 1));
         if I <= N_Matched
         and then Regular_Expressions.Valid_Match (Match_Info(I)) then
           Expanded := Result.Uslice (Match_Info(I).First_Offset,
@@ -218,7 +216,7 @@ package body Matcher is
       Statements : constant As.U.Utils.Asu_Ua.Unb_Array
                  := String_Mng.Regex.Split_Sep (Assign.Image, "[\n\t ]+");
     begin
-      Debug.Log ("Found " & Natural'Image (Statements.Length)
+      Debug.Log ("Found " & Integer_Image (Statements.Length)
                & " assignments");
       if Statements.Length = 0 then
         -- No separator => Parse the whole Assign string

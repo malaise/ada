@@ -1,8 +1,6 @@
 with Ada.Text_Io;
-with As.B, Int_Image;
+with As.B, Integer_Image;
 procedure T_Asb is
-
-  function Image is new Int_Image (Natural);
 
   N1, N2 : As.B.Asb_Bs(128);
 
@@ -15,7 +13,7 @@ begin
     Ada.Text_Io.Put ("Init is not empty");
     return;
   end if;
-  Ada.Text_Io.Put_Line ("Length " & Image(N1.Length));
+  Ada.Text_Io.Put_Line ("Length " & Integer_Image(N1.Length));
   Ada.Text_Io.Put_Line ("Image " & N1.Image);
   Ada.Text_Io.Put_Line ("Array of 3:");
   N1.Set ('3');
@@ -24,7 +22,7 @@ begin
 
   Ada.Text_Io.Put_Line ("Array of 1, 3, 5:");
   N1.Set ("135");
-  Ada.Text_Io.Put_Line ("Length " & Image(N1.Length));
+  Ada.Text_Io.Put_Line ("Length " & Integer_Image(N1.Length));
   Ada.Text_Io.Put_Line ("Image " & N1.Image);
   Ada.Text_Io.Put_Line ("Element 2: " & N1.Element (2));
   N1.Replace_Element (2, 'u');

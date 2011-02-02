@@ -1,5 +1,5 @@
 with As.U.Utils, Argument, Con_Io, Afpx, Basic_Proc, Language, Many_Strings,
-     String_Mng, Lower_Str, Environ, Int_Image, Event_Mng;
+     String_Mng, Lower_Str, Environ, Integer_Image, Event_Mng;
 with Cmd, Analist;
 procedure Xwords is
 
@@ -52,8 +52,6 @@ procedure Xwords is
   -- Dictio init status
   Dictio_File_Name : As.U.Asu_Us;
   Loading_Anagrams : Boolean;
-
-  function Image is new Int_Image (Integer);
 
   -- Us to Afpx line
   function Us2Afpx (Us : As.U.Asu_Us) return Afpx.Line_Rec is
@@ -116,7 +114,7 @@ procedure Xwords is
       if Anagrams.Element(I).Length /= Length then
         Length := Anagrams.Element(I).Length;
         Afpx.Line_List.Insert (Us2Afpx (As.U.Tus (
-             "-- " & Image (Length) & " --")));
+             "-- " & Integer_Image (Length) & " --")));
       end if;
       Afpx.Line_List.Insert (Us2Afpx (Anagrams.Element(I)));
     end loop;

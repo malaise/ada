@@ -1,11 +1,10 @@
 with Ada.Text_Io;
-with As.U, Unbounded_Arrays, Int_Image;
+with As.U, Unbounded_Arrays, Integer_Image;
 procedure T_Unbounded_Arrays is
 
   type Nat_Array is array (Positive range <>) of Natural;
 
   package Natua is new Unbounded_Arrays (Natural, Nat_Array);
-  function Image is new Int_Image (Natural);
 
   use Natua;
 
@@ -15,7 +14,7 @@ procedure T_Unbounded_Arrays is
     Res : As.U.Asu_Us;
   begin
     for I in A'Range loop
-      Res.Append (Image (A(I)));
+      Res.Append (Integer_Image (A(I)));
       if I /= A'Last then
         Res.Append (", ");
       end if;
@@ -40,7 +39,7 @@ begin
     Ada.Text_Io.Put ("Init is not empty");
     return;
   end if;
-  Ada.Text_Io.Put_Line ("Length " & Image(N1.Length));
+  Ada.Text_Io.Put_Line ("Length " & Integer_Image(N1.Length));
   Ada.Text_Io.Put_Line ("Content " & Image(N1.To_Array));
   Ada.Text_Io.Put_Line ("Image " & Image(N1));
   Ada.Text_Io.Put_Line ("Array of 3:");
@@ -50,12 +49,12 @@ begin
 
   Ada.Text_Io.Put_Line ("Array of 1, 3, 5:");
   N1 := Natua.To_Unbounded_Array ( (1, 3, 5) );
-  Ada.Text_Io.Put_Line ("Length " & Image(N1.Length));
+  Ada.Text_Io.Put_Line ("Length " & Integer_Image(N1.Length));
   Ada.Text_Io.Put_Line ("Content " & Image(N1.To_Array));
   Ada.Text_Io.Put_Line ("Image " & Image(N1));
-  Ada.Text_Io.Put_Line ("Element 2: " & Image(N1.Element (2)));
+  Ada.Text_Io.Put_Line ("Element 2: " & Integer_Image(N1.Element (2)));
   N1.Replace_Element (2, 21);
-  Ada.Text_Io.Put_Line ("Replaced by 21: " & Image(N1.Element (2)));
+  Ada.Text_Io.Put_Line ("Replaced by 21: " & Integer_Image(N1.Element (2)));
   Ada.Text_Io.Put_Line ("Image " & Image(N1));
   Ada.Text_Io.New_Line;
 

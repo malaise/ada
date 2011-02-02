@@ -1,11 +1,8 @@
 with Ada.Text_Io, Ada.Characters.Latin_1;
-with As.U, Argument, Argument_Parser, Environ, Basic_Proc, Int_Image, Sys_Calls,
-     Command, Many_Strings, Parser, Event_Mng;
+with As.U, Argument, Argument_Parser, Environ, Basic_Proc, Integer_Image,
+     Sys_Calls, Command, Many_Strings, Parser, Event_Mng;
 
 procedure T_Arg_Parser is
-
-  -- Image of Natural
-  function Image is new Int_Image (Natural);
 
   -- The env var set on auto test
   Auto_Env_Name : constant String := "T_ARG_PARSER_AUTO_TEST";
@@ -39,7 +36,7 @@ procedure T_Arg_Parser is
   procedure Put (S : String) renames Basic_Proc.Put_Output;
   procedure Put (I : Natural; Append_Sep : Boolean) is
   begin
-    Put (Image (I));
+    Put (Integer_Image (I));
     if Append_Sep then
       Put (" ");
     end if;

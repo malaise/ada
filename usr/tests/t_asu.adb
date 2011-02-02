@@ -1,8 +1,6 @@
 with Ada.Text_Io;
-with As.U, Int_Image;
+with As.U, Integer_Image;
 procedure T_Asu is
-
-  function Image is new Int_Image (Natural);
 
   N1, N2, N3 : As.U.Asu_Us;
   use type As.U.Asu_Us;
@@ -19,7 +17,7 @@ begin
     Ada.Text_Io.Put ("Init is not empty");
     return;
   end if;
-  Ada.Text_Io.Put_Line ("Length " & Image(N1.Length));
+  Ada.Text_Io.Put_Line ("Length " & Integer_Image(N1.Length));
   Ada.Text_Io.Put_Line ("Image " & N1.Image);
   Ada.Text_Io.Put_Line ("Array of 3:");
   N1 := As.U.Tus ('3');
@@ -28,7 +26,7 @@ begin
 
   Ada.Text_Io.Put_Line ("Array of 1, 3, 5:");
   N1 := As.U.Tus ("135");
-  Ada.Text_Io.Put_Line ("Length " & Image(N1.Length));
+  Ada.Text_Io.Put_Line ("Length " & Integer_Image(N1.Length));
   Ada.Text_Io.Put_Line ("Image " & N1.Image);
   Ada.Text_Io.Put_Line ("Element 2: " & N1.Element (2));
   N1.Replace_Element (2, 'u');

@@ -1,7 +1,6 @@
 with Unchecked_Deallocation;
-with Argument, Int_Image, Bit_Ops, Unbounded_Arrays, Basic_Proc;
+with Argument, Integer_Image, Bit_Ops, Unbounded_Arrays, Basic_Proc;
 procedure Renardeau is
-  function Image is new Int_Image (Natural);
 
   -- Internal representation
   subtype Num is Long_Long_Integer range 0 .. Long_Long_Integer'Last;
@@ -129,13 +128,15 @@ procedure Renardeau is
       end if;
       if Is_No_Operation (Outputs.Element(1)) then
         Basic_Proc.Put_Line_Output (
-                 Image (Outputs.Element(1).Result));
+                 Integer_Image (Outputs.Element(1).Result));
       else
         for I in 1 .. Outputs.Length loop
           Output := Outputs.Element(I);
           Basic_Proc.Put_Line_Output (
-            Image (Output.Left) & " " & Operations_Images (Output.Operation) & " "
-          & Image (Output.Right) & " = " & Image (Output.Result));
+            Integer_Image (Output.Left) & " "
+          & Operations_Images (Output.Operation) & " "
+          & Integer_Image (Output.Right) & " = "
+          & Integer_Image (Output.Result));
         end loop;
       end if;
     end if;

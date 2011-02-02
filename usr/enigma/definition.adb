@@ -1,10 +1,8 @@
 -- Parses command line and returns enigma definition
 with Ada.Exceptions;
-with Argument, Xml_Parser, Environ, String_Mng, Parser, Int_Image;
+with Argument, Xml_Parser, Environ, String_Mng, Parser, Integer_Image;
 with Io_Manager;
 package body Definition is
-
-  function Pimage is new Int_Image (Positive);
 
   -- Is the definition loaded
   Initialized : Boolean := False;
@@ -176,7 +174,8 @@ package body Definition is
     if Str'Length mod 2 /= 0 then
       Error ("Invalid number of switches");
     elsif Str'Length > Types.Nb_Letters then
-      Error ("Too many switches (max is " & Pimage (Types.Nb_Letters) & ")");
+      Error ("Too many switches (max is " & Integer_Image (Types.Nb_Letters)
+             & ")");
     end if;
     -- Set switches, check no dup and no identity
     for I in 1 .. Str'Length loop
@@ -283,7 +282,7 @@ package body Definition is
       begin
         if Str = "" then
           Error ("Missing rotor definition, expecting "
-              & Pimage (Def.Nb_Rotors));
+              & Integer_Image (Def.Nb_Rotors));
         end if;
         Arob := String_Mng.Locate (Str, "@");
         if Arob /= Str'Last - 1 then
@@ -310,7 +309,7 @@ package body Definition is
     -- No more Rotor allowed
     if Iter.Next_Word /= "" then
       Error ("Too many rotor definitions, expecting "
-          & Pimage (Def.Nb_Rotors));
+          & Integer_Image (Def.Nb_Rotors));
     end if;
 
     -- Only last rotor can have no carry

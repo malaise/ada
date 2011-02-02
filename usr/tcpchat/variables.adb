@@ -1,11 +1,10 @@
-with Computer, Environ, Regular_Expressions, Int_Image;
+with Computer, Environ, Regular_Expressions, Integer_Image;
 with Error, Debug;
 package body Variables is
 
   Memory : Computer.Memory_Type;
 
   Ext_Ref : constant Character := '$';
-  function Image is new Int_Image (Integer);
 
   -- Dummy variable resolver for check
   function Dummy (Name : String) return String is
@@ -130,7 +129,7 @@ package body Variables is
   begin
     Memory.Set_External_Resolver (Getenv'Access);
     I := Memory.Compute (Text.Image);
-    return As.U.Tus (Image (I));
+    return As.U.Tus (Integer_Image (I));
   exception
     when others =>
       Error ("Cannot compute " & Text.Image);
