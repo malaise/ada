@@ -116,20 +116,30 @@ package body Ip_Addr is
 
   -- Parse a string at format <addr>:<port> where <addr> and <port>
   --  are processed as in both Parse functions above
-  -- :<port> and <port> are supported (<addr> leads to empty host name)
-  -- <addr>: raises Parse_Error
+  -- <addr>: is supported (and lead to empty port name)
+  -- :<port> is supported (and lead to empty host name)
   procedure Parse (Addr_Port : in String;
                    Host : out Tcp_Util.Remote_Host;
                    Port : out Tcp_Util.Remote_Port) is
     Colon : Natural;
   begin
     Colon := String_Mng.Locate (Addr_Port, ":");
-    if Colon <= 1 then
+    if Colon = 0 or else Addr_Port'Length = 1 then
+      -- Only ":" or no ':'
+      raise Parse_Error;
+    end if;
+    if Colon = 1 then
+      -- :<port>
       Host := (Tcp_Util.Host_Name_Spec, As.U.Asu_Null);
     else
       Host := Parse (Addr_Port (Addr_Port'First .. Colon - 1));
     end if;
-    Port := Parse (Addr_Port (Colon + 1 .. Addr_Port'Last));
+    if Colon = Addr_Port'Last then
+      -- <addr>:
+      Port := (Tcp_Util.Port_Name_Spec, As.U.Asu_Null);
+    else
+      Port := Parse (Addr_Port (Colon + 1 .. Addr_Port'Last));
+    end if;
   end Parse;
 
 end Ip_Addr;
