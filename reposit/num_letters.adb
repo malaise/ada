@@ -14,15 +14,9 @@ package body Num_Letters is
   -- Stores "teen" "ty" " hundred" "thousand"
   Tenth : Name_Array (0 .. 3);
 
-  -- Result
-  -- Should store "seventy seven thousand seven hundred seventy seven"
-  --  or same with eight
-  Txt : As.U.Asu_Us;
-
   Initialized : Boolean := False;
   procedure Init is
   begin
-    Txt.Set_Null;
     if Initialized then
       return;
     end if;
@@ -52,8 +46,9 @@ package body Num_Letters is
 
   subtype Str1 is String (1 .. 1);
   subtype Str2 is String (1 .. 2);
+  subtype Str3 is String (1 .. 3);
 
-  -- Generate 1 .. 9
+  -- Name of 0 .. 9
   function Make1 (Str : Str1) return String is
   begin
     if Str = "0" then
@@ -62,6 +57,7 @@ package body Num_Letters is
     return Names(Character'Pos (Str(1)) - Character'Pos ('0')).all;
   end Make1;
 
+  -- Name of 0 .. 99
   function Make2 (Str : Str2) return String is
     Num : Natural;
     T, U : Natural;
@@ -99,10 +95,31 @@ package body Num_Letters is
     end if;
   end Make2;
 
+  -- Name of 0 .. 999
+  function Make3 (Str : Str3) return String is
+    -- String (1 .. 3)
+    Lstr : constant Str3 := Str;
+  begin
+    if Lstr(1) /= '0' then
+      if Lstr (2 .. 3) /= "00" then
+        -- xxx hundred yyy
+        return Make1 (Str(1 .. 1)) & " " & Tenth(2).all
+                    & " " & Make2 (Str(2 .. 3));
+      else
+        -- xxx hundred
+        return Make1 (Str(1 .. 1)) & " " & Tenth(2).all;
+      end if;
+    else
+      -- xxx hundred yyy
+      return Make2 (Str(2 .. 3));
+    end if;
+  end Make3;
+
   function Letters_Of (N : Number) return String is
     Img : constant String := N'Img;
     Rev : String (1 .. Img'Length);
     Last : Positive;
+    Txt : As.U.Asu_Us;
   begin
     Init;
     -- Handle specific case of 0
@@ -120,47 +137,35 @@ package body Num_Letters is
     end loop;
 
     -- Generate thousands, leave hundreds
-    if Last = 5 then
-      Txt := As.U.Tus (Make2 (Rev(5) & Rev(4)) & " " & Tenth(3).all);
+    if Last = 6 then
+      Txt := As.U.Tus (Make3 (Rev(6) & Rev(5) & Rev(4)));
+    elsif Last = 5 then
+      Txt := As.U.Tus (Make2 (Rev(5) & Rev(4)));
       Last := 3;
     elsif Last = 4 then
-      Txt := As.U.Tus (Make1 (Rev(4 .. 4)) & " " & Tenth(3).all);
+      Txt := As.U.Tus (Make1 (Rev(4 .. 4)));
+      Last := 3;
+    end if;
+    if not Txt.Is_Null then
+      Txt.Append (" " & Tenth(3).all);
+      if Rev(1 .. 3) = "000" then
+        -- xxx000 -> thousands => Done
+        return Txt.Image;
+      end if;
+      -- Prepare to process hundreds
+      Txt.Append (" ");
       Last := 3;
     end if;
 
-    -- Skip hundreds if no hundreds
-    if Last = 3 and then Rev(3) = '0' then
-      Last := 2;
-    end if;
-
-    -- Generate hundreds, leave tenths
+    -- Generate hundreds
     if Last = 3 then
-      -- Add separator from thousands
-      if not Txt.Is_Null then
-        Txt.Append (" ");
-      end if;
-      Txt.Append (Make1 (Rev(3 .. 3)) & " " & Tenth(2).all);
-      Last := 2;
-    end if;
-
-    -- Skip tenths if no tenths
-    if Last = 2 and then Rev(2) = '0' then
-      Last := 1;
-    end if;
-
-    -- Generate tenths or unit
-    if Last = 2 then
-      -- Add separator from hundreds
-      if not Txt.Is_Null then
-        Txt.Append (" ");
-      end if;
+      Txt.Append (Make3 (Rev(3) & Rev(2) & Rev(1)));
+    elsif Last = 2 then
       Txt.Append (Make2 (Rev(2) & Rev(1)));
-    elsif Rev(1) /= '0' then
-      -- Add separator from hundreds
-      if not Txt.Is_Null then
-        Txt.Append (" ");
-      end if;
+    elsif Last = 1 then
       Txt.Append (Make1 (Rev(1 .. 1)));
+    else
+      raise Program_Error;
     end if;
 
     return Txt.Image;
