@@ -173,7 +173,7 @@ int incr_time (timeout_t *p_to, unsigned int delay_ms)
 
     timeout_t val;
 
-    val.tv_sec  = (long)delay_ms / (long)THOUSAND;
+    val.tv_sec  = (time_t)delay_ms / (time_t)THOUSAND;
     val.tv_usec = ( (long)delay_ms % (long)THOUSAND ) * (long)THOUSAND;
 
     return (add_time(p_to, &val));
@@ -398,9 +398,9 @@ extern void double_to_time (double from, timeout_t *p_to) {
   /* Convert to ints, checking overflow */
   p_to->tv_sec = (sizeof(p_to->tv_sec) == sizeof(long) ? LONG_MAX : INT_MAX);
   if (s <= (double) p_to->tv_sec) {
-    p_to->tv_sec = (long int)s;
+    p_to->tv_sec = (time_t)s;
   }
-  p_to->tv_usec = (long int)u;
+  p_to->tv_usec = (long)u;
   normalize_time (p_to);
 
 }
