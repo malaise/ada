@@ -20,8 +20,8 @@
  * static void print_date (void) {
  *   timeout_t cur_time;
  *   get_time (&cur_time);
- *   printf ("    >> %06d %06d << ", (int)cur_time.tv_sec,
- *                                   (int)cur_time.tv_usec);
+ *   printf ("    >> %010ld %06d << ", cur_time.tv_sec,
+ *                                     (int)cur_time.tv_usec);
  * }
  */
 
