@@ -73,7 +73,7 @@ package body Tcp_Util is
   begin
     return R1.Fd_Set and then R2.Fd_Set and then R1.Fd = R2.Fd;
   end Fd_Match;
-  procedure Find_By_Fd is new Con_List_Mng.Unsafe_Search (Fd_Match);
+  procedure Find_By_Fd is new Con_List_Mng.Search_Raise (Fd_Match);
 
   -- Delete current connection rec in list
   procedure Delete_Current_Con is
@@ -575,7 +575,7 @@ package body Tcp_Util is
   begin
     return R1.Fd = R2.Fd;
   end Fd_Match;
-  procedure Find_By_Fd is new Acc_List_Mng.Unsafe_Search (Fd_Match);
+  procedure Find_By_Fd is new Acc_List_Mng.Search_Raise (Fd_Match);
 
   --  Search Accepting_Rec by Port_Num
   function Port_Match (R1, R2 : Accepting_Rec) return Boolean is
@@ -761,7 +761,7 @@ package body Tcp_Util is
   begin
     return R1.Fd = R2.Fd;
   end Fd_Match;
-  procedure Find_By_Fd is new Sen_List_Mng.Unsafe_Search (Fd_Match);
+  procedure Find_By_Fd is new Sen_List_Mng.Search_Raise (Fd_Match);
 
   -- Delete current sending rec in list
   procedure Delete_Current_Sen is

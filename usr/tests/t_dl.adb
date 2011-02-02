@@ -4,7 +4,7 @@ procedure T_Dl is
   package My_Dyn_List is new Dynamic_List(Element_Type => Integer);
   package My_List renames My_Dyn_List.Dyn_List;
   procedure My_Search is new My_List.Search("=");   -- ("=" of Integer)
-  procedure My_Unsafe_Search is new My_List.Unsafe_Search("=");
+  procedure My_Search_Raise is new My_List.Search_Raise("=");
   procedure My_Sort is new My_List.Sort("<");  -- ("<" of Integer)
 
   List : My_List.List_Type;
@@ -139,7 +139,7 @@ begin
   -- Permute 1st and 4th elements, then search 3 from last
   Ada.Text_Io.Put_Line("Permute 1st and 4th elements, then search 3 from last");
   List.Permute (0, 3, My_List.Next, False);
-  My_Unsafe_Search (List, 3, My_List.Prev, 1, My_List.Absolute);
+  My_Search_Raise (List, 3, My_List.Prev, 1, My_List.Absolute);
 
   -- Get pos from first and current item
   Ada.Text_Io.Put("Get current pos from first: ");
