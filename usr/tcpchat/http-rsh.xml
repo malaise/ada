@@ -7,7 +7,7 @@
   <!-- HTTP 1.0 or 1.1: Skip noise, send header + file -->
   <chat Name="http" TimeoutMs="&None;" Regexp="true"
         Assign="FILE=${4} VERS=${5}"
-        >GET ((http:/)?/(localhost|${$HOSTNAME}))?([^ ]+)( +HTTP/1\.(0|1))?</chat>
+        >GET ((http:/)?/(localhost|${$HOSTNAME}|${$HOSTIP}))?([^ ]+)( +HTTP/1\.(0|1))?</chat>
   <script>
     <cond>
       <if Variable="VERS"></if>
@@ -73,13 +73,8 @@
         </cond>
       </script>
     </call>
-    <!-- Close if 0.9 -->
-    <cond>
-      <if Variable="VERS"></if>
-      <script>
-        <close/>
-      </script>
-    </cond>
+    <!-- Close -->
+    <close/>
   </script>
 
   <!-- Rsh : execude command -->

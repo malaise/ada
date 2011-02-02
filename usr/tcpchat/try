@@ -1,6 +1,15 @@
 #!/bin/bash
+
 export PASSWORD="userpass"
 export HOSTNAME
+export HOSTIP=`gawk -v HOSTNAME=$HOSTNAME '
+  ($2 == HOSTNAME) {
+    ADDR = $1
+    gsub ("\\\\.", "\\\\.", ADDR)
+    print ADDR
+    exit
+  }
+' /etc/hosts `
 
 if [ "$1" = "-d" ] ; then
   export TCPCHAT_DEBUG=Y
@@ -21,5 +30,5 @@ else
   echo "On stdio"
 fi
 
-exec tcpchat -p $port -f chats.xml
+exec tcpchat -p $port -f $file
 
