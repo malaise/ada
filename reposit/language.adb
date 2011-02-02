@@ -344,8 +344,7 @@ package body Language is
     return Left = String_To_Unicode (Right);
   end "=";
 
-
-  -- Compute the put length of Str
+  -- Compute the number of slots to put Str
   function Put_Length (Str : String) return Natural is
     Len : Natural;
     Index : Natural;
@@ -362,27 +361,32 @@ package body Language is
     return Len;
   end Put_Length;
 
-  -- Compute the last index of Str to put a given
-  --  number of characters
+  -- Compute the last index of Str to put a number of slots max
   function Last_Index_For (Str : String; Put_Pos : Natural) return Natural is
     Index : Natural;
   begin
-    -- Move forward up to Put_Pos
+    if Str'Length = 0 or else Put_Pos = 0 then
+      return 0;
+    end if;
+    -- Move forward by steps of Nb_Chars
     Index := Str'First;
-    loop
-      if Index > Str'Last then
-        -- End of string reached: Put_Pos is too large
-        return 0;
-      elsif Index > Put_Pos then
-        -- Index is now first char after Put_Pos
-        return Index - 1;
+    for I in 1 .. Put_Pos loop
+      Index := Index + (Nb_Chars (Str(Index)) - 1);
+      if Index = Str'Last then
+        -- End of string reached before Put_Pos => Str'last
+        return Str'Last;
+      elsif Index > Str'Last then
+        -- Index + Nb_Chars is above Last + 1 => String is invalid
+        raise Invalid_Utf_8_Sequence;
       end if;
-      Index := Index + Nb_Chars (Str(Index));
+      -- Cannot overflow because < Str'Last
+      Index := Index + 1;
     end loop;
+    return Index - 1;
   end Last_Index_For;
 
-  -- Adjust String so that it contains only Max valid characters
-  --  (result is MAx or shorter than Max)
+  -- Adjust String so that it contains only Len valid characters
+  --  (result is Len or shorter than Len)
   function Adjust (Str : String; Len : Natural) return String is
     Indexes : constant Index_Array := All_Indexes_Of (Str);
     Last : Natural;
@@ -401,8 +405,7 @@ package body Language is
     return "";
   end Adjust;
 
-  -- Compute all the indexes of Str corresponding to successive
-  --  put offset
+  -- Compute all the indexes of Str corresponding to successive slots
   function All_Indexes_Of (Str : String) return Index_Array is
     Indexes : Index_Array (1 .. Str'Length);
     Index : Natural;
@@ -424,7 +427,7 @@ package body Language is
     return Indexes;
   end All_Indexes_Of;
 
-  -- Return slice of Str between 2 positions
+  -- Return slice of Str between 2 slots included
   function Slice (Str : String;
                   First_Pos : Positive;
                   Last_Pos  : Natural) return String is
@@ -436,7 +439,7 @@ package body Language is
       return "";
     end if;
     Last_Nbre_Char := Nb_Chars (Str(Indexes(Last_Pos)));
-    Last_Char_Index := Indexes(Last_Pos) + Last_Nbre_Char;
+    Last_Char_Index := Indexes(Last_Pos) + Last_Nbre_Char - 1;
     return Str (Indexes(First_Pos) .. Last_Char_Index);
   end Slice;
 
