@@ -21,8 +21,8 @@ package Limited_List is
   type Reference is (From_First, From_Last);
 
 
-  -- All calls except Insert, Is_Empty, List_Length and Search may raise
-  --  Empty_List if the list is empty
+  -- All calls except Insert, Is_Empty, List_Length, searches and Iterate
+  --  may raise Empty_List if the list is empty
   -- All calls which modify List may raise In_Callback if performed
   --  in an application callback (Match, Iteration);
 
@@ -70,14 +70,14 @@ package Limited_List is
 
   -- Read and delete the current item
   -- The current item is then the next or the previous item in the list
-  --  except when deleting last item (no movement done!)
-  -- May raise Not_In_List (no get nor movement done)
+  -- Does not raise Not_In_List nor Empty_List when getting the last item
+  -- May raise Not_In_List (no deletion nor movement done)
   procedure Get (List : in out List_Type;
                  Item : out Element_Type;
                  Move : in Direction := Next);
 
   -- Get anyway. Set Moved to True if movement was possible (and done)
-  --  or lists becomes empty, and False otherwise (movement done in the
+  --  or if list becomes empty, and False otherwise (movement done in the
   --  opposite direction)
   procedure Get (List  : in out List_Type;
                  Item  : out Element_Type;
@@ -86,14 +86,14 @@ package Limited_List is
 
 
   -- Suppress the current element from the list
-  --  the current item is then the next or the previous item in the list
+  -- The current item is then the next or the previous item in the list
+  -- Does not raise Not_In_List nor Empty_List when getting the last item
   -- May raise Not_In_List (no deletion nor movement done)
-  -- Does not raise Empty_List when deleting the last item
   procedure Delete (List : in out List_Type;
                     Move : in Direction := Next);
 
   -- Delete anyway. Set Moved to True if movement was possible (and done)
-  --  or lists becomes empty, and False otherwise (movement done in the
+  --  or if list becomes empty, and False otherwise (movement done in the
   --  opposite direction)
   procedure Delete (List  : in out List_Type;
                     Move  : in Direction := Next;
@@ -101,7 +101,7 @@ package Limited_List is
 
 
   -- Delete the full list
-  --  deallocate or not the free list
+  -- Deallocate or not the free list
   procedure Delete_List (List : in out List_Type;
                          Deallocate : in Boolean := True);
 
@@ -110,8 +110,8 @@ package Limited_List is
   --  If From_Current is False, then counting is from the first
   --  item in the list (Next), or the last (Prev).
   -- May raise Not_In_List (no movement done)
-  --  Examples Move_To (List, Next, 1, False) goes to SECOND element
-  --           Move_To (List, Next, 0, False) goes to FIRST element
+  --  Examples: Move_To (List, Next, 1, False) goes to SECOND element
+  --            Move_To (List, Next, 0, False) goes to FIRST element
   procedure Move_To (List         : in out List_Type;
                      Where        : in Direction := Next;
                      Number       : in Natural := 1;
@@ -121,7 +121,7 @@ package Limited_List is
   --  or last (Direction = Prev).
   -- Equivalent to Move_To (List, Where, Position - 1, False)
   -- May raise Not_In_List (no movement done)
-  --  Example Move_At (List, Next, 1) goes to FIRST element
+  --  Example: Move_At (List, Next, 1) goes to FIRST element
   procedure Move_At (List     : in out List_Type;
                      Position : in Positive;
                      Where    : in Direction := Next);
@@ -134,7 +134,7 @@ package Limited_List is
 
   -- Permute 2 elements
   --  If From_Current is True,  then numbers of elements are relative from
-  --   current
+  --   current,
   --  If From_Current is False, then counting is from the first
   --   item in the list (Next), or the last (Prev).
   -- May raise Not_In_List (no movement done)
@@ -163,8 +163,8 @@ package Limited_List is
 
   -- These two calls allow sharing the same list among several
   --  software layers. Each time the list is modified, a flag is set
-  --  which allow another layer to test it and reset it for further
-  --  testing
+  --  which allow another layer to test it and to reset it for further
+  --  setting and testing
   function Is_Modified (List : List_Type) return Boolean;
 
   procedure Modification_Ack (List : in out List_Type);
@@ -172,24 +172,28 @@ package Limited_List is
 
   -- Copy the Val list to To list
   -- CARE: Risk of side effect because List_Type only is duplicated
-  --  while both versions are valid, they sould only navigate (search, move)
-  -- CARE CARE: Only use Assign to make a temporary local copy of Val,
+  --  while both versions are valid, they should only be used to navigate
+  --  (search, move)
+  -- CARE CARE: Only use Unchecked_Assign to make a temporary local copy of Val,
   --  never assign a local list Val to a global list To (because the
   --  finalization of Val will delete the content of To).
   -- Use Insert_Copy instead.
   -- You have been warned.
   procedure Unchecked_Assign (To : in out List_Type; Val : in List_Type);
 
-  -- Completely insert a copy of Val list (data) after or before current
-  --  position in To list. Current becomes last element copied.
+  -- Completely insert a copy of Val elements after or before current
+  --  position in To list. Current becomes the last element copied.
   -- No effect if Val is empty
   procedure Insert_Copy (To    : in out List_Type;
                          Val   : in List_Type;
                          Where : in Direction := Next);
 
 
-  -- Get direct access to current element in list (or null if list is empty).
-  function Access_Current (List : List_Type) return Element_Access;
+  -- Get direct access to current element in list
+  function Access_Current (List : List_Type;
+                           Check_Empty : in Boolean := True)
+           return Element_Access;
+
 
   -- Search the element that is at the provided access (move to it)
   -- Found is set to True if the matching item is found, then the current
@@ -206,17 +210,17 @@ package Limited_List is
   -- Absolute     : Search starts fron beginning/end of list
   type Search_Kind_List is (From_Current, Skip_Current, Absolute);
 
-  -- Search with criteria not of Element_Type
-  -------------------------------------------
+  -- Search with criteria of any type
+  -----------------------------------
   generic
     -- The Criteria is the one provided to Search
     -- Current will be the element of list compared to criteria
     type Criteria_Type is limited private;
     with function Match (Current : Element_Type; Criteria : Criteria_Type)
                   return Boolean;
-  -- Search from the nth occurence of an item matching the provided criteria
-  -- Starts from current, skipping it or not if it matches,
-  --  or from begin/end of list
+  -- Search the Nth occurence of an item matching the provided criteria
+  -- Starts from current, skipping it or not (usefull if current is the result
+  --  of a previous search), or from begin/end of list
   -- Found is set to True if a matching item is found, then the current
   --  position is set to the item found, otherwise it is unchanged.
   -- Does not raise Empty_List.
@@ -234,9 +238,9 @@ package Limited_List is
     -- Current will be the element of list compared to criteria
     with function Match (Current, Criteria : Element_Type)
                   return Boolean;
-  -- Search from the nth occurence of an item matching the provided criteria
-  -- Starts from current, skipping it or not if it matches,
-  --  or from begin/end of list
+  -- Search the Nth occurence of an item matching the provided criteria
+  -- Starts from current, skipping it or not (usefull if current is the result
+  --  of a previous search), or from begin/end of list
   -- Found is set to True if a matching item is found, then the current
   --  position is set to the item found, otherwise it is unchanged.
   -- Does not raise Empty_List.
@@ -252,10 +256,10 @@ package Limited_List is
   -- For Search_Match
   type Match_Access is access function (Current, Criteria : Element_Type)
                               return Boolean;
-  -- Search from the nth occurence of an item matching the provided criteria
+  -- Search the Nth occurence of an item matching the provided criteria
   -- Match is provided as a callback.
-  -- Starts from current, skipping it or not if it matches,
-  --  or from begin/end of list.
+  -- Starts from current, skipping it or not (usefull if current is the result
+  --  of a previous search), or from begin/end of list
   -- Found is set to True if a matching item is found, then the current
   --  position is set to the item found, otherwise it is unchanged.
   -- If Match is null then any element matches.
@@ -278,26 +282,29 @@ package Limited_List is
   generic
     with function Match (Current, Criteria : Element_Type)
                   return Boolean;
-  procedure Unsafe_Search (List      : in out List_Type;
-                           Criteria  : in Element_Type;
-                           Where     : in Direction := Next;
-                           Occurence : in Positive := 1;
-                           From      : in Search_Kind_List);
+  procedure Search_Raise (List      : in out List_Type;
+                          Criteria  : in Element_Type;
+                          Where     : in Direction := Next;
+                          Occurence : in Positive := 1;
+                          From      : in Search_Kind_List);
 
 
+  -- Iteration
+  ------------
   -- Called with each matching element, which can be updated.
   -- Processing of Iterate can be stopped by resetting Go_On to False
   --  (it is initialised to True).
   type Iteration_Access is access procedure (Current : in out Element_Type;
                                              Go_On   : in out Boolean);
 
-  -- Search from the next item matching the provided criteria and
+  -- Search the next item matching the provided criteria and
   --  call Iteration with this item.
-  -- Starts from current, skipping it or not if it matches,
-  --  or from begin/end of list.
+  -- Starts from current, skipping it or not (usefull if current is the result
+  --  of a previous search), or from begin/end of list
   -- Does not raise Empty_List.
   procedure Iterate (List      : in out List_Type;
-                     Match     : in Match_Access;
+                     Match     : access
+                function (Current, Criteria : Element_Type) return Boolean;
                      Criteria  : in Element_Type;
                      Where     : in Direction := Next;
                      From      : in Search_Kind_List;

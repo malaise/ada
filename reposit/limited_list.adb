@@ -634,10 +634,16 @@ package body Limited_List is
 
 
   -- Access to current element
-  function Access_Current (List : List_Type) return Element_Access is
+  function Access_Current (List : List_Type;
+                           Check_Empty : in Boolean := True)
+           return Element_Access is
   begin
     if Is_Empty (List) then
-      return null;
+      if Check_Empty then
+        raise Empty_List;
+      else
+        return null;
+      end if;
     end if;
     return List.Current.Value'Unrestricted_Access;
   end Access_Current;
@@ -804,11 +810,11 @@ package body Limited_List is
   end Search_Match;
 
   -- Search -> exception
-  procedure Unsafe_Search (List      : in out List_Type;
-                           Criteria  : in Element_Type;
-                           Where     : in Direction := Next;
-                           Occurence : in Positive := 1;
-                           From      : in Search_Kind_List) is
+  procedure Search_Raise (List      : in out List_Type;
+                          Criteria  : in Element_Type;
+                          Where     : in Direction := Next;
+                          Occurence : in Positive := 1;
+                          From      : in Search_Kind_List) is
     Found : Boolean;
     function Loc_Match (Current, Criteria : Element_Type) return Boolean is
     begin
@@ -820,11 +826,12 @@ package body Limited_List is
     if not Found then
       raise Not_In_List;
     end if;
-  end Unsafe_Search;
+  end Search_Raise;
 
   -- Iterate
   procedure Iterate (List      : in out List_Type;
-                     Match     : in Match_Access;
+                     Match     : access
+                function (Current, Criteria : Element_Type) return Boolean;
                      Criteria  : in Element_Type;
                      Where     : in Direction := Next;
                      From      : in Search_Kind_List;
