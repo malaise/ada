@@ -13,6 +13,12 @@ package body Many_Strings is
     return Str;
   end Empty;
 
+  -- True if Str is really empty (no separator nor string)
+  function Is_Empty (Str : Many_String) return Boolean is
+  begin
+    return Str.Ustr.Is_Null;
+  end Is_Empty;
+
   -- Init
   function Set (To : String) return Many_String is
   begin

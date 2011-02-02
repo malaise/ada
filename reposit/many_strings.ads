@@ -15,6 +15,9 @@ package Many_Strings is
   procedure Reset (Str : in out Many_String);
   function Empty return Many_String;
 
+  -- True if Str is really empty (no separator nor string)
+  function Is_Empty (Str : Many_String) return Boolean;
+
   -- Init a Many_String
   function Set (To : String) return Many_String;
   function Set (To : As.U.Asu_Us) return Many_String;
@@ -22,7 +25,7 @@ package Many_Strings is
   procedure Set (Str : in out Many_String; To : in As.U.Asu_Us);
 
   -- Concatenation
-  -- If Str is empty then it set to What
+  -- If Str is empty then it is set to What
   -- otherwise concatenate to Str a Separator then What (even if What is empty)
   function Cat (Str : Many_String; What : String) return Many_String;
   function Cat (Str : Many_String; What : As.U.Asu_Us) return Many_String;
@@ -36,7 +39,7 @@ package Many_Strings is
   function Image (Str : Many_String) return As.U.Asu_Us;
 
   -- Decode (String_Error is raised by Nth if N > Nb)
-  -- An empty string contains one (empty) string
+  -- An empty Many_String contains one (empty) string
   function Nb  (Str : Many_String) return Positive;
   function Nth (Str : Many_String; N : Positive) return String;
   function Nth (Str : Many_String; N : Positive) return As.U.Asu_Us;
