@@ -1,3 +1,4 @@
+-- Convert a character into upper char
 function Upper_Char (Char : Character) return Character is
   Offset  : constant Integer   := Character'Pos('A') - Character'Pos('a');
 begin

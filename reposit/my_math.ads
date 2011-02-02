@@ -15,7 +15,7 @@ package My_Math is
   Pi : constant := Ada.Numerics.Pi;
   -- e constant
   E : constant := Ada.Numerics.E;
-  -- possible units for trigonometric constants
+  -- Possible units for trigonometric constants
   type Angle_Unit is (Radian, Degree);
 
   -- Integer part and fractional part of a real
@@ -43,15 +43,16 @@ package My_Math is
   function Cos (X : Real; Mode : Angle_Unit := Radian) return Real;
   function Tg  (X : Real; Mode : Angle_Unit := Radian) return Real;
 
-  -- Invers trigonometric functions
+  -- Invert trigonometric functions
   -- arc sinus returned on -pi/2 .. pi/2
   function Arc_Sin (X : Real; Mode : Angle_Unit := Radian) return Real;
   -- arc cosinus returned on 0 .. pi
   function Arc_Cos (X : Real; Mode : Angle_Unit := Radian) return Real;
-  -- arc tangente returned on -pi/2 .. pi/2
+  -- arc tangent returned on -pi/2 .. pi/2
   function Arc_Tg  (X : Real; Mode : Angle_Unit := Radian) return Real;
 
-  -- exception raised in case of error
+  -- Exception raised in case of invalid argument or numeric error
   Math_Error : exception;
 
 end My_Math;
+

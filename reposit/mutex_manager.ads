@@ -6,10 +6,11 @@ package Mutex_Manager is
   -- Simple is standard mutex providing exclusive acccess. Efficient.
   -- Read_Write allows several readers but one writer at a time.
   --  This implementation is fair but somewhat CPU consuming because
-  --  the arival of a reader while writer(s) wait triggers a re-evaluation
-  --  to let it pass if it has a higher priority.
+  --  the arrival of a reader while writer(s) wait triggers a re-evaluation
+  --  to let it pass if it has a higher (task) priority.
   -- Write_Read is like Read_Write but it priviledges writer(s).
-  --   No reader passes as soon as writer(s) queue.
+  --   No reader passes as soon as writer(s) queue, which is less fair
+  --   but more efficient.
   type Mutex_Kind is (Simple, Read_Write, Write_Read);
 
   -- Kind of requested access for a Read_Write and Write_Read mutex

@@ -1,3 +1,5 @@
+-- Convert the characters of Str: First character into upper char
+--  and others into lower char
 with Upper_Char, Lower_Char;
 function Mixed_Str (Str : String) return String is
   Str_Loc : String (Str'Range) := Str;

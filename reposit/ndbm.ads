@@ -1,3 +1,4 @@
+-- Interface to gdbm (dbm and ndbm) database manager
 generic
   type Key is private;
   type Data is private;

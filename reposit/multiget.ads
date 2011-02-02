@@ -35,7 +35,8 @@ package Multiget is
   -- When the buffer is full, the oldest got item is overwritten by the new one
   function Get (User_Data : User_Data_Type) return Item_Type;
 
-  -- Returns the number of Unget that can be done (0 when recording is not active)
+  -- Returns the number of Unget that can be done (0 when recording is
+  --  not active)
   function Nb_Unget return Unget_Range;
 
   -- Ungets one or several gets (0 for all, Nb_Unget)
