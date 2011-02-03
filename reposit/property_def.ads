@@ -1,6 +1,6 @@
+-- Definition of a property: (name, value)
 with As.U, Any_Def;
 package Property_Def is
-
 
   type Property is record
     Name : As.U.Asu_Us;
