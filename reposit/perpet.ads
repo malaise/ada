@@ -1,3 +1,4 @@
+-- Perpetual calendar
 with Ada.Calendar;
 package Perpet is
 
@@ -28,10 +29,10 @@ package Perpet is
    0 .. Ada.Calendar.Year_Number'Last - Ada.Calendar.Year_Number'First;
 
   subtype Month_Range is Integer range 0 .. Ada.Calendar.Month_Number'Last;
-  -- Years & Months to add (or substract). Months are truncated :
+  -- Years & Months to add (or substract). Months are truncated:
   --     Jan 31 + 1 month -> Feb 28 (or 29)
   --     Jan 31 + 3 month -> Apr 30
-  -- and Mar 31 - 1 month -> Feb 28 (or 29)
+  --     Mar 31 - 1 month -> Feb 28 (or 29)
   type Duration_Rec is record
     Years  : Year_Range;
     Months : Month_Range;
@@ -68,8 +69,7 @@ package Perpet is
 
   -- Nb of days and secs between two dates
   --  If Date_1 < Date_2, Time_Error will be raised
-  function "-" (Date_1, Date_2 : Ada.Calendar.Time)
-    return Delta_Rec;
+  function "-" (Date_1, Date_2 : Ada.Calendar.Time) return Delta_Rec;
 
   -- Add/Sub a delta to a time
   function "+" (Date : Ada.Calendar.Time; Delta_Date : Delta_Rec)
@@ -102,7 +102,7 @@ package Perpet is
                           return Month_Name_List;
 
 
-  -- On overflow of year range
+  -- On overflow of year range or when obtaining a negative Delta_Rec
   Time_Error : exception renames Ada.Calendar.Time_Error;
 
 end Perpet;

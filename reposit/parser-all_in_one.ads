@@ -1,3 +1,4 @@
+-- Parse all the string in one call
 package Parser.All_In_One is
 
   -- The array of parsed element

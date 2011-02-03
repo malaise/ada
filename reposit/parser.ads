@@ -1,3 +1,4 @@
+-- Parse the words of a string
 with Ada.Finalization;
 with As.U;
 package Parser is
