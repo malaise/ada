@@ -1,4 +1,5 @@
-with Sys_Calls;
+-- Spawn (fork) a child and mutate (exec) a new program
+with Many_Strings, Sys_Calls;
 package Proc_Family is
 
   -- Callback for death report
@@ -37,8 +38,8 @@ package Proc_Family is
   end record;
 
   -- Spawn a process (with mutation if mutation /= "")
-  --  if set, Mutation (prog name and arguments) have to follow
-  --    Many_Strings format
+  --  if set, Mutation contains the program name and arguments packed
+  --    in a Many_Strings.Many_String
   --  redirecting standard in/out/err flows if Std_Fds
   --  opening com channel if New_Fds
   -- If not empty, Mutation has to follow Many_Strings format
@@ -47,7 +48,8 @@ package Proc_Family is
   --  - A Signal_Event is generated on the death of children
   --  - Programs using Spawn shall not set their own Sig_Child callback
   type Comm_Kind_List is (None, Std_Fds, New_Fds);
-  function Spawn (Mutation     : String := "";
+  function Spawn (Mutation     : Many_Strings.Many_String
+                               := Many_Strings.Empty_String;
                   Comm         : Comm_Kind_List := None;
                   Death_Report : Death_Callback_Access := null)
            return Spawn_Result_Rec;

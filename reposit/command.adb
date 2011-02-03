@@ -225,7 +225,7 @@ package body Command is
     if Debug then
       Ada.Text_Io.Put_Line ("Command: Spwaning >" & Cmd_Line.Image & "<");
     end if;
-    Spawn_Result := Proc_Family.Spawn (Cmd_Line.Image,
+    Spawn_Result := Proc_Family.Spawn (Cmd_Line,
                                        Proc_Family.Std_Fds,
                                        Death_Cb'Access);
     if not Spawn_Result.Ok or else not Spawn_Result.Open then

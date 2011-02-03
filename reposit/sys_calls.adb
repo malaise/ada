@@ -755,10 +755,10 @@ package body Sys_Calls is
   end Procreate;
 
   -- Process mutation (exec)
-  procedure Mutate (Program : in String) is
+  procedure Mutate (Program : in Many_Strings.Many_String) is
     procedure C_Mutate (Args : in System.Address; Len : in C_Types.Int);
     pragma Import  (C, C_Mutate, "mutate");
-    Str4C : constant String := Program & Ada.Characters.Latin_1.Nul;
+    Str4C : constant String := Program.Image & Ada.Characters.Latin_1.Nul;
   begin
     C_Mutate (Str4C'Address, Str4C'Length);
   end Mutate;

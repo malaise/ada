@@ -1,6 +1,6 @@
 with System;
 with Ada.Calendar;
-with C_Types;
+with C_Types, Many_Strings;
 package Sys_Calls is
 
   -- Call system
@@ -199,7 +199,7 @@ package Sys_Calls is
 
   -- Process mutation (exec)
   -- Program_name and arguments have to follow Many_Strings format
-  procedure Mutate (Program : in String);
+  procedure Mutate (Program : in Many_Strings.Many_String);
 
   -- When mutation failed, child process shall suicide by using this
   procedure Suicide;

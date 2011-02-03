@@ -50,7 +50,7 @@ begin
   if Child then
     Ada.Text_Io.Put_Line ("I am child  pid " & Child_Pid'Img
          & " of father pid " & Sys_Calls.Get_Parent_Pid'Img);
-    Sys_Calls.Mutate (Str.Image);
+    Sys_Calls.Mutate (Str);
     Ada.Text_Io.Put_Line ("Child mutation has failed!");
   else
 

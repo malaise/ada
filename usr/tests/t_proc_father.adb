@@ -92,7 +92,7 @@ begin
   end loop;
 
 
-  Spawn_Result := Proc_Family.Spawn (Str.Image,
+  Spawn_Result := Proc_Family.Spawn (Str,
                                      Proc_Family.Std_Fds,
                                      Death_Cb'Unrestricted_Access);
   if not Spawn_Result.Ok then

@@ -10,6 +10,7 @@ package Many_Strings is
   --  separated by Separator
   -- No separator if there is no or one string
   type Many_String is tagged private;
+  Empty_String : constant Many_String;
 
   -- Clear a Many_String
   procedure Reset (Str : in out Many_String);
@@ -49,5 +50,6 @@ private
   type Many_String is tagged record
     Ustr : As.U.Asu_Us;
   end record;
+  Empty_String : constant Many_String := (Ustr => As.U.Asu_Null);
 end Many_Strings;
 

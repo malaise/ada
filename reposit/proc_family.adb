@@ -128,7 +128,8 @@ package body Proc_Family is
   --  redirecting standard in/out/err flows if Std_Fds
   --  opening com channel if New_Fds
   -- If Death_Callback is set, it will be called on child's death
-  function Spawn (Mutation      : String := "";
+  function Spawn (Mutation      : Many_Strings.Many_String
+                               := Many_Strings.Empty_String;
                   Comm          : Comm_Kind_List := None;
                   Death_Report  : Death_Callback_Access := null)
            return Spawn_Result_Rec is
@@ -227,7 +228,7 @@ package body Proc_Family is
       Close (Result.Fd_Err);
     end if;
 
-    if Mutation /= "" then
+    if not Mutation.Is_Empty then
       begin
         -- Reroute standard Fds is needed: Close and dup2
         if Comm = Std_Fds then

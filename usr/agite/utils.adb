@@ -48,7 +48,7 @@ package body Utils is
     Cmd.Set ("/bin/sh");
     Cmd.Cat ("-c");
     Cmd.Cat (Command);
-    Res := Proc_Family.Spawn (Cmd.Image);
+    Res := Proc_Family.Spawn (Cmd);
   end Launch;
 
 end Utils;
