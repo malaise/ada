@@ -32,7 +32,7 @@ begin
           N := Romanic.Arabic_Range'Value(Str);
         exception
           when others =>
-            Ada.Text_Io.Put_Line ("Not an arabic number: " & Str);
+            Ada.Text_Io.Put_Line ("Not a valid arabic number: " & Str);
             raise Skip_It;
         end;
         begin
@@ -48,6 +48,9 @@ begin
         begin
           N := Romanic.Romanic2Arabic(Str);
         exception
+          when Romanic.Invalid_Romanic =>
+            Ada.Text_Io.Put_Line ("Not a valid romanic number: " & Str);
+            raise Skip_It;
           when Error:others =>
             Ada.Text_Io.Put_Line ("Romanic2Arabic on " & Str & " raised "
                                 & Ada.Exceptions.Exception_Name(Error));

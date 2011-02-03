@@ -1,5 +1,22 @@
 with As.U;
 package body Romanic is
+  Nb_Digits : constant := 7;
+  subtype Digits_Range is Positive range 1 .. Nb_Digits;
+
+  type Typo_Rec is record
+    Typo : Character;
+    Val  : Positive;
+  end record;
+
+  Typo_Def_Array : constant array (Digits_Range) of Typo_Rec := (
+    ('I',     1),
+    ('V',     5),
+    ('X',    10),
+    ('L',    50),
+    ('C',   100),
+    ('D',   500),
+    ('M', 1_000));
+
   -- Convert a romanic number into arabic
   -- May raise Invalid_Roman
   function Romanic2Arabic (Romanic : in String) return Arabic_Range is
@@ -107,9 +124,13 @@ package body Romanic is
           -- This digit cannot be repeated
           raise Invalid_Romanic;
         end if;
-        if Nb_Repet = 2 then
+        if Nb_Repet = 3 and then Current = 'M' then
+          -- This M is already repated 3 times and is also the next:
+          -- 5 times the same digit
+          raise Invalid_Romanic;
+        elsif Nb_Repet = 2 and then Current /= 'M' then
           -- This digit is already repated twice and is also the next:
-          -- Four times the same digit
+          -- 4 times the same digit
           raise Invalid_Romanic;
         else
           -- Another repeated digit
@@ -186,12 +207,13 @@ package body Romanic is
         for I in 6 .. N loop
           Result.Append (Typo_Def_Array(Index).Typo);
         end loop;
-      elsif N = 4 then
+      elsif N = 4 and then Index /= Digits_Range'Last then
         -- Current then Next
         Result.Append (Typo_Def_Array(Index).Typo
                           & Typo_Def_Array(Index+1).Typo);
       else
         -- N times current
+        -- Up to 3 times for all but M and up to 4 times for M
         for I in 1 .. N loop
           Result.Append (Typo_Def_Array(Index).Typo);
         end loop;

@@ -1,26 +1,12 @@
+-- Conversion of romanic numbers (ex: VII) to anf from arabic (ex: 7)
 package Romanic is
 
   -- The romanic typo
-  -- Max is MMMCMXCIX (3999)
-  Nb_Digits : constant := 7;
-  subtype Digits_Range is Positive range 1 .. Nb_Digits;
+  -------------------
+  -- Longest supported is MMMMDCCCLXXXVIII (4888)
+  -- Biggest supported is MMMMCMXCIX (4999)
 
-  type Typo_Rec is record
-    Typo : Character;
-    Val  : Positive;
-  end record;
-
-  Typo_Def_Array : constant array (Digits_Range) of Typo_Rec := (
-    ('I',     1),
-    ('V',     5),
-    ('X',    10),
-    ('L',    50),
-    ('C',   100),
-    ('D',   500),
-    ('M', 1_000));
-
-  -- The corresponding arabic value
-  subtype Arabic_Range is Positive range 1 .. 3999;
+  subtype Arabic_Range is Positive range 1 .. 4999;
 
   -- Convert a romanic number into arabic
   -- May raise Invalid_Romanic
