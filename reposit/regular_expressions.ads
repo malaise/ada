@@ -12,8 +12,8 @@ package Regular_Expressions is
   -- When a character is encoded on several bytes,
   --  Language is used to detect the end of this sequence and
   --  set Last_Offset_Stop to the last byte of the sequence.
-  -- 'abcab' matches '(ab)c\1*' at pos [1-5] [1-2]
-  -- 'to/to' matches 'to($)' 'at pos [4-5] [6-5]
+  -- 'abcab' matches '(ab)c\1*' at pos [1-5/5] [1-2/2]
+  -- 'to/to' matches 'to($)' 'at pos [4-5/5] [6-5/5]
   subtype Offset_Range is Integer;
   type Match_Cell is record
     First_Offset      :  Offset_Range;
@@ -33,11 +33,8 @@ package Regular_Expressions is
                      Case_Sensitive : in Boolean := True;
                      Match_Newline : in Boolean := True);
 
-  -- Check a regex, return True if OK
+  -- Check syntax of a regex, return True if OK
   function Check (Criteria : String) return Boolean;
-
-  -- Check that a Match_Cell can be used to extract matching (sub) string
-  function Valid_Match (Cell : Match_Cell) return Boolean;
 
   -- Execute a regex
   -- If Mach_Info is empty, N_Matched is set to 1 (match) or 0 (not match)
@@ -50,7 +47,8 @@ package Regular_Expressions is
   -- Also beware that an empty To_Check can match a Criteria that is
   --  only made of optional patterns (e.g. '' matches 't*'). In this
   --  case Match_Info is one cell of Any_Match.
-  -- Use Valid_Match to check if you can use it to extract substrings.
+  -- Use Valid_Match to check if you can use a Match_Cell to extract the
+  --  corresponding substring.
   No_Criteria : exception;
   procedure Exec (Criteria : in Compiled_Pattern;
                   To_Check : in String;
@@ -59,13 +57,17 @@ package Regular_Expressions is
                   Begin_Line_Match : in Boolean := True;
                   End_Line_Match : in Boolean := True);
 
- -- Compare string Str to Criteria (Compile and Exec with default values)
-  -- Returns No_Match or a Match_Cell (possibly Any_Match)
+  -- Compare string Str to Criteria (Compile and Exec with default values)
+  -- Returns No_Match or a Match_Cell (possibly Any_Match) corresponding
+  --  to Match_Info(1)
   -- May raise No_Criteria is Criteria does not compile
   function Match (Criteria, Str : String) return Match_Cell;
 
+  -- Check that a Match_Cell (returned by Exec or Match) is valid
+  --  i.e. it can be used to extract a matching (sub) string
+  function Valid_Match (Cell : Match_Cell) return Boolean;
+
   -- Compare string Str to Criteria (Compile and Exec with default values)
-  -- Returns True or False
   -- If Strict is set, then True is returned if and only if the
   --  complete Str matches the criteria (i.e. First_Offset = Str'First
   --  and Last_Offset_Stop = Str'Last)

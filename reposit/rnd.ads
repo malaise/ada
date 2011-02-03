@@ -1,8 +1,8 @@
-
+-- Pseudo random number generator
 package Rnd is
   pragma Elaborate_Body(Rnd);
 
-  -- Initialisation of sequence,
+  -- Initialisation of the sequence,
   --   on  Init if 0.0 <= Init < 1.0
   --   randomly otherwise
   procedure Randomize (Init : in Float := 1.0);
@@ -24,7 +24,6 @@ package Rnd is
   -- Next element in sequence: Mini <= R < Maxi
   function Dur_Random (Mini : Duration := 0.0;
                        Maxi : Duration := 1.0) return Duration;
-
 
 end Rnd;
 

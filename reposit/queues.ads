@@ -1,7 +1,7 @@
 package Queues is
 
   generic
-    -- Last in first out
+    -- Last in - first out
     -- Management of a stack of objects to be defined: type Object is...;
     -- Size of the stack: Size : Positive := ...;
     -- Instanciation: package My_Lifo is new Queues.Lifo (Size, Object);
@@ -37,7 +37,7 @@ package Queues is
     -- Make room by removing the last to be popped
     procedure Discard_Last (Queue : in out Lifo_Type);
 
-    -- Clear
+    -- Clear the whole stack
     procedure Clear (Queue : in out Lifo_Type);
 
 
@@ -58,7 +58,7 @@ package Queues is
   end Lifo;
 
   generic
-    -- First in first out
+    -- First in - first out
     -- Management of a queue of objects to be defined: type Object is...;
     -- Size of the stack: Size : Positive := ...;
     -- Instanciation: package My_Fifo is new Queues.Fifo (Size, Object);
@@ -95,7 +95,7 @@ package Queues is
     -- Make room by removing the last to be popped
     procedure Discard_Last (Queue : in out Fifo_Type);
 
-    -- Clear
+    -- Clear the whole queue
     procedure Clear (Queue : in out Fifo_Type);
 
     -- Exceptions raised during push if the stack is full
@@ -120,7 +120,7 @@ package Queues is
   end Fifo;
 
   generic
-    -- First in first out with Priority
+    -- First in - first out with Priority
     -- Management of a queue of objects to be defined: type Object is...;
     -- Each object associated to a priority:
     -- subtpye Priority is Integer range ...;
@@ -161,7 +161,7 @@ package Queues is
     -- Make room by removing the last to be popped
     procedure Discard_Last (Queue : in out Prio_Type);
 
-    -- Clear
+    -- Clear the whole queue
     procedure Clear (Queue : in out Prio_Type);
 
 
@@ -225,7 +225,7 @@ package Queues is
     -- Make room by removing the last to be popped
     procedure Discard_Last (Queue : in out Circ_Type);
 
-    -- Clear
+    -- Clear the whole buffer
     procedure Clear (Queue : in out Circ_Type);
 
 

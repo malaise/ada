@@ -8,17 +8,17 @@ package Regex_Filters is
   -- Append the regex Criteria and the success condition Match to the Filter
   Invalid_Regex : exception;
   procedure Add_Regex (Filter : in out Regex_Filter;
-            Criteria : in String;
-            Match : in Boolean);
+                       Criteria : in String;
+                       Match : in Boolean);
 
   -- Check Str versus first Criteria.
-  -- Success is if it matches and then Match was set for this Criteria,
-  --  or if does not match and Match was not set.
-  -- If success, then go to next criteria
-  -- Return True is success for all criterias
+  -- Success is if it matches and then Match was set to True for this Criteria,
+  --  or if does not match and Match was set to False for this Criteria.
+  -- If success, then go to next criteria otherwise return False
+  -- Return True is success for all criterias or no criteria defined
   function Check (Str : String; Filter : in Regex_Filter) return Boolean;
 
-
+  -- Remove all criteria
   procedure Clear_Filter (Filter : in out Regex_Filter);
 
 private

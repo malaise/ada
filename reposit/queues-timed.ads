@@ -36,7 +36,6 @@ package Queues.Timed is
                   Equal  : access function (X, Criteria : Item) return Boolean;
                   X      : out Item;
                   Found  : out Boolean);
-  --
 
   -- Remove all items if any (no exception)
   procedure Clear (Queue : in out Timed_Type);

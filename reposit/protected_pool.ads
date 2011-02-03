@@ -1,4 +1,5 @@
--- Protected pool of objects accessed by key
+-- Protected pool of objects, each accessed by a unique key
+-- Access and modification of the Pool are protected by a mutex
 with Ada.Finalization;
 with Dynamic_List, Mutex_Manager;
 generic
@@ -17,6 +18,7 @@ package Protected_Pool is
   -- Key_Value may raise Constraint_Error
   function Key_Image (Key : Key_Type) return String;
   function Key_Value (Str : String) return Key_Type;
+
 
   -- Store a new element in the pool, return the key to access it
   -- Raises Pool_Full if Positive'Last elements are already stored
