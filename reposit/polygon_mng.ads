@@ -1,3 +1,5 @@
+-- Is a point within or outside a polygon
+-- Is a polygon crossed (some semgments cross each other)
 package Polygon_Mng is
 
   -- Representation of a point
@@ -25,7 +27,7 @@ package Polygon_Mng is
        Accuracy       : in Float;
        Result         : out Belonging_Results);
 
-  function Is_Connexe (Polygon : Float_Points_Array) return Boolean;
+  function Is_Crossed (Polygon : Float_Points_Array) return Boolean;
 
   procedure Belong_To_Area
       (Polygon        : in Int_Points_Array;
@@ -33,7 +35,7 @@ package Polygon_Mng is
        Accuracy       : in Float;
        Result         : out Belonging_Results);
 
-  function Is_Connexe (Polygon : Int_Points_Array) return Boolean;
+  function Is_Crossed (Polygon : Int_Points_Array) return Boolean;
 
   Not_A_Polygon : exception;
 

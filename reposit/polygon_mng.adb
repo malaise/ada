@@ -136,7 +136,7 @@ package body Polygon_Mng is
 
   end Segments_Intersect;
 
-  function Is_Connexe (Polygon : Float_Points_Array) return Boolean is
+  function Is_Crossed (Polygon : Float_Points_Array) return Boolean is
 
     Intersect : Boolean;
     I_Point   : Float_Point_Rec;
@@ -156,7 +156,7 @@ package body Polygon_Mng is
                             Intersect => Intersect,
                             I_Point   => I_Point);
         if Intersect then
-          return False;
+          return True;
         end if;
       end loop;
     end loop;
@@ -169,13 +169,13 @@ package body Polygon_Mng is
                           Intersect => Intersect,
                           I_Point   => I_Point);
       if Intersect then
-        return False;
+        return True;
       end if;
     end loop;
 
-    return True;
+    return False;
 
-  end Is_Connexe;
+  end Is_Crossed;
 
   function To_Float (Point : Int_Point_Rec) return Float_Point_Rec is
   begin
@@ -203,12 +203,12 @@ package body Polygon_Mng is
     Belong_To_Area (Float_Polygon, Float_Point_To_Check, Accuracy, Result);
   end  Belong_To_Area;
 
-  function Is_Connexe (Polygon : Int_Points_Array) return Boolean is
+  function Is_Crossed (Polygon : Int_Points_Array) return Boolean is
     Float_Polygon : Float_Points_Array(1 .. Polygon'Length);
   begin
     To_Float (Polygon, Float_Polygon);
-    return Is_Connexe (Float_Polygon);
-  end Is_Connexe;
+    return Is_Crossed (Float_Polygon);
+  end Is_Crossed;
 
 end Polygon_Mng;
 
