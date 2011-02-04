@@ -1,3 +1,6 @@
+-- Allow several object to have references to a common object and
+--  automatically de-allocate the referenced object when last user releases
+--  its reference
 with Ada.Finalization;
 generic
   type Object is limited private;
@@ -5,7 +8,7 @@ generic
   with procedure Finalize (Dest : in Object);
 package Smart_Reference is
 
-  type Handle is limited private;
+  type Handle is tagged limited private;
 
   -- Initialise a Handle to an object
   procedure Set (Reference : in out Handle; Init : in Object);
@@ -17,7 +20,10 @@ package Smart_Reference is
   procedure Release (Reference : in out Handle);
 
   -- Get handled object
+  -- Raises Constraint_Error is Reference is not set or released
   procedure Dereference (Reference : in out Handle; Val : in out Object);
+  procedure Get (Reference : in out Handle; Val : in out Object)
+            renames Dereference;
 
 private
   type Object_Access is access Object;
