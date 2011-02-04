@@ -337,7 +337,7 @@ begin
             My_Io.Put ("Criteria (String)? "); My_Io.Get_Line (Str1, Nat1);
             My_Io.Put ("Max_Slices (Pos)? "); Nat_Get (Pos1, False);
             declare
-              Lstr : constant String_Mng.Regex.String_Slice
+              Lstr : constant As.U.Utils.Asu_Array
                    := String_Mng.Regex.Split (Str(1 .. Str_Len),
                                               Str1(1 .. Nat1), Pos1);
             begin
@@ -358,12 +358,12 @@ begin
             My_Io.Put_Line ("22 Regex split on sep");
             My_Io.Put ("Separator (Str)? "); My_Io.Get_Line (Str1, Nat1);
             declare
-              Slices : constant As.U.Utils.Asu_Ua.Unb_Array
+              Slices : constant As.U.Utils.Asu_Array
                      := String_Mng.Regex.Split_Sep (Str(1 .. Str_Len),
                                                     Str1(1 .. Nat1));
             begin
-              for I in 1 .. Slices.Length loop
-                My_Io.Put_Line (">" & Slices.Element (I).Image & "<");
+              for I in 1 .. Slices'Length loop
+                My_Io.Put_Line (">" & Slices(I).Image & "<");
               end loop;
             end;
 

@@ -21,11 +21,12 @@ package String_Mng.Regex is
   -- Raised by Locate or Replace if Within is not Empty and an Index is not
   -- in Within'Range
   Invalid_Index : exception;
-  -- Raised by Locate or Replace  or Split if Criteria is not a valid
-  -- extented regularexpression
+  -- Raised by Locate or Replace or Split if Criteria is not a valid
+  -- extented regular expression
   Invalid_Regular_Expression : exception;
 
   -- Locate a fragment of Within string matching the regexp Criteria.
+  -- Criteria is an extented regular expression.
   -- Search is performed between the given From_Index (first if 0) and
   --  the To_Index (last if 0) indexes of Within.
   -- Search can be performed either forward or backward, and returns the
@@ -42,16 +43,16 @@ package String_Mng.Regex is
 
 
   -- Replace in Within string all occurences of Criteria by By.
-  -- Search and replace is performed between the given From_Index (first if 0)
-  --  and the given To_Index (last if 0) indexes of Within.
-  -- Criteria can be a regular expression and By may:
+  -- Criteria is an extented regular expression and By may:
   --   reference partial matching substrings (\0, \1, \2 up to \9)
   --   contain hexadecimal code (\xIJ)
-  --   convert in UPPER, lower, Mixed case, stop converting (\u, \l, \m and \c).
+  --   convert to UPPER, lower, Mixed case, stop converting (\u, \l, \m and \c).
+  -- Search and replace is performed forward between the given From_Index
+  --  (first if 0) and the given To_Index (last if 0) indexes of Within.
   -- Once a substitution has occured, the search continues from the
   --  first character after replacement (thus avoiding loops), up to To_Index.
   -- This cycle ends when no substitution occurs or after a maximum Nb_Cycles,
-  --  (if not 0). Beware that Nb_Cycles=0 may lead to infinite.
+  --  (if not 0). Beware that Nb_Cycles=0 may lead to infinite loop.
   function Replace (Within     : String;
                     Criteria   : String;
                     By         : String;
@@ -63,18 +64,18 @@ package String_Mng.Regex is
   -- Split Str into several substrings that match the substrings "(...)"
   --  of the criteria.
   -- Returns the array of slices (empty array if Str does not strictly match).
-  type String_Slice is array (Positive range <>) of As.U.Asu_Us;
+  -- Example: Split ("1o2o", "(.)o(.)o)) -> ("1", "2")
   function Split (Str : String;
                   Criteria : String;
-                  Max_Slices : Positive) return String_Slice;
+                  Max_Slices : Positive) return As.U.Utils.Asu_Array;
 
   -- Split Str into several substrings separated by strings matching the
   --  separator.
   -- Returns the array of slices (Str at pos 1 if no match,
   --   empty slice if Str at all matches Separator).
-  -- Leading and trailing separators lead to leading and trailing empty strings
+  -- Heading and trailing separators lead to heading and trailing empty strings
   --  in the result.
   function Split_Sep (Str : String; Separator : String)
-           return As.U.Utils.Asu_Ua.Unb_Array;
+           return As.U.Utils.Asu_Array;
 end String_Mng.Regex;
 

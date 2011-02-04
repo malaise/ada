@@ -1,6 +1,6 @@
 with Ada.Text_Io, Ada.Exceptions;
-with As.U, Argument, Xml_Parser, Normal, Basic_Proc, Sys_Calls, Text_Line,
-     String_Mng.Regex, Directory, Dir_Mng, Upper_Str, Rnd;
+with As.U.Utils, Argument, Xml_Parser, Normal, Basic_Proc, Sys_Calls,
+     Text_Line, String_Mng.Regex, Directory, Dir_Mng, Upper_Str, Rnd;
 procedure T_Xml_String is
   Ctx : Xml_Parser.Ctx_Type;
   Prologue, Root : Xml_Parser.Element_Type;
@@ -101,7 +101,7 @@ procedure T_Xml_String is
       end if;
     elsif Target = If_Vers_Key then
       declare
-        Strs : constant String_Mng.Regex.String_Slice
+        Strs : constant As.U.Utils.Asu_Array
              := String_Mng.Regex.Split (Text, If_Vers_Crit, 2);
       begin
         if Strs'Length /= 2 then

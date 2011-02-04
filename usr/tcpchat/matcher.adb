@@ -213,22 +213,22 @@ package body Matcher is
     -- Check and compute Assign
     declare
       -- Split into assignments
-      Statements : constant As.U.Utils.Asu_Ua.Unb_Array
+      Statements : constant As.U.Utils.Asu_Array
                  := String_Mng.Regex.Split_Sep (Assign.Image, "[\n\t ]+");
     begin
-      Debug.Log ("Found " & Integer_Image (Statements.Length)
+      Debug.Log ("Found " & Integer_Image (Statements'Length)
                & " assignments");
-      if Statements.Length = 0 then
+      if Statements'Length = 0 then
         -- No separator => Parse the whole Assign string
         Parse_Assign (Node, 1, Assign);
       else
         -- Parse each assignment
         Assign_Index := 1;
-        for I in 1 .. Statements.Length loop
-          if not Statements.Element(I).Is_Null then
+        for I in 1 .. Statements'Length loop
+          if not Statements(I).Is_Null then
             -- Leading or trailing separator in assignments string
             --  lead to empty elements, to be skipped
-            Parse_Assign (Node, Assign_Index, Statements.Element(I));
+            Parse_Assign (Node, Assign_Index, Statements(I));
             Assign_Index := Assign_Index + 1;
           end if;
         end loop;

@@ -337,7 +337,7 @@ package body String_Mng.Regex is
   -- Returns the array of slices (empty array if Str does not match).
   function Split (Str : String;
                   Criteria : String;
-                  Max_Slices : Positive) return String_Slice is
+                  Max_Slices : Positive) return As.U.Utils.Asu_Array is
     -- Regex compilation
     Ok : Boolean;
     Compiled : Regular_Expressions.Compiled_Pattern;
@@ -357,14 +357,14 @@ package body String_Mng.Regex is
     or else  Cells(1).First_Offset /= Str'First
     or else  Cells(1).Last_Offset_Stop /= Str'Last then
       declare
-        Result : constant String_Slice (1 .. 0) := (others => As.U.Asu_Null);
+        Result : constant As.U.Utils.Asu_Array(1 .. 0) := (others => As.U.Asu_Null);
       begin
         return Result;
       end;
     end if;
     -- Build result: Copy
     declare
-      Result : String_Slice (1 .. N_Matched - 1);
+      Result : As.U.Utils.Asu_Array(1 .. N_Matched - 1);
     begin
       for I in Result'Range loop
         Result(I) := As.U.Tus (
@@ -378,7 +378,7 @@ package body String_Mng.Regex is
   --  separator.
   -- Returns the array of slices (Str if no match).
   function Split_Sep (Str : String; Separator : String)
-           return As.U.Utils.Asu_Ua.Unb_Array is
+           return As.U.Utils.Asu_Array is
     -- Regex compilation
     Ok : Boolean;
     Compiled : Regular_Expressions.Compiled_Pattern;
@@ -412,10 +412,10 @@ package body String_Mng.Regex is
         else
           -- A real match
           if Cell.Last_Offset_Stop = Str'Last then
-            -- Str ends by a match, append this slice and Asu_Null and return
+            -- Str ends by a match, append this slice and Asu_Null and exit
             Result.Append (As.U.Tus (Str(From_Index .. Cell.First_Offset - 1)));
             Result.Append (As.U.Asu_Null);
-            return Result;
+            exit;
           else
             -- Append this slice
             Result.Append (As.U.Tus (Str(From_Index .. Cell.First_Offset - 1)));
@@ -426,15 +426,15 @@ package body String_Mng.Regex is
       elsif From_Index = Str'First then
         -- No match at all
         Result := As.U.Utils.Asu_Ua.To_Unb_Array (As.U.Tus (Str));
-        return Result;
+        exit;
       else
         -- No more match: Append tail
         Result.Append(As.U.Tus (Str(From_Index .. Str'Last)));
-        return Result;
+        exit;
       end if;
       exit when From_Index > Str'Last;
     end loop;
-    return Result;
+    return Result.To_Array;
   end Split_Sep;
 
 end String_Mng.Regex;
