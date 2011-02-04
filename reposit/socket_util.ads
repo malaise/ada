@@ -1,3 +1,4 @@
+-- Use Tcp_Util addresses on socket
 with Socket, Tcp_Util;
 package Socket_Util is
 

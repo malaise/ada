@@ -1,3 +1,4 @@
+-- State machine management
 generic
 
   -- List of states

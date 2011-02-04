@@ -1,3 +1,4 @@
+-- UDP, IPM and TCP socket binding
 with System;
 with Sys_Calls, C_Types;
 package Socket is
