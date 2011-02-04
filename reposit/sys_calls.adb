@@ -726,7 +726,7 @@ package body Sys_Calls is
   end Get_Parent_Pid;
 
   -- Kill
-  procedure Kill (Dest_Pid : in Pid; Signal_No : in Natural) is
+  procedure Kill (Dest_Pid : in Pid; Signal_No : in Kill_Signal_Range) is
     function C_Kill (Dest_Pid : C_Types.Pid_T; Signal : C_Types.Int)
              return Integer;
     pragma Import (C, C_Kill, "kill");

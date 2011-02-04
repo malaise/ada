@@ -12,7 +12,7 @@ package Proc_Family is
         Exit_Code : Integer;
       when Sys_Calls.Signaled =>
         Signaled_Pid : Sys_Calls.Pid;
-        Signal : Positive;
+        Signal : Sys_Calls.Signal_Range;
     end case;
   end record;
   type Death_Callback_Access is access procedure (Death_Report : in Death_Rec);

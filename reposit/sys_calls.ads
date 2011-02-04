@@ -3,7 +3,7 @@ with Ada.Calendar;
 with C_Types, Many_Strings;
 package Sys_Calls is
 
-  -- Call system
+  -- Call system (execute UNIX command)
   function Call_System (Command : String) return Integer;
 
   -- Unlink a file
@@ -32,9 +32,9 @@ package Sys_Calls is
   procedure Flush_Error;
 
   -- Basic getenv, raises Env_Not_Set
-  function Getenv (Env_Name : String) return String;
   Env_Not_Set : exception;
-  -- Getenv and truncates if necessary
+  function Getenv (Env_Name : String) return String;
+  -- Getenv and truncates if necessary, no exception
   procedure Getenv (Env_Name : in String;
                     Env_Set   : out Boolean;
                     Env_Trunc : out Boolean;
@@ -59,6 +59,7 @@ package Sys_Calls is
 
   -- Unix File Descriptor
   type File_Desc is new C_Types.Int range 0 .. C_Types.Int'Last;
+  -- File kind
   type File_Desc_Kind_List is (Tty,
     File, Dir, Link, Block_Device, Character_Device, Pipe, Socket, Unknown);
   function File_Desc_Kind (Fd : File_Desc) return File_Desc_Kind_List;
@@ -76,10 +77,11 @@ package Sys_Calls is
   function File_Found (File_Name : String) return Boolean;
 
 
-  -- File kind (not tty)
+  -- Kind of file on disk (not tty)
   subtype File_Kind_List is File_Desc_Kind_List range File .. Unknown;
   -- File modif time
-  type Time_T is private;
+  type Time_T is new C_Types.Time_T;
+
   -- File Rights are :
   --  1st bit OX  2nd bit OW  3rd bit OR
   --  4th bit GX  5th bit GW  6th bit GR
@@ -109,7 +111,7 @@ package Sys_Calls is
   -- Convert file time
   function Time_Of (Time : Time_T) return Ada.Calendar.Time;
 
-  -- Get effective user/group Id
+  -- Get effective user/group Id of current process
   function Get_Effective_User_Id return Natural;
   function Get_Effective_Group_Id return Natural;
 
@@ -144,7 +146,7 @@ package Sys_Calls is
   -- (from Asynchronous tty or non blocking fd)
   -- If Status is Got then C is the got character
   -- Else Status = None if no character available
-  --      Status = Closed if connection is closed (read -> 0)
+  --      Status = Closed if connection/tty is closed (read -> 0)
   --      Status = Error  in case of other error
   type Get_Status_List is (Got, None, Closed, Error);
   procedure Get_Immediate (Fd : in File_Desc;
@@ -173,16 +175,18 @@ package Sys_Calls is
   -- May raise System_Error
   procedure Pipe (Fd1, Fd2 : out File_Desc);
 
-  -- Duplicate a file descriptor, using smallest or Start_At
+  -- Duplicate the file descriptor To_Copy, using smallest Fd possible
   -- Fd has CLOEXEC set
   -- May raise System_Error
   function Dup (To_Copy : in File_Desc) return File_Desc;
+  -- Same but returns Set_Fd (closing it before duplicating if necessary)
   function Dup2 (To_Copy, Set_Fd : in File_Desc) return File_Desc;
 
-  -- Set CLOEXEC to true on Fd
+  -- Set or reset CLOEXEC on Fd
   -- May raise System_Error
   procedure Set_Cloexec (Fd : in File_Desc; On : in Boolean);
 
+  -- Process Id
   type Pid is new Integer;
 
   -- Get current / parent pid
@@ -191,7 +195,9 @@ package Sys_Calls is
 
   -- Kill a process
   -- May raise System_Error
-  procedure Kill (Dest_Pid : in Pid; Signal_No : in Natural);
+  subtype Kill_Signal_Range is Natural range 0 .. 64;
+  subtype Signal_Range is Kill_Signal_Range range 1 .. Kill_Signal_Range'Last;
+  procedure Kill (Dest_Pid : in Pid; Signal_No : in Kill_Signal_Range);
 
   -- Process procreation (fork)
   -- May raise System_Error
@@ -215,7 +221,7 @@ package Sys_Calls is
         Exit_Code : Integer;
       when Signaled =>
         Signaled_Pid : Pid;
-        Signal : Positive;
+        Signal : Signal_Range;
       when Stopped =>
         Stopped_Pid : Pid;
     end case;
@@ -229,10 +235,6 @@ package Sys_Calls is
 
   -- Exception (of read, write, pipe...)
   System_Error : exception;
-
-private
-
-  type Time_T is new C_Types.Time_T;
 
 end Sys_Calls;
 
