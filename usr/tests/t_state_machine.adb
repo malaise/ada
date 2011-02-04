@@ -6,8 +6,11 @@ procedure T_State_Machine is
 
   type Event_List is (True, Default, Start, Failure, Success, Attach, Detach);
 
-  package Msm is new State_Machine (State_List, Event_List);
-  use Msm;
+  package Msm is new State_Machine (State_List, Event_List, Boolean);
+  Mach : Msm.Machine_Type (True);
+  Mach1 : Msm.Machine_Type (False);
+  Mach2 : Msm.Machine_Type (False);
+  pragma Unreferenced (Mach1, Mach2);
 
   Cur_State : State_List;
   Event : Event_List;
@@ -28,7 +31,7 @@ procedure T_State_Machine is
   end Get_Event;
 
 
-  procedure Put_Change (Change : in State_Change_Rec) is
+  procedure Put_Change (Change : in Msm.State_Change_Rec) is
     procedure Puts (Str : in String) is
       Strmax : String(1 .. 8) := (others => ' ');
     begin
@@ -52,7 +55,8 @@ procedure T_State_Machine is
     My_Io.New_Line;
   end Put_Change;
 
-  procedure Display_Change (Msg : in String; Change : in State_Change_Rec) is
+  procedure Display_Change (Msg : in String;
+                            Change : in Msm.State_Change_Rec) is
   begin
     if Change.Destination_State /= Change.Original_State then
       My_Io.Put (Msg & ": ");
@@ -60,15 +64,21 @@ procedure T_State_Machine is
     end if;
   end Display_Change;
 
-  procedure Report_Transition (Transition : in Transition_Rec) is
+  procedure Report_Transition (Id : in Boolean;
+                               Transition : in Msm.Transition_Rec) is
+    pragma Unreferenced (Id);
   begin
     Display_Change ("Transition", Transition);
   end Report_Transition;
-  procedure Report_Event (Transition : in Transition_Rec) is
+  procedure Report_Event (Id : in Boolean;
+                          Transition : in Msm.Transition_Rec) is
+    pragma Unreferenced (Id);
   begin
     Display_Change ("Event", Transition);
   end Report_Event;
-  procedure Report_State (Change : in State_Change_Rec) is
+  procedure Report_State (Id : in Boolean;
+                          Change : in Msm.State_Change_Rec) is
+    pragma Unreferenced (Id);
   begin
     Display_Change ("State", Change);
   end Report_State;
@@ -76,10 +86,10 @@ procedure T_State_Machine is
   procedure My_Add_Transition (From_State : in State_List;
                                Event : Event_List;
                                To_State : in State_List) is
-    Transition : Transition_Rec;
+    Transition : Msm.Transition_Rec;
   begin
     Transition := (True, From_State, To_State, Event);
-    Msm.Add_Transition (Transition, Report_Transition'Unrestricted_Access);
+    Mach.Add_Transition (Transition, Report_Transition'Unrestricted_Access);
     Put_Change (Transition);
   end My_Add_Transition;
 
@@ -112,23 +122,23 @@ begin
 --My_Add_Transition (Ok,       True,      Failed)  ;
 --My_Add_Transition (Failed,   True,      Ok)      ;
   My_Io.Put_Line("Reports set on State=Unknown and Event=Default");
-  Msm.Add_State_Report(Unknown, Report_State'Unrestricted_Access);
-  Msm.Add_Event_Report(Default, Report_Event'Unrestricted_Access);
+  Mach.Add_State_Report(Unknown, Report_State'Unrestricted_Access);
+  Mach.Add_Event_Report(Default, Report_Event'Unrestricted_Access);
   My_Io.Put_Line("End of state machine definition.");
   My_Io.New_Line;
-  End_Declaration;
+  Mach.End_Declaration;
 
-  My_Io.Put_Line ("Initial state : " & State_List'Image(Current_State));
+  My_Io.Put_Line ("Initial state : " & State_List'Image(Mach.Current_State));
 
   -- Drive
   loop
-    Cur_State := Current_State;
+    Cur_State := Mach.Current_State;
 
     Valid_Event := True;
     case Cur_State is
       when Failed =>
         My_Io.Put_Line (" test program : setting state to unknown");
-        Set_State (Unknown);
+        Mach.Set_State (Unknown);
       when others =>
         begin
           Event := Get_Event;
@@ -137,7 +147,7 @@ begin
             Valid_Event := False;
         end;
         if Valid_Event then
-          New_Event (Event);
+          Mach.New_Event (Event);
         else
           My_Io.Put_Line (" ???");
         end if;
