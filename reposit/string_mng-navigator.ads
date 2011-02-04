@@ -1,4 +1,5 @@
--- Allows navigation (lookup chars) within a string
+-- Allows navigation (lookup chars) within and possibly outside (around)
+--  a string
 with As.U;
 package String_Mng.Navigator is
 
@@ -18,12 +19,13 @@ package String_Mng.Navigator is
   -- (Str'First at the beginning)
   function Position (Navig : Navigator_Type) return Integer;
 
-  -- Is a position within bounds
+  -- Is a position (Current + Offset) within bounds
   function In_Bounds (Navig : Navigator_Type;
                       Offset : Integer := 0) return Boolean;
 
   -- Move forward or backwards
-  -- May move out of the string
+  -- If Current + By is out the string, raise May raise Out_Of_Bounds if Check
+  --  and move out of the string
   procedure Move (Navig : in out Navigator_Type;
                   By    : in Integer := 1;
                   Check : in Boolean := False);
@@ -38,7 +40,8 @@ package String_Mng.Navigator is
   function Get_No_Char (Navig : Navigator_Type) return Character;
 
   -- Lookup a character
-  -- May returns No_Char if out the string
+  -- If Current + Offset is out the string, raise Out_Of_Bounds if Check
+  --  and return No_Char otherwise
   function Lookup (Navig  : Navigator_Type;
                    Offset : Integer := 0;
                    Check  : Boolean := False)

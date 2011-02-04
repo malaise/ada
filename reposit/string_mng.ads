@@ -1,9 +1,10 @@
+-- Various String utilities
 with Ada.Characters.Latin_1;
 with Many_Strings;
 package String_Mng is
 
   -- Parses spaces and tabs (Latin_1.Ht) from the head/tail of a string
-  -- Returns the position of the first/last character or 0 if
+  -- Returns the position of the first/last character, or 0 if
   --  all the string is spaces or tabs (or empty)
   function Parse_Spaces (Str : String; From_Head : Boolean := True)
            return Natural;
@@ -12,16 +13,17 @@ package String_Mng is
   type Strip_Kind is (Tail, Head, Both);
   function Strip (Str : String; From : Strip_Kind := Tail) return String;
 
-  -- Puts a string str in a string of fixed length Len.
+  -- Puts the string Str in a string of fixed length Len.
   -- If Str is shorter than Len, it is aligned at right or left and padded
-  -- If Str is longer  than Len, it's head ot tail is truncated
+  -- If Str is longer  than Len, it's head or tail is truncated
   -- Str : String to put in the returned string
   -- Len : Number of characters of the returned string
   -- Align_Left : If string is shorter than Len characters,
-  --     align it at left or at right (not Align_Left) and fill with Gap,
+  --     align it at left (Align_Left) or at right (not Align_Left) and fill
+  --     with Gap,
   -- Gap : When string is shorter than Len, fill empty positions with Gap
   -- Trunc_Head : If string is longer than Len characters, trunc it's head
-  --     or its tail (not Trunc_Head)
+  --     (Trunc_Head) or its tail (not Trunc_Head)
   -- Show_Trunc : When string is longer than Len, if Show_Trunc is set,
   --         then Str is truncated to Len-2 and starts (Trunc_Head) with "> "
   --         or ends (not Trunc_Head) with " <"
@@ -33,10 +35,10 @@ package String_Mng is
                      Show_Trunc : Boolean := True)
            return String;
 
-  -- Locate Nth occurence of a fragment within a string,
-  --  between a given index (first/last if 0) and the end/beginning of string,
-  --  searching forward or backward
-  -- Returns index in Within of char matching start of Fragment
+  -- Locate the Nth occurence of a fragment within a string,
+  --  between a given index (first/last if 0) and the end/beginning of the
+  --  string, searching forward or backward
+  -- Returns the index in Within of the char matching the start of Fragment,
   --  or 0 if not found or if Within or Fragment is empty
   function Locate (Within     : String;
                    Fragment   : String;
@@ -74,8 +76,8 @@ package String_Mng is
                   To_Right : Boolean := True)
            return String;
 
-  -- Remove the Nb_Char first (if Head is set to True) or last characters
-  --   (if Head is set to False) of From string.
+  -- Remove the Nb_Char first (if Head is set to True) or last
+  --   (if Head is set to False) characters of From string.
   -- Return the remaining string.
   function Cut (From : String;
                 Nb_Char : Natural;
@@ -106,12 +108,12 @@ package String_Mng is
   --  (that will be propagated by Eval_Variables).
   type Resolv_Access is access function (Variable_Name : String) return String;
   -- Replace all variables by their values provided by the Resolv callback.
-  -- A variable name is identified because it is within delimiters (strings).
+  -- A variable name is identified when it is within delimiters (strings).
   -- Start and stop delimiters must be non empty and different (e.g. "(" and ")",
   --  or "${" and "}"), otherwise Inv_Delimiter is raised.
   -- Variables may be defined recursively (e.g. ${Foo${Bar}}).
   -- Delimiter number must match (as many stop as start and in consistent
-  --  sequence e.g. {}}{ s forbidden), otherwise the exception
+  --  sequence e.g. {}}{ is forbidden), otherwise the exception
   --  Delimiter_Mismatch is raised.
   -- On option Recursive, loops re-avaluating as long as possible (otherwise
   --  only one pass)
@@ -128,12 +130,12 @@ package String_Mng is
            return String;
   Inv_Delimiter, Delimiter_Mismatch : exception;
 
-  -- Locate an escape sequence within the Within string,
+  -- Locate an escape sequence within the Within_Str string,
   --  starting searching from From_Index.
   -- An escape sequence is one escape character followed by the possible
   --  escaped characters. The escape character can escape itself.
   --  (e.g. Escape="\na" will detect "\\" "\n" or "\a").
-  -- Returns the index in Within of the escaped matching character
+  -- Returns the index in Within_Str of the escaped matching character
   --  (e.g. the '\', 'n' or 'a' following the first '\'), or 0 if not found.
   -- Also returns 0 if Escape is empty.
   function Locate_Escape (Within_Str : String;
@@ -141,7 +143,7 @@ package String_Mng is
                           Escape     : String) return Natural;
 
   -- Check if the character at Index of Str is backslashed
-  --  (the number of '\' before it is odd)
+  --  (the number of '\' immediately before it is odd)
   -- Raises Constraint_Error if Index is out of Str
   function Is_Backslashed (Str   : String;
                            Index : Positive) return Boolean;
@@ -178,7 +180,7 @@ package String_Mng is
   procedure Copy (Val : in String; To : in out String);
 
   -- Replace occurences of What by By in Str. One pass.
-  -- If Skip_Backslashed, use Is_Backslash to detect it and skip
+  -- If Skip_Backslashed, use Is_Backslash to detect \What and skip it
   function Replace (Str, What, By : String;
                     Skip_Backslashed : Boolean := False) return String;
 
@@ -188,6 +190,7 @@ package String_Mng is
   -- Center a String Str in a fixed size
   -- if Str <= Size pad with Gap before then after Str
   -- if Str > Size  raise Constraint_Error
+  -- Example:
   function Center (Str : String;
                    Len : Positive;
                    Gap : Character := ' ') return String;
