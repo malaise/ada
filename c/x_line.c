@@ -10,6 +10,7 @@
 #include "x_file.h"
 
 #include <X11/cursorfont.h>
+#include <X11/Xutil.h>
 
 #define DEF_WIN_MASK CWBackPixel | CWBorderPixel | CWEventMask | CWCursor | CWOverrideRedirect | CWBackingStore
 #define DEF_WIN_ATTRIB 2, 0, InputOutput, CopyFromParent, win_mask, &win_attrib
@@ -324,6 +325,7 @@ Status res;
             free (p_window);
             return (NULL);
         }
+
     }
 
     XSetWindowColormap (p_window->server->x_server, p_window->x_window,
@@ -351,6 +353,18 @@ Status res;
     res =  XSetWMProtocols (p_window->server->x_server, p_window->x_window, &p_window->server->delete_code, 1);
     if (res == 0) {
             printf ("X_LINE : X Can set delete-window WM protocol.\n");
+    }
+
+    /* Force fixed size in the window manager */
+    {
+        XSizeHints hints;
+        hints.min_width = (unsigned int)p_window->wwidth;
+        hints.max_width = (unsigned int)p_window->wwidth;
+        hints.min_height = (unsigned int)p_window->wheight;
+        hints.max_height = (unsigned int)p_window->wheight;
+        hints.flags = PMaxSize|PMinSize;
+        XSetWMNormalHints(p_window->server->x_server, p_window->x_window,
+                          &hints);
     }
 
     /* Map Window */
