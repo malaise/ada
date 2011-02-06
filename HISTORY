@@ -1,4 +1,5 @@
 Major changes:
+2011/02/06: Add fix size of X window in window manager
 2011/02/04: Add make State_Machine OO
 2011/02/02: Add support for http://<ip_address>
 2011/02/01: Fix in http the decoding when server replies an error (no header)
