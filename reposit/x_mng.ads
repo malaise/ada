@@ -43,6 +43,9 @@ package X_Mng is
                        Shift_Up, Shift_Down, Ctrl_Up, Ctrl_Down);
 
   -- Result of waiting (see Event_Mng for Events).
+  -- CARE:
+  -- Calling X_Mng in a Timer, Fd or Signal callback will result in a
+  --  deadlock
   type Event_Kind is (
      Keyboard, Tid_Release, Tid_Press, Tid_Motion, Refresh, Selection,
      Exit_Request,
@@ -259,6 +262,8 @@ package X_Mng is
   -- Kind is Keyboard or Tid (Press or Release or Motion) for this line,
   --  or Refresh or Exit_Request or Fd_Event or Timer_Event or Signal_Event...
   -- Timeout must be in real time (Clock = null) or Invalid_Timeout is raised
+  -- CARE: Timer, Fd or Signal callbacks are invoked internally and calling
+  --  X_Mng in these callbacks will lead to a deadlock
   Invalid_Timeout : exception;
   procedure X_Wait_Event(Line_Id : in Line;
                          Timeout : in out Timers.Delay_Rec;
