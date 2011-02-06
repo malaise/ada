@@ -17,8 +17,6 @@ package Nav_Dialog is
   -- put consistency error message during a while
   procedure Put (Error : in Nav_Data.T_Consistency);
 
-  procedure Abort_Clock renames Nav_Screen.Abort_Clock;
-
 end Nav_Dialog;
 
 

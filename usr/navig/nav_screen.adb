@@ -1,5 +1,5 @@
 -- All the primitives to access the screen
-with Task_Mng, Timers, Language;
+with Timers, Language;
 package body Nav_Screen is
 
   -- The 8 needed windows
@@ -38,8 +38,6 @@ package body Nav_Screen is
   -- Time displaying
   procedure Show_Time is separate;
 
-  package Time_Task_Mng is new Task_Mng (Call_Back => Show_Time);
-
   -- Clear all the screen
   procedure Reset is
   begin
@@ -49,7 +47,6 @@ package body Nav_Screen is
   -- To write the title
   procedure Title is
   begin
-    Time_Task_Mng.Start;
     Con_Io.Move ((0, 30), W_Title);
     Con_Io.Put ("AERONAUTICAL NAVIGATION", W_Title,
                 Con_Io.Color_Of ("Light_Blue"));
@@ -73,7 +70,6 @@ package body Nav_Screen is
     Con_Io.Put ("? in a field to clear it", W_Title);
 
     Show_Time;
-    Time_Task_Mng.Schedule;
 
   end Title;
 
@@ -156,6 +152,7 @@ package body Nav_Screen is
   begin
     Lstr := Language.Copy (Str);
     for I in 1 .. Time_Out_Get loop
+      Show_Time;
       Con_Io.Move ( (Fld_Row(Field), Fld_Col(Field)), W_Get);
       if Blink then
         Con_Io.Put_Then_Get (Lstr, Last, Nxt, Pos, Insert, W_Get,
@@ -164,7 +161,6 @@ package body Nav_Screen is
         Con_Io.Put_Then_Get (Lstr, Last, Nxt, Pos, Insert, W_Get,
          Time_Out => Delta_Get);
       end if;
-      Time_Task_Mng.Schedule;
       exit when Nxt /= Con_Io.Timeout;
     end loop;
     Next := Nxt;
@@ -245,13 +241,13 @@ package body Nav_Screen is
     Stat := Con_Io.Right;
     loop
       -- Infinite get with Get_Back on Get_Back
+      Show_Time;
       if Stat /= Con_Io.Timeout then
         Con_Io.Move (0, Act_Col(Cur_Action), W_Act);
         Con_Io.Put ('X', W_Act, Background => Get_Back);
       end if;
       Con_Io.Move (0, Act_Col(Cur_Action), W_Act);
       Con_Io.Get (Str, Last, Stat, Pos, Ins, W_Act, Time_Out => Delta_Get);
-      Time_Task_Mng.Schedule;
       if Stat /= Con_Io.Timeout then
         Con_Io.Put (' ', W_Act, Background => Get_Back);
       end if;
@@ -333,19 +329,16 @@ package body Nav_Screen is
   begin
     Stat := Con_Io.Refresh;
     loop
+      Show_Time;
       if Stat = Con_Io.Refresh then
         Con_Io.Move (Name => W_Err);
         Con_Io.Put ("Confirm you want to quit by entering 'Return': ", W_Err);
       end if;
       Con_Io.Move ( (0, 49), W_Err);
       Con_Io.Get (Str, Last, Stat, Pos, Ins, W_Err, Time_Out => Delta_Get);
-      Time_Task_Mng.Schedule;
       exit when Stat /= Con_Io.Timeout;
     end loop;
     Con_Io.Clear (W_Err);
-    if Stat = Con_Io.Ret then
-      Abort_Clock;
-    end if;
     return Stat = Con_Io.Ret;
   end Confirm_Quit;
 
@@ -392,27 +385,17 @@ package body Nav_Screen is
   begin
     Stat := Con_Io.Refresh;
     loop
+      Show_Time;
       if Stat = Con_Io.Refresh then
         Put;
       end if;
       Con_Io.Move ((13, 45), W_Help);
       Con_Io.Get (Str, Lst, Stat, Pos, Ins, W_Help,
        Con_Io.Default_Background, Con_Io.Default_Background, Delta_Get);
-      Time_Task_Mng.Schedule;
       exit when Stat = Con_Io.Ret;
     end loop;
     Con_Io.Clear (W_Help);
   end Put_Help;
-
-  procedure Abort_Clock is
-  begin
-    Con_Io.Move ( (0, 0), W_Act);
-    Time_Task_Mng.Abort_Task;
-  exception
-    when Time_Task_Mng.Task_Aborted =>
-      null;
-  end Abort_Clock;
-
 
 begin -- Nav_Screen
   Con_Io.Default_Background := Con_Io.Color_Of ("Black");

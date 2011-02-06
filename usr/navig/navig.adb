@@ -25,8 +25,5 @@ begin
     end if;
 
   end loop;
-exception
-  when others =>
-    Nav_Dialog.Abort_Clock;
-    raise;
+
 end Navig;

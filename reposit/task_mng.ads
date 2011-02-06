@@ -1,50 +1,35 @@
+with Timers;
 generic
 
   Activation_Period : Duration := 1.0;
 
   -- The user defines this procedure which will be called regulary.
-  -- The main program must call "delay" or schedule regulary
-  --  (no Get except the ones with timeout of Con_Io).
-  -- The call back is called only when the schedule procedure is called
-  --  (the first time after activation date is reached)
-  -- The activation will be aborted if the procedure raises an exception.
-  -- If the period is too small, the task may "keep the hand" definitively,
-  --  so the duration has a minimum : Min_Period. Any period value
-  --  (for Activation_Period or New_Period of Start) less then Min_Period
-  --  becomes Min_Period.
-
+  -- The call back is called on timer expiration.
   with procedure Call_Back;
 
 package Task_Mng is
 
   -- Default period at activation (instanciation)
   Def_Period : constant Duration := 1.0;
-  Min_Period : constant Duration := 0.5;
+  -- Any Period lower than Min_Period becomes Min_Period
+  Min_Period : constant Duration := 0.1;
 
-  -- At elaboration, the task is ready but not started.
-  -- This call starts effectively the task, eventually with a new period.
-  -- If the task if already started, its period is updated.
-  -- If the task has been aborted, exception is raised.
-  -- If the period is <= 0, the task is started with previous period
+  -- At elaboration, the activity is not started
+  -- This call starts effectively the activity, eventually with a new period.
+  -- If the activity if already started, its period is updated (next activation
+  --  will occure at now + New_Period).
   procedure Start (New_Period : in Duration := Activation_Period);
-
-  Task_Aborted : exception;
 
   -- When the the task is started, stops it.
   -- If the task is already stopped, no effect.
   -- If the task has been aborted, exception is raised.
   procedure Stop;
 
-  -- Aborts the task, mandatory for the main program to exit.
-  -- If the task is already aborted, exception is raised.
-  procedure Abort_Task;
+private
 
-  -- Returns the current period of activation.
-  -- If the task is already aborted, exception is raised.
-  function Get_Period return Duration;
+  function Callback (Id : in Timers.Timer_Id;
+                     Data : in Timers.Timer_Data) return Boolean;
 
-  -- To activate (if period is reached) the call back
-  procedure Schedule;
-
+  Cb_Access : constant Timers.Timer_Callback := Callback'Access;
 end Task_Mng;
 

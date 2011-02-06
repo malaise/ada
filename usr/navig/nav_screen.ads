@@ -54,7 +54,4 @@ package Nav_Screen is
   -- displays the help screen
   procedure Put_Help;
 
-  -- to stop clock and abort
-  procedure Abort_Clock;
-
 end Nav_Screen;

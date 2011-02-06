@@ -1,162 +1,50 @@
-with Ada.Calendar;
-with System;
 package body Task_Mng is
 
-  type Task_State_List is (Stopped, Running, Aborted);
+  -- The timer id
+  Tid : Timers.Timer_Id := Timers.No_Timer;
 
-  -- The effective period of task and its state
-  Real_Period : Duration := Activation_Period;
-
-  -- The current state of the task
-  Task_State : Task_State_List := Stopped;
-
-  task The_Task is
-    -- Lowest priority
-    pragma Priority (System.Priority'First);
-    -- Change task's state
-    entry Set_State;
-    -- Activate
-    entry Schedule;
-  end The_Task;
-
-  procedure Set_Task_State (New_State : in Task_State_List) is
+  -- The timer callback
+  function Callback (Id : in Timers.Timer_Id;
+                     Data : in Timers.Timer_Data) return Boolean is
+    pragma Unreferenced (Id, Data);
   begin
-    if not The_Task'Callable then
-      raise Task_Aborted;
-    end if;
-    if Task_State = Aborted then
-      raise Task_Aborted;
-    end if;
-    if New_State = Task_State then
-      return;
-    end if;
+    -- Call user callback
+    Call_Back;
+    return False;
+  end Callback;
 
-    Task_State := New_State;
-    if New_State /= Aborted then
-      The_Task.Set_State;
-    else
-      select
-        -- Try to warn the task
-        The_Task.Set_State;
-      or
-        delay 1.0;
-        -- Kill the task which does not answer
-        abort The_Task;
-      end select;
-    end if;
-  end Set_Task_State;
-
-  task body The_Task is
-    use Ada.Calendar;
-    -- Next activation date
-    Next_Go : Ada.Calendar.Time;
-  begin
-    loop
-
-      select
-        accept Set_State;
-        -- Tasks's state changes
-        if Task_State = Running then
-          -- Task starts : activate it immediatly
-          Next_Go := Ada.Calendar.Clock;
-        end if;
-      or
-        when Task_State = Running =>
-          accept Schedule do
-            -- Call_back in rendez-vous for re-entrance
-            if Ada.Calendar.Clock >= Next_Go then
-              Next_Go := Next_Go + Real_Period;
-              begin
-                Call_Back;
-              exception
-                when others =>
-                  Task_State := Aborted;
-              end;
-            end if;
-          end Schedule;
-      or
-        terminate;
-      end select;
-
-    end loop;
-  end The_Task;
-
-
-  -- If period is <= 0 return default at init, previous otherwise
-  -- If period is <  minimum return minimum
-  -- Else return period
-  function Check_Period (New_Period : Duration; Init : Boolean := False)
-                        return Duration is
-  begin
-    if New_Period <= 0.0 then
-      if not Init then
-        return Real_Period;
-      else
-        return Def_Period;
-      end if;
-    elsif New_Period < Min_Period then
-      return Min_Period;
-    else
-      return New_Period;
-    end if;
-  end Check_Period;
-
-
-  -- At elaboration, the task is ready but not started.
-  -- This call starts effectively the task, eventually with a new period.
-  -- A null or negative period is fobidden and discarded (default value).
-  -- If the task if already started, its period is updated.
-  -- If the task has been aborted, exception is raised.
+  -- Start/restart/replace
   procedure Start (New_Period : in Duration := Activation_Period) is
+    Expiration : Timers.Delay_Rec (Timers.Delay_Sec);
+    New_Tid : Timers.Timer_Id;
   begin
-    Real_Period := Check_Period(New_Period);
-    -- Warn task about new state
-    Set_Task_State (Running);
+    -- Set new period
+    if New_Period < Min_Period then
+      Expiration.Period := Min_Period;
+    elsif New_Period > Timers.Period_Range'Last then
+      Expiration.Period := Timers.Period_Range'Last;
+    else
+      Expiration.Period := New_Period;
+    end if;
+    Expiration.Delay_Seconds := Expiration.Period;
+    -- Arm new timer ASAP
+    New_Tid := Timers.Create (Expiration, Cb_Access);
+    -- Cancel previous timer
+    Stop;
+    Tid := New_Tid;
   end Start;
 
   -- When the the task is started, stops it.
   -- If the task is already stopped, no effect.
   -- If the task has been aborted, exception is raised.
   procedure Stop is
+    use type Timers.Timer_Id;
   begin
-    -- Warn task about new state
-    Set_Task_State (Stopped);
+    -- Cancel previous timer
+    if Tid /= Timers.No_Timer then
+      Timers.Delete (Tid);
+    end if;
   end Stop;
 
-  -- Aborts the task, mandatory for the main program to exit.
-  -- If the task is already aborted, exception is raised.
-  procedure Abort_Task is
-  begin
-    -- Try to warn the task
-    Set_Task_State (Aborted);
-  end Abort_Task;
-
-
-  -- Returns the current period of activation.
-  -- If the task is already aborted, exception is raised.
-  function Get_Period return Duration is
-  begin
-    if Task_State /= Aborted then
-      return Real_Period;
-    else
-      raise Task_Aborted;
-    end if;
-  end Get_Period;
-
-  procedure Schedule is
-  begin
-    case Task_State is
-      when Stopped =>
-        return;
-      when Running =>
-        The_Task.Schedule;
-      when Aborted =>
-        return;
-    end case;
-  end Schedule;
-
-begin
-  -- Store the initial period
-  Real_Period := Check_Period (Activation_Period, True);
 end Task_Mng;
 
