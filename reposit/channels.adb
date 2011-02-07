@@ -176,8 +176,8 @@ package body Channels is
 
     -- Connection callback (used in read callback on destination
     --  disconnection
-    procedure Connect_Cb (Remote_Port_Num : in Tcp_Util.Port_Num;
-                          Remote_Host_Id  : in Tcp_Util.Host_Id;
+    procedure Connect_Cb (Remote_Host_Id  : in Tcp_Util.Host_Id;
+                          Remote_Port_Num : in Tcp_Util.Port_Num;
                           Connected       : in Boolean;
                           Dscr            : in Socket.Socket_Dscr);
 
@@ -277,8 +277,8 @@ package body Channels is
 
     procedure Accept_Cb (Local_Port_Num  : in Tcp_Util.Port_Num;
                          Local_Dscr      : in Socket.Socket_Dscr;
-                         Remote_Port_Num : in Tcp_Util.Port_Num;
                          Remote_Host_Id  : in Tcp_Util.Host_Id;
+                         Remote_Port_Num : in Tcp_Util.Port_Num;
                          New_Dscr        : in Socket.Socket_Dscr) is
       pragma Unreferenced (Local_Port_Num, Local_Dscr,
                            Remote_Port_Num, Remote_Host_Id);
@@ -373,8 +373,8 @@ package body Channels is
       return Read_Cb (False, Fd);
     end Snd_Read_Cb;
 
-    procedure Connect_Cb (Remote_Port_Num : in Tcp_Util.Port_Num;
-                          Remote_Host_Id  : in Tcp_Util.Host_Id;
+    procedure Connect_Cb (Remote_Host_Id  : in Tcp_Util.Host_Id;
+                          Remote_Port_Num : in Tcp_Util.Port_Num;
                           Connected       : in Boolean;
                           Dscr            : in Socket.Socket_Dscr) is
       pragma Unreferenced (Remote_Port_Num, Connected);

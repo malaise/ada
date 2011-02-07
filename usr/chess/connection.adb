@@ -93,8 +93,8 @@ package body Connection is
   end My_Send;
 
 
-  procedure Con_Call_Back (Remote_Port_Num : in Tcp_Util.Port_Num;
-                           Remote_Host_Id  : in Tcp_Util.Host_Id;
+  procedure Con_Call_Back (Remote_Host_Id  : in Tcp_Util.Host_Id;
+                           Remote_Port_Num : in Tcp_Util.Port_Num;
                            Connected       : in Boolean;
                            Dscr            : in Socket.Socket_Dscr) is
     pragma Unreferenced (Remote_Port_Num, Remote_Host_Id, Connected);
@@ -129,8 +129,8 @@ package body Connection is
 
   procedure Acc_Call_Back (Local_Port_Num  : in Tcp_Util.Port_Num;
                            Local_Dscr      : in Socket.Socket_Dscr;
-                           Remote_Port_Num : in Tcp_Util.Port_Num;
                            Remote_Host_Id  : in Tcp_Util.Host_Id;
+                           Remote_Port_Num : in Tcp_Util.Port_Num;
                            New_Dscr        : in Socket.Socket_Dscr) is
     pragma Unreferenced (Local_Dscr, Remote_Port_Num, Remote_Host_Id);
   begin

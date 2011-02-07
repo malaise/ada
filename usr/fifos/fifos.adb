@@ -274,8 +274,8 @@ package body Fifos is
 
       procedure Acception_Cb (Local_Port_Num  : in Tcp_Util.Port_Num;
                               Local_Dscr      : in Socket.Socket_Dscr;
-                              Remote_Port_Num : in Tcp_Util.Port_Num;
                               Remote_Host_Id  : in Tcp_Util.Host_Id;
+                              Remote_Port_Num : in Tcp_Util.Port_Num;
                               New_Dscr        : in Socket.Socket_Dscr) is
         pragma Unreferenced (Local_Dscr);
         Tmp_Dscr : Socket.Socket_Dscr;
@@ -320,8 +320,8 @@ package body Fifos is
 
       end Acception_Cb;
 
-      procedure Connection_Cb (Remote_Port_Num : in Tcp_Util.Port_Num;
-                               Remote_Host_Id  : in Tcp_Util.Host_Id;
+      procedure Connection_Cb (Remote_Host_Id  : in Tcp_Util.Host_Id;
+                               Remote_Port_Num : in Tcp_Util.Port_Num;
                                Connected       : in Boolean;
                                Dscr            : in Socket.Socket_Dscr) is
         Acc : Fifo_Access;

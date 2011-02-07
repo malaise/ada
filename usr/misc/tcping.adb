@@ -125,8 +125,8 @@ procedure Tcping is
                            Cancel_Cb'Unrestricted_Access);
   end Cancel;
 
-  procedure Connect_Cb (Remote_Port_Num : in Tcp_Util.Port_Num;
-                        Remote_Host_Id  : in Tcp_Util.Host_Id;
+  procedure Connect_Cb (Remote_Host_Id  : in Tcp_Util.Host_Id;
+                        Remote_Port_Num : in Tcp_Util.Port_Num;
                         Connected       : in Boolean;
                         Dscr            : in Socket.Socket_Dscr) is
     Loc_Dscr : Socket.Socket_Dscr := Dscr;

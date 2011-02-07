@@ -1,9 +1,10 @@
+-- Automatically connect, re-connect, accept, handle sending overflow and
+--  receive data on a TCP socket
 with As.U, Socket;
 package Tcp_Util is
 
   -- GENERAL CONVENTIONS --
   -------------------------
-  -- Pad strings with spaces in records.
   -- All services rely on Even_Mng-Fd and/or Timer callbacks, which return
   --  True at completion of the service. So Event_Mng will report:
   -- For Connection: Fd_Event or Timer_Event when connection success or failure
@@ -14,6 +15,7 @@ package Tcp_Util is
 
   -- PROTOCOL DEFINITION --
   -------------------------
+  -- All kinds of TCP of Socket are supported
   subtype Tcp_Protocol_List is Socket.Protocol_List range
                                Socket.Tcp .. Socket.Tcp_Header_Afux;
 
@@ -21,6 +23,7 @@ package Tcp_Util is
   ---------------------
   -- Kinds of port definition
   type Local_Port_List is (Port_Name_Spec, Port_Num_Spec, Port_Dynamic_Spec);
+  -- No dynamic remote port
   subtype Remote_Port_List is Local_Port_List
                      range Port_Name_Spec .. Port_Num_Spec;
 
@@ -29,7 +32,7 @@ package Tcp_Util is
   subtype Port_Num is Socket.Port_Num;
 
 
-  -- Specification of a local port to bind to
+  -- Specification of a local port (name or num or dynamic) to bind to
   type Local_Port (Kind : Local_Port_List := Port_Name_Spec) is record
     case Kind is
       when Port_Name_Spec =>
@@ -42,7 +45,7 @@ package Tcp_Util is
   end record;
 
 
-  -- Specification of a remote port to connect or send to
+  -- Specification of a remote port (name or num) to connect or send to
   type Remote_Port (Kind : Remote_Port_List := Port_Name_Spec) is record
     case Kind is
       when Port_Name_Spec =>
@@ -77,32 +80,16 @@ package Tcp_Util is
   -- Connection / Disconnection callback
   -- Sets Connected to True if connection succeeds,
   --  then Dscr is the one of the new socket connected, blocking,
-  --  Remote_Port_Num and Remote_Host_Id are set.
+  --  Remote_Host_Id and Remote_Port_Num are set.
   -- Sets Connected to False if connection fails,
-  --  then Dscr is Socket.No_Socket, Remote_Port_Num and
-  --  Remote_Host_Id are set.
+  --  then Dscr is Socket.No_Socket, Remote_Host_Id and Remote_Port_Num
+  --  are set.
   type Connection_Callback_Access is
-    access procedure (Remote_Port_Num : in Port_Num;
-                      Remote_Host_Id  : in Host_Id;
+    access procedure (Remote_Host_Id  : in Host_Id;
+                      Remote_Port_Num : in Port_Num;
                       Connected       : in Boolean;
                       Dscr            : in Socket.Socket_Dscr);
 
-
-  -- Acception callback
-  -- The Local_Dscr is the one set by Accept_From
-  --  New_Dscr is the one of the new socket, blocking,
-  --  Remote_Port_Num and Remote_Host_Id are set.
-  type Acception_Callback_Access is
-    access procedure (Local_Port_Num  : in Port_Num;
-                      Local_Dscr      : in Socket.Socket_Dscr;
-                      Remote_Port_Num : in Port_Num;
-                      Remote_Host_Id  : in Host_Id;
-                      New_Dscr        : in Socket.Socket_Dscr);
-
-
-  -- Default end of overflow callback
-  type End_Overflow_Callback_Access is
-    access procedure (Dscr : in Socket.Socket_Dscr);
 
   -- CONNECTION PROCEDURES --
   ---------------------------
@@ -110,7 +97,7 @@ package Tcp_Util is
   -- May make several tries (one each Delta_Retry) before giving up
   -- Infinite retries if Nb_Tries = 0
   -- Returns True if immediate result could be achieved
-  --  (then callback has already been called).
+  --  (and the callback has already been called).
   -- May raise Invalid_Delay is Delta_Retry is <= 0.0
   -- May raise Name_Error if Host.Name or Port.Name is unknown
   function Connect_To (Protocol      : in Tcp_Protocol_List;
@@ -121,13 +108,23 @@ package Tcp_Util is
                        Connection_Cb : in Connection_Callback_Access)
            return Boolean;
 
-  -- Abort a pending connection.
+  -- Abort a pending connection attempt
   -- May raise No_Such
   procedure Abort_Connect (Host : in Remote_Host;
                            Port : in Remote_Port);
 
   -- ACCEPTION PROCEDURE --
   -------------------------
+  -- Acception callback
+  -- The Local_Dscr is the one set by Accept_From
+  --  New_Dscr is the one of the new socket, blocking,
+  --  Remote_Host_Id and Remote_Port_Num are set.
+  type Acception_Callback_Access is
+    access procedure (Local_Port_Num  : in Port_Num;
+                      Local_Dscr      : in Socket.Socket_Dscr;
+                      Remote_Host_Id  : in Host_Id;
+                      Remote_Port_Num : in Port_Num;
+                      New_Dscr        : in Socket.Socket_Dscr);
   -- Accept connections to a local port
   -- Dscr is open and set to the accepting connections
   -- Num is its port num (usefull when dynamical).
@@ -145,6 +142,9 @@ package Tcp_Util is
 
   -- SEND PROCEDURES --
   ---------------------
+  -- End of overflow callback
+  type End_Overflow_Callback_Access is
+    access procedure (Dscr : in Socket.Socket_Dscr);
   -- If send is ok returns True else
   -- Returns false and manages to re-send when possible until
   --  all message is sent, then calls End_Of_Overflow_Callback
@@ -172,10 +172,10 @@ package Tcp_Util is
   type Disconnection_Callback_Access is access
        procedure (Dscr : in Socket.Socket_Dscr);
 
-  -- Callback invoqued when a message is received
   generic
     type Message_Type is private;
   package Reception is
+    -- Callback invoqued when a message is received
     type Reception_Callback_Access is access
          procedure (Dscr    : in Socket.Socket_Dscr;
                     Message : in Message_Type;

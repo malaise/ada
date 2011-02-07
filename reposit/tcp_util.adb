@@ -209,7 +209,7 @@ package body Tcp_Util is
     end if;
     -- Inform client
     if Rec.Cb /= null then
-      Rec.Cb (Port, Host,  Rec.Dscr.Is_Open, Rec.Dscr);
+      Rec.Cb (Host, Port, Rec.Dscr.Is_Open, Rec.Dscr);
       if Debug_Connect then
         My_Io.Put_Line ("  Tcp_Util.Handle_Current_Result Cb called");
       end if;
@@ -625,7 +625,7 @@ package body Tcp_Util is
     Host := New_Dscr.Get_Destination_Host;
     Port := New_Dscr.Get_Destination_Port;
     if Rec.Cb /= null then
-      Rec.Cb (Rec.Port, Rec.Dscr, Port, Host, New_Dscr);
+      Rec.Cb (Rec.Port, Rec.Dscr, Host, Port, New_Dscr);
       if Debug_Accept then
         My_Io.Put_Line ("  Tcp_Util.Acception_Fd_Cb Cb called");
       end if;

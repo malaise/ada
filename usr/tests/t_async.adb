@@ -94,8 +94,8 @@ procedure T_Async is
 
   procedure Accept_Cb (Local_Port_Num  : in Tcp_Util.Port_Num;
                        Local_Dscr      : in Socket.Socket_Dscr;
-                       Remote_Port_Num : in Tcp_Util.Port_Num;
                        Remote_Host_Id  : in Tcp_Util.Host_Id;
+                       Remote_Port_Num : in Tcp_Util.Port_Num;
                        New_Dscr        : in Socket.Socket_Dscr) is
     pragma Unreferenced (Local_Port_Num, Local_Dscr, Remote_Port_Num,
                          Remote_Host_Id);
@@ -112,8 +112,8 @@ procedure T_Async is
   end Accept_Cb;
 
   -- Connection report Cb
-  procedure Conn_Cb (Remote_Port_Num : in Tcp_Util.Port_Num;
-                     Remote_Host_Id  : in Tcp_Util.Host_Id;
+  procedure Conn_Cb (Remote_Host_Id  : in Tcp_Util.Host_Id;
+                     Remote_Port_Num : in Tcp_Util.Port_Num;
                      Connected       : in Boolean;
                      Dscr            : in Socket.Socket_Dscr) is
     pragma Unreferenced (Remote_Port_Num, Remote_Host_Id);

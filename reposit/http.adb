@@ -263,8 +263,8 @@ package body Http is
   end Disconnection_Cb;
 
   -- Connection_Cb
-  procedure Connection_Cb (Remote_Port_Num : in Tcp_Util.Port_Num;
-                           Remote_Host_Id  : in Tcp_Util.Host_Id;
+  procedure Connection_Cb (Remote_Host_Id  : in Tcp_Util.Host_Id;
+                           Remote_Port_Num : in Tcp_Util.Port_Num;
                            Connected       : in Boolean;
                            Dscr            : in Socket.Socket_Dscr) is
     pragma Unreferenced (Remote_Port_Num, Remote_Host_Id, Connected);

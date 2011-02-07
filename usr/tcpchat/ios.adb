@@ -112,8 +112,8 @@ package body Ios is
   -- Connection acception Cb
   procedure Accept_Cb (Local_Port_Num  : in Tcp_Util.Port_Num;
                        Local_Dscr      : in Socket.Socket_Dscr;
-                       Remote_Port_Num : in Tcp_Util.Port_Num;
                        Remote_Host_Id  : in Tcp_Util.Host_Id;
+                       Remote_Port_Num : in Tcp_Util.Port_Num;
                        New_Dscr        : in Socket.Socket_Dscr) is
     pragma Unreferenced (Local_Port_Num, Local_Dscr, Remote_Port_Num,
                          Remote_Host_Id);
