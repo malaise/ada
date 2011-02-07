@@ -190,7 +190,7 @@ package String_Mng is
   -- Center a String Str in a fixed size
   -- if Str <= Size pad with Gap before then after Str
   -- if Str > Size  raise Constraint_Error
-  -- Example:
+  -- Example: Center ("TOTO", 7, '+') -> "++TOTO+"
   function Center (Str : String;
                    Len : Positive;
                    Gap : Character := ' ') return String;
