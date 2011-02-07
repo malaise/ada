@@ -433,6 +433,9 @@ package body Search_Pattern is
     Upat.Num := 1;
     Delim_List.Get_Access (Upat, Acc);
     Delimiter := Acc.Find_Str;
+    if Delimiter.Length > Text_Line.Max_Line_Feed_Len then
+      Error ("Delimiter is too long");
+    end if;
     if Debug.Set then
       Sys_Calls.Put_Line_Error ("Search, parsed delimiter >"
            & Delimiter.Image & "<");

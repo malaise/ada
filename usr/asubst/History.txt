@@ -1,6 +1,9 @@
 History of Asubst:
 ------------------
-16/08/2010 V11.0
+07/02/2011 V11.2
+Add: Check delimiter length
+
+16/08/2010 V11.1
 Add: Improve help and doc on how to mimic "grep -l"
 
 11/08/2010 V11.0
