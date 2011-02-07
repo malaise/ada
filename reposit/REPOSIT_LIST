@@ -202,8 +202,6 @@ temp_file (2)
   Create a temporary file.
 text_char (2)
   Get/unget chars from an input flow.
-text_handler (1)
-  Storage of variable length strings.
 text_line (2)
   Get/put lines of text from/to a flow.
 timeval (1)

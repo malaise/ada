@@ -1,4 +1,6 @@
 Major changes:
+2011/02/07: Add make Timer_Id tagged
+            Chg remove Text_Handler
 2011/02/06: Add fix size of X window in window manager
 2011/02/04: Add make State_Machine OO
 2011/02/02: Add support for http://<ip_address>
