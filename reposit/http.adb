@@ -1,7 +1,10 @@
 with Ada.Characters.Latin_1;
 with Basic_Proc, Environ, String_Mng, Parser,
-     Event_Mng, Timers, Ip_Addr, Socket, Tcp_Util;
+     Event_Mng, Timers, Ip_Addr, Socket, Tcp_Util, Mutex_Manager;
 package body Http is
+
+  -- The Mutex of exclusive execution
+  Mut : Mutex_Manager.Mutex (Mutex_Manager.Simple, True);
 
   -- Debug
   Debug_Var : constant String := "HTTP_DEBUG";
@@ -218,13 +221,11 @@ package body Http is
   end Check;
 
   procedure Close is
-    use type Timers.Timer_Id;
   begin
     Debug ("HTTP: Closing");
     -- Cancel timer
-    if Timer_Id /= Timers.No_Timer then
-      Timers.Delete (Timer_Id);
-      Timer_Id := Timers.No_Timer;
+    if Timer_Id.Is_Set then
+      Timer_Id.Delete;
     end if;
     begin
       Tcp_Util.Abort_Connect (Host, Port);
@@ -254,7 +255,6 @@ package body Http is
   -- When Soc_Read_0
   procedure Disconnection_Cb (Dscr : in Socket.Socket_Dscr) is
     pragma Unreferenced (Dscr);
-    use type Timers.Timer_Id;
   begin
     Debug ("HTTP: Disconnection");
     -- Tcp_Util closes the socket
@@ -306,12 +306,8 @@ package body Http is
 
   function Get (Url : String) return Result_Type is
   begin
-    -- Init result
-    Done := False;
-    Timer_Id := Timers.No_Timer;
-    Result := (Kind => Ok, Content => As.U.Asu_Null);
 
-    -- Parse Url and set host and port
+    -- Sanity check on request: Parse Url and set host and port
     declare
       Iter : Parser.Iterator;
     begin
@@ -330,6 +326,12 @@ package body Http is
         return (Client_Error, Invalid_Url);
     end;
 
+    -- Here we go, init result
+    Mut.Get;
+    Timer_Id := Timers.No_Timer;
+    Done := False;
+    Result := (Kind => Ok, Content => As.U.Asu_Null);
+
     -- Getenv Timeout and arm timeout if set
     declare
       Timeout : Integer;
@@ -339,7 +341,7 @@ package body Http is
       if Timeout > 0 then
         -- Arm timer
         The_Delay.Delay_Seconds := Duration(Timeout) / 1000.0;
-        Timer_Id := Timers.Create (The_Delay, Timer_Cb'Access);
+        Timer_Id.Create (The_Delay, Timer_Cb'Access);
       end if;
     end;
 
@@ -364,6 +366,7 @@ package body Http is
       when Tcp_Util.Name_Error =>
         -- Host or "http" not found
         Close;
+        Mut.Release;
         return (Client_Error, Name_Error);
     end;
 
@@ -383,8 +386,15 @@ package body Http is
     end if;
 
     -- Done
+    Mut.Release;
     Debug ("HTTP: Done");
     return Result;
+  exception
+    when others =>
+      if Mut.Is_Owner then
+        Mut.Release;
+      end if;
+      raise;
   end Get;
 
 end Http;

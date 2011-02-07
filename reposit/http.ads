@@ -37,6 +37,7 @@ package Http is
   --    Event_Mng.Reset_Default_Signals_Policy after using this function   --
   --  * X11 programs shall Suspend ALL the X objects X_Line/Con_Io/Afpx    --
   --    before calling this function, then Resume the X objects.           --
+  --  * This function is re-entrant with a mutex                           --
   ---------------------------------------------------------------------------
   function Get (Url : String) return Result_Type;
 end Http;

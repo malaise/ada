@@ -1,6 +1,9 @@
 with Ada.Text_Io;
-with Sys_Calls, Environ, Proc_Family, Event_Mng, Text_Line;
+with Sys_Calls, Environ, Proc_Family, Event_Mng, Text_Line,  Mutex_Manager;
 package body Command is
+
+  -- The Mutex of exclusive execution
+  Mut : Mutex_Manager.Mutex (Mutex_Manager.Simple, True);
 
   -- Debug option
   Debug_Init : Boolean := False;
@@ -180,6 +183,7 @@ package body Command is
     Prev_Term_Cb : aliased Event_Mng.Sig_Callback;
     use type Sys_Calls.Death_Cause_List;
   begin
+    Mut.Get;
     -- Init Debug
     if not Debug_Init then
       Debug := Environ.Is_Yes (Command_Debug_Name);
@@ -233,6 +237,7 @@ package body Command is
         Ada.Text_Io.Put_Line ("Command: Spawn error: " & Spawn_Result.Ok'Img
                              & " " & Spawn_Result.Open'Img);
       end if;
+      Mut.Release;
       raise Spawn_Error;
     end if;
 
@@ -253,6 +258,7 @@ package body Command is
       Event_Mng.Wait (Event_Mng.Infinite_Ms);
       exit when Child_Done and then Output_Done and then Error_Done;
       if Aborted then
+        Mut.Release;
         raise Terminate_Request;
       end if;
     end loop;
@@ -272,6 +278,14 @@ package body Command is
     else
       Exit_Code := Error;
     end if;
+
+    Mut.Release;
+  exception
+    when others =>
+      if Mut.Is_Owner then
+        Mut.Release;
+      end if;
+      raise;
 
   end Execute;
 
