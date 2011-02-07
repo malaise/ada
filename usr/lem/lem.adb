@@ -75,7 +75,7 @@ package body Lem is
   -- Set X thrust for a second
   -- Return true if too much X thrust while landed
   Current_X_Thrust : X_Thrust_Range := 0;
-  Thrust_Tid : Timers.Timer_Id := Timers.No_Timer;
+  Thrust_Tid : Timers.Timer_Id;
   function Timer_Thrust_Cb (Id : Timers.Timer_Id; Data : in Timers.Timer_Data)
            return Boolean is
     pragma Unreferenced (Id, Data);
@@ -86,13 +86,12 @@ package body Lem is
     return False;
   end Timer_Thrust_Cb;
   procedure Set_X_Thrust (X_Thrust : in X_Thrust_Range) is
-    use type Timers.Timer_Id;
   begin
     if not Running then
       raise Invalid_Mode;
     end if;
     -- Delete previous timer
-    if Thrust_Tid /= Timers.No_Timer then
+    if Thrust_Tid.Is_Set then
       Timers.Delete (Thrust_Tid);
       Thrust_Tid := Timers.No_Timer;
     end if;
@@ -290,7 +289,7 @@ package body Lem is
   end Period_Timer_Cb;
 
   -- Periodical timer
-  Period_Tid : Timers.Timer_Id := Timers.No_Timer;
+  Period_Tid : Timers.Timer_Id;
 
   -- Init Lem position
   -- Thrust is set to compensate weight to 25 kN
@@ -328,14 +327,13 @@ package body Lem is
 
   -- Stop Lem life: stop timer
   procedure Stop is
-    use type Timers.Timer_Id;
   begin
     -- Stop timers
-    if Period_Tid /= Timers.No_Timer then
+    if Period_Tid.Is_Set then
       Timers.Delete (Period_Tid);
       Period_Tid := Timers.No_Timer;
     end if;
-    if Thrust_Tid /= Timers.No_Timer then
+    if Thrust_Tid.Is_Set then
       Timers.Delete (Thrust_Tid);
       Thrust_Tid := Timers.No_Timer;
     end if;

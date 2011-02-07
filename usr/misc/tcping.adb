@@ -62,7 +62,7 @@ procedure Tcping is
   Go_Success  : Boolean := False;
 
   -- Timer for retries, count
-  Tid         : Timers.Timer_Id := Timers.No_Timer;
+  Tid         : Timers.Timer_Id;
   Curr_Try    : Natural := 0;
 
   -- Connect in progess
@@ -118,11 +118,11 @@ procedure Tcping is
     pragma Unreferenced (Cid);
   begin
     -- Need a timer so that the main loop Wait returns
-    Cid := Timers.Create ( (Delay_Kind    => Timers.Delay_Sec,
-                            Clock         => null,
-                            Period        => Timers.No_Period,
-                            Delay_Seconds => 0.0),
-                           Cancel_Cb'Unrestricted_Access);
+    Cid.Create ( (Delay_Kind    => Timers.Delay_Sec,
+                  Clock         => null,
+                  Period        => Timers.No_Period,
+                  Delay_Seconds => 0.0),
+                    Cancel_Cb'Unrestricted_Access);
   end Cancel;
 
   procedure Connect_Cb (Remote_Host_Id  : in Tcp_Util.Host_Id;
@@ -304,11 +304,11 @@ begin
   end if;
 
   -- Arm periodical timer
-  Tid := Timers.Create ( (Delay_Kind    => Timers.Delay_Sec,
-                          Clock         => null,
-                          Period        => Delta_Tries,
-                          Delay_Seconds => 0.0),
-                         Timer_Cb'Unrestricted_Access);
+  Tid.Create ( (Delay_Kind    => Timers.Delay_Sec,
+                Clock         => null,
+                Period        => Delta_Tries,
+                Delay_Seconds => 0.0),
+                  Timer_Cb'Unrestricted_Access);
 
   -- Main loop
   loop
@@ -328,7 +328,7 @@ begin
   end loop;
 
   -- Cancel timer
-  Timers.Delete (Tid);
+  Tid.Delete;
 
   -- Cancel pending connection
   if Connecting then

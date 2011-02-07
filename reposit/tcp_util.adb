@@ -153,17 +153,16 @@ package body Tcp_Util is
   -- Delete connection rec
   -- Get dest if success
   -- Call callback
-  procedure Handle_Current_Result (Rec : in Connecting_Rec) is
+  procedure Handle_Current_Result (Rec : in out Connecting_Rec) is
     Port : Port_Num;
     Host : Host_Id;
-    use type Timers.Timer_Id;
     use type Socket.Socket_Dscr;
   begin
     if Debug_Connect then
       My_Io.Put_Line ("  Tcp_Util.Handle_Current_Result start");
     end if;
     -- Remove management data
-    if Rec.Timer /= Timers.No_Timer then
+    if Rec.Timer.Is_Set then
       if Debug_Connect then
         My_Io.Put_Line ("  Tcp_Util.Handle_Current_Result delete timer"
                       & Timers.Image (Rec.Timer));
@@ -337,8 +336,7 @@ package body Tcp_Util is
     Rec : Connecting_Rec;
     Connected : Boolean;
     Go_On : Boolean;
-    use type Timers.Timer_Id;
-    use type Socket.Socket_Dscr;
+    use type Socket.Socket_Dscr, Timers.Timer_Id;
   begin
     if Debug_Connect then
       My_Io.Put_Line ("  Tcp_Util.Connection_Timer_Cb start on timer "
@@ -427,7 +425,7 @@ package body Tcp_Util is
         My_Io.Put_Line ("  Tcp_Util.Connection_Timer_Cb first try");
       end if;
       -- First attempt failure: start timer
-      Rec.Timer := Timers.Create (
+      Rec.Timer.Create (
           Delay_Spec => (Delay_Kind    => Timers.Delay_Sec,
                          Clock         => null,
                          Period        => Rec.Delta_Retry,
@@ -547,7 +545,7 @@ package body Tcp_Util is
       My_Io.Put_Line ("  Tcp_Util.Abort_Connect deleting timer "
                     & Timers.Image (Rec.Timer));
     end if;
-    Timers.Delete (Rec.Timer);
+    Rec.Timer.Delete;
     -- Delete rec
     if Debug_Connect then
       My_Io.Put_Line ("  Tcp_Util.Abort_Connect deleting rec");

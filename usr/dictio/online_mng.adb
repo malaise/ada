@@ -4,7 +4,7 @@ with Dictio_Debug, Intra_Dictio, Local_Host_Name, Nodes,
 
 package body Online_Mng is
 
-  Tid : Timers.Timer_Id := Timers.No_Timer;
+  Tid : Timers.Timer_Id;
 
   -- Ever requested a sync?
   Ever_Synced : Boolean := False;
@@ -23,12 +23,10 @@ package body Online_Mng is
      Nodes.No_Master_Slave    => Status.Slave);
 
   procedure Delete_Timer is
-    use type Timers.Timer_Id;
   begin
-    if Tid /= Timers.No_Timer then
+    if Tid.Is_Set then
       Timers.Delete (Tid);
     end if;
-    Tid := Timers.No_Timer;
   end Delete_Timer;
 
   procedure Start_Slave_Timeout is
@@ -61,7 +59,7 @@ package body Online_Mng is
       Current_Master := As.U.Tus (Local_Host_Name.Get);
       T.Delay_Seconds := 0.0;
       T.Period := Alive_Period;
-      Tid := Timers.Create (T, Timer_Cb'Access);
+      Tid.Create (T, Timer_Cb'Access);
       Status.Sync := True;
       Ever_Synced := True;
       Client_Mng.Start;
@@ -73,7 +71,6 @@ package body Online_Mng is
   end Start;
 
   procedure Start_Fight is
-    use type Timers.Timer_Id;
   begin
     Reset_Master;
     if Sync_Mng.In_Sync then

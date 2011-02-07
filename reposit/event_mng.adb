@@ -422,7 +422,7 @@ package body Event_Mng is
   end Pause_Cb;
 
   procedure Pause (Timeout_Ms : in Integer) is
-    Tid : Timers.Timer_Id := Timers.No_Timer;
+    Tid : Timers.Timer_Id;
     Loc_Level : Positive;
     Wait_Timeout : Integer;
     Dummy : Boolean;
@@ -447,12 +447,12 @@ package body Event_Mng is
       Wait_Timeout := 0;
     else
       -- Arm a timer
-      Tid := Timers.Create ( (Delay_Kind    => Timers.Delay_Sec,
-                              Clock         => null,
-                              Period        => Timers.No_Period,
-                              Delay_Seconds => Duration(Timeout_Ms)/1000.0),
-                             Callback => Pause_Cb'Access,
-                             Data     => Pause_Level);
+      Tid.Create ( (Delay_Kind    => Timers.Delay_Sec,
+                    Clock         => null,
+                    Period        => Timers.No_Period,
+                    Delay_Seconds => Duration(Timeout_Ms)/1000.0),
+                      Callback => Pause_Cb'Access,
+                      Data     => Pause_Level);
       Wait_Timeout := Infinite_Ms;
     end if;
 
@@ -471,7 +471,7 @@ package body Event_Mng is
         end if;
         -- Cancel timer if not yet expired
         begin
-          Timers.Delete (Tid);
+          Tid.Delete;
         exception
           when Timers.Invalid_Timer =>
             null;

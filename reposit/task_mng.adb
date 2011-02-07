@@ -1,7 +1,7 @@
 package body Task_Mng is
 
   -- The timer id
-  Tid : Timers.Timer_Id := Timers.No_Timer;
+  Tid : Timers.Timer_Id;
 
   -- The timer callback
   function Callback (Id : in Timers.Timer_Id;
@@ -28,7 +28,7 @@ package body Task_Mng is
     end if;
     Expiration.Delay_Seconds := Expiration.Period;
     -- Arm new timer ASAP
-    New_Tid := Timers.Create (Expiration, Cb_Access);
+    New_Tid.Create (Expiration, Cb_Access);
     -- Cancel previous timer
     Stop;
     Tid := New_Tid;
@@ -38,11 +38,10 @@ package body Task_Mng is
   -- If the task is already stopped, no effect.
   -- If the task has been aborted, exception is raised.
   procedure Stop is
-    use type Timers.Timer_Id;
   begin
     -- Cancel previous timer
-    if Tid /= Timers.No_Timer then
-      Timers.Delete (Tid);
+    if Tid.Is_Set then
+      Tid.Delete;
     end if;
   end Stop;
 

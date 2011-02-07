@@ -17,7 +17,6 @@ procedure T_Afpx is
   Flip_Flop : Boolean;
 
   Timer_Ss, Timer_Per, Timer_Tmp : Timers.Timer_Id;
-  pragma Unreferenced (Timer_Ss);
   function Timer_Cb (Id : Timers.Timer_Id;
                      Data : Timers.Timer_Data) return Boolean is
     pragma Unreferenced (Id, Data);
@@ -71,15 +70,15 @@ begin
   Dir_List.Rewind;
 
   -- Start a temporary silly timer
-  Timer_Tmp := Timers.Create ( (Timers.Delay_Sec, null, 0.1, 0.1), null);
+  Timer_Tmp.Create ( (Timers.Delay_Sec, null, 0.1, 0.1), null);
   -- Start a single shot timer in 10 secs
-  Timer_Ss := Timers.Create ( (Timers.Delay_Sec, null, Timers.No_Period, 10.0),
+  Timer_Ss.Create ( (Timers.Delay_Sec, null, Timers.No_Period, 10.0),
                               null);
   -- Start a 10 sec periodical timer in 20 secs
-  Timer_Per := Timers.Create ( (Timers.Delay_Sec, null, 10.0, 20.0),
+  Timer_Per.Create ( (Timers.Delay_Sec, null, 10.0, 20.0),
                                Timer_Cb'Unrestricted_Access);
   -- Delete the temporary silly timer
-  Timers.Delete (Timer_Tmp);
+  Timer_Tmp.Delete;
 
   loop
     Dir_List.Read (Dir_Item, Dir_Mng.File_List_Mng.Current);
@@ -182,7 +181,7 @@ begin
 
   end loop;
 
-  Timers.Delete (Timer_Per);
+  Timer_Per.Delete;
   Afpx.Release_Descriptor;
 
 end T_Afpx;

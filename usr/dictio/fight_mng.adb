@@ -2,8 +2,8 @@ with Timers;
 with Dictio_Debug, Errors, Versions, Intra_Dictio;
 package body Fight_Mng is
 
-  Tid : Timers.Timer_Id := Timers.No_Timer;
-  Per : Timers.Timer_Id := Timers.No_Timer;
+  Tid : Timers.Timer_Id;
+  Per : Timers.Timer_Id;
 
   Last_Status : Status.Status_List;
 
@@ -16,9 +16,8 @@ package body Fight_Mng is
   Fight_Actions : Fight_Action;
 
   function In_Fight return Boolean is
-    use type Timers.Timer_Id;
   begin
-    return Tid /= Timers.No_Timer;
+    return Tid.Is_Set;
   end In_Fight;
 
   procedure Start (New_Status : in Status.Status_List;
@@ -44,13 +43,13 @@ package body Fight_Mng is
 
     -- End of fight timer
     T.Delay_Seconds := Timeout;
-    Tid := Timers.Create (T, Timer_Cb'Access);
+    Tid.Create (T, Timer_Cb'Access);
 
     -- Periodical timer to send Last_Status
     Intra_Dictio.Send_Status (Last_Status);
     T.Delay_Seconds := Timeout / 4;
     T.Period := Timeout / 4;
-    Per := Timers.Create (T, Perio_Cb'Access);
+    Per.Create (T, Perio_Cb'Access);
   end Start;
 
 
@@ -90,16 +89,14 @@ package body Fight_Mng is
                      Data : Timers.Timer_Data) return Boolean is
     pragma Unreferenced (Id, Data);
     Result : Nodes.Check_Result_List;
-    use type Timers.Timer_Id;
   begin
     Result := Nodes.Check;
     if Dictio_Debug.Level_Array(Dictio_Debug.Fight) then
       Dictio_Debug.Put ("Fight: ends " & Result'Img);
     end if;
     Tid := Timers.No_Timer;
-    if Per /= Timers.No_Timer then
-      Timers.Delete (Per);
-      Per := Timers.No_Timer;
+    if Per.Is_Set then
+      Per.Delete;
     end if;
 
     -- This may restart a fight

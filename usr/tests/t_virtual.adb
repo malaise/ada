@@ -86,10 +86,10 @@ begin
   Ada.Text_Io.Put_Line (
       "Starting chrono and timers, attaching queue and waiting 3s");
   My_Chrono.Start;
-  My_Tid := Timers.Create (Delay_Spec => (Delay_Kind => Timers.Delay_Sec,
-                                          Clock => My_Clock'Unrestricted_Access,
-                                          Period => 1.0,
-                                          Delay_Seconds => 1.0),
+  My_Tid.Create (Delay_Spec => (Delay_Kind => Timers.Delay_Sec,
+                                Clock => My_Clock'Unrestricted_Access,
+                                Period => 1.0,
+                                Delay_Seconds => 1.0),
                            Callback => Timer_Callback'Unrestricted_Access);
   My_Pt.Start ( (Delay_Kind => Timers.Delay_Sec,
                  Clock => My_Clock'Unrestricted_Access,
@@ -159,7 +159,7 @@ begin
   My_Queue.Push (25, 25.0);
   My_Queue.Push (35, 35.0);
   Ada.Text_Io.Put_Line ("Suspending timer and setting speed to 10.0");
-  Timers.Suspend (My_Tid);
+  My_Tid.Suspend;
   My_Clock.Set_Speed (10.0);
   for I in 1 .. 3 loop
     Ada.Text_Io.Put_Line ("Now is " & Date_Image (My_Clock.Current_Time));

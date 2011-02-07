@@ -407,8 +407,7 @@ package body Screen is
     else
       Put_Time (Move_Color);
       -- Start a single shot timer (no callback)
-      Timer := Timers.Create ( (Timers.Delay_Sec, null, Con_Io.No_Period, 1.0),
-                               null);
+      Timer.Create ( (Timers.Delay_Sec, null, Con_Io.No_Period, 1.0), null);
     end if;
     Ins := False;
 
@@ -435,7 +434,7 @@ package body Screen is
       end if;
     end loop;
     begin
-      Timers.Delete (Timer);
+      Timer.Delete;
     exception
       when Timers.Invalid_Timer =>
         null;

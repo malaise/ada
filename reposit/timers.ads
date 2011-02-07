@@ -35,7 +35,7 @@ package Timers is
                      Delay_Seconds => Infinite_Seconds);
 
   -- Timer unique identifier
-  type Timer_Id is private;
+  type Timer_Id is tagged private;
   function Image (Id : Timer_Id) return String;
 
   -- Value returned by Next_Timer if no more timer
@@ -59,11 +59,18 @@ package Timers is
   function Create (Delay_Spec : Delay_Rec;
                    Callback   : Timer_Callback;
                    Data       : Timer_Data := No_Data) return Timer_Id;
+  procedure Create (Id         : in out Timer_Id;
+                    Delay_Spec : in Delay_Rec;
+                    Callback   : in Timer_Callback;
+                    Data       : in Timer_Data := No_Data);
+
+  -- Is a timer set (created)
+  function Is_Set (Id : in Timer_Id) return Boolean;
 
   -- Delete a timer
   -- May raise Invalid_Timer if timer has no period and has expired
   Invalid_Timer : exception;
-  procedure Delete (Id : in Timer_Id);
+  procedure Delete (Id : in out Timer_Id);
 
   -- Suspend a timer: expirations, even the pending ones are suspended
   -- No action if timer is alread syspended
@@ -116,7 +123,7 @@ package Timers is
 
 private
 
-  type Timer_Id is record
+  type Timer_Id is tagged record
     Timer_Num : Natural := 0;
   end record;
   No_Timer : constant Timer_Id := (Timer_Num => 0);

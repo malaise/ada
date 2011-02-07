@@ -5,16 +5,15 @@ package body Status is
   Current_Status : Status_List := Starting;
   Stable_Status : Stable_Status_List := Dead;
   Status_Cb : New_Status_Callback := null;
-  Tid : Timers.Timer_Id := Timers.No_Timer;
+  Tid : Timers.Timer_Id;
 
   function Timer_Cb (Id : Timers.Timer_Id;
                      Data : Timers.Timer_Data) return Boolean is
     Prev_Status : constant Status_List := Current_Status;
     New_Status : Status_List;
-    use type Timers.Timer_Id;
   begin
 
-    if Tid = Timers.No_Timer and then Id /= Timers.No_Timer then
+    if not Tid.Is_Set and then Id.Is_Set then
       -- Called as a timer Cb after an immediate status set
       return False;
     end if;
@@ -63,7 +62,7 @@ package body Status is
     else
       -- Create immediate timer with status (so we go back to main loop)
       T.Delay_Seconds := 0.0;
-      Tid := Timers.Create (T, Timer_Cb'Access, Status_List'Pos(Status));
+      Tid.Create (T, Timer_Cb'Access, Status_List'Pos(Status));
     end if;
   end Set;
 

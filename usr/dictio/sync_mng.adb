@@ -2,8 +2,7 @@ with As.U, Timers, Event_Mng, Dynamic_List, Environ;
 with Intra_Dictio, Data_Base, Dictio_Debug, Online_Mng, Args;
 package body Sync_Mng is
 
-
-  Timer_Id : Timers.Timer_Id := Timers.No_Timer;
+  Timer_Id : Timers.Timer_Id;
   Sync_Has_Been_Received : Boolean;
   Nb_Syn_Received : Natural := 0;
 
@@ -33,16 +32,14 @@ package body Sync_Mng is
 
 
   function Timer_Active return Boolean is
-    use type Timers.Timer_Id;
   begin
-    return Timer_Id /= Timers.No_Timer;
+    return Timer_Id.Is_Set;
   end Timer_Active;
 
   procedure Cancel_Timer is
   begin
     if Timer_Active then
       Timers.Delete (Timer_Id);
-      Timer_Id := Timers.No_Timer;
     end if;
   end Cancel_Timer;
 
@@ -67,11 +64,11 @@ package body Sync_Mng is
     Cancel_Timer;
     Nb_Syn_Received := 0;
     Intra_Dictio.Reply_Status;
-    Timer_Id := Timers.Create ( (Timers.Delay_Sec,
-                                 null,
-                                 Sync_Timeout,
-                                 Sync_Init_Timeout),
-                                Timer_Rec_Cb'Access);
+    Timer_Id.Create ( (Timers.Delay_Sec,
+                       null,
+                       Sync_Timeout,
+                       Sync_Init_Timeout),
+                         Timer_Rec_Cb'Access);
     Sync_Has_Been_Received := False;
     if Dictio_Debug.Level_Array(Dictio_Debug.Sync) then
       Dictio_Debug.Put ("Sync: Start");
@@ -98,7 +95,7 @@ package body Sync_Mng is
 
   -- Timer between first request and real syn (Init)
   --  or for flow limitation (Send)
-  Tid : Timers.Timer_Id := Timers.No_Timer;
+  Tid : Timers.Timer_Id;
 
   Delay_Per_Kb : Natural := 0;
 
@@ -141,11 +138,11 @@ package body Sync_Mng is
     end if;
     if Sync_List.Is_Empty then
       -- First dest, arm timer
-      Tid := Timers.Create ( (Timers.Delay_Sec,
-                              null,
-                              Timers.No_Period,
-                              Sync_Listen_Timeout),
-                              Timer_Sen_Cb'Access);
+      Tid.Create ( (Timers.Delay_Sec,
+                    null,
+                    Timers.No_Period,
+                    Sync_Listen_Timeout),
+                      Timer_Sen_Cb'Access);
       Sending_Status := Init;
     end if;
     if Dictio_Debug.Level_Array(Dictio_Debug.Sync) then
@@ -338,7 +335,6 @@ package body Sync_Mng is
   end In_Sync;
 
   procedure Cancel is
-    use type Timers.Timer_Id;
   begin
     if Dictio_Debug.Level_Array(Dictio_Debug.Sync) then
       if Timer_Active or else Sending_Status /= Stop then
@@ -350,7 +346,7 @@ package body Sync_Mng is
     end if;
     if Sending_Status = Init then
       Tid := Timers.No_Timer;
-      Timers.Delete (Tid);
+      Tid.Delete;
     end if;
     Sending_Status := Stop;
   end Cancel;

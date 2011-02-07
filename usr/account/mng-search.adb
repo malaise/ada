@@ -35,11 +35,9 @@ procedure Search is
 
   -- Cancel timer if it is active
   procedure Cancel_Timer is
-    use type Timers.Timer_Id;
   begin
-    if Timer /= Timers.No_Timer then
-      Timers.Delete (Timer);
-      Timer := Timers.No_Timer;
+    if Timer.Is_Set then
+      Timer.Delete;
     end if;
   end Cancel_Timer;
 
@@ -241,11 +239,11 @@ begin
 
   -- Arm timer
   Dummy_Bool := Set_Today (Timers.No_Timer);
-  Timer := Timers.Create ( (Delay_Kind => Timers.Delay_Sec,
-                            Clock  => null,
-                            Period => 1.0,
-                            Delay_Seconds => 1.0),
-                           Set_Today'Unrestricted_Access);
+  Timer.Create ( (Delay_Kind => Timers.Delay_Sec,
+                  Clock  => null,
+                  Period => 1.0,
+                  Delay_Seconds => 1.0),
+                     Set_Today'Unrestricted_Access);
 
   -- Init criteria and fields accordingly
   Criteria.Status := (others => False);

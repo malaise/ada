@@ -276,16 +276,14 @@ package body Ios is
   begin
     if Timeout_Ms /= Tree.Infinite_Ms then
       Exp.Delay_Seconds := Duration(Timeout_Ms) / 1_000.0;
-      Global_Tid := Timers.Create (Exp, Timer_Cb'Access);
+      Global_Tid.Create (Exp, Timer_Cb'Access);
     end if;
   end Start_Global_Timer;
 
   procedure Stop_Global_Timer is
-    use type Timers.Timer_Id;
   begin
-    if Global_Tid /= Timers.No_Timer then
-      Timers.Delete (Global_Tid);
-      Global_Tid := Timers.No_Timer;
+    if Global_Tid.Is_Set then
+      Global_Tid.Delete;
     end if;
   end Stop_Global_Timer;
 

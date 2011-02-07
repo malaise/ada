@@ -82,7 +82,6 @@ procedure Udp_Spy is
   -- Timeout expired
   Timeout : Boolean := False;
   Tid : Timers.Timer_Id;
-  pragma Unreferenced (Tid);
   function Timer_Cb (Id : in Timers.Timer_Id;
                      Data : in Timers.Timer_Data := Timers.No_Data)
            return Boolean is
@@ -253,7 +252,7 @@ begin
   if Argument.Is_Set (1, "t") then
     Nb_Options := Nb_Options + 1;
     begin
-      Tid := Timers.Create (
+      Tid.Create (
           (Clock => null,
            Period => Timers.No_Period,
            Delay_Kind => Timers.Delay_Sec,
@@ -378,6 +377,9 @@ begin
 
   -- Close
   Text_Line.Close (File);
+ if Tid.Is_Set then
+    Tid.Delete;
+  end if;
   if Event_Mng.Fd_Callback_Set (Fd, True) then
     Event_Mng.Del_Fd_Callback (Fd, True);
     Soc.Close;

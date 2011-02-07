@@ -85,7 +85,6 @@ procedure T_Channels is
   -- Infinite wait or use a timer
   procedure Wait (Dur : in Duration) is
     Id : Timers.Timer_Id;
-    pragma Unreferenced (Id);
   begin
     if Sig then
       return;
@@ -93,11 +92,11 @@ procedure T_Channels is
     Go_Wait := True;
     if Dur /= Timers.Infinite_Seconds then
       -- No timer if infinite
-      Id := Timers.Create ( (Delay_Kind    => Timers.Delay_Sec,
-                             Clock         => null,
-                             Period        => Timers.No_Period,
-                             Delay_Seconds => Dur),
-                             Timer_Cb'Unrestricted_Access);
+      Id.Create ( (Delay_Kind    => Timers.Delay_Sec,
+                   Clock         => null,
+                   Period        => Timers.No_Period,
+                   Delay_Seconds => Dur),
+                     Timer_Cb'Unrestricted_Access);
     end if;
     loop
       Event_Mng.Wait (Integer (Dur) * 1_000);

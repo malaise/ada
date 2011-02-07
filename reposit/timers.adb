@@ -304,6 +304,22 @@ package body Timers is
     return (Timer_Num => Timer.Id);
   end Create;
 
+  procedure Create (Id         : in out Timer_Id;
+                    Delay_Spec : in Delay_Rec;
+                    Callback   : in Timer_Callback;
+                    Data       : in Timer_Data := No_Data) is
+  begin
+    -- In case of error
+    Id := No_Timer;
+    Id := Create (Delay_Spec, Callback, Data);
+  end Create;
+
+  -- Is a timer set (created)
+  function Is_Set (Id : in Timer_Id) return Boolean is
+  begin
+    return Id /= No_Timer;
+  end Is_Set;
+
   -- Locate a timer in list
   -- May raise Invalid_Timer if timer has expired
   procedure Locate (Id : in Timer_Id) is
@@ -370,7 +386,7 @@ package body Timers is
 
   -- Delete a timer
   -- May raise Invalid_Timer if timer has expired
-  procedure Delete (Id : in Timer_Id) is
+  procedure Delete (Id : in out Timer_Id) is
   begin
     Get_Mutex;
     Set_Debug;

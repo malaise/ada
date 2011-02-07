@@ -75,14 +75,14 @@ procedure T_Timers is
     else
       A := null;
     end if;
-    The_Timers(T) := Timers.Create (
+    The_Timers(T).Create (
         Delay_Spec => (Delay_Kind    => Timers.Delay_Sec,
                        Clock         => null,
                        Period        => P,
                        Delay_Seconds => D),
         Callback   => A);
     Display ("Created timer " & Timer_List'Image(T) & ": "
-              & Timers.Image(The_Timers(T)));
+              & The_Timers(T).Image);
   end Start;
 
   Nb_Funny : Natural := 0;
@@ -158,18 +158,18 @@ begin
         case Ptg_Result.Keyboard_Key is
           when Afpx.Return_Key =>
             Display ("Resuming Periodical and Single.");
-            Timers.Resume (The_Timers(Periodic));
+            The_Timers(Periodic).Resume;
             begin
-              Timers.Resume (The_Timers(Single));
+              The_Timers(Single).Resume;
             exception
               when Timers.Invalid_Timer =>
                 null;
             end;
           when Afpx.Escape_Key =>
             Display ("Suspending Periodical and Single. Resume with Return.");
-            Timers.Suspend (The_Timers(Periodic));
+            The_Timers(Periodic).Suspend;
             begin
-              Timers.Suspend (The_Timers(Single));
+              The_Timers(Single).Suspend;
             exception
               when Timers.Invalid_Timer =>
                 null;
@@ -193,7 +193,7 @@ begin
 
   for T in Timer_List loop
     begin
-      Timers.Delete (The_Timers(T));
+      The_Timers(T).Delete;
     exception
       when Timers.Invalid_Timer =>
         Display ("Invalid timer when closing " & Timer_List'Image (T));
