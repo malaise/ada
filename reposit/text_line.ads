@@ -1,3 +1,4 @@
+-- Get lines (until Lf) of text from file
 with Ada.Characters.Latin_1, Ada.Finalization;
 with As.U, Sys_Calls;
 package Text_Line is
@@ -32,9 +33,9 @@ package Text_Line is
   function Get_Fd (File : File_Type) return Sys_Calls.File_Desc;
 
   -- Set and get Line_Feed sequence
-  -- If Line_Feed is empty, then Get returns the complete flow or file
+  -- If Line_Feed is empty, then Get will return the complete flow or file
   -- May raise Status_Error if File is not open
-  -- May raise Status_Error if Str is too long
+  -- May raise Constraint_Error if Str is too long
   procedure Set_Line_Feed (File : in out File_Type; Str : in String);
   function Get_Line_Feed (File : File_Type) return String;
 

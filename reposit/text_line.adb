@@ -56,7 +56,7 @@ package body Text_Line is
       raise Status_Error;
     end if;
     if Str'Length > Max_Line_Feed_Len then
-      raise Status_Error;
+      raise Constraint_Error;
     end if;
     File.Acc.Line_Feed := As.U.Tus (Str);
   end Set_Line_Feed;
