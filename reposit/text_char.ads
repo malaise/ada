@@ -1,3 +1,4 @@
+-- Get/unget chars from a file
 with Ada.Finalization;
 with As.U, Sys_Calls, Text_Line;
 package Text_Char is
