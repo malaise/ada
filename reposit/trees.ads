@@ -1,3 +1,10 @@
+-- Tree of elements
+-- A tree starts with a root (first branch)
+-- Each branch / cell has
+--  a data (Element_Type)
+--  some children (0 to N)
+--  some brothers (0 to N, root has no brother)
+--  one father (except root).
 with Ada.Finalization;
 with Unlimited_Pool;
 package Trees is
@@ -5,12 +12,6 @@ package Trees is
   -- Amount of children of a father
   subtype Child_Range is Natural;
 
-  -- A tree starts with a root (first branch)
-  -- Each branch / cell has
-  --  a data (Element_Type)
-  --  some children (0 to N)
-  --  some brothers (0 to N, root has no brother)
-  --  one father (except root).
   generic
     -- Element to store in the tree
     type Element_Type is private;
@@ -40,7 +41,7 @@ package Trees is
                              Element  : in Element_Type);
 
     -- Insert a child of current position
-    -- Append or prepend to the list of children
+    --  as eldest or youngest child
     -- Move to it
     -- May raise No_Cell if The_Tree is empty
     procedure Insert_Child (The_Tree : in out Tree_Type;
@@ -78,12 +79,16 @@ package Trees is
 
     -- Deletions --
     ---------------
+    -- When Deallocate is set then the free lists of deleted elements
+    --  are cleared
+
     -- Delete current cell if it has no children, moving to father
     -- There must be no saved position
     -- May raise No_Cell if The_Tree is empty
     -- May raise Has_Children if current cell has children
     -- May raise Saved_Position if some position is currently saved
-    procedure Delete_Current (The_Tree : in out Tree_Type);
+    procedure Delete_Current (The_Tree : in out Tree_Type;
+                              Deallocate : in Boolean := False);
 
     -- Clear the whole sub-tree, moving to father
     -- There must be no saved position
@@ -111,6 +116,8 @@ package Trees is
     procedure Swap (The_Tree : in Tree_Type;
                     Element  : in out Element_Type);
 
+    -- Use saved position --
+    ------------------------
     -- Swap saved pos and its sub tree with current position and its sub tree
     -- Saved position is poped.
     -- Current position remains the same cell (it follows the swapped cell)
@@ -195,6 +202,8 @@ package Trees is
     -- Any of the trees can be empty, in this case this is a move of a sub-tree
     -- Curent positions are updated
     -- Both trees must have no saved position
+    -- May raise Saved_Position if some position is currently saved for Tree_A
+    -- or Tree_B
     procedure Swap_Trees (Tree_A, Tree_B : in out Tree_Type);
 
     -- Copy cell and sub-tree (from current position) of a tree

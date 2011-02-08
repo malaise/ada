@@ -438,7 +438,8 @@ package body Trees is
     -- May raise No_Cell if The_Tree is empty
     -- May raise Has_Children if current cell has children
     -- May raise Saved_Position if some position is currently saved
-    procedure Delete_Current (The_Tree : in out Tree_Type) is
+    procedure Delete_Current (The_Tree : in out Tree_Type;
+                              Deallocate : in Boolean := False) is
       Cell_Acc : Cell_Access;
     begin
       -- No empty tree
@@ -475,6 +476,12 @@ package body Trees is
 
       -- Free cell
       Cell_Dyn.Free (Cell_Acc);
+
+      -- Deallocate cells and data if requested
+      if Deallocate then
+        Data_Dyn.Clear;
+        Cell_Dyn.Clear;
+      end if;
     end Delete_Current;
 
     -- Clean children of current cell, tree is not updated
