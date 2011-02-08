@@ -1,3 +1,4 @@
+-- Log messages in a file named _trace_<pid>
 package Trace is
 
   -- Traces are activated at start-up
@@ -7,3 +8,4 @@ package Trace is
   procedure Put (Message : in String := ""; Flush : in Boolean := False);
 
 end Trace;
+

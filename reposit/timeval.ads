@@ -1,4 +1,4 @@
--- Tranformation from and to struct timeval
+-- Tranformation between C_Types.Timeval and Perpet.Delta_Rec
 with Perpet, C_Types;
 package Timeval is
 

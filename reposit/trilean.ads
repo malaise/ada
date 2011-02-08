@@ -1,6 +1,6 @@
+-- A boolean wth 3 values
 package Trilean is
 
-  -- A boolean wth 3 values
   type Trilean is (False, True, Other);
   Maybe : constant Trilean := Other;
 
