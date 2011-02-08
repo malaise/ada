@@ -1,3 +1,4 @@
+-- Unbounded array of element
 with Ada.Finalization;
 generic
   type Element_Type is private;
@@ -16,6 +17,7 @@ package Unbounded_Arrays is
   type Unbounded_Array is tagged private;
   subtype Unb_Array is Unbounded_Array;
 
+  -- Empty unbounded array
   procedure Set_Null (Target : in out Unbounded_Array);
   Null_Unbounded_Array : constant Unbounded_Array;
   Null_Unb_Array : constant Unbounded_Array;
@@ -40,7 +42,7 @@ package Unbounded_Arrays is
                                                  renames To_Unbounded_Array;
   function To_Array (Source : Unbounded_Array) return Element_Array;
 
-  -- Prepend, Append, concat
+  -- Prepend, Append, Concatenate
   procedure Prepend (Source   : in out Unbounded_Array;
                      New_Item : in Unbounded_Array);
   procedure Prepend (Source   : in out Unbounded_Array;

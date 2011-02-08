@@ -1,5 +1,5 @@
-with Unicode;
 -- Utf_16 encoding/decoding
+with Unicode;
 package Utf_16 is
 
   -- Utf-16 sequence of bytes, Wide_String of 1 to 2 chars

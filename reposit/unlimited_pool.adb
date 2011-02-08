@@ -1,6 +1,3 @@
---  type Data_Type is limited private;
---  type Data_Access_Type is access Data_Type;
-
 package body Unlimited_Pool is
 
   procedure Set (To : out Data_Type; Val : in Data_Type) is

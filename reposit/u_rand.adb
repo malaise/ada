@@ -1,23 +1,3 @@
-
---------------------------------------------------------------------------
--- The following is an implementation of a "universal" random number    --
--- generator algorithm developed by Dr. George Marsaglia of the         --
--- Supercomputer Computations Research Institute (SCRI) at Florida      --
--- State University.  This generator has a period of ~2**144 and has    --
--- been tailored for reproducibility in all CPU's with at least         --
--- 16 bit integer arithmetic and 24 bit floating point.  This algorithm --
--- does not generate random numbers < 2**-24.  At the end of this file  --
--- you will find a self test program that checks generated results      --
--- against known expected results and reports any inaccuracies.         --
---                                                                      --
--- Further references: "Toward a Universal Random Number Generator",    --
--- appearing in the Journal of The American Statistical Association.    --
---                                                                      --
--- This code appeared in the March/April publication of SIGAda's        --
--- Ada Letters and is considered public domain.  PCK                    --
---------------------------------------------------------------------------
-
-
 package body U_Rand is
   M3     : constant := 97;
   Init_C : constant := 362436.0/16777216.0;
@@ -98,3 +78,4 @@ begin
   -- initialize table U
   Start;
 end U_Rand;
+

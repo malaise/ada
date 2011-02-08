@@ -1,3 +1,4 @@
+-- Definition of Unicode number
 with Unbounded_Arrays;
 package Unicode is
 

@@ -1,6 +1,7 @@
 -- Generic simple unlimited pool of objects
 -- Simply push data in pool, and pop data as long as it is not empty
--- Default policy is Lifo (Last In First Out) but Fifo (First In First Out) is possible
+-- Default policy is Lifo (Last In First Out)
+--  but Fifo (First In First Out) is also possible
 with Limited_List;
 generic
   type Data_Type is private;
@@ -17,15 +18,15 @@ package Unlimited_Pool is
   Pool_Full : exception;
   procedure Push (Pool : in out Pool_Type; Data : in Data_Type);
 
-  -- Get from pool
+  -- Get from pool last pushed (Lifo) or first pushed (Fifo)
   Empty_Pool : exception;
   procedure Pop (Pool : in out Pool_Type; Data : out Data_Type);
   procedure Pop (Pool : in out Pool_Type);
 
-  -- Read from pool
+  -- Read from pool last pushed (Lifo) or first pushed (Fifo)
   procedure Read (Pool : in out Pool_Type; Data : out Data_Type);
 
-  -- Clear the pool
+  -- Clear the pool (deallocates)
   procedure Clear (Pool : in out Pool_Type);
 
 private
