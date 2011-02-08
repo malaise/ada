@@ -1,3 +1,7 @@
+-- A virtual clock can be shift from real time and can have different speed
+--  from frozen to 128 times faster than real time
+-- Virtual clocks can be used for Chronos (and associated passive timers)
+--  Timed queues and Timers.
 with Ada.Calendar, Ada.Finalization;
 with Limited_List;
 package Virtual_Time is
@@ -60,8 +64,8 @@ package Virtual_Time is
 
   -- Observers interface
   type Observer is limited interface;
-  -- The observer is notified with the time of change (clock before the change)
-  -- and the new clock
+  -- The observer is notified with the clock characteristics before the change
+  --  and with the new clock (from which it can get the new characteristics)
   procedure Notify (An_Observer : in out Observer;
                     Prev_Reference_Time : in Time;
                     Prev_Virtual_Time : in Time;

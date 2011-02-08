@@ -1,14 +1,17 @@
+-- Low level access to X11 operations (put text / draw / get events)
 with System;
 with As.U, Timers;
 package X_Mng is
 
   ----- TYPES -----
+  -- The line identifies the X window
   Max_Line_Number : constant := 5;
   type Line is private;
 
   type Byte is new Natural range 0 .. 255;
   for Byte'Size use System.Storage_Unit;
 
+  -- Colors and fonts
   subtype Color       is Natural range 0 .. 13;
   type Color_Definition is array (Color) of As.U.Asu_Us;
   subtype Font        is Natural range 0 .. 3;
@@ -234,8 +237,8 @@ package X_Mng is
                                            X, Y    : out Integer);
 
   -- Draw points in a rectangle, starting at X1, Y1 and of width * height pixels
-  -- The points array has to be width * height and contains a list of Zero (no put)
-  --  or not Zero (put)
+  -- The points array has to be width * height and contains a list of
+  --  Zero (no put) or not Zero (put)
   procedure X_Draw_Points(Line_Id       : in Line;
                           X, Y          : in Natural;
                           Width, Height : in Natural;
@@ -293,7 +296,8 @@ package X_Mng is
 
   -- Enable disable cursor motion events
   -- The line_id must be the one given by wait_event
-  procedure X_Enable_Motion_Events (Line_Id : in Line; Motion_Enable : in Boolean);
+  procedure X_Enable_Motion_Events (Line_Id : in Line;
+                                    Motion_Enable : in Boolean);
 
   ----- SELECTION MANAGEMENT -----
   -- Set/reset the selection to be transfered to other applications

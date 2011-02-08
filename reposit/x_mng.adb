@@ -1106,6 +1106,7 @@ package body X_Mng is
       raise X_Failure;
     end if;
     if Timeout.Clock /= null then
+      -- Virtual time is not supported
       raise Invalid_Timeout;
     end if;
 

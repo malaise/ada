@@ -6,8 +6,8 @@ with As.U, Queues, Trees, Hashed_List.Unique, Text_Char, Dynamic_List,
 -- Limitations:
 --  * Only the System Id of the DOCTYPE and of external parsed ENTITY is used,
 --    Public Id (if any) is skipped.
---  * Only local file, "file://" and "http://" schemes are supported in URIs
---    (parsing error).
+--  * Only the local file, the "file://" and the "http://" schemes are supported
+--     in URIs (parsing error).
 --  * Only UTF-8, UTF-16 and ISO-8859-1 are natively supported, other character
 --    maps can be defined in $XML_PARSER_MAP_DIR.
 package Xml_Parser is
@@ -20,16 +20,18 @@ package Xml_Parser is
   -- TYPES --
   -----------
   -- Generic node type
-  -- A node is either an element or a text or a comment
+  -- A node is either an element or a text or a processing instruction (PI)
+  --  or a comment
   type Node_Kind_List is (Element, Text, Pi, Comment);
   type Node_Type (Kind : Node_Kind_List := Element) is private;
   No_Node : constant Node_Type;
 
-  -- Element type
+  -- Specific node types
+  -- An Element
   subtype Element_Type is Node_Type(Element);
   -- A Text
   subtype Text_Type is Node_Type(Text);
-  -- A Processing Instruction
+  -- A Processing Instruction (PI)
   subtype Pi_Type is Node_Type(Pi);
   -- A Comment
   subtype Comment_Type is Node_Type(Comment);
@@ -50,15 +52,8 @@ package Xml_Parser is
   -- The children of an element
   type Nodes_Array is array (Child_Index range <>) of Node_Type;
 
-  -- A parsing context
+  -- A parsing context (token for all operation)
   type Ctx_Type is tagged limited private;
-
-
-  -- What to do with CDATA sections
-  type Cdata_Policy_List is (Keep_Cdata_Section,    -- Keep markers and Cdata
-                             Remove_Cdata_Markers,  -- Remove markers
-                             Remove_Cdata_Section); -- Remove whole section
-
 
   -- Context status
   type Ctx_Status_List is (
@@ -69,18 +64,23 @@ package Xml_Parser is
     Error,              -- Parse error detected
     Init);              -- Initialized for the Generator
 
+  -- What to do with CDATA sections
+  type Cdata_Policy_List is (Keep_Cdata_Section,    -- Keep markers and Cdata
+                             Remove_Cdata_Markers,  -- Remove markers
+                             Remove_Cdata_Section); -- Remove whole section
+
   -----------------------------
   -- NOTE ABOUT THE PROLOGUE --
   -----------------------------
-  -- In xml V1.0, the prologue consists of an optional xml directive
+  -- In xml V1.0, the prologue consists in an optional xml directive
   --  (<?xml attributes?>) then optional processing instructions
   --  (<?name text?>), DOCTYPE and comments.
   -- In Xml V1.1 the xml directive and version is mandatory.
   -- So the Prologue is an element of name "xml" with possible attributes
   --  (no attribute means that there is no Xml directive) and children:
-  --  for PIs: PIs each with the PITarget as name
-  --  for Comments: comments
-  --  for the doctype: an empty text
+  --  for a PIs: a Pi node
+  --  for a comments: a Comment node
+  --  for the doctype: an empty Text
 
   ----------------------------
   -- NOTE ABOUT THE DOCTYPE --
@@ -94,7 +94,7 @@ package Xml_Parser is
   -------------------------
   -- The tail (Comments and PIs after the root element) are attached
   --  to a dummy child of the root element. This child (if any) is the
-  --  last child of root and has no name.
+  --  last child of root and has no (empty) name.
 
   -------------------------------------
   -- NOTE ABOUT THE PARSING CALLBACK --
@@ -105,8 +105,8 @@ package Xml_Parser is
   --  is created (Creation = True), then its children (recusively) then it is
   --  closed (Creation = False)
   -- Only PIs have a value
-  -- Is_Mixed on element if this element has mixed content
-  -- In_Mixed on anything if within a Is_Mixed element
+  -- Is_Mixed is set on element if this element has mixed content
+  -- In_Mixed is on anything else when it is within a Is_Mixed element
   --  indent shall be skipped
   type Stage_List is (Prologue, Elements, Tail);
   type Node_Update is new Ada.Finalization.Controlled with record
@@ -124,7 +124,7 @@ package Xml_Parser is
     -- Only for Kind Element
     Attributes : Attributes_Access := null;
   end record;
-  -- If the callback raises an exception the parse raises
+  -- If the callback raises an exception the parsing raises:
   Callback_Error : exception;
   type Parse_Callback_Access is access
             procedure (Ctx  : in Ctx_Type;
@@ -180,6 +180,7 @@ package Xml_Parser is
   -- STRING PARSING --
   --------------------
   -- Parse a Dtd, optionally check for some warnings
+  -- The Dtd can then be used to Parse_Elements
   -- Set Error to error string, or empty string if OK
   type Dtd_Type is limited private;
   procedure Parse_Dtd_File (
@@ -217,20 +218,21 @@ package Xml_Parser is
                             Parse_Cb  : in Parse_Callback_Access := null);
 
   -- Parse the elements (after the prologue) and tail of a string with a dtd
-  -- may raise Status_Error if Ctx is clean
+  -- The options are inherited from the parsing of the prologue
+  -- May raise Status_Error if Ctx is clean
   --           End_Error if Ctx has already parsed elements
   --           Parse_Error if Parse_Prologue was not ok
+  End_Error : exception;
   Parse_Error : exception;
   procedure Parse_Elements (Ctx      : in out Ctx_Type;
                             Dtd      : in out Dtd_Type;
                             Ok       : out Boolean);
-  End_Error : exception;
 
   -----------
   -- CHECK --
   -----------
   -- Check the Ctx: parse the DTD (if any) and check the Ctx versus it
-  --  (same effect as Parse, but on a context set or modified in
+  --  (same effect as Parse, but on a context that has been set or modified by
   --  Xml_Parser.Generator)
   procedure Check (Ctx : in out Ctx_Type;
                    Ok  : out Boolean;
@@ -239,17 +241,21 @@ package Xml_Parser is
   -------------------------
   -- NAME AND ATTRIBUTES --
   -------------------------
-  -- All the following operations may raise Invalid_Node if the Element has
-  --  not been returned by Parse, Get_xxx...
-  Invalid_Node : exception;
+  -- Is a Node valid (returned by Get_xxx)
   function Is_Valid (Node : Node_Type) return Boolean;
-  -- They may raise Status_Error if the Ctx is clean
-  -- They may raise Use_Error if the Ctx and the Element do not match
+
+  -- All the following operations may raise Invalid_Node if the Node has
+  --  not been returned by Get_xxx... They also may raise
+  --  Status_Error if the Ctx is clean
+  --  Use_Error if the Ctx and the Element do not match
+  --  (Element obtained from another context)
+  Invalid_Node : exception;
   Use_Error : exception;
 
   -- Get Prologue of a parsed context (after Parse or Parse_Prologue)
   --  may raise Parse_Error if Parse was not ok
   function Get_Prologue (Ctx : Ctx_Type) return Element_Type;
+
   -- Get elements'root after Parse or Parse_Elements
   --  may raise Status_Error if called before Parse_Elements
   --            Parse_Error if Parse was not ok
@@ -270,7 +276,7 @@ package Xml_Parser is
   function Get_Target (Ctx     : Ctx_Type;
                        Pi_Node : Pi_Type)
                     return As.U.Asu_Us;
-  -- Get a PI data
+  -- Get the data of a PI
   function Get_Pi (Ctx : in Ctx_Type;
                    Pi_Node : Pi_Type) return String;
   function Get_Pi (Ctx : in Ctx_Type;
@@ -287,21 +293,22 @@ package Xml_Parser is
                      Element : Element_Type) return String;
   function Get_Name (Ctx     : Ctx_Type;
                      Element : Element_Type) return As.U.Asu_Us;
+
   -- Get the attributes of an element
   function Get_Attributes (Ctx     : Ctx_Type;
                            Element : Element_Type) return Attributes_Array;
   function Get_Nb_Attributes (Ctx     : Ctx_Type;
                               Element : Element_Type) return Natural;
-  -- May raise Invalid_Index
+  -- Get one attribute of an element. May raise Invalid_Index
+  Invalid_Index : exception;
   function Get_Attribute (Ctx     : Ctx_Type;
                           Element : Element_Type;
                           Index   : Positive) return Attribute_Rec;
-  Invalid_Index : exception;
-  -- May raise Attribute_Not_Found
+  -- Search one attribute of an element. May raise Attribute_Not_Found
+  Attribute_Not_Found : exception;
   function Get_Attribute (Ctx     : Ctx_Type;
                           Element : Element_Type;
                           Name    : String) return Attribute_Rec;
-  Attribute_Not_Found : exception;
 
 
   ----------------
@@ -339,6 +346,7 @@ package Xml_Parser is
   ----------------------
   -- TEXT and COMMENT --
   ----------------------
+  -- Get text of a Text or Comment node
   function Get_Text (Ctx  : Ctx_Type;
                      Text : Text_Type) return String;
   function Get_Text (Ctx  : Ctx_Type;
@@ -371,9 +379,9 @@ package Xml_Parser is
                                       Entity : in String;
                                       Info   : out Unparsed_Entity_Info_Rec);
 
-  -----------------
-  -- Specif TAGS --
-  -----------------
+  -------------------
+  -- Specific TAGS --
+  -------------------
   -- Shall the Element, if empty, be put with EmptyElemTag (<element/>) or
   --  with STag and ETag (<element></elememt>)
   -- By default it is False except if
