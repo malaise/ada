@@ -687,6 +687,22 @@ package body Xml_Parser.Generator is
     Tree.Replace (Cell);
   end Set_Put_Empty;
 
+  -- Set the PITarget and data of a Pi
+  -- Content must have the form "<PITarget> [ <spaces> <Pi_Data> ]"
+  procedure Set_Pi (Ctx     : in out Ctx_Type;
+                    Pi    : in out Pi_Type;
+                    Content : in String) is
+    Tree : Tree_Acc;
+    Cell : My_Tree_Cell;
+  begin
+    -- Move to node, must be a Pi
+    Move_To_Element (Ctx, Pi, Tree);
+    -- Update Pi
+    Tree.Read (Cell);
+    Set_Pi (Cell, Content);
+    Tree.Replace (Cell);
+  end Set_Pi;
+
   -- Set the text of a Text element
   procedure Set_Text (Ctx     : in out Ctx_Type;
                       Text    : in out Text_Type;
@@ -694,7 +710,7 @@ package body Xml_Parser.Generator is
     Tree : Tree_Acc;
     Cell : My_Tree_Cell;
   begin
-    -- Move to node, must be an element
+    -- Move to node, must be a text
     Move_To_Element (Ctx, Text, Tree);
     -- Update Text
     Tree.Read (Cell);
@@ -709,7 +725,7 @@ package body Xml_Parser.Generator is
     Tree : Tree_Acc;
     Cell : My_Tree_Cell;
   begin
-    -- Move to node, must be an element
+    -- Move to node, must be a comment
     Move_To_Element (Ctx, Comment, Tree);
     -- Update Text
     Tree.Read (Cell);
