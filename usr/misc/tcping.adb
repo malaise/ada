@@ -115,7 +115,6 @@ procedure Tcping is
   -- Immediate timer to stop
   procedure Cancel is
     Cid : Timers.Timer_Id;
-    pragma Unreferenced (Cid);
   begin
     -- Need a timer so that the main loop Wait returns
     Cid.Create ( (Delay_Kind    => Timers.Delay_Sec,
