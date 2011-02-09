@@ -109,7 +109,7 @@ package body Util is
       when Byte_To_Unicode.File_Error =>
         Error (Flow, "Error accessing encoding file " & Name);
       when Byte_To_Unicode.Parse_Error =>
-        Error (Flow, "Error parsing file " & Name);
+        Error (Flow, "Error parsing encoding file " & Name);
     end;
   end Load_Map;
 
