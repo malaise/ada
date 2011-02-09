@@ -1,8 +1,8 @@
 with Ada.Text_Io;
-with Argument, Basic_Proc, Byte_To_Unicode, Normal, Int_Io;
+with Argument, Basic_Proc, Unicode, Byte_To_Unicode, Normal, Int_Io;
 procedure T_Byte_To_Unicode is
   Map : Byte_To_Unicode.Map;
-  Unicode : Byte_To_Unicode.Unicode_Number;
+  Uni : Unicode.Unicode_Number;
 begin
 
   Map.Load (Argument.Get_Parameter(1));
@@ -13,9 +13,9 @@ begin
     Int_Io.Put (I, Base => 16);
     Ada.Text_Io.Put (" -> ");
 
-    Unicode := Map.Convert (I);
-    Ada.Text_Io.Put (Normal (Unicode, 5) & " ");
-    Int_Io.Put (Unicode, Base => 16);
+    Uni := Map.Convert (I);
+    Ada.Text_Io.Put (Normal (Uni, 5) & " ");
+    Int_Io.Put (Uni, Base => 16);
     Ada.Text_Io.New_Line;
 
   end loop;

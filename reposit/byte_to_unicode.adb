@@ -20,8 +20,7 @@ package body Byte_To_Unicode is
   procedure Load (The_Map : out Map; File_Name : in String) is
     Ctx : Xml_Parser.Ctx_Type;
     Ok : Boolean;
-    Set : array (Byte'Range) of Boolean
-        := (others => False);
+    Set : array (Byte'Range) of Boolean := (others => False);
     Code : Byte;
     Node : Xml_Parser.Element_Type;
     Child : Xml_Parser.Node_Type;
@@ -66,7 +65,7 @@ package body Byte_To_Unicode is
 
   -- Returns the Unicode corresponding to a given byte in the table
   function Convert (The_Map : Map;
-                    Code : Byte) return Unicode_Number is
+                    Code : Byte) return Unicode.Unicode_Number is
   begin
     return The_Map.Table (Code);
   end Convert;
