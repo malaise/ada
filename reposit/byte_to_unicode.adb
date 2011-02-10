@@ -1,4 +1,5 @@
-with Xml_Parser, Lower_Str;
+with Ada.Exceptions;
+with Xml_Parser, Lower_Str, Mixed_Str;
 package body Byte_To_Unicode is
 
 
@@ -29,13 +30,15 @@ package body Byte_To_Unicode is
     -- Parse the file
     Ctx.Parse (File_Name, Ok);
     if not Ok then
-      raise Parse_Error;
+      Ada.Exceptions.Raise_Exception (Parse_Error'Identity,
+                                      Ctx.Get_Parse_Error_Message);
     end if;
 
     -- Get the Map and check Nb of codes
     Node := Ctx.Get_Root_Element;
     if Ctx.Get_Nb_Children (Node) /= Table_Array'Length then
-      raise Parse_Error;
+      Ada.Exceptions.Raise_Exception (Parse_Error'Identity,
+                                      "Wrong number of Code entries.");
     end if;
 
     -- Iterate on all children of the Map
@@ -58,9 +61,16 @@ package body Byte_To_Unicode is
     when Xml_Parser.File_Error =>
       The_Map.Table := (others => 0);
       raise File_Error;
-    when others =>
+    when Parse_Error =>
       The_Map.Table := (others => 0);
-      raise Parse_Error;
+      raise;
+    when Error:others =>
+      The_Map.Table := (others => 0);
+      Ada.Exceptions.Raise_Exception (Parse_Error'Identity,
+               "Exception " &
+               Mixed_Str (Ada.Exceptions.Exception_Name (Error)) &
+               " raised.");
+
   end Load;
 
   -- Returns the Unicode corresponding to a given byte in the table
