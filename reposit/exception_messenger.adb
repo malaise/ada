@@ -1,4 +1,4 @@
-with As.U, Protected_Pool;
+with Protected_Pool, String_Mng;
 package body Exception_Messenger is
 
   package Msg_Pool is new Protected_Pool (As.U.Asu_Us);
@@ -26,10 +26,9 @@ package body Exception_Messenger is
     end if;
   end Raise_Exception;
 
-  -- Retrieve the message associated to an exception
-  function Exception_Message (X : Ada.Exceptions.Exception_Occurrence_Access)
-                             return String is
-    Str : constant String := Ada.Exceptions.Exception_Message (X.all);
+  -- INTERNAL: Retrieve the message associated to an exception message
+  function Get_Message (M : String) return String is
+    Str : constant String (1 .. M'Length) := String_Mng.Normalize (M);
     Key : Msg_Pool.Key_Type;
     Res : As.U.Asu_Us;
   begin
@@ -54,6 +53,19 @@ package body Exception_Messenger is
       when Msg_Pool.Not_Found =>
         return "";
     end;
+  end Get_Message;
+
+  -- Retrieve the message associated to an exception
+  procedure Exception_Message (X : in out Ada.Exceptions.Exception_Occurrence;
+                               M : out As.U.Asu_Us) is
+  begin
+    M := As.U.Tus (Get_Message (Ada.Exceptions.Exception_Message (X)));
+  end Exception_Message;
+
+  function Exception_Message (X : Ada.Exceptions.Exception_Occurrence_Access)
+                             return String is
+  begin
+    return Get_Message (Ada.Exceptions.Exception_Message (X.all));
   end Exception_Message;
 
 end Exception_Messenger;
