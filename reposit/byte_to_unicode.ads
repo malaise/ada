@@ -8,10 +8,12 @@ package Byte_To_Unicode is
 
   type Map is tagged private;
 
-  -- Load a map from file (or stdin if "")
+  -- Load a (XML defined) map from File_Name (or stdin if "")
   -- Raises File_Error if error accessing file
   -- Raises Parse_Error if incorrect or uncomplete table
-  -- See byte2unicode.dtd
+  -- An error message is associated to the Parse_Error exception
+  --  (error detected by the Xml_Parser or locally).
+  -- See byte2unicode.dtd for the format of the file
   File_Error : exception;
   Parse_Error : exception;
   procedure Load (The_Map : out Map; File_Name : in String);
