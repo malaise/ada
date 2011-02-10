@@ -1,4 +1,5 @@
 Major changes:
+2011/02/10: Add improve error reported when parsing encoding map in Xml_Parser V26.1
 2011/02/08: Add operation Set_Pi to Xml_Parser.Generator V9.0
 2011/02/07: Add make Timer_Id tagged
             Chg remove Text_Handler
