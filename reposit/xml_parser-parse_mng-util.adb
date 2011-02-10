@@ -102,14 +102,28 @@ package body Util is
         Error (Flow, "Unsupported encoding (only UTF-8, UTF-16 "
                           & "and ISO-8859-1 are natively supported)");
       end if;
-      Trace ("Loading map " & File_Name);
+      Trace ("Loading map " & Name & " from file " & File_Name);
       Flow.Curr_Flow.Map.Load (File_Name);
       Flow.Curr_Flow.Encod := Other;
     exception
       when Byte_To_Unicode.File_Error =>
-        Error (Flow, "Error accessing encoding file " & Name);
-      when Byte_To_Unicode.Parse_Error =>
-        Error (Flow, "Error parsing encoding file " & Name);
+        Error (Flow, "Error accessing encoding file " & File_Name);
+      when Except:Byte_To_Unicode.Parse_Error =>
+        declare
+          Except_Access : Ada.Exceptions.Exception_Occurrence_Access
+                        := Ada.Exceptions.Save_Occurrence (Except);
+          Msg : constant String
+              := Exception_Messenger.Exception_Message (Except_Access);
+        begin
+          Exception_Messenger.Deallocate (Except_Access);
+          if Msg = "" then
+            Error (Flow, "Error while parsing encoding file " & File_Name);
+          else
+            -- Append message raised by the map parsing (without last '.')
+            Error (Flow, "Error while parsing encoding file " & File_Name
+             & ": " & String_Mng.Cut (Msg, 1, Head => False));
+          end if;
+        end;
     end;
   end Load_Map;
 

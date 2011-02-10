@@ -11,7 +11,7 @@ with As.U, Queues, Trees, Hashed_List.Unique, Text_Char, Dynamic_List,
 --  * Only UTF-8, UTF-16 and ISO-8859-1 encodings are natively supported.
 --    Some other encodings may be handled by defining the environment variable
 --    XML_PARSER_MAP_DIR to where Byte_To_Unicode can find the mapping file
---    named <encoding>.xml (ex: ISO-8859-9.xml)
+--    named <ENCODING>.xml (in uppercase, ex: ISO-8859-9.xml)
 package Xml_Parser is
 
   -- Version incremented at each significant change
