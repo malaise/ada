@@ -701,9 +701,16 @@ package body String_Mng is
 
   -- Return a String (1 .. N)
   function Normalize (Str : String) return String is
-    Lstr : constant String (1 .. Str'Length) := Str;
   begin
-    return Lstr;
+    if Str'First = 1 then
+      -- Optim: no copy if not needed
+      return Str;
+    end if;
+    declare
+      Lstr : constant String (1 .. Str'Length) := Str;
+    begin
+      return Lstr;
+    end;
   end Normalize;
 
   -- Center a String Str in a fixed size
