@@ -27,8 +27,11 @@ package body Afpx is
     -- Release a descriptor. Check will raise No_Descriptor
     procedure Release_Dscr;
 
-    -- Check if a descriptor has been used (raise No_Descriptor)
+    -- Check if a descriptor is being used (raise No_Descriptor)
     procedure Check;
+
+    -- Check if a descriptor is being used
+    function Is_Set return Boolean;
 
     -- Check if a descriptor has been used (raise No_Descriptor)
     --  and if Field_No is valid in it (raise Invalid_Field)
@@ -276,6 +279,11 @@ package body Afpx is
     Af_Dscr.Release_Dscr;
   end Release_Descriptor;
 
+  -- Is a descriptor in use
+  function Is_Descriptor_Set return Boolean is
+  begin
+    return Af_Dscr.Is_Set;
+  end Is_Descriptor_Set;
 
   -- Suspend and resume the descriptor
   procedure Suspend is

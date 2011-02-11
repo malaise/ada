@@ -40,6 +40,9 @@ package Afpx is
   -- Exceptions : No_Descriptor (no Descriptor in use)
   procedure Release_Descriptor;
 
+  -- Is a descriptor in use
+  function Is_Descriptor_Set return Boolean;
+
   -- Suspend and resume a con_io
   -- If a program wants to open several con_io, (by example a graphical con_io
   --   after an afpx), there are two options:
