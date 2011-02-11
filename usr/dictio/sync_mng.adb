@@ -38,15 +38,15 @@ package body Sync_Mng is
 
   procedure Cancel_Timer is
   begin
-    if Timer_Active then
-      Timers.Delete (Timer_Id);
-    end if;
+    Timer_Id.Delete_If_Exists;
   end Cancel_Timer;
 
-  function Timer_Rec_Cb (Id : in Timers.Timer_Id;
-                         Data : Timers.Timer_Data) return Boolean is
+  function Timer_Rec_Cb (Id : Timers.Timer_Id;
+                         Data : Timers.Timer_Data;
+                         New_Id : Timers.Timer_Id) return Boolean is
     pragma Unreferenced (Id, Data);
   begin
+    Timer_Id := New_Id;
     if Sync_Has_Been_Received then
       -- Still in sync
       Sync_Has_Been_Received := False;
@@ -123,7 +123,8 @@ package body Sync_Mng is
 
 
   function Timer_Sen_Cb (Id : Timers.Timer_Id;
-                         Data : Timers.Timer_Data) return Boolean;
+                         Data : Timers.Timer_Data;
+                         New_Id : Timers.Timer_Id) return Boolean;
 
   procedure Send (To : Tcp_Util.Host_Name) is
     Found : Boolean;
@@ -289,11 +290,12 @@ package body Sync_Mng is
   end Do_Sync_Channel;
 
   function Timer_Sen_Cb (Id : Timers.Timer_Id;
-                         Data : Timers.Timer_Data) return Boolean is
+                         Data : Timers.Timer_Data;
+                         New_Id : Timers.Timer_Id) return Boolean is
     pragma Unreferenced (Id, Data);
     use type Args.Channel_Mode_List;
   begin
-    Tid := Timers.No_Timer;
+    Tid := New_Id;
 
     -- Check sync not cancelled during init
     if Sending_Status /= Init then
@@ -341,12 +343,9 @@ package body Sync_Mng is
         Dictio_Debug.Put ("Sync: Cancel");
       end if;
     end if;
-    if Timer_Active then
-      Cancel_Timer;
-    end if;
+    Cancel_Timer;
     if Sending_Status = Init then
-      Tid := Timers.No_Timer;
-      Tid.Delete;
+      Tid.Delete_If_Exists;
     end if;
     Sending_Status := Stop;
   end Cancel;

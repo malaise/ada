@@ -41,15 +41,27 @@ package Timers is
   -- Value returned by Next_Timer if no more timer
   No_Timer : constant Timer_Id;
 
-  -- Timer callback: called when the timer expires with two argument:
-  --  the timer Id and the Data provided at timer creation
-  -- Should return True if the timer Virtual_Time has to be reported by
+  -- Is a Timer_Id set
+  -- Beware that a Timer_Id may still set after expiration, even if no period
+  function Is_Set (Id : Timer_Id) return Boolean;
+  -- Reset a Timer_Id (set it to No_Timer)
+  procedure Reset (Id : in out Timer_Id);
+
+  -- Timer callback: called when the timer expires with three arguments:
+  --  the timer Id if the timer created
+  --  the Data provided at timer creation
+  --  the New_Id to set: same as Id if the timer is periodic and No_Timer
+  --    otherwise, so that the user callback may start with
+  --    My_Global_Id := New_Id;
+  -- Should return True if the timer expiration has to be reported by
   --    expire
   subtype Timer_Data is Natural;
   No_Data : constant Timer_Data := 0;
 
   type Timer_Callback is access
-        function (Id : in Timer_Id; Data : in Timer_Data) return Boolean;
+        function (Id : in Timer_Id;
+                  Data : in Timer_Data;
+                  New_Id : in Timer_Id) return Boolean;
 
   -- Create a new timer
   -- May raise Invalid_Delay if Delay_Seconds is < 0
@@ -64,13 +76,17 @@ package Timers is
                     Callback   : in Timer_Callback;
                     Data       : in Timer_Data := No_Data);
 
-  -- Is a timer set (created)
-  function Is_Set (Id : in Timer_Id) return Boolean;
+  -- Does a timer exist (still running, even if suspended)
+  function Exists (Id : Timer_Id) return Boolean;
 
   -- Delete a timer
   -- May raise Invalid_Timer if timer has no period and has expired
   Invalid_Timer : exception;
   procedure Delete (Id : in out Timer_Id);
+
+  -- Delete a timer if it exists
+  -- No exception even if Timer_Id is not set
+  procedure Delete_If_Exists (Id : in out Timer_Id);
 
   -- Suspend a timer: expirations, even the pending ones are suspended
   -- No action if timer is alread syspended
@@ -88,7 +104,8 @@ package Timers is
   -- then, if periodical it is re-armed (and may expire)
   --       if not it is deleted
   -- Return True if at least one timer has expired with a callback set
-  --  and this callback has returned True
+  --  and this callback has returned True or if at least one timer has
+  --  expired with no callback set
   function Expire return Boolean;
 
 

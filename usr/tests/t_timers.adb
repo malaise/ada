@@ -61,7 +61,8 @@ procedure T_Timers is
 
   -- Generic callback
   function Callback (Id : Timers.Timer_Id;
-                     Data : Timers.Timer_Data) return Boolean;
+                     Data : Timers.Timer_Data;
+                     New_Id : Timers.Timer_Id) return Boolean;
 
   -- Start a timer and store its id
   procedure Start (T : Timer_List;
@@ -70,8 +71,8 @@ procedure T_Timers is
                    Cb : in Boolean) is
     A : Timers.Timer_Callback;
   begin
-    if Cb
-      then A := Callback'Unrestricted_Access;
+    if Cb then
+      A := Callback'Unrestricted_Access;
     else
       A := null;
     end if;
@@ -90,22 +91,16 @@ procedure T_Timers is
 
   -- Generic callback
   function Callback (Id : Timers.Timer_Id;
-                     Data : Timers.Timer_Data) return Boolean is
-    pragma Unreferenced (Data);
+                     Data : Timers.Timer_Data;
+                     New_Id : Timers.Timer_Id) return Boolean is
+    pragma Unreferenced (Data, New_Id);
     use type Timers.Timer_Id;
     N : Positive;
   begin
     if not Use_Afpx then
-      declare
-        W : Afpx.Width_Range;
-        pragma Unreferenced (W);
-      begin
-        W := Afpx.Get_Field_Width (F);
+      if Afpx.Is_Descriptor_Set then
         Use_Afpx := True;
-      exception
-        when Afpx.No_Descriptor =>
-          null;
-      end;
+      end if;
     end if;
     for T in Timer_List loop
       if The_Timers(T) = Id then

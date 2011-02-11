@@ -330,9 +330,10 @@ package body Tcp_Util is
 
   -- Timer callback
   function Connection_Timer_Cb (Id : Timers.Timer_Id;
-                                Data : Timers.Timer_Data := Timers.No_Data)
+                                Data : Timers.Timer_Data := Timers.No_Data;
+                                New_Id : Timers.Timer_Id := Timers.No_Timer)
            return Boolean is
-    pragma Unreferenced (Data);
+    pragma Unreferenced (Data, New_Id);
     Rec : Connecting_Rec;
     Connected : Boolean;
     Go_On : Boolean;

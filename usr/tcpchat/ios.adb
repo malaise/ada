@@ -53,17 +53,18 @@ package body Ios is
   end Signal_Cb;
 
   -- Handle global timeout expiration
-  function Timer_Cb (Id : in Timers.Timer_Id;
-                     Data : in Timers.Timer_Data := Timers.No_Data)
+  function Timer_Cb (Id : Timers.Timer_Id;
+                     Data : Timers.Timer_Data;
+                     New_Id : Timers.Timer_Id)
            return Boolean is
     pragma Unreferenced (Id, Data);
   begin
+   Global_Tid := New_Id;
     Debug.Log ("Global timeout");
     if Event.Kind /= Exit_Requested
     and then Event.Kind /= Disconnection then
       Event := (Kind => Global_Timeout);
     end if;
-    Global_Tid := Timers.No_Timer;
     return True;
   end Timer_Cb;
 
@@ -282,9 +283,7 @@ package body Ios is
 
   procedure Stop_Global_Timer is
   begin
-    if Global_Tid.Is_Set then
-      Global_Tid.Delete;
-    end if;
+    Global_Tid.Delete_If_Exists;
   end Stop_Global_Timer;
 
   -- Wait during Timeout (or up to global timeout or disconnection)

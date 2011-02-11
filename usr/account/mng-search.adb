@@ -7,10 +7,11 @@ procedure Search is
   -- Current date for searching and displaying
   Today : Oper_Def.Date_Rec;
   -- Update current date if it changes
-  function Set_Today (Id : in Timers.Timer_Id;
-                      Data : in Timers.Timer_Data := Timers.No_Data)
+  function Set_Today (Id : Timers.Timer_Id;
+                      Data : Timers.Timer_Data := Timers.No_Data;
+                      New_Id : Timers.Timer_Id := Timers.No_Timer)
            return Boolean is
-    pragma Unreferenced (Id, Data);
+    pragma Unreferenced (Id, Data, New_Id);
     Newday : Oper_Def.Date_Rec;
     Seconds : Ada.Calendar.Day_Duration;
     use type Oper_Def.Date_Rec;
@@ -36,9 +37,7 @@ procedure Search is
   -- Cancel timer if it is active
   procedure Cancel_Timer is
   begin
-    if Timer.Is_Set then
-      Timer.Delete;
-    end if;
+    Timer.Delete_If_Exists;
   end Cancel_Timer;
 
   -- Unselect current oper

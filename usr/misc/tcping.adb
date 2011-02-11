@@ -103,10 +103,11 @@ procedure Tcping is
   end Image;
 
   -- Cancel immediate timer Cb
-  function Cancel_Cb (Id : in Timers.Timer_Id;
-                    Data : in Timers.Timer_Data := Timers.No_Data)
+  function Cancel_Cb (Id : Timers.Timer_Id;
+                      Data : Timers.Timer_Data := Timers.No_Data;
+                      New_Id : Timers.Timer_Id := Timers.No_Timer)
            return Boolean is
-    pragma Unreferenced (Id, Data);
+    pragma Unreferenced (Id, Data, New_Id);
   begin
     Game_Over := True;
     return True;
@@ -116,7 +117,8 @@ procedure Tcping is
   procedure Cancel is
     Cid : Timers.Timer_Id;
   begin
-    -- Need a timer so that the main loop Wait returns
+    -- Need a timer so that the main loop Wait returns with timer event
+    --  (signal event is already used to abort)
     Cid.Create ( (Delay_Kind    => Timers.Delay_Sec,
                   Clock         => null,
                   Period        => Timers.No_Period,
@@ -162,10 +164,11 @@ procedure Tcping is
     end if;
   end Connect_Cb;
 
-  function Timer_Cb (Id : in Timers.Timer_Id;
-                     Data : in Timers.Timer_Data := Timers.No_Data)
+  function Timer_Cb (Id : Timers.Timer_Id;
+                     Data : Timers.Timer_Data := Timers.No_Data;
+                     New_Id : Timers.Timer_Id := Timers.No_Timer)
            return Boolean is
-    pragma Unreferenced (Id, Data);
+    pragma Unreferenced (Id, Data, New_Id);
     Dummy :  Boolean;
     pragma Unreferenced (Dummy);
   begin
@@ -327,7 +330,7 @@ begin
   end loop;
 
   -- Cancel timer
-  Tid.Delete;
+  Tid.Delete_If_Exists;
 
   -- Cancel pending connection
   if Connecting then

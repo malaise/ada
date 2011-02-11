@@ -27,8 +27,9 @@ package Task_Mng is
 
 private
 
-  function Callback (Id : in Timers.Timer_Id;
-                     Data : in Timers.Timer_Data) return Boolean;
+  function Callback (Id : Timers.Timer_Id;
+                     Data : Timers.Timer_Data;
+                     New_Id : Timers.Timer_Id) return Boolean;
 
   Cb_Access : constant Timers.Timer_Callback := Callback'Access;
 end Task_Mng;

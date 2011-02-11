@@ -24,11 +24,13 @@ procedure T_Virtual is
 
   -- The timer and its expiration callback
   My_Tid : Timers.Timer_Id;
-  function Timer_Callback (Id : in Timers.Timer_Id;
-                           Data : in Timers.Timer_Data := Timers.No_Data)
+  function Timer_Callback (Id : Timers.Timer_Id;
+                           Data : Timers.Timer_Data;
+                           New_Id : Timers.Timer_Id)
            return Boolean is
     pragma Unreferenced (Id, Data);
   begin
+    My_Tid := New_Id;
     Ada.Text_Io.Put_Line ("Timer expiration at "
       & Date_Image (Virtual_Time.Current_Time (null))
       & " - " & Date_Image (My_Clock.Current_Time));

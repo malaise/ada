@@ -194,6 +194,18 @@ package body Timers is
     end loop;
   end Get_Next_Id;
 
+  -- Is a timer set (created)
+  function Is_Set (Id : in Timer_Id) return Boolean is
+  begin
+    return Id /= No_Timer;
+  end Is_Set;
+
+  -- Reset a Timer_Id (set it to No_Timer)
+  procedure Reset (Id : in out Timer_Id) is
+  begin
+    Id := No_Timer;
+  end Reset;
+
   -- Create a new timer
   -- May raise Invalid_Delay if Delay_Seconds is < 0
   -- Invalid_Delay : exception;
@@ -314,15 +326,9 @@ package body Timers is
     Id := Create (Delay_Spec, Callback, Data);
   end Create;
 
-  -- Is a timer set (created)
-  function Is_Set (Id : in Timer_Id) return Boolean is
-  begin
-    return Id /= No_Timer;
-  end Is_Set;
-
   -- Locate a timer in list
-  -- May raise Invalid_Timer if timer has expired
-  procedure Locate (Id : in Timer_Id) is
+  -- Return True if found
+  function Exists (Id : Timer_Id) return Boolean is
     Timer : Timer_Rec;
     Found : Boolean;
   begin
@@ -331,19 +337,25 @@ package body Timers is
       raise Invalid_Timer;
     end if;
     if Timer_List.Is_Empty then
-      raise Invalid_Timer;
+      return False;
     end if;
     -- Try current
     Timer_List.Read (Timer, Timer_List_Mng.Current);
     if Timer.Id = Id.Timer_Num then
-      return ;
+      return True;
     end if;
 
     -- Search timer
     Timer.Id := Id.Timer_Num;
     Search_Id (Timer_List, Found, Timer, From => Timer_List_Mng.Absolute);
-    if not Found then
-      -- Not found
+    return Found;
+  end Exists;
+
+  -- Locate a timer in list
+  -- May raise Invalid_Timer if timer has expired
+  procedure Locate (Id : in Timer_Id) is
+  begin
+    if not Exists (Id) then
       raise Invalid_Timer;
     end if;
   end Locate;
@@ -397,6 +409,23 @@ package body Timers is
     Put_Debug ("Delete", " id " & Id.Timer_Num'Img);
     Release_Mutex;
   end Delete;
+
+  -- Delete a timer if it exists
+  -- No exception even if Timer_Id is not set
+  procedure Delete_If_Exists (Id : in out Timer_Id) is
+  begin
+    Get_Mutex;
+    Set_Debug;
+    -- Search timer
+    if Is_Set (Id) and then Exists (Id) then
+      -- Delete timer
+      Delete_Current;
+      Put_Debug ("Delete_If_Exists", " id " & Id.Timer_Num'Img);
+    else
+      Put_Debug ("Delete_If_Exists", "no timer id " & Id.Timer_Num'Img);
+    end if;
+    Release_Mutex;
+  end Delete_If_Exists;
 
   -- Suspend a timer: expirations, even the pending ones are suspended
   -- No action is timer is alread syspended
@@ -496,6 +525,7 @@ package body Timers is
   function Expire return Boolean is
     Timer : Timer_Rec;
     One_True : Boolean;
+    New_Id : Timer_Id;
     use type Virtual_Time.Time;
   begin
     Get_Mutex;
@@ -514,12 +544,14 @@ package body Timers is
       -- Expired: Remove single shot
       if Timer.Exp.Period = No_Period then
         Delete_Current;
+        New_Id := No_Timer;
       else
         -- Re-arm periodical, store and sort
         Timer.Exp.Expiration_Time := Timer.Exp.Expiration_Time
              + Timer.Exp.Period / Virtual_Time.Get_Speed (Timer.Clock);
         Timer_List.Modify (Timer, Timer_List_Mng.Current);
         Sort (Timer_List);
+        New_Id := (Timer_Num => Timer.Id);
       end if;
       Put_Debug ("Expire", "expiring id " & Timer.Id'Img);
       -- Call callback
@@ -528,7 +560,8 @@ package body Timers is
         One_True := True;
       else
         if Timer.Cb ( (Timer_Num => Timer.Id),
-                      Timer.Dat) then
+                      Timer.Dat,
+                      New_Id ) then
           -- At least this Cb has returned True
           One_True := True;
         end if;

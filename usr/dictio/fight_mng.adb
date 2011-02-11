@@ -8,10 +8,12 @@ package body Fight_Mng is
   Last_Status : Status.Status_List;
 
   function Timer_Cb (Id : Timers.Timer_Id;
-                     Data : Timers.Timer_Data) return Boolean;
+                     Data : Timers.Timer_Data;
+                     New_Id : Timers.Timer_Id) return Boolean;
 
   function Perio_Cb (Id : Timers.Timer_Id;
-                     Data : Timers.Timer_Data) return Boolean;
+                     Data : Timers.Timer_Data;
+                     New_Id : Timers.Timer_Id) return Boolean;
 
   Fight_Actions : Fight_Action;
 
@@ -86,18 +88,17 @@ package body Fight_Mng is
 
 
   function Timer_Cb (Id : Timers.Timer_Id;
-                     Data : Timers.Timer_Data) return Boolean is
+                     Data : Timers.Timer_Data;
+                     New_Id : Timers.Timer_Id) return Boolean is
     pragma Unreferenced (Id, Data);
     Result : Nodes.Check_Result_List;
   begin
+    Tid := New_Id;
     Result := Nodes.Check;
     if Dictio_Debug.Level_Array(Dictio_Debug.Fight) then
       Dictio_Debug.Put ("Fight: ends " & Result'Img);
     end if;
-    Tid := Timers.No_Timer;
-    if Per.Is_Set then
-      Per.Delete;
-    end if;
+    Per.Delete_If_Exists;
 
     -- This may restart a fight
     Status.Set (Fight_Actions(Result));
@@ -105,8 +106,9 @@ package body Fight_Mng is
   end Timer_Cb;
 
   function Perio_Cb (Id : Timers.Timer_Id;
-                     Data : Timers.Timer_Data) return Boolean is
-    pragma Unreferenced (Id, Data);
+                     Data : Timers.Timer_Data;
+                     New_Id : Timers.Timer_Id) return Boolean is
+    pragma Unreferenced (Id, Data, New_Id);
     use type Status.Status_List;
   begin
     if In_Fight and then Last_Status /= Status.Fight then

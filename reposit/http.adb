@@ -62,12 +62,13 @@ package body Http is
   -- Timer Cb
   Timer_Id : Timers.Timer_Id;
   function Timer_Cb (Id : Timers.Timer_Id;
-                     Data : Timers.Timer_Data := Timers.No_Data)
+                     Data : Timers.Timer_Data;
+                     New_Id : Timers.Timer_Id)
            return Boolean is
     pragma Unreferenced (Id, Data);
   begin
     Debug ("HTTP: Timeout");
-    Timer_Id := Timers.No_Timer;
+    Timer_Id := New_Id;
     Result := (Client_Error, Timeout);
     Done := True;
     return True;
@@ -224,9 +225,7 @@ package body Http is
   begin
     Debug ("HTTP: Closing");
     -- Cancel timer
-    if Timer_Id.Is_Set then
-      Timer_Id.Delete;
-    end if;
+    Timer_Id.Delete_If_Exists;
     begin
       Tcp_Util.Abort_Connect (Host, Port);
     exception
@@ -328,7 +327,7 @@ package body Http is
 
     -- Here we go, init result
     Mut.Get;
-    Timer_Id := Timers.No_Timer;
+    Timer_Id.Reset;
     Done := False;
     Result := (Kind => Ok, Content => As.U.Asu_Null);
 

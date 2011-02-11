@@ -10,7 +10,8 @@ package body Online_Mng is
   Ever_Synced : Boolean := False;
 
   function Timer_Cb (Id : Timers.Timer_Id;
-                     Data : Timers.Timer_Data) return Boolean;
+                     Data : Timers.Timer_Data;
+                     New_Id : Timers.Timer_Id) return Boolean;
 
   Fight_Actions : constant Fight_Mng.Fight_Action :=
     (Nodes.Many_Master_Master => Status.Master,
@@ -24,9 +25,7 @@ package body Online_Mng is
 
   procedure Delete_Timer is
   begin
-    if Tid.Is_Set then
-      Timers.Delete (Tid);
-    end if;
+    Tid.Delete_If_Exists;
   end Delete_Timer;
 
   procedure Start_Slave_Timeout is
@@ -179,10 +178,12 @@ package body Online_Mng is
   end Event;
 
   function Timer_Cb (Id : Timers.Timer_Id;
-                     Data : Timers.Timer_Data) return Boolean is
+                     Data : Timers.Timer_Data;
+                     New_Id : Timers.Timer_Id) return Boolean is
     pragma Unreferenced (Id, Data);
     use type Status.Status_List;
   begin
+    Tid := New_Id;
     if Status.Get = Status.Master then
       -- Send alive message
       -- With Crc if stable
@@ -196,7 +197,6 @@ package body Online_Mng is
       if Dictio_Debug.Level_Array(Dictio_Debug.Online) then
         Dictio_Debug.Put ("Online: fight due to alive timeout");
       end if;
-      Tid := Timers.No_Timer;
       Start_Fight;
     end if;
     return False;

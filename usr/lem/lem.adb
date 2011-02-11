@@ -76,13 +76,15 @@ package body Lem is
   -- Return true if too much X thrust while landed
   Current_X_Thrust : X_Thrust_Range := 0;
   Thrust_Tid : Timers.Timer_Id;
-  function Timer_Thrust_Cb (Id : Timers.Timer_Id; Data : in Timers.Timer_Data)
+  function Timer_Thrust_Cb (Id : Timers.Timer_Id;
+                            Data : Timers.Timer_Data;
+                            New_Id : Timers.Timer_Id)
            return Boolean is
     pragma Unreferenced (Id, Data);
   begin
     -- Reset X thrust
+    Thrust_Tid := New_Id;
     Current_X_Thrust := 0;
-    Thrust_Tid := Timers.No_Timer;
     return False;
   end Timer_Thrust_Cb;
   procedure Set_X_Thrust (X_Thrust : in X_Thrust_Range) is
@@ -91,10 +93,7 @@ package body Lem is
       raise Invalid_Mode;
     end if;
     -- Delete previous timer
-    if Thrust_Tid.Is_Set then
-      Timers.Delete (Thrust_Tid);
-      Thrust_Tid := Timers.No_Timer;
-    end if;
+    Thrust_Tid.Delete_If_Exists;
     -- No fuel => no thrust, if landed, no effect
     if Current_Fuel = 0.0 or else Landed then
       return;
@@ -218,9 +217,11 @@ package body Lem is
   Period : constant Duration := 1.0;
 
   -- Timer callback computing new LEM characteristics
-  function Period_Timer_Cb (Id : Timers.Timer_Id; Data : in Timers.Timer_Data)
+  function Period_Timer_Cb (Id : Timers.Timer_Id;
+                            Data : Timers.Timer_Data;
+                            New_Id : Timers.Timer_Id)
                     return Boolean is
-    pragma Unreferenced (Id, Data);
+    pragma Unreferenced (Id, Data, New_Id);
     Fuel_Consumed : Fuel_Range;
     Mass : Mass_Range;
     New_Position : Position_Rec;
@@ -329,14 +330,9 @@ package body Lem is
   procedure Stop is
   begin
     -- Stop timers
-    if Period_Tid.Is_Set then
-      Timers.Delete (Period_Tid);
-      Period_Tid := Timers.No_Timer;
-    end if;
-    if Thrust_Tid.Is_Set then
-      Timers.Delete (Thrust_Tid);
-      Thrust_Tid := Timers.No_Timer;
-    end if;
+    Period_Tid.Delete_If_Exists;
+    Timers.Delete (Thrust_Tid);
+    Thrust_Tid.Delete_If_Exists;
     -- Reset Trust, acceleration and speed
     Chrono.Stop;
     Current_X_Thrust := 0;

@@ -409,8 +409,10 @@ package body Event_Mng is
   Pause_Level : Natural := 0;
 
   function Pause_Cb (Id : Timers.Timer_Id;
-                     Data : Timers.Timer_Data) return Boolean is
-    pragma Unreferenced (Id);
+                     Data : Timers.Timer_Data;
+                     New_Id : Timers.Timer_Id := Timers.No_Timer)
+           return Boolean is
+    pragma Unreferenced (Id, New_Id);
   begin
     -- Check this expiration versus current pause level
     if Pause_Level >= Data then
@@ -470,12 +472,7 @@ package body Event_Mng is
           end if;
         end if;
         -- Cancel timer if not yet expired
-        begin
-          Tid.Delete;
-        exception
-          when Timers.Invalid_Timer =>
-            null;
-        end;
+        Tid.Delete_If_Exists;
         exit;
       end if;
 

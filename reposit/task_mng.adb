@@ -4,10 +4,12 @@ package body Task_Mng is
   Tid : Timers.Timer_Id;
 
   -- The timer callback
-  function Callback (Id : in Timers.Timer_Id;
-                     Data : in Timers.Timer_Data) return Boolean is
+  function Callback (Id : Timers.Timer_Id;
+                     Data : Timers.Timer_Data;
+                     New_Id : Timers.Timer_Id) return Boolean is
     pragma Unreferenced (Id, Data);
   begin
+    Tid := New_Id;
     -- Call user callback
     Call_Back;
     return False;
@@ -40,9 +42,7 @@ package body Task_Mng is
   procedure Stop is
   begin
     -- Cancel previous timer
-    if Tid.Is_Set then
-      Tid.Delete;
-    end if;
+    Tid.Delete_If_Exists;
   end Stop;
 
 end Task_Mng;

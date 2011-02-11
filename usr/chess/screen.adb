@@ -433,12 +433,7 @@ package body Screen is
         exit;
       end if;
     end loop;
-    begin
-      Timer.Delete;
-    exception
-      when Timers.Invalid_Timer =>
-        null;
-    end;
+    Timer.Delete_If_Exists;
   end Put;
 
   -- Wait until fd event
