@@ -114,8 +114,16 @@ package body Timers is
   begin
     I1.Get (T1);
     I2.Get (T2);
-    T1_Running := not T1.Suspended and then not T1.Frozen;
-    T2_Running := not T2.Suspended and then not T2.Frozen;
+    -- Handle case when one or both are deleted
+    if T1.Status /= Deleted and then T2.Status = Deleted then
+      return True;
+    elsif T1.Status = Deleted and then T2.Status /= Deleted then
+      return False;
+    elsif T1.Status = Deleted and then T2.Status = Deleted then
+      return  T1.Cre < T2.Cre;
+    end if;
+    T1_Running := T1.Status = Running and then not T1.Frozen;
+    T2_Running := T2.Status = Running and then not T2.Frozen;
     if T1_Running and then T2_Running then
       -- Both running => Expiration time
       return T1.Exp.Expiration_Time < T2.Exp.Expiration_Time
@@ -148,6 +156,12 @@ package body Timers is
     Id.Get (Timer);
     return Timer.Status;
   end Status;
+
+  -- True if timer is not Deleted
+  function Exists (Id : in Timer_Id) return Boolean is
+  begin
+    return Status (Id) /= Deleted;
+  end Exists;
 
   -- Create a new timer
   -- May raise Invalid_Delay if Delay_Seconds is < 0
@@ -227,7 +241,7 @@ package body Timers is
     end if;
 
     -- Insert in beginning of list and sort
-    Id.Set (Timer);
+    Id.Init (Timer);
     Timer_List.Rewind (False);
     Timer_List.Insert (Id, Timer_List_Mng.Prev);
     Sort (Timer_List);
@@ -350,6 +364,9 @@ package body Timers is
     if not Id.Is_Set then
       Put_Debug ("Delete_If_Exists", "not set");
       return;
+    elsif Timer_List.Is_Empty then
+      Put_Debug ("Delete_If_Exists", "empty list");
+      return;
     end if;
     Delete (Id);
   end Delete_If_Exists;
@@ -368,7 +385,10 @@ package body Timers is
     Set_Debug;
     -- Read timer
     Id.Get (Timer);
-    if Timer.Suspended then
+    if Timer.Status = Deleted then
+      Release_Mutex;
+      raise Invalid_Timer;
+    elsif Timer.Status = Suspended then
       -- Already suspended
       Release_Mutex;
       return;
@@ -385,7 +405,8 @@ package body Timers is
       end if;
     end if;
     -- Store it and re-sort
-    Timer.Suspended := True;
+    Timer.Status := Suspended;
+    Id.Set (Timer);
     Sort (Timer_List);
     Put_Debug ("Suspend", "for " & Timer.Remaining.Days'Img & "D +  "
                                   & Timer.Remaining.Secs'Img & "s");
@@ -404,7 +425,10 @@ package body Timers is
     Set_Debug;
     -- Read timer
     Id.Get (Timer);
-    if not Timer.Suspended then
+    if Timer.Status = Deleted then
+      Release_Mutex;
+      raise Invalid_Timer;
+    elsif Timer.Status = Running then
       -- Already running
       Release_Mutex;
       return;
@@ -416,7 +440,8 @@ package body Timers is
           + (Timer.Remaining * Perpet.Natural_Duration(1.0 / Speed));
     end if;
     -- Store it and re-sort
-    Timer.Suspended := False;
+    Timer.Status := Running;
+    Id.Set (Timer);
     Sort (Timer_List);
 
     --Done
@@ -459,7 +484,7 @@ package body Timers is
       Timer_List.Read (Tid, Timer_List_Mng.Current);
       Tid.Get (Timer);
       -- Done when no more to expire
-      exit when Timer.Suspended or else Timer.Frozen
+      exit when Timer.Status /= Running or else Timer.Frozen
       or else Timer.Exp.Expiration_Time > Ada.Calendar.Clock;
 
       -- Expired: Remove single shot
@@ -469,6 +494,7 @@ package body Timers is
         -- Re-arm periodical, store and sort
         Timer.Exp.Expiration_Time := Timer.Exp.Expiration_Time
              + Timer.Exp.Period / Virtual_Time.Get_Speed (Timer.Clock);
+        Tid.Set (Timer);
         Sort (Timer_List);
       end if;
       Put_Debug ("Expire", "expiring");
@@ -500,7 +526,7 @@ package body Timers is
     end if;
   end Adjust;
 
-  -- Expiration of next timer
+  -- Date of expiration of next timer
   function Wait_Until return Expiration_Rec is
     Tid : Timer_Id;
     Timer : Timer_Rec;
@@ -516,7 +542,7 @@ package body Timers is
     end if;
     Timer_List.Read (Tid, Timer_List_Mng.Current);
     Tid.Get (Timer);
-    if Timer.Suspended or else Timer.Frozen then
+    if Timer.Status /= Running or else Timer.Frozen then
       -- No more running timer
       Put_Debug ("Wait_Until", "-> Infinite cause no more running timer");
       Release_Mutex;
@@ -535,6 +561,7 @@ package body Timers is
     use type Virtual_Time.Time;
   begin
     -- Get next timer and substract now
+    Put_Debug ("Wait_For", "");
     Now :=  Ada.Calendar.Clock;
     Next_Exp := Wait_Until;
     if Next_Exp = Infinite_Expiration then
@@ -615,12 +642,12 @@ package body Timers is
     begin
       Timer_List.Read (Tid, Timer_List_Mng.Current);
       Tid.Get (Timer);
-      if Timer.Clock /= Clock then
+      if Timer.Clock /= Clock or else Timer.Status = Deleted then
         return;
       end if;
       if Timer.Frozen and then New_Speed /= 0.0 then
         -- Clock restarted at Rtime, compute expiration with new speed
-        if not Timer.Suspended then
+        if Timer.Status = Running then
           Timer.Exp.Expiration_Time := Rtime
               + (Timer.Remaining * Perpet.Natural_Duration(1.0 / New_Speed));
           Put_Debug ("Update",
@@ -629,7 +656,7 @@ package body Timers is
         Timer.Frozen := False;
       elsif not Timer.Frozen and then New_Speed = 0.0 then
         -- Clock froze at Rtime, store remaining time in previous Vtime
-        if not Timer.Suspended then
+        if Timer.Status = Running then
           Timer.Remaining := (Timer.Exp.Expiration_Time - Rtime)
               * Perpet.Natural_Duration(Speed);
           Put_Debug ("Update",
@@ -644,6 +671,7 @@ package body Timers is
               (Timer.Exp.Expiration_Time - Rtime) * Duration(Speed / New_Speed)
             + Virtual_Time.Current_Time (null);
       end if;
+      Tid.Set (Timer);
     end Update;
 
   begin

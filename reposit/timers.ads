@@ -45,6 +45,8 @@ package Timers is
                         Running,   -- Will expire
                         Suspended);-- Will expire but currently suspended
   function Status (Id : in Timer_Id) return Timer_Status;
+  -- True if timer is not Deleted
+  function Exists (Id : in Timer_Id) return Boolean;
 
   -- Timer callback: called when the timer expires with two arguments:
   --  the timer Id if the timer created
@@ -145,8 +147,6 @@ private
     Dat : Timer_Data;
     Cb  : Timer_Callback;
     Clock : Virtual_Time.Clock_Access;
-    -- Suspend/Resume
-    Suspended : Boolean;
     -- Clock speed 0
     Frozen : Boolean;
     Remaining : Perpet.Delta_Rec;
