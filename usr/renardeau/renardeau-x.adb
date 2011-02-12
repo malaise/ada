@@ -169,6 +169,7 @@ package body X is
       -- Ptg
       Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result,
                          Redisplay);
+      Redisplay := False;
       case Ptg_Result.Event is
         when Keyboard =>
           case Ptg_Result.Keyboard_Key is
@@ -278,6 +279,7 @@ package body X is
       -- Ptg
       Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result,
                          Redisplay);
+      Redisplay := False;
       case Ptg_Result.Event is
         when Keyboard =>
           case Ptg_Result.Keyboard_Key is

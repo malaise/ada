@@ -144,6 +144,7 @@ begin
 
   loop
     Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result, Redisplay);
+    Redisplay := False;
     case Ptg_Result.Event is
       when Afpx.Keyboard =>
 
@@ -178,6 +179,7 @@ begin
       when Afpx.Timer_Event =>
         Display ("Timer Event");
       when Afpx.Refresh =>
+Ada.Text_Io.Put_Line ("Refresh");
         Redisplay := True;
     end case;
   end loop;
