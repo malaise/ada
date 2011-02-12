@@ -326,7 +326,6 @@ package body Lem is
   begin
     -- Stop timers
     Period_Tid.Delete_If_Exists;
-    Timers.Delete (Thrust_Tid);
     Thrust_Tid.Delete_If_Exists;
     -- Reset Trust, acceleration and speed
     Chrono.Stop;

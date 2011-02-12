@@ -318,6 +318,12 @@ package body Timers is
     Timer_List.Read (Tid, Timer_List_Mng.Current);
     Timer_List.Delete (Moved => Found);
     Tid.Get (Timer);
+    if Timer.Status = Deleted then
+      Put_Debug ("Delete", "timer status is already deleted!!!");
+      raise Invalid_Timer;
+    end if;
+    Timer.Status := Deleted;
+    Tid.Set (Timer);
 
     -- Update clock if any
     if Timer.Clock /= null then
@@ -360,6 +366,7 @@ package body Timers is
   -- Delete a timer if it exists
   -- No exception even if Timer_Id is not set
   procedure Delete_If_Exists (Id : in out Timer_Id) is
+    Timer : Timer_Rec;
   begin
     if not Id.Is_Set then
       Put_Debug ("Delete_If_Exists", "not set");
@@ -368,7 +375,15 @@ package body Timers is
       Put_Debug ("Delete_If_Exists", "empty list");
       return;
     end if;
+    -- Check that timer is not already deleted
+    Id.Get (Timer);
+    if Timer.Status = Deleted then
+      Put_Debug ("Delete_If_Exists", "already deleted");
+      return;
+    end if;
+    -- Delete timer
     Delete (Id);
+    Put_Debug ("Delete_If_Exists", "deleted");
   end Delete_If_Exists;
 
   -- Suspend a timer: expirations, even the pending ones are suspended
