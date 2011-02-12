@@ -5,11 +5,9 @@ package body Task_Mng is
 
   -- The timer callback
   function Callback (Id : Timers.Timer_Id;
-                     Data : Timers.Timer_Data;
-                     New_Id : Timers.Timer_Id) return Boolean is
+                     Data : Timers.Timer_Data) return Boolean is
     pragma Unreferenced (Id, Data);
   begin
-    Tid := New_Id;
     -- Call user callback
     Call_Back;
     return False;

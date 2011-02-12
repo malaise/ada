@@ -5,7 +5,7 @@ with Ada.Finalization;
 generic
   type Object is limited private;
   with procedure Set (Dest : in out Object; Val : in Object);
-  with procedure Finalize (Dest : in Object);
+  with procedure Finalize (Dest : in Object) is null;
 package Smart_Reference is
 
   type Handle is tagged private;
@@ -18,9 +18,12 @@ package Smart_Reference is
 
   -- Get handled object
   -- Raises Constraint_Error is Reference is not set or released
-  procedure Dereference (Reference : in out Handle; Val : in out Object);
-  procedure Get (Reference : in out Handle; Val : in out Object)
+  procedure Dereference (Reference : in Handle; Val : in out Object);
+  procedure Get (Reference : in Handle; Val : in out Object)
             renames Dereference;
+
+  -- Is a Handle set
+  function Is_Set (Reference : Handle) return Boolean;
 
 private
   type Object_Access is access Object;

@@ -71,10 +71,16 @@ package body Smart_Reference is
   end Release;
 
   -- Get a copy of referenced object
-  procedure Dereference (Reference : in out Handle; Val : in out Object) is
+  procedure Dereference (Reference : in Handle; Val : in out Object) is
   begin
     Set (Val, Reference.Box_Access.Obj);
   end Dereference;
+
+  -- Is a Handle set
+  function Is_Set (Reference : Handle) return Boolean is
+  begin
+    return Reference.Box_Access /= null;
+  end Is_Set;
 
 end Smart_Reference;
 

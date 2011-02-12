@@ -156,16 +156,15 @@ package body Tcp_Util is
   procedure Handle_Current_Result (Rec : in out Connecting_Rec) is
     Port : Port_Num;
     Host : Host_Id;
-    use type Socket.Socket_Dscr;
+    use type Socket.Socket_Dscr, Timers.Timer_Status;
   begin
     if Debug_Connect then
       My_Io.Put_Line ("  Tcp_Util.Handle_Current_Result start");
     end if;
     -- Remove management data
-    if Rec.Timer.Is_Set then
+    if Rec.Timer.Status /= Timers.Deleted then
       if Debug_Connect then
-        My_Io.Put_Line ("  Tcp_Util.Handle_Current_Result delete timer"
-                      & Timers.Image (Rec.Timer));
+        My_Io.Put_Line ("  Tcp_Util.Handle_Current_Result delete timer");
       end if;
       Timers.Delete (Rec.Timer);
     end if;
@@ -330,18 +329,16 @@ package body Tcp_Util is
 
   -- Timer callback
   function Connection_Timer_Cb (Id : Timers.Timer_Id;
-                                Data : Timers.Timer_Data := Timers.No_Data;
-                                New_Id : Timers.Timer_Id := Timers.No_Timer)
+                                Data : Timers.Timer_Data := Timers.No_Data)
            return Boolean is
-    pragma Unreferenced (Data, New_Id);
+    pragma Unreferenced (Data);
     Rec : Connecting_Rec;
     Connected : Boolean;
     Go_On : Boolean;
     use type Socket.Socket_Dscr, Timers.Timer_Id;
   begin
     if Debug_Connect then
-      My_Io.Put_Line ("  Tcp_Util.Connection_Timer_Cb start on timer "
-                    & Timers.Image (Id));
+      My_Io.Put_Line ("  Tcp_Util.Connection_Timer_Cb start on timer");
     end if;
     -- Read rec: Try current
     Con_List.Read (Rec, Con_List_Mng.Current);
@@ -433,8 +430,7 @@ package body Tcp_Util is
                          Delay_Seconds => Rec.Delta_Retry),
           Callback => Connection_Timer_Cb'Access);
       if Debug_Connect then
-        My_Io.Put_Line ("  Tcp_Util.Connection_Timer_Cb created timer "
-                      & Timers.Image (Rec.Timer));
+        My_Io.Put_Line ("  Tcp_Util.Connection_Timer_Cb created timer");
       end if;
     end if;
     -- Store Rec: Fd, Timer_Id, Curr_Try ...
@@ -543,8 +539,7 @@ package body Tcp_Util is
     end if;
     -- Cancel timer
     if Debug_Connect then
-      My_Io.Put_Line ("  Tcp_Util.Abort_Connect deleting timer "
-                    & Timers.Image (Rec.Timer));
+      My_Io.Put_Line ("  Tcp_Util.Abort_Connect deleting timer");
     end if;
     Rec.Timer.Delete;
     -- Delete rec

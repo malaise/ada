@@ -48,6 +48,11 @@ package body Timers is
       null;
   end Set_Debug;
 
+  procedure Set (Dest : in out Timer_Rec; Val : in Timer_Rec) is
+  begin
+    Dest := Val;
+  end Set;
+
   function Delay_Image (Delay_Spec : Delay_Rec) return String is
     use type Virtual_Time.Time;
   begin
@@ -95,46 +100,22 @@ package body Timers is
       & ": " & Msg);
   end Put_Debug;
 
-  -- Return an image of a timer
-  function Image (Id : Timer_Id) return String is
-  begin
-    return Id.Timer_Num'Img;
-  end Image;
-
-  -- Allocated timer Ids
-  subtype Timer_Id_Range is Positive;
-  Next_Timer_Id : Timer_Id_Range := Timer_Id_Range'First;
-  -- Allocate a new (free) timer id
-  function Get_Next_Id return Timer_Id_Range;
-
-  -- List of timers, running or suspended
-  subtype Exp_Rec is Delay_Rec(Delay_Exp);
-  type Timer_Rec is record
-    Id  : Timer_Id_Range;
-    Exp : Exp_Rec;
-    Cre : Virtual_Time.Time;
-    Dat : Timer_Data;
-    Cb  : Timer_Callback;
-    Clock : Virtual_Time.Clock_Access;
-    -- Suspend/Resume
-    Suspended : Boolean;
-    -- Clock speed 0
-    Frozen : Boolean;
-    Remaining : Perpet.Delta_Rec;
-  end record;
-
-  package Timer_Dyn_List_Mng is new Dynamic_List (Timer_Rec);
+  package Timer_Dyn_List_Mng is new Dynamic_List (Timer_Id);
   package Timer_List_Mng renames Timer_Dyn_List_Mng.Dyn_List;
   Timer_List : Timer_List_Mng.List_Type;
 
   -- Sort timers in crescent order of expiration times
   --  if same expiration, use creation time
   -- Suspended and frozen timers are higher
-  function "<" (T1, T2 : Timer_Rec) return Boolean is
+  function "<" (I1, I2 : Timer_Id) return Boolean is
+    T1, T2 : Timer_Rec;
+    T1_Running, T2_Running : Boolean;
     use type Virtual_Time.Time, Perpet.Delta_Rec;
-    T1_Running : constant Boolean := not T1.Suspended and then not T1.Frozen;
-    T2_Running : constant Boolean := not T2.Suspended and then not T2.Frozen;
   begin
+    I1.Get (T1);
+    I2.Get (T2);
+    T1_Running := not T1.Suspended and then not T1.Frozen;
+    T2_Running := not T2.Suspended and then not T2.Frozen;
     if T1_Running and then T2_Running then
       -- Both running => Expiration time
       return T1.Exp.Expiration_Time < T2.Exp.Expiration_Time
@@ -154,57 +135,19 @@ package body Timers is
   procedure Sort is new Timer_List_Mng.Sort ("<");
 
   -- Search Timer by Id
-  function Id_Match (T1, T2 : Timer_Rec) return Boolean is
-  begin
-    return T1.Id = T2.Id;
-  end Id_Match;
-  procedure Search_Id is new Timer_List_Mng.Search (Id_Match);
+  procedure Search_Id is new Timer_List_Mng.Search ("=");
 
-  procedure Incr_Id is
-  begin
-    if Next_Timer_Id /= Timer_Id_Range'Last then
-      Next_Timer_Id := Next_Timer_Id + 1;
-    else
-      Next_Timer_Id := Timer_Id_Range'First;
-    end if;
-  end Incr_Id;
-
-  -- Allocate a new (free) timer id
-  function Get_Next_Id return Timer_Id_Range is
-    Start_Id : constant Timer_Id_Range := Next_Timer_Id;
+  -- Timer status, independant from the associated clock status
+  function Status (Id : in Timer_Id) return Timer_Status is
     Timer : Timer_Rec;
-    Found : Boolean;
   begin
-    loop
-      -- Init to next possible Id
-      Timer.Id := Next_Timer_Id;
-      -- Check not allocated
-      Search_Id (Timer_List, Found, Timer, From => Timer_List_Mng.Absolute);
-      if not Found then
-          -- Good
-          Incr_Id;
-          return Timer.Id;
-      end if;
-      -- Bad luck, this Id is in use. Try next.
-      Incr_Id;
-      -- Check we have not tried ALL timers
-      if Next_Timer_Id = Start_Id then
-        raise No_More_Timer;
-      end if;
-    end loop;
-  end Get_Next_Id;
-
-  -- Is a timer set (created)
-  function Is_Set (Id : in Timer_Id) return Boolean is
-  begin
-    return Id /= No_Timer;
-  end Is_Set;
-
-  -- Reset a Timer_Id (set it to No_Timer)
-  procedure Reset (Id : in out Timer_Id) is
-  begin
-    Id := No_Timer;
-  end Reset;
+    if not Id.Is_Set then
+      -- No reference: not created or deleted
+      return Deleted;
+    end if;
+    Id.Get (Timer);
+    return Timer.Status;
+  end Status;
 
   -- Create a new timer
   -- May raise Invalid_Delay if Delay_Seconds is < 0
@@ -212,7 +155,7 @@ package body Timers is
   function Create (Delay_Spec : Delay_Rec;
                    Callback   : Timer_Callback;
                    Data       : Timer_Data := No_Data) return Timer_Id is
-
+    Id : Timer_Id;
     Timer : Timer_Rec;
     Start : Virtual_Time.Time;
     Clock : Clock_Rec;
@@ -229,13 +172,12 @@ package body Timers is
 
     Get_Mutex;
     Set_Debug;
-    -- Allocate Id and copy period and callback
-    Timer.Id := Get_Next_Id;
+    -- Init status and copy period and callback
+    Timer.Status := Running;
     Timer.Exp.Period := Delay_Spec.Period;
     Timer.Dat := Data;
     Timer.Cb := Callback;
     Timer.Clock := Delay_Spec.Clock;
-    Timer.Suspended := False;
     Timer.Frozen := Delay_Spec.Clock /= null
            and then Delay_Spec.Clock.Get_Speed = 0.0;
 
@@ -261,9 +203,9 @@ package body Timers is
             Timer.Remaining := Default_Delta;
           end if;
       end case;
-      Put_Debug ("Create ", Timer.Id'Img & " frozen for "
-        & Timer.Remaining.Days'Img & "D +  "
-        & Timer.Remaining.Secs'Img & "s");
+      Put_Debug ("Create",
+                 "frozen for " & Timer.Remaining.Days'Img & "D +  "
+                               & Timer.Remaining.Secs'Img & "s");
     else
       case Delay_Spec.Delay_Kind is
         when Delay_Sec =>
@@ -280,13 +222,14 @@ package body Timers is
         Timer.Exp.Expiration_Time :=
           Delay_Spec.Clock.Reference_Time_Of (Timer.Exp.Expiration_Time);
       end if;
-      Put_Debug ("Create ", Timer.Id'Img & " started for "
-                    & Date_Image (Timer.Exp.Expiration_Time));
+      Put_Debug ("Create",
+                 "started for " & Date_Image (Timer.Exp.Expiration_Time));
     end if;
 
     -- Insert in beginning of list and sort
+    Id.Set (Timer);
     Timer_List.Rewind (False);
-    Timer_List.Insert (Timer, Timer_List_Mng.Prev);
+    Timer_List.Insert (Id, Timer_List_Mng.Prev);
     Sort (Timer_List);
 
     -- Register observer
@@ -309,11 +252,10 @@ package body Timers is
 
     -- Trace
     Put_Debug ("Create", Delay_Image (Delay_Spec)
-             & Cb_Image (Callback)
-             & " -> " & Timer.Id'Img);
+             & Cb_Image (Callback));
     -- Done
     Release_Mutex;
-    return (Timer_Num => Timer.Id);
+    return Id;
   end Create;
 
   procedure Create (Id         : in out Timer_Id;
@@ -327,49 +269,41 @@ package body Timers is
   end Create;
 
   -- Locate a timer in list
-  -- Return True if found
-  function Exists (Id : Timer_Id) return Boolean is
-    Timer : Timer_Rec;
+  -- May raise Invalid_Timer if timer has expired
+  procedure Locate (Id : in Timer_Id) is
+    Tid : Timer_Id;
     Found : Boolean;
   begin
     -- Check validity
-    if Id = No_Timer then
+    if Id = No_Timer
+    or else Timer_List.Is_Empty then
       raise Invalid_Timer;
     end if;
-    if Timer_List.Is_Empty then
-      return False;
-    end if;
     -- Try current
-    Timer_List.Read (Timer, Timer_List_Mng.Current);
-    if Timer.Id = Id.Timer_Num then
-      return True;
+    Timer_List.Read (Tid, Timer_List_Mng.Current);
+    if Tid = Id then
+      return;
     end if;
 
     -- Search timer
-    Timer.Id := Id.Timer_Num;
-    Search_Id (Timer_List, Found, Timer, From => Timer_List_Mng.Absolute);
-    return Found;
-  end Exists;
-
-  -- Locate a timer in list
-  -- May raise Invalid_Timer if timer has expired
-  procedure Locate (Id : in Timer_Id) is
-  begin
-    if not Exists (Id) then
+    Search_Id (Timer_List, Found, Id, From => Timer_List_Mng.Absolute);
+    if not Found then
       raise Invalid_Timer;
     end if;
   end Locate;
 
   -- Delete current timer
   procedure Delete_Current is
+    Tid : Timer_Id;
     Timer : Timer_Rec;
     Clock : Clock_Rec;
     Found : Boolean;
     use type Virtual_Time.Clock_Access;
   begin
     -- Read timer (to see its clock) and delete it
-    Timer_List.Read (Timer, Timer_List_Mng.Current);
+    Timer_List.Read (Tid, Timer_List_Mng.Current);
     Timer_List.Delete (Moved => Found);
+    Tid.Get (Timer);
 
     -- Update clock if any
     if Timer.Clock /= null then
@@ -378,8 +312,7 @@ package body Timers is
                     From => Clocks_List_Mng.Absolute);
       if not Found then
         -- Abnormal, clock shall be known
-        Put_Debug ("Delete ", Timer.Id'Img
-                 & " is being deleted but its clock is unknown!!!");
+        Put_Debug ("Delete", "but its clock is unknown!!!");
         raise Invalid_Timer;
       else
         Clocks_List.Read (Clock, Clocks_List_Mng.Current);
@@ -406,7 +339,7 @@ package body Timers is
     Locate (Id);
     -- Delete timer
     Delete_Current;
-    Put_Debug ("Delete", " id " & Id.Timer_Num'Img);
+    Put_Debug ("Delete", "deleted");
     Release_Mutex;
   end Delete;
 
@@ -414,17 +347,11 @@ package body Timers is
   -- No exception even if Timer_Id is not set
   procedure Delete_If_Exists (Id : in out Timer_Id) is
   begin
-    Get_Mutex;
-    Set_Debug;
-    -- Search timer
-    if Is_Set (Id) and then Exists (Id) then
-      -- Delete timer
-      Delete_Current;
-      Put_Debug ("Delete_If_Exists", " id " & Id.Timer_Num'Img);
-    else
-      Put_Debug ("Delete_If_Exists", "no timer id " & Id.Timer_Num'Img);
+    if not Id.Is_Set then
+      Put_Debug ("Delete_If_Exists", "not set");
+      return;
     end if;
-    Release_Mutex;
+    Delete (Id);
   end Delete_If_Exists;
 
   -- Suspend a timer: expirations, even the pending ones are suspended
@@ -439,10 +366,8 @@ package body Timers is
   begin
     Get_Mutex;
     Set_Debug;
-    -- Search timer
-    Locate (Id);
-    -- Get it
-    Timer_List.Read (Timer, Timer_List_Mng.Current);
+    -- Read timer
+    Id.Get (Timer);
     if Timer.Suspended then
       -- Already suspended
       Release_Mutex;
@@ -461,11 +386,9 @@ package body Timers is
     end if;
     -- Store it and re-sort
     Timer.Suspended := True;
-    Timer_List.Modify (Timer, Timer_List_Mng.Current);
     Sort (Timer_List);
-    Put_Debug ("Suspend", Id.Timer_Num'Img & " for "
-        & Timer.Remaining.Days'Img & "D +  "
-        & Timer.Remaining.Secs'Img & "s");
+    Put_Debug ("Suspend", "for " & Timer.Remaining.Days'Img & "D +  "
+                                  & Timer.Remaining.Secs'Img & "s");
     Release_Mutex;
   end Suspend;
 
@@ -479,10 +402,8 @@ package body Timers is
   begin
     Get_Mutex;
     Set_Debug;
-    -- Search timer
-    Locate (Id);
-    -- Get it
-    Timer_List.Read (Timer, Timer_List_Mng.Current);
+    -- Read timer
+    Id.Get (Timer);
     if not Timer.Suspended then
       -- Already running
       Release_Mutex;
@@ -496,12 +417,11 @@ package body Timers is
     end if;
     -- Store it and re-sort
     Timer.Suspended := False;
-    Timer_List.Modify (Timer, Timer_List_Mng.Current);
     Sort (Timer_List);
 
     --Done
-    Put_Debug ("Resume ", Timer.Id'Img & " restarted for "
-                    & Date_Image (Timer.Exp.Expiration_Time));
+    Put_Debug ("Resume",
+               "restarted for " & Date_Image (Timer.Exp.Expiration_Time));
     Release_Mutex;
   end Resume;
 
@@ -523,9 +443,9 @@ package body Timers is
   --       if not it is deleted
   -- Return True if at least one timer has expired
   function Expire return Boolean is
+    Tid : Timer_Id;
     Timer : Timer_Rec;
     One_True : Boolean;
-    New_Id : Timer_Id;
     use type Virtual_Time.Time;
   begin
     Get_Mutex;
@@ -536,7 +456,8 @@ package body Timers is
       exit when not First;
 
       -- Get it
-      Timer_List.Read (Timer, Timer_List_Mng.Current);
+      Timer_List.Read (Tid, Timer_List_Mng.Current);
+      Tid.Get (Timer);
       -- Done when no more to expire
       exit when Timer.Suspended or else Timer.Frozen
       or else Timer.Exp.Expiration_Time > Ada.Calendar.Clock;
@@ -544,24 +465,19 @@ package body Timers is
       -- Expired: Remove single shot
       if Timer.Exp.Period = No_Period then
         Delete_Current;
-        New_Id := No_Timer;
       else
         -- Re-arm periodical, store and sort
         Timer.Exp.Expiration_Time := Timer.Exp.Expiration_Time
              + Timer.Exp.Period / Virtual_Time.Get_Speed (Timer.Clock);
-        Timer_List.Modify (Timer, Timer_List_Mng.Current);
         Sort (Timer_List);
-        New_Id := (Timer_Num => Timer.Id);
       end if;
-      Put_Debug ("Expire", "expiring id " & Timer.Id'Img);
+      Put_Debug ("Expire", "expiring");
       -- Call callback
       if Timer.Cb = null then
         -- A timer with no cb is for generating events
         One_True := True;
       else
-        if Timer.Cb ( (Timer_Num => Timer.Id),
-                      Timer.Dat,
-                      New_Id ) then
+        if Timer.Cb (Tid, Timer.Dat) then
           -- At least this Cb has returned True
           One_True := True;
         end if;
@@ -586,6 +502,7 @@ package body Timers is
 
   -- Expiration of next timer
   function Wait_Until return Expiration_Rec is
+    Tid : Timer_Id;
     Timer : Timer_Rec;
   begin
     Get_Mutex;
@@ -597,18 +514,16 @@ package body Timers is
       Release_Mutex;
       return Infinite_Expiration;
     end if;
-    Timer_List.Read (Timer, Timer_List_Mng.Current);
+    Timer_List.Read (Tid, Timer_List_Mng.Current);
+    Tid.Get (Timer);
     if Timer.Suspended or else Timer.Frozen then
       -- No more running timer
-      Put_Debug ("Wait_Until", "-> Infinite cause no more running timer"
-                 & Timer.Id'Img);
+      Put_Debug ("Wait_Until", "-> Infinite cause no more running timer");
       Release_Mutex;
       return Infinite_Expiration;
     end if;
 
-    Put_Debug ("Wait_Until", "-> "
-                           & Date_Image (Timer.Exp.Expiration_Time)
-                           & " cause id " & Timer.Id'Img);
+    Put_Debug ("Wait_Until", "-> " & Date_Image (Timer.Exp.Expiration_Time));
     Release_Mutex;
     return (Infinite => False, Time =>Timer.Exp.Expiration_Time);
   end Wait_Until;
@@ -693,11 +608,13 @@ package body Timers is
 
     -- Update current timer if needed
     procedure Update is
+      Tid : Timer_Id;
       Timer : Timer_Rec;
       use type Virtual_Time.Time, Virtual_Time.Clock_Access,
                Virtual_Time.Speed_Range, Perpet.Delta_Rec;
     begin
-      Timer_List.Read (Timer, Timer_List_Mng.Current);
+      Timer_List.Read (Tid, Timer_List_Mng.Current);
+      Tid.Get (Timer);
       if Timer.Clock /= Clock then
         return;
       end if;
@@ -706,8 +623,8 @@ package body Timers is
         if not Timer.Suspended then
           Timer.Exp.Expiration_Time := Rtime
               + (Timer.Remaining * Perpet.Natural_Duration(1.0 / New_Speed));
-          Put_Debug ("Update ", Timer.Id'Img & " restarted for "
-                    & Date_Image (Timer.Exp.Expiration_Time));
+          Put_Debug ("Update",
+                     "restarted for " & Date_Image (Timer.Exp.Expiration_Time));
         end if;
         Timer.Frozen := False;
       elsif not Timer.Frozen and then New_Speed = 0.0 then
@@ -715,9 +632,9 @@ package body Timers is
         if not Timer.Suspended then
           Timer.Remaining := (Timer.Exp.Expiration_Time - Rtime)
               * Perpet.Natural_Duration(Speed);
-          Put_Debug ("Update ", Timer.Id'Img & " frozen for "
-              & Timer.Remaining.Days'Img & "D +  "
-              & Timer.Remaining.Secs'Img & "s");
+          Put_Debug ("Update",
+                     "frozen for " & Timer.Remaining.Days'Img & "D +  "
+                                   & Timer.Remaining.Secs'Img & "s");
         end if;
         Timer.Frozen := True;
       elsif not Timer.Frozen then
@@ -727,7 +644,6 @@ package body Timers is
               (Timer.Exp.Expiration_Time - Rtime) * Duration(Speed / New_Speed)
             + Virtual_Time.Current_Time (null);
       end if;
-      Timer_List.Modify (Timer, Timer_List_Mng.Current);
     end Update;
 
   begin

@@ -1,4 +1,4 @@
-with Perpet, Virtual_Time;
+with Perpet, Virtual_Time, Smart_Reference;
 package Timers is
 
   -- How to specify a timer, wait some seconds or until a specific time
@@ -10,6 +10,8 @@ package Timers is
 
   -- How to specify a period for a timer
   subtype Period_Range is Duration range 0.0 .. Duration'Last;
+  -- Timer with No_Period will expire only once and is called single-shot
+  --  otherwise it is periodic
   No_Period : Period_Range := 0.0;
   Default_Timeout : constant Duration := 0.0;
   Default_Delta : constant Perpet.Delta_Rec := (0, 0.0);
@@ -36,32 +38,25 @@ package Timers is
 
   -- Timer unique identifier
   type Timer_Id is tagged private;
-  function Image (Id : Timer_Id) return String;
-
-  -- Value returned by Next_Timer if no more timer
   No_Timer : constant Timer_Id;
 
-  -- Is a Timer_Id set
-  -- Beware that a Timer_Id may still set after expiration, even if no period
-  function Is_Set (Id : Timer_Id) return Boolean;
-  -- Reset a Timer_Id (set it to No_Timer)
-  procedure Reset (Id : in out Timer_Id);
+  -- Timer status, independant from the associated clock status
+  type Timer_Status is (Deleted,   -- Not created or single-shot expired
+                        Running,   -- Will expire
+                        Suspended);-- Will expire but currently suspended
+  function Status (Id : in Timer_Id) return Timer_Status;
 
-  -- Timer callback: called when the timer expires with three arguments:
+  -- Timer callback: called when the timer expires with two arguments:
   --  the timer Id if the timer created
   --  the Data provided at timer creation
-  --  the New_Id to set: same as Id if the timer is periodic and No_Timer
-  --    otherwise, so that the user callback may start with
-  --    My_Global_Id := New_Id;
-  -- Should return True if the timer expiration has to be reported by
-  --    expire
+  -- Should return True if the timer expiration has to be reported by Expire
+  --  (and Event_Mng will report Timer_Event)
   subtype Timer_Data is Natural;
   No_Data : constant Timer_Data := 0;
 
   type Timer_Callback is access
         function (Id : in Timer_Id;
-                  Data : in Timer_Data;
-                  New_Id : in Timer_Id) return Boolean;
+                  Data : in Timer_Data) return Boolean;
 
   -- Create a new timer
   -- May raise Invalid_Delay if Delay_Seconds is < 0
@@ -76,28 +71,30 @@ package Timers is
                     Callback   : in Timer_Callback;
                     Data       : in Timer_Data := No_Data);
 
-  -- Does a timer exist (still running, even if suspended)
-  function Exists (Id : Timer_Id) return Boolean;
-
   -- Delete a timer
-  -- May raise Invalid_Timer if timer has no period and has expired
+  -- May raise Invalid_Timer if timer is Deleted
   Invalid_Timer : exception;
   procedure Delete (Id : in out Timer_Id);
 
   -- Delete a timer if it exists
-  -- No exception even if Timer_Id is not set
+  -- No exception even if Timer_Id is Deleted
   procedure Delete_If_Exists (Id : in out Timer_Id);
 
   -- Suspend a timer: expirations, even the pending ones are suspended
   -- No action if timer is alread syspended
-  -- May raise Invalid_Timer if timer has no period and has expired
+  -- May raise Invalid_Timer if timer is Deleted
   procedure Suspend (Id : in Timer_Id);
 
   -- Resume a suspended a timer: expirations, even the pending ones are resumed
   -- No action if timer is not syspended
-  -- May raise Invalid_Timer if timer has no period and has expired
+  -- May raise Invalid_Timer if timer is Deleted
   procedure Resume (Id : in Timer_Id);
 
+
+  --------------------------------------------------------------
+  -- The following operations are used by Event_Mng and X_Mng --
+  -- They should not be used by "normal" applications         --
+  --------------------------------------------------------------
 
   -- For each timer for which if expiration time/delay is reached
   -- its callback is called
@@ -107,7 +104,6 @@ package Timers is
   --  and this callback has returned True or if at least one timer has
   --  expired with no callback set
   function Expire return Boolean;
-
 
   -- Expiration time
   type Expiration_Rec (Infinite : Boolean := True) is record
@@ -140,10 +136,30 @@ package Timers is
 
 private
 
-  type Timer_Id is tagged record
-    Timer_Num : Natural := 0;
+  -- Timer descriptor
+  subtype Exp_Rec is Delay_Rec(Delay_Exp);
+  type Timer_Rec is record
+    Status : Timer_Status;
+    Exp : Exp_Rec;
+    Cre : Virtual_Time.Time;
+    Dat : Timer_Data;
+    Cb  : Timer_Callback;
+    Clock : Virtual_Time.Clock_Access;
+    -- Suspend/Resume
+    Suspended : Boolean;
+    -- Clock speed 0
+    Frozen : Boolean;
+    Remaining : Perpet.Delta_Rec;
   end record;
-  No_Timer : constant Timer_Id := (Timer_Num => 0);
+
+  procedure Set (Dest : in out Timer_Rec; Val : in Timer_Rec);
+  package Smart_Timer_Mng is new Smart_Reference (
+    Object => Timer_Rec, Set    => Set);
+
+  type Timer_Id is new Smart_Timer_Mng.Handle with null record;
+
+  Def_Timer : Timer_Id;
+  No_Timer : constant Timer_Id := Def_Timer;
 
 end Timers;
 

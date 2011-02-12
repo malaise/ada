@@ -409,10 +409,9 @@ package body Event_Mng is
   Pause_Level : Natural := 0;
 
   function Pause_Cb (Id : Timers.Timer_Id;
-                     Data : Timers.Timer_Data;
-                     New_Id : Timers.Timer_Id := Timers.No_Timer)
+                     Data : Timers.Timer_Data)
            return Boolean is
-    pragma Unreferenced (Id, New_Id);
+    pragma Unreferenced (Id);
   begin
     -- Check this expiration versus current pause level
     if Pause_Level >= Data then

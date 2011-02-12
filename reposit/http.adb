@@ -62,13 +62,10 @@ package body Http is
   -- Timer Cb
   Timer_Id : Timers.Timer_Id;
   function Timer_Cb (Id : Timers.Timer_Id;
-                     Data : Timers.Timer_Data;
-                     New_Id : Timers.Timer_Id)
-           return Boolean is
+                     Data : Timers.Timer_Data) return Boolean is
     pragma Unreferenced (Id, Data);
   begin
     Debug ("HTTP: Timeout");
-    Timer_Id := New_Id;
     Result := (Client_Error, Timeout);
     Done := True;
     return True;
@@ -327,7 +324,6 @@ package body Http is
 
     -- Here we go, init result
     Mut.Get;
-    Timer_Id.Reset;
     Done := False;
     Result := (Kind => Ok, Content => As.U.Asu_Null);
 
