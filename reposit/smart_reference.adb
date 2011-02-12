@@ -2,7 +2,7 @@ with Ada.Text_Io;
 with Unchecked_Deallocation;
 package body Smart_Reference is
 
-  Debug : constant Boolean := False;
+  Debug : constant Boolean := True;
   procedure Trace (Str : in String) is
   begin
     if Debug then
@@ -39,6 +39,13 @@ package body Smart_Reference is
     Trace("Initialization");
   end Initialize;
 
+  -- Increment Nb_Access
+  overriding procedure Adjust (Ref : in out Handle) is
+  begin
+    Trace("Adjustment");
+    Increment_Ref (Ref);
+  end Adjust;
+
   -- Decrement Nb_Access and garbage collect when last
   overriding procedure Finalize (Ref : in out Handle) is
   begin
@@ -50,17 +57,10 @@ package body Smart_Reference is
   procedure Set (Reference : in out Handle; Init : in Object) is
   begin
     Decrement_Ref(Reference);
+    Trace("New");
     Reference.Box_Access := new Object_Box;
     Set (Reference.Box_Access.Obj, Init);
     Increment_Ref(Reference);
-  end Set;
-
-  -- Copy handle
-  procedure Set (Dest : in out Handle; Val : in Handle) is
-  begin
-    Decrement_Ref(Dest);
-    Dest.Box_Access := Val.Box_Access;
-    Increment_Ref(Dest);
   end Set;
 
   -- Release handle

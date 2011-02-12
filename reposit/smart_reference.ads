@@ -8,15 +8,12 @@ generic
   with procedure Finalize (Dest : in Object);
 package Smart_Reference is
 
-  type Handle is tagged limited private;
+  type Handle is tagged private;
 
   -- Initialise a Handle to an object
   procedure Set (Reference : in out Handle; Init : in Object);
 
-  -- Copy handle
-  procedure Set (Dest : in out Handle; Val : in Handle);
-
-  -- Release handle
+  -- Release handle (which becomes null)
   procedure Release (Reference : in out Handle);
 
   -- Get handled object
@@ -34,11 +31,12 @@ private
   end record;
   type Object_Box_Access is access Object_Box;
 
-  type Handle is limited new Ada.Finalization.Limited_Controlled with record
+  type Handle is new Ada.Finalization.Controlled with record
     Box_Access : Object_Box_Access := null;
   end record;
   overriding procedure Initialize (Ref : in out Handle);
-  overriding procedure Finalize (Ref : in out Handle);
+  overriding procedure Adjust     (Ref : in out Handle);
+  overriding procedure Finalize   (Ref : in out Handle);
 
 end Smart_Reference;
 
