@@ -1,5 +1,5 @@
 with Ada.Exceptions, Ada.Characters.Latin_1;
-with Event_Mng, Async_Stdin, Rnd, Argument, Sys_Calls, Parser, Pattern;
+with Event_Mng, Async_Stdin, Rnd, Argument, Basic_Proc, Parser, Pattern;
 with Dictio_Lib;
 procedure T_Dictio is
 
@@ -316,7 +316,7 @@ procedure T_Dictio is
       Async_Stdin.Put_Line_Out ("CLIENT.LOAD: No Dictio");
       Sig := True;
       Event_Mng.Send_Dummy_Signal;
-      Sys_Calls.Set_Error_Exit_Code;
+      Basic_Proc.Set_Error_Exit_Code;
   end Load;
 
 begin
