@@ -2,8 +2,11 @@ with Afpx;
 package Utils is
 
   -- If Str fits Width then return Str
-  -- else return ">> " & tail to match Width
-  function Normalize (Str : String; Width : Positive) return String;
+  -- else return ">>" & tail to match Width (if Tail)
+  --   or return head to match Width and "<<" (if not Tail)
+  function Normalize (Str : String;
+                      Width : Positive;
+                      Tail : Boolean := True) return String;
 
   -- Remove trailing spaces and Htabs
   function Parse_Spaces (Str : String) return String;

@@ -140,7 +140,8 @@ procedure Agite is
      Branch := As.U.Tus ("None.");
    end if;
    Afpx.Encode_Field (16, (0, 0),
-         Utils.Normalize ("Br: " & Branch.Image, Afpx.Get_Field_Width (16)));
+         Utils.Normalize ("Br: " & Branch.Image, Afpx.Get_Field_Width (16),
+                          False));
 
     -- De-activate Diff and history if no in Git
     if Root.Is_Null then

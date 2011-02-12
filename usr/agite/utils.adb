@@ -3,13 +3,20 @@ with Many_Strings, Proc_Family, Con_Io;
 package body Utils is
 
   -- If Str fits Width then return Str
-  -- else return ">> " & tail
-  function Normalize (Str : String; Width : Positive) return String is
+  -- else return ">>" & tail to match Width (if Tail)
+  --   or return head to match Width and "<<" (if not Tail)
+  function Normalize (Str : String;
+                      Width : Positive;
+                      Tail : Boolean := True) return String is
   begin
     if Str'Length <= Width then
       return Str;
     end if;
-    return ">>" & Str (Str'Last - Width + 3 .. Str'Last);
+    if Tail then
+      return ">>" & Str (Str'Last - Width + 3 .. Str'Last);
+    else
+      return Str (Str'First .. Str'First + Width - 3) & "<<";
+    end if;
   end Normalize;
 
   -- Remove trailing spaces and Htabs
