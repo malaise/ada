@@ -590,8 +590,13 @@ package body Async_Stdin is
       Sys_Calls.New_Line_Output;
     end if;
 
-    Result := Cb (Language.Unicode_To_String (Line.Get));
-    Line.Clear;
+    declare
+      Seq : constant Unicode_Sequence := Line.Get;
+    begin
+      -- Cb may call Put, so clear Line first
+      Line.Clear;
+      Result := Cb (Language.Unicode_To_String (Seq));
+    end;
     return Result;
 
   end Fd_Callback;
