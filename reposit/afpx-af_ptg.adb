@@ -686,7 +686,7 @@ package body Af_Ptg is
         Af_List.Set_Selected (List_Right, 0);
       end if;
 
-      -- list to be updated if Line_List has changed
+      -- List to be updated if Line_List has changed
       if Line_List.Is_Modified then
         Af_List.Modified := True;
         Line_List.Modification_Ack;
