@@ -8,18 +8,16 @@ package body Fight_Mng is
   Last_Status : Status.Status_List;
 
   function Timer_Cb (Id : Timers.Timer_Id;
-                     Data : Timers.Timer_Data;
-                     New_Id : Timers.Timer_Id) return Boolean;
+                     Data : Timers.Timer_Data) return Boolean;
 
   function Perio_Cb (Id : Timers.Timer_Id;
-                     Data : Timers.Timer_Data;
-                     New_Id : Timers.Timer_Id) return Boolean;
+                     Data : Timers.Timer_Data) return Boolean;
 
   Fight_Actions : Fight_Action;
 
   function In_Fight return Boolean is
   begin
-    return Tid.Is_Set;
+    return Tid.Exists;
   end In_Fight;
 
   procedure Start (New_Status : in Status.Status_List;
@@ -88,12 +86,10 @@ package body Fight_Mng is
 
 
   function Timer_Cb (Id : Timers.Timer_Id;
-                     Data : Timers.Timer_Data;
-                     New_Id : Timers.Timer_Id) return Boolean is
+                     Data : Timers.Timer_Data) return Boolean is
     pragma Unreferenced (Id, Data);
     Result : Nodes.Check_Result_List;
   begin
-    Tid := New_Id;
     Result := Nodes.Check;
     if Dictio_Debug.Level_Array(Dictio_Debug.Fight) then
       Dictio_Debug.Put ("Fight: ends " & Result'Img);
@@ -106,9 +102,8 @@ package body Fight_Mng is
   end Timer_Cb;
 
   function Perio_Cb (Id : Timers.Timer_Id;
-                     Data : Timers.Timer_Data;
-                     New_Id : Timers.Timer_Id) return Boolean is
-    pragma Unreferenced (Id, Data, New_Id);
+                     Data : Timers.Timer_Data) return Boolean is
+    pragma Unreferenced (Id, Data);
     use type Status.Status_List;
   begin
     if In_Fight and then Last_Status /= Status.Fight then

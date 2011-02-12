@@ -83,12 +83,9 @@ procedure Udp_Spy is
   Timeout : Boolean := False;
   Tid : Timers.Timer_Id;
   function Timer_Cb (Id : Timers.Timer_Id;
-                     Data : Timers.Timer_Data;
-                     New_Id : Timers.Timer_Id)
-           return Boolean is
+                     Data : Timers.Timer_Data) return Boolean is
     pragma Unreferenced (Id, Data);
   begin
-    Tid := New_Id;
     Timeout := True;
     return True;
   end Timer_Cb;

@@ -8,18 +8,15 @@ package body Status is
   Tid : Timers.Timer_Id;
 
   function Timer_Cb (Id : Timers.Timer_Id;
-                     Data : Timers.Timer_Data;
-                     New_Id : Timers.Timer_Id) return Boolean is
+                     Data : Timers.Timer_Data) return Boolean is
     Prev_Status : constant Status_List := Current_Status;
     New_Status : Status_List;
   begin
 
-    if not Tid.Is_Set and then Id.Is_Set then
+    if not Tid.Exists and then Id.Exists then
       -- Called as a timer Cb after an immediate status set
-      Tid := New_Id;
       return False;
     end if;
-    Tid := New_Id;
 
     begin
       New_Status := Status_List'Val(Data);
@@ -59,10 +56,9 @@ package body Status is
     T : Timers.Delay_Rec;
   begin
     if Immediate then
-      Dummy := Timer_Cb (Timers.No_Timer, Status_List'Pos(Status),
-                         Timers.No_Timer);
+      Dummy := Timer_Cb (Timers.No_Timer, Status_List'Pos(Status));
       -- No action on expiration of pendig timer
-      Tid.Reset;
+      Tid.Delete_If_Exists;
     else
       -- Create immediate timer with status (so we go back to main loop)
       T.Delay_Seconds := 0.0;

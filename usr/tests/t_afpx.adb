@@ -18,9 +18,8 @@ procedure T_Afpx is
 
   Timer_Ss, Timer_Per, Timer_Tmp : Timers.Timer_Id;
   function Timer_Cb (Id : Timers.Timer_Id;
-                     Data : Timers.Timer_Data;
-                     New_Id : Timers.Timer_Id) return Boolean is
-    pragma Unreferenced (Id, Data, New_Id);
+                     Data : Timers.Timer_Data) return Boolean is
+    pragma Unreferenced (Id, Data);
   begin
     Flip_Flop := not Flip_Flop;
     return True;

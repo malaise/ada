@@ -8,10 +8,9 @@ procedure Search is
   Today : Oper_Def.Date_Rec;
   -- Update current date if it changes
   function Set_Today (Id : Timers.Timer_Id;
-                      Data : Timers.Timer_Data := Timers.No_Data;
-                      New_Id : Timers.Timer_Id := Timers.No_Timer)
+                      Data : Timers.Timer_Data := Timers.No_Data)
            return Boolean is
-    pragma Unreferenced (Id, Data, New_Id);
+    pragma Unreferenced (Id, Data);
     Newday : Oper_Def.Date_Rec;
     Seconds : Ada.Calendar.Day_Duration;
     use type Oper_Def.Date_Rec;

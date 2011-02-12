@@ -104,10 +104,9 @@ procedure Tcping is
 
   -- Cancel immediate timer Cb
   function Cancel_Cb (Id : Timers.Timer_Id;
-                      Data : Timers.Timer_Data := Timers.No_Data;
-                      New_Id : Timers.Timer_Id := Timers.No_Timer)
+                      Data : Timers.Timer_Data := Timers.No_Data)
            return Boolean is
-    pragma Unreferenced (Id, Data, New_Id);
+    pragma Unreferenced (Id, Data);
   begin
     Game_Over := True;
     return True;
@@ -165,10 +164,9 @@ procedure Tcping is
   end Connect_Cb;
 
   function Timer_Cb (Id : Timers.Timer_Id;
-                     Data : Timers.Timer_Data := Timers.No_Data;
-                     New_Id : Timers.Timer_Id := Timers.No_Timer)
+                     Data : Timers.Timer_Data := Timers.No_Data)
            return Boolean is
-    pragma Unreferenced (Id, Data, New_Id);
+    pragma Unreferenced (Id, Data);
     Dummy :  Boolean;
     pragma Unreferenced (Dummy);
   begin

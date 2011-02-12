@@ -61,8 +61,7 @@ procedure T_Timers is
 
   -- Generic callback
   function Callback (Id : Timers.Timer_Id;
-                     Data : Timers.Timer_Data;
-                     New_Id : Timers.Timer_Id) return Boolean;
+                     Data : Timers.Timer_Data) return Boolean;
 
   -- Start a timer and store its id
   procedure Start (T : Timer_List;
@@ -82,8 +81,7 @@ procedure T_Timers is
                        Period        => P,
                        Delay_Seconds => D),
         Callback   => A);
-    Display ("Created timer " & Timer_List'Image(T) & ": "
-              & The_Timers(T).Image);
+    Display ("Created timer " & Timer_List'Image(T));
   end Start;
 
   Nb_Funny : Natural := 0;
@@ -91,9 +89,8 @@ procedure T_Timers is
 
   -- Generic callback
   function Callback (Id : Timers.Timer_Id;
-                     Data : Timers.Timer_Data;
-                     New_Id : Timers.Timer_Id) return Boolean is
-    pragma Unreferenced (Data, New_Id);
+                     Data : Timers.Timer_Data) return Boolean is
+    pragma Unreferenced (Data);
     use type Timers.Timer_Id;
     N : Positive;
   begin
@@ -120,7 +117,7 @@ procedure T_Timers is
         return True;
       end if;
     end loop;
-    Display ("Expiration of unknown timer:" & Timers.Image(Id));
+    Display ("Expiration of unknown timer");
     return False;
   end Callback;
 

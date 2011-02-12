@@ -10,8 +10,7 @@ package body Online_Mng is
   Ever_Synced : Boolean := False;
 
   function Timer_Cb (Id : Timers.Timer_Id;
-                     Data : Timers.Timer_Data;
-                     New_Id : Timers.Timer_Id) return Boolean;
+                     Data : Timers.Timer_Data) return Boolean;
 
   Fight_Actions : constant Fight_Mng.Fight_Action :=
     (Nodes.Many_Master_Master => Status.Master,
@@ -178,12 +177,10 @@ package body Online_Mng is
   end Event;
 
   function Timer_Cb (Id : Timers.Timer_Id;
-                     Data : Timers.Timer_Data;
-                     New_Id : Timers.Timer_Id) return Boolean is
+                     Data : Timers.Timer_Data) return Boolean is
     pragma Unreferenced (Id, Data);
     use type Status.Status_List;
   begin
-    Tid := New_Id;
     if Status.Get = Status.Master then
       -- Send alive message
       -- With Crc if stable

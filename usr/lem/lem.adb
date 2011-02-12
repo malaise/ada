@@ -77,13 +77,10 @@ package body Lem is
   Current_X_Thrust : X_Thrust_Range := 0;
   Thrust_Tid : Timers.Timer_Id;
   function Timer_Thrust_Cb (Id : Timers.Timer_Id;
-                            Data : Timers.Timer_Data;
-                            New_Id : Timers.Timer_Id)
-           return Boolean is
+                            Data : Timers.Timer_Data) return Boolean is
     pragma Unreferenced (Id, Data);
   begin
     -- Reset X thrust
-    Thrust_Tid := New_Id;
     Current_X_Thrust := 0;
     return False;
   end Timer_Thrust_Cb;
@@ -218,10 +215,8 @@ package body Lem is
 
   -- Timer callback computing new LEM characteristics
   function Period_Timer_Cb (Id : Timers.Timer_Id;
-                            Data : Timers.Timer_Data;
-                            New_Id : Timers.Timer_Id)
-                    return Boolean is
-    pragma Unreferenced (Id, Data, New_Id);
+                            Data : Timers.Timer_Data) return Boolean is
+    pragma Unreferenced (Id, Data);
     Fuel_Consumed : Fuel_Range;
     Mass : Mass_Range;
     New_Position : Position_Rec;

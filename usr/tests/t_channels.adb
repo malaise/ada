@@ -75,9 +75,8 @@ procedure T_Channels is
 
   -- Time callback, no more waiting
   function Timer_Cb (Id : Timers.Timer_Id;
-                     Data : Timers.Timer_Data;
-                     New_Id : Timers.Timer_Id) return Boolean is
-    pragma Unreferenced (Id, Data, New_Id);
+                     Data : Timers.Timer_Data) return Boolean is
+    pragma Unreferenced (Id, Data);
   begin
     Go_Wait := False;
     return True;

@@ -54,12 +54,9 @@ package body Ios is
 
   -- Handle global timeout expiration
   function Timer_Cb (Id : Timers.Timer_Id;
-                     Data : Timers.Timer_Data;
-                     New_Id : Timers.Timer_Id)
-           return Boolean is
+                     Data : Timers.Timer_Data) return Boolean is
     pragma Unreferenced (Id, Data);
   begin
-   Global_Tid := New_Id;
     Debug.Log ("Global timeout");
     if Event.Kind /= Exit_Requested
     and then Event.Kind /= Disconnection then

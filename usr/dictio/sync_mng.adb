@@ -33,7 +33,7 @@ package body Sync_Mng is
 
   function Timer_Active return Boolean is
   begin
-    return Timer_Id.Is_Set;
+    return Timer_Id.Exists;
   end Timer_Active;
 
   procedure Cancel_Timer is
@@ -42,11 +42,9 @@ package body Sync_Mng is
   end Cancel_Timer;
 
   function Timer_Rec_Cb (Id : Timers.Timer_Id;
-                         Data : Timers.Timer_Data;
-                         New_Id : Timers.Timer_Id) return Boolean is
+                         Data : Timers.Timer_Data) return Boolean is
     pragma Unreferenced (Id, Data);
   begin
-    Timer_Id := New_Id;
     if Sync_Has_Been_Received then
       -- Still in sync
       Sync_Has_Been_Received := False;
@@ -123,8 +121,7 @@ package body Sync_Mng is
 
 
   function Timer_Sen_Cb (Id : Timers.Timer_Id;
-                         Data : Timers.Timer_Data;
-                         New_Id : Timers.Timer_Id) return Boolean;
+                         Data : Timers.Timer_Data) return Boolean;
 
   procedure Send (To : Tcp_Util.Host_Name) is
     Found : Boolean;
@@ -290,12 +287,10 @@ package body Sync_Mng is
   end Do_Sync_Channel;
 
   function Timer_Sen_Cb (Id : Timers.Timer_Id;
-                         Data : Timers.Timer_Data;
-                         New_Id : Timers.Timer_Id) return Boolean is
+                         Data : Timers.Timer_Data) return Boolean is
     pragma Unreferenced (Id, Data);
     use type Args.Channel_Mode_List;
   begin
-    Tid := New_Id;
 
     -- Check sync not cancelled during init
     if Sending_Status /= Init then
