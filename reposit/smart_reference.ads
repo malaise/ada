@@ -11,16 +11,16 @@ package Smart_Reference is
   type Handle is tagged private;
 
   -- Initialise a Handle to an object
-  procedure Set (Reference : in out Handle; Init : in Object);
+  procedure Init (Reference : in out Handle; Val : in Object);
 
   -- Release handle (which becomes null)
   procedure Release (Reference : in out Handle);
 
-  -- Get handled object
-  -- Raises Constraint_Error is Reference is not set or released
-  procedure Dereference (Reference : in Handle; Val : in out Object);
-  procedure Get (Reference : in Handle; Val : in out Object)
-            renames Dereference;
+  -- Set handled object to new value
+  -- Get a copy of handled object
+  -- Raise Constraint_Error if Reference is not set or released
+  procedure Set (Reference : in Handle; Val : in Object);
+  procedure Get (Reference : in Handle; Val : out Object);
 
   -- Is a Handle set
   function Is_Set (Reference : Handle) return Boolean;

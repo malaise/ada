@@ -7,8 +7,8 @@ procedure T_Smart_Ref is
 
 begin
   Ada.Text_Io.Put_Line ("Test: Begin - Initializing R1 to 21 and R3 to 23");
-  R1.Set (21);
-  R3.Set (23);
+  R1.Init (21);
+  R3.Init (23);
   Ada.Text_Io.Put_Line ("Test: R1 and R3 set - Setting R2 to R1");
   R2 := R1;
   Ada.Text_Io.Put_Line ("Test: Dereferencing R3");

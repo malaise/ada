@@ -2,7 +2,7 @@ with Ada.Text_Io;
 with Unchecked_Deallocation;
 package body Smart_Reference is
 
-  Debug : constant Boolean := True;
+  Debug : constant Boolean := False;
   procedure Trace (Str : in String) is
   begin
     if Debug then
@@ -29,7 +29,9 @@ package body Smart_Reference is
   -- Increment reference to object
   procedure Increment_Ref (Ref : in Handle) is
   begin
-    Ref.Box_Access.Nb_Access := Ref.Box_Access.Nb_Access + 1;
+    if Ref.Box_Access /= null then
+      Ref.Box_Access.Nb_Access := Ref.Box_Access.Nb_Access + 1;
+    end if;
   end Increment_Ref;
 
   -- Init Nb_Access to 1
@@ -54,14 +56,14 @@ package body Smart_Reference is
   end Finalize;
 
   -- Initialize handle
-  procedure Set (Reference : in out Handle; Init : in Object) is
+  procedure Init (Reference : in out Handle; Val : in Object) is
   begin
     Decrement_Ref(Reference);
     Trace("New");
     Reference.Box_Access := new Object_Box;
-    Set (Reference.Box_Access.Obj, Init);
+    Set (Reference.Box_Access.Obj, Val);
     Increment_Ref(Reference);
-  end Set;
+  end Init;
 
   -- Release handle
   procedure Release (Reference : in out Handle) is
@@ -70,11 +72,17 @@ package body Smart_Reference is
     Reference.Box_Access := null;
   end Release;
 
+  -- Set handled object to new value
+  procedure Set (Reference : in Handle; Val : in Object) is
+  begin
+    Set (Reference.Box_Access.Obj, Val);
+  end Set;
+
   -- Get a copy of referenced object
-  procedure Dereference (Reference : in Handle; Val : in out Object) is
+  procedure Get (Reference : in Handle; Val : out Object) is
   begin
     Set (Val, Reference.Box_Access.Obj);
-  end Dereference;
+  end Get;
 
   -- Is a Handle set
   function Is_Set (Reference : Handle) return Boolean is
