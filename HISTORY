@@ -1,5 +1,6 @@
 Major changes:
-2011/02/23: Add make Timer_Id a smart reference
+2011/02/13: Add use anonymous access type in Limited_List
+2011/02/12: Add make Timer_Id a smart reference
 2011/02/11: Add new operations on Timers and add New_Id parameter to expiration callback
 2011/02/10: Add improve error reported when parsing encoding map in Xml_Parser V26.1
 2011/02/08: Add operation Set_Pi to Xml_Parser.Generator V9.0
