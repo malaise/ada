@@ -309,7 +309,7 @@ package body Timers is
   -- Delete current timer
   procedure Delete_Current is
     Tid : Timer_Id;
-    Timer : Timer_Rec;
+    Timer : access Timer_Rec;
     Clock : Clock_Rec;
     Found : Boolean;
     use type Virtual_Time.Clock_Access;
@@ -317,13 +317,12 @@ package body Timers is
     -- Read timer (to see its clock) and delete it
     Timer_List.Read (Tid, Timer_List_Mng.Current);
     Timer_List.Delete (Moved => Found);
-    Tid.Get (Timer);
+    Timer := Tid.Get_Access;
     if Timer.Status = Deleted then
       Put_Debug ("Delete", "timer status is already deleted!!!");
       raise Invalid_Timer;
     end if;
     Timer.Status := Deleted;
-    Tid.Set (Timer);
 
     -- Update clock if any
     if Timer.Clock /= null then
@@ -366,7 +365,7 @@ package body Timers is
   -- Delete a timer if it exists
   -- No exception even if Timer_Id is not set
   procedure Delete_If_Exists (Id : in out Timer_Id) is
-    Timer : Timer_Rec;
+    Timer : access Timer_Rec;
   begin
     if not Id.Is_Set then
       Put_Debug ("Delete_If_Exists", "not set");
@@ -376,7 +375,7 @@ package body Timers is
       return;
     end if;
     -- Check that timer is not already deleted
-    Id.Get (Timer);
+    Timer := Id.Get_Access;
     if Timer.Status = Deleted then
       Put_Debug ("Delete_If_Exists", "already deleted");
       return;
@@ -390,7 +389,7 @@ package body Timers is
   -- No action is timer is alread syspended
   -- May raise Invalid_Timer if timer has no period and has expired
   procedure Suspend (Id : in Timer_Id) is
-    Timer : Timer_Rec;
+    Timer : access Timer_Rec;
     Now : Virtual_Time.Time;
     Speed : Virtual_Time.Speed_Range;
     use type Virtual_Time.Time, Virtual_Time.Clock_Access,
@@ -398,8 +397,8 @@ package body Timers is
   begin
     Get_Mutex;
     Set_Debug;
-    -- Read timer
-    Id.Get (Timer);
+    -- Get access to timer
+    Timer := Id.Get_Access;
     if Timer.Status = Deleted then
       Release_Mutex;
       raise Invalid_Timer;
@@ -419,9 +418,8 @@ package body Timers is
         Timer.Exp.Expiration_Time := Now;
       end if;
     end if;
-    -- Store it and re-sort
+    -- Update status and re-sort
     Timer.Status := Suspended;
-    Id.Set (Timer);
     Sort (Timer_List);
     Put_Debug ("Suspend", "for " & Timer.Remaining.Days'Img & "D +  "
                                   & Timer.Remaining.Secs'Img & "s");
@@ -432,14 +430,14 @@ package body Timers is
   -- No action is timer is not syspended
   -- May raise Invalid_Timer if timer has no period and has expired
   procedure Resume (Id : in Timer_Id) is
-    Timer : Timer_Rec;
+    Timer : access Timer_Rec;
     Speed : Virtual_Time.Speed_Range;
     use type Virtual_Time.Time, Perpet.Delta_Rec;
   begin
     Get_Mutex;
     Set_Debug;
-    -- Read timer
-    Id.Get (Timer);
+    -- Get access to timer
+    Timer := Id.Get_Access;
     if Timer.Status = Deleted then
       Release_Mutex;
       raise Invalid_Timer;
@@ -454,9 +452,8 @@ package body Timers is
       Timer.Exp.Expiration_Time := Virtual_Time.Current_Time (null)
           + (Timer.Remaining * Perpet.Natural_Duration(1.0 / Speed));
     end if;
-    -- Store it and re-sort
+    -- Update status and re-sort
     Timer.Status := Running;
-    Id.Set (Timer);
     Sort (Timer_List);
 
     --Done
@@ -483,8 +480,8 @@ package body Timers is
   --       if not it is deleted
   -- Return True if at least one timer has expired
   function Expire return Boolean is
-    Tid : Timer_Id;
-    Timer : Timer_Rec;
+    Id : Timer_Id;
+    Timer : access Timer_Rec;
     One_True : Boolean;
     use type Virtual_Time.Time;
   begin
@@ -496,8 +493,8 @@ package body Timers is
       exit when not First;
 
       -- Get it
-      Timer_List.Read (Tid, Timer_List_Mng.Current);
-      Tid.Get (Timer);
+      Timer_List.Read (Id, Timer_List_Mng.Current);
+      Timer := Id.Get_Access;
       -- Done when no more to expire
       exit when Timer.Status /= Running or else Timer.Frozen
       or else Timer.Exp.Expiration_Time > Ada.Calendar.Clock;
@@ -506,10 +503,9 @@ package body Timers is
       if Timer.Exp.Period = No_Period then
         Delete_Current;
       else
-        -- Re-arm periodical, store and sort
+        -- Re-arm periodical and sort
         Timer.Exp.Expiration_Time := Timer.Exp.Expiration_Time
              + Timer.Exp.Period / Virtual_Time.Get_Speed (Timer.Clock);
-        Tid.Set (Timer);
         Sort (Timer_List);
       end if;
       Put_Debug ("Expire", "expiring");
@@ -518,7 +514,7 @@ package body Timers is
         -- A timer with no cb is for generating events
         One_True := True;
       else
-        if Timer.Cb (Tid, Timer.Dat) then
+        if Timer.Cb (Id, Timer.Dat) then
           -- At least this Cb has returned True
           One_True := True;
         end if;
@@ -543,8 +539,8 @@ package body Timers is
 
   -- Date of expiration of next timer
   function Wait_Until return Expiration_Rec is
-    Tid : Timer_Id;
-    Timer : Timer_Rec;
+    Id : Timer_Id;
+    Timer : access Timer_Rec;
   begin
     Get_Mutex;
     Set_Debug;
@@ -555,8 +551,8 @@ package body Timers is
       Release_Mutex;
       return Infinite_Expiration;
     end if;
-    Timer_List.Read (Tid, Timer_List_Mng.Current);
-    Tid.Get (Timer);
+    Timer_List.Read (Id, Timer_List_Mng.Current);
+    Timer := Id.Get_Access;
     if Timer.Status /= Running or else Timer.Frozen then
       -- No more running timer
       Put_Debug ("Wait_Until", "-> Infinite cause no more running timer");
@@ -650,13 +646,13 @@ package body Timers is
 
     -- Update current timer if needed
     procedure Update is
-      Tid : Timer_Id;
-      Timer : Timer_Rec;
+      Id : Timer_Id;
+      Timer : access Timer_Rec;
       use type Virtual_Time.Time, Virtual_Time.Clock_Access,
                Virtual_Time.Speed_Range, Perpet.Delta_Rec;
     begin
-      Timer_List.Read (Tid, Timer_List_Mng.Current);
-      Tid.Get (Timer);
+      Timer_List.Read (Id, Timer_List_Mng.Current);
+      Timer := Id.Get_Access;
       if Timer.Clock /= Clock or else Timer.Status = Deleted then
         return;
       end if;
@@ -686,7 +682,6 @@ package body Timers is
               (Timer.Exp.Expiration_Time - Rtime) * Duration(Speed / New_Speed)
             + Virtual_Time.Current_Time (null);
       end if;
-      Tid.Set (Timer);
     end Update;
 
   begin

@@ -84,6 +84,15 @@ package body Smart_Reference is
     Set (Val, Reference.Box_Access.Obj);
   end Get;
 
+-- Get a direct access to a handled object
+  -- Raise Constraint_Error if Reference is not set or released
+  -- CARE: Don't use an access outside the scope of the Handle
+  --  that was used to get the access
+  function Get_Access (Reference : Handle) return access Object is
+  begin
+    return Reference.Box_Access.Obj'Unrestricted_Access;
+  end Get_Access;
+
   -- Is a Handle set
   function Is_Set (Reference : Handle) return Boolean is
   begin
