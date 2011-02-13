@@ -10,7 +10,7 @@ procedure T_Dl is
   List : My_List.List_Type;
   List1 : My_List.List_Type;
   Item : Integer;
-  Acc : My_Dyn_List.Element_Access;
+  Acc : access Integer;
   Found : Boolean;
   Moved : Boolean;
   Count : Natural;

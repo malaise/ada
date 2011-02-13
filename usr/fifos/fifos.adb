@@ -23,6 +23,7 @@ package body Fifos is
 
   package body Fifo is
 
+    type Fifo_Rec_Access is access all Fifo_Rec;
     -------------------------------------------------------------------------
     -- FIFO SEND
     -------------------------------------------------------------------------
@@ -34,7 +35,7 @@ package body Fifos is
 
     package List is
       -- Insert a fifo
-      function Insert (Rec : Fifo_Rec) return Fifo_Access;
+      function Insert (Rec : Fifo_Rec) return access Fifo_Rec;
 
 
       -- Search fifo
@@ -49,7 +50,7 @@ package body Fifos is
                                Port : Tcp_Util.Port_Num) return Boolean;
 
       -- Get access to current fifo
-      function Access_Current return Fifo_Access;
+      function Access_Current return access Fifo_Rec;
 
       -- Del current fifo and move to next
       procedure Del_Current;
@@ -68,14 +69,14 @@ package body Fifos is
       Fifo_List : Fifo_List_Mng.List_Type;
 
       -- Insert a record
-      function Insert (Rec : Fifo_Rec) return Fifo_Access is
+      function Insert (Rec : Fifo_Rec) return access Fifo_Rec is
       begin
         Fifo_List.Insert (Rec);
         return Access_Current;
       end Insert;
 
       -- Get access to current record
-      function Access_Current return Fifo_Access is
+      function Access_Current return access Fifo_Rec is
       begin
         return Fifo_List.Access_Current;
       end Access_Current;
@@ -187,10 +188,10 @@ package body Fifos is
     -- CONNECTION
     -------------------------------------------------------------------------
     package Connection is
-      procedure Accepte (Fifo : in Fifo_Access);
-      procedure Connect (Fifo : in Fifo_Access);
-      procedure Close (Fifo : in Fifo_Access);
-      procedure Activate (Fifo : in Fifo_Access);
+      procedure Accepte (Fifo : access Fifo_Rec);
+      procedure Connect (Fifo : access Fifo_Rec);
+      procedure Close (Fifo : access Fifo_Rec);
+      procedure Activate (Fifo : access Fifo_Rec);
     end Connection;
 
     package body Connection is
@@ -215,14 +216,14 @@ package body Fifos is
       -- CALLBACKS
       -------------------------------------------------------------------------
       procedure Disconnection_Cb (Dscr : in Socket.Socket_Dscr) is
-        Acc : Fifo_Access;
+        Acc : Fifo_Rec_Access;
       begin
         -- Clean fifo
         if not List.Search_By_Dscr (Dscr) then
           Assertion.Assert (False, "disconnection of unknown fifo");
           return;
         end if;
-        Acc := List.Access_Current;
+        Acc := Fifo_Rec_Access(List.Access_Current);
 
         -- Call Connection_Cb
         if Acc.Kind /= Accepting and then Acc.Conn_Cb /= null then
@@ -252,14 +253,14 @@ package body Fifos is
       procedure Reception_Cb (Dscr    : in Socket.Socket_Dscr;
                               Message : in Message_Type;
                               Length  : in Natural) is
-        Acc : Fifo_Access;
+        Acc : Fifo_Rec_Access;
       begin
         if not List.Search_By_Dscr (Dscr) then
           Assertion.Assert (False, "reception on unknown fifo");
           return;
         end if;
 
-        Acc := List.Access_Current;
+        Acc := Fifo_Rec_Access(List.Access_Current);
         if Acc.Kind = Accepting then
           Assertion.Assert (False, "reception on accepting fifo");
           return;
@@ -280,7 +281,7 @@ package body Fifos is
         pragma Unreferenced (Local_Dscr);
         Tmp_Dscr : Socket.Socket_Dscr;
         Rec : Fifo_Rec;
-        Acc : Fifo_Access;
+        Acc : Fifo_Rec_Access;
       begin
         -- Get accepting rec
         if not List.Search_By_Port (Accepting, Local_Port_Num) then
@@ -302,7 +303,7 @@ package body Fifos is
         Rec.Host := (Kind => Tcp_Util.Host_Id_Spec, Id => Remote_Host_Id);
         Rec.Port := (Kind => Tcp_Util.Port_Num_Spec, Num => Remote_Port_Num);
         Rec.State := Connected;
-        Acc := List.Insert (Rec);
+        Acc := Fifo_Rec_Access(List.Insert (Rec));
 
         -- Hook reception/disconnection callbacks
         Fifo_Reception.Set_Callbacks (New_Dscr,
@@ -324,14 +325,14 @@ package body Fifos is
                                Remote_Port_Num : in Tcp_Util.Port_Num;
                                Connected       : in Boolean;
                                Dscr            : in Socket.Socket_Dscr) is
-        Acc : Fifo_Access;
+        Acc : Fifo_Rec_Access;
       begin
         if not List.Search_By_Addr (Connect, Remote_Host_Id, Remote_Port_Num) then
           Assertion.Assert (False, "connection of unknown fifo");
           return;
         end if;
 
-        Acc := List.Access_Current;
+        Acc := Fifo_Rec_Access(List.Access_Current);
         if Acc.Kind /= Connect then
           Assertion.Assert (False, "connection of " & Acc.Kind'Img & " fifo");
           return;
@@ -372,7 +373,7 @@ package body Fifos is
       -- FUNCTIONS
       -------------------------------------------------------------------------
 
-      procedure Connect (Fifo : in Fifo_Access) is
+      procedure Connect (Fifo : access Fifo_Rec) is
         Result : Boolean;
         pragma Unreferenced (Result);
         Protocol : Socket.Protocol_List;
@@ -400,7 +401,7 @@ package body Fifos is
           null;
       end Connect;
 
-      procedure Close (Fifo : in Fifo_Access) is
+      procedure Close (Fifo : access Fifo_Rec) is
         procedure Call_Cb is
           Id : constant Fifo_Id := (Acc => Fifo);
         begin
@@ -437,7 +438,7 @@ package body Fifos is
         end case;
       end Close;
 
-      procedure Accepte (Fifo : in Fifo_Access) is
+      procedure Accepte (Fifo : access Fifo_Rec) is
         Port_Num : Tcp_Util.Port_Num;
         Port : Tcp_Util.Local_Port;
         use type Tcp_Util.Local_Port_List;
@@ -474,7 +475,7 @@ package body Fifos is
           raise Name_Error;
       end Accepte;
 
-      procedure Activate (Fifo : in Fifo_Access) is
+      procedure Activate (Fifo : access Fifo_Rec) is
       begin
         Fifo_Reception.Activate_Callbacks (Fifo.Dscr, Fifo.Active);
       end Activate;
@@ -549,7 +550,7 @@ package body Fifos is
                            Item : in Boolean;
                            Data : in String) is
         pragma Unreferenced (Item);
-        Acc : Fifo_Access;
+        Acc : access Fifo_Rec;
       begin
         -- Cet record and check
         declare
@@ -717,7 +718,7 @@ package body Fifos is
     return Fifo_Id is
       Rec : Fifo_Rec;
       Got : Boolean;
-      Acc : Fifo_Access;
+      Acc : Fifo_Rec_Access;
     begin
       -- Check name length
       if Fifo_Name'Length > Max_Fifo_Name_Len then
@@ -762,7 +763,7 @@ package body Fifos is
               return (Acc => List.Insert (Rec));
           end;
           Rec.State := Connecting;
-          Acc := List.Insert (Rec);
+          Acc := Fifo_Rec_Access(List.Insert (Rec));
           Connection.Connect (Acc);
         end if;
         return (Acc => Acc);
@@ -770,7 +771,7 @@ package body Fifos is
         -- Accept
         Rec.State := Connected;
         Rec.Port.Name := As.U.Tus (Fifo_Name);
-        Acc := List.Insert (Rec);
+        Acc := Fifo_Rec_Access(List.Insert (Rec));
         Connection.Accepte (Acc);
         -- Set dictio
         Dictio.Set (Fifo_Name, Local_Host_Name, Acc.Port.Num);
@@ -781,7 +782,7 @@ package body Fifos is
     end Open;
 
     -- Close a fifo by access
-    procedure Close (Acc : Fifo_Access) is
+    procedure Close (Acc : access Fifo_Rec) is
       procedure Finish is
       begin
         Connection.Close (Acc);
@@ -809,7 +810,6 @@ package body Fifos is
     -- or cease accepting connections from remotes
     -- May raise Not_Open if Fifo is not open
     procedure Close (Id : in out Fifo_Id) is
-      use type Fifo_Access;
     begin
       if Id = No_Fifo or else not List.Search_By_Dscr (Id.Acc.Dscr) then
         raise Not_Open;
@@ -839,7 +839,6 @@ package body Fifos is
     -- Activate or not the reception of messages
     -- May raise Not_Open if Fifo is not open
     procedure Activate (Id : Fifo_Id; Allow_Reception : in Boolean) is
-      use type Fifo_Access;
     begin
       if Id = No_Fifo or else not List.Search_By_Dscr (Id.Acc.Dscr) then
         raise Not_Open;
@@ -870,7 +869,6 @@ package body Fifos is
     -- Kind and state of a fifo
     -- May raise Not_Open if Fifo is not open
     function Fifo_Kind (Id : Fifo_Id) return Fifo_Kind_List is
-      use type Fifo_Access;
     begin
       if Id = No_Fifo or else not List.Search_By_Dscr (Id.Acc.Dscr) then
         raise Not_Open;
@@ -879,7 +877,6 @@ package body Fifos is
     end Fifo_Kind;
 
     function Fifo_State (Id : Fifo_Id) return Fifo_State_List is
-      use type Fifo_Access;
     begin
       if Id = No_Fifo or else not List.Search_By_Dscr (Id.Acc.Dscr) then
         raise Not_Open;
@@ -889,13 +886,13 @@ package body Fifos is
 
 
     procedure End_Overflow_Cb (Dscr : in Socket.Socket_Dscr) is
-      Acc : Fifo_Access;
+      Acc : Fifo_Rec_Access;
     begin
       if not List.Search_By_Dscr (Dscr) then
         Assertion.Assert (False, "end ovf of unknown fifo");
         return;
       end if;
-      Acc := List.Access_Current;
+      Acc := Fifo_Rec_Access(List.Access_Current);
       if Acc.Kind /= Connect then
         Assertion.Assert (False, "end ovf of " & Acc.Kind'Img & " fifo");
         return;

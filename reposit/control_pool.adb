@@ -15,7 +15,6 @@ package body Control_Pool is
     Waiters : Positive;
     Key : Key_Type;
   end record;
-  type Cell_Access is access all Cell_Type;
 
   -- Affectation of cell
   procedure Set_Cell (To : out Cell_Type; Val : in Cell_Type) is
@@ -24,7 +23,7 @@ package body Control_Pool is
   end Set_Cell;
 
   -- Pool management
-  package Pool_Mng is new Limited_List (Cell_Type, Cell_Access, Set_Cell);
+  package Pool_Mng is new Limited_List (Cell_Type, Set_Cell);
   Pool : Pool_Mng.List_Type;
 
   -- Search in pool for a key

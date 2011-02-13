@@ -14,19 +14,18 @@ package body Data_Base is
   end Name_Match;
   procedure Search_Name is new Item_List_Mng.Search (Name_Match);
 
-
+  type Item_Access is access all Item_Rec;
   -- Hash on: Item.Kind & Item.Name (not Parsed)
   H_Use : constant Boolean := True;
-  procedure H_Dump (Data : in Item_Dyn_List_Mng.Element_Access) is
+  procedure H_Dump (Data : in Item_Access) is
   begin
     null;
   end H_Dump;
   package H_Item is new Hash.Hash_Mng (
-        Data_Acess => Item_Dyn_List_Mng.Element_Access,
-        Dump => H_Dump);
+        Data_Access => Item_Access, Dump => H_Dump);
   H_Table : H_Item.Hash_Table;
   function H_Get (Kind : Item_Kind; Name : Item_Name)
-                 return Item_Dyn_List_Mng.Element_Access is
+                 return Item_Access is
     R : H_Item.Found_Rec;
   begin
     H_Item.Reset_Find (H_Table, Kind & Name);
@@ -61,9 +60,8 @@ package body Data_Base is
       Item_List.Insert (Itm);
     end Append_Itm;
 
-    Acc : Item_Dyn_List_Mng.Element_Access;
+    Acc : Item_Access;
     Found : Boolean;
-    use type Item_Dyn_List_Mng.Element_Access;
   begin
     -- The one to store
     Itm := Item;
@@ -76,7 +74,7 @@ package body Data_Base is
         Append_Itm;
         H_Item.Store (H_Table,
                       Item.Kind & Item.Name,
-                      Item_List.Access_Current);
+                      Item_Access(Item_List.Access_Current));
       end if;
     else
       Search_Name (Item_List, Found, Itm, From => Item_List_Mng.Absolute);
@@ -99,9 +97,8 @@ package body Data_Base is
 
   procedure Get (Name : in Item_Name; Kind : in Item_Kind; Item : out Item_Rec) is
     Itm : Item_Rec;
-    Acc : Item_Dyn_List_Mng.Element_Access;
+    Acc : Item_Access;
     Found : Boolean;
-    use type Item_Dyn_List_Mng.Element_Access;
   begin
     if H_Use then
       Acc := H_Get (Kind, Name);

@@ -141,7 +141,7 @@ package body Network is
 
   -- Delete the connection that Of_Node has with With_Node
   procedure Asym_Delete_Connection (Of_Node : in out Node_Type;
-                                    Connection : in Connection_Access) is
+                                    Connection : access Connection_Info_Type) is
     Connection_Read : Connection_Info_Type;
     Length : Positive;
     Moved : Boolean;

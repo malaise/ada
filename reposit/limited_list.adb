@@ -636,7 +636,7 @@ package body Limited_List is
   -- Access to current element
   function Access_Current (List : List_Type;
                            Check_Empty : in Boolean := True)
-           return Element_Access is
+           return access Element_Type is
   begin
     if Is_Empty (List) then
       if Check_Empty then
@@ -653,7 +653,7 @@ package body Limited_List is
   -- Search the element that is at the provided access (move to it)
   procedure Search_Access (List      : in out List_Type;
                            Found     : out Boolean;
-                           Criteria  : in Element_Access) is
+                           Criteria  : access Element_Type) is
     New_Pos : Link;
     New_Pos_First : Natural;
   begin

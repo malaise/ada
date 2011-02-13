@@ -8,7 +8,7 @@ package body Substit is
   -- List of strings
   package Line_List_Mng renames As.U.Utils.Asu_Dyn_List_Mng;
   Line_List : Line_List_Mng.List_Type;
-  subtype Str_Access is As.U.Utils.Asu_List_Mng.Element_Access;
+  subtype Str_Access is As.U.Utils.Asu_Us_Access;
 
   -- File names
   In_File_Name : As.U.Asu_Us;
@@ -428,15 +428,15 @@ package body Substit is
   end Do_One_File;
 
   -- Handle multiple substitutions within one line
-  procedure Subst_One_Line (Line          : in Str_Access;
-                           Match_Range    : in String;
-                           Verbose        : in Boolean;
-                           Grep           : in Boolean;
-                           Grep_Line_Nb   : in Boolean;
-                           Grep_File_Name : in Boolean;
-                           Test           : in Boolean;
-                           Nb_Match       : in out Long_Long_Natural;
-                           Loc_Subst      : out Long_Long_Natural) is
+  procedure Subst_One_Line (Line           : access As.U.Asu_Us;
+                            Match_Range    : in String;
+                            Verbose        : in Boolean;
+                            Grep           : in Boolean;
+                            Grep_Line_Nb   : in Boolean;
+                            Grep_File_Name : in Boolean;
+                            Test           : in Boolean;
+                            Nb_Match       : in out Long_Long_Natural;
+                            Loc_Subst      : out Long_Long_Natural) is
 
     Current : Positive;
     Match_Res : Regular_Expressions.Match_Cell;
@@ -593,7 +593,7 @@ package body Substit is
                          Nb_Match       : in out Long_Long_Natural;
                          Loc_Subst      : out Long_Long_Natural) is
     Match_Res : Regular_Expressions.Match_Cell;
-    Line, First_Line, Last_Line : Str_Access;
+    Line, First_Line, Last_Line : access As.U.Asu_Us;
     Matches, Excluded : Boolean;
 
     -- Put matching text, complete lines text or just the matching text

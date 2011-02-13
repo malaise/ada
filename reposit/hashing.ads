@@ -1,6 +1,6 @@
 -- This hash package does not store the user's data but an access to it.
--- The user needs to associate a unique acess to each data
---  (index in an array, acess type...)
+-- The user needs to associate a unique access to each data
+--  (index in an array, access type...)
 with Ada.Finalization;
 with Hash_Function;
 package Hashing is
@@ -35,10 +35,10 @@ package Hashing is
     Not_Found : exception renames Hashing.Not_Found;
 
     generic
-      -- Acess to data, managed by client
-      type Data_Acess is private;
+      -- Access to data, managed by client
+      type Data_Access is private;
       -- Procedure to dump data in Dump
-      with procedure Dump (Data : in Data_Acess);
+      with procedure Dump (Data : in Data_Access);
       -- Hashing function
       with function Hash_Func (Key : String) return Hash_Range is Hash_Def_Func;
     package Hash_Mng is
@@ -52,7 +52,7 @@ package Hashing is
       type Found_Rec (Found : Boolean := True) is record
         case Found is
           when True =>
-            Data : Data_Acess; -- significant only if Found
+            Data : Data_Access; -- significant only if Found
           when False =>
             null;
         end case;
@@ -65,7 +65,7 @@ package Hashing is
       -- Last found is not reset
       procedure Store (Table : in out Hash_Table;
                        Key   : in String;
-                       Data  : in Data_Acess);
+                       Data  : in Data_Access);
 
       -- To reset finding index for matching Key
       procedure Reset_Find (Table : in out Hash_Table; Index : in Hash_Range);
@@ -107,7 +107,7 @@ package Hashing is
       type Cell_Access is access Cell_Rec;
 
       type Cell_Rec is record
-        Data : Data_Acess;
+        Data : Data_Access;
         Next : Cell_Access := null;
       end record;
 

@@ -84,9 +84,8 @@ private
   Init : constant Time := Ada.Calendar.Clock;
 
   type Observer_Access is access all Observer'Class;
-  type Element_Access is access all Observer_Access;
   procedure Set (To : out Observer_Access; Val : in Observer_Access);
-  package List_Mng is new Limited_List (Observer_Access, Element_Access, Set);
+  package List_Mng is new Limited_List (Observer_Access, Set);
 
   type Clock_Def_Rec is record
     -- Synchro point

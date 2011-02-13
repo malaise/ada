@@ -127,10 +127,9 @@ package Fifos is
     end record;
     package Fifo_Dyn_List_Mng is new Dynamic_List (Fifo_Rec);
     package Fifo_List_Mng renames Fifo_Dyn_List_Mng.Dyn_List;
-    subtype Fifo_Access is Fifo_Dyn_List_Mng.Element_Access;
 
     type Fifo_Id is record
-      Acc : Fifo_Access := null;
+      Acc : access Fifo_Rec := null;
     end record;
     No_Fifo : constant Fifo_Id := (Acc => null);
 

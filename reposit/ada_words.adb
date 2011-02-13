@@ -89,7 +89,7 @@ package body Ada_Words is
     Ada.Text_Io.Put (Word.Str (1 .. Word.Len) & " " & Word.Must'Img);
   end Dump;
 
-  package Word_Hash is new Hash.Hash_Mng (Data_Acess => Word_Rec,
+  package Word_Hash is new Hash.Hash_Mng (Data_Access => Word_Rec,
                                           Dump => Dump);
   Hash_Table : Word_Hash.Hash_Table;
 

@@ -151,7 +151,7 @@ package Hashed_List is
   Internal_Error : exception;
 private
   -- The limited list of items
-  package List_Mng is new Limited_List (Element_Type, Element_Access, Set);
+  package List_Mng is new Limited_List (Element_Type, Set);
 
   -- Element hashing
   package Sized_Hash is new Hashing.Sized_Hash (Hash_Max);

@@ -30,7 +30,7 @@ package body Hashing is
       -- To store association Key <-> Index
       procedure Store (Table : in out Hash_Table;
                        Key   : in String;
-                       Data  : in Data_Acess) is
+                       Data  : in Data_Access) is
         I : constant Hash_Range := Hash_Func(Key);
         Ca : Cell_Access;
       begin

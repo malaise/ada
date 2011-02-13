@@ -2,7 +2,6 @@ with Ada.Finalization;
 generic
   -- Type of the element of the list
   type Element_Type is limited private;
-  type Element_Access is access all Element_Type;
   with procedure Set (To : out Element_Type; Val : in Element_Type);
 
 package Limited_List is
@@ -192,7 +191,7 @@ package Limited_List is
   -- Get direct access to current element in list
   function Access_Current (List : List_Type;
                            Check_Empty : in Boolean := True)
-           return Element_Access;
+           return access Element_Type;
 
 
   -- Search the element that is at the provided access (move to it)
@@ -201,7 +200,7 @@ package Limited_List is
   -- Does not raise Empty_List.
   procedure Search_Access (List      : in out List_Type;
                            Found     : out Boolean;
-                           Criteria  : in Element_Access);
+                           Criteria  : access Element_Type );
 
 
   -- Three different strategies to search:

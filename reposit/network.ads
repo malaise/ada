@@ -133,7 +133,7 @@ private
   type Connection_Info_Type is record
     -- Remote node and connection
     Node : Node_Access;
-    Connection : Connection_Access;
+    Connection : access all Connection_Info_Type;
     Data : Conn_Data_Type;
   end record;
   procedure Set_Connection (To : out Connection_Info_Type;
@@ -141,7 +141,7 @@ private
 
   -- List of node's connections (dynamic list of node accesses)
   package Connection_Mng is new Limited_List (Connection_Info_Type,
-                                   Connection_Access, Set_Connection);
+                                              Set_Connection);
   type Connections_Access is access Connection_Mng.List_Type;
 
   -- The exported node type
