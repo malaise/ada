@@ -107,47 +107,49 @@ package body Chronos is
     A_Chrono.Offset := 0.0;
   end Reset;
 
+  -- INTERNAL: Detach a clock from a chrono
+  --  (when setting a new clock or in Finalize)
+  procedure Detach_Clock (A_Chrono : in out Chrono_Type) is
+    use type Virtual_Time.Clock_Access;
+  begin
+    if A_Chrono.Clock /= null then
+      -- Unregister as observer of the clock
+      A_Chrono.Clock.Del_Observer (A_Chrono'Unchecked_Access);
+    end if;
+    A_Chrono.Clock := null;
+  end Detach_Clock;
+
   -- Attach a virtal clock to the virtual chrono
   procedure Attach (A_Chrono : in out Chrono_Type;
                     A_Clock : in Virtual_Time.Clock_Access) is
-    use type Chronos.Status_List, Virtual_Time.Clock_Access;
+    use type Virtual_Time.Clock_Access;
   begin
     if A_Chrono.Get_Status = Chronos.Running  then
       raise Chrono_Running;
     end if;
-    -- Detach from previous clock if any
-    Detach (A_Chrono);
-    -- Set its new clock
-    A_Chrono.Clock := A_Clock;
     A_Chrono.Reset;
+    -- Detach from previous clock if any
+    Detach_Clock (A_Chrono);
     -- Register as observer of this clock
     if A_Clock /= null then
+      -- Set its new clock and register as observer
+      A_Chrono.Clock := A_Clock;
       A_Clock.Add_Observer (A_Chrono'Unchecked_Access);
     end if;
   end Attach;
 
-  -- Detach any virtual clock from the chrono
-  procedure Detach (A_Chrono : in out Chrono_Type) is
-    use type Chronos.Status_List, Virtual_Time.Clock_Access;
+  -- Get the clock attached to the Chrono (null if real time)
+  function Get_Clock (A_Chrono : in Chrono_Type)
+                     return Virtual_Time.Clock_Access is
   begin
-    if A_Chrono.Get_Status = Chronos.Running  then
-      raise Chrono_Running;
-    end if;
-    A_Chrono.Reset;
-    if A_Chrono.Clock = null then
-      return;
-    end if;
-    -- Unregister as observer of the clock
-    A_Chrono.Clock.Del_Observer (A_Chrono'Unchecked_Access);
-    -- No clock
-    A_Chrono.Clock := null;
-  end Detach;
+    return A_Chrono.Clock;
+  end Get_Clock;
 
   -- Finalize: Stop and detach from that clock
   overriding procedure Finalize (Chrono : in out Chrono_Type) is
   begin
     Chrono.Stop;
-    Detach (Chrono);
+    Detach_Clock (Chrono);
   end Finalize;
 
 end Chronos;

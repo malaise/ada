@@ -1,4 +1,5 @@
 Major changes:
+2011/02/14: Add Get_Clock in Chronos, and remove Detach cause same as Attach (null)
 2011/02/13: Add use anonymous access type in Limited_List
 2011/02/12: Add make Timer_Id a smart reference
 2011/02/11: Add new operations on Timers and add New_Id parameter to expiration callback

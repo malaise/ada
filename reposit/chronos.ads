@@ -52,15 +52,15 @@ package Chronos is
 
   -- Attach the Chrono to a (new) clock (detach from previous clock if any)
   -- Chrono must be stopped, it is reset
-  -- By default, chronos are normal (real time)
+  -- Set A_Clock to null for real time clock
+  -- By default, chronos are on real time clock (Clock is null)
   Chrono_Running : exception;
   procedure Attach (A_Chrono : in out Chrono_Type;
                     A_Clock : in Virtual_Time.Clock_Access);
 
-  -- Detach the chrono from the clock (if attached)
-  -- Chrono must be stopped, it is reset and becomes a normal
-  --  chronometer (real time)
-  procedure Detach (A_Chrono : in out Chrono_Type);
+  -- Get the clock attached to the Chrono (null if real time)
+  function Get_Clock (A_Chrono : in Chrono_Type)
+                     return Virtual_Time.Clock_Access;
 
 private
 
