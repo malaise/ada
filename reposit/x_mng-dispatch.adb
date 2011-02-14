@@ -393,7 +393,7 @@ package body Dispatch is
     end Register;
 
     -- Unregister
-    -- Count clients and refreshh all on Unregister
+    -- Count clients and refresh all on Unregister
     entry Unregister (Client : in out Line_Range)
                      when not In_X is
       Res : Boolean;
@@ -424,9 +424,7 @@ package body Dispatch is
         Nb_X_Events := 0;
         -- This client is the first of the cohort so it must handle the event
         Clients(Selected).Refreshing := True;
-      end if;
-
-      if Nb_Clients = 0 then
+      else
         -- Last client => suspend
         Log ("Unregister", No_Client_No, "suspending");
         Res := X_Suspend = Ok;
@@ -491,11 +489,13 @@ package body Dispatch is
 
       -- Second, handle global refreshing
       if Refresh_All then
-        -- This was started in Unregister by first client
+        Log ("Prepare", Client, "refresh_all");
+        -- This was started in Unregister or on Refresh X event by first client
         -- Refresh first or next client (deliver a Refresh event)
         if Clients(Client).Refreshing then
           -- I was the first when the global refresh was triggered
-          -- (in Unregister). Send a refresh event to myself
+          -- (in Unregister or on Refresh X event).
+          -- Send a refresh event to myself
           New_Client := Client;
           Clients(Client).Refreshing := False;
         else
@@ -571,7 +571,7 @@ package body Dispatch is
         Log ("Prepare", Client, "gets direct event for " & New_Client'Img);
       end if;
 
-      -- Seventh, dispatch resulting event
+      -- Seventh, dispatch resulting event, set Selected
       if Event.Prv then
         case Event.Prv_Kind is
           when Wakeup_Event =>
@@ -592,6 +592,21 @@ package body Dispatch is
               Selected := Find_From_C (Got_Id);
             end if;
             Nb_X_Events := Nb_X_Events + 1;
+            if Event.Kind = Refresh and then Nb_Clients /= 1 then
+              -- Receiveing a X refresh event and at least one other client
+              --  => refresh all
+              Log ("Prepare", New_Client, "X refresh => refresh_all");
+              Selected := First;
+              Refresh_All := True;
+              for I in Client_Range loop
+                if Clients(I).Used then
+                  Clients(Client).Refreshing := False;
+                end if;
+              end loop;
+              Clients(Selected).Refreshing := True;
+              -- Generate a dummy masked event
+              Event := (True, Dispatch_Event);
+            end if;
           when Timer_Event | Fd_Event | Signal_Event =>
             -- A general event to deliver to oldest
             Selected := Oldest;
