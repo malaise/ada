@@ -8,7 +8,7 @@
 -- Return resumes them
 
 with Ada.Text_Io;
-with Afpx, Con_Io, Timers, Rnd, Event_Mng;
+with Afpx, Con_Io, Timers, Rnd, Event_Mng, Mixed_Str;
 procedure T_Timers is
 
   -- Afpx stuff
@@ -81,7 +81,8 @@ procedure T_Timers is
                        Period        => P,
                        Delay_Seconds => D),
         Callback   => A);
-    Display ("Created timer " & Timer_List'Image(T));
+    Display ("Created timer " & Timer_List'Image(T)
+           & " with Cb " & Mixed_Str (Cb'Img));
   end Start;
 
   Nb_Funny : Natural := 0;
@@ -179,7 +180,6 @@ begin
       when Afpx.Timer_Event =>
         Display ("Timer Event");
       when Afpx.Refresh =>
-Ada.Text_Io.Put_Line ("Refresh");
         Redisplay := True;
     end case;
   end loop;
