@@ -171,11 +171,11 @@ package body Dispatch is
       elsif C_Fd = C_Select_Wake_Event then
         -- A wakeup event to transmit to Wait
         Handle_Event := False;
-        Event := (Prv => True, Prv_Kind => Wakeup_Event);
+        Event := (Internal => True, Internal_Kind => Wakeup_Event);
       elsif C_Fd = C_Select_X_Event then
         -- Get X event and its owner
         Handle_Event := False;
-        Event := (False, No_Event);
+        Event := (Internal => False, Kind => No_Event);
         Xx_Get_Event (C_Id, Event.Kind, Next);
       else
         -- A fd
@@ -189,13 +189,13 @@ package body Dispatch is
         Evt_Out := Event_Mng.Handle (Evt_In);
         case Evt_Out is
           when Event_Mng.Timer_Event =>
-            Event := (False, Timer_Event);
+            Event := (Internal => False, Kind => Timer_Event);
           when Event_Mng.Fd_Event =>
-            Event := (False, Fd_Event);
+            Event := (Internal => False, Kind => Fd_Event);
           when Event_Mng.Signal_Event =>
-            Event := (False, Signal_Event);
+            Event := (Internal => False, Kind => Signal_Event);
           when Event_Mng.No_Event =>
-            Event := (False, No_Event);
+            Event := (Internal => False, Kind => No_Event);
         end case;
 
         -- Done on select timeout (No_Event) or an event to report
@@ -203,14 +203,14 @@ package body Dispatch is
         or else Event.Kind /= No_Event;
       else
         -- X event or private event, done if valid
-        exit when Event.Prv or else Event.Kind /= No_Event;
+        exit when Event.Internal or else Event.Kind /= No_Event;
       end if;
 
     end loop;
 
-    if Event.Prv then
+    if Event.Internal then
       Log ("Xx_Select", No_Client_No,
-           "-> " & Event.Prv_Kind'Img & " " & Next'Img);
+           "-> " & Event.Internal_Kind'Img & " " & Next'Img);
     else
       Log ("Xx_Select", No_Client_No,
            "-> " & Event.Kind'Img & " " & Next'Img);
@@ -419,7 +419,7 @@ package body Dispatch is
         -- At least one client remaining, refresh all
         Refresh_All := True;
         -- Deliver a Refresh event to this client,
-        Event := (False, Refresh);
+        Event := (Internal => False, Kind => Refresh);
         Next_Event := False;
         Nb_X_Events := 0;
         -- This client is the first of the cohort so it must handle the event
@@ -505,7 +505,7 @@ package body Dispatch is
         if New_Client /= No_Client_No then
           -- One client to pass the event to (possibly me)
           Selected := New_Client;
-          Event := (False, Refresh);
+          Event := (Internal => False, Kind => Refresh);
           Next_Event := False;
           Log ("Prepare", Selected, "will be refreshing");
           Log ("Prepare", Client, "goes waiting");
@@ -541,7 +541,7 @@ package body Dispatch is
       and then Nb_X_Events = Max_Successive_X then
         -- Give up with X events and dispatch other events to oldest client
         Selected := Oldest;
-        Event := (True, Dispatch_Event);
+        Event := (Internal => True, Internal_Kind => Dispatch_Event);
         Next_Event := False;
         Log ("Prepare", Selected, "will be dispatching non X events");
         Log ("Prepare", Client, "goes waiting");
@@ -552,7 +552,7 @@ package body Dispatch is
       end if;
 
       -- Fifth, try to fetch a pending X event
-      Event := (False, No_Event);
+      Event := (Internal => False, Kind => No_Event);
       if Selected /= No_Client_No
       and then Next_Event then
         New_Client := Selected;
@@ -572,8 +572,8 @@ package body Dispatch is
       end if;
 
       -- Seventh, dispatch resulting event, set Selected
-      if Event.Prv then
-        case Event.Prv_Kind is
+      if Event.Internal then
+        case Event.Internal_Kind is
           when Wakeup_Event =>
             -- A wake up, dispatch by Closest
             Selected := New_Client;
@@ -605,7 +605,7 @@ package body Dispatch is
               end loop;
               Clients(Selected).Refreshing := True;
               -- Generate a dummy masked event
-              Event := (True, Dispatch_Event);
+              Event := (Internal => True, Internal_Kind => Dispatch_Event);
             end if;
           when Timer_Event | Fd_Event | Signal_Event =>
             -- A general event to deliver to oldest
@@ -620,7 +620,7 @@ package body Dispatch is
         -- Send a "dummy" refresh event to oldest
         if Selected = No_Client_No then
           Selected := Oldest;
-          Event := (False, Refresh);
+          Event := (Internal => False, Kind => Refresh);
           Next_Event := False;
           Log ("Prepare", Selected, " gets a dummy refresh");
         end if;
@@ -629,8 +629,8 @@ package body Dispatch is
       -- Nice work! time to go to wait
       Nb_Waiting := Nb_Waiting + 1;
       Clients(Client).Running := False;
-      if Event.Prv then
-        Log ("Prepare", Selected, "<= " & Event.Prv_Kind'Img);
+      if Event.Internal then
+        Log ("Prepare", Selected, "<= " & Event.Internal_Kind'Img);
       else
         Log ("Prepare", Selected, "<= " & Event.Kind'Img);
       end if;
@@ -648,8 +648,8 @@ package body Dispatch is
       Clients(Selected).Running := True;
       Nb_Waiting := Nb_Waiting - 1;
       New_Event := Event;
-      if New_Event.Prv then
-        Log ("Wait_Event", Client, "<- " & New_Event.Prv_Kind'Img);
+      if New_Event.Internal then
+        Log ("Wait_Event", Client, "<- " & New_Event.Internal_Kind'Img);
       else
         Log ("Wait_Event", Client, "<- " & New_Event.Kind'Img);
       end if;

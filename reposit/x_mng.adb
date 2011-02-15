@@ -361,13 +361,13 @@ package body X_Mng is
     -- During registration (Pre_Register, then Register, up to the first
     -- Prepare), the task can do X calls and there cannot be other registration
 
-    -- Event kind exchanged with dispatcher
-    -- Either a Wakeup event (to mask) or a real event to return
-    type Prv_Event_Kind is (Wakeup_Event, Dispatch_Event);
-    type Event_Rec (Prv : Boolean := False) is record
-      case Prv is
+    -- Event kind exchanged internally with dispatcher
+    -- Either a Wakeup event (to mask) or the need to re-dispatch (Refresh_All)
+    type Internal_Event_Kind is (Wakeup_Event, Dispatch_Event);
+    type Event_Rec (Internal : Boolean := False) is record
+      case Internal is
         when True =>
-          Prv_Kind : Prv_Event_Kind := Dispatch_Event;
+          Internal_Kind : Internal_Event_Kind := Dispatch_Event;
         when False =>
           Kind : Event_Kind := No_Event;
       end case;
@@ -1140,7 +1140,7 @@ package body X_Mng is
         My_Io.Put_Line ("X_Wait_Event: " & Line_Id.No'Img & " released");
       end if;
       -- An event to report?
-      if not Internal_Event.Prv then
+      if not Internal_Event.Internal then
         Kind := Internal_Event.Kind;
         exit;
       end if;
