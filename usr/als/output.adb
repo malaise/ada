@@ -475,10 +475,10 @@ package body Output is
     Ada.Text_Io.Put (Size_Image (Entity.Size, Human) & ' ');
 
     -- Modif time
-    -- Date_Image is "YYyy/Mm/Dd Hh:Mm:Ss.mmm"
-    -- Put "YYyy/Mm/Dd-Hh:Mm:Ss"
-    Date := Date_Image (Entity.Modif_Time);
-    Date(11) := '-';
+    -- Date_Image is "YYyy-Mm-DdTHh:Mm:Ss.mmm"
+    -- Replace 'T' by a space
+    Date := Date_Image (Entity.Modif_Time, Iso => True);
+    Date(11) := ' ';
     Ada.Text_Io.Put (Date(1 .. 19) & ' ');
 
     -- Entity name

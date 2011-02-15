@@ -2,7 +2,7 @@ with Ada.Calendar;
 with As.U, Basic_Proc, Argument, Argument_Parser;
 with Entities, Output, Targets, Lister;
 procedure Als is
-  Version : constant String  := "V5.3";
+  Version : constant String  := "V6.0";
 
   -- Exit codes
   Found_Exit_Code : constant Natural := 0;
@@ -37,9 +37,10 @@ procedure Als is
     Put_Line_Error (" <templates>     ::= <template> [ { ,<template> } ]");
     Put_Line_Error (" <date_spec>     ::= -d <date_comp><date> | --date=<date_comp><date>");
     Put_Line_Error (" <date_comp>     ::= eq | lt | le | gt | ge");
-    Put_Line_Error (" <date>          ::= yyyy/mm/dd-hh:mm  |  hh:mm  |  <positive><duration>");
+    Put_Line_Error (" <date>          ::= yyyy-mm-ddThh:mm:ss | yyyy-mm-dd | Thh:mm:ss");
+    Put_Line_Error ("                     | <positive><duration>");
     Put_Line_Error (" <duration>      ::= Y | M | D | h | m");
-    Put_Line_Error (" -n <date>       ::= -RMt -d ge<date>");
+    Put_Line_Error (" -n <date>       ::= -d ge<date>");
     Put_Line_Error ("exclude_name excludes the entries from the output list");
     Put_Line_Error ("  while exclude_dir excludes directories from the recursive scan.");
     Put_Line_Error ("Exits with 0 if a result, 1 if none and 2 on error.");
@@ -177,10 +178,10 @@ begin
   One_Row := Arg_Dscr.Is_Set (04);
   List_Only_Dirs := Arg_Dscr.Is_Set (05);
   Sort_Reverse := Arg_Dscr.Is_Set (06);
-  Recursive := Arg_Dscr.Is_Set (07) or else Arg_Dscr.Is_Set (22);
+  Recursive := Arg_Dscr.Is_Set (07);
   Sort_By_Size := Arg_Dscr.Is_Set (08);
-  Sort_By_Time := Arg_Dscr.Is_Set (09) or else Arg_Dscr.Is_Set (22);
-  Merge_Lists := Arg_Dscr.Is_Set (10) or else Arg_Dscr.Is_Set (22);
+  Sort_By_Time := Arg_Dscr.Is_Set (09);
+  Merge_Lists := Arg_Dscr.Is_Set (10);
   Classify := Arg_Dscr.Is_Set (23);
   Human := Arg_Dscr.Is_Set (25);
   No_Sorting := Arg_Dscr.Is_Set (26);

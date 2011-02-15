@@ -36,24 +36,55 @@ begin
   else
     raise Error_Exception;
   end if;
-  if Lstr'Length = (18) and then Lstr(7) = '/' and then Lstr(10) = '/'
-  and then Lstr(13) = '-' and then Lstr(16) = ':' then
-    -- yyyy/mm/dd-hh:mm
+  if Lstr'Length = (21) and then Lstr(7) = '-' and then Lstr(10) = '-'
+  and then Lstr(13) = 'T' and then Lstr(16) = ':' and then Lstr(19) = ':' then
+    -- yyyy-mm-ddThh:mm:ss
     Year := Ada.Calendar.Year_Number'Value (Lstr(3 .. 6));
     Month := Ada.Calendar.Month_Number'Value (Lstr(8 .. 9));
     Day := Ada.Calendar.Day_Number'Value (Lstr(11 .. 12));
     Hour := Day_Mng.T_Hours'Value (Lstr(14 .. 15));
     Minute := Day_Mng.T_Minutes'Value (Lstr(17 .. 18));
-    Second := 0;
-    Milli := 0;
+    Second := Day_Mng.T_Minutes'Value (Lstr(20 .. 21));
+    if Crit.Oper = Entities.Less_Or_Equal
+    or else Crit.Oper = Entities.Greater_Than then
+      Milli := 999;
+    else
+      Milli := 0;
+    end if;
     Crit.Date := Ada.Calendar.Time_Of (Year, Month, Day,
                    Day_Mng.Pack (Hour, Minute, Second, Milli));
-  elsif Lstr'Length = (7) and then Lstr(5) = ':' then
-    -- hh:mm
-    Hour := Day_Mng.T_Hours'Value (Lstr(3 .. 4));
-    Minute := Day_Mng.T_Minutes'Value (Lstr(6 .. 7));
-    Second := 0;
-    Milli := 0;
+  elsif Lstr'Length = (12) and then Lstr(7) = '-' and then Lstr(10) = '-' then
+    -- yyyy-mm-dd
+    Year := Ada.Calendar.Year_Number'Value (Lstr(3 .. 6));
+    Month := Ada.Calendar.Month_Number'Value (Lstr(8 .. 9));
+    Day := Ada.Calendar.Day_Number'Value (Lstr(11 .. 12));
+    if Crit.Oper = Entities.Less_Or_Equal
+    or else Crit.Oper = Entities.Greater_Than then
+      Hour := 23;
+      Minute := 59;
+      Second := 59;
+      Milli := 999;
+    else
+      Hour := 0;
+      Minute := 0;
+      Second := 0;
+      Milli := 0;
+    end if;
+    Crit.Date := Ada.Calendar.Time_Of (Year, Month, Day,
+                   Day_Mng.Pack (Hour, Minute, Second, Milli));
+
+  elsif Lstr'Length = (11) and then Lstr(3) = 'T'
+  and then Lstr(6) = ':' and then Lstr(9) = ':' then
+    -- Thh:mm:ss
+    Hour := Day_Mng.T_Hours'Value (Lstr(4 .. 5));
+    Minute := Day_Mng.T_Minutes'Value (Lstr(7 .. 8));
+    Second := Day_Mng.T_Minutes'Value (Lstr(10 .. 11));
+    if Crit.Oper = Entities.Less_Or_Equal
+    or else Crit.Oper = Entities.Greater_Than then
+      Milli := 999;
+    else
+      Milli := 0;
+    end if;
     -- Apply to current day
     Ada.Calendar.Split (Ada.Calendar.Clock,
                         Year, Month, Day, Dur);
