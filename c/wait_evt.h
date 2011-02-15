@@ -20,8 +20,8 @@ extern void activate_signal_handling (void);
 /* Returns un-handled signal */
 extern int reset_default_signals (void);
 
-/* Send Dummy, Terminate or Child */
-extern void send_signal (int sig);
+/* Send Dummy signal to local process */
+extern void send_dummy_signal (void);
 
 /* Get signal received */
 /* No signal was received */

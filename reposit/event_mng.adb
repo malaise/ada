@@ -166,8 +166,8 @@ package body Event_Mng is
   C_Sig_Child     : constant Integer :=  1;
   C_Sig_Terminate : constant Integer :=  2;
 
-  procedure C_Send_Signal (Num : C_Types.Int);
-  pragma Import(C, C_Send_Signal, "send_signal");
+  procedure C_Send_Dummy_Signal;
+  pragma Import(C, C_Send_Dummy_Signal, "send_dummy_signal");
 
   function C_Get_Signal return C_Types.Int;
   pragma Import(C, C_Get_Signal, "get_signal");
@@ -221,8 +221,8 @@ package body Event_Mng is
 
   procedure Send_Dummy_Signal is
   begin
-    Put_Debug ("Event_Mng.Send_Signal");
-    C_Send_Signal (C_Sig_Dummy);
+    Put_Debug ("Event_Mng.Send_Dummy_Signal");
+    C_Send_Dummy_Signal;
   end Send_Dummy_Signal;
 
   procedure Activate_Signal_Handling is

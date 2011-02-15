@@ -128,9 +128,8 @@ static void signal_handler (int sig) {
   sig_received = TRUE;
 }
 
-extern void send_signal (int sig) {
-  if (sig == SIG_DUMMY) sig = SIGDUMMY;
-  (void) kill (getpid(), sig);
+extern void send_dummy_signal (void) {
+  (void) kill (getpid(), SIGDUMMY);
 }
 
 /* Return highest prio received and reset it */
