@@ -1,4 +1,5 @@
 Major changes:
+2011/02/15: Add a static agite executable
 2011/02/14: Fix dispatching of X Refresh event to multiple windows
             Add Get_Clock in Chronos, and remove Detach cause same as Attach (null)
 2011/02/13: Add use anonymous access type in Limited_List
