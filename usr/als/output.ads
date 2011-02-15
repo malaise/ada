@@ -11,6 +11,7 @@ package Output is
                        Put_Path    : in Boolean;
                        Full_Path   : in Boolean;
                        Classify    : in Boolean;
+                       Date_Iso    : in Boolean;
                        Separator   : in As.U.Asu_Us);
 
   -- Sort list and put according to style

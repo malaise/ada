@@ -20,6 +20,7 @@ package body Output is
   Full_Path : Boolean;
   Separator : As.U.Asu_Us;
   Classify : Boolean;
+  Date_Iso : Boolean;
   Default_Separator : constant String := "  ";
 
   -- Current directory path
@@ -33,6 +34,7 @@ package body Output is
              Put_Path    : in Boolean;
              Full_Path   : in Boolean;
              Classify    : in Boolean;
+             Date_Iso    : in Boolean;
              Separator   : in As.U.Asu_Us) is
   begin
     Output.Sort_Kind := Sort_Kind;
@@ -42,6 +44,7 @@ package body Output is
     Output.Full_Path := Full_Path;
     Output.Separator := Separator;
     Output.Classify := Classify;
+    Output.Date_Iso := Date_Iso;
     Environ.Get_Nat (Env_Max_To_Sort, Max_To_Sort);
   end Set_Style;
 
@@ -476,9 +479,11 @@ package body Output is
 
     -- Modif time
     -- Date_Image is "YYyy-Mm-DdTHh:Mm:Ss.mmm"
-    -- Replace 'T' by a space
+    -- Replace 'T' by a space except if option Date_Iso
     Date := Date_Image (Entity.Modif_Time, Iso => True);
-    Date(11) := ' ';
+    if not Date_Iso then
+      Date(11) := ' ';
+    end if;
     Ada.Text_Io.Put (Date(1 .. 19) & ' ');
 
     -- Entity name
