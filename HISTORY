@@ -1,4 +1,5 @@
 Major changes:
+2011/02/16: Add improve help of als, V6.2
 2011/02/15: Add option --date_iso for strict ISO output of dates in als, V6.1
             Chg use ISO 8601 format for time input and output of als, V6.0
             Add a static agite executable

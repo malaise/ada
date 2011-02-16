@@ -2,7 +2,7 @@ with Ada.Calendar;
 with As.U, Basic_Proc, Argument, Argument_Parser;
 with Entities, Output, Targets, Lister;
 procedure Als is
-  Version : constant String  := "V6.1";
+  Version : constant String  := "V6.2";
 
   -- Exit codes
   Found_Exit_Code : constant Natural := 0;
@@ -15,34 +15,52 @@ procedure Als is
   begin
     Put_Line_Error ("Usage: " & Argument.Get_Program_Name
       & " [ { <option> } ] [ { <file_or_dir_spec> } ]");
-    Put_Line_Error (" <option> ::= -l (--list) | -1 (--1row) | -c (--classify)");
-    Put_Line_Error ("            | -h (--human) | -f (--full_path) | <separator>");
-    Put_Line_Error ("            | --follow_links | --date_iso");
-    Put_Line_Error ("            | -a (--all) | -A (--All)");
-    Put_Line_Error ("            | -D (--directories) | -L (--links) | -F (--files)");
-    Put_Line_Error ("            | -B (--broken_links) ");
-    Put_Line_Error ("            | [ { <match_name> } ] | [ { <exclude_name> } ]");
-    Put_Line_Error ("            | [ { <match_dir> } ] | [ { <exclude_dir> } ]");
-    Put_Line_Error ("            | <date_spec> [ <date_spec> ]");
-    Put_Line_Error ("            | -s (--size) | -t (--time) | -r (--reverse) | -N (--no_sort)");
-    Put_Line_Error ("            | -R (--recursive) | -M (--merge) | -T (--total)");
-    Put_Line_Error ("            | --depth=<positive>");
-    Put_Line_Error ("            | -n <date> (--newer=<date>)");
-    Put_Line_Error (" <separator>     ::= -S <string> | --separator=<string>");
-    Put_Line_Error (" <match_name>    ::= -m <criteria> | --match=<criteria>");
-    Put_Line_Error (" <exclude_name>  ::= -e <criteria> | --exclude=<criteria>");
-    Put_Line_Error (" <match_dir>     ::= --match_dir=<criteria>");
-    Put_Line_Error (" <exclude_dir>   ::= --exclude_dir=<criteria>");
-    Put_Line_Error (" <criteria>      ::= <templates> | @<regex>");
-    Put_Line_Error (" <templates>     ::= <template> [ { ,<template> } ]");
-    Put_Line_Error (" <date_spec>     ::= -d <date_comp><date> | --date=<date_comp><date>");
-    Put_Line_Error (" <date_comp>     ::= eq | lt | le | gt | ge");
-    Put_Line_Error (" <date>          ::= yyyy-mm-ddThh:mm:ss | yyyy-mm-dd | Thh:mm:ss");
-    Put_Line_Error ("                     | <positive><duration>");
-    Put_Line_Error (" <duration>      ::= Y | M | D | h | m");
-    Put_Line_Error (" -n <date>       ::= -d ge<date>");
-    Put_Line_Error ("exclude_name excludes the entries from the output list");
-    Put_Line_Error ("  while exclude_dir excludes directories from the recursive scan.");
+    Put_Line_Error ("How to show each entry (file or dir):");
+    Put_Line_Error ("  -l (--list)        // Show rights, owner, size, date, symlink target");
+    Put_Line_Error ("  -1 (--1row)        // One name per line");
+    Put_Line_Error ("  -c (--classify)    // Append '/' to dirs, '@' to symlinks");
+    Put_Line_Error ("  -h (--human)       // Show sizes in friendly format (e.g. 1K, 2G)");
+    Put_Line_Error ("  -f (--full_path)   // Show full path of entries");
+    Put_Line_Error ("  <separator> ::= -S <string> | --separator=<string>");
+    Put_Line_Error ("                     // Insert <string> beween each entry");
+    Put_Line_Error ("  --follow_links     // Show final target of symlinks");
+    Put_Line_Error ("  --date_iso         // Show date in strick ISO format (<date>T<time>)");
+    Put_Line_Error ("Which entries to show:");
+    Put_Line_Error ("  -a (--all)         // Show all entries including hidden (starting with '.')");
+    Put_Line_Error ("  -A (--All)         // Show all entries except ""."" and ""..""");
+    Put_Line_Error ("  -D (--directories) // Show only directories");
+    Put_Line_Error ("  -L (--links)       // Show only symbolic links");
+    Put_Line_Error ("  -F (--files)       // Show only regular files");
+    Put_Line_Error ("  -B (--broken_links)// Show only broken symbolic links");
+    Put_Line_Error ("  -R (--recursive)   // Scan directories recursively");
+    Put_Line_Error ("  --depth=<positive> // Scan only to given depth (needs ""-R"")");
+    Put_Line_Error ("  <match_name> ::= -m <criteria> | --match=<criteria>");
+    Put_Line_Error ("    <criteria> ::= <templates> | @<regex>");
+    Put_Line_Error ("    <templates> ::= <template> [ { ,<template> } ]");
+    Put_Line_Error ("                     // Keep only files that match the ciriteria (one template");
+    Put_Line_Error ("                     //  or the regular expression)");
+    Put_Line_Error ("  <exclude_name> ::= -e <criteria> | --exclude=<criteria>");
+    Put_Line_Error ("                     // Exclude files that match the ciriteria");
+    Put_Line_Error ("  <match_dir> ::= --match_dir=<criteria>");
+    Put_Line_Error ("                     // Scan only directories that match the criteria");
+    Put_Line_Error ("  <exclude_dir> ::= --exclude_dir=<criteria>");
+    Put_Line_Error ("                     // Don't scan directories that match the criteria");
+    Put_Line_Error ("  <date_spec> [ <date_spec> ]");
+    Put_Line_Error ("    <date_spec> ::= -d <date_comp><date> | --date=<date_comp><date>");
+    Put_Line_Error ("    <date_comp> ::= eq | lt | le | gt | ge");
+    Put_Line_Error ("    <date>      ::= yyyy-mm-ddThh:mm:ss | yyyy-mm-dd | Thh:mm:ss");
+    Put_Line_Error ("                  | <positive><duration>");
+    Put_Line_Error ("    <duration>  ::= Y | M | D | h | m");
+    Put_Line_Error ("                     // Keep files that match the date specification");
+    Put_Line_Error ("                     //  (before, after or equal to a given date or delay)");
+    Put_Line_Error ("    -n <date> (--newer=<date>) is a shortcut to ""-d ge<date>""");
+    Put_Line_Error ("How to organize entry list:");
+    Put_Line_Error ("  -s (--size)        // Sort by decrescent size (see also ""-r"")");
+    Put_Line_Error ("  -t (--time)        // Sort by decrescent time (see also ""-r"")");
+    Put_Line_Error ("  -r (--reverse)     // Sort (by name, size or time) in reverse order");
+    Put_Line_Error ("  -N (--no_sort)     // Keep order same as in the directory structure");
+    Put_Line_Error ("  -M (--merge)       // Show a global list of entries (without dir names)");
+    Put_Line_Error ("  -T (--total)       // Also show total size of listed entries");
     Put_Line_Error ("Exits with 0 if a result, 1 if none and 2 on error.");
   end Usage;
   Error_Exception : exception;
@@ -123,7 +141,7 @@ procedure Als is
                                         Regex    : in Boolean);
   procedure Set_Criteria (Criteria : in String;
                           Call     : in Call_Access) is separate;
-
+  use type Entities.Date_Oper_List;
 begin
 
   -- Parse keys and options
@@ -190,6 +208,7 @@ begin
   Full_Path := Arg_Dscr.Is_Set (27);
   Date_Iso := Arg_Dscr.Is_Set (30);
   Depth := 0;
+
   -- Check sorting
   if Sort_By_Time and then Sort_By_Size then
     Error ("-s (--size) and -t (--time) are mutually exclusive");
@@ -198,6 +217,7 @@ begin
   (Sort_By_Size or else Sort_By_Time or else Sort_Reverse) then
     Error ("-n (--no_sort) is exclusive with other sorting options");
   end if;
+
   -- Check dates
   if Arg_Dscr.Is_Set (11) and then Arg_Dscr.Is_Set (22) then
     Error ("-d (--date) and -n (--new) are mutially exclusive");
@@ -212,10 +232,24 @@ begin
       Date2.Oper := Entities.None;
     end if;
   end if;
+  if Arg_Dscr.Get_Nb_Occurences (11) = 2 then
+    if Date1.Oper = Entities.Equal or else Date2.Oper = Entities.Equal then
+      Error ("With two dates, none can be ""eq""");
+    end if;
+    if (Date1.Oper <= Entities.Less_Or_Equal
+           and then Date2.Oper <= Entities.Less_Or_Equal)
+    or else (Date1.Oper >= Entities.Greater_Than
+             and then Date2.Oper >= Entities.Greater_Than) then
+      Error ("With two dates, one must be ""lt"" or ""le"" and the other ""gt or ""ge""");
+    end if;
+  end if;
+  -- Parse option newer
   if Arg_Dscr.Get_Nb_Occurences (22) /= 0 then
     Date1 := Parse_Date ("ge" & Arg_Dscr.Get_Option(22, 1));
     Date2.Oper := Entities.None;
   end if;
+
+  -- Some other simple options
   if Arg_Dscr.Is_Set (14) then
     List_Only_Links := Lister.All_Links;
   elsif Arg_Dscr.Is_Set (28) then
@@ -224,6 +258,7 @@ begin
     List_Only_Links := Lister.No_Link;
   end if;
   List_Only_Files := Arg_Dscr.Is_Set (15);
+
   -- Add match template if any
   for I in 1 .. Arg_Dscr.Get_Nb_Occurences (16) loop
     begin
@@ -260,6 +295,7 @@ begin
         Error ("Invalid dir_match " & Arg_Dscr.Get_Option (19, I));
     end;
   end loop;
+
   -- Separator
   if Arg_Dscr.Is_Set (20) then
     if Arg_Dscr.Get_Option (20) = "" then
@@ -267,8 +303,10 @@ begin
     end if;
     Separator := As.U.Tus (Arg_Dscr.Get_Option (20));
   end if;
+
   -- Put total size
   Put_Total := Arg_Dscr.Is_Set (21);
+
   -- Set output criteria
   declare
     Sort_Kind : Output.Sort_Kind_List;
@@ -299,9 +337,11 @@ begin
     Output.Set_Style (Sort_Kind, Sort_Reverse, Format_Kind, Merge_Lists,
                       Full_Path, Classify, Date_Iso, Separator);
   end;
+
+  -- Depth
   if Arg_Dscr.Is_Set (24) then
     if not Recursive then
-      Error ("--depth option requires -R (--recursive) or -n (--newer) options");
+      Error ("--depth option requires -R (--recursive)");
     end if;
     if Arg_Dscr.Get_Option (24) = "" then
       Error ("No depth provided");
