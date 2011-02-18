@@ -12,10 +12,18 @@ package body Autobus is
   -- Accept connection Cb
   -- Find bus and insert partner, set reception callback
 
-  -- Reception Cb
+  -- TCP Reception Cb
   -- Find bus
   -- On disconnection remove partner
-  -- On message notify mathcing Subscribers
+  -- On message notify matching Subscribers
+
+  -- IPM Reception Cb
+  -- If new
+  --   if Addr > own add partner and start connect
+  -- Else reset timer of this partner
+
+  -- Timer Cb
+  -- Send Alive and check partners keep alive timers
 
   -- Internal inconsistency
   Internal_Error : exception;
@@ -65,6 +73,8 @@ package body Autobus is
     -- Set admin callback
 
     -- Create Accep TCp socket, set accep callback
+
+    -- Arm timers
 
     -- Done: Append in list, return access
     Buses.Rewind (False, Bus_List_Mng.Prev);

@@ -1,6 +1,8 @@
 -- Simple API for reliable message passing
 with Ada.Finalization;
-with Socket, Regular_Expressions, Dynamic_List, Limited_List;
+with Socket, Regular_Expressions, As.U,
+     Dynamic_List, Limited_List,
+     Chronos.Passive_Timers;
 package Autobus is
 
   -------------
@@ -64,10 +66,18 @@ private
   -- List of partners
   type Bus_Rec;
   type Bus_Access is access all Bus_Rec;
+  type Timer_Access is access all Chronos.Passive_Timers.Passive_Timer;
   type Partner_Rec is record
+    -- Address of the TCP socket "www.xxx.yyy.zzz:portnum"
+    Addr : As.U.Asu_Us;
+    -- Low level address
     Host : Socket.Host_Id;
     Port : Socket.Port_Num;
+    -- Socket
     Sock : Socket.Socket_Dscr;
+    -- Timer of keep alive
+    Timer : Timer_Access;
+    -- Reference to the bus (when message recieved or diconnection)
     Bus : Bus_Access;
   end record;
   package Partner_Dyn_List_Mng is new Dynamic_List (Partner_Rec);
@@ -79,6 +89,7 @@ private
   -- List of Subscribers
   type Filter_Access is access Regular_Expressions.Compiled_Pattern;
   type Observer_Access is access all Observer_Type'Class;
+  type Subscriber_Access_Type is access all Subscriber_Type;
   type Subscriber_Rec is new Ada.Finalization.Controlled with record
     -- Bus
     Bus : Bus_Access;
@@ -86,6 +97,8 @@ private
     Filter : Filter_Access;
     -- Observer
     Observer : Observer_Access;
+    -- Client subscriber
+    Client : Subscriber_Access_Type;
   end record;
 
   overriding procedure Finalize (List : in out Subscriber_Rec);
@@ -94,6 +107,8 @@ private
 
   -- List of Buses
   type Bus_Rec is limited new Ada.Finalization.Limited_Controlled with record
+    -- Address of the TCP socket "www.xxx.yyy.zzz:portnum"
+    Addr : As.U.Asu_Us;
     -- Administration IPM socket
     Admin : Socket.Socket_Dscr := Socket.No_Socket;
     -- TCP accept socket
@@ -116,7 +131,6 @@ private
     Acc : access Bus_Rec;
   end record;
   overriding procedure Finalize (List : in out Bus_Type);
-
 
 end Autobus;
 
