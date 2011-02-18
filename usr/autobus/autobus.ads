@@ -107,6 +107,8 @@ private
 
   -- List of Buses
   type Bus_Rec is limited new Ada.Finalization.Limited_Controlled with record
+    -- Address of the IPM socket "www.xxx.yyy.zzz:portnum", for reporting
+    Name : As.U.Asu_Us;
     -- Address of the TCP socket "www.xxx.yyy.zzz:portnum"
     Addr : As.U.Asu_Us;
     -- Administration IPM socket
