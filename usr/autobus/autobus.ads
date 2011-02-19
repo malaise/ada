@@ -2,7 +2,7 @@
 with Ada.Finalization;
 with Socket, Regular_Expressions, As.U,
      Dynamic_List, Limited_List,
-     Chronos.Passive_Timers;
+     Timers, Chronos.Passive_Timers;
 package Autobus is
 
   -------------
@@ -119,6 +119,8 @@ private
     Partners : Partner_Access_List_Mng.List_Type;
     -- List of subscribers
     Subscribers : Subscriber_List_Mng.List_Type;
+    -- Timer
+    Timer : Timers.Timer_Id;
   end record;
   overriding procedure Finalize (List : in out Bus_Rec);
   procedure Set (To : out Bus_Rec; Val : in Bus_Rec);
