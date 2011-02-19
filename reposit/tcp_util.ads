@@ -167,6 +167,8 @@ package Tcp_Util is
 
   -- RECEIVE PROCEDURE --
   -----------------------
+  -- This package can be used with UDP/IPM socket as well (and there is no
+  --  no disconnection in this case)
   -- Callback invoqued when remote disconnects
   -- Dscr is closed after invocation
   type Disconnection_Callback_Access is access
