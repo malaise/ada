@@ -385,6 +385,19 @@ extern int soc_is_blocking (soc_token token, boolean *blocking) {
   return (SOC_OK);
 }
 
+/* Get socket protocol */
+extern int soc_get_protocol (soc_token token, socket_protocol *protocol) {
+  soc_ptr soc = (soc_ptr) token;
+
+  /* Check that socket is open */
+  if (soc == NULL) return (SOC_USE_ERR);
+  LOCK;
+
+  *protocol = soc->socket_kind;
+  UNLOCK;
+  return (SOC_OK);
+}
+
 
 /* Do the connection */
 static int do_connect (soc_ptr soc) {

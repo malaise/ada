@@ -52,6 +52,9 @@ package body Socket is
   function Soc_Is_Blocking (S_Addr : System.Address;
                             Block  : System.Address) return Result;
   pragma Import (C, Soc_Is_Blocking, "soc_is_blocking");
+  function Soc_Get_Protocol (S_Addr : System.Address;
+                             Protocol  : System.Address) return Result;
+  pragma Import (C, Soc_Get_Protocol, "soc_get_protocol");
 
   function Soc_Set_Rece_Ipm_Interface (S_Addr : System.Address;
                                        Host   : System.Address) return Result;
@@ -241,6 +244,14 @@ package body Socket is
     return Sys_Calls.File_Desc(Fd);
   end Get_Fd;
 
+  -- Get the protocol of a socket
+  function Get_Protocol (Socket : in Socket_Dscr) return Protocol_List is
+    Protocol : C_Protocol;
+  begin
+    Res := Soc_Get_Protocol (Socket.Soc_Addr, Protocol'Address);
+    Check_Ok;
+    return Protocol_List(Protocol);
+  end Get_Protocol;
 
 
   -------------------------------------

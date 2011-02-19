@@ -132,6 +132,9 @@ extern int soc_set_blocking (soc_token token, boolean blocking);
 /* Is the socket in blocking mode or not */
 extern int soc_is_blocking (soc_token token, boolean *blocking);
 
+/* Get socket protocol */
+extern int soc_get_protocol (soc_token token, socket_protocol *protocol);
+
 /*-------------------------------------*/
 /* Emission                            */
 /* No broadcast nor change dest in tcp */

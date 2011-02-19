@@ -89,6 +89,9 @@ package Socket is
   -- Get the Fd of a socket (for use in X_Mng. Add/Del _Callback)
   function Get_Fd (Socket : in Socket_Dscr) return Sys_Calls.File_Desc;
 
+  -- Get the protocol of a socket
+  function Get_Protocol (Socket : in Socket_Dscr) return Protocol_List;
+
   -------------------------------------
   -- RECEPTION PORT - FD - RECEPTION --
   -------------------------------------
