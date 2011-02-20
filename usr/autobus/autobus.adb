@@ -1,5 +1,5 @@
 with Ada.Unchecked_Deallocation, Ada.Exceptions;
-with Basic_Proc, Int_Image, Ip_Addr, Socket_Util, Tcp_Util;
+with Basic_Proc, Environ, Int_Image, Ip_Addr, Socket_Util, Tcp_Util;
 package body Autobus is
 
   --------------
@@ -9,27 +9,46 @@ package body Autobus is
   Buses : Bus_List_Mng.List_Type;
   Partners : Partner_List_Mng.List_Type;
 
-  -- Heartbeat
+  -- Heartbeat (Todo: getenv for each Bus)
   Heartbeat_Period : constant Duration := 0.33;
   Heartbeat_Missed_Factor : constant := 3;
 
-  -- Connection timeout
+  -- Connection timeout (Todo: getenv for each Bus)
   Connection_Timeout : constant Duration := 0.5;
+
+  -- Tcp message type
+  Tcp_Message_Max_Length : constant := 1024 * 1024 + 1;
+  subtype Tcp_Message_Str is String (1 .. Tcp_Message_Max_Length);
 
   -- Internal inconsistency
   Internal_Error : exception;
 
-  -- Internal: Image of a port num
+  -- Image of a port num
   function Port_Image is new Int_Image (Socket.Port_Num);
 
-  -- Internal Image of a full address
+  -- Image of a full address
   function Image (Host : Socket.Host_Id; Port : Socket.Port_Num)
                  return String is
   begin
     return Ip_Addr.Image (Socket.Id2Addr (Host)) & ":" & Port_Image (Port);
   end Image;
 
-  -- Internal: Log an exception
+  -- Debug
+  Debug_Got : Boolean := False;
+  Debug_Set : Boolean := False;
+  Debug_Str : constant String := "AUTOBUS_DEBUG";
+  procedure Debug (Message : in String) is
+  begin
+    if not Debug_Got then
+      Debug_Set := Environ.Is_Yes (Debug_Str);
+      Debug_Got := True;
+    end if;
+    if Debug_Set then
+      Basic_Proc.Put_Line_Output ("Autobus: " & Message);
+    end if;
+  end Debug;
+
+  -- Log an exception
   procedure Log_Exception (Operation, Exception_Name, Message : in String) is
   begin
     Basic_Proc.Put_Error ("Autobus: Exception " & Exception_Name
@@ -41,7 +60,7 @@ package body Autobus is
     end if;
   end Log_Exception;
 
-  -- Internal: Log an error
+  -- Log an error
   procedure Log_Error (Operation, Error, Message : in String) is
   begin
     Basic_Proc.Put_Error ("Autobus: Error " & Error
@@ -53,8 +72,7 @@ package body Autobus is
     end if;
   end Log_Error;
 
-
-  -- Internal: Search Partner
+  -- Search Partner
   -- By address
   function Partner_Match_Addr (Curr, Crit : Partner_Rec) return Boolean is
     use type As.U.Asu_Us;
@@ -67,25 +85,19 @@ package body Autobus is
   begin
     return Curr.Sock = Crit.Sock;
   end Partner_Match_Sock;
-  -- By access
-  function Partner_Match_Acc (Curr, Crit : Partner_Access) return Boolean is
-  begin
-    return Curr = Crit;
-  end Partner_Match_Acc;
   -- By Host and port
   function Partner_Match_Hp (Curr, Crit : Partner_Rec) return Boolean is
     use type Socket.Host_Id, Socket.Port_Num;
   begin
     return Curr.Host = Crit.Host and then Curr.Port = Crit.Port;
   end Partner_Match_Hp;
-
-  -- Internal: Search Bus
-  -- By address
-  function Bus_Match_Addr (Curr, Crit : Bus_Rec) return Boolean is
-    use type As.U.Asu_Us;
+  -- By access
+  function Partner_Match_Acc (Curr, Crit : Partner_Access) return Boolean is
   begin
-    return Curr.Addr = Crit.Addr;
-  end Bus_Match_Addr;
+    return Curr = Crit;
+  end Partner_Match_Acc;
+
+  -- Search Bus
   -- By admin socket
   function Bus_Match_Admin (Curr, Crit : Bus_Rec) return Boolean is
     use type Socket.Socket_Dscr;
@@ -98,32 +110,47 @@ package body Autobus is
   begin
     return Curr.Accep = Crit.Accep;
   end Bus_Match_Accep;
+  -- By timer Id
+  function Bus_Match_Timer (Curr, Crit : Bus_Rec) return Boolean is
+    use type Timers.Timer_Id;
+  begin
+    return Curr.Timer = Crit.Timer;
+  end Bus_Match_Timer;
 
-  -- Internal: Remove current (in Partners list) Partner
-  -- Remove its ref in its Bus list and remove it from Parrners list
-  procedure Remove_Current_Partner is
+  -- Remove current (in Partners list) Partner
+  -- Remove its ref in its Bus list and remove it from Partners list
+  procedure Deallocate is new Ada.Unchecked_Deallocation (
+           Chronos.Passive_Timers.Passive_Timer, Timer_Access);
+  procedure Remove_Current_Partner (Close : in Boolean) is
     Partner_Acc : Partner_Access;
     Partner_Found : Boolean;
     Moved : Boolean;
   begin
     -- Find partner ref in Bus
     Partner_Acc := Partner_Access (Partners.Access_Current);
+    Debug ("Removing partner " & Partner_Acc.Addr.Image);
     Partner_Acc.Bus.Partners.Search_Match (
            Partner_Found, Partner_Match_Acc'Access, Partner_Acc,
            From => Partner_Access_List_Mng.Absolute);
     if not Partner_Found then
       Log_Error ("Remove_Current_Partner", "not found", "in bus list");
+      return;
     end if;
 
     -- Delete this partner from bus list
     Partner_Acc.Bus.Partners.Delete (Moved => Moved);
 
     -- Close this partner resources
+    Deallocate (Partner_Acc.Timer);
     if Partner_Acc.Sock.Is_Open then
       -- This partner is connected
-      Partner_Acc.Sock.Close;
+      if Close then
+        Debug ("Removing partner -> Closing socket");
+        Partner_Acc.Sock.Close;
+      end if;
     else
       -- There is a pending connection attempt to this partner
+      Debug ("Removing partner -> Aborting connection");
       begin
         -- Connection was requested with host and port Ids
         Tcp_Util.Abort_Connect (
@@ -133,11 +160,13 @@ package body Autobus is
         when Tcp_Util.No_Such =>
           Log_Error ("Remove_Current_Partner", "no such",
                      "while aborting pending tcp connection");
+          return;
       end;
     end if;
 
     -- Delete this partner from Partners
     Partners.Search_Access (Partner_Found, Partner_Acc);
+    Partners.Delete (Moved => Moved);
 
   end Remove_Current_Partner;
 
@@ -152,6 +181,8 @@ package body Autobus is
   end Start_Partner_Timer;
 
   -- Pending connection Cb
+  procedure Tcp_Send is new Socket.Send (Tcp_Message_Str,
+                                         Tcp_Message_Max_Length);
   procedure Tcp_Connection_Cb (Remote_Host_Id  : in Tcp_Util.Host_Id;
                                Remote_Port_Num : in Tcp_Util.Port_Num;
                                Connected       : in Boolean;
@@ -159,6 +190,8 @@ package body Autobus is
     Partner : Partner_Rec;
     Partner_Found : Boolean;
     Partner_Acc : Partner_Access;
+    Message : Tcp_Message_Str;
+    Message_Length : Natural;
   begin
     if not Connected then
       -- This should not occur because the number of connection retries
@@ -169,7 +202,6 @@ package body Autobus is
     end if;
 
     -- Set non blocking, find partner by Host and Port, update its Sock,
-    Dscr.Set_Blocking (False);
     Partner.Host := Remote_Host_Id;
     Partner.Port := Remote_Port_Num;
     -- Find partner by address
@@ -182,6 +214,13 @@ package body Autobus is
     end if;
     Partner_Acc := Partner_Access(Partners.Access_Current);
     Partner_Acc.Sock := Dscr;
+    Partner_Acc.Sock.Set_Blocking (False);
+    Debug ("Connection to partner " & Partner_Acc.Addr.Image);
+
+    -- Send identification message
+    Message_Length := Partner_Acc.Bus.Addr.Length + 1;
+    Message(1 .. Message_Length) := 'I' & Partner_Acc.Bus.Addr.Image;
+    Tcp_Send (Partner_Acc.Sock, Message, Message_Length);
 
     --  Create and start its timer
     Start_Partner_Timer;
@@ -192,10 +231,8 @@ package body Autobus is
     Partner : Partner_Rec;
     Partner_Found : Boolean;
   begin
-    -- Remove partner
-    -- Set non blocking, find partner by Host and Port, update its Sock,
-    Partner.Sock := Dscr;
     -- Find partner by socket
+    Partner.Sock := Dscr;
     Partners.Search_Match (Partner_Found, Partner_Match_Sock'Access, Partner,
                            From => Partner_List_Mng.Absolute);
     if not Partner_Found then
@@ -203,16 +240,61 @@ package body Autobus is
                  "in partners list");
       return;
     end if;
-    Remove_Current_Partner;
+    -- Don't close socket (Tcp_Util will do it when we return)
+    Debug ("Disconnection of partner " & Partners.Access_Current.Addr.Image);
+    Remove_Current_Partner (False);
   end Tcp_Disconnection_Cb;
 
+  -- Dispatch a message to the Subscribers of current bus
+  procedure Dispatch (Message : in String);
+
   -- TCP Reception Cb
-  Tcp_Message_Max_Length : constant := 1024 * 1024;
-  subtype Tcp_Message_Str is String (1 .. Tcp_Message_Max_Length);
   package Tcp_Reception_Mng is new Tcp_Util.Reception (Tcp_Message_Str);
   procedure Tcp_Reception_Cb (Dscr    : in Socket.Socket_Dscr;
                               Message : in Tcp_Message_Str;
-                              Length  : in Natural);
+                              Length  : in Natural) is
+    Partner : Partner_Rec;
+    Partner_Found : Boolean;
+    Partner_Acc : Partner_Access;
+  begin
+    -- Find partner by Socket
+    -- Find partner by socket
+    Partner.Sock := Dscr;
+    Partners.Search_Match (Partner_Found, Partner_Match_Sock'Access, Partner,
+                           From => Partner_List_Mng.Absolute);
+    if not Partner_Found then
+      Log_Error ("Tcp_Reception_Cb", " partner not found",
+                 "in partners list");
+      return;
+    end if;
+    Partner_Acc := Partner_Access(Partners.Access_Current);
+
+    -- Dispatch Data message
+    if Length = 0 then
+      Log_Error ("Tcp_Reception_Cb", " empty message ",
+                 " from " & Partner_Acc.Addr.Image);
+      return;
+    end if;
+    if Message(1) = 'D' then
+      Debug ("Reception of Data from " & Partner_Acc.Addr.Image
+           & " " & Message (2 .. Length));
+      Dispatch (Message (2 .. Length));
+      return;
+    end if;
+
+    -- Process Identification service message
+    if Message(1) = 'I' then
+      -- The parner (connecting to us) sends us its accept address
+      Partner_Acc.Addr := As.U.Tus (Message (2 .. Length));
+      Debug ("Reception of Identification from " & Partner_Acc.Addr.Image);
+      return;
+    else
+      Log_Error ("Tcp_Reception_Cb", " unexpected service message ",
+                 Message & " from " & Partner_Acc.Addr.Image);
+      return;
+    end if;
+
+  end Tcp_Reception_Cb;
 
   -- Accept connection Cb
   procedure Tcp_Accept_Cb (Local_Port_Num  : in Tcp_Util.Port_Num;
@@ -233,15 +315,19 @@ package body Autobus is
       Log_Error ("Accept_Cb", "bus not found", "in bus list");
       return;
     end if;
-    Partner.Addr := As.U.Tus (Image (Remote_Host_Id, Remote_Port_Num));
+    -- The Addr remains empty until the partner sends it on the connection
     Partner.Host := Remote_Host_Id;
     Partner.Port := Remote_Port_Num;
     Partner.Sock := New_Dscr;
+    Partner.Timer := new Chronos.Passive_Timers.Passive_Timer;
     Partner.Bus := Bus_Access(Buses.Access_Current);
     Partners.Rewind (False, Partner_List_Mng.Next);
     Partners.Insert (Partner);
+    Debug ("Acception of partner " & Partner.Addr.Image);
+    -- Insert in Bus a reference to this partner
     Start_Partner_Timer;
     -- Set reception callback
+    New_Dscr.Set_Blocking (False);
     Tcp_Reception_Mng.Set_Callbacks (New_Dscr,
                                      Tcp_Reception_Cb'Access,
                                      Tcp_Disconnection_Cb'Access);
@@ -308,7 +394,7 @@ package body Autobus is
       -- Set partner bus
       Partner.Bus := Bus_Access(Buses.Access_Current);
       -- Discard our own admin message
-      if Partner.Addr = Partner.Bus.Name then
+      if Partner.Addr = Partner.Bus.Addr then
         return;
       end if;
     end;
@@ -319,22 +405,27 @@ package body Autobus is
 
     -- Handle Death
     if Message(1) = 'D' then
-      if not Partner_Found then
-        -- Death of an unknown partner
-        return;
-      else
-        Remove_Current_Partner;
+      if Partner_Found then
+        -- Death of a known partner, remove it and close connection
+        Debug ("Ipm: Death of partner " & Partner.Addr.Image);
+        Remove_Current_Partner (True);
       end if;
+      -- End of processing of a death message
+      return;
     end if;
 
     -- Handle Alive
     if not Partner_Found then
       -- New (unknown yet) partner
-      if Partner.Addr < Partner.Bus.Name then
+      if Partner.Addr < Partner.Bus.Addr then
         -- Addr < own: then the partner will connect to us (and we will accept)
+        --  and it will send its address
+        Debug ("Ipm: Waiting for new partner to identify " & Partner.Addr.Image);
         return;
       end if;
       -- Addr > own: add partner and start connect
+      Debug ("Ipm: Connecting to new partner " & Partner.Addr.Image);
+      Partner.Timer := new Chronos.Passive_Timers.Passive_Timer;
       Partners.Rewind (False, Partner_List_Mng.Next);
       Partners.Insert (Partner);
       -- The callback can be called synchronously
@@ -349,8 +440,34 @@ package body Autobus is
   end Ipm_Reception_Cb;
 
   -- Timer Cb
-  -- Send Alive and check partners keep alive timers
-  -- @@@
+  procedure Ipm_Send is new Socket.Send (Ipm_Message_Str,
+                                         Ipm_Message_Max_Length - 1);
+  function Timer_Cb (Id : in Timers.Timer_Id;
+                     Data : in Timers.Timer_Data) return Boolean is
+    pragma Unreferenced (Data);
+    Bus_Found : Boolean;
+    Bus : Bus_Rec;
+    Bus_Acc : Bus_Access;
+    Message_Len : Natural;
+    Message : Ipm_Message_Str;
+  begin
+    -- Find Bus
+    Bus.Timer := Id;
+    Buses.Search_Match (Bus_Found, Bus_Match_Timer'Access, Bus,
+                          From => Bus_List_Mng.Absolute);
+    if not Bus_Found then
+      Log_Error ("Timer_Cb", "bus not found", "in bus list");
+      return False;
+    end if;
+    Bus_Acc := Bus_Access(Buses.Access_Current);
+    -- Send Alive message
+    Message_Len := Bus_Acc.Addr.Length + 2;
+    Message(1 .. Message_Len) := "A/" & Bus_Acc.Addr.Image;
+    Ipm_Send (Bus_Acc.Admin, Message, Message_Len);
+
+    -- Check partners keep alive timers
+    return False;
+  end Timer_Cb;
 
   ------------
   -- PUBLIC --
@@ -361,6 +478,7 @@ package body Autobus is
                   Address : in String) is
     Rbus : Bus_Rec;
     Port_Num : Socket.Port_Num;
+    Timeout : Timers.Delay_Rec (Timers.Delay_Sec);
   begin
     -- Check that Bus is not already initialised
     if Bus.Acc /= null then
@@ -402,12 +520,15 @@ package body Autobus is
     Rbus.Addr := As.U.Tus (Image (Socket.Local_Host_Id , Port_Num));
 
     -- Arm timer
-    -- @@@
+    Timeout.Delay_Seconds := Heartbeat_Period;
+    Timeout.Period := Heartbeat_Period;
+    Rbus.Timer.Create (Timeout, Timer_Cb'Access);
 
     -- Done: Insert in list, return access
     Buses.Rewind (False, Bus_List_Mng.Next);
     Buses.Insert (Rbus);
     Bus.Acc := Buses.Access_Current;
+    Debug ("Bus " & Rbus.Name.Image & " created at " & Rbus.Addr.Image);
   end Init;
 
   -- Reset a Bus (make it re-usable)
@@ -459,15 +580,14 @@ package body Autobus is
     null;
   end Reset;
 
-  procedure Tcp_Reception_Cb (Dscr    : in Socket.Socket_Dscr;
-                              Message : in Tcp_Message_Str;
-                              Length  : in Natural) is
+  -- Dispatch the message to the subscribers of current bus
+  procedure Dispatch (Message : in String) is
   begin
     -- Find bus
     -- Notify matching Subscribers
     -- @@@
     null;
-  end Tcp_Reception_Cb;
+  end Dispatch;
 
   ---------------
   -- INTERNAL --
@@ -477,8 +597,12 @@ package body Autobus is
   -- Other accesses are done by Access_Current
   procedure Set (To : out Bus_Rec; Val : in Bus_Rec) is
   begin
+    -- Caopy all fields except the lists (of Partners and Subscribers)
+    To.Name := Val.Name;
+    To.Addr := Val.Addr;
     To.Admin := Val.Admin;
     To.Accep := Val.Accep;
+    To.Timer := Val.Timer;
     -- Lists are empty
     if not Val.Partners.Is_Empty or else not Val.Subscribers.Is_Empty then
       raise Internal_Error;
