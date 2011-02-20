@@ -201,52 +201,6 @@ package body Autobus is
     Partner_Acc.Timer.Start (Timeout);
   end Start_Partner_Timer;
 
-  -- Pending connection Cb
-  procedure Tcp_Send is new Socket.Send (Tcp_Message_Str,
-                                         Tcp_Message_Max_Length);
-  procedure Tcp_Connection_Cb (Remote_Host_Id  : in Tcp_Util.Host_Id;
-                               Remote_Port_Num : in Tcp_Util.Port_Num;
-                               Connected       : in Boolean;
-                               Dscr            : in Socket.Socket_Dscr) is
-    Partner : Partner_Rec;
-    Partner_Found : Boolean;
-    Partner_Acc : Partner_Access;
-    Message : Tcp_Message_Str;
-    Message_Length : Natural;
-  begin
-    if not Connected then
-      -- This should not occur because the number of connection retries
-      --  is infinite
-      Log_Error ("Tcp_Connection_Cb", "failure",
-                 "shall not occur");
-      return;
-    end if;
-
-    -- Set non blocking, find partner by Host and Port, update its Sock,
-    Partner.Host := Remote_Host_Id;
-    Partner.Port := Remote_Port_Num;
-    -- Find partner by address
-    Partners.Search_Match (Partner_Found, Partner_Match_Hp'Access, Partner,
-                           From => Partner_List_Mng.Absolute);
-    if not Partner_Found then
-      Log_Error ("Tcp_Connection_Cb", " partner not found",
-                 "in partners list");
-      return;
-    end if;
-    Partner_Acc := Partner_Access(Partners.Access_Current);
-    Partner_Acc.Sock := Dscr;
-    Partner_Acc.Sock.Set_Blocking (False);
-    Debug ("Connection to partner " & Partner_Acc.Addr.Image);
-
-    -- Send identification message
-    Message_Length := Partner_Acc.Bus.Addr.Length + 1;
-    Message(1 .. Message_Length) := 'I' & Partner_Acc.Bus.Addr.Image;
-    Tcp_Send (Partner_Acc.Sock, Message, Message_Length);
-
-    --  Create and start its timer
-    Start_Partner_Timer;
-  end Tcp_Connection_Cb;
-
   -- TCP disconnection Cb
   procedure Tcp_Disconnection_Cb (Dscr : in Socket.Socket_Dscr) is
     Partner : Partner_Rec;
@@ -316,6 +270,55 @@ package body Autobus is
     end if;
 
   end Tcp_Reception_Cb;
+
+  -- Pending connection Cb
+  procedure Tcp_Send is new Socket.Send (Tcp_Message_Str,
+                                         Tcp_Message_Max_Length);
+  procedure Tcp_Connection_Cb (Remote_Host_Id  : in Tcp_Util.Host_Id;
+                               Remote_Port_Num : in Tcp_Util.Port_Num;
+                               Connected       : in Boolean;
+                               Dscr            : in Socket.Socket_Dscr) is
+    Partner : Partner_Rec;
+    Partner_Found : Boolean;
+    Partner_Acc : Partner_Access;
+    Message : Tcp_Message_Str;
+    Message_Length : Natural;
+  begin
+    if not Connected then
+      -- This should not occur because the number of connection retries
+      --  is infinite
+      Log_Error ("Tcp_Connection_Cb", "failure",
+                 "shall not occur");
+      return;
+    end if;
+
+    -- Set non blocking, find partner by Host and Port, update its Sock,
+    Partner.Host := Remote_Host_Id;
+    Partner.Port := Remote_Port_Num;
+    -- Find partner by address
+    Partners.Search_Match (Partner_Found, Partner_Match_Hp'Access, Partner,
+                           From => Partner_List_Mng.Absolute);
+    if not Partner_Found then
+      Log_Error ("Tcp_Connection_Cb", " partner not found",
+                 "in partners list");
+      return;
+    end if;
+    Partner_Acc := Partner_Access(Partners.Access_Current);
+    Partner_Acc.Sock := Dscr;
+    Partner_Acc.Sock.Set_Blocking (False);
+    Tcp_Reception_Mng.Set_Callbacks (Dscr,
+                                     Tcp_Reception_Cb'Access,
+                                     Tcp_Disconnection_Cb'Access);
+    Debug ("Connection to partner " & Partner_Acc.Addr.Image);
+
+    -- Send identification message
+    Message_Length := Partner_Acc.Bus.Addr.Length + 1;
+    Message(1 .. Message_Length) := 'I' & Partner_Acc.Bus.Addr.Image;
+    Tcp_Send (Partner_Acc.Sock, Message, Message_Length);
+
+    --  Create and start its timer
+    Start_Partner_Timer;
+  end Tcp_Connection_Cb;
 
   -- Accept connection Cb
   procedure Tcp_Accept_Cb (Local_Port_Num  : in Tcp_Util.Port_Num;
