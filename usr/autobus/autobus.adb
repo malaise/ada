@@ -10,11 +10,19 @@ package body Autobus is
   Partners : Partner_List_Mng.List_Type;
 
   -- Heartbeat (Todo: getenv for each Bus)
-  Heartbeat_Period : constant Duration := 0.33;
+  Heartbeat_Period : constant Duration := 1.0;
   Heartbeat_Missed_Factor : constant := 3;
 
   -- Connection timeout (Todo: getenv for each Bus)
   Connection_Timeout : constant Duration := 0.5;
+
+  -- Ipm message type
+  -- 'A' or 'D' then '/' then IPM address then ":" then port num
+  --  Ex: "A/123.123.123.123:65535"
+  -- Message received shall not exceed 23 chars
+  -- We read a message of 24 characters to check that it is shorter than 23
+  Ipm_Message_Max_Length : constant := 23 + 1;
+  subtype Ipm_Message_Str is String (1 .. Ipm_Message_Max_Length);
 
   -- Tcp message type
   Tcp_Message_Max_Length : constant := 1024 * 1024 + 1;
@@ -133,7 +141,7 @@ package body Autobus is
            Partner_Found, Partner_Match_Acc'Access, Partner_Acc,
            From => Partner_Access_List_Mng.Absolute);
     if not Partner_Found then
-      Log_Error ("Remove_Current_Partner", "not found", "in bus list");
+      Log_Error ("Remove_Current_Partner", "not found", "in buses list");
       return;
     end if;
 
@@ -312,7 +320,7 @@ package body Autobus is
     Buses.Search_Match (Bus_Found, Bus_Match_Accep'Access, Bus,
                         From => Bus_List_Mng.Absolute);
     if not Bus_Found then
-      Log_Error ("Accept_Cb", "bus not found", "in bus list");
+      Log_Error ("Accept_Cb", "bus not found", "in buses list");
       return;
     end if;
     -- The Addr remains empty until the partner sends it on the connection
@@ -334,12 +342,21 @@ package body Autobus is
 
   end Tcp_Accept_Cb;
 
+  -- Send Alive message of current Bus
+  procedure Ipm_Send is new Socket.Send (Ipm_Message_Str,
+                                         Ipm_Message_Max_Length - 1);
+  procedure Send_Alive is
+    Message_Len : Natural;
+    Message : Ipm_Message_Str;
+    Bus_Acc : Bus_Access;
+  begin
+    Bus_Acc := Bus_Access(Buses.Access_Current);
+    Message_Len := Bus_Acc.Addr.Length + 2;
+    Message(1 .. Message_Len) := "A/" & Bus_Acc.Addr.Image;
+    Ipm_Send (Bus_Acc.Admin, Message, Message_Len);
+  end Send_Alive;
+
   -- IPM Reception Cb
-  -- IPM message is 'A' or 'D' then '/' then IP address then ":" then port num
-  --  Ex: "A/123.123.123.123:65535"
-  -- Message received shall not exceed 23 chars
-  Ipm_Message_Max_Length : constant := 23 + 1;
-  subtype Ipm_Message_Str is String (1 .. Ipm_Message_Max_Length);
   package Ipm_Reception_Mng is new Tcp_Util.Reception (Ipm_Message_Str);
   procedure Ipm_Reception_Cb (Dscr    : in Socket.Socket_Dscr;
                               Message : in Ipm_Message_Str;
@@ -388,7 +405,7 @@ package body Autobus is
       Buses.Search_Match (Bus_Found, Bus_Match_Admin'Access, Crit,
                           From => Bus_List_Mng.Absolute);
       if not Bus_Found then
-        Log_Error ("Ipm_Reception_Cb", "bus not found", "in bus list");
+        Log_Error ("Ipm_Reception_Cb", "bus not found", "in buses list");
         return;
       end if;
       -- Set partner bus
@@ -421,6 +438,7 @@ package body Autobus is
         -- Addr < own: then the partner will connect to us (and we will accept)
         --  and it will send its address
         Debug ("Ipm: Waiting for new partner to identify " & Partner.Addr.Image);
+        Send_Alive;
         return;
       end if;
       -- Addr > own: add partner and start connect
@@ -440,32 +458,46 @@ package body Autobus is
   end Ipm_Reception_Cb;
 
   -- Timer Cb
-  procedure Ipm_Send is new Socket.Send (Ipm_Message_Str,
-                                         Ipm_Message_Max_Length - 1);
   function Timer_Cb (Id : in Timers.Timer_Id;
                      Data : in Timers.Timer_Data) return Boolean is
     pragma Unreferenced (Data);
     Bus_Found : Boolean;
     Bus : Bus_Rec;
     Bus_Acc : Bus_Access;
-    Message_Len : Natural;
-    Message : Ipm_Message_Str;
+    Partner_Acc : Partner_Access;
+    Partner_Found : Boolean;
+    Moved : Boolean;
   begin
     -- Find Bus
     Bus.Timer := Id;
     Buses.Search_Match (Bus_Found, Bus_Match_Timer'Access, Bus,
                           From => Bus_List_Mng.Absolute);
     if not Bus_Found then
-      Log_Error ("Timer_Cb", "bus not found", "in bus list");
+      Log_Error ("Timer_Cb", "bus not found", "in buses list");
       return False;
     end if;
-    Bus_Acc := Bus_Access(Buses.Access_Current);
+
     -- Send Alive message
-    Message_Len := Bus_Acc.Addr.Length + 2;
-    Message(1 .. Message_Len) := "A/" & Bus_Acc.Addr.Image;
-    Ipm_Send (Bus_Acc.Admin, Message, Message_Len);
+    Send_Alive;
 
     -- Check partners keep alive timers
+    Bus_Acc := Bus_Access(Buses.Access_Current);
+    Bus_Acc.Partners.Rewind (False, Partner_Access_List_Mng.Next);
+    loop
+      exit when Bus_Acc.Partners.Is_Empty;
+      Bus_Acc.Partners.Read (Partner_Acc, Moved => Moved);
+      if Partner_Acc.Timer.Has_Expired then
+        -- This partner is not alive (alive timeout has expired)
+        Debug ("Alive timeout of partner " & Partner_Acc.Addr.Image);
+        Partners.Search_Access (Partner_Found, Partner_Acc);
+        if not Partner_Found  then
+          Log_Error ("Timer_Cb", "partner not found", "in partners list");
+        else
+          Remove_Current_Partner (True);
+        end if;
+      end if;
+      exit when not Moved;
+    end loop;
     return False;
   end Timer_Cb;
 
@@ -505,7 +537,7 @@ package body Autobus is
         raise Name_Error;
       when Except:others =>
         Log_Exception ("Bus.Init", Ada.Exceptions.Exception_Name (Except),
-                       "Administration IPM socket creation");
+                       "IPM socket creation");
         raise System_Error;
     end;
 
@@ -520,7 +552,7 @@ package body Autobus is
     Rbus.Addr := As.U.Tus (Image (Socket.Local_Host_Id , Port_Num));
 
     -- Arm timer
-    Timeout.Delay_Seconds := Heartbeat_Period;
+    Timeout.Delay_Seconds := 0.0;
     Timeout.Period := Heartbeat_Period;
     Rbus.Timer.Create (Timeout, Timer_Cb'Access);
 
