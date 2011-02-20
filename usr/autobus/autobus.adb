@@ -178,6 +178,19 @@ package body Autobus is
 
   end Remove_Current_Partner;
 
+  -- Insert Partner in current Bus
+  procedure Insert_Partner (Partner : in Partner_Rec) is
+    Partner_Acc : Partner_Access;
+  begin
+    -- Insert in Partners list
+    Partners.Rewind (False, Partner_List_Mng.Next);
+    Partners.Insert (Partner);
+    Partner_Acc := Partner_Access(Partners.Access_Current);
+    -- Insert a partner access in the list of partners of the bus
+    Partner_Acc.Bus.Partners.Rewind (False, Partner_Access_List_Mng.Next);
+    Partner_Acc.Bus.Partners.Insert (Partner_Acc);
+  end Insert_Partner;
+
   -- Start passive timer on current partner
   procedure Start_Partner_Timer is
     Partner_Acc : Partner_Access;
@@ -329,8 +342,7 @@ package body Autobus is
     Partner.Sock := New_Dscr;
     Partner.Timer := new Chronos.Passive_Timers.Passive_Timer;
     Partner.Bus := Bus_Access(Buses.Access_Current);
-    Partners.Rewind (False, Partner_List_Mng.Next);
-    Partners.Insert (Partner);
+    Insert_Partner (Partner);
     Debug ("Acception of partner " & Partner.Addr.Image);
     -- Insert in Bus a reference to this partner
     Start_Partner_Timer;
@@ -444,8 +456,7 @@ package body Autobus is
       -- Addr > own: add partner and start connect
       Debug ("Ipm: Connecting to new partner " & Partner.Addr.Image);
       Partner.Timer := new Chronos.Passive_Timers.Passive_Timer;
-      Partners.Rewind (False, Partner_List_Mng.Next);
-      Partners.Insert (Partner);
+      Insert_Partner (Partner);
       -- The callback can be called synchronously
       Connected := Tcp_Util.Connect_To (Socket.Tcp_Header,
                                         Rem_Host, Rem_Port,
