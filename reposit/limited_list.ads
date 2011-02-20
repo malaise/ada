@@ -200,7 +200,7 @@ package Limited_List is
   -- Does not raise Empty_List.
   procedure Search_Access (List      : in out List_Type;
                            Found     : out Boolean;
-                           Criteria  : access Element_Type );
+                           Criteria  : access Element_Type);
 
 
   -- Three different strategies to search:
