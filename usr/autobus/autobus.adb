@@ -25,7 +25,7 @@ package body Autobus is
   subtype Ipm_Message_Str is String (1 .. Ipm_Message_Max_Length);
 
   -- Tcp message type
-  Tcp_Message_Max_Length : constant := 1024 * 1024 + 1;
+  Tcp_Message_Max_Length : constant := 1024 * 1024;
   subtype Tcp_Message_Str is String (1 .. Tcp_Message_Max_Length);
 
   -- Internal inconsistency
@@ -228,6 +228,7 @@ package body Autobus is
   procedure Tcp_Reception_Cb (Dscr    : in Socket.Socket_Dscr;
                               Message : in Tcp_Message_Str;
                               Length  : in Natural) is
+    Msg : constant String := Message (1 .. Length);
     Partner : Partner_Rec;
     Partner_Found : Boolean;
     Partner_Acc : Partner_Access;
@@ -244,30 +245,29 @@ package body Autobus is
     end if;
     Partner_Acc := Partner_Access(Partners.Access_Current);
 
-    -- Dispatch Data message
-    if Length = 0 then
-      Log_Error ("Tcp_Reception_Cb", " empty message ",
-                 " from " & Partner_Acc.Addr.Image);
-      return;
-    end if;
-    if Message(1) = 'D' then
+    if not Partner.Addr.Is_Null then
+      -- Not the first message, so this is Data => dispatch
       Debug ("Reception of Data from " & Partner_Acc.Addr.Image
-           & " " & Message (2 .. Length));
-      Dispatch (Message (2 .. Length));
+           & " " & Message (1 .. Length));
+      Dispatch (Message (1 .. Length));
       return;
     end if;
 
-    -- Process Identification service message
-    if Message(1) = 'I' then
-      -- The parner (connecting to us) sends us its accept address
-      Partner_Acc.Addr := As.U.Tus (Message (2 .. Length));
-      Debug ("Reception of Identification from " & Partner_Acc.Addr.Image);
-      return;
-    else
-      Log_Error ("Tcp_Reception_Cb", " unexpected service message ",
-                 Message & " from " & Partner_Acc.Addr.Image);
-      return;
-    end if;
+    -- The parner (just connected to us) sends us its accept address
+    declare
+      Rem_Host : Tcp_Util.Remote_Host;
+      Rem_Port : Tcp_Util.Remote_Port;
+    begin
+      Ip_Addr.Parse (Msg, Rem_Host, Rem_Port);
+    exception
+      when Ip_Addr.Parse_Error =>
+        Log_Error ("Tcp_Reception_Cb", " invalid identification ",
+                 Msg & " from " & Partner_Acc.Addr.Image);
+        Remove_Current_Partner (True);
+        return;
+    end;
+    Partner_Acc.Addr := As.U.Tus (Msg);
+    Debug ("Reception of Identification from " & Partner_Acc.Addr.Image);
 
   end Tcp_Reception_Cb;
 
@@ -312,8 +312,8 @@ package body Autobus is
     Debug ("Connection to partner " & Partner_Acc.Addr.Image);
 
     -- Send identification message
-    Message_Length := Partner_Acc.Bus.Addr.Length + 1;
-    Message(1 .. Message_Length) := 'I' & Partner_Acc.Bus.Addr.Image;
+    Message_Length := Partner_Acc.Bus.Addr.Length;
+    Message(1 .. Message_Length) := Partner_Acc.Bus.Addr.Image;
     Tcp_Send (Partner_Acc.Sock, Message, Message_Length);
 
     --  Create and start its timer
@@ -340,6 +340,7 @@ package body Autobus is
       return;
     end if;
     -- The Addr remains empty until the partner sends it on the connection
+    --  (first message received on the conection)
     Partner.Host := Remote_Host_Id;
     Partner.Port := Remote_Port_Num;
     Partner.Sock := New_Dscr;
@@ -452,7 +453,7 @@ package body Autobus is
       if Partner.Addr < Partner.Bus.Addr then
         -- Addr < own: then the partner will connect to us (and we will accept)
         --  and it will send its address
-        Debug ("Ipm: Waiting for new partner to identify " & Partner.Addr.Image);
+        Debug ("Ipm: Waiting for identification of " & Partner.Addr.Image);
         Send_Alive;
         return;
       end if;
