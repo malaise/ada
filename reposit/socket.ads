@@ -140,7 +140,6 @@ package Socket is
   -- May raise Soc_Would_Block if the full sent message was not
   --  received, in tcp_header and udp
   -- May raise Soc_Len_Err if message size is to short in tcp_header
-  -- May raise Soc_Len_Err if message'size is not multiple of 8
   generic
     -- If Message_Size (in bits) is 0, the length is computed from
     --  Message_Type'Size, which may be wrong with indefinite type.
@@ -264,7 +263,6 @@ package Socket is
   --   had raised Soc_Would_Block (Re_Send should have been used)
   -- May raise Soc_Conn_Lost if destination has closed
   -- May raise Soc_Would_Block if non blocking and overflow (call Re_Send)
-  -- May raise Soc_Len_Err if message'size is not multiple of 8
   generic
     -- If Message_Size (in bits) is 0, the length (if 0) is computed from
     --  Message_Type'Size, which may be wrong with indefinite type.
