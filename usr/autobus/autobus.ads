@@ -23,6 +23,8 @@ package Autobus is
   procedure Reset (Bus : in out Bus_Type);
 
   -- Send a Message on a Bus
+  -- On message longer than 1MB
+  Message_Too_Long : exception;
   procedure Send (Bus : in out Bus_Type; Message : in String);
 
   -------------------
@@ -101,7 +103,6 @@ private
     Client : Subscriber_Access_Type;
   end record;
 
-  overriding procedure Finalize (List : in out Subscriber_Rec);
   package Subscriber_Dyn_List_Mng is new Dynamic_List (Subscriber_Rec);
   package Subscriber_List_Mng renames Subscriber_Dyn_List_Mng.Dyn_List;
 
@@ -122,7 +123,6 @@ private
     -- Timer
     Timer : Timers.Timer_Id;
   end record;
-  overriding procedure Finalize (List : in out Bus_Rec);
   procedure Set (To : out Bus_Rec; Val : in Bus_Rec);
   package Bus_List_Mng is new Limited_List (Bus_Rec, Set);
 
@@ -130,11 +130,11 @@ private
   type Subscriber_Type is new Ada.Finalization.Limited_Controlled with record
     Acc : access Subscriber_Rec;
   end record;
-  overriding procedure Finalize (List : in out Subscriber_Type);
+  overriding procedure Finalize (Subscriber : in out Subscriber_Type);
   type Bus_Type is new Ada.Finalization.Limited_Controlled with record
     Acc : access Bus_Rec;
   end record;
-  overriding procedure Finalize (List : in out Bus_Type);
+  overriding procedure Finalize (Bus : in out Bus_Type);
 
 end Autobus;
 

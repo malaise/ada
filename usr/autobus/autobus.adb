@@ -23,10 +23,12 @@ package body Autobus is
   -- We read a message of 24 characters to check that it is shorter than 23
   Ipm_Message_Max_Length : constant := 23 + 1;
   subtype Ipm_Message_Str is String (1 .. Ipm_Message_Max_Length);
+  package Ipm_Reception_Mng is new Tcp_Util.Reception (Ipm_Message_Str);
 
   -- Tcp message type
   Tcp_Message_Max_Length : constant := 1024 * 1024;
   subtype Tcp_Message_Str is String (1 .. Tcp_Message_Max_Length);
+  package Tcp_Reception_Mng is new Tcp_Util.Reception (Tcp_Message_Str);
 
   -- Internal inconsistency
   Internal_Error : exception;
@@ -127,6 +129,7 @@ package body Autobus is
 
   -- Remove current (in Partners list) Partner
   -- Remove its ref in its Bus list and remove it from Partners list
+  -- Move to next in both lists
   procedure Deallocate is new Ada.Unchecked_Deallocation (
            Chronos.Passive_Timers.Passive_Timer, Timer_Access);
   procedure Remove_Current_Partner (Close : in Boolean) is
@@ -154,6 +157,7 @@ package body Autobus is
       -- This partner is connected
       if Close then
         Debug ("Removing partner -> Closing socket");
+        Tcp_Reception_Mng.Remove_Callbacks (Partner_Acc.Sock);
         Partner_Acc.Sock.Close;
       end if;
     else
@@ -220,11 +224,46 @@ package body Autobus is
     Remove_Current_Partner (False);
   end Tcp_Disconnection_Cb;
 
+  -- Remove partners that are not alive (alive timeout expired)
+  --  or remove ALL partners. Of current Bus.
+  procedure Remove_Partners (Remove_All : in Boolean) is
+    Bus_Acc : Bus_Access;
+    Partner_Acc : Partner_Access;
+    Remove : Boolean;
+    Partner_Found : Boolean;
+    Moved : Boolean;
+  begin
+    Bus_Acc := Bus_Access(Buses.Access_Current);
+    Bus_Acc.Partners.Rewind (False, Partner_Access_List_Mng.Next);
+    loop
+      exit when Bus_Acc.Partners.Is_Empty;
+      Bus_Acc.Partners.Read (Partner_Acc, Moved => Moved);
+      Remove := False;
+      if Remove_All then
+        Remove := True;
+      else
+        if Partner_Acc.Timer.Has_Expired then
+          -- This partner is not alive (alive timeout has expired)
+          Debug ("Alive timeout of partner " & Partner_Acc.Addr.Image);
+          Remove := True;
+        end if;
+      end if;
+      if Remove then
+        Partners.Search_Access (Partner_Found, Partner_Acc);
+        if not Partner_Found  then
+          Log_Error ("Timer_Cb", "partner not found", "in partners list");
+        else
+          Remove_Current_Partner (True);
+        end if;
+      end if;
+      exit when not Moved;
+    end loop;
+  end Remove_Partners;
+
   -- Dispatch a message to the Subscribers of current bus
   procedure Dispatch (Message : in String);
 
   -- TCP Reception Cb
-  package Tcp_Reception_Mng is new Tcp_Util.Reception (Tcp_Message_Str);
   procedure Tcp_Reception_Cb (Dscr    : in Socket.Socket_Dscr;
                               Message : in Tcp_Message_Str;
                               Length  : in Natural) is
@@ -361,19 +400,22 @@ package body Autobus is
   -- Send Alive message of current Bus
   procedure Ipm_Send is new Socket.Send (Ipm_Message_Str,
                                          Ipm_Message_Max_Length - 1);
-  procedure Send_Alive is
+  procedure Send_Ipm (Alive : in Boolean) is
     Message_Len : Natural;
     Message : Ipm_Message_Str;
     Bus_Acc : Bus_Access;
   begin
     Bus_Acc := Bus_Access(Buses.Access_Current);
     Message_Len := Bus_Acc.Addr.Length + 2;
-    Message(1 .. Message_Len) := "A/" & Bus_Acc.Addr.Image;
+    if Alive then
+      Message(1 .. Message_Len) := "A/" & Bus_Acc.Addr.Image;
+    else
+      Message(1 .. Message_Len) := "D/" & Bus_Acc.Addr.Image;
+    end if;
     Ipm_Send (Bus_Acc.Admin, Message, Message_Len);
-  end Send_Alive;
+  end Send_Ipm;
 
   -- IPM Reception Cb
-  package Ipm_Reception_Mng is new Tcp_Util.Reception (Ipm_Message_Str);
   procedure Ipm_Reception_Cb (Dscr    : in Socket.Socket_Dscr;
                               Message : in Ipm_Message_Str;
                               Length  : in Natural) is
@@ -451,10 +493,10 @@ package body Autobus is
     if not Partner_Found then
       -- New (unknown yet) partner
       if Partner.Addr < Partner.Bus.Addr then
-        -- Addr < own: then the partner will connect to us (and we will accept)
-        --  and it will send its address
+        -- Addr < own: we send an live, then the partner will connect to us
+        --  (and we will accept) then it will send its address
         Debug ("Ipm: Waiting for identification of " & Partner.Addr.Image);
-        Send_Alive;
+        Send_Ipm (True);
         return;
       end if;
       -- Addr > own: add partner and start connect
@@ -478,10 +520,6 @@ package body Autobus is
     pragma Unreferenced (Data);
     Bus_Found : Boolean;
     Bus : Bus_Rec;
-    Bus_Acc : Bus_Access;
-    Partner_Acc : Partner_Access;
-    Partner_Found : Boolean;
-    Moved : Boolean;
   begin
     -- Find Bus
     Bus.Timer := Id;
@@ -493,26 +531,10 @@ package body Autobus is
     end if;
 
     -- Send Alive message
-    Send_Alive;
+    Send_Ipm (True);
 
-    -- Check partners keep alive timers
-    Bus_Acc := Bus_Access(Buses.Access_Current);
-    Bus_Acc.Partners.Rewind (False, Partner_Access_List_Mng.Next);
-    loop
-      exit when Bus_Acc.Partners.Is_Empty;
-      Bus_Acc.Partners.Read (Partner_Acc, Moved => Moved);
-      if Partner_Acc.Timer.Has_Expired then
-        -- This partner is not alive (alive timeout has expired)
-        Debug ("Alive timeout of partner " & Partner_Acc.Addr.Image);
-        Partners.Search_Access (Partner_Found, Partner_Acc);
-        if not Partner_Found  then
-          Log_Error ("Timer_Cb", "partner not found", "in partners list");
-        else
-          Remove_Current_Partner (True);
-        end if;
-      end if;
-      exit when not Moved;
-    end loop;
+    -- Check partners keep alive timers and remove dead ones
+    Remove_Partners (False);
     return False;
   end Timer_Cb;
 
@@ -580,19 +602,82 @@ package body Autobus is
 
   -- Reset a Bus (make it re-usable)
   procedure Reset (Bus : in out Bus_Type) is
+    Bus_Found : Boolean;
+    Moved : Boolean;
     use type Socket.Socket_Dscr;
   begin
     -- Check that Bus is initialised
     if Bus.Acc = null then
       raise Status_Error;
     end if;
-    -- Abort connect on pending connections
+    Buses.Search_Access (Bus_Found, Bus.Acc);
+
+    -- Send Death info
+    Send_Ipm (False);
+
+    -- Close resources
+    Ipm_Reception_Mng.Remove_Callbacks (Bus.Acc.Admin);
+    Tcp_Util.Abort_Accept (Socket.Tcp_Header, Bus.Acc.Accep.Get_Linked_To);
+
+    -- Remove all partners
+    Remove_Partners (True);
+
+    -- Remove all subscribers
+    -- @@@
+
+    -- Delete current Bus from list
+    Buses.Delete (Moved => Moved);
+    Bus.Acc := null;
   end Reset;
 
   -- Send a Message on a Bus
   procedure Send (Bus : in out Bus_Type; Message : in String) is
+    Msg : Tcp_Message_Str;
+    Partner_Acc : Partner_Access;
+    Moved : Boolean;
+    Partner_Found : Boolean;
+    Success : Boolean;
   begin
-    null;
+    -- Check that Bus is initialised
+    if Bus.Acc = null then
+      raise Status_Error;
+    end if;
+
+    if Bus.Acc.Partners.Is_Empty then
+      -- No partner
+      return;
+    end if;
+
+    -- Prepare message and list of parners
+    if Message'Length > Msg'Length then
+      raise Message_Too_Long;
+    end if;
+    Msg(1 .. Message'Length) := Message;
+    Bus.Acc.Partners.Rewind (False, Partner_Access_List_Mng.Next);
+
+    -- Send message on each partner,
+    loop
+      exit when Bus.Acc.Partners.Is_Empty;
+      Bus.Acc.Partners.Read (Partner_Acc, Moved => Moved);
+      begin
+        Tcp_Send (Partner_Acc.Sock, Msg, Message'Length);
+        Success := True;
+      exception
+        when Socket.Soc_Conn_Lost =>
+          Debug ("Lost connection to " & Partner_Acc.Addr.Image);
+          Success := False;
+        when Except:others =>
+          Log_Exception ("Tcp_Send", Ada.Exceptions.Exception_Name (Except),
+                         "sending to " & Partner_Acc.Addr.Image);
+          Success := False;
+      end;
+      if not Success then
+        -- Remove partner where error occurs
+        Partners.Search_Access (Partner_Found, Partner_Acc);
+        Remove_Current_Partner (True);
+      end if;
+      exit when not Moved;
+    end loop;
   end Send;
 
   -------------------
@@ -657,23 +742,14 @@ package body Autobus is
   end Set;
 
   -- Internal: Finalizations
-  procedure Deallocate is new Ada.Unchecked_Deallocation (Bus_Rec, Bus_Access);
-  overriding procedure Finalize (List : in out Bus_Rec) is
+  overriding procedure Finalize (Bus : in out Bus_Type) is
   begin
-    null;
+    if Bus.Acc /= null then
+      Reset (Bus);
+    end if;
   end Finalize;
 
-  overriding procedure Finalize (List : in out Subscriber_Rec) is
-  begin
-    null;
-  end Finalize;
-
-  overriding procedure Finalize (List : in out Bus_Type) is
-  begin
-    null;
-  end Finalize;
-
-  overriding procedure Finalize (List : in out Subscriber_Type) is
+  overriding procedure Finalize (Subscriber : in out Subscriber_Type) is
   begin
     null;
   end Finalize;
