@@ -1,5 +1,5 @@
 with Ada.Unchecked_Deallocation, Ada.Exceptions;
-with Basic_Proc, Environ, Int_Image, Ip_Addr, Socket_Util, Tcp_Util;
+with Basic_Proc, Environ, Int_Image, Ip_Addr, Socket_Util, Tcp_Util, Event_Mng;
 package body Autobus is
 
   --------------
@@ -15,6 +15,9 @@ package body Autobus is
 
   -- Connection timeout (Todo: getenv for each Bus)
   Connection_Timeout : constant Duration := 0.5;
+
+  -- Access to Subscriber_Rec
+  type Subscriber_Access is access all Subscriber_Rec;
 
   -- Ipm message type
   -- 'A' or 'D' then '/' then IPM address then ":" then port num
@@ -74,7 +77,7 @@ package body Autobus is
   procedure Log_Error (Operation, Error, Message : in String) is
   begin
     Basic_Proc.Put_Error ("Autobus: Error " & Error
-                        & " raised in " & Operation);
+                        & " detected in " & Operation);
     if Message = "" then
       Basic_Proc.Put_Line_Error (".");
     else
@@ -205,7 +208,34 @@ package body Autobus is
     Partner_Acc.Timer.Start (Timeout);
   end Start_Partner_Timer;
 
-  -- TCP disconnection Cb
+  -- Remove current (in current Bus list) subscriber
+  --  and move to next
+  procedure Deallocate is new Ada.Unchecked_Deallocation (
+            Regular_Expressions.Compiled_Pattern, Filter_Access);
+  procedure Remove_Current_Subscriber is
+    Subscriber_Acc : Subscriber_Access;
+    Subscriber_Found : Boolean;
+    Moved : Boolean;
+  begin
+    -- Get access and move to current
+    Subscriber_Acc := Subscriber_Access(
+                  Buses.Access_Current.Subscribers.Access_Current);
+    Buses.Access_Current.Subscribers.Search_Access (Subscriber_Found,
+                                                    Subscriber_Acc);
+    if not Subscriber_Found then
+      Log_Error ("Remove_Current_Subscriber", " subscriber not found",
+                 "in bus list");
+      return;
+    end if;
+
+    -- Clear client reference
+    Subscriber_Acc.Client.Acc := null;
+    -- Free Filter and delete
+    Regular_Expressions.Free (Subscriber_Acc.Filter.all);
+    Deallocate (Subscriber_Acc.Filter);
+    Buses.Access_Current.Subscribers.Delete (Moved => Moved);
+  end Remove_Current_Subscriber;
+
   procedure Tcp_Disconnection_Cb (Dscr : in Socket.Socket_Dscr) is
     Partner : Partner_Rec;
     Partner_Found : Boolean;
@@ -284,7 +314,7 @@ package body Autobus is
     end if;
     Partner_Acc := Partner_Access(Partners.Access_Current);
 
-    if not Partner.Addr.Is_Null then
+    if not Partner_Acc.Addr.Is_Null then
       -- Not the first message, so this is Data => dispatch
       Debug ("Reception of Data from " & Partner_Acc.Addr.Image
            & " " & Message (1 .. Length));
@@ -292,7 +322,7 @@ package body Autobus is
       return;
     end if;
 
-    -- The parner (just connected to us) sends us its accept address
+    -- The partner (just connected to us) sends us its accept address
     declare
       Rem_Host : Tcp_Util.Remote_Host;
       Rem_Port : Tcp_Util.Remote_Port;
@@ -300,7 +330,7 @@ package body Autobus is
       Ip_Addr.Parse (Msg, Rem_Host, Rem_Port);
     exception
       when Ip_Addr.Parse_Error =>
-        Log_Error ("Tcp_Reception_Cb", " invalid identification ",
+        Log_Error ("Tcp_Reception_Cb", "invalid identification",
                  Msg & " from " & Partner_Acc.Addr.Image);
         Remove_Current_Partner (True);
         return;
@@ -588,7 +618,7 @@ package body Autobus is
                           Rbus.Accep, Port_Num);
     Rbus.Addr := As.U.Tus (Image (Socket.Local_Host_Id , Port_Num));
 
-    -- Arm timer
+    -- Arm Bus active timer
     Timeout.Delay_Seconds := 0.0;
     Timeout.Period := Heartbeat_Period;
     Rbus.Timer.Create (Timeout, Timer_Cb'Access);
@@ -598,6 +628,10 @@ package body Autobus is
     Buses.Insert (Rbus);
     Bus.Acc := Buses.Access_Current;
     Debug ("Bus " & Rbus.Name.Image & " created at " & Rbus.Addr.Image);
+
+    -- Wait a little bit (100ms) for "immediate" connections to establish
+    Event_Mng.Pause (100);
+
   end Init;
 
   -- Reset a Bus (make it re-usable)
@@ -611,6 +645,7 @@ package body Autobus is
       raise Status_Error;
     end if;
     Buses.Search_Access (Bus_Found, Bus.Acc);
+    Debug ("Bus.Reset " & Bus.Acc.Name.Image);
 
     -- Send Death info
     Send_Ipm (False);
@@ -623,7 +658,11 @@ package body Autobus is
     Remove_Partners (True);
 
     -- Remove all subscribers
-    -- @@@
+    Bus.Acc.Subscribers.Rewind (False, Subscriber_List_Mng.Next);
+    loop
+      exit when Bus.Acc.Subscribers.Is_Empty;
+      Remove_Current_Subscriber;
+    end loop;
 
     -- Delete current Bus from list
     Buses.Delete (Moved => Moved);
@@ -717,8 +756,9 @@ package body Autobus is
   begin
     -- Find bus
     -- Notify matching Subscribers
-    -- @@@
-    null;
+
+    -- This debug to be removed
+    Debug ("Dispatching message " & Message);
   end Dispatch;
 
   ---------------
@@ -729,13 +769,13 @@ package body Autobus is
   -- Other accesses are done by Access_Current
   procedure Set (To : out Bus_Rec; Val : in Bus_Rec) is
   begin
-    -- Caopy all fields except the lists (of Partners and Subscribers)
+    -- Copy all fields except the lists (of Partners and Subscribers)
     To.Name := Val.Name;
     To.Addr := Val.Addr;
     To.Admin := Val.Admin;
     To.Accep := Val.Accep;
     To.Timer := Val.Timer;
-    -- Lists are empty
+    -- Lists must be empty because this is Bus creation
     if not Val.Partners.Is_Empty or else not Val.Subscribers.Is_Empty then
       raise Internal_Error;
     end if;
