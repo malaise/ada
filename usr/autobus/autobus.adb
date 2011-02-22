@@ -316,8 +316,6 @@ package body Autobus is
 
     if not Partner_Acc.Addr.Is_Null then
       -- Not the first message, so this is Data => dispatch
-      Debug ("Reception of Data from " & Partner_Acc.Addr.Image
-           & " " & Message (1 .. Length));
       Dispatch (Message (1 .. Length));
       return;
     end if;
@@ -738,27 +736,106 @@ package body Autobus is
   -- Invalid_Filter : exception;
 
   procedure Init (Subscriber : in out Subscriber_Type;
-                  Bus : Bus_Access_Type;
+                  Bus : in Bus_Access_Type;
                   Filter : in String;
                   Observer : access Observer_Type'Class) is
+    Bus_Found : Boolean;
+    Subs : Subscriber_Rec;
+    Ok : Boolean;
   begin
-    null;
+    -- Check that this Bus is initialised
+    if Bus = null then
+      raise Status_Error;
+    end if;
+    Buses.Search_Access (Bus_Found, Bus.Acc);
+    if not Bus_Found then
+      raise Status_Error;
+    end if;
+    if Observer = null then
+       raise Status_Error;
+    end if;
+    Subs.Bus := Bus_Access(Bus.Acc);
+    Subs.Observer := Observer_Access(Observer);
+    Subs.Client := Subscriber'Unrestricted_Access;
+
+    -- Compile Filter
+    Subs.Filter := new Regular_Expressions.Compiled_Pattern;
+    if Filter = "" then
+      Regular_Expressions.Compile (Subs.Filter.all, Ok, ".*");
+    else
+      Regular_Expressions.Compile (Subs.Filter.all, Ok, Filter);
+    end if;
+    if not Ok then
+      Debug ("Subscriber.Init regexp error "
+           & Regular_Expressions.Error (Subs.Filter.all));
+      Regular_Expressions.Free (Subs.Filter.all);
+      Deallocate (Subs.Filter);
+      raise Invalid_Filter;
+    end if;
+
+    -- Store in Bus
+    Bus.Acc.Subscribers.Rewind (False, Subscriber_List_Mng.Next);
+    Bus.Acc.Subscribers.Insert (Subs);
+
+    Debug ("Subscriber " & Filter & " init ok");
   end Init;
 
   -- Reset a Subscriber (make it re-usable)
-  procedure Reset (Subscriber : in out Subscriber_Type) is
+  procedure Reset (Subscriber : in out Subscriber_Type;
+                   Bus : in Bus_Access_Type) is
+    Bus_Found : Boolean;
+    Subscriber_Found : Boolean;
   begin
-    null;
+    -- Check that this Bus is initialised and knows this subscriber
+    if Bus = null then
+      raise Status_Error;
+    end if;
+    Buses.Search_Access (Bus_Found, Bus.Acc);
+    if not Bus_Found then
+      raise Status_Error;
+    end if;
+    Bus.Acc.Subscribers.Search_Access (Subscriber_Found, Subscriber.Acc);
+    if not Subscriber_Found then
+      Debug ("Subscriber.Reset unknown subscriber");
+      raise Status_Error;
+    end if;
+
+    Remove_Current_Subscriber;
   end Reset;
 
   -- Dispatch the message to the subscribers of current bus
   procedure Dispatch (Message : in String) is
+    Bus : Bus_Access;
+    Subs : Subscriber_Access;
+    Match_Info : Regular_Expressions.Match_Array (1 .. 1);
+    N_Match : Natural;
   begin
-    -- Find bus
-    -- Notify matching Subscribers
+    Bus := Bus_Access(Buses.Access_Current);
 
-    -- This debug to be removed
-    Debug ("Dispatching message " & Message);
+    -- Notify matching Subscribers
+    if Bus.Subscribers.Is_Empty then
+      return;
+    end if;
+    Bus.Subscribers.Rewind;
+    loop
+      Subs := Subscriber_Access(Bus.Subscribers.Access_Current);
+      -- See if message matches this Filter
+      Regular_Expressions.Exec (Subs.Filter.all, Message, N_Match, Match_Info);
+      if N_Match = 1
+      and then Regular_Expressions.Valid_Match (Match_Info(1))
+      and then Match_Info(1).First_Offset = Message'First
+      and then  Match_Info(1).Last_Offset_Stop = Message'Last then
+        begin
+          Subs.Observer.Receive (Subs.Client, Message);
+        exception
+          when others =>
+            null;
+        end;
+      end if;
+      exit when not Bus.Subscribers.Check_Move;
+      Bus.Subscribers.Move_To;
+    end loop;
+
   end Dispatch;
 
   ---------------

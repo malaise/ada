@@ -31,25 +31,28 @@ package Autobus is
   -- The Subsciber --
   -------------------
   type Subscriber_Type is tagged limited private;
+  type Subscriber_Access_Type is access all Subscriber_Type;
 
   -- The Observer is notified with the Messages (sent on the Bus)
   --  that pass the Filter
   -- Filter is a PCRE regular expression
   -- Empty filter lets all messages pass through
   type Observer_Type is limited interface;
-  procedure Bus_Receive (Observer : in out Observer_Type;
-                         Message : in String) is abstract;
+  procedure Receive (Observer : in out Observer_Type;
+                     Subscriber : in Subscriber_Access_Type;
+                     Message : in String) is abstract;
 
   -- Initialise a Subscriber on a Bus, may raise
   -- On incorrect filter expression
   Invalid_Filter : exception;
   procedure Init (Subscriber : in out Subscriber_Type;
-                  Bus : Bus_Access_Type;
+                  Bus : in Bus_Access_Type;
                   Filter : in String;
                   Observer : access Observer_Type'Class);
 
   -- Reset a Subscriber (make it re-usable)
-  procedure Reset (Subscriber : in out Subscriber_Type);
+  procedure Reset (Subscriber : in out Subscriber_Type;
+                   Bus : Bus_Access_Type);
 
   ------------------------
   -- General Exceptions --
@@ -91,7 +94,6 @@ private
   -- List of Subscribers
   type Filter_Access is access Regular_Expressions.Compiled_Pattern;
   type Observer_Access is access all Observer_Type'Class;
-  type Subscriber_Access_Type is access all Subscriber_Type;
   type Subscriber_Rec is new Ada.Finalization.Controlled with record
     -- Bus
     Bus : Bus_Access;
