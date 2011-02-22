@@ -5,6 +5,12 @@ with Socket, Regular_Expressions, As.U,
      Timers, Chronos.Passive_Timers;
 package Autobus is
 
+  -- For each bus the following environment variables allow some tuning
+  --  "AUTOBUS_"<ip_address>'_'<port_num>'_'<suffix>
+  --  (where the '.' of the address are replaced by '_') andsuffix can be
+  --  "HEARTBEAT_PERIOD"             (positive duration)
+  --  "HEARTBEAT_MISSED_FACTOR"      (positive integer)
+  --  "HEARTBEAT_CONNECTION_TIMEOUT" (positive duration)
   -------------
   -- The Bus --
   -------------
@@ -118,6 +124,10 @@ private
     Admin : Socket.Socket_Dscr := Socket.No_Socket;
     -- TCP accept socket
     Accep : Socket.Socket_Dscr := Socket.No_Socket;
+    -- Heartbeat and connection timeout
+    Heartbeat_Period : Duration := 1.0;
+    Heartbeat_Missed_Factor : Positive := 3;
+    Connection_Timeout : Duration := 0.5;
     -- List of access to partners (TCP connections)
     Partners : Partner_Access_List_Mng.List_Type;
     -- List of subscribers

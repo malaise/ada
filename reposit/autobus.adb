@@ -1,5 +1,6 @@
 with Ada.Unchecked_Deallocation, Ada.Exceptions;
-with Basic_Proc, Environ, Int_Image, Ip_Addr, Socket_Util, Tcp_Util, Event_Mng;
+with Basic_Proc, Environ, Int_Image, Ip_Addr, Socket_Util, Tcp_Util, Event_Mng,
+     Integer_Image, Dur_Image, String_Mng;
 package body Autobus is
 
   --------------
@@ -9,12 +10,16 @@ package body Autobus is
   Buses : Bus_List_Mng.List_Type;
   Partners : Partner_List_Mng.List_Type;
 
-  -- Heartbeat (Todo: getenv for each Bus)
-  Heartbeat_Period : constant Duration := 1.0;
-  Heartbeat_Missed_Factor : constant := 3;
+  -- Default heartbeat
+  Env_Prefix : constant String := "AUTOBUS";
+  Env_Heartbeat_Period : constant String := "HEARTBEAT_PERIOD";
+  Env_Heartbeat_Missed_Factor : constant String := "HEARTBEAT_MISSED_FACTOR";
+  Default_Heartbeat_Period : constant Duration := 1.0;
+  Default_Heartbeat_Missed_Factor : constant := 3;
 
-  -- Connection timeout (Todo: getenv for each Bus)
-  Connection_Timeout : constant Duration := 0.5;
+  -- Default connection timeout
+  Env_Connection_Timeout : constant String := "CONNECTION_TIMEOUT";
+  Default_Connection_Timeout : constant Duration := 0.5;
 
   -- Access to Subscriber_Rec
   type Subscriber_Access is access all Subscriber_Rec;
@@ -199,12 +204,12 @@ package body Autobus is
   end Insert_Partner;
 
   -- Start passive timer on current partner
-  procedure Start_Partner_Timer is
+  procedure Start_Partner_Timer (Bus : Bus_Access) is
     Partner_Acc : Partner_Access;
     Timeout : Timers.Delay_Rec (Timers.Delay_Sec);
   begin
     Partner_Acc := Partner_Access(Partners.Access_Current);
-    Timeout.Delay_Seconds := Heartbeat_Missed_Factor * Heartbeat_Period;
+    Timeout.Delay_Seconds := Bus.Heartbeat_Missed_Factor * Bus.Heartbeat_Period;
     Partner_Acc.Timer.Start (Timeout);
   end Start_Partner_Timer;
 
@@ -384,7 +389,7 @@ package body Autobus is
     Tcp_Send (Partner_Acc.Sock, Message, Message_Length);
 
     --  Create and start its timer
-    Start_Partner_Timer;
+    Start_Partner_Timer (Partner_Acc.Bus);
   end Tcp_Connection_Cb;
 
   -- Accept connection Cb
@@ -416,7 +421,7 @@ package body Autobus is
     Insert_Partner (Partner);
     Debug ("Acception of partner " & Partner.Addr.Image);
     -- Insert in Bus a reference to this partner
-    Start_Partner_Timer;
+    Start_Partner_Timer (Partner.Bus);
     -- Set reception callback
     New_Dscr.Set_Blocking (False);
     Tcp_Reception_Mng.Set_Callbacks (New_Dscr,
@@ -534,11 +539,11 @@ package body Autobus is
       -- The callback can be called synchronously
       Connected := Tcp_Util.Connect_To (Socket.Tcp_Header,
                                         Rem_Host, Rem_Port,
-                                        Connection_Timeout, 0,
+                                        Partner.Bus.Connection_Timeout, 0,
                                         Tcp_Connection_Cb'Access);
     else
       -- This partner is known, restart its keep alive timer
-      Start_Partner_Timer;
+      Start_Partner_Timer (Partner.Bus);
     end if;
   end Ipm_Reception_Cb;
 
@@ -574,6 +579,7 @@ package body Autobus is
   procedure Init (Bus : in out Bus_Type;
                   Address : in String) is
     Rbus : Bus_Rec;
+    Env_Name : As.U.Asu_Us;
     Port_Num : Socket.Port_Num;
     Timeout : Timers.Delay_Rec (Timers.Delay_Sec);
   begin
@@ -606,6 +612,30 @@ package body Autobus is
         raise System_Error;
     end;
 
+    -- Get env settings
+    declare
+      use type As.U.Asu_Us;
+    begin
+      Env_Name := As.U.Tus (Env_Prefix & "_"
+                & String_Mng.Replace (Rbus.Name.Image, ".", "_") & "_");
+      Env_Name := As.U.Tus (String_Mng.Replace (Env_Name.Image, ":", "_"));
+      Rbus.Heartbeat_Period := Environ.Get_Dur (
+              Env_Name.Image & Env_Heartbeat_Period,
+              Default_Heartbeat_Period);
+      if Rbus.Heartbeat_Period <= 0.0 then
+        Rbus.Heartbeat_Period := Default_Heartbeat_Period;
+      end if;
+      Rbus.Heartbeat_Missed_Factor := Environ.Get_Pos (
+              Env_Name.Image & Env_Heartbeat_Missed_Factor,
+              Default_Heartbeat_Missed_Factor);
+      Rbus.Connection_Timeout := Environ.Get_Dur (
+              Env_Name.Image & Env_Connection_Timeout,
+              Default_Connection_Timeout);
+      if Rbus.Connection_Timeout <= 0.0 then
+        Rbus.Connection_Timeout := Default_Connection_Timeout;
+      end if;
+    end;
+
     -- Set admin callback
     Ipm_Reception_Mng.Set_Callbacks (Rbus.Admin, Ipm_Reception_Cb'Access, null);
 
@@ -618,7 +648,7 @@ package body Autobus is
 
     -- Arm Bus active timer
     Timeout.Delay_Seconds := 0.0;
-    Timeout.Period := Heartbeat_Period;
+    Timeout.Period := Rbus.Heartbeat_Period;
     Rbus.Timer.Create (Timeout, Timer_Cb'Access);
 
     -- Done: Insert in list, return access
@@ -626,6 +656,9 @@ package body Autobus is
     Buses.Insert (Rbus);
     Bus.Acc := Buses.Access_Current;
     Debug ("Bus " & Rbus.Name.Image & " created at " & Rbus.Addr.Image);
+    Debug (" with Period: " & Dur_Image (Rbus.Heartbeat_Period, 1, False)
+       & " MaxMissing: " & Integer_Image(Rbus.Heartbeat_Missed_Factor)
+       & " ConnectTimeout: " & Dur_Image (Rbus.Connection_Timeout, 1, False));
 
     -- Wait a little bit (100ms) for "immediate" connections to establish
     Event_Mng.Pause (100);
