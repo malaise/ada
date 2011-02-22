@@ -18,6 +18,8 @@ arbitrary arbitrary-factors arbitrary-fractions (2)
   Arbitrary precision operations, prime factor decomposition, fractions.
 as as-b as-u as-u-utils (2)
   Bounded and unbounded strings and associated packaging utilities
+autobus (3)
+  Simple bus to excahnge strings between processes
 loc_arg (1)
   Program name and arguments extraction (based on keys).
 argument_parser (2)
@@ -202,6 +204,8 @@ temp_file (2)
   Create a temporary file.
 text_char (2)
   Get/unget chars from an input flow.
+text_handler (1)
+  Storage of variable length strings.
 text_line (2)
   Get/put lines of text from/to a flow.
 timeval (1)

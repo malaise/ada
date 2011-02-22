@@ -26,19 +26,20 @@ procedure T_Autobus is
     Str : As.U.Asu_Us;
     use type Autobus.Subscriber_Access_Type;
   begin
-    Basic_Proc.Put_Line_Output ("Received " & Message);
+    Basic_Proc.Put_Output ("Received " & Message);
+    Basic_Proc.Flush_Output;
     if Subscriber = Subs_Drop'Unrestricted_Access then
-      Basic_Proc.Put_Line_Output ("Dropping");
+      Basic_Proc.Put_Line_Output (" -> Dropping");
       -- No reply
       return;
     end if;
     Index := String_Mng.Locate (Message, " ", Occurence => 2);
     if Index = 0  or else Index = Message'Last then
-      Basic_Proc.Put_Line_Output ("Rejecting");
+      Basic_Proc.Put_Line_Output (" -> Rejecting");
       return;
     end if;
     Str := As.U.Tus (Mixed_Str (Message(Index + 1 .. Message'Last) & '!'));
-    Basic_Proc.Put_Line_Output ("Replying " & Str.Image);
+    Basic_Proc.Put_Line_Output (" -> Replying " & Str.Image);
     Bus.Send (Str.Image);
   end Receive;
 
@@ -58,6 +59,7 @@ begin
   loop
     Sig := False;
     if not Stimulus.Is_Null then
+      Basic_Proc.Put_Line_Output ("Sending " & Stimulus.Image);
       Bus.Send (Stimulus.Image);
     end if;
     Event_Mng.Pause (10_000);
