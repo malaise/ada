@@ -4,6 +4,24 @@ package body Chronos.Passive_Timers is
 
   procedure Free is new Ada.Unchecked_Deallocation (Timer_Rec, Timer_Access);
 
+  -- Timer status, independant from the associated clock status
+  function Status (Timer : Passive_Timer) return Timer_Status is
+  begin
+    if Timer.Acc = null then
+      return Timers.Deleted;
+    elsif Timer.Acc.Chrono.Get_Status = Stopped then
+      return Timers.Suspended;
+    else
+      return Timers.Running;
+    end if;
+  end Status;
+
+  -- True if timer is not Deleted
+  function Exists (Timer : Passive_Timer) return Boolean is
+  begin
+    return Timer.Acc /= null;
+  end Exists;
+
   -- Arm a passive timer with a given period
   -- Overwrites any previous setting on this timer
   -- Raises Invalid_Period if Period is <= 0.0
@@ -75,12 +93,12 @@ package body Chronos.Passive_Timers is
     if Timer.Acc.Expired then
       raise Timer_Expired;
     end if;
-    Timer.Acc.Chrono.Stop;
+    Timer.Acc.Chrono.Start;
   end Resume;
 
   -- Checks if timer expiration time (Prev_Exp + Period) is reached
   -- If yes, add Period to expiration time
-  function Has_Expired (Timer : in Passive_Timer) return Boolean is
+  function Has_Expired (Timer : Passive_Timer) return Boolean is
     use type Chronos.Time_Rec;
   begin
     if Timer.Acc = null then

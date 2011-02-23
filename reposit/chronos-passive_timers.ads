@@ -4,6 +4,13 @@ package Chronos.Passive_Timers is
 
   type Passive_Timer is tagged limited private;
 
+  -- Timer status, independant from the associated clock status
+  subtype Timer_Status is Timers.Timer_Status;
+
+  function Status (Timer : Passive_Timer) return Timer_Status;
+  -- True if timer is not Deleted
+  function Exists (Timer : Passive_Timer) return Boolean;
+
   -- Arm a passive timer with a given period
   -- Overwrites any previous setting on this timer
   -- May raise Invalid_Delay if Delay_Seconds is < 0
@@ -25,7 +32,7 @@ package Chronos.Passive_Timers is
 
   -- Checks if timer expiration time (Prev_Exp + Period) is reached
   -- If yes, add Period to expiration time
-  function Has_Expired (Timer : in Passive_Timer) return Boolean;
+  function Has_Expired (Timer : Passive_Timer) return Boolean;
 
   -- When a timer has expired once and has no period (0.0) it is not re-armed
   -- Calling Suspend, Resume or Has_Expired again on it will raise:
