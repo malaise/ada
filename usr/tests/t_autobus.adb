@@ -3,7 +3,7 @@ with Autobus;
 procedure T_Autobus is
 
   Bus : aliased Autobus.Bus_Type;
-  Subs_Repl, Subs_Drop : aliased Autobus.Subscriber_Type;
+  Subs_Repl, Subs_Drop, Subs_Spy : aliased Autobus.Subscriber_Type;
 
   -- Signal callback
   Sig : Boolean;
@@ -15,10 +15,10 @@ procedure T_Autobus is
 
   Stimulus : As.U.Asu_Us;
 
-  -- Observer of messages
-  type Obs_Type is new Autobus.Observer_Type with null record;
-  Observer : aliased Obs_Type;
-  procedure Receive (Observer : in out Obs_Type;
+  -- Observer recevier of messages
+  type Obs_Rece_Type is new Autobus.Observer_Type with null record;
+  Receiver : aliased Obs_Rece_Type;
+  procedure Receive (Observer : in out Obs_Rece_Type;
                      Subscriber : in Autobus.Subscriber_Access_Type;
                      Message : in String) is
     pragma Unreferenced (Observer);
@@ -43,6 +43,18 @@ procedure T_Autobus is
     Bus.Send (Str.Image);
   end Receive;
 
+  -- Observer spying of messages
+  type Obs_Spy_Type is new Autobus.Observer_Type with null record;
+  Spy : aliased Obs_Spy_Type;
+  procedure Receive (Observer : in out Obs_Spy_Type;
+                     Subscriber : in Autobus.Subscriber_Access_Type;
+                     Message : in String) is
+    pragma Unreferenced (Observer, Subscriber);
+    use type Autobus.Subscriber_Access_Type;
+  begin
+    Basic_Proc.Put_Line_Output ("Spyed >" & Message & "<");
+  end Receive;
+
 begin
   for I in 1 .. Argument.Get_Nbre_Arg loop
     Stimulus.Append (" " & Argument.Get_Parameter (Occurence => I));
@@ -53,9 +65,11 @@ begin
   Event_Mng.Set_Sig_Term_Callback (Signal_Cb'Unrestricted_Access);
   Bus.Init ("234.7.6.5:21021");
   Subs_Repl.Init (Bus'Unrestricted_Access, "Ah que .*",
-                  Observer'Unrestricted_Access);
+                  Receiver'Unrestricted_Access);
   Subs_Drop.Init (Bus'Unrestricted_Access, "Coucou.*",
-                  Observer'Unrestricted_Access);
+                  Receiver'Unrestricted_Access);
+  Subs_Spy.Init (Bus'Unrestricted_Access, "",
+                 Spy'Unrestricted_Access);
   loop
     Sig := False;
     if not Stimulus.Is_Null then
