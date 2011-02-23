@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Autobus SYSTEM "Autobus.dtd">
+
+<Autobus>
+  <Config Heartbeat_Period="2.0" Heartbeat_Missed_Number="4"
+         Default_Connection_Timeout="1.0">
+    <Bus Name="A-234.7.6.5:21021"/>
+    <Connection Timeout="2.0">
+      <Pair Host1="systint29" Host2="systint29"/>
+      <Pair Host1="systint28" Host2="systint28"/>
+      <Pair Host1="systint29" Host2="systint28"/>
+    </Connection>
+  </Config>
+</Autobus>
+
