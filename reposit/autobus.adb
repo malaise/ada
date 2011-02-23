@@ -277,7 +277,7 @@ package body Autobus is
       if Remove_All then
         Remove := True;
       else
-        if Partner_Acc.Timer.Has_Expired then
+        if Partner_Acc.Timer.Exists and then Partner_Acc.Timer.Has_Expired then
           -- This partner is not alive (alive timeout has expired)
           Debug ("Alive timeout of partner " & Partner_Acc.Addr.Image);
           Remove := True;
@@ -306,9 +306,10 @@ package body Autobus is
     Partner : Partner_Rec;
     Partner_Found : Boolean;
     Partner_Acc : Partner_Access;
+    Bus_Found : Boolean;
+    use type As.U.Asu_Us;
   begin
     -- Find partner by Socket
-    -- Find partner by socket
     Partner.Sock := Dscr;
     Partners.Search_Match (Partner_Found, Partner_Match_Sock'Access, Partner,
                            From => Partner_List_Mng.Absolute);
@@ -318,6 +319,9 @@ package body Autobus is
       return;
     end if;
     Partner_Acc := Partner_Access(Partners.Access_Current);
+
+    -- Find Bus by access
+    Buses.Search_Access (Bus_Found, Partner_Acc.Bus);
 
     if not Partner_Acc.Addr.Is_Null then
       -- Not the first message, so this is Data => dispatch
@@ -339,7 +343,15 @@ package body Autobus is
         return;
     end;
     Partner_Acc.Addr := As.U.Tus (Msg);
-    Debug ("Reception of Identification from " & Partner_Acc.Addr.Image);
+    if Partner_Acc.Addr = Buses.Access_Current.Addr then
+      Debug ("Reception of own identification");
+      -- A stopped timer identifies the unique connection to ourself
+      --  (amoung both) that is passive: no alive tiemout check and
+      --  no sending of message
+      Partner_Acc.Timer.Stop;
+    else
+      Debug ("Reception of identification from " & Partner_Acc.Addr.Image);
+    end if;
 
   end Tcp_Reception_Cb;
 
@@ -418,9 +430,9 @@ package body Autobus is
     Partner.Sock := New_Dscr;
     Partner.Timer := new Chronos.Passive_Timers.Passive_Timer;
     Partner.Bus := Bus_Access(Buses.Access_Current);
+    -- Insert in Bus a reference to this partner
     Insert_Partner (Partner);
     Debug ("Acception of partner " & Partner.Addr.Image);
-    -- Insert in Bus a reference to this partner
     Start_Partner_Timer (Partner.Bus);
     -- Set reception callback
     New_Dscr.Set_Blocking (False);
@@ -501,10 +513,6 @@ package body Autobus is
       end if;
       -- Set partner bus
       Partner.Bus := Bus_Access(Buses.Access_Current);
-      -- Discard our own admin message
-      if Partner.Addr = Partner.Bus.Addr then
-        return;
-      end if;
     end;
 
     -- Find partner by address
@@ -532,7 +540,7 @@ package body Autobus is
         Send_Ipm (True);
         return;
       end if;
-      -- Addr > own: add partner and start connect
+      -- Addr => own: add partner and start connect
       Debug ("Ipm: Connecting to new partner " & Partner.Addr.Image);
       Partner.Timer := new Chronos.Passive_Timers.Passive_Timer;
       Insert_Partner (Partner);
@@ -730,7 +738,9 @@ package body Autobus is
       exit when Bus.Acc.Partners.Is_Empty;
       Bus.Acc.Partners.Read (Partner_Acc, Moved => Moved);
       begin
-        Tcp_Send (Partner_Acc.Sock, Msg, Message'Length);
+        if Partner_Acc.Timer.Exists then
+          Tcp_Send (Partner_Acc.Sock, Msg, Message'Length);
+        end if;
         Success := True;
       exception
         when Socket.Soc_Conn_Lost =>
@@ -787,6 +797,9 @@ package body Autobus is
     if Observer = null then
        raise Status_Error;
     end if;
+    if Subscriber.Acc /= null then
+      raise Status_Error;
+    end if;
     Subs.Bus := Bus_Access(Bus.Acc);
     Subs.Observer := Observer_Access(Observer);
     Subs.Client := Subscriber'Unrestricted_Access;
@@ -825,6 +838,9 @@ package body Autobus is
     end if;
     Buses.Search_Access (Bus_Found, Bus.Acc);
     if not Bus_Found then
+      raise Status_Error;
+    end if;
+    if Subscriber.Acc /= null then
       raise Status_Error;
     end if;
     Bus.Acc.Subscribers.Search_Access (Subscriber_Found, Subscriber.Acc);
