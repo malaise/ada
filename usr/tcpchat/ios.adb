@@ -329,13 +329,15 @@ package body Ios is
     return Loc_Event;
   end Read;
 
-  -- Send a sentence. Disconnection if error or overflow
-  procedure My_Send is new Socket.Send (Message_Type);
+  -- Send a sentence. Disconnection if error, timeout or overflow
+  function My_Send is new Tcp_Util.Send (Message_Type);
   procedure Send (Text : in As.U.Asu_Us;
                   Disconnection : out Boolean) is
     Txt : As.U.Asu_Us;
     Len : Natural;
     Msg : Message_Type;
+    Dummy : Boolean;
+    pragma Unreferenced (Dummy);
   begin
     Debug.Log ("Send " & String_Mng.Replace (Text.Image, Lf, "[LF]"));
     if Stdio then
@@ -358,7 +360,7 @@ package body Ios is
       end if;
       Msg(1 .. Len) := Txt.Slice (1, Len);
       Txt.Delete (1, Len);
-      My_Send (Tcp_Soc, Msg, Len);
+      Dummy := My_Send (Tcp_Soc, null, null, False, 0.1, Msg, Len);
     end loop;
   exception
     when Socket.Soc_Would_Block =>
@@ -366,6 +368,9 @@ package body Ios is
       Disconnection := True;
     when Socket.Soc_Conn_Lost =>
       Debug.Log ("Lost connection");
+      Disconnection := True;
+    when Tcp_Util.Timeout_Error =>
+      Debug.Log ("Timeout");
       Disconnection := True;
   end Send;
 

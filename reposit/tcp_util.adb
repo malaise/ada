@@ -448,7 +448,7 @@ package body Tcp_Util is
   function Connect_To (Protocol      : in Tcp_Protocol_List;
                        Host          : in Remote_Host;
                        Port          : in Remote_Port;
-                       Delta_Retry   : in Duration := 1.0;
+                       Delta_Retry   : in Positive_Duration := 1.0;
                        Nb_Tries      : in Natural := 1;
                        Connection_Cb : in Connection_Callback_Access)
            return Boolean is
@@ -457,9 +457,6 @@ package body Tcp_Util is
     Init_Debug;
     if Debug_Connect then
       My_Io.Put_Line ("  Tcp_Util.Connect_To start");
-    end if;
-    if Delta_Retry <= 0.0 then
-      raise Invalid_Delay;
     end if;
     -- Check port and host name
     if Port.Kind = Port_Name_Spec then
@@ -734,7 +731,9 @@ package body Tcp_Util is
   type Sending_Rec is record
     Dscr : Socket.Socket_Dscr;
     Fd   : Event_Mng.File_Desc;
-    Cb : End_Overflow_Callback_Access;
+    Timeout : Positive_Duration;
+    Eoo_Cb : End_Overflow_Callback_Access;
+    Err_Cb : Send_Error_Callack_Access;
   end record;
 
   package Sen_Dyn_List_Mng is new Dynamic_List (Sending_Rec);
@@ -757,6 +756,38 @@ package body Tcp_Util is
   end Fd_Match;
   procedure Find_By_Fd is new Sen_List_Mng.Search_Raise (Fd_Match);
 
+  -- Resending, with or without timeout
+  type Send_Result_List is (Ok, Timeout, Overflow, Conn_Lost);
+  function Re_Send (Dscr : Socket.Socket_Dscr;
+                    Timeout : Natural_Duration) return Send_Result_List is
+  begin
+    if Timeout = 0.0 then
+      -- Inifinite sending
+      Dscr.Re_Send;
+    else
+      -- (Re)send during at most Timeout
+      select
+        delay Timeout;
+          -- Timeout on sending
+          return Tcp_Util.Timeout;
+        then abort
+          Dscr.Re_Send;
+      end select;
+    end if;
+    return Ok;
+  exception
+    when Socket.Soc_Would_Block =>
+      return Overflow;
+    when Socket.Soc_Conn_Lost =>
+      return Conn_Lost;
+    when Error:others =>
+      if Debug_Overflow then
+        My_Io.Put_Line ("  Tcp_Util.Re_Send exception "
+            & Ada.Exceptions.Exception_Name (Error));
+      end if;
+      raise;
+  end Re_Send;
+
   -- Delete current sending rec in list
   procedure Delete_Current_Sen is
     Moved : Boolean;
@@ -766,9 +797,9 @@ package body Tcp_Util is
 
   -- Sending callback on fd
   function Sending_Cb (Fd : in Event_Mng.File_Desc; Read : in Boolean)
-  return Boolean is
+                      return Boolean is
     Rec : Sending_Rec;
-    Done : Boolean;
+    Result : Send_Result_List;
   begin
     if Debug_Overflow then
       My_Io.Put_Line ("  Tcp_Util.Sending_Cb start with fd " & Fd'Img
@@ -784,24 +815,13 @@ package body Tcp_Util is
     end if;
 
     -- Try to re send
-    begin
-      Done := False;
-      Rec.Dscr.Re_Send;
-      Done := True;
-    exception
-      when Socket.Soc_Would_Block =>
-        -- Still in overflow
-        if Debug_Overflow then
-          My_Io.Put_Line ("  Tcp_Util.Sending_Cb still in overflow");
-        end if;
-        return False;
-      when others =>
-        if Debug_Overflow then
-          My_Io.Put_Line ("  Tcp_Util.Sending_Cb error");
-        end if;
-    end;
-    if Debug_Overflow then
-      My_Io.Put_Line ("  Tcp_Util.Sending_Cb resent");
+    Result := Re_Send (Rec.Dscr, Rec.Timeout);
+    if Result = Overflow then
+      -- Still in overflow
+      if Debug_Overflow then
+        My_Io.Put_Line ("  Tcp_Util.Sending_Cb still in overflow");
+      end if;
+      return False;
     end if;
 
     -- End of overflow: unhook callback and del rec
@@ -811,38 +831,84 @@ package body Tcp_Util is
       My_Io.Put_Line ("  Tcp_Util.Sending_Cb cleaned");
     end if;
 
-    -- Call user callbak
-    if Rec.Cb /= null then
-      Rec.Cb (Rec.Dscr);
+    if Result = Ok then
+      -- Success: Call end of overflow callbak
       if Debug_Overflow then
-        My_Io.Put_Line ("  Tcp_Util.Sending_Cb Cb called");
+        My_Io.Put_Line ("  Tcp_Util.Sending_Cb resent OK");
       end if;
+      if Rec.Eoo_Cb /= null then
+        Rec.Eoo_Cb (Rec.Dscr);
+        if Debug_Overflow then
+          My_Io.Put_Line ("  Tcp_Util.Sending_Cb Cb called");
+        end if;
+      end if;
+      return True;
+    else
+      -- Timeout or Lost_Conn: Call send error callback and close
+      if Debug_Overflow then
+        My_Io.Put_Line ("  Tcp_Util.Sending_Cb error " & Result'Img);
+      end if;
+      if Rec.Err_Cb /= null then
+        Rec.Err_Cb (Rec.Dscr, Result = Conn_Lost);
+        if Debug_Overflow then
+          My_Io.Put_Line ("  Tcp_Util.Send_Err_Cb Cb called");
+        end if;
+      end if;
+      Rec.Dscr.Close;
+      return False;
     end if;
-    return Done;
   exception
     when Sen_List_Mng.Not_In_List =>
       if Debug_Overflow then
         My_Io.Put_Line ("  Tcp_Util.Sending_Cb fd rec not found");
       end if;
-    raise;
+      raise;
+    when others =>
+      return False;
   end Sending_Cb;
 
   -- Send message, handling overflow
   function Send (Dscr               : in Socket.Socket_Dscr;
                  End_Of_Overflow_Cb : in End_Overflow_Callback_Access;
+                 Send_Error_Cb      : in Send_Error_Callack_Access;
+                 Handle_Overflow    : in Boolean;
+                 Timeout            : in Natural_Duration;
                  Message            : in Message_Type;
                  Length             : in Natural := 0) return Boolean is
     Rec : Sending_Rec;
     procedure Send is new Socket.Send (Message_Type);
   begin
     Init_Debug;
+
     -- Try to send
     begin
-      Send (Dscr, Message, Length);
+      if Timeout = 0.0 then
+        -- Inifinite sending
+        Send (Dscr, Message, Length);
+      else
+        -- (Re)send during at most Timeout
+        select
+          delay Timeout;
+            -- Timeout on sending
+            raise Timeout_Error;
+          then abort
+            Send (Dscr, Message, Length);
+        end select;
+      end if;
       return True;
     exception
       when Socket.Soc_Would_Block =>
-        null;
+        if not Handle_Overflow then
+          raise;
+        end if;
+      when Socket.Soc_Conn_Lost =>
+        raise;
+      when Error:others =>
+        if Debug_Overflow then
+          My_Io.Put_Line ("  Tcp_Util.Send exception "
+              & Ada.Exceptions.Exception_Name (Error));
+        end if;
+        raise;
     end;
 
     -- Handle overflow : build and store rec
@@ -851,7 +917,9 @@ package body Tcp_Util is
     end if;
     Rec.Dscr := Dscr;
     Rec.Fd := Dscr.Get_Fd;
-    Rec.Cb := End_Of_Overflow_Cb;
+    Rec.Timeout := Timeout;
+    Rec.Eoo_Cb := End_Of_Overflow_Cb;
+    Rec.Err_Cb := Send_Error_Cb;
     Sen_List.Insert (Rec);
     if Debug_Overflow then
       My_Io.Put_Line ("  Tcp_Util.Send rec with fd " & Rec.Fd'Img
@@ -865,13 +933,6 @@ package body Tcp_Util is
       My_Io.Put_Line ("  Tcp_Util.Send Cb hooked");
     end if;
     return False;
-  exception
-    when Error:others =>
-      if Debug_Overflow then
-        My_Io.Put_Line ("  Tcp_Util.Send exception "
-            & Ada.Exceptions.Exception_Name (Error));
-      end if;
-      raise;
   end Send;
 
   -- Cancel overflow management and closes

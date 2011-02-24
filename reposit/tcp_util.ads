@@ -19,6 +19,15 @@ package Tcp_Util is
   subtype Tcp_Protocol_List is Socket.Protocol_List range
                                Socket.Tcp .. Socket.Tcp_Header_Afux;
 
+
+  -- POSITIVE AND NATURAL DURATION --
+  ------------------------------------
+  -- Positive duration for connection
+  subtype Positive_Duration is Duration range 0.001 .. Duration'Last;
+  -- Natural duration for connection or sending timeout
+  subtype Natural_Duration is Duration range 0.0 .. Duration'Last;
+
+
   -- PORT DEFINITION --
   ---------------------
   -- Kinds of port definition
@@ -31,7 +40,6 @@ package Tcp_Util is
   subtype Port_Name is As.U.Asu_Us;
   subtype Port_Num is Socket.Port_Num;
 
-
   -- Specification of a local port (name or num or dynamic) to bind to
   type Local_Port (Kind : Local_Port_List := Port_Name_Spec) is record
     case Kind is
@@ -43,7 +51,6 @@ package Tcp_Util is
         null;
     end case;
   end record;
-
 
   -- Specification of a remote port (name or num) to connect or send to
   type Remote_Port (Kind : Remote_Port_List := Port_Name_Spec) is record
@@ -64,7 +71,6 @@ package Tcp_Util is
   subtype Host_Name is As.U.Asu_Us;
   subtype Host_Id is Socket.Host_Id;
 
-
   -- Specification of a remote host to connect or send to
   type Remote_Host (Kind : Remote_Host_List := Host_Name_Spec) is record
     case Kind is
@@ -75,8 +81,8 @@ package Tcp_Util is
     end case;
   end record;
 
-  -- CALLBACKS --
-  ---------------
+  -- CONNECTION PROCEDURES --
+  ---------------------------
   -- Connection / Disconnection callback
   -- Sets Connected to True if connection succeeds,
   --  then Dscr is the one of the new socket connected, blocking,
@@ -90,20 +96,16 @@ package Tcp_Util is
                       Connected       : in Boolean;
                       Dscr            : in Socket.Socket_Dscr);
 
-
-  -- CONNECTION PROCEDURES --
-  ---------------------------
   -- Connect to a remote Host/Port
   -- May make several tries (one each Delta_Retry) before giving up
   -- Infinite retries if Nb_Tries = 0
   -- Returns True if immediate result could be achieved
   --  (and the callback has already been called).
-  -- May raise Invalid_Delay is Delta_Retry is <= 0.0
   -- May raise Name_Error if Host.Name or Port.Name is unknown
   function Connect_To (Protocol      : in Tcp_Protocol_List;
                        Host          : in Remote_Host;
                        Port          : in Remote_Port;
-                       Delta_Retry   : in Duration := 1.0;
+                       Delta_Retry   : in Positive_Duration := 1.0;
                        Nb_Tries      : in Natural := 1;
                        Connection_Cb : in Connection_Callback_Access)
            return Boolean;
@@ -112,6 +114,7 @@ package Tcp_Util is
   -- May raise No_Such
   procedure Abort_Connect (Host : in Remote_Host;
                            Port : in Remote_Port);
+
 
   -- ACCEPTION PROCEDURE --
   -------------------------
@@ -125,6 +128,7 @@ package Tcp_Util is
                       Remote_Host_Id  : in Host_Id;
                       Remote_Port_Num : in Port_Num;
                       New_Dscr        : in Socket.Socket_Dscr);
+
   -- Accept connections to a local port
   -- Dscr is open and set to the accepting connections
   -- Num is its port num (usefull when dynamical).
@@ -145,15 +149,36 @@ package Tcp_Util is
   -- End of overflow callback
   type End_Overflow_Callback_Access is
     access procedure (Dscr : in Socket.Socket_Dscr);
-  -- If send is ok returns True else
-  -- Returns false and manages to re-send when possible until
-  --  all message is sent, then calls End_Of_Overflow_Callback
-  -- May raise Socket.Soc_Tail_Err if called while previous Send returned
-  --  False and End_Of_Overflow_Cb has not (yet) been called.
+
+  -- Callback invoked on fatal error during sending (or re-sending):
+  --  on connection lost or timeout
+  -- Dscr is closed after invocation
+  type Send_Error_Callack_Access is
+    access procedure (Dscr : in Socket.Socket_Dscr;
+                      Conn_Lost : in Boolean);
+
+  -- If send is ok returns True
+  -- Elsif overflow and Handle_Overflow is set,
+  --  Returns false and manages to re-send when possible until
+  --   all message is sent, then calls End_Of_Overflow_Callback
+  --   If a timeout or connection lost occurs during the retries,
+  --     then call the Send_Error_Callback and close the Dscr
+  --  May raise Socket.Soc_Tail_Err if called while previous Send returned
+  --   False and End_Of_Overflow_Cb has not (yet) been called
+  -- Else raise Socket.Soc_Would_Block, Socket.Conn_Lost ot Timeout_Error
+  --  depending on the error
+
+  -- As a consequence, if Handle_Overflow is not set, then Send returns
+  --  True or raises an exception, and the callbacks are never called
+  -- A Timeout of 0.0 means no guard on sending (no Timeout error or exception)
+  Timeout_Error : exception;
   generic
     type Message_Type is private;
   function Send (Dscr               : in Socket.Socket_Dscr;
                  End_Of_Overflow_Cb : in End_Overflow_Callback_Access;
+                 Send_Error_Cb      : in Send_Error_Callack_Access;
+                 Handle_Overflow    : in Boolean;
+                 Timeout            : in Natural_Duration;
                  Message            : in Message_Type;
                  Length             : in Natural := 0) return Boolean;
 
@@ -215,9 +240,6 @@ package Tcp_Util is
   ----------------
   -- Raised by Connect_To if Host.Name or Port.Name is unknown
   Name_Error : exception;
-
-  -- Raised when Connect_To.Delta_Retry is negative or nul
-  Invalid_Delay : exception;
 
   -- Raised when aborting unknown connection/acception
   -- Or a send which is not in overflow

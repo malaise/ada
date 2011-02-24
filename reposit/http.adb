@@ -53,6 +53,9 @@ package body Http is
   Cr : constant String := Ada.Characters.Latin_1.Cr & "";
   Crlf : constant String := Cr & Lf;
 
+  -- The timeout for sending request
+  Send_Timeout : Tcp_Util.Natural_Duration;
+
   -- Send/receive Msg
   -- Shall be large enough to receive the whole reply header
   subtype Message_Type is String (1 .. 1024 * 1024);
@@ -274,6 +277,7 @@ package body Http is
     Soc := Dscr;
     -- Send request: slices of Msg'Length
     Debug ("HTTP: Sending " & Request.Image);
+    Soc.Set_Blocking (False);
     loop
       Len := Request.Length;
       exit when Len = 0;
@@ -282,10 +286,9 @@ package body Http is
       end if;
       Msg (1 .. Len) := Request.Slice (1, Len);
       Request.Delete (1, Len);
-      Dummy := My_Send (Soc, null, Msg, Len);
+      Dummy := My_Send (Soc, null, null, False, Send_Timeout, Msg, Len);
     end loop;
     -- Set not blocking and hook receptions
-    Soc.Set_Blocking (False);
     Buffer.Set_Null;
     My_Rece.Set_Callbacks (Soc,
                            Read_Cb'Unrestricted_Access,
@@ -328,15 +331,18 @@ package body Http is
     Result := (Kind => Ok, Content => As.U.Asu_Null);
 
     -- Getenv Timeout and arm timeout if set
+    -- Set send timeout
     declare
       Timeout : Integer;
       The_Delay : Timers.Delay_Rec;
     begin
       Timeout := Environ.Get_Int (Timeout_Var, 0);
+      Send_Timeout := 0.0;
       if Timeout > 0 then
         -- Arm timer
         The_Delay.Delay_Seconds := Duration(Timeout) / 1000.0;
         Timer_Id.Create (The_Delay, Timer_Cb'Access);
+        Send_Timeout := The_Delay.Delay_Seconds;
       end if;
     end;
 

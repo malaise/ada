@@ -83,7 +83,8 @@ package body Client_Mng is
         Alias.Resolve (Msg.Item);
         Data_Base.Get (Msg.Item.Name, Msg.Item.Kind, Msg.Item);
         begin
-          Send_Res := Client_Com.Dictio_Send (Dscr, null, Msg);
+          Send_Res := Client_Com.Dictio_Send (Dscr, null, null,
+                                              False, 0.0, Msg);
           if Dictio_Debug.Level_Array(Dictio_Debug.Client_Data) then
             Dictio_Debug.Put ("Client: get reply result " & Send_Res'Img);
           end if;
@@ -163,7 +164,7 @@ package body Client_Mng is
       Msg.Item.Name := (others => ' ');
       Msg.Item.Name(1 .. Versions.Lib'Length) := Versions.Lib;
       Msg.Item.Data_Len := 0;
-      Dummy := Client_Com.Dictio_Send (New_Dscr, null, Msg);
+      Dummy := Client_Com.Dictio_Send (New_Dscr, null, null, False, 0.0, Msg);
 
       Dictio_Status := Status.Get_Stable;
       Send_Status (New_Dscr);
@@ -270,7 +271,7 @@ package body Client_Mng is
     Msg.Item.Name := (others => ' ');
     Msg.Item.Name(1 .. State'Length) := State;
     Msg.Item.Data_Len := 0;
-    Dummy := Client_Com.Dictio_Send (Dscr, null, Msg);
+    Dummy := Client_Com.Dictio_Send (Dscr, null, null, False, 0.0, Msg);
   end Send_Status;
 
   procedure New_Status is

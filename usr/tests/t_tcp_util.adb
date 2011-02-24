@@ -14,6 +14,7 @@ procedure T_Tcp_Util is
 
   Give_Up : Boolean;
   In_Ovf : Boolean := False;
+  Lost : Boolean := False;
   Server_Nb_Overflow : Natural := 0;
 
   Delay_Try : constant Duration := 10.0;
@@ -46,15 +47,28 @@ procedure T_Tcp_Util is
     Sig := True;
   end Signal_Cb;
 
+  procedure Send_Err_Cb (Dscr : in  Socket.Socket_Dscr;
+                         Conn_Lost : in Boolean) is
+    pragma Unreferenced (Dscr);
+  begin
+    Ada.Text_Io.Put_Line ("Send_Err_Cb with lost_conn=" & Conn_Lost'Img);
+    Lost := True;
+  end Send_Err_Cb;
+
   function Send (Msg : in String) return Boolean is
   begin
     if not The_Dscr.Is_Open then
       Ada.Text_Io.Put_Line (Msg & " not sending cause not open");
       return False;
     end if;
+    if Lost then
+      Ada.Text_Io.Put_Line (Msg & " not sending cause lost connection");
+      return False;
+    end if;
     if Server then
       if not In_Ovf then
-        if My_Send (The_Dscr, End_Ovf_Cb'Unrestricted_Access, Message) then
+        if My_Send (The_Dscr, End_Ovf_Cb'Unrestricted_Access,
+                    Send_Err_Cb'Unrestricted_Access, True, 1.0, Message) then
           Ada.Text_Io.Put_Line (Msg & " sent num "
                                     & Integer'Image(Message.Num));
           return True;
@@ -71,7 +85,8 @@ procedure T_Tcp_Util is
         Ada.Text_Io.Put_Line (Msg & " not sending cause in overflow");
         return False;
       end if;
-      while My_Send (The_Dscr, End_Ovf_Cb'Unrestricted_Access, Message) loop
+      while My_Send (The_Dscr, End_Ovf_Cb'Unrestricted_Access,
+                     Send_Err_Cb'Unrestricted_Access, True, 1.0, Message) loop
         Ada.Text_Io.Put_Line (Msg & " sent num " & Integer'Image(Message.Num));
         Message.Num := Message.Num + 1;
       end loop;
@@ -242,6 +257,10 @@ procedure T_Tcp_Util is
       Ada.Text_Io.Put_Line ("      Replying");
       Message.Num := Message.Num + 10;
       if not Send ("Reply") and then In_Ovf then
+        if Lost then
+          Ada.Text_Io.Put_Line ("      Not responding to lost client");
+          return False;
+        end if;
         if Server_Nb_Overflow < 50 then
           Ada.Text_Io.Put_Line ("      Not responding to client in overflow");
           Server_Nb_Overflow := Server_Nb_Overflow + 1;
