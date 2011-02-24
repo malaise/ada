@@ -1,0 +1,27 @@
+<?xml version="1.1" encoding="UTF-8"?>
+<!-- DTD for Autobus configuration -->
+
+<!-- This file contains several configurations, each for several buses -->
+<!ELEMENT Autobus (Config*)>
+
+<!-- A heartbeat setting and default connection timeout for several buses -->
+<!ELEMENT Config (Bus+, Connection*)>
+<!ATTLIST Config Heartbeat_Period CDATA #IMPLIED
+                 Heartbeat_Missed_Number CDATA #IMPLIED
+                 Default_Connection_Timeout CDATA #IMPLIED>
+
+<!-- A bus, uniquely identified by it name preceeded by "A-": -->
+<!-- (A-<Lan_Num>:<Port_Num>) -->
+<!ELEMENT Bus EMPTY>
+<!ATTLIST Bus Name ID #REQUIRED>
+
+<!-- A connection, specific timeout for several pairs of hosts -->
+<!ELEMENT Connection (Pair*)>
+<!ATTLIST Connection Timeout CDATA #REQUIRED>
+
+<!-- A pair of hosts, each identified either by "A-<Ip_Address>" or by -->
+<!--  <Host_Name> -->
+<!ELEMENT Pair EMPTY>
+<!ATTLIST Pair Host1 CDATA #REQUIRED
+               Host2 CDATA #REQUIRED>
+
