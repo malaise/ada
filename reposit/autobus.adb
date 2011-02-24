@@ -81,15 +81,13 @@ package body Autobus is
 
   -- Get tuning
   package Config is
-    -- Get the heartbeat period for the Bus
-    function Get_Heartbeat_Period (Bus : String) return Duration;
-
-    -- Get the heartbeat missed number for the bus
-    function Get_Heartbeat_Missed_Number (Bus : String) return Positive;
-
-    -- Get Connection_Timeout for the Bus and the target Host (IP address)
-    function Get_Connection_Timeout (Bus : String; Dest : String)
-             return Duration;
+    -- Get for the bus the heartbeat period, the heartbeat max missed number
+    -- and the timeout of connection and send
+    -- May raise Config_Error
+    procedure Get_Tuning (Name : in String;
+                          Heartbeat_Period : out Duration;
+                          Heartbeat_Max_Missed : out Positive;
+                          Timeout : out Duration);
   end Config;
   package body Config is separate;
 
@@ -212,7 +210,7 @@ package body Autobus is
     Timeout : Timers.Delay_Rec (Timers.Delay_Sec);
   begin
     Partner_Acc := Partner_Access(Partners.Access_Current);
-    Timeout.Delay_Seconds := Bus.Heartbeat_Missed_Number * Bus.Heartbeat_Period;
+    Timeout.Delay_Seconds := Bus.Heartbeat_Max_Missed * Bus.Heartbeat_Period;
     Partner_Acc.Timer.Start (Timeout);
   end Start_Partner_Timer;
 
@@ -551,8 +549,7 @@ package body Autobus is
       Connected := Tcp_Util.Connect_To (
           Socket.Tcp_Header,
           Rem_Host, Rem_Port,
-          Config.Get_Connection_Timeout (Partner.Bus.Name.Image,
-                                         Partner.Addr.Image),
+          Partner.Bus.Timeout,
           0,
           Tcp_Connection_Cb'Access);
     else
@@ -625,10 +622,11 @@ package body Autobus is
         raise System_Error;
     end;
 
-    -- Get env settings
-    Rbus.Heartbeat_Period := Config.Get_Heartbeat_Period (Rbus.Name.Image);
-    Rbus.Heartbeat_Missed_Number :=
-           Config.Get_Heartbeat_Missed_Number (Rbus.Name.Image);
+    -- Get tuning for this bus
+    Config.Get_Tuning (Rbus.Name.Image,
+                       Rbus.Heartbeat_Period,
+                       Rbus.Heartbeat_Max_Missed,
+                       Rbus.Timeout);
 
     -- Set admin callback
     Ipm_Reception_Mng.Set_Callbacks (Rbus.Admin, Ipm_Reception_Cb'Access, null);
@@ -651,7 +649,8 @@ package body Autobus is
     Bus.Acc := Buses.Access_Current;
     Debug ("Bus " & Rbus.Name.Image & " created at " & Rbus.Addr.Image);
     Debug (" with Period: " & Dur_Image (Rbus.Heartbeat_Period, 1, False)
-       & " and MaxMissing: " & Integer_Image(Rbus.Heartbeat_Missed_Number));
+       & ", MaxMissed: " & Integer_Image(Rbus.Heartbeat_Max_Missed)
+       & " and Timeout: " &  Dur_Image (Rbus.Timeout, 1, False));
 
     -- Wait a little bit (100ms) for "immediate" connections to establish
     Event_Mng.Pause (100);
@@ -808,7 +807,11 @@ package body Autobus is
     Bus.Acc.Subscribers.Rewind (False, Subscriber_List_Mng.Next);
     Bus.Acc.Subscribers.Insert (Subs);
 
-    Debug ("Subscriber " & Filter & " init ok");
+    if Filter = "" then
+      Debug ("Subscriber init ok");
+    else
+      Debug ("Subscriber " & Filter & " init ok");
+    end if;
   end Init;
 
   -- Reset a Subscriber (make it re-usable)

@@ -12,32 +12,90 @@ package body Config is
 
   -- Default values
   Default_Heartbeat_Period : constant Duration := 1.0;
-  Default_Heartbeat_Missed_Number : constant := 3;
-  Default_Connection_Timeout : constant Duration := 0.5;
+  Default_Heartbeat_Max_Missed : constant := 3;
+  Default_Timeout : constant Duration := 0.5;
 
-  -- Dynamic list of pair of host Ids
-  type Pair_Rec is record
-    Host1, Host2 : Socket.Host_Id;
-  end record;
-  package Pair_Dyn_List_Mng is new Dynamic_List (Pair_Rec);
-  package Pair_List_Mng renames Pair_Dyn_List_Mng.Dyn_List;
-  function Pair_Match (Curr, Crit : Pair_Rec) return Boolean is
-    use type Socket.Host_Id;
+  -- For Debug
+  function Image (Attrs : Xml_Parser.Attributes_Array) return String is
+     Res : As.U.Asu_Us;
   begin
-    return  (Curr.Host1 = Crit.Host1 and then Curr.Host2 = Crit.Host2)
-    or else (Curr.Host1 = Crit.Host2 and then Curr.Host2 = Crit.Host1);
-  end Pair_Match;
+    for I in Attrs'Range loop
+      Res.Append (Attrs(I).Name.Image & "=" & Attrs(I).Value.Image);
+      if I /= Attrs'Last then
+        Res.Append (" ");
+      end if;
+    end loop;
+    return Res.Image;
+  end Image;
+
+  -- Get an attribute, raise Config_Error
+  function Get_Attribute (Node : Xml_Parser.Element_Type;
+                          Name : String;
+                          Is_Duration : Boolean) return Duration is
+    Attr : Xml_Parser.Attribute_Rec;
+    Dur : Duration;
+    Int : Integer;
+  begin
+    Attr := Ctx.Get_Attribute (Node, Name);
+    if Is_Duration then
+      Dur := Duration'Value (Attr.Value.Image);
+      if Dur <= 0.0 then
+        raise Constraint_Error;
+      end if;
+      return Dur;
+    else
+      Int := Integer'Value (Attr.Value.Image);
+      if Int <= 0 then
+        raise Constraint_Error;
+      end if;
+      return Duration (Int);
+    end if;
+  exception
+    when Xml_Parser.Attribute_Not_Found =>
+      return 0.0;
+    when others =>
+      Log_Error ("Config.Init", "invalid " & Name,
+                 Attr.Value.Image & " at line " &
+                 Integer_Image (Ctx.Get_Line_No (Node)));
+      raise Config_Error;
+  end Get_Attribute;
+
+  -- Check the attributes of node
+  Heartbeat_Period_Name : constant String := "Heartbeat_Period";
+  Heartbeat_Max_Missed_Name : constant String := "Heartbeat_Max_Missed";
+  Timeout_Name : constant String := "Timeout";
+  function Check_Attributes (Node : Xml_Parser.Element_Type) return Boolean is
+    Dur1, Dur2, Dur3 : Duration;
+    pragma Unreferenced (Dur1, Dur2, Dur3);
+  begin
+    Dur1 := Get_Attribute (Node, Heartbeat_Period_Name, True);
+    Dur2 := Get_Attribute (Node, Heartbeat_Max_Missed_Name, False);
+    Dur3:= Get_Attribute (Node, Timeout_Name, True);
+    return True;
+  exception
+    when Config_Error =>
+      return False;
+  end Check_Attributes;
+
+  -- The list of Bus nodes and corresponding Config
+  type Bus_Conf_Rec is record
+    Addr : As.U.Asu_Us;
+    Bus : Xml_Parser.Node_Type;
+    Config : Xml_Parser.Node_Type;
+  end record;
+  function Bus_Conf_Match (Curr, Crit : Bus_Conf_Rec) return Boolean is
+    use type As.U.Asu_Us;
+  begin
+    return Curr.Addr = Crit.Addr;
+  end Bus_Conf_Match;
+  package Bus_Conf_Dyn_List_Mng is new Dynamic_List (Bus_Conf_Rec);
+  package Bus_Conf_List_Mng renames Bus_Conf_Dyn_List_Mng.Dyn_List;
+  Bus_Conf_List : Bus_Conf_List_Mng.List_Type;
 
   -- Init (parse the file)
   procedure Init is
-    Root, Conf, Connection : Xml_Parser.Element_Type;
-    New_Node : Xml_Parser.Node_Type;
-    Host_Pair_Attr : Xml_Parser.Attributes_Array(1 .. 2);
-    Host : Tcp_Util.Remote_Host;
-    Host_Pair_Id : Pair_Rec;
-    Pair_List : Pair_List_Mng.List_Type;
+    Root : Xml_Parser.Element_Type;
     Ok : Boolean;
-    use type As.U.Asu_Us;
     use type Xml_Parser.Ctx_Status_List;
   begin
     -- Check if already init
@@ -56,7 +114,7 @@ package body Config is
                    "on out dummy tree");
         raise Internal_Error;
       end if;
-      Debug ("Config.Init dummy tree cause no Env");
+      Debug ("Dummy tree cause no Env");
       return;
     end if;
 
@@ -67,134 +125,133 @@ package body Config is
                    "when parsing config file");
         raise Config_Error;
     end if;
+    Debug ("File " & Environ.Getenv (Env_File_Name) & " parsed OK");
     Root := Ctx.Get_Root_Element;
 
-
-    -- For each Conf, scan each Pair of each Connection
-    --  * replace any Host name by its address, remove Pair if
-    --    a name is not found
-    --  * Make a list of the Pairs (hostIds) defined for this Conf entry
-    --  * Check unicity of these Pairs
-    All_Configs:
-    for I in 1 ..  Ctx.Get_Nb_Children (Root) loop
-      -- Go to first/next Conf
-      if I = 1 then
-        Conf := Ctx.Get_Child (Root, 1);
+    -- Check all Buses of all configs, check that names are A-<Ip_Address>
+    declare
+      Configs : constant Xml_Parser.Nodes_Array
+              := Ctx.Get_Children(Root);
+      Name : As.U.Asu_Us;
+    begin
+      Ok := True;
+      if Check_Attributes (Root) then
+        Debug ("Default config " & Image (Ctx.Get_Attributes (Root)));
       else
-        Conf := Ctx.Get_Brother (Conf);
+        Ok := False;
       end if;
-      declare
-        Attrs : constant Xml_Parser.Attributes_Array
-              := Ctx.Get_Attributes (Conf);
-        Txt : As.U.Asu_Us;
-      begin
-        for I in Attrs'Range loop
-          Txt.Append (Attrs(I).Name & "=" & Attrs(I).Value & " ");
-        end loop;
-        Debug ("Config.Init got Config " & Txt.Image);
-      end;
 
-      -- Skip the Buses, there is at least one, to move to first Connection
-      Connection := Ctx.Get_Child (Conf, 1);
-      loop
-        Debug ("Config.Init got bus "
-             & Ctx.Get_Attribute(Connection, 1).Value.Image);
-        Connection := Ctx.Get_Brother (Connection);
-        exit when Ctx.Get_Name (Connection).Image = "Connection";
-      end loop;
-
-      -- Iterate on all configs
-      Pair_List.Delete_List;
-      loop
-        Debug ("Config.Init got config "
-             & Ctx.Get_Attribute(Connection, 1).Name.Image
-             & "=" & Ctx.Get_Attribute(Connection, 1).Value.Image);
-        -- Iterate on all pairs
+      for C in Configs'Range loop
         declare
-          Pairs : Xml_Parser.Nodes_Array := Ctx.Get_Children (Connection);
-          Save : Boolean;
-          use type Tcp_Util.Remote_Host_List;
+          Buses : constant Xml_Parser.Nodes_Array
+              := Ctx.Get_Children(Configs(C));
         begin
-          for J in Pairs'Range loop
-            begin
-              Host_Pair_Attr := Ctx.Get_Attributes (Pairs(J));
-              -- Get both Host_Ids
-              Save := False;
-              Host := Ip_Addr.Parse (Host_Pair_Attr(1).Value.Image);
-              if Host.Kind = Tcp_Util.Host_Name_Spec then
-                -- Host name
-                Host_Pair_Id.Host1 := Socket.Host_Id_Of (Host.Name.Image);
-                Host_Pair_Attr(1).Value := As.U.Tus (Ip_Addr.Image (
-                        Socket.Id2Addr (Host_Pair_Id.Host1)));
-                Save := True;
-              else
-                -- Host address
-                Host_Pair_Id.Host1 := Host.Id;
-              end if;
-              Host := Ip_Addr.Parse (Host_Pair_Attr(2).Value.Image);
-              if Host.Kind = Tcp_Util.Host_Name_Spec then
-                -- Host name
-                Host_Pair_Id.Host2 := Socket.Host_Id_Of (Host.Name.Image);
-                Host_Pair_Attr(2).Value := As.U.Tus (Ip_Addr.Image (
-                        Socket.Id2Addr (Host_Pair_Id.Host2)));
-                Save := True;
-              else
-                -- Host address
-                Host_Pair_Id.Host2 := Host.Id;
-              end if;
-              -- Insert HostIds in list
-              Pair_List.Insert (Host_Pair_Id);
-              -- Replace Attibutes if needed
-              if Save then
-                Ctx.Set_Attributes (Pairs(J), Host_Pair_Attr);
-              end if;
-              Debug ("Storing pair " & Host_Pair_Attr(1).Value.Image
-                             & " - " & Host_Pair_Attr(2).Value.Image);
-            exception
-              when Socket.Soc_Name_Not_Found =>
-                -- Host name not found => Remove this pair
-                Debug ("Dropping pair " & Host_Pair_Attr(1).Value.Image
-                                & " - " & Host_Pair_Attr(2).Value.Image);
-                Ctx.Delete_Node (Pairs(J), New_Node);
-            end;
+          if Check_Attributes (Configs(C)) then
+            Debug ("Got config " & Image (Ctx.Get_Attributes (Configs(C))));
+          else
+            Ok := False;
+          end if;
+          for B in Buses'Range loop
+            -- Get bus name
+            Name := Ctx.Get_Attribute (Buses(B), 1).Value;
+            if Name.Length > 2 and then Name.Slice (1, 2) = "A-" then
+              Bus_Conf_List.Insert ( (Name, Buses(B), Configs(C)) );
+              Debug ("Bus address " & Name.Image);
+            else
+              Log_Error ("Config.Init", "invalid bus name", Name.Image);
+              Ok := False;
+            end if;
           end loop;
         end;
-
-        exit when not Ctx.Has_Brother (Connection);
       end loop;
+      if not Ok then
+        raise Config_Error;
+      end if;
+    end;
 
-      -- Check Unicity of Pairs
-      -- @@@
-    end loop All_Configs;
-  exception
-    when Config_Error | Internal_Error =>
-      raise;
-    when Except:others =>
-      Log_Exception ("Config.Init", Ada.Exceptions.Exception_Name (Except),
-                     "parsing tree");
-      raise Config_Error;
   end Init;
 
-  -- Get the heartbeat period for the Bus
-  function Get_Heartbeat_Period (Bus : String) return Duration is
+  -- Get for the bus the heartbeat period, the heartbeat max missed number
+  -- and the timeout of connection and send
+  -- May raise Config_Error
+  procedure Get_Tuning (Name : in String;
+                        Heartbeat_Period : out Duration;
+                        Heartbeat_Max_Missed : out Positive;
+                        Timeout : out Duration) is
+    Root : Xml_Parser.Element_Type;
+    Crit : Bus_Conf_Rec;
+    Found : Boolean;
+    Dur : Duration;
+    use type As.U.Asu_Us;
   begin
     Init;
-    return Default_Heartbeat_Period;
-  end Get_Heartbeat_Period;
+    Root := Ctx.Get_Root_Element;
 
-  -- Get the heartbeat missed number for the bus
-  function Get_Heartbeat_Missed_Number (Bus : String) return Positive is
-  begin
-    Init;
-    return Default_Heartbeat_Missed_Number;
-  end Get_Heartbeat_Missed_Number;
+    -- See if this bus is described
+    Crit.Addr := As.U.Tus ("A-" & Name);
+    Bus_Conf_List.Search_Match (Found, Bus_Conf_Match'Access, Crit,
+                                From => Bus_Conf_List_Mng.Absolute);
+    if Found then
+      Debug ("Bus " & Name & " found in config");
+    else
+      Debug ("Bus " & Name & " not found in config");
+    end if;
 
-  -- Get Connection_Timeout for the Bus and the target Host (IP address)
-  function Get_Connection_Timeout (Bus : String; Dest : String)
-             return Duration is
-  begin
-    return Default_Connection_Timeout;
-  end Get_Connection_Timeout;
+    -- Get Heartbeat_Period
+    Dur := 0.0;
+    if Found then
+      -- In Conf?
+      Dur := Get_Attribute (Bus_Conf_List.Access_Current.Config,
+                            Heartbeat_Period_Name, True);
+    end if;
+    if Dur = 0.0 then
+      -- In Root?
+      Dur := Get_Attribute (Root,
+                            Heartbeat_Period_Name, True);
+    end if;
+    if Dur = 0.0 then
+      -- Default
+      Dur := Default_Heartbeat_Period;
+    end if;
+    Heartbeat_Period := Dur;
+
+    -- Get Heartbeat_Max_Missed
+    Dur := 0.0;
+    if Found then
+      -- In Conf?
+      Dur := Get_Attribute (Bus_Conf_List.Access_Current.Config,
+                            Heartbeat_Max_Missed_Name, False);
+    end if;
+    if Dur = 0.0 then
+      -- In Root?
+      Dur := Get_Attribute (Root,
+                            Heartbeat_Max_Missed_Name, False);
+    end if;
+    if Dur = 0.0 then
+      -- Default
+      Heartbeat_Max_Missed := Default_Heartbeat_Max_Missed;
+    else
+      Heartbeat_Max_Missed := Positive (Dur);
+    end if;
+
+    -- Get Timeout
+    Dur := 0.0;
+    if Found then
+      -- In Conf?
+      Dur := Get_Attribute (Bus_Conf_List.Access_Current.Config,
+                            Timeout_Name, True);
+    end if;
+    if Dur = 0.0 then
+      -- In Root?
+      Dur := Get_Attribute (Root,
+                            Timeout_Name, True);
+    end if;
+    if Dur = 0.0 then
+      -- Default
+      Dur := Default_Timeout;
+    end if;
+    Timeout := Dur;
+  end Get_Tuning;
 
 end Config;
 

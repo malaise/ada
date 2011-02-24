@@ -1,15 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Autobus SYSTEM "Autobus.dtd">
 
-<Autobus>
-  <Config Heartbeat_Period="2.0" Heartbeat_Missed_Number="4"
-         Default_Connection_Timeout="1.0">
+<Autobus Heartbeat_Period="6.0" 
+         Heartbeat_Max_Missed="5"
+         Timeout="4.0">
+  <!-- Broadcast -->
+  <Config Heartbeat_Period="5.0"
+          Heartbeat_Max_Missed="4"
+          Timeout="3.0">
+    <Bus Name="A-192.168.6.255:21022"/>
+    <Bus Name="A-192.168.50.255:21023"/>
+  </Config>
+  <!-- Multicast -->
+  <Config Heartbeat_Period="1.0"
+          Heartbeat_Max_Missed="3"
+          Timeout="0.5">
     <Bus Name="A-234.7.6.5:21021"/>
-    <Connection Timeout="2.0">
-      <Pair Host1="systint29" Host2="systint29"/>
-      <Pair Host1="systint28" Host2="systint28"/>
-      <Pair Host1="systint29" Host2="systint28"/>
-    </Connection>
   </Config>
 </Autobus>
 
