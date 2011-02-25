@@ -194,8 +194,10 @@ package Tcp_Util is
   -----------------------
   -- This package can be used with UDP/IPM socket as well (and there is no
   --  no disconnection in this case)
+
   -- Callback invoqued when remote disconnects
-  -- Dscr is closed after invocation
+  -- Callbacks are automatically removed
+  --  and Dscr is closed after invocation
   type Disconnection_Callback_Access is access
        procedure (Dscr : in Socket.Socket_Dscr);
 
