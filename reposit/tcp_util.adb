@@ -731,7 +731,7 @@ package body Tcp_Util is
   type Sending_Rec is record
     Dscr : Socket.Socket_Dscr;
     Fd   : Event_Mng.File_Desc;
-    Timeout : Positive_Duration;
+    Timeout : Natural_Duration;
     Eoo_Cb : End_Overflow_Callback_Access;
     Err_Cb : Send_Error_Callack_Access;
   end record;
