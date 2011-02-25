@@ -42,7 +42,8 @@ package body Ip_Addr is
       Dots(2) := String_Mng.Locate (Txt.Image, ".", Occurence => 2);
       Dots(3) := String_Mng.Locate (Txt.Image, ".", Occurence => 3);
       if Dots(1) = 1 or else Dots(2) = Dots(1)+1 or else
-         Dots(3) = Dots(2)+1 or else Dots(3) = Txt.Length then
+         Dots(3) = Dots(2)+1 or else Dots(3) = Txt.Length
+      or else Dots(3) = 0 then
         raise Parse_Error;
       end if;
 
@@ -59,6 +60,7 @@ package body Ip_Addr is
               Id   => Socket.Addr2Id (Ip_Addr) );
     exception
       when others =>
+        -- Not a "vvv.xxx.yyy.zzz" format
         null;
     end;
 
@@ -108,6 +110,18 @@ package body Ip_Addr is
   exception
     when others =>
       raise Parse_Error;
+  end Parse;
+
+  -- Same with Tcp_Util.Local_port
+  function Parse (Port : String) return Tcp_Util.Local_Port is
+    Remote_Port : constant Tcp_Util.Remote_Port := Parse (Port);
+  begin
+    case Remote_Port.Kind is
+      when Tcp_Util.Port_Num_Spec =>
+        return (Tcp_Util.Port_Num_Spec, Remote_Port.Num);
+      when Tcp_Util.Port_Name_Spec =>
+        return (Tcp_Util.Port_Name_Spec, Remote_Port.Name);
+    end case;
   end Parse;
 
   -- Image of a port
