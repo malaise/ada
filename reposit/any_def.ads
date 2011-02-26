@@ -7,12 +7,14 @@ package Any_Def is
   type Any (Kind : Any_Kind_List := None_Kind) is record
     case Kind is
       when None_Kind => null;
-      when Bool_Kind  => Bool : Boolean;
-      when Inte_Kind  => Inte : My_Math.Inte;
-      when Real_Kind  => Real : My_Math.Real;
-      when Str_Kind   => Str  : As.U.Asu_Us;
+      when Bool_Kind => Bool : Boolean;
+      when Inte_Kind => Inte : My_Math.Inte;
+      when Real_Kind => Real : My_Math.Real;
+      when Str_Kind  => Str  : As.U.Asu_Us;
     end case;
   end record;
+
+  function Image (A : Any) return String;
 
 end Any_Def;
 

@@ -1,6 +1,6 @@
 with System, Ada.Text_Io, Ada.Io_Exceptions;
 with C_Types, Null_Procedure, Dynamic_List, Environ, Timeval, Perpet,
-     Virtual_Time;
+     Any_Def, My_Math, Virtual_Time;
 package body Event_Mng is
 
   -------------
@@ -406,7 +406,7 @@ package body Event_Mng is
   end Wait;
 
   -- The pause
-  Pause_Level : Natural := 0;
+  Pause_Level : Any_Def.Any (Any_Def.Inte_Kind) := (Any_Def.Inte_Kind, 0);
 
   function Pause_Cb (Id : Timers.Timer_Id;
                      Data : Timers.Timer_Data)
@@ -414,20 +414,21 @@ package body Event_Mng is
     pragma Unreferenced (Id);
   begin
     -- Check this expiration versus current pause level
-    if Pause_Level >= Data then
+    if Pause_Level.Inte >= Data.Inte then
       -- Pop up to current level
-      Pause_Level := Data - 1;
+      Pause_Level.Inte := Data.Inte - 1;
     end if;
-    Put_Debug ("Event_Mng.Pause.Cb " & Data'Img);
+    Put_Debug ("Event_Mng.Pause.Cb " & Any_Def.Image (Data));
     return True;
   end Pause_Cb;
 
   procedure Pause (Timeout_Ms : in Integer) is
     Tid : Timers.Timer_Id;
-    Loc_Level : Positive;
+    Loc_Level : Any_Def.Any (Any_Def.Inte_Kind);
     Wait_Timeout : Integer;
     Dummy : Boolean;
     pragma Unreferenced (Dummy);
+    use type My_Math.Inte;
   begin
     Set_Debug;
 
@@ -435,9 +436,9 @@ package body Event_Mng is
     Activate_Signal_Handling;
 
     -- Increment global pause level and store ours
-    Pause_Level := Pause_Level + 1;
+    Pause_Level.Inte := Pause_Level.Inte + 1;
     Loc_Level := Pause_Level;
-    Put_Debug ("Event_Mng.Pause Push " & Loc_Level'Img);
+    Put_Debug ("Event_Mng.Pause Push " & Any_Def.Image (Loc_Level));
 
     -- Arm or simulate timer
     if Timeout_Ms < 0 then
@@ -463,10 +464,10 @@ package body Event_Mng is
 
       if Wait (Wait_Timeout) = Signal_Event then
         -- Exit all pauses on signal
-        Put_Debug ("Event_Mng.Pause Signal " & Pause_Level'Img);
-        if Pause_Level /= 0 then
-          Pause_Level := Pause_Level - 1;
-          if Pause_Level /= 0 then
+        Put_Debug ("Event_Mng.Pause Signal " & Any_Def.Image (Pause_Level));
+        if Pause_Level.Inte /= 0 then
+          Pause_Level.Inte := Pause_Level.Inte - 1;
+          if Pause_Level.Inte /= 0 then
             Send_Dummy_Signal;
           end if;
         end if;
@@ -475,7 +476,7 @@ package body Event_Mng is
         exit;
       end if;
 
-      exit when Pause_Level < Loc_Level;
+      exit when Pause_Level.Inte < Loc_Level.Inte;
     end loop;
   end Pause;
 
