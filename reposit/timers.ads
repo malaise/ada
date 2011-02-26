@@ -1,4 +1,4 @@
-with Perpet, Virtual_Time, Smart_Reference;
+with Any_Def, Perpet, Virtual_Time, Smart_Reference;
 package Timers is
 
   -- How to specify a timer, wait some seconds or until a specific time
@@ -53,8 +53,8 @@ package Timers is
   --  the Data provided at timer creation
   -- Should return True if the timer expiration has to be reported by Expire
   --  (and Event_Mng will report Timer_Event)
-  subtype Timer_Data is Natural;
-  No_Data : constant Timer_Data := 0;
+  subtype Timer_Data is Any_Def.Any;
+  No_Data : constant Timer_Data := (Kind => Any_Def.None_Kind);
 
   type Timer_Callback is access
         function (Id : in Timer_Id;
@@ -88,10 +88,13 @@ package Timers is
   procedure Suspend (Id : in Timer_Id);
 
   -- Resume a suspended a timer: expirations, even the pending ones are resumed
-  -- No action if timer is not syspended
+  -- No action if timer is not suspended
   -- May raise Invalid_Timer if timer is Deleted
   procedure Resume (Id : in Timer_Id);
 
+  -- Return the delay until expiration
+  -- May raise Invalid_Timer if timer is Deleted
+  function Remaining (Id : Timer_Id) return Perpet.Delta_Rec;
 
   --------------------------------------------------------------
   -- The following operations are used by Event_Mng and X_Mng --

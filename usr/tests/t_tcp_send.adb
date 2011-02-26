@@ -15,7 +15,6 @@ procedure T_Tcp_Send is
   -- Options
   Next_Arg : Positive;
   Blocking : Boolean := False;
-  Handle_Overflow : Boolean := False;
   Send_Timeout : Duration := 0.0;
 
   -- Connect synchronous result
@@ -121,26 +120,26 @@ procedure T_Tcp_Send is
     use type Socket.Socket_Dscr;
   begin
     if Sock = Socket.No_Socket then
-      Basic_Proc.Put_Line_Output ("Not connected");
+      Basic_Proc.Put_Line_Output ("Not sending cause connected");
+      return;
+    elsif In_Overflow then
+      Basic_Proc.Put_Line_Output ("Not sending cause in Overflow");
       return;
     end if;
     Basic_Proc.Put_Line_Output ("Sending");
     Res := My_Send (Sock,
              End_Overflow_Cb'Unrestricted_Access,
              Send_Err_Cb'Unrestricted_Access,
-             Handle_OverFlow, Send_Timeout, Message);
+             Send_Timeout, Message);
+    In_Overflow := not Res;
     Basic_Proc.Put_Line_Output ("Send result " & Mixed_Str (Res'Img));
   exception
-    when Socket.Soc_Tail_Err =>
-      Basic_Proc.Put_Line_Output ("Sending exception Tail_Err, resending");
-      begin
-        Sock.Re_Send;
-      exception
-         when Socket.Soc_Would_Block =>
-           Basic_Proc.Put_Line_Output ("Resending would block");
-      end;
     when Socket.Soc_Conn_Lost =>
       Basic_Proc.Put_Line_Output ("Sending exception Conn_Lost, closing");
+      Sock.Close;
+      Connect;
+    when Tcp_Util.Timeout_Error =>
+      Basic_Proc.Put_Line_Output ("Sending exception Timeout_Error, closing");
       Sock.Close;
       Connect;
     when Error : others =>
@@ -185,8 +184,6 @@ begin
     begin
       if Arg = "-b" then
         Blocking := True;
-      elsif Arg = "-o" then
-        Handle_Overflow := True;
       elsif Arg = "-t" then
         Send_Timeout := 0.1;
       elsif Next_Arg = Argument.Get_Nbre_Arg then
@@ -219,7 +216,7 @@ exception
     Basic_Proc.Put_Line_Output ("Usage: "
           & Argument.Get_Program_Name & " -a <port>");
     Basic_Proc.Put_Line_Output ("   or: "
-          & Argument.Get_Program_Name & " [ -b ] [ -o ] [ -t ] <host>:<port>");
+          & Argument.Get_Program_Name & " [ -b ] [ -t ] <host>:<port>");
   when Error: others =>
     Basic_Proc.Put_Line_Output ("Exception: "
                    & Ada.Exceptions.Exception_Name (Error));

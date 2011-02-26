@@ -275,9 +275,8 @@ package body Http is
     Debug ("HTTP: Connection");
     -- Save Dscr & Send request
     Soc := Dscr;
-    -- Send request: slices of Msg'Length
+    -- Send request (blocking): slices of Msg'Length
     Debug ("HTTP: Sending " & Request.Image);
-    Soc.Set_Blocking (False);
     loop
       Len := Request.Length;
       exit when Len = 0;
@@ -286,14 +285,18 @@ package body Http is
       end if;
       Msg (1 .. Len) := Request.Slice (1, Len);
       Request.Delete (1, Len);
-      Dummy := My_Send (Soc, null, null, False, Send_Timeout, Msg, Len);
+      Dummy := My_Send (Soc, null, null, Send_Timeout, Msg, Len);
     end loop;
     -- Set not blocking and hook receptions
+    Soc.Set_Blocking (False);
     Buffer.Set_Null;
     My_Rece.Set_Callbacks (Soc,
                            Read_Cb'Unrestricted_Access,
                            Disconnection_Cb'Unrestricted_Access);
-
+  exception
+    when Tcp_Util.Timeout_Error =>
+      Result := (Client_Error, Timeout);
+      Done := True;
   end Connection_Cb;
 
   ---------------------------------------------------------------------------

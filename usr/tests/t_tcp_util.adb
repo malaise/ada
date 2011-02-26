@@ -68,7 +68,7 @@ procedure T_Tcp_Util is
     if Server then
       if not In_Ovf then
         if My_Send (The_Dscr, End_Ovf_Cb'Unrestricted_Access,
-                    Send_Err_Cb'Unrestricted_Access, True, 1.0, Message) then
+                    Send_Err_Cb'Unrestricted_Access, 1.0, Message) then
           Ada.Text_Io.Put_Line (Msg & " sent num "
                                     & Integer'Image(Message.Num));
           return True;
@@ -86,7 +86,7 @@ procedure T_Tcp_Util is
         return False;
       end if;
       while My_Send (The_Dscr, End_Ovf_Cb'Unrestricted_Access,
-                     Send_Err_Cb'Unrestricted_Access, True, 1.0, Message) loop
+                     Send_Err_Cb'Unrestricted_Access, 1.0, Message) loop
         Ada.Text_Io.Put_Line (Msg & " sent num " & Integer'Image(Message.Num));
         Message.Num := Message.Num + 1;
       end loop;

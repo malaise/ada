@@ -917,7 +917,7 @@ package body Fifos is
         raise Not_Open;
       end if;
       if Fifo_Send (Id.Acc.Dscr, End_Overflow_Cb'Unrestricted_Access,
-                    null, True, 0.0, Message, Length) then
+                    null, 0.0, Message, Length) then
         return Ok;
       else
         return Overflow;

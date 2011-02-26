@@ -1,4 +1,4 @@
-with Timers;
+with Timers, Any_Def;
 with Dictio_Debug;
 package body Status is
 
@@ -19,11 +19,12 @@ package body Status is
     end if;
 
     begin
-      New_Status := Status_List'Val(Data);
+      New_Status := Status_List'Val(Data.Inte);
     exception
       when others =>
         if Dictio_Debug.Level_Array(Dictio_Debug.Status) then
-          Dictio_Debug.Put ("Status: Cb with invalid status " & Data'Img);
+          Dictio_Debug.Put ("Status: Cb with invalid status "
+                          & Any_Def.Image (Data));
         end if;
         return False;
     end;
@@ -56,13 +57,15 @@ package body Status is
     T : Timers.Delay_Rec;
   begin
     if Immediate then
-      Dummy := Timer_Cb (Timers.No_Timer, Status_List'Pos(Status));
+      Dummy := Timer_Cb (Timers.No_Timer, (Any_Def.Inte_Kind, 
+                                           Status_List'Pos(Status)));
       -- No action on expiration of pendig timer
       Tid.Delete_If_Exists;
     else
       -- Create immediate timer with status (so we go back to main loop)
       T.Delay_Seconds := 0.0;
-      Tid.Create (T, Timer_Cb'Access, Status_List'Pos(Status));
+      Tid.Create (T, Timer_Cb'Access, (Any_Def.Inte_Kind,
+                                       Status_List'Pos(Status)));
     end if;
   end Set;
 

@@ -47,7 +47,7 @@ procedure T_Async is
     end if;
     if not In_Overflow then
       if not My_Send (Tcp_Soc, End_Ovf_Cb'Unrestricted_Access, null,
-                      True, 0.0, Msg, Len) then
+                      0.0, Msg, Len) then
         In_Overflow := True;
       end if;
     end if;

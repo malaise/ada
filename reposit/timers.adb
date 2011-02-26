@@ -408,14 +408,14 @@ package body Timers is
       return;
     end if;
     if not Timer.Frozen then
-      -- Compute remaining in virtual time
+      -- Compute remaining in virtual time from expiration time
       Now := Virtual_Time.Current_Time (Timer.Clock);
       Speed := Virtual_Time.Get_Speed (Timer.Clock);
       if Timer.Exp.Expiration_Time > Now then
         Timer.Remaining := (Timer.Exp.Expiration_Time - Now)
             * Perpet.Natural_Duration(Speed);
       else
-        Timer.Exp.Expiration_Time := Now;
+        Timer.Remaining := Default_Delta;
       end if;
     end if;
     -- Update status and re-sort
@@ -461,6 +461,37 @@ package body Timers is
                "restarted for " & Date_Image (Timer.Exp.Expiration_Time));
     Release_Mutex;
   end Resume;
+
+  -- Return the delay until expiration
+  -- May raise Invalid_Timer if timer is Deleted
+  function Remaining (Id : Timer_Id) return Perpet.Delta_Rec is
+    Timer : access Timer_Rec;
+    Now : Virtual_Time.Time;
+    Speed : Virtual_Time.Speed_Range;
+    use type Virtual_Time.Time, Virtual_Time.Speed_Range, Perpet.Delta_Rec;
+  begin
+    Get_Mutex;
+    Set_Debug;
+    -- Get access to timer
+    Timer := Id.Get_Access;
+    if Timer.Status = Deleted then
+      Release_Mutex;
+      raise Invalid_Timer;
+    elsif Timer.Frozen or else Timer.Status = Suspended then
+      -- Clock frozen or timer suspended (or both)
+      Release_Mutex;
+      return Timer.Remaining;
+    end if;
+    -- Compute remaining time up to expiration
+    Now := Virtual_Time.Current_Time (Timer.Clock);
+    Speed := Virtual_Time.Get_Speed (Timer.Clock);
+    if Timer.Exp.Expiration_Time > Now then
+      return Perpet.Delta_Rec'(
+         (Timer.Exp.Expiration_Time - Now) * Perpet.Natural_Duration(Speed));
+    else
+      return Default_Delta;
+    end if;
+  end Remaining;
 
   -- Locate First timer to expire
   -- Retuns False if no more timer

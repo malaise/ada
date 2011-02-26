@@ -9,7 +9,7 @@ package Tcp_Util is
   --  True at completion of the service. So Event_Mng will report:
   -- For Connection: Fd_Event or Timer_Event when connection success or failure
   -- For Acception: Fd_Event when a connection is accepted
-  -- For Sending : Fd_Event when end of overflow
+  -- For Sending : Fd_Event when end of overflow or error
   -- For Receiving: Fd_Event when data read or connection closed
 
 
@@ -20,11 +20,11 @@ package Tcp_Util is
                                Socket.Tcp .. Socket.Tcp_Header_Afux;
 
 
-  -- POSITIVE AND NATURAL DURATION --
-  ------------------------------------
+  -- POSITIVE and NATURAL DURATION
+  --------------------------------
   -- Positive duration for connection
   subtype Positive_Duration is Duration range 0.001 .. Duration'Last;
-  -- Natural duration for connection or sending timeout
+  -- Natural duration for sending
   subtype Natural_Duration is Duration range 0.0 .. Duration'Last;
 
 
@@ -157,27 +157,36 @@ package Tcp_Util is
     access procedure (Dscr : in Socket.Socket_Dscr;
                       Conn_Lost : in Boolean);
 
-  -- If send is ok returns True
-  -- Elsif overflow and Handle_Overflow is set,
-  --  Returns false and manages to re-send when possible until
-  --   all message is sent, then calls End_Of_Overflow_Callback
-  --   If a timeout or connection lost occurs during the retries,
-  --     then call the Send_Error_Callback and close the Dscr
-  --  May raise Socket.Soc_Tail_Err if called while previous Send returned
-  --   False and End_Of_Overflow_Cb has not (yet) been called
-  -- Else raise Socket.Soc_Would_Block, Socket.Conn_Lost ot Timeout_Error
-  --  depending on the error
-
-  -- As a consequence, if Handle_Overflow is not set, then Send returns
-  --  True or raises an exception, and the callbacks are never called
-  -- A Timeout of 0.0 means no guard on sending (no Timeout error or exception)
+  -- The general idea is not to be blocked in case the receiver is too slow
+  --  slow or if the connection becomes "frozen" (TCP timeout is very long).
+  -- There are two strategies:
+  --  - either set the socket blocking and send with a timeout. The send
+  --    blocks and either succeeds or raises Timeout_Error or Socket.Conn_Lost.
+  --  - or set the socket non blocking. The send either succeds or raises
+  --    Socket.Conn_Lost (the socket should be closed) or returns False.
+  --    It tries asynchronously to re-send when possible until all the message
+  --    is sent, then calls End_Of_Overflow_Callback.
+  --    If a timeout occurs or connection is lost during the retries,
+  --    then it calls the Send_Error_Callback and closes the Dscr.
+  -- May raise Socket.Soc_Tail_Err if called while previous Send returned
+  --  False and End_Of_Overflow_Cb has not (yet) been called
+  -- May raise Socket.Conn_Lost if the connection is lost, the socket should be
+  --  closed
+  -- May raise Timeout_Error on a blocking socket if timeout has expired, the
+  --  socket is left in an unpredictable state and MUST be closed.
+  -- If the timeout is 0.0 then no timeout is checked and Timeout_Error cannot
+  --  be raised: sending on a blocking socket blocks until success or error,
+  --  and sending on an non blocking socket makes infinite retries until
+  --  success or error.
+  -- If send is called on a non blocking socket and overflows and then the
+  --   socket is changed to blocking then a Timeout error is reported as
+  --   soon as possible (Timeout expiration or next attempt to re send).
   Timeout_Error : exception;
   generic
     type Message_Type is private;
   function Send (Dscr               : in Socket.Socket_Dscr;
                  End_Of_Overflow_Cb : in End_Overflow_Callback_Access;
                  Send_Error_Cb      : in Send_Error_Callack_Access;
-                 Handle_Overflow    : in Boolean;
                  Timeout            : in Natural_Duration;
                  Message            : in Message_Type;
                  Length             : in Natural := 0) return Boolean;

@@ -137,8 +137,7 @@ package body Notify is
         Dummy : Boolean;
         pragma Unreferenced (Dummy);
       begin
-        Dummy := Client_Com.Dictio_Send (Rec.Client, null, null,
-                                         False, 0.0, Msg);
+        Dummy := Client_Com.Dictio_Send (Rec.Client, null, null, 0.0, Msg);
         if Dictio_Debug.Level_Array(Dictio_Debug.Client_Notify) then
           Dictio_Debug.Put ("Client-notify.send: " &  Parse(Item.Name)
                    & " kind " & Item.Kind

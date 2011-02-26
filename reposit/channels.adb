@@ -679,7 +679,7 @@ package body Channels is
         Channel_Dscr.Dests.Read (Dest, Dest_List_Mng.Current);
         if Dest.Dscr /= Socket.No_Socket then
           begin
-            Res := Channel_Send (Dest.Dscr, null, null, False, 0.0, Msg, Len);
+            Res := Channel_Send (Dest.Dscr, null, null, 0.0, Msg, Len);
             Res := True;
           exception
             when Socket.Soc_Tail_Err =>
@@ -721,7 +721,7 @@ package body Channels is
 
       -- Send on Dscr
       begin
-        Res := Channel_Send (Dscr, null, null, False, 0.0, Msg, Len);
+        Res := Channel_Send (Dscr, null, null, 0.0, Msg, Len);
       exception
         when Socket.Soc_Tail_Err =>
           raise Send_Overflow;

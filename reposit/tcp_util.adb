@@ -731,7 +731,7 @@ package body Tcp_Util is
   type Sending_Rec is record
     Dscr : Socket.Socket_Dscr;
     Fd   : Event_Mng.File_Desc;
-    Timeout : Natural_Duration;
+    Timer : Timers.Timer_Id;
     Eoo_Cb : End_Overflow_Callback_Access;
     Err_Cb : Send_Error_Callack_Access;
   end record;
@@ -756,37 +756,13 @@ package body Tcp_Util is
   end Fd_Match;
   procedure Find_By_Fd is new Sen_List_Mng.Search_Raise (Fd_Match);
 
-  -- Resending, with or without timeout
-  type Send_Result_List is (Ok, Timeout, Overflow, Conn_Lost);
-  function Re_Send (Dscr : Socket.Socket_Dscr;
-                    Timeout : Natural_Duration) return Send_Result_List is
+  -- Search Sending_Rec by Timer Id
+  function Timer_Match (R1, R2 : Sending_Rec) return Boolean is
+    use type Timers.Timer_Id;
   begin
-    if Timeout = 0.0 then
-      -- Inifinite sending
-      Dscr.Re_Send;
-    else
-      -- (Re)send during at most Timeout
-      select
-        delay Timeout;
-          -- Timeout on sending
-          return Tcp_Util.Timeout;
-        then abort
-          Dscr.Re_Send;
-      end select;
-    end if;
-    return Ok;
-  exception
-    when Socket.Soc_Would_Block =>
-      return Overflow;
-    when Socket.Soc_Conn_Lost =>
-      return Conn_Lost;
-    when Error:others =>
-      if Debug_Overflow then
-        My_Io.Put_Line ("  Tcp_Util.Re_Send exception "
-            & Ada.Exceptions.Exception_Name (Error));
-      end if;
-      raise;
-  end Re_Send;
+    return R1.Timer = R2.Timer;
+  end Timer_Match;
+  procedure Find_By_Timer is new Sen_List_Mng.Search_Raise (Timer_Match);
 
   -- Delete current sending rec in list
   procedure Delete_Current_Sen is
@@ -795,10 +771,44 @@ package body Tcp_Util is
     Sen_List.Delete (Moved => Moved);
   end Delete_Current_Sen;
 
+  -- Timer expiration callback
+  function Timer_Cb (Id : in Timers.Timer_Id;
+                     Data : in Timers.Timer_Data) return Boolean is
+    pragma Unreferenced (Data);
+    Rec : Sending_Rec;
+  begin
+    -- Find Rec from Timer and read
+    Rec.Timer := Id;
+    Find_By_Timer (Sen_List, Rec, From => Sen_List_Mng.Absolute);
+    Sen_List.Read (Rec, Sen_List_Mng.Current);
+    if Debug_Overflow then
+      My_Io.Put_Line ("  Tcp_Util.Timer_Cb found rec "
+                    & Positive'Image (Sen_List.Get_Position));
+    end if;
+
+    -- End of processing: unhook callback and del rec
+    Event_Mng.Del_Fd_Callback (Rec.Fd, False);
+    Delete_Current_Sen;
+    if Debug_Overflow then
+      My_Io.Put_Line ("  Tcp_Util.Timer_Cb cleaned");
+    end if;
+
+    -- Call send error callback and close
+    if Rec.Err_Cb /= null then
+      Rec.Err_Cb (Rec.Dscr, False);
+      if Debug_Overflow then
+        My_Io.Put_Line ("  Tcp_Util.Send_Err_Cb Cb called");
+      end if;
+    end if;
+    Rec.Dscr.Close;
+    return True;
+  end Timer_Cb;
+
   -- Sending callback on fd
   function Sending_Cb (Fd : in Event_Mng.File_Desc; Read : in Boolean)
                       return Boolean is
     Rec : Sending_Rec;
+    type Send_Result_List is (Ok, Timeout, Overflow, Conn_Lost);
     Result : Send_Result_List;
   begin
     if Debug_Overflow then
@@ -814,14 +824,27 @@ package body Tcp_Util is
                     & Positive'Image (Sen_List.Get_Position));
     end if;
 
-    -- Try to re send
-    Result := Re_Send (Rec.Dscr, Rec.Timeout);
-    if Result = Overflow then
-      -- Still in overflow
-      if Debug_Overflow then
-        My_Io.Put_Line ("  Tcp_Util.Sending_Cb still in overflow");
-      end if;
-      return False;
+    -- See if socket has been changed to blocking meanwhile
+    if Rec.Dscr.Is_Blocking then
+      Result := Timeout;
+    else
+      -- Try to re send
+      begin
+        Rec.Dscr.Re_Send;
+        Result := Ok;
+      exception
+        when Socket.Soc_Would_Block =>
+          -- Still in overflow
+          if Debug_Overflow then
+            My_Io.Put_Line ("  Tcp_Util.Sending_Cb still in overflow");
+          end if;
+          return False;
+        when Socket.Soc_Conn_Lost =>
+          if Debug_Overflow then
+            My_Io.Put_Line ("  Tcp_Util.Sending_Cb still in overflow");
+          end if;
+          Result := Conn_Lost;
+      end;
     end if;
 
     -- End of overflow: unhook callback and del rec
@@ -855,7 +878,7 @@ package body Tcp_Util is
         end if;
       end if;
       Rec.Dscr.Close;
-      return False;
+      return True;
     end if;
   exception
     when Sen_List_Mng.Not_In_List =>
@@ -871,10 +894,10 @@ package body Tcp_Util is
   function Send (Dscr               : in Socket.Socket_Dscr;
                  End_Of_Overflow_Cb : in End_Overflow_Callback_Access;
                  Send_Error_Cb      : in Send_Error_Callack_Access;
-                 Handle_Overflow    : in Boolean;
                  Timeout            : in Natural_Duration;
                  Message            : in Message_Type;
                  Length             : in Natural := 0) return Boolean is
+    Timer_Delay : Timers.Delay_Rec;
     Rec : Sending_Rec;
     procedure Send is new Socket.Send (Message_Type);
   begin
@@ -882,8 +905,8 @@ package body Tcp_Util is
 
     -- Try to send
     begin
-      if Timeout = 0.0 then
-        -- Inifinite sending
+      if Timeout = 0.0 or else not Dscr.Is_Blocking then
+        -- Inifinite or non blocking sending
         Send (Dscr, Message, Length);
       else
         -- (Re)send during at most Timeout
@@ -898,9 +921,8 @@ package body Tcp_Util is
       return True;
     exception
       when Socket.Soc_Would_Block =>
-        if not Handle_Overflow then
-          raise;
-        end if;
+        -- Overflow (on non blocking) is handled below
+        null;
       when Socket.Soc_Conn_Lost =>
         raise;
       when Error:others =>
@@ -911,13 +933,16 @@ package body Tcp_Util is
         raise;
     end;
 
-    -- Handle overflow : build and store rec
+    -- Handle overflow : arm timer, build and store rec
     if Debug_Overflow then
       My_Io.Put_Line ("  Tcp_Util.Send oveflow");
     end if;
     Rec.Dscr := Dscr;
     Rec.Fd := Dscr.Get_Fd;
-    Rec.Timeout := Timeout;
+    if Timeout /= 0.0 then
+      Timer_Delay.Delay_Seconds := Timeout;
+      Rec.Timer.Create (Timer_Delay, Timer_Cb'Access);
+    end if;
     Rec.Eoo_Cb := End_Of_Overflow_Cb;
     Rec.Err_Cb := Send_Error_Cb;
     Sen_List.Insert (Rec);
