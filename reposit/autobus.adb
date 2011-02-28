@@ -357,8 +357,7 @@ package body Autobus is
   end Tcp_Reception_Cb;
 
   -- Pending connection Cb
-  procedure Tcp_Send is new Socket.Send (Tcp_Message_Str,
-                                         Tcp_Message_Max_Length);
+  function Tcp_Send is new Tcp_Util.Send (Tcp_Message_Str);
   procedure Tcp_Connection_Cb (Remote_Host_Id  : in Tcp_Util.Host_Id;
                                Remote_Port_Num : in Tcp_Util.Port_Num;
                                Connected       : in Boolean;
@@ -368,6 +367,8 @@ package body Autobus is
     Partner_Acc : Partner_Access;
     Message : Tcp_Message_Str;
     Message_Length : Natural;
+    Dummy : Boolean;
+    pragma Unreferenced (Dummy);
   begin
     if not Connected then
       -- This should not occur because the number of connection retries
@@ -377,7 +378,7 @@ package body Autobus is
       return;
     end if;
 
-    -- Set non blocking, find partner by Host and Port, update its Sock,
+    -- Find partner by Host and Port
     Partner.Host := Remote_Host_Id;
     Partner.Port := Remote_Port_Num;
     -- Find partner by address
@@ -389,20 +390,30 @@ package body Autobus is
       return;
     end if;
     Partner_Acc := Partner_Access(Partners.Access_Current);
-    Partner_Acc.Sock := Dscr;
-    Partner_Acc.Sock.Set_Blocking (False);
-    Tcp_Reception_Mng.Set_Callbacks (Dscr,
-                                     Tcp_Reception_Cb'Access,
-                                     Tcp_Disconnection_Cb'Access);
     Debug ("Connection to partner " & Partner_Acc.Addr.Image);
 
     -- Send identification message
+    Partner_Acc.Sock := Dscr;
     Message_Length := Partner_Acc.Bus.Addr.Length;
     Message(1 .. Message_Length) := Partner_Acc.Bus.Addr.Image;
-    Tcp_Send (Partner_Acc.Sock, Message, Message_Length);
+    Dummy := Tcp_Send (Partner_Acc.Sock, null, null, Partner_Acc.Bus.Timeout,
+                       Message, Message_Length);
 
+    -- Hook callbacks
+    Tcp_Reception_Mng.Set_Callbacks (Dscr,
+                                     Tcp_Reception_Cb'Access,
+                                     Tcp_Disconnection_Cb'Access);
     --  Create and start its timer
     Start_Partner_Timer (Partner_Acc.Bus);
+  exception
+    when Socket.Soc_Conn_Lost =>
+      -- Not working
+      Debug ("Sending ident to partner raises Conn_Lost, closing");
+      Partner_Acc.Sock.Close;
+    when Tcp_Util.Timeout_Error =>
+      -- Not working
+      Debug ("Sending ident to partner raises Timeout_Error, closing");
+      Partner_Acc.Sock.Close;
   end Tcp_Connection_Cb;
 
   -- Accept connection Cb
@@ -436,7 +447,6 @@ package body Autobus is
     Debug ("Acception of partner " & Partner.Addr.Image);
     Start_Partner_Timer (Partner.Bus);
     -- Set reception callback
-    New_Dscr.Set_Blocking (False);
     Tcp_Reception_Mng.Set_Callbacks (New_Dscr,
                                      Tcp_Reception_Cb'Access,
                                      Tcp_Disconnection_Cb'Access);
@@ -699,6 +709,8 @@ package body Autobus is
     Moved : Boolean;
     Partner_Found : Boolean;
     Success : Boolean;
+    Dummy : Boolean;
+    pragma Unreferenced (Dummy);
   begin
     -- Check that Bus is initialised
     if Bus.Acc = null then
@@ -723,12 +735,16 @@ package body Autobus is
       Bus.Acc.Partners.Read (Partner_Acc, Moved => Moved);
       begin
         if Partner_Acc.Timer.Exists then
-          Tcp_Send (Partner_Acc.Sock, Msg, Message'Length);
+          Dummy := Tcp_Send (Partner_Acc.Sock, null, null,
+                             Bus.Acc.Timeout, Msg, Message'Length);
         end if;
         Success := True;
       exception
         when Socket.Soc_Conn_Lost =>
           Debug ("Lost connection to " & Partner_Acc.Addr.Image);
+          Success := False;
+        when Tcp_Util.Timeout_Error =>
+          Debug ("Timeout while sending to " & Partner_Acc.Addr.Image);
           Success := False;
         when Except:others =>
           Log_Exception ("Tcp_Send", Ada.Exceptions.Exception_Name (Except),
@@ -736,7 +752,7 @@ package body Autobus is
           Success := False;
       end;
       if not Success then
-        -- Remove partner where error occurs
+        -- Remove partner with which error occurs
         Partners.Search_Access (Partner_Found, Partner_Acc);
         Remove_Current_Partner (True);
       end if;
