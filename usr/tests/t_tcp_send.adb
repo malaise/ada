@@ -1,10 +1,11 @@
 with Ada.Exceptions;
-with Basic_Proc, Argument, Mixed_Str,
+with Basic_Proc, Argument, Mixed_Str, Mod_Image,
      Event_Mng, Ip_Addr, Socket, Tcp_Util;
+with Trace;
 procedure T_Tcp_Send is
   Arg_Error : exception;
 
-  -- Socket 
+  -- Socket
   Protocol : constant Socket.Protocol_List := Socket.Tcp_Header;
   Sock, Accept_Sock : Socket.Socket_Dscr;
   Remote_Host : Tcp_Util.Remote_Host;
@@ -20,6 +21,10 @@ procedure T_Tcp_Send is
   -- Connect synchronous result
   Result : Boolean;
 
+  -- Sequence number
+  type Sequence_Number is mod Integer'Last;
+  function Image is new Mod_image (Sequence_Number);
+
   -- Signal callback
   Sig : Boolean := False;
   procedure Signal_Cb is
@@ -29,7 +34,10 @@ procedure T_Tcp_Send is
   end Signal_Cb;
 
   -- Message type
-  subtype Message_Type is string (1 .. 16 * 1024);
+  type Message_Type is record
+    Seq : Sequence_Number;
+    Str : String (1 .. 16 * 1024);
+  end record;
   Message : Message_Type;
   package Reception is new Tcp_Util.Reception (Message_Type);
   function My_Send is new Tcp_Util.Send (Message_Type);
@@ -43,13 +51,20 @@ procedure T_Tcp_Send is
   end Disconnect_Cb;
 
   procedure Read_Cb (Dscr    : in Socket.Socket_Dscr;
-                     Message : in Message_Type;
-                     Length  : in Natural) is
-    pragma Unreferenced (Dscr, Message, Length);
+                     Msg : in Message_Type;
+                     Len  : in Natural) is
+    pragma Unreferenced (Dscr, Len);
   begin
-    Basic_Proc.Put_Line_Output ("Read Cb");
+    if Msg.Seq = Message.seq then
+      Basic_Proc.Put_Line_Output ("Read Cb got " & Image (Msg.Seq));
+    else
+      Basic_Proc.Put_Line_Output ("Read Cb got seq " & Image (Msg.Seq)
+                                & " while expecting " & Image (Message.Seq));
+    end if;
+    Message.Seq := Msg.Seq + 1;
   end Read_Cb;
 
+  -- Acception callback
   procedure Accept_Cb (Local_Port_Num  : in Tcp_Util.Port_Num;
                        Local_Dscr      : in Socket.Socket_Dscr;
                        Remote_Host_Id  : in Tcp_Util.Host_Id;
@@ -67,29 +82,15 @@ procedure T_Tcp_Send is
     else
       Basic_Proc.Put_Line_Output ("Accept Cb accepting connection");
       Sock := New_Dscr;
+      Message.Seq := 0;
       Reception.Set_Callbacks (Sock,
-             Read_Cb'Unrestricted_Access, 
+             Read_Cb'Unrestricted_Access,
              Disconnect_Cb'Unrestricted_Access);
     end if;
   end Accept_Cb;
 
-  -- Emission callbacks
+  -- Connection
   In_Overflow : Boolean := False;
-  procedure End_Overflow_Cb (Dscr : in  Socket.Socket_Dscr) is
-    pragma Unreferenced (Dscr);
-  begin
-    Basic_Proc.Put_Line_Output ("End of overflow Cb");
-    In_Overflow  := False;
-  end End_Overflow_Cb;
-
-  procedure Send_Err_Cb (Dscr : in  Socket.Socket_Dscr;
-                         Conn_Lost : in Boolean) is
-    pragma Unreferenced (Dscr);
-  begin
-    Basic_Proc.Put_Line_Output ("Send error Cb " & Mixed_Str (Conn_Lost'Img));
-    Sock := Socket.No_Socket;
-  end Send_Err_Cb;
-
   procedure Connect_Cb (Remote_Host_Id  : in Tcp_Util.Host_Id;
                         Remote_Port_Num : in Tcp_Util.Port_Num;
                         Connected       : in Boolean;
@@ -108,6 +109,8 @@ procedure T_Tcp_Send is
   procedure Connect is
   begin
     Basic_Proc.Put_Line_Output ("Connecting");
+    In_Overflow := False;
+    Message.seq := 0;
     Result := Tcp_Util.Connect_To (Protocol,
                                    Remote_Host, Remote_Port,
                                    1.0, 0,
@@ -115,42 +118,66 @@ procedure T_Tcp_Send is
     Basic_Proc.Put_Line_Output ("Connect result " & Mixed_Str (Result'Img));
   end Connect;
 
+  -- Emission
+  procedure End_Overflow_Cb (Dscr : in  Socket.Socket_Dscr) is
+    pragma Unreferenced (Dscr);
+  begin
+    Basic_Proc.Put_Line_Output ("End of overflow Cb");
+    In_Overflow  := False;
+  end End_Overflow_Cb;
+
+  procedure Send_Err_Cb (Dscr : in  Socket.Socket_Dscr;
+                         Conn_Lost : in Boolean) is
+    pragma Unreferenced (Dscr);
+  begin
+    Basic_Proc.Put_Line_Output ("Send error Cb " & Mixed_Str (Conn_Lost'Img));
+    -- Socket will be closed by Tcp_Util
+    Sock := Socket.No_Socket;
+    Connect;
+  end Send_Err_Cb;
+
   procedure Send is
     Res : Boolean;
     use type Socket.Socket_Dscr;
   begin
     if Sock = Socket.No_Socket then
-      Basic_Proc.Put_Line_Output ("Not sending cause connected");
+      Basic_Proc.Put_Line_Output ("Not sending cause not connected");
       return;
     elsif In_Overflow then
-      Basic_Proc.Put_Line_Output ("Not sending cause in Overflow");
+      Basic_Proc.Put_Line_Output ("Not sending cause in overflow");
       return;
     end if;
     Basic_Proc.Put_Line_Output ("Sending");
+    Trace.Put ("Sending", True);
     Res := My_Send (Sock,
              End_Overflow_Cb'Unrestricted_Access,
              Send_Err_Cb'Unrestricted_Access,
              Send_Timeout, Message);
+    Message.seq := Message.Seq + 1;
+    Trace.Put ("Send -> " & Mixed_Str (Res'Img), True);
     In_Overflow := not Res;
     Basic_Proc.Put_Line_Output ("Send result " & Mixed_Str (Res'Img));
   exception
     when Socket.Soc_Conn_Lost =>
+      Trace.Put ("Send -> Socket.Soc_Conn_Lost", True);
       Basic_Proc.Put_Line_Output ("Sending exception Conn_Lost, closing");
       Sock.Close;
       Connect;
     when Tcp_Util.Timeout_Error =>
+      Trace.Put ("Send -> Tcp_Util.Timeout_Error", True);
       Basic_Proc.Put_Line_Output ("Sending exception Timeout_Error, closing");
       Sock.Close;
       Connect;
     when Error : others =>
-      Basic_Proc.Put_Line_Output ("Sending exception: " 
+      Trace.Put ("Send -> " & Mixed_Str (Ada.Exceptions.Exception_Name (Error)), True);
+      Basic_Proc.Put_Line_Output ("Sending exception: "
         & Mixed_Str (Ada.Exceptions.Exception_Name (Error)) & ".");
   end Send;
 
 begin
   -- General init
-  Message := (others => ' ');
-  
+  Message := (0, (others => ' '));
+
   Event_Mng.Set_Sig_Term_Callback (Signal_Cb'Unrestricted_Access);
 
   if Argument.Get_Nbre_Arg < 1 then
@@ -185,7 +212,7 @@ begin
       if Arg = "-b" then
         Blocking := True;
       elsif Arg = "-t" then
-        Send_Timeout := 0.1;
+        Send_Timeout := 2.1;
       elsif Next_Arg = Argument.Get_Nbre_Arg then
         -- Last arg = dest
         exit;
@@ -196,9 +223,10 @@ begin
     Next_Arg := Next_Arg + 1;
   end loop;
 
+  Trace.Activate (False);
   begin
     Ip_Addr.Parse (Argument.Get_Parameter (Next_Arg),
-                   Remote_host, Remote_Port);
+                   Remote_Host, Remote_Port);
   exception
     when others =>
       raise Arg_Error;
@@ -211,6 +239,7 @@ begin
     Send;
   end loop;
 
+  Trace.Put ("Done.", False, True);
 exception
   when Arg_Error =>
     Basic_Proc.Put_Line_Output ("Usage: "
