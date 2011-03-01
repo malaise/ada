@@ -1,5 +1,5 @@
-with Ada.Text_Io;
-with Normal, Sys_Calls, Int_Image;
+with Ada.Text_Io, Ada.Calendar;
+with Normal, Sys_Calls, Int_Image, Date_Image;
 package body Trace is
 
   function Pid_Image is new Int_Image (Sys_Calls.Pid);
@@ -24,7 +24,8 @@ package body Trace is
     Created := True;
   end Create;
 
-  procedure Put (Message : in String := ""; Flush : in Boolean := False) is
+  procedure Put (Message : in String; Date : in Boolean;
+                 Flush : in Boolean := False) is
   begin
     if not Activated then
       return;
@@ -32,8 +33,16 @@ package body Trace is
     if not Created then
       Create;
     end if;
-    Ada.Text_Io.Put_Line (File => File,
-                          Item => Normal(Count, 5) & " ->" & Message & "<");
+    if Message /= "" or else Date then
+      Ada.Text_Io.Put (File => File,
+                       Item => Normal(Count, 5));
+      if Date then
+        Ada.Text_Io.Put (File => File,
+                         Item => " " & Date_Image (Ada.Calendar.Clock, True));
+      end if;
+      Ada.Text_Io.Put_Line (File => File,
+                            Item => " ->" & Message & "<");
+    end if;
     if Flush then
       Ada.Text_Io.Flush (File);
     end if;
