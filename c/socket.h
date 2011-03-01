@@ -65,6 +65,15 @@
 typedef enum {udp_socket=0, tcp_socket=1, tcp_header_socket=2,
               tcp_afux_socket=3, tcp_header_afux_socket=4} socket_protocol;
 
+/* Blocking mode */
+/* full_blocking: soc_accept, soc_receive, soc_send, soc_resend and */
+/*                soc_set_dest_xxx are blocking */
+/* blocking_send: soc_accept and soc_receive are non blocking */
+/* non_blocking: connecting, sending, accepting and receiving are non */
+/*               blocking */
+/* The mode where only reception is blocking is not usefull */
+typedef enum {full_blocking, blocking_send, non_blocking} blocking_mode;
+
 /* Token socket : a pointer (abstract data type) */
 /* Has to be initialised to init_soc */
 typedef void * soc_token;
@@ -90,11 +99,11 @@ typedef void * soc_message;
 /* Returns the string associated to an error code */
 extern const char * soc_error (const int code);
 
-/*-------------------------------------------------------------*/
-/* All functions return an error or SOC_OK except soc_receive: */
-/*  on non blocking tcp no header it returns the read length   */
-/*  on udp it returns the real length of the message sent      */
-/*-------------------------------------------------------------*/
+/*----------------------------------------------------------------*/
+/* All functions return an error or SOC_OK except soc_receive:    */
+/*  on non full_blocking tcp no header it returns the read length */
+/*  on udp it returns the real length of the message sent         */
+/*----------------------------------------------------------------*/
 
 /*-------------------------------------------------------------------------*/
 /*  Note for Multicast IP (using Udp socket):                              */
@@ -125,12 +134,12 @@ extern int soc_close (soc_token *p_token);
 extern int soc_get_id (soc_token token, int *p_id);
 
 /* Set the socket blocking or non blocking */
-/*  (for sending, receiving, connecting) */
-/* Socket is blocking at creation (open/accept) */
-extern int soc_set_blocking (soc_token token, boolean blocking);
+/*  (for connecting and sending, for receiving) */
+/* Socket is full_blocking at creation (open/accept) */
+extern int soc_set_blocking (soc_token token, blocking_mode blocking);
 
-/* Is the socket in blocking mode or not */
-extern int soc_is_blocking (soc_token token, boolean *blocking);
+/* What is the socket blocking mode */
+extern int soc_get_blocking (soc_token token, blocking_mode *blocking);
 
 /* Get socket protocol */
 extern int soc_get_protocol (soc_token token, socket_protocol *protocol);

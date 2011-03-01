@@ -118,7 +118,7 @@ package body Ios is
     use type Socket.Socket_Dscr;
   begin
     Tcp_Soc := New_Dscr;
-    Tcp_Soc.Set_Blocking (False);
+    Tcp_Soc.Set_Blocking (Socket.Blocking_Send);
     My_Rece.Set_Callbacks (Tcp_Soc, Read_Cb'Unrestricted_Access,
                                   Discon_Cb'Unrestricted_Access);
     Debug.Log ("Connected");
@@ -352,7 +352,6 @@ package body Ios is
     Disconnection := False;
     Txt := Text;
     -- Send slices of Message_Type, blocking with timeout
-    Tcp_Soc.Set_Blocking (True);
     loop
       Len := Txt.Length;
       exit when Len = 0;
@@ -363,7 +362,6 @@ package body Ios is
       Txt.Delete (1, Len);
       Dummy := My_Send (Tcp_Soc, null, null, 0.1, Msg, Len);
     end loop;
-    Tcp_Soc.Set_Blocking (False);
   exception
     when Socket.Soc_Conn_Lost =>
       Debug.Log ("Lost connection");

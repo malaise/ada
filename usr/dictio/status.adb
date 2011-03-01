@@ -57,7 +57,7 @@ package body Status is
     T : Timers.Delay_Rec;
   begin
     if Immediate then
-      Dummy := Timer_Cb (Timers.No_Timer, (Any_Def.Inte_Kind, 
+      Dummy := Timer_Cb (Timers.No_Timer, (Any_Def.Inte_Kind,
                                            Status_List'Pos(Status)));
       -- No action on expiration of pendig timer
       Tid.Delete_If_Exists;

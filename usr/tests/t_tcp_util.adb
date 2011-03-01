@@ -126,12 +126,8 @@ procedure T_Tcp_Util is
       Event_Mng.Add_Fd_Callback (Dscr.Get_Fd,
                             True,
                             Read_Cb'Unrestricted_Access);
-      The_Dscr.Set_Blocking (False);
-      Ada.Text_Io.Put ("Connected and ");
-      if not The_Dscr.Is_Blocking then
-        Ada.Text_Io.Put ("non ");
-      end if;
-      Ada.Text_Io.Put_Line ("blocking");
+      The_Dscr.Set_Blocking (Socket.Non_Blocking);
+      Ada.Text_Io.Put ("Connected and non blocking");
     else
       Ada.Text_Io.Put_Line ("Not connected");
       Give_Up := True;
@@ -174,12 +170,8 @@ procedure T_Tcp_Util is
       Event_Mng.Add_Fd_Callback (New_Dscr.Get_Fd,
                             True,
                             Read_Cb'Unrestricted_Access);
-      The_Dscr.Set_Blocking (False);
-      Ada.Text_Io.Put ("Accepted and ");
-      if not The_Dscr.Is_Blocking then
-        Ada.Text_Io.Put ("non ");
-      end if;
-      Ada.Text_Io.Put_Line ("blocking");
+      The_Dscr.Set_Blocking (Socket.Non_Blocking);
+      Ada.Text_Io.Put ("Accepted and non blocking");
     end if;
   end Accept_Cb;
 

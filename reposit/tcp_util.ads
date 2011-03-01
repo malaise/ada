@@ -85,7 +85,7 @@ package Tcp_Util is
   ---------------------------
   -- Connection / Disconnection callback
   -- Sets Connected to True if connection succeeds,
-  --  then Dscr is the one of the new socket connected, blocking,
+  --  then Dscr is the one of the new socket connected, in mode Blocking_Send,
   --  Remote_Host_Id and Remote_Port_Num are set.
   -- Sets Connected to False if connection fails,
   --  then Dscr is Socket.No_Socket, Remote_Host_Id and Remote_Port_Num
@@ -120,7 +120,7 @@ package Tcp_Util is
   -------------------------
   -- Acception callback
   -- The Local_Dscr is the one set by Accept_From
-  --  New_Dscr is the one of the new socket, blocking,
+  --  New_Dscr is the one of the new socket, in mode Blocking_Send,
   --  Remote_Host_Id and Remote_Port_Num are set.
   type Acception_Callback_Access is
     access procedure (Local_Port_Num  : in Port_Num;
@@ -130,13 +130,13 @@ package Tcp_Util is
                       New_Dscr        : in Socket.Socket_Dscr);
 
   -- Accept connections to a local port
-  -- Dscr is open and set to the accepting connections
+  -- Dscr is open in mode Blocking_Send, and set to the accept connections
   -- Num is its port num (usefull when dynamical).
   -- May raise Name_Error if Port.Name is unknown
   procedure Accept_From (Protocol     : in Tcp_Protocol_List;
                          Port         : in Local_Port;
                          Acception_Cb : in Acception_Callback_Access;
-                         Dscr         : in out Socket.Socket_Dscr;
+                         Dscr         : out Socket.Socket_Dscr;
                          Num          : out Port_Num);
 
   -- Abort further accepts on port (Af_inet and Af_unix may be on the same port).

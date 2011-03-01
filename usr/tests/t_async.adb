@@ -38,6 +38,19 @@ procedure T_Async is
     In_Overflow := False;
   end End_Ovf_Cb;
 
+  -- Sending fatal error
+  procedure Send_Err_Cb (Dscr : in  Socket.Socket_Dscr;
+                         Conn_Lost : in Boolean) is
+    pragma Unreferenced (Dscr);
+  begin
+    if Conn_Lost then
+      Async_Stdin.Put_Line_Err ("Sending msg failed cause connection lost");
+    else
+      Async_Stdin.Put_Line_Err ("Sending msg failed cause timeout");
+    end if;
+  end Send_Err_Cb;
+
+
   -- For sending on Tcp
   function My_Send is new Tcp_Util.Send (Message_Type);
   procedure Send (Msg : in Message_Type; Len : in Positive) is
@@ -46,8 +59,8 @@ procedure T_Async is
       return;
     end if;
     if not In_Overflow then
-      if not My_Send (Tcp_Soc, End_Ovf_Cb'Unrestricted_Access, null,
-                      0.0, Msg, Len) then
+      if not My_Send (Tcp_Soc, End_Ovf_Cb'Unrestricted_Access,
+                      Send_Err_Cb'Unrestricted_Access, 1.0, Msg, Len) then
         In_Overflow := True;
       end if;
     end if;
@@ -103,7 +116,7 @@ procedure T_Async is
     use type Socket.Socket_Dscr;
   begin
     Tcp_Soc := New_Dscr;
-    Tcp_Soc.Set_Blocking (False);
+    Tcp_Soc.Set_Blocking (Socket.Non_Blocking);
     In_Overflow := False;
     My_Rece.Set_Callbacks (Tcp_Soc, Read_Cb'Unrestricted_Access,
                                   Discon_Cb'Unrestricted_Access);
@@ -121,7 +134,7 @@ procedure T_Async is
   begin
     if Connected then
       Tcp_Soc := Dscr;
-      Tcp_Soc.Set_Blocking (False);
+      Tcp_Soc.Set_Blocking (Socket.Non_Blocking);
       In_Overflow := False;
       My_Rece.Set_Callbacks (Tcp_Soc, Read_Cb'Unrestricted_Access,
                                     Discon_Cb'Unrestricted_Access);

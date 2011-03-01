@@ -275,7 +275,7 @@ package body Http is
     Debug ("HTTP: Connection");
     -- Save Dscr & Send request
     Soc := Dscr;
-    -- Send request (blocking): slices of Msg'Length
+    -- Send request (socket is in mode Blocking_Send): slices of Msg'Length
     Debug ("HTTP: Sending " & Request.Image);
     loop
       Len := Request.Length;
@@ -287,8 +287,6 @@ package body Http is
       Request.Delete (1, Len);
       Dummy := My_Send (Soc, null, null, Send_Timeout, Msg, Len);
     end loop;
-    -- Set not blocking and hook receptions
-    Soc.Set_Blocking (False);
     Buffer.Set_Null;
     My_Rece.Set_Callbacks (Soc,
                            Read_Cb'Unrestricted_Access,

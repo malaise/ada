@@ -99,7 +99,7 @@ package body Tcp_Util is
     end if;
     -- Open non blocking
     Dscr.Open (Protocol);
-    Dscr.Set_Blocking (False);
+    Dscr.Set_Blocking (Socket.Non_Blocking);
     if Debug_Connect then
       My_Io.Put_Line ("  Tcp_Util.Try_Connect socket open");
     end if;
@@ -176,7 +176,7 @@ package body Tcp_Util is
       end if;
       Host := Rec.Dscr.Get_Destination_Host;
       Port := Rec.Dscr.Get_Destination_Port;
-      Rec.Dscr.Set_Blocking (True);
+      Rec.Dscr.Set_Blocking (Socket.Blocking_Send);
     else
       -- Giving up
       if Debug_Connect then
@@ -602,7 +602,7 @@ package body Tcp_Util is
       Rec.Dscr.Accept_Connection (New_Dscr);
     exception
       when Socket.Soc_Would_Block =>
-        -- Connection is not avlid any more: discard
+        -- Connection is not valid any more: discard
         if Debug_Accept then
           My_Io.Put_Line ("  Tcp_Util.Acception_Fd_Cb accept would block");
         end if;
@@ -611,6 +611,8 @@ package body Tcp_Util is
     if Debug_Accept then
       My_Io.Put_Line ("  Tcp_Util.Acception_Fd_Cb connection accepted");
     end if;
+    -- Set new socket in mode Blocking_Send
+    New_Dscr.Set_Blocking (Socket.Blocking_Send);
 
     -- Call callback
     Host := New_Dscr.Get_Destination_Host;
@@ -635,7 +637,7 @@ package body Tcp_Util is
   procedure Accept_From (Protocol     : in Tcp_Protocol_List;
                          Port         : in Local_Port;
                          Acception_Cb : in Acception_Callback_Access;
-                         Dscr         : in out Socket.Socket_Dscr;
+                         Dscr         : out Socket.Socket_Dscr;
                          Num          : out Port_Num) is
     Rec : Accepting_Rec;
   begin
@@ -649,8 +651,9 @@ package body Tcp_Util is
     Rec.Cb := Acception_Cb;
     Rec.Dscr := Socket.No_Socket;
 
-    -- Open socket
+    -- Open socket in mode Blocking_Send
     Dscr.Open (Protocol);
+    Dscr.Set_Blocking (Socket.Blocking_Send);
     Rec.Dscr := Dscr;
     Rec.Fd := Rec.Dscr.Get_Fd;
     -- Bind socket
@@ -825,7 +828,7 @@ package body Tcp_Util is
     end if;
 
     -- See if socket has been changed to blocking meanwhile
-    if Rec.Dscr.Is_Blocking then
+    if Rec.Dscr.Is_Blocking (Emission => True) then
       Result := Timeout;
     else
       -- Try to re send
@@ -908,7 +911,7 @@ package body Tcp_Util is
 
     -- Try to send
     begin
-      if Timeout = 0.0 or else not Dscr.Is_Blocking then
+      if Timeout = 0.0 or else not Dscr.Is_Blocking (Emission => True) then
         -- Inifinite or non blocking sending
         Send (Dscr, Message, Length);
       else
@@ -1088,6 +1091,12 @@ package body Tcp_Util is
       begin
         Read (The_Rec.Dscr, Msg.all, Len);
       exception
+        when Socket.Soc_Would_Block =>
+          -- Data is not completely ready
+          if Debug_Reception then
+            My_Io.Put_Line ("  Tcp_Util.Read_Cb soc would block on fd " & Fd'Img);
+          end if;
+          return False;
         when Socket.Soc_Conn_Lost | Socket.Soc_Read_0 =>
           -- Remote has diconnected
           if Debug_Reception then

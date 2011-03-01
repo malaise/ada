@@ -105,11 +105,7 @@ begin
 
   -- Create socket, add callback
   Soc.Open (Socket.Udp);
-  My_Io.Put ("Socket created and ");
-  if not Soc.Is_Blocking then
-    My_Io.Put ("non ");
-  end if;
-  My_Io.Put_Line ("blocking");
+  My_Io.Put_Line ("Socket created in mode " & Soc.Get_Blocking'Img);
 
   Fd := Soc.Get_Fd;
   Event_Mng.Add_Fd_Callback (Fd, True, Call_Back'Unrestricted_Access);

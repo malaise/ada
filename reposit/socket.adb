@@ -41,17 +41,20 @@ package body Socket is
   type C_Protocol is new Protocol_List;
   for C_Protocol'Size use 32;
 
+  type C_Blocking_Mode is new Blocking_List;
+  for C_Blocking_Mode'Size use 32;
+
   function Soc_Open (S_Addr : System.Address;
                      Protocol : C_Protocol) return Result;
   pragma Import (C, Soc_Open, "soc_open");
   function Soc_Close (S_Addr : System.Address) return Result;
   pragma Import (C, Soc_Close, "soc_close");
   function Soc_Set_Blocking (S_Addr : System.Address;
-                             Block  : C_Types.Bool) return Result;
+                             Block  : C_Blocking_Mode) return Result;
   pragma Import (C, Soc_Set_Blocking, "soc_set_blocking");
-  function Soc_Is_Blocking (S_Addr : System.Address;
-                            Block  : System.Address) return Result;
-  pragma Import (C, Soc_Is_Blocking, "soc_is_blocking");
+  function Soc_Get_Blocking (S_Addr : System.Address;
+                             Block  : System.Address) return Result;
+  pragma Import (C, Soc_Get_Blocking, "soc_get_blocking");
   function Soc_Get_Protocol (S_Addr : System.Address;
                              Protocol  : System.Address) return Result;
   pragma Import (C, Soc_Get_Protocol, "soc_get_protocol");
@@ -220,19 +223,31 @@ package body Socket is
   end Close;
 
   -- Set a socket blocking or not
-  procedure Set_Blocking (Socket : in Socket_Dscr; Blocking : in Boolean) is
+  procedure Set_Blocking (Socket : in Socket_Dscr;
+                          Blocking : in Blocking_List) is
   begin
-    Res := Soc_Set_Blocking (Socket.Soc_Addr, C_Types.Bool(Blocking));
+    Res := Soc_Set_Blocking (Socket.Soc_Addr, C_Blocking_Mode(Blocking));
     Check_Ok;
   end Set_Blocking;
 
-  -- Is a socket in blocking mode
-  function Is_Blocking (Socket : in Socket_Dscr) return Boolean is
-    Bool : C_Types.Bool;
+  -- Get a socket blocking mode
+  function Get_Blocking (Socket : in Socket_Dscr) return Blocking_List is
+    Mode : C_Blocking_Mode;
   begin
-    Res := Soc_Is_Blocking (Socket.Soc_Addr, Bool'Address);
+    Res := Soc_Get_Blocking (Socket.Soc_Addr, Mode'Address);
     Check_Ok;
-    return Boolean(Bool);
+    return Blocking_List(Mode);
+  end Get_Blocking;
+
+  -- Is a socket in blocking mode in emission or reception
+  function Is_Blocking (Socket : in Socket_Dscr; Emission : in Boolean)
+                       return Boolean is
+    Mode : C_Blocking_Mode;
+  begin
+    Res := Soc_Get_Blocking (Socket.Soc_Addr, Mode'Address);
+    Check_Ok;
+    return  (Emission and then Mode /= Non_Blocking)
+    or else (not Emission and then Mode = Full_Blocking);
   end Is_Blocking;
 
   -- Get the Fd of a socket (for use in X_Mng. Add/Del _Callback)

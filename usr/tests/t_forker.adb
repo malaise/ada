@@ -79,7 +79,7 @@ begin
     end if;
   end if;
   Soc.Link_Dynamic;
-  Soc.Set_Blocking (False);
+  Soc.Set_Blocking (Socket.Blocking_Send);
   Ada.Text_Io.Put_Line (
       "My host is "
     & Socket.Host_Name_Of(Socket.Local_Host_Id)

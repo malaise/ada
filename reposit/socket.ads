@@ -29,6 +29,12 @@ package Socket is
   type Host_Id is private;
   No_Host : constant Host_Id;
 
+  -- The blocking / non-blocking modes
+  --  Blocking emission and reception
+  --  Blocking only connection and sending
+  --  All non blocking
+  type Blocking_List is (Full_Blocking, Blocking_Send, Non_Blocking);
+
   -- Exceptions for errors
   -- Errors are consequences of bad usage of the socket
   -- All the calls may raise Soc_Use_Err or Soc_Sys_Err
@@ -63,12 +69,13 @@ package Socket is
   -- Send: wait for write on fd and call Re_Send, until Ok,
   -- Set_Destination (connect tcp): wait for write on fd then check result
   --   by calling Is_Connected.
+  -- Accept_Connection: go back to wait for read on fd
 
   ---------------------------------
   -- OPEN - CLOSE - SET BLOCKING --
   ---------------------------------
 
-  -- Open a socket (in blocking mode)
+  -- Open a socket (in Full_Blocking mode)
   procedure Open (Socket : in out Socket_Dscr; Protocol : in Protocol_List);
 
   -- Close a socket
@@ -80,11 +87,15 @@ package Socket is
 
   -- Set the socket blocking or non blocking
   --  (for sending, receiving, connecting)
-  -- Socket is blocking at creation (open/accept)
-  procedure Set_Blocking (Socket : in Socket_Dscr; Blocking : in Boolean);
+  -- Socket is Full_Blocking at creation (open/accept)
+  procedure Set_Blocking (Socket : in Socket_Dscr; Blocking : in Blocking_List);
 
-  -- Is a socket in blocking mode
-  function Is_Blocking (Socket : in Socket_Dscr) return Boolean;
+  -- Get the the socket blocking or non blocking mode
+  function Get_Blocking (Socket : in Socket_Dscr) return Blocking_List;
+
+  -- Is a socket in blocking mode in emission or reception
+  function Is_Blocking (Socket : in Socket_Dscr; Emission : in Boolean)
+                       return Boolean;
 
   -- Get the Fd of a socket (for use in X_Mng. Add/Del _Callback)
   function Get_Fd (Socket : in Socket_Dscr) return Sys_Calls.File_Desc;
@@ -120,7 +131,7 @@ package Socket is
 
   -- Accept a new Tcp connection
   -- The socket must be open, tcp and linked
-  -- A new socket is open (tcp) with destination set, blocking
+  -- A new socket is open (tcp) with destination set, Full_Blocking
   -- May raise Soc_Proto_Err if socket is not tcp
   -- May raise Soc_Link_Err if socket is not linked
   -- May raise Soc_Would_Block if no more valid connection to accept

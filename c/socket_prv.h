@@ -27,7 +27,8 @@ typedef struct {
         domain_list     domain;
         boolean         dest_set;
         boolean         linked;
-        boolean         blocking;
+        blocking_mode   blocking;
+        boolean         blocked;
         connect_state   connection;
         int             socket_id;
         struct sockaddr_in send_struct;

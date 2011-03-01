@@ -23,7 +23,7 @@ procedure T_Tcp_Send is
 
   -- Sequence number
   type Sequence_Number is mod Integer'Last;
-  function Image is new Mod_image (Sequence_Number);
+  function Image is new Mod_Image (Sequence_Number);
 
   -- Signal callback
   Sig : Boolean := False;
@@ -55,7 +55,7 @@ procedure T_Tcp_Send is
                      Len  : in Natural) is
     pragma Unreferenced (Dscr, Len);
   begin
-    if Msg.Seq = Message.seq then
+    if Msg.Seq = Message.Seq then
       Basic_Proc.Put_Line_Output ("Read Cb got " & Image (Msg.Seq));
     else
       Basic_Proc.Put_Line_Output ("Read Cb got seq " & Image (Msg.Seq)
@@ -82,6 +82,7 @@ procedure T_Tcp_Send is
     else
       Basic_Proc.Put_Line_Output ("Accept Cb accepting connection");
       Sock := New_Dscr;
+      Sock.Set_Blocking (Socket.Full_Blocking);
       Message.Seq := 0;
       Reception.Set_Callbacks (Sock,
              Read_Cb'Unrestricted_Access,
@@ -100,7 +101,7 @@ procedure T_Tcp_Send is
     if Connected then
       Sock := Dscr;
       if not Blocking then
-        Sock.Set_Blocking (False);
+        Sock.Set_Blocking (Socket.Non_Blocking);
       end if;
     end if;
     Basic_Proc.Put_Line_Output ("Connection Cb " & Mixed_Str (Connected'Img));
@@ -110,7 +111,7 @@ procedure T_Tcp_Send is
   begin
     Basic_Proc.Put_Line_Output ("Connecting");
     In_Overflow := False;
-    Message.seq := 0;
+    Message.Seq := 0;
     Result := Tcp_Util.Connect_To (Protocol,
                                    Remote_Host, Remote_Port,
                                    1.0, 0,
@@ -153,7 +154,7 @@ procedure T_Tcp_Send is
              End_Overflow_Cb'Unrestricted_Access,
              Send_Err_Cb'Unrestricted_Access,
              Send_Timeout, Message);
-    Message.seq := Message.Seq + 1;
+    Message.Seq := Message.Seq + 1;
     Trace.Put ("Send -> " & Mixed_Str (Res'Img), True);
     In_Overflow := not Res;
     Basic_Proc.Put_Line_Output ("Send result " & Mixed_Str (Res'Img));

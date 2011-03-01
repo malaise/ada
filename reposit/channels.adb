@@ -77,6 +77,7 @@ package body Channels is
     Init : Boolean := False;
     Name : Tcp_Util.Host_Name;
     Period : Ada.Calendar.Day_Duration;
+    Timeout : Ada.Calendar.Day_Duration;
     Accept_Num : Tcp_Util.Port_Num := 0;
     Dests : Dest_List_Mng.List_Type;
     Sends : Send_List_Mng.List_Type;
@@ -102,6 +103,21 @@ package body Channels is
     when others =>
       return Default_Period;
   end Get_Period;
+  function Get_Timeout (Channel : String) return Ada.Calendar.Day_Duration is
+    Default_Timeout : constant Ada.Calendar.Day_Duration := 0.3;
+    Result : Ada.Calendar.Day_Duration;
+  begin
+    Result := Environ.Get_Dur ("Channel_" & Channel & "_Timeout",
+                               Default_Timeout);
+   if Result <= 0.1 then
+     Result := 0.1;
+   end if;
+   return Result;
+  exception
+    when others =>
+      return Default_Timeout;
+  end Get_Timeout;
+
 
   package File is
     -- All may raise File_Error
@@ -147,6 +163,7 @@ package body Channels is
       end if;
       Channel_Dscr.Name := As.U.Tus (Channel_Name);
       Channel_Dscr.Period := Get_Period (Channel_Name);
+      Channel_Dscr.Timeout := Get_Timeout (Channel_Name);
       Channel_Dscr.Init := True;
       Channel_Dscr.Active := True;
     exception
@@ -168,6 +185,7 @@ package body Channels is
       -- Store new name
       Channel_Dscr.Name := As.U.Tus (New_Channel_Name);
       Channel_Dscr.Period := Get_Period (New_Channel_Name);
+      Channel_Dscr.Timeout := Get_Timeout (Channel_Name);
       Channel_Dscr.Init := True;
     exception
       when Constraint_Error =>
@@ -296,6 +314,7 @@ package body Channels is
         return;
       else
         -- Insert new sender
+        New_Dscr.Set_Blocking (Socket.Non_Blocking);
         Channel_Dscr.Sends.Insert ( (Dscr => New_Dscr,
                                      Fd   => New_Dscr.Get_Fd));
 
@@ -304,7 +323,6 @@ package body Channels is
           Event_Mng.Add_Fd_Callback (New_Dscr.Get_Fd, True,
                                 Rec_Read_Cb'Unrestricted_Access);
         end if;
-        New_Dscr.Set_Blocking (False);
       end if;
     end Accept_Cb;
 
@@ -393,6 +411,7 @@ package body Channels is
 
       -- Update Dscr and Fd
       Channel_Dscr.Dests.Read (Dest, Dest_List_Mng.Current);
+      Dscr.Set_Blocking (Socket.Non_Blocking);
       Dest.Dscr := Dscr;
       Dest.Fd := Dscr.Get_Fd;
       Channel_Dscr.Dests.Modify (Dest, Dest_List_Mng.Current);
@@ -402,7 +421,6 @@ package body Channels is
         Event_Mng.Add_Fd_Callback (Dscr.Get_Fd, True,
                               Snd_Read_Cb'Unrestricted_Access);
       end if;
-      Dscr.Set_Blocking (False);
     end Connect_Cb;
 
 
@@ -679,7 +697,8 @@ package body Channels is
         Channel_Dscr.Dests.Read (Dest, Dest_List_Mng.Current);
         if Dest.Dscr /= Socket.No_Socket then
           begin
-            Res := Channel_Send (Dest.Dscr, null, null, 0.0, Msg, Len);
+            Res := Channel_Send (Dest.Dscr, null, null,
+                                 Channel_Dscr.Timeout, Msg, Len);
             Res := True;
           exception
             when Socket.Soc_Tail_Err =>
@@ -721,7 +740,7 @@ package body Channels is
 
       -- Send on Dscr
       begin
-        Res := Channel_Send (Dscr, null, null, 0.0, Msg, Len);
+        Res := Channel_Send (Dscr, null, null, Channel_Dscr.Timeout, Msg, Len);
       exception
         when Socket.Soc_Tail_Err =>
           raise Send_Overflow;

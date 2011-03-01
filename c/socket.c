@@ -136,9 +136,9 @@ static int init (soc_ptr *p_soc,
   }
   (*p_soc)->socket_id = fd;
 
-  /* Blocking operations as default */
-  (*p_soc)->blocking = FALSE;
-  result = soc_set_blocking ((soc_token)*p_soc, TRUE);
+  /* Force blocking operations as default */
+  (*p_soc)->blocked = FALSE;
+  result = soc_set_blocking ((soc_token)*p_soc, full_blocking);
   if (result != SOC_OK) {
     return (result);
   }
@@ -325,35 +325,35 @@ extern int soc_get_id (soc_token token, int *p_id) {
   return (SOC_OK);
 }
 
-/* Set the socket blocking or non blocking */
-/*  (for sendind and receiving) */
-extern int soc_set_blocking (soc_token token, boolean blocking) {
-  soc_ptr soc = (soc_ptr) token;
+/* Set the socket blocked mode according to blocking_mode and action */
+static int set_blocked (soc_ptr soc, boolean for_read) {
+  boolean setblock;
   int status;
 
-  /* Check that socket is open */
-  if (soc == NULL) return (SOC_USE_ERR);
-  LOCK;
+  /* Compute target mode */
+  if (for_read) {
+    setblock = (soc->blocking == full_blocking);
+  } else {
+    setblock = (soc->blocking != non_blocking);
+  }
 
   /* Nothing to do */
-  if (soc->blocking == blocking) {
-    UNLOCK;
+  if (soc->blocked == setblock) {
     return (SOC_OK);
   }
 
   /* Store state */
-  soc->blocking = blocking;
+  soc->blocked = setblock;
 
   /* Get status */
   status = fcntl (soc->socket_id, F_GETFL, 0);
   if (status < 0) {
     perror("fcntl_get_block");
-    UNLOCK;
     return (SOC_SYS_ERR);
   }
 
-  /* Blocking receiving or not */
-  if (blocking) {
+  /* Set blocking or not */
+  if (setblock) {
     status &= ~O_NONBLOCK;
   } else {
     status |= O_NONBLOCK;
@@ -362,17 +362,31 @@ extern int soc_set_blocking (soc_token token, boolean blocking) {
   /* Fcntl for having blocking ios */
   if (fcntl (soc->socket_id, F_SETFL, status)  == -1) {
     perror("fcntl_set_block");
-    UNLOCK;
     return (SOC_SYS_ERR);
   }
 
   /* Ok */
+  return (SOC_OK);
+}
+
+/* Set the socket blocking or non blocking */
+/*  (for sendind and receiving) */
+extern int soc_set_blocking (soc_token token, blocking_mode blocking) {
+  soc_ptr soc = (soc_ptr) token;
+
+  /* Check that socket is open */
+  if (soc == NULL) return (SOC_USE_ERR);
+  LOCK;
+
+  /* Store mode */
+  soc->blocking = blocking;
+
   UNLOCK;
   return (SOC_OK);
 }
 
 /* Is the socket in blocking mode or not */
-extern int soc_is_blocking (soc_token token, boolean *blocking) {
+extern int soc_get_blocking (soc_token token, blocking_mode *blocking) {
 
   soc_ptr soc = (soc_ptr) token;
 
@@ -404,11 +418,13 @@ static int do_connect (soc_ptr soc) {
 
   int result;
 
-  /* Check that socket is open and dest set */
-  if (soc == NULL) return (SOC_USE_ERR);
+  /* Check that socket has dest set */
   if (! soc->dest_set) {
     return (SOC_DEST_ERR);
   }
+
+  /* Set blocking or not */
+  set_blocked (soc, FALSE);
 
   /* Connect */
   if (soc->domain == inet_domain) {
@@ -1062,6 +1078,9 @@ extern int soc_send (soc_token token, soc_message message, soc_length length) {
   if (soc == NULL) return (SOC_USE_ERR);
   LOCK;
 
+  /* Set blocking or not */
+  set_blocked (soc, FALSE);
+
   res = do_send (soc, message, length);
   UNLOCK;
   return (res);
@@ -1075,6 +1094,9 @@ extern int soc_resend (soc_token token) {
   /* Check that socket is open */
   if (soc == NULL) return (SOC_USE_ERR);
   LOCK;
+
+  /* Set blocking or not */
+  set_blocked (soc, FALSE);
 
   /* Check socket is in send overflow */
   if (soc->send_tail == NULL) {
@@ -1366,6 +1388,7 @@ extern int soc_set_rece_ipm_interface (soc_token token, const soc_host *host) {
   return (SOC_OK);
 }
 
+/* Bind and listen + IPM add membership */
 static int bind_and_co (soc_token token, boolean dynamic) {
 
   soc_ptr soc = (soc_ptr) token;
@@ -1694,6 +1717,9 @@ extern int soc_receive (soc_token token,
   if (soc == NULL) return (SOC_USE_ERR);
   LOCK;
 
+  /* Set blocking or not */
+  set_blocked (soc, TRUE);
+
   /* Check set_for_reply and linked vs proto */
   if (soc->protocol == tcp_protocol) {
     if (set_for_reply) {
@@ -1842,6 +1868,9 @@ extern int soc_accept (soc_token token, soc_token *p_token) {
   /* Check that socket is open */
   if (soc == NULL) return (SOC_USE_ERR);
   LOCK;
+
+  /* Set blocking or not */
+  set_blocked (soc, TRUE);
 
   /* Check that new socket is not already open */
   if (*p_soc != NULL) {
