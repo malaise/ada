@@ -847,7 +847,10 @@ package body Tcp_Util is
       end;
     end if;
 
-    -- End of overflow: unhook callback and del rec
+    -- End of overflow: cancel timer, unhook callback and del rec
+    if Rec.Timer.Exists then
+      Rec.Timer.Delete;
+    end if;
     Event_Mng.Del_Fd_Callback (Rec.Fd, False);
     Delete_Current_Sen;
     if Debug_Overflow then
