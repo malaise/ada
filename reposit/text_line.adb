@@ -32,6 +32,11 @@ package body Text_Line is
       Flush (File);
     end if;
     Free (File.Acc);
+  exception
+    when Io_Error =>
+      -- May be raised by Flush, for example if close is called following
+      --  an Io_Error...
+      null;
   end Close;
 
   -- Returns if a file is open
