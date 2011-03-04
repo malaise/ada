@@ -12,16 +12,10 @@ package body Screen is
 
   Stored_File_Name : As.U.Asu_Us;
 
-  Get_Width : Natural := 0;
-
   -- Return width of Get field
   function Get_Get_Width return Afpx.Width_Range is
-    Height : Afpx.Height_Range;
   begin
-    if Get_Width = 0 then
-      Afpx.Get_Field_Size (Get_Fld, Height, Get_Width);
-    end if;
-    return Get_Width;
+    return Afpx.Get_Field_Width (Get_Fld);
   end Get_Get_Width;
 
 
@@ -267,7 +261,8 @@ package body Screen is
       when E_No_Data            => Encode_Info ("Error, no data");
       when E_Wrong_Degree       => Encode_Info ("Error, invalid degree");
       when E_Wrong_Coordinate   => Encode_Info ("Error, invalid coordinate");
-      when E_Resolution_Problem => Encode_Info ("Internal error while solving");
+      when E_Resolution_Problem => Encode_Info ("Internal error while solving"
+                                              & " (degree too high?)");
       when E_Curve_Problem      => Encode_Info ("Internal error while drawing");
       when E_Curve_Active       => Encode_Info ("A curve is currently active");
       when E_Too_Many_Points    => Encode_Info ("Too many points");
@@ -336,7 +331,8 @@ package body Screen is
 
   procedure Put_Degree is
   begin
-    Afpx.Encode_Field (Degree_Fld, (0, 0),  Normal (Resol.R_Degree, Max_Degree_Width));
+    Afpx.Encode_Field (Degree_Fld, (0, 0),
+                       Normal (Resol.R_Degree, Max_Degree_Width));
   end Put_Degree;
 
   procedure Init_For_Main2 (Cursor_Field : out Afpx.Field_Range) is

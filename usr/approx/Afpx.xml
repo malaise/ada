@@ -401,13 +401,13 @@
 
     <!-- Get -->
     <Field Num="9" Kind="Get">
-      <Geometry Up="23" Left="1" Low="23" Right="33"/>
+      <Geometry Up="23" Left="1" Low="23" Right="30"/>
       <Colors Foreground="Cyan" Background="Brown" Selected="Brown"/>
     </Field>
 
     <!-- Message -->
     <Field Num="10" Kind="Put">
-      <Geometry Up="23" Left="35" Low="23" Right="78"/>
+      <Geometry Up="23" Left="32" Low="23" Right="78"/>
       <Colors Foreground="Light_Grey" Background="Black"/>
     </Field>
 
