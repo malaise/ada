@@ -269,6 +269,7 @@ package body Connection is
     use type Tcp_Util.Local_Port_List;
   begin
     -- Init parameters and socket
+    Own_Color := Color;
     if Server_Name /= "" then
       Server := False;
       Server_Host.Name := As.U.Tus (Server_Name);
@@ -293,7 +294,6 @@ package body Connection is
         end;
       end loop;
     end if;
-    Own_Color := Color;
 
     if Debug.Get (Debug.Connection) then
       Ada.Text_Io.Put_Line ("Connection: init done");
