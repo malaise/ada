@@ -1,0 +1,19 @@
+#!/bin/bash
+make test.adb
+if [ $? -ne 0 ] ; then
+  exit 1
+fi
+cmp -s test.adb test.adb.ref
+res=$?
+if [ $res -eq 0 ] ; then
+  rm test.adb
+  echo Ok.
+  exit 0
+elif [ $res -eq 1 ] ; then
+  echo "Error: Files differ."
+  tkdiff test.adb.ref test.adb
+  exit 0
+else
+  echo "An error occured while comparing."
+  exit 1
+fi
