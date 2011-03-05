@@ -1,4 +1,4 @@
 #!/bin/bash
-export CHESS_OPT="-DC"
+export CHESS_OPT=""
 chess -S -cwhite -p50000 $CHESS_OPT $* &
 chess -C -cblack -slocalhost -p50000 $CHESS_OPT $* &
