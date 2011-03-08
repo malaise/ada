@@ -26,7 +26,8 @@ compare
 
 echo "Testing VIGENERE"
 # Letters -> UPPERCASE, others -> ' '
-cat $FILE | asubst -D '' '([A-Z])|([a-z])|(.|\n)' '\i11\r11\i12\u\r12\c\i13 \f' > $TMP.ini
+cat $FILE | asubst -D '' '([A-Z])|([a-z])|(.|\n)' '\i11\r11\i12\u\r12\c\i13 \f' \
+          | asubst '.$' '\n' > $TMP.ini
 echo "Coding"
 t_vigenere -c "$PASSWD" "`cat $TMP.ini`" > $TMP.cod
 echo "Decoding"
