@@ -1,5 +1,8 @@
 History of Asubst:
 ------------------
+07/03/2011 V11.2
+Fix: Incorrect comparison of delimiter, leading to loose last line feed
+
 07/02/2011 V11.2
 Add: Check delimiter length
 

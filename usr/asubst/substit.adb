@@ -285,6 +285,8 @@ package body Substit is
     Line : As.U.Asu_Us;
     Len : Natural;
     Line_Feed : constant As.U.Asu_Us := As.U.Tus (In_File.Get_Line_Feed);
+    Feed_Len : constant Natural := Line_Feed.Length;
+    use type As.U.Asu_Us;
   begin
     -- Move to end
     Line_List.Rewind (False, Line_List_Mng.Prev);
@@ -312,11 +314,11 @@ package body Substit is
         return False;
       end if;
       -- There are either one or two items to push
-      if Len >= 1
-      and then Line.Element(Len) = Text_Line.Line_Feed_Char then
+      if Len >= Feed_Len
+      and then Line.Slice(Len - Feed_Len + 1, Len) = Line_Feed then
         -- Line (possibly empty) and Line_Feed
         -- Insert line (without Lf)
-        Line_List.Insert (As.U.Tus (Line.Slice (1, Len-1)));
+        Line_List.Insert (As.U.Tus (Line.Slice (1, Len - Feed_Len)));
         Nb_To_Read := Nb_To_Read - 1;
         Line_No := Line_No + 1;
         if Nb_To_Read = 0 then

@@ -9,15 +9,18 @@ asubst --version
 sleep 1
 
 # Various file names, reference (in), expected result
-#  tested (in/out), list, saved, inserted
+#  tested (in/out), list, saved, inserted, file with no delim
+#  file got
 export FR=tstfile.ref
 export FE=tstfile.exp
 export FT=tstfile.tst
 export FL=tstfile.lst
 export FS=tstfile.tst.asu
 export FI=tstfile.ins
+export FD=tstfile.del
+export FG=tstfile.got
 
-# Prepare  inserted file
+# Prepare inserted file
 echo -en "toto\nle" > $FI
 
 # Play scenario
@@ -30,9 +33,41 @@ fi
 echo "$STEP OK."
 echo ""
 
-
 # Initial cleanup of files
 rm -rf $FS Temp_File.*
+
+# Prepare file with no delim
+echo -en "toto\ntiti\n" > $FD
+echo -en "got\ntiti\n" > $FG
+
+# Substit in file with no delimiter
+STEP="Test of file substitution with no delimiter"
+cp $FD $FT
+res=`asubst -D '' "toto" "got" $FT`
+code=$?
+# Check exit code and that result is expected
+if [ $code -ne 0 ] ; then
+  echo "Error: asubst exited with code $code"
+  echo "$STEP FAILED."
+  exit 1
+fi
+cmp -s $FT $FG
+if [ $? -ne 0 ] ; then
+  echo "Result file $FT differs from expected $FG."
+  echo "$STEP FAILED."
+  exit 1
+fi
+if [ "$res" != "$FT" ] ; then
+  echo "Asubst generated wrong output $res. Expected $FT."
+  echo "$STEP FAILED."
+  exit 1
+fi
+if [ -f $FS ] ; then
+  echo "Unexpected backup $FS found."
+  echo "$STEP FAILED."
+  exit 1
+fi
+echo "$STEP OK."
 
 # Make reference in file and result
 # Will remove both "------" and the linefeed before Test
@@ -293,6 +328,6 @@ fi
 echo "$STEP OK."
 
 # Cleanup test files
-rm -rf $FR $FT $FS $FE $FL $FI
+rm -rf $FR $FT $FS $FE $FL $FI $FD $FG
 echo "Test OK."
 
