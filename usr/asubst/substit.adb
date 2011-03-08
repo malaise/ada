@@ -314,7 +314,8 @@ package body Substit is
         return False;
       end if;
       -- There are either one or two items to push
-      if Len >= Feed_Len
+      if Feed_Len /= 0
+      and then Len >= Feed_Len
       and then Line.Slice(Len - Feed_Len + 1, Len) = Line_Feed then
         -- Line (possibly empty) and Line_Feed
         -- Insert line (without Lf)
@@ -330,7 +331,7 @@ package body Substit is
           Nb_To_Read := Nb_To_Read - 1;
         end if;
       else
-        -- Line without Nl (last line)
+        -- Line without Lf (last line)
         -- Insert it
         Line_List.Insert (Line);
         Nb_To_Read := Nb_To_Read - 1;
