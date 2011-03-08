@@ -41,7 +41,7 @@ begin
     for I in Str'Range loop
       Str(I) := Lstr(Vigenere.Long_Positive(I));
     end loop;
-    Ada.Text_Io.Put_Line (Str);
+    Ada.Text_Io.Put (Str);
   end;
 
 end T_Vigenere;

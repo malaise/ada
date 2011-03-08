@@ -3,17 +3,33 @@ export FILE=code.adb
 export TMP=tmpfile
 export PASSWD=Melusine
 
+function compare {
+  echo Comparing
+  cmp -s $TMP.ini $TMP.dec
+  if [ $? -eq 0 ] ; then
+    echo "Test OK."
+    echo ""
+    rm -f $TMP.cod $TMP.dec $TMP.ini
+  else
+    echo "Test is not OK. Please check the files."
+    exit 1
+  fi
+}
+
+echo "Testing CODE"
+cp $FILE $TMP.ini
 echo "Coding"
-echo "$PASSWD" | code -c $FILE $TMP.cod
+echo "$PASSWD" | code -c $TMP.ini $TMP.cod
 echo "Decoding"
 echo "$PASSWD" | code -d $TMP.cod $TMP.dec
+compare
 
-echo Comparing
-cmp -s $FILE $TMP.dec
-if [ $? -eq 0 ] ; then
-  echo "Test OK."
-  rm $TMP.cod $TMP.dec
-else
-  echo "Test s not OK. Please check the files."
-fi
+echo "Testing VIGENERE"
+# Letters -> UPPERCASE, others -> ' '
+cat $FILE | asubst -D '' '([A-Z])|([a-z])|(.|\n)' '\i11\r11\i12\u\r12\c\i13 \f' > $TMP.ini
+echo "Coding"
+t_vigenere -c "$PASSWD" "`cat $TMP.ini`" > $TMP.cod
+echo "Decoding"
+t_vigenere -d "$PASSWD" "`cat $TMP.cod`" > $TMP.dec
+compare
 
