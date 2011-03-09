@@ -1,7 +1,8 @@
 #!/bin/bash
 # set -vx
 
-export ENIGMA_CONF_FILE=../enigma.xml
+export ENIGMA_CONF_FILE=enigma.xml
+export DATA=data
 
 # For loops
 export LIST="A B C D E F G H I J K L M N O P Q R S T U V W X Y Z"
@@ -9,10 +10,10 @@ export LIST="A B C D E F G H I J K L M N O P Q R S T U V W X Y Z"
 # Do local tests with: settings, encypted and decoded text
 echo "Test of fixed settings, encrypted and decoded files:"
 for i in 1 2 3 4 ; do
-  cat crypt${i} | enigma `tail -1 set${i}` > tmp
-  cmp -s decod${i} tmp
+  cat $DATA/crypt${i} | enigma `tail -1 $DATA/set${i}` > tmp
+  cmp -s $DATA/decod${i} tmp
   res=$?
-  echo -n "cat crypt${i} | enigma `tail -1 set${i}` "
+  echo -n "cat $DATA/crypt${i} | enigma `tail -1 $DATA/set${i}` "
   if [ $res -eq 0 ] ; then
     echo "OK."
   else
@@ -27,7 +28,7 @@ echo ""
 
 # Verify upper level txt files through enigmacode -c then -d
 echo "Test of txt files with enigmacode:"
-for file in ../*.txt ; do
+for file in *.txt ; do
   cat $file | enigmacode -c > tmpc
   cat tmpc | enigmacode -d > tmpd
   cmp -s $file tmpd
