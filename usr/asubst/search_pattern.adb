@@ -242,6 +242,14 @@ package body Search_Pattern is
       end case;
     end Char_Class_Of;
 
+    -- Return True if Pattern(Start) /= '^' and Patern(Stop) /= '$'
+    function Check_Iterative (Start, Stop : Positive) return Boolean is
+    begin
+      return    The_Pattern.Element (Start) /= Start_Char
+      and then (The_Pattern.Element (Stop) /= Stop_Char
+        or else String_Mng.Is_Backslashed (The_Pattern.Image, Stop));
+    end Check_Iterative;
+
     -- Indexes in Pattern
     Start_Index : Positive;
     Stop_Index : Natural;
@@ -371,10 +379,7 @@ package body Search_Pattern is
             --  is handled as iterative
             if not Prev_Delim
             and then not Next_Delim
-            and then The_Pattern.Element (Start_Index) /= Start_Char
-            and then (The_Pattern.Element (Stop_Index) /= Stop_Char
-              or else String_Mng.Is_Backslashed (The_Pattern.Image,
-                                                 Stop_Index) ) then
+            and then Check_Iterative (Start_Index, Stop_Index) then
               Is_Iterative := True;
             end if;
           else
@@ -395,10 +400,11 @@ package body Search_Pattern is
       -- No split
       if Regex_Mode then
         Add (The_Pattern.Image, Case_Sensitive, List);
+        Is_Iterative := Check_Iterative (1, The_Pattern.Length);
       else
         Add (The_Pattern.Image, True, List);
+        Is_Iterative := True;
       end if;
-      Is_Iterative := True;
     end if;
     -- Done
   end Parse_One;

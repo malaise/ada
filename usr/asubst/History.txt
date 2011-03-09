@@ -1,6 +1,9 @@
 History of Asubst:
 ------------------
-07/03/2011 V11.2
+09/03/2011 V11.4
+Fix: Detection of '^' and '$' in search pattern when specific delimiter
+
+08/03/2011 V11.3
 Fix: Incorrect comparison of delimiter, leading to loose last line feed
 
 07/02/2011 V11.2
