@@ -1,4 +1,5 @@
 Major changes:
+2011/03/10: Add operations to set/get TTL on socket
 2011/03/09: Fix detection of '^' and '$' in search pattern when specific delimiter in asubst, V11.4
 2011/03/08: Fix handling of specific Delim in asubst, V11.3
 2011/03/01: Add different blocking modes for sending and receiving on sockets
