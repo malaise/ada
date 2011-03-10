@@ -152,6 +152,12 @@ static int init (soc_ptr *p_soc,
     (*p_soc)->send_struct.sin_family = AF_INET;
     (*p_soc)->rece_struct.sin_family = AF_INET;
   }
+  /* Default TTL */
+  if ( (*p_soc)->protocol == tcp_protocol) {
+    (*p_soc)->ttl = 64;
+  } else {
+    (*p_soc)->ttl = 32;
+  }
   (*p_soc)->send_struct.sin_addr.s_addr = htonl(INADDR_ANY);
   (*p_soc)->ipm_send_if.s_addr = htonl(INADDR_ANY);
   (*p_soc)->set_send_if = FALSE;
@@ -412,6 +418,90 @@ extern int soc_get_protocol (soc_token token, socket_protocol *protocol) {
   return (SOC_OK);
 }
 
+/* Set the ttl if possible */
+static int set_ttl (soc_ptr soc) {
+  int result;
+
+  if ( (soc->protocol == tcp_afux_socket)
+    || (soc->protocol == tcp_header_afux_socket) ) {
+    /* No TTL on AFUX */
+    return (SOC_OK);
+  }
+
+  if (soc->protocol == udp_protocol) {
+    if (!soc->dest_set) {
+      /* Dest must be set on udp (to know if udp or ipm) */
+      return (SOC_OK);
+    }
+    if (is_ipm(& soc->send_struct) ) {
+      result = setsockopt(soc->socket_id, IPPROTO_IP, IP_MULTICAST_TTL,
+                   &(soc->ttl), sizeof (soc->ttl));
+    } else {
+      result = setsockopt(soc->socket_id, IPPROTO_IP, IP_TTL,
+                   &(soc->ttl), sizeof (soc->ttl));
+    }
+  } else {
+    result = setsockopt(soc->socket_id, IPPROTO_IP, IP_TTL,
+                   &(soc->ttl), sizeof (soc->ttl));
+  }
+  if (result == -1) {
+    perror("setsockopt(ip_(multicast_)ttl)");
+    return (SOC_SYS_ERR);
+  }
+  return (SOC_OK);
+}
+
+/* Set the TTL. Socket must be either udp with dest set (otherwise */
+/*  SOC_DEST_ERR), or tcp non afux (otherwise SOC_PROTO_ERR) */
+extern int soc_set_ttl (soc_token token, byte ttl) {
+  soc_ptr soc = (soc_ptr) token;
+
+  /* Check that socket is open */
+  if (soc == NULL) return (SOC_USE_ERR);
+  LOCK;
+
+  if ( (soc->protocol == udp_protocol) && (!soc->dest_set) ) {
+    /* UDP/IPM dest must be set */
+    UNLOCK;
+    return (SOC_DEST_ERR);
+  } else if ( (soc->protocol == tcp_afux_socket)
+    || (soc->protocol == tcp_header_afux_socket) ) {
+    /* No TTL on AFUX */
+    UNLOCK;
+    return (SOC_PROTO_ERR);
+  }
+
+  /* OK */
+  soc->ttl = ttl;
+  set_ttl (soc);
+
+  UNLOCK;
+  return (SOC_OK);
+}
+
+/* Get the TTL. Socket must be either udp or tcp non afux (otherwise */
+/*  SOC_PROTO_ERR) */
+extern int soc_get_ttl (soc_token token, byte *ttl) {
+  soc_ptr soc = (soc_ptr) token;
+
+  /* Check that socket is open */
+  if (soc == NULL) return (SOC_USE_ERR);
+  LOCK;
+
+  if ( (soc->protocol == tcp_afux_socket)
+    || (soc->protocol == tcp_header_afux_socket) ) {
+    /* No TTL on AFUX */
+    UNLOCK;
+    return (SOC_PROTO_ERR);
+  }
+
+  /* OK */
+  *ttl = soc->ttl;
+
+  UNLOCK;
+  return (SOC_OK);
+}
+
 
 /* Do the connection */
 static int do_connect (soc_ptr soc) {
@@ -569,6 +659,12 @@ extern int soc_set_dest_name_service (soc_token token, const char *host_lan,
     UNLOCK;
     return (SOC_SYS_ERR);
   }
+
+  /* Set TTL */
+  if (set_ttl (soc) != SOC_OK) {
+    return (SOC_SYS_ERR);
+  }
+
   /* Connect tcp */
   soc->dest_set = TRUE;
   if (soc->protocol == tcp_protocol) {
@@ -637,6 +733,12 @@ extern int soc_set_dest_name_port (soc_token token, const char *host_lan,
     UNLOCK;
     return (SOC_SYS_ERR);
   }
+
+  /* Set TTL */
+  if (set_ttl (soc) != SOC_OK) {
+    return (SOC_SYS_ERR);
+  }
+
   /* Connect tcp */
   soc->dest_set = TRUE;
   if (soc->protocol == tcp_protocol) {
@@ -685,6 +787,12 @@ extern int soc_set_dest_host_service (soc_token token, const soc_host *host,
     UNLOCK;
     return (SOC_SYS_ERR);
   }
+
+  /* Set TTL */
+  if (set_ttl (soc) != SOC_OK) {
+    return (SOC_SYS_ERR);
+  }
+
   /* Connect tcp */
   soc->dest_set = TRUE;
   if (soc->protocol == tcp_protocol) {
@@ -726,6 +834,12 @@ extern int soc_set_dest_host_port (soc_token token, const soc_host *host,
     UNLOCK;
     return (SOC_SYS_ERR);
   }
+
+  /* Set TTL */
+  if (set_ttl (soc) != SOC_OK) {
+    return (SOC_SYS_ERR);
+  }
+
   /* Connect tcp */
   soc->dest_set = TRUE;
   if (soc->protocol == tcp_protocol) {
@@ -776,11 +890,18 @@ extern int soc_change_dest_name (soc_token token, const char *host_lan, boolean 
     }
     soc->send_struct.sin_addr = inet_makeaddr(lan_name->n_net, 0);
   }
+
   /* Set ipm sending interface */
   if (set_ipm_if(soc, TRUE) != SOC_OK) {
     UNLOCK;
     return (SOC_SYS_ERR);
   }
+
+  /* Set TTL */
+  if (set_ttl (soc) != SOC_OK) {
+    return (SOC_SYS_ERR);
+  }
+
 
   /* Ok */
   UNLOCK;
@@ -813,6 +934,12 @@ extern int soc_change_dest_host (soc_token token, const soc_host *host) {
     UNLOCK;
     return (SOC_SYS_ERR);
   }
+
+  /* Set TTL */
+  if (set_ttl (soc) != SOC_OK) {
+    return (SOC_SYS_ERR);
+  }
+
 
   /* Ok */
   UNLOCK;
@@ -1923,6 +2050,11 @@ extern int soc_accept (soc_token token, soc_token *p_token) {
   memcpy (&(*p_soc)->send_struct , &from_addr, len);
   (*p_soc)->dest_set = TRUE;
   (*p_soc)->connection = connected;
+
+  /* Set TTL */
+  if (set_ttl (soc) != SOC_OK) {
+    return (SOC_SYS_ERR);
+  }
 
   /* Ok */
   UNLOCK;

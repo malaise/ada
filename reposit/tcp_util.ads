@@ -18,7 +18,8 @@ package Tcp_Util is
   -- All kinds of TCP of Socket are supported
   subtype Tcp_Protocol_List is Socket.Protocol_List range
                                Socket.Tcp .. Socket.Tcp_Header_Afux;
-
+  -- Default TTL
+  Default_Ttl : constant Socket.Ttl_Range := 0;
 
   -- POSITIVE and NATURAL DURATION
   --------------------------------
@@ -26,7 +27,6 @@ package Tcp_Util is
   subtype Positive_Duration is Duration range 0.001 .. Duration'Last;
   -- Natural duration for sending
   subtype Natural_Duration is Duration range 0.0 .. Duration'Last;
-
 
   -- PORT DEFINITION --
   ---------------------
@@ -61,7 +61,6 @@ package Tcp_Util is
         Num : Port_Num := 0;
     end case;
   end record;
-
 
   -- HOST DEFINITION --
   ---------------------
@@ -99,15 +98,18 @@ package Tcp_Util is
   -- Connect to a remote Host/Port
   -- May make several tries (one each Delta_Retry) before giving up
   -- Infinite retries if Nb_Tries = 0
+  -- The Ttl is used (if supported by the TCP stack) to establish the
+  --  connection, but not propagated to the established connection
   -- Returns True if immediate result could be achieved
   --  (and the callback has already been called).
   -- May raise Name_Error if Host.Name or Port.Name is unknown
   function Connect_To (Protocol      : in Tcp_Protocol_List;
                        Host          : in Remote_Host;
                        Port          : in Remote_Port;
+                       Connection_Cb : in Connection_Callback_Access;
                        Delta_Retry   : in Positive_Duration := 1.0;
                        Nb_Tries      : in Natural := 1;
-                       Connection_Cb : in Connection_Callback_Access)
+                       Ttl           : in Socket.Ttl_Range := Default_Ttl)
            return Boolean;
 
   -- Abort a pending connection attempt

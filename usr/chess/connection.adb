@@ -116,8 +116,8 @@ package body Connection is
     Ok := Tcp_Util.Connect_To (Socket.Tcp_Header,
                                Server_Host,
                                Remote_Port,
-                               1.0, 0,
-                               Con_Call_Back'Access);
+                               Con_Call_Back'Access,
+                               1.0, 0);
   exception
     when Error: others =>
       if Debug.Get (Debug.Connection) then

@@ -19,6 +19,7 @@ procedure T_Tcp_Util is
 
   Delay_Try : constant Duration := 10.0;
   Nb_Try : constant := 9;
+  Ttl : constant := 5;
 
   Accept_Dscr, The_Dscr : Socket.Socket_Dscr;
 
@@ -146,8 +147,8 @@ procedure T_Tcp_Util is
     Host.Name := Server_Name;
     Result := Tcp_Util.Connect_To (Protocol,
                                    Host, Remote_Port,
-                                   Delay_Try, Nb_Try,
-                                   Connect_Cb'Unrestricted_Access);
+                                   Connect_Cb'Unrestricted_Access,
+                                   Delay_Try, Nb_Try, Ttl);
 
   end Connect;
 

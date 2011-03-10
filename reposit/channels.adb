@@ -256,8 +256,8 @@ package body Channels is
               Port.Name := Channel_Dscr.Name;
               Res := Tcp_Util.Connect_To (Socket.Tcp_Header,
                                           D_Rec.Host_Name, Port,
-                                          Channel_Dscr.Period, 0,
-                                          Connect_Cb'Unrestricted_Access);
+                                          Connect_Cb'Unrestricted_Access,
+                                          Channel_Dscr.Period, 0);
             exception
               when others =>
                 -- Failure
@@ -518,8 +518,8 @@ package body Channels is
       -- Try to connect each sec indefinitely
       begin
         Result := Tcp_Util.Connect_To (Socket.Tcp_Header, Host, Port,
-                                       Channel_Dscr.Period, 0,
-                                       Connect_Cb'Unrestricted_Access);
+                                       Connect_Cb'Unrestricted_Access,
+                                       Channel_Dscr.Period, 0);
       exception
         when Socket.Soc_Name_Not_Found =>
           -- Host/port name is not fount in hosts/services

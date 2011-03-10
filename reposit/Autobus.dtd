@@ -3,7 +3,8 @@
 
 <!ENTITY % Tuning "Heartbeat_Period CDATA #IMPLIED
                    Heartbeat_Max_Missed CDATA #IMPLIED
-                   Timeout CDATA #IMPLIED">
+                   Timeout CDATA #IMPLIED
+                   TTL CDATA #IMPLIED">
 
 <!-- This file contains several configurations, each for several buses -->
 <!ELEMENT Autobus (Config*)>

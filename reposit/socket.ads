@@ -35,6 +35,9 @@ package Socket is
   --  All non blocking
   type Blocking_List is (Full_Blocking, Blocking_Send, Non_Blocking);
 
+  -- The TTL, for TCP non Afux (default 64) and UDP/IPM (default 32)
+  subtype Ttl_Range is Natural range 0 .. 255;
+
   -- Exceptions for errors
   -- Errors are consequences of bad usage of the socket
   -- All the calls may raise Soc_Use_Err or Soc_Sys_Err
@@ -79,7 +82,7 @@ package Socket is
   procedure Open (Socket : in out Socket_Dscr; Protocol : in Protocol_List);
 
   -- Close a socket
-  -- May raise Soc_In_Use
+  -- May raise Soc_In_Use if Fd is used (in Event_Mng)
   procedure Close (Socket : in out Socket_Dscr);
 
   -- Is a socket open
@@ -97,7 +100,16 @@ package Socket is
   function Is_Blocking (Socket : in Socket_Dscr; Emission : in Boolean)
                        return Boolean;
 
-  -- Get the Fd of a socket (for use in X_Mng. Add/Del _Callback)
+  -- Set the TTL of a socket
+  -- May raise Soc_Dest_Err on UDP (or IPM) socket if dest is not set
+  -- May raise Soc_Proto_Err if socket is Tcp_(Header_)Afux
+  procedure Set_Ttl (Socket : in Socket_Dscr; Ttl : in Ttl_Range);
+
+  -- Get the TTL of a socket
+  -- May raise Soc_Proto_Err if socket is Tcp_(Header_)Afux
+  function Get_Ttl (Socket : Socket_Dscr) return Ttl_Range;
+
+  -- Get the Fd of a socket (for use in Event_Mng. Add/Del _Callback)
   function Get_Fd (Socket : in Socket_Dscr) return Sys_Calls.File_Desc;
 
   -- Get the protocol of a socket

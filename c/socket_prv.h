@@ -29,6 +29,7 @@ typedef struct {
         boolean         linked;
         blocking_mode   blocking;
         boolean         blocked;
+        byte            ttl;
         connect_state   connection;
         int             socket_id;
         struct sockaddr_in send_struct;

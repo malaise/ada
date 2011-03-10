@@ -49,6 +49,7 @@ package body Socket is
   pragma Import (C, Soc_Open, "soc_open");
   function Soc_Close (S_Addr : System.Address) return Result;
   pragma Import (C, Soc_Close, "soc_close");
+
   function Soc_Set_Blocking (S_Addr : System.Address;
                              Block  : C_Blocking_Mode) return Result;
   pragma Import (C, Soc_Set_Blocking, "soc_set_blocking");
@@ -58,6 +59,11 @@ package body Socket is
   function Soc_Get_Protocol (S_Addr : System.Address;
                              Protocol  : System.Address) return Result;
   pragma Import (C, Soc_Get_Protocol, "soc_get_protocol");
+  function Soc_Set_Ttl (S_Addr : System.Address; Ttl : Byte) return Result;
+  pragma Import (C, Soc_Set_Ttl, "soc_set_ttl");
+  function Soc_Get_Ttl (S_Addr : System.Address;
+                        Ttl : System.Address) return Result;
+  pragma Import (C, Soc_Get_Ttl, "soc_get_ttl");
 
   function Soc_Set_Rece_Ipm_Interface (S_Addr : System.Address;
                                        Host   : System.Address) return Result;
@@ -250,7 +256,23 @@ package body Socket is
     or else (not Emission and then Mode = Full_Blocking);
   end Is_Blocking;
 
-  -- Get the Fd of a socket (for use in X_Mng. Add/Del _Callback)
+  -- Set the TTL of a socket
+  procedure Set_Ttl (Socket : in Socket_Dscr; Ttl : in Ttl_Range) is
+  begin
+    Res := Soc_Set_Ttl (Socket.Soc_Addr, Byte(Ttl));
+    Check_Ok;
+  end Set_Ttl;
+
+  -- Get the TTL of a socket
+  function Get_Ttl (Socket : Socket_Dscr) return Ttl_Range is
+    Ttl : Byte;
+  begin
+    Res := Soc_Get_Ttl (Socket.Soc_Addr, Ttl'Address);
+    Check_Ok;
+    return Ttl_Range (Ttl);
+  end Get_Ttl;
+
+  -- Get the Fd of a socket (for use in Event_Mng. Add/Del _Callback)
   function Get_Fd (Socket : in Socket_Dscr) return Sys_Calls.File_Desc is
     Fd : Integer;
   begin

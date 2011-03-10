@@ -362,8 +362,8 @@ package body Http is
       Soc := Socket.No_Socket;
       Debug ("HTTP: Connecting each" & Connect_Timeout'Img);
       Dummy := Tcp_Util.Connect_To (Socket.Tcp, Host, Port,
-                                    Duration(Connect_Timeout) / 1000.0, 0,
-                                    Connection_Cb'Access);
+                                    Connection_Cb'Access,
+                                    Duration(Connect_Timeout) / 1000.0, 0);
     exception
       when Tcp_Util.Name_Error =>
         -- Host or "http" not found

@@ -87,7 +87,8 @@ package body Autobus is
     procedure Get_Tuning (Name : in String;
                           Heartbeat_Period : out Duration;
                           Heartbeat_Max_Missed : out Positive;
-                          Timeout : out Duration);
+                          Timeout : out Duration;
+                          Ttl : out Socket.Ttl_Range);
   end Config;
   package body Config is separate;
 
@@ -392,8 +393,9 @@ package body Autobus is
     Partner_Acc := Partner_Access(Partners.Access_Current);
     Debug ("Connection to partner " & Partner_Acc.Addr.Image);
 
-    -- Send identification message
+    -- Set TTL and send identification message
     Partner_Acc.Sock := Dscr;
+    Partner_Acc.Sock.Set_Ttl (Partner_Acc.Bus.Ttl);
     Message_Length := Partner_Acc.Bus.Addr.Length;
     Message(1 .. Message_Length) := Partner_Acc.Bus.Addr.Image;
     Dummy := Tcp_Send (Partner_Acc.Sock, null, null, Partner_Acc.Bus.Timeout,
@@ -447,6 +449,7 @@ package body Autobus is
     Debug ("Acception of partner " & Partner.Addr.Image);
     Start_Partner_Timer (Partner.Bus);
     -- Set reception callback
+    New_Dscr.Set_Ttl (Partner.Bus.Ttl);
     Tcp_Reception_Mng.Set_Callbacks (New_Dscr,
                                      Tcp_Reception_Cb'Access,
                                      Tcp_Disconnection_Cb'Access);
@@ -559,9 +562,9 @@ package body Autobus is
       Connected := Tcp_Util.Connect_To (
           Socket.Tcp_Header,
           Rem_Host, Rem_Port,
-          Partner.Bus.Timeout,
-          0,
-          Tcp_Connection_Cb'Access);
+          Tcp_Connection_Cb'Access,
+          Partner.Bus.Timeout, 0,
+          Partner.Bus.Ttl);
     else
       -- This partner is known, restart its keep alive timer
       Start_Partner_Timer (Partner.Bus);
@@ -636,7 +639,8 @@ package body Autobus is
     Config.Get_Tuning (Rbus.Name.Image,
                        Rbus.Heartbeat_Period,
                        Rbus.Heartbeat_Max_Missed,
-                       Rbus.Timeout);
+                       Rbus.Timeout,
+                       Rbus.Ttl);
 
     -- Set admin callback
     Ipm_Reception_Mng.Set_Callbacks (Rbus.Admin, Ipm_Reception_Cb'Access, null);
@@ -647,6 +651,10 @@ package body Autobus is
                           Tcp_Accept_Cb'Access,
                           Rbus.Accep, Port_Num);
     Rbus.Addr := As.U.Tus (Image (Socket.Local_Host_Id , Port_Num));
+
+    -- Set TTL on Admin and Accept sockets
+    Rbus.Admin.Set_Ttl (Rbus.Ttl);
+    Rbus.Accep.Set_Ttl (Rbus.Ttl);
 
     -- Arm Bus active timer
     Timeout.Delay_Seconds := 0.0;

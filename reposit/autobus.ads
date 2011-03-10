@@ -121,10 +121,11 @@ private
     Admin : Socket.Socket_Dscr := Socket.No_Socket;
     -- TCP accept socket
     Accep : Socket.Socket_Dscr := Socket.No_Socket;
-    -- Heartbeat period and Max missed number, Timeout on connect and send
+    -- Heartbeat period and Max missed number, Timeout on connect and send, TTL
     Heartbeat_Period : Duration := 1.0;
     Heartbeat_Max_Missed : Positive := 3;
     Timeout : Duration := 0.5;
+    Ttl : Socket.Ttl_Range := 5;
     -- List of access to partners (TCP connections)
     Partners : Partner_Access_List_Mng.List_Type;
     -- List of subscribers

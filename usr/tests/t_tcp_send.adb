@@ -114,8 +114,8 @@ procedure T_Tcp_Send is
     Message.Seq := 0;
     Result := Tcp_Util.Connect_To (Protocol,
                                    Remote_Host, Remote_Port,
-                                   1.0, 0,
-                                   Connect_Cb'Unrestricted_Access);
+                                   Connect_Cb'Unrestricted_Access,
+                                   1.0, 0);
     Basic_Proc.Put_Line_Output ("Connect result " & Mixed_Str (Result'Img));
   end Connect;
 

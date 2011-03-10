@@ -170,9 +170,9 @@ procedure T_Async is
       Dummy := Tcp_Util.Connect_To (Socket.Tcp,
                                     Remote_Host_Def,
                                     Remote_Port_Def,
+                                    Conn_Cb'Unrestricted_Access,
                                     1.0,
-                                    1,
-                                    Conn_Cb'Unrestricted_Access);
+                                    1);
     end if;
   end Open;
 

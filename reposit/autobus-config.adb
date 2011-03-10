@@ -14,6 +14,7 @@ package body Config is
   Default_Heartbeat_Period : constant Duration := 1.0;
   Default_Heartbeat_Max_Missed : constant := 3;
   Default_Timeout : constant Duration := 0.5;
+  Default_Ttl : constant Socket.Ttl_Range := 5;
 
   -- For Debug
   function Image (Attrs : Xml_Parser.Attributes_Array) return String is
@@ -64,13 +65,15 @@ package body Config is
   Heartbeat_Period_Name : constant String := "Heartbeat_Period";
   Heartbeat_Max_Missed_Name : constant String := "Heartbeat_Max_Missed";
   Timeout_Name : constant String := "Timeout";
+  Ttl_Name : constant String := "TTL";
   function Check_Attributes (Node : Xml_Parser.Element_Type) return Boolean is
-    Dur1, Dur2, Dur3 : Duration;
-    pragma Unreferenced (Dur1, Dur2, Dur3);
+    Dur : Duration;
+    pragma Unreferenced (Dur);
   begin
-    Dur1 := Get_Attribute (Node, Heartbeat_Period_Name, True);
-    Dur2 := Get_Attribute (Node, Heartbeat_Max_Missed_Name, False);
-    Dur3:= Get_Attribute (Node, Timeout_Name, True);
+    Dur := Get_Attribute (Node, Heartbeat_Period_Name, True);
+    Dur := Get_Attribute (Node, Heartbeat_Max_Missed_Name, False);
+    Dur:= Get_Attribute (Node, Timeout_Name, True);
+    Dur:= Get_Attribute (Node, Ttl_Name, False);
     return True;
   exception
     when Config_Error =>
@@ -177,7 +180,8 @@ package body Config is
   procedure Get_Tuning (Name : in String;
                         Heartbeat_Period : out Duration;
                         Heartbeat_Max_Missed : out Positive;
-                        Timeout : out Duration) is
+                        Timeout : out Duration;
+                        Ttl : out Socket.Ttl_Range) is
     Root : Xml_Parser.Element_Type;
     Crit : Bus_Conf_Rec;
     Found : Boolean;
@@ -251,6 +255,24 @@ package body Config is
       Dur := Default_Timeout;
     end if;
     Timeout := Dur;
+
+    -- Get TTL
+    Dur := 0.0;
+    if Found then
+      -- In Conf?
+      Dur := Get_Attribute (Bus_Conf_List.Access_Current.Config,
+                            Ttl_Name, False);
+    end if;
+    if Dur = 0.0 then
+      -- In Root?
+      Dur := Get_Attribute (Root, Ttl_Name, False);
+    end if;
+    if Dur = 0.0 then
+      -- Default
+      Ttl := Default_Ttl;
+    else
+      Ttl := Positive (Dur);
+    end if;
   end Get_Tuning;
 
 end Config;

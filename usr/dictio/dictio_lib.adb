@@ -191,9 +191,8 @@ package body Dictio_Lib is
     Connected : Boolean;
     pragma Unreferenced (Connected);
   begin
-    Connected := Tcp_Util.Connect_To (Protocol,
-                                      Host, Port, 1.0, 0,
-                                      Connection_Cb'Access);
+    Connected := Tcp_Util.Connect_To (Protocol, Host, Port,
+                                      Connection_Cb'Access, 1.0, 0);
   exception
     when Error:others =>
       if Dictio_Debug.Level_Array(Dictio_Debug.Lib) then

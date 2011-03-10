@@ -40,6 +40,7 @@ package body Tcp_Util is
     Port : Remote_Port;
     Delta_Retry : Duration;
     Nb_Tries : Natural;
+    Ttl : Socket.Ttl_Range;
     Cb : Connection_Callback_Access;
     Timer : Timers.Timer_Id;
     Dscr : Socket.Socket_Dscr;
@@ -89,6 +90,7 @@ package body Tcp_Util is
            Protocol  : in Tcp_Protocol_List;
            Host      : in Remote_Host;
            Port      : in Remote_Port;
+           Ttl       : in Socket.Ttl_Range;
            Dscr      : in out Socket.Socket_Dscr;
            Connected : out Boolean) is
     use type  Socket.Socket_Dscr;
@@ -100,6 +102,9 @@ package body Tcp_Util is
     -- Open non blocking
     Dscr.Open (Protocol);
     Dscr.Set_Blocking (Socket.Non_Blocking);
+    if Ttl /= Default_Ttl then
+      Dscr.Set_Ttl (Ttl);
+    end if;
     if Debug_Connect then
       My_Io.Put_Line ("  Tcp_Util.Try_Connect socket open");
     end if;
@@ -375,7 +380,8 @@ package body Tcp_Util is
     end if;
 
     -- Try to connect
-    Try_Connect (Rec.Protocol, Rec.Host, Rec.Port, Rec.Dscr, Connected);
+    Try_Connect (Rec.Protocol, Rec.Host, Rec.Port, Rec.Ttl, Rec.Dscr,
+                 Connected);
     Rec.Curr_Try :=  Rec.Curr_Try + 1;
 
     if Rec.Dscr.Is_Open and then Connected then
@@ -448,9 +454,10 @@ package body Tcp_Util is
   function Connect_To (Protocol      : in Tcp_Protocol_List;
                        Host          : in Remote_Host;
                        Port          : in Remote_Port;
+                       Connection_Cb : in Connection_Callback_Access;
                        Delta_Retry   : in Positive_Duration := 1.0;
                        Nb_Tries      : in Natural := 1;
-                       Connection_Cb : in Connection_Callback_Access)
+                       Ttl           : in Socket.Ttl_Range := Default_Ttl)
            return Boolean is
     Rec : Connecting_Rec;
   begin
@@ -487,6 +494,7 @@ package body Tcp_Util is
     Rec.Port := Port;
     Rec.Delta_Retry := Delta_Retry;
     Rec.Nb_Tries := Nb_Tries;
+    Rec.Ttl := Ttl;
     Rec.Cb := Connection_Cb;
     Rec.Timer := Timers.No_Timer;
     Rec.Dscr := Socket.No_Socket;

@@ -192,8 +192,8 @@ procedure Tcping is
     Put ("Connecting... ");
     Connecting := True;
     begin
-      Dummy := Tcp_Util.Connect_To (Socket.Tcp, Host, Port, Timeout, 1,
-               Connect_Cb'Unrestricted_Access);
+      Dummy := Tcp_Util.Connect_To (Socket.Tcp, Host, Port,
+                   Connect_Cb'Unrestricted_Access, Timeout, 1);
     exception
       when Error:others =>
         Connecting := False;
