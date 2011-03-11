@@ -48,12 +48,15 @@ procedure T_Tcp_Util is
     Sig := True;
   end Signal_Cb;
 
+  procedure Connect;
   procedure Send_Err_Cb (Dscr : in  Socket.Socket_Dscr;
                          Conn_Lost : in Boolean) is
-    pragma Unreferenced (Dscr);
   begin
     Ada.Text_Io.Put_Line ("Send_Err_Cb with lost_conn=" & Conn_Lost'Img);
+    Event_Mng.Del_Fd_Callback (Dscr.Get_Fd, True);
+    The_Dscr := Socket.No_Socket;
     Lost := True;
+    Connect;
   end Send_Err_Cb;
 
   function Send (Msg : in String) return Boolean is
@@ -82,6 +85,7 @@ procedure T_Tcp_Util is
       end if;
       return False;
     else
+      -- Client
       if In_Ovf then
         Ada.Text_Io.Put_Line (Msg & " not sending cause in overflow");
         return False;
@@ -128,7 +132,12 @@ procedure T_Tcp_Util is
                             True,
                             Read_Cb'Unrestricted_Access);
       The_Dscr.Set_Blocking (Socket.Non_Blocking);
-      Ada.Text_Io.Put ("Connected and non blocking");
+      Ada.Text_Io.Put_Line ("Connected and non blocking");
+      Lost := False;
+      In_Ovf := False;
+      if The_Dscr.Get_Ttl /= Ttl then
+        Ada.Text_Io.Put_Line ("TTL lost!");
+      end if;
     else
       Ada.Text_Io.Put_Line ("Not connected");
       Give_Up := True;
@@ -173,6 +182,8 @@ procedure T_Tcp_Util is
                             Read_Cb'Unrestricted_Access);
       The_Dscr.Set_Blocking (Socket.Non_Blocking);
       Ada.Text_Io.Put ("Accepted and non blocking");
+      Lost := False;
+      In_Ovf := False;
     end if;
   end Accept_Cb;
 
@@ -208,7 +219,7 @@ procedure T_Tcp_Util is
       My_Read (The_Dscr, Received_Message, Len, False);
     exception
       when Socket.Soc_Conn_Lost | Socket.Soc_Read_0 =>
-        Ada.Text_Io.Put ("Read Cb -> disconnected: Closing");
+        Ada.Text_Io.Put_Line ("Read Cb -> disconnected: Closing");
         Event_Mng.Del_Fd_Callback (Fd, True);
         if In_Ovf then
           Tcp_Util.Abort_Send_And_Close (The_Dscr);
