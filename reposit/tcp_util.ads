@@ -99,7 +99,7 @@ package Tcp_Util is
   -- May make several tries (one each Delta_Retry) before giving up
   -- Infinite retries if Nb_Tries = 0
   -- The Ttl is used (if supported by the TCP stack) to establish the
-  --  connection, but not propagated to the established connection
+  --  connection and in the established connection
   -- Returns True if immediate result could be achieved
   --  (and the callback has already been called).
   -- May raise Name_Error if Host.Name or Port.Name is unknown
