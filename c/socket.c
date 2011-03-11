@@ -89,6 +89,50 @@ static boolean is_ipm (struct sockaddr_in *addr) {
   return (class_of(host.bytes[0]) == d_class);
 }
 
+/* Set the socket blocked mode according to blocking_mode and action */
+static int set_blocked (soc_ptr soc, boolean for_read) {
+  boolean setblock;
+  int status;
+
+  /* Compute target mode */
+  if (for_read) {
+    setblock = (soc->blocking == full_blocking);
+  } else {
+    setblock = (soc->blocking != non_blocking);
+  }
+
+  /* Nothing to do */
+  if (soc->blocked == setblock) {
+    return (SOC_OK);
+  }
+
+  /* Store state */
+  soc->blocked = setblock;
+
+  /* Get status */
+  status = fcntl (soc->socket_id, F_GETFL, 0);
+  if (status < 0) {
+    perror("fcntl_get_block");
+    return (SOC_SYS_ERR);
+  }
+
+  /* Set blocking or not */
+  if (setblock) {
+    status &= ~O_NONBLOCK;
+  } else {
+    status |= O_NONBLOCK;
+  }
+
+  /* Fcntl for having blocking ios */
+  if (fcntl (soc->socket_id, F_SETFL, status)  == -1) {
+    perror("fcntl_set_block");
+    return (SOC_SYS_ERR);
+  }
+
+  /* Ok */
+  return (SOC_OK);
+}
+
 /* Init a socket (used by open and accept) */
 static int init (soc_ptr *p_soc,
                      int fd,
@@ -138,7 +182,8 @@ static int init (soc_ptr *p_soc,
 
   /* Force blocking operations as default */
   (*p_soc)->blocked = FALSE;
-  result = soc_set_blocking ((soc_token)*p_soc, full_blocking);
+  (*p_soc)->blocking = full_blocking;
+  result = set_blocked (*p_soc, TRUE);
   if (result != SOC_OK) {
     return (result);
   }
@@ -328,50 +373,6 @@ extern int soc_get_id (soc_token token, int *p_id) {
   /* Ok */
   *p_id = soc->socket_id;
   UNLOCK;
-  return (SOC_OK);
-}
-
-/* Set the socket blocked mode according to blocking_mode and action */
-static int set_blocked (soc_ptr soc, boolean for_read) {
-  boolean setblock;
-  int status;
-
-  /* Compute target mode */
-  if (for_read) {
-    setblock = (soc->blocking == full_blocking);
-  } else {
-    setblock = (soc->blocking != non_blocking);
-  }
-
-  /* Nothing to do */
-  if (soc->blocked == setblock) {
-    return (SOC_OK);
-  }
-
-  /* Store state */
-  soc->blocked = setblock;
-
-  /* Get status */
-  status = fcntl (soc->socket_id, F_GETFL, 0);
-  if (status < 0) {
-    perror("fcntl_get_block");
-    return (SOC_SYS_ERR);
-  }
-
-  /* Set blocking or not */
-  if (setblock) {
-    status &= ~O_NONBLOCK;
-  } else {
-    status |= O_NONBLOCK;
-  }
-
-  /* Fcntl for having blocking ios */
-  if (fcntl (soc->socket_id, F_SETFL, status)  == -1) {
-    perror("fcntl_set_block");
-    return (SOC_SYS_ERR);
-  }
-
-  /* Ok */
   return (SOC_OK);
 }
 
@@ -1146,8 +1147,8 @@ static int do_send (soc_ptr soc, soc_message message, soc_length length) {
       soc->send_len = 0;
     }
     return (SOC_OK);
-  } else if (soc->blocking) {
-    /* Not blocked despite blocking */
+  } else if (soc->blocking != non_blocking) {
+    /* Not blocked despite blocking send */
     return (SOC_CONN_LOST);
   } else if ((cr == 0) && (soc->protocol == udp_protocol) ) {
     /* Udp */
@@ -1816,13 +1817,13 @@ static int rec1 (soc_ptr soc, char *buffer, int total_len) {
 
 /* If socket is non blocking, call rec1 directly, */
 /* Else (blocking socket) call rec1 until it does not */
-/* return SOC_WOULD_BLOCK */
+/* return SOC_WOULD_BLOCK (which may happen just before disconnection) */
 static int rec2 (soc_ptr soc, char *buffer, int total_len) {
   int res;
 
   for (;;) {
     res = rec1(soc, buffer, total_len);
-    if ( (! soc->blocking) || (res != SOC_WOULD_BLOCK) ) {
+    if ( (soc->blocking == non_blocking) || (res != SOC_WOULD_BLOCK) ) {
       return (res);
     }
   }
