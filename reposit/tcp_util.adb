@@ -143,6 +143,7 @@ package body Tcp_Util is
       if Dscr.Is_Open then
         Dscr.Close;
       end if;
+      Connected := False;
       if Debug_Connect then
         My_Io.Put_Line ("  Tcp_Util.Try_Connect refused");
       end if;
@@ -997,7 +998,10 @@ package body Tcp_Util is
                     & Positive'Image (Sen_List.Get_Position));
     end if;
 
-    -- Unhook callback and del rec
+    -- Cancel timer, unhook callback and del rec
+    if Rec.Timer.Exists then
+      Rec.Timer.Delete;
+    end if;
     Event_Mng.Del_Fd_Callback (Rec.Fd, False);
     Delete_Current_Sen;
 
