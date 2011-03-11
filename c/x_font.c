@@ -8,17 +8,17 @@ boolean fon_open (Display *x_server, XFontSet font_set[],
 int i, res, err;
 char **name_list;
 int missing_count;
-boolean DEBUG;
+boolean debug;
 XFontStruct **fonts;
 
     /* See if debug */
     {
         char *p;
         p = getenv("X_FONT_DEBUG");
-        DEBUG = (p != NULL) && ( (*p == 'y') || (*p == 'Y') );
+        debug = (p != NULL) && ( (*p == 'y') || (*p == 'Y') );
     }
 #ifdef DEBUG
-    DEBUG = TRUE;
+    debug = True;
 #endif
 
 
@@ -29,14 +29,14 @@ XFontStruct **fonts;
                        &name_list, &missing_count, NULL);
         if (font_set[i] == NULL) {
 
-            if (DEBUG) {
+            if (debug) {
                 printf ("X_FONT : can't create font set of %s.\n",
                         font_name[i]);
             }
             err=i;
             break;
         } else if (missing_count != 0)  {
-            if (DEBUG) {
+            if (debug) {
                 printf ("X_FONT warning : missing %d fonts for font set of %s.\n",
                         missing_count, font_name[i]);
                 {
@@ -53,7 +53,7 @@ XFontStruct **fonts;
         /* Load font characteristics */
         res = XFontsOfFontSet (font_set[i], &fonts, &name_list);
         if (res == -1) {
-            if (DEBUG) {
+            if (debug) {
                 printf ("X_FONT : cannot get font from set %s.\n",
                         font_name[i]);
             }
@@ -61,12 +61,12 @@ XFontStruct **fonts;
             break;
         }
         /* Copy font characteristics */
-        if (DEBUG) {
+        if (debug) {
             printf ("X_FONT info : got font from set %s.\n", name_list[0]);
         }
         font[i] = XLoadQueryFont (x_server, font_name[i]);
         if (font[i] == NULL) {
-            if (DEBUG) {
+            if (debug) {
                 printf ("X_FONT : cannot load font %s.\n", font_name[i]);
             }
             err = i;
