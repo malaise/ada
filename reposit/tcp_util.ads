@@ -163,9 +163,9 @@ package Tcp_Util is
   --  slow or if the connection becomes "frozen" (TCP timeout is very long).
   -- There are two strategies:
   --  - either set the socket blocking and send with a timeout. The send
-  --    blocks and either succeeds or raises Timeout_Error or Socket.Conn_Lost.
+  --    blocks and either succeeds or raises Timeout_Error or Socket.Conn_Lost
   --  - or set the socket non blocking. The send either succeds or raises
-  --    Socket.Conn_Lost (the socket should be closed) or returns False.
+  --    Socket.Conn_Lost or returns False.
   --    It tries asynchronously to re-send when possible until all the message
   --    is sent, then calls End_Of_Overflow_Callback.
   --    If a timeout occurs or connection is lost during the retries,
@@ -176,10 +176,12 @@ package Tcp_Util is
   --  closed
   -- May raise Timeout_Error on a blocking socket if timeout has expired, the
   --  socket is left in an unpredictable state and MUST be closed.
+  -- Notes:
   -- If the timeout is 0.0 then no timeout is checked and Timeout_Error cannot
   --  be raised: sending on a blocking socket blocks until success or error,
   --  and sending on an non blocking socket makes infinite retries until
   --  success or error.
+  -- If the socket is blocking then the callbacks are not used.
   -- If send is called on a non blocking socket and overflows and then the
   --   socket is changed to blocking then a Timeout error is reported as
   --   soon as possible (Timeout expiration or next attempt to re send).

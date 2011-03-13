@@ -938,7 +938,7 @@ package body Tcp_Util is
       when Socket.Soc_Would_Block =>
         -- Overflow (on non blocking) is handled below
         null;
-      when Socket.Soc_Conn_Lost =>
+      when Socket.Soc_Conn_Lost | Timeout_Error =>
         raise;
       when Error:others =>
         if Debug_Overflow then
