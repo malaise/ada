@@ -17,6 +17,7 @@ procedure T_Tcp_Send is
   Next_Arg : Positive;
   Blocking : Boolean := False;
   Send_Timeout : Duration := 0.0;
+  Default_Timeout : constant Duration := 5.1;
 
   -- Connect synchronous result
   Result : Boolean;
@@ -213,7 +214,7 @@ begin
       if Arg = "-b" then
         Blocking := True;
       elsif Arg = "-t" then
-        Send_Timeout := 2.1;
+        Send_Timeout := Default_Timeout;
       elsif Next_Arg = Argument.Get_Nbre_Arg then
         -- Last arg = dest
         exit;
