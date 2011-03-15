@@ -23,7 +23,7 @@ package body Autobus is
   package Ipm_Reception_Mng is new Tcp_Util.Reception (Ipm_Message_Str);
 
   -- Tcp message type
-  Tcp_Message_Max_Length : constant := 1024 * 1024;
+  Tcp_Message_Max_Length : constant := Message_Max_Length;
   subtype Tcp_Message_Str is String (1 .. Tcp_Message_Max_Length);
   package Tcp_Reception_Mng is new Tcp_Util.Reception (Tcp_Message_Str);
 
@@ -237,7 +237,7 @@ package body Autobus is
 
     -- Clear client reference
     Subscriber_Acc.Client.Acc := null;
-    -- Free Filter and delete
+    -- Free Filter and delete from Bus list
     Regular_Expressions.Free (Subscriber_Acc.Filter.all);
     Deallocate (Subscriber_Acc.Filter);
     Buses.Access_Current.Subscribers.Delete (Moved => Moved);
@@ -830,6 +830,7 @@ package body Autobus is
     -- Store in Bus
     Bus.Acc.Subscribers.Rewind (False, Subscriber_List_Mng.Next);
     Bus.Acc.Subscribers.Insert (Subs);
+    Subscriber.Acc := Bus.Acc.Subscribers.Access_Current;
 
     if Filter = "" then
       Debug ("Subscriber init ok");
@@ -852,7 +853,7 @@ package body Autobus is
     if not Bus_Found then
       raise Status_Error;
     end if;
-    if Subscriber.Acc /= null then
+    if Subscriber.Acc = null then
       raise Status_Error;
     end if;
     Bus.Acc.Subscribers.Search_Access (Subscriber_Found, Subscriber.Acc);
@@ -861,6 +862,7 @@ package body Autobus is
       raise Status_Error;
     end if;
 
+    Debug ("Subscriber.Reset " & Bus.Acc.Name.Image);
     Remove_Current_Subscriber;
   end Reset;
 
