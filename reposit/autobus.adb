@@ -238,8 +238,10 @@ package body Autobus is
     -- Clear client reference
     Subscriber_Acc.Client.Acc := null;
     -- Free Filter and delete from Bus list
-    Regular_Expressions.Free (Subscriber_Acc.Filter.all);
-    Deallocate (Subscriber_Acc.Filter);
+    if Subscriber_Acc.Filter /= null then
+      Regular_Expressions.Free (Subscriber_Acc.Filter.all);
+      Deallocate (Subscriber_Acc.Filter);
+    end if;
     Buses.Access_Current.Subscribers.Delete (Moved => Moved);
   end Remove_Current_Subscriber;
 
@@ -298,7 +300,7 @@ package body Autobus is
   end Remove_Partners;
 
   -- Dispatch a message to the Subscribers of current bus
-  procedure Dispatch (Message : in String);
+  procedure Dispatch (Message : in String; Local : in Boolean);
 
   -- TCP Reception Cb
   procedure Tcp_Reception_Cb (Dscr    : in Socket.Socket_Dscr;
@@ -327,7 +329,8 @@ package body Autobus is
 
     if not Partner_Acc.Addr.Is_Null then
       -- Not the first message, so this is Data => dispatch
-      Dispatch (Message (1 .. Length));
+      Dispatch (Message (1 .. Length),
+                Partner_Acc.Addr = Buses.Access_Current.Addr);
       return;
     end if;
 
@@ -745,6 +748,7 @@ package body Autobus is
         if Partner_Acc.Timer.Exists then
           Dummy := Tcp_Send (Partner_Acc.Sock, null, null,
                              Bus.Acc.Timeout, Msg, Message'Length);
+Debug ("Sent to " & Partner_Acc.Addr.Image);
         end if;
         Success := True;
       exception
@@ -788,8 +792,9 @@ package body Autobus is
 
   procedure Init (Subscriber : in out Subscriber_Type;
                   Bus : in Bus_Access_Type;
-                  Filter : in String;
-                  Observer : access Observer_Type'Class) is
+                  Observer : access Observer_Type'Class;
+                  Filter : in String := "";
+                  Echo : in Boolean := False) is
     Bus_Found : Boolean;
     Subs : Subscriber_Rec;
     Ok : Boolean;
@@ -811,20 +816,19 @@ package body Autobus is
     Subs.Bus := Bus_Access(Bus.Acc);
     Subs.Observer := Observer_Access(Observer);
     Subs.Client := Subscriber'Unrestricted_Access;
+    Subs.Echo := Echo;
 
     -- Compile Filter
-    Subs.Filter := new Regular_Expressions.Compiled_Pattern;
-    if Filter = "" then
-      Regular_Expressions.Compile (Subs.Filter.all, Ok, ".*");
-    else
+    if Filter /= "" then
+      Subs.Filter := new Regular_Expressions.Compiled_Pattern;
       Regular_Expressions.Compile (Subs.Filter.all, Ok, Filter);
-    end if;
-    if not Ok then
-      Debug ("Subscriber.Init regexp error "
-           & Regular_Expressions.Error (Subs.Filter.all));
-      Regular_Expressions.Free (Subs.Filter.all);
-      Deallocate (Subs.Filter);
-      raise Invalid_Filter;
+      if not Ok then
+        Debug ("Subscriber.Init regexp error "
+             & Regular_Expressions.Error (Subs.Filter.all));
+        Regular_Expressions.Free (Subs.Filter.all);
+        Deallocate (Subs.Filter);
+        raise Invalid_Filter;
+      end if;
     end if;
 
     -- Store in Bus
@@ -867,11 +871,12 @@ package body Autobus is
   end Reset;
 
   -- Dispatch the message to the subscribers of current bus
-  procedure Dispatch (Message : in String) is
+  procedure Dispatch (Message : in String; Local : in Boolean) is
     Bus : Bus_Access;
     Subs : Subscriber_Access;
     Match_Info : Regular_Expressions.Match_Array (1 .. 1);
     N_Match : Natural;
+    Ok : Boolean;
   begin
     Bus := Bus_Access(Buses.Access_Current);
 
@@ -879,16 +884,35 @@ package body Autobus is
     if Bus.Subscribers.Is_Empty then
       return;
     end if;
+Debug ("Dispatching");
     Bus.Subscribers.Rewind;
     loop
       Subs := Subscriber_Access(Bus.Subscribers.Access_Current);
-      -- See if message matches this Filter
-      Regular_Expressions.Exec (Subs.Filter.all, Message, N_Match, Match_Info);
-      if N_Match = 1
-      and then Regular_Expressions.Valid_Match (Match_Info(1))
-      and then Match_Info(1).First_Offset = Message'First
-      and then  Match_Info(1).Last_Offset_Stop = Message'Last then
+Debug ("Got Observer");
+      Ok := False;
+      if not Local or else Subs.Echo then
+Debug ("Local and Echo OK");
+        -- This a remote message or this observer wants local messages
+        if Subs.Filter = null then
+          Ok := True;
+        else
+          -- See if message matches this Filter
+          Regular_Expressions.Exec (Subs.Filter.all, Message,
+                                    N_Match, Match_Info);
+Debug ("Regex " & N_Match'Img & " "
+ & Boolean'Image (Regular_Expressions.Valid_Match (Match_Info(1)))
+ & Match_Info(1).First_Offset'Img
+ & Match_Info(1).Last_Offset_Stop'Img
+ & Natural'Image(Message'Last));
+          Ok := N_Match = 1
+             and then Regular_Expressions.Valid_Match (Match_Info(1))
+             and then Match_Info(1).First_Offset = Message'First
+             and then  Match_Info(1).Last_Offset_Stop = Message'Last;
+        end if;
+      end if;
+      if Ok then
         begin
+Debug ("Calling Observer");
           Subs.Observer.Receive (Subs.Client, Message);
         exception
           when others =>

@@ -1,4 +1,6 @@
 Major changes:
+2011/03/15: Fix autobus local echo and clean-up
+            Chg replace Fifo by an Autobus in mcd
 2011/03/11: Fix blocking management in socket and Tcp_Util.Abort_Send_And_Close
 2011/03/10: Add operations to set/get TTL on socket
 2011/03/09: Fix detection of '^' and '$' in search pattern when specific delimiter in asubst, V11.4

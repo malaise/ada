@@ -41,6 +41,7 @@ package Autobus is
   --  that pass the Filter
   -- Filter is a PCRE regular expression
   -- Empty filter lets all messages pass through
+  -- Echo allows enabling observation of messages sent by own process
   type Observer_Type is limited interface;
   procedure Receive (Observer : in out Observer_Type;
                      Subscriber : in Subscriber_Access_Type;
@@ -51,8 +52,9 @@ package Autobus is
   Invalid_Filter : exception;
   procedure Init (Subscriber : in out Subscriber_Type;
                   Bus : in Bus_Access_Type;
-                  Filter : in String;
-                  Observer : access Observer_Type'Class);
+                  Observer : access Observer_Type'Class;
+                  Filter : in String := "";
+                  Echo : in Boolean := False);
 
   -- Reset a Subscriber (make it re-usable)
   procedure Reset (Subscriber : in out Subscriber_Type;
@@ -103,6 +105,7 @@ private
     Bus : Bus_Access;
     -- Filter
     Filter : Filter_Access;
+    Echo : Boolean;
     -- Observer
     Observer : Observer_Access;
     -- Client subscriber
