@@ -102,7 +102,7 @@ package body Io_Flow is
                                   & Bus_Addr.Image);
           raise Init_Error;
       end;
-      Bus_Subscriber.Init (Bus'Access, "", Bus_Observer'Access);
+      Bus_Subscriber.Init (Bus'Access, Bus_Observer'Access);
       Io_Mode := Abus;
       return;
     end if;
