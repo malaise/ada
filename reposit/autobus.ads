@@ -26,6 +26,7 @@ package Autobus is
   procedure Reset (Bus : in out Bus_Type);
 
   -- Send a Message on a Bus
+  Message_Max_Length : constant := 1024 * 1024;
   -- On message longer than 1MB
   Message_Too_Long : exception;
   procedure Send (Bus : in out Bus_Type; Message : in String);
