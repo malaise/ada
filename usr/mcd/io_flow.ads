@@ -1,8 +1,9 @@
 with As.U;
 package Io_Flow is
 
-  -- Init or Next_Line can raise Fifo_Error if error (re)opening FIFO
-  Fifo_Error : exception;
+  -- Init or Next_Line can raise Comm_Error if error (re)opening communication
+  --  channel
+  Communication_Error : exception;
 
   -- Initialization, use Default if init fails, before putting init error
   -- May raise Init_Error (if invalid argument, communication error...)

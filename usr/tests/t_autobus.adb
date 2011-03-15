@@ -80,6 +80,9 @@ begin
     exit when Sig;
   end loop;
 
+  Basic_Proc.Put_Line_Output ("Closing.");
+  Subs_Repl.Reset (Bus'Unrestricted_Access);
+  Bus.Reset;
   Basic_Proc.Put_Line_Output ("Done.");
 end T_Autobus;
 

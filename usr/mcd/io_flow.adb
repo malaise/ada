@@ -1,8 +1,7 @@
-with Ada.Characters.Latin_1, Ada.Exceptions;
-with Argument, Event_Mng, Sys_Calls, Async_Stdin, Text_Line,
-     Socket, Socket_Util,Tcp_Util, Ip_Addr;
-with Fifos;
-with Debug, Io_Data;
+with Ada.Characters.Latin_1;
+with As.U.Utils, Argument, Event_Mng, Sys_Calls, Async_Stdin, Text_Line,
+     Socket, Socket_Util, Tcp_Util, Ip_Addr, Autobus;
+with Io_Data, Debug;
 package body Io_Flow is
 
   -- Io mode
@@ -12,7 +11,7 @@ package body Io_Flow is
     Stdio_Not_Tty,
     Udp,
     Tcp,
-    Fifo);
+    Abus);
   Io_Mode : Io_Mode_List := Unknown;
 
   -- Data read
@@ -34,11 +33,17 @@ package body Io_Flow is
   procedure Soc_Send is new Socket.Send (Io_Data.Message_Type);
   procedure Soc_Receive is new Socket.Receive (Io_Data.Message_Type);
 
-  -- Fifo
-  Fifo_Name : As.U.Asu_Us;
-  package Mcd_Fifos is new Fifos.Fifo (Io_Data.Message_Type);
-  Acc_Id, Client_Id : Mcd_Fifos.Fifo_Id := Mcd_Fifos.No_Fifo;
-  procedure Open_Fifo (Active : in Boolean);
+  -- Bus
+  Bus_Addr : As.U.Asu_Us;
+  Bus : aliased Autobus.Bus_Type;
+  Messages : As.U.Utils.Asu_Dyn_List_Mng.List_Type;
+  -- Observer recevier of messages
+  Bus_Subscriber : Autobus.Subscriber_Type;
+  type Bus_Observer_Type is new Autobus.Observer_Type with null record;
+  procedure Receive (Observer : in out Bus_Observer_Type;
+                     Subscriber : in Autobus.Subscriber_Access_Type;
+                     Message : in String);
+  Bus_Observer : aliased Bus_Observer_Type;
 
   -- Async Stdin
   function Stdin_Cb (Str : in String) return Boolean;
@@ -67,22 +72,39 @@ package body Io_Flow is
       return;
     end if;
 
-    -- Get fifo name argument if set
-    if Argument.Is_Set (1, "f") then
-      if Argument.Is_Set (2, "f") or else Io_Mode /= Unknown then
+    -- Get bus address rgument if set
+    if Argument.Is_Set (1, "a") then
+      if Argument.Is_Set (2, "a") or else Io_Mode /= Unknown then
         Async_Stdin.Put_Line_Err ("Too many options.");
         raise Init_Error;
       end if;
-      Argument.Get_Parameter (Fifo_Name, 1, "f");
-      if Fifo_Name.Is_Null then
-        Async_Stdin.Put_Line_Err ("Missing fifo name.");
+      Argument.Get_Parameter (Bus_Addr, 1, "a");
+      if Bus_Addr.Is_Null then
+        Async_Stdin.Put_Line_Err ("Missing autobus address.");
         raise Init_Error;
       end if;
       if Debug.Debug_Level_Array(Debug.Flow) then
-        Async_Stdin.Put_Line_Err ("Flow: Init on fifo " & Fifo_Name.Image);
+        Async_Stdin.Put_Line_Err ("Flow: Init on autobus " & Bus_Addr.Image);
       end if;
-      Open_Fifo (True);
-      Io_Mode := Fifo;
+      begin
+        Bus.Init (Bus_Addr.Image);
+      exception
+        when Autobus.Invalid_Address =>
+          Async_Stdin.Put_Line_Err ("Invalid autobus address "
+                                  & Bus_Addr.Image);
+          raise Init_Error;
+        when Autobus.Name_Error =>
+          Async_Stdin.Put_Line_Err ("Name not found in autobus address "
+                                  & Bus_Addr.Image);
+          raise Init_Error;
+        when Autobus.Config_Error =>
+          Async_Stdin.Put_Line_Err ("invlaid autobus config for address "
+                                  & Bus_Addr.Image);
+          raise Init_Error;
+      end;
+      Bus_Subscriber.Init (Bus'Access, "", Bus_Observer'Access);
+      Io_Mode := Abus;
+      return;
     end if;
 
     -- Get tcp port if set
@@ -175,7 +197,6 @@ package body Io_Flow is
     Evt : Event_Mng.Out_Event_List;
     Len : Natural;
     use type Event_Mng.Out_Event_List;
-    use type Mcd_Fifos.Fifo_Id;
   begin
     if Io_Mode = Stdio_Not_Tty then
       Input_Data.Set_Null;
@@ -194,12 +215,35 @@ package body Io_Flow is
         -- This line is Ok if not empty
         exit when Len /= 0;
       end loop;
+    elsif Io_Mode = Abus then
+      -- Get data from buffer of autobus messages
+      loop
+        if not Messages.Is_Empty then
+          Messages.Rewind;
+          Messages.Get (Str);
+          exit;
+        end if;
+        Evt := Event_Mng.Wait (Event_Mng.Infinite_Ms);
+
+        if Evt = Event_Mng.Signal_Event then
+          -- Give up on signal
+          Input_Data.Set_Null;
+          if Debug.Debug_Level_Array(Debug.Flow) then
+            Async_Stdin.Put_Line_Err ("Flow: Got signal");
+          end if;
+          exit;
+        else
+          if Debug.Debug_Level_Array(Debug.Flow) then
+            Async_Stdin.Put_Line_Err ("Flow: Got event " & Evt'Img);
+          end if;
+        end if;
+      end loop;
     else
-      -- Get next data on async stdin, socket or Fifo
+      -- Get next data on async stdin, socket
       loop
         Input_Data.Set_Null;
         if Debug.Debug_Level_Array(Debug.Flow) then
-          Async_Stdin.Put_Line_Err ("Flow: Waiting on fifo/socket/tty");
+          Async_Stdin.Put_Line_Err ("Flow: Waiting on bus/socket/tty");
         end if;
         Evt := Event_Mng.Wait (Event_Mng.Infinite_Ms);
 
@@ -226,10 +270,8 @@ package body Io_Flow is
     case Io_Mode is
       when Stdio_Tty =>
         Async_Stdin.Activate (True);
-      when Fifo =>
-        if Client_Id /= Mcd_Fifos.No_Fifo then
-          Mcd_Fifos.Activate (Client_Id, True);
-        end if;
+      when Abus =>
+        null;
       when Udp | Tcp =>
         Activate_Socket (True);
       when others =>
@@ -243,30 +285,19 @@ package body Io_Flow is
   ----------------------------------------------------
   -- Pet data on fifo, tcp, udp or stdin (async or not)
   ----------------------------------------------------
-  -- Send one message on socket or FIFO
+  -- Send one message on socket or Autobus
   Message_To_Put : Io_Data.Message_Type;
   procedure Send_Message (Str : in String) is
     Active : Boolean;
-    Res : Fifos.Send_Result_List;
-    use type Fifos.Send_Result_List;
   begin
     Message_To_Put (1 .. Str'Length) := Str;
-    if Io_Mode = Fifo then
-      Active := Mcd_Fifos.Is_Active (Client_Id);
-      Res := Mcd_Fifos.Send (Client_Id, Message_To_Put, Str'Length);
-      if Res /= Fifos.Ok and then Res /= Fifos.Overflow then
-        Mcd_Fifos.Close (Client_Id);
-        Open_Fifo (Active);
-      end if;
+    if Io_Mode = Abus then
+      Bus.Send (Str);
     else
       Active := Socket_Is_Active;
       Soc_Send (Soc, Message_To_Put, Str'Length);
     end if;
   exception
-    when Fifos.In_Overflow =>
-      -- FIFO
-      Mcd_Fifos.Close (Client_Id);
-      Open_Fifo (Active);
     when Socket.Soc_Would_Block =>
       -- TCP
       Activate_Socket (False);
@@ -277,7 +308,6 @@ package body Io_Flow is
   -- Put or send string
   procedure Put (Str : in String) is
     F, L : Natural;
-    use type Mcd_Fifos.Fifo_Id;
   begin
     case Io_Mode is
       when Unknown =>
@@ -285,18 +315,16 @@ package body Io_Flow is
       when Stdio_Tty | Stdio_Not_Tty =>
         -- Put on stdout (tty or not)
         Async_Stdin.Put_Out (Str);
-      when Udp | Tcp | Fifo =>
+      when Udp | Tcp | Abus =>
         -- Skip if channel is not active
-        if Io_Mode = Fifo and then Client_Id /= Mcd_Fifos.No_Fifo then
-          return;
-        elsif (Io_Mode = Udp or else Io_Mode = Tcp)
+        if (Io_Mode = Udp or else Io_Mode = Tcp)
         and then not Soc.Is_Open then
           return;
         end if;
         -- Send on Socket/Fifo several messages
         F := Str'First;
         loop
-          L := F + Io_Data.Max_Message_Len - 1;
+          L := F + Autobus.Message_Max_Length - 1;
           if L > Str'Last then
             L := Str'Last;
           end if;
@@ -324,11 +352,8 @@ package body Io_Flow is
     Put (Str & Ada.Characters.Latin_1.Lf);
   end Put_Line;
 
-  Closing : Boolean := False;
   procedure Close is
-    use type Mcd_Fifos.Fifo_Id;
   begin
-    Closing := True;
     case Io_Mode is
       when Stdio_Tty =>
         -- Reset tty blocking
@@ -336,19 +361,9 @@ package body Io_Flow is
       when Stdio_Not_Tty =>
         -- Close input flow
         Input_Flow.Close;
-      when Fifo =>
-        if Debug.Debug_Level_Array(Debug.Flow) then
-          Async_Stdin.Put_Line_Err ("Flow: Closing fifo");
-        end if;
-        if Client_Id /= Mcd_Fifos.No_Fifo then
-          Mcd_Fifos.Close (Client_Id);
-        end if;
-        if Acc_Id /= Mcd_Fifos.No_Fifo then
-          Mcd_Fifos.Close (Acc_Id);
-        end if;
-        if Debug.Debug_Level_Array(Debug.Flow) then
-          Async_Stdin.Put_Line_Err ("Flow: Closed fifo");
-        end if;
+      when Abus =>
+        Bus_Subscriber.Reset (Bus'Access);
+        Bus.Reset;
       when Udp =>
         if Debug.Debug_Level_Array(Debug.Flow) then
           Async_Stdin.Put_Line_Err ("Flow: Closing udp");
@@ -377,88 +392,36 @@ package body Io_Flow is
   end Close;
 
   ----------------------------------------------------
-  -- Fifo operations
+  -- Bus resception callback
   ----------------------------------------------------
-  procedure Fifo_Conn_Cb (Fifo_Name : in String;
-                          Id        : in Mcd_Fifos.Fifo_Id;
-                          Connected : in Boolean) is
-    pragma Unreferenced (Fifo_Name);
-    Active : Boolean;
+  procedure Receive (Observer : in out Bus_Observer_Type;
+                     Subscriber : in Autobus.Subscriber_Access_Type;
+                     Message : in String) is
+    pragma Unreferenced (Observer, Subscriber);
   begin
-    if Connected then
-      if Debug.Debug_Level_Array(Debug.Flow) then
-        Async_Stdin.Put_Line_Err ("Flow: Client accepted");
-      end if;
-      -- Accept one client and stop accepting others
-      Mcd_Fifos.Close (Acc_Id);
-      Client_Id := Id;
-    else
-      -- Client disconnected, allow new client (except if we are closing)
-      if Debug.Debug_Level_Array(Debug.Flow) then
-        Async_Stdin.Put_Line_Err ("Flow: Client has disconnected");
-      end if;
-      Active := Mcd_Fifos.Is_Active (Client_Id);
-      Client_Id := Mcd_Fifos.No_Fifo;
-      if not Closing then
-        Open_Fifo (Active);
-      end if;
-    end if;
-  end Fifo_Conn_Cb;
-
-  procedure Fifo_Rece_Cb (Id      : in Mcd_Fifos.Fifo_Id;
-                          Message : in Io_Data.Message_Type;
-                          Length  : in Fifos.Message_Length) is
-    pragma Unreferenced (Id);
-  begin
-    if Length = 0 then
+    if Message'Length = 0 then
       return;
     end if;
     -- Add this chunk
-    Tmp_Data.Append (Message(1 .. Length));
-    if      Message(Length) = Ada.Characters.Latin_1.Cr
-    or else Message(Length) = Ada.Characters.Latin_1.Lf then
-      -- Validate the overall string
+    Tmp_Data.Append (Message);
+    if      Message(Message'Last) = Ada.Characters.Latin_1.Cr
+    or else Message(Message'Last) = Ada.Characters.Latin_1.Lf then
+      -- Validate the overall string and append it to list
       Input_Data := Tmp_Data;
       Tmp_Data.Set_Null;
-      -- Freeze fifo to prevent Input_Data to be overwritten
-      Mcd_Fifos.Activate (Client_Id, False);
+      Messages.Rewind (False, As.U.Utils.Asu_Dyn_List_Mng.Next);
+      Messages.Insert (Input_Data);
       if Debug.Debug_Level_Array(Debug.Flow) then
         Async_Stdin.Put_Line_Err ("Flow: Fifo_Rece_Cb set >"
                              & Input_Data.Image & "<");
       end if;
     end if;
-  end Fifo_Rece_Cb;
-
-  procedure Open_Fifo (Active : in Boolean) is
-  begin
-    if Debug.Debug_Level_Array(Debug.Flow) then
-      Async_Stdin.Put_Line_Err ("Flow: Opening fifo " & Fifo_Name.Image);
-    end if;
-    Acc_Id := Mcd_Fifos.Open (Fifo_Name.Image,
-                              False,
-                              Fifo_Conn_Cb'Access,
-                              Fifo_Rece_Cb'Access,
-                              null);
-    if not Active then
-      Mcd_Fifos.Activate (Acc_Id, False);
-    end if;
-    if Debug.Debug_Level_Array(Debug.Flow) then
-      Async_Stdin.Put_Line_Err ("Flow: Fifo open");
-    end if;
-  exception
-    when Error:others =>
-      if Debug.Debug_Level_Array(Debug.Flow) then
-        Async_Stdin.Put_Line_Err ("Flow: Fifo open error "
-                            & Ada.Exceptions.Exception_Name (Error));
-      end if;
-      raise Fifo_Error;
-  end Open_Fifo;
+  end Receive;
 
   ----------------------------------------------------
   -- Async stdin callback
   ----------------------------------------------------
   function Stdin_Cb (Str : in String) return Boolean is
-    use type Mcd_Fifos.Fifo_Id;
   begin
     if Str = "" then
       -- Error or end

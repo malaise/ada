@@ -405,7 +405,7 @@ package body Mcd_Parser is
   procedure Print_Help is
     Ope_Name : String (1 .. Ope_Len);
   begin
-    Io_Flow.Put_Line ("Usage: " & Argument.Get_Program_Name & " [ -f<fifo_name> | -u<udp_spec> | -t<tcp_port> | -h ]");
+    Io_Flow.Put_Line ("Usage: " & Argument.Get_Program_Name & " [ -a<bus_address> | -u<udp_spec> | -t<tcp_port> | -h ]");
     Io_Flow.Put_Line ("  <udp_spec> ::= [<ipm_lan_name_or_num>]:<udp_port>");
     Io_Flow.Put_Line ("  <port>     ::= <port_name> | <port_num>");
     Io_Flow.New_Line;

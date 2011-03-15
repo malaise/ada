@@ -91,8 +91,8 @@ exception
     Error ("File IO error");
   when Io_Flow.Init_Error =>
     Error ("Initialization error");
-  when Io_Flow.Fifo_Error =>
-    Error ("Fifo opening error");
+  when Io_Flow.Communication_Error =>
+    Error ("Communication error");
   when Mcd_Parser.Parsing_Error =>
     Error ("Parsing error");
   when Except:others =>
