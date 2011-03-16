@@ -72,7 +72,7 @@ package body Io_Flow is
       return;
     end if;
 
-    -- Get bus address rgument if set
+    -- Get bus address argument if set
     if Argument.Is_Set (1, "a") then
       if Argument.Is_Set (2, "a") or else Io_Mode /= Unknown then
         Async_Stdin.Put_Line_Err ("Too many options.");
@@ -98,7 +98,7 @@ package body Io_Flow is
                                   & Bus_Addr.Image);
           raise Init_Error;
         when Autobus.Config_Error =>
-          Async_Stdin.Put_Line_Err ("invlaid autobus config for address "
+          Async_Stdin.Put_Line_Err ("Invalid autobus config for address "
                                   & Bus_Addr.Image);
           raise Init_Error;
       end;
