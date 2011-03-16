@@ -75,12 +75,12 @@ procedure T_Autobus is
     pragma Unreferenced (Observer, Subscriber);
     use type Autobus.Subscriber_Access_Type;
   begin
-    Basic_Proc.Put_Line_Output (Message);
+    Basic_Proc.Put_Output (Message);
+    Basic_Proc.Flush_Output;
   end Receive;
 
   -- Async stdin callback
   function Async_Cb (Str : String) return Boolean is
-    Last : Natural;
   begin
     if Str = "" then
       -- Async stdin error
@@ -88,13 +88,7 @@ procedure T_Autobus is
       Sig := True;
       return True;
     else
-      Last  := Str'Last;
-      if Str (Last) < ' ' then
-        Last  := Last - 1;
-      end if;
-      if Last > 0 then
-        Bus.Send (Str (Str'First .. Last));
-      end if;
+      Bus.Send (Str);
       return False;
     end if;
   end Async_Cb;
