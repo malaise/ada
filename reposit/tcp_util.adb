@@ -1078,6 +1078,7 @@ package body Tcp_Util is
       Found : Boolean;
       Msg : Message_Access;
       Len : Natural;
+      Result : Boolean;
     begin
       if not For_Read then
         if Debug_Reception then
@@ -1132,10 +1133,10 @@ package body Tcp_Util is
       end if;
       -- Call appli callback
       if The_Rec.Read_Cb /= null then
-        The_Rec.Read_Cb (The_Rec.Dscr, Msg.all, Len);
+        Result := The_Rec.Read_Cb (The_Rec.Dscr, Msg.all, Len);
       end if;
       Free_Message (Msg);
-      return True;
+      return Result;
     end Read_Cb;
 
     procedure Set_Callbacks (

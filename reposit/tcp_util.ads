@@ -10,7 +10,8 @@ package Tcp_Util is
   -- For Connection: Fd_Event or Timer_Event when connection success or failure
   -- For Acception: Fd_Event when a connection is accepted
   -- For Sending : Fd_Event when end of overflow or error
-  -- For Receiving: Fd_Event when data read or connection closed
+  -- For Receiving: Fd_Event when data read and callback returns true
+  --                or when connection closed
 
 
   -- PROTOCOL DEFINITION --
@@ -218,10 +219,12 @@ package Tcp_Util is
     type Message_Type is private;
   package Reception is
     -- Callback invoqued when a message is received
+    -- If it returns True then a Fd_Event will be reported
+    --  by Event_Mng
     type Reception_Callback_Access is access
-         procedure (Dscr    : in Socket.Socket_Dscr;
-                    Message : in Message_Type;
-                    Length  : in Natural);
+         function (Dscr    : Socket.Socket_Dscr;
+                   Message : Message_Type;
+                   Length  : Natural) return Boolean;
 
     -- Set reception and disconnection callbacks
     --  (callbacks may be null, then data/events will be lost)

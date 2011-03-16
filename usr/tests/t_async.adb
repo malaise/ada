@@ -71,9 +71,9 @@ procedure T_Async is
   end Send;
 
   -- When a message to read
-  procedure Read_Cb (Dscr : in Socket.Socket_Dscr;
-                     Msg : in Message_Type;
-                     Len : in Natural) is
+  function Read_Cb (Dscr : Socket.Socket_Dscr;
+                    Msg  :  Message_Type;
+                    Len  :  Natural) return Boolean is
     pragma Unreferenced (Dscr);
   begin
     if Len = 1 and then Msg(1) = Ada.Characters.Latin_1.Eot then
@@ -88,6 +88,7 @@ procedure T_Async is
     else
       Async_Stdin.Put_Out (Msg(1 .. Len));
     end if;
+    return True;
   end Read_Cb;
   package My_Rece is new Tcp_Util.Reception (Message_Type);
 

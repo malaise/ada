@@ -250,26 +250,26 @@ package body Fifos is
       end Disconnection_Cb;
 
 
-      procedure Reception_Cb (Dscr    : in Socket.Socket_Dscr;
-                              Message : in Message_Type;
-                              Length  : in Natural) is
+      function Reception_Cb (Dscr    : Socket.Socket_Dscr;
+                             Message : Message_Type;
+                             Length  : Natural) return Boolean is
         Acc : Fifo_Rec_Access;
       begin
         if not List.Search_By_Dscr (Dscr) then
           Assertion.Assert (False, "reception on unknown fifo");
-          return;
+          return False;
         end if;
 
         Acc := Fifo_Rec_Access(List.Access_Current);
         if Acc.Kind = Accepting then
           Assertion.Assert (False, "reception on accepting fifo");
-          return;
+          return False;
         end if;
 
         if Acc.Kind /= Accepting and then Acc.Rece_Cb /= null then
           Acc.Rece_Cb ((Acc => Acc), Message, Length);
         end if;
-
+        return True;
       end Reception_Cb;
 
 

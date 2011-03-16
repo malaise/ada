@@ -303,9 +303,9 @@ package body Autobus is
   procedure Dispatch (Message : in String; Local : in Boolean);
 
   -- TCP Reception Cb
-  procedure Tcp_Reception_Cb (Dscr    : in Socket.Socket_Dscr;
-                              Message : in Tcp_Message_Str;
-                              Length  : in Natural) is
+  function Tcp_Reception_Cb (Dscr    : Socket.Socket_Dscr;
+                             Message : Tcp_Message_Str;
+                             Length  : Natural) return Boolean is
     Msg : constant String := Message (1 .. Length);
     Partner : Partner_Rec;
     Partner_Found : Boolean;
@@ -320,7 +320,7 @@ package body Autobus is
     if not Partner_Found then
       Log_Error ("Tcp_Reception_Cb", " partner not found",
                  "in partners list");
-      return;
+      return False;
     end if;
     Partner_Acc := Partner_Access(Partners.Access_Current);
 
@@ -331,7 +331,7 @@ package body Autobus is
       -- Not the first message, so this is Data => dispatch
       Dispatch (Message (1 .. Length),
                 Partner_Acc.Addr = Buses.Access_Current.Addr);
-      return;
+      return True;
     end if;
 
     -- The partner (just connected to us) sends us its accept address
@@ -345,7 +345,7 @@ package body Autobus is
         Log_Error ("Tcp_Reception_Cb", "invalid identification",
                  Msg & " from " & Partner_Acc.Addr.Image);
         Remove_Current_Partner (True);
-        return;
+        return False;
     end;
     Partner_Acc.Addr := As.U.Tus (Msg);
     if Partner_Acc.Addr = Buses.Access_Current.Addr then
@@ -357,7 +357,7 @@ package body Autobus is
     else
       Debug ("Reception of identification from " & Partner_Acc.Addr.Image);
     end if;
-
+    return False;
   end Tcp_Reception_Cb;
 
   -- Pending connection Cb
@@ -478,9 +478,9 @@ package body Autobus is
   end Send_Ipm;
 
   -- IPM Reception Cb
-  procedure Ipm_Reception_Cb (Dscr    : in Socket.Socket_Dscr;
-                              Message : in Ipm_Message_Str;
-                              Length  : in Natural) is
+  function Ipm_Reception_Cb (Dscr    : Socket.Socket_Dscr;
+                             Message : Ipm_Message_Str;
+                             Length  : Natural) return Boolean is
     Address : constant String := Message (3 .. Length);
     Rem_Host : Tcp_Util.Remote_Host;
     Rem_Port : Tcp_Util.Remote_Port;
@@ -498,7 +498,7 @@ package body Autobus is
     if Length < 11 or else Length > Ipm_Message_Max_Length - 1
     or else (Message(1) /= 'A' and then Message(1) /= 'D')
     or else Message(2) /= '/' then
-      return;
+      return False;
     end if;
     begin
       -- Check address IP part
@@ -506,14 +506,14 @@ package body Autobus is
       if Rem_Host.Kind = Tcp_Util.Host_Name_Spec
       or else Rem_Port.Kind = Tcp_Util.Port_Name_Spec then
         -- Not an IP address or not a port num
-        return;
+        return False;
       end if;
       -- Set partner address
       Partner.Addr := As.U.Tus (Address);
       Partner.Host := Rem_Host.Id;
       Partner.Port := Rem_Port.Num;
     exception
-      when others => return;
+      when others => return False;
     end;
 
     -- Find bus by admin socket
@@ -526,7 +526,7 @@ package body Autobus is
                           From => Bus_List_Mng.Absolute);
       if not Bus_Found then
         Log_Error ("Ipm_Reception_Cb", "bus not found", "in buses list");
-        return;
+        return False;
       end if;
       -- Set partner bus
       Partner.Bus := Bus_Access(Buses.Access_Current);
@@ -544,7 +544,7 @@ package body Autobus is
         Remove_Current_Partner (True);
       end if;
       -- End of processing of a death message
-      return;
+      return False;
     end if;
 
     -- Handle Alive
@@ -555,7 +555,7 @@ package body Autobus is
         --  (and we will accept) then it will send its address
         Debug ("Ipm: Waiting for identification of " & Partner.Addr.Image);
         Send_Ipm (True);
-        return;
+        return False;
       end if;
       -- Addr => own: add partner and start connect
       Debug ("Ipm: Connecting to new partner " & Partner.Addr.Image);
@@ -572,6 +572,7 @@ package body Autobus is
       -- This partner is known, restart its keep alive timer
       Start_Partner_Timer (Partner.Bus);
     end if;
+    return False;
   end Ipm_Reception_Cb;
 
   -- Timer Cb

@@ -85,13 +85,14 @@ package body Ios is
   -- Message reception Cb
   subtype Message_Type is String (1 .. 1024);
   package My_Rece is new Tcp_Util.Reception (Message_Type);
-  procedure Read_Cb (Dscr : in Socket.Socket_Dscr;
-                     Msg : in Message_Type;
-                     Len : in Natural) is
+  function Read_Cb (Dscr : Socket.Socket_Dscr;
+                    Msg  : Message_Type;
+                    Len  : Natural) return Boolean is
     pragma Unreferenced (Dscr);
   begin
     Debug.Log ("Read " & Msg(1 .. Len));
     Buffer.Push (String_Mng.Replace (Msg(1 .. Len), Crlf, Lf));
+    return True;
   end Read_Cb;
 
  -- When Soc_Read_0

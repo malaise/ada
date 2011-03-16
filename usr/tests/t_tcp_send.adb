@@ -51,9 +51,9 @@ procedure T_Tcp_Send is
     Sock := Socket.No_Socket;
   end Disconnect_Cb;
 
-  procedure Read_Cb (Dscr    : in Socket.Socket_Dscr;
-                     Msg : in Message_Type;
-                     Len  : in Natural) is
+  function Read_Cb (Dscr : Socket.Socket_Dscr;
+                    Msg  : Message_Type;
+                    Len  : Natural) return Boolean is
     pragma Unreferenced (Dscr, Len);
   begin
     if Msg.Seq = Message.Seq then
@@ -63,6 +63,7 @@ procedure T_Tcp_Send is
                                 & " while expecting " & Image (Message.Seq));
     end if;
     Message.Seq := Msg.Seq + 1;
+    return True;
   end Read_Cb;
 
   -- Acception callback

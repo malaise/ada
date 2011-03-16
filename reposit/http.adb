@@ -80,14 +80,15 @@ package body Http is
     return C = ' ';
   end Is_Space;
 
-  -- Message reception Cb
-  procedure Read_Cb (Dscr : in Socket.Socket_Dscr;
-                     Msg : in Message_Type;
-                     Len : in Natural) is
+  -- Message reception Cb, until disconnection
+  function Read_Cb (Dscr : Socket.Socket_Dscr;
+                    Msg : Message_Type;
+                    Len : Natural) return Boolean is
     pragma Unreferenced (Dscr);
   begin
     Debug ("HTTP: Reading");
     Buffer.Append (Msg(1 .. Len));
+    return False;
   end Read_Cb;
 
   -- Check received Data, set Result
