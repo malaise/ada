@@ -3,6 +3,7 @@ all:
 clean:
 	- rm *.o
 	- rm *.ali
+	- rm b~*
 clean_exe:
 	- rm linxtris
 clean_all: clean clean_exe
