@@ -748,7 +748,6 @@ package body Autobus is
         if Partner_Acc.Timer.Exists then
           Dummy := Tcp_Send (Partner_Acc.Sock, null, null,
                              Bus.Acc.Timeout, Msg, Message'Length);
-Debug ("Sent to " & Partner_Acc.Addr.Image);
         end if;
         Success := True;
       exception
@@ -884,14 +883,11 @@ Debug ("Sent to " & Partner_Acc.Addr.Image);
     if Bus.Subscribers.Is_Empty then
       return;
     end if;
-Debug ("Dispatching");
     Bus.Subscribers.Rewind;
     loop
       Subs := Subscriber_Access(Bus.Subscribers.Access_Current);
-Debug ("Got Observer");
       Ok := False;
       if not Local or else Subs.Echo then
-Debug ("Local and Echo OK");
         -- This a remote message or this observer wants local messages
         if Subs.Filter = null then
           Ok := True;
@@ -899,11 +895,6 @@ Debug ("Local and Echo OK");
           -- See if message matches this Filter
           Regular_Expressions.Exec (Subs.Filter.all, Message,
                                     N_Match, Match_Info);
-Debug ("Regex " & N_Match'Img & " "
- & Boolean'Image (Regular_Expressions.Valid_Match (Match_Info(1)))
- & Match_Info(1).First_Offset'Img
- & Match_Info(1).Last_Offset_Stop'Img
- & Natural'Image(Message'Last));
           Ok := N_Match = 1
              and then Regular_Expressions.Valid_Match (Match_Info(1))
              and then Match_Info(1).First_Offset = Message'First
@@ -912,7 +903,6 @@ Debug ("Regex " & N_Match'Img & " "
       end if;
       if Ok then
         begin
-Debug ("Calling Observer");
           Subs.Observer.Receive (Subs.Client, Message);
         exception
           when others =>
