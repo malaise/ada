@@ -148,7 +148,7 @@ package body One_File_Statements is
     File : Text_Line.File_Type;
     File_Name_Len : constant Natural := File_Name'Length;
     Count : Integer range -1 ..Integer'Last;
-    Max_Tab : constant := 60;
+    Max_Tab : constant := 68;
     Max_Dig : constant := 8;
     Gap : constant String := "  ";
   begin
@@ -188,12 +188,12 @@ package body One_File_Statements is
         Text_Line.Put (File, File_Name);
         if File_Name_Len < Max_Tab then
           Text_Line.Put (File, " ");
-          for I in File_Name_Len+1 .. Max_Tab loop
+          for I in File_Name_Len + 1 .. Max_Tab loop
             Text_Line.Put (File, ".");
           end loop;
         elsif File_Name_Len > Max_Tab then
           Text_Line.New_Line (File);
-          for I in Integer range 1 .. Max_Tab loop
+          for I in Integer range 1 .. Max_Tab + 1 loop
             Text_Line.Put (File, ".");
           end loop;
         end if;
