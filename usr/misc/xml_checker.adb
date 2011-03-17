@@ -73,7 +73,7 @@ procedure Xml_Checker is
     Ple (" <width>      ::= -W <Width> | --width=<Width>");
     Ple ("                                    -- Put attributes up to Width");
     Ple (" <one>        ::= -1 | --one        -- Put one attribute per line");
-    Ple (" <keep>       ::= -k  e|c|d|n|a     --keep=expanded|comments|cdata|none|all");
+    Ple (" <keep>       ::= -k e|c|d|n|a | --keep=expanded|comments|cdata|none|all");
     Ple ("                                    -- Keep un-expanded general entities");
     Ple ("                                    --  and attributes with default");
     Ple ("                                    -- Keep comments");
@@ -89,8 +89,8 @@ procedure Xml_Checker is
     Ple ("Always expands general entities in dump.");
     Ple ("All options except keep, check_dtd, warnings and tree are exclusive.");
     Ple ("Keep not allowed on Dump mode, Dump => keep all.");
-    Ple ("Canonical only allows dtd, warnings and keep-comment options (it removes");
-    Ple ("  comments by default.");
+    Ple ("Canonical only allows options dtd, warnings and keep-comments (it removes");
+    Ple ("  comments by default).");
     Ple ("Empty Dtd leads to skip check of comformance to DTD.");
     Ple ("Default is -W" & Xml_Parser.Generator.Default_Width'Img
                          & " on stdout.");

@@ -1,4 +1,5 @@
 Major changes:
+2011/03/17: Chg default 'keep' mode of xml_checker, V13.0
 2011/03/15: Fix autobus local echo and clean-up
             Chg replace Fifo by an Autobus in mcd
 2011/03/11: Fix blocking management in socket and Tcp_Util.Abort_Send_And_Close
