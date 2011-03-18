@@ -3,7 +3,7 @@ with As.U, Argument, Argument_Parser, Xml_Parser.Generator, Normal, Basic_Proc,
      Text_Line, Sys_Calls, Parser;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V13.0";
+  Version : constant String := "V14.0";
 
   procedure Ae_Re (E : in Ada.Exceptions.Exception_Id;
                    M : in String := "")
@@ -80,6 +80,7 @@ procedure Xml_Checker is
     Ple ("                                    -- Keep CDATA sections");
     Ple ("                                    -- Keep none");
     Ple ("                                    -- Keep all (default)");
+    Ple (" <normalize>  ::= --no-normalize    -- Do not normalize attributes and text");
     Ple (" <check_dtd>  ::= -c [ <Dtd> ] | --check_dtd=[<Dtd>]");
     Ple ("                                    -- Check vs a specific dtd or none");
     Ple (" <tree>       ::= -t | --tree       -- Build tree then dump it");
@@ -112,7 +113,8 @@ procedure Xml_Checker is
     9 => ('c', As.U.Tus ("check_dtd"), False, True),
    10 => ('t', As.U.Tus ("tree"), False, False),
    11 => ('w', As.U.Tus ("warnings"), False, False),
-   12 => ('C', As.U.Tus ("canonical"), False, False)
+   12 => ('C', As.U.Tus ("canonical"), False, False),
+   13 => (Argument_Parser.No_Key_Char,As.U.Tus ("no-normalize"), False, False)
    );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
@@ -676,6 +678,11 @@ begin
     Cdata_Policy := Xml_Parser.Keep_Cdata_Section;
   else
     Cdata_Policy := Xml_Parser.Remove_Cdata_Markers;
+  end if;
+
+  -- No normalize
+  if Arg_Dscr.Is_Set (13) then
+    Normalize := False;
   end if;
 
   -- Process files
