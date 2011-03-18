@@ -1,4 +1,5 @@
 Major changes:
+2011/03/18: Fix preserve text when it is the only child in Xml_Parser, V26.2
 2011/03/18: Add option --no-normalize to xml_checker, V14.0
 2011/03/17: Chg default 'keep' mode of xml_checker, V13.0
 2011/03/15: Fix autobus local echo and clean-up
