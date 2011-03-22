@@ -263,7 +263,7 @@ package body Parse_Mng  is
     -- Save parsed text
     Util.Get_Curr_Str (Ctx.Flow, Value);
     -- Normalize attribute
-    if Ctx.Normalize and then Context = Ref_Attribute then
+    if Ctx.Expand and then Ctx.Normalize and then Context = Ref_Attribute then
       Util.Normalize (Value);
     end if;
     -- Expand entities
@@ -379,9 +379,9 @@ package body Parse_Mng  is
                   Attribute_Name, Attribute_Value, Line_No);
       else
         -- Keep first definition
-        -- See if normalize separators of non CDATA attributes
+        -- If expand, then Normalize separators of non CDATA attributes
         Dtd.Is_Cdata (Adtd, Elt_Name, Attribute_Name, Attr_Cdata);
-        if Ctx.Normalize and then not Attr_Cdata then
+        if Ctx.Expand and then Ctx.Normalize and then not Attr_Cdata then
           Trace ("Attribute " & Attribute_Name.Image & " is not CDATA");
           Unnormalized := Attribute_Value;
           Util.Normalize_Spaces (Attribute_Value);
@@ -1118,10 +1118,8 @@ package body Parse_Mng  is
   -- Parse text
   procedure Parse_Text (Ctx : in out Ctx_Type;
                         Adtd : in out Dtd_Type;
-                        Only_Text : in out Boolean;
                         Children : access Children_Desc) is
     Text, Tail, Head, Cdata, Tmp_Text : As.U.Asu_Us;
-    C : Character;
     Start_Index, Index : Natural;
     Ok : Boolean;
     use type As.U.Asu_Us;
@@ -1142,7 +1140,6 @@ package body Parse_Mng  is
         Util.Unget (Ctx.Flow);
         -- Save Text
         Util.Get_Curr_Str (Ctx.Flow, Text);
-        Ok := True;
       exception
         when Util.End_Error =>
           -- End of flow, save text
@@ -1150,24 +1147,11 @@ package body Parse_Mng  is
           if Text.Is_Null then
             -- End of flow and no text
             exit Cdata_In_Flow;
-          else
-            Ok := False;
           end if;
       end;
       Trace ("Txt Got text >" & Text.Image & "<");
 
-      -- See if the Start tag is the end of current parent ("</parent")
-      --  or the start of a brother ("<child")
-      if Ok then
-        Util.Get (Ctx.Flow, C);
-        Util.Get (Ctx.Flow, C);
-        Util.Unget (Ctx.Flow, 2);
-        Only_Text := Only_Text and then C = Util.Slash;
-      end if;
-
-      -- Normalize text if...
-      if Ctx.Normalize and then not Children.Preserve
-      and then not Only_Text then
+      if Ctx.Expand and then Ctx.Normalize and then not Children.Preserve then
         Util.Normalize (Text);
       end if;
 
@@ -1269,7 +1253,8 @@ package body Parse_Mng  is
             Trace ("Txt appended >" & Head.Image & "<");
             -- Text is the remaining unexpanded text, fixed
             Text.Delete (1, Index + Util.Cdata_End'Length - 1);
-            if Ctx.Normalize and then not Children.Preserve then
+            if Ctx.Expand and then Ctx.Normalize
+            and then not Children.Preserve then
               Util.Normalize (Text);
             end if;
             -- And we loop
@@ -1295,9 +1280,9 @@ package body Parse_Mng  is
          & "< tail >" & Tail.Image & "<");
 
     if not Head.Is_Null then
-      -- If there are only separators between children, skip them
+      -- If there are only separators, skip them
       if not Ctx.Normalize or else Children.Preserve
-      or else not Util.Is_Separators (Head) or else Only_Text then
+      or else not Util.Is_Separators (Head) then
         -- Notify on father creation if needed
         if not Children.Created then
           -- First text child of this element, so this element is mixed
@@ -1380,7 +1365,6 @@ package body Parse_Mng  is
     Char : Character;
     Ok : Boolean;
     Str2 : String (1 .. 2);
-    Only_Text : Boolean;
   begin
     -- Try to preserve spaces if current element has this tuning
     Children.Preserve := String_Mng.Locate (
@@ -1389,7 +1373,6 @@ package body Parse_Mng  is
     if Children.Preserve then
       Trace ("Preserving spaces of the texts of this element");
     end if;
-    Only_Text := True;
 
     -- Detect children
     loop
@@ -1429,7 +1412,7 @@ package body Parse_Mng  is
           Util.Try (Ctx.Flow, Util.Cdata_Start, Ok, False);
           if Ok then
             -- CDATA => Text
-            Parse_Text (Ctx, Adtd, Only_Text, Children);
+            Parse_Text (Ctx, Adtd, Children);
           else
             -- Directive: must be a comment or DOCTYPE
             Util.Get (Ctx.Flow, Str2);
@@ -1437,12 +1420,10 @@ package body Parse_Mng  is
             Parse_Directive (Ctx, Adtd, Allow_Dtd => False,
                                         Context => Ref_Xml,
                                         Children => Children);
-            Only_Text := False;
           end if;
         elsif Char = Util.Instruction then
           Create (True);
           Parse_Instruction (Ctx, Adtd, Children);
-          Only_Text := False;
         elsif Char = Util.Start then
           Util.Error (Ctx.Flow, "Unexpected character " & Util.Start);
         else
@@ -1450,13 +1431,12 @@ package body Parse_Mng  is
           Create (True);
           Util.Unget (Ctx.Flow);
           Parse_Element (Ctx, Adtd, Children, False);
-          Only_Text := False;
         end if;
       else
         -- A text, will stop with a new sub-element or
         --  with stop of current element
         Util.Unget (Ctx.Flow);
-        Parse_Text (Ctx, Adtd, Only_Text, Children);
+        Parse_Text (Ctx, Adtd, Children);
       end if;
     end loop;
   end Parse_Children;
