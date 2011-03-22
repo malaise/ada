@@ -664,6 +664,8 @@ private
     Cdata_Policy : Cdata_Policy_List := Remove_Cdata_Markers;
     -- Normalize separators in attributes and texts
     Normalize : Boolean := True;
+    -- List of Elements with "xml:space 'preserve'" in dtd
+    Preserved : As.U.Asu_Us;
     -- Use Dtd
     Use_Dtd : Boolean := True;
     Dtd_File : As.U.Asu_Us;

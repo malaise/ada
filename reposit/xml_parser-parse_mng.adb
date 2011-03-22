@@ -304,6 +304,8 @@ package body Parse_Mng  is
     procedure Is_Cdata (Adtd      : in out Dtd_Type;
                         Elt, Attr : in As.U.Asu_Us;
                         Yes       : out Boolean);
+    -- Has this element the xml:spaces=preserve
+    function Has_Preserve (Ctx : Ctx_Type; Elt  : As.U.Asu_Us) return Boolean;
 
     -- Add current element to list of children
     procedure Add_Current_Element (List : in out As.U.Asu_Us;
@@ -393,8 +395,8 @@ package body Parse_Mng  is
         end if;
         Tree_Mng.Add_Attribute (Ctx.Elements.all,
                   Attribute_Name, Attribute_Value, Line_No);
-        if Attribute_Name.Image = "xml:space"
-        and then Attribute_Value.Image = "preserve" then
+        if Attribute_Name.Image = Tree_Mng.Xml_Space
+        and then Attribute_Value.Image = Tree_Mng.Preserve then
           Tree_Mng.Add_Tuning (Ctx.Elements.all, Tree_Mng.Xml_Space_Preserve);
           Trace ("Added tuning " & Tree_Mng.Xml_Space_Preserve);
         end if;
@@ -951,6 +953,11 @@ package body Parse_Mng  is
       Trace ("Dtd reset cause not used or no expand");
       Dtd.Init (Adtd);
     end if;
+    if Ctx.Expand or else not Ctx.Use_Dtd then
+      -- Keep the lists of elements in which dtd sets to preserve spaces
+      --  only when not Ctx.Expand
+      Ctx.Preserved.Set_Null;
+    end if;
     -- In prologue, Creation of the Doctype
     Call_Callback (Ctx, Prologue, True);
     Move_Del (Ctx, True);
@@ -1366,13 +1373,6 @@ package body Parse_Mng  is
     Ok : Boolean;
     Str2 : String (1 .. 2);
   begin
-    -- Try to preserve spaces if current element has this tuning
-    Children.Preserve := String_Mng.Locate (
-            Tree_Mng.Get_Tuning (Ctx.Elements.all),
-                                 Tree_Mng.Xml_Space_Preserve) /= 0;
-    if Children.Preserve then
-      Trace ("Preserving spaces of the texts of this element");
-    end if;
 
     -- Detect children
     loop
@@ -1484,8 +1484,8 @@ package body Parse_Mng  is
       Tree_Mng.Set_Is_Mixed (Ctx.Elements.all, True);
     end if;
     Trace ("Parsing element " & Element_Name.Image
-         & "  allowing space: " & Mixed_Str (My_Children.Space_Allowed'Img)
-         & "  mixed: " & Mixed_Str (My_Children.Is_Mixed'Img));
+         & ", allowing space: " & Mixed_Str (My_Children.Space_Allowed'Img)
+         & ", mixed: " & Mixed_Str (My_Children.Is_Mixed'Img));
     My_Children.Father := Element_Name;
     My_Children.In_Mixed := Parent_Children.Is_Mixed;
     -- See first significant character after name
@@ -1494,6 +1494,7 @@ package body Parse_Mng  is
       Util.Skip_Separators (Ctx.Flow);
       Util.Get (Ctx.Flow, Char);
     end if;
+
     -- If not / nor >, then parse_attributes
     if Char /= Util.Slash and then Char /= Util.Stop then
       Util.Unget (Ctx.Flow);
@@ -1522,6 +1523,18 @@ package body Parse_Mng  is
       -- >: parse text and children elements until </
       -- Check attributes first (e.g. xml:space)
       Dtd.Check_Attributes (Ctx, Adtd);
+      -- Try to preserve spaces if current element has this tuning
+      -- Tuning set by Dtd (if default is preserve and no value in Xml)
+      --  or by attribute value in Xml. In both cases it in Tree
+      My_Children.Preserve := String_Mng.Locate (
+              Tree_Mng.Get_Tuning (Ctx.Elements.all),
+                                   Tree_Mng.Xml_Space_Preserve) /= 0;
+      -- If Dtd reset (not Expand), still apply space preservation
+      My_Children.Preserve := My_Children.Preserve
+                              or else Dtd.Has_Preserve (Ctx, Element_Name);
+      if My_Children.Preserve then
+        Trace ("Preserving spaces of the texts of " & Element_Name.Image);
+      end if;
       Trace ("Parsing children of " & Element_Name.Image);
       Parse_Children (Ctx, Adtd, My_Children'Access);
       Trace ("Parsed children of " & Element_Name.Image);

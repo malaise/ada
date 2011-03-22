@@ -489,6 +489,12 @@ package body Dtd is
                 Util.Error (Ctx.Flow, "Enumerated value "
                      & Val & " not allowed for " & Tree_Mng.Xml_Space);
               end if;
+              if Val = Tree_Mng.Preserve then
+                -- Store this info appart in Ctx for when the Dtd is cleared
+                --  (no expand)
+                Ctx.Preserved.Append (Info_Sep & Elt_Name);
+                Trace ("Dtd saving preserve of " & Elt_Name.Image);
+              end if;
             end if;
           end;
         end loop;
@@ -1147,6 +1153,10 @@ package body Dtd is
       Ctx.Flow.Curr_Flow.Line := 1;
       Ctx.Flow.Curr_Flow.Same_Line := False;
       Parse (Ctx, Adtd, True);
+    end if;
+    -- Preserved is empty or "#Name#Name...#Name#"
+    if not Ctx.Preserved.Is_Null then
+      Ctx.Preserved.Append (Info_Sep);
     end if;
     -- Dtd is now valid
     Trace ("Dtd parsed dtd");
@@ -1969,6 +1979,13 @@ package body Dtd is
       Yes := Info.List.Element (Index) = 'S';
     end;
   end Is_Cdata;
+
+  -- Has this element the xml:spaces=preserve
+  function Has_Preserve (Ctx : Ctx_Type; Elt  : As.U.Asu_Us) return Boolean is
+  begin
+    return String_Mng.Locate (Ctx.Preserved.Image,
+                              Info_Sep & Elt.Image & Info_Sep) /= 0;
+  end Has_Preserve;
 
   -- Add current element to list of children
   procedure Add_Current_Element (List : in out As.U.Asu_Us;
