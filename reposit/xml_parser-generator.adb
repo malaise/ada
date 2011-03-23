@@ -4,7 +4,7 @@ with Integer_Image, Text_Line, Sys_Calls, Trees;
 package body Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "0";
+  Minor_Version : constant String := "1";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -1030,7 +1030,7 @@ package body Xml_Parser.Generator is
     -- Internal definition
     if not Doctype.Int_Def.Is_Null then
       if Format /= Raw then
-        Put (Flow, " [" & Doctype.Int_Def.Image & "] ");
+        Put (Flow, " [" & Doctype.Int_Def.Image & "]");
       else
         Put (Flow, "[" & Normalize (Doctype.Int_Def.Image) & "]");
       end if;
