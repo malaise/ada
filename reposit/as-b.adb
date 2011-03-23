@@ -51,6 +51,12 @@ package body As.B is
   -- PUBLIC operations --
   -----------------------
 
+  function Asb_Null (Max : in Natural := 0) return Asb_Bs is
+    Res : Asb_Bs(Max);
+  begin
+    return Res;
+  end Asb_Null;
+
   procedure Set_Null (Target : in out Asb_Bs) is
   begin
     Target.Last := 0;
