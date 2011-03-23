@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1;
-with Lower_Str, Upper_Str, Mixed_Str, String_Mng;
+with Lower_Str, Upper_Str, Mixed_Str, String_Mng, As.U.Utils;
 separate (Xml_Parser)
 
 package body Parse_Mng  is
@@ -232,6 +232,7 @@ package body Parse_Mng  is
     Created : Boolean := False;
     In_Mixed : Boolean := False;
     Preserve : Boolean := False;
+    First_Child : Boolean := True;
   end record;
 
   -- Parse a directive <! >
@@ -1126,22 +1127,41 @@ package body Parse_Mng  is
   procedure Parse_Text (Ctx : in out Ctx_Type;
                         Adtd : in out Dtd_Type;
                         Children : access Children_Desc) is
-    Text, Tail, Head, Cdata, Tmp_Text : As.U.Asu_Us;
+    -- This list is either empty (<node></node>) or contains
+    --  Text, Cdata, Text...
+    Texts : As.U.Utils.Asu_Dyn_List_Mng.List_Type;
+    Text, Tmp_Text, Cdata, Tail : As.U.Asu_Us;
     Start_Index, Index : Natural;
-    Ok : Boolean;
+    Moved, Cdata_Found, Last_Is_Text, Normalize : Boolean;
+    Next_Char : Character;
+
+    -- Depending on Last_Is_Text, append Txt to last or insert it
+    procedure Insert_Text (Txt : in As.U.Asu_Us) is
+      Tmp : As.U.Asu_Us;
+    begin
+      if Last_Is_Text then
+        Texts.Read (Tmp, As.U.Utils.Asu_Dyn_List_Mng.Current);
+        Tmp.Append (Txt);
+        Texts.Modify (Tmp, As.U.Utils.Asu_Dyn_List_Mng.Current);
+      else
+        Texts.Insert (Txt);
+      end if;
+    end Insert_Text;
+
     use type As.U.Asu_Us;
   begin
     -- Concatenate blocks of expanded text and CDATA sections
+    -- First should be text (even empty)
+    Last_Is_Text := False;
 
     -- Loop as long a flow does not contain and does not expand
     --  to '<', skipping "<![CDATA["
     -- Save expanded text and CDATA in Head, and save '<' and following in Tail
-    Cdata_In_Flow:
+    Read_Flow:
     loop
 
       -- Parse until '<' or End of flow
       --  save Text, and save Cdata in Tail
-      Tail.Set_Null;
       begin
         Util.Parse_Until_Char (Ctx.Flow, Util.Start & "");
         Util.Unget (Ctx.Flow);
@@ -1153,53 +1173,15 @@ package body Parse_Mng  is
           Util.Get_Curr_Str (Ctx.Flow, Text);
           if Text.Is_Null then
             -- End of flow and no text
-            exit Cdata_In_Flow;
+            exit Read_Flow;
           end if;
       end;
-      Trace ("Txt Got text >" & Text.Image & "<");
-
-      if Ctx.Expand and then Ctx.Normalize and then not Children.Preserve then
-        Util.Normalize (Text);
-      end if;
-
-      -- Check "<![CDATA[" in flow
-      Util.Try (Ctx.Flow, Util.Cdata_Start, Ok);
-      if Ok then
-        -- Get Cdata (without markers)
-        begin
-          Util.Parse_Until_Str (Ctx.Flow, Util.Cdata_End);
-        exception
-          when Util.End_Error =>
-            Util.Error (Ctx.Flow, "Unterminated CDATA section");
-        end;
-        Util.Get_Curr_Str (Ctx.Flow, Cdata);
-        Cdata.Delete (Cdata.Length  - Util.Cdata_End'Length + 1,
-                      Cdata.Length);
-        Trace ("Txt Got cdata >" & Cdata.Image & "<");
-        -- Apply policy
-        case Ctx.Cdata_Policy is
-          when Keep_Cdata_Section =>
-            Cdata := Util.Cdata_Start & Cdata & Util.Cdata_End;
-          when Remove_Cdata_Markers =>
-            null;
-          when Remove_Cdata_Section =>
-            Cdata.Set_Null;
-        end case;
-        if Text.Is_Null then
-          -- No text: This is fixed (in Head), and we will re-loop reading
-          Head := Head & Cdata;
-        else
-          -- Some text: This will be appended to expanded text
-          Tail := Cdata;
-        end if;
-      elsif Text.Is_Null then
-        -- A valid '<' read and no text before it
-        exit Cdata_In_Flow;
-      end if;
+      Trace ("Txt - Got text >" & Text.Image & "<");
 
       -- Loop as long as expansion does not generate a '<'
       --  or as long as this is a "<![CDATA["
-      -- At the end, Head contains expanded text and CDATA
+      -- At the end, Texts contains expanded text and CDATA
+      --  with indication of last_Is_Text
       --  and Tail contains non expanded flow
       Cdata_In_Text:
       loop
@@ -1255,77 +1237,168 @@ package body Parse_Mng  is
               when Remove_Cdata_Section =>
                 Cdata.Set_Null;
             end case;
-            -- Head takes the expanded text and the CDATA section
-            Head := Head & As.U.Uslice (Text, 1, Start_Index - 1) & Cdata;
-            Trace ("Txt appended >" & Head.Image & "<");
+            -- Insert the expanded text and the CDATA section
+            Insert_Text (Text.Uslice (1, Start_Index - 1));
+            Trace ("Txt -- appended text >" & Text.Slice (1, Start_Index - 1)
+                 & "<");
+            Texts.Insert (Cdata);
+            Trace ("Txt -- appended CDATA >" & Cdata.Image & "<");
             -- Text is the remaining unexpanded text, fixed
             Text.Delete (1, Index + Util.Cdata_End'Length - 1);
-            if Ctx.Expand and then Ctx.Normalize
-            and then not Children.Preserve then
-              Util.Normalize (Text);
-            end if;
+            Last_Is_Text := False;
             -- And we loop
 
           else
             -- There is a '<' but not CDATA: prepend it to the tail
             Tail := Text.Slice (Index, Text.Length) & Tail;
-            Head := Head & Text.Slice (1, Index - 1);
+            Insert_Text (Text.Uslice (1, Index - 1));
+            Trace ("Txt -- appended text >" & Text.Slice (1, Index - 1) & "<");
+            Last_Is_Text := True;
+            Trace ("Txt -- tail >" & Tail.Image & "<");
             -- And done (completely)
-            exit Cdata_In_Flow;
+            exit Read_Flow;
           end if;
         else
-          -- There is no '<' in expanded text
-          -- Head takes the expanded text and the initial CDATA
-          Head := Head & Text & Tail;
+         -- There is no '<' in expanded text
+          -- Store the expanded text
+          Insert_Text (Text);
+          Trace ("Txt -- appended text >" & Text.Image & "<");
+          Last_Is_Text := True;
           -- Nothing more to expand => Need to read from flow
-          Text.Set_Null;
+          exit Cdata_In_Text;
         end if;
       end loop Cdata_In_Text;
 
-    end loop Cdata_In_Flow;
-    Trace ("Txt expanded text >" & Head.Image
-         & "< tail >" & Tail.Image & "<");
-
-    if not Head.Is_Null then
-      -- If there are only separators, skip them
-      if not Ctx.Normalize or else Children.Preserve
-      or else not Util.Is_Separators (Head) then
-        -- Notify on father creation if needed
-        if not Children.Created then
-          -- First text child of this element, so this element is mixed
-          -- In elements, Creation of element that has children
-          Tree_Mng.Set_Is_Mixed (Ctx.Elements.all, True);
-          Children.Is_Mixed := True;
-          Trace ("Txt setting mixed on father");
-          Call_Callback (Ctx, Elements, True, True,
-                         In_Mixed => Children.In_Mixed);
-          Ctx.Level := Ctx.Level + 1;
-          Children.Created := True;
+      -- Check "<![CDATA[" in flow
+      Util.Try (Ctx.Flow, Util.Cdata_Start, Cdata_Found);
+      if Cdata_Found then
+        -- Get Cdata (without markers)
+        begin
+          Util.Parse_Until_Str (Ctx.Flow, Util.Cdata_End);
+        exception
+          when Util.End_Error =>
+            Util.Error (Ctx.Flow, "Unterminated CDATA section");
+        end;
+        Util.Get_Curr_Str (Ctx.Flow, Cdata);
+        Cdata.Delete (Cdata.Length  - Util.Cdata_End'Length + 1,
+                      Cdata.Length);
+        Trace ("Txt - Got CDATA >" & Cdata.Image & "<");
+        -- Apply policy
+        case Ctx.Cdata_Policy is
+          when Keep_Cdata_Section =>
+            Cdata := Util.Cdata_Start & Cdata & Util.Cdata_End;
+          when Remove_Cdata_Markers =>
+            null;
+          when Remove_Cdata_Section =>
+            Cdata.Set_Null;
+        end case;
+        if not Last_Is_Text then
+          Texts.Insert (As.U.Asu_Null);
         end if;
-        -- Fix text to insert
-        -- Insert and notify this child
-        Tree_Mng.Add_Text (Ctx.Elements.all, Head, Util.Get_Line_No (Ctx.Flow));
-        if not Ctx.Expand then
-          -- When not expanding, add child only if not empty
-          Tmp_Text := Head;
-          Util.Remove_Entities (Tmp_Text);
-          if not Tmp_Text.Is_Null then
+        Texts.Insert (Cdata);
+        Trace ("Txt - appended CDATA >" & Cdata.Image & "<");
+        Last_Is_Text := False;
+      else
+        -- Text is got and is followed by '<' but not CDATA
+        --  => end of this text char
+        exit Read_Flow;
+      end if;
+
+    end loop Read_Flow;
+
+    -- See if this is the end of father or beginning of a brother
+    if Children.First_Child then
+      if Tail.Is_Null then
+        -- Scan input flow
+        begin
+          Util.Get (Ctx.Flow, Next_Char);
+          Util.Get (Ctx.Flow, Next_Char);
+          Util.Unget (Ctx.Flow, 2);
+        exception
+          when Util.End_Error =>
+            Next_Char := Util.Start;
+        end;
+      elsif Tail.Length >= 2 then
+        Next_Char := Tail.Element (2);
+      else
+        -- Tail too short!
+        Next_Char := Util.Start;
+      end if;
+      if Next_Char /= Util.Slash and then Next_Char /= Util.Directive
+      and then Next_Char /= Util.Instruction then
+        -- This is the beginning of a brother
+        Trace ("Txt not only text child");
+        Children.First_Child := False;
+      end if;
+    end if;
+
+    -- See if we normalize this text
+    Normalize := Ctx.Expand and then Ctx.Normalize
+                 and then not Children.Preserve
+                 and then not Children.First_Child;
+
+    -- Now build the text from the list
+    Text.Set_Null;
+    if not Texts.Is_Empty then
+      Texts.Rewind;
+      loop
+        -- Read Text
+        Texts.Read (Tmp_Text, Moved => Moved);
+        if Normalize then
+          -- Normalize and remove leading and trailing spaces
+          Util.Normalize (Tmp_Text);
+          Tmp_Text := As.U.Tus (
+              String_Mng.Strip (Tmp_Text.Image, String_Mng.Both));
+        end if;
+        Text.Append (Tmp_Text);
+        if Moved then
+          Texts.Read (Tmp_Text, Moved => Moved);
+          Text.Append (Tmp_Text);
+        end if;
+        exit when not Moved;
+      end loop;
+    end if;
+    Trace ("Parsed text >" & Text.Image & "<");
+
+    -- If there are only separators and if we are allowed, skip them
+    if not Text.Is_Null
+    and then (not Util.Is_Separators (Text)
+              or else not Ctx.Normalize or else Children.Preserve) then
+      -- Notify on father creation if needed
+      if not Children.Created then
+        -- First text child of this element, so this element is mixed
+        -- In elements, Creation of element that has children
+        Tree_Mng.Set_Is_Mixed (Ctx.Elements.all, True);
+        Children.Is_Mixed := True;
+        Trace ("Txt setting mixed on father");
+        Call_Callback (Ctx, Elements, True, True,
+                       In_Mixed => Children.In_Mixed);
+        Ctx.Level := Ctx.Level + 1;
+        Children.Created := True;
+      end if;
+      -- Fix text to insert
+      -- Insert and notify this child
+      Tree_Mng.Add_Text (Ctx.Elements.all, Text, Util.Get_Line_No (Ctx.Flow));
+      if not Ctx.Expand then
+        -- When not expanding, add child only if not empty
+        Tmp_Text := Text;
+        Util.Remove_Entities (Tmp_Text);
+        if not Tmp_Text.Is_Null then
             Add_Child (Ctx, Adtd, Children);
-          end if;
-        elsif not Ctx.Normalize then
-          -- When preserving spaces, add child only if not only separators
-          if not Util.Is_Separators (Head) then
-            Add_Child (Ctx, Adtd, Children);
-          end if;
-        else
+        end if;
+      elsif not Ctx.Normalize then
+        -- When preserving spaces, add child only if not only separators
+        if not Util.Is_Separators (Text) then
           Add_Child (Ctx, Adtd, Children);
         end if;
-        -- In elements, Creation of this text element
-        Call_Callback (Ctx, Elements, True, False,
-                       In_Mixed => Children.Is_Mixed);
-        Move_Del (Ctx, False);
-        Trace ("Txt added text >" & Head.Image & "<");
+      else
+        Add_Child (Ctx, Adtd, Children);
       end if;
+      -- In elements, Creation of this text element
+      Call_Callback (Ctx, Elements, True, False,
+                     In_Mixed => Children.Is_Mixed);
+      Move_Del (Ctx, False);
+      Trace ("Txt added text child >" & Text.Image & "<");
     end if;
 
     -- Now handle tail if not empty
@@ -1424,6 +1497,7 @@ package body Parse_Mng  is
         elsif Char = Util.Instruction then
           Create (True);
           Parse_Instruction (Ctx, Adtd, Children);
+          Children.First_Child := False;
         elsif Char = Util.Start then
           Util.Error (Ctx.Flow, "Unexpected character " & Util.Start);
         else
@@ -1431,6 +1505,7 @@ package body Parse_Mng  is
           Create (True);
           Util.Unget (Ctx.Flow);
           Parse_Element (Ctx, Adtd, Children, False);
+          Children.First_Child := False;
         end if;
       else
         -- A text, will stop with a new sub-element or
@@ -1488,6 +1563,7 @@ package body Parse_Mng  is
          & ", mixed: " & Mixed_Str (My_Children.Is_Mixed'Img));
     My_Children.Father := Element_Name;
     My_Children.In_Mixed := Parent_Children.Is_Mixed;
+    My_Children.First_Child := True;
     -- See first significant character after name
     Util.Read (Ctx.Flow, Char);
     if Util.Is_Separator (Char) then
