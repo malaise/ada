@@ -1324,18 +1324,20 @@ package body Parse_Mng  is
         -- Tail too short!
         Next_Char := Util.Start;
       end if;
-      if Next_Char /= Util.Slash and then Next_Char /= Util.Directive
-      and then Next_Char /= Util.Instruction then
-        -- This is the beginning of a brother
+      if Next_Char /= Util.Slash then
+        -- This is the beginning of a brother, a directive or Pi
         Trace ("Txt not only text child");
         Children.First_Child := False;
       end if;
     end if;
 
     -- See if we normalize this text
-    Normalize := Ctx.Expand and then Ctx.Normalize
+    Normalize := Ctx.Normalize
                  and then not Children.Preserve
                  and then not Children.First_Child;
+    if Normalize then
+      Trace ("Txt normalizing");
+    end if;
 
     -- Now build the text from the list
     Text.Set_Null;
@@ -1361,9 +1363,7 @@ package body Parse_Mng  is
     Trace ("Parsed text >" & Text.Image & "<");
 
     -- If there are only separators and if we are allowed, skip them
-    if not Text.Is_Null
-    and then (not Util.Is_Separators (Text)
-              or else not Ctx.Normalize or else Children.Preserve) then
+    if not Text.Is_Null then
       -- Notify on father creation if needed
       if not Children.Created then
         -- First text child of this element, so this element is mixed
@@ -1376,7 +1376,6 @@ package body Parse_Mng  is
         Ctx.Level := Ctx.Level + 1;
         Children.Created := True;
       end if;
-      -- Fix text to insert
       -- Insert and notify this child
       Tree_Mng.Add_Text (Ctx.Elements.all, Text, Util.Get_Line_No (Ctx.Flow));
       if not Ctx.Expand then
@@ -1563,7 +1562,6 @@ package body Parse_Mng  is
          & ", mixed: " & Mixed_Str (My_Children.Is_Mixed'Img));
     My_Children.Father := Element_Name;
     My_Children.In_Mixed := Parent_Children.Is_Mixed;
-    My_Children.First_Child := True;
     -- See first significant character after name
     Util.Read (Ctx.Flow, Char);
     if Util.Is_Separator (Char) then
