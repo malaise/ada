@@ -3,7 +3,7 @@ with Environ, Basic_Proc, Rnd, Exception_Messenger, Directory;
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "4";
+  Minor_Version : constant String := "5";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -1212,6 +1212,14 @@ package body Xml_Parser is
   begin
     Deallocate (Node.Attributes);
   end Finalize;
+
+  overriding procedure Adjust (Node : in out Node_Update) is
+  begin
+    -- Copy attributes
+    if Node.Attributes /= null then
+      Node.Attributes := new Attributes_Array'(Node.Attributes.all);
+    end if;
+  end Adjust;
 
 end Xml_Parser;
 

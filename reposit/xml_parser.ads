@@ -691,6 +691,7 @@ private
   overriding procedure Finalize (Ctx : in out Ctx_Type);
 
   overriding procedure Finalize (Node : in out Node_Update);
+  overriding procedure Adjust   (Node : in out Node_Update);
 
   -- For Xml_Generator
   function Get_Magic return Float;
