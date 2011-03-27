@@ -169,8 +169,8 @@ procedure Search is
     Update_Color (18, Criteria.Kind(Oper_Def.Withdraw));
     Update_Color (19, Criteria.Kind(Oper_Def.Savings));
     Kind_Set := One_Set;
-    Update_Color (22, Criteria.Date=Prev_Month);
-    Update_Color (23, Criteria.Date=Curr_Month);
+    Update_Color (22, Criteria.Date = Prev_Month);
+    Update_Color (23, Criteria.Date = Curr_Month);
     Update_Color (25, Criteria.Reference_Set);
     -- Update reference
     if not Criteria.Reference_Set then
@@ -178,6 +178,7 @@ procedure Search is
      Afpx.Clear_Field (26);
      Cursor_Col := 0;
     end if;
+    Afpx.Set_Field_Activation (24, Criteria.Date /= All_Dates);
     Afpx.Set_Field_Activation (26, Criteria.Reference_Set);
     -- Update SEARCH button
     Afpx.Set_Field_Activation (29, Status_Set and then Kind_Set);

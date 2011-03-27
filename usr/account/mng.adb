@@ -67,15 +67,15 @@ package body Mng is
   begin
     Line.Len := Afpx.Get_Field_Width(8);
     Line.Str := (others => Language.Char_To_Unicode (' '));
-    Line.Str(1 .. 34) := Language.Copy (
+    Line.Str(1 .. 33) := Language.Copy (
                 Normal(No, 4) & Sep                                     -- 5
               & Unit_Format.Short_Date_Image(Oper.Date) & Sep           -- 9
               & Unit_Format.Short_Image(Oper.Amount) & Sep              -- 10
-              & ' ' & Unit_Format.Short_Status_Image(Oper.Status) & Sep -- 5
+              & Unit_Format.Short_Status_Image(Oper.Status) & Sep       -- 4
               & Unit_Format.Short_Kind_Image(Oper.Kind) & Sep);         -- 5
-    Line.Str(35 .. 71) := Language.Copy (
+    Line.Str(34 .. 71) := Language.Copy (
            Oper.Destination(1 .. 10) & Wsep
-         & Oper.Comment(1 .. 15) & Wsep
+         & Oper.Comment(1 .. 16) & Wsep
          & Oper.Reference);
     return Line;
   end Oper_To_Line;
@@ -470,8 +470,8 @@ package body Mng is
     Line : Positive;
     Lines_Per_Page : Positive;
     Page_Title : constant String
-    --     --1234 123456789  123456789012 1234 1234 12345678901234567890 12345678901234567890 1234567890
-       := "    No|   Date   |   Amount   |Stat|Kind|Destination         |Comment             |Reference";
+    --     --1234 123456789  123456789012 123 1234 12345678901234567890 12345678901234567890 1234567890
+       := "    No|   Date   |   Amount   |Ent|Kind|Destination         |Comment             |Reference";
     Overflow : constant Unit_Format.Amount_Str := "Overflow    ";
   begin
     -- Get lines per page
@@ -511,7 +511,7 @@ package body Mng is
         Put_Line(Pf, "  " & Normal(Index, 4) & Sep
                    & Unit_Format.Date_Image(Oper.Date) & Sep
                    & Unit_Format.Image(Oper.Amount, False) & Sep
-                   & ' ' & Unit_Format.Short_Status_Image(Oper.Status) & Sep
+                   & Unit_Format.Short_Status_Image(Oper.Status) & Sep
                    & Unit_Format.Short_Kind_Image(Oper.Kind) & Sep
                    & Language.Wide_To_String (Oper.Destination) & Sep
                    & Language.Wide_To_String (Oper.Comment) & Sep

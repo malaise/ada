@@ -66,9 +66,9 @@
       <Colors Foreground="Black" Background="Light_Grey"/>
       <!-- 0         1         2         3         4         5         6         7 -->
       <!-- 01234567890123456789012345678901234567890123456789012345678901234567890 -->
-      <Init Row="0" Col="2">No|  Date  |  Amount |Stat|Kind|Destinat. |Comment        |Reference</Init>
-      <!-- 3021|25/10/01|-12345.12|    |    |1234567890|123456789012345|1234567890 -->
-      <!-- Status: Yes No Def    Kind: Cheq Cred Xfer Draw -->
+      <Init Row="0" Col="0">  No|  Date  |  Amount |Ent|Kind|Destinat. |Comment         |Reference </Init>
+      <!--                  3021|25/10/01|-12345.12|   |    |1234567890|1234567890123456|1234567890 -->
+      <!-- Ent: Yes No Def    Kind: Cheq Cred Xfer Draw -->
     </Field>
 
     <!-- Account summary -->
@@ -687,27 +687,27 @@
 
     <!-- Status -->
     <Field Num="9" Kind="Put">
-      <Geometry Up="7" Left="2" Low="7" Right="7"/>
+      <Geometry Up="7" Left="2" Low="7" Right="8"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
-      <Init Row="0" Col="0">Status</Init>
+      <Init Row="0" Col="0">Entered</Init>
     </Field>
     <Field Num="10" Kind="Button">
-      <Geometry Up="6" Left="11" Low="8" Right="19"/>
+      <Geometry Up="6" Left="11" Low="8" Right="17"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="1" Col="1">Entered</Init>
+      <Init Row="1" Col="2">Yes</Init>
     </Field>
     <Field Num="11" Kind="Button">
-      <Geometry Up="6" Left="22" Low="8" Right="34"/>
+      <Geometry Up="6" Left="20" Low="8" Right="25"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="1" Col="1">Not entered</Init>
+      <Init Row="1" Col="2">No</Init>
     </Field>
     <Field Num="12" Kind="Button">
-      <Geometry Up="6" Left="37" Low="8" Right="45"/>
+      <Geometry Up="6" Left="28" Low="8" Right="38"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="1" Col="1">Defered</Init>
+      <Init Row="1" Col="2">Defered</Init>
     </Field>
     <Field Num="13" Kind="Button">
-      <Geometry Up="6" Left="50" Low="8" Right="54"/>
+      <Geometry Up="6" Left="73" Low="8" Right="77"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">All</Init>
     </Field>
@@ -766,7 +766,7 @@
       <Init Row="1" Col="1">CurrMonth</Init>
     </Field>
     <Field Num="24" Kind="Button">
-      <Geometry Up="14" Left="39" Low="16" Right="43"/>
+      <Geometry Up="14" Left="73" Low="16" Right="77"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">All</Init>
     </Field>

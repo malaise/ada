@@ -1,4 +1,5 @@
 Major changes:
+2011/03/27: Fix homogenenize output of status in account
 2011/03/24: Fix normalization of text and add adjustment of Node_Info in Xml_Parser, V26.5
 2011/03/18: Fix preserve text when it is the only child in Xml_Parser, V26.2
 2011/03/18: Add option --no-normalize to xml_checker, V14.0
