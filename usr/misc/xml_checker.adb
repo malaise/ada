@@ -3,7 +3,7 @@ with As.U, Argument, Argument_Parser, Xml_Parser.Generator, Normal, Basic_Proc,
      Text_Line, Sys_Calls, Parser;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V14.0";
+  Version : constant String := "V14.1";
 
   procedure Ae_Re (E : in Ada.Exceptions.Exception_Id;
                    M : in String := "")
@@ -87,7 +87,7 @@ procedure Xml_Checker is
     Ple (" <canonical>  ::= -C | --canonical  -- Canonicalize xml");
     Ple (" <help>       ::= -h | --help       -- Put this help");
     Ple (" <version>    ::= -v | --version    -- Put versions");
-    Ple ("Always expands general entities in dump.");
+    Ple ("Always keep all in dump.");
     Ple ("All options except keep, check_dtd, warnings and tree are exclusive.");
     Ple ("Keep not allowed on Dump mode, Dump => keep all.");
     Ple ("Canonical only allows options dtd, warnings and keep-comments (it removes");
@@ -486,7 +486,7 @@ begin
 
   -- Process help and version options
   if Arg_Dscr.Is_Set (6) then
-    -- No file nor other option
+    -- Help: No file nor other option
     if Arg_Dscr.Get_Nb_Occurences (No_Key_Index) /= 0
     or else Arg_Dscr.Get_Number_Keys > 1 then
       Ae_Re (Arg_Error'Identity, "Too many options");
@@ -495,6 +495,7 @@ begin
     Basic_Proc.Set_Error_Exit_Code;
     return;
   elsif Arg_Dscr.Is_Set (7) then
+    -- Version: No file nor other option
     if Arg_Dscr.Get_Nb_Occurences (No_Key_Index) /= 0
     or else Arg_Dscr.Get_Number_Keys > 1 then
       Ae_Re (Arg_Error'Identity, "Too many options");
@@ -542,7 +543,7 @@ begin
     Warnings := Warning'Unrestricted_Access;
   end if;
   if Arg_Dscr.Get_Number_Keys > Max_Opt then
-    Ae_Re (Arg_Error'Identity, "Too many options");
+    Ae_Re (Arg_Error'Identity, "Too many or incompatible options");
   end if;
 
   -- Get format info
@@ -577,11 +578,13 @@ begin
                & Arg_Dscr.Get_Option (4));
       end;
     elsif Arg_Dscr.Is_Set (5) then
+      -- -1
       Format := Xml_Parser.Generator.One_Per_Line;
     end if;
   end if;
 
   if Arg_Dscr.Is_Set (8) then
+    -- -k: keep expanded|comments|cdata|none|all
     if Output_Kind = Dump then
       Ae_Re (Arg_Error'Identity, "Incompatible ""keep"" and ""dump"" options");
     end if;
@@ -649,7 +652,7 @@ begin
   end if;
 
   if Arg_Dscr.Is_Set (9) then
-    -- Check dtd file
+    -- -c: Check dtd file
     Dtd_File := As.U.Tus (Arg_Dscr.Get_Option (9));
     if Dtd_File.Is_Null then
       -- If option set with empty dtd => no check
@@ -659,7 +662,7 @@ begin
 
   -- Canonical
   if Arg_Dscr.Is_Set (12) then
-    -- No other keep than kc
+    -- No other keep than -k c
     if Arg_Dscr.Is_Set (10) or else Keep_Expand_Set or else Keep_Cdata_Set then
       Ae_Re (Arg_Error'Identity, "Incompatible options");
     end if;
