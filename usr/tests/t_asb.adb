@@ -3,13 +3,15 @@ with As.B, Integer_Image;
 procedure T_Asb is
 
   N1, N2 : As.B.Asb_Bs(128);
-
   use type As.B.Asb_Bs;
+
 begin
 
   Ada.Text_Io.Put_Line ("Empty array:");
   N1.Set_Null;
-  if N1 /= N2 or else not N1.Is_Null or else not N2.Is_Null then
+  if N1 /= N2
+  or else not N1.Is_Null or else not N2.Is_Null
+  or else N1 /= As.B.Asb_Null or else N2 /= As.B.Asb_Null(21) then
     Ada.Text_Io.Put ("Init is not empty");
     return;
   end if;
