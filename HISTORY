@@ -1,4 +1,6 @@
 Major changes:
+2011/03/31: Add specific option 'E for entities expansion in xml_checker, V15.0
+            Add normalize text also when knowing from DTD that there cannot be text in Xml_Parser, V26.6
 2011/03/27: Fix homogenenize output of status in account
 2011/03/24: Fix normalization of text and add adjustment of Node_Info in Xml_Parser, V26.5
 2011/03/18: Fix preserve text when it is the only child in Xml_Parser, V26.2

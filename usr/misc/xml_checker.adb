@@ -3,7 +3,7 @@ with As.U, Argument, Argument_Parser, Xml_Parser.Generator, Normal, Basic_Proc,
      Text_Line, Sys_Calls, Parser;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V14.1";
+  Version : constant String := "V15.0";
 
   procedure Ae_Re (E : in Ada.Exceptions.Exception_Id;
                    M : in String := "")
@@ -12,12 +12,14 @@ procedure Xml_Checker is
   -- Xml Parser context, elements and parsing parameters
   Ctx : Xml_Parser.Generator.Ctx_Type;
 
+  -- Expand general entities and attributes with default
+  Expand : Boolean;
+
   -- "Keep" options
-  Keep_Comments, Keep_Expand, Keep_Cdata : Boolean;
+  Keep_Comments, Keep_Cdata : Boolean;
   Cdata_Policy : Xml_Parser.Cdata_Policy_List;
 
   -- Are these options set
-  Keep_Expand_Set : Boolean := False;
   Keep_Comments_Set : Boolean := False;
   Keep_Cdata_Set : Boolean := False;
 
@@ -64,36 +66,37 @@ procedure Xml_Checker is
   begin
     Ple ("Usage: " & Argument.Get_Program_Name & "[ { <option> } ] [ { <file> } ]");
     Ple (" <option> ::= <silent> | <dump> | <raw> | <warnings> |  <width> | <one>");
-    Ple ("            | <keep> | <check_dtd> | <tree> | <canonical>");
+    Ple ("            | <keep> | <expand> | <check_dtd> | <tree> | <canonical>");
     Ple ("            | <help> | <version>");
     Ple (" <silent>     ::= -s | --silent     -- No output, only exit code");
-    Ple (" <dump>       ::= -d | --dump       -- Dump expanded Xml tree");
+    Ple (" <dump>       ::= -D | --dump       -- Dump expanded Xml tree");
     Ple (" <raw>        ::= -r | --raw        -- Put all on one line");
     Ple (" <warnings>   ::= -w | --warnings   -- Check for warnings");
     Ple (" <width>      ::= -W <Width> | --width=<Width>");
     Ple ("                                    -- Put attributes up to Width");
     Ple (" <one>        ::= -1 | --one        -- Put one attribute per line");
-    Ple (" <keep>       ::= -k e|c|d|n|a | --keep=expanded|comments|cdata|none|all");
-    Ple ("                                    -- Keep un-expanded general entities");
+    Ple (" <expand>     ::= -E | --expand     -- Expanded general entities");
     Ple ("                                    --  and attributes with default");
+    Ple (" <keep>       ::= -k c|d|n|a | --keep=comments|cdata|none|all");
     Ple ("                                    -- Keep comments");
-    Ple ("                                    -- Keep CDATA sections");
-    Ple ("                                    -- Keep none");
+    Ple ("                                    -- Keep CDATA sections unchanged");
+    Ple ("                                    -- Keep none (remove comments and CDATA");
+    Ple ("                                    --  markers)");
     Ple ("                                    -- Keep all (default)");
     Ple (" <normalize>  ::= --no-normalize    -- Do not normalize attributes and text");
-    Ple (" <check_dtd>  ::= -c [ <Dtd> ] | --check_dtd=[<Dtd>]");
-    Ple ("                                    -- Check vs a specific dtd or none");
+    Ple (" <check_dtd>  ::= -d [ <Dtd> ] | --dtd=[<Dtd>]");
+    Ple ("                                    -- Use a specific dtd or none");
     Ple (" <tree>       ::= -t | --tree       -- Build tree then dump it");
     Ple (" <canonical>  ::= -C | --canonical  -- Canonicalize xml");
     Ple (" <help>       ::= -h | --help       -- Put this help");
     Ple (" <version>    ::= -v | --version    -- Put versions");
-    Ple ("Always keep all in dump.");
-    Ple ("All options except keep, check_dtd, warnings and tree are exclusive.");
-    Ple ("Keep not allowed on Dump mode, Dump => keep all.");
-    Ple ("Canonical only allows options dtd, warnings and keep-comments (it removes");
-    Ple ("  comments by default).");
-    Ple ("Empty Dtd leads to skip check of comformance to DTD.");
-    Ple ("Default is -W" & Xml_Parser.Generator.Default_Width'Img
+    Ple ("The xml is validated versus dtd (if any) only if entities are expanded.");
+    Ple ("Empty Dtd can be used to force skipping validation versus dtd.");
+    Ple ("All options except expand, keep, dtd, warnings and tree are exclusive.");
+    Ple ("Keep and expand are not allowed on Dump mode, Dump => keep all.");
+    Ple ("Canonical only allows options dtd, warnings and keep-comments (it expands");
+    Ple ("  and by default removes commentst).");
+    Ple ("Default format is -W" & Xml_Parser.Generator.Default_Width'Img
                          & " on stdout.");
     Ple ("Building the tree is not recommended for big files.");
     Ple ("Please also consider increasing the process stack size (ulimit -s) to");
@@ -103,18 +106,19 @@ procedure Xml_Checker is
   -- The argument keys and descriptor of parsed keys
   Keys : constant Argument_Parser.The_Keys_Type := (
     1 => ('s', As.U.Tus ("silent"), False, False),
-    2 => ('d', As.U.Tus ("dump"), False, False),
+    2 => ('D', As.U.Tus ("dump"), False, False),
     3 => ('r', As.U.Tus ("raw"), False, False),
     4 => ('W', As.U.Tus ("width"), False, True),
     5 => ('1', As.U.Tus ("one"), False, False),
     6 => ('h', As.U.Tus ("help"), False, False),
     7 => ('v', As.U.Tus ("version"), False, False),
     8 => ('k', As.U.Tus ("keep"), True, True),
-    9 => ('c', As.U.Tus ("check_dtd"), False, True),
+    9 => ('d', As.U.Tus ("dtd"), False, True),
    10 => ('t', As.U.Tus ("tree"), False, False),
    11 => ('w', As.U.Tus ("warnings"), False, False),
    12 => ('C', As.U.Tus ("canonical"), False, False),
-   13 => (Argument_Parser.No_Key_Char,As.U.Tus ("no-normalize"), False, False)
+   13 => (Argument_Parser.No_Key_Char,As.U.Tus ("no-normalize"), False, False),
+   14 => ('E', As.U.Tus ("expand"), False, False)
    );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
@@ -404,7 +408,7 @@ procedure Xml_Checker is
     Ctx.Parse (Get_File_Name (Index, False),
                Parse_Ok,
                Comments => Keep_Comments,
-               Expand => not Keep_Expand,
+               Expand => Expand,
                Cdata  => Cdata_Policy,
                Normalize => Normalize,
                Use_Dtd => Use_Dtd,
@@ -512,7 +516,7 @@ begin
   Width := Xml_Parser.Generator.Default_Width;
   Format := Xml_Parser.Generator.Default_Format;
   Warnings := null;
-  Keep_Expand := True;
+  Expand := False;
   Keep_Comments := True;
   Keep_Cdata := True;
   Normalize := True;
@@ -542,6 +546,11 @@ begin
     Max_Opt := Max_Opt + 1;
     Warnings := Warning'Unrestricted_Access;
   end if;
+  if Arg_Dscr.Is_Set (14) then
+    -- Expand entities and default of attributes
+    Expand := True;
+    Max_Opt := Max_Opt + 1;
+  end if;
   if Arg_Dscr.Get_Number_Keys > Max_Opt then
     Ae_Re (Arg_Error'Identity, "Too many or incompatible options");
   end if;
@@ -551,9 +560,12 @@ begin
     -- Silent
     Output_Kind := None;
   elsif Arg_Dscr.Is_Set (2) then
-    -- Dump: keep all
+    if Arg_Dscr.Get_Option (14) = "" then
+      Ae_Re (Arg_Error'Identity, "Incompatible ""expand"" and ""dump"" options");
+    end if;
+    -- -D: Dump, keep all
     Output_Kind := Dump;
-    Keep_Expand := True;
+    Expand := False;
     Keep_Comments := True;
     Keep_Cdata := True;
   elsif Arg_Dscr.Is_Set (3) then
@@ -584,13 +596,12 @@ begin
   end if;
 
   if Arg_Dscr.Is_Set (8) then
-    -- -k: keep expanded|comments|cdata|none|all
+    -- -k: keep comments|cdata|none|all
     if Output_Kind = Dump then
       Ae_Re (Arg_Error'Identity, "Incompatible ""keep"" and ""dump"" options");
     end if;
     for I in 1 .. Arg_Dscr.Get_Nb_Occurences (8) loop
       -- Parse Keep options
-      Keep_Expand := False;
       Keep_Comments := False;
       Keep_Cdata := False;
       declare
@@ -599,13 +610,10 @@ begin
       begin
         if (Chr and then Opt = "n")
         or else (not Chr and then Opt = "none") then
-          if Keep_Expand_Set or else Keep_Comments_Set
-          or else Keep_Cdata_Set then
+          if Keep_Comments_Set or else Keep_Cdata_Set then
             Ae_Re (Arg_Error'Identity, "Incompatible ""keep"" options");
           end if;
-          -- Keep none (expand all, remove comments and Cdata)
-          Keep_Expand := False;
-          Keep_Expand_Set := True;
+          -- Keep none (remove comments and Cdata)
           Keep_Comments := False;
           Keep_Comments_Set := True;
           Keep_Cdata := False;
@@ -613,23 +621,13 @@ begin
         elsif (Chr and then Opt = "a")
         or else (not Chr and then Opt = "all") then
           -- Keep all
-          if Keep_Expand_Set or else Keep_Comments_Set
-          or else Keep_Cdata_Set then
+          if Keep_Comments_Set or else Keep_Cdata_Set then
             Ae_Re (Arg_Error'Identity, "Incompatible ""keep"" options");
           end if;
-          Keep_Expand := True;
-          Keep_Expand_Set := True;
           Keep_Comments := True;
           Keep_Comments_Set := True;
           Keep_Cdata := True;
           Keep_Cdata_Set := True;
-        elsif (Chr and then Opt = "e")
-        or else (not Chr and then Opt = "expanded") then
-          if Keep_Expand_Set then
-            Ae_Re (Arg_Error'Identity, "Incompatible ""keep"" options");
-          end if;
-          Keep_Expand := True;
-          Keep_Expand_Set := True;
         elsif (Chr and then Opt = "c")
         or else (not Chr and then Opt = "comments") then
           if Keep_Comments_Set then
@@ -652,7 +650,7 @@ begin
   end if;
 
   if Arg_Dscr.Is_Set (9) then
-    -- -c: Check dtd file
+    -- -d: Check dtd file
     Dtd_File := As.U.Tus (Arg_Dscr.Get_Option (9));
     if Dtd_File.Is_Null then
       -- If option set with empty dtd => no check
@@ -662,13 +660,16 @@ begin
 
   -- Canonical
   if Arg_Dscr.Is_Set (12) then
+    if Arg_Dscr.Is_Set (14) then
+      Ae_Re (Arg_Error'Identity, "Canonical already implies expansion.");
+    end if;
     -- No other keep than -k c
-    if Arg_Dscr.Is_Set (10) or else Keep_Expand_Set or else Keep_Cdata_Set then
+    if Arg_Dscr.Is_Set (10) or else Keep_Cdata_Set then
       Ae_Re (Arg_Error'Identity, "Incompatible options");
     end if;
     -- Skip comments by default, don't keep others
     Keep_Comments := Keep_Comments_Set;
-    Keep_Expand := False;
+    Expand := True;
     Keep_Cdata := False;
     Output_Kind := Canon;
     Format := Xml_Parser.Generator.Fill_Width;
