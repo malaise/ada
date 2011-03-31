@@ -1489,7 +1489,7 @@ package body Dtd is
                           Line_No);
             end if;
             Trace ("Dtd checked mixed child " & Child
-                 & " versus " & Strip_Sep (Info.List));
+                 & " versus " & Info.List.Image);
           end;
         end loop;
         Iter_Xml.Del;

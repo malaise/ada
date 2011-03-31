@@ -1331,12 +1331,17 @@ package body Parse_Mng  is
       end if;
     end if;
 
-    -- See if we normalize this text
-    Normalize := Ctx.Normalize
-                 and then not Children.Preserve
-                 and then not Children.First_Child;
-    if Normalize then
-      Trace ("Txt normalizing");
+    -- See if we normalize this text, by default NO
+    Normalize := False;
+    if Ctx.Normalize and then not Children.Preserve then
+      -- We are allowed by caller and by attributes
+      if not Children.First_Child
+      or else (Adtd.Set and then not Children.Is_Mixed) then
+        -- We know by parsing that there is not only a text child
+        -- Or we know by dtd that there cannot be text here
+        Normalize := True;
+        Trace ("Txt normalizing");
+      end if;
     end if;
 
     -- Now build the text from the list
