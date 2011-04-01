@@ -113,8 +113,8 @@ begin
       begin
         Solution :=  My_Syslin.Gauss(Matrix, Vector);
       exception
-        when My_Syslin.Discriminent_Error =>
-          Ada.Text_Io.Put_Line ("Unable to solve: Discriminent is nul.");
+        when My_Syslin.Null_Determinant =>
+          Ada.Text_Io.Put_Line ("Unable to solve: Determinant is nul.");
           return;
         when My_Syslin.Dimension_Error =>
           Ada.Text_Io.Put_Line ("Unable to solve: ERROR in dimensions.");

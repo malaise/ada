@@ -17,8 +17,8 @@ package Syslin is
   -- If the matrix is not a square, or if indexes do not have same Length
   Dimension_Error   : exception;
 
-  -- If the discriminent is nul
-  Discriminent_Error : exception;
+  -- If the determinant is nul
+  Null_Determinant : exception;
 
 end Syslin;
 

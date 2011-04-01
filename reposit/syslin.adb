@@ -43,7 +43,7 @@ package body Syslin is
     if B'Length = 1 then
       -- Test wether pivot (A(1,1)) is not nul
       if A(A'First(1), A'First(2)) < Epsilon then
-        raise Discriminent_Error;
+        raise Null_Determinant;
       end if;
       Solution(Solution'First) := B(B'First) / A(A'First(1), A'First(2));
       return Solution;
@@ -69,7 +69,7 @@ package body Syslin is
 
       -- Test wether pivot is not nul
       if Pivot < Epsilon then
-        raise Discriminent_Error;
+        raise Null_Determinant;
       end if;
 
       -- Exchange current line with pivot line (in matrix and vector)
@@ -112,7 +112,7 @@ package body Syslin is
 
     -- Test wether last component is not nul
     if abs(A_T(Dimension'Last, Dimension'Last)) < Epsilon then
-      raise Discriminent_Error;
+      raise Null_Determinant;
     end if;
 
     -- Resolution "in stairs"
