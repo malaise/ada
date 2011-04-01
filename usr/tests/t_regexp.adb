@@ -1,15 +1,20 @@
 with Ada.Text_Io;
-with Argument, Regular_Expressions, Integer_Image, String_Mng, Text_Line;
+with Argument, Regular_Expressions, Integer_Image, String_Mng, Text_Line,
+     Basic_Proc;
 
 procedure T_Regexp is
 
   procedure Error is
   begin
     Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
-                                    & " <pattern> { <Search_String> }");
+                                    & " [ -s ] <pattern> { <Search_String> }");
   end Error;
 
+  Silent : Boolean;
+  Start : Natural;
+  Ok : Boolean;
   Pattern : Regular_Expressions.Compiled_Pattern;
+  Compile_Error : exception;
 
   procedure Compile_Pattern (Str : in String; Report : in Boolean := True) is
     Ok : Boolean;
@@ -17,10 +22,15 @@ procedure T_Regexp is
     -- Compile pattern
     Regular_Expressions.Compile (Pattern, Ok, Str);
     if not Ok then
-      Ada.Text_Io.Put_Line ("Error compiling pattern >" & Str & "<");
-      Ada.Text_Io.Put_Line (Regular_Expressions.Error (Pattern));
+      if not Silent then
+        Ada.Text_Io.Put_Line ("Error compiling pattern >" & Str & "<");
+        Ada.Text_Io.Put_Line (Regular_Expressions.Error (Pattern));
+      end if;
+      raise Compile_Error;
     elsif Report then
-      Ada.Text_Io.Put_Line ("Pattern >" & Str & "< compiled");
+      if not Silent then
+        Ada.Text_Io.Put_Line ("Pattern >" & Str & "< compiled");
+      end if;
     end if;
   end Compile_Pattern;
 
@@ -57,12 +67,21 @@ begin
     return;
   end if;
 
+  if Argument.Get_Parameter (Occurence => 1) = "-s" then
+    Silent := True;
+    Start := 2;
+  else
+    Silent := False;
+    Start := 1;
+  end if;
 
   -- Compile 1st args as pattern
-  Compile_Pattern (Argument.Get_Parameter (Occurence => 1), False);
+  Compile_Pattern (Argument.Get_Parameter (Occurence => Start), False);
+  Start := Start + 1;
 
   -- Check pattern vs other arguments
-  for I in 2 .. Argument.Get_Nbre_Arg loop
+  Ok := False;
+  for I in Start .. Argument.Get_Nbre_Arg loop
     declare
       Str : constant String
           := String_Mng.Replace (Argument.Get_Parameter (Occurence => I),
@@ -74,24 +93,44 @@ begin
                                 N_Matched,
                                 Match_Info);
     end;
-    Ada.Text_Io.Put ("String >"
-                    & Argument.Get_Parameter (Occurence => I)
-                    & "< ");
+    if not Silent then
+      Ada.Text_Io.Put ("String >"
+                      & Argument.Get_Parameter (Occurence => I)
+                      & "< ");
+    end if;
     if N_Matched = 0 then
-      Ada.Text_Io.Put_Line ("does not match");
+      if not Silent then
+          Ada.Text_Io.Put_Line ("does not match");
+      end if;
     else
-      Ada.Text_Io.Put ("matches at pos");
-      -- List submatches
-      for I in Match_Range'(1) .. N_Matched loop
-        Ada.Text_Io.Put (
-            " [" & Integer_Image(Match_Info(I).First_Offset)
-          & "-" & Integer_Image(Match_Info(I).Last_Offset_Start)
-          & "/" & Integer_Image(Match_Info(I).Last_Offset_Stop) & "]");
-      end loop;
-      Ada.Text_Io.New_Line;
+      -- At least one match
+      Ok := True;
+      if not Silent then
+        Ada.Text_Io.Put ("matches at pos");
+        -- List submatches
+        for I in Match_Range'(1) .. N_Matched loop
+          Ada.Text_Io.Put (
+              " [" & Integer_Image(Match_Info(I).First_Offset)
+            & "-" & Integer_Image(Match_Info(I).Last_Offset_Start)
+            & "/" & Integer_Image(Match_Info(I).Last_Offset_Stop) & "]");
+        end loop;
+        Ada.Text_Io.New_Line;
+      end if;
     end if;
 
   end loop;
 
+  if Ok then
+    Basic_Proc.Set_Exit_Code (0);
+  else
+    Basic_Proc.Set_Exit_Code (1);
+  end if;
+
+exception
+  when Compile_Error =>
+    Basic_Proc.Set_Exit_Code (2);
+  when Argument.Argument_not_Found =>
+    Error;  
+    Basic_Proc.Set_Exit_Code (3);
 end T_Regexp;
 
