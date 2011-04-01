@@ -16,6 +16,9 @@ procedure T_Passive_Timers is
 
 begin
 
+  Ada.Text_Io.Put_Line ("Starting T1(10, 10) and T2(2, 2)");
+  Ada.Text_Io.Put_Line (" and checking each sec until T1 expiration");
+
   T1.Start ( (Timers.Delay_Sec, null, 10.0, 10.0) );
 
   declare
@@ -30,6 +33,7 @@ begin
     Put ("T1", True);
   end;
 
+  Ada.Text_Io.Put_Line ("Starting T1(1, 1) and checking 10 times each 0.5s");
   T1.Start ( (Timers.Delay_Sec, null, 1.0, 1.0) );
   for I in 1 .. 10 loop
       Put ("T1", T1.Has_Expired);
@@ -40,6 +44,7 @@ begin
   declare
     T3 : Chronos.Passive_Timers.Passive_Timer;
   begin
+    Ada.Text_Io.Put_Line ("Starting T3(0, 1) and checking after 0.5 then 1.0");
     T3.Start ( (Timers.Delay_Sec, null, 0.0, 1.0) );
     delay 0.5;
     Put ("T3", T3.Has_Expired);
@@ -53,3 +58,4 @@ begin
   end;
 
 end T_Passive_Timers;
+
