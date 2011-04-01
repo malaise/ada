@@ -844,29 +844,30 @@ package body Autobus is
   end Init;
 
   -- Reset a Subscriber (make it re-usable)
-  procedure Reset (Subscriber : in out Subscriber_Type;
-                   Bus : in Bus_Access_Type) is
+  procedure Reset (Subscriber : in out Subscriber_Type) is
     Bus_Found : Boolean;
     Subscriber_Found : Boolean;
   begin
-    -- Check that this Bus is initialised and knows this subscriber
-    if Bus = null then
-      raise Status_Error;
-    end if;
-    Buses.Search_Access (Bus_Found, Bus.Acc);
-    if not Bus_Found then
-      raise Status_Error;
-    end if;
     if Subscriber.Acc = null then
       raise Status_Error;
     end if;
-    Bus.Acc.Subscribers.Search_Access (Subscriber_Found, Subscriber.Acc);
+    if Subscriber.Acc.Bus = null then
+      raise Status_Error;
+    end if;
+    -- Find bus
+    Buses.Search_Access (Bus_Found, Subscriber.Acc.Bus);
+    if not Bus_Found then
+      raise Status_Error;
+    end if;
+    -- Find subscriber in bus list
+    Subscriber.Acc.Bus.Subscribers.Search_Access (Subscriber_Found,
+                                                  Subscriber.Acc);
     if not Subscriber_Found then
-      Debug ("Subscriber.Reset unknown subscriber");
+      Debug ("Subscriber.Reset subscriber unknown by its bus!");
       raise Status_Error;
     end if;
 
-    Debug ("Subscriber.Reset " & Bus.Acc.Name.Image);
+    Debug ("Subscriber.Reset " & Subscriber.Acc.Bus.Name.Image);
     Remove_Current_Subscriber;
   end Reset;
 
@@ -946,7 +947,9 @@ package body Autobus is
 
   overriding procedure Finalize (Subscriber : in out Subscriber_Type) is
   begin
-    null;
+    if Subscriber.Acc /= null then
+      Reset (Subscriber);
+    end if;
   end Finalize;
 
 end Autobus;

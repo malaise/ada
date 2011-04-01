@@ -362,7 +362,7 @@ package body Io_Flow is
         -- Close input flow
         Input_Flow.Close;
       when Abus =>
-        Bus_Subscriber.Reset (Bus'Access);
+        Bus_Subscriber.Reset;
         Bus.Reset;
       when Udp =>
         if Debug.Debug_Level_Array(Debug.Flow) then

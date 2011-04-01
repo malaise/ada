@@ -57,8 +57,7 @@ package Autobus is
                   Echo : in Boolean := False);
 
   -- Reset a Subscriber (make it re-usable)
-  procedure Reset (Subscriber : in out Subscriber_Type;
-                   Bus : Bus_Access_Type);
+  procedure Reset (Subscriber : in out Subscriber_Type);
 
   ------------------------
   -- General Exceptions --
@@ -100,7 +99,7 @@ private
   -- List of Subscribers
   type Filter_Access is access Regular_Expressions.Compiled_Pattern;
   type Observer_Access is access all Observer_Type'Class;
-  type Subscriber_Rec is new Ada.Finalization.Controlled with record
+  type Subscriber_Rec is record
     -- Bus
     Bus : Bus_Access;
     -- Filter

@@ -108,9 +108,9 @@ begin
     Event_Mng.Set_Sig_Term_Callback (Signal_Cb'Unrestricted_Access);
     Bus.Init (Default_Address);
     Subs_Repl.Init (Bus'Unrestricted_Access, Receiver'Unrestricted_Access,
-                    "Ah que .*", True);
+                    "Ah que .*", False);
     Subs_Drop.Init (Bus'Unrestricted_Access, Receiver'Unrestricted_Access,
-                    "Coucou.*", True);
+                    "Coucou.*", False);
     Subs_Spy.Init (Bus'Unrestricted_Access, Spy'Unrestricted_Access, "", True);
     loop
       Sig := False;
@@ -123,7 +123,7 @@ begin
     end loop;
 
     Basic_Proc.Put_Line_Output ("Closing.");
-    Subs_Repl.Reset (Bus'Unrestricted_Access);
+    Subs_Repl.Reset;
     Bus.Reset;
     Basic_Proc.Put_Line_Output ("Done.");
   elsif Argument.Get_Parameter (1) = "--manual"
@@ -139,7 +139,7 @@ begin
       exit when Sig;
     end loop;
     Async_Stdin.Set_Async (null);
-    Subs_Put.Reset (Bus'Unrestricted_Access);
+    Subs_Put.Reset;
     Bus.Reset;
   else
     Usage;
