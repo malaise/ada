@@ -11,24 +11,37 @@ export HOSTIP=`gawk -v HOSTNAME=$HOSTNAME '
   }
 ' /etc/hosts `
 
-if [ "$1" = "-d" ] ; then
-  export TCPCHAT_DEBUG=Y
-  shift
+
+export TCPCHAT_DEBUG=""
+export PORT="http"
+while [ "$1" != "" ] ; do
+  if [ "$1" = "-d" ] ; then
+    export TCPCHAT_DEBUG=Y
+    shift
+  elif [ "$1" = "-p" ] ; then
+    export PORT="$2"
+    shift
+    shift
+  else
+    break
+  fi
+done
+if [ "$PORT" = "-" ] ; then
+  export PORT_ENAME="stdio"
+else
+  export PORT_NAME="port $PORT"
 fi
 
 if [ "$1" = "http" ] ; then
-  port="www"
-  file=http-rsh.xml
-  echo "On port $port"
-elif [ "$1" != "" ] ; then
-  port="$1"
-  file=chats.xml
-  echo "On port $port"
+  FILE=http-rsh.xml
+  echo "Http on $PORT_NAME"
+elif [ "$1" = "chats" ] ; then
+  FILE=chats.xml
+  echo "Chats on $PORT_NAME"
 else
-  port="-"
-  file=chats.xml
-  echo "On stdio"
+  echo "Usage: `basename $0` [ -d ] [ -p <port> ]  http | chats"
+  exit 1
 fi
 
-exec tcpchat -p $port -f $file
+exec tcpchat -p $PORT -f $FILE
 
