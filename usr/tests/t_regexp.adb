@@ -129,8 +129,8 @@ begin
 exception
   when Compile_Error =>
     Basic_Proc.Set_Exit_Code (2);
-  when Argument.Argument_not_Found =>
-    Error;  
+  when Argument.Argument_Not_Found =>
+    Error;
     Basic_Proc.Set_Exit_Code (3);
 end T_Regexp;
 
