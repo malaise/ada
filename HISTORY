@@ -1,4 +1,5 @@
 Major changes:
+2011/04/04: Add support of port in http package and in tcpchat test scenario
 2011/03/31: Add specific option 'E for entities expansion in xml_checker, V15.0
             Add normalize text also when knowing from DTD that there cannot be text in Xml_Parser, V26.6
 2011/03/27: Fix homogenenize output of status in account

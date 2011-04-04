@@ -6,8 +6,8 @@
   <!-- HTTP 0.9: Send file and close -->
   <!-- HTTP 1.0 or 1.1: Skip noise, send header + file -->
   <chat Name="http" TimeoutMs="&None;" Regexp="true"
-        Assign="FILE=${4} VERS=${5}"
-        >GET ((http:/)?/(localhost|${$HOSTNAME}|${$HOSTIP}))?([^ ]+)( +HTTP/1\.(0|1))?</chat>
+        Assign="FILE=${5} VERS=${6}"
+        >GET ((http:/)?/(localhost|${$HOSTNAME}|${$HOSTIP})(:[0-9]+)?)?([^ ]+)( +HTTP/1\.(0|1))?</chat>
   <script>
     <cond>
       <if Variable="VERS"></if>

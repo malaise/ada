@@ -311,17 +311,44 @@ package body Http is
     -- Sanity check on request: Parse Url and set host and port
     declare
       Iter : Parser.Iterator;
+      Addr : As.U.Asu_Us;
+      Port_Start : Natural;
+      use type Tcp_Util.Remote_Host_List, Tcp_Util.Remote_Port_List;
     begin
+      -- Parse protocol: "http://<addr>"
+      -- Where addr is <host>[:<port>]/<path>
       Iter.Set (Url, Is_Slash'Access);
       if Iter.Next_Word /= "http:" or else Iter.Prev_Separators /= "" then
         return (Client_Error, Invalid_Url);
       end if;
-      Host := Ip_Addr.Parse (Iter.Next_Word);
+      Addr := As.U.Tus (Iter.Next_Word);
       if Iter.Prev_Separators /= "//" then
         return (Client_Error, Invalid_Url);
       end if;
-      Port := Ip_Addr.Parse ("http");
+
+      Port_Start := String_Mng.Locate (Addr.Image, ":");
+      if Port_Start = 0 then
+        -- No port, <host> and "http"
+        Host := Ip_Addr.Parse (Addr.Image);
+        Port := Ip_Addr.Parse ("http");
+      else
+        -- A port "<host>:<port>"
+        Host := Ip_Addr.Parse (Addr.Slice (1, Port_Start - 1));
+        Port := Ip_Addr.Parse (Addr.Slice (Port_Start + 1, Addr.Length));
+      end if;
       Iter.Del;
+      if Host.Kind = Tcp_Util.Host_Name_Spec then
+        Addr := Host.Name;
+      else
+        Addr := As.U.Tus (Ip_Addr.Image (Socket.Id2Addr (Host.Id)));
+      end if;
+      Debug ("Server address is " & Addr.Image);
+      if Port.Kind = Tcp_Util.Port_Name_Spec then
+        Addr := Port.Name;
+      else
+        Addr := As.U.Tus (Ip_Addr.Image (Port.Num));
+      end if;
+      Debug ("Server port is " & Addr.Image);
     exception
       when others =>
         return (Client_Error, Invalid_Url);
