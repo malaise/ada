@@ -12,7 +12,7 @@ package body Debug is
     end if;
     -- First call
     if Debug_Status = Unknown then
-      if Environ.Is_Set (Debug_Var) then
+      if Environ.Is_Yes (Debug_Var) then
         Debug_Status := On;
       else
         Debug_Status := Off;
