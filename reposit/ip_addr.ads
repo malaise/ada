@@ -26,8 +26,8 @@ package Ip_Addr is
 
   -- Parse a string at format <addr>:<port> where <addr> and <port>
   --  are processed as in both Parse functions above
-  -- <addr>: is supported (and lead to empty port name)
-  -- :<port> is supported (and lead to empty host name)
+  -- <addr>: is supported (and leads to empty port name)
+  -- :<port> is supported (and leads to empty host name)
   procedure Parse (Addr_Port : in String;
                    Host : out Tcp_Util.Remote_Host;
                    Port : out Tcp_Util.Remote_Port);
