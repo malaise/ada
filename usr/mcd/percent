@@ -1,0 +1,7 @@
+#!/bin/bash
+export MCD_DIR=$HOME/ada/usr/mcd
+export NAME=`basename $0`
+
+cd ${MCD_DIR}
+mcdt ${NAME}.mcd $*
+
