@@ -126,3 +126,4 @@ L regind + indreg pushr put " day of the year, " put
 c pushr dup B pushr call dateof
 6 "12" strrep 9 "31" strrep timeof A pushr call swap - dup put
 " day" put 1 > "s " " " ifte put "remaining." putl
+
