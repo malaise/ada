@@ -8,6 +8,9 @@
 #define REG_UTF8      0x0040
 #define REG_STARTEND  0x0080
 #define REG_NOTEMPTY  0x0100
+#define REG_UNGREEDY  0x0200
+#define REG_UCP       0x0400
+
 
 /* Error codes */
 enum {

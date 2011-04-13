@@ -73,7 +73,11 @@ static const int eint[] = {
   REG_BADPAT,  /* number is too big */
   REG_BADPAT,  /* subpattern name expected */
   REG_BADPAT,  /* digit expected after (?+ */
-  REG_BADPAT   /* ] is an invalid data character in JavaScript compatibility mode */
+  REG_BADPAT,  /* ] is an invalid data character in JavaScript compatibility mode */
+  REG_BADPAT,  /* different names for subpatterns of the same number are not allowed */
+  REG_BADPAT,  /* (*MARK) must have an argument */
+  REG_INVARG,  /* this version of PCRE is not compiled with PCRE_UCP support */
+  REG_BADPAT,  /* \c must be followed by an ASCII character */
 };
 
 /* POSIX error messages */
@@ -113,6 +117,8 @@ extern int regcomp(regex_t *preg, const char *pattern, int cflags) {
   if ((cflags & REG_DOTALL) != 0)  options |= PCRE_DOTALL;
   if ((cflags & REG_NOSUB) != 0)   options |= PCRE_NO_AUTO_CAPTURE;
   if ((cflags & REG_UTF8) != 0)    options |= PCRE_UTF8;
+  if ((cflags & REG_UCP) != 0)      options |= PCRE_UCP;
+  if ((cflags & REG_UNGREEDY) != 0) options |= PCRE_UNGREEDY;
 
   preg->re_pcre = pcre_compile2(pattern, options, &errorcode, &errorptr,
                                 &erroffset, NULL);
