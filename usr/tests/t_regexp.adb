@@ -7,11 +7,21 @@ procedure T_Regexp is
   procedure Error is
   begin
     Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
-                                    & " [ -s ] <pattern> { <Search_String> }");
+                        & " <automatic> | <manual>");
+    Ada.Text_Io.Put_Line (" <automatic> ::= -c | -f | -p");
+    Ada.Text_Io.Put_Line ("     -c for successive compilations");
+    Ada.Text_Io.Put_Line ("     -f for successive compilations and frees");
+    Ada.Text_Io.Put_Line ("     -p for compilind all arguments as patterns");
+    Ada.Text_Io.Put_Line (" <manual>    ::= [ <option> ] <pattern> { <Search_String> }");
+    Ada.Text_Io.Put_Line ("     -s for silent check (exit code only)");
+    Ada.Text_Io.Put_Line ("     -n for no match newline");
+    Ada.Text_Io.Put_Line ("     -d for dot math all");
   end Error;
 
-  Silent : Boolean;
-  Start : Natural;
+  Silent : Boolean := False;
+  Not_Newline : Boolean := False;
+  Dot_All : Boolean := False;
+  Start : Natural := 1;
   Ok : Boolean;
   Pattern : Regular_Expressions.Compiled_Pattern;
   Compile_Error : exception;
@@ -20,7 +30,10 @@ procedure T_Regexp is
     Ok : Boolean;
   begin
     -- Compile pattern
-    Regular_Expressions.Compile (Pattern, Ok, Str);
+    Regular_Expressions.Compile (Pattern, Ok, Str,
+                                 Case_Sensitive => True,
+                                 Match_Newline => not Not_Newline,
+                                 Dot_All => Dot_All);
     if not Ok then
       if not Silent then
         Ada.Text_Io.Put_Line ("Error compiling pattern >" & Str & "<");
@@ -44,7 +57,7 @@ begin
     return;
   end if;
 
-  if Argument.Get_Nbre_Arg = 1 and then Argument.Get_Parameter = "-m" then
+  if Argument.Get_Nbre_Arg = 1 and then Argument.Get_Parameter = "-c" then
     Ada.Text_Io.Put_Line (
       "Infinite loop of silent Compile to check memory... Ctrl C to end");
     loop
@@ -57,7 +70,7 @@ begin
       Compile_Pattern ("titi", False);
       Regular_Expressions.Free (Pattern);
     end loop;
-  elsif Argument.Get_Parameter = "-c" then
+  elsif Argument.Get_Parameter = "-p" then
     -- Compile all args as pattern, keep 1st arg as THE pattern
     Ada.Text_Io.Put_Line (
       "Compiling all arguments as patterns.");
@@ -67,13 +80,25 @@ begin
     return;
   end if;
 
-  if Argument.Get_Parameter (Occurence => 1) = "-s" then
-    Silent := True;
-    Start := 2;
-  else
-    Silent := False;
-    Start := 1;
-  end if;
+  Start := 1;
+  Silent := False;
+  Not_Newline := False;
+  Dot_All := False;
+
+  loop
+    if Argument.Get_Parameter (Occurence => Start) = "-s" then
+      Silent := True;
+      Start := Start + 1;
+    elsif Argument.Get_Parameter (Occurence => Start) = "-n" then
+      Not_Newline := True;
+      Start := Start + 1;
+    elsif Argument.Get_Parameter (Occurence => Start) = "-d" then
+      Dot_All := True;
+      Start := Start + 1;
+    else
+      exit;
+    end if;
+  end loop;
 
   -- Compile 1st args as pattern
   Compile_Pattern (Argument.Get_Parameter (Occurence => Start), False);

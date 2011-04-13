@@ -27,11 +27,16 @@ package Regular_Expressions is
   Any_Match : constant Match_Cell := (1, 0, 0);
 
   -- Compile a regex
+  -- By default
+  --  Case is sensitive,
+  --  '.', '?' and "[^...]" without newline match newline
+  --  '.' does not match any character (new line, carriage return...)
   procedure Compile (Result : in out Compiled_Pattern;
                      Ok : out Boolean;
                      Criteria : in String;
                      Case_Sensitive : in Boolean := True;
-                     Match_Newline : in Boolean := True);
+                     Match_Newline : in Boolean := True;
+                     Dot_All : in Boolean := False);
 
   -- Check syntax of a regex, return True if OK
   function Check (Criteria : String) return Boolean;
@@ -49,6 +54,8 @@ package Regular_Expressions is
   --  case Match_Info is one cell of Any_Match.
   -- Use Valid_Match to check if you can use a Match_Cell to extract the
   --  corresponding substring.
+  -- Begin_Line_Match and End_Line_Match allow '^' and '$' ti match beginning
+  --  and end of line respectively (if regexp was compiled with Match_Newline).
   No_Criteria : exception;
   procedure Exec (Criteria : in Compiled_Pattern;
                   To_Check : in String;

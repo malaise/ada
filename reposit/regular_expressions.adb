@@ -15,12 +15,18 @@ package body Regular_Expressions is
     return Str & Ada.Characters.Latin_1.Nul;
   end Str4C;
 
+  -- Flags defined in C (those in coment are not used)
   C_Icase    : constant Integer := 16#0001#;
   C_Newline  : constant Integer := 16#0002#;
   C_Notbol   : constant Integer := 16#0004#;
   C_Noteol   : constant Integer := 16#0008#;
+  C_Dotall   : constant Integer := 16#0010#;
+--C_Nosub    : constant Integer := 16#0020#;
   C_Utf8     : constant Integer := 16#0040#;
+--C_Startend : constant Integer := 16#0080#;
   C_Notempty : constant Integer := 16#0100#;
+--C_Ungreedy : constant Integer := 16#0200#;
+--C_Ucp      : constant Integer := 16#0400#;
 
   function C_Regvers return System.Address;
   pragma Import (C, C_Regvers, "pcre_version");
@@ -86,7 +92,8 @@ package body Regular_Expressions is
                      Ok : out Boolean;
                      Criteria : in String;
                      Case_Sensitive : in Boolean := True;
-                     Match_Newline : in Boolean := True) is
+                     Match_Newline : in Boolean := True;
+                     Dot_All : in Boolean := False) is
     Criteria4C : constant String := Str4C (Criteria);
     Cflags : Integer := 0;
     use type System.Address, Language.Language_Set_List;
@@ -104,6 +111,9 @@ package body Regular_Expressions is
     end if;
     if not Match_Newline then
       Cflags := Cflags or C_Newline;
+    end if;
+    if Dot_All then
+      Cflags := Cflags or C_Dotall;
     end if;
     -- Free previous buffer if needed, allocate buffer if needed
     Result.Error := 0;
