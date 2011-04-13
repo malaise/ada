@@ -1,7 +1,4 @@
 #!/bin/bash
-export MCD_DIR=$HOME/ada/usr/mcd
-export NAME=`basename $0`
-
-cd ${MCD_DIR}
-mcdt ${NAME}.mcd $*
+cd $HOME/ada/usr/mcd
+mcdt percent.mcd $1 $2
 
