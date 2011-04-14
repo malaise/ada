@@ -10,10 +10,10 @@ package body Regular_Expressions is
     Stop_Offset  : C_Offset_Range;
   end record;
   type C_Match_Array is array (Natural range <>) of C_Match_Cell;
-  function Str4C (Str : String) return String is
+  function String4C (Str : String) return String is
   begin
     return Str & Ada.Characters.Latin_1.Nul;
-  end Str4C;
+  end String4C;
 
   -- Flags defined in C (those in coment are not used)
   C_Icase    : constant Integer := 16#0001#;
@@ -90,11 +90,11 @@ package body Regular_Expressions is
   -- Ada binding
   procedure Compile (Result : in out Compiled_Pattern;
                      Ok : out Boolean;
-                     Criteria : in String;
+                     Str : in String;
                      Case_Sensitive : in Boolean := True;
-                     Match_Newline : in Boolean := True;
+                     Multi_Line : in Boolean := False;
                      Dot_All : in Boolean := False) is
-    Criteria4C : constant String := Str4C (Criteria);
+    Str4C : constant String := String4C (Str);
     Cflags : Integer := 0;
     use type System.Address, Language.Language_Set_List;
     use Bit_Ops;
@@ -109,7 +109,7 @@ package body Regular_Expressions is
     if not Case_Sensitive then
       Cflags := Cflags or C_Icase;
     end if;
-    if not Match_Newline then
+    if Multi_Line then
       Cflags := Cflags or C_Newline;
     end if;
     if Dot_All then
@@ -124,7 +124,7 @@ package body Regular_Expressions is
       Result.Comp_Addr := C_Malloc_Regex;
     end if;
     -- Compile
-    Result.Error := C_Regcomp (Result.Comp_Addr, Criteria4C'Address, Cflags);
+    Result.Error := C_Regcomp (Result.Comp_Addr, Str4C'Address, Cflags);
     Ok := Result.Error = 0;
   end Compile;
 
@@ -170,7 +170,7 @@ package body Regular_Expressions is
                   End_Line_Match : in Boolean := True) is
     C_Match_Info : C_Match_Array (1 .. Match_Info'Length);
     Eflags : Integer := 0;
-    To_Check4C : constant String := Str4C (To_Check);
+    To_Check4C : constant String := String4C (To_Check);
     Cres : Integer;
     First : constant Integer := To_Check'First;
     J : Positive;

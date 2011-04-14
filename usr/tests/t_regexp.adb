@@ -14,12 +14,12 @@ procedure T_Regexp is
     Ada.Text_Io.Put_Line ("     -p for compilind all arguments as patterns");
     Ada.Text_Io.Put_Line (" <manual>    ::= [ <option> ] <pattern> { <Search_String> }");
     Ada.Text_Io.Put_Line ("     -s for silent check (exit code only)");
-    Ada.Text_Io.Put_Line ("     -n for no match newline");
+    Ada.Text_Io.Put_Line ("     -m for multiline");
     Ada.Text_Io.Put_Line ("     -d for dot math all");
   end Error;
 
   Silent : Boolean := False;
-  Not_Newline : Boolean := False;
+  Multi_Line : Boolean := False;
   Dot_All : Boolean := False;
   Start : Natural := 1;
   Ok : Boolean;
@@ -32,7 +32,7 @@ procedure T_Regexp is
     -- Compile pattern
     Regular_Expressions.Compile (Pattern, Ok, Str,
                                  Case_Sensitive => True,
-                                 Match_Newline => not Not_Newline,
+                                 Multi_Line => Multi_Line,
                                  Dot_All => Dot_All);
     if not Ok then
       if not Silent then
@@ -82,15 +82,15 @@ begin
 
   Start := 1;
   Silent := False;
-  Not_Newline := False;
+  Multi_Line := False;
   Dot_All := False;
 
   loop
     if Argument.Get_Parameter (Occurence => Start) = "-s" then
       Silent := True;
       Start := Start + 1;
-    elsif Argument.Get_Parameter (Occurence => Start) = "-n" then
-      Not_Newline := True;
+    elsif Argument.Get_Parameter (Occurence => Start) = "-m" then
+      Multi_Line := True;
       Start := Start + 1;
     elsif Argument.Get_Parameter (Occurence => Start) = "-d" then
       Dot_All := True;

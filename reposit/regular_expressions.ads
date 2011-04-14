@@ -29,13 +29,13 @@ package Regular_Expressions is
   -- Compile a regex
   -- By default
   --  Case is sensitive,
-  --  '.', '?' and "[^...]" without newline match newline
-  --  '.' does not match any character (new line, carriage return...)
+  --  '^' and '$' do not match  a newline in the middle of Str
+  --  '.' does not match all characters (e.g. new line, carriage return...)
   procedure Compile (Result : in out Compiled_Pattern;
                      Ok : out Boolean;
-                     Criteria : in String;
+                     Str : in String;
                      Case_Sensitive : in Boolean := True;
-                     Match_Newline : in Boolean := True;
+                     Multi_Line : in Boolean := False;
                      Dot_All : in Boolean := False);
 
   -- Check syntax of a regex, return True if OK
