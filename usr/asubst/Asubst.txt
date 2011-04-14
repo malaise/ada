@@ -1,5 +1,5 @@
                                  Asubst
-                                  V11.4
+                                  V12.0
 
 
 1. General syntax
@@ -12,25 +12,24 @@ for Perl Regular Expressions.
 
 
 2. Options
--a or --ascii : consider that input flow or file is pure ASCII.
--D <string> or --delimiter=<string> for a delimiter other than '\n'.
--d or --display : display arguments <find_pattern>, <exclude_pattern> and
-    <replace_string>.
+-a or --ascii : consider that input flow or file is pure ASCII,
+-D <string> or --delimiter=<string> for a delimiter other than '\n',
+-d or --dotall for allow '.' to match '\n', when -D is set,
 -e <pattern> or --exclude=<pattern> for skip text matching <pattern>,
 -F <file> or --file_list=<file> to provide a file list of file names,
 -f or --file for display file name in grep mode,
--g or --grep : print matching text as grep would do (no substitution).
--i or --ignorecase : do case insensitive match checking of <find_pattern>.
--l or --line for display line number in grep mode.
--m <range> or --match=<range> for substitution of only <range> matches.
--n or --number : print number of substitutions per file.
--p <dir> or --tmp=<dir> : directory of temporary files.
--q or --quiet : no printout.
--s or --save : make a copy (<file>.asu) of original file(s).
+-g or --grep : print matching text as grep would do (no substitution),
+-i or --ignorecase : do case insensitive match checking of <find_pattern>,
+-l or --line for display line number in grep mode,
+-m <range> or --match=<range> for substitution of only <range> matches,
+-n or --number : print number of substitutions per file,
+-p <dir> or --tmp=<dir> : directory of temporary files,
+-q or --quiet : no printout,
+-s or --save : make a copy (<file>.asu) of original file(s),
 -t or --test for test, substitutions not performed,
--u or --utf8 : process utf-8 sequences.
--v or --verbose : print each substitution and its line number.
--x or --noregex : <find_pattern> is considered as string(s).
+-u or --utf8 : process utf-8 sequences,
+-v or --verbose : print each substitution and its line number,
+-x or --noregex : <find_pattern> is considered as string(s),
 -- : to stop the list of options. If <find_pattern> is "-pat", then use
      asubst [ { <option> } ] -- "-pat" <replace_pattern>  [ { <file> } ].
 
@@ -124,14 +123,16 @@ the long option name. Example: don't use '-m -4', but '-m 1-4' or '--match=-4'.
 
 
 7. Delimiter
-Normally asubst reads the input flow or file line by line (separated by '\n')
-and searches for matches, between the input sequences of text and '\n', and the
-sequence of regex of find_pattern. When an input delimiter is specified (option
+Normally, asubst reads the input flow or file line by line (separated by '\n')
+and searches for matches between the input sequences of text and the sequence
+of regex of find_pattern. However, when an input delimiter is specified (option
 -D or --delimiter) then asubst reads sequences of text separated by this
-delimiter (the whole text if delimiter is empty). In this case the find
-pattern cannot contain '^' or '$' and it applies to each chunk.
-However, '\n' is allowed in find pattern and denotes line feed within a chunk.
-Delimiter can contain "\s", "\t", "\xIJ" (even "\x00") and "\n".
+delimiter (the whole text if delimiter is empty). The delimiter string is not
+a regular expression but can contain "\s", "\t", "\xIJ" (even "\x00") and "\n".
+If a delimiter is specified, then the find pattern cannot contain '^' or '$'
+and it applies to each chunk. Still, it can contain '\n' to denote line feed
+within a chunk. Option -d (--dotall) can then be used to allow '.' in find
+pattern to match '\n' in the text.
 
 Examples:
 Remove comments (and possible trailing new_line) from a XML file:

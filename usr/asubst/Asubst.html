@@ -3,18 +3,19 @@
 <HEAD>
 	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
 	<TITLE>Asubst</TITLE>
-	<META NAME="GENERATOR" CONTENT="OpenOffice.org 2.3  (Unix)">
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 3.2  (Linux)">
 	<META NAME="AUTHOR" CONTENT="MALAISE Pascal">
 	<META NAME="CREATED" CONTENT="20060414;18573000">
+	<META NAME="CHANGEDBY" CONTENT="Pascal MALAISE">
+	<META NAME="CHANGED" CONTENT="20110414;19501100">
 	<META NAME="CHANGEDBY" CONTENT="Pascal Malaise">
-	<META NAME="CHANGED" CONTENT="20100816;16125600">
 	<META NAME="CHANGEDBY" CONTENT="Pascal Malaise">
 	<META NAME="CHANGEDBY" CONTENT="Pascal Malaise">
 	<META NAME="CHANGEDBY" CONTENT="Pascal Malaise">
 	<META NAME="CHANGEDBY" CONTENT="Pascal MALAISE">
 </HEAD>
 <BODY LANG="en-US" DIR="LTR">
-<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><FONT SIZE=6><B>V11.4</B></FONT></FONT></FONT></P>
+<P LANG="en-GB" ALIGN=CENTER><FONT FACE="monospace"><FONT SIZE=7><B>Asubst</B><BR><FONT SIZE=6><B>V12.0</B></FONT></FONT></FONT></P>
 <H1 LANG="en-GB"><FONT FACE="monospace">1. General syntax</FONT></H1>
 <P LANG="en-GB"><FONT FACE="monospace">Usage: asubst [ { &lt;option&gt;
 } ] &lt;find_pattern&gt; &lt;replace_string&gt; [ { &lt;file&gt; }
@@ -27,26 +28,25 @@ pattern matching and &quot;man 1 perlre&quot; for Perl Regular
 Expressions.</FONT></P>
 <H1 LANG="en-GB"><FONT FACE="monospace">2. Options</FONT></H1>
 <P LANG="en-GB"><FONT FACE="monospace">-a or --ascii : consider that
-input flow or file is pure ASCII.<BR>-D &lt;string&gt; or
---delimiter=&lt;string&gt; for a delimiter other than '\n'.<BR>-d or
---display : display arguments &lt;find_pattern&gt;, &lt;exclude_pattern&gt;
-and &lt;replace_string&gt;.<BR>-e &lt;pattern&gt; or
---exclude=&lt;pattern&gt; for skip text matching &lt;pattern&gt;.<BR>-F
+input flow or file is pure ASCII,<BR>-D &lt;string&gt; or
+--delimiter=&lt;string&gt; for a delimiter other than '\n',<BR>-d or
+--dotall for allow '.' to match '\n', when -D is set,<BR>-e &lt;pattern&gt;
+or --exclude=&lt;pattern&gt; for skip text matching &lt;pattern&gt;,<BR>-F
 &lt;file&gt; or --file_list=&lt;file&gt; to provide a file list of
 file names,<BR>-f or --file for display file name in grep mode,<BR>-g
 or --grep : print matching text as grep would do (no
-substitution).</FONT><BR><FONT FACE="monospace">-i or --ignorecase :
-do case insensitive match checking of &lt;find_pattern&gt;.<BR>-l or
---line for display line number in grep mode.<BR>-m &lt;range&gt; or
+substitution),</FONT><BR><FONT FACE="monospace">-i or --ignorecase :
+do case insensitive match checking of &lt;find_pattern&gt;,<BR>-l or
+--line for display line number in grep mode,<BR>-m &lt;range&gt; or
 --match=&lt;range&gt; for substitution of only &lt;range&gt;
-matches.<BR>-n or --number : print number of substitutions per
-file.<BR>-p &lt;dir&gt; or --tmp=&lt;dir&gt; : directory of temporary
-files.<BR>-q or --quiet : no printout.</FONT><BR><FONT FACE="monospace">-s
+matches,<BR>-n or --number : print number of substitutions per
+file,<BR>-p &lt;dir&gt; or --tmp=&lt;dir&gt; : directory of temporary
+files,<BR>-q or --quiet : no printout,</FONT><BR><FONT FACE="monospace">-s
 or --save : make a copy (&lt;file&gt;.asu) of original file(s),<BR>-t
 or --test for test, substitutions not performed,<BR>-u or --utf8 :
-process utf-8 sequences.<BR>-v or --verbose : print each substitution
-and its line number.<BR>-x or --noregex : &lt;find_pattern&gt; is
-considered as string(s).</FONT><BR><FONT FACE="monospace">-- : to end
+process utf-8 sequences,<BR>-v or --verbose : print each substitution
+and its line number,<BR>-x or --noregex : &lt;find_pattern&gt; is
+considered as string(s),</FONT><BR><FONT FACE="monospace">-- : to end
 the list of options. If &lt;find_pattern&gt; is &quot;-pat&quot;,
 then use<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;asubst [ { &lt;option&gt; }
 ] -- &quot;-pat&quot; &lt;replace_pattern&gt; [ { &lt;file&gt; }
@@ -143,21 +143,24 @@ exclusion &quot;toto&quot;.<BR>On the other hand, echo &quot;toto&quot;
 format: i-j,k-l... Example: &quot;-4,7-9,15-&quot; means the first 4
 matching occurence, the 7th to the 9th and 15th occurence and after
 (&quot;&quot; means none). Only these occurences of matching (in the
-file or flow) will be substituted. <BR>Because of the rules for
+file or flow) will be substituted.<BR>Because of the rules for
 parsing arguments, a &lt;range&gt; starting by '-' requires the long
-option name. Example: don't use '-m -4', but '-m 1-4' or
+option name.<BR>Example: don't use '-m -4', but '-m 1-4' or
 '--match=-4'.</FONT></P>
 <H1 LANG="en-GB"><FONT FACE="monospace">7. Delimiter</FONT></H1>
-<P><FONT FACE="Monospace">Normally asubst reads the input flow or
-file line by line (separated by '\n') and searches for matches,
-between the input sequences of text and '\n', and the sequence of
-regex of find_pattern. When an input delimiter is specified (option
+<P><FONT FACE="Monospace">Normally, asubst reads the input flow or
+file line by line (separated by '\n') and searches for matches
+between the input sequences of text and the sequence of regex of
+find_pattern. However, when an input delimiter is specified (option
 -D or --delimiter) then asubst reads sequences of text separated by
-this delimiter (the whole text if delimiter is empty). In this case
-the find pattern cannot contain '^' or '$' and it applies to each
-chunk. However, '\n' is allowed in find pattern and denotes line feed
-within a chunk.<BR>Delimiter can contain &quot;\s&quot;, &quot;\t&quot;,
-&quot;\xIJ&quot; (even &quot;\x00&quot;) and &quot;\n&quot;.<BR><BR>Examples:<BR>Remove
+this delimiter (the whole text if delimiter is empty).<BR>The
+delimiter string is not a regular expression but can contain &quot;\s&quot;,
+&quot;\t&quot;, &quot;\xIJ&quot; (even &quot;\x00&quot;) and
+&quot;\n&quot;.<BR>If a delimiter is specified, then the find
+pattern cannot contain '^' or '$' and it applies to each
+chunk.<BR>Still, it can contain '\n' to denote line feed within a
+chunk.<BR>Option -d (--dotall) can then be used to allow '.' in find
+pattern to match '\n' in the text.<BR><BR>Examples:<BR>Remove
 comments (and possible trailing new_line) from a XML file:<BR>asubst
 -D '' '&lt;!--([^-]|-[^-])*--&gt;\n?' '' file<BR><BR>Tag duplicated
 words in paragraphs (separated by two '\n'):<BR>asubst -D '\n\n'
@@ -226,8 +229,9 @@ imposes quiet, test and no-backup modes. File_name and line_nb modes
 are allowed in grep mode only, and line_nb mode requires file_name
 mode.</FONT></P>
 <P LANG="en-GB"><FONT FACE="Monospace">Note that it is possible to
-get the result of &quot;grep -l &lt;pattern&quot; with simply
-&quot;asubst -t &lt;pattern&gt; ''&quot;. </FONT></P>
+get the result of &quot;grep -l &lt;pattern&quot; with simply &quot;asubst
+-t &lt;pattern&gt; ''&quot;. </FONT>
+</P>
 <P LANG="en-GB"><FONT FACE="Monospace">It is possible to provide a
 non empty replace_string (if file_name mode is not active), so that
 asubst displays it. Of course, this is especially useful if it

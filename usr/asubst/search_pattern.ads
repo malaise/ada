@@ -8,7 +8,7 @@ package Search_Pattern is
   procedure Parse (Search  : in String;
                    Exclude : in String;
                    Delimiter : in String;
-                   Case_Sensitive, Is_Regex : in Boolean);
+                   Case_Sensitive, Is_Regex, Dot_All : in Boolean);
   Parse_Error : exception;
 
   -- Returns the number of regex that are implied by the

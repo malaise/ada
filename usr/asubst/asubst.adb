@@ -4,7 +4,7 @@ with As.U, Environ, Argument, Argument_Parser, Sys_Calls, Language, Mixed_Str,
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
-  Version : constant String  := "V11.4";
+  Version : constant String  := "V12.0";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -35,7 +35,7 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
      "    -D <string> or --delimiter=<string> for a delimiter other than '\n',");
     Sys_Calls.Put_Line_Error (
-     "    -d or --display for display find and exclude patterns and replace_string,");
+     "    -d or --dotall for allow '.' to match '\n', when -D is set,");
     Sys_Calls.Put_Line_Error (
      "    -e <pattern> or --exclude=<pattern> for skip text matching <pattern>,");
     Sys_Calls.Put_Line_Error (
@@ -152,9 +152,11 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
      "  If a specific delimiter is set, it is used to read chunks of input text (whole");
     Sys_Calls.Put_Line_Error (
-     "   flow if delimiter is empty). The <find_pattern> must be a simple <regex>");
+     "    flow if delimiter is empty). The <find_pattern> must be a simple <regex>");
     Sys_Calls.Put_Line_Error (
      "    (no '^' or '$', but '\n' is allowed), and applies to each chunk.");
+    Sys_Calls.Put_Line_Error (
+     "    Option -d (--dotall) can be usefull in this case.");
     Sys_Calls.Put_Line_Error (
      "    This allows multi-row processing.");
     Sys_Calls.Put_Line_Error (
@@ -187,7 +189,7 @@ procedure Asubst is
   Keys : constant Argument_Parser.The_Keys_Type := (
    01 => ('a', As.U.Tus ("ascii"), False, False),
    02 => ('D', As.U.Tus ("delimiter"), False, True),
-   03 => ('d', As.U.Tus ("display"), False, False),
+   03 => ('d', As.U.Tus ("dotall"), False, False),
    04 => ('e', As.U.Tus ("exclude"), False, True),
    05 => ('F', As.U.Tus ("file_list"), False, True),
    06 => ('g', As.U.Tus ("grep"), False, False),
@@ -211,7 +213,7 @@ procedure Asubst is
                := Argument_Parser.No_Key_Index;
 
   -- Option management
-  Display : Boolean := False;
+  Dot_All : Boolean := False;
   Exclude : As.U.Asu_Us;
   File_Of_Files : Boolean := False;
   Case_Sensitive : Boolean := True;
@@ -365,11 +367,16 @@ begin
     end if;
   end if;
   if Arg_Dscr.Is_Set (03) then
-    -- Display patterns
-    if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Option display patterns");
+    -- Allow dot to match all characters
+    if not Arg_Dscr.Is_Set (02) then
+      Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
+         & ": Syntax ERROR. Option -d requires option -D.");
+      Error;
     end if;
-    Display := True;
+    if Debug.Set then
+      Sys_Calls.Put_Line_Error ("Option dot all");
+    end if;
+    Dot_All := True;
   end if;
   if Arg_Dscr.Is_Set (04) then
     -- Exclude text matching exclude_regexp
@@ -399,7 +406,7 @@ begin
   if Arg_Dscr.Is_Set (06) then
     -- Put matching text like grep would do
     if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Option grep display");
+      Sys_Calls.Put_Line_Error ("Option grep mode");
     end if;
     Grep := True;
   end if;
@@ -542,7 +549,7 @@ begin
          Arg_Dscr.Get_Option (No_Key_Index, 1),
          Exclude.Image,
          Delimiter.Image,
-         Case_Sensitive, Is_Regex);
+         Case_Sensitive, Is_Regex, Dot_All);
   exception
     when Search_Pattern.Parse_Error =>
       Error;
@@ -604,7 +611,7 @@ begin
   end if;
 
   -- Display search pattern and replace string
-  if Display then
+  if Debug.Set then
     Ada.Text_Io.Put_Line ("Search pattern: >"
        & Arg_Dscr.Get_Option (No_Key_Index, 1) & "<");
     if Exclude.Image /= "" then

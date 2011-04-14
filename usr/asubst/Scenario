@@ -95,6 +95,9 @@
 "titi to to tutu"      "(([\M]+)[\S]+)\2[\S]+"        "\r11"                      "titi to tutu"
 "titi to\nto tutu"     "(([\M]+)[\S]+)\2[\S]+"        "\r11"                      "titi to\ntutu"
 "titi to\nto tutu"     "(([\M]+)\n+)\2[\S]+"          "\r11"                      "titi to\ntutu"
+"to\nut"               "o.u"                          "O-U"                       "to\nut"
+"Options" "-d" "--delimiter="
+"to\nut"               "o.u"                          "O-U"                       "tO-Ut"
 "Options" "-x" "--delimiter="
 "titi to\nto tutu"     "to\nto "                      ""                          "titi tutu"
 

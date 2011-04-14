@@ -1,5 +1,9 @@
 History of Asubst:
 ------------------
+09/03/2011 V12.0
+Add: Option -d (--dotall) to allow dot to match '\n', when specific delimiter
+     Option -d (--display) removed
+
 09/03/2011 V11.4
 Fix: Detection of '^' and '$' in search pattern when specific delimiter
 
