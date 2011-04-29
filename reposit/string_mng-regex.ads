@@ -25,6 +25,16 @@ package String_Mng.Regex is
   -- extented regular expression
   Invalid_Regular_Expression : exception;
 
+  -- Options for the Regexp matching
+  type Options_Rec is record
+    Case_Sensitive : Boolean := True;
+    Multi_Line : Boolean := False;
+    Dot_All : Boolean := False;
+  end record;
+  Tmp_Options : Options_Rec;
+  Default_Options : constant Options_Rec := Tmp_Options;
+
+
   -- Locate a fragment of Within string matching the regexp Criteria.
   -- Criteria is an extented regular expression.
   -- Search is performed between the given From_Index (first if 0) and
@@ -38,7 +48,8 @@ package String_Mng.Regex is
                    From_Index : Natural := 0;
                    To_Index   : Natural := 0;
                    Forward    : Boolean := True;
-                   Occurence  : Positive := 1)
+                   Occurence  : Positive := 1;
+                   Options    : Options_Rec := Default_Options)
            return Search_Result;
 
 
@@ -58,6 +69,7 @@ package String_Mng.Regex is
                     By         : String;
                     From_Index : Natural := 0;
                     To_Index   : Natural := 0;
+                    Options    : Options_Rec := Default_Options;
                     Nb_Cycles  : Natural := 1)
            return String;
 
@@ -65,9 +77,11 @@ package String_Mng.Regex is
   --  of the criteria.
   -- Returns the array of slices (empty array if Str does not strictly match).
   -- Example: Split ("1o2o", "(.)o(.)o)) -> ("1", "2")
-  function Split (Str : String;
-                  Criteria : String;
-                  Max_Slices : Positive) return As.U.Utils.Asu_Array;
+  function Split (Str        : String;
+                  Criteria   : String;
+                  Max_Slices : Positive;
+                  Options    : Options_Rec := Default_Options)
+           return As.U.Utils.Asu_Array;
 
   -- Split Str into several substrings separated by strings matching the
   --  separator.
@@ -75,7 +89,9 @@ package String_Mng.Regex is
   --   empty slice if Str at all matches Separator).
   -- Heading and trailing separators lead to heading and trailing empty strings
   --  in the result.
-  function Split_Sep (Str : String; Separator : String)
+  function Split_Sep (Str       : String;
+                      Separator : String;
+                      Options   : Options_Rec := Default_Options)
            return As.U.Utils.Asu_Array;
 end String_Mng.Regex;
 

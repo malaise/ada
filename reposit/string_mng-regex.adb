@@ -3,9 +3,22 @@
 with Char_To_Hexa, Upper_Str, Lower_Str, Mixed_Str;
 package body String_Mng.Regex is
 
+  -- Internal: compile regex
+  procedure Compile (Compiled : in out Regular_Expressions.Compiled_Pattern;
+                     Ok : out Boolean;
+                     Criteria : in String;
+                     Options : in Options_Rec) is
+  begin
+    Regular_Expressions.Compile (Compiled, Ok, Criteria,
+                                 Options.Case_Sensitive,
+                                 Options.Multi_Line,
+                                 Options.Dot_All);
+  end Compile;
+
+
   -- Internal Locate with Regex compiled
   function Locate (Within     : String;
-                   Compiled : Regular_Expressions.Compiled_Pattern;
+                   Compiled   : Regular_Expressions.Compiled_Pattern;
                    From_Index : Natural;
                    To_Index   : Natural;
                    Forward    : Boolean;
@@ -88,13 +101,14 @@ package body String_Mng.Regex is
                    From_Index : Natural := 0;
                    To_Index   : Natural := 0;
                    Forward    : Boolean := True;
-                   Occurence  : Positive := 1)
+                   Occurence  : Positive := 1;
+                   Options    : Options_Rec := Default_Options)
            return Search_Result is
     Compiled : Regular_Expressions.Compiled_Pattern;
     Ok : Boolean;
   begin
     -- Compile regex
-    Regular_Expressions.Compile (Compiled, Ok, Criteria);
+    Compile (Compiled, Ok, Criteria, Options);
     if not Ok then
       raise Invalid_Regular_Expression;
     end if;
@@ -102,6 +116,7 @@ package body String_Mng.Regex is
                           Forward, Occurence));
   end Locate;
 
+  -- Internal
   -- Replace Working(Info(1).First_Offset .. Info(1).End_Offset)
   -- by By.
   -- In By, \i (0 <= i <= 9) is replaced by
@@ -251,6 +266,7 @@ package body String_Mng.Regex is
                     By         : String;
                     From_Index : Natural := 0;
                     To_Index   : Natural := 0;
+                    Options    : Options_Rec := Default_Options;
                     Nb_Cycles  : Natural := 1)
            return String is
     -- Working string
@@ -292,7 +308,7 @@ package body String_Mng.Regex is
     Working := As.U.Tus (Within(I1 .. I2));
 
     -- Compile regex
-    Regular_Expressions.Compile (Compiled, Ok, Criteria);
+    Compile (Compiled, Ok, Criteria, Options);
     if not Ok then
       raise Invalid_Regular_Expression;
     end if;
@@ -335,9 +351,11 @@ package body String_Mng.Regex is
   -- Split Str into several substrings that match the substrings "(...)"
   --  of the criteria.
   -- Returns the array of slices (empty array if Str does not match).
-  function Split (Str : String;
-                  Criteria : String;
-                  Max_Slices : Positive) return As.U.Utils.Asu_Array is
+  function Split (Str        : String;
+                  Criteria   : String;
+                  Max_Slices : Positive;
+                  Options    : Options_Rec := Default_Options)
+           return As.U.Utils.Asu_Array is
     -- Regex compilation
     Ok : Boolean;
     Compiled : Regular_Expressions.Compiled_Pattern;
@@ -346,7 +364,7 @@ package body String_Mng.Regex is
     N_Matched : Natural;
   begin
     -- Compile regex
-    Regular_Expressions.Compile (Compiled, Ok, Criteria);
+    Compile (Compiled, Ok, Criteria, Options);
     if not Ok then
       raise Invalid_Regular_Expression;
     end if;
@@ -377,7 +395,9 @@ package body String_Mng.Regex is
   -- Split Str into several substrings separated by strings matching the
   --  separator.
   -- Returns the array of slices (Str if no match).
-  function Split_Sep (Str : String; Separator : String)
+  function Split_Sep (Str       : String;
+                      Separator : String;
+                      Options   : Options_Rec := Default_Options)
            return As.U.Utils.Asu_Array is
     -- Regex compilation
     Ok : Boolean;
@@ -391,7 +411,7 @@ package body String_Mng.Regex is
     use type  Regular_Expressions.Match_Cell;
   begin
     -- Compile regex
-    Regular_Expressions.Compile (Compiled, Ok, Separator);
+    Compile (Compiled, Ok, Separator, Options);
     if not Ok then
       raise Invalid_Regular_Expression;
     end if;
