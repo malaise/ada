@@ -1,4 +1,9 @@
+include $(HOME)/Makefiles/common.mk
+
 SUBDIRS := c reposit usr cots
 
-include $(HOME)/Makefiles/dir.mk
+TEXI := HISTORY README
+HISTORY_WIDTH := 120
+
+include $(TEMPLATES)/dir.mk
 

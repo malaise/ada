@@ -12,3 +12,6 @@ static:
 	gnatmake -O2 -gnatp src/linxtris.adb `gtkada-config --static` -bargs -static -largs -s
 debug:
 	gnatmake -O2 -g src/linxtris.adb `gtkada-config`
+
+texi clean_texi:
+

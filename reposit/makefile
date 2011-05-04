@@ -18,5 +18,7 @@ CLIBS_clear_screen := cutil
 HTML := true
 GNATHTMLOPT := -d
 
+TEXI := REPOSIT_LIST
+
 include $(TEMPLATES)/ada.mk
 

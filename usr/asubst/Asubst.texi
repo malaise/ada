@@ -1,17 +1,62 @@
-                                 Asubst
-                                  V12.0
+\input texinfo.tex    @c -*-Asubst-*-
+@c %**start of header
+@setfilename Asubst
+@settitle Asubst
+@c %**end of header
 
+@c Constants
+@set name Asubst
+@set version V12.0
+@set nameversion @value{name} @value{version}
 
-1. General syntax
-Usage: asubst [ { <option> } ] <find_pattern> <replace_string> [ { <file> } ]
-or   : asubst -h | --help | -V | --version
-Substitutes strings in files.
+@c General format
+@paragraphindent none
+@exampleindent 0
+
+@c Title and front page
+@node Top
+@ifhtml
+@center @titlefont{@value{nameversion}}
+@end ifhtml
+@ifnothtml
+@top @center @value{nameversion}
+@end ifnothtml
+
+Asubs is a command line tool that finds occurences of text that match a pattern
+(regular expresssion) and replaces these occurences by a given string.
+
+@menu
+* General syntax::             General arguments of asubst.
+* Options::                    Command line arguments.
+* Environment::                Environment variables.
+* Find pattern::               Syntax of the "find pattern" argument.
+* Exclusion pattern::          Use of exclusion pattern.
+* Match range::                Specify the range of patterns to substitute.
+* Delimiter::                  Specify a different (or no) delimiter.
+* Replace string::             Syntax of the replacement string.
+* Grep mode::                  Display matching text only (no substitution).
+* Regex and noregex modes::    Differences in find pattern between both modes.
+* File list::                  List the files to process in a file.
+* Exit code::                  Meaning of Asubst exit code.
+* Troubleshooting::            Explanation of most common issues.
+@end menu
+
+@node General syntax, Options, Top, Top
+@chapter General syntax
+
+@example
+Usage: asubst [ @{ <option > @} ] <find_pattern> <replace_string> [ @{ <file> @} ]
+or   : asubst -h | --help | -V | --version@*
+@end example
+Substitutes strings in files.@*
 If no file name is specified, substitutes from stdin to stdout.
+@sp 1
 See "man 3 pcre" for Perl Compatible Regular Expressions and "man 1 perlre"
 for Perl Regular Expressions.
 
-
-2. Options
+@node Options, Environment, General syntax, Top
+@chapter Options
+@example
 -a or --ascii : consider that input flow or file is pure ASCII,
 -D <string> or --delimiter=<string> for a delimiter other than '\n',
 -d or --dotall for allow '.' to match '\n', when -D is set,
@@ -31,39 +76,43 @@ for Perl Regular Expressions.
 -v or --verbose : print each substitution and its line number,
 -x or --noregex : <find_pattern> is considered as string(s),
 -- : to stop the list of options. If <find_pattern> is "-pat", then use
-     asubst [ { <option> } ] -- "-pat" <replace_pattern>  [ { <file> } ].
+     asubst [ @{ <option> @} ] -- "-pat" <replace_pattern>  [ @{ <file> @} ].
+@end example
 
-
-3. Environment
+@node Environment, Find pattern, Options, Top
+@chapter Environment
 If the LANG environment variable is set to something containing "UTF-8", then
 asubst considers that input flow or file is coded in Utf-8. This setting can be
 altered in a way or the other by setting ASUBST_UTF8 environment variable
 to Y, yes, N or no (with whatever casing). Finally, this setting can be
-altered in a way or the other by the options -a (--ascii), or -u (--utf8).
-
+altered in a way or the other by the options -a (--ascii), or -u (--utf8).@*
+	@*
 If ASUBST_DEBUG environment variable is set to Y or yes (with whatever casing)
 then asubst puts on stderr some debugging information.
 
-
-4. Find pattern
-<find_pattern>   ::= <regex> | <multiple_regex>
-<multiple_regex> ::= { [ <regex> ] \n } [ <regex> ]
+@node Find pattern, Exclusion pattern, Environment, Top
+@chapter Find pattern
+<find_pattern>   ::= <regex> | <multiple_regex>@*
+<multiple_regex> ::= @{ [ <regex> ] \n @} [ <regex> ]@*
+@sp 1
 If there is no "\n", then the regex can be any regular expression. If it
 does not start with '^' nor ends with '$', then it is applied several times
-to each input line (each time to the text following previous substitution).
+to each input line (each time to the text following previous substitution).@*
 Significant '^' and '$' (not backslashed nor in brakets) are then only allowed
-respectively at the beginning and at the end of the regex.
+respectively at the beginning and at the end of the regex.@*
 Examples:
-echo "toto" | asubst "t" "x"                       ->  "xoxo"
-echo "toto" | asubst "t" "ti"                      ->  "tiotio"
-echo "tito" | asubst "t." "tu"                     ->  "tutu"
-
-If there are "\n", they delimit several regex that will apply to several lines.
+@example
+echo "toto" | asubst "t" "x"   ->  "xoxo"
+echo "toto" | asubst "t" "ti"  ->  "tiotio"
+echo "tito" | asubst "t." "tu" ->  "tutu"
+@end example
+@*
+If there are "\n", they delimit several regex that will apply to several lines.@*
 Search pattern is split into several regex and \n patterns, each line of input
 is split in two input items: text (possibly empty) then newline. Pattern 1 will
-be compared to item 1, if they match, pattern 2 will be compared to item 2...
-
+be compared to item 1, if they match, pattern 2 will be compared to item 2...@*
 Examples:
+@example
 r        -> r                (r anywhere in line)
 ^r$      -> ^r$              (line exctly matching r)
 ^\n      -> ^$ \n            (empty line)
@@ -71,188 +120,197 @@ r1\nr2\n -> r1$ \n and ^r2$
 r1\nr2   -> r1$ \n and ^r2
 r1\nr2$  -> r1$ \n and ^r2$
 r1$\n     is forbdidden.
+@end example
+@*
 The difference between "r1\n" and "r1$" is that "r1\n" is two regex. With "r1\n",
 the string matching "r1" AND the following New_Line will be substituted. With
 "r1$", only the string matching "r1" will be subtituted. In short, "r1\n" means
-"r1 then a newline" while "r1$" means "r1, followed by a newline".
-The following specific '\' sequences are also handled:
-- "\i", i from 1 to 9, standard back reference to a matching substring,
-- "\s", replaced by a space,
-- "\t", replaced by a (horiz) tab,
+"r1 then a newline" while "r1$" means "r1, followed by a newline".@*
+@sp 1
+The following specific '\' sequences are also handled:@*
+- "\i", i from 1 to 9, standard back reference to a matching substring,@*
+- "\s", replaced by a space,@*
+- "\t", replaced by a (horiz) tab,@*
 - "\xIJ" where IJ is an hexadecimal number (00 to FF or ff) for a byte code.
-  "\x00" is forbidden in find pattern except in mode "noregex".
-  Beware also that \xIJ is replaced before compiling the regex, so it cannot be
-  used to avoid a given character. "[a\x2Dx]" is exactly the same as
-  "[a-x]", and "\x0A" is exactly the same as "\n" (it will be used as regex
-  delimiter).
+"\x00" is forbidden in find pattern except in mode "noregex".
+Beware also that \xIJ is replaced before compiling the regex, so it cannot be
+used to avoid a given character. "[a\x2Dx]" is exactly the same as "[a-x]",
+and "\x0A" is exactly the same as "\n" (it will be used as regex delimiter).@*
 - The following shortcuts for character classes, to be used in regex within
-  brackets:
+brackets:
+@example
      "\M" [:alnum:], "\A" [:alpha:], "\B" [:blank:], "\C" [:cntrl:],
      "\D" [:digit:], "\G" [:graph:], "\L" [:lower:], "\P" [:print:],
      "\T" [:punct:], "\S" [:space:], "\U" [:upper:], "\X" [:xdigit:].
-  Note that asubst does NOT check if such shortcut is within a bracket
-  expression or not. For example, "\M" is always replaced by "[:alnum:]" and,
-  out of a bracket expression, this becomes a bracket expression, meaning:
-  ':' or 'a' or 'l' or 'n' or 'u' or 'm'.
-
+@end example
+Note that asubst does NOT check if such shortcut is within a bracket
+expression or not. For example, "\M" is always replaced by "[:alnum:]" and,
+out of a bracket expression, this becomes a bracket expression, meaning:
+':' or 'a' or 'l' or 'n' or 'u' or 'm'.
+@sp 1
 Note that only "\s", "\t", "\n" and "\xIJ" are interpreted in "noregex" mode.
 Finally, beware that some regex expressions are supposed to match a "new line"
 (example [:blank:] within a bracket expression) but will not match in asubst,
 because the input flow/file is decomposed into lines and then each line is
 compared to a regex expression. 
 
-
-5. Exclusion pattern
+@node Exclusion pattern, Match range, Find pattern, Top
+@chapter Exclusion pattern
 If set, the <exclude_regex> must have the same number of regex as the
 <find_pattern>. This option means that text matching the <find_pattern> but
 also the <exclude_regex> will not be replaced. Beware that it applies to the
-text matching <find_pattern> only.
-For example echo "toto" | asubst --exclude=toto to ti will replace toto by titi
-because each matching "to" does not match the exclusion "toto".
-On the other hand, echo "toto" | asubst --exclude=to to ti and
-echo "toto" | asubst --exclude=toto toto titi will not substitute.
+text matching <find_pattern> only.@*
+For example 'echo "toto" | asubst --exclude=toto to ti' will replace toto by
+titi because each matching "to" does not match the exclusion "toto".@*
+On the other hand, 'echo "toto" | asubst --exclude=to to ti' and
+'echo "toto" | asubst --exclude=toto toto titi' will not substitute.
 
-
-6. Match range
+@node Match range, Delimiter, Exclusion pattern, Top
+@chapter Match range
 The <range> has the format: i-j,k-l... Example: "-4,7-9,15-" means the first 4
 matching occurence, the 7th to the 9th and 15th occurence and after ("" means
 none). Only these occurences of matching (in the file or flow) will be
-substituted.
+substituted.@*
 Because of the rules for parsing arguments, a <range> starting by '-' requires
 the long option name. Example: don't use '-m -4', but '-m 1-4' or '--match=-4'.
 
-
-7. Delimiter
+@node Delimiter, Replace string, Match range, Top
+@chapter Delimiter
 Normally, asubst reads the input flow or file line by line (separated by '\n')
 and searches for matches between the input sequences of text and the sequence
 of regex of find_pattern. However, when an input delimiter is specified (option
 -D or --delimiter) then asubst reads sequences of text separated by this
 delimiter (the whole text if delimiter is empty). The delimiter string is not
-a regular expression but can contain "\s", "\t", "\xIJ" (even "\x00") and "\n".
+a regular expression but can contain "\s", "\t", "\xIJ" (even "\x00") and "\n".@*
 If a delimiter is specified, then the find pattern cannot contain '^' or '$'
 and it applies to each chunk. Still, it can contain '\n' to denote line feed
 within a chunk. Option -d (--dotall) can then be used to allow '.' in find
-pattern to match '\n' in the text.
-
-Examples:
-Remove comments (and possible trailing new_line) from a XML file:
+pattern to match '\n' in the text.@*
+Examples:@*
+Remove comments (and possible trailing new_line) from a XML file:@*
 asubst -D '' '<!--([^-]|-[^-])*-->\n?' '' file
-
-Tag duplicated words in paragraphs (separated by two '\n'):
+@sp 1
+Tag duplicated words in paragraphs (separated by two '\n'):@*
 asubst -D '\n\n' -- '\b([\M]+)\b[\S]+\1' '->\R01<-' file
 
-
-8. Replace string
-The following '\' sequences are supported:
-- "\n" will be replaced by a newline.
-- "\t" will be replaced by a (horiz) tab.
+@node Replace string, Grep mode, Delimiter, Top
+@chapter Replace string
+The following '\' sequences are supported:@*
+- "\n" will be replaced by a newline.@*
+- "\t" will be replaced by a (horiz) tab.@*
 - "\xIJ" where IJ is an hexadecimal number (00 to FF or ff) will be replaced
-  by a byte with the corresponding value.
+by a byte with the corresponding value.
 - "\iIJ", "\aIJ", "\oIJ", "\e" and "\f" to replace by the <text> following it,
-  if Jth substring of the Ith regex matches (\rIJ not empty).
-  The logic is a sequence of if... [ { elsif... } ] [ else... ] [ endif ].
-  Each 'if' or 'elsif' must start with a "\iIJ", possibly immediately followed
-  by one or several "\aIJ" or "\oIJ" evaluated one after the other.
-  Example: "\i11\o12\a13T1\i13T2\eT3\f" means: If sub11 matches or sub12 matches
-  and sub13 matches, then replace by T1, elsif sub13 matches, then replace by
-  T2, else replace by T3.
-  <text> ends when encountering another "\i", a "\e" or a "\f".
+if Jth substring of the Ith regex matches (\rIJ not empty).@*
+The logic is a sequence of if... [ @{ elsif... @} ] [ else... ] [ endif ].
+Each 'if' or 'elsif' must start with a "\iIJ", possibly immediately followed
+by one or several "\aIJ" or "\oIJ" evaluated one after the other.
+Example: "\i11\o12\a13T1\i13T2\eT3\f" means: If sub11 matches or sub12 matches
+and sub13 matches, then replace by T1, elsif sub13 matches, then replace by
+T2, else replace by T3.@*
+<text> ends when encountering another "\i", a "\e" or a "\f".
 - "\RIJ" where IJ is an hexadecimal number will be replaced by the string
-  matching the regex number IJ, (00 <= IJ <= NbOfRegex, 00 means the whole
-  string matching all regex).
+matching the regex number IJ, (00 <= IJ <= NbOfRegex, 00 means the whole
+string matching all regex).@*
 - "\rIJ" where IJ is an hexadecimal number will be replaced by the string
-  matching the substring J of the regex number I (0 < I), J = 0 for the
-  complete string, (so "\R0x" = "\rx0").
+matching the substring J of the regex number I (0 < I), J = 0 for the
+complete string, (so "\R0x" = "\rx0").@*
 - "\K"<shell command>"\k", within which "\RIJ" and "\rIJ" are first replaced,
-  then the command is launched (and must exit with 0), then the command
-  directive is replaced by the command output.
+then the command is launched (and must exit with 0), then the command
+directive is replaced by the command output.@*
 - "\P"<file path>"\p",  within which "\RIJ" and "\rIJ" are first replaced,
-  then the content of the file is inserted as is.
+then the content of the file is inserted as is.@*
 - "\u", "\l", "\m" for starting an UPPER, lower or Mixed case conversion. "\c"
-  for stopping a case conversion. A conversion ends when a new starts, on "\c"
-  or at the end of replace string.
-
+for stopping a case conversion. A conversion ends when a new starts, on "\c"
+or at the end of replace string.
+@sp 1
 Note that substrings are numbered in the order of the opening parenthesis, left
-to right.
-Note that "\r0i" and "\i0i" are forbidden.
+to right.@*
+Note that "\r0i" and "\i0i" are forbidden.@*
 Conditions apply first, then replacement, then case conversion.
-
+@sp 1
 Examples:
-echo -en "toto" | asubst "t" "\x40"                     ->  "@"
+@example
+echo -en "toto" | asubst "t" "\x40"                     ->  "@@"
 echo -en "toto\ntiti\ntata\n" | asubst ".*\n" "\R01"    ->  "tototititata"
 echo -en "\ntoto\ntiti\ntata" | asubst "\n.*" "\R02"    ->  "tototititata"
 echo -en "tito" | asubst "(.i)(.o)"  "\r12<->\r11"      ->  "to<->ti"
 echo -en "tito" | asubst ".*" "\m\R01"                  ->  "Tito"
 echo -en "toto\ntiti\n" | asubst "to\nti" "\u\R00"      ->  "toTO\nTIti\n"
 echo -en "toto" | asubst "(.)(.)(..)" "\u\r12\c\r11"    ->  "Otto"
+@end example
 
-
-9. Grep mode
+@node Grep mode, Regex and noregex modes, Replace string, Top
+@chapter Grep mode
 In grep mode, asubst only looks for find_pattern and displays result,
 (possibly with the input file name and possibly with the line number in this 
-input file) but does not alter the files.
+input file) but does not alter the files.@*
 As a consequence, grep mode imposes quiet, test and no-backup modes. File_name
 and line_nb modes are allowed in grep mode only, and line_nb mode requires
-file_name mode.
+file_name mode.@*
 Note that it is possible to get the result of "grep -l <pattern" with simply
-"asubst -t <pattern> ''".
+"asubst -t <pattern> ''".@*
 It is possible to provide a non empty replace_string (if file_name mode is not
 active), so that asubst displays it. Of course, this is especially useful if it
 contains some "\RIJ" or "\rIJ".
-
+@sp 1
 Examples:
+@example
 echo -en "toto" | asubst -gl "toto" ""                  -> toto
 echo -en "toto" | asubst -g "toto" "found"              -> found
 echo -en "*cs add" | asubst -g "^\*([^ ]+) " "Got \r11" -> Got cs
+@end example
 
-
-10. Regex and noregex modes
-In both modes "\x0A" is the same as "\n", and "\s" and "\t" are interpreted.
+@node Regex and noregex modes, File list, Grep mode, Top
+@chapter Regex and noregex modes
+In both modes "\x0A" is the same as "\n", and "\s" and "\t" are interpreted.@*
 In regex mode "\x00" is forbidden in find pattern because it is the C string
-terminator and it is used as such by regex library.
-It is allowed in noregex mode.
+terminator and it is used as such by regex library.@*
+It is allowed in noregex mode.@*
 In noregex mode "\A" to "\X" are not interpreted, like other regex specific
-characters (including "^" and "$").
+characters (including "^" and "$").@*
 In noregex mode, "\rIJ" with J > 0 is forbidden (no substring). 
 
-
-11. File list
+@node File list, Exit code, Regex and noregex modes, Top
+@chapter File list
 Option -F <file_list> or --file_list=<file_list> allows specifying a file that
 contains the list of files to process, instead of specifying these files as
-arguments. In this case no <file> argument is accepted.
+arguments. In this case no <file> argument is accepted.@*
 The <file_list> must contain one file name per line and empty lines are skipped
-(so it is impossible to specify stdin in the file list).
-"-" as <file_list> denotes stdin.
-Examples:
-asubst -F list toto titi
+(so it is impossible to specify stdin in the file list).@*
+"-" as <file_list> denotes stdin.@*
+Examples:@*
+asubst -F list toto titi@*
 echo -e "file1\nfile2" | asubst -F - toto titi
 
-
-12. Exit code
-asubst exits with 0 if some matching was found, with 1 if no matching
+@node Exit code, Troubleshooting, File list, Top
+@chapter Exit code
+Asubst exits with 0 if some matching was found, with 1 if no matching
 was found, with 2 otherwise (e.g. in case of error). It can also exit with code
 3 if stopped (Ctrl-C or SIGTERM) while executing external command, or with
 standard 128 + signal number.
 
-
-13. Troubleshooting
+@node Troubleshooting, , Exit code, Top
+@chapter Troubleshooting
 - Asubst is stuck. -> Maybe an argument is missing or an option is not complete,
-and asubst is waiting in stdin.
-E.g. "asubst -m 5 6 file". Asubst considers "5" as the value for m, "6" as the
+and asubst is waiting in stdin.@*
+e.g. "asubst -m 5 6 file". Asubst considers "5" as the value for m, "6" as the
 find_pattern and "file" as the replace_string, so no file name is provided.
-
+@sp 1
 - I want to substitute "\f", why do I need to provide "\\\\f"? -> Because regex
 imposes to provide "\\f" for matching "\f", ("\f" matches "f") and the shell
-imposes a "\\" for each "\" transmitted to asubst.
-Note that, you can pass to the shell '\\f' instead of "\\\\f".
+imposes a "\\" for each "\" transmitted to asubst.@*
+Note that, you can pass to the shell '\\f' instead of "\\\\f".@*
 Same considerations apply to "\$" or '$' in order to pass '$' to asubst.
+@sp 1
 - ERROR: Cannot create temp file in ".".  -> Asubst cannot make the temporary
 file, probably because the file system does not support hard links (e.g. samba
 file system). Try the -p (--tmp) option with a UNIX directory.
-
+@sp 1
 - The 'else' part of the condition is not processed. -> The whole replace string
 is not processed if the input text does not match the find pattern. Example,
 with '([A-Z][a-z])|([0-1])' '\i11Letter\i12Digit\eOther\f' the input text '!'
 remains unchanged. Appending '|.' to the search pattern makes it match and be
 substituted by 'Other'.
+@bye
 
