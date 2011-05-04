@@ -21,6 +21,8 @@
 
 @table @asis
 
+@item 2011/05/04
+Chg Major documentations into texi format
 @item 2011/04/14
 Add option --dotall (remove --display) that allows '.' to match '\n' in asubst, V12.0@*
 Add option Dot_All to Regular_Expressions
