@@ -58,8 +58,8 @@ This lib gathers several low level utility libraries:
 This lib encapsulates all needed calls to X11, interfaced by X_Mng Ada package.
 
 2.3 Lib C Ndbm (cnbdbm)
-This lib interfaces with ndbm C library. The corresponding Ndbm package is not
-used at present (except in test).
+This lib is optional. It interfaces with ndbm C library. The corresponding Ndbm
+package is not used at present (except in test).
 
 2.4 Lib Posix to PCRE (posic2pcre)
 Own binding of PCRE to POSIX API, with extension, interfaced by

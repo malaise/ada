@@ -117,8 +117,12 @@ extern int regcomp(regex_t *preg, const char *pattern, int cflags) {
   if ((cflags & REG_DOTALL) != 0)  options |= PCRE_DOTALL;
   if ((cflags & REG_NOSUB) != 0)   options |= PCRE_NO_AUTO_CAPTURE;
   if ((cflags & REG_UTF8) != 0)    options |= PCRE_UTF8;
+#ifdef PCRE_UCP
   if ((cflags & REG_UCP) != 0)      options |= PCRE_UCP;
+#endif
+#ifdef PCRE_UNGREEDY
   if ((cflags & REG_UNGREEDY) != 0) options |= PCRE_UNGREEDY;
+#endif
 
   preg->re_pcre = pcre_compile2(pattern, options, &errorcode, &errorptr,
                                 &erroffset, NULL);
