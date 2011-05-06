@@ -9,5 +9,7 @@ CLIBS_lsadeps := posix2pcre pcre
 LARGS_lsadeps.stat := $(CPATHD)/libcutil.a $(CPATHD)/libposix2pcre.a \
   $(PCRE)/libpcre.a
 
+TEXI := Lsadeps
+
 include $(TEMPLATES)/ada.mk
 

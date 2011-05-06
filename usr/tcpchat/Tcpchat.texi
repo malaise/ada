@@ -1,0 +1,162 @@
+\input texinfo.tex    @c -*-tcpchat-*-
+@c %**start of header
+@setfilename Tcpchat
+@settitle Tcpchat
+@c %**end of header
+
+@c Constants
+@set name tcpchat
+
+@c General format
+@paragraphindent none
+@exampleindent 0
+
+@c Title and front page
+@node Top
+@ifhtml
+@center @titlefont{@value{name}}
+@end ifhtml
+@ifnothtml
+@top @center @value{name}
+@end ifnothtml
+
+Lsadeps lists ada dependencies between files or units, optionnally in reverse order.@*
+Alternatively it checks redundants "with" clauses between specs and bodies.
+@menu
+* Presentation::      Goal and behaviour
+* Design::            High level design.
+@end menu
+
+@node Presentation, Design, Top, Top
+@chapter Presentation
+@section General description
+tcpchat takes 2 arguments: a TCP port name or num and a chats file name.@*
+It listens on the port and accepts one TCP connection at a time: new
+connections are not accepted while one client is connected.@*
+It expects to receive one or several sentences (a sentence is one line
+terminated by Lf) and replies by one or several sentences.
+
+@section Chat file and behaviour
+The chat file describes several alternative chats.@*
+Each chat script starts with one expected sentence followed by a script of
+expected sentences and/or actions.@*
+The text of sentences that are expected, read or sent and of commands that are
+called or executed has its variables $@{VAR@} expanded according to Environment
+variables. It is an error if an referenced ENV variable does not exist.@*
+The text of chat, read and expect statement are regexp with which the input
+sentence must completely match (i.e. <input_string> matches "^<regex>$").@*
+See Dtd for more information.
+
+@node Design, , Presentation, Top
+@chapter High level  esign
+@section General esign
+There are 4 main modules:
+@itemize @minus
+@item IOs
+in charge of managing the TCP connections (accepting, closing, sending,
+receiving). Reception is coupled with an input buffer to provide sentences.@*
+Cr are removed if sentence ends with CrLf.@*
+API is: init, wait, read, send, reset and close. Read takes a timeout
+and returns either a timeout event or a sentence. Wait takes a timeout.
+Timeouts can be infinite. Wait, read and send can raise/return Disconnection.
+@item Tree
+in charge of storing the tree of chat scripts events and actions.
+@item matcher
+in charge of checking if an event matches a node of the tree.
+@item Events
+in charge of navigating in the tree, waiting for events and executing the
+actions.
+@end itemize
+
+There are 3 main steps of execution:
+@enumerate a
+@item Parsing the xml file into our own tree. Raise init fatal errors.
+@item Accepting connections. Raise init fatal errors
+@item Main loop: Event => action
+@end enumerate
+
+@section Design of the tree
+Each node of the tree contains:
+@itemize @minus
+@item Kind (Enum): Selec, Read, Default, Skip, Wait, Send, Call, Close.
+Chat and expect statements are mapped as Read nodes, children of a Selec.
+@item Name (Asu_Us): For a chat, its name
+@item Text (Asu_Us). For a Read the sentence expected, for a Send/Call/ the
+sentence to send, for a Call the command and arguments to invoque.
+Chats is a Selec, chat is an expect, expect is mapped as a Read (child of a
+Selec)
+@item Timeout (Ms). For a Selec (including chats) a read or skip it's a failure if
+it expires (no matching / not matching / nothing received). For a chat it's
+a failure if it expires before the end of the chat. For a Wait it is the
+delay to wait. Note that the chat InputDefaultTimeoutMs is not stored in the
+tree. It is kept in memory (while buildling the tree) and set in the
+Selec/Read/Skip nodes that have no timeout defined.
+@item Next: The reference to the node that implements the following of the script:
+It is the statement following the current statement if there is one.
+Otherwise, it is the statement following ancestor select...
+Close has no Next. Other nodes have at least Next pointing to the
+chats node (root).@*
+Ex. Selec1 has 2 Expects and is followed by a Read. Expect1 leads to
+Select11 that is not followed. Expect2 leads to Select21 that is followed by
+a Wait. Branches of Select11 end with Next=Read, while branches of Selec21
+end with Next=Wait. Branch of the Read ends with Next=Root.
+@end itemize
+
+Nodes, children, Next:
+@itemize @minus
+@item Root is a Selec node (the chats statement) with no Next
+@item A node of kind Close has no child and no Next
+@item A Selec node has one (Read) child for each of its chat or expect, then
+possibly one (Default) child for the default, then possibly a child: the next
+statement following the select (in this case, Next points to it).
+@item Other nodes may have one child: the statement following current (in this
+case, Next points to it) or no child (in this case, Next points to the same
+node as the first non null Next of a parent Selec, or ultimately to root).
+@item Statements chat and expect are mapped as Read nodes.
+@end itemize
+
+@section Parsing of the tree
+First the Xml file is parser with Xml_Parser.
+@sp 1
+Then the tree is build by navigating through the XML tree with a recursive
+operation that creates nodes with Kind, Text, and Timeout.
+@itemize @minus
+@item Kind: see above
+@item Name: see above
+@item Text: ENV variables are expanded, possibly leading to error.
+@end itemize
+When parsing a "chat" XML node, a global variable is set to the default
+timeout it defines or infinite. When parsing a select, read or skip, local
+timeout is set to local value if defined, or to the global default.@*
+After creating a Selec node, its Next is set to its last child if it is the
+statement following the select, and to null otherwise.@*
+After creating a Selec node, a test verifies that all its children, except
+of kind Default and except Next, have different Text.
+@sp 1
+Then a second pass calls a recusive operation, passing to it Next initialized
+to root. When arriving on a Selec node, the local Next, if null, is set to the
+value received. the local Next is passed recursively when parsing children.@*
+When arriving on a node with no child, set it Next to the value receive if
+it type is not Close.
+
+@section Main loop
+Depending on the type of current node:
+@itemize @minus
+@item Select (including root): Read text. Check if it matches a child or default. Jump
+to it.
+@item Condition: Check if it matches a child. Jump to it.
+@item Repeat: Check if it matches a child. Jump to first statement to repeat
+or to the next node after the loop.
+@item Read: Read text. Check that it matches the expected text. Jump to next node
+or reset.
+@item Skip: Read text and discard. Jump to next node.
+@item Wait: Wait the delay. Jump to next node.
+@item Send: Expand the text and send it. Jump to next node.
+@item Call: Issue the command. Jump to next node.
+@item Eval: Issue the command and evaluate the result. Jump to next node.
+@item Set: Evaluate the variable. Jump to next node.
+@item Close: Reset connection and jump to the root of the tree.
+@end itemize
+
+@bye
+
