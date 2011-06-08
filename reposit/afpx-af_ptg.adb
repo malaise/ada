@@ -460,7 +460,7 @@ package body Af_Ptg is
     Af_Con_Io.Move (Cursor_Pos);
   end Handle_Click;
 
-  -- Get and past selection (if any) in Selection_Field
+  -- Get and paste selection (if any) in Selection_Field
   --  and at Selection_Col
   -- Return -2 if selection failed (no change)
   -- Return -1 if end of field reached
@@ -996,6 +996,9 @@ package body Af_Ptg is
         when Af_Con_Io.Timeout =>
           null;
       end case;
+
+      -- Ensure that changes appear on screen
+      Af_Con_Io.Flush;
 
       -- Notify of change of list because of key
       if List_Change and then List_Change_Cb /= null then
