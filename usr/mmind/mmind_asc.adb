@@ -1,35 +1,12 @@
-with Ada.Text_Io;
-
-with Argument, Normal, Rnd;
+with Basic_Proc, Normal, Rnd;
 
 with Common, Response;
 
 procedure Mmind_Asc is
 begin
+  Common.Set_Level_To_Stored;
 
-  declare
-    Level : Common.Last_Level_Range;
-  begin
-    if Argument.Get_Nbre_Arg > 1 then
-      raise Constraint_Error;
-    end if;
-    Level := Common.Last_Level_Range'Value (Argument.Get_Parameter);
-    Common.Store_Level (Level);
-    Common.Set_Level_To_Stored;
-  exception
-    when Argument.Argument_Not_Found =>
-      Level := Common.Last_Level_Range'First;
-      Common.Store_Level (Level);
-      Common.Set_Level_To_Stored;
-    when Constraint_Error =>
-      Ada.Text_Io.Put_Line (
-         "Syntax ERROR. Usage is """
-       & Argument.Get_Program_Name
-       & " [ <level> ]"" (level from 3 to 5).");
-      return;
-  end;
-
-  Ada.Text_Io.Put_Line ("Find "
+  Basic_Proc.Put_Line_Output ("Find "
     & Normal(Integer(Common.Get_Stored_Level), 1)
     & " digits from 1 to 8.");
 
@@ -50,8 +27,8 @@ begin
       Get:
       loop
         begin
-          Ada.Text_Io.Put(Normal(I, 2) & "? ");
-          Ada.Text_Io.Get_Line(Buffer, Len);
+          Basic_Proc.Put_Output(Normal(I, 2) & "? ");
+          Basic_Proc.Get_Input(Buffer, Len);
           if Len /= Str'Length then
             raise Constraint_Error;
           end if;
@@ -69,19 +46,19 @@ begin
 
       Rep := Response.Respond(Prop);
       Str := (others => ' ');
-      Ada.Text_Io.Put(" -> " & Str & " ");
-      Ada.Text_Io.Put_Line(Normal(Rep.Placed_Ok,1) & Normal(Rep.Colors_Ok,1));
+      Basic_Proc.Put_Output(" -> " & Str & " ");
+      Basic_Proc.Put_Line_Output(Normal(Rep.Placed_Ok,1) & Normal(Rep.Colors_Ok,1));
 
       exit Play when Rep.Placed_Ok = Len;
 
     end loop Play;
 
     Prop := Response.Get_Code;
-    Ada.Text_Io.Put(" => ");
+    Basic_Proc.Put_Output(" => ");
     for I in 1 .. Len loop
-      Ada.Text_Io.Put(Normal(Integer(Prop.Color(Common.Level_Range(I))), 1));
+      Basic_Proc.Put_Output(Normal(Integer(Prop.Color(Common.Level_Range(I))), 1));
     end loop;
-    Ada.Text_Io.New_Line;
+    Basic_Proc.New_Line_Output;
 
   end;
 
