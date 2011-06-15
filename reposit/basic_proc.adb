@@ -69,6 +69,29 @@ package body Basic_Proc is
     I := Interfaces.C_Streams.Fflush (Interfaces.C_Streams.Stderr);
   end Flush_Error;
 
+    -- Get line from stdin
+  procedure Get_Input (Item : out String;
+                       Last : out Natural) is
+   Chrs : Interfaces.C_Streams.Chars;
+   pragma Unreferenced (Chrs);
+   Str : String (1 .. Item'Length);
+  begin
+    Chrs := Interfaces.C_Streams.Fgets (Str'Address,
+                    Str'Length,
+                    Interfaces.C_Streams.Stdin);
+    for I in Str'Range loop
+      if Str(I) = Ada.Characters.Latin_1.Lf
+      or else Str(I) = Ada.Characters.Latin_1.Cr
+      or else Str(I) = Ada.Characters.Latin_1.Nul then
+        Item(Item'First .. Item'First + I - Str'First) := Str(Str'First .. I);
+        Last := I - 1;
+        return;
+      end if;
+    end loop;
+    -- Should not occur because fgets always appends a Nul
+    Last := 0;
+  end Get_Input;
+
   -- Set exit code
   procedure Set_Exit_Code (Code : in Natural) is
   begin

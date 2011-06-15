@@ -12,6 +12,10 @@ package Basic_Proc is
   procedure New_Line_Error;
   procedure Flush_Error;
 
+  -- Get line from stdin
+  procedure Get_Input (Item : out String;
+                       Last : out Natural);
+
   -- Set exit code
   procedure Set_Exit_Code (Code : in Natural);
   -- Set exit code to ok (0) or error (1)
