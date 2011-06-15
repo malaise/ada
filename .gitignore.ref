@@ -4,7 +4,3 @@ lib_Linux/
 html/
 AFPX.*
 .gitignore
-# For COTS
-*.o
-*.ali
-
