@@ -1,9 +1,6 @@
 # Gives information about today
 #true debugall
 
-# Get current date for if no arg
-clock dateof d popr
-
 # FUNCTIONS
 # Replace TOS (as clock) by date (in days since ref), and reverse
 [
@@ -45,13 +42,18 @@ swap 1 = 1 0 ifte +
 ] C popr
 
 # BEGIN
+# Get current date (for if no arg or for comparison with arg)
+clock dateof d popr "is" v popr
 # One arg => dd/mm/YYyy
 ssize 1 = [
 # dd/mm/YYyy -> YYyy/mm/dd
 dup 7 10 strsub pope
 dup 3 5 strsub pushle swap strcat pope
 dup 6 6 strsub pushle swap strcat pope
-1 2 strsub pushle swap strcat
+1 2 strsub pushle swap strcat dup
+# Compare to YYyy/mm/dd of today
+dup d pushr 1 10 strsub dup swap3
+= [ 2 popn ] [ < "was" "will be" ifte v popr ] ifte call
 # Add hour:min:sec and store
 "-00:00:00.000" strcat d popr
 ] ifcall
@@ -69,7 +71,7 @@ d pushr 6 "12" strrep 9 "31" strrep timeof b popr
 
 1 format
 d pushr dup dup 9 10 strsub put "/" put 6 7 strsub put "/" put 1 4 strsub put
-" is " put
+" " put v pushr put " " put
 # Get day name
 # Nb days since reference modulo 7
 c pushr D pushr call
