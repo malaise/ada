@@ -54,7 +54,7 @@ v copyr
 100.0 * frac absv epsilon > E pushr ifcall
 
 # Set conversion factor and offset, and result unit
-u pushr "f" = 
+u pushr "f" =
 [ f pushr 1.0 swap / f copyr o pushr +- * o popr "c" r popr ]
 [ "f" r popr ] ifte call
 

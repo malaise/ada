@@ -10,7 +10,7 @@ m popr
 [ "@" a popr 1 format
 m pushr toreal rnd * trunc 1 + i popr
 [ 9 toreal rnd * trunc 1 + strof a pushr swap strcat a popr
-i pushr 1 - i copyr 0 = ifret A pushr retacal 
+i pushr 1 - i copyr 0 = ifret A pushr retacal
 ] A popr
 A pushr call a pushr strarbi a popr
 ] R popr
