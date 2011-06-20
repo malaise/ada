@@ -463,7 +463,8 @@ package body Mesu_Gra is
     -- Compute X Factor
     X_Factor := Float(Xs_First - Xs_Last) / Float(X_First - X_Last);
 
-    -- Graphic mode
+    -- Graphic mode for current screen and any new window
+    Con_Io.Set_Xor_Mode (Con_Io.Xor_On);
     Con_Io.Default_Xor_Mode := Con_Io.Xor_On;
     Con_Io.Reset_Term;
 
