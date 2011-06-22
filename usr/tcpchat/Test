@@ -61,6 +61,7 @@ function try {
   # Send stimulus and stop
   send $@ > $PIPE
   kill $PID
+  sleep 1
 
   # Compare with expected
   cmp -s $RES "$expected"
