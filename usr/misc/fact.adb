@@ -1,17 +1,21 @@
-with My_Io; use My_Io;
--- calcul de la factorielle d'un entier;
+with My_Math, My_Io;
+use My_Math;
+use My_Io;
+-- Calcul de la factorielle d'un entier
 
 procedure Fact is
 
-  Nombre   : Natural;
-  Resultat : Float;
+  subtype Nat is Inte range 0 .. Inte'Last;
+  N : Natural;
+  Nombre   : Nat;
+  Resultat : Real;
 
-  function Calcul_Factoriel (N : Float) return Float is
+  function Calcul_Factoriel (N : Real) return Real is
   begin
     if N = 0.0 then
       return 1.0;
     else
-      return N*Calcul_Factoriel(N - 1.0);
+      return N * Calcul_Factoriel (N - 1.0);
     end if;
   end Calcul_Factoriel;
 
@@ -23,7 +27,8 @@ begin
     loop
       begin
         Put("Entrez le nombre ? ");
-        Get(Nombre);
+        Get(N);
+        Nombre := Inte(N);
         exit;
       exception
         when others =>
@@ -33,14 +38,11 @@ begin
     end loop;
 
     begin
-      if (Nombre > 170) then
-        raise Constraint_Error;
-      end if;
 
       Put(Nombre);
       Put("! = ");
-      Resultat := Calcul_Factoriel(Float(Nombre));
-      Put(Resultat);
+      Resultat := Calcul_Factoriel(Real(Nombre));
+      Put(Resultat'Img);
       New_Line;
       New_Line;
     exception
