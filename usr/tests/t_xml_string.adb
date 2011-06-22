@@ -33,7 +33,7 @@ procedure T_Xml_String is
   procedure Usage is
   begin
     Basic_Proc.Put_Line_Error ("Usage: "
-        & Argument.Get_Program_Name & " <xml_file>");
+        & Argument.Get_Program_Name & " <xml_file> | rnd");
   end Usage;
 
   -- Read a dtd or a xml file
