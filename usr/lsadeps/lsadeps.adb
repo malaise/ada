@@ -10,7 +10,7 @@ procedure Lsadeps is
      "Usage: " & Argument.Get_Program_Name
       & " [ <display> ] [ <revert_mode> ] [ <file_mode> ] [ <include_dirs> ] <target>");
     Basic_Proc.Put_Line_Error (
-     "   or: " & Argument.Get_Program_Name & " <check>");
+     "   or: " & Argument.Get_Program_Name & " <check> [ <path> ]");
     Basic_Proc.Put_Line_Error (
      "  <display>       ::= <list> | <tree> // Default: list");
     Basic_Proc.Put_Line_Error (

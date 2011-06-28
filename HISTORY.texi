@@ -21,8 +21,10 @@
 
 @table @asis
 
+@item 2011/06/28
+Add optional path to lsadeps target
 @item 2011/06/20
-Fix hear graph use of Xor mode
+Fix heart graph use of Xor mode
 @item 2011/05/04
 Chg Major documentations into texi format
 @item 2011/04/14
