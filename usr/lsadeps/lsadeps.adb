@@ -1,5 +1,5 @@
 with Ada.Exceptions;
-with As.U, Argument, Argument_Parser, Basic_Proc, Mixed_Str;
+with As.U, Argument, Argument_Parser, Basic_Proc, Mixed_Str, Directory;
 with Debug, Sourcer, Tree_Mng, Sort, Output, Checker;
 procedure Lsadeps is
 
@@ -105,9 +105,11 @@ begin
   end if;
 
   if Check_Mode then
-    -- No target
-    if Arg_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) /= 0 then
-      Error ("Check mode is exclusive with target");
+    -- An optional target directory
+    if Arg_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) = 1 then
+      Target := As.U.Tus (Arg_Dscr.Get_Option (Argument_Parser.No_Key_Index));
+    elsif Arg_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) /= 0 then
+      Error ("At most one target accepted");
     end if;
   else
     -- Target: only once and at the end
@@ -136,10 +138,55 @@ begin
     end loop;
   end if;
 
-  ---------------------------
-  -- BUILD LIST OF SOURCES --
-  ---------------------------
+  ------------------
+  -- CHECK TARGET --
+  ------------------
+  -- Check that target directory is readable, change to it
+  begin
+    if Check_Mode then
+      -- Optional Target is the directory
+      if not Target.Is_Null then
+        Directory.Change_Current (Directory.Make_Full_Path (Target.Image));
+      end if;
+    else
+      -- Target is the directory + unit
+      Directory.Change_Current (Directory.Make_Full_Path (Directory.Dirname
+          (Target.Image)));
+    end if;
+  exception
+    when others =>
+      Error ("Cannot change to target directory "
+           & Directory.Make_Full_Path (Directory.Dirname (Target.Image)));
+  end;
+  if Debug.Is_Set then
+    Basic_Proc.Put_Line_Output ("In " &
+      Directory.Make_Full_Path (Directory.Get_Current));
+  end if;
+
+  -------------------------------------
+  -- BUILD and CHECK LIST OF SOURCES --
+  -------------------------------------
   Sourcer.Build_List (Arg_Dscr);
+  if not Check_Mode then
+    -- Check that target is found, as spec or standalone body
+    Unit.Unit := As.U.Tus (Mixed_Str (Directory.Basename (Target.Image)));
+    Unit.Kind := Sourcer.Unit_Spec;
+    Sourcer.List.Search (Unit, Found);
+    if not Found then
+      Unit.Kind := Sourcer.Unit_Body;
+      Sourcer.List.Search (Unit, Found);
+    end if;
+    if not Found then
+      Error ("Target unit " & Unit.Unit.Image & " not found");
+    end if;
+    Sourcer.List.Read (Unit);
+    if Unit.Kind = Sourcer.Unit_Body and then not Unit.Standalone then
+      Error ("Target unit, if a body, must be standalone");
+    end if;
+    if Debug.Is_Set then
+      Basic_Proc.Put_Line_Output ("Target checked: " & Sourcer.Image (Unit));
+    end if;
+  end if;
 
   -----------------
   -- CHECK UNITS --
@@ -150,28 +197,6 @@ begin
       Basic_Proc.Set_Error_Exit_Code;
     end if;
     return;
-  end if;
-
-  ------------------
-  -- CHECK TARGET --
-  ------------------
-  -- Check that target is found, as spec or standalone body and is local
-  Unit.Unit := As.U.Tus (Mixed_Str (Target.Image));
-  Unit.Kind := Sourcer.Unit_Spec;
-  Sourcer.List.Search (Unit, Found);
-  if not Found then
-    Unit.Kind := Sourcer.Unit_Body;
-    Sourcer.List.Search (Unit, Found);
-  end if;
-  if not Found then
-    Error ("Target unit " & Unit.Unit.Image & " not found");
-  end if;
-  Sourcer.List.Read (Unit);
-  if Unit.Kind = Sourcer.Unit_Body and then not Unit.Standalone then
-    Error ("Target unit, if a body, must be standalone");
-  end if;
-  if Debug.Is_Set then
-    Basic_Proc.Put_Line_Output ("Target checked: " & Sourcer.Image (Unit));
   end if;
 
   ----------------------------
