@@ -3,6 +3,8 @@ with As.U, Argument, Argument_Parser, Basic_Proc, Mixed_Str, Directory;
 with Debug, Sourcer, Tree_Mng, Sort, Output, Checker;
 procedure Lsadeps is
 
+  Version : constant String := "V2.1";
+
   -- Usage and Error
   procedure Usage is
   begin
@@ -11,6 +13,8 @@ procedure Lsadeps is
       & " [ <display> ] [ <revert_mode> ] [ <file_mode> ] [ <include_dirs> ] <target>");
     Basic_Proc.Put_Line_Error (
      "   or: " & Argument.Get_Program_Name & " <check> [ <path> ]");
+    Basic_Proc.Put_Line_Error (
+     "   or: " & Argument.Get_Program_Name & " -v | --version | -h | --help");
     Basic_Proc.Put_Line_Error (
      "  <display>       ::= <list> | <tree> // Default: list");
     Basic_Proc.Put_Line_Error (
@@ -47,7 +51,8 @@ procedure Lsadeps is
    04 => ('f', As.U.Tus ("files"), False, False),
    05 => ('I', As.U.Tus ("include"), True, True),
    06 => ('h', As.U.Tus ("help"), False, False),
-   07 => ('c', As.U.Tus ("check"), False, False));
+   07 => ('c', As.U.Tus ("check"), False, False),
+   08 => ('v', As.U.Tus ("version"), False, False));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
   -- Option management
@@ -76,6 +81,13 @@ begin
   -- Help
   if Arg_Dscr.Is_Set (6) then
     Usage;
+    Basic_Proc.Set_Error_Exit_Code;
+    return;
+  end if;
+
+  -- Version
+  if Arg_Dscr.Is_Set (8) then
+    Basic_Proc.Put_Line_Output (Argument.Get_Program_Name & " " & Version);
     Basic_Proc.Set_Error_Exit_Code;
     return;
   end if;
@@ -163,9 +175,9 @@ begin
       Directory.Make_Full_Path (Directory.Get_Current));
   end if;
 
-  -------------------------------------
-  -- BUILD and CHECK LIST OF SOURCES --
-  -------------------------------------
+  --------------------------------------------
+  -- BUILD LIST OF SOURCES and CHECK TARGET --
+  --------------------------------------------
   Sourcer.Build_List (Arg_Dscr);
   if not Check_Mode then
     -- Check that target is found, as spec or standalone body

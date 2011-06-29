@@ -2,6 +2,7 @@ with As.U.Utils;
 package Sort is
 
   -- Set the priority level of a path (1 = Higest)
+  -- So that the order of '-I' dirs is preserved in the output
   procedure Set_Prio (Path : As.U.Asu_Us; Prio : Positive);
 
   -- Sort entries ([<path>/]<file>)

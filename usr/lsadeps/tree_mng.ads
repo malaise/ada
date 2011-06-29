@@ -1,3 +1,9 @@
+-- Dependancy tree
+-- In normal mode File_Spec -> Withed_files
+--                          -> File_Body -> Withed_files
+--                                       -> Subunit -> Withed_Files
+-- In revert mode: File_Spec -> Withing_files
+--                           -> File_Body -> File_Subunits
 with Trees;
 with Sourcer;
 package Tree_Mng is

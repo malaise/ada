@@ -33,7 +33,8 @@ Alternatively it checks redundants "with" clauses between specs and bodies.
 
 @verbatim
 Usage: lsadeps [ <display> ] [ <revert_mode> ] [ <file_mode> ] [ <include_dirs> ] <target>
-   or: lsadeps <check>
+   or: lsadeps <check> [ <path> ]
+   or: lsadeps -v | --version | -h | --help
   <display>       ::= <list> | <tree> // Default: list
     <list>        ::= -l | --list     // List dependencies
     <tree>        ::= -t | --tree     // Tree of dependencies

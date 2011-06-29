@@ -2,11 +2,11 @@ with Basic_Proc, String_Mng, Dynamic_List, Parser;
 with Sourcer;
 package body Checker is
 
-  -- A dyn list od Sourcer dscrs
+  -- A dyn list of Sourcer dscrs
   package Src_List_Mng is new Dynamic_List (Sourcer.Src_Dscr);
   package Src_Dyn_List_Mng renames Src_List_Mng.Dyn_List;
 
-  -- Seprator of Withs
+  -- Separator of Withs
   function Is_Sep (C : Character) return Boolean is
   begin
     return C = Sourcer.Separator;
