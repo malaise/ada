@@ -1,4 +1,4 @@
-\input texinfo.tex    @c -*-lsadps-*-
+\input texinfo.tex    @c -*-Lsadps-*-
 @c %**start of header
 @setfilename Lsadeps
 @settitle Lsadeps
@@ -6,6 +6,8 @@
 
 @c Constants
 @set name lsadeps
+@set version V2.1
+@set nameversion @value{name} @value{version}
 
 @c General format
 @paragraphindent none
@@ -14,10 +16,10 @@
 @c Title and front page
 @node Top
 @ifhtml
-@center @titlefont{@value{name}}
+@center @titlefont{@value{nameversion}}
 @end ifhtml
 @ifnothtml
-@top @center @value{name}
+@top @center @value{nameversion}
 @end ifnothtml
 
 Lsadeps lists ada dependencies between files or units, optionnally in reverse order.@*
@@ -48,8 +50,9 @@ Usage: lsadeps [ <display> ] [ <revert_mode> ] [ <file_mode> ] [ <include_dirs> 
 
 @node Output, Design, Usage, Top
 @chapter Format of output
-@section Dependancies
-There are 2 different modes of output of depenancies:
+There are two main functions: list dependancies and check redundant "with" and "use"
+@section List dependancies
+There are 2 different modes of output of dependancies:
 @itemize @minus
 @item default mode: list parent units then withed units of target...
 @item tree: show tree of dependencies (parents and withed units)
@@ -61,17 +64,18 @@ Local units are listed first, then "remote" ones in alphabetical order.
 @sp 1
 By default the search is restricted to local directory, but additional
 directories can be added to search path.
-@section Check redundant with
-Alternate "check" mode checks that no redundant with appear in bodies and
-sub-units.@*
-Lsadeps then exits with 1 if at least one redundant with is detected or with 0
-otherwise.
+@section Check redundant "with" and "use"
+This funtion checks that no redundant "with" and "use" clause appear
+in the body and sub-units of each unit.@*
+Lsadeps then exits with 1 if at least one redundant "with" or "use" is detected
+and with 0 otherwise.
 
 @node Design, , Output, Top
 @chapter high level design
-@section Parsing and check of arguments
+@section Parse and check arguments
 @itemize @minus
-@item target must have no '.'
+@item in non check mode target is a unit (possibly containing a path) 
+@item in check mode an optional path denotes the directory to check
 @item include dirs must exist
 @end itemize
 
@@ -79,51 +83,57 @@ otherwise.
 List and parse all ada sources in current and included dirs. For each file,
 store in a list:
 @itemize @minus
-@item kind: UnitSpec/UnitBody/ChildSpec/ChildBody/SubUnit (US/UB/CS/CB/SU)
+@item kind: UnitSpec/UnitBody/SubUnit (US/UB/SU)
 @item Unit_Name, Mixed_Str.
 @item Full file path and name
 @item StandAlone indicator, boolean, if spec without body or body without spec
-@item Unit_Name of parent (if CS, CB or SU)
+@item Unit_Name of parent (if child spec, child body or subunit)
 @item List of withed unit names: @@Name@@Name...@@
+@item List of used unit names: @@Name@@Name...@@
+@item List of subunits names (if body or subunit): @@Name@@Name...@@
 @end itemize
+@*
 "Unit_Name#Kind" is the unique access key, a duplicated key (remote unit hidden
 by a local or remote unit) is discarded.@*
-A CS, CB or SU without parent is an error.@*
-A spec (US or CS), its body (UB or CB) and its SUs must be colocated
+A spec, its body and its subunits must be colocated.@*
 No check that withed units exist but check that target is listed (as spec or
-standalone body).@*
+standalone body).
 
-@section Build and display outputs
-@subsection Tree mode
-Start from target, process dependancies recursively in this order:
+@section Check redundant "with" and "use"
+For each unit build the tree of its parents (sub-unit -> body -> spec) and for
+each unit make the list of its withed units.@*
+For each unit check that no withed unit is already withed by a parent.@*
+Exit program.
+
+@section Build tree
+If in normal (not reverse) mode, start from target, process dependancies
+recursively in this order:
 @verbatim
 unit - ParentUnit
      - WithsOfSpec
      - WithsOfBody
      - WithsOfSububits
 @end verbatim
-In case of file mode, list for each unit the corresponding file(s):
+If in reverse mode, build a unique list of units that list targets, of units that list these
+units...
+
+@section Display output
+In unit mode, only show specs and standalone bodies, otherwise (file mode) show
+all entries.@*
+Iterate on tree:
+
+@subsection In tree mode
+Dump the tree:
 @verbatim
 UnitSpec - UnitBody - Subunits - WithSpecs
                     - WithsSpecs...
          - ParentSpec - WithsSpecs...
          - WithsSpecs - WithsSpecs...
 @end verbatim
-
-@subsection Default mode
-Build the tree of units/files and dump it is a list.@*
-Sort by unit/file path (local first).
- 
-@subsection Revert mode
-Build a unique list of units that list targets, of units that list these
-units...@*
-If file mode, replace each unit by spec+body+subunits.@*
-Sort (local first) and output.
-
-@subsection Check mode
-For each unit build the tree of its parents (sub-unit -> body -> spec) and for
-each unit make the list of its withed units.@*
-For each unit check that no withed unit is already withed by a parent.
-
+@subsection In list mode
+Dump the tree in a list.@*
+Sort it by unit/file path (local first).@*
+In case of file revert mode, list each unit by spec+body+subunits.
 
 @bye
+

@@ -193,7 +193,7 @@ begin
     end if;
     Sourcer.List.Read (Unit);
     if Unit.Kind = Sourcer.Unit_Body and then not Unit.Standalone then
-      Error ("Target unit, if a body, must be standalone");
+      Error ("Internal error: Target is a body but not standalone");
     end if;
     if Debug.Is_Set then
       Basic_Proc.Put_Line_Output ("Target checked: " & Sourcer.Image (Unit));
