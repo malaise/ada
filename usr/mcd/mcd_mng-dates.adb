@@ -161,6 +161,7 @@ package body Dates is
     Cal_Time : Ada.Calendar.Time;
     Delta_D : Perpet.Delta_Rec;
     Res_Time : Item_Rec(Inte);
+    Res_Error : Item_Rec(Bool);
   begin
     -- Check kind and length
     if Date.Kind /= Chrs or else Date.Val_Text.Length /= Date_Length then
@@ -177,7 +178,7 @@ package body Dates is
       raise Invalid_Argument;
     end if;
 
-    -- Extract
+    -- Extract (check values)
     Year  := Ada.Calendar.Year_Number'Value  (Date.Val_Text.Slice (01, 04));
     Month := Ada.Calendar.Month_Number'Value (Date.Val_Text.Slice (06, 07));
     Day   := Ada.Calendar.Day_Number'Value   (Date.Val_Text.Slice (09, 10));
@@ -186,7 +187,7 @@ package body Dates is
     Secs  := Day_Mng.T_Seconds'Value         (Date.Val_Text.Slice (18, 19));
     Millis := Day_Mng.T_Millisec'Value       (Date.Val_Text.Slice (21, 23));
 
-    -- Compute Time for the day
+    -- Compute Time for the day (check validity)
     Cal_Time := Ada.Calendar.Time_Of (Year, Month, Day);
 
     -- Compute delta days since reference
@@ -205,12 +206,15 @@ package body Dates is
     Res_Time.Val_Inte := 1000 * Res_Time.Val_Inte + My_Math.Inte (Millis);
 
     if Neg then
-    Res_Time.Val_Inte := - Res_Time.Val_Inte;
+      Res_Time.Val_Inte := - Res_Time.Val_Inte;
     end if;
     return Res_Time;
   exception
     when Constraint_Error | Ada.Calendar.Time_Error =>
-      raise Compute_Error;
+      -- Format is correct (otherwise Invalid_Argument)
+      -- But date values are not valid => return False
+      Res_Error.Val_Bool := False;
+      return Res_Error;
   end Date_To_Time;
 
 end Dates;
