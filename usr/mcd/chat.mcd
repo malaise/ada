@@ -1,21 +1,22 @@
 # Cats activities
 
-# Variable sentence start
+# Random sentence start
 2 M popr
 "Le petit chat Fada" Y popr
 "La petite chatte Circé" Z popr
 
-# Variable sentence end
+# Random sentence end
 0 N popr
 [ a N pushr 1 + N copyr popa ] S popr
 "a peur" S pushr call
 "joue du piano" S pushr call
-"fait la sieste" S pushr call
+"fait le koala" S pushr call
 "explore le toit" S pushr call
-"se fait brosser" S pushr call
 "se fait tripoter" S pushr call
 "fait sa toilette" S pushr call
 "boit dans la mare" S pushr call
+"fuit les éboueurs" S pushr call
+"dort dans le hamac" S pushr call
 "fait des galipettes" S pushr call
 "fait de la dentelle" S pushr call
 "joue avec la souris" S pushr call
@@ -31,16 +32,19 @@
 "joue à chat avec les maîtres" S pushr call
 "met de l'ordre dans le doudou" S pushr call
 "court après l'eau du jet d'eau" S pushr call
+"fait la sieste dans le potager" S pushr call
 "n'aime pas le vent qui rend fou" S pushr call
 "joue dehors avec les autres chats" S pushr call
 "remue les papiers dans la corbeille" S pushr call
 "veut être de l'autre côté de la porte" S pushr call
+"se fait brosser sur la table à repasser" S pushr call
 "deterre les plantations de la maîtresse" S pushr call
 "ronronne sur les genoux de la maîtresse" S pushr call
 "regarde l'eau s'écouler dans la baignoire" S pushr call
 "surveille la maison du haut du secrétaire" S pushr call
 "rapporte un oiseau dans la maison pour jouer" S pushr call
 "range le secrétaire en mettant tout par terre" S pushr call
+"attend la brosse du matin dans la salle de bain" S pushr call
 "attend devant la chatière l'arrivée d'un portier" S pushr call
 "toise le monde du haut de la cheminée du barbecue" S pushr call
 2 format N pushr putl
