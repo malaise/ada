@@ -1,4 +1,7 @@
 # Generate data for approx: list of x, y
+# Args must be x1, x2, delta_x (inte or real) and the function
+# Function must replace x (real in TOS) by the result (real in TOS)
+# Example: mcdt gen_approx.mcd 1 10 0.1 "[ dup * 1.0 + ]"
 
 # Check args
 [ "Error, expecting: x1 x2 dx func" putl ssize popn retall ] E popr
