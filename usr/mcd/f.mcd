@@ -1,3 +1,4 @@
-# Function for yfx
-
+# Function for use with yfx
+# Replace x, top of stack by y=f(x)
+# x2 - 10
 [ dup * 10.0 - ]

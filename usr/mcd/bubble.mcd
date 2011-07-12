@@ -1,4 +1,4 @@
-# Sort elements from stack
+# Sort elements (inte or real) from stack
 
 # Error
 [ "Error. Invalid argument." putl ssize popn retall ] E popr

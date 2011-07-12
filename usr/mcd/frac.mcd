@@ -1,3 +1,5 @@
+# Test fractions: random A/B and random C/D. Compare, add, sub, mult and div
+
 # Take a random number -1000 .. +1000
 1000.0 r popr
 [

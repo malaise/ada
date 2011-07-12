@@ -1,4 +1,4 @@
-# Put prime numbers
+# Put prime numbers (up to an optional positive inte or arbi) or infinite
 
 # Error Handling
 [ "Usage: prime [ <max_number> ]" putl ssize popn retall ] E popr
@@ -8,6 +8,7 @@ ssize isnul [ 0 ] ifcall
 ssize 1 /= E pushr ifcall
 dup isinte [ toarbi ] ifcall
 dup isarbi ~ E pushr ifcall
+dup dup isneg E pushr ifcall
 m popr
 
 # Compute Sqrt of n and store it in s

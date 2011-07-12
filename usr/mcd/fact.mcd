@@ -1,4 +1,4 @@
-# Compute factorial of arg
+# Compute factorial of arg (inte or arbi)
 
 # Check 1 arg >= 0
 [ "Error: 1 argument N >= 0 expected." putl ssize popn retall ] E popr

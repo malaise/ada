@@ -1,3 +1,5 @@
+# When to both hands of a clock overlap
+
 # Given a clock at a time h.m (in hours and minutes):
 # - The hour hand position (in 1/60°) is ph = h*5 + 5*m/60
 # - The minute hand position is pm = m
@@ -30,3 +32,4 @@ h pushr 1 + h copyr
 L pushr retacal ] L copyr
 
 call
+

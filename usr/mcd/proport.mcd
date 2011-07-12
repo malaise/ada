@@ -11,9 +11,10 @@ ssize 3 < E pushr ifcall
 C pushr call
 swap C pushr call swap
 swap3 C pushr call
+swap3
 
-# Stakc is now C B A. Compute A * B / C
-/ *
+# Stack is now C B A. Compute A * B / C
+proport
 
 # If the three initial values where inte,
 # and result is within inte range, round it
@@ -22,3 +23,4 @@ pushle pushle pushle & & ~ ifret
 roundif
 ] call
 
+putl

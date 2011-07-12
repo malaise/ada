@@ -1,4 +1,4 @@
-# Flight log (adds hours.ninutes)
+# Flight log (adds hours.minutes)
 
 # Can top of stack be assimilated to 0.0
 [ absv 1.0e-10 <= ] Z popr

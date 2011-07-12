@@ -1,6 +1,6 @@
-# Power 2 polynom
+# Power 2 polynom resolution
 
-# Check 3 args
+# Check 3 args (must be inte or real)
 7.014 format
 ssize 3 /= [ "Error. 3 arguments a b c expected" putl
 ssize popn retall ] ifcall

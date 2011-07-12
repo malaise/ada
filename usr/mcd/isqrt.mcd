@@ -1,4 +1,5 @@
 # Integer search of largest i for which i * i <= n
+# Onearg: positive inte or arbi
 
 # Error and quit
 [ "Error: expect 1 argument, positive int or arbi" putl ssize popn retall

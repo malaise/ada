@@ -1,3 +1,4 @@
-# For use with yfx
-# y = x * x - 1
+# Function for use with yfx
+# Replace x, top of stack by y=f(x)
+# x2 - 1
 [ dup * 1.0 - ]

@@ -1,4 +1,5 @@
 # Test register ordering and double indirection
+# (no arg)
 
 # Generic loop do iterate function in F on registers a .. z
 [

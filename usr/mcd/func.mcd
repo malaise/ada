@@ -1,4 +1,5 @@
-# For use with yfx
+# Function for use with yfx
+# Replace x, top of stack by y=f(x)
 # ln x - 1   -> e
 [ ln 1.0 - ]
 

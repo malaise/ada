@@ -792,7 +792,7 @@ package body Operations is
     return (Kind => Real, Val_Real => R);
   end Msd;
 
-  -- Real,Arbi->Real,Arbi
+  -- Real,Arbi,Inte->Real,Arbi,Inte
   function Sqrt (X : Item_Rec) return Item_Rec is
     R : My_Math.Real;
   begin

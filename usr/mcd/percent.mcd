@@ -1,4 +1,11 @@
-# A percentage of B
+# Percentages between 2 positive numbers (real or inte) A and B
+# B = 1 + x%
+# B = A * x%
+# A * B% = x
+# A + B% = x
+# A - B% = x
+
+# Output format
 2.004 format
 
 # Error message

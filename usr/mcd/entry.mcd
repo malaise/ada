@@ -1,3 +1,5 @@
+# Compute time to leave work, according to arrival time and breaks
+
 # Arg error
 [
 "Error. Usage: entry <entry_time> [ { <leave_time> <entry_time> } ]"
