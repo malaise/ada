@@ -755,6 +755,7 @@ package body Arbitrary is
   end "**";
 
   procedure Sqrt (A : in Number; S, R : out Number) is
+    Zerostr : constant As.U.Asu_Us := As.U.Tus ("0");
     Onestr : constant As.U.Asu_Us := As.U.Tus ("1");
     Twostr : constant As.U.Asu_Us := As.U.Tus ("2");
     Ninestr : constant As.U.Asu_Us := As.U.Tus ("9");
@@ -766,7 +767,8 @@ package body Arbitrary is
     begin
       if N.Length = 1 then
         -- 1 digit, so it can be 0, 1, 2 or 3
-        Prev := As.U.Tus ("0");
+        -- Start trying 0
+        Prev := Zerostr;
         Curr := Onestr;
         loop
           Val := Basic.Mul_No_Sign (Curr, Curr);
@@ -783,6 +785,7 @@ package body Arbitrary is
       elsif N.Length = 2 then
         -- 2 digits so it can be from 4 to 9
         -- Optim: there are more chances that it is 7 or above
+        -- Start trying 9
         Curr := Ninestr;
         loop
           Val := Basic.Mul_No_Sign (Curr, Curr);
