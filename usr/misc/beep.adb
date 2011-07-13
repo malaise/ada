@@ -1,3 +1,6 @@
+-- One or several beeps
+-- usage: beep [ [ <number_of beeps> [ <delay_between_beeps> ] ]
+-- Defaults are 1 beep and each 0.25s
 with Ada.Text_Io, Ada.Characters.Latin_1;
 with Argument;
 procedure Beep is

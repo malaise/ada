@@ -1,11 +1,15 @@
+-- Small game. Player shall compute the remainig if division by 3 of a random
+-- number and add -1, 0 or 1 so that the remaining is 0.
+-- Then do the same on the quotien of this division... until the quotien
+-- becomes 0.
 with Ada.Text_Io, Ada.Calendar, Ada.Characters.Latin_1;
 with My_Io, U_Rand, Clear_Screen;
 procedure G is
-  -- generated number
+  -- Generated number
   subtype Number is Natural range 0 .. 999_999_999;
   Num : Number;
 
-  -- result of division of current value
+  -- Result of division of current value
   type Div_Res is (Minus_1, Zero, Plus_1);
 
   Got_Res, Res : Div_Res;

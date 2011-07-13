@@ -1,7 +1,7 @@
+-- Compute factorial of a integer
 with My_Math, My_Io;
 use My_Math;
 use My_Io;
--- Calcul de la factorielle d'un entier
 
 procedure Fact is
 
@@ -20,20 +20,20 @@ procedure Fact is
   end Calcul_Factoriel;
 
 begin
-  Put_Line("Calcul de la factorielle d'un nombre:");
+  Put_Line("Computation of the factorial of a number:");
   New_Line;
   loop
 
     loop
       begin
-        Put("Entrez le nombre ? ");
+        Put("Enter the number? ");
         Get(N);
         Nombre := Inte(N);
         exit;
       exception
         when others =>
           Skip_Line;
-          Put_Line("ERREUR, il faut un entier positif ou nul. Recommencez.");
+          Put_Line("ERROR, a positive or null integer is required. Try again.");
       end;
     end loop;
 
@@ -47,8 +47,9 @@ begin
       New_Line;
     exception
       when Constraint_Error | Storage_Error =>
-        Put_Line("Nombre trop grand. Recommencez.");
+        Put_Line("ERROR, the number is too big. Try again.");
         New_Line;
     end;
   end loop;
 end Fact;
+

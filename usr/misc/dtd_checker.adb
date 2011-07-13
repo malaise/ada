@@ -1,3 +1,4 @@
+-- Check a dtd file
 with Ada.Exceptions;
 with As.U, Argument, Basic_Proc, Xml_Parser;
 procedure Dtd_Checker is
@@ -11,7 +12,7 @@ procedure Dtd_Checker is
   begin
     Basic_Proc.Put_Line_Error (
  "Usage: " & Argument.Get_Program_Name & " [ -w | --warnings ] <dtd_file>");
-    Basic_Proc.Put_Line_Error ("  Default: only checks for errors on stdin.");
+    Basic_Proc.Put_Line_Error ("  Default: only checks for errors.");
   end Usage;
 
   Abort_Error : exception;

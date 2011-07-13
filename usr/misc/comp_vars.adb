@@ -1,3 +1,6 @@
+-- Compute variables from definitions in Xml files or stdin
+-- Output results as XML or optionnaly in shell format (export <Name>=<Value>)
+-- Usage: Comp_Vars [ -s | --shell ] [ { <file> } ]
 with Ada.Text_Io;
 with As.U, Argument, Text_Line, Sys_Calls, Xml_Parser, Computer, Environ,
      Integer_Image;
@@ -25,7 +28,7 @@ procedure Comp_Vars is
   procedure Usage is
   begin
     Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
-     & "[ " & Shell_Opt_C & " | " & Shell_Opt_S & " ] { <file> }");
+     & "[ " & Shell_Opt_C & " | " & Shell_Opt_S & " ] [ { <file> } ]");
   end Usage;
 
   -- Output flow (stdout)

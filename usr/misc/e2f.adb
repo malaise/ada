@@ -1,3 +1,4 @@
+-- Euro <-> Franc conversion
 with Ada.Text_Io;
 with As.U, Argument, Upper_Char, Get_Float, My_Math, Euro_Franc, String_Mng;
 use type My_Math.Real;
