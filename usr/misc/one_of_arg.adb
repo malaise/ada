@@ -1,7 +1,6 @@
-with My_Io;
-with Rnd;
-with Argument;
+with My_Io, Rnd, Argument;
 
+-- Outputs one random among arguments
 procedure One_Of_Arg is
 begin
   if Argument.Get_Nbre_Arg = 0 then

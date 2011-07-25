@@ -1,16 +1,23 @@
 with Ada.Text_Io;
 with Normal, Sys_Calls, Text_Line;
 
+-- Count Ada statements
 package body One_File_Statements is
 
+  -- Total Nb of statements
   Total : Natural := 0;
   File_Error : exception;
   function Count_Statements_Of_File (File_Name : String) return Natural is
 
     File  : Ada.Text_Io.File_Type;
-    C, Prev_C, Next_C  : Character := ' ';
+    -- Current and prev chars
+    C, Prev_C : Character := ' ';
+    -- Character read head
+    Next_C  : Character := ' ';
     Next_Set : Boolean := False;
+    -- Current Nb of statements
     Statements : Natural := 0;
+    -- Parentheses
     Levels : Natural := 0;
 
     procedure Get (File : in Ada.Text_Io.File_Type; C : out Character) is
@@ -81,7 +88,7 @@ package body One_File_Statements is
 
       elsif C = ';' then
         -- Any ';' that can be found at this point after all exclusions
-        -- must be a valid "line of code terminator"
+        -- must be a valid "statement terminator"
         if Levels = 0 then
           -- Skip parentheses cause every ';' within is a formal parameter list
           Statements := Statements + 1;
@@ -99,6 +106,7 @@ package body One_File_Statements is
         end if;
       elsif C = '"' or else C = '%' then
         -- Now, check for string brackets of either kind, " or %
+        -- This works even if there is '""' in string
         Skip_Until (C);
       elsif C = ''' then
         -- Character literals are just three characters long including '
@@ -155,7 +163,9 @@ package body One_File_Statements is
 
     Text_Line.Open (File, Text_Line.Out_File, Sys_Calls.Stdout);
     if File_Name = "" then
+      -- Summary so far
       if Put_It then
+        -- Put formatted output
         for I in Integer range 1 .. Max_Tab + Gap'Length + Max_Dig + 1 loop
           Text_Line.Put (File, "-");
         end loop;
@@ -171,12 +181,13 @@ package body One_File_Statements is
         end;
         Text_Line.Put_Line (File, Gap & Normal(Total, Max_Dig));
       else
+        -- Just put number
         Text_Line.Put (File, Normal(Total, Max_Dig));
       end if;
       Total := 0;
 
     else
-
+      -- Statements of file
       begin
         Count := One_File_Statements.Count_Statements_Of_File(File_Name);
       exception
@@ -185,6 +196,7 @@ package body One_File_Statements is
       end;
 
       if Put_It then
+        -- Put formatted output
         Text_Line.Put (File, File_Name);
         if File_Name_Len < Max_Tab then
           Text_Line.Put (File, " ");

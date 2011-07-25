@@ -1,5 +1,5 @@
 -- List directories
--- Usage: ddir [ { <path> } ] 
+-- Usage: ddir [ { <path> } ]
 with As.U, My_Io, Argument, Directory;
 procedure Ddir is
 
