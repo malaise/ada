@@ -1,3 +1,4 @@
+-- Random number of Sokoban frame (1 .. 50)
 with Rnd, My_Io, Normal;
 function Rndsok return Integer is
   N : Integer;

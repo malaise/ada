@@ -1,3 +1,6 @@
+-- For each file provided as argument format and put the number of Ada
+--   statements of this file, then put the formated total
+-- If -s, only put the total not formated
 with Argument;
 with One_File_Statements;
 
@@ -19,6 +22,7 @@ begin
                                                  Put_It);
   end loop;
 
+  -- Total
   One_File_Statements.Print_Statements_Of_File("", Put_It);
 
 end Stat;

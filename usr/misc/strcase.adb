@@ -1,7 +1,6 @@
+-- Convert input flow to UPPER_CASE, lower_case or Mixed_Case
 with Sys_Calls, Argument, Text_Line;
 with Upper_Str, Lower_Str, Mixed_Str;
-
--- Convert input flow to UPPER_CASE, lower_case or Mixed_Case
 procedure Strcase is
 
   procedure Usage is

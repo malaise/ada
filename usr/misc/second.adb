@@ -36,6 +36,7 @@ begin
 
   -- A = 0 ?
   if A = 0.0 then
+    -- First degree
     if B = 0.0 then
       if C = 0.0 then
         My_Io.Put_Line ("Inifinity of solutions.");
@@ -48,9 +49,11 @@ begin
         My_Io.New_Line;
     end if;
   else
+    -- A /= 0
+    -- Compute discriminant, see if it is >= 0
     D := B * B - 4.0 * A * C;
     if D >= 0.0 then
-      My_Io.Put ("Two solutions: ");
+      My_Io.Put ("Two real solutions: ");
       Real_Io.Put ((-B + My_Math.Sqrt(D)) / (2.0 * A));
       My_Io.Put (" and ");
       Real_Io.Put ((-B - My_Math.Sqrt(D)) / (2.0 * A));

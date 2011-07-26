@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="Utf-8"?>
+<!-- An example of tcp channels configuration file -->
 <!DOCTYPE Channels SYSTEM "../../reposit/Channels.dtd">
 
 <Channels>

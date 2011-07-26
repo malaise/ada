@@ -150,6 +150,7 @@ begin
       end loop;
 
     when Is_Prime =>
+      -- Check if N1 is prime
       N2 := Arbitrary.Prime_List.Next;
       if N1 /= One then
         loop
@@ -165,12 +166,14 @@ begin
       end if;
 
     when Next =>
+      -- Look for first prime number > N1
       loop
         N2 := Arbitrary.Prime_List.Next;
         exit when N2 > N1;
       end loop;
       Ada.Text_Io.Put_Line (Image (N2));
     when Prev =>
+      -- Look for last prime number < N1
       N3 := One;
       loop
         N2 := Arbitrary.Prime_List.Next;
@@ -184,6 +187,7 @@ begin
       Arbitrary.Factors.Decompose (N1, L1);
       Put_List (L1);
     when Hcd | Lcm =>
+      -- Highest common denominator and lowest common multiplicator
       -- Decompose N1 and N2 in prime factors
       Arbitrary.Factors.Decompose (N1, L1);
       Arbitrary.Factors.Decompose (N2, L2);
@@ -193,9 +197,11 @@ begin
       Arbitrary.Factors.Extract_Common (L1, L2, Lr);
 
       if Mode = Hcd then
+        -- Highest common denominator
         -- Put multiplication of Lr
         Put_Line (Arbitrary.Factors.Multiply (Lr));
       else
+        -- Lowest common multiplicator
         -- Put multiplication of Lr * L1 * L2
         Put_Line (Arbitrary.Factors.Multiply (Lr)
                 * Arbitrary.Factors.Multiply (L1)

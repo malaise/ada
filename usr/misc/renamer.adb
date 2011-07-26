@@ -1,4 +1,4 @@
--- Use Select_File to rename files
+-- Use Select_File (Afpx) to rename files
 with Ada.Text_Io;
 with As.B, Argument, Select_File, Sys_Calls;
 

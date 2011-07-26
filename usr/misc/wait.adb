@@ -1,3 +1,4 @@
+-- Pause for some seconds (default 1.0)
 with Ada.Text_Io, Ada.Calendar;
 with Argument;
 procedure Wait is

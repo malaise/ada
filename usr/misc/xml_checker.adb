@@ -1,3 +1,4 @@
+-- Check/Format/Canonify a XML file or flow
 with Ada.Exceptions;
 with As.U, Argument, Argument_Parser, Xml_Parser.Generator, Normal, Basic_Proc,
      Text_Line, Sys_Calls, Parser;

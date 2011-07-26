@@ -1,5 +1,5 @@
 <?xml version="1.1" encoding="UTF-8"?>
-<!-- DTD for Variable definitions -->
+<!-- DTD for Variable definitions for comp_vars -->
 <!-- This allows defining several variables -->
 <!ATTLIST Variables>
 <!ELEMENT Variables (Var)*>

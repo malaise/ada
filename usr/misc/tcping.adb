@@ -1,4 +1,5 @@
--- Open a TCP connection to the provided host and port
+-- Open a TCP connection to the provided host and port,
+-- with timeout and possibly several tries.
 with Ada.Text_Io, Ada.Calendar, Ada.Exceptions;
 
 with As.U, Argument, Basic_Proc, Ip_Addr,

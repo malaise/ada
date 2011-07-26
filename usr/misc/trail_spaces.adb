@@ -1,3 +1,7 @@
+-- Replace each Htab by a space
+-- Replace Cr+Lf by Lf
+-- Remove trailing spaces (speces preceeding a Lf)
+-- Append a Lf and end of file if last char is not a Lf
 with Ada.Exceptions, Ada.Characters.Latin_1;
 with As.U, Argument, Sys_Calls, Temp_File, Text_Line;
 procedure Trail_Spaces is

@@ -1,3 +1,4 @@
+-- Listen to a UDP (or IPM) port and put packets received
 with Ada.Exceptions, Ada.Text_Io, Ada.Calendar;
 with As.U, Argument, Basic_Proc, Date_Image, Normal, Int_Image,
      Upper_Str, String_Mng, Text_Line, Sys_Calls,

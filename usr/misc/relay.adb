@@ -1,3 +1,4 @@
+-- Relay stdin/stdout <-> a channel
 -- Usage: relay <channel>
 -- The channel destinations file is <channel>.chn
 

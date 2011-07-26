@@ -1,3 +1,6 @@
+-- For each file provided as argument consider it contains a list of Ada
+--  files (one per line) and put the number of Ada statements of these files,
+--  then put the total.
 with Ada.Text_Io;
 with Argument;
 with One_File_Statements;

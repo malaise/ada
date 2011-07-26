@@ -1,66 +1,65 @@
--- Triangle de Pascal
+-- Pascal Triangle
 
 with My_Io; use My_Io;
--- Calcul des elements des 33 premieres lignes du
---  triangle de Pascal
+-- Compute elements of the 33 first lines lignes of the Pascal's triangle
 procedure Pascal is
 
-  -- element calcule et sorti
+  -- Item computed and printed
   Element      : Long_Long_Integer;
-  -- table des resultats
-  No_Ligne_Max : constant Integer := 33;
-  Indice_Max   : constant Integer := No_Ligne_Max + 1;
-  subtype Typ_No_Ligne is Integer range 0 .. No_Ligne_Max;
-  subtype Typ_Indice is Integer range 1 .. Indice_Max;
-  Table : array(Typ_No_Ligne, Typ_Indice) of Long_Long_Integer :=
+  -- Table of results
+  No_Line_Max : constant Integer := 33;
+  Index_Max   : constant Integer := No_Line_Max + 1;
+  subtype Typ_No_Line is Integer range 0 .. No_Line_Max;
+  subtype Typ_Index is Integer range 1 .. Index_Max;
+  Table : array(Typ_No_Line, Typ_Index) of Long_Long_Integer :=
    (others => (others => 0));
 
 begin
-  Put("Calcul des ");
-  Put(No_Ligne_Max);
-  Put_Line(" premieres lignes du Triangle de PASCAL:");
+  Put("Computation of the ");
+  Put(No_Line_Max);
+  Put_Line(" first lines of the PASCAL triangle:");
   New_Line;
 
-  Principale : for No_Ligne in Typ_No_Ligne loop
+  Principale : for No_Line in Typ_No_Line loop
 
-    -- numero de ligne pour le calcul
-    Put(No_Ligne);
+    -- Line number for computation
+    Put(No_Line);
     Put_Line(" : ");
 
     Put("   ");
-    for Indice in Typ_Indice range Typ_Indice'First .. Typ_No_Ligne'Succ(
-      No_Ligne) loop
+    for Index in Typ_Index range Typ_Index'First .. Typ_No_Line'Succ(
+      No_Line) loop
 
-      -- 6 elements par ligne d'ecran
-      if ((Indice - 1) mod 6 = 0) and then (Indice /= 1) then
+      -- 6 elements per line of screen
+      if ((Index - 1) mod 6 = 0) and then (Index /= 1) then
         New_Line;
         Put("-> ");
       end if;
 
-      -- elements de la ligne separes par '/'
-      if Indice = Typ_Indice'First then
+      -- Elements of the line, separated by '/'
+      if Index = Typ_Index'First then
         Element := 1;
       else
-        Element := Table(Typ_No_Ligne'Pred(No_Ligne), Typ_Indice'Pred(Indice)) +
-                      Table(Typ_No_Ligne'Pred(No_Ligne), Indice);
+        Element := Table(Typ_No_Line'Pred(No_Line), Typ_Index'Pred(Index)) +
+                      Table(Typ_No_Line'Pred(No_Line), Index);
       end if;
-      Table(No_Ligne, Indice) := Element;
+      Table(No_Line, Index) := Element;
       Put(Element);
-      if Indice /= Typ_Indice'Succ(No_Ligne) then
+      if Index /= Typ_Index'Succ(No_Line) then
         Put('/');
       end if;
     end loop;
 
-    -- fin du traitement
+    -- End of processing
     New_Line;
     New_Line;
   end loop Principale;
 
 exception
 
-  -- un element est trop grand
+  -- One item is too big
   when others =>
-    Put_Line("PROBLEME: Degre trop grand.");
+    Put_Line("PROBLEM: Level is too big.");
     New_Line;
 end Pascal;
 

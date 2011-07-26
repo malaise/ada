@@ -1,3 +1,9 @@
+-- Put a random number:
+-- By default (no arg)          0 or 1
+-- If one int arg I1            0   <= N <= I1
+-- If one float arg F1          0.0 <= N <  F1
+-- If two int arg I1 and I2     I1  <= N <= I2
+-- If two float arg F1 and F2   F1  <= N <  F2
 with Argument, Rnd, Basic_Proc, Int_Io, Flo_Io, Get_Float;
 procedure Random is
 
