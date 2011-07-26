@@ -1,3 +1,4 @@
+-- Cannonification of XML
 with Ada.Characters.Latin_1;
 with String_Mng, Sorts;
 separate (Xml_Checker)
@@ -218,6 +219,8 @@ begin
   -- Update for next call
   Stage := Clone.Stage;
   -- Ensure that Node attributes are not deallocated twice
+  pragma Warnings (Off, "useless assignment to ""*"", value never referenced");
   Clone.Attributes := null;
+  pragma Warnings (On,  "useless assignment to ""*"", value never referenced");
 end Canon_Callback;
 
