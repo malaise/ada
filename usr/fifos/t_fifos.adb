@@ -119,9 +119,9 @@ begin
     & " is open");
 
   loop
-    pragma Warnings (Off, "variable * is not modified in loop body");
+    pragma Warnings (Off, "variable ""*"" is not modified in loop body");
     exit when Signal;
-    pragma Warnings (On,  "variable * is not modified in loop body");
+    pragma Warnings (On,  "variable ""*"" is not modified in loop body");
     Event_Mng.Wait (-1);
   end loop;
 
