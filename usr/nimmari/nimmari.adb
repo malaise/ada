@@ -1,3 +1,6 @@
+-- The games of NIM and Marienbad, graphical and text version.
+-- Remove sticks alternatively with the computer
+-- Remove the last stick (in NIM) or oblige the computer to do so (Marienbad)
 with Ada.Text_Io;
 with As.U, Argument, Argument_Parser;
 with Common, Screen, Text, Compute;

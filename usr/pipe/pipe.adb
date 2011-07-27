@@ -1,3 +1,4 @@
+-- Relay stdin/out to/from a FIFO
 -- Usage: pipe <mode> <fifo>
 -- <mode> ::= -c | -s
 -- -c : connects to server  for data to relay

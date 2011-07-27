@@ -1,3 +1,4 @@
+-- Execute chat script on a TCP connection
 with Ada.Exceptions;
 with As.U, Basic_Proc, Argument, Argument_Parser;
 with Debug, Ios, Tree, Events;

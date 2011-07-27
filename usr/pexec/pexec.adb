@@ -1,6 +1,6 @@
--- executes some commands in all the sub-dir in the tree of sub-dir
+-- Executes some commands in all the sub-dir in the tree of sub-dir
 --  under the current
--- Syntax: pexec command [ { ;command } ]
+-- Syntax: pexec [ <options> ] <command> [ { ; <command> } ]
 --  each command can contain spaces
 with Ada.Exceptions;
 with As.U, Directory, Recurs, Sys_Calls, Basic_Proc;

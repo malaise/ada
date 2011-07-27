@@ -1,3 +1,9 @@
+-- Aeronautical navigation
+-- 6 parameters define 3 vectors:
+--  - Wind (bearing and speed)
+--  - Air speed (heading and aircraft speed)
+--  - Ground trajectory (route and ground speed)
+-- 3 parameters are unknown and are computed from the 4 others.
 with Nav_Screen, Nav_Data, Nav_Dialog;
 procedure Navig is
   Data, Result : Nav_Data.T_Data;

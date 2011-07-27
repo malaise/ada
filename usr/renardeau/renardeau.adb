@@ -1,3 +1,7 @@
+-- With 6 random integers (1 to 9 or 25, 50, 75 or 100)
+-- With the 4 operations + - / * on integers
+-- With a random target integer number (100 to 999)
+-- Try to obtain the target or to get as close as possible to it
 with Unchecked_Deallocation;
 with Argument, Integer_Image, Bit_Ops, Unbounded_Arrays, Basic_Proc;
 procedure Renardeau is

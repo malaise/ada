@@ -16,8 +16,8 @@ package body Command is
   procedure Print_Usage is
   begin
     Basic_Proc.Put_Line_Output ("Usage : " & Argument.Get_Program_Name
-                               & " [options] command [ { ; command } ]");
-    Basic_Proc.Put_Line_Output (" options : -[a][d][c][f][l][i][s]");
+                      & " [ <options> ] <command> [ { ; <command> } ]");
+    Basic_Proc.Put_Line_Output (" <options> : -[a][d][c][f][l][i][s]");
     Basic_Proc.Put_Line_Output ("  a for do not print actions.");
     Basic_Proc.Put_Line_Output ("  d for do not print name of each dir.");
     Basic_Proc.Put_Line_Output ("  c for don't exec in current dir.");

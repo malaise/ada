@@ -1,9 +1,6 @@
-with My_Io;
-with Argument;
-with Rnd;
-with Upper_Str;
-with Sok_Types;
-with Sok_Manager;
+-- Sokoban game: push boxes and move them to destination
+with My_Io, Argument, Rnd, Upper_Str;
+with Sok_Types, Sok_Manager;
 
 procedure Sokoban is
   No_Frame : Sok_Types.Desired_Frame_Range;

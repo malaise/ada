@@ -1,3 +1,5 @@
+-- Search for words matching criteria (au:o:obile) or regexp (au.*bile)
+-- Or search anagrams
 with As.U.Utils, Argument, Con_Io, Afpx, Basic_Proc, Language, Many_Strings,
      String_Mng, Lower_Str, Environ, Integer_Image, Event_Mng;
 with Cmd, Analist;
