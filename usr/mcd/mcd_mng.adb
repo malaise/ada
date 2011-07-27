@@ -189,11 +189,14 @@ package body Mcd_Mng is
     function Index_Of (Reg : Item_Rec) return Item_Rec;
     function Register_At (Index : Item_Rec) return Item_Rec;
 
-    -- Array: store / retrieve Var[Index]
+    -- Array: store / retrieve / clear / check_empty: Var[Index]
     -- Var must be a register; Index must be Inte (otherwise Invalid_Argument)
     procedure Store_Array (Val : in Item_Rec;
                            To_Reg : in Item_Rec; Index : in Item_Rec);
-    function Retrieve_Array (To_Reg : Item_Rec; Index : Item_Rec)
+    function Retrieve_Array (From_Reg : Item_Rec; Index : Item_Rec)
+                            return Item_Rec;
+    procedure Clear_Array (Reg : in Item_Rec; Index : Item_Rec);
+    function Is_Empty_Array (Reg : Item_Rec; Index : Item_Rec)
                             return Item_Rec;
 
     -- Valid registers  are 'a' .. 'z' and 'A' .. 'Z'
@@ -627,10 +630,6 @@ package body Mcd_Mng is
           Pop(A); Pop(B); Pop(C); Push (Operations.Ifte(A,C,B));
           S := A;
 
-        when Obase =>
-          Pop(A); Ios.Set_Obase(A);
-          S := A;
-
         -- These are about registers
         when Popr =>
           -- Store B in reg A
@@ -691,6 +690,14 @@ package body Mcd_Mng is
           -- Push B[A]
           Pop(A); Pop(B);
           Push (Registers.Retrieve_Array(B, A));
+        when Cleara =>
+          -- Clear B[A]
+          Pop(A); Pop(B);
+          Registers.Clear_Array(B, A);
+        when Emptya =>
+          -- True if B[A] is empty
+          Pop(A); Pop(B);
+          Push (Registers.Is_Empty_Array(B, A));
 
         -- Stack size
         when Ssize =>
@@ -778,6 +785,9 @@ package body Mcd_Mng is
         -- Puts
         when Format =>
           Pop(A); Ios.Format(A);
+          S := A;
+        when Obase =>
+          Pop(A); Ios.Set_Obase(A);
           S := A;
         when Put =>
           Pop(A); Ios.Put(A);

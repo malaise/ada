@@ -101,6 +101,8 @@ package Mcd_Mng is
    Indreg,
    Popa,
    Pusha,
+   Cleara,
+   Emptya,
 
    Pope,
    Copye,
@@ -126,6 +128,7 @@ package Mcd_Mng is
    Retacal,
 
    Format,
+   Obase,
    Put,
    Newl,
    Putl,
@@ -154,7 +157,6 @@ package Mcd_Mng is
    Daysof,
    Timeof,
 
-   Obase,
    Nop,
    Getenv,
    Rnd,

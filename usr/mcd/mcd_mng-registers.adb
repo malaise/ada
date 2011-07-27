@@ -160,7 +160,7 @@ package body Registers is
       when Constraint_Error =>
         raise Invalid_Argument;
     end;
-    -- BUild key
+    -- Build key
     Key(1) := Reg.Val_Regi;
     if I >= 0 then
       Key(2) := '+';
@@ -208,17 +208,39 @@ package body Registers is
     Array_List.Insert (Storage);
   end Store_Array;
 
-  function Retrieve_Array (To_Reg : Item_Rec; Index : Item_Rec)
+  function Retrieve_Array (From_Reg : Item_Rec; Index : Item_Rec)
                           return Item_Rec is
     Storage : Storage_Rec;
   begin
-    Storage.Key := Key_Of (To_Reg, Index);
+    Storage.Key := Key_Of (From_Reg, Index);
     Array_List.Read (Storage);
     return Storage.Data;
   exception
     when List_Mng.Not_In_List =>
       raise Empty_Register;
   end Retrieve_Array;
+
+  procedure Clear_Array (Reg : in Item_Rec; Index : Item_Rec) is
+    Storage : Storage_Rec;
+  begin
+    Storage.Key := Key_Of (Reg, Index);
+    Array_List.Delete (Storage);
+  exception
+    when List_Mng.Not_In_List =>
+      -- Clearing already cleared entry
+      null;
+  end Clear_Array;
+
+  function Is_Empty_Array (Reg : Item_Rec; Index : Item_Rec)
+                            return Item_Rec is
+    Storage : Storage_Rec;
+    Result : Item_Rec(Bool);
+  begin
+    Storage.Key := Key_Of (Reg, Index);
+    Array_List.Search (Storage, Result.Val_Bool);
+    Result.Val_Bool := not Result.Val_Bool;
+    return Result;
+  end Is_Empty_Array;
 
 end Registers;
 
