@@ -1,0 +1,69 @@
+# Several people participate to general expenses
+# Each entry is a participant id (1 .. N) then its contribution (Positive int
+# or real with 2 digits)
+# From 1 to the highest id entered, display the balance (positive or negative)
+
+# Can top of stack be assimilated to 0.0
+[ absv 1.0e-10 <= ] Z popr
+
+# Foramt a real value (xx.yy)
+[ dup trunc strof "." strof strcat swap
+frac 100.0 * 0 roundat trunc absv 2 true "0" normal strcat ] F popr
+
+# Check that number of arguments is even
+ssize isnul ssize 2 % isnul |
+[ "Error: Some pairs of arguments <id> <cost>... are expected" putl
+   ssize popn 1 setexit retall ] ifcall
+
+# Init Nb of participants, total and error messages
+1 n popr
+0.0 t popr
+[ "Invalid id " put putl ssize popn 1 setexit retall ]  E popr
+[ "Invalid cost " put putl ssize popn 1 setexit retall ]  D popr
+
+# Parse all pairs
+# Check one pair <id> <cost>, store cost in reg <id>, track higest id
+#  and update total
+[
+swap
+# Id must be > 0
+dup isinte ~ E pushr ifcall
+dup ispos ~ E pushr ifcall
+# Track max id
+dup n pushr > [ dup n popr ] ifcall
+# Init entry if needed
+i copyr
+I swap emptya [ 0.0 I i pushr popa ] ifcall
+# Cost must be x.yy >= 0.00
+dup isinte [ toreal ] ifcall
+dup isneg D pushr ifcall
+dup 100.0 * frac Z pushr call ~ D pushr ifcall
+# Add to toal and to register
+dup t pushr + t popr
+I i pushr pusha + I i pushr popa
+ssize isnul ifret C pushr retacal ] C popr
+C pushr call
+1 format
+"MaxId is " put n pushr putl
+3 format
+"Total is " put t pushr F pushr call putl
+
+# Compute average participation
+t pushr n pushr toreal / -2 roundat
+dup n pushr toreal * t pushr < [ 0.01 + ] ifcall
+a popr
+"Average is " put a pushr F pushr call putl
+
+# Put balance of each participant, add them in v
+1 i popr
+0.0 v popr
+[
+I i pushr emptya [ 0.0 I i pushr popa ] ifcall
+I i pushr pusha a pushr - -2 roundat dup v pushr + v popr
+"Id " put i pushr put " -> " put F pushr call putl
+i pushr n pushr = ifret i pushr 1 + i popr P pushr retacal ] P popr
+P pushr call
+
+1 format
+"Remaining is " put v pushr F pushr call putl
+
