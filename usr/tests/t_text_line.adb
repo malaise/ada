@@ -7,28 +7,27 @@ procedure T_Text_Line is
   begin
     if File_Name /= "" then
       In_Fd := Sys_Calls.Open (File_Name, Sys_Calls.In_File);
-      Text_Line.Open (In_File, Text_Line.In_File, In_Fd);
+      In_File.Open (Text_Line.In_File, In_Fd);
     else
-      Text_Line.Open (In_File, Text_Line.In_File, Sys_Calls.Stdin);
+      In_File.Open (Text_Line.In_File, Sys_Calls.Stdin);
     end if;
-    Text_Line.Open (Out_File, Text_Line.Out_File, Sys_Calls.Stdout);
-    Text_Line.Set_Line_Feed (In_File,
-           Text_Line.Line_Feed_Str & Text_Line.Line_Feed_Str);
-    Text_Line.Set_Line_Feed (Out_File, Text_Line.Get_Line_Feed (In_File));
+    Out_File.Open (Text_Line.Out_File, Sys_Calls.Stdout);
+    In_File.Set_Line_Feed (Text_Line.Line_Feed_Str & Text_Line.Line_Feed_Str);
+    Out_File.Set_Line_Feed (Text_Line.Get_Line_Feed (In_File));
     loop
       declare
-        Str : constant String := Text_Line.Get (In_File);
+        Str : constant String := In_File.Get;
       begin
         exit when Str = "";
-        Text_Line.Put (Out_File, Str);
+        Out_File.Put (Str);
       end;
     end loop;
-    Text_Line.Close (In_File);
+    In_File.Close;
     if File_Name /= "" then
       Sys_Calls.Close (In_Fd);
-      Text_Line.Put_Line (Out_File, "<<EOF>>");
+      Out_File.Put_Line ("<<EOF>>");
     end if;
-    Text_Line.Close (Out_File);
+    Out_File.Close;
   exception
     when Sys_Calls.Name_Error =>
       Sys_Calls.Put_Line_Error ("Name error on " & File_Name & ".");
