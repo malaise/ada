@@ -196,6 +196,9 @@ package body Mcd_Parser is
    Getenv   => (Nosy, "push getenv(A) or False                           ", As.U.Asu_Null, False),
    Rnd      => (Nosy, "push 0.0 <= Rnd < 1.0                             ", As.U.Asu_Null, False),
    Sleep    => (Nosy, "sleep A seconds                                   ", As.U.Asu_Null, False),
+   Include  => (Nosy, "include content of file A (string)                ",
+    As.U.Tus ("(insert the content as a subprogram and call it)"), False),
+   Version  => (Nosy, "push current version (string)                     ", As.U.Asu_Null, False),
    Setexit  => (Nosy, "set exit code to A (natural)                      ", As.U.Asu_Null, False),
    Debugall => (Nosy, "set debug to A (boolean)                          ", As.U.Asu_Null, False),
    Help     => (Nosy, "put help                                          ", As.U.Asu_Null, False) );

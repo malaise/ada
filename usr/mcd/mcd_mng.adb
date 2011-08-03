@@ -2,6 +2,8 @@ with Random, Async_Stdin;
 with Debug, Input_Dispatcher, Mcd_Parser;
 pragma Elaborate(Random);
 package body Mcd_Mng is
+  -- Current version
+  Mcd_Version : constant String := "V1.0";
 
   -- Values poped and processed by oper
   A, B, C, D : Item_Rec;
@@ -286,6 +288,10 @@ package body Mcd_Mng is
     procedure Set_Exit_Code (Code : Item_Rec);
   end Misc;
 
+  package File is
+    procedure Read (File_Name : in Item_Rec; Content : out Item_Rec);
+  end File;
+
   package body Stack is separate;
   package body Operations is separate;
   package body Registers is separate;
@@ -294,6 +300,7 @@ package body Mcd_Mng is
   package body Strings is separate;
   package body Dates is separate;
   package body Misc is separate;
+  package body File is separate;
 
   procedure Dump_Stack renames Stack.Dump_History;
 
@@ -400,6 +407,9 @@ package body Mcd_Mng is
           Pop(A);
           S := A;
           The_End := Misc.Do_Delay(A);
+        when Version =>
+          Push( (Kind => Chrs,
+                 Val_Text => As.U.Tus (Mcd_Version)));
         when Prevtop =>
           if S.Kind = Oper then
             raise Invalid_Argument;
@@ -781,6 +791,11 @@ package body Mcd_Mng is
           -- Return but forbid level 0
           Do_Ret(False);
           Misc.Do_Call;
+        when Include =>
+          Pop(A);
+          File.Read(A, B);
+          Push(B);
+          Misc.Do_Call;
 
         -- Puts
         when Format =>
@@ -877,8 +892,10 @@ package body Mcd_Mng is
         when Debugall =>
           Pop(A); Misc.Set_Debug(A);
           S := A;
+
         when Help =>
           Mcd_Parser.Print_Help;
+
       end case;
     end if;
   end New_Item;

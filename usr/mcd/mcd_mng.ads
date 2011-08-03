@@ -161,6 +161,8 @@ package Mcd_Mng is
    Getenv,
    Rnd,
    Sleep,
+   Include,
+   Version,
    Setexit,
    Debugall,
    Help
