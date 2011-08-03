@@ -1,4 +1,7 @@
-# Concorde consumption
+# Compute Concorde consumption
+# Given percentage of fuel remaining (0 to 200), current fuel flow and
+#  time to arrival, compute the available flight duration and the
+#  remaining fuel at arrival
 
 # Tank capacities in Lbls
 160722 m popr

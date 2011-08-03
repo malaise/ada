@@ -1,4 +1,4 @@
-# When to both hands of a clock overlap
+# Compute when to both hands of a clock overlap (ex, at 0h00)
 
 # Given a clock at a time h.m (in hours and minutes):
 # - The hour hand position (in 1/60°) is ph = h*5 + 5*m/60

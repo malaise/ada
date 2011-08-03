@@ -1,4 +1,4 @@
-# Infinite loop
+# Make an infinite loop
 [ i pushr 1 + i copyr "Loop No: " put putl pushle copye retacal ] copye
 
 0 i popr

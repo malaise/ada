@@ -1,4 +1,4 @@
-# Transforms Lat/Lon: degrees from Greenwich <-> grads from Paris
+# Transform Lat/Lon: degrees from Greenwich <-> grads from Paris
 # Usage: Lat Lon Mode (d or g) -> Lat Lon
 # deg <-> grad
 

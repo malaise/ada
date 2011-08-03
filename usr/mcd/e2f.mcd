@@ -1,4 +1,4 @@
-# Francs <-> Euros conversion
+# Convert Francs <-> Euros
 
 # Error and quit
 [ "Usage: e2f <amount>[<unit>]" putl

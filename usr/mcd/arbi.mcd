@@ -1,7 +1,7 @@
-# Test A+B A-B A*B A/B A%B for random A and B in -999 .. 999
+# Test A+B A-B A*B A/B A%B for random arbitraries A and B in -999 .. 999
 ssize isnotnul [ "No argument expected." putl ssize popn retall ] ifcall
 
-# Get a random number
+# Get a random integer from -999 to +999
 999 toreal r popr
 [ r pushr dup 2.0 * rnd * - +- trunc ] R popr
 

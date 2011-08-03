@@ -1,4 +1,4 @@
-# Test if some strings mach a regex
+# Test if some strings match a regex
 # At least the pattern and one string
 ssize 2 < [ "Usage: regex <pattern> { <str> }" putl ssize popn retall ] ifcall
 

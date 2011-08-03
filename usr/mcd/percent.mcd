@@ -1,4 +1,4 @@
-# Percentages between 2 positive numbers (real or inte) A and B
+# Compute the percentages between 2 positive numbers (real or inte) A and B
 # B = 1 + x%
 # B = A * x%
 # A * B% = x

@@ -1,4 +1,4 @@
-# Triple register indirection
+# Test triple register indirection
 # Store data in reg a
 "Ah que coucou!" a popr "Storing data in reg a" putl
 

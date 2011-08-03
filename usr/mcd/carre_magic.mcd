@@ -1,4 +1,4 @@
-# Displays for each dimension of a magic square, the sum to expect
+# Display, for each dimension of a magic square, the sum to expect
 
 # No argument
 ssize 0 /= [ "Error. No argument accepted." putl ssize popn retall ] ifcall

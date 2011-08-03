@@ -1,4 +1,4 @@
-# Double register indirection
+# Check double register indirection
 # Store data in reg a
 "Ah que coucou!" a popr "Storing data in reg a" putl
 

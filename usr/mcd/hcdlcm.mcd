@@ -1,8 +1,9 @@
-# Highest Common Divisor (hcd) and Lowest Common Multiple (lcm)
+# Compute the Highest Common Divisor (hcd) and the Lowest Common Multiple (lcm)
 #  of two integers (or arbi)
 
 # Error
-[ "Error. Two positive arguments expectd."  putl ssize popn retall ] E popr
+[ "Error. Two positive arguments (int or arbi) expected."  putl
+ssize popn retall ] E popr
 
 # Check one arg
 [

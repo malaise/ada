@@ -1,5 +1,5 @@
-# Compute altitude from flight level and QNH
-#      or flight level from altitude and QNH
+# Compute altitude from flight level and QNH (if input >= 1000)
+#      or flight level from altitude and QNH (otherwise)
 
 # Error handling
 [ "Usage: alti <FL/Alt> <QNH>" putl ssize popn retall ] E popr
@@ -18,7 +18,7 @@ dup isreal  ~ [ E pushr call ] ifcall q popr
 # Compute (QNH - 1013.24) * 28
 q pushr 1013.24 - 28.0 * p popr
 
-# Alt -> FL if > 1000, else FL -> Alt
+# Alt -> FL if >= 1000, else FL -> Alt
 f pushr 1000 <
 [
 5 format

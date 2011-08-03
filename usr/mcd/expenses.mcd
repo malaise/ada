@@ -1,4 +1,4 @@
-# Several people participate to general expenses
+# Compute the balance of several people who participate to general expenses
 # Each entry is a participant id (1 .. N) then its contribution (Positive int
 # or real with 2 digits)
 # From 1 to the highest id entered, display the balance (positive or negative)

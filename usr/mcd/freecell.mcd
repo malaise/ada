@@ -1,4 +1,4 @@
-# Frecell score (wins, defeats) -> win percentage
+# Compute Frecell score: (wins, defeats) -> win percentage
 # W percentage of W + D
 2.004 format
 

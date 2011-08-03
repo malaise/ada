@@ -1,4 +1,4 @@
-# Compute various reaction/brake/stop distances for the given speed (km/h)
+# Compute the reaction/brake/stop distances for the given speeds (km/h)
 # or (if no arg) for all speeds from 30 to 170 km/h (step 10)
 
 # Compute data from top of stack (poped) and put dataa

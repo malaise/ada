@@ -1,5 +1,6 @@
-# Integer search of largest i for which i * i <= n
-# Onearg: positive inte or arbi
+# Search the square root of an integer
+# sqrt(n) is the largest i for which i * i <= n
+# One arg: positive inte or arbi
 
 # Error and quit
 [ "Error: expect 1 argument, positive int or arbi" putl ssize popn retall

@@ -1,4 +1,7 @@
-# Gives information about today
+# Give information about today or about an optional date at format dd/mm/YYyy
+# Ex: 03/08/2011 is Wednesday 03 August 2011, in week 31,
+#      the 215th day of the year, 150 days remaining.
+
 #true debugall
 
 # FUNCTIONS

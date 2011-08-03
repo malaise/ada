@@ -1,4 +1,3 @@
 #!/bin/bash
 cd $HOME/ada/usr/mcd
-# mmcdt "\"$1\"" -e c2f.mcd
 mcdt c2f.mcd "\"$1\""

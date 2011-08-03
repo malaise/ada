@@ -1,4 +1,4 @@
-# Celcius <-> Farenheit conversion
+# Convert Celcius <-> Farenheit
 
 # Error and quit
 [ "Usage: c2f <temperture>[<unit>]" putl

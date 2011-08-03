@@ -1,4 +1,4 @@
-# Put prime numbers (up to an optional positive inte or arbi) or infinite
+# Put prime numbers (up to an optional positive inte or arbi or infinite)
 
 # Error Handling
 [ "Usage: prime [ <max_number> ]" putl ssize popn retall ] E popr

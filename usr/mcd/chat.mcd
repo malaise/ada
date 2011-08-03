@@ -1,11 +1,11 @@
-# Cats activities
+# Display random cats activities
 
-# Random sentence start
+# Random sentence start: select the cat
 2 M popr
 "Le petit chat Fada" Y popr
 "La petite chatte Circé" Z popr
 
-# Random sentence end
+# Random sentence end: select the activity
 0 N popr
 [ a N pushr 1 + N copyr popa ] S popr
 "a peur" S pushr call

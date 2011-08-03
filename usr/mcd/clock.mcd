@@ -1,4 +1,6 @@
-# Clock display Mm/Dd-Hh:Mm
+# Display Clock at format Mm/Dd-Hh:Mm:Ss.Mil
+# With no arg:  display current time then at each round minute
+# With arg 's': display current time then at each round second
 
 # Arg error
 [ "Usage: Clock [ s ]" putl ssize popn retall ] E popr

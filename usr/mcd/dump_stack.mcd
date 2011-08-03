@@ -1,4 +1,4 @@
-# Dumps the stack, not destructive
+# Dump the stack, not destructive
 
 "Stack size is " put ssize putl
 "Stack:" putl
