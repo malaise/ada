@@ -5,6 +5,7 @@ package Mcd_Mng is
 
   type Operator_List is (
 
+   -- Basic operations on numbers
    Add,
    Sub,
    Mult,
@@ -15,26 +16,26 @@ package Mcd_Mng is
    Minus,
    Absv,
    Fact,
-
+   -- Bits operations
    Bitand,
    Bitor,
    Bitxor,
    Bitneg,
    Shl,
    Shr,
-
+   -- Comparisons
    Equal,
    Diff,
    Greater,
    Smaller,
    Greateq,
    Smalleq,
-
+   -- Boolean operations
    Boland,
    Bolor,
    Bolxor,
    Bolneg,
-
+   -- Trigonometry
    Pi,
    Sin,
    Cos,
@@ -42,12 +43,12 @@ package Mcd_Mng is
    Asin,
    Acos,
    Atan,
-
+   -- Logarithm
    Epsilon,
    Exp,
    Ln,
    Log,
-
+   -- Numerical conversion
    Toreal,
    Tointe,
    Toarbi,
@@ -59,13 +60,13 @@ package Mcd_Mng is
    Minint,
    Roundif,
    Dms,
+   Msd,
    Mkfrac,
    Numerof,
    Denomof,
-   Msd,
    Proport,
    Roundat,
-
+   -- Tests on type and value
    Isarbi,
    Isfrac,
    Isinte,
@@ -78,7 +79,7 @@ package Mcd_Mng is
    Isnul,
    Isnotnul,
    Isneg,
-
+   -- Main stack management
    Ssize,
    Swap,
    Swap3,
@@ -86,7 +87,7 @@ package Mcd_Mng is
    Prevtop,
    Pop,
    Popn,
-
+   -- Registers and arrays
    Popr,
    Copyr,
    Pushr,
@@ -103,7 +104,7 @@ package Mcd_Mng is
    Pusha,
    Cleara,
    Emptya,
-
+   -- Extra stack
    Pope,
    Copye,
    Pushle,
@@ -112,13 +113,14 @@ package Mcd_Mng is
    Rotfe,
    Esize,
    Cleare,
-
+   -- Conditions
    Ifthen,
    Ifte,
    Etfi,
-
+   -- Subprograms
    Call,
    Ifcall,
+   Include,
    Ret,
    Retn,
    Retall,
@@ -126,13 +128,13 @@ package Mcd_Mng is
    Ifretn,
    Ifretall,
    Retacal,
-
+   -- Output
    Format,
    Obase,
    Put,
    Newl,
    Putl,
-
+   -- String management and conversions
    Strlen,
    Strcat,
    Strsub,
@@ -151,17 +153,16 @@ package Mcd_Mng is
    Strof,
    Normal,
    Regmatch,
-
+   -- Time
    Clock,
    Dateof,
    Daysof,
    Timeof,
-
+   -- Miscelaneous
    Nop,
    Getenv,
    Rnd,
    Sleep,
-   Include,
    Version,
    Setexit,
    Debugall,

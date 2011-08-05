@@ -3,7 +3,7 @@ with Debug, Input_Dispatcher, Mcd_Parser;
 pragma Elaborate(Random);
 package body Mcd_Mng is
   -- Current version
-  Mcd_Version : constant String := "V1.0";
+  Mcd_Version : constant String := "V1.1";
 
   -- Values poped and processed by oper
   A, B, C, D : Item_Rec;
@@ -388,259 +388,318 @@ package body Mcd_Mng is
         Debug.Put(Item);
         Async_Stdin.New_Line_Err;
       end if;
+      -- The big case on all operations
       case Item.Val_Oper is
-        -- These I do it myself
-        when Nop =>
-          null;
-        when Swap =>
-          Pop(A); Pop(B); Push(A); Push(B);
-        when Swap3 =>
-          Pop(A); Pop(B); Pop(C); Push(A); Push(B); Push(C);
-        when Dup =>
-          Read(A); Push(A);
-        when Pop =>
-          Pop(A);
-        when Rnd =>
-          Push( (Kind => Real,
-                 Val_Real => My_Math.Real(Random.Float_Random)) );
-        when Sleep =>
-          Pop(A);
-          S := A;
-          The_End := Misc.Do_Delay(A);
-        when Version =>
-          Push( (Kind => Chrs,
-                 Val_Text => As.U.Tus (Mcd_Version)));
-        when Prevtop =>
-          if S.Kind = Oper then
-            raise Invalid_Argument;
-          end if;
-          Push (S);
 
-        when Popn =>
-          Misc.Do_Popn;
-
-        -- These are operations
+        -- Basic operations on numbers
         when Add =>
+          -- push B + A
           Pop(A); Pop(B); Push (Operations.Add(B,A));
           S := A;
         when Sub =>
+          -- push B - A
           Pop(A); Pop(B); Push (Operations.Sub(B,A));
           S := A;
         when Mult =>
+          -- push B * A
           Pop(A); Pop(B); Push (Operations.Mult(B,A));
           S := A;
         when Div =>
+          -- push B / A
           Pop(A); Pop(B); Push (Operations.Div(B,A));
           S := A;
         when Remind =>
+          -- push B rem A
           Pop(A); Pop(B); Push (Operations.Remind(B,A));
           S := A;
         when Pow =>
+          -- push B ** A
           Pop(A); Pop(B); Push (Operations.Pow(B,A));
           S := A;
-        when Bitand =>
-          Pop(A); Pop(B); Push (Operations.Bitand(B,A));
-          S := A;
-        when Bitor =>
-          Pop(A); Pop(B); Push (Operations.Bitor(B,A));
-          S := A;
-        when Bitxor =>
-          Pop(A); Pop(B); Push (Operations.Bitxor(B,A));
-          S := A;
-        when Shl =>
-          Pop(A); Pop(B); Push (Operations.Shl(B,A));
-          S := A;
-        when Shr =>
-          Pop(A); Pop(B); Push (Operations.Shr(B,A));
+        when Sqrt =>
+          -- push sqrt(A)
+          Pop(A); Push (Operations.Sqrt(A));
           S := A;
         when Minus =>
+          -- push -A
           Pop(A); Push (Operations.Minus(A));
           S := A;
         when Absv =>
+          -- push |A|
           Pop(A); Push (Operations.Absv(A));
           S := A;
         when Fact =>
+          -- push A!
           Pop(A); Push (Operations.Fact(A));
           S := A;
+
+        -- Bits operations
+        when Bitand =>
+          -- push B and A
+          Pop(A); Pop(B); Push (Operations.Bitand(B,A));
+          S := A;
+        when Bitor =>
+          -- push B or A
+          Pop(A); Pop(B); Push (Operations.Bitor(B,A));
+          S := A;
+        when Bitxor =>
+          -- push B xor A
+          Pop(A); Pop(B); Push (Operations.Bitxor(B,A));
+          S := A;
         when Bitneg =>
+          -- push not A
           Pop(A); Push (Operations.Bitneg(A));
           S := A;
+        when Shl =>
+          -- push shl(B,A)
+          Pop(A); Pop(B); Push (Operations.Shl(B,A));
+          S := A;
+        when Shr =>
+          -- push shr(B,A)
+          Pop(A); Pop(B); Push (Operations.Shr(B,A));
+          S := A;
+
+        -- Comparisons
         when Equal =>
+          -- push B = A
           Pop(A); Pop(B); Push (Operations.Equal(B,A));
           S := A;
         when Diff =>
+          -- push B /= A
           Pop(A); Pop(B); Push (Operations.Diff(B,A));
           S := A;
         when Greater =>
+          -- push B > A
           Pop(A); Pop(B); Push (Operations.Greater(B,A));
           S := A;
         when Smaller =>
+          -- push B < A
           Pop(A); Pop(B); Push (Operations.Smaller(B,A));
           S := A;
         when Greateq =>
+          -- push B >= A
           Pop(A); Pop(B); Push (Operations.Greateq(B,A));
           S := A;
         when Smalleq =>
+          -- push B <= A
           Pop(A); Pop(B); Push (Operations.Smalleq(B,A));
           S := A;
+
+        -- Boolean operations
+        when Boland =>
+          -- push B and then A
+          Pop(A); Pop(B); Push (Operations.Boland(B,A));
+          S := A;
+        when Bolor =>
+          -- push B or else A
+          Pop(A); Pop(B); Push (Operations.Bolor(B,A));
+          S := A;
+        when Bolxor =>
+          -- push B xor A
+          Pop(A); Pop(B); Push (Operations.Bolxor(B,A));
+          S := A;
+        when Bolneg =>
+          -- push not A
+          Pop(A); Push (Operations.Bolneg(A));
+          S := A;
+
+        -- Trigonometry
+        when Pi =>
+          -- push value of Pi
+          Push( (Kind => Real,
+                 Val_Real => My_Math.Real(My_Math.Pi)) );
+        when Sin =>
+          -- push sin(A)
+          Pop(A); Push (Operations.Sin(A));
+          S := A;
+        when Cos =>
+          -- push cos(A)
+          Pop(A); Push (Operations.Cos(A));
+          S := A;
+        when Tan =>
+          -- push tg(A)
+          Pop(A); Push (Operations.Tan(A));
+          S := A;
+        when Asin =>
+          -- push asin(A)
+          Pop(A); Push (Operations.Asin(A));
+          S := A;
+        when Acos =>
+          -- push acos(A)
+          Pop(A); Push (Operations.Acos(A));
+          S := A;
+        when Atan =>
+          -- push atg(A)
+          Pop(A); Push (Operations.Atan(A));
+          S := A;
+
+       -- Logarithm
+        when Epsilon =>
+          -- push value of Epsilon
+          Push( (Kind => Real,
+                 Val_Real => 1.0E-10) );
+        when Exp =>
+          -- push value of e
+          Push( (Kind => Real,
+                 Val_Real => My_Math.Real(My_Math.E)) );
+        when Ln =>
+          -- push ln(A)
+          Pop(A); Push (Operations.Ln(A));
+          S := A;
+        when Log =>
+          -- push log(A)
+          Pop(A); Push (Operations.Log(A));
+          S := A;
+
+        -- Numerical conversion
+        when Toreal =>
+          -- push A converted to real
+          Pop(A); Push (Operations.Toreal(A));
+          S := A;
         when Tointe =>
+          -- push A converted to inte
           Pop(A); Push (Operations.Tointe(A));
           S := A;
         when Toarbi =>
+          -- push A converted to arbi
           Pop(A); Push (Operations.Toarbi(A));
           S := A;
-        when Toreal =>
-          Pop(A); Push (Operations.Toreal(A));
-          S := A;
         when Round =>
+          -- push A rounded
           Pop(A); Push (Operations.Round(A));
           S := A;
         when Trunc =>
+          -- push A truncated
           Pop(A); Push (Operations.Trunc(A));
           S := A;
         when Int =>
+          -- push int part of A
           Pop(A); Push (Operations.Int(A));
           S := A;
         when Frac =>
+          -- push frac part of A
           Pop(A); Push (Operations.Frac(A));
           S := A;
         when Maxint =>
+          -- push value of maxint
           A := Operations.Maxint;
           Push (A);
           S := A;
         when Minint =>
+          -- push value of minint
           A := Operations.Minint;
           Push (A);
           S := A;
         when Roundif =>
+          -- if A within inte then push round(A) elas push(A)
           Pop(A); Push (Operations.Roundif(A));
           S := A;
-          S := A;
-        when Mkfrac =>
-          Pop(A); Pop(B); Push (Operations.Mkfrac(B, A));
-          S := A;
-        when Numerof =>
-          Pop(A); Push (Operations.Numerof(A));
-          S := A;
-        when Denomof =>
-          Pop(A); Push (Operations.Denomof(A));
-          S := A;
         when Dms =>
+          -- push A converted to deg.MiSe
           Pop(A); Push (Operations.Dms(A));
           S := A;
         when Msd =>
+          -- push A (deg.MiSe) converted to A.frac
           Pop(A); Push (Operations.Msd(A));
           S := A;
-        when Sqrt =>
-          Pop(A); Push (Operations.Sqrt(A));
+        when Mkfrac =>
+          -- push fraction B:A
+          Pop(A); Pop(B); Push (Operations.Mkfrac(B, A));
           S := A;
-        when Isarbi =>
-          Pop(A); Push (Operations.Isarbi(A));
+        when Numerof =>
+          -- push numerator of Fraction A
+          Pop(A); Push (Operations.Numerof(A));
           S := A;
-        when Isfrac =>
-          Pop(A); Push (Operations.Isfrac(A));
-          S := A;
-        when Isinte =>
-          Pop(A); Push (Operations.Isinte(A));
-          S := A;
-        when Isreal =>
-          Pop(A); Push (Operations.Isreal(A));
-          S := A;
-        when Isbool =>
-          Pop(A); Push (Operations.Isbool(A));
-          S := A;
-        when Isstr =>
-          Pop(A); Push (Operations.Isstr(A));
-          S := A;
-        when Isreg =>
-          Pop(A); Push (Operations.Isreg(A));
-          S := A;
-        when Isprog =>
-          Pop(A); Push (Operations.Isprog(A));
-          S := A;
-        when Ispos =>
-          Pop(A); Push (Operations.Ispos(A));
-          S := A;
-        when Isnul =>
-          Pop(A); Push (Operations.Isnul(A));
-          S := A;
-        when Isnotnul =>
-          Pop(A); Push (Operations.Isnotnul(A));
-          S := A;
-        when Isneg =>
-          Pop(A); Push (Operations.Isneg(A));
-          S := A;
-        when Boland =>
-          Pop(A); Pop(B); Push (Operations.Boland(B,A));
-          S := A;
-        when Bolor =>
-          Pop(A); Pop(B); Push (Operations.Bolor(B,A));
-          S := A;
-        when Bolxor =>
-          Pop(A); Pop(B); Push (Operations.Bolxor(B,A));
-          S := A;
-        when Bolneg =>
-          Pop(A); Push (Operations.Bolneg(A));
+        when Denomof =>
+          -- push denominatorof Fraction A
+          Pop(A); Push (Operations.Denomof(A));
           S := A;
         when Proport =>
+          -- push A * B / C
           Pop(A); Pop(B); Pop(C); Push (Operations.Proport(C,B,A));
           S := A;
         when Roundat =>
+          -- push B rounded at A digits
           Pop(A); Pop(B); Push (Operations.Roundat(B,A));
           S := B;
 
-        -- Trigo
-        when Pi =>
-          Push( (Kind => Real,
-                 Val_Real => My_Math.Real(My_Math.Pi)) );
-        when Sin =>
-          Pop(A); Push (Operations.Sin(A));
+        -- Tests on type and value
+        when Isarbi =>
+          -- push whether A is arbitrari
+          Pop(A); Push (Operations.Isarbi(A));
           S := A;
-        when Cos =>
-          Pop(A); Push (Operations.Cos(A));
+        when Isfrac =>
+          -- push whether A is fraction
+          Pop(A); Push (Operations.Isfrac(A));
           S := A;
-        when Tan =>
-          Pop(A); Push (Operations.Tan(A));
+        when Isinte =>
+          -- push whether A is integer
+          Pop(A); Push (Operations.Isinte(A));
           S := A;
-        when Asin =>
-          Pop(A); Push (Operations.Asin(A));
+        when Isreal =>
+          -- push whether A is real
+          Pop(A); Push (Operations.Isreal(A));
           S := A;
-        when Acos =>
-          Pop(A); Push (Operations.Acos(A));
+        when Isbool =>
+          -- push whether A is boolean
+          Pop(A); Push (Operations.Isbool(A));
           S := A;
-        when Atan =>
-          Pop(A); Push (Operations.Atan(A));
+        when Isstr =>
+          -- push whether A is string
+          Pop(A); Push (Operations.Isstr(A));
+          S := A;
+        when Isreg =>
+          -- push whether A is register
+          Pop(A); Push (Operations.Isreg(A));
+          S := A;
+        when Isprog =>
+          -- push whether A is sub-programm
+          Pop(A); Push (Operations.Isprog(A));
+          S := A;
+        when Ispos =>
+          -- push whether A is positive
+          Pop(A); Push (Operations.Ispos(A));
+          S := A;
+        when Isnul =>
+          -- push whether A is null
+          Pop(A); Push (Operations.Isnul(A));
+          S := A;
+        when Isnotnul =>
+          -- push whether A is not null
+          Pop(A); Push (Operations.Isnotnul(A));
+          S := A;
+        when Isneg =>
+          -- push whether A is negative
+          Pop(A); Push (Operations.Isneg(A));
           S := A;
 
-        -- Exp, logs
-        when Epsilon =>
-          Push( (Kind => Real,
-                 Val_Real => 1.0E-10) );
-        when Exp =>
-          Push( (Kind => Real,
-                 Val_Real => My_Math.Real(My_Math.E)) );
-        when Ln =>
-          Pop(A); Push (Operations.Ln(A));
-          S := A;
-        when Log =>
-          Pop(A); Push (Operations.Log(A));
-          S := A;
-
-        -- Conditions
-        when Ifthen =>
-          Pop(A); Pop(B);
-          if Operations.Is_True(B) then
-            Push(A);
+        -- Main stack management
+        when Ssize =>
+          -- push stack size
+          Push( (Kind => Inte, Val_Inte => My_Math.Inte(Stack.Stack_Size)));
+        when Swap =>
+          -- push A push B
+          Pop(A); Pop(B); Push(A); Push(B);
+        when Swap3 =>
+          -- push A push B push C
+          Pop(A); Pop(B); Pop(C); Push(A); Push(B); Push(C);
+        when Dup =>
+          -- push A push A
+          Read(A); Push(A);
+        when Prevtop =>
+          -- push S
+          if S.Kind = Oper then
+            raise Invalid_Argument;
           end if;
-          S := A;
-        when Ifte =>
-          Pop(A); Pop(B); Pop(C); Push (Operations.Ifte(C,B,A));
-          S := A;
-        when Etfi =>
-          Pop(A); Pop(B); Pop(C); Push (Operations.Ifte(A,C,B));
-          S := A;
+          Push (S);
+        when Pop =>
+          -- pop A
+          Pop(A);
+        when Popn =>
+          -- pop B A times
+          Misc.Do_Popn;
 
-        -- These are about registers
+        -- Registers and arrays
         when Popr =>
           -- Store B in reg A
           Pop(A); Pop(B); Registers.Store(B, A);
@@ -709,10 +768,6 @@ package body Mcd_Mng is
           Pop(A); Pop(B);
           Push (Registers.Is_Empty_Array(B, A));
 
-        -- Stack size
-        when Ssize =>
-          Push( (Kind => Inte, Val_Inte => My_Math.Inte(Stack.Stack_Size)));
-
         -- Extra stack
         when Pope =>
           -- pushe A
@@ -738,33 +793,62 @@ package body Mcd_Mng is
           Misc.Do_Rotate_Extra (True, A);
           S := A;
         when Esize =>
+           -- push estack size
            Push( (Kind => Inte,
                   Val_Inte => My_Math.Inte(Stack.Stack_Size(
                                 Default_Stack => False))));
         when Cleare =>
+           -- clear estack
            Misc.Do_Clear_Extra;
 
+        -- Conditions
+        when Ifthen =>
+          -- if B then push A
+          Pop(A); Pop(B);
+          if Operations.Is_True(B) then
+            Push(A);
+          end if;
+          S := A;
+        when Ifte =>
+          -- if C then push B else push A
+          Pop(A); Pop(B); Pop(C); Push (Operations.Ifte(C,B,A));
+          S := A;
+        when Etfi =>
+          -- if A then push C else push B
+          Pop(A); Pop(B); Pop(C); Push (Operations.Ifte(A,C,B));
+          S := A;
 
-        -- These ones are subprogram
+        -- Subprograms
         when Call =>
+          -- call A
           Misc.Do_Call;
         when Ifcall =>
+          -- if B then call A
           Pop(A);
           Pop(B);
           if Operations.Is_True(B) then
             Push(A);
             Misc.Do_Call;
           end if;
-
+        when Include =>
+          -- read content of A and call it
+          Pop(A);
+          File.Read(A, B);
+          Push(B);
+          Misc.Do_Call;
         when Ret =>
+          -- return
           Push( (Kind => Inte, Val_Inte => 1) );
           Do_Ret;
         when Retn =>
+          -- return A levels
           Read (S);
           Do_Ret;
         when Retall =>
+          -- return all levels
           Do_Retall;
         when Ifret =>
+          -- if A then return
           Pop(A);
           if Operations.Is_True(A) then
             Push( (Kind => Inte, Val_Inte => 1) );
@@ -772,6 +856,7 @@ package body Mcd_Mng is
           end if;
           S := A;
         when Ifretn =>
+          -- if B then return A levels
           Pop(A);
           Pop(B);
           if Operations.Is_True(B) then
@@ -780,120 +865,164 @@ package body Mcd_Mng is
           end if;
           S := A;
         when Ifretall =>
+          -- if A then return all levels
           Pop(A);
           if Operations.Is_True(A) then
             Do_Retall;
           end if;
           S := A;
-
         when Retacal =>
+          -- return and call A
           Push( (Kind => Inte, Val_Inte => 1) );
           -- Return but forbid level 0
           Do_Ret(False);
           Misc.Do_Call;
-        when Include =>
-          Pop(A);
-          File.Read(A, B);
-          Push(B);
-          Misc.Do_Call;
 
-        -- Puts
+        -- Output
         when Format =>
+          -- set foramt to A
           Pop(A); Ios.Format(A);
           S := A;
         when Obase =>
+          -- set obase to A
           Pop(A); Ios.Set_Obase(A);
           S := A;
         when Put =>
+          -- put A
           Pop(A); Ios.Put(A);
           S := A;
+        when Newl =>
+          -- new line
+          Ios.New_Line;
         when Putl =>
+          -- put_line A
           Pop(A); Ios.Put_Line(A);
           S := A;
-        when Newl =>
-          Ios.New_Line;
 
-        -- Strings
+        -- String management and conversions
         when Strlen =>
+          -- push string length of A
           Pop(A); Push (Strings.Strlen(A));
           S := A;
         when Strcat =>
+          -- push B & A
           Pop(A); Pop(B); Push (Strings.Strcat(B, A));
           S := A;
         when Strsub =>
+          -- push C(B..A)
           Pop(A); Pop(B); Pop(C); Push (Strings.Strsub(C, B, A));
           S := A;
         when Strloc =>
+          -- push index of Bth occurence of A in C
           Pop(A); Pop(B); Pop(C); Push (Strings.Strloc(C, B, A));
           S := A;
         when Strrep =>
+          -- push C replaced by A at pos B
           Pop(A); Pop(B); Pop(C); Push (Strings.Strrep(C, B, A));
           S := A;
         when Strupp =>
+          -- push A converted to uppercase
           Pop(A); Push (Strings.Strupp(A));
           S := A;
         when Strlow =>
+          -- push A converted to lowercase
           Pop(A); Push (Strings.Strlow(A));
           S := A;
         when Strmix =>
+          -- push A converted to mixed-case
           Pop(A); Push (Strings.Strmix(A));
           S := A;
         when Strarbi =>
+          -- push A converted to arbitrary
           Pop(A); Push (Ios.Strarbi(A));
           S := A;
         when Strfrac =>
+          -- push A converted to fraction
           Pop(A); Push (Ios.Strfrac(A));
           S := A;
         when Strinte =>
+          -- push A converted to integer
           Pop(A); Push (Ios.Strinte(A));
           S := A;
         when Strreal =>
+          -- push A converted to real
           Pop(A); Push (Ios.Strreal(A));
           S := A;
         when Strbool =>
+          -- push A converted to boolean
           Pop(A); Push (Ios.Strbool(A));
           S := A;
         when Strregi =>
+          -- push A converted to register
           Pop(A); Push (Ios.Strregi(A));
           S := A;
         when Strprog =>
+          -- push A converted to subprogram
           Pop(A); Push (Ios.Strprog(A));
           S := A;
         when Strof =>
+          -- push A converted to string
           Pop(A); Push (Ios.Strof(A));
           S := A;
         when Normal =>
+          -- push normalised string of D
+          --   C is Nb, B is Right, A is Pad
           Pop(A); Pop(B); Pop(C); Pop(D);
           Push (Ios.Normalof(D, C, B, A));
           S := A;
         when Regmatch =>
+          -- push whether B matches regex A
           Pop(A); Pop(B); Push (Misc.Reg_Match(A, B));
           S := A;
 
-        -- Dates
+        -- Time
         when Clock =>
+          -- push current time
           Push (Dates.Clock);
         when Dateof =>
+          -- push time image of A
           Pop(A); Push (Dates.Time_To_Date(A));
           S := A;
         when Daysof =>
+          -- push delay in days of A
           Pop(A); Push (Dates.Time_To_Days(A));
           S := A;
         when Timeof =>
+          -- push time corresponding to time image A
           Pop(A); Push (Dates.Date_To_Time(A));
           S := A;
 
-        -- Misc
+        -- Miscelaneous
+        when Nop =>
+          -- no operation
+          null;
         when Getenv =>
+          -- push getenv(A)
           Pop(A); Push (Misc.Getenv(A));
           S := A;
+        when Rnd =>
+          -- push random value
+          Push( (Kind => Real,
+                 Val_Real => My_Math.Real(Random.Float_Random)) );
+        when Sleep =>
+          -- sleep A seconds
+          Pop(A);
+          S := A;
+          The_End := Misc.Do_Delay(A);
+        when Version =>
+          -- push Mcd version
+          Push( (Kind => Chrs,
+                 Val_Text => As.U.Tus (Mcd_Version)));
+
         when Setexit =>
+          -- set exit code to A
           Pop (A); Misc.Set_Exit_Code (A);
         when Debugall =>
+          -- set debug to True or False
           Pop(A); Misc.Set_Debug(A);
           S := A;
-
         when Help =>
+          -- put help
           Mcd_Parser.Print_Help;
 
       end case;

@@ -36,7 +36,7 @@ package body Mcd_Parser is
 
   -- The operators
   Words : constant array (Mcd_Mng.Operator_List) of One_Rec :=
-
+  -- Basic operations on numbers
   (Add      => ("+ ", "push B + A                                        ", As.U.Asu_Null, False),
    Sub      => ("- ", "push B - A                                        ", As.U.Asu_Null, False),
    Mult     => ("* ", "push B * A                                        ", As.U.Asu_Null, False),
@@ -47,26 +47,26 @@ package body Mcd_Parser is
    Minus    => ("+-", "push -A                                           ", As.U.Asu_Null, False),
    Absv     => (Nosy, "push |A| (absolute value)                         ", As.U.Asu_Null, False),
    Fact     => ("! ", "push A! (factorial)                               ", As.U.Asu_Null, True),
-
+   -- Bits operations
    Bitand   => ("&&", "push B and A (bit and)                            ", As.U.Asu_Null, False),
    Bitor    => ("||", "push B or A  (bit or)                             ", As.U.Asu_Null, False),
    Bitxor   => ("^^", "push B xor A (bit xor)                            ", As.U.Asu_Null, False),
    Bitneg   => ("~~", "push neg A   (bit neg)                            ", As.U.Asu_Null, False),
    Shl      => ("<<", "push B << A (bits shift left)                     ", As.U.Asu_Null, False),
    Shr      => (">>", "push B >> A (bits shift right)                    ", As.U.Asu_Null, True),
-
+   -- Comparisons
    Equal    => ("= ", "push B = A                                        ", As.U.Asu_Null, False),
    Diff     => ("/=", "push B /= A                                       ", As.U.Asu_Null, False),
    Greater  => ("> ", "push B > A                                        ", As.U.Asu_Null, False),
    Smaller  => ("< ", "push B < A                                        ", As.U.Asu_Null, False),
    Greateq  => (">=", "push B >= A                                       ", As.U.Asu_Null, False),
    Smalleq  => ("<=", "push B <= A                                       ", As.U.Asu_Null, True),
-
+   -- Boolean operations
    Boland   => ("& ", "push B and A (boolean)                            ", As.U.Asu_Null, False),
    Bolor    => ("| ", "push B or A  (boolean)                            ", As.U.Asu_Null, False),
    Bolxor   => ("^ ", "push B xor A (boolean)                            ", As.U.Asu_Null, False),
    Bolneg   => ("~ ", "push not A   (boolean)                            ", As.U.Asu_Null, True),
-
+   -- Trigonometry
    Pi       => (Nosy, "push pi                                           ", As.U.Asu_Null, False),
    Sin      => (Nosy, "push Sin(A) A in radiants                         ", As.U.Asu_Null, False),
    Cos      => (Nosy, "push Cos(A) A in radiants                         ", As.U.Asu_Null, False),
@@ -74,12 +74,12 @@ package body Mcd_Parser is
    Asin     => (Nosy, "push ASin(A) in radiants                          ", As.U.Asu_Null, False),
    Acos     => (Nosy, "push ACos(A) in radiants                          ", As.U.Asu_Null, False),
    Atan     => (Nosy, "push ATan(A) in radiants                          ", As.U.Asu_Null, True),
-
+   -- Logarithm
    Epsilon  => (Nosy, "push epsilon (1.0E-10)                            ", As.U.Asu_Null, False),
    Exp      => (Nosy, "push e (exponential)                              ", As.U.Asu_Null, False),
    Ln       => (Nosy, "push ln(A)  (neper logarithm)                     ", As.U.Asu_Null, False),
    Log      => (Nosy, "push log(A) (base 10 logarithm)                   ", As.U.Asu_Null, True),
-
+   -- Numerical conversion
    Toreal   => (Nosy, "push Real(A) (A integer)                          ", As.U.Asu_Null, False),
    Tointe   => (Nosy, "push Inte(A) (A arbitrary)                        ", As.U.Asu_Null, False),
    Toarbi   => (Nosy, "push Arbi(A) (A interger)                         ", As.U.Asu_Null, False),
@@ -89,7 +89,7 @@ package body Mcd_Parser is
    Frac     => (Nosy, "push frac part of A real                          ", As.U.Asu_Null, False),
    Maxint   => (Nosy, "push max integer value                            ", As.U.Asu_Null, False),
    Minint   => (Nosy, "push min integer value                            ", As.U.Asu_Null, False),
-   Roundif  => (Nosy, "push Round(A) if A within int else push A         ", As.U.Asu_Null, False),
+   Roundif  => (Nosy, "push Round(A) if A (real) within inte else push A ", As.U.Asu_Null, False),
    Dms      => (Nosy, "A.frac -> A.MinSecMillis                          ", As.U.Asu_Null, False),
    Msd      => (Nosy, "A.MinSecMillis -> A.frac                          ", As.U.Asu_Null, False),
    Mkfrac   => (Nosy, "push Fraction B:A (A, B arbi)                     ", As.U.Asu_Null, False),
@@ -97,7 +97,7 @@ package body Mcd_Parser is
    Denomof  => (Nosy, "push denominator of Fraction A                    ", As.U.Asu_Null, False),
    Proport  => (Nosy, "push A * B / C                                    ", As.U.Asu_Null, False),
    Roundat  => (Nosy, "push B (real) rounded at A (integer) digits       ", As.U.Asu_Null, True),
-
+   -- Tests on type and value
    Isarbi   => (Nosy, "push True if A in an arbitrary                    ", As.U.Asu_Null, False),
    Isfrac   => (Nosy, "push True if A in a Fraction                      ", As.U.Asu_Null, False),
    Isinte   => (Nosy, "push True if A in an integer                      ", As.U.Asu_Null, False),
@@ -105,13 +105,12 @@ package body Mcd_Parser is
    Isbool   => (Nosy, "push True if A in a boolean                       ", As.U.Asu_Null, False),
    Isstr    => (Nosy, "push True if A is a string                        ", As.U.Asu_Null, False),
    Isreg    => (Nosy, "push True if A is a register                      ", As.U.Asu_Null, False),
-   Isprog   => (Nosy, "push True if A is a subprog                       ", As.U.Asu_Null, True),
-
+   Isprog   => (Nosy, "push True if A is a subprog                       ", As.U.Asu_Null, False),
    Ispos    => (Nosy, "push True if A >  0 or 0.0                        ", As.U.Asu_Null, False),
    Isnul    => (Nosy, "push True if A =  0 or 0.0                        ", As.U.Asu_Null, False),
    Isnotnul => (Nosy, "push True if A /= 0 or 0.0                        ", As.U.Asu_Null, False),
    Isneg    => (Nosy, "push True if A <  0 or 0.0                        ", As.U.Asu_Null, True),
-
+   -- Main stack management
    Ssize    => (Nosy, "push stack size                                   ", As.U.Asu_Null, False),
    Swap     => (Nosy, "push A, push B                                    ", As.U.Asu_Null, False),
    Swap3    => (Nosy, "push A, push B, push C                            ", As.U.Asu_Null, False),
@@ -119,7 +118,7 @@ package body Mcd_Parser is
    Prevtop  => (Nosy, "push previous top of stack                        ", As.U.Asu_Null, False),
    Pop      => (Nosy, "pop A                                             ", As.U.Asu_Null, False),
    Popn     => (Nosy, "pop B A times                                     ", As.U.Asu_Null, True),
-
+   -- Registers and arrays
    Popr     => (Nosy, "B -> regA                                         ", As.U.Asu_Null, False),
    Copyr    => (Nosy, "B -> regA, push B                                 ", As.U.Asu_Null, False),
    Pushr    => (Nosy, "push regA                                         ", As.U.Asu_Null, False),
@@ -136,7 +135,7 @@ package body Mcd_Parser is
    Pusha    => (Nosy, "push regB[A]                                      ", As.U.Asu_Null, False),
    Cleara   => (Nosy, "clear regB[A]                                     ", As.U.Asu_Null, False),
    Emptya   => (Nosy, "push True if regB[A] is empty                     ", As.U.Asu_Null, True),
-
+   -- Extra stack
    Pope     => (Nosy, "pop A push_extra A                                ", As.U.Asu_Null, False),
    Copye    => (Nosy, "pop A push_extra A push A                         ", As.U.Asu_Null, False),
    Pushle   => (Nosy, "pop_extra last  X push X                          ", As.U.Asu_Null, False),
@@ -145,13 +144,15 @@ package body Mcd_Parser is
    Rotfe    => (Nosy, "pushfe Pope A times (>=0)                         ", As.U.Asu_Null, False),
    Esize    => (Nosy, "push extra_stack size                             ", As.U.Asu_Null, False),
    Cleare   => (Nosy, "clear extra_stack                                 ", As.U.Asu_Null, True),
-
+   -- Conditions
    Ifthen   => (Nosy, "if B then push A                                  ", As.U.Asu_Null, False),
    Ifte     => (Nosy, "if C then push B else push A                      ", As.U.Asu_Null, False),
    Etfi     => (Nosy, "if A then push C else push B                      ", As.U.Asu_Null, True),
-
+   -- Subprograms
    Call     => (Nosy, "call A                                            ", As.U.Asu_Null, False),
    Ifcall   => (Nosy, "if B then call A                                  ", As.U.Asu_Null, False),
+   Include  => (Nosy, "include content of file A (string)                ",
+    As.U.Tus ("(insert the content as a subprogram and call it)"), False),
    Ret      => (Nosy, "return                                            ", As.U.Asu_Null, False),
    Retn     => (Nosy, "return A levels (0=none)                          ", As.U.Asu_Null, False),
    Retall   => (Nosy, "return all levels                                 ", As.U.Asu_Null, False),
@@ -159,14 +160,14 @@ package body Mcd_Parser is
    Ifretn   => (Nosy, "if B return A levels (0=none)                     ", As.U.Asu_Null, False),
    Ifretall => (Nosy, "if A return all levels                            ", As.U.Asu_Null, False),
    Retacal  => (Nosy, "return and call A                                 ", As.U.Asu_Null, True),
-
+   -- Output
    Format   => (Nosy, "set format to A (for put and strof)               ",
     As.U.Tus ("xx (for integers) or xx.yyy (for reals) "), False),
    Obase    => (Nosy, "set output base to A (for put and strof)          ", As.U.Asu_Null, False),
    Put      => (Nosy, "put A                                             ", As.U.Asu_Null, False),
    Newl     => (Nosy, "new line                                          ", As.U.Asu_Null, False),
    Putl     => (Nosy, "put_line A                                        ", As.U.Asu_Null, True),
-
+   -- String management and conversions
    Strlen   => (Nosy, "push length of A                                  ", As.U.Asu_Null, False),
    Strcat   => (Nosy, "push B & A                                        ", As.U.Asu_Null, False),
    Strsub   => (Nosy, "push C(B..A)                                      ", As.U.Asu_Null, False),
@@ -186,18 +187,16 @@ package body Mcd_Parser is
    Normal   => (Nosy, "push normalised string of D (integer)             ",
     As.U.Tus ("C is Nb(positive), B is Right(boolean), A is Pad(string)"), False),
    Regmatch => (Nosy, "push where B matches regex A                      ", As.U.Asu_Null, True),
-
+   -- Time
    Clock    => (Nosy, "push current time                                 ", As.U.Asu_Null, False),
    Dateof   => (Nosy, "int -> YYyy/mm/dd-hh:mm:ss.mmm                    ", As.U.Asu_Null, False),
    Daysof   => (Nosy, "int -> days-hh:mm:ss.mmm                          ", As.U.Asu_Null, False),
    Timeof   => (Nosy, "YYyy/mm/dd-hh:mm:ss.mmm -> int                    ", As.U.Asu_Null, True),
-
+   -- Miscelaneous
    Nop      => (Nosy, "no operation                                      ", As.U.Asu_Null, False),
    Getenv   => (Nosy, "push getenv(A) or False                           ", As.U.Asu_Null, False),
    Rnd      => (Nosy, "push 0.0 <= Rnd < 1.0                             ", As.U.Asu_Null, False),
    Sleep    => (Nosy, "sleep A seconds                                   ", As.U.Asu_Null, False),
-   Include  => (Nosy, "include content of file A (string)                ",
-    As.U.Tus ("(insert the content as a subprogram and call it)"), False),
    Version  => (Nosy, "push current version (string)                     ", As.U.Asu_Null, False),
    Setexit  => (Nosy, "set exit code to A (natural)                      ", As.U.Asu_Null, False),
    Debugall => (Nosy, "set debug to A (boolean)                          ", As.U.Asu_Null, False),
