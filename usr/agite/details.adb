@@ -129,6 +129,12 @@ package body Details is
             end if;
           end if;
         end loop;
+        -- Prepend date
+        if Result.Is_Null then
+          Result := As.U.Tus (Date);
+        else
+          Result := As.U.Tus (Date) & Ada.Characters.Latin_1.Lf & Result;
+        end if;
         Afpx.Set_Selection (Result.Image);
       else
         Afpx.Set_Selection (Hash);

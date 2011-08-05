@@ -3,7 +3,7 @@
 
 <!-- For agite -->
 <Afpx_Descriptors Height="44" Width="55">
-  <Var Name="Version" Value="V3.1"/>
+  <Var Name="Version" Value="V3.2"/>
 
   <!-- Main screen: explorator -->
   <Descriptor Num="1" Background="Light_Grey">
@@ -529,6 +529,8 @@
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="2">Back</Init>
     </Field>
+
+    <!-- Copy Hash / date and comment -->
     <Field Num="17" Kind="Button">
       <Geometry Up="${Field_10.Up}" Height="1"
                 Width="8" Right="${Screen.Width}-2"/>
