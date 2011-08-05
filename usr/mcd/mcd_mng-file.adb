@@ -22,15 +22,9 @@ package body File is
     end;
     In_File.Open (Text_Line.In_File, In_Fd);
 
-    -- Read and append lines
-    loop
-      declare
-        Str : constant String := In_File.Get;
-      begin
-        exit when Str = "";
-        Content.Val_Text.Append (Str);
-      end;
-    end loop;
+    -- Read all content
+    In_File.Set_Line_Feed ("");
+    Content.Val_Text := In_File.Get;
 
     -- Close
     In_File.Close;
