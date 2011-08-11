@@ -1,5 +1,5 @@
 # Compute the reaction/brake/stop distances for the given speeds (km/h)
-# or (if no arg) for all speeds from 30 to 170 km/h (step 10)
+# or (if no arg) for all speeds from 30 to 200 km/h (step 10)
 
 # Compute data from top of stack (poped) and put dataa
 [
@@ -42,7 +42,7 @@ S pushr round "  " put put " |" putl
 ] C popr
 
 # Default values
-ssize isnul [ 30 40 50 60 70 80 90 100 110 120 130 140 150 160 170 ] ifcall
+ssize isnul [ 30 40 50 60 70 80 90 100 110 120 130 140 150 160 170 180 190 200 ] ifcall
 
 # Store stack in reverse order in estack
 [ ssize isnul ifret
