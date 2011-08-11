@@ -26,6 +26,9 @@ package body Input_Dispatcher is
   --  also used by Error_String
   Stop_Index : Positive;
 
+  -- Line terminator, Lf in Unix (still valid with CrLf of dos/windows)
+  Lf : constant String := Ada.Characters.Latin_1.Lf & "";
+
   -- Word separator
   function Is_Separator (C : in Character) return Boolean is
   begin
@@ -93,22 +96,32 @@ package body Input_Dispatcher is
   -- Extraxt next word (from Cur_Index) of Cur_Str
   function Next_Str_Word return As.U.Asu_Us is
     Tmp_Index : Positive;
+    Lf_Index : Natural;
     In_Lit : Boolean := False;
   begin
-    -- Skip separators
-    while Cur_Index <= Cur_Str.Length
-    and then Is_Separator (Cur_Str.Element (Cur_Index)) loop
-      Cur_Index := Cur_Index + 1;
-    end loop;
-    if Cur_Index > Cur_Str.Length then
-      -- No more word
-      return As.U.Asu_Null;
-    end if;
+    -- Loop as long as a comment
+    loop
+      -- Skip separators
+      while Cur_Index <= Cur_Str.Length
+      and then Is_Separator (Cur_Str.Element (Cur_Index)) loop
+        Cur_Index := Cur_Index + 1;
+      end loop;
+      if Cur_Index > Cur_Str.Length then
+        -- No more word
+        return As.U.Asu_Null;
+      end if;
 
-    if Cur_Str.Element (Cur_Index) = '#' then
-      -- Comment: skip line
-      return As.U.Asu_Null;
-    end if;
+      exit when Cur_Str.Element (Cur_Index) /= '#';
+      -- Comment: skip line until Lf
+      Lf_Index := Cur_Str.Locate (Lf, Cur_Index);
+      if Lf_Index = 0 then
+        -- No end of line (so nothing after it) => done
+        return As.U.Asu_Null;
+      else
+        -- Start at Lf (it will be skipped as a separator)
+        Cur_Index := Lf_Index;
+      end if;
+    end loop;
 
     -- Got a start of word
     Tmp_Index := Cur_Index;
