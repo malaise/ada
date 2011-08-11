@@ -3,7 +3,7 @@ with Debug, Input_Dispatcher, Mcd_Parser;
 pragma Elaborate(Random);
 package body Mcd_Mng is
   -- Current version
-  Mcd_Version : constant String := "V1.1";
+  Mcd_Version : constant String := "V1.2";
 
   -- Values poped and processed by oper
   A, B, C, D : Item_Rec;
