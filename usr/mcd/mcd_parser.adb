@@ -195,6 +195,7 @@ package body Mcd_Parser is
    -- Miscelaneous
    Nop      => (Nosy, "no operation                                      ", As.U.Asu_Null, False),
    Getenv   => (Nosy, "push getenv(A) or False                           ", As.U.Asu_Null, False),
+   Read     => (Nosy, "push lines of file as strings (first on top)      ", As.U.Asu_Null, False),
    Rnd      => (Nosy, "push 0.0 <= Rnd < 1.0                             ", As.U.Asu_Null, False),
    Sleep    => (Nosy, "sleep A seconds                                   ", As.U.Asu_Null, False),
    Version  => (Nosy, "push current version (string)                     ", As.U.Asu_Null, False),

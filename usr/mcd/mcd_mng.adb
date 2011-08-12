@@ -1,12 +1,15 @@
-with Random, Async_Stdin;
+with Random, Async_Stdin, As.U.Utils;
 with Debug, Input_Dispatcher, Mcd_Parser;
 pragma Elaborate(Random);
 package body Mcd_Mng is
   -- Current version
-  Mcd_Version : constant String := "V1.2";
+  Mcd_Version : constant String := "V2.0";
 
   -- Values poped and processed by oper
   A, B, C, D : Item_Rec;
+
+  -- Array of lines read from file
+  Read_Lines : As.U.Utils.Asu_Ua.Unb_Array;
 
   -- Saved value (previous top of stack), invalid when of kind Oper
   Invalid_Item : constant Item_Rec
@@ -289,7 +292,11 @@ package body Mcd_Mng is
   end Misc;
 
   package File is
+    -- Read and concatenate lines (including Lf)
     procedure Read (File_Name : in Item_Rec; Content : out Item_Rec);
+    -- Read ans store each string (excluding Lfs)
+    procedure Read (File_Name : in Item_Rec;
+                    Content   : out As.U.Utils.Asu_Ua.Unb_Array);
   end File;
 
   package body Stack is separate;
@@ -1000,6 +1007,14 @@ package body Mcd_Mng is
           -- push getenv(A)
           Pop(A); Push (Misc.Getenv(A));
           S := A;
+        when Read =>
+         -- push lines of the file
+         Pop(A);
+         File.Read(A, Read_Lines);
+         for I in reverse 1 .. Read_Lines.Length loop
+           Push ((Kind => Chrs, Val_Text => Read_Lines.Element(I)));
+         end loop;
+         Read_Lines.Set_Null;
         when Rnd =>
           -- push random value
           Push( (Kind => Real,

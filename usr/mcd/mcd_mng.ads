@@ -161,6 +161,7 @@ package Mcd_Mng is
    -- Miscelaneous
    Nop,
    Getenv,
+   Read,
    Rnd,
    Sleep,
    Version,

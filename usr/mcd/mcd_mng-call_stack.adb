@@ -1,4 +1,3 @@
-with As.U.Utils;
 separate (Mcd_Mng)
 
 package body Call_Stack is

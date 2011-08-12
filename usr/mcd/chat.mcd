@@ -7,10 +7,10 @@
 
 # Random sentence end: the activity
 # Read activities
-"chat-txt.mcd" include
+"chat.dat" read
 # Count them and store them in array a[1..N]
-ssize N copyr 1 + i popr
-[ ssize isnul ifret a i pushr 1 - i copyr popa
+0 N popr
+[ ssize isnul ifret a N pushr 1 + N copyr popa
 S pushr retacal ] S copyr call
 
 # Display number of activities
