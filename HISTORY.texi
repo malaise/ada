@@ -21,6 +21,8 @@
 
 @table @asis
 
+@item 2011/08/12
+Add mcd operations read and callbrk
 @item 2011/07/04
 Add mcd timeof returns False if string is properly formatted but invalid
 @item 2011/06/28
