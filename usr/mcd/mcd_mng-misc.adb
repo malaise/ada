@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with Event_Mng, Regular_Expressions, Basic_Proc, Sys_Calls;
+with Regular_Expressions, Basic_Proc, Sys_Calls;
 
 separate (Mcd_Mng)
 package body Misc is
@@ -83,7 +83,7 @@ package body Misc is
     end loop;
   end Do_Rotate_Extra;
 
-  function  Do_Delay (The_Delay : Duration) return Delay_Status_List is
+  function Do_Delay (The_Delay : Duration) return Boolean is
     Expiration : Ada.Calendar.Time;
     Timeout_Ms : Integer;
     use type Ada.Calendar.Time, Event_Mng.Out_Event_List;
@@ -102,15 +102,20 @@ package body Misc is
 
     loop
       if Event_Mng.Wait (Timeout_Ms) = Event_Mng.Signal_Event then
-        return Exit_Break;
+        return True;
       end if;
       Compute_Timeout;
       exit when Timeout_Ms = 0;
     end loop;
-    return Continue;
+    return False;
   end Do_Delay;
 
-  function Do_Delay (The_Delay : Item_Rec) return Delay_Status_List is
+  function Check_Break return Boolean is
+  begin
+    return Do_Delay (0.0);
+  end Check_Break;
+
+  function Do_Delay (The_Delay : Item_Rec) return Boolean is
   begin
     if The_Delay.Kind = Inte then
       return Do_Delay (Duration(The_Delay.Val_Inte));

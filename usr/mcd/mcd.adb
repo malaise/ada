@@ -54,6 +54,7 @@ begin
   end;
 
   -- Main loop
+  Mcd_Mng.Init;
   loop
     begin
       Item := Mcd_Parser.Next_Item;

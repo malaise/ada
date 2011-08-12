@@ -159,7 +159,8 @@ package body Mcd_Parser is
    Ifret    => (Nosy, "if A return                                       ", As.U.Asu_Null, False),
    Ifretn   => (Nosy, "if B return A levels (0=none)                     ", As.U.Asu_Null, False),
    Ifretall => (Nosy, "if A return all levels                            ", As.U.Asu_Null, False),
-   Retacal  => (Nosy, "return and call A                                 ", As.U.Asu_Null, True),
+   Retacal  => (Nosy, "return and call A                                 ", As.U.Asu_Null, False),
+   Callbrk  => (Nosy, "set program to be called after break before exit  ", As.U.Asu_Null, True),
    -- Output
    Format   => (Nosy, "set format to A (for put and strof)               ",
     As.U.Tus ("xx (for integers) or xx.yyy (for reals) "), False),

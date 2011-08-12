@@ -128,6 +128,7 @@ package Mcd_Mng is
    Ifretn,
    Ifretall,
    Retacal,
+   Callbrk,
    -- Output
    Format,
    Obase,
@@ -194,6 +195,8 @@ package Mcd_Mng is
     end case;
   end record;
 
+  -- Init the manager
+  procedure Init;
 
   -- Treat a new item
   type End_Status_List is (Exit_Return, Continue, Exit_Break);

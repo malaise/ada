@@ -1,6 +1,7 @@
 # Format a time into [-][DDd]HHhMMmSSsmmm
 # TOS is either a real (HH.xxyy) or a clock (ms)
 
+[
 # If input is real, transform it into milliseconds
 dup isreal [ 3600.0 * 1000.0 * round ] ifcall
 
@@ -8,7 +9,7 @@ dup isreal [ 3600.0 * 1000.0 * round ] ifcall
 dup isneg [ "-" put absv ] ifcall
 
 # Check for days
-daysof dup 1 5 strsub strinte dup
+5 format daysof dup 1 5 strsub strinte dup
 isnul [ pop ] [ 1 format put "d" put ] ifte call
 # Convert to " days-hh:mm:ss.mmm" and remove days
 7 18 strsub
@@ -16,4 +17,4 @@ isnul [ pop ] [ 1 format put "d" put ] ifte call
 3 "h" strrep
 6 "m" strrep
 9 "s" strrep
-
+]

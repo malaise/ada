@@ -1,23 +1,10 @@
-with Random, Async_Stdin, As.U.Utils;
+with Random, Async_Stdin, As.U.Utils, Event_Mng;
 with Debug, Input_Dispatcher, Mcd_Parser;
 pragma Elaborate(Random);
 package body Mcd_Mng is
+
   -- Current version
-  Mcd_Version : constant String := "V2.0";
-
-  -- Values poped and processed by oper
-  A, B, C, D : Item_Rec;
-
-  -- Array of lines read from file
-  Read_Lines : As.U.Utils.Asu_Ua.Unb_Array;
-
-  -- Saved value (previous top of stack), invalid when of kind Oper
-  Invalid_Item : constant Item_Rec
-       := (Kind => Oper, Val_Oper => Operator_List'First);
-  S : Item_Rec := Invalid_Item;
-
-  -- Subprogram called
-  Call_Entry : As.U.Asu_Us;
+  Mcd_Version : constant String := "V3.0";
 
   package Stack is
     -- What can we store in stack
@@ -277,10 +264,9 @@ package body Mcd_Mng is
 
     procedure Do_Rotate_Extra (First : in Boolean; Times : in Item_Rec);
 
-    subtype Delay_Status_List is End_Status_List range Continue .. Exit_Break;
-    function Do_Delay (The_Delay : Duration) return Delay_Status_List;
+    function Check_Break return Boolean;
 
-    function Do_Delay (The_Delay : Item_Rec) return Delay_Status_List;
+    function Do_Delay (The_Delay : Item_Rec) return Boolean;
 
     procedure Set_Debug (Set : in Item_Rec);
 
@@ -306,16 +292,43 @@ package body Mcd_Mng is
   package body Call_Stack is separate;
   package body Strings is separate;
   package body Dates is separate;
-  package body Misc is separate;
   package body File is separate;
 
   procedure Dump_Stack renames Stack.Dump_History;
+
+  -- Values poped and processed by oper
+  A, B, C, D : Item_Rec;
+
+  -- Array of lines read from file
+  Read_Lines : As.U.Utils.Asu_Ua.Unb_Array;
+
+  -- Saved value (previous top of stack), invalid when of kind Oper
+  Invalid_Item : constant Item_Rec
+       := (Kind => Oper, Val_Oper => Operator_List'First);
+  S : Item_Rec := Invalid_Item;
+
+  -- Subprogram called
+  Call_Entry : As.U.Asu_Us;
+
+  -- Subprogram to call when Break
+  Breaking : Boolean := False;
+  Break_Program : Item_Rec := (Prog, As.U.Tus ("nop"));
 
   -- Check for Ctrl Break each Item_Check_Period items
   --  to dectect it even if no input (e.g. within a loop)
   Item_Check_Period : constant Positive := 100;
   Nb_Item : Natural := 0;
 
+  -- Misc uses A, Call_Entry, S...
+  package body Misc is separate;
+
+  -- Init the manager
+  procedure Init is
+  begin
+    Event_Mng.Activate_Signal_Handling;
+  end Init;
+
+  -- Process next item
   procedure New_Item (Item : in Item_Rec; The_End : out End_Status_List) is
 
     procedure Do_Retn (All_Levels    : in Boolean;
@@ -323,6 +336,7 @@ package body Mcd_Mng is
                        Allow_Level_0 : in Boolean) is
       L : Integer;
       Call_Stack_Level : Natural;
+      Ret_All : Boolean;
     begin
       if Debug.Debug_Level_Array(Debug.Oper) then
         Async_Stdin.Put_Line_Err("Mng: Do_ret");
@@ -347,8 +361,13 @@ package body Mcd_Mng is
         raise Invalid_Argument;
       elsif L - 1 = Call_Stack_Level then
         if Allow_Level_0 then
-          The_End := Exit_Return;
-          return;
+          Ret_All := True;
+          L := Call_Stack_Level;
+          if Breaking then
+            The_End := Exit_Break;
+          else
+            The_End := Exit_Return;
+          end if;
         else
           -- Retacal from level 0
           raise Invalid_Argument;
@@ -359,7 +378,9 @@ package body Mcd_Mng is
         -- Restart form previous context
         Call_Entry := Call_Stack.Pop;
       end loop;
-      Input_Dispatcher.Set_Input(Call_Entry.Image);
+      if not Ret_All then
+        Input_Dispatcher.Set_Input(Call_Entry.Image);
+      end if;
     end Do_Retn;
 
     procedure Do_Retall is
@@ -373,16 +394,47 @@ package body Mcd_Mng is
       Do_Retn(False, A, Allow_Level_0);
     end Do_Ret;
 
+    procedure Handle_Break is
+    begin
+      if Debug.Debug_Level_Array(Debug.Oper) then
+        Async_Stdin.Put_Line_Err("Mng: Handle_Break");
+      end if;
+      -- Pop all stacks
+      Do_Retall;
+      for I in 1 .. Stack.Stack_Size loop
+        Stack.Pop (A);
+      end loop;
+      if Breaking then
+        -- Break while breaking => return
+        return;
+      end if;
+      -- Call break program
+      if Debug.Debug_Level_Array(Debug.Oper) then
+        Async_Stdin.Put_Line_Err("Mng: Breaking");
+      end if;
+      Breaking := True;
+      -- This is not the end yet (despite Do_Retall)
+      The_End := Continue;
+      Stack.Push (Break_Program);
+      Break_Program.Val_Text.Set_Null;
+      Misc.Do_Call;
+    end Handle_Break;
+
     use Stack;
   begin
+    -- Default, except Ret
+    The_End := Continue;
     -- Check for Ctrl C
     if Nb_Item = Item_Check_Period then
       Nb_Item := 0;
-      The_End := Misc.Do_Delay(0.0);
+      if Misc.Check_Break then
+        -- Set Break_Program
+        Handle_Break;
+        -- Discard current instruction
+        return;
+      end if;
     else
       Nb_Item := Nb_Item + 1;
-      -- Default, except Ret and delay
-      The_End := Continue;
     end if;
     -- Dispatch
     Clear_History;
@@ -840,6 +892,7 @@ package body Mcd_Mng is
         when Include =>
           -- read content of A and call it
           Pop(A);
+          S := A;
           File.Read(A, B);
           Push(B);
           Misc.Do_Call;
@@ -884,6 +937,14 @@ package body Mcd_Mng is
           -- Return but forbid level 0
           Do_Ret(False);
           Misc.Do_Call;
+        when Callbrk =>
+          -- set program to be called on break
+          Pop(A);
+          if A.Kind /= Prog then
+            raise Invalid_Argument;
+          end if;
+          Break_Program := A;
+          S := A;
 
         -- Output
         when Format =>
@@ -1008,27 +1069,32 @@ package body Mcd_Mng is
           Pop(A); Push (Misc.Getenv(A));
           S := A;
         when Read =>
-         -- push lines of the file
-         Pop(A);
-         File.Read(A, Read_Lines);
-         for I in reverse 1 .. Read_Lines.Length loop
-           Push ((Kind => Chrs, Val_Text => Read_Lines.Element(I)));
-         end loop;
-         Read_Lines.Set_Null;
+          -- push lines of the file
+          Pop(A);
+          File.Read(A, Read_Lines);
+          for I in reverse 1 .. Read_Lines.Length loop
+            Push ((Kind => Chrs, Val_Text => Read_Lines.Element(I)));
+          end loop;
+          Read_Lines.Set_Null;
+          S := A;
         when Rnd =>
           -- push random value
-          Push( (Kind => Real,
-                 Val_Real => My_Math.Real(Random.Float_Random)) );
+          S := (Kind => Real,
+                 Val_Real => My_Math.Real(Random.Float_Random));
+          Push(S);
         when Sleep =>
           -- sleep A seconds
           Pop(A);
           S := A;
-          The_End := Misc.Do_Delay(A);
+          Nb_Item := 0;
+          if Misc.Do_Delay(A) then
+            Handle_Break;
+          end if;
         when Version =>
           -- push Mcd version
-          Push( (Kind => Chrs,
-                 Val_Text => As.U.Tus (Mcd_Version)));
-
+          S := (Kind => Chrs,
+                 Val_Text => As.U.Tus (Mcd_Version));
+          Push(S);
         when Setexit =>
           -- set exit code to A
           Pop (A); Misc.Set_Exit_Code (A);

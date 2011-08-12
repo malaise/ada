@@ -13,10 +13,19 @@
 [ ssize isnul ifret a N pushr 1 + N copyr popa
 S pushr retacal ] S copyr call
 
+# Function to display elapsed time
+"format_time.mcd" include D popr
+clock t popr
+
+# Function to be called on break
+[ i pushr 3 format put " attitudes vues en " put
+clock t pushr - D pushr call put "." putl ] callbrk
+
 # Display number of activities
-2 format N pushr putl
+"Il y a " put 2 format N pushr put " attitudes:" putl
 
 # Main loop
+0 i popr
 [
 # Set random end of sentence and put num
 rnd N pushr toreal * trunc 1 +
@@ -27,6 +36,8 @@ rnd M pushr toreal * trunc
 Y regind + indreg pushr put " " put
 # Display end of sentence
 a swap pusha put "." putl
+# Increment counter
+i pushr 1 + i popr
 # Wait a bit
 1 sleep
 # Loop
