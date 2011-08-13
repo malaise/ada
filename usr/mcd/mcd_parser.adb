@@ -151,8 +151,7 @@ package body Mcd_Parser is
    -- Subprograms
    Call     => (Nosy, "call A                                            ", As.U.Asu_Null, False),
    Ifcall   => (Nosy, "if B then call A                                  ", As.U.Asu_Null, False),
-   Include  => (Nosy, "include content of file A (string)                ",
-    As.U.Tus ("(insert the content as a subprogram and call it)"), False),
+   Include  => (Nosy, "include content of file A (string) as a subprog   ", As.U.Asu_Null, False),
    Ret      => (Nosy, "return                                            ", As.U.Asu_Null, False),
    Retn     => (Nosy, "return A levels (0=none)                          ", As.U.Asu_Null, False),
    Retall   => (Nosy, "return all levels                                 ", As.U.Asu_Null, False),
