@@ -4,7 +4,7 @@ pragma Elaborate(Random);
 package body Mcd_Mng is
 
   -- Current version
-  Mcd_Version : constant String := "V3.1";
+  Mcd_Version : constant String := "V4.0";
 
   package Stack is
     -- What can we store in stack
@@ -240,6 +240,7 @@ package body Mcd_Mng is
     function Strsub (S, I1, I2 : Item_Rec) return Item_Rec;
     function Strloc (S, Occ, Pat : Item_Rec) return Item_Rec;
     function Strrep (S, I, Pat : Item_Rec) return Item_Rec;
+    function Strdel (S, I, J : Item_Rec) return Item_Rec;
     function Strupp (S : Item_Rec) return Item_Rec;
     function Strlow (S : Item_Rec) return Item_Rec;
     function Strmix (S : Item_Rec) return Item_Rec;
@@ -359,11 +360,15 @@ package body Mcd_Mng is
       -- Can return by one more than level
       if L - 1 > Call_Stack_Level then
         raise Invalid_Argument;
-      elsif L - 1 = Call_Stack_Level then
+      elsif L - 1 = Call_Stack_Level
+      or else (Breaking and then L = Call_Stack_Level) then
         if Allow_Level_0 then
           Ret_All := True;
           L := Call_Stack_Level;
           if Breaking then
+            if Debug.Debug_Level_Array(Debug.Oper) then
+              Async_Stdin.Put_Line_Err("Mng: Return from Break ");
+            end if;
             The_End := Exit_Break;
           else
             The_End := Exit_Return;
@@ -986,6 +991,10 @@ package body Mcd_Mng is
         when Strrep =>
           -- push C replaced by A at pos B
           Pop(A); Pop(B); Pop(C); Push (Strings.Strrep(C, B, A));
+          S := A;
+        when Strdel =>
+          -- push C without C(B..A)
+          Pop(A); Pop(B); Pop(C); Push (Strings.Strdel(C, B, A));
           S := A;
         when Strupp =>
           -- push A converted to uppercase

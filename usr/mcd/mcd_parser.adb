@@ -173,6 +173,7 @@ package body Mcd_Parser is
    Strsub   => (Nosy, "push C(B..A)                                      ", As.U.Asu_Null, False),
    Strloc   => (Nosy, "push B occurence of A in C                        ", As.U.Asu_Null, False),
    Strrep   => (Nosy, "push C replaced by A at pos B                     ", As.U.Asu_Null, False),
+   Strdel   => (Nosy, "push C after deleting C(B..A)                     ", As.U.Asu_Null, False),
    Strupp   => (Nosy, "push A in uppercase                               ", As.U.Asu_Null, False),
    Strlow   => (Nosy, "push A in LOWERCASE                               ", As.U.Asu_Null, False),
    Strmix   => (Nosy, "push A in Mixed_Case                              ", As.U.Asu_Null, False),

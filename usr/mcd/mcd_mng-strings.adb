@@ -93,6 +93,23 @@ package body Strings is
     return Res;
   end Strrep;
 
+  function Strdel (S, I, J : Item_Rec) return Item_Rec is
+    Res : Item_Rec(Chrs);
+  begin
+    Check_Chrs(S);
+    Check_Inte(I);
+    Check_Inte(J);
+
+    if I.Val_Inte < 1
+    or else J.Val_Inte > My_Math.Inte(S.Val_Text.Length) then
+      raise Argument_Mismatch;
+    end if;
+    Res := S;
+    Res.Val_Text.Delete (Positive (I.Val_Inte),
+                         Natural (J.Val_Inte));
+    return Res;
+  end Strdel;
+
   function Strlen (S : Item_Rec) return Item_Rec is
   begin
     Check_Chrs(S);

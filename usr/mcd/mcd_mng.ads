@@ -141,6 +141,7 @@ package Mcd_Mng is
    Strsub,
    Strloc,
    Strrep,
+   Strdel,
    Strupp,
    Strlow,
    Strmix,
