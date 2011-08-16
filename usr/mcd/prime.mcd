@@ -46,8 +46,8 @@ L pushr retacal ] L popr
 # Check current i (store sqrt(i))
 i pushr n popr S pushr call
 @0 j popr true L pushr call
-# I prime?  Put it and insert in estack
-[ i pushr copye putl ] ifcall
+# I prime?  Put it and insert in estack, incr j
+[ i pushr copye putl k pushr @1 + k popr ] ifcall
 # Next i
 i pushr @1 + i popr
 # Stop loop if m /= 0 and then m < j
@@ -55,12 +55,21 @@ m pushr dup isnotnul swap i pushr < & ifret
 # Infinite loop or up to m
 P pushr retacal ] P popr
 
+# Function to display elapsed time
+"format_time.mcd" include D popr
+clock v popr
 
+# Function to be called on break
+[ k pushr strof 1 2 strdel put " prime numbers found in " put
+clock v pushr - D pushr call put "." putl ] callbrk
+
+# Start
 # 1 is prime
 @1 putl
+@1 k popr
 m pushr @1 = ifret
 
 # First number to check
 @2 i popr
 P pushr call
-
+pop
