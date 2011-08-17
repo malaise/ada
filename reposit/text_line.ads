@@ -72,6 +72,12 @@ package Text_Line is
   -- May raise Io_Error if IO error
   procedure Flush (File : in File_Type);
 
+  -- If Line ends with Line_Feed_Char then delete it
+  procedure Trim (Line : in out As.U.Asu_Us;
+                  Line_Feed : in String := Line_Feed_Str);
+  function Trim (Line : String;
+                 Line_Feed : in String := Line_Feed_Str) return String;
+
   Status_Error : exception;
   Io_Error : exception;
 

@@ -266,6 +266,44 @@ package body Text_Line is
       raise Io_Error;
   end Flush;
 
+ -- If Line ends with Line_Feed_Char then delete it
+  procedure Trim (Line : in out As.U.Asu_Us;
+                  Line_Feed : in String := Line_Feed_Str) is
+  begin
+    if Line_Feed'Length = 1 then
+      -- Line_Feed is a char => optim
+      if Line.Length > 1 then
+        Line.Delete (Line.Length, Line.Length);
+      end if;
+    else
+      -- Line_Feed is a string => optim
+      if Line.Length >= Line_Feed'Length
+      and then Line.Slice (Line.Length - Line_Feed'Length + 1, Line.Length)
+             = Line_Feed then
+        Line.Delete (Line.Length - Line_Feed'Length + 1, Line.Length);
+      end if;
+    end if;
+  end Trim;
+
+  function Trim (Line : String;
+                 Line_Feed : in String := Line_Feed_Str) return String is
+  begin
+    if Line_Feed'Length = 1 then
+      -- Line_Feed is a char => optim
+      if Line'Length > 1 then
+        return Line(Line'First .. Line'Last - 1);
+      end if;
+    else
+      -- Line_Feed is a string => optim
+      if Line'Length >= Line_Feed'Length
+      and then Line (Line'Last - Line_Feed'Length + 1 .. Line'Last)
+             = Line_Feed then
+        return Line(Line'First .. Line'Last - Line_Feed'Length);
+      end if;
+    end if;
+    return Line;
+  end Trim;
+
   overriding procedure Finalize (File : in out File_Type) is
   begin
     if Is_Open (File) then
