@@ -66,6 +66,7 @@ begin
     Ada.Text_Io.Put_Line ("Check ""="" OK");
   else
     Ada.Text_Io.Put_Line ("Check ""="" FAILED");
+    return;
   end if;
   Ada.Text_Io.New_Line;
 
