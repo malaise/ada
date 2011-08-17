@@ -75,11 +75,32 @@ package body Strings is
     return Res;
   end Strloc;
 
-  function Strrep (S, I, Pat : Item_Rec) return Item_Rec is
+  function Strrep (S, I, J, Sub : Item_Rec) return Item_Rec is
     Res : Item_Rec(Chrs);
   begin
     Check_Chrs(S);
-    Check_Chrs(Pat);
+    Check_Chrs(Sub);
+    Check_Inte(I);
+    Check_Inte(J);
+
+    -- May raise Index_Error if Low > Source.Length+1 or High > Source.Length
+    if I.Val_Inte < 1
+    or else I.Val_Inte > My_Math.Inte(S.Val_Text.Length) + 1
+    or else J.Val_Inte < 1
+    or else J.Val_Inte > My_Math.Inte(S.Val_Text.Length) then
+      raise Invalid_Argument;
+    end if;
+    Res := S;
+    Res.Val_Text.Replace (Positive (I.Val_Inte), Natural (J.Val_Inte),
+                          Sub.Val_Text.Image);
+    return Res;
+  end Strrep;
+
+  function Strins (S, I, Sub : Item_Rec) return Item_Rec is
+    Res : Item_Rec(Chrs);
+  begin
+    Check_Chrs(S);
+    Check_Chrs(Sub);
     Check_Inte(I);
 
     if I.Val_Inte < 1
@@ -87,11 +108,27 @@ package body Strings is
       raise Argument_Mismatch;
     end if;
     Res := S;
-    Res.Val_Text.Replace (Positive (I.Val_Inte),
-                          Positive (I.Val_Inte) + Pat.Val_Text.Length - 1,
-                          Pat.Val_Text.Image);
+    Res.Val_Text.Insert (Positive (I.Val_Inte),
+                         Sub.Val_Text.Image);
     return Res;
-  end Strrep;
+  end Strins;
+
+  function Strovw (S, I, Sub : Item_Rec) return Item_Rec is
+    Res : Item_Rec(Chrs);
+  begin
+    Check_Chrs(S);
+    Check_Chrs(Sub);
+    Check_Inte(I);
+
+    if I.Val_Inte < 1
+    or else I.Val_Inte > My_Math.Inte(S.Val_Text.Length) then
+      raise Argument_Mismatch;
+    end if;
+    Res := S;
+    Res.Val_Text.Overwrite (Positive (I.Val_Inte),
+                            Sub.Val_Text.Image);
+    return Res;
+  end Strovw;
 
   function Strdel (S, I, J : Item_Rec) return Item_Rec is
     Res : Item_Rec(Chrs);

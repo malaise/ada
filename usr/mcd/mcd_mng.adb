@@ -4,7 +4,7 @@ pragma Elaborate(Random);
 package body Mcd_Mng is
 
   -- Current version
-  Mcd_Version : constant String := "V4.0";
+  Mcd_Version : constant String := "V5.0";
 
   package Stack is
     -- What can we store in stack
@@ -239,7 +239,9 @@ package body Mcd_Mng is
     function Strcat (S1, S2 : Item_Rec) return Item_Rec;
     function Strsub (S, I1, I2 : Item_Rec) return Item_Rec;
     function Strloc (S, Occ, Pat : Item_Rec) return Item_Rec;
-    function Strrep (S, I, Pat : Item_Rec) return Item_Rec;
+    function Strrep (S, I, J, Sub : Item_Rec) return Item_Rec;
+    function Strins (S, I, Sub : Item_Rec) return Item_Rec;
+    function Strovw (S, I, Sub : Item_Rec) return Item_Rec;
     function Strdel (S, I, J : Item_Rec) return Item_Rec;
     function Strupp (S : Item_Rec) return Item_Rec;
     function Strlow (S : Item_Rec) return Item_Rec;
@@ -989,8 +991,15 @@ package body Mcd_Mng is
           Pop(A); Pop(B); Pop(C); Push (Strings.Strloc(C, B, A));
           S := A;
         when Strrep =>
-          -- push C replaced by A at pos B
-          Pop(A); Pop(B); Pop(C); Push (Strings.Strrep(C, B, A));
+          -- push D with its slice B .. C replaced by A
+          Pop(A); Pop(B); Pop(C); Pop(D); Push (Strings.Strrep(D, C, B, A));
+          S := A;
+        when Strins =>
+          -- push C after inserting A from pos B in it
+          Pop(A); Pop(B); Pop(C); Push (Strings.Strins(C, B, A));
+        when Strovw =>
+          -- push C overwriten by A from pos B
+          Pop(A); Pop(B); Pop(C); Push (Strings.Strovw(C, B, A));
           S := A;
         when Strdel =>
           -- push C without C(B..A)

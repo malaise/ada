@@ -26,7 +26,7 @@ dup 0 < [ 7 + ] ifcall
 [
 dup
 # Compute and save 01/01 of the year
-B pushr call dateof 6 "01" strrep 9 "01" strrep timeof A pushr call o copyr
+B pushr call dateof 6 "01" strovw 9 "01" strovw timeof A pushr call o copyr
 # Day offset: now - 01/01
 dup swap3 swap - swap
 # Day of week of 01/01
@@ -75,8 +75,8 @@ putl ssize popn retall ] ifcall
 d pushr timeof A pushr call c popr
 
 # Store beginning and end of current year, in days
-d pushr 6 "01" strrep 9 "01" strrep timeof a popr
-d pushr 6 "12" strrep 9 "31" strrep timeof b popr
+d pushr 6 "01" strovw 9 "01" strovw timeof a popr
+d pushr 6 "12" strovw 9 "31" strovw timeof b popr
 
 1 format
 d pushr dup dup 9 10 strsub put "/" put 6 7 strsub put "/" put 1 4 strsub put
@@ -121,7 +121,7 @@ d pushr 1 4 strsub " " put put
 
 # Compute delta from 01/01 of the year
 c pushr dup B pushr call dateof
-6 "01" strrep 9 "01" strrep timeof A pushr call - 1 +
+6 "01" strovw 9 "01" strovw timeof A pushr call - 1 +
 " the " put dup put
 # Put st, nd, rd, th for 1..9 and 20..99
 "th" L popr
@@ -135,6 +135,6 @@ L regind + indreg pushr put " day of the year, " put
 
 # Compute delta to 31/12 of the year
 c pushr dup B pushr call dateof
-6 "12" strrep 9 "31" strrep timeof A pushr call swap - dup put
+6 "12" strovw 9 "31" strovw timeof A pushr call swap - dup put
 " day" put 1 > "s " " " ifte put "remaining." putl
 

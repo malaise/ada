@@ -22,6 +22,9 @@
 @table @asis
 
 @item 2011/08/12
+Add operation Overwrite to bounded and unbounded strings
+Add mcd operations strins and strovw (i.o. strrep, which is fixed)
+@item 2011/08/12
 Add mcd operations read and callbrk
 @item 2011/07/04
 Add mcd timeof returns False if string is properly formatted but invalid
