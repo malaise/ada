@@ -1,0 +1,63 @@
+# Test various string operations
+# Shall produce the same output as t_asu and t_asb
+1 format
+"Empty array:" putl
+"" t popr
+t pushr "" /= t pushr strnull ~ | [ "Init is not empty" putl retall ] ifcall
+"Length " put t pushr strlen putl
+"Image " put t pushr putl
+"Array of 3:" putl "Image " put "3" putl
+newl
+
+"Array of 1, 3, 5:" putl
+"135" t popr
+"Length " put t pushr strlen putl
+"Image " put t pushr putl
+"Element 2: " put t pushr 2 2 strsub putl
+t pushr 2 "u" strovw 
+"Replaced by u: " put t copyr 2 2 strsub putl
+"Image " put t pushr putl
+newl
+
+"Append a, b, c, d, e" putl
+t pushr "ab" strcat "cd" strcat "e" strcat t popr
+"Image " put t pushr putl
+"Same with concat" putl
+"Image " put t pushr putl
+"Same with reverse concat" putl
+"d" "e" strcat
+"1u5abc" swap strcat
+"Image " put putl
+"Same with prepend" putl
+"Image " put t pushr putl
+newl
+
+"Slice 4 .. 6" putl
+"Slice string " put t pushr 4 6 strsub putl
+"Uslice Image " put t pushr 4 6 strsub dup putl
+"abc" = [ "Check ""="" OK" putl ] [ "Check ""="" FAILED" putl retall ] ifte call
+newl
+
+"Replace from 4 to 7 with B, C" putl
+"1u5abcde"  4 7 "BC" strrep
+"Image " put dup putl
+"Replace from B with 45" putl
+4 "45" strovw 
+"Image " put dup putl
+"Delete from 4 to 5, insert a, b, c, d before 4" putl
+4 5 strdel 4 "abcd" strins
+"Image " put dup putl
+"Replace from 4 to 5 with B, C, D" putl
+4 5 "BCD" strrep
+"Image " put dup putl
+"Delete from 4 to 6, insert A, B before 4" putl
+4 6 strdel 4 "AB" strins
+"Image " put putl
+newl
+
+"Check Finalization" putl
+"B" "C" strcat
+"Array of B, C" putl
+"Image " put putl
+"Done." putl
+
