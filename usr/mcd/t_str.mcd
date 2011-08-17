@@ -14,7 +14,7 @@ newl
 "Length " put t pushr strlen putl
 "Image " put t pushr putl
 "Element 2: " put t pushr 2 2 strsub putl
-t pushr 2 "u" strovw 
+t pushr 2 "u" strovw
 "Replaced by u: " put t copyr 2 2 strsub putl
 "Image " put t pushr putl
 newl
@@ -42,7 +42,7 @@ newl
 "1u5abcde"  4 7 "BC" strrep
 "Image " put dup putl
 "Replace from B with 45" putl
-4 "45" strovw 
+4 "45" strovw
 "Image " put dup putl
 "Delete from 4 to 5, insert a, b, c, d before 4" putl
 4 5 strdel 4 "abcd" strins
