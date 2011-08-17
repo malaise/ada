@@ -471,6 +471,27 @@ procedure Replace (Source   : in out Asu_Us;
     Move (Source, Before, Last + 1);
   end Insert;
 
+  procedure Overwrite (Source   : in out Asu_Us;
+                       Position   : in Positive;
+                       New_Item : in Asu_Us) is
+  begin
+    if Position + New_Item.Last > Source.Last then
+      raise Index_Error;
+    end if;
+    Source.Ref(Position .. Position + New_Item.Last - 1) :=
+       New_Item.Ref(1 ..  New_Item.Last);
+  end Overwrite;
+
+  procedure Overwrite (Source   : in out Asu_Us;
+                       Position   : in Positive;
+                       New_Item : in String) is
+  begin
+    if Position + New_Item'Length > Source.Last then
+      raise Index_Error;
+    end if;
+    Source.Ref(Position .. Position + New_Item'Length - 1) := New_Item;
+  end Overwrite;
+
   procedure Delete (Source  : in out Asu_Us;
                     From    : in Positive;
                     Through : in Natural) is

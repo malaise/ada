@@ -70,8 +70,11 @@ begin
   Ada.Text_Io.New_Line;
 
   Ada.Text_Io.Put_Line ("Replace from 4 to 7 with B, C");
-  N1 := As.U.Tus ("1u5abcde");
+  N1.Set ("1u5abcde");
   N1.Replace (4, 7, "BC");
+  Ada.Text_Io.Put_Line ("Image " & N1.Image);
+  Ada.Text_Io.Put_Line ("Replace from B with 45");
+  N1.Overwrite (4, "45");
   Ada.Text_Io.Put_Line ("Image " & N1.Image);
   Ada.Text_Io.Put_Line ("Delete from 4 to 5, insert a, b, c, d before 4");
   N1.Delete (4, 5);
