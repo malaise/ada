@@ -136,6 +136,7 @@ package Mcd_Mng is
    Newl,
    Putl,
    -- String management and conversions
+   Strnull,
    Strlen,
    Strcat,
    Strsub,

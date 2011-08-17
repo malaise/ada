@@ -18,6 +18,14 @@ package body Strings is
     end if;
   end Check_Inte;
 
+  function Strnull (S : Item_Rec) return Item_Rec is
+    Res : Item_Rec(Bool);
+  begin
+    Check_Chrs(S);
+    Res.Val_Bool := S.Val_Text.Is_Null;
+    return Res;
+  end Strnull;
+
   function Strcat (S1, S2 : Item_Rec) return Item_Rec is
     Res : Item_Rec(Chrs);
     use type As.U.Asu_Us;

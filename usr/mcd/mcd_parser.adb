@@ -168,6 +168,7 @@ package body Mcd_Parser is
    Newl     => (Nosy, "new line                                          ", As.U.Asu_Null, False),
    Putl     => (Nosy, "put_line A                                        ", As.U.Asu_Null, True),
    -- String management and conversions
+   Strnull  => (Nosy, "push True if A is empty                           ", As.U.Asu_Null, False),
    Strlen   => (Nosy, "push length of A                                  ", As.U.Asu_Null, False),
    Strcat   => (Nosy, "push B & A                                        ", As.U.Asu_Null, False),
    Strsub   => (Nosy, "push C(B..A)                                      ", As.U.Asu_Null, False),

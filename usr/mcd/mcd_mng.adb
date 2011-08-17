@@ -4,7 +4,7 @@ pragma Elaborate(Random);
 package body Mcd_Mng is
 
   -- Current version
-  Mcd_Version : constant String := "V5.0";
+  Mcd_Version : constant String := "V6.0";
 
   package Stack is
     -- What can we store in stack
@@ -235,6 +235,7 @@ package body Mcd_Mng is
   end Call_Stack;
 
   package Strings is
+    function Strnull (S : Item_Rec) return Item_Rec;
     function Strlen (S : Item_Rec) return Item_Rec;
     function Strcat (S1, S2 : Item_Rec) return Item_Rec;
     function Strsub (S, I1, I2 : Item_Rec) return Item_Rec;
@@ -974,6 +975,10 @@ package body Mcd_Mng is
           S := A;
 
         -- String management and conversions
+        when Strnull =>
+          -- push True if A is empty
+          Pop(A); Push (Strings.Strnull(A));
+          S := A;
         when Strlen =>
           -- push string length of A
           Pop(A); Push (Strings.Strlen(A));
