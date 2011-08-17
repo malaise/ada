@@ -1,0 +1,11 @@
+#!/bin/bash
+export FILE=t_str_error.c
+cat << EOF > $FILE
+#include "errno.h"
+int main (void) {
+  return 0;
+}
+EOF
+cpp -dD $FILE | asubst -g "^#define (E[A-Z]+)[\B]+([0-9]+)$" "\r12 \r11" | t_str_error
+rm $FILE
+
