@@ -29,7 +29,7 @@ package Regular_Expressions is
   -- Compile a regex
   -- By default
   --  Case is sensitive,
-  --  '^' and '$' do not match  a newline in the middle of Str
+  --  '^' and '$' do not match a newline in the middle of Str
   --  '.' does not match all characters (e.g. new line, carriage return...)
   procedure Compile (Result : in out Compiled_Pattern;
                      Ok : out Boolean;
@@ -54,8 +54,8 @@ package Regular_Expressions is
   --  case Match_Info is one cell of Any_Match.
   -- Use Valid_Match to check if you can use a Match_Cell to extract the
   --  corresponding substring.
-  -- Begin_Line_Match and End_Line_Match allow '^' and '$' ti match beginning
-  --  and end of line respectively (if regexp was compiled with Match_Newline).
+  -- Begin_Line_Match and End_Line_Match allow '^' and '$' to match beginning
+  --  and end of line respectively (if regexp was compiled with Multi_Line).
   No_Criteria : exception;
   procedure Exec (Criteria : in Compiled_Pattern;
                   To_Check : in String;
