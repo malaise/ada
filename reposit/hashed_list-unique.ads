@@ -14,6 +14,7 @@ package Hashed_List.Unique is
   type Unique_List_Type is new List_Type with null record;
 
 
+  -- Of course Search and Find will set not Found / raise Not_In_List
   -- Check if an element exists in the list
   procedure Search (List : in out Unique_List_Type;
                     Crit : in Element_Type;
@@ -24,9 +25,9 @@ package Hashed_List.Unique is
   procedure Find (List : in out Unique_List_Type;
                   Crit : in Element_Type) renames Find_First;
 
-  -- Of course Search_Next and Find_Next will set not Found / raise Not_In_List
-
   -- Get access to the element matching in the list
+  -- Of course, changing the key of the accessed element will break the
+  --  hash table integrity
   -- May raise Not_In_List
   procedure Get_Access (List : in out Unique_List_Type;
                         Item : in Element_Type;

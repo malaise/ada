@@ -67,6 +67,8 @@ package Hashed_List is
                           Item : out Element_Type);
 
   -- Get direct access to the last element searched/found
+  -- Of course, changing the key of the accessed element will break the
+  --  hash table integrity
   -- May raise Not_In_List
   procedure Get_Access_Current (List : in List_Type;
                                 Item_Access : out Element_Access);
