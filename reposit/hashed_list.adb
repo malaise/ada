@@ -259,7 +259,7 @@ package body Hashed_List is
   procedure Read_Next (List : in out List_Type;
                        Item : out Element_Type;
                        Moved : out Boolean;
-                      From : in Reference := From_First) is
+                       From : in Reference := From_First) is
   begin
     if List.List.Is_Empty then
       raise Not_In_List;

@@ -80,7 +80,7 @@ package Hashed_List is
   -- May raise Not_In_List
   procedure Delete_Current (List : in out List_Type);
 
-  -- Read the last element searched/found
+  -- replace the last element searched/found
   -- May raise Not_Equal if Item is not "=" to the element searched/found
   -- May raise Not_In_List
   procedure Replace_Current (List : in out List_Type;

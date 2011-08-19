@@ -2,7 +2,9 @@
 with As.U, Dynamic_List, Many_Strings;
 package Command is
 
-  -- Output and error flow, either a list (one item per line) or a Asu_Us
+  -- Output and error flow,
+  --  either a list: one item per line without LineFeed, not rewinded
+  --  or a raw Asu_Us
   type Flow_Format_Kind_List is (Str, List);
   subtype Line_Type is As.U.Asu_Us;
   package Res_Mng is new Dynamic_List (Line_Type);
