@@ -1,112 +1,389 @@
-with Basic_Proc, Sys_Calls, Normal, Text_Line, As.U, Regular_Expressions,
-     Argument, String_Mng, Unbounded_Arrays;
+with Ada.Exceptions;
+with Basic_Proc, Sys_Calls, Normal, As.U, Regular_Expressions,
+     String_Mng, Command, Many_Strings, Argument, Parser,
+     Hashed_List.Unique, Unbounded_Arrays, Dynamic_List;
 procedure T_Str_Error is
-  -- Input flow and line read
-  Flow : Text_Line.File_Type;
+
+  -- Command, flow and line read
+  Cmd : Many_Strings.Many_String;
+  Flow : Command.Flow_Rec(Command.List);
+  Exit_Code : Command.Exit_Code_Range;
   Line : As.U.Asu_Us;
-  -- Paterns to match
+
+  -- Paterns to match and result of exec
   Patc, Pata : Regular_Expressions.Compiled_Pattern;
   Ok : Boolean;
-  -- Index to split line and mnemonic
-  Index : Natural;
+  Nb_Match : Natural;
+  Matches : Regular_Expressions.Match_Array (1 .. 3);
+  Valid : Boolean;
 
   -- Max len of mnemonic
   Max_Len : constant := 15;
-  -- Max value of errno
-  subtype Code_Range is Positive;
-  Code : Code_Range;
 
-  -- Unbounded array of aliases
-  type Alias_Rec is record
-    Mnemo, Target : As.U.Asu_Us;
+  -- Hash list of entries
+  type Def_Rec is record
+    Name : As.U.Asu_Us;
+    Code : Natural;
+    Alias_Of : As.U.Asu_Us;
   end record;
-  type Alias_Array is array (Positive range <>) of Alias_Rec;
-  package Alias_Mng is new Unbounded_Arrays (Alias_Rec, Alias_Array);
-  Aliases : Alias_Mng.Unb_Array;
+  Def, Def_Crit : Def_Rec;
+  type Def_Access is access all Def_Rec;
+  Def_Acc : Def_Access;
+  procedure Set (To : out Def_Rec; Val : in Def_Rec) is
+  begin
+    To := Val;
+  end Set;
+  function "=" (Current : Def_Rec; Criteria : Def_Rec) return Boolean is
+    use type As.U.Asu_Us;
+  begin
+    return Current.Name = Criteria.Name;
+  end "=";
+  function Key_Image (Element : Def_Rec) return String is
+  begin
+    return Element.Name.Image;
+  end Key_Image;
+  package Hash_Def_Mng is new Hashed_List (Def_Rec, Def_Access,
+    Set, "=", Key_Image);
+  package Unique_Def_Mng is new Hash_Def_Mng.Unique;
+  Defs : Unique_Def_Mng.Unique_List_Type;
+
+  -- For iterators
+  Max_Search : constant := 100;
+  Moved : Boolean;
+
+  -- Solved aliases
+  type Def_Array is array (Positive range <>) of Def_Rec;
+  package Unbounded_Defs is new Unbounded_Arrays (Def_Rec, Def_Array);
+  Aliases : Unbounded_Defs.Unb_Array;
+
+  -- List of codes and associated names
+  type Code_Rec is record
+    Code : Positive;
+    Names : As.U.Asu_Us;
+  end record;
+  Code_Crit : Code_Rec;
+  package Codes_Dyn_List_Mng is new Dynamic_List(Code_Rec);
+  package Codes_List_Mng renames Codes_Dyn_List_Mng.Dyn_List;
+  Codes : Codes_List_Mng.List_Type;
+  function Less_Than (El1, El2 : Code_Rec) return Boolean is
+  begin
+    return El1.Code < El2.Code;
+  end Less_Than;
+  procedure Sort is new Codes_List_Mng.Sort (Less_Than);
+  function Match (Current, Criteria : Code_Rec) return Boolean is
+  begin
+    return Current.Code = Criteria.Code;
+  end Match;
+  procedure Search is new Codes_List_Mng.Search (Match);
+  Found : Boolean;
+
+
+  -- Function to dump the Hash list
+  procedure Put (Def : Def_Rec; Show_Alias : in Boolean) is
+  begin
+    if Def.Alias_Of.Is_Null then
+      -- A definition
+      Basic_Proc.Put_Line_Output (
+        Normal(Def.Code, 3) & " "
+        & String_Mng.Procuste (Def.Name.Image, Max_Len)
+        & " -> "
+        & Sys_Calls.Str_Error(Def.Code) );
+    elsif Show_Alias then
+      -- An alias to dump
+      Basic_Proc.Put_Line_Output ("    "
+         & String_Mng.Procuste (Def.Name.Image, Max_Len)
+         & " = "
+         & Def.Alias_Of.Image);
+    else
+      -- An alias to put after its definition
+      Basic_Proc.Put_Line_Output ("  = " & Def.Name.Image);
+    end if;
+  end Put;
+  procedure Dump_Iterator (Current : in Def_Rec;
+                           Go_On   : in out Boolean) is
+    pragma Unreferenced (Go_On);
+  begin
+    Put (Current, True);
+  end Dump_Iterator;
+
+  procedure Put_Code (Code : in Code_Rec) is
+    Iterator : Parser.Iterator;
+    Def : Def_Rec;
+  begin
+      Def.Code := Code.Code;
+      Def.Alias_Of.Set_Null;
+      -- Split Names
+      Iterator.Set (Code.Names.Image);
+      loop
+        Def.Name := As.U.Tus (Iterator.Next_Word);
+        exit when Def.Name.Is_Null;
+        Put (Def, False);
+        -- All but first name are aliases of it
+        if Def.Alias_Of.Is_Null then
+          Def.Alias_Of := Def.Name;
+        end if;
+      end loop;
+  end Put_Code;
 
 begin
 
-  if Argument.Get_Nbre_Arg /= 0 then
-    -- Any arg => Do not process inpout flow
-    for I in 1 .. 256 loop
-      exit when Sys_Calls.Str_Error(I) = "";
-      Basic_Proc.Put_Line_Output (Normal(I, 3) & " -> "
-                                & Sys_Calls.Str_Error(I) );
-    end loop;
+  -- Help
+  if Argument.Get_Nbre_Arg = 1
+  and then (Argument.Get_Parameter = "-h"
+    or else Argument.Get_Parameter = "--help") then
+    Basic_Proc.Put_Line_Output ("Usage: " & Argument.Get_Program_Name
+        & " [ <help> | <dump> | <list> | { <code> | <menmonic> } ]");
+    Basic_Proc.Put_Line_Output (" <help> ::= -h | --help    This help message");
+    Basic_Proc.Put_Line_Output (" <dump> ::= -d | --dump    Dump definitions");
+    Basic_Proc.Put_Line_Output (" <list> ::= -l | --list    List definitions"
+       & " (default)");
+    Basic_Proc.Set_Ok_Exit_Code;
     return;
   end if;
 
-  -- Open flow on stdin
-  Flow.Open (Text_Line.In_File, Sys_Calls.Stdin);
+  -- Launch command
+  Cmd.Set ("cpp"); Cmd.Cat ("-dD"); Cmd.Cat ("/usr/include/errno.h");
+  begin
+    Command.Execute (Cmd, True, Command.Only_Out,
+                     Flow'Unrestricted_Access, null, Exit_Code);
+  exception
+    when Command.Terminate_Request =>
+      Basic_Proc.Put_Line_Error ("ERROR, command aborted");
+      Basic_Proc.Set_Error_Exit_Code;
+      return;
+    when Command.Spawn_Error =>
+      Basic_Proc.Put_Line_Error ("ERROR launching command: " & Cmd.Image);
+      Basic_Proc.Set_Error_Exit_Code;
+      return;
+  end;
+  if Exit_Code /= Basic_Proc.Exit_Code_Ok then
+    Basic_Proc.Put_Line_Error ("ERROR, command: " & Cmd.Image
+                 & " has failed with code" & Exit_Code'Img);
+    Basic_Proc.Set_Error_Exit_Code;
+    return;
+  end if;
+  if Flow.List.Is_Empty then
+    Basic_Proc.Put_Line_Error ("ERROR, command: " & Cmd.Image
+                 & " has no output");
+    Basic_Proc.Set_Error_Exit_Code;
+    return;
+  end if;
 
-  -- Compile regexps for expected text
-  -- code mnemonic
-  Regular_Expressions.Compile (Patc, Ok, "^[0-9]+ [A-Z]+$");
+  -- Compile regexps for expected texts
+  -- #define mnemonic code
+  Regular_Expressions.Compile (Patc, Ok,
+     "^#define[[:blank:]]+(E[A-Z]+)[[:blank:]]+([0-9]+)[[:blank:]]*$");
   if not Ok then
-    Basic_Proc.Put_Line_Error ("Invalid regex: "
+    Basic_Proc.Put_Line_Error ("ERROR, invalid regex: "
           & Regular_Expressions.Error (Patc) & '.');
     Basic_Proc.Set_Error_Exit_Code;
     return;
   end if;
-  -- mnemonic mnemonic
-  Regular_Expressions.Compile (Pata, Ok, "^[A-Z]+ [A-Z]+$");
+  -- #define mnemonic mnemonic
+  Regular_Expressions.Compile (Pata, Ok,
+    "^#define[[:blank:]]+(E[A-Z]+)[[:blank:]]+(E[A-Z]+)[[:blank:]]*$");
   if not Ok then
-    Basic_Proc.Put_Line_Error ("Invalid regex: "
+    Basic_Proc.Put_Line_Error ("ERROR, invalid regex: "
           & Regular_Expressions.Error (Pata) & '.');
     Basic_Proc.Set_Error_Exit_Code;
     return;
   end if;
 
-  -- Read stdin, put definitions on the flow and store aliases
-  Basic_Proc.Put_Line_Output ("Errno:");
-  loop
-    Line := Flow.Get;
-    exit when Line.Is_Null;
-    Text_Line.Trim (Line);
-    Regular_Expressions.Exec (Patc, Line.Image, Index,
-                              Regular_Expressions.No_Match_Array);
-    if Index /= 0 then
-      -- Valid line "code mnemo"
-      Index := Line.Locate (" ");
+  -- Read command output, store definitions and aliases in the Unique list
+  Flow.List.Rewind;
+  for I in 1 .. Flow.List.List_Length loop
+    Flow.List.Get (Line);
+    Regular_Expressions.Exec (Patc, Line.Image, Nb_Match, Matches);
+    if Nb_Match = 3 then
+      -- Valid line "#define mnemo code"
       begin
-        Code := Positive'Value (Line.Slice (1, Index - 1));
+        Def.Code := Positive'Value (Line.Slice (Matches(3).First_Offset,
+                                                Matches(3).Last_Offset_Stop));
+        Valid := True;
       exception
         when Constraint_Error =>
-          Index := 0;
+          Valid := False;
       end;
-      if Index /= 0 then
-        -- Put code, menmo and text
-        Basic_Proc.Put_Line_Output (
-            Normal(Code, 3) & " "
-          & String_Mng.Procuste (Line.Slice (Index + 1, Line.Length), Max_Len)
-          & " -> "
-          & Sys_Calls.Str_Error(Code) );
+      if Valid then
+        -- Insert Mnemo and Code
+        Def.Name := Line.Uslice (Matches(2).First_Offset,
+                                 Matches(2).Last_Offset_Stop);
+        Def.Alias_Of.Set_Null;
+        Defs.Insert (Def);
       end if;
     else
-      Regular_Expressions.Exec (Pata, Line.Image, Index,
-                                Regular_Expressions.No_Match_Array);
-      if Index /= 0 then
-        -- Valid line "mnemo mnemo"
-        -- Insert alias definition
-        Index := Line.Locate (" ");
-        Aliases.Append ( Alias_Rec'(Line.Uslice (1, Index - 1),
-                                    Line.Uslice (Index + 1, Line.Length)) );
-
+      Regular_Expressions.Exec (Pata, Line.Image, Nb_Match, Matches);
+      if  Nb_Match = 3 then
+        -- Valid line "#define mnemo mnemo"
+        -- Insert alias definition if it does not overwrite a code definition
+        Def.Code := 0;
+        Def.Name := Line.Uslice (Matches(2).First_Offset,
+                                 Matches(2).Last_Offset_Stop);
+        Def.Alias_Of := Line.Uslice (Matches(3).First_Offset,
+                                     Matches(3).Last_Offset_Stop);
+        Defs.Insert_If_New (Def);
       end if;
     end if;
 
   end loop;
+  if Defs.Is_Empty then
+    Basic_Proc.Put_Line_Error ("ERROR, empty list");
+    Basic_Proc.Set_Error_Exit_Code;
+    return;
+  end if;
 
-  -- Put Aliases
-  Basic_Proc.Put_Line_Output ("Aliases:");
-  for I in 1 .. Aliases.Length loop
-    Basic_Proc.Put_Line_Output (
-      String_Mng.Procuste (Aliases.Element(I).Mnemo.Image, Max_Len)
-     & " = " & Aliases.Element(I).Target.Image);
+  -- Dump raw result of parsing
+  if Argument.Get_Nbre_Arg = 1
+  and then (Argument.Get_Parameter = "-d"
+    or else Argument.Get_Parameter = "--dump") then
+    -- Dump Hash
+    Defs.Iterate (Dump_Iterator'Access);
+    Basic_Proc.Set_Ok_Exit_Code;
+    return;
+  end if;
+
+  -- Resolve aliases, store resolved aliases in an array
+  Defs.Rewind;
+  loop
+    Defs.Read_Next (Def, Moved);
+    if Def.Code = 0 then
+      -- This is an alias, search the definition
+      for I in 1 .. Max_Search loop
+        Def_Crit.Name := Def.Alias_Of;
+        -- Search definition or alias => may raise Not_In_List
+        begin
+          Defs.Get_Access (Def_Crit, Def_Acc);
+        exception
+          when Unique_Def_Mng.Not_In_List =>
+            -- Raised by Get_Access
+            Basic_Proc.Put_Line_Error (
+              "ERROR, cannot resolve alias " & Def.Name.Image);
+            Basic_Proc.Set_Error_Exit_Code;
+            return;
+        end;
+        exit when Def_Acc.Code /= 0;
+      end loop;
+
+      if Def_Acc.Code = 0 then
+        -- Not found after Max_Search loops
+        Basic_Proc.Put_Line_Error (
+          "ERROR, infinite loop while resolving alias " & Def.Name.Image);
+        Basic_Proc.Set_Error_Exit_Code;
+        return;
+      end if;
+      -- Found, append to list of aliases
+      Def.Code := Def_Acc.Code;
+      Aliases.Append (Def);
+    end if;
+    exit when not Moved;
   end loop;
 
-  -- Close flow
-  Flow.Close;
+  -- Replace resolved aliases in unique list
+  for I in 1 .. Aliases.Length loop
+    Defs.Insert (Aliases.Element (I));
+  end loop;
+  Aliases.Set_Null;
 
+  -- Make a list of codes with names, sorted by codes
+  Defs.Rewind;
+  loop
+    -- Got a definition or an alias
+    Defs.Read_Next (Def, Moved);
+    Code_Crit.Code := Def.Code;
+    -- Read code entry if one exists in Codes
+    Search (Codes, Found, Code_Crit, From => Codes_List_Mng.Absolute);
+    if Found then
+      Codes.Read (Code_Crit, Codes_List_Mng.Current);
+    else
+      Code_Crit.Names.Set_Null;
+    end if;
+    -- If this a definition then prepend name, else append it
+    -- So Names contains the name then the aliases
+    -- There might be extra leading, tailing and intermediate spaces
+    --  but never mind, Names will be parsed with Parser
+    if Def.Alias_Of.Is_Null then
+      Code_Crit.Names.Prepend (Def.Name.Image & " ");
+    else
+      Code_Crit.Names.Append (" " & Def.Name.Image);
+    end if;
+    -- And store
+    if Found then
+      Codes.Modify (Code_Crit, Codes_List_Mng.Current);
+    else
+      Codes.Insert (Code_Crit);
+    end if;
+    exit when not Moved;
+  end loop;
+  -- And sort
+  Sort (Codes);
+
+  -- Put the list
+  if Argument.Get_Nbre_Arg = 0
+  or else (Argument.Get_Nbre_Arg = 1
+    and then (Argument.Get_Parameter = "-l"
+      or else Argument.Get_Parameter = "--list") ) then
+    -- Dump sorted list of codes
+    Codes.Rewind;
+    loop
+      Codes.Read (Code_Crit, Moved => Moved);
+      -- Put the different mnemonics for this code
+      Put_Code (Code_Crit);
+      exit when not Moved;
+    end loop;
+    Basic_Proc.Set_Ok_Exit_Code;
+    return;
+  end if;
+
+  -- Process arguments
+  for I in 1 .. Argument.Get_Nbre_Arg loop
+    Argument.Get_Parameter (Line, Occurence => I);
+    if Regular_Expressions.Match ("E[A-Z]*", Line.Image, True) then
+      -- A mnemonic, read its definition
+      Def_Crit.Name := Line;
+      Defs.Search (Def_Crit, Found);
+      if Found then
+        Defs.Read_Current (Def_Crit);
+        Code_Crit.Code := Def_Crit.Code;
+      else
+        Basic_Proc.Put_Line_Output (Line.Image & " => Mnemonic not found");
+      end if;
+    elsif Regular_Expressions.Match ("[1-9][0-9]*", Line.Image, True) then
+      -- A code, read it
+      begin
+        Code_Crit.Code := Positive'Value (Line.Image);
+        Found := True;
+      exception
+        when Constraint_Error =>
+          -- 'Value failed
+          Basic_Proc.Put_Line_Output (Line.Image & " => Invalid code");
+          Found := False;
+          Basic_Proc.Set_Error_Exit_Code;
+      end;
+    else
+      Basic_Proc.Put_Line_Output (Line.Image & " => Invalid argument");
+      Found := False;
+      Basic_Proc.Set_Error_Exit_Code;
+    end if;
+    if Found then
+      -- At this point Code_Crit has the code to search
+      Search (Codes, Found, Code_Crit, From => Codes_List_Mng.Absolute);
+      if Found then
+        Codes.Read (Code_Crit, Codes_List_Mng.Current);
+        -- Put the different mnemonics for this code
+        Put_Code (Code_Crit);
+      else
+        Basic_Proc.Put_Line_Output (Line.Image
+                                   & " =>" & Code_Crit.Code'Img
+                                   & " => Code not found");
+        Basic_Proc.Set_Error_Exit_Code;
+      end if;
+    end if;
+  end loop;
+
+exception
+  when Error:others =>
+    Basic_Proc.Put_Line_Error ("ERROR, exception: "
+        & Ada.Exceptions.Exception_Name (Error) & " raised");
+    Basic_Proc.Set_Error_Exit_Code;
 end T_Str_Error;
 
