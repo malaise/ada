@@ -67,11 +67,11 @@ package Hashing is
                        Key   : in String;
                        Data  : in Data_Access);
 
-      -- To reset finding index for matching Key
+      -- To reset finding for Index or Key
       procedure Reset_Find (Table : in out Hash_Table; Index : in Hash_Range);
       procedure Reset_Find (Table : in out Hash_Table; Key   : in String);
 
-      -- To get first, then next Index matching Key
+      -- To get first, then next Data for Index or Key
       -- Last found is reset if not found
       procedure Find_Next (Table : in out Hash_Table;
                            Index : in Hash_Range;
@@ -80,11 +80,19 @@ package Hashing is
                            Key   : in String;
                            Found : out Found_Rec);
 
-      -- To remove last found association Key <-> Index
+      -- To re-read data previously found at Index or Key
+      procedure Re_Read (Table : in out Hash_Table;
+                         Index : in Hash_Range;
+                         Found : out Found_Rec);
+      procedure Re_Read (Table : in out Hash_Table;
+                         Key   : in String;
+                         Found : out Found_Rec);
+
+      -- To remove last data found at Index or Key
       -- Last found is reset
       -- Beware that this can be expensive in time/cpu if the hash tree
       --  depth is important
-      -- May raise Not_Found if last found is reset
+      -- May raise Not_Found if last found is not set
       procedure Remove (Table : in out Hash_Table;
                         Index : in Hash_Range);
       procedure Remove (Table : in out Hash_Table;

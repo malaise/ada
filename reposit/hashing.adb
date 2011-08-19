@@ -134,6 +134,28 @@ package body Hashing is
         Find_Next (Table, Hash_Func(Key), Found);
       end Find_Next;
 
+      -- To re-read data previously found at Index or Key
+      procedure Re_Read (Table : in out Hash_Table;
+                         Index : in Hash_Range;
+                         Found : out Found_Rec) is
+      begin
+        if Table.Arr(Index).First = null
+        or else Table.Arr(Index).Current = null then
+          -- Empty or not found
+          Found := Not_Found_Rec;
+        else
+          Found := (Found => True, Data => Table.Arr(Index).Current.Data);
+        end if;
+      end Re_Read;
+
+      procedure Re_Read (Table : in out Hash_Table;
+                         Key   : in String;
+                         Found : out Found_Rec) is
+      begin
+        Re_Read (Table, Hash_Func(Key), Found);
+      end Re_Read;
+
+
       -- Dump hash value of key and lists all data found for key
       procedure Dump (Table : in Hash_Table;
                       Index : in Hash_Range) is

@@ -34,13 +34,12 @@ procedure T_Hash is
     My_Io.Put(Image(I));
   end Dump;
 
-
 begin
 
   loop
     My_Io.New_Line;
 
-    My_Io.Put ("Store <>, Zreset <>, Find <>, Remove <>, Dump <>, Clear all, EXIT ? ");
+    My_Io.Put ("Store <>, Zreset <>, Find <>, Reread <>, Delete <>, dumP <>, Clear all, EXIT ? ");
     My_Io.Get_Line (Input, Len);
     Txt.Set (Input(1 .. Len));
     if Txt.Length >= 3 and then Txt.Element (2) = ' ' then
@@ -59,16 +58,23 @@ begin
           else
             My_Io.Put_Line ("No data found for key >" & Str(Txt) & "<.");
           end if;
-        when 'R'| 'r' =>
+        when 'R' | 'r' =>
+          My_Hash.Re_Read (Ht, Str(Txt), Found);
+          if Found.Found then
+            My_Io.Put_Line ("Re-read " & Image(Found.Data) & " with key >" & Str(Txt) & "<.");
+          else
+            My_Io.Put_Line ("No data re-read for key >" & Str(Txt) & "<.");
+          end if;
+        when 'D'| 'd' =>
           begin
             My_Hash.Remove (Ht, Str(Txt));
-            My_Io.Put_Line ("Current data for key >" & Str(Txt) & "< removed.");
+            My_Io.Put_Line ("Current data for key >" & Str(Txt) & "< deleted.");
           exception
             when Hash.Not_Found =>
-              My_Io.Put_Line ("Exception NOT_FOUND raised when removing data for key >"
+              My_Io.Put_Line ("Exception NOT_FOUND raised when deleting data for key >"
                              & Str(Txt) & "<.");
           end;
-        when 'D' | 'd' =>
+        when 'P' | 'p' =>
           My_Io.Put_Line ("Dumping data for key >" & Str(Txt) & "<:");
           My_Hash.Dump(Ht, Str(Txt));
         when others =>
