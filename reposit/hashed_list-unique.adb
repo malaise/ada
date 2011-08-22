@@ -11,6 +11,24 @@ package body Hashed_List.Unique is
   --  - drop the new value and keep the original
   -- type Unique_List_Type is new List_Type with null record;
 
+  -- Search in hashing the element matching criteria, returns null if not found
+  -- Optim: See if last found is the one
+  procedure Locate_Optim (List : in out Unique_List_Type;
+                          Crit : in Element_Type;
+                          Element : out Element_Access) is
+    Index : constant Hash_Mng.Hash_Range := Hash_Func (Key_Image (Crit));
+    use type Hash_Mng.Hash_Range;
+  begin
+    -- See if previously found is the one
+    if List.Current /= null and then List.Hash_Index = Index
+    and then List.Current.all = Crit then
+      -- Yes
+      Element := List.Current;
+    else
+      Locate (List_Type(List), Crit, True, Element);
+    end if;
+  end Locate_Optim;
+
   -- Get access to the element matching in the list
   -- May raise Not_In_List
   procedure Get_Access (List : in out Unique_List_Type;
@@ -18,7 +36,7 @@ package body Hashed_List.Unique is
                         Item_Access : out Element_Access) is
     Acc : Element_Access;
   begin
-    Locate (List_Type(List), Item, True, Acc);
+    Locate_Optim (List, Item, Acc);
     if Acc = null then
       raise Not_In_List;
     end if;
@@ -60,7 +78,7 @@ package body Hashed_List.Unique is
     Acc : Element_Access;
   begin
     -- Find (List, Item);
-    Locate (List_Type(List), Item, True, Acc);
+    Locate_Optim (List, Item, Acc);
     if Acc = null then
       raise Not_In_List;
     end if;
