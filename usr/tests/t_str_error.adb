@@ -1,7 +1,7 @@
 with Ada.Exceptions;
 with Basic_Proc, Sys_Calls, Normal, As.U, Regular_Expressions,
      String_Mng, Command, Many_Strings, Argument, Parser,
-     Hashed_List.Unique, Unbounded_Arrays, Dynamic_List;
+     Hashed_List.Unique, Unbounded_Arrays, Dynamic_List, Integer_Image;
 procedure T_Str_Error is
 
   -- Command, flow and line read
@@ -26,9 +26,8 @@ procedure T_Str_Error is
     Code : Natural;
     Alias_Of : As.U.Asu_Us;
   end record;
-  Def, Def_Crit : Def_Rec;
+  Def, Alias : Def_Rec;
   type Def_Access is access all Def_Rec;
-  Def_Acc : Def_Access;
   procedure Set (To : out Def_Rec; Val : in Def_Rec) is
   begin
     To := Val;
@@ -51,7 +50,7 @@ procedure T_Str_Error is
   Max_Search : constant := 100;
   Moved : Boolean;
 
-  -- Solved aliases
+  -- Aliases to solve
   type Def_Array is array (Positive range <>) of Def_Rec;
   package Unbounded_Defs is new Unbounded_Arrays (Def_Rec, Def_Array);
   Aliases : Unbounded_Defs.Unb_Array;
@@ -79,7 +78,7 @@ procedure T_Str_Error is
 
 
   -- Function to dump the Hash list
-  procedure Put (Def : Def_Rec; Show_Alias : in Boolean) is
+  procedure Put_Def (Def : Def_Rec; Show_Alias : in Boolean) is
   begin
     if Def.Alias_Of.Is_Null then
       -- A definition
@@ -98,12 +97,12 @@ procedure T_Str_Error is
       -- An alias to put after its definition
       Basic_Proc.Put_Line_Output ("  = " & Def.Name.Image);
     end if;
-  end Put;
+  end Put_Def;
   procedure Dump_Iterator (Current : in Def_Rec;
                            Go_On   : in out Boolean) is
     pragma Unreferenced (Go_On);
   begin
-    Put (Current, True);
+    Put_Def (Current, True);
   end Dump_Iterator;
 
   procedure Put_Code (Code : in Code_Rec) is
@@ -117,7 +116,7 @@ procedure T_Str_Error is
       loop
         Def.Name := As.U.Tus (Iterator.Next_Word);
         exit when Def.Name.Is_Null;
-        Put (Def, False);
+        Put_Def (Def, False);
         -- All but first name are aliases of it
         if Def.Alias_Of.Is_Null then
           Def.Alias_Of := Def.Name;
@@ -222,6 +221,7 @@ begin
         Def.Alias_Of := Line.Uslice (Matches(3).First_Offset,
                                      Matches(3).Last_Offset_Stop);
         Defs.Insert_If_New (Def);
+        Aliases.Append (Def);
       end if;
     end if;
 
@@ -236,51 +236,44 @@ begin
   if Argument.Get_Nbre_Arg = 1
   and then (Argument.Get_Parameter = "-d"
     or else Argument.Get_Parameter = "--dump") then
-    -- Dump Hash
+    -- Dump Hash list and array of aliases
     Defs.Iterate (Dump_Iterator'Access);
     Basic_Proc.Set_Ok_Exit_Code;
     return;
   end if;
 
-  -- Resolve aliases, store resolved aliases in an array
-  Defs.Rewind;
-  loop
-    Defs.Read_Next (Def, Moved);
-    if Def.Code = 0 then
-      -- This is an alias, search the definition
-      for I in 1 .. Max_Search loop
-        Def_Crit.Name := Def.Alias_Of;
-        -- Search definition or alias => may raise Not_In_List
-        begin
-          Defs.Get_Access (Def_Crit, Def_Acc);
-        exception
-          when Unique_Def_Mng.Not_In_List =>
-            -- Raised by Get_Access
-            Basic_Proc.Put_Line_Error (
-              "ERROR, cannot resolve alias " & Def.Name.Image);
-            Basic_Proc.Set_Error_Exit_Code;
-            return;
-        end;
-        exit when Def_Acc.Code /= 0;
-      end loop;
-
-      if Def_Acc.Code = 0 then
-        -- Not found after Max_Search loops
+  -- Resolve aliases, update resolved aliases in list
+  for I in 1 .. Aliases.Length loop
+    Def := Aliases.Element (I);
+    Defs.Read (Def);
+    -- Resolve aliases until a code is set
+    Alias := Def;
+    for I in 1 .. Max_Search loop
+      exit when Alias.Code /= 0;
+      -- Check (recursively) if this Alias_Of is defined
+      Alias.Name := Def.Alias_Of;
+      Defs.Search (Alias, Found);
+      if not Found then
+        -- This Alias_Of is not defined
         Basic_Proc.Put_Line_Error (
-          "ERROR, infinite loop while resolving alias " & Def.Name.Image);
+          "ERROR, cannot resolve alias " & Alias.Name.Image);
         Basic_Proc.Set_Error_Exit_Code;
         return;
       end if;
-      -- Found, append to list of aliases
-      Def.Code := Def_Acc.Code;
-      Aliases.Append (Def);
-    end if;
-    exit when not Moved;
-  end loop;
+      Defs.Read_Current (Alias);
+    end loop;
 
-  -- Replace resolved aliases in unique list
-  for I in 1 .. Aliases.Length loop
-    Defs.Insert (Aliases.Element (I));
+    if Alias.Code = 0 then
+      -- Not found after Max_Search loops
+      Basic_Proc.Put_Line_Error (
+        "ERROR, infinite loop while resolving alias " & Def.Name.Image);
+      Basic_Proc.Set_Error_Exit_Code;
+      return;
+    end if;
+    -- Found, insert in list
+    Def.Code := Alias.Code;
+    Def.Alias_Of.Set_Null;
+    Defs.Insert (Def);
   end loop;
   Aliases.Set_Null;
 
@@ -339,16 +332,17 @@ begin
     Argument.Get_Parameter (Line, Occurence => I);
     if Regular_Expressions.Match ("E[A-Z]*", Line.Image, True) then
       -- A mnemonic, read its definition
-      Def_Crit.Name := Line;
-      Defs.Search (Def_Crit, Found);
+      Def.Name := Line;
+      Defs.Search (Def, Found);
       if Found then
-        Defs.Read_Current (Def_Crit);
-        Code_Crit.Code := Def_Crit.Code;
+        Defs.Read_Current (Def);
+        Code_Crit.Code := Def.Code;
       else
         Basic_Proc.Put_Line_Output (Line.Image & " => Mnemonic not found");
       end if;
     elsif Regular_Expressions.Match ("[1-9][0-9]*", Line.Image, True) then
       -- A code, read it
+      Def.Name.Set_Null;
       begin
         Code_Crit.Code := Positive'Value (Line.Image);
         Found := True;
@@ -372,9 +366,13 @@ begin
         -- Put the different mnemonics for this code
         Put_Code (Code_Crit);
       else
-        Basic_Proc.Put_Line_Output (Line.Image
-                                   & " =>" & Code_Crit.Code'Img
-                                   & " => Code not found");
+        if not Def.Name.Is_Null then
+          -- Mnemonic
+          Basic_Proc.Put_Output (Line.Image & " => ");
+        end if;
+        -- Mnemonic or code
+        Basic_Proc.Put_Line_Output (Integer_Image (Code_Crit.Code)
+                                  & " => Code not found");
         Basic_Proc.Set_Error_Exit_Code;
       end if;
     end if;
