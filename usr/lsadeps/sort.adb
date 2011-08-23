@@ -1,4 +1,5 @@
-with Directory, Dynamic_List, Hashed_List.Unique;
+with Directory, Dynamic_List, Hashed_List.Unique, Basic_Proc;
+with Debug;
 package body Sort is
   -- Unique list of prios
   type Prio_Rec is record
@@ -50,6 +51,10 @@ package body Sort is
       return;
     end if;
     -- Insert if new (otherwise it already exists with better prio)
+    if Debug.Is_Set then
+      Basic_Proc.Put_Line_Output ("Adding path " & R.Path.Image
+                                & " with prio" & R.Prio'Img);
+    end if;
     Prio_Ulist.Insert_If_New (R);
   end Add_Path;
 

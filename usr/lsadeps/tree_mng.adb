@@ -25,56 +25,86 @@ package body Tree_Mng is
   procedure Build_Node (Origin : in Sourcer.Src_Dscr;
                         Revert : in Boolean);
 
-  -- Build the children (subunits or withed specs)
-  procedure Build_Children (List : in As.U.Asu_Us;
-                            Kind : in Sourcer.Src_Kind_List;
-                            Revert : in Boolean) is
-    Iter : Parser.Iterator;
-    Crit : Sourcer.Src_Dscr;
-    Found : Boolean;
+  -- Build the nodes with any unit withed in List, whatever Path
+  procedure Build_Witheds (List : in As.U.Asu_Us) is
+    Iter1 : Parser.Iterator;
+    Name : Sourcer.Name_Dscr;
+
+    -- Find and insert units with name = Name.Unit
+    procedure Find_Units is
+      Found : Boolean;
+      Iter2 : Parser.Iterator;
+      Src : Sourcer.Src_Dscr;
+    begin
+      Sourcer.Name_List.Search (Name, Found);
+      if not Found then
+        -- This unit name is not known at all => skip it
+        return;
+      end if;
+      Sourcer.Name_List.Read (Name);
+      -- Parse list of paths with Parser and find each Path
+      Iter2.Set (Name.Paths.Image, Is_Sep'Access);
+      loop
+        Src.Path := As.U.Tus (Iter2.Next_Word);
+        Src.Kind := Sourcer.Unit_Spec;
+        Src.Unit := Name.Unit;
+        Sourcer.List.Search (Src, Found);
+        if Found then
+          -- Got a spec
+          Sourcer.List.Read (Src);
+        else
+          Src.Kind := Sourcer.Unit_Body;
+          Sourcer.List.Search (Src, Found);
+          if not Found then
+            -- Likely a standalone spec
+            return;
+          end if;
+          -- Found a body, read it to raise ERROR if not standalone
+          Sourcer.List.Read (Src);
+          if not Src.Standalone then
+            -- Found a body without spec and not standalone
+            raise Sourcer.Src_List_Mng.Not_In_List;
+          end if;
+        end if;
+        Build_Node (Src, False);
+      end loop;
+    end Find_Units;
+
   begin
     if List.Is_Null then
       return;
     end if;
-    if Revert and then Kind = Sourcer.Unit_Spec then
-      Error ("Looking for withed units in revert mode");
+    -- Parse list with Parser and find each name
+    Iter1.Set (List.Image, Is_Sep'Access);
+    loop
+      Name.Unit := As.U.Tus (Iter1.Next_Word);
+      exit when Name.Unit.Is_Null;
+      Find_Units;
+    end loop;
+  end Build_Witheds;
+
+  -- Build the subunits of List (with same path)
+  -- Else any unit withed in List, whatever Path
+  procedure Build_Subunits (List : in As.U.Asu_Us;
+                            Path : in As.U.Asu_Us;
+                            Revert : in Boolean) is
+    Iter : Parser.Iterator;
+    Crit : Sourcer.Src_Dscr;
+  begin
+    if List.Is_Null then
+      return;
     end if;
     -- Parse list with Parser and insert nodes
     Iter.Set (List.Image, Is_Sep'Access);
     loop
-      Crit.Kind := Kind;
       Crit.Unit := As.U.Tus (Iter.Next_Word);
       exit when Crit.Unit.Is_Null;
-      -- Look for unit and insert it in tree
-      if Kind = Sourcer.Unit_Spec then
-        -- Look for spec or standalone body
-        Sourcer.List.Search (Crit, Found);
-        if Found then
-          -- Got a spec
-          Sourcer.List.Read (Crit);
-        else
-          Crit.Kind := Sourcer.Unit_Body;
-          Sourcer.List.Search (Crit, Found);
-          -- Found a body, read it to raise ERROR if not standalone
-          if Found then
-            Sourcer.List.Read (Crit);
-            if not Crit.Standalone then
-              -- Found a body without spec and not standalone
-              raise Sourcer.Src_List_Mng.Not_In_List;
-            end if;
-          end if;
-        end if;
-      else
-        -- Subunit
-        Found := True;
-        Sourcer.List.Read (Crit);
-      end if;
-      if Found then
-        -- Record is found and read
-        Build_Node (Crit, Revert);
-      end if;
+      Crit.Kind := Sourcer.Subunit;
+      Crit.Path := Path;
+      Sourcer.List.Read (Crit);
+      Build_Node (Crit, Revert);
     end loop;
-  end Build_Children;
+  end Build_Subunits;
 
   -- Build wihing units (in revert mode)
   -- The temporary local dynamic lists are necessary because
@@ -137,10 +167,10 @@ package body Tree_Mng is
     end if;
 
     -- Any unit: Insert withed
-    -- In revert:  insert units withing spec or standalone body
+    -- In revert: Insert units withing spec or standalone body
     if not Revert then
       Kind :=  As.U.Tus ("withed");
-      Build_Children (Origin.Witheds, Sourcer.Unit_Spec, Revert);
+      Build_Witheds (Origin.Witheds);
     elsif Origin.Kind = Sourcer.Unit_Spec
           or else (Origin.Kind = Sourcer.Unit_Body
                    and then Origin.Standalone) then
@@ -156,6 +186,7 @@ package body Tree_Mng is
       Kind := As.U.Tus ("parent");
       Child.Unit := Origin.Parent;
       Child.Kind := Sourcer.Unit_Spec;
+      Child.Path := Origin.Path;
       Sourcer.List.Read (Child);
       Build_Node (Child, Revert);
     end if;
@@ -166,6 +197,7 @@ package body Tree_Mng is
       if not Origin.Standalone then
         Child.Unit := Origin.Unit;
         Child.Kind := Sourcer.Unit_Body;
+        Child.Path := Origin.Path;
         Sourcer.List.Read (Child);
         Build_Node (Child, Revert);
       end if;
@@ -175,7 +207,7 @@ package body Tree_Mng is
     if Origin.Kind = Sourcer.Unit_Body
     or else Origin.Kind = Sourcer.Subunit then
       Kind := As.U.Tus ("subunit");
-      Build_Children (Origin.Subunits, Sourcer.Subunit, Revert);
+      Build_Subunits (Origin.Subunits, Origin.Path, Revert);
     end if;
 
     -- Done, move up

@@ -96,9 +96,7 @@ package body Output is
           Str.Append ("  ");
         end loop;
         Str.Append (Strip (Directory.Build_File_Name (
-                Directory.Dirname (Dscr.Dscr.File.Image),
-                Name.Image,
-                "")));
+            Dscr.Dscr.Path.Image, Name.Image, "")));
         Basic_Proc.Put_Line_Output (Str.Image);
       end if;
     end if;
@@ -139,7 +137,8 @@ package body Output is
       Str.Append ("  ");
     end loop;
     -- File
-    Str.Append (Strip (Dscr.Dscr.File.Image));
+    Str.Append (Strip (Directory.Build_File_Name (
+            Dscr.Dscr.Path.Image, Dscr.Dscr.File.Image, "")));
     Basic_Proc.Put_Line_Output (Str.Image);
     return True;
   end Tree_File_Iterator;
@@ -154,7 +153,6 @@ package body Output is
       Tree_Unit_Iterator (Dscr);
     end if;
   end Put_Tree;
-
 
   ----------
   -- LIST --
@@ -191,9 +189,8 @@ package body Output is
       end if;
     end if;
     -- PathOfFile / UnitName
-    Ulist.Insert (As.U.Tus (
-        Directory.Build_File_Name (
-            Directory.Dirname (Dscr.Dscr.File.Image), Name.Image, "")));
+    Ulist.Insert (As.U.Tus (Directory.Build_File_Name (
+            Dscr.Dscr.Path.Image, Name.Image, "")));
     return True;
   end List_Unit_Iterator;
 
@@ -208,7 +205,8 @@ package body Output is
       return True;
     end if;
     -- File
-    Ulist.Insert (Dscr.Dscr.File);
+    Ulist.Insert (As.U.Tus (Directory.Build_File_Name (
+              Dscr.Dscr.Path.Image, Dscr.Dscr.File.Image, "")));
     return True;
   end List_File_Iterator;
 
@@ -256,7 +254,9 @@ package body Output is
   procedure Put (Tree_Mode, Revert_Mode, File_Mode : in Boolean) is
   begin
     Directory.Get_Current (Curr_Dir);
-    Curr_Dir.Append ("/");
+    if Curr_Dir.Image /= "/" then
+      Curr_Dir.Append ("/");
+    end if;
     Revert := Revert_Mode;
     if Tree_Mode then
      Put_Tree (File_Mode);

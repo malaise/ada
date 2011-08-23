@@ -14,6 +14,8 @@ package Sourcer is
     Kind : Src_Kind_List := Unit_Spec;
     -- Full unit name - MixedStr
     Unit : As.U.Asu_Us;
+    -- Full path of the unit (with trailing /)
+    Path : As.U.Asu_Us;
     -- Full file path name
     File : As.U.Asu_Us;
     -- Standalone indicator: spec without body or body without spec
@@ -26,11 +28,11 @@ package Sourcer is
     Witheds_Parents : As.U.Asu_Us;
     -- List of used units - @unit@unit...@unit@
     Useds : As.U.Asu_Us;
-    -- List of subunits (if Body or subunit)  - @unit@unit...@unit@
+    -- List of subunits (if Body or subunit) - @unit@unit...@unit@
     Subunits : As.U.Asu_Us;
   end record;
 
-  -- Unique list of parsed source descriptors
+  -- Unique list of parsed source descriptors (Kind, Unit and Path)
   type Src_Dscr_Access is access all Src_Dscr;
   procedure Set (To : out Src_Dscr; Val : in Src_Dscr);
   function "=" (Current : Src_Dscr; Criteria : Src_Dscr) return Boolean;
@@ -39,6 +41,24 @@ package Sourcer is
                                            Set, "=" , Image);
   package Src_List_Mng is new H_Src_List_Mng.Unique;
   List : Src_List_Mng.Unique_List_Type;
+
+
+  -- A name descriptor
+  type Name_Dscr is record
+    -- Full unit name - MixedStr
+    Unit :   As.U.Asu_Us;
+    -- List of paths where it existst - @path@path...@path@
+    Paths : As.U.Asu_Us;
+  end record;
+  -- Unique list of parsed unit names (Unit)
+  type Name_Dscr_Access is access all Name_Dscr;
+  procedure Set (To : out Name_Dscr; Val : in Name_Dscr);
+  function "=" (Current : Name_Dscr; Criteria : Name_Dscr) return Boolean;
+  function Image (Element : Name_Dscr) return String;
+  package H_Name_List_Mng is new Hashed_List (Name_Dscr, Name_Dscr_Access,
+                                           Set, "=" , Image);
+  package Name_List_Mng is new H_Name_List_Mng.Unique;
+  Name_List : Name_List_Mng.Unique_List_Type;
 
   -- Parse sources and build list
   -- Reports errors on stderr and raises Error

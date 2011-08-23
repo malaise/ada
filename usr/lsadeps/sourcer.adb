@@ -10,7 +10,7 @@ package body Sourcer is
     return C = Separator;
   end Is_Sep;
 
-  -- Operations for Unique_list managmeent
+  -- Operations for unique list of Src_Dscr
   subtype Src_Code is String (1 .. 2);
   Src_Codes : constant array (Src_Kind_List) of Src_Code := ("US", "UB", "SU");
   procedure Set (To : out Src_Dscr; Val : in Src_Dscr) is
@@ -21,11 +21,31 @@ package body Sourcer is
     use type As.U.Asu_Us;
   begin
     return Current.Kind = Criteria.Kind
-    and then Current.Unit = Criteria.Unit;
+    and then
+     Directory.Build_File_Name (Current.Path.Image, Current.Unit.Image, "") =
+     Directory.Build_File_Name (Criteria.Path.Image, Criteria.Unit.Image, "");
   end "=";
   function Image (Element : Src_Dscr) return String is
   begin
-    return Element.Unit.Image & "#" & Src_Codes(Element.Kind);
+    return Directory.Build_File_Name (Element.Path.Image,
+                                      Element.Unit.Image,
+                                      "")
+         & "#" & Src_Codes(Element.Kind);
+  end Image;
+
+  -- Operations for unique list of Name_Dscr
+  procedure Set (To : out Name_Dscr; Val : in Name_Dscr) is
+  begin
+    To := Val;
+  end Set;
+  function "=" (Current : Name_Dscr; Criteria : Name_Dscr) return Boolean is
+    use type As.U.Asu_Us;
+  begin
+    return Current.Unit = Criteria.Unit;
+  end "=";
+  function Image (Element : Name_Dscr) return String is
+  begin
+    return Element.Unit.Image;
   end Image;
 
   -- Dump a unit dscr
@@ -78,6 +98,11 @@ package body Sourcer is
   procedure Parse_File (Dir, File : in String) is
     -- The unit descriptor
     Dscr : Src_Dscr;
+    -- Its name descriptor
+    Name : Name_Dscr;
+    Found : Boolean;
+    -- Full file name
+    Full_File_Name : As.U.Asu_Us;
     -- Text_Char stuff
     Fd : Sys_Calls.File_Desc;
     Txt : Text_Char.File_Type;
@@ -98,16 +123,15 @@ package body Sourcer is
     Iterator : Parser.Iterator;
     use type As.U.Asu_Us, Ada_Parser.Lexical_Kind_List;
   begin
-    -- Store local or full file name
-    if Dir = "." then
-      Dscr.File := As.U.Tus (File);
-    else
-      Dscr.File := As.U.Tus (Directory.Build_File_Name (Dir, File, ""));
-    end if;
+    -- Store file name and path
+    Dscr.File := As.U.Tus (File);
+    Full_File_Name := As.U.Tus (Directory.Build_File_Name (Dir, File, ""));
+    Dscr.Path := As.U.Tus (Directory.Dirname (Full_File_Name.Image));
 
     -- Set Kind according to file name, check if standalone
-    Root_File := As.U.Tus (Directory.Build_File_Name (Dir,
-                            Directory.File_Prefix (File), ""));
+    Root_File := As.U.Tus (Directory.Build_File_Name (
+          Dscr.Path.Image,
+          Directory.File_Prefix (Dscr.File.Image), ""));
     if Directory.File_Suffix (File) = ".ads" then
       Dscr.Kind := Unit_Spec;
       Dscr.Standalone := not File_Exists (Root_File.Image, "adb");
@@ -135,12 +159,12 @@ package body Sourcer is
     Dscr.Witheds.Set_Null;
 
     if Debug.Is_Set then
-      Basic_Proc.Put_Line_Output ("Parsing file " & Dscr.File.Image);
+      Basic_Proc.Put_Line_Output ("Parsing file " & Full_File_Name.Image);
     end if;
 
     -- Open
     begin
-      Fd := Sys_Calls.Open (Dscr.File.Image, Sys_Calls.In_File);
+      Fd := Sys_Calls.Open (Full_File_Name.Image, Sys_Calls.In_File);
     exception
       when Sys_Calls.Name_Error =>
         Error ("Cannot open file " & Dscr.File.Image);
@@ -200,6 +224,21 @@ package body Sourcer is
       -- Skip other (used) keywords
     end loop;
 
+    -- Append Path for this unit name
+    if Dscr.Kind = Unit_Spec
+    or else (Dscr.Kind = Unit_Body and then Dscr.Standalone) then
+      -- Read name if it exists
+      Name.Unit := Dscr.Unit;
+      Name_List.Search (Name, Found);
+      if Found then
+        Name_List.Read (Name);
+        Name.Paths.Append (Dscr.Path & Separator);
+      else
+        Name.Paths.Set (Separator & Dscr.Path & Separator);
+      end if;
+      Name_List.Insert (Name);
+    end if;
+
     -- Store parents of withed units
     if not Dscr.Witheds.Is_Null then
       Dscr.Witheds.Append (Separator);
@@ -236,6 +275,10 @@ package body Sourcer is
       if not Dscr.Witheds_Parents.Is_Null then
         Dscr.Witheds_Parents.Append (Separator);
       end if;
+      Dscr.Witheds_Parents := As.U.Tus (
+          String_Mng.Replace (Dscr.Witheds_Parents.Image,
+                              Separator & Separator,
+                              Separator & ""));
     end if;
 
     if not Dscr.Useds.Is_Null then
@@ -297,7 +340,7 @@ package body Sourcer is
 
   -- Parse sources and build list
   procedure Build_List is
-    -- The list of paths to scan
+    -- The list of paths to scan (in priority order)
     Paths : constant As.U.Utils.Asu_Ua.Unb_Array := Sort.Get_Paths;
     -- The unit descriptor
     Dscr, Crit : Src_Dscr;
@@ -306,15 +349,11 @@ package body Sourcer is
     Found : Boolean;
     use type As.U.Asu_Us;
   begin
-    if Debug.Is_Set then
-      Basic_Proc.Put_Line_Output ("Parsing dirs:");
-      for I in 1 .. Paths.Length loop
-        Basic_Proc.Put_Line_Output (Paths.Element (I).Image);
-      end loop;
-      Basic_Proc.Put_Line_Output ("Parsing starting.");
-    end if;
-    -- Process local then include dirs
+    -- Process paths one by one
     for I in 1 .. Paths.Length loop
+      if Debug.Is_Set then
+        Basic_Proc.Put_Line_Output ("Parsing dir " & Paths.Element (I).Image);
+      end if;
       Parse_Dir (Paths.Element (I).Image);
     end loop;
     if Debug.Is_Set then
@@ -332,6 +371,7 @@ package body Sourcer is
     loop
       List.Read_Next (Dscr, Moved);
       Crit.Unit := Dscr.Unit;
+      Crit.Path := Dscr.Path;
       -- Search counterpart Spec -> Body, Body -> Spec, Subunit -> Spec
       case Dscr.Kind is
         when Unit_Spec => Crit.Kind := Unit_Body;
@@ -368,6 +408,7 @@ package body Sourcer is
       if Has_Dot (Dscr.Unit) then
         -- Parent of child: unit or child
         Crit.Unit := Dscr.Parent;
+        Crit.Path := Dscr.Path;
         if Dscr.Kind = Subunit then
           if Has_Dot (Crit.Unit) then
             -- Subunit, either of a subunit or of a child
@@ -430,6 +471,7 @@ package body Sourcer is
     Crit : Src_Dscr;
     Found : Boolean;
   begin
+    Crit.Path := Dscr.Path;
     case Dscr.Kind is
       when Unit_Spec =>
         return Dscr;
@@ -450,7 +492,7 @@ package body Sourcer is
       List.Search (Crit, Found);
     end if;
     if not Found then
-      Error ("Not parent for " & Image (Dscr));
+      Error ("No parent for " & Image (Dscr));
     end if;
     List.Read (Crit);
     return Crit;
