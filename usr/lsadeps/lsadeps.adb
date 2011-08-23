@@ -3,7 +3,7 @@ with As.U, Argument, Argument_Parser, Basic_Proc, Mixed_Str, Directory;
 with Debug, Sourcer, Tree_Mng, Sort, Output, Checker;
 procedure Lsadeps is
 
-  Version : constant String := "V3.0";
+  Version : constant String := "V3.1";
 
   -- Usage and Error
   procedure Usage is
@@ -95,8 +95,6 @@ begin
   ---------------------
   -- PARSE ARGUMENTS --
   ---------------------
-  -- Save current dir
-  Directory.Get_Current (Current_Dir);
 
   -- Parse keys and options
   Arg_Dscr := Argument_Parser.Parse (Keys);
@@ -142,6 +140,10 @@ begin
     Check_Mode := True;
   end if;
 
+  -- Save current dir and add it to paths (top prio)
+  Directory.Get_Current (Current_Dir);
+  Sort.Add_Path (Current_Dir);
+
   if Check_Mode then
     -- An optional target directory
     if Arg_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) = 1 then
@@ -162,9 +164,9 @@ begin
     Target_Dir := As.U.Tus (Directory.Make_Full_Path (Directory.Dirname
         (Target.Image)));
     Check_Dir (Target_Dir.Image);
-    -- Include target dir in includes
+    -- Include target dir in paths (just after current dir)
     if not Target_Dir.Is_Null then
-      Sort.Set_Prio (Target_Dir, 1);
+      Sort.Add_Path (Target_Dir);
     end if;
   end if;
 
@@ -183,8 +185,8 @@ begin
       end if;
       Dir := As.U.Tus (Directory.Make_Full_Path (Dir.Image));
       Check_Dir (Dir.Image);
-      -- Prio 1 might be used by target dir
-      Sort.Set_Prio (Dir, I + 1);
+      -- Add this include to paths
+      Sort.Add_Path (Dir);
     end loop;
   end if;
 
@@ -252,6 +254,8 @@ begin
   -------------------
   -- PUT LIST/TREE --
   -------------------
+  -- Back to original dir
+  Check_Dir ("");
   Output.Put (Tree_Mode, Revert_Mode, File_Mode);
 
 exception

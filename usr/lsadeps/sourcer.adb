@@ -308,14 +308,12 @@ package body Sourcer is
   begin
     if Debug.Is_Set then
       Basic_Proc.Put_Line_Output ("Parsing dirs:");
-      Basic_Proc.Put_Line_Output (".");
       for I in 1 .. Paths.Length loop
         Basic_Proc.Put_Line_Output (Paths.Element (I).Image);
       end loop;
       Basic_Proc.Put_Line_Output ("Parsing starting.");
     end if;
     -- Process local then include dirs
-    Parse_Dir (".");
     for I in 1 .. Paths.Length loop
       Parse_Dir (Paths.Element (I).Image);
     end loop;

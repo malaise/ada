@@ -32,14 +32,16 @@ package body Sort is
   package Prio_List_Mng renames Prio_Dyn_List_Mng.Dyn_List;
   procedure Prio_Sort is new Prio_List_Mng.Sort (Less_Than);
 
-  -- Set the priority level of a path (1 = Higest)
-  procedure Set_Prio (Path : As.U.Asu_Us; Prio : Positive) is
+  -- store Path with prio
+  Current_Prio : Positive := 1;
+  procedure Add_Path (Path : As.U.Asu_Us) is
     R : Prio_Rec;
     L : Natural;
   begin
     -- Remove trailing '/' if not "/"
     R.Path := As.U.Tus (Directory.Make_Full_Path (Path.Image));
-    R.Prio := Prio;
+    R.Prio := Current_Prio;
+    Current_Prio := Current_Prio + 1;
     L := R.Path.Length;
     if L > 1 and then R.Path.Element (L) = '/' then
       R.Path.Delete (L, L);
@@ -49,7 +51,7 @@ package body Sort is
     end if;
     -- Insert if new (otherwise it already exists with better prio)
     Prio_Ulist.Insert_If_New (R);
-  end Set_Prio;
+  end Add_Path;
 
   function Get_Paths return As.U.Utils.Asu_Ua.Unb_Array is
     Result : As.U.Utils.Asu_Ua.Unb_Array;

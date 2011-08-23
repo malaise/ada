@@ -5,6 +5,25 @@ package body Output is
   -- Are we in revert mode. Tree iterators need it
   Revert : Boolean := False;
 
+  -- Current directory
+  Curr_Dir : As.U.Asu_Us;
+
+  -- Strip path of Str if current dir
+  function Strip (Str : String) return String is
+  begin
+    if Directory.Dirname (Str) = Curr_Dir.Image then
+      return Directory.Basename (Str);
+    else
+      return Str;
+    end if;
+  end Strip;
+
+  -- Put_Line a stripped string
+  procedure Put_Line_Stripped (Str : in String) is
+  begin
+    Basic_Proc.Put_Line_Output (Strip (Str));
+  end Put_Line_Stripped;
+
   ----------
   -- TREE --
   ----------
@@ -76,10 +95,10 @@ package body Output is
         for I in 1 .. Level - 1 loop
           Str.Append ("  ");
         end loop;
-        Str.Append (Directory.Build_File_Name (
+        Str.Append (Strip (Directory.Build_File_Name (
                 Directory.Dirname (Dscr.Dscr.File.Image),
                 Name.Image,
-                ""));
+                "")));
         Basic_Proc.Put_Line_Output (Str.Image);
       end if;
     end if;
@@ -120,7 +139,7 @@ package body Output is
       Str.Append ("  ");
     end loop;
     -- File
-    Str.Append (Dscr.Dscr.File);
+    Str.Append (Strip (Dscr.Dscr.File.Image));
     Basic_Proc.Put_Line_Output (Str.Image);
     return True;
   end Tree_File_Iterator;
@@ -228,7 +247,7 @@ package body Output is
     Dlist.Rewind;
     loop
       Dlist.Read (Str, Moved => Moved);
-      Basic_Proc.Put_Line_Output (Str.Image);
+      Put_Line_Stripped (Str.Image);
       exit when not Moved;
     end loop;
   end Put_List;
@@ -236,6 +255,8 @@ package body Output is
   -- Put list/tree, normal/revert of units/files
   procedure Put (Tree_Mode, Revert_Mode, File_Mode : in Boolean) is
   begin
+    Directory.Get_Current (Curr_Dir);
+    Curr_Dir.Append ("/");
     Revert := Revert_Mode;
     if Tree_Mode then
      Put_Tree (File_Mode);
