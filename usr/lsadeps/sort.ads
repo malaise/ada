@@ -5,6 +5,10 @@ package Sort is
   -- So that the order of '-I' dirs is preserved in the output
   procedure Set_Prio (Path : As.U.Asu_Us; Prio : Positive);
 
+  -- Sort then get all the paths
+  function Get_Paths return As.U.Utils.Asu_Ua.Unb_Array;
+
+
   -- Sort entries ([<path>/]<file>)
   --  First the entries without path
   --  Then in order of prio

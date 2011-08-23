@@ -1,4 +1,4 @@
-with As.U, My_Math, Arbitrary, Arbitrary.Fractions;
+with As.U, My_Math, Arbitrary.Fractions;
 package Mcd_Mng is
 
   type Item_Kind_List is (Arbi, Frac, Inte, Real, Bool, Chrs, Prog, Regi, Oper);

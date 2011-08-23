@@ -1,4 +1,4 @@
-with Basic_Proc, Date_Image, Virtual_Time, Chronos, Timers, Event_Mng,
+with Basic_Proc, Date_Image, Virtual_Time, Timers, Event_Mng,
      Chronos.Passive_Timers, Queues.Timed;
 procedure T_Virtual is
 

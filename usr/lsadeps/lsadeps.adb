@@ -3,7 +3,7 @@ with As.U, Argument, Argument_Parser, Basic_Proc, Mixed_Str, Directory;
 with Debug, Sourcer, Tree_Mng, Sort, Output, Checker;
 procedure Lsadeps is
 
-  Version : constant String := "V2.1";
+  Version : constant String := "V3.0";
 
   -- Usage and Error
   procedure Usage is
@@ -32,7 +32,7 @@ procedure Lsadeps is
     Basic_Proc.Put_Line_Error (
      "  <target>        ::= <unit>");
     Basic_Proc.Put_Line_Error (
-     "  <check>         ::= -c | --check    // Detects redundant withs");
+     "  <check>         ::= -c | --check    // Detects redundant withs in a dir");
   end Usage;
 
   Error_Raised : exception renames Sourcer.Error_Raised;
@@ -60,18 +60,44 @@ procedure Lsadeps is
   Revert_Mode : Boolean := False;
   File_Mode : Boolean := False;
   Check_Mode : Boolean := False;
-  Target : As.U.Asu_Us;
+  Target, Target_Dir : As.U.Asu_Us;
   Dir : As.U.Asu_Us;
+
+  -- Current directory
+  Current_Dir : As.U.Asu_Us;
 
   -- Unit descriptor
   Unit : Sourcer.Src_Dscr;
   Found : Boolean;
   use type Sourcer.Src_Kind_List;
 
+  -- Check that a target/include directory is usable
+  procedure Check_Dir (Dir : in String) is
+  begin
+    if Dir = "" then
+      return;
+    end if;
+    begin
+      Directory.Change_Current (Dir);
+    exception
+      when Directory.Name_Error | Directory.Access_Error =>
+        Error ("Cannot change to directory " & Dir);
+    end;
+    begin
+      Directory.Change_Current (Current_Dir.Image);
+    exception
+      when Directory.Name_Error | Directory.Access_Error =>
+        Error ("Cannot change back to current directory " & Current_Dir.Image);
+    end;
+  end Check_Dir;
+
 begin
   ---------------------
   -- PARSE ARGUMENTS --
   ---------------------
+  -- Save current dir
+  Directory.Get_Current (Current_Dir);
+
   -- Parse keys and options
   Arg_Dscr := Argument_Parser.Parse (Keys);
   if not Arg_Dscr.Is_Ok then
@@ -120,9 +146,11 @@ begin
     -- An optional target directory
     if Arg_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) = 1 then
       Target := As.U.Tus (Arg_Dscr.Get_Option (Argument_Parser.No_Key_Index));
+      Target_Dir := As.U.Tus (Directory.Make_Full_Path (Target.Image));
     elsif Arg_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) /= 0 then
       Error ("At most one target accepted");
     end if;
+    Check_Dir (Target_Dir.Image);
   else
     -- Target: only once and at the end
     if Arg_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) /= 1 then
@@ -131,6 +159,13 @@ begin
       Error ("Invalid argument");
     end if;
     Target := As.U.Tus (Arg_Dscr.Get_Option (Argument_Parser.No_Key_Index));
+    Target_Dir := As.U.Tus (Directory.Make_Full_Path (Directory.Dirname
+        (Target.Image)));
+    Check_Dir (Target_Dir.Image);
+    -- Include target dir in includes
+    if not Target_Dir.Is_Null then
+      Sort.Set_Prio (Target_Dir, 1);
+    end if;
   end if;
 
   if Check_Mode then
@@ -146,39 +181,37 @@ begin
       if Dir.Is_Null then
         Error ("Missing include dir");
       end if;
-      Sort.Set_Prio (As.U.Tus (Arg_Dscr.Get_Option (5, I)), I);
+      Dir := As.U.Tus (Directory.Make_Full_Path (Dir.Image));
+      Check_Dir (Dir.Image);
+      -- Prio 1 might be used by target dir
+      Sort.Set_Prio (Dir, I + 1);
     end loop;
   end if;
 
-  ------------------
-  -- CHECK TARGET --
-  ------------------
-  -- Check that target directory is readable, change to it
-  begin
-    if Check_Mode then
-      -- Optional Target is the directory
-      if not Target.Is_Null then
-        Directory.Change_Current (Directory.Make_Full_Path (Target.Image));
-      end if;
-    else
-      -- Target is the directory + unit
-      Directory.Change_Current (Directory.Make_Full_Path (Directory.Dirname
-          (Target.Image)));
-    end if;
-  exception
-    when others =>
-      Error ("Cannot change to target directory "
-           & Directory.Make_Full_Path (Directory.Dirname (Target.Image)));
-  end;
+  ---------------------------
+  -- BUILD LIST OF SOURCES --
+  ---------------------------
+  Sourcer.Build_List;
+
+  ------------------------
+  -- MOVE TO TARGET DIR --
+  ------------------------
+  if not Target_Dir.Is_Null then
+    begin
+      Directory.Change_Current (Directory.Make_Full_Path (Target_Dir.Image));
+    exception
+      when others =>
+        Error ("Cannot change to target directory " & Target_Dir.Image);
+    end;
+  end if;
   if Debug.Is_Set then
     Basic_Proc.Put_Line_Output ("In " &
       Directory.Make_Full_Path (Directory.Get_Current));
   end if;
 
-  --------------------------------------------
-  -- BUILD LIST OF SOURCES and CHECK TARGET --
-  --------------------------------------------
-  Sourcer.Build_List (Arg_Dscr);
+  ------------------
+  -- CHECK TARGET --
+  ------------------
   if not Check_Mode then
     -- Check that target is found, as spec or standalone body
     Unit.Unit := As.U.Tus (Mixed_Str (Directory.Basename (Target.Image)));

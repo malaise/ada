@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1, Ada.Exceptions;
-with As.U.Utils, My_Io, String_Mng, String_Mng.Regex, Many_Strings,
+with As.U.Utils, My_Io, String_Mng.Regex, Many_Strings,
      Upper_Str, Lower_Str, Mixed_Str, Upper_Char, Environ;
 procedure T_String is
 

@@ -1,5 +1,5 @@
 with Ada.Text_Io;
-with Basic_Proc, Parser, Parser.All_In_One, Argument, Mixed_Str;
+with Basic_Proc, Parser.All_In_One, Argument, Mixed_Str;
 procedure T_Parser is
 
   Sep : Character := '.';

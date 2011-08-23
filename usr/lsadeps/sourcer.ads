@@ -1,5 +1,5 @@
 -- List of ada source files parsed
-with As.U, Argument_Parser, Hashed_List.Unique;
+with As.U, Hashed_List.Unique;
 package Sourcer is
 
   -- Kind of ada source
@@ -22,6 +22,8 @@ package Sourcer is
     Parent : As.U.Asu_Us;
     -- List of withed units - @unit@unit...@unit@
     Witheds : As.U.Asu_Us;
+    -- List of ancestors of withed units (if any) - @unit@unit...@unit@
+    Witheds_Parents : As.U.Asu_Us;
     -- List of used units - @unit@unit...@unit@
     Useds : As.U.Asu_Us;
     -- List of subunits (if Body or subunit)  - @unit@unit...@unit@
@@ -41,7 +43,7 @@ package Sourcer is
   -- Parse sources and build list
   -- Reports errors on stderr and raises Error
   Error_Raised : exception;
-  procedure Build_List (Args : in Argument_Parser.Parsed_Dscr);
+  procedure Build_List;
 
   -- Some utilities
   -- Does a unit name contain a '.'

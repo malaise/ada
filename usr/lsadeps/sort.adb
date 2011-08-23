@@ -1,5 +1,4 @@
-with Directory;
-with Hashed_List.Unique;
+with Directory, Dynamic_List, Hashed_List.Unique;
 package body Sort is
   -- Unique list of prios
   type Prio_Rec is record
@@ -22,8 +21,16 @@ package body Sort is
   end Image;
   package H_Prio_List_Mng is new Hashed_List (
        Prio_Rec, Prio_Access, Set, "=" , Image);
-  package Prio_List_Mng is new H_Prio_List_Mng.Unique;
-  Prio_List : Prio_List_Mng.Unique_List_Type;
+  package Prio_Ulist_Mng is new H_Prio_List_Mng.Unique;
+  Prio_Ulist : Prio_Ulist_Mng.Unique_List_Type;
+
+  function Less_Than (E1, E2 : Prio_Rec) return Boolean is
+  begin
+    return E1.Prio < E2.Prio;
+  end Less_Than;
+  package Prio_Dyn_List_Mng is new Dynamic_List (Prio_Rec);
+  package Prio_List_Mng renames Prio_Dyn_List_Mng.Dyn_List;
+  procedure Prio_Sort is new Prio_List_Mng.Sort (Less_Than);
 
   -- Set the priority level of a path (1 = Higest)
   procedure Set_Prio (Path : As.U.Asu_Us; Prio : Positive) is
@@ -37,10 +44,39 @@ package body Sort is
     if L > 1 and then R.Path.Element (L) = '/' then
       R.Path.Delete (L, L);
     end if;
-    if L /= 0 then
-      Prio_List.Insert (R);
+    if L = 0 then
+      return;
     end if;
+    -- Insert if new (otherwise it already exists with better prio)
+    Prio_Ulist.Insert_If_New (R);
   end Set_Prio;
+
+  function Get_Paths return As.U.Utils.Asu_Ua.Unb_Array is
+    Result : As.U.Utils.Asu_Ua.Unb_Array;
+    Prio : Prio_Rec;
+    Moved : Boolean;
+    List : Prio_List_Mng.List_Type;
+  begin
+    if Prio_Ulist.Is_Empty then
+      return Result;
+    end if;
+    -- Build list and sort
+    Prio_Ulist.Rewind;
+    loop
+      Prio_Ulist.Read_Next (Prio, Moved);
+      List.Insert (Prio);
+      exit when not Moved;
+    end loop;
+    Prio_Sort (List);
+    -- Copy in array
+    List.Rewind;
+    loop
+      List.Get (Prio, Moved => Moved);
+      Result.Append (Prio.Path);
+      exit when not Moved;
+    end loop;
+    return Result;
+  end Get_Paths;
 
   -- Sort entries ([<path>/]<file>)
   --  First the entries without path
@@ -72,9 +108,9 @@ package body Sort is
      -- Search Dir without last '/'
       R.Path := As.U.Tus (D);
       R.Path.Delete (R.Path.Length, R.Path.Length);
-      Prio_List.Search (R, Found);
+      Prio_Ulist.Search (R, Found);
       if Found then
-        Prio_List.Read (R);
+        Prio_Ulist.Read (R);
       else
         R.Prio := Positive'Last;
       end if;

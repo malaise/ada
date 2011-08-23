@@ -1,4 +1,4 @@
-with As.U, My_Math, Queues, Basic_Proc, Lower_Str, Argument, Bool_Io, Arbitrary,
+with As.U, My_Math, Queues, Basic_Proc, Lower_Str, Argument, Bool_Io,
      Arbitrary.Fractions, Async_Stdin, String_Mng;
 with Debug, Input_Dispatcher, Inte_Io, Io_Flow;
 package body Mcd_Parser is

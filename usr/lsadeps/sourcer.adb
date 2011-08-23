@@ -1,8 +1,14 @@
 with Ada.Exceptions;
 with Basic_Proc, Directory, Sys_Calls, Text_Char, Ada_Parser, String_Mng,
-     Mixed_Str;
-with Debug;
+     Mixed_Str, As.U.Utils, Parser;
+with Debug, Sort;
 package body Sourcer is
+
+  -- Is separator for iterator
+  function Is_Sep (C : Character) return Boolean is
+  begin
+    return C = Separator;
+  end Is_Sep;
 
   -- Operations for Unique_list managmeent
   subtype Src_Code is String (1 .. 2);
@@ -30,6 +36,7 @@ package body Sourcer is
            & Mixed_Str (Dscr.Standalone'Img));
     Basic_Proc.Put_Line_Output (", parent: " & Dscr.Parent.Image);
     Basic_Proc.Put_Line_Output ("  withed: " & Dscr.Witheds.Image);
+    Basic_Proc.Put_Line_Output ("  withPa: " & Dscr.Witheds_Parents.Image);
     Basic_Proc.Put_Line_Output ("  used  : " & Dscr.Useds.Image);
   end Dump;
 
@@ -87,6 +94,8 @@ package body Sourcer is
     In_Use : Boolean;
     -- Is prev delimiter a "."
     Prev_Dot : Boolean;
+    -- Iterator on withed units to find their parents
+    Iterator : Parser.Iterator;
     use type As.U.Asu_Us, Ada_Parser.Lexical_Kind_List;
   begin
     -- Store local or full file name
@@ -191,13 +200,48 @@ package body Sourcer is
       -- Skip other (used) keywords
     end loop;
 
-    -- Done: store and close
+    -- Store parents of withed units
     if not Dscr.Witheds.Is_Null then
       Dscr.Witheds.Append (Separator);
+      -- Scan each withed unit and and appends its parents if any
+      Iterator.Set (Dscr.Witheds.Image, Is_Sep'Access);
+      loop
+        declare
+          -- The current withed unit
+          Unit : constant String := Iterator.Next_Word;
+          -- Depth of parent
+          Depth : Positive;
+          Dot : Natural;
+          -- New parent
+          Parent : As.U.Asu_Us;
+        begin
+          -- No more unit?
+          exit when Unit = "";
+          -- Look for successive '.' in its name
+          Depth := 1;
+          loop
+            Dot := String_Mng.Locate (Unit, ".", Occurence => Depth);
+            exit when Dot = 0;
+            -- Append parent if new
+            Parent := As.U.Tus (Separator & Unit(Unit'First .. Dot - 1)
+                              & Separator);
+            if String_Mng.Locate (Dscr.Witheds_Parents.Image,
+                                  Parent.Image) = 0 then
+              Dscr.Witheds_Parents.Append (Parent);
+            end if;
+            Depth := Depth + 1;
+          end loop;
+        end;
+      end loop;
+      if not Dscr.Witheds_Parents.Is_Null then
+        Dscr.Witheds_Parents.Append (Separator);
+      end if;
     end if;
+
     if not Dscr.Useds.Is_Null then
-      Dscr.Witheds.Append (Separator);
+      Dscr.Useds.Append (Separator);
     end if;
+    -- Done: store and close
     -- Drop new version of this unit if one already exists
     List.Insert_If_New (Dscr);
     Txt.Close;
@@ -252,8 +296,9 @@ package body Sourcer is
   end Parse_Dir;
 
   -- Parse sources and build list
-  Incl_Key : constant := 5;
-  procedure Build_List (Args : in Argument_Parser.Parsed_Dscr) is
+  procedure Build_List is
+    -- The list of paths to scan
+    Paths : constant As.U.Utils.Asu_Ua.Unb_Array := Sort.Get_Paths;
     -- The unit descriptor
     Dscr, Crit : Src_Dscr;
     -- Unique list indicators
@@ -261,10 +306,18 @@ package body Sourcer is
     Found : Boolean;
     use type As.U.Asu_Us;
   begin
+    if Debug.Is_Set then
+      Basic_Proc.Put_Line_Output ("Parsing dirs:");
+      Basic_Proc.Put_Line_Output (".");
+      for I in 1 .. Paths.Length loop
+        Basic_Proc.Put_Line_Output (Paths.Element (I).Image);
+      end loop;
+      Basic_Proc.Put_Line_Output ("Parsing starting.");
+    end if;
     -- Process local then include dirs
     Parse_Dir (".");
-    for I in 1 .. Args.Get_Nb_Occurences (Incl_Key) loop
-      Parse_Dir (Directory.Make_Full_Path (Args.Get_Option (Incl_Key, I)));
+    for I in 1 .. Paths.Length loop
+      Parse_Dir (Paths.Element (I).Image);
     end loop;
     if Debug.Is_Set then
       Basic_Proc.Put_Line_Output ("Parsing completed.");

@@ -7,7 +7,7 @@
 --        prime -lcm <n1> <n2>     lowest common multiple
 
 with Ada.Text_Io;
-with Argument, Arbitrary, Arbitrary.Factors, Arbitrary.Prime_List;
+with Argument, Arbitrary.Factors, Arbitrary.Prime_List;
 procedure Prime is
   use type Arbitrary.Number;
   subtype Positive_Number is Arbitrary.Prime_List.Positive_Number;

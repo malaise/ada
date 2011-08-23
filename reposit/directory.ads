@@ -10,7 +10,7 @@ package Directory is
 
   -- Changes current working directory
   procedure Change_Current (New_Dir : in String);
-  -- May raise Name_Error
+  -- May raise Name_Error or Access_Error
 
 
   type Dir_Desc is private;

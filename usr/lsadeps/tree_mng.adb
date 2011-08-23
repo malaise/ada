@@ -93,7 +93,8 @@ package body Tree_Mng is
     loop
       Sourcer.List.Read_Next (Dscr, Moved);
       -- See if its Witheds contains us
-      if String_Mng.Locate (Dscr.Witheds.Image, Crit) /= 0 then
+      if String_Mng.Locate (Dscr.Witheds.Image, Crit) /= 0
+      or else String_Mng.Locate (Dscr.Witheds_Parents.Image, Crit) /= 0 then
         -- Yesss, add it to our list
         List.Insert (Dscr);
       end if;
