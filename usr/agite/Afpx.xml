@@ -3,7 +3,7 @@
 
 <!-- For agite -->
 <Afpx_Descriptors Height="44" Width="55">
-  <Var Name="Version" Value="V3.2"/>
+  <Var Name="Version" Value="V3.3"/>
 
   <!-- Main screen: explorator -->
   <Descriptor Num="1" Background="Light_Grey">
@@ -95,9 +95,9 @@
     </Field>
     <Field Num="14" Kind="Button">
       <Geometry Up="${Field_13.Up}" Left="${Field_13.Right}+2"
-                Height="1" Width="4"/>
+                Height="1" Width="8"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="1">Up</Init>
+      <Init Row="0" Col="1">Dir Up</Init>
     </Field>
     <Field Num="15" Kind="Button">
       <Geometry Up="${Field_13.Up}" Left="${Field_14.Right}+2"
