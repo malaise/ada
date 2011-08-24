@@ -103,7 +103,7 @@ Some of them are interdependant, the main dependency trees are:
 @item Graphic (X11) function:
 X_Mng <- (Genric_)Con_Io <- Afpx and Curve
 @item Communication, Timers:
-Socket, Timers and Event_Mng <- Tcp_Util <- Channels 
+Socket, Timers and Event_Mng <- Tcp_Util <- Channels
 @end itemize
 
 The most complex is definitively the Xml_Parser.@*

@@ -86,7 +86,7 @@ asubst considers that input flow or file is coded in Utf-8. This setting can be
 altered in a way or the other by setting ASUBST_UTF8 environment variable
 to Y, yes, N or no (with whatever casing). Finally, this setting can be
 altered in a way or the other by the options -a (--ascii), or -u (--utf8).@*
-	@*
+ @*
 If ASUBST_DEBUG environment variable is set to Y or yes (with whatever casing)
 then asubst puts on stderr some debugging information.
 
@@ -152,7 +152,7 @@ Note that only "\s", "\t", "\n" and "\xIJ" are interpreted in "noregex" mode.
 Finally, beware that some regex expressions are supposed to match a "new line"
 (example [:blank:] within a bracket expression) but will not match in asubst,
 because the input flow/file is decomposed into lines and then each line is
-compared to a regex expression. 
+compared to a regex expression.
 
 @node Exclusion pattern, Match range, Find pattern, Top
 @chapter Exclusion pattern
@@ -243,7 +243,7 @@ echo -en "toto" | asubst "(.)(.)(..)" "\u\r12\c\r11"    ->  "Otto"
 @node Grep mode, Regex and noregex modes, Replace string, Top
 @chapter Grep mode
 In grep mode, asubst only looks for find_pattern and displays result,
-(possibly with the input file name and possibly with the line number in this 
+(possibly with the input file name and possibly with the line number in this
 input file) but does not alter the files.@*
 As a consequence, grep mode imposes quiet, test and no-backup modes. File_name
 and line_nb modes are allowed in grep mode only, and line_nb mode requires
@@ -269,7 +269,7 @@ terminator and it is used as such by regex library.@*
 It is allowed in noregex mode.@*
 In noregex mode "\A" to "\X" are not interpreted, like other regex specific
 characters (including "^" and "$").@*
-In noregex mode, "\rIJ" with J > 0 is forbidden (no substring). 
+In noregex mode, "\rIJ" with J > 0 is forbidden (no substring).
 
 @node File list, Exit code, Regex and noregex modes, Top
 @chapter File list

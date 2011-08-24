@@ -123,7 +123,7 @@ is a crash.
 @node Design, , Playing, Top
 @chapter Elements of design
 The axes are x (horizontal, left to right) and y (vertical bottom to top).
-@verbatim  
+@verbatim
 y ^
   |
   |
@@ -142,7 +142,7 @@ It has a fuel tank of volume F kg of fuel.
 
 It provides the following operations
 @itemize @minus
-@item Set_X_Thrust and Set_Y_Thrust (Y_Thrust) 
+@item Set_X_Thrust and Set_Y_Thrust (Y_Thrust)
 @itemize @minus
 @item Max_X_Thrust is applied during a fixed delay
 @item Max_Y_Thrust < Y_Thrust <= 0 in N (1N = 1kg.m/s2)

@@ -92,7 +92,7 @@ and with 0 otherwise.
 @chapter high level design
 @section Parse and check arguments
 @itemize @minus
-@item in non check mode target is a unit (possibly containing a path) 
+@item in non check mode target is a unit (possibly containing a path)
 @item in check mode it is an optional path that denotes the directory to check
 @item include dirs (recursive or not) must exist
 @end itemize
@@ -121,7 +121,7 @@ Also store in a list, for each Unit_Name, the list of paths where such unit exis
 @section Check redundant "with"
 For each unit build the tree of its parents (sub-unit -> body -> spec) and for
 each unit make the list of its withed units.@*
-For each unit U check that no withed unit W is withed twice by U or by a parent of U, 
+For each unit U check that no withed unit W is withed twice by U or by a parent of U,
 including indirect with of a child of W. Note that a redundant "with" context
 clause is acceptable in case of a "use" context clause.@*
 Exit program.
