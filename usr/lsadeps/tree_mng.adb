@@ -167,7 +167,8 @@ package body Tree_Mng is
     end if;
 
     -- Any unit: Insert withed
-    -- In revert: Insert units withing spec or standalone body
+    -- In revert: Insert units withing us if we are a spec or standalone body
+    --            Otherwise they are not dependant on us
     if not Revert then
       Kind :=  As.U.Tus ("withed");
       Build_Witheds (Origin.Witheds);

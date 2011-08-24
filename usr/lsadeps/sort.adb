@@ -125,7 +125,7 @@ package body Sort is
   begin
     if D1 = "" and then D2 /= "" then return True; end if;
     if D1 /= "" and then D2 = "" then return False; end if;
-    if D1 = "" then return File_Less_Than; end if;
+    if D1 = D2 then return File_Less_Than; end if;
     -- Apply prio of path
     Read (D1, R1);
     Read (D2, R2);
