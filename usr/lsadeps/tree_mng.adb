@@ -26,7 +26,7 @@ package body Tree_Mng is
                         Revert : in Boolean);
 
   -- Build the nodes with any unit withed in List, whatever Path
-  procedure Build_Witheds (List : in As.U.Asu_Us) is
+  procedure Build_Witheds (Path, Witheds : in As.U.Asu_Us) is
     Iter1 : Parser.Iterator;
     Name : Sourcer.Name_Dscr;
 
@@ -36,6 +36,14 @@ package body Tree_Mng is
       Iter2 : Parser.Iterator;
       Src : Sourcer.Src_Dscr;
     begin
+      -- See if a local unit exists
+      Src := Sourcer.Get_Unit (Path, Name.Unit);
+      if not Src.Unit.Is_Null then
+        -- Yes, local unit hides remote ones
+        Build_Node (Src, False);
+        return;
+      end if;
+      -- List all (remote) units with this withed name
       Sourcer.Name_List.Search (Name, Found);
       if not Found then
         -- This unit name is not known at all => skip it
@@ -71,11 +79,11 @@ package body Tree_Mng is
     end Find_Units;
 
   begin
-    if List.Is_Null then
+    if Witheds.Is_Null then
       return;
     end if;
     -- Parse list with Parser and find each name
-    Iter1.Set (List.Image, Is_Sep'Access);
+    Iter1.Set (Witheds.Image, Is_Sep'Access);
     loop
       Name.Unit := As.U.Tus (Iter1.Next_Word);
       exit when Name.Unit.Is_Null;
@@ -107,26 +115,39 @@ package body Tree_Mng is
   end Build_Subunits;
 
   -- Build wihing units (in revert mode)
-  -- The temporary local dynamic lists are necessary because
+  -- The temporary local dynamic list is necessary because
   --  here we call Build_Node, which itself calls us recursively
   package Src_List_Mng is new Dynamic_List (Sourcer.Src_Dscr);
   package Src_Dyn_List_Mng renames Src_List_Mng.Dyn_List;
 
-  procedure Build_Withings (Name : in String) is
+  procedure Build_Withings (Name, Path : in String) is
     Dscr : Sourcer.Src_Dscr;
     Moved : Boolean;
     Crit : constant String := Sourcer.Separator & Name & Sourcer.Separator;
     List : Src_Dyn_List_Mng.List_Type;
+    Hidding : Sourcer.Src_Dscr;
+    use type As.U.Asu_Us;
   begin
     -- Scan all known units
     Sourcer.List.Rewind;
     loop
       Sourcer.List.Read_Next (Dscr, Moved);
-      -- See if its Witheds contains us
+      -- See if its Witheds contains us or one of our children
       if String_Mng.Locate (Dscr.Witheds.Image, Crit) /= 0
       or else String_Mng.Locate (Dscr.Witheds_Parents.Image, Crit) /= 0 then
-        -- Yesss, add it to our list
-        List.Insert (Dscr);
+        -- Yes, see if it is local
+        if Dscr.Path = Path then
+          -- Yesss, add it to our list
+          List.Insert (Dscr);
+        else
+          -- We are withed by a remote unit, see if we are hidden
+          -- Search a unit (spec or standalone body) in Dscr Path with our name
+          Hidding := Sourcer.Get_Unit (Dscr.Path, As.U.Tus (Name));
+          if Hidding.Unit.Is_Null then
+            -- We are not hidden, add it to our list
+            List.Insert (Dscr);
+          end if;
+        end if;
       end if;
       exit when not Moved;
     end loop;
@@ -171,12 +192,12 @@ package body Tree_Mng is
     --            Otherwise they are not dependant on us
     if not Revert then
       Kind :=  As.U.Tus ("withed");
-      Build_Witheds (Origin.Witheds);
+      Build_Witheds (Origin.Path, Origin.Witheds);
     elsif Origin.Kind = Sourcer.Unit_Spec
           or else (Origin.Kind = Sourcer.Unit_Body
                    and then Origin.Standalone) then
       Kind :=  As.U.Tus ("withing");
-      Build_Withings (Origin.Unit.Image);
+      Build_Withings (Origin.Unit.Image, Origin.Path.Image);
     end if;
 
     -- A Child (spec or standalone body): Insert parent spec if not revert

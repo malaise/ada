@@ -21,6 +21,10 @@
 
 @table @asis
 
+@item 2011/08/24
+Add co-located units hidding remote ones in lsadeps, V5.0
+@item 2011/08/23
+Add support of recursive includes in lsadeps, V4.0
 @item 2011/08/12
 Add operation Overwrite to bounded and unbounded strings@*
 Add mcd operations strnull, strins and strovw (i.o. strrep, which is fixed)
@@ -175,7 +179,7 @@ Add Home1 and End1 sequences in Async_Stdin@*
 Add support of mode Inout_File in Text_Line@*
 Add restore of current entry on Reread in Select_File@*
 Add declare Real_Io in My_Math@*
-Fix Delete_Connection in Network 
+Fix Delete_Connection in Network
 @item 2010/07/23
 Fix C_Nbres.Polar constructor when negative imaginary part@*
 Fix decoding of Utf_16 when one char@*
@@ -323,7 +327,7 @@ Add option -w (--warnings) to xml_checker (width becomes -W) in Xml_Checker V7.0
 Add optional warnings in Xml_Parser V14.0, add dtd_checker
 @item 2009/09/29
 Fix parsing of PI starting with "xml" (ex
-"xml-stylesheet"), in Xml_Parser V13.6 
+"xml-stylesheet"), in Xml_Parser V13.6
 @item 2009/08/27
 Fix expansion of external parameter entity in internal Dtd, and fix New_Line management in Xml_Parser V13.5
 @item 2009/08/25
@@ -381,7 +385,7 @@ Add explicit activation of signal handling. Set automatically when using Con_Io/
 @item 2009/06/09
 Add virtual_time. Use them in timers and chronos, and for lem
 @item 2009/06/01
-Fix bug when starting or stopping a Chrono twice, and add a Pause to Lem. 
+Fix bug when starting or stopping a Chrono twice, and add a Pause to Lem.
 @item 2009/05/28
 Fix allow ^ and $ in multiple regex and do not flush remaining lines in grep mode of asubst, V7.12
 @item 2009/05/24
@@ -417,13 +421,13 @@ Add option -n (--newer) to Als, V2.7
 @item 2008/12/12
 Add Put all the replace string of each line in multiple grep mode in Asubst, V7.8
 @item 2008/12/09
-Add Improve help on grep mode in Asubst, V7.7 
+Add Improve help on grep mode in Asubst, V7.7
 @item 2008/12/08
 Add Reject un-terminated 'if', 'elsif' or 'else' directive in Asubst, V7.6
 @item 2008/12/05
 Add aIJ and oIJ (for and_then and or_else) in 'if' statements of replace string of Asubst, V7.5
 @item 2008/12/03
-Add Change semantic of successive \iIJ to elsif in Asubst, V7.4 
+Add Change semantic of successive \iIJ to elsif in Asubst, V7.4
 @item 2008/12/02
 Add '\e' for 'else' part of '\iIJ' condition in replace pattern of Asubst, V7.3
 @item 2008/11/10
@@ -482,7 +486,7 @@ Xml_Parser V3.0, Xml_Generator V5.1, Xml_Checker V3.0@*
 - Add check that Root name matches Doctype name@*
 - Add option to set alternate Dtd file and option to skip Dtd check@*
 - Add accurate parsing and check of Dtd xml directive@*
-- Fix forbid attributes not in ATTLIST 
+- Fix forbid attributes not in ATTLIST
 @item 2008/08/13
 Add Asubst support of '\n' in noregex mode and when specific delimiter, V6.1
 @item 2008/08/12

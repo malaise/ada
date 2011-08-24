@@ -4,6 +4,10 @@ with Basic_Proc, Directory, Sys_Calls, Text_Char, Ada_Parser, String_Mng,
 with Debug, Sort;
 package body Sourcer is
 
+  -- The empty dscr
+  Default_Dscr : Src_Dscr;
+  Empty_Dscr : constant Src_Dscr := Default_Dscr;
+
   -- Is separator for iterator
   function Is_Sep (C : Character) return Boolean is
   begin
@@ -466,7 +470,7 @@ package body Sourcer is
   end Has_Dot;
 
   -- Get parent of Dscr (body or subunit)
-  -- Return Dscr itself if it is a Unit_Spec
+  -- Return Dscr itself if it is a spec or a standalone body
   function Get_Parent (Dscr : in Src_Dscr) return Src_Dscr is
     Crit : Src_Dscr;
     Found : Boolean;
@@ -497,6 +501,36 @@ package body Sourcer is
     List.Read (Crit);
     return Crit;
   end Get_Parent;
+
+  -- Get root Unit of a path/unit
+  -- Return a spec or else a standalone body
+  function Get_Unit (Path, Unit : in As.U.Asu_Us) return Src_Dscr is
+    Crit : Src_Dscr;
+    Found : Boolean;
+  begin
+    -- Try to get a spec
+    Crit.Path := Path;
+    Crit.Unit := Unit;
+    Crit.Kind := Unit_Spec;
+    List.Search (Crit, Found);
+    if Found then
+      List.Read (Crit);
+      return Crit;
+    end if;
+    -- Try to get a body
+    Crit.Kind := Unit_Body;
+    List.Search (Crit, Found);
+    if not Found then
+      return Empty_Dscr;
+    end if;
+    List.Read (Crit);
+    -- Body must be standalone
+    if Crit.Standalone then
+      return Crit;
+    else
+      return Empty_Dscr;
+    end if;
+  end Get_Unit;
 
   -- Get Unit_Body of a subunit
   function Get_Body (Sub : in Src_Dscr) return Src_Dscr is

@@ -3,7 +3,7 @@ with As.U, Argument, Argument_Parser, Basic_Proc, Mixed_Str, Directory;
 with Debug, Sourcer, Tree_Mng, Sort, Output, Checker;
 procedure Lsadeps is
 
-  Version : constant String := "V4.1";
+  Version : constant String := "V5.0";
 
   -- Usage and Error
   procedure Usage is

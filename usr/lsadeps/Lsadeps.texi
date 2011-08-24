@@ -6,7 +6,7 @@
 
 @c Constants
 @set name lsadeps
-@set version V4.0
+@set version V5.0
 @set nameversion @value{name} @value{version}
 
 @c General format
@@ -52,13 +52,14 @@ Usage: lsadeps [ <display> ] [ <revert> ] [ <file_mode> ] [ <dirs> ] <target>
 
 @node Output, Design, Usage, Top
 @chapter Format of output
-There are two main functions: list dependancies and check redundant "with" and "use"
+There are two main functions: list dependancies and check redundant "with"
 @section List dependancies
 There are 2 different modes of output of dependancies:
 @itemize @minus
 @item default mode: list parent units then withed units of target...
 @item tree: show tree of dependencies (parents and withed units)
 @end itemize
+
 With option "file", lists the files (specs/bodies/sub-units) instead of units.@*
 With option "revert", list all the [<path>/]<unit> that with (directly
 or not) the <target>, which must be a unit. The search ends when reacing a withing
@@ -70,12 +71,21 @@ In tree mode the units appear in the same order as in the "with" directives.
 @sp 1
 By default the search is restricted to local directory and target directory, but
 additional directories can be added to search path, either individually or
-recursively. In this case all the units with the same name are processed similarly
-(they are all considered to depend on or to be dependent from current unit).
-@section Check redundant "with" and "use"
-This funtion checks that no redundant "with" and "use" clause appear
+recursively.
+@sp 1
+A local unit, if any exists, hides all the remote ones.@*
+Example: suppose that a unit U withes a unit W.@*
+In normal (non revert) mode all remote units W are discarded if there is a
+unit W co-located with U.@*
+In revert mode, a remote unit W withing unit U is discarded if there is another
+unit U co-located with W.@*
+If there is no co-located unit then all the remote units with the same name are
+processed identically (they are all considered to depend on or to be dependent
+from current unit).
+@section Check redundant "with"
+This funtion checks that no redundant "with" clause appear
 in the body and sub-units of each unit.@*
-Lsadeps then exits with 1 if at least one redundant "with" or "use" is detected
+Lsadeps then exits with 1 if at least one redundant "with" is detected
 and with 0 otherwise.
 
 @node Design, , Output, Top
@@ -108,11 +118,12 @@ No check that withed units exist but check that target is listed (as spec or
 standalone body).
 Also store in a list, for each Unit_Name, the list of paths where such unit exists.
 
-@section Check redundant "with" and "use"
+@section Check redundant "with"
 For each unit build the tree of its parents (sub-unit -> body -> spec) and for
 each unit make the list of its withed units.@*
 For each unit U check that no withed unit W is withed twice by U or by a parent of U, 
-including indirect with of a child of W.@*
+including indirect with of a child of W. Note that a redundant "with" context
+clause is acceptable in case of a "use" context clause.@*
 Exit program.
 
 @section Build tree

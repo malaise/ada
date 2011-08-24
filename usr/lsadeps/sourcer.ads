@@ -70,8 +70,13 @@ package Sourcer is
   function Has_Dot (Unit : in As.U.Asu_Us) return Boolean;
 
   -- Get parent of Dscr (body or subunit)
-  -- Return Dscr itself if it is a Unit_Spec
+  -- Return Dscr itself if it is a spec or a standalone body
   function Get_Parent (Dscr : in Src_Dscr) return Src_Dscr;
+
+  -- Get root Unit of a path/unit
+  -- Return a spec or else a standalone body
+  -- Retrun a Dscr with empty Unit if not found
+  function Get_Unit (Path, Unit : in As.U.Asu_Us) return Src_Dscr;
 
   -- Get Unit_Body of a subunit
   function Get_Body (Sub : in Src_Dscr) return Src_Dscr;
