@@ -23,10 +23,11 @@ package body Tree_Mng is
 
   -- Build a node
   procedure Build_Node (Origin : in Sourcer.Src_Dscr;
-                        Revert : in Boolean);
+                        Specs_Mode, Revert_Mode : in Boolean);
 
   -- Build the nodes with any unit withed in List, whatever Path
-  procedure Build_Witheds (Path, Witheds : in As.U.Asu_Us) is
+  procedure Build_Witheds (Path, Witheds : in As.U.Asu_Us;
+                           Specs_Mode : in Boolean) is
     Iter1 : Parser.Iterator;
     Name : Sourcer.Name_Dscr;
 
@@ -40,7 +41,7 @@ package body Tree_Mng is
       Src := Sourcer.Get_Unit (Path, Name.Unit);
       if not Src.Unit.Is_Null then
         -- Yes, local unit hides remote ones
-        Build_Node (Src, False);
+        Build_Node (Src, Specs_Mode, False);
         return;
       end if;
       -- List all (remote) units with this withed name
@@ -74,7 +75,7 @@ package body Tree_Mng is
             raise Sourcer.Src_List_Mng.Not_In_List;
           end if;
         end if;
-        Build_Node (Src, False);
+        Build_Node (Src, Specs_Mode, False);
       end loop;
     end Find_Units;
 
@@ -95,7 +96,8 @@ package body Tree_Mng is
   -- Else any unit withed in List, whatever Path
   procedure Build_Subunits (List : in As.U.Asu_Us;
                             Path : in As.U.Asu_Us;
-                            Revert : in Boolean) is
+                            Specs_Mode : in Boolean;
+                            Revert_Mode : in Boolean) is
     Iter : Parser.Iterator;
     Crit : Sourcer.Src_Dscr;
   begin
@@ -110,7 +112,7 @@ package body Tree_Mng is
       Crit.Kind := Sourcer.Subunit;
       Crit.Path := Path;
       Sourcer.List.Read (Crit);
-      Build_Node (Crit, Revert);
+      Build_Node (Crit, Specs_Mode, Revert_Mode);
     end loop;
   end Build_Subunits;
 
@@ -120,7 +122,8 @@ package body Tree_Mng is
   package Src_List_Mng is new Dynamic_List (Sourcer.Src_Dscr);
   package Src_Dyn_List_Mng renames Src_List_Mng.Dyn_List;
 
-  procedure Build_Withings (Name, Path : in String) is
+  procedure Build_Withings (Name, Path : in String;
+                            Specs_Mode : in Boolean) is
     Dscr : Sourcer.Src_Dscr;
     Moved : Boolean;
     Crit : constant String := Sourcer.Separator & Name & Sourcer.Separator;
@@ -156,14 +159,15 @@ package body Tree_Mng is
       List.Rewind;
       loop
         List.Read (Dscr, Moved => Moved);
-        Build_Node (Dscr, True);
+        Build_Node (Dscr, Specs_Mode, True);
         exit when not Moved;
       end loop;
     end if;
   end Build_Withings;
 
   -- Build a node
-  procedure Build_Node (Origin : in Sourcer.Src_Dscr; Revert : in Boolean) is
+  procedure Build_Node (Origin : in Sourcer.Src_Dscr;
+                        Specs_Mode,  Revert_Mode : in Boolean) is
     Found : Boolean;
     Child : Sourcer.Src_Dscr;
     Kind : As.U.Asu_Us;
@@ -190,18 +194,18 @@ package body Tree_Mng is
     -- Any unit: Insert withed
     -- In revert: Insert units withing us if we are a spec or standalone body
     --            Otherwise they are not dependant on us
-    if not Revert then
+    if not Revert_Mode then
       Kind :=  As.U.Tus ("withed");
-      Build_Witheds (Origin.Path, Origin.Witheds);
+      Build_Witheds (Origin.Path, Origin.Witheds, Specs_Mode);
     elsif Origin.Kind = Sourcer.Unit_Spec
           or else (Origin.Kind = Sourcer.Unit_Body
                    and then Origin.Standalone) then
       Kind :=  As.U.Tus ("withing");
-      Build_Withings (Origin.Unit.Image, Origin.Path.Image);
+      Build_Withings (Origin.Unit.Image, Origin.Path.Image, Specs_Mode);
     end if;
 
     -- A Child (spec or standalone body): Insert parent spec if not revert
-    if not Revert
+    if not Revert_Mode
     and then (Origin.Kind = Sourcer.Unit_Spec
        or else (Origin.Kind = Sourcer.Unit_Body and then Origin.Standalone) )
     and then Sourcer.Has_Dot (Origin.Unit) then
@@ -210,26 +214,28 @@ package body Tree_Mng is
       Child.Kind := Sourcer.Unit_Spec;
       Child.Path := Origin.Path;
       Sourcer.List.Read (Child);
-      Build_Node (Child, Revert);
+      Build_Node (Child, Specs_Mode, Revert_Mode);
     end if;
 
-    -- A spec: Insert body
-    if Origin.Kind = Sourcer.Unit_Spec then
+    -- From now, spec => body => subunits... except in normal (not revert)
+    --  if specs only
+    if Revert_Mode or else not Specs_Mode then
+      -- A spec: Insert body
       Kind := As.U.Tus ("body");
       if not Origin.Standalone then
         Child.Unit := Origin.Unit;
         Child.Kind := Sourcer.Unit_Body;
         Child.Path := Origin.Path;
         Sourcer.List.Read (Child);
-        Build_Node (Child, Revert);
+        Build_Node (Child, Specs_Mode, Revert_Mode);
       end if;
-    end if;
 
-    -- A Body or subunit: Insert subunits
-    if Origin.Kind = Sourcer.Unit_Body
-    or else Origin.Kind = Sourcer.Subunit then
-      Kind := As.U.Tus ("subunit");
-      Build_Subunits (Origin.Subunits, Origin.Path, Revert);
+      -- A Body or subunit: Insert subunits
+      if Origin.Kind = Sourcer.Unit_Body
+        or else Origin.Kind = Sourcer.Subunit then
+        Kind := As.U.Tus ("subunit");
+        Build_Subunits (Origin.Subunits, Origin.Path, Specs_Mode, Revert_Mode);
+      end if;
     end if;
 
     -- Done, move up
@@ -259,9 +265,10 @@ package body Tree_Mng is
   end Dump_One;
 
   -- Build the tree of source dependencies of Origin
-  procedure Build (Origin : in Sourcer.Src_Dscr; Revert : in Boolean) is
+  procedure Build (Origin : in Sourcer.Src_Dscr;
+                   Specs_Mode, Revert_Mode : in Boolean) is
   begin
-    Build_Node (Origin, Revert);
+    Build_Node (Origin, Specs_Mode, Revert_Mode);
     if Debug.Is_Set then
       Basic_Proc.Put_Line_Output ("Dumping tree:");
       Tree.Iterate (Dump_One'Access, False);

@@ -3,40 +3,62 @@ with As.U, Argument, Argument_Parser, Basic_Proc, Mixed_Str, Directory;
 with Debug, Sourcer, Tree_Mng, Sort, Output, Checker;
 procedure Lsadeps is
 
-  Version : constant String := "V5.0";
+  Version : constant String := "V6.0";
 
   -- Usage and Error
   procedure Usage is
   begin
     Basic_Proc.Put_Line_Error (
      "Usage: " & Argument.Get_Program_Name
-      & " [ <display> ] [ <revert> ] [ <file_mode> ] [ <dirs> ] <target>");
+     & " <version> | <help> | <check> | <depend>");
     Basic_Proc.Put_Line_Error (
-     "   or: " & Argument.Get_Program_Name & " <check> [ <path> ]");
+     " <version>     ::= -v | --version");
     Basic_Proc.Put_Line_Error (
-     "   or: " & Argument.Get_Program_Name & " -v | --version | -h | --help");
+     " <help>        ::= -h | --help");
     Basic_Proc.Put_Line_Error (
-     "  <display>       ::= <list> | <tree> // Default: list");
+     " <check>       ::= -c | --check  [ <target_dir> ]");
     Basic_Proc.Put_Line_Error (
-     "    <list>        ::= -l | --list     // List dependencies");
+     " <depend>      ::= <options> <target_unit>");
     Basic_Proc.Put_Line_Error (
-     "    <tree>        ::= -t | --tree     // Tree of dependencies");
+     " <target_unit> ::=  [<path>/]<unit>");
     Basic_Proc.Put_Line_Error (
-     "  <revert>        ::= -r | --revert   // List units depending on target");
+     " <options>     ::=  [ <specs> | <revert> ] [ <tree> ] [ <files> ] [ <include> ]");
     Basic_Proc.Put_Line_Error (
-     "                                      //   i.o. units withed by target");
+     " <specs>       ::= -s | --specs");
     Basic_Proc.Put_Line_Error (
-     "  <file_mode>     ::= -f | --files    // Show files i.o. units");
+     " <revert>      ::= -r | --revert");
     Basic_Proc.Put_Line_Error (
-     "  <dirs>          ::= { <include_dir> | <recursive_dir> }");
+     " <tree>        ::= -t | --tree");
     Basic_Proc.Put_Line_Error (
-     "  <include_dir>   ::= -I <dir> | --include=<dir>   // Include <dir>");
+     " <files>       ::= -f | --files");
     Basic_Proc.Put_Line_Error (
-     "  <recursive_dir> ::= -R <dir> | --recursive=<dir> // Include <dir> and subdirs");
+     " <include>     ::= { <dir> | <recursive> }");
     Basic_Proc.Put_Line_Error (
-     "  <target>        ::= <unit>");
+     " <dir>         ::= -I <dir> | --include=<dir>");
     Basic_Proc.Put_Line_Error (
-     "  <check>         ::= -c | --check    // Detects redundant withs in a dir");
+     " <recursive>   ::= -R <dir> | --recursive=<dir>");
+    Basic_Proc.Put_Line_Error (
+     "Check function shows redundant ""with"" clauses in a dir (default: current dir).");
+    Basic_Proc.Put_Line_Error (
+     "Dependency function by default lists units on which <target_unit> depends,");
+    Basic_Proc.Put_Line_Error (
+     "    which are withed units, their body and subunits, units withed by these");
+    Basic_Proc.Put_Line_Error (
+     "    units... recursively. Alternative modes are:");
+    Basic_Proc.Put_Line_Error (
+     " <specs> to show only units withed by specs and standalone bodies,");
+    Basic_Proc.Put_Line_Error (
+     " <revert> to show units withing <target_unit>... recursively.");
+    Basic_Proc.Put_Line_Error (
+     " Other options are:");
+    Basic_Proc.Put_Line_Error (
+     " <tree> to show the tree of dependencies (instead of a sorted unique list),");
+    Basic_Proc.Put_Line_Error (
+     " <file> to show the file names (instead of unit names),");
+    Basic_Proc.Put_Line_Error (
+     " <include> to add some directories or some directory trees to the search path");
+    Basic_Proc.Put_Line_Error (
+     "   (default is current and target directories).");
   end Usage;
 
   Error_Raised : exception renames Sourcer.Error_Raised;
@@ -49,22 +71,23 @@ procedure Lsadeps is
 
   -- The keys and descriptor of parsed keys
   Keys : constant Argument_Parser.The_Keys_Type := (
-   01 => ('l', As.U.Tus ("list"), False, False),
-   02 => ('t', As.U.Tus ("tree"), False, False),
-   03 => ('r', As.U.Tus ("revert"), False, False),
-   04 => ('f', As.U.Tus ("files"), False, False),
-   05 => ('I', As.U.Tus ("include"), True, True),
-   06 => ('h', As.U.Tus ("help"), False, False),
-   07 => ('c', As.U.Tus ("check"), False, False),
-   08 => ('v', As.U.Tus ("version"), False, False),
+   01 => ('h', As.U.Tus ("help"), False, False),
+   02 => ('v', As.U.Tus ("version"), False, False),
+   03 => ('c', As.U.Tus ("check"), False, False),
+   04 => ('s', As.U.Tus ("specs"), False, False),
+   05 => ('r', As.U.Tus ("revert"), False, False),
+   06 => ('t', As.U.Tus ("tree"), False, False),
+   07 => ('f', As.U.Tus ("files"), False, False),
+   08 => ('I', As.U.Tus ("include"), True, True),
    09 => ('R', As.U.Tus ("recursive"), True, True));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
   -- Option management
-  Tree_Mode : Boolean := False;
-  Revert_Mode : Boolean := False;
-  File_Mode : Boolean := False;
   Check_Mode : Boolean := False;
+  Specs_Mode : Boolean := False;
+  Revert_Mode : Boolean := False;
+  Tree_Mode : Boolean := False;
+  Files_Mode : Boolean := False;
   Target, Target_Dir : As.U.Asu_Us;
 
   -- Current directory
@@ -109,39 +132,46 @@ begin
   end if;
 
   -- Help
-  if Arg_Dscr.Is_Set (6) then
+  if Arg_Dscr.Is_Set (1) then
     Usage;
     Basic_Proc.Set_Error_Exit_Code;
     return;
   end if;
 
   -- Version
-  if Arg_Dscr.Is_Set (8) then
+  if Arg_Dscr.Is_Set (2) then
     Basic_Proc.Put_Line_Output (Argument.Get_Program_Name & " " & Version);
     Basic_Proc.Set_Error_Exit_Code;
     return;
   end if;
 
-  -- Mode: at most once
-  if Arg_Dscr.Is_Set (2) then
-    if Arg_Dscr.Is_Set (1) then
-      Error ("At most one display mode expected");
-    end if;
-    Tree_Mode := True;
+  -- Modes
+  if Arg_Dscr.Is_Set (4) then
+    Specs_Mode := True;
   end if;
-  if Arg_Dscr.Is_Set (3) then
+  if Arg_Dscr.Is_Set (5) then
     Revert_Mode := True;
   end if;
-
-  -- File mode
-  if Arg_Dscr.Is_Set (4) then
-    File_Mode := True;
+  if Specs_Mode and then Revert_Mode then
+    Error ("Specs and revert mode are mutually exclusive");
+  end if;
+  if Arg_Dscr.Is_Set (6) then
+    Tree_Mode := True;
+  end if;
+  if Arg_Dscr.Is_Set (7) then
+    Files_Mode := True;
   end if;
 
   -- Check mode
-  if Arg_Dscr.Is_Set (7) then
-    if Tree_Mode or else Revert_Mode or else File_Mode then
-      Error ("Check mode is exclusive with other modes");
+  if Arg_Dscr.Is_Set (3) then
+    -- No option
+    if Specs_Mode or else Revert_Mode or else Tree_Mode or else Files_Mode then
+      Error ("Check mode does not support options");
+    end if;
+    -- No include
+    if Arg_Dscr.Get_Nb_Occurences (8) /= 0
+    or else Arg_Dscr.Get_Nb_Occurences (9) /= 0 then
+      Error ("Check mode is exclusive with simple or recursive includes");
     end if;
     Check_Mode := True;
   end if;
@@ -175,17 +205,10 @@ begin
       Sort.Add_Path (Target_Dir);
     end if;
     Target := As.U.Tus (Directory.Basename (Target.Image));
-  end if;
-
-  if Check_Mode then
-    -- No include
-    if Arg_Dscr.Get_Nb_Occurences (5) /= 0
-    or else Arg_Dscr.Get_Nb_Occurences (9) /= 0 then
-      Error ("Check mode is exclusive with simple or recursive includes");
-    end if;
-  else
+    -- Include dirs of -I and -R options
     Add_Paths;
   end if;
+
 
   ---------------------------
   -- BUILD LIST OF SOURCES --
@@ -206,6 +229,17 @@ begin
   if Debug.Is_Set then
     Basic_Proc.Put_Line_Output ("In " &
       Directory.Make_Full_Path (Directory.Get_Current));
+  end if;
+
+  -----------------
+  -- CHECK UNITS --
+  -----------------
+  if Check_Mode then
+    if not Checker.Check then
+      -- Check failed
+      Basic_Proc.Set_Error_Exit_Code;
+    end if;
+    return;
   end if;
 
   ------------------
@@ -233,28 +267,17 @@ begin
     end if;
   end if;
 
-  -----------------
-  -- CHECK UNITS --
-  -----------------
-  if Check_Mode then
-    if not Checker.Check then
-      -- Check failed
-      Basic_Proc.Set_Error_Exit_Code;
-    end if;
-    return;
-  end if;
-
   ----------------------------
   -- BUILD TREE OF SOURCES --
   ----------------------------
-  Tree_Mng.Build (Unit, Revert_Mode);
+  Tree_Mng.Build (Unit, Specs_Mode, Revert_Mode);
 
   -------------------
   -- PUT LIST/TREE --
   -------------------
   -- Back to original dir
   Check_Dir ("");
-  Output.Put (Tree_Mode, Revert_Mode, File_Mode);
+  Output.Put (Revert_Mode, Tree_Mode, Files_Mode);
 
 exception
   when Error_Raised | Sourcer.Error_Raised =>

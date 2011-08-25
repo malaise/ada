@@ -251,7 +251,7 @@ package body Output is
   end Put_List;
 
   -- Put list/tree, normal/revert of units/files
-  procedure Put (Tree_Mode, Revert_Mode, File_Mode : in Boolean) is
+  procedure Put (Revert_Mode, Tree_Mode, File_Mode : in Boolean) is
   begin
     Directory.Get_Current (Curr_Dir);
     if Curr_Dir.Image /= "/" then

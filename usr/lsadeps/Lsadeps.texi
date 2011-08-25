@@ -6,7 +6,7 @@
 
 @c Constants
 @set name lsadeps
-@set version V5.0
+@set version V6.0
 @set nameversion @value{name} @value{version}
 
 @c General format
@@ -34,39 +34,50 @@ Alternatively it checks redundants "with" clauses between specs and bodies.
 @chapter Command line arguments
 
 @verbatim
-Usage: lsadeps [ <display> ] [ <revert> ] [ <file_mode> ] [ <dirs> ] <target>
-   or: lsadeps <check> [ <path> ]
-   or: lsadeps -v | --version | -h | --help
-  <display>       ::= <list> | <tree> // Default: list
-    <list>        ::= -l | --list     // List dependencies
-    <tree>        ::= -t | --tree     // Tree of dependencies
-  <revert>        ::= -r | --revert   // List units depending on target
-                                      //   i.o. units withed by target
-  <file_mode>     ::= -f | --files    // Show files i.o. units
-  <dirs>          ::= { <include_dir> | <recursive_dir> }
-  <include_dir>   ::= -I <dir> | --include=<dir>   // Include <dir>
-  <recursive_dir> ::= -R <dir> | --recursive=<dir> // Include <dir> and subdirs
-  <target>        ::= <unit>
-  <check>         ::= -c | --check    // Detects redundant withs in a dir
+Usage: lsadeps <version> | <help> | <check> | <depend>
+ <version>     ::= -v | --version
+ <help>        ::= -h | --help
+ <check>       ::= -c | --check  [ <target_dir> ]
+ <depend>      ::= <options> <target_unit>
+ <target_unit> ::=  [<path>/]<unit>
+ <options>     ::=  [ <specs> | <revert> ] [ <tree> ] [ <files> ] [ <include> ]
+ <specs>       ::= -s | --specs
+ <revert>      ::= -r | --revert
+ <tree>        ::= -t | --tree
+ <files>       ::= -f | --files
+ <include>     ::= { <dir> | <recursive> }
+ <dir>         ::= -I <dir> | --include=<dir>
+ <recursive>   ::= -R <dir> | --recursive=<dir>
+Check function shows redundant "with" clauses in a dir (default: current dir).
+Dependency function by default lists units on which <target_unit> depends,
+    which are withed units, their body and subunits, units withed by these
+    units... recursively. Alternative modes are:
+ <specs> to show only units withed by specs and standalone bodies,
+ <revert> to show units withing <target_unit>... recursively.
+ Other options are:
+ <tree> to show the tree of dependencies (instead of a sorted unique list),
+ <file> to show the file names (instead of unit names),
+ <include> to add some directories or some directory trees to the search path
+   (default is current and target directories).
 @end verbatim
 
 @node Output, Design, Usage, Top
 @chapter Format of output
 There are two main functions: list dependancies and check redundant "with"
-@section List dependancies
-There are 2 different modes of output of dependancies:
+@section Show dependancies
+There are 3 different modes of analyse of dependancies and 2 options of output:
 @itemize @minus
-@item default mode: list parent units then withed units of target...
-@item tree: show tree of dependencies (parents and withed units)
+@item default mode: show parent units of target, then withed units, then
+body and subunits... recusively
+@item specs mode: same as default but only show units withed by specs
+@item revert mode: show units withing target, then units withing them...
+recusively
+@item tree option: show tree of dependencies instead of list
+@item files option: show file names instead of units
 @end itemize
 
-With option "file", lists the files (specs/bodies/sub-units) instead of units.@*
-With option "revert", list all the [<path>/]<unit> that with (directly
-or not) the <target>, which must be a unit. The search ends when reacing a withing
-non-standalone body or a subunit.@*
-@sp 1
-In list mode local units are listed first, then "remote" ones in the order of the
-include directives and they are sorted by alphapbetical order.
+In list mode local units are listed first, then "remote" ones in the order of
+the include directives and they are sorted by alphapbetical order.
 In tree mode the units appear in the same order as in the "with" directives.
 @sp 1
 By default the search is restricted to local directory and target directory, but
@@ -135,8 +146,10 @@ unit - ParentUnit
      - WithsOfBody
      - WithsOfSububits
 @end verbatim
-If in reverse mode, build a unique list of units that list targets, of units that list these
-units. Stop recursive search when reaching a non-standalone body or a subunit.
+If in specs only mode don't insert body andsubunits.
+If in reverse mode, build a unique list of units that list targets, of units
+that list these units. Stop recursive search when reaching a non-standalone
+body or a subunit.
 
 @section Display output
 In unit mode, only show specs and standalone bodies, otherwise (file mode) show
