@@ -20,7 +20,7 @@
 @end ifnothtml
 
 @table @asis
- 
+
 @item 2011/08/25
 Add option for dependency between spcs only in lsadeps, V6.0
 @item 2011/08/24
