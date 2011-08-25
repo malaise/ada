@@ -1,5 +1,5 @@
 with Ada.Calendar, Ada.Characters.Latin_1;
-with C_Types, My_Io, Address_Ops, Environ, Perpet, Event_Mng, Virtual_Time;
+with C_Types, Basic_Proc, Address_Ops, Environ, Perpet, Event_Mng, Virtual_Time;
 package body X_Mng is
 
   -- Maximum successive X events
@@ -474,7 +474,7 @@ package body X_Mng is
         Len :=Colors(I).Length;
         if Len = 0 then
           if Debug then
-            My_Io.Put_Line ("X_Initialise, incorrect empty color at " & I'Img);
+            Basic_Proc.Put_Line_Output ("X_Initialise, incorrect empty color at " & I'Img);
           end if;
           raise X_Failure;
         elsif Len > Max_Len then
@@ -557,7 +557,7 @@ package body X_Mng is
                         Line_Definition.No_Font,
                         Line_For_C_Id'Address) = Ok;
     if Debug then
-      My_Io.Put_Line ("X_Open_Line " & Line_Id.No'Img
+      Basic_Proc.Put_Line_Output ("X_Open_Line " & Line_Id.No'Img
                     & " -> " & Address_Ops.Image(Line_For_C_Id));
     end if;
     Dispatcher.Call_Off(Line_Id.No, Line_For_C_Id);
@@ -1133,11 +1133,11 @@ package body X_Mng is
 
       -- Get an event
       if Debug then
-        My_Io.Put_Line ("X_Wait_Event: " & Line_Id.No'Img & " waiting");
+        Basic_Proc.Put_Line_Output ("X_Wait_Event: " & Line_Id.No'Img & " waiting");
       end if;
       Dispatcher.Wait_Event(Line_Id.No) (Internal_Event);
       if Debug then
-        My_Io.Put_Line ("X_Wait_Event: " & Line_Id.No'Img & " released");
+        Basic_Proc.Put_Line_Output ("X_Wait_Event: " & Line_Id.No'Img & " released");
       end if;
       -- An event to report?
       if not Internal_Event.Internal then
@@ -1151,7 +1151,7 @@ package body X_Mng is
     end loop;
 
     if Debug then
-      My_Io.Put_Line ("X_Wait_Event: " & Line_Id.No'Img & " got " & Kind'Img);
+      Basic_Proc.Put_Line_Output ("X_Wait_Event: " & Line_Id.No'Img & " got " & Kind'Img);
     end if;
 
     -- Compute remaining time

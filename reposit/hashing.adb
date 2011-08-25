@@ -1,5 +1,4 @@
-with My_Io;
-with Dyn_Data;
+with Basic_Proc, Dyn_Data;
 pragma Elaborate (Dyn_Data);
 package body Hashing is
 
@@ -161,20 +160,20 @@ package body Hashing is
                       Index : in Hash_Range) is
         Ca : Cell_Access := Table.Arr(Index).First;
       begin
-        My_Io.Put_Line ("Hash " & Hash_Range'Image(Index));
+        Basic_Proc.Put_Line_Output ("Hash " & Hash_Range'Image(Index));
         if Ca = null then
-          My_Io.Put_Line (" No data found");
+          Basic_Proc.Put_Line_Output (" No data found");
         end if;
         while Ca /= null loop
-          My_Io.Put (" Data found ");
+          Basic_Proc.Put_Output (" Data found ");
           if Ca = Table.Arr(Index).Current then
-            My_Io.Put (" => ");
+            Basic_Proc.Put_Output (" => ");
           else
-            My_Io.Put (" -> ");
+            Basic_Proc.Put_Output (" -> ");
           end if;
 
           Dump (Ca.Data);
-          My_Io.New_Line;
+          Basic_Proc.New_Line_Output;
           Ca := Ca.Next;
         end loop;
       end Dump;

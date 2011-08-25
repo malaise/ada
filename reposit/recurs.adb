@@ -1,4 +1,4 @@
-with As.U, My_Io, Directory;
+with As.U, Basic_Proc, Directory;
 procedure Recurs (Name_Of_Dir : in Boolean := True;
                   In_Current : in Boolean := True;
                   First_Level_Only : in Boolean := False;
@@ -22,14 +22,14 @@ procedure Recurs (Name_Of_Dir : in Boolean := True;
     begin
       -- Display current drive and directory
       if Name_Of_Dir then
-        My_Io.New_Line;
-        My_Io.Put ("==> ");
-        My_Io.Put (Full_Curr_Name.Image);
-        My_Io.Put_Line (" <==");
+        Basic_Proc.New_Line_Output;
+        Basic_Proc.Put_Output ("==> ");
+        Basic_Proc.Put_Output (Full_Curr_Name.Image);
+        Basic_Proc.Put_Line_Output (" <==");
       end if;
 
       if not Do_In_Dir and then Stop_On_Error then
-        My_Io.Put_Line (" *** Abort ***");
+        Basic_Proc.Put_Line_Output (" *** Abort ***");
         raise Abort_Explore;
       end if;
     end Do_Here;
@@ -41,13 +41,13 @@ procedure Recurs (Name_Of_Dir : in Boolean := True;
       Directory.Change_Current (Curr_Name);
     exception
       when Directory.Name_Error | Directory.Access_Error =>
-        My_Io.New_Line;
-        My_Io.Put ("Error changing to directory " & Curr_Name);
+        Basic_Proc.New_Line_Output;
+        Basic_Proc.Put_Output ("Error changing to directory " & Curr_Name);
         if Stop_On_Error then
-          My_Io.Put_Line (" *** Abort ***");
+          Basic_Proc.Put_Line_Output (" *** Abort ***");
           raise Abort_Explore;
         else
-           My_Io.New_Line;
+           Basic_Proc.New_Line_Output;
            return;
         end if;
     end;

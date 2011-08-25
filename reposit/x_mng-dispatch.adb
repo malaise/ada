@@ -8,7 +8,7 @@ package body Dispatch is
                  Message : in String) is
   begin
     if Debug then
-      My_Io.Put_Line ("X_Mng.Dispatcher." & Operation & ":"
+      Basic_Proc.Put_Line_Output ("X_Mng.Dispatcher." & Operation & ":"
                     & Client'Img & " " & Message);
     end if;
   end Log;
