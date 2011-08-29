@@ -6,7 +6,7 @@
 
 @c Constants
 @set name lsadeps
-@set version V6.0
+@set version V7.0
 @set nameversion @value{name} @value{version}
 
 @c General format
@@ -38,7 +38,7 @@ Usage: lsadeps <version> | <help> | <check> | <depend>
  <version>     ::= -v | --version
  <help>        ::= -h | --help
  <check>       ::= -c | --check  [ <target_dir> ]
- <depend>      ::= <options> <target_unit>
+ <depend>      ::= <options> <target_unit> [ <path_unit> ]
  <target_unit> ::=  [<path>/]<unit>
  <options>     ::=  [ <specs> | <revert> ] [ <tree> ] [ <files> ] [ <include> ]
  <specs>       ::= -s | --specs
@@ -54,6 +54,7 @@ Dependency function by default lists units on which <target_unit> depends,
     units... recursively. Alternative modes are:
  <specs> to show only units withed by specs and standalone bodies,
  <revert> to show units withing <target_unit>... recursively.
+ <path_unit> to show dependency paths between two units.
  Other options are:
  <tree> to show the tree of dependencies (instead of a sorted unique list),
  <file> to show the file names (instead of unit names),
@@ -65,13 +66,16 @@ Dependency function by default lists units on which <target_unit> depends,
 @chapter Format of output
 There are two main functions: list dependancies and check redundant "with"
 @section Show dependancies
-There are 3 different modes of analyse of dependancies and 2 options of output:
+There are 4 different modes of analyse of dependancies (that can be combined)
+and 2 options of output:
 @itemize @minus
 @item default mode: show parent units of target, then withed units, then
 body and subunits... recusively
 @item specs mode: same as default but only show units withed by specs
 @item revert mode: show units withing target, then units withing them...
 recusively
+@item path mode: shows the units withed by (or withing) each other between
+two units
 @item tree option: show tree of dependencies instead of list
 @item files option: show file names instead of units
 @end itemize
@@ -80,9 +84,9 @@ In list mode local units are listed first, then "remote" ones in the order of
 the include directives and they are sorted by alphapbetical order.
 In tree mode the units appear in the same order as in the "with" directives.
 @sp 1
-By default the search is restricted to local directory and target directory, but
-additional directories can be added to search path, either individually or
-recursively.
+By default the search is restricted to local directory and target directory
+(and path_unit directory if any), but additional directories can be added to
+the search path, either individually or recursively.
 @sp 1
 A local unit, if any exists, hides all the remote ones.@*
 Example: suppose that a unit U withes a unit W.@*
@@ -103,7 +107,8 @@ and with 0 otherwise.
 @chapter high level design
 @section Parse and check arguments
 @itemize @minus
-@item in non check mode target is a unit (possibly containing a path)
+@item in non check mode target is a unit (possibly containing a path), an
+optional path_unit triggers the path analysis between the target and this unit
 @item in check mode it is an optional path that denotes the directory to check
 @item include dirs (recursive or not) must exist
 @end itemize
@@ -168,6 +173,9 @@ UnitSpec - UnitBody - Subunits - WithSpecs
 Dump the tree in a list.@*
 Sort it by unit/file path (local first).@*
 In case of file revert mode, list each unit by spec+body+subunits.
+@subsection In path mode
+Keep track in a list of the units between target and current unit.@*
+When current unit is path_unit then show the current list.
 
 @bye
 

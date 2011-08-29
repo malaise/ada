@@ -1,12 +1,18 @@
-with As.U.Utils, Basic_Proc, Directory;
-with Debug, Sourcer, Tree_Mng, Sort;
+with As.U.Utils, Basic_Proc, Directory, Unbounded_Arrays;
+with Debug, Tree_Mng, Sort;
 package body Output is
+
+  -- For tree/path indent
+  Tab : constant String := "  ";
 
   -- Are we in revert mode. Tree iterators need it
   Revert : Boolean := False;
 
   -- Current directory
   Curr_Dir : As.U.Asu_Us;
+
+  -- Unit to show Path to/from
+  Path_Unit_Full : As.U.Asu_Us;
 
   -- Strip path of Str if current dir
   function Strip (Str : String) return String is
@@ -51,7 +57,7 @@ package body Output is
 
   -- Dump Units of tree
   Level : Natural := 0;
-  procedure Tree_Unit_Iterator (Parent : in Sourcer.Src_Dscr) is
+  procedure Tree_Unit_Walker (Parent : in Sourcer.Src_Dscr) is
     Dscr : Tree_Mng.Src_Dscr;
     Str : As.U.Asu_Us;
     Incr : Boolean := False;
@@ -93,7 +99,7 @@ package body Output is
       end if;
       if not Name.Is_Null then
         for I in 1 .. Level - 1 loop
-          Str.Append ("  ");
+          Str.Append (Tab);
         end loop;
         Str.Append (Strip (Directory.Build_File_Name (
             Dscr.Dscr.Path.Image, Name.Image, "")));
@@ -109,7 +115,7 @@ package body Output is
       else
         Tree_Mng.Tree.Move_Brother;
       end if;
-      Tree_Unit_Iterator (Dscr.Dscr);
+      Tree_Unit_Walker (Dscr.Dscr);
     end loop;
     -- Move back to current in tree
     if Nb_Children /= 0 then
@@ -121,7 +127,7 @@ package body Output is
       Level := Level - 1;
     end if;
 
-  end Tree_Unit_Iterator;
+  end Tree_Unit_Walker;
 
   -- Dump files of tree
   function Tree_File_Iterator (Dscr : Tree_Mng.Src_Dscr;
@@ -134,7 +140,7 @@ package body Output is
       return True;
     end if;
     for I in 1 .. Level loop
-      Str.Append ("  ");
+      Str.Append (Tab);
     end loop;
     -- File
     Str.Append (Strip (Directory.Build_File_Name (
@@ -150,7 +156,7 @@ package body Output is
     if File_Mode then
       Tree_Mng.Tree.Iterate (Tree_File_Iterator'Access, False);
     else
-      Tree_Unit_Iterator (Dscr);
+      Tree_Unit_Walker (Dscr);
     end if;
   end Put_Tree;
 
@@ -250,17 +256,145 @@ package body Output is
     end loop;
   end Put_List;
 
+  -- Put path from Root to Path_Unit or revert
+  -- Ubnounded array of paths so far
+  type Path_Rec is record
+    Level : Natural;
+    Path : As.U.Asu_Us;
+  end record;
+  type Path_Array is array (Positive range <>) of Path_Rec;
+  package Unb_Paths_Mng is new Unbounded_Arrays (Path_Rec, Path_Array);
+  Paths : Unb_Paths_Mng.Unb_Array;
+  -- Remove tail of Paths until last Path.Level < Level
+  procedure Move_Up (Level : in Natural) is
+    Path : Path_Rec;
+    Len : Natural;
+  begin
+    loop
+      Len := Paths.Length;
+      exit when Len = 0;
+      Path := Paths.Element (Len);
+      exit when Path.Level < Level;
+      Paths.Delete (Len, Len);
+    end loop;
+  end Move_Up;
+  -- Show the units of the path
+  procedure Show is
+    Indent : As.U.Asu_Us;
+  begin
+    for I in 1 .. Paths.Length loop
+      Basic_Proc.Put_Output (Indent.Image);
+      Put_Line_Stripped (Paths.Element(I).Path.Image);
+      Indent.Append (Tab);
+    end loop;
+  end Show;
+
+  -- Reuse the Level
+  -- Path of units
+  function Path_Unit_Iterator (Dscr : Tree_Mng.Src_Dscr;
+                               Level : Natural) return Boolean is
+    Name : As.U.Asu_Us;
+    use type As.U.Asu_Us;
+    use type Sourcer.Src_Kind_List;
+  begin
+    -- Clean any previous path if we are movin up
+    Move_Up (Level);
+    -- Discard Looping info
+    if Dscr.Looping then
+      return True;
+    end if;
+    if not Revert then
+      -- Keep only spec or standalone body
+      if Dscr.Dscr.Kind = Sourcer.Subunit
+         or else (Dscr.Dscr.Kind = Sourcer.Unit_Body
+                  and then not Dscr.Dscr.Standalone) then
+        return True;
+      end if;
+      Name := Dscr.Dscr.Unit;
+    else
+      -- Put unit name, body ancestor of the subunit
+      if Dscr.Dscr.Kind = Sourcer.Subunit then
+        Name := Sourcer.Get_Body (Dscr.Dscr).Unit;
+      else
+        Name := Dscr.Dscr.Unit;
+      end if;
+    end if;
+    -- Append and check PathOfFile / UnitName
+    Name := As.U.Tus (Directory.Build_File_Name (
+            Dscr.Dscr.Path.Image, Name.Image, ""));
+    -- Avoid adding a subunit after its body
+    if Paths.Is_Null or else Name /= Paths.Element (Paths.Length).Path then
+      Paths.Append ( Path_Rec'(Level, Name));
+      if Name = Path_Unit_Full then
+        Show;
+      end if;
+    end if;
+    return True;
+  end Path_Unit_Iterator;
+
+  -- Path of files
+  function Path_File_Iterator (Dscr : Tree_Mng.Src_Dscr;
+                               Level : Natural) return Boolean is
+    Name, File : As.U.Asu_Us;
+    use type As.U.Asu_Us;
+    use type Sourcer.Src_Kind_List;
+  begin
+    -- Clean any previous path if we are movin up
+    Move_Up (Level);
+    -- Discard Looping info
+    if Dscr.Looping then
+      return True;
+    end if;
+    -- Append and check PathOfFile / Unit_Name and same for Unit_File
+    Name := As.U.Tus (Directory.Build_File_Name (
+             Dscr.Dscr.Path.Image, Dscr.Dscr.Unit.Image, ""));
+    File := As.U.Tus (Directory.Build_File_Name (
+             Dscr.Dscr.Path.Image, Dscr.Dscr.File.Image, ""));
+    Paths.Append ( Path_Rec'(Level, File));
+    -- See if we are at Path_Unit
+    -- Avoid showing non standalone body of Path_Unit
+    if Name = Path_Unit_Full
+    and then (Dscr.Dscr.Kind = Sourcer.Unit_Spec
+              or else (Dscr.Dscr.Kind = Sourcer.Unit_Body
+                       and then Dscr.Dscr.Standalone)) then
+      Show;
+    end if;
+    return True;
+  end Path_File_Iterator;
+
+  procedure Put_Path (File_Mode : in Boolean) is
+  begin
+    -- Build unique list of entries
+    if Debug.Is_Set then
+      Basic_Proc.Put_Line_Output ("Scanning tree");
+    end if;
+    if File_Mode then
+      Tree_Mng.Tree.Iterate (Path_File_Iterator'Access);
+    else
+      Tree_Mng.Tree.Iterate (Path_Unit_Iterator'Access);
+    end if;
+  end Put_Path;
+
+
   -- Put list/tree, normal/revert of units/files
-  procedure Put (Revert_Mode, Tree_Mode, File_Mode : in Boolean) is
+  procedure Put (Revert_Mode, Tree_Mode, File_Mode : in Boolean;
+                 Path_Unit : in Sourcer.Src_Dscr) is
   begin
     Directory.Get_Current (Curr_Dir);
     if Curr_Dir.Image /= "/" then
       Curr_Dir.Append ("/");
     end if;
     Revert := Revert_Mode;
-    if Tree_Mode then
+    Path_Unit_Full := As.U.Tus (Directory.Build_File_Name (
+      Path_Unit.Path.Image, Path_Unit.Unit.Image, ""));
+    if not Path_Unit.Unit.Is_Null then
+      -- Path from Root to Path_Unit or revert
+      Put_Path (File_Mode);
+    elsif Tree_Mode then
+      -- Tree from Root or reverse
      Put_Tree (File_Mode);
     else
+      -- list from Root or reverse
      Put_List (File_Mode);
     end if;
   end Put;

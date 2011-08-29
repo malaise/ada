@@ -3,7 +3,7 @@ with As.U, Argument, Argument_Parser, Basic_Proc, Mixed_Str, Directory;
 with Debug, Sourcer, Tree_Mng, Sort, Output, Checker;
 procedure Lsadeps is
 
-  Version : constant String := "V6.0";
+  Version : constant String := "V7.0";
 
   -- Usage and Error
   procedure Usage is
@@ -18,7 +18,7 @@ procedure Lsadeps is
     Basic_Proc.Put_Line_Error (
      " <check>       ::= -c | --check  [ <target_dir> ]");
     Basic_Proc.Put_Line_Error (
-     " <depend>      ::= <options> <target_unit>");
+     " <depend>      ::= <options> <target_unit> [ <path_unit> ]");
     Basic_Proc.Put_Line_Error (
      " <target_unit> ::=  [<path>/]<unit>");
     Basic_Proc.Put_Line_Error (
@@ -48,7 +48,9 @@ procedure Lsadeps is
     Basic_Proc.Put_Line_Error (
      " <specs> to show only units withed by specs and standalone bodies,");
     Basic_Proc.Put_Line_Error (
-     " <revert> to show units withing <target_unit>... recursively.");
+     " <revert> to show units withing <target_unit>... recursively,");
+    Basic_Proc.Put_Line_Error (
+     " <path_unit> to show dependency paths between two units.");
     Basic_Proc.Put_Line_Error (
      " Other options are:");
     Basic_Proc.Put_Line_Error (
@@ -58,7 +60,7 @@ procedure Lsadeps is
     Basic_Proc.Put_Line_Error (
      " <include> to add some directories or some directory trees to the search path");
     Basic_Proc.Put_Line_Error (
-     "   (default is current and target directories).");
+     "   (default is current and target directories),");
   end Usage;
 
   Error_Raised : exception renames Sourcer.Error_Raised;
@@ -89,13 +91,13 @@ procedure Lsadeps is
   Tree_Mode : Boolean := False;
   Files_Mode : Boolean := False;
   Target, Target_Dir : As.U.Asu_Us;
+  Path, Path_Dir : As.U.Asu_Us;
 
   -- Current directory
   Current_Dir : As.U.Asu_Us;
 
-  -- Unit descriptor
-  Unit : Sourcer.Src_Dscr;
-  Found : Boolean;
+  -- Unit descriptor of the target and of the path
+  Target_Dscr, Path_Dscr : Sourcer.Src_Dscr;
   use type Sourcer.Src_Kind_List;
 
   -- Check that a target/include directory is usable
@@ -116,6 +118,23 @@ procedure Lsadeps is
         Error ("Cannot change back to current directory " & Current_Dir.Image);
     end;
   end Check_Dir;
+
+  -- Check that a unit exists and is spec or standalone body
+  function Check_Unit (Path, Name : As.U.Asu_Us; Kind : String)
+           return Sourcer.Src_Dscr is
+    Dscr : Sourcer.Src_Dscr;
+  begin
+    -- Check that unit is found, as spec or standalone body
+    Dscr := Sourcer.Get_Unit (Path, Name);
+    if Dscr.Unit.Is_Null or else Dscr.Kind = Sourcer.Subunit then
+      Error (Kind & " unit " & Dscr.Unit.Image & " not found");
+    end if;
+    if Debug.Is_Set then
+      Basic_Proc.Put_Line_Output (Kind & " unit checked: "
+                                & Sourcer.Image (Dscr));
+    end if;
+    return Dscr;
+  end Check_Unit;
 
   -- Add the paths of -I and -R dirtectives in the proper order
   procedure Add_Paths is separate;
@@ -190,30 +209,48 @@ begin
     end if;
     Check_Dir (Target_Dir.Image);
   else
-    -- Target: only once and at the end
-    if Arg_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) /= 1 then
-      Error ("One and only one target required");
+    -- Target and path: at most 2 and at the end
+    if Arg_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) > 2
+    or else Arg_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) = 0 then
+      Error ("At least one target and most one path required");
+    elsif Arg_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) = 2
+    and then Tree_Mode then
+      Error ("Path mode and tree are mutually exculsive");
     elsif Arg_Dscr.Get_Nb_Embedded_Arguments /= 0 then
       Error ("Invalid argument");
     end if;
-    Target := As.U.Tus (Arg_Dscr.Get_Option (Argument_Parser.No_Key_Index));
+    -- Target
+    Target := As.U.Tus (Arg_Dscr.Get_Option (Argument_Parser.No_Key_Index, 1));
     Target_Dir := As.U.Tus (Directory.Make_Full_Path (Directory.Dirname
         (Target.Image)));
     Check_Dir (Target_Dir.Image);
+    Target := As.U.Tus (Mixed_Str (Directory.Basename (Target.Image)));
+    -- Path
+    if Arg_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) = 2 then
+      Path := As.U.Tus (Arg_Dscr.Get_Option (Argument_Parser.No_Key_Index, 2));
+      Path_Dir := As.U.Tus (Directory.Make_Full_Path (Directory.Dirname
+          (Path.Image)));
+      Check_Dir (Target_Dir.Image);
+      Path := As.U.Tus (Mixed_Str (Directory.Basename (Path.Image)));
+    end if;
+
     -- Include target dir in paths (just after current dir)
     if not Target_Dir.Is_Null then
       Sort.Add_Path (Target_Dir);
     end if;
-    Target := As.U.Tus (Directory.Basename (Target.Image));
+    -- Include path dir in paths (just after target dir)
+    if not Path_Dir.Is_Null then
+      Sort.Add_Path (Path_Dir);
+    end if;
     -- Include dirs of -I and -R options
     Add_Paths;
   end if;
 
 
-  ---------------------------
-  -- BUILD LIST OF SOURCES --
-  ---------------------------
-  Sourcer.Build_List;
+  ----------------------------
+  -- BUILD LISTS OF SOURCES --
+  ----------------------------
+  Sourcer.Build_Lists;
 
   ------------------------
   -- MOVE TO TARGET DIR --
@@ -246,38 +283,23 @@ begin
   -- CHECK TARGET --
   ------------------
   if not Check_Mode then
-    -- Check that target is found, as spec or standalone body
-    Unit.Unit := As.U.Tus (Mixed_Str (Target.Image));
-    Unit.Path := Target_Dir;
-    Unit.Kind := Sourcer.Unit_Spec;
-    Sourcer.List.Search (Unit, Found);
-    if not Found then
-      Unit.Kind := Sourcer.Unit_Body;
-      Sourcer.List.Search (Unit, Found);
-    end if;
-    if not Found then
-      Error ("Target unit " & Unit.Unit.Image & " not found");
-    end if;
-    Sourcer.List.Read (Unit);
-    if Unit.Kind = Sourcer.Unit_Body and then not Unit.Standalone then
-      Error ("Internal error: Target is a body but not standalone");
-    end if;
-    if Debug.Is_Set then
-      Basic_Proc.Put_Line_Output ("Target checked: " & Sourcer.Image (Unit));
+    Target_Dscr := Check_Unit (Target_Dir, Target, "Target");
+    if not Path.Is_Null then
+      Path_Dscr := Check_Unit (Path_Dir, Path, "Path");
     end if;
   end if;
 
   ----------------------------
   -- BUILD TREE OF SOURCES --
   ----------------------------
-  Tree_Mng.Build (Unit, Specs_Mode, Revert_Mode);
+  Tree_Mng.Build (Target_Dscr, Specs_Mode, Revert_Mode);
 
   -------------------
   -- PUT LIST/TREE --
   -------------------
   -- Back to original dir
   Check_Dir ("");
-  Output.Put (Revert_Mode, Tree_Mode, Files_Mode);
+  Output.Put (Revert_Mode, Tree_Mode, Files_Mode, Path_Dscr);
 
 exception
   when Error_Raised | Sourcer.Error_Raised =>

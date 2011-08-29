@@ -21,8 +21,10 @@
 
 @table @asis
 
+@item 2011/08/29
+Add a new mode to show the dependency path between two units in lsadeps, V7.0
 @item 2011/08/25
-Add option for dependency between spcs only in lsadeps, V6.0
+Add option for dependency between specs only in lsadeps, V6.0
 @item 2011/08/24
 Add co-located units hidding remote ones in lsadeps, V5.0
 @item 2011/08/23
