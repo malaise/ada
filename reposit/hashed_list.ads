@@ -35,7 +35,7 @@ package Hashed_List is
   -- For Iterator
   type Reference is (From_First, From_Last);
 
-  -- Insert may raise In_Callback if performed
+  -- Insert/Replace_Current/Delete_Current may raise In_Callback if performed
   --  in an application callback (Iteration);
 
   -- Check if an element matching Crit exists in the list
@@ -80,7 +80,7 @@ package Hashed_List is
   -- May raise Not_In_List
   procedure Delete_Current (List : in out List_Type);
 
-  -- replace the last element searched/found
+  -- Replace the last element searched/found
   -- May raise Not_Equal if Item is not "=" to the element searched/found
   -- May raise Not_In_List
   procedure Replace_Current (List : in out List_Type;
@@ -168,6 +168,7 @@ private
     Table : Hash_Mng.Hash_Table;
     Current : Element_Access := null;
     Hash_Index : Hash_Mng.Hash_Range := 0;
+    In_Cb : Boolean := False;
   end record;
   overriding procedure Finalize (List : in out List_Type);
 
@@ -176,6 +177,7 @@ private
                     Crit : in Element_Type;
                     Reset : in Boolean;
                     Element : out Element_Access);
+  procedure Check_Callback (List : in out List_Type);
 
 end Hashed_List;
 

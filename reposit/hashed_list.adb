@@ -1,5 +1,13 @@
 package body Hashed_List is
 
+  -- Check we are on in callback
+  procedure Check_Callback (List : in out List_Type) is
+  begin
+    if List.In_Cb then
+      raise In_Callback;
+    end if;
+  end Check_Callback;
+
   -- Element hashing
   procedure Dump (Data : in Element_Access) is
   begin
@@ -80,6 +88,7 @@ package body Hashed_List is
   procedure Insert (List : in out List_Type;
                     Item : in Element_Type) is
   begin
+    Check_Callback (List);
     -- Insert new element in list (append for more determinism) and in hashing
     List.List.Rewind (False, List_Mng.Prev);
     List.List.Insert (Item);
@@ -124,6 +133,7 @@ package body Hashed_List is
     Acc : Element_Access;
     Dummy : Boolean;
   begin
+    Check_Callback (List);
     Get_Access_Current (List, Acc);
 
     -- Locate in list the item that has this access
@@ -154,6 +164,7 @@ package body Hashed_List is
     First_Element : Element_Type;
     Position : Positive;
   begin
+    Check_Callback (List);
     Get_Access_Current (List, Acc);
 
     -- Check that Item is "=" to current element
@@ -178,6 +189,7 @@ package body Hashed_List is
   procedure Delete_List (List       : in out List_Type;
                          Deallocate : in Boolean := True) is
   begin
+    Check_Callback (List);
     List.List.Delete_List (Deallocate);
     Hash_Mng.Clear_All (List.Table);
     List.Current := null;
@@ -236,10 +248,16 @@ package body Hashed_List is
       else
         List.List.Read (Item, List_Mng.Prev, Moved => Moved);
       end if;
+      List.In_Cb := True;
       Iteration (Item, Go_On);
+      List.In_Cb := False;
       -- Callback requests to stop or en of list
       exit when not Go_On or else not Moved;
     end loop;
+  exception
+    when others =>
+      List.In_Cb := False;
+      raise;
   end Iterate;
 
  -- Rewind internal list and read successive items

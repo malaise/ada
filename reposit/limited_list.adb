@@ -684,6 +684,10 @@ package body Limited_List is
       List.Modified := True;
     end if;
     List.In_Cb := False;
+  exception
+    when others =>
+      List.In_Cb := False;
+      raise;
   end Search_Access;
 
 
@@ -779,6 +783,10 @@ package body Limited_List is
       List.Modified := True;
     end if;
     List.In_Cb := False;
+  exception
+    when others =>
+      List.In_Cb := False;
+      raise;
   end Search_Criteria;
 
   -- Generic search with Criteria of Element_Type
@@ -878,6 +886,10 @@ package body Limited_List is
         end if;
       end if;
     end loop;
+  exception
+    when others =>
+      List.In_Cb := False;
+      raise;
   end Iterate;
 
 

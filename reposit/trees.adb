@@ -1007,6 +1007,10 @@ package body Trees is
       Cell_Acc := The_Tree.Curr;
       Recurs (Cell_Acc, 0, Do_One_Acc, Elder);
       The_Tree.In_Cb := False;
+    exception
+      when others =>
+        The_Tree.In_Cb := False;
+        raise;
     end Iterate;
 
     procedure Deallocate is new Ada.Unchecked_Deallocation

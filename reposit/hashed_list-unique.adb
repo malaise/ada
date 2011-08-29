@@ -49,6 +49,7 @@ package body Hashed_List.Unique is
                            Item : in Element_Type) is
     Acc : Element_Access;
   begin
+    Check_Callback (List_Type(List));
     Locate (List_Type(List), Item, True, Acc);
     if Acc = null then
       Insert (List_Type(List), Item);
@@ -63,7 +64,8 @@ package body Hashed_List.Unique is
                        Item : in Element_Type) is
     Acc : Element_Access;
   begin
-    Locate (List_Type(List), Item, True, Acc);
+    Check_Callback (List_Type(List));
+    Locate_Optim (List, Item, Acc);
     if Acc = null then
       Insert (List_Type(List), Item);
     else
@@ -92,6 +94,7 @@ package body Hashed_List.Unique is
                     Crit : in Element_Type) is
     Acc : Element_Access;
   begin
+    Check_Callback (List_Type(List));
     -- Find (List, Item);
     Locate (List_Type(List), Crit, True, Acc);
     if Acc = null then
@@ -107,6 +110,7 @@ package body Hashed_List.Unique is
                     Done : out Boolean) is
     Acc : Element_Access;
   begin
+    Check_Callback (List_Type(List));
     -- Find (List, Item);
     Locate (List_Type(List), Crit, True, Acc);
     if Acc = null then
