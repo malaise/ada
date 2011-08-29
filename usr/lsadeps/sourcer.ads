@@ -63,7 +63,7 @@ package Sourcer is
   -- Parse sources and build list
   -- Reports errors on stderr and raises Error
   Error_Raised : exception;
-  procedure Build_List;
+  procedure Build_Lists;
 
   -- Some utilities
   -- Does a unit name contain a '.'

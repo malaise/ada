@@ -343,7 +343,7 @@ package body Sourcer is
   end Parse_Dir;
 
   -- Parse sources and build list
-  procedure Build_List is
+  procedure Build_Lists is
     -- The list of paths to scan (in priority order)
     Paths : constant As.U.Utils.Asu_Ua.Unb_Array := Sort.Get_Paths;
     -- The unit descriptor
@@ -461,7 +461,7 @@ package body Sourcer is
     if Debug.Is_Set then
       Basic_Proc.Put_Line_Output ("Checks completed.");
     end if;
-  end Build_List;
+  end Build_Lists;
 
   -- Does a unit name contain a '.'
   function Has_Dot (Unit : in As.U.Asu_Us) return Boolean is
