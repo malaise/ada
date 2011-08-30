@@ -1,6 +1,24 @@
 with Directory, Dynamic_List, Hashed_List.Unique, Basic_Proc;
 with Debug;
 package body Sort is
+
+  function Make_Path (Path, Unit : As.U.Asu_Us) return As.U.Asu_Us is
+  begin
+    return As.U.Tus (Make_Path (Path, Unit));
+  end Make_Path;
+  function Make_Path (Path, Unit : As.U.Asu_Us) return String is
+  begin
+    return Make_Path (Path.Image, Unit.Image);
+  end Make_Path;
+  function Make_Path (Path, Unit : String) return As.U.Asu_Us is
+  begin
+    return As.U.Tus (Make_Path (Path, Unit));
+  end Make_Path;
+  function Make_Path (Path, Unit : String) return String is
+  begin
+    return Directory.Build_File_Name (Path, Unit, "");
+  end Make_Path;
+
   -- Unique list of prios
   type Prio_Rec is record
     Path : As.U.Asu_Us;

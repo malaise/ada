@@ -101,8 +101,7 @@ package body Output is
         for I in 1 .. Level - 1 loop
           Str.Append (Tab);
         end loop;
-        Str.Append (Strip (Directory.Build_File_Name (
-            Dscr.Dscr.Path.Image, Name.Image, "")));
+        Str.Append (Strip (Sort.Make_Path (Dscr.Dscr.Path, Name)));
         Basic_Proc.Put_Line_Output (Str.Image);
       end if;
     end if;
@@ -143,8 +142,7 @@ package body Output is
       Str.Append (Tab);
     end loop;
     -- File
-    Str.Append (Strip (Directory.Build_File_Name (
-            Dscr.Dscr.Path.Image, Dscr.Dscr.File.Image, "")));
+    Str.Append (Strip (Sort.Make_Path (Dscr.Dscr.Path, Dscr.Dscr.File)));
     Basic_Proc.Put_Line_Output (Str.Image);
     return True;
   end Tree_File_Iterator;
@@ -195,8 +193,7 @@ package body Output is
       end if;
     end if;
     -- PathOfFile / UnitName
-    Ulist.Insert (As.U.Tus (Directory.Build_File_Name (
-            Dscr.Dscr.Path.Image, Name.Image, "")));
+    Ulist.Insert (Sort.Make_Path (Dscr.Dscr.Path, Name));
     return True;
   end List_Unit_Iterator;
 
@@ -211,8 +208,7 @@ package body Output is
       return True;
     end if;
     -- File
-    Ulist.Insert (As.U.Tus (Directory.Build_File_Name (
-              Dscr.Dscr.Path.Image, Dscr.Dscr.File.Image, "")));
+    Ulist.Insert (Sort.Make_Path (Dscr.Dscr.Path, Dscr.Dscr.File));
     return True;
   end List_File_Iterator;
 
@@ -320,8 +316,7 @@ package body Output is
       end if;
     end if;
     -- Append and check PathOfFile / UnitName
-    Name := As.U.Tus (Directory.Build_File_Name (
-            Dscr.Dscr.Path.Image, Name.Image, ""));
+    Name := Sort.Make_Path (Dscr.Dscr.Path, Name);
     -- Avoid adding a subunit after its body
     if Paths.Is_Null or else Name /= Paths.Element (Paths.Length).Path then
       Paths.Append ( Path_Rec'(Level, Name));
@@ -346,10 +341,8 @@ package body Output is
       return True;
     end if;
     -- Append and check PathOfFile / Unit_Name and same for Unit_File
-    Name := As.U.Tus (Directory.Build_File_Name (
-             Dscr.Dscr.Path.Image, Dscr.Dscr.Unit.Image, ""));
-    File := As.U.Tus (Directory.Build_File_Name (
-             Dscr.Dscr.Path.Image, Dscr.Dscr.File.Image, ""));
+    Name := As.U.Tus (Sort.Make_Path (Dscr.Dscr.Path, Dscr.Dscr.Unit));
+    File := As.U.Tus (Sort.Make_Path (Dscr.Dscr.Path, Dscr.Dscr.File));
     Paths.Append ( Path_Rec'(Level, File));
     -- See if we are at Path_Unit
     -- Avoid showing non standalone body of Path_Unit
@@ -385,8 +378,7 @@ package body Output is
       Curr_Dir.Append ("/");
     end if;
     Revert := Revert_Mode;
-    Path_Unit_Full := As.U.Tus (Directory.Build_File_Name (
-      Path_Unit.Path.Image, Path_Unit.Unit.Image, ""));
+    Path_Unit_Full := Sort.Make_Path (Path_Unit.Path, Path_Unit.Unit);
     if not Path_Unit.Unit.Is_Null then
       -- Path from Root to Path_Unit or revert
       Put_Path (File_Mode);

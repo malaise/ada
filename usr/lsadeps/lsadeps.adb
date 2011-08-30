@@ -3,7 +3,7 @@ with As.U, Argument, Argument_Parser, Basic_Proc, Mixed_Str, Directory;
 with Debug, Sourcer, Tree_Mng, Sort, Output, Checker;
 procedure Lsadeps is
 
-  Version : constant String := "V7.0";
+  Version : constant String := "V7.1";
 
   -- Usage and Error
   procedure Usage is
@@ -127,7 +127,7 @@ procedure Lsadeps is
     -- Check that unit is found, as spec or standalone body
     Dscr := Sourcer.Get_Unit (Path, Name);
     if Dscr.Unit.Is_Null or else Dscr.Kind = Sourcer.Subunit then
-      Error (Kind & " unit " & Dscr.Unit.Image & " not found");
+      Error (Kind & " unit " & Sort.Make_Path (Path, Name) & " not found");
     end if;
     if Debug.Is_Set then
       Basic_Proc.Put_Line_Output (Kind & " unit checked: "

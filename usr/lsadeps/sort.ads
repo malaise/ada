@@ -1,6 +1,12 @@
 with As.U.Utils;
 package Sort is
 
+  -- Utility to make a full path
+  function Make_Path (Path, Unit : As.U.Asu_Us) return As.U.Asu_Us;
+  function Make_Path (Path, Unit : As.U.Asu_Us) return String;
+  function Make_Path (Path, Unit : String) return As.U.Asu_Us;
+  function Make_Path (Path, Unit : String) return String;
+
   -- Add this path to list with decrescent prio
   -- So that the order of '-I' and -R dirs is preserved in the output
   procedure Add_Path (Path : As.U.Asu_Us);

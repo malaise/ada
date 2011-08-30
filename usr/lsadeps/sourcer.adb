@@ -22,18 +22,15 @@ package body Sourcer is
     To := Val;
   end Set;
   function "=" (Current : Src_Dscr; Criteria : Src_Dscr) return Boolean is
-    use type As.U.Asu_Us;
   begin
     return Current.Kind = Criteria.Kind
     and then
-     Directory.Build_File_Name (Current.Path.Image, Current.Unit.Image, "") =
-     Directory.Build_File_Name (Criteria.Path.Image, Criteria.Unit.Image, "");
+     Sort.Make_Path (Current.Path, Current.Unit) =
+     Sort.Make_Path (Criteria.Path, Criteria.Unit);
   end "=";
   function Image (Element : Src_Dscr) return String is
   begin
-    return Directory.Build_File_Name (Element.Path.Image,
-                                      Element.Unit.Image,
-                                      "")
+    return Sort.Make_Path (Element.Path, Element.Unit)
          & "#" & Src_Codes(Element.Kind);
   end Image;
 
@@ -129,13 +126,13 @@ package body Sourcer is
   begin
     -- Store file name and path
     Dscr.File := As.U.Tus (File);
-    Full_File_Name := As.U.Tus (Directory.Build_File_Name (Dir, File, ""));
+    Full_File_Name := Sort.Make_Path (Dir, File);
     Dscr.Path := As.U.Tus (Directory.Dirname (Full_File_Name.Image));
 
     -- Set Kind according to file name, check if standalone
-    Root_File := As.U.Tus (Directory.Build_File_Name (
+    Root_File := Sort.Make_Path (
           Dscr.Path.Image,
-          Directory.File_Prefix (Dscr.File.Image), ""));
+          Directory.File_Prefix (Dscr.File.Image));
     if Directory.File_Suffix (File) = ".ads" then
       Dscr.Kind := Unit_Spec;
       Dscr.Standalone := not File_Exists (Root_File.Image, "adb");
@@ -328,8 +325,7 @@ package body Sourcer is
           exit;
       end;
       -- File and matches ada source?
-      if Directory.File_Kind (
-             Directory.Build_File_Name (Dir, File_Name.Image, "") )
+      if Directory.File_Kind (Sort.Make_Path (Dir, File_Name.Image) )
          = Directory.File
       and then (Directory.File_Match (File_Name.Image, "*.ads")
         or else Directory.File_Match (File_Name.Image, "*.adb") ) then

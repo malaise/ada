@@ -1,5 +1,5 @@
-with As.U, String_Mng, Dynamic_List;
-with Debug, Basic_Proc, Parser;
+with As.U, String_Mng, Dynamic_List, Basic_Proc, Parser;
+with Debug;
 package body Tree_Mng is
 
   use type Sourcer.Src_Kind_List;
