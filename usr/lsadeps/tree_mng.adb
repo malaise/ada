@@ -1,4 +1,4 @@
-with As.U, String_Mng, Dynamic_List, Basic_Proc, Parser;
+with As.U, Dynamic_List, String_Mng, Basic_Proc, Parser;
 with Debug;
 package body Tree_Mng is
 
@@ -116,29 +116,77 @@ package body Tree_Mng is
     end loop;
   end Build_Subunits;
 
+  -- Get a spec or else a body of unit Name withing Withed
+  function Get_Wither (Name, Withing : in String) return Sourcer.Src_Dscr is
+    Crit : constant String := Sourcer.Separator & Name & Sourcer.Separator;
+    Dscr : Sourcer.Src_Dscr;
+    function Withes  return Boolean is
+    begin
+      return String_Mng.Locate (Dscr.Witheds.Image, Crit) /= 0
+      or else String_Mng.Locate (Dscr.Witheds_Parents.Image, Crit) /= 0;
+    end Withes;
+
+  begin
+    Dscr := Sourcer.Get_Unit (As.U.Tus (Withing));
+    -- This unit shall be found
+    if Dscr.Unit.Is_Null then
+      Basic_Proc.Put_Line_Error ("INTERNAL ERROR: with " & Withing & ".");
+      raise Sourcer.Src_List_Mng.Not_In_List;
+    end if;
+    if Withes then
+      -- Spec withese us
+      return Dscr;
+    end if;
+    -- Read body (it must exist)
+    Dscr.Kind := Sourcer.Unit_Body;
+    Sourcer.List.Read (Dscr);
+    if not Withes then
+      -- One of them shall with us
+      Basic_Proc.Put_Line_Error ("INTERNAL ERROR: with " & Withing & ".");
+      raise Sourcer.Src_List_Mng.Not_In_List;
+    end if;
+    return Dscr;
+  end Get_Wither;
+
   -- Build wihing units (in revert mode)
   -- The temporary local dynamic list is necessary because
   --  here we call Build_Node, which itself calls us recursively
   package Src_List_Mng is new Dynamic_List (Sourcer.Src_Dscr);
   package Src_Dyn_List_Mng renames Src_List_Mng.Dyn_List;
 
-  procedure Build_Withings (Name, Path : in String;
-                            Specs_Mode : in Boolean) is
+  procedure Build_Withings (Path, Name : in String) is
+    Withing : Sourcer.Withing_Dscr;
+    Found : Boolean;
+    Iter : Parser.Iterator;
+
     Dscr : Sourcer.Src_Dscr;
-    Moved : Boolean;
-    Crit : constant String := Sourcer.Separator & Name & Sourcer.Separator;
-    List : Src_Dyn_List_Mng.List_Type;
     Hidding : Sourcer.Src_Dscr;
+
+    List : Src_Dyn_List_Mng.List_Type;
+    Moved : Boolean;
     use type As.U.Asu_Us;
+
   begin
-    -- Scan all known units
-    Sourcer.List.Rewind;
+    -- Search ourself in list of withings cross references
+    Withing.Unit := As.U.Tus (Name);
+    Sourcer.Withing_List.Search (Withing, Found);
+    if not Found then
+      -- Nobody is withing us :-(
+      return;
+    end if;
+    Sourcer.Withing_List.Read (Withing);
+
+    -- Scan all withing units
+    Iter.Set (Withing.Withings.Image, Is_Sep'Access);
     loop
-      Sourcer.List.Read_Next (Dscr, Moved);
-      -- See if its Witheds contains us or one of our children
-      if String_Mng.Locate (Dscr.Witheds.Image, Crit) /= 0
-      or else String_Mng.Locate (Dscr.Witheds_Parents.Image, Crit) /= 0 then
-        -- Yes, see if it is local
+      declare
+        -- Path/Name of the withing unit
+        Str : constant String := Iter.Next_Word;
+      begin
+        exit when Str = "";
+        -- Get spec or body withing us
+        Dscr := Get_Wither (Name, Str);
+        -- See if it is local
         if Dscr.Path = Path then
           -- Yesss, add it to our list
           List.Insert (Dscr);
@@ -151,15 +199,15 @@ package body Tree_Mng is
             List.Insert (Dscr);
           end if;
         end if;
-      end if;
-      exit when not Moved;
+      end;
     end loop;
+
     -- Insert in the tree each node of the list
     if not List.Is_Empty then
       List.Rewind;
       loop
         List.Read (Dscr, Moved => Moved);
-        Build_Node (Dscr, Specs_Mode, True);
+        Build_Node (Dscr, True, True);
         exit when not Moved;
       end loop;
     end if;
@@ -201,7 +249,7 @@ package body Tree_Mng is
           or else (Origin.Kind = Sourcer.Unit_Body
                    and then Origin.Standalone) then
       Kind :=  As.U.Tus ("withing");
-      Build_Withings (Origin.Unit.Image, Origin.Path.Image, Specs_Mode);
+      Build_Withings (Origin.Path.Image, Origin.Unit.Image);
     end if;
 
     -- A Child (spec or standalone body): Insert parent spec if not revert

@@ -49,6 +49,21 @@ package body Sourcer is
     return Element.Unit.Image;
   end Image;
 
+  -- Operations for unique list of Withing_Dscr
+  procedure Set (To : out Withing_Dscr; Val : in Withing_Dscr) is begin
+    To := Val;
+  end Set;
+  function "=" (Current : Withing_Dscr; Criteria : Withing_Dscr)
+               return Boolean is
+    use type As.U.Asu_Us;
+  begin
+    return Current.Unit = Criteria.Unit;
+  end "=";
+  function Image (Element : Withing_Dscr) return String is
+  begin
+    return Element.Unit.Image;
+  end Image;
+
   -- Dump a unit dscr
   procedure Dump (Dscr : in Src_Dscr) is
   begin
@@ -95,6 +110,24 @@ package body Sourcer is
     end loop;
   end Next_Word;
 
+  -- Add a cross reference if B is withing A then append B to A Withing_Dscr
+  procedure Add_Withing (Withed, Path_Name : in As.U.Asu_Us) is
+   Dscr : Withing_Dscr;
+   Found : Boolean;
+   use type As.U.Asu_Us;
+  begin
+    Dscr.Unit := Withed;
+    -- See if it exists
+    Withing_List.Search (Dscr, Found);
+    if Found then
+      Withing_List.Read (Dscr);
+      Dscr.Withings.Append (Path_Name & Separator);
+    else
+      Dscr.Withings.Set (Separator & Path_Name & Separator);
+    end if;
+    Withing_List.Insert (Dscr);
+  end Add_Withing;
+
   -- Parse a file
   procedure Parse_File (Dir, File : in String) is
     -- The unit descriptor
@@ -102,6 +135,8 @@ package body Sourcer is
     -- Its name descriptor
     Name : Name_Dscr;
     Found : Boolean;
+    -- Full path and unit
+    Full_Unit_Name : As.U.Asu_Us;
     -- Full file name
     Full_File_Name : As.U.Asu_Us;
     -- Text_Char stuff
@@ -241,6 +276,8 @@ package body Sourcer is
     end if;
 
     -- Store parents of withed units
+    Full_Unit_Name := As.U.Tus (Directory.Build_File_Name
+         (Dscr.Path.Image, Dscr.Unit.Image, ""));
     if not Dscr.Witheds.Is_Null then
       Dscr.Witheds.Append (Separator);
       -- Scan each withed unit and and appends its parents if any
@@ -257,6 +294,8 @@ package body Sourcer is
         begin
           -- No more unit?
           exit when Unit = "";
+          -- Insert cross reference to this withed unit
+          Add_Withing (As.U.Tus (Unit), Full_Unit_Name);
           -- Look for successive '.' in its name
           Depth := 1;
           loop
@@ -268,6 +307,8 @@ package body Sourcer is
             if String_Mng.Locate (Dscr.Witheds_Parents.Image,
                                   Parent.Image) = 0 then
               Dscr.Witheds_Parents.Append (Parent);
+              -- Insert cross reference to this parent of withed unit
+              Add_Withing (Parent, Full_Unit_Name);
             end if;
             Depth := Depth + 1;
           end loop;
@@ -276,6 +317,7 @@ package body Sourcer is
       if not Dscr.Witheds_Parents.Is_Null then
         Dscr.Witheds_Parents.Append (Separator);
       end if;
+      -- Replace @@ by @
       Dscr.Witheds_Parents := As.U.Tus (
           String_Mng.Replace (Dscr.Witheds_Parents.Image,
                               Separator & Separator,
@@ -338,7 +380,7 @@ package body Sourcer is
     Directory.Close (Dir_Desc);
   end Parse_Dir;
 
-  -- Parse sources and build list
+  -- Parse sources and build lists
   procedure Build_Lists is
     -- The list of paths to scan (in priority order)
     Paths : constant As.U.Utils.Asu_Ua.Unb_Array := Sort.Get_Paths;
@@ -516,17 +558,32 @@ package body Sourcer is
     -- Try to get a body
     Crit.Kind := Unit_Body;
     List.Search (Crit, Found);
-    if not Found then
-      return Empty_Dscr;
-    end if;
-    List.Read (Crit);
-    -- Body must be standalone
-    if Crit.Standalone then
-      return Crit;
+    if Found then
+      List.Read (Crit);
+      -- Body must be standalone
+      if Crit.Standalone then
+        return Crit;
+      else
+        return Empty_Dscr;
+      end if;
     else
-      return Empty_Dscr;
+      -- Try to get a subunit
+      Crit.Kind := Subunit;
+      List.Search (Crit, Found);
+      if Found then
+        List.Read (Crit);
+        return Crit;
+      else
+        return Empty_Dscr;
+      end if;
     end if;
   end Get_Unit;
+  function Get_Unit (Path_Unit : in As.U.Asu_Us) return Src_Dscr is
+  begin
+    return Get_Unit (As.U.Tus (Directory.Dirname (Path_Unit.Image)),
+                     As.U.Tus (Directory.Basename (Path_Unit.Image)));
+  end Get_Unit;
+
 
   -- Get Unit_Body of a subunit
   function Get_Body (Sub : in Src_Dscr) return Src_Dscr is

@@ -46,7 +46,7 @@ package Sourcer is
   -- A name descriptor
   type Name_Dscr is record
     -- Full unit name - MixedStr
-    Unit :   As.U.Asu_Us;
+    Unit : As.U.Asu_Us;
     -- List of paths where it existst - @path@path...@path@
     Paths : As.U.Asu_Us;
   end record;
@@ -60,7 +60,27 @@ package Sourcer is
   package Name_List_Mng is new H_Name_List_Mng.Unique;
   Name_List : Name_List_Mng.Unique_List_Type;
 
-  -- Parse sources and build list
+
+  -- A withing descriptor
+  type Withing_Dscr is record
+    -- Full unit name of the withed unit
+    Unit : As.U.Asu_Us;
+    -- Withings - @path/unit@path/unit...@path/unit@
+    Withings : As.U.Asu_Us;
+  end record;
+  type Withing_Dscr_Access is access all Withing_Dscr;
+  procedure Set (To : out Withing_Dscr; Val : in Withing_Dscr);
+  function "=" (Current : Withing_Dscr; Criteria : Withing_Dscr) return Boolean;
+  function Image (Element : Withing_Dscr) return String;
+  package H_Withing_List_Mng is new Hashed_List (Withing_Dscr,
+                                           Withing_Dscr_Access,
+                                           Set, "=" , Image);
+  package Withing_List_Mng is new H_Withing_List_Mng.Unique;
+  Withing_List : Withing_List_Mng.Unique_List_Type;
+
+
+
+  -- Parse sources and build lists
   -- Reports errors on stderr and raises Error
   Error_Raised : exception;
   procedure Build_Lists;
@@ -74,9 +94,10 @@ package Sourcer is
   function Get_Parent (Dscr : in Src_Dscr) return Src_Dscr;
 
   -- Get root Unit of a path/unit
-  -- Return a spec or else a standalone body
-  -- Retrun a Dscr with empty Unit if not found
+  -- Return a spec or a standalone body or subunit
+  -- Return a Dscr with empty Unit if not found
   function Get_Unit (Path, Unit : in As.U.Asu_Us) return Src_Dscr;
+  function Get_Unit (Path_Unit : in As.U.Asu_Us) return Src_Dscr;
 
   -- Get Unit_Body of a subunit
   function Get_Body (Sub : in Src_Dscr) return Src_Dscr;
