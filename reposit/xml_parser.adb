@@ -3,7 +3,7 @@ with Environ, Basic_Proc, Rnd, Exception_Messenger, Directory;
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "6";
+  Minor_Version : constant String := "7";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -282,7 +282,7 @@ package body Xml_Parser is
     end if;
     -- Be sure context is clean
     Clean (Ctx);
-    -- No it will not be clean
+    -- Now it will not be clean
     Ctx.Magic := Get_Magic;
     -- In case of exception...
     Ctx.Status := Error;
@@ -1220,6 +1220,7 @@ package body Xml_Parser is
       Node.Attributes := new Attributes_Array'(Node.Attributes.all);
     end if;
   end Adjust;
-
+begin
+  Rnd.Randomize;
 end Xml_Parser;
 
