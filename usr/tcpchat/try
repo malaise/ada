@@ -40,6 +40,10 @@ elif [ "$1" = "chats" ] ; then
   echo "Chats on $PORT_NAME"
 else
   echo "Usage: `basename $0` [ -d ] [ -p <port> ]  http | chats"
+  echo " -d             for tcpchat debug"
+  echo " -p <port>      for specific port or stdin if \"-\" (default \"http\")"
+  echo " http or chats  script"
+  echo "Note that using the port http requires root priviledges."
   exit 1
 fi
 
