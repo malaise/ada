@@ -389,8 +389,9 @@ package body Sourcer is
     -- Unique list indicators
     Moved : Boolean;
     Found : Boolean;
-    -- A withing, for debug
+    -- A withing and a name, for debug
     Withing : Withing_Dscr;
+    Name : Name_Dscr;
     use type As.U.Asu_Us;
   begin
     -- Process paths one by one
@@ -499,6 +500,17 @@ package body Sourcer is
     end loop;
 
     if Debug.Is_Set then
+      Basic_Proc.Put_Line_Output ("Checks completed.");
+
+      -- Dumpt Names (not empty) and Withings if any
+      Basic_Proc.Put_Line_Output ("Names:");
+      Name_List.Rewind;
+      loop
+        Name_List.Read_Next (Name, Moved);
+        Basic_Proc.Put_Line_Output (Name.Unit.Image & " = "
+                                  & Name.Paths.Image);
+        exit when not Moved;
+      end loop;
       Basic_Proc.Put_Line_Output ("Withings:");
       if not Withing_List.Is_Empty then
         Withing_List.Rewind;
@@ -509,7 +521,6 @@ package body Sourcer is
           exit when not Moved;
         end loop;
       end if;
-      Basic_Proc.Put_Line_Output ("Checks completed.");
     end if;
   end Build_Lists;
 
