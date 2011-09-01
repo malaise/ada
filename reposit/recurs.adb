@@ -1,4 +1,4 @@
-with As.U, Basic_Proc, Directory;
+with As.U, Basic_Proc, Directory, Dir_Mng;
 procedure Recurs (Name_Of_Dir : in Boolean := True;
                   In_Current : in Boolean := True;
                   First_Level_Only : in Boolean := False;
@@ -12,9 +12,10 @@ procedure Recurs (Name_Of_Dir : in Boolean := True;
   Dot_Dot_Dir : constant String := "..";
 
   procedure Explore (Curr_Name : in String) is
-    Dir_Dsc : Directory.Dir_Desc;
-    Full_Curr_Name, New_Name : As.U.Asu_Us;
-    Kind : Directory.File_Kind_List;
+    Full_Curr_Name : As.U.Asu_Us;
+    List : Dir_Mng.File_List_Mng.List_Type;
+    File : Dir_Mng.File_Entry_Rec;
+    Moved : Boolean;
     Nb_Sons : Natural;
     use Directory;
 
@@ -66,49 +67,58 @@ procedure Recurs (Name_Of_Dir : in Boolean := True;
       end if;
     end if;
 
-    -- Go to next sub dir
+    -- List sub dirs
     Nb_Sons := 0;
-    Dir_Dsc := Directory.Open (Full_Curr_Name.Image);
-    loop
-      begin
-        New_Name := As.U.Tus (Directory.Next_Entry (Dir_Dsc));
-      exception
-        when Directory.End_Error =>
-          exit;
-      end;
-      begin
-        Kind := Directory.File_Kind (New_Name.Image);
-      exception
-        when Directory.Name_Error | Directory.Access_Error =>
-          -- A link to nowhere?
-          Kind := Directory.Unknown;
-      end;
-      -- Follow link recursively
-      if Follow_Links and then Kind = Directory.Link then
-        begin
-          New_Name := As.U.Tus (Directory.Read_Link (New_Name.Image, True));
-          Kind := Directory.File_Kind (New_Name.Image);
-        exception
-          when Directory.Name_Error | Directory.Access_Error =>
-            -- A link to nowhere?
-            Kind := Directory.Unknown;
-        end;
-      end if;
+    Dir_Mng.List_Dir (List, "", "");
+    if not List.Is_Empty then
+      List.Rewind;
+      loop
+        List.Read (File, Dir_Mng.File_List_Mng.Current);
+        -- Follow link recursively
+        if Follow_Links and then File.Kind = Directory.Link then
+          begin
+            File.Name := As.U.Tus (Directory.Read_Link (File.Name.Image, True));
+            File.Kind := Directory.File_Kind (File.Name.Image);
+          exception
+            when Directory.Name_Error | Directory.Access_Error =>
+              -- A link to nowhere?
+              File.Kind := Directory.Unknown;
+          end;
+        end if;
 
-      if Kind = Directory.Dir
-      and then New_Name.Image /= Dot_Dir
-      and then New_Name.Image /= Dot_Dot_Dir then
+        if File.Kind = Directory.Dir
+        and then File.Name.Image /= Dot_Dir
+        and then File.Name.Image /= Dot_Dot_Dir then
+          -- Keep this one, move to next
+          exit when not List.Check_Move;
+          List.Move_To;
+        else
+          -- Delete this one, move to next
+          List.Delete (Moved => Moved);
+          exit when not Moved;
+        end if;
+      end loop;
+
+    end if;
+
+    if not List.Is_Empty then
+      -- Sort list
+      Dir_Mng.File_Sort (List);
+      -- Go in each sub dir
+      List.Rewind;
+      loop
+        List.Read (File, Moved => Moved);
         -- Restart with next son if not First_Level_Only
         if Current_Level /= 1 or else not First_Level_Only then
           Current_Level := Current_Level + 1;
-          Explore (New_Name.Image);
+          Explore (File.Name.Image);
           Current_Level := Current_Level - 1;
           Directory.Change_Current (Full_Curr_Name.Image);
         end if;
         Nb_Sons := Nb_Sons + 1;
-      end if;
-    end loop;
-    Directory.Close(Dir_Dsc);
+        exit when not Moved;
+      end loop;
+    end if;
 
 
     -- When Leaves_Only, do current dir after counting sons
