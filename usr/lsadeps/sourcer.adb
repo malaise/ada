@@ -290,7 +290,7 @@ package body Sourcer is
           Depth : Positive;
           Dot : Natural;
           -- New parent
-          Parent : As.U.Asu_Us;
+          Parent, Parent_Sep : As.U.Asu_Us;
         begin
           -- No more unit?
           exit when Unit = "";
@@ -302,11 +302,11 @@ package body Sourcer is
             Dot := String_Mng.Locate (Unit, ".", Occurence => Depth);
             exit when Dot = 0;
             -- Append parent if new
-            Parent := As.U.Tus (Separator & Unit(Unit'First .. Dot - 1)
-                              & Separator);
+            Parent := As.U.Tus (Unit(Unit'First .. Dot - 1));
+            Parent_Sep := Separator & Parent & Separator;
             if String_Mng.Locate (Dscr.Witheds_Parents.Image,
-                                  Parent.Image) = 0 then
-              Dscr.Witheds_Parents.Append (Parent);
+                                  Parent_Sep.Image) = 0 then
+              Dscr.Witheds_Parents.Append (Parent_Sep);
               -- Insert cross reference to this parent of withed unit
               Add_Withing (Parent, Full_Unit_Name);
             end if;
@@ -389,6 +389,8 @@ package body Sourcer is
     -- Unique list indicators
     Moved : Boolean;
     Found : Boolean;
+    -- A withing, for debug
+    Withing : Withing_Dscr;
     use type As.U.Asu_Us;
   begin
     -- Process paths one by one
@@ -497,6 +499,16 @@ package body Sourcer is
     end loop;
 
     if Debug.Is_Set then
+      Basic_Proc.Put_Line_Output ("Withings:");
+      if not Withing_List.Is_Empty then
+        Withing_List.Rewind;
+        loop
+          Withing_List.Read_Next (Withing, Moved);
+          Basic_Proc.Put_Line_Output (Withing.Unit.Image & " <- "
+                                    & Withing.Withings.Image);
+          exit when not Moved;
+        end loop;
+      end if;
       Basic_Proc.Put_Line_Output ("Checks completed.");
     end if;
   end Build_Lists;
