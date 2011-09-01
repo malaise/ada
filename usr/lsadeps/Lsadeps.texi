@@ -27,6 +27,7 @@ Alternatively it checks redundants "with" clauses between specs and bodies.
 @menu
 * Usage::             Command line arguments.
 * Output::            Format of output.
+* Examples::          Examples
 * Design::            High level design.
 @end menu
 
@@ -62,7 +63,7 @@ Dependency function by default lists units on which <target_unit> depends,
    (default is current and target directories).
 @end verbatim
 
-@node Output, Design, Usage, Top
+@node Output, Examples, Usage, Top
 @chapter Format of output
 There are two main functions: list dependancies and check redundant "with"
 @section Show dependancies
@@ -80,31 +81,46 @@ two units
 @item files option: show file names instead of units
 @end itemize
 
-In list mode local units are listed first, then "remote" ones in the order of
+in list mode local units are listed first, then "remote" ones in the order of
 the include directives and they are sorted by alphapbetical order.
-In tree mode the units appear in the same order as in the "with" directives.
+in tree mode the units appear in the same order as in the "with" directives.
 @sp 1
-By default the search is restricted to local directory and target directory
+by default the search is restricted to local directory and target directory
 (and path_unit directory if any), but additional directories can be added to
 the search path, either individually or recursively.
 @sp 1
-A local unit, if any exists, hides all the remote ones.@*
-Example: suppose that a unit U withes a unit W.@*
-In normal (non revert) mode all remote units W are discarded if there is a
+a local unit, if any exists, hides all the remote ones.@*
+example: suppose that a unit U withes a unit W.@*
+in normal (non revert) mode all remote units W are discarded if there is a
 unit W co-located with U.@*
-In revert mode, a remote unit W withing unit U is discarded if there is another
+in revert mode, a remote unit W withing unit U is discarded if there is another
 unit U co-located with W.@*
-If there is no co-located unit then all the remote units with the same name are
+if there is no co-located unit then all the remote units with the same name are
 processed identically (they are all considered to depend on or to be dependent
 from current unit).
 @section Check redundant "with"
-This funtion checks that no redundant "with" clause appear
+this funtion checks that no redundant "with" clause appear
 in the body and sub-units of each unit.@*
-Lsadeps then exits with 1 if at least one redundant "with" is detected
+lsadeps then exits with 1 if at least one redundant "with" is detected
 and with 0 otherwise.
 
-@node Design, , Output, Top
-@chapter high level design
+@node Examples, Design, Output, Top
+@chapter Examples
+@table @asis
+@item What are the units needed by Unit
+lsadeps Unit (or lsadeps unit)
+@item What are the units, including those or the repository, needed by Unit
+lsadeps -I ~/ada/reposit Unit
+@item What are all the files needed to build Unit
+lsadeps -f -I ~/ada/reposit Unit
+@item How does Unit1 need Unit2
+lsadeps Unit1 Unit2
+@item What are all the units that will be re-compiled due to a modification of Unit spec
+lsadeps -r -R ~/ada/usr Unit
+@end table
+
+@node Design, , Examples, Top
+@chapter High level design
 @section Parse and check arguments
 @itemize @minus
 @item in non check mode target is a unit (possibly containing a path), an
