@@ -6,7 +6,7 @@
 
 @c Constants
 @set name lsadeps
-@set version V7.0
+@set version V7.3
 @set nameversion @value{name} @value{version}
 
 @c General format
@@ -62,6 +62,11 @@ Dependency function by default lists units on which <target_unit> depends,
  <include> to add some directories or some directory trees to the search path
    (default is current and target directories).
 @end verbatim
+@*
+Check mode does not support options (even includes), only one optional target
+directory.@*
+Specs and revert modes are mutually exclusive.@*
+Path mode and tree are mutually exculsive.@*
 
 @node Output, Examples, Usage, Top
 @chapter Format of output

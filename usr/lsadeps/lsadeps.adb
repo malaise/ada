@@ -3,7 +3,7 @@ with As.U, Argument, Argument_Parser, Basic_Proc, Mixed_Str, Directory;
 with Debug, Sourcer, Tree_Mng, Sort, Output, Checker;
 procedure Lsadeps is
 
-  Version : constant String := "V7.2";
+  Version : constant String := "V7.3";
 
   -- Usage and Error
   procedure Usage is
@@ -172,7 +172,7 @@ begin
     Revert_Mode := True;
   end if;
   if Specs_Mode and then Revert_Mode then
-    Error ("Specs and revert mode are mutually exclusive");
+    Error ("Specs and revert modes are mutually exclusive");
   end if;
   if Arg_Dscr.Is_Set (6) then
     Tree_Mode := True;
