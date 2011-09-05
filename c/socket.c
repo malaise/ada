@@ -1385,6 +1385,65 @@ extern int soc_get_local_host_id (soc_host *p_host) {
   return soc_host_of(hostname, p_host);
 }
 
+static void close_sock (int sock) {
+  int saved_errno = errno;
+  close (sock);
+  errno = saved_errno;
+}
+
+/* Get bcast address for a given interface (designated by if_host) */
+extern int soc_get_bcast (const soc_host *if_host, soc_host *p_bcast_host) {
+  int sock;
+  int res;
+  struct ifreq ifreqs[255];
+  struct ifconf ifconf;
+  int  nifaces, i, n;
+  struct sockaddr_in *addr;
+
+  /* Get list of interfaces */
+  memset (&ifconf, 0, sizeof(ifconf));
+  ifconf.ifc_buf = (char*) (ifreqs);
+  ifconf.ifc_len = sizeof(ifreqs);
+  sock = socket (AF_INET, SOCK_STREAM, 0);
+  if(sock < 0) {
+    perror("socket for ioctl siocgifconf");
+    return (SOC_SYS_ERR);
+  }
+  res = ioctl (sock, SIOCGIFCONF , (char*) &ifconf);
+  if (res < 0 ) {
+    close_sock (sock);
+    perror("ioctl siocgifconf");
+    return (SOC_SYS_ERR);
+  }
+  nifaces = ifconf.ifc_len/sizeof(struct ifreq);
+
+  /* Find if_host in list and return its bcast address */
+  n = -1;
+  for(i = 0; i < nifaces; i++) {
+    addr = (struct sockaddr_in *)&ifreqs[i].ifr_addr;
+    if (addr->sin_addr.s_addr == if_host->integer) {
+      n = i;
+      break;
+    }
+  }
+  if (n == -1) {
+    close_sock (sock);
+    return (SOC_NAME_NOT_FOUND);
+  }
+
+  /* Get its broadcast address */
+  res = ioctl (sock, SIOCGIFBRDADDR, &ifreqs[n]);
+  if (res < 0) {
+    close_sock (sock);
+    perror("ioctl siocgifbrdaddr");
+    return (SOC_SYS_ERR);
+  }
+  close (sock);
+  addr = (struct sockaddr_in *)&ifreqs[n].ifr_broadaddr;
+  p_bcast_host->integer = addr->sin_addr.s_addr;
+  return (SOC_OK);
+}
+
 /* String "x.y.z.t" to host, and string to port conversions */
 /* Parse a byte from a string, for str2host */
 static boolean parse_byte (const char *str, const int start, const int stop,

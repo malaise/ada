@@ -159,7 +159,8 @@ package body Socket is
   pragma Import (C, Soc_Get_Local_Host_Name, "soc_get_local_host_name");
   function Soc_Get_Local_Host_Id(Id : System.Address) return Result;
   pragma Import (C, Soc_Get_Local_Host_Id, "soc_get_local_host_id");
-
+  function Soc_Get_Bcast(If_Host, Bcast_Host : System.Address) return Result;
+  pragma Import (C, Soc_Get_Bcast, "soc_get_bcast");
 
   function Soc_Send (S : System.Address;
                      Message : System.Address;
@@ -584,6 +585,15 @@ package body Socket is
   begin
     return L_Addr2Id(Addr);
   end Addr2Id;
+
+   -- Broadcast address for an interface
+  function Bcast_Of (If_Id : Host_Id) return Host_Id is
+    Ret_Id : Host_Id;
+  begin
+    Res := Soc_Get_Bcast (If_Id'Address, Ret_Id'Address);
+    Check_Ok;
+    return Ret_Id;
+  end Bcast_Of;
 
   -- Send a message
   -- If Length is 0 then the full size of Message_Type is sent

@@ -7,7 +7,6 @@ procedure Wake is
   -- Socket stuff
   Host : Tcp_Util.Remote_Host;
   Lan_Id : Socket.Host_Id;
-  Lan_Addr : Socket.Ip_Address;
   Port : Tcp_Util.Remote_Port;
   Soc : Socket.Socket_Dscr;
   Default_Port : constant Socket.Port_Num := 9;
@@ -98,12 +97,13 @@ begin
   -- Create socket
   Soc.Open (Socket.Udp);
 
-  if  Argument.Get_Nbre_Arg = 1 then
-    Lan_Addr := Socket.Id2Addr (Socket.Local_Host_Id);
-    Lan_Addr.D := 16#FF#;
-    Lan_Id := Socket.Addr2Id (Lan_Addr);
+  if Argument.Get_Nbre_Arg = 1 then
+    -- Broadcast on local LAN
+    Lan_Id := Socket.Bcast_Of (Socket.Local_Host_Id);
     Soc.Set_Destination_Host_And_Port (Lan_Id, Default_Port);
+basic_proc.Put_Line_Output (Ip_Addr.Image (Socket.Id2Addr (Lan_Id)));
   else
+    -- Send to host to wake up or router
     begin
       Socket_Util.Set_Destination (Soc, False, Host, Port);
     exception

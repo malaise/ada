@@ -237,6 +237,9 @@ extern int soc_get_local_host_name (char *host_name,
                                     unsigned int host_name_len);
 extern int soc_get_local_host_id (soc_host *p_host);
 
+/* Get bcast address for a given interface (designated by if_host) */
+extern int soc_get_bcast (const soc_host *if_host, soc_host *p_bcast_host);
+
 /* String "x.y.z.t" to host, and string to port conversions */
 extern int soc_str2host (const char *str, soc_host *p_host);
 

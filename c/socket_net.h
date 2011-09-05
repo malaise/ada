@@ -11,6 +11,7 @@
 
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <net/if.h>
 
 /* Not supported by default
 #ifndef SO_REUSEPORT

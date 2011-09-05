@@ -278,6 +278,9 @@ package Socket is
   function Id2Addr (Id : Host_Id) return Ip_Address;
   function Addr2Id (Addr : Ip_Address) return Host_Id;
 
+  -- Get the broadcast address for a given interface (designated by if_host) */
+  function Bcast_Of (If_Id : Host_Id) return Host_Id;
+
   -- Send a message
   -- If Length is 0 then the full size of Message_Type is sent
   -- May raise Soc_Dest_Err if destination is not set
