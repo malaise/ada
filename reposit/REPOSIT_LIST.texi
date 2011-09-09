@@ -62,8 +62,6 @@ Complex numbers operations.
 Types for portable interfacing with C.
 @item channels (2)
 Diffuse messages to several destinations in TCP (channel) or IPM (bus).
-@item char_to_hexa (1)
-Converts a character to hexa ('A' -> 10...).
 @item chronos (1)
 Handle chronometers.
 @item chronos.passive_timers (1)
@@ -128,6 +126,8 @@ Hash table storage of keyed data.
 Hashed access to a dynamic list of items
 @item hashed_list.unique (1)
 Hashed access to a dynamic list of items with unique keys.
+@item hexa_utils (1)
+Convert strings to hexa and reverse (ex: "1A" <-> 26).
 @item http (2)
 Fetch the content of a HTTP URL.
 @item init_manager (1)

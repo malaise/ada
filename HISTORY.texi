@@ -21,6 +21,8 @@
 
 @table @asis
 
+@item 2011/09/09
+Add a package Hexa_Utils in repository (containing Char_To_Hexa)
 @item 2011/08/29
 Add a new mode to show the dependency path between two units in lsadeps, V7.0
 @item 2011/08/25
