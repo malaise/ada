@@ -1,6 +1,6 @@
 -- More powerfull search and substitution in strings,
 --  based on regex.
-with Char_To_Hexa, Upper_Str, Lower_Str, Mixed_Str;
+with Hexa_Utils, Upper_Str, Lower_Str, Mixed_Str;
 package body String_Mng.Regex is
 
   -- Internal: compile regex
@@ -171,8 +171,8 @@ package body String_Mng.Regex is
         declare
           Byte : Integer;
         begin
-          Byte := 16#10# * Char_To_Hexa (Newby.Element (Esc + 1))
-                        +  Char_To_Hexa (Newby.Element (Esc + 2));
+          Byte := 16#10# * Hexa_Utils.Char_To_Hexa (Newby.Element (Esc + 1))
+                        +  Hexa_Utils.Char_To_Hexa (Newby.Element (Esc + 2));
           -- Replace "\xIJ" by the code
           Newby.Replace (Esc - 1, Esc + 2, Character'Val (Byte) & "");
           From := Esc;

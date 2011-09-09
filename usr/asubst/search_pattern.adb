@@ -1,6 +1,6 @@
 with Ada.Characters.Latin_1;
 with As.U, Sys_Calls, Argument, Hashed_List.Unique, String_Mng, Text_Line,
-     Char_To_Hexa, Language;
+     Hexa_Utils, Language;
 with Debug;
 package body Search_Pattern is
 
@@ -187,7 +187,8 @@ package body Search_Pattern is
         Error ("No hexadecimal sequence at the end of pattern");
       end if;
       begin
-        Result := 16#10# * Char_To_Hexa (The_Pattern.Element (Index));
+        Result := 16#10#
+                * Hexa_Utils.Char_To_Hexa (The_Pattern.Element (Index));
       exception
         when Constraint_Error =>
           Error ("Invalid hexadecimal sequence "
@@ -200,7 +201,8 @@ package body Search_Pattern is
         raise Parse_Error;
       end if;
       begin
-        Result := Result + Char_To_Hexa (The_Pattern.Element (Index + 1));
+        Result := Result
+                + Hexa_Utils.Char_To_Hexa (The_Pattern.Element (Index + 1));
       exception
         when Constraint_Error =>
           Error ("Invalid hexadecimal sequence "

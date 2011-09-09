@@ -1,6 +1,6 @@
 with Ada.Characters.Latin_1, Ada.Exceptions;
 with As.U, Argument, Sys_Calls, String_Mng, Text_Line, Hashed_List.Unique,
-     Char_To_Hexa, Upper_Str, Lower_Str, Mixed_Str, Command, Int_Image;
+     Hexa_Utils, Upper_Str, Lower_Str, Mixed_Str, Command, Int_Image;
 with Search_Pattern, Debug;
 package body Replace_Pattern is
 
@@ -89,7 +89,7 @@ package body Replace_Pattern is
       Error ("No hexadecimal sequence at the end of replace pattern");
     end if;
     begin
-      Result := 16#10# * Char_To_Hexa (The_Pattern.Element (Index));
+      Result := 16#10# * Hexa_Utils.Char_To_Hexa (The_Pattern.Element (Index));
     exception
       when Constraint_Error =>
         Error ("Invalid hexadecimal sequence "
@@ -102,7 +102,8 @@ package body Replace_Pattern is
       raise Parse_Error;
     end if;
     begin
-      Result := Result + Char_To_Hexa (The_Pattern.Element (Index + 1));
+      Result := Result
+              + Hexa_Utils.Char_To_Hexa (The_Pattern.Element (Index + 1));
     exception
       when Constraint_Error =>
         Error ("Invalid hexadecimal sequence "
