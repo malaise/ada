@@ -1,6 +1,6 @@
 with Ada.Exceptions;
-with As.U.Utils, Basic_Proc, Argument, String_Mng.Regex,
-     Socket, Socket_Util, Tcp_Util, Char_To_Hexa, Ip_Addr;
+with As.U.Utils, Basic_Proc, Argument, String_Mng.Regex, Hexa_Utils,
+     Socket, Socket_Util, Tcp_Util, Ip_Addr;
 
 procedure Wake is
 
@@ -14,7 +14,8 @@ procedure Wake is
   type Byte_Array is array (Positive range <>) of Socket.Byte;
 
   -- Mac stuff
-  Mac_Addr : Byte_Array (1 .. 6);
+  subtype Mac_Type is Byte_Array (1 .. 6);
+  Mac_Addr : Mac_Type;
   -- 6 bytes at FF then 16 times the 6 bytes of MAC address
   subtype Message_Type is Byte_Array (1 .. 102);
   Message : Message_Type := (others => 16#FF#);
@@ -22,10 +23,14 @@ procedure Wake is
   procedure Usage is
   begin
     Basic_Proc.Put_Line_Output ("Usage: " & Argument.Get_Program_Name
-      & " <mac_address> [ <host>:<port> ]");
-    Basic_Proc.Put_Line_Output (" <mac_address> ::= XX:XX:XX:XX:XX:XX");
-    Basic_Proc.Put_Line_Output (" <host> ::= <host_name>|<host_ip>");
-    Basic_Proc.Put_Line_Output (" <port> ::= <port_name>|<port_num>");
+      & " <mac_address> [<host>][:<port>]");
+    Basic_Proc.Put_Line_Output (
+      " <mac_address> ::= XX:XX:XX:XX:XX:XX    -- MAC address of host to wake up");
+    Basic_Proc.Put_Line_Output (
+      " <host> ::= <host_name>|<host_ip>       -- Default: broadcast on local LAN");
+    Basic_Proc.Put_Line_Output (
+      " <port> ::= <port_name>|<port_num>      -- Default: "
+    & Ip_Addr.Image (Default_Port));
   end Usage;
 
   procedure Error (Msg : in String) is
@@ -36,9 +41,21 @@ procedure Wake is
     return;
   end Error;
 
+  function Image (Mac_Addr : Mac_Type) return String is
+    Res : As.U.Asu_Us;
+  begin
+    for I in Mac_Addr'Range loop
+      Res.Append (Hexa_Utils.Image (Natural (Mac_Addr(I))));
+      if I /= Mac_Addr'Last then
+        Res.Append (":");
+      end if;
+    end loop;
+    return Res.Image;
+  end Image;
+
   procedure My_Send is new Socket.Send (Message_Type);
 
-  use type Tcp_Util.Remote_Host_List;
+  use type Tcp_Util.Remote_Host_List, Tcp_Util.Remote_Port_List;
 begin
   ---------------------
   -- PARSE ARGUMENTS --
@@ -69,8 +86,7 @@ begin
       if Mac_Str(I).Length /= 2 then
         raise Mac_Error;
       end if;
-      Mac_Addr(I) := Socket.Byte (Char_To_Hexa (Mac_Str(I).Element(1)) * 16
-                                + Char_To_Hexa (Mac_Str(I).Element(2)));
+      Mac_Addr(I) := Socket.Byte (Hexa_Utils.Value (Mac_Str(I).Image));
     end loop;
   exception
     when others =>
@@ -86,6 +102,16 @@ begin
         Error ("Invalid host and port");
     end;
   end if;
+  -- Use default Host : Port
+  if Host.Kind = Tcp_Util.Host_Name_Spec and then Host.Name.Is_Null then
+    -- Default host is broadcast on LAN
+    Lan_Id := Socket.Bcast_Of (Socket.Local_Host_Id);
+    Host := (Tcp_Util.Host_Id_Spec, Lan_Id);
+  end if;
+  if Port.Kind = Tcp_Util.Port_Name_Spec and then Port.Name.Is_Null then
+    -- Default port
+    Port := (Tcp_Util.Port_Num_Spec, Default_Port);
+  end if;
 
   -------------------------
   -- SET PACKET AND DEST --
@@ -97,21 +123,14 @@ begin
   -- Create socket
   Soc.Open (Socket.Udp);
 
-  if Argument.Get_Nbre_Arg = 1 then
-    -- Broadcast on local LAN
-    Lan_Id := Socket.Bcast_Of (Socket.Local_Host_Id);
-    Soc.Set_Destination_Host_And_Port (Lan_Id, Default_Port);
-basic_proc.Put_Line_Output (Ip_Addr.Image (Socket.Id2Addr (Lan_Id)));
-  else
-    -- Send to host to wake up or router
-    begin
-      Socket_Util.Set_Destination (Soc, False, Host, Port);
-    exception
-      when Socket.Soc_Name_Not_Found =>
-        Error ("Unknown destination "
-              & Argument.Get_Parameter (Occurence => 2));
-    end;
-  end if;
+  -- Send dest to Host/Lan
+  begin
+    Socket_Util.Set_Destination (Soc, False, Host, Port);
+  exception
+    when Socket.Soc_Name_Not_Found =>
+      Error ("Unknown destination "
+            & Argument.Get_Parameter (Occurence => 2));
+  end;
 
   -----------------------
   -- SEND MAGIC PACKET --
@@ -119,6 +138,13 @@ basic_proc.Put_Line_Output (Ip_Addr.Image (Socket.Id2Addr (Lan_Id)));
 
   -- Send message
   My_Send (Soc, Message);
+
+
+  -- Done
+  Basic_Proc.Put_Line_Output (
+      "Sent WOL packet for host " & Image (Mac_Addr)
+    & " on " & Ip_Addr.Image (Socket.Id2Addr (Soc.Get_Destination_Host))
+    & ":" & Ip_Addr.Image (Soc.Get_Destination_Port));
 
   -- Close socket
   Soc.Close;
