@@ -167,6 +167,7 @@ package body Screen is
     Screen_Ground : Con_Io.Natural_Array (1 .. (Ground'Length + 2) * 2);
     use type My_Math.Real;
   begin
+    Con_Io.Clear;
     -- Draw ground
     J := 1;
     -- 1, 1
