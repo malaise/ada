@@ -1,5 +1,6 @@
 with Ada.Calendar;
-with As.U, Basic_Proc, Command, Many_Strings, Date_Image, Mixed_Str, Trilean;
+with As.U, Basic_Proc, Command, Many_Strings, Date_Image, Mixed_Str, Trilean,
+     Directory;
 with Variables, Tree, Ios, Matcher, Debug;
 package body Events is
 
@@ -17,12 +18,16 @@ package body Events is
   --  applies. If not, no need to reset connection when no chat selected
   In_Chat : Boolean := False;
 
-  -- Reset connection and move on root
+  -- Initial directory
+  Home_Dir : constant As.U.Asu_Us := As.U.Tus (Directory.Get_Current);
+
+  -- Reset connection, variables, directory and move on root
   procedure Reset is
   begin
     In_Chat := False;
     Ios.Reset;
     Variables.Reset;
+    Directory.Change_Current (Home_Dir.Image);
     Tree.Chats.Move_Root;
   end Reset;
 
@@ -400,6 +405,24 @@ package body Events is
               -- Skip
               Set_Position (Node.Next.all);
             end if;
+
+          when Chdir =>
+            declare
+              Target : constant String := Variables.Expand (Node.Text);
+            begin
+              if Target = "" then
+                -- Go to initial dir
+                Directory.Change_Current (Home_Dir.Image);
+              else
+                -- Go to target dir
+                Directory.Change_Current (Target);
+              end if;
+              Set_Position (Node.Next.all);
+            exception
+              when Directory.Name_Error | Directory.Access_Error =>
+                Put_Line ("ERROR changing current directory");
+                Reset;
+            end;
 
           when Close =>
             Reset;

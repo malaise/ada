@@ -27,19 +27,22 @@ while [ "$1" != "" ] ; do
   fi
 done
 if [ "$PORT" = "-" ] ; then
-  export PORT_ENAME="stdio"
+  export PORT_NAME="stdio"
 else
   export PORT_NAME="port $PORT"
 fi
 
 if [ "$1" = "http" ] ; then
-  FILE=http-rsh.xml
+  FILE=http.xml
   echo "Http on $PORT_NAME"
+elif [ "$1" = "rsh" ] ; then
+  FILE=rsh.xml
+  echo "Rsh on $PORT_NAME"
 elif [ "$1" = "chats" ] ; then
   FILE=chats.xml
   echo "Chats on $PORT_NAME"
 else
-  echo "Usage: `basename $0` [ -d ] [ -p <port> ]  http | chats"
+  echo "Usage: `basename $0` [ -d ] [ -p <port> ]  http | rsh | chats"
   echo " -d             for tcpchat debug"
   echo " -p <port>      for specific port or stdin if \"-\" (default \"http\")"
   echo " http or chats  script"

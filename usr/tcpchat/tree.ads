@@ -8,7 +8,7 @@ package Tree is
 
   -- Kind of node
   type Node_Kind is (Nop, Selec, Cond, Condif, Condelse, Repeat, Read, Default,
-                     Skip, Wait, Send, Call, Eval, Set, Close);
+                     Skip, Wait, Send, Call, Eval, Set, Chdir, Close);
 
   -- Infinite timeout
   Infinite_Ms : constant Integer := Event_Mng.Infinite_Ms;
@@ -25,7 +25,7 @@ package Tree is
     Kind : Node_Kind := Nop;
     -- For chat (kind Read)
     Name : As.U.Asu_Us;
-    -- For Cond, read, send, call or eval
+    -- For Cond, read, send, call, eval or chdir
     Text : As.U.Asu_Us;
     -- For Selec, Read, Skip, Wait
     Timeout : Integer := Infinite_Ms;

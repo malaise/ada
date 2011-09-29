@@ -144,7 +144,7 @@ package body Tree is
       Basic_Proc.Put_Error (Node.Name.Image & " ");
     end if;
     case Node.Kind is
-      when Condif | Repeat | Read | Call | Eval | Set =>
+      when Condif | Repeat | Read | Call | Eval | Set | Chdir =>
         Basic_Proc.Put_Error ("Text: >" & Node.Text.Image & "< ");
       when Send =>
         Basic_Proc.Put_Error ("Text: >" &
@@ -330,6 +330,10 @@ package body Tree is
       Node.Compute := Get_Attribute (Xnode, "Compute") = "true";
       Node.Ifunset := Trilean.Boo2Tri (
                Get_Attribute (Xnode, "IfUnset") = "true");
+    elsif Name = "chdir" then
+      Node.Kind := Chdir;
+      -- Get text
+      Get_Text (Xnode, Node, True);
     elsif Name = "error" then
       -- Begin of error handling block
       Node := Chats.Read;

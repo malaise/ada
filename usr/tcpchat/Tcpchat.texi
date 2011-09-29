@@ -48,8 +48,8 @@ sentence must completely match (i.e. <input_string> matches "^<regex>$").@*
 See Dtd for more information.
 
 @node Design, , Presentation, Top
-@chapter High level  esign
-@section General esign
+@chapter High level design
+@section General design
 There are 4 main modules:
 @itemize @minus
 @item IOs

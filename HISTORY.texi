@@ -22,6 +22,9 @@
 @table @asis
 
 @item 2011/00/28
+Add instruction chdir in tcpchat
+Fix handling of copied and moved files in agite, V3.4@*
+Fix @minus{}@minus{} in texi files@*
 Add option @minus{}@minus{}skip_dirs to als, V7.0
 @item 2011/08/29
 Add a new mode to show the dependency path between two units in lsadeps, V7.0

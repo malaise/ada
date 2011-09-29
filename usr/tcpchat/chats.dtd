@@ -24,17 +24,20 @@
      the output flow of the command.
    - eval: Call the shell to execute the command and arguments provided. Set a
      variable to the output flow of the command.
+   - chdir: Change current directory until another chdir or until the current
+     script ends. Note that an empty argument leads to move back to the original
+     directory when tcpchat has been launched.
   When a subscript reaches its end, the execution continues at the instruction
    that follows the instruction that leads to this subscript (if any).
   A chat script ends on either:
-   - a close statement: Close current connection and go back expecting a chat
-     script selection.
+   - a close statement: Close current connection, reset variables and current
+     dir, and go back expecting a chat script selection.
    - nothing else to do: Keep connection open and go back expecting a chat
-     script selection. The chat timeout, if any, remains active until a new
-     chat is selected.
+     script selection. Variables and current dir are not reset. The chat
+     timeout, if any, remains active until a new chat is selected.
 
-  The following situations lead to the termination (closure) of current
-   script:
+  The following situations lead to the termination (closure as on instruction
+   "close") of current script:
    - The expiration of the timeout global to the chat script.
    - The expiration of the timeout on the whole chats selection, on a select,
       on a read or on a skip.
@@ -87,7 +90,7 @@
                %TimeoutMs;
                InputDefaultTimeoutMs CDATA #IMPLIED
                %ReadDef;>
-<!ELEMENT script ((select|cond|repeat|read|skip|wait|send|call|set|eval)*,close?)>
+<!ELEMENT script ((select|cond|repeat|read|skip|wait|send|call|set|eval|chdir)*,close?)>
 
 <!ELEMENT select ((expect,script)+,(default,script)?)>
 <!ATTLIST select %TimeoutMs;>
@@ -123,5 +126,6 @@
 <!ELEMENT set (#PCDATA)>
 <!ATTLIST set %Variable_Set; Compute %boolean; "false"
               IfUnset %boolean; "false">
+<!ELEMENT chdir (#PCDATA)>
 <!ELEMENT close EMPTY>
 

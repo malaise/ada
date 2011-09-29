@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<!DOCTYPE chats SYSTEM "chats.dtd">
+<!-- TCP chat script for handling rsh -->
+
+<chats>
+
+  <!-- Rsh : execude command -->
+  <chat Name="rsh" Regexp="true" Assign="COMMAND=${2}"
+    >rsh( (.*))?</chat>
+  <script>
+    <cond>
+      <if Variable="COMMAND"></if>
+      <script></script>
+      <else/>
+      <script>
+        <call>
+          <command>${COMMAND}</command>
+          <error/>
+          <script></script>
+        </call>
+      </script>
+    </cond>
+  </script>
+
+  <!-- Rcd : change dir -->
+  <chat Name="chdir" Regexp="true" Assign="TARGET=${2}"
+    >rcd( (.*))?</chat>
+  <script>
+    <chdir>${TARGET}</chdir>
+  </script>
+</chats>
+
