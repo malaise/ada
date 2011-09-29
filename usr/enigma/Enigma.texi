@@ -150,12 +150,12 @@ The software is decomposed into the following components:
 initializes the machine from it.
 
 @item The Io_Manager, that reads and writes bytes. It supports:@*
-Skip (Nb_Bytes);  -- From input flow@*
-Read -> Byte;     -- Or raises End_Error@*
+Skip (Nb_Bytes);  @minus{}@minus{} From input flow@*
+Read -> Byte;     @minus{}@minus{} Or raises End_Error@*
 Write (Byte);
 
 @item The Coder, that encodes uppercase characters. It supports:
-Init;   -- Using the Definition to init the enigma@*
+Init;   @minus{}@minus{} Using the Definition to init the enigma@*
 Encode (Upper_Char) -> Upper_Char;
 
 @item The main inits the scrambler factory then the Coder, then run

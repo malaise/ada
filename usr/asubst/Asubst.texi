@@ -85,7 +85,7 @@ If the LANG environment variable is set to something containing "UTF-8", then
 asubst considers that input flow or file is coded in Utf-8. This setting can be
 altered in a way or the other by setting ASUBST_UTF8 environment variable
 to Y, yes, N or no (with whatever casing). Finally, this setting can be
-altered in a way or the other by the options -a (--ascii), or -u (--utf8).@*
+altered in a way or the other by the options -a (@minus{}@minus{}ascii), or -u (@minus{}@minus{}utf8).@*
  @*
 If ASUBST_DEBUG environment variable is set to Y or yes (with whatever casing)
 then asubst puts on stderr some debugging information.
@@ -160,10 +160,10 @@ If set, the <exclude_regex> must have the same number of regex as the
 <find_pattern>. This option means that text matching the <find_pattern> but
 also the <exclude_regex> will not be replaced. Beware that it applies to the
 text matching <find_pattern> only.@*
-For example 'echo "toto" | asubst --exclude=toto to ti' will replace toto by
+For example 'echo "toto" | asubst @minus{}@minus{}exclude=toto to ti' will replace toto by
 titi because each matching "to" does not match the exclusion "toto".@*
-On the other hand, 'echo "toto" | asubst --exclude=to to ti' and
-'echo "toto" | asubst --exclude=toto toto titi' will not substitute.
+On the other hand, 'echo "toto" | asubst @minus{}@minus{}exclude=to to ti' and
+'echo "toto" | asubst @minus{}@minus{}exclude=toto toto titi' will not substitute.
 
 @node Match range, Delimiter, Exclusion pattern, Top
 @chapter Match range
@@ -172,26 +172,26 @@ matching occurence, the 7th to the 9th and 15th occurence and after ("" means
 none). Only these occurences of matching (in the file or flow) will be
 substituted.@*
 Because of the rules for parsing arguments, a <range> starting by '-' requires
-the long option name. Example: don't use '-m -4', but '-m 1-4' or '--match=-4'.
+the long option name. Example: don't use '-m -4', but '-m 1-4' or '@minus{}@minus{}match=-4'.
 
 @node Delimiter, Replace string, Match range, Top
 @chapter Delimiter
 Normally, asubst reads the input flow or file line by line (separated by '\n')
 and searches for matches between the input sequences of text and the sequence
 of regex of find_pattern. However, when an input delimiter is specified (option
--D or --delimiter) then asubst reads sequences of text separated by this
+-D or @minus{}@minus{}delimiter) then asubst reads sequences of text separated by this
 delimiter (the whole text if delimiter is empty). The delimiter string is not
 a regular expression but can contain "\s", "\t", "\xIJ" (even "\x00") and "\n".@*
 If a delimiter is specified, then the find pattern cannot contain '^' or '$'
 and it applies to each chunk. Still, it can contain '\n' to denote line feed
-within a chunk. Option -d (--dotall) can then be used to allow '.' in find
+within a chunk. Option -d (@minus{}@minus{}dotall) can then be used to allow '.' in find
 pattern to match '\n' in the text.@*
 Examples:@*
 Remove comments (and possible trailing new_line) from a XML file:@*
-asubst -D '' '<!--([^-]|-[^-])*-->\n?' '' file
+asubst -D '' '<!@minus{}@minus{}([^-]|-[^-])*@minus{}@minus{}>\n?' '' file
 @sp 1
 Tag duplicated words in paragraphs (separated by two '\n'):@*
-asubst -D '\n\n' -- '\b([\M]+)\b[\S]+\1' '->\R01<-' file
+asubst -D '\n\n' @minus{}@minus{} '\b([\M]+)\b[\S]+\1' '->\R01<-' file
 
 @node Replace string, Grep mode, Delimiter, Top
 @chapter Replace string
@@ -273,7 +273,7 @@ In noregex mode, "\rIJ" with J > 0 is forbidden (no substring).
 
 @node File list, Exit code, Regex and noregex modes, Top
 @chapter File list
-Option -F <file_list> or --file_list=<file_list> allows specifying a file that
+Option -F <file_list> or @minus{}@minus{}file_list=<file_list> allows specifying a file that
 contains the list of files to process, instead of specifying these files as
 arguments. In this case no <file> argument is accepted.@*
 The <file_list> must contain one file name per line and empty lines are skipped
@@ -305,7 +305,7 @@ Same considerations apply to "\$" or '$' in order to pass '$' to asubst.
 @sp 1
 - ERROR: Cannot create temp file in ".".  -> Asubst cannot make the temporary
 file, probably because the file system does not support hard links (e.g. samba
-file system). Try the -p (--tmp) option with a UNIX directory.
+file system). Try the -p (@minus{}@minus{}tmp) option with a UNIX directory.
 @sp 1
 - The 'else' part of the condition is not processed. -> The whole replace string
 is not processed if the input text does not match the find pattern. Example,
