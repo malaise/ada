@@ -21,8 +21,8 @@
 
 @table @asis
 
-@item 2011/09/09
-Add a package Hexa_Utils in repository (containing Char_To_Hexa)
+@item 2011/00/28
+Add option @minus{}@minus{}skip_dirs to als, V7.0
 @item 2011/08/29
 Add a new mode to show the dependency path between two units in lsadeps, V7.0
 @item 2011/08/25
@@ -45,7 +45,7 @@ Fix heart graph use of Xor mode
 @item 2011/05/04
 Chg Major documentations into texi format
 @item 2011/04/14
-Add option --dotall (remove --display) that allows '.' to match '\n' in asubst, V12.0@*
+Add option @minus{}@minus{}dotall (remove @minus{}@minus{}display) that allows '.' to match '\n' in asubst, V12.0@*
 Add option Dot_All to Regular_Expressions
 @item 2011/04/04
 Add support of port in http package and in tcpchat test scenario
@@ -59,7 +59,7 @@ Fix normalization of text and add adjustment of Node_Info in Xml_Parser, V26.5
 @item 2011/03/18
 Fix preserve text when it is the only child in Xml_Parser, V26.2
 @item 2011/03/18
-Add option --no-normalize to xml_checker, V14.0
+Add option @minus{}@minus{}no-normalize to xml_checker, V14.0
 @item 2011/03/17
 Chg default 'keep' mode of xml_checker, V13.0
 @item 2011/03/15
@@ -82,7 +82,7 @@ Add autobus package
 @item 2011/02/16
 Add improve help of als, V6.2
 @item 2011/02/15
-Add option --date_iso for strict ISO output of dates in als, V6.1@*
+Add option @minus{}@minus{}date_iso for strict ISO output of dates in als, V6.1@*
 Chg use ISO 8601 format for time input and output of als, V6.0@*
 Add a static agite executable
 @item 2011/02/14
@@ -237,7 +237,7 @@ Add policy for parsing Cdata in Xml_Parser V19.0, Xml_Generator V7.1 and xml_che
 Add improve warning on Empty in Xml_Parser V18.2 and xml_checker V9.2@*
 Add test of warning on tree set with Xml_Generator
 @item 2010/04/12
-Add -k a (--keep=all) and allow keep and silent in xml_checker V9.1@*
+Add -k a (@minus{}@minus{}keep=all) and allow keep and silent in xml_checker V9.1@*
 Add optimise warning on Empty and allow warnings in Check in Xml_Parser V18.0
 @item 2010/04/11
 Add call callback on warning (i.o. error) in Xml_Parser V17.0@*
@@ -280,9 +280,9 @@ Add Afpx support of right click selection in list
 @item 2010/02/26
 Add migration svn -> git
 @item 2010/02/13
-Add options -B (--broken_links) and --follow_links in als V5.0
+Add options -B (@minus{}@minus{}broken_links) and @minus{}@minus{}follow_links in als V5.0
 @item 2010/02/12
-Add option -f (--full_path) in als V4.0
+Add option -f (@minus{}@minus{}full_path) in als V4.0
 @item 2010/02/09
 Add complete porting on 64 bits
 @item 2010/02/04
@@ -297,9 +297,9 @@ Fix and document several details, add test, in Argument_Parser
 @item 2009/11/13
 Add support of option after several char keys in Argument_Parser
 @item 2009/11/11
-Add support of "-" for stdin as file list. File list becomes an option of -F (--file_list) in Asubst V10.0
+Add support of "-" for stdin as file list. File list becomes an option of -F (@minus{}@minus{}file_list) in Asubst V10.0
 @item 2009/11/06
-Add Use -f (--file) to put file name in grep and previous option -f becomes -F (--file_list) in Asubst V9.0
+Add Use -f (@minus{}@minus{}file) to put file name in grep and previous option -f becomes -F (@minus{}@minus{}file_list) in Asubst V9.0
 @item 2009/11/04
 Fix Don't normalize attributes and text when not expanding. in Xml_Parser V14.12
 @item 2009/10/30
@@ -312,7 +312,7 @@ Fix skip all checks versus Dtd when not expanding in Xml_Parser V14.9
 Fix skip some checks when not expanding in Xml_Parser V14.8
 @item 2009/10/21
 Fix verify compliance with standalone directive in Xml_Parser V14.7@*
-Chg expand by default, -e (--expand) -> -k (--keep) in Xml_Checker V8.0
+Chg expand by default, -e (@minus{}@minus{}expand) -> -k (@minus{}@minus{}keep) in Xml_Checker V8.0
 @item 2009/10/16
 Fix normalization of attributes in Xml_Parser V14.6
 @item 2009/10/14
@@ -320,15 +320,15 @@ Fix count of options when -w, in Xml_Checker V7.2
 @item 2009/10/13
 Add Reject simultaneous -a and -u options in Asubst V8.1
 @item 2009/10/10
-Add Replace -m <max> (--max=<max>) by -m <range> (--match=<range>) in Asubst V8.0
+Add Replace -m <max> (@minus{}@minus{}max=<max>) by -m <range> (@minus{}@minus{}match=<range>) in Asubst V8.0
 @item 2009/10/09
 Add support for other ISO-8859 encoding, via files defining the mapping, in Xml_Parser V14.5 and Xml_Checker V7.1@*
-Fix parsing of -m (--max) argument of Asubsts V7.14
+Fix parsing of -m (@minus{}@minus{}max) argument of Asubsts V7.14
 @item 2009/10/07
 Add native support for ISO-8859-1 (latin-1) encoding in Xml_Parser V14.3
 @item 2009/10/02
 Add complete warning detection (multiple definition of entity) in Xml_Parser V14.1@*
-Add option -w (--warnings) to xml_checker (width becomes -W) in Xml_Checker V7.0
+Add option -w (@minus{}@minus{}warnings) to xml_checker (width becomes -W) in Xml_Checker V7.0
 @item 2009/10/01
 Add optional warnings in Xml_Parser V14.0, add dtd_checker
 @item 2009/09/29
@@ -375,7 +375,7 @@ Chg Event_Mng and X_Mng don't report Wakeup event any more (still handled intern
 @item 2009/06/16
 Chg align passive timers API on timers@*
 Add suport of virtual time in timed queues@*
-Chg invert default mode of xml_checker, -f (--flow) becomes -t (--tree), V5.3
+Chg invert default mode of xml_checker, -f (@minus{}@minus{}flow) becomes -t (@minus{}@minus{}tree), V5.3
 @item 2009/06/15
 Add filter ada compilation outputs in makefiles@*
 Add some operations on Delta_Rec in Perpet@*
@@ -395,7 +395,7 @@ Fix bug when starting or stopping a Chrono twice, and add a Pause to Lem.
 @item 2009/05/28
 Fix allow ^ and $ in multiple regex and do not flush remaining lines in grep mode of asubst, V7.12
 @item 2009/05/24
-Add option -n (--no_sort) to als, V3.1
+Add option -n (@minus{}@minus{}no_sort) to als, V3.1
 @item 2009/05/05
 Fix bug in trail_spaces - Lines made only of spaces were skipped
 @item 2009/04/26
@@ -407,7 +407,7 @@ Fix only parse \k, \r and \R in asubst external command, V7.10
 @item 2009/04/24
 Add \K...\k in asubst replace string to execute shell command in asubst, V7.9
 @item 2009/04/20
-Add option -h (--human) to als, V3.0
+Add option -h (@minus{}@minus{}human) to als, V3.0
 @item 2009/04/18
 Chg Reorganize arbitrary prime and factors
 @item 2009/04/09
@@ -415,15 +415,15 @@ Add array operations in Mcd, rationalize Unique_List arguments
 @item 2009/04/02
 Add Sqrt function in Arbitrary
 @item 2009/03/24
-Add option --depth to Als, V2.11
+Add option @minus{}@minus{}depth to Als, V2.11
 @item 2009/03/19
 Fix Als help, V2.10
 @item 2009/01/19
-Add Add option -c (--classify) to append '*', '/', '@'... in Als V2.9
+Add Add option -c (@minus{}@minus{}classify) to append '*', '/', '@'... in Als V2.9
 @item 2009/01/06
 Add support of empty criteria in Als, V2.8
 @item 2008/12/22
-Add option -n (--newer) to Als, V2.7
+Add option -n (@minus{}@minus{}newer) to Als, V2.7
 @item 2008/12/12
 Add Put all the replace string of each line in multiple grep mode in Asubst, V7.8
 @item 2008/12/09
@@ -505,7 +505,7 @@ Add handling of mouse in LEM
 @item 2008/08/04
 Add Asubst option of specific delimiter for multi-line processing, V6.0
 @item 2008/07/30
-Add Argument_Parser support of empty options and multiple '--'
+Add Argument_Parser support of empty options and multiple '@minus{}@minus{}'
 @item 2008/07/29
 Add Xml_Checker option to skip comments, V2.6@*
 Add Text_Line support of any (reasonnable) string as line/block delimiter

@@ -2,7 +2,7 @@ with Ada.Calendar;
 with As.U, Basic_Proc, Argument, Argument_Parser;
 with Entities, Output, Targets, Lister;
 procedure Als is
-  Version : constant String  := "V6.2";
+  Version : constant String  := "V7.0";
 
   -- Exit codes
   Found_Exit_Code : constant Natural := 0;
@@ -20,11 +20,11 @@ procedure Als is
     Put_Line_Error ("  -1 (--1row)        // One name per line");
     Put_Line_Error ("  -c (--classify)    // Append '/' to dirs, '@' to symlinks");
     Put_Line_Error ("  -h (--human)       // Show sizes in friendly format (e.g. 1K, 2G)");
-    Put_Line_Error ("  -f (--full_path)   // Show full path of entries");
+    Put_Line_Error ("  -p (--path)        // Show full path of entries");
     Put_Line_Error ("  <separator> ::= -S <string> | --separator=<string>");
     Put_Line_Error ("                     // Insert <string> beween each entry");
     Put_Line_Error ("  --follow_links     // Show final target of symlinks");
-    Put_Line_Error ("  --date_iso         // Show date in strick ISO format (<date>T<time>)");
+    Put_Line_Error ("  --date_iso         // Show date in strict ISO format (<date>T<time>)");
     Put_Line_Error ("Which entries to show:");
     Put_Line_Error ("  -a (--all)         // Show all entries including hidden (starting with '.')");
     Put_Line_Error ("  -A (--All)         // Show all entries except ""."" and ""..""");
@@ -33,6 +33,7 @@ procedure Als is
     Put_Line_Error ("  -F (--files)       // Show only regular files");
     Put_Line_Error ("  -B (--broken_links)// Show only broken symbolic links");
     Put_Line_Error ("  -R (--recursive)   // Scan directories recursively");
+    Put_Line_Error ("  --skip_dirs        // Skip directories from arguments");
     Put_Line_Error ("  --depth=<positive> // Scan only to given depth (needs ""-R"")");
     Put_Line_Error ("  <match_name> ::= -m <criteria> | --match=<criteria>");
     Put_Line_Error ("    <criteria> ::= <templates> | @<regex>");
@@ -104,10 +105,11 @@ procedure Als is
    24 => (Argument_Parser.No_Key_Char, As.U.Tus ("depth"), False, True),
    25 => ('h', As.U.Tus ("human"), False, False),
    26 => ('N', As.U.Tus ("no_sort"), False, False),
-   27 => ('f', As.U.Tus ("full_path"), False, False),
+   27 => ('p', As.U.Tus ("path"), False, False),
    28 => ('B', As.U.Tus ("broken_links"), False, False),
    29 => (Argument_Parser.No_Key_Char, As.U.Tus ("follow_links"), False, False),
-   30 => (Argument_Parser.No_Key_Char, As.U.Tus ("date_iso"), False, False) );
+   30 => (Argument_Parser.No_Key_Char, As.U.Tus ("date_iso"), False, False),
+   31 => (Argument_Parser.No_Key_Char, As.U.Tus ("skip_dirs"), False, False) );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   -- Option management
   List_Dots, List_Roots_And_Dots : Boolean;
@@ -132,6 +134,7 @@ procedure Als is
   Depth : Natural;
   Full_Path : Boolean;
   Date_Iso : Boolean;
+  Skip_Dirs : Boolean;
 
   -- Parse a date argument
   function Parse_Date (Str : String) return Entities.Date_Spec_Rec is separate;
@@ -202,6 +205,7 @@ begin
   Sort_By_Size := Arg_Dscr.Is_Set (08);
   Sort_By_Time := Arg_Dscr.Is_Set (09);
   Merge_Lists := Arg_Dscr.Is_Set (10);
+  List_Only_Files := Arg_Dscr.Is_Set (15);
   Classify := Arg_Dscr.Is_Set (23);
   Human := Arg_Dscr.Is_Set (25);
   No_Sorting := Arg_Dscr.Is_Set (26);
@@ -257,7 +261,6 @@ begin
   else
     List_Only_Links := Lister.No_Link;
   end if;
-  List_Only_Files := Arg_Dscr.Is_Set (15);
 
   -- Add match template if any
   for I in 1 .. Arg_Dscr.Get_Nb_Occurences (16) loop
@@ -357,6 +360,14 @@ begin
     end;
   end if;
 
+  -- Skip dirs
+  if Arg_Dscr.Is_Set (31) then
+    if Recursive then
+      Error ("Options recursive and skip_dirs are mutually exclusive");
+    end if;
+    Skip_Dirs := True;
+  end if;
+
   -- Set selection criteria in Lister, activate Total computation
   Lister.Set_Criteria (List_Only_Dirs, List_Only_Files, List_Only_Links,
                        Follow_Links, Date1, Date2);
@@ -365,7 +376,8 @@ begin
   end if;
 
   -- List each target
-  if Targets.List (Dots, Recursive, Depth, Merge_Lists, Arg_Dscr) then
+  if Targets.List (Dots, Recursive, Depth, Merge_Lists, Skip_Dirs,
+                   Arg_Dscr) then
     Basic_Proc.Set_Exit_Code (Found_Exit_Code);
   else
     Basic_Proc.Set_Exit_Code (Empty_Exit_Code);

@@ -7,6 +7,7 @@ package body Targets is
                  Recursive : Boolean;
                  Depth : Natural;
                  Merge : Boolean;
+                 Skip_Dirs : Boolean;
                  Args : Argument_Parser.Parsed_Dscr) return Boolean is
     Found : Boolean;
     Entries : Entities.Entity_List;
@@ -100,7 +101,8 @@ package body Targets is
     end if;
 
     -- Process dirs that match
-    if Args.Get_First_Pos_After_Keys /= 0 then
+    if Args.Get_First_Pos_After_Keys /= 0
+    and then not Skip_Dirs then
       for I in Args.Get_First_Pos_After_Keys .. Argument.Get_Nbre_Arg loop
         declare
           Dir : constant String := Argument.Get_Parameter (Occurence => I);

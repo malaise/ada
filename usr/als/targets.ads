@@ -8,6 +8,7 @@ package Targets is
                  Recursive : Boolean;
                  Depth : Natural;
                  Merge : Boolean;
+                 Skip_Dirs : Boolean;
                  Args : Argument_Parser.Parsed_Dscr) return Boolean;
 
 
