@@ -180,6 +180,7 @@ package body Git_If is
     Found : Boolean;
     Dir_List : Dir_Mng.File_List_Mng.List_Type;
     Dir_Entry : Dir_Mng.File_Entry_Rec;
+    Redirect : Natural;
     use type Directory.File_Kind_List;
   begin
     -- Init result
@@ -237,6 +238,12 @@ package body Git_If is
           -- This is a file, and in 2nd or 3rd stage or untracked
           -- Remove "XY "
           Str.Delete (1, 3);
+          Redirect := String_Mng.Locate (Str.Image, "-> ");
+          if Redirect /= 0 then
+            -- File is a copy or a move ("<old_name> -> <new_name>")
+            -- Remove "<old_name> -> "
+            Str.Delete (1, Redirect + 2);
+          end if;
           if Directory.Dirname (Str.Image) = Current_Path then
             -- This file is in current dir, look for it
             File_Entry.Name := As.U.Tus (Directory.Basename (Str.Image));
