@@ -21,8 +21,8 @@
 
 @table @asis
 @item 09/03/2011 V12.0
-Add: Option -d (--dotall) to allow dot to match '\n', when specific delimiter@*
-Option -d (--display) removed
+Add: Option -d (@minus{}@minus{}dotall) to allow dot to match '\n', when specific delimiter@*
+Option -d (@minus{}@minus{}display) removed
 @item 09/03/2011 V11.4
 Fix: Detection of '^' and '$' in search pattern when specific delimiter
 @item 08/03/2011 V11.3
@@ -37,16 +37,16 @@ Add: Replace string command (\P...\p) to insert content of a file
 Add: Improve dir and file right access check when not writting
 @item 11/11/2009 V10.0
 Add: Support "-" as file list for stdin.@*
-Add: File list becomes an option of -F (--file_list)
+Add: File list becomes an option of -F (@minus{}@minus{}file_list)
 @item 06/11/2009 V9.0
-Add: Use -f (--file) to put file name in grep@*
-Add: Previous option -f becomes -F (--file_list)
+Add: Use -f (@minus{}@minus{}file) to put file name in grep@*
+Add: Previous option -f becomes -F (@minus{}@minus{}file_list)
 @item 13/10/2009 V8.1
 Add: Reject simultaneous -a and -u options
 @item 10/10/2009 V8.0
-Add: Replace -m (--max) by -m (--match) for match_range
+Add: Replace -m (@minus{}@minus{}max) by -m (@minus{}@minus{}match) for match_range
 @item 08/10/2009 V7.14
-Fix: Incorrect parsing of argument -m (--max=)
+Fix: Incorrect parsing of argument -m (@minus{}@minus{}max=)
 @item 24/06/2009 V7.13
 Fix: "" was not matching "(.?)"
 @item 28/05/2009 V7.12
@@ -82,9 +82,9 @@ Add: Prevent the use in UTF-8 of non ASCII chars in regex bracket expression.
 Add: Support '\n' in noregex mode.@*
 Add: Support '\n' when delimiter is set.
 @item 04/08/2008 V6.0
-Add: -D <string> (--delimiter=<string>) to set a specific input line delimiter.
+Add: -D <string> (@minus{}@minus{}delimiter=<string>) to set a specific input line delimiter.
 @item 25/01/2008 V5.3
-Add: -p (--tmp) for alternative dir of tmp files.
+Add: -p (@minus{}@minus{}tmp) for alternative dir of tmp files.
 @item 25/01/2008 V5.2
 Fix: internal error when matching substring has index=(0, 0).@*
 Fix: String_Mng bug on \\\R01 in replace pattern.
@@ -102,7 +102,7 @@ was put twice.
 @item 25/11/2007 V4.7
 Fix: Complete help and doc on back reference and order of substrings.
 @item 20/11/2007 V4.6
-Add: -d or --display also display exclude pattern (if any).
+Add: -d or @minus{}@minus{}display also display exclude pattern (if any).
 @item 20/11/2007 V4.5
 Add: Complete check of validity of '^' or '$' in simple or multiple regex.
 @item 18/11/2007 V4.4
@@ -110,27 +110,27 @@ Fix: Cannot check that multi-regex pattern does not contain '^' or '$',
 (because they are allowed if backslashed, and ^ is allowed in []).@*
 Replace by a detection of "\n^" and "$\n" and error in this case.
 @item 18/11/2007 V4.3
-Add: -e <pattern> or --exclude=<pattern> to exclude string matching <pattern>.
+Add: -e <pattern> or @minus{}@minus{}exclude=<pattern> to exclude string matching <pattern>.
 @item 15/11/2007 V4.2
 Fix: help and doc: \r0i and \R00 are forbidden.
 @item 14/11/2007 V4.1
-Add: -d or --display to display patterns.@*
-Add: -l or --line to display line number in grep mode.
+Add: -d or @minus{}@minus{}display to display patterns.@*
+Add: -l or @minus{}@minus{}line to display line number in grep mode.
 @item 03/11/2007 V4.0
 Add: Use generic parsing by Argument_Parser; single letter options can now
 be grouped (ex: -tv).
 @item 18/07/2007 V3_8
 Fix: verbose output when multi-line search pattern.@*
-Add: -g or --grep option.@*
+Add: -g or @minus{}@minus{}grep option.@*
 Chg: Exit codes become 0 (found), 1 (not found) and 2 (error).
 @item 18/07/2007 V3_7
 Fix: and robustify the parsing of arguments.@*
 Fix: language setting (env and/or arg).@*
-Fix: Change -v to -V for --version.@*
+Fix: Change -v to -V for @minus{}@minus{}version.@*
 Fix: Do not commit when -t.@*
 Fix: Propagate all access right of original file into new file.
 @item 22/04/2007 V3_6
-Add: -t or --test option.
+Add: -t or @minus{}@minus{}test option.
 @item 13/04/2007 V3_5
 Fix: Internal change in Utf_8 handling.
 @item 25/04/2006 V3_4
@@ -138,7 +138,7 @@ Fix: Return "" i.o. exception when no matching substring.@*
 Fix: Forbid "\n" in noregex mode.@*
 Add: Improve doc regarding noregex mode.
 @item 25/04/2006 V3_3
-Add: -x or --noregex for nor considering find pattern as a regex.
+Add: -x or @minus{}@minus{}noregex for nor considering find pattern as a regex.
 @item 25/04/2006 V3_2
 Add: Forbid \x00 in find pattern (it does not work with regex).
 @item 23/04/2006 V3_1
@@ -147,7 +147,7 @@ Add: Support \A for [:alpha:], \B for [:blank:]... in find pattern.
 Add: Check if env variable LANG ends by ".UTF-8" then check env variable
 ASUBST_UTF8, then apply -u or -a option.
 @item 16/04/2006 V2_13
-Add: -u or --utf8 for UTF-8 processing, and -a or --ascii for ASCII processing.@*
+Add: -u or @minus{}@minus{}utf8 for UTF-8 processing, and -a or @minus{}@minus{}ascii for ASCII processing.@*
 Fix: Invalid processing of \R00 if multiple regexps.@*
 Chg: \R00 and \r0i become forbidden.
 @item 06/04/2006 V2_12
@@ -155,11 +155,11 @@ Fix: Exception in replace because string for replace must be full string
 and not matching string.
 @item 03/04/2006 V2_11
 Add: Reject argument starting with "-" if it is not a valid option
-and if it is not after "--".
+and if it is not after "@minus{}@minus{}".
 @item 09/02/2006 V2_10
 Add: Improve doc and help text.
 @item 22/12/2005 V2_9
-Add: Options -f (--file) for file of files, and -m <max> (--max=<max>) for
+Add: Options -f (@minus{}@minus{}file) for file of files, and -m <max> (@minus{}@minus{}max=<max>) for
 maximum of subtitutions per file.@*
 Add: Count substitutions and lines with Long_Long.
 @item 21/12/2005 V2_8
@@ -167,7 +167,7 @@ Add: checks of access right on file prior to substitution.
 Add: clean temp file in case of exception.@*
 Fix: file name was always displayed if default verbosity (since V2_7).
 @item 19/12/2005 V2_7
-Add: -n (--number) and -v (--verbose) options for putting number of
+Add: -n (@minus{}@minus{}number) and -v (@minus{}@minus{}verbose) options for putting number of
 substitutions and substitution details.
 @item 19/12/2005 V2_6
 Add: Clear the help and version messages.
