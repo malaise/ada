@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1;
-with Many_Strings, Proc_Family, Con_Io;
+with Many_Strings, Proc_Family;
 package body Utils is
 
   -- If Str fits Width then return Str
@@ -36,15 +36,6 @@ package body Utils is
   begin
     return Str (Str'First .. Last_Index (Str));
   end Parse_Spaces;
-
-  -- Protect a field and "revert" its colors
-  procedure Protect_Field (Field_No : in Afpx.Absolute_Field_Range) is
-  begin
-    Afpx.Set_Field_Protection (Field_No, True);
-    Afpx.Set_Field_Colors (Field_No,
-          Foreground => Con_Io.Color_Of ("Black"),
-          Background => Afpx.Get_Descriptor_Background);
-  end Protect_Field;
 
   -- Start a command in background
   procedure Launch (Command : in String) is

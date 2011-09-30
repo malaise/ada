@@ -1,6 +1,6 @@
 with Ada.Characters.Latin_1, Ada.Exceptions;
 with As.U, Con_Io, Afpx.List_Manager, String_Mng, Directory, Basic_Proc;
-with Utils, View, History, Config;
+with Utils.X, View, History, Config;
 package body Details is
 
   List_Width : Afpx.Width_Range;
@@ -168,11 +168,11 @@ package body Details is
             when Afpx.List_Field_No =>
               -- Double click (View)
               Show (Show_View);
-            when Utils.List_Scroll_Fld_Range'First ..
-                 Utils.List_Scroll_Fld_Range'Last =>
+            when Utils.X.List_Scroll_Fld_Range'First ..
+                 Utils.X.List_Scroll_Fld_Range'Last =>
               -- Scroll list
-              Afpx.List_Manager.Scroll (Ptg_Result.Field_No
-                                      - Utils.List_Scroll_Fld_Range'First + 1);
+              Afpx.List_Manager.Scroll (
+                 Ptg_Result.Field_No - Utils.X.List_Scroll_Fld_Range'First + 1);
             when 13 =>
               -- View
               Show (Show_View);

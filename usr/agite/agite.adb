@@ -1,6 +1,6 @@
 with As.U, Con_Io, Afpx.List_Manager, Basic_Proc, Integer_Image, Directory,
      Dir_Mng, Sys_Calls, Argument, Argument_Parser, Socket, String_Mng;
-with Utils, Git_If, Config, Bookmarks, History, Confirm;
+with Utils.X, Git_If, Config, Bookmarks, History, Confirm;
 procedure Agite is
 
   -- Usage and Error message
@@ -145,8 +145,8 @@ procedure Agite is
 
     -- De-activate Diff and history if no in Git
     if Root.Is_Null then
-      Utils.Protect_Field (22);
-      Utils.Protect_Field (23);
+      Utils.X.Protect_Field (22);
+      Utils.X.Protect_Field (23);
     else
       Afpx.Reset_Field (22);
       Afpx.Reset_Field (23);
@@ -432,11 +432,11 @@ begin
           when Afpx.List_Field_No =>
             -- Double click (edit file or change to dir)
             List_Action (Default);
-          when Utils.List_Scroll_Fld_Range'First ..
-               Utils.List_Scroll_Fld_Range'Last =>
+          when Utils.X.List_Scroll_Fld_Range'First ..
+               Utils.X.List_Scroll_Fld_Range'Last =>
             -- Scroll list
-            Afpx.List_Manager.Scroll(Ptg_Result.Field_No
-                                   - Utils.List_Scroll_Fld_Range'First + 1);
+            Afpx.List_Manager.Scroll(
+                Ptg_Result.Field_No - Utils.X.List_Scroll_Fld_Range'First + 1);
           when 10 =>
             -- Root (change dir to)
             Change_Dir (Root.Image);

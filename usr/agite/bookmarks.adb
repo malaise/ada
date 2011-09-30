@@ -1,5 +1,5 @@
 with As.U, Directory, Con_Io, Afpx.List_Manager;
-with Utils, Config;
+with Utils.X, Config;
 package body Bookmarks is
 
   -- Strip potential leading "(name) " of bookmark
@@ -106,10 +106,10 @@ package body Bookmarks is
     loop
       -- No Goto nor Del nor Move if no Bookmark
       if Afpx.Line_List.Is_Empty then
-        Utils.Protect_Field (15);
-        Utils.Protect_Field (16);
-        Utils.Protect_Field (17);
-        Utils.Protect_Field (18);
+        Utils.X.Protect_Field (15);
+        Utils.X.Protect_Field (16);
+        Utils.X.Protect_Field (17);
+        Utils.X.Protect_Field (18);
       else
         Afpx.Reset_Field (15);
         Afpx.Reset_Field (16);
@@ -144,11 +144,11 @@ package body Bookmarks is
                   return Dir;
                 end if;
               end;
-            when Utils.List_Scroll_Fld_Range'First ..
-                 Utils.List_Scroll_Fld_Range'Last =>
+            when Utils.X.List_Scroll_Fld_Range'First ..
+                 Utils.X.List_Scroll_Fld_Range'Last =>
               -- Scroll list
-              Afpx.List_Manager.Scroll(Ptg_Result.Field_No
-                                     - Utils.List_Scroll_Fld_Range'First + 1);
+              Afpx.List_Manager.Scroll(
+                 Ptg_Result.Field_No - Utils.X.List_Scroll_Fld_Range'First + 1);
             when 13 =>
               -- Add current
               Bookmark := (As.U.Tus (Get_Name),

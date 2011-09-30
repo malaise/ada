@@ -1,6 +1,6 @@
 with Ada.Exceptions;
 with Con_Io, Afpx.List_Manager, String_Mng, Basic_Proc, Normal;
-with Utils, Config, Details, View;
+with Utils.X, Config, Details, View;
 package body History is
 
   -- Cut string if too long for list
@@ -88,7 +88,7 @@ package body History is
                  Utils.Normalize ("/" , Afpx.Get_Field_Width (10)));
         end if;
         -- Lock button View
-        Utils.Protect_Field (17);
+        Utils.X.Protect_Field (17);
       end if;
     end Init;
 
@@ -234,11 +234,11 @@ package body History is
               if Is_File then
                 Show (Show_View);
               end if;
-            when Utils.List_Scroll_Fld_Range'First ..
-                 Utils.List_Scroll_Fld_Range'Last =>
+            when Utils.X.List_Scroll_Fld_Range'First ..
+                 Utils.X.List_Scroll_Fld_Range'Last =>
               -- Scroll list
-              Afpx.List_Manager.Scroll(Ptg_Result.Field_No
-                                     - Utils.List_Scroll_Fld_Range'First + 1);
+              Afpx.List_Manager.Scroll(
+                 Ptg_Result.Field_No - Utils.X.List_Scroll_Fld_Range'First + 1);
 
             when 18 =>
               -- Diff

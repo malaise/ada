@@ -1,4 +1,3 @@
-with Afpx;
 package Utils is
 
   -- If Str fits Width then return Str
@@ -11,12 +10,6 @@ package Utils is
   -- Remove trailing spaces and Htabs
   function Parse_Spaces (Str : String) return String;
   function Last_Index (Str : String) return Natural;
-
-  -- The scroll buttons
-  subtype List_Scroll_Fld_Range is Afpx.Field_Range range 2 .. 8;
-
-  -- Protect a field and "revert" its colors
-  procedure Protect_Field (Field_No : in Afpx.Absolute_Field_Range);
 
   -- Start a command in background
   procedure Launch (Command : in String);
