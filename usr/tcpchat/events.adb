@@ -420,8 +420,13 @@ package body Events is
               Set_Position (Node.Next.all);
             exception
               when Directory.Name_Error | Directory.Access_Error =>
-                Put_Line ("ERROR changing current directory");
-                Reset;
+                if Has_Error_Handler (Node) then
+                  Debug.Log ("Chdir handling error");
+                  Chats.Move_Child;
+                else
+                  Put_Line ("ERROR changing current directory");
+                  Reset;
+                end if;
             end;
 
           when Close =>

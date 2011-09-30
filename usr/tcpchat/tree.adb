@@ -226,7 +226,7 @@ package body Tree is
     Init_Next (Node);
     -- Propagate default timeout from father
     Default_Timeout := Timeout;
-    -- Default flags: Dummy is for "if" and "else"
+    -- Default flags: Dummy is for "repeat" and "error"
     -- Next_Is_Script is for the "read" of select, "default", "if", "else"
     Dummy_Node := False;
     Next_Is_Script := False;
@@ -332,8 +332,9 @@ package body Tree is
                Get_Attribute (Xnode, "IfUnset") = "true");
     elsif Name = "chdir" then
       Node.Kind := Chdir;
-      -- Get text
-      Get_Text (Xnode, Node, True);
+      -- Move to "dir" to get text
+      Xchild := Ctx.Get_Child (Xnode, 1);
+      Get_Text (Xchild, Node, True);
     elsif Name = "error" then
       -- Begin of error handling block
       Node := Chats.Read;
@@ -376,8 +377,10 @@ package body Tree is
         end if;
       end loop;
       Debug.Log ("  End of entries of " & Mixed_Str (Node.Kind'Img));
-    elsif Node.Kind = Call or else Node.Kind = Eval then
-      -- Call and Eval are a command then an opt handler (error+script)
+    elsif Node.Kind = Call or else Node.Kind = Eval
+    or else Node.Kind = Chdir then
+      -- Call, Eval and Chdir are a command or target, then an opt handler
+      -- (error+script)
       -- Insert error handler if any
       if Ctx.Get_Nb_Children (Xnode) = 3 then
         Debug.Log ("    Inserting error handler of "
@@ -393,18 +396,22 @@ package body Tree is
       --  the "else", for the "while", for the "error",
       -- next Xml node is a "script".
       -- Jump in it if not empty, else insert a Nop node
-      -- In both cases, there is no next instruction
+      -- In all cases except error, there is no next instruction
       if Ctx.Get_Nb_Children (Ctx.Get_Brother (Xnode)) /= 0 then
         Debug.Log ("  Inserting child of " & Mixed_Str (Node.Kind'Img));
         Xchild := Ctx.Get_Child (Ctx.Get_Brother (Xnode), 1);
         Insert_Node (Xchild, Default_Timeout);
-        Link_Next (Node);
+        if not Dummy_Node then
+          Link_Next (Node);
+        end if;
       else
         Debug.Log ("  Inserting Nop child of " & Mixed_Str (Node.Kind'Img));
         Init_Next (Nop_Node);
         Chats.Insert_Child (Nop_Node, False);
         Chats.Move_Father;
-        Link_Next (Node);
+        if not Dummy_Node then
+          Link_Next (Node);
+        end if;
       end if;
     elsif Ctx.Has_Brother (Xnode) then
       -- Normal (non script) instruction : jump to Xml brother if any
@@ -468,14 +475,16 @@ package body Tree is
       end if;
     end if;
 
-    -- Set Onext depending on kind of multiplexor
+    -- Set Inext depending on kind of multiplexor
     if Node.Kind = Selec
     or else Node.Kind = Cond
     or else Node.Kind = Call
-    or else Node.Kind = Eval then
+    or else Node.Kind = Eval
+    or else Node.Kind = Chdir then
       -- For leaf children of entries of a Selec, Next is the next of Selec
       -- For leaf children of if/else of a Cond, Next is the next of Cond
-      -- For leaf children of Call or Eval, Next is the next of Call/Eval
+      -- For leaf children of Call, Eval or Chdir, Next is the next of
+      --  Call/Eval/Chdir
       Inext := Node.Next.all;
     elsif Node.Kind = Repeat then
       -- For leaf child of a Repeat, Next is the Repeat

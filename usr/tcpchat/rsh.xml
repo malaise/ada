@@ -4,29 +4,40 @@
 
 <chats>
 
-  <!-- Rsh : execude command -->
-  <chat Name="rsh" Regexp="true" Assign="COMMAND=${2}"
-    >rsh( (.*))?</chat>
+  <!-- Empty: discard -->
+  <chat Name="empty"></chat>
   <script>
-    <cond>
-      <if Variable="COMMAND"></if>
-      <script></script>
-      <else/>
-      <script>
-        <call>
-          <command>${COMMAND}</command>
-          <error/>
-          <script></script>
-        </call>
-      </script>
-    </cond>
   </script>
 
-  <!-- Rcd : change dir -->
-  <chat Name="chdir" Regexp="true" Assign="TARGET=${2}"
-    >rcd( (.*))?</chat>
+  <!-- cd: change dir -->
+  <chat Name="chdir" Regexp="true" Assign="TARGET=${2}">cd( (.*))?</chat>
   <script>
-    <chdir>${TARGET}</chdir>
+    <chdir>
+      <dir>${TARGET}</dir>
+      <error/>
+      <script>
+        <send>ERROR changing dir to ${TARGET}</send>
+      </script>
+    </chdir>
   </script>
+
+  <!-- exit: close -->
+  <chat Name="close">exit</chat>
+  <script>
+    <close/>
+  </script>
+
+  <!-- Other: execude command -->
+  <chat Name="rsh" Regexp="true" Assign="COMMAND=${0}">.*</chat>
+  <script>
+    <call>
+      <command>${COMMAND}</command>
+      <error/>
+      <script>
+        <send>ERROR executing command ${COMMAND}</send>
+      </script>
+    </call>
+  </script>
+
 </chats>
 

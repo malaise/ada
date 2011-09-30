@@ -155,6 +155,7 @@ or reset.
 @item Call: Issue the command. Jump to next node.
 @item Eval: Issue the command and evaluate the result. Jump to next node.
 @item Set: Evaluate the variable. Jump to next node.
+@item Chdir: Change current directory. Jump to next node.
 @item Close: Reset connection and jump to the root of the tree.
 @end itemize
 

@@ -21,6 +21,8 @@
 
 @table @asis
 
+@item 2011/00/30
+Add error handling of Chdir and fix error handling when no next instruction in tcpchat
 @item 2011/00/28
 Add instruction chdir in tcpchat
 Fix handling of copied and moved files in agite, V3.4@*
