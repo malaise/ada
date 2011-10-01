@@ -76,24 +76,5 @@
     <!-- Close -->
     <close/>
   </script>
-
-  <!-- Rsh : execude command -->
-  <chat Name="rsh" Regexp="true" Assign="COMMAND=${2}"
-    >rsh( (.*))?</chat>
-  <script>
-    <cond>
-      <if Variable="COMMAND"></if>
-      <script></script>
-      <else/>
-      <script>
-        <call>
-          <command>${COMMAND}</command>
-          <error/>
-          <script></script>
-        </call>
-      </script>
-    </cond>
-    <close/>
-  </script>
 </chats>
 
