@@ -168,6 +168,11 @@ package body Screen is
     use type My_Math.Real;
   begin
     Con_Io.Clear;
+    -- Workaround to bug with ATI 3D driver: Ground is not properly
+    --  drawn on refresh (during game or pause)
+    --  without a flush and a small delay
+    Con_Io.Flush;
+    delay 0.05;
     -- Draw ground
     J := 1;
     -- 1, 1
