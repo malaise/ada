@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!DOCTYPE chats SYSTEM "chats.dtd">
-<!-- TCP chat script for handling http and rsh -->
+<!-- TCP chat script for handling http -->
 
 <chats>
   <!-- HTTP 0.9: Send file and close -->
