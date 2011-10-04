@@ -1,15 +1,28 @@
-with Basic_Proc, Environ, Xml_Parser.Generator;
+with Basic_Proc, Environ, Directory, Xml_Parser.Generator;
 package body Config is
 
   -- Config file name
-  function File_Name return String is
+  File_Path : As.U.Asu_Us;
+  function Get_File_Name return String is
+    Env_Agite_Conf_File : constant String := "AGITE_CONF_FILE";
   begin
-    if not Environ.Is_Set ("HOME") then
-      Basic_Proc.Put_Line_Error ("Env variable HOME not set.");
-      raise Invalid_Config;
+    if File_Path.Is_Null then
+      -- Build file name at fist call only
+      -- Use $AGITE_CONF_FILE or default $HOME/.agite/agite.xml
+      if Environ.Is_Set (Env_Agite_Conf_File) then
+        File_Path := As.U.Tus (Environ.Getenv (Env_Agite_Conf_File));
+      elsif Environ.Is_Set ("HOME") then
+        File_Path := As.U.Tus (Environ.Getenv ("HOME") & "/.agite/agite.xml");
+      else
+        Basic_Proc.Put_Line_Error ("Env variables " & Env_Agite_Conf_File
+                                 & " and HOME are both not set.");
+        raise Invalid_Config;
+      end if;
+      -- Build full absolute path (agite is changing current dir)
+      File_Path := As.U.Tus (Directory. Make_Full_Path (File_Path.Image));
     end if;
-    return Environ.Getenv ("HOME") & "/.agite/agite.xml";
-  end File_Name;
+    return File_Path.Image;
+  end Get_File_Name;
 
   Curr_Dir_Pos : constant := 5;
   Bookmarks_Pos : constant := 6;
@@ -28,7 +41,7 @@ package body Config is
     declare
       Ok : Boolean;
     begin
-      Ctx.Parse (File_Name, Ok);
+      Ctx.Parse (Get_File_Name, Ok);
       if not Ok then
         Basic_Proc.Put_Line_Error ("Parse error in config: "
                                  & Ctx.Get_Parse_Error_Message);
@@ -63,7 +76,7 @@ package body Config is
                                  & Ctx.Get_Parse_Error_Message);
       raise Invalid_Config;
     end if;
-    Ctx.Put (File_Name);
+    Ctx.Put (Get_File_Name);
   end Save;
 
   -- X terminal

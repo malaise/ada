@@ -22,6 +22,7 @@
 @table @asis
 
 @item 2011/10/04
+Add env variable for configuration file of agite, V3.7@*
 Add viewing of files in the commit where they are deleted in agite, V3.6
 @item 2011/09/30
 Add error handling of Chdir and fix error handling when no next instruction in tcpchat
