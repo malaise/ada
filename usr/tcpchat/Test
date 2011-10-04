@@ -166,6 +166,16 @@ echo -n "Test logout ko: "
 echo -en  "" > $EXPECTED
 try $EXPECTED logout
 
+# Error 1 (nothing after handler)
+echo -n "Test error1: "
+echo -en  "error-handler-1\n" > $EXPECTED
+try $EXPECTED error1
+
+# Error 2 (a send after handler)
+echo -n "Test error2: "
+echo -en  "error-handler-2\nafter-error-2\n" > $EXPECTED
+try $EXPECTED error2
+
 # Clean
 clean
 if [ $DBG  -eq 1 ] ; then

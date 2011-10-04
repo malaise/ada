@@ -44,7 +44,7 @@
             <send>HTTP/1.0 404 Not Found</send>
             <close/>
           </script>
-        </cond> 
+        </cond>
         <eval Variable="DATE">
           <command>echo -n `date "+%a, %d %b %Y %H:%M:00 %Z"`</command>
         </eval>
@@ -75,17 +75,20 @@
     </call>
     <close/>
   </script>
+
   <!-- Tcping: Send pong and remain connected -->
   <chat Name="tcping" TimeoutMs="1_000" Regexp="true">(tc)?ping</chat>
   <script>
     <send>pong</send>
   </script>
+
   <!-- TEST wait then close -->
   <chat Name="testWaitClose">close</chat>
   <script>
     <wait DelayMs="1000"/>
     <close/>
   </script>
+
   <!-- TEST simulate a ppp login chat user side -->
   <chat Name="testPpp1">ppp1</chat>
   <script>
@@ -134,6 +137,7 @@
     <read TimeoutMs="10_000">logout</read>
     <close/>
   </script>
+
   <!-- TEST multiple select -->
   <chat Name="testMulti"
         InputDefaultTimeoutMs="None">testMulti</chat>
@@ -195,7 +199,7 @@
             </cond>
           </script>
         </cond>
-        <!-- Increment counter if not OK, failed if maximum reached --> 
+        <!-- Increment counter if not OK, failed if maximum reached -->
         <cond>
           <if Variable="RES">try</if>
           <script>
@@ -215,10 +219,12 @@
       <if Variable="RES">success</if>
       <script>
         <send>User ${USER} logged in</send>
+        <log>User ${USER} logged in</log>
       </script>
       <else/>
       <script>
         <send>Login failed</send>
+        <log>Login failed</log>
         <set Variable="USER"></set>
          <close/>
       </script>
@@ -232,9 +238,33 @@
       <else/>
       <script>
         <send>User ${USER} logged out</send>
-      </script> 
+        <log>User ${USER} logged out</log>
+      </script>
     </cond>
     <close/>
   </script>
+
+  <chat Name="error1">error1</chat>
+  <script>
+    <chdir>
+      <dir>Unknown</dir>
+      <error/>
+      <script>
+        <send>error-handler-1</send>
+      </script>
+    </chdir>
+  </script>
+  <chat Name="error2">error2</chat>
+  <script>
+    <chdir>
+      <dir>Unknown</dir>
+      <error/>
+      <script>
+        <send>error-handler-2</send>
+      </script>
+    </chdir>
+    <send>after-error-2</send>
+  </script>
+
 </chats>
 

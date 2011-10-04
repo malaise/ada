@@ -429,6 +429,10 @@ package body Events is
                 end if;
             end;
 
+          when Log =>
+            Put_Line ("Log: " & Variables.Expand (Node.Text));
+            Set_Position (Node.Next.all);
+
           when Close =>
             Reset;
             Put_Line ("Closed");

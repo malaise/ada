@@ -90,7 +90,8 @@
                %TimeoutMs;
                InputDefaultTimeoutMs CDATA #IMPLIED
                %ReadDef;>
-<!ELEMENT script ((select|cond|repeat|read|skip|wait|send|call|set|eval|chdir)*,close?)>
+<!ELEMENT script ((select|cond|repeat|read|skip|wait|send|call|set|eval|chdir
+                   |log)*,close?)>
 
 <!ELEMENT select ((expect,script)+,(default,script)?)>
 <!ATTLIST select %TimeoutMs;>
@@ -128,5 +129,6 @@
               IfUnset %boolean; "false">
 <!ELEMENT chdir (dir,%error;?)>
 <!ELEMENT dir (#PCDATA)>
+<!ELEMENT log (#PCDATA)>
 <!ELEMENT close EMPTY>
 

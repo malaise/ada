@@ -146,7 +146,7 @@ package body Tree is
     case Node.Kind is
       when Condif | Repeat | Read | Call | Eval | Set | Chdir =>
         Basic_Proc.Put_Error ("Text: >" & Node.Text.Image & "< ");
-      when Send =>
+      when Send | Log =>
         Basic_Proc.Put_Error ("Text: >" &
           String_Mng.Replace (Node.Text.Image, Line_Feed, "[LF]") &  "< ");
       when others =>
@@ -335,6 +335,10 @@ package body Tree is
       -- Move to "dir" to get text
       Xchild := Ctx.Get_Child (Xnode, 1);
       Get_Text (Xchild, Node, True);
+    elsif Name = "log" then
+      Node.Kind := Log;
+      -- Get text
+      Get_Text (Xnode, Node, False);
     elsif Name = "error" then
       -- Begin of error handling block
       Node := Chats.Read;
