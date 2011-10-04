@@ -21,9 +21,11 @@
 
 @table @asis
 
-@item 2011/00/30
+@item 2011/10/04
+Add viewing of files in the commit where they are deleted in agite, V3.6
+@item 2011/09/30
 Add error handling of Chdir and fix error handling when no next instruction in tcpchat
-@item 2011/00/28
+@item 2011/09/28
 Add instruction chdir in tcpchat
 Fix handling of copied and moved files in agite, V3.4@*
 Fix @minus{}@minus{} in texi files@*

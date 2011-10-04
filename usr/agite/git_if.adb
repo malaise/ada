@@ -516,7 +516,7 @@ package body Git_If is
   end List_Commit;
 
   -- Cat a file at a Hash in a file
-  procedure Cat (Name : in String; Hash : in Git_Hash; File : in String) is
+  function Cat (Name : String; Hash : String; File : String) return Boolean is
     Cmd : Many_Strings.Many_String;
   begin
     Cmd.Set ("git");
@@ -528,8 +528,9 @@ package body Git_If is
     -- Handle error
     if Exit_Code /= 0 then
       Basic_Proc.Put_Line_Error ("git show: " & Err_Flow.Str.Image);
-      return;
+      return False;
     end if;
+    return True;
   end Cat;
 
   -- Launch a diff (asynchronous)

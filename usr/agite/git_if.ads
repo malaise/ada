@@ -71,8 +71,8 @@ package Git_If is
                          Comment : out Comment_Array;
                          Commit : in out Commit_List);
 
-  -- Cat a file at a Hash in a file
-  procedure Cat (Name : in String; Hash : in Git_Hash; File : in String);
+  -- Cat a file at a Hash in a file, Ok if success
+  function Cat (Name : String; Hash : String; File : String) return Boolean;
 
   -- Launch a diff (asynchronous) from current to HEAD
   procedure Launch_Diff (Differator, File_Name : in String);
