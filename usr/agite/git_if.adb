@@ -536,7 +536,7 @@ package body Git_If is
   -- Launch a diff (asynchronous)
   procedure Launch_Diff (Differator, File_Name : in String) is
   begin
-    Utils.Launch ("git difftool -y " & " -t " & Differator
+    Utils.Launch ("git difftool -y " & " -x " & Differator
                 & " HEAD -- " & File_Name);
   end Launch_Diff;
 
@@ -544,7 +544,7 @@ package body Git_If is
   procedure Launch_Delta (Differator, File_Name : in String;
                           Ref_Rev, Comp_Rev : in String) is
   begin
-    Utils.Launch ("git difftool -y " & " -t " & Differator
+    Utils.Launch ("git difftool -y " & " -x " & Differator
           & " " & Ref_Rev & " " & Comp_Rev & " -- " & File_Name);
   end Launch_Delta;
 
