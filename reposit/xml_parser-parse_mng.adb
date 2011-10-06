@@ -1097,8 +1097,7 @@ package body Parse_Mng  is
     and then not Ctx.Dtd_File.Is_Null then
       Util.Push_Flow (Ctx.Flow);
       -- Parse dtd file provided instead of doctype directive
-      Dtd.Parse (Ctx, Adtd, Build_Full_Name (Ctx.Dtd_File,
-                                             Ctx.Flow.Curr_Flow.Name));
+      Dtd.Parse (Ctx, Adtd, Ctx.Dtd_File);
       Util.Pop_Flow (Ctx.Flow);
     end if;
     -- Perform final checks on Dtd (unparsed entities v.s. notations)
@@ -1783,8 +1782,7 @@ package body Parse_Mng  is
     -- Parse Dtd
     if not Ctx.Dtd_File.Is_Null then
       -- Parse alternate Dtd provided by caller
-      Dtd.Parse (Ctx, Adtd, Build_Full_Name (Ctx.Dtd_File,
-                                       Ctx.Flow.Curr_Flow.Name));
+      Dtd.Parse (Ctx, Adtd, Ctx.Dtd_File);
     elsif not Ctx.Doctype.Name.Is_Null then
       if not Ctx.Doctype.File.Is_Null then
         -- Check validity of dtd file

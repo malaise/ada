@@ -21,6 +21,8 @@
 
 @table @asis
 
+@item 2011/10/05
+Don't change dtd file path when it is explicitely provided, in Xml_Parser V26.8
 @item 2011/10/04
 Add env variable for configuration file of agite, V3.7@*
 Add viewing of files in the commit where they are deleted in agite, V3.6
