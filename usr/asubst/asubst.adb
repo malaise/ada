@@ -4,7 +4,7 @@ with As.U, Environ, Argument, Argument_Parser, Sys_Calls, Language, Mixed_Str,
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
-  Version : constant String  := "V12.0";
+  Version : constant String  := "V12.1";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -45,7 +45,7 @@ procedure Asubst is
     Sys_Calls.Put_Line_Error (
      "    -g or --grep to print matching text as grep would do (no subst),");
     Sys_Calls.Put_Line_Error (
-     "    -i or --ignorecase for case insensitive match,");
+     "    -i or --ignorecase for case insensitive match (of search and exclusion),");
     Sys_Calls.Put_Line_Error (
      "    -l or --line for display line number in grep mode,");
     Sys_Calls.Put_Line_Error (

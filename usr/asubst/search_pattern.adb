@@ -59,7 +59,7 @@ package body Search_Pattern is
   Check_Completed : Boolean := False;
   Expected_Search : Positive := 1;
 
-  -- The search and axclude patterns
+  -- The search and exclude patterns
   Search_List  : aliased Unique_Pattern.Unique_List_Type;
   Exclude_List : aliased Unique_Pattern.Unique_List_Type;
 

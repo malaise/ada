@@ -462,7 +462,7 @@ package body Substit is
            & " to" & Match_Res.Last_Offset_Stop'Img);
       end if;
 
-      -- Check if this matching patterm matches the exclusion rule
+      -- Check if this matching pattern matches the exclusion rule
       if Search_Pattern.Check (
           Line.all.Slice (Match_Res.First_Offset,
                                Match_Res.Last_Offset_Stop),
