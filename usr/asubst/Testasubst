@@ -195,7 +195,7 @@ fi
 echo "$STEP OK."
 
 # Substitution with a "--"
-STEP="Test of Substitution with --"
+STEP="Test of substitution with --"
 res=`echo "t_o..T'I" | asubst "--"  "[\T]" "-"`
 if [ "$res" != "t-o--T-I" ] ; then
   echo "Result $res differs from expected."
