@@ -949,9 +949,9 @@ package body Parse_Mng  is
     if Char /= Util.Stop then
       Util.Error (Ctx.Flow, "Unexpected character " & Char & " in DOCTYPE");
     end if;
-    if not Ctx.Use_Dtd or else not Ctx.Expand then
+    if not Ctx.Use_Dtd then
       -- Reset dtd info
-      Trace ("Dtd reset cause not used or no expand");
+      Trace ("Dtd reset cause not to be used");
       Dtd.Init (Adtd);
     end if;
     if Ctx.Expand or else not Ctx.Use_Dtd then

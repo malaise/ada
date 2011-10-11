@@ -4,7 +4,7 @@ with As.U, Argument, Argument_Parser, Xml_Parser.Generator, Normal, Basic_Proc,
      Text_Line, Sys_Calls, Parser;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V15.0";
+  Version : constant String := "V15.1";
 
   procedure Ae_Re (E : in Ada.Exceptions.Exception_Id;
                    M : in String := "")
@@ -96,10 +96,10 @@ procedure Xml_Checker is
     Ple ("All options except expand, keep, dtd, warnings and tree are exclusive.");
     Ple ("Keep and expand are not allowed on Dump mode, Dump => keep all.");
     Ple ("Canonical only allows options dtd, warnings and keep-comments (it expands");
-    Ple ("  and by default removes commentst).");
+    Ple ("  and by default removes comments).");
     Ple ("Default format is -W" & Xml_Parser.Generator.Default_Width'Img
                          & " on stdout.");
-    Ple ("Building the tree is not recommended for big files.");
+    Ple ("Building the tree is not recommended for big files and forbidden in canonical.");
     Ple ("Please also consider increasing the process stack size (ulimit -s) to");
     Ple ("  avoid stack overflow and Storage_Error.");
   end Usage;
@@ -664,7 +664,7 @@ begin
     if Arg_Dscr.Is_Set (14) then
       Ae_Re (Arg_Error'Identity, "Canonical already implies expansion.");
     end if;
-    -- No other keep than -k c
+    -- No tree, no other keep than -k c
     if Arg_Dscr.Is_Set (10) or else Keep_Cdata_Set then
       Ae_Re (Arg_Error'Identity, "Incompatible options");
     end if;
