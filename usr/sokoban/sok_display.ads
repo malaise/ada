@@ -39,9 +39,13 @@ package Sok_Display is
    Allow_Write : in Boolean);
   procedure Clear_Menu;
 
-  -- new action selected
-  procedure Update_Menu (New_Action : in Menu_Action_List);
+  -- new action selected or mouse event
+  procedure Update_Menu (New_Action : in Menu_Action_List;
+                         Clicked : in Boolean);
 
+  -- menu item corresponding to row and col (Done if none)
+  subtype Got_Action_List is Action_List range Done .. Break;
+  function Get_Action (Row, Col : Natural) return Got_Action_List;
 
   -- Errors
   type Error_List is (No_Data, Read, No_Frame, Restore, Save,

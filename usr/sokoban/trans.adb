@@ -1,6 +1,6 @@
 with Ada.Text_Io, Ada.Direct_Io;
 
-with My_Io, Normal, Argument;
+with Normal, Argument;
 
 with Sok_Types;
 use Sok_Types;

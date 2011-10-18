@@ -1,4 +1,4 @@
-with Con_Io, Timers, Language, Lower_Char;
+with Timers, Language, Lower_Char;
 with Sok_Time;
 package body Sok_Input is
 
@@ -9,6 +9,9 @@ package body Sok_Input is
                 Period        => Con_Io.No_Period,
                 Delay_Seconds => 1.0);
 
+  Mouse_Event : Mouse_Event_Rec;
+  No_Event : constant Mouse_Event_Rec := Mouse_Event;
+
   function Get_Key return Key_List is
     Str  : Con_Io.Unicode_Sequence (1 .. 1);
     Last : Natural;
@@ -18,6 +21,7 @@ package body Sok_Input is
 
     use Con_Io;
   begin
+    Mouse_Event := No_Event;
     loop
       if Play then
         Sok_Time.Disp_Time;
@@ -55,7 +59,18 @@ package body Sok_Input is
           when Ret => return Next;
           when Esc => return Esc;
           when Break => raise Break_Requested;
-          when Mouse_Button => null;
+          when Mouse_Button =>
+            declare
+              Evt : Con_Io.Mouse_Event_Rec;
+            begin
+              Con_Io.Get_Mouse_Event (Evt);
+              if Evt.Valid and then Evt.Button = Con_Io.Left
+              and then Evt.Status /= Motion then
+                Mouse_Event := (True, Evt.Status = Con_Io.Pressed,
+                                Evt.Row, Evt.Col);
+                return Mouse;
+              end if;
+            end;
           when Selection => null;
           when Timeout => null;
           when Fd_Event | Timer_Event | Signal_Event =>
@@ -74,6 +89,11 @@ package body Sok_Input is
     end loop;
   end Get_Key;
 
+  function Get_Mouse return Mouse_Event_Rec is
+  begin
+    return Mouse_Event;
+  end Get_Mouse;
+
   procedure Pause is
     Str  : Con_Io.Unicode_Sequence (1 .. 0);
     Last : Natural;
@@ -83,6 +103,7 @@ package body Sok_Input is
 
     use Con_Io;
   begin
+    Mouse_Event := No_Event;
     loop
       Con_Io.Get (Str, Last, Stat, Pos, Ins,
                   Time_Out => Delta_Get,

@@ -258,79 +258,86 @@ package body Sok_Display is
     end if;
   end Put_Score;
 
-  procedure Put_Action (Action : in Menu_Action_List; Selected : in Boolean) is
-    Color : Con_Io.Effective_Colors;
-    Len_Field : constant := 11;
-    Pad       : constant :=  4;
-    Write_Col   : constant := Pad;
-    Read_Col    : constant := Write_Col   + Len_Field + Pad;
-    Reset_Col   : constant := Read_Col    + Len_Field + Pad;
-    Get_New_Col : constant := Reset_Col   + Len_Field + Pad;
-    Break_Col   : constant := Get_New_Col + Len_Field + Pad;
-    Blue : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("Blue");
+  Len_Field   : constant := 11;
+  Pad         : constant :=  4;
+  Write_Col   : constant := Pad;
+  Read_Col    : constant := Write_Col   + Len_Field + Pad;
+  Reset_Col   : constant := Read_Col    + Len_Field + Pad;
+  Get_New_Col : constant := Reset_Col   + Len_Field + Pad;
+  Break_Col   : constant := Get_New_Col + Len_Field + Pad;
+
+  procedure Put_Action (Action : in Menu_Action_List;
+                        Selected : in Boolean;
+                        Clicked : in Boolean) is
+    Ink, Paper : Con_Io.Effective_Colors;
   begin
     if not Selected then
-      Color := Con_Io.Color_Of ("Light_Grey");
+      Ink := Con_Io.Color_Of ("Light_Grey");
+      Paper := Con_Io.Color_Of ("Blue");
+    elsif not Clicked then
+      Ink := Con_Io.Color_Of ("Red");
+      Paper := Con_Io.Color_Of ("Blue");
     else
-      Color := Con_Io.Color_Of ("Red");
+      Ink := Con_Io.Color_Of ("Blue");
+      Paper := Con_Io.Color_Of ("Red");
     end if;
 
     case Action is
       when Write =>
         if Current_Allow_Write then
           Con_Io.Move ( (0, Write_Col), Menu_Win);
-          Con_Io.Put ("           ", Menu_Win, Foreground => Color,
-                      Background => Blue, Move => False);
+          Con_Io.Put ("           ", Menu_Win, Foreground => Ink,
+                      Background => Paper, Move => False);
           Con_Io.Move ( (1, Write_Col), Menu_Win);
-          Con_Io.Put ("   SAVE    ", Menu_Win, Foreground => Color,
-                      Background => Blue, Move => False);
+          Con_Io.Put ("   SAVE    ", Menu_Win, Foreground => Ink,
+                      Background => Paper, Move => False);
           Con_Io.Move ( (2, Write_Col), Menu_Win);
-          Con_Io.Put ("           ", Menu_Win, Foreground => Color,
-                      Background => Blue, Move => False);
+          Con_Io.Put ("           ", Menu_Win, Foreground => Ink,
+                      Background => Paper, Move => False);
         else
           Con_Io.Move ( (1, Write_Col), Menu_Win);
           Con_Io.Put ("   SAVE    ", Menu_Win, Move => False);
         end if;
       when Read =>
         Con_Io.Move ( (0, Read_Col), Menu_Win);
-        Con_Io.Put ("           ", Menu_Win, Foreground => Color,
-                    Background => Blue, Move => False);
+        Con_Io.Put ("           ", Menu_Win, Foreground => Ink,
+                    Background => Paper, Move => False);
         Con_Io.Move ( (1, Read_Col), Menu_Win);
-        Con_Io.Put ("  RESTORE  ", Menu_Win, Foreground => Color,
-                    Background => Blue, Move => False);
+        Con_Io.Put ("  RESTORE  ", Menu_Win, Foreground => Ink,
+                    Background => Paper, Move => False);
         Con_Io.Move ( (2, Read_Col), Menu_Win);
-        Con_Io.Put ("           ", Menu_Win, Foreground => Color,
-                    Background => Blue, Move => False);
+        Con_Io.Put ("           ", Menu_Win, Foreground => Ink,
+                    Background => Paper, Move => False);
       when Reset =>
         Con_Io.Move ( (0, Reset_Col), Menu_Win);
-        Con_Io.Put ("           ", Menu_Win, Foreground => Color,
-                    Background => Blue, Move => False);
+        Con_Io.Put ("           ", Menu_Win, Foreground => Ink,
+                    Background => Paper, Move => False);
         Con_Io.Move ( (1, Reset_Col), Menu_Win);
-        Con_Io.Put ("   RESET   ", Menu_Win, Foreground => Color,
-                    Background => Blue, Move => False);
+        Con_Io.Put ("   RESET   ", Menu_Win, Foreground => Ink,
+                    Background => Paper, Move => False);
         Con_Io.Move ( (2, Reset_Col), Menu_Win);
-        Con_Io.Put ("           ", Menu_Win, Foreground => Color,
-                    Background => Blue, Move => False);
+        Con_Io.Put ("           ", Menu_Win, Foreground => Ink,
+                    Background => Paper, Move => False);
       when Get_New =>
         Con_Io.Move ( (0, Get_New_Col), Menu_Win);
-        Con_Io.Put ("           ", Menu_Win, Foreground => Color,
-                    Background => Blue, Move => False);
+        Con_Io.Put ("           ", Menu_Win, Foreground => Ink,
+                    Background => Paper, Move => False);
         Con_Io.Move ( (1, Get_New_Col), Menu_Win);
-        Con_Io.Put (" GOTO NEW  ", Menu_Win, Foreground => Color,
-                    Background => Blue, Move => False);
+        Con_Io.Put (" GOTO NEW  ", Menu_Win, Foreground => Ink,
+                    Background => Paper, Move => False);
         Con_Io.Move ( (2, Get_New_Col), Menu_Win);
-        Con_Io.Put ("           ", Menu_Win, Foreground => Color,
-                    Background => Blue, Move => False);
+        Con_Io.Put ("           ", Menu_Win, Foreground => Ink,
+                    Background => Paper, Move => False);
       when Break =>
         Con_Io.Move ( (0, Break_Col), Menu_Win);
-        Con_Io.Put ("           ", Menu_Win, Foreground => Color,
-                    Background => Blue, Move => False);
+        Con_Io.Put ("           ", Menu_Win, Foreground => Ink,
+                    Background => Paper, Move => False);
         Con_Io.Move ( (1, Break_Col), Menu_Win);
-        Con_Io.Put ("    EXIT   ", Menu_Win, Foreground => Color,
-                    Background => Blue, Move => False);
+        Con_Io.Put ("    EXIT   ", Menu_Win, Foreground => Ink,
+                    Background => Paper, Move => False);
         Con_Io.Move ( (2, Break_Col), Menu_Win);
-        Con_Io.Put ("           ", Menu_Win, Foreground => Color,
-                    Background => Blue, Move => False);
+        Con_Io.Put ("           ", Menu_Win, Foreground => Ink,
+                    Background => Paper, Move => False);
     end case;
   end Put_Action;
 
@@ -344,21 +351,39 @@ package body Sok_Display is
     Current_Action := Init_Action;
     Current_Allow_Write := Allow_Write;
     for I in Menu_Action_List loop
-      Put_Action (I, I = Init_Action);
+      Put_Action (I, I = Init_Action, False);
     end loop;
   end Put_Menu;
 
-  procedure Update_Menu (New_Action : in Menu_Action_List) is
+  procedure Update_Menu (New_Action : in Menu_Action_List;
+                         Clicked : in Boolean) is
   begin
-    Put_Action (Current_Action, False);
+    Put_Action (Current_Action, False, False);
     Current_Action := New_Action;
-    Put_Action (Current_Action, True);
+    Put_Action (Current_Action, True, Clicked);
   end Update_Menu;
 
   procedure Clear_Menu is
   begin
     Con_Io.Clear (Menu_Win);
   end Clear_Menu;
+
+  function Get_Action (Row, Col : Natural) return Got_Action_List is
+    Relative_Col : Con_Io.Col_Range;
+  begin
+    if not Con_Io.In_Window ( (Row, Col), Menu_Win) then
+      return Done;
+    end if;
+    Relative_Col := Con_Io.To_Relative ( (Row, Col), Menu_Win).Col;
+    case Relative_Col is
+      when Write_Col   .. Write_Col   + Len_Field - 1 => return Write;
+      when Read_Col    .. Read_Col    + Len_Field - 1 => return Read;
+      when Reset_Col   .. Reset_Col   + Len_Field - 1 => return Reset;
+      when Get_New_Col .. Get_New_Col + Len_Field - 1 => return Get_New;
+      when Break_Col   .. Break_Col   + Len_Field - 1 => return Break;
+      when others => return Done;
+    end case;
+  end Get_Action;
 
   procedure Put_Error (Error : in Error_List) is
   begin

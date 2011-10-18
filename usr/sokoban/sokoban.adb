@@ -1,5 +1,5 @@
 -- Sokoban game: push boxes and move them to destination
-with My_Io, Argument, Rnd, Upper_Str;
+with Basic_Proc, Argument, Rnd, Upper_Str;
 with Sok_Types, Sok_Manager;
 
 procedure Sokoban is
@@ -10,8 +10,9 @@ procedure Sokoban is
 
   procedure Usage is
   begin
-    My_Io.Put_Line ("Usage : sokoban [ <frame_number> | rnd | rst]");
-    My_Io.Put_Line (" Frames are from 1 to 50");
+    Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
+                             & " [ <frame_number> | rnd | rst]");
+    Basic_Proc.Put_Line_Error (" Frames are from 1 to 50");
   end Usage;
 
 begin

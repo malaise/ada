@@ -2,8 +2,11 @@ separate (Sok_Manager)
 
 function Sok_Menu (Done : Boolean) return Menu_Result_List is
 
+
   Cur_Action : Sok_Display.Menu_Action_List := Sok_Display.Reset;
+  Prev_Click, Curr_Click : Sok_Display.Got_Action_List := Sok_Display.Done;
   Key : Sok_Input.Key_List;
+  Mouse : Sok_Input.Mouse_Event_Rec;
 
   subtype Menu_Error_List is Sok_Display.Error_List
    range Sok_Display.No_Frame .. Sok_Display.Score_Io;
@@ -44,12 +47,41 @@ function Sok_Menu (Done : Boolean) return Menu_Result_List is
   end Redisplay;
 
   use Sok_Display;
+  use type Sok_Input.Key_List;
 begin
   Sok_Display.Clear_Menu;
   Sok_Display.Put_Menu (Cur_Action, True);
   loop
     Sok_Display.Put_Help (Cur_Action);
     Key := Sok_Input.Get_Key;
+
+    -- Handle click / release
+    -- Map valid release to Next
+    if Key = Sok_Input.Mouse then
+      -- Mouse click or release
+      -- Get position
+      Mouse := Sok_Input.Get_Mouse;
+      -- Always reset previous click
+      if Prev_Click /= Sok_Display.Done then
+        Sok_Display.Update_Menu (Prev_Click, False);
+      end if;
+      -- Get menu entry corresponding to mouse position of click/release
+      Curr_Click := Sok_Display.Get_Action (Mouse.Row, Mouse.Col);
+      if Curr_Click /= Sok_Display.Done then
+        -- Click/Release is valid
+        if Mouse.Click then
+          -- Valid click => show and store
+          Sok_Display.Update_Menu (Curr_Click, True);
+          Prev_Click := Curr_Click;
+          -- Put help on this selection
+          Cur_Action := Curr_Click;
+        elsif Curr_Click = Prev_Click then
+          -- Release in same field as click (otherwise discard) => validate
+          Key := Sok_Input.Next;
+        end if;
+      end if;
+    end if;
+
     case Key is
       when Sok_Input.Right =>
         if Cur_Action /= Sok_Display.Menu_Action_List'Last then
@@ -57,18 +89,21 @@ begin
         else
           Cur_Action := Sok_Display.Menu_Action_List'First;
         end if;
-        Sok_Display.Update_Menu (Cur_Action);
+        Sok_Display.Update_Menu (Cur_Action, False);
       when Sok_Input.Left =>
         if Cur_Action /= Sok_Display.Menu_Action_List'First then
           Cur_Action := Sok_Display.Menu_Action_List'Pred (Cur_Action);
         else
           Cur_Action := Sok_Display.Menu_Action_List'Last;
         end if;
-        Sok_Display.Update_Menu (Cur_Action);
+        Sok_Display.Update_Menu (Cur_Action, False);
       when Sok_Input.Up | Sok_Input.Down | Sok_Input.Undo =>
         null;
+      when Sok_Input.Mouse =>
+        -- Intermediate or invalide mouse event
+        null;
       when Sok_Input.Next =>
-        -- validation
+        -- Validation
         Sok_Display.Clear_Menu;
         case Cur_Action is
           when Sok_Display.Read =>

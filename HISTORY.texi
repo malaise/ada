@@ -21,6 +21,8 @@
 
 @table @asis
 
+@item 2011/10/18
+Add support of mouse in sokoban menu
 @item 2011/10/11
 Keep DTD even if no expand, in Xml_Parser V26.9
 @item 2011/10/05
