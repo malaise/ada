@@ -463,9 +463,11 @@ begin
   end loop;
 exception
   when Invalid_Argument =>
-    Basic_Proc.Put_Line_Error ("Expecting 6 bases and 1 target numbers.");
-    Basic_Proc.Put_Line_Error ("Bases must be from 1 to 9 or 25, 50, 75 or 100.");
-    Basic_Proc.Put_Line_Error ("Target must be from 100 to 999.");
+    Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
+      & " -x  |  <bases> <target>");
+    Basic_Proc.Put_Line_Error ("  <bases>  ::= <base>{6,6}");
+    Basic_Proc.Put_Line_Error ("  <base>   ::= 1 .. 10 | 25 | 50 | 75 | 100");
+    Basic_Proc.Put_Line_Error ("  <target> ::= 100 .. 999");
     Basic_Proc.Set_Error_Exit_Code;
 end Renardeau;
 
