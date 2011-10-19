@@ -1,7 +1,6 @@
-with Ada.Text_Io;
 with As.U.Utils;
 with Argument, Sys_Calls, Text_Line, Temp_File, Regular_Expressions, Directory,
-     Copy_File, File_Access, Mixed_Str, Int_Image;
+     Copy_File, File_Access, Mixed_Str, Int_Image, Basic_Proc;
 with Search_Pattern, Replace_Pattern, Debug;
 package body Substit is
 
@@ -392,7 +391,7 @@ package body Substit is
       --  then append a line feed
       if Grep and then Is_Iterative and then Loc_Subst /= 0
       and then not Replace_Pattern.Is_Empty then
-        Ada.Text_Io.New_Line;
+        Basic_Proc.New_Line_Output;
       end if;
       -- Process these lines
       Subst_Lines (Match_Range, Do_Verbose, Grep, Grep_Line_Nb, Grep_File_Name,
@@ -498,7 +497,7 @@ package body Substit is
             Loc_Subst := Loc_Subst + 1;
             -- Display verbose substitution
             if Verbose then
-              Ada.Text_Io.Put_Line (
+              Basic_Proc.Put_Line_Output (
                   Line_No'Img & " : "
                 & Line.all.Slice (Match_Res.First_Offset,
                                        Match_Res.Last_Offset_Stop)
@@ -507,18 +506,18 @@ package body Substit is
               if Loc_Subst = 1
               and then not Is_Stdin
               and then Grep_File_Name then
-                Ada.Text_Io.Put (In_File_Name.Image & ":");
+                Basic_Proc.Put_Output (In_File_Name.Image & ":");
                 if Grep_Line_Nb then
-                  Ada.Text_Io.Put (Line_Image(Line_No) & ":");
+                  Basic_Proc.Put_Output (Line_Image(Line_No) & ":");
                 end if;
               end if;
               if Replace_Pattern.Is_Empty then
                 -- Display once each matching line
-                Ada.Text_Io.Put_Line (Line.all.Image);
+                Basic_Proc.Put_Line_Output (Line.all.Image);
                 exit;
               else
                 -- Display each replaced (line feed is handled in Do_One_File)
-                Ada.Text_Io.Put (Replacing);
+                Basic_Proc.Put_Output (Replacing);
               end if;
             end if;
             if not Test then
@@ -606,9 +605,9 @@ package body Substit is
       if Last_Line = First_Line then
         -- Handle specific case of only one line
         if Complete then
-          Ada.Text_Io.Put (Last_Line.all.Image);
+          Basic_Proc.Put_Output (Last_Line.all.Image);
         else
-          Ada.Text_Io.Put (Last_Line.all.Slice (
+          Basic_Proc.Put_Output (Last_Line.all.Slice (
                            Match_Res.First_Offset,
                            Match_Res.Last_Offset_Stop));
         end if;
@@ -616,9 +615,9 @@ package body Substit is
       end if;
 
       if Complete then
-        Ada.Text_Io.Put (First_Line.all.Image);
+        Basic_Proc.Put_Output (First_Line.all.Image);
       else
-        Ada.Text_Io.Put (First_Line.all.Slice (
+        Basic_Proc.Put_Output (First_Line.all.Slice (
                                     Match_Res.First_Offset,
                                     First_Line.all.Length));
       end if;
@@ -626,12 +625,12 @@ package body Substit is
       for I in 2 .. Nb_Pattern - 1 loop
         Line_List.Move_To;
         Line := Line_List.Access_Current;
-        Ada.Text_Io.Put (Line.all.Image);
+        Basic_Proc.Put_Output (Line.all.Image);
       end loop;
       if Complete then
-        Ada.Text_Io.Put (Last_Line.all.Image);
+        Basic_Proc.Put_Output (Last_Line.all.Image);
       else
-        Ada.Text_Io.Put (Last_Line.all.Slice (
+        Basic_Proc.Put_Output (Last_Line.all.Slice (
                         1, Match_Res.Last_Offset_Stop));
       end if;
     end Put_Match;
@@ -763,25 +762,28 @@ package body Substit is
         end if;
         if Verbose then
           -- Display verbose substitution
-          Ada.Text_Io.Put (
+          Basic_Proc.Put_Output (
               Long_Long_Natural'Image(Line_No
                                     - Long_Long_Natural(Nb_Pattern) / 2)
             & " : ");
           Put_Match (False);
-          Ada.Text_Io.Put_Line (" -> " & Str_Replacing);
+          Basic_Proc.Put_Line_Output (" -> " & Str_Replacing);
         elsif Grep then
           -- Display grep result
           if not Is_Stdin and then Grep_File_Name then
-            Ada.Text_Io.Put (In_File_Name.Image & ":");
+            Basic_Proc.Put_Output (In_File_Name.Image & ":");
             if Grep_Line_Nb then
-              Ada.Text_Io.Put (Line_Image(Line_No) & ":");
+              Basic_Proc.Put_Output (Line_Image(Line_No) & ":");
             end if;
           end if;
           if Replace_Pattern.Is_Empty then
             Put_Match (True);
-            Ada.Text_Io.New_Line;
+            Basic_Proc.New_Line_Output;
           else
-            Ada.Text_Io.Put_Line (Str_Replacing);
+            Basic_Proc.Put_Output (Str_Replacing);
+            if Search_Pattern.Number = 1 then
+              Basic_Proc.New_Line_Output;
+            end if;
           end if;
         end if;
         if not Test then

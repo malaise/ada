@@ -20,6 +20,8 @@
 @end ifnothtml
 
 @table @asis
+@item 19/10/2011 V13.0
+Fix: No Lf between outputs of grep mode when not default and multiple regex
 @item 09/03/2011 V12.0
 Add: Option -d (@minus{}@minus{}dotall) to allow dot to match '\n', when specific delimiter@*
 Option -d (@minus{}@minus{}display) removed

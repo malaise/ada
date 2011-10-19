@@ -1,10 +1,10 @@
-with Ada.Exceptions, Ada.Text_Io;
-with As.U, Environ, Argument, Argument_Parser, Sys_Calls, Language, Mixed_Str,
+with Ada.Exceptions;
+with As.U, Environ, Argument, Argument_Parser, Basic_Proc, Language, Mixed_Str,
      Text_Line;
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
-  Version : constant String  := "V12.1";
+  Version : constant String  := "V13.0";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -14,173 +14,173 @@ procedure Asubst is
 
   procedure Usage is
   begin
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "Usage: " & Argument.Get_Program_Name
                & " [ { <option> } ] <find_pattern> <replace_string> [ { <file> } ]");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "or:    " & Argument.Get_Program_Name & " -h | --help | -V | --version");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "  Substitutes pattern in files, or from stdin to stdout if no file.");
   end Usage;
 
   procedure Help is
   begin
     Usage;
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "  <option> ::= -a | -D <string> | -d | -e <pattern> | -f | -g | -i");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "             | -l | -m <range> | -n | -p | -q | -s | -t | -u | -v | -x | --");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    -a or --ascii for pure ASCII processing,");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    -D <string> or --delimiter=<string> for a delimiter other than '\n',");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    -d or --dotall for allow '.' to match '\n', when -D is set,");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    -e <pattern> or --exclude=<pattern> for skip text matching <pattern>,");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    -F <file> or --file_list=<file> to provide a file list of file names,");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    -f or --file for display file name in grep mode,");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    -g or --grep to print matching text as grep would do (no subst),");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    -i or --ignorecase for case insensitive match (of search and exclusion),");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    -l or --line for display line number in grep mode,");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    -m <range> or --match=<range> for substitution of only <range> matches,");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    -n or --number for print number of substitutions,");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    -p <dir> or --tmp=<dir> for directory of temporary files,");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    -q or --quiet for no printout,");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    -s or --save for backup of original file,");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    -t or --test for test, substitutions not performed,");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    -u or --utf8 for processing utf-8 sequences,");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    -v or --verbose for print each substitution,");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    -x or --noregex for <find_pattern> being considered as string(s),");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    -- to stop options.");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "  Set env LANG to something containig UTF-8, or set ASUBST_UTF8 to Y for utf-8");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "   processing by default. (Processing mode can still be modified by -u or -a.)");
 
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "  <find_pattern> ::= <regex> | <multiple_regex>");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    <multiple_regex> ::= { [ <regex> ] \n } [ <regex> ]");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    A <regex> can contain ""\t"" (tab), ""\s"" (space), ""\xIJ"" (any hexa byte),");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "     or ""\I"" (I from 1 to 9, a back reference to a matching substring).");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    A <regex> can't contain ""\n"" (""\n"" matches the new_line character");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    and is the delimiter of regexes).");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    The following shortcuts are provided for use in regex within brakets:");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "     \M [:alnum:]   \A [:alpha:]   \B [:blank:]   \C [:cntrl:]");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "     \D [:digit:]   \G [:graph:]   \L [:lower:]   \P [:print:]");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "     \T [:punct:]   \S [:space:]   \U [:upper:]   \X [:xdigit:]");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    A <regex> can contain '^' or '$'. If not, it applies several times per line.");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    Each <regex> of <multiple_regex> applies to one line (once).");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    In noregex mode, only ""\t"", ""\s"", ""\xIJ"" and ""\n"" are interpreted");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    and ""\x00"" is allowed (forbidden in a regex).");
 
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "  <replace_string> is a string with the following specific sequences:");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    ""\n"" (new_line), ""\t"" (tab), ""\s"" (space), ""\xIJ"" (hexa byte value).");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    ""\iIJ<text>"" to replace by <text> if the Jth substring of the Ith regex");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "      matches. ""\iIJ"" can be followed by one or several ""\aIJ"" (and then) and");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "      ""\oIJ"" (or else). <text> ends when encountering another ""\iIJ"" (elsif),");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "      a ""\e"" (else) or a ""\f"" (end if). Ex: \i11\o12\a13OK\eNOK\f.");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "      The logic is if... elsif... elsif... else... endif.");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    ""\RIJ"" (IJ in hexa) to replace by the input text matching the IJth regex,");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    ""\rIJ"" to replace by the text matching the Jth substring of the Ith regex.");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    ""\K""<shell command>""\k"", within which ""\RIJ"" and ""\rIJ"" are first replaced,");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "      then the command is launched (and must exit with 0), then the command");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "      directive is replaced by the command output.");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    ""\P""<file path>""\p"", within which ""\RIJ"" and ""\rIJ"" are first replaced,");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "      then the content of the file is inserted as is.");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    ""\u"" (start UPPERCASE conversion), ""\l"" (lowercase), ""\m"" (Mixed_Case),");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "      ""\c"" (stop case conversion). Any new conversion replaces previous.");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    Conditions apply first, then replacement and command, then case conversion.");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    ""\R01"" <-> 1st <regex>, ""\R00"" <-> all <regex>, ""\ri0"" == ""\R0i"".");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    Like back references, substrs are numbered in order of opening parentheses.");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    Note that ""\r0i"" and ""\i0i"" are is forbidden.");
 
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "  If set <exclude_pattern> must have the same number of regex as <find_pattern>.");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "  Text matching <find_pattern> will be discarded if it also matches");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    <exclude_pattern>.");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "  If a specific delimiter is set, it is used to read chunks of input text (whole");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    flow if delimiter is empty). The <find_pattern> must be a simple <regex>");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    (no '^' or '$', but '\n' is allowed), and applies to each chunk.");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    Option -d (--dotall) can be usefull in this case.");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    This allows multi-row processing.");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "  In grep mode <replace_string> is put if not empty (ex: ""\R01"" for the matching");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    text), otherwise the full line of the matching text is put (as grep would");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    do), possibly possibly with file name (""-f"") and with line number (""-fl"").");
 
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "  Warning: regex are powerfull (see ""man 3 pcre"" and ""man 1 perlre"") and");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    automatic substitution can be dangerous, so use " & Argument.Get_Program_Name & " with caution:");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    test pattern with ""echo string | " &  Argument.Get_Program_Name & " <search_pattern> <replace_string>""");
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
      "    and use -s or -tv option if unsure.");
-    Sys_Calls.Set_Exit_Code (Error_Exit_Code);
+    Basic_Proc.Set_Exit_Code (Error_Exit_Code);
   end Help;
 
   procedure Error is
   begin
     Usage;
-    Sys_Calls.Set_Exit_Code (Error_Exit_Code);
+    Basic_Proc.Set_Exit_Code (Error_Exit_Code);
   end Error;
 
   -- For getenv
@@ -242,7 +242,7 @@ procedure Asubst is
   function Check_Verbose return Boolean is
   begin
     if Verbosity /= Put_File_Name then
-      Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
+      Basic_Proc.Put_Line_Error (Argument.Get_Program_Name
           & ": Syntax ERROR. Options 'n', 'q' and 'v' are mutually exclusive.");
       Error;
       return False;
@@ -256,7 +256,7 @@ procedure Asubst is
   begin
     if Verbosity = Verbose then
       -- Put file name
-      Ada.Text_Io.Put_Line (File_Name);
+      Basic_Proc.Put_Line_Output (File_Name);
     end if;
     Nb_Subst := Substit.Do_One_File (
                   File_Name,
@@ -270,10 +270,10 @@ procedure Asubst is
     end if;
     if Verbosity = Put_File_Name and then Nb_Subst /= 0 then
       -- Put file name if substitution occured
-      Ada.Text_Io.Put_Line (File_Name);
+      Basic_Proc.Put_Line_Output (File_Name);
     elsif Verbosity >= Put_Subst_Nb then
       -- Put file name and nb of substitutions
-      Ada.Text_Io.Put_Line (File_Name & Nb_Subst'Img);
+      Basic_Proc.Put_Line_Output (File_Name & Nb_Subst'Img);
     end if;
   exception
     when Substit.Substit_Error =>
@@ -281,7 +281,7 @@ procedure Asubst is
     when Replace_Pattern.Terminate_Request =>
       raise;
     when Error:others =>
-      Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
+      Basic_Proc.Put_Line_Error (Argument.Get_Program_Name
                 & ": EXCEPTION: " & Ada.Exceptions.Exception_Name (Error)
                 & " while processing file "
                 & File_Name & ".");
@@ -293,19 +293,19 @@ begin
   if Environ.Is_Yes (Utf8_Var_Name) then
     Lang := Language.Lang_Utf_8;
     if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Environ set to UTF-8");
+      Basic_Proc.Put_Line_Error ("Environ set to UTF-8");
     end if;
   elsif Environ.Is_No (Utf8_Var_Name) then
     Lang := Language.Lang_C;
     if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Environ set to NO UTF-8");
+      Basic_Proc.Put_Line_Error ("Environ set to NO UTF-8");
     end if;
   end if;
 
   -- Parse keys and options
   Arg_Dscr := Argument_Parser.Parse (Keys);
   if not Arg_Dscr.Is_Ok then
-    Sys_Calls.Put_Line_Error (Argument.Get_Program_Name & ": Syntax ERROR. "
+    Basic_Proc.Put_Line_Error (Argument.Get_Program_Name & ": Syntax ERROR. "
       & Arg_Dscr.Get_Error & ".");
     Error;
     return;
@@ -315,17 +315,17 @@ begin
   if Arg_Dscr.Is_Set (17) then
     -- Version
     if Argument.Get_Nbre_Arg /= 1 then
-      Sys_Calls.Put_Line_Error (Argument.Get_Program_Name & ": Syntax ERROR.");
+      Basic_Proc.Put_Line_Error (Argument.Get_Program_Name & ": Syntax ERROR.");
       Error;
     else
-      Sys_Calls.Put_Line_Error (Argument.Get_Program_Name & " " & Version);
-      Sys_Calls.Set_Exit_Code (Error_Exit_Code);
+      Basic_Proc.Put_Line_Error (Argument.Get_Program_Name & " " & Version);
+      Basic_Proc.Set_Exit_Code (Error_Exit_Code);
     end if;
     return;
   elsif Arg_Dscr.Is_Set (07) then
     -- Help
     if  Argument.Get_Nbre_Arg /= 1 then
-      Sys_Calls.Put_Line_Error (Argument.Get_Program_Name & ": Syntax ERROR.");
+      Basic_Proc.Put_Line_Error (Argument.Get_Program_Name & ": Syntax ERROR.");
       Error;
     else
       Help;
@@ -335,7 +335,7 @@ begin
   or else Arg_Dscr.Get_Nb_Embedded_Arguments /= 0 then
     -- There must be at least Search and Replace strings
     -- They must be after options
-    Sys_Calls.Put_Line_Error (Argument.Get_Program_Name & ": Syntax ERROR.");
+    Basic_Proc.Put_Line_Error (Argument.Get_Program_Name & ": Syntax ERROR.");
     Error;
     return;
   end if;
@@ -344,7 +344,7 @@ begin
   if Arg_Dscr.Is_Set (01) then
     -- Force ASCII processing even if ENV was set
     if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Option ascii");
+      Basic_Proc.Put_Line_Error ("Option ascii");
     end if;
     Lang := Language.Lang_C;
   end if;
@@ -357,24 +357,24 @@ begin
       end if;
     exception
       when others =>
-        Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
+        Basic_Proc.Put_Line_Error (Argument.Get_Program_Name
            & ": Syntax ERROR. Invalid delimiter.");
         Error;
         return;
     end;
     if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Option delimiter = " & Delimiter.Image);
+      Basic_Proc.Put_Line_Error ("Option delimiter = " & Delimiter.Image);
     end if;
   end if;
   if Arg_Dscr.Is_Set (03) then
     -- Allow dot to match all characters
     if not Arg_Dscr.Is_Set (02) then
-      Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
+      Basic_Proc.Put_Line_Error (Argument.Get_Program_Name
          & ": Syntax ERROR. Option -d requires option -D.");
       Error;
     end if;
     if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Option dot all");
+      Basic_Proc.Put_Line_Error ("Option dot all");
     end if;
     Dot_All := True;
   end if;
@@ -387,40 +387,40 @@ begin
       end if;
     exception
       when others =>
-        Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
+        Basic_Proc.Put_Line_Error (Argument.Get_Program_Name
            & ": Syntax ERROR. Invalid exclude_pattern.");
         Error;
         return;
     end;
     if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Option exclude = " & Exclude.Image);
+      Basic_Proc.Put_Line_Error ("Option exclude = " & Exclude.Image);
     end if;
   end if;
   if Arg_Dscr.Is_Set (05) then
     -- The file will be a list of files
     if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Option file of files");
+      Basic_Proc.Put_Line_Error ("Option file of files");
     end if;
     File_Of_Files := True;
   end if;
   if Arg_Dscr.Is_Set (06) then
     -- Put matching text like grep would do
     if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Option grep mode");
+      Basic_Proc.Put_Line_Error ("Option grep mode");
     end if;
     Grep := True;
   end if;
   if Arg_Dscr.Is_Set (08) then
     -- Case insensitive match
     if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Option ignore case");
+      Basic_Proc.Put_Line_Error ("Option ignore case");
     end if;
     Case_Sensitive := False;
   end if;
   if Arg_Dscr.Is_Set (09) then
     -- Put line no
     if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Option line no");
+      Basic_Proc.Put_Line_Error ("Option line no");
     end if;
     Grep_Line_Nb := True;
   end if;
@@ -434,13 +434,13 @@ begin
       Dummy := Substit.Subst_Match.Matches (0, Match_Range.Image);
     exception
       when others =>
-        Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
+        Basic_Proc.Put_Line_Error (Argument.Get_Program_Name
            & ": Syntax ERROR. Invalid specification of matching range.");
         Error;
         return;
     end;
     if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Option match =" & Match_Range.Image);
+      Basic_Proc.Put_Line_Error ("Option match =" & Match_Range.Image);
     end if;
   else
     -- No criteria
@@ -449,7 +449,7 @@ begin
   if Arg_Dscr.Is_Set (11) then
     -- Put number of substitutions
     if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Option put numbers");
+      Basic_Proc.Put_Line_Error ("Option put numbers");
     end if;
     if not Check_Verbose then
       return;
@@ -459,7 +459,7 @@ begin
   if Arg_Dscr.Is_Set (12) then
     -- Quiet mode
     if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Option quiet");
+      Basic_Proc.Put_Line_Error ("Option quiet");
     end if;
     if not Check_Verbose then
       return;
@@ -469,34 +469,34 @@ begin
   if Arg_Dscr.Is_Set (13) then
     -- Make backup
     if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Option make backup");
+      Basic_Proc.Put_Line_Error ("Option make backup");
     end if;
     Backup := True;
   end if;
   if Arg_Dscr.Is_Set (14) then
     -- Test mode
     if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Option test");
+      Basic_Proc.Put_Line_Error ("Option test");
     end if;
     Test := True;
   end if;
   if Arg_Dscr.Is_Set (15) then
     if Arg_Dscr.Is_Set (1) then
-      Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
+      Basic_Proc.Put_Line_Error (Argument.Get_Program_Name
          & ": Syntax ERROR. Incompatible options -a and -u.");
       Error;
       return;
     end if;
     -- Process utf-8 sequences
     if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Option utf8");
+      Basic_Proc.Put_Line_Error ("Option utf8");
     end if;
     Lang := Language.Lang_Utf_8;
   end if;
   if Arg_Dscr.Is_Set (16) then
     -- Verbose put each substit
     if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Option verbose");
+      Basic_Proc.Put_Line_Error ("Option verbose");
     end if;
     if not Check_Verbose then
       return;
@@ -506,7 +506,7 @@ begin
   if Arg_Dscr.Is_Set (18) then
     -- Find pattern is not a regex
     if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Option noregex");
+      Basic_Proc.Put_Line_Error ("Option noregex");
     end if;
     Is_Regex := False;
   end if;
@@ -519,19 +519,19 @@ begin
       end if;
     exception
       when others =>
-        Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
+        Basic_Proc.Put_Line_Error (Argument.Get_Program_Name
            & ": Syntax ERROR. Invalid tmp dir.");
         Error;
         return;
     end;
     if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Option tmp_dir = " & Tmp_Dir.Image);
+      Basic_Proc.Put_Line_Error ("Option tmp_dir = " & Tmp_Dir.Image);
     end if;
   end if;
   if Arg_Dscr.Is_Set (20) then
     -- Put file name
     if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Option file name");
+      Basic_Proc.Put_Line_Error ("Option file name");
     end if;
     Grep_File_Name := True;
   end if;
@@ -539,7 +539,7 @@ begin
   -- Set language (for regexp)
   Language.Set_Language (Lang);
   if Debug.Set then
-    Sys_Calls.Put_Line_Error ("Regex assumes language to be "
+    Basic_Proc.Put_Line_Error ("Regex assumes language to be "
        & Mixed_Str (Language.Language_List'Image(
                 Language.Get_Language)));
   end if;
@@ -568,7 +568,7 @@ begin
   -- Grep => Test, not verbose, not backup
   if Grep then
     if Test or else Verbosity /= Put_File_Name or else Backup then
-      Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
+      Basic_Proc.Put_Line_Error (Argument.Get_Program_Name
         & ": Syntax ERROR. Grep mode imposes quiet, test and no-backup.");
       Error;
       return;
@@ -579,14 +579,14 @@ begin
   end if;
   -- File_Name => Grep
   if Grep_File_Name and then not Grep then
-    Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
+    Basic_Proc.Put_Line_Error (Argument.Get_Program_Name
       & ": Syntax ERROR. File_name mode is allowed in grep mode only.");
     Error;
     return;
   end if;
   -- Line_Nb => Grep and File_Name
   if Grep_Line_Nb and then not Grep_File_Name then
-    Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
+    Basic_Proc.Put_Line_Error (Argument.Get_Program_Name
       & ": Syntax ERROR. Line_nb mode is allowed in grep mode with file name only.");
     Error;
     return;
@@ -594,7 +594,7 @@ begin
   -- Grep AND File_Name => empty Replace_Pattern
   if Grep and then Grep_File_Name
   and then Arg_Dscr.Get_Option (No_Key_Index, 2) /= "" then
-    Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
+    Basic_Proc.Put_Line_Error (Argument.Get_Program_Name
       & ": Syntax ERROR. Grep with file_name implies empty replace_string.");
     Error;
     return;
@@ -603,7 +603,7 @@ begin
   -- One file argument if file of files
   if File_Of_Files
   and then Arg_Dscr.Get_Nb_Occurences (No_Key_Index) /= 2 then
-    Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
+    Basic_Proc.Put_Line_Error (Argument.Get_Program_Name
                    & ": Syntax ERROR. No file accepted"
                    & " when -F or --file_list option is set.");
     Error;
@@ -612,13 +612,13 @@ begin
 
   -- Display search pattern and replace string
   if Debug.Set then
-    Ada.Text_Io.Put_Line ("Search pattern: >"
+    Basic_Proc.Put_Line_Output ("Search pattern: >"
        & Arg_Dscr.Get_Option (No_Key_Index, 1) & "<");
     if Exclude.Image /= "" then
-      Ada.Text_Io.Put_Line ("Exclude pattern: >" & Exclude.Image & "<");
+      Basic_Proc.Put_Line_Output ("Exclude pattern: >" & Exclude.Image & "<");
     end if;
     if not Grep then
-      Ada.Text_Io.Put_Line ("Replace string: >"
+      Basic_Proc.Put_Line_Output ("Replace string: >"
          & Arg_Dscr.Get_Option (No_Key_Index, 2) & "<");
     end if;
   end if;
@@ -651,7 +651,7 @@ begin
   elsif Arg_Dscr.Get_Nb_Occurences (No_Key_Index) = 2 then
     -- No file: stdin -> stdout
     if Backup then
-      Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
+      Basic_Proc.Put_Line_Error (Argument.Get_Program_Name
                 & ": ERROR. Cannot make backup when no file name.");
       Ok := False;
     else
@@ -676,7 +676,7 @@ begin
         when Replace_Pattern.Terminate_Request =>
           raise;
         when Error:others =>
-          Sys_Calls.Put_Line_Error (Argument.Get_Program_Name
+          Basic_Proc.Put_Line_Error (Argument.Get_Program_Name
                     & ": EXCEPTION: " & Ada.Exceptions.Exception_Name (Error)
                     & " while processing stdin to stdout.");
           Ok := False;
@@ -693,16 +693,16 @@ begin
   Arg_Dscr.Reset;
 
   if not Ok then
-    Sys_Calls.Set_Exit_Code (Error_Exit_Code);
+    Basic_Proc.Set_Exit_Code (Error_Exit_Code);
   else
     if not Found then
-      Sys_Calls.Set_Exit_Code (No_Subst_Exit_Code);
+      Basic_Proc.Set_Exit_Code (No_Subst_Exit_Code);
     else
-      Sys_Calls.Set_Exit_Code (Ok_Exit_Code);
+      Basic_Proc.Set_Exit_Code (Ok_Exit_Code);
     end if;
   end if;
 exception
   when Replace_Pattern.Terminate_Request =>
-    Sys_Calls.Set_Exit_Code (Terminate_Exit_Code);
+    Basic_Proc.Set_Exit_Code (Terminate_Exit_Code);
 end Asubst;
 

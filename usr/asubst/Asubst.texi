@@ -208,7 +208,7 @@ by one or several "\aIJ" or "\oIJ" evaluated one after the other.
 Example: "\i11\o12\a13T1\i13T2\eT3\f" means: If sub11 matches or sub12 matches
 and sub13 matches, then replace by T1, elsif sub13 matches, then replace by
 T2, else replace by T3.@*
-<text> ends when encountering another "\i", a "\e" or a "\f".
+<text> ends when encountering another "\i", a "\e" or a "\f".@*
 - "\RIJ" where IJ is an hexadecimal number will be replaced by the string
 matching the regex number IJ, (00 <= IJ <= NbOfRegex, 00 means the whole
 string matching all regex).@*
