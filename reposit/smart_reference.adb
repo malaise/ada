@@ -64,6 +64,15 @@ package body Smart_Reference is
     Set (Reference.Box_Access.Obj, Val);
     Increment_Ref(Reference);
   end Init;
+  function Init (Val : Object) return Handle is
+  begin
+    Trace("New");
+    return Reference : Handle do
+      Reference.Box_Access := new Object_Box;
+      Set (Reference.Box_Access.Obj, Val);
+      Increment_Ref(Reference);
+    end return;
+  end Init;
 
   -- Release handle
   procedure Release (Reference : in out Handle) is
