@@ -105,8 +105,7 @@ private
     Sep   : Natural := 1;
   end record;
 
-  Default_Rec : Iter_Rec;
-  Init_Rec : constant Iter_Rec := Default_Rec;
+  Init_Rec : constant Iter_Rec := (others => <>);
 
   type Iter_Rec_Access is access Iter_Rec;
   type Iterator is limited new Ada.Finalization.Limited_Controlled with record
