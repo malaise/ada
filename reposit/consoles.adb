@@ -2,6 +2,34 @@ with Ada.Calendar;
 with Argument, Dyn_Data, Environ, Lower_Str, Event_Mng, String_Mng;
 package body Consoles is
 
+  procedure Set (Dest : in out Console_Data; Val : in Console_Data) is
+  begin
+    Dest.Initialised := Val.Initialised;
+    Dest.Id := Val.Id;
+    Dest.Mouse_Status := Val.Mouse_Status;
+    Dest.Motion_Enabling := Val.Motion_Enabling;
+    Dest.Line_Foreground := Val.Line_Foreground;
+    Dest.Line_Background := Val.Line_Background;
+    Dest.Line_Xor_Mode   := Val.Line_Xor_Mode;
+    Dest.Font_No := Val.Font_No;
+    Dest.Row_Range_Last := Val.Row_Range_Last;
+    Dest.Col_Range_Last := Val.Col_Range_Last;
+    Dest.X_Max := Val.X_Max;
+    Dest.Y_Max := Val.Y_Max;
+    Dest.Font_Width  := Val.Font_Width;
+    Dest.Font_Height := Val.Font_Height;
+    Dest.Font_Offset := Val.Font_Offset;
+    Dest.Screen_Window := new Window_Data'(Val.Screen_Window.all);
+    Dest.Windows.Delete_List;
+    Dest.Windows.Insert_Copy (Val.Windows);
+  end Set;
+  overriding procedure Finalize (Con : in out Console_Data) is
+  begin
+    if Con.Initialised then
+      X_Mng.X_Close_Line(Con.Id);
+    end if;
+  end Finalize;
+
   X_Init_Done : Boolean := False;
 
   The_Color_Names : Colors_Definition := Default_Colors;

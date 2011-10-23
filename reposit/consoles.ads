@@ -1,5 +1,5 @@
-with Ada.Characters.Latin_1, Ada.Finalization;
-with As.U, X_Mng, Timers, Unicode, Language, Dynamic_List;
+with Ada.Characters.Latin_1;
+with As.U, X_Mng, Timers, Unicode, Language, Dynamic_List, Smart_Reference;
 package Consoles is
 
   -- The Font
@@ -79,7 +79,7 @@ package Consoles is
   procedure Initialise;
 
   -- One console
-  type Console is tagged limited private;
+  type Console is tagged private;
   No_Console : constant Console;
 
   -- Shall never be used explicitely by it is usefull, for exemple when:
@@ -87,7 +87,6 @@ package Consoles is
   -- procedure Proc (Con : in Console; Win : in Window := Screen);
   -- Then Proc will use the default Screen (Con)
   function Same_Console return Console;
-
 
   -- Has to be called to initialize a console, which appears on screen
   -- Should be called prior any action on the console
@@ -576,13 +575,35 @@ package Consoles is
 
 private
 
+  type Console_Data;
+  type Console_Access is access Console_Data;
+
+  -- Windows are store in the Console_Data (Screen_Window or Windows)
   type Window_Data;
-  type Window is access Window_Data;
-  package Window_Dyn_List_Mng is new Dynamic_list (Window);
+  type Window_Data is record
+    Con                : Console_Access;
+    Upper_Left         : Square;
+    Lower_Right        : Square;
+    Current_Pos        : Square := Home;
+    Current_Foreground : Effective_Colors;
+    Current_Background : Effective_Colors;
+    Current_Xor_Mode   : Effective_Xor_Modes;
+  end record;
+  type Window is access all Window_Data;
+
+  Screen_Data   : constant Window_Data := (
+    Con                => null,
+    Upper_Left         => (Row => Row_Range_First, Col => Col_Range_First),
+    Lower_Right        => (Row => Last_Row,  Col => Last_Col),
+    Current_Pos        => Home,
+    Current_Foreground => Default_Foreground,
+    Current_Background => Default_Background,
+    Current_Xor_Mode   => Default_Xor_Mode);
+
+  package Window_Dyn_List_Mng is new Dynamic_List (Window_Data);
   package Window_List_Mng renames Window_Dyn_List_Mng.Dyn_List;
 
-
-  type Console_Data is new Ada.Finalization.Limited_Controlled with record
+  type Console_Data is record
     Initialised : Boolean := False;
     Id : X_Mng.Line;
     Mouse_Status : X_Mng.Event_Kind := X_Mng.No_Event;
@@ -598,35 +619,13 @@ private
     Font_Width  : Natural;
     Font_Height : Natural;
     Font_Offset : Natural;
-    Screen_Window : Window;
+    Screen_Window : Window_Data;
     Windows : Window_List_Mng.List_Type;
   end record;
-  type Console_Access is access Console;
-  type Console is new Ada.Finalization.Limited_Controlled with record
-    A : Console_Access;
-  end record;
-  overriding procedure Finalize (Con : in out Console);
-
-  type Window_Data is record
-    Con                : Console_Access;
-    Upper_Left         : Square;
-    Lower_Right        : Square;
-    Current_Pos        : Square := Home;
-    Current_Foreground : Effective_Colors;
-    Current_Background : Effective_Colors;
-    Current_Xor_Mode   : Effective_Xor_Modes;
-  end record;
-
-  Screen_Data   : constant Window_Data := (
-    Con                => null,
-    Upper_Left         => (Row => Row_Range_First, Col => Col_Range_First),
-    Lower_Right        => (Row => Last_Row,  Col => Last_Col),
-    Current_Pos        => Home,
-    Current_Foreground => Default_Foreground,
-    Current_Background => Default_Background,
-    Current_Xor_Mode   => Default_Xor_Mode);
-
-  Screen_Window : constant Window := new Window_Data'(Screen_Data);
+  procedure Set (Dest : in out Console_Data; Val : in Console_Data);
+  procedure Finalize (Con : in Console_Data);
+  package Console_Ref_Mng is new Smart_Reference (Console_Data, Set, Finalize);
+  type Console is new Console_Ref_Mng.Handle with null record;
 
   C : Console;
   No_Console : constant Console := C;
