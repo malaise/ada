@@ -3,6 +3,7 @@
 --  its reference
 with Ada.Finalization;
 generic
+  -- Object shall NOT implement Ada.Finalization.(Limited_)Controlled
   type Object is limited private;
   with procedure Set (Dest : in out Object; Val : in Object);
   with procedure Finalize (Dest : in Object) is null;
@@ -13,6 +14,7 @@ package Smart_Reference is
 
   -- Initialise a Handle to an object
   procedure Init (Reference : in out Handle; Val : in Object);
+  function Init (Val : Object) return Handle;
 
   -- Release handle (which becomes null)
   procedure Release (Reference : in out Handle);
