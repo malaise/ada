@@ -11,6 +11,7 @@ package Smart_Reference is
 
   -- The handle that points to an Object
   type Handle is tagged private;
+  Null_Handle : constant Handle;
 
   -- Initialise a Handle to an object
   procedure Init (Reference : in out Handle; Val : in Object);
@@ -50,6 +51,8 @@ private
   overriding procedure Initialize (Ref : in out Handle);
   overriding procedure Adjust     (Ref : in out Handle);
   overriding procedure Finalize   (Ref : in out Handle);
+  Null_Handle : constant Handle := (Ada.Finalization.Controlled
+                                    with others => <>);
 
 end Smart_Reference;
 
