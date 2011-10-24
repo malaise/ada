@@ -36,11 +36,11 @@ package body Limited_List is
   end Check_Cb;
 
   -- Delete the full list
+  procedure Deallocation_Of is new
+     Unchecked_Deallocation(Object=>Cell, Name=>Link);
   procedure Delete_List (List : in out List_Type;
                          Deallocate : in Boolean := True) is
     Local : Link;
-    procedure Deallocation_Of is new
-     Unchecked_Deallocation(Object=>Cell, Name=>Link);
   begin
     Check_Cb(List);
     -- Don't delete the list if it is a copy
@@ -230,9 +230,10 @@ package body Limited_List is
       raise Full_List;
   end Insert;
 
-
-  -- Suppress the current element from the list
-  procedure Delete (List : in out List_Type; Move : in Direction := Next) is
+  -- Suppress and possibly deallocate the current element from the list
+  procedure Del (List       : in out List_Type;
+                 Move       : in Direction;
+                 Deallocate : in Boolean)  is
     Del_Cell : Link;
   begin
     Check_Cb(List);
@@ -272,19 +273,30 @@ package body Limited_List is
         List.Current := List.Current.Prev;
         List.Pos_First := List.Pos_First - 1;
     end case;
-    -- Insert in free list
-    if Free_List /= null then
-      Free_List.Prev := Del_Cell;
+    -- Insert in free list or deallocate
+    if Deallocate then
+      Deallocation_Of (Del_Cell);
+    else
+      if Free_List /= null then
+        Free_List.Prev := Del_Cell;
+      end if;
+      Del_Cell.Prev := null;
+      Del_Cell.Next := Free_List;
+      Free_List := Del_Cell;
     end if;
-    Del_Cell.Prev := null;
-    Del_Cell.Next := Free_List;
-    Free_List := Del_Cell;
     -- Check the special case when list is empty
     --  (set pos_first and pos_last to 0)
     if List.Current = null then
       List.Pos_First := 0;
       List.Pos_Last := 0;
     end if;
+  end Del;
+
+  -- Suppress the current element from the list
+  procedure Delete (List       : in out List_Type;
+                    Move       : in Direction := Next) is
+  begin
+    Del (List, Move, False);
   end Delete;
 
   procedure Delete (List  : in out List_Type;
@@ -292,13 +304,33 @@ package body Limited_List is
                     Moved : out Boolean) is
   begin
     if Check_Move (List, Move) then
-      Delete (List, Move);
+      Del (List, Move, False);
       Moved := True;
     else
-      Delete (List, Other_Way (Move));
+      Del (List, Other_Way (Move), False);
       Moved := False;
     end if;
   end Delete;
+
+  -- Suppress and deallocate the current element from the list
+  procedure Deallocate (List : in out List_Type;
+                        Move : in Direction := Next) is
+  begin
+    Del (List, Move, True);
+  end Deallocate;
+
+  procedure Deallocate (List  : in out List_Type;
+                        Move  : in Direction := Next;
+                        Moved : out Boolean) is
+  begin
+    if Check_Move (List, Move) then
+      Del (List, Move, True);
+      Moved := True;
+    else
+      Del (List, Other_Way (Move), True);
+      Moved := False;
+    end if;
+  end Deallocate;
 
 
   -- Reads and deletes the current element

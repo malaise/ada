@@ -98,6 +98,19 @@ package Limited_List is
                     Move  : in Direction := Next;
                     Moved : out Boolean);
 
+  -- Suppress and deallocate the current element from the list
+  -- The current item is then the next or the previous item in the list
+  -- Does not raise Not_In_List nor Empty_List when getting the last item
+  -- May raise Not_In_List (no deletion nor movement done)
+  procedure Deallocate (List : in out List_Type;
+                        Move : in Direction := Next);
+
+  -- Delete and deallocate anyway. Set Moved to True if movement was possible
+  --  (and done) or if list becomes empty, and False otherwise (movement done
+  --  in the --  opposite direction)
+  procedure Deallocate (List  : in out List_Type;
+                        Move  : in Direction := Next;
+                        Moved : out Boolean);
 
   -- Delete the full list
   -- Deallocate or not the free list
