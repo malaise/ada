@@ -1,37 +1,54 @@
 with Ada.Calendar;
-with Argument, Dyn_Data, Environ, Lower_Str, Event_Mng, String_Mng;
+with Argument, Environ, Lower_Str, Event_Mng, String_Mng, Dynamic_List;
 package body Consoles is
+
+  package Window_Dyn_List_Mng is new Dynamic_List (Window);
+  package Window_List_Mng renames Window_Dyn_List_Mng.Dyn_List;
+  Windows : Window_List_Mng.List_Type;
+
 
   procedure Set (Dest : in out Console_Data; Val : in Console_Data) is
   begin
-    Dest.Initialised := Val.Initialised;
-    Dest.Id := Val.Id;
-    Dest.Mouse_Status := Val.Mouse_Status;
-    Dest.Motion_Enabling := Val.Motion_Enabling;
-    Dest.Line_Foreground := Val.Line_Foreground;
-    Dest.Line_Background := Val.Line_Background;
-    Dest.Line_Xor_Mode   := Val.Line_Xor_Mode;
-    Dest.Font_No := Val.Font_No;
-    Dest.Row_Range_Last := Val.Row_Range_Last;
-    Dest.Col_Range_Last := Val.Col_Range_Last;
-    Dest.X_Max := Val.X_Max;
-    Dest.Y_Max := Val.Y_Max;
-    Dest.Font_Width  := Val.Font_Width;
-    Dest.Font_Height := Val.Font_Height;
-    Dest.Font_Offset := Val.Font_Offset;
-    Dest.Screen_Window := new Window_Data'(Val.Screen_Window.all);
-    Dest.Windows.Delete_List;
-    Dest.Windows.Insert_Copy (Val.Windows);
+    Dest := Val;
   end Set;
-  overriding procedure Finalize (Con : in out Console_Data) is
+  procedure Finalize (Con : in Console_Data) is
+    Id : X_Mng.Line := Con.Id;
+    W : Window;
+    Moved : Boolean;
   begin
-    if Con.Initialised then
-      X_Mng.X_Close_Line(Con.Id);
+    if not Con.Initialised then
+      return;
     end if;
+    X_Mng.X_Close_Line(Id);
+    -- Del & dealloc all windows which refer to this console
+    if Windows.Is_Empty then
+      return;
+    end if;
+    Windows.Rewind;
+    loop
+      Windows.Read (W, Window_List_Mng.Current);
+      if W.Get_Access.Con.Get_Access = Con'Unrestricted_Access then
+        -- This is a window of current console
+        W.Get_Access.Open := False;
+        Windows.Deallocate (Moved => Moved);
+        exit when not Moved;
+      else
+        exit when not Windows.Check_Move;
+      end if;
+    end loop;
   end Finalize;
 
-  X_Init_Done : Boolean := False;
+  procedure Set (Dest : in out Window_Data; Val : in Window_Data) is
+  begin
+    Dest := Val;
+  end Set;
+  procedure Finalize (Win : in Window_Data) is
+  begin
+    null;
+  end Finalize;
 
+  -- Global X11 initialisation info
+  X_Init_Done : Boolean := False;
   The_Color_Names : Colors_Definition := Default_Colors;
 
   Lf : Character renames Ada.Characters.Latin_1.Lf;
@@ -99,486 +116,435 @@ package body Consoles is
     No_Font => 0);
   Mouse_Discard : constant X_Mng.Event_Kind := X_Mng.Keyboard;
 
-  -- Dynamic alloc/desaloc of windows
-  package Dyn_Win is new Dyn_Data(Window_Data, Window);
-
-  procedure Set_Attributes (Con : in out Console;
+  -- Internal
+  procedure Set_Attributes (Con : in Console;
                             Foreground : in Effective_Colors;
                             Background : in Effective_Colors;
                             Xor_Mode   : in Effective_Xor_Modes;
                             Forced     : in Boolean := False) is
+    C : constant access Console_Data := Con.Get_Access;
   begin
     -- Reset can be forced explicitely by the Forced argument
-    if Forced or else Foreground /= Con.Line_Foreground
-              or else Background /= Con.Line_Background then
-      X_Mng.X_Set_Attributes (Con.Id, Colors'Pos(Background) - 1,
+    if Forced or else Foreground /= C.Line_Foreground
+              or else Background /= C.Line_Background then
+      X_Mng.X_Set_Attributes (C.Id, Colors'Pos(Background) - 1,
                                   Colors'Pos(Foreground) - 1,
                                   Superbright => True);
-      Con.Line_Foreground := Foreground;
-      Con.Line_Background := Background;
+      C.Line_Foreground := Foreground;
+      C.Line_Background := Background;
     end if;
-    if Forced or else Xor_Mode /= Con.Line_Xor_Mode then
-      X_Mng.X_Set_Xor_Mode (Con.Id, Xor_Mode = Xor_On);
-      Con.Line_Xor_Mode := Xor_Mode;
+    if Forced or else Xor_Mode /= C.Line_Xor_Mode then
+      X_Mng.X_Set_Xor_Mode (C.Id, Xor_Mode = Xor_On);
+      C.Line_Xor_Mode := Xor_Mode;
     end if;
   end Set_Attributes;
 
-  function Same_Console return Console is
-  begin
-    return No_Console;
-  end Same_Console;
-
-  procedure Init (Con : in out Console;
-                  Font_No  : in Font_No_Range;
-                  Row_Last : in Row_Range := Def_Row_Last;
-                  Col_Last : in Col_Range := Def_Col_Last) is
+  function Create (Font_No  : in Font_No_Range;
+                   Row_Last : in Row_Range := Def_Row_Last;
+                   Col_Last : in Col_Range := Def_Col_Last) return Console is
     Line : X_Mng.Line_Definition_Rec := Line_Def;
-    Screen : Window_Data := Screen_Data;
     Env_Str : String (1 .. Font_Env_Small'Length);
     Env_Len : Natural;
+    Con_Data : Console_Data;
+    Con : Console;
+    Screen : Window;
   begin
-    if Con.Initialised then
-      raise Already_Init;
-    end if;
     Initialise;
-
-    Con := No_Console;
-    Con.Font_No := Font_No;
-    Con.Row_Range_Last := Row_Last;
-    Con.Col_Range_Last := Col_Last;
+    Con_Data.Font_No := Font_No;
+    Con_Data.Row_Range_Last := Row_Last;
+    Con_Data.Col_Range_Last := Col_Last;
 
     Env_Str := (others => '-');
     Env_Len := Env_Str'Length;
     Environ.Get_Str (Font_Env_Name, Env_Str, Env_Len);
     if Lower_Str (Env_Str (1 .. Env_Len)) = Font_Env_Small
-    and then Con.Font_No /= Font_No_Range'First then
-      Line.No_Font := Con.Font_No - 1;
+    and then Con_Data.Font_No /= Font_No_Range'First then
+      Line.No_Font := Con_Data.Font_No - 1;
     elsif Lower_Str (Env_Str (1 .. Env_Len)) = Font_Env_Large
-    and then Con.Font_No /= Font_No_Range'Last then
-      Line.No_Font := Con.Font_No + 1;
+    and then Con_Data.Font_No /= Font_No_Range'Last then
+      Line.No_Font := Con_Data.Font_No + 1;
     end if;
     Line.Background := Colors'Pos(Default_Background) - 1;
-    X_Mng.X_Open_Line (Line, Con.Id);
-    X_Mng.X_Set_Line_Name (Con.Id, Argument.Get_Program_Name);
-    Con.Mouse_Status := Mouse_Discard;
-    X_Mng.X_Get_Graphic_Characteristics(Con.Id, Con.X_Max, Con.Y_Max,
-          Con.Font_Width, Con.Font_Height, Con.Font_Offset);
+    X_Mng.X_Open_Line (Line, Con_Data.Id);
+    X_Mng.X_Set_Line_Name (Con_Data.Id, Argument.Get_Program_Name);
+    Con_Data.Mouse_Status := Mouse_Discard;
+    X_Mng.X_Get_Graphic_Characteristics(Con_Data.Id,
+          Con_Data.X_Max, Con_Data.Y_Max,
+          Con_Data.Font_Width, Con_Data.Font_Height, Con_Data.Font_Offset);
     -- Max is width - 1 so that range is 0 .. max
-    Con.X_Max := Con.X_Max - 1;
-    Con.Y_Max := Con.Y_Max - 1;
+    Con_Data.X_Max := Con_Data.X_Max - 1;
+    Con_Data.Y_Max := Con_Data.Y_Max - 1;
+    -- Create console
+    Con_Data.Initialised := True;
+    Con.Init (Con_Data);
     Set_Attributes (Con, Default_Foreground, Default_Background,
-                    Default_Xor_Mode, Forced => True);
-    Screen.Lower_Right := (Con.Row_Range_Last, Con.Col_Range_Last);
-    Con.Screen_Window := new Window_Data'(Screen);
-    Con.Screen_Window.Current_Foreground := Default_Foreground;
-    Con.Screen_Window.Current_Background := Default_Background;
-    Con.Screen_Window.Current_Xor_Mode   := Default_Xor_Mode;
-    Con.Initialised := True;
+                      Default_Xor_Mode, Forced => True);
     Flush (Con);
+    -- Create and store Screen window
+    Screen := Open (Con'Unrestricted_Access,
+         (Row_Range_First, Col_Range_First),
+         (Con_Data.Row_Range_Last, Con_Data.Col_Range_Last));
+    Windows.Insert (Screen);
+    Con.Get_Access.Screen_Window := Window_Access(Windows.Access_Current);
+    return Con;
   exception
     when others =>
       raise Init_Failure;
-  end Init;
+  end Create;
 
-  procedure Check_init (Con : in Console) is
+  procedure Check_Init (Con : in Console) is
   begin
-    if Con.Initialised then
+    if Con = Null_Console or else not Con.Get_Access.Initialised then
       raise Not_Init;
     end if;
-  end Check_init;
+  end Check_Init;
 
   procedure Destroy (Con : in out Console) is
   begin
-    Check_init (Con);
-    X_Mng.X_Close_Line(Con.Id);
-    Con := No_Console;
+    Check_Init (Con);
+    X_Mng.X_Close_Line(Con.Get_Access.Id);
+    Con := Null_Console;
   end Destroy;
 
   function Is_Init (Con : Console) return Boolean is
   begin
-    return Con.Initialised;
+    return Con /= Null_Console and then Con.Get_Access.Initialised;
   end Is_Init;
 
   -- Suspend and resume con_io
-  procedure Suspend (Con : in out Console) is
+  procedure Suspend (Con : in Console) is
   begin
-    Check_init (Con);
+    Check_Init (Con);
     -- Clear window and suspend
     Reset_Term (Con);
-    X_Mng.X_Suspend (Con.Id);
+    X_Mng.X_Suspend (Con.Get_Access.Id);
   end Suspend;
 
-  procedure Resume (Con : in out Console) is
+  procedure Resume (Con : in Console) is
   begin
-    Check_init (Con);
+    Check_Init (Con);
     -- Resume
-    X_Mng.X_Resume (Con.Id);
+    X_Mng.X_Resume (Con.Get_Access.Id);
   end Resume;
 
   function Is_Suspended (Con : Console) return Boolean is
   begin
-    Check_init (Con);
-    return X_Mng.X_Is_Suspended (Con.Id);
+    Check_Init (Con);
+    return X_Mng.X_Is_Suspended (Con.Get_Access.Id);
   end Is_Suspended;
 
   -- Get geometry
   function Row_Range_Last  (Con : Console) return Row_Range is
   begin
-    Check_init (Con);
-    return Con.Row_Range_Last;
+    Check_Init (Con);
+    return Con.Get_Access.Row_Range_Last;
   end Row_Range_Last;
 
   function Col_Range_Last  (Con : Console) return Row_Range is
   begin
-    Check_init (Con);
-    return Con.Col_Range_Last;
+    Check_Init (Con);
+    return Con.Get_Access.Col_Range_Last;
   end Col_Range_Last;
 
   -- Flushes X
   procedure Flush (Con : in Console) is
   begin
-    Check_init (Con);
-    X_Mng.X_Flush (Con.Id);
+    Check_Init (Con);
+    X_Mng.X_Flush (Con.Get_Access.Id);
   end Flush;
 
   procedure Bell (Con : in Console; Repeat : in Positive := 1) is
   begin
-    Check_init (Con);
+    Check_Init (Con);
     if Repeat in X_Mng.Bell_Repeat then
-      X_Mng.X_Bell (Con.Id, Repeat);
+      X_Mng.X_Bell (Con.Get_Access.Id, Repeat);
     else
-      X_Mng.X_Bell (Con.Id, X_Mng.Bell_Repeat'Last);
+      X_Mng.X_Bell (Con.Get_Access.Id, X_Mng.Bell_Repeat'Last);
     end if;
   end Bell;
 
   -- Reset screen, windows and keyboard
-  procedure Reset_Term (Con : in out Console) is
+  procedure Reset_Term (Con : in Console) is
   begin
-    Check_init (Con);
-    X_Mng.X_Clear_Line (Con.Id);
+    Check_Init (Con);
+    X_Mng.X_Clear_Line (Con.Get_Access.Id);
     -- Set current attributes in cache
     Set_Attributes (Con, Default_Foreground, Default_Background,
                     Default_Xor_Mode, Forced => True);
   end Reset_Term;
 
   -- Screen characteristics
-  function Screen (Con : Console := Same_Console) return Window is
+  function Screen (Con : Console_Access) return Window is
   begin
-    Check_init (Con);
-    return Con.Screen_Window;
+    if Con = null then
+      raise Not_Init;
+    end if;
+    Check_Init (Con.all);
+    return Con.Get_Access.Screen_Window.all;
   end Screen;
 
   -- Open a window
-  procedure Open (Con                     : in out Console;
-                  Name                    : in out Window;
-                  Upper_Left, Lower_Right : in Square) is
+  function Open (Con                     : Console_Access;
+                 Upper_Left, Lower_Right : in Square) return Window is
+    Win_Data : Window_Data;
   begin
-    Check_Init (Con);
-    if Name /= null then
-      raise Window_Already_Open;
-    end if;
+    Check_Init (Con.all);
     if Upper_Left.Row > Lower_Right.Row or else
        Upper_Left.Col > Lower_Right.Col then
       raise Invalid_Square;
     end if;
-    begin
-      Name := Dyn_Win.Allocate (Screen_Data);
-    exception
-      when Storage_Error =>
-        raise Open_Failure;
-    end;
-    Name.Con := Con'Unrestricted_Access;
-    Name.Upper_Left := Upper_Left;
-    Name.Lower_Right := Lower_Right;
-    Name.Current_Pos := Home;
-    Name.Current_Foreground := Default_Foreground;
-    Name.Current_Background := Default_Background;
-    Name.Current_Xor_Mode   := Default_Xor_Mode;
-    Con.Windows.Insert ( (Name) );
+    Win_Data.Con := Con.all;
+    Win_Data.Open := True;
+    Win_Data.Upper_Left := Upper_Left;
+    Win_Data.Lower_Right := Lower_Right;
+    Win_Data.Current_Pos := Home;
+    Win_Data.Current_Foreground := Default_Foreground;
+    Win_Data.Current_Background := Default_Background;
+    Win_Data.Current_Xor_Mode   := Default_Xor_Mode;
+    return Win : Window do
+      Win.Init (Win_Data);
+      Windows.Insert ( (Win) );
+    end return;
   exception
     when Constraint_Error =>
       raise Invalid_Square;
   end Open;
 
-  procedure Check_Win (Con : in Console; Name : in Window) is
+  procedure Check_Win (Name : in Window) is
   begin
-    if not Is_Open (Con, Name) then
+    if Name = Null_Window or else not Name.Get_Access.Open then
       raise Window_Not_Open;
     end if;
   end Check_Win;
 
   -- Make window re-usable (have to re_open it)
-  procedure Close (Con  : in out Console; Name : in out Window) is
-    Win : Window;
+  procedure Close (Name : in out Window) is
+    W : Window;
     Moved : Boolean;
   begin
-    Check_Win (Con, Name);
-    -- List at least contains Name
-    if Con.Windows.Is_Empty then
-      raise Window_Not_Open;
-    end if;
-    Con.Windows.Rewind;
+    Check_Win (Name);
+    Windows.Rewind;
     loop
-      Con.Windows.Read (Win, Moved => Moved);
-      exit when Win = Name;
-      if not Moved then
-        -- Not found and reading last
-        raise Window_Not_Open;
+      Windows.Read (W, Window_List_Mng.Current);
+      if W.Get_Access = Name.Get_Access then
+        Windows.Deallocate (Moved => Moved);
+        exit when not Moved;
+      else
+        exit when not Windows.Check_Move;
       end if;
     end loop;
-    Con.Windows.Delete (Moved => Moved);
-    Dyn_Win.Free(Name);
+    Name := Null_Window;
   end Close;
 
-  function Is_Open (Con : Console; Name : Window) return Boolean is
+  function Is_Open (Name : Window) return Boolean is
   begin
-    Check_Init (Con);
-    return Name /= null and then Name.Con = Con'Unrestricted_Access;
+    return Name /= Null_Window and then Name.Get_Access.Open;
   end Is_Open;
 
-  procedure Clear (Con  : in out Console; Name : in Window := Screen) is
+  procedure Clear (Name : in Window) is
+    Win : access Window_Data;
   begin
-    Check_Win (Con, Name);
+    Check_Win (Name);
+    Win := Name.Get_Access;
     -- Upper left and lower right, set foreground as our background
-    Set_Attributes (Con, Name.Current_Background,
-                    Name.Current_Background, Xor_Off);
-    X_Mng.X_Draw_Area (Con.Id, Name.Lower_Right.Col - Name.Upper_Left.Col + 1,
-                           Name.Lower_Right.Row - Name.Upper_Left.Row + 1,
-                           Name.Upper_Left.Row, Name.Upper_Left.Col);
-    Set_Attributes (Con, Name.Current_Foreground,
-                    Name.Current_Background,
-                    Name.Current_Xor_Mode);
-    Move (Con, Name => Name);
+    Set_Attributes (Win.Con, Win.Current_Background,
+                    Win.Current_Background, Xor_Off);
+    X_Mng.X_Draw_Area (Win.Con.Get_Access.Id,
+                           Win.Lower_Right.Col - Win.Upper_Left.Col + 1,
+                           Win.Lower_Right.Row - Win.Upper_Left.Row + 1,
+                           Win.Upper_Left.Row, Win.Upper_Left.Col);
+    Set_Attributes (Win.Con, Win.Current_Foreground,
+                    Win.Current_Background,
+                    Win.Current_Xor_Mode);
+    Move (Name);
   end Clear;
 
   -- Set / get colors
-  procedure Set_Foreground (Con        : in Console;
-                            Foreground : in Colors      := Current;
-                            Name       : in Window      := Screen) is
+  procedure Set_Foreground (Name       : in Window;
+                            Foreground : in Colors := Current) is
   begin
-    Check_Win (Con, Name);
+    Check_Win (Name);
     if Foreground /= Current then
-      Name.Current_Foreground := Foreground;
+      Name.Get_Access.Current_Foreground := Foreground;
     end if;
   end Set_Foreground;
 
-  procedure Set_Background (Con        : in Console;
-                            Background : in Colors := Current;
-                            Name       : in Window       := Screen) is
+  function Get_Foreground (Name : Window) return Effective_Colors is
   begin
-    if Name = null then
-      raise Window_Not_Open;
-    end if;
+    Check_Win (Name);
+    return Name.Get_Access.Current_Foreground;
+  end Get_Foreground;
+
+  procedure Set_Background (Name       : in Window;
+                            Background : in Colors := Current) is
+  begin
+    Check_Win (Name);
     if Background /= Current then
-      Name.Current_Background := Background;
+      Name.Get_Access.Current_Background := Background;
     end if;
   end Set_Background;
 
-  function Get_Foreground (Con        : in Console;
-                            Name : Window := Screen)
-    return Effective_Colors is
+  function Get_Background (Name : Window) return Effective_Colors is
   begin
-    if Name = null then
-      raise Window_Not_Open;
-    end if;
-    return Name.Current_Foreground;
-  end Get_Foreground;
-
-  function Get_Background (Con        : in Console;
-                            Name : Window := Screen)
-    return Effective_Colors is
-  begin
-    if Name = null then
-      raise Window_Not_Open;
-    end if;
-    return Name.Current_Background;
+    Check_Win (Name);
+    return Name.Get_Access.Current_Background;
   end Get_Background;
 
-  procedure Set_Xor_Mode(Con        : in Console;
-                            Xor_Mode : in Xor_Modes := Current;
-                         Name : in Window := Screen) is
+  procedure Set_Xor_Mode(Name     : in Window;
+                         Xor_Mode : in Xor_Modes := Current) is
   begin
-    if Name = null then
-      raise Window_Not_Open;
-    end if;
+    Check_Win (Name);
     if Xor_Mode /= Current then
-      Name.Current_Xor_Mode := Xor_Mode;
+      Name.Get_Access.Current_Xor_Mode := Xor_Mode;
     end if;
   end Set_Xor_Mode;
 
-  function Get_Xor_Mode(Con        : in Console;
-                            Name : Window := Screen) return Effective_Xor_Modes is
+  function Get_Xor_Mode(Name : Window) return Effective_Xor_Modes is
   begin
-    if Name = null then
-      raise Window_Not_Open;
-    end if;
-    return Name.Current_Xor_Mode;
+    Check_Win (Name);
+    return Name.Get_Access.Current_Xor_Mode;
   end Get_Xor_Mode;
 
-
   -- Get Upper_Left / Lower_Right absolute coordinates of a window
-  function Get_Absolute_Upper_Left (Con        : in Console;
-                            Name : Window) return Square is
+  function Get_Absolute_Upper_Left (Name : Window) return Square is
   begin
-    if Name = null then
-      raise Window_Not_Open;
-    end if;
-    return Name.Upper_Left;
+    Check_Win (Name);
+    return Name.Get_Access.Upper_Left;
   end Get_Absolute_Upper_Left;
 
-  function Get_Absolute_Lower_Right (Con        : in Console;
-                            Name : Window) return Square is
+  function Get_Absolute_Lower_Right (Name : Window) return Square is
   begin
-    if Name = null then
-      raise Window_Not_Open;
-    end if;
-    return Name.Lower_Right;
+    Check_Win (Name);
+    return Name.Get_Access.Lower_Right;
   end Get_Absolute_Lower_Right;
 
-  -- Get Lower_Right relative coordinates of a window (Upper_Left is (0, 0)).
-  function Get_Relative_Lower_Right (Con        : in Console;
-                            Name : Window) return Square is
+  -- Get Lower_Right relative coordinates of a window
+  -- (Upper_Left is (0, 0)).
+  function Get_Relative_Lower_Right (Name : Window) return Square is
+    Win : access Window_Data;
   begin
-    if Name = null then
-      raise Window_Not_Open;
-    end if;
-    return (Name.Lower_Right.Row - Name.Upper_Left.Row,
-            Name.Lower_Right.Col - Name.Upper_Left.Col);
+    Check_Win (Name);
+    Win := Name.Get_Access;
+    return (Win.Lower_Right.Row - Win.Upper_Left.Row,
+            Win.Lower_Right.Col - Win.Upper_Left.Col);
   end Get_Relative_Lower_Right;
 
   -- True if the absolute square (relative to screen) is in the window.
   -- False otherwise
-  function In_Window (Con        : in Console;
-                            Absolute_Square : Square;
-                      Name            : Window) return Boolean is
+  function In_Window (Name            : Window;
+                      Absolute_Square : Square) return Boolean is
+    Win : access Window_Data;
   begin
-    if Name = null then
-      raise Window_Not_Open;
-    end if;
-    return   Absolute_Square.Row >= Name.Upper_Left.Row
-    and then Absolute_Square.Row <= Name.Lower_Right.Row
-    and then Absolute_Square.Col >= Name.Upper_Left.Col
-    and then Absolute_Square.Col <= Name.Lower_Right.Col;
+    Check_Win (Name);
+    Win := Name.Get_Access;
+    return   Absolute_Square.Row >= Win.Upper_Left.Row
+    and then Absolute_Square.Row <= Win.Lower_Right.Row
+    and then Absolute_Square.Col >= Win.Upper_Left.Col
+    and then Absolute_Square.Col <= Win.Lower_Right.Col;
   end In_Window;
 
   -- Returns the relative square (relative to window), being the same
   --  physical position as the absolute square (relative to screen).
   -- May raise Invalid_Square if the absolute position is not in window.
-  function To_Relative (Con        : in Console;
-                            Absolute_Square : Square;
-                        Name            : Window) return Square is
+  function To_Relative (Name            : Window;
+                        Absolute_Square : Square) return Square is
+    Win : access Window_Data;
   begin
-    if not In_Window(Absolute_Square, Name) then
+    if not In_Window (Name, Absolute_Square) then
       raise Invalid_Square;
     end if;
-    return (Row => Absolute_Square.Row - Name.Upper_Left.Row,
-            Col => Absolute_Square.Col - Name.Upper_Left.Col);
+    Win := Name.Get_Access;
+    return (Row => Absolute_Square.Row - Win.Upper_Left.Row,
+            Col => Absolute_Square.Col - Win.Upper_Left.Col);
   end To_Relative;
 
   -- Returns the absolute square (in screen) corresponding to the relative
   --  square in the window
   -- May raise Invalid_Square if the relative square is not in window
-  function To_Absolute (Con        : in Console;
-                            Relative_Square : Square;
-                        Name            : Window) return Square is
+  function To_Absolute (Name            : Window;
+                        Relative_Square : Square) return Square is
+    Win : access Window_Data;
   begin
-    if Name = null then
-      raise Window_Not_Open;
-    end if;
-    if (Relative_Square.Row > Name.Lower_Right.Row-Name.Upper_Left.Row) or else
-       (Relative_Square.Col > Name.Lower_Right.Col-Name.Upper_Left.Col) then
+    Check_Win (Name);
+    Win := Name.Get_Access;
+    if (Relative_Square.Row >
+        Win.Lower_Right.Row - Win.Upper_Left.Row) or else
+       (Relative_Square.Col >
+        Win.Lower_Right.Col - Win.Upper_Left.Col) then
       raise Invalid_Square;
     end if;
-    return (Row => Relative_Square.Row + Name.Upper_Left.Row, Col =>
-      Relative_Square.Col + Name.Upper_Left.Col);
+    return (Row => Relative_Square.Row + Win.Upper_Left.Row,
+            Col => Relative_Square.Col + Win.Upper_Left.Col);
   end To_Absolute;
 
 
-
   -- Move cursor for use with put or get
-  procedure Move (Position : in Square := Home;
-                  Name     : in Window := Screen) is
+  procedure Move (Name     : in Window;
+                  Position : in Square := Home) is
   begin
-    Move(Position.Row, Position.Col, Name);
+    Move(Name, Position.Row, Position.Col);
   end Move;
 
-  procedure Clear (Name : in Window := Screen) is
+  procedure Move (Name : in Window;
+                  Row  : in Row_Range;
+                  Col  : in Col_Range) is
+    Win : access Window_Data;
   begin
-    if Name = null then
-      raise Window_Not_Open;
-    end if;
-    -- Upper left and lower right, set foreground as our background
-    Set_Attributes (Name.Current_Background,
-                    Name.Current_Background, Xor_Off);
-    X_Mng.X_Draw_Area (Id, Name.Lower_Right.Col - Name.Upper_Left.Col + 1,
-                           Name.Lower_Right.Row - Name.Upper_Left.Row + 1,
-                           Name.Upper_Left.Row, Name.Upper_Left.Col);
-    Set_Attributes (Name.Current_Foreground,
-                    Name.Current_Background,
-                    Name.Current_Xor_Mode);
-    Move (Name => Name);
-  end Clear;
-
-  procedure Move (Row  : in Row_Range;
-                  Col  : in Col_Range;
-                  Name : in Window := Screen) is
-  begin
-    if Name = null then
-      raise Window_Not_Open;
-    end if;
-    if (Row > Name.Lower_Right.Row - Name.Upper_Left.Row) or else
-       (Col > Name.Lower_Right.Col - Name.Upper_Left.Col) then
+    Check_Win (Name);
+    Win := Name.Get_Access;
+    if (Row > Win.Lower_Right.Row - Win.Upper_Left.Row) or else
+       (Col > Win.Lower_Right.Col - Win.Upper_Left.Col) then
       raise Invalid_Square;
     end if;
-    Name.Current_Pos := (Row, Col);
+    Win.Current_Pos := (Row, Col);
   end Move;
 
-  function Position (Name : Window := Screen) return Square is
+  function Position (Name : Window) return Square is
   begin
-    if Name = null then
-      raise Window_Not_Open;
-    end if;
-    return Name.Current_Pos;
+    Check_Win (Name);
+    return Name.Get_Access.Current_Pos;
   end Position;
 
 
-  -- Get window attributes when current, and set the whole
+  -- Internal set attributes for the window
   procedure Set_Attributes_From_Window (
-                     Name       : in Window;
+                     Win        : access Window_Data;
                      Foreground : in Colors;
                      Background : in Colors) is
     Fg : Effective_Colors;
     Bg : Effective_Colors;
   begin
     if Foreground = Current then
-      Fg := Name.Current_Foreground;
+      Fg := Win.Current_Foreground;
     else
       Fg := Foreground;
     end if;
     if Background = Current then
-      Bg := Name.Current_Background;
+      Bg := Win.Current_Background;
     else
       Bg := Background;
     end if;
-    Set_Attributes (Fg, Bg, Name.Current_Xor_Mode);
+    Set_Attributes (Win.Con,
+                    Fg, Bg, Win.Current_Xor_Mode);
   end Set_Attributes_From_Window;
 
-  -- Increment col by one or row by one...
-  procedure Move_1 (Name : in Window := Screen) is
+  -- Internal increment col by one or row by one...
+  procedure Move_1 (Win : access Window_Data) is
   begin
-    if Name.Current_Pos.Col /= Name.Lower_Right.Col - Name.Upper_Left.Col then
+    if Win.Current_Pos.Col /= Win.Lower_Right.Col
+                            - Win.Upper_Left.Col then
       -- Next col
-      Name.Current_Pos.Col := Col_Range'Succ(Name.Current_Pos.Col);
+      Win.Current_Pos.Col := Col_Range'Succ(Win.Current_Pos.Col);
     else
       -- 1st col
-      Name.Current_Pos.Col := Col_Range'First;
-      if Name.Current_Pos.Row /=
-         Name.Lower_Right.Row  - Name.Upper_Left.Row then
+      Win.Current_Pos.Col := Col_Range'First;
+      if Win.Current_Pos.Row /=
+         Win.Lower_Right.Row - Win.Upper_Left.Row then
         -- Next line
-        Name.Current_Pos.Row := Row_Range'Succ(Name.Current_Pos.Row);
+        Win.Current_Pos.Row := Row_Range'Succ(Win.Current_Pos.Row);
       else
         -- No scroll :-( first row
-        Name.Current_Pos.Row := Row_Range'First;
+        Win.Current_Pos.Row := Row_Range'First;
       end if;
     end if;
   end Move_1;
@@ -586,33 +552,30 @@ package body Consoles is
   -- Internal write of the string of ONE character at the current cursor
   --  position and with attributes.
   -- Lf only is interpreted
-  procedure Put_1_Char (C          : in String;
-                        Name       : in Window := Screen;
+  procedure Put_1_Char (Win        : access Window_Data;
+                        C          : in String;
                         Foreground : in Colors := Current;
                         Background : in Colors := Current;
                         Move       : in Boolean := True) is
   begin
-    if Name = null then
-      raise Window_Not_Open;
-    end if;
     if Language.Put_Length (C) /= 1 then
       -- Internal error put a "Warning" character
-      X_Mng.X_Put_String (Id, "#",
-                          Name.Upper_Left.Row + Name.Current_Pos.Row,
-                          Name.Upper_Left.Col + Name.Current_Pos.Col);
+      X_Mng.X_Put_String (Win.Con.Get_Access.Id, "#",
+                          Win.Upper_Left.Row + Win.Current_Pos.Row,
+                          Win.Upper_Left.Col + Win.Current_Pos.Col);
     elsif C /= Lfs then
-      Set_Attributes_From_Window (Name, Foreground, Background);
+      Set_Attributes_From_Window (Win, Foreground, Background);
       -- Put character
-      X_Mng.X_Put_String (Id, C,
-                          Name.Upper_Left.Row + Name.Current_Pos.Row,
-                          Name.Upper_Left.Col + Name.Current_Pos.Col);
+      X_Mng.X_Put_String (Win.Con.Get_Access.Id, C,
+                          Win.Upper_Left.Row + Win.Current_Pos.Row,
+                          Win.Upper_Left.Col + Win.Current_Pos.Col);
     end if;
     if Move then
       if C = Lfs then
         -- End of current row
-        Name.Current_Pos.Col := Name.Lower_Right.Col - Name.Upper_Left.Col;
+        Win.Current_Pos.Col := Win.Lower_Right.Col - Win.Upper_Left.Col;
       end if;
-      Move_1 (Name);
+      Move_1 (Win);
     end if;
   end Put_1_Char;
 
@@ -622,26 +585,28 @@ package body Consoles is
   -- Lf is the only special Ascii character which is interpreted.
   -- If not Move, the cursor position is not updated
   --  (Lf would be ignored then)
-  procedure Put (C          : in Character;
-                 Name       : in Window := Screen;
+  procedure Put (Name       : in Window;
+                 C          : in Character;
                  Foreground : in Colors := Current;
                  Background : in Colors := Current;
                  Move       : in Boolean := True) is
   begin
-    Put_1_Char (C & "", Name, Foreground, Background, Move);
+    Check_Win (Name);
+    Put_1_Char (Name.Get_Access, C & "", Foreground, Background, Move);
   end Put;
 
   -- Idem with a string
-  procedure Put (S          : in String;
-                 Name       : in Window := Screen;
+  procedure Put (Name       : in Window;
+                 S          : in String;
                  Foreground : in Colors := Current;
                  Background : in Colors := Current;
                  Move       : in Boolean := True) is
     Ifirst, Ilast : Natural;
     Last : Natural;
-    Saved_Pos : constant Square := Name.Current_Pos;
-    Win_Last_Col : constant Col_Range
-                 := Name.Lower_Right.Col - Name.Upper_Left.Col;
+    Acc : access Window_Data;
+    Con : access Console_Data;
+    Saved_Pos : Square;
+    Win_Last_Col : Col_Range;
     Indexes : constant Language.Index_Array
             := Language.All_Indexes_Of (S);
     Plf : Boolean;
@@ -649,21 +614,23 @@ package body Consoles is
     procedure X_Put (Str : in String) is
     begin
       if Str'Length /= 0 then
-        X_Mng.X_Put_String (Id, Str,
-                Name.Upper_Left.Row + Name.Current_Pos.Row,
-                Name.Upper_Left.Col + Name.Current_Pos.Col);
+        X_Mng.X_Put_String (Con.Id, Str,
+                Acc.Upper_Left.Row + Acc.Current_Pos.Row,
+                Acc.Upper_Left.Col + Acc.Current_Pos.Col);
       end if;
     end X_Put;
 
   begin
-    if Name = null then
-      raise Window_Not_Open;
-    end if;
+    Check_Win (Name);
     -- Check empty string
     if S = "" then
       return;
     end if;
-    Set_Attributes_From_Window (Name, Foreground, Background);
+    Acc := Name.Get_Access;
+    Con := Acc.Con.Get_Access;
+    Saved_Pos :=  Acc.Current_Pos;
+    Win_Last_Col := Acc.Lower_Right.Col - Acc.Upper_Left.Col;
+    Set_Attributes_From_Window (Acc, Foreground, Background);
     -- Put chunks of string due to Lfs or too long slices
     Ifirst := Indexes'First;
     loop
@@ -680,8 +647,8 @@ package body Consoles is
       end if;
       -- Truncate to fit window
       -- Last - first <= Win_last_col - Pos
-      if Name.Current_Pos.Col + Ilast - Ifirst  > Win_Last_Col then
-         Ilast := Ifirst + Win_Last_Col - Name.Current_Pos.Col;
+      if Acc.Current_Pos.Col + Ilast - Ifirst  > Win_Last_Col then
+         Ilast := Ifirst + Win_Last_Col - Acc.Current_Pos.Col;
       end if;
       -- Set Last to last char to put
       if Ilast /= Indexes'Last then
@@ -692,13 +659,12 @@ package body Consoles is
       -- Put the chunk
       X_Put (S(Indexes(Ifirst) .. Last));
       -- Update position : last character + one
-      One_Con_Io.Move (Name.Current_Pos.Row,
-                       Name.Current_Pos.Col + Ilast - Ifirst,
-                       Name);
-      Move_1 (Name);
+      Consoles.Move (Name, Acc.Current_Pos.Row,
+                           Acc.Current_Pos.Col + Ilast - Ifirst);
+      Move_1 (Acc);
       -- Issue Lf
       if Plf then
-        Put_1_Char (Lfs, Name);
+        Put_1_Char (Acc, Lfs);
         Ilast := Ilast + 1;
       end if;
       -- Move to next chunk
@@ -708,134 +674,122 @@ package body Consoles is
 
     -- Restore pos
     if not Move then
-      One_Con_Io.Move (Saved_Pos, Name);
+      Consoles.Move (Name, Saved_Pos);
     end if;
 
   end Put;
 
   -- Idem but appends a CR
-  procedure Put_Line (S          : in String;
-                      Name       : in Window := Screen;
+  procedure Put_Line (Name       : in Window;
+                      S          : in String;
                       Foreground : in Colors := Current;
                       Background : in Colors := Current) is
   begin
-    if Name = null then
-      raise Window_Not_Open;
-    end if;
     -- Puts the string
-    Put(S, Name, Foreground, Background);
+    Put (Name, S, Foreground, Background);
     -- New line
-    New_Line(Name);
+    New_Line (Name);
   end Put_Line;
 
   -- Idem with a wide character
-  procedure Putw (W          : in Wide_Character;
-                  Name       : in Window := Screen;
+  procedure Putw (Name       : in Window;
+                  W          : in Wide_Character;
                   Foreground : in Colors := Current;
                   Background : in Colors := Current;
                   Move       : in Boolean := True) is
   begin
-    Put (Language.Wide_To_String (W & ""),
-         Name, Foreground, Background, Move);
+    Put (Name, Language.Wide_To_String (W & ""),
+         Foreground, Background, Move);
   end Putw;
 
   -- Idem with a wide string
-  procedure Putw (S          : in Wide_String;
-                  Name       : in Window := Screen;
+  procedure Putw (Name       : in Window;
+                  S          : in Wide_String;
                   Foreground : in Colors := Current;
                   Background : in Colors := Current;
                   Move       : in Boolean := True) is
   begin
-    Put (Language.Wide_To_String (S),
-         Name, Foreground, Background, Move);
+    Put (Name, Language.Wide_To_String (S),
+         Foreground, Background, Move);
   end Putw;
 
   -- Idem but appends a Lf
-  procedure Putw_Line (S          : in Wide_String;
-                       Name       : in Window := Screen;
+  procedure Putw_Line (Name       : in Window;
+                       S          : in Wide_String;
                        Foreground : in Colors := Current;
                        Background : in Colors := Current) is
   begin
-    Put_Line (Language.Wide_To_String (S),
-         Name, Foreground, Background);
+    Put_Line (Name, Language.Wide_To_String (S),
+              Foreground, Background);
   end Putw_Line;
 
   -- Idem with a unicode number
-  procedure Putu (U          : in Unicode_Number;
-                  Name       : in Window := Screen;
+  procedure Putu (Name       : in Window;
+                  U          : in Unicode_Number;
                   Foreground : in Colors := Current;
                   Background : in Colors := Current;
                   Move       : in Boolean := True) is
     S : constant Unicode_Sequence (1 .. 1) := (1 => U);
   begin
-    Put (Language.Unicode_To_String (S),
-         Name, Foreground, Background, Move);
+    Put (Name, Language.Unicode_To_String (S),
+         Foreground, Background, Move);
   end Putu;
 
   -- Idem with a unicode sequence
-  procedure Putu (S          : in Unicode_Sequence;
-                  Name       : in Window := Screen;
+  procedure Putu (Name       : in Window;
+                  S          : in Unicode_Sequence;
                   Foreground : in Colors := Current;
                   Background : in Colors := Current;
                   Move       : in Boolean := True) is
   begin
-    Put (Language.Unicode_To_String (S),
-         Name, Foreground, Background, Move);
+    Put (Name, Language.Unicode_To_String (S),
+         Foreground, Background, Move);
   end Putu;
 
   -- Idem but appends a Lf
-  procedure Putu_Line (S          : in Unicode_Sequence;
-                       Name       : in Window := Screen;
+  procedure Putu_Line (Name       : in Window;
+                       S          : in Unicode_Sequence;
                        Foreground : in Colors := Current;
                        Background : in Colors := Current) is
   begin
-    Put_Line (Language.Unicode_To_String (S),
-         Name, Foreground, Background);
+    Put_Line (Name, Language.Unicode_To_String (S),
+              Foreground, Background);
   end Putu_Line;
 
   -- Puts CR
-  procedure New_Line (Name   : in Window := Screen;
+  procedure New_Line (Name   : in Window;
                       Number : in Positive := 1) is
   begin
-    if Name = null then
-      raise Window_Not_Open;
-    end if;
     for I in 1 .. Number loop
-      Put (Lf, Name);
+      Put (Name, Lf);
     end loop;
   end New_Line;
 
   -- Selection (in/out) management
   -- Set/reset the selection to be transfered to other applications
-  procedure Set_Selection (Selection : in String) is
+  procedure Set_Selection (Con : in Console; Selection : in String) is
   begin
-    if not Init_Done then
-      raise Not_Init;
-    end if;
+    Check_Init (Con);
     if Selection = "" then
-      X_Mng.X_Reset_Selection (Id);
+      X_Mng.X_Reset_Selection (Con.Get_Access.Id);
     else
-      X_Mng.X_Set_Selection (Id, Selection);
+      X_Mng.X_Set_Selection (Con.Get_Access.Id, Selection);
     end if;
   end Set_Selection;
 
   -- Request selection from other applications. An event (Curs_Mvt) of
   --  kind Selection will be received, then Get_Selection shall be called
-  procedure Request_Selection is
+  procedure Request_Selection (Con : in Console) is
   begin
-    if not Init_Done then
-      raise Not_Init;
-    end if;
-    X_Mng.X_Request_Selection (Id);
+    Check_Init (Con);
+    X_Mng.X_Request_Selection (Con.Get_Access.Id);
   end Request_Selection;
 
   -- Get the requested selection
-  function Get_Selection (Max_Len : Natural) return String is
+  function Get_Selection (Con : Console; Max_Len : Natural) return String is
   begin
-    if not Init_Done then
-      raise Not_Init;
-    end if;
-    return X_Mng.X_Get_Selection (Id, Max_Len);
+    Check_Init (Con);
+    return X_Mng.X_Get_Selection (Con.Get_Access.Id, Max_Len);
   exception
     when X_Mng.X_Failure =>
       -- Unable to get selection
@@ -843,17 +797,18 @@ package body Consoles is
   end Get_Selection;
 
 
-  -- X event management
-  procedure Next_X_Event (Timeout : in Timers.Delay_Rec;
+  -- Internal X event management
+  procedure Next_X_Event (Con : access Console_Data;
+                          Timeout : in Timers.Delay_Rec;
                           X_Event : out X_Mng.Event_Kind) is
   -- In out for X_Mng
   X_Timeout : Timers.Delay_Rec := Timeout;
   begin
     -- Wait
-    X_Mng.X_Wait_Event (Id, X_Timeout, X_Event);
+    X_Mng.X_Wait_Event (Con.Id, X_Timeout, X_Event);
   end Next_X_Event;
 
-  -- Maps some function keys (16#FF# 16#xx#) back into a normal key
+  -- Internal: Maps some function keys (16#FF# 16#xx#) back into a normal key
   --  or to another function key
   procedure Translate_X_Key (Kbd_Tab : in out X_Mng.Kbd_Tab_Code;
                              Is_Code : in out Boolean) is
@@ -900,11 +855,12 @@ package body Consoles is
     end if;
   end Translate_X_Key;
 
-  -- Check if a key is available until a certain time.
+  -- Internal: Check if a key is available until a certain time.
   -- Returns if key pressed (Esc event), then Ctrl..Kbd_Tab are significant
   -- otherwise mouse action, refresh, timeout...
   subtype Event_List is Curs_Mvt range Esc .. Refresh;
-  procedure Get_Key_Time (Event       : out Event_List;
+  procedure Get_Key_Time (Con         : access Console_Data;
+                          Event       : out Event_List;
                           Ctrl        : out Boolean;
                           Shift       : out Boolean;
                           Code        : out Boolean;
@@ -915,15 +871,12 @@ package body Consoles is
     use X_Mng, Ada.Calendar;
     use type Timers.Delay_Rec, Timers.Delay_List;
   begin
-    if not Init_Done then
-      raise Not_Init;
-    end if;
 
     Event := Timeout;
     Ctrl := False;
     Shift := False;
     Code := False;
-    Next_X_Event (Time_Out, X_Event);
+    Next_X_Event (Con, Time_Out, X_Event);
     case X_Event is
       when X_Mng.Fd_Event =>
         -- Fd event
@@ -947,7 +900,7 @@ package body Consoles is
         return;
       when X_Mng.Tid_Press | X_Mng.Tid_Release | X_Mng.Tid_Motion =>
         Event := Mouse_Button;
-        Mouse_Status := X_Event;
+        Con.Mouse_Status := X_Event;
         return;
       when X_Mng.Selection =>
         -- Selection to get
@@ -958,7 +911,7 @@ package body Consoles is
         Event := Break;
         return;
       when X_Mng.Keyboard =>
-        X_Mng.X_Read_Key(Id, Ctrl, Shift, Code, Kbd_Tab);
+        X_Mng.X_Read_Key(Con.Id, Ctrl, Shift, Code, Kbd_Tab);
         Translate_X_Key (Kbd_Tab, Code);
         -- Check break
         if not Code
@@ -979,24 +932,26 @@ package body Consoles is
 
   -- Idem but the get is initialised with the initial content of the string
   --  and cursor's initial location can be set
-  procedure Put_Then_Get (Str        : in out Unicode_Sequence;
+  procedure Put_Then_Get (Name       : in Window;
+                          Str        : in out Unicode_Sequence;
                           Last       : out Natural;
                           Stat       : out Curs_Mvt;
                           Pos        : in out Positive;
                           Insert     : in out Boolean;
-                          Name       : in Window := Screen;
                           Foreground : in Colors := Current;
                           Background : in Colors := Current;
                           Time_Out   : in Delay_Rec :=  Infinite_Delay;
                           Echo       : in Boolean := True) is
+    -- Window and console data
+    Con : access Console_Data;
+    Win : access Window_Data;
     -- Local string for working on
     Lstr        : As.U.Asu_Us := As.U.Tus (Language.Unicode_To_String (Str));
     -- Indexes in Lstr of put positions
     Indexes     : Language.Index_Array
                 := Language.All_Indexes_Of (Lstr.Image);
     -- Constant put width
-    Width       : constant Natural
-                := Indexes'Length;
+    Width       : constant Natural := Indexes'Length;
     -- Got event
     Event       : Event_List;
     -- Got key & info
@@ -1009,7 +964,7 @@ package body Consoles is
     -- Done?
     Done        :  Boolean;
     Redraw      : Boolean;
-    First_Pos   : constant Square := Name.Current_Pos;
+    First_Pos   : Square;
     Last_Time   : Delay_Rec;
 
     -- Return index in str of last char of a position
@@ -1067,18 +1022,18 @@ package body Consoles is
     procedure Cursor (Show : in Boolean) is
       Absolute_Pos : Square;
     begin
-      Move(First_Pos.Row, First_Pos.Col + Pos - 1, Name);
-      Absolute_Pos := To_Absolute (Name.Current_Pos, Name);
+      Move (Name, First_Pos.Row, First_Pos.Col + Pos - 1);
+      Absolute_Pos := To_Absolute (Name, Win.Current_Pos);
       if Show then
         if Insert then
-          X_Mng.X_Overwrite_Char (Id, 16#5E#,
+          X_Mng.X_Overwrite_Char (Con.Id, 16#5E#,
                 Absolute_Pos.Row, Absolute_Pos.Col);
         else
-          X_Mng.X_Overwrite_Char (Id, 16#5F#,
+          X_Mng.X_Overwrite_Char (Con.Id, 16#5F#,
                 Absolute_Pos.Row, Absolute_Pos.Col);
         end if;
       else
-        X_Mng.X_Put_String (Id, Slice(Pos, Pos),
+        X_Mng.X_Put_String (Con.Id, Slice(Pos, Pos),
               Absolute_Pos.Row, Absolute_Pos.Col);
       end if;
     end Cursor;
@@ -1087,6 +1042,10 @@ package body Consoles is
     use type X_Mng.Byte;
     use type As.U.Asu_Us;
   begin
+    Check_Win (Name);
+    Win := Name.Get_Access;
+    Con := Win.Con.Get_Access;
+    First_Pos := Win.Current_Pos;
     -- Time at which the get ends
     if Time_Out = Timers.Infinite_Delay
     or else Time_Out.Delay_Kind = Timers.Delay_Exp then
@@ -1104,7 +1063,7 @@ package body Consoles is
       Last := 0;
 
       loop
-        Get_Key_Time (Event, Ctrl, Shift, Code, Kbd_Tab, Last_Time);
+        Get_Key_Time (Con, Event, Ctrl, Shift, Code, Kbd_Tab, Last_Time);
         if Event /= Esc then
           -- No key ==> mouse, time out, refresh, fd...
           Stat := Event;
@@ -1204,14 +1163,14 @@ package body Consoles is
     end if;  -- Width = 0
 
     -- Check width and current_pos / window's width
-    if Width > Name.Lower_Right.Col - Name.Upper_Left.Col  + 1 then
+    if Width > Win.Lower_Right.Col - Win.Upper_Left.Col  + 1 then
       raise String_Too_Long;
     end if;
 
     -- Put the string
-    Move(First_Pos, Name);
+    Move (Name, First_Pos);
     if Echo then
-      Put(Lstr.Image, Name, Foreground, Background, Move => False);
+      Put (Name, Lstr.Image, Foreground, Background, Move => False);
     end if;
 
     Done := False;
@@ -1222,7 +1181,7 @@ package body Consoles is
       end if;
       Redraw := False;
       -- Try to get a key
-      Get_Key_Time (Event, Ctrl, Shift, Code, Kbd_Tab, Last_Time);
+      Get_Key_Time (Con, Event, Ctrl, Shift, Code, Kbd_Tab, Last_Time);
       -- Hide cursor
       if Echo then
         Cursor (False);
@@ -1378,8 +1337,8 @@ package body Consoles is
 
       -- Redraw if necessary
       if Redraw and then Echo then
-        Move(First_Pos, Name);
-        Put(Lstr.Image, Name, Foreground, Background, Move => False);
+        Move (Name, First_Pos);
+        Put (Name, Lstr.Image, Foreground, Background, Move => False);
      end if;
      exit when Done;
     end loop;
@@ -1387,12 +1346,12 @@ package body Consoles is
   end Put_Then_Get;
 
   -- Idem but with a Wide_String
-  procedure Put_Then_Get (Str        : in out Wide_String;
+  procedure Put_Then_Get (Name       : in Window;
+                          Str        : in out Wide_String;
                           Last       : out Natural;
                           Stat       : out Curs_Mvt;
                           Pos        : in out Positive;
                           Insert     : in out Boolean;
-                          Name       : in Window := Screen;
                           Foreground : in Colors := Current;
                           Background : in Colors := Current;
                           Time_Out   : in Delay_Rec :=  Infinite_Delay;
@@ -1400,19 +1359,18 @@ package body Consoles is
     -- Copy keeps the same range
     Seq : Unicode_Sequence := Language.Copy (Str);
   begin
-    Put_Then_Get (Seq, Last, Stat, Pos, Insert, Name, Foreground,
+    Put_Then_Get (Name, Seq, Last, Stat, Pos, Insert, Foreground,
                   Background, Time_Out, Echo);
     Str := Language.Copy (Seq);
   end Put_Then_Get;
 
   -- Gets a string of at most width characters
-  procedure Get (Con        : in Console;
+  procedure Get (Name       : in Window;
                  Str        : out Unicode_Sequence;
                  Last       : out Natural;
                  Stat       : out Curs_Mvt;
                  Pos        : out Positive;
                  Insert     : out Boolean;
-                 Name       : in Window := Screen;
                  Foreground : in Colors := Current;
                  Background : in Colors := Current;
                  Time_Out   : in Delay_Rec :=  Infinite_Delay;
@@ -1424,14 +1382,14 @@ package body Consoles is
     Lpos := 1;
     Lins := False;
     -- Init empty
-    Put_Then_Get (Lstr, Last, Stat, Lpos, Lins, Name,
+    Put_Then_Get (Name, Lstr, Last, Stat, Lpos, Lins,
         Foreground, Background, Time_Out, Echo);
     Str := Lstr;
     Pos := Lpos;
     Insert := Lins;
   end Get;
 
-  function Get (Name     : in Window := Screen;
+  function Get (Name     : in Window;
                 Time_Out : in Delay_Rec := Infinite_Delay)
            return Get_Result is
     Str    : Unicode_Sequence (1 .. 1);
@@ -1440,7 +1398,7 @@ package body Consoles is
     Pos    : Positive;
     Insert : Boolean;
   begin
-    Get (Str, Last, Stat, Pos, Insert, Name,
+    Get (Name, Str, Last, Stat, Pos, Insert,
          Time_Out => Time_Out, Echo => False);
     case Stat is
       when Up =>
@@ -1498,235 +1456,244 @@ package body Consoles is
   end Get;
 
   -- Take first character of keyboard buffer (no echo) or refresh event
-  procedure Pause is
+  procedure Pause (Con : in Console) is
     Str  : Unicode_Sequence (1 .. 0);
     Last : Natural;
     Stat : Curs_Mvt;
     Pos  : Positive;
     Ins  : Boolean;
   begin
+    Check_Init (Con);
     loop
       -- Str is empty so no echo at all
-      Get (Str, Last, Stat, Pos, Ins);
+      Get (Con.Get_Access.Screen_Window.all, Str, Last, Stat, Pos, Ins);
       exit when Stat /= Mouse_Button;
     end loop;
   end Pause;
 
 
-  procedure Enable_Motion_Events (Motion_Enabled : in Boolean) is
-  begin
-    if Motion_Enabled /= Motion_Enabling then
-      X_Mng.X_Enable_Motion_Events(Id, Motion_Enabled);
-      Motion_Enabling := Motion_Enabled;
-    end if;
-  end Enable_Motion_Events;
-
   package body Graphics is
 
-    function X_Max return X_Range is
+    function X_Max (Con : Console) return X_Range is
     begin
-      if not Init_Done then
-        raise Not_Init;
-      end if;
-      return One_Con_Io.X_Max;
+      Check_Init (Con);
+      return Con.Get_Access.X_Max;
     end X_Max;
 
-    function Y_Max return Y_Range is
+    function Y_Max (Con : Console) return Y_Range is
     begin
-      if not Init_Done then
-        raise Not_Init;
-      end if;
-      return One_Con_Io.Y_Max;
+      Check_Init (Con);
+      return Con.Get_Access.Y_Max;
     end Y_Max;
 
     -- Font characteristics
-    function Font_Width  return Natural is
+    function Font_Width (Con : Console) return Natural is
     begin
-      if not Init_Done then
-        raise Not_Init;
-      end if;
-      return One_Con_Io.Font_Width;
+      Check_Init (Con);
+      return Con.Get_Access.Font_Width;
     end Font_Width;
 
-    function Font_Height return Natural is
+    function Font_Height (Con : Console) return Natural is
     begin
-      if not Init_Done then
-        raise Not_Init;
-      end if;
-      return One_Con_Io.Font_Height;
+      Check_Init (Con);
+      return Con.Get_Access.Font_Height;
     end Font_Height;
 
-    function Font_Offset return Natural is
+    function Font_Offset (Con : Console) return Natural is
     begin
-      if not Init_Done then
-        raise Not_Init;
-      end if;
-      return One_Con_Io.Font_Offset;
+      Check_Init (Con);
+      return Con.Get_Access.Font_Offset;
     end Font_Offset;
 
-
-    procedure Set_Screen_Attributes is
+    -- Internal
+    procedure Set_Screen_Attributes (Con : in Console) is
+      Screen : constant access Window_Data
+             := Con.Get_Access.Screen_Window.all.Get_Access;
     begin
-      Set_Attributes (Screen.Current_Foreground,
-                      Screen.Current_Background,
-                      Screen.Current_Xor_Mode);
+      Set_Attributes (Con, Screen.Current_Foreground,
+                           Screen.Current_Background,
+                           Screen.Current_Xor_Mode);
     end Set_Screen_Attributes;
 
-    procedure Put (C : in Character;
-                   X : in X_Range;
-                   Y : in Y_Range) is
+    procedure Put (Con : in Console;
+                   C   : in Character;
+                   X   : in X_Range;
+                   Y   : in Y_Range) is
+      Acc : access Console_Data;
     begin
-      if not Init_Done then
-        raise Not_Init;
-      end if;
-      Set_Screen_Attributes;
-      X_Mng.X_Put_Char_Pixels(Id, X_Mng.Byte(Character'Pos(C)),
-                              X, One_Con_Io.Y_Max - Y);
+      Check_Init (Con);
+      Acc := Con.Get_Access;
+      Set_Screen_Attributes (Con);
+      X_Mng.X_Put_Char_Pixels (Acc.Id,
+                X_Mng.Byte(Character'Pos(C)), X, Acc.Y_Max - Y);
     end Put;
 
-    procedure Put (S : in String;
-                   X : in X_Range;
-                   Y : in Y_Range) is
+    procedure Put (Con : in Console;
+                   S   : in String;
+                   X   : in X_Range;
+                   Y   : in Y_Range) is
       Lx : X_Range;
       Ly : Y_Range;
+      Acc : access Console_Data;
     begin
-      if not Init_Done then
-        raise Not_Init;
-      end if;
-      Set_Screen_Attributes;
+      Check_Init (Con);
+      Acc := Con.Get_Access;
+      Set_Screen_Attributes (Con);
       Lx := X;
-      Ly := One_Con_Io.Y_Max - Y;
+      Ly := Acc.Y_Max - Y;
       for I in S'Range loop
-        X_Mng.X_Put_Char_Pixels(Id, X_Mng.Byte(Character'Pos(S(I))),
+        X_Mng.X_Put_Char_Pixels (Acc.Id, X_Mng.Byte(Character'Pos(S(I))),
                                 Lx, Ly);
-        Lx := Lx + Font_Width;
+        Lx := Lx + Acc.Font_Width;
       end loop;
     end Put;
 
-    procedure Draw_Point (X : in X_Range;
-                          Y : in Y_Range) is
+    procedure Draw_Point (Con : in Console;
+                          X   : in X_Range;
+                          Y   : in Y_Range) is
+      Acc : access Console_Data;
     begin
-      if not Init_Done then
-        raise Not_Init;
-      end if;
-      Set_Screen_Attributes;
-      X_Mng.X_Draw_Point(Id, X, One_Con_Io.Y_Max - Y);
+      Check_Init (Con);
+      Acc := Con.Get_Access;
+      Set_Screen_Attributes (Con);
+      X_Mng.X_Draw_Point (Acc.Id, X, Acc.Y_Max - Y);
     end Draw_Point;
 
-    procedure Draw_Line (X1 : in X_Range;
-                         Y1 : in Y_Range;
-                         X2 : in X_Range;
-                         Y2 : in Y_Range) is
+    procedure Draw_Line (Con : in Console;
+                         X1  : in X_Range;
+                         Y1  : in Y_Range;
+                         X2  : in X_Range;
+                         Y2  : in Y_Range) is
+      Acc : access Console_Data;
     begin
-      if not Init_Done then
-        raise Not_Init;
-      end if;
-      Set_Screen_Attributes;
-      X_Mng.X_Draw_Line(Id, X1, One_Con_Io.Y_Max - Y1, X2, One_Con_Io.Y_Max - Y2);
+      Check_Init (Con);
+      Acc := Con.Get_Access;
+      Set_Screen_Attributes (Con);
+      X_Mng.X_Draw_Line (Acc.Id, X1, Acc.Y_Max - Y1, X2, Acc.Y_Max - Y2);
     end Draw_Line;
 
-
-    procedure Draw_Rectangle (X1 : in X_Range;
-                              Y1 : in Y_Range;
-                              X2 : in X_Range;
-                              Y2 : in Y_Range) is
+    procedure Draw_Rectangle (Con : in Console;
+                              X1  : in X_Range;
+                              Y1  : in Y_Range;
+                              X2  : in X_Range;
+                              Y2  : in Y_Range) is
+      Acc : access Console_Data;
     begin
-      if not Init_Done then
-        raise Not_Init;
-      end if;
-      Set_Screen_Attributes;
-      X_Mng.X_Draw_Rectangle(Id, X1, One_Con_Io.Y_Max - Y1, X2, One_Con_Io.Y_Max - Y2);
+      Check_Init (Con);
+      Acc := Con.Get_Access;
+      Set_Screen_Attributes (Con);
+      X_Mng.X_Draw_Rectangle (Acc.Id, X1, Acc.Y_Max - Y1, X2, Acc.Y_Max - Y2);
     end Draw_Rectangle;
 
-    procedure Fill_Rectangle (X1 : in X_Range;
-                              Y1 : in Y_Range;
-                              X2 : in X_Range;
-                              Y2 : in Y_Range) is
+    procedure Fill_Rectangle (Con : in Console;
+                              X1  : in X_Range;
+                              Y1  : in Y_Range;
+                              X2  : in X_Range;
+                              Y2  : in Y_Range) is
+      Acc : access Console_Data;
     begin
-      if not Init_Done then
-        raise Not_Init;
-      end if;
-      Set_Screen_Attributes;
-      X_Mng.X_Fill_Rectangle(Id, X1, One_Con_Io.Y_Max - Y1, X2, One_Con_Io.Y_Max - Y2);
+      Check_Init (Con);
+      Acc := Con.Get_Access;
+      Set_Screen_Attributes (Con);
+      X_Mng.X_Fill_Rectangle (Acc.Id, X1, Acc.Y_Max - Y1, X2, Acc.Y_Max - Y2);
     end Fill_Rectangle;
 
-    procedure Draw_Points(X, Y          : in Natural;
+    procedure Draw_Points(Con           : in Console;
+                          X, Y          : in Natural;
                           Width, Height : in Natural;
                           Points        : in Byte_Array) is
+      Acc : access Console_Data;
     begin
-      if not Init_Done then
-        raise Not_Init;
-      end if;
-      Set_Screen_Attributes;
-      X_Mng.X_Draw_Points(Id, X, One_Con_Io.Y_Max - Y, Width, Height, Points);
+      Check_Init (Con);
+      Acc := Con.Get_Access;
+      Set_Screen_Attributes (Con);
+      X_Mng.X_Draw_Points (Acc.Id, X, Acc.Y_Max - Y, Width, Height, Points);
     end Draw_Points;
 
-    procedure Fill_Area(Xys : in Natural_Array) is
+    procedure Fill_Area(Con : in Console; Xys : in Natural_Array) is
       Loc_Xys : Natural_Array (Xys'Range) := Xys;
       Y : Boolean;
+      Acc : access Console_Data;
     begin
-      if not Init_Done then
-        raise Not_Init;
-      end if;
+      Check_Init (Con);
+      Acc := Con.Get_Access;
+      Set_Screen_Attributes (Con);
       -- Fix the Ys, each second index of Xys
       Y := False;
       for I in Loc_Xys'Range loop
         if Y then
-          Loc_Xys(I) := One_Con_Io.Y_Max - Loc_Xys(I);
+          Loc_Xys(I) := Acc.Y_Max - Loc_Xys(I);
         end if;
         Y := not Y;
       end loop;
-      Set_Screen_Attributes;
-      X_Mng.X_Fill_Area(Id, Loc_Xys);
+      X_Mng.X_Fill_Area(Acc.Id, Loc_Xys);
     end Fill_Area;
 
-    procedure Get_Current_Pointer_Pos (Valid : out Boolean;
+    procedure Get_Current_Pointer_Pos (Con   : in Console;
+                                       Valid : out Boolean;
                                        X     : out X_Range;
                                        Y     : out Y_Range) is
       Lx, Ly : Integer;
+      Acc : access Console_Data;
     begin
       Valid := False;
-      if not Init_Done then
-        raise Not_Init;
-      end if;
-      X_Mng.X_Get_Current_Pointer_Position(Id, Lx, Ly);
+      Check_Init (Con);
+      Acc := Con.Get_Access;
+      Set_Screen_Attributes (Con);
+      X_Mng.X_Get_Current_Pointer_Position (Acc.Id, Lx, Ly);
       -- In screen? (avoiding function call for X/Y_Max)
-      if       Lx in Graphics.X_Range and then Lx <= One_Con_Io.X_Max
-      and then Ly in Graphics.Y_Range and then Ly <= One_Con_Io.Y_Max then
+      if       Lx in Graphics.X_Range and then Lx <= Acc.X_Max
+      and then Ly in Graphics.Y_Range and then Ly <= Acc.Y_Max then
         X := Lx;
-        Y := One_Con_Io.Y_Max - Ly;
+        Y := Acc.Y_Max - Ly;
         Valid := True;
       end if;
     end Get_Current_Pointer_Pos;
 
-
   end Graphics;
 
-  -- Set pointer shape
-  procedure Set_Pointer_Shape (Pointer_Shape : in Pointer_Shape_List;
-                               Grab : in Boolean) is
+  -- Enable events on mouse motion
+  procedure Enable_Motion_Events (Con : in Console;
+                                  Motion_Enabled : in Boolean) is
+    Acc : access Console_Data;
   begin
+    Check_Init (Con);
+    Acc := Con.Get_Access;
+    if Motion_Enabled /= Acc.Motion_Enabling then
+      X_Mng.X_Enable_Motion_Events (Acc.Id, Motion_Enabled);
+      Acc.Motion_Enabling := Motion_Enabled;
+    end if;
+  end Enable_Motion_Events;
+
+  -- Set pointer shape
+  procedure Set_Pointer_Shape (Con           : in Console;
+                               Pointer_Shape : in Pointer_Shape_List;
+                               Grab          : in Boolean) is
+  begin
+    Check_Init (Con);
     if Pointer_Shape = None then
-      X_Mng.X_Hide_Graphic_Pointer(Id, Grab);
+      X_Mng.X_Hide_Graphic_Pointer(Con.Get_Access.Id, Grab);
     else
-      X_Mng.X_Set_Graphic_Pointer(Id, Pointer_Shape=Cross, Grab);
+      X_Mng.X_Set_Graphic_Pointer(Con.Get_Access.Id, Pointer_Shape=Cross, Grab);
     end if;
   end Set_Pointer_Shape;
-
 
   -- Get a mouse event. If valid is False, it means that a release
   -- has occured outside the screen, then only Button and status
   -- are significant
-  procedure Get_Mouse_Event (Mouse_Event : out Mouse_Event_Rec;
-                    Coordinate_Mode : in Coordinate_Mode_List := Row_Col) is
+  procedure Get_Mouse_Event (
+      Con             : in Console;
+      Mouse_Event     : out Mouse_Event_Rec;
+      Coordinate_Mode : in Coordinate_Mode_List := Row_Col) is
     Loc_Event : Mouse_Event_Rec(Coordinate_Mode);
     Button : X_Mng.Button_List;
     Row, Col : Integer;
     use X_Mng;
+    Acc : access Console_Data;
   begin
-    if not Init_Done then
-      raise Not_Init;
-    end if;
+    Check_Init (Con);
+    Acc := Con.Get_Access;
+
     -- Init result : Press not valid
     Loc_Event.Valid := False;
     Loc_Event.Status := Pressed;
@@ -1741,15 +1708,15 @@ package body Consoles is
     Mouse_Event := Loc_Event;
 
     -- Mouse event pending?
-    if Mouse_Status = Mouse_Discard then
+    if Acc.Mouse_Status = Mouse_Discard then
       return;
     end if;
 
     -- Get button and pos
-    X_Mng.X_Read_Tid (Id, Coordinate_Mode = Row_Col, Button, Row, Col);
+    X_Mng.X_Read_Tid (Acc.Id, Coordinate_Mode = Row_Col, Button, Row, Col);
 
     -- Event was a press release or motion?
-    case Mouse_Status is
+    case Acc.Mouse_Status is
       when X_Mng.Tid_Press | X_Mng.Tid_Release =>
 
         case Button is
@@ -1774,13 +1741,13 @@ package body Consoles is
           when X_Mng.Ctrl_Down =>
             Loc_Event.Button := Ctrl_Down;
         end case;
-        if Mouse_Status = X_Mng.Tid_Press then
+        if Acc.Mouse_Status = X_Mng.Tid_Press then
           Loc_Event.Status := Pressed;
         else
           Loc_Event.Status := Released;
         end if;
       when X_Mng.Tid_Motion =>
-        if Button /= X_Mng.None or else not Motion_Enabling then
+        if Button /= X_Mng.None or else not Acc.Motion_Enabling then
           return;
         end if;
         Loc_Event.Status := Motion;
@@ -1803,43 +1770,43 @@ package body Consoles is
           Loc_Event.Row := Row - 1;
         elsif Row - 1 < Row_Range'First then
           Loc_Event.Row := Row_Range'First;
-        elsif Row - 1 > Row_Range'Last then
-          Loc_Event.Row := Row_Range'Last;
+        elsif Row - 1 > Acc.Row_Range_Last then
+          Loc_Event.Row := Acc.Row_Range_Last;
         end if;
         if Col - 1 in Col_Range then
           Loc_Event.Col := Col - 1;
         elsif Col - 1 < Col_Range'First then
           Loc_Event.Col := Col_Range'First;
-        elsif Col - 1 > Col_Range'Last then
-          Loc_Event.Col := Col_Range'Last;
+        elsif Col - 1 > Acc.Col_Range_Last then
+          Loc_Event.Col := Acc.Col_Range_Last;
         end if;
       end if;
     else
-      if       Row in Graphics.X_Range and then Row <= One_Con_Io.X_Max
-      and then Col in Graphics.Y_Range and then Col <= One_Con_Io.Y_Max then
+      if       Row in Graphics.X_Range and then Row <= Acc.X_Max
+      and then Col in Graphics.Y_Range and then Col <= Acc.Y_Max then
         Loc_Event.Valid := True;
         Loc_Event.X := Row;
-        Loc_Event.Y := One_Con_Io.Y_Max - Col;
+        Loc_Event.Y := Acc.Y_Max - Col;
       else
         Loc_Event.Valid := False;
-        if Row in Graphics.X_Range and then Row <= One_Con_Io.X_Max then
+        if Row in Graphics.X_Range and then Row <= Acc.X_Max then
           Loc_Event.X := Row;
         elsif Row < Graphics.X_Range'First then
           Loc_Event.X := Graphics.X_Range'First;
-        elsif Row > X_Max then
-          Loc_Event.X := X_Max;
+        elsif Row > Acc.X_Max then
+          Loc_Event.X := Acc.X_Max;
         end if;
-        if Col in Graphics.Y_Range and then Col <= One_Con_Io.Y_Max then
-          Loc_Event.Y := Y_Max - Col;
+        if Col in Graphics.Y_Range and then Col <= Acc.Y_Max then
+          Loc_Event.Y := Acc.Y_Max - Col;
         elsif Col < Graphics.Y_Range'First then
-          Loc_Event.Y := Y_Max;
-        elsif Col > Y_Max then
+          Loc_Event.Y := Acc.Y_Max;
+        elsif Col > Acc.Y_Max then
           Loc_Event.Y := Graphics.Y_Range'First;
         end if;
       end if;
     end if;
     Mouse_Event := Loc_Event;
-    Mouse_Status := Mouse_Discard;
+    Acc.Mouse_Status := Mouse_Discard;
   exception
     when X_Mng.X_Failure =>
       null;

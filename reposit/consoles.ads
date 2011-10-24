@@ -1,6 +1,14 @@
 with Ada.Characters.Latin_1;
-with As.U, X_Mng, Timers, Unicode, Language, Dynamic_List, Smart_Reference;
+with As.U, X_Mng, Timers, Unicode, Language, Smart_Reference;
 package Consoles is
+
+  -- Propagation of Unicode definitions
+  subtype Unicode_Number is Unicode.Unicode_Number;
+  subtype Unicode_Sequence is Unicode.Unicode_Sequence;
+  Space : constant Unicode_Number
+        := Language.Char_To_Unicode (Ada.Characters.Latin_1.Space);
+  Htab  : constant Unicode_Number
+        := Language.Char_To_Unicode (Ada.Characters.Latin_1.Ht);
 
   -- The Font
   subtype Font_No_Range is Natural range 0 .. 3;
@@ -80,21 +88,14 @@ package Consoles is
 
   -- One console
   type Console is tagged private;
-  No_Console : constant Console;
-
-  -- Shall never be used explicitely by it is usefull, for exemple when:
-  -- function Screen (Con : Console := Same_Console);
-  -- procedure Proc (Con : in Console; Win : in Window := Screen);
-  -- Then Proc will use the default Screen (Con)
-  function Same_Console return Console;
+  type Console_Access is access all Console;
 
   -- Has to be called to initialize a console, which appears on screen
   -- Should be called prior any action on the console
   -- May raise Already_Init be called several times (no effect)
-  procedure Init (Con : in out Console;
-                  Font_No  : in Font_No_Range;
+  function Create (Font_No  : in Font_No_Range;
                   Row_Last : in Row_Range := Def_Row_Last;
-                  Col_Last : in Col_Range := Def_Col_Last);
+                  Col_Last : in Col_Range := Def_Col_Last) return Console;
 
   -- To be called to close the console
   procedure Destroy (Con : in out Console);
@@ -110,8 +111,8 @@ package Consoles is
   --   time. In this case the program must suspend and not use the previous
   --   console, then open and use the new console, then close the new console
   --   then resume and use the first console.
-  procedure Suspend (Con : in out Console);
-  procedure Resume (Con : in out Console);
+  procedure Suspend (Con : in Console);
+  procedure Resume (Con : in Console);
   function Is_Suspended (Con : Console) return Boolean;
 
   -- Get geometry and upper-left square
@@ -126,111 +127,87 @@ package Consoles is
   procedure Bell (Con : in Console; Repeat : in Positive := 1);
 
   -- Clear screen, and reset keyboard
-  procedure Reset_Term (Con : in out Console);
+  procedure Reset_Term (Con : in Console);
 
 
   -- Operations on window
-  type Window is limited private;
+  type Window is tagged private;
 
   subtype Byte_Array is X_Mng.Byte_Array;
   subtype Natural_Array is X_Mng.Natural_Array;
 
   -- The window which is screen (always open)
   -- Never call directly with Same_Console (see definition of Same_Console)
-  function Screen (Con : Console := Same_Console) return Window;
+  function Screen (Con : Console_Access) return Window;
 
   -- Open a window (screen is always open)
-  procedure Open (Con                     : in out Console;
-                  Name                    : in out Window;
-                  Upper_Left, Lower_Right : in Square);
+  function Open (Con                     : Console_Access;
+                 Upper_Left, Lower_Right : in Square) return Window;
 
   -- Make window re-usable (have to re_open it)
   -- screen cannot be closed
-  procedure Close (Con  : in out Console; Name : in out Window);
+  procedure Close (Name : in out Window);
 
   -- Is a window open
-  function Is_Open (Con : Console; Name : Window) return Boolean;
+  function Is_Open (Name : Window) return Boolean;
 
   -- Clear window and move to home
-  procedure Clear (Con  : in out Console; Name : in Window := Screen);
+  procedure Clear (Name : in Window);
 
   -- Set / get colors, xor
-  procedure Set_Foreground (Con        : in Console;
-                            Foreground : in Colors := Current;
-                            Name       : in Window := Screen);
-  function Get_Foreground (Con  : Console;
-                           Name : Window := Screen) return Effective_Colors;
+  procedure Set_Foreground (Name       : in Window;
+                            Foreground : in Colors := Current);
+  function Get_Foreground (Name : Window) return Effective_Colors;
 
-  procedure Set_Background (Con        : in Console;
-                            Background : in Colors := Current;
-                            Name       : in Window := Screen);
-  function Get_Background (Con  : Console;
-                           Name : Window := Screen) return Effective_Colors;
+  procedure Set_Background (Name       : in Window;
+                            Background : in Colors := Current);
+  function Get_Background (Name : Window) return Effective_Colors;
 
-  procedure Set_Xor_Mode(Con  : in Console;
-                         Xor_Mode : in Xor_Modes := Current;
-                         Name : in Window := Screen);
-  function Get_Xor_Mode(Con  : Console;
-                        Name : Window := Screen) return Effective_Xor_Modes;
+  procedure Set_Xor_Mode (Name : in Window;
+                          Xor_Mode : in Xor_Modes := Current);
+  function Get_Xor_Mode (Name : Window) return Effective_Xor_Modes;
 
   -- Get Upper_Left / Lower_Right absolute coordinates of a window
-  function Get_Absolute_Upper_Left  (Con  : Console;
-                                     Name : Window) return Square;
-  function Get_Absolute_Lower_Right (Con  : Console;
-                                     Name : Window) return Square;
+  function Get_Absolute_Upper_Left  (Name : Window) return Square;
+  function Get_Absolute_Lower_Right (Name : Window) return Square;
 
   -- Get Lower_Right relative coordinates of a window (Upper_Left is (0, 0)).
-  function Get_Relative_Lower_Right (Con  : Console;
-                                     Name : Window) return Square;
+  function Get_Relative_Lower_Right (Name : Window) return Square;
 
   -- True if the absolute square (relative to screen) is in the window.
   -- False otherwise
-  function In_Window (Con  : Console;
-                      Absolute_Square : Square;
-                      Name            : Window) return Boolean;
+  function In_Window (Name            : Window;
+                      Absolute_Square : Square) return Boolean;
 
   -- Returns the relative square (relative to window), being the same
   --  physical position as the absolute square (relative to screen).
   -- May raise Invalid_Square if the absolute position is not in window.
-  function To_Relative (Con  : Console;
-                        Absolute_Square : Square;
-                        Name            : Window) return Square;
+  function To_Relative (Name            : Window;
+                        Absolute_Square : Square) return Square;
 
   -- Returns the absolute square (in screen) corresponding to the relative
   --  square in the window
   -- May raise Invalid_Square if the relative square is not in window
-  function To_Absolute (Con  : Console;
-                        Relative_Square : Square;
-                        Name            : Window) return Square;
+  function To_Absolute (Name            : Window;
+                        Relative_Square : Square) return Square;
 
 
   -- Move cursor for use with put or get. Position is relative to window.
-  procedure Move (Con      : in Console;
-                  Position : in Square := Home;
-                  Name     : in Window := Screen);
-  procedure Move (Con  : in Console;
+  procedure Move (Name     : in Window;
+                  Position : in Square := Home);
+  procedure Move (Name     : in Window;
                   Row  : in Row_Range;
-                  Col  : in Col_Range;
-                  Name : in Window := Screen);
-  function Position (Con : Console; Name : Window := Screen) return Square;
+                  Col  : in Col_Range);
+  function Position (Name : Window) return Square;
 
-
-  -- Propagation of Unicode definitions
-  subtype Unicode_Number is Unicode.Unicode_Number;
-  subtype Unicode_Sequence is Unicode.Unicode_Sequence;
-  Space : constant Unicode_Number
-        := Language.Char_To_Unicode (Ada.Characters.Latin_1.Space);
-  Htab  : constant Unicode_Number
-        := Language.Char_To_Unicode (Ada.Characters.Latin_1.Ht);
 
   -- Writes a character at the current cursor position and with the
   --  curent attributes. Position can be set by using move.
   -- Lf is the only special Ascii character which is interpreted.
   -- If not Move, the cursor position is not updated
   --  (Lf would be ignored then)
-  procedure Put (Con        : in Console;
+  procedure Put (Name       : in Window;
                  C          : in Character;
-                 Name       : in Window := Screen;
                  Foreground : in Colors := Current;
                  Background : in Colors := Current;
                  Move       : in Boolean := True);
@@ -238,74 +215,60 @@ package Consoles is
   -- Idem with a string
   -- If not Move, the cursor position is not updated
   --  (last Lf would be ignored then)
-  procedure Put (Con        : in Console;
+  procedure Put (Name       : in Window;
                  S          : in String;
-                 Name       : in Window := Screen;
                  Foreground : in Colors := Current;
                  Background : in Colors := Current;
                  Move       : in Boolean := True);
 
   -- Idem but appends a Lf
-  procedure Put_Line (Con        : in Console;
+  procedure Put_Line (Name       : in Window;
                       S          : in String;
-                      Name       : in Window := Screen;
                       Foreground : in Colors := Current;
                       Background : in Colors := Current);
 
   -- Idem with a wide character
-  procedure Putw (Con        : in Console;
+  procedure Putw (Name       : in Window;
                   W          : in Wide_Character;
-                  Name       : in Window := Screen;
                   Foreground : in Colors := Current;
                   Background : in Colors := Current;
                   Move       : in Boolean := True);
 
   -- Idem with a wide string
-  procedure Putw (Con        : in Console;
+  procedure Putw (Name       : in Window;
                   S          : in Wide_String;
-                  Name       : in Window := Screen;
                   Foreground : in Colors := Current;
                   Background : in Colors := Current;
                   Move       : in Boolean := True);
 
   -- Idem but appends a Lf
-  procedure Putw_Line (Con        : in Console;
+  procedure Putw_Line (Name       : in Window;
                        S          : in Wide_String;
-                       Name       : in Window := Screen;
                        Foreground : in Colors := Current;
                        Background : in Colors := Current);
 
   -- Idem with a unicode number
-  procedure Putu (Con        : in Console;
+  procedure Putu (Name       : in Window;
                   U          : in Unicode_Number;
-                  Name       : in Window := Screen;
                   Foreground : in Colors := Current;
                   Background : in Colors := Current;
                   Move       : in Boolean := True);
 
   -- Idem with a unicode sequence
-  procedure Putu (Con        : in Console;
+  procedure Putu (Name       : in Window;
                   S          : in Unicode_Sequence;
-                  Name       : in Window := Screen;
                   Foreground : in Colors := Current;
                   Background : in Colors := Current;
                   Move       : in Boolean := True);
 
   -- Idem but appends a Lf
-  procedure Putu_Line (Con        : in Console;
+  procedure Putu_Line (Name       : in Window;
                        S          : in Unicode_Sequence;
-                       Name       : in Window := Screen;
                        Foreground : in Colors := Current;
                        Background : in Colors := Current);
   -- Puts Lf
-  procedure New_Line (Con        : in Console;
-                      Name   : in Window := Screen;
+  procedure New_Line (Name   : in Window;
                       Number : in Positive := 1);
-
-
-  -- Take first character of keyboard buffer (no echo) or refresh event
-  procedure Pause (Con : in Console);
-
 
   -- Selection (in/out) management
   -- Set the selection to be transfered to other applications
@@ -318,7 +281,6 @@ package Consoles is
 
   -- Get the requested selection
   function Get_Selection (Con : Console; Max_Len : Natural) return String;
-
 
   -- How to specify a delay, wait some seconds or until a specific time
   -- Period is not significant
@@ -364,13 +326,12 @@ package Consoles is
                     Full, Tab, Stab, Ret, Esc, Break,
                     Mouse_Button, Selection, Timeout, Fd_Event, Timer_Event,
                     Signal_Event, Refresh);
-  procedure Get (Con        : in Console;
+  procedure Get (Name       : in Window;
                  Str        : out Unicode_Sequence;
                  Last       : out Natural;
                  Stat       : out Curs_Mvt;
                  Pos        : out Positive;
                  Insert     : out Boolean;
-                 Name       : in Window := Screen;
                  Foreground : in Colors := Current;
                  Background : in Colors := Current;
                  Time_Out   : in Delay_Rec := Infinite_Delay;
@@ -378,26 +339,24 @@ package Consoles is
 
   -- Idem but the get is initialised with the initial content of the string
   --  and cursor's initial location can be set
-  procedure Put_Then_Get (Con        : in Console;
+  procedure Put_Then_Get (Name       : in Window;
                           Str        : in out Unicode_Sequence;
                           Last       : out Natural;
                           Stat       : out Curs_Mvt;
                           Pos        : in out Positive;
                           Insert     : in out Boolean;
-                          Name       : in Window := Screen;
                           Foreground : in Colors := Current;
                           Background : in Colors := Current;
                           Time_Out   : in Delay_Rec :=  Infinite_Delay;
                           Echo       : in Boolean := True);
 
   -- Idem but with a Wide_String
-  procedure Put_Then_Get (Con        : in Console;
+  procedure Put_Then_Get (Name       : in Window;
                           Str        : in out Wide_String;
                           Last       : out Natural;
                           Stat       : out Curs_Mvt;
                           Pos        : in out Positive;
                           Insert     : in out Boolean;
-                          Name       : in Window := Screen;
                           Foreground : in Colors := Current;
                           Background : in Colors := Current;
                           Time_Out   : in Delay_Rec :=  Infinite_Delay;
@@ -412,32 +371,12 @@ package Consoles is
         null;
     end case;
   end record;
-  function Get (Con      : Console;
-                Name     : Window := Screen;
+  function Get (Name     : Window;
                 Time_Out : Delay_Rec := Infinite_Delay) return Get_Result;
 
+  -- Take first character of keyboard buffer (no echo) or refresh event
+  procedure Pause (Con : in Console);
 
-  -- Enable cursor motion events
-  procedure Enable_Motion_Events (Con : in Console;
-                                  Motion_Enabled : in Boolean);
-
-  -- Failure when initialising the Console
-  Init_Failure : exception;
-  -- Failure when allocating data for window
-  Open_Failure        : exception;
-  -- Position out of screen (or out of window)
-  Invalid_Square      : exception;
-  -- Window close to screen limit
-  Frame_Impossible    : exception;
-  -- Window not open (or not open in this console)
-  Window_Not_Open     : exception;
-  -- Self explanatory
-  Window_Already_Open : exception;
-  -- String lenght incompatible with current position and window width
-  --  for get and put_then get
-  String_Too_Long     : exception;
-  -- Any operation on a not initialized console
-  Not_Init : exception;
 
   -- Graphic operations on Screen window
   package Graphics is
@@ -531,6 +470,10 @@ package Consoles is
 
   end Graphics;
 
+  -- Enable cursor motion events
+  procedure Enable_Motion_Events (Con : in Console;
+                                  Motion_Enabled : in Boolean);
+
   -- Set mouse pointer shape or hide mouse
   --  Arrow by default
   type Pointer_Shape_List is (Arrow, Cross, None);
@@ -569,40 +512,31 @@ package Consoles is
   -- has occured outside the screen, then only Button and Status
   -- are significant
   procedure Get_Mouse_Event (
-    Con         : in Console;
-    Mouse_Event : out Mouse_Event_Rec;
-    Coordinate_Mode : in Coordinate_Mode_List := Row_Col);
+      Con         : in Console;
+      Mouse_Event : out Mouse_Event_Rec;
+      Coordinate_Mode : in Coordinate_Mode_List := Row_Col);
+
+  -- Failure when initialising the Console
+  Init_Failure : exception;
+  -- Failure when allocating data for window
+  Open_Failure        : exception;
+  -- Position out of screen (or out of window)
+  Invalid_Square      : exception;
+  -- Window close to screen limit
+  Frame_Impossible    : exception;
+  -- Window not open (or not open in this console)
+  Window_Not_Open     : exception;
+  -- Self explanatory
+  Window_Already_Open : exception;
+  -- String lenght incompatible with current position and window width
+  --  for get and put_then get
+  String_Too_Long     : exception;
+  -- Any operation on a not initialized console
+  Not_Init : exception;
 
 private
 
-  type Console_Data;
-  type Console_Access is access Console_Data;
-
-  -- Windows are store in the Console_Data (Screen_Window or Windows)
-  type Window_Data;
-  type Window_Data is record
-    Con                : Console_Access;
-    Upper_Left         : Square;
-    Lower_Right        : Square;
-    Current_Pos        : Square := Home;
-    Current_Foreground : Effective_Colors;
-    Current_Background : Effective_Colors;
-    Current_Xor_Mode   : Effective_Xor_Modes;
-  end record;
-  type Window is access all Window_Data;
-
-  Screen_Data   : constant Window_Data := (
-    Con                => null,
-    Upper_Left         => (Row => Row_Range_First, Col => Col_Range_First),
-    Lower_Right        => (Row => Last_Row,  Col => Last_Col),
-    Current_Pos        => Home,
-    Current_Foreground => Default_Foreground,
-    Current_Background => Default_Background,
-    Current_Xor_Mode   => Default_Xor_Mode);
-
-  package Window_Dyn_List_Mng is new Dynamic_List (Window_Data);
-  package Window_List_Mng renames Window_Dyn_List_Mng.Dyn_List;
-
+  type Window_Access is access all Window;
   type Console_Data is record
     Initialised : Boolean := False;
     Id : X_Mng.Line;
@@ -611,24 +545,43 @@ private
     Line_Foreground : Effective_Colors := Default_Foreground;
     Line_Background : Effective_Colors := Default_Background;
     Line_Xor_Mode   : Effective_Xor_Modes := Default_Xor_Mode;
-    Font_No : Font_No_Range;
-    Row_Range_Last : Row_Range;
-    Col_Range_Last : Col_Range;
-    X_Max : Graphics.X_Range;
-    Y_Max : Graphics.Y_Range;
-    Font_Width  : Natural;
-    Font_Height : Natural;
-    Font_Offset : Natural;
-    Screen_Window : Window_Data;
-    Windows : Window_List_Mng.List_Type;
+    Font_No : Font_No_Range := Font_No_Range'First;
+    Row_Range_Last : Row_Range := Row_Range'First;
+    Col_Range_Last : Col_Range := Col_Range'First;
+    X_Max : Graphics.X_Range := Graphics.X_Range'First;
+    Y_Max : Graphics.Y_Range := Graphics.Y_Range'First;
+    Font_Width  : Natural := 0;
+    Font_Height : Natural := 0;
+    Font_Offset : Natural := 0;
+    Screen_Window : Window_Access;
   end record;
   procedure Set (Dest : in out Console_Data; Val : in Console_Data);
   procedure Finalize (Con : in Console_Data);
   package Console_Ref_Mng is new Smart_Reference (Console_Data, Set, Finalize);
   type Console is new Console_Ref_Mng.Handle with null record;
+  Null_Console : constant Console
+               := (Console_Ref_Mng.Null_Handle with others => <>);
 
-  C : Console;
-  No_Console : constant Console := C;
+  -- Windows are stored in a global list
+  type Window_Data is record
+    Con                : Console := Null_Console;
+    Open               : Boolean := False;
+    Upper_Left         : Square  := (Row => Row_Range_First,
+                                     Col => Col_Range_First);
+    Lower_Right        : Square  := (Row => Last_Row,  Col => Last_Col);
+    Current_Pos        : Square  := Home;
+    Current_Foreground : Effective_Colors    := Default_Foreground;
+    Current_Background : Effective_Colors    := Default_Background;
+    Current_Xor_Mode   : Effective_Xor_Modes := Default_Xor_Mode;
+  end record;
+  procedure Set (Dest : in out Window_Data; Val : in Window_Data);
+  procedure Finalize (Win : in Window_Data);
+  package Window_Ref_Mng is new Smart_Reference (Window_Data, Set, Finalize);
+  type Window is new Window_Ref_Mng.Handle with null record;
+  Null_Window : constant Window
+               := (Window_Ref_Mng.Null_Handle with others => <>);
+
+  Screen_Data : constant Window_Data := (others => <>);
 
 end Consoles;
 
