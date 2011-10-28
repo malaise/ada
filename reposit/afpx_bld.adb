@@ -1,6 +1,6 @@
 with Ada.Text_Io, Ada.Direct_Io;
 with As.U;
-with Generic_Con_Io, Con_Io, Normal, Argument,
+with Con_Io, Normal, Argument,
      Mixed_Str, Basic_Proc, Xml_Parser,
      Ada_Words, Parser, String_Mng, Computer, Int_Image,
      Language;
@@ -40,7 +40,7 @@ procedure Afpx_Bld is
 
   -- The color names and default background
   Color_Names : Afpx_Typ.Color_Names := (others => Afpx_Typ.No_Color);
-  Color_Defs : Generic_Con_Io.Colors_Definition;
+  Color_Defs : Con_Io.Colors_Definition;
   Default_Background : Con_Io.Effective_Colors;
   Colors_Loaded : Boolean;
 
@@ -184,8 +184,8 @@ procedure Afpx_Bld is
 
   -- Check and return size of screen
   Root_Name : constant String := "Afpx_Descriptors";
-  function Load_Size (Root : in Xp.Node_Type) return Con_Io.Full_Square is
-    Size : Con_Io.Full_Square;
+  function Load_Size (Root : in Xp.Node_Type) return Con_Io.Square is
+    Size : Con_Io.Square;
     Width, Height : Boolean := False;
   begin
     if Root.Kind /= Xp.Element
@@ -197,7 +197,7 @@ procedure Afpx_Bld is
     Add_Variable (Root, "Screen.Left", Geo_Image (0), False, True);
     if Ctx.Get_Nb_Attributes (Root) = 0 then
       -- No attribute : default size
-      Size := (Con_Io.Full_Def_Row_Last, Con_Io.Full_Def_Col_Last);
+      Size := (Con_Io.Def_Row_Last, Con_Io.Def_Col_Last);
       -- Add constant persistent
       Add_Variable (Root, "Screen.Low", Geo_Image (Size.Row), False, True);
       Add_Variable (Root, "Screen.Right", Geo_Image (Size.Col), False, True);
@@ -225,7 +225,7 @@ procedure Afpx_Bld is
           end if;
           Height := True;
           P := Memory.Compute (Attrs(I).Value.Image);
-          Size.Row := Con_Io.Full_Row_Range(P - 1);
+          Size.Row := Con_Io.Row_Range(P - 1);
           -- Add constant persistent
           Add_Variable (Root, "Screen.Height", Geo_Image (Size.Row + 1), False, True);
         elsif Match (Attrs(I).Name, "Width") then
@@ -234,7 +234,7 @@ procedure Afpx_Bld is
           end if;
           Width := True;
           P := Memory.Compute (Attrs(I).Value.Image);
-          Size.Col := Con_Io.Full_Col_Range(P - 1);
+          Size.Col := Con_Io.Col_Range(P - 1);
           -- Add constant persistent
           Add_Variable (Root, "Screen.Width", Geo_Image (Size.Col + 1), False, True);
         else
@@ -325,9 +325,9 @@ procedure Afpx_Bld is
     end if;
     Colors_Loaded := True;
     -- Define variables Colorxy
-    for I in Generic_Con_Io.Effective_Colors'Range loop
+    for I in Con_Io.Effective_Colors'Range loop
       Add_Variable (Node,
-                    Mixed_Str (Generic_Con_Io.Effective_Colors'Image (I)),
+                    Mixed_Str (Con_Io.Effective_Colors'Image (I)),
                     Color_Defs(I).Image, False, True);
     end loop;
     Add_Variable (Node, "Default_Background", Color_Image (Default_Background),
@@ -339,7 +339,7 @@ procedure Afpx_Bld is
     Child : Xp.Element_Type;
     Attrs : Xp.Attributes_Array (1 .. 2);
     Id, Color, Default_Background_Name : Asu_Us;
-    Index : Generic_Con_Io.Effective_Colors;
+    Index : Con_Io.Effective_Colors;
   begin
     -- Overwrite some colors
     for I in 1 .. Ctx.Get_Nb_Children (Node) loop
@@ -354,7 +354,7 @@ procedure Afpx_Bld is
           Color := Attrs(1).Value;
           Id := Attrs(2).Value;
         end if;
-        Index := Generic_Con_Io.Effective_Colors'Value(Id.Image);
+        Index := Con_Io.Effective_Colors'Value(Id.Image);
         Color_Defs(Index) := As.U.Tus (Memory.Eval (Color.Image));
       else
         -- Default_Background: attribute Color
@@ -365,7 +365,7 @@ procedure Afpx_Bld is
     end loop;
 
     Color_Names := Afpx_Typ.To_Names (Color_Defs);
-    Generic_Con_Io.Set_Colors (Color_Defs);
+    Con_Io.Set_Colors (Color_Defs);
     if not Default_Background_Name.Is_Null then
       Default_Background := Con_Io.Color_Of (Memory.Eval (
                                  Default_Background_Name.Image));
@@ -381,7 +381,7 @@ procedure Afpx_Bld is
   -- Check and store upper_left and lower right
   procedure Load_Geometry (Node : in Xp.Node_Type;
                            Fn : in Afpx_Typ.Absolute_Field_Range;
-                           Screen_Size : in Con_Io.Full_Square) is
+                           Screen_Size : in Con_Io.Square) is
     -- Add a geometry constant, not persistent
     procedure Add_Geo (Name : in String; Value : in Natural) is
     begin
@@ -621,7 +621,7 @@ procedure Afpx_Bld is
   end Load_Colors;
 
   procedure Load_List (Node : in Xp.Node_Type;
-                       Screen_Size : in Con_Io.Full_Square) is
+                       Screen_Size : in Con_Io.Square) is
   begin
     if Node.Kind /= Xp.Element
     or else Ctx.Get_Nb_Attributes (Node) /= 0
@@ -639,13 +639,13 @@ procedure Afpx_Bld is
 
   procedure Loc_Load_Field (Node : in Xp.Node_Type;
                             No : in Afpx_Typ.Field_Range;
-                            Screen_Size : in Con_Io.Full_Square)  is
+                            Screen_Size : in Con_Io.Square)  is
     Attrs : constant Xp.Attributes_Array := Ctx.Get_Attributes (Node);
     Child : Xp.Node_Type;
     First_Init : Boolean;
-    Prev_Init_Square : Con_Io.Full_Square;
+    Prev_Init_Square : Con_Io.Square;
     -- Location in field of init string
-    Finit_Square : Con_Io.Full_Square;
+    Finit_Square : Con_Io.Square;
     -- Init string
     Finit_String : Asu_Us;
     Finit_Length : Positive;
@@ -842,7 +842,7 @@ procedure Afpx_Bld is
   function Dscr_Image is new Int_Image (Afpx_Typ.Descriptor_Range);
   procedure Load_Dscr (Node : in Xp.Element_Type;
                        Dscr_Index : in Afpx_Typ.Descriptor_Range;
-                       Screen_Size : in Con_Io.Full_Square)  is
+                       Screen_Size : in Con_Io.Square)  is
     Attrs : constant Xp.Attributes_Array := Ctx.Get_Attributes (Node);
     Dscr_No : Afpx_Typ.Descriptor_Range;
     Num, Background : Boolean := False;
@@ -949,7 +949,7 @@ procedure Afpx_Bld is
 
   procedure Load_Dscrs (Root : in Xp.Element_Type;
                         Check_Only : in Boolean) is
-    Screen_Size : Con_Io.Full_Square;
+    Screen_Size : Con_Io.Square;
     Dscr_Index : Afpx_Typ.Descriptor_Range;
     Child : Xp.Node_Type;
     use type Afpx_Typ.Descriptor_Range;
@@ -991,7 +991,7 @@ procedure Afpx_Bld is
     -- Parse size
     Screen_Size := Load_Size (Root);
     -- Init colors with default
-    Color_Defs := Generic_Con_Io.Default_Colors;
+    Color_Defs := Con_Io.Default_Colors;
     Default_Background := Con_Io.Effective_Colors'First;
 
     -- Initialize the descriptors array as not used

@@ -1,14 +1,26 @@
 with Ada.Text_Io;
-with Unicode, Language, Generic_Con_Io, Normal, Upper_Char;
+with Unicode, Language, Con_Io, Normal, Upper_Char;
 package body Curve is
   use My_Math;
 
   -- Small font and look square
-  package Cur_Con_Io is new Generic_Con_Io.One_Con_Io (
-                     Font_No => 1,
-                     Row_Last => 45,
-                     Col_Last => 76);
+  Cur_Con_Io : aliased Con_Io.Console;
+  Screen : Con_Io.Window;
   package P_Io is new Ada.Text_Io.Float_Io (T_Coordinate);
+
+  -- Init Cur_Con_Io and Screen if necessary
+  procedure Init is
+  begin
+    if Cur_Con_Io.Is_Init then
+      return;
+    end if;
+    Cur_Con_Io := Con_Io.Create (Font_No => 1,
+                                 Row_Last => 45,
+                                 Col_Last => 76,
+                                 Def_Back => Con_Io.Color_Of ("Black"),
+                                 Def_Xor => Con_Io.Xor_On);
+    Screen := Cur_Con_Io.Screen.all;
+  end Init;
 
   -- Find lowest and greatest X of points
   procedure X_Boundaries (
@@ -70,8 +82,8 @@ package body Curve is
 
       -- Screen coordinates of the frame
       type T_Screen_Boundaries is record
-        X_Min, X_Max : Cur_Con_Io.Graphics.X_Range;
-        Y_Min, Y_Max : Cur_Con_Io.Graphics.Y_Range;
+        X_Min, X_Max : Con_Io.X_Range;
+        Y_Min, Y_Max : Con_Io.Y_Range;
       end record;
 
       -- Current limits (in pixels) of drawing
@@ -82,12 +94,12 @@ package body Curve is
 
       -- From real to screen and reverse
       function X_Real_Screen (X_Real : T_Coordinate)
-                             return Cur_Con_Io.Graphics.X_Range;
+                             return Con_Io.X_Range;
       function Y_Real_Screen (Y_Real : T_Coordinate)
-                             return Cur_Con_Io.Graphics.Y_Range;
-      function X_Screen_Real (X_Screen : Cur_Con_Io.Graphics.X_Range)
+                             return Con_Io.Y_Range;
+      function X_Screen_Real (X_Screen : Con_Io.X_Range)
                return T_Coordinate;
-      function Y_Screen_Real (Y_Screen : Cur_Con_Io.Graphics.Y_Range)
+      function Y_Screen_Real (Y_Screen : Con_Io.Y_Range)
                return T_Coordinate;
 
       Epsilon : constant T_Coordinate := T_Coordinate'Epsilon;
@@ -122,10 +134,10 @@ package body Curve is
       procedure Wait_Message is
         Msg : constant String := "COMPUTING. Please wait ...";
       begin
-        Cur_Con_Io.Set_Foreground (Cur_Con_Io.Color_Of ("Light_Blue"));
-        Cur_Con_Io.Move (Cur_Con_Io.Row_Range_Last,
-                     Cur_Con_Io.Col_Range_Last - Msg'Length);
-        Cur_Con_Io.Put (Msg);
+        Screen.Set_Foreground (Con_Io.Color_Of ("Light_Blue"));
+        Screen.Move (Screen.Row_Range_Last,
+                     Screen.Col_Range_Last - Msg'Length);
+        Screen.Put (Msg);
         Cur_Con_Io.Flush;
       end Wait_Message;
 
@@ -150,9 +162,9 @@ package body Curve is
 
       -- screen <-> real conversions
       function X_Real_Screen (X_Real : T_Coordinate)
-                             return Cur_Con_Io.Graphics.X_Range is
+                             return Con_Io.X_Range is
         X_Int : Integer;
-        X_Scr : Cur_Con_Io.Graphics.X_Range;
+        X_Scr : Con_Io.X_Range;
       begin
         X_Int := Integer (Conversion.Offset_X + X_Real * Conversion.Factor_X);
         X_Scr := X_Int;
@@ -162,9 +174,9 @@ package body Curve is
       end X_Real_Screen;
 
       function Y_Real_Screen (Y_Real : T_Coordinate)
-                             return Cur_Con_Io.Graphics.Y_Range is
+                             return Con_Io.Y_Range is
         Y_Int : Integer;
-        Y_Scr : Cur_Con_Io.Graphics.Y_Range;
+        Y_Scr : Con_Io.Y_Range;
       begin
         Y_Int := Integer (Conversion.Offset_Y + Y_Real * Conversion.Factor_Y);
         Y_Scr := Y_Int;
@@ -173,14 +185,14 @@ package body Curve is
         when others => raise Out_Of_Frame;
       end Y_Real_Screen;
 
-      function X_Screen_Real (X_Screen : Cur_Con_Io.Graphics.X_Range)
+      function X_Screen_Real (X_Screen : Con_Io.X_Range)
                              return T_Coordinate is
       begin
         return (T_Coordinate(X_Screen)-Conversion.Offset_X)
              / Conversion.Factor_X;
       end X_Screen_Real;
 
-      function Y_Screen_Real (Y_Screen : Cur_Con_Io.Graphics.Y_Range)
+      function Y_Screen_Real (Y_Screen : Con_Io.Y_Range)
                              return T_Coordinate is
       begin
         return (T_Coordinate(Y_Screen)-Conversion.Offset_Y)
@@ -227,16 +239,16 @@ package body Curve is
           raise Maj_Error;
         end if;
         Conversion.Factor_X :=
-          My_Math.Real (Cur_Con_Io.Graphics.X_Max - Cur_Con_Io.Graphics.X_Range'First)
+          My_Math.Real (Cur_Con_Io.X_Max - Con_Io.X_Range'First)
           / (Real_Boundaries.X_Max - Real_Boundaries.X_Min);
-        Conversion.Offset_X  := My_Math.Real (Cur_Con_Io.Graphics.X_Range'First)
+        Conversion.Offset_X  := My_Math.Real (Con_Io.X_Range'First)
          - Real_Boundaries.X_Min * Conversion.Factor_X;
 
         -- Now X scale is computed, we can compute curve and update Ys
         if Bounds.Scale /= Free_Screen and then
            Bounds.Scale /= Free_Normed then
           -- Find lowest and greatest y of curve
-          for X in Cur_Con_Io.Graphics.X_Range'First .. Cur_Con_Io.Graphics.X_Max loop
+          for X in Con_Io.X_Range'First .. Cur_Con_Io.X_Max loop
             X_Real := X_Screen_Real (X);
             Y_Real := F (X_Real);
             if Y_Real < Real_Boundaries.Y_Min then
@@ -253,9 +265,9 @@ package body Curve is
           raise Maj_Error;
         end if;
         Conversion.Factor_Y :=
-          My_Math.Real (Cur_Con_Io.Graphics.Y_Max - Cur_Con_Io.Graphics.Y_Range'First)
+          My_Math.Real (Cur_Con_Io.Y_Max - Con_Io.Y_Range'First)
           / (Real_Boundaries.Y_Max - Real_Boundaries.Y_Min);
-        Conversion.Offset_Y  := My_Math.Real (Cur_Con_Io.Graphics.Y_Range'First)
+        Conversion.Offset_Y  := My_Math.Real (Con_Io.Y_Range'First)
         - Real_Boundaries.Y_Min * Conversion.Factor_Y;
 
         -- If Scale is normed, factors must be the same on X and Y
@@ -268,9 +280,9 @@ package body Curve is
             Conversion.Factor_X := Conversion.Factor_Y;
           end if;
           -- Update conversion
-          Conversion.Offset_X  := My_Math.Real (Cur_Con_Io.Graphics.X_Range'First)
+          Conversion.Offset_X  := My_Math.Real (Con_Io.X_Range'First)
           - Real_Boundaries.X_Min * Conversion.Factor_X;
-          Conversion.Offset_Y  := My_Math.Real (Cur_Con_Io.Graphics.Y_Range'First)
+          Conversion.Offset_Y  := My_Math.Real (Con_Io.Y_Range'First)
           - Real_Boundaries.Y_Min * Conversion.Factor_Y;
         end if;
 
@@ -329,24 +341,24 @@ package body Curve is
       -- For waiting for an event
       Str  : Unicode.Unicode_Sequence (1 .. 1);
       Last : Natural;
-      Stat : Cur_Con_Io.Curs_Mvt;
+      Stat : Con_Io.Curs_Mvt;
       Pos  : Positive;
       Ins  : Boolean;
       -- Input command
       Char : Character;
       -- Mouse event
-      Mouse_Event : Cur_Con_Io.Mouse_Event_Rec(Cur_Con_Io.X_Y);
+      Mouse_Event : Con_Io.Mouse_Event_Rec(Con_Io.X_Y);
       -- Status (pos) at start / end of drag
-      Clicked_Status : Cur_Con_Io.Mouse_Event_Rec(Cur_Con_Io.X_Y);
+      Clicked_Status : Con_Io.Mouse_Event_Rec(Con_Io.X_Y);
 
       Mvalid : Boolean;
-      Mx : Cur_Con_Io.Graphics.X_Range;
-      My : Cur_Con_Io.Graphics.Y_Range;
+      Mx : Con_Io.X_Range;
+      My : Con_Io.Y_Range;
 
       -- Set mouse position within screen boundaries
       -- Invert Y
-      procedure Set_Mouse_In_Frame(X : in out Cur_Con_Io.Graphics.X_Range;
-                                   Y : in out Cur_Con_Io.Graphics.Y_Range) is
+      procedure Set_Mouse_In_Frame(X : in out Con_Io.X_Range;
+                                   Y : in out Con_Io.Y_Range) is
       begin
         if X < Screen_Boundaries.X_Min then
           X := Screen_Boundaries.X_Min;
@@ -362,30 +374,30 @@ package body Curve is
 
       procedure Toggle_Help_Misc (Misc_Index : in T_Misc_List) is
       begin
-        Cur_Con_Io.Set_Foreground (Cur_Con_Io.Color_Of ("Magenta"));
+        Screen.Set_Foreground (Con_Io.Color_Of ("Magenta"));
         case Misc_Index is
           when M_Help =>
             null;
           when M_Grab =>
-            Cur_Con_Io.Move (Cur_Con_Io.Row_Range_Last - 6,
-                       Cur_Con_Io.Col_Range_Last - 8);
-            Cur_Con_Io.Put ("*");
+            Screen.Move (Screen.Row_Range_Last - 6,
+                         Screen.Col_Range_Last - 8);
+            Screen.Put ("*");
           when M_Axes =>
-            Cur_Con_Io.Move (Cur_Con_Io.Row_Range_Last - 5,
-                       Cur_Con_Io.Col_Range_Last - 8);
-            Cur_Con_Io.Put ("*");
+            Screen.Move (Screen.Row_Range_Last - 5,
+                         Screen.Col_Range_Last - 8);
+            Screen.Put ("*");
           when M_Points =>
-            Cur_Con_Io.Move (Cur_Con_Io.Row_Range_Last - 4,
-                       Cur_Con_Io.Col_Range_Last - 8);
-            Cur_Con_Io.Put ("*");
+            Screen.Move (Screen.Row_Range_Last - 4,
+                         Screen.Col_Range_Last - 8);
+            Screen.Put ("*");
           when M_Curve =>
-            Cur_Con_Io.Move (Cur_Con_Io.Row_Range_Last - 3,
-                       Cur_Con_Io.Col_Range_Last - 8);
-            Cur_Con_Io.Put ("*");
+            Screen.Move (Screen.Row_Range_Last - 3,
+                         Screen.Col_Range_Last - 8);
+            Screen.Put ("*");
           when M_Scale =>
-            Cur_Con_Io.Move (Cur_Con_Io.Row_Range_Last - 2,
-                       Cur_Con_Io.Col_Range_Last - 8);
-            Cur_Con_Io.Put ("*");
+            Screen.Move (Screen.Row_Range_Last - 2,
+                         Screen.Col_Range_Last - 8);
+            Screen.Put ("*");
         end case;
       end Toggle_Help_Misc;
 
@@ -395,15 +407,15 @@ package body Curve is
         -- Dedicated message according to zoom mode (hide/show)
         procedure Put_Mode (Mode : in Zoom_Mode_List) is
         begin
-          Cur_Con_Io.Move (Cur_Con_Io.Row_Range_Last - 11,
-                       Cur_Con_Io.Col_Range_Last - 18);
+          Screen.Move (Screen.Row_Range_Last - 11,
+                       Screen.Col_Range_Last - 18);
           case Mode is
             when Init =>
-              Cur_Con_Io.Put ("Point & click L");
+              Screen.Put ("Point & click L");
             when Drag =>
-              Cur_Con_Io.Put ("Drag L & release");
+              Screen.Put ("Drag L & release");
             when Done =>
-              Cur_Con_Io.Put ("L or R click");
+              Screen.Put ("L or R click");
           end case;
         end Put_Mode;
 
@@ -415,7 +427,7 @@ package body Curve is
         end if;
 
         -- Help on zoom only if mouse
-        Cur_Con_Io.Set_Foreground (Cur_Con_Io.Color_Of ("Magenta"));
+        Screen.Set_Foreground (Con_Io.Color_Of ("Magenta"));
 
         -- Previous mode to hide : Something drawn and new thing different
         if Misc(M_Help) and then
@@ -436,40 +448,40 @@ package body Curve is
 
         -- Global help
         if Action = Toggle or else Action = Init then
-          Cur_Con_Io.Move (Cur_Con_Io.Row_Range_Last - 10,
-                       Cur_Con_Io.Col_Range_Last - 18);
-          Cur_Con_Io.Put ("Current ZOOM: " & Normal(Curr_Zoom_No, 1) );
-          Cur_Con_Io.Move (Cur_Con_Io.Row_Range_Last - 9,
-                       Cur_Con_Io.Col_Range_Last - 18);
-          Cur_Con_Io.Put ("0.." & Normal(Last_Zoom_No, 1) & ": other ZOOM");
+          Screen.Move (Screen.Row_Range_Last - 10,
+                       Screen.Col_Range_Last - 18);
+          Screen.Put ("Current ZOOM: " & Normal(Curr_Zoom_No, 1) );
+          Screen.Move (Screen.Row_Range_Last - 9,
+                       Screen.Col_Range_Last - 18);
+          Screen.Put ("0.." & Normal(Last_Zoom_No, 1) & ": other ZOOM");
 
           -- if mouse not installed : color is set here
-          Cur_Con_Io.Set_Foreground (Cur_Con_Io.Color_Of ("Magenta"));
+          Screen.Set_Foreground (Con_Io.Color_Of ("Magenta"));
 
-          Cur_Con_Io.Move (Cur_Con_Io.Row_Range_Last - 8,
-                       Cur_Con_Io.Col_Range_Last - 10);
-          Cur_Con_Io.Put ("SWITCHES:");
-          Cur_Con_Io.Move (Cur_Con_Io.Row_Range_Last - 7,
-                       Cur_Con_Io.Col_Range_Last - 10);
-          Cur_Con_Io.Put ("H * Help");
-          Cur_Con_Io.Move (Cur_Con_Io.Row_Range_Last - 6,
-                       Cur_Con_Io.Col_Range_Last - 10);
-          Cur_Con_Io.Put ("G   Grab");
-          Cur_Con_Io.Move (Cur_Con_Io.Row_Range_Last - 5,
-                       Cur_Con_Io.Col_Range_Last - 10);
-          Cur_Con_Io.Put ("A   Axes");
-          Cur_Con_Io.Move (Cur_Con_Io.Row_Range_Last - 4,
-                       Cur_Con_Io.Col_Range_Last - 10);
-          Cur_Con_Io.Put ("P   Points");
-          Cur_Con_Io.Move (Cur_Con_Io.Row_Range_Last - 3,
-                       Cur_Con_Io.Col_Range_Last - 10);
-          Cur_Con_Io.Put ("C   Curve");
-          Cur_Con_Io.Move (Cur_Con_Io.Row_Range_Last - 2,
-                       Cur_Con_Io.Col_Range_Last - 10);
-          Cur_Con_Io.Put ("S   Scales");
-          Cur_Con_Io.Move (Cur_Con_Io.Row_Range_Last - 1,
-                       Cur_Con_Io.Col_Range_Last - 10);
-          Cur_Con_Io.Put ("Esc Exit");
+          Screen.Move (Screen.Row_Range_Last - 8,
+                       Screen.Col_Range_Last - 10);
+          Screen.Put ("SWITCHES:");
+          Screen.Move (Screen.Row_Range_Last - 7,
+                       Screen.Col_Range_Last - 10);
+          Screen.Put ("H * Help");
+          Screen.Move (Screen.Row_Range_Last - 6,
+                       Screen.Col_Range_Last - 10);
+          Screen.Put ("G   Grab");
+          Screen.Move (Screen.Row_Range_Last - 5,
+                       Screen.Col_Range_Last - 10);
+          Screen.Put ("A   Axes");
+          Screen.Move (Screen.Row_Range_Last - 4,
+                       Screen.Col_Range_Last - 10);
+          Screen.Put ("P   Points");
+          Screen.Move (Screen.Row_Range_Last - 3,
+                       Screen.Col_Range_Last - 10);
+          Screen.Put ("C   Curve");
+          Screen.Move (Screen.Row_Range_Last - 2,
+                       Screen.Col_Range_Last - 10);
+          Screen.Put ("S   Scales");
+          Screen.Move (Screen.Row_Range_Last - 1,
+                       Screen.Col_Range_Last - 10);
+          Screen.Put ("Esc Exit");
         end if;
 
         -- New help mode
@@ -488,8 +500,8 @@ package body Curve is
 
         -- Draw a point knowing its real coordinates
         procedure Draw_Point (X, Y : in T_Coordinate) is
-          X_S : Cur_Con_Io.Graphics.X_Range;
-          Y_S : Cur_Con_Io.Graphics.Y_Range;
+          X_S : Con_Io.X_Range;
+          Y_S : Con_Io.Y_Range;
           type Pix is record
             X, Y: Integer;
           end record;
@@ -504,8 +516,8 @@ package body Curve is
           for I in Point_Pixels'Range loop
             begin
               In_Frame (X_S + Point_Pixels(I).X, Y_S + Point_Pixels(I).Y);
-              Cur_Con_Io.Graphics.Draw_Point (X_S + Point_Pixels(I).X,
-                                          Y_S + Point_Pixels(I).Y);
+              Cur_Con_Io.Draw_Point (X_S + Point_Pixels(I).X,
+                                     Y_S + Point_Pixels(I).Y);
             exception
               when others => null;
             end;
@@ -515,7 +527,7 @@ package body Curve is
         end Draw_Point;
 
       begin
-        Cur_Con_Io.Set_Foreground (Cur_Con_Io.Color_Of ("Red"));
+        Screen.Set_Foreground (Con_Io.Color_Of ("Red"));
         for I in Points'Range loop
           Draw_Point (Points(I).X, Points(I).Y);
         end loop;
@@ -527,13 +539,13 @@ package body Curve is
       -- Draw an horizontal line (for frames and axes)
       procedure Draw_X (X_Min, X_Max : in Natural; Y : in Natural) is
       begin
-        Cur_Con_Io.Graphics.Draw_Line (X_Min, Y, X_Max, Y);
+        Cur_Con_Io.Draw_Line (X_Min, Y, X_Max, Y);
       end Draw_X;
 
       -- Draw a vertical line (for frames and axes)
       procedure Draw_Y (X : in Natural; Y_Min, Y_Max : in Natural) is
       begin
-        Cur_Con_Io.Graphics.Draw_Line (X, Y_Min, X, Y_Max);
+        Cur_Con_Io.Draw_Line (X, Y_Min, X, Y_Max);
       end Draw_Y;
 
       -- Draw axes of the curve
@@ -541,7 +553,7 @@ package body Curve is
         X_0, Y_0 : Natural;
         Intersec : Boolean := True;
       begin
-        Cur_Con_Io.Set_Foreground (Cur_Con_Io.Color_Of ("Light_Blue"));
+        Screen.Set_Foreground (Con_Io.Color_Of ("Light_Blue"));
         -- Horizontal
         begin
           Y_0 := Y_Real_Screen (0.0);
@@ -562,7 +574,7 @@ package body Curve is
         if Intersec then
           begin
             In_Frame (X_0, Y_0);
-            Cur_Con_Io.Graphics.Draw_Point (X_0, Y_0);
+            Cur_Con_Io.Draw_Point (X_0, Y_0);
           exception
             when others => null;
           end;
@@ -581,8 +593,8 @@ package body Curve is
         -- Draw the frame around the curve
         procedure Draw_Frame is
         begin
-          Cur_Con_Io.Set_Xor_Mode (Cur_Con_Io.Xor_Off);
-          Cur_Con_Io.Set_Foreground (Cur_Con_Io.Color_Of ("White"));
+          Screen.Set_Xor_Mode (Con_Io.Xor_Off);
+          Screen.Set_Foreground (Con_Io.Color_Of ("White"));
           Draw_X (Screen_Boundaries.X_Min, Screen_Boundaries.X_Max,
                   Screen_Boundaries.Y_Min);
           Draw_Y (Screen_Boundaries.X_Max, Screen_Boundaries.Y_Min,
@@ -591,15 +603,15 @@ package body Curve is
                   Screen_Boundaries.Y_Max);
           Draw_Y (Screen_Boundaries.X_Min, Screen_Boundaries.Y_Min,
                   Screen_Boundaries.Y_Max);
-          Cur_Con_Io.Set_Xor_Mode (Cur_Con_Io.Xor_On);
+          Screen.Set_Xor_Mode (Con_Io.Xor_On);
         end Draw_Frame;
 
       begin
         -- Draw frame
         Draw_Frame;
-        Cur_Con_Io.Set_Foreground (Cur_Con_Io.Color_Of ("Lime_Green"));
+        Screen.Set_Foreground (Con_Io.Color_Of ("Lime_Green"));
         -- Draw pixel for each possible X screen
-        for X_S in Cur_Con_Io.Graphics.X_Range
+        for X_S in Con_Io.X_Range
                  range Screen_Boundaries.X_Min .. Screen_Boundaries.X_Max loop
           begin
             -- Xscreen -> Xreal -> Yreal -> Yscreen
@@ -607,7 +619,7 @@ package body Curve is
             Y_R := F (X_R);
             Y_S := Y_Real_Screen (Y_R);
             In_Frame (X_S, Y_S);
-            Cur_Con_Io.Graphics.Draw_Point (X_S, Y_S);
+            Cur_Con_Io.Draw_Point (X_S, Y_S);
           exception
             when others => null;
           end;
@@ -630,15 +642,15 @@ package body Curve is
         begin
           case Pos is
             when X_Min =>
-              Cur_Con_Io.Move (13, 1);
+              Screen.Move (13, 1);
             when X_Max =>
-              Cur_Con_Io.Move (13, Cur_Con_Io.Col_Range_Last - 13);
+              Screen.Move (13, Screen.Col_Range_Last - 13);
             when Y_Min =>
-              Cur_Con_Io.Move (Cur_Con_Io.Row_Range_Last - 2, 30);
+              Screen.Move (Screen.Row_Range_Last - 2, 30);
             when Y_Max =>
-              Cur_Con_Io.Move (2, 30);
+              Screen.Move (2, 30);
           end case;
-          Cur_Con_Io.Put (Coo_To_Str(Scale));
+          Screen.Put (Coo_To_Str(Scale));
         end Put_Scale;
       begin
         -- Optimization : most frequent case
@@ -648,7 +660,7 @@ package body Curve is
           return;
         end if;
 
-        Cur_Con_Io.Set_Foreground (Cur_Con_Io.Color_Of ("Cyan"));
+        Screen.Set_Foreground (Con_Io.Color_Of ("Cyan"));
 
         -- Previous scale to hide : Something drawn and new values different
         if Misc(M_Scale) then
@@ -676,15 +688,15 @@ package body Curve is
         if      Action = Toggle
         or else (Action = Init and then Misc (M_Scale)) then
           -- External scales
-          Cur_Con_Io.Set_Foreground (Cur_Con_Io.Color_Of ("Light_Grey"));
-          Cur_Con_Io.Move (1, 30);
-          Cur_Con_Io.Put (Coo_To_Str(Y_Screen_Real(Screen_Boundaries.Y_Max)));
-          Cur_Con_Io.Move (Cur_Con_Io.Row_Range_Last - 1, 30);
-          Cur_Con_Io.Put (Coo_To_Str(Y_Screen_Real(Screen_Boundaries.Y_Min)));
-          Cur_Con_Io.Move (12, 1);
-          Cur_Con_Io.Put (Coo_To_Str(X_Screen_Real(Screen_Boundaries.X_Min)));
-          Cur_Con_Io.Move (12, Cur_Con_Io.Col_Range_Last - 13);
-          Cur_Con_Io.Put (Coo_To_Str(X_Screen_Real(Screen_Boundaries.X_Max)));
+          Screen.Set_Foreground (Con_Io.Color_Of ("Light_Grey"));
+          Screen.Move (1, 30);
+          Screen.Put (Coo_To_Str(Y_Screen_Real(Screen_Boundaries.Y_Max)));
+          Screen.Move (Screen.Row_Range_Last - 1, 30);
+          Screen.Put (Coo_To_Str(Y_Screen_Real(Screen_Boundaries.Y_Min)));
+          Screen.Move (12, 1);
+          Screen.Put (Coo_To_Str(X_Screen_Real(Screen_Boundaries.X_Min)));
+          Screen.Move (12, Screen.Col_Range_Last - 13);
+          Screen.Put (Coo_To_Str(X_Screen_Real(Screen_Boundaries.X_Max)));
         end if;
 
         -- Toggle mode
@@ -707,7 +719,7 @@ package body Curve is
         -- Draw/hide a zoom frame
         procedure Put_Frame (Bounds : in T_Screen_Boundaries) is
         begin
-          Cur_Con_Io.Graphics.Draw_Rectangle (
+          Cur_Con_Io.Draw_Rectangle (
              Bounds.X_Min,
              Bounds.Y_Min,
              Bounds.X_Max,
@@ -717,7 +729,7 @@ package body Curve is
       begin
         -- Redraw (refresh when done)
         if Action = Redraw then
-          Cur_Con_Io.Set_Foreground (Cur_Con_Io.Color_Of ("Cyan"));
+          Screen.Set_Foreground (Con_Io.Color_Of ("Cyan"));
           Put_Frame(Prev_Frame_Bounds);
           return;
         end if;
@@ -734,7 +746,7 @@ package body Curve is
         end if;
 
         -- If action = update, then cur mode is drag and bounds are new
-        Cur_Con_Io.Set_Foreground (Cur_Con_Io.Color_Of ("Cyan"));
+        Screen.Set_Foreground (Con_Io.Color_Of ("Cyan"));
 
         -- Previous frame to hide : new drag or drag -> done or done -> init
         if Action = Update
@@ -780,18 +792,18 @@ package body Curve is
         Cur_Con_Io.Enable_Motion_Events (Misc(M_Scale));
       end Cancel_Zoom;
 
-    use type Cur_Con_Io.Curs_Mvt, Cur_Con_Io.Mouse_Button_List,
-             Cur_Con_Io.Mouse_Button_Status_List;
+    use type Con_Io.Curs_Mvt, Con_Io.Mouse_Button_List,
+             Con_Io.Mouse_Button_Status_List;
     begin -- Draw_One
 
       -- Init context
       Prev_Zoom_Mode := Init;
       Curr_Zoom_Mode := Init;
-      Stat := Cur_Con_Io.Refresh;
+      Stat := Con_Io.Refresh;
       Cur_Con_Io.Enable_Motion_Events (Misc(M_Scale));
       Misc(M_Curve) := True;
 
-      Cur_Con_Io.Graphics.Get_Current_Pointer_Pos (Mvalid, Mx, My);
+      Cur_Con_Io.Get_Current_Pointer_Pos (Mvalid, Mx, My);
       if Mvalid then
         Set_Mouse_In_Frame(Mx, My);
         Mouse_Bounds.X_Min := Mx;
@@ -806,11 +818,11 @@ package body Curve is
 
       loop -- Main loop of mouse and keys actions
 
-        if Stat = Cur_Con_Io.Refresh and then Curr_Zoom_Mode /= Drag then
+        if Stat = Con_Io.Refresh and then Curr_Zoom_Mode /= Drag then
           -- Discard refresh when in drag
           -- Frozen mouse when done
           if Curr_Zoom_Mode /= Done then
-            Cur_Con_Io.Graphics.Get_Current_Pointer_Pos (Mvalid, Mx, My);
+            Cur_Con_Io.Get_Current_Pointer_Pos (Mvalid, Mx, My);
             if Mvalid then
               Set_Mouse_In_Frame(Mx, My);
               Mouse_Bounds.X_Min := Mx;
@@ -820,7 +832,7 @@ package body Curve is
             end if;
           end if;
           -- Draw what has to be for initial/refresh
-          Cur_Con_Io.Clear;
+          Screen.Clear;
           if Misc(M_Grab)   then
             if Misc(M_Help) then
               Toggle_Help_Misc (M_Grab);
@@ -838,28 +850,28 @@ package body Curve is
         end if;
 
         -- Infinite wait
-        Cur_Con_Io.Get (Str, Last, Stat, Pos, Ins, Echo => False);
+        Screen.Get (Str, Last, Stat, Pos, Ins, Echo => False);
 
         case Stat is
-          when Cur_Con_Io.Break =>
+          when Con_Io.Break =>
             -- End of curve
             return False;
-          when Cur_Con_Io.Refresh =>
+          when Con_Io.Refresh =>
             -- Redraw at next loop;
             null;
-          when Cur_Con_Io.Fd_Event =>
+          when Con_Io.Fd_Event =>
             -- Call any fd callback
             Fd_Callback;
-          when Cur_Con_Io.Timer_Event =>
+          when Con_Io.Timer_Event =>
             -- Call any timer callback
             Timer_Callback;
-          when Cur_Con_Io.Signal_Event =>
+          when Con_Io.Signal_Event =>
             -- Call any signal callback
             Signal_Callback;
-          when Cur_Con_Io.Timeout =>
+          when Con_Io.Timeout =>
             -- Should not occure: Get(Infinite_Time)
             null;
-          when Cur_Con_Io.Esc =>
+          when Con_Io.Esc =>
             if Curr_Zoom_Mode = Init then
               -- Initial zoom mode. Exit drawings.
               return False;
@@ -868,7 +880,7 @@ package body Curve is
               Cancel_Zoom;
               Draw_Z_Frame (Zoom_Frame_Action, Mouse_Bounds);
             end if;
-          when Cur_Con_Io.Full =>
+          when Con_Io.Full =>
             -- Key pressed,
             -- Con_Io default char (Wide_Def_Char = '#') is rejected here,
             --  so we can use Con_Io "weak" conversion
@@ -896,7 +908,7 @@ package body Curve is
             elsif Upper_Char(Char) = 'G' then
               -- Grab / ungrab pointer
               Misc(M_Grab) := not Misc(M_Grab);
-              Cur_Con_Io.Set_Pointer_Shape(Cur_Con_Io.Cross, Misc(M_Grab));
+              Cur_Con_Io.Set_Pointer_Shape(Con_Io.Cross, Misc(M_Grab));
               if Misc(M_Help) then
                 Toggle_Help_Misc (M_Grab);
               end if;
@@ -930,9 +942,9 @@ package body Curve is
               Cur_Con_Io.Bell(3);
             end if;
 
-          when Cur_Con_Io.Mouse_Button =>
+          when Con_Io.Mouse_Button =>
             -- New button status
-            Cur_Con_Io.Get_Mouse_Event (Mouse_Event, Cur_Con_Io.X_Y);
+            Cur_Con_Io.Get_Mouse_Event (Mouse_Event, Con_Io.X_Y);
             Set_Mouse_In_Frame(Mouse_Event.X, Mouse_Event.Y);
             -- Update scales and frame according to zoom mode
             if Curr_Zoom_Mode = Init then
@@ -954,8 +966,8 @@ package body Curve is
             case Curr_Zoom_Mode is
               when Init =>
                 if Mouse_Event.Valid
-                and then Mouse_Event.Button = Cur_Con_Io.Left
-                and then Mouse_Event.Status = Cur_Con_Io.Pressed then
+                and then Mouse_Event.Button = Con_Io.Left
+                and then Mouse_Event.Status = Con_Io.Pressed then
 
                   Curr_Zoom_Mode := Drag;
                   Draw_Help (Update);
@@ -964,15 +976,15 @@ package body Curve is
                   Zoom_Frame_Action := Toggle;
                   Cur_Con_Io.Enable_Motion_Events (True);
                 elsif Mouse_Event.Valid
-                and then Mouse_Event.Status = Cur_Con_Io.Released then
-                  if Mouse_Event.Button = Cur_Con_Io.Up
+                and then Mouse_Event.Status = Con_Io.Released then
+                  if Mouse_Event.Button = Con_Io.Up
                   and then Curr_Zoom_No /= Last_Zoom_No then
                     -- Next zoom
                     Curr_Zoom_No := Curr_Zoom_No + 1;
                     -- Compute new conversions
                     Maj (Zoom_Array(Curr_Zoom_No));
                     return True;
-                  elsif Mouse_Event.Button = Cur_Con_Io.Down
+                  elsif Mouse_Event.Button = Con_Io.Down
                   and then Curr_Zoom_No /= Zoom_No_Range'First then
                     -- Prev zoom
                     Curr_Zoom_No := Curr_Zoom_No - 1;
@@ -988,8 +1000,8 @@ package body Curve is
                   Zoom_Frame_Action := None;
                 end if;
               when Drag =>
-                if       Mouse_Event.Button = Cur_Con_Io.Left
-                and then Mouse_Event.Status = Cur_Con_Io.Released then
+                if       Mouse_Event.Button = Con_Io.Left
+                and then Mouse_Event.Status = Con_Io.Released then
                   -- release
                   if      Mouse_Event.X = Clicked_Status.X
                   or else Mouse_Event.Y = Clicked_Status.Y then
@@ -1006,8 +1018,8 @@ package body Curve is
                 end if;
               when Done =>
                 if Mouse_Event.Valid
-                and then Mouse_Event.Button = Cur_Con_Io.Left
-                and then Mouse_Event.Status = Cur_Con_Io.Pressed then
+                and then Mouse_Event.Button = Con_Io.Left
+                and then Mouse_Event.Status = Con_Io.Pressed then
                   -- Click left : Validate
                   -- Zoom status is Done. Validate new scales in Curr_Zoom_No+1
                   declare
@@ -1055,8 +1067,8 @@ package body Curve is
                   end;
 
                 elsif Mouse_Event.Valid
-                and then Mouse_Event.Button = Cur_Con_Io.Right
-                and then Mouse_Event.Status = Cur_Con_Io.Pressed then
+                and then Mouse_Event.Button = Con_Io.Right
+                and then Mouse_Event.Status = Con_Io.Pressed then
                   Cancel_Zoom;
                 else
                   -- no change in init or done
@@ -1067,7 +1079,7 @@ package body Curve is
 
             -- perform zoom frame drawing
             if Mouse_Event.Valid
-            or else Mouse_Event.Status /= Cur_Con_Io.Pressed then
+            or else Mouse_Event.Status /= Con_Io.Pressed then
               Draw_Z_Frame (Zoom_Frame_Action, Mouse_Bounds);
             end if;
           when others =>
@@ -1086,11 +1098,9 @@ package body Curve is
 
   begin -- Draw
     -- Initialise graphics
-    Cur_Con_Io.Default_Background := Cur_Con_Io.Color_Of ("Black");
-    Cur_Con_Io.Init;
+    Init;
 
-    Cur_Con_Io.Set_Xor_Mode (Cur_Con_Io.Xor_On);
-    Cur_Con_Io.Set_Pointer_Shape(Cur_Con_Io.Cross, Misc(M_Grab));
+    Cur_Con_Io.Set_Pointer_Shape(Con_Io.Cross, Misc(M_Grab));
 
     -- Initialise zooms storing
     Zoom_Array(Zoom_No_Range'First) := Boundaries;
@@ -1141,11 +1151,10 @@ package body Curve is
 
   function Init return Boolean is
   begin
-    Cur_Con_Io.Default_Background := Cur_Con_Io.Color_Of ("Black");
-    Cur_Con_Io.Init;
+    Init;
     return True;
   exception
-    when Cur_Con_Io.Init_Failure =>
+    when Con_Io.Init_Failure =>
       return False;
   end Init;
 

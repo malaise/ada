@@ -1,6 +1,8 @@
 with Ada.Wide_Text_Io;
 with Con_Io, My_Io, Language;
 procedure T_Key is
+  Console : Con_Io.Console;
+  Screen : Con_Io.Window;
 
   Got : Con_Io.Get_Result;
   Seq : Con_Io.Unicode_Sequence (1 .. 1);
@@ -8,20 +10,21 @@ procedure T_Key is
   use type Con_Io.Curs_Mvt;
 begin
 
-  Con_Io.Init;
-  Con_Io.Reset_Term;
-  Con_Io.Set_Foreground (Con_Io.Color_Of("Black"));
-  Con_Io.Set_Background (Con_Io.Color_Of("Light_Grey"));
-  Con_Io.Clear;
+  Console := Con_Io.Create (1);
+  Console.Reset_Term;
+  Screen := Console.Screen.all;
+  Screen.Set_Foreground (Con_Io.Color_Of("Black"));
+  Screen.Set_Background (Con_Io.Color_Of("Light_Grey"));
+  Screen.Clear;
   Got := (Mvt => Con_Io.Refresh);
   loop
     if Got.Mvt = Con_Io.Refresh then
       -- Refresh
-      Con_Io.Clear;
-      Con_Io.Move;
-      Con_Io.Put_Line ("Exit with Ctrl C");
+      Screen.Clear;
+      Screen.Move;
+      Screen.Put_Line ("Exit with Ctrl C");
     end if;
-    Got := Con_Io.Get;
+    Got := Screen.Get;
 
     My_Io.Put (Got.Mvt'Img);
 

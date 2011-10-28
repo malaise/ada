@@ -1,25 +1,28 @@
-with Ada.Text_Io;
-with Unchecked_Deallocation;
+with Ada.Unchecked_Deallocation;
+with Basic_Proc, Address_Ops, Environ;
 package body Smart_Reference is
 
-  Debug : constant Boolean := False;
-  procedure Trace (Str : in String) is
+
+  procedure Free is new Ada.Unchecked_Deallocation (Object_Box,
+                                                    Object_Box_Access);
+
+  Debug : constant Boolean := Environ.Is_Yes ("SMART_REFERENCE_DEBUG");
+  procedure Trace (Ref : in Handle; Str : in String) is
   begin
-    if Debug then
-      Ada.Text_Io.Put_Line(Str);
+    if Debug and then Ref.Box_Access /= null then
+      Basic_Proc.Put_Line_Error ("Smart_Ref: " & Str
+         & " of " & Address_Ops.Image (Ref.Box_Access.all'Address));
     end if;
   end Trace;
-
-  procedure Free is new Unchecked_Deallocation (Object_Box,
-                                                Object_Box_Access);
 
   -- Decrement reference to object and free object if no more reference
   procedure Decrement_Ref (Ref : in out Handle) is
   begin
     if Ref.Box_Access /= null then
       Ref.Box_Access.Nb_Access := Ref.Box_Access.Nb_Access - 1;
+      Trace(Ref, "Decr ->" & Ref.Box_Access.Nb_Access'Img);
       if Ref.Box_Access.Nb_Access = 0 then
-        Trace("Free");
+        Trace(Ref, "Free");
         Finalize(Ref.Box_Access.Obj);
         Free(Ref.Box_Access);
       end if;
@@ -31,27 +34,27 @@ package body Smart_Reference is
   begin
     if Ref.Box_Access /= null then
       Ref.Box_Access.Nb_Access := Ref.Box_Access.Nb_Access + 1;
+      Trace(Ref, "Incr ->" & Ref.Box_Access.Nb_Access'Img);
     end if;
   end Increment_Ref;
 
   -- Init Nb_Access to 1
   overriding procedure Initialize (Ref : in out Handle) is
-    pragma Unreferenced (Ref);
   begin
-    Trace("Initialization");
+    Trace(Ref, "Initialization");
   end Initialize;
 
   -- Increment Nb_Access
   overriding procedure Adjust (Ref : in out Handle) is
   begin
-    Trace("Adjustment");
+    Trace(Ref, "Adjustment");
     Increment_Ref (Ref);
   end Adjust;
 
   -- Decrement Nb_Access and garbage collect when last
   overriding procedure Finalize (Ref : in out Handle) is
   begin
-    Trace("Finalization");
+    Trace(Ref, "Finalization");
     Decrement_Ref(Ref);
   end Finalize;
 
@@ -59,16 +62,16 @@ package body Smart_Reference is
   procedure Init (Reference : in out Handle; Val : in Object) is
   begin
     Decrement_Ref(Reference);
-    Trace("New");
     Reference.Box_Access := new Object_Box;
+    Trace(Reference, "New");
     Set (Reference.Box_Access.Obj, Val);
     Increment_Ref(Reference);
   end Init;
   function Init (Val : Object) return Handle is
   begin
-    Trace("New");
     return Reference : Handle do
       Reference.Box_Access := new Object_Box;
+      Trace(Reference, "New");
       Set (Reference.Box_Access.Obj, Val);
       Increment_Ref(Reference);
     end return;

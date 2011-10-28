@@ -123,6 +123,7 @@ procedure T_Timers is
   end Callback;
 
 begin
+  Display ("Use Esc/Return to Suspend/Resume periodical and single timers");
   Rnd.Randomize;
 
   -- Start timers

@@ -1,6 +1,6 @@
 with Ada.Exceptions, Ada.Calendar;
 with My_Io, Normal, Argument, Timers, Language;
-with Generic_Con_Io;
+with Con_Io;
 
 procedure T_Con is
 
@@ -13,9 +13,10 @@ procedure T_Con is
   Nb_Tasks : constant := 2;
   T : array (1 .. Nb_Tasks) of Task_T;
 
+
   task body Task_T is
 
-    package Con_Io is new Generic_Con_Io.One_Con_Io(1);
+    Console : Con_Io.Console;
 
     Me : Positive;
 
@@ -45,16 +46,16 @@ procedure T_Con is
     procedure Show_Clock is
       T : Natural;
     begin
-      Con_Io.Move (0, 0, W3);
+      W3.Move (0, 0);
       T := Natural(Ada.Calendar.Seconds(Ada.Calendar.Clock) - T0);
-      Con_Io.Put (Natural'Image(T) & String'("   "), W3);
+      W3.Put (Natural'Image(T) & String'("   "));
     end Show_Clock;
 
     procedure Redraw is
     begin
-      Con_Io.Clear (W1);
-      Con_Io.Clear (W2);
-      Con_Io.Clear (W3);
+      W1.Clear;
+      W2.Clear;
+      W3.Clear;
       Show_Clock;
     end Redraw;
 
@@ -70,36 +71,36 @@ procedure T_Con is
     end;
     accept Start(I : in Positive) do
       Me := I;
-      Con_Io.Init;
+      Console := Con_Io.Create (1);
     end Start;
 
-    Con_Io.Reset_Term;
-    Con_Io.Enable_Motion_Events(True);
+    Console.Reset_Term;
+    Console.Enable_Motion_Events(True);
     -- fenetre de saisie, fenetre d'affichage
-    Con_Io.Open ( W1, ( 5, 15), (10, 78));
-    Con_Io.Open ( W2, (15,  1), (17, 78));
-    Con_Io.Open ( W3, (20,  0), (20, 9));
+    W1 := Console.Open ( ( 5, 15), (10, 78)).all;
+    W1.Set_Foreground (Con_Io.Color_Of ("Light_Blue"));
+    W1.Set_Background (Con_Io.Color_Of ("Blue"));
 
-    Con_Io.Set_Foreground (Con_Io.Color_Of ("Light_Blue"), W1);
-    Con_Io.Set_Foreground (Con_Io.Color_Of ("Cyan"), W2);
-    Con_Io.Set_Foreground (Con_Io.Color_Of ("Lime_Green"), W3);
+    W2 := Console.Open ( (15,  1), (17, 78)).all;
+    W2.Set_Foreground (Con_Io.Color_Of ("Cyan"));
+    W2.Set_Background (Con_Io.Color_Of ("Red"));
 
-    Con_Io.Set_Background (Con_Io.Color_Of ("Blue"), W1);
-    Con_Io.Set_Background (Con_Io.Color_Of ("Red"), W2);
-    Con_Io.Set_Background (Con_Io.Color_Of ("Dark_Green"), W3);
+    W3 := Console.Open ( (20,  0), (20, 9)).all;
+    W3.Set_Foreground (Con_Io.Color_Of ("Lime_Green"));
+    W3.Set_Background (Con_Io.Color_Of ("Dark_Green"));
 
     Redraw;
 
-    Con_Io.Move (1, Col, W1);
-    Con_Io.Get (Str(1..Width), Last, Stat, Pos, Ins,
-       W1, Con_Io.Current, Con_Io.Color_Of ("Red"), Delt);
+    W1.Move (1, Col);
+    W1.Get (Str(1..Width), Last, Stat, Pos, Ins,
+       Con_Io.Current, Con_Io.Color_Of ("Red"), Delt);
     loop
-        Con_Io.Clear (W2);
-        Con_Io.Putu (
+        W2.Clear;
+        W2.Putu (
               Language.Char_To_Unicode ('>')
             & Str(1..Last)
             & Language.Char_To_Unicode ('<')
-            & Language.String_To_Unicode (Con_Io.Curs_Mvt'Image(Stat)), W2);
+            & Language.String_To_Unicode (Con_Io.Curs_Mvt'Image(Stat)));
         My_Io.Put_Line (Positive'Image(Me)
                       & " >" & Language.Unicode_To_String (Str(1 .. Last))
                       & "<" & Con_Io.Curs_Mvt'Image(Stat));
@@ -117,34 +118,34 @@ procedure T_Con is
               exit;
             end if;
           when Con_Io.Mouse_Button =>
-            Con_Io.Get_Mouse_Event (Mouse_Event);
+            Console.Get_Mouse_Event (Mouse_Event);
             if Mouse_Event.Valid then
-              Con_Io.Put (" T", W2);
+              W2.Put (" T");
             else
-              Con_Io.Put (" D", W2);
+              W2.Put (" D");
             end if;
             if Mouse_Event.Status = Con_Io.Pressed then
-              Con_Io.Put (" P", W2);
+              W2.Put (" P");
             elsif Mouse_Event.Status = Con_Io.Released then
-              Con_Io.Put (" R", W2);
+              W2.Put (" R");
             elsif Mouse_Event.Status = Con_Io.Motion then
-              Con_Io.Put (" M", W2);
+              W2.Put (" M");
             end if;
             if Mouse_Event.Button = Con_Io.Left then
-              Con_Io.Put (" L", W2);
+              W2.Put (" L");
             elsif Mouse_Event.Button = Con_Io.Middle then
-              Con_Io.Put (" M", W2);
+              W2.Put (" M");
             elsif Mouse_Event.Button = Con_Io.Right then
-              Con_Io.Put (" R", W2);
+              W2.Put (" R");
             elsif Mouse_Event.Button = Con_Io.Motion then
-              Con_Io.Put (" x", W2);
+              W2.Put (" x");
             elsif Mouse_Event.Button = Con_Io.Up then
-              Con_Io.Put (" U", W2);
+              W2.Put (" U");
             elsif Mouse_Event.Button = Con_Io.Down then
-              Con_Io.Put (" D", W2);
+              W2.Put (" D");
             end if;
-            Con_Io.Put (Normal(Mouse_Event.Row, 4)
-                      & Normal(Mouse_Event.Col, 4), W2);
+            W2.Put (Normal(Mouse_Event.Row, 4)
+                      & Normal(Mouse_Event.Col, 4));
             if Mouse_Event.Valid
             and then Mouse_Event.Status = Con_Io.Pressed
             and then Mouse_Event.Button = Con_Io.Left
@@ -163,32 +164,32 @@ procedure T_Con is
             null;
         end case;
         Show_Clock;
-        Con_Io.Move (1, Col, W1);
-        Con_Io.Put_Then_Get (Str(1..Width), Last, Stat, Pos, Ins,
-         W1, Con_Io.Current, Con_Io.Color_Of ("Red"), Delt);
+        W1.Move (1, Col);
+        W1.Put_Then_Get (Str(1..Width), Last, Stat, Pos, Ins,
+          Con_Io.Current, Con_Io.Color_Of ("Red"), Delt);
     end loop;
 
 
-    Con_Io.Enable_Motion_Events (False);
+    Console.Enable_Motion_Events (False);
     for I in 1 .. 3 loop
-      Con_Io.Clear (W1);
-      Con_Io.Move (6 - I, 2, W1);
-      Con_Io.Put ("Exiting", W1, Con_Io.Color_Of ("Red"),
+      W1.Clear;
+      W1.Move (6 - I, 2);
+      W1.Put ("Exiting", Con_Io.Color_Of ("Red"),
                   Con_Io.Color_Of ("Dark_Green"));
-      Con_Io.Get (Str(1..0), Last, Stat, Pos, Ins,
-         W1, Con_Io.Current, Con_Io.Color_Of ("Red"),
+      W1.Get (Str(1..0), Last, Stat, Pos, Ins,
+         Con_Io.Current, Con_Io.Color_Of ("Red"),
          (Delay_Kind    => Timers.Delay_Sec,
           Clock         => null,
           Period        => Con_Io.No_Period,
           Delay_Seconds => 3.0) );
     end loop;
 
-    Con_Io.Destroy;
+    Console.Destroy;
     delay 3.0;
 
-    Con_Io.Init;
+    Console := Con_Io.Create (1);
     delay 2.0;
-    Con_Io.Destroy;
+    Console.Destroy;
     delay 1.0;
 
     My_Io.Put_Line (Me'Img & " Terminated");
@@ -203,7 +204,7 @@ procedure T_Con is
 
 begin
   -- Init Con_Io with stack of main
-  Generic_Con_Io.Initialise;
+  Con_Io.Initialise;
 
   for I in T'Range loop
     T(I).Start(I);
