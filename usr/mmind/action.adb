@@ -1,4 +1,4 @@
-with Con_Io, Rnd;
+with Rnd, Con_Io;
 with Common, Screen, Response;
 package body Action is
 
@@ -15,7 +15,6 @@ package body Action is
   procedure Init is
   begin
     Screen.Init;
-    Con_Io.Init;
     Rnd.Randomize;
     Level := Common.Get_Level;
   end Init;
@@ -52,7 +51,9 @@ package body Action is
   function Play return Boolean is
     Clicked : Boolean := False;
     Go_On, Exit_Game : Boolean;
+    Scr : constant Con_Io.Window := Screen.Console.Screen.all;
   begin
+
     -- Start new game - playing
     Level := Common.Get_Level;
     Common.Reset_State;
@@ -82,9 +83,9 @@ package body Action is
       begin
         Wait_Event:
         loop
-          Con_Io.Get (Str, Last, Stat, Pos, Ins, Echo => False);
+          Scr.Get (Str, Last, Stat, Pos, Ins, Echo => False);
           if Stat = Con_Io.Mouse_Button then
-            Con_Io.Get_Mouse_Event (Mouse_Status);
+            Screen.Console.Get_Mouse_Event (Mouse_Status);
             if Mouse_Status.Button = Con_Io.Left then
               -- exit on new event
               exit Wait_Event when Clicked
@@ -158,7 +159,7 @@ package body Action is
     return not Exit_Game;
   exception
     when others =>
-      Con_Io.Move;
+      Scr.Move;
       return Exit_Game;
   end Play;
 

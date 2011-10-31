@@ -1,5 +1,5 @@
 with Timers, Language, Lower_Char;
-with Sok_Time;
+with Sok_Time, Sok_Display;
 package body Sok_Input is
 
   Play : Boolean := True;
@@ -11,6 +11,8 @@ package body Sok_Input is
 
   Mouse_Event : Mouse_Event_Rec;
   No_Event : constant Mouse_Event_Rec := Mouse_Event;
+  Console : Con_Io.Console;
+  Screen : Con_Io.Window;
 
   function Get_Key return Key_List is
     Str  : Con_Io.Unicode_Sequence (1 .. 1);
@@ -21,12 +23,16 @@ package body Sok_Input is
 
     use Con_Io;
   begin
+    if not Console.Is_Init then
+      Console := Sok_Display.Get_Console;
+      Screen := Console.Screen.all;
+    end if;
     Mouse_Event := No_Event;
     loop
       if Play then
         Sok_Time.Disp_Time;
       end if;
-      Con_Io.Get (Str, Last, Stat, Pos, Ins,
+      Screen.Get (Str, Last, Stat, Pos, Ins,
                   Time_Out => Delta_Get,
                   Echo     => False);
       if Play then
@@ -48,7 +54,7 @@ package body Sok_Input is
                   return Undo;
                 when 'w' =>
                   Play := not Play;
-                  Con_Io.Clear;
+                  Screen.Clear;
                   Sok_Time.Stop_Time;
                 when ' '  =>
                   return Next;
@@ -63,7 +69,7 @@ package body Sok_Input is
             declare
               Evt : Con_Io.Mouse_Event_Rec;
             begin
-              Con_Io.Get_Mouse_Event (Evt);
+              Console.Get_Mouse_Event (Evt);
               if Evt.Valid and then Evt.Button = Con_Io.Left
               and then Evt.Status /= Motion then
                 Mouse_Event := (True, Evt.Status = Con_Io.Pressed,
@@ -103,9 +109,13 @@ package body Sok_Input is
 
     use Con_Io;
   begin
+    if not Console.Is_Init then
+      Console := Sok_Display.Get_Console;
+      Screen := Console.Screen.all;
+    end if;
     Mouse_Event := No_Event;
     loop
-      Con_Io.Get (Str, Last, Stat, Pos, Ins,
+      Screen.Get (Str, Last, Stat, Pos, Ins,
                   Time_Out => Delta_Get,
                   Echo     => False);
       case Stat is

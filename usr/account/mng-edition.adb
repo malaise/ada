@@ -428,17 +428,17 @@ package body Edition is
   --  and on first char in all other cases
   function Set_Cursor (Field : Afpx.Field_Range;
                        New_Field : Boolean;
-                       Col   : Con_Io.Full_Col_Range;
+                       Col   : Con_Io.Col_Range;
                        Cause : Afpx.Enter_Field_Cause_List;
                        Str   : Afpx.Unicode_Sequence)
-           return Con_Io.Full_Col_Range is
+           return Con_Io.Col_Range is
     pragma Unreferenced (Field, New_Field, Col);
     use type Afpx.Enter_Field_Cause_List, Afpx.Field_Range;
   begin
     if Cause = Afpx.Left then
       return Afpx.Last_Index (Str, True);
     else
-      return Con_Io.Full_Col_Range'First;
+      return Con_Io.Col_Range'First;
     end if;
   end Set_Cursor;
 

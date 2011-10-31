@@ -1,4 +1,4 @@
-with Normal, Day_Mng, Con_Io, Timers, Language;
+with Normal, Day_Mng, Timers, Language;
 with Sok_Input, Sok_Time;
 
 -- displaying of sokoban
@@ -6,6 +6,9 @@ package body Sok_Display is
 
   Len_Moves  : constant := 5;
   Len_Days   : constant := 3;
+
+  Console : Con_Io.Console;
+  Screen_Win : Con_Io.Window;
 
   Title_Win : Con_Io.Window;
   Frame_Win : Con_Io.Window;
@@ -25,118 +28,124 @@ package body Sok_Display is
   procedure Init is
   begin
     Black := Con_Io.Color_Of ("Black");
-    Con_Io.Default_Background := Black;
-    Con_Io.Init;
-    Con_Io.Reset_Term;
-    Con_Io.Clear;
+    Console := Con_Io.Create (Font_No => 1,
+                              Def_Back => Black);
+    Screen_Win := Console.Screen.all;
+    Console.Reset_Term;
+    Screen_Win.Clear;
 
     -- Title      : row 00 to 00 col 00 to 57 (01 row, 57 col)
-    Con_Io.Open (Title_Win, (00, 00), (00, 55) );
+    Title_Win := Console.Open ((00, 00), (00, 55) ).all;
 
     -- Time zone  : row 00 to 00 col 57 to 76 (01 row 20 col)
-    Con_Io.Open (Time_Win,  (00, 57), (00, 76) );
+    Time_Win := Console.Open ((00, 57), (00, 76) ).all;
 
     -- Frame      : row 02 to 17 col 05 to 42 (16 row 38 col) (38=19*2)
-    Con_Io.Open (Frame_Win, (02, 05), (17, 42) );
+    Frame_Win := Console.Open ((02, 05), (17, 42) ).all;
 
     -- State line : row 20 to 20 col 10 to 75 (01 row 66 col)
-    Con_Io.Open (Line_Win,  (20, 10), (20, 75) );
+    Line_Win := Console.Open ((20, 10), (20, 75) ).all;
 
     -- Score line : row 21 to 20 col 10 to 75 (01 row 66 col)
-    Con_Io.Open (Score_Win,  (21, 10), (21, 75) );
+    Score_Win := Console.Open ((21, 10), (21, 75) ).all;
 
     -- Help beside: row 05 to 15 col 55 to 77 (left to frame)
-    Con_Io.Open (Help_Win,  (05, 55), (15, 77) );
-    Con_Io.Set_Foreground (Con_Io.Color_Of ("Lime_Green"), Name => Help_Win);
+    Help_Win := Console.Open ((05, 55), (15, 77) ).all;
+    Help_Win.Set_Foreground (Con_Io.Color_Of ("Lime_Green"));
 
     -- Menu       : row 19 to 21 col 02 to 79 (bottom)
-    Con_Io.Open (Menu_Win,  (19, 00), (21, 79) );
+    Menu_Win := Console.Open ((19, 00), (21, 79) ).all;
 
     -- Error      : row 19 to 21 col 02 to 79 (bottom)
-    Con_Io.Open (Error_Win, (19, 00), (21, 79) );
+    Error_Win := Console.Open ((19, 00), (21, 79) ).all;
 
     -- Get        : row 22 to 25 col 19 to 59 (bottom)
-    Con_Io.Open (Get_Win,   (22, 19), (24, 59) );
+    Get_Win := Console.Open ((22, 19), (24, 59) ).all;
 
   end Init;
 
+  function Get_Console return Con_Io.Console is
+  begin
+    return Console;
+  end Get_Console;
+
   procedure Put_Help (Help : in Action_List) is
   begin
-    Con_Io.Clear (Help_Win);
+    Help_Win.Clear;
     case Help is
       when Frame =>
-        Con_Io.Put_Line (" Arrows", Name => Help_Win);
-        Con_Io.Put ("  for movements", Name => Help_Win);
-        Con_Io.New_Line (Help_Win, 2);
+        Help_Win.Put_Line (" Arrows");
+        Help_Win.Put ("  for movements");
+        Help_Win.New_Line (2);
 
-        Con_Io.Put_Line (" u  or  Backspace", Name => Help_Win);
-        Con_Io.Put ("  for undo", Name => Help_Win);
-        Con_Io.New_Line (Help_Win, 2);
+        Help_Win.Put_Line (" u  or  Backspace");
+        Help_Win.Put ("  for undo");
+        Help_Win.New_Line (2);
 
-        Con_Io.Put_Line (" Ctrl Break or Ctrl C", Name => Help_Win);
-        Con_Io.Put ("  to quit", Name => Help_Win);
+        Help_Win.Put_Line (" Ctrl Break or Ctrl C");
+        Help_Win.Put ("  to quit");
       when Done =>
-        Con_Io.Put_Line ("  - FRAME completed -", Name => Help_Win);
-        Con_Io.New_Line (Help_Win, 2);
+        Help_Win.Put_Line ("  - FRAME completed -");
+        Help_Win.New_Line (2);
 
-        Con_Io.Put_Line (" Space or Return", Name => Help_Win);
-        Con_Io.Put ("  for next frame", Name => Help_Win);
-        Con_Io.New_Line (Help_Win, 2);
+        Help_Win.Put_Line (" Space or Return");
+        Help_Win.Put ("  for next frame");
+        Help_Win.New_Line (2);
 
-        Con_Io.Put_Line (" Ctrl Break or Ctrl C", Name => Help_Win);
-        Con_Io.Put ("  to quit", Name => Help_Win);
+        Help_Win.Put_Line (" Ctrl Break or Ctrl C");
+        Help_Win.Put ("  to quit");
       when Write =>
-        Con_Io.Move ( (02, 00), Name => Help_Win);
-        Con_Io.Put_Line (" Save current", Name => Help_Win);
-        Con_Io.Put_Line ("  frame and movements", Name => Help_Win);
-        Con_Io.New_Line (Name => Help_Win);
-        Con_Io.Put_Line (" Only one frame saved", Name => Help_Win);
-        Con_Io.Put_Line ("  at a time", Name => Help_Win);
+        Help_Win.Move ( (02, 00));
+        Help_Win.Put_Line (" Save current");
+        Help_Win.Put_Line ("  frame and movements");
+        Help_Win.New_Line;
+        Help_Win.Put_Line (" Only one frame saved");
+        Help_Win.Put_Line ("  at a time");
       when Read =>
-        Con_Io.Move ( (02, 00), Name => Help_Win);
-        Con_Io.Put_Line (" Restore last saved", Name => Help_Win);
-        Con_Io.Put_Line ("  frame and movements", Name => Help_Win);
-        Con_Io.New_Line (Name => Help_Win);
-        Con_Io.Put_Line (" Only one frame saved", Name => Help_Win);
-        Con_Io.Put_Line ("  at a time", Name => Help_Win);
+        Help_Win.Move ( (02, 00));
+        Help_Win.Put_Line (" Restore last saved");
+        Help_Win.Put_Line ("  frame and movements");
+        Help_Win.New_Line;
+        Help_Win.Put_Line (" Only one frame saved");
+        Help_Win.Put_Line ("  at a time");
       when Reset =>
-        Con_Io.Move ( (03, 00), Name => Help_Win);
-        Con_Io.Put_Line (" Restart current frame", Name => Help_Win);
-        Con_Io.Put_Line ("  from the beginning", Name => Help_Win);
+        Help_Win.Move ( (03, 00));
+        Help_Win.Put_Line (" Restart current frame");
+        Help_Win.Put_Line ("  from the beginning");
       when Get_New =>
-        Con_Io.Move ( (03, 00), Name => Help_Win);
-        Con_Io.Put_Line (" Start a new frame", Name => Help_Win);
-        Con_Io.Put_Line ("  from the beginning", Name => Help_Win);
+        Help_Win.Move ( (03, 00));
+        Help_Win.Put_Line (" Start a new frame");
+        Help_Win.Put_Line ("  from the beginning");
       when Break =>
-        Con_Io.Move ( (05, 00), Name => Help_Win);
-        Con_Io.Put_Line (" Exit SOKOBAN", Name => Help_Win);
+        Help_Win.Move ( (05, 00));
+        Help_Win.Put_Line (" Exit SOKOBAN");
 
     end case;
 
     case Help is
       when Frame | Done =>
-        Con_Io.Move ( (09, 00) ,Help_Win);
-        Con_Io.Put_Line (" Esc", Name => Help_Win);
-        Con_Io.Put ("  for command menu", Name => Help_Win);
+        Help_Win.Move ( (09, 00));
+        Help_Win.Put_Line (" Esc");
+        Help_Win.Put ("  for command menu");
       when others =>
-        Con_Io.Move ( (09, 00) ,Help_Win);
-        Con_Io.Put_Line (" Esc", Name => Help_Win);
-        Con_Io.Put ("  to play again", Name => Help_Win);
+        Help_Win.Move ( (09, 00));
+        Help_Win.Put_Line (" Esc");
+        Help_Win.Put ("  to play again");
     end case;
   end Put_Help;
 
   -- puts all the frame
   procedure Put_Frame (Frame : in Sok_Types.Frame_Tab) is
   begin
-    Con_Io.Reset_Term;
-    Con_Io.Clear;
-    Con_Io.Move ( (00, 20), Name => Title_Win);
-    Con_Io.Put ("S O K O B A N", Title_Win,
+    Console.Reset_Term;
+    Screen_Win.Clear;
+    Title_Win.Move ( (00, 20));
+    Title_Win.Put ("S O K O B A N",
      Foreground => Con_Io.Color_Of ("White"), Move => False);
-    Con_Io.Move ( (0, 50), Title_Win);
-    Con_Io.Put ("Time :", Title_Win, Move => False);
+    Title_Win.Move ( (0, 50));
+    Title_Win.Put ("Time :", Move => False);
 
-    Con_Io.Clear (Frame_Win);
+    Frame_Win.Clear;
     for I in Sok_Types.Row_Range loop
       for J in Sok_Types.Col_Range loop
         Put_Square (Frame (I,J), (Row =>I, Col =>J) );
@@ -158,39 +167,34 @@ package body Sok_Display is
                         Blink      : in Boolean := False) is
   begin
 
-    Con_Io.Move ((Coordinate.Row - 1, (Coordinate.Col - 1) * 2),
-     Name => Frame_Win);
+    Frame_Win.Move ((Coordinate.Row - 1, (Coordinate.Col - 1) * 2));
     case Square.Pattern is
       when Sok_Types.Wall =>
-        Con_Io.Put ("  ", Frame_Win, Background => Wall_Color,
-         Move => False);
+        Frame_Win.Put ("  ", Background => Wall_Color, Move => False);
       when Sok_Types.Target =>
         case Square.Content is
           when Sok_Types.Nothing =>
-            Con_Io.Put ("* ", Frame_Win, Foreground => Target_Color,
-             Move => False);
+            Frame_Win.Put ("* ", Foreground => Target_Color, Move => False);
           when Sok_Types.Man =>
-            Con_Io.Put ("!!", Frame_Win, Man_Target_Color, Move => False);
+            Frame_Win.Put ("!!", Man_Target_Color, Move => False);
           when Sok_Types.Box =>
             if Blink then
-              Con_Io.Put ("[]", Frame_Win,
-                                Foreground => Target_Color,
-                                Move => False);
+              Frame_Win.Put ("[]", Foreground => Target_Color,
+                                   Move => False);
             else
-              Con_Io.Put ("[]", Frame_Win,
-                                Foreground => Target_Color,
-                                Move => False);
+              Frame_Win.Put ("[]", Foreground => Target_Color,
+                                   Move => False);
             end if;
         end case;
       when Sok_Types.Free =>
         case Square.Content is
           when Sok_Types.Nothing =>
-            Con_Io.Put ("  ", Frame_Win, Move => False);
+            Frame_Win.Put ("  ", Move => False);
           when Sok_Types.Man =>
-            Con_Io.Put ("!!", Frame_Win,  Foreground => Man_Color,
+            Frame_Win.Put ("!!", Foreground => Man_Color,
                         Move => False);
           when Sok_Types.Box =>
-            Con_Io.Put ("[]", Frame_Win, Move => False);
+            Frame_Win.Put ("[]", Move => False);
         end case;
     end case;
   end Put_Square;
@@ -201,13 +205,12 @@ package body Sok_Display is
                       Boxes_In : in Natural; Nb_Boxes : in Positive;
                       Frame : in Sok_Types.Frame_Range) is
   begin
-    Con_Io.Move (Name => Line_Win);
-    Con_Io.Put ("Frame : "      & Normal (Frame, 2),          Line_Win);
-    Con_Io.Put ("    Moves : "  & Normal (Moves, Len_Moves),  Line_Win);
-    Con_Io.Put ("    Pushes : " & Normal (Pushes, Len_Moves), Line_Win);
-    Con_Io.Put ("    Boxes : " & Normal (Boxes_In, 2)
-                & '/' & Normal (Nb_Boxes, 2), Line_Win,
-              Move => False);
+    Line_Win.Move;
+    Line_Win.Put ("Frame : "      & Normal (Frame, 2));
+    Line_Win.Put ("    Moves : "  & Normal (Moves, Len_Moves));
+    Line_Win.Put ("    Pushes : " & Normal (Pushes, Len_Moves));
+    Line_Win.Put ("    Boxes : " & Normal (Boxes_In, 2)
+                & '/' & Normal (Nb_Boxes, 2), Move => False);
   end Put_Line;
 
   function Time_Image (Day : Natural;
@@ -237,22 +240,18 @@ package body Sok_Display is
                       Time : in Ada.Calendar.Day_Duration) is
 
   begin
-    Con_Io.Move (Name => Time_Win);
-    Con_Io.Put (Time_Image(Day, Time),
-                Time_Win,
-                Move => False);
+    Time_Win.Move;
+    Time_Win.Put (Time_Image(Day, Time), Move => False);
   end Put_Time;
 
   procedure Put_Score (Score : in Sok_Types.Score_Rec) is
   begin
-    Con_Io.Move (Name => Score_Win);
+    Score_Win.Move;
     if Score.Set then
-      Con_Io.Put ("Best results", Score_Win);
-      Con_Io.Put ("  Moves : "  & Normal (Score.Moves, Len_Moves),  Score_Win);
-      Con_Io.Put ("    Pushes : " & Normal (Score.Pushes, Len_Moves), Score_Win);
-      Con_Io.Put ("  " & Time_Image(Score.Day, Score.Dur),
-                  Score_Win,
-                  Move => False);
+      Score_Win.Put ("Best results");
+      Score_Win.Put ("  Moves : "  & Normal (Score.Moves, Len_Moves));
+      Score_Win.Put ("    Pushes : " & Normal (Score.Pushes, Len_Moves));
+      Score_Win.Put ("  " & Time_Image(Score.Day, Score.Dur), Move => False);
     else
       Con_Io.Clear (Score_Win);
     end if;
@@ -285,58 +284,58 @@ package body Sok_Display is
     case Action is
       when Write =>
         if Current_Allow_Write then
-          Con_Io.Move ( (0, Write_Col), Menu_Win);
-          Con_Io.Put ("           ", Menu_Win, Foreground => Ink,
+          Menu_Win.Move ( (0, Write_Col));
+          Menu_Win.Put ("           ", Foreground => Ink,
                       Background => Paper, Move => False);
-          Con_Io.Move ( (1, Write_Col), Menu_Win);
-          Con_Io.Put ("   SAVE    ", Menu_Win, Foreground => Ink,
+          Menu_Win.Move ( (1, Write_Col));
+          Menu_Win.Put ("   SAVE    ", Foreground => Ink,
                       Background => Paper, Move => False);
-          Con_Io.Move ( (2, Write_Col), Menu_Win);
-          Con_Io.Put ("           ", Menu_Win, Foreground => Ink,
+          Menu_Win.Move ( (2, Write_Col));
+          Menu_Win.Put ("           ", Foreground => Ink,
                       Background => Paper, Move => False);
         else
-          Con_Io.Move ( (1, Write_Col), Menu_Win);
-          Con_Io.Put ("   SAVE    ", Menu_Win, Move => False);
+          Menu_Win.Move ( (1, Write_Col));
+          Menu_Win.Put ("   SAVE    ", Move => False);
         end if;
       when Read =>
-        Con_Io.Move ( (0, Read_Col), Menu_Win);
-        Con_Io.Put ("           ", Menu_Win, Foreground => Ink,
+        Menu_Win.Move ( (0, Read_Col));
+        Menu_Win.Put ("           ", Foreground => Ink,
                     Background => Paper, Move => False);
-        Con_Io.Move ( (1, Read_Col), Menu_Win);
-        Con_Io.Put ("  RESTORE  ", Menu_Win, Foreground => Ink,
+        Menu_Win.Move ( (1, Read_Col));
+        Menu_Win.Put ("  RESTORE  ", Foreground => Ink,
                     Background => Paper, Move => False);
-        Con_Io.Move ( (2, Read_Col), Menu_Win);
-        Con_Io.Put ("           ", Menu_Win, Foreground => Ink,
+        Menu_Win.Move ( (2, Read_Col));
+        Menu_Win.Put ("           ", Foreground => Ink,
                     Background => Paper, Move => False);
       when Reset =>
-        Con_Io.Move ( (0, Reset_Col), Menu_Win);
-        Con_Io.Put ("           ", Menu_Win, Foreground => Ink,
+        Menu_Win.Move ( (0, Reset_Col));
+        Menu_Win.Put ("           ", Foreground => Ink,
                     Background => Paper, Move => False);
-        Con_Io.Move ( (1, Reset_Col), Menu_Win);
-        Con_Io.Put ("   RESET   ", Menu_Win, Foreground => Ink,
+        Menu_Win.Move ( (1, Reset_Col));
+        Menu_Win.Put ("   RESET   ", Foreground => Ink,
                     Background => Paper, Move => False);
-        Con_Io.Move ( (2, Reset_Col), Menu_Win);
-        Con_Io.Put ("           ", Menu_Win, Foreground => Ink,
+        Menu_Win.Move ( (2, Reset_Col));
+        Menu_Win.Put ("           ", Foreground => Ink,
                     Background => Paper, Move => False);
       when Get_New =>
-        Con_Io.Move ( (0, Get_New_Col), Menu_Win);
-        Con_Io.Put ("           ", Menu_Win, Foreground => Ink,
+        Menu_Win.Move ( (0, Get_New_Col));
+        Menu_Win.Put ("           ", Foreground => Ink,
                     Background => Paper, Move => False);
-        Con_Io.Move ( (1, Get_New_Col), Menu_Win);
-        Con_Io.Put (" GOTO NEW  ", Menu_Win, Foreground => Ink,
+        Menu_Win.Move ( (1, Get_New_Col));
+        Menu_Win.Put (" GOTO NEW  ", Foreground => Ink,
                     Background => Paper, Move => False);
-        Con_Io.Move ( (2, Get_New_Col), Menu_Win);
-        Con_Io.Put ("           ", Menu_Win, Foreground => Ink,
+        Menu_Win.Move ( (2, Get_New_Col));
+        Menu_Win.Put ("           ", Foreground => Ink,
                     Background => Paper, Move => False);
       when Break =>
-        Con_Io.Move ( (0, Break_Col), Menu_Win);
-        Con_Io.Put ("           ", Menu_Win, Foreground => Ink,
+        Menu_Win.Move ( (0, Break_Col));
+        Menu_Win.Put ("           ", Foreground => Ink,
                     Background => Paper, Move => False);
-        Con_Io.Move ( (1, Break_Col), Menu_Win);
-        Con_Io.Put ("    EXIT   ", Menu_Win, Foreground => Ink,
+        Menu_Win.Move ( (1, Break_Col));
+        Menu_Win.Put ("    EXIT   ", Foreground => Ink,
                     Background => Paper, Move => False);
-        Con_Io.Move ( (2, Break_Col), Menu_Win);
-        Con_Io.Put ("           ", Menu_Win, Foreground => Ink,
+        Menu_Win.Move ( (2, Break_Col));
+        Menu_Win.Put ("           ", Foreground => Ink,
                     Background => Paper, Move => False);
     end case;
   end Put_Action;
@@ -371,10 +370,10 @@ package body Sok_Display is
   function Get_Action (Row, Col : Natural) return Got_Action_List is
     Relative_Col : Con_Io.Col_Range;
   begin
-    if not Con_Io.In_Window ( (Row, Col), Menu_Win) then
+    if not Menu_Win.In_Window ( (Row, Col)) then
       return Done;
     end if;
-    Relative_Col := Con_Io.To_Relative ( (Row, Col), Menu_Win).Col;
+    Relative_Col := Menu_Win.To_Relative ( (Row, Col)).Col;
     case Relative_Col is
       when Write_Col   .. Write_Col   + Len_Field - 1 => return Write;
       when Read_Col    .. Read_Col    + Len_Field - 1 => return Read;
@@ -387,41 +386,41 @@ package body Sok_Display is
 
   procedure Put_Error (Error : in Error_List) is
   begin
-    Con_Io.Set_Background (Con_Io.Color_Of ("Red"), Name => Error_Win);
-    Con_Io.Clear (Error_Win);
-    Con_Io.Move ( (1, 30) , Error_Win);
+    Error_Win.Set_Background (Con_Io.Color_Of ("Red"));
+    Error_Win.Clear;
+    Error_Win.Move ( (1, 30) );
     case Error is
       when No_Data =>
-        Con_Io.Put ("DATA FILE NOT FOUND", Error_Win);
+        Error_Win.Put ("DATA FILE NOT FOUND");
       when Read =>
-        Con_Io.Put ("ERROR READING DATA", Error_Win);
+        Error_Win.Put ("ERROR READING DATA");
 
       when No_Frame =>
-        Con_Io.Put ("NO FRAME SAVED", Error_Win);
+        Error_Win.Put ("NO FRAME SAVED");
       when Restore =>
-        Con_Io.Put ("ERROR RESTORING FRAME", Error_Win);
+        Error_Win.Put ("ERROR RESTORING FRAME");
       when Save =>
-        Con_Io.Put ("ERROR SAVING FRAME", Error_Win);
+        Error_Win.Put ("ERROR SAVING FRAME");
 
       when Init_Score =>
-        Con_Io.Put ("ERROR INITIALIZING SCORES", Error_Win);
+        Error_Win.Put ("ERROR INITIALIZING SCORES");
       when Score_Io =>
-        Con_Io.Put ("ERROR READ/WRITE SCORE", Error_Win);
+        Error_Win.Put ("ERROR READ/WRITE SCORE");
 
       when Internal =>
-        Con_Io.Put ("INTERNAL ERROR", Error_Win);
+        Error_Win.Put ("INTERNAL ERROR");
 
       when Format =>
-        Con_Io.Put ("ERROR. NUMBER REQUIRED (1 .. 50)", Error_Win);
+        Error_Win.Put ("ERROR. NUMBER REQUIRED (1 .. 50)");
     end case;
-    Con_Io.Move ( (2, 65), Error_Win);
-    Con_Io.Put ("Hit a key", Error_Win);
+    Error_Win.Move ( (2, 65));
+    Error_Win.Put ("Hit a key");
   end Put_Error;
 
   procedure Clear_Error is
   begin
-    Con_Io.Set_Background (Con_Io.Default_Background, Error_Win);
-    Con_Io.Clear (Error_Win);
+    Error_Win.Set_Background (Console.Background);
+    Error_Win.Clear;
   end Clear_Error;
 
   -- get frame number
@@ -434,21 +433,21 @@ package body Sok_Display is
     Pos  : Positive := 1;
     Ins  : Boolean := False;
   begin
-    Con_Io.Set_Background (Con_Io.Color_Of ("Cyan"), Get_Win);
-    Con_Io.Set_Foreground (Black, Name => Get_Win);
-    Con_Io.Clear (Get_Win);
-    Con_Io.Move ( (01, 07), Get_Win);
-    Con_Io.Put ("Enter frame no (" &
+    Get_Win.Set_Background (Con_Io.Color_Of ("Cyan"));
+    Get_Win.Set_Foreground (Black);
+    Get_Win.Clear;
+    Get_Win.Move ( (01, 07));
+    Get_Win.Put ("Enter frame no (" &
                 Normal (Sok_Types.Frame_Range'First, 1) &
                 " to " &
                 Normal (Sok_Types.Frame_Range'Last, 2) &
-                ") : ", Get_Win);
-    Con_Io.Move ( (02, 02), Get_Win);
-    Con_Io.Put ("Enter to validate, Escape to give_up", Get_Win);
+                ") : ");
+    Get_Win.Move ( (02, 02));
+    Get_Win.Put ("Enter to validate, Escape to give_up");
 
     loop
-      Con_Io.Move ( (01, 34), Get_Win);
-      Con_Io.Put_Then_Get (Str, Last, Stat, Pos, Ins, Get_Win,
+      Get_Win.Move ( (01, 34));
+      Get_Win.Put_Then_Get (Str, Last, Stat, Pos, Ins,
        Foreground => Con_Io.Color_Of ("Light_Grey"),
        Background => Black,
        Time_Out => (Delay_Kind    => Timers.Delay_Sec,
@@ -498,13 +497,13 @@ package body Sok_Display is
         end case;
     end loop;
 
-    Con_Io.Set_Background (Black, Get_Win);
-    Con_Io.Clear (Get_Win);
+    Get_Win.Set_Background (Console.Background);
+    Get_Win.Clear;
 
   exception
     when Format_Error =>
-      Con_Io.Set_Background (Con_Io.Default_Background, Get_Win);
-      Con_Io.Clear (Get_Win);
+      Get_Win.Set_Background (Console.Background);
+      Get_Win.Clear;
       raise;
   end Get_No_Frame;
 
@@ -512,8 +511,13 @@ package body Sok_Display is
 
   procedure End_Of_Program is
   begin
-    Con_Io.Clear;
+    Screen_Win.Clear;
   end End_Of_Program;
 
+  procedure Bell is
+  begin
+    Console.Bell;
+  end Bell;
 
 end Sok_Display;
+

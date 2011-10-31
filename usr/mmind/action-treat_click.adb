@@ -26,7 +26,7 @@ begin
         Last_Click := (Selection_Kind => Screen.Nothing,
                        Selection => Screen.Nothing);
         Screen.Put_Help (Screen.Discarded);
-        Con_Io.Bell;
+        Screen.Console.Bell;
     end case;
 
   else
@@ -59,7 +59,7 @@ begin
             Screen.Put_Help (Screen.Discarded);
             Last_Click := (Selection_Kind => Screen.Nothing,
                            Selection => Screen.Try);
-            Con_Io.Bell;
+            Screen.Console.Bell;
           end if;
         end;
 
@@ -92,7 +92,7 @@ begin
             Screen.Put_Help (Screen.Discarded);
             Last_Click := (Selection_Kind => Screen.Nothing,
                            Selection => Screen.Propal);
-            Con_Io.Bell;
+            Screen.Console.Bell;
           end if;
         end;
 
@@ -100,7 +100,7 @@ begin
         Screen.Put_Help (Screen.Discarded);
         Last_Click := (Selection_Kind => Screen.Nothing,
                        Selection => Screen.Nothing);
-        Con_Io.Bell;
+        Screen.Console.Bell;
 
     end case;
 

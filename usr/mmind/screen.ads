@@ -5,12 +5,13 @@ package Screen is
   -------------------
   -- GLOBAL SCREEN --
   -------------------
+  Console : Con_Io.Console;
   -- Global init (of colors)
   procedure Init;
-  -- init the screen
+  -- Init the screen
   procedure Init (Level  : in Common.Last_Level_Range);
 
-  -- clear and reset
+  -- Clear and reset
   procedure Clear;
 
   ------------

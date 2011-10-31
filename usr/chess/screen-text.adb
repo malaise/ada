@@ -96,8 +96,8 @@ package body Text is
     end if;
 
     -- Move and put
-    Con_Io.Move(To_Con_Io_Square(Color, Square));
-    Con_Io.Put(Char,
+    Screen.Move(To_Con_Io_Square(Color, Square));
+    Screen.Put(Char,
                Foreground => Fore,
                Background => Back,
                Move => False);
@@ -111,11 +111,11 @@ package body Text is
 
     procedure Put (Row : in Space.Row_Range) is
     begin
-      Con_Io.Put (Normal(Integer(Row), 1), Move => False);
+      Screen.Put (Normal(Integer(Row), 1), Move => False);
     end Put;
     procedure Put (Col : in Space.Col_Range) is
     begin
-      Con_Io.Put (Lower_Str(Space.Col_Range'Image(Col)), Move => False);
+      Screen.Put (Lower_Str(Space.Col_Range'Image(Col)), Move => False);
     end Put;
 
   begin
@@ -127,9 +127,9 @@ package body Text is
       else
         Con_Row := Space.Row_Range'Pos(Row) + Screen_Row_Offset - 1;
       end if;
-      Con_Io.Move(Con_Row, Screen_Col_Offset - 2);
+      Screen.Move(Con_Row, Screen_Col_Offset - 2);
       Put (Row);
-      Con_Io.Move(Row => Con_Row,
+      Screen.Move(Row => Con_Row,
                   Col => Screen_Col_Offset
                        + Space.Col_Range'Pos(Space.Col_Range'Last)
                        + 2);
@@ -143,11 +143,11 @@ package body Text is
                  - Space.Col_Range'Pos(Col)
                  + Screen_Col_Offset;
       end if;
-      Con_Io.Move(Row => Space.Row_Range'Pos(Space.Row_Range'Last)
+      Screen.Move(Row => Space.Row_Range'Pos(Space.Row_Range'Last)
                        + Screen_Row_Offset + 1,
                   Col => Con_Col);
       Put (Col);
-      Con_Io.Move(Screen_Row_Offset - 2, Con_Col);
+      Screen.Move(Screen_Row_Offset - 2, Con_Col);
       Put (Col);
     end loop;
   end Init_Board;
@@ -162,13 +162,13 @@ package body Text is
       Fore := Fore_Black;
     end if;
     for P in Pieces.Promotion_Piece_List loop
-      Con_Io.Move (Promotion_Row_Offset + Pieces.Promotion_Piece_List'Pos(P),
+      Screen.Move (Promotion_Row_Offset + Pieces.Promotion_Piece_List'Pos(P),
                    Promotion_Col);
       if Getting_Promotion then
-        Con_Io.Put (Image.Piece_Image(P)(1),
+        Screen.Put (Image.Piece_Image(P)(1),
                     Foreground => Fore, Background => Main_Back);
       else
-        Con_Io.Put (' ', Foreground => Main_Back, Background => Main_Back);
+        Screen.Put (' ', Foreground => Main_Back, Background => Main_Back);
       end if;
     end loop;
   end Display_Promotion;
@@ -179,7 +179,7 @@ package body Text is
     use type Con_Io.Mouse_Button_List, Con_Io.Mouse_Button_Status_List;
   begin
     -- Get and check Con_Io event
-    Con_Io.Get_Mouse_Event (Con_Io_Rec, Con_Io.Row_Col);
+    Console.Get_Mouse_Event (Con_Io_Rec, Con_Io.Row_Col);
     if Con_Io_Rec.Button /= Con_Io.Left
     or else Con_Io_Rec.Status = Con_Io.Motion then
       return (Kind => Discard);
@@ -209,7 +209,7 @@ package body Text is
     Con_Io_Rec : Con_Io.Mouse_Event_Rec;
     use type Con_Io.Mouse_Button_List, Con_Io.Mouse_Button_Status_List;
   begin
-    Con_Io.Get_Mouse_Event (Con_Io_Rec, Con_Io.Row_Col);
+    Console.Get_Mouse_Event (Con_Io_Rec, Con_Io.Row_Col);
     if Con_Io_Rec.Valid
     and then Con_Io_Rec.Button = Con_Io.Left
     and then Con_Io_Rec.Col = Promotion_Col

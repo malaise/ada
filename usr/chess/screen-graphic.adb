@@ -12,12 +12,12 @@ package body Graphic is
   Len  : constant Natural := 8 * Size;
 
   -- Offsets (middle of square)
-  X0 : constant Con_Io.Graphics.X_Range := 60;
+  X0 : constant Con_Io.X_Range := 60;
   -- Set at init
-  Y0 :  Con_Io.Graphics.Y_Range;
+  Y0 :  Con_Io.Y_Range;
 
-  Promotion_X : constant Con_Io.Graphics.X_Range := 495;
-  Promotion_Y_Offset :  Con_Io.Graphics.Y_Range;
+  Promotion_X : constant Con_Io.X_Range := 495;
+  Promotion_Y_Offset :  Con_Io.Y_Range;
 
   -- For characters
   X_Offset : Natural;
@@ -53,8 +53,8 @@ package body Graphic is
   end To_Con_Io_Square;
 
   function To_Space_Square (Color : Space.Color_List;
-                            X : Con_Io.Graphics.X_Range;
-                            Y : Con_Io.Graphics.Y_Range)
+                            X : Con_Io.X_Range;
+                            Y : Con_Io.Y_Range)
                            return Square_Result_Rec is
     Result : Square_Result_Rec (True);
     use type Space.Color_List;
@@ -99,10 +99,10 @@ package body Graphic is
     end if;
 
     -- Fill square
-    Con_Io.Set_Foreground (Back);
-    Con_Io.Set_Background (Back);
-    Con_Io.Graphics.Fill_Rectangle (Pos.X - Size2, Pos.Y - Size2,
-                                    Pos.X + Size2 + 1, Pos.Y + Size2 + 1);
+    Screen.Set_Foreground (Back);
+    Screen.Set_Background (Back);
+    Console.Fill_Rectangle (Pos.X - Size2, Pos.Y - Size2,
+                            Pos.X + Size2 + 1, Pos.Y + Size2 + 1);
 
     -- Set Foreground and piece
     if Space.Board.Piece_At(Square) /= null then
@@ -113,11 +113,11 @@ package body Graphic is
       else
         Fore := Fore_Black;
       end if;
-      Con_Io.Set_Foreground (Fore);
-      Con_Io.Graphics.Draw_Points(Pos.X - (Size2 - Bitmaps.Bits_Offset),
-                                  Pos.Y + (Size2 - Bitmaps.Bits_Offset),
-                                  Bitmaps.Piece_Size, Bitmaps.Piece_Size,
-                                  Bits.all);
+      Screen.Set_Foreground (Fore);
+      Console.Draw_Points(Pos.X - (Size2 - Bitmaps.Bits_Offset),
+                          Pos.Y + (Size2 - Bitmaps.Bits_Offset),
+                          Bitmaps.Piece_Size, Bitmaps.Piece_Size,
+                          Bits.all);
     end if;
 
   end Display_Square;
@@ -128,13 +128,13 @@ package body Graphic is
 
     procedure Put (Row : in Space.Row_Range; Square : in Graph_Square) is
     begin
-      Con_Io.Graphics.Put (Normal(Integer(Row), 1),
-           Square.X - X_Offset, Square.Y - Y_Offset);
+      Console.Put (Normal(Integer(Row), 1),
+                   Square.X - X_Offset, Square.Y - Y_Offset);
     end Put;
     procedure Put (Col : in Space.Col_Range; Square : Graph_Square) is
     begin
-      Con_Io.Graphics.Put (Lower_Str(Space.Col_Range'Image(Col)),
-           Square.X - X_Offset, Square.Y - Y_Offset);
+      Console.Put (Lower_Str(Space.Col_Range'Image(Col)),
+                   Square.X - X_Offset, Square.Y - Y_Offset);
     end Put;
 
     use type Space.Color_List;
@@ -143,17 +143,17 @@ package body Graphic is
     -- Y0 - Size is the pos of lower text "a b c d .."
     -- Y0 - Size - Height should be the text "Move:"
     -- Y0 - Size - 2 * Height must be positive, otherwise the font is too small
-    if Con_Io.Graphics.Y_Max < X0 + Len + 2 * Con_Io.Graphics.Font_Height then
+    if Console.Y_Max < X0 + Len + 2 * Console.Font_Height then
       raise Font_Too_Small;
     end if;
-    if Con_Io.Graphics.Font_Height >= Size then
+    if Console.Font_Height >= Size then
       raise Font_Too_Big;
     end if;
     -- Compute offsets
-    Y0 := Con_Io.Graphics.Y_Max - X0 - Len + Size;
-    X_Offset := Con_Io.Graphics.Font_Width  / 2;
-    Y_Offset := (Con_Io.Graphics.Font_Height
-               - Con_Io.Graphics.Font_Offset) / 2 + 4;
+    Y0 := Console.Y_Max - X0 - Len + Size;
+    X_Offset := Console.Font_Width  / 2;
+    Y_Offset := (Console.Font_Height
+               - Console.Font_Offset) / 2 + 4;
     Promotion_Y_Offset := Y0 + Size;
 
     -- Print Rows/Cols names
@@ -162,8 +162,8 @@ package body Graphic is
     else
       Offset := - Size;
     end if;
-    Con_Io.Set_Foreground (Main_Fore);
-    Con_Io.Set_Background (Main_Back);
+    Screen.Set_Foreground (Main_Fore);
+    Screen.Set_Background (Main_Back);
     for R in Space.Row_Range loop
       Pos := To_Con_Io_Square (Color, (Space.A, R));
       Pos.X := Pos.X - Offset;
@@ -199,9 +199,9 @@ package body Graphic is
         Back := Back_Black;
       end if;
       for P in Pieces.Promotion_Piece_List loop
-        Con_Io.Set_Foreground (Back);
-        Con_Io.Set_Background (Back);
-        Con_Io.Graphics.Fill_Rectangle (
+        Screen.Set_Foreground (Back);
+        Screen.Set_Background (Back);
+        Console.Fill_Rectangle (
                Promotion_X - Size2,
                Promotion_Y_Offset
                 + Pieces.Promotion_Piece_List'Pos(P) * Size
@@ -217,9 +217,9 @@ package body Graphic is
           Back := Back_White;
         end if;
 
-        Con_Io.Set_Foreground (Fore);
+        Screen.Set_Foreground (Fore);
         Bits := Bitmaps.Get_Bitmap (P);
-        Con_Io.Graphics.Draw_Points(
+        Console.Draw_Points(
             Promotion_X - (Size2 - Bitmaps.Bits_Offset),
             Promotion_Y_Offset
                  + Pieces.Promotion_Piece_List'Pos(P) * Size
@@ -230,8 +230,8 @@ package body Graphic is
       end loop;
 
     else
-      Con_Io.Set_Foreground (Main_Back);
-      Con_Io.Graphics.Fill_Rectangle (
+      Screen.Set_Foreground (Main_Back);
+      Console.Fill_Rectangle (
           Promotion_X - Size2,
           Promotion_Y_Offset
            + Pieces.Promotion_Piece_List'Pos(
@@ -252,7 +252,7 @@ package body Graphic is
     use type Con_Io.Mouse_Button_List, Con_Io.Mouse_Button_Status_List;
   begin
     -- Get and check Con_Io event
-    Con_Io.Get_Mouse_Event (Con_Io_Rec, Con_Io.X_Y);
+    Console.Get_Mouse_Event (Con_Io_Rec, Con_Io.X_Y);
     if Con_Io_Rec.Button /= Con_Io.Left
     or else Con_Io_Rec.Status = Con_Io.Motion then
       return (Kind => Discard);
@@ -281,7 +281,7 @@ package body Graphic is
     Con_Io_Rec : Con_Io.Mouse_Event_Rec;
     use type Con_Io.Mouse_Button_List, Con_Io.Mouse_Button_Status_List;
   begin
-    Con_Io.Get_Mouse_Event (Con_Io_Rec, Con_Io.X_Y);
+    Console.Get_Mouse_Event (Con_Io_Rec, Con_Io.X_Y);
     if Con_Io_Rec.Valid
     and then Con_Io_Rec.Button = Con_Io.Left
     and then Con_Io_Rec.X >= Promotion_X - Size2

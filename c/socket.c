@@ -423,8 +423,8 @@ extern int soc_get_protocol (soc_token token, socket_protocol *protocol) {
 static int set_ttl (soc_ptr soc) {
   int result;
 
-  if ( (soc->protocol == tcp_afux_socket)
-    || (soc->protocol == tcp_header_afux_socket) ) {
+  if ( (soc->socket_kind == tcp_afux_socket)
+    || (soc->socket_kind == tcp_header_afux_socket) ) {
     /* No TTL on AFUX */
     return (SOC_OK);
   }
@@ -465,8 +465,8 @@ extern int soc_set_ttl (soc_token token, byte ttl) {
     /* UDP/IPM dest must be set */
     UNLOCK;
     return (SOC_DEST_ERR);
-  } else if ( (soc->protocol == tcp_afux_socket)
-    || (soc->protocol == tcp_header_afux_socket) ) {
+  } else if ( (soc->socket_kind == tcp_afux_socket)
+    || (soc->socket_kind == tcp_header_afux_socket) ) {
     /* No TTL on AFUX */
     UNLOCK;
     return (SOC_PROTO_ERR);
@@ -489,8 +489,8 @@ extern int soc_get_ttl (soc_token token, byte *ttl) {
   if (soc == NULL) return (SOC_USE_ERR);
   LOCK;
 
-  if ( (soc->protocol == tcp_afux_socket)
-    || (soc->protocol == tcp_header_afux_socket) ) {
+  if ( (soc->socket_kind == tcp_afux_socket)
+    || (soc->socket_kind == tcp_header_afux_socket) ) {
     /* No TTL on AFUX */
     UNLOCK;
     return (SOC_PROTO_ERR);

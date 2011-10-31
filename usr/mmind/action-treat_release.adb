@@ -147,12 +147,12 @@ begin
 
           end;
         else
-          Con_Io.Bell;
+          Screen.Console.Bell;
         end if;
         Go_On := True;
         Exit_Game := False;
       when Color =>
-        Con_Io.Bell;
+        Screen.Console.Bell;
         Go_On := True;
         Exit_Game := False;
       when Propal =>
@@ -187,7 +187,7 @@ begin
             -- Dest is used
             if Last_Click.Propal_No /= Cur_Selection.Propal_No
             and then Last_Click.Column_No /= Cur_Selection.Column_No then
-              Con_Io.Bell;
+              Screen.Console.Bell;
             end if;
           end if;
         end;
@@ -211,7 +211,7 @@ begin
       Update_Try (Cur_Selection.Propal_No);
 
     else
-      Con_Io.Bell;
+      Screen.Console.Bell;
     end if;
     Go_On := True;
     Exit_Game := False;
@@ -220,7 +220,7 @@ begin
     if Cur_Selection.Selection_Kind = Screen.Nothing and then
        Cur_Selection.Selection = Screen.Propal then
       -- Restore color
-      Con_Io.Bell;
+      Screen.Console.Bell;
     else
       -- Remove a color from propal (already cleared)
       Common.Set_Color (Last_Click.Propal_No,
@@ -235,7 +235,7 @@ begin
     Exit_Game := False;
   else
     if Last_Click.Selection_Kind /= Screen.Nothing then
-      Con_Io.Bell;
+      Screen.Console.Bell;
     end if;
     Go_On := True;
     Exit_Game := False;

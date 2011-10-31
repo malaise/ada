@@ -10,8 +10,8 @@ package Afpx is
   List_Field_No : constant Absolute_Field_Range := 0;
 
   -- Width and height of a field
-  subtype Height_Range is Positive range 1 .. Con_Io.Full_Row_Range_Last + 1;
-  subtype Width_Range  is Positive range 1 .. Con_Io.Full_Col_Range_Last + 1;
+  subtype Height_Range is Positive range 1 .. Con_Io.Last_Row + 1;
+  subtype Width_Range  is Positive range 1 .. Con_Io.Last_Col + 1;
 
   -- The content of one row of one field (encode, decode)
   subtype Unicode_Number is Unicode.Unicode_Number;
@@ -101,16 +101,16 @@ package Afpx is
   --              Invalid_Square (not in field),
   --              String_Too_Long (due to Square.Col)
   procedure Encode_Field (Field_No : in Field_Range;
-                          From_Pos : in Con_Io.Full_Square;
+                          From_Pos : in Con_Io.Square;
                           Str      : in String);
   procedure Encode_Wide_Field (Field_No : in Field_Range;
-                               From_Pos : in Con_Io.Full_Square;
+                               From_Pos : in Con_Io.Square;
                                Str      : in Wide_String);
   procedure Encode_Field (Field_No : in Field_Range;
-                          From_Pos : in Con_Io.Full_Square;
+                          From_Pos : in Con_Io.Square;
                           Str      : in Unicode_Sequence);
   procedure Encode_Field (Field_No : in Field_Range;
-                          From_Pos : in Con_Io.Full_Square;
+                          From_Pos : in Con_Io.Square;
                           Str      : in As.U.Asu_Us);
 
   -- Decode the content of a row of a field
@@ -119,17 +119,17 @@ package Afpx is
   --  and possibly pad with a space
   -- Exceptions : No_Descriptor, Invalid_Field, Invalid_Row
   function Decode_Field (Field_No : Field_Range;
-                         Row      : Con_Io.Full_Row_Range;
+                         Row      : Con_Io.Row_Range;
                          Adjust   : Boolean := True)
                          return String;
   function Decode_Wide_Field (Field_No : Field_Range;
-                              Row      : Con_Io.Full_Row_Range)
+                              Row      : Con_Io.Row_Range)
                               return Wide_String;
   function Decode_Field (Field_No : Field_Range;
-                         Row      : Con_Io.Full_Row_Range)
+                         Row      : Con_Io.Row_Range)
                          return Unicode_Sequence;
   procedure Decode_Field (Field_No : in Field_Range;
-                          Row      : in Con_Io.Full_Row_Range;
+                          Row      : in Con_Io.Row_Range;
                           Str      : in out As.U.Asu_Us;
                           Adjust   : in Boolean := True);
 
@@ -206,7 +206,7 @@ package Afpx is
                               return Absolute_Field_Range;
 
   -- List of items to put in list field in Put_Then_Get
-  subtype Line_Len_Range is Natural range 0 .. Con_Io.Full_Col_Range'Last+1;
+  subtype Line_Len_Range is Natural range 0 .. Con_Io.Col_Range'Last + 1;
   type Line_Rec is record
     Str : Unicode_Sequence (1 .. Line_Len_Range'Last);
     Len : Line_Len_Range;
@@ -264,23 +264,23 @@ package Afpx is
   type Cursor_Set_Col_Cb is access
        function (Cursor_Field : Field_Range;
                  New_Field : Boolean;
-                 Cursor_Col : Con_Io.Full_Col_Range;
+                 Cursor_Col : Con_Io.Col_Range;
                  Enter_Field_Cause : Enter_Field_Cause_List;
-                 Str : Unicode_Sequence) return Con_Io.Full_Col_Range;
+                 Str : Unicode_Sequence) return Con_Io.Col_Range;
 
   -- Returns the index (from 0 to Str'Length-1) of the first character of Str
   --  or, if Significant, the index preceeding first significant character
   --  (skipping heading spaces and htabs).
   -- This can be usefully called by Cursor_Set_Col_Cb.
   function First_Index (Str : Unicode_Sequence; Significant : Boolean)
-                        return Con_Io.Full_Col_Range;
+                        return Con_Io.Col_Range;
 
   -- Returns the index (from 0 to Str'Length-1) of the last character of Str
   --  or, if Significant, the index following last significant character
   --  (skipping trailing spaces and htabs).
   -- This can be usefully called by Cursor_Set_Col_Cb.
   function Last_Index (Str : Unicode_Sequence; Significant : Boolean)
-                       return Con_Io.Full_Col_Range;
+                       return Con_Io.Col_Range;
 
   -- Call back called by Put_Then_Get when something is changed in the list:
   --  - change of left or right selection
@@ -340,7 +340,7 @@ package Afpx is
   --               String_Too_Long (if an item in list is too long),
   --               In_Put_Then_Get (already in Put_Then_Get).
   procedure Put_Then_Get (Cursor_Field  : in out Field_Range;
-                          Cursor_Col    : in out Con_Io.Full_Col_Range;
+                          Cursor_Col    : in out Con_Io.Col_Range;
                           Insert        : in out Boolean;
                           Result        : out Result_Rec;
                           Redisplay     : in Boolean := False;
@@ -348,9 +348,9 @@ package Afpx is
                           Cursor_Col_Cb : access
        function (Cursor_Field : Field_Range;
                  New_Field : Boolean;
-                 Cursor_Col : Con_Io.Full_Col_Range;
+                 Cursor_Col : Con_Io.Col_Range;
                  Enter_Field_Cause : Enter_Field_Cause_List;
-                 Str : Unicode_Sequence) return Con_Io.Full_Col_Range := null;
+                 Str : Unicode_Sequence) return Con_Io.Col_Range := null;
                           List_Change_Cb : access
        procedure (Action : in List_Change_List;
                   Status : in List_Status_Rec) := null);

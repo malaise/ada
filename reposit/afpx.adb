@@ -1,8 +1,12 @@
-with Generic_Con_Io, Language;
+with Language;
 with Afpx_Typ;
 package body Afpx is
 
   Initialised : Boolean := False;
+
+  Console : aliased Con_Io.Console;
+  Af_Con_Io : Con_Io.Window;
+  Size : Con_Io.Square;
 
   Lfn : constant Afpx_Typ.Absolute_Field_Range
       := Afpx_Typ.Absolute_Field_Range(List_Field_No);
@@ -19,7 +23,7 @@ package body Afpx is
     -- Characters of the fields
     Chars : Afpx_Typ.Char_Str;
     -- Load the screen size
-    function Load_Size return Con_Io.Full_Square;
+    function Load_Size return Con_Io.Square;
 
     -- Load a descriptor, raise No_Descriptor if invalid No
     procedure Load_Dscr (Dscr_No : in Afpx_Typ.Descriptor_Range);
@@ -50,7 +54,7 @@ package body Afpx is
 
 
   function In_Field_Absolute (Field_No : in Afpx_Typ.Absolute_Field_Range;
-                              Square : in Con_Io.Full_Square) return Boolean is
+                              Square : in Con_Io.Square) return Boolean is
   begin
     return Afpx_Typ.In_Field_Absolute (Af_Dscr.Fields(Field_No), Square);
   end In_Field_Absolute;
@@ -128,12 +132,6 @@ package body Afpx is
     return Fn;
   end Prev_Get_Field;
 
-  -- The real con io with size from Af_Dscr
-  Size : constant Con_Io.Full_Square := Af_Dscr.Load_Size;
-  package Af_Con_Io is new Generic_Con_Io.One_Con_Io (
-                                 Font_No => 1,
-                                 Row_Last => Size.Row,
-                                 Col_Last => Size.Col);
 
   -- All the actions related to screen, keyboard and mouse
   package Af_Ptg is
@@ -159,7 +157,7 @@ package body Afpx is
 
     -- The put_then get
     procedure Ptg (Cursor_Field  : in out Afpx_Typ.Field_Range;
-                   Cursor_Col    : in out Af_Con_Io.Col_Range;
+                   Cursor_Col    : in out Con_Io.Col_Range;
                    Insert        : in out Boolean;
                    Result        : out Result_Rec;
                    Redisplay     : in Boolean;
@@ -168,9 +166,9 @@ package body Afpx is
                    Cursor_Col_Cb : access
       function (Cursor_Field : Field_Range;
                 New_Field : Boolean;
-                Cursor_Col : Con_Io.Full_Col_Range;
+                Cursor_Col : Con_Io.Col_Range;
                 Enter_Field_Cause : Enter_Field_Cause_List;
-                Str : Unicode_Sequence) return Con_Io.Full_Col_Range := null;
+                Str : Unicode_Sequence) return Con_Io.Col_Range := null;
                    List_Change_Cb : access
       procedure (Action : in List_Change_List;
                  Status : in List_Status_Rec) := null);
@@ -210,17 +208,17 @@ package body Afpx is
     procedure Set_Current;
 
     -- Put a row in a state, move to next (if possible and requested)
-    procedure Put (Row : in Af_Con_Io.Row_Range;
+    procedure Put (Row : in Con_Io.Row_Range;
                    State : in Af_Ptg.State_List;
                    Move : in Boolean);
 
     -- Is an Id, a row displayed
     function Id_Displayed (Id : Positive) return Boolean;
-    function Row_Displayed (Row : Af_Con_Io.Row_Range) return Boolean;
+    function Row_Displayed (Row : Con_Io.Row_Range) return Boolean;
 
     -- Row <-> Item Id
-    function To_Row (Id : Positive) return Af_Con_Io.Row_Range;
-    function To_Id  (Row : Af_Con_Io.Row_Range) return Positive;
+    function To_Row (Id : Positive) return Con_Io.Row_Range;
+    function To_Id  (Row : Con_Io.Row_Range) return Positive;
 
     Not_Opened : exception;
   end Af_List;
@@ -245,22 +243,30 @@ package body Afpx is
   begin
     Af_Dscr.Load_Dscr (Afpx_Typ.Descriptor_Range (Descriptor_No));
     if not Initialised
-    and then Af_Dscr.Current_Dscr.Colors (Generic_Con_Io.Effective_Colors'First)
+    and then Af_Dscr.Current_Dscr.Colors (Con_Io.Effective_Colors'First)
              /= Afpx_Typ.No_Color then
-      -- Set the colors when using the first descriptor
-      Generic_Con_Io.Set_Colors (Afpx_Typ.To_Def (Af_Dscr.Current_Dscr.Colors));
-      Generic_Con_Io.Initialise;
-      Initialised := True;
+      -- If necessary, Set the colors when using the first descriptor
+      Con_Io.Set_Colors (Afpx_Typ.To_Def (Af_Dscr.Current_Dscr.Colors));
     end if;
-    -- Set descriptor background
-    Af_Con_Io.Default_Background := (Af_Con_Io.Effective_Colors(
-               Af_Dscr.Current_Dscr.Background));
-    Af_Con_Io.Init;
+    if not Console.Is_Init then
+      -- Done only once at first dsescriptor
+      Con_Io.Initialise;
+      Size := Af_Dscr.Load_Size;
+      Initialised := True;
+      -- Create console and screen
+      Console := Con_Io.Create (
+              Font_No => 1,
+              Row_Last => Size.Row,
+              Col_Last => Size.Col,
+              Def_Back => (Af_Dscr.Current_Dscr.Background));
+      Af_Con_Io := Console.Screen.all;
+    end if;
+    -- Done at each descriptor
     Af_List.Open;
     Af_Dscr.Current_Dscr.Modified := True;
-    Af_Con_Io.Set_Background (Af_Con_Io.Default_Background);
+    Af_Con_Io.Set_Background (Af_Dscr.Current_Dscr.Background);
     if Clear_Screen then
-      Af_Con_Io.Clear (Af_Con_Io.Screen);
+      Af_Con_Io.Clear;
     end if;
   end Use_Descriptor;
 
@@ -271,11 +277,11 @@ package body Afpx is
     return Descriptor_Range(Af_Dscr.Current_Dscr.Dscr_Index);
   end Get_Descriptor;
 
-  -- Close the Con_Io window
+  -- Close the Console
   procedure Release_Descriptor is
   begin
     Af_Dscr.Check;
-    Af_Con_Io.Destroy;
+    Console.Destroy;
     Af_Dscr.Release_Dscr;
   end Release_Descriptor;
 
@@ -289,13 +295,13 @@ package body Afpx is
   procedure Suspend is
   begin
     Af_Dscr.Check;
-    Af_Con_Io.Suspend;
+    Console.Suspend;
   end Suspend;
 
   procedure Resume is
   begin
     Af_Dscr.Check;
-    Af_Con_Io.Resume;
+    Console.Resume;
     -- Trigger a complete refresh
     Af_Dscr.Current_Dscr.Redisplay := True;
   end Resume;
@@ -303,7 +309,7 @@ package body Afpx is
   function Is_Suspended return Boolean is
   begin
     Af_Dscr.Check;
-    return Af_Con_Io.Is_Suspended;
+    return Console.Is_Suspended;
   end Is_Suspended;
 
   --Get descriptor background color
@@ -340,7 +346,7 @@ package body Afpx is
     Field_Size := Field.Height * Field.Width;
     -- Copy the nb_chars from init_str to char_str
     for I in Field.Char_Index .. Field.Char_Index + Field_Size - 1 loop
-      Af_Dscr.Chars(I) := Af_Con_Io.Space;
+      Af_Dscr.Chars(I) := Con_Io.Space;
     end loop;
     Af_Dscr.Current_Dscr.Modified := True;
    end Clear_Field;
@@ -391,14 +397,14 @@ package body Afpx is
 
   -- Encode a string in a row of a field
   procedure Encode_Field (Field_No : in Field_Range;
-                          From_Pos : in Con_Io.Full_Square;
+                          From_Pos : in Con_Io.Square;
                           Str      : in String) is
   begin
     Encode_Field (Field_No, From_Pos, Language.String_To_Unicode (Str));
   end Encode_Field;
 
   procedure Encode_Wide_Field (Field_No : in Field_Range;
-                               From_Pos : in Con_Io.Full_Square;
+                               From_Pos : in Con_Io.Square;
                                Str      : in Wide_String) is
     Ustr : Unicode_Sequence (Str'Range);
   begin
@@ -409,7 +415,7 @@ package body Afpx is
   end Encode_Wide_Field;
 
   procedure Encode_Field (Field_No : in Field_Range;
-                          From_Pos : in Con_Io.Full_Square;
+                          From_Pos : in Con_Io.Square;
                           Str      : in Unicode_Sequence) is
     Fn : constant Afpx_Typ.Field_Range := Afpx_Typ.Field_Range(Field_No);
     Field : Afpx_Typ.Field_Rec;
@@ -437,7 +443,7 @@ package body Afpx is
   end Encode_Field;
 
   procedure Encode_Field (Field_No : in Field_Range;
-                          From_Pos : in Con_Io.Full_Square;
+                          From_Pos : in Con_Io.Square;
                           Str      : in As.U.Asu_Us) is
   begin
     Encode_Field (Field_No, From_Pos, Str.Image);
@@ -473,7 +479,7 @@ package body Afpx is
 
   -- Decode the content of a row of a field
   function Decode_Field (Field_No : Field_Range;
-                         Row      : Con_Io.Full_Row_Range;
+                         Row      : Con_Io.Row_Range;
                          Adjust   : Boolean := True) return String is
     Str : constant String
         := Language.Unicode_To_String (Decode_Field (Field_No, Row));
@@ -496,7 +502,7 @@ package body Afpx is
   end Decode_Field;
 
   function Decode_Wide_Field (Field_No : Field_Range;
-                              Row      : Con_Io.Full_Row_Range)
+                              Row      : Con_Io.Row_Range)
                               return Wide_String is
     Ustr : constant Unicode_Sequence := Decode_Field (Field_No, Row);
   begin
@@ -504,7 +510,7 @@ package body Afpx is
   end Decode_Wide_Field;
 
   function Decode_Field (Field_No : Field_Range;
-                         Row      : Con_Io.Full_Row_Range)
+                         Row      : Con_Io.Row_Range)
                          return Unicode_Sequence is
     Fn : constant Afpx_Typ.Field_Range := Afpx_Typ.Field_Range(Field_No);
     Field : Afpx_Typ.Field_Rec;
@@ -528,7 +534,7 @@ package body Afpx is
   end Decode_Field;
 
   procedure Decode_Field (Field_No : in Field_Range;
-                          Row      : in Con_Io.Full_Row_Range;
+                          Row      : in Con_Io.Row_Range;
                           Str      : in out As.U.Asu_Us;
                           Adjust   : in Boolean := True) is
   begin
@@ -679,7 +685,7 @@ package body Afpx is
     for I in 1 .. Af_Dscr.Current_Dscr.Nb_Fields loop
       Af_Ptg.Erase_Field (I);
     end loop;
-    Af_Con_Io.Flush;
+    Console.Flush;
   end Erase;
 
   -- Put all the fields of the descriptor on the screen
@@ -704,7 +710,7 @@ package body Afpx is
         Af_Ptg.Erase_Field (I);
       end if;
     end loop;
-    Af_Con_Io.Flush;
+    Console.Flush;
   end Put;
 
   -- Computes next cursor field after current one:
@@ -783,7 +789,7 @@ package body Afpx is
   --  (skipping heading spaces and htabs).
   -- This can be usefully called by Cursor_Set_Col_Cb.
   function First_Index (Str : Unicode_Sequence; Significant : Boolean)
-                        return Con_Io.Full_Col_Range is
+                        return Con_Io.Col_Range is
     N : Natural;
   begin
     if not Significant then
@@ -792,7 +798,7 @@ package body Afpx is
     -- Locate first significant character
     N := 0;
     for I in Str'Range loop
-      if Str (I) /= Af_Con_Io.Space and then Str(I) /= Af_Con_Io.Htab then
+      if Str (I) /= Con_Io.Space and then Str(I) /= Con_Io.Htab then
         N := I;
         exit;
       end if;
@@ -814,7 +820,7 @@ package body Afpx is
   --  (skipping trailing spaces and htabs).
   -- This can be usefully called by Cursor_Set_Col_Cb.
   function Last_Index (Str : Unicode_Sequence; Significant : Boolean)
-                       return Con_Io.Full_Col_Range is
+                       return Con_Io.Col_Range is
     N : Natural;
   begin
     if not Significant then
@@ -823,7 +829,7 @@ package body Afpx is
     -- Locate last significant character
     N := 0;
     for I in reverse Str'Range loop
-      if Str (I) /= Af_Con_Io.Space and then Str(I) /= Af_Con_Io.Htab then
+      if Str (I) /= Con_Io.Space and then Str(I) /= Con_Io.Htab then
         N := I;
         exit;
       end if;
@@ -847,7 +853,7 @@ package body Afpx is
 
   -- Print the fields and the list, then gets
   procedure Put_Then_Get (Cursor_Field  : in out Field_Range;
-                          Cursor_Col    : in out Con_Io.Full_Col_Range;
+                          Cursor_Col    : in out Con_Io.Col_Range;
                           Insert        : in out Boolean;
                           Result        : out Result_Rec;
                           Redisplay     : in Boolean := False;
@@ -855,9 +861,9 @@ package body Afpx is
                           Cursor_Col_Cb : access
        function (Cursor_Field : Field_Range;
                  New_Field : Boolean;
-                 Cursor_Col : Con_Io.Full_Col_Range;
+                 Cursor_Col : Con_Io.Col_Range;
                  Enter_Field_Cause : Enter_Field_Cause_List;
-                 Str : Unicode_Sequence) return Con_Io.Full_Col_Range := null;
+                 Str : Unicode_Sequence) return Con_Io.Col_Range := null;
                           List_Change_Cb : access
        procedure (Action : in List_Change_List;
                   Status : in List_Status_Rec) := null) is
@@ -910,14 +916,14 @@ package body Afpx is
   procedure Set_Selection (Selection : in String) is
   begin
     Af_Dscr.Check;
-    Af_Con_Io.Set_Selection (Selection);
+    Console.Set_Selection (Selection);
   end Set_Selection;
 
   -- Ring a bell on screen
   procedure Bell (Repeat : in Positive := 1) is
   begin
     Af_Dscr.Check;
-    Af_Con_Io.Bell (Repeat);
+    Console.Bell (Repeat);
   end Bell;
 
 end Afpx;

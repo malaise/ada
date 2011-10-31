@@ -1,7 +1,5 @@
 with Ada.Calendar; -- For time
 
-with Con_Io;       -- For reset_term
-
 with Sok_Display;
 with Sok_Input;
 with Sok_Movement;
@@ -363,7 +361,7 @@ package body Sok_Manager is
           State.Position := Saved_Pos;
         exception
           when Sok_Save.No_More_Saved_Movements =>
-            Con_Io.Bell;
+            Sok_Display.Bell;
         end;
 
       end if; -- Move or undo
@@ -442,7 +440,7 @@ package body Sok_Manager is
         -- Menu
         return False;
       elsif Key = Sok_Input.Undo then
-        Con_Io.Bell;
+        Sok_Display.Bell;
       elsif Key = Sok_Input.Refresh then
         -- Refresh
         Sok_Display.Put_Frame (State.Frame);

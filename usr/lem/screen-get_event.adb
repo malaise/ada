@@ -46,11 +46,11 @@ begin
   Prev_Action := Prev_Click_Action;
   Prev_Time := Prev_Click_Time;
   -- Position and color for blind get
-  Con_Io.Move (Get_Pos);
-  Con_Io.Set_Foreground (Con_Io.Get_Background);
+  Screen.Move (Get_Pos);
+  Screen.Set_Foreground (Screen.Get_Background);
   loop
     -- Get key
-    Con_Io.Get (Str, Last, Stat, Pos, Insert, Time_Out => Time_Out);
+    Screen.Get (Str, Last, Stat, Pos, Insert, Time_Out => Time_Out);
     Now := Ada.Calendar.Clock;
     -- (Default) values for return
     Prev_Click_Action := None;
@@ -79,7 +79,7 @@ begin
         if Str(1) = Language.Char_To_Unicode ('g') then
           -- Grab / ungrab pointer
           Pointer_Grabbed := not Pointer_Grabbed;
-          Con_Io.Set_Pointer_Shape (Con_Io.None, Pointer_Grabbed);
+          Console.Set_Pointer_Shape (Con_Io.None, Pointer_Grabbed);
         elsif Str(1) = Language.Char_To_Unicode (' ') then
           -- Pause / resume game
           return (Evt => Pause);
@@ -97,7 +97,7 @@ begin
         Prev_Click_Time := Prev_Time;
         return (Evt => Refresh);
       when Con_Io.Mouse_Button =>
-        Con_Io.Get_Mouse_Event (Mouse_Status);
+        Console.Get_Mouse_Event (Mouse_Status);
         if Mouse_Status.Status = Con_Io.Pressed then
           if Mouse_Status.Button = Con_Io.Up then
             return (Move_Click, Up_Key);
