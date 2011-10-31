@@ -18,13 +18,12 @@ begin
   -- compute time hours, minutes and seconds
   Day_Mng.Split (Dur, Hor, Min, Sec, Mil);
   -- put
-  Con_Io.Move ( (0, 0), W_Time);
-  Con_Io.Put (
+  W_Time.Move ( (0, 0));
+  W_Time.Put (
    S =>
     Normal(Day, 2, True, '0') & "/" & Normal(Month, 2, True, '0') &
     "/" & Normal(Year, 4, True, '0') & " " &
     Normal(Hor, 2, True, '0') & ":" & Normal(Min, 2, True, '0') & ":" &
-    Normal(Sec, 2, True, '0'),
-   Name => W_Time);
+    Normal(Sec, 2, True, '0'));
 end Show_Time;
 

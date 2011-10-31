@@ -49,9 +49,9 @@ procedure Gc is
   -- Clear result fields during input
   function Next_Field_Cb (Cursor_Field : Afpx.Field_Range;
                           New_Field : Boolean;
-                          Cursor_Col : Con_Io.Full_Col_Range;
+                          Cursor_Col : Con_Io.Col_Range;
                           Enter_Field_Cause : Afpx.Enter_Field_Cause_List;
-                          Str : Afpx.Unicode_Sequence) return Con_Io.Full_Col_Range is
+                          Str : Afpx.Unicode_Sequence) return Con_Io.Col_Range is
     pragma Unreferenced (Cursor_Field, New_Field, Cursor_Col);
     use type Afpx.Enter_Field_Cause_List;
   begin

@@ -242,7 +242,7 @@ package body Nav_Dialog is
     -- data at beginning of get
     Data_In : constant Nav_Data.T_Data := Data;
 
-
+    use type Nav_Screen.Movement;
 
   begin
     Fmt_Error := False;
@@ -272,7 +272,7 @@ package body Nav_Dialog is
 
       if not In_Action then
 
-        if Con_Io."/="(Nxt, Con_Io.Timeout) then
+        if Nxt /= Con_Io.Timeout then
           -- new field or error
           Ins := False;
           -- build field from data if not format error (new field)
@@ -293,9 +293,9 @@ package body Nav_Dialog is
         Fmt_Error := False;
 
         -- if not timeout, try to have a value
-        if Con_Io."/=" (Nxt, Con_Io.Timeout) then
+        if Nxt /= Con_Io.Timeout then
 
-          if Con_Io."=" (Nxt, Con_Io.Esc) then
+          if Nxt = Con_Io.Esc then
             -- on escape : unknown
             Get_Str (1) := '?';
           end if;
@@ -403,7 +403,6 @@ package body Nav_Dialog is
   procedure Init is
   begin
     -- init screen
-    Con_Io.Init;
     Nav_Screen.Reset;
 
     -- get mask and data fields have to be put at next get

@@ -1,5 +1,5 @@
-with Ada.Text_Io, Ada.Calendar;
-with Timers, Rnd, Chronos;
+with Ada.Calendar;
+with Timers, Rnd, Chronos, Basic_Proc;
 with Moon, Debug;
 package body Lem is
 
@@ -200,7 +200,7 @@ package body Lem is
     Delta_Time : constant Duration := Read_Chrono;
   begin
     if Debug.Set_Lem then
-      Ada.Text_Io.Put_Line ("LEM Delta time is " & Delta_Time'Img);
+      Basic_Proc.Put_Line_Error ("LEM Delta time is " & Delta_Time'Img);
     end if;
     return Position_At (Delta_Time);
   end Get_Position;
@@ -223,7 +223,7 @@ package body Lem is
     New_Speed : Speed_Rec;
   begin
     if Debug.Set_Lem then
-      Ada.Text_Io.Put_Line ("LEM Periodic");
+      Basic_Proc.Put_Line_Error ("LEM Periodic");
     end if;
     -- Compute LEM characteristics
     -- Time of computation for further linear interpolation
@@ -237,9 +237,9 @@ package body Lem is
     New_Speed := Speed_At (Period);
     Current_Speed := New_Speed;
     if Debug.Set_Lem then
-      Ada.Text_Io.Put_Line ("LEM Pos is " & Current_Position.X_Pos'Img
+      Basic_Proc.Put_Line_Error ("LEM Pos is " & Current_Position.X_Pos'Img
                                     & "/" & Current_Position.Y_Pos'Img);
-      Ada.Text_Io.Put_Line ("LEM Speed is "
+      Basic_Proc.Put_Line_Error ("LEM Speed is "
                         & Current_Speed.X_Speed'Img
                   & "/" & Current_Speed.Y_Speed'Img);
     end if;
@@ -261,7 +261,7 @@ package body Lem is
     Current_Acceleration := (X_Acc => Current_X_Thrust / Mass,
                              Y_Acc => Current_Y_Thrust / Mass + Moon.Acceleration);
     if Debug.Set_Lem then
-      Ada.Text_Io.Put_Line ("LEM Acc is " & Current_Acceleration.X_Acc'Img
+      Basic_Proc.Put_Line_Error ("LEM Acc is " & Current_Acceleration.X_Acc'Img
                                     & "/" & Current_Acceleration.Y_Acc'Img);
     end if;
     -- Check if lem is landed
@@ -271,13 +271,13 @@ package body Lem is
         -- Don't go down when landed
         Current_Acceleration.Y_Acc := 0.0;
         if Debug.Set_Lem then
-          Ada.Text_Io.Put_Line ("LEM is landed. Accel 0.");
+          Basic_Proc.Put_Line_Error ("LEM is landed. Accel 0.");
         end if;
       else
         -- Takin' off
         Landed := False;
         if Debug.Set_Lem then
-          Ada.Text_Io.Put_Line ("LEM is taking off.");
+          Basic_Proc.Put_Line_Error ("LEM is taking off.");
         end if;
       end if;
     end if;
@@ -344,7 +344,7 @@ package body Lem is
     end if;
     -- Landed at position
     if Debug.Set_Lem then
-      Ada.Text_Io.Put_Line ("LEM has just landed.");
+      Basic_Proc.Put_Line_Error ("LEM has just landed.");
     end if;
     Landed := True;
     Current_Position := Position;

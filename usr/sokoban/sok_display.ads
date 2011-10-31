@@ -1,10 +1,12 @@
 with Ada.Calendar;
+with Con_Io;
 with Sok_Types;
 -- displaying of sokoban
 package Sok_Display is
 
   -- to init screen
   procedure Init;
+  function Get_Console return Con_Io.Console;
 
   -- puts all the frame
   procedure Put_Frame (Frame : in Sok_Types.Frame_Tab);
@@ -60,5 +62,8 @@ package Sok_Display is
   type Get_Result_List is (Set, Esc, Refresh);
   procedure Get_No_Frame (No : out Sok_Types.Frame_Range; Result : out Get_Result_List);
   Format_Error : exception;
+
+  -- ring a bell
+  procedure Bell;
 
 end Sok_Display;

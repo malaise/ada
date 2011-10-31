@@ -1,6 +1,6 @@
 with Ada.Calendar;
 
-with Big_Con_Io, Normal, Lower_Str, Upper_Char, Day_Mng, Timers, Language;
+with Con_Io, Normal, Lower_Str, Upper_Char, Day_Mng, Timers, Language;
 
 with Pieces, Space.Board, Image;
 
@@ -10,7 +10,8 @@ package body Screen is
   -- Graphic_Mode : constant Boolean := False;
   Graphic_Mode : constant Boolean := True;
 
-  package Con_Io renames Big_Con_Io;
+  Console : Con_Io.Console;
+  Screen : Con_Io.Window;
 
   -- Are we waiting for promotion selection
   Getting_Promotion : Boolean := False;
@@ -134,10 +135,12 @@ package body Screen is
   -- Redisplay the board
   procedure Display_Board (Color : in Space.Color_List) is
   begin
-    Con_Io.Init;
-    Con_Io.Set_Background (Main_Back);
-    Con_Io.Set_Foreground (Main_Fore);
-    Con_Io.Clear;
+    if not Console.Is_Init then
+      Console := Con_Io.Create (Font_No => 2,
+                                Def_Fore => Main_Fore,
+                                Def_Back => Main_Back);
+      Screen := Console.Screen.all;
+    end if;
     Init_Board (Color);
     for Row in Space.Row_Range loop
       for Col in Space.Col_Range loop
@@ -145,7 +148,7 @@ package body Screen is
       end loop;
     end loop;
     Moves.Put_Moves;
-    Con_Io.Flush;
+    Console.Flush;
   end Display_Board;
 
 
@@ -170,7 +173,7 @@ package body Screen is
     Millisecs : Day_Mng.T_Millisec := 0;
     use Ada.Calendar;
   begin
-    Con_Io.Move (2, 65);
+    Screen.Move (2, 65);
     -- Not more than one day :-)
     begin
       Day_Mng.Split (Ada.Calendar.Clock-Start_Time, Hours, Minutes, Secs, Millisecs);
@@ -178,7 +181,7 @@ package body Screen is
       when Constraint_Error | Ada.Calendar.Time_Error =>
         Start_Time := Ada.Calendar.Clock;
     end;
-    Con_Io.Put (Normal(Hours, 2, Gap => '0') & 'h'
+    Screen.Put (Normal(Hours, 2, Gap => '0') & 'h'
         & ' ' & Normal(Minutes, 2, Gap => '0') & 'm'
         & ' ' & Normal(Secs, 2, Gap => '0') & 's',
         Foreground => Fore (Color),
@@ -188,8 +191,8 @@ package body Screen is
 
   procedure Erase_Time is
   begin
-    Con_Io.Move (2, 65);
-    Con_Io.Put ("               ", Foreground => Main_Back,
+    Screen.Move (2, 65);
+    Screen.Put ("               ", Foreground => Main_Back,
                                    Background => Main_Back);
   end Erase_Time;
 
@@ -202,8 +205,8 @@ package body Screen is
   procedure Erase is
     Erase_Str :  constant String (1 .. 50) := (others => ' ');
   begin
-    Con_Io.Move (23, 1);
-    Con_Io.Put (Erase_Str, Foreground => Main_Back);
+    Screen.Move (23, 1);
+    Screen.Put (Erase_Str, Foreground => Main_Back);
   end Erase;
 
   -- Mouse
@@ -309,13 +312,13 @@ package body Screen is
     Put_Time (Move_Color);
 
     loop
-      Con_Io.Set_Foreground (Fore (Move_Color));
-      Con_Io.Set_Background (Main_Back);
-      Con_Io.Move (23, 1);
-      Con_Io.Put ("Move:");
+      Screen.Set_Foreground (Fore (Move_Color));
+      Screen.Set_Background (Main_Back);
+      Screen.Move (23, 1);
+      Screen.Put ("Move:");
 
-      Con_Io.Move (23, 7);
-      Con_Io.Put_Then_Get (Str, Last, Stat, Pos, Ins,
+      Screen.Move (23, 7);
+      Screen.Put_Then_Get (Str, Last, Stat, Pos, Ins,
              Time_Out => (Timers.Delay_Sec, null, Con_Io.No_Period, 0.1));
       Put_Time (Move_Color);
       if Stat = Con_Io.Ret then
@@ -412,13 +415,13 @@ package body Screen is
     Ins := False;
 
     loop
-      Con_Io.Set_Background (Main_Back);
-      Con_Io.Set_Foreground (Fore (Move_Color));
-      Con_Io.Move (23, 1);
-      Con_Io.Put (Message);
+      Screen.Set_Background (Main_Back);
+      Screen.Set_Foreground (Fore (Move_Color));
+      Screen.Move (23, 1);
+      Screen.Put (Message);
 
       Pos := 1;
-      Con_Io.Put_Then_Get (Str, Last, Stat, Pos, Ins);
+      Screen.Put_Then_Get (Str, Last, Stat, Pos, Ins);
       if not Ack then
         Put_Time (Move_Color);
       end if;
@@ -454,12 +457,12 @@ package body Screen is
     Put_Time (Move_Color);
 
     loop
-      Con_Io.Set_Background (Main_Back);
-      Con_Io.Set_Foreground (Main_Back);
-      Con_Io.Move (23, 1);
+      Screen.Set_Background (Main_Back);
+      Screen.Set_Foreground (Main_Back);
+      Screen.Move (23, 1);
 
       Pos := 1;
-      Con_Io.Put_Then_Get (Str, Last, Stat, Pos, Ins,
+      Screen.Put_Then_Get (Str, Last, Stat, Pos, Ins,
              Time_Out => Timeout);
       Put_Time (Move_Color);
       if Stat = Con_Io.Fd_Event then
@@ -487,12 +490,12 @@ package body Screen is
     Ins := False;
 
     loop
-      Con_Io.Set_Background (Main_Back);
-      Con_Io.Set_Foreground (Main_Back);
-      Con_Io.Move (23, 1);
+      Screen.Set_Background (Main_Back);
+      Screen.Set_Foreground (Main_Back);
+      Screen.Move (23, 1);
 
       Pos := 1;
-      Con_Io.Put_Then_Get (Str, Last, Stat, Pos, Ins,
+      Screen.Put_Then_Get (Str, Last, Stat, Pos, Ins,
              Time_Out => Timeout);
       if Stat = Con_Io.Timeout then
         return;
@@ -506,12 +509,12 @@ package body Screen is
   begin
     Moves.Add_Move (Color, Action, Result);
     Moves.Put_Moves;
-    Con_Io.Flush;
+    Console.Flush;
   end Put_Move;
 
   procedure Close is
   begin
-    Con_Io.Destroy;
+    Console.Destroy;
   end Close;
 
 end Screen;

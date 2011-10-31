@@ -120,6 +120,11 @@ package Con_Io is
   procedure Resume (Con : in Console);
   function Is_Suspended (Con : Console) return Boolean;
 
+  -- Get colors of Console
+  function Foreground (Con : Console) return Effective_Colors;
+  function Background (Con : Console) return Effective_Colors;
+  function Xor_Mode   (Con : Console) return Effective_Xor_Modes;
+
   -- Get geometry of Console
   function Row_Range_Last  (Con : Console) return Row_Range;
   function Col_Range_Last  (Con : Console) return Col_Range;
@@ -158,6 +163,9 @@ package Con_Io is
 
   -- Is a window open
   function Is_Open (Name : Window) return Boolean;
+
+  -- Get Console of a window
+  function Get_Console (Name : Window_Access) return Console;
 
   -- Clear window and move to home
   procedure Clear (Name : in Window);

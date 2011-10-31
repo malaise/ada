@@ -120,7 +120,7 @@ package body X is
                         Target : out Positive;
                         Cancel : out Boolean) is
     -- Get a value from a field at a row
-    function Get_Value (Field : in Field_Range; Row : in Con_Io.Full_Row_Range)
+    function Get_Value (Field : in Field_Range; Row : in Con_Io.Row_Range)
              return Natural is
     begin
       return Natural'Value (String_Mng.Strip (Decode_Field (Field, Row),
@@ -240,7 +240,7 @@ package body X is
                          Finish : out Boolean) is
     -- Put a value (on 3 digits) in a field at a row
     procedure Encode (Field : in Field_Range;
-                      Col : in Con_Io.Full_Col_Range;
+                      Col : in Con_Io.Col_Range;
                       Value : in Natural) is
     begin
       Encode_Field (Field, (0, Col), Normal (Value, 4));

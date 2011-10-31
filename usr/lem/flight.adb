@@ -1,5 +1,4 @@
-with Ada.Text_Io;
-with Rnd;
+with Rnd, Basic_Proc;
 with Moon, Debug, Screen;
 package body Flight is
 
@@ -114,11 +113,11 @@ package body Flight is
     P2 := P1 + 1;
     P3 := P2 + 1;
     if Debug.Set_Flight then
-      Ada.Text_Io.Put_Line ("FLIGHT Lem is "
+      Basic_Proc.Put_Line_Error ("FLIGHT Lem is "
          & Left.X_Pos'Img & " - " & Right.X_Pos'Img & " / " & Left.Y_Pos'Img);
-      Ada.Text_Io.Put_Line ("P" & P1'Img & " is " & Ground(P1).X_Pos'Img
+      Basic_Proc.Put_Line_Error ("P" & P1'Img & " is " & Ground(P1).X_Pos'Img
                           & " / " & Ground(P1).Y_Pos'Img);
-      Ada.Text_Io.Put_Line ("P" & P2'Img & " is " & Ground(P2).X_Pos'Img
+      Basic_Proc.Put_Line_Error ("P" & P2'Img & " is " & Ground(P2).X_Pos'Img
                           & " / " & Ground(P2).Y_Pos'Img);
     end if;
 
@@ -130,7 +129,7 @@ package body Flight is
       -- Check current (Iter) is at same visual height as P1
       if not Screen.Same_Height (Ground(Iter).Y_Pos, Ground(P1).Y_Pos) then
         if Debug.Set_Flight then
-          Ada.Text_Io.Put_Line ("FLIGHT Ground not flat for " & Iter'Img);
+          Basic_Proc.Put_Line_Error ("FLIGHT Ground not flat for " & Iter'Img);
         end if;
         Flat_Index := 0;
         exit;
@@ -166,7 +165,7 @@ package body Flight is
         -- Ground is climbing: check right corner is above (not equal)
         if Check_Above (Right, Ground(P1), Ground(P2)) then
           if Debug.Set_Flight then
-            Ada.Text_Io.Put_Line ("FLIGHT Above P1 <= P2");
+            Basic_Proc.Put_Line_Error ("FLIGHT Above P1 <= P2");
           end if;
           return;
         end if;
@@ -174,14 +173,14 @@ package body Flight is
         -- Ground is descending: check left corner is above (not equal)
         if Check_Above (Left, Ground(P1), Ground(P2)) then
           if Debug.Set_Flight then
-            Ada.Text_Io.Put_Line ("FLIGHT Above P1 > P2");
+            Basic_Proc.Put_Line_Error ("FLIGHT Above P1 > P2");
           end if;
           return;
         end if;
       end if;
     else
       if Debug.Set_Flight then
-        Ada.Text_Io.Put_Line ("FLIGHT P" & P3'Img & " is "
+        Basic_Proc.Put_Line_Error ("FLIGHT P" & P3'Img & " is "
                      & Ground(P3).X_Pos'Img
              & " / " & Ground(P3).Y_Pos'Img);
       end if;
@@ -191,7 +190,7 @@ package body Flight is
         -- P1 P2 P3 climbing: check right > (P2, P3)
         if Check_Above (Right, Ground(P2), Ground(P3)) then
           if Debug.Set_Flight then
-            Ada.Text_Io.Put_Line ("FLIGHT Above P1 <= P2 <= P3");
+            Basic_Proc.Put_Line_Error ("FLIGHT Above P1 <= P2 <= P3");
           end if;
           return;
         end if;
@@ -200,7 +199,7 @@ package body Flight is
         -- P1 P2 P3 climbing: check left > (P1, P2)
         if Check_Above (Left, Ground(P1), Ground(P2)) then
           if Debug.Set_Flight then
-            Ada.Text_Io.Put_Line ("FLIGHT Above P1 >= P2 >= P3");
+            Basic_Proc.Put_Line_Error ("FLIGHT Above P1 >= P2 >= P3");
           end if;
           return;
         end if;
@@ -209,7 +208,7 @@ package body Flight is
         -- P2 above P1 and P3: check P2 < Lem
         if Ground(P2).Y_Pos < Right.Y_Pos then
           if Debug.Set_Flight then
-            Ada.Text_Io.Put_Line ("FLIGHT Above P1 <= P2 >= P3");
+            Basic_Proc.Put_Line_Error ("FLIGHT Above P1 <= P2 >= P3");
           end if;
           return;
         end if;
@@ -219,7 +218,7 @@ package body Flight is
         if Check_Above (Left, Ground(P1), Ground(P2))
         and then Check_Above (Right, Ground(P2), Ground(P3)) then
           if Debug.Set_Flight then
-            Ada.Text_Io.Put_Line ("FLIGHT Above P1 >= P2 <= P3");
+            Basic_Proc.Put_Line_Error ("FLIGHT Above P1 >= P2 <= P3");
           end if;
           return;
         end if;
@@ -232,7 +231,7 @@ package body Flight is
     -- Check ground is flat
     if Flat_Index = 0 then
       if Debug.Set_Flight then
-        Ada.Text_Io.Put_Line ("FLIGHT Crashed not flat");
+        Basic_Proc.Put_Line_Error ("FLIGHT Crashed not flat");
       end if;
       return;
     end if;
@@ -241,7 +240,7 @@ package body Flight is
     or else (Result.Speed.Y_Speed < 0.0
              and then abs Result.Speed.Y_Speed > Max_Verti_Speed) then
       if Debug.Set_Flight then
-        Ada.Text_Io.Put_Line ("FLIGHT Crashed speed "
+        Basic_Proc.Put_Line_Error ("FLIGHT Crashed speed "
                                  & Result.Speed.X_Speed'Img
                          & " / " & Result.Speed.Y_Speed'Img);
       end if;
@@ -250,7 +249,7 @@ package body Flight is
     -- Speed must be negative or nul, otherwise approaching
     if Result.Speed.Y_Speed > 0.0 then
       if Debug.Set_Flight then
-        Ada.Text_Io.Put_Line ("FLIGHT On ground but climbing");
+        Basic_Proc.Put_Line_Error ("FLIGHT On ground but climbing");
       end if;
       Result.Status := Close;
       return;
@@ -261,7 +260,7 @@ package body Flight is
     --  (LX + Lem.Width / 2.0, Yfalt + Lem.Height / 2.0)
     -- Flat_Index has been set to the lowest of the "flat" points
     if Debug.Set_Flight then
-      Ada.Text_Io.Put_Line ("FLIGHT Landed with speeds "
+      Basic_Proc.Put_Line_Error ("FLIGHT Landed with speeds "
                                  & Result.Speed.X_Speed'Img
                          & " / " & Result.Speed.Y_Speed'Img);
     end if;
@@ -298,7 +297,7 @@ package body Flight is
     or else Right.X_Pos > Space.X_Range'Last
     or else Result.Pos.Y_Pos + Lem.Height / 2.0 > Space.Y_Range'Last then
       if Debug.Set_Flight then
-        Ada.Text_Io.Put_Line ("FLIGHT Lost at "
+        Basic_Proc.Put_Line_Error ("FLIGHT Lost at "
                       & Result.Pos.X_Pos'Img & "/" & Result.Pos.Y_Pos'Img);
       end if;
       Result.Status := Lost;
@@ -306,7 +305,7 @@ package body Flight is
     end if;
     if Left.Y_Pos < Space.Y_Range'First then
       if Debug.Set_Flight then
-        Ada.Text_Io.Put_Line ("FLIGHT Crashed at "
+        Basic_Proc.Put_Line_Error ("FLIGHT Crashed at "
                       & Result.Pos.X_Pos'Img & "/" & Result.Pos.Y_Pos'Img);
       end if;
       Result.Status := Crashed;

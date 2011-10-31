@@ -245,23 +245,26 @@ package body Afpx is
     if not Initialised
     and then Af_Dscr.Current_Dscr.Colors (Con_Io.Effective_Colors'First)
              /= Afpx_Typ.No_Color then
-      -- Set the colors when using the first descriptor
+      -- If necessary, Set the colors when using the first descriptor
       Con_Io.Set_Colors (Afpx_Typ.To_Def (Af_Dscr.Current_Dscr.Colors));
+    end if;
+    if not Console.Is_Init then
+      -- Done only once at first dsescriptor
       Con_Io.Initialise;
       Size := Af_Dscr.Load_Size;
       Initialised := True;
+      -- Create console and screen
+      Console := Con_Io.Create (
+              Font_No => 1,
+              Row_Last => Size.Row,
+              Col_Last => Size.Col,
+              Def_Back => (Af_Dscr.Current_Dscr.Background));
+      Af_Con_Io := Console.Screen.all;
     end if;
-    -- Delete previous console if any
-    if Console.Is_Init then
-      Console.Destroy;
-    end if;
-    -- Create console and screen
-    Console := Con_Io.Create (
-            Font_No => 1,
-            Def_Back => (Af_Dscr.Current_Dscr.Background));
-    Af_Con_Io := Console.Screen.all;
+    -- Done at each descriptor
     Af_List.Open;
     Af_Dscr.Current_Dscr.Modified := True;
+    Af_Con_Io.Set_Background (Af_Dscr.Current_Dscr.Background);
     if Clear_Screen then
       Af_Con_Io.Clear;
     end if;

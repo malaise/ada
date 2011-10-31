@@ -271,6 +271,25 @@ package body Con_Io is
     return X_Mng.X_Is_Suspended (Con.Get_Access.Id);
   end Is_Suspended;
 
+  -- Get colors of Console
+  function Foreground (Con : Console) return Effective_Colors is
+  begin
+    Check_Init (Con);
+    return Con.Get_Access.Line_Foreground;
+  end Foreground;
+
+  function Background (Con : Console) return Effective_Colors is
+  begin
+    Check_Init (Con);
+    return Con.Get_Access.Line_Background;
+  end Background;
+
+  function Xor_Mode   (Con : Console) return Effective_Xor_Modes is
+  begin
+    Check_Init (Con);
+    return Con.Get_Access.Line_Xor_Mode;
+  end Xor_Mode;
+
   -- Get geometry
   function Row_Range_Last  (Con : Console) return Row_Range is
   begin
@@ -303,13 +322,15 @@ package body Con_Io is
 
   -- Reset screen, windows and keyboard
   procedure Reset_Term (Con : in Console) is
+    Acc : access Console_Data;
   begin
     Debug ("Console reset term");
     Check_Init (Con);
-    X_Mng.X_Clear_Line (Con.Get_Access.Id);
+    Acc := Con.Get_Access;
+    X_Mng.X_Clear_Line (Acc.Id);
     -- Set current attributes in cache
-    Set_Attributes (Con, Default_Foreground, Default_Background,
-                    Default_Xor_Mode, Forced => True);
+    Set_Attributes (Con, Acc.Line_Foreground, Acc.Line_Background,
+                    Acc.Line_Xor_Mode, Forced => True);
   end Reset_Term;
 
   -- Screen characteristics
@@ -391,6 +412,16 @@ package body Con_Io is
   begin
     return Name /= Null_Window and then Name.Get_Access.Open;
   end Is_Open;
+
+  -- Get Console of a window
+  function Get_Console (Name : Window_Access) return Console is
+  begin
+    if Name = null then
+      raise Window_Not_Open;
+    end if;
+    Check_Win (Name.all);
+    return Name.all.Get_Access.Con;
+  end Get_Console;
 
   procedure Clear (Name : in Window) is
     Win : access Window_Data;

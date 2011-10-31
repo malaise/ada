@@ -5,12 +5,15 @@ use Pers_Def;
 package body Mesu_Gra is
   use My_Math;
 
+  Console : Con_Io.Console;
+  Screen : Con_Io.Window;
+
   -- X and Y first and last, in screen and reality
   X_First : constant Natural := 0;
   -- To be computed: 4 * font_width
-  Xs_First : Con_Io.Graphics.X_Range := 43;
+  Xs_First : Con_Io.X_Range := 43;
   -- To be computed: X_Max
-  Xs_Last  : Con_Io.Graphics.X_Range;
+  Xs_Last  : Con_Io.X_Range;
   -- To be computed: last sample in time
   X_Last  : Natural;
 
@@ -18,9 +21,9 @@ package body Mesu_Gra is
   Y_Last   : Pers_Def.Bpm_Range;
   Y_Step   : constant Pers_Def.Bpm_Range := 25;
   -- To be computed: 2 * font height
-  Ys_First : Con_Io.Graphics.Y_Range;
+  Ys_First : Con_Io.Y_Range;
   -- To be computed: Y_Max - Max_Nb_Mesure * font height
-  Ys_Last  : Con_Io.Graphics.Y_Range;
+  Ys_Last  : Con_Io.Y_Range;
 
   -- Scale factors from reality to screen
   -- To be computed
@@ -28,7 +31,7 @@ package body Mesu_Gra is
   Y_Factor : Float;
 
   -- Font offset: how much to lower Y to get char "centered" to Y axis
-  Font_Offset_Height : Con_Io.Graphics.Y_Range;
+  Font_Offset_Height : Con_Io.Y_Range;
 
   -- What to know about a record
   type Mesure_Cell is record
@@ -46,14 +49,14 @@ package body Mesu_Gra is
 
 
   -- From reality to screen
-  function X_To_Screen (X : in Natural) return Con_Io.Graphics.X_Range is
+  function X_To_Screen (X : in Natural) return Con_Io.X_Range is
   begin
-    return Con_Io.Graphics.X_Range(Float(X - X_First) * X_Factor) + Xs_First;
+    return Con_Io.X_Range(Float(X - X_First) * X_Factor) + Xs_First;
   end X_To_Screen;
 
-  function Y_To_Screen (Bpm : in Pers_Def.Bpm_Range) return Con_Io.Graphics.Y_Range is
+  function Y_To_Screen (Bpm : in Pers_Def.Bpm_Range) return Con_Io.Y_Range is
   begin
-    return Con_Io.Graphics.Y_Range(Float(Bpm - Y_First) * Y_Factor) + Ys_First;
+    return Con_Io.Y_Range(Float(Bpm - Y_First) * Y_Factor) + Ys_First;
   end Y_To_Screen;
 
   -- From reality to screen
@@ -68,14 +71,13 @@ package body Mesu_Gra is
   end Y_To_Screen_Secure;
 
   procedure Pixel (X : in Integer; Y : in Integer; In_Graphic : in Boolean) is
-    use Con_Io;
   begin
     if In_Graphic and then
     (       X < Xs_First or else X > Xs_Last
     or else Y < Ys_First or else Y > Ys_Last) then
       return;
     end if;
-    Con_Io.Graphics.Draw_Point (X, Y);
+    Console.Draw_Point (X, Y);
   exception
     when others =>
       null;
@@ -116,10 +118,10 @@ package body Mesu_Gra is
       end if;
     else
       -- Other lines
-      if abs (Float(Xb - Xa) / Float (Con_Io.Graphics.X_Max -
-                                      Con_Io.Graphics.X_Range'First))
-      >  abs (Float(Yb - Ya) / Float (Con_Io.Graphics.Y_Max -
-                                      Con_Io.Graphics.Y_Range'First) ) then
+      if abs (Float(Xb - Xa) / Float (Console.X_Max -
+                                      Con_Io.X_Range'First))
+      >  abs (Float(Yb - Ya) / Float (Console.Y_Max -
+                                      Con_Io.Y_Range'First) ) then
         if Xa < Xb then
           X1 := Xa;
           Y1 := Ya;
@@ -135,7 +137,7 @@ package body Mesu_Gra is
         A := My_Math.Real (Y2 - Y1) / My_Math.Real (X2 - X1);
         B := My_Math.Real(Y1) - (A * My_Math.Real(X1));
         for X in X1 .. X2 loop
-          Y := Con_Io.Graphics.Y_Range(My_Math.Round (A * My_Math.Real(X) + B));
+          Y := Con_Io.Y_Range(My_Math.Round (A * My_Math.Real(X) + B));
           Pixel (X, Y, In_Graphic);
         end loop;
       else
@@ -154,7 +156,7 @@ package body Mesu_Gra is
         A := My_Math.Real (X2 - X1) / My_Math.Real (Y2 - Y1);
         B := My_Math.Real(X1) - (A * My_Math.Real(Y1));
         for Y in Y1 .. Y2 loop
-          X := Con_Io.Graphics.X_Range(My_Math.Round (A * My_Math.Real(Y) + B));
+          X := Con_Io.X_Range(My_Math.Round (A * My_Math.Real(Y) + B));
           Pixel (X, Y, In_Graphic);
         end loop;
       end if;
@@ -177,33 +179,33 @@ package body Mesu_Gra is
     Secs : Natural;
     -- Scale step on Y in Bpm
     Bpm : Pers_Def.Bpm_Range;
-    X : Con_Io.Graphics.X_Range;
-    Y : Con_Io.Graphics.Y_Range;
+    X : Con_Io.X_Range;
+    Y : Con_Io.Y_Range;
 
   begin
     -- Help
-    Con_Io.Move (Con_Io.Row_Range_Last, 5);
-    Con_Io.Set_Foreground (Help_Color);
-    Con_Io.Put ("Escape to quit, '1' to '" & Normal(Nb_Mesure,1)
+    Screen.Move (Screen.Row_Range_Last, 5);
+    Screen.Set_Foreground (Help_Color);
+    Screen.Put ("Escape to quit, '1' to '" & Normal(Nb_Mesure,1)
        & "' to draw/hide a record, T for Training Zones.");
     -- Axes of scale
-    Con_Io.Set_Foreground (Scale_Color);
-    Con_Io.Graphics.Draw_Line (Xs_First, Ys_First, Xs_Last, Ys_First);
-    Con_Io.Graphics.Draw_Line (Xs_First, Ys_First, Xs_First, Ys_Last);
+    Screen.Set_Foreground (Scale_Color);
+    Console.Draw_Line (Xs_First, Ys_First, Xs_Last, Ys_First);
+    Console.Draw_Line (Xs_First, Ys_First, Xs_First, Ys_Last);
     -- Horizontal scale : one + each 10 mn (600 seconds)
     --                    Time in mn each 3 +
     for I in 0 .. X_Last / Secs_Scale_Step loop
       Secs := I * Secs_Scale_Step;
       X := X_To_Screen (Secs);
-      Con_Io.Graphics.Draw_Line (X, Ys_First - 2, X, Ys_First + 2);
+      Console.Draw_Line (X, Ys_First - 2, X, Ys_First + 2);
       if I rem 3 = 0 or else I = X_Last / Secs_Scale_Step then
-        if X / Con_Io.Graphics.Font_Width - 1 <= Con_Io.Col_Range'Last - 3 then
-          Con_Io.Move (Con_Io.Row_Range_Last - 1,
-                       X / Con_Io.Graphics.Font_Width - 1);
+        if X / Console.Font_Width - 1 <= Con_Io.Col_Range'Last - 3 then
+          Screen.Move (Console.Row_Range_Last - 1,
+                       X / Console.Font_Width - 1);
         else
-          Con_Io.Move (Con_Io.Row_Range_Last - 1, Con_Io.Col_Range'Last - 3);
+          Screen.Move (Console.Row_Range_Last - 1, Console.Col_Range_Last - 3);
         end if;
-        Con_Io.Put (Normal (Secs / 60, 3));
+        Screen.Put (Normal (Secs / 60, 3));
       end if;
     end loop;
     -- Vertical scale : one + each 25 Bpm
@@ -211,8 +213,8 @@ package body Mesu_Gra is
     for I in Y_First / Y_Step .. Y_Last / Y_Step loop
       Bpm := I * Y_Step;
       Y := Y_To_Screen (Bpm);
-      Con_Io.Graphics.Draw_Line (Xs_First - 2, Y, Xs_First + 2, Y);
-      Con_Io.Graphics.Put (Normal (Integer(Bpm), 3),
+      Console.Draw_Line (Xs_First - 2, Y, Xs_First + 2, Y);
+      Console.Put (Normal (Integer(Bpm), 3),
                            1,
                            Y - Font_Offset_Height);
     end loop;
@@ -222,10 +224,10 @@ package body Mesu_Gra is
   procedure Draw_Tz (Show : in Boolean) is
     Tz_Color    : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("Red");
     Bpm : Pers_Def.Bpm_Range;
-    Y : Con_Io.Graphics.Y_Range;
+    Y : Con_Io.Y_Range;
     Mesure_Index : Mesure_Range;
   begin
-    Con_Io.Set_Foreground (Tz_Color);
+    Screen.Set_Foreground (Tz_Color);
     if not Show then
       Mesure_Index := Prev_Tz;
     else
@@ -244,10 +246,10 @@ package body Mesu_Gra is
       Bpm := Mesure_Array(Mesure_Index).Mesure.Tz(I);
       if Bpm >= Y_First then
         Y := Y_To_Screen(Bpm);
-        Draw_Line (Xs_First, Y, Xs_Last - 4 * Con_Io.Graphics.Font_Width, Y);
-        Con_Io.Graphics.Put (
+        Draw_Line (Xs_First, Y, Xs_Last - 4 * Console.Font_Width, Y);
+        Console.Put (
                     Normal(Integer(Bpm), 3),
-                    Con_Io.Graphics.X_Max - (3 * Con_Io.Graphics.Font_Width),
+                    Console.X_Max - (3 * Console.Font_Width),
                     Y - Font_Offset_Height);
       end if;
     end loop;
@@ -270,9 +272,9 @@ package body Mesu_Gra is
     Mesure : Mesu_Def.Mesure_Rec renames Mesure_Array(No).Mesure;
     Title_Txt : As.B.Asb_Bs(Con_Io.Col_Range'Last);
   begin
-    Con_Io.Set_Foreground (Colors(No));
+    Screen.Set_Foreground (Colors(No));
     -- Person and date
-    Con_Io.Move (No-1, 10);
+    Screen.Move (No-1, 10);
     if Mesure.Samples(1) = Pers_Def.Bpm_Range'First or else
        Mesure.Samples(2) = Pers_Def.Bpm_Range'First then
       -- 0 or only 1 sample. Cannot draw this one
@@ -286,7 +288,7 @@ package body Mesu_Gra is
          & Mesure_Array(No).Person.Activity & " "
          & Str_Mng.To_Printed_Str(Mesure.Date) & " "
          & Mesure.Comment);
-    Con_Io.Put (Title_Txt.Image);
+    Screen.Put (Title_Txt.Image);
 
     if Mesure.Samples(2) = Pers_Def.Bpm_Range'First then
       return;
@@ -358,15 +360,15 @@ package body Mesu_Gra is
     -- Here we only use Afpx.Line_List, no pb to suspend for
     --  a Con_Io
     Afpx.Suspend;
-    Con_Io.Default_Background := Con_Io.Color_Of ("Black");
-    Con_Io.Init;
+    Console := Con_Io.Create (1, Def_Back => Con_Io.Color_Of ("Black"));
+    Screen := Console.Screen.all;
 
     -- Screen scale
-    Xs_First := 4 * Con_Io.Graphics.Font_Width;
-    Xs_Last  := Con_Io.Graphics.X_Max;
-    Ys_First := Con_Io.Graphics.Font_Height * 2;
-    Ys_Last := Con_Io.Graphics.Y_Max
-             - Max_Nb_Mesure * Con_Io.Graphics.Font_Height;
+    Xs_First := 4 * Console.Font_Width;
+    Xs_Last  := Console.X_Max;
+    Ys_First := Console.Font_Height * 2;
+    Ys_Last := Console.Y_Max
+             - Max_Nb_Mesure * Console.Font_Height;
 
     -- Init array of mesures
     -- List is not empty
@@ -442,7 +444,7 @@ package body Mesu_Gra is
 
     -- Compute Y factor
     Y_Factor := Float(Ys_First - Ys_Last) / Float(Y_First - Y_Last);
-    Font_Offset_Height := Con_Io.Graphics.Font_Height / 3;
+    Font_Offset_Height := Console.Font_Height / 3;
 
     -- Compute last X
     X_Last := 0;
@@ -463,10 +465,9 @@ package body Mesu_Gra is
     -- Compute X Factor
     X_Factor := Float(Xs_First - Xs_Last) / Float(X_First - X_Last);
 
-    -- Graphic mode for current screen and any new window
-    Con_Io.Set_Xor_Mode (Con_Io.Xor_On);
-    Con_Io.Default_Xor_Mode := Con_Io.Xor_On;
-    Con_Io.Reset_Term;
+    -- Graphic mode for current screen
+    Console.Reset_Term;
+    Screen.Set_Xor_Mode (Con_Io.Xor_On);
 
     Draw_Layout;
     Tz_Drown := False;
@@ -480,7 +481,7 @@ package body Mesu_Gra is
     Main_Loop:
     loop
       -- Get key
-      Get_Res := Con_Io.Get;
+      Get_Res := Screen.Get;
       if Get_Res.Mvt = Con_Io.Full then
         Char := Language.Unicode_To_Char (Get_Res.Char);
       else
@@ -529,8 +530,8 @@ package body Mesu_Gra is
         end if;
       elsif Get_Res.Mvt = Con_Io.Refresh then
         -- Refresh
-        Con_Io.Reset_Term;
-        Con_Io.Clear;
+        Console.Reset_Term;
+        Screen.Clear;
         Draw_Layout;
         -- Redraw mesures
         for I in 1 .. Nb_Mesure loop
@@ -546,16 +547,17 @@ package body Mesu_Gra is
     end loop Main_Loop;
 
     -- Back to text mode
-    Con_Io.Reset_Term;
-    Con_Io.Default_Xor_Mode := Con_Io.Xor_Off;
+    Console.Reset_Term;
     -- Close Con_Io and restore Afpx
-    Con_Io.Destroy;
+    Console.Destroy;
     Afpx.Resume;
   exception
     when Error:others =>
       Ada.Text_Io.Put_Line ("Exception "
        & Ada.Exceptions.Exception_Name (Error) & " raised.");
-      Con_Io.Destroy;
+      if Console.Is_Init then
+        Console.Destroy;
+      end if;
       Afpx.Resume;
   end Graphic;
 

@@ -66,36 +66,32 @@ package body Moves is
       Empty : constant Image.Move_Str := (others => ' ');
     begin
       if not M.White_Move.Valid then
-        Con_Io.Put ("   " & ' ' & Empty,
-                    Name => Move_Window,
+        Move_Window.Put ("   " & ' ' & Empty,
                     Foreground => Main_Fore);
       else
-        Con_Io.Put (Normal (M.Num, 3) & ' ' &
-                     Image.Move_Image (M.White_Move, M.White_Result),
-                    Name => Move_Window,
+        Move_Window.Put (Normal (M.Num, 3) & ' ' &
+                    Image.Move_Image (M.White_Move, M.White_Result),
                     Foreground => Fore(Space.White));
       end if;
 
       if not M.Black_Move.Valid then
-        Con_Io.Put (' ' & Empty,
-                    Name => Move_Window,
+        Move_Window.Put (' ' & Empty,
                     Foreground => Main_Fore);
       else
-        Con_Io.Put (' ' & Image.Move_Image (M.Black_Move, M.Black_Result),
-                    Name => Move_Window,
+        Move_Window.Put (' ' & Image.Move_Image (M.Black_Move, M.Black_Result),
                     Foreground => Fore(Space.Black));
       end if;
     end Put;
 
   begin
     -- First call: init
-    if not Con_Io.Is_Open (Move_Window) then
-      Con_Io.Open (Move_Window, Upper_Left, Lower_Right);
-      Con_Io.Set_Background (Main_Back, Move_Window);
+    if not Move_Window.Is_Open then
+      Move_Window := Console.Open (Upper_Left, Lower_Right).all;
+      Move_Window.Set_Background (Main_Back);
       Move_No := 1;
     end if;
 
-    Con_Io.Clear (Move_Window);
+    Move_Window.Clear;
 
     if not Looped then
       -- From First to Pos included
