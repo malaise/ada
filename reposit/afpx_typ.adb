@@ -3,7 +3,7 @@ package body Afpx_Typ is
 
   -- Check is square (relative to field) is in field
   function In_Field (Field  : in Field_Rec;
-                     Square : in Con_Io.Full_Square) return Boolean is
+                     Square : in Con_Io.Square) return Boolean is
   begin
     return   Square.Row < Field.Height
     and then Square.Col < Field.Width;
@@ -11,7 +11,7 @@ package body Afpx_Typ is
 
   -- Check is square (absolute) is in field
   function In_Field_Absolute (Field  : in Field_Rec;
-                              Square : in Con_Io.Full_Square) return Boolean is
+                              Square : in Con_Io.Square) return Boolean is
   begin
     return   Square.Row >= Field.Upper_Left.Row
     and then Square.Row <= Field.Lower_Right.Row
@@ -19,10 +19,9 @@ package body Afpx_Typ is
     and then Square.Col <= Field.Lower_Right.Col;
   end In_Field_Absolute;
 
-  -- Make Generic_Con_Io.Colors_Definition from Dscr Color_Names
-  function To_Def (Names : Color_Names)
-           return Generic_Con_Io.Colors_Definition is
-    Colors : Generic_Con_Io.Colors_Definition;
+  -- Make Con_Io.Colors_Definition from Dscr Color_Names
+  function To_Def (Names : Color_Names) return Con_Io.Colors_Definition is
+    Colors : Con_Io.Colors_Definition;
     Last : Natural;
   begin
     -- Set the colors when using the first descriptor
@@ -33,7 +32,7 @@ package body Afpx_Typ is
     return Colors;
   end To_Def;
 
-  function To_Names (Defs : Generic_Con_Io.Colors_Definition)
+  function To_Names (Defs : Con_Io.Colors_Definition)
            return Color_Names is
     Names : Color_Names := (others => No_Color);
   begin

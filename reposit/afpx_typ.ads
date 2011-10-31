@@ -1,4 +1,4 @@
-with As.U, Unicode, Generic_Con_Io, Con_Io;
+with As.U, Unicode, Con_Io;
 package Afpx_Typ is
 
   -- Version of Afpx
@@ -22,14 +22,14 @@ package Afpx_Typ is
   Max_Color_Name_Len : constant := 80;
   subtype Color_Name is String (1 .. Max_Color_Name_Len);
   No_Color : constant Color_Name := (others => ' ');
-  type Color_Names is array (Generic_Con_Io.Effective_Colors) of Color_Name;
+  type Color_Names is array (Con_Io.Effective_Colors) of Color_Name;
 
   -- A descriptor
   type Dscr_Rec is record
     -- To be checked prior to loading
     Version    : Float;
     -- Screen size
-    Size : Con_Io.Full_Square;
+    Size : Con_Io.Square;
     -- To generate refresh. True in file if used
     Modified   : Boolean;
     -- To generate a complete redisplay of the window
@@ -57,12 +57,12 @@ package Afpx_Typ is
   end record;
 
   -- Width and height of a field
-  subtype Height_Range is Positive range 1 .. Con_Io.Full_Row_Range_Last + 1;
-  subtype Width_Range  is Positive range 1 .. Con_Io.Full_Col_Range_Last + 1;
+  subtype Height_Range is Positive range 1 .. Con_Io.Last_Row + 1;
+  subtype Width_Range  is Positive range 1 .. Con_Io.Last_Col + 1;
 
   -- Characters of the fields
   Max_Init_Len : constant Integer :=
-   (Con_Io.Full_Row_Range_Last + 1) * (Con_Io.Full_Col_Range_Last + 1);
+   (Con_Io.Last_Row + 1) * (Con_Io.Last_Col + 1);
   subtype Char_Str_Range is Positive range 1 .. Max_Init_Len;
 
   -- A field
@@ -76,7 +76,7 @@ package Afpx_Typ is
     -- Field protection for Get / Button fields
     Isprotected : Boolean;
     -- Upper left, lower_right corners of the field
-    Upper_Left, Lower_Right : Con_Io.Full_Square;
+    Upper_Left, Lower_Right : Con_Io.Square;
     -- Width, height
     Height : Height_Range;
     Width  : Width_Range;
@@ -94,15 +94,15 @@ package Afpx_Typ is
 
   -- Check is square (relative to field) is in field
   function In_Field (Field  : in Field_Rec;
-                     Square : in Con_Io.Full_Square) return Boolean;
+                     Square : in Con_Io.Square) return Boolean;
 
   -- Check is square (absolute) is in field
   function In_Field_Absolute (Field  : in Field_Rec;
-                              Square : in Con_Io.Full_Square) return Boolean;
+                              Square : in Con_Io.Square) return Boolean;
 
-  -- Make Generic_Con_Io.Colors_Definition from Dscr Color_Names
-  function To_Def (Names : Color_Names) return Generic_Con_Io.Colors_Definition;
-  function To_Names (Defs :  Generic_Con_Io.Colors_Definition)
+  -- Make Con_Io.Colors_Definition from Dscr Color_Names
+  function To_Def (Names : Color_Names) return Con_Io.Colors_Definition;
+  function To_Names (Defs :  Con_Io.Colors_Definition)
            return Color_Names;
 end Afpx_Typ;
 

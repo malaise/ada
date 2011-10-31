@@ -24,7 +24,7 @@ package body Af_Dscr is
   Dscrs : Afpx_Typ.Descriptors_Array;
 
   -- Load the screen size, raise No_Descriptor if failure of version check
-  function Load_Size return Con_Io.Full_Square is
+  function Load_Size return Con_Io.Square is
   begin
     -- Even when not used, each dscr has the screen size
     return Dscrs(1).Size;
