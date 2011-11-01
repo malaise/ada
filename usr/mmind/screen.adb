@@ -117,10 +117,9 @@ package body Screen is
     -- Set Colors
     Colors(Con_Io.Color09) := As.U.Tus ("Grey");
     Con_Io.Set_Colors (Colors);
-    Console := Con_Io.Create (Font_No => 1,
-                              Def_Fore => Foreground_Color,
-                              Def_Back => Background_Color);
-    Screen_Win := Console.Screen.all;
+    Console.Open (Def_Fore => Foreground_Color,
+                  Def_Back => Background_Color);
+    Screen_Win.Set_To_Screen (Console'Access);
     Background_Select := Con_Io.Color_Of ("Light_Grey");
   end Init;
 
@@ -132,16 +131,16 @@ package body Screen is
     if not Global_Win.Is_Open then
       Console.Reset_Term;
       -- Open windows
-      Global_Win := Console.Open ((1, 1), (23, 78)).all;
-      Color_Win := Console.Open ((Color_First_Row,  Color_First_Col),
-                                 (Color_Last_Row,   Color_Last_Col) ).all;
-      Help_Win := Console.Open ((4, Menu_First_Col),(Menu_Row-3, 76) ).all;
-      Menu_Win := Console.Open ((Menu_Row,  Menu_First_Col),
-                                (Menu_Row,  Menu_Last_Col) ).all;
-      Level_Win := Console.Open ((Menu_Row,  Level_First_Col),
-                                 (Menu_Row,  Level_Last_Col) ).all;
-      Exit_Win := Console.Open ((Menu_Row,  Exit_First_Col),
-                                (Menu_Row,  Exit_Last_Col) ).all;
+      Global_Win.Open (Console'Access, (1, 1), (23, 78));
+      Color_Win.Open (Console'Access, (Color_First_Row,  Color_First_Col),
+                                      (Color_Last_Row,   Color_Last_Col) );
+      Help_Win.Open (Console'Access, (4, Menu_First_Col),(Menu_Row-3, 76) );
+      Menu_Win.Open (Console'Access, (Menu_Row,  Menu_First_Col),
+                                     (Menu_Row,  Menu_Last_Col) );
+      Level_Win.Open (Console'Access, (Menu_Row,  Level_First_Col),
+                                      (Menu_Row,  Level_Last_Col) );
+      Exit_Win.Open (Console'Access, (Menu_Row,  Exit_First_Col),
+                                     (Menu_Row,  Exit_Last_Col) );
     else
       Secret_Win.Close;
       Propal_Win.Close;
@@ -155,12 +154,12 @@ package body Screen is
      - (Propal_Col_Width-1);
     Try_Last_Col := Try_First_Col + (Con_Io.Col_Range(Current_Level)-1);
 
-    Secret_Win := Console.Open ((1, Propal_First_Col),
-                                (1, Propal_Last_Col) ).all;
-    Propal_Win := Console.Open ((Propal_First_Row, Propal_First_Col),
-                                (Propal_Last_Row,  Propal_Last_Col) ).all;
-    Try_Win := Console.Open ((Propal_First_Row, Try_First_Col),
-                             (Propal_Last_Row,  Try_Last_Col) ).all;
+    Secret_Win.Open (Console'Access, (1, Propal_First_Col),
+                                     (1, Propal_Last_Col) );
+    Propal_Win.Open (Console'Access, (Propal_First_Row, Propal_First_Col),
+                                     (Propal_Last_Row,  Propal_Last_Col) );
+    Try_Win.Open (Console'Access, (Propal_First_Row, Try_First_Col),
+                                  (Propal_Last_Row,  Try_Last_Col) );
 
     -- Redraw and frames
     Screen_Win.Clear;

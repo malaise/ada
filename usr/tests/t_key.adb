@@ -1,7 +1,7 @@
 with Ada.Wide_Text_Io;
 with Con_Io, My_Io, Language;
 procedure T_Key is
-  Console : Con_Io.Console;
+  Console : aliased Con_Io.Console;
   Screen : Con_Io.Window;
 
   Got : Con_Io.Get_Result;
@@ -10,9 +10,9 @@ procedure T_Key is
   use type Con_Io.Curs_Mvt;
 begin
 
-  Console := Con_Io.Create (1);
+  Console.Open;
   Console.Reset_Term;
-  Screen := Console.Screen.all;
+  Screen.Set_To_Screen (Console'Unrestricted_Access);
   Screen.Set_Foreground (Con_Io.Color_Of("Black"));
   Screen.Set_Background (Con_Io.Color_Of("Light_Grey"));
   Screen.Clear;

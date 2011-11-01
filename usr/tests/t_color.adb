@@ -1,7 +1,7 @@
 with Ada.Text_Io;
 with Con_Io, Argument;
 procedure T_Color is
-  Console : Con_Io.Console;
+  Console : aliased Con_Io.Console;
   Screen : Con_Io.Window;
   Colors : Con_Io.Colors_Definition;
   Ic : Con_Io.Effective_Colors;
@@ -22,8 +22,8 @@ begin
   Con_Io.Set_Colors (Colors);
   Con_Io.Initialise;
 
-  Console := Con_Io.Create (1);
-  Screen := Console.Screen.all;
+  Console.Open;
+  Screen.Set_To_Screen (Console'Unrestricted_Access);
 
   loop
     Screen.Clear;
@@ -41,7 +41,7 @@ begin
   end loop;
   Ada.Text_Io.Put_Line ("Exiting in 1 s");
   delay 1.0;
-  Console.Destroy;
+  Console.Close;
   Ada.Text_Io.Put_Line ("Console destroyed");
 
 end T_Color;

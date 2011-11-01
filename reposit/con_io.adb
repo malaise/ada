@@ -123,6 +123,9 @@ package body Con_Io is
       end;
       X_Init_Done := True;
     end if;
+  exception
+    when others =>
+      raise Init_Failure;
   end Initialise;
 
   procedure Set_Colors (Color_Names : in Colors_Definition) is
@@ -172,19 +175,18 @@ package body Con_Io is
     end if;
   end Set_Attributes;
 
-  function Create (Font_No  : in Font_No_Range;
-                   Row_Last : in Row_Range := Def_Row_Last;
-                   Col_Last : in Col_Range := Def_Col_Last;
-                   Def_Fore : in Effective_Colors := Default_Foreground;
-                   Def_Back : in Effective_Colors := Default_Background;
-                   Def_Xor  : in Effective_Xor_Modes := Default_Xor_Mode)
-           return Console is
+  procedure Open (Con : in out Console;
+                  Font_No  : in Font_No_Range := 1;
+                  Row_Last : in Row_Range := Def_Row_Last;
+                  Col_Last : in Col_Range := Def_Col_Last;
+                  Def_Fore : in Effective_Colors := Default_Foreground;
+                  Def_Back : in Effective_Colors := Default_Background;
+                  Def_Xor  : in Effective_Xor_Modes := Default_Xor_Mode) is
     Line : X_Mng.Line_Definition_Rec := Line_Def;
     Con_Data : Console_Data;
-    Con : Console;
-    Screen : Window_Access;
+    Screen : Window;
   begin
-    Debug ("Console creation");
+    Debug ("Console opening");
     Initialise;
     Con_Data.Font_No := Font_No;
     Con_Data.Row_Range_Last := Row_Last;
@@ -211,47 +213,47 @@ package body Con_Io is
     -- Create console
     Con_Data.Initialised := True;
     Con.Init (Con_Data);
+    -- Create and store Screen window (access to Window in Windows)
+    Open (Screen, Con'Unrestricted_Access,
+         (Row_Range_First, Col_Range_First),
+         (Con_Data.Row_Range_Last, Con_Data.Col_Range_Last));
+    Con.Get_Access.Screen_Window := Window_Access(Windows.Access_Current);
+    -- Set ohysical attributes
     Set_Attributes (Con, Con_Data.Line_Foreground, Con_Data.Line_Background,
                     Con_Data.Line_Xor_Mode, Forced => True);
     Flush (Con);
-    -- Create and store Screen window (access to Window in Windows)
-    Screen := Open (Con,
-         (Row_Range_First, Col_Range_First),
-         (Con_Data.Row_Range_Last, Con_Data.Col_Range_Last));
-    Con.Get_Access.Screen_Window := Screen;
-    return Con;
   exception
     when others =>
       raise Init_Failure;
-  end Create;
+  end Open;
 
-  procedure Check_Init (Con : in Console) is
+  procedure Check_Con (Con : in Console) is
   begin
     if Con = Null_Console or else not Con.Get_Access.Initialised then
       raise Not_Init;
     end if;
-  end Check_Init;
+  end Check_Con;
 
-  procedure Destroy (Con : in out Console) is
+  procedure Close (Con : in out Console) is
   begin
     Debug ("Console destruction");
-    Check_Init (Con);
+    Check_Con (Con);
     Finalize (Con.Get_Access.all);
     -- Prevent double finalization
     Con.Get_Access.Initialised := False;
     Con := Null_Console;
-  end Destroy;
+  end Close;
 
-  function Is_Init (Con : Console) return Boolean is
+  function Is_Open (Con : Console) return Boolean is
   begin
     return Con /= Null_Console and then Con.Get_Access.Initialised;
-  end Is_Init;
+  end Is_Open;
 
   -- Suspend and resume con_io
   procedure Suspend (Con : in Console) is
   begin
     Debug ("Console suspension");
-    Check_Init (Con);
+    Check_Con (Con);
     -- Clear window and suspend
     Reset_Term (Con);
     X_Mng.X_Suspend (Con.Get_Access.Id);
@@ -260,59 +262,59 @@ package body Con_Io is
   procedure Resume (Con : in Console) is
   begin
     Debug ("Console resume");
-    Check_Init (Con);
+    Check_Con (Con);
     -- Resume
     X_Mng.X_Resume (Con.Get_Access.Id);
   end Resume;
 
   function Is_Suspended (Con : Console) return Boolean is
   begin
-    Check_Init (Con);
+    Check_Con (Con);
     return X_Mng.X_Is_Suspended (Con.Get_Access.Id);
   end Is_Suspended;
 
   -- Get colors of Console
   function Foreground (Con : Console) return Effective_Colors is
   begin
-    Check_Init (Con);
+    Check_Con (Con);
     return Con.Get_Access.Line_Foreground;
   end Foreground;
 
   function Background (Con : Console) return Effective_Colors is
   begin
-    Check_Init (Con);
+    Check_Con (Con);
     return Con.Get_Access.Line_Background;
   end Background;
 
   function Xor_Mode   (Con : Console) return Effective_Xor_Modes is
   begin
-    Check_Init (Con);
+    Check_Con (Con);
     return Con.Get_Access.Line_Xor_Mode;
   end Xor_Mode;
 
   -- Get geometry
   function Row_Range_Last  (Con : Console) return Row_Range is
   begin
-    Check_Init (Con);
+    Check_Con (Con);
     return Con.Get_Access.Row_Range_Last;
   end Row_Range_Last;
 
   function Col_Range_Last  (Con : Console) return Row_Range is
   begin
-    Check_Init (Con);
+    Check_Con (Con);
     return Con.Get_Access.Col_Range_Last;
   end Col_Range_Last;
 
   -- Flushes X
   procedure Flush (Con : in Console) is
   begin
-    Check_Init (Con);
+    Check_Con (Con);
     X_Mng.X_Flush (Con.Get_Access.Id);
   end Flush;
 
   procedure Bell (Con : in Console; Repeat : in Positive := 1) is
   begin
-    Check_Init (Con);
+    Check_Con (Con);
     if Repeat in X_Mng.Bell_Repeat then
       X_Mng.X_Bell (Con.Get_Access.Id, Repeat);
     else
@@ -325,7 +327,7 @@ package body Con_Io is
     Acc : access Console_Data;
   begin
     Debug ("Console reset term");
-    Check_Init (Con);
+    Check_Con (Con);
     Acc := Con.Get_Access;
     X_Mng.X_Clear_Line (Acc.Id);
     -- Set current attributes in cache
@@ -334,35 +336,37 @@ package body Con_Io is
   end Reset_Term;
 
   -- Screen characteristics
-  function Screen (Con : Console) return Window_Access is
-  begin
-    Check_Init (Con);
-    return Con.Get_Access.Screen_Window;
-  end Screen;
-
-  function Screen (Con : Console_Access) return Window is
+  function Get_Screen (Con : Console_Access) return Window is
   begin
     if Con = null then
       raise Not_Init;
     end if;
-    return Screen (Con.all).all;
-  end Screen;
+    Check_Con (Con.all);
+    return Con.all.Get_Access.Screen_Window.all;
+  end Get_Screen;
+
+  procedure Set_To_Screen (Name : in out Window; Con : in Console_Access) is
+  begin
+    Name := Get_Screen (Con);
+  end Set_To_Screen;
 
   -- Open a window
-  function Open (Con                     : Console;
-                 Upper_Left, Lower_Right : in Square) return Window_Access is
+  procedure Open (Name : in out Window; Con : in Console_Access;
+                 Upper_Left, Lower_Right : in Square) is
     Win_Data : Window_Data;
-    Win : Window;
     Acc : access Console_Data;
   begin
     Debug ("Window opening");
-    Check_Init (Con);
-    Acc := Con.Get_Access;
+    if Con = null then
+      raise Not_Init;
+    end if;
+    Check_Con (Con.all);
+    Acc := Con.all.Get_Access;
     if Upper_Left.Row > Lower_Right.Row or else
        Upper_Left.Col > Lower_Right.Col then
       raise Invalid_Square;
     end if;
-    Win_Data.Con := Con;
+    Win_Data.Con := Con.all;
     Win_Data.Open := True;
     Win_Data.Upper_Left := Upper_Left;
     Win_Data.Lower_Right := Lower_Right;
@@ -370,21 +374,11 @@ package body Con_Io is
     Win_Data.Current_Foreground := Acc.Line_Foreground;
     Win_Data.Current_Background := Acc.Line_Background;
     Win_Data.Current_Xor_Mode   := Acc.Line_Xor_Mode;
-    Win.Init (Win_Data);
-    Windows.Insert ( (Win) );
-    return Window_Access (Windows.Access_Current);
+    Name.Init (Win_Data);
+    Windows.Insert ( (Name) );
   exception
     when Constraint_Error =>
       raise Invalid_Square;
-  end Open;
-
-  function Open (Con                     : Console_Access;
-                 Upper_Left, Lower_Right : in Square) return Window is
-  begin
-    if Con = null then
-      raise Not_Init;
-    end if;
-    return Open (Con.all, Upper_Left, Lower_Right).all;
   end Open;
 
   procedure Check_Win (Name : in Window) is
@@ -868,7 +862,7 @@ package body Con_Io is
   -- Set/reset the selection to be transfered to other applications
   procedure Set_Selection (Con : in Console; Selection : in String) is
   begin
-    Check_Init (Con);
+    Check_Con (Con);
     if Selection = "" then
       X_Mng.X_Reset_Selection (Con.Get_Access.Id);
     else
@@ -880,14 +874,14 @@ package body Con_Io is
   --  kind Selection will be received, then Get_Selection shall be called
   procedure Request_Selection (Con : in Console) is
   begin
-    Check_Init (Con);
+    Check_Con (Con);
     X_Mng.X_Request_Selection (Con.Get_Access.Id);
   end Request_Selection;
 
   -- Get the requested selection
   function Get_Selection (Con : Console; Max_Len : Natural) return String is
   begin
-    Check_Init (Con);
+    Check_Con (Con);
     return X_Mng.X_Get_Selection (Con.Get_Access.Id, Max_Len);
   exception
     when X_Mng.X_Failure =>
@@ -1562,7 +1556,7 @@ package body Con_Io is
     Pos  : Positive;
     Ins  : Boolean;
   begin
-    Check_Init (Con);
+    Check_Con (Con);
     loop
       -- Str is empty so no echo at all
       Get (Con.Get_Access.Screen_Window.all, Str, Last, Stat, Pos, Ins);
@@ -1572,32 +1566,32 @@ package body Con_Io is
 
   function X_Max (Con : Console) return X_Range is
   begin
-    Check_Init (Con);
+    Check_Con (Con);
     return Con.Get_Access.X_Max;
   end X_Max;
 
   function Y_Max (Con : Console) return Y_Range is
   begin
-    Check_Init (Con);
+    Check_Con (Con);
     return Con.Get_Access.Y_Max;
   end Y_Max;
 
   -- Font characteristics
   function Font_Width (Con : Console) return Natural is
   begin
-    Check_Init (Con);
+    Check_Con (Con);
     return Con.Get_Access.Font_Width;
   end Font_Width;
 
   function Font_Height (Con : Console) return Natural is
   begin
-    Check_Init (Con);
+    Check_Con (Con);
     return Con.Get_Access.Font_Height;
   end Font_Height;
 
   function Font_Offset (Con : Console) return Natural is
   begin
-    Check_Init (Con);
+    Check_Con (Con);
     return Con.Get_Access.Font_Offset;
   end Font_Offset;
 
@@ -1617,7 +1611,7 @@ package body Con_Io is
                  Y   : in Y_Range) is
     Acc : access Console_Data;
   begin
-    Check_Init (Con);
+    Check_Con (Con);
     Acc := Con.Get_Access;
     Set_Screen_Attributes (Con);
     X_Mng.X_Put_Char_Pixels (Acc.Id,
@@ -1632,7 +1626,7 @@ package body Con_Io is
     Ly : Y_Range;
     Acc : access Console_Data;
   begin
-    Check_Init (Con);
+    Check_Con (Con);
     Acc := Con.Get_Access;
     Set_Screen_Attributes (Con);
     Lx := X;
@@ -1649,7 +1643,7 @@ package body Con_Io is
                         Y   : in Y_Range) is
     Acc : access Console_Data;
   begin
-    Check_Init (Con);
+    Check_Con (Con);
     Acc := Con.Get_Access;
     Set_Screen_Attributes (Con);
     X_Mng.X_Draw_Point (Acc.Id, X, Acc.Y_Max - Y);
@@ -1662,7 +1656,7 @@ package body Con_Io is
                        Y2  : in Y_Range) is
     Acc : access Console_Data;
   begin
-    Check_Init (Con);
+    Check_Con (Con);
     Acc := Con.Get_Access;
     Set_Screen_Attributes (Con);
     X_Mng.X_Draw_Line (Acc.Id, X1, Acc.Y_Max - Y1, X2, Acc.Y_Max - Y2);
@@ -1675,7 +1669,7 @@ package body Con_Io is
                             Y2  : in Y_Range) is
     Acc : access Console_Data;
   begin
-    Check_Init (Con);
+    Check_Con (Con);
     Acc := Con.Get_Access;
     Set_Screen_Attributes (Con);
     X_Mng.X_Draw_Rectangle (Acc.Id, X1, Acc.Y_Max - Y1, X2, Acc.Y_Max - Y2);
@@ -1688,7 +1682,7 @@ package body Con_Io is
                             Y2  : in Y_Range) is
     Acc : access Console_Data;
   begin
-    Check_Init (Con);
+    Check_Con (Con);
     Acc := Con.Get_Access;
     Set_Screen_Attributes (Con);
     X_Mng.X_Fill_Rectangle (Acc.Id, X1, Acc.Y_Max - Y1, X2, Acc.Y_Max - Y2);
@@ -1700,7 +1694,7 @@ package body Con_Io is
                         Points        : in Byte_Array) is
     Acc : access Console_Data;
   begin
-    Check_Init (Con);
+    Check_Con (Con);
     Acc := Con.Get_Access;
     Set_Screen_Attributes (Con);
     X_Mng.X_Draw_Points (Acc.Id, X, Acc.Y_Max - Y, Width, Height, Points);
@@ -1711,7 +1705,7 @@ package body Con_Io is
     Y : Boolean;
     Acc : access Console_Data;
   begin
-    Check_Init (Con);
+    Check_Con (Con);
     Acc := Con.Get_Access;
     Set_Screen_Attributes (Con);
     -- Fix the Ys, each second index of Xys
@@ -1733,7 +1727,7 @@ package body Con_Io is
     Acc : access Console_Data;
   begin
     Valid := False;
-    Check_Init (Con);
+    Check_Con (Con);
     Acc := Con.Get_Access;
     Set_Screen_Attributes (Con);
     X_Mng.X_Get_Current_Pointer_Position (Acc.Id, Lx, Ly);
@@ -1752,7 +1746,7 @@ package body Con_Io is
                                   Motion_Enabled : in Boolean) is
     Acc : access Console_Data;
   begin
-    Check_Init (Con);
+    Check_Con (Con);
     Acc := Con.Get_Access;
     if Motion_Enabled /= Acc.Motion_Enabling then
       X_Mng.X_Enable_Motion_Events (Acc.Id, Motion_Enabled);
@@ -1765,7 +1759,7 @@ package body Con_Io is
                                Pointer_Shape : in Pointer_Shape_List;
                                Grab          : in Boolean) is
   begin
-    Check_Init (Con);
+    Check_Con (Con);
     if Pointer_Shape = None then
       X_Mng.X_Hide_Graphic_Pointer(Con.Get_Access.Id, Grab);
     else
@@ -1786,7 +1780,7 @@ package body Con_Io is
     use X_Mng;
     Acc : access Console_Data;
   begin
-    Check_Init (Con);
+    Check_Con (Con);
     Acc := Con.Get_Access;
 
     -- Init result : Press not valid

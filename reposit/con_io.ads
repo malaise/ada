@@ -64,7 +64,7 @@ package Con_Io is
   -- Color_Of raises Unknown_Color if this color is not found
   Unknown_Color : exception;
 
-  -- Set colors to specific values
+  -- Set colors to specific values, before initialisation
   procedure Set_Colors (Color_Names : in Colors_Definition);
 
   -- Color <-> Name
@@ -83,36 +83,35 @@ package Con_Io is
 
   -- Can be called to initialise the consoles manager
   -- If not called, this init will be called together with first console
-  --  initialisation and with default colors
+  --  opening and with default colors
   procedure Initialise;
 
   -- One console
   type Console is tagged private;
   type Console_Access is access all Console;
 
-  -- Has to be called to initialize a console, which appears on screen
-  -- Should be called prior any action on the console
-  -- Screen window is created with atrtibutes of Console
-  -- May raise Already_Init be called several times (no effect)
-  function Create (Font_No  : in Font_No_Range;
-                   Row_Last : in Row_Range := Def_Row_Last;
-                   Col_Last : in Col_Range := Def_Col_Last;
-                   Def_Fore : in Effective_Colors := Default_Foreground;
-                   Def_Back : in Effective_Colors := Default_Background;
-                   Def_Xor  : in Effective_Xor_Modes := Default_Xor_Mode)
-           return Console;
+  -- Open a console, which appears on screen
+  -- Shall be called prior any action on the console
+  -- Screen window is created with the attributes of the Console
+  procedure Open (Con : in out Console;
+                  Font_No  : in Font_No_Range := 1;
+                  Row_Last : in Row_Range := Def_Row_Last;
+                  Col_Last : in Col_Range := Def_Col_Last;
+                  Def_Fore : in Effective_Colors := Default_Foreground;
+                  Def_Back : in Effective_Colors := Default_Background;
+                  Def_Xor  : in Effective_Xor_Modes := Default_Xor_Mode);
 
   -- To be called to close the console
-  procedure Destroy (Con : in out Console);
+  procedure Close (Con : in out Console);
 
-  -- Is a console initialised
-  function Is_Init (Con : Console) return Boolean;
+  -- Is a console open
+  function Is_Open (Con : Console) return Boolean;
 
   -- Suspend and resume a console
-  -- If a program wants to open several con_io, there are two options:
+  -- If a program wants to open several consoles, there are two options:
   -- - One task per console, each task calls *Get and receives its
   --   events
-  -- - One taks (or main) opens several consoels but only one is active at a
+  -- - One taks (or main) opens several consoles but only one is active at a
   --   time. In this case the program must suspend and not use the previous
   --   console, then open and use the new console, then close the new console
   --   then resume and use the first console.
@@ -130,10 +129,10 @@ package Con_Io is
   function Col_Range_Last  (Con : Console) return Col_Range;
 
 
-  -- Flushes data to the console
+  -- Flush data to the console
   procedure Flush (Con : in Console);
 
-  -- Rings a bell
+  -- Ring a bell
   procedure Bell (Con : in Console; Repeat : in Positive := 1);
 
   -- Clear screen, and reset keyboard
@@ -148,17 +147,15 @@ package Con_Io is
   subtype Natural_Array is X_Mng.Natural_Array;
 
   -- The window which is screen (always open)
-  function Screen (Con : Console) return Window_Access;
-  function Screen (Con : Console_Access) return Window;
+  function Get_Screen (Con : Console_Access) return Window;
+  procedure Set_To_Screen (Name : in out Window; Con : in Console_Access);
 
   -- Open a window (screen is always open) with Console attributes
-  function Open (Con                     : Console;
-                 Upper_Left, Lower_Right : in Square) return Window_Access;
-  function Open (Con                     : Console_Access;
-                 Upper_Left, Lower_Right : in Square) return Window;
+  procedure Open (Name : in out Window; Con : in Console_Access;
+                  Upper_Left, Lower_Right : in Square);
 
   -- Make window re-usable (have to re_open it)
-  -- Screen cannot be closed (raises Closing_Screen);
+  -- Screen cannot be closed (raises Closing_Screen)
   procedure Close (Name : in out Window);
 
   -- Is a window open
@@ -194,18 +191,18 @@ package Con_Io is
   function Row_Range_Last  (Name : Window) return Row_Range;
   function Col_Range_Last  (Name : Window) return Col_Range;
 
-  -- True if the absolute square (relative to screen) is in the window.
+  -- Return True if the absolute square (relative to screen) is in the window.
   -- False otherwise
   function In_Window (Name            : Window;
                       Absolute_Square : Square) return Boolean;
 
-  -- Returns the relative square (relative to window), being the same
+  -- Return the relative square (relative to window), being the same
   --  physical position as the absolute square (relative to screen).
   -- May raise Invalid_Square if the absolute position is not in window.
   function To_Relative (Name            : Window;
                         Absolute_Square : Square) return Square;
 
-  -- Returns the absolute square (in screen) corresponding to the relative
+  -- Return the absolute square (in screen) corresponding to the relative
   --  square in the window
   -- May raise Invalid_Square if the relative square is not in window
   function To_Absolute (Name            : Window;
@@ -221,7 +218,7 @@ package Con_Io is
   function Position (Name : Window) return Square;
 
 
-  -- Writes a character at the current cursor position and with the
+  -- Write a character at the current cursor position and with the
   --  curent attributes. Position can be set by using move.
   -- Lf is the only special Ascii character which is interpreted.
   -- If not Move, the cursor position is not updated
@@ -241,7 +238,7 @@ package Con_Io is
                  Background : in Colors := Current;
                  Move       : in Boolean := True);
 
-  -- Idem but appends a Lf
+  -- Idem but append a Lf
   procedure Put_Line (Name       : in Window;
                       S          : in String;
                       Foreground : in Colors := Current;
@@ -261,7 +258,7 @@ package Con_Io is
                   Background : in Colors := Current;
                   Move       : in Boolean := True);
 
-  -- Idem but appends a Lf
+  -- Idem but append a Lf
   procedure Putw_Line (Name       : in Window;
                        S          : in Wide_String;
                        Foreground : in Colors := Current;
@@ -281,12 +278,12 @@ package Con_Io is
                   Background : in Colors := Current;
                   Move       : in Boolean := True);
 
-  -- Idem but appends a Lf
+  -- Idem but append a Lf
   procedure Putu_Line (Name       : in Window;
                        S          : in Unicode_Sequence;
                        Foreground : in Colors := Current;
                        Background : in Colors := Current);
-  -- Puts Lf
+  -- Put Lf
   procedure New_Line (Name   : in Window;
                       Number : in Positive := 1);
 
@@ -312,7 +309,7 @@ package Con_Io is
   Infinite_Delay : constant Delay_Rec := Timers.Infinite_Delay;
 
 
-  -- Gets a string of at most width put characters. Width is deduced from
+  -- Get a string of at most width put characters. Width is deduced from
   --  the size to put initial string.
   -- The string must be short enought to be put in 1 line at current position
   --  in the window.
@@ -533,9 +530,9 @@ package Con_Io is
       Mouse_Event : out Mouse_Event_Rec;
       Coordinate_Mode : in Coordinate_Mode_List := Row_Col);
 
-  -- Failure when initialising the Console
+  -- Failure when initialising the Con_Io or openging a Console
   Init_Failure : exception;
-  -- Failure when allocating data for window
+  -- Failure when opening a window
   Open_Failure        : exception;
   -- Position out of screen (or out of window)
   Invalid_Square      : exception;

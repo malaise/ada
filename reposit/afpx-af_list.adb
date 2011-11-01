@@ -25,9 +25,9 @@ package body Af_List is
     Modified := True;
     -- Check there is a window in the dscr
     if Af_Dscr.Fields(Lfn).Kind = Afpx_Typ.Button then
-      List_Window := Console.Open (
+      List_Window.Open (Console'Access,
                    Af_Dscr.Fields(Lfn).Upper_Left,
-                   Af_Dscr.Fields(Lfn).Lower_Right).all;
+                   Af_Dscr.Fields(Lfn).Lower_Right);
       Opened := True;
     else
       Opened := False;

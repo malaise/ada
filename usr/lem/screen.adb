@@ -18,7 +18,7 @@ package body Screen is
   Do_Put_Gauges : Boolean;
 
   -- Console and screen
-  Console : Con_Io.Console;
+  Console : aliased Con_Io.Console;
   Screen : Con_Io.Window;
 
   -- First and Last X on screen for space
@@ -88,7 +88,7 @@ package body Screen is
   -- Close (definitively)
   procedure Close is
   begin
-    Console.Destroy;
+    Console.Close;
   end Close;
 
   -- Pointer grabbing switch
@@ -99,9 +99,9 @@ package body Screen is
     use type My_Math.Real;
   begin
     -- Reset screen and hide mouse
-    if not Console.Is_Init then
-      Console := Con_Io.Create (1, Def_Back => Con_Io.Color_Of ("Black"));
-      Screen := Console.Screen.all;
+    if not Console.Is_Open then
+      Console.Open (Def_Back => Con_Io.Color_Of ("Black"));
+      Screen.Set_To_Screen (Console'Access);
     end if;
     Console.Reset_Term;
     Screen.Clear;

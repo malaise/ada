@@ -5,7 +5,7 @@ use Pers_Def;
 package body Mesu_Gra is
   use My_Math;
 
-  Console : Con_Io.Console;
+  Console : aliased Con_Io.Console;
   Screen : Con_Io.Window;
 
   -- X and Y first and last, in screen and reality
@@ -360,8 +360,8 @@ package body Mesu_Gra is
     -- Here we only use Afpx.Line_List, no pb to suspend for
     --  a Con_Io
     Afpx.Suspend;
-    Console := Con_Io.Create (1, Def_Back => Con_Io.Color_Of ("Black"));
-    Screen := Console.Screen.all;
+    Console.Open (1, Def_Back => Con_Io.Color_Of ("Black"));
+    Screen.Set_To_Screen (Console'Access);
 
     -- Screen scale
     Xs_First := 4 * Console.Font_Width;
@@ -549,14 +549,14 @@ package body Mesu_Gra is
     -- Back to text mode
     Console.Reset_Term;
     -- Close Con_Io and restore Afpx
-    Console.Destroy;
+    Console.Close;
     Afpx.Resume;
   exception
     when Error:others =>
       Ada.Text_Io.Put_Line ("Exception "
        & Ada.Exceptions.Exception_Name (Error) & " raised.");
-      if Console.Is_Init then
-        Console.Destroy;
+      if Console.Is_Open then
+        Console.Close;
       end if;
       Afpx.Resume;
   end Graphic;

@@ -77,8 +77,8 @@ package Event_Mng is
   --   using this function
   -- * X11 programs shall use the X waiting point (X_Wait_Event/Put_Then_Get)
   --   instead. If they really need to use Wait, they shall Suspend ALL the X
-  --   objects (X_Line/Con_Io/Afpx) before calling it, then Resume the X
-  --   objects after it retruns.
+  --   objects (X_Line/Con_Io/Afpx) before calling Wait, then Resume the X
+  --   objects after it returns.
   --
   -- Wait until a Terminate_Sig or Child_Sig with a callback set,
   --   or until a Dummy_Sig,

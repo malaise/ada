@@ -7,7 +7,7 @@ package body Sok_Display is
   Len_Moves  : constant := 5;
   Len_Days   : constant := 3;
 
-  Console : Con_Io.Console;
+  Console : aliased Con_Io.Console;
   Screen_Win : Con_Io.Window;
 
   Title_Win : Con_Io.Window;
@@ -28,39 +28,38 @@ package body Sok_Display is
   procedure Init is
   begin
     Black := Con_Io.Color_Of ("Black");
-    Console := Con_Io.Create (Font_No => 1,
-                              Def_Back => Black);
-    Screen_Win := Console.Screen.all;
+    Console.Open (Def_Back => Black);
+    Screen_Win.Set_To_Screen (Console'Access);
     Console.Reset_Term;
     Screen_Win.Clear;
 
     -- Title      : row 00 to 00 col 00 to 57 (01 row, 57 col)
-    Title_Win := Console.Open ((00, 00), (00, 55) ).all;
+    Title_Win.Open (Console'Access, (00, 00), (00, 55) );
 
     -- Time zone  : row 00 to 00 col 57 to 76 (01 row 20 col)
-    Time_Win := Console.Open ((00, 57), (00, 76) ).all;
+    Time_Win.Open (Console'Access, (00, 57), (00, 76) );
 
     -- Frame      : row 02 to 17 col 05 to 42 (16 row 38 col) (38=19*2)
-    Frame_Win := Console.Open ((02, 05), (17, 42) ).all;
+    Frame_Win.Open (Console'Access, (02, 05), (17, 42) );
 
     -- State line : row 20 to 20 col 10 to 75 (01 row 66 col)
-    Line_Win := Console.Open ((20, 10), (20, 75) ).all;
+    Line_Win.Open (Console'Access, (20, 10), (20, 75) );
 
     -- Score line : row 21 to 20 col 10 to 75 (01 row 66 col)
-    Score_Win := Console.Open ((21, 10), (21, 75) ).all;
+    Score_Win.Open (Console'Access, (21, 10), (21, 75) );
 
     -- Help beside: row 05 to 15 col 55 to 77 (left to frame)
-    Help_Win := Console.Open ((05, 55), (15, 77) ).all;
+    Help_Win.Open (Console'Access, (05, 55), (15, 77) );
     Help_Win.Set_Foreground (Con_Io.Color_Of ("Lime_Green"));
 
     -- Menu       : row 19 to 21 col 02 to 79 (bottom)
-    Menu_Win := Console.Open ((19, 00), (21, 79) ).all;
+    Menu_Win.Open (Console'Access, (19, 00), (21, 79) );
 
     -- Error      : row 19 to 21 col 02 to 79 (bottom)
-    Error_Win := Console.Open ((19, 00), (21, 79) ).all;
+    Error_Win.Open (Console'Access, (19, 00), (21, 79) );
 
     -- Get        : row 22 to 25 col 19 to 59 (bottom)
-    Get_Win := Console.Open ((22, 19), (24, 59) ).all;
+    Get_Win.Open (Console'Access, (22, 19), (24, 59) );
 
   end Init;
 

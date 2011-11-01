@@ -114,7 +114,7 @@ Decode Unix file access flags.
 Store the content of file (1 word per line) in a hashed dynlist.
 @item forker (2)
 API to a standalone (in C) forker process.
-@item generic_con_io con_io big_con_io (3)
+@item con_io (3)
 Console IOs (keyboard, mouse, screen) in text and graphic.
 @item get_float (1)
 Get a float or int from a string.

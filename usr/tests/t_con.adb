@@ -16,7 +16,7 @@ procedure T_Con is
 
   task body Task_T is
 
-    Console : Con_Io.Console;
+    Console : aliased Con_Io.Console;
 
     Me : Positive;
 
@@ -71,21 +71,21 @@ procedure T_Con is
     end;
     accept Start(I : in Positive) do
       Me := I;
-      Console := Con_Io.Create (1);
+      Console.Open;
     end Start;
 
     Console.Reset_Term;
     Console.Enable_Motion_Events(True);
     -- fenetre de saisie, fenetre d'affichage
-    W1 := Console.Open ( ( 5, 15), (10, 78)).all;
+    W1.Open (Console'Unrestricted_Access, ( 5, 15), (10, 78));
     W1.Set_Foreground (Con_Io.Color_Of ("Light_Blue"));
     W1.Set_Background (Con_Io.Color_Of ("Blue"));
 
-    W2 := Console.Open ( (15,  1), (17, 78)).all;
+    W2.Open (Console'Unrestricted_Access, (15,  1), (17, 78));
     W2.Set_Foreground (Con_Io.Color_Of ("Cyan"));
     W2.Set_Background (Con_Io.Color_Of ("Red"));
 
-    W3 := Console.Open ( (20,  0), (20, 9)).all;
+    W3.Open (Console'Unrestricted_Access, (20,  0), (20, 9));
     W3.Set_Foreground (Con_Io.Color_Of ("Lime_Green"));
     W3.Set_Background (Con_Io.Color_Of ("Dark_Green"));
 
@@ -184,12 +184,12 @@ procedure T_Con is
           Delay_Seconds => 3.0) );
     end loop;
 
-    Console.Destroy;
+    Console.Close;
     delay 3.0;
 
-    Console := Con_Io.Create (1);
+    Console.Open;
     delay 2.0;
-    Console.Destroy;
+    Console.Close;
     delay 1.0;
 
     My_Io.Put_Line (Me'Img & " Terminated");

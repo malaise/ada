@@ -248,18 +248,18 @@ package body Afpx is
       -- If necessary, Set the colors when using the first descriptor
       Con_Io.Set_Colors (Afpx_Typ.To_Def (Af_Dscr.Current_Dscr.Colors));
     end if;
-    if not Console.Is_Init then
+    if not Console.Is_Open then
       -- Done only once at first dsescriptor
       Con_Io.Initialise;
       Size := Af_Dscr.Load_Size;
       Initialised := True;
       -- Create console and screen
-      Console := Con_Io.Create (
+      Console.Open (
               Font_No => 1,
               Row_Last => Size.Row,
               Col_Last => Size.Col,
               Def_Back => (Af_Dscr.Current_Dscr.Background));
-      Af_Con_Io := Console.Screen.all;
+      Af_Con_Io.Set_To_Screen (Console'Access);
     end if;
     -- Done at each descriptor
     Af_List.Open;
@@ -281,7 +281,7 @@ package body Afpx is
   procedure Release_Descriptor is
   begin
     Af_Dscr.Check;
-    Console.Destroy;
+    Console.Close;
     Af_Dscr.Release_Dscr;
   end Release_Descriptor;
 

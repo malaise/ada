@@ -11,7 +11,7 @@ package body Sok_Input is
 
   Mouse_Event : Mouse_Event_Rec;
   No_Event : constant Mouse_Event_Rec := Mouse_Event;
-  Console : Con_Io.Console;
+  Console : aliased Con_Io.Console;
   Screen : Con_Io.Window;
 
   function Get_Key return Key_List is
@@ -23,9 +23,9 @@ package body Sok_Input is
 
     use Con_Io;
   begin
-    if not Console.Is_Init then
+    if not Console.Is_Open then
       Console := Sok_Display.Get_Console;
-      Screen := Console.Screen.all;
+      Screen.Set_To_Screen (Console'Access);
     end if;
     Mouse_Event := No_Event;
     loop
@@ -109,9 +109,9 @@ package body Sok_Input is
 
     use Con_Io;
   begin
-    if not Console.Is_Init then
+    if not Console.Is_Open then
       Console := Sok_Display.Get_Console;
-      Screen := Console.Screen.all;
+      Screen.Set_To_Screen (Console'Access);
     end if;
     Mouse_Event := No_Event;
     loop

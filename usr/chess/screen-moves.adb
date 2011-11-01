@@ -86,7 +86,7 @@ package body Moves is
   begin
     -- First call: init
     if not Move_Window.Is_Open then
-      Move_Window := Console.Open (Upper_Left, Lower_Right).all;
+      Move_Window.Open (Console'Access, Upper_Left, Lower_Right);
       Move_Window.Set_Background (Main_Back);
       Move_No := 1;
     end if;

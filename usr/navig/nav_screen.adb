@@ -2,7 +2,7 @@
 with Timers, Language;
 package body Nav_Screen is
 
-  Console : Con_Io.Console;
+  Console : aliased Con_Io.Console;
 
   -- The 8 needed windows
   W_Title, W_Mask, W_Get, W_Res, W_Act, W_Err, W_Help, W_Time : Con_Io.Window;
@@ -43,17 +43,16 @@ package body Nav_Screen is
   -- Clear all the screen
   procedure Reset is
   begin
-    if not Console.Is_Init then
-      Console := Con_Io.Create (Font_No => 1,
-                                Def_Back => Con_Io.Color_Of ("Black"));
-      W_Title := Console.Open (( 0,  0), ( 7, 79)).all;
-      W_Mask := Console.Open (( 8,  0), (22, 79)).all;
-      W_Help := Console.Open (( 8,  0), (22, 79)).all;
-      W_Get := Console.Open ((11, Col_Get), (20, Col_Get + 7)).all;
-      W_Res := Console.Open ((11, Col_Res), (20, Col_Res + 7)).all;
-      W_Act := Console.Open ((22,  0), (22, 79)).all;
-      W_Err := Console.Open ((24,  2), (24, 79)).all;
-      W_Time := Console.Open (( 0, 60), ( 0, 79)).all;
+    if not Console.Is_Open then
+      Console.Open (Def_Back => Con_Io.Color_Of ("Black"));
+      W_Title.Open (Console'Access, ( 0,  0), ( 7, 79));
+      W_Mask.Open (Console'Access, ( 8,  0), (22, 79));
+      W_Help.Open (Console'Access, ( 8,  0), (22, 79));
+      W_Get.Open (Console'Access, (11, Col_Get), (20, Col_Get + 7));
+      W_Res.Open (Console'Access, (11, Col_Res), (20, Col_Res + 7));
+      W_Act.Open (Console'Access, (22,  0), (22, 79));
+      W_Err.Open (Console'Access, (24,  2), (24, 79));
+      W_Time.Open (Console'Access, ( 0, 60), ( 0, 79));
       W_Get.Set_Background (Get_Back);
       W_Act.Set_Background (Get_Back);
       W_Res.Set_Foreground (Res_Fore);

@@ -5,7 +5,7 @@ package Screen is
   -------------------
   -- GLOBAL SCREEN --
   -------------------
-  Console : Con_Io.Console;
+  Console : aliased Con_Io.Console;
   -- Global init (of colors)
   procedure Init;
   -- Init the screen

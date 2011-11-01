@@ -10,7 +10,7 @@ package body Screen is
   -- Graphic_Mode : constant Boolean := False;
   Graphic_Mode : constant Boolean := True;
 
-  Console : Con_Io.Console;
+  Console : aliased Con_Io.Console;
   Screen : Con_Io.Window;
 
   -- Are we waiting for promotion selection
@@ -135,11 +135,11 @@ package body Screen is
   -- Redisplay the board
   procedure Display_Board (Color : in Space.Color_List) is
   begin
-    if not Console.Is_Init then
-      Console := Con_Io.Create (Font_No => 2,
-                                Def_Fore => Main_Fore,
-                                Def_Back => Main_Back);
-      Screen := Console.Screen.all;
+    if not Console.Is_Open then
+      Console.Open (Font_No => 2,
+                    Def_Fore => Main_Fore,
+                    Def_Back => Main_Back);
+      Screen.Set_To_Screen (Console'Access);
     end if;
     Init_Board (Color);
     for Row in Space.Row_Range loop
@@ -514,7 +514,7 @@ package body Screen is
 
   procedure Close is
   begin
-    Console.Destroy;
+    Console.Close;
   end Close;
 
 end Screen;

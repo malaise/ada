@@ -11,15 +11,15 @@ package body Curve is
   -- Init Cur_Con_Io and Screen if necessary
   procedure Init is
   begin
-    if Cur_Con_Io.Is_Init then
+    if Cur_Con_Io.Is_Open then
       return;
     end if;
-    Cur_Con_Io := Con_Io.Create (Font_No => 1,
-                                 Row_Last => 45,
-                                 Col_Last => 76,
-                                 Def_Back => Con_Io.Color_Of ("Black"),
-                                 Def_Xor => Con_Io.Xor_On);
-    Screen := Cur_Con_Io.Screen.all;
+    Cur_Con_Io.Open (Font_No => 1,
+                     Row_Last => 45,
+                     Col_Last => 76,
+                     Def_Back => Con_Io.Color_Of ("Black"),
+                     Def_Xor => Con_Io.Xor_On);
+    Screen.Set_To_Screen (Cur_Con_Io'Access);
   end Init;
 
   -- Find lowest and greatest X of points
@@ -1129,7 +1129,7 @@ package body Curve is
 
       if not Draw_Result then
         -- Exit drawings
-        Cur_Con_Io.Destroy;
+        Cur_Con_Io.Close;
         exit;
       else
         -- New drawing : clear graphic
@@ -1142,7 +1142,7 @@ package body Curve is
   exception
     when others =>
       begin
-        Cur_Con_Io.Destroy;
+        Cur_Con_Io.Close;
       exception
         when others => null;
       end;
@@ -1160,7 +1160,7 @@ package body Curve is
 
   procedure Destroy is
   begin
-    Cur_Con_Io.Destroy;
+    Cur_Con_Io.Close;
   exception
     when others =>
       null;

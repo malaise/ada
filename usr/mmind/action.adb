@@ -51,7 +51,7 @@ package body Action is
   function Play return Boolean is
     Clicked : Boolean := False;
     Go_On, Exit_Game : Boolean;
-    Scr : constant Con_Io.Window := Screen.Console.Screen.all;
+    Scr : constant Con_Io.Window := Con_Io.Get_Screen (Screen.Console'Access);
   begin
 
     -- Start new game - playing
