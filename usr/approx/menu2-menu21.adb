@@ -62,6 +62,7 @@ package body Menu21 is
   procedure Set_Bounds (Scale : in Curve.T_Scale;
                         Compute_X : in Boolean := False) is
     Loc_Bounds : Curve.T_Boundaries(Scale);
+    The_Y_Bounds_Set : Boolean;
     Set : Boolean;
     use Curve;
   begin
@@ -75,28 +76,57 @@ package body Menu21 is
       Curve.X_Boundaries(Points.P_The_Points,
                          Loc_Bounds.X_Min, Loc_Bounds.X_Max);
     else
-      Set := False;
+
+      if The_Bounds_Set then
+        Loc_Bounds.X_Min := The_Bounds.X_Min;
+        Set := True;
+      else
+        Set := False;
+      end if;
       Dialog.Read_Coordinate(Screen.I_Xmin, Set, Loc_Bounds.X_Min);
       if not Set then
         return;
       end if;
-      Set := False;
+
+      if The_Bounds_Set then
+        Loc_Bounds.X_Max := The_Bounds.X_Max;
+        Set := True;
+      else
+        Set := False;
+      end if;
       Dialog.Read_Coordinate(Screen.I_Xmax, Set, Loc_Bounds.X_Max);
       if not Set then
         return;
       end if;
+
       if      Scale = Curve.Free_Screen
       or else Scale = Curve.Free_Normed then
-      Set := False;
+        The_Y_Bounds_Set := The_Bounds_Set
+                    and then (The_Bounds.Scale = Curve.Free_Screen
+                      or else The_Bounds.Scale = Curve.Free_Screen);
+
+        if The_Y_Bounds_Set then
+          Loc_Bounds.Y_Min := The_Bounds.Y_Min;
+          Set := True;
+        else
+          Set := False;
+        end if;
         Dialog.Read_Coordinate(Screen.I_Ymin, Set, Loc_Bounds.Y_Min);
         if not Set then
           return;
         end if;
-        Set := False;
+
+        if The_Y_Bounds_Set then
+          Loc_Bounds.Y_Max := The_Bounds.Y_Max;
+          Set := True;
+        else
+          Set := False;
+        end if;
         Dialog.Read_Coordinate(Screen.I_Ymax, Set, Loc_Bounds.Y_Max);
         if not Set then
           return;
         end if;
+
       end if;
     end if;
     The_Bounds := Loc_Bounds;
