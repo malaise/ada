@@ -607,12 +607,13 @@ begin
         I := I + 1;
         exit when I >= L;
       end loop;
+      -- 13 pairs max => 26 letters max
+      if L > Id_Range'Last then
+        L := Id_Range'Last;
+      end if;
       -- Length must be even
       if L rem 2 /= 0  then
         L := L - 1;
-      end if;
-      if L > Id_Range'Last / 2 then
-        L := Id_Range'Last / 2;
       end if;
       Switch.Set (Str(1 .. L));
     end;
