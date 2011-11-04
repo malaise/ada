@@ -435,13 +435,14 @@
 
     <!-- TZ edit numbers -->
     <Field Num="07" Kind="Put">
-      <Geometry Up="06" Left="30" Low="06" Right="52"/>
+      <Geometry Up="06" Left="30" Low="06" Right="53"/>
       <Colors Foreground="Light_Grey" Background="Black"/>
-      <Init Row="00" Col="05">2</Init>
-      <Init Row="00" Col="09">3</Init>
-      <Init Row="00" Col="13">4</Init>
-      <Init Row="00" Col="17">5</Init>
-      <Init Row="00" Col="21">6</Init>
+      <Init Row="00" Col="01">50</Init>
+      <Init Row="00" Col="05">60</Init>
+      <Init Row="00" Col="09">70</Init>
+      <Init Row="00" Col="13">80</Init>
+      <Init Row="00" Col="17">90</Init>
+      <Init Row="00" Col="20">100%</Init>
     </Field>
 
     <!-- TZ edit tittle -->
