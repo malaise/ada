@@ -359,8 +359,9 @@ package body Mesu_Gra is
   begin
     -- Here we only use Afpx.Line_List, no pb to suspend for
     --  a Con_Io
-    Afpx.Suspend;
-    Console.Open (1, Def_Back => Con_Io.Color_Of ("Black"));
+--    Afpx.Suspend;
+--    Console.Open (1, Def_Back => Con_Io.Color_Of ("Black"));
+    Console := Afpx.get_Console;
     Screen.Set_To_Screen (Console'Access);
 
     -- Screen scale
@@ -547,18 +548,19 @@ package body Mesu_Gra is
     end loop Main_Loop;
 
     -- Back to text mode
-    Console.Reset_Term;
+    -- Console.Reset_Term;
     -- Close Con_Io and restore Afpx
-    Console.Close;
-    Afpx.Resume;
+--    Console.Close;
+--    Afpx.Resume;
   exception
     when Error:others =>
       Ada.Text_Io.Put_Line ("Exception "
        & Ada.Exceptions.Exception_Name (Error) & " raised.");
-      if Console.Is_Open then
-        Console.Close;
-      end if;
-      Afpx.Resume;
+--      Console.Reset_Term;
+--      if Console.Is_Open then
+--        Console.Close;
+--      end if;
+--      Afpx.Resume;
   end Graphic;
 
 end Mesu_Gra;
