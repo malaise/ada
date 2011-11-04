@@ -324,15 +324,21 @@ package body Con_Io is
 
   -- Reset screen, windows and keyboard
   procedure Reset_Term (Con : in Console) is
-    Acc : access Console_Data;
+    Con_Acc : access Console_Data;
+    Scr_Acc : access Window_Data;
   begin
     Debug ("Console reset term");
     Check_Con (Con);
-    Acc := Con.Get_Access;
-    X_Mng.X_Clear_Line (Acc.Id);
+    Con_Acc := Con.Get_Access;
+    Scr_Acc := Con_Acc.Screen_Window.Get_Access;
+    X_Mng.X_Clear_Line (Con_Acc.Id);
     -- Set current attributes in cache
-    Set_Attributes (Con, Acc.Line_Foreground, Acc.Line_Background,
-                    Acc.Line_Xor_Mode, Forced => True);
+    Set_Attributes (Con, Con_Acc.Line_Foreground, Con_Acc.Line_Background,
+                    Con_Acc.Line_Xor_Mode, Forced => True);
+    -- Reset screen attributes
+    Scr_Acc.Current_Foreground := Con_Acc.Line_Foreground;
+    Scr_Acc.Current_Background := Con_Acc.Line_Background;
+    Scr_Acc.Current_Xor_Mode   := Con_Acc.Line_Xor_Mode;
   end Reset_Term;
 
   -- Screen characteristics
