@@ -1133,7 +1133,7 @@ package body Curve is
         exit;
       else
         -- New drawing : clear graphic
-        Cur_Con_Io.Reset_Term;
+        Screen.Clear;
       end if;
 
     end loop;

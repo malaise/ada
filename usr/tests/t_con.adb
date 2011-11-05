@@ -74,7 +74,6 @@ procedure T_Con is
       Console.Open;
     end Start;
 
-    Console.Reset_Term;
     Console.Enable_Motion_Events(True);
     -- fenetre de saisie, fenetre d'affichage
     W1.Open (Console'Unrestricted_Access, ( 5, 15), (10, 78));

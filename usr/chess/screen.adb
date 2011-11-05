@@ -88,6 +88,7 @@ package body Screen is
 
   procedure Init_Board (Color : in Space.Color_List) is
   begin
+    Screen.Clear;
     if Graphic_Mode then
       Graphic.Init_Board (Color);
     else

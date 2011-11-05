@@ -30,7 +30,6 @@ package body Sok_Display is
     Black := Con_Io.Color_Of ("Black");
     Console.Open (Def_Back => Black);
     Screen_Win.Set_To_Screen (Console'Access);
-    Console.Reset_Term;
     Screen_Win.Clear;
 
     -- Title      : row 00 to 00 col 00 to 57 (01 row, 57 col)
@@ -136,7 +135,6 @@ package body Sok_Display is
   -- puts all the frame
   procedure Put_Frame (Frame : in Sok_Types.Frame_Tab) is
   begin
-    Console.Reset_Term;
     Screen_Win.Clear;
     Title_Win.Move ( (00, 20));
     Title_Win.Put ("S O K O B A N",

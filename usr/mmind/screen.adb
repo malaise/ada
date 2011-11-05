@@ -129,7 +129,6 @@ package body Screen is
   begin
 
     if not Global_Win.Is_Open then
-      Console.Reset_Term;
       -- Open windows
       Global_Win.Open (Console'Access, (1, 1), (23, 78));
       Color_Win.Open (Console'Access, (Color_First_Row,  Color_First_Col),
@@ -289,7 +288,7 @@ package body Screen is
 
   procedure Clear is
   begin
-    Console.Reset_Term;
+    Screen_Win.Clear;
     Screen_Win.Move;
   end Clear;
 

@@ -92,7 +92,7 @@ package Con_Io is
 
   -- Open a console, which appears on screen
   -- Shall be called prior any action on the console
-  -- Screen window is created with the attributes of the Console
+  -- Screen window is created with the attributes of the Console and cleared
   procedure Open (Con : in out Console;
                   Font_No  : in Font_No_Range := 1;
                   Row_Last : in Row_Range := Def_Row_Last;
@@ -135,8 +135,11 @@ package Con_Io is
   -- Ring a bell
   procedure Bell (Con : in Console; Repeat : in Positive := 1);
 
-  -- Clear screen, and reset keyboard
-  procedure Reset_Term (Con : in Console);
+  -- Reset screen attributes to Console's one and clear it
+  procedure Reset_Screen (Con : in Console);
+
+  -- Clear screen (as Screen.Clear)
+  procedure Clear_Screen (Con : in Console);
 
 
   -- Operations on window
@@ -557,9 +560,9 @@ private
     Id : X_Mng.Line;
     Mouse_Status : X_Mng.Event_Kind := X_Mng.No_Event;
     Motion_Enabling : Boolean := False;
-    Line_Foreground : Effective_Colors := Default_Foreground;
-    Line_Background : Effective_Colors := Default_Background;
-    Line_Xor_Mode   : Effective_Xor_Modes := Default_Xor_Mode;
+    Def_Foreground : Effective_Colors := Default_Foreground;
+    Def_Background : Effective_Colors := Default_Background;
+    Def_Xor_Mode   : Effective_Xor_Modes := Default_Xor_Mode;
     Font_No : Font_No_Range := Font_No_Range'First;
     Row_Range_Last : Row_Range := Row_Range'First;
     Col_Range_Last : Col_Range := Col_Range'First;
@@ -569,6 +572,10 @@ private
     Font_Height : Natural := 0;
     Font_Offset : Natural := 0;
     Screen_Window : Window_Access;
+    -- Cache of current attributes set to X
+    Line_Foreground : Effective_Colors := Default_Foreground;
+    Line_Background : Effective_Colors := Default_Background;
+    Line_Xor_Mode   : Effective_Xor_Modes := Default_Xor_Mode;
   end record;
   procedure Set (Dest : in out Console_Data; Val : in Console_Data);
   procedure Finalize (Con : in Console_Data);

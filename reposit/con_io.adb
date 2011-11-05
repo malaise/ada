@@ -138,9 +138,10 @@ package body Con_Io is
   end Set_Colors;
 
   function Color_Of (Name : String) return Effective_Colors is
+    Lower_Name : constant String := Lower_Str (Name);
   begin
     for I in The_Color_Names'Range loop
-      if The_Color_Names(I).Image = Name then
+      if Lower_Str (The_Color_Names(I).Image) = Lower_Name then
         return I;
       end if;
     end loop;
@@ -158,20 +159,20 @@ package body Con_Io is
                             Background : in Effective_Colors;
                             Xor_Mode   : in Effective_Xor_Modes;
                             Forced     : in Boolean := False) is
-    C : constant access Console_Data := Con.Get_Access;
+    Con_Acc : constant access Console_Data := Con.Get_Access;
   begin
     -- Reset can be forced explicitely by the Forced argument
-    if Forced or else Foreground /= C.Line_Foreground
-              or else Background /= C.Line_Background then
-      X_Mng.X_Set_Attributes (C.Id, Colors'Pos(Background) - 1,
-                                  Colors'Pos(Foreground) - 1,
-                                  Superbright => True);
-      C.Line_Foreground := Foreground;
-      C.Line_Background := Background;
+    if Forced or else Foreground /= Con_Acc.Line_Foreground
+              or else Background /= Con_Acc.Line_Background then
+      X_Mng.X_Set_Attributes (Con_Acc.Id, Colors'Pos(Background) - 1,
+                                          Colors'Pos(Foreground) - 1,
+                                          Superbright => True);
+      Con_Acc.Line_Foreground := Foreground;
+      Con_Acc.Line_Background := Background;
     end if;
-    if Forced or else Xor_Mode /= C.Line_Xor_Mode then
-      X_Mng.X_Set_Xor_Mode (C.Id, Xor_Mode = Xor_On);
-      C.Line_Xor_Mode := Xor_Mode;
+    if Forced or else Xor_Mode /= Con_Acc.Line_Xor_Mode then
+      X_Mng.X_Set_Xor_Mode (Con_Acc.Id, Xor_Mode = Xor_On);
+      Con_Acc.Line_Xor_Mode := Xor_Mode;
     end if;
   end Set_Attributes;
 
@@ -191,9 +192,9 @@ package body Con_Io is
     Con_Data.Font_No := Font_No;
     Con_Data.Row_Range_Last := Row_Last;
     Con_Data.Col_Range_Last := Col_Last;
-    Con_Data.Line_Foreground := Def_Fore;
-    Con_Data.Line_Background := Def_Back;
-    Con_Data.Line_Xor_Mode := Def_Xor;
+    Con_Data.Def_Foreground := Def_Fore;
+    Con_Data.Def_Background := Def_Back;
+    Con_Data.Def_Xor_Mode := Def_Xor;
 
     if Con_Data.Font_No + Font_No_Offset in Font_No_Range then
       Line.No_Font := Con_Data.Font_No + Font_No_Offset;
@@ -213,14 +214,12 @@ package body Con_Io is
     -- Create console
     Con_Data.Initialised := True;
     Con.Init (Con_Data);
-    -- Create and store Screen window (access to Window in Windows)
+    -- Create, store Screen window (access to Window in Windows), clear screen
     Open (Screen, Con'Unrestricted_Access,
          (Row_Range_First, Col_Range_First),
          (Con_Data.Row_Range_Last, Con_Data.Col_Range_Last));
     Con.Get_Access.Screen_Window := Window_Access(Windows.Access_Current);
-    -- Set ohysical attributes
-    Set_Attributes (Con, Con_Data.Line_Foreground, Con_Data.Line_Background,
-                    Con_Data.Line_Xor_Mode, Forced => True);
+    Clear (Con.Get_Access.Screen_Window.all);
     Flush (Con);
   exception
     when others =>
@@ -255,7 +254,6 @@ package body Con_Io is
     Debug ("Console suspension");
     Check_Con (Con);
     -- Clear window and suspend
-    Reset_Term (Con);
     X_Mng.X_Suspend (Con.Get_Access.Id);
   end Suspend;
 
@@ -277,19 +275,19 @@ package body Con_Io is
   function Foreground (Con : Console) return Effective_Colors is
   begin
     Check_Con (Con);
-    return Con.Get_Access.Line_Foreground;
+    return Con.Get_Access.Def_Foreground;
   end Foreground;
 
   function Background (Con : Console) return Effective_Colors is
   begin
     Check_Con (Con);
-    return Con.Get_Access.Line_Background;
+    return Con.Get_Access.Def_Background;
   end Background;
 
   function Xor_Mode   (Con : Console) return Effective_Xor_Modes is
   begin
     Check_Con (Con);
-    return Con.Get_Access.Line_Xor_Mode;
+    return Con.Get_Access.Def_Xor_Mode;
   end Xor_Mode;
 
   -- Get geometry
@@ -322,8 +320,8 @@ package body Con_Io is
     end if;
   end Bell;
 
-  -- Reset screen, windows and keyboard
-  procedure Reset_Term (Con : in Console) is
+  -- Reset screen and clear it
+  procedure Reset_Screen (Con : in Console) is
     Con_Acc : access Console_Data;
     Scr_Acc : access Window_Data;
   begin
@@ -331,15 +329,20 @@ package body Con_Io is
     Check_Con (Con);
     Con_Acc := Con.Get_Access;
     Scr_Acc := Con_Acc.Screen_Window.Get_Access;
-    X_Mng.X_Clear_Line (Con_Acc.Id);
-    -- Set current attributes in cache
-    Set_Attributes (Con, Con_Acc.Line_Foreground, Con_Acc.Line_Background,
-                    Con_Acc.Line_Xor_Mode, Forced => True);
     -- Reset screen attributes
-    Scr_Acc.Current_Foreground := Con_Acc.Line_Foreground;
-    Scr_Acc.Current_Background := Con_Acc.Line_Background;
-    Scr_Acc.Current_Xor_Mode   := Con_Acc.Line_Xor_Mode;
-  end Reset_Term;
+    Scr_Acc.Current_Foreground := Con_Acc.Def_Foreground;
+    Scr_Acc.Current_Background := Con_Acc.Def_Background;
+    Scr_Acc.Current_Xor_Mode   := Con_Acc.Def_Xor_Mode;
+    -- Clear screen
+    Clear (Con_Acc.Screen_Window.all);
+  end Reset_Screen;
+
+  -- Clear screen (as Screen.Clear)
+  procedure Clear_Screen (Con : in Console) is
+  begin
+    Check_Con (Con);
+    Clear (Con.Get_Access.Screen_Window.all);
+  end Clear_Screen;
 
   -- Screen characteristics
   function Get_Screen (Con : Console_Access) return Window is
@@ -377,9 +380,9 @@ package body Con_Io is
     Win_Data.Upper_Left := Upper_Left;
     Win_Data.Lower_Right := Lower_Right;
     Win_Data.Current_Pos := Home;
-    Win_Data.Current_Foreground := Acc.Line_Foreground;
-    Win_Data.Current_Background := Acc.Line_Background;
-    Win_Data.Current_Xor_Mode   := Acc.Line_Xor_Mode;
+    Win_Data.Current_Foreground := Acc.Def_Foreground;
+    Win_Data.Current_Background := Acc.Def_Background;
+    Win_Data.Current_Xor_Mode   := Acc.Def_Xor_Mode;
     Name.Init (Win_Data);
     Windows.Insert ( (Name) );
   exception

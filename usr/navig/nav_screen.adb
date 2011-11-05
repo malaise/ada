@@ -59,7 +59,7 @@ package body Nav_Screen is
       W_Err.Set_Foreground (Red);
       W_Time.Set_Foreground (Con_Io.Color_Of ("Light_Blue"));
     end if;
-    Console.Reset_Term;
+    Console.Clear_Screen;
   end Reset;
 
   -- To write the title
@@ -364,6 +364,7 @@ package body Nav_Screen is
 
     procedure Put is
     begin
+      Console.Clear_Screen;
       Title;
       W_Help.Clear;
       W_Help.Move ((0, 8));

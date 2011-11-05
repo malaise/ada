@@ -357,11 +357,8 @@ package body Mesu_Gra is
 
     use type Con_Io.Curs_Mvt;
   begin
-    -- Here we only use Afpx.Line_List, no pb to suspend for
-    --  a Con_Io
---    Afpx.Suspend;
---    Console.Open (1, Def_Back => Con_Io.Color_Of ("Black"));
-    Console := Afpx.get_Console;
+    -- Re-use Afpx console
+    Console := Afpx.Get_Console;
     Screen.Set_To_Screen (Console'Access);
 
     -- Screen scale
@@ -467,8 +464,8 @@ package body Mesu_Gra is
     X_Factor := Float(Xs_First - Xs_Last) / Float(X_First - X_Last);
 
     -- Graphic mode for current screen
-    Console.Reset_Term;
     Screen.Set_Xor_Mode (Con_Io.Xor_On);
+    Screen.Clear;
 
     Draw_Layout;
     Tz_Drown := False;
@@ -531,7 +528,6 @@ package body Mesu_Gra is
         end if;
       elsif Get_Res.Mvt = Con_Io.Refresh then
         -- Refresh
-        Console.Reset_Term;
         Screen.Clear;
         Draw_Layout;
         -- Redraw mesures
@@ -547,20 +543,15 @@ package body Mesu_Gra is
       end if;
     end loop Main_Loop;
 
-    -- Back to text mode
-    -- Console.Reset_Term;
-    -- Close Con_Io and restore Afpx
---    Console.Close;
---    Afpx.Resume;
+    -- Back to Afpx
+    Screen.Set_Xor_Mode (Con_Io.Xor_Off);
+    Screen.Clear;
   exception
     when Error:others =>
       Ada.Text_Io.Put_Line ("Exception "
        & Ada.Exceptions.Exception_Name (Error) & " raised.");
---      Console.Reset_Term;
---      if Console.Is_Open then
---        Console.Close;
---      end if;
---      Afpx.Resume;
+      Screen.Set_Xor_Mode (Con_Io.Xor_Off);
+      Screen.Clear;
   end Graphic;
 
 end Mesu_Gra;

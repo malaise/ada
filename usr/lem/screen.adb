@@ -103,7 +103,6 @@ package body Screen is
       Console.Open (Def_Back => Con_Io.Color_Of ("Black"));
       Screen.Set_To_Screen (Console'Access);
     end if;
-    Console.Reset_Term;
     Screen.Clear;
     begin
       if Argument.Get_Parameter (1, "g") = "" then

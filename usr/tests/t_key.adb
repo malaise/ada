@@ -11,7 +11,6 @@ procedure T_Key is
 begin
 
   Console.Open;
-  Console.Reset_Term;
   Screen.Set_To_Screen (Console'Unrestricted_Access);
   Screen.Set_Foreground (Con_Io.Color_Of("Black"));
   Screen.Set_Background (Con_Io.Color_Of("Light_Grey"));
