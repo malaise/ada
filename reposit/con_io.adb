@@ -338,10 +338,14 @@ package body Con_Io is
   end Reset_Screen;
 
   -- Clear screen (as Screen.Clear)
-  procedure Clear_Screen (Con : in Console) is
+  procedure Clear_Screen (Con        : in Console;
+                          Background : in Colors := Current) is
+    Screen : Window;
   begin
     Check_Con (Con);
-    Clear (Con.Get_Access.Screen_Window.all);
+    Screen := Con.Get_Access.Screen_Window.all;
+    Set_Background (Screen, Background);
+    Clear (Screen);
   end Clear_Screen;
 
   -- Screen characteristics

@@ -1,5 +1,5 @@
 with Ada.Text_Io;
-with Con_Io, Argument;
+with Con_Io, Argument, Mixed_Str;
 procedure T_Color is
   Console : aliased Con_Io.Console;
   Screen : Con_Io.Window;
@@ -29,7 +29,7 @@ begin
     Screen.Clear;
     for I in Con_Io.Effective_Colors loop
       Screen.Move (Con_Io.Colors'Pos(I), 1);
-      Screen.Put (Con_Io.Color_Name_Of (I) );
+      Screen.Put (Mixed_Str (Con_Io.Color_Name_Of (I) ));
       Screen.Move (Con_Io.Colors'Pos(I), 20);
       Screen.Put ("^!@#$%&€*é$ê", Foreground => I, Move => False);
       Screen.New_Line;

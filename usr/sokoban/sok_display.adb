@@ -8,7 +8,7 @@ package body Sok_Display is
   Len_Days   : constant := 3;
 
   Console : aliased Con_Io.Console;
-  Screen_Win : Con_Io.Window;
+
 
   Title_Win : Con_Io.Window;
   Frame_Win : Con_Io.Window;
@@ -29,8 +29,7 @@ package body Sok_Display is
   begin
     Black := Con_Io.Color_Of ("Black");
     Console.Open (Def_Back => Black);
-    Screen_Win.Set_To_Screen (Console'Access);
-    Screen_Win.Clear;
+    Console.Clear_Screen;
 
     -- Title      : row 00 to 00 col 00 to 57 (01 row, 57 col)
     Title_Win.Open (Console'Access, (00, 00), (00, 55) );
@@ -135,7 +134,7 @@ package body Sok_Display is
   -- puts all the frame
   procedure Put_Frame (Frame : in Sok_Types.Frame_Tab) is
   begin
-    Screen_Win.Clear;
+    Console.Clear_Screen;
     Title_Win.Move ( (00, 20));
     Title_Win.Put ("S O K O B A N",
      Foreground => Con_Io.Color_Of ("White"), Move => False);
@@ -508,7 +507,7 @@ package body Sok_Display is
 
   procedure End_Of_Program is
   begin
-    Screen_Win.Clear;
+    Console.Clear_Screen;
   end End_Of_Program;
 
   procedure Bell is

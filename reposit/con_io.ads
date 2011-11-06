@@ -50,13 +50,13 @@ package Con_Io is
                      Color05 => As.U.Tus ("Red"),
                      Color06 => As.U.Tus ("Magenta"),
                      Color07 => As.U.Tus ("Brown"),
-                     Color08 => As.U.Tus ("Black"),
+                     Color08 => As.U.Tus ("White"),
                      Color09 => As.U.Tus ("Dark_Grey"),
                      Color10 => As.U.Tus ("Light_Blue"),
                      Color11 => As.U.Tus ("Lime_Green"),
                      Color12 => As.U.Tus ("Orange"),
                      Color13 => As.U.Tus ("Yellow"),
-                     Color14 => As.U.Tus ("White") );
+                     Color14 => As.U.Tus ("Black") );
 
   -- Set_Colors raises Already_Init if called after Initialise
   -- Console.Init raises Already_Init if called several times
@@ -138,8 +138,10 @@ package Con_Io is
   -- Reset screen attributes to Console's one and clear it
   procedure Reset_Screen (Con : in Console);
 
-  -- Clear screen (as Screen.Clear)
-  procedure Clear_Screen (Con : in Console);
+  -- Clear screen (as Screen.Clear), optionally after setting a new
+  -- background color (as Screen.Set_Background)
+  procedure Clear_Screen (Con        : in Console;
+                          Background : in Colors := Current);
 
 
   -- Operations on window

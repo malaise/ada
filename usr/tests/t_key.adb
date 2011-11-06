@@ -11,10 +11,9 @@ procedure T_Key is
 begin
 
   Console.Open;
+  Console.Clear_Screen (Con_Io.Color_Of("Light_Grey"));
   Screen.Set_To_Screen (Console'Unrestricted_Access);
   Screen.Set_Foreground (Con_Io.Color_Of("Black"));
-  Screen.Set_Background (Con_Io.Color_Of("Light_Grey"));
-  Screen.Clear;
   Got := (Mvt => Con_Io.Refresh);
   loop
     if Got.Mvt = Con_Io.Refresh then
