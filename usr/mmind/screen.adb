@@ -35,31 +35,30 @@ package body Screen is
   Try_Last_Col     : Con_Io.Col_Range;
 
   -- Color definitions
-  Color_Definition : constant array (Common.Color_Range) of
-   Con_Io.Effective_Colors := (
-       0 => Con_Io.Color_Of ("Brown"),
-       1 => Con_Io.Color_Of ("Blue"),
-       2 => Con_Io.Color_Of ("Dark_Green"),
-       3 => Con_Io.Color_Of ("Cyan"),
-       4 => Con_Io.Color_Of ("Red"),
-       5 => Con_Io.Color_Of ("Magenta"),
-       6 => Con_Io.Color_Of ("Light_Grey"),
-       7 => Con_Io.Color_Of ("Orange"),
-       8 => Con_Io.Color_Of ("Yellow"));
-  White : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("White");
+  Colors : array (Common.Color_Range) of Con_Io.Effective_Colors;
+  Color_Names : constant array (Common.Color_Range) of As.U.Asu_Us :=
+      (0 => As.U.Tus ("Brown"),
+       1 => As.U.Tus ("Blue"),
+       2 => As.U.Tus ("Dark_Green"),
+       3 => As.U.Tus ("Cyan"),
+       4 => As.U.Tus ("Red"),
+       5 => As.U.Tus ("Magenta"),
+       6 => As.U.Tus ("Light_Grey"),
+       7 => As.U.Tus ("Chartreuse"),
+       8 => As.U.Tus ("Yellow"));
+  White : Con_Io.Effective_Colors;
 
-  Foreground_Color  : constant Con_Io.Effective_Colors
-                    := Con_Io.Color_Of ("Dark_Grey");
-  Background_Color  : constant Con_Io.Effective_Colors :=
-   Color_Definition(0);
+  -- Screen foreground and backgound
+  Foreground_Color  : Con_Io.Effective_Colors;
+  Background_Color  : Con_Io.Effective_Colors;
 
   -- When possible to try
-  Try_Color : constant Con_Io.Effective_Colors := White;
+  Try_Color : Con_Io.Effective_Colors;
   -- When click in try or menu window
   Background_Select : Con_Io.Effective_Colors;
   -- Used to answer
-  Ok_Color  : constant Con_Io.Effective_Colors := Con_Io.Color_Of ("Black");
-  Nok_Color : constant Con_Io.Effective_Colors := White;
+  Ok_Color  : Con_Io.Effective_Colors;
+  Nok_Color : Con_Io.Effective_Colors;
 
   Pin : constant Character := '!';
 
@@ -112,15 +111,40 @@ package body Screen is
 
   -- Init the screen, the windows, draw borders
   procedure Init is
-    Colors : Con_Io.Colors_Definition := Con_Io.Default_Colors;
+    Color_Def : Con_Io.Colors_Definition := Con_Io.Default_Colors;
+    Coli : Con_Io.Colors;
   begin
-    -- Set Colors
-    Colors(Con_Io.Color09) := As.U.Tus ("Grey");
-    Con_Io.Set_Colors (Colors);
+    -- Set Color names, start with background and colors to search
+    Coli := Con_Io.Effective_Colors'First;
+    for I in Common.Color_Range loop
+      Coli := Con_Io.Effective_Colors'Succ (Coli);
+      Color_Def(Coli) := Color_Names(I);
+      Colors(I) := Coli;
+    end loop;
+    -- Add other colors
+    Coli := Con_Io.Effective_Colors'Succ (Coli);
+    Color_Def(Coli) := As.U.Tus ("Light_Grey");
+    Coli := Con_Io.Effective_Colors'Succ (Coli);
+    Color_Def(Coli) := As.U.Tus ("White");
+    Coli := Con_Io.Effective_Colors'Succ (Coli);
+    Color_Def(Coli) := As.U.Tus ("Dark_Grey");
+    Coli := Con_Io.Effective_Colors'Succ (Coli);
+    Color_Def(Coli) := As.U.Tus ("Black");
+    Con_Io.Set_Colors (Color_Def);
+
+    -- Store other colors
+    Background_Color := Colors(0);
+    Background_Select := Con_Io.Color_Of ("Light_Grey");
+    White := Con_Io.Color_Of ("White");
+    Foreground_Color := Con_Io.Color_Of ("Dark_Grey");
+    Try_Color := White;
+    Ok_Color  := Con_Io.Color_Of ("Black");
+    Nok_Color := White;
+    -- Open console
     Console.Open (Def_Fore => Foreground_Color,
                   Def_Back => Background_Color);
     Screen_Win.Set_To_Screen (Console'Access);
-    Background_Select := Con_Io.Color_Of ("Light_Grey");
+
   end Init;
 
   procedure Init (Level : in Common.Last_Level_Range) is
@@ -248,9 +272,9 @@ package body Screen is
     -- Draw colors
     for I in Common.Eff_Color_Range loop
       Color_Win.Move ((Con_Io.Row_Range(I)-1) * 2, 0);
-      Color_Win.Put (Pin, Foreground => Color_Definition(I));
+      Color_Win.Put (Pin, Foreground => Colors(I));
       Color_Win.Move ((Con_Io.Row_Range(I)-1) * 2, 1);
-      Color_Win.Put (Pin, Foreground => Color_Definition(I));
+      Color_Win.Put (Pin, Foreground => Colors(I));
       if I /= Common.Eff_Color_Range'Last then
         Color_Win.Move ((Con_Io.Row_Range(I)-1) * 2 + 1, 0);
         Color_Win.Put ('-');
@@ -389,7 +413,7 @@ package body Screen is
     for I in 1 .. Propal_Col_Width loop
       Propal_Win.Move (Square.Row, Square.Col+I-1);
       if Color /= Common.Color_Range'First then
-        Propal_Win.Put (Pin, Foreground => Color_Definition(Color));
+        Propal_Win.Put (Pin, Foreground => Colors(Color));
       else
         Propal_Win.Put (' ', Foreground => Foreground_Color, Move => False);
       end if;
@@ -440,7 +464,7 @@ package body Screen is
     Square.Col := Propal_Square (1, Level).Col;
     for I in 1 .. Propal_Col_Width loop
       Secret_Win.Move (Square.Row, Square.Col+I-1);
-      Secret_Win.Put (Pin, Foreground => Color_Definition(Color));
+      Secret_Win.Put (Pin, Foreground => Colors(Color));
     end loop;
 
   end Put_Secret_Color;
