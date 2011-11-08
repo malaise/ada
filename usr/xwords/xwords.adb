@@ -289,7 +289,7 @@ procedure Xwords is
         when Analist.Init_Error =>
           Ok := False;
       end;
-
+Basic_Proc.Put_Line_Error ("Loaded");
       -- Wake up main task
       Event_Mng.Send_Dummy_Signal;
       -- Report status
@@ -384,7 +384,9 @@ begin
 
     -- Set cursor at last significant char of the Get field
     Cursor_Col := Afpx.Last_Index (Afpx.Decode_Field (Get_Fld, 0), True);
+Basic_Proc.Put_Line_Error ("Call PTG");
     Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result, Redisplay);
+Basic_Proc.Put_Line_Error ("PTG returns");
     Redisplay := False;
 
     case Ptg_Result.Event is

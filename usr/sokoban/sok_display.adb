@@ -28,7 +28,8 @@ package body Sok_Display is
   procedure Init is
   begin
     Black := Con_Io.Color_Of ("Black");
-    Console.Open (Def_Back => Black);
+    Console.Open (Def_Back => Black,
+                  Def_Fore => Con_Io.Color_Of ("Light_Grey"));
     Console.Clear_Screen;
 
     -- Title      : row 00 to 00 col 00 to 57 (01 row, 57 col)
