@@ -329,6 +329,7 @@ package body Mesu_Gra is
     Get_Res   : Con_Io.Get_Result;
     Char      : Character;
     No_Mesure : Mesure_Range;
+    Nb_Drown  : Mesure_Range;
 
     -- Check if same Tz
     procedure Check_Same_Tz is
@@ -352,6 +353,10 @@ package body Mesu_Gra is
           end if;
         end if;
       end loop;
+      if First_Drown_Mesure = 0 then
+        -- No mesure drown
+        Same_Tz := False;
+      end if;
     end Check_Same_Tz;
 
 
@@ -475,6 +480,7 @@ package body Mesu_Gra is
       Mesure_Array(I).Drown := True;
       Draw_Mesure (I);
     end loop;
+    Nb_Drown := Nb_Mesure;
 
     Main_Loop:
     loop
@@ -519,12 +525,19 @@ package body Mesu_Gra is
                 Tz_Drown := False;
               end if;
             end if;
+            Nb_Drown := Nb_Drown + 1;
           else
             -- Hidding a record
             Mesure_Array(No_Mesure).Drown := False;
+            Nb_Drown := Nb_Drown - 1;
           end if;
-
+          -- Draw/hide this mesure
           Draw_Mesure (No_Mesure);
+          -- Hide Tz if no mesure
+          if Nb_Drown = 0 and then Tz_Drown then
+            Draw_Tz (False);
+            Tz_Drown := False;
+          end if;
         end if;
       elsif Get_Res.Mvt = Con_Io.Refresh then
         -- Refresh
