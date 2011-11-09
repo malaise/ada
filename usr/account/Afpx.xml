@@ -287,7 +287,7 @@
   <Descriptor Num="2" Background="Light_Grey">
 
     <List>
-      <Geometry Up="2" Left="11" Low="21" Right="65"/>
+      <Geometry Up="2" Left="11" Low="${Screen.Low}-3" Right="65"/>
       <Colors Foreground="Black" Background="Dark_Grey" Selected="Dark_Green"/>
     </List>
 
@@ -318,13 +318,15 @@
 
     <!-- Get -->
     <Field Num="5" Kind="Get">
-      <Geometry Up="23" Left="1" Low="23" Right="33"/>
+      <Geometry Up="${Screen.Low}-1" Left="1"
+                Low="${Screen.Low}-1" Right="33"/>
       <Colors Foreground="Black" Background="YellowGreen" Selected="Lime_Green"/>
     </Field>
 
     <!-- Messages -->
     <Field Num="6" Kind="Put">
-      <Geometry Up="23" Left="35" Low="23" Right="78"/>
+      <Geometry Up="${Screen.Low}-1" Left="35"
+                Low="${Screen.Low}-1" Right="78"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
 
