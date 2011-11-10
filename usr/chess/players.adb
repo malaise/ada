@@ -1,6 +1,4 @@
-with Ada.Text_Io;
-with Dynamic_List;
-
+with Basic_Proc, Dynamic_List;
 with Team, Space.Board, Debug;
 
 package body Players is
@@ -19,7 +17,7 @@ package body Players is
     King_Found : Boolean;
   begin
     if Debug.Get (Debug.Think) then
-      Ada.Text_Io.Put_Line ("Player " & Space.Color_List'Image(Color)
+      Basic_Proc.Put_Line_Output ("Player " & Space.Color_List'Image(Color)
                           & " is thinking");
     end if;
     -- Clear list of movements
@@ -50,9 +48,9 @@ package body Players is
         for I in Arr'Range loop
           Actions(Color).Insert ((True, Piece_Kind, Pos, Arr(I)) );
           if Debug.Get (Debug.Think) then
-            Ada.Text_Io.Put ("-> ");
+            Basic_Proc.Put_Output ("-> ");
             Debug.Put (Valid_Action_Rec'(True, Piece_Kind, Pos, Arr(I)));
-            Ada.Text_Io.New_Line;
+            Basic_Proc.New_Line_Output;
           end if;
         end loop;
       end;
@@ -63,7 +61,7 @@ package body Players is
       raise Player_Board_Error;
     end if;
     if Debug.Get (Debug.Think) then
-      Ada.Text_Io.Put_Line ("Player " & Space.Color_List'Image(Color)
+      Basic_Proc.Put_Line_Output ("Player " & Space.Color_List'Image(Color)
                           & " has finished thinking");
     end if;
   end Think;

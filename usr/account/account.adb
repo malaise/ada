@@ -1,7 +1,7 @@
 -- Usage: account [ -e | -f ] [ <file> ]
 --  (default is euros)
-with Ada.Text_Io, Ada.Exceptions;
-with Argument, Con_Io, Afpx;
+with Ada.Exceptions;
+with Basic_Proc, Argument, Con_Io, Afpx;
 with Unit_Format, Screen, Mng;
 procedure Account is
 
@@ -184,9 +184,9 @@ begin
 
 exception
   when Usage_Error =>
-    Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
+    Basic_Proc.Put_Line_Output ("Usage: " & Argument.Get_Program_Name
                     & "[ -e | -f ] [ <account_file> ]");
-    Ada.Text_Io.Put_Line ("  (default is euros)");
+    Basic_Proc.Put_Line_Output ("  (default is euros)");
   when Quit_Program =>
     Afpx.Release_Descriptor;
   when Ooops : others =>
@@ -197,7 +197,8 @@ exception
       when others => null;
     end;
     begin
-      Ada.Text_Io.Put_Line("Exception: " & Ada.Exceptions.Exception_Name(Ooops));
+      Basic_Proc.Put_Line_Error ("Exception: "
+             & Ada.Exceptions.Exception_Name(Ooops));
     exception
       when others => null;
     end;

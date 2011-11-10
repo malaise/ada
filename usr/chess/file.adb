@@ -1,5 +1,5 @@
-with Ada.Text_Io, Ada.Direct_Io, Ada.Characters.Latin_1;
-with As.U.Utils, Get_Line;
+with Ada.Direct_Io, Ada.Characters.Latin_1;
+with As.U.Utils, Get_Line, Basic_Proc;
 
 with Space;
 
@@ -75,14 +75,14 @@ package body File is
   begin
     if not Read then
       -- Error during reading
-      Ada.Text_Io.Put_Line ("Format error after line" & Line_No'Img);
+      Basic_Proc.Put_Line_Output ("Format error after line" & Line_No'Img);
     else
       -- Line has been read
-      Ada.Text_Io.Put_Line ("Format error at line"
+      Basic_Proc.Put_Line_Output ("Format error at line"
           & Line_No'Img & ": " & Line.Image);
     end if;
     if Msg /= "" then
-       Ada.Text_Io.Put_Line (Msg & '.');
+       Basic_Proc.Put_Line_Output (Msg & '.');
     end if;
   end Log_Error;
 

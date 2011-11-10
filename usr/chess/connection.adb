@@ -1,5 +1,5 @@
-with Ada.Text_Io, Ada.Exceptions;
-with As.U, Socket, Event_Mng, Dynamic_List;
+with Ada.Exceptions;
+with As.U, Socket, Event_Mng, Dynamic_List, Basic_Proc;
 with Debug;
 package body Connection is
 
@@ -100,7 +100,7 @@ package body Connection is
     pragma Unreferenced (Remote_Port_Num, Remote_Host_Id, Connected);
   begin
     if Debug.Get (Debug.Connection) then
-      Ada.Text_Io.Put_Line ("Connect callback");
+      Basic_Proc.Put_Line_Output ("Connect callback");
     end if;
     Soc := Dscr;
     Fd := Soc.Get_Fd;
@@ -121,7 +121,7 @@ package body Connection is
   exception
     when Error: others =>
       if Debug.Get (Debug.Connection) then
-        Ada.Text_Io.Put_Line ("Connect exception: "
+        Basic_Proc.Put_Line_Output ("Connect exception: "
            & Ada.Exceptions.Exception_Name(Error));
       end if;
       raise;
@@ -135,7 +135,7 @@ package body Connection is
     pragma Unreferenced (Local_Dscr, Remote_Port_Num, Remote_Host_Id);
   begin
     if Debug.Get (Debug.Connection) then
-      Ada.Text_Io.Put_Line ("Accept callback");
+      Basic_Proc.Put_Line_Output ("Accept callback");
     end if;
     Tcp_Util.Abort_Accept (Socket.Tcp_Header, Local_Port_Num);
     Soc := New_Dscr;
@@ -166,14 +166,14 @@ package body Connection is
     use type Socket.Host_Id, Socket.Port_Num;
   begin
     if Debug.Get (Debug.Connection) then
-      Ada.Text_Io.Put_Line ("In receive callback : ");
+      Basic_Proc.Put_Line_Output ("In receive callback : ");
     end if;
     begin
       Chess_Read (Soc, Message, Len, False);
     exception
       when Socket.Soc_Conn_Lost | Socket.Soc_Read_0 =>
         if Debug.Get (Debug.Connection) then
-          Ada.Text_Io.Put_Line ("Lost connection - Discard");
+          Basic_Proc.Put_Line_Output ("Lost connection - Discard");
         end if;
         if Server then
           Accept_Client;
@@ -183,13 +183,13 @@ package body Connection is
         return False;
       when Error: others =>
         if Debug.Get (Debug.Connection) then
-          Ada.Text_Io.Put_Line ("Exception: "
+          Basic_Proc.Put_Line_Output ("Exception: "
              & Ada.Exceptions.Exception_Name(Error));
         end if;
         raise;
     end;
     if Debug.Get (Debug.Connection) then
-      Ada.Text_Io.Put_Line ("Message read " & Integer'Image (Len) & " bytes");
+      Basic_Proc.Put_Line_Output ("Message read " & Integer'Image (Len) & " bytes");
     end if;
     case We_Are_Ready is
 
@@ -245,7 +245,7 @@ package body Connection is
         end if;
 
         if Debug.Get (Debug.Connection) then
-          Ada.Text_Io.Put_Line ("In rec callback : Saving action");
+          Basic_Proc.Put_Line_Output ("In rec callback : Saving action");
         end if;
 
         -- Insert action
@@ -256,7 +256,7 @@ package body Connection is
     end case;
 
     if Debug.Get (Debug.Connection) then
-      Ada.Text_Io.Put_Line ("In rec callback : End");
+      Basic_Proc.Put_Line_Output ("In rec callback : End");
     end if;
     return True;
   end Rec_Call_Back;
@@ -288,7 +288,7 @@ package body Connection is
         exception
           when Socket.Soc_Addr_In_Use =>
             if Debug.Get (Debug.Connection) then
-              Ada.Text_Io.Put_Line ("Address in use: Waiting");
+              Basic_Proc.Put_Line_Output ("Address in use: Waiting");
             end if;
             Event_Mng.Wait (10_000);
         end;
@@ -296,7 +296,7 @@ package body Connection is
     end if;
 
     if Debug.Get (Debug.Connection) then
-      Ada.Text_Io.Put_Line ("Connection: init done");
+      Basic_Proc.Put_Line_Output ("Connection: init done");
     end if;
   exception
     when others =>
@@ -306,7 +306,7 @@ package body Connection is
   procedure Wait_Ready is
   begin
     if Debug.Get (Debug.Connection) then
-      Ada.Text_Io.Put_Line ("Connection: waiting");
+      Basic_Proc.Put_Line_Output ("Connection: waiting");
     end if;
     loop
       -- Wait
@@ -314,7 +314,7 @@ package body Connection is
       exit when We_Are_Ready;
     end loop;
     if Debug.Get (Debug.Connection) then
-      Ada.Text_Io.Put_Line ("Connection: established");
+      Basic_Proc.Put_Line_Output ("Connection: established");
     end if;
   end Wait_Ready;
 
@@ -323,7 +323,7 @@ package body Connection is
   begin
     My_Send (Message);
     if Debug.Get (Debug.Connection) then
-      Ada.Text_Io.Put_Line ("Connection: sent "
+      Basic_Proc.Put_Line_Output ("Connection: sent "
          & Integer'Image (Message'Size / 8) & " bytes");
     end if;
   end Send;

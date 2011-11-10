@@ -1,6 +1,5 @@
-with Ada.Exceptions, Ada.Text_Io;
-with As.U.Utils, Get_Line;
-
+with Ada.Exceptions;
+with Basic_Proc, As.U.Utils, Get_Line;
 with Space.Board, Pieces, Image;
 
 package body Set_Up is
@@ -24,16 +23,16 @@ package body Set_Up is
     begin
       My_Get_Line.Open (File_Name);
     exception
-      when Ada.Text_Io.Name_Error =>
-        Ada.Text_Io.Put_Line ("Error. Cannot find set-up file " & File_Name);
+      when My_Get_Line.Name_Error =>
+        Basic_Proc.Put_Line_Output ("Error. Cannot find set-up file " & File_Name);
         return Space.White;
       when My_Get_Line.End_Error =>
-        Ada.Text_Io.Put_Line ("Warning. Empty set-up file " & File_Name);
+        Basic_Proc.Put_Line_Output ("Warning. Empty set-up file " & File_Name);
         My_Get_Line.Close;
         return Space.White;
       when Error : others =>
-        Ada.Text_Io.Put_Line ("Error. Cannot open set-up file " & File_Name);
-        Ada.Text_Io.Put_Line ("Exception " & Ada.Exceptions.Exception_Name (Error));
+        Basic_Proc.Put_Line_Output ("Error. Cannot open set-up file " & File_Name);
+        Basic_Proc.Put_Line_Output ("Exception " & Ada.Exceptions.Exception_Name (Error));
         raise Load_Error;
     end Open;
 
@@ -44,7 +43,7 @@ package body Set_Up is
       One_Word:
       for I in 1 .. My_Get_Line.Get_Word_Number loop
         if Line.Element (I).Length /= 4 then
-          Ada.Text_Io.Put_Line ("Error. Invalid definition "
+          Basic_Proc.Put_Line_Output ("Error. Invalid definition "
               & Line.Element (I).Image
               & " at line "
               & My_Get_Line.Positive_Count'Image (My_Get_Line.Get_Line_No) );
@@ -58,7 +57,7 @@ package body Set_Up is
         elsif Char = 'B' then
           Decoded_Id.Id.Color := Space.Black;
         else
-          Ada.Text_Io.Put_Line ("Error. Invalid color " & Char
+          Basic_Proc.Put_Line_Output ("Error. Invalid color " & Char
              & " at line "
              & My_Get_Line.Positive_Count'Image (My_Get_Line.Get_Line_No) );
            raise Load_Error;
@@ -71,7 +70,7 @@ package body Set_Up is
         else
           Decoded_Id.Id.Kind := Image.Piece_Value (Char);
           if Decoded_Id.Id.Kind = Pieces.Pawn then
-            Ada.Text_Io.Put_Line ("Error. Invalid piece " & Char
+            Basic_Proc.Put_Line_Output ("Error. Invalid piece " & Char
                 & " at line "
                 & My_Get_Line.Positive_Count'Image (My_Get_Line.Get_Line_No) );
             raise Load_Error;
@@ -84,7 +83,7 @@ package body Set_Up is
           Decoded_Square := Image.Square_Value (Str2);
         exception
           when Image.Value_Error =>
-            Ada.Text_Io.Put_Line ("Error. Invalid square " & Str2
+            Basic_Proc.Put_Line_Output ("Error. Invalid square " & Str2
                 & " at line "
                 & My_Get_Line.Positive_Count'Image (My_Get_Line.Get_Line_No) );
             raise Load_Error;
@@ -97,7 +96,7 @@ package body Set_Up is
                                     Has_Moved => Orig_Id /= Decoded_Id);
         exception
           when others =>
-            Ada.Text_Io.Put_Line ("Error. Non empty square "
+            Basic_Proc.Put_Line_Output ("Error. Non empty square "
                 & Line.Element (I).Image
                 & " at line "
                 & My_Get_Line.Positive_Count'Image (My_Get_Line.Get_Line_No) );
@@ -120,7 +119,7 @@ package body Set_Up is
     when Load_Error =>
       raise;
     when Error : others =>
-      Ada.Text_Io.Put_Line ("Error reading file " & File_Name
+      Basic_Proc.Put_Line_Output ("Error reading file " & File_Name
          & " at line "
          & My_Get_Line.Positive_Count'Image (My_Get_Line.Get_Line_No)
          & " exception " &  Ada.Exceptions.Exception_Name (Error));

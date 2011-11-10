@@ -12,7 +12,7 @@ package body Grid_1 is
   -- Return a valid character for text
   function Filter (C : Character) return Character is
   begin
-    if (C >= ' ' and then C <= '~') or else C = Ada.Characters.Latin_1.Cr then
+    if (C >= ' ' and then C <= '~') or else C = Ada.Characters.Latin_1.Lf then
       return C;
     elsif C = Ada.Characters.Latin_1.Ht then
       return ' ';
@@ -68,7 +68,7 @@ package body Grid_1 is
         Store (Sorted_Key(I), False);
       end loop;
     end;
-    Store (Ada.Characters.Latin_1.Cr, True);
+    Store (Ada.Characters.Latin_1.Lf, True);
     for C in Character'(' ') .. '~' loop
       Store (C, True);
     end loop;
@@ -76,7 +76,7 @@ package body Grid_1 is
   end Initialize;
 
 
-  -- C can be any char from ' ' to '~' or Ada.Characters.Latin_1.Cr
+  -- C can be any char from ' ' to '~' or Ada.Characters.Latin_1.Lf
   function Encode (C : Character) return Coordinate_Rec is
     Sc : constant Character := Filter(C);
   begin
@@ -111,7 +111,7 @@ package body Grid_1 is
     end if;
     for R in Row_Coordinate loop
       for C in Col_Coordinate loop
-        if Data(R, C) = Ada.Characters.Latin_1.Cr then
+        if Data(R, C) = Ada.Characters.Latin_1.Lf then
           My_Io.Put ("Ret");
         elsif Data(R, C) /= Ada.Characters.Latin_1.Nul then
           My_Io.Put('>' & Data(R, C) & '<');

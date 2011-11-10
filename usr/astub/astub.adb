@@ -1,23 +1,23 @@
-with Ada.Text_Io, Ada.Exceptions;
-with As.U, Argument, Argument_Parser, Sys_Calls, Mixed_Str;
+with Ada.Exceptions;
+with As.U, Argument, Argument_Parser, Mixed_Str, Basic_Proc;
 with Common, Files, Parse_Context;
 procedure Astub is
 
   procedure Usage is
   begin
-    Ada.Text_Io.Put_Line ("Usage : " & Argument.Get_Program_Name
-                   & " [ -f | --force ] [ -k | --keep ] <spec_file_name>");
-    Ada.Text_Io.Put_Line (
-      " -f | --force : Force generation (delete existing body)");
-    Ada.Text_Io.Put_Line (
-      " -k | --keep : Keep empty body");
+    Basic_Proc.Put_Line_Output ("Usage : " & Argument.Get_Program_Name
+             & " [ -f | --force ] [ -k | --keep ] <spec_file_name>");
+    Basic_Proc.Put_Line_Output (
+               " -f | --force : Force generation (delete existing body)");
+    Basic_Proc.Put_Line_Output (
+               " -k | --keep : Keep empty body");
   end Usage;
 
   procedure Error (Msg : in String) is
   begin
-    Sys_Calls.Put_Line_Error ("Error: " & Msg);
+    Basic_Proc.Put_Line_Error ("Error: " & Msg);
     Usage;
-    Sys_Calls.Set_Error_Exit_Code;
+    Basic_Proc.Set_Error_Exit_Code;
   end Error;
 
   -- The keys and descriptor of parsed keys
@@ -56,7 +56,7 @@ begin
   Keep_Opt := Arg_Dscr.Is_Set (2);
 
   -- Open files
-  Ada.Text_Io.Put_Line ("Astubbing "
+  Basic_Proc.Put_Line_Output ("Astubbing "
       & Arg_Dscr.Get_Option (Argument_Parser.No_Key_Index, 1) );
   begin
     Files.Open (Arg_Dscr.Get_Option (Argument_Parser.No_Key_Index, 1),
@@ -83,14 +83,14 @@ begin
 
     -- Output success
     if Generated then
-      Ada.Text_Io.Put_Line ("Done.");
+      Basic_Proc.Put_Line_Output ("Done.");
     else
-      Sys_Calls.Put_Line_Error ("Warning: Body is empty but kept.");
+      Basic_Proc.Put_Line_Error ("Warning: Body is empty but kept.");
     end if;
   else
     -- Dummy body
-    Ada.Text_Io.Put_Line ("Warning: " & Argument.Get_Parameter
-                         & " leads to empty body. Removing it.");
+    Basic_Proc.Put_Line_Output ("Warning: " & Argument.Get_Parameter
+                              & " leads to empty body. Removing it.");
     Files.Close (Files.Remove);
   end if;
 

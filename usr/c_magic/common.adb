@@ -1,5 +1,5 @@
-with Ada.Text_Io, Ada.Calendar;
-with As.B, Normal, Sorts, My_Math;
+with Ada.Calendar;
+with Basic_Proc, Normal, Sorts, My_Math;
 package body Common is
   -- The dimension of square
   Dim : Dim_Range;
@@ -18,10 +18,6 @@ package body Common is
   Sigma : Positive;
   -- Number of magic squares found
   Nb_Square : Natural;
-
-  -- Output file
-  File : Ada.Text_Io.File_Type;
-  File_Name : As.B.Asb_Bs(80);
 
   -- Real -> integer : round or trunc
   function Trunc (X : in Float) return Integer is
@@ -61,21 +57,13 @@ package body Common is
     end loop;
     Nb_Square := 0;
 
-    File_Name.Set (Normal (Dim, 1, True) & "_MAGIC.DAT");
-    begin
-      Ada.Text_Io.Open (File, Ada.Text_Io.Out_File, File_Name.Image);
-    exception
-      when Ada.Text_Io.Name_Error =>
-        Ada.Text_Io.Create (File, Ada.Text_Io.Out_File, File_Name.Image);
-    end;
-
     -- Start searching
     Start_Time := Ada.Calendar.Clock;
     Try(1);
     Search_Duration := Float (Ada.Calendar.Clock - Start_Time);
 
     -- Done
-    Ada.Text_Io.Put_Line (Natural'Image(Nb_Square)
+    Basic_Proc.Put_Line_Output (Natural'Image(Nb_Square)
                    &  " squares of "
                    & Dim_Range'Image(Dim)
                    & " found in "
@@ -84,7 +72,6 @@ package body Common is
                    & Normal (Round(Frac(Search_Duration) * 1000.0), 3, Gap => '0')
                    & " s." );
 
-    Ada.Text_Io.Close(File);
   end Search;
 
   -- Check if, up to N, the array content may be a magic square
@@ -165,16 +152,12 @@ package body Common is
       J := Lin * Dim - Dim;
       for Col in 1 .. Dim loop
         I := Lis(J + Col);
-        Ada.Text_Io.Put (Normal(I, 2) & " ");
-        Ada.Text_Io.Put (File, Normal(I, 2) & " ");
+        Basic_Proc.Put_Output (Normal(I, 2) & " ");
       end loop;
-      Ada.Text_Io.New_Line;
-      Ada.Text_Io.New_Line (File);
+      Basic_Proc.New_Line_Output;
     end loop;
-    Ada.Text_Io.New_Line;
-    Ada.Text_Io.New_Line(File);
+    Basic_Proc.New_Line_Output;
   end Dump;
-
 
 end Common;
 

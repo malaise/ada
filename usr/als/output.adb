@@ -1,6 +1,6 @@
-with Ada.Calendar, Ada.Text_Io;
+with Ada.Calendar;
 with Directory, Sys_Calls, Bit_Ops, Normal, Int_Image, Date_Image, Upper_Str,
-     Environ;
+     Basic_Proc, Environ;
 package body Output is
 
   -- Max amount of entries to sort
@@ -11,6 +11,12 @@ package body Output is
   function Nat_Image is new Int_Image (Natural);
   function Size_Image is new Int_Image (Sys_Calls.Size_T);
   function Total_Image is new Int_Image (Lister.Size_Type);
+
+  -- Put a char
+  procedure Put_Output (C : in Character) is
+  begin
+    Basic_Proc.Put_Output (C & "");
+  end Put_Output;
 
   -- Stored style
   Sort_Kind : Sort_Kind_List;
@@ -214,9 +220,9 @@ package body Output is
   procedure Put_Raw (Entity : in Entities.Entity) is
   begin
     if not First_Entry then
-      Ada.Text_Io.Put (Get_Separator);
+      Basic_Proc.Put_Output (Get_Separator);
     end if;
-    Ada.Text_Io.Put (Name_Image (Entity));
+    Basic_Proc.Put_Output (Name_Image (Entity));
     First_Entry := False;
   end Put_Raw;
 
@@ -264,16 +270,16 @@ package body Output is
     -- Check if need to New_Line or Space
     if Current_Col /= 0 then
       if Current_Col + Default_Separator'Length + Len > Max_Col then
-        Ada.Text_Io.New_Line;
+        Basic_Proc.New_Line_Output;
         Current_Col := 0;
       else
-        Ada.Text_Io.Put (Default_Separator);
+        Basic_Proc.Put_Output (Default_Separator);
         Current_Col := Current_Col + Default_Separator'Length;
       end if;
     end if;
-    Ada.Text_Io.Put (Image);
+    Basic_Proc.Put_Output (Image);
     if Char /= Default_Char then
-      Ada.Text_Io.Put (Char);
+      Put_Output (Char);
     end if;
     Current_Col := Current_Col + Len;
   end Put_Simple;
@@ -281,12 +287,12 @@ package body Output is
   -- Put an entity in one row
   procedure Put_One_Row (Entity : in Entities.Entity) is
   begin
-    Ada.Text_Io.Put (Name_Image (Entity));
+    Basic_Proc.Put_Output (Name_Image (Entity));
     if Classify
     and then Char_Of (Entity.Kind, Entity.Rights) /= Default_Char then
-      Ada.Text_Io.Put (Char_Of (Entity.Kind, Entity.Rights));
+      Put_Output (Char_Of (Entity.Kind, Entity.Rights));
     end if;
-    Ada.Text_Io.New_Line;
+    Basic_Proc.New_Line_Output;
   end Put_One_Row;
 
   -- Put an entity in full mode
@@ -356,14 +362,14 @@ package body Output is
   begin
     -- Put kind
     case Entity.Kind is
-      when Directory.File => Ada.Text_Io.Put ('-');
-      when Directory.Dir => Ada.Text_Io.Put ('d');
-      when Directory.Link => Ada.Text_Io.Put ('l');
-      when Directory.Block_Device => Ada.Text_Io.Put ('b');
-      when Directory.Character_Device => Ada.Text_Io.Put ('c');
-      when Directory.Pipe => Ada.Text_Io.Put ('p');
-      when Directory.Socket => Ada.Text_Io.Put ('s');
-      when Directory.Unknown => Ada.Text_Io.Put ('?');
+      when Directory.File => Put_Output ('-');
+      when Directory.Dir => Put_Output ('d');
+      when Directory.Link => Put_Output ('l');
+      when Directory.Block_Device => Put_Output ('b');
+      when Directory.Character_Device => Put_Output ('c');
+      when Directory.Pipe => Put_Output ('p');
+      when Directory.Socket => Put_Output ('s');
+      when Directory.Unknown => Put_Output ('?');
     end case;
 
     -- Put Rights
@@ -373,77 +379,77 @@ package body Output is
     Tbit := (Entity.Rights and Shl (1, 09)) /= 0;
     -- User rights
     if (Entity.Rights and Shl (1, 8)) /= 0 then
-      Ada.Text_Io.Put ('r');
+      Put_Output ('r');
     else
-      Ada.Text_Io.Put ('-');
+      Put_Output ('-');
     end if;
     if (Entity.Rights and Shl (1, 7)) /= 0 then
-      Ada.Text_Io.Put ('w');
+      Put_Output ('w');
     else
-      Ada.Text_Io.Put ('-');
+      Put_Output ('-');
     end if;
     if (Entity.Rights and Shl (1, 6)) /= 0 then
       if Suid then
-        Ada.Text_Io.Put ('s');
+        Put_Output ('s');
       else
-        Ada.Text_Io.Put ('x');
+        Put_Output ('x');
       end if;
     else
       if Suid then
-        Ada.Text_Io.Put ('S');
+        Put_Output ('S');
       else
-        Ada.Text_Io.Put ('-');
+        Put_Output ('-');
       end if;
     end if;
     -- Group rights
     if (Entity.Rights and Shl (1, 5)) /= 0 then
-      Ada.Text_Io.Put ('r');
+      Put_Output ('r');
     else
-      Ada.Text_Io.Put ('-');
+      Put_Output ('-');
     end if;
     if (Entity.Rights and Shl (1, 4)) /= 0 then
-      Ada.Text_Io.Put ('w');
+      Put_Output ('w');
     else
-      Ada.Text_Io.Put ('-');
+      Put_Output ('-');
     end if;
     if (Entity.Rights and Shl (1, 3)) /= 0 then
       if Sgid then
-        Ada.Text_Io.Put ('s');
+        Put_Output ('s');
       else
-        Ada.Text_Io.Put ('x');
+        Put_Output ('x');
       end if;
     else
       if Sgid then
-        Ada.Text_Io.Put ('S');
+        Put_Output ('S');
       else
-        Ada.Text_Io.Put ('-');
+        Put_Output ('-');
       end if;
     end if;
     -- Others rights
     if (Entity.Rights and Shl (1, 2)) /= 0 then
-      Ada.Text_Io.Put ('r');
+      Put_Output ('r');
     else
-      Ada.Text_Io.Put ('-');
+      Put_Output ('-');
     end if;
     if (Entity.Rights and Shl (1, 1)) /= 0 then
-      Ada.Text_Io.Put ('w');
+      Put_Output ('w');
     else
-      Ada.Text_Io.Put ('-');
+      Put_Output ('-');
     end if;
     if (Entity.Rights and Shl (1, 0)) /= 0 then
       if Tbit then
-        Ada.Text_Io.Put ('t');
+        Put_Output ('t');
       else
-        Ada.Text_Io.Put ('x');
+        Put_Output ('x');
       end if;
     else
       if Tbit then
-        Ada.Text_Io.Put ('T');
+        Put_Output ('T');
       else
-        Ada.Text_Io.Put ('-');
+        Put_Output ('-');
       end if;
     end if;
-    Ada.Text_Io.Put (' ');
+    Put_Output (' ');
 
     -- Owner and its group on N chars or more
     -- If resolution fails (Sys_Calls.System_Error) put Id in 10 chars
@@ -454,11 +460,11 @@ package body Output is
         Pad : constant String (1 .. Max_Name_Len - User_Name'Length)
             := (others => ' ');
       begin
-        Ada.Text_Io.Put (Pad & User_Name & ' ');
+        Basic_Proc.Put_Output (Pad & User_Name & ' ');
       end;
     exception
       when Sys_Calls.System_Error =>
-        Ada.Text_Io.Put (Id_Image (Entity.User_Id) & ' ');
+        Basic_Proc.Put_Output (Id_Image (Entity.User_Id) & ' ');
     end;
     begin
       declare
@@ -467,15 +473,15 @@ package body Output is
         Pad : constant String (1 .. Max_Group_Len - Group_Name'Length)
             := (others => ' ');
       begin
-        Ada.Text_Io.Put (Pad & Group_Name & ' ');
+        Basic_Proc.Put_Output (Pad & Group_Name & ' ');
       end;
     exception
       when Sys_Calls.System_Error =>
-        Ada.Text_Io.Put (Id_Image (Entity.Group_Id) & ' ');
+        Basic_Proc.Put_Output (Id_Image (Entity.Group_Id) & ' ');
     end;
 
     -- Size human format or full size
-    Ada.Text_Io.Put (Size_Image (Entity.Size, Human) & ' ');
+    Basic_Proc.Put_Output (Size_Image (Entity.Size, Human) & ' ');
 
     -- Modif time
     -- Date_Image is "YYyy-Mm-DdTHh:Mm:Ss.mmm"
@@ -484,30 +490,30 @@ package body Output is
     if not Date_Iso then
       Date(11) := ' ';
     end if;
-    Ada.Text_Io.Put (Date(1 .. 19) & ' ');
+    Basic_Proc.Put_Output (Date(1 .. 19) & ' ');
 
     -- Entity name
-    Ada.Text_Io.Put (Name_Image (Entity) );
+    Basic_Proc.Put_Output (Name_Image (Entity) );
 
     -- Link
     if Entity.Kind = Directory.Link then
       if Entity.Link_Ok then
-        Ada.Text_Io.Put (" -> ");
+        Basic_Proc.Put_Output (" -> ");
       else
-        Ada.Text_Io.Put (" => ");
+        Basic_Proc.Put_Output (" => ");
       end if;
-      Ada.Text_Io.Put (Entity.Link.Image);
+      Basic_Proc.Put_Output (Entity.Link.Image);
       if Classify and then Entity.Link_Ok
       and then Char_Of (Entity.Link_Kind, Entity.Link_Rights)
                        /= Default_Char then
-        Ada.Text_Io.Put (Char_Of (Entity.Link_Kind, Entity.Link_Rights));
+        Put_Output (Char_Of (Entity.Link_Kind, Entity.Link_Rights));
       end if;
     elsif Classify
     and then Char_Of (Entity.Kind, Entity.Rights) /= Default_Char then
-      Ada.Text_Io.Put (Char_Of (Entity.Kind, Entity.Rights));
+      Put_Output (Char_Of (Entity.Kind, Entity.Rights));
     end if;
     -- Done
-    Ada.Text_Io.New_Line;
+    Basic_Proc.New_Line_Output;
   end Put_Long;
 
   -- Sort list and put according to style
@@ -549,18 +555,18 @@ package body Output is
       exit when not Moved;
    end loop;
    if Append_New_Line and then Format_Kind = Simple then
-     Ada.Text_Io.New_Line;
+     Basic_Proc.New_Line_Output;
    end if;
   end Put;
 
   procedure Put_Dir (Name : in String) is
   begin
-    Ada.Text_Io.Put_Line (Name & ":");
+    Basic_Proc.Put_Line_Output (Name & ":");
   end Put_Dir;
 
   procedure New_Line is
   begin
-    Ada.Text_Io.New_Line;
+    Basic_Proc.New_Line_Output;
   end New_Line;
 
   -- Put Total size, no new_line
@@ -570,7 +576,7 @@ package body Output is
 
   begin
     -- Bytes
-    Ada.Text_Io.Put ("Total size: " & Total_Image (Size) & "B");
+    Basic_Proc.Put_Output ("Total size: " & Total_Image (Size) & "B");
     -- kBytes rounded
     Split (Size, Kilosi, Kilosf);
     if Kilosf < 5 then
@@ -578,14 +584,14 @@ package body Output is
     else
       Kilos := Kilosi + 1;
     end if;
-    Ada.Text_Io.Put (" " & Total_Image (Kilos) & "kB");
+    Basic_Proc.Put_Output (" " & Total_Image (Kilos) & "kB");
 
     -- MBytes and tenth
     Split (Kilos, Kilosi, Kilosf);
     if Kilosi = 0 and then Kilosf = 0 then
       return;
     end if;
-    Ada.Text_Io.Put (" " & Total_Image (Kilosi)
+    Basic_Proc.Put_Output (" " & Total_Image (Kilosi)
                    & "." & Total_Image (Kilosf) & "MB");
     if Kilosf < 5 then
       Kilos := Kilosi;
@@ -598,7 +604,7 @@ package body Output is
     if Kilosi = 0 and then Kilosf = 0 then
       return;
     end if;
-    Ada.Text_Io.Put (" " & Total_Image (Kilosi)
+    Basic_Proc.Put_Output (" " & Total_Image (Kilosi)
                    & "." & Total_Image (Kilosf) & "GB");
     if Kilosf < 5 then
       Kilos := Kilosi;
@@ -611,7 +617,7 @@ package body Output is
     if Kilosi = 0 and then Kilosf = 0 then
       return;
     end if;
-    Ada.Text_Io.Put (" " & Total_Image (Kilosi)
+    Basic_Proc.Put_Output (" " & Total_Image (Kilosi)
                    & "." & Total_Image (Kilosf) & "TB");
   end Put_Size;
 

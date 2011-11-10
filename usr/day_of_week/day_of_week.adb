@@ -1,5 +1,5 @@
-with Ada.Calendar, Ada.Text_Io;
-with As.B, Perpet, Argument, Day_Mng, Normal, Mixed_Str;
+with Ada.Calendar;
+with Basic_Proc, As.B, Perpet, Argument, Day_Mng, Normal, Mixed_Str;
 procedure Day_Of_Week is
 
   Day   : Ada.Calendar.Day_Number;
@@ -19,10 +19,9 @@ procedure Day_Of_Week is
 
   procedure Usage is
   begin
-    Ada.Text_Io.Put_Line("Syntax error or invalid date.");
-    Ada.Text_Io.Put_Line(" Usage: "
-                 & Argument.Get_Program_Name
-                 & " [ dd/mm/yyyy ]");
+    Basic_Proc.Put_Line_Error ("Syntax error or invalid date.");
+    Basic_Proc.Put_Line_Error (" Usage: "
+                 & Argument.Get_Program_Name & " [ dd/mm/yyyy ]");
   end Usage;
 
   function Is_Digit (C : Character) return Boolean is
@@ -141,7 +140,7 @@ begin
     Delta_Date_1 := Perpet."-" (T1, T);
   exception
     when others =>
-      Ada.Text_Io.Put_Line ("Internal error");
+      Basic_Proc.Put_Line_Error ("Internal error");
       raise;
   end;
 
@@ -171,7 +170,7 @@ begin
   end if;
 
   -- Display result
-  Ada.Text_Io.Put_Line (Txt.Image
+  Basic_Proc.Put_Line_Output (Txt.Image
        & " "
        & Verb.Image
        & " "
@@ -185,7 +184,7 @@ begin
        & ", in week"
        & Perpet.Week_Of_Year_Range'Image (Perpet.Get_Week_Of_Year (T))
        & ",");
-  Ada.Text_Io.Put_Line (" the"
+  Basic_Proc.Put_Line_Output (" the"
        & Perpet.Day_Range'Image (Day_No)
        & Th
        & " day of the year,"

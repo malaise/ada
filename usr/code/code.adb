@@ -1,12 +1,11 @@
-with Ada.Text_Io, Ada.Characters.Latin_1;
-with As.B, Sys_Calls, My_Io, Argument, Upper_Str, Normal, My_Math;
+with Ada.Characters.Latin_1;
+with As.U, As.B, Sys_Calls, Argument, Upper_Str, Normal, My_Math, Text_Line,
+     Basic_Proc;
 with Grid_1, Grid_2, Vigenere;
 
 procedure Code is
   Code : Boolean;
-  Max_Line_Len : constant := 1024;
-  Buff : String (1 .. Max_Line_Len);
-  Max_File_Len : constant := 58;
+  Buff : As.U.Asu_Us;
   Rec : Grid_1.Coordinate_Rec;
   -- Better not allocate that in stack, but in heap.
   type Access_Long_String is access Grid_2.Long_String;
@@ -15,13 +14,12 @@ procedure Code is
   File_Too_Long : exception;
 
 
-  subtype Line_Index is Natural range 0 .. Max_Line_Len;
-  Len : Line_Index;
-  Min_Key_Len : constant Line_Index := 8;
-  Line_Too_Long : exception;
+  Key_Len : Natural;
+  Min_Key_Len : constant Natural := 8;
   Key : As.B.Asb_Bs(80);
-  In_File  : Ada.Text_Io.File_Type;
-  Out_File : Ada.Text_Io.File_Type;
+  Key_Str : String (1 .. Key.Max);
+  In_File  : Text_Line.File_Type;
+  Out_File : Text_Line.File_Type;
   Sl : Vigenere.Long_Positive;
   Si : Vigenere.Long_Positive;
   C : Character;
@@ -38,27 +36,20 @@ procedure Code is
 
   procedure Code_1 is
   begin
-    begin
-      Len := Len + 1;
-    exception
-      when Constraint_Error =>
-        raise Line_Too_Long;
-    end;
-    Buff(Len) := Ada.Characters.Latin_1.Cr;
-    for I in 1 .. Len loop
+    for I in 1 .. Buff.Length loop
       begin
-        Rec := Grid_1.Encode(Buff(I));
+        Rec := Grid_1.Encode(Buff.Element(I));
       exception
         when Grid_1.Invalid_Character =>
-          Ada.Text_Io.Put_Line ("ERROR, invalid character.");
-          Ada.Text_Io.Put_Line (Buff(1 .. Len));
-          for J in 1 .. I-1 loop
-            Ada.Text_Io.Put ('-');
+          Basic_Proc.Put_Line_Output ("ERROR, invalid character.");
+          Basic_Proc.Put_Line_Output (Buff.Image);
+          for J in 1 .. I - 1 loop
+            Basic_Proc.Put_Output ("-");
           end loop;
-          Ada.Text_Io.Put_Line ("^");
+          Basic_Proc.Put_Line_Output ("^");
           raise;
       end;
-      if Sl > Str'Last then
+      if Sl > Str'Last - 2 then
         raise File_Too_Long;
       end if;
       Str(Sl) := Rec.Row;
@@ -69,15 +60,15 @@ procedure Code is
 
   procedure Decode_1 is
   begin
-    Len := 0;
+    Buff.Set_Null;
     loop
+      exit when Si > Sl - 1;
       Rec.Row := Str(Si);
       Rec.Col := Str(Si + 1);
       Si := Si + 2;
       C := Grid_1.Decode(Rec);
-      Len := Len + 1;
-      Buff(Len) := C;
-      exit when C = Ada.Characters.Latin_1.Cr;
+      Buff.Append (C);
+      exit when C = Ada.Characters.Latin_1.Lf;
     end loop;
   end Decode_1;
 
@@ -97,62 +88,59 @@ begin
     end if;
   exception
     when others =>
-      My_Io.Put_Line ("Wrong argument. Usage : "
+      Basic_Proc.Put_Line_Error ("Wrong argument. Usage : "
                      & Argument.Get_Parameter(Occurence => 0)
                      & " -c  |  -d     <input_file> [ <output_file> ] ");
       return;
   end;
 
   -- Get input file name
-  Argument.Get_Parameter (Buff(1 .. Max_File_Len), Len, Occurence => 2);
+  Argument.Get_Parameter (Buff, Occurence => 2);
   -- Open input file
   begin
-    Ada.Text_Io.Open (In_File, Ada.Text_Io.In_File, Buff(1 .. Len));
+    In_File.Open_All (Text_Line.In_File, Buff.Image);
   exception
     when others =>
-      My_Io.Put_Line ("Unable to open input file >"
-                     & Buff (1 .. Len) & "<. Abort.");
+      Basic_Proc.Put_Line_Error ("Unable to open input file >"
+                               & Buff.Image & "<. Abort.");
       raise;
   end;
 
   -- Get output file name
   if Argument.Get_Nbre_Arg = 3 then
-    Argument.Get_Parameter (Buff(1 .. Max_File_Len), Len, Occurence => 3);
+    Argument.Get_Parameter (Buff, Occurence => 3);
     -- Open output file
     begin
-      begin
-        Ada.Text_Io.Open (Out_File, Ada.Text_Io.Out_File, Buff(1 .. Len));
-      exception
-        when Ada.Text_Io.Name_Error =>
-          Ada.Text_Io.Create (Out_File, Ada.Text_Io.Out_File, Buff(1 .. Len));
-      end;
+      Out_File.Create_All (Buff.Image);
     exception
       when others =>
-        My_Io.Put_Line ("Unable to open/create output file >"
-                      & Buff (1 .. Len) & "<. Abort.");
+        Basic_Proc.Put_Line_Error ("Unable to create output file >"
+                                 & Buff.Image & "<. Abort.");
         raise;
     end;
+  else
+    Out_File.Open_All (Text_Line.Out_File);
   end if;
 
   -- Get key
   loop
     Is_A_Tty := Echo(True);
     if Is_A_Tty then
-      My_Io.Put ("Key: ");
+      Basic_Proc.Put_Output ("Key: ");
       Is_A_Tty := Echo (False);
     end if;
-    My_Io.Get_Line (Buff, Len);
+    Basic_Proc.Get_Input (Key_Str, Key_Len);
     if Is_A_Tty then
       Is_A_Tty := Echo(True);
-      My_Io.New_Line;
+      Basic_Proc.New_Line_Output;
     end if;
-    if Len = 0 then
-      My_Io.Put_Line ("Empty key.");
+    if Key_Len = 0 then
+      Basic_Proc.Put_Line_Output ("Empty key.");
       if not Is_A_Tty then
         return;
       end if;
-    elsif Code and then Len < Min_Key_Len then
-      My_Io.Put_Line ("Key too short ("
+    elsif Code and then Key_Len < Min_Key_Len then
+      Basic_Proc.Put_Line_Output ("Key too short ("
                     & Normal(Min_Key_Len, 1) & " min), try again.");
       if not Is_A_Tty then
         return;
@@ -161,7 +149,7 @@ begin
       exit;
     end if;
   end loop;
-  Key.Set (Buff (1 .. Len));
+  Key.Set (Key_Str (1 .. Key_Len));
 
   -- Initialize coding
   Grid_1.Initialize(Key.Image);
@@ -170,24 +158,20 @@ begin
     -- Code through code 1
     Sl := 1;
     -- Code key
-    Len := Key.Length;
-    Buff(1 .. Len) := Key.Image;
+    Buff.Set (Key.Image & Ada.Characters.Latin_1.Lf);
     Code_1;
     -- Code input file
     loop
       -- Read input file
-      begin
-        Ada.Text_Io.Get_Line (In_File, Buff, Len);
-      exception
-        when Ada.Text_Io.End_Error => exit;
-      end;
+      Buff := In_File.Get;
+      exit when Buff.Is_Null;
       -- Code line
       Code_1;
     end loop;
     Sl := Sl - 1;
 
     -- Code through code 2
-    Str (1 .. Sl) := Grid_2.Encode(Key.Image, Str(1 .. Sl));
+    Str(1 .. Sl) := Grid_2.Encode (Key.Image, Str(1 .. Sl));
 
     -- Code through vigenere
     Vigenere.Encode (Key.Image, Str(1 .. Sl));
@@ -197,14 +181,12 @@ begin
     -- Read input file
     Sl := 1;
     loop
-      begin
-        Ada.Text_Io.Get_Line (In_File, Buff, Len);
-      exception
-        when Ada.Text_Io.End_Error => exit;
-      end;
+      Buff := In_File.Get;
+      Text_Line.Trim (Buff);
+      exit when Buff.Is_Null;
       -- Store characters
-      for I in 1 .. Len loop
-        Str(Sl) := Buff(I);
+      for I in 1 .. Buff.Length loop
+        Str(Sl) := Buff.Element (I);
         Sl := Sl + 1;
       end loop;
     end loop;
@@ -222,32 +204,29 @@ begin
 
   end if;
 
-  if Argument.Get_Nbre_Arg = 3 then
-    Ada.Text_Io.Set_Output (Out_File);
-  end if;
-
   if Code then
     -- Output result (cut each 80 cars)
     for I in 1 .. Sl loop
-      Ada.Text_Io.Put (Str(I));
+      Out_File.Put (Str(I) & "");
       if I mod 78 = 0 then
-        Ada.Text_Io.New_Line;
+        Out_File.New_Line;
       end if;
     end loop;
     if Sl mod 78 /= 0 then
-      Ada.Text_Io.New_Line;
+      Out_File.New_Line;
     end if;
   else
     -- Decode through code 1 and put
     begin
       Si := 1;
       Decode_1;
-      if Buff(1 .. Len-1) = Key.Image then
+      Buff.Delete (Buff.Length, Buff.Length);
+      if Buff.Image = Key.Image then
         -- Decode if key matches
         loop
           Decode_1;
-          exit when Len = 0;
-          Ada.Text_Io.Put_Line (Buff(1 .. Len-1));
+          exit when Buff.Is_Null;
+          Out_File.Put (Buff.Image);
         end loop;
       end if;
     exception
@@ -256,17 +235,13 @@ begin
     end;
   end if;
 
-  Ada.Text_Io.Close (In_File);
-  Ada.Text_Io.Set_Output (Ada.Text_Io.Standard_Output);
-  if Ada.Text_Io.Is_Open (Out_File) then
-    Ada.Text_Io.Close (Out_File);
-  end if;
+  In_File.Close_All;
+  Out_File.Close_All;
 exception
-  when Line_Too_Long =>
-    Ada.Text_Io.Put_Line ("ERROR, input line too long.");
   when File_Too_Long =>
-    Ada.Text_Io.Put_Line ("ERROR, input file too long.");
+    Basic_Proc.Put_Line_Error ("ERROR, input file too long.");
   when Grid_1.Invalid_Character =>
+    -- Error while decoding
     null;
 end Code;
 

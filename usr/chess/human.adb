@@ -1,5 +1,4 @@
-with Ada.Text_Io;
-
+with Basic_Proc;
 with Pieces, Space.Board, Screen, Game, Debug, Connection, File, Players,
      Set_Up;
 
@@ -31,7 +30,7 @@ package body Human is
     Human.Mode := Mode;
     Human.Color := Color;
     if Debug.Get (Debug.Human) then
-      Ada.Text_Io.Put_Line ("Human start in mode " & Play_Mode'Image(Mode)
+      Basic_Proc.Put_Line_Output ("Human start in mode " & Play_Mode'Image(Mode)
          & " with color " & Space.Color_List'Image(Color));
     end if;
 
@@ -150,9 +149,9 @@ package body Human is
         Action := Players.Next_Action (Move_Color);
         exit when not Action.Valid;
         Debug.Put (Action);
-        Ada.Text_Io.New_Line;
+        Basic_Proc.New_Line_Output;
       end loop;
-      Ada.Text_Io.New_Line;
+      Basic_Proc.New_Line_Output;
     end if;
 
 
@@ -165,10 +164,10 @@ package body Human is
         exit Get_One;
       end if;
       if Debug.Some then
-        Ada.Text_Io.Put (">> " & Space.Color_List'Image(Move_Color)
+        Basic_Proc.Put_Output (">> " & Space.Color_List'Image(Move_Color)
                        & " Playing: ");
         Debug.Put(Action);
-        Ada.Text_Io.New_Line;
+        Basic_Proc.New_Line_Output;
       end if;
       Result := Game.Do_Move (Action);
       exit Get_One when Result /= Game.Nok;
@@ -193,7 +192,7 @@ package body Human is
                or else Result = Game.Stalemate
                or else Result = Game.Checkmate;
     if Debug.Get (Debug.Human) then
-      Ada.Text_Io.Put_Line ("Human end of play. The_End is "
+      Basic_Proc.Put_Line_Output ("Human end of play. The_End is "
                           & Boolean'Image (The_End));
     end if;
   end Do_Play;
@@ -207,7 +206,7 @@ package body Human is
     Screen.Reset_Time;
 
     if Debug.Get (Debug.Human) then
-      Ada.Text_Io.Put_Line ("Human waiting");
+      Basic_Proc.Put_Line_Output ("Human waiting");
     end if;
     -- Wait until opponent move
     loop
@@ -216,7 +215,7 @@ package body Human is
     end loop;
     Action := Connection.Receive;
     if Debug.Get (Debug.Human) then
-      Ada.Text_Io.Put_Line ("Human received move");
+      Basic_Proc.Put_Line_Output ("Human received move");
     end if;
 
     if not Action.Valid then
@@ -234,7 +233,7 @@ package body Human is
       The_End := Result = Game.Stalemate or else Result = Game.Checkmate;
     end if;
     if Debug.Get (Debug.Human) then
-      Ada.Text_Io.Put_Line ("Human end of wait. The_End is "
+      Basic_Proc.Put_Line_Output ("Human end of wait. The_End is "
                           & Boolean'Image (The_End));
     end if;
 
@@ -268,18 +267,18 @@ package body Human is
         or else Pieces.Id_Of (Piece.all).Kind /=  Action.Piece then
           Screen.Put (Color, Move_Color, "Invalid action", True);
           if Debug.Get (Debug.Human) then
-            Ada.Text_Io.Put ("Loading invalid action ");
+            Basic_Proc.Put_Output ("Loading invalid action ");
             Debug.Put (Action);
-            Ada.Text_Io.New_Line;
+            Basic_Proc.New_Line_Output;
           end if;
           raise Load_Error;
         end if;
       end if;
 
       if Debug.Get (Debug.Human) then
-        Ada.Text_Io.Put ("Loading ");
+        Basic_Proc.Put_Output ("Loading ");
         Debug.Put (Action);
-        Ada.Text_Io.New_Line;
+        Basic_Proc.New_Line_Output;
       end if;
       exit when not Action.Valid;
 
@@ -303,7 +302,7 @@ package body Human is
       Move_Color := Space.Opponent (Move_Color);
     end loop;
     if Debug.Get (Debug.Human) then
-      Ada.Text_Io.Put_Line ("End of loading. Move is "
+      Basic_Proc.Put_Line_Output ("End of loading. Move is "
           & Space.Color_List'Image(Move_Color));
     end if;
   exception

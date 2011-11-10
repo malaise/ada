@@ -1,5 +1,4 @@
-with Ada.Text_Io;
-
+with Basic_Proc;
 with Pieces, Space.Board, Team, Screen, Debug;
 package body Game is
 
@@ -183,13 +182,13 @@ package body Game is
         return;
       end if;
       if In_Check then
-        Ada.Text_Io.Put ("In");
+        Basic_Proc.Put_Output ("In");
       else
-        Ada.Text_Io.Put ("No");
+        Basic_Proc.Put_Output ("No");
       end if;
-      Ada.Text_Io.Put (" check with ");
+      Basic_Proc.Put_Output (" check with ");
       Debug.Put (Action);
-      Ada.Text_Io.New_Line;
+      Basic_Proc.New_Line_Output;
     end Debug_Check;
 
   begin

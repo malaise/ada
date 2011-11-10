@@ -1,5 +1,4 @@
-with Ada.Text_Io;
-with As.U, Lower_Str, Argument, Tcp_Util;
+with As.U, Lower_Str, Argument, Tcp_Util, Basic_Proc;
 with Debug, Space, Connection, Human, File, Screen;
 
 procedure Chess is
@@ -15,17 +14,17 @@ procedure Chess is
 
   procedure Usage is
   begin
-    Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
+    Basic_Proc.Put_Line_Output ("Usage: " & Argument.Get_Program_Name
            & " [ { -D<debug_flag> } ] <mode>");
-    Ada.Text_Io.Put_Line ("  <mode> ::= <server> | <client> | <both>");
-    Ada.Text_Io.Put_Line ("    <server> ::= -S -c<color> <port> [ <replay_file> ]");
-    Ada.Text_Io.Put_Line ("    <client> ::= -C -c<color> <port> -s<server_host>");
-    Ada.Text_Io.Put_Line ("    <both>   ::= -B [ <init_option> ]");
-    Ada.Text_Io.Put_Line ("      <color> ::=  white | black");
-    Ada.Text_Io.Put_Line ("      <port>  ::=  -P<port_name> | -p<port_num>");
-    Ada.Text_Io.Put_Line ("      <init_option> ::= <replay_file> | <setup_file>");
-    Ada.Text_Io.Put_Line ("        <replay_file> ::= -f<file_name> [ -w ]");
-    Ada.Text_Io.Put_Line ("        <setup_file>  ::= -i<init_file>");
+    Basic_Proc.Put_Line_Output ("  <mode> ::= <server> | <client> | <both>");
+    Basic_Proc.Put_Line_Output ("    <server> ::= -S -c<color> <port> [ <replay_file> ]");
+    Basic_Proc.Put_Line_Output ("    <client> ::= -C -c<color> <port> -s<server_host>");
+    Basic_Proc.Put_Line_Output ("    <both>   ::= -B [ <init_option> ]");
+    Basic_Proc.Put_Line_Output ("      <color> ::=  white | black");
+    Basic_Proc.Put_Line_Output ("      <port>  ::=  -P<port_name> | -p<port_num>");
+    Basic_Proc.Put_Line_Output ("      <init_option> ::= <replay_file> | <setup_file>");
+    Basic_Proc.Put_Line_Output ("        <replay_file> ::= -f<file_name> [ -w ]");
+    Basic_Proc.Put_Line_Output ("        <setup_file>  ::= -i<init_file>");
   end Usage;
 
   procedure Parse_Debug (Flag : in String; Option : in Debug.Debug_List) is
@@ -212,20 +211,20 @@ exception
   when Invalid_Argument | Argument.Argument_Not_Found =>
     Usage;
   when Connection.Color_Error =>
-    Ada.Text_Io.Put_Line ("Server uses "
+    Basic_Proc.Put_Line_Output ("Server uses "
             & Lower_Str (Argument.Get_Parameter (1, "c"))
             & ". Try alternate color.");
   when Connection.Busy_Error =>
-    Ada.Text_Io.Put_Line ("Server is busy.");
+    Basic_Proc.Put_Line_Output ("Server is busy.");
   when Human.Load_Error =>
-    Ada.Text_Io.Put_Line ("Load error.");
+    Basic_Proc.Put_Line_Output ("Load error.");
   when File.File_Error =>
-    Ada.Text_Io.Put_Line ("File I/O error.");
+    Basic_Proc.Put_Line_Output ("File I/O error.");
   when File.Format_Error =>
-    Ada.Text_Io.Put_Line ("File format error.");
+    Basic_Proc.Put_Line_Output ("File format error.");
   when Screen.Font_Too_Small =>
-    Ada.Text_Io.Put_Line ("Current font is too small.");
+    Basic_Proc.Put_Line_Output ("Current font is too small.");
   when Screen.Font_Too_Big =>
-    Ada.Text_Io.Put_Line ("Current font is too big.");
+    Basic_Proc.Put_Line_Output ("Current font is too big.");
 end Chess;
 

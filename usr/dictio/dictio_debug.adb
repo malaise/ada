@@ -1,4 +1,4 @@
-with Ada.Text_Io, Ada.Calendar;
+with Ada.Calendar;
 with Sys_Calls, Normal, Day_Mng, Environ;
 package body Dictio_Debug is
 
@@ -46,7 +46,7 @@ package body Dictio_Debug is
 
   procedure Put (Str : in String) is
   begin
-    Ada.Text_Io.Put_Line (Date_Image & " " & Str);
+    Sys_Calls.Put_Line_Output (Date_Image & " " & Str);
   end Put;
 
   procedure Put_Error (Str : in String) is

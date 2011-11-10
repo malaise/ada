@@ -1,5 +1,4 @@
-with Ada.Text_Io;
-with Argument;
+with Argument, Basic_Proc;
 with Common;
 procedure C_Magic is
   Dim : Common.Dim_Range;
@@ -15,7 +14,7 @@ begin
     Dim := Common.Dim_Range'Value(Argument.Get_Parameter);
   exception
     when others =>
-      Ada.Text_Io.Put_Line ("SYNTAX ERROR. Usage : c_magic <dim>");
+      Basic_Proc.Put_Line_Error ("SYNTAX ERROR. Usage : c_magic <dim>");
       raise;
   end;
 

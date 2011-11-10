@@ -1,4 +1,5 @@
-with Ada.Text_Io, Ada.Sequential_Io, Ada.Exceptions;
+with Ada.Sequential_Io, Ada.Exceptions;
+with Basic_Proc;
 with Oper_Def;
 package body File_Mng is
 
@@ -90,7 +91,7 @@ package body File_Mng is
     when F_Access_Error =>
       raise;
     when File_Error : others =>
-      Ada.Text_Io.Put_Line ("Exception "
+      Basic_Proc.Put_Line_Error ("Exception "
                           & Ada.Exceptions.Exception_Name(File_Error)
                           & " raised while loading file " & File_Name);
       begin
@@ -159,7 +160,7 @@ package body File_Mng is
     when F_Access_Error =>
       raise;
     when File_Error : others =>
-      Ada.Text_Io.Put_Line ("Exception "
+      Basic_Proc.Put_Line_Error ("Exception "
                           & Ada.Exceptions.Exception_Name(File_Error)
                           & " raised while closing file " & File_Name);
       begin
