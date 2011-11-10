@@ -1,62 +1,98 @@
-with Ada.Text_Io;
-with Normal, Sys_Calls, Text_Line;
+with Normal, Sys_Calls, Text_Line, As.U, My_Math;
 
 -- Count Ada statements
 package body One_File_Statements is
 
-  -- Total Nb of statements
-  Total : Natural := 0;
-  File_Error : exception;
-  function Count_Statements_Of_File (File_Name : String) return Natural is
+  type Metrics is record
+    Statements : Natural := 0;
+    Comments : Natural := 0;
+    Lines : Positive := 1;
+  end record;
 
-    File  : Ada.Text_Io.File_Type;
+  -- Total Nb of statements
+  Total : Metrics;
+  File_Error : exception;
+  function Count_Statements_Of_File (File_Name : String) return Metrics is
+
+    File  : Text_Line.File_Type;
     -- Current and prev chars
     C, Prev_C : Character := ' ';
     -- Character read head
     Next_C  : Character := ' ';
     Next_Set : Boolean := False;
     -- Current Nb of statements
-    Statements : Natural := 0;
+    Current : Metrics;
     -- Parentheses
     Levels : Natural := 0;
 
-    procedure Get (File : in Ada.Text_Io.File_Type; C : out Character) is
+    -- Cache of line
+    Line : As.U.Asu_Us;
+    Len : Natural := 0;
+    Index : Positive := 1;
+
+    End_Error : exception;
+
+    procedure Get (C : out Character) is
     begin
-      Ada.Text_Io.Get (File, C);
-    exception
-      when Ada.Text_Io.End_Error =>
+      if Index > Len then
+        Line := File.Get;
+        if Line.Is_Null then
+          raise End_Error;
+        end if;
+        Len := Line.Length;
+        Index := 1;
+      end if;
+
+      C := Line.Element (Index);
+      Index := Index + 1;
+
+      if C = Text_Line.Line_Feed_Char then
+        Current.Lines := Current.Lines + 1;
+      end if;
+   exception
+      when End_Error =>
         raise;
       when others =>
         Sys_Calls.Put_Line_Error ("Exception when reading line "
-                       & Ada.Text_Io.Positive_Count'Image(Ada.Text_Io.Line(File))
-                       & " of file " & File_Name);
+          & Current.Lines'Img & " of file " & File_Name);
         raise File_Error;
     end Get;
 
-    procedure Close (File : in out Ada.Text_Io.File_Type) is
+    procedure Skip_Line is
     begin
-      Ada.Text_Io.Close (File);
+      if Index <= Len then
+        Current.Lines := Current.Lines + 1;
+        -- Force reading of next line
+        Len := 0;
+        Index := 1;
+      end if;
+    end Skip_Line;
+
+    procedure Close is
+    begin
+      File.Close_All;
     exception
-      when others => null;
+      when others =>
+        null;
     end Close;
 
     procedure Skip_Until (Upto : in Character) is
     begin
       loop
-        Get (File, C);
+        Get (C);
         exit when C = Upto;
       end loop;
     end Skip_Until;
 
-    function Line_No return Ada.Text_Io.Positive_Count is
+    function Line_No return Positive is
     begin
-      return Ada.Text_Io.Line (File);
+      return Current.Lines;
     end Line_No;
 
   begin
 
     begin
-      Ada.Text_Io.Open (File, Ada.Text_Io.In_File, File_Name);
+      File.Open_All (File_Name);
     exception
       when others =>
         Sys_Calls.Put_Line_Error ("Exception when opening file "
@@ -70,16 +106,17 @@ package body One_File_Statements is
         C := Next_C;
         Next_Set := False;
       else
-        Get (File, C);
+        Get (C);
       end if;
 
       -- Check for comment on the line
       if C = '-' then
-        Get (File, C);
+        Get (C);
         -- Which is signaled by the '-' following a '-'
         if C = '-' then
           -- Then just skip the rest of the line and go to the next
-          Ada.Text_Io.Skip_Line (File);
+          Skip_Line;
+          Current.Comments := Current.Comments + 1;
         else
           -- Restore char
           Next_C := C;
@@ -91,7 +128,7 @@ package body One_File_Statements is
         -- must be a valid "statement terminator"
         if Levels = 0 then
           -- Skip parentheses cause every ';' within is a formal parameter list
-          Statements := Statements + 1;
+          Current.Statements := Current.Statements + 1;
         end if;
       elsif  C = '(' then
         -- Count the number of levels of parentheses
@@ -111,8 +148,8 @@ package body One_File_Statements is
       elsif C = ''' then
         -- Character literals are just three characters long including '
         -- Attributes are skipped the same way because longer than one char
-        Get (File, Prev_C);
-        Get (File, C);
+        Get (Prev_C);
+        Get (C);
         -- Handle specific Qualifier'(...
         if C /= ''' then
           -- This is not a char literal
@@ -130,23 +167,49 @@ package body One_File_Statements is
     end loop;
 
   exception
-    when Ada.Text_Io.End_Error =>
-      Close (File);
+    when End_Error =>
+      Close;
       if Levels /= 0 then
         Sys_Calls.Put_Line_Error ("Warning: Ending file with parenthesis level"
                             & Levels'Img & ".");
       end if;
-      return Statements;
+      if Current.Lines >= 2 then
+        Current.Lines := Current.Lines - 2;
+      elsif Current.Lines >= 1 then
+        Current.Lines := Current.Lines - 1;
+      end if;
+      return Current;
     when File_Error =>
-      Close (File);
+      Close;
       raise;
     when others =>
-      Close (File);
+      Close;
       Sys_Calls.Put_Line_Error ("Exception when processing line "
-                      & Ada.Text_Io.Positive_Count'Image(Ada.Text_Io.Line(File))
-                      & " of file " & File_Name);
+          & Current.Lines'Img & " of file " & File_Name);
       raise;
   end Count_Statements_Of_File;
+
+
+  Max_Dig : constant := 9;
+  Gap : constant String := "  ";
+  procedure Put_Vals (File : in out Text_Line.File_Type;
+                      Vals : Metrics) is
+    Percent : Natural;
+    Lines : Natural;
+    use type My_Math.Real;
+  begin
+    if Vals.Statements = 0 then
+      Percent := 0;
+      Lines := 0;
+    else
+      Percent := Natural (My_Math.Round (My_Math.Real (Vals.Comments) * 100.0
+                                       / My_Math.Real (Vals.Statements)));
+      Lines := Vals.Lines;
+    end if;
+    Text_Line.Put_Line (File, Gap & Normal(Vals.Statements, Max_Dig)
+                            & Gap & Normal(Percent, 4)
+                            & Gap & Normal(Lines, Max_Dig));
+  end Put_Vals;
 
   -- If File_Name is empty, put total so far and reset it
   procedure Print_Statements_Of_File (
@@ -155,10 +218,9 @@ package body One_File_Statements is
 
     File : Text_Line.File_Type;
     File_Name_Len : constant Natural := File_Name'Length;
-    Count : Integer range -1 ..Integer'Last;
+    Current : Metrics;
+    Ok : Boolean;
     Max_Tab : constant := 68;
-    Max_Dig : constant := 8;
-    Gap : constant String := "  ";
   begin
 
     Text_Line.Open (File, Text_Line.Out_File, Sys_Calls.Stdout);
@@ -172,27 +234,28 @@ package body One_File_Statements is
         Text_Line.New_Line (File);
 
         declare
-          Total_Str : constant String := "TOTAL statements";
+          Total_Str : constant String := "TOTAL statements %comments lines";
         begin
           Text_Line.Put (File, Total_Str);
           for I in Integer range Total_Str'Length .. Max_Tab loop
             Text_Line.Put (File, " ");
           end loop;
         end;
-        Text_Line.Put_Line (File, Gap & Normal(Total, Max_Dig));
+        Put_Vals (File, Total);
       else
-        -- Just put number
-        Text_Line.Put (File, Normal(Total, Max_Dig));
+        -- Just put number of statements
+        Text_Line.Put (File, Normal(Total.Statements, Max_Dig));
       end if;
-      Total := 0;
+      Total := (others => <>);
 
     else
       -- Statements of file
       begin
-        Count := One_File_Statements.Count_Statements_Of_File(File_Name);
+        Ok := True;
+        Current := One_File_Statements.Count_Statements_Of_File(File_Name);
       exception
         when others =>
-          Count := -1;
+          Ok := False;
       end;
 
       if Put_It then
@@ -210,15 +273,17 @@ package body One_File_Statements is
           end loop;
         end if;
 
-        if Count >= 0 then
-          Text_Line.Put_Line (File, Gap & Normal(Count, Max_Dig));
+        if Ok then
+          Put_Vals (File, Current);
         else
           Text_Line.Put_Line (File, Gap & " SKIPPED");
         end if;
       end if;
 
-      if Count >= 0 then
-        Total := Total + Count;
+      if Ok then
+        Total.Statements := Total.Statements + Current.Statements;
+        Total.Comments := Total.Comments + Current.Comments;
+        Total.Lines := Total.Lines + Current.Lines;
       end if;
 
     end if;
