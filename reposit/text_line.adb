@@ -304,10 +304,93 @@ package body Text_Line is
     return Line;
   end Trim;
 
-  overriding procedure Finalize (File : in out File_Type) is
+ -- Open the fd associated to File_Name (stdin if empty) for reading
+  --  and open File to it
+  procedure Open_All (File : in out File_Type;
+                      Mode : in File_Mode;
+                      File_Name : in String := "") is
+    Fd : Sys_Calls.File_Desc;
+    Sys_Mode : Sys_Calls.File_Mode ;
   begin
-    if Is_Open (File) then
+    if File.Acc /= null then
+      raise Status_Error;
+    end if;
+    if File_Name /= "" then
+      case Mode is
+        when In_File => Sys_Mode := Sys_Calls.In_File;
+        when Out_File => Sys_Mode := Sys_Calls.Out_File;
+        when Inout_File => Sys_Mode := Sys_Calls.Inout_File;
+      end case;
+      begin
+        Fd := Sys_Calls.Open (File_Name, Sys_Mode);
+      exception
+        when Sys_Calls.Name_Error =>
+          raise Name_Error;
+        when Sys_Calls.System_Error =>
+          raise Io_Error;
+      end;
+    else
+      case Mode is
+        when In_File => Fd := Sys_Calls.Stdin;
+        when Out_File => Fd := Sys_Calls.Stdout;
+        when Inout_File => raise Mode_Error;
+      end case;
+    end if;
+    Open (File, Mode, Fd);
+  end Open_All;
+
+  -- Create (Mode Out_File)
+  procedure Create_All (File : in out File_Type;
+                        File_Name : in String) is
+    Fd : Sys_Calls.File_Desc;
+  begin
+    if File.Acc /= null then
+      raise Status_Error;
+    end if;
+    Fd := Sys_Calls.Create (File_Name);
+    Open (File, Out_File, Fd);
+  end Create_All;
+
+  -- Close the file then the fd (if not stdin)
+  -- May raise Status_Error if File is not open
+  procedure Close_All (File : in out File_Type) is
+    Fd : Sys_Calls.File_Desc;
+    use type Sys_Calls.File_Desc;
+  begin
+    if File.Acc = null then
+      raise Status_Error;
+    end if;
+    Fd := File.Acc.Fd;
+    Close (File);
+    if Fd /= Sys_Calls.Stdin
+    and then Fd /= Sys_Calls.Stdout
+    and then Fd /= Sys_Calls.Stderr then
+      begin
+        Sys_Calls.Close (Fd);
+      exception
+        when others =>
+          null;
+      end;
+    end if;
+  end Close_All;
+
+  overriding procedure Finalize (File : in out File_Type) is
+    Fd : Sys_Calls.File_Desc;
+    use type Sys_Calls.File_Desc;
+  begin
+    if File.Acc /= null then
+      Fd := File.Acc.Fd;
       Close (File);
+      if Fd /= Sys_Calls.Stdin
+      and then Fd /= Sys_Calls.Stdout
+      and then Fd /= Sys_Calls.Stderr then
+        begin
+          Sys_Calls.Close (Fd);
+        exception
+          when others =>
+            null;
+        end;
+      end if;
     end if;
   end Finalize;
 

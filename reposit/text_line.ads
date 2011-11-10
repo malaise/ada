@@ -22,7 +22,6 @@ package Text_Line is
 
   -- Dissociate a file desc from a Txt_Line file
   -- May raise Status_Error if File is not open
-  -- May raise Io_Error if IO error (flushing Out_File and Inout_File)
   procedure Close (File : in out File_Type);
 
   -- Returns if a file is open
@@ -78,6 +77,28 @@ package Text_Line is
   function Trim (Line : String;
                  Line_Feed : in String := Line_Feed_Str) return String;
 
+  -- Shortcuts to open/close the fd and the file together
+
+  -- Open the fd associated to File_Name (use stdin/stdout depending
+  --  on Mode if empty File_Name) and open File to it
+  -- May raise Name_Error or Io_Error if error opening File_Name
+  -- May raise Status_Error if File is already open
+  -- May raise Mode_Error if empty File_Name and Mode = Inout_File
+  procedure Open_All (File : in out File_Type;
+                      Mode : in File_Mode;
+                      File_Name : in String := "");
+
+  -- Create (Mode Out_File)
+  procedure Create_All (File : in out File_Type;
+                        File_Name : in String);
+
+  -- Close the file then the fd (if not stdin)
+  -- May raise Status_Error if File is not open
+  procedure Close_All (File : in out File_Type);
+
+
+  Name_Error : exception;
+  Mode_Error : exception;
   Status_Error : exception;
   Io_Error : exception;
 
