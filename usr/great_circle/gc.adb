@@ -1,4 +1,4 @@
-with Ada.Text_Io, Ada.Characters.Latin_1;
+with Ada.Characters.Latin_1;
 with As.B, Argument, Basic_Proc, Con_Io, Afpx, String_Mng, Language;
 with Conv, Lat_Lon, String_Util, Great_Circle;
 
@@ -6,9 +6,9 @@ procedure Gc is
 
   procedure Usage is
   begin
-    Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
+    Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
       & " [ add.mm.ss/oddd.mm.ss add.mm.ss/oddd.mm.ss ]");
-    Ada.Text_Io.Put_Line (" where a is N or S and o is E or W.");
+    Basic_Proc.Put_Line_Error (" where a is N or S and o is E or W.");
   end Usage;
 
   Debug : constant Boolean := False;
@@ -78,7 +78,7 @@ procedure Gc is
       Point_Txt.Append (Afpx.Decode_Field(Field, 0));
     end loop;
     if Debug then
-      Ada.Text_Io.Put_Line ("Decoded point: " & Point_Txt.Image);
+      Basic_Proc.Put_Line_Error ("Decoded point: " & Point_Txt.Image);
     end if;
     -- Replace Ndd°mm'ss"/Eddd°mm'ss" by Ndd.mm.ss/Eddd.mm.ss
     -- "°" has already been replaced by " " in Afpx.Decode_Field
@@ -86,17 +86,17 @@ procedure Gc is
     Point_Txt.Set (String_Mng.Replace (Point_Txt.Image, "'", "."));
     Point_Txt.Set (String_Mng.Replace (Point_Txt.Image, """", ""));
     if Debug then
-      Ada.Text_Io.Put_Line ("Parsed point: " & Point_Txt.Image);
+      Basic_Proc.Put_Line_Error ("Parsed point: " & Point_Txt.Image);
     end if;
     Point := String_Util.Str2Geo(Point_Txt.Image);
     if Debug then
-      Ada.Text_Io.Put_Line ("Got point OK: " & Point_Txt.Image);
+      Basic_Proc.Put_Line_Error ("Got point OK: " & Point_Txt.Image);
     end if;
     Ok := True;
   exception
     when others =>
       if Debug then
-        Ada.Text_Io.Put_Line ("Decode point Exception");
+        Basic_Proc.Put_Line_Error ("Decode point Exception");
       end if;
       Ok := False;
       Cursor := First_Fld;
@@ -136,8 +136,8 @@ begin
       -- Compute
       Great_Circle.Compute_Route(A, B, Heading, Distance);
       -- Put result
-      Ada.Text_Io.Put ("Route: " & String_Util.Angle2Str(Heading));
-      Ada.Text_Io.Put_Line ("   Distance(Nm): "
+      Basic_Proc.Put_Output ("Route: " & String_Util.Angle2Str(Heading));
+      Basic_Proc.Put_Line_Output ("   Distance(Nm): "
                         & String_Util.Dist2Str(Distance));
     exception
       when others =>

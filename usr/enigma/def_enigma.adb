@@ -5,9 +5,9 @@
 -- <switches> is pairs of letters, each letter appears at most once
 -- See Def_Enigma.txt for more information
 
-with Ada.Calendar, Ada.Text_Io;
+with Ada.Calendar;
 with As.B, Perpet, Argument, Day_Mng, Normal, Upper_Str, Rnd,
-     Num_Letters, Sys_Calls, String_Mng, Parser;
+     Num_Letters, Basic_Proc, String_Mng, Parser;
 with Types, Scrambler_Gen, Definition;
 procedure Def_Enigma is
 
@@ -26,12 +26,12 @@ procedure Def_Enigma is
 
   procedure Usage is
   begin
-    Sys_Calls.Put_Line_Error ("Syntax error.");
-    Sys_Calls.Put_Line_Error (" Usage: "
+    Basic_Proc.Put_Line_Error ("Syntax error.");
+    Basic_Proc.Put_Line_Error (" Usage: "
       & Argument.Get_Program_Name & " [ -text ] [ today | <date> | rnd | <text_key> | <enigma_setting> ]");
-    Sys_Calls.Put_Line_Error ("  <date> ::= dd/mm/yyyy");
-    Sys_Calls.Put_Line_Error ("  <enigma_setting> ::= <back> [ <rotors> <init> ] [ <switches> ]");
-    Sys_Calls.Set_Error_Exit_Code;
+    Basic_Proc.Put_Line_Error ("  <date> ::= dd/mm/yyyy");
+    Basic_Proc.Put_Line_Error ("  <enigma_setting> ::= <back> [ <rotors> <init> ] [ <switches> ]");
+    Basic_Proc.Set_Error_Exit_Code;
   end Usage;
 
   function Is_Digit (C : Character) return Boolean is
@@ -446,7 +446,7 @@ begin
         Prev_Scrambler := Got_Scrambler;
         Start := Stop + 3;
       end loop;
-      Sys_Calls.Set_Exit_Code (Start);
+      Basic_Proc.Set_Exit_Code (Start);
   when Key =>
     -- Get rotors init, get Nb of rotors
     begin
@@ -650,7 +650,7 @@ begin
 
   -- Put setting in internal format
   if Debug then
-    Sys_Calls.Put_Line_Error (
+    Basic_Proc.Put_Line_Error (
                  Reflector.Image
        & " r=" & Rotors.Image
        & " i=" & Init_Offset.Image
@@ -662,41 +662,41 @@ begin
   declare
     Num : constant Positive := To_Id (Reflector.Element (1));
   begin
-    Ada.Text_Io.Put (Xml.Get_Name (False, Num) & '@'
+    Basic_Proc.Put_Output (Xml.Get_Name (False, Num) & '@'
                    & Reflector.Element (2));
   end;
 
   if not Init_Offset.Is_Null then
-    Ada.Text_Io.Put (" -r");
+    Basic_Proc.Put_Output (" -r");
     for I in 1 .. Rotors.Length loop
       if I mod 2 = 1 then
         if I /= 1 then
-          Ada.Text_Io.Put ('#');
+          Basic_Proc.Put_Output ('#');
         end if;
         declare
           Name : constant String
                := Xml.Get_Name (True, To_Id (Rotors.Element (I)));
         begin
-          Ada.Text_Io.Put (Name & '@');
+          Basic_Proc.Put_Output (Name & '@');
         end;
       else
-        Ada.Text_Io.Put (Rotors.Element (I));
+        Basic_Proc.Put_Output (Rotors.Element (I));
       end if;
     end loop;
-    Ada.Text_Io.Put (" -i" & Init_Offset.Image);
+    Basic_Proc.Put_Output (" -i" & Init_Offset.Image);
   end if;
 
   if not Switch.Is_Null then
-    Ada.Text_Io.Put (" -s" & Switch.Image);
+    Basic_Proc.Put_Output (" -s" & Switch.Image);
   end if;
 
   -- Result
   -- Text output
   if To_Text then
-    Ada.Text_Io.Put (" ");
+    Basic_Proc.Put_Output (" ");
     -- Key coded onto text
     -- Switch and separator
-    Ada.Text_Io.Put (Switch.Image & Separator);
+    Basic_Proc.Put_Output (Switch.Image & Separator);
     for I in 1 .. Rotors.Length loop
       if I rem 2 = 1 then
         -- Rotor letter
@@ -704,12 +704,12 @@ begin
           Num : constant Positive
               := Positive (To_Id (Rotors.Element (I)) );
         begin
-          Ada.Text_Io.Put (Upper_Str (Num_Letters.Letters_Of (Num)));
+          Basic_Proc.Put_Output (Upper_Str (Num_Letters.Letters_Of (Num)));
         end;
         -- Ring offset
-        Ada.Text_Io.Put (Rotors.Element (I + 1));
+        Basic_Proc.Put_Output (Rotors.Element (I + 1));
         -- Initial offset
-        Ada.Text_Io.Put (Init_Offset.Element ((I - 1) / 2 + 1));
+        Basic_Proc.Put_Output (Init_Offset.Element ((I - 1) / 2 + 1));
       end if;
     end loop;
     -- Reflector: Num, offset, offset and zero
@@ -720,17 +720,17 @@ begin
       Reflector_Str : constant String
                 := Upper_Str (Num_Letters.Letters_Of (Reflector_Num));
     begin
-      Ada.Text_Io.Put (Reflector_Str);
-      Ada.Text_Io.Put (Reflector.Element (2));
-      Ada.Text_Io.Put (Reflector.Element (2));
-      Ada.Text_Io.Put ('Z');
+      Basic_Proc.Put_Output (Reflector_Str);
+      Basic_Proc.Put_Output (Reflector.Element (2));
+      Basic_Proc.Put_Output (Reflector.Element (2));
+      Basic_Proc.Put_Output ('Z');
     end;
   end if;
 
-  Ada.Text_Io.New_Line;
+  Basic_Proc.New_Line_Output;
 exception
   when Key_Error =>
-    Sys_Calls.Put_Line_Error ("Invalid key specification.");
+    Basic_Proc.Put_Line_Error ("Invalid key specification.");
     Usage;
 end Def_Enigma;
 

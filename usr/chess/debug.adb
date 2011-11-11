@@ -91,9 +91,9 @@ package body Debug is
       when others =>
         Basic_Proc.Put_Output ("Exception when getting piece");
     end;
-    Basic_Proc.Put_Output (' ' & "");
+    Basic_Proc.Put_Output (' ');
     Put (Action.From);
-    Basic_Proc.Put_Output (' ' & "");
+    Basic_Proc.Put_Output (' ');
     Put (Action.To);
   exception
     when others =>

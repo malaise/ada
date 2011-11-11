@@ -1,5 +1,5 @@
-with Ada.Text_Io, Ada.Characters.Latin_1;
-with Argument, Normal, My_Io, Get_Float;
+with Ada.Characters.Latin_1;
+with Argument, Normal, My_Io, Get_Float, Basic_Proc;
 with Fl_Time, Fl_Get;
 
 procedure Fl is
@@ -17,16 +17,17 @@ begin
   elsif Argument.Get_Nbre_Arg = 0 then
     With_Cost := False;
   else
-    Ada.Text_Io.Put_Line ("Usage: "
+    Basic_Proc.Put_Line_Error ("Usage: "
        & Argument.Get_Program_Name & " [ -c ]");
     return;
   end if;
 
-  Ada.Text_Io.Put_Line ("      HOURS and MINUTES additions.");
-  Ada.Text_Io.Put_Line ("      ----------------------------");
-  Ada.Text_Io.Put_Line (" Syntax of time is [-]hhhhhhh[.mm] (Return);");
-  Ada.Text_Io.Put_Line (" Enter 'C'to clear, 'X' or 'Q' to exit.");
-  Ada.Text_Io.New_Line (2);
+  Basic_Proc.Put_Line_Output ("      HOURS and MINUTES additions.");
+  Basic_Proc.Put_Line_Output ("      ----------------------------");
+  Basic_Proc.Put_Line_Output (" Syntax of time is [-]hhhhhhh[.mm] (Return);");
+  Basic_Proc.Put_Line_Output (" Enter 'C'to clear, 'X' or 'Q' to exit.");
+  Basic_Proc.New_Line_Output;
+  Basic_Proc.New_Line_Output;
 
   -- Initialise
   Tt := (True, 0, 0);
@@ -35,23 +36,23 @@ begin
 
   loop
     -- Display
-    Ada.Text_Io.Put ("--> ");
+    Basic_Proc.Put_Output ("--> ");
 
     if Tt.Positiv then
-      Ada.Text_Io.Put (' ');
+      Basic_Proc.Put_Output (' ');
     else
-      Ada.Text_Io.Put ('-');
+      Basic_Proc.Put_Output ('-');
     end if;
-    Ada.Text_Io.Put (Normal(Integer(Tt.Hours), Max_Hour_Dig + 1));
-    Ada.Text_Io.Put ('.');
-    Ada.Text_Io.Put (Normal(Integer(Tt.Minutes), 2, Gap => '0'));
+    Basic_Proc.Put_Output (Normal(Integer(Tt.Hours), Max_Hour_Dig + 1));
+    Basic_Proc.Put_Output ('.');
+    Basic_Proc.Put_Output (Normal(Integer(Tt.Minutes), 2, Gap => '0'));
     if With_Cost then
-       Ada.Text_Io.Put ("     This cost: ");
+       Basic_Proc.Put_Output ("     This cost: ");
        My_Io.Put(Tmp_Cost, Fore => 4, Aft => 2, Exp => 0);
-       Ada.Text_Io.Put ("  Total cost: ");
+       Basic_Proc.Put_Output ("  Total cost: ");
        My_Io.Put_Line(Cost, Fore => 5, Aft => 2, Exp => 0);
     else
-      Ada.Text_Io.New_Line;
+      Basic_Proc.New_Line_Output;
     end if;
 
 
@@ -62,7 +63,7 @@ begin
       when Fl_Get.Error =>
         T := (True, 0, 0);
         Tmp_Cost := 0.0;
-        Ada.Text_Io.Put_Line (Bell & "Error.");
+        Basic_Proc.Put_Line_Error (Bell & "Error.");
       when Fl_Get.Clear =>
         T := (True, 0, 0);
         Tt := (True, 0, 0);
@@ -78,14 +79,14 @@ begin
         Str : String(1 .. 8);
         Len : Natural;
       begin
-        Ada.Text_Io.Put(">>");
-        Ada.Text_Io.Get_Line(Str, Len);
-        Tmp_Cost := Get_Float.Get_Float(Str(1 .. Len));
+        Basic_Proc.Put_Output (">>");
+        Basic_Proc.Get_Input (Str, Len);
+        Tmp_Cost := Get_Float.Get_Float (Str(1 .. Len));
       exception
         when others =>
           T := (True, 0, 0);
           Tmp_Cost := 0.0;
-          Ada.Text_Io.Put_Line (Bell & "Error.");
+          Basic_Proc.Put_Line_Error (Bell & "Error.");
       end;
       -- Cost of the flight
       Tmp_Cost := Tmp_Cost * Float(T.Hours)
@@ -106,7 +107,7 @@ begin
     exception
       when Time_Overflow =>
         Tt := St;
-        Ada.Text_Io.Put_Line (Bell & "Overflow.");
+        Basic_Proc.Put_Line_Error (Bell & "Overflow.");
     end;
     Cost := Cost + Tmp_Cost;
 

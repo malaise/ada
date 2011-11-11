@@ -1,57 +1,57 @@
-with Ada.Text_Io, Normal, Afpx, Sys_Calls;
+with Ada.Characters.Latin_1;
+with Normal, Afpx, Sys_Calls, Text_Line;
 with Str_Mng, Mesu_Fil, Pers_Def, Mesu_Def, Mesu_Nam, Pers_Mng;
 package body Mesu_Prt is
 
   Printer_Name : constant String := "";
   Printer_Command : constant String := "heart_print";
-  Printer      : Ada.Text_Io.File_Type;
+  Printer      : Text_Line.File_Type;
 
   procedure Print_Rec (Person : in Pers_Def.Person_Rec;
                        Mesure : in Mesu_Def.Mesure_Rec) is
     Last_Of_Line : Boolean;
-    use Ada.Text_Io;
     use Pers_Def;
   begin
-    if not Is_Open (Printer) then
-      Create (Printer, Out_File, Printer_Name);
+    if not Printer.Is_Open then
+      Printer.Create_All (Printer_Name);
     end if;
-    Put_Line (Printer, "Person: " & Person.Name & "    " & Person.Activity
+    Printer.Put_Line ("Person: " & Person.Name & "    " & Person.Activity
                       & "    Date: " & Str_Mng.To_Printed_Str(Mesure.Date));
-    Put (Printer, "Comment: " & Mesure.Comment
+    Printer.Put ("Comment: " & Mesure.Comment
                 & "   Delta: " & Normal(Integer(Mesure.Sampling_Delta), 3)
                 & "    TZ: ");
     for I in Pers_Def.Person_Tz_Array'Range loop
-      Put (Printer, Str_Mng.To_Str(Mesure.Tz(I)) & " ");
+      Printer.Put (Str_Mng.To_Str(Mesure.Tz(I)) & " ");
     end loop;
-    New_Line (Printer);
+    Printer.New_Line;
     Last_Of_Line := False;
     for I in Mesu_Def.Sample_Nb_Range loop
       exit when Mesure.Samples(I) = Pers_Def.Bpm_Range'First;
-      Put (Printer, Str_Mng.To_Str(Mesure.Samples(I)));
+      Printer.Put (Str_Mng.To_Str(Mesure.Samples(I)));
       Last_Of_Line := I mod 20 = 0;
       if Last_Of_Line then
         -- After last of row
-        New_Line (Printer);
+        Printer.New_Line;
       else
-        Put (Printer, " ");
+        Printer.Put (" ");
       end if;
     end loop;
     if not Last_Of_Line then
-      New_Line (Printer);
+      Printer.New_Line;
     end if;
   end Print_Rec;
 
   procedure Print_Separator is
   begin
-    Ada.Text_Io.Put_Line (Printer,
+    Printer.Put_Line (
 "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -");
   end Print_Separator;
 
-  procedure Form_Feed is
+  procedure Close is
   begin
-    Ada.Text_Io.New_Page(Printer);
-    Ada.Text_Io.Close(Printer);
-  end Form_Feed;
+    Printer.Put (Ada.Characters.Latin_1.Ff & "");
+    Printer.Close_All;
+  end Close;
 
   procedure Print is
     Saved_Pos : Natural;
@@ -99,7 +99,7 @@ package body Mesu_Prt is
       Print_Separator;
     end loop Print;
 
-    Form_Feed;
+    Close;
 
     -- Print
     Dummy := Sys_Calls.Call_System(Printer_Command & " " & Printer_Name);

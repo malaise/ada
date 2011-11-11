@@ -1,49 +1,48 @@
 -- For each file provided as argument consider it contains a list of Ada
 --  files (one per line) and put the number of Ada statements of these files,
 --  then put the total.
-with Ada.Text_Io;
-with Argument;
+with Argument, Basic_Proc, Text_Line;
 with One_File_Statements;
 
 procedure Statfile is
 
   procedure Stat_One_File (List_File_Name : in String) is
-    List_File : Ada.Text_Io.File_Type;
-    File_Name : String (1 .. 5000);
-    File_Name_Len : Natural;
+    List_File : Text_Line.File_Type;
   begin
     begin
-      Ada.Text_Io.Open (List_File, Ada.Text_Io.In_File, List_File_Name);
+      List_File.Open_All (Text_Line.In_File, List_File_Name);
     exception
       when others =>
-        Ada.Text_Io.Put_Line ("Exception raised when opening list file "
+        Basic_Proc.Put_Line_Error ("Exception raised when opening list file "
                         & List_File_Name & " SKIPPING");
         return;
     end;
 
-    while not Ada.Text_Io.End_Of_File (List_File) loop
+    loop
+      declare
+        Name : constant String := List_File.Get;
       begin
-        Ada.Text_Io.Get_Line (List_File, File_Name, File_Name_Len);
+        exit when Name = "";
+        if Name'Length /= 1 then
+          One_File_Statements.Print_Statements_Of_File(Text_Line.Trim (Name));
+        end if;
       exception
         when others =>
-          Ada.Text_Io.Put_Line ("Exception raised when reading line "
-                          & Ada.Text_Io.Positive_Count'Image(Ada.Text_Io.Line(List_File))
-                          & " of list file " & List_File_Name & " SKIPPING");
-          Ada.Text_Io.Close (List_File);
+          Basic_Proc.Put_Line_Error (
+               "Exception raised when reading list file "
+             & List_File_Name & " SKIPPING");
+          List_File.Close_All;
           return;
       end;
-
-      if File_Name_Len /= 0 then
-        One_File_Statements.Print_Statements_Of_File(File_Name(1 .. File_Name_Len));
-      end if;
     end loop;
-    Ada.Text_Io.Close (List_File);
+    List_File.Close_All;
   end Stat_One_File;
 
 begin
 
   for Arg in 1 .. Argument.Get_Nbre_Arg loop
-    Ada.Text_Io.Put_Line ("Processing list file " & String'(Argument.Get_Parameter(Arg)));
+    Basic_Proc.Put_Line_Output ("Processing list file "
+        & String'(Argument.Get_Parameter(Arg)));
     Stat_One_File(Argument.Get_Parameter(Arg));
   end loop;
 

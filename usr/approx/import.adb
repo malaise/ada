@@ -1,6 +1,4 @@
-with As.U.Utils;
-with Ada.Text_Io;
-with Argument, Get_Line;
+with As.U.Utils, Argument, Get_Line, Basic_Proc;
 with Points, Point_Str, File;
 
 procedure Import is
@@ -13,8 +11,9 @@ procedure Import is
 
   procedure Error (Msg : in String)  is
   begin
-    Ada.Text_Io.Put_Line ("ERROR: " & Msg);
-    Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name & " <src_ascii_file> <dst_approx_file>");
+    Basic_Proc.Put_Line_Error ("ERROR: " & Msg);
+    Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
+                             & " <src_ascii_file> <dst_approx_file>");
   end Error;
 
 begin
@@ -31,7 +30,7 @@ begin
   begin
     My_Get_Line.Open(Argument.Get_Parameter(Occurence => 1));
   exception
-    when Ada.Text_Io.Name_Error =>
+    when My_Get_Line.Name_Error =>
       Error ("File " & Argument.Get_Parameter(Occurence => 1) & " not found");
       return;
     when others =>
@@ -74,6 +73,6 @@ exception
     My_Get_Line.Close;
     File.F_Write(Argument.Get_Parameter(Occurence => 2),
                  Points.P_The_Points);
-    Ada.Text_Io.Put_Line ("Done.");
+    Basic_Proc.Put_Line_Output ("Done.");
 end Import;
 

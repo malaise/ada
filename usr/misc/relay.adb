@@ -3,9 +3,9 @@
 -- The channel destinations file is <channel>.chn
 
 with System;
-with Ada.Text_Io, Ada.Characters.Latin_1;
+with Ada.Characters.Latin_1;
 with As.U, Argument, Sys_Calls, Event_Mng, Socket, Channels, Async_Stdin,
-     String_Mng;
+     String_Mng, Basic_Proc;
 procedure Relay is
 
   -- Message type
@@ -73,7 +73,7 @@ procedure Relay is
       Async_Stdin.Put_Out ("-> ");
     end if;
     Async_Stdin.Put_Line_Out (Message.Data(1 .. Len));
-    Ada.Text_Io.Flush;
+    Basic_Proc.Flush_Output;
   end Channel_Read_Cb;
 
   package My_Channel is new Channels.Channel ("dummy", Message_Type,
@@ -114,20 +114,16 @@ procedure Relay is
   procedure Get_No_Tty is
     Len : Natural;
   begin
-    begin
-      Ada.Text_Io.Get_Line (Message.Data, Len);
-    exception
-      when Ada.Text_Io.End_Error =>
-        Done := True;
-        return;
-    end;
-
+    Basic_Proc.Get_Input (Message.Data, Len);
     if Len = 0 then
       Message.Data(1) := Ada.Characters.Latin_1.Cr;
       Len := 1;
     end if;
     Message.Id := My_Host_Id;
     My_Channel.Write (Message, Len + Len_Offset);
+  exception
+    when Basic_Proc.End_Error =>
+      Done := True;
   end Get_No_Tty;
 
 begin

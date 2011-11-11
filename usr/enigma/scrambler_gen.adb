@@ -1,5 +1,4 @@
-with Ada.Text_Io;
-with Rnd;
+with Basic_Proc, Rnd;
 with Types;
 package body Scrambler_Gen is
 
@@ -70,7 +69,7 @@ package body Scrambler_Gen is
           end loop;
           -- I should be found
           if I_Id = 0 then
-            Ada.Text_Io.Put_Line ("Symetric not found!!!");
+            Basic_Proc.Put_Line_Error ("Symetric not found!!!");
             raise Program_Error;
           end if;
           -- Remove I from Remain

@@ -3,7 +3,7 @@
 -- Then do the same on the quotien of this division... until the quotien
 -- becomes 0.
 with Ada.Text_Io, Ada.Calendar, Ada.Characters.Latin_1;
-with My_Io, U_Rand, Clear_Screen;
+with U_Rand, Clear_Screen, Basic_Proc, Normal;
 procedure G is
   -- Generated number
   subtype Number is Natural range 0 .. 999_999_999;
@@ -88,7 +88,7 @@ begin
   loop
     Num := Rand;
     Success := True;
-    My_Io.Put ("   ");
+    Basic_Proc.Put_Output ("   ");
     Start_Time := Ada.Calendar.Clock;
 
     Party:
@@ -96,17 +96,17 @@ begin
 
       Get:
       loop
-        My_Io.Put ("--> ");
-        My_Io.Put (Num, 10);
+        Basic_Proc.Put_Output ("--> ");
+        Basic_Proc.Put_Output (Normal (Num, 10));
         exit Party when Num = 0;
-        My_Io.Put (
+        Basic_Proc.Put_Output (
          "  '<-' -1   'V' 0   '->' +1   'q' quit ? ");
 
         declare
           Char : Character;
         begin
           Ada.Text_Io.Get_Immediate (Char);
-          Ada.Text_Io.New_Line;
+          Basic_Proc.New_Line_Output;
           if Char = 'q' or else Char = 'Q' then
             Clear_Screen;
             return;
@@ -139,7 +139,7 @@ begin
           end if;
         end;
 
-        My_Io.Put ("ERR");
+        Basic_Proc.Put_Output ("ERR");
       end loop Get;
 
       Div (Num, Num, Res);
@@ -147,33 +147,33 @@ begin
         Success := False;
         case Res is
           when Zero =>
-            My_Io.Put_Line (" Error, it was  0");
+            Basic_Proc.Put_Line_Output (" Error, it was  0");
           when Plus_1 =>
-            My_Io.Put_Line (" Error, it was +1");
+            Basic_Proc.Put_Line_Output (" Error, it was +1");
           when Minus_1 =>
-            My_Io.Put_Line (" Error, it was -1");
+            Basic_Proc.Put_Line_Output (" Error, it was -1");
         end case;
       end if;
       case Res is
         when Zero =>
-          My_Io.Put (" 0 ");
+          Basic_Proc.Put_Output (" 0 ");
         when Plus_1 =>
-          My_Io.Put ("+1 ");
+          Basic_Proc.Put_Output ("+1 ");
         when Minus_1 =>
-          My_Io.Put ("-1 ");
+          Basic_Proc.Put_Output ("-1 ");
       end case;
     end loop Party;
 
-    My_Io.Put ("   ");
+    Basic_Proc.Put_Output ("   ");
     if Success then
       Time_Spent := Positive (Ada.Calendar."-" (Ada.Calendar.Clock,
                                                 Start_Time) );
-      My_Io.Put_Line (" Perfect, in" & Time_Spent'Img
+      Basic_Proc.Put_Line_Output (" Perfect, in" & Time_Spent'Img
                     & " seconds!");
     else
-      My_Io.Put_Line (" Some errors...");
+      Basic_Proc.Put_Line_Output (" Some errors...");
     end if;
-    My_Io.New_Line;
+    Basic_Proc.New_Line_Output;
   end loop Game;
 
 end G;

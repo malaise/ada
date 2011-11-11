@@ -1,6 +1,6 @@
 -- Source file indenter. See procedure Usage.
-with Ada.Text_Io, Ada.Exceptions;
-with As.U, Basic_Proc, Sys_Calls, Argument;
+with Ada.Exceptions;
+with As.U, Basic_Proc, Sys_Calls, Argument, Text_Line;
 
 procedure Adand is
   Line_Deb, Line_Fin : Positive;
@@ -13,15 +13,14 @@ procedure Adand is
   Sav_Suf : constant String := ".bak";
   File_Suf : As.U.Asu_Us;
 
-  Str_Max : constant := 500;
-  Str : String(1..Str_Max+1);
-  Lst : Natural;
+  Str, Pad : As.U.Asu_Us;
 
   Tld, Tlf, Ti : As.U.Asu_Us;
 
-  F, Fb : Ada.Text_Io.File_Type;
+  F, Fb : Text_Line.File_Type;
 
   System_Call_Error : exception;
+  use type As.U.Asu_Us;
 
   procedure Usage is
   begin
@@ -116,56 +115,46 @@ begin
 
   -- open file.bak file and create file
   begin
-    Ada.Text_Io.Open (Fb, Ada.Text_Io.In_File, File_Suf.Image);
+    Fb.Open_All (Text_Line.In_File, File_Suf.Image);
   exception
     when others =>
       Basic_Proc.Put_Line_Error ("Error opening file " & File_Suf.Image);
       raise;
   end;
   begin
-    Ada.Text_Io.Create (F, Ada.Text_Io.Out_File, File_Name.Image);
+    F.Create_All (File_Name.Image);
   exception
     when others =>
     Basic_Proc.Put_Line_Error ("Error creating file " & File_Name.Image);
   end;
 
+  Pad := abs(Ind) * ' ';
   L := 0;
   loop
     -- read file.bak line
-    Ada.Text_Io.Get_Line (Fb, Str, Lst);
+    Str := Fb.Get;
+    exit when Str.Is_Null;
     L := L + 1;
-    if Lst /= 0 and then L >= Line_Deb and then L<=Line_Fin then
+    if L >= Line_Deb and then L <= Line_Fin then
       -- if ld<=line<=lf and non empty then indent
       if Ind > 0 then
-        if Lst + Ind <= Str_Max then
-          Str (Ind + 1 .. Ind + Lst) := Str (1 .. Lst);
-          Str (1 .. Ind) := (others => ' ');
-          Lst := Lst + Ind;
-        end if;
+        Str := Pad & Str;
       elsif Ind < 0 then
-        declare
-          Mind : constant Positive := - Ind;
-          Spaces : constant String (1 .. Mind) := (others => ' ');
-        begin
-          if Lst >= Mind and then Str (1 .. Mind) = Spaces then
-            Str (1 .. Lst - Mind) := Str (Mind + 1 .. Lst);
-            Lst := Lst - Mind;
-          end if;
-        end;
+        if Str.Length >= -Ind and then Str.Uslice (1, -Ind) = Pad then
+          Str.Delete (1, -Ind);
+        end if;
       end if;
     end if;
 
     -- write line in file
-    Ada.Text_Io.Put_Line (F, Str(1 .. Lst));
-
-    exit when Ada.Text_Io.End_Of_File (Fb);
+    F.Put (Str.Image);
 
   end loop;
-  Ada.Text_Io.New_Line (F);
+  F.New_Line;
 
   -- close files
-  Ada.Text_Io.Close (Fb);
-  Ada.Text_Io.Close (F);
+  Fb.Close_All;
+  F.Close_All;
 
   Basic_Proc.Put_Line_Output ("Done.");
 

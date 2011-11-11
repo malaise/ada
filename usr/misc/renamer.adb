@@ -1,5 +1,4 @@
 -- Use Select_File (Afpx) to rename files
-with Ada.Text_Io;
 with As.B, Argument, Select_File, Sys_Calls;
 
 procedure Renamer is
@@ -35,7 +34,7 @@ begin
 
     -- Check if no /
     if File.Locate ("/") /= 0 then
-      Ada.Text_Io.Put_Line (Me & ": File name contains '/'. Skipping.");
+      Sys_Calls.Put_Line_Output (Me & ": File name contains '/'. Skipping.");
       Ok := False;
       Read := True;
       File.Set_Null;
@@ -52,19 +51,19 @@ begin
             Read := False;
             Ok := False;
           else
-            Ada.Text_Io.Put_Line (Me & ": File not found "
+            Sys_Calls.Put_Line_Output (Me & ": File not found "
                                      & File.Image
                                      & ". Skipping.");
           end if;
         else
           -- Check file does not exist and is accessible
           if File_Exists (File.Image) then
-            Ada.Text_Io.Put_Line (Me & ": New name "
+            Sys_Calls.Put_Line_Output (Me & ": New name "
                                      & File.Image
                                      & " already exists. Skipping.");
             Ok := False;
           elsif As.B."=" (Prev_File, File) then
-            Ada.Text_Io.Put_Line (Me & ": New name "
+            Sys_Calls.Put_Line_Output (Me & ": New name "
                                      & File.Image
                                      & " is prev name. Skipping.");
             Ok := False;
@@ -73,7 +72,7 @@ begin
         end if;
       exception
         when Access_Error =>
-          Ada.Text_Io.Put_Line (Me & ": Cannot access file "
+          Sys_Calls.Put_Line_Output (Me & ": Cannot access file "
                                    & File.Image
                                    & ". Skipping.");
           Ok := False;
@@ -85,16 +84,16 @@ begin
     if Ok then
       Ok := Sys_Calls.Rename (Prev_File.Image, File.Image);
       if Ok then
-        Ada.Text_Io.Put_Line (Me & ": " & Prev_File.Image &
+        Sys_Calls.Put_Line_Output (Me & ": " & Prev_File.Image &
                               " renamed to " & File.Image);
       else
-        Ada.Text_Io.Put_Line (Me & ": Failed to rename " & Prev_File.Image &
+        Sys_Calls.Put_Line_Output (Me & ": Failed to rename " & Prev_File.Image &
                               " to " & File.Image);
       end if;
       File.Set_Null;
     end if;
   end loop;
 
-  Ada.Text_Io.Put_Line (Me & ": Done.");
+  Sys_Calls.Put_Line_Output (Me & ": Done.");
 end Renamer;
 

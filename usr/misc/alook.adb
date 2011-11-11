@@ -16,7 +16,7 @@
 --
 -- Debug displays the modified words.
 
-with Ada.Text_Io, Ada.Direct_Io, Ada.Exceptions, Ada.Characters.Latin_1;
+with Ada.Direct_Io, Ada.Exceptions, Ada.Characters.Latin_1;
 with As.U, Argument, Bloc_Io, Ada_Words, Lower_Str, Mixed_Str, Upper_Str,
      Basic_Proc;
 procedure Alook is
@@ -334,7 +334,7 @@ procedure Alook is
         end if;
         Modified := True;
         if Debug then
-          Ada.Text_Io.Put_Line ("In file " & File_Name
+          Basic_Proc.Put_Line_Output ("In file " & File_Name
                               & " at line" & Line_No'Img
                               & ": " & Str
                               & "->" & New_Str);
@@ -343,7 +343,7 @@ procedure Alook is
 
     begin
       -- Uncoment this to trace words:
-      -- ada.text_io.put_line (Str);
+      -- Basic_Proc.Put_Line_Output (Str);
       if Str(1) >= '0' and then Str(1) <= '9' then
         -- Convert numeric in upper case
         if Str /= Upper_Str (Str) then
@@ -375,9 +375,9 @@ procedure Alook is
     procedure Check_Line is
     begin
       if Warnings then
-        Ada.Text_Io.Put_Line("Warning. In file " & File_Name
-                           & " at line" & Line_No'Img);
-        Ada.Text_Io.Put_Line("--> " & Line.Image);
+        Basic_Proc.Put_Line_Output ("Warning. In file " & File_Name
+                                  & " at line" & Line_No'Img);
+        Basic_Proc.Put_Line_Output ("--> " & Line.Image);
         Warnings := False;
       end if;
       Line.Set_Null;
@@ -561,7 +561,7 @@ procedure Alook is
       Reading.Append_New_Line (File_Name);
       Modified := True;
       if Debug then
-        Ada.Text_Io.Put_Line ("In file " & File_Name
+        Basic_Proc.Put_Line_Output ("In file " & File_Name
                             & " at line" & Line_No'Img
                             & ": New_Line appended");
       end if;
@@ -589,11 +589,11 @@ procedure Alook is
 
   procedure Put_Usage is
   begin
-    Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
+    Basic_Proc.Put_Line_Output ("Usage: " & Argument.Get_Program_Name
          & " [ { -v | -s | -t | -n | -C | -c <file> } ]");
-    Ada.Text_Io.Put_Line ("Verbose levels (exclusive): " &
+    Basic_Proc.Put_Line_Output ("Verbose levels (exclusive): " &
                           "Verbose, Silent, Normal or Test");
-    Ada.Text_Io.Put_Line ("Warnings on comments (on/off): if upper case");
+    Basic_Proc.Put_Line_Output ("Warnings on comments (on/off): if upper case");
   end Put_Usage;
 
 begin
@@ -635,11 +635,11 @@ begin
                  Warn_Comment) then
         -- Trace altered files if not silent
         if Verbose_Level /= Silent then
-          Ada.Text_Io.Put (Argument.Get_Parameter (Occurence => I));
+          Basic_Proc.Put_Output (Argument.Get_Parameter (Occurence => I));
           if Verbose_Level = Verbose then
-            Ada.Text_Io.Put_Line (" *");
+            Basic_Proc.Put_Line_Output (" *");
           else
-            Ada.Text_Io.New_Line;
+            Basic_Proc.New_Line_Output;
           end if;
         end if;
         if Exit_Code /= Problem then
@@ -647,7 +647,8 @@ begin
         end if;
       elsif Verbose_Level = Verbose then
         -- Trace unaltered files if verbose
-        Ada.Text_Io.Put_Line (Argument.Get_Parameter (Occurence => I) & " =");
+        Basic_Proc.Put_Line_Output (Argument.Get_Parameter (Occurence => I)
+                                  & " =");
       end if;
     end if;
   end loop;

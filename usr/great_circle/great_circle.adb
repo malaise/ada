@@ -1,5 +1,4 @@
-with Ada.Text_Io;
-with My_Math, C_Nbres;
+with My_Math, C_Nbres, Basic_Proc;
 
 package body Great_Circle is
 
@@ -96,22 +95,22 @@ package body Great_Circle is
     if Distance < Epsilon then
       Heading := Conv.Zero;
       if Debug then
-        Ada.Text_Io.Put_Line ("Distance is 0");
+        Basic_Proc.Put_Line_Error ("Distance is 0");
       end if;
       return;
     elsif abs (Angle_Result - Conv.Pi) < Epsilon then
       -- From and To are opposite (antipodes)
       Heading := Conv.Zero;
       if Debug then
-        Ada.Text_Io.Put_Line ("Antipodes");
+        Basic_Proc.Put_Line_Error ("Antipodes");
       end if;
       return;
     end if;
 
     if Debug then
-      Ada.Text_Io.Put_Line ("Delta Lat: " & Lat_Lon_Rad_Delta.Y'Img);
-      Ada.Text_Io.Put_Line ("Delta Lon: " & Lat_Lon_Rad_Delta.X'Img);
-      Ada.Text_Io.Put_Line ("Gamma : " & Angle_Result'Img);
+      Basic_Proc.Put_Line_Error ("Delta Lat: " & Lat_Lon_Rad_Delta.Y'Img);
+      Basic_Proc.Put_Line_Error ("Delta Lon: " & Lat_Lon_Rad_Delta.X'Img);
+      Basic_Proc.Put_Line_Error ("Gamma : " & Angle_Result'Img);
     end if;
 
     -- Compute heading
@@ -124,7 +123,7 @@ package body Great_Circle is
             / My_Math.Cos(My_Math.Real(Lat_Lon_Rad_A.Y))
             / My_Math.Sin(My_Math.Real(Angle_Result)) ;
     if Debug then
-      Ada.Text_Io.Put_Line ("Cos H : " & Cos_H'Img);
+      Basic_Proc.Put_Line_Error ("Cos H : " & Cos_H'Img);
     end if;
 
     -- Round to 0 or 180 if cos between 1+Epsilon and -1-Epsilon
@@ -138,18 +137,18 @@ package body Great_Circle is
       Heading_Rad_Angle := C_Nbres.Reduct(C_Nbres.Radian(
                               My_Math.Arc_Cos(Cos_H)));
       if Debug then
-        Ada.Text_Io.Put_Line ("Raw H : " & Heading_Rad_Angle'Img);
+        Basic_Proc.Put_Line_Error ("Raw H : " & Heading_Rad_Angle'Img);
       end if;
       -- Set heading < 0 if B is at west of A
       if Lat_Lon_Rad_Delta.X > Conv.Pi then
         Heading_Rad_Angle := C_Nbres.Reduct(-Heading_Rad_Angle);
         if Debug then
-          Ada.Text_Io.Put_Line ("West correction");
+          Basic_Proc.Put_Line_Error ("West correction");
         end if;
       end if;
     end if;
     if Debug then
-      Ada.Text_Io.Put_Line ("H : " & Heading_Rad_Angle'Img);
+      Basic_Proc.Put_Line_Error ("H : " & Heading_Rad_Angle'Img);
     end if;
 
     -- In degrees

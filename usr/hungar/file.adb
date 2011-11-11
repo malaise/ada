@@ -1,6 +1,4 @@
-with Ada.Text_Io;
-with As.U.Utils;
-with My_Math, Get_Line, Get_Float;
+with As.U.Utils, Basic_Proc, My_Math, Get_Line, Get_Float;
 
 package body File is
 
@@ -38,7 +36,7 @@ package body File is
       My_Get_Line.Open (File_Name);
     exception
       when others =>
-        Ada.Text_Io.Put_Line ("ERROR opening file " & File_Name);
+        Basic_Proc.Put_Line_Error ("ERROR opening file " & File_Name);
         raise Read_Error;
     end;
 
@@ -47,13 +45,13 @@ package body File is
       My_Get_Line.Get_Words (Line);
     exception
       when My_Get_Line.End_Error =>
-        Ada.Text_Io.Put_Line ("ERROR in file " & File_Name
+        Basic_Proc.Put_Line_Error ("ERROR in file " & File_Name
                           & ". File is empty.");
         My_Get_Line.Close;
         raise Read_Error;
     end;
     if My_Get_Line.Get_Word_Number /= 1 then
-      Ada.Text_Io.Put_Line ("ERROR in file " & File_Name
+      Basic_Proc.Put_Line_Error ("ERROR in file " & File_Name
             & ", only one word, WISH or REGRET, allowed in first line.");
       My_Get_Line.Close;
       raise Read_Error;
@@ -62,7 +60,7 @@ package body File is
       Loc_Kind := Types.Mattrix_Kind_List'Value (Line.Element (1).Image);
     exception
       when others =>
-        Ada.Text_Io.Put_Line ("ERROR in file " & File_Name
+        Basic_Proc.Put_Line_Error ("ERROR in file " & File_Name
               & ", only one word, WISH or REGRET, allowed in first line.");
         My_Get_Line.Close;
         raise Read_Error;
@@ -73,12 +71,12 @@ package body File is
       Read_Next_Significant_Line;
       Dim := My_Get_Line.Get_Word_Number;
     exception
-      when Ada.Text_Io.End_Error =>
-        Ada.Text_Io.Put_Line ("ERROR in file " & File_Name & ", no mattrix.");
+      when My_Get_Line.End_Error =>
+        Basic_Proc.Put_Line_Error ("ERROR in file " & File_Name & ", no mattrix.");
         My_Get_Line.Close;
         raise Read_Error;
       when others =>
-        Ada.Text_Io.Put_Line ("ERROR in file " & File_Name
+        Basic_Proc.Put_Line_Error ("ERROR in file " & File_Name
                           & ", impossible to compute mattrix size.");
         My_Get_Line.Close;
         raise Read_Error;
@@ -99,7 +97,7 @@ package body File is
         end loop;
       exception
         when others =>
-          Ada.Text_Io.Put_Line ("ERROR, when reading data at line "
+          Basic_Proc.Put_Line_Error ("ERROR, when reading data at line "
                 & My_Get_Line.Count'Image (My_Get_Line.Get_Line_No)
                 & " of file " & File_Name);
           My_Get_Line.Close;
@@ -112,7 +110,7 @@ package body File is
 
         -- Check number of words
         if My_Get_Line.Get_Word_Number /= Dim then
-          Ada.Text_Io.Put_Line ("ERROR in file. Wrong number of words at line "
+          Basic_Proc.Put_Line_Error ("ERROR in file. Wrong number of words at line "
                 & My_Get_Line.Count'Image(My_Get_Line.Get_Line_No)
                 & " of file " & File_Name);
           My_Get_Line.Close;
@@ -125,7 +123,7 @@ package body File is
     -- Check nothing else in file
     begin
       Read_Next_Significant_Line;
-      Ada.Text_Io.Put_Line ("ERROR. Unexpected data at line "
+      Basic_Proc.Put_Line_Error ("ERROR. Unexpected data at line "
             & My_Get_Line.Count'Image (My_Get_Line.Get_Line_No)
             & " of file " & File_Name);
       My_Get_Line.Close;

@@ -1,11 +1,10 @@
-with Ada.Text_Io;
-with Argument, Mixed_Str, Event_Mng;
+with Argument, Mixed_Str, Event_Mng, Basic_Proc;
 with Fifos;
 procedure T_Fifos is
 
   procedure Usage is
   begin
-    Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
+    Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
                         & "  -s | -c      <fifo_name>");
   end Usage;
 
@@ -31,7 +30,7 @@ procedure T_Fifos is
     Msg.Str (1 .. Str'Length) := Str;
     Msg.Len := Str'Length;
     Res := Test_Fifo.Send (Id, Msg);
-    Ada.Text_Io.Put_Line ("Send result: " & Mixed_Str(Res'Img));
+    Basic_Proc.Put_Line_Output ("Send result: " & Mixed_Str(Res'Img));
   end Send;
 
 
@@ -40,19 +39,19 @@ procedure T_Fifos is
                      Connected : in Boolean) is
     use type Test_Fifo.Fifo_Id;
   begin
-    Ada.Text_Io.Put ("Fifo " & Fifo_Name
+    Basic_Proc.Put_Output ("Fifo " & Fifo_Name
       & " kind " & Fifos.Fifo_Kind_List'Image(Test_Fifo.Fifo_Kind (Id))
       & " is");
     if not Connected then
-      Ada.Text_Io.Put (" not");
+      Basic_Proc.Put_Output (" not");
     end if;
-    Ada.Text_Io.Put_Line (" connected");
+    Basic_Proc.Put_Line_Output (" connected");
 
     if not Server
     and then Connected
     and then Fid /= Test_Fifo.No_Fifo
     and then Fid /= Id then
-      Ada.Text_Io.Put_Line ("Ooops in Fid");
+      Basic_Proc.Put_Line_Output ("Ooops in Fid");
       Signal := True;
       return;
     end if;
@@ -68,7 +67,7 @@ procedure T_Fifos is
                      Message : in Test_Rec;
                      Length  : in Fifos.Message_Length) is
   begin
-    Ada.Text_Io.Put_Line ("Received >"
+    Basic_Proc.Put_Line_Output ("Received >"
                         & Message.Str(1 .. Message.Len)
                         & "<  Len:" & Length'Img & ". Waiting then replying");
     Event_Mng.Wait(1_000);
@@ -80,7 +79,7 @@ procedure T_Fifos is
   procedure Ovfl_Cb (Id      : in Test_Fifo.Fifo_Id) is
     pragma Unreferenced (Id);
   begin
-    Ada.Text_Io.Put_Line ("End of overflow");
+    Basic_Proc.Put_Line_Output ("End of overflow");
   end Ovfl_Cb;
 
 
@@ -114,7 +113,7 @@ begin
                          Rece_Cb'Access,
                          Ovfl_Cb'Access);
 
-  Ada.Text_Io.Put_Line ("Fifo " & Argument.Get_Parameter(Occurence => 2)
+  Basic_Proc.Put_Line_Output ("Fifo " & Argument.Get_Parameter(Occurence => 2)
     & " kind " & Fifos.Fifo_Kind_List'Image(Test_Fifo.Fifo_Kind (Fid))
     & " is open");
 
@@ -126,16 +125,16 @@ begin
   end loop;
 
   if Server then
-    Ada.Text_Io.Put_Line ("Closing accepting Fifo");
+    Basic_Proc.Put_Line_Output ("Closing accepting Fifo");
     Test_Fifo.Close (Fid);
-    Ada.Text_Io.Put_Line ("Closing all Fifos");
+    Basic_Proc.Put_Line_Output ("Closing all Fifos");
     Test_Fifo.Close_All;
   else
-    Ada.Text_Io.Put_Line ("Closing connected Fifo");
+    Basic_Proc.Put_Line_Output ("Closing connected Fifo");
     Test_Fifo.Close (Fid);
   end if;
 
-  Ada.Text_Io.Put_Line ("Done.");
+  Basic_Proc.Put_Line_Output ("Done.");
 
 end T_Fifos;
 

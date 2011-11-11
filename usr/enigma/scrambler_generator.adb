@@ -1,5 +1,4 @@
-with Ada.Text_Io;
-with Argument, Sys_Calls;
+with Argument, Basic_Proc;
 with Types, Scrambler_Gen;
 -- Generate a scrambler for enigma config file
 procedure Scrambler_Generator is
@@ -7,9 +6,9 @@ procedure Scrambler_Generator is
   -- Error/Usage
   procedure Error is
   begin
-    Sys_Calls.Put_Line_Error ("ERROR. Usage " & Argument.Get_Program_Name
+    Basic_Proc.Put_Line_Error ("ERROR. Usage " & Argument.Get_Program_Name
        & " [ -s ]");
-    Sys_Calls.Set_Error_Exit_Code;
+    Basic_Proc.Set_Error_Exit_Code;
   end Error;
 
   -- Shall we generate a symetric scrambler or not
@@ -33,12 +32,13 @@ begin
 
   -- Put reference then map
   for C in Types.Letter loop
-    Ada.Text_Io.Put (C);
+    Basic_Proc.Put_Output (C);
   end loop;
-  Ada.Text_Io.New_Line;
+  Basic_Proc.New_Line_Output;
   for I in Id_Range'Range loop
-    Ada.Text_Io.Put (Scrambler(I));
+    Basic_Proc.Put_Output (Scrambler(I));
   end loop;
+  Basic_Proc.New_Line_Output;
 
 end Scrambler_Generator;
 

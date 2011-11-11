@@ -53,16 +53,16 @@ begin
   end;
 
   -- Display result
-  Ada.Text_Io.Put_Line ("Read " & Nb_Read'Img & " characters:");
-  Ada.Text_Io.Put_Line ("C Dec Hx   %  NbOcc");
-  Ada.Text_Io.Put_Line ("-------------------");
+  Sys_Calls.Put_Line_Output ("Read " & Nb_Read'Img & " characters:");
+  Sys_Calls.Put_Line_Output ("C Dec Hx   %  NbOcc");
+  Sys_Calls.Put_Line_Output ("-------------------");
   for I in Table'Range loop
     if Table(I) /= 0 or else Put_All then
       begin
         if I >= ' ' and then I <= '~' then
-          Ada.Text_Io.Put (I);
+          Sys_Calls.Put_Output (I);
         else
-          Ada.Text_Io.Put (' ');
+          Sys_Calls.Put_Output (' ');
         end if;
         Pos := Character'Pos (I);
         Int_Io.Put (Str16, Pos, Base => 16);
@@ -70,20 +70,20 @@ begin
           -- 16#x# i.o. 16#0x#
           Str16(4) := '0';
         end if;
-        Ada.Text_Io.Put (' ' & Normal (Pos, 3, Gap => '0')
+        Sys_Calls.Put_Output (' ' & Normal (Pos, 3, Gap => '0')
                        & ' ' & Str16(4..5));
         Percent := Natural (Table(I) * 100 / Nb_Read);
         if Percent < 100 then
-          Ada.Text_Io.Put ("  " & Normal (Percent, 2, Gap => '0'));
+          Sys_Calls.Put_Output ("  " & Normal (Percent, 2, Gap => '0'));
         else
-          Ada.Text_Io.Put (" 100");
+          Sys_Calls.Put_Output (" 100");
         end if;
-        Ada.Text_Io.Put (' ' & Table(I)'Img);
-        Ada.Text_Io.New_Line;
+        Sys_Calls.Put_Output (' ' & Table(I)'Img);
+        Sys_Calls.New_Line_Output;
       exception
         when Error:others =>
           Sys_Calls.Set_Error_Exit_Code;
-          Ada.Text_Io.Put_Line ("Exception "
+          Sys_Calls.Put_Line_Output ("Exception "
            & Mixed_Str (Ada.Exceptions.Exception_Name (Error)));
       end;
     end if;

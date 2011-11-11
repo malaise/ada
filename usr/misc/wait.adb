@@ -1,6 +1,6 @@
 -- Pause for some seconds (default 1.0)
 with Ada.Text_Io, Ada.Calendar;
-with Argument;
+with Argument, Basic_Proc;
 procedure Wait is
 
   Start : constant Ada.Calendar.Time := Ada.Calendar.Clock;
@@ -33,6 +33,7 @@ begin
 
 exception
   when others =>
-    Ada.Text_Io.Put_Line("Usage : ""wait [seconds]""     (1.0 by default).");
+    Basic_Proc.Put_Line_Error (
+       "Usage : ""wait [seconds]""     (1.0 by default).");
 end Wait;
 

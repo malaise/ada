@@ -1,5 +1,4 @@
-with Ada.Text_Io;
-with As.U, Argument;
+with As.U, Argument, Basic_Proc;
 with Git_If;
 procedure T_Git is
 
@@ -22,20 +21,20 @@ procedure T_Git is
 begin
 
   Vers := Git_If.Get_Version;
-  Ada.Text_Io.Put_Line ("Version is " & Vers.Major'Img & Vers.Medium'Img
+  Basic_Proc.Put_Line_Output ("Version is " & Vers.Major'Img & Vers.Medium'Img
                       & Vers.Minor'Img);
 
   Git_If.Get_Root_And_Path (Root, Path);
-  Ada.Text_Io.Put_Line ("Root is >" & Root.Image & "<");
-  Ada.Text_Io.Put_Line ("Path is >" & Path.Image & "<");
+  Basic_Proc.Put_Line_Output ("Root is >" & Root.Image & "<");
+  Basic_Proc.Put_Line_Output ("Path is >" & Path.Image & "<");
 
   Git_If.List_Files (Path.Image, Files);
   if Files.Is_Empty then
-    Ada.Text_Io.Put_Line ("No file");
+    Basic_Proc.Put_Line_Output ("No file");
   else
     loop
       Files.Read (File_Entry, Moved => Moved);
-      Ada.Text_Io.Put_Line (File_Entry.S2 & File_Entry.S3 & " "
+      Basic_Proc.Put_Line_Output (File_Entry.S2 & File_Entry.S3 & " "
                           & File_Entry.Name.Image
                           & File_Entry.Kind);
       exit when not Moved;
@@ -49,13 +48,13 @@ begin
   end if;
   Git_If.List_Log (Path.Image, Logs);
   if Logs.Is_Empty then
-    Ada.Text_Io.Put_Line ("No log");
+    Basic_Proc.Put_Line_Output ("No log");
   else
     loop
       Logs.Read (Log_Entry, Moved => Moved);
-      Ada.Text_Io.Put_Line (Log_Entry.Hash & " " & Log_Entry.Date);
-      Ada.Text_Io.Put_Line (Log_Entry.Comment(1).Image);
-      Ada.Text_Io.New_Line;
+      Basic_Proc.Put_Line_Output (Log_Entry.Hash & " " & Log_Entry.Date);
+      Basic_Proc.Put_Line_Output (Log_Entry.Comment(1).Image);
+      Basic_Proc.New_Line_Output;
       exit when not Moved;
     end loop;
   end if;
@@ -66,16 +65,16 @@ begin
 
   Git_If.List_Commit (Argument.Get_Parameter (Occurence => 2),
                       Date, Comment, Commits);
-  Ada.Text_Io.Put_Line (Date);
+  Basic_Proc.Put_Line_Output (Date);
   for I in Comment'Range loop
-    Ada.Text_Io.Put_Line (Comment(I).Image);
+    Basic_Proc.Put_Line_Output (Comment(I).Image);
   end loop;
   if Commits.Is_Empty then
-     Ada.Text_Io.Put_Line ("No File");
+     Basic_Proc.Put_Line_Output ("No File");
   else
     loop
       Commits.Read (Commit_Entry, Moved => Moved);
-      Ada.Text_Io.Put_Line (Commit_Entry.Status & " "
+      Basic_Proc.Put_Line_Output (Commit_Entry.Status & " "
                           & Commit_Entry.File.Image);
       exit when not Moved;
     end loop;

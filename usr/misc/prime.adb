@@ -6,8 +6,7 @@
 --        prime -hcd <n1> <n2>     highest common divisor
 --        prime -lcm <n1> <n2>     lowest common multiple
 
-with Ada.Text_Io;
-with Argument, Arbitrary.Factors, Arbitrary.Prime_List;
+with Argument, Arbitrary.Factors, Arbitrary.Prime_List, Basic_Proc;
 procedure Prime is
   use type Arbitrary.Number;
   subtype Positive_Number is Arbitrary.Prime_List.Positive_Number;
@@ -28,22 +27,23 @@ procedure Prime is
   -- Help
   procedure Usage is
   begin
-    Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name & " <mode>");
-    Ada.Text_Io.Put_Line (
+    Basic_Proc.Put_Line_Output (
+  "Usage: " & Argument.Get_Program_Name & " <mode>");
+    Basic_Proc.Put_Line_Output (
   "<mode> ::= <list> | <is> | <next> | <prev> | <factors> | <hcd> | <lcm>");
-    Ada.Text_Io.Put_Line (
+    Basic_Proc.Put_Line_Output (
   "<list>    ::= -list [ <positive> ]        -- list prime numbers (up to N)");
-    Ada.Text_Io.Put_Line (
+    Basic_Proc.Put_Line_Output (
   "<is>      ::= -is <positive>              -- is N prime or not");
-    Ada.Text_Io.Put_Line (
+    Basic_Proc.Put_Line_Output (
   "<next>    ::= -next <positive>            -- next prime number after N");
-    Ada.Text_Io.Put_Line (
+    Basic_Proc.Put_Line_Output (
   "<prev>    ::= -prev <positive>            -- previous prime number before N");
-    Ada.Text_Io.Put_Line (
+    Basic_Proc.Put_Line_Output (
   "<factors> ::= -fact <positive>            -- prime factors of N");
-    Ada.Text_Io.Put_Line (
+    Basic_Proc.Put_Line_Output (
   "<hcd>     ::= -hcd <positive> <positive>  -- highest common denominator");
-    Ada.Text_Io.Put_Line (
+    Basic_Proc.Put_Line_Output (
   "<lcm>     ::= -lcm <positive> <positive>  -- lowest common multiple");
   end Usage;
 
@@ -57,8 +57,7 @@ procedure Prime is
   -- Put a number
   procedure Put_Line (P : in Positive_Number) is
   begin
-    Ada.Text_Io.Put (Image (P) );
-    Ada.Text_Io.New_Line;
+    Basic_Proc.Put_Line_Output (Image (P) );
   end Put_Line;
 
   Zero : constant Arbitrary.Number := Arbitrary.Zero;
@@ -158,11 +157,11 @@ begin
           exit when N1 rem N2 = Zero;
         end loop;
       end if;
-      Ada.Text_Io.Put (Image (N1));
+      Basic_Proc.Put_Output (Image (N1));
       if N1 = N2 then
-        Ada.Text_Io.Put_Line (" is prime.");
+        Basic_Proc.Put_Line_Output (" is prime.");
       else
-        Ada.Text_Io.Put_Line (" is not prime.");
+        Basic_Proc.Put_Line_Output (" is not prime.");
       end if;
 
     when Next =>
@@ -171,7 +170,7 @@ begin
         N2 := Arbitrary.Prime_List.Next;
         exit when N2 > N1;
       end loop;
-      Ada.Text_Io.Put_Line (Image (N2));
+      Basic_Proc.Put_Line_Output (Image (N2));
     when Prev =>
       -- Look for last prime number < N1
       N3 := One;
@@ -180,7 +179,7 @@ begin
         exit when N2 >= N1;
         N3 := N2;
       end loop;
-      Ada.Text_Io.Put_Line (Image (N3));
+      Basic_Proc.Put_Line_Output (Image (N3));
 
     when Factors =>
       -- Decompose N1 in prime factors

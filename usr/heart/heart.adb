@@ -1,5 +1,4 @@
-with Ada.Text_Io;
-with Argument, Afpx;
+with Argument, Afpx, Basic_Proc;
 with Pers_Fil, Mesu_Mng, Str_Mng;
 procedure Heart is
   Nb_Month : Str_Mng.Offset_Range;
@@ -23,7 +22,7 @@ begin
     end if;
   exception
     when others =>
-      Ada.Text_Io.Put_Line ("SYNTAX ERROR. Usage : "
+      Basic_Proc.Put_Line_Error ("SYNTAX ERROR. Usage : "
                       & Argument.Get_Program_Name & " [ <nb_month> ]");
       return;
   end;

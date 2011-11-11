@@ -92,7 +92,7 @@ package body One_File_Statements is
   begin
 
     begin
-      File.Open_All (File_Name);
+      File.Open_All (Text_Line.In_File, File_Name);
     exception
       when others =>
         Sys_Calls.Put_Line_Error ("Exception when opening file "

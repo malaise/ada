@@ -1,5 +1,4 @@
-with Ada.Text_Io;
-with Arbitrary, Dynamic_List, Argument;
+with Arbitrary, Dynamic_List, Argument, Basic_Proc;
 -- Pascal triangle with arbitrary precision numbers
 procedure Arbipas is
 
@@ -12,7 +11,7 @@ procedure Arbipas is
   procedure Put_Number (N : Arbitrary.Number) is
     Str : constant String := Arbitrary.Image (N);
   begin
-    Ada.Text_Io.Put (Str(2 .. Str'Last));
+    Basic_Proc.Put_Output (Str(2 .. Str'Last));
   end Put_Number;
 
   procedure Put_Line (N : Natural) is
@@ -21,15 +20,15 @@ procedure Arbipas is
   begin
     -- Init
     Arbi_List.Rewind;
-    Ada.Text_Io.Put (N'Img & ": ");
+    Basic_Proc.Put_Output (N'Img & ": ");
     loop
       Arbi_List.Read (C, Arbi_List_Mng.Next, Done);
       Put_Number (C);
-      Ada.Text_Io.Put (" ");
+      Basic_Proc.Put_Output (" ");
       exit when not Done;
     end loop;
     -- Add last one
-    Ada.Text_Io.New_Line;
+    Basic_Proc.New_Line_Output;
   end Put_Line;
 
   procedure Compute_Line is
@@ -69,7 +68,7 @@ begin
     end if;
   exception
     when Constraint_Error =>
-      Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
+      Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
        & " [ <nb_Line> ]");
       return;
   end;

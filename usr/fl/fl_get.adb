@@ -1,4 +1,4 @@
-with Ada.Text_Io;
+with Basic_Proc;
 
 package body Fl_Get is
 
@@ -17,8 +17,8 @@ package body Fl_Get is
     F, L, P :  Natural;
     Time : Fl_Time.Time_Type := (True, 0, 0);
   begin
-    Ada.Text_Io.Put ('>');
-    Ada.Text_Io.Get_Line (Str, L);
+    Basic_Proc.Put_Output ('>');
+    Basic_Proc.Get_Input (Str, L);
     if L = 0 then raise Error; end if;
     if L = 1 then
       if Str(1) = '.' then raise Error; end if;

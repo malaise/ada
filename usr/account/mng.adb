@@ -1,8 +1,7 @@
-with Ada.Text_Io, Ada.Calendar;
-with As.B;
-with Dynamic_List, Directory, Afpx, Select_File, Normal,
-     Oper_Def, Environ, Sys_Calls, Date_Image, Language, Perpet, Con_Io;
-with File_Mng, Oper_Dyn_List_Mng, Screen, Unit_Format;
+with Ada.Calendar, Ada.Characters.Latin_1;
+with As.B, Dynamic_List, Directory, Afpx, Select_File, Normal, Text_Line,
+     Environ, Sys_Calls, Date_Image, Language, Perpet, Con_Io;
+with Oper_Def, File_Mng, Oper_Dyn_List_Mng, Screen, Unit_Format;
 
 -- Manage the whole acount status
 package body Mng is
@@ -461,11 +460,11 @@ package body Mng is
 
   -- Print account
   procedure Print is
-    use Ada.Text_Io;
     Pfn : constant String := "Account.lpt";
-    Pf : File_Type;
+    Pf : Text_Line.File_Type;
     Oper : Oper_Def.Oper_Rec;
     Sep : constant Character := '|';
+    Form_Feed : constant String := Ada.Characters.Latin_1.Ff & "";
     Index : Oper_Range;
     Line : Positive;
     Lines_Per_Page : Positive;
@@ -473,6 +472,8 @@ package body Mng is
     --     --1234 123456789  123456789012 123 1234 12345678901234567890 12345678901234567890 1234567890
        := "    No|   Date   |   Amount   |Ent|Kind|Destination         |Comment             |Reference";
     Overflow : constant Unit_Format.Amount_Str := "Overflow    ";
+    Dummy : Boolean;
+    pragma Unreferenced (Dummy);
   begin
     -- Get lines per page
     declare
@@ -491,16 +492,16 @@ package body Mng is
 
     -- Create file
     begin
-      Create(Pf, Out_File, Pfn);
+      Pf.Create_All(Pfn);
     exception
       when others =>
         Screen.Ack_Error(Screen.File_Access);
         Refresh_Screen(Center);
         return;
     end;
-    Put_Line(Pf, "Account: " & Account_Name.Image
+    Pf.Put_Line("Account: " & Account_Name.Image
                & "     at: " & Date_Image(Ada.Calendar.Clock) (1 .. 16));
-    Put_Line(Pf, Page_Title);
+    Pf.Put_Line(Page_Title);
     Line := 3;
 
     if not Oper_List.Is_Empty then
@@ -508,7 +509,7 @@ package body Mng is
       Index := 1;
       loop
         Oper_List.Read(Oper, Oper_List_Mng.Current);
-        Put_Line(Pf, "  " & Normal(Index, 4) & Sep
+        Pf.Put_Line("  " & Normal(Index, 4) & Sep
                    & Unit_Format.Date_Image(Oper.Date) & Sep
                    & Unit_Format.Image(Oper.Amount, False) & Sep
                    & Unit_Format.Short_Status_Image(Oper.Status) & Sep
@@ -520,8 +521,8 @@ package body Mng is
         Oper_List.Move_To;
         Index := Index + 1;
         if Line = Lines_Per_Page then
-          New_Page(Pf);
-          Put_Line(Pf, Page_Title);
+          Pf.Put(Form_Feed);
+          Pf.Put_Line(Page_Title);
           Line := 2;
         else
           Line := Line + 1;
@@ -530,38 +531,38 @@ package body Mng is
     end if;
     -- Print summary
     if Line = Lines_Per_Page then
-      New_Page(Pf);
+      Pf.Put(Form_Feed);
       Line := 2;
     end if;
 
-    Put(Pf, "Real: ");
+    Pf.Put("Real: ");
     if not Amounts(Screen.Real).Overflow then
-      Put (Pf, Unit_Format.Image(Amounts(Screen.Real).Amount, False));
+      Pf.Put (Unit_Format.Image(Amounts(Screen.Real).Amount, False));
     else
-      Put (Pf, Overflow);
+      Pf.Put (Overflow);
     end if;
-    Put (Pf, " Account: ");
+    Pf.Put (" Account: ");
     if not Amounts(Screen.Account).Overflow then
-      Put (Pf, Unit_Format.Image(Amounts(Screen.Account).Amount, False));
+      Pf.Put (Unit_Format.Image(Amounts(Screen.Account).Amount, False));
     else
-      Put (Pf, Overflow);
+      Pf.Put (Overflow);
     end if;
-    Put (Pf, " Defered: ");
+    Pf.Put (" Defered: ");
     if not Amounts(Screen.Defered).Overflow then
-      Put (Pf, Unit_Format.Image(Amounts(Screen.Defered).Amount, False));
+      Pf.Put (Unit_Format.Image(Amounts(Screen.Defered).Amount, False));
     else
-      Put (Pf, Overflow);
+      Pf.Put (Overflow);
     end if;
-    Put (Pf, " Saved: ");
+    Pf.Put (" Saved: ");
     if not Amounts(Screen.Saved).Overflow then
-      Put (Pf, Unit_Format.Image(Amounts(Screen.Saved).Amount, False));
+      Pf.Put (Unit_Format.Image(Amounts(Screen.Saved).Amount, False));
     else
-      Put (Pf, Overflow);
+      Pf.Put (Overflow);
     end if;
-    New_Line (Pf);
+    Pf.New_Line;
 
-    New_Page(Pf);
-    Flush(Pf);
+    Pf.Put(Form_Feed);
+    Pf.Flush;
 
     -- Print
     declare
@@ -578,7 +579,8 @@ package body Mng is
     end;
 
     -- Delete & close
-    Delete(Pf);
+    Pf.Close_All;
+    Dummy := Sys_Calls.Unlink (Pfn);
 
   exception
     when others =>

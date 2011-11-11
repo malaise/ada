@@ -1,8 +1,8 @@
 -- One or several beeps
 -- usage: beep [ [ <number_of beeps> [ <delay_between_beeps> ] ]
 -- Defaults are 1 beep and each 0.25s
-with Ada.Text_Io, Ada.Characters.Latin_1;
-with Argument;
+with Ada.Characters.Latin_1;
+with Argument, Basic_Proc;
 procedure Beep is
   Nb_Beep : Positive;
   subtype Delta_Beep_Range is Duration range 0.01 .. 1.0;
@@ -22,13 +22,13 @@ begin
     Delta_Beep := 0.25;
   end if;
   for I in 1 .. Nb_Beep loop
-    Ada.Text_Io.Put (Ada.Characters.Latin_1.Bel);
+    Basic_Proc.Put_Output (Ada.Characters.Latin_1.Bel);
     if I /= Nb_Beep then
       delay Delta_Beep;
     end if;
   end loop;
 exception
   when others =>
-    Ada.Text_Io.Put (Ada.Characters.Latin_1.Bel);
+    Basic_Proc.Put_Output (Ada.Characters.Latin_1.Bel);
 end Beep;
 

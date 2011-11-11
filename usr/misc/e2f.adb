@@ -1,10 +1,9 @@
 -- Euro <-> Franc conversion
-with Ada.Text_Io;
-with As.U, Argument, Upper_Char, Get_Float, My_Math, Euro_Franc, String_Mng;
+with As.U, Argument, Upper_Char, Get_Float, My_Math, Euro_Franc, String_Mng,
+     Basic_Proc;
 use type My_Math.Real;
 
 procedure E2F is
-
 
   package Real_Ef is new Euro_Franc (My_Math.Real, My_Math.Real);
 
@@ -14,12 +13,11 @@ procedure E2F is
   The_Argument : As.U.Asu_Us;
 
   procedure Help is
-    use Ada.Text_Io;
   begin
-    Put_Line("Usage: " & Argument.Get_Program_Name
+    Basic_Proc.Put_Line_Output ("Usage: " & Argument.Get_Program_Name
                        & " <amount>[<unit>]");
-    Put_Line("   <amount> : integer or float (2 digits)");
-    Put_Line("   <unit>   : f or e");
+    Basic_Proc.Put_Line_Output ("   <amount> : integer or float (2 digits)");
+    Basic_Proc.Put_Line_Output ("   <unit>   : f or e");
   end Help;
 
   procedure Put (V : in My_Math.Real) is
@@ -70,7 +68,7 @@ begin
 
   exception
     when others =>
-      Ada.Text_Io.Put_Line("Error, invalid argument: "
+      Basic_Proc.Put_Line_Error ("Error, invalid argument: "
                           & Argument.Get_Parameter);
       Help;
       return;
@@ -78,17 +76,17 @@ begin
 
   Put(Amount);
   if To_Francs then
-    Ada.Text_Io.Put("e");
+    Basic_Proc.Put_Output ("e");
   else
-    Ada.Text_Io.Put("f");
+    Basic_Proc.Put_Output ("f");
   end if;
-  Ada.Text_Io.Put(" = ");
+  Basic_Proc.Put_Output (" = ");
   if To_Francs then
     Put(Real_Ef.Euros_To_Francs(Amount));
-    Ada.Text_Io.Put_Line("f");
+    Basic_Proc.Put_Line_Output ("f");
   else
     Put(Real_Ef.Francs_To_Euros(Amount));
-    Ada.Text_Io.Put_Line("e");
+    Basic_Proc.Put_Line_Output ("e");
   end if;
 
 end E2F;

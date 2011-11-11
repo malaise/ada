@@ -30,13 +30,13 @@ package body Xml is
     begin
       Ctx.Parse (File_Name, Parse_Ok);
       if not Parse_Ok then
-        Sys_Calls.Put_Line_Error ("ERROR in file " & File_Name
+        Basic_Proc.Put_Line_Error ("ERROR in file " & File_Name
                                 & ": " & Ctx.Get_Parse_Error_Message);
         raise Invalid_Configuration;
       end if;
     exception
       when Xml_Parser.File_Error =>
-        Sys_Calls.Put_Line_Error ("ERROR: File " & File_Name & " not found.");
+        Basic_Proc.Put_Line_Error ("ERROR: File " & File_Name & " not found.");
         raise Invalid_Configuration;
     end;
     Root := Ctx.Get_Root_Element;

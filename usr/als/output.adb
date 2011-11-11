@@ -13,10 +13,7 @@ package body Output is
   function Total_Image is new Int_Image (Lister.Size_Type);
 
   -- Put a char
-  procedure Put_Output (C : in Character) is
-  begin
-    Basic_Proc.Put_Output (C & "");
-  end Put_Output;
+  procedure Put_Output (C : in Character) renames Basic_Proc.Put_Output;
 
   -- Stored style
   Sort_Kind : Sort_Kind_List;

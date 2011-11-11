@@ -1,6 +1,6 @@
-with Ada.Text_Io, Ada.Wide_Text_Io;
+with Ada.Wide_Text_Io;
 
-with Argument;
+with Basic_Proc, Argument;
 
 with Oper_Def, Oper_Dyn_List_Mng, File_Mng, Unit_Format;
 
@@ -8,7 +8,7 @@ procedure Export is
 
   procedure Usage is
   begin
-    Ada.Text_Io.Put_Line("Usage: " & Argument.Get_Program_Name
+    Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
                         & " <account_file> <ascii_file>");
   end Usage;
 
@@ -31,7 +31,7 @@ begin
   begin
     Ada.Wide_Text_Io.Open(File, Ada.Wide_Text_Io.In_File,
                      Argument.Get_Parameter(Occurence => 2));
-    Ada.Text_Io.Put_Line("Error. Ascii file "
+    Basic_Proc.Put_Line_Error ("Error. Ascii file "
                          & Argument.Get_Parameter(Occurence => 2)
                          & " already exists");
     Usage;
@@ -47,10 +47,10 @@ begin
     File_Mng.Load(Argument.Get_Parameter(Occurence => 1), Oper_List, Can_Write);
   exception
     when File_Mng.F_Access_Error =>
-      Ada.Text_Io.Put_Line("Error. Cannot read from file "
+      Basic_Proc.Put_Line_Error ("Error. Cannot read from file "
                          & Argument.Get_Parameter(Occurence => 1));
     when File_Mng.F_Io_Error =>
-      Ada.Text_Io.Put_Line("Error. Reading from file "
+      Basic_Proc.Put_Line_Error ("Error. Reading from file "
                          & Argument.Get_Parameter(Occurence => 1));
   end;
   Oper_List.Rewind;
@@ -61,7 +61,7 @@ begin
                        Argument.Get_Parameter(Occurence => 2));
   exception
     when others =>
-      Ada.Text_Io.Put_Line("Error. Cannot create ascii file "
+      Basic_Proc.Put_Line_Error ("Error. Cannot create ascii file "
                          & Argument.Get_Parameter(Occurence => 2));
       Usage;
       return;
@@ -76,7 +76,7 @@ begin
       Str := Unit_Format.Image(Oper);
     exception
       when others =>
-        Ada.Text_Io.Put_Line("Error. At record no "
+        Basic_Proc.Put_Line_Error ("Error. At record no "
                            & Positive'Image(No));
         Ada.Wide_Text_Io.Close(File);
         return;
@@ -87,7 +87,7 @@ begin
       Ada.Wide_Text_Io.Put_Line(File, Str);
     exception
       when others =>
-        Ada.Text_Io.Put_Line("Error. Writing ascii file, record no "
+        Basic_Proc.Put_Line_Error ("Error. Writing ascii file, record no "
                            & Positive'Image(No));
         Ada.Wide_Text_Io.Close(File);
         return;

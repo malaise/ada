@@ -1,5 +1,5 @@
-with Ada.Text_Io, Ada.Exceptions;
-with Afpx, Con_Io, Normal, My_Math, As.B, Language;
+with Ada.Exceptions;
+with Afpx, Con_Io, Normal, My_Math, As.B, Language, Basic_Proc;
 with Mesu_Def, Str_Mng, Mesu_Nam, Pers_Mng, Pers_Def, Mesu_Fil;
 use Pers_Def;
 package body Mesu_Gra is
@@ -561,7 +561,7 @@ package body Mesu_Gra is
     Screen.Clear;
   exception
     when Error:others =>
-      Ada.Text_Io.Put_Line ("Exception "
+      Basic_Proc.Put_Line_Error ("Exception "
        & Ada.Exceptions.Exception_Name (Error) & " raised.");
       Screen.Set_Xor_Mode (Con_Io.Xor_Off);
       Screen.Clear;

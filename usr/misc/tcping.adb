@@ -1,6 +1,6 @@
 -- Open a TCP connection to the provided host and port,
 -- with timeout and possibly several tries.
-with Ada.Text_Io, Ada.Calendar, Ada.Exceptions;
+with Ada.Calendar, Ada.Exceptions;
 
 with As.U, Argument, Basic_Proc, Ip_Addr,
      Normal, My_Math, Round_At, Timers, Socket, Tcp_Util, Event_Mng;
@@ -85,7 +85,7 @@ procedure Tcping is
     if Silent then
       return;
     end if;
-    Ada.Text_Io.Put (Str);
+    Basic_Proc.Put_Output (Str);
   end Put;
 
   procedure Put_Line (Str : in String) is
@@ -93,7 +93,7 @@ procedure Tcping is
     if Silent then
       return;
     end if;
-    Ada.Text_Io.Put_Line (Str);
+    Basic_Proc.Put_Line_Output (Str);
   end Put_Line;
 
   -- "xxx.yyy.zzz.ttt" from Host_Id
