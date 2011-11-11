@@ -2,17 +2,20 @@ package Basic_Proc is
 
   -- Put line on stdout
   procedure Put_Output (Str : in String);
+  procedure Put_Output (Char : in Character);
   procedure Put_Line_Output (Str : in String);
   procedure New_Line_Output;
   procedure Flush_Output;
 
   -- Put line on stderr
   procedure Put_Error (Str : in String);
+  procedure Put_Error (Char : in Character);
   procedure Put_Line_Error (Str : in String);
   procedure New_Line_Error;
   procedure Flush_Error;
 
-  -- Get line from stdin
+  -- Get line from stdin (strip tailing Lf)
+  End_Error : exception;
   procedure Get_Input (Item : out String;
                        Last : out Natural);
 

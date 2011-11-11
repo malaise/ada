@@ -1,6 +1,5 @@
-with Interfaces.C_Streams;
+with System, Interfaces.C_Streams;
 with Ada.Command_Line, Ada.Characters.Latin_1;
-
 package body Basic_Proc is
 
   -- Put line on stdout
@@ -8,6 +7,15 @@ package body Basic_Proc is
     I : Interfaces.C_Streams.Int;
     pragma Unreferenced (I);
     Str4C : constant String := Str & Ada.Characters.Latin_1.Nul;
+  begin
+    I := Interfaces.C_Streams.Fputs (Str4C'Address,
+                 Interfaces.C_Streams.Stdout);
+  end Put_Output;
+
+  procedure Put_Output (Char : in Character) is
+    I : Interfaces.C_Streams.Int;
+    pragma Unreferenced (I);
+    Str4C : constant String := Char & Ada.Characters.Latin_1.Nul;
   begin
     I := Interfaces.C_Streams.Fputs (Str4C'Address,
                  Interfaces.C_Streams.Stdout);
@@ -46,6 +54,15 @@ package body Basic_Proc is
                  Interfaces.C_Streams.Stderr);
   end Put_Error;
 
+  procedure Put_Error (Char : in Character) is
+    I : Interfaces.C_Streams.Int;
+    pragma Unreferenced (I);
+    Str4C : constant String := Char & Ada.Characters.Latin_1.Nul;
+  begin
+    I := Interfaces.C_Streams.Fputs (Str4C'Address,
+                 Interfaces.C_Streams.Stderr);
+  end Put_Error;
+
   procedure New_Line_Error is
     I : Interfaces.C_Streams.Int;
     pragma Unreferenced (I);
@@ -69,22 +86,26 @@ package body Basic_Proc is
     I := Interfaces.C_Streams.Fflush (Interfaces.C_Streams.Stderr);
   end Flush_Error;
 
-    -- Get line from stdin
+  -- Get line from stdin
   procedure Get_Input (Item : out String;
                        Last : out Natural) is
    Chrs : Interfaces.C_Streams.Chars;
-   pragma Unreferenced (Chrs);
    Str : String (1 .. Item'Length);
+   use type System.Address;
   begin
     Chrs := Interfaces.C_Streams.Fgets (Str'Address,
                     Str'Length,
                     Interfaces.C_Streams.Stdin);
+    if Chrs = System.Null_Address then
+      raise End_Error;
+    end if;
     for I in Str'Range loop
       if Str(I) = Ada.Characters.Latin_1.Lf
       or else Str(I) = Ada.Characters.Latin_1.Cr
       or else Str(I) = Ada.Characters.Latin_1.Nul then
+        -- Copy up to Cr/Lf/Nul excluded
         Item(Item'First .. Item'First + I - Str'First) := Str(Str'First .. I);
-        Last := I - 1;
+        Last := Item'First + I - 2;
         return;
       end if;
     end loop;

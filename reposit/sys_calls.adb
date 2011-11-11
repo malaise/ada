@@ -149,11 +149,13 @@ package body Sys_Calls is
 
   -- Put line on stdout or stderr
   procedure Put_Output (Str : in String) renames Basic_Proc.Put_Output;
+  procedure Put_Output (Char : in Character) renames Basic_Proc.Put_Output;
   procedure New_Line_Output renames Basic_Proc.New_Line_Output;
   procedure Put_Line_Output (Str : in String)
             renames  Basic_Proc.Put_Line_Output;
   procedure Flush_Output renames Basic_Proc.Flush_Output;
   procedure Put_Error (Str : in String) renames Basic_Proc.Put_Error;
+  procedure Put_Error (Char : in Character) renames Basic_Proc.Put_Error;
   procedure New_Line_Error renames Basic_Proc.New_Line_Error;
   procedure Put_Line_Error (Str : in String) renames Basic_Proc.Put_Line_Error;
   procedure Flush_Error renames Basic_Proc.Flush_Error;

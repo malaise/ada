@@ -23,10 +23,12 @@ package Sys_Calls is
 
   -- Put line on stdout or stderr
   procedure Put_Output (Str : in String);
+  procedure Put_Output (Char : in Character);
   procedure Put_Line_Output (Str : in String);
   procedure New_Line_Output;
   procedure Flush_Output;
   procedure Put_Error (Str : in String);
+  procedure Put_Error (Char : in Character);
   procedure Put_Line_Error (Str : in String);
   procedure New_Line_Error;
   procedure Flush_Error;
