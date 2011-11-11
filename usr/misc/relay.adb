@@ -114,7 +114,7 @@ procedure Relay is
   procedure Get_No_Tty is
     Len : Natural;
   begin
-    Basic_Proc.Get_Input (Message.Data, Len);
+    Basic_Proc.Get_Line (Message.Data, Len);
     if Len = 0 then
       Message.Data(1) := Ada.Characters.Latin_1.Cr;
       Len := 1;

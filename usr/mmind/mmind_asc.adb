@@ -28,7 +28,7 @@ begin
       loop
         begin
           Basic_Proc.Put_Output(Normal(I, 2) & "? ");
-          Basic_Proc.Get_Input(Buffer, Len);
+          Basic_Proc.Get_Line(Buffer, Len);
           if Len /= Str'Length then
             raise Constraint_Error;
           end if;

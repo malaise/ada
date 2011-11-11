@@ -1,8 +1,7 @@
 -- The games of NIM and Marienbad, graphical and text version.
 -- Remove sticks alternatively with the computer
 -- Remove the last stick (in NIM) or oblige the computer to do so (Marienbad)
-with Ada.Text_Io;
-with As.U, Argument, Argument_Parser;
+with As.U, Argument, Argument_Parser, Basic_Proc;
 with Common, Screen, Text, Compute;
 procedure Nimmari is
   Debug : constant Boolean := False;
@@ -25,19 +24,19 @@ procedure Nimmari is
 
   procedure Usage is
   begin
-    Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
+    Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
         & " [ -t | --text ]  [ <nim> | <marienbad>]");
-    Ada.Text_Io.Put_Line (" <nim> ::= -n | --nim");
-    Ada.Text_Io.Put_Line (" <marienbad> ::= -m | --marienbad");
+    Basic_Proc.Put_Line_Error (" <nim> ::= -n | --nim");
+    Basic_Proc.Put_Line_Error (" <marienbad> ::= -m | --marienbad");
   end Usage;
 
   procedure Put (Bars : Common.Bar_Status_Array) is
   begin
     for I in Bars'Range loop
       if Bars(I) then
-        Ada.Text_Io.Put ("I ");
+        Basic_Proc.Put_Output ("I ");
       else
-        Ada.Text_Io.Put ("- ");
+        Basic_Proc.Put_Output ("- ");
       end if;
     end loop;
   end Put;
@@ -48,7 +47,7 @@ begin
   -- Parse arguments
   Arg_Dscr := Argument_Parser.Parse (Keys);
   if not Arg_Dscr.Is_Ok then
-    Ada.Text_Io.Put_Line (Argument.Get_Program_Name & ": Syntax ERROR. "
+    Basic_Proc.Put_Line_Error (Argument.Get_Program_Name & ": Syntax ERROR. "
       & Arg_Dscr.Get_Error & ".");
     Usage;
     return;
@@ -61,7 +60,7 @@ begin
   end if;
 
   if Arg_Dscr.Is_Set (2) and then Arg_Dscr.Is_Set (3) then
-     Ada.Text_Io.Put_Line (Argument.Get_Program_Name & ": Syntax ERROR.");
+     Basic_Proc.Put_Line_Error (Argument.Get_Program_Name & ": Syntax ERROR.");
     Usage;
     return;
   end if;
@@ -98,9 +97,9 @@ begin
       -- Compute game, check end
       Compute.Play(Row, Remove, Result);
       if Debug then
-        Ada.Text_Io.Put ("Machine played: Row" & Row'Img & " ");
+        Basic_Proc.Put_Output ("Machine played: Row" & Row'Img & " ");
         Put (Remove);
-        Ada.Text_Io.Put_Line (" Result -> " & Result'Img);
+        Basic_Proc.Put_Line_Output (" Result -> " & Result'Img);
       end if;
 
       if Result in Common.Played_Result_List then
@@ -123,9 +122,9 @@ begin
         Text.Play (Row, Remove);
       end if;
       if Debug then
-        Ada.Text_Io.Put ("Human played: Row" & Row'Img & " ");
+        Basic_Proc.Put_Output ("Human played: Row" & Row'Img & " ");
         Put (Remove);
-        Ada.Text_Io.New_Line;
+        Basic_Proc.New_Line_Output;
       end if;
       Common.Remove_Bars (Row, Remove);
 

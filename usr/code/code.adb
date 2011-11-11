@@ -129,7 +129,7 @@ begin
       Basic_Proc.Put_Output ("Key: ");
       Is_A_Tty := Echo (False);
     end if;
-    Basic_Proc.Get_Input (Key_Str, Key_Len);
+    Basic_Proc.Get_Line (Key_Str, Key_Len);
     if Is_A_Tty then
       Is_A_Tty := Echo(True);
       Basic_Proc.New_Line_Output;

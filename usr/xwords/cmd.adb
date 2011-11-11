@@ -1,5 +1,5 @@
-with Ada.Text_Io, Ada.Characters.Latin_1;
-with As.U, Environ, Many_Strings, String_Mng;
+with Ada.Characters.Latin_1;
+with As.U, Environ, Many_Strings, String_Mng, Basic_Proc;
 package body Cmd is
 
   -- Path to Words
@@ -57,8 +57,8 @@ package body Cmd is
 
     -- Spawn
     if Debug then
-      Ada.Text_Io.Put_Line ("Executing >" & Words_Path.Image & Com
-                                         & "<>" & Arg & "<");
+      Basic_Proc.Put_Line_Output ("Executing >" & Words_Path.Image & Com
+                                & "<>" & Arg & "<");
     end if;
     Cmd.Set (Words_Path & Com);
     Cmd.Cat (Arg);
@@ -67,7 +67,7 @@ package body Cmd is
 
     if Exit_Code = Command.Error then
       if Debug then
-        Ada.Text_Io.Put_Line ("Execute error");
+        Basic_Proc.Put_Line_Output ("Execute error");
       end if;
       Res.Insert (As.U.Tus ("Spawn error"));
       Ok := False;
@@ -77,7 +77,7 @@ package body Cmd is
     -- Set "out" values: Copy list of output lines and append
     --  error string
     if Debug then
-      Ada.Text_Io.Put_Line ("Copying result");
+      Basic_Proc.Put_Line_Output ("Copying result");
     end if;
     Res.Insert_Copy (Output_Flow.List);
     if not Error_Flow.Str.Is_Null then
@@ -89,7 +89,7 @@ package body Cmd is
     -- Exec failed leads to Exit code 1 with no output
     if Exit_Code = 1 and then Res.Is_Empty then
       if Debug then
-        Ada.Text_Io.Put_Line ("Adding spwan error");
+        Basic_Proc.Put_Line_Output ("Adding spwan error");
       end if;
       Res.Insert (As.U.Tus ("Spawn error"));
     end if;

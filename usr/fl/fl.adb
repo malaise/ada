@@ -80,7 +80,7 @@ begin
         Len : Natural;
       begin
         Basic_Proc.Put_Output (">>");
-        Basic_Proc.Get_Input (Str, Len);
+        Basic_Proc.Get_Line (Str, Len);
         Tmp_Cost := Get_Float.Get_Float (Str(1 .. Len));
       exception
         when others =>

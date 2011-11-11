@@ -4,7 +4,7 @@ procedure T_Basic is
   Len : Natural;
 begin
   loop
-    Basic_Proc.Get_Input (Str, Len);
+    Basic_Proc.Get_Line (Str, Len);
     Basic_Proc.Put_Line_Output (Str (1 .. Len));
   end loop;
 end T_Basic;

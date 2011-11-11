@@ -1,12 +1,11 @@
-with Ada.Text_Io, Ada.Characters.Latin_1;
-with Normal, Upper_Str, Upper_Char;
+with Ada.Characters.Latin_1;
+with Normal, Upper_Str, Upper_Char, Basic_Proc;
 package body Text is
 
   Lf : constant Character := Ada.Characters.Latin_1.Lf;
-  procedure Put (Str : in String) renames Ada.Text_Io.Put;
-  procedure Put_Line (Str : in String) renames Ada.Text_Io.Put_Line;
-  procedure New_Line (Spacing : in Ada.Text_Io.Positive_Count := 1)
-                     renames Ada.Text_Io.New_Line;
+  procedure Put (Str : in String) renames Basic_Proc.Put_Output;
+  procedure Put_Line (Str : in String) renames Basic_Proc.Put_Line_Output;
+  procedure New_Line renames Basic_Proc.New_Line_Output;
 
   -- Get a String of fixed lenght
   -- Returns a string filled with Lf on error
@@ -14,7 +13,7 @@ package body Text is
     Str : String (1 .. 80);
     Len : Natural;
   begin
-    Ada.Text_Io.Get_Line (Str, Len);
+    Basic_Proc.Get_Line (Str, Len);
     if Len /= Length then
       Str := (others => Lf);
     end if;

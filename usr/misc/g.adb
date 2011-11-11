@@ -2,8 +2,8 @@
 -- number and add -1, 0 or 1 so that the remaining is 0.
 -- Then do the same on the quotien of this division... until the quotien
 -- becomes 0.
-with Ada.Text_Io, Ada.Calendar, Ada.Characters.Latin_1;
-with U_Rand, Clear_Screen, Basic_Proc, Normal;
+with Ada.Calendar, Ada.Characters.Latin_1;
+with U_Rand, Clear_Screen, Sys_Calls, Normal;
 procedure G is
   -- Generated number
   subtype Number is Natural range 0 .. 999_999_999;
@@ -17,6 +17,9 @@ procedure G is
 
   Start_Time : Ada.Calendar.Time;
   Time_Spent : Natural;
+
+  Dummy : Boolean;
+  pragma Unreferenced (Dummy);
 
   procedure Init is
     N : Positive;
@@ -80,15 +83,29 @@ procedure G is
     return;
   end Div;
 
+  Get_Error : exception;
+  function Get_Char return Character is
+    Status : Sys_Calls.Get_Status_List;
+    Char : Character;
+  begin
+    Sys_Calls.Get_Immediate (Sys_Calls.Stdin, Status, Char);
+    case Status is
+      when Sys_Calls.Got =>
+        return Char;
+      when others =>
+        raise Get_Error;
+    end case;
+  end Get_Char;
+
 begin
-  -- Clear_Screen;
+  Dummy := Sys_Calls.Set_Tty_Attr (Sys_Calls.Stdin, Sys_Calls.Char_No_Echo);
   Init;
 
   Game:
   loop
     Num := Rand;
     Success := True;
-    Basic_Proc.Put_Output ("   ");
+    Sys_Calls.Put_Output ("   ");
     Start_Time := Ada.Calendar.Clock;
 
     Party:
@@ -96,25 +113,25 @@ begin
 
       Get:
       loop
-        Basic_Proc.Put_Output ("--> ");
-        Basic_Proc.Put_Output (Normal (Num, 10));
+        Sys_Calls.Put_Output ("--> ");
+        Sys_Calls.Put_Output (Normal (Num, 10));
         exit Party when Num = 0;
-        Basic_Proc.Put_Output (
+        Sys_Calls.Put_Output (
          "  '<-' -1   'V' 0   '->' +1   'q' quit ? ");
 
         declare
           Char : Character;
         begin
-          Ada.Text_Io.Get_Immediate (Char);
-          Basic_Proc.New_Line_Output;
+          Char := Get_Char;
+          Sys_Calls.New_Line_Output;
           if Char = 'q' or else Char = 'Q' then
             Clear_Screen;
-            return;
+            exit Game;
           end if;
           if Char = Ada.Characters.Latin_1.Esc then
-            Ada.Text_Io.Get_Immediate (Char);
+            Char := Get_Char;
             if Char = '[' then
-              Ada.Text_Io.Get_Immediate (Char);
+              Char := Get_Char;
               if Char = 'D' then
                 Char := '4';
               elsif Char = 'C'then
@@ -139,7 +156,7 @@ begin
           end if;
         end;
 
-        Basic_Proc.Put_Output ("ERR");
+        Sys_Calls.Put_Output ("ERR");
       end loop Get;
 
       Div (Num, Num, Res);
@@ -147,34 +164,38 @@ begin
         Success := False;
         case Res is
           when Zero =>
-            Basic_Proc.Put_Line_Output (" Error, it was  0");
+            Sys_Calls.Put_Line_Output (" Error, it was  0");
           when Plus_1 =>
-            Basic_Proc.Put_Line_Output (" Error, it was +1");
+            Sys_Calls.Put_Line_Output (" Error, it was +1");
           when Minus_1 =>
-            Basic_Proc.Put_Line_Output (" Error, it was -1");
+            Sys_Calls.Put_Line_Output (" Error, it was -1");
         end case;
       end if;
       case Res is
         when Zero =>
-          Basic_Proc.Put_Output (" 0 ");
+          Sys_Calls.Put_Output (" 0 ");
         when Plus_1 =>
-          Basic_Proc.Put_Output ("+1 ");
+          Sys_Calls.Put_Output ("+1 ");
         when Minus_1 =>
-          Basic_Proc.Put_Output ("-1 ");
+          Sys_Calls.Put_Output ("-1 ");
       end case;
     end loop Party;
 
-    Basic_Proc.Put_Output ("   ");
+    Sys_Calls.Put_Output ("   ");
     if Success then
       Time_Spent := Positive (Ada.Calendar."-" (Ada.Calendar.Clock,
                                                 Start_Time) );
-      Basic_Proc.Put_Line_Output (" Perfect, in" & Time_Spent'Img
+      Sys_Calls.Put_Line_Output (" Perfect, in" & Time_Spent'Img
                     & " seconds!");
     else
-      Basic_Proc.Put_Line_Output (" Some errors...");
+      Sys_Calls.Put_Line_Output (" Some errors...");
     end if;
-    Basic_Proc.New_Line_Output;
+    Sys_Calls.New_Line_Output;
   end loop Game;
 
+  Dummy := Sys_Calls.Set_Tty_Attr (Sys_Calls.Stdin, Sys_Calls.Canonical);
+exception
+  when others =>
+    Dummy := Sys_Calls.Set_Tty_Attr (Sys_Calls.Stdin, Sys_Calls.Canonical);
 end G;
 

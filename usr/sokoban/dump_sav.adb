@@ -1,38 +1,32 @@
-with Sok_Movement;
-
-package Dump_Save is
-  procedure Dump (Mvt : in Sok_Movement.Saved_Data_Rec; Pushed : in Boolean);
-end Dump_Save;
-
+with Text_Line;
 with Sok_Types;
-with Ada.Text_Io; use Ada.Text_Io;
-package body Dump_Save is
-  File : File_Type;
-  Open : Boolean := False;
+package body Dump_Sav is
+  File : Text_Line.File_Type;
 
   procedure Dump (Mvt : in Sok_Movement.Saved_Data_Rec; Pushed : in Boolean) is
   begin
-    if not Open then
-      Create (File, Out_File, "dump");
-      Open := True;
+    if not File.Is_Open then
+      File.Create_All ("dump");
     end if;
 
     if Pushed then
-      Put_Line ("PUSHED");
+      File.Put_Line ("PUSHED");
     else
-      Put_Line ("POPED");
+      File.Put_Line ("POPED");
     end if;
 
-    Put_Line ("POS_ORIG " &
+    File.Put_Line ("POS_ORIG " &
      Sok_Types.Row_Range'Image(Mvt.Pos_Orig.Row) & " " &
      Sok_Types.Col_Range'Image(Mvt.Pos_Orig.Col) );
 
-    Put_Line ("MOVEMENT " & Sok_Movement.Movement_List'Image (Mvt.Movement) );
+    File.Put_Line ("MOVEMENT "
+                 & Sok_Movement.Movement_List'Image (Mvt.Movement) );
 
-    Put_Line ("RESULT " & Sok_Movement.Saved_Result_List'Image (Mvt.Result) );
+    File.Put_Line ("RESULT "
+                 & Sok_Movement.Saved_Result_List'Image (Mvt.Result) );
 
-    Put_Line ("---------------------");
+    File.Put_Line ("---------------------");
   end Dump;
 
-end Dump_Save;
+end Dump_Sav;
 
