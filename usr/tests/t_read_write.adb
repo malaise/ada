@@ -1,4 +1,3 @@
-with Ada.Text_Io;
 with Mutex_Manager, Schedule, Rnd, Normal, Argument, Basic_Proc;
 
 procedure T_Read_Write is
@@ -18,7 +17,7 @@ procedure T_Read_Write is
   procedure Put_Line (Index : in Range_Task; Msg : in String) is
   begin
     Io_Lock.Get;
-    Ada.Text_Io.Put_Line (Normal (Index, 3) & " " & Msg);
+    Basic_Proc.Put_Line_Output (Normal (Index, 3) & " " & Msg);
     Io_Lock.Release;
   end Put_Line;
 

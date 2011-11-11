@@ -7,8 +7,7 @@
 -- Escape suspends the Periodic and the Single (if not expired)
 -- Return resumes them
 
-with Ada.Text_Io;
-with Afpx, Con_Io, Timers, Rnd, Event_Mng, Mixed_Str;
+with Basic_Proc, Afpx, Con_Io, Timers, Rnd, Event_Mng, Mixed_Str;
 procedure T_Timers is
 
   -- Afpx stuff
@@ -49,7 +48,7 @@ procedure T_Timers is
     if Use_Afpx then
       Put_Line (Str);
     else
-      Ada.Text_Io.Put_Line (Str);
+      Basic_Proc.Put_Line_Output (Str);
     end if;
   end Display;
 

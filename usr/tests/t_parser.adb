@@ -1,4 +1,3 @@
-with Ada.Text_Io;
 with Basic_Proc, Parser.All_In_One, Argument, Mixed_Str;
 procedure T_Parser is
 
@@ -27,27 +26,28 @@ begin
   and then Argument.Get_Parameter(Occurence => 1)'Length = 1 then
     Sep := Argument.Get_Parameter(Occurence => 1)(1);
   else
-    Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
+    Basic_Proc.Put_Line_Output ("Usage: " & Argument.Get_Program_Name
       & " <separator_char> [ <string_to_parse> ]");
     Basic_Proc.Set_Error_Exit_Code;
     return;
   end if;
 
-  Ada.Text_Io.Put_Line ("Parsing >" & Str & "< with separator '" & Sep & "':");
+  Basic_Proc.Put_Line_Output ("Parsing >" & Str & "< with separator '" & Sep & "':");
   Parser.Set (It, Str, Is_Sep'Unrestricted_Access);
 
   loop
-    Ada.Text_Io.Put (">" & Parser.Next_Word (It) & "< ");
+    Basic_Proc.Put_Output (">" & Parser.Next_Word (It) & "< ");
     exit when Parser.Current_Word (It) = "";
   end loop;
-  Ada.Text_Io.New_Line (2);
+  Basic_Proc.New_Line_Output;
+  Basic_Proc.New_Line_Output;
 
   Parser.Reset (It);
 
-  Ada.Text_Io.Put_Line ("Getting indexes:");
+  Basic_Proc.Put_Line_Output ("Getting indexes:");
   loop
     Parser.Next_Word (It);
-    Ada.Text_Io.Put_Line ("Word is >" & Parser.Current_Word (It) & "<"
+    Basic_Proc.Put_Line_Output ("Word is >" & Parser.Current_Word (It) & "<"
                         & " from" & Positive'Image(Parser.First_Index (It))
                         & " to" & Natural'Image(Parser.Last_Index (It))
                         & " separated by >"
@@ -58,7 +58,7 @@ begin
   if Parser.First_Word (It) = "check"
   and then Parser.Next_Word (It) = "size"
   and then Parser.Next_Word (It) = "" then
-    Ada.Text_Io.Put_Line ("Checking size... Ctrl C to abort");
+    Basic_Proc.Put_Line_Output ("Checking size... Ctrl C to abort");
     -- Size of process shall not grow
     loop
       declare
@@ -70,23 +70,23 @@ begin
     end loop;
   end if;
   Parser.Del (It);
-  Ada.Text_Io.New_Line;
+  Basic_Proc.New_Line_Output;
 
-  Ada.Text_Io.Put_Line ("Parsing all in one:");
+  Basic_Proc.Put_Line_Output ("Parsing all in one:");
   Parser.Set (It, Str, Is_Sep'Unrestricted_Access);
   declare
     Parsed : constant Parser.All_In_One.Parsed_Array
            := Parser.All_In_One.Parse_All (It);
   begin
     for I in Parsed'Range loop
-      Ada.Text_Io.Put_Line ("Got >" & Parsed(I).Str.Image
+      Basic_Proc.Put_Line_Output ("Got >" & Parsed(I).Str.Image
        & "< of kind " & Mixed_Str (Parsed(I).Kind'Img) );
     end loop;
   end;
   Parser.Del (It);
-  Ada.Text_Io.New_Line;
+  Basic_Proc.New_Line_Output;
 
-  Ada.Text_Io.Put_Line ("Done.");
+  Basic_Proc.Put_Line_Output ("Done.");
 
 end T_Parser;
 

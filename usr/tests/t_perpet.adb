@@ -1,4 +1,4 @@
-with Ada.Calendar, Ada.Text_Io, Ada.Characters.Latin_1;
+with Ada.Calendar, Ada.Characters.Latin_1;
 with Perpet, My_Io;
 procedure T_Perpet is
 
@@ -9,8 +9,6 @@ procedure T_Perpet is
   procedure Error is
   begin
     My_Io.Put(Ada.Characters.Latin_1.Bel);
-    Ada.Text_Io.Skip_Line;
-    Ada.Text_Io.Skip_Line;
   end Error;
 
   function Get return Ada.Calendar.Time is
@@ -134,3 +132,4 @@ begin
     end;
   end loop;
 end T_Perpet;
+

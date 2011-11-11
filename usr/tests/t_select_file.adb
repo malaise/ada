@@ -1,5 +1,4 @@
-with Ada.Text_Io;
-with As.B, Select_File;
+with Basic_Proc, As.B, Select_File;
 
 procedure T_Select_File is
 
@@ -14,7 +13,7 @@ begin
 
   loop
     File.Set (My_Select_File (10, File.Image, Read, not Read));
-    Ada.Text_Io.Put_Line (File.Image);
+    Basic_Proc.Put_Line_Output (File.Image);
     exit when File.Is_Null;
     Read := not Read;
   end loop;

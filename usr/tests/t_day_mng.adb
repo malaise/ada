@@ -1,5 +1,5 @@
-with Ada.Text_Io, Ada.Calendar;
-with Day_Mng;
+with Ada.Calendar, Ada.Text_Io;
+with Basic_Proc, Day_Mng;
 
 procedure T_Day_Mng is
 
@@ -18,19 +18,18 @@ begin
 
     loop
       begin
-        Ada.Text_Io.Put ("Enter a duration: ");
+        Basic_Proc.Put_Output ("Enter a duration: ");
         Dur_Io.Get(Dur);
         exit;
       exception
         when others =>
-          Ada.Text_Io.Skip_Line;
-          Ada.Text_Io.Put_Line ("Error.");
+          Basic_Proc.Put_Line_Output ("Error.");
       end;
     end loop;
 
     Day_Mng.Split (Dur, Hours, Minutes, Seconds, Millisec);
 
-    Ada.Text_Io.Put_Line (Day_Mng.T_Hours'Image(Hours) & " h  "
+    Basic_Proc.Put_Line_Output (Day_Mng.T_Hours'Image(Hours) & " h  "
                         & Day_Mng.T_Minutes'Image(Minutes) & " min  "
                         & Day_Mng.T_Seconds'Image(Seconds) & " sec  "
                         & Day_Mng.T_Millisec'Image(Millisec) & " msec");
@@ -38,7 +37,7 @@ begin
     Dur := Day_Mng.Pack (Hours, Minutes, Seconds, Millisec);
 
     Dur_Io.Put(Dur);
-    Ada.Text_Io.New_Line;
+    Basic_Proc.New_Line_Output;
 
   end loop;
 

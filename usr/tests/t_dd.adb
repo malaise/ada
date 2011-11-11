@@ -1,5 +1,4 @@
-with Ada.Text_Io;
-with Argument, Dyn_Data;
+with Basic_Proc, Argument, Dyn_Data;
 
 procedure T_Dd is
 
@@ -38,7 +37,7 @@ begin
     end if;
   exception
     when others =>
-      Ada.Text_Io.Put_Line ("Wrong argument. Usage : "
+      Basic_Proc.Put_Line_Output ("Wrong argument. Usage : "
       & Argument.Get_Program_Name & " [ <nb_iteration> ]");
       raise Abort_Exception;
   end;
@@ -47,22 +46,23 @@ begin
     One_Cycle;
   exception
     when Storage_Error =>
-      Ada.Text_Io.Put_Line ("The test cannot be performed: "
+      Basic_Proc.Put_Line_Output ("The test cannot be performed: "
           & "Even one iteration raises STORAGE_ERROR.");
-      Ada.Text_Io.Put_Line (
+      Basic_Proc.Put_Line_Output (
             "Lower MAX_DATA in source file, recompile and retry.");
       raise Abort_Exception;
   end;
 
-  Ada.Text_Io.Put_Line ("This test succeeds if no STORAGE_ERROR is raised.");
-  Ada.Text_Io.Put ("Performinig ");
+  Basic_Proc.Put_Line_Output (
+        "This test succeeds if no STORAGE_ERROR is raised.");
+  Basic_Proc.Put_Output ("Performinig ");
   if Nb_Loop = 0 then
-    Ada.Text_Io.Put (" infinite");
+    Basic_Proc.Put_Output (" infinite");
   else
-    Ada.Text_Io.Put (Natural'Image(Nb_Loop));
+    Basic_Proc.Put_Output (Natural'Image(Nb_Loop));
   end if;
-  Ada.Text_Io.Put_Line (" iterations, each of them consisting in");
-  Ada.Text_Io.Put_Line (" allocating "
+  Basic_Proc.Put_Line_Output (" iterations, each of them consisting in");
+  Basic_Proc.Put_Line_Output (" allocating "
                       & Integer'Image(Max_Data)
                       & " objects of "
                       & Integer'Image(Data'Last)
@@ -79,14 +79,14 @@ begin
     end loop;
   end if;
 
-  Ada.Text_Io.Put_Line ("Test successful.");
+  Basic_Proc.Put_Line_Output ("Test successful.");
 exception
   when Storage_Error =>
-    Ada.Text_Io.Put_Line ("Test has failed.");
+    Basic_Proc.Put_Line_Output ("Test has failed.");
   when Abort_Exception =>
     null;
   when others =>
-    Ada.Text_Io.Put_Line ("Unexpected exception was raised.");
+    Basic_Proc.Put_Line_Output ("Unexpected exception was raised.");
     raise;
 end T_Dd;
 

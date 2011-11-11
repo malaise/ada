@@ -1,4 +1,4 @@
-with Ada.Text_Io, Ada.Exceptions;
+with Ada.Exceptions;
 with As.U.Utils, Argument, Xml_Parser, Normal, Basic_Proc, Sys_Calls,
      Text_Line, String_Mng.Regex, Directory, Dir_Mng, Upper_Str, Rnd;
 procedure T_Xml_String is
@@ -71,12 +71,12 @@ procedure T_Xml_String is
     for I in Attrs'Range loop
       if I /= 1 then
         -- Indent
-        Ada.Text_Io.Put (Indent);
+        Basic_Proc.Put_Output (Indent);
       end if;
-      Ada.Text_Io.Put (" " & Attrs(I).Name.Image
+      Basic_Proc.Put_Output (" " & Attrs(I).Name.Image
                      & "=""" & Attrs(I).Value.Image & """");
       if I /= Attrs'Last then
-        Ada.Text_Io.New_Line;
+        Basic_Proc.New_Line_Output;
       end if;
     end loop;
   end Put_Attributes;
@@ -86,11 +86,11 @@ procedure T_Xml_String is
     Target : constant String := Ctx.Get_Target (Pi).Image;
     Text : constant String := Ctx.Get_Pi (Pi).Image;
   begin
-    Ada.Text_Io.Put ("<?" & Target);
+    Basic_Proc.Put_Output ("<?" & Target);
     if Text /= ""  then
-      Ada.Text_Io.Put (" " & Text);
+      Basic_Proc.Put_Output (" " & Text);
     end if;
-    Ada.Text_Io.Put_Line ("?>");
+    Basic_Proc.Put_Line_Output ("?>");
     if Target = If_Name_Key then
       if Text = If_Name_Val then
         If_Name_Ok := True;
@@ -131,9 +131,9 @@ procedure T_Xml_String is
       if Name /= "" then
         -- A prologue
         -- Put the xml directive with attributes
-        Ada.Text_Io.Put ("<?" & Name);
+        Basic_Proc.Put_Output ("<?" & Name);
         Put_Attributes (Elt, 0, 2 + Name'Length);
-        Ada.Text_Io.Put_Line ("?>");
+        Basic_Proc.Put_Line_Output ("?>");
         for I in Children'Range loop
           if Children(I).Kind = Xml_Parser.Pi then
             -- Put PIs
@@ -144,14 +144,14 @@ procedure T_Xml_String is
       return;
     else
       -- Put element, attributes and children recursively
-      Ada.Text_Io.Put (Indent);
-      Ada.Text_Io.Put ("<" & Name);
+      Basic_Proc.Put_Output (Indent);
+      Basic_Proc.Put_Output ("<" & Name);
       Put_Attributes (Elt, Level, 1 + Name'Length);
       if Children'Length = 0 then
         -- No child, terminate tag now
-        Ada.Text_Io.Put ("/>");
+        Basic_Proc.Put_Output ("/>");
       else
-        Ada.Text_Io.Put (">");
+        Basic_Proc.Put_Output (">");
         Prev_Is_Text := False;
         for I in Children'Range loop
           if Children(I).Kind = Xml_Parser.Element then
@@ -160,7 +160,7 @@ procedure T_Xml_String is
               -- Father did not New_Line because of possible text
               --  or prev was not text and did not New_Line because
               --  of possible text
-              Ada.Text_Io.New_Line;
+              Basic_Proc.New_Line_Output;
               Put_Element (Children(I), Level + 1);
             elsif I = 1 then
               -- First Child
@@ -171,20 +171,20 @@ procedure T_Xml_String is
               Put_Element (Children(I), 0);
             end if;
             if I = Children'Last then
-              Ada.Text_Io.New_Line;
+              Basic_Proc.New_Line_Output;
             end if;
             Prev_Is_Text := False;
           else
             -- Specific put text
-            Ada.Text_Io.Put (Ctx.Get_Text (Children(I)));
+            Basic_Proc.Put_Output (Ctx.Get_Text (Children(I)));
             Prev_Is_Text := True;
           end if;
         end loop;
         -- Terminate tag after children
         if not Prev_Is_Text then
-          Ada.Text_Io.Put (Indent);
+          Basic_Proc.Put_Output (Indent);
         end if;
-        Ada.Text_Io.Put ("</" & Name & ">");
+        Basic_Proc.Put_Output ("</" & Name & ">");
       end if;
     end if;
   end Put_Element;
@@ -192,7 +192,7 @@ procedure T_Xml_String is
   procedure Do_One (Name : in String) is
   begin
     -- Parse string of file provided as arg
-    Ada.Text_Io.Put_Line ("Parsing prologue of string of file " & Name);
+    Basic_Proc.Put_Line_Output ("Parsing prologue of string of file " & Name);
     Ctx.Parse_Prologue (Read_File (Name), Parse_Ok);
     if not Parse_Ok then
       Basic_Proc.Put_Line_Error (Xml_Parser.Get_Parse_Error_Message (Ctx));
@@ -201,9 +201,9 @@ procedure T_Xml_String is
       return;
     end if;
     Prologue := Ctx.Get_Prologue;
-    Ada.Text_Io.Put_Line ("Got Prologue:");
+    Basic_Proc.Put_Line_Output ("Got Prologue:");
     Put_Element (Prologue, Prologue_Level);
-    Ada.Text_Io.New_Line;
+    Basic_Proc.New_Line_Output;
 
     -- Identify Dtd
     if not If_Name_Ok or else not If_Vers_Ok then
@@ -211,21 +211,21 @@ procedure T_Xml_String is
            "Error. Missing or incomplete interface definition");
       raise Interface_Error;
     end if;
-    Ada.Text_Io.Put_Line ("Selected Dtd:" & Dtd_Index'Img);
+    Basic_Proc.Put_Line_Output ("Selected Dtd:" & Dtd_Index'Img);
     -- Parse remaining with this dtd
-    Ada.Text_Io.Put_Line ("Parsing remaining of string");
+    Basic_Proc.Put_Line_Output ("Parsing remaining of string");
     Ctx.Parse_Elements (Dtds (Dtd_Index), Parse_Ok);
     if not Parse_Ok then
       Basic_Proc.Put_Line_Error (Xml_Parser.Get_Parse_Error_Message (Ctx));
       Basic_Proc.Set_Error_Exit_Code;
       Xml_Parser.Clean (Ctx);
     else
-      Ada.Text_Io.Put_Line ("Got Elements:");
+      Basic_Proc.Put_Line_Output ("Got Elements:");
       Root := Ctx.Get_Root_Element;
       Put_Element (Root, 0);
-      Ada.Text_Io.New_Line;
+      Basic_Proc.New_Line_Output;
     end if;
-    Ada.Text_Io.Put_Line (Separator);
+    Basic_Proc.Put_Line_Output (Separator);
 
     -- Done
     Ctx.Clean;
@@ -250,10 +250,10 @@ begin
                 := Data_Dir & "/dtd_" & Normal (I, 1) & ".dtd";
     begin
       if I mod 2 = 1 then
-        Ada.Text_Io.Put_Line ("Parsing file " & File_Name);
+        Basic_Proc.Put_Line_Output ("Parsing file " & File_Name);
         Xml_Parser.Parse_Dtd_File (File_Name, null, Dtds(I), Error_Msg);
       else
-        Ada.Text_Io.Put_Line ("Parsing string of file " & File_Name);
+        Basic_Proc.Put_Line_Output ("Parsing string of file " & File_Name);
         Xml_Parser.Parse_Dtd_String (Read_File (File_Name), null, Dtds(I),
                                      Error_Msg);
       end if;
@@ -264,7 +264,7 @@ begin
       end if;
     end;
   end loop;
-  Ada.Text_Io.Put_Line (Separator);
+  Basic_Proc.Put_Line_Output (Separator);
 
   if Argument.Get_Nbre_Arg = 1
   and then Upper_Str (Argument.Get_Parameter) = "RND" then

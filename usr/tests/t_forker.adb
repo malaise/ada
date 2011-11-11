@@ -1,6 +1,6 @@
-with Ada.Text_Io, Ada.Characters.Latin_1;
+with Ada.Characters.Latin_1;
 
-with Sys_Calls, Argument, Lower_Str, Socket, Forker, Ip_Addr, Tcp_Util;
+with Basic_Proc, Argument, Lower_Str, Socket, Forker, Ip_Addr, Tcp_Util;
 
 procedure T_Forker is
 
@@ -43,13 +43,13 @@ procedure T_Forker is
   use type Socket.Port_Num, Tcp_Util.Remote_Host_List;
 begin
 
-  -- Ada.Text_Io.Put_Line ("Req_size: " & Integer'Image(Forker.Request_Rec'Size));
-  -- Ada.Text_Io.Put_Line ("Rep_size: " & Integer'Image(Forker.Report_Rec'Size));
+  -- Basic_Proc.Put_Line_Output ("Req_size: " & Integer'Image(Forker.Request_Rec'Size));
+  -- Basic_Proc.Put_Line_Output ("Rep_size: " & Integer'Image(Forker.Report_Rec'Size));
 
   if Argument.Get_Nbre_Arg /= 2 then
-    Ada.Text_Io.Put_Line ("ERROR: Two args <dest> <port_name/num> expected.");
-    Ada.Text_Io.Put_Line ("  <dest> ::= <host_name/addr> | <lan_addr>");
-    Sys_Calls.Set_Error_Exit_Code;
+    Basic_Proc.Put_Line_Output ("ERROR: Two args <dest> <port_name/num> expected.");
+    Basic_Proc.Put_Line_Output ("  <dest> ::= <host_name/addr> | <lan_addr>");
+    Basic_Proc.Set_Error_Exit_Code;
     return;
   end if;
 
@@ -80,7 +80,7 @@ begin
   end if;
   Soc.Link_Dynamic;
   Soc.Set_Blocking (Socket.Blocking_Send);
-  Ada.Text_Io.Put_Line (
+  Basic_Proc.Put_Line_Output (
       "My host is "
     & Socket.Host_Name_Of(Socket.Local_Host_Id)
     & " and my port is "
@@ -88,13 +88,13 @@ begin
 
   Req_Num := 0;
   loop
-    Ada.Text_Io.New_Line;
-    Ada.Text_Io.Put("Start Kill Exit Ping Read (s k e p r) ? ");
-    Ada.Text_Io.Get_Line (Buff, Len);
+    Basic_Proc.New_Line_Output;
+    Basic_Proc.Put_Output("Start Kill Exit Ping Read (s k e p r) ? ");
+    Basic_Proc.Get_Line (Buff, Len);
 
     if Len = 1 and then Buff(1) = 's' then
       -- Start
-      Ada.Text_Io.Put_Line ("Number =" & Natural'Image(Req_Num));
+      Basic_Proc.Put_Line_Output ("Number =" & Natural'Image(Req_Num));
       Req := (Kind => Forker.Start_Request,
               Start_Data => Forker.Init_Start);
       Req.Start_Data.Number := Req_Num;
@@ -102,22 +102,22 @@ begin
       Req_Num := Req_Num + 1;
 
       loop
-        Ada.Text_Io.Put ("Command ? ");
-        Ada.Text_Io.Get_Line (Buff, Len);
+        Basic_Proc.Put_Output ("Command ? ");
+        Basic_Proc.Get_Line (Buff, Len);
         Req.Start_Data.Command(1 .. Len) := Buff(1 .. Len);
         exit when Len /= 0;
       end loop;
 
       loop
-        Ada.Text_Io.Put ("Argument (Empty to end) ? ");
-        Ada.Text_Io.Get_Line (Buff, Len);
+        Basic_Proc.Put_Output ("Argument (Empty to end) ? ");
+        Basic_Proc.Get_Line (Buff, Len);
         exit when Len = 0;
         Cat_Str (Req.Start_Data.Command, Buff(1 .. Len));
       end loop;
 
       for N in Positive loop
-        Ada.Text_Io.Put ("Environ (Empty to end) ? ");
-        Ada.Text_Io.Get_Line (Buff, Len);
+        Basic_Proc.Put_Output ("Environ (Empty to end) ? ");
+        Basic_Proc.Get_Line (Buff, Len);
         exit when Len = 0;
         if N = 1 then
           Req.Start_Data.Environ(1 .. Len) := Buff(1 .. Len);
@@ -126,19 +126,19 @@ begin
         end if;
       end loop;
 
-      Ada.Text_Io.Put ("Current dir ? ");
-      Ada.Text_Io.Get_Line (Buff, Len);
+      Basic_Proc.Put_Output ("Current dir ? ");
+      Basic_Proc.Get_Line (Buff, Len);
       if Len /= 0 then
         Req.Start_Data.Current_Dir(1 .. Len) := Buff(1 .. Len);
       end if;
 
-      Ada.Text_Io.Put ("Output flow ? ");
-      Ada.Text_Io.Get_Line (Buff, Len);
+      Basic_Proc.Put_Output ("Output flow ? ");
+      Basic_Proc.Get_Line (Buff, Len);
       if Len /= 0 then
         Req.Start_Data.Output_Flow(1 .. Len) := Buff(1 .. Len);
         loop
-          Ada.Text_Io.Put ("  Append (t or [f]) ? ");
-          Ada.Text_Io.Get_Line (Buff, Len);
+          Basic_Proc.Put_Output ("  Append (t or [f]) ? ");
+          Basic_Proc.Get_Line (Buff, Len);
           if Len = 0 then
             exit;
           elsif Len = 1 and then Buff(1) = 't' then
@@ -150,13 +150,13 @@ begin
         end loop;
       end if;
 
-      Ada.Text_Io.Put ("Error flow ? ");
-      Ada.Text_Io.Get_Line (Buff, Len);
+      Basic_Proc.Put_Output ("Error flow ? ");
+      Basic_Proc.Get_Line (Buff, Len);
       if Len /= 0 then
         Req.Start_Data.Error_Flow(1 .. Len) := Buff(1 .. Len);
         loop
-          Ada.Text_Io.Put ("  Append (t or [f]) ? ");
-          Ada.Text_Io.Get_Line (Buff, Len);
+          Basic_Proc.Put_Output ("  Append (t or [f]) ? ");
+          Basic_Proc.Get_Line (Buff, Len);
           if Len = 0 then
             exit;
           elsif Len = 1 and then Buff(1) = 't' then
@@ -174,8 +174,8 @@ begin
       Req := (Kind => Forker.Kill_Request,
               Kill_Data => (Number => 0, Signal => 0) );
       loop
-        Ada.Text_Io.Put ("Number ? ");
-        Ada.Text_Io.Get_Line (Buff, Len);
+        Basic_Proc.Put_Output ("Number ? ");
+        Basic_Proc.Get_Line (Buff, Len);
         begin
           Req.Kill_Data.Number := Natural'Value(Buff(1 .. Len));
           exit;
@@ -185,8 +185,8 @@ begin
       end loop;
 
       loop
-        Ada.Text_Io.Put ("Signal ? ");
-        Ada.Text_Io.Get_Line (Buff, Len);
+        Basic_Proc.Put_Output ("Signal ? ");
+        Basic_Proc.Get_Line (Buff, Len);
         begin
           Req.Kill_Data.Signal := Natural'Value(Buff(1 .. Len));
           exit;
@@ -201,8 +201,8 @@ begin
       Req := (Kind => Forker.Forker_Exit_Request,
               Forker_Exit_Data => (Exit_Code => 0) );
       loop
-        Ada.Text_Io.Put ("Exit code ? ");
-        Ada.Text_Io.Get_Line (Buff, Len);
+        Basic_Proc.Put_Output ("Exit code ? ");
+        Basic_Proc.Get_Line (Buff, Len);
         begin
           Req.Forker_Exit_Data.Exit_Code := Natural'Value(Buff(1 .. Len));
           exit;
@@ -224,32 +224,32 @@ begin
       exception
         when Socket.Soc_Would_Block =>
           Len := 0;
-          Ada.Text_Io.Put_Line ("No report");
+          Basic_Proc.Put_Line_Output ("No report");
       end;
       if Len /= 0 then
         case Rep.Kind is
           when Forker.Start_Report =>
-            Ada.Text_Io.Put_Line ("Start: command"
+            Basic_Proc.Put_Line_Output ("Start: command"
               & Natural'Image(Rep.Start_Result.Number)
               & " Pid "
               & Forker.Pid_Result'Image(Rep.Start_Result.Started_Pid));
           when Forker.Kill_Report =>
-            Ada.Text_Io.Put_Line ("Kill: command"
+            Basic_Proc.Put_Line_Output ("Kill: command"
               & Natural'Image(Rep.Kill_Result.Number)
               & " Pid "
               & Forker.Pid_Result'Image(Rep.Kill_Result.Killed_Pid));
           when Forker.Exit_Report =>
             Forker.Decode_Exit (Rep.Exit_Result.Status, Cause, Code);
-            Ada.Text_Io.Put_Line ("Exit: command"
+            Basic_Proc.Put_Line_Output ("Exit: command"
               & Natural'Image(Rep.Exit_Result.Number)
               & " Pid" & Forker.Pid_Result'Image(Rep.Exit_Result.Exit_Pid)
               & " Status" & Integer'Image(Rep.Exit_Result.Status)
               & ": Cause " & Lower_Str(Forker.Exit_Cause_List'Image(Cause))
               & " Code" & Natural'Image(Code));
           when Forker.Forker_Exit_Report =>
-            Ada.Text_Io.Put_Line ("Forker exited");
+            Basic_Proc.Put_Line_Output ("Forker exited");
           when Forker.Pong_Report =>
-            Ada.Text_Io.Put_Line ("Pong");
+            Basic_Proc.Put_Line_Output ("Pong");
         end case;
       end if;
 

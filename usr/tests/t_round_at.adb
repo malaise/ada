@@ -1,10 +1,9 @@
-with Ada.Text_Io;
-with My_Math, Round_At, Get_Float, Argument;
+with Basic_Proc, My_Math, Round_At, Get_Float, Argument;
 procedure T_Round_At is
   End_Error : exception;
   procedure Error is
   begin
-    Ada.Text_Io.Put_Line ("Usage " & Argument.Get_Program_Name
+    Basic_Proc.Put_Line_Output ("Usage " & Argument.Get_Program_Name
                         & " <Real> <Int>");
     raise End_Error;
   end Error;
@@ -37,18 +36,18 @@ begin
 
   -- Compute nb of digits before dot
   D := Integer (My_Math.Trunc (My_Math.Log_10 (R))) + 1;
-  Ada.Text_Io.Put_Line ("Digits: " & D'Img);
+  Basic_Proc.Put_Line_Output ("Digits: " & D'Img);
 
   -- Round and put
   Res := Round_At (R, I);
-  Ada.Text_Io.Put_Line ("Image -> " & Res'Img);
-  Ada.Text_Io.Put ("Real_Io -> ");
+  Basic_Proc.Put_Line_Output ("Image -> " & Res'Img);
+  Basic_Proc.Put_Output ("Real_Io -> ");
   if I >= 0 then
     My_Math.Real_Io.Put (Res, Fore => 1, Aft => D);
   else
     My_Math.Real_Io.Put (Res, Fore => 1, Aft => D - I);
   end if;
-  Ada.Text_Io.New_Line;
+  Basic_Proc.New_Line_Output;
 
 exception
   when End_Error =>

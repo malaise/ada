@@ -1,5 +1,4 @@
-with Ada.Text_Io;
-with Argument, Con_Io, Afpx, Normal, Mixed_Str, Language;
+with Basic_Proc, Argument, Con_Io, Afpx, Normal, Mixed_Str, Language;
 procedure T_Dscr is
   Dscr_No : Afpx.Descriptor_Range;
   Cursor_Field : Afpx.Absolute_Field_Range;
@@ -11,7 +10,7 @@ procedure T_Dscr is
 
   procedure Usage is
   begin
-    Ada.Text_Io.Put_Line("ERROR. Usage " & Argument.Get_Program_Name
+    Basic_Proc.Put_Line_Output("ERROR. Usage " & Argument.Get_Program_Name
                                      & " [ <dscr_no> ]");
   end Usage;
 
@@ -21,20 +20,20 @@ procedure T_Dscr is
     Cursor_Field := Afpx.Next_Cursor_Field(0);
 
     -- Dump descriptor
-    Ada.Text_Io.Put ("Descriptor" & No'Img & " has");
+    Basic_Proc.Put_Output ("Descriptor" & No'Img & " has");
     if Afpx.Has_List then
-      Ada.Text_Io.Put (" a");
+      Basic_Proc.Put_Output (" a");
     else
-      Ada.Text_Io.Put (" no");
+      Basic_Proc.Put_Output (" no");
     end if;
-    Ada.Text_Io.Put_Line (" list and"
+    Basic_Proc.Put_Line_Output (" list and"
       & Afpx.Absolute_Field_Range'Image (Afpx.Nb_Fields)
       & " fields.");
     for I in 1 .. Afpx.Nb_Fields loop
-      Ada.Text_Io.Put_Line ("Field No" & I'Img & " is of kind "
+      Basic_Proc.Put_Line_Output ("Field No" & I'Img & " is of kind "
          & Mixed_Str (Afpx.Field_Kind_List'Image(Afpx.Get_Field_Kind (I))));
     end loop;
-    Ada.Text_Io.Put_Line ("Cursor field is" & Cursor_Field'Img);
+    Basic_Proc.Put_Line_Output ("Cursor field is" & Cursor_Field'Img);
 
     -- Fix Cursor_Field for Put_Then_Get
     if Cursor_Field not in Afpx.Field_Range then

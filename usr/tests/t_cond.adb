@@ -1,5 +1,4 @@
-with Ada.Text_Io;
-with Condition_Manager;
+with Basic_Proc, Condition_Manager;
 
 procedure T_Cond is
   pragma Priority(10);
@@ -19,16 +18,16 @@ procedure T_Cond is
   begin
     accept Init (No : in Positive) do
       Me := No;
-      Ada.Text_Io.Put_Line ("Client " & Me'Img & " initialised");
+      Basic_Proc.Put_Line_Output ("Client " & Me'Img & " initialised");
     end Init;
     for I in 1 .. Nb_Loops loop
-      Ada.Text_Io.Put_Line ("Client " & Me'Img
+      Basic_Proc.Put_Line_Output ("Client " & Me'Img
                           & " getting access");
       Condition_Manager.Get (Cond);
 
       if Me = 1 then
         -- First task makes conditional waiting
-        Ada.Text_Io.Put_Line ("Client " & Me'Img
+        Basic_Proc.Put_Line_Output ("Client " & Me'Img
                             & " trying to wait on condition");
         if I = 1 then
           -- This one will fail
@@ -38,62 +37,62 @@ procedure T_Cond is
           Res := Condition_Manager.Wait (Cond, 10.0);
         end if;
       else
-        Ada.Text_Io.Put_Line ("Client " & Me'Img
+        Basic_Proc.Put_Line_Output ("Client " & Me'Img
                             & " waiting on condition");
         Condition_Manager.Wait (Cond);
         Res := True;
       end if;
       if Res then
-        Ada.Text_Io.Put_Line ("Client " & Me'Img
+        Basic_Proc.Put_Line_Output ("Client " & Me'Img
                             & " released on condition, releasing access");
         Condition_Manager.Release (Cond);
       else
-        Ada.Text_Io.Put_Line ("Client " & Me'Img
+        Basic_Proc.Put_Line_Output ("Client " & Me'Img
                            & " giving up");
       end if;
 
     end loop;
-    Ada.Text_Io.Put_Line ("Client " & Me'Img & " terminating");
+    Basic_Proc.Put_Line_Output ("Client " & Me'Img & " terminating");
   end Client;
 
   Clients : array (1 .. Nb_Clients) of Client;
 
 begin -- T_Cond
   -- Init the clients
-  Ada.Text_Io.Put_Line ("Main initializing clients");
+  Basic_Proc.Put_Line_Output ("Main initializing clients");
   for I in 1 .. Nb_Clients loop
     Clients(I).Init (I);
   end loop;
   delay 0.5;
-  Ada.Text_Io.New_Line;
+  Basic_Proc.New_Line_Output;
   delay 1.0;
 
   -- Signal each client plus some of them twice
   for I in 1 .. Nb_Clients + 2 loop
-    Ada.Text_Io.Put_Line ("Main signaling on condition");
+    Basic_Proc.Put_Line_Output ("Main signaling on condition");
     Condition_Manager.Signal (Cond);
     delay 0.1;
-    Ada.Text_Io.New_Line;
+    Basic_Proc.New_Line_Output;
     delay 1.0;
   end loop;
 
   -- Broadcast enough times so each client reaches end
   for I in 1 ..Nb_Loops loop
-    Ada.Text_Io.Put_Line ("Main broadcasting on condition");
+    Basic_Proc.Put_Line_Output ("Main broadcasting on condition");
     Condition_Manager.Broadcast (Cond);
     delay 0.1;
-    Ada.Text_Io.New_Line;
+    Basic_Proc.New_Line_Output;
     delay 1.0;
   end loop;
 
-  Ada.Text_Io.Put_Line ("Main signaling on condition");
+  Basic_Proc.Put_Line_Output ("Main signaling on condition");
   Condition_Manager.Signal (Cond);
   delay 0.1;
-  Ada.Text_Io.New_Line;
+  Basic_Proc.New_Line_Output;
   delay 1.0;
 
   -- Terminate
-  Ada.Text_Io.Put_Line ("Main terminating");
-  Ada.Text_Io.New_Line;
+  Basic_Proc.Put_Line_Output ("Main terminating");
+  Basic_Proc.New_Line_Output;
 end T_Cond;
 

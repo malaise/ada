@@ -1,9 +1,8 @@
-with Ada.Text_Io;
-with Argument, Computer, String_Mng, Environ;
+with Basic_Proc, Argument, Computer, String_Mng, Environ;
 procedure T_Computer is
   procedure Usage is
   begin
-    Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
+    Basic_Proc.Put_Line_Output ("Usage: " & Argument.Get_Program_Name
      & " [ { <name>=<value> } ] <expression>");
   end Usage;
 
@@ -32,16 +31,16 @@ begin
 
   -- Last arg is the expression
   -- Evaluate expression
-  Ada.Text_Io.Put_Line ("Evaluation: ");
-  Ada.Text_Io.Put_Line (Mem.Eval (
+  Basic_Proc.Put_Line_Output ("Evaluation: ");
+  Basic_Proc.Put_Line_Output (Mem.Eval (
          Argument.Get_Parameter(Argument.Get_Nbre_Arg)));
   -- Try to compute expression
-  Ada.Text_Io.Put_Line ("Computation: ");
+  Basic_Proc.Put_Line_Output ("Computation: ");
   N := Mem.Compute (Argument.Get_Parameter(Argument.Get_Nbre_Arg));
-  Ada.Text_Io.Put_Line (N'Img);
+  Basic_Proc.Put_Line_Output (N'Img);
 exception
   when Computer.Invalid_Expression =>
-    Ada.Text_Io.Put_Line ("Invalid expression");
+    Basic_Proc.Put_Line_Output ("Invalid expression");
   when others =>
     Usage;
     raise;

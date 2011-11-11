@@ -1,5 +1,5 @@
-with Ada.Text_Io, Ada.Wide_Text_Io;
-with My_Io, Utf_16, Rnd;
+with Ada.Wide_Text_Io;
+with Basic_Proc, My_Io, Utf_16, Rnd;
 procedure T_Utf16 is
 
   procedure Put (N : Natural) is
@@ -17,7 +17,7 @@ procedure T_Utf16 is
 
   U1, U2 : Utf_16.Unicode_Number;
 begin
-  Ada.Text_Io.Put_Line (Str);
+  Basic_Proc.Put_Line_Output (Str);
   for I in Ucodes'Range loop
     declare
       Ustr : constant Wide_String := Utf_16.Encode(Ucodes(I));
@@ -27,9 +27,9 @@ begin
         Put (Wide_Character'Pos (Ustr(J)));
       end loop;
     end;
-    Ada.Text_Io.New_Line;
+    Basic_Proc.New_Line_Output;
   end loop;
-  Ada.Text_Io.New_Line;
+  Basic_Proc.New_Line_Output;
 
   Rnd.Randomize;
   loop
@@ -40,19 +40,19 @@ begin
         Str : constant Utf_16.Sequence := Utf_16.Encode (U1);
       begin
         Put (U1);
-        Ada.Text_Io.Put (" -> ");
+        Basic_Proc.Put_Output (" -> ");
         for I in Str'Range loop
           Put (Wide_Character'Pos (Str(I)));
         end loop;
-        Ada.Text_Io.Put (" -> ");
+        Basic_Proc.Put_Output (" -> ");
 
         U2 := Utf_16.Decode (Str);
         Put (U2);
         if U1 /= U2 then
-          Ada.Text_Io.Put_Line (" Bug");
+          Basic_Proc.Put_Line_Output (" Bug");
           exit;
         else
-          Ada.Text_Io.Put_Line (" OK");
+          Basic_Proc.Put_Line_Output (" OK");
         end if;
       end;
     exception

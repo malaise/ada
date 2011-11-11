@@ -1,4 +1,3 @@
-with Ada.Text_Io;
 with Sys_Calls, Proc_Family, Many_Strings, Argument, Event_Mng;
 
 -- Note on lsof result
@@ -23,10 +22,12 @@ procedure T_Proc_Father is
     use type Sys_Calls.Death_Cause_List;
   begin
     if Death_Report.Cause = Sys_Calls.Exited then
-      Ada.Text_Io.Put_Line ("Father: child pid " & Death_Report.Exited_Pid'Img
+      Sys_Calls.Put_Line_Output (
+          "Father: child pid " & Death_Report.Exited_Pid'Img
         & " has exited with code " & Death_Report.Exit_Code'Img);
     else
-      Ada.Text_Io.Put_Line ("Father: child pid " & Death_Report.Signaled_Pid'Img
+      Sys_Calls.Put_Line_Output (
+          "Father: child pid " & Death_Report.Signaled_Pid'Img
         & " has exited on signal " & Death_Report.Signal'Img);
     end if;
   end Death_Cb;
@@ -35,7 +36,7 @@ procedure T_Proc_Father is
 
   procedure Term_Cb is
   begin
-    Ada.Text_Io.Put_Line ("Father: aborted by user");
+    Sys_Calls.Put_Line_Output ("Father: aborted by user");
     Done := True;
   end Term_Cb;
 
@@ -48,16 +49,16 @@ procedure T_Proc_Father is
     use type Sys_Calls.File_Desc;
   begin
     if Fd /= Spawn_Result.Fd_Out then
-      Ada.Text_Io.Put_Line ("Father: Fd Cb on invalid Fd");
+      Sys_Calls.Put_Line_Output ("Father: Fd Cb on invalid Fd");
       return False;
     end if;
     Res := Sys_Calls.Read (Fd, Buf'Address, Buf'Length);
     if Res = 0 then
-      Ada.Text_Io.Put_Line ("Father: Read 0");
+      Sys_Calls.Put_Line_Output ("Father: Read 0");
       Event_Mng.Del_Fd_Callback (Spawn_Result.Fd_Out, True);
       return False;
     end if;
-    Ada.Text_Io.Put_Line ("Father: Read >" & Buf(1 .. Res) & "<");
+    Sys_Calls.Put_Line_Output ("Father: Read >" & Buf(1 .. Res) & "<");
     Buf(1 .. Reply'Length) := Reply;
     begin
       -- Reply "F2C"
@@ -67,7 +68,7 @@ procedure T_Proc_Father is
         Res := 0;
     end;
     if Res /= Reply'Length then
-      Ada.Text_Io.Put_Line ("Father: Cannot write "
+      Sys_Calls.Put_Line_Output ("Father: Cannot write "
                             & Natural'Image(Reply'Length)
                             & " bytes on In fd");
     end if;
@@ -83,7 +84,7 @@ begin
   Fd1 := Sys_Calls.Open (Argument.Get_Program_Name, Sys_Calls.In_File);
   Fd2 := Sys_Calls.Open (Argument.Get_Program_Name, Sys_Calls.In_File);
   Sys_Calls.Set_Cloexec (Fd2, False);
-  Ada.Text_Io.Put_Line ("Father: " & Fd1'Img
+  Sys_Calls.Put_Line_Output ("Father: " & Fd1'Img
        & " should be closed in child but not " & Fd2'Img & ".");
 
   -- Build String (may raise Constraint_Error if args too long)
@@ -96,7 +97,7 @@ begin
                                      Proc_Family.Std_Fds,
                                      Death_Cb'Unrestricted_Access);
   if not Spawn_Result.Ok then
-    Ada.Text_Io.Put_Line ("Father: Spawn result NOT OK");
+    Sys_Calls.Put_Line_Output ("Father: Spawn result NOT OK");
     return;
   end if;
 
@@ -105,25 +106,25 @@ begin
   begin
     I_Am_Father := Sys_Calls.Get_Pid /= Spawn_Result.Child_Pid;
     if I_Am_Father then
-      Ada.Text_Io.Put_Line ("Father: I am father of "
+      Sys_Calls.Put_Line_Output ("Father: I am father of "
                           & Spawn_Result.Child_Pid'Img);
     else
-      Ada.Text_Io.Put_Line ("Father: I am child "
+      Sys_Calls.Put_Line_Output ("Father: I am child "
                            & Spawn_Result.Child_Pid'Img);
     end if;
   end;
 
   if not Spawn_Result.Open then
-    Ada.Text_Io.Put_Line ("Father: Spawn result NOT OPEN");
+    Sys_Calls.Put_Line_Output ("Father: Spawn result NOT OPEN");
     return;
   end if;
 
-  Ada.Text_Io.Put_Line ("Father: Fds are " & Spawn_Result.Fd_In'Img
+  Sys_Calls.Put_Line_Output ("Father: Fds are " & Spawn_Result.Fd_In'Img
                      & ", " & Spawn_Result.Fd_Out'Img
                      & " and " & Spawn_Result.Fd_Err'Img);
 
   if not I_Am_Father then
-    Ada.Text_Io.Put_Line ("Father: Child exiting");
+    Sys_Calls.Put_Line_Output ("Father: Child exiting");
     return;
   end if;
 

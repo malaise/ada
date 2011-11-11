@@ -1,4 +1,4 @@
-with Ada.Text_Io, Ada.Characters.Latin_1;
+with Ada.Characters.Latin_1;
 with As.U, Argument, Argument_Parser, Environ, Basic_Proc, Integer_Image,
      Sys_Calls, Command, Many_Strings, Parser, Event_Mng;
 
@@ -123,7 +123,7 @@ begin
       -- Test with empty list of keys
       if not Environ.Is_Set (Auto_Env_Name)
       or else not Environ.Is_Yes (Auto_Env_Name) then
-        Ada.Text_Io.Put_Line ("Parsing with no keys");
+        Basic_Proc.Put_Line_Output ("Parsing with no keys");
       end if;
       Dscr :=  Argument_Parser.Parse (No_Keys);
       Nb_Keys := No_Keys'Length;
@@ -135,15 +135,15 @@ begin
     if not Environ.Is_Set (Auto_Env_Name)
     or else not Environ.Is_Yes (Auto_Env_Name) then
       -- Verbose output
-      Ada.Text_Io.Put ("Parsing OK is "
+      Basic_Proc.Put_Output ("Parsing OK is "
          & Boolean'Image (Dscr.Is_Ok));
-      Ada.Text_Io.Put (" and parsing error string is");
+      Basic_Proc.Put_Output (" and parsing error string is");
       if not Dscr.Is_Ok then
-        Ada.Text_Io.New_Line;
+        Basic_Proc.New_Line_Output;
       end if;
-      Ada.Text_Io.Put_Line (" >" & Dscr.Get_Error & "<");
+      Basic_Proc.Put_Line_Output (" >" & Dscr.Get_Error & "<");
 
-      Ada.Text_Io.Put_Line (
+      Basic_Proc.Put_Line_Output (
          "Number of keys found:" & Dscr.Get_Number_Keys'Img
          & ", Last key at pos:" & Dscr.Get_Last_Pos_Of_Keys'Img
          & ", First after at pos:" & Dscr.Get_First_Pos_After_Keys'Img
@@ -151,21 +151,21 @@ begin
 
       for I in 0 .. Nb_Keys loop
         if I = 0 then
-          Ada.Text_Io.Put ("Arguments not key are");
+          Basic_Proc.Put_Output ("Arguments not key are");
         else
-          Ada.Text_Io.Put ("Key " & Keys(I).Key_Char & " "
+          Basic_Proc.Put_Output ("Key " & Keys(I).Key_Char & " "
             & Keys(I).Key_String.Image & " is");
         end if;
-        Ada.Text_Io.Put_Line (" found on" & Dscr.Get_Nb_Occurences (I)'Img
+        Basic_Proc.Put_Line_Output (" found on" & Dscr.Get_Nb_Occurences (I)'Img
              & " occurences.");
         for J in 1 .. Dscr.Get_Nb_Occurences(I) loop
-          Ada.Text_Io.Put ("  Kind: ");
+          Basic_Proc.Put_Output ("  Kind: ");
           if Dscr.Is_Char (I, J) then
-            Ada.Text_Io.Put ("Chr");
+            Basic_Proc.Put_Output ("Chr");
           else
-            Ada.Text_Io.Put ("Str");
+            Basic_Proc.Put_Output ("Str");
           end if;
-          Ada.Text_Io.Put_Line ("  Position: " &  Dscr.Get_Position (I, J)'Img
+          Basic_Proc.Put_Line_Output ("  Position: " &  Dscr.Get_Position (I, J)'Img
                               & "  Option >" & Dscr.Get_Option (I, J) & "<");
         end loop;
       end loop;
@@ -251,7 +251,7 @@ exception
   when Stop_Error =>
     Basic_Proc.Set_Error_Exit_Code;
   when Argument_Parser.Parsing_Error =>
-    Ada.Text_Io.Put_Line ("Exception Parsing_Error.");
+    Basic_Proc.Put_Line_Error ("Exception Parsing_Error.");
     Basic_Proc.Set_Error_Exit_Code;
 end T_Arg_Parser;
 

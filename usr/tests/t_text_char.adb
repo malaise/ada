@@ -1,4 +1,3 @@
-with Ada.Text_Io;
 with Argument, Text_Char, Sys_Calls, Rnd, Queues;
 procedure T_Text_Char is
   package Q is new Queues.Circ (4, Character);
@@ -38,7 +37,7 @@ begin
   Rnd.Randomize;
   loop
     C := Text_Char.Get (File);
-    Ada.Text_Io.Put (C);
+    Sys_Calls.Put_Output (C);
     Q.Push (Circ, C);
     exit when Text_Char.End_Of_File (File);
     -- Check unget average each 4 chars

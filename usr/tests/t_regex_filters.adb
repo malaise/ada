@@ -1,12 +1,11 @@
-with Ada.Text_Io;
-with Argument, Regex_Filters, Parser, Mixed_Str;
+with Basic_Proc, Argument, Regex_Filters, Parser, Mixed_Str;
 procedure T_Regex_Filters is
   procedure Usage is
   begin
-    Ada.Text_Io.Put_Line("Usage: " & Argument.Get_Program_Name
+    Basic_Proc.Put_Line_Output("Usage: " & Argument.Get_Program_Name
                                    & " [ { <criteria> } ]");
-    Ada.Text_Io.Put_Line("<criteria > ::= <regex> <match>");
-    Ada.Text_Io.Put_Line("<match>     ::= T  |  F");
+    Basic_Proc.Put_Line_Output("<criteria > ::= <regex> <match>");
+    Basic_Proc.Put_Line_Output("<match>     ::= T  |  F");
   end Usage;
 
   Filter : Regex_Filters.Regex_Filter;
@@ -38,7 +37,7 @@ begin
                               Argument.Get_Parameter(Occurence => I) = "T");
     exception
       when Regex_Filters.Invalid_Regex =>
-        Ada.Text_Io.Put_Line("Invalid regex "
+        Basic_Proc.Put_Line_Output("Invalid regex "
                            & Argument.Get_Parameter(Occurence => I-1));
         Usage;
         return;
@@ -49,17 +48,17 @@ begin
   -- Each line
   loop
     -- Get next line and initalise its parsing
-    Ada.Text_Io.Get_Line (Str, Len);
+    Basic_Proc.Get_Line (Str, Len);
     Parser.Set (Iter, Str(1 .. Len));
     while Parser.Next_Word(Iter) /= "" loop
       Res := Regex_Filters.Check(Parser.Current_Word(Iter), Filter);
-      Ada.Text_Io.Put_Line ("Check " & Parser.Current_Word(Iter)
+      Basic_Proc.Put_Line_Output ("Check " & Parser.Current_Word(Iter)
                           & " -> " & Mixed_Str(Res'Img));
     end loop;
   end loop;
 
 exception
-  when Ada.Text_Io.End_Error =>
+  when Basic_Proc.End_Error =>
     if Parser.Is_Set(Iter) then
       Parser.Del(Iter);
     end if;

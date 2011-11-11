@@ -1,12 +1,11 @@
-with Ada.Text_Io;
-with Argument, Arbitrary, Rnd, Integer_Image, Mixed_Str, My_Math;
+with Argument, Arbitrary, Rnd, Integer_Image, Mixed_Str, My_Math, Basic_Proc;
 procedure T_Arbitrary is
 
 
   Abort_Error : exception;
   procedure Usage is
   begin
-    Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
+    Basic_Proc.Put_Line_Output ("Usage: " & Argument.Get_Program_Name
                                     & " [ <num1> [ <num2> ] ]");
     raise Abort_Error;
   end Usage;
@@ -16,7 +15,8 @@ procedure T_Arbitrary is
     return Arbitrary.Set (Argument.Get_Parameter(Occurence => Occ));
   exception
     when others =>
-      Ada.Text_Io.Put_Line ("Invalid_Number " & Argument.Get_Parameter(Occurence => Occ));
+      Basic_Proc.Put_Line_Output ("Invalid_Number "
+                               & Argument.Get_Parameter(Occurence => Occ));
       Usage;
       raise Abort_Error;
   end Set;
@@ -53,9 +53,9 @@ procedure T_Arbitrary is
            I : in Integer) is
   begin
     if Arbitrary.Image (N) /= Image (I) then
-      Ada.Text_Io.Put ("ERROR on " &
+      Basic_Proc.Put_Output ("ERROR on " &
         Arbitrary.Image (A) & " " & Oper & " " & Arbitrary.Image (B) & ". ");
-      Ada.Text_Io.Put_Line ("Expected " & Image (I)
+      Basic_Proc.Put_Line_Output ("Expected " & Image (I)
              & ", got " & Arbitrary.Image (N) & ".");
       raise Abort_Error;
     end if;
@@ -69,9 +69,9 @@ procedure T_Arbitrary is
            Ib : in Boolean) is
   begin
     if Nb /= Ib then
-      Ada.Text_Io.Put ("ERROR on " &
+      Basic_Proc.Put_Output ("ERROR on " &
         Arbitrary.Image (A) & " " & Oper & " " & Arbitrary.Image (B) & ". ");
-      Ada.Text_Io.Put_Line ("Expected " & Image (Ib)
+      Basic_Proc.Put_Line_Output ("Expected " & Image (Ib)
              & ", got " & Image (Nb) & ".");
       raise Abort_Error;
     end if;
@@ -98,66 +98,68 @@ begin
     -- One or two args
     A := Set (1);
 
-    Ada.Text_Io.Put_Line ("A is        " & Arbitrary.Image(A));
-    Ada.Text_Io.Put_Line ("abs A is    " & Arbitrary.Image(abs A));
-    Ada.Text_Io.Put_Line ("-A is       " & Arbitrary.Image(-A));
-    Ada.Text_Io.Put_Line ("A positive  " & Image(Arbitrary.Is_Positive(A)));
+    Basic_Proc.Put_Line_Output ("A is        " & Arbitrary.Image(A));
+    Basic_Proc.Put_Line_Output ("abs A is    " & Arbitrary.Image(abs A));
+    Basic_Proc.Put_Line_Output ("-A is       " & Arbitrary.Image(-A));
+    Basic_Proc.Put_Line_Output ("A positive  "
+                              & Image(Arbitrary.Is_Positive(A)));
     begin
-      Ada.Text_Io.Put_Line ("Sqrt(A)     " & Arbitrary.Image(Arbitrary.Sqrt(A)));
+      Basic_Proc.Put_Line_Output ("Sqrt(A)     "
+                                & Arbitrary.Image(Arbitrary.Sqrt(A)));
     exception
       when Constraint_Error =>
-        Ada.Text_Io.Put_Line ("Constraint_Error on Sqrt(A)");
+        Basic_Proc.Put_Line_Output ("Constraint_Error on Sqrt(A)");
     end;
     -- Digits of A
-    Ada.Text_Io.Put ("Digits: ");
+    Basic_Proc.Put_Output ("Digits: ");
     for I in 1 .. Arbitrary.Nb_Digits (A) - 1 loop
-      Ada.Text_Io.Put (Arbitrary.Nth_Digit (A, I)'Img);
+      Basic_Proc.Put_Output (Arbitrary.Nth_Digit (A, I)'Img);
     end loop;
-    Ada.Text_Io.Put (" and" & Arbitrary.Last_Digit (A)'Img);
-    Ada.Text_Io.New_Line;
+    Basic_Proc.Put_Output (" and" & Arbitrary.Last_Digit (A)'Img);
+    Basic_Proc.New_Line_Output;
   end if;
 
   if Argument.Get_Nbre_Arg = 2 then
     -- Two args
-    Ada.Text_Io.New_Line;
+    Basic_Proc.New_Line_Output;
     B := Set (2);
-    Ada.Text_Io.Put_Line ("B is        " & Arbitrary.Image(B));
-    Ada.Text_Io.Put_Line ("abs B is    " & Arbitrary.Image(abs B));
-    Ada.Text_Io.Put_Line ("-B is       " & Arbitrary.Image(-B));
-    Ada.Text_Io.Put_Line ("B positive  " & Image(Arbitrary.Is_Positive(A)));
+    Basic_Proc.Put_Line_Output ("B is        " & Arbitrary.Image(B));
+    Basic_Proc.Put_Line_Output ("abs B is    " & Arbitrary.Image(abs B));
+    Basic_Proc.Put_Line_Output ("-B is       " & Arbitrary.Image(-B));
+    Basic_Proc.Put_Line_Output ("B positive  " & Image(Arbitrary.Is_Positive(A)));
     begin
       Arbitrary.Sqrt(B, C, D);
     exception
       when Constraint_Error =>
-        Ada.Text_Io.Put_Line ("Constraint_Error on Sqrt(B)");
+        Basic_Proc.Put_Line_Output ("Constraint_Error on Sqrt(B)");
     end;
-    Ada.Text_Io.Put_Line ("Sqrt(B)     " & Arbitrary.Image(C)
+    Basic_Proc.Put_Line_Output ("Sqrt(B)     " & Arbitrary.Image(C)
                         & " remaining "  & Arbitrary.Image(D));
 
-    Ada.Text_Io.Put_Line ("A =  B is   " & Boolean'Image(A = B));
-    Ada.Text_Io.Put_Line ("A <  B is   " & Boolean'Image(A < B));
-    Ada.Text_Io.Put_Line ("A <= B is   " & Boolean'Image(A <= B));
-    Ada.Text_Io.Put_Line ("A >  B is   " & Boolean'Image(A > B));
-    Ada.Text_Io.Put_Line ("A >= B is   " & Boolean'Image(A >= B));
+    Basic_Proc.Put_Line_Output ("A =  B is   " & Boolean'Image(A = B));
+    Basic_Proc.Put_Line_Output ("A <  B is   " & Boolean'Image(A < B));
+    Basic_Proc.Put_Line_Output ("A <= B is   " & Boolean'Image(A <= B));
+    Basic_Proc.Put_Line_Output ("A >  B is   " & Boolean'Image(A > B));
+    Basic_Proc.Put_Line_Output ("A >= B is   " & Boolean'Image(A >= B));
 
-    Ada.Text_Io.Put_Line ("A + B is   " &  Arbitrary.Image(A + B));
-    Ada.Text_Io.Put_Line ("A - B is   " &  Arbitrary.Image(A - B));
-    Ada.Text_Io.Put_Line ("A * B is   " &  Arbitrary.Image(A * B));
+    Basic_Proc.Put_Line_Output ("A + B is   " &  Arbitrary.Image(A + B));
+    Basic_Proc.Put_Line_Output ("A - B is   " &  Arbitrary.Image(A - B));
+    Basic_Proc.Put_Line_Output ("A * B is   " &  Arbitrary.Image(A * B));
     begin
       Arbitrary.Div (A, B, C, D);
-      Ada.Text_Io.Put_Line ("A / B is   " &  Arbitrary.Image(C));
-      Ada.Text_Io.Put_Line ("A % B is   " &  Arbitrary.Image(D));
-      Ada.Text_Io.Put_Line ("A rem B is " &  Arbitrary.Image(A rem B));
-      Ada.Text_Io.Put_Line ("A mod B is " &  Arbitrary.Image(A mod B));
+      Basic_Proc.Put_Line_Output ("A / B is   " &  Arbitrary.Image(C));
+      Basic_Proc.Put_Line_Output ("A % B is   " &  Arbitrary.Image(D));
+      Basic_Proc.Put_Line_Output ("A rem B is " &  Arbitrary.Image(A rem B));
+      Basic_Proc.Put_Line_Output ("A mod B is " &  Arbitrary.Image(A mod B));
     exception
       when Constraint_Error =>
-        Ada.Text_Io.Put_Line ("Constraint_Error on division");
+        Basic_Proc.Put_Line_Output ("Constraint_Error on division");
     end;
     begin
-      Ada.Text_Io.Put_Line ("A ** B is  " &  Arbitrary.Image(A ** B));
+      Basic_Proc.Put_Line_Output ("A ** B is  " &  Arbitrary.Image(A ** B));
     exception
       when Constraint_Error =>
-        Ada.Text_Io.Put_Line ("Constraint_Error on **");
+        Basic_Proc.Put_Line_Output ("Constraint_Error on **");
     end;
   end if;
 
@@ -175,25 +177,25 @@ begin
   -- Setting empty
   begin
     A := Arbitrary.Set("");
-    Ada.Text_Io.Put_Line ("ERROR: Set("""") should have raised "
+    Basic_Proc.Put_Line_Output ("ERROR: Set("""") should have raised "
                         & "Constraint_Error");
     raise Abort_Error;
   exception
     when Constraint_Error =>
-      Ada.Text_Io.Put_Line ("Set("""")  raises Constraint_Error, OK.");
+      Basic_Proc.Put_Line_Output ("Set("""")  raises Constraint_Error, OK.");
   end;
 
   if Arbitrary.Is_Set (A) then
-    Ada.Text_Io.Put_Line ("A is set, OK.");
+    Basic_Proc.Put_Line_Output ("A is set, OK.");
   else
-    Ada.Text_Io.Put_Line ("ERROR: A is not set.");
+    Basic_Proc.Put_Line_Output ("ERROR: A is not set.");
     raise Abort_Error;
   end if;
 
   if not Arbitrary.Is_Set (Nul) then
-    Ada.Text_Io.Put_Line ("Nul is not set, OK.");
+    Basic_Proc.Put_Line_Output ("Nul is not set, OK.");
   else
-    Ada.Text_Io.Put_Line ("ERROR: Nul is set.");
+    Basic_Proc.Put_Line_Output ("ERROR: Nul is set.");
     raise Abort_Error;
   end if;
   delay 1.0;
@@ -209,7 +211,7 @@ begin
       Ib := 0;
     end if;
     Nb := Arbitrary.Set (Ib);
-    Ada.Text_Io.Put_Line (Arbitrary.Image (Na)
+    Basic_Proc.Put_Line_Output (Arbitrary.Image (Na)
               & " and " & Arbitrary.Image (Nb));
 
     -- Unary operators
@@ -237,7 +239,7 @@ begin
       -- Shall raise Constraint_Error
       begin
         A := Na / Nb;
-        Ada.Text_Io.Put_Line ("ERROR: / should have raised Constraint_Error");
+        Basic_Proc.Put_Line_Output ("ERROR: / should have raised Constraint_Error");
         raise Abort_Error;
       exception
         when Constraint_Error =>
@@ -246,7 +248,7 @@ begin
       end;
       begin
         A := Na rem Nb;
-        Ada.Text_Io.Put_Line ("ERROR: rem should have raised Constraint_Error");
+        Basic_Proc.Put_Line_Output ("ERROR: rem should have raised Constraint_Error");
         raise Abort_Error;
       exception
         when Constraint_Error =>
@@ -255,7 +257,7 @@ begin
       end;
       begin
         A := Na mod Nb;
-        Ada.Text_Io.Put_Line ("ERROR: mod should have raised Constraint_Error");
+        Basic_Proc.Put_Line_Output ("ERROR: mod should have raised Constraint_Error");
         raise Abort_Error;
       exception
         when Constraint_Error =>
@@ -284,7 +286,7 @@ begin
     else
       begin
         A := Arbitrary.Sqrt (Nb);
-        Ada.Text_Io.Put_Line ("ERROR: Sqrt should have raised " &
+        Basic_Proc.Put_Line_Output ("ERROR: Sqrt should have raised " &
                               "Constraint_Error");
         raise Abort_Error;
       exception
@@ -296,7 +298,7 @@ begin
 
     -- Sleep a bit when B is 0
     if Ib = 0 then
-      Ada.Text_Io.Put_Line ("Waiting a bit");
+      Basic_Proc.Put_Line_Output ("Waiting a bit");
       delay 1.0;
     end if;
   end loop;

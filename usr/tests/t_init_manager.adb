@@ -1,5 +1,4 @@
-with Ada.Text_Io;
-with Init_Manager;
+with Basic_Proc, Init_Manager;
 procedure T_Init_Manager is
 
   package Mng is new Init_Manager (Natural);
@@ -13,7 +12,7 @@ procedure T_Init_Manager is
     I : Natural := 0;
   begin
     loop
-      Ada.Text_Io.Put_Line ("  Sending event:" & I'Img);
+      Basic_Proc.Put_Line_Output ("  Sending event:" & I'Img);
       Mng.New_Event (I);
       I := I + 1;
       select
@@ -23,13 +22,13 @@ procedure T_Init_Manager is
         delay 0.2;
       end select;
     end loop;
-    Ada.Text_Io.Put_Line ("  Stopped");
+    Basic_Proc.Put_Line_Output ("  Stopped");
   end Evt_Gen;
 
   -- Handler of events
   procedure Evt_Handle (Event : in Natural) is
   begin
-    Ada.Text_Io.Put_Line ("Handling event:" & Event'Img);
+    Basic_Proc.Put_Line_Output ("Handling event:" & Event'Img);
     delay 0.1;
   end Evt_Handle;
 
@@ -40,18 +39,18 @@ begin
     if I /= 1 then
       Mng.Set_Handler (null);
     end if;
-    Ada.Text_Io.Put_Line ("Initializing");
+    Basic_Proc.Put_Line_Output ("Initializing");
     delay 2.0;
     -- End of init, events shall be flushed
-    Ada.Text_Io.Put_Line ("Initialized");
+    Basic_Proc.Put_Line_Output ("Initialized");
     Mng.Set_Handler (Evt_Handle'Unrestricted_Access);
     delay 2.0;
-    Ada.Text_Io.New_Line;
+    Basic_Proc.New_Line_Output;
   end loop;
-  Ada.Text_Io.Put_Line ("Terminating");
+  Basic_Proc.Put_Line_Output ("Terminating");
   Evt_Gen.Stop;
   delay 0.1;
-  Ada.Text_Io.Put_Line ("Terminated");
+  Basic_Proc.Put_Line_Output ("Terminated");
 
 end T_Init_Manager;
 

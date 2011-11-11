@@ -1,4 +1,3 @@
-with Ada.Text_Io;
 with Argument, Regular_Expressions, Integer_Image, String_Mng, Text_Line,
      Basic_Proc;
 
@@ -6,17 +5,17 @@ procedure T_Regexp is
 
   procedure Error is
   begin
-    Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
+    Basic_Proc.Put_Line_Output ("Usage: " & Argument.Get_Program_Name
                         & " <automatic> | <manual>");
-    Ada.Text_Io.Put_Line (" <automatic> ::= -c | -f | -p");
-    Ada.Text_Io.Put_Line ("     -c for successive compilations");
-    Ada.Text_Io.Put_Line ("     -f for successive compilations and frees");
-    Ada.Text_Io.Put_Line ("     -p for compiling all arguments as patterns");
-    Ada.Text_Io.Put_Line (" <manual>    ::= [ <option> ] <pattern> { <Search_String> }");
-    Ada.Text_Io.Put_Line ("     -s for silent check (exit code only)");
-    Ada.Text_Io.Put_Line ("     -i for case insensitive");
-    Ada.Text_Io.Put_Line ("     -m for multiline");
-    Ada.Text_Io.Put_Line ("     -d for dot math all");
+    Basic_Proc.Put_Line_Output (" <automatic> ::= -c | -f | -p");
+    Basic_Proc.Put_Line_Output ("     -c for successive compilations");
+    Basic_Proc.Put_Line_Output ("     -f for successive compilations and frees");
+    Basic_Proc.Put_Line_Output ("     -p for compiling all arguments as patterns");
+    Basic_Proc.Put_Line_Output (" <manual>    ::= [ <option> ] <pattern> { <Search_String> }");
+    Basic_Proc.Put_Line_Output ("     -s for silent check (exit code only)");
+    Basic_Proc.Put_Line_Output ("     -i for case insensitive");
+    Basic_Proc.Put_Line_Output ("     -m for multiline");
+    Basic_Proc.Put_Line_Output ("     -d for dot math all");
   end Error;
 
   Silent : Boolean := False;
@@ -38,13 +37,13 @@ procedure T_Regexp is
                                  Dot_All => Dot_All);
     if not Ok then
       if not Silent then
-        Ada.Text_Io.Put_Line ("Error compiling pattern >" & Str & "<");
-        Ada.Text_Io.Put_Line (Regular_Expressions.Error (Pattern));
+        Basic_Proc.Put_Line_Output ("Error compiling pattern >" & Str & "<");
+        Basic_Proc.Put_Line_Output (Regular_Expressions.Error (Pattern));
       end if;
       raise Compile_Error;
     elsif Report then
       if not Silent then
-        Ada.Text_Io.Put_Line ("Pattern >" & Str & "< compiled");
+        Basic_Proc.Put_Line_Output ("Pattern >" & Str & "< compiled");
       end if;
     end if;
   end Compile_Pattern;
@@ -60,13 +59,13 @@ begin
   end if;
 
   if Argument.Get_Nbre_Arg = 1 and then Argument.Get_Parameter = "-c" then
-    Ada.Text_Io.Put_Line (
+    Basic_Proc.Put_Line_Output (
       "Infinite loop of silent Compile to check memory... Ctrl C to end");
     loop
       Compile_Pattern ("toto", False);
     end loop;
   elsif Argument.Get_Nbre_Arg = 1 and then Argument.Get_Parameter = "-f" then
-    Ada.Text_Io.Put_Line (
+    Basic_Proc.Put_Line_Output (
       "Infinite loop of silent Compile/Free to check memory... Ctrl C to end");
     loop
       Compile_Pattern ("titi", False);
@@ -74,7 +73,7 @@ begin
     end loop;
   elsif Argument.Get_Parameter = "-p" then
     -- Compile all args as pattern, keep 1st arg as THE pattern
-    Ada.Text_Io.Put_Line (
+    Basic_Proc.Put_Line_Output (
       "Compiling all arguments as patterns.");
     for I in 2 .. Argument.Get_Nbre_Arg loop
       Compile_Pattern (Argument.Get_Parameter (Occurence => I));
@@ -125,27 +124,27 @@ begin
                                 Match_Info);
     end;
     if not Silent then
-      Ada.Text_Io.Put ("String >"
+      Basic_Proc.Put_Output ("String >"
                       & Argument.Get_Parameter (Occurence => I)
                       & "< ");
     end if;
     if N_Matched = 0 then
       if not Silent then
-          Ada.Text_Io.Put_Line ("does not match");
+          Basic_Proc.Put_Line_Output ("does not match");
       end if;
     else
       -- At least one match
       Ok := True;
       if not Silent then
-        Ada.Text_Io.Put ("matches at pos");
+        Basic_Proc.Put_Output ("matches at pos");
         -- List submatches
         for I in Match_Range'(1) .. N_Matched loop
-          Ada.Text_Io.Put (
+          Basic_Proc.Put_Output (
               " [" & Integer_Image(Match_Info(I).First_Offset)
             & "-" & Integer_Image(Match_Info(I).Last_Offset_Start)
             & "/" & Integer_Image(Match_Info(I).Last_Offset_Stop) & "]");
         end loop;
-        Ada.Text_Io.New_Line;
+        Basic_Proc.New_Line_Output;
       end if;
     end if;
 

@@ -1,5 +1,4 @@
-with Ada.Text_Io;
-with My_Io, Utf_8, Rnd;
+with Basic_Proc, My_Io, Utf_8, Rnd;
 procedure T_Utf8 is
 
   procedure Put (N : Natural) is
@@ -17,41 +16,41 @@ procedure T_Utf8 is
 
   U1, U2 : Utf_8.Unicode_Number;
 begin
-  Ada.Text_Io.Put_Line (Str);
+  Basic_Proc.Put_Line_Output (Str);
   for I in Ucodes'Range loop
     declare
       Ustr : constant String := Utf_8.Encode(Ucodes(I));
     begin
-      Ada.Text_Io.Put (Ustr);
+      Basic_Proc.Put_Output (Ustr);
       for J in Ustr'Range loop
         Put (Character'Pos (Ustr(J)));
       end loop;
     end;
-    Ada.Text_Io.New_Line;
+    Basic_Proc.New_Line_Output;
   end loop;
-  Ada.Text_Io.New_Line;
+  Basic_Proc.New_Line_Output;
 
   Rnd.Randomize;
   loop
     U1 := Rnd.Int_Random (Utf_8.Unicode_Number'First,
                           Utf_8.Unicode_Number'Last);
     Put (U1);
-    Ada.Text_Io.Put (" -> ");
+    Basic_Proc.Put_Output (" -> ");
     declare
       Str : constant Utf_8.Sequence := Utf_8.Encode (U1);
     begin
       for I in Str'Range loop
         Put (Character'Pos (Str(I)));
       end loop;
-      Ada.Text_Io.Put (" -> ");
+      Basic_Proc.Put_Output (" -> ");
 
       U2 := Utf_8.Decode (Str);
       Put (U2);
       if U1 /= U2 then
-        Ada.Text_Io.Put_Line (" Bug");
+        Basic_Proc.Put_Line_Output (" Bug");
         exit;
       else
-        Ada.Text_Io.Put_Line (" OK");
+        Basic_Proc.Put_Line_Output (" OK");
       end if;
     end;
   end loop;

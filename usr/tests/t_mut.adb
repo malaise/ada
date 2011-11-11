@@ -1,16 +1,31 @@
-with Ada.Text_Io;
-with My_Io, Mutex_Manager, Schedule, Argument, Basic_Proc, Upper_Char;
+with My_Io, Mutex_Manager, Schedule, Argument, Basic_Proc, Upper_Char,
+     Sys_Calls;
 
 procedure T_Mut is
   pragma Priority(10);
 
   Critical_Section_Duration : constant := 10.0;
 
+  Dummy : Boolean;
+  pragma Unreferenced (Dummy);
+  procedure Get_Immediate (C : out Character; Ok : out Boolean) is
+    Status : Sys_Calls.Get_Status_List;
+  begin
+    Sys_Calls.Get_Immediate (Sys_Calls.Stdin, Status, C);
+    case Status is
+      when Sys_Calls.Got =>
+        Ok := True;
+      when others =>
+        Ok := False;
+    end case;
+  end Get_Immediate;
+
   procedure Exec (Mut_Kind : Mutex_Manager.Mutex_Kind;
                   Max_Task : in Positive) is
     Crit_Lock : Mutex_Manager.Mutex (Mut_Kind, False);
 
     subtype Range_Task is Positive range 1 .. Max_Task;
+
 
     task type T is
      pragma Priority(10);
@@ -41,15 +56,15 @@ procedure T_Mut is
           Current_I := I;
         end if;
 
-        Ada.Text_Io.Put ("Task: ");
+        Basic_Proc.Put_Output ("Task: ");
         My_Io.Put (Current_I, 3);
         if Mut_Kind /= Mutex_Manager.Simple then
-          Ada.Text_Io.Put (" : Read, Write, Terminate");
-          Ada.Text_Io.Put (" : Bloqued, Immediate, Wait (3s) ? ");
+          Basic_Proc.Put_Output (" : Read, Write, Terminate");
+          Basic_Proc.Put_Output (" : Bloqued, Immediate, Wait (3s) ? ");
         else
-          Ada.Text_Io.Put (" : Bloqued, Immediate, Wait (3s), Terminate ? ");
+          Basic_Proc.Put_Output (" : Bloqued, Immediate, Wait (3s), Terminate ? ");
         end if;
-        Ada.Text_Io.Flush;
+        Basic_Proc.Flush_Output;
         Prompt_Lock.Release;
       end Prompt;
 
@@ -63,14 +78,14 @@ procedure T_Mut is
         Get_Lock.Get;
         -- Skip any pending character
         loop
-          Ada.Text_Io.Get_Immediate (C, B);
+          Get_Immediate (C, B);
           exit when not B;
         end loop;
         -- Start get
         In_Get := True;
         loop
           Prompt (I, True);
-          Ada.Text_Io.Get_Line (S, L);
+          Basic_Proc.Get_Line (S, L);
           if Mut_Kind /= Mutex_Manager.Simple then
             if L = 1 then
               K := Upper_Char (S(1));
@@ -99,11 +114,11 @@ procedure T_Mut is
       begin
         Put_Lock.Get;
         if In_Get then
-          Ada.Text_Io.New_Line;
+          Basic_Proc.New_Line_Output;
         end if;
-        Ada.Text_Io.Put (Tab & S & ' ');
+        Basic_Proc.Put_Output (Tab & S & ' ');
         My_Io.Put (I, 3);
-        Ada.Text_Io.New_Line;
+        Basic_Proc.New_Line_Output;
         if In_Get then
           Prompt (1, False);
         end if;
@@ -176,7 +191,8 @@ procedure T_Mut is
 
 
   begin -- Exec
-    Ada.Text_Io.New_Line(2);
+    Basic_Proc.New_Line_Output;
+    Basic_Proc.New_Line_Output;
     -- Give to each actor it's name
     for I in Range_Task loop
       Ta(I).Num (I);
@@ -187,9 +203,9 @@ procedure T_Mut is
       Ta(I).Done;
     end loop;
 
-    Ada.Text_Io.New_Line;
-    Ada.Text_Io.Put_Line ("Done.");
-    Ada.Text_Io.New_Line;
+    Basic_Proc.New_Line_Output;
+    Basic_Proc.Put_Line_Output ("Done.");
+    Basic_Proc.New_Line_Output;
   end Exec;
 
   procedure Error (S : in String) is
@@ -223,6 +239,8 @@ begin -- T_Mut
     Error ("Invalid argument " & Argument.Get_Parameter (Occurence => 1));
     return;
   end if;
+
+  Dummy := Sys_Calls.Set_Tty_Attr (Sys_Calls.Stdin, Sys_Calls.Char_No_Echo);
 
   if N_Args = 1 then
     -- Default Nb of tasks

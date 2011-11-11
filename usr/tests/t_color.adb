@@ -1,5 +1,4 @@
-with Ada.Text_Io;
-with Con_Io, Argument, Mixed_Str;
+with Basic_Proc, Con_Io, Argument, Mixed_Str;
 procedure T_Color is
   Console : aliased Con_Io.Console;
   Screen : Con_Io.Window;
@@ -39,10 +38,10 @@ begin
     R := Screen.Get;
     exit when R.Mvt /= Con_Io.Refresh;
   end loop;
-  Ada.Text_Io.Put_Line ("Exiting in 1 s");
+  Basic_Proc.Put_Line_Output ("Exiting in 1 s");
   delay 1.0;
   Console.Close;
-  Ada.Text_Io.Put_Line ("Console destroyed");
+  Basic_Proc.Put_Line_Output ("Console destroyed");
 
 end T_Color;
 

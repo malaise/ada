@@ -1,5 +1,4 @@
-with Ada.Text_Io;
-with Argument, Many_Strings;
+with Basic_Proc, Argument, Many_Strings;
 
 procedure T_Many_Strings is
   Str : Many_Strings.Many_String;
@@ -13,17 +12,17 @@ begin
 
   -- Decode number
   L := Many_Strings.Nb (Str);
-  Ada.Text_Io.Put_Line ("Got" & L'Img & " substrings:");
+  Basic_Proc.Put_Line_Output ("Got" & L'Img & " substrings:");
 
   -- Decode substrings
   for I in 1 .. L loop
-    Ada.Text_Io.Put_Line ('>' &
+    Basic_Proc.Put_Line_Output ('>' &
          Many_Strings.Nth (Str, I) & '<');
   end loop;
 
   -- Should raise String_Error
-  Ada.Text_Io.Put_Line ("This should raise String_Error");
-  Ada.Text_Io.Put_Line ('>' &
+  Basic_Proc.Put_Line_Output ("This should raise String_Error");
+  Basic_Proc.Put_Line_Output ('>' &
      Many_Strings.Nth (Str, L + 1) & '<');
 
 end T_Many_Strings;

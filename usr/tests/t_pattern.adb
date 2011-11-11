@@ -1,5 +1,4 @@
-with Ada.Text_Io;
-with As.U, Parser, Pattern, Lower_Str;
+with Basic_Proc, As.U, Parser, Pattern, Lower_Str;
 procedure T_Pattern is
 
   Done : Boolean := False;
@@ -22,30 +21,34 @@ procedure T_Pattern is
     use type Pattern.Rule_No, Pattern.Pattern_Id;
   begin
     if Ru /= Last_Data.Ru then
-      Ada.Text_Io.Put_Line ("Error: Cb Ru " & Pattern.Image (Last_Data.Ru)
+      Basic_Proc.Put_Line_Output (
+                       "Error: Cb Ru " & Pattern.Image (Last_Data.Ru)
                      & " differs from expected " & Pattern.Image (Ru));
       Done := True;
       return False;
     end if;
     if Pa /= Last_Data.Pa then
-      Ada.Text_Io.Put_Line ("Error: Cb Pa " & Last_Data.Pa'Img
+      Basic_Proc.Put_Line_Output (
+                       "Error: Cb Pa " & Last_Data.Pa'Img
                      & " differs from expected " & Pa'Img);
       Done := True;
       return False;
     end if;
     if Nb /= Last_Data.Nb then
-      Ada.Text_Io.Put_Line ("Error: Cb Nb " & Last_Data.Nb'Img
+      Basic_Proc.Put_Line_Output (
+                       "Error: Cb Nb " & Last_Data.Nb'Img
                      & " differs from expected " & Nb'Img);
       Done := True;
       return False;
     end if;
     if Tail /= Last_Data.Tail.Image then
-      Ada.Text_Io.Put_Line ("Error: Cb Tail " & Last_Data.Tail.Image
+      Basic_Proc.Put_Line_Output (
+                       "Error: Cb Tail " & Last_Data.Tail.Image
                      & " differs from expected " & Tail);
       Done := True;
       return False;
     end if;
-    Ada.Text_Io.Put_Line ("OK");
+    Basic_Proc.Put_Line_Output ("OK");
     return True;
   end Check_Data;
 
@@ -54,7 +57,7 @@ procedure T_Pattern is
                 Nb : in Natural;
                 It : in Parser.Iterator) return Boolean is
   begin
-    Ada.Text_Io.Put ("Called Cb (" & Pattern.Image (Ru) & ","
+    Basic_Proc.Put_Output ("Called Cb (" & Pattern.Image (Ru) & ","
                                    & Pa'Img & ","
                                    & Nb'Img & ", tail: ");
     Last_Data.Ru := Ru;
@@ -62,14 +65,14 @@ procedure T_Pattern is
     Last_Data.Nb := Nb;
     Last_Data.Tail.Set_Null;
     while Parser.Current_Word (It) /= "" loop
-      Ada.Text_Io.Put (">" & Parser.Current_Word (It) & "<");
+      Basic_Proc.Put_Output (">" & Parser.Current_Word (It) & "<");
       if not Last_Data.Tail.Is_Null then
         Last_Data.Tail.Append (" ");
       end if;
       Last_Data.Tail.Append (Parser.Current_Word (It));
       Parser.Next_Word (It);
     end loop;
-    Ada.Text_Io.Put_Line (").");
+    Basic_Proc.Put_Line_Output (").");
     return Nb /= 0;
   end Cli;
 
@@ -111,7 +114,8 @@ procedure T_Pattern is
       New_Pa := Pattern.Pattern_Id'Value (Parser.Current_Word(It));
     exception
       when Constraint_Error =>
-        Ada.Text_Io.Put_Line ("Invalid pattern id " & Parser.Current_Word(It));
+        Basic_Proc.Put_Line_Output ("Invalid pattern id "
+                                  & Parser.Current_Word(It));
         return False;
     end;
     declare
@@ -145,11 +149,12 @@ procedure T_Pattern is
       New_Pa := Pattern.Pattern_Id'Value (Parser.Current_Word(It));
     exception
       when Constraint_Error =>
-        Ada.Text_Io.Put_Line ("Invalid pattern id" & Parser.Current_Word(It));
+        Basic_Proc.Put_Line_Output ("Invalid pattern id"
+                                  & Parser.Current_Word(It));
         return False;
     end;
     if Parser.Next_Word(It) /= "" then
-      Ada.Text_Io.Put_Line ("Invalid extra argument "
+      Basic_Proc.Put_Line_Output ("Invalid extra argument "
                           & Parser.Current_Word(It));
       return False;
     end if;
@@ -173,9 +178,9 @@ procedure T_Pattern is
       Res := Pattern.Check (Rule, Parse (Str(First .. Str'Last)));
     end if;
     if Res then
-      Ada.Text_Io.Put_Line ("Check ok");
+      Basic_Proc.Put_Line_Output ("Check ok");
     else
-      Ada.Text_Io.Put_Line ("Check nok");
+      Basic_Proc.Put_Line_Output ("Check nok");
     end if;
     return False;
   end Che;
@@ -190,14 +195,14 @@ procedure T_Pattern is
     Pat2Put : Pattern.Pattern_Id;
     procedure Put_Pat (Id : Pattern.Pattern_Id) is
     begin
-      Ada.Text_Io.Put_Line (Id'Img & " -> "
+      Basic_Proc.Put_Line_Output (Id'Img & " -> "
           & Pattern.Pattern_Id'Image(Pattern.Get_Id4Cb (Rule, Id))
           & ":" & Pattern.Image (Rule, Id));
     end Put_Pat;
   begin
     if Str /= "" then
       if Str1 /= "" then
-        Ada.Text_Io.Put_Line ("Invalid pattern id " & Str & " " & Str1);
+        Basic_Proc.Put_Line_Output ("Invalid pattern id " & Str & " " & Str1);
         return False;
       end if;
       -- First word is pattern id
@@ -205,7 +210,7 @@ procedure T_Pattern is
         Pat2Put := Pattern.Pattern_Id'Value (Str);
       exception
         when Constraint_Error =>
-          Ada.Text_Io.Put_Line ("Invalid pattern id " & Str);
+          Basic_Proc.Put_Line_Output ("Invalid pattern id " & Str);
           return False;
       end;
       Put_Pat (Pat2Put);
@@ -230,13 +235,13 @@ procedure T_Pattern is
                 It : in Parser.Iterator) return Boolean is
     pragma Unreferenced (Ru, Pa, Nb, It);
   begin
-    Ada.Text_Io.Put_Line ("The following commands are supported:");
-    Ada.Text_Io.Put_Line ("  set <id> <pattern>");
-    Ada.Text_Io.Put_Line ("  del <id>");
-    Ada.Text_Io.Put_Line ("  put [ <id> ]");
-    Ada.Text_Io.Put_Line ("  check <string>");
-    Ada.Text_Io.Put_Line ("  auto");
-    Ada.Text_Io.Put_Line ("  exit, quit or q");
+    Basic_Proc.Put_Line_Output ("The following commands are supported:");
+    Basic_Proc.Put_Line_Output ("  set <id> <pattern>");
+    Basic_Proc.Put_Line_Output ("  del <id>");
+    Basic_Proc.Put_Line_Output ("  put [ <id> ]");
+    Basic_Proc.Put_Line_Output ("  check <string>");
+    Basic_Proc.Put_Line_Output ("  auto");
+    Basic_Proc.Put_Line_Output ("  exit, quit or q");
     return False;
   end Hel;
 
@@ -247,7 +252,7 @@ procedure T_Pattern is
 
   begin
     if Parser.Current_Word (It) /= "" then
-      Ada.Text_Io.Put_Line ("Invalid command: " & Parser.Image(It) & ".");
+      Basic_Proc.Put_Line_Output ("Invalid command: " & Parser.Image(It) & ".");
       return Hel (Ru, Pa, Nb, It);
     end if;
     return False;
@@ -259,7 +264,7 @@ procedure T_Pattern is
                 It : in Parser.Iterator) return Boolean is
   begin
     if Parser.Current_Word (It) = "" then
-      Ada.Text_Io.Put_Line ("Exiting");
+      Basic_Proc.Put_Line_Output ("Exiting");
       Done := True;
     else
       Parser.Reset (It);
@@ -308,7 +313,7 @@ procedure T_Pattern is
     if not Check_Data (R, 10, 1, "foo") then return False; end if;
     R.Check ("get   alias foo");
     if not Check_Data (R, 10, 2, "foo") then return False; end if;
-    Ada.Text_Io.Put_Line ("Auto test OK.");
+    Basic_Proc.Put_Line_Output ("Auto test OK.");
     return True;
   end Auto;
 
@@ -334,14 +339,14 @@ begin
   Rule := Pattern.Get_Free_Rule;
 
   loop
-    Ada.Text_Io.Put ("> ");
-    Ada.Text_Io.Get_Line (Buf, Len);
+    Basic_Proc.Put_Output ("> ");
+    Basic_Proc.Get_Line (Buf, Len);
     begin
       Pattern.Check (Mr, Lower_Str(Buf(1 .. Len)));
       exit when Done;
     exception
       when Pattern.Invalid_Pattern =>
-        Ada.Text_Io.Put_Line ("EXCEPTION: Invalid_Pattern");
+        Basic_Proc.Put_Line_Output ("EXCEPTION: Invalid_Pattern");
     end;
   end loop;
   Pattern.Del_Rule (Mr);

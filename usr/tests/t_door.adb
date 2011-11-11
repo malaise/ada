@@ -1,5 +1,4 @@
-with Ada.Text_Io;
-with Door_Manager;
+with Basic_Proc, Door_Manager;
 
 procedure T_Door is
   pragma Priority(10);
@@ -20,16 +19,16 @@ procedure T_Door is
   begin
     accept Init (No : in Positive) do
       Me := No;
-      Ada.Text_Io.Put_Line ("Client " & Me'Img & " initialised");
+      Basic_Proc.Put_Line_Output ("Client " & Me'Img & " initialised");
     end Init;
     for I in 1 .. Nb_Loops loop
-      Ada.Text_Io.Put_Line ("Client " & Me'Img
+      Basic_Proc.Put_Line_Output ("Client " & Me'Img
                           & " getting access to door");
       Door_Manager.Get (Door);
 
       if Me = 1 then
         -- First task make conditional waiting
-        Ada.Text_Io.Put_Line ("Client " & Me'Img
+        Basic_Proc.Put_Line_Output ("Client " & Me'Img
                             & " trying to wait on door");
         if I = 1 then
           -- This one will fail
@@ -39,22 +38,22 @@ procedure T_Door is
           Res := Door_Manager.Wait (Door, 10.0);
         end if;
       else
-        Ada.Text_Io.Put_Line ("Client " & Me'Img
+        Basic_Proc.Put_Line_Output ("Client " & Me'Img
                             & " waiting on door");
         Door_Manager.Wait (Door);
         Res := True;
       end if;
       if Res then
-        Ada.Text_Io.Put_Line ("Client " & Me'Img
+        Basic_Proc.Put_Line_Output ("Client " & Me'Img
                             & " released on door");
         Door_Manager.Release (Door);
       else
-        Ada.Text_Io.Put_Line ("Client " & Me'Img
+        Basic_Proc.Put_Line_Output ("Client " & Me'Img
                            & " giving up");
       end if;
       delay 1.0;
     end loop;
-    Ada.Text_Io.Put_Line ("Client " & Me'Img & " terminating");
+    Basic_Proc.Put_Line_Output ("Client " & Me'Img & " terminating");
   end Client;
 
   Clients : array (1 .. Nb_Clients) of Client;
@@ -66,13 +65,13 @@ begin -- T_Cond
   Door_Manager.Release (Door);
 
   -- Init the clients
-  Ada.Text_Io.Put_Line ("Main initializing clients");
+  Basic_Proc.Put_Line_Output ("Main initializing clients");
   for I in 1 .. Nb_Clients loop
     Clients(I).Init (I);
     delay 0.1;
   end loop;
   delay 0.5;
-  Ada.Text_Io.New_Line;
+  Basic_Proc.New_Line_Output;
   delay 10.0;
 
   -- Release all clients
@@ -81,7 +80,7 @@ begin -- T_Cond
   Door_Manager.Release (Door);
 
   -- Terminate
-  Ada.Text_Io.Put_Line ("Main terminating");
-  Ada.Text_Io.New_Line;
+  Basic_Proc.Put_Line_Output ("Main terminating");
+  Basic_Proc.New_Line_Output;
 end T_Door;
 

@@ -1,9 +1,8 @@
 -- Test romanic 2 arabic conversion
 -- With no arg, loops on all values (1 to 3999)
 --  otherwise converts arguments
-with Ada.Text_Io, Ada.Exceptions;
-with Argument;
-with Romanic;
+with Ada.Exceptions;
+with Basic_Proc, Argument, Romanic;
 
 procedure T_Romanic is
   N : Romanic.Arabic_Range;
@@ -16,7 +15,7 @@ begin
         Str : constant String := Romanic.Arabic2Romanic(I);
         N : constant Romanic.Arabic_Range := Romanic.Romanic2Arabic(Str);
       begin
-        Ada.Text_Io.Put_Line (I'Img & " -> " & Str & " -> " & N'Img);
+        Basic_Proc.Put_Line_Output (I'Img & " -> " & Str & " -> " & N'Img);
       end;
     end loop;
     return;
@@ -32,15 +31,16 @@ begin
           N := Romanic.Arabic_Range'Value(Str);
         exception
           when others =>
-            Ada.Text_Io.Put_Line ("Not a valid arabic number: " & Str);
+            Basic_Proc.Put_Line_Output ("Not a valid arabic number: " & Str);
             raise Skip_It;
         end;
         begin
-          Ada.Text_Io.Put_Line (Str & " -> " & Romanic.Arabic2Romanic(N));
+          Basic_Proc.Put_Line_Output (Str & " -> " & Romanic.Arabic2Romanic(N));
         exception
           when Error:others =>
-            Ada.Text_Io.Put_Line ("Arabic2Romanic on " & Str & " raised "
-                                & Ada.Exceptions.Exception_Name(Error));
+            Basic_Proc.Put_Line_Output (
+                "Arabic2Romanic on " & Str & " raised "
+              & Ada.Exceptions.Exception_Name(Error));
             raise Skip_It;
         end;
       else
@@ -49,14 +49,16 @@ begin
           N := Romanic.Romanic2Arabic(Str);
         exception
           when Romanic.Invalid_Romanic =>
-            Ada.Text_Io.Put_Line ("Not a valid romanic number: " & Str);
+            Basic_Proc.Put_Line_Output ("Not a valid romanic number: " & Str);
             raise Skip_It;
           when Error:others =>
-            Ada.Text_Io.Put_Line ("Romanic2Arabic on " & Str & " raised "
-                                & Ada.Exceptions.Exception_Name(Error));
+            Basic_Proc.Put_Line_Output (
+                "Romanic2Arabic on " & Str & " raised "
+              & Ada.Exceptions.Exception_Name(Error));
             raise Skip_It;
         end;
-        Ada.Text_Io.Put_Line (Str & " -> " & Romanic.Arabic_Range'Image(N));
+        Basic_Proc.Put_Line_Output (Str & " -> "
+                                  & Romanic.Arabic_Range'Image(N));
       end if;
     exception
       when Skip_It =>

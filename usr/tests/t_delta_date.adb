@@ -10,8 +10,6 @@ procedure T_Delta_Date is
   procedure Error is
   begin
     My_Io.Put(Ada.Characters.Latin_1.Bel);
-    Ada.Text_Io.Skip_Line;
-    Ada.Text_Io.Skip_Line;
   end Error;
 
   function Get return Ada.Calendar.Time is

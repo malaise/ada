@@ -1,5 +1,5 @@
-with Ada.Exceptions, Ada.Text_Io;
-with As.U, Argument, Lower_Str, Event_Mng, Socket, Tcp_Util;
+with Ada.Exceptions;
+with Basic_Proc, As.U, Argument, Lower_Str, Event_Mng, Socket, Tcp_Util;
 procedure T_Tcp_Util is
   Arg_Error : exception;
 
@@ -44,7 +44,7 @@ procedure T_Tcp_Util is
   -- Signal callback
   procedure Signal_Cb is
   begin
-    Ada.Text_Io.Put_Line ("Aborted.");
+    Basic_Proc.Put_Line_Output ("Aborted.");
     Sig := True;
   end Signal_Cb;
 
@@ -52,7 +52,7 @@ procedure T_Tcp_Util is
   procedure Send_Err_Cb (Dscr : in  Socket.Socket_Dscr;
                          Conn_Lost : in Boolean) is
   begin
-    Ada.Text_Io.Put_Line ("Send_Err_Cb with lost_conn=" & Conn_Lost'Img);
+    Basic_Proc.Put_Line_Output ("Send_Err_Cb with lost_conn=" & Conn_Lost'Img);
     Event_Mng.Del_Fd_Callback (Dscr.Get_Fd, True);
     The_Dscr := Socket.No_Socket;
     Lost := True;
@@ -62,46 +62,49 @@ procedure T_Tcp_Util is
   function Send (Msg : in String) return Boolean is
   begin
     if not The_Dscr.Is_Open then
-      Ada.Text_Io.Put_Line (Msg & " not sending cause not open");
+      Basic_Proc.Put_Line_Output (Msg & " not sending cause not open");
       return False;
     end if;
     if Lost then
-      Ada.Text_Io.Put_Line (Msg & " not sending cause lost connection");
+      Basic_Proc.Put_Line_Output (Msg & " not sending cause lost connection");
       return False;
     end if;
     if Server then
       if not In_Ovf then
         if My_Send (The_Dscr, End_Ovf_Cb'Unrestricted_Access,
                     Send_Err_Cb'Unrestricted_Access, 1.0, Message) then
-          Ada.Text_Io.Put_Line (Msg & " sent num "
+          Basic_Proc.Put_Line_Output (Msg & " sent num "
                                     & Integer'Image(Message.Num));
           return True;
         else
           In_Ovf := True;
-          Ada.Text_Io.Put_Line (Msg & "                     sending overflow");
+          Basic_Proc.Put_Line_Output (
+              Msg & "                     sending overflow");
         end if;
       else
-         Ada.Text_Io.Put_Line (Msg & " not sending cause in overflow");
+         Basic_Proc.Put_Line_Output (Msg & " not sending cause in overflow");
       end if;
       return False;
     else
       -- Client
       if In_Ovf then
-        Ada.Text_Io.Put_Line (Msg & " not sending cause in overflow");
+        Basic_Proc.Put_Line_Output (Msg & " not sending cause in overflow");
         return False;
       end if;
       while My_Send (The_Dscr, End_Ovf_Cb'Unrestricted_Access,
                      Send_Err_Cb'Unrestricted_Access, 1.0, Message) loop
-        Ada.Text_Io.Put_Line (Msg & " sent num " & Integer'Image(Message.Num));
+        Basic_Proc.Put_Line_Output (Msg & " sent num "
+                                  & Integer'Image(Message.Num));
         Message.Num := Message.Num + 1;
       end loop;
       In_Ovf := True;
-      Ada.Text_Io.Put_Line (Msg & "                     sending overflow");
+      Basic_Proc.Put_Line_Output (
+          Msg & "                     sending overflow");
     end if;
     return False;
   exception
     when Error : others =>
-      Ada.Text_Io.Put_Line ("Sending " & Msg & " failed cause "
+      Basic_Proc.Put_Line_Output ("Sending " & Msg & " failed cause "
         & Lower_Str (Ada.Exceptions.Exception_Name (Error)) & ".");
       return False;
   end Send;
@@ -110,10 +113,10 @@ procedure T_Tcp_Util is
     use type Socket.Socket_Dscr;
   begin
     if Dscr /= The_Dscr then
-      Ada.Text_Io.Put_Line ("End of overflow on invalid dscr");
+      Basic_Proc.Put_Line_Output ("End of overflow on invalid dscr");
       return;
     end if;
-    Ada.Text_Io.Put_Line (
+    Basic_Proc.Put_Line_Output (
        "End of overflow Cb ->                    End of overflow");
     In_Ovf := False;
   end End_Ovf_Cb;
@@ -132,14 +135,14 @@ procedure T_Tcp_Util is
                             True,
                             Read_Cb'Unrestricted_Access);
       The_Dscr.Set_Blocking (Socket.Non_Blocking);
-      Ada.Text_Io.Put_Line ("Connected and non blocking");
+      Basic_Proc.Put_Line_Output ("Connected and non blocking");
       Lost := False;
       In_Ovf := False;
       if The_Dscr.Get_Ttl /= Ttl then
-        Ada.Text_Io.Put_Line ("TTL lost!");
+        Basic_Proc.Put_Line_Output ("TTL lost!");
       end if;
     else
-      Ada.Text_Io.Put_Line ("Not connected");
+      Basic_Proc.Put_Line_Output ("Not connected");
       Give_Up := True;
       return;
     end if;
@@ -172,7 +175,7 @@ procedure T_Tcp_Util is
     Tmp_Dscr : Socket.Socket_Dscr;
   begin
     if The_Dscr /= Socket.No_Socket then
-      Ada.Text_Io.Put_Line ("Rejected");
+      Basic_Proc.Put_Line_Output ("Rejected");
       Tmp_Dscr := New_Dscr;
       Tmp_Dscr.Close;
     else
@@ -181,7 +184,7 @@ procedure T_Tcp_Util is
                             True,
                             Read_Cb'Unrestricted_Access);
       The_Dscr.Set_Blocking (Socket.Non_Blocking);
-      Ada.Text_Io.Put ("Accepted and non blocking");
+      Basic_Proc.Put_Output ("Accepted and non blocking");
       Lost := False;
       In_Ovf := False;
     end if;
@@ -190,9 +193,9 @@ procedure T_Tcp_Util is
   procedure Wait (Dur : in Duration) is
   begin
     if Event_Mng.Wait (Integer (Dur) * 1_000) then
-      Ada.Text_Io.Put_Line ("Timer/Event");
+      Basic_Proc.Put_Line_Output ("Timer/Event");
     else
-      Ada.Text_Io.Put_Line ("Timeout");
+      Basic_Proc.Put_Line_Output ("Timeout");
     end if;
   end Wait;
 
@@ -205,12 +208,12 @@ procedure T_Tcp_Util is
     use type Event_Mng.File_Desc;
   begin
     if Server then
-      Ada.Text_Io.Put ("Server: ");
+      Basic_Proc.Put_Output ("Server: ");
     else
-      Ada.Text_Io.Put ("Client: ");
+      Basic_Proc.Put_Output ("Client: ");
     end if;
     if not The_Dscr.Is_Open or else Fd /= The_Dscr.Get_Fd then
-      Ada.Text_Io.Put_Line ("Read Cb -> Unknown fd");
+      Basic_Proc.Put_Line_Output ("Read Cb -> Unknown fd");
       return False;
     end if;
 
@@ -219,7 +222,7 @@ procedure T_Tcp_Util is
       My_Read (The_Dscr, Received_Message, Len, False);
     exception
       when Socket.Soc_Conn_Lost | Socket.Soc_Read_0 =>
-        Ada.Text_Io.Put_Line ("Read Cb -> disconnected: Closing");
+        Basic_Proc.Put_Line_Output ("Read Cb -> disconnected: Closing");
         Event_Mng.Del_Fd_Callback (Fd, True);
         if In_Ovf then
           Tcp_Util.Abort_Send_And_Close (The_Dscr);
@@ -228,49 +231,50 @@ procedure T_Tcp_Util is
           The_Dscr.Close;
         end if;
         if not Server then
-          Ada.Text_Io.Put_Line (" - Waiting");
+          Basic_Proc.Put_Line_Output (" - Waiting");
           delay 3.0;
           Connect;
         else
-          Ada.Text_Io.New_Line;
+          Basic_Proc.New_Line_Output;
         end if;
         return True;
       when Socket.Soc_Would_Block =>
-        Ada.Text_Io.Put_Line ("Read Cb ->                     underflow");
+        Basic_Proc.Put_Line_Output ("Read Cb ->                     underflow");
         return False;
     end;
 
     Message := Received_Message;
-    Ada.Text_Io.Put_Line ("receives: >"
+    Basic_Proc.Put_Line_Output ("receives: >"
                    & Message.Str(1 .. Message.Len)
                    & "< num "
                    & Positive'Image(Message.Num));
     if Message.Str(1 .. Message.Len) /= Str then
-      Ada.Text_Io.Put_Line ("Incorrect message received");
+      Basic_Proc.Put_Line_Output ("Incorrect message received");
       raise Program_Error;
     end if;
 
 
     if not Server then
-      Ada.Text_Io.Put_Line ("      Working");
+      Basic_Proc.Put_Line_Output ("      Working");
       delay 0.3;
       Res := Send ("Request");
     else
-      Ada.Text_Io.Put_Line ("      Working");
+      Basic_Proc.Put_Line_Output ("      Working");
       delay 0.1;
-      Ada.Text_Io.Put_Line ("      Replying");
+      Basic_Proc.Put_Line_Output ("      Replying");
       Message.Num := Message.Num + 10;
       if not Send ("Reply") and then In_Ovf then
         if Lost then
-          Ada.Text_Io.Put_Line ("      Not responding to lost client");
+          Basic_Proc.Put_Line_Output ("      Not responding to lost client");
           return False;
         end if;
         if Server_Nb_Overflow < 50 then
-          Ada.Text_Io.Put_Line ("      Not responding to client in overflow");
+          Basic_Proc.Put_Line_Output (
+              "      Not responding to client in overflow");
           Server_Nb_Overflow := Server_Nb_Overflow + 1;
         else
           -- Cancel with this bad client
-          Ada.Text_Io.Put_Line ("      Closing with client in overflow");
+          Basic_Proc.Put_Line_Output ("      Closing with client in overflow");
           Event_Mng.Del_Fd_Callback (Fd, True);
           Tcp_Util.Abort_Send_And_Close (The_Dscr);
           In_Ovf := False;
@@ -345,7 +349,8 @@ begin
         exit;
       exception
         when Socket.Soc_Addr_In_Use =>
-          Ada.Text_Io.Put_Line ("Cannot accept. Maybe Close-wait. Waiting");
+          Basic_Proc.Put_Line_Output (
+              "Cannot accept. Maybe Close-wait. Waiting");
           Wait (20.0);
       end;
       exit when Give_Up or else Sig;
@@ -382,12 +387,12 @@ begin
   end if;
 exception
   when Arg_Error =>
-    Ada.Text_Io.Put_Line ("Usage: "
+    Basic_Proc.Put_Line_Output ("Usage: "
             & Argument.Get_Program_Name & " <mode> <port>");
-    Ada.Text_Io.Put_Line (" <mode> ::= -c<server_host> | -s");
-    Ada.Text_Io.Put_Line (" <port> ::= -P<port_name> | -p<port_num>");
+    Basic_Proc.Put_Line_Output (" <mode> ::= -c<server_host> | -s");
+    Basic_Proc.Put_Line_Output (" <port> ::= -P<port_name> | -p<port_num>");
   when Error : others =>
-    Ada.Text_Io.Put_Line ("Exception: "
+    Basic_Proc.Put_Line_Output ("Exception: "
                    & Ada.Exceptions.Exception_Name (Error));
 end T_Tcp_Util;
 

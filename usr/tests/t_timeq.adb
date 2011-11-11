@@ -1,19 +1,19 @@
 -- Test timed queue
-with Ada.Text_Io, Ada.Calendar, Ada.Characters.Latin_1;
+with Ada.Calendar, Ada.Characters.Latin_1;
 with Argument, Queues.Timed, Basic_Proc, Get_Float, Lower_Char;
 procedure T_Timeq is
 
   procedure Usage is
   begin
-    Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
+    Basic_Proc.Put_Line_Output ("Usage: " & Argument.Get_Program_Name
                         & "  ivd | o | e | | rv | c | x | a");
-    Ada.Text_Io.Put_Line ("i => push value (0 .. 9) for duration d");
-    Ada.Text_Io.Put_Line ("o => pop next value");
-    Ada.Text_Io.Put_Line ("e => expire values");
-    Ada.Text_Io.Put_Line ("r => read value if not expired");
-    Ada.Text_Io.Put_Line ("c => clear queue");
-    Ada.Text_Io.Put_Line ("x => exit");
-    Ada.Text_Io.Put_Line ("a => run autotest");
+    Basic_Proc.Put_Line_Output ("i => push value (0 .. 9) for duration d");
+    Basic_Proc.Put_Line_Output ("o => pop next value");
+    Basic_Proc.Put_Line_Output ("e => expire values");
+    Basic_Proc.Put_Line_Output ("r => read value if not expired");
+    Basic_Proc.Put_Line_Output ("c => clear queue");
+    Basic_Proc.Put_Line_Output ("x => exit");
+    Basic_Proc.Put_Line_Output ("a => run autotest");
   end Usage;
 
   subtype Val_Range is Natural range 0 .. 9;
@@ -31,9 +31,9 @@ procedure T_Timeq is
   begin
     Val_Queue.Read (Vals, I, Equal'Unrestricted_Access, V, B);
     if B then
-      Ada.Text_Io.Put_Line ("Read " & V'Img);
+      Basic_Proc.Put_Line_Output ("Read " & V'Img);
     else
-      Ada.Text_Io.Put_Line ("Not data matches " & I'Img);
+      Basic_Proc.Put_Line_Output ("Not data matches " & I'Img);
     end if;
   end Read;
 
@@ -46,52 +46,52 @@ procedure T_Timeq is
       loop
         Val_Queue.Pop (Vals, V, D);
         exit when not D;
-        Ada.Text_Io.Put_Line ("Got" & V'Img);
+        Basic_Proc.Put_Line_Output ("Got" & V'Img);
       end loop;
     end Pop;
   begin
     -- Step 1, test auto expire on push
-    Ada.Text_Io.Put_Line ("Putting 11 22 33 44 55 and waiting 3 seconds");
+    Basic_Proc.Put_Line_Output ("Putting 11 22 33 44 55 and waiting 3 seconds");
     Val_Queue.Push (Vals, 1, 1.0);
     Val_Queue.Push (Vals, 2, 2.0);
     Val_Queue.Push (Vals, 3, 3.0);
     Val_Queue.Push (Vals, 4, 4.0);
     Val_Queue.Push (Vals, 5, 5.0);
     delay 3.0;
-    Ada.Text_Io.Put_Line ("Popping first without expire");
+    Basic_Proc.Put_Line_Output ("Popping first without expire");
     Val_Queue.Pop (Vals, V);
-    Ada.Text_Io.Put_Line ("Got" & Val_Range'Image(V));
-    Ada.Text_Io.Put_Line ("Putting 66 then popping all");
+    Basic_Proc.Put_Line_Output ("Got" & Val_Range'Image(V));
+    Basic_Proc.Put_Line_Output ("Putting 66 then popping all");
     Val_Queue.Push (Vals, 6, (0, 6.0));
     Pop;
     -- Step 2, test auto expire on get
-    Ada.Text_Io.Put_Line ("Putting 11 22 33 44 55 and waiting 3 seconds");
+    Basic_Proc.Put_Line_Output ("Putting 11 22 33 44 55 and waiting 3 seconds");
     Val_Queue.Push (Vals, 1, 1.0);
     Val_Queue.Push (Vals, 2, 2.0);
     Val_Queue.Push (Vals, 3, 3.0);
     Val_Queue.Push (Vals, 4, 4.0);
     Val_Queue.Push (Vals, 5, 5.0);
     delay 3.0;
-    Ada.Text_Io.Put_Line ("Reading 1, 2, 3, 4, 5 and 4 again");
+    Basic_Proc.Put_Line_Output ("Reading 1, 2, 3, 4, 5 and 4 again");
     for I in 1 .. 5 loop
       Read (I);
     end loop;
     Read (4);
     -- Step 3, test explicit expire
-    Ada.Text_Io.Put_Line ("Putting 11 33 and waiting 1 seconds");
+    Basic_Proc.Put_Line_Output ("Putting 11 33 and waiting 1 seconds");
     Val_Queue.Push (Vals, 1, (0, 1.0));
     Val_Queue.Push (Vals, 3, (0, 3.0));
     delay 1.0;
-    Ada.Text_Io.Put_Line ("Expiring then popping all");
+    Basic_Proc.Put_Line_Output ("Expiring then popping all");
     Val_Queue.Expire (Vals);
     Pop;
     -- Step 4, test clear
-    Ada.Text_Io.Put_Line ("Putting 11 and 66, cleaning then popping all");
+    Basic_Proc.Put_Line_Output ("Putting 11 and 66, cleaning then popping all");
     Val_Queue.Push (Vals, 1, (0, 1.0));
     Val_Queue.Push (Vals, 6, (0, 6.0));
     Val_Queue.Clear (Vals);
     Pop;
-    Ada.Text_Io.Put_Line ("End of auto test.");
+    Basic_Proc.Put_Line_Output ("End of auto test.");
   end Autotest;
 
 
@@ -101,11 +101,11 @@ procedure T_Timeq is
   V : Val_Range;
   D : Ada.Calendar.Day_Duration;
 begin
-    Ada.Text_Io.Put_Line (
+    Basic_Proc.Put_Line_Output (
       "Insert(Value, Duration) Pop Get(Value) Expire Clear eXit Autotest> ");
   loop
-    Ada.Text_Io.Put ("Ivd | P | Rv | E | C | X | A ? ");
-    Ada.Text_Io.Get_Line (Str, Len);
+    Basic_Proc.Put_Output ("Ivd | P | Rv | E | C | X | A ? ");
+    Basic_Proc.Get_Line (Str, Len);
     if Len = 0 then
       C := Ada.Characters.Latin_1.Nul;
     else
@@ -124,16 +124,16 @@ begin
           Val_Queue.Push (Vals, V, (0, D));
         exception
           when Val_Queue.Timed_Full =>
-            Ada.Text_Io.Put_Line ("EXCEPTION Timed_Full");
+            Basic_Proc.Put_Line_Output ("EXCEPTION Timed_Full");
         end;
       when 'p' =>
         -- Pop
         begin
           Val_Queue.Pop (Vals, V);
-          Ada.Text_Io.Put_Line ("Popped " & V'Img);
+          Basic_Proc.Put_Line_Output ("Popped " & V'Img);
         exception
           when Val_Queue.Timed_Empty =>
-            Ada.Text_Io.Put_Line ("EXCEPTION Timed_Empty");
+            Basic_Proc.Put_Line_Output ("EXCEPTION Timed_Empty");
         end;
       when 'r' =>
         -- Read
@@ -163,7 +163,7 @@ begin
   end loop;
 
 exception
-  when Ada.Text_Io.End_Error =>
+  when Basic_Proc.End_Error =>
     null;
   when others =>
     Basic_Proc.Set_Error_Exit_Code;

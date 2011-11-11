@@ -1,5 +1,4 @@
-with Ada.Text_Io;
-with Ndbm, Normal;
+with Basic_Proc, Ndbm, Normal;
 
 procedure T_Ndbm is
 
@@ -31,12 +30,12 @@ begin
     loop
       D := My_Ndbm.Read (K);
       Nb_Op := Nb_Op + 1;
-      Ada.Text_Io.Put_Line (D);
+      Basic_Proc.Put_Line_Output (D);
       begin
         K := My_Ndbm.Next_Key;
       exception
         when My_Ndbm.No_Data =>
-           Ada.Text_Io.Put_Line ("No more to read, "
+           Basic_Proc.Put_Line_Output ("No more to read, "
                                 & Natural'Image(Nb_Op)
                                 & " done.");
            exit;
@@ -53,11 +52,11 @@ begin
           Nb_Op := Nb_Op + 1;
         exception
           when My_Ndbm.No_Data =>
-            Ada.Text_Io.Put_Line ("Delete Not Ok ????!!!!");
+            Basic_Proc.Put_Line_Output ("Delete Not Ok ????!!!!");
         end;
       exception
         when My_Ndbm.No_Data =>
-          Ada.Text_Io.Put_Line ("No more to delete, "
+          Basic_Proc.Put_Line_Output ("No more to delete, "
                                 & Natural'Image(Nb_Op)
                                 & " done.");
           exit;
@@ -66,18 +65,18 @@ begin
 
     begin
       K := My_Ndbm.First_Key;
-      Ada.Text_Io.Put_Line ("First Key Ok ????!!!!");
+      Basic_Proc.Put_Line_Output ("First Key Ok ????!!!!");
     exception
       when My_Ndbm.No_Data =>
-        Ada.Text_Io.Put_Line ("First Key -> No data");
+        Basic_Proc.Put_Line_Output ("First Key -> No data");
     end;
 
     begin
       D := My_Ndbm.Read (K);
-      Ada.Text_Io.Put_Line ("Read Ok ????!!!!");
+      Basic_Proc.Put_Line_Output ("Read Ok ????!!!!");
     exception
       when My_Ndbm.No_Data =>
-        Ada.Text_Io.Put_Line ("Read -> No data");
+        Basic_Proc.Put_Line_Output ("Read -> No data");
     end;
 
     delay 1.0;

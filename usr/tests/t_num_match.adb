@@ -1,5 +1,4 @@
-with Ada.Text_Io;
-with Argument, Num_Match;
+with Basic_Proc, Argument, Num_Match;
 
 procedure T_Num_Match is
 
@@ -7,7 +6,7 @@ procedure T_Num_Match is
 
   procedure Usage is
   begin
-    Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
+    Basic_Proc.Put_Line_Output ("Usage: " & Argument.Get_Program_Name
        & " <Natural> [ <Criteria_String> ]");
   end Usage;
 
@@ -30,13 +29,13 @@ begin
 
   Res := My_Num_Match.Matches (Num, Str(1 .. Len));
 
-  Ada.Text_Io.Put (Num'Img);
+  Basic_Proc.Put_Output (Num'Img);
   if Res then
-    Ada.Text_Io.Put (" matches");
+    Basic_Proc.Put_Output (" matches");
   else
-    Ada.Text_Io.Put (" does not match");
+    Basic_Proc.Put_Output (" does not match");
   end if;
-  Ada.Text_Io.Put_Line (" >" & Str(1 .. Len) & "<");
+  Basic_Proc.Put_Line_Output (" >" & Str(1 .. Len) & "<");
 
 exception
   when Argument.Argument_Not_Found | Argument.Argument_Too_Long =>

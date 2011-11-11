@@ -1,7 +1,6 @@
 -- Stores ENV variables in a unique list
 -- Modifies and retrieve list entries according to arguments
 --  <name> | <name>=<value> | dump
-with Ada.Text_Io;
 with Hashed_List.Unique, Argument, As.B, String_Mng, Sys_Calls;
 procedure T_Ul is
 
@@ -55,13 +54,13 @@ procedure T_Ul is
 
   procedure Put (Var : in Var_Rec) is
   begin
-    Ada.Text_Io.Put (">" & Var.Name.Image & "<->" & Var.Val.Image & "<");
+    Sys_Calls.Put_Output (">" & Var.Name.Image & "<->" & Var.Val.Image & "<");
   end Put;
   procedure Iteration (Current : Var_Rec; Go_On : in out Boolean) is
     pragma Unreferenced (Go_On);
   begin
     Put (Current);
-    Ada.Text_Io.New_Line;
+    Sys_Calls.New_Line_Output;
   end Iteration;
 
   Var : Var_Rec;
@@ -76,16 +75,16 @@ begin
   end loop;
 
   -- Process argument: variable (re) definition or get
-  Ada.Text_Io.Put_Line ("Processing arguments:");
+  Sys_Calls.Put_Line_Output ("Processing arguments:");
   for I in 1 .. Argument.Get_Nbre_Arg loop
     if Argument.Get_Parameter (Occurence => I) = "dump" then
       -- Dump the list
-      Ada.Text_Io.Put_Line ("List dump:");
+      Sys_Calls.Put_Line_Output ("List dump:");
       My_Ul.Iterate (Ul, Iteration'Access);
-      Ada.Text_Io.New_Line;
+      Sys_Calls.New_Line_Output;
     elsif Store_Env (Argument.Get_Parameter (Occurence => I)) then
       -- Try to store variable (will work if string constains "=")
-      Ada.Text_Io.Put_Line ("Inserted >"
+      Sys_Calls.Put_Line_Output ("Inserted >"
                           & Argument.Get_Parameter (Occurence => I) & "<");
     else
       -- Try to fetch the variable
@@ -101,12 +100,13 @@ begin
       if Go_On then
         begin
           Ul.Read (Var);
-          Ada.Text_Io.Put ("Got ");
+          Sys_Calls.Put_Output ("Got ");
           Put (Var);
-          Ada.Text_Io.New_Line;
+          Sys_Calls.New_Line_Output;
         exception
           when My_Ul.Not_In_List =>
-            Ada.Text_Io.Put_Line ("Var >" & Var.Name.Image &  "< is not set.");
+            Sys_Calls.Put_Line_Output ("Var >" & Var.Name.Image
+                                    &  "< is not set.");
         end;
       end if;
     end if;

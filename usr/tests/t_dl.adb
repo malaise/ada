@@ -1,5 +1,4 @@
-with Ada.Text_Io;
-with Dynamic_List, Normal, Rnd;
+with Basic_Proc, Dynamic_List, Normal, Rnd;
 procedure T_Dl is
   package My_Dyn_List is new Dynamic_List(Element_Type => Integer);
   package My_List renames My_Dyn_List.Dyn_List;
@@ -17,8 +16,8 @@ procedure T_Dl is
 
   procedure Put (I : in Integer; New_Line : in Boolean := False) is
   begin
-    Ada.Text_Io.Put (Normal (I, 2, Gap => '0') & ' ');
-    if New_Line then Ada.Text_Io.New_Line; end if;
+    Basic_Proc.Put_Output (Normal (I, 2, Gap => '0') & ' ');
+    if New_Line then Basic_Proc.New_Line_Output; end if;
   end Put;
 
   procedure Iteration (Current : in out Integer;
@@ -26,21 +25,21 @@ procedure T_Dl is
   begin
     Put (Current);
     if Current rem 2 = 0 then
-      Ada.Text_Io.Put (" is odd");
+      Basic_Proc.Put_Output (" is odd");
     else
-      Ada.Text_Io.Put (" is even");
+      Basic_Proc.Put_Output (" is even");
     end if;
     if Current > 10 then
-      Ada.Text_Io.Put_Line (" and stopping iteration");
+      Basic_Proc.Put_Line_Output (" and stopping iteration");
       begin
         List.Read (Item);
       exception
         when My_List.In_Callback =>
-          Ada.Text_Io.Put_Line ("Read raises In_Callback, OK");
+          Basic_Proc.Put_Line_Output ("Read raises In_Callback, OK");
       end;
       Go_On := False;
     else
-      Ada.Text_Io.New_Line;
+      Basic_Proc.New_Line_Output;
     end if;
   end Iteration;
 
@@ -49,7 +48,7 @@ procedure T_Dl is
     Moved : Boolean;
   begin
     if List.Is_Empty then
-      Ada.Text_Io.New_Line;
+      Basic_Proc.New_Line_Output;
       return;
     end if;
 
@@ -60,76 +59,76 @@ procedure T_Dl is
       Put (Item);
       exit when not Moved;
     end loop;
-    Ada.Text_Io.New_Line;
+    Basic_Proc.New_Line_Output;
     List.Move_At (Pos);
   end Dump;
 
 begin
 
   -- Add 10 elements to the list
-  Ada.Text_Io.Put_Line("Adds 10 elements");
+  Basic_Proc.Put_Line_Output("Adds 10 elements");
   for I in 1 .. 10 loop
     List.Insert(I, My_List.Next);
   end loop;
 
   -- Read 5 elements from list in reverse
-  Ada.Text_Io.Put("Reads 5 elements from the last one: ");
+  Basic_Proc.Put_Output("Reads 5 elements from the last one: ");
   List.Rewind(True, My_List.Prev);
   for I in 1 .. 5 loop
     List.Read(Item, My_List.Prev);
     Put(Item);
   end loop;
-  Ada.Text_Io.New_Line;
+  Basic_Proc.New_Line_Output;
 
   -- Dump
-  Ada.Text_Io.Put("List length: ");
+  Basic_Proc.Put_Output("List length: ");
   Put(List.List_Length, True);
 
   -- Delete 5th
-  Ada.Text_Io.Put_Line("Deletes the current");
+  Basic_Proc.Put_Line_Output("Deletes the current");
   List.Delete(Moved => Moved);
 
   -- Pos and list length
-  Ada.Text_Io.Put("Pos from first: ");
+  Basic_Proc.Put_Output("Pos from first: ");
   Put(List.Get_Position, False);
-  Ada.Text_Io.Put("List length: ");
+  Basic_Proc.Put_Output("List length: ");
   Put(List.List_Length, True);
 
   -- Read 7 elements from first
-  Ada.Text_Io.Put("Reads 7 elements from the first one: ");
+  Basic_Proc.Put_Output("Reads 7 elements from the first one: ");
   List.Rewind;
   for I in 1 .. 7 loop
     List.Read(Item);
     Put(Item);
   end loop;
-  Ada.Text_Io.New_Line;
+  Basic_Proc.New_Line_Output;
 
   -- Add 50 before current
-  Ada.Text_Io.Put_Line("Adds the element 50 before current position");
+  Basic_Proc.Put_Line_Output("Adds the element 50 before current position");
   List.Insert(50, My_List.Prev);
 
-  Ada.Text_Io.Put("Store current access and read: ");
+  Basic_Proc.Put_Output("Store current access and read: ");
   Acc := List.Access_Current;
   Put(Acc.all, True);
 
   -- List length
-  Ada.Text_Io.Put("List length: ");
+  Basic_Proc.Put_Output("List length: ");
   Put(List.List_Length, True);
 
   -- Read 9 elements from the last
-  Ada.Text_Io.Put("Reads 9 elements from the last one: ");
+  Basic_Proc.Put_Output("Reads 9 elements from the last one: ");
   List.Move_To(My_List.Prev, 0, False);
   for I in 1 .. 9 loop
     List.Read(Item, My_List.Prev);
     Put(Item);
   end loop;
-  Ada.Text_Io.New_Line;
+  Basic_Proc.New_Line_Output;
 
   -- Move back to saved access and read
-  Ada.Text_Io.Put("Search stored access and read: ");
+  Basic_Proc.Put_Output("Search stored access and read: ");
   List.Search_Access (Found, Acc);
   if not Found then
-    Ada.Text_Io.Put_Line ("NOT FOUND");
+    Basic_Proc.Put_Line_Output ("NOT FOUND");
     -- This is not normal. Abort.
     raise My_List.Not_In_List;
   end if;
@@ -137,50 +136,50 @@ begin
   Put(Item, True);
 
   -- Permute 1st and 4th elements, then search 3 from last
-  Ada.Text_Io.Put_Line("Permute 1st and 4th elements, then search 3 from last");
+  Basic_Proc.Put_Line_Output("Permute 1st and 4th elements, then search 3 from last");
   List.Permute (0, 3, My_List.Next, False);
   My_Search_Raise (List, 3, My_List.Prev, 1, My_List.Absolute);
 
   -- Get pos from first and current item
-  Ada.Text_Io.Put("Get current pos from first: ");
+  Basic_Proc.Put_Output("Get current pos from first: ");
   Put(List.Get_Position);
-  Ada.Text_Io.Put(" Get current item: ");
+  Basic_Proc.Put_Output(" Get current item: ");
   List.Get (Item);
   Put(Item, True);
 
   -- Dump
-  Ada.Text_Io.Put("List (length: ");
+  Basic_Proc.Put_Output("List (length: ");
   Put (List.List_Length, False);
-  Ada.Text_Io.Put (") : ");
+  Basic_Proc.Put_Output (") : ");
   Dump;
 
   -- Search 50 from first
-  Ada.Text_Io.Put_Line("Seach 50 from first");
+  Basic_Proc.Put_Line_Output("Seach 50 from first");
   My_Search (List, Found, 50, From => My_List.Absolute);
   if not Found then
-    Ada.Text_Io.Put_Line ("NOT FOUND");
+    Basic_Proc.Put_Line_Output ("NOT FOUND");
     -- This is not normal. Abort.
     raise My_List.Not_In_List;
   end if;
   -- Search 50 from current, skipping it
-  Ada.Text_Io.Put_Line("Seach 50, skipping current");
+  Basic_Proc.Put_Line_Output("Seach 50, skipping current");
   My_Search (List, Found, 50, From => My_List.Skip_Current);
   if not Found then
-    Ada.Text_Io.Put_Line ("Returns not Found, OK");
+    Basic_Proc.Put_Line_Output ("Returns not Found, OK");
   end if;
 
   -- Dump the list
   begin
     Count := 0;
     loop
-      Ada.Text_Io.Put("Pos from first: ");
+      Basic_Proc.Put_Output("Pos from first: ");
       Put (List.Get_Position, False);
-      Ada.Text_Io.Put("Pos from last: ");
+      Basic_Proc.Put_Output("Pos from last: ");
       Put (List.Get_Position (My_List.From_Last), False);
-      Ada.Text_Io.Put ("Can go to next: ");
-      Ada.Text_Io.Put (Boolean'Image (List.Check_Move (My_List.Next))
+      Basic_Proc.Put_Output ("Can go to next: ");
+      Basic_Proc.Put_Output (Boolean'Image (List.Check_Move (My_List.Next))
                  & " ");
-      Ada.Text_Io.Put("Current item, go to next: ");
+      Basic_Proc.Put_Output("Current item, go to next: ");
       List.Read(Item);
       Put(Item, True);
       Count := Count + 1;
@@ -188,48 +187,48 @@ begin
   exception
     when My_List.Not_In_List =>
       if Count = 2 then
-        Ada.Text_Io.Put_Line("raises Not_In_List, OK");
+        Basic_Proc.Put_Line_Output("raises Not_In_List, OK");
       else
-        Ada.Text_Io.Put_Line("==> NOT IN LIST");
+        Basic_Proc.Put_Line_Output("==> NOT IN LIST");
       end if;
   end;
 
-  Ada.Text_Io.Put("Pos from first: ");
+  Basic_Proc.Put_Output("Pos from first: ");
   Put(List.Get_Position, False);
-  Ada.Text_Io.Put("Pos from last: ");
+  Basic_Proc.Put_Output("Pos from last: ");
   Put(List.Get_Position (My_List.From_Last), False);
-  Ada.Text_Io.Put("Current item, stay: ");
+  Basic_Proc.Put_Output("Current item, stay: ");
   List.Read(Item, My_List.Current);
   Put(Item, True);
 
   -- Read no move
-  Ada.Text_Io.Put("Current item, stay: ");
+  Basic_Proc.Put_Output("Current item, stay: ");
   List.Read(Item, My_List.Current);
   Put(Item, True);
 
   -- Iterator
-  Ada.Text_Io.Put_Line ("Iteration");
+  Basic_Proc.Put_Line_Output ("Iteration");
   List.Iterate (null, 1, My_List.Next, My_List.Absolute,
                    Iteration'Access);
 
   -- Complete delete
-  Ada.Text_Io.Put_Line("Delete fully the list");
+  Basic_Proc.Put_Line_Output("Delete fully the list");
   List.Delete_List;
 
-  Ada.Text_Io.Put("Get current pos from first: ");
+  Basic_Proc.Put_Output("Get current pos from first: ");
   begin
     Put(List.Get_Position, True);
   exception
     when My_List.Empty_List =>
-      Ada.Text_Io.Put_Line("raises Empty_List, OK");
+      Basic_Proc.Put_Line_Output("raises Empty_List, OK");
   end;
 
   -- List length
-  Ada.Text_Io.Put("List length: ");
+  Basic_Proc.Put_Output("List length: ");
   Put(List.List_Length, True);
 
   -- Sort fixed list
-  Ada.Text_Io.Put("Sort the list: 30 50 42 35: ");
+  Basic_Proc.Put_Output("Sort the list: 30 50 42 35: ");
   List.Insert (30);
   List.Insert (50);
   List.Insert (42);
@@ -239,14 +238,14 @@ begin
   List.Delete_List;
 
   -- Sort random list
-  Ada.Text_Io.Put ("Make the following random list: ");
+  Basic_Proc.Put_Output ("Make the following random list: ");
   Rnd.Randomize;
   for I in 1 .. Rnd.Int_Random (0, 10) loop
     List.Insert (Rnd.Int_Random(0, 50));
   end loop;
   Dump;
   My_Sort(List);
-  Ada.Text_Io.Put ("After sorting it: ");
+  Basic_Proc.Put_Output ("After sorting it: ");
   Dump;
 
   -- Insert a copy
@@ -256,7 +255,7 @@ begin
   List.Insert (12);
   List.Move_To (My_List.Prev);
   List.Insert_Copy (List1);
-  Ada.Text_Io.Put ("Copied/Inserted in a new list between 21 and 12: ");
+  Basic_Proc.Put_Output ("Copied/Inserted in a new list between 21 and 12: ");
   Dump;
 
 end T_Dl;

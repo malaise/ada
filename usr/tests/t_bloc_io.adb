@@ -1,6 +1,5 @@
-with Ada.Text_Io, Ada.Exceptions;
-
-with Bloc_Io;
+with Ada.Exceptions;
+with Bloc_Io, Basic_Proc;
 
 procedure T_Bloc_Io is
 
@@ -17,11 +16,11 @@ procedure T_Bloc_Io is
 
   procedure Dump (Slice : in Int_Io.Element_Array) is
   begin
-    Ada.Text_Io.Put("Dump: ");
+    Basic_Proc.Put_Output("Dump: ");
     for I in Slice'Range loop
-      Ada.Text_Io.Put(Integer'Image(Slice(I)) & " ");
+      Basic_Proc.Put_Output(Integer'Image(Slice(I)) & " ");
     end loop;
-    Ada.Text_Io.New_Line;
+    Basic_Proc.New_Line_Output;
   end Dump;
 
   use type Int_Io.Count;
@@ -33,14 +32,14 @@ begin
     Ro := True;
   exception
     when Error:others =>
-      Ada.Text_Io.Put_Line("Open => "
+      Basic_Proc.Put_Line_Output("Open => "
              & Ada.Exceptions.Exception_Name (Error));
       Int_Io.Create(File, File_Name);
       Ro := False;
   end;
 
   Remain := Int_Io.Size(File);
-  Ada.Text_Io.Put_Line("Size: " & Int_Io.Count'Image(Remain));
+  Basic_Proc.Put_Line_Output("Size: " & Int_Io.Count'Image(Remain));
 
   if Ro then
     while Remain > Arr'Length loop
@@ -52,7 +51,8 @@ begin
     Dump(Arr(1 .. Remain));
     Remain := 0;
     Int_Io.Set_Index(File, N_Arr * Arr'Length - 5);
-    Ada.Text_Io.Put_Line("Set index to " & Int_Io.Count'Image(Int_Io.Index(File)));
+    Basic_Proc.Put_Line_Output("Set index to "
+                             & Int_Io.Count'Image(Int_Io.Index(File)));
     Int_Io.Read(File, Arr(1 .. 4));
     Dump(Arr(1 .. 4));
     Int_Io.Close(File);
