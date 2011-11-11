@@ -87,8 +87,8 @@ package body Basic_Proc is
   end Flush_Error;
 
   -- Get line from stdin
-  procedure Get_Input (Item : out String;
-                       Last : out Natural) is
+  procedure Get_Line (Item : out String;
+                      Last : out Natural) is
    Chrs : Interfaces.C_Streams.Chars;
    Str : String (1 .. Item'Length);
    use type System.Address;
@@ -111,7 +111,7 @@ package body Basic_Proc is
     end loop;
     -- Should not occur because fgets always appends a Nul
     Last := 0;
-  end Get_Input;
+  end Get_Line;
 
   -- Set exit code
   procedure Set_Exit_Code (Code : in Natural) is

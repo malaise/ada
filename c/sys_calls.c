@@ -81,6 +81,20 @@ extern int set_tty_attr (int fd, int mode) {
       termattr.c_lflag &= ~ECHO;
       blk = 1;
     break;
+    case CHAR:
+      termattr.c_lflag &= ~ICANON;
+      termattr.c_lflag |= ECHO;
+      termattr.c_cc[VMIN] = 1;
+      termattr.c_cc[VTIME]= 0;
+      blk = 1;
+    break;
+    case CHARNO:
+      termattr.c_lflag &= ~ICANON;
+      termattr.c_lflag &= ~ECHO;
+      termattr.c_cc[VMIN] = 1;
+      termattr.c_cc[VTIME]= 0;
+      blk = 1;
+    break;
     case ASYNC:
       termattr.c_lflag &= ~ICANON;
       termattr.c_lflag |= ECHO;

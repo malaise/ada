@@ -135,6 +135,8 @@ package Sys_Calls is
   type Tty_Mode_List is (
     Canonical,   -- Wait for Cr, Echo, Blocking
     No_Echo,     -- Wait for Cr, No echo, Blocking
+    Char,        -- No wait, Echo, Blocking
+    Char_No_Echo,-- No wait, No echo, Blocking
     Asynchronous,-- No wait, Echo, Not Blocking
     Transparent  -- No wait, No echo, Not Blocking
   );

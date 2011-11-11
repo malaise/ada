@@ -22,8 +22,10 @@ extern int set_blocking (int fd, int blocking);
 
 #define NORMAL 0
 #define NOECHO 1
-#define ASYNC  2
-#define TRANSP 3
+#define CHAR   2
+#define CHARNO 3
+#define ASYNC  4
+#define TRANSP 5
 
 extern int set_tty_attr (int fd, int mode);
 

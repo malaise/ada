@@ -16,8 +16,8 @@ package Basic_Proc is
 
   -- Get line from stdin (strip tailing Lf)
   End_Error : exception;
-  procedure Get_Input (Item : out String;
-                       Last : out Natural);
+  procedure Get_Line (Item : out String;
+                      Last : out Natural);
 
   -- Set exit code
   procedure Set_Exit_Code (Code : in Natural);

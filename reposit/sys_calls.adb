@@ -510,8 +510,10 @@ package body Sys_Calls is
     Tty_Modes_For_C : constant array (Tty_Mode_List) of Integer := (
       Canonical    => 0,
       No_Echo      => 1,
-      Asynchronous => 2,
-      Transparent  => 3);
+      Char         => 2,
+      Char_No_Echo => 3,
+      Asynchronous => 4,
+      Transparent  => 5);
     function C_Set_Tty_Attr (Fd : C_Types.Int; Mode : C_Types.Int)
                             return C_Types.Int;
     pragma Import (C, C_Set_Tty_Attr, "set_tty_attr");
