@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1;
-with As.B, My_Io, Sorts;
+with As.B, Basic_Proc, Sorts;
 package body Grid_1 is
 
 
@@ -112,17 +112,18 @@ package body Grid_1 is
     for R in Row_Coordinate loop
       for C in Col_Coordinate loop
         if Data(R, C) = Ada.Characters.Latin_1.Lf then
-          My_Io.Put ("Ret");
+          Basic_Proc.Put_Output ("Ret");
         elsif Data(R, C) /= Ada.Characters.Latin_1.Nul then
-          My_Io.Put('>' & Data(R, C) & '<');
+          Basic_Proc.Put_Output ('>' & Data(R, C) & '<');
         elsif Data(R, C) = Ada.Characters.Latin_1.Nul then
-          My_Io.Put ("Nul");
+          Basic_Proc.Put_Output ("Nul");
         else
           raise Constraint_Error;
         end if;
-        My_Io.Put (' ');
+        Basic_Proc.Put_Output (' ');
       end loop;
-      My_Io.New_Line;
+      Basic_Proc.New_Line_Output;
+      
     end loop;
   end Dump;
 
