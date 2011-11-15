@@ -190,6 +190,23 @@ package body Io_Flow is
 
   end Init;
 
+  function Is_Interactive return Boolean  is
+  begin
+    if Io_Mode = Unknown then
+      raise Init_Error;
+    else
+      return Io_Mode = Stdio_Tty;
+    end if;
+  end Is_Interactive;
+
+   procedure Clear_Interactive is
+   begin
+     if Io_Mode /= Stdio_Tty then
+       raise Init_Error;
+    end if;
+    Async_Stdin.Clear;
+  end Clear_Interactive;
+
   ----------------------------------------------------
   -- Get data from fifo, tcp, udp or stdin (async or not)
   ----------------------------------------------------

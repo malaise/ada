@@ -18,14 +18,22 @@ procedure Mcd is
     Basic_Proc.Set_Exit_Code (Error_Exit_Code);
   end Set_Error_Code;
 
+  Termin_Error : exception;
   procedure Error (Message : in String) is
   begin
     Basic_Proc.Put_Line_Error (Mixed_Str(Argument.Get_Program_Name) & " error: "
                             & Message & ".");
-    Mcd_Parser.Dump_Stack;
-    Mcd_Mng.Dump_Stack;
-    Close;
-    Set_Error_Code;
+    if Io_Flow.Is_Interactive then
+      -- Continue on error
+      Io_Flow.Clear_Interactive;
+    else
+      -- Terminate on error
+      Mcd_Parser.Dump_Stack;
+      Mcd_Mng.Dump_Stack;
+      Close;
+      Set_Error_Code;
+      raise Termin_Error;
+    end if;
   end Error;
 
 begin
@@ -60,6 +68,30 @@ begin
       Item := Mcd_Parser.Next_Item;
       Mcd_Mng.New_Item(Item, The_End);
       exit when The_End /= Mcd_Mng.Continue;
+    exception
+      -- Clean mapping of exceptions
+      when Mcd_Mng.Invalid_Argument =>
+        Error ("Invalid argument");
+      when Mcd_Mng.Argument_Mismatch =>
+        Error ("Argument mismatch");
+      when Mcd_Mng.Compute_Error =>
+        Error ("Compute error");
+      when Mcd_Mng.Invalid_Register =>
+        Error ("Invalid register");
+      when Mcd_Mng.Empty_Register =>
+        Error ("Empty register");
+      when Mcd_Mng.Empty_Stack =>
+        Error ("Empty stack");
+      when Mcd_Mng.String_Len =>
+        Error ("String length error");
+      when Mcd_Mng.File_Error =>
+        Error ("File IO error");
+      when Io_Flow.Init_Error =>
+        Error ("Initialization error");
+      when Io_Flow.Communication_Error =>
+        Error ("Communication error");
+      when Mcd_Parser.Parsing_Error =>
+        Error ("Parsing error");
     end;
   end loop;
 
@@ -71,31 +103,9 @@ begin
 
   -- Done
   Close;
-
 exception
-  -- Clean mapping of exceptions
-  when Mcd_Mng.Invalid_Argument =>
-    Error ("Invalid argument");
-  when Mcd_Mng.Argument_Mismatch =>
-    Error ("Argument mismatch");
-  when Mcd_Mng.Compute_Error =>
-    Error ("Compute error");
-  when Mcd_Mng.Invalid_Register =>
-    Error ("Invalid register");
-  when Mcd_Mng.Empty_Register =>
-    Error ("Empty register");
-  when Mcd_Mng.Empty_Stack =>
-    Error ("Empty stack");
-  when Mcd_Mng.String_Len =>
-    Error ("String length error");
-  when Mcd_Mng.File_Error =>
-    Error ("File IO error");
-  when Io_Flow.Init_Error =>
-    Error ("Initialization error");
-  when Io_Flow.Communication_Error =>
-    Error ("Communication error");
-  when Mcd_Parser.Parsing_Error =>
-    Error ("Parsing error");
+  when Termin_Error =>
+    null;
   when Except:others =>
     Error ("Exception "
               & Mixed_Str(Ada.Exceptions.Exception_Name (Except))

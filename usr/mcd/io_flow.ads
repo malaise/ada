@@ -10,6 +10,12 @@ package Io_Flow is
   Init_Error : exception;
   procedure Init (Default : in Boolean := False);
 
+  -- Is io flow interactive (Stdio Tty)
+  function Is_Interactive return Boolean;
+
+  -- Clear interactive input buffer (on error)
+  procedure Clear_Interactive;
+
   -- Data to output
   procedure Put (Str : in String);
   procedure Put_Line (Str : in String);
