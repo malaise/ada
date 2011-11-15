@@ -46,6 +46,18 @@ package body Console is
     Ada.Text_Io.Put (Csi & "2K");
   end Erase_Line;
 
+  -- Erase from beginning of line to cursor
+  procedure Erase_Begin_Line is
+  begin
+    Ada.Text_Io.Put (Csi & "0K");
+  end Erase_Begin_Line;
+
+  -- Erase from cursor to end of line
+  procedure Erase_End_Line is
+  begin
+    Ada.Text_Io.Put (Csi & "0K");
+  end Erase_End_Line;
+
   -- Switch reverse
   procedure Set_Reverse (On : in Boolean) is
   begin

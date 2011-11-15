@@ -17,6 +17,11 @@ package Console is
   -- Erase whole line
   procedure Erase_Line;
 
+  -- Erase from beginning of line to cursor
+  procedure Erase_Begin_Line;
+  -- Erase from cursor to end of line
+  procedure Erase_End_Line;
+
   -- Save/Restore cursor position
   procedure Save;
   procedure Restore;
