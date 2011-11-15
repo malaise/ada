@@ -282,7 +282,7 @@ begin
 
   -- Close
   Close;
-  Async_Stdin.Set_Async (null);
+  Async_Stdin.Set_Async;
 
 exception
   when Arg_Error =>

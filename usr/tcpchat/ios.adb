@@ -384,7 +384,7 @@ package body Ios is
   begin
     Clear;
     if Stdio then
-      Async_Stdin.Set_Async (null);
+      Async_Stdin.Set_Async;
     end if;
  end Close;
 

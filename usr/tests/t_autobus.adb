@@ -138,7 +138,7 @@ begin
       Event_Mng.Pause (-1);
       exit when Sig;
     end loop;
-    Async_Stdin.Set_Async (null);
+    Async_Stdin.Set_Async;
     Subs_Put.Reset;
     Bus.Reset;
   else
