@@ -2,7 +2,7 @@ with Ada.Calendar;
 with As.U, Basic_Proc, Argument, Argument_Parser;
 with Entities, Output, Targets, Lister;
 procedure Als is
-  Version : constant String  := "V7.0";
+  Version : constant String  := "V7.1";
 
   -- Exit codes
   Found_Exit_Code : constant Natural := 0;
@@ -14,17 +14,9 @@ procedure Als is
     use Basic_Proc;
   begin
     Put_Line_Error ("Usage: " & Argument.Get_Program_Name
+      & " --help | -v | --version");
+    Put_Line_Error ("or:    " & Argument.Get_Program_Name
       & " [ { <option> } ] [ { <file_or_dir_spec> } ]");
-    Put_Line_Error ("How to show each entry (file or dir):");
-    Put_Line_Error ("  -l (--list)        // Show rights, owner, size, date, symlink target");
-    Put_Line_Error ("  -1 (--1row)        // One name per line");
-    Put_Line_Error ("  -c (--classify)    // Append '/' to dirs, '@' to symlinks");
-    Put_Line_Error ("  -h (--human)       // Show sizes in friendly format (e.g. 1K, 2G)");
-    Put_Line_Error ("  -p (--path)        // Show full path of entries");
-    Put_Line_Error ("  <separator> ::= -S <string> | --separator=<string>");
-    Put_Line_Error ("                     // Insert <string> beween each entry");
-    Put_Line_Error ("  --follow_links     // Show final target of symlinks");
-    Put_Line_Error ("  --date_iso         // Show date in strict ISO format (<date>T<time>)");
     Put_Line_Error ("Which entries to show:");
     Put_Line_Error ("  -a (--all)         // Show all entries including hidden (starting with '.')");
     Put_Line_Error ("  -A (--All)         // Show all entries except ""."" and ""..""");
@@ -55,6 +47,16 @@ procedure Als is
     Put_Line_Error ("                     // Keep files that match the date specification");
     Put_Line_Error ("                     //  (before, after or equal to a given date or delay)");
     Put_Line_Error ("    -n <date> (--newer=<date>) is a shortcut to ""-d ge<date>""");
+    Put_Line_Error ("How to show each entry (file or dir):");
+    Put_Line_Error ("  -l (--list)        // Show rights, owner, size, date, symlink target");
+    Put_Line_Error ("  -1 (--1row)        // One name per line");
+    Put_Line_Error ("  -c (--classify)    // Append '/' to dirs, '@' to symlinks");
+    Put_Line_Error ("  -h (--human)       // Show sizes in friendly format (e.g. 1K, 2G)");
+    Put_Line_Error ("  -p (--path)        // Show full path of entries");
+    Put_Line_Error ("  <separator> ::= -S <string> | --separator=<string>");
+    Put_Line_Error ("                     // Insert <string> beween each entry");
+    Put_Line_Error ("  --follow_links     // Show final target of symlinks");
+    Put_Line_Error ("  --date_iso         // Show date in strict ISO format (<date>T<time>)");
     Put_Line_Error ("How to organize entry list:");
     Put_Line_Error ("  -s (--size)        // Sort by decrescent size (see also ""-r"")");
     Put_Line_Error ("  -t (--time)        // Sort by decrescent time (see also ""-r"")");
@@ -160,15 +162,14 @@ begin
     else
       Usage;
       raise Error_Exception;
-      return;
     end if;
   elsif Arg_Dscr.Is_Set (13) then
     -- Version
     if Argument.Get_Nbre_Arg /= 1 then
-     Error;
+      Error;
     else
       Basic_Proc.Put_Line_Error (Argument.Get_Program_Name & " " & Version);
-      return;
+      raise Error_Exception;
     end if;
   end if;
 
