@@ -1,3 +1,4 @@
+-- Convert Euros to Francs and reverse
 generic
   type Euros  is digits <>;
   type Francs is digits <>;

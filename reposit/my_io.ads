@@ -3,6 +3,7 @@ package My_Io is
 
   Default_Exp : Ada.Text_Io.Field := 4;
 
+  -- Put Boolean/Character/Integer/Long_Long_Integer/Float/String
   procedure Put(Item  : in Boolean;
                 Width : in Ada.Text_Io.Field := Bool_Io.Default_Width;
                 Set   : in Ada.Text_Io.Type_Set := Bool_Io.Default_Setting)
@@ -27,6 +28,7 @@ package My_Io is
 
   procedure Put(Item : in String) renames Ada.Text_Io.Put;
 
+  -- Put_Line Boolean/Character/Integer/Long_Long_Integer/Float/String
   procedure Put_Line(Item  : in Boolean;
                      Width : in Ada.Text_Io.Field := Bool_Io.Default_Width;
                      Set   : in Ada.Text_Io.Type_Set
@@ -50,9 +52,11 @@ package My_Io is
 
   procedure Put_Line(Item : in String) renames Ada.Text_Io.Put_Line;
 
+  -- New_Line
   procedure New_Line(Spacing : in Ada.Text_Io.Positive_Count := 1)
     renames Ada.Text_Io.New_Line;
 
+  -- Get Boolean/Character/Integer/Long_Long_Integer/Float/String
   procedure Get(Item : out Boolean) renames Bool_Io.Get;
 
   procedure Get(Item : out Character) renames Ada.Text_Io.Get;
@@ -68,6 +72,7 @@ package My_Io is
 
   procedure Get(Item : out String) renames Ada.Text_Io.Get;
 
+  -- Get_Line on String
   procedure Get_Line(Item : out String;
                      Last : out Natural) renames Ada.Text_Io.Get_Line;
 
@@ -81,11 +86,14 @@ package My_Io is
   procedure Safe_Get(Prompt : in String;
                      Item   : out Float);
 
+  -- Skip_Line
   procedure Skip_Line(Spacing : in Ada.Text_Io.Positive_Count := 1)
     renames Ada.Text_Io.Skip_Line;
 
+  -- End_Of_Line
   function End_Of_Line return Boolean renames Ada.Text_Io.End_Of_Line;
 
+  -- Flush
   procedure Flush renames Ada.Text_Io.Flush;
 
 end My_Io;

@@ -110,8 +110,9 @@ package Unbounded_Arrays is
                 Right : Unbounded_Array) return Boolean;
 
 private
-  Empty_Array : Element_Array (1 .. 0);
 
+  -- Default value is an ampty array
+  Empty_Array : Element_Array (1 .. 0);
   Null_Array : aliased Element_Array := Empty_Array;
 
 

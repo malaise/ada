@@ -1,9 +1,11 @@
 with As.U, My_Math;
 package Any_Def is
 
-  type Any_Kind_List is (None_Kind, Bool_Kind, Inte_Kind, Real_Kind,
-                         Str_Kind);
+  -- An "any" is a multi-type container
+  -- An "any" can be empty, a boolean, integer, real or string
+  type Any_Kind_List is (None_Kind, Bool_Kind, Inte_Kind, Real_Kind, Str_Kind);
 
+  -- Content of an "any"
   type Any (Kind : Any_Kind_List := None_Kind) is record
     case Kind is
       when None_Kind => null;
@@ -14,6 +16,7 @@ package Any_Def is
     end case;
   end record;
 
+  -- String representation of an "any"
   function Image (A : Any) return String;
 
 end Any_Def;
