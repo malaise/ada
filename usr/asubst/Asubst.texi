@@ -6,7 +6,7 @@
 
 @c Constants
 @set name Asubst
-@set version V12.0
+@set version V13.0
 @set nameversion @value{name} @value{version}
 
 @c General format
