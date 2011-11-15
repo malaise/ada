@@ -17,7 +17,8 @@ package Async_Stdin is
   --  returns the result of the User_Callback. So Event_Mng will report
   --  a Fd_Event if User_Callback returns True
   procedure Set_Async (User_Callback : in User_Callback_Access := null;
-                       Max_Chars : in Max_Chars_Range := 1);
+                       Max_Chars : in Max_Chars_Range := 1;
+                       First_Col : in Max_Chars_Range := 1);
   function Is_Set return Boolean;
 
   -- Activate asynchronous data to trigger callback
@@ -28,6 +29,16 @@ package Async_Stdin is
 
   -- Clear internal buffer of pending characters
   procedure Clear;
+
+  -- By default the input is in insert mode and is reset to insert mode after
+  --  each input (just before calling user callback)
+  -- This operation allows setting the overwrite mode for next input
+  procedure Overwrite;
+
+  -- Set an internal callback (overwritting any Async callback set)
+  --  and wait until it is called, then unset it and return the result
+  function Get_Line (Max_Chars : Max_Chars_Range := 0;
+                     First_Col : Max_Chars_Range := 1) return String;
 
   -- Put on stdout when in async
   procedure Put_Out (Str : in String);

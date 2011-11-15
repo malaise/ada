@@ -1,12 +1,16 @@
 with Ada.Calendar, Ada.Characters.Latin_1;
 with Event_Mng, Sys_Calls, Console, Dynamic_List, Environ,
-     Unicode, Utf_8, Language;
+     Unicode, Utf_8, Language, As.U;
 package body Async_Stdin is
 
   -- The user callback
   Cb : User_Callback_Access := null;
   -- Max len of result
   Max : Max_Chars_Range := 1;
+  -- First column
+  First_Col : Max_Chars_Range := 1;
+  -- Insert mode
+  Insert_Mode : Boolean := True;
   -- Are stdin/out a console (or a pipe)
   Stdio_Is_A_Tty : Boolean := False;
   -- Is the input flow to be activated
@@ -233,8 +237,8 @@ package body Async_Stdin is
     -- Copy Buf and move to end of line
     procedure Update is
     begin
-      Console.Set_Col (1);
-      Console.Erase_Line;
+      Console.Set_Col (First_Col);
+      Console.Erase_End_Line;
       Txt := History.Buf;
       Sys_Calls.Put_Output (Language.Unicode_To_String (Uu.To_Array (Txt)));
       Ind := Uu.Length (Txt) + 1;
@@ -267,17 +271,31 @@ package body Async_Stdin is
     function Insert_Put (U : in Unicode_Number) return Boolean is
       use type Unicode_Sequence;
     begin
-      -- Insert U at current position and move 1 right
-      Txt := Uu.To_Unbounded_Array (
-                Uu.Slice (Txt, 1, Ind - 1)
-              & U
-              & Uu.Slice (Txt, Ind, Uu.Length(Txt)));
+      if not Insert_Mode then
+        -- Overwrite mode
+        if Ind <= Txt.Length then
+          -- Replace current position by U
+          Txt.Replace_Element (Ind, U);
+        else
+          -- Append U
+          Txt.Append (U);
+        end if;
+      else
+        -- Insert U at current position and move 1 right
+        Txt := Uu.To_Unbounded_Array (
+                  Uu.Slice (Txt, 1, Ind - 1)
+                & U
+                & Uu.Slice (Txt, Ind, Uu.Length(Txt)));
+      end if;
+      -- Move 1 right and redisplay
       Ind := Ind + 1;
       Sys_Calls.Put_Output (Language.Unicode_To_String (
                              Uu.Slice (Txt, Ind - 1, Uu.Length(Txt))));
+      -- Move cursor at proper position
       for I in 1 .. Uu.Length(Txt) - Ind + 1 loop
         Console.Left;
       end loop;
+      -- Detect completion of input
       if Uu.Length (Txt) = Max then
         Store;
         return True;
@@ -392,13 +410,13 @@ package body Async_Stdin is
               or else Str = Home1_Seq then
                 -- Home
                 Ind := 1;
-                Console.Set_Col(1);
+                Console.Set_Col(First_Col);
                 Seq := Uu_Null;
               elsif Str = End_Seq
               or else Str = End1_Seq then
                 -- End
                 Ind := Uu.Length(Txt) + 1;
-                Console.Set_Col(Ind);
+                Console.Set_Col(First_Col + Ind - 1);
                 Seq := Uu_Null;
               elsif Str = Delete_Seq then
                 -- Del
@@ -442,7 +460,8 @@ package body Async_Stdin is
                 Update;
                 Seq := Uu_Null;
               elsif Str = Insert_Seq then
-                -- Discard Insert
+                -- Insert
+                Insert_Mode := not Insert_Mode;
                 Seq := Uu_Null;
               -- No sequence identified
               elsif Uu.Length(Seq) = Seq_Max_Length then
@@ -507,7 +526,7 @@ package body Async_Stdin is
       Txt := Uu_Null;
       Ind := 1;
       if Stdio_Is_A_Tty then
-        Console.Set_Col(1);
+        Console.Set_Col(First_Col);
       end if;
     end Clear;
 
@@ -595,6 +614,8 @@ package body Async_Stdin is
     begin
       -- Cb may call Put, so clear Line first
       Line.Clear;
+      Console.Set_Col (1);
+      Insert_Mode := True;
       Result := Cb (Language.Unicode_To_String (Seq));
     end;
     return Result;
@@ -606,7 +627,8 @@ package body Async_Stdin is
   --  or at each new line
   -- Set null callback to restore normal behaviour
   procedure Set_Async (User_Callback : in User_Callback_Access := null;
-                       Max_Chars : in Max_Chars_Range := 1) is
+                       Max_Chars : in Max_Chars_Range := 1;
+                       First_Col : in Max_Chars_Range := 1) is
     Result : Boolean;
     use type  Sys_Calls.File_Desc_Kind_List;
   begin
@@ -652,6 +674,8 @@ package body Async_Stdin is
                                      Fd_Callback'Access);
         end if;
         Cb := User_Callback;
+        Async_Stdin.First_Col := First_Col;
+        Console.Set_Col (First_Col);
       else
         raise Error;
       end if;
@@ -694,6 +718,40 @@ package body Async_Stdin is
   begin
     Line.Clear;
   end Clear;
+
+  -- By default the input is in insert mode and reset in insert after
+  --  each input (before calling user callback) and when calling Set_Async
+  -- This operation allows setting the next input to overwrite mode
+  procedure Overwrite is
+  begin
+    Insert_Mode := False;
+  end Overwrite;
+
+  -- Set an internal callback (overwritting any Async callback set)
+  --  and wait until it is called, then unset it and return the result
+  -- The buffer and callback
+  Get_Line_Buffer : As.U.Asu_Us;
+  function Get_Line_Cb (Buffer : String) return Boolean is
+  begin
+    Get_Line_Buffer.Set (Buffer);
+    return True;
+  end Get_Line_Cb;
+
+  function Get_Line (Max_Chars : Max_Chars_Range := 0;
+                     First_Col : Max_Chars_Range := 1) return String is
+  begin
+    -- Set callback
+    Get_Line_Buffer.Set_Null;
+    Set_Async (Get_Line_Cb'Access, Max_Chars, First_Col);
+    -- Wait until it is called
+    loop
+      Event_Mng.Wait (Event_Mng.Infinite_Ms);
+      exit when not Get_Line_Buffer.Is_Null;
+    end loop;
+    -- Unset callback
+    Set_Async;
+    return Get_Line_Buffer.Image;
+  end Get_Line;
 
   -- Put on stdout when in async
   procedure Put_Out (Str : in String) is
