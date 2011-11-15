@@ -1,4 +1,4 @@
-with Basic_Proc;
+with My_Io;
 with Grid_2;
 
 procedure Tg2 is
@@ -8,16 +8,16 @@ procedure Tg2 is
   Str3 : Grid_2.Long_String (1 .. Str1'Length);
 begin
   Str2 := Grid_2.Encode (Key, Str1);
-  Basic_Proc.Put_Output (">");
+  My_Io.Put (">");
   for I in Str2'Range loop
-    Basic_Proc.Put_Output (Str2(I));
+    My_Io.Put(Str2(I));
   end loop;
-  Basic_Proc.Put_Line_Output("<");
+  My_Io.Put_Line("<");
   Str3 := Grid_2.Decode (Key, Str2);
-  Basic_Proc.Put_Output (">");
+  My_Io.Put (">");
   for I in Str3'Range loop
-    Basic_Proc.Put_Output (Str3(I));
+    My_Io.Put(Str3(I));
   end loop;
-  Basic_Proc.Put_Line_Output("<");
+  My_Io.Put_Line("<");
 end Tg2;
 
