@@ -6,7 +6,7 @@
 
 @c Constants
 @set name Als
-@set version V7.1
+@set version V7.2
 @set nameversion @value{name} @value{version}
 
 @c General format
@@ -31,23 +31,40 @@ formatting options.
 * Entry selection::            Specify which entry to select.
 * Entry format::               Specify how to show each entry selected.
 * General format::             Specify general formating options.
-* Other options::              General purpose options.
-* Exit code::                  Meaning of Als exit code.
+* Other options::              Other options.
+* Exit code::                  Meaning of Als exit codes.
 @end menu
 
 @node General syntax, Entry selection, Top, Top
-@chapter General syntax
+@chapter General arguments of als
 
 @example
 Usage: als [ @{ <option> @} ] [ @{ <file_or_dir_spec> @} ]
 or   : als  --help | -v | --version@*
 @end example
-List files or directory contents.
+List files or directory contents.@*
+@example
+@end example
+
+Note on compatibility between options:@*
+- Some options options are meaningful only when some other option is provided.
+They are accepted and ignored when provided alone.
+@example
+Example:
+Option -h is usefull only when -l is provided. So "als -h" is the same as "als".
+@end example
+- Some options are mutually exclusive. This is reported as an error.
+@example
+Examples:
+-d and -n are mutually exclusive.
+-S is not compatible with some other formating options (-l, -1 and -c).
+@end example
 
 @node Entry selection, Entry format, General syntax, Top
-@chapter Define which entry to list
+@chapter Specify which entry to select
 @example
--a (--all)                 Show all entries including hidden (starting with '.')
+-a (--all)                 Show all entries including hidden ones
+                             (starting with '.')
 -A (--All)                 Show all entries except "." and ".."
 -D (--directories)         Show only directories
 -L (--links)               Show only symbolic links
@@ -55,8 +72,10 @@ List files or directory contents.
 -B (--broken_links)        Show only broken symbolic links
 
 -R (--recursive)           Scan directories recursively
---skip_dirs                Skip directories from arguments
 --depth=<positive>         Scan only to given depth (needs "-R")
+
+--skip_dirs                Skip directories from arguments
+                             (usefull whan calling "asl *")
 
 <match_name> ::= -m <criteria> | --match=<criteria>
   <criteria> ::= <templates> | @@<regex>
@@ -82,39 +101,41 @@ List files or directory contents.
 @end example
 
 @node Entry format, General format, Entry selection, Top
-@chapter Define what to show on each entry
+@chapter Specify how to show each entry selected
 @example
--l (--list)                Show rights, owner, size, date, symlink target
+-l (--list)                Show rights, owner, size, date, symbolic link target
 -1 (--1row)                One name per line
--c (--classify)            Append '/' to dirs, '@@' to symlinks
+-c (--classify)            Append '/' to dirs, '@@' to symbolic links
 -h (--human)               Show sizes in friendly format (e.g. 1K, 2G)
 -p (--path)                Show full path of entries
 <separator> ::= -S <string> | --separator=<string>
                            Insert <string> beween each entry
---follow_links             Show final target of symlinks
+--follow_links             Show final target of symbolic links
 --date_iso                 Show date in strict ISO format (<date>T<time>)
 @end example
 
 @node General format, Other options, Entry format, Top
-@chapter Define general formating
+@chapter Specify general formating options
 @example
 -s (--size)                Sort by decrescent size (see also "-r")
 -t (--time)                Sort by decrescent time (see also "-r")
 -r (--reverse)             Sort (by name, size or time) in reverse order
 -N (--no_sort)             Keep order same as in the directory structure
+
 -M (--merge)               Show a global list of entries (without dir names)
+
 -T (--total)               Also show total size of listed entries
 @end example
 
 @node Other options, Exit code, General format, Top
-@chapter Define general formating
+@chapter Other options
 @example
 --help                     Show online help
 -v (--version)             Show current version of Als
 @end example
 
 @node Exit code, , Other options, Top
-@chapter Define general formating
+@chapter Meaning of Als exit codes
 Als exits with 0 if a file or dir has been shown, with 1 otherwise and
 with 2 on error.
 

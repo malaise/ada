@@ -2,7 +2,7 @@ with Ada.Calendar;
 with As.U, Basic_Proc, Argument, Argument_Parser;
 with Entities, Output, Targets, Lister;
 procedure Als is
-  Version : constant String  := "V7.1";
+  Version : constant String  := "V7.2";
 
   -- Exit codes
   Found_Exit_Code : constant Natural := 0;
@@ -25,8 +25,8 @@ procedure Als is
     Put_Line_Error ("  -F (--files)       // Show only regular files");
     Put_Line_Error ("  -B (--broken_links)// Show only broken symbolic links");
     Put_Line_Error ("  -R (--recursive)   // Scan directories recursively");
-    Put_Line_Error ("  --skip_dirs        // Skip directories from arguments");
     Put_Line_Error ("  --depth=<positive> // Scan only to given depth (needs ""-R"")");
+    Put_Line_Error ("  --skip_dirs        // Skip directories from arguments");
     Put_Line_Error ("  <match_name> ::= -m <criteria> | --match=<criteria>");
     Put_Line_Error ("    <criteria> ::= <templates> | @<regex>");
     Put_Line_Error ("    <templates> ::= <template> [ { ,<template> } ]");
@@ -306,6 +306,9 @@ begin
       Error ("Empty separator");
     end if;
     Separator := As.U.Tus (Arg_Dscr.Get_Option (20));
+    if Long_List or else One_Row or else Classify then
+      Error ("Option incompatible with separator");
+    end if;
   end if;
 
   -- Put total size
