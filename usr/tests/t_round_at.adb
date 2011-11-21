@@ -12,6 +12,7 @@ procedure T_Round_At is
   R, Res : My_Math.Real;
   I, D : Integer;
 
+  use type My_Math.Real;
 begin
 
   if Argument.Get_Nbre_Arg /= 2 then
@@ -35,7 +36,7 @@ begin
   I := Int_Float.Int_Value;
 
   -- Compute nb of digits before dot
-  D := Integer (My_Math.Trunc (My_Math.Log_10 (R))) + 1;
+  D := Integer (My_Math.Trunc (My_Math.Log_10 (abs R))) + 1;
   Basic_Proc.Put_Line_Output ("Digits: " & D'Img);
 
   -- Round and put
