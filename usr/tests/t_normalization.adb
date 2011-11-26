@@ -24,15 +24,15 @@ begin
     end loop;
     loop
       begin
-        My_Io.Put ("Exp/Int ? : "); My_Io.Get (Exp);
+        My_Io.Put ("Exp/Fore ? : "); My_Io.Get (Exp);
         exit;
       exception
         when others => null;
       end;
     end loop;
 
-    My_Io.Put_Line ("0         1          2         3         4         5");
-    My_Io.Put_Line ("0123456789012345678980123456789012345678901234567890");
+    My_Io.Put_Line ("0         1         2         3         4         5");
+    My_Io.Put_Line ("012345678901234567890123456789012345678901234567890");
     My_Io.Put_Line ('>' & Normalization.Normal_Digits (F, Len, Exp) & '<');
     My_Io.Put_Line ('>' & Normalization.Normal_Fixed (F, Len, Exp, '@') & '<');
     My_Io.New_Line;

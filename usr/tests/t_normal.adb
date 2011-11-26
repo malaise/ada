@@ -40,8 +40,8 @@ begin
       end;
     end loop;
 
-    My_Io.Put_Line ("0         1          2         3         4         5");
-    My_Io.Put_Line ("0123456789012345678980123456789012345678901234567890");
+    My_Io.Put_Line ("0         1         2         3         4         5");
+    My_Io.Put_Line ("012345678901234567890123456789012345678901234567890");
     My_Io.Put_Line ('>' & Normal (I, Len, Right, Gap) & '<');
     My_Io.New_Line;
   end loop;
