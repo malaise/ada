@@ -1,4 +1,3 @@
-with Basic_Proc;
 with Normal, Round_At, String_Mng, As.U;
 package body Normalization is
 
@@ -13,6 +12,7 @@ package body Normalization is
                        Right : Boolean := True;
                        Gap   : Character := ' ') return String
            renames Normal;
+
 
   -- Puts a float F or a real R in a string of fixed length.
   -- S i . f {[ f ]} E S e {[ e ]}
@@ -88,6 +88,67 @@ package body Normalization is
   end Normal_Digits;
 
 
+  -- Local: round Str (space/signXXX.YYYYY) at length Len
+  procedure Round_Str (Str : in out As.U.Asu_Us; Len : in Positive) is
+    Carry : Boolean;
+    Char : Character;
+  begin
+    if Len >= Str.Length then
+      -- Nothing to do
+      return;
+    end if;
+    -- Str is longer than Len
+
+    -- Analyse tail to see if it leads to a carry
+    -- Only a '4' requires to see next char (to see if it turns to '5')
+    -- By default, if end is reached without '5', then no Carry
+    Carry  := False;
+    for I in Len + 1 .. Str.Length loop
+      Char := Str.Element (I);
+      if Char >= '5' then
+        Carry := True;
+        exit;
+      elsif Char < '4' then
+        -- No carry
+        exit;
+      end if;
+    end loop;
+
+    -- Delete tail
+    Str.Delete (Len + 1, Str.Length);
+    -- Propagate Carry
+    for I in reverse 2 .. Str.Length loop
+      exit when not Carry;
+      Char := Str.Element (I);
+      if Char /= '.' then
+        -- Just skip dot
+        if Char /= '9' then
+          Char := Character'Succ (Char);
+          Carry := False;
+        else
+          Char := '0';
+        end if;
+        Str.Replace_Element (I, Char);
+      end if;
+    end loop;
+    if Carry then
+      -- Heading '9' turned into '0': make it "10"
+      Str.Insert (2, "1");
+    end if;
+
+    -- Remove tailing '0's
+    for I in reverse 2 .. Str.Length loop
+      if Str.Element (I) /= '0' then
+        if I /= Str.Length then
+          Str.Delete (I + 1, Str.Length);
+        end if;
+        exit;
+      end if;
+    end loop;
+
+    -- Done
+  end Round_Str;
+
   -- Puts a float F or a real R in a string of fixed length.
   -- At least one digit then a '.' then some fraction part.
   -- S i . f
@@ -121,7 +182,7 @@ package body Normalization is
     -- <----- len -------->
     --          x.yzt
     -- <- Fore ->.<- Aft ->
-    if Len < Fore + 2 then
+    if Fore < 2 or else Len < Fore + 2 then
       raise Constraint_Error;
     end if;
 
@@ -134,14 +195,17 @@ package body Normalization is
     -- Handle the case when Exp is so high that nothing at all can be
     --  displayed: enough to shift right Digit_Str by its len -2
     -- (which leads to "      xyzt.") then right by Fore - 1
-    -- => "!-999.99999" or "!9999.99999"
+    -- => "!-000.0   " or "!000.0 ", or even "!-.0  "
     if Exp > Digit_Str.Length - 2 + Fore - 1 then
       return Result : String (1 .. Len) do
-        Result := (others => '9');
         Result(1) := Warning_Char;
+        Result(2 .. Fore + 2) := (others => '0');
         Result(Fore + 1) := '.';
         if R < 0.0 then
           Result(2) := '-';
+        end if;
+        if Fore + 3 <= Len then
+          Result (Fore + 3 .. Len) := (others => Gap);
         end if;
       end return;
     end if;
@@ -172,10 +236,11 @@ package body Normalization is
       Idot := 3;
     end if;
 
-    -- Truncate or complete tail so that its frac has Aft length
-    if Digit_Str.Length - Idot > Aft then
-      Digit_Str.Delete (Idot + Aft + 1, Digit_Str.Length);
-    elsif Digit_Str.Length - Idot < Aft then
+    -- Round tail so that its frac has Aft length or less
+    Round_Str (Digit_Str, Idot + Aft);
+
+    -- Complete tail with Gap so that its frac has Aft length
+    if Digit_Str.Length - Idot < Aft then
       Digit_Str.Append (As.U."*" (Aft + Idot - Digit_Str.Length, Gap));
     end if;
 

@@ -33,8 +33,18 @@ begin
 
     My_Io.Put_Line ("0         1         2         3         4         5");
     My_Io.Put_Line ("012345678901234567890123456789012345678901234567890");
-    My_Io.Put_Line ('>' & Normalization.Normal_Digits (F, Len, Exp) & '<');
-    My_Io.Put_Line ('>' & Normalization.Normal_Fixed (F, Len, Exp, '@') & '<');
+    begin
+      My_Io.Put_Line ('>' & Normalization.Normal_Digits (F, Len, Exp) & '<');
+    exception
+      when Constraint_Error =>
+        My_Io.Put_Line ("Constraint error");
+    end;
+    begin
+      My_Io.Put_Line ('>' & Normalization.Normal_Fixed (F, Len, Exp, '@') & '<');
+    exception
+      when Constraint_Error =>
+        My_Io.Put_Line ("Constraint error");
+    end;
     My_Io.New_Line;
   end loop;
 end T_Normalization;

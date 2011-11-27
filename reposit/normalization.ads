@@ -29,12 +29,13 @@ package Normalization is
                           Exp   : Positive) return String;
 
   -- Puts a float F or a real R in a string of fixed length.
-  -- At least one digit then a '.' then some fraction part.
-  -- Fore is the length before the dot, Gap is used to pad the tail.
-  -- Example: Fore=3 and Len=6 => " -x.yy"
+  -- At least space/sign, then one digit, then a '.', then some fraction part,
+  --  then some Gap character if needed
+  -- Fore is the length before the dot, padded with spaces if needed
+  -- Example: Len=7, Fore=3, Gap='@' => " -x.yy@"
   -- A warning char at the beginning of the output signals an integer part
   -- larger than Fore
-  -- Raises Constraint_Error if Len < Fore+2
+  -- Raises Constraint_Error if Fore < 2 or Len < Fore+2
   function Normal_Fixed (F     : Float;
                          Len   : Positive;
                          Fore  : Positive;
