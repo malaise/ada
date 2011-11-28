@@ -1,6 +1,10 @@
 with My_Io, Normalization;
 procedure T_Normalization is
   F : Float;
+  type Delt_Range is delta 0.00001 digits 13 range -99_999_999.99999 .. 99_999_999.99999;
+  D : Delt_Range;
+  function Normal_Delt is new Normalization.Normal_Delt_Dig (Delt_Range);
+
   Len : Positive;
   Exp : Positive;
 begin
@@ -41,6 +45,13 @@ begin
     end;
     begin
       My_Io.Put_Line ('>' & Normalization.Normal_Fixed (F, Len, Exp, '@') & '<');
+    exception
+      when Constraint_Error =>
+        My_Io.Put_Line ("Constraint error");
+    end;
+    begin
+      D := Delt_Range (F);
+      My_Io.Put_Line ('>' & Normal_Delt (D, Len, Exp, '@') & '<');
     exception
       when Constraint_Error =>
         My_Io.Put_Line ("Constraint error");

@@ -21,6 +21,8 @@
 
 @table @asis
 
+@item 2011/11/28
+Add normalization of reals
 @item 2011/10/31
 Big change: Con_Io provides objects Console and Window
 @item 2011/10/19

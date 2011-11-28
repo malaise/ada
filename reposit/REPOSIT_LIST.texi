@@ -158,6 +158,8 @@ Interface to C ndbm library.
 Simulate a network of inter-connected nodes.
 @item normal (1)
 Normalize an integer image into fixed length string.
+@item normalization (1)
+General normalization of integers and reals.
 @item normalize_path (1)
 Normalize a directory path (remove "/.", etc).
 @item null_procedure (1)

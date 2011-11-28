@@ -44,6 +44,18 @@ package Normalization is
                          Len   : Positive;
                          Fore  : Positive;
                          Gap   : Character := ' ') return String;
+  generic
+    type Delt is delta <>;
+  function Normal_Delt (D     : Delt;
+                        Len   : Positive;
+                        Fore  : Positive;
+                        Gap   : Character := ' ') return String;
+  generic
+    type Delt_Dig is delta <> digits <>;
+  function Normal_Delt_Dig (D     : Delt_Dig;
+                            Len   : Positive;
+                            Fore  : Positive;
+                            Gap   : Character := ' ') return String;
 
 end Normalization;
 
