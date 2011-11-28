@@ -44,7 +44,9 @@ package body Nav_Screen is
   procedure Reset is
   begin
     if not Console.Is_Open then
-      Console.Open (Def_Back => Con_Io.Color_Of ("Black"));
+      Console.Open (
+        Def_Fore => Con_Io.Color_Of ("light_Grey"),
+        Def_Back => Con_Io.Color_Of ("Black"));
       W_Title.Open (Console'Access, ( 0,  0), ( 7, 79));
       W_Mask.Open (Console'Access, ( 8,  0), (22, 79));
       W_Help.Open (Console'Access, ( 8,  0), (22, 79));
