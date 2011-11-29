@@ -1,7 +1,7 @@
 include $(HOME)/Makefiles/common.mk
 
 LIBS := libcutil libx_mng libposix2pcre
-DBM := $(wildcard /usr/include/gdbm-ndbm.h)
+DBM := $(wildcard /usr/include/gdbm/ndbm.h /usr/include/gdbm-ndbm.h)
 ifneq ($(DBM),)
 LIBS += libcndbm
 OBJS_libcndbm := cndbm.o
