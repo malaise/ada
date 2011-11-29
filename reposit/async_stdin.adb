@@ -753,6 +753,16 @@ package body Async_Stdin is
     return Get_Line_Buffer.Image;
   end Get_Line;
 
+  -- Strip last character if Str if it is a control char (before space)
+  function Strip_Last_Control (Str : String) return String is
+  begin
+    if Str'Length = 0 or else Str(Str'Last) >= ' ' then
+      return Str;
+    else
+      return Str (Str'First .. Str'Last - 1);
+    end if;
+  end Strip_Last_Control;
+
   -- Put on stdout when in async
   procedure Put_Out (Str : in String) is
     Result : Boolean;

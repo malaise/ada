@@ -40,6 +40,9 @@ package Async_Stdin is
   function Get_Line (Max_Chars : Max_Chars_Range := 0;
                      First_Col : Max_Chars_Range := 1) return String;
 
+  -- Strip last character if Str if it is a control char (before space)
+  function Strip_Last_Control (Str : String) return String;
+
   -- Put on stdout when in async
   procedure Put_Out (Str : in String);
   procedure Put_Line_Out (Str : in String);
