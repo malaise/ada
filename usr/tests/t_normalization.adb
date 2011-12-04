@@ -188,6 +188,7 @@ begin
   -- Now we are in automatic mode
   -- Init tests
   Append (3.14159, 10, 3, "> 3.14E+000< >  3.14159@< >  3.14159@<");
+  Append (31.4159, 10, 3, "> 3.14E+001< > 31.415899< > 31.41589@<");
 
 
   -- Execute tests as long as OK
