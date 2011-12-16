@@ -1500,7 +1500,8 @@ package body Dtd is
                       Line_No);
         end if;
         -- Strictly check that list matches criteria
-        if not Regular_Expressions.Match (Info.List.Image,
+        -- Regexp is lazy, the ^ and $ make it know that we want the full match
+        if not Regular_Expressions.Match ("^(" & Info.List.Image & ")$",
                 Childstr.Image, Strict => True) then
           Util.Error (Ctx.Flow, "According to dtd, element " & Name.Image
                     & " allows children " & Strip_Sep (Info.List)
