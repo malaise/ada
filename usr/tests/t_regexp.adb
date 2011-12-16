@@ -15,7 +15,7 @@ procedure T_Regexp is
     Basic_Proc.Put_Line_Output ("     -s for silent check (exit code only)");
     Basic_Proc.Put_Line_Output ("     -i for case insensitive");
     Basic_Proc.Put_Line_Output ("     -m for multiline");
-    Basic_Proc.Put_Line_Output ("     -d for dot math all");
+    Basic_Proc.Put_Line_Output ("     -d for dot matches all");
   end Error;
 
   Silent : Boolean := False;
