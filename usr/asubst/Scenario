@@ -70,6 +70,9 @@
 "\n"                    ".$"                          "t"                         ""
 "\n"                    "(.?)$"                       "\r11t"                     "t"
 "a\n"                   "(.?)$"                       "\r11t"                     "at"
+"ti"                    "to?|ti"                      "ok"                        "oki"
+"ti"                    "^(to?|ti)$"                  "ok"                        "ok"
+"ti"                    "ti|to?"                      "ok"                        "ok"
 
 # Change delimiter of Scenario for awk format string
 "Delimiter" "@"
