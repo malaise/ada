@@ -114,7 +114,8 @@ package body Tree is
       elsif Attrs(I).Name.Image = "Assign"
       or else Attrs(I).Name.Image = "Variable" then
         Assign := Attrs(I).Value;
-      elsif Attrs(I).Name.Image = "NewLine" then
+      elsif Attrs(I).Name.Image = "NewLine"
+      and then Attrs(I).Value.Image = "true" then
         Node.Text.Append (Line_Feed);
       end if;
     end loop;
@@ -306,10 +307,6 @@ package body Tree is
       Node.Kind := Send;
       -- Get text
       Get_Text (Xnode, Node, True);
-      -- See if Newline
-      if Get_Attribute (Xnode, "NewLine") = "true" then
-        Node.Text.Append (Line_Feed);
-      end if;
     elsif Name = "call" then
       Node.Kind := Call;
       -- Move to "command" to get text
