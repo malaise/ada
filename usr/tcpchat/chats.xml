@@ -79,7 +79,7 @@
   <!-- Tcping: Send pong and remain connected -->
   <chat Name="tcping" TimeoutMs="1_000" Regexp="true">(tc)?ping</chat>
   <script>
-    <send>pong</send>
+    <send NewLine="false">pong</send>
   </script>
 
   <!-- TEST wait then close -->

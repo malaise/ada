@@ -77,7 +77,7 @@ function try {
 
 # Ping
 echo -n "Test ping: "
-echo "pong" > $EXPECTED
+echo -n "pong" > $EXPECTED
 try $EXPECTED ping 1
 
 # HTTP 0.9 ok

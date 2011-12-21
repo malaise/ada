@@ -118,7 +118,7 @@
 <!ELEMENT wait EMPTY>
 <!ATTLIST wait DelayMs CDATA #REQUIRED>
 <!ELEMENT send (#PCDATA)>
-<!ATTLIST send NewLine %boolean; "false">
+<!ATTLIST send NewLine %boolean; "true">
 <!ELEMENT call (command,%error;?)>
 <!ELEMENT command (#PCDATA)>
 <!ELEMENT error EMPTY>
