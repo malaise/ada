@@ -614,7 +614,9 @@ package body Async_Stdin is
     begin
       -- Cb may call Put, so clear Line first
       Line.Clear;
-      Console.Set_Col (1);
+      if Stdio_Is_A_Tty then
+        Console.Set_Col (1);
+      end if;
       Insert_Mode := True;
       Result := Cb (Language.Unicode_To_String (Seq));
     end;
@@ -675,7 +677,9 @@ package body Async_Stdin is
         end if;
         Cb := User_Callback;
         Async_Stdin.First_Col := First_Col;
-        Console.Set_Col (First_Col);
+        if Stdio_Is_A_Tty then
+          Console.Set_Col (First_Col);
+        end if;
       else
         raise Error;
       end if;
@@ -773,11 +777,11 @@ package body Async_Stdin is
       declare
         Buf : constant Unicode_Sequence := Line.Read_Buffer;
       begin
-        if Buf'Length /= 0 then
+        if Stdio_Is_A_Tty and then Buf'Length /= 0 then
           Sys_Calls.New_Line_Output;
         end if;
         Sys_Calls.Put_Output (Str);
-        if Buf'Length /= 0 then
+        if Stdio_Is_A_Tty and then Buf'Length /= 0 then
           -- Put buffer, move cursor
           Sys_Calls.Put_Output (Language.Unicode_To_String (Buf));
           Console.Set_Col (Line.Read_Col);
