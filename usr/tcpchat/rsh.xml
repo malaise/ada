@@ -16,9 +16,16 @@
       <dir>${TARGET}</dir>
       <error/>
       <script>
+        <set Variable="OK">false</set>
         <send>ERROR changing dir to ${TARGET}</send>
       </script>
     </chdir>
+    <cond>
+      <if Variable="OK" IfUnset="true"></if>
+      <script>
+        <send>${$PWD}</send>
+      </script>
+    </cond>
   </script>
 
   <!-- exit: close -->

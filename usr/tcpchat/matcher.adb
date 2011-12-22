@@ -52,9 +52,13 @@ package body Matcher is
     -- Case of the Cond or Repeat: maybe fixed result if unset
     if Node.Kind = Tree.Condif
     or else Node.Kind = Tree.Repeat then
-      if not Variables.Is_Set (Str)
-      and then Node.Ifunset /= Trilean.Other then
-        -- Var is not set and IfUnset is set
+      if not Variables.Is_Set (Str) then
+        if Node.Ifunset = Trilean.Other then
+          -- Var is not set and IfUnset is Error
+          Error ("Unknown variable " & Str.Image & " in cond or repeat");
+          raise Match_Error;
+        end if;
+        -- Var is not set and IfUnset is set True or False
         return Trilean.Tri2Boo (Node.Ifunset);
       end if;
       Result := Variables.Expand ("${" & Str & "}", True);
