@@ -6,12 +6,13 @@
   <!-- HTTP 0.9: Send file and close -->
   <!-- HTTP 1.0 or 1.1: Skip noise, send header + file -->
   <chat Name="http" TimeoutMs="&None;" Regexp="true"
-        Assign="FILE=${5} VERS=${6}"
-        >GET ((http:/)?/(localhost|${$HOSTNAME}|${$HOSTIP})(:[0-9]+)?)?([^ ]+)( +HTTP/1\.(0|1))?</chat>
+        Assign="FILE=${5} HTTPVERS=${7}"
+        >GET ((http:/)?/(localhost|${$HOSTNAME}|${$HOSTIP})(:[0-9]+)?)?([^ ]+)( +HTTP/(1\.(0|1)))?</chat>
   <script>
+    <set Variable="SERVER_VERS">V2.2</set>
     <cond>
-      <if Variable="VERS"></if>
-      <!-- No vers => 0.9 -->
+      <if Variable="HTTPVERS"></if>
+      <!-- No vers => 0.9 => no more input, no header -->
       <script></script>
       <else/>
       <script>
@@ -48,8 +49,9 @@
         <eval Variable="DATE">
           <command>echo -n `date "+%a, %d %b %Y %H:%M:00 %Z"`</command>
         </eval>
-        <set Variable="SERVER_ID">tcpchat/V2.1</set>
-        <send>HTTP/1.1 200 OK</send>
+        <set Variable="SERVER_ID">tcpchat/${SERVER_VERS}</set>
+<!--         <send>HTTP/${HTTPVERS} 200 OK</send> -->
+        <send>HTTP/1.0 200 OK</send>
         <send>Date: ${DATE}</send>
         <send>Server: ${SERVER_ID}</send>
         <send>Connection: close</send>
@@ -64,7 +66,8 @@
       <error/>
       <script>
         <cond>
-          <if Variable="VERS"></if>
+          <if Variable="HTTPVERS"></if>
+          <!-- HTTP 0.9 => no error message -->
           <script></script>
           <else/>
           <script>
