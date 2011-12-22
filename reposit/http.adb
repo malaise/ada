@@ -128,7 +128,7 @@ package body Http is
       Ind := Ind + 2 * New_Line.Length;
       Buffer.Delete (1, Ind - 1);
     else
-      -- No header
+      -- Empty Buffer
       Header := Buffer;
       Buffer.Set_Null;
       Debug ("HTTP: No header delimiter: " & Header.Image);
@@ -323,6 +323,10 @@ package body Http is
       end if;
       Addr := As.U.Tus (Iter.Next_Word);
       if Iter.Prev_Separators /= "//" then
+        return (Client_Error, Invalid_Url);
+      end if;
+      -- Reject URL with "username:password@"
+      if String_Mng.Locate (Addr.Image, "@") /= 0 then
         return (Client_Error, Invalid_Url);
       end if;
 
