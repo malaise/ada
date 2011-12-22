@@ -24,7 +24,10 @@
     <cond>
       <if Variable="OK">true</if>
       <script>
-        <send>${$PWD}</send>
+        <eval Variable="PWD">
+          <command>pwd</command>
+        </eval>
+        <send NewLine="false">${PWD}</send>
       </script>
     </cond>
   </script>
