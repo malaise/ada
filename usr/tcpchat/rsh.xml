@@ -12,6 +12,7 @@
   <!-- cd: change dir -->
   <chat Name="chdir" Regexp="true" Assign="TARGET=${2}">cd( (.*))?</chat>
   <script>
+    <set Variable="OK">true</set>
     <chdir>
       <dir>${TARGET}</dir>
       <error/>
@@ -21,7 +22,7 @@
       </script>
     </chdir>
     <cond>
-      <if Variable="OK" IfUnset="true"></if>
+      <if Variable="OK">true</if>
       <script>
         <send>${$PWD}</send>
       </script>

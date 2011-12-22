@@ -12,6 +12,21 @@ package body Variables is
     return Name;
   end Dummy;
 
+  -- Variable resolver that forbids ENV variables
+  function Local (Name : String) return String is
+  begin
+    -- Name can start with '$'
+    if Name = "" then
+      Error ("Empty ENV variable");
+    elsif Name(Name'First) /= Ext_Ref then
+      Error ("Internal variable " & Name & " not found");
+    else
+      Error ("ENV variable " & Name & " forbidden");
+    end if;
+    raise Expand_Error;
+    return Name;
+  end Local;
+
   -- Real ENV variable resolver for expansion
   function Getenv (Name : String) return String is
   begin
@@ -103,19 +118,22 @@ package body Variables is
 
   -- Expand the expression
   function Expand (Text : As.U.Asu_Us;
-                   Check_Only : Boolean := False) return String is
+                   Exp_Mode : Exp_Mode_List) return String is
   begin
-    return Expand (Text, Check_Only).Image;
+    return Expand (Text, Exp_Mode).Image;
   end Expand;
 
   function Expand (Text : As.U.Asu_Us;
-                   Check_Only : Boolean := False) return As.U.Asu_Us is
+                   Exp_Mode : Exp_Mode_List) return As.U.Asu_Us is
   begin
-    if Check_Only then
-      Memory.Set_External_Resolver (Dummy'Access);
-    else
-      Memory.Set_External_Resolver (Getenv'Access);
-    end if;
+    case Exp_Mode is
+      when Check_Only =>
+        Memory.Set_External_Resolver (Dummy'Access);
+      when Local_Only =>
+        Memory.Set_External_Resolver (Local'Access);
+      when Local_Env =>
+        Memory.Set_External_Resolver (Getenv'Access);
+    end case;
     return As.U.Tus (Memory.Eval (Text.Image));
   exception
     when others =>

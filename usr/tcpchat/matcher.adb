@@ -22,16 +22,20 @@ package body Matcher is
     or else Node.Kind = Tree.Set then
       -- Expand variable name
       Expanding := Node.Assign(Node.Assign'First).Name;
-      Expanded := Variables.Expand (Expanding, Check_Only);
+      if Check_Only then
+        Expanded := Variables.Expand (Expanding, Variables.Check_Only);
+      else
+        Expanded := Variables.Expand (Expanding, Variables.Local_Only);
+      end if;
       if Check_Only then
         -- Check that content expands OK
-        Result := Variables.Expand (Str, True);
+        Result := Variables.Expand (Str, Variables.Check_Only);
       else
         -- Set variable
         if Node.Compute then
           Result := Variables.Compute (Str);
         else
-          Result := Variables.Expand (Str, False);
+          Result := Variables.Expand (Str, Variables.Local_Env);
           if String_Mng.Locate (Result.Image, "=") /= 0 then
             Error ("Invalid value in assignment " & Result.Image);
             raise Match_Error;
@@ -47,23 +51,37 @@ package body Matcher is
     --  or Condif or Repeat
     -- Expand expression
     Expanding := Node.Text;
-    Expanded := Variables.Expand (Expanding, Check_Only);
+    if Check_Only then
+      Expanded := Variables.Expand (Expanding, Variables.Check_Only);
+    else
+      Expanded := Variables.Expand (Expanding, Variables.Local_Env);
+    end if;
 
     -- Case of the Cond or Repeat: maybe fixed result if unset
-    if Node.Kind = Tree.Condif
-    or else Node.Kind = Tree.Repeat then
-      if not Variables.Is_Set (Str) then
+    if Check_Only then
+      Result := Variables.Expand (Str, Variables.Check_Only);
+    elsif Node.Kind = Tree.Condif or else Node.Kind = Tree.Repeat then
+      -- Expand variable name => Var
+      Expanding := Variables.Expand (Str, Variables.Local_Only);
+      if not Variables.Is_Set (Expanding) then
         if Node.Ifunset = Trilean.Other then
           -- Var is not set and IfUnset is Error
-          Error ("Unknown variable " & Str.Image & " in cond or repeat");
+          Error ("Unknown variable " & Expanding.Image & " in cond or repeat");
           raise Match_Error;
         end if;
         -- Var is not set and IfUnset is set True or False
         return Trilean.Tri2Boo (Node.Ifunset);
+      else
+        -- Var is set : Expand content of var
+        Result := Variables.Expand ("${" & Expanding & "}",
+                                    Variables.Local_Only);
       end if;
-      Result := Variables.Expand ("${" & Str & "}", True);
     else
-      Result := Variables.Expand (Str, True);
+      Result := Variables.Expand (Str, Variables.Local_Env);
+    end if;
+
+    if not Check_Only then
+      Debug.Log ("Matching " & Result.Image & " with " & Expanded.Image);
     end if;
 
     -- Pure string comparison or regexp?
@@ -116,7 +134,7 @@ package body Matcher is
       for I in Node.Assign'Range loop
         exit when Node.Assign(I).Value.Kind = Any_Def.None_Kind;
         Expanding := Node.Assign(I).Value.Str;
-        Expanded := Variables.Expand (Expanding);
+        Expanded := Variables.Expand (Expanding, Variables.Local_Env);
         if String_Mng.Locate (Expanded.Image, "=") /= 0 then
           Error ("Invalid value in assignment " & Expanded.Image);
           raise Match_Error;
@@ -161,7 +179,8 @@ package body Matcher is
       Expanded : As.U.Asu_Us;
       pragma Unreferenced (Expanded);
     begin
-      Expanded := Variables.Expand (Node.Assign(I).Value.Str, True);
+      Expanded := Variables.Expand (Node.Assign(I).Value.Str,
+                                    Variables.Check_Only);
     exception
       when Variables.Expand_Error =>
         Error ("Invalid value in assignment "

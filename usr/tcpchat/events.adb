@@ -59,12 +59,14 @@ package body Events is
   function Set_Var (Node : in Tree.Node_Rec) return Boolean is
     Name : As.U.Asu_Us;
   begin
+    -- On Set and Eval Ifunset is in fact a boolean
     if not Trilean.Tri2Boo (Node.Ifunset) then
-      -- Always set var here
+      -- IfUnset = flase => always set var
       return True;
     end if;
     -- See if Var is set
-    Name := Variables.Expand (Node.Assign(Node.Assign'First).Name, False);
+    Name := Variables.Expand (Node.Assign(Node.Assign'First).Name,
+                              Variables.Local_Only);
     return not Variables.Is_Set (Name);
   end Set_Var;
 
@@ -302,7 +304,8 @@ package body Events is
             end case;
 
           when Send =>
-            Ios.Send (Variables.Expand (Node.Text), Disconnection);
+            Ios.Send (Variables.Expand (Node.Text, Variables.Local_Env),
+                      Disconnection);
             if Disconnection then
               Put_Line ("Disconnection");
               Reset;
@@ -316,7 +319,7 @@ package body Events is
             begin
               Command.Execute (
                 Cmd => Many_Strings.Set (As.U.Asu_Us'(
-                    Variables.Expand (Node.Text))),
+                    Variables.Expand (Node.Text, Variables.Local_Env))),
                 Use_Sh => True,
                 Mix_Policy => Command.Only_Out,
                 Out_Flow => Flow'Access,
@@ -357,7 +360,7 @@ package body Events is
               begin
                 Command.Execute (
                   Cmd => Many_Strings.Set (As.U.Asu_Us'(
-                      Variables.Expand (Node.Text))),
+                      Variables.Expand (Node.Text, Variables.Local_Env))),
                   Use_Sh => True,
                   Mix_Policy => Command.Only_Out,
                   Out_Flow => Flow'Access,
@@ -395,7 +398,9 @@ package body Events is
           when Set =>
             if Set_Var (Node) then
               -- Load the variable
-              if Matcher.Match (Node, Variables.Expand (Node.Text)) then
+              if Matcher.Match (Node,
+                                Variables.Expand (Node.Text,
+                                                  Variables.Local_Env)) then
                 Set_Position (Node.Next.all);
               else
                 Put_Line ("Invalid evaluation");
@@ -408,7 +413,8 @@ package body Events is
 
           when Chdir =>
             declare
-              Target : constant String := Variables.Expand (Node.Text);
+              Target : constant String
+                     := Variables.Expand (Node.Text, Variables.Local_Env);
             begin
               if Target = "" then
                 -- Go to initial dir
@@ -430,7 +436,8 @@ package body Events is
             end;
 
           when Log =>
-            Put_Line ("Log: " & Variables.Expand (Node.Text));
+            Put_Line ("Log: " & Variables.Expand (Node.Text,
+                                                  Variables.Local_Env));
             Set_Position (Node.Next.all);
 
           when Close =>
