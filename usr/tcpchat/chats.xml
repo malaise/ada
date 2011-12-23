@@ -266,5 +266,15 @@
     <send>after-error-2</send>
   </script>
 
+  <chat Name="Indirect">indirect</chat>
+  <script>
+    <set Variable="V1">Content1</set>
+    <set Variable="V2">Content2</set>
+    <read Regexp="true" Assign="Index=${0}">.*</read>
+    <set Variable="Index" Compute="true">${Index}+1</set>
+    <set Variable="Result">${V${Index}}</set>
+    <send NewLine="false">${Result}</send>
+  </script>
+
 </chats>
 
