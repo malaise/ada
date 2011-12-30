@@ -5,7 +5,7 @@ EXES := tcpchat tios
 
 CLIBS := cutil posix2pcre pcre
 
-TEXI := Tcpchat
+TXT := Tcpchat
 
 include $(TEMPLATES)/ada.mk
 

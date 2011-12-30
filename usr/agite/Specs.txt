@@ -1,78 +1,129 @@
 Agite specifications
---------------------
+====================
 
-1. General purpose
+General purpose
+---------------
 Provide a GIT graphical front end based on Afpx.
 Major functions are Navigation, file status and graphical diff.
 
-2. Detailed functions
-2.1. Dir status
+Detailed functions
+------------------
+Dir status
+~~~~~~~~~~
 The main menu lists the git content and subdirs of current directory.
+
 For file, two first characters are the status (MADRC)
 (modified-unstaged/Modified/Added/Delete/OK),
 then a space. For dirs 2 spaces.
+
 Then the name, then a space, then the kind (/@>|=?).
 
+
 Double click on an entry does:
+
 - if a directory -> move to it
+
 - if a file -> launch X editor on it
+
 A bouton allows to launch X diff on current entry if a file and status M.
+
 A bouton allows to switch to history of currently selected entry.
+
 A get field list contains the current directory path.
 Modifying it and Return moves current directory (or click on Go).
+
 A bouton allows to switch to bookmarks.
+
 A bouton allows to exit.
 
-2.2. Bookmarks
+Bookmarks
+~~~~~~~~~
 Locations (directories) can be bookmarked.
+
 A menu lists known bookmarks and buttons allow to:
+
 - go to a bookmark, as for a double click (returns to main)
+
 - add current dir to bookmarks
+
 - delete a bookmark
+
 - return to main screen
 
-2.3. History
+History
+~~~~~~~
 The history of a file or dir is listed (Head on top), each line with the date
 (YYMMDD:HHMM) a space then the comment.
+
 Left click in list allows selecting reference version and right click selects
 version to compare.
+
 If a file or dir a button switches to a screen with the list of modified files
+
 If a file, a button launches X diff from reference to version to compare.
+
 A button allows to return to main screen.
 
-2.4. Files
+Files
+~~~~~
 The Files screen shows for a commit:
+
 - The date YYYY-MM-DD HH:MM:SS
+
 - 3 lines of comment
+
 - The list of files, each preceeded by a letter M/A/D and a space
 
-3. Interfaces
-3.1. Xml configuration
+Interfaces
+----------
+Xml configuration
+~~~~~~~~~~~~~~~~~
 See dtd
+
 X diff tool path and args
+
 X edit tool path and args
+
 Bookmarks (Optional name)
 
-3.2. Git
+
+Git
+~~~
 These functions use Command to call git and parse result.
+
 Requires git 1.7.0 or above.
+
 A function lists current entries and status.
+
 - "git ls-files" => a list of current files
+
 - "git status -uno --porcelain" => modif versus stage, for the whole box
+
 - merge lists: apply the status to local file (discard others)
+
 A function logs history of file or dir
+
 - "git log --name-status --date=iso -- <path>"
+
 A function lists files mofied by a commit
+
 - git log --name-status --date=iso -n 1 <hash>
+
 A function starts graphical diff
+
 - "git difftool -y -t HEAD <file>" in background
 
-3.3. Human
+Human
+~~~~~
 See Afpx.xml
 
-4. Design aspects
+Design aspects
+--------------
 At startup:
+
 - get HOME env variable (for config file in $HOME/.agite and for bookmarks)
+
 - get root directory. Scan from current to / until a dir '.git' is found.
+
 - get relative path to root (to pass to git_list function)
 

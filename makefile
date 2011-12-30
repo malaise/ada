@@ -2,8 +2,7 @@ include $(HOME)/Makefiles/common.mk
 
 SUBDIRS := c reposit usr cots
 
-TEXI := HISTORY README
-HISTORY_WIDTH := 120
+TXT := HISTORY README
 
 include $(TEMPLATES)/dir.mk
 

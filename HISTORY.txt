@@ -1,0 +1,698 @@
+HISTORY
+=======
+Main changes
+
+[horizontal]
+*2011/11/28*:: Add normalization of reals
+
+*2011/10/31*:: Big change: Con_Io provides objects Console and Window
+
+*2011/10/19*:: Remove Lf between outputs of grep mode when not default and multiple regex in asubst, V13.0
+
+*2011/10/18*:: Add support of mouse in sokoban menu
+
+*2011/10/11*:: Keep DTD even if no expand, in Xml_Parser V26.9
+
+*2011/10/05*:: Don't change DTD file path when it is explicitly provided, in Xml_Parser V26.8
+
+*2011/10/04*:: Add env variable for configuration file of agite, V3.7
++
+Add viewing of files in the commit where they are deleted in agite, V3.6
+
+*2011/09/30*:: Add error handling of Chdir and fix error handling when no next instruction in tcpchat
+
+*2011/09/28*:: Add instruction chdir in tcpchat
++
+Fix handling of copied and moved files in agite, V3.4
++
+Fix -- in texi files
++
+Add option --skip_dirs to als, V7.0
+
+*2011/08/29*:: Add a new mode to show the dependency path between two units in lsadeps, V7.0
+
+*2011/08/25*:: Add option for dependency between specs only in lsadeps, V6.0
+
+*2011/08/24*:: Add co-located units hidding remote ones in lsadeps, V5.0
+
+*2011/08/23*:: Add support of recursive includes in lsadeps, V4.0
+
+*2011/08/12*:: Add operation Overwrite to bounded and unbounded strings
++
+Add mcd operations strnull, strins and strovw (i.o. strrep, which is fixed)
+
+*2011/08/12*:: Add mcd operations read and callbrk
+
+*2011/07/04*:: Add mcd timeof returns False if string is properly formatted but invalid
+
+*2011/06/28*:: Add optional path to lsadeps target
+
+*2011/06/20*:: Fix heart graph use of Xor mode
+
+*2011/05/04*:: Chg Major documentations into texi format
+
+*2011/04/14*:: Add option --dotall (remove --display) that allows '.' to match '\n' in asubst, V12.0
++
+Add option Dot_All to Regular_Expressions
+
+*2011/04/04*:: Add support of port in http package and in tcpchat test scenario
+
+*2011/03/31*:: Add specific option -E for entities expansion in xml_checker, V15.0
++
+Add normalize text also when knowing from DTD that there cannot be text in Xml_Parser, V26.6
+
+*2011/03/27*:: Fix homogenenize output of status in account
+
+*2011/03/24*:: Fix normalization of text and add adjustment of Node_Info in Xml_Parser, V26.5
+
+*2011/03/18*:: Fix preserve text when it is the only child in Xml_Parser, V26.2
+
+*2011/03/18*:: Add option --no-normalize to xml_checker, V14.0
+
+*2011/03/17*:: Chg default 'keep' mode of xml_checker, V13.0
+
+*2011/03/15*:: Fix autobus local echo and clean-up
++
+Chg replace Fifo by an Autobus in mcd
+
+*2011/03/11*:: Fix blocking management in socket and Tcp_Util.Abort_Send_And_Close
+
+*2011/03/10*:: Add operations to set/get TTL on socket
+
+*2011/03/09*:: Fix detection of '^' and '$' in search pattern when specific delimiter in asubst, V11.4
+
+*2011/03/08*:: Fix handling of specific Delim in asubst, V11.3
+
+*2011/03/01*:: Add different blocking modes for sending and receiving on sockets
+
+*2011/02/28*:: Add timeout in Tcp_Util.Send
+
+*2011/02/22*:: Add autobus package
+
+*2011/02/16*:: Add improve help of als, V6.2
+
+*2011/02/15*:: Add option --date_iso for strict ISO output of dates in als, V6.1
++
+Chg use ISO 8601 format for time input and output of als, V6.0
++
+Add a static agite executable
+
+*2011/02/14*:: Fix dispatching of X Refresh event to multiple windows
++
+Add Get_Clock in Chronos, and remove Detach cause same as Attach (null)
+
+*2011/02/13*:: Add use anonymous access type in Limited_List
+
+*2011/02/12*:: Add make Timer_Id a smart reference
+
+*2011/02/11*:: Add new operations on Timers and add New_Id parameter to expiration callback
+
+*2011/02/10*:: Add improve error reported when parsing encoding map in Xml_Parser V26.1
+
+*2011/02/08*:: Add operation Set_Pi to Xml_Parser.Generator V9.0
+
+*2011/02/07*:: Add make Timer_Id tagged
++
+Chg remove Text_Handler
+
+*2011/02/06*:: Add fix size of X window in window manager
+
+*2011/02/04*:: Add make State_Machine OO
+
+*2011/02/02*:: Add support for http://<ip_address>
+
+*2011/02/01*:: Fix in http the decoding when server replies an error (no header)
+
+*2011/01/31*:: Add make Ada_Parser and Computer re-entrant
+
+*2011/01/28*:: Add Hosting in github
+
+*2011/01/21*:: Add Set_Null in As.U and Unbounded_Arrays and use them
+
+*2011/01/20*:: Fix many small fixes in select_file and initializations of chess, approx and day_of_week
+
+*2011/01/07*:: Fix remove "use" of As.U and As.B
++
+Fix use As.B instead of Text_Handler and restore original Text_Handler
+
+*2010/12/28*:: Fix unbounded Tail when no pad needed
+
+*2010/12/22*:: Add our own (tagged) version of unbounded and bounded strings
+
+*2010/12/19*:: Add Move to first/last significant char on Ctrl-Left/Right in Afpx.Put_Then_Get
+
+*2010/12/16*:: Fix remove fixed-length strings from Reposit and make Text_Handler.Text tagged
+
+*2010/11/19*:: Add default background color in Con_Io and Afpx and change default to the "grey" scheme
++
+Fix font loading
+
+*2010/11/14*:: Add support of 4 digits in renardeau computation and result
+
+*2010/11/12*:: Fix dummy signal didn't wake up the wait
+
+*2010/11/11*:: Add replace Unique_List by Hashed_List.Unique, more efficient
+
+*2010/11/08*:: Add search of anagrams in xwords
+
+*2010/11/06*:: Add Hashing on larger keys and optimizations
+
+*2010/10/31*:: Add X screen to renardeau, move it in a separate dir
+
+*2010/10/30*:: Add program renardeau in misc
+
+*2010/10/27*:: Add error handler of external commands of tcpchat
+
+*2010/10/21*:: Add IfUnset trilean to if/elsif/while of tcpchat
+
+*2010/10/19*:: Add conditional setting and computation of variables in tcpchat
+
+*2010/10/18*:: Add new operation Repeat to tcpchat
+
+*2010/10/17*:: Add new operations (Set, Cond...) to tcpchat
+
+*2010/10/01*:: Add program tcpchat that plays chat scripts on a TCP connection
+
+*2010/08/29*:: Add Sys_Calls operation to set/reset Close_On_Exec on File_Desc
+
+*2010/08/23*:: Add support of URIs "file://" and "http://" in Xml_Parser V24.0
+
+*2010/08/22*:: Fix socket C read that shall return read length (i.o. SOC_OK) on tcp_socket (no header)
+
+*2010/08/20*:: Add Change interfaces of Con_Io and Afpx to use Unicode instead of Wide_Char
+
+*2010/08/18*:: Add Tcp_Util end of overflow callback shall return True to Event_Mng
+
+*2010/08/17*:: Add support of UTF-8 input in Async_Stdin
+
+*2010/08/13*:: Add support of tcp channel in mcd
+
+*2010/08/12*:: Add support of udp/ipm channel in mcd (tcp support is on the way)
++
+Add \P...\p in replace string for file insertion of asubst V11.0
++
+Add Remove string len limitation of Argument
++
+Add Make Socket_Dscr tagged and use object call notation
++
+Add Improve definition of colors in Afpx.xml
++
+Add a button "revert" and a history "scroll bar" in agite V2.8
+
+*2010/07/28*:: Add replace Queues.Timed.Get by Read
++
+Fix init of State_Machine to first state
++
+Add Home1 and End1 sequences in Async_Stdin
++
+Add support of mode Inout_File in Text_Line
++
+Add restore of current entry on Reread in Select_File
++
+Add declare Real_Io in My_Math
++
+Fix Delete_Connection in Network
+
+*2010/07/23*:: Fix C_Nbres.Polar constructor when negative imaginary part
++
+Fix decoding of Utf_16 when one char
++
+Fix Append of Unbounded_Arrays
+
+*2010/07/17*:: Fix update of current dir field in agite V2.4
++
+Fix use path of XML for DTD during Check in Xml_Parser V23.4
++
+Add complete handling of bookmarks in agite V2.3
++
+Fix handling in del_fd when last_fd>32
++
+Fix close of dtd and external entity files in Xml_Parser V23.3
+
+*2010/07/15*:: Add Dur_Image
+
+*2010/07/12*:: Fix handling of empty dtd file name in Xml_Parser V23.2
++
+Fix several reference to Xxx_Gray color
+
+*2010/07/11*:: Add replace Ada.Strings.Unbounded by As.U everywhere
+
+*2010/07/08*:: Add replace Text_Handler by Asu in pexec and many repository units
+
+*2010/07/06*:: Add port to Gnat GPL 2010 (new warnings)
+
+*2010/07/05*:: Add fixes of lsadeps
+
+*2010/06/27*:: Add minor changes and lsadeps
+
+*2010/06/17*:: Add minor changes
+
+*2010/05/31*:: Add support of empty embedded arguments in als V5.2
+
+*2010/05/21*:: Add handling of 4 fields version of git in agite
++
+Add switch to UTF-8 if LANG has any of utf-8 or utf8 in any casing
+
+*2010/05/20*:: Fix bug in agite re-read when on last item
++
+Add canonical mode in xml_checker V12.0, Xml_Parser V23.1, Xml_Generator V8.0
+
+*2010/05/01*:: Add option to retain separators (no normalization) in Xml_Parser V23.0
+
+*2010/04/30*:: Add explicit indication when in tail and support for unlimited width 
+in Xml_Parser V22.0, Xml_Generator V7.7 and xml_checker V11.1
+
+*2010/04/28*:: Fix policy on Mixed elements in Xml_Parser V21.2, Xml_Generator V7.5 and xml_checker V10.3
+
+*2010/04/25*:: Fix spacing between prolog and root element in Xml_Generator V7.3
++
+Add a text mode in nimmari
+
+*2010/04/14*:: Add policy for parsing Cdata in Xml_Parser V19.0, Xml_Generator V7.1 and xml_checker V10.0
+
+*2010/04/13*:: Add improve warning on Empty in Xml_Parser V18.2 and xml_checker V9.2
++
+Add test of warning on tree set with Xml_Generator
+
+*2010/04/12*:: Add -k a (--keep=all) and allow keep and silent in xml_checker V9.1
++
+Add optimise warning on Empty and allow warnings in Check in Xml_Parser V18.0
+
+*2010/04/11*:: Add call callback on warning (i.o. error) in Xml_Parser V17.0
++
+Add merge Comments and Keep options in xml_checker V9.0
+
+*2010/04/10*:: Fix handling of empty elements in Xml_Parser V16.0 and Xml_Generator V7.0
+
+*2010/04/05*:: Add Remove blink (useless).
++
+Fix handling of CDATA at beginning of text in Xml_Parser V15.1
+
+*2010/04/03*:: Add Improve account colors
+
+*2010/04/02*:: Chg Make colors parametrable, get rid of Basic_Color, in X_Mng, Con_Io, Afpx and all applications
+
+*2010/03/28*:: Fix X_Mng deadlock when a new line opens after prev has suspended
+
+*2010/03/26*:: Fix handling of click and release in Afpx list
+
+*2010/03/20*:: Add sort log in topology order in agite
+
+*2010/03/20*:: Add more diff features in agite V1.0
+
+*2010/03/19*:: Fix details in agite and improve handle of incorrect Utf_8 byte
+
+*2010/03/13*:: Add Get status on Ctx of Xml_Parser V15.0
+
+*2010/03/11*:: Fix agite history and details
++
+Add makefile generation of .ginignore with symlinks to exes
+
+*2010/03/10*:: Add complete agite
+
+*2010/03/08*:: Add agite, GUI to git, "à la" tkcvs
++
+Add Afpx providing access to screen geometry and descriptor background
+
+*2010/03/05*:: Fix segfault when event makes prev_fd set to less than -1
+
+*2010/03/01*:: Add Make Afpx right click selection in list is optional and disabled by default
+
+*2010/02/27*:: Add Afpx support of right click selection in list
+
+*2010/02/26*:: Add migration svn -> git
+
+*2010/02/13*:: Add options -B (--broken_links) and --follow_links in als V5.0
+
+*2010/02/12*:: Add option -f (--full_path) in als V4.0
+
+*2010/02/09*:: Add complete porting on 64 bits
+
+*2010/02/04*:: Add C_types for 32/64 bits compatibility
++
+Fix loss of attributes after suspend/resume at Con_Io level
+
+*2010/01/04*:: Fix bug when calling Evnt_Mng.Wait (or Command.Execute) within a X11 application (X_Mng/Con_Io/Afpx)
+
+*2009/11/27*:: Fix check of dir and file access rights when in Grep, in Asubst V10.1
+
+*2009/11/25*:: Fix and document several details, add test, in Argument_Parser
+
+*2009/11/13*:: Add support of option after several char keys in Argument_Parser
+
+*2009/11/11*:: Add support of "-" for stdin as file list. File list becomes an option of -F (--file_list) in Asubst V10.0
+
+*2009/11/06*:: Add Use -f (--file) to put file name in grep and previous option -f becomes -F (--file_list) in Asubst V9.0
+
+*2009/11/04*:: Fix Don't normalize attributes and text when not expanding. in Xml_Parser V14.12
+
+*2009/10/30*:: Fix improve compliance with standard in Xml_Parser V14.11
+
+*2009/10/28*:: Fix improve validity check of Names in Xml_Parser V14.10
+
+*2009/10/22*:: Fix skip all checks versus Dtd when not expanding in Xml_Parser V14.9
+
+*2009/10/21*:: Fix skip some checks when not expanding in Xml_Parser V14.8
+
+*2009/10/21*:: Fix verify compliance with standalone directive in Xml_Parser V14.7
++
+Chg expand by default, -e (--expand) -> -k (--keep) in Xml_Checker V8.0
+
+*2009/10/16*:: Fix normalization of attributes in Xml_Parser V14.6
+
+*2009/10/14*:: Fix count of options when -w, in Xml_Checker V7.2
+
+*2009/10/13*:: Add Reject simultaneous -a and -u options in Asubst V8.1
+
+*2009/10/10*:: Add Replace -m <max> (--max=<max>) by -m <range> (--match=<range>) in Asubst V8.0
+
+*2009/10/09*:: Add support for other ISO-8859 encoding, via files defining the mapping, in Xml_Parser V14.5 and Xml_Checker V7.1
++
+Fix parsing of -m (--max) argument of Asubsts V7.14
+
+*2009/10/07*:: Add native support for ISO-8859-1 (latin-1) encoding in Xml_Parser V14.3
+
+*2009/10/02*:: Add complete warning detection (multiple definition of entity) in Xml_Parser V14.1
++
+Add option -w (--warnings) to xml_checker (width becomes -W) in Xml_Checker V7.0
+
+*2009/10/01*:: Add optional warnings in Xml_Parser V14.0, add dtd_checker
+
+*2009/09/29*:: Fix parsing of PI starting with "xml" (ex
++
+"xml-stylesheet"), in Xml_Parser V13.6
+
+*2009/08/27*:: Fix expansion of external parameter entity in internal Dtd, and fix New_Line management in Xml_Parser V13.5
+
+*2009/08/25*:: Add detection of recursive entity reference and check generation of tail, in Xml_Parser V13.2
+
+*2009/08/24*:: Fix detection of '<' in expanded content in Xml_Parser V13.1
+
+*2009/08/24*:: Add notification of unparsed entities in Xml_Parser V13.0 and Xml_Checker V6.2
+
+*2009/08/23*:: Fix handling of '<' when expanding text in Xml_Parser, V12.2
+
+*2009/08/22*:: Fix line No and avoid memory leak in case of error in Xml_Parser, V12.1
+
+*2009/08/21*:: Add complete expansion of external entities and many many fixes, in Xml_Parser V12.0, Xml_Generator V6.1 
+and Xml_Checker V6.1
+
+*2009/08/16*:: Fix EMPTY elements must be really empty (no Pi nor directive) in Xml_Parser, V11.1
+
+*2009/08/14*:: Fix PIs can appear in xml content, not only in prologue, so add a new node type,
++
+Xml_Parser V11.0, Xml_Generator V6.0, Xml_Checker V5.3
+
+*2009/08/12*:: Fix expansion of parmameter entities and fix PI text in callback, in Xml_Parser V10.0 and Xml_Generator V5.2
+
+*2009/08/10*:: Add parsing of attlist of entities and notation, parsing of notations and
+external entities (not parsing value) in Xml_Parser, V9.0
++
+Chg use xml for channel file
+
+*2009/07/31*:: Add support for relative path in URI of Xml_Parser, V8.1
+
+*2009/07/30*:: Fix bug in Xml_Parser when ';' in text and expanding, V8.0
+
+*2009/07/29*:: Add Xml_Parser support for UTF-16 encoding, V7.0
+
+*2009/07/22*:: Fix Xml_Parser handling of char codes, V6.2
+
+*2009/06/24*:: Fix bug in Asubst, empty string did not match '(.)?', V7.13
+
+*2009/06/18*:: Chg Event_Mng and X_Mng don't report Wakeup event any more (still handled internally)
+
+*2009/06/16*:: Chg align passive timers API on timers
++
+Add suport of virtual time in timed queues
++
+Chg invert default mode of xml_checker, -f (--flow) becomes -t (--tree), V5.3
+
+*2009/06/15*:: Add filter ada compilation outputs in makefiles
++
+Add some operations on Delta_Rec in Perpet
++
+Add support of virtual time in passive timers
+
+*2009/06/15*:: Add compiler option to display warnings and fix them
+
+*2009/06/13*:: Fix astub indentation of protected
+
+*2009/06/11*:: Fix astub propagation of "[ not ] overriding" and the parsing of end of protected declaration
+
+*2009/06/10*:: Add explicit activation of signal handling. Set automatically when using Con_Io/Afpx or setting Signal Cb
+
+*2009/06/09*:: Add virtual_time. Use them in timers and chronos, and for lem
+
+*2009/06/01*:: Fix bug when starting or stopping a Chrono twice, and add a Pause to Lem.
+
+*2009/05/28*:: Fix allow ^ and $ in multiple regex and do not flush remaining lines in grep mode of asubst, V7.12
+
+*2009/05/24*:: Add option -n (--no_sort) to als, V3.1
+
+*2009/05/05*:: Fix bug in trail_spaces - Lines made only of spaces were skipped
+
+*2009/04/26*:: Fix bug in arbitrary division (e.g. 710 / 79)
+
+*2009/04/26*:: Add asubst exit code 3 when Ctrl-C while executing external command, V7.11
+
+*2009/04/25*:: Fix only parse \k, \r and \R in asubst external command, V7.10
+
+*2009/04/24*:: Add \K...\k in asubst replace string to execute shell command in asubst, V7.9
+
+*2009/04/20*:: Add option -h (--human) to als, V3.0
+
+*2009/04/18*:: Chg Reorganize arbitrary prime and factors
+
+*2009/04/09*:: Add array operations in Mcd, rationalize Unique_List arguments
+
+*2009/04/02*:: Add Sqrt function in Arbitrary
+
+*2009/03/24*:: Add option --depth to Als, V2.11
+
+*2009/03/19*:: Fix Als help, V2.10
+
+*2009/01/19*:: Add Add option -c (--classify) to append '*', '/', '@'... in Als V2.9
+
+*2009/01/06*:: Add support of empty criteria in Als, V2.8
+
+*2008/12/22*:: Add option -n (--newer) to Als, V2.7
+
+*2008/12/12*:: Add Put all the replace string of each line in multiple grep mode in Asubst, V7.8
+
+*2008/12/09*:: Add Improve help on grep mode in Asubst, V7.7
+
+*2008/12/08*:: Add Reject un-terminated 'if', 'elsif' or 'else' directive in Asubst, V7.6
+
+*2008/12/05*:: Add aIJ and oIJ (for and_then and or_else) in 'if' statements of replace string of Asubst, V7.5
+
+*2008/12/03*:: Add Change semantic of successive \iIJ to elsif in Asubst, V7.4
+
+*2008/12/02*:: Add '\e' for 'else' part of '\iIJ' condition in replace pattern of Asubst, V7.3
+
+*2008/11/10*:: Add improvements to Lem, V2.9.
+
+*2008/11/02*:: Fix use own wrapper posix2pcre to pcre instead of using pcreposix
+
+*2008/10/07*:: Fix handling of '^$', '^\n' and '\n$' regex for empty lines, in Asubst V7.2
+
+*2008/10/02*:: Add \iIJ and \f in replace string for conditional replacement, in Asubst V7.1
+
+*2008/09/27*:: Fix propagate Storage_Error i.o. Internal_Error in Xml_Parser V6.1
++
+Fix improve help about large files of Xml_Checker V5.1
+
+*2008/09/26*:: Chg Use PCRE (Perl Compatible Regular Expressions) instead of POSIX RE, for correct UTF-8 support
++
+No more '\<' or '\>' but '\b' instead. No more basic regex. Asubst V7.0
++
+Beware that xml_parser works with PCRE 7.8 but not with 7.4, where 'toto' does not match '(toto)'!
+
+*2008/09/21*:: Add on-the-flow mode of xml parsing
++
+Xml_Parser V6.0, Xml_Generator V5.1, Xml_Checker V5.0
++
+Add asubst check to prevent UTF-8 characters within regex bracket expression V6.2
+
+*2008/08/24*:: Fix Xml_parser handling of xml default version, V5.1
+
+*2008/08/23*:: Add passive timers and init management packages in repository
+
+*2008/08/22*:: Add make unique list, limited pool and trees tagged types, with finalization when needed
++
+Fix Xml parser handling of many IDs and IDREFs, V5.0
+
+*2008/08/21*:: Fix Xml parsing of entity when its name is a reference to a parameter entity, V4.7
++
+Fix Xml parsing of parameter entities in internal Dtd (broken in 4.6)
+
+*2008/08/20*:: Fix Check that xml is first statement (of xml and dtd), Xml_Parser V4.6
++
+Fix Check that xml elements exist in dtd
++
+Fix parsing of ELEMENT content when it is an entity describing a list
+
+*2008/08/20*:: Fix Xml_Parser, don't accept spaces within EMPTY or ANY for element content in dtd, V4.3
+
+*2008/08/19*:: Fix Xml_Parser, expand entity for complete definition of element content in dtd, V4.2
++
+Fix Xml_Parser, empty elements where not checked vs dtd
+
+*2008/08/18*:: Fix several bugs and limitations in Xml_Parser
++
+Xml_Parser V4.1, Xml_Checker V4.0
+
+- Fix expand_Entities becomes Expand and is used also to set ro not attributes with default values 
+but don't miss xml:space="preserve" directives
+- Fix forbid text child for EMPTY elements
+- Fix if there is no child but not significant text between start and stop tags, then add text child
+- Fix propagate (if Expand) encoding attribute from Dtd
+
+*2008/08/17*:: Fix cleaning of our own X selection
++
+Fix child behaviour that shall exit when spwan (exec) fails
+
+*2008/08/14*:: Fix several bugs or limitations in Xml_Parser
++
+Xml_Parser V3.0, Xml_Generator V5.1, Xml_Checker V3.0
+
+- Fix improper handling of DTD enum attributes when default/fix is not the first
+- Add check that Root name matches Doctype name
+- Add option to set alternate Dtd file and option to skip Dtd check
+- Add accurate parsing and check of Dtd xml directive
+- Fix forbid attributes not in ATTLIST
+
+*2008/08/13*:: Add Asubst support of '\n' in noregex mode and when specific delimiter, V6.1
+
+*2008/08/12*:: Add support of X selection in UTF-8 (or else ASCII)
++
+Add double click in LEM
+
+*2008/08/11*:: Add selection copy and paste for all X applications
++
+Add improvement of Afpx cursor Cb and provide clicked col
++
+Add handling of mouse in LEM
+
+*2008/08/04*:: Add Asubst option of specific delimiter for multi-line processing, V6.0
+
+*2008/07/30*:: Add Argument_Parser support of empty options and multiple '--'
+
+*2008/07/29*:: Add Xml_Checker option to skip comments, V2.6
++
+Add Text_Line support of any (reasonnable) string as line/block delimiter
+
+*2008/07/23*:: Fix bugs in Afpx, Afpx_Bld and Proc_Family
+
+*2008/07/18*:: Fix bug in afpx_bld computing missing parts of geometry
++
+Fix bug in xml_parser setting error line number to 0 and rejecting multiple settings of an attribute
++
+Fix bug in xml_parser raising internal error when <file> is a dir, V2.7
+
+*2008/07/15*:: Fix bug in account loading. Avoid using Limited_List.Assign
+
+*2008/07/14*:: Fix Various fixes following port to GNAT GPL 2008
+
+*2008/07/12*:: Chg Port to GNAT GPL 2008
+
+*2008/07/12*:: Add procedure Copy in Xml generator, V4.1
+
+*2008/06/27*:: Add Afpx.xml support for Width and Height in field geometry
+
+*2008/06/26*:: Add Make Xml generator context a child of Xml_Parser's and add Xml_Parser
+operation Check. Xml_Parser V2.6, Xml_Generator V4.0, Xml_Checker V2.5
+
+*2008/04/27*:: Add Init_From_Parsed to Xml_Generator, becomming child of Xml_Parser, V2.4
+use it in Xml_Checker, V2.4
+
+*2008/04/24*:: Add Als long output of "=>" i.o. "->" when broken symlink, V2.6
+
+*2008/04/21*:: Fix Xml_Checker put file name only when more than one file, V2.2
+
+*2008/04/19*:: Add Xml_Checker support of multiple file, improve argument error reports, V2.1
+
+*2008/04/18*:: Add Xml_Parser option for no expansion of general entities, V2.5
++
+Add Xml_Generator option for putting several attributes per line, up to Width, V2.2
++
+Add Xml_Checker options for all kinds of output, V2.0
+
+*2008/04/16*:: Add Xml_Parser expansion of parameter entities in element and attlist of dtd, V2.4
+
+*2008/04/15*:: Add Xml_Parser support of multiple attlist per element, V2.3
+
+*2008/04/13*:: Add Xml_Parser detections of CDATA (and raise parsing error), V2.2
+
+*2008/04/12*:: Add Xml_Parser parsing of CDATA in Xml text, V2.1
+
+*2008/04/11*:: Add Xml_Parser parsing of conditional directives
+
+*2008/04/08*:: Add Xml_Parser complete retrieval and output of doctype directive
+
+*2008/04/04*:: Add Xml_Generator package, use it in Xml_Checker
++
+Add Xml_Parser optional retrieval of comments
++
+Add Xml_Parser partial retrieval of doctype directive
+
+*2008/03/21*:: Fix Xml_Parser, don't indent prologue attibutes
+
+*2008/03/02*:: Add option to als to put total size, V2.5
+
+*2008/02/21*:: Add option for tmp dir in asubst, V5.3
++
+Fix handling of errors on tmp files
+
+*2008/02/20*:: Add comp_vars in misc
+
+*2008/02/14*:: Fix Constraint_Error when parsing XML Attr=" "
+
+*2008/02/09*:: Add option to als to set separator, V2.4
+
+*2008/01/26*:: Fix Asubst error when matching substring has index=(0, 0), V5.2
++
+Fix String_Mng bug when \\\R01 in replace pattern.
+
+*2008/01/18*:: Re-implement \R00 in replace_string of Asubst, V5.1
+
+*2008/01/17*:: Fix Asubst grep output when replace string and multi lines, V5.0
+
+*2008/01/14*:: Improve merge and exclude options of Als, V1.8
++
+Allow non-empty replacing string when Asubst -g, V4.9
++
+Fix Asubst grep mode output when "^toto", V4.8
++
+Add String_Mng.Split
+
+*2008/01/13*:: Add options to Als, V1.7
++
+Fix some bugs in Argument_Parser
++
+Add hidding of X mouse pointer
+
+*2008/01/03*:: Add Als
++
+Improve Xml_Parser error reporting
++
+Add Exception_Messenger and Protected_Pool
+
+*2007/12/14*:: Fix finalization of Limited_List
++
+Add String_Mng.Regex.Split
++
+Raise File_Error if Name_Error when explicit parsing of Dtd
+
+*2007/12/13*:: Fix 4 bugs in xml parsing of dtd
++
+Update xml to parse string (and be re-entrant)
++
+Add finalization of some types in Reposit
++
+Tag some types in Reposit (to allow Object.Operation)
+
+*2007/11/20*:: String_Mng.Navigator and Asubst V4.6
+
+*2007/11/19*:: Asubst V4.4
+

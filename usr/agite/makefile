@@ -10,5 +10,7 @@ CLIBS_agite := posix2pcre pcre
 LARGS_agite.stat := $(CPATHD)/libx_mng.a $(CPATHD)/libcutil.a \
   $(CPATHD)/libposix2pcre.a $(PCRE)/libpcre.a -lX11
 
+TXT := Specs
+
 include $(TEMPLATES)/ada.mk
 

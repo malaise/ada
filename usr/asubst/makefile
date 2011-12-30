@@ -9,8 +9,7 @@ CLIBS_asubst := posix2pcre pcre
 LARGS_asubst.stat := $(CPATHD)/libcutil.a $(CPATHD)/libposix2pcre.a \
   $(PCRE)/libpcre.a
 
-TEXI := Asubst History
-History_WIDTH := 120
+TXT := Asubst History
 
 include $(TEMPLATES)/ada.mk
 

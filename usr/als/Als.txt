@@ -1,0 +1,106 @@
+Als
+===
+V7.2
+
+Als lists files, directory contents... It supports several powerfull options
+for the selection of entries, the output format of each entry, and general
+formatting options.
+
+General arguments of als
+------------------------
+
+ Usage: als [ { <option> } ] [ { <file_or_dir_spec> } ]
+ or   : als  --help | -v | --version
+
+List files or directory contents.
+
+Notes on compatibility between options:
+
+- Some options options are meaningful only when some other option is provided.
+They are accepted and ignored when provided alone.
++
+Example:
++
+Option -h is usefull only when -l is provided. So "als -h" is the same as "als".
+
+- Some options are mutually exclusive. This is reported as an error.
++
+Examples:
++
+* -d and -n are mutually exclusive.
+* -S is not compatible with some other formating options (-l, -1 and -c).
+
+Specify which entry to select
+-----------------------------
+
+  -a (--all)                 Show all entries including hidden ones
+                               (starting with '.')
+  -A (--All)                 Show all entries except "." and ".."
+  -D (--directories)         Show only directories
+  -L (--links)               Show only symbolic links
+  -F (--files)               Show only regular files
+  -B (--broken_links)        Show only broken symbolic links
+
+  -R (--recursive)           Scan directories recursively
+  --depth=<positive>         Scan only to given depth (needs "-R")
+
+  --skip_dirs                Skip directories from arguments
+                               (usefull whan calling "asl *")
+
+  <match_name> ::= -m <criteria> | --match=<criteria>
+    <criteria> ::= <templates> | @<regex>
+    <templates> ::= <template> [ { ,<template> } ]
+                             Keep only files that match the ciriteria
+                              (one template or the regular expression)
+  <exclude_name> ::= -e <criteria> | --exclude=<criteria>
+                             Exclude files that match the ciriteria
+  <match_dir> ::= --match_dir=<criteria>
+                             Scan only directories that match the criteria
+  <exclude_dir> ::= --exclude_dir=<criteria>
+                             Don't scan directories that match the criteria
+
+  <date_spec> [ <date_spec> ]
+    <date_spec> ::= -d <date_comp><date> | --date=<date_comp><date>
+    <date_comp> ::= eq | lt | le | gt | ge
+    <date>      ::= yyyy-mm-ddThh:mm:ss | yyyy-mm-dd | Thh:mm:ss
+                  | <positive><duration>
+    <duration>  ::= Y | M | D | h | m
+                             Keep files that match the date specification
+                              (before, after or equal to a given date or delay)
+    -n <date> (--newer=<date>) is a shortcut to "-d ge<date>"
+
+Specify how to show each entry selected
+---------------------------------------
+
+  -l (--list)                Show rights, owner, size, date, symbolic link target
+  -1 (--1row)                One name per line
+  -c (--classify)            Append '/' to dirs, '@' to symbolic links
+  -h (--human)               Show sizes in friendly format (e.g. 1K, 2G)
+  -p (--path)                Show full path of entries
+  <separator> ::= -S <string> | --separator=<string>
+                             Insert <string> beween each entry
+  --follow_links             Show final target of symbolic links
+  --date_iso                 Show date in strict ISO format (<date>T<time>)
+
+Specify general formating options
+---------------------------------
+
+  -s (--size)                Sort by decrescent size (see also "-r")
+  -t (--time)                Sort by decrescent time (see also "-r")
+  -r (--reverse)             Sort (by name, size or time) in reverse order
+  -N (--no_sort)             Keep order same as in the directory structure
+
+  -M (--merge)               Show a global list of entries (without dir names)
+
+  -T (--total)               Also show total size of listed entries
+
+Other options
+-------------
+  --help                     Show online help
+  -v (--version)             Show current version of Als
+
+Meaning of Als exit codes
+-------------------------
+Als exits with 0 if a file or dir has been shown, with 1 otherwise and with 2
+on error.
+

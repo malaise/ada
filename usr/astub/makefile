@@ -6,5 +6,7 @@ EXES := astub
 CLIBS := cutil
 CLIBS_astub := posix2pcre pcre
 
+TXT := Astub
+
 include $(TEMPLATES)/ada.mk
 

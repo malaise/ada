@@ -1,65 +1,82 @@
+Astub
+=====
+
 Input: ads file name.
 Output: adb file (only if it does not already exist).
 
 Uses Ada_Parser to parse ads file and generates a stub of body:
+
 - Rejects spec with "body", "separate"...
+
 - Sets correct indentation
+
 - Propagates comments,
+
 - Copy as comment all what is not expandable (with and use clauses,
   constants, types, instanciations, private part, representation clause,
   abstract subprogram...),
+
 - Expands spec of procedure, function, task, protected type and package
   as described in section A.
 
-A: Expansion rules
-------------------
+Expansion rules
+---------------
 
-1. Procedure
-------------
+Procedure
+~~~~~~~~~
+--------------------------
 procedure Pr [ (Args) ] ;
-
+--------------------------
 Is expanded as:
-
+--------------------------
 procedure Pr [ (Args) ] is
 begin
   null;
 end Pr;
+--------------------------
 
-2. Function
------------
+Function
+~~~~~~~~
+--------------------------
 function F [ (Args) ] return Ty;
-
+--------------------------
 Is expanded as:
-
+--------------------------
 function F [ (Args) ] return Ty is
 begin
   return F [ (Args) ];
 end F;
+--------------------------
 
-3. Task and task type
----------------------
+Task and task type
+~~~~~~~~~~~~~~~~~~
+--------------------------
 task [ type ] Ta;
+--------------------------
 or
+--------------------------
 task [ type ] Ta is
   entry E (Args);
 end Ta;
-
+--------------------------
 Is expanded as:
-
+--------------------------
 task body Ta is
 begin
   null;
 end Ta;
+--------------------------
 
-5. Protected object and protected type
---------------------------------------
+Protected object and protected type
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------
 protected [ type ] Pr is
   entry En [ (Atype) ] [ (Args) ] ;
   -- Procedure and function declarations
 end Pr;
-
+--------------------------
 Is expanded (with its procedures, functions expanded as above) as:
-
+--------------------------
 protected body Pr is
   entry En [ (for I in Atype) ] [ (Args) ] when True is
   begin
@@ -67,32 +84,44 @@ protected body Pr is
   end En;
   -- Expanded procedures and functions
 end Pr;
+--------------------------
 
 5. Package
-----------
+~~~~~~~~~~
+--------------------------
 package Pa is
   -- Declarations
 end Pa;
-
+--------------------------
 Is expanded (with its procedures, functions, tasks, protected objects expanded
 as above) as:
-
+--------------------------
 package body Pa is
   -- Expanded declarations
 end Pa;
+--------------------------
 
-B: States when parsing
-----------------------
+States when parsing
+-------------------
 Parsing the spec consists in: 
+
 - do the processing of current object declaration
+
 - look for chaining reserved words that declares a sub-object
+
 - skip any unexpected reserved word:
+
   * forbid separate
-  * parse until ; (outside parentheses), put each line in comment
-- look for ending ';' that make it change state.
+
+  * parse until '';'' (outside parentheses), put each line in comment
+
+- look for ending '';'' that make it change state.
+
 Always copies comments and put unexepected contructs in comment.
+
 The parser evolves between several states, each of them having its own list of
 chaining and ending words.
+
 The parser must keep trace of level of sub-object (package of package...)
 for indentation, called obj_level and starting at 0.
 
@@ -100,40 +129,61 @@ The common function Check_Renames checks if the lexic after object identifier is
 the reserved word "renames". If yes this must be expanded as a comment and
 this ends the current state.
 
-Object name expands up to '(', ';' or separator, which covers A.B.C or "**".
+Object name expands up to ''('', '';'' or separator, which covers A.B.C or "**".
 
-1. In_Context
+In_Context
+~~~~~~~~~~
 The context clauses section, at level 0.
+
 Chains: [ private ] procedure, function, package
+
 Ends: End of file.
 
-2. In_Procedure
+In_Procedure
+~~~~~~~~~~~~
 Process: Check_Renames, expand
+
 Chains: none
+
 Ends: ;
 
-3. In_function
+In_function
+~~~~~~~~~~~
 Process: Check_Renames, expand
+
 Chains: none
+
 Ends: ;
 
-4. In_Task
+In_Task
+~~~~~~~
 Process: expand
+
 Chains: none
+
 Ends: ;
 
-5. In_Protected
+In_Protected
+~~~~~~~~~~~~
 Process: expand
+
 Chains: entry, procedure, function
+
 Ends: ;
 
-6. In_Entry
+In_Entry
+~~~~~~~~
 Process: expand
+
 Chains: none
+
 Ends: ;
 
-7. In_Package
+In_Package
+~~~~~~~~~~
 Process: Check_Renames, expand
+
 Chains: procedure, function, package
+
 Ends: ;
 

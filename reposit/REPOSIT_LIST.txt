@@ -1,0 +1,362 @@
+Repository list
+===============
+
+Packages are rated from 1 (simple) to 3 (very complex), on subjective
+criteria.
+
+ada_parser (2)::
+     Parses a text input flow, identifies ada lexical elements.
+
+ada_words (2)::
+     Basic ada parsic of delimiters, separators and reserved words.
+
+address_ops (1)::
+     Add, sub and returns image of a System.Address.
+
+afpx (3)::
+     Graphic (text oriented) manager of input screens that are off-line
+     defined.
+
+afpx_bld (2)::
+     Process that compiles AFPX xml text description of screens.
+
+any_def (1)::
+     Definition of variant type that contains any value
+
+arbitrary arbitrary-factors arbitrary-fractions (2)::
+     Arbitrary precision operations, prime factor decomposition, fractions.
+
+as as-b as-u as-u-utils (2)::
+     Bounded and unbounded strings and associated packaging utilities
+
+autobus (3)::
+     Simple bus to excahnge strings between processes
+
+loc_arg (1)::
+     Program name and arguments extraction (based on keys).
+
+argument_parser (2)::
+     Parser of program arguments (based on keys and options).
+
+assertion(1)::
+     Raise exception or trace when assertion fails.
+
+async_stdin (2)::
+     Asynchronous reading and buffer of characters from input flow.
+
+basic_proc (1)::
+     Basic IO operations and exit code setting.
+
+bit_ops (1)::
+     Bit operations.
+
+bloc_io (3)::
+     Read/writes arrays of bytes from/to file.
+
+byte_to_unicode (1)::
+     Map a character (e.g. ISO-8859-xx) to unicode according to a xml-defined
+     map.
+
+c_nbres(1)::
+     Complex numbers operations.
+
+c_types (1)::
+     Types for portable interfacing with C.
+
+channels (2)::
+     Diffuse messages to several destinations in TCP (channel) or IPM (bus).
+
+chronos (1)::
+     Handle chronometers.
+
+chronos.passive_timers (1)::
+     Arm and check if timer has expired.
+
+clear_screen (1)::
+     Process that clears the screen.
+
+command (2)::
+     Uses Proc_Family to fork-exec and catch output and error flows.
+
+computer (2)::
+     Evaluates expressions based on numbers, variables, operations.
+
+condition_manager (1)::
+     Allow several tasks to wait until unblocked all together or one by one.
+
+console (1)::
+     ANSII management of text/cursor console.
+
+control_pool (2)::
+     Control exclusive access to data in a pool
+
+convert (1)::
+     Converts network <-> host integer.
+
+copy_file (1)::
+     Copy a file.
+
+crc_10 (1)::
+     Computes the CRC of strings (CRC is in 0 .. 3FF).
+
+curve (3)::
+     Draw a curve y=f(x) and points in 2D.
+
+date_image (1)::
+     String image "YYyy/Mm/Dd Hh:Mm:Ss.mmm" of a date.
+
+day_mng (2)::
+     Split/pack a duration into hours, minutes, seconds.
+
+dir_mng (2)::
+     Makes a dynamic list of directory content.
+
+directory (2)::
+     Change/read directory, dirname, basename...
+
+door_manager (1)::
+     Allow several tasks to wait until a given amount or waiters is reached.
+
+dur_image (1)::
+     Return string image of a duration rounded at N digits
+
+dyn_data (2)::
+     Allocate/free data from a pool.
+
+environ (2)::
+     Environment variable extraction and basic tests.
+
+euro_franc (1)::
+     Euro <-> Franc convertion.
+
+event_mng (3)::
+     Multiplex reception of events (timers, fd, signals).
+
+exception_messenger (1)::
+     Allow transmission of un-truncated exception message.
+
+file_access (1)::
+     Decode Unix file access flags.
+
+file_hash (1)::
+     Store the content of file (1 word per line) in a hashed dynlist.
+
+forker (2)::
+     API to a standalone (in C) forker process.
+
+con_io (3)::
+     Console IOs (keyboard, mouse, screen) in text and graphic.
+
+get_float (1)::
+     Get a float or int from a string.
+
+get_line (2)::
+     Parses lines and words of file.
+
+hash hashing (2)::
+     Hash table storage of keyed data.
+
+hashed_list (1)::
+     Hashed access to a dynamic list of items
+
+hashed_list.unique (1)::
+     Hashed access to a dynamic list of items with unique keys.
+
+hexa_utils (1)::
+     Convert strings to hexa and reverse (ex: "1A" <-> 26).
+
+http (2)::
+     Fetch the content of a HTTP URL.
+
+init_manager (1)::
+     Manage atomic init of state while concurent update events are bufferized.
+
+input_buffer (1)::
+     Extract sentences from a flow of chars.
+
+int_image mod_image integer_image (1)::
+     Integer and modulus image (no leading space).
+
+ip_addr (1)::
+     Parse IP address or port.
+
+limited_list dynamic_list (3)::
+     Dynamic list of (limited) private objects, search/sort.
+
+lower_char lower_str mixed_str upper_char upper_str (1)::
+     Upper, lower, mixed string and character conversion.
+
+many_strings (2)::
+     Concatenates strings in string.
+
+multiget (2)::
+     Allows getting/ungetting items from an input flow.
+
+mutex_manager (2)::
+     Mutex for exclusive access or read/write access to shared data.
+
+my_io bool_io flo_io int_io long_io (1)::
+     Basic boolean/integer... IOs.
+
+my_math (2)::
+     Math library.
+
+ndbm (1)::
+     Interface to C ndbm library.
+
+network (2)::
+     Simulate a network of inter-connected nodes.
+
+normal (1)::
+     Normalize an integer image into fixed length string.
+
+normalization (1)::
+     General normalization of integers and reals.
+
+normalize_path (1)::
+     Normalize a directory path (remove "/.", etc).
+
+null_procedure (1)::
+     Null (dummy) procedure.
+
+num_letters (1)::
+     Converts a number into english text.
+
+num_match (1)::
+     Checks if a number matches a range based criteria.
+
+parser (2)::
+     Parse a string, separate words and separators.
+
+pattern (2)::
+     Check a string versus several patterns.
+
+perpet (2)::
+     Perpetual calendar.
+
+polygon_mng (2)::
+     Line and polygone intersection.
+
+prime_list (1)::
+     List of prime numbers.
+
+proc_family (2)::
+     Fork/exec unix process.
+
+property_def (1)::
+     Definition of a Property type and array
+
+protected_pool (1)::
+     Store and retrieve data (by key) in a protected pool.
+
+queues queues-timed (1)::
+     Fifo, Lifo, Prio, Timed queues.
+
+recurs (1)::
+     Recursive operation on subdirs.
+
+regex_filters (2)::
+     Check a string vs chained regex criteria.
+
+regular_expressions (2)::
+     Check a string versus a regular expression.
+
+rnd (1)::
+     Random number generator.
+
+romanic (1)::
+     Decimal to romanic conversion (11 <-> XI).
+
+round_at (1)::
+     Round a float at a given position, before or after decimal.
+
+schedule (1)::
+     Allow task schduling (delay 0.0).
+
+select_file (2)::
+     Afpx-based file selection in a dir.
+
+smart_reference (2)::
+     Smart reference (automatic free).
+
+socket (3)::
+     Socket (Udp/Tpc/Tcp_Header, Afuix) operations.
+
+socket_util (1)::
+     General Set_Dest and Link of socket
+
+sorts (2)::
+     Sort array.
+
+state_machine (2)::
+     Generic state machine manager.
+
+string_mng (2)::
+     Various string utilites, including regexp and navigation.
+
+sys_calls (2)::
+     Various low level Unix calls
+
+syslin (2)::
+     Linear system (Gauss) resolver.
+
+task_mng (2)::
+     Calls a callback periodically.
+
+tcp_util (3)::
+     Automatic connect/accept Tcp connections, receive, send on them.
+
+temp_file (2)::
+     Create a temporary file.
+
+text_char (2)::
+     Get/unget chars from an input flow.
+
+text_handler (1)::
+     Storage of variable length strings.
+
+text_line (2)::
+     Get/put lines of text from/to a flow.
+
+timeval (1)::
+     Conversion from and to timeval structure.
+
+timers (2)::
+     Asynchronous timer management.
+
+trace (1)::
+     Tracing utility library.
+
+trees (2)::
+     Tree of items (father/childs) management.
+
+u_rand (2)::
+     Universal random number generator.
+
+unbounded_arrays (1)::
+     Handle unbounded generic arrays as Unbounded_String does.
+
+unicode (1)::
+     Definition of unicode numbers
+
+unlimited_pool (2)::
+     Simple pool of objects.
+
+utf_16 (2)::
+     Utf_16 encoding/decoding
+
+utf_8 (2)::
+     Utf_8 encoding/decoding
+
+virtual_time (2)::
+     Define virtual time that can shift, accelerate...
+
+xml_parser (3)::
+     Parser of Xml files or strings, including check of dtd.
+
+xml_parser.generator (2)::
+     Generate Xml output in flow/file/string.
+
+x_mng(3)::
+     Low level interface to X11 (txt, basic graphics, Mouse and keyboard).
+
