@@ -9,9 +9,31 @@ The rotors are statically defined off line in a XML file. The choice of
 rotors, their initial position and the switches are provided as arguments to
 the simulator.
 
+
+Definitions in configuration
+----------------------------
+All rotors and reflectors are defined in a XML configuration file (name from
+ENV ENIGMA_CONF_FILE, default "enigma.xml"). They must all have different names.
+
+A definition like:
+
+     BCDEFGHIJKLMNOPQRSTUVWXYZA
+
+means that A->B, N->O, Z->A...
+
+     ABCDEFGHIJKLMNOPQRSTUVWXYZ
+     |            |           |
+     V            V           V
+     BCDEFGHIJKLMNOPQRSTUVWXYZA
+
+Rotor carries are the offsets at which next rotor will turn together with
+current. Rotors with no carry can only appear at first position (slowest) and
+don't turn.
+
+For a reflector, the definition must be symetrical and with no identity.
+
 Enigma command line
 -------------------
-
 Syntax: enigma <reflector_def> [ <rotor_defs>  ] [ <rotor_inits> ]
                [ <switches> ] [ <first_index> ] [ <last_index> ]
 
@@ -24,44 +46,22 @@ Syntax: enigma <reflector_def> [ <rotor_defs>  ] [ <rotor_inits> ]
    <ring_setting>  ::= <upperletter>
    <upperletter>   ::= A .. Z
 
-Up to 4 rotors can be used and one reflector must be defined.
-
-They must have different names.
-
-There must be as many rotor_inits as rotors_defs.
-
-Ex, for rotors I (fastest), IV and Beta (slowest):
---------------------------------------
-Beta@A#IV@Q#I@F.
---------------------------------------
-
 Semantic:
 
 - The reflector is defined by its name and the optional letter of offset
 (constant).
 
-- Up to 4 rotors can be defined and one reflector must be defined. They
+- Up to 4 rotors can be defined (and one reflector must be defined). They
 must all have different names.
-+
-All rotors and reflectors are defined in a XML configuration file (name from
-ENV ENIGMA_CONF_FILE, default "enigma.xml"). They must all have different names.
-+
-Rotor carries are the offsets at which next rotor will turn together with
-current. Rotors with no carry can only appear at first position (slowest) and
-don't turn.
-
-     ABCDEFGHIJKLMNOPQRSTUVWXYZ
-     |                        |
-     BCDEFGHIJKLMNOPQRSTUVWXYZA
-+
-For a reflector, the definition must be symetrical and with no identity.
-+
 In the command line, the rotors (optional) definition consists in
 <rotor_defs> (rotor name @ ring setting, separated by #) and
 <rotor_inits>, the initial position of each rotor. First rotor defined
 is the slowest and is the one crossed just before the reflector. So for
 command line "I IV V", the coding will go through V, IV, I, reflector,
 then back.
+
+- Rotor initial offsets is optional. If it is set it must define an offset
+for each rotor defined.
 
 - The switches definition follows the same logic but defines only the
 letters that change in the coding (all other letters are kept
@@ -73,6 +73,31 @@ decoding starts (default 1).
 
 - The last number defines the last offset of input text after which the
 decoding stops (default none).
+
+Examples:
+
+For reflector Cthin offset B:
+--------------------------------
+Cthin@B
+--------------------------------
+For rotors I (fastest) offset F, IV offset Q and Beta (slowest) offset A:
+--------------------------------
+-rBeta@A#IV@Q#I@F.
+--------------------------------
+For initial offset of the rotors above:
+--------------------------------
+-iDIV
+--------------------------------
+For switches a<->L, B<->E and C<->W:
+--------------------------------
+-sALBECW
+--------------------------------
+Valid command lines:
+--------------------------------
+A@A -rIX@M#IV@N#V@G -iAHD -sALBICTDJEMFOGU
+A@A -rI@A -s -f55
+Cthin
+--------------------------------
 
 Enigma behaviour
 ----------------
@@ -184,32 +209,37 @@ and 3 rotors from I to VIII.
 M4 compatible configurations shall use a reflector Bthin or Cthin with no
 offset, a rotor Beta and 3 rotors from I to VIII.
 
-Automatic configuration
------------------------
-Automatic enigma setting considering the date.
+Tools
+-----
+Automatic configuration with def_enigma
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Def_enigma is a tool that automatically generates enigma settings, either
+randomly or based on a date.
 
-  Usage: def_enigma [ -text ]   <date> | today | rnd | <text_key> | <enigma_key>
+  Usage: def_enigma [ -text ]   <date> | today | rnd | <text_key> | <enigma_setting>
     date ::= dd/mm/YYyy
-    <enigma_key> ::= <reflector> [ <rotors> <rotors_init> ] [ <switches> ]
+    <enigma_setting> ::= <reflector> [ <rotors> <rotors_init> ] [ <switches> ]
 
 If rnd, generates a random switch sequence, 3 to 4 rotors and a random
 reflector (A to Cthin).
 
-If date, generates a switch sequence, 3 rotors and the reflector from the
+If <date>, generates a switch sequence, 3 rotors and the reflector from the
 date.
 
-If no arg, same with current date.
+If today arg, same with current date.
 
-If text_key, displays the key from text jey (see <<XT-TextOutput,Text Output>>).
+If <text_key>, displays the key from text key (see
+<<XT-TextOutput,Text Output>>).
 
-If enigma_key, check and displays enigma key.
+If <enigma_setting>, check and displays these enigma arguments.
 
 If -text, also generates text of key (see <<XT-TextOutput,Text Output>>).
 
-Rotors (at least 10) and reflectors (at least 5) are defined in enigma.xml.
+Rotors (at least 10) and reflectors (at least 5) are defined in a XML file as
+for enigma.
 
 Normal generation
-~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^
 The date is either provided or is current date.
 
 The date that is considered is DAYNAME DAYNUM MONTHNAME.
@@ -217,7 +247,7 @@ The date that is considered is DAYNAME DAYNUM MONTHNAME.
 There are 3 rotors.
 
 Reflector
-^^^^^^^^^
++++++++++
 The Reflector num is 1 to 3, computed from DAYNUM:
 
 01->1, 02->2, 03 -> 3, 04 -> 1...
@@ -225,7 +255,7 @@ The Reflector num is 1 to 3, computed from DAYNUM:
 Its offset is 0 (A).
 
 Rotors
-^^^^^^
+++++++
 There are 3 rotors:
 
 - The first rotor number is the unit of DAYNUM, with 1->1 .. 10->10, 11->1.
@@ -242,28 +272,14 @@ The rotor initial offsets are the first three letters of MONTHNAME
 respectively.
 
 Switches
-^^^^^^^^
+++++++++
 The switches definition is got from the letters of DAYNAME and MONTHNAME, with
 criteria of unicity, no identity and even number (and max 26 letters).
 
 Ex MONDAY DECEMBER -> MONDAYECBR.
 
-Output format
-^^^^^^^^^^^^^
-The reflector setting is <reflector_name><reflector_offset>
-
-The optional setting of rotors is -r<rotor>#<rotor>....
-where each <rotor> is <rotor_name>@<ring_offset> The initial rotors positions
-are -i{<letter>} with as may letter as rotors number.
-
-The optional switchs are -s{<letter><letter>}
-
---------------------------------------
-Ex: Cthin@B -rI@G#IV@C#VII@Q#II@G -iTLDO -sTPWASFXIEVZCYLBN
---------------------------------------
-
 Random generation
-~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^
 The reflector is random from 1 to 3 if 3 rotors, from 1 to 2 (meaning Bthin
 and Cthin, num 4 and 5) if 4 rotors. It has no offset (A).
 
@@ -278,13 +294,14 @@ The switch is a random list (1 to 12 included) of random pairs of letters
 
 [[XT-TextOutput]]
 Text output
-~~~~~~~~~~~
-If optionnal -text is provided, the key (random, from current date or from
-provided date) is translated to text:
+^^^^^^^^^^^
+The default output format is a valid set of arguments for enigma.
 
-- The switch definition is displayed, followed by JJJ (letter cannot appear
-twice at first of pair, nor twice as second of pair, in switch
-definition).
+If optionnal -text option is provided, the setting (computed from random, from
+current date or from provided date) is also translated to text:
+
+- The switch definition is displayed, followed by a random letter repeated
+(a letter cannot appear twice in switch definition).
 
 - Then the rotors are displayed but their number in letters instead of
 name, each with the ring offset then the initial offset.
@@ -295,36 +312,40 @@ name, each with the ring offset then the initial offset.
 number in letters then two letters), then a ''Z'' (which cannot start a
 digit in letters), which marks the end). Example
 --------------------------------------
--rV@M#III@O#I@N B@Y -iJAN -> MONDAYJUJJJFIVEMJTHREEOAONENNTWOYYZ
+C@A -rI@H#VII@R#II@U -iUAQ -sAEBM -> AEBMPPONEHUSEVENRATWOUQTHREEAAZ
 --------------------------------------
 
 Note that even in case of 4 rotors the 4th rotor is ONE or TWO and the
 reflector is ONE or TWO.
 
-If the key is provided as text, then it is transformed into normal opions.
+If the key is provided as text, then it is transformed into normal options.
 
-Random configuration
---------------------
-Random generation of configuration.
+Random encoding with enigmacode
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Enigmacode is a tool that encodes with a random key.
+
+This key is itself encoded with the given date or today and prepended at the
+beginning of the output file.
+
+Similarly, given a date or with today it decodes a file that it has
+encoded.
 
   Usage: enigmacode -c | -d  [ <date> ]
     <date>  ::=  jj/mm/YYyy
 
 Coding
-~~~~~~
-
+^^^^^^
 A random key is generated in arguments and text:
 --------------------------------------
 def_enigma rnd -text
 --------------------------------------
 This displays <key_args> and <key_text>.
 
-The key in text is coded, with a key generated from the current day, at the
-beginning of the coded file:
+The key in text is coded, with a key generated from the given date or today,
+at the beginning of the coded file:
 --------------------------------------
 echo -n "<key_text>" | enigmadef <date>  > <coded_file>
 --------------------------------------
-<date> can be an explicit date (dd/mm/yyy) or "today"
 
 The input file is coded with the random key and appended to the coded file
 --------------------------------------
@@ -332,21 +353,20 @@ enigma <key_args>  < <input_file>  >> <coded_file>
 --------------------------------------
 
 Decoding
-~~~~~~~~
-Extract temporary in the decoded file the 68 first characters from the coded
-file, (68 because 26 for switch, 3 for JJJ, 4 * 7 + 3 (5 is longest number in
-letters e.g. SEVEN) for the 4 max rotors, 5 + 3 (number+offset twice+"Z") for
-the reflector.
+^^^^^^^^
+Extract temporary in the decoded file the 67 first characters from the coded
+file, (67 because 26 for switch, 2 for separator, 4 * 7 + 3 (5 is longest
+number in letters e.g. SEVEN) for the 4 max rotors, 5 + 3
+(number+offset twice+"Z") for the reflector.
 
-Use the key generated from the current date (today) or a provided date:
+Use the key generated from the provided date or today:
 --------------------------------------
 datekey=`def_enigma <date>`
-txtkey=`enigma $datekey -l68 < <coded_file>`
+txtkey=`enigma $datekey -l67 < <coded_file>`
 --------------------------------------
 
-Look in the temporary result for the "JJJ" then read the key in text, until
-<num_in_text><letter><letter><num_in_text>. Note the offset <offset> of the
-irst letter following this sequence.
+Look in the temporary result for a valid text key. Note the offset <offset> of
+the first letter following this sequence.
 --------------------------------------
 numkey=`def_enigma $textkey` ; start=$?
 --------------------------------------

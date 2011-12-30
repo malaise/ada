@@ -17,7 +17,6 @@ for i in 1 2 3 4 ; do
   if [ $res -eq 0 ] ; then
     echo "OK."
   else
-    echo "KO."
     rm -f tmp
     echo "FAILED."
     exit 1
@@ -37,7 +36,6 @@ for file in *.txt ; do
   if [ $res -eq 0 ] ; then
     echo "OK."
   else
-    echo "KO."
     rm -f tmpc tmpd
     echo "FAILED."
     exit 1
@@ -50,13 +48,12 @@ echo ""
 echo "Test of  a letter twice through a random setting:"
 for L in $LIST ; do
   key=`def_enigma rnd`
+  echo -n "$L through $key twice "
   r=`echo -n $L | enigma $key`
   r=`echo -n $r | enigma $key`
-  echo -n "$L through $key twice "
   if [ "$r" = "$L" ] ; then
     echo "OK."
   else
-    echo "KO."
     echo "FAILED."
     exit 1
   fi
@@ -67,30 +64,12 @@ echo ""
 echo "Test of key to text and back:"
 for L in $LIST ; do
   key1="`def_enigma rnd`"
+  echo -n "$key1 to text and reverse "
   text=`def_enigma -text $key1 | awk '{print $NF}'`
   key2="`def_enigma $text`"
-  echo -n "$key1 to text and reverse "
   if [ "$key1" = "$key2" ] ; then
     echo "OK."
   else
-    echo "KO."
-    echo "FAILED."
-    exit 1
-  fi
-done
-echo ""
-
-# Verfiy text <-> key conversion
-echo "Test of text to key and back:"
-for L in $LIST ; do
-  text1=`def_enigma -text rnd | awk '{print $NF}'`
-  key="`def_enigma $text1`"
-  text2=`def_enigma -text $key | awk '{print $NF}'`
-  echo -n "$text1 to key and reverse "
-  if [ "$text1" = "$text2" ] ; then
-    echo "OK."
-  else
-    echo "KO."
     echo "FAILED."
     exit 1
   fi

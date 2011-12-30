@@ -90,13 +90,14 @@ procedure Def_Enigma is
   Rotors : As.B.Asb_Bs(8); -- 1 letter for rotor Id and 1 for ring
   Init_Offset : As.B.Asb_Bs(4);
   Nb_Rotors : Natural;
+  Separator : Character;
 
   -- For unicity of rotors
   subtype Rotor_Id is Positive range 1 .. 10;
   Rotor_Nums : array (Definition.Rotors_Id_Range) of Rotor_Id;
 
   -- For text key parsing and extraction
-  Separator : constant String := "JJJ";
+  Valid : Boolean;
   subtype Prev_Scrambler_Range is Natural range 0 .. Rotor_Id'Last;
   Start, Stop : Natural;
   Prev_Scrambler : Prev_Scrambler_Range;
@@ -106,6 +107,25 @@ procedure Def_Enigma is
   -- For Key parsing
   Reflector_Txt, Rotors_Txt, Init_Txt, Switches_Txt : As.B.Asb_Bs(256);
   Key_Error : exception;
+
+  -- Parse a reflector definition
+  procedure Parse_Reflector (Reflector_Str : String) is
+    Arob : Natural;
+    Id : Natural;
+  begin
+    Arob := Reflector_Str'Last - 1;
+    if Reflector_Str (Arob) /= '@' then
+      raise Key_Error;
+    end if;
+    Id := Xml.Get_Id (False, Reflector_Str(Reflector_Str'First .. Arob - 1));
+    if Id = 0 then
+      raise Key_Error;
+    end if;
+    Reflector.Set (To_Letter (Id) & Reflector_Str(Arob + 1));
+  exception
+    when others =>
+      raise Key_Error;
+  end Parse_Reflector;
 
   -- Input: N in 1 .. 10, to insert at Index
   function Store (N : Rotor_Id; Index : in Definition.Rotors_Id_Range)
@@ -199,13 +219,9 @@ begin
                              "/") /= 0 then
       -- Looks like a date
       Action := Parse_Date;
-    elsif String_Mng.Locate (Argument.Get_Parameter (Occurence => Other_Arg),
-                             Separator) /= 0 then
-      -- Looks like a text key
-      Action := Extract;
     else
-      -- A single reflector
-      Action := Key;
+      -- Try to extract a valid key from text, or a valid reflector def
+      Action := Extract;
     end if;
   else
     -- Reflector + options (rotors, switches)
@@ -371,82 +387,106 @@ begin
           Usage;
           return;
       end;
-      -- Locate separator between switch and scramblers
-      -- This cannot be "JJJJJ", but can be "xJJJJ"!
-      Start := Txt.Locate (Separator(1) & Separator);
-      if Start /= 0 then
-        -- Yes it is, the real separator is after the first "J"
-        Start := Start + 1;
+      -- At least SSxxxTTZ (separator ONE|TWO|SIX|TEN terminator and Z)
+      -- separator (and terminator) is twice the same letter
+      Valid := Txt.Length >= 8;
+      if Valid then
+        -- Locate separator between switch and scramblers
+        -- This is a letter repeated twice at odd offset
+        Start := 0;
+        declare
+          Str : constant String := Txt.Image;
+        begin
+          for I in 1 .. Str'Last - 1 loop
+            if Str(I) = Str(I + 1) then
+              if I rem 2 = 1 then
+                -- Separator found
+                Start := I;
+              elsif I + 2 <= Str'Last and then Str(I) = Str(I + 2) then
+                -- Separator is the same as last letter of switch
+                Start := I + 1;
+              else
+                -- Invalid duplication
+                Valid := False;
+              end if;
+              exit;
+            end if;
+          end loop;
+        end;
+
+        if Start > Txt.Length - 7 then
+          Valid := False;
+        end if;
+      end if;
+      if Valid then
+        Switch.Set (Txt.Slice (1, Start - 1));
+        -- Skip the separator
+        Start := Start + 2;
+        -- Look for scramblers
+        Prev_Scrambler := 0;
+        Got_Letters := (others => 'A');
+        loop
+          if Txt.Length >= Start
+          and then Txt.Element (Start) = 'Z' then
+            if Prev_Scrambler = 0 then
+              -- Empty definition!
+              Valid := False;
+              exit;
+            end if;
+            -- End of definition of rotors and reflector
+            if Got_Letters(1) /= Got_Letters(2) then
+              -- For the reflector: same letter
+              Valid := False;
+              exit;
+            end if;
+            Reflector.Set (To_Letter (Prev_Scrambler) & Got_Letters(1));
+            -- Will exit with code = first significant index after key
+            Start := Start + 1;
+            exit;
+          end if;
+
+          -- Look for scrambler num in letter
+          Get_Number (Txt.Image, Start, Stop, Got_Scrambler);
+          if Stop = 0 then
+            Valid := False;
+            exit;
+          end if;
+          if Prev_Scrambler /= 0 then
+            -- Prev rotor parsed ok: store rotor num and ring offset,
+            -- and rotor initial offset
+            Rotors.Append (To_Letter (Prev_Scrambler) & Got_Letters(1));
+            Init_Offset.Append (Got_Letters(2));
+          end if;
+          -- Two letters (ring offset and initial offset,
+          --  or twice the reflector offset)
+          begin
+            Got_Letters(1) := Txt.Element (Stop + 1);
+          exception
+            when Constraint_Error =>
+              -- No more char or no a letter
+              Valid := False;
+              exit;
+          end;
+          begin
+            Got_Letters(2) := Txt.Element (Stop + 2);
+          exception
+            when Constraint_Error =>
+              -- No more char or no a letter
+              Valid := False;
+              exit;
+          end;
+          Prev_Scrambler := Got_Scrambler;
+          Start := Stop + 3;
+        end loop;
+      end if;
+
+      if Valid then
+        -- Exit with next significant index
+        Basic_Proc.Set_Exit_Code (Start);
       else
-        -- This is "xyJJJ"
-        Start := Txt.Locate (Separator);
+        -- Parse as a reflector definition
+        Parse_Reflector (Txt.Image);
       end if;
-
-      -- Pairs of letters before separator (=> separator found)
-      if Start rem 2 /= 1 then
-        Usage;
-        return;
-      end if;
-      Switch.Set (Txt.Slice (1, Start - 1));
-      -- Skip the separator
-      Start := Start + Separator'Length;
-      -- Look for scramblers
-      Prev_Scrambler := 0;
-      Got_Letters := (others => 'A');
-      loop
-        if Txt.Length >= Start
-        and then Txt.Element (Start) = 'Z' then
-          if Prev_Scrambler = 0 then
-            -- Empty definition!
-            Usage;
-            return;
-          end if;
-          -- End of definition of rotors and reflector
-          if Got_Letters(1) /= Got_Letters(2) then
-            -- For the reflector: same letter
-            Usage;
-            return;
-          end if;
-          Reflector.Set (To_Letter (Prev_Scrambler) & Got_Letters(1));
-          -- Will exit with code = last significant index
-          Start := Start + 1;
-          exit;
-        end if;
-
-        -- Look for scrambler num in letter
-        Get_Number (Txt.Image, Start, Stop, Got_Scrambler);
-        if Stop = 0 then
-          Usage;
-          return;
-        end if;
-        if Prev_Scrambler /= 0 then
-          -- Prev rotor parsed ok: store rotor num and ring offset,
-          -- and rotor initial offset
-          Rotors.Append (To_Letter (Prev_Scrambler) & Got_Letters(1));
-          Init_Offset.Append (Got_Letters(2));
-        end if;
-        -- Two letters (ring offset and initial offset,
-        --  or twice the reflector offset)
-        begin
-          Got_Letters(1) := Txt.Element (Stop + 1);
-        exception
-          when Constraint_Error =>
-            -- No more char or no a letter
-            Usage;
-            return;
-        end;
-        begin
-          Got_Letters(2) := Txt.Element (Stop + 2);
-        exception
-          when Constraint_Error =>
-            -- No more char or no a letter
-            Usage;
-            return;
-        end;
-        Prev_Scrambler := Got_Scrambler;
-        Start := Stop + 3;
-      end loop;
-      Basic_Proc.Set_Exit_Code (Start);
   when Key =>
     -- Get rotors init, get Nb of rotors
     begin
@@ -461,24 +501,7 @@ begin
     end;
 
     -- Extract reflector
-    declare
-      Reflector_Str : constant String := Reflector_Txt.Image;
-      Arob : Natural;
-      Id : Natural;
-    begin
-      Arob := Reflector_Str'Last - 1;
-      if Reflector_Str (Arob) /= '@' then
-        raise Key_Error;
-      end if;
-      Id := Xml.Get_Id (False, Reflector_Str(Reflector_Str'First .. Arob - 1));
-      if Id = 0 then
-        raise Key_Error;
-      end if;
-      Reflector.Set (To_Letter (Id) & Reflector_Str(Arob + 1));
-    exception
-      when others =>
-        raise Key_Error;
-    end;
+    Parse_Reflector (Reflector_Txt.Image);
 
     -- Extract rotors and check Nb versus offsets
     declare
@@ -695,8 +718,9 @@ begin
   if To_Text then
     Basic_Proc.Put_Output (" ");
     -- Key coded onto text
-    -- Switch and separator
-    Basic_Proc.Put_Output (Switch.Image & Separator);
+    -- Switch and random separator
+    Separator := To_Letter (Id_Random);
+    Basic_Proc.Put_Output (Switch.Image & Separator & Separator);
     for I in 1 .. Rotors.Length loop
       if I rem 2 = 1 then
         -- Rotor letter

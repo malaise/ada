@@ -9,10 +9,10 @@ function usage {
 
 # The max length of text key
 # 26 for switches
-#  3 for "JJJ"
+#  2 for the seperator twice
 # 31 for the rotors, 4 * 7 (longest number is SEVEN=5, + '@' offset each) + 3 '#'
 #  8 for the reflector (number=5, offset, offset, 'Z')
-export TEXT_KEY_MAX_LEN=68
+export TEXT_KEY_MAX_LEN=67
 
 # Parse mode
 if [ "$1" = "-c" ] ; then

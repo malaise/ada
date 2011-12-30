@@ -268,10 +268,17 @@ package body Definition is
 
   -- Set the rotors
   procedure Set_Rotors (Children : in Xml_Parser.Nodes_Array;
-                        Rotor_Str, Init_Str : in String) is
+                        Rotor_Str, Initial_Str : in String) is
     Iter : Parser.Iterator;
+    Init_Str : String (1 .. Def.Nb_Rotors);
     No_Carry : constant Carries_Array := (others => False);
   begin
+    -- If Init_Str is empty => no initial offset
+    if Initial_Str = "" then
+      Init_Str := (others => 'A');
+    else
+      Init_Str := Initial_Str;
+    end if;
     -- Parse the Rotors definition
     -- <Name>@<OffsetLetter> [ { #<Name>@<OffsetLetter> } ]
     Iter.Set (Rotor_Str, Separing'Access);
@@ -293,7 +300,7 @@ package body Definition is
           Error ("Invalid rotor ring setting " & Str(Str'Last));
         end if;
         if Init_Str(I) not in Types.Letter then
-          Error ("Invalid rotor initial setting " & Str(Str'Last));
+          Error ("Invalid rotor initial offset setting " & Str(Str'Last));
         end if;
         -- The order is Refl - R3 - R2 - R1 (R1 is turning fastest)
         -- And signal is
@@ -306,11 +313,6 @@ package body Definition is
                    Init => Types.Id_Of (Init_Str(I)));
       end;
     end loop;
-    -- No more Rotor allowed
-    if Iter.Next_Word /= "" then
-      Error ("Too many rotor definitions, expecting "
-          & Integer_Image (Def.Nb_Rotors));
-    end if;
 
     -- Only last rotor can have no carry
     for I in 1 .. Def.Nb_Rotors - 1 loop
@@ -394,17 +396,29 @@ package body Definition is
       Error ("Too many reflector definitions");
     end if;
 
-    -- Check offset versus rotors
+    -- Check offset versus rotors, count rotors
+    Rotor_Nb := 0;
     if not Argument.Is_Set (1, Rotors_Key) then
       if Argument.Is_Set (Param_Key => Init_Key) then
-        Error ("Unexpected initial rotor offsets key");
+        Error ("Unexpected rotor initial offsets key");
       end if;
-      Rotor_Nb := 0;
     else
-      if not Argument.Is_Set (1, Init_Key) then
-        Error ("Missing initial rotor offsets key");
+      declare
+        Str : constant String := Argument.Get_Parameter (1,Rotors_Key);
+      begin
+        for I in Str'Range loop
+          if Str(I) = '@' then
+            Rotor_Nb := Rotor_Nb + 1;
+          end if;
+        end loop;
+      end;
+      if Argument.Is_Set (1, Init_Key)
+      and then Argument.Get_Parameter (1, Init_Key)'Length /= Rotor_Nb then
+        Error ("Invalid number of rotor initial offsets in """
+          & Argument.Get_Parameter (1, Init_Key)
+          & """, expecting "
+          & Integer_Image (Rotor_Nb));
       end if;
-      Rotor_Nb := Argument.Get_Parameter (1, Init_Key)'Length;
     end if;
 
     -- Initialize result with correct number of rotors
@@ -422,8 +436,12 @@ package body Definition is
 
     -- Set rotors
     if Def.Nb_Rotors /= 0 then
-      Set_Rotors (Children, Argument.Get_Parameter (1, Rotors_Key),
-                            Argument.Get_Parameter (1, Init_Key));
+      if Argument.Is_Set (1, Init_Key) then
+        Set_Rotors (Children, Argument.Get_Parameter (1, Rotors_Key),
+                              Argument.Get_Parameter (1, Init_Key));
+      else
+        Set_Rotors (Children, Argument.Get_Parameter (1, Rotors_Key), "");
+      end if;
     end if;
 
     -- Set reflector
