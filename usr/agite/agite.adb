@@ -341,6 +341,8 @@ procedure Agite is
           when Revert =>
             Do_Revert (File_Name);
         end case;
+      elsif File.Kind = '?' and then Action = Revert then
+        Do_Revert (File_Name);
       end if;
     end;
   end List_Action;
