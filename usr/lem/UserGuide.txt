@@ -34,7 +34,7 @@ speed can be far above the speed gauges maxima without problem.
 Finally, in the lower right corner, an indicator shows "APPR" when above a
 landing area and and not too high (less than 5 times the LEM height).
 
-This indicator shows "CLOS" when getting close to land, then "LAND" when
+This indicator shows "CLOSE" when getting close to land, then "LAND" when
 landed.
 
 Below the indicator, a chronometer indicates the duration of the game.
@@ -71,7 +71,7 @@ Scenario
 ~~~~~~~~
 The game starts at a random (high) position, with a random vertical speed and
 a reasonable vertical thrust (and a very reasonable horizontal speed).
-Spot a flat landing area and adjust speeds to reach it. Check the area (APP
+Spot a flat landing area and adjust speeds to reach it. Check the area (APPR
 indicator) before landing.
 
 You land safely if within 75% of the speed limits and with at least 10% of
@@ -114,15 +114,16 @@ Beware that the horizontal speed is nearly never nul, if needed, swap sides
 when getting close to a side of the landing area. Also anticipate the changes
 of vertical speeds, always remain on the "safe" side.
 
-You will bump (APP then LAND then APP) if you are slowing down at excessive
+You will bump (APPR then LAND then APPR) if you are slowing down at excessive
 rate (positive acceleration). The best landing is with a constant or slightly
 negative acceleration. So, at the last time, reduce power (if it is safe).
 
 Troubleshooting
 ~~~~~~~~~~~~~~~
 Any software has bugs. Please report any bug to malaise-at-magic-dot-fr.
+
 If you think that you landed properly but crashed, please check the speeds and
-the "APP" indicator before suspecting a bug. If the speeds are not both blue
+the "APPR" indicator before suspecting a bug. If the speeds are not both blue
 or the "LAND" indicator is not set at the time the LEM contacts the ground,
 then it is a crash.
 

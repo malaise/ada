@@ -540,9 +540,7 @@ Fix parsing of ELEMENT content when it is an entity describing a list
 +
 Fix Xml_Parser, empty elements where not checked vs dtd
 
-*2008/08/18*:: Fix several bugs and limitations in Xml_Parser
-+
-Xml_Parser V4.1, Xml_Checker V4.0
+*2008/08/18*:: Fix several bugs and limitations in Xml_Parser V4.1, Xml_Checker V4.0
 
 - Fix expand_Entities becomes Expand and is used also to set ro not attributes with default values 
 but don't miss xml:space="preserve" directives
@@ -554,9 +552,7 @@ but don't miss xml:space="preserve" directives
 +
 Fix child behaviour that shall exit when spwan (exec) fails
 
-*2008/08/14*:: Fix several bugs or limitations in Xml_Parser
-+
-Xml_Parser V3.0, Xml_Generator V5.1, Xml_Checker V3.0
+*2008/08/14*:: Fix several bugs or limitations in Xml_Parser V3.0, Xml_Generator V5.1, Xml_Checker V3.0
 
 - Fix improper handling of DTD enum attributes when default/fix is not the first
 - Add check that Root name matches Doctype name

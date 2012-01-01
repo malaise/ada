@@ -206,8 +206,8 @@ show all entries.
 
 Iterate on tree:
 
-4.5.1 In tree mode
-------------------
+In tree mode
+^^^^^^^^^^^^
 Dump the tree:
 
   UnitSpec - UnitBody - Subunits - WithSpecs
@@ -215,16 +215,16 @@ Dump the tree:
            - ParentSpec - WithsSpecs...
            - WithsSpecs - WithsSpecs...
 
-4.5.2 In list mode
-------------------
+In list mode
+^^^^^^^^^^^^
 Dump the tree in a list.
 
 Sort it by unit/file path (local first).
 
 In case of file revert mode, list each unit by spec+body+subunits.
 
-4.5.3 In path mode
-------------------
+In path mode
+^^^^^^^^^^^^
 Keep track in a list of the units between target and current unit.
 
 When current unit is path_unit then show the current list.

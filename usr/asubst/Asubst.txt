@@ -16,6 +16,10 @@ Substitutes strings in files.
 
 If no file name is specified, substitutes from stdin to stdout.
 
+WARNING: regex are powerfull and automatic substitution can be dangerous, so
+use asubst with caution: test pattern with "echo string | asubst
+<search_pattern> <replace_string>" and use -s or -tv option if unsure.
+
 See "man 3 pcre" for Perl Compatible Regular Expressions and "man 1 perlre"
 for Perl Regular Expressions.
 
@@ -142,13 +146,14 @@ brackets:
 
     "\T" [:punct:], "\S" [:space:], "\U" [:upper:], "\X" [:xdigit:].
 +
-Note that asubst does NOT check if such shortcut is within a bracket
+NOTE: Asubst does *NOT* check if such shortcut is within a bracket
 expression or not. For example, "\M" is always replaced by "[:alnum:]" and,
-out of a bracket expression, this becomes a bracket expression, meaning: ':'
+out of a bracket expression, this becomes a bracket expression, meaning: '':''
 or ''a'' or ''l'' or ''n'' or ''u'' or ''m''.
 
-Note that only "\s", "\t", "\n" and "\xIJ" are interpreted in "noregex" mode.
-Finally, beware that some regex expressions are supposed to match a "new line"
+NOTE: Only "\s", "\t", "\n" and "\xIJ" are interpreted in "noregex" mode.
+
+NOTE: Beware that some regex expressions are supposed to match a "new line"
 (example [:blank:] within a bracket expression) but will not match in asubst,
 because the input flow/file is decomposed into lines and then each line is
 compared to a regex expression.
@@ -157,8 +162,9 @@ Exclusion pattern
 -----------------
 If set, the <exclude_regex> must have the same number of regex as the
 <find_pattern>. This option means that text matching the <find_pattern> but
-also the <exclude_regex> will not be replaced. Beware that it applies to the
-text matching <find_pattern> only.
+also the <exclude_regex> will not be replaced.
+
+NOTE: Beware that it applies to the text matching <find_pattern> only.
 
 For example 'echo "toto" | asubst --exclude=toto to ti' will replace toto by
 titi because each matching "to" does not match the exclusion "toto".
@@ -168,7 +174,6 @@ On the other hand, 'echo "toto" | asubst --exclude=to to ti' and 'echo "toto"
 
 Match range
 -----------
-
 The <range> has the format: i-j,k-l... Example: "-4,7-9,15-" means the first 4
 matching occurence, the 7th to the 9th and 15th occurence and after ("" means
 none). Only these occurences of matching (in the file or flow) will be
@@ -247,10 +252,10 @@ then the content of the file is inserted as is.
 for stopping a case conversion. A conversion ends when a new starts, on "\c"
 or at the end of replace string.
 
-Note that substrings are numbered in the order of the opening parenthesis,
+NOTE: Substrings are numbered in the order of the opening parenthesis,
 left to right.
 
-Note that "\r0i" and "\i0i" are forbidden.
+NOTE: "\r0i" and "\i0i" are forbidden.
 
 Conditions apply first, then replacement, then case conversion.
 

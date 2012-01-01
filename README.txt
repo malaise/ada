@@ -6,7 +6,6 @@ This README file describes briefly the main directories of the Ada contrib.
 The software compiles with Ada05 (Gnat GPL 2010) and runs on Unix (Linux).
 
 Some programs depend on PCRE (Perl Compatible Regular Expressions) and work
-
 with version 7.8 or above (8.11 is OK).
 
 Programs are rated from 1 (simple) to 3 (very complex), on subjective
@@ -21,7 +20,7 @@ Similarly, the commands "ada" and "gnatlink" can be in the path and be this
 gnatmake (you can copy it or make links from $HOME/bin/ada and
 $HOME/bin/gnatlink to it).
 
-Automatic generation by make (see next section) don't use them but these
+Automatic generation by make (see next section) doesn't use them but these
 scripts are convenient.
 
 Makefiles project (MANDATORY)
@@ -31,8 +30,10 @@ Several examples of usage can be found in the source directories.
 
 Relocation of the Makefiles directory
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-If the Makefiles installation directory is not $(HOME)/Makefiles,
+If the Makefiles installation directory is not $(HOME)/Makefiles, then
+
 - the definition of TEMPLATES in common.mk has to be adapted,
+
 - all makefiles must have their first include directive of common.mk adapted.
 
 Relocation of C or Repository
@@ -43,7 +44,9 @@ path.mk of Makefiles must be modified.
 Recursive make
 ~~~~~~~~~~~~~~
 The content of the makefile for applying make to subdirecotries is:
+
 SUBDIRS := c reposit usr
+
 include $(HOME)/Makefiles/dir.mk
 
 Other directives can be added if something has also to be compiled in current
@@ -53,9 +56,9 @@ C directory (MANDATORY)
 -----------------------
 Four libraries here:
 
-Lib C util (cutil)
-~~~~~~~~~~~~~~~~~~
+.Lib C util (cutil)
 This lib gathers several low level utility libraries:
+
 - timeval used by other C libraries, for struct timeval operations,
 
 - socket interfaced by Ada Socket package, interfaces socket (tcp, udp,
@@ -67,18 +70,15 @@ several operating system calls,
 - wait_evt, interfaced by Ada Even_Mng package, waits (with "select") on
 several fds, catches signals...
 
-Lib X Mng (xmng)
-~~~~~~~~~~~~~~~~
+.Lib X Mng (xmng)
 This lib encapsulates all needed calls to X11, interfaced by X_Mng Ada
 package.
 
-Lib C Ndbm (cnbdbm)
-~~~~~~~~~~~~~~~~~~~
+.Lib C Ndbm (cnbdbm)
 This lib interfaces with ndbm C library. The corresponding Ndbm package is not
 used at present (except in test).
 
-Lib Posix to PCRE (posic2pcre)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.Lib Posix to PCRE (posic2pcre)
 Own binding of PCRE to POSIX API, with extension, interfaced by
 Regular_Expressions Ada package.
 
@@ -86,12 +86,15 @@ Reposit directory
 -----------------
 Many utility packages here.
 Some of them are interdependant, the main dependency trees are:
-- Graphic (X11) function: X_Mng <- (Genric_)Con_Io <- Afpx and Curve
+
+- Graphic (X11) function: X_Mng <- Con_Io <- Afpx and Curve
+
 - Communication, Timers: Socket, Timers and Event_Mng <- Tcp_Util <-
 Channels
 
 The most complex is definitively the Xml_Parser.
-See reposit/REPOSIT_LIST for the list of packages.
+
+See link:reposit/REPOSIT_LIST.html[] for the list of packages.
 
 5 Usr directories
 -----------------

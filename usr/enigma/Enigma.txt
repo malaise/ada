@@ -53,12 +53,16 @@ Semantic:
 
 - Up to 4 rotors can be defined (and one reflector must be defined). They
 must all have different names.
-In the command line, the rotors (optional) definition consists in
++
+The rotors (optional) definition consists in
 <rotor_defs> (rotor name @ ring setting, separated by #) and
-<rotor_inits>, the initial position of each rotor. First rotor defined
-is the slowest and is the one crossed just before the reflector. So for
+<rotor_inits>, the initial position of each rotor.
++
+First rotor defined is the slowest and is the one crossed just before the reflector. So for
 command line "I IV V", the coding will go through V, IV, I, reflector,
 then back.
++
+Only last rotor can have no carry.
 
 - Rotor initial offsets is optional. If it is set it must define an offset
 for each rotor defined.
@@ -228,12 +232,12 @@ date.
 
 If today arg, same with current date.
 
-If <text_key>, displays the key from text key (see
-<<XT-TextOutput,Text Output>>).
+If <text_key>, parses the text key and displeys the corresponding settings (see
+xref:XT-TextKey[Text Key]).
 
 If <enigma_setting>, check and displays these enigma arguments.
 
-If -text, also generates text of key (see <<XT-TextOutput,Text Output>>).
+If -text, also generates text key (see xref:XT-TextKey[Text Key]).
 
 Rotors (at least 10) and reflectors (at least 5) are defined in a XML file as
 for enigma.
@@ -292,13 +296,14 @@ The other rotors are from 1st to 10th.
 
 The switch is a random list (1 to 12 included) of random pairs of letters
 
-[[XT-TextOutput]]
-Text output
-^^^^^^^^^^^
+Text key
+^^^^^^^^
+anchor:XT-TextKey[]
 The default output format is a valid set of arguments for enigma.
 
-If optionnal -text option is provided, the setting (computed from random, from
-current date or from provided date) is also translated to text:
+If optionnal -text option is provided, the setting (given as argument,
+given in text, computed from random, computed from current date or from
+provided date) is also translated to text:
 
 - The switch definition is displayed, followed by a random letter repeated
 (a letter cannot appear twice in switch definition).
@@ -315,10 +320,8 @@ digit in letters), which marks the end). Example
 C@A -rI@H#VII@R#II@U -iUAQ -sAEBM -> AEBMPPONEHUSEVENRATWOUQTHREEAAZ
 --------------------------------------
 
-Note that even in case of 4 rotors the 4th rotor is ONE or TWO and the
-reflector is ONE or TWO.
-
-If the key is provided as text, then it is transformed into normal options.
+This format of text key is also supported as argument, then it is parsed and
+displayed as normal enigma settings.
 
 Random encoding with enigmacode
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
