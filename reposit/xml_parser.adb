@@ -3,7 +3,7 @@ with Environ, Basic_Proc, Rnd, Exception_Messenger, Directory;
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "10";
+  Minor_Version : constant String := "0";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -263,6 +263,13 @@ package body Xml_Parser is
   -------------
   -- PARSING --
   -------------
+  procedure Clean (Ctx : in out Ctx_Type;
+                   Reset_Unparsed_Entities : in Boolean);
+  procedure Clean (Ctx : in out Ctx_Type) is
+  begin
+    Clean (Ctx, Reset_Unparsed_Entities => True);
+  end Clean;
+
   -- Parse a Xml file, stdin if empty
   -- May raise File_Error, Parse_Error
   procedure Parse (Ctx       : out Ctx_Type;
@@ -310,7 +317,8 @@ package body Xml_Parser is
     if Ctx.Callback = null then
       Ctx.Status := Parsed_Elements;
     else
-      Clean (Ctx);
+      -- Keep unparsed entities after successful parsing with callback
+      Clean (Ctx, Reset_Unparsed_Entities => False);
     end if;
     Ok := True;
   exception
@@ -343,7 +351,7 @@ package body Xml_Parser is
   function Get_Parse_Error_Message (Ctx : Ctx_Type) return String is
   begin
     case Ctx.Status is
-      when Clean | Init | Parsed_Prologue_Cb =>
+      when Clean | Init | Unparsed | Parsed_Prologue_Cb =>
         raise Status_Error;
       when Parsed_Prologue | Parsed_Elements | Error =>
         return Ctx.Flow.Err_Msg.Image;
@@ -351,7 +359,8 @@ package body Xml_Parser is
   end Get_Parse_Error_Message;
 
   -- Clean a parsing context
-  procedure Clean (Ctx : in out Ctx_Type) is
+  procedure Clean (Ctx : in out Ctx_Type;
+                   Reset_Unparsed_Entities : in Boolean) is
     use type My_Tree.Position_Access;
     File : File_Access;
   begin
@@ -405,10 +414,15 @@ package body Xml_Parser is
     -- Clean IDs and unparsed entities
     Ctx.Ids.Delete_List;
     Ctx.Idrefs.Delete_List;
-    Ctx.Unparsed_List.Delete_List;
-    -- Context is clean
+    if Reset_Unparsed_Entities then
+      Ctx.Unparsed_List.Delete_List;
+      -- Context is clean
+      Ctx.Status := Clean;
+    else
+      -- Only unparsed entities can now be got
+      Ctx.Status := Unparsed;
+    end if;
     Ctx.Magic := Clean_Magic;
-    Ctx.Status := Clean;
   end Clean;
 
   -- Dtd parsing
@@ -553,7 +567,7 @@ package body Xml_Parser is
   begin
     -- Status must be Parsed_Prologue [_Cb]
     case Ctx.Status is
-      when Clean | Init =>
+      when Clean | Init | Unparsed =>
         raise Status_Error;
       when Parsed_Elements =>
         raise End_Error;
@@ -571,7 +585,8 @@ package body Xml_Parser is
     if Ctx.Callback = null then
       Ctx.Status := Parsed_Elements;
     else
-      Clean (Ctx);
+      -- Keep unparsed entities after successful parsing with callback
+      Clean (Ctx, Reset_Unparsed_Entities => False);
     end if;
     -- Close the file
     Ok := True;
@@ -605,10 +620,10 @@ package body Xml_Parser is
                    Ok  : out Boolean;
                    Warn_Cb  : in Warning_Callback_Access := null) is
   begin
-    -- Status must be Parsed_xxx or Init
-    if Ctx.Status = Clean
-    or else Ctx.Status = Error
-    or else Ctx.Status = Parsed_Prologue_Cb then
+    -- Status must be Parsed_Prologue, Parsed_Elements or Init
+    if Ctx.Status /= Parsed_Prologue
+    and then Ctx.Status /= Parsed_Elements
+    and then Ctx.Status /= Init then
       raise Status_Error;
     end if;
     -- In case of exception...
@@ -652,6 +667,7 @@ package body Xml_Parser is
     if Node.Tree_Access = My_Tree.No_Position then
       raise Invalid_Node;
     end if;
+    -- Status must be Parsed_Prologue, Parsed_Elements or Init
     if Ctx.Status /= Parsed_Prologue
     and then Ctx.Status /= Parsed_Elements
     and then Ctx.Status /= Init then
@@ -685,6 +701,16 @@ package body Xml_Parser is
     return Cell;
   end Get_Cell;
 
+  -- Check that status is compatible with get
+  procedure Check_For_Get (Status : Ctx_Status_List) is
+  begin
+    if Status = Error then
+      raise Parse_Error;
+    elsif Status = Clean or else Status = Unparsed then
+      raise Status_Error;
+    end if;
+  end Check_For_Get;
+
   -- Get Doctype characteristics (prologue must have been parsed)
   procedure Get_Doctype (Ctx : in Ctx_Type;
        Name    : out As.U.Asu_Us;
@@ -693,11 +719,7 @@ package body Xml_Parser is
        File    : out As.U.Asu_Us;
        Int_Def : out As.U.Asu_Us) is
   begin
-    if Ctx.Status = Error then
-      raise Parse_Error;
-    elsif Ctx.Status = Clean then
-      raise Status_Error;
-    end if;
+    Check_For_Get (Ctx.Status);
     if Ctx.Doctype.Name.Is_Null then
       raise Doctype_Not_Set;
     end if;
@@ -720,11 +742,6 @@ package body Xml_Parser is
     Cell : constant My_Tree_Cell
          := Get_Cell (Get_Tree (Ctx, Pi_Node), Pi_Node);
   begin
-    if Ctx.Status = Error then
-      raise Parse_Error;
-    elsif Ctx.Status = Clean then
-      raise Status_Error;
-    end if;
     return Cell.Name;
   end Get_Target;
 
@@ -740,22 +757,13 @@ package body Xml_Parser is
     Cell : constant My_Tree_Cell
          := Get_Cell (Get_Tree (Ctx, Pi_Node), Pi_Node);
   begin
-    if Ctx.Status = Error then
-      raise Parse_Error;
-    elsif Ctx.Status = Clean then
-      raise Status_Error;
-    end if;
     return Cell.Value;
   end Get_Pi;
 
   -- Get Prologue of a parsed context (after Parse or Parse_Prologue)
   function Get_Prologue (Ctx : Ctx_Type) return Element_Type is
   begin
-    if Ctx.Status = Error then
-      raise Parse_Error;
-    elsif Ctx.Status = Clean then
-      raise Status_Error;
-    end if;
+    Check_For_Get (Ctx.Status);
     -- Only prologue or full parsing completed
     Ctx.Prologue.Move_Root;
     return (Kind => Element,
@@ -768,10 +776,8 @@ package body Xml_Parser is
   --  may raise Status_Error if called before Parse_Elements
   function Get_Root_Element (Ctx : Ctx_Type) return Element_Type is
   begin
-    if Ctx.Status = Error then
-      raise Parse_Error;
-    elsif Ctx.Status /= Parsed_Elements
-    and then Ctx.Status /= Init then
+    Check_For_Get (Ctx.Status);
+    if Ctx.Status /= Parsed_Elements then
       raise Status_Error;
     end if;
     -- Only prologue or full parsing completed
@@ -1137,11 +1143,13 @@ package body Xml_Parser is
     Rec : Unparsed_Type;
   begin
     case Ctx.Status is
-      when Clean | Init =>
+      when Clean =>
         raise Status_Error;
       when Error =>
         raise Parse_Error;
-      when Parsed_Elements | Parsed_Prologue | Parsed_Prologue_Cb =>
+      when Init | Parsed_Elements | Parsed_Prologue | Parsed_Prologue_Cb
+         | Unparsed =>
+        -- Ok
         null;
     end case;
     -- Get entity

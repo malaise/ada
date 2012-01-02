@@ -4,7 +4,7 @@ with Integer_Image, Text_Line, Sys_Calls, Trees;
 package body Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "1";
+  Minor_Version : constant String := "2";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -53,7 +53,8 @@ package body Xml_Parser.Generator is
   procedure Init_Ctx (Ctx : in out Ctx_Type) is
     Cell : My_Tree_Cell;
   begin
-    if Ctx.Status = Clean then
+    if Ctx.Status = Clean
+    or else Ctx.Status = Unparsed then
       Ctx.Magic := Get_Magic;
       -- Init prologue: a xml node
       Cell.Kind := Element;
@@ -64,7 +65,9 @@ package body Xml_Parser.Generator is
       -- Init elements: an empty root element
       Cell.Name.Set_Null;
       Ctx.Elements.Insert_Father (Cell);
-      Ctx.Status := Init;
+      if Ctx.Status = Unparsed then
+        Ctx.Unparsed_List.Delete_List;
+      end if;
     end if;
     -- Reset to init (in case of error...)
     Ctx.Status := Init;
@@ -1279,9 +1282,7 @@ package body Xml_Parser.Generator is
                       Width  : in Natural;
                       Flow   : in out Flow_Dscr) is
   begin
-    if Ctx.Status = Error
-    or else Ctx.Status = Error
-    or else Ctx.Status = Parsed_Prologue then
+    if Ctx.Status /= Init and then Ctx.Status /= Parsed_Elements then
       raise Status_Error;
     end if;
     -- Put prologue if any

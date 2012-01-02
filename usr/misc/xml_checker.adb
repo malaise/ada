@@ -4,7 +4,7 @@ with As.U, Argument, Argument_Parser, Xml_Parser.Generator, Normal, Basic_Proc,
      Text_Line, Sys_Calls, Parser;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V15.1";
+  Version : constant String := "V15.2";
 
   procedure Ae_Re (E : in Ada.Exceptions.Exception_Id;
                    M : in String := "")
@@ -66,13 +66,13 @@ procedure Xml_Checker is
     procedure Ple (Str : in String) renames Basic_Proc.Put_Line_Error;
   begin
     Ple ("Usage: " & Argument.Get_Program_Name & "[ { <option> } ] [ { <file> } ]");
-    Ple (" <option> ::= <silent> | <dump> | <raw> | <warnings> |  <width> | <one>");
-    Ple ("            | <keep> | <expand> | <check_dtd> | <tree> | <canonical>");
-    Ple ("            | <help> | <version>");
+    Ple (" <option> ::= <silent> | <dump> | <raw> | <width> | <one> |");
+    Ple ("            | <expand> | <keep> | <normalize> | <canonical>");
+    Ple ("            | <check_dtd> | <warnings> | <tree> | <help> | <version>");
+
     Ple (" <silent>     ::= -s | --silent     -- No output, only exit code");
     Ple (" <dump>       ::= -D | --dump       -- Dump expanded Xml tree");
     Ple (" <raw>        ::= -r | --raw        -- Put all on one line");
-    Ple (" <warnings>   ::= -w | --warnings   -- Check for warnings");
     Ple (" <width>      ::= -W <Width> | --width=<Width>");
     Ple ("                                    -- Put attributes up to Width");
     Ple (" <one>        ::= -1 | --one        -- Put one attribute per line");
@@ -84,14 +84,14 @@ procedure Xml_Checker is
     Ple ("                                    -- Keep none (remove comments and CDATA");
     Ple ("                                    --  markers)");
     Ple ("                                    -- Keep all (default)");
+    Ple (" <canonical>  ::= -C | --canonical  -- Canonicalize xml");
     Ple (" <normalize>  ::= --no-normalize    -- Do not normalize attributes and text");
     Ple (" <check_dtd>  ::= -d [ <Dtd> ] | --dtd=[<Dtd>]");
     Ple ("                                    -- Use a specific dtd or none");
+    Ple (" <warnings>   ::= -w | --warnings   -- Check for warnings");
     Ple (" <tree>       ::= -t | --tree       -- Build tree then dump it");
-    Ple (" <canonical>  ::= -C | --canonical  -- Canonicalize xml");
     Ple (" <help>       ::= -h | --help       -- Put this help");
     Ple (" <version>    ::= -v | --version    -- Put versions");
-    Ple ("The xml is validated versus dtd (if any) only if entities are expanded.");
     Ple ("Empty Dtd can be used to force skipping validation versus dtd.");
     Ple ("All options except expand, keep, dtd, warnings and tree are exclusive.");
     Ple ("Keep and expand are not allowed on Dump mode, Dump => keep all.");
@@ -561,7 +561,7 @@ begin
     -- Silent
     Output_Kind := None;
   elsif Arg_Dscr.Is_Set (2) then
-    if Arg_Dscr.Get_Option (14) = "" then
+    if Arg_Dscr.Is_Set (14) then
       Ae_Re (Arg_Error'Identity, "Incompatible ""expand"" and ""dump"" options");
     end if;
     -- -D: Dump, keep all

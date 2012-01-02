@@ -27,5 +27,7 @@ LARGS_dtd_checker.stat := $(CPATHD)/libcutil.a $(CPATHD)/libposix2pcre.a \
 LARGS_xml_checker.stat := $(CPATHD)/libcutil.a $(CPATHD)/libposix2pcre.a \
   $(PCRE)/libpcre.a
 
+TXT := Xml_Checker
+
 include $(TEMPLATES)/ada.mk
 

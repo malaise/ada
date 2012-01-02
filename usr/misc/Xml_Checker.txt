@@ -1,0 +1,173 @@
+XML_CHECKER
+===========
+
+Parser version: V27.0
+
+Generator version: V9.2
+
+Xml_checker version: V15.2
+
+Xml_checker is a parser of XML file that checks the syntax (versus DTD) and
+formats the output.
+
+Syntax
+------
+...................................................
+xml_checker[ { <option> } ] [ { <file> } ]
+ <option> ::= <silent> | <dump> | <raw> | <width> | <one> |
+            | <expand> | <keep> | <normalize> | <canonical>
+            | <check_dtd> | <warnings> | <tree> | <help> | <version>
+
+ <silent>     ::= -s | --silent     -- No output, only exit code
+ <dump>       ::= -D | --dump       -- Dump expanded Xml tree
+ <raw>        ::= -r | --raw        -- Put all on one line
+ <width>      ::= -W <Width> | --width=<Width>
+                                    -- Put attributes up to Width
+ <one>        ::= -1 | --one        -- Put one attribute per line
+
+ <expand>     ::= -E | --expand     -- Expanded general entities
+                                    --  and attributes with default
+ <keep>       ::= -k c|d|n|a | --keep=comments|cdata|none|all
+                                    -- Keep comments
+                                    -- Keep CDATA sections unchanged
+                                    -- Keep none (remove comments and CDATA
+                                    --  markers)
+                                    -- Keep all (default)
+ <canonical>  ::= -C | --canonical  -- Canonicalize xml
+ <normalize>  ::= --no-normalize    -- Do not normalize attributes and text
+
+ <check_dtd>  ::= -d [ <Dtd> ] | --dtd=[<Dtd>]
+                                    -- Use a specific dtd or none
+ <warnings>   ::= -w | --warnings   -- Check for warnings
+
+ <tree>       ::= -t | --tree       -- Build tree then dump it
+ <help>       ::= -h | --help       -- Put this help
+ <version>    ::= -v | --version    -- Put versions
+...................................................
+All options except expand, keep, dtd, warnings and tree are exclusive.
+
+Output format
+~~~~~~~~~~~~~
+-s | --silent: :: for no output at all. Xml_checker exits with 0 if OK and
+with 1 on error.
+-D | --dump: :: for a dump of the line numbers, of XML structure and "Mixed"
+information, example:
+
+  Prologue:
+  00000001 - - xml : version=1.1
+  00000002 - -  <!-- Definition of variables for test of program "comp_vars" -->
+  00000003 - -  =><=
+  00000004 - -  <!-- After Doctype -->
+  Elements:
+  00000006 - - Variables
+  00000007 - -  <!-- Below root -->
+  00000008 M -  Var : Name=V1 Type=Int
+  00000008 - M   =>5<=
++
+Note that this options is incompatible with the xref:Expand[Expand] option and
+with the xref:Keep[Keep] option. Dump implies to keep all as is.
+
+-r | --raw: :: for a XML output, all on one line (no line feed).
+
+-W <Width> | --width=<Width>: :: for limiting the number of attributes per
+line to up to <Width> columns. Default format is ''-W 80''.
+
+-1 | --one : :: for a XML output with at most one attribute per line.
+
+Transformations
+~~~~~~~~~~~~~~~
+-E | --expand: :: anchor:Expand[] for expand general entities and expand attributes with
+their default value (if they have).
+
+-k c|d|n|a | --keep=comments|cdata|none|all: :: anchor:Keep[] for keep comments,
+or keep CDATA sections unchanged, or keep none (remove comments and CDATA
+markers) or keep all unchanged, which is the default.
+
+-C | --canonical: :: for canonicalization of the XML (see
+http://www.w3.org/TR/xml-c14n). This option only allows options dtd, warnings
+and keep-comments (it expands and by default removes comments, it forbids the
+"xref:tree[tree]" mode).
+
+--no-normalize: :: for no normalization of attributes and text.
+
+Checks
+~~~~~~
+-d [ <Dtd> ] | --dtd=[<Dtd>]: :: for check with a specific DTD file.
+Use this option to set the DTD if the XML file has no DOCTYPE or to overwrite
+the DOCTYPE directive. You ca use ''-d ""'' or ''--dtd=""'' to force discarding
+the DOCTYPE directive.
+
+ -w | --warnings: :: for check and report warnings. The warnings that are
+handled are:
+ * multiple definition of the same ATTLIST,
+ * ATTLIST for unknown element,
+ * multiple definition of the same attribute for an element,
+ * multiple definition of the same ENTITY,
+ * reference to a child that is not defined,
+ * inconsistency between the EMPY definition of an element and the use of
+empty element tag (<element/>) in XML.
+
+Other options
+~~~~~~~~~~~~~
+-t | --tree: :: anchor:tree[] By default Xml_checker sets a callback that the
+XML parser invokes for each element that it finds.
+With this option the XML parser builds the complete tree then Xml_checker
+iterates on the tree and displays its content.
++
+Note that this option is not recommended for big files and forbidden in
+canonical mode.
++
+Please also consider increasing the process stack size (ulimit -s) to
+avoid stack overflow and Storage_Error.
+
+-h | --help: :: for put online help.
+
+-v | --version: :: for put versions of the Xml_Parser, the Xml_Parser.Generator
+and Xml_checker.
+
+Behaviour
+---------
+
+Inputs
+~~~~~~
+Xml_checker take 0, 1 on several arguments files to specify the XML flow to
+process.
+
+When no argument Xml_checker processes stdin.
+
+When one or several files Xml_checker processes these files one after another.
+
+Output
+~~~~~~
+Xml_checker outputs the dump or the XML result (none if -s) on stdout.
+
+It outputs warnings and errors on stderr.
+
+Exit code
+~~~~~~~~~
+Xml_checker exits with 0 if no error is detected and with 1 otherwise
+(warnings don't affect the exit code).
+
+XML parser and generator
+------------------------
+.XML parser
+Xml_checker uses a standalone package (Xml_Parser) to parse the XML low.
+This parser has the following limitations versus the XML standards 1.0
+and 1.1 (see http://www.w3.org/TR/REC-xml and
+http://www.w3.org/TR/2006/REC-xml11-20060816):
+
+- Only the System Id of the DOCTYPE and of external parsed ENTITY is used,
+Public Id (if any) is skipped.
+- Only the local file, the "file://" and the "http://" schemes are supported
+in URIs (parsing error).
+- Only UTF-8, UTF-16 and ISO-8859-1 encodings are natively supported.
+Some other encodings may be handled by defining the environment variable
+XML_PARSER_MAP_DIR to where Byte_To_Unicode can find the mapping file
+named <ENCODING>.xml (in uppercase, ex: ISO-8859-9.xml).
+- XML namespaces (see http://www.w3.org/TR/2009/REC-xml-names-20091208) are
+not handled.
+
+.XML generator
+Xml_checker also uses a child package of Xml_Parser (Xml_Parser.Generator) to
+build the XML output of the tree or of each node.
+

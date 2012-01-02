@@ -11,11 +11,12 @@ with As.U, Queues, Trees, Hashed_List.Unique, Text_Char, Dynamic_List,
 --  * Only UTF-8, UTF-16 and ISO-8859-1 encodings are natively supported.
 --    Some other encodings may be handled by defining the environment variable
 --    XML_PARSER_MAP_DIR to where Byte_To_Unicode can find the mapping file
---    named <ENCODING>.xml (in uppercase, ex: ISO-8859-9.xml)
+--    named <ENCODING>.xml (in uppercase, ex: ISO-8859-9.xml).
+--  * XML namespaces are not handled.
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "26";
+  Major_Version : constant String := "27";
   function Version return String;
 
   -----------
@@ -64,7 +65,9 @@ package Xml_Parser is
     Parsed_Prologue_Cb, -- } Prologue parsed (can scan prologue and parse elts)
     Parsed_Elements,    -- Elements parsed OK (can scan prologue and elts)
     Error,              -- Parse error detected
-    Init);              -- Initialized for the Generator
+    Init,               -- Initialized for the Generator
+    Unparsed);          -- Parsed with callback, only unparsed Entitites
+                        --  can be got
 
   -- What to do with CDATA sections
   type Cdata_Policy_List is (Keep_Cdata_Section,    -- Keep markers and Cdata
@@ -264,6 +267,7 @@ package Xml_Parser is
   function Get_Root_Element (Ctx : Ctx_Type) return Element_Type;
 
   -- Get Doctype characteristics (prologue must have been parsed)
+  --  may raise Parse_Error if Parse was not ok
   Doctype_Not_Set : exception;
   procedure Get_Doctype (Ctx : in Ctx_Type;
        Name    : out As.U.Asu_Us;
