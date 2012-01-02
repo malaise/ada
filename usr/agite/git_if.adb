@@ -554,6 +554,7 @@ package body Git_If is
   begin
     Cmd.Set ("git");
     Cmd.Cat ("checkout");
+    Cmd.Cat ("HEAD");
     Cmd.Cat (File);
     Command.Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow'Access, Exit_Code);
