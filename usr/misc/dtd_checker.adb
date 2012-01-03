@@ -4,6 +4,7 @@ with As.U, Argument, Basic_Proc, Xml_Parser;
 procedure Dtd_Checker is
 
   -- Xml Parser dtd
+  File : As.U.Asu_Us;
   Dtd : Xml_Parser.Dtd_Type;
   Error_Msg : As.U.Asu_Us;
 
@@ -11,8 +12,8 @@ procedure Dtd_Checker is
   procedure Usage is
   begin
     Basic_Proc.Put_Line_Error (
- "Usage: " & Argument.Get_Program_Name & " [ -w | --warnings ] <dtd_file>");
-    Basic_Proc.Put_Line_Error ("  Default: only checks for errors.");
+ "Usage: " & Argument.Get_Program_Name & " [ -w | --warnings ] [ <dtd_file> ]");
+    Basic_Proc.Put_Line_Error ("  Default: only checks for errors on stdin.");
   end Usage;
 
   Abort_Error : exception;
@@ -36,33 +37,32 @@ procedure Dtd_Checker is
 
 begin
   -- Parse arguments
-  if Argument.Get_Nbre_Arg = 0
-  or else Argument.Get_Nbre_Arg > 2 then
-    Error ("Invalid arguments");
-  end if;
-
-  if Argument.Get_Parameter (1) = "-h"
-  or else Argument.Get_Parameter (1) = "--help" then
+  if Argument.Get_Nbre_Arg = 1
+  and then (Argument.Get_Parameter (1) = "-h"
+    or else Argument.Get_Parameter (1) = "--help") then
     Usage;
     Basic_Proc.Set_Error_Exit_Code;
     return;
   end if;
 
-  if Argument.Get_Parameter (1) = "-w"
-  or else Argument.Get_Parameter (1) = "--warnings" then
+  if Argument.Get_Nbre_Arg >= 1
+  and then (Argument.Get_Parameter (1) = "-w"
+    or else Argument.Get_Parameter (1) = "--warnings") then
     Warnings := Warning'Unrestricted_Access;
-    if Argument.Get_Nbre_Arg > 1 then
-      File_Pos := 2;
-    end if;
+    File_Pos := 2;
   end if;
 
-  if Argument.Get_Nbre_Arg /= File_Pos then
+  if Argument.Get_Nbre_Arg = File_Pos then
+    Argument.Get_Parameter (File, File_Pos);
+  elsif Argument.Get_Nbre_Arg = File_Pos - 1 then
+    File.Set_Null;
+  else
     Error ("Invalid arguments");
   end if;
 
   -- Parse and check Dtd
   begin
-    Xml_Parser.Parse_Dtd_File (Argument.Get_Parameter (File_Pos),
+    Xml_Parser.Parse_Dtd_File (File.Image,
                                Warnings, Dtd, Error_Msg);
   exception
     when Xml_Parser.File_Error =>

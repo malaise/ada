@@ -184,7 +184,8 @@ package Xml_Parser is
   --------------------
   -- STRING PARSING --
   --------------------
-  -- Parse a Dtd, optionally check for some warnings
+  -- Parse a Dtd, stdin if empty
+  -- Optionally check for some warnings
   -- The Dtd can then be used to Parse_Elements
   -- Set Error to error string, or empty string if OK
   type Dtd_Type is limited private;
@@ -194,6 +195,7 @@ package Xml_Parser is
       Dtd       : out Dtd_Type;
       Error     : out As.U.Asu_Us);
 
+  -- Same but the Dtd is in a string
   procedure Parse_Dtd_String (
       Str       : in String;
       Warn_Cb   : in Warning_Callback_Access := null;

@@ -1,7 +1,7 @@
-XML_CHECKER
+Xml_Checker
 ===========
 
-Parser version: V27.0
+Parser version: V27.1
 
 Generator version: V9.2
 
@@ -64,8 +64,8 @@ information, example:
   00000008 M -  Var : Name=V1 Type=Int
   00000008 - M   =>5<=
 +
-Note that this options is incompatible with the xref:Expand[Expand] option and
-with the xref:Keep[Keep] option. Dump implies to keep all as is.
+Note that this options is incompatible with the xref:Expand[expand] option and
+with the xref:Keep[keep] option. Dump implies to keep all as is.
 
 -r | --raw: :: for a XML output, all on one line (no line feed).
 
@@ -76,17 +76,17 @@ line to up to <Width> columns. Default format is ''-W 80''.
 
 Transformations
 ~~~~~~~~~~~~~~~
--E | --expand: :: anchor:Expand[] for expand general entities and expand attributes with
+anchor:Expand[]-E | --expand: :: for expand general entities and expand attributes with
 their default value (if they have).
 
--k c|d|n|a | --keep=comments|cdata|none|all: :: anchor:Keep[] for keep comments,
+anchor:Keep[]-k c|d|n|a | --keep=comments|cdata|none|all: :: for keep comments,
 or keep CDATA sections unchanged, or keep none (remove comments and CDATA
 markers) or keep all unchanged, which is the default.
 
 -C | --canonical: :: for canonicalization of the XML (see
 http://www.w3.org/TR/xml-c14n). This option only allows options dtd, warnings
 and keep-comments (it expands and by default removes comments, it forbids the
-"xref:tree[tree]" mode).
+"xref:Tree[tree]" mode).
 
 --no-normalize: :: for no normalization of attributes and text.
 
@@ -97,7 +97,7 @@ Use this option to set the DTD if the XML file has no DOCTYPE or to overwrite
 the DOCTYPE directive. You ca use ''-d ""'' or ''--dtd=""'' to force discarding
 the DOCTYPE directive.
 
- -w | --warnings: :: for check and report warnings. The warnings that are
+anchor:Warnings[]-w | --warnings: :: for check and report warnings. The warnings that are
 handled are:
  * multiple definition of the same ATTLIST,
  * ATTLIST for unknown element,
@@ -109,9 +109,9 @@ empty element tag (<element/>) in XML.
 
 Other options
 ~~~~~~~~~~~~~
--t | --tree: :: anchor:tree[] By default Xml_checker sets a callback that the
+anchor:Tree[]-t | --tree: :: By default xml_checker sets a callback that the
 XML parser invokes for each element that it finds.
-With this option the XML parser builds the complete tree then Xml_checker
+With this option the XML parser builds the complete tree then xml_checker
 iterates on the tree and displays its content.
 +
 Note that this option is not recommended for big files and forbidden in
@@ -123,7 +123,7 @@ avoid stack overflow and Storage_Error.
 -h | --help: :: for put online help.
 
 -v | --version: :: for put versions of the Xml_Parser, the Xml_Parser.Generator
-and Xml_checker.
+and Xml_checker (see xref:XmlParser[XML parser and generator]).
 
 Behaviour
 ---------
@@ -133,9 +133,9 @@ Inputs
 Xml_checker take 0, 1 on several arguments files to specify the XML flow to
 process.
 
-When no argument Xml_checker processes stdin.
+When no argument xml_checker processes stdin.
 
-When one or several files Xml_checker processes these files one after another.
+When one or several files xml_checker processes these files one after another.
 
 Output
 ~~~~~~
@@ -148,8 +148,8 @@ Exit code
 Xml_checker exits with 0 if no error is detected and with 1 otherwise
 (warnings don't affect the exit code).
 
-XML parser and generator
-------------------------
+anchor:XmlParser[] XML parser and generator
+-------------------------------------------
 .XML parser
 Xml_checker uses a standalone package (Xml_Parser) to parse the XML low.
 This parser has the following limitations versus the XML standards 1.0
@@ -170,4 +170,18 @@ not handled.
 .XML generator
 Xml_checker also uses a child package of Xml_Parser (Xml_Parser.Generator) to
 build the XML output of the tree or of each node.
+
+DTD checker
+-----------
+Dtd_Checker is a standalone tool that checks a DTD file for errors and on
+option for warnings.
+...................................................
+dtd_checker [ -w | --warnings ] [ <dtd_file> ]
+...................................................
+
+By default dtd_checker only checks for errors in the DTD.
+With the option "-w" or "--warnings" it reports the same
+xref:Warnings[warnings] as xml_checker.
+
+If no file is provided then dtd_checker parses stdin.
 
