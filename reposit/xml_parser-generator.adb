@@ -4,7 +4,7 @@ with Integer_Image, Text_Line, Sys_Calls, Trees;
 package body Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "2";
+  Minor_Version : constant String := "3";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -1108,7 +1108,8 @@ package body Xml_Parser.Generator is
       if Element.Get_Position = Cell_Ref then
         -- No Child (Put_Attributes moved back to current): return
         if Format /= Raw and then Cell.Nb_Attributes /= 0 then
-          -- Skip one line between prologue and root
+          -- Skip one line between prologue and root if there is
+          --  a xml directive
           New_Line (Flow);
         end if;
         return;
@@ -1146,7 +1147,7 @@ package body Xml_Parser.Generator is
       end loop;
       -- End of prologue and its children
       Element.Move_Father;
-      if Format /= Raw and then Cell.Nb_Attributes /= 0 then
+      if Format /= Raw then
         -- Skip one line between prologue and root
         New_Line (Flow);
       end if;

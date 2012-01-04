@@ -3,6 +3,12 @@ HISTORY
 Main changes
 
 [horizontal]
+*2012/01/04*:: Add keep local doctype definition even if a dtd file is
+provided in Xml_Parser V27.4
++
+Fix output when some prologue when no xml directive in Xml_parser.Generator
+V9.3
+
 *2012/01/04*:: Fix "<!INCLUDE[" (with no separators after INCLUDE)
 +
 Fix imbricated INCLUDE directives

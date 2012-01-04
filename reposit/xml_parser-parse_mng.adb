@@ -935,11 +935,6 @@ package body Parse_Mng  is
       -- Remove last ']'
       Len := Ctx.Doctype.Int_Def.Length;
       Ctx.Doctype.Int_Def.Delete (Len, Len);
-      if not Ctx.Dtd_File.Is_Null then
-        -- This Dtd internal definition is overriden by an alternate file
-        Trace ("Dtd internal def overwritten by external");
-        Clean_Dtd (Adtd);
-      end if;
     else
       Util.Unget (Ctx.Flow);
     end if;
@@ -1806,16 +1801,16 @@ package body Parse_Mng  is
         end if;
         Dtd.Parse (Ctx, Adtd, Full_File);
       end if;
-      if not Ctx.Doctype.Int_Def.Is_Null then
-        -- Parse internal defs
-        Ctx.Flow.Curr_Flow.Is_File := False;
-        Ctx.Flow.Curr_Flow.Kind := Dtd_Flow;
-        Ctx.Flow.Curr_Flow.In_Str := Ctx.Doctype.Int_Def;
-        Ctx.Flow.Curr_Flow.In_Stri := 0;
-        Ctx.Flow.Curr_Flow.Line := Ctx.Doctype.Line_No;
-        Ctx.Flow.Curr_Flow.Same_Line := True;
-        Dtd.Parse (Ctx, Adtd, As.U.Tus (Dtd.String_Flow));
-      end if;
+    end if;
+    if not Ctx.Doctype.Int_Def.Is_Null then
+      -- Parse internal defs
+      Ctx.Flow.Curr_Flow.Is_File := False;
+      Ctx.Flow.Curr_Flow.Kind := Dtd_Flow;
+      Ctx.Flow.Curr_Flow.In_Str := Ctx.Doctype.Int_Def;
+      Ctx.Flow.Curr_Flow.In_Stri := 0;
+      Ctx.Flow.Curr_Flow.Line := Ctx.Doctype.Line_No;
+      Ctx.Flow.Curr_Flow.Same_Line := True;
+      Dtd.Parse (Ctx, Adtd, As.U.Tus (Dtd.String_Flow));
     end if;
     -- Restore flow
     Util.Pop_Flow (Ctx.Flow);
