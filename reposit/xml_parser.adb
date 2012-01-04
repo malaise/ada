@@ -3,7 +3,7 @@ with Environ, Basic_Proc, Rnd, Exception_Messenger, Directory;
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "2";
+  Minor_Version : constant String := "3";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -488,7 +488,7 @@ package body Xml_Parser is
     Dtd.Set := False;
     Dtd.Xml_Found := False;
     Dtd.Encoding.Set_Null;
-    Dtd.In_Include := False;
+    Dtd.Include_Level := 0;
     Info_Mng.Delete_List (Dtd.Info_List);
     Entity_List_Mng.Delete_List (Dtd.Entity_List);
   end Clean_Dtd;

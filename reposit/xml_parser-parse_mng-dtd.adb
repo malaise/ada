@@ -29,8 +29,8 @@ package body Dtd is
     Adtd.Notation_Attrs.Set_Null;
     -- Reset list of internal attlist and entity
     Adtd.Internals.Set_Null;
-    -- Clean in iclude tag
-    Adtd.In_Include := False;
+    -- Clean include level
+    Adtd.Include_Level := 0;
   end Init;
 
   -- Parse an instruction:
@@ -608,10 +608,22 @@ package body Dtd is
            & " " & Attinfo.List.Image);
         end if;
         -- Verify Notation is not used twice (##N) for this element
-        if String_Mng.Locate (Info.List.Image, Info_Sep & Info_Sep & "N")
-           /= 0 then
-          Util.Error (Ctx.Flow, "Notation already defined for element "
-                               & Elt_Name.Image);
+        if Typ_Char = 'N'
+         and then String_Mng.Locate (Info.List.Image,
+                                     Info_Sep & Info_Sep & "N") /= 0 then
+          declare
+            Stop : constant Positive
+                 := String_Mng.Locate (Info.List.Image,
+                                       Info_Sep & Info_Sep & "N");
+            Start : constant Positive
+                  := String_Mng.Locate (Info.List.Image, Info_Sep & "",
+                                        From_Index => Stop - 1,
+                                        Forward => False);
+          begin
+            Util.Error (Ctx.Flow, "Notation "
+              & Info.List.Slice (Start + 1, Stop - 1)
+              & " already defined for element " & Elt_Name.Image);
+          end;
         end if;
         if Typ_Char = 'N' then
           -- Append Elt##Attr# to the list of notation attributes
@@ -916,9 +928,10 @@ package body Dtd is
     -- then possible separators then '['
     Util.Skip_Separators (Ctx.Flow);
     Util.Parse_Until_Char (Ctx.Flow, Util.Space & "[");
+    Util.Unget (Ctx.Flow);
     Util.Get_Curr_Str (Ctx.Flow, Word);
 
-    -- Expand dtd entitiesa and check keywork and format
+    -- Expand dtd entities and check keywork and format
     Util.Expand_Name (Ctx, Adtd, Word, Ref_Dtd_Mark);
     Util.Normalize (Word);
     if Word.Image = "IGNORE" or else Word.Image = "INCLUDE" then
@@ -956,8 +969,8 @@ package body Dtd is
     elsif Word.Image = "INCLUDE" then
       -- INCLUDE directive
       -- Go on parsing, knowing that we are in an Include directive
-      Trace ("Dtd starting inclusion");
-      Adtd.In_Include := True;
+      Adtd.Include_Level := Adtd.Include_Level + 1;
+      Trace ("Dtd starting inclusion" & Adtd.Include_Level'Img);
     end if;
   end Parse_Condition;
 
@@ -1065,12 +1078,12 @@ package body Dtd is
           Ctx.Flow.Recording := Is_Recorded;
         end if;
       end if;
-      if not Found and then Adtd.In_Include then
+      if not Found and then Adtd.Include_Level /= 0 then
         -- Detect end of include
         Util.Try (Ctx.Flow, "]]" & Util.Stop, Found);
         if Found then
-          Adtd.In_Include := False;
-          Trace ("Dtd ending inclusion");
+          Trace ("Dtd ending inclusion" & Adtd.Include_Level'Img);
+          Adtd.Include_Level := Adtd.Include_Level - 1;
         end if;
       end if;
       if not Found then

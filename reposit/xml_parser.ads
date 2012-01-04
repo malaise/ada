@@ -610,8 +610,8 @@ private
     -- Internal elements #@Elt# or attributes #Elt##Attr#
     -- ELEMENT or ATTLIST defined in internal dtd
     Internals : As.U.Asu_Us;
-    -- Are we in an INCLUDE directive
-    In_Include : Boolean := False;
+    -- Are we in an INCLUDE directive? Count levels
+    Include_Level : Natural := 0;
   end record;
 
   --------------------

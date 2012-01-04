@@ -3,6 +3,12 @@ HISTORY
 Main changes
 
 [horizontal]
+*2012/01/04*:: Fix "<!INCLUDE[" (with no separators after INCLUDE)
++
+Fix imbricated INCLUDE directives
++
+Fix detection of multiple NOTATION attributes, in Xml_Parser V27.3
+
 *2012/01/04*:: Fix handling of FIXED attributes in Xml_Parser V27.2
 
 *2012/01/03*:: Support empty DTD file (stdin) in Xml_Parser V27.1
