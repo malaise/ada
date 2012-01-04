@@ -3,8 +3,12 @@ HISTORY
 Main changes
 
 [horizontal]
-*2011/12/30*:: Add Allow retrieving unparsed entities after parsing with callback in Xml_Parser V27.0,
-Xml_Parser.Generator V9.2 and xml_checker V15.2
+*2012/01/04*:: Fix handling of FIXED attributes in Xml_Parser V27.2
+
+*2012/01/03*:: Support empty DTD file (stdin) in Xml_Parser V27.1
+
+*2012/01/02*:: Add allow retrieving unparsed entities after parsing with callback in Xml_Parser V27.0, 
+Xml_parser.Generator V9.2 and xml_checker V15.2
 
 *2011/12/30*:: Chg major documentations into txt format for asciidoc
 

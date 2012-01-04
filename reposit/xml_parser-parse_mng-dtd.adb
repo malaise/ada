@@ -602,7 +602,7 @@ package body Dtd is
           Trace ("Dtd stored attribute type -> " & Attinfo.Name.Image
            & " " & Attinfo.List.Image);
         elsif Def_Char = 'F' or else Def_Char = 'D' then
-          Attinfo.List := Def_Val;
+          Attinfo.List := Info_Sep & Def_Val & Info_Sep;
           Adtd.Info_List.Insert (Attinfo);
           Trace ("Dtd stored attribute type -> " & Attinfo.Name.Image
            & " " & Attinfo.List.Image);
@@ -1675,15 +1675,14 @@ package body Dtd is
           Tree_Mng.Get_Attribute (Ctx.Elements.all, As.U.Tus(Attr), Xml_Val);
         end if;
 
-        --  Any Required or Fixed in dtd must appear in xml
-        if (Td(2) = 'R' or else Td(2) = 'F')
-        and then not Att_Set then
+        --  Any Required in dtd must appear in xml
+        if Td(2) = 'R' and then not Att_Set then
           Util.Error (Ctx.Flow, "According to dtd, element " & Name.Image
                     & " must have attribute " & Attr, Line_No);
         end if;
 
         -- Enum and Fixed must have correct value
-        if Td(2) = 'F' then
+        if Td(2) = 'F' and then Att_Set then
           -- Fixed (Enum or string): first #<val># is the one required
           declare
             -- Get the first value from dtd list, from 2 to second sep
@@ -1706,7 +1705,7 @@ package body Dtd is
                       & " has incorrect value "
                       & Xml_Val.Image, Line_No);
           end if;
-        elsif Td(2) = 'D' and then not Att_Set then
+        elsif (Td(2) = 'D' or else Td(2) = 'F') and then not Att_Set then
           -- Default in dtd with no xml value: insert default in tree
           --  and set Xml_Val
           if Ctx.Standalone then
@@ -1717,35 +1716,26 @@ package body Dtd is
                      & " needs default value in standalone document");
             end if;
           end if;
-          if Td(1) = 'E' or else Td(1) = 'N' then
-            -- Default of enum is first string after Info_Sep
-            declare
-              -- Get the first value from dtd list, from 2 to second sep
-              Sep : constant Positive
-                  := String_Mng.Locate (Attinfo.List.Image,
-                                        Info_Sep & "", 2);
-              Dtd_Val : constant String
-                      := Attinfo.List.Slice (2, Sep - 1 );
-            begin
-              if Ctx.Expand then
-                Tree_Mng.Add_Attribute (Ctx.Elements.all,
-                    As.U.Tus (Attr), As.U.Tus (Dtd_Val), Line_No);
-              end if;
-              Xml_Val := As.U.Tus (Dtd_Val);
-              if Attr = Tree_Mng.Xml_Space and then Dtd_Val = Tree_Mng.Preserve then
-                Tree_Mng.Add_Tuning (Ctx.Elements.all,
-                                     Tree_Mng.Xml_Space_Preserve);
-                Trace (" Check, added tuning " & Tree_Mng.Xml_Space_Preserve);
-              end if;
-            end;
-          else
+          -- Default / Fixed is first string after Info_Sep
+          declare
+            -- Get the first value from dtd list, from 2 to second sep
+            Sep : constant Positive
+                := String_Mng.Locate (Attinfo.List.Image,
+                                      Info_Sep & "", 2);
+            Dtd_Val : constant String
+                    := Attinfo.List.Slice (2, Sep - 1 );
+          begin
             if Ctx.Expand then
-              -- Attinfo of not enum is the value
               Tree_Mng.Add_Attribute (Ctx.Elements.all,
-                    As.U.Tus (Attr), Attinfo.List, Line_No);
+                  As.U.Tus (Attr), As.U.Tus (Dtd_Val), Line_No);
             end if;
-            Xml_Val := Attinfo.List;
-          end if;
+            Xml_Val := As.U.Tus (Dtd_Val);
+            if Attr = Tree_Mng.Xml_Space and then Dtd_Val = Tree_Mng.Preserve then
+              Tree_Mng.Add_Tuning (Ctx.Elements.all,
+                                   Tree_Mng.Xml_Space_Preserve);
+              Trace (" Check, added tuning " & Tree_Mng.Xml_Space_Preserve);
+            end if;
+          end;
         elsif Att_Set then
           -- Comformance checks on ID, IDREF(s) and NMTOKEN(s)
           -- Store ID and IDREFs and Sanity checks on I
