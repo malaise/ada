@@ -8,7 +8,7 @@
   <Config Heartbeat_Period="5.0"
           Heartbeat_Max_Missed="4"
           Timeout="3.0"
-          TTL="1.0">
+          TTL="1">
     <Bus Name="A-192.168.6.255:21022"/>
     <Bus Name="A-192.168.50.255:21023"/>
   </Config>
@@ -16,7 +16,7 @@
   <Config Heartbeat_Period="1.0"
           Heartbeat_Max_Missed="3"
           Timeout="0.5"
-          TTL="5.0">
+          TTL="5">
     <Bus Name="A-234.7.6.5:21021"/>
   </Config>
 </Autobus>
