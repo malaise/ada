@@ -66,7 +66,7 @@ package Xml_Parser is
     Parsed_Elements,    -- Elements parsed OK (can scan prologue and elts)
     Error,              -- Parse error detected
     Init,               -- Initialized for the Generator
-    Unparsed);          -- Parsed with callback, only unparsed Entitites
+    Unparsed);          -- Parsed with callback, only unparsed entities infos
                         --  can be got
 
   -- What to do with CDATA sections
@@ -113,6 +113,8 @@ package Xml_Parser is
   -- Is_Mixed is set on element if this element has mixed content
   -- In_Mixed is on anything else when it is within a Is_Mixed element
   --  indent shall be skipped
+  -- After parsing the Ctx has status Unparsed and only unparsed entities infos
+  --  can be got from it.
   type Stage_List is (Prologue, Elements, Tail);
   type Node_Update is new Ada.Finalization.Controlled with record
     Stage : Stage_List := Prologue;

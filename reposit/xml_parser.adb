@@ -3,7 +3,7 @@ with Environ, Basic_Proc, Rnd, Exception_Messenger, Directory;
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "4";
+  Minor_Version : constant String := "5";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -777,7 +777,8 @@ package body Xml_Parser is
   function Get_Root_Element (Ctx : Ctx_Type) return Element_Type is
   begin
     Check_For_Get (Ctx.Status);
-    if Ctx.Status /= Parsed_Elements then
+    if Ctx.Status /= Parsed_Elements
+    and then Ctx.Status /= Init then
       raise Status_Error;
     end if;
     -- Only prologue or full parsing completed
