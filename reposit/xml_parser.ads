@@ -12,11 +12,11 @@ with As.U, Queues, Trees, Hashed_List.Unique, Text_Char, Dynamic_List,
 --    Some other encodings may be handled by defining the environment variable
 --    XML_PARSER_MAP_DIR to where Byte_To_Unicode can find the mapping file
 --    named <ENCODING>.xml (in uppercase, ex: ISO-8859-9.xml).
---  * XML namespaces are not handled.
+--  * There is no support for XML namespaces.
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "27";
+  Major_Version : constant String := "28";
   function Version return String;
 
   -----------
@@ -147,10 +147,10 @@ package Xml_Parser is
   ------------------
   -- Parse a Xml file, stdin if empty
   -- On option, allows retrieval of comments (usefull for formatter)
+  -- On option skip CDATA sections or keep markers
   -- On option, does not expand General entities nor set attributes with
   --  default values (usefull for formatter)
-  -- On option skip CDATA sections or markers
-  -- On option keep separators unchanged (in attributes and text)
+  -- On option, if expand, keep separators unchanged in attributes and text
   -- On option does not check compliance with Dtd
   -- On option force a dtd file different from DOCTYPE directive
   -- If a warning callback is set then it is called for each warning detected
@@ -163,8 +163,8 @@ package Xml_Parser is
                    File_Name : in String;
                    Ok        : out Boolean;
                    Comments  : in Boolean := False;
-                   Expand    : in Boolean := True;
                    Cdata     : in Cdata_Policy_List := Remove_Cdata_Markers;
+                   Expand    : in Boolean := True;
                    Normalize : in Boolean := True;
                    Use_Dtd   : in Boolean := True;
                    Dtd_File  : in String  := "";
@@ -209,25 +209,29 @@ package Xml_Parser is
 
   -- Parse the prologue of a string
   -- Then one can call Get_Prologue on Ctx
-  --  (Calling Get_Root_Element will raise Use_Error);
+  --  (Calling Get_Root_Element will raise Status_Error);
+  -- If the Dtd is clean then it is set from the DOCTYPE directive,
+  --  otherwise it is completed with the internal declaration if any
   -- On option, allows retrieval of comments (usefull for formatter)
+  -- On option skip CDATA sections or keep markers
   -- On option, does not expand General entities (usefull for formatter)
-  -- On option skip CDATA sections or markers
-  -- On option keep separators (in attributes and text) unchanged
+  -- On option, if expand, keep separators (in attributes and text) unchanged
   -- May raise Status_Error if Ctx is not clean
   procedure Parse_Prologue (Ctx       : out Ctx_Type;
                             Str       : in String;
+                            Dtd       : in out Dtd_Type;
                             Ok        : out Boolean;
                             Comments  : in Boolean := False;
-                            Expand    : in Boolean := True;
                             Cdata     : in Cdata_Policy_List
                                       := Remove_Cdata_Markers;
+                            Expand    : in Boolean := True;
                             Normalize : in Boolean := True;
                             Warn_Cb   : in Warning_Callback_Access := null;
                             Parse_Cb  : in Parse_Callback_Access := null);
 
   -- Parse the elements (after the prologue) and tail of a string with a dtd
-  -- The options are inherited from the parsing of the prologue
+  -- The options are inherited from the parsing of the prologue but the Dtd
+  --  may be different
   -- May raise Status_Error if Ctx is clean
   --           End_Error if Ctx has already parsed elements
   --           Parse_Error if Parse_Prologue was not ok

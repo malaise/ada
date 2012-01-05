@@ -7,6 +7,7 @@ procedure T_Xml_String is
 
   Data_Dir : constant String := "data";
 
+  Dtd : Xml_Parser.Dtd_Type;
   Dtds : array (1 .. 3) of Xml_Parser.Dtd_Type;
   subtype Dtd_Index_Range is Positive range Dtds'Range;
   Dtd_Index : Dtd_Index_Range;
@@ -193,7 +194,8 @@ procedure T_Xml_String is
   begin
     -- Parse string of file provided as arg
     Basic_Proc.Put_Line_Output ("Parsing prologue of string of file " & Name);
-    Ctx.Parse_Prologue (Read_File (Name), Parse_Ok);
+    Xml_Parser.Clean_Dtd (Dtd);
+    Ctx.Parse_Prologue (Read_File (Name), Dtd, Parse_Ok);
     if not Parse_Ok then
       Basic_Proc.Put_Line_Error (Xml_Parser.Get_Parse_Error_Message (Ctx));
       Basic_Proc.Set_Error_Exit_Code;

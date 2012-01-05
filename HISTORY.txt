@@ -3,8 +3,9 @@ HISTORY
 Main changes
 
 [horizontal]
-*2012/01/04*:: Add keep local doctype definition even if a dtd file is
-provided in Xml_Parser V27.4
+*2012/01/05*:: Handle Dtd for strings similarly as for files in Xml_Parser V28.0
+
+*2012/01/04*:: Add keep local doctype definition even if a dtd file is provided in Xml_Parser V27.4
 +
 Fix output when some prologue when no xml directive in Xml_parser.Generator
 V9.3

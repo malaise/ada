@@ -899,8 +899,10 @@ package body Parse_Mng  is
       Util.Skip_Separators (Ctx.Flow);
       if Ctx.Use_Dtd
       and then Ctx.Dtd_File.Is_Null
-      and then not Doctype_File.Is_Null then
+      and then not Doctype_File.Is_Null
+      and then not Adtd.Set then
         -- Parse dtd file of doctype directive if no alternate file
+        --  and (for string flows) if clean Dtd is provided
         Util.Push_Flow (Ctx.Flow);
         -- Check validity of dtd file
         Full_File := Build_Full_Name (Doctype_File, Ctx.Flow.Curr_Flow.Name);
@@ -1042,9 +1044,8 @@ package body Parse_Mng  is
   end Parse_Directive;
 
   -- Parse the prologue
-  procedure Parse_Prologue (Ctx : in out Ctx_Type;
-                            Adtd : in out Dtd_Type;
-                            Allow_Dtd : in Boolean) is
+  procedure Parse_Start_To_Root (Ctx : in out Ctx_Type;
+                                 Adtd : in out Dtd_Type) is
     C1, C2 : Character;
   begin
     -- Autodetect encoding and check
@@ -1077,9 +1078,9 @@ package body Parse_Mng  is
         when Util.Directive =>
           -- Directive or comment or CDATA
           Check_Xml (Ctx);
-          Parse_Directive (Ctx, Adtd, Allow_Dtd, Ref_Xml, null);
+          Parse_Directive (Ctx, Adtd, True, Ref_Xml, null);
         when others =>
-          -- A name go back to before '<'
+          -- A name: Root, go back to before '<'
           Util.Unget (Ctx.Flow);
           Util.Unget (Ctx.Flow);
           exit;
@@ -1103,7 +1104,7 @@ package body Parse_Mng  is
   exception
     when Util.End_Error =>
       Util.Error (Ctx.Flow, "Unexpected end of file");
-  end Parse_Prologue;
+  end Parse_Start_To_Root;
 
   -- Parse an element (<Name...>)
   procedure Parse_Element (Ctx : in out Ctx_Type;
@@ -1485,7 +1486,7 @@ package body Parse_Mng  is
             -- CDATA => Text
             Parse_Text (Ctx, Adtd, Children);
           else
-            -- Directive: must be a comment or DOCTYPE
+            -- Directive: must be a comment
             Util.Get (Ctx.Flow, Str2);
             Create (True);
             Parse_Directive (Ctx, Adtd, Allow_Dtd => False,
@@ -1713,7 +1714,7 @@ package body Parse_Mng  is
     -- Reset Dtd
     Dtd.Init (Adtd);
     -- Parse prologue, allow Dtd
-    Parse_Prologue (Ctx, Adtd, Allow_Dtd => True);
+    Parse_Start_To_Root (Ctx, Adtd);
     -- Parse elements
     Parse_Root_To_End (Ctx, Adtd);
     -- Perform final checks versus dtd
@@ -1744,15 +1745,15 @@ package body Parse_Mng  is
   end Parse_Dtd;
 
    -- Parse the prologue
-  procedure Parse_Prologue (Ctx : in out Ctx_Type) is
-    Adtd : Dtd_Type;
+  procedure Parse_Prologue (Ctx : in out Ctx_Type;
+                            Adtd : in out Dtd_Type) is
   begin
     -- Init Prologue with an empty root
     Tree_Mng.Init_Prologue (Ctx.Prologue.all);
     -- Reset Dtd, it will not be used
     Dtd.Init (Adtd);
     -- Parse prologue, disallow Dtd
-    Parse_Prologue (Ctx, Adtd, Allow_Dtd => False);
+    Parse_Start_To_Root (Ctx, Adtd);
   end Parse_Prologue;
 
   -- Parse the elements

@@ -1,9 +1,9 @@
 Xml_Checker
 ===========
 
-Parser version: V27.1
+Parser version: V27.5
 
-Generator version: V9.2
+Generator version: V9.3
 
 Xml_checker version: V15.2
 
@@ -48,7 +48,9 @@ All options except expand, keep, dtd, warnings and tree are exclusive.
 
 Output format
 ~~~~~~~~~~~~~
--s | --silent: :: for no output at all. Xml_checker exits with 0 if OK and
+anchor:Silent[]-s | --silent: :: for no output at all. Xml_checker exits with 0
+if OK and
+
 with 1 on error.
 -D | --dump: :: for a dump of the line numbers, of XML structure and "Mixed"
 information, example:
@@ -76,8 +78,8 @@ line to up to <Width> columns. Default format is ''-W 80''.
 
 Transformations
 ~~~~~~~~~~~~~~~
-anchor:Expand[]-E | --expand: :: for expand general entities and expand attributes with
-their default value (if they have).
+anchor:Expand[]-E | --expand: :: for expand general entities and expand
+attributes with their default value (if they have).
 
 anchor:Keep[]-k c|d|n|a | --keep=comments|cdata|none|all: :: for keep comments,
 or keep CDATA sections unchanged, or keep none (remove comments and CDATA
@@ -85,10 +87,16 @@ markers) or keep all unchanged, which is the default.
 
 -C | --canonical: :: for canonicalization of the XML (see
 http://www.w3.org/TR/xml-c14n). This option only allows options dtd, warnings
-and keep-comments (it expands and by default removes comments, it forbids the
-"xref:Tree[tree]" mode).
+and keep-comments (it expands and by default removes comments, it is not
+supported in "xref:Tree[tree]" mode).
 
---no-normalize: :: for no normalization of attributes and text.
+--no-normalize: :: for no normalization of attributes and text. By default, if
+the xref:Expand[expand] option is set the attributes and text are normalized.
++
+This option forces no normalization even when expansion is activated.
++
+It is significant only when expanding because the parser itself does not
+normalize otherwise.
 
 Checks
 ~~~~~~
@@ -97,8 +105,8 @@ Use this option to set the DTD if the XML file has no DOCTYPE or to overwrite
 the DOCTYPE directive. You ca use ''-d ""'' or ''--dtd=""'' to force discarding
 the DOCTYPE directive.
 
-anchor:Warnings[]-w | --warnings: :: for check and report warnings. The warnings that are
-handled are:
+anchor:Warnings[]-w | --warnings: :: for check and report warnings. The warnings
+that are handled are:
  * multiple definition of the same ATTLIST,
  * ATTLIST for unknown element,
  * multiple definition of the same attribute for an element,
@@ -114,7 +122,7 @@ XML parser invokes for each element that it finds.
 With this option the XML parser builds the complete tree then xml_checker
 iterates on the tree and displays its content.
 +
-Note that this option is not recommended for big files and forbidden in
+Note that this option is not recommended for big files and not compatible with
 canonical mode.
 +
 Please also consider increasing the process stack size (ulimit -s) to
@@ -123,35 +131,38 @@ avoid stack overflow and Storage_Error.
 -h | --help: :: for put online help.
 
 -v | --version: :: for put versions of the Xml_Parser, the Xml_Parser.Generator
-and Xml_checker (see xref:XmlParser[XML parser and generator]).
+(see xref:XmlParser[XML parser and generator]) and Xml_checker.
 
 Behaviour
 ---------
 
 Inputs
 ~~~~~~
-Xml_checker take 0, 1 on several arguments files to specify the XML flow to
+Xml_checker takes 0, 1 on several arguments files to specify the XML flow to
 process.
 
 When no argument xml_checker processes stdin.
 
-When one or several files xml_checker processes these files one after another.
+When one or several files are provided xml_checker processes these files one
+after another.
 
 Output
 ~~~~~~
-Xml_checker outputs the dump or the XML result (none if -s) on stdout.
+Xml_checker outputs the dump or the XML text on stdout. There is no output in
+xref:Silent[silent] mode.
 
-It outputs warnings and errors on stderr.
+It outputs xref:Warnings[warnings] (if activated) and errors on stderr.
 
 Exit code
 ~~~~~~~~~
 Xml_checker exits with 0 if no error is detected and with 1 otherwise
-(warnings don't affect the exit code).
+(xref:Warnings[warnings] don't affect the exit code).
 
 anchor:XmlParser[] XML parser and generator
 -------------------------------------------
 .XML parser
-Xml_checker uses a standalone package (Xml_Parser) to parse the XML low.
+Xml_checker uses a standalone package (Xml_Parser) to parse the XML flow.
+
 This parser has the following limitations versus the XML standards 1.0
 and 1.1 (see http://www.w3.org/TR/REC-xml and
 http://www.w3.org/TR/2006/REC-xml11-20060816):
@@ -164,8 +175,20 @@ in URIs (parsing error).
 Some other encodings may be handled by defining the environment variable
 XML_PARSER_MAP_DIR to where Byte_To_Unicode can find the mapping file
 named <ENCODING>.xml (in uppercase, ex: ISO-8859-9.xml).
-- XML namespaces (see http://www.w3.org/TR/2009/REC-xml-names-20091208) are
-not handled.
+- There is no support for XML namespaces
+(see http://www.w3.org/TR/2009/REC-xml-names-20091208).
+
+By default Xml_Checker invokes this parser with options that ensure that the
+output is the same as the input except the formating (indentation of elements
+and attributes).
+
+On the other hand the parser by default provides the caller with a tree where
+the comments and CDATA markers are removed, where entities are expanded, and
+where attributes are initialized with their default values. In order to
+display this result xml_checker can be called with:
+...................................................
+xml_checker --tree --keep=none --expand
+...................................................
 
 .XML generator
 Xml_checker also uses a child package of Xml_Parser (Xml_Parser.Generator) to
@@ -180,7 +203,7 @@ dtd_checker [ -w | --warnings ] [ <dtd_file> ]
 ...................................................
 
 By default dtd_checker only checks for errors in the DTD.
-With the option "-w" or "--warnings" it reports the same
+With the option "-w" or "--warnings" it also reports the same
 xref:Warnings[warnings] as xml_checker.
 
 If no file is provided then dtd_checker parses stdin.

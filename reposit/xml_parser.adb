@@ -3,7 +3,7 @@ with Environ, Basic_Proc, Rnd, Exception_Messenger, Directory;
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "5";
+  Minor_Version : constant String := "0";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -227,7 +227,8 @@ package body Xml_Parser is
     procedure Parse_Dtd (Ctx : in out Ctx_Type;
                          Adtd : in out Dtd_Type);
     -- Parse the prologue
-    procedure Parse_Prologue (Ctx : in out Ctx_Type);
+    procedure Parse_Prologue (Ctx : in out Ctx_Type;
+                              Adtd : in out Dtd_Type);
     -- Parse the elements
     procedure Parse_Elements (Ctx : in out Ctx_Type;
                               Adtd : in out Dtd_Type);
@@ -276,8 +277,8 @@ package body Xml_Parser is
                    File_Name : in String;
                    Ok        : out Boolean;
                    Comments  : in Boolean := False;
-                   Expand    : in Boolean := True;
                    Cdata     : in Cdata_Policy_List := Remove_Cdata_Markers;
+                   Expand    : in Boolean := True;
                    Normalize : in Boolean := True;
                    Use_Dtd   : in Boolean := True;
                    Dtd_File  : in String  := "";
@@ -498,11 +499,12 @@ package body Xml_Parser is
   --    Parse_Error while parsing the string
   procedure Parse_Prologue (Ctx       : out Ctx_Type;
                             Str       : in String;
+                            Dtd       : in out Dtd_Type;
                             Ok        : out Boolean;
                             Comments  : in Boolean := False;
-                            Expand    : in Boolean := True;
                             Cdata     : in Cdata_Policy_List
                                       := Remove_Cdata_Markers;
+                            Expand    : in Boolean := True;
                             Normalize : in Boolean := True;
                             Warn_Cb   : in Warning_Callback_Access := null;
                             Parse_Cb  : in Parse_Callback_Access := null) is
@@ -531,7 +533,7 @@ package body Xml_Parser is
     Ctx.Normalize := Normalize;
     Ctx.Warnings := Warn_Cb;
     Ctx.Callback := Parse_Cb;
-    Parse_Mng.Parse_Prologue (Ctx);
+    Parse_Mng.Parse_Prologue (Ctx, Dtd);
     -- Update status
     if Ctx.Callback = null then
       Ctx.Status := Parsed_Prologue;
