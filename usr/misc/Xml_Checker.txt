@@ -49,9 +49,8 @@ All options except expand, keep, dtd, warnings and tree are exclusive.
 Output format
 ~~~~~~~~~~~~~
 anchor:Silent[]-s | --silent: :: for no output at all. Xml_checker exits with 0
-if OK and
+if OK and with 1 on error.
 
-with 1 on error.
 -D | --dump: :: for a dump of the line numbers, of XML structure and "Mixed"
 information, example:
 

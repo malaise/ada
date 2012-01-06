@@ -103,6 +103,19 @@ package body Tree_Mng is
     end if;
   end Add_Element;
 
+  -- Set namespace of current element
+  procedure Set_Namespace (Elements : in out My_Tree.Tree_Type;
+                           Namespace : in As.U.Asu_Us) is
+    Cell : My_Tree_Cell;
+  begin
+    if Namespace.Is_Null then
+      return;
+    end if;
+    Elements.Read (Cell);
+    Cell.Namespace := Namespace;
+    Elements.Replace (Cell);
+  end Set_Namespace;
+
   -- Add specific tuning to element (xml:space=preserve)
   -- Use the Value field of the element
   procedure Add_Tuning (Elements : in out My_Tree.Tree_Type;
@@ -151,13 +164,15 @@ package body Tree_Mng is
   end Move_Root;
 
   procedure Add_Attribute (Elements : in out My_Tree.Tree_Type;
-                           Name, Value : in As.U.Asu_Us; Line : in Natural) is
+                           Name, Namespace, Value : in As.U.Asu_Us;
+                           Line : in Natural) is
     Cell : My_Tree_Cell;
   begin
     Cell.Line_No := Line;
     Cell.Kind := Attribute;
     Cell.Nb_Attributes := 0;
     Cell.Name := Name;
+    Cell.Namespace := Namespace;
     Cell.Value := Value;
     -- Insert as attribute of current and remain current
     Insert_Attribute (Elements, Cell);
@@ -375,6 +390,7 @@ package body Tree_Mng is
     Tree.Read (Cell);
     Update.Line_No := Cell.Line_No;
     Update.Name := Cell.Name;
+    Update.Namespace := Cell.Namespace;
     Update.Value := Cell.Value;
     Update.Creation := Creation;
     Update.Is_Mixed := Cell.Is_Mixed;
@@ -418,6 +434,7 @@ package body Tree_Mng is
       end if;
       Tree.Read (Attr);
       Update.Attributes(I).Name := Attr.Name;
+      Update.Attributes(I).Namespace := Attr.Namespace;
       Update.Attributes(I).Value := Attr.Value;
       Update.Attributes(I).Unparsed := Attr.Unparsed;
     end loop;

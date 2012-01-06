@@ -1,16 +1,9 @@
-with Regular_Expressions, Parser, Integer_Image;
+with Regular_Expressions, Parser, Integer_Image, Upper_Char;
 separate (Xml_Parser.Parse_Mng)
 package body Dtd is
 
   -- Image of line_no without leading space
   function Line_Image (I : Integer) return String renames Integer_Image;
-
-  -- Separator within Info name and list
-  Info_Sep : constant Character := '#';
-  function Is_Sep (C : Character) return Boolean is
-  begin
-    return C = Info_Sep;
-  end Is_Sep;
 
   -- Init (clear) Dtd data
   procedure Init (Adtd : in out Dtd_Type) is
@@ -1737,16 +1730,25 @@ package body Dtd is
                                       Info_Sep & "", 2);
             Dtd_Val : constant String
                     := Attinfo.List.Slice (2, Sep - 1 );
+            Attr_Us : constant As.U.Asu_Us := As.U.Tus (Attr);
+            Namespace : As.U.Asu_Us;
           begin
             if Ctx.Expand then
+              if Ctx.Namespace then
+                Namespaces.Get (Ctx, Attr_Us, False, Namespace);
+              end if;
               Tree_Mng.Add_Attribute (Ctx.Elements.all,
-                  As.U.Tus (Attr), As.U.Tus (Dtd_Val), Line_No);
+                  Attr_Us, Namespace, As.U.Tus (Dtd_Val), Line_No);
             end if;
             Xml_Val := As.U.Tus (Dtd_Val);
-            if Attr = Tree_Mng.Xml_Space and then Dtd_Val = Tree_Mng.Preserve then
+            if Attr = Tree_Mng.Xml_Space
+            and then Dtd_Val = Tree_Mng.Preserve then
               Tree_Mng.Add_Tuning (Ctx.Elements.all,
                                    Tree_Mng.Xml_Space_Preserve);
               Trace (" Check, added tuning " & Tree_Mng.Xml_Space_Preserve);
+            end if;
+            if Ctx.Namespace then
+              Namespaces.Add (Ctx, Attr_Us, Xml_Val);
             end if;
           end;
         elsif Att_Set then
@@ -1832,6 +1834,16 @@ package body Dtd is
             end;
           end loop;
           Iter.Del;
+        end if;
+
+        if Ctx.Namespace then
+          -- Attr can be CDATA, Enumeration or NMTOKEN(s) with a ':'
+          --  otherwise no ':'
+          if not Namespaces.Valid (As.U.Tus (Attr),
+               Td(1) = 'S' or else Td(1) = 'E'
+               or else Upper_Char (Td(1)) = 'T') then
+            Util.Error (Ctx.Flow, "Invalid namespace " & Attr);
+          end if;
         end if;
         Trace ("Dtd checked versus dtd attribute " & Attr & " type " & Td);
       end;

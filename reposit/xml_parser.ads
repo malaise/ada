@@ -12,11 +12,11 @@ with As.U, Queues, Trees, Hashed_List.Unique, Text_Char, Dynamic_List,
 --    Some other encodings may be handled by defining the environment variable
 --    XML_PARSER_MAP_DIR to where Byte_To_Unicode can find the mapping file
 --    named <ENCODING>.xml (in uppercase, ex: ISO-8859-9.xml).
---  * There is no support for XML namespaces.
+--  * Namespaces are not checked for validity of URI references.
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "28";
+  Major_Version : constant String := "29";
   function Version return String;
 
   -----------
@@ -41,9 +41,10 @@ package Xml_Parser is
 
   -- An attribute of an element
   type Attribute_Rec is record
-    Name : As.U.Asu_Us;
-    Value : As.U.Asu_Us;
-    Unparsed : Boolean := False;
+    Name : As.U.Asu_Us;            -- Attribute name
+    Namespace : As.U.Asu_Us;       -- Namespace (if parsed with Namespace)
+    Value : As.U.Asu_Us;           -- Attribute value
+    Unparsed : Boolean := False;   -- Is it an unparsed entity
   end record;
   -- The attributes of an element
   type Attributes_Array is array (Positive range <>) of Attribute_Rec;
@@ -73,6 +74,16 @@ package Xml_Parser is
   type Cdata_Policy_List is (Keep_Cdata_Section,    -- Keep markers and Cdata
                              Remove_Cdata_Markers,  -- Remove markers
                              Remove_Cdata_Section); -- Remove whole section
+
+  ---------------------------
+  -- NOTE ABOUT NAMESPACES --
+  ---------------------------
+  -- When  Namespaces option is set then
+  --  - the document is checked to be namespace-well-formed and namespace-valid
+  --  - namespace information of elements (Get_Namespace) and attributes
+  --    (Namesapce field) is filled, otherwise it is empty
+  -- Note that names of element and attribute remain qualified and validity
+  --  of URIs is not checked
 
   -----------------------------
   -- NOTE ABOUT THE PROLOGUE --
@@ -106,9 +117,9 @@ package Xml_Parser is
   -------------------------------------
   -- When a callback is provided to Parse, then no tree is build but nodes
   --  are directly provided. Prologue items all have a level of 0 and no child
-  -- Only elements have attributes and children. When it has children an element
-  --  is created (Creation = True), then its children (recusively) then it is
-  --  closed (Creation = False)
+  -- Only elements have namespace, attributes and children.
+  --  When it has children an element is created (Creation = True),
+  --  then its children (recusively) then it is closed (Creation = False)
   -- Only PIs have a value
   -- Is_Mixed is set on element if this element has mixed content
   -- In_Mixed is on anything else when it is within a Is_Mixed element
@@ -121,6 +132,7 @@ package Xml_Parser is
     Line_No : Natural := 0;
     Level : Natural := 0;
     Name : As.U.Asu_Us;
+    Namespace : As.U.Asu_Us;
     Value : As.U.Asu_Us;
     Creation : Boolean := True;
     Is_Mixed : Boolean := False;
@@ -153,6 +165,7 @@ package Xml_Parser is
   -- On option, if expand, keep separators unchanged in attributes and text
   -- On option does not check compliance with Dtd
   -- On option force a dtd file different from DOCTYPE directive
+  -- On option check and fill namespace informations
   -- If a warning callback is set then it is called for each warning detected
   -- If a Parse_Cb is set then it is called for each node creation et for
   --  each element end and no tree is build (see above)
@@ -168,6 +181,7 @@ package Xml_Parser is
                    Normalize : in Boolean := True;
                    Use_Dtd   : in Boolean := True;
                    Dtd_File  : in String  := "";
+                   Namespace : in Boolean := False;
                    Warn_Cb   : in Warning_Callback_Access := null;
                    Parse_Cb  : in Parse_Callback_Access := null);
   File_Error, Status_Error : exception;
@@ -216,6 +230,7 @@ package Xml_Parser is
   -- On option skip CDATA sections or keep markers
   -- On option, does not expand General entities (usefull for formatter)
   -- On option, if expand, keep separators (in attributes and text) unchanged
+  -- On option check and fill namespace informations
   -- May raise Status_Error if Ctx is not clean
   procedure Parse_Prologue (Ctx       : out Ctx_Type;
                             Str       : in String;
@@ -226,6 +241,7 @@ package Xml_Parser is
                                       := Remove_Cdata_Markers;
                             Expand    : in Boolean := True;
                             Normalize : in Boolean := True;
+                            Namespace : in Boolean := False;
                             Warn_Cb   : in Warning_Callback_Access := null;
                             Parse_Cb  : in Parse_Callback_Access := null);
 
@@ -307,6 +323,13 @@ package Xml_Parser is
                      Element : Element_Type) return String;
   function Get_Name (Ctx     : Ctx_Type;
                      Element : Element_Type) return As.U.Asu_Us;
+
+  -- Get the namespace name of an element (if Ctx is parsed with Namespace
+  --  option, otherwise return empty string / Asu_Null)
+  function Get_Namespace (Ctx     : Ctx_Type;
+                          Element : Element_Type) return String;
+  function Get_Namespace (Ctx     : Ctx_Type;
+                          Element : Element_Type) return As.U.Asu_Us;
 
   -- Get the attributes of an element
   function Get_Attributes (Ctx     : Ctx_Type;
@@ -431,6 +454,8 @@ private
     Nb_Attributes : Natural := 0;
     -- Element name or Attribute name or text or comment...
     Name : As.U.Asu_Us;
+    -- Namespace name of the element or attribute
+    Namespace : As.U.Asu_Us;
     -- Attribute value or PI content
     Value : As.U.Asu_Us;
     -- Is this attribute an Unparsed entity or a list of unparsed entities
@@ -599,7 +624,21 @@ private
              Unparsed_Access, Set, "=", Image);
   package Unparsed_List_Mng is new H_Unparsed_List_Mng.Unique;
 
+  -- Namespaces
+  type Namespace_Type is record
+    Prefix : As.U.Asu_Us;
+    Namespace : As.U.Asu_Us;
+  end record;
+  type Namespace_Access is access all Namespace_Type;
+  procedure Set (To : out Namespace_Type; Val : in Namespace_Type);
+  function "=" (Current : Namespace_Type; Criteria : Namespace_Type)
+               return Boolean;
+  function Image (Namespace : Namespace_Type) return String;
+  package H_Namespace_List_Mng is new Hashed_List (Namespace_Type,
+             Namespace_Access, Set, "=", Image);
+  package Namespace_List_Mng is new H_Namespace_List_Mng.Unique;
 
+  -- A dtd info
   type Dtd_Type is record
     -- Is there a dtd set, otherwise check is always ok
     Set : Boolean := False;
@@ -681,6 +720,8 @@ private
     -- Use Dtd
     Use_Dtd : Boolean := True;
     Dtd_File : As.U.Asu_Us;
+    -- Check and fill namespaces
+    Namespace : Boolean := False;
     -- Check also and report warnings
     Warnings : Warning_Callback_Access := null;
     -- Call a callback i.o. feeding trees
@@ -699,6 +740,8 @@ private
     Idrefs : Idref_List_Access := new Idref_List_Mng.List_Type;
     -- Unparsed entities and Notations
     Unparsed_List : Unparsed_List_Mng.Unique_List_Type;
+    -- Namespaces
+    Namespace_List : Namespace_List_Mng.Unique_List_Type;
   end record;
   overriding procedure Finalize (Ctx : in out Ctx_Type);
 

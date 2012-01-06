@@ -48,6 +48,9 @@ package body Xml_Parser is
     -- Add an element, move to it
     procedure Add_Element (Elements : in out My_Tree.Tree_Type;
                            Name : in As.U.Asu_Us; Line : in Natural);
+    -- Set namespace of current element
+    procedure Set_Namespace (Elements : in out My_Tree.Tree_Type;
+                             Namespace : in As.U.Asu_Us);
     -- Add specific tuning to element (xml:space=preserve)
     Xml_Space : constant String := "xml:space";
     Preserve : constant String := "preserve";
@@ -65,7 +68,8 @@ package body Xml_Parser is
     function Get_Tuning (Elements : My_Tree.Tree_Type) return String;
     -- Add an attribute to current element, remain on current element
     procedure Add_Attribute (Elements : in out My_Tree.Tree_Type;
-                             Name, Value : in As.U.Asu_Us; Line : in Natural);
+                             Name, Namespace, Value : in As.U.Asu_Us;
+                             Line : in Natural);
     -- Check if an attribute exists for current element
     procedure Attribute_Exists (Elements : in out My_Tree.Tree_Type;
                               Name : in As.U.Asu_Us; Exists : out Boolean);
@@ -120,7 +124,7 @@ package body Xml_Parser is
   end Tree_Mng;
   package body Tree_Mng is separate;
 
-  -- Dtd definition: entities
+  -- Parsed entities
   procedure Set (To : out Entity_Type; Val : in Entity_Type) is
   begin
     To := Val;
@@ -141,7 +145,8 @@ package body Xml_Parser is
     return Current.Parameter = Criteria.Parameter
     and then Current.Name = Criteria.Name;
   end "=";
-  -- Dtd definition: unparsed entities and notations
+
+  -- Unparsed entities and notations
   procedure Set (To : out Unparsed_Type; Val : in Unparsed_Type) is
   begin
     To := Val;
@@ -161,7 +166,8 @@ package body Xml_Parser is
     return Current.Is_Entity = Criteria.Is_Entity
     and then Current.Name = Criteria.Name;
   end "=";
-  -- Dtd definition: infos
+
+  -- Parsed infos
   procedure Set (To : out Info_Rec; Val : in Info_Rec) is
   begin
     To := Val;
@@ -174,6 +180,22 @@ package body Xml_Parser is
     use type As.U.Asu_Us;
   begin
     return Current.Name = Criteria.Name;
+  end "=";
+
+  -- Namespaces
+  procedure Set (To : out Namespace_Type; Val : in Namespace_Type) is
+  begin
+    To := Val;
+  end Set;
+  function Image (Namespace : Namespace_Type) return String is
+  begin
+    return Namespace.Prefix.Image;
+  end Image;
+  function "=" (Current : Namespace_Type; Criteria : Namespace_Type)
+               return Boolean is
+    use type As.U.Asu_Us;
+  begin
+    return Current.Prefix = Criteria.Prefix;
   end "=";
 
   -- If file path is relative and father non null, use father path
@@ -282,6 +304,7 @@ package body Xml_Parser is
                    Normalize : in Boolean := True;
                    Use_Dtd   : in Boolean := True;
                    Dtd_File  : in String  := "";
+                   Namespace : in Boolean := False;
                    Warn_Cb   : in Warning_Callback_Access := null;
                    Parse_Cb  : in Parse_Callback_Access := null) is
   begin
@@ -311,6 +334,7 @@ package body Xml_Parser is
     Ctx.Normalize := Normalize;
     Ctx.Use_Dtd := Use_Dtd;
     Ctx.Dtd_File := As.U.Tus (Dtd_File);
+    Ctx.Namespace := Namespace;
     Ctx.Warnings := Warn_Cb;
     Ctx.Callback := Parse_Cb;
     Parse_Mng.Parse_Xml (Ctx);
@@ -390,6 +414,7 @@ package body Xml_Parser is
     Ctx.Normalize := True;
     Ctx.Use_Dtd := True;
     Ctx.Dtd_File.Set_Null;
+    Ctx.Namespace := False;
     Ctx.Warnings := null;
     Ctx.Callback := null;
     Ctx.Level := 0;
@@ -506,6 +531,7 @@ package body Xml_Parser is
                                       := Remove_Cdata_Markers;
                             Expand    : in Boolean := True;
                             Normalize : in Boolean := True;
+                            Namespace : in Boolean := False;
                             Warn_Cb   : in Warning_Callback_Access := null;
                             Parse_Cb  : in Parse_Callback_Access := null) is
   begin
@@ -531,6 +557,7 @@ package body Xml_Parser is
     Ctx.Expand := Expand;
     Ctx.Cdata_Policy := Cdata;
     Ctx.Normalize := Normalize;
+    Ctx.Namespace := Namespace;
     Ctx.Warnings := Warn_Cb;
     Ctx.Callback := Parse_Cb;
     Parse_Mng.Parse_Prologue (Ctx, Dtd);
@@ -817,6 +844,22 @@ package body Xml_Parser is
     return Cell.Name;
   end Get_Name;
 
+   -- Get the namespace name of an element
+  function Get_Namespace (Ctx     : Ctx_Type;
+                          Element : Element_Type) return String is
+  begin
+    return Get_Namespace (Ctx, Element).Image;
+  end Get_Namespace;
+
+  function Get_Namespace (Ctx     : Ctx_Type;
+                          Element : Element_Type) return As.U.Asu_Us is
+    Cell : constant My_Tree_Cell
+         := Get_Cell (Get_Tree (Ctx, Element), Element);
+  begin
+    return Cell.Namespace;
+  end Get_Namespace;
+
+
   -- Get the attributes of an element
   function Get_Attributes (Ctx     : Ctx_Type;
                            Element : Element_Type) return Attributes_Array is
@@ -836,6 +879,7 @@ package body Xml_Parser is
         raise Internal_Error;
       end if;
       A(I).Name := Cell.Name;
+      A(I).Namespace := Cell.Namespace;
       A(I).Value := Cell.Value;
       A(I).Unparsed := Cell.Unparsed;
     end loop;
@@ -872,7 +916,7 @@ package body Xml_Parser is
       Trace ("Expecting kind attribute, found " & Cell.Kind'Img);
       raise Internal_Error;
     end if;
-    return (Cell.Name, Cell.Value, Cell.Unparsed);
+    return (Cell.Name, Cell.Namespace, Cell.Value, Cell.Unparsed);
   end Get_Attribute;
 
   -- May raise Attribute_Not_Found
