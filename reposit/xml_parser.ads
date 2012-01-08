@@ -752,5 +752,10 @@ private
   function Get_Magic return Float;
   function Get_Tree (Ctx : Ctx_Type;
                      Node : Node_Type) return Tree_Acc;
+
+  -- For Xml_Generator and internal
+  -- If Name is not qualified or Namespace is empty then return Name
+  -- Otherwise return Namespace^NameSuffix
+  function Expand_Name (Name, Namespace : As.U.Asu_Us) return As.U.Asu_Us;
 end Xml_Parser;
 

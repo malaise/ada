@@ -1,9 +1,9 @@
 with Ada.Exceptions, Ada.Unchecked_Deallocation;
-with Environ, Basic_Proc, Rnd, Exception_Messenger, Directory;
+with Environ, Basic_Proc, Rnd, Exception_Messenger, Directory, String_Mng;
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "0";
+  Minor_Version : constant String := "1";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -48,9 +48,6 @@ package body Xml_Parser is
     -- Add an element, move to it
     procedure Add_Element (Elements : in out My_Tree.Tree_Type;
                            Name : in As.U.Asu_Us; Line : in Natural);
-    -- Set namespace of current element
-    procedure Set_Namespace (Elements : in out My_Tree.Tree_Type;
-                             Namespace : in As.U.Asu_Us);
     -- Add specific tuning to element (xml:space=preserve)
     Xml_Space : constant String := "xml:space";
     Preserve : constant String := "preserve";
@@ -68,7 +65,7 @@ package body Xml_Parser is
     function Get_Tuning (Elements : My_Tree.Tree_Type) return String;
     -- Add an attribute to current element, remain on current element
     procedure Add_Attribute (Elements : in out My_Tree.Tree_Type;
-                             Name, Namespace, Value : in As.U.Asu_Us;
+                             Name, Value : in As.U.Asu_Us;
                              Line : in Natural);
     -- Check if an attribute exists for current element
     procedure Attribute_Exists (Elements : in out My_Tree.Tree_Type;
@@ -859,6 +856,23 @@ package body Xml_Parser is
     return Cell.Namespace;
   end Get_Namespace;
 
+  -- If Name is not qualified or Namespace is empty then return Name
+  -- Otherwise return Namespace^NameSuffix
+  function Expand_Name (Name, Namespace : As.U.Asu_Us) return As.U.Asu_Us is
+    Index : Natural := 0;
+    use type As.U.Asu_Us;
+  begin
+    if not Namespace.Is_Null then
+      -- Optim: No check of qualified if Namespace is empty
+      Index := String_Mng.Locate (Name.Image, ":");
+    end if;
+    if Index = 0 or else Index = Name.Length then
+      -- Not qualified (or no suffix) or empty Namespace
+      return Name;
+    end if;
+    -- Namespace^NameSuffix
+    return Namespace & "^" & Name.Slice (Index + 1, Name.Length);
+  end Expand_Name;
 
   -- Get the attributes of an element
   function Get_Attributes (Ctx     : Ctx_Type;

@@ -2,6 +2,13 @@ with Regular_Expressions, Parser, Integer_Image, Upper_Char;
 separate (Xml_Parser.Parse_Mng)
 package body Dtd is
 
+ -- Separator within Info name and list
+  Info_Sep : constant Character := '#';
+  function Is_Sep (C : Character) return Boolean is
+  begin
+    return C = Info_Sep;
+  end Is_Sep;
+
   -- Image of line_no without leading space
   function Line_Image (I : Integer) return String renames Integer_Image;
 
@@ -1738,7 +1745,7 @@ package body Dtd is
                 Namespaces.Get (Ctx, Attr_Us, False, Namespace);
               end if;
               Tree_Mng.Add_Attribute (Ctx.Elements.all,
-                  Attr_Us, Namespace, As.U.Tus (Dtd_Val), Line_No);
+                  Attr_Us, As.U.Tus (Dtd_Val), Line_No);
             end if;
             Xml_Val := As.U.Tus (Dtd_Val);
             if Attr = Tree_Mng.Xml_Space
@@ -1746,9 +1753,6 @@ package body Dtd is
               Tree_Mng.Add_Tuning (Ctx.Elements.all,
                                    Tree_Mng.Xml_Space_Preserve);
               Trace (" Check, added tuning " & Tree_Mng.Xml_Space_Preserve);
-            end if;
-            if Ctx.Namespace then
-              Namespaces.Add (Ctx, Attr_Us, Xml_Val);
             end if;
           end;
         elsif Att_Set then
@@ -1863,17 +1867,17 @@ package body Dtd is
     Cell : My_Tree_Cell;
     -- Lists of attributes
     Attributes : As.U.Asu_Us;
+    -- Current namespace and expanded attribute name
+    Namespace, Expanded : As.U.Asu_Us;
+    -- List of expanded attributes
+    Expanded_List : As.U.Asu_Us;
     use type As.U.Asu_Us;
   begin
-    if not Adtd.Set then
-      -- No dtd => no check
-      return;
-    end if;
+    Ctx.Elements.Read (Cell);
     if Debug_Level /= 0 then
-      Ctx.Elements.Read (Cell);
       Trace ("Dtd checking attributes of element " & Cell.Name.Image);
     end if;
-    -- Read current element from tree and make its attribute list
+    -- Make its attribute list and set namespaces
     if Ctx.Elements.Children_Number /= 0 then
       for I in 1 .. Ctx.Elements.Children_Number loop
         if I = 1 then
@@ -1882,18 +1886,69 @@ package body Dtd is
           Ctx.Elements.Move_Brother (False);
         end if;
         Ctx.Elements.Read (Cell);
-        if Cell.Kind = Xml_Parser.Attribute then
-          Attributes.Append (Info_Sep & Cell.Name & Info_Sep);
-        else
+        if Cell.Kind /= Xml_Parser.Attribute then
           -- Children
           exit;
+        end if;
+        Attributes.Append (Info_Sep & Cell.Name & Info_Sep);
+        if Ctx.Namespace then
+          if not Adtd.Set
+          and then not Namespaces.Valid (Cell.Name, True) then
+            -- No Dtd so name will not be checked (in Check_Attributes)
+            --  considering its type. Check name considering it is CDATA
+            Util.Error (Ctx.Flow, "Invalid namespace " & Cell.Name.Image);
+          end if;
+          -- Define namespace
+          Namespaces.Add (Ctx, Cell.Name, Cell.Value);
         end if;
       end loop;
       Ctx.Elements.Move_Father;
     end if;
+
     Ctx.Elements.Read (Cell);
-    -- Check Attributes
-    Check_Attributes (Ctx, Adtd, Cell.Name, Cell.Line_No, Attributes);
+    if Adtd.Set then
+      -- Check Attributes
+      Check_Attributes (Ctx, Adtd, Cell.Name, Cell.Line_No, Attributes);
+    end if;
+
+    if not Ctx.Namespace then
+      return;
+    end if;
+
+    -- Check uniqueness of expanded attributes
+    --  and set namespace of attributes
+    if Ctx.Elements.Children_Number /= 0 then
+      for I in 1 .. Ctx.Elements.Children_Number loop
+        if I = 1 then
+          Ctx.Elements.Move_Child;
+        else
+          Ctx.Elements.Move_Brother (False);
+        end if;
+        Ctx.Elements.Read (Cell);
+        if Cell.Kind /= Xml_Parser.Attribute then
+          -- Children
+          exit;
+        end if;
+        -- Get namespace for this attribute
+        Namespaces.Get (Ctx, Cell.Name, False, Namespace);
+        -- Check uniqueness of expanded name
+        Expanded := Expand_Name (Cell.Name, Namespace);
+        if String_Mng.Locate (
+                Expanded_List.Image,
+                Info_Sep & Expanded.Image & Info_Sep) /= 0 then
+          Util.Error (Ctx.Flow, "Duplicated expanded attribute name "
+                               & Expanded.Image);
+        end if;
+        if Expanded.Is_Null then
+          Expanded.Set (Info_Sep);
+        end if;
+        Expanded.Append (Expanded & Info_Sep);
+        -- Set this attribute namespace
+        Cell.Namespace := Namespace;
+        Ctx.Elements.Replace (Cell);
+      end loop;
+    end if;
+
   end Check_Attributes;
 
   -- Is this element defined as Mixed
@@ -2017,13 +2072,19 @@ package body Dtd is
                            Children : in Children_Desc) is
     Cell : My_Tree_Cell;
   begin
-    if not Adtd.Set then
-      -- No dtd => no check
-      return;
-    end if;
     Ctx.Elements.Read (Cell);
-    Check_Children (Ctx, Adtd, Cell.Name, Cell.Line_No, Cell.Put_Empty,
-                    Children);
+    if Ctx.Namespace then
+      -- Check name and set namespace
+      if not Namespaces.Valid (Cell.Name, True) then
+        Util.Error (Ctx.Flow, "Invalid namespace " & Cell.Name.Image);
+      end if;
+      Namespaces.Get (Ctx, Cell.Name, True, Cell.Namespace);
+      Ctx.Elements.Replace (Cell);
+    end if;
+    if Adtd.Set then
+      Check_Children (Ctx, Adtd, Cell.Name, Cell.Line_No, Cell.Put_Empty,
+                      Children);
+    end if;
   end Check_Element;
 
   -- INTERNAL

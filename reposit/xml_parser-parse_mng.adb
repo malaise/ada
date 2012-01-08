@@ -1,15 +1,8 @@
 with Ada.Characters.Latin_1;
-with Lower_Str, Upper_Str, Mixed_Str, String_Mng, As.U.Utils;
+with Lower_Str, Upper_Str, Mixed_Str, As.U.Utils;
 separate (Xml_Parser)
 
 package body Parse_Mng  is
-
-  -- Separator within Info name and list
-  Info_Sep : constant Character := '#';
-  function Is_Sep (C : Character) return Boolean is
-  begin
-    return C = Info_Sep;
-  end Is_Sep;
 
   -- Context where a reference to entity is resolved
   -- In Xml content, in attribute value, in entity value,
@@ -362,8 +355,6 @@ package body Parse_Mng  is
     Char : Character;
     Line_No : Natural;
     Attr_Exists, Attr_Cdata : Boolean;
-    Expanded : As.U.Asu_Us;
-    Namespace : As.U.Asu_Us;
     use type As.U.Asu_Us;
   begin
     -- Loop on several attributes
@@ -425,32 +416,13 @@ package body Parse_Mng  is
             & " in standalone document is impacted by not CDATA declaration");
           end if;
         end if;
-        -- Check uniqueness of expanded name and add namespace
-        if Ctx.Namespace then
-          Namespaces.Get (Ctx, Attribute_Name, False, Namespace);
-          if String_Mng.Locate (Expanded.Image,
-                Info_Sep & Attribute_Name.Image
-              & '^' & Namespace.Image & Info_Sep) /= 0 then
-            Util.Error (Ctx.Flow, "Duplicated expanded attribute names "
-                                & Attribute_Name.Image & '^' & Namespace.Image);
-          end if;
-          if Expanded.Is_Null then
-            Expanded.Set (Info_Sep);
-          end if;
-          Expanded.Append (Attribute_Name & '^' & Namespace & Info_Sep);
-        end if;
-        Tree_Mng.Add_Attribute (Ctx.Elements.all,
-                  Attribute_Name, Namespace, Attribute_Value, Line_No);
+        -- Add attribute and possible tuning
+        Tree_Mng.Add_Attribute (Ctx.Elements.all, Attribute_Name,
+                                Attribute_Value, Line_No);
         if Attribute_Name.Image = Tree_Mng.Xml_Space
         and then Attribute_Value.Image = Tree_Mng.Preserve then
           Tree_Mng.Add_Tuning (Ctx.Elements.all, Tree_Mng.Xml_Space_Preserve);
           Trace ("Added tuning " & Tree_Mng.Xml_Space_Preserve);
-        end if;
-      end if;
-      if Ctx.Namespace and then not Adtd.Set then
-        -- No Dtd, check validity of this attribute as CDATA
-        if not Namespaces.Valid (Attribute_Name, True) then
-          Util.Error (Ctx.Flow, "Invalid namespace " & Attribute_Name.Image);
         end if;
       end if;
 
@@ -1576,7 +1548,6 @@ package body Parse_Mng  is
     Char : Character;
     Line_No : Natural;
     My_Children : aliased Children_Desc;
-    Namespace : As.U.Asu_Us;
     use type As.U.Asu_Us;
   begin
     Line_No := Util.Get_Line_No (Ctx.Flow);
@@ -1586,9 +1557,6 @@ package body Parse_Mng  is
     Util.Get_Curr_Str (Ctx.Flow, Element_Name);
     if not Util.Name_Ok (Element_Name) then
       Util.Error (Ctx.Flow, "Invalid element name " & Element_Name.Image);
-    end if;
-    if Ctx.Namespace and then Namespaces.Valid (Element_Name, True) then
-      Util.Error (Ctx.Flow, "Invalid namespace " & Element_Name.Image);
     end if;
     if Root
     and then not Ctx.Doctype.Name.Is_Null
@@ -1630,11 +1598,6 @@ package body Parse_Mng  is
       Util.Unget (Ctx.Flow);
       Parse_Attributes (Ctx, Adtd, Of_Xml => False, Elt_Name => Element_Name);
       Util.Read (Ctx.Flow, Char);
-    end if;
-    -- Set Namespace
-    if Ctx.Namespace then
-      Namespaces.Get (Ctx, Element_Name, True, Namespace);
-      Tree_Mng.Set_Namespace (Ctx.Elements.all, Namespace);
     end if;
     -- If /, then must be followed by >, return
     if Char = Util.Slash then
