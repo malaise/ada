@@ -31,7 +31,7 @@ package body Namespaces is
     if Name.Length > Xmlns_Prefix'Length
     and then Name.Slice (1, Xmlns_Prefix'Length) = Xmlns_Prefix then
       -- Keep suffix
-      Item.Prefix := Name.Uslice (Xmlns_Prefix'Length + 1, Item.Prefix.Length);
+      Item.Prefix := Name.Uslice (Xmlns_Prefix'Length + 1, Name.Length);
     elsif Name.Image /= Xmlns then
       -- Not a Namespace => exit, otherwise default (empty) domain
       return;

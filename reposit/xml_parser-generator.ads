@@ -3,7 +3,7 @@
 package Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "9";
+  Major_Version : constant String := "10";
   function Version return String;
 
   type Ctx_Type is new Xml_Parser.Ctx_Type with private;
@@ -209,29 +209,34 @@ package Xml_Parser.Generator is
   procedure Put (Ctx       : in out Ctx_Type;
                  File_Name : in String;
                  Format    : in Format_Kind_List := Default_Format;
-                 Width     : in Natural := Default_Width);
+                 Width     : in Natural := Default_Width;
+                 Namespace : in Boolean := False);
 
   -- Dumps in a string
   -- Same as for Put, the Ctx should have been checked if new nodes
   function Set (Ctx    : Ctx_Type;
-                Format : Format_Kind_List := Default_Format;
-                Width  : Natural := Default_Width) return String;
-  procedure Set (Ctx    : in Ctx_Type;
-                 Str    : out As.U.Asu_Us;
-                 Format : in Format_Kind_List := Default_Format;
-                 Width  : in Natural := Default_Width);
+                Format    : Format_Kind_List := Default_Format;
+                Width     : Natural := Default_Width;
+                Namespace : Boolean := False) return String;
+  procedure Set (Ctx       : in Ctx_Type;
+                 Str       : out As.U.Asu_Us;
+                 Format    : in Format_Kind_List := Default_Format;
+                 Width     : in Natural := Default_Width;
+                 Namespace : in Boolean := False);
 
 
   -- Put a node update image in a string
   function Image (Ctx    : Xml_Parser.Ctx_Type;
                   Update : Node_Update;
                   Format : Format_Kind_List := Default_Format;
-                  Width  : Natural := Default_Width) return String;
-  procedure Set_Image (Ctx    : in Xml_Parser.Ctx_Type;
-                       Update : in Node_Update;
-                       Str    : out As.U.Asu_Us;
-                       Format : in Format_Kind_List := Default_Format;
-                       Width  : in Natural := Default_Width);
+                  Width  : Natural := Default_Width;
+                  Namespace : Boolean := False) return String;
+  procedure Set_Image (Ctx       : in Xml_Parser.Ctx_Type;
+                       Update    : in Node_Update;
+                       Str       : out As.U.Asu_Us;
+                       Format    : in Format_Kind_List := Default_Format;
+                       Width     : in Natural := Default_Width;
+                       Namespace : in Boolean := False);
 
 private
   type Ctx_Type is new Xml_Parser.Ctx_Type with null record;

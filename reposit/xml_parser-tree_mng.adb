@@ -103,6 +103,16 @@ package body Tree_Mng is
     end if;
   end Add_Element;
 
+  -- Set namespace of current element
+  procedure Set_Namespace (Elements : in out My_Tree.Tree_Type;
+                           Namespace : in As.U.Asu_Us) is
+    Cell : My_Tree_Cell;
+  begin
+    Elements.Read (Cell);
+    Cell.Namespace := Namespace;
+    Elements.Replace (Cell);
+  end Set_Namespace;
+
   -- Add specific tuning to element (xml:space=preserve)
   -- Use the Value field of the element
   procedure Add_Tuning (Elements : in out My_Tree.Tree_Type;

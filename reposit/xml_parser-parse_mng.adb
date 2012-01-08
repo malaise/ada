@@ -1544,7 +1544,7 @@ package body Parse_Mng  is
                            Adtd : in out Dtd_Type;
                            Parent_Children : access Children_Desc;
                            Root : in Boolean) is
-    Element_Name, End_Name : As.U.Asu_Us;
+    Element_Name, End_Name, Namespace : As.U.Asu_Us;
     Char : Character;
     Line_No : Natural;
     My_Children : aliased Children_Desc;
@@ -1557,6 +1557,12 @@ package body Parse_Mng  is
     Util.Get_Curr_Str (Ctx.Flow, Element_Name);
     if not Util.Name_Ok (Element_Name) then
       Util.Error (Ctx.Flow, "Invalid element name " & Element_Name.Image);
+    end if;
+    if Ctx.Namespace then
+      -- Check name v.s. namespace
+      if not Namespaces.Valid (Element_Name, True) then
+        Util.Error (Ctx.Flow, "Invalid namespace " & Element_Name.Image);
+      end if;
     end if;
     if Root
     and then not Ctx.Doctype.Name.Is_Null
@@ -1599,6 +1605,7 @@ package body Parse_Mng  is
       Parse_Attributes (Ctx, Adtd, Of_Xml => False, Elt_Name => Element_Name);
       Util.Read (Ctx.Flow, Char);
     end if;
+
     -- If /, then must be followed by >, return
     if Char = Util.Slash then
       -- <Name [ attributes ]/>
@@ -1610,6 +1617,11 @@ package body Parse_Mng  is
       -- End of this empty element, check attributes and content
       Tree_Mng.Set_Put_Empty (Ctx.Elements.all, True);
       Dtd.Check_Attributes (Ctx, Adtd);
+      -- Set element namespace
+      if Ctx.Namespace then
+        Namespaces.Get (Ctx, Element_Name, True, Namespace);
+        Tree_Mng.Set_Namespace (Ctx.Elements.all, Namespace);
+      end if;
       Dtd.Check_Element (Ctx, Adtd,  My_Children);
       -- Create this element with no child (Close)
       Call_Callback (Ctx, Elements, True, False,
@@ -1621,6 +1633,11 @@ package body Parse_Mng  is
       -- >: parse text and children elements until </
       -- Check attributes first (e.g. xml:space)
       Dtd.Check_Attributes (Ctx, Adtd);
+      -- Set element namespace
+      if Ctx.Namespace then
+        Namespaces.Get (Ctx, Element_Name, True, Namespace);
+        Tree_Mng.Set_Namespace (Ctx.Elements.all, Namespace);
+      end if;
       -- Try to preserve spaces if current element has this tuning
       -- Tuning set by Dtd (if default is preserve and no value in Xml)
       --  or by attribute value in Xml. In both cases it in Tree

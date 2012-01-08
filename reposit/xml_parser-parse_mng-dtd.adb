@@ -1947,6 +1947,7 @@ package body Dtd is
         Cell.Namespace := Namespace;
         Ctx.Elements.Replace (Cell);
       end loop;
+      Ctx.Elements.Move_Father;
     end if;
 
   end Check_Attributes;
@@ -2072,16 +2073,8 @@ package body Dtd is
                            Children : in Children_Desc) is
     Cell : My_Tree_Cell;
   begin
-    Ctx.Elements.Read (Cell);
-    if Ctx.Namespace then
-      -- Check name and set namespace
-      if not Namespaces.Valid (Cell.Name, True) then
-        Util.Error (Ctx.Flow, "Invalid namespace " & Cell.Name.Image);
-      end if;
-      Namespaces.Get (Ctx, Cell.Name, True, Cell.Namespace);
-      Ctx.Elements.Replace (Cell);
-    end if;
     if Adtd.Set then
+      Ctx.Elements.Read (Cell);
       Check_Children (Ctx, Adtd, Cell.Name, Cell.Line_No, Cell.Put_Empty,
                       Children);
     end if;
