@@ -4,7 +4,7 @@ with As.U, Argument, Argument_Parser, Xml_Parser.Generator, Normal, Basic_Proc,
      Text_Line, Sys_Calls, Parser;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V16.0";
+  Version : constant String := "V16.1";
 
   procedure Ae_Re (E : in Ada.Exceptions.Exception_Id;
                    M : in String := "")
@@ -70,7 +70,7 @@ procedure Xml_Checker is
   begin
     Ple ("Usage: " & Argument.Get_Program_Name & "[ { <option> } ] [ { <file> } ]");
     Ple (" <option> ::= <silent> | <dump> | <raw> | <width> | <one> |");
-    Ple ("            | <expand> | <keep> | <normalize> | <canonical>");
+    Ple ("            | <expand> | <keep> | <namespace> | <normalize> | <canonical>");
     Ple ("            | <check_dtd> | <warnings> | <tree> | <help> | <version>");
 
     Ple (" <silent>     ::= -s | --silent     -- No output, only exit code");

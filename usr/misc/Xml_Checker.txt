@@ -1,11 +1,11 @@
 Xml_Checker
 ===========
 
-Parser version: V27.5
+Parser version: V29.3
 
-Generator version: V9.3
+Generator version: V10.0
 
-Xml_checker version: V15.2
+Xml_checker version: V16.1
 
 Xml_checker is a parser of XML file that checks the syntax (versus DTD) and
 formats the output.
@@ -15,7 +15,7 @@ Syntax
 ...................................................
 xml_checker[ { <option> } ] [ { <file> } ]
  <option> ::= <silent> | <dump> | <raw> | <width> | <one> |
-            | <expand> | <keep> | <normalize> | <canonical>
+            | <expand> | <keep> | <namespace> | <normalize> | <canonical>
             | <check_dtd> | <warnings> | <tree> | <help> | <version>
 
  <silent>     ::= -s | --silent     -- No output, only exit code
@@ -33,6 +33,7 @@ xml_checker[ { <option> } ] [ { <file> } ]
                                     -- Keep none (remove comments and CDATA
                                     --  markers)
                                     -- Keep all (default)
+ <namespace>  ::= -n | --namespace  -- Put Namespace^Suffix
  <canonical>  ::= -C | --canonical  -- Canonicalize xml
  <normalize>  ::= --no-normalize    -- Do not normalize attributes and text
 
@@ -44,7 +45,8 @@ xml_checker[ { <option> } ] [ { <file> } ]
  <help>       ::= -h | --help       -- Put this help
  <version>    ::= -v | --version    -- Put versions
 ...................................................
-All options except expand, keep, dtd, warnings and tree are exclusive.
+All options except expand, keep, dtd, warnings, namespace and tree are
+exclusive.
 
 Output format
 ~~~~~~~~~~~~~
@@ -83,6 +85,13 @@ attributes with their default value (if they have).
 anchor:Keep[]-k c|d|n|a | --keep=comments|cdata|none|all: :: for keep comments,
 or keep CDATA sections unchanged, or keep none (remove comments and CDATA
 markers) or keep all unchanged, which is the default.
+
+-n | --namespace: :: for namespace checks and expansion. Add checks that flow is
+namespace-well-formed and namespace-valid (see 
+http://www.w3.org/TR/REC-xml-names) and expand namespaces as
+'<namespace>^<suffix>.'
++
+This option always expand, so it is exclusive with option xref:Expand[expand].
 
 -C | --canonical: :: for canonicalization of the XML (see
 http://www.w3.org/TR/xml-c14n). This option only allows options dtd, warnings

@@ -3,6 +3,9 @@ HISTORY
 Main changes
 
 [horizontal]
+*2012/01/09*:: Add support for XML namespace in in Xml_Parser V29.3, Xml_parser.Generator V10.0 and
+xml_checker V16.1
+
 *2012/01/05*:: Handle Dtd for strings similarly as for files in Xml_Parser V28.0
 
 *2012/01/04*:: Add keep local doctype definition even if a dtd file is provided in Xml_Parser V27.4
