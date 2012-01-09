@@ -93,8 +93,6 @@ package body Ada_Words is
                                           Dump => Dump);
   Hash_Table : Word_Hash.Hash_Table;
 
-
-
   procedure Store (Word : in String; Must_Be_Keyword : in Boolean := True) is
     Low_Word : constant String := Lower_Str (Word);
     Rec : Word_Rec;
