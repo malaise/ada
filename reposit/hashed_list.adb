@@ -15,10 +15,11 @@ package body Hashed_List is
   end Dump;
 
   -- Search in hashing the element matching criteria, returns null if not found
-  procedure Locate (List : in out List_Type;
-                    Crit : in Element_Type;
-                    Reset : in Boolean;
-                    Element : out Element_Access) is
+  procedure Locate (List      : in out List_Type;
+                    Crit      : in Element_Type;
+                    Reset     : in Boolean;
+                    Element   : out Element_Access;
+                    Direction : in Direction_List := Forward) is
     Index : constant Hash_Mng.Hash_Range := Hash_Func (Key_Image (Crit));
     Data_Found : Hash_Mng.Found_Rec;
   begin
@@ -28,7 +29,8 @@ package body Hashed_List is
     end if;
     loop
       -- Loop withing matching (same image) until data = criteria
-      List.Table.Find_Next (Index, Data_Found);
+      List.Table.Find_Next (Index, Data_Found,
+                            Hashing.Direction_List(Direction));
       if Data_Found.Found and then Data_Found.Data.all = Crit then
         -- Found the correct element, store its access (for further access)
         --  and its hash index (for deletion)
@@ -48,36 +50,40 @@ package body Hashed_List is
   end Locate;
 
   -- Check if an element exists in the list
-  procedure Search_First (List : in out List_Type;
-                          Crit : in Element_Type;
-                          Found : out Boolean) is
+  procedure Search_First (List      : in out List_Type;
+                          Crit      : in Element_Type;
+                          Found     : out Boolean;
+                          Direction : in Direction_List := Forward) is
     Acc : Element_Access;
   begin
-    Locate (List, Crit, True, Acc);
+    Locate (List, Crit, True, Acc, Direction);
     Found := Acc /= null;
   end Search_First;
-  procedure Search_Next (List : in out List_Type;
-                         Crit : in Element_Type;
-                         Found : out Boolean) is
+  procedure Search_Next (List      : in out List_Type;
+                         Crit      : in Element_Type;
+                         Found     : out Boolean;
+                         Direction : in Direction_List := Forward) is
     Acc : Element_Access;
   begin
-    Locate (List, Crit, False, Acc);
+    Locate (List, Crit, False, Acc, Direction);
     Found := Acc /= null;
   end Search_Next;
   procedure Find_First (List : in out List_Type;
-                        Crit : in Element_Type) is
+                        Crit : in Element_Type;
+                        Direction : in Direction_List := Forward) is
     Acc : Element_Access;
   begin
-    Locate (List, Crit, True, Acc);
+    Locate (List, Crit, True, Acc, Direction);
     if Acc = null then
       raise Not_In_List;
     end if;
   end Find_First;
   procedure Find_Next (List : in out List_Type;
-                       Crit : in Element_Type) is
+                       Crit : in Element_Type;
+                       Direction : in Direction_List := Forward) is
     Acc : Element_Access;
   begin
-    Locate (List, Crit, False, Acc);
+    Locate (List, Crit, False, Acc, Direction);
     if Acc = null then
       raise Not_In_List;
     end if;
@@ -86,15 +92,27 @@ package body Hashed_List is
   -- Insert an item
   -- May raise Full_List (no more memory)
   procedure Insert (List : in out List_Type;
-                    Item : in Element_Type) is
+                    Item : in Element_Type;
+                    Where : in Where_Insert_List := Last) is
   begin
     Check_Callback (List);
-    -- Insert new element in list (append for more determinism) and in hashing
-    List.List.Rewind (False, List_Mng.Prev);
-    List.List.Insert (Item);
+    -- Insert new element in list and in hashing
+    case Where is
+      when First =>
+        List.List.Rewind (False, List_Mng.Next);
+        List.List.Insert (Item, List_Mng.Prev);
+      when Last =>
+        List.List.Rewind (False, List_Mng.Prev);
+        List.List.Insert (Item, List_Mng.Next);
+      when After_Curr =>
+        List.List.Insert (Item, List_Mng.Next);
+      when Before_Curr =>
+        List.List.Insert (Item, List_Mng.Prev);
+    end case;
     Hash_Mng.Store (List.Table,
                     Key_Image(Item),
-                    Element_Access (List.List.Access_Current));
+                    Element_Access (List.List.Access_Current),
+                    Hashing.Where_Insert_List(Where));
   exception
     when List_Mng.Full_List =>
       raise Full_List;
@@ -277,12 +295,12 @@ package body Hashed_List is
   procedure Read_Next (List : in out List_Type;
                        Item : out Element_Type;
                        Moved : out Boolean;
-                       From : in Reference := From_First) is
+                       Direction : in Direction_List := Forward) is
   begin
     if List.List.Is_Empty then
       raise Not_In_List;
     end if;
-    if From = From_First then
+    if Direction = Forward then
       List.List.Read (Item, List_Mng.Next, Moved);
     else
       List.List.Read (Item, List_Mng.Prev, Moved);

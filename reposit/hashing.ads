@@ -8,7 +8,14 @@ package Hashing is
   subtype Max_Hash_Range is Hash_Function.Hash_Range;
   Max_Hash_Value : constant Max_Hash_Range := Max_Hash_Range'Last;
 
-  -- Raised on Remove if last found is not set
+  -- Where inserting a new data
+  type Where_Insert_List is (First, Last, After_Curr, Before_Curr);
+
+  -- In which direction searching
+  type Direction_List is (Forward, Backward);
+
+  -- Raised on Remove or on Store (After_Curr | Before_Curr)
+  --  if last found is not set
   Not_Found : exception;
 
   -- Default maximum size of primary hash table (4095)
@@ -65,7 +72,8 @@ package Hashing is
       -- Last found is not reset
       procedure Store (Table : in out Hash_Table;
                        Key   : in String;
-                       Data  : in Data_Access);
+                       Data  : in Data_Access;
+                       Where : in Where_Insert_List := Last);
 
       -- To reset finding for Index or Key
       procedure Reset_Find (Table : in out Hash_Table; Index : in Hash_Range);
@@ -73,12 +81,14 @@ package Hashing is
 
       -- To get first, then next Data for Index or Key
       -- Last found is reset if not found
-      procedure Find_Next (Table : in out Hash_Table;
-                           Index : in Hash_Range;
-                           Found : out Found_Rec);
-      procedure Find_Next (Table : in out Hash_Table;
-                           Key   : in String;
-                           Found : out Found_Rec);
+      procedure Find_Next (Table     : in out Hash_Table;
+                           Index     : in Hash_Range;
+                           Found     : out Found_Rec;
+                           Direction : in Direction_List := Forward);
+      procedure Find_Next (Table     : in out Hash_Table;
+                           Key       : in String;
+                           Found     : out Found_Rec;
+                           Direction : in Direction_List := Forward);
 
       -- To re-read data previously found at Index or Key
       procedure Re_Read (Table : in out Hash_Table;
@@ -90,8 +100,6 @@ package Hashing is
 
       -- To remove last data found at Index or Key
       -- Last found is reset
-      -- Beware that this can be expensive in time/cpu if the hash tree
-      --  depth is important
       -- May raise Not_Found if last found is not set
       procedure Remove (Table : in out Hash_Table;
                         Index : in Hash_Range);
@@ -99,10 +107,12 @@ package Hashing is
                         Key   : in String);
 
       -- Dump hash value of key and lists all data found for key
-      procedure Dump (Table : in Hash_Table;
-                      Index : in Hash_Range);
-      procedure Dump (Table : in Hash_Table;
-                      Key   : in String);
+      procedure Dump (Table     : in Hash_Table;
+                      Index     : in Hash_Range;
+                      Direction : in Direction_List := Forward);
+      procedure Dump (Table     : in Hash_Table;
+                      Key       : in String;
+                      Direction : in Direction_List := Forward);
 
       -- Remove all the data stored in the hash table
       procedure Clear_All (Table : in out Hash_Table);
@@ -117,13 +127,14 @@ package Hashing is
       type Cell_Rec is record
         Data : Data_Access;
         Next : Cell_Access := null;
+        Prev : Cell_Access := null;
       end record;
 
 
       type First_Cell_Rec is record
         First     : Cell_Access := null;
-        Current   : Cell_Access := null;
         Last      : Cell_Access := null;
+        Current   : Cell_Access := null;
       end record;
 
 

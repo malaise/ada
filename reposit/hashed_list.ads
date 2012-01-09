@@ -35,31 +35,43 @@ package Hashed_List is
   -- For Iterator
   type Reference is (From_First, From_Last);
 
+  -- Where inserting a new data
+  type Where_Insert_List is new Hashing.Where_Insert_List;
+
+  -- In which direction searching
+  type Direction_List is new Hashing.Direction_List;
+
+
   -- Insert/Replace_Current/Delete_Current may raise In_Callback if performed
   --  in an application callback (Iteration);
 
   -- Check if an element matching Crit exists in the list
-  procedure Search_First (List : in out List_Type;
-                          Crit : in Element_Type;
-                          Found : out Boolean);
+  procedure Search_First (List      : in out List_Type;
+                          Crit      : in Element_Type;
+                          Found     : out Boolean;
+                          Direction : in Direction_List:= Forward);
   -- Check if another element matching Crit exists in the list
-  procedure Search_Next (List : in out List_Type;
-                         Crit : in Element_Type;
-                         Found : out Boolean);
+  procedure Search_Next (List      : in out List_Type;
+                         Crit      : in Element_Type;
+                         Found     : out Boolean;
+                         Direction : in Direction_List:= Forward);
 
   -- Check if an element matching Crit exists in the list
   -- May raise Not_In_List
-  procedure Find_First (List : in out List_Type;
-                        Crit : in Element_Type);
+  procedure Find_First (List      : in out List_Type;
+                        Crit      : in Element_Type;
+                        Direction : in Direction_List := Forward);
   -- Check if another element matching Crit exists in the list
   -- May raise Not_In_List
-  procedure Find_Next (List : in out List_Type;
-                       Crit : in Element_Type);
+  procedure Find_Next (List      : in out List_Type;
+                       Crit      : in Element_Type;
+                       Direction : in Direction_List := Forward);
 
   -- Insert an item
   -- May raise Full_List (no more memory)
-  procedure Insert (List : in out List_Type;
-                    Item : in Element_Type);
+  procedure Insert (List  : in out List_Type;
+                    Item  : in Element_Type;
+                    Where : in Where_Insert_List := Last);
 
   -- Read the last element searched/found
   -- May raise Not_In_List
@@ -75,7 +87,7 @@ package Hashed_List is
   function Get_Access_Current (List : List_Type) return Element_Access;
 
   -- Suppress the last element searched/found (which is reset)
-  -- Note that this operation leads to a sequenctial scan of the list
+  -- Note that this operation leads to a sequential scan of the list
   --   of elements
   -- May raise Not_In_List
   procedure Delete_Current (List : in out List_Type);
@@ -96,7 +108,6 @@ package Hashed_List is
 
   -- Return the number of elements in the list (0 if empty, no exception)
   function List_Length (List : List_Type) return Natural;
-
 
   -- These two calls allow sharing the same list among several
   --  software layers. Each time the list is modified, a flag is set
@@ -129,10 +140,10 @@ package Hashed_List is
                     From : in Reference := From_First);
   -- Read successive items
   -- May raise Not_In_List if list is empty
-  procedure Read_Next (List : in out List_Type;
-                       Item : out Element_Type;
-                       Moved : out Boolean;
-                       From : in Reference := From_First);
+  procedure Read_Next (List      : in out List_Type;
+                       Item      : out Element_Type;
+                       Moved     : out Boolean;
+                       Direction : in Direction_List := Forward);
 
   ----------------
   -- EXCEPTIONS --
@@ -173,10 +184,11 @@ private
   overriding procedure Finalize (List : in out List_Type);
 
   -- For children
-  procedure Locate (List : in out List_Type;
-                    Crit : in Element_Type;
-                    Reset : in Boolean;
-                    Element : out Element_Access);
+  procedure Locate (List      : in out List_Type;
+                    Crit      : in Element_Type;
+                    Reset     : in Boolean;
+                    Element   : out Element_Access;
+                    Direction : in Direction_List := Forward);
   procedure Check_Callback (List : in out List_Type);
 
 end Hashed_List;

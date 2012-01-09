@@ -29,56 +29,76 @@ package body Hashing is
       -- To store association Key <-> Index
       procedure Store (Table : in out Hash_Table;
                        Key   : in String;
-                       Data  : in Data_Access) is
+                       Data  : in Data_Access;
+                       Where : in Where_Insert_List := Last) is
         I : constant Hash_Range := Hash_Func(Key);
         Ca : Cell_Access;
+        Cu : Cell_Access;
       begin
-        Ca := Dyn_Hash.Allocate ((Data => Data, Next  => null));
+        Ca := Dyn_Hash.Allocate ((Data => Data, Prev => null, Next => null));
 
-        -- Append
+        Cu := Table.Arr(I).Current;
         if Table.Arr(I).First = null then
-          Table.Arr(I).First := Ca;
-          Table.Arr(I).Last := Ca;
+          if Where = After_Curr or else Where = Before_Curr then
+            raise Not_Found;
+          end if;
         else
-          Table.Arr(I).Last.Next := Ca;
+          case Where is
+            when First =>
+              Ca.Next := Table.Arr(I).First;
+            when Last =>
+              Ca.Prev := Table.Arr(I).Last;
+            when After_Curr =>
+              if Cu = null then
+                raise Not_Found;
+              end if;
+              Ca.Next := Cu.Next;
+              Ca.Prev := Cu;
+            when Before_Curr =>
+              if Cu = null then
+                raise Not_Found;
+              end if;
+              Ca.Next := Cu;
+              Ca.Prev := Cu.Prev;
+          end case;
+        end if;
+        -- Link brothers (or first/last) to ca
+        if Ca.Prev /= null then
+          Ca.Prev.Next := Ca;
+        else
+          Table.Arr(I).First := Ca;
+        end if;
+        if Ca.Next /= null then
+          Ca.Next.Prev := Ca;
+        else
           Table.Arr(I).Last := Ca;
         end if;
-
       end Store;
 
       -- To remove a stored association Key <-> Index
       procedure Remove (Table : in out Hash_Table;
                         Index : in Hash_Range) is
-        Cp : Cell_Access;
         Cu : Cell_Access;
-        Cf : Cell_Access;
       begin
         Cu := Table.Arr(Index).Current;
-        Cf := Table.Arr(Index).First;
         -- Empty or not found
-        if Cf = null or else Cu = null then
+        if Table.Arr(Index).First = null or else Cu = null then
           raise Not_Found;
         end if;
 
         -- Reset current
         Table.Arr(Index).Current := null;
 
-        if Cf = Cu then
-          -- Special case when current is first
-          Table.Arr(Index).First := Cf.Next;
-          Cp := null;
+        -- Disconnect
+        if Cu.Next /= null then
+          Cu.Next.Prev := Cu.Prev;
         else
-          -- Find previous of current and chain it
-          Cp := Cf;
-          while Cp.Next /= Cu loop
-            Cp := Cp.Next;
-          end loop;
-          Cp.Next := Cu.Next;
+          Table.Arr(Index).Last := Cu.Prev;
         end if;
-
-        -- Handle case when current is last
-        if Table.Arr(Index).Last = Cu then
-          Table.Arr(Index).Last := Cp;
+        if Cu.Prev /= null then
+          Cu.Prev.Next := Cu.Next;
+        else
+          Table.Arr(Index).First := Cu.Next;
         end if;
 
         -- Get rid of current
@@ -106,15 +126,24 @@ package body Hashing is
       end Reset_Find;
 
       -- To get next Index matching Key
-      procedure Find_Next (Table : in out Hash_Table;
-                           Index : in Hash_Range;
-                           Found : out Found_Rec) is
+      procedure Find_Next (Table     : in out Hash_Table;
+                           Index     : in Hash_Range;
+                           Found     : out Found_Rec;
+                           Direction : in Direction_List := Forward) is
         Cu : Cell_Access;
       begin
         if Table.Arr(Index).Current = null then
-          Cu := Table.Arr(Index).First;
+          if Direction = Forward then
+            Cu := Table.Arr(Index).First;
+          else
+            Cu := Table.Arr(Index).Last;
+          end if;
         else
-          Cu := Table.Arr(Index).Current.Next;
+          if Direction = Forward then
+            Cu := Table.Arr(Index).Current.Next;
+          else
+            Cu := Table.Arr(Index).Current.Prev;
+          end if;
         end if;
 
         Table.Arr(Index).Current := Cu;
@@ -126,11 +155,12 @@ package body Hashing is
         end if;
       end Find_Next;
 
-      procedure Find_Next (Table : in out Hash_Table;
-                           Key   : in String;
-                           Found : out Found_Rec) is
+      procedure Find_Next (Table     : in out Hash_Table;
+                           Key       : in String;
+                           Found     : out Found_Rec;
+                           Direction : in Direction_List := Forward) is
       begin
-        Find_Next (Table, Hash_Func(Key), Found);
+        Find_Next (Table, Hash_Func(Key), Found, Direction);
       end Find_Next;
 
       -- To re-read data previously found at Index or Key
@@ -156,8 +186,9 @@ package body Hashing is
 
 
       -- Dump hash value of key and lists all data found for key
-      procedure Dump (Table : in Hash_Table;
-                      Index : in Hash_Range) is
+      procedure Dump (Table     : in Hash_Table;
+                      Index     : in Hash_Range;
+                      Direction : in Direction_List := Forward) is
         Ca : Cell_Access := Table.Arr(Index).First;
       begin
         Basic_Proc.Put_Line_Output ("Hash " & Hash_Range'Image(Index));
@@ -174,15 +205,20 @@ package body Hashing is
 
           Dump (Ca.Data);
           Basic_Proc.New_Line_Output;
-          Ca := Ca.Next;
+          if Direction = Forward then
+            Ca := Ca.Next;
+          else
+            Ca := Ca.Prev;
+          end if;
         end loop;
       end Dump;
 
-      procedure Dump (Table : in Hash_Table;
-                      Key   : in String) is
+      procedure Dump (Table     : in Hash_Table;
+                      Key       : in String;
+                      Direction : in Direction_List := Forward) is
         I : constant Hash_Range := Hash_Func(Key);
       begin
-        Dump (Table, I);
+        Dump (Table, I, Direction);
       end Dump;
 
       procedure Clear_All (Table : in out Hash_Table) is

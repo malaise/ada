@@ -11,6 +11,19 @@ package body Hashed_List.Unique is
   --  - drop the new value and keep the original
   -- type Unique_List_Type is new List_Type with null record;
 
+  procedure Search (List : in out Unique_List_Type;
+                    Crit : in Element_Type;
+                    Found : out Boolean) is
+  begin
+    Search_First (List_Type (List), Crit, Found);
+  end Search;
+
+  procedure Find (List : in out Unique_List_Type;
+                  Crit : in Element_Type) is
+  begin
+    Find_First (List_Type (List), Crit);
+  end Find;
+
   -- Search in hashing the element matching criteria, returns null if not found
   -- Optim: See if last found is the one
   procedure Locate_Optim (List : in out Unique_List_Type;
@@ -25,7 +38,7 @@ package body Hashed_List.Unique is
       -- Yes
       Element := List.Current;
     else
-      Locate (List_Type(List), Crit, True, Element);
+      Locate (List_Type(List), Crit, True, Element, Forward);
     end if;
   end Locate_Optim;
 
@@ -52,7 +65,7 @@ package body Hashed_List.Unique is
     Check_Callback (List_Type(List));
     Locate (List_Type(List), Item, True, Acc);
     if Acc = null then
-      Insert (List_Type(List), Item);
+      Insert (List_Type(List), Item, First);
       -- Else drop
     end if;
   end Insert_If_New;
@@ -61,13 +74,15 @@ package body Hashed_List.Unique is
   -- May raise Full_List (no more memory)
   -- This ensures that Hased_List.Insert is not called on a Unique_List
   overriding procedure Insert (List : in out Unique_List_Type;
-                       Item : in Element_Type) is
+                               Item : in Element_Type;
+                               Where : in Where_Insert_List := Last) is
+    pragma Unreferenced (Where);
     Acc : Element_Access;
   begin
     Check_Callback (List_Type(List));
     Locate_Optim (List, Item, Acc);
     if Acc = null then
-      Insert (List_Type(List), Item);
+      Insert (List_Type(List), Item, First);
     else
       Replace_Current (List_Type(List), Item);
     end if;

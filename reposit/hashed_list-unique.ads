@@ -18,12 +18,12 @@ package Hashed_List.Unique is
   -- Check if an element exists in the list
   procedure Search (List : in out Unique_List_Type;
                     Crit : in Element_Type;
-                    Found : out Boolean) renames Search_First;
+                    Found : out Boolean);
 
   -- Check if an element exists in the list
   -- May raise Not_in_List
   procedure Find (List : in out Unique_List_Type;
-                  Crit : in Element_Type) renames Find_First;
+                  Crit : in Element_Type);
 
   -- Get access to the element matching in the list
   -- Of course, changing the key of the accessed element will break the
@@ -41,7 +41,8 @@ package Hashed_List.Unique is
   -- May raise Full_List (no more memory)
   -- This ensures that Hased_List.Insert is not called on a Unique_List
   overriding procedure Insert (List : in out Unique_List_Type;
-                       Item : in Element_Type);
+                               Item : in Element_Type;
+                               Where : in Where_Insert_List := Last);
 
   -- Read the element matching in the list
   -- May raise Not_In_List
