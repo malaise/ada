@@ -615,28 +615,6 @@ private
     -- Notation name (when this is an entity)
     Notation : As.U.Asu_Us;
   end record;
-  type Unparsed_Access is access all Unparsed_Type;
-  procedure Set (To : out Unparsed_Type; Val : in Unparsed_Type);
-  function "=" (Current : Unparsed_Type; Criteria : Unparsed_Type)
-               return Boolean;
-  function Image (Unparsed : Unparsed_Type) return String;
-  package H_Unparsed_List_Mng is new Hashed_List (Unparsed_Type,
-             Unparsed_Access, Set, "=", Image);
-  package Unparsed_List_Mng is new H_Unparsed_List_Mng.Unique;
-
-  -- Namespaces
-  type Namespace_Type is record
-    Prefix : As.U.Asu_Us;
-    Namespace : As.U.Asu_Us;
-  end record;
-  type Namespace_Access is access all Namespace_Type;
-  procedure Set (To : out Namespace_Type; Val : in Namespace_Type);
-  function "=" (Current : Namespace_Type; Criteria : Namespace_Type)
-               return Boolean;
-  function Image (Namespace : Namespace_Type) return String;
-  package H_Namespace_List_Mng is new Hashed_List (Namespace_Type,
-             Namespace_Access, Set, "=", Image);
-  package Namespace_List_Mng is new H_Namespace_List_Mng.Unique;
 
   -- A dtd info
   type Dtd_Type is record
@@ -659,9 +637,9 @@ private
     Include_Level : Natural := 0;
   end record;
 
-  --------------------
-  -- IDs and IDREFs --
-  --------------------
+  --------------------------------------------------
+  -- IDs, IDREFs, UNPARSED ENTITIES and NAMSPACES --
+  --------------------------------------------------
   type Id_Cell is record
     -- Line where the ID or IDREF is defined
     Line_No : Natural := 0;
@@ -684,6 +662,28 @@ private
   package Idref_List_Mng renames Idref_Dyn_List_Mng.Dyn_List;
   type Idref_List_Access is access Idref_List_Mng.List_Type;
 
+  -- Unparsed entities
+  type Unparsed_Access is access all Unparsed_Type;
+  procedure Set (To : out Unparsed_Type; Val : in Unparsed_Type);
+  function "=" (Current : Unparsed_Type; Criteria : Unparsed_Type)
+               return Boolean;
+  function Image (Unparsed : Unparsed_Type) return String;
+  package H_Unparsed_List_Mng is new Hashed_List (Unparsed_Type,
+             Unparsed_Access, Set, "=", Image);
+  package Unparsed_List_Mng is new H_Unparsed_List_Mng.Unique;
+
+  -- Namespaces
+  type Namespace_Type is record
+    Prefix : As.U.Asu_Us;
+    Namespace : As.U.Asu_Us;
+  end record;
+  type Namespace_Access is access all Namespace_Type;
+  procedure Set (To : out Namespace_Type; Val : in Namespace_Type);
+  function "=" (Current : Namespace_Type; Criteria : Namespace_Type)
+               return Boolean;
+  function Image (Namespace : Namespace_Type) return String;
+  package Namespace_List_Mng is new Hashed_List (Namespace_Type,
+             Namespace_Access, Set, "=", Image);
   ------------------
   -- DOCTYPE info --
   ------------------
@@ -741,7 +741,7 @@ private
     -- Unparsed entities and Notations
     Unparsed_List : Unparsed_List_Mng.Unique_List_Type;
     -- Namespaces
-    Namespace_List : Namespace_List_Mng.Unique_List_Type;
+    Namespace_List : Namespace_List_Mng.List_Type;
   end record;
   overriding procedure Finalize (Ctx : in out Ctx_Type);
 
@@ -754,7 +754,7 @@ private
                      Node : Node_Type) return Tree_Acc;
 
   -- For Xml_Generator and internal
-  -- If Name is not qualified or Namespace is empty then return Name
+  -- If Name is empty then return Name
   -- Otherwise return Namespace^NameSuffix
   function Expand_Name (Name, Namespace : As.U.Asu_Us) return As.U.Asu_Us;
 end Xml_Parser;

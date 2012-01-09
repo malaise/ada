@@ -1,9 +1,10 @@
 with Ada.Exceptions, Ada.Unchecked_Deallocation;
-with Environ, Basic_Proc, Rnd, Exception_Messenger, Directory, String_Mng;
+with Environ, Basic_Proc, Rnd, Exception_Messenger, Directory, String_Mng,
+     Trilean;
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "2";
+  Minor_Version : constant String := "3";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -29,8 +30,9 @@ package body Xml_Parser is
   end "=";
 
   -- Trace debug message
-  Debug_Level : Integer := -1;
+  Debug : Trilean.Trilean := Trilean.Maybe;
   procedure Trace (Msg : in String);
+  function Debug_On return Boolean;
 
   -- File management
   package File_Mng is
@@ -264,19 +266,26 @@ package body Xml_Parser is
   -----------
   -- Trace debug message
   procedure Trace (Msg : in String) is
+    use type Trilean.Trilean;
   begin
-    if Debug_Level = -1 then
+    if Debug = Trilean.Maybe then
       -- First call, set debug
       if Environ.Is_Yes ("XML_PARSER_DEBUG") then
-        Debug_Level := 1;
+        Debug := Trilean.True;
       else
-        Debug_Level := 0;
+        Debug := Trilean.False;
       end if;
     end if;
-    if Debug_Level = 1 then
+    if Debug = Trilean.True then
       Basic_Proc.Put_Line_Error (Msg);
     end if;
   end Trace;
+
+  function Debug_On return Boolean is
+    use type Trilean.Trilean;
+  begin
+    return Debug = Trilean.True;
+  end Debug_On;
 
   function Get_Magic return Float is
   begin
@@ -859,22 +868,23 @@ package body Xml_Parser is
     return Cell.Namespace;
   end Get_Namespace;
 
-  -- If Name is not qualified or Namespace is empty then return Name
+  -- If Namespace is empty then return Name
   -- Otherwise return Namespace^NameSuffix
   function Expand_Name (Name, Namespace : As.U.Asu_Us) return As.U.Asu_Us is
     Index : Natural := 0;
     use type As.U.Asu_Us;
   begin
-    if not Namespace.Is_Null then
-      -- Optim: No check of qualified if Namespace is empty
-      Index := String_Mng.Locate (Name.Image, ":");
-    end if;
-    if Index = 0 or else Index = Name.Length then
-      -- Not qualified (or no suffix) or empty Namespace
+    if Namespace.Is_Null then
       return Name;
     end if;
-    -- Namespace^NameSuffix
-    return Namespace & "^" & Name.Slice (Index + 1, Name.Length);
+    Index := String_Mng.Locate (Name.Image, ":");
+    if Index = 0 then
+      -- DefaultNamespace^Name
+      return Namespace & "^" & Name;
+    else
+      -- Namespace^NameSuffix
+      return Namespace & "^" & Name.Slice (Index + 1, Name.Length);
+    end if;
   end Expand_Name;
 
   -- Get the attributes of an element

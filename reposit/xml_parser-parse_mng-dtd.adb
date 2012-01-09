@@ -1843,10 +1843,11 @@ package body Dtd is
         if Ctx.Namespace then
           -- Attr can be CDATA, Enumeration or NMTOKEN(s) with a ':'
           --  otherwise no ':'
-          if not Namespaces.Valid (As.U.Tus (Attr),
-               Td(1) = 'S' or else Td(1) = 'E'
-               or else Upper_Char (Td(1)) = 'T') then
-            Util.Error (Ctx.Flow, "Invalid namespace " & Attr);
+          if Td(1) = 'S' or else Td(1) = 'E'
+          or else Upper_Char (Td(1)) = 'T' then
+            Namespaces.Validate (Ctx, As.U.Tus (Attr), Namespaces.Attr);
+          else
+            Namespaces.Validate (Ctx, As.U.Tus (Attr), Namespaces.Other);
           end if;
         end if;
         Trace ("Dtd checked versus dtd attribute " & Attr & " type " & Td);
@@ -1874,9 +1875,7 @@ package body Dtd is
     use type As.U.Asu_Us;
   begin
     Ctx.Elements.Read (Cell);
-    if Debug_Level /= 0 then
-      Trace ("Dtd checking attributes of element " & Cell.Name.Image);
-    end if;
+    Trace ("Dtd checking attributes of element " & Cell.Name.Image);
     -- Make its attribute list and set namespaces
     if Ctx.Elements.Children_Number /= 0 then
       for I in 1 .. Ctx.Elements.Children_Number loop
@@ -1892,11 +1891,10 @@ package body Dtd is
         end if;
         Attributes.Append (Info_Sep & Cell.Name & Info_Sep);
         if Ctx.Namespace then
-          if not Adtd.Set
-          and then not Namespaces.Valid (Cell.Name, True) then
+          if not Adtd.Set then
             -- No Dtd so name will not be checked (in Check_Attributes)
             --  considering its type. Check name considering it is CDATA
-            Util.Error (Ctx.Flow, "Invalid namespace " & Cell.Name.Image);
+            Namespaces.Validate (Ctx, Cell.Name, Namespaces.Attr);
           end if;
           -- Define namespace
           Namespaces.Add (Ctx, Cell.Name, Cell.Value);
@@ -2077,6 +2075,24 @@ package body Dtd is
       Ctx.Elements.Read (Cell);
       Check_Children (Ctx, Adtd, Cell.Name, Cell.Line_No, Cell.Put_Empty,
                       Children);
+    end if;
+    -- Clean namespaces of attributes
+    if Ctx.Elements.Children_Number /= 0 then
+      for I in 1 .. Ctx.Elements.Children_Number loop
+        if I = 1 then
+          Ctx.Elements.Move_Child;
+        else
+          Ctx.Elements.Move_Brother (False);
+        end if;
+        Ctx.Elements.Read (Cell);
+        if Cell.Kind /= Xml_Parser.Attribute then
+          -- Children
+          exit;
+        end if;
+        -- Delete namespace if this attribute is defining one
+        Namespaces.Del (Ctx, Cell.Name);
+      end loop;
+      Ctx.Elements.Move_Father;
     end if;
   end Check_Element;
 

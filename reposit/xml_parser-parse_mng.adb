@@ -206,16 +206,21 @@ package body Parse_Mng  is
   end Util;
 
   package Namespaces is
+    type Elt_Attr_List is (Elt, Attr, Other);
     -- Validate that name has 0 or 1 ':' if Elt or Attr
     --  or has no ':' otherwise
-    function Valid (Name : in As.U.Asu_Us;
-                    Elt_Attr : in Boolean) return Boolean;
+    procedure Validate (Ctx : in out Ctx_Type;
+                        Name : in As.U.Asu_Us;
+                        Elt_Attr : in Elt_Attr_List);
 
     -- Add / overwrite the definition of Name
-    -- No action if name is not "xlmsn[:<suffix>]"
-    -- Delete it if Namespace is empty
+    -- No action (only check) if name is not "xlmsn[:<suffix>]"
     procedure Add (Ctx : in out Ctx_Type;
                    Name, Namespace : in As.U.Asu_Us);
+
+    -- Delete Namespace
+    procedure Del (Ctx : in out Ctx_Type;
+                   Name : in As.U.Asu_Us);
 
     -- Get the Namespace of name.
     -- Return default if Element not qualified
@@ -1560,9 +1565,7 @@ package body Parse_Mng  is
     end if;
     if Ctx.Namespace then
       -- Check name v.s. namespace
-      if not Namespaces.Valid (Element_Name, True) then
-        Util.Error (Ctx.Flow, "Invalid namespace " & Element_Name.Image);
-      end if;
+      Namespaces.Validate (Ctx, Element_Name, Namespaces.Elt);
     end if;
     if Root
     and then not Ctx.Doctype.Name.Is_Null
@@ -1626,9 +1629,6 @@ package body Parse_Mng  is
       -- Create this element with no child (Close)
       Call_Callback (Ctx, Elements, True, False,
                      In_Mixed => Parent_Children.Is_Mixed);
-      Move_Del (Ctx, False);
-      Trace ("Parsed element " & Element_Name.Image);
-      return;
     elsif Char = Util.Stop then
       -- >: parse text and children elements until </
       -- Check attributes first (e.g. xml:space)
@@ -1663,14 +1663,14 @@ package body Parse_Mng  is
       end if;
       -- End of this non empty element, check children
       Tree_Mng.Set_Put_Empty (Ctx.Elements.all, False);
-      Dtd.Check_Element (Ctx, Adtd,  My_Children);
-      Move_Del (Ctx, False);
-      Trace ("Parsed element " & Element_Name.Image);
-      return;
+      Dtd.Check_Element (Ctx, Adtd, My_Children);
     else
       Util.Error (Ctx.Flow, "Unexpected character " & Char
                 & " while parsing element");
     end if;
+    -- End of element
+    Move_Del (Ctx, False);
+    Trace ("Parsed element " & Element_Name.Image);
   end Parse_Element;
 
   -- Parse the root element and until end of file
