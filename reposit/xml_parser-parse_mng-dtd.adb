@@ -1463,7 +1463,8 @@ package body Dtd is
         raise Internal_Error;
     end;
     -- Check children
-    Trace ("Dtd check Dtd element info " & Info.List.Image);
+    Trace ("Dtd check Dtd element " & Name.Image
+         & " with infolist " & Info.List.Image);
     -- Separate element type
     Char := Info.List.Element (1);
     Info.List.Delete (1, 1);
@@ -1624,7 +1625,7 @@ package body Dtd is
       end if;
     end if;
     -- Check attributes
-    Trace ("Dtd check Dtd attlist info " & Info.List.Image);
+    Trace ("Dtd check Dtd attlist with infolist " & Info.List.Image);
     -- Check attributes xml vs dtd
     -- First extract list of dtd attribute names
     Iter_Dtd.Set (Info.List.Image, Is_Sep'Access);
@@ -1744,6 +1745,8 @@ package body Dtd is
               if Ctx.Namespace then
                 Namespaces.Get (Ctx, Attr_Us, False, Namespace);
               end if;
+              Trace ("Dtd adding attribute " & Attr_Us.Image & " type " & Td
+                    & " val " & Dtd_Val);
               Tree_Mng.Add_Attribute (Ctx.Elements.all,
                   Attr_Us, As.U.Tus (Dtd_Val), Line_No);
             end if;
@@ -1876,7 +1879,8 @@ package body Dtd is
   begin
     Ctx.Elements.Read (Cell);
     Trace ("Dtd checking attributes of element " & Cell.Name.Image);
-    -- Make its attribute list and set namespaces
+
+    -- Make its attribute list
     if Ctx.Elements.Children_Number /= 0 then
       for I in 1 .. Ctx.Elements.Children_Number loop
         if I = 1 then
@@ -1903,14 +1907,40 @@ package body Dtd is
       Ctx.Elements.Move_Father;
     end if;
 
-    Ctx.Elements.Read (Cell);
     if Adtd.Set then
       -- Check Attributes
+      Ctx.Elements.Read (Cell);
       Check_Attributes (Ctx, Adtd, Cell.Name, Cell.Line_No, Attributes);
     end if;
 
     if not Ctx.Namespace then
       return;
+    end if;
+
+    -- Define namespaces
+    if Ctx.Elements.Children_Number /= 0 then
+      for I in 1 .. Ctx.Elements.Children_Number loop
+        if I = 1 then
+          Ctx.Elements.Move_Child;
+        else
+          Ctx.Elements.Move_Brother (False);
+        end if;
+        Ctx.Elements.Read (Cell);
+        if Cell.Kind /= Xml_Parser.Attribute then
+          -- Children
+          exit;
+        end if;
+        if Ctx.Namespace then
+          if not Adtd.Set then
+            -- No Dtd so name will not be checked (in Check_Attributes)
+            --  considering its type. Check name considering it is CDATA
+            Namespaces.Validate (Ctx, Cell.Name, Namespaces.Attr);
+          end if;
+          -- Define namespace
+          Namespaces.Add (Ctx, Cell.Name, Cell.Value);
+        end if;
+      end loop;
+      Ctx.Elements.Move_Father;
     end if;
 
     -- Check uniqueness of expanded attributes
@@ -2077,6 +2107,9 @@ package body Dtd is
                       Children);
     end if;
     -- Clean namespaces of attributes
+    if not Ctx.Namespace then
+      return;
+    end if;
     if Ctx.Elements.Children_Number /= 0 then
       for I in 1 .. Ctx.Elements.Children_Number loop
         if I = 1 then

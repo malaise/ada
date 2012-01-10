@@ -206,6 +206,8 @@ package body Parse_Mng  is
   end Util;
 
   package Namespaces is
+    -- Init namespaces definitions
+    procedure Init (Ctx : in out Ctx_Type);
     type Elt_Attr_List is (Elt, Attr, Other);
     -- Validate that name has 0 or 1 ':' if Elt or Attr
     --  or has no ':' otherwise
@@ -1746,6 +1748,7 @@ package body Parse_Mng  is
   procedure Parse_Xml (Ctx : in out Ctx_Type) is
     Adtd : Dtd_Type;
   begin
+    Namespaces.Init (Ctx);
     if Ctx.Flow.Curr_Flow.Is_File then
       File_Mng.Open (Ctx.Flow.Curr_Flow.Name.Image,
                      Ctx.Flow.Curr_Flow.File.all);
@@ -1789,6 +1792,7 @@ package body Parse_Mng  is
   procedure Parse_Prologue (Ctx : in out Ctx_Type;
                             Adtd : in out Dtd_Type) is
   begin
+    Namespaces.Init (Ctx);
     -- Init Prologue with an empty root
     Tree_Mng.Init_Prologue (Ctx.Prologue.all);
     -- Reset Dtd, it will not be used
@@ -1813,6 +1817,7 @@ package body Parse_Mng  is
     Full_File : As.U.Asu_Us;
     Is_File : Boolean;
   begin
+    Namespaces.Init (Ctx);
     -- Reset Dtd
     Dtd.Init (Adtd);
     Util.Push_Flow (Ctx.Flow);
