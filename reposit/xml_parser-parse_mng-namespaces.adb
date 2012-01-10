@@ -2,12 +2,25 @@ separate (Xml_Parser.Parse_Mng)
 
 package body Namespaces is
   Xml : constant String := "xml";
+  Xml_Prefix : constant String := "xml:";
 
   Xmlns : constant String := "xmlns";
   Xmlns_Prefix : constant String := "xmlns:";
 
   Xml_Domain   : constant String := "http://www.w3.org/XML/1998/namespace";
   Xmlns_Domain : constant String := "http://www.w3.org/2000/xmlns/";
+
+  -- Init once
+  procedure Init (Ctx : in out Ctx_Type) is
+  begin
+    if Ctx.Namespace_List.Is_Empty then
+      -- Add definitions of xml and xmlns namespaces
+      Ctx.Namespace_List.Insert (
+        (As.U.Tus (Xml), As.U.Tus (Xml_Domain)), Namespace_List_Mng.First);
+      Ctx.Namespace_List.Insert (
+        (As.U.Tus (Xmlns), As.U.Tus (Xmlns_Domain)), Namespace_List_Mng.First);
+    end if;
+  end Init;
 
   -- Validate that name has 0 or 1 ':' if Elt or Attr
   --  or has no ':' otherwise
@@ -19,7 +32,10 @@ package body Namespaces is
     Occurence : Positive;
     Index : Natural;
   begin
-    if Elt_Attr /= Other then
+    if Elt_Attr /= Other
+    or else (Name.Length > Xml_Prefix'Length
+             and then Name.Slice (1, Xml_Prefix'Length) = Xml_Prefix) then
+      -- Element or CDATA or Enumeration or NMTOKEN(s) or "xml:xxx"
       -- There can be 0 or 1 occurence, not 2, in element or attribute name
       Occurence := 2;
     else
@@ -53,7 +69,7 @@ package body Namespaces is
   begin
     Ind := String_Mng.Locate (Name.Image, ":");
     -- xmlns:xml
-    if Ind = 9 and then Name.Slice (1, 9) = Xmlns_Prefix & Xml then
+    if Name.Image = Xmlns_Prefix & Xml then
       if Namespace.Image /= Xml_Domain then
         -- "xmlns:xml" must bind to Xml_Domain
         Util.Error (Ctx.Flow, "Invalid redifinition of xml namespace "
@@ -63,16 +79,14 @@ package body Namespaces is
     and then Namespace.Image = Xml_Domain then
       -- Other namespace definition must not bind to xml domain
       Util.Error (Ctx.Flow, "Invalid binding of " & Name.Image
-                          & "to xml namespace.");
+                          & " to xml namespace.");
     end if;
 
     -- xmlns:xmlns
-    if Ind = 11 and then Name.Slice (1, 11) = Xmlns_Prefix & Xmlns then
-      if Namespace.Image /= Xmlns_Domain then
-        -- "xmlns:" must bind to Xmlns_Domain
-        Util.Error (Ctx.Flow, "Invalid redifinition of xmlns namespace "
-                            & Namespace.Image);
-      end if;
+    if Name.Image = Xmlns_Prefix & Xmlns then
+      -- "xmlns:xmlns" cannot be declared
+      Util.Error (Ctx.Flow, "Invalid redifinition of xmlns namespace "
+                          & Namespace.Image);
     elsif Ind = 6 and then Name.Slice (1, 6) = Xmlns_Prefix
     and then Namespace.Image = Xmlns_Domain then
       -- Other namespace definition must not by to xmlns domain
