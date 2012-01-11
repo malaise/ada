@@ -14,9 +14,11 @@ package body Namespaces is
   procedure Init (Ctx : in out Ctx_Type) is
   begin
     if Ctx.Namespace_List.Is_Empty then
-      -- Add definition of xml and xmlns NS
-      Add (Ctx, As.U.Tus (Xmlns_Prefix & Xml), As.U.Tus (Xml_Domain));
-      Add (Ctx, As.U.Tus (Xmlns_Prefix & Xmlns), As.U.Tus (Xmlns_Domain));
+      -- Add definitions of xml and xmlns namespaces
+      Ctx.Namespace_List.Insert (
+        (As.U.Tus (Xml), As.U.Tus (Xml_Domain)), Namespace_List_Mng.First);
+      Ctx.Namespace_List.Insert (
+        (As.U.Tus (Xmlns), As.U.Tus (Xmlns_Domain)), Namespace_List_Mng.First);
     end if;
   end Init;
 
@@ -82,11 +84,9 @@ package body Namespaces is
 
     -- xmlns:xmlns
     if Name.Image = Xmlns_Prefix & Xmlns then
-      if Namespace.Image /= Xmlns_Domain then
-        -- "xmlns:" must bind to Xmlns_Domain
-        Util.Error (Ctx.Flow, "Invalid redifinition of xmlns namespace "
-                            & Namespace.Image);
-      end if;
+      -- "xmlns:xmlns" cannot be declared
+      Util.Error (Ctx.Flow, "Invalid redifinition of xmlns namespace "
+                          & Namespace.Image);
     elsif Ind = 6 and then Name.Slice (1, 6) = Xmlns_Prefix
     and then Namespace.Image = Xmlns_Domain then
       -- Other namespace definition must not by to xmlns domain
