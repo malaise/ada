@@ -192,6 +192,11 @@ package body Hashing is
         Ca : Cell_Access := Table.Arr(Index).First;
       begin
         Basic_Proc.Put_Line_Output ("Hash " & Hash_Range'Image(Index));
+        if Direction = Forward then
+          Ca := Table.Arr(Index).First;
+        else
+          Ca := Table.Arr(Index).Last;
+        end if;
         if Ca = null then
           Basic_Proc.Put_Line_Output (" No data found");
         end if;
