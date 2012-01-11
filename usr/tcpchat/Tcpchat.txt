@@ -9,7 +9,7 @@ Presentation
 
 General description
 ~~~~~~~~~~~~~~~~~~~
-tcpchat takes 2 arguments: a TCP port name or num and a chats file name.
+tcpchat takes 2 arguments: a TCP port name or number and a chats file name.
 
 It listens on the port and accepts one TCP connection at a time: new
 connections are not accepted while one client is connected.
@@ -26,98 +26,100 @@ The chat file describes several alternative chats.
 Each chat script starts with one expected sentence followed by a script of
 expected sentences and/or actions.
 
-A chat has a unique name. It can define global timeout for its execution
-(default infinite) and a default timeout for all its statements when an
-input is expected: chats, select, read, skip (default infinite).
+A chat has a unique name. It can define a global timeout for its execution
+(default is infinite) and a default timeout for all its statements when an
+input is expected: 'select', 'read' and 'skip' (default is infinite).
 
 A chat starts by a 'expect' statement. It defines a regexp that will lead
 this chat script to be selected if the input string matches the regexp.
-Some xref:Variables[Variables] can be defined to the content of the intput
-string or part of it.
+Some xref:Variables[Variables] can be defined from the content of the input
+string or from part of it.
 
 .Instructions
-Once the chat is selected it follows a script made of instructions:
+Once the chat is selected it follows a script made of statements and executes
+them one after the other:
 
-- select: A select is like a sub-chat but with no name nor attibute. It
+- 'select': A select is like a sub-chat but with no name nor attibute. It
 allows selecting a subscript according to the reception of a matching
 sentence. If the select has a default entry, it is selected when the
 sentence does not match any expected string.
-- cond: execute a sub-chat on condition (if variable matches a criteria, elsif...
-else...).
-- repeat: loop executing a chat while a condition is true.
-- read: Read next sentence and check that it mathes the one provided.
-- skip: Read next sequence whatever it is.
-- wait: Wait the specified delay.
-- send: Send the sentence provided.
-- call: Call the shell to execute the command and arguments provided. Send
+- 'cond': execute a sub-chat on condition (if variable matches a criteria,
+elsif...  else...).
+- 'repeat': loop executing a chat while a condition is true.
+- 'read': Read next sentence and check that it mathes the one provided.
+- 'skip': Read next sequence whatever it is.
+- 'wait': Wait the specified delay.
+- 'send': Send the sentence provided.
+- 'call': Call the shell to execute the command and arguments provided. Send
 the output flow of the command.
-- set: Set a variable to an evaluated expression.
-- eval: Call the shell to execute the command and arguments provided. Set a
+- 'set': Set a variable to an evaluated expression.
+- 'eval': Call the shell to execute the command and arguments provided. Set a
 variable to the output flow of the command.
-- chdir: Change current directory until another chdir or until the current
-script ends. Note that an empty argument leads to move back to the original
-directory when tcpchat has been launched.
-- log: Report some text on stderr.
-- close: Close current chat, go back to chat selection.
+- 'chdir': Change current directory until another chdir or until a script ends
+on xref:Close[close] or xref:Failure[failure]. As for 'chdir' with an empty
+argument leads this leads to move back to the original directory when tcpchat
+has been launched.
+- 'log': Report some text on stderr.
+- 'close': Close current chat, go back to chat selection.
 
 .Chat end
-When a subscript reaches its end, the execution continues at the instruction
-that follows the instruction that leads to this subscript (if any).
+When a subscript reaches its end, the execution continues at the statement
+that follows the statement that leads to this subscript (if any).
 
 A chat script ends on either:
 
-- a 'close' statement: Close current connection, reset variables and current
-dir, and go back expecting a chat script selection.
 - nothing else to do: Keep connection open and go back expecting a chat
 script selection. Variables and current dir are not reset. The chat
 timeout, if any, remains active until a new chat is selected.
-
-The following situations lead to the termination (closure as on instruction
-'close') of current script:
-
-- The expiration of the timeout global to the chat script.
-- The expiration of the timeout on the whole chats selection, on a select,
+- anchor:Close[]a 'close' statement: Close current connection, reset variables
+and current dir, and go back expecting a chat script selection.
+- anchor:Failure[]a failure: one of the following situations, which leads to
+the closure (as on statement 'xref:Close[close]') of current script:
+ * The expiration of the timeout global to the chat script.
+ * The expiration of the timeout on the whole chats selection, on a select,
 on a read or on a skip.
-- The reception of a non expected string by a read.
-- The reception of a non expected string by a chats-expect or a
-select-expect when it has no default.
-- A transmission error (closure, overflow).
-- The failure when calling or evaluating an external command if there is no
+ * The reception of a non expected string by a 'read'.
+ * The reception of a non expected string by a 'expect' (for 'chats' or
+'select') when it has no default.
+ * A transmission error (closure, overflow).
+ * The failure of 'call' or 'eval' of an external command if there is no
 'error' block to handle the failure.
-- The reference to an undefined variable in an expression.
-- An undefined variable in a statement 'if', 'elsif', 'while' with the IfUnset
-attribute set (or let) to "error".
-- Error when changing current directory if there is no "error" block to handle the
-failure.
+ * The reference to an undefined variable in an expression.
+ * An undefined variable in a statement 'if', 'elsif', 'while' with the IfUnset
+attribute set (or left) to "error".
+ * Error of 'chdir' when changing current directory if there is no "error" block
+to handle the failure.
 
 anchor:Variables[]
 
 .Variables
 The text of sentences that are expected, read or sent and of commands that are
-called or executed can reference variables. Variables obey to the following rules:
+called or executed can reference variables. Variables obey to the following
+rules:
 
-- Assignments (after chat, read or expect) have the form "VAR=... VAR=..."
-- Set and eval instruction directly assign a variable
+- Assignments (after 'chat', 'read' or 'expect') have the form "VAR=... VAR=..."
+- 'set' and 'eval' statements directly assign a variable
 - References have the form $\{name} where:
   * $\{0} denotes the full string matching the regexp
-  * $\{1} to $\{9} denote the substrings (matching "(...)" int the regexp)
-  * ${$name} denotes ENV variables
-  * Internal variables names cannot be numbers nor start by "$" nor contain
-"="
-  * 'set' with the "Compute" attribute set converts an expression (possibly referring
-to variables) to an integer and back to a string stored in a variable
-  * 'set' and 'eval' with the "IfUnset" attribtue set will set the variable only if
-it is not defiend yet
-  * 'if', 'elsif' and 'while' may raise error or may return true or false depending
-on the "IfUnset" attribute.
+  * $\{1} to $\{9} denote the substrings (matching "(...)" in the regexp)
+  * ${$name} denotes a ENV variable
+  * Internal variables names cannot be numbers nor start by "$" nor contain "="
+  * 'set' with the "Compute" attribute set converts an expression (possibly
+referring to variables) to an integer and back to a string stored in a variable
+  * 'set' and 'eval' with the "IfUnset" attribute set assign the variable only
+if it is not defined yet
+  * 'if', 'elsif' and 'while' may raise error or may return true or false
+depending on the "IfUnset" attribute.
 
 Any occurence of "${" or "}" that does't denote a variable must be backslashed.
 
-It is an error if a variable does not exist when it is referenced in an expression.
+It is an error if a variable does not exist when it is referenced in an
+expression.
 
 .Pattern matching
-The text of chat, read and expect statement are regexp with which the input
-sentence must completely match (i.e. <input_string> matches "^<regex>$").
+The text of 'chat', 'read' and 'expect' statements are regexp with which the
+input sentence must completely match (i.e. <input_string> matches
+"^<regex>$").
 
 High level design
 -----------------
