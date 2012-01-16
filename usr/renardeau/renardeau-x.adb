@@ -27,6 +27,8 @@ package body X is
   Compute_Fs : constant Field_Range := 28;
   -- Exit
   Exit_F : constant Field_Range := 33;
+  -- Getting target
+  Targin_F : constant Field_Range := 34;
 
   -- For PTG Get field (there is none here)
   Cursor_Field : Field_Range := 1;
@@ -44,7 +46,8 @@ package body X is
   pragma Unreferenced (B3, B4, B5);
 
   -- Memory of previous status
-  Number_Act, Digit_Act, Zero_Act, Enter_Act, Clear_Act : Boolean := False;
+  Number_Act, Digit_Act, Zero_Act, Enter_Act, Clear_Act, Targin_Act : Boolean
+                                                                    := False;
 
   procedure Activate_Fields (Status : in Status_List; Force : in Boolean) is
     -- Field active
@@ -114,6 +117,18 @@ package body X is
       end if;
       Clear_Act := Active;
     end if;
+
+    -- Getting target: when getting target
+    Active := Status in T1 .. T3;
+    if Targin_Act /= Active or else Force then
+      if Active then
+        Reset_Field (Targin_F);
+      else
+        Clear_Field (Targin_F);
+      end if;
+      Targin_Act := Active;
+    end if;
+
   end Activate_Fields;
 
   procedure Get_Inputs (Bases : out Bases_Array;

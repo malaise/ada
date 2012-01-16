@@ -169,7 +169,7 @@
       <Init Row="1" Col="1">CLR</Init>
     </Field>
 
-    <!-- Computation -->
+    <!-- Result -->
     <Field Num="27" Kind="Put">
       <Geometry Up="${Field_14.Up}" Left="${Field_8.Left}-1"
                 Height="1" Width="4"/>
@@ -210,6 +210,15 @@
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">EXIT</Init>
     </Field>
+
+    <!-- Getting target -->
+    <Field Num="34" Kind="Put">
+      <Geometry Up="${Field_1.Low}+2" Left="${Field_7.Right}+2"
+                Height="1" Right="${Field_8.Left}-2"/>
+      <Colors Foreground="Black" Background="Light_Grey" />
+      <Init Row="0" Col="0">=========></Init>
+    </Field>
+
 
   </Descriptor>
 
