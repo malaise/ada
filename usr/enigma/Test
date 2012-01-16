@@ -9,7 +9,7 @@ export LIST="A B C D E F G H I J K L M N O P Q R S T U V W X Y Z"
 
 # Do local tests with: settings, encypted and decoded text
 echo "Test of fixed settings, encrypted and decoded files:"
-for i in 1 2 3 4 ; do
+for i in 1 2 3 4 5 ; do
   cat $DATA/crypt${i} | enigma `tail -1 $DATA/set${i}` > tmp
   cmp -s $DATA/decod${i} tmp
   res=$?
