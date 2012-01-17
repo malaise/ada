@@ -27,8 +27,6 @@ package body X is
   Compute_Fs : constant Field_Range := 28;
   -- Exit
   Exit_F : constant Field_Range := 33;
-  -- Getting target
-  Targin_F : constant Field_Range := 34;
 
   -- For PTG Get field (there is none here)
   Cursor_Field : Field_Range := 1;
@@ -43,16 +41,45 @@ package body X is
 
   -- Status while getting
   type Status_List is (B1, B2, B3, B4, B5, B6, T1, T2, T3, Ready, Done);
-  pragma Unreferenced (B3, B4, B5);
 
   -- Memory of previous status
-  Number_Act, Digit_Act, Zero_Act, Enter_Act, Clear_Act, Targin_Act : Boolean
-                                                                    := False;
+  Number_Act, Digit_Act, Zero_Act, Enter_Act, Clear_Act : Boolean := False;
+  Prev_Status : Status_List := Done;
+
+  -- Put field associated to status
+  subtype Put_List is Status_List range B1 .. T3;
+  function Field_Of (Put : Put_List) return Field_Range is
+  begin
+    case Put is
+      when B1 => return Base_Fs + 0;
+      when B2 => return Base_Fs + 1;
+      when B3 => return Base_Fs + 2;
+      when B4 => return Base_Fs + 3;
+      when B5 => return Base_Fs + 4;
+      when B6 => return Base_Fs + 5;
+      when T1 .. T3 => return Target_F;
+    end case;
+  end Field_Of;
 
   procedure Activate_Fields (Status : in Status_List; Force : in Boolean) is
     -- Field active
     Active : Boolean;
   begin
+    -- Reset / Set backround color of input field
+    if Status in B1 .. Ready
+    and then (Prev_Status /= Status or else Force) then
+      -- Reset backround of Prev_Status
+      if Prev_Status in Put_List then
+        Reset_Field (Field_Of (Prev_Status), Reset_String => False);
+      end if;
+      -- Set Background of new Status
+      if Status in Put_List then
+        Set_Field_Colors (Field_Of (Status),
+                          Background => Con_Io.Color_Of ("Lime_Green"));
+      end if;
+      Prev_Status := Status;
+    end if;
+
     -- Activate buttons depending on status
     -- Numbers: only when getting bases
     Active := Status in B1 .. B6;
@@ -118,17 +145,6 @@ package body X is
       Clear_Act := Active;
     end if;
 
-    -- Getting target: when getting target
-    Active := Status in T1 .. T3;
-    if Targin_Act /= Active or else Force then
-      if Active then
-        Reset_Field (Targin_F);
-      else
-        Clear_Field (Targin_F);
-      end if;
-      Targin_Act := Active;
-    end if;
-
   end Activate_Fields;
 
   procedure Get_Inputs (Bases : out Bases_Array;
@@ -176,6 +192,7 @@ package body X is
     -- Init for loop
     Redisplay := False;
     Status := B1;
+    Prev_Status := Done;
     loop
       -- Activate the fields according to Status
       Activate_Fields (Status, Reset);
@@ -232,6 +249,7 @@ package body X is
               Reset := True;
               Redisplay := False;
               Status := B1;
+              Prev_Status := Ready;
             when Enter_F =>
               Cancel := False;
               return;
