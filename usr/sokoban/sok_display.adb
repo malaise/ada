@@ -1,4 +1,4 @@
-with Normal, Day_Mng, Timers, Language;
+with Normal, Day_Mng, Timers, Language, Basic_Proc;
 with Sok_Input, Sok_Time;
 
 -- displaying of sokoban
@@ -60,6 +60,10 @@ package body Sok_Display is
     -- Get        : row 22 to 25 col 19 to 59 (bottom)
     Get_Win.Open (Console'Access, (22, 19), (24, 59) );
 
+  exception
+    when others =>
+      Basic_Proc.Put_Line_Error ("Con_Io init error.");
+      raise;
   end Init;
 
   function Get_Console return Con_Io.Console is
@@ -508,7 +512,9 @@ package body Sok_Display is
 
   procedure End_Of_Program is
   begin
-    Console.Clear_Screen;
+    if Console.Is_Open then
+      Console.Clear_Screen;
+    end if;
   end End_Of_Program;
 
   procedure Bell is

@@ -88,7 +88,7 @@ package body Sok_Manager is
       Sok_Display.Init;
     exception
       when others =>
-      raise Sok_Input.Break_Requested;
+        raise Sok_Input.Break_Requested;
     end;
     -- See if restore or init
     if First_Frame = Sok_Types.Restore_Frame then
