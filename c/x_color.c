@@ -85,9 +85,7 @@ boolean col_open(Display *x_server, int x_screen, unsigned long color_id[],
       /* Parse color from name to RGB value */
       if (XParseColor (x_server, *colormap, color_name[i],
                          &color_value[i]) == 0) {
-#ifdef DEBUG
         printf ("X_COLOR : X can't find color named %s.\n", color_name[i]);
-#endif
         return (False);
       }
     }
@@ -103,9 +101,7 @@ boolean col_open(Display *x_server, int x_screen, unsigned long color_id[],
     for (i = 0; i < NBRE_COLOR; i++) {
       if (XAllocNamedColor (x_server, *colormap, color_name[i],
                             &color_value[i], &exact_color_value[i]) == 0) {
-#ifdef DEBUG
         printf ("X_COLOR : X can't alloc color named %s\n", color_name[i]);
-#endif
         return (False);
       } else {
         color_id[i] = color_value[i].pixel;

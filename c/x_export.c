@@ -122,11 +122,10 @@ extern int x_initialise (const char *server_name,
     result = (lin_initialise (server_name) ? WAIT_OK : WAIT_ERR);
     if (result == WAIT_OK) {
       result = evt_add_fd (ConnectionNumber(local_server.x_server), TRUE);
-    }
-
-    /* Init color names if set */
-    if ( (result == WAIT_OK) && (color_names != NULL) ) {
-      col_set_names (color_names);
+      /* Init color names if set */
+      if (color_names != NULL) {
+        col_set_names (color_names);
+      }
     }
 
     return (result);

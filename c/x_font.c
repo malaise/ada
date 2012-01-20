@@ -29,10 +29,7 @@ XFontStruct **fonts;
                        &name_list, &missing_count, NULL);
         if (font_set[i] == NULL) {
 
-            if (debug) {
-                printf ("X_FONT : can't create font set of %s.\n",
-                        font_name[i]);
-            }
+            printf ("X_FONT : can't create font set of %s.\n", font_name[i]);
             err=i;
             break;
         } else if (missing_count != 0)  {

@@ -54,16 +54,12 @@ Window x_window;
     int i;
 
     if (setlocale (LC_ALL, "") == NULL) {
-#ifdef DEBUG
         printf ("X_LINE : X cannot set locale.\n");
-#endif
         return (False);
     }
     if (!XSupportsLocale()) {
-#ifdef DEBUG
         printf ("X_LINE : X does not support locale %s.",
                 setlocale (LC_ALL, NULL));
-#endif
         return (False);
     }
 
@@ -71,9 +67,7 @@ Window x_window;
     /* Open X display */
     local_server.x_server = XOpenDisplay (server_name);
     if (local_server.x_server == NULL) {
-#ifdef DEBUG
-        printf ("X_LINE : X Can't open display.\n");
-#endif
+        printf ("X_LINE : X Can't open display %s.\n", server_name);
         return (False);
     }
 #ifdef SYNCHRO
@@ -92,9 +86,7 @@ Window x_window;
     /* Set default input method */
     modifiers = XSetLocaleModifiers ("@im=none");
     if (modifiers == NULL) {
-#ifdef DEBUG
         printf ("X_LINE : Can't set locale modifiers.\n");
-#endif
     }
 
     local_server.xim_style = 0;
@@ -151,9 +143,7 @@ Window x_window;
       0, 0, 1, 1, DEF_WIN_ATTRIB);
 
     if (x_window == None) {
-#ifdef DEBUG
         printf ("X_LINE : X Can't create initial window.\n");
-#endif
         XCloseDisplay (local_server.x_server);
         return (False);
     }
