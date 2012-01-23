@@ -1,0 +1,140 @@
+Four Twenty On (421)
+====================
+
+This is a simulation of the dice game 421.
+
+Presentation of the game
+------------------------
+Principles of the games
+~~~~~~~~~~~~~~~~~~~~~~~
+The game is played by at least 2 players with 3 dices and 21 tokens.
+It is decomposed into several sccessive sets, each made of two different steps:
+
+- The 'load' step during which the tokens are dispatched from the kitty to the
+players,
+- The 'unload' step where the players try to give their tokens to the others.
+
+When a player has no more token he stops playing the set. The looser of the
+set is the player who has received all the tokens from the other players.
+
+The first player who looses 2 sets looses the game and pays a penalty.
+
+Dice combinations
+~~~~~~~~~~~~~~~~~
+The tokens are exchanged among players according to the scores obtained with
+the dices. The table below lists the combinations from the highest to the lowest
+and indicates the value of each combination.
+
+[width="50%",options="header"]
+|=========================================================
+|Name            |Combination |Value
+|Four Twenty One |421         | 10
+|All Aces        |111         |  7
+|Triple Six      |666         |  6
+3+^e| ...
+|Triple Two      |222         |  2
+|Ace Six         |116         |  6
+3+^e| ...
+|Ace Two         |112         |  6
+|Nenette         |221         |  4
+|Others          |655, 653... |  1
+|==========================================================
+  
+Course of the set
+~~~~~~~~~~~~~~~~~
+The load
+^^^^^^^^
+.Who starts the load?
+
+Each player throws a dice. The player with the lowest value (1 is lower than
+6) starts the load.
+
+.Course of a turn
+
+The first player starts the turn. He throws the 3 dices and annouces the
+combination and the value, ex: "Ace two for two".
+
+The player at his left throws the 3 dices. He annouces the combination and the
+total so far for the turn, ex: "Ace three for five". And so on until all
+players have thrown.
+
+If two or more players have the same smallest combination this is a
+xref:XRampo[rampo].
+
+The player with the lowest combination receives from the kitty the total
+amount of points cumulated during the turn, including the points obtained
+during the xref:XRampo[rampo] if any. This marks the end of the turn and
+this player starts the next turn.
+
+.End of the load
+
+The load step ends when the kitty is empty.
+
+If a player has no token at all at the end of the load then he does not play the
+next step (unload) and cannot loose the set. If a player has all the token at
+the end of the load then he looses the set (the unload step is not played at
+all).
+
+The unload
+^^^^^^^^^^
+The loads ends and the unload starts when the kitty is empty.
+
+.Start of the turn
+The player who has got the last tokens from the kitty starts the first turn. He
+throws the dices up to three times. He annouces each combination and the total
+so far for the turn. The first player stop after the first, second or third
+throw, when he want. He annouces the combination, the number ot throws and the
+total so far for the turn, ex: "Ace six in two for eight".
+
+.Other players, number of throws
+During the turn the remaining players try to make the highest combination in the
+same number of throws as the first player. Before each throw a player can
+decide that this is the last throw of his go. Hi annouces this decision by
+hitting the table with the dices that he has in hand.
+
+.Throwing ans saving dices
+After the first and after the second throw a player can leave some dices on the
+table and take the others for another throw. He can change his mind (at third
+throw he can take some dices that he left after first throw). If a dice thrown
+hits a dice left on the table the the new value of the dice is taken into
+account!
+
+.Paying
+At the end of the turn (including playing xref:XRampo[rampo] for the highest
+combination and a xref:XRampo[rampo] for the lowest combination) the player with
+the highest combination gives to the one with the lowest the number of tokens
+scored during the whole turn (or as many token as he has). The player who has
+lost the turn starts the new one.
+
+.End of the set
+When a player has no more token he is out of the set (and cannot loos it). The
+looser of the set is the player who has collected all the token at the end of
+the set.
+
+The rampo
+^^^^^^^^^
+.When
+anchor:XRampo[]The rampo is the situation when several players have the same
+combination and when one must loose or win. This occurs when:
+
+- several players have the same smallest combination during the load or during
+the unload. The looser of the rampo will be the looser of the turn.
+- several players have the same highest combination during the unload. The
+winner of the rampo will be the winner of the turn.
+
+.Announces
+Each time a player makes a combination in the situation above he annouces
+"Rampo". When each player has played his turn then the last Rampo announces
+"hot hand". If there is a rampo for lowest and a rampo for highest scores,
+then the lowest hot hand is announced and the corresponding rampo is played
+before the hot hand and rampo for highest.
+
+.Playing the rampo
+The rampo is played like the load. Each player throws the dices once and
+annouces the combination and the total so far for the turn, except that the
+players play in reverse order: The hot hand first, then the player at his right,
+and so on.
+
+There can be a new rampo within the rampo. It is annouced as usual and
+then played, back in the "normal" order, and so on.
+
