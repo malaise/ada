@@ -1,10 +1,13 @@
-Four Twenty On (421)
-====================
+Four Twenty One (421)
+=====================
 
 This is a simulation of the dice game 421.
 
 Presentation of the game
 ------------------------
+The Four Twenty One game is popular and has many variants. This section presents
+the variants and options that are implemented in this simulation.
+
 Principles of the games
 ~~~~~~~~~~~~~~~~~~~~~~~
 The game is played by at least 2 players with 3 dices and 21 tokens.
@@ -58,7 +61,7 @@ The player at his left throws the 3 dices. He annouces the combination and the
 total so far for the turn, ex: "Ace three for five". And so on until all
 players have thrown.
 
-If two or more players have the same smallest combination this is a
+If two or more players have the same lowest combination this is a
 xref:XRampo[rampo].
 
 The player with the lowest combination receives from the kitty the total
@@ -92,11 +95,11 @@ same number of throws as the first player. Before each throw a player can
 decide that this is the last throw of his go. Hi annouces this decision by
 hitting the table with the dices that he has in hand.
 
-.Throwing ans saving dices
+.Throwing and saving dices
 After the first and after the second throw a player can leave some dices on the
 table and take the others for another throw. He can change his mind (at third
-throw he can take some dices that he left after first throw). If a dice thrown
-hits a dice left on the table the the new value of the dice is taken into
+throw he can take some dices that he had left after first throw). If a dice
+thrown hits a dice left on the table the the new value of the dice is taken into
 account!
 
 .Paying
@@ -117,7 +120,7 @@ The rampo
 anchor:XRampo[]The rampo is the situation when several players have the same
 combination and when one must loose or win. This occurs when:
 
-- several players have the same smallest combination during the load or during
+- several players have the same lowest combination during the load or during
 the unload. The looser of the rampo will be the looser of the turn.
 - several players have the same highest combination during the unload. The
 winner of the rampo will be the winner of the turn.
@@ -137,4 +140,118 @@ and so on.
 
 There can be a new rampo within the rampo. It is annouced as usual and
 then played, back in the "normal" order, and so on.
+
+Design of the software
+----------------------
+This section describes the objects that are implemented in the software and
+their interactions.
+
+The player
+~~~~~~~~~~
+It is created with a constant name and tag to indicate if it is human or
+computer.
+
+It has a number of set lost initialised to 0, a number of tokens and a tag
+to indicate if he is playing the set.
+
+It has an operation to receive some tokens and one to give some tokens to
+another player.
+
+During its go if has the dices (0, 1 or 3) to show, for each a boolean tag if
+it is selected. Operations (un)select and "throw" to manipulate the dices.
+
+After its go it has the result of the go (combination), with possible indication
+of a rampo.
+
+The players
+~~~~~~~~~~~
+It has the list of players.
+
+The game
+~~~~~~~~
+It identifies the first player to start: It makes each player throw one dice and
+idenfies the smallest value, handling a potential rampo. This identifies the
+"previous looser"
+
+It runs the sets one after the other, propagating the previous looser to
+identify which starts, until it detects that the game is finished (one player
+has lost 2 sets). The looser of the last set is the looser of the game.
+
+The set
+~~~~~~~
+It initialises the kitty.
+
+It starts the load with previous looser then the unload with the last looser of
+the load.
+
+It reports the looser of the set.
+
+The load
+~~~~~~~~
+It starts the load turn with the looser of previous turn.
+It takes tokens from the kitty and gives then to the looser of the load turn,
+until the kitty is empty and reports the looser of the load.
+
+.The load turn
+It make the first player throw the dices and reports his combination as the
+lowest, then the second player, up to the last player. It keeps the count of the
+total value of the turn.
+
+Then it calls the rampo checker for lowest combination, which returns the
+looser of the turn. It reports the looser and the total.
+
+The unload
+~~~~~~~~~~
+It starts the unload turn with the looser of previous turn.
+It takes tokens from the winner of the unload turn and gives them to the looser
+of the unload turn. It tags the players that have "won" and don't play any more
+the set, until there is a looser for the set.
+
+.The unload turn
+It make the first player throw the dices up to 3 times, counts the points and
+reports his combination as the lowest.
+It makes the second player go and so on, up to the last player. It keeps the
+count of the total value of the turn.
+
+It calls the rampo checker for lowest combination, which returns the looser of
+the turn. Then it calls the rampo checker for highest combination, which returns
+the winner of the turn. It reports the winner, the looser and the total.
+
+The rampo
+~~~~~~~~~
+It is called either for lowest or highest check and with the first player of the
+turn.
+
+It sets the direction to back.
+
+loop::
+It identifies the lowest/highest combination and searches if several players
+have this same combination. If no, it returns the player with lowest/highest.
++
+It tags these players as part of the rampo (untags the others).
++
+From just before the first player of the turn and following the direction it
+makes all players who are part of the rampo throw a dice.
+It switches the direction and loops.
+
+The computer
+~~~~~~~~~~~~
+This implement the stateless strategy of the game.
+
+.First player
+There is a specific algorithm for the first player, which takes only the number
+of throws done so far and the current combination (3 dices).
+'TBD'
+
+.Other players
+It takes the combination to beat, the number of throws to do, the number of
+throws done so far and the current combination (3 dices).
+It decides which dices to save/throw and it this is the last.
+'TBD'
+
+
+The table
+~~~~~~~~~
+This object hosts the graphical aspects. It has a function update to (re)draw
+the current situation.
 
