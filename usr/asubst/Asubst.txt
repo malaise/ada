@@ -1,6 +1,6 @@
 Asubst
 ======
-V13.0
+V13.1
 
 Asubs is a command line tool that finds occurences of text that match a
 pattern (regular expresssion) and replaces these occurences by a given string.
@@ -272,8 +272,7 @@ echo -en "toto" | asubst "(.)(.)(..)" "\u\r12\c\r11"    ->  "Otto"
 
 Grep mode
 ---------
-
-In grep mode, asubst only looks for find_pattern and displays result,
+In grep mode, asubst only looks for find_pattern and displays the result,
 (possibly with the input file name and possibly with the line number in this
 input file) but does not alter the files.
 

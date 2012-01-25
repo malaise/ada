@@ -4,7 +4,7 @@ with As.U, Environ, Argument, Argument_Parser, Basic_Proc, Language, Mixed_Str,
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
-  Version : constant String  := "V13.0";
+  Version : constant String  := "V13.1";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -43,7 +43,7 @@ procedure Asubst is
     Basic_Proc.Put_Line_Error (
      "    -f or --file for display file name in grep mode,");
     Basic_Proc.Put_Line_Error (
-     "    -g or --grep to print matching text as grep would do (no subst),");
+     "    -g or --grep to print matching text (as grep would do) or substitution,");
     Basic_Proc.Put_Line_Error (
      "    -i or --ignorecase for case insensitive match (of search and exclusion),");
     Basic_Proc.Put_Line_Error (
@@ -160,12 +160,13 @@ procedure Asubst is
     Basic_Proc.Put_Line_Error (
      "    This allows multi-row processing.");
     Basic_Proc.Put_Line_Error (
-     "  In grep mode <replace_string> is put if not empty (ex: ""\R01"" for the matching");
+     "  In grep mode, if <replace_string> is not empty then it is interpreted and put");
     Basic_Proc.Put_Line_Error (
-     "    text), otherwise the full line of the matching text is put (as grep would");
+     "    (ex: ""\R01"" for the matching text), otherwise the full line of the matching");
     Basic_Proc.Put_Line_Error (
-     "    do), possibly possibly with file name (""-f"") and with line number (""-fl"").");
-
+     "    text is put (as grep would do), possibly with file name (if ""-f"") and with");
+    Basic_Proc.Put_Line_Error (
+     "    line number (if ""-fl"").");
     Basic_Proc.Put_Line_Error (
      "  Warning: regex are powerfull (see ""man 3 pcre"" and ""man 1 perlre"") and");
     Basic_Proc.Put_Line_Error (
@@ -580,14 +581,14 @@ begin
   -- File_Name => Grep
   if Grep_File_Name and then not Grep then
     Basic_Proc.Put_Line_Error (Argument.Get_Program_Name
-      & ": Syntax ERROR. File_name mode is allowed in grep mode only.");
+      & ": Syntax ERROR. File_name option is allowed in grep mode only.");
     Error;
     return;
   end if;
   -- Line_Nb => Grep and File_Name
   if Grep_Line_Nb and then not Grep_File_Name then
     Basic_Proc.Put_Line_Error (Argument.Get_Program_Name
-      & ": Syntax ERROR. Line_nb mode is allowed in grep mode with file name only.");
+      & ": Syntax ERROR. Line_number option requires file_name (and grep mode).");
     Error;
     return;
   end if;
