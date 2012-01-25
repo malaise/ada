@@ -39,6 +39,9 @@ and indicates the value of each combination.
 |Ace Six         |116         |  6
 3+^e| ...
 |Ace Two         |112         |  6
+|Suite Six       |654         |  2
+3+^e| ...
+|Suite Three     |321         |  2
 |Nenette         |221         |  4
 |Others          |655, 653... |  1
 |==========================================================
@@ -92,8 +95,9 @@ total so far for the turn, ex: "Ace six in two for eight".
 .Other players, number of throws
 During the turn the remaining players try to make the highest combination in the
 same number of throws as the first player. Before each throw a player can
-decide that this is the last throw of his go. Hi annouces this decision by
-hitting the table with the dices that he has in hand.
+decide that he stops: this will be the last throw of his go. Hi annouces this
+decision before throwing by hitting the table with the dices that he has in
+hand.
 
 .Throwing and saving dices
 After the first and after the second throw a player can leave some dices on the
@@ -137,7 +141,6 @@ The rampo is played like the load. Each player throws the dices once and
 annouces the combination and the total so far for the turn, except that the
 players play in reverse order: The hot hand first, then the player at his right,
 and so on.
-
 There can be a new rampo within the rampo. It is annouced as usual and
 then played, back in the "normal" order, and so on.
 
@@ -145,6 +148,27 @@ Design of the software
 ----------------------
 This section describes the objects that are implemented in the software and
 their interactions.
+
+The dices
+~~~~~~~~~
+It defines the dice_value (0 .. 6), effective_dice_value (1 .. 6)
+and combination (3 effective_dice_values, private).
+
+Operations:
+
+- Return the value of a combination
+
+- Compare 2 combinations (<, >, =, /=, <=, >=)
+
+- Evaluate a combination. 
+ * Return Fourtwentyone, Triple, Aces, Suite, Nenette or Other. 
+ * Also return an effective dice value, (not significant for Fourtwentyone,
+ Nenette and other). Ex 555 -> Triple 5, 114 -> Aces 4, 432 -> Suite 4
+ * Return the sorted combination highest value first, then medium then lowest.
+
+- Scan a combination: functions Has_A (effective_dice_value) and 
++
+Has (effective_dice_value, effective_dice_value)
 
 The player
 ~~~~~~~~~~
@@ -234,24 +258,50 @@ From just before the first player of the turn and following the direction it
 makes all players who are part of the rampo throw a dice.
 It switches the direction and loops.
 
-The computer
-~~~~~~~~~~~~
-This implement the stateless strategy of the game.
-
-.First player
-There is a specific algorithm for the first player, which takes only the number
-of throws done so far and the current combination (3 dices).
-'TBD'
-
-.Other players
-It takes the combination to beat, the number of throws to do, the number of
-throws done so far and the current combination (3 dices).
-It decides which dices to save/throw and it this is the last.
-'TBD'
-
-
 The table
 ~~~~~~~~~
 This object hosts the graphical aspects. It has a function update to (re)draw
 the current situation.
 
+The computer
+~~~~~~~~~~~~
+This object implements the stateless strategy of the game.
+There is a basic service that analyses a combination of 3 
+
+First player
+^^^^^^^^^^^^
+There is a specific algorithm for the first player, which takes only the number
+of throws done so far and the current combination (3 dices).
+
+It decides which dices to save/throw and it if this is the last.
+
+.After the first and the second throw
+- if there is a significant combination (not Other) not Aces stop now.
+- if there are two aces 
+ * if the last dice is more that 3 stop now
+ * else re-throw the last dice
+- if there is 42, 41 or 21 keep it and throw last dice
+- if there is one ace keep it and throw both other dices
+- if there are 2 identical values keep them and throw last dice
+- if there is 65, 54, 43, or 32 keep them and throw last dice
+- else re-throw all dices
+
+Other players
+^^^^^^^^^^^^^
+The algorithm takes the combination to beat, the number of throws to do, the
+number of throws done so far, the current combination (3 dices).
+
+The strategy is the same as for the first player except that it must take into
+account the target (combination and number of throws) and possibly decide to
+stop before the target number of throws.
+
+'TBD'
+
+Possible improvements
+^^^^^^^^^^^^^^^^^^^^^
+The strategy could be improved by taking into account the number of players:
+when more than two it is important to win but also important not to loose.
+This may lead to take less risks (trying Aces before 421).
+
+Another improvement would be to take into account the combinations obtained by
+previous players.
