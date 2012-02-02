@@ -28,6 +28,10 @@ package body Sok_Manager is
   -- Frames reading, saving and restoring.
   package Sok_File is
 
+    -- Ensure that frames are readable
+    -- Init empty score file if necessary
+    procedure Init;
+
     -- To read a new frame
     procedure Read (No_Frame : in  Sok_Types.Frame_Range;
                     Frame    : out Sok_Types.Frame_Tab);
@@ -83,13 +87,29 @@ package body Sok_Manager is
 
   begin
 
-    -- Init for first frame
+    -- Init screen for first frame
     begin
       Sok_Display.Init;
     exception
       when others =>
         raise Sok_Input.Break_Requested;
     end;
+
+    -- Init files (frames and scores)
+    begin
+      Sok_File.Init;
+    exception
+      when Sok_File.Data_File_Not_Found =>
+        Sok_Display.Put_Error (Sok_Display.No_Data);
+        raise;
+      when Sok_File.Error_Reading_Data =>
+        Sok_Display.Put_Error (Sok_Display.Read);
+        raise;
+      when Sok_File.Score_Io_Error =>
+        Sok_Display.Put_Error (Sok_Display.Score_Io);
+        raise;
+    end;
+
     -- See if restore or init
     if First_Frame = Sok_Types.Restore_Frame then
       -- Try to restore

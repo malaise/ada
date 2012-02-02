@@ -5,7 +5,7 @@ separate (Sok_Manager)
 -- Sokoban frames reading.
 package body Sok_File is
 
-  -- frame as it is on disk : no mutant
+  -- Frame as it is on disk : no mutant
   type File_Square_Rec is record
     Pattern : Sok_Types.Pattern_List;
     Content : Sok_Types.Content_List;
@@ -13,7 +13,7 @@ package body Sok_File is
   type File_Frame_Tab is array (Sok_Types.Row_Range, Sok_Types.Col_Range)
    of File_Square_Rec;
 
-  -- internal state of a frame
+  -- Internal state of a frame
   type File_State_Rec is record
     Dur          : Ada.Calendar.Day_Duration;
     Day          : Natural;
@@ -26,33 +26,33 @@ package body Sok_File is
     Pushes       : Natural;
   end record;
 
-  -- for read frame
+  -- For read frame
   package Sok_File_Mng is new Ada.Direct_Io (File_Frame_Tab);
 
 
-  -- for save and restore sate
+  -- For save and restore sate
   package Sok_State_Mng is new Ada.Sequential_Io (File_State_Rec);
-  -- for save and restore saved movements
+  -- For save and restore saved movements
   package Sok_Saved_Mng is new Ada.Sequential_Io (Sok_Movement.Saved_Data_Rec);
 
-  -- for save and restore scores
+  -- For save and restore scores
   package Sok_Score_Mng is new Ada.Direct_Io (Sok_Types.Score_Rec);
 
-  -- for setting frame file directory
+  -- For setting frame file directory
   Sok_File_Dir_Env_Name : constant String := "SOKOBAN_DIR";
   Sok_File_Dir : As.B.Asb_Bs(Directory.Max_Dir_Name_Len + 1);
 
-  -- for read frame
+  -- For read frame
   Sok_File_Name : constant String := "SOKOBAN.DAT";
 
-  -- for save and restore frame and movements
+  -- For save and restore frame and movements
   Sok_State_Name : constant String := "STATE.DAT";
   Sok_Saved_Name : constant String := "SAVED.DAT";
 
-  -- for scores
+  -- For scores
   Sok_Score_Name : constant String := "SCORES.DAT";
 
-  -- to convert from a frame on file to a frame
+  -- To convert from a frame on file to a frame
   procedure From_File_To_Frame (File  : in  File_Frame_Tab;
                                 Frame : out Sok_Types.Frame_Tab) is
     use Sok_Types;
@@ -74,7 +74,7 @@ package body Sok_File is
     end loop;
   end From_File_To_Frame;
 
-  -- to convert from a frame to a frame on file
+  -- To convert from a frame to a frame on file
   procedure From_Frame_To_File (Frame : in  Sok_Types.Frame_Tab;
                                 File  : out File_Frame_Tab) is
     use Sok_Types;
@@ -97,8 +97,39 @@ package body Sok_File is
     end loop;
   end From_Frame_To_File;
 
+  -- Ensure that frames are readable
+  -- Init empty score file if necessary
+  procedure Init is
+    Frame : Sok_Types.Frame_Tab;
+    pragma Unreferenced (Frame);
+    Score : Sok_Types.Score_Rec;
+    Sok_Score_File : Sok_Score_Mng.File_Type;
+  begin
+    -- Read first and last frames
+    Read (Sok_Types.Frame_Range'First, Frame);
+    Read (Sok_Types.Frame_Range'Last, Frame);
+    if Sys_Calls.File_Found (Sok_Score_Name) then
+      -- Read first and last scores
+      Score := Read_Score (Sok_Types.Frame_Range'First);
+      Score := Read_Score (Sok_Types.Frame_Range'Last);
+      return;
+    end if;
+    -- Create empty scores if necessary
+    begin
+      Sok_Score_Mng.Create (Sok_Score_File, Sok_Score_Mng.Out_File,
+         Sok_Score_Name);
+      Score := (Set => False, Day => 0, Dur => 0.0, Moves => 0, Pushes => 0);
+      for I in Sok_Types.Frame_Range'Range loop
+        Sok_Score_Mng.Write (Sok_Score_File, Score);
+      end loop;
+      Sok_Score_Mng.Close (Sok_Score_File);
+    exception
+      when others =>
+        raise Score_Io_Error;
+    end;
+  end Init;
 
-  -- to read a new frame
+  -- To read a new frame
   procedure Read (No_Frame : in  Sok_Types.Frame_Range;
                   Frame    : out Sok_Types.Frame_Tab) is
     Sok_File : Sok_File_Mng.File_Type;
@@ -150,19 +181,19 @@ package body Sok_File is
     end;
   end Read;
 
-  -- closes frame and saved file
+  -- Closes frame and saved file
   procedure Close_Files (
    Sok_State_File : in out Sok_State_Mng.File_Type;
    Sok_Saved_File : in out Sok_Saved_Mng.File_Type) is
   begin
     begin
-      -- close state file
+      -- Close state file
       Sok_State_Mng.Close (Sok_State_File);
     exception
       when others => null;
     end;
 
-    -- close saved file
+    -- Close saved file
     begin
       Sok_Saved_Mng.Close (Sok_Saved_File);
     exception
@@ -170,13 +201,13 @@ package body Sok_File is
     end;
   end Close_Files;
 
-  --save a frame with saved movements
+  -- Save a frame with saved movements
   procedure Save (State : in State_Rec) is
     Sok_State_File : Sok_State_Mng.File_Type;
     Sok_Saved_File : Sok_Saved_Mng.File_Type;
     File_State : File_State_Rec;
   begin
-    -- be sure that there is no file
+    -- Be sure that there is no file
     begin
       Sok_State_Mng.Open (Sok_State_File, Sok_State_Mng.In_File,
        Sok_State_Name);
@@ -192,7 +223,7 @@ package body Sok_File is
       when Sok_Saved_Mng.Name_Error => null;
     end;
 
-    -- now create new files
+    -- Now create new files
     Sok_State_Mng.Create (Sok_State_File, Sok_State_Mng.Out_File,
      Sok_State_Name);
     Sok_Saved_Mng.Create (Sok_Saved_File, Sok_Saved_Mng.Out_File,
@@ -208,10 +239,10 @@ package body Sok_File is
     File_State.Moves        := State.Moves;
     File_State.Pushes       := State.Pushes;
 
-    -- save state
+    -- Save state
     Sok_State_Mng.Write (Sok_State_File, File_State);
 
-    -- save saved movements
+    -- Save saved movements
     begin
       Sok_Saved_Mng.Write (Sok_Saved_File, Sok_Save.Look (Sok_Save.First));
       loop
@@ -228,7 +259,7 @@ package body Sok_File is
       raise Error_Writing_Frame;
   end Save;
 
-  --restore a frame without saved movements
+  -- Restore a frame without saved movements
   procedure Restore (State : out State_Rec) is
     Sok_State_File : Sok_State_Mng.File_Type;
     Sok_Saved_File : Sok_Saved_Mng.File_Type;
@@ -245,10 +276,10 @@ package body Sok_File is
         raise Frame_File_Not_Found;
     end;
 
-    -- read state
+    -- Read state
     Sok_State_Mng.Read (Sok_State_File, File_State);
 
-    -- fill returned state
+    -- Fill returned state
     Sok_Time.Set_Time (File_State.Day, File_State.Dur);
     From_File_To_Frame (File_State.Frame, State.Frame);
     State.No_Frame     := File_State.No_Frame;
@@ -258,7 +289,7 @@ package body Sok_File is
     State.Moves        := File_State.Moves;
     State.Pushes       := File_State.Pushes;
 
-    -- read saved movements
+    -- Read saved movements
     Sok_Save.Reset;
     loop
       declare
