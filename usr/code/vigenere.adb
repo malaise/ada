@@ -57,7 +57,7 @@ package body Vigenere is
         -- Offest: Index of Car in Key
         Offset := Car2Index(Carkey(Kindex));
         -- Add offest
-        T := Cindex + Offset;
+        T := Cindex + Offset - 1;
         if T > Car_Index'Last then
           T := T - Car_Index'Last;
         end if;
@@ -96,7 +96,7 @@ package body Vigenere is
         -- Offest: Index of Car in Key
         Offset := Car2Index(Carkey(Kindex));
         -- Sub offest
-        T := Cindex - Offset;
+        T := Cindex - Offset + 1;
         if T < Car_Index'First then
           T := T + Car_Index'Last;
         end if;

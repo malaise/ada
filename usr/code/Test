@@ -16,14 +16,6 @@ function compare {
   fi
 }
 
-echo "Testing CODE"
-cp $FILE $TMP.ini
-echo "Coding"
-echo "$PASSWD" | code -c $TMP.ini $TMP.cod
-echo "Decoding"
-echo "$PASSWD" | code -d $TMP.cod $TMP.dec
-compare
-
 echo "Testing VIGENERE"
 # Letters -> UPPERCASE, others -> ' '
 cat $FILE | asubst -D '' '([A-Za-z])|(.|\n)' '\i11\u\r11\c\i12 \f' > $TMP.ini
@@ -32,4 +24,36 @@ cat $TMP.ini | t_vigenere -c "$PASSWD" > $TMP.cod
 echo "Decoding"
 cat $TMP.cod | t_vigenere -d "$PASSWD" > $TMP.dec
 compare
+
+echo "Testing CODE"
+cp $FILE $TMP.ini
+echo "Coding"
+echo "$PASSWD" | code -c $TMP.ini $TMP.cod
+echo "Decoding"
+echo "$PASSWD" | code -d $TMP.cod $TMP.dec
+compare
+
+echo "Testing VIGENERE on known result"
+export KEY="MUSIQUE"
+export INI="j'adore ecouter la radio toute la journee"
+export COD="V UVWHY IOIMBUL PM LSLYI XAOLM BU NAOJVUY"
+export DEC=`echo -n $INI | asubst -D '' '([A-Za-z])|(.|\n)' '\i11\u\r11\c\i12 \f'`
+echo "Coding"
+res=`echo -n "$INI" | t_vigenere -c "$KEY"`
+echo Comparing
+if [ "$res" != "$COD" ] ; then
+  echo "Coding error. Got " "$res"
+  echo "Instead of " $COD
+  exit 1
+fi
+echo "Decoding"
+res=`echo -n "$COD" | t_vigenere -d "$KEY"`
+echo Comparing
+if [ "$res" != "$DEC" ] ; then
+  echo "Decoding error. Got " "$res"
+  echo "Instead of " $DEC
+  exit 1
+fi
+echo "Test OK."
+echo ""
 
