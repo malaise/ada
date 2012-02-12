@@ -64,7 +64,10 @@ package body Moon is
     Ground(Point_Range'Last).X_Pos := Space.X_Range'Last;
 
     -- Set index of landing point
-    Index_Landing := Rnd.Int_Random (Landing_Range'First, Landing_Range'Last);
+    -- Index_Landing := Rnd.Int_Random (Landing_Range'First, Landing_Range'Last);
+    Index_Landing := Rnd.Int_Random (
+        Landing_Range'Succ (Landing_Range'First),
+        Landing_Range'Pred (Landing_Range'Last) );
     -- Level the landing site. 2 consecutive points if hard, 3 if normal.
     Ground(Index_Landing - 1).Y_Pos := Ground(Index_Landing).Y_Pos;
     if not Hard_Level then
