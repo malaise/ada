@@ -17,11 +17,13 @@ package body Moon is
 
   -- Init a new moon
   procedure Init is
-    -- Index of the central point of the landing site (2 .. Last-2)
-    --  Last-2 because Last-1 to Last may not be wide enough for LEM
-    subtype Landing_Range is Point_Range
-            range Point_Range'First + 1 .. Point_Range'Last - 2;
+    -- Index of landing array
+    -- If hard, ground is flat from I-1 to I, else from I-1 to I+1
     Index_Landing : Point_Range;
+    -- First and last possible index for landing site (depending on hard)
+    First_Index : constant Point_Range := Point_Range'Succ (Point_Range'First);
+    Last_Index : Point_Range := Point_Range'Pred (Point_Range'Last);
+
     Y_Ground_Min : constant Space.Y_Range := 2.0;
     Hard_Level : Boolean;
   begin
@@ -48,6 +50,7 @@ package body Moon is
         Nb_Consec := 1.0;
       else
         Nb_Consec := 2.0;
+        Last_Index := Last_Index - 1;
       end if;
       if Delta_Point * Nb_Consec < Lem.Width then
         raise Delta_Point_Lem_Width_Error;
@@ -64,17 +67,13 @@ package body Moon is
     Ground(Point_Range'Last).X_Pos := Space.X_Range'Last;
 
     -- Set index of landing point
-    -- Index_Landing := Rnd.Int_Random (Landing_Range'First, Landing_Range'Last);
-    Index_Landing := Rnd.Int_Random (
-        Landing_Range'Succ (Landing_Range'First),
-        Landing_Range'Pred (Landing_Range'Last) );
+    Index_Landing := Rnd.Int_Random (First_Index, Last_Index);
     -- Level the landing site. 2 consecutive points if hard, 3 if normal.
     Ground(Index_Landing - 1).Y_Pos := Ground(Index_Landing).Y_Pos;
     if not Hard_Level then
       Ground(Index_Landing + 1).Y_Pos := Ground(Index_Landing).Y_Pos;
     end if;
   end Init;
-
 
   -- The array of points defining the ground
   -- First point has X = 0.0, last point has X = Space.X_Max
