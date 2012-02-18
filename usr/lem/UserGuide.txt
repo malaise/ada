@@ -1,6 +1,6 @@
 Land LEM
 ========
-V2.9
+V3.0
 
 The goal of the game is to land the LEM on the Moon.
 
@@ -15,11 +15,6 @@ The main area represents the space, the LEM and the Moon ground.
 
 The LEM must not reach the borders (up, left or right) of the space, otherwise
 it is lost. The ground shows at least one flat landing area.
-
-Normal mode defines at least one large flat area, while hard mode (argument
-"-h") defines at least one narrow flat area.
-When started with argument "-g" the mouse pointer is grabbed in the game
-window. It can be grabed / ungrabed at any time by pressing the key ''g''.
 
 The gauges
 ~~~~~~~~~~
@@ -38,6 +33,14 @@ This indicator shows "CLOSE" when getting close to land, then "LAND" when
 landed.
 
 Below the indicator, a chronometer indicates the duration of the game.
+
+Arguments of the program
+-------------------------
+Whrn started with argument "-h" the game is harder because the the landing area
+is thinner.
+
+When started with argument "-g" the mouse pointer is grabbed in the game
+window. It can be grabed / ungrabed at any time by pressing the key ''g''.
 
 Commands of the game
 --------------------
@@ -139,8 +142,7 @@ The axes are x (horizontal, left to right) and y (vertical bottom to top).
 
 The LEM
 ~~~~~~~
-Is square 10x10 m made of a rectangle and 2 feet and has an empty mass of M
-kg.
+Is square 10x10 m made of a rectangle and 2 feet and has an empty mass of M kg.
 
 It has a fuel tank of volume F kg of fuel.
 
@@ -187,10 +189,13 @@ The moon
 ~~~~~~~~
 It has a constant gravity g.
 
-It generates a random ground, width (500m) with a point each 10m (51 points).
+It generates a random ground, width (250m) made of several (18) points, so that
+the delta between points (14m) > width of LEM (10m).
 
-Points are at random height from 0 to Hpmax, one random point from 2 to 50
-has its pred and succ forced at the same height => the landing site (20m).
+Points are at random height from Hpmin (2m) to Hpmax (50m). One random point
+has its pred and succ forced at the same height => the landing site (28m). In
+hard mode only the pred is forced to the landing height, so the area is thiner
+(14m). The landing site is not at the border (right or left) of the space.
 
 The space
 ~~~~~~~~~
@@ -240,14 +245,19 @@ Hpmax=50 m
 
 Validation
 ~~~~~~~~~~
-Full mass is M + F = 15600 kg
+.In theory,
+without decreasing the mass (and without X thrust):
 
-Corresponding weight is 15600 * g = 25506 (25.5kN)
+[width="50%", options="header"]
+|=========================================================
+|                   |Full mass           |Empty mass
+|Mass (kg)          | M + F = 15600      |M = 10000
+|Weight (N)         | 15600 * g = 25506  |16350
+|Consumption (kg/s) | 25506 * C = 46.68  |29.92
+|Autonomy (s)       | 5600 / 46.68 = 120 |187
+|=========================================================
 
-25506 * C = 46.68 kg/s
-
-With an initial fuel F = 5600 kg, the autonomy is 5600 / 46.68 = 120s (with
-no X thrust but without decreasing the mass).
-
-At empty mass, the autonomy would be 187s.
+.Practically,
+starting at full mass and applying a (decreasing) Y thrust to remain at constant
+height the mission duration appears to be around 150s.
 
