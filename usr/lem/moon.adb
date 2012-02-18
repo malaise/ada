@@ -63,9 +63,11 @@ package body Moon is
     declare
       Delta_Point_Lem_Width_Error : exception;
     begin
+      pragma Warnings (Off, "condition is always False");
       if Delta_Point < Lem.Width then
         raise Delta_Point_Lem_Width_Error;
       end if;
+      pragma Warnings (On, "condition is always False");
     end;
 
     -- Set X of each point, ensure last point has X = last X_Range
