@@ -63,7 +63,7 @@ package body Moon is
     declare
       Delta_Point_Lem_Width_Error : exception;
     begin
-      if Delta_Point * Nb_Consec < Lem.Width then
+      if Delta_Point < Lem.Width then
         raise Delta_Point_Lem_Width_Error;
       end if;
     end;
