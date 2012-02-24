@@ -3,6 +3,9 @@ with System, Ada.Finalization;
 with Language;
 package Regular_Expressions is
 
+  -- Get current PCRE version
+  function Get_Pcre_Version return String;
+
   -- Result of regex compilation
   type Compiled_Pattern is limited private;
 

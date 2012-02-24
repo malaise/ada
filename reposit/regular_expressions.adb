@@ -58,26 +58,38 @@ package body Regular_Expressions is
   procedure C_Regfree (Preg : in System.Address);
   pragma Import (C, C_Regfree, "regfree");
 
-  -- Check PCRE version >= 6.5
-  Version_Ok : Boolean := False;
-  Invalid_Pcre_Version : exception;
-  procedure Check_Version is
+  -- Get PCRE version
+  function Get_Pcre_Version return String is
     Addr, Dummy : System.Address;
     pragma Unreferenced (Dummy);
     Str : String (1 .. 255);
-    Vers : Float;
-    Last : Positive;
     function C_Strncpy (Dest, Src : System.Address; Size : Integer)
              return System.Address;
     pragma Import (C, C_Strncpy, "strncpy");
   begin
+    -- Returns a char*, make it a string
+    Addr := C_Regvers;
+    Dummy := C_Strncpy (Str(Str'First)'Address, Addr, Str'Length);
+    -- Stop at first space if any
+    for I in Str'Range loop
+      if Str(I) = ' ' and then I /= Str'First then
+        return Str(Str'First .. I - 1);
+      end if;
+    end loop;
+    return Str;
+  end Get_Pcre_Version;
+
+  -- Check PCRE version >= 7.8
+  Version_Ok : Boolean := False;
+  Invalid_Pcre_Version : exception;
+  procedure Check_Version is
+    Vers : Float;
+    Last : Positive;
+  begin
     if Version_Ok then
       return;
     end if;
-    -- Returns a char*, make it a string then a float
-    Addr := C_Regvers;
-    Dummy := C_Strncpy (Str(Str'First)'Address, Addr, Str'Length);
-    Flo_Io.Get (Str, Vers, Last);
+    Flo_Io.Get (Get_Pcre_Version, Vers, Last);
     if Vers < 7.8 then
       raise Invalid_Pcre_Version;
     end if;
