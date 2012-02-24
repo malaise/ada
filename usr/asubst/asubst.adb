@@ -1,10 +1,10 @@
 with Ada.Exceptions;
 with As.U, Environ, Argument, Argument_Parser, Basic_Proc, Language, Mixed_Str,
-     Text_Line;
+     Text_Line, Regular_Expressions;
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
-  Version : constant String  := "V13.1";
+  Version : constant String  := "V13.2";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -186,6 +186,7 @@ procedure Asubst is
 
   -- For getenv
   Utf8_Var_Name : constant String := "ASUBST_UTF8";
+
   -- The keys and descriptor of parsed keys
   Keys : constant Argument_Parser.The_Keys_Type := (
    01 => ('a', As.U.Tus ("ascii"), False, False),
@@ -320,6 +321,8 @@ begin
       Error;
     else
       Basic_Proc.Put_Line_Error (Argument.Get_Program_Name & " " & Version);
+      Basic_Proc.Put_Line_Error ("PCRE "
+                               & Regular_Expressions.Get_Pcre_Version);
       Basic_Proc.Set_Exit_Code (Error_Exit_Code);
     end if;
     return;

@@ -1,6 +1,12 @@
 History of Asubst
 =================
 
+24/02/2012 V13.2::
+Add: Also put PCRE version when -V (--version)
+
+25/01/2012 V13.1::
+Fix: Improve help and doc on grep mode
+
 19/10/2011 V13.0::
 Fix: No Lf between outputs of grep mode when not default and multiple regex
 
