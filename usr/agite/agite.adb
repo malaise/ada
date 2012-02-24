@@ -27,6 +27,7 @@ procedure Agite is
   -- Got to previous dir (if any) / Save history
   Goto_Previous : Boolean;
   Update_History : Boolean;
+  Prev_Dir, Curr_Dir : As.U.Asu_Us;
 
   -- Version Stuff
   Version : Git_If.Version_Rec;
@@ -135,21 +136,21 @@ procedure Agite is
        Utils.Normalize (Root.Image, Afpx.Get_Field_Width (12)));
 
    -- Encode current branch
-   Afpx.Clear_Field (16);
+   Afpx.Clear_Field (17);
    if Branch.Image = ("(no branch)") then
      Branch := As.U.Tus ("None.");
    end if;
-   Afpx.Encode_Field (16, (0, 0),
-         Utils.Normalize ("Br: " & Branch.Image, Afpx.Get_Field_Width (16),
+   Afpx.Encode_Field (17, (0, 0),
+         Utils.Normalize ("Br: " & Branch.Image, Afpx.Get_Field_Width (17),
                           False));
 
     -- De-activate Diff and history if no in Git
     if Root.Is_Null then
-      Utils.X.Protect_Field (22);
       Utils.X.Protect_Field (23);
+      Utils.X.Protect_Field (24);
     else
-      Afpx.Reset_Field (22);
       Afpx.Reset_Field (23);
+      Afpx.Reset_Field (24);
     end if;
 
   end Encode_Files;
@@ -159,8 +160,10 @@ procedure Agite is
     Str : constant String
         := Utils.Parse_Spaces (Afpx.Decode_Field (Dir_Field, 0, False));
     Width : constant Afpx.Width_Range := Afpx.Get_Field_Width (Dir_Field);
+    Saved_Prev_Dir : As.U.Asu_Us;
   begin
     begin
+      Saved_Prev_Dir := As.U.Tus (Directory.Get_Current);
       if New_Dir = "" then
         if Str /= "" then
           Directory.Change_Current (Str);
@@ -179,6 +182,11 @@ procedure Agite is
       Config.Save_Curr_Dir (Directory.Get_Current);
     end if;
     Encode_Files;
+    -- Set this new dir for Prev if no Prev yet
+    -- Otherwise Prev is set only on significant action
+    if Prev_Dir.Is_Null then
+      Prev_Dir := Saved_Prev_Dir;
+    end if;
 
     Afpx.Clear_Field (Dir_Field);
     Afpx.Encode_Field (Dir_Field, (0, 0),
@@ -200,6 +208,12 @@ procedure Agite is
       Cursor_Col := Width - 1;
     end if;
   end Change_Dir;
+
+  -- Save current dir as Prev_Dir
+  procedure Save_Dir is
+  begin
+    Curr_Dir := As.U.Tus (Directory.Get_Current);
+  end Save_Dir;
 
   -- To find current position back
   function Match (Current, Criteria : Git_If.File_Entry_Rec) return Boolean is
@@ -234,7 +248,7 @@ procedure Agite is
   -- else ">tail"
   Local_Host : As.U.Asu_Us;
   function Host_Str return String is
-    Len : constant Positive := Afpx.Get_Field_Width (18);
+    Len : constant Positive := Afpx.Get_Field_Width (19);
     use type As.U.Asu_Us;
   begin
     if not Local_Host.Is_Null then
@@ -264,7 +278,7 @@ procedure Agite is
     Cursor_Col := 0;
     Insert := False;
     Redisplay := False;
-    Afpx.Encode_Field (18, (0, 0), Host_Str);
+    Afpx.Encode_Field (19, (0, 0), Host_Str);
     Change_Dir;
   end;
 
@@ -310,6 +324,7 @@ procedure Agite is
       File_Name : constant String := File.Name.Image;
     begin
       if File.Kind = '/' then
+        -- Dir
         case Action is
           when Default =>
             Change_Dir (File_Name);
@@ -331,6 +346,8 @@ procedure Agite is
             end if;
         end case;
       elsif File.Kind /= '@' and then File.Kind /= '?' then
+        -- File
+        Save_Dir;
         case Action is
           when Edit | Default =>
             Edit (File_Name);
@@ -342,6 +359,8 @@ procedure Agite is
             Do_Revert (File_Name);
         end case;
       elsif File.Kind = '?' and then Action = Revert then
+        -- Deleted file
+        Save_Dir;
         Do_Revert (File_Name);
       end if;
     end;
@@ -413,6 +432,7 @@ begin
 
   -- Main loop
   loop
+    Afpx.Set_Field_Activation (16, Directory.Get_Current /= Prev_Dir.Image);
 
     Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
                        Ptg_Result, Redisplay);
@@ -461,25 +481,36 @@ begin
                 Change_Dir (New_Dir);
               end if;
             end;
-          when 19 =>
-            -- GUI
-            Utils.Launch ("git gui");
+          when 16 =>
+            -- Prev dir
+            Save_Dir;
+            Change_Dir (Prev_Dir.Image);
+            Prev_Dir := Curr_Dir;
           when 20 =>
-            -- XTerm
-            Utils.Launch (Config.Xterminal);
+            -- GUI
+            Save_Dir;
+            Utils.Launch ("git gui");
           when 21 =>
-            -- Edit (file)
-            List_Action (Edit);
+            -- XTerm
+            Save_Dir;
+            Utils.Launch (Config.Xterminal);
           when 22 =>
-            -- Diff
-            List_Action (Diff);
+            -- Edit (file)
+            Save_Dir;
+            List_Action (Edit);
           when 23 =>
-            -- History
-            List_Action (History);
+            -- Diff
+            Save_Dir;
+            List_Action (Diff);
           when 24 =>
-            -- Revert
-            List_Action (Revert);
+            -- History
+            Save_Dir;
+            List_Action (History);
           when 25 =>
+            -- Revert
+            Save_Dir;
+            List_Action (Revert);
+          when 26 =>
             -- Exit
             raise Utils.Exit_Requested;
           when others =>
