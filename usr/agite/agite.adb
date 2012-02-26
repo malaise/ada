@@ -467,6 +467,7 @@ begin
             Change_Dir;
           when 13 =>
             -- Reread (change dir . and restore pos)
+            Save_Dir;
             Reread;
           when 14 =>
             -- Up (change dir ..)
@@ -483,9 +484,11 @@ begin
             end;
           when 16 =>
             -- Prev dir
-            Save_Dir;
             Change_Dir (Prev_Dir.Image);
-            Prev_Dir := Curr_Dir;
+            if not Curr_Dir.Is_Null then
+              Prev_Dir := Curr_Dir;
+            end if;
+            Save_Dir;
           when 20 =>
             -- GUI
             Save_Dir;
