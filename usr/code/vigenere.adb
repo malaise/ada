@@ -1,4 +1,4 @@
-with Upper_Char;
+with Upper_Char, Text_Line;
 package body Vigenere is
 
   -- Coding generates upper char
@@ -85,6 +85,10 @@ package body Vigenere is
     Kindex := 1;
     -- Decode each character one by one
     for I in Str'Range loop
+      -- Support tailing LineFeed => keep it
+      if I = Str'Last and then Str(I) = Text_Line.Line_Feed_Char then
+        return;
+      end if;
       if Str(I) /= ' ' then
         -- This character to decode
         if Str(I) not in Car then
