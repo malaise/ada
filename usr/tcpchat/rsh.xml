@@ -10,7 +10,7 @@
   </script>
 
   <!-- cd: change dir -->
-  <chat Name="chdir" Regexp="true" Assign="TARGET=${2}">cd( (.*))?</chat>
+  <chat Name="chdir" Regexp="true" Assign="TARGET=${2}">cd( +(.*))?</chat>
   <script>
     <set Variable="OK">true</set>
     <chdir>
