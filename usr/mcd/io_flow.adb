@@ -338,7 +338,7 @@ package body Io_Flow is
         and then not Soc.Is_Open then
           return;
         end if;
-        -- Send on Socket/Fifo several messages
+        -- Send on Socket/AutoBus several messages
         F := Str'First;
         loop
           L := F + Autobus.Message_Max_Length - 1;
@@ -409,7 +409,7 @@ package body Io_Flow is
   end Close;
 
   ----------------------------------------------------
-  -- Bus resception callback
+  -- Bus reception callback
   ----------------------------------------------------
   procedure Receive (Observer : in out Bus_Observer_Type;
                      Subscriber : in Autobus.Subscriber_Access_Type;
@@ -429,7 +429,7 @@ package body Io_Flow is
       Messages.Rewind (False, As.U.Utils.Asu_Dyn_List_Mng.Next);
       Messages.Insert (Input_Data);
       if Debug.Debug_Level_Array(Debug.Flow) then
-        Async_Stdin.Put_Line_Err ("Flow: Fifo_Rece_Cb set >"
+        Async_Stdin.Put_Line_Err ("Flow: Bus reception of >"
                              & Input_Data.Image & "<");
       end if;
     end if;
