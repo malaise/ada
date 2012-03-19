@@ -6,32 +6,19 @@ Als lists files, directory contents... It supports several powerfull options
 for the selection of entries, the output format of each entry, and general
 formatting options.
 
-General arguments of als
-------------------------
+General syntax
+--------------
 
  Usage: als [ { <option> } ] [ { <file_or_dir_spec> } ]
  or   : als  --help | -v | --version
 
 List files or directory contents.
 
-Notes on compatibility between options:
-
-- Some options options are meaningful only when some other option is provided.
-They are accepted and ignored when provided alone.
-+
-Example:
-+
-Option -h is usefull only when -l is provided. So "als -h" is the same as "als".
-
-- Some options are mutually exclusive. This is reported as an error.
-+
-Examples:
-+
-* -d and -n are mutually exclusive.
-* -S is not compatible with some other formating options (-l, -1 and -c).
+Detailed options
+----------------
 
 Specify which entry to select
------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   -a (--all)                 Show all entries including hidden ones
                                (starting with '.')
@@ -70,7 +57,7 @@ Specify which entry to select
     -n <date> (--newer=<date>) is a shortcut to "-d ge<date>"
 
 Specify how to show each entry selected
----------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   -l (--list)                Show rights, owner, size, date, symbolic link target
   -1 (--1row)                One name per line
@@ -83,7 +70,7 @@ Specify how to show each entry selected
   --date_iso                 Show date in strict ISO format (<date>T<time>)
 
 Specify general formating options
----------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   -s (--size)                Sort by decrescent size (see also "-r")
   -t (--time)                Sort by decrescent time (see also "-r")
@@ -95,9 +82,28 @@ Specify general formating options
   -T (--total)               Also show total size of listed entries
 
 Other options
--------------
+~~~~~~~~~~~~~
   --help                     Show online help
   -v (--version)             Show current version of Als
+
+Notes on compatibility between options
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.Some options are ignored when alone
+Some options options are meaningful only when some other option is provided.
+They are accepted and silently ignored when provided alone.
+
+Example:
+
+Option -h is usefull only when -l is provided. So "als -h" is the same as "als".
+
+.Some options are mutually exclusive
+Providing these options together is reported as an error.
+
+Examples:
+
+* -d and -n are mutually exclusive.
+* -S is not compatible with some other formating options (-l, -1 and -c).
 
 Meaning of Als exit codes
 -------------------------
