@@ -6,7 +6,7 @@ package body Nav_Format is
   function Imag (Speed : Nav_Types.T_Speed; Set : Boolean := True)
    return String is
     Lspeed : My_Math.Real;
-    Str_Unset : constant String := "???.?";
+    Str_Unset : constant String := "     ";
     Str : String (1 .. Str_Unset'Last);
     I : Integer;
     use type My_Math.Real;
@@ -26,7 +26,7 @@ package body Nav_Format is
   -- from angle to string
   function Imag (Angle : Nav_Types.T_Angle; Set : Boolean := True)
    return String is
-    Str_Unset : constant String := "???.??";
+    Str_Unset : constant String := "      ";
     Str : String (1 .. Str_Unset'Last);
   begin
     if Set then
@@ -42,7 +42,7 @@ package body Nav_Format is
   -- from drift to string
   function Imag (Drift : Nav_Types.T_Drift; Set : Boolean := True)
    return String is
-    Str_Unset : constant String := "????.??";
+    Str_Unset : constant String := "       ";
     Str : String (1 .. Str_Unset'Last);
   begin
     if Set then
@@ -86,19 +86,19 @@ package body Nav_Format is
     Sign := False;
     -- parse leading and tailing spaces
     F := Str'First;
-    while F <= Str'Last and then Str(F) = ' ' loop
+    while F < Str'Last and then Str(F) = ' ' loop
       F := F + 1;
     end loop;
-    L := Str'Last;
-    while L >= Str'First and then Str(L) = ' ' loop
-      L := L - 1;
-    end loop;
     if Str'Length = 0 or else Str(F) = ' ' then
-      -- only spaces : Err
+      -- only spaces : unset
       Pos := Str'First;
-      Res := Error;
+      Res := Unset;
       return;
     end if;
+    L := Str'Last;
+    while L > Str'First and then Str(L) = ' ' loop
+      L := L - 1;
+    end loop;
 
     First := F;
     Last := L;
@@ -117,15 +117,12 @@ package body Nav_Format is
       First_Digit := F;
     end if;
 
-   -- general syntax ?  or     {d} ['.'{d}]
+   -- general syntax {d} ['.'{d}]
    Dot := False; -- no dot
    Pos := 0;
    for I in First_Digit .. L loop
      C := Str(I);
-     if C = '?' then
-       Res := Unset;
-       return;
-     elsif Is_Digit(C) then
+     if Is_Digit(C) then
        Digit_Found := True;
      elsif C = '.' then
        Pos := I;
@@ -149,7 +146,7 @@ package body Nav_Format is
      end if;
    end loop;
 
-   -- last significant char must be a digit (or ? , but already returned)
+   -- last significant char must be a digit
    if not Is_Digit(C) then
      Pos := L;
      Res := Error;

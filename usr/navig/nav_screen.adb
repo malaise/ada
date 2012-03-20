@@ -71,8 +71,8 @@ package body Nav_Screen is
     W_Title.Put ("AERONAUTICAL NAVIGATION", Con_Io.Color_Of ("Light_Blue"));
 
     W_Title.Move ((2, 0));
-    W_Title.Put ("Keys: Enter, arrows, Ins, Del, Backspace, Home, End, Page Up,"
-     & " Page Down");
+    W_Title.Put ("Keys: Enter, arrows, Ins, Del, Backspace, Home, End, Esc,"
+     & " Page Up, Page Down, Ctrl C");
     W_Title.Move ((3, 9));
     W_Title.Put ("digits, '.', '?', '+', '-'");
 
@@ -83,7 +83,7 @@ package body Nav_Screen is
     W_Title.Move ((6, 8));
     W_Title.Put ("drift in degrees and minutes (-90.00 .. +90.00)");
     W_Title.Move ((7, 8));
-    W_Title.Put ("? in a field to clear it");
+    W_Title.Put ("Ctrl-Suppr to clear field");
 
     Show_Time;
 
@@ -221,6 +221,8 @@ package body Nav_Screen is
   end Arrow;
 
   -- Clears a line of dots or an arrow
+  subtype Operation is Action range Compute .. Clear;
+  Prev_Operation : Operation := Operation'First;
   procedure Clear_Line (Field : in Nav_Data.T_List_Data) is
     Spaces : constant String (1 .. Width_Line) := (others => ' ');
   begin
@@ -228,14 +230,13 @@ package body Nav_Screen is
     W_Mask.Put (Spaces);
   end Clear_Line;
 
-  function Get_Action return Action is
+  function Get_Action (Initial : Action) return Action is
     Str : Con_Io.Unicode_Sequence (1 .. 0);
     Last : Natural;
     Stat : Con_Io.Curs_Mvt;
     Pos : Positive;
     Ins : Boolean;
-    Cur_Action : Action;
-    subtype Operation is Action range Compute .. Clear;
+    Cur_Operation : Operation;
 
     function Act_Col (Oper : Operation) return Con_Io.Col_Range is
     begin
@@ -253,41 +254,56 @@ package body Nav_Screen is
     end Act_Col;
     use type Con_Io.Curs_Mvt;
   begin
-    Cur_Action := Compute;
+    -- Reuse previous operation if initial is not valid (ex Refresh)
+    if Initial in Operation then
+      Cur_Operation := Initial;
+    else
+      Cur_Operation := Prev_Operation;
+    end if;
     Stat := Con_Io.Right;
     loop
       -- Infinite get with Get_Back on Get_Back
       Show_Time;
       if Stat /= Con_Io.Timeout then
-        W_Act.Move (0, Act_Col(Cur_Action));
+        W_Act.Move (0, Act_Col(Cur_Operation));
         W_Act.Put ('X', Background => Get_Back);
       end if;
-      W_Act.Move (0, Act_Col(Cur_Action));
+      W_Act.Move (0, Act_Col(Cur_Operation));
       W_Act.Get (Str, Last, Stat, Pos, Ins, Time_Out => Delta_Get);
       if Stat /= Con_Io.Timeout then
         W_Act.Put (' ', Background => Get_Back);
       end if;
       case Stat is
-        when Con_Io.Up => return Prev;
-        when Con_Io.Down | Con_Io.Pgdown | Con_Io.Pgup => return Next;
-        when Con_Io.Ret => return Cur_Action;
+        when Con_Io.Up =>
+          Prev_Operation := Operation'First;
+          return Prev;
+        when Con_Io.Down | Con_Io.Pgdown | Con_Io.Pgup =>
+          Prev_Operation := Operation'First;
+          return Next;
+        when Con_Io.Ret =>
+          Prev_Operation := Cur_Operation;
+          return Cur_Operation;
+        when Con_Io.Break =>
+          return Break;
         when Con_Io.Esc | Con_Io.Timeout | Con_Io.Full | Con_Io.Mouse_Button
-           | Con_Io.Break | Con_Io.Ctrl_Pgup | Con_Io.Ctrl_Pgdown
+           | Con_Io.Ctrl_Pgup | Con_Io.Ctrl_Pgdown
            | Con_Io.Ctrl_Up   | Con_Io.Ctrl_Down
            | Con_Io.Ctrl_Left | Con_Io.Ctrl_Right | Con_Io.Selection =>
           null;
         when Con_Io.Left | Con_Io.Stab =>
-          if Cur_Action /= Operation'First then
-            Cur_Action := Operation'Pred (Cur_Action);
+          if Cur_Operation /= Operation'First then
+            Cur_Operation := Operation'Pred (Cur_Operation);
           else
-            Cur_Action := Operation'Last;
+            Cur_Operation := Operation'Last;
           end if;
+          Prev_Operation := Cur_Operation;
         when Con_Io.Right | Con_Io.Tab =>
-          if Cur_Action /= Operation'Last then
-            Cur_Action := Operation'Succ (Cur_Action);
+          if Cur_Operation /= Operation'Last then
+            Cur_Operation := Operation'Succ (Cur_Operation);
           else
-            Cur_Action := Operation'First;
+            Cur_Operation := Operation'First;
           end if;
+          Prev_Operation := Cur_Operation;
         when Con_Io.Fd_Event | Con_Io.Timer_Event | Con_Io.Signal_Event =>
           null;
         when Con_Io.Refresh =>
@@ -353,11 +369,11 @@ package body Nav_Screen is
       exit when Stat /= Con_Io.Timeout;
     end loop;
     Con_Io.Clear (W_Err);
-    return Stat = Con_Io.Ret;
+    return Stat = Con_Io.Ret or else Stat = Con_Io.Break;
   end Confirm_Quit;
 
   -- Displays the help screen
-  procedure Put_Help is
+  function Put_Help return Boolean is
     Str : Con_Io.Unicode_Sequence (1..0);
     Lst : Natural;
     Stat : Con_Io.Curs_Mvt;
@@ -392,7 +408,7 @@ package body Nav_Screen is
       W_Help.Move ((10, 13));
       W_Help.Put ("The wind and the air speed must allow to follow the route");
       W_Help.Move ((13, 0));
-      W_Help.Put ("Enter Return to go back to the data ");
+      W_Help.Put ("Enter Return or Escape to go back to the data ");
     end Put;
     use type Con_Io.Curs_Mvt;
   begin
@@ -405,9 +421,11 @@ package body Nav_Screen is
       W_Help.Move ((13, 45));
       W_Help.Get (Str, Lst, Stat, Pos, Ins,
        Con_Io.Default_Background, Con_Io.Default_Background, Delta_Get);
-      exit when Stat = Con_Io.Ret;
+      exit when Stat = Con_Io.Ret or else Stat = Con_Io.Esc
+        or else Stat = Con_Io.Break;
     end loop;
     Con_Io.Clear (W_Help);
+    return Stat /= Con_Io.Break;
   end Put_Help;
 
 end Nav_Screen;

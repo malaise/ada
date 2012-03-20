@@ -271,6 +271,7 @@ package body Nav_Dialog is
       Blink := Fmt_Error; -- or Chk_Error
 
       if not In_Action then
+        Curr_Action := Nav_Screen.Action'First;
 
         if Nxt /= Con_Io.Timeout then
           -- new field or error
@@ -294,11 +295,6 @@ package body Nav_Dialog is
 
         -- if not timeout, try to have a value
         if Nxt /= Con_Io.Timeout then
-
-          if Nxt = Con_Io.Esc then
-            -- on escape : unknown
-            Get_Str (1) := '?';
-          end if;
 
           -- Value of got field.
           To_Value (Curr_Field, Get_Str(1..Get_Len), Data, Ok, Pos);
@@ -335,17 +331,19 @@ package body Nav_Dialog is
                 Curr_Field := Nav_Data.T_List_Data'First;
               when Con_Io.Pgdown =>
                 In_Action := True;
+              when Con_Io.Esc =>
+                In_Action := True;
               when Con_Io.Ctrl_Pgup | Con_Io.Ctrl_Pgdown
                  | Con_Io.Ctrl_Up   | Con_Io.Ctrl_Down
                  | Con_Io.Ctrl_Left | Con_Io.Ctrl_Right =>
                 null;
               when Con_Io.Refresh =>
                 Refresh := True;
-              when Con_Io.Fd_Event | Con_Io.Timer_Event | Con_Io.Signal_Event =>
-                null;
-              when Con_Io.Timeout | Con_Io.Esc |
-                   Con_Io.Mouse_Button | Con_Io.Break | Con_Io.Selection =>
-                -- impossible to be here
+              when Con_Io.Break =>
+                To_Do := Nav_Screen.Quit;
+                return;
+              when Con_Io.Fd_Event | Con_Io.Timer_Event | Con_Io.Signal_Event
+                 | Con_Io.Timeout | Con_Io.Mouse_Button | Con_Io.Selection =>
                 null;
             end case;
             Pos := 1;
@@ -358,7 +356,7 @@ package body Nav_Dialog is
       else -- in action
 
         -- get action
-        Curr_Action := Nav_Screen.Get_Action;
+        Curr_Action := Nav_Screen.Get_Action (Curr_Action);
 
         -- do action or movement
         case Curr_Action is
@@ -373,8 +371,12 @@ package body Nav_Dialog is
               Refresh := True;
             end if;
           when Nav_Screen.Help =>
-            Nav_Screen.Put_Help;
-            Refresh := True;
+            if Nav_Screen.Put_Help then
+              Refresh := True;
+            else
+              To_Do := Nav_Screen.Quit;
+              return;
+            end if;
           when Nav_Screen.Clear =>
             -- clear the data
             for Field in Nav_Data.T_List_Data loop
@@ -383,6 +385,9 @@ package body Nav_Dialog is
             Refresh := True;
             -- clear the result
             Clear_Result;
+            -- move to first input
+            In_Action := False;
+            Curr_Field := Nav_Data.T_List_Data'First;
           when Nav_Screen.Prev =>
             In_Action := False;
             Curr_Field := Nav_Data.T_List_Data'Last;
@@ -391,6 +396,9 @@ package body Nav_Dialog is
             Curr_Field := Nav_Data.T_List_Data'First;
           when Nav_Screen.Refresh =>
             Refresh := True;
+          when Nav_Screen.Break =>
+            To_Do := Nav_Screen.Quit;
+            return;
         end case;
 
       end if;
