@@ -148,5 +148,10 @@ begin
 
   end loop;
 
+  Partner.Close;
+exception
+  when others =>
+    Partner.Close;
+    raise;
 end Tcpipe;
 

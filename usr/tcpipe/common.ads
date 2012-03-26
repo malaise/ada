@@ -8,5 +8,7 @@ package Common is
   Max_Data_Len : constant := 1024;
   subtype Data_Type is String (1 .. Max_Data_Len);
 
+  -- Fatal runtime error
+  Fatal_Error : exception;
 end Common;
 

@@ -10,6 +10,10 @@ package Partner is
 
   function Is_Connected return Boolean;
 
+  -- Close connection or cancel attempts
+  -- No error
+  procedure Close;
+
   -- Kind of message between tcpipe instances
   type Kind_List is (Data, Connect, Disconnect);
 
@@ -29,7 +33,7 @@ package Partner is
 
   -- Send connection/disconnection/data
   -- If sending error then close local connect on port
-  procedure Send (Msg : in Message);
+  procedure Send (Msg : in Message; Len : in Natural);
 
 end Partner;
 

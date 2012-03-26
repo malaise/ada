@@ -1,17 +1,18 @@
+with Sys_Calls;
 package body Clients is
 
   -- Descriptor of a client connection
-  -- type Client_Rec is record
+  type Client_Rec is record
     -- The port associted to the client
-  --   Port : Common.Port_Num;
+    Port : Common.Port_Num;
     -- The definition is local (option -p) or comes from remote tcpipe
-  --   Local : Boolean;
+    Local : Boolean;
     -- When local, is it connected of not
-  --   Connected : Boolean;
+    Connected : Boolean;
     -- When local not connected: the accept Fd, when connected (local or remote)
     --  the connection fd
-  --   Fd : Sys_Calls.File_Desc;
-  -- end record;
+    Fd : Sys_Calls.File_Desc;
+  end record;
 
   -- Accept on a local port
   -- When a client connects stop accepting until it disconnects (then restart
@@ -52,6 +53,13 @@ package body Clients is
   begin
     null;
   end Disconnect;
+
+  -- Disconnect all clients
+  -- If local then start accepting again
+  procedure Disconnect_All is
+  begin
+    null;
+  end Disconnect_All;
 
   -- Send data to a client
   -- If error then disconnect and send a Disconnect to partner
