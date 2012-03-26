@@ -173,8 +173,8 @@ package Tcp_Util is
   --    then it calls the Send_Error_Callback and closes the Dscr.
   -- May raise Socket.Soc_Tail_Err if called while previous Send returned
   --  False and End_Of_Overflow_Cb has not (yet) been called
-  -- May raise Socket.Conn_Lost if the connection is lost, the socket should be
-  --  closed
+  -- May raise Socket.Soc_Conn_Lost if the connection is lost, the socket
+  --  should be --  closed
   -- May raise Timeout_Error on a blocking socket if timeout has expired, the
   --  socket is left in an unpredictable state and MUST be closed.
   -- Notes:
