@@ -130,7 +130,9 @@ package body Sok_Input is
         when Tab | Stab  => null;
         when Ret => return;
         when Esc => return;
-        when Break => raise Break_Requested;
+        when Break =>
+          -- Pause is always called on error before exiting
+          return;
         when Mouse_Button => null;
         when Timeout => null;
         when Selection => null;
