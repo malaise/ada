@@ -15,6 +15,7 @@ package Partner is
   procedure Close;
 
   -- Kind of message between tcpipe instances
+  -- Connect is always Remote
   type Kind_List is (Data, Connect, Disconnect);
 
   -- Data sent / read on connection
@@ -24,6 +25,7 @@ package Partner is
   -- Message sent between tcpipe instances
   type Header is record
    Kind : Kind_List;
+   Local : Boolean;
    Port : Common.Port_Num;
   end record;
   type Message is record

@@ -11,7 +11,6 @@ package Clients is
   -- Set target
   Invalid_Target : exception;
   procedure Set_Target (Target : in String);
-  function Target_Set return Boolean;
 
   -- Connect to a port on target
   -- If Ok then relay data from/to it
@@ -21,7 +20,7 @@ package Clients is
 
   -- Disconnect from a client
   -- If local then start accepting again
-  procedure Disconnect (Port : in Common.Port_Num);
+  procedure Disconnect (Port : in Common.Port_Num; Local : in Boolean);
 
   -- Disconnect all clients
   -- If local then start accepting again
@@ -29,9 +28,10 @@ package Clients is
 
   -- Send data to a client
   -- If error then disconnect and send a Disconnect to partner
-  procedure Send (Port : in Common.Port_Num;
-                  Len : in Natural;
-                  Data : in Common.Data_Type);
+  procedure Send (Port  : in Common.Port_Num;
+                  Local : in Boolean;
+                  Len   : in Natural;
+                  Data  : in Common.Data_Type);
 
 end Clients;
 

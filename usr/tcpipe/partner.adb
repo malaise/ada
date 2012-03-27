@@ -189,25 +189,6 @@ package body Partner is
     end if;
   end Accept_Cb;
 
-  -- Kind of message between tcpipe instances
-  -- type Kind_List is (Data, Connect, Disconnect);
-
-  -- Data sent / read on connection
-  -- Max_Data_Len : constant := 1024;
-
-  -- subtype Data_Type is String (1 .. Max_Data_Len);
-
-  -- Message sent between tcpipe instances
-  -- type Header is record
-  --  Kind : Kind_List;
-  --  Port : Common.Port_Num;
-  -- end record;
-
-  -- type Message is record
-  --  Head : Header;
-  --  Data : Data_Type;
-  -- end record;
-
   -- Close and restart
   procedure Close_Restart is
   begin
@@ -272,12 +253,18 @@ package body Partner is
         Clients.Connect_Client (Msg.Head.Port);
       when Disconnect =>
         if Debug.Is_Set then
-          Basic_Proc.Put_Line_Output ("Tcpipe: Receive a disconnect request to"
-            & " port: " & Ip_Addr.Image (Msg.Head.Port));
+          Basic_Proc.Put_Output ("Tcpipe: Receive a disconnect ");
+          if Msg.Head.Local then
+            Basic_Proc.Put_Output ("local ");
+          else
+            Basic_Proc.Put_Output ("remote ");
+          end if;
+          Basic_Proc.Put_Line_Output (" request to"
+            & "port: " & Ip_Addr.Image (Msg.Head.Port));
         end if;
-        Clients.Disconnect (Msg.Head.Port);
+        Clients.Disconnect (Msg.Head.Port, Msg.Head.Local);
       when Data =>
-        Clients.Send (Msg.Head.Port, Len - Head_Len, Msg.Data);
+        Clients.Send (Msg.Head.Port, Msg.Head.Local, Len - Head_Len, Msg.Data);
     end case;
     return False;
   end Reception_Cb;
