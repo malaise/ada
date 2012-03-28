@@ -118,6 +118,18 @@ package Tcp_Util is
   procedure Abort_Connect (Host : in Remote_Host;
                            Port : in Remote_Port);
 
+  -- Synchronously connect to a remote Host/Port
+  -- The Ttl is used (if supported by the TCP stack) to establish the
+  --  connection and in the established connection
+  -- Timeout = 0.0 may be used for infinite attempt
+  -- Returns a valid Dscr (Open, Full blocking) if success
+  -- May raise Name_Error if Host.Name or Port.Name is unknown
+  function Connect_To (Protocol      : in Tcp_Protocol_List;
+                       Host          : in Remote_Host;
+                       Port          : in Remote_Port;
+                       Timeout       : in Natural_Duration := 1.0;
+                       Ttl           : in Socket.Ttl_Range := Default_Ttl)
+           return Socket.Socket_Dscr;
 
   -- ACCEPTION PROCEDURE --
   -------------------------
@@ -164,7 +176,8 @@ package Tcp_Util is
   --  slow or if the connection becomes "frozen" (TCP timeout is very long).
   -- There are two strategies:
   --  - either set the socket blocking and send with a timeout. The send
-  --    blocks and either succeeds or raises Timeout_Error or Socket.Conn_Lost
+  --    blocks and either succeeds or raises Timeout_Error or
+  --    Socket.Soc_Conn_Lost
   --  - or set the socket non blocking. The send either succeds or raises
   --    Socket.Conn_Lost or returns False.
   --    It tries asynchronously to re-send when possible until all the message
@@ -174,7 +187,7 @@ package Tcp_Util is
   -- May raise Socket.Soc_Tail_Err if called while previous Send returned
   --  False and End_Of_Overflow_Cb has not (yet) been called
   -- May raise Socket.Soc_Conn_Lost if the connection is lost, the socket
-  --  should be --  closed
+  --  should be closed
   -- May raise Timeout_Error on a blocking socket if timeout has expired, the
   --  socket is left in an unpredictable state and MUST be closed.
   -- Notes:

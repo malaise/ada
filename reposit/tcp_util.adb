@@ -1,6 +1,6 @@
 with Unchecked_Deallocation;
 with Ada.Exceptions;
-with Environ, Dynamic_List, Timers, Event_Mng, Basic_Proc;
+with Environ, Dynamic_List, Timers, Event_Mng, Basic_Proc, Socket_Util;
 package body Tcp_Util is
 
   -- Debugging
@@ -554,6 +554,73 @@ package body Tcp_Util is
     end if;
     Con_List.Delete (Moved => Ok);
   end Abort_Connect;
+
+  -- Synchronously connect to a remote Host/Port
+  -- The Ttl is used (if supported by the TCP stack) to establish the
+  --  connection and in the established connection
+  -- Timeout = 0.0 may be used for infinite attempt
+  -- Returns a valid (Open) Dscr if the connection has been established
+  -- May raise Name_Error if Host.Name or Port.Name is unknown
+  function Connect_To (Protocol      : in Tcp_Protocol_List;
+                       Host          : in Remote_Host;
+                       Port          : in Remote_Port;
+                       Timeout       : in Natural_Duration := 1.0;
+                       Ttl           : in Socket.Ttl_Range := Default_Ttl)
+           return Socket.Socket_Dscr is
+    Dscr : Socket.Socket_Dscr;
+  begin
+    -- Open blocking
+    Dscr.Open (Protocol);
+    if Ttl /= Default_Ttl then
+      Dscr.Set_Ttl (Ttl);
+    end if;
+    if Debug_Connect then
+      Basic_Proc.Put_Line_Output ("  Tcp_Util.Connect_To sync start");
+    end if;
+    if Timeout = 0.0 then
+      -- Synchronous connect infinite
+      Socket_Util.Set_Destination (Dscr, False, Host, Port);
+    else
+      -- Synchronous connect with timeout
+      select
+        delay Timeout;
+          -- Timeout on connect
+          if Debug_Connect then
+            Basic_Proc.Put_Line_Output ("  Tcp_Util.Connect_To sync timeout");
+          end if;
+          Dscr.Close;
+        then abort
+          Socket_Util.Set_Destination (Dscr, False, Host, Port);
+      end select;
+    end if;
+    return Dscr;
+  exception
+    when Socket.Soc_Conn_Refused =>
+      if Debug_Connect then
+        Basic_Proc.Put_Line_Output ("  Tcp_Util.Connect_To sync refused");
+      end if;
+      Dscr.Close;
+      return Dscr;
+    when Socket.Soc_Name_Not_Found =>
+      if Debug_Connect then
+        Basic_Proc.Put_Line_Output ("  Tcp_Util.Connect_To sync name error");
+      end if;
+      Dscr.Close;
+      raise Name_Error;
+    when Error:others =>
+      if Dscr.Is_Open then
+        Dscr.Close;
+      end if;
+      if Debug_Connect then
+        Basic_Proc.Put_Line_Output ("  Tcp_Util.Connect_To sync exception "
+              & Ada.Exceptions.Exception_Name (Error));
+      end if;
+      raise;
+  end Connect_To;
+
+
+
+
 
   --------------------------------------------------------------------------
 
