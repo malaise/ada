@@ -8,7 +8,7 @@ connects to this server.
 
 When a client application connects to one tcpipe instance, the other tcpipe
 instance connects to another client application and both instances relay the
-data from one application to another
+data from one client application to another.
 
 
 Syntax
@@ -23,18 +23,29 @@ Usage: tcpipe <mode> [ <ports> ] [ <target> ]
 <target> ::= -t <host> | --target="<host>"
 ...................................
 
-The ports are the ones on which tcpipe accepts connections.
+The <client> and <server> options define the connection between two tcpipe
+instances.
 
-The target host is the one to which tcpipe attempts to connect.
+The ports are the ones on which tcpipe accepts connections from clients.
 
+The target host is the one to which tcpipe attempts to connect to clients.
+
+Usage
+-----
+Tcpipe can be usefull for multiplexing several TCP connections between several
+clients within one TCP connection, especially through a firewall.
+
+ * This reduces the number of TCP connections through the firewall,
+ * This allows connections between clients to be established despite the
+filters of the firewall (allowed ports, direction of connection...).
 
 Example
 -------
   On host host1 start "tcpipe -s 50000 -p40000"
   On host host2 start "tcpipe -c host1:50000 -tclient2"
   -> tcpipe on host2 connects to tcpipe on host1, port 50000
-  On the host client2 th t can be reached by host2 start a client that accepts connections on port 40000
-  On a host client1 that can reach host1 start an application that connects to host1 on port 40000
+  On the host client2 that can be reached by host2, start a client that accepts connections on port 40000
+  On a host client1 that can reach host1, start an application that connects to host1 on port 40000
   -> tcpipe on host1 accepts the connection from client1
   -> tcpipe on host2 connects to the application on client2
   -> data sent by any of the applications is relayed to the other
@@ -45,28 +56,33 @@ Errors
 As soon as a tcpipe instance is started with some ports it accepts connections
 to these ports.
 
-When a client connects to a port of a tcpipe instance T1, then T1 accepts the connection, then:
+When a client connects to a port of a tcpipe instance T1, then T1 accepts the
+connection, then:
 
-* T1 transmits the connection request to its partner T2 (if any)
-* the partner T2 tries to connect to the target (if any) on the same port
+* T1 transmits a connection request to its partner T2 (if any)
+* the partner T2 tries to connect to the target on the same port
 
-If any of these steps fails (no partner, partner with no target or failure to
-connect to target) then the tcpipe T1 closes the connection.
+If any of these steps fails (no partner or failure to connect to target) then
+the tcpipe T1 closes the connection.
 
 .Disconnection
-Any disconnection occuring on an established connection leads both tcpipe
-instances to close its relevant connection.
+Any disconnection between both tcpipe instances leads these instances to close
+all the connections with their local clients.
+
+Any disconnection of a client from an instance leads the other instance to
+close the corresponding connection with its client.
 
 Protocol
 --------
 Messages exchanged between tcpipe instances are either transfer of data or
 service messages.
 
-Data messages are made of a "Data" indicator then the bytes of data.
+These messages are made of:
 
-Service messages are made of a "Service" indicator, a service code C and an
-integer I. The service messages are:
-
-* Connect C=1, I=<port_num>
-* Disconnect C=2, I=<port_num>
+* a Kind: Connect, Disconnect or Data
+* a Port: port number concerned
+* a Local: boolean indicator (Local=True means a connection from a client,
+otherwise it means a connection to a client). Connect message is always not
+Local.
+* a String: the data when kind is Data
 
