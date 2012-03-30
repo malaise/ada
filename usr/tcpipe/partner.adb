@@ -54,12 +54,12 @@ package body Partner is
       Result := Tcp_Util.Connect_To (Socket.Tcp_Header, Rem_Host, Rem_Port,
                                      Connect_Cb'Access, Nb_Tries => 0);
     else
-      Tcp_Util.Accept_From (Socket.Tcp_Header, Loc_Port, Accept_Cb'Access,
-                            Dscr, Port);
       if Debug.Is_Set then
-        Basic_Proc.Put_Line_Output ("Tcpipe: accepting on "
+        Basic_Proc.Put_Line_Output ("Tcpipe: accepting on"
          & " port: " & Ip_Addr.Image (Loc_Port.Num));
       end if;
+      Tcp_Util.Accept_From (Socket.Tcp_Header, Loc_Port, Accept_Cb'Access,
+                            Dscr, Port);
     end if;
   end Connect_Accept;
 
@@ -176,8 +176,11 @@ package body Partner is
                        Remote_Host_Id  : in Tcp_Util.Host_Id;
                        Remote_Port_Num : in Tcp_Util.Port_Num;
                        New_Dscr        : in Socket.Socket_Dscr) is
-    pragma Unreferenced (Local_Port_Num, Local_Dscr);
+    pragma Unreferenced (Local_Dscr);
   begin
+    -- Stop accepting
+    Tcp_Util.Abort_Accept (Socket.Tcp_Header, Local_Port_Num);
+    -- Receive from partner
     Rem_Host.Id := Remote_Host_Id;
     Rem_Port.Num := Remote_Port_Num;
     Rem_Dscr := New_Dscr;
@@ -190,11 +193,21 @@ package body Partner is
   end Accept_Cb;
 
   -- Close and restart
-  procedure Close_Restart is
+  procedure Close_Restart (On_Send : in Boolean) is
   begin
-    -- Close and reconnect
-    My_Reception.Remove_Callbacks (Rem_Dscr);
-    Rem_Dscr.Close;
+    -- The Dscr is always already closed and reception callbacks are already
+    --  removed by My_Reception
+    Rem_Dscr := Socket.No_Socket;
+    if On_Send then
+      -- Error on send does not close Dscr nor remove reception CBs
+      Rem_Dscr.Close;
+      My_Reception.Remove_Callbacks (Rem_Dscr);
+    else
+      -- The Dscr is already closed and reception CBs are already
+      --  removed by My_Reception
+      Rem_Dscr := Socket.No_Socket;
+    end if;
+    -- Reconnect
     Connect_Accept;
     -- Disconnect all local client
     Clients.Disconnect_All;
@@ -218,7 +231,7 @@ package body Partner is
          & " host: " & Ip_Addr.Image (Socket.Id2Addr(Rem_Host.Id))
          & " port: " & Ip_Addr.Image (Rem_Port.Num));
       end if;
-      Close_Restart;
+      Close_Restart (True);
   end Send;
 
   -- Message reception
@@ -226,11 +239,11 @@ package body Partner is
     pragma Unreferenced (Dscr);
   begin
     if Debug.Is_Set then
-      Basic_Proc.Put_Line_Output ("Tcpipe: Disconnection from remote"
+      Basic_Proc.Put_Line_Output ("Tcpipe: disconnection from remote"
        & " host: " & Ip_Addr.Image (Socket.Id2Addr(Rem_Host.Id))
        & " port: " & Ip_Addr.Image (Rem_Port.Num));
     end if;
-    Close_Restart;
+    Close_Restart (False);
   end Disconnection_Cb;
 
   procedure Set_Callbacks is
@@ -259,7 +272,7 @@ package body Partner is
           else
             Basic_Proc.Put_Output ("remote ");
           end if;
-          Basic_Proc.Put_Line_Output (" request to"
+          Basic_Proc.Put_Line_Output ("request to "
             & "port: " & Ip_Addr.Image (Msg.Head.Port));
         end if;
         Clients.Disconnect (Msg.Head.Port, Msg.Head.Local);

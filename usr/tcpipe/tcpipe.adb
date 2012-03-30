@@ -1,3 +1,4 @@
+with Ada.Exceptions;
 with As.U, Basic_Proc, Argument, Argument_Parser, Parser, Event_Mng;
 with Clients, Partner;
 procedure Tcpipe is
@@ -150,7 +151,9 @@ begin
 
   Partner.Close;
 exception
-  when others =>
+  when Error:others =>
+    Basic_Proc.Put_Line_Error ("EXCEPTION "
+         & Ada.Exceptions.Exception_Name(Error) & " raised.");
     Partner.Close;
     raise;
 end Tcpipe;

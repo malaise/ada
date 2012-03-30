@@ -1,45 +1,44 @@
-with Basic_Proc, Socket, Tcp_Util, Ip_Addr, Dynamic_List, Mixed_Str;
+with Basic_Proc, Socket, Tcp_Util, Ip_Addr, Hashed_List.Unique;
 with Debug, Partner;
 package body Clients is
 
-  -- Accepting or accepted connection from local to us
-  --  or Connecting or Connected from us to local
-  type Client_Status_List is (Accepting, Accepted, Connected);
   -- Descriptor of a client connection
   type Client_Rec is record
     -- The port associted to the client
     Port : Common.Port_Num;
-    Status : Client_Status_List;
+    -- Local when accepted, otherwise connected
+    Local : Boolean;
     -- When accepting: the accept Dscr, when accepted or connected:
     --  the connection Dscr
     Dscr : Socket.Socket_Dscr;
   end record;
-
-  -- Dynamic list of clients (accepting/accepted/connected)
-  package Client_List_Mng is new Dynamic_List (Client_Rec);
-  package Client_Mng renames Client_List_Mng.Dyn_List;
-  Client_List : Client_Mng.List_Type;
-  function Match (Current, Criteria : Client_Rec) return Boolean is
-    use type Socket.Port_Num;
-  begin
-    return Current.Port = Criteria.Port;
-  end Match;
-  procedure Search is new Client_Mng.Search (Match);
-  function Search (Port : Socket.Port_Num) return Boolean is
-    Client : Client_Rec;
-    Found : Boolean;
-  begin
-    Client.Port := Port;
-    Search (Client_List, Found, Client, From => Client_Mng.Absolute);
-    return Found;
-  end Search;
-
-  -- Maps Port -> Client_Rec (Dscr)
   type Client_Access is access all Client_Rec;
-  Accept_Port_Map  : array (Socket.Port_Num) of Client_Access;
-  Connect_Port_Map : array (Socket.Port_Num) of Client_Access;
+
+  -- List of clients (accepting/accepted/connected), hashed on Dscr
+  procedure Set (To : out Client_Rec; Val : in Client_Rec) is
+  begin
+    To := Val;
+  end Set;
+  function "=" (Current : Client_Rec; Criteria : Client_Rec) return Boolean is
+  begin
+    return Current.Dscr.Image = Criteria.Dscr.Image;
+  end "=";
+  function Image (Element : Client_Rec) return String is
+  begin
+    return Element.Dscr.Image;
+  end Image;
+
+  package Client_List_Mng is new Hashed_List (Client_Rec, Client_Access,
+                                               Set, "=", Image);
+  package Client_Mng is new Client_List_Mng.Unique;
+  Client_List : Client_Mng.Unique_List_Type;
+
+  -- Maps: Port -> Client Dscr 
+  Acceptings : array (Socket.Port_Num) of Socket.Socket_DScr;
+  Connecteds : array (Boolean, Socket.Port_Num) of Socket.Socket_DScr;
 
   -- Set reception callback on connection from/to client
+  package My_Reception is new Tcp_Util.Reception (Common.Data_Type);
   procedure Set_Callbacks (Dscr : in Socket.Socket_Dscr;
                            Local : in Boolean);
 
@@ -50,29 +49,34 @@ package body Clients is
                        Remote_Port_Num : in Tcp_Util.Port_Num;
                        New_Dscr        : in Socket.Socket_Dscr) is
     pragma Unreferenced (Local_Dscr);
-    Acc : Client_Access;
+    Msg : Partner.Message;
+    Client : Client_Rec;
+    Loc_Dscr : Socket.Socket_Dscr;
+    use type Socket.Socket_Dscr;
   begin
-    -- Check that this Dscr exists and is not connected
-    if not Search (Local_Port_Num) then
-      Basic_Proc.Put_Line_Error (
-         "ERROR: Accepting dscr not found for port "
-         & Ip_Addr.Image (Local_Port_Num) & ".");
-      raise Common.Fatal_Error;
+    -- Accept only if partner is connected
+    if not Partner.Is_Connected then
+      Loc_Dscr := New_Dscr;
+      Loc_Dscr.Close;
+      return;
     end if;
-    Acc := Client_Access(Client_List.Access_Current);
-    if Acc.Status /= Accepting then
-      Basic_Proc.Put_Line_Error (
-         "ERROR: Port " & Ip_Addr.Image (Local_Port_Num)
-         & " is " & Mixed_Str (Acc.Status'Img)
-         & " instead of accepting.");
-      raise Common.Fatal_Error;
-    end if;
-    -- Update
-    Acc.Status := Accepted;
-    Acc.Dscr := New_Dscr;
-    -- Cancel Accept and set reception callbacks
+    -- Cancel Accept 
     Tcp_Util.Abort_Accept (Socket.Tcp, Local_Port_Num);
+    Acceptings(Local_Port_Num) := Socket.No_Socket;
+    -- Update map, insert record and set reception callbacks
+    Connecteds(True, Local_Port_Num) := New_Dscr;
+    Client.Port := Local_Port_Num;
+    Client.Local := True;
+    Client.Dscr := New_Dscr;
+    Client_List.Insert (Client);
     Set_Callbacks (New_Dscr, True);
+
+    -- Send symetric connect message
+    Msg.Head.Kind := Partner.Connect;
+    Msg.Head.Local := True;
+    Msg.Head.Port := Local_Port_Num;
+    Partner.Send (Msg, 0);
+
     if Debug.Is_Set then
       Basic_Proc.Put_Line_Output ("Tcpipe: accepted client ("
         & Ip_Addr.Image (Socket.Id2Addr(Remote_Host_Id))
@@ -88,7 +92,8 @@ package body Clients is
   -- When a client is connected relay data from/to it
   -- Invalid_Port : exception;
   procedure Accept_Client (Port : in String) is
-    Client : Client_Rec;
+    Dscr : Socket.Socket_Dscr;
+    Port_Num : Tcp_Util.Port_Num;
     Loc_Port : Tcp_Util.Local_Port;
     use type Tcp_Util.Local_Port_List;
   begin
@@ -96,7 +101,7 @@ package body Clients is
     Loc_Port := Ip_Addr.Parse (Port);
     if Loc_Port.Kind = Tcp_Util.Port_Name_Spec then
       begin
-        Client.Port := Socket.Port_Num_Of (Loc_Port.Name.Image, Socket.Tcp);
+        Port_Num := Socket.Port_Num_Of (Loc_Port.Name.Image, Socket.Tcp);
       exception
         when Socket.Soc_Name_Not_Found =>
           Basic_Proc.Put_Line_Error ("Unknown port name "
@@ -104,24 +109,22 @@ package body Clients is
           raise Invalid_Port;
       end;
     else
-      Client.Port := Loc_Port.Num;
+      Port_Num := Loc_Port.Num;
     end if;
 
     -- Check unicity
-    if Accept_Port_Map (Client.Port) /= null then
-      Basic_Proc.Put_Line_Error ("Port num " & Ip_Addr.Image (Client.Port)
+    if Acceptings (Port_Num).Is_Open then
+      Basic_Proc.Put_Line_Error ("Port num " & Ip_Addr.Image (Port_Num)
                                  & " already used.");
       raise Invalid_Port;
     end if;
 
     -- Accept
     Tcp_Util.Accept_From (Socket.Tcp, Loc_Port, Accept_Cb'Access,
-                          Client.Dscr, Client.Port);
+                          Dscr, Port_Num);
 
-    -- Insert
-    Client.Status := Accepting;
-    Client_List.Insert (Client, Client_Mng.Prev);
-    Accept_Port_Map(Client.Port) := Client_Access(Client_List.Access_Current);
+    -- Insert accepting Dscr in map
+    Acceptings(Port_Num) := Dscr;
 
   exception
     when Ip_Addr.Parse_Error =>
@@ -165,7 +168,7 @@ package body Clients is
     Msg : Partner.Message;
   begin
     -- Nothing if already connected
-    if Connect_Port_Map(Port) /= null then
+    if Connecteds(False, Port).Is_Open then
       return;
     end if;
     Target_Host.Id := Target_Id;
@@ -181,11 +184,12 @@ package body Clients is
           & ":" & Ip_Addr.Image (Target_Port.Num)
           & ")");
       end if;
-      -- Insert
-      Client.Status := Connected;
+      -- Insert record and set reception callbacks
       Client.Port := Port;
-      Client_List.Insert (Client, Client_Mng.Prev);
-      Connect_Port_Map(Port) := Client_Access(Client_List.Access_Current);
+      Client.Local := False;
+      Client_List.Insert (Client);
+      Connecteds(False, Port) := Client.Dscr;
+      Set_Callbacks (Client.Dscr, False);
     else
       if Debug.Is_Set then
         Basic_Proc.Put_Line_Output ("Tcpipe: connection failure to client ("
@@ -203,74 +207,77 @@ package body Clients is
 
   -- Disconnect from a client
   -- If local then start accepting again
-  procedure Disconnect (Port : in Common.Port_Num; Local : in Boolean) is
+  procedure Close_Accept (Port : in Common.Port_Num; Local : in Boolean) is
     Loc_Port : Tcp_Util.Local_Port (Tcp_Util.Port_Num_Spec);
-    Found : Boolean;
   begin
-    if Local then
-      -- See if this Port is accepted
-      if Accept_Port_Map(Port) = null
-      or else Accept_Port_Map(Port).Status = Accepting then
-        return;
-      end if;
-      -- Close
-      Accept_Port_Map(Port).Dscr.Close;
-      -- Accept
-      Tcp_Util.Accept_From (Socket.Tcp, Loc_Port, Accept_Cb'Access,
-                            Accept_Port_Map(Port).Dscr,
-                            Accept_Port_Map(Port).Port);
-
-      Accept_Port_Map(Port).Status := Accepting;
-    else
-      -- See if this Port is connected
-      if Connect_Port_Map(Port) = null then
-        return;
-      end if;
-      Client_List.Search_Access (Found, Connect_Port_Map(Port));
-      if not Found then
-        Basic_Proc.Put_Line_Error (
-           "ERROR: Connected port " & Ip_Addr.Image (Port) & " not found.");
-        raise Common.Fatal_Error;
-      end if;
-      -- Close and delete
-      Connect_Port_Map(Port).Dscr.Close;
-      Client_List.Delete (Moved => Found);
+    -- See if this Port is accepted/connected
+    if not Connecteds(Local, Port).Is_Open then
+      return;
     end if;
+    -- Close
+    begin
+      My_Reception.Remove_Callbacks (Connecteds(Local, Port));
+      Connecteds(Local, Port).Close;
+    exception
+      when Tcp_Util.No_Such =>
+        -- If client quit then callbacks are already removed and Dscr closed
+        null;
+    end;
+    if Local then
+      -- Accept again
+      Loc_Port.Num := Port;
+      Tcp_Util.Accept_From (Socket.Tcp, Loc_Port, Accept_Cb'Access,
+                            Acceptings(Port), Loc_Port.Num);
+    end if;
+  end Close_Accept;
+
+  -- Disconnect (re-accept) and remove entry
+  procedure Disconnect (Port : in Common.Port_Num; Local : in Boolean) is
+    Client : Client_Rec;
+  begin
+    -- See if this Port is accepted/connected
+    if not Connecteds(Local, Port).Is_Open then
+      return;
+    end if;
+    -- Save Dscr and Close
+    Client.Dscr := Connecteds(Local, Port);
+    Close_Accept (Port, Local);
+    -- Delete entry
+    Client_List.Delete (Client);
+  exception
+    when Client_Mng.Not_In_List =>
+      if Local then
+        Basic_Proc.Put_Error ("ERROR: Connected ");
+      else
+        Basic_Proc.Put_Error ("ERROR: Accepted ");
+      end if;
+      Basic_Proc.Put_Line_Error ("port " & Ip_Addr.Image (Port)
+                                 & " not found.");
+      raise Common.Fatal_Error;
   end Disconnect;
 
   -- Disconnect all clients
   -- If local then start accepting again
   procedure Disconnect_All is
-    Acc : Client_Access;
+    Client : Client_Rec;
     Moved : Boolean;
-    Port : Tcp_Util.Local_Port (Tcp_Util.Port_Num_Spec);
   begin
+    if Debug.Is_Set then
+      Basic_Proc.Put_Line_Output ("Tcpipe: disconnecting all clients");
+    end if;
     if Client_List.Is_Empty then
       return;
     end if;
+    -- Close and accept accepted, close connected
     Client_List.Rewind;
     loop
-      Acc := Client_Access(Client_List.Access_Current);
-      case Acc.Status is
-        when Accepting =>
-          -- Skip and move to next
-          null;
-        when Accepted =>
-          -- Close and Accept and move to next
-          Acc.Dscr.Close;
-          Port.Num := Acc.Port;
-          Tcp_Util.Accept_From (Socket.Tcp, Port, Accept_Cb'Access,
-                                Acc.Dscr, Acc.Port);
-          Acc.Status := Accepting;
-        when Connected =>
-          -- Close and delete
-          Acc.Dscr.Close;
-          Client_List.Delete (Moved => Moved);
-          exit when not Moved;
-      end case;
-      exit when not Client_List.Check_Move;
-      Client_List.Move_To;
+      Client_List.Read_Next (Client, Moved);
+      -- Close
+      Close_Accept (Client.Port, Client.Local);
+      exit when not Moved;
     end loop;
+    -- Delete whole list
+    Client_List.Delete_List;
   end Disconnect_All;
 
   -- Send data to a client
@@ -280,17 +287,23 @@ package body Clients is
                   Local : Boolean;
                   Len : in Natural;
                   Data : in Common.Data_Type) is
-    Acc : Client_Access;
+    Dscr : Socket.Socket_Dscr;
     Res : Boolean;
     pragma Unreferenced (Res);
     Msg : Partner.Message;
   begin
-    if Local then
-      Acc := Accept_Port_Map(Port);
-    else
-      Acc := Connect_Port_Map(Port);
+    Dscr := Connecteds(Local, Port);
+    if not Dscr.Is_Open then
+      Basic_Proc.Put_Error ("ERROR: Sending port not ");
+      if Local then
+        Basic_Proc.Put_Error ("accepted ");
+      else
+        Basic_Proc.Put_Error ("connected ");
+      end if;
+      Basic_Proc.Put_Line_Error (Ip_Addr.Image (Port) & ".");
+      raise Common.Fatal_Error;
     end if;
-    Res := My_Send (Acc.Dscr, null, null, 0.1, Data, Len);
+    Res := My_Send (Dscr, null, null, 0.1, Data, Len);
   exception
     when Tcp_Util.Timeout_Error | Socket.Soc_Conn_Lost =>
       if Debug.Is_Set then
@@ -302,7 +315,7 @@ package body Clients is
         end if;
         Basic_Proc.Put_Line_Output ("client  port " & Ip_Addr.Image (Port));
       end if;
-      -- On error disconnect client and send to partner
+      -- On error disconnect client and send to partner a symetric disconnect
       Disconnect (Port, Local);
       Msg.Head.Kind := Partner.Disconnect;
       Msg.Head.Local := not Local;
@@ -310,12 +323,89 @@ package body Clients is
       Partner.Send (Msg, 0);
   end Send;
 
+  -- Disconnection callbacks
+  procedure Disconnect (Dscr : in Socket.Socket_Dscr; Local : in Boolean) is
+    Client : Client_Rec;
+  begin
+    -- Search client by Dscr
+    Client.Dscr := Dscr;
+    Client_List.Read (Client);
+    -- Disconnect client
+    Disconnect (Client.Port, Local);
+  exception
+    when Client_List_Mng.Not_In_List =>
+      Basic_Proc.Put_Error ("ERROR: ");
+      if Local then
+        Basic_Proc.Put_Error ("accepted ");
+      else
+        Basic_Proc.Put_Error ("connected ");
+      end if;
+      Basic_Proc.Put_Line_Error ("client not found on disconnection.");
+      raise Common.Fatal_Error;
+  end Disconnect;
+  procedure Local_Disconnect (Dscr : in Socket.Socket_Dscr) is
+  begin
+    Disconnect (Dscr, True);
+  end Local_Disconnect;
+  procedure Remote_Disconnect (Dscr : in Socket.Socket_Dscr) is
+  begin
+    Disconnect (Dscr, False);
+  end Remote_Disconnect;
+
+  -- Reception callbacks
+  function Receive (Dscr    : Socket.Socket_Dscr;
+                    Local   : in Boolean;
+                    Message : Common.Data_Type;
+                    Length  : Natural) return Boolean is
+    Msg : Partner.Message;
+    Client : Client_Rec;
+  begin
+    -- Search client by Dscr
+    Client.Dscr := Dscr;
+    Client_List.Read (Client);
+    -- Send data
+    Msg.Head.Kind := Partner.Data;
+    Msg.Head.Local := not Local;
+    Msg.Head.Port := Client.Port;
+    Msg.Data := Message;
+    Partner.Send (Msg, Length);
+    return False;
+  exception
+    when Client_List_Mng.Not_In_List =>
+      Basic_Proc.Put_Error ("ERROR: ");
+      if Local then
+        Basic_Proc.Put_Error ("accepted ");
+      else
+        Basic_Proc.Put_Error ("connected ");
+      end if;
+      Basic_Proc.Put_Line_Error ("client not found for sending.");
+      raise Common.Fatal_Error;
+  end Receive;
+  function Local_Receive (Dscr    : Socket.Socket_Dscr;
+                          Message : Common.Data_Type;
+                          Length  : Natural) return Boolean is
+  begin
+    return Receive (Dscr, True, Message, Length);
+  end Local_Receive;
+  function Remote_Receive (Dscr    : Socket.Socket_Dscr;
+                          Message : Common.Data_Type;
+                          Length  : Natural) return Boolean is
+  begin
+    return Receive (Dscr, False, Message, Length);
+  end Remote_Receive;
+
   -- Set reception callback on connection from/to client
   procedure Set_Callbacks (Dscr : in Socket.Socket_Dscr;
                            Local : in Boolean) is
   begin
-    -- @@@
-    null;
+    if Local then
+      My_Reception.Set_Callbacks (Dscr, Local_Receive'Access,
+                                        Local_Disconnect'Access);
+    else
+      My_Reception.Set_Callbacks (Dscr, Remote_Receive'Access,
+                                        Remote_Disconnect'Access);
+    end if;
   end Set_Callbacks;
+
 end Clients;
 
