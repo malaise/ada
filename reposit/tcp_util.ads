@@ -155,6 +155,7 @@ package Tcp_Util is
                          Num          : out Port_Num);
 
   -- Abort further accepts on port (Af_inet and Af_unix may be on the same port).
+  --  and closes the Dscr
   -- May raise No_Such
   procedure Abort_Accept (Protocol : in Tcp_Protocol_List; Num : in Port_Num);
 
