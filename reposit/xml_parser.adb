@@ -1,10 +1,10 @@
 with Ada.Exceptions, Ada.Unchecked_Deallocation;
 with Environ, Basic_Proc, Rnd, Exception_Messenger, Directory, String_Mng,
-     Trilean;
+     Trilean, Regular_Expressions;
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "5";
+  Minor_Version : constant String := "6";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -1304,5 +1304,7 @@ package body Xml_Parser is
   end Adjust;
 begin
   Rnd.Randomize;
+  -- Ensure that Invalid_Pcre_Version exception is not masked
+  Regular_Expressions.Check_Pcre_Version;
 end Xml_Parser;
 

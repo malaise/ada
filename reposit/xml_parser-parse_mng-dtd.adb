@@ -1,4 +1,4 @@
-with Regular_Expressions, Parser, Integer_Image, Upper_Char;
+with Parser, Integer_Image, Upper_Char;
 separate (Xml_Parser.Parse_Mng)
 package body Dtd is
 

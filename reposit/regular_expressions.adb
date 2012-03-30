@@ -82,7 +82,7 @@ package body Regular_Expressions is
   -- Check PCRE version >= 7.8
   Version_Ok : Boolean := False;
   Invalid_Pcre_Version : exception;
-  procedure Check_Version is
+  procedure Check_Pcre_Version is
     Vers : Float;
     Last : Positive;
   begin
@@ -97,7 +97,7 @@ package body Regular_Expressions is
   exception
     when others =>
       raise Invalid_Pcre_Version;
-  end Check_Version;
+  end Check_Pcre_Version;
 
   -- Ada binding
   procedure Compile (Result : in out Compiled_Pattern;
@@ -111,7 +111,7 @@ package body Regular_Expressions is
     use type System.Address, Language.Language_Set_List;
     use Bit_Ops;
   begin
-    Check_Version;
+    Check_Pcre_Version;
     Result.Lang := Language.Get_Language;
     -- Set flags
     Cflags := 0;

@@ -6,6 +6,9 @@ package Regular_Expressions is
   -- Get current PCRE version
   function Get_Pcre_Version return String;
 
+  -- Check PCRE version, raises anonymous exception Invalid_Pcre_Version
+  procedure Check_Pcre_Version;
+
   -- Result of regex compilation
   type Compiled_Pattern is limited private;
 
