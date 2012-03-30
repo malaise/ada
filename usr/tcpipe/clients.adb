@@ -33,9 +33,9 @@ package body Clients is
   package Client_Mng is new Client_List_Mng.Unique;
   Client_List : Client_Mng.Unique_List_Type;
 
-  -- Maps: Port -> Client Dscr 
-  Acceptings : array (Socket.Port_Num) of Socket.Socket_DScr;
-  Connecteds : array (Boolean, Socket.Port_Num) of Socket.Socket_DScr;
+  -- Maps: Port -> Client Dscr
+  Acceptings : array (Socket.Port_Num) of Socket.Socket_Dscr;
+  Connecteds : array (Boolean, Socket.Port_Num) of Socket.Socket_Dscr;
 
   -- Set reception callback on connection from/to client
   package My_Reception is new Tcp_Util.Reception (Common.Data_Type);
@@ -60,7 +60,7 @@ package body Clients is
       Loc_Dscr.Close;
       return;
     end if;
-    -- Cancel Accept 
+    -- Cancel Accept
     Tcp_Util.Abort_Accept (Socket.Tcp, Local_Port_Num);
     Acceptings(Local_Port_Num) := Socket.No_Socket;
     -- Update map, insert record and set reception callbacks
@@ -214,15 +214,15 @@ package body Clients is
     if not Connecteds(Local, Port).Is_Open then
       return;
     end if;
-    -- Close
-    begin
+    -- Close if needed
+    if My_Reception.Callbacks_Set (Connecteds(Local, Port)) then
+      -- If send error then callbacks must be removed then Dscr must be closed
       My_Reception.Remove_Callbacks (Connecteds(Local, Port));
       Connecteds(Local, Port).Close;
-    exception
-      when Tcp_Util.No_Such =>
-        -- If client quit then callbacks are already removed and Dscr closed
-        null;
-    end;
+    else
+      -- If client quit then callbacks are already removed and Dscr is closed
+      Connecteds(Local, Port) := Socket.No_Socket;
+    end if;
     if Local then
       -- Accept again
       Loc_Port.Num := Port;
@@ -326,12 +326,17 @@ package body Clients is
   -- Disconnection callbacks
   procedure Disconnect (Dscr : in Socket.Socket_Dscr; Local : in Boolean) is
     Client : Client_Rec;
+    Msg : Partner.Message;
   begin
     -- Search client by Dscr
     Client.Dscr := Dscr;
     Client_List.Read (Client);
-    -- Disconnect client
+    -- Disconnect client and send to partner a symetric disconnect
     Disconnect (Client.Port, Local);
+    Msg.Head.Kind := Partner.Disconnect;
+    Msg.Head.Local := not Local;
+    Msg.Head.Port := Client.Port;
+    Partner.Send (Msg, 0);
   exception
     when Client_List_Mng.Not_In_List =>
       Basic_Proc.Put_Error ("ERROR: ");
