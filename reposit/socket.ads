@@ -88,6 +88,10 @@ package Socket is
   -- Is a socket open
   function Is_Open (Socket : in Socket_Dscr) return Boolean;
 
+  -- Image of a socket (for hashing by client)
+  -- May raise Soc_Use_Err if Socket is not open
+  function Image (Socket : in Socket_Dscr) return String;
+
   -- Set the socket blocking or non blocking
   --  (for sending, receiving, connecting)
   -- Socket is Full_Blocking at creation (open/accept)

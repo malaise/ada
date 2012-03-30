@@ -1,4 +1,5 @@
 with Ada.Characters.Latin_1, Ada.Unchecked_Conversion;
+with Address_Ops;
 package body Socket is
 
   ----------------
@@ -205,6 +206,15 @@ package body Socket is
       when others => raise Soc_Unknown_Error;
     end case;
   end Check_Ok;
+
+  -- Image of a socket (for hashing by user)
+  function Image (Socket: in Socket_Dscr) return String is
+  begin
+    if not Is_Open (Socket) then
+      raise Soc_Use_Err;
+    end if;
+    return Address_Ops.Image (Socket.Soc_Addr);
+  end Image;
 
   -- Open a socket
   procedure Open (Socket : in out Socket_Dscr;
