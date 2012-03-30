@@ -266,6 +266,9 @@ package Tcp_Util is
     -- May raise No_Such if callbacks have not been set
     procedure Remove_Callbacks (Dscr : in Socket.Socket_Dscr);
 
+    -- Are callbacks set
+    function Callbacks_Set (Dscr : Socket.Socket_Dscr) return Boolean;
+
   end Reception;
 
   -- EXCEPTIONS --

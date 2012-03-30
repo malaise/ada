@@ -1294,6 +1294,16 @@ package body Tcp_Util is
       Event_Mng.Del_Fd_Callback (Dscr.Get_Fd, True);
     end Remove_Callbacks;
 
+    -- Are callbacks set
+    function Callbacks_Set (Dscr : Socket.Socket_Dscr) return Boolean is
+      The_Rec : Rece_Rec;
+      Ok : Boolean;
+    begin
+      The_Rec.Dscr := Dscr;
+        Find_Dscr (Rece_List, Ok, The_Rec, From => Rece_List_Mng.Absolute);
+      return Ok;
+    end Callbacks_Set;
+
   end Reception;
 
 end Tcp_Util;
