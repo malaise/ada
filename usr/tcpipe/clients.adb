@@ -73,7 +73,7 @@ package body Clients is
 
     -- Send symetric connect message
     Msg.Head.Kind := Partner.Connect;
-    Msg.Head.Local := True;
+    Msg.Head.Local := False;
     Msg.Head.Port := Local_Port_Num;
     Partner.Send (Msg, 0);
 
