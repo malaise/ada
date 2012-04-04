@@ -8,7 +8,7 @@ package body Directory is
   Separator : constant Character := '/';
 
   -- For Name_Error else Access_Error
-  Enoent : constant := 2;
+  Enoent  : constant := 2;
   -- For Open_Error else Access_Error
   Einval : constant := 22;
 
@@ -20,11 +20,11 @@ package body Directory is
     return Str & Ada.Characters.Latin_1.Nul;
   end Str_For_C;
 
+  -- Returns current working directory
   function C_Getcwd (Buf : System.Address; Size : C_Types.Size_T)
            return System.Address;
   pragma Import(C, C_Getcwd, "getcwd");
 
-  -- Returns current working directory
   function Get_Current return String is
     Addr : System.Address;
     Result : String (1 .. Max_Dir_Name_Len);
@@ -44,10 +44,10 @@ package body Directory is
     Cur_Dir := As.U.Tus (Get_Current);
   end Get_Current;
 
+  -- Changes current working directory
   function C_Chdir (Path : System.Address) return C_Types.Int;
   pragma Import(C, C_Chdir, "chdir");
 
-  -- Changes current working directory
   procedure Change_Current (New_Dir : in String) is
     C_New_Dir : constant String := Str_For_C(New_Dir);
   begin
@@ -60,10 +60,42 @@ package body Directory is
     end if;
   end Change_Current;
 
+  -- Creates a new directory
+  function C_Dir_Create (Path : System.Address) return C_Types.Int;
+  pragma Import(C, C_Dir_Create, "dir_create");
+
+  procedure Create (New_Dir : in String) is
+    C_New_Dir : constant String := Str_For_C(New_Dir);
+  begin
+    if C_Dir_Create (C_New_Dir'Address) = -1 then
+      if Sys_Calls.Errno = Enoent then
+        raise Name_Error;
+      else
+        raise Access_Error;
+      end if;
+    end if;
+  end Create;
+
+  -- Removes a new directory
+  function C_Rmdir (Path : System.Address) return C_Types.Int;
+  pragma Import(C, C_Rmdir, "rmdir");
+
+  procedure Remove (New_Dir : in String) is
+    C_New_Dir : constant String := Str_For_C(New_Dir);
+  begin
+    if C_Rmdir (C_New_Dir'Address) = -1 then
+      if Sys_Calls.Errno = Enoent then
+        raise Name_Error;
+      else
+        raise Access_Error;
+      end if;
+    end if;
+  end Remove;
+
+  -- Opens a directory for list of entries
   function C_Opendir (Name : System.Address) return System.Address;
   pragma Import(C, C_Opendir, "opendir");
 
-  -- Opens a directory for list of entries
   function Open (Dir_Name : in String) return Dir_Desc is
     C_Dir_Name : constant String := Str_For_C(Dir_Name);
     Desc : Dir_Desc;
@@ -83,11 +115,11 @@ package body Directory is
   end Open;
 
 
+  -- Gets next entry of the opened directory
   function C_Readdir (Dir : System.Address; Name : System.Address)
            return C_Types.Int;
   pragma Import(C, C_Readdir, "read_dir");
 
-  -- Gets next entry of the opened directory
   function Next_Entry (Desc : Dir_Desc) return String is
     Len : Integer;
     Dir_Name : Dir_Str;
@@ -111,10 +143,10 @@ package body Directory is
     Dir_Entry := As.U.Tus (Next_Entry (Desc));
   end Next_Entry;
 
+  -- Reset entries for the first
   procedure C_Rewinddir (Dir : System.Address);
   pragma Import(C, C_Rewinddir, "rewinddir");
 
-  -- Reset entries for the first
   procedure Rewind (Desc : in Dir_Desc) is
   begin
     -- Check dir desc
@@ -124,10 +156,10 @@ package body Directory is
     C_Rewinddir (Desc.Dir_Addr);
   end Rewind;
 
+  -- Closes a directory
   procedure C_Closedir (Dir : System.Address);
   pragma Import(C, C_Closedir, "closedir");
 
-  -- Closes a directory
   procedure Close (Desc : in out Dir_Desc) is
   begin
     if Desc.Dir_Addr = System.Null_Address then
@@ -221,6 +253,7 @@ package body Directory is
   end Read_Link;
 
 
+  -- Does file name match a pattern
   function C_Fnmatch (Pattern : System.Address;
                       Strings : System.Address;
                       Flags : C_Types.Int)
@@ -229,7 +262,6 @@ package body Directory is
   File_Matches : constant := 0;
   File_Not_Matches : constant := 1;
 
-  -- Does file name match a pattern
   function File_Match (File_Name : String; Template : String) return Boolean is
     C_File_Name : constant String := Str_For_C (File_Name);
     C_Template : constant String := Str_For_C (Template);

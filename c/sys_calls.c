@@ -217,9 +217,16 @@ extern int fd_stat(int fd, simple_stat *simple_stat_struct) {
 }
 
 /* Rights are -rw-r--r-- */
-#define ACCESS_RIGHTS (S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)
+#define FD_ACCESS_RIGHTS (S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)
 extern int fd_create (const char *path) {
-  return creat(path, ACCESS_RIGHTS);
+  return creat(path, FD_ACCESS_RIGHTS);
+}
+
+/* Rights are -rwxr-xr-x */
+#define DIR_ACCESS_RIGHTS (S_IRUSR | S_IWUSR | S_IXUSR \
+                         | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH)
+extern int dir_create (const char *path) {
+  return mkdir(path, DIR_ACCESS_RIGHTS);
 }
 
 #define READ_ONLY  0

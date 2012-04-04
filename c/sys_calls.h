@@ -59,6 +59,8 @@ extern int fd_stat(int fd, simple_stat *simple_stat_struct);
 
 extern int fd_create (const char *path);
 
+extern int dir_create (const char *path);
+
 #define READ_ONLY  0
 #define WRITE_ONLY 1
 #define READ_WRITE 2

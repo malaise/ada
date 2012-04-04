@@ -75,6 +75,10 @@ procedure T_Dir is
 
   use type Sys_Calls.File_Kind_List;
 begin
+  if Argument.Get_Nbre_Arg = 1 then
+    Directory.Create (Argument.Get_Parameter);
+    My_Io.Put_Line ("Created dir " & Argument.Get_Parameter);
+  end if;
 
   loop
 
@@ -127,7 +131,7 @@ begin
         Directory.Close (Dsc);
     end;
     if Argument.Get_Nbre_Arg /= 0 then
-      return;
+      exit;
     end if;
 
     My_Io.New_Line;
@@ -145,5 +149,9 @@ begin
 
   end loop;
 
+  if Argument.Get_Nbre_Arg = 1 then
+    Directory.Remove (Argument.Get_Parameter);
+    My_Io.Put_Line ("Removed dir " & Argument.Get_Parameter);
+  end if;
 end T_Dir;
 

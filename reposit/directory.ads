@@ -9,9 +9,16 @@ package Directory is
   procedure Get_Current (Cur_Dir : in out As.U.Asu_Us);
 
   -- Changes current working directory
-  procedure Change_Current (New_Dir : in String);
   -- May raise Name_Error or Access_Error
+  procedure Change_Current (New_Dir : in String);
 
+  -- Create a directory
+  -- May raise Name_Error or Access_Error
+  procedure Create (New_Dir : in String);
+
+  -- Remove a directory
+  -- May raise Name_Error or Access_Error
+  procedure Remove (New_Dir : in String);
 
   type Dir_Desc is private;
 
