@@ -1,6 +1,56 @@
 Repository list
 ===============
 
+Program frameworks
+------------------
+
+Three frameworks are available for the programs:
+
+Direct input::
+    The program has no blockin input at all (ex: reads files) or reads stdin
+and blocks on it (and puts on stdout/stderr).
++
+=> The program can use Text_Io, Basic_Proc or Sys_Calls for its Ios.
+
+Multiplexed inputs::
+    The program multiplexes several inputs and stimuli: file descriptors (UDP or 
+TCP socket), stdin, signals (SIGCHILD and SIGTERM), timers.
++
+=> The program must use Event_Mng.Wait as the single blocking point. This
+allows dispatching the FD events, Timers and signals to the proper callbacks).
+
+ * Event_Mng allows defining signal handling callbacks and callbacks on FD
+events,
+
+ * Timers allows defining timers expiration and callback,
+
+ * Socket allows reading on socket FDs,
+
+ * Async_Stdin allows defining a callback on stdin,
+
+ * Sys_Calls allows direct access to other FDs.
+
+X11 mutiplexed inputs ::
+    The program uses X11 and multiplexes X11 events with other events (see
+above).
++
+=> The program must use either X_Mng.X_Wait_Event or Con_Io.Put_Then_Get (or
+Con_Io.Get) or Afpx.Put_Then_Get.
++
+Several tasks can be defined, for example one for each window.
+
+Notes: 
+
+* Using Event_Mng in non interactive programs requires caution (see
+Event_Mng.Reset_Default_Signals_Policy).
+
+* Using X_Mng is exclusive with Con_Io and Afpx. 
+
+* Using Con_Io and Afpx simultaneously requires caution (see Afpx.Suspend).
+
+List of packages
+----------------
+
 Packages are rated from 1 (simple) to 3 (very complex), on subjective
 criteria.
 
