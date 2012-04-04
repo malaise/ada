@@ -41,9 +41,6 @@ procedure Trail_Spaces is
     Line : As.U.Asu_Us;
     -- Is file modified
     Modified : Boolean;
-    -- Dummy result for Sys calls
-    Dummy : Boolean;
-    pragma Unreferenced (Dummy);
     use type As.U.Asu_Us;
   begin
     -- Open in-file read only and associate in Text_Line
@@ -56,14 +53,14 @@ procedure Trail_Spaces is
       when Sys_Calls.Name_Error =>
         Sys_Calls.Put_Line_Error ("Error. File "
              & In_File_Name & " not found, skipping.");
-        Dummy := Sys_Calls.Unlink (Out_File_Name);
+        Sys_Calls.Unlink (Out_File_Name);
         Exit_Code := Problem;
         return;
       when Error:others =>
         Sys_Calls.Put_Line_Error ("Error. Cannot open file "
              & In_File_Name & " due to "
              & Ada.Exceptions.Exception_Name (Error) & ", skipping.");
-        Dummy := Sys_Calls.Unlink (Out_File_Name);
+        Sys_Calls.Unlink (Out_File_Name);
         Exit_Code := Problem;
         return;
     end;
@@ -78,7 +75,7 @@ procedure Trail_Spaces is
         Sys_Calls.Put_Line_Error ("Error. Cannot create out file "
              & Out_File_Name & ", skipping.");
         Close (In_File);
-        Dummy := Sys_Calls.Unlink (Out_File_Name);
+        Sys_Calls.Unlink (Out_File_Name);
         Exit_Code := Problem;
         return;
     end;
@@ -149,7 +146,7 @@ procedure Trail_Spaces is
         Sys_Calls.Put_Line_Error ("Error. Cannot rename out file "
                & Out_File_Name & " as " & In_File_Name & ", skipping.");
         -- At least try to remove tmp file
-        Dummy := Sys_Calls.Unlink (Out_File_Name);
+        Sys_Calls.Unlink (Out_File_Name);
         Exit_Code := Problem;
       end if;
     else
@@ -169,7 +166,7 @@ procedure Trail_Spaces is
       -- Close files and delete temp file
       Close (In_File);
       Close (Out_File);
-      Dummy := Sys_Calls.Unlink (Out_File_Name);
+      Sys_Calls.Unlink (Out_File_Name);
       Exit_Code := Problem;
       raise;
   end Do_File;

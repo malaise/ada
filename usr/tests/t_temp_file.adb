@@ -4,8 +4,6 @@ procedure T_Temp_File is
   type String_Access is access String;
   Names : array (1 .. 1000) of String_Access;
   Desc : Directory.Dir_Desc;
-  Dummy : Boolean;
-  pragma Unreferenced (Dummy);
 begin
   Sys_Calls.Put_Line_Output ("Creating " & Names'Last'Img & " temp files in "
                       & Temp_Dir & ":");
@@ -56,7 +54,7 @@ begin
 
   Sys_Calls.Put_Line_Output ("Cleaning temp files.");
   for I in Names'Range loop
-    Dummy := Sys_Calls.Unlink (Names(I).all);
+    Sys_Calls.Unlink (Names(I).all);
   end loop;
   Sys_Calls.New_Line_Output;
 

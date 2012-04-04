@@ -472,8 +472,6 @@ package body Mng is
     --     --1234 123456789  123456789012 123 1234 12345678901234567890 12345678901234567890 1234567890
        := "    No|   Date   |   Amount   |Ent|Kind|Destination         |Comment             |Reference";
     Overflow : constant Unit_Format.Amount_Str := "Overflow    ";
-    Dummy : Boolean;
-    pragma Unreferenced (Dummy);
   begin
     -- Get lines per page
     declare
@@ -580,7 +578,7 @@ package body Mng is
 
     -- Delete & close
     Pf.Close_All;
-    Dummy := Sys_Calls.Unlink (Pfn);
+    Sys_Calls.Unlink (Pfn);
 
   exception
     when others =>

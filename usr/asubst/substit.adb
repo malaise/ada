@@ -137,13 +137,11 @@ package body Substit is
 
   -- Remove Out file
   procedure Clean is
-    Dummy : Boolean;
-    pragma Unreferenced (Dummy);
   begin
     if Out_File_Name.Length /= 0
     and then Sys_Calls.File_Check (Out_File_Name.Image) then
       -- File exists => remove
-      Dummy := Sys_Calls.Unlink (Out_File_Name.Image);
+      Sys_Calls.Unlink (Out_File_Name.Image);
     end if;
   exception
     when others => null;

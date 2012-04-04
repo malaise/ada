@@ -90,6 +90,12 @@ package body Sys_Calls is
     Res := C_Unlink (File_Name4C'Address);
     return Res = 0;
   end Unlink;
+  procedure Unlink (File_Name : String) is
+    Dummy : Boolean;
+    pragma Unreferenced (Dummy);
+  begin
+    Dummy := Unlink (File_Name);
+  end Unlink;
 
   function Rename (Src, Dest : String) return Boolean is
     function C_Rename (Oldpath, Newpath : System.Address) return C_Types.Int;

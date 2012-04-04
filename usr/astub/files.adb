@@ -87,8 +87,6 @@ package body Files is
   -- Close files
   procedure Close (Action : in Result_Action_List) is
     Fd : Sys_Calls.File_Desc;
-    Dummy : Boolean;
-    pragma Unreferenced (Dummy);
   begin
     -- Close Out file if it is open
     if Text_Line.Is_Open (Out_File) then
@@ -109,7 +107,7 @@ package body Files is
     and then (Action = Remove
         or else (Action = Remove_If_Not_Keep
             and then not Environ.Is_Yes (Keep_Name)) ) then
-      Dummy := Sys_Calls.Unlink (Body_File_Name.Image);
+      Sys_Calls.Unlink (Body_File_Name.Image);
     end if;
 
   end Close;

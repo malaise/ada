@@ -6,8 +6,10 @@ package Sys_Calls is
   -- Call system (execute UNIX command)
   function Call_System (Command : String) return Integer;
 
-  -- Unlink a file
+  -- Unlink a file, returns True if done
   function Unlink (File_Name : String) return Boolean;
+  -- Unlink a file if possible, no error
+  procedure Unlink (File_Name : String);
 
   -- Rename/move a file (same filesystem)
   function Rename (Src, Dest : String) return Boolean;

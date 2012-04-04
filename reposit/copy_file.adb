@@ -13,10 +13,6 @@ function Copy_File (Src_Name, Dst_Name : String) return Boolean is
   In_Blocs_Nb : Char_Io.Count;
   Last_Bloc_Len : Char_Io.Count;
 
-  -- Result of Unlink
-  Dummy : Boolean;
-  pragma Unreferenced (Dummy);
-
   use type Char_Io.Count;
 begin
   -- Open files
@@ -61,7 +57,7 @@ exception
     if Char_Io.Is_Open (Out_File) then
       Char_Io.Close (Out_File);
     end if;
-    Dummy := Sys_Calls.Unlink (Dst_Name);
+    Sys_Calls.Unlink (Dst_Name);
     return False;
 end Copy_File;
 

@@ -15,11 +15,9 @@ procedure T_Xml_Gen is
   Warnings : Xml_Parser.Warning_Callback_Access := null;
 
   procedure Clean is
-    Dummy : Boolean;
-    pragma Unreferenced (Dummy);
   begin
     Dscr.Clean;
-    Dummy := Sys_Calls.Unlink (Dtd_Name);
+    Sys_Calls.Unlink (Dtd_Name);
   end Clean;
 
   use Xml_Parser, Xml_Parser.Generator;
