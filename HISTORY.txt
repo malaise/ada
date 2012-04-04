@@ -3,7 +3,9 @@ HISTORY
 Main changes
 
 [horizontal]
-*2012/10/30*:: Ensure that exception Invalid_Pcre_Version is properly raised
+*2012/03/30*:: Add tcpipe
+
+*2012/03/30*:: Ensure that exception Invalid_Pcre_Version is properly raised
 in Xml_Parser V29.6
 
 *2012/01/09*:: Add support for XML namespace in in Xml_Parser V29.3, Xml_parser.Generator V10.0 and
