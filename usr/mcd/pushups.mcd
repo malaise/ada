@@ -1,0 +1,15 @@
+# Compute the number of push-ups to do each day
+# 1 during 01/2011, 2 during 02/2011...
+
+# Reference month (the one from which we start)
+2011 y popr 01 m popr
+
+# Current year and month
+clock dateof dup 1 4 strsub strinte swap 6 7 strsub strinte swap
+
+# Delta of years *  12 + delta of months + 1
+y pushr - 12 * swap m pushr - + 1 +
+
+# Put result
+3 format putl
+
