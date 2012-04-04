@@ -108,6 +108,7 @@ The more usefull are Agite, Alook, Astub, Asubst, Lsadeps, Mcd, Udp_Spy and
 Xml_Checker.
 
 Here is the full list and description:
+
 Account (3)::
      Based on Afpx, this tool makes the management of bank accounts, with
      cheque, credit card (defered) and transfer operations.
@@ -186,7 +187,7 @@ Misc::
 - Alook (2) properly formats the words of a (valid) Ada05 source file.
 - Dtd_Checker (1) check a DTD file (of a xml).
 - Prime (1) search prime numbers.
-- Stat (1) measures the number of instruction of a (valid) Ada source file.
+- Stat (1) counts the number of instruction of (valid) Ada source files.
 - Status (1) evaluates if a target file needs to be rebuilt.
 - Tcping (1) pings in tcp a host/port.
 - Trail_spaces (1) removes tabs and trailing spaces and dos2unix a file.
@@ -219,7 +220,14 @@ Sokoban (3)::
      The famous Sokoban game (push the boxes).
 
 Tasks::
-     Several small programs playing with tasks.
+     Several simple programs using tasks.
+
+Tcpchat::
+     Accepts connection of a TCP port, expects sentences and executes
+     specified actions depending on what it receives.
+
+Tcpipe::
+     As a bridge, multiplexes and relays TCP connections.
 
 Tests::
      Several small test programs of the Repository packages.
