@@ -200,7 +200,7 @@ byte_to_unicode (1)::
      Map a character (e.g. ISO-8859-xx) to unicode according to a xml-defined
      map.
 
-c_nbres(1)::
+c_nbres (1)::
      Complex numbers operations.
 
 c_types (1)::
@@ -500,6 +500,6 @@ xml_parser (3)::
 xml_parser.generator (2)::
      Generate Xml output in flow/file/string.
 
-x_mng(3)::
+x_mng (3)::
      Low level interface to X11 (txt, basic graphics, Mouse and keyboard).
 
