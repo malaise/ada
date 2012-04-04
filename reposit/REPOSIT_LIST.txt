@@ -35,7 +35,8 @@ X11 mutiplexed inputs ::
 above).
 +
 => The program must use either X_Mng.X_Wait_Event or Con_Io.Put_Then_Get (or
-Con_Io.Get) or Afpx.Put_Then_Get.
+Con_Io.Get) or Afpx.Put_Then_Get. It cna also use more specialized tools like
+Curve and Select_File).
 +
 Several tasks can be defined, for example one for each window.
 
@@ -47,6 +48,98 @@ Event_Mng.Reset_Default_Signals_Policy).
 * Using X_Mng is exclusive with Con_Io and Afpx. 
 
 * Using Con_Io and Afpx simultaneously requires caution (see Afpx.Suspend).
+
+
+Families of tools
+-----------------
+
+Arguments
+~~~~~~~~~
+'Argument' provides simple parsing by keys, while 'Argument_Parser' provides a
+more strict logic and higher level parsing. Use the later if the arguments are
+many, are optional, support options...
+
+Strings
+~~~~~~~
+'As.U' and 'As.B' are implementations of Ada.Strings.Unbounded and
+Ada.Strings.Bounded.
+
+Character encoding
+~~~~~~~~~~~~~~~~~~
+'Language' allows the selection of encoding between C and utf-8 and associated
+string operations. 'Utf_8' and 'Utf_16' provide basic encoding functions.
+
+Data containers
+~~~~~~~~~~~~~~~
+* 'Dyn_Data' allocates and frees data and relies on a free list.
+
+* 'Limited_List' and anchor:XDynamic_List[] 'Dynamic_List' are linked lists of
+data, limited or simply private. 'Unlimited_Pool' is a simple dynamic list with
+push/pop operations.
+
+* 'Hashing' provides basic hashing table, while 'Hashed_List' provides a hashed
+storage of data, possibly with unicity of each data.
+
+* 'Queues' provides various storage of data with fixed size (FIFO, LIFO, prio,
+timed).
+
+* 'Trees' allows storing trees of data.
+
+* 'Unbounded_Arrays' provides unbounded arrays of data.
+
+Tasking tools
+~~~~~~~~~~~~~
+
+* 'Mutex_Manager' provides simple and read-write mutexes, while 'Door_Manager'
+provides doors and 'Condition_Manager' provides conditions.
+
+* 'Control_Pool' provides exclusive access to an item in a pool.
+
+* 'Task_Mng' controls a task of periodic activity.
+
+Time
+~~~~
+* 'Virtual_Time' provide clocks  that can slow down, speed up, freeze or jump.
+The are notifying when they change.
+
+* 'Timers' provides timers (single shot or periodics) that are based on virtual
+times. They are active in the sense that they invoque a callback when they
+expire.
+
+* 'Chronos' provides individual chronometers that can start/stop and are based
+on virtual times. It also provides 'Passive_Timers' (single shot or periodics)
+on which one can check the expiration from time to time.
+
+Forking child process
+~~~~~~~~~~~~~~~~~~~~~
+'Proc_Family' provides the basic fork/exec features while 'Command' waits
+(using Event_Mng) until the end of execution of the child.
+
+Sockets
+~~~~~~~
+* 'Socket' provides all the basic functions for UDP (IPM) and TCP sockets.
+
+* 'Tcp_Util' automaticall and asynchronously connects TCP sockets, accepts
+TCp connection, handles sending overflow and reception on scoket (including
+underflow and disconnection).
+
+Files
+~~~~~
+* 'Text_Line' allows reading a file line by line.
+
+* 'Text_Char' allows reading a file character by character and "un-getting"
+characters.
+
+* 'Bloc_Io' allows reading and writin in a file block by block (a block is
+an array of bytes).
+
+Directory
+~~~~~~~~~
+* 'Directory' provides all the basic functions for changing to and scanning
+directories, and tools for building and splitting directory path.
+
+* 'Dir_Mng' fills a xref:XDynamic_List[dynamic list] with the content of a
+directory.
 
 List of packages
 ----------------
