@@ -21,7 +21,7 @@ package body Temp_File  is
   -- If the link fails with Name_Error, we skip to next file
   -- If the link fails another way, it's a problem of file system, directory...
 
-  -- Remove a file is possible, no error
+  -- Remove a file if possible, no error
   procedure Remove (File_Name : in String) is
     Dummy : Boolean;
     pragma Unreferenced (Dummy);
