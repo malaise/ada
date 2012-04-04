@@ -2,9 +2,11 @@ with As.U.Utils;
 with Hashing, Hashed_List;
 package File_Hash is
 
+  -- Stores the content of a file in a hashed list, one entry per line
+
   -- The goal is to store the hash of word (0 to FFF) and a reasonable length
   --  of the word (x?) in *FFF, so x is either F (15!) of FF (255) which is OK
-  -- Longer names are not stored
+  -- Longer lines are truncated
   Max_Str_Len : constant := 16#FF#;
 
   Hash_Max : constant Hashing.Max_Hash_Range := 16#FFFFF#;
