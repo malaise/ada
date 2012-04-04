@@ -1,3 +1,4 @@
+# For Mine Detector 6.0
 include $(HOME)/Makefiles/common.mk
 
 ADAVIEW := $(HOME)/ada/cots/pragmarc
