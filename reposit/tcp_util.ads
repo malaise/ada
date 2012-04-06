@@ -16,7 +16,7 @@ package Tcp_Util is
 
   -- PROTOCOL DEFINITION --
   -------------------------
-  -- All kinds of TCP of Socket are supported
+  -- All kinds of TCP of Socket are supported by Connect_To and Accepti_From
   subtype Tcp_Protocol_List is Socket.Protocol_List range
                                Socket.Tcp .. Socket.Tcp_Header_Afux;
   -- Default TTL
@@ -174,7 +174,7 @@ package Tcp_Util is
                       Conn_Lost : in Boolean);
 
   -- The general idea is not to be blocked in case the receiver is too slow
-  --  slow or if the connection becomes "frozen" (TCP timeout is very long).
+  --  or if the connection becomes "frozen" (TCP timeout is very long).
   -- There are two strategies:
   --  - either set the socket blocking and send with a timeout. The send
   --    blocks and either succeeds or raises Timeout_Error or
@@ -185,6 +185,8 @@ package Tcp_Util is
   --    is sent, then calls End_Of_Overflow_Callback.
   --    If a timeout occurs or connection is lost during the retries,
   --    then it calls the Send_Error_Callback and closes the Dscr.
+  -- May raise Soc_Dest_Err if destination is not set
+  -- May raise Soc_Conn_Err if tcp and not connected
   -- May raise Socket.Soc_Tail_Err if called while previous Send returned
   --  False and End_Of_Overflow_Cb has not (yet) been called
   -- May raise Socket.Soc_Conn_Lost if the connection is lost, the socket
@@ -200,6 +202,8 @@ package Tcp_Util is
   -- If send is called on a non blocking socket and overflows and then the
   --   socket is changed to blocking then a Timeout error is reported as
   --   soon as possible (Timeout expiration or next attempt to re send).
+  -- This function can be used on a UDP/IPM socket but adds no value compared
+  --  to Socket.Send
   Timeout_Error : exception;
   generic
     type Message_Type is private;
@@ -220,8 +224,8 @@ package Tcp_Util is
 
   -- RECEIVE PROCEDURE --
   -----------------------
-  -- This package can be used with UDP/IPM socket as well (and there is no
-  --  no disconnection in this case)
+  -- This package can be used with UDP/IPM socket as well (there is no
+  --  disconnection in this case)
 
   -- Callback invoqued when remote disconnects
   -- Callbacks are automatically removed
