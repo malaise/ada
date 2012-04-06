@@ -13,6 +13,7 @@ package Http is
     Missing_Length, -- No "Content-Length:" in answer
     Msg_Too_Long,   -- Answer message is too long (above Max_Msg_Len)
     Wrong_Length,   -- Length received (before disconnection) /= Content-Length
+    No_Server,      -- Could not connect to server
     Timeout);       -- Timeout expired before completion
   subtype Server_Code_Range is Positive range 100 .. 999;
   type Result_Type (Kind : Result_Kind_List := Ok) is record
@@ -31,6 +32,10 @@ package Http is
   -- Get the (file) content of an URL.                                     --
   -- Result can be Ok (and content), Client error (parsing, connection...) --
   --  or Server error.                                                     --
+  -- Set Environ variable HTTP_TIMEOUT_MS to the overall timeout (default  --
+  --  is infinite, but other errors are detected).                         --
+  -- Set Environ variable HTTP_CONNECT_TIMEOUT_MS to the connection        --
+  --  (one try, default is 3000).
   -- Because it waits for replies from HTTp server, this function uses     --
   --  Event_Mng.Wait, which sets signal handlers. As a consequence:        --
   --  * Non interactive programs shall call                                --

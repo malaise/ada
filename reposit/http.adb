@@ -1,4 +1,4 @@
-with Ada.Characters.Latin_1;
+with Ada.Characters.Latin_1, Ada.Calendar;
 with Basic_Proc, Environ, String_Mng, Parser,
      Event_Mng, Timers, Ip_Addr, Socket, Tcp_Util, Mutex_Manager;
 package body Http is
@@ -26,9 +26,11 @@ package body Http is
 
   -- Timeout definition
   Timeout_Var : constant String := "HTTP_TIMEOUT_MS";
+  The_Timeout_Ms : Integer;
+  The_Delay : Timers.Delay_Rec (Timers.Delay_Exp);
 
   -- Each connection try timeout definition
-  Default_Connect_Timeout : constant Integer := 3000;
+  Default_Connect_Timeout_Ms : constant Integer := 3000;
   Connect_Timeout_Var : constant String := "HTTP_CONNECT_TIMEOUT_MS";
 
   -- End of processing (Error, disconnection or timeout)
@@ -54,7 +56,7 @@ package body Http is
   Crlf : constant String := Cr & Lf;
 
   -- The timeout for sending request
-  Send_Timeout : Tcp_Util.Natural_Duration;
+  Send_Timeout : Duration;
 
   -- Send/receive Msg
   -- Shall be large enough to receive the whole reply header
@@ -262,42 +264,6 @@ package body Http is
     Done := True;
   end Disconnection_Cb;
 
-  -- Connection_Cb
-  procedure Connection_Cb (Remote_Host_Id  : in Tcp_Util.Host_Id;
-                           Remote_Port_Num : in Tcp_Util.Port_Num;
-                           Connected       : in Boolean;
-                           Dscr            : in Socket.Socket_Dscr) is
-    pragma Unreferenced (Remote_Port_Num, Remote_Host_Id, Connected);
-    Msg : Message_Type;
-    Len : Natural;
-    Dummy : Boolean;
-    pragma Unreferenced (Dummy);
-  begin
-    Debug ("HTTP: Connection");
-    -- Save Dscr & Send request
-    Soc := Dscr;
-    -- Send request (socket is in mode Blocking_Send): slices of Msg'Length
-    Debug ("HTTP: Sending " & Request.Image);
-    loop
-      Len := Request.Length;
-      exit when Len = 0;
-      if Len > Msg'Length then
-        Len := Msg'Length;
-      end if;
-      Msg (1 .. Len) := Request.Slice (1, Len);
-      Request.Delete (1, Len);
-      Dummy := My_Send (Soc, null, null, Send_Timeout, Msg, Len);
-    end loop;
-    Buffer.Set_Null;
-    My_Rece.Set_Callbacks (Soc,
-                           Read_Cb'Unrestricted_Access,
-                           Disconnection_Cb'Unrestricted_Access);
-  exception
-    when Tcp_Util.Timeout_Error =>
-      Result := (Client_Error, Timeout);
-      Done := True;
-  end Connection_Cb;
-
   ---------------------------------------------------------------------------
   -- For parsing URL
   function Is_Slash (C : Character) return Boolean is
@@ -306,6 +272,7 @@ package body Http is
   end Is_Slash;
 
   function Get (Url : String) return Result_Type is
+    use type Ada.Calendar.Time;
   begin
 
     -- Sanity check on request: Parse Url and set host and port
@@ -365,37 +332,36 @@ package body Http is
 
     -- Getenv Timeout and arm timeout if set
     -- Set send timeout
-    declare
-      Timeout : Integer;
-      The_Delay : Timers.Delay_Rec;
-    begin
-      Timeout := Environ.Get_Int (Timeout_Var, 0);
-      Send_Timeout := 0.0;
-      if Timeout > 0 then
-        -- Arm timer
-        The_Delay.Delay_Seconds := Duration(Timeout) / 1000.0;
-        Timer_Id.Create (The_Delay, Timer_Cb'Access);
-        Send_Timeout := The_Delay.Delay_Seconds;
-      end if;
-    end;
+    The_Timeout_Ms := Environ.Get_Int (Timeout_Var, 0);
+    if The_Timeout_Ms > 0 then
+      -- Arm timer
+      The_Delay.Expiration_Time := Ada.Calendar.Clock
+                                 + Duration(The_Timeout_Ms) / 1000.0;
+      Timer_Id.Create (The_Delay, Timer_Cb'Access);
+    end if;
 
     -- Store request and connect
     declare
-      Connect_Timeout : Integer;
-      Dummy : Boolean;
-      pragma Unreferenced (Dummy);
+      Connect_Timeout_Ms : Integer;
     begin
       -- Get connection timeout
-      Connect_Timeout := Environ.Get_Int (Connect_Timeout_Var,
-                                          Default_Connect_Timeout);
+      Connect_Timeout_Ms := Environ.Get_Int (Connect_Timeout_Var,
+                                             Default_Connect_Timeout_Ms);
+      if The_Timeout_Ms /= 0 and then Connect_Timeout_Ms > The_Timeout_Ms then
+        Connect_Timeout_Ms := The_Timeout_Ms;
+      end if;
       -- Init request and result
       Request := As.U.Tus ("GET " & Url & " HTTP/1.0" & Crlf & Crlf);
-      -- Connect: infinite retries each Connect_Timeout sec
-      Soc := Socket.No_Socket;
-      Debug ("HTTP: Connecting each" & Connect_Timeout'Img);
-      Dummy := Tcp_Util.Connect_To (Socket.Tcp, Host, Port,
-                                    Connection_Cb'Access,
-                                    Duration(Connect_Timeout) / 1000.0, 0);
+      -- Connect: one synchronous try
+      Debug ("HTTP: Connecting during" & Connect_Timeout_Ms'Img);
+      Soc := Tcp_Util.Connect_To (Socket.Tcp, Host, Port,
+                                  Duration(Connect_Timeout_Ms) / 1000.0);
+      if not Soc.Is_Open then
+        -- Connection failure
+        Close;
+        Mut.Release;
+        return (Client_Error, No_Server);
+      end if;
     exception
       when Tcp_Util.Name_Error =>
         -- Host or "http" not found
@@ -403,6 +369,43 @@ package body Http is
         Mut.Release;
         return (Client_Error, Name_Error);
     end;
+
+    -- Send request (socket is in mode Blocking_Send): slices of Msg'Length
+    Debug ("HTTP: Sending " & Request.Image);
+    declare
+      Len : Natural;
+      Dummy : Boolean;
+      Msg : Message_Type;
+      pragma Unreferenced (Dummy);
+    begin
+      loop
+        if The_Timeout_Ms /= 0 then
+          -- Set timeout to (positive) value of time remaining
+          Send_Timeout := The_Delay.Expiration_Time - Ada.Calendar.Clock;
+          if Send_Timeout < 0.0 then
+            Send_Timeout := 0.001;
+          end if;
+        else
+          -- Inifinite
+          Send_Timeout := 0.0;
+        end if;
+        Len := Request.Length;
+        exit when Len = 0 or else Done;
+        if Len > Msg'Length then
+          Len := Msg'Length;
+        end if;
+        Msg (1 .. Len) := Request.Slice (1, Len);
+        Request.Delete (1, Len);
+        Dummy := My_Send (Soc, null, null, Send_Timeout, Msg, Len);
+        Event_Mng.Wait (0);
+      end loop;
+    end;
+
+    -- Ready to receive
+    Buffer.Set_Null;
+    My_Rece.Set_Callbacks (Soc,
+                           Read_Cb'Unrestricted_Access,
+                           Disconnection_Cb'Unrestricted_Access);
 
     -- Loop and wait until Done
     Debug ("HTTP: Waiting");
