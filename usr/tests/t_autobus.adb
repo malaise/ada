@@ -1,19 +1,48 @@
-with Basic_Proc, Event_Mng, String_Mng, Mixed_Str, As.U, Argument, Async_Stdin;
+-- In manual mode:
+--  * Send on bus the text got by async_stdin
+--  * Output on stdout the text received on bus
+-- In automatic mode:
+--  * Send each 10 seconds the automatic message if any
+--  * Spy (echo "Spyed ><Msg><") each received message, including owers
+--  * Drop (echo "Received <Msg> -> Dropping") messages starting by "Coucou"
+--  * Reply (echo "Received <Msg> -> Replying <reply>") messages "Ah que "
+--  * Reply (echo "Received <Msg> -> Replying <reply>") messages starting by
+--   "Ah que " and containing something
+--   Reply is the remaining text in Mixed_Str
+with Basic_Proc, Event_Mng, String_Mng, Mixed_Str, As.U, Async_Stdin,
+     Argument, Argument_Parser;
 with Autobus;
 procedure T_Autobus is
 
   Default_Address : constant String := "234.7.6.5:21021";
 
+  procedure Plo (Str : in String) renames Basic_Proc.Put_Line_Output;
+
   procedure Usage is
   begin
-    Basic_Proc.Put_Line_Output ("Usage: " & Argument.Get_Program_Name
-                                & " <auto> | <manual>");
-    Basic_Proc.Put_Line_Output ("   <auto>   ::= --auto [ <message> ]");
-    Basic_Proc.Put_Line_Output ("   <manual> ::= --manual <bus_address>");
-    Basic_Proc.Put_Line_Output ("Ex: " & Argument.Get_Program_Name
-                              & " --manual " & Default_Address);
+    Plo ("Usage: " & Argument.Get_Program_Name
+       & " <mode> [ <bus> ] [ <auto_message> ]");
+    Plo ("<mode> ::= -a | --auto | -m | --manual");
+    Plo ("<bus>  ::= -b <bus_address> | --bus=<bus_address>");
+    Plo ("Ex: " & Argument.Get_Program_Name
+       & " --manual " & Default_Address);
   end Usage;
 
+  procedure Error (Msg : in String) is
+  begin
+    Basic_Proc.Put_Line_Error ("ERROR: " & Msg & ".");
+    Basic_Proc.Set_Error_Exit_Code;
+  end Error;
+
+  -- Arguments
+  Keys : constant Argument_Parser.The_Keys_Type := (
+   1 => ('h', As.U.Tus ("help"), False, False),
+   2 => ('a', As.U.Tus ("auto"), False, False),
+   3 => ('m', As.U.Tus ("manual"), False, False),
+   4 => ('b', As.U.Tus ("bus"), False, True));
+ Key_Dscr : Argument_Parser.Parsed_Dscr;
+
+  -- Bus and subscribers
   Bus : aliased Autobus.Bus_Type;
   Subs_Repl, Subs_Drop, Subs_Spy, Subs_Put : aliased Autobus.Subscriber_Type;
 
@@ -26,7 +55,7 @@ procedure T_Autobus is
 
   Stimulus : As.U.Asu_Us;
 
-  -- Observer recevier of messages
+  -- Observer receiver of messages
   type Obs_Rece_Type is new Autobus.Observer_Type with null record;
   Receiver : aliased Obs_Rece_Type;
   procedure Receive (Observer : in out Obs_Rece_Type;
@@ -75,8 +104,8 @@ procedure T_Autobus is
     pragma Unreferenced (Observer, Subscriber);
     use type Autobus.Subscriber_Access_Type;
   begin
-    Basic_Proc.Put_Output (Message);
-    Basic_Proc.Flush_Output;
+    Async_Stdin.Put_Out (Message);
+    Async_Stdin.Flush_Out;
   end Receive;
 
   -- Async stdin callback
@@ -95,18 +124,62 @@ procedure T_Autobus is
 
 
 begin
-  if Argument.Get_Nbre_Arg = 0 then
+
+  -- Parse arguments
+  Key_Dscr :=  Argument_Parser.Parse (Keys);
+  if not Key_Dscr.Is_Ok then
+    Error ("Invalid arguments, " & Key_Dscr.Get_Error);
     Usage;
     return;
-  elsif Argument.Get_Parameter (1) = "--auto" then
-    for I in 2 .. Argument.Get_Nbre_Arg loop
-      Stimulus.Append (" " & Argument.Get_Parameter (Occurence => I));
+  end if;
+  if Key_Dscr.Get_Nb_Embedded_Arguments /= 0 then
+    Error ("Invalid arguments");
+    Usage;
+    return;
+  end if;
+
+  -- Help
+  if Key_Dscr.Is_Set (1) then
+    Usage;
+    return;
+  end if;
+
+  -- Mode required
+  if not Key_Dscr.Is_Set (2) and then not Key_Dscr.Is_Set (3) then
+    Error ("Missing mode");
+    Usage;
+    return;
+  end if;
+
+  -- No message in manual mode
+  if  Key_Dscr.Is_Set (3)
+  and then Key_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) /= 0 then
+    Error ("No automatic message allowed in manual mode");
+    Usage;
+    return;
+  end if;
+
+  -- Init bus
+  if Key_Dscr.Is_Set (4) then
+    if Key_Dscr.Get_Option (4, 1) = "" then
+      Error ("Missing bus address");
+    end if;
+    Bus.Init (Key_Dscr.Get_Option (3, 1));
+  else
+    Bus.Init (Default_Address);
+  end if;
+
+  if Key_Dscr.Is_Set (2) then
+    -- Automatic mode
+    -- Concat parts of automatic message
+    for I in 1 .. Key_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) loop
+      Stimulus.Append (" " & Key_Dscr.Get_Option (
+                              Argument_Parser.No_Key_Index, I));
     end loop;
     if not Stimulus.Is_Null then
       Stimulus.Delete (1, 1);
     end if;
     Event_Mng.Set_Sig_Term_Callback (Signal_Cb'Unrestricted_Access);
-    Bus.Init (Default_Address);
     Subs_Repl.Init (Bus'Unrestricted_Access, Receiver'Unrestricted_Access,
                     "Ah que .*", False);
     Subs_Drop.Init (Bus'Unrestricted_Access, Receiver'Unrestricted_Access,
@@ -126,10 +199,9 @@ begin
     Subs_Repl.Reset;
     Bus.Reset;
     Basic_Proc.Put_Line_Output ("Done.");
-  elsif Argument.Get_Parameter (1) = "--manual"
-  and then Argument.Get_Nbre_Arg = 2 then
+  else
+    -- Manual mode
     Event_Mng.Set_Sig_Term_Callback (Signal_Cb'Unrestricted_Access);
-    Bus.Init (Argument.Get_Parameter (2));
     Subs_Put.Init (Bus'Unrestricted_Access, Putter'Unrestricted_Access);
     Async_Stdin.Set_Async (Async_Cb'Unrestricted_Access,
                            Autobus.Message_Max_Length);
@@ -141,8 +213,6 @@ begin
     Async_Stdin.Set_Async;
     Subs_Put.Reset;
     Bus.Reset;
-  else
-    Usage;
   end if;
 end T_Autobus;
 
