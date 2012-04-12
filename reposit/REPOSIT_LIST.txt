@@ -7,22 +7,21 @@ Program frameworks
 Three frameworks are available for the programs:
 
 Direct input::
-    The program has no blockin input at all (ex: reads files) or reads stdin
+    The program has no blocking input at all (ex: reads files) or reads stdin
 and blocks on it (and puts on stdout/stderr).
 +
-=> The program can use Text_Io, Basic_Proc or Sys_Calls for its Ios.
+=> The program can use Basic_Proc or Sys_Calls (or even Ada.text_Io) for its Ios.
 
 Multiplexed inputs::
     The program multiplexes several inputs and stimuli: file descriptors (UDP or 
 TCP socket), stdin, signals (SIGCHILD and SIGTERM), timers.
 +
 => The program must use Event_Mng.Wait as the single blocking point. This
-allows dispatching the FD events, Timers and signals to the proper callbacks).
+allows dispatching the FD events, timers and signals to the proper callbacks).
 
- * Event_Mng allows defining signal handling callbacks and callbacks on FD
-events,
+ * Event_Mng allows defining callabcks for handling signal and FD events,
 
- * Timers allows defining timers expiration and callback,
+ * Timers allows defining timers, expiration and callback,
 
  * Socket allows reading on socket FDs,
 
@@ -35,8 +34,8 @@ X11 mutiplexed inputs ::
 above).
 +
 => The program must use either X_Mng.X_Wait_Event or Con_Io.Put_Then_Get (or
-Con_Io.Get) or Afpx.Put_Then_Get. It cna also use more specialized tools like
-Curve and Select_File).
+Con_Io.Get) or Afpx.Put_Then_Get. It can also use more specialized tools based
+on X11 like Curve and Select_File.
 +
 Several tasks can be defined, for example one for each window.
 
@@ -55,37 +54,75 @@ Families of tools
 
 Arguments
 ~~~~~~~~~
-'Argument' provides simple parsing by keys, while 'Argument_Parser' provides a
+* 'Argument' provides simple parsing by keys, while 'Argument_Parser' provides a
 more strict logic and higher level parsing. Use the later if the arguments are
 many, are optional, support options...
 
+* 'Environ' allows retriaving and checking environmental data.
+
 Strings
 ~~~~~~~
-'As.U' and 'As.B' are implementations of Ada.Strings.Unbounded and
-Ada.Strings.Bounded.
+* 'As.U' and 'As.B' are implementations of Ada.Strings.Unbounded and
+Ada.Strings.Bounded with more features.
+
+* 'String_Mng' provides several operations on strings.
+
+* 'Many_Strings' allows storing several strings successively in a string and
+extracting them.
+
+* 'Parser' allows extracting the successive words of a string according to a
+given separator.
+
+* 'Xml_Parser' parses (and/or generates) XML files or flows of characters.
+
+* 'Http' fetches the target of a URL.
+
+* 'Ada_Parser' parses a Ada file or flow of characters.
 
 Character encoding
 ~~~~~~~~~~~~~~~~~~
-'Language' allows the selection of encoding between C and utf-8 and associated
-string operations. 'Utf_8' and 'Utf_16' provide basic encoding functions.
+* 'Language' allows the selection of encoding between C and Utf-8 and provides
+associated string operations.
+
+* 'Utf_8' and 'Utf_16' provide basic encoding functions.
+
+* 'Byte_To_Unicode' allow converting bytes to unicode numbers according to a 
+XML file definition of encoding.
+
+Numbers
+~~~~~~~
+* 'Arbitrary' provides operations on integers with arbitray precision.
+
+* 'My_Math' provides logarithm and trigonometry on real and conversion to
+integers.
+
+* 'C_Nbres' implements complex numbers.
+
+* 'Normalisation' generates formatted image of integer, digits, delta or fixed
+real.
+
+* 'Round_At' rounds a real at a given precision.
 
 Data containers
 ~~~~~~~~~~~~~~~
-* 'Dyn_Data' allocates and frees data and relies on a free list.
+* 'Dyn_Data' allocates and frees data, relying on a free list.
 
 * 'Limited_List' and anchor:XDynamic_List[] 'Dynamic_List' are linked lists of
-data, limited or simply private. 'Unlimited_Pool' is a simple dynamic list with
-push/pop operations.
+data, limited or simply private.
+
+* 'Unlimited_Pool' is a simple dynamic list with push/pop operations.
 
 * 'Hashing' provides basic hashing table, while 'Hashed_List' provides a hashed
 storage of data, possibly with unicity of each data.
 
-* 'Queues' provides various storage of data with fixed size (FIFO, LIFO, prio,
-timed).
+* 'Queues' provides various kinds of storage of data (FIFO, LIFO, prio, timed)
+in container of fixed size.
 
-* 'Trees' allows storing trees of data.
+* 'Trees' allows organizing data in trees.
 
 * 'Unbounded_Arrays' provides unbounded arrays of data.
+
+* 'Smart_reference' provides automatic deallocation of unreferenced data.
 
 Tasking tools
 ~~~~~~~~~~~~~
@@ -110,6 +147,10 @@ expire.
 on virtual times. It also provides 'Passive_Timers' (single shot or periodics)
 on which one can check the expiration from time to time.
 
+* 'Perpet' is a petpetual calendar.
+
+* 'Day_Mang' converts durations and hours/minutes/seconds/milliseconds.
+
 Forking child process
 ~~~~~~~~~~~~~~~~~~~~~
 'Proc_Family' provides the basic fork/exec features while 'Command' waits
@@ -120,8 +161,14 @@ Sockets
 * 'Socket' provides all the basic functions for UDP (IPM) and TCP sockets.
 
 * 'Tcp_Util' automaticall and asynchronously connects TCP sockets, accepts
-TCp connection, handles sending overflow and reception on scoket (including
+TCP connection, handles sending overflow and reception on socket (including
 underflow and disconnection).
+
+* 'Autobus' automatically transfers to subscribers of the bus the messages that
+are sent by publishers on the bus.
+
+* 'Channels' (deprecated) provides channel (connected) or bus (not connected)
+of communication.
 
 Files
 ~~~~~
@@ -130,11 +177,9 @@ Files
 * 'Text_Char' allows reading a file character by character and "un-getting"
 characters.
 
-* 'Bloc_Io' allows reading and writin in a file block by block (a block is
+* 'Bloc_Io' allows reading and writing in a file block by block (a block is
 an array of bytes).
 
-Directory
-~~~~~~~~~
 * 'Directory' provides all the basic functions for changing to and scanning
 directories, and tools for building and splitting directory path.
 
@@ -309,7 +354,7 @@ hexa_utils (1)::
      Convert strings to hexa and reverse (ex: "1A" <-> 26).
 
 http (2)::
-     Fetch the content of a HTTP URL.
+     Fetch the target of a HTTP URL.
 
 init_manager (1)::
      Manage atomic init of state while concurent update events are bufferized.
