@@ -25,9 +25,9 @@ package Autobus is
   -- Reset a Bus (make it re-usable)
   procedure Reset (Bus : in out Bus_Type);
 
-  -- Send a Message on a Bus
+  -- Send a Message on a Bus, may raise:
+  -- On message longer than Message_Max_Length (1MB)
   Message_Max_Length : constant := 1024 * 1024;
-  -- On message longer than 1MB
   Message_Too_Long : exception;
   procedure Send (Bus : in out Bus_Type; Message : in String);
 
@@ -47,7 +47,7 @@ package Autobus is
                      Subscriber : in Subscriber_Access_Type;
                      Message : in String) is abstract;
 
-  -- Initialise a Subscriber on a Bus, may raise
+  -- Initialise a Subscriber on a Bus, may raise:
   -- On incorrect filter expression
   Invalid_Filter : exception;
   procedure Init (Subscriber : in out Subscriber_Type;
