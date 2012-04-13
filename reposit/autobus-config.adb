@@ -107,7 +107,8 @@ package body Config is
     end if;
 
     -- Make dummy tree if env variable is set
-    if not Environ.Is_Set (Env_File_Name) then
+    if not Environ.Is_Set (Env_File_Name)
+    or else Environ.Getenv (Env_File_Name) = "" then
       Ctx.Set_Version (1, 0);
       Root := Ctx.Get_Root_Element;
       Ctx.Set_Name (Root, "Autobus");
