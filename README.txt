@@ -90,11 +90,10 @@ Some of them are interdependant, the main dependency trees are:
 - Graphic (X11) function: X_Mng <- Con_Io <- Afpx and Curve
 
 - Communication, Timers: Socket, Timers and Event_Mng <- Tcp_Util <-
-Channels
+Autobus (and Channels)
 
-The most complex is definitively the Xml_Parser.
-
-See link:reposit/REPOSIT_LIST.html[] for the list of packages.
+See link:reposit/REPOSIT_LIST.html[] for the list of packages and how to use
+them.
 
 5 Usr directories
 -----------------
@@ -102,10 +101,12 @@ Each ot them hosts a standalone project except tests (test programs of
 repository packages) and tasks (simple task examples).
 
 They all depend on C and Reposit and are independant from the others (except
-Mcd&Pipe -> Fifos -> Dictio).
+Pipe -> Fifos -> Dictio).
 
-The more usefull are Agite, Alook, Astub, Asubst, Lsadeps, Mcd, Udp_Spy and
+The more usefull are Agite, Alook, Als, Asubst, Lsadeps, Mcd, Udp_Spy and
 Xml_Checker.
+
+The games are G, Lem, Mmind, Nimmari and Sokoban.
 
 Here is the full list and description:
 
@@ -113,10 +114,10 @@ Account (3)::
      Based on Afpx, this tool makes the management of bank accounts, with
      cheque, credit card (defered) and transfer operations.
 
-Agite (2)::
+Agite (3)::
      GUI for Git, dir oriented.
 
-Als (3)::
+Als (2)::
      Lists, more or less the "ls" way, files and directories. Allow selection
      by date, type, regexp. Allows merging of all outputs and sorting.
 
@@ -141,8 +142,8 @@ C_Magic (1)::
      CPU despite many optims :-)
 
 Code (1)::
-     Simple program that codes (crypts) and decodes a text. The crypting algo
-     is very old and not secure.
+     Simple programs that codes (crypts) and decodes a text. The crypting algo
+     are old and not secure.
 
 Day_Of_Week (1)::
      Simple program that tells everything on today (or on another day).
@@ -184,7 +185,7 @@ Mcd (3)::
 
 Misc::
      Many simple programs here. The most interesting are:
-- Alook (2) properly formats the words of a (valid) Ada05 source file.
+- Alook (1) properly formats the words of a (valid) Ada05 source file.
 - Dtd_Checker (1) check a DTD file (of a xml).
 - Prime (1) search prime numbers.
 - Stat (1) counts the number of instruction of (valid) Ada source files.
@@ -216,17 +217,17 @@ Renardeau (2)::
 Simusi (2)::
      Machining simulation. (Tough algo).
 
-Sokoban (3)::
+Sokoban (2)::
      The famous Sokoban game (push the boxes).
 
 Tasks::
      Several simple programs using tasks.
 
-Tcpchat::
+Tcpchat (3)::
      Accepts connection of a TCP port, expects sentences and executes
      specified actions depending on what it receives.
 
-Tcpipe::
+Tcpipe (2)::
      As a bridge, multiplexes and relays TCP connections.
 
 Tests::
@@ -238,9 +239,9 @@ Xwords (2)::
 Cots directories
 ----------------
 
-This directory mainly contains copies of:
+This directory mainly contains a copy of:
 
-- pragmarc and mine from http://pragmada.x10hosting.com/ (under GPL)
+- pragmarc and mine from http://pragmada.home.mchsi.com (under GPL)
 
 - LinXtris from http://sourceforge.net/projects/linxtris (under GPL)
 
