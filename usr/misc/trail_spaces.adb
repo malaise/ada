@@ -1,4 +1,4 @@
--- Replace each Htab by a space
+-- Replace each Htab by two spaces
 -- Replace Cr+Lf by Lf
 -- Remove trailing spaces (speces preceeding a Lf)
 -- Append a Lf and end of file if last char is not a Lf
@@ -91,10 +91,10 @@ procedure Trail_Spaces is
         Line.Append (Text_Line.Line_Feed_Char);
         Modified := True;
       end if;
-      -- Replace horiz tabs by spaces
+      -- Replace horiz tabs by 2 spaces
       for I in 1 .. Line.Length - 1 loop
         if Line.Element (I) = Ada.Characters.Latin_1.Ht then
-          Line.Replace_Element (I, ' ');
+          Line.Replace (I, I, "  ");
           Modified := True;
         end if;
       end loop;
