@@ -2,13 +2,13 @@ include $(HOME)/Makefiles/common.mk
 
 include $(TEMPLATES)/units.mk
 SUBUNITS := afpx-af_dscr afpx-af_list afpx-af_ptg \
-  arbitrary-prime_list autobus-config channels-file \
-  pattern-storage x_mng-dispatch \
+  autobus-config channels-file pattern-storage \
   xml_parser-file_mng xml_parser-parse_mng \
   xml_parser-parse_mng-dtd xml_parser-parse_mng-entity_mng \
   xml_parser-parse_mng-namespaces \
   xml_parser-parse_mng-resolve_uri xml_parser-parse_mng-util \
-  xml_parser-tree_mng
+  xml_parser-tree_mng \
+  x_mng-dispatch 
 LIBS := $(filter-out $(SUBUNITS), $(UNITS))
 
 EXES := afpx_bld clear_screen
