@@ -29,10 +29,18 @@ package body Arbitrary.Prime_List is
   begin
     The_List.Rewind (False, Prime_List_Mng.Prev);
     The_List.Insert (N);
+    Need_Search := True;
   end Append;
 
   Zero : constant Number := Arbitrary.Zero;
   One  : constant Positive_Number := Arbitrary.One;
+
+  -- This optimisation is possible because we always get Sqrt of
+  --  crescent values of N (in case of rewind the prime values are read
+  --  from the list).
+  -- So we just keep in mind prev Sqrt returned S and Nm=(S+1)^2
+  --  as long as the arg is N < Nm then its Sqrt is S
+  --  otherwise it is S+1 and we update Nm
 
   -- S is last Sqrt found, also store S+1 and N=(S+1)*(S+1)
   S_Memory : Positive_Number := One;
@@ -87,11 +95,13 @@ package body Arbitrary.Prime_List is
       end if;
       Square := Sqrt(Res);
 
+      -- We can rewind (which resets Need_Search) because we will append
+      --  (which sets Need_Search)
+      Rewind;
       -- Loop on list of primes to find a divisor
       -- Because the case of Res=1, 2 and 3 is already done, we are sure that
       --  Square > 1, so this loop always exits before exhausting the list
       --  so Is_Prime is always set
-      Rewind;
       Divisor_Loop:
       for I in 1 .. The_List.List_Length loop
         Tmp := Read;
@@ -108,6 +118,7 @@ package body Arbitrary.Prime_List is
         end if;
       end loop Divisor_Loop;
 
+      -- We always exit by appending a new prime number to the list
       if Is_Prime then
         Append (Res);
         return Res;
