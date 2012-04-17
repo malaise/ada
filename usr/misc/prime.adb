@@ -1,4 +1,5 @@
--- Usage: prime -list [ <number> ] list prime numbers up to a number
+-- Usage: prime -list [ <number> ] list prime numbers up to number
+--        prime -from <number>     list prime numbers greater than number
 --        prime -is <number>       is a number prime
 --        prime -next <number>     first prime greater than number
 --        prime -prev <number>     last prime smaller than number
@@ -15,7 +16,7 @@ procedure Prime is
   package Plm renames Arbitrary.Factors.Nb_List_Mng;
 
   -- What should we do
-  type Mode_List is (List_All, List, Is_Prime, Next, Prev, Factors, Hcd, Lcm);
+  type Mode_List is (List_All, List, From, Is_Prime, Next, Prev, Factors, Hcd, Lcm);
   Mode : Mode_List;
 
   -- Arguments, numbers
@@ -30,9 +31,11 @@ procedure Prime is
     Basic_Proc.Put_Line_Output (
   "Usage: " & Argument.Get_Program_Name & " <mode>");
     Basic_Proc.Put_Line_Output (
-  "<mode> ::= <list> | <is> | <next> | <prev> | <factors> | <hcd> | <lcm>");
+  "<mode> ::= <list> | <from> | <is> | <next> | <prev> | <factors> | <hcd> | <lcm>");
     Basic_Proc.Put_Line_Output (
   "<list>    ::= -list [ <positive> ]        -- list prime numbers (up to N)");
+    Basic_Proc.Put_Line_Output (
+  "<from>    ::= -from [ <positive> ]        -- list prime numbers above N");
     Basic_Proc.Put_Line_Output (
   "<is>      ::= -is <positive>              -- is N prime or not");
     Basic_Proc.Put_Line_Output (
@@ -98,6 +101,10 @@ begin
       Mode := List;
       N1 := Positive_Number_Value (Argument.Get_Parameter(Occurence => 2));
     elsif Argument.Get_Nbre_Arg = 2
+    and then Argument.Get_Parameter = "-from" then
+      Mode := From;
+      N1 := Positive_Number_Value (Argument.Get_Parameter(Occurence => 2));
+    elsif Argument.Get_Nbre_Arg = 2
     and then Argument.Get_Parameter = "-is" then
       Mode := Is_Prime;
       N1 := Positive_Number_Value (Argument.Get_Parameter(Occurence => 2));
@@ -146,6 +153,15 @@ begin
         N2 := Arbitrary.Prime_List.Next;
         exit when N2 > N1;
         Put_Line (N2);
+      end loop;
+
+    when From =>
+      -- List prime numbers from N1 included
+      loop
+        N2 := Arbitrary.Prime_List.Next;
+        if N2 >= N1 then
+          Put_Line (N2);
+        end if;
       end loop;
 
     when Is_Prime =>
