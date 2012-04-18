@@ -334,6 +334,38 @@ extern void delay ( timeout_t *p_timeout ) {
 
 /*
  ******************************************************************************
+ * Function : wait_until
+ *
+ * Abstract : Wait until the given time is reached
+ *
+ * Decisions : None
+ *
+ * Input  : p_time  The time to wait until it is reached
+ *
+ * Output : None
+ *
+ * Return : None
+ *
+ * Errors : None
+ *
+ * History :
+ *
+ *******************************************************************************
+*/
+extern void wait_until ( timeout_t *p_time ) {
+  timeout_t current_time, timeout;
+
+  get_time (&current_time);
+  timeout = *p_time;
+  if (sub_time (&timeout, &current_time) <= 0) {
+    /* Time is reached */
+    return;
+  }
+  delay (&timeout);
+}
+
+/*
+ ******************************************************************************
  * Function : time_to_double
  *
  * Abstract : Convert time to double (seconds dot microseconds)

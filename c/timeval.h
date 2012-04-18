@@ -3,6 +3,7 @@
 
 #include "boolean.h"
 #include <sys/time.h>
+
 typedef struct timeval timeout_t;
 
 /* Normalises a time */
@@ -34,6 +35,9 @@ extern boolean time_is_reached (timeout_t *p_time);
 
 /* Waits for some time */
 extern void delay (timeout_t *p_timeout);
+
+/* Waits until time is reached */
+extern void wait_until (timeout_t *p_time);
 
 /* Convert time to double (sec.usec) and reverse */
 extern double time_to_double (timeout_t *p_time );
