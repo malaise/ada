@@ -527,10 +527,12 @@ private
   end record;
 
   -- Pool of flows (when switching to new flow then back)
-  package Flow_Pool_Mng is new Unlimited_Pool (Flow_Info_Type);
+  package Flow_Pool_Manager is new Unlimited_Pool (Flow_Info_Type);
+  package Flow_Pool_Mng renames Flow_Pool_Manager.Upool;
 
   -- Pool of files to deallocate
-  package File_Pool_Mng is new Unlimited_Pool (File_Access);
+  package File_Pool_Manager is new Unlimited_Pool (File_Access);
+  package File_Pool_Mng renames File_Pool_Manager.Upool;
 
   type Flow_Type is record
     -- To know how many where got before End_Error

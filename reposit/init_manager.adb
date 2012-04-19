@@ -12,7 +12,8 @@ package body Init_Manager is
   R_Mutex : Mutex_Manager.Simple_Mutex;
 
   -- The pool of pending events: Fifo
-  package Event_Pool_Mng is new Unlimited_Pool (Event_Type, Lifo => False);
+  package Event_Pool_Manager is new Unlimited_Pool (Event_Type, Lifo => False);
+  package Event_Pool_Mng renames Event_Pool_Manager.Upool;
   Event_Pool : Event_Pool_Mng.Pool_Type;
 
   -- The event handler

@@ -240,7 +240,9 @@ package Trees is
     No_Position : constant Position_Access := null;
 
     -- The Lifo of saved position;
-    package Saved_Pool is new Unlimited_Pool (Cell_Access, Lifo => True);
+    package Saved_Pool_Manager is new Unlimited_Pool (Cell_Access,
+                                                      Lifo => True);
+    package Saved_Pool renames Saved_Pool_Manager.Upool;
     type Saved_Pool_Access is access Saved_Pool.Pool_Type;
 
     -- Eldest/Youngest children, or Elder/Younger brothers

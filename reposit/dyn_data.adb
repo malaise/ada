@@ -2,7 +2,8 @@ with Unlimited_Pool;
 package body Dyn_Data is
 
   -- A list of Data_Access pointing to free data
-  package Pool_Mng is new Unlimited_Pool (Data_Access_Type);
+  package Pool_Manager is new Unlimited_Pool (Data_Access_Type);
+  package Pool_Mng renames Pool_Manager.Upool;
   Data_Pool : Pool_Mng.Pool_Type;
 
   function Allocate return Data_Access_Type is

@@ -26,7 +26,8 @@ package body Ios is
   No_Event : constant Event_Type (Got_Sentence)
            := (Got_Sentence, As.U.Asu_Null);
   -- Event is never set with a sentence. Sentences are stored in a Fifo
-  package Sentences_Mng is new Unlimited_Pool (As.U.Asu_Us, Lifo => False);
+  package Sentences_Manager is new Unlimited_Pool (As.U.Asu_Us, Lifo => False);
+  package Sentences_Mng renames Sentences_Manager.Upool;
   Sentences : Sentences_Mng.Pool_Type;
 
   -- Global timer

@@ -110,7 +110,8 @@ Data containers
 * 'Limited_List' and anchor:XDynamic_List[] 'Dynamic_List' are linked lists of
 data, limited or simply private.
 
-* 'Unlimited_Pool' is a simple dynamic list with push/pop operations.
+* 'Limited_Pool' and 'Unlimited_Pool' are simple dynamic lists with push/pop
+operations.
 
 * 'Hashing' provides basic hashing table, while 'Hashed_List' provides a hashed
 storage of data, possibly with unicity of each data.
@@ -371,6 +372,9 @@ ip_addr (1)::
 limited_list dynamic_list (3)::
      Dynamic list of (limited) private objects, search/sort.
 
+limited_pool unlimited_pool (2)::
+     Simple pool of (limited) private objects, push/pop.
+
 lower_char lower_str mixed_str upper_char upper_str (1)::
      Upper, lower, mixed string and character conversion.
 
@@ -526,9 +530,6 @@ unbounded_arrays (1)::
 
 unicode (1)::
      Definition of unicode numbers
-
-unlimited_pool (2)::
-     Simple pool of objects.
 
 utf_16 (2)::
      Utf_16 encoding/decoding

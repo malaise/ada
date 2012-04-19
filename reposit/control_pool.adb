@@ -36,7 +36,8 @@ package body Control_Pool is
 
   -- Pool of free mutexes
   -----------------------
-  package Free_Mutex_Pool is new Unlimited_Pool (Mutex_Access);
+  package Free_Mutex_Pool_Mng is new Unlimited_Pool (Mutex_Access);
+  package Free_Mutex_Pool renames Free_Mutex_Pool_Mng.Upool;
   Free_Mutexes : Free_Mutex_Pool.Pool_Type;
   function Get_Mutex return Mutex_Access is
     Mut_Acc : Mutex_Access;
