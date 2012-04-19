@@ -1,5 +1,7 @@
 History of Asubst
 =================
+219/04/2012 V13.3::
+Add: Description of exit code in online help
 
 24/02/2012 V13.2::
 Add: Also put PCRE version when -V (--version)

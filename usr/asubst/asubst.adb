@@ -4,7 +4,7 @@ with As.U, Environ, Argument, Argument_Parser, Basic_Proc, Language, Mixed_Str,
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
-  Version : constant String  := "V13.2";
+  Version : constant String  := "V13.3";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -144,9 +144,9 @@ procedure Asubst is
      "    Note that ""\r0i"" and ""\i0i"" are is forbidden.");
 
     Basic_Proc.Put_Line_Error (
-     "  If set <exclude_pattern> must have the same number of regex as <find_pattern>.");
+     "  <exclude_pattern> if set must have the same number of regex as <find_pattern>.");
     Basic_Proc.Put_Line_Error (
-     "  Text matching <find_pattern> will be discarded if it also matches");
+     "    Text matching <find_pattern> will be discarded if it also matches");
     Basic_Proc.Put_Line_Error (
      "    <exclude_pattern>.");
     Basic_Proc.Put_Line_Error (
@@ -167,6 +167,8 @@ procedure Asubst is
      "    text is put (as grep would do), possibly with file name (if ""-f"") and with");
     Basic_Proc.Put_Line_Error (
      "    line number (if ""-fl"").");
+    Basic_Proc.Put_Line_Error (
+     "  Exit code is 0 if some matching was found, 1 if no match and 2 on error.");
     Basic_Proc.Put_Line_Error (
      "  Warning: regex are powerfull (see ""man 3 pcre"" and ""man 1 perlre"") and");
     Basic_Proc.Put_Line_Error (
