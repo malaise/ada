@@ -1,7 +1,7 @@
 tcpchat
 =======
 
-Tcpchat accepts connections to a TCP port, expects specific sentences and
+Tcpchat accepts connections on a TCP port, expects specific sentences and
 executes specified actions depending on what it receives.
 
 Presentation
@@ -15,64 +15,66 @@ It listens on the port and accepts one TCP connection at a time: new
 connections are not accepted while one client is connected.
 
 It expects to receive one or several sentences (a sentence is one line
-terminated by Lf) and replies by one or several sentences.
+terminated by Lf), it executes some actions and replies by one or several
+sentences.
 
 Chat file and behaviour
 ~~~~~~~~~~~~~~~~~~~~~~~
 .File
 The chat file describes several alternative chats.
 
-.Chat script
-Each chat script starts with one expected sentence followed by a script of
-expected sentences and/or actions.
+.Chat
+Each chat starts with one expected sentence followed by a script of expected
+sentences and/or actions.
 
 A chat has a unique name. It can define a global timeout for its execution
 (default is infinite) and a default timeout for all its statements when an
 input is expected: 'select', 'read' and 'skip' (default is infinite).
 
 A chat starts by a 'expect' statement. It defines a regexp that will lead
-this chat script to be selected if the input string matches the regexp.
+this chat to be selected (and the script to be executed) if the input string
+matches the regexp.
 Some xref:Variables[Variables] can be defined from the content of the input
 string or from part of it.
 
-.Instructions
-Once the chat is selected it follows a script made of statements and executes
-them one after the other:
+.Statements
+Once the chat is selected tcpcaht executes one after the other the statements
+of the script:
 
 - 'select': A select is like a sub-chat but with no name nor attibute. It
 allows selecting a subscript according to the reception of a matching
 sentence. If the select has a default entry, it is selected when the
 sentence does not match any expected string.
-- 'cond': execute a sub-chat on condition (if variable matches a criteria,
+- 'cond': execute a sub-script on condition (if variable matches a criteria,
 elsif...  else...).
-- 'repeat': loop executing a chat while a condition is true.
+- 'repeat': loop executing a script while a condition is true.
 - 'read': Read next sentence and check that it mathes the one provided.
-- 'skip': Read next sequence whatever it is.
+- 'skip': Read next sentence whatever it is.
 - 'wait': Wait the specified delay.
 - 'send': Send the sentence provided.
 - 'call': Call the shell to execute the command and arguments provided. Send
 the output flow of the command.
-- 'set': Set a variable to an evaluated expression.
+- 'set': Set a variable to the result of an evaluated expression.
 - 'eval': Call the shell to execute the command and arguments provided. Set a
 variable to the output flow of the command.
 - 'chdir': Change current directory until another chdir or until a script ends
 on xref:Close[close] or xref:Failure[failure]. As for 'chdir' with an empty
-argument leads this leads to move back to the original directory when tcpchat
+argument this leads to move back to the original directory when tcpchat
 has been launched.
 - 'log': Report some text on stderr.
 - 'close': Close current chat, go back to chat selection.
 
-.Chat end
+.Script end
 When a subscript reaches its end, the execution continues at the statement
 that follows the statement that leads to this subscript (if any).
 
 A chat script ends on either:
 
 - nothing else to do: Keep connection open and go back expecting a chat
-script selection. Variables and current dir are not reset. The chat
+selection. Variables and current dir are not reset. The chat
 timeout, if any, remains active until a new chat is selected.
 - anchor:Close[]a 'close' statement: Close current connection, reset variables
-and current dir, and go back expecting a chat script selection.
+and current dir, and go back expecting a chat selection.
 - anchor:Failure[]a failure: one of the following situations, which leads to
 the closure (as on statement 'xref:Close[close]') of current script:
  * The expiration of the timeout global to the chat script.

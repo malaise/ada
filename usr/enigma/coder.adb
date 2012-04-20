@@ -71,7 +71,7 @@ package body Coder is
                 and then Machine.Rotors(I).Carries(Machine.Rotors(I).Position);
       -- Move current rotor either because previous rotor has the carry
       --  or because current rotor has the carry and moves next rotor
-      -- This causes the "doubelstepping"
+      -- This causes the "doublestepping"
       -- But last rotor may be fixed anyway
       if (Curr_Moves or else Next_Moves)
       and then (I /= Machine.Nb_Rotors or else not Last_Fixed) then

@@ -20,8 +20,8 @@
   
   <!-- A Rotor. No dup in Carries (max 26 letters),
        no dup in scramble (26 letters) -->
-  <!-- If no Carry, the rotor also does not turn, except if alone,
-       only last rotor can have no carry -->
+  <!-- Only last rotor (slowest, first in command line) can have no carry -->
+  <!-- A rotor with no carry does not turn, except if it is alone -->
   <!--                             ABCDEFGHIJKLMNOPQRSTUVWXYZ -->
   <Rotor Name="I"     Carries="Q" >EKMFLGDQVZNTOWYHXUSPAIBRCJ</Rotor>
   <Rotor Name="II"    Carries="E" >AJDKSIRUXBLHWTMCQGZNPYFVOE</Rotor>

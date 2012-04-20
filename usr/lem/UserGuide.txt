@@ -32,11 +32,11 @@ landing area and and not too high (less than 5 times the LEM height).
 This indicator shows "CLOSE" when getting close to land, then "LAND" when
 landed.
 
-Below the indicator, a chronometer indicates the duration of the game.
+Below the indicator, a chronometer indicates the duration of the mission.
 
 Arguments of the program
 -------------------------
-Whrn started with argument "-h" the game is harder because the the landing area
+When started with argument "-h" the game is harder because the the landing area
 is thinner.
 
 When started with argument "-g" the mouse pointer is grabbed in the game
@@ -78,7 +78,7 @@ Spot a flat landing area and adjust speeds to reach it. Check the area (APPR
 indicator) before landing.
 
 You land safely if within 75% of the speed limits and with at least 10% of
-fuel remaining. Otherwise it is just acceptable (normal landing).
+fuel remaining. Otherwise it is just acceptable (normally, below average).
 
 When landed (LAND indicator), horizontal thrust has no effect. You can still
 use the vertical thrust to take off, or you can shut-down the engine, which
@@ -109,7 +109,7 @@ of horizontal thrust.
 Hints
 ~~~~~
 Try to always descend: quickly fix vertical rate then spot a landing area and
-move horizontally, fast if needed (more than the gauge). Visualise the
+move horizontally, fast if needed (more than the gauge limit). Visualise the
 trajectory, anticipate the approach (what you see is speed, what you change is
 acceleration).
 
@@ -118,8 +118,9 @@ when getting close to a side of the landing area. Also anticipate the changes
 of vertical speeds, always remain on the "safe" side.
 
 You will bump (APPR then LAND then APPR) if you are slowing down at excessive
-rate (positive acceleration). The best landing is with a constant or slightly
-negative acceleration. So, at the last time, reduce power (if it is safe).
+rate (positive acceleration). The best landing is with a null or slightly
+negative acceleration. So, at the last time, reduce a littel bit the power (if
+it is safe).
 
 Troubleshooting
 ~~~~~~~~~~~~~~~
@@ -128,7 +129,7 @@ Any software has bugs. Please report any bug to malaise-at-magic-dot-fr.
 If you think that you landed properly but crashed, please check the speeds and
 the "APPR" indicator before suspecting a bug. If the speeds are not both blue
 or the "LAND" indicator is not set at the time the LEM contacts the ground,
-then it is a crash.
+then it is a crash, not a bug.
 
 Elements of design
 ------------------
@@ -144,7 +145,7 @@ The LEM
 ~~~~~~~
 Is square 10x10 m made of a rectangle and 2 feet and has an empty mass of M kg.
 
-It has a fuel tank of volume F kg of fuel.
+It has a fuel tank of F kg of fuel.
 
   +-----+
   | LEM |
@@ -166,7 +167,7 @@ The acceleration a is X_Thrust / m and Y_Thrust / m + g
 
 The mass m is m0 - (X_Thrust + Y_Thrust) * C * t
 
-Where C is the consumption rate kg/N/s
+Where C is the consumption rate in kg/N/s
 
 Each period, V0, P0, m0 and a are re-computed with current thrust value
 (which leads to a rather accurate integration of mass evolution).
@@ -225,9 +226,9 @@ The inputs
 
 Values
 ~~~~~~
-Moon gravity g=1.635 m/s2 (1/6 of Earth)
+Moon gravity g=1.635 m/s^2^ (1/6 of Earth)
 
-F=5.600 tons
+Fuel F=5.600 tons
 
 Empty mass M=10 tons
 
@@ -235,7 +236,7 @@ Max_Y_Thrust=44 kN
 
 Max_X_Thrust=4 kN
 
-C=1.83E-003 kg/N/s
+Consumption rate C=1.83x10^-3^ kg/N/s
 
 Width=500 m
 
@@ -248,7 +249,7 @@ Validation
 .In theory,
 without decreasing the mass (and without X thrust):
 
-[width="50%", options="header"]
+[width="75%", options="header"]
 |=========================================================
 |                   |Full mass           |Empty mass
 |Mass (kg)          | M + F = 15600      |M = 10000
@@ -259,5 +260,5 @@ without decreasing the mass (and without X thrust):
 
 .Practically,
 starting at full mass and applying a (decreasing) Y thrust to remain at constant
-height the mission duration appears to be around 150s.
+height the mission duration is around 150s.
 

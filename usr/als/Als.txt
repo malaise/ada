@@ -90,7 +90,7 @@ Notes on compatibility between options
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .Some options are ignored when alone
-Some options options are meaningful only when some other option is provided.
+Some options are meaningful only when some other option is provided.
 They are accepted and silently ignored when provided alone.
 
 Example:
@@ -105,8 +105,8 @@ Examples:
 * -d and -n are mutually exclusive.
 * -S is not compatible with some other formating options (-l, -1 and -c).
 
-Meaning of Als exit codes
--------------------------
+Als exit codes
+--------------
 Als exits with 0 if a file or dir has been shown, with 1 otherwise and with 2
 on error.
 

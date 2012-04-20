@@ -27,8 +27,9 @@ means that A->B, N->O, Z->A...
      BCDEFGHIJKLMNOPQRSTUVWXYZA
 
 Rotor carries are the offsets at which next rotor will turn together with
-current. Rotors with no carry can only appear at first position (slowest) and
-don't turn.
+current. Rotors with no carry can only appear at first position in the command
+line (slowest). Rotors with no carry don't turn except if they are alone
+(the only rotor defined).
 
 For a reflector, the definition must be symetrical and with no identity.
 
@@ -58,24 +59,28 @@ The rotors (optional) definition consists in
 <rotor_defs> (rotor name @ ring setting, separated by #) and
 <rotor_inits>, the initial position of each rotor.
 +
-First rotor defined is the slowest and is the one crossed just before the reflector. So for
-command line "I IV V", the coding will go through V, IV, I, reflector,
-then back.
+The first rotor on the command line is the slowest and is the one crossed just
+before the reflector. It is called the last rotor. Reversely the last rotor
+on the command line is the one that turns at each character and is called the
+first rotor.
 +
-Only last rotor can have no carry.
+So for command line "I IV V", the coding will go through V, IV, I, the
+reflector, then back through I, IV and V.
++
+Only the last rotor can have no carry.
 
 - Rotor initial offsets is optional. If it is set it must define an offset
 for each rotor defined.
 
 - The switches definition follows the same logic but defines only the
 letters that change in the coding (all other letters are kept
-unchanged). ex: AZBJMGYC Note that max 13 pairs can be defined, with no
+unchanged), ex: AZBJMGYC. Note that 13 pairs maximum can be defined, with no
 identity and each letter can appear at most once (implicit symetry).
 
 - The first_index number defines the offset of input text from which the
 decoding starts (default 1).
 
-- The last number defines the last offset of input text after which the
+- The last_index number defines the last offset of input text after which the
 decoding stops (default none).
 
 Examples:
@@ -88,7 +93,7 @@ For rotors I (fastest) offset F, IV offset Q and Beta (slowest) offset A:
 --------------------------------
 -rBeta@A#IV@Q#I@F.
 --------------------------------
-For initial offset of the rotors above:
+For initial position of the rotors above:
 --------------------------------
 -iDIV
 --------------------------------
@@ -131,8 +136,8 @@ Coding and decoding algorithm
 Letters are represented by a modulus 0 .. 25, the Id (A->0, B->1, .. Z->25).
 Coding X through a rotor or through the reflector means:
 
-- The current offset O of the rotor is nb of increments - ring setting and
-the offset O of the reflector is constant
+- The current offset O of the rotor is the 'number of increments' - 'ring
+setting' and the offset O of the reflector is constant
 
 - Input I is X + O
 
