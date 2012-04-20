@@ -12,7 +12,6 @@ package body Limited_Pool is
     return Pool.List_Length;
   end Length;
 
-
   -- Add in beginning of list
   procedure Push (Pool : in out Pool_Type; Data : in Data_Type) is
   begin

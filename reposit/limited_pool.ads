@@ -1,10 +1,10 @@
--- Generic simple unlimited pool of limited objects
+-- Generic simple unlimited pool of limited private objects
 -- Simply push data in pool, and pop data as long as it is not empty
 -- Default policy is Lifo (Last In First Out)
 --  but Fifo (First In First Out) is also possible
 with Limited_List;
 generic
-  type Data_Type is private;
+  type Data_Type is limited private;
   Lifo : Boolean := True;
   with procedure Set (To : out Data_Type; Val : in Data_Type);
 package Limited_Pool is
