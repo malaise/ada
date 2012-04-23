@@ -4,20 +4,23 @@ Agite specifications
 General purpose
 ---------------
 Provide a GIT graphical front end based on Afpx.
-Major functions are Navigation, file status and graphical diff.
+Major functions are navigation, file status and graphical diff.
 
 Detailed functions
 ------------------
 Dir status
 ~~~~~~~~~~
-The main menu lists the git content and subdirs of current directory.
+The main menu lists the git content, subdirs and files, of current directory.
 
-For file, two first characters are the status (MADRC)
-(modified-unstaged/Modified/Added/Delete/OK),
-then a space. For dirs 2 spaces.
+For a file, the two first characters are the status (MADRC)
+(Modified-unstaged/Modified/Added/Deleted/OK), then a space. For dirs there
+are 2 spaces.
 
-Then the name, then a space, then the kind (/@>|=?).
+Then the name, then a space, then the kind (' ' fo files, '@' for symbolic
+links, '/' for directories or '?' for others).
 
+A quick search function allows searhing first file that starts with the selected
+key or above.
 
 Double click on an entry does:
 
@@ -40,11 +43,15 @@ Bookmarks
 ~~~~~~~~~
 Locations (directories) can be bookmarked.
 
-A menu lists known bookmarks and buttons allow to:
+A menu lists the known bookmarks and buttons allow to:
 
 - go to a bookmark, as for a double click (returns to main)
 
-- add current dir to bookmarks
+- add current dir to bookmarks (with a given name if any)
+
+- add a separator in the list (with a given name if any)
+
+- Move current entry up or down
 
 - delete a bookmark
 
@@ -58,15 +65,19 @@ The history of a file or dir is listed (Head on top), each line with the date
 Left click in list allows selecting reference version and right click selects
 version to compare.
 
-If a file or dir a button switches to a screen with the list of modified files
+A button switches to a screen with the detailed list of files modified by this
+entry of the history.
 
-If a file, a button launches X diff from reference to version to compare.
+If a file, a button launches X diff from previous to this entry of the
+history.
 
 A button allows to return to main screen.
 
-Files
+Details
 ~~~~~
-The Files screen shows for a commit:
+The Details screen shows for a commit:
+
+- The commit SHA value
 
 - The date YYYY-MM-DD HH:MM:SS
 
