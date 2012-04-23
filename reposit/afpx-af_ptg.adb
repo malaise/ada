@@ -13,6 +13,7 @@ package body Af_Ptg is
         -- Double click in list
         -- Click and release in a Button field
         But_Field_No : Afpx_Typ.Absolute_Field_Range;
+        But_Square : Con_Io.Square;
       when Afpx_Typ.Get =>
         -- Click and release in a Get field
         Get_Field_No : Afpx_Typ.Field_Range;
@@ -254,6 +255,11 @@ package body Af_Ptg is
     begin
       Line_List.Move_At (List_Pos);
     end Restore_Pos;
+    function Get_Click_Pos return Con_Io.Square is
+    begin
+      return (Row => Click_Pos.Row - Field.Upper_Left.Row,
+              Col => Click_Pos.Col - Field.Upper_Left.Col);
+    end Get_Click_Pos;
 
     use Afpx_Typ;
     use Ada.Calendar;
@@ -365,7 +371,8 @@ package body Af_Ptg is
         and then Last_Selection_Time >= Click_Time - Double_Click_Delay then
           -- Double Left click
           Af_List.Put (Click_Row_List, Selected, False);
-          Result := (Kind => Afpx_Typ.Button, But_Field_No => Click_Field);
+          Result := (Kind => Afpx_Typ.Button, But_Field_No => Click_Field,
+                     But_Square => Get_Click_Pos);
         elsif Click_But = List_Left then
           -- Valid Left click. Store for next click to check double click
           Af_List.Put (Click_Row_List, Selected, False);
@@ -451,7 +458,8 @@ package body Af_Ptg is
       -- If field is button: restore color
       Put_Field (Click_Field, Normal);
       if Valid_Field then
-        Result := (Kind => Afpx_Typ.Button, But_Field_No => Click_Field);
+        Result := (Kind => Afpx_Typ.Button, But_Field_No => Click_Field,
+                   But_Square => Get_Click_Pos);
       end if;
     end if;
 
@@ -943,7 +951,8 @@ package body Af_Ptg is
                              Af_List.Get_Status.Ids_Selected (List_Right),
                            Event        => Mouse_Button,
                            Field_No =>
-                              Absolute_Field_Range(Click_Result.But_Field_No));
+                              Absolute_Field_Range(Click_Result.But_Field_No),
+                           Click_Pos => Click_Result.But_Square);
                 Insert := False;
                 Done := True;
             end case;

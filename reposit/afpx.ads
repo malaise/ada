@@ -249,7 +249,9 @@ package Afpx is
       when Keyboard =>
         Keyboard_Key : Keyboard_Key_List;
       when Mouse_Button =>
+        -- Field clicks and relative square of click
         Field_No : Absolute_Field_Range;
+        Click_Pos : Con_Io.Square;
       when Fd_Event | Timer_Event | Signal_Event | Refresh =>
         null;
     end case;
