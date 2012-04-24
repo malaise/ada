@@ -1,6 +1,5 @@
 with As.U, Con_Io, Afpx.List_Manager, Basic_Proc, Integer_Image, Directory,
-     Dir_Mng, Sys_Calls, Argument, Argument_Parser, Socket, String_Mng,
-     Upper_Char;
+     Dir_Mng, Sys_Calls, Argument, Argument_Parser, Socket, String_Mng;
 with Utils.X, Git_If, Config, Bookmarks, History, Confirm;
 procedure Agite is
 
@@ -367,31 +366,31 @@ procedure Agite is
     end;
   end List_Action;
 
-  -- Locate a file that has Upper_Char (First_Letter) >= Key
-  -- Move pos in list if found
+  -- Locate a file that has its first letter = Key
+  -- Move to it in Afpx list if found
   procedure Locate_File (Key : in Character) is
     File : Git_If.File_Entry_Rec;
-    Char : Character;
     Moved : Boolean;
   begin
-    if Afpx.Line_List.Is_Empty then
+    if Files.Is_Empty then
       return;
     end if;
-    Files.Move_At (Afpx.Line_List.Get_Position);
+    Files.Rewind;
     loop
       Files.Read (File, Moved => Moved);
-      -- regular file or unknown
-      if File.Kind = ' ' or else File.Kind = '?' then
-        Char := Upper_Char (File.Name.Element(1));
-        if Char >= Key then
-          -- Got it
-          if Moved then
-            Files.Move_To (Git_If.File_Mng.Dyn_List.Prev);
-          end if;
-          Afpx.Line_List.Move_At (Files.Get_Position);
-          Afpx.Update_List (Afpx.Center);
-          return;
+      -- Regular file or other kind, and matching Key
+      if (File.Kind = ' ' or else File.Kind = '?')
+      and then File.Name.Element(1) = Key then
+        -- Got it
+        if Moved then
+          -- Move back to matching entry
+          Files.Move_To (Git_If.File_Mng.Dyn_List.Prev);
         end if;
+        -- Move to it
+        Afpx.Line_List.Move_At (Files.Get_Position);
+        Afpx.Update_List (Afpx.Center);
+        -- Done
+        return;
       end if;
       exit when not Moved;
     end loop;
@@ -550,8 +549,9 @@ begin
             raise Utils.Exit_Requested;
           when 28 =>
             -- Quick search
-            Locate_File (Afpx.Decode_Field (Ptg_Result.Field_No, 0)
-                              (Ptg_Result.Click_Pos.Col + 1));
+            Locate_File (
+              Afpx.Decode_Field (Ptg_Result.Field_No, Ptg_Result.Click_Pos.Row)
+                                  (Ptg_Result.Click_Pos.Col + 1));
           when others =>
             -- Other button?
             null;

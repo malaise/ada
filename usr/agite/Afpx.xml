@@ -3,7 +3,7 @@
 
 <!-- For agite -->
 <Afpx_Descriptors Height="44" Width="55">
-  <Var Name="Version" Value="V4.2"/>
+  <Var Name="Version" Value="V4.3"/>
 
   <!-- Main screen: explorator -->
   <Descriptor Num="1" Background="Light_Grey">
@@ -15,7 +15,7 @@
     <!-- Title and list -->
     <Var Name="WWidth" Value="${Screen.Width}-${LmWidth}-${LmHOffset}-1"/>
     <List>
-      <Geometry Up="8" Left="1" Low="${Screen.Low}-1" Width="${WWidth}"/>
+      <Geometry Up="9" Left="1" Low="${Screen.Low}-1" Width="${WWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey" Selected="Dark_Green"/>
     </List>
     <Field Num="1" Kind="Put">
@@ -26,7 +26,7 @@
 
     <!-- List management -->
     <Var Name="LmLeft"  Value="${List.Right}+${LmHOffset}"/>
-    <Var Name="LmUp"    Value="${List.Up}+15"/>
+    <Var Name="LmUp"    Value="${List.Up}+14"/>
     <Var Name="LmSta"   Value="1"/>
 
     <Field Num="2" Kind="Button">
@@ -174,15 +174,16 @@
 
     <!-- Quick search -->
     <Field Num="27" Kind="Put">
-      <Geometry Height="1" Left="1" Up="${List.Up}-1" Width="7"/>
+      <Geometry Up="${List.Up}-2" Height="1" Left="1" Width="7"/>
       <Colors Foreground="Black" Background="Light_Grey" />
       <Init Row="0" Col="0">Search:</Init>
     </Field>
     <Field Num="28" Kind="Button">
-    <Geometry Height="1" Left="${Field_27.Right}+2" Low="${Field_27.Low}"
+    <Geometry Up="${Field_27.Up}" Height="2" Left="${Field_27.Right}+2"
               Width="36"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789</Init>
+      <Init Row="1" Col="0">abcdefghijklmnopqrstuvwxyz</Init>
     </Field>
 
   </Descriptor>
