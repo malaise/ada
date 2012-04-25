@@ -183,7 +183,7 @@
               Width="36"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789</Init>
-      <Init Row="1" Col="0">abcdefghijklmnopqrstuvwxyz</Init>
+      <Init Row="1" Col="0">abcdefghijklmnopqrstuvwxyz !#+-(:=[{</Init>
     </Field>
 
   </Descriptor>
