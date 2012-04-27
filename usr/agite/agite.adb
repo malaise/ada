@@ -27,7 +27,6 @@ procedure Agite is
   -- Got to previous dir (if any) / Save history
   Goto_Previous : Boolean;
   Update_History : Boolean;
-  Prev_Dir, Curr_Dir : As.U.Asu_Us;
 
   -- Version Stuff
   Version : Git_If.Version_Rec;
@@ -40,7 +39,7 @@ procedure Agite is
   Insert       : Boolean;
   Redisplay    : Boolean;
   Ptg_Result   : Afpx.Result_Rec;
-  Dir_Field    : constant Afpx.Field_Range := 12;
+  Dir_Field    : constant Afpx.Field_Range := 15;
   use type Afpx.Absolute_Field_Range;
 
   -- Current Git root and path referred to Git root
@@ -131,26 +130,26 @@ procedure Agite is
     Afpx.Update_List (Afpx.Top);
 
     -- Encode root dir
-    Afpx.Clear_Field (10);
-    Afpx.Encode_Field (10, (0, 0),
-       Utils.Normalize (Root.Image, Afpx.Get_Field_Width (12)));
+    Afpx.Clear_Field (13);
+    Afpx.Encode_Field (13, (0, 0),
+       Utils.Normalize (Root.Image, Afpx.Get_Field_Width (13)));
 
    -- Encode current branch
-   Afpx.Clear_Field (17);
+   Afpx.Clear_Field (9);
    if Branch.Image = ("(no branch)") then
      Branch := As.U.Tus ("None.");
    end if;
-   Afpx.Encode_Field (17, (0, 0),
-         Utils.Normalize ("Br: " & Branch.Image, Afpx.Get_Field_Width (17),
+   Afpx.Encode_Field (9, (0, 0),
+         Utils.Normalize ("Br: " & Branch.Image, Afpx.Get_Field_Width (9),
                           False));
 
     -- De-activate Diff and history if no in Git
     if Root.Is_Null then
-      Utils.X.Protect_Field (23);
-      Utils.X.Protect_Field (24);
+      Utils.X.Protect_Field (26);
+      Utils.X.Protect_Field (27);
     else
-      Afpx.Reset_Field (23);
-      Afpx.Reset_Field (24);
+      Afpx.Reset_Field (26);
+      Afpx.Reset_Field (27);
     end if;
 
   end Encode_Files;
@@ -160,10 +159,8 @@ procedure Agite is
     Str : constant String
         := Utils.Parse_Spaces (Afpx.Decode_Field (Dir_Field, 0, False));
     Width : constant Afpx.Width_Range := Afpx.Get_Field_Width (Dir_Field);
-    Saved_Prev_Dir : As.U.Asu_Us;
   begin
     begin
-      Saved_Prev_Dir := As.U.Tus (Directory.Get_Current);
       if New_Dir = "" then
         if Str /= "" then
           Directory.Change_Current (Str);
@@ -182,11 +179,6 @@ procedure Agite is
       Config.Save_Curr_Dir (Directory.Get_Current);
     end if;
     Encode_Files;
-    -- Set this new dir for Prev if no Prev yet
-    -- Otherwise Prev is set only on significant action
-    if Prev_Dir.Is_Null then
-      Prev_Dir := Saved_Prev_Dir;
-    end if;
 
     Afpx.Clear_Field (Dir_Field);
     Afpx.Encode_Field (Dir_Field, (0, 0),
@@ -208,12 +200,6 @@ procedure Agite is
       Cursor_Col := Width - 1;
     end if;
   end Change_Dir;
-
-  -- Save current dir as Prev_Dir
-  procedure Save_Dir is
-  begin
-    Curr_Dir := As.U.Tus (Directory.Get_Current);
-  end Save_Dir;
 
   -- To find current position back
   function Match (Current, Criteria : Git_If.File_Entry_Rec) return Boolean is
@@ -248,7 +234,7 @@ procedure Agite is
   -- else ">tail"
   Local_Host : As.U.Asu_Us;
   function Host_Str return String is
-    Len : constant Positive := Afpx.Get_Field_Width (19);
+    Len : constant Positive := Afpx.Get_Field_Width (11);
     use type As.U.Asu_Us;
   begin
     if not Local_Host.Is_Null then
@@ -278,7 +264,7 @@ procedure Agite is
     Cursor_Col := 0;
     Insert := False;
     Redisplay := False;
-    Afpx.Encode_Field (19, (0, 0), Host_Str);
+    Afpx.Encode_Field (11, (0, 0), Host_Str);
     Change_Dir;
   end;
 
@@ -347,7 +333,6 @@ procedure Agite is
         end case;
       elsif File.Kind /= '@' and then File.Kind /= '?' then
         -- File
-        Save_Dir;
         case Action is
           when Edit | Default =>
             Edit (File_Name);
@@ -360,7 +345,6 @@ procedure Agite is
         end case;
       elsif File.Kind = '?' and then Action = Revert then
         -- Deleted file
-        Save_Dir;
         Do_Revert (File_Name);
       end if;
     end;
@@ -396,6 +380,40 @@ procedure Agite is
     end loop;
     -- Not found
   end Locate_File;
+
+  -- Push/pop dir
+  Dir1, Dir2 : As.U.Asu_Us;
+  procedure Push_Dir is
+  begin
+    Dir2 := Dir1;
+    Dir1 := As.U.Tus (Directory.Get_Current);
+  end Push_Dir;
+  procedure Pop_Dir is
+    New_Dir : As.U.Asu_Us;
+  begin
+    if Dir2.Is_Null then
+      Push_Dir;
+    end if;
+    -- Change to Dir2 and swap Dir1 and Dir2
+    New_Dir := Dir2;
+    Dir2 := Dir1;
+    Dir1 := New_Dir;
+    Change_Dir (New_Dir.Image);
+  end Pop_Dir;
+  procedure Init_Dir is
+  begin
+    Push_Dir;
+  end Init_Dir;
+  function Can_Push return Boolean is
+  begin
+    return True;
+  end Can_Push;
+  function Can_Pop return Boolean is
+    Curr_Dir : constant String := Directory.Get_Current;
+  begin
+    return (Dir2.Is_Null and then Curr_Dir /= Dir1.Image)
+    or else (not Dir2.Is_Null and then Curr_Dir /= Dir2.Image);
+  end Can_Pop;
 
 begin
   -- Check/Parse arguments
@@ -459,11 +477,18 @@ begin
 
   -- Init Afpx
   Init;
+
+  -- Now we can reset this env variables for our children
   Sys_Calls.Unsetenv ("AFPX_DATA_DIR");
+
+  -- Init Push/Pop dirs
+  Init_Dir;
 
   -- Main loop
   loop
-    Afpx.Set_Field_Activation (16, Directory.Get_Current /= Prev_Dir.Image);
+    -- Activate PushD and PopD
+    Afpx.Set_Field_Activation (19, Can_Push);
+    Afpx.Set_Field_Activation (20, Can_Pop);
 
     Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
                        Ptg_Result, Redisplay);
@@ -490,20 +515,19 @@ begin
             -- Scroll list
             Afpx.List_Manager.Scroll(
                 Ptg_Result.Field_No - Utils.X.List_Scroll_Fld_Range'First + 1);
-          when 10 =>
+          when 13 =>
             -- Root (change dir to)
             Change_Dir (Root.Image);
-          when 11 =>
+          when 15 =>
             -- Go (to dir)
             Change_Dir;
-          when 13 =>
+          when 16 =>
             -- Reread (change dir . and restore pos)
-            Save_Dir;
             Reread;
-          when 14 =>
+          when 17 =>
             -- Up (change dir ..)
             Change_Dir ("..");
-          when 15 =>
+          when 18 =>
             -- Bookmarks (menu)
             declare
               New_Dir : constant String := Bookmarks.Handle;
@@ -513,45 +537,38 @@ begin
                 Change_Dir (New_Dir);
               end if;
             end;
-          when 16 =>
-            -- Prev dir
-            Change_Dir (Prev_Dir.Image);
-            if not Curr_Dir.Is_Null then
-              Prev_Dir := Curr_Dir;
-            end if;
-            Save_Dir;
+          when 19 =>
+            -- PushD
+            Push_Dir;
           when 20 =>
-            -- GUI
-            Save_Dir;
-            Utils.Launch ("git gui");
-          when 21 =>
-            -- XTerm
-            Save_Dir;
-            Utils.Launch (Config.Xterminal);
+            -- PopD
+            Pop_Dir;
           when 22 =>
-            -- Edit (file)
-            Save_Dir;
-            List_Action (Edit);
-          when 23 =>
-            -- Diff
-            Save_Dir;
-            List_Action (Diff);
-          when 24 =>
-            -- History
-            Save_Dir;
-            List_Action (History);
-          when 25 =>
-            -- Revert
-            Save_Dir;
-            List_Action (Revert);
-          when 26 =>
-            -- Exit
-            raise Utils.Exit_Requested;
-          when 28 =>
             -- Quick search
             Locate_File (
               Afpx.Decode_Field (Ptg_Result.Field_No, Ptg_Result.Click_Pos.Row)
                                   (Ptg_Result.Click_Pos.Col + 1));
+          when 23 =>
+            -- GUI
+            Utils.Launch ("git gui");
+          when 24 =>
+            -- XTerm
+            Utils.Launch (Config.Xterminal);
+          when 25 =>
+            -- Edit (file)
+            List_Action (Edit);
+          when 26 =>
+            -- Diff
+            List_Action (Diff);
+          when 27 =>
+            -- History
+            List_Action (History);
+          when 28 =>
+            -- Revert
+            List_Action (Revert);
+          when 29 =>
+            -- Exit
+            raise Utils.Exit_Requested;
           when others =>
             -- Other button?
             null;
