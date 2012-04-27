@@ -10,7 +10,7 @@ Direct input::
     The program has no blocking input at all (ex: reads files) or reads stdin
 and blocks on it (and puts on stdout/stderr).
 +
-=> The program can use Basic_Proc or Sys_Calls (or even Ada.text_Io) for its Ios.
+=> The program can use Basic_Proc or Sys_Calls (or even Ada.Text_Io) for its Ios.
 
 Multiplexed inputs::
     The program multiplexes several inputs and stimuli: file descriptors (UDP or 
@@ -30,7 +30,7 @@ allows dispatching the FD events, timers and signals to the proper callbacks).
  * Sys_Calls allows direct access to other FDs.
 
 X11 mutiplexed inputs ::
-    The program uses X11 and multiplexes X11 events with other events (see
+    The program uses X11 and multiplexes X11 events with other inputs (see
 above).
 +
 => The program must use either X_Mng.X_Wait_Event or Con_Io.Put_Then_Get (or
@@ -58,7 +58,7 @@ Arguments
 more strict logic and higher level parsing. Use the later if the arguments are
 many, are optional, support options...
 
-* 'Environ' allows retriaving and checking environmental data.
+* 'Environ' allows retrieving and checking environmental variables.
 
 Strings
 ~~~~~~~
@@ -86,15 +86,15 @@ associated string operations.
 
 * 'Utf_8' and 'Utf_16' provide basic encoding functions.
 
-* 'Byte_To_Unicode' allow converting bytes to unicode numbers according to a 
+* 'Byte_To_Unicode' allows converting bytes to unicode numbers according to a 
 XML file definition of encoding.
 
 Numbers
 ~~~~~~~
 * 'Arbitrary' provides operations on integers with arbitray precision.
 
-* 'My_Math' provides logarithm and trigonometry on real and conversion to
-integers.
+* 'My_Math' provides logarithm and trigonometry on real numbers and conversion
+to integers.
 
 * 'C_Nbres' implements complex numbers.
 
@@ -148,18 +148,20 @@ expire.
 on virtual times. It also provides 'Passive_Timers' (single shot or periodics)
 on which one can check the expiration from time to time.
 
-* 'Perpet' is a petpetual calendar.
+* 'Perpet' is a perpetual calendar.
 
-* 'Day_Mang' converts durations and hours/minutes/seconds/milliseconds.
+* 'Day_Mang' converts durations to and from hours/minutes/seconds/milliseconds.
 
 Forking child process
 ~~~~~~~~~~~~~~~~~~~~~
 'Proc_Family' provides the basic fork/exec features while 'Command' waits
-(using Event_Mng) until the end of execution of the child.
+(using Event_Mng) until the end of execution of the child and collects its
+outputs and errors.
 
 Sockets
 ~~~~~~~
-* 'Socket' provides all the basic functions for UDP (IPM) and TCP sockets.
+* 'Socket' provides all the basic functions for UDP (including IPM) and TCP
+sockets.
 
 * 'Tcp_Util' automaticall and asynchronously connects TCP sockets, accepts
 TCP connection, handles sending overflow and reception on socket (including
@@ -197,7 +199,7 @@ ada_parser (2)::
      Parses a text input flow, identifies ada lexical elements.
 
 ada_words (2)::
-     Basic ada parsic of delimiters, separators and reserved words.
+     Basic ada parsing of delimiters, separators and reserved words.
 
 address_ops (1)::
      Add, sub and returns image of a System.Address.
@@ -207,19 +209,19 @@ afpx (3)::
      defined.
 
 afpx_bld (2)::
-     Process that compiles AFPX xml text description of screens.
+     Process that compiles XML text description of screens for AFPX.
 
 any_def (1)::
-     Definition of variant type that contains any value
+     Definition of variant type that contains any value.
 
 arbitrary arbitrary-factors arbitrary-fractions (2)::
      Arbitrary precision operations, prime factor decomposition, fractions.
 
 as as-b as-u as-u-utils (2)::
-     Bounded and unbounded strings and associated packaging utilities
+     Bounded and unbounded strings and associated containers.
 
 autobus (3)::
-     Simple bus to excahnge strings between processes
+     Simple bus to exchange strings between processes.
 
 loc_arg (1)::
      Program name and arguments extraction (based on keys).
@@ -240,7 +242,7 @@ bit_ops (1)::
      Bit operations.
 
 bloc_io (3)::
-     Read/writes arrays of bytes from/to file.
+     Read/writes arrays of bytes from/to a file.
 
 byte_to_unicode (1)::
      Map a character (e.g. ISO-8859-xx) to unicode according to a xml-defined
@@ -265,10 +267,10 @@ clear_screen (1)::
      Process that clears the screen.
 
 command (2)::
-     Uses Proc_Family to fork-exec and catch output and error flows.
+     Uses Proc_Family to fork-exec and collect output and error flows.
 
 computer (2)::
-     Evaluates expressions based on numbers, variables, operations.
+     Evaluate expressions based on numbers, variables, operations.
 
 condition_manager (1)::
      Allow several tasks to wait until unblocked all together or one by one.
@@ -280,7 +282,7 @@ control_pool (2)::
      Control exclusive access to data in a pool
 
 convert (1)::
-     Converts network <-> host integer.
+     Converts network <--> host integer.
 
 copy_file (1)::
      Copy a file.
@@ -289,7 +291,7 @@ crc_10 (1)::
      Computes the CRC of strings (CRC is in 0 .. 3FF).
 
 curve (3)::
-     Draw a curve y=f(x) and points in 2D.
+     Draw a curve of function y=f(x) and drawn a set of points in 2D.
 
 date_image (1)::
      String image "YYyy/Mm/Dd Hh:Mm:Ss.mmm" of a date.
@@ -316,7 +318,7 @@ environ (2)::
      Environment variable extraction and basic tests.
 
 euro_franc (1)::
-     Euro <-> Franc convertion.
+     Euro <--> Franc convertion.
 
 event_mng (3)::
      Multiplex reception of events (timers, fd, signals).
@@ -352,7 +354,7 @@ hashed_list.unique (1)::
      Hashed access to a dynamic list of items with unique keys.
 
 hexa_utils (1)::
-     Convert strings to hexa and reverse (ex: "1A" <-> 26).
+     Convert strings to hexa and reverse (ex: "1A" <--> 26).
 
 http (2)::
      Fetch the target of a HTTP URL.
@@ -361,10 +363,10 @@ init_manager (1)::
      Manage atomic init of state while concurent update events are bufferized.
 
 input_buffer (1)::
-     Extract sentences from a flow of chars.
+     Extract sentences from a flow of characters.
 
 int_image mod_image integer_image (1)::
-     Integer and modulus image (no leading space).
+     Image of integer and modulus (no leading space).
 
 ip_addr (1)::
      Parse IP address or port.
@@ -379,16 +381,16 @@ lower_char lower_str mixed_str upper_char upper_str (1)::
      Upper, lower, mixed string and character conversion.
 
 many_strings (2)::
-     Concatenates strings in string.
+     Concatenate strings in string.
 
 multiget (2)::
-     Allows getting/ungetting items from an input flow.
+     Allow getting/ungetting items from an input flow.
 
 mutex_manager (2)::
      Mutex for exclusive access or read/write access to shared data.
 
 my_io bool_io flo_io int_io long_io (1)::
-     Basic boolean/integer... IOs.
+     Basic boolean/integer... IOs with Ada.Text_Io.
 
 my_math (2)::
      Math library.
@@ -429,9 +431,6 @@ perpet (2)::
 polygon_mng (2)::
      Line and polygone intersection.
 
-prime_list (1)::
-     List of prime numbers.
-
 proc_family (2)::
      Fork/exec unix process.
 
@@ -448,7 +447,7 @@ recurs (1)::
      Recursive operation on subdirs.
 
 regex_filters (2)::
-     Check a string vs chained regex criteria.
+     Check a string versus chained regex criteria.
 
 regular_expressions (2)::
      Check a string versus a regular expression.
@@ -457,7 +456,7 @@ rnd (1)::
      Random number generator.
 
 romanic (1)::
-     Decimal to romanic conversion (11 <-> XI).
+     Decimal to romanic conversion (11 <--> XI).
 
 round_at (1)::
      Round a float at a given position, before or after decimal.
@@ -472,7 +471,7 @@ smart_reference (2)::
      Smart reference (automatic free).
 
 socket (3)::
-     Socket (Udp/Tpc/Tcp_Header, Afuix) operations.
+     Socket (Udp/Tpc/Tcp_Header, Ipm, Afunix) operations.
 
 socket_util (1)::
      General Set_Dest and Link of socket
@@ -483,7 +482,7 @@ sorts (2)::
 state_machine (2)::
      Generic state machine manager.
 
-string_mng (2)::
+string_mng string_mng-navigator string_mng-regex (2)::
      Various string utilites, including regexp and navigation.
 
 sys_calls (2)::
@@ -504,9 +503,6 @@ temp_file (2)::
 text_char (2)::
      Get/unget chars from an input flow.
 
-text_handler (1)::
-     Storage of variable length strings.
-
 text_line (2)::
      Get/put lines of text from/to a flow.
 
@@ -520,13 +516,13 @@ trace (1)::
      Tracing utility library.
 
 trees (2)::
-     Tree of items (father/childs) management.
+     Tree of items (father/children) management.
 
 u_rand (2)::
      Universal random number generator.
 
 unbounded_arrays (1)::
-     Handle unbounded generic arrays as Unbounded_String does.
+     Handle unbounded generic arrays, as Unbounded_String does.
 
 unicode (1)::
      Definition of unicode numbers
@@ -538,7 +534,7 @@ utf_8 (2)::
      Utf_8 encoding/decoding
 
 virtual_time (2)::
-     Define virtual time that can shift, accelerate...
+     Define virtual time that can shift, accelerate, freeze...
 
 xml_parser (3)::
      Parser of Xml files or strings, including check of dtd.
@@ -547,5 +543,5 @@ xml_parser.generator (2)::
      Generate Xml output in flow/file/string.
 
 x_mng (3)::
-     Low level interface to X11 (txt, basic graphics, Mouse and keyboard).
+     Low level interface to X11 (text, basic graphics, Mouse and keyboard).
 

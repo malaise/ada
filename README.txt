@@ -3,10 +3,10 @@ Ada notes
 
 This README file describes briefly the main directories of the Ada contrib.
 
-The software compiles with Ada05 (Gnat GPL 2010) and runs on Unix (Linux).
+The software compiles with Ada05 (Gnat GPL 2011) and runs on Unix (Linux).
 
 Some programs depend on PCRE (Perl Compatible Regular Expressions) and work
-with version 7.8 or above (8.11 is OK).
+with version 7.8 or above (8.21 is OK).
 
 Programs are rated from 1 (simple) to 3 (very complex), on subjective
 criteria.
@@ -21,7 +21,7 @@ gnatmake (you can copy it or make links from $HOME/bin/ada and
 $HOME/bin/gnatlink to it).
 
 Automatic generation by make (see next section) doesn't use them but these
-scripts are convenient.
+scripts are convenient for manual compilation.
 
 Makefiles project (MANDATORY)
 -----------------------------
@@ -97,8 +97,9 @@ them.
 
 5 Usr directories
 -----------------
-Each ot them hosts a standalone project except tests (test programs of
-repository packages) and tasks (simple task examples).
+Each ot them hosts a standalone project except 'misc' (miscellaneous small
+programs, 'tests' (test programs of repository packages) and 'tasks' (simple
+task examples).
 
 They all depend on C and Reposit and are independant from the others (except
 Pipe -> Fifos -> Dictio).
@@ -106,7 +107,7 @@ Pipe -> Fifos -> Dictio).
 The more usefull are Agite, Alook, Als, Asubst, Lsadeps, Mcd, Udp_Spy and
 Xml_Checker.
 
-The games are G, Lem, Mmind, Nimmari and Sokoban.
+The games are G (in misc), Lem, Mmind, Nimmari and Sokoban.
 
 Here is the full list and description:
 
@@ -115,7 +116,8 @@ Account (3)::
      cheque, credit card (defered) and transfer operations.
 
 Agite (3)::
-     GUI for Git, dir oriented.
+     GUI for Git, directory oriented. Access to history and external
+diff tool.
 
 Als (2)::
      Lists, more or less the "ls" way, files and directories. Allow selection
@@ -133,8 +135,8 @@ Asubst (3)::
 
 Chess (3)::
      With Con_Io and Tcp_Util, allows 2 players to play chess on one or 2
-     computers.  Checks movement validity (already tricky) but does not play
-     against human.
+     displays.  Checks movement validity (already tricky) but does not play
+     against human (too tricky).
 
 C_Magic (1)::
      Small program that computes magic squares (numbers from to 1 in a
@@ -152,10 +154,10 @@ Dictio (3)::
      Distributed data dictionnary that allows to store data, distribute this
      data base on all the machines. Ensures correct insertion of new machines
      and constant consistency. Recovery of data loss may be optimized
-     (resends all).
+     (presnetly it resends all).
 
 Enigma (2)::
-     Encodes/decodes text like german enigma machine did in ww2.
+     Encodes/decodes text like german enigma machines did in ww2.
 
 Fifos (2)::
      Use Dictio to make distributed point to point connections (logical
@@ -171,14 +173,14 @@ Heart (3)::
      DB of heart rate measures, displayed with Afpx.
 
 Hungar (2)::
-     Euristic search (hungarian method) of best affection (e.g. of peaple to
-     jobs).  Tough algo.
+     Euristic search (hungarian method) of best affection (e.g. of people to
+     jobs). Tough algo.
 
 Lem (2)::
      Game: land the LEM on the moon.
 
 Lsadeps (2)::
-     Shows the list/tree of Ada units/files dependencies
+     Shows the list/tree of Ada units/files dependencies.
 
 Mcd (3)::
      Reverse polish computer. At command line level but very powerful.
@@ -202,7 +204,7 @@ Navig (2)::
      Navigation computation (wind, speed, heading, route, drift...).
 
 Nimmari (2)::
-     Nim and Marienbad games.
+     Nim and Marienbad game.
 
 Pexec (1)::
      Recursive execution on directories of commands.
@@ -234,7 +236,8 @@ Tests::
      Several small test programs of the Repository packages.
 
 Xwords (2)::
-     A graphical lexicography of common words and nouns (french DB).
+     A graphical lexicography of common words and nouns (french DB),
+     search with wildcards for crosswords, search of anagrams.
 
 Cots directories
 ----------------
