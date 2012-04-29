@@ -3,7 +3,7 @@
 
 <!-- For agite -->
 <Afpx_Descriptors Height="44" Width="55">
-  <Var Name="Version" Value="V4.4"/>
+  <Var Name="Version" Value="V5.0"/>
 
   <!-- Main screen: explorator -->
   <Descriptor Num="1" Background="Light_Grey">
@@ -15,7 +15,7 @@
     <!-- Title and list -->
     <Var Name="WWidth" Value="${Screen.Width}-${LmWidth}-${LmHOffset}-1"/>
     <List>
-      <Geometry Up="9" Left="1" Low="${Screen.Low}-1" Width="${WWidth}"/>
+      <Geometry Up="10" Left="1" Low="${Screen.Low}-1" Width="${WWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey" Selected="Dark_Green"/>
     </List>
     <Field Num="1" Kind="Put">
@@ -26,7 +26,7 @@
 
     <!-- List management -->
     <Var Name="LmLeft"  Value="${List.Right}+${LmHOffset}"/>
-    <Var Name="LmUp"    Value="${List.Up}+14"/>
+    <Var Name="LmUp"    Value="${List.Up}+13"/>
     <Var Name="LmSta"   Value="1"/>
 
     <Field Num="2" Kind="Button">

@@ -13,6 +13,9 @@ package Config is
   -- Diff GUI
   function Differator return String;
 
+  -- Refresh period
+  function Period return Duration;
+
   -- Last/Current dir
   procedure Save_Curr_Dir (Dir : in String);
   function Prev_Dir return String;

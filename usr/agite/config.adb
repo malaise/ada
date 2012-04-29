@@ -1,4 +1,4 @@
-with Basic_Proc, Environ, Directory, Xml_Parser.Generator;
+with Basic_Proc, Environ, Directory, Xml_Parser.Generator, Timers;
 package body Config is
 
   -- Config file name
@@ -24,8 +24,8 @@ package body Config is
     return File_Path.Image;
   end Get_File_Name;
 
-  Curr_Dir_Pos : constant := 5;
-  Bookmarks_Pos : constant := 6;
+  Curr_Dir_Pos : constant := 6;
+  Bookmarks_Pos : constant := 7;
 
   -- Load the conf
   Ctx : Xml_Parser.Generator.Ctx_Type;
@@ -106,6 +106,19 @@ package body Config is
     Load;
     return Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 4), 1));
   end Differator;
+
+  -- Refresh_Period
+  function Period return Duration is
+    Result : Timers.Period_Range;
+  begin
+    Load;
+    Result := Timers.Period_Range'Value (
+               Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 5), 1)));
+    return Result;
+  exception
+    when others =>
+      raise Invalid_Config;
+  end Period;
 
   -- Last/Current dir
   procedure Save_Curr_Dir (Dir : in String) is

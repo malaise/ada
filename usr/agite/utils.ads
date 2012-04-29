@@ -12,7 +12,8 @@ package Utils is
   function Last_Index (Str : String) return Natural;
 
   -- Start a command in background
-  procedure Launch (Command : in String);
+  type Client_Callback is access procedure;
+  procedure Launch (Command : in String; Set_Callback : in Boolean := False);
 
   -- Exception on Ctrl C
   Exit_Requested : exception;

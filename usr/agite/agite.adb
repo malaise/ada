@@ -50,8 +50,9 @@ procedure Agite is
   Editor : As.U.Asu_Us;
   Differator : As.U.Asu_Us;
 
-  -- Files list
+  -- Files list and current branch
   Files : Git_If.File_List;
+  Branch : As.U.Asu_Us;
 
   -- List width and encoding
   List_Width : Afpx.Width_Range;
@@ -97,11 +98,9 @@ procedure Agite is
     Files.Rewind;
   end List_Files;
 
-  -- Encode files
-  procedure Encode_Files is
-    Branch : As.U.Asu_Us;
+  -- Update list of files
+  procedure List_Files is
   begin
-    List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No) - 4;
     -- Get info: Path if needed and list
     Afpx.Suspend;
     Redisplay := True;
@@ -124,34 +123,85 @@ procedure Agite is
         Afpx.Resume;
         raise;
     end;
+  end List_Files;
 
-    -- Copy in Afpx list
-    Init_List (Files);
-    Afpx.Update_List (Afpx.Top);
+  -- To find current position back
+  function Match (Current, Criteria : Git_If.File_Entry_Rec) return Boolean is
+    use type As.U.Asu_Us;
+  begin
+    return Current.Kind = Criteria.Kind and then Current.Name = Criteria.Name;
+  end Match;
+  procedure File_Search is new Git_If.File_Mng.Dyn_List.Search (Match);
 
-    -- Encode root dir
-    Afpx.Clear_Field (13);
-    Afpx.Encode_Field (13, (0, 0),
-       Utils.Normalize (Root.Image, Afpx.Get_Field_Width (13)));
-
-   -- Encode current branch
-   Afpx.Clear_Field (9);
-   if Branch.Image = ("(no branch)") then
-     Branch := As.U.Tus ("None.");
-   end if;
-   Afpx.Encode_Field (9, (0, 0),
-         Utils.Normalize ("Br: " & Branch.Image, Afpx.Get_Field_Width (9),
-                          False));
-
-    -- De-activate Diff and history if no in Git
-    if Root.Is_Null then
-      Utils.X.Protect_Field (26);
-      Utils.X.Protect_Field (27);
+  -- Encode Afpx list with files, if list has changed or if Force
+  procedure Encode_Files (Force : in Boolean) is
+    Position : Natural := 0;
+    Current_File : Git_If.File_Entry_Rec;
+    Prev_Files : Git_If.File_List;
+    Changed : Boolean;
+    Found : Boolean;
+    use type Git_If.File_Entry_Rec;
+  begin
+    -- Save current position and entry
+    if not Files.Is_Empty then
+      Position := Afpx.Line_List.Get_Position;
+      Files.Move_At (Position);
+      Files.Read (Current_File, Git_If.File_Mng.Dyn_List.Current);
+    end if;
+    if Force then
+      List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No) - 4;
+      Changed := True;
     else
-      Afpx.Reset_Field (26);
-      Afpx.Reset_Field (27);
+      -- Refresh list only if it has changed
+      -- Make a copy of files list
+      Prev_Files.Insert_Copy (Files);
+      Changed := False;
     end if;
 
+    -- Update list of files
+    List_Files;
+
+    -- Check lengths then content
+    if not Changed
+    and then Files.List_Length /= Prev_Files.List_Length then
+      Changed := True;
+    end if;
+    if not Changed then
+      Files.Rewind;
+      Prev_Files.Rewind;
+      loop
+        if Files.Access_Current.all /= Prev_Files.Access_Current.all then
+          -- Stop as soon as one entry differs
+          Changed := True;
+          exit;
+        end if;
+        exit when not Files.Check_Move;
+        Files.Move_To;
+        Prev_Files.Move_To;
+      end loop;
+    end if;
+
+    if not Changed then
+      -- No change: nothing
+      return;
+    elsif Position = 0 then
+      -- Initial list was empty
+      Init_List (Files);
+      Afpx.Update_List (Afpx.Top);
+    else
+      Init_List (Files);
+      -- Search position back and move Afpx to it
+      File_Search (Files, Found, Current_File,
+                   From => Git_If.File_Mng.Dyn_List.Absolute);
+      if Found then
+        Afpx.Line_List.Move_At (Files.Get_Position);
+        Afpx.Update_List (Afpx.Center);
+      else
+        Afpx.Line_List.Rewind;
+        Afpx.Update_List (Afpx.Top);
+      end if;
+    end if;
+    -- Copy in Afpx list
   end Encode_Files;
 
   -- Change dir (or at least try) according to argument or Dir_Field
@@ -178,8 +228,9 @@ procedure Agite is
     if Update_History then
       Config.Save_Curr_Dir (Directory.Get_Current);
     end if;
-    Encode_Files;
+    Encode_Files (Force => True);
 
+    -- Encode current dir (get field)
     Afpx.Clear_Field (Dir_Field);
     Afpx.Encode_Field (Dir_Field, (0, 0),
            Utils.Normalize (Directory.Get_Current, Width));
@@ -199,34 +250,50 @@ procedure Agite is
     if Cursor_Col >= Width then
       Cursor_Col := Width - 1;
     end if;
+
+    -- Encode root dir
+    Afpx.Clear_Field (13);
+    Afpx.Encode_Field (13, (0, 0),
+       Utils.Normalize (Root.Image, Afpx.Get_Field_Width (13)));
+
+    -- Encode current branch
+    Afpx.Clear_Field (9);
+    if Branch.Image = ("(no branch)") then
+      Branch := As.U.Tus ("None.");
+    end if;
+    Afpx.Encode_Field (9, (0, 0),
+         Utils.Normalize ("Br: " & Branch.Image, Afpx.Get_Field_Width (9),
+                          False));
+
+    -- De-activate Diff and history if no in Git
+    if Root.Is_Null then
+      Utils.X.Protect_Field (26);
+      Utils.X.Protect_Field (27);
+    else
+      Afpx.Reset_Field (26);
+      Afpx.Reset_Field (27);
+    end if;
   end Change_Dir;
 
-  -- To find current position back
-  function Match (Current, Criteria : Git_If.File_Entry_Rec) return Boolean is
-    use type As.U.Asu_Us;
+  -- Refresh list of files
+  -- If Set_Dir then change dir to "."
+  -- try to restore current pos
+  procedure Reread (Set_Dir : in Boolean) is
   begin
-    return Current.Kind = Criteria.Kind and then Current.Name = Criteria.Name;
-  end Match;
-  procedure File_Search is new Git_If.File_Mng.Dyn_List.Search (Match);
-
-  -- Reread curent dir: change dir to "." and try to restore current pos
-  procedure Reread is
-    Current_File : Git_If.File_Entry_Rec;
-    Found : Boolean;
-  begin
-    -- Save current entry
-    Files.Move_At (Afpx.Line_List.Get_Position);
-    Files.Read (Current_File, Git_If.File_Mng.Dyn_List.Current);
     -- Re-build list
-    Change_Dir (".");
-    -- Search position back and move Afpx to it
-    File_Search (Files, Found, Current_File,
-                 From => Git_If.File_Mng.Dyn_List.Absolute);
-    if Found then
-      Afpx.Line_List.Move_At (Files.Get_Position);
-      Afpx.Update_List (Afpx.Center);
+    if Set_Dir then
+      Change_Dir (".");
+    else
+      Encode_Files (Force => False);
     end if;
   end Reread;
+
+  -- Periodical timer to refresh list/status of file
+  package Timer is
+    procedure Start (Periodic : in Boolean := False);
+    procedure Stop;
+  end Timer;
+  package body Timer is separate;
 
   -- Local host: "on (<host>)" if possible
   -- else "(<host>)" if possible
@@ -268,10 +335,11 @@ procedure Agite is
     Change_Dir;
   end;
 
-  procedure Edit (File_Name : in String) is
+  procedure Do_Edit (File_Name : in String) is
   begin
-    Utils.Launch (Editor.Image & " " & File_Name);
-  end Edit;
+    Timer.Start;
+    Utils.Launch (Editor.Image & " " & File_Name, True);
+  end Do_Edit;
 
   procedure Do_History (Name : in String; Is_File : in Boolean) is
     Pos : Positive;
@@ -335,7 +403,7 @@ procedure Agite is
         -- File
         case Action is
           when Edit | Default =>
-            Edit (File_Name);
+            Do_Edit (File_Name);
           when Diff =>
             Git_If.Launch_Diff (Differator.Image, File_Name);
           when History =>
@@ -475,8 +543,9 @@ begin
   Editor := As.U.Tus (Config.Editor);
   Differator := As.U.Tus (Config.Differator);
 
-  -- Init Afpx
+  -- Init Afpx and Timer
   Init;
+  Timer.Start (Periodic => True);
 
   -- Now we can reset this env variables for our children
   Sys_Calls.Unsetenv ("AFPX_DATA_DIR");
@@ -523,7 +592,7 @@ begin
             Change_Dir;
           when 16 =>
             -- Reread (change dir . and restore pos)
-            Reread;
+            Reread (True);
           when 17 =>
             -- Up (change dir ..)
             Change_Dir ("..");
@@ -550,7 +619,8 @@ begin
                                   (Ptg_Result.Click_Pos.Col + 1));
           when 23 =>
             -- GUI
-            Utils.Launch ("git gui");
+            Timer.Start;
+            Utils.Launch ("git gui", True);
           when 24 =>
             -- XTerm
             Utils.Launch (Config.Xterminal);
@@ -577,10 +647,13 @@ begin
       when Afpx.Fd_Event =>
         null;
       when Afpx.Timer_Event =>
-        null;
+        -- A child likely to change status (Edit, GitGUI) is running
+        Reread (False);
       when Afpx.Signal_Event =>
-        null;
+        -- Exit of child likely to change status
+        Reread (False);
       when Afpx.Refresh =>
+        Reread (False);
         Redisplay := True;
     end case;
   end loop;
@@ -592,12 +665,16 @@ exception
       & Integer_Image (Ref_Version.Medium) & "."
       & Integer_Image (Ref_Version.Minor) );
     Basic_Proc.Set_Error_Exit_Code;
+  when Config.Invalid_Config =>
+    Basic_Proc.Put_Line_Error ("Invalid configuration");
+    Basic_Proc.Set_Error_Exit_Code;
   when Utils.Exit_Requested =>
     begin
       Afpx.Release_Descriptor;
     exception
       when Afpx.No_Descriptor =>
         null;
-   end;
+    end;
+    Timer.Stop;
 end Agite;
 

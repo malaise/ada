@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!ELEMENT agite (xterm,editor,viewer,differator,last_dir,bookmarks*)>
+<!ELEMENT agite (xterm,editor,viewer,differator,period,last_dir,bookmarks*)>
 
 <!ELEMENT xterm (#PCDATA)>
 <!ELEMENT editor (#PCDATA)>
 <!ELEMENT viewer (#PCDATA)>
 <!ELEMENT differator (#PCDATA)>
+<!ELEMENT period (#PCDATA)>
 <!ELEMENT last_dir (#PCDATA)>
 <!ELEMENT bookmarks (bookmark*)>
 <!ELEMENT bookmark (#PCDATA)>

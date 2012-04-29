@@ -37,8 +37,15 @@ package body Utils is
     return Str (Str'First .. Last_Index (Str));
   end Parse_Spaces;
 
+  -- Sigchild callback
+  -- This will trigger Afpx.PtG to return Signal_Evenv
+  procedure My_Cb (Death_Report : in Proc_Family.Death_Rec) is
+  begin
+    null;
+  end My_Cb;
+
   -- Start a command in background
-  procedure Launch (Command : in String) is
+  procedure Launch (Command : in String; Set_Callback : in Boolean := False) is
     Cmd : Many_Strings.Many_String;
     Res : Proc_Family.Spawn_Result_Rec;
     pragma Unreferenced (Res);
@@ -46,7 +53,11 @@ package body Utils is
     Cmd.Set ("/bin/sh");
     Cmd.Cat ("-c");
     Cmd.Cat (Command);
-    Res := Proc_Family.Spawn (Cmd);
+    if Set_Callback then
+      Res := Proc_Family.Spawn (Cmd, Death_Report => My_Cb'Access);
+    else
+      Res := Proc_Family.Spawn (Cmd);
+    end if;
   end Launch;
 
 end Utils;
