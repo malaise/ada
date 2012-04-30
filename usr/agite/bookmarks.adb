@@ -35,7 +35,7 @@ package body Bookmarks is
       -- Separator with name
       Res := "----- " & Bookmark.Name & " -----";
     else
-      -- Emty separator
+      -- Empty separator
       null;
     end if;
     return Res.Image;
@@ -77,7 +77,7 @@ package body Bookmarks is
 
     -- Current dir
     Curr_Dir : constant String := Directory.Get_Current;
-    Dir_Width : constant Afpx.Width_Range := Afpx.Get_Field_Width (10);
+    Dir_Width : Afpx.Width_Range;
 
     -- Current position in Afpx list
     Position : Positive;
@@ -94,6 +94,7 @@ package body Bookmarks is
     Cursor_Col := 0;
     Insert := False;
     Redisplay := True;
+    Dir_Width := Afpx.Get_Field_Width (10);
 
     -- Encode dir
     Afpx.Clear_Field (10);
