@@ -1,0 +1,324 @@
+Agite user guide
+================
+Pascal MALAISE <malaise@magic.fr>
+V5.0
+
+General purpose
+---------------
+Agite (Ada GIT Editor) is a graphical front end of the 'Git' configuration
+management tool.
+It is directory-oriented.
+Major functions are navigation in directories and history, file status and
+graphical diff.
+
+anchor:XCommandLine[]
+
+Command line
+------------
+  Usage: agite [ -n | --no_history ] [ <path> | -p | --previous ]
+
+By default Agite continuously stores the current directory in its
+xref:XConfig[configuration file].
+This allows restarting Agite in the same directory as when it stopped by
+providing the argument '-p' or '--previous'.
+
+On the other hand this feature is hardly compatible with several instances of
+Agite running in parallel. Other instances of the program shall not save the
+current directory, which is achieved by providing the argument '-n' or
+'--no_history'.
+
+Instead of previous directory the start-up directory can be explicitly
+specified in the command line with '<path>'. By default Agite starts in
+the current directory.
+
+Environment variables
+---------------------
+AFPX_DATA_DIR::
+Agite is based on Afpx screen manager, which reads the configuration files
+AFPX.DSC, AFPX.FLD and AFPX.INI. Either theses files are in the current
+directory at startup or the environment variable 'AFPX_DATA_DIR' must be
+set to the directory containing these files.
+
+Note: Agite unsets AFPX_DATA_DIR at start-up so its children don't inherit
+from this setting.
+
+AGITE_CONF_FILE::
+Agite allows several settings to be defined in a 
+xref:XConfig[configuration file]. By default this file is 
+'$\{HOME}/.agite/agite.xml' but this can be overridden by setting the
+environment variable 'AGITE_CONF_FILE' to the full path and name of the
+configuration file.
+
+GIT_DIR::
+Agite needs to know the root directory of the current Git sandbox (if any). It
+finds it by locating, in current directory or above, the Git technical
+directory.
+By default it is named '.git' but this can be overridden by setting the
+environment variable 'GIT_DIR' to the name of the Git directory.
+
+anchor:XConfig[] 
+
+Configuration file
+------------------
+User defined configuration
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+Agite reads at start-up some user-defined configuration parameters.
+
+anchor:XConfXterm[]
+
+xterm::
+This defines the command to be launched when the
+xref:XXterm[xterm] button is selected. Example: 'gnome-terminal --zoom=0.9'
+
+anchor:XConfEditor[]
+
+editor::
+This defines the command to be launched for editing a file (either with
+double click in the list or by selecting the xref:XEdit[Edit] button.
++
+Note: This command should rather not return until completion so that Agite
+properly refreshes the status of files when it exits.
+
+anchor:XConfDiff[]
+
+differator::
+This defines the command to be launched for performing a xref:XDiff[diff]
+between two versions of a file. Agite will launch 'git difftool -y -x
+<differator> HEAD -- <file>' for the diff between current file and GIT
+repository and 'git difftool -y -x <differator> <ref_rev> <comp_rev> -- <file>'
+for the diff between two revisions of a file.
+
+anchor:XConfPeriod[]
+
+period::
+Agite refreshes the current status of files in the xref:Xdir[directory] screen
+when it starts xref:XGui[Git GUI] or xref:XEdit[Editor] and when they exit.
+This is because these tools can modify the current status of local files. Still,
+it is possible from a stand-alone terminal to also modify the list or status of
+local files. This is why Agite preiodically checks and redisplays the status of
+local files. This parameter defines the period in seconds of this automatic
+check.
++
+0.0 disables the feature.
++
+Note: a manual refresh is always possible with the xref:XReread[Reread] button.
+
+Agite persistent data
+~~~~~~~~~~~~~~~~~~~~~
+Agite also uses the configuration file to store information from one invocation
+to another.
+
+last_dir::
+Agite continuously stores the current directory in this entry. See the 
+xref:XCommandLine[arguments] '-p' ('--previous') and '-n' ('--no_history') for
+how to use or disable this feature.
+
+bookmarks::
+Agite stores the xref:XBookmarks[bookmarks] in this section:
+
+* blank lines have no 'Name' nor content,
+* separators have a 'Name' and no content,
+* bookmarks have a content and possibly a 'Name'.
+
+*Note: The DTD file 'agite.dtd' must be located in the same directory as the
+Agite XML configuration file.*
+
+Agite screens
+-------------
+Agite is based on four main menus:
+
+* Directory: This is the first menu at start-up. It shows the content of a
+directory.
+* Bookmarks:  This menu allows bookmarking directories and quickly jumping
+to a bookmark
+* History: This shows the Git history of a file or directory, the list of
+commits that have modified the file(s).
+* Commit details: This shows informations on a commit, including the list
+of files modified by the commit.
+
+The navigation is as follows:
+
+                        +-----------+
+                /------>| Bookmarks |
+  +---------- +/        +-----------+
+  | Directory |
+  +---------- +\        +---------+       +--------+
+                \------>| History |<----->| Commit |
+                        +---------+       +--------+
+
+
+All the screen transitions are based on the 'call-return' scheme.
+So please note the double arrow between 'History' and 'Commit': from the
+'History' of a file (or dir) you can select a commit and and see its 'Detail'.
+In this new screen you can select a file and see its 'History'... and so on.
+Once this is done you we need to "un-stack" all these menus (by clicking on
+the 'Back' button in each) in order to go back to the 'Directory'.
+
+anchor:XDir[]
+
+Directory status
+~~~~~~~~~~~~~~~~
+The 'Directory' menu lists the git content, subdirectories and files, of
+current directory. We find from top to bottom:
+
+Title::
+The first line shows the title and current version of Agite.
++
+On the left is the indication of current Git branch.
++
+On the right is the indication of current host.
+
+Root::
+This line shows the root directory of the current Git sandbox. Clicking in this
+fields moves current directory to the root.
+
+Go::
+This line shows the current directory. It also allows entering a path and going
+to it by hitting the key 'Return' or clicking in th 'Go' button.
+
+anchor:XReread[]
+
+Reread::
+Normally Agite re-scans the current directory and refreshes the list and status
+when necessary, and also periodically if the feature is enabled (see
+Xref:XConfReread[period] configuration option). This button explicitly refreshes
+the current display.
+
+Dir Up::
+This button allows moving up to parent directory.
+
+Bookmarks::
+This button activates the xref:XBookmarks[Bookmarks] menu.
+
+PushD and Popd::
+These buttons allows storing the current directory ('PushD') then later on
+allows moving back to it ('PopD').
+
+@@@ We are 'Here' @@@ More details on the logic (Curr / D1 / D2).
+
+
+List::
+For a file, the two first characters are the status (MADRC)
+(Modified-unstaged/Modified/Added/Deleted/OK), then a space. For dirs there
+are 2 spaces.
+
+Then the name, then a space, then the kind (' ' fo files, '@' for symbolic
+links, '/' for directories or '?' for others).
+
+A quick search function allows searhing first file that starts with the selected
+key or above.
+
+Double click on an entry does:
+
+- if a directory -> move to it
+
+- if a file -> launch X editor on it
+
+
+anchor:XGui[]
+
+GitGUI::
+
+anchor:XXterm[]
+
+Xterm::
+This button starts a X terminal by launching the command defined
+in the xref:XConfXterm[xterm] entry of the configuration file.
+
+anchor:XEdit[]
+
+Edit::
+This button launches an editor (defined in the xref:XConfEditor[editor] entry of
+the configuration file) on the file currently selected in the list, as a double
+click on this file would do.
+
+anchor:XDiff[]
+
+Diff::
+This bouton launches a graphical difference tool (as defined in the
+xref:XConfDiff[differator] entry of the configuration file) to show the
+differences between current version of a file and the version in GIT HEAD.
+
+Note: If the file is not locally modified this button does nothing.
+
+A bouton allows to switch to history of currently selected entry.
+
+A bouton allows to switch to bookmarks.
+
+A bouton allows to exit.
+
+anchor:XBookmarks[]
+
+Bookmarks
+~~~~~~~~~
+Locations (directories) can be bookmarked.
+
+A menu lists the known bookmarks and buttons allow to:
+
+- go to a bookmark, as for a double click (returns to main)
+
+- add current dir to bookmarks (with a given name if any)
+
+- add a separator in the list (with a given name if any)
+
+- Move current entry up or down
+
+- delete a bookmark
+
+- return to main screen
+
+History
+~~~~~~~
+The history of a file or dir is listed (Head on top), each line with the date
+(YYMMDD:HHMM) a space then the comment.
+
+Left click in list allows selecting reference version and right click selects
+version to compare.
+
+A button switches to a screen with the detailed list of files modified by this
+entry of the history.
+
+If a file, a button launches X diff from previous to this entry of the
+history.
+
+A button allows to return to main screen.
+
+Details
+~~~~~~~
+The Details screen shows for a commit:
+
+- The commit SHA value
+
+- The date YYYY-MM-DD HH:MM:SS
+
+- 3 lines of comment
+
+- The list of files, each preceeded by a letter M/A/D and a space
+
+Interfaces with Git
+-------------------
+These functions use Command to call git and parse result.
+
+Requires git 1.7.0 or above.
+
+A function lists current entries and status.
+
+- "git ls-files" => a list of current files
+
+- "git status -uno --porcelain" => modif versus stage, for the whole box
+
+- merge lists: apply the status to local file (discard others)
+
+A function logs history of file or dir
+
+- "git log --name-status --date=iso -- <path>"
+
+A function lists files mofied by a commit
+
+- git log --name-status --date=iso -n 1 <hash>
+
+A function starts graphical diff
+
+- "git difftool -y -t HEAD <file>" in background
+
+
