@@ -8,8 +8,11 @@ General purpose
 Agite (Ada GIT Editor) is a graphical front end of the 'Git' configuration
 management tool.
 It is directory-oriented.
+
 Major functions are navigation in directories and history, file status and
 graphical diff.
+
+It relies on 'git gui' for committing and pushing local changes.
 
 anchor:XCommandLine[]
 
@@ -73,13 +76,25 @@ xref:XXterm[xterm] button is selected. Example: 'gnome-terminal --zoom=0.9'
 anchor:XConfEditor[]
 
 editor::
-This defines the command to be launched for editing a file (either with
-double click in the list or by selecting the xref:XEdit[Edit] button.
+This defines the command to be launched for editing a file (for example
+with the xref:XEdit[Edit] button). A space and the file name will be
+concatenated to this string.
 +
-Note: This command should rather not return until completion so that Agite
+Note: This command shall start a GUI of editor like 'gedit' or a 'xterm -e vi'.
++
+Note: The editor should not return until completion so that Agite
 properly refreshes the status of files when it exits.
 
+viewer::
+This defines the command to be launched for viewing a file (for example
+with the xref:XView[View] button). As the xref:XConfEditor[editor] it must be a
+GUI, for example 'xterm -e cat' or 'xterm -e vi -M'.
+
+
 anchor:XConfDiff[]
+This defines the command to be launched for editing a file (either with
+double click in the list or by selecting the xref:XEdit[Edit] button.
+
 
 differator::
 This defines the command to be launched for performing a xref:XDiff[diff]
@@ -114,7 +129,7 @@ xref:XCommandLine[arguments] '-p' ('--previous') and '-n' ('--no_history') for
 how to use or disable this feature.
 
 bookmarks::
-Agite stores the xref:XBookmarks[bookmarks] in this section:
+Agite stores the xref:XBook[bookmarks] in this section:
 
 * blank lines have no 'Name' nor content,
 * separators have a 'Name' and no content,
@@ -159,8 +174,9 @@ anchor:XDir[]
 Directory status
 ~~~~~~~~~~~~~~~~
 The 'Directory' menu lists the git content, subdirectories and files, of
-current directory. We find from top to bottom:
+current directory. We find, starting from top:
 
+.Environment
 Title::
 The first line shows the title and current version of Agite.
 +
@@ -168,9 +184,12 @@ On the left is the indication of current Git branch.
 +
 On the right is the indication of current host.
 
+.Directories
 Root::
 This line shows the root directory of the current Git sandbox. Clicking in this
 fields moves current directory to the root.
+
+anchor:XGo[]
 
 Go::
 This line shows the current directory. It also allows entering a path and going
@@ -188,43 +207,83 @@ Dir Up::
 This button allows moving up to parent directory.
 
 Bookmarks::
-This button activates the xref:XBookmarks[Bookmarks] menu.
+This button activates the xref:XBook[Bookmarks] menu.
 
 PushD and Popd::
-These buttons allows storing the current directory ('PushD') then later on
-allows moving back to it ('PopD').
+These buttons allows storing the current directory ('PushD') then
+allows moving back to it later on ('PopD').
++
+How it works: Agite keeps a cache of two paths, D1 and D2.
+'PushD' pushes current directory as D1 and saves D1 as D2,
+while 'PopD' swaps D1 and D2 and moves to the new D1 (if D2 is empty then 'PopD'
+makes a 'PushD' first. Note that PopD is disabled if it would lead to move to
+current directory.
++
+How to use it: At start-up current directory is automatically pushed and 'PopD'
+is disabled. As soon as you move to another directory 'PopD' allows moving
+back to the original one. When you 'PusD' this allows swapping between the new
+pushed and the last pushed.
 
-@@@ We are 'Here' @@@ More details on the logic (Curr / D1 / D2).
+.List
 
+anchor:XQuickSearch[]
 
-List::
-For a file, the two first characters are the status (MADRC)
-(Modified-unstaged/Modified/Added/Deleted/OK), then a space. For dirs there
-are 2 spaces.
+Quick search::
+On top of the list is a quick search area on two rows.
+Clicking in any character of this area triggers a search of file (not dir)
+starting with this character. If found the file becomes selected in the list,
+otherwise the selection is unchanged.
 
-Then the name, then a space, then the kind (' ' fo files, '@' for symbolic
-links, '/' for directories or '?' for others).
+The list::
+The list shows the directories then files of xref:XGo[current directory),
+in alphabetical order.
++
+Each directory starts with three spaces then the name then \'/'.
++
+Each file is preceeded by two characters of its Git status (see
+'man git-status') then a space, then the name:
 
-A quick search function allows searhing first file that starts with the selected
-key or above.
+* \' ' = unmodified
+* M = modified
+* A = added
+* D = deleted
+* R = renamed
+* C = copied
+* U = updated but unmerged
 
-Double click on an entry does:
++
+After the name a character represents the kind: 
 
-- if a directory -> move to it
+* \' ' fo a file, 
+* '@' for a symbolic link, 
+* '/' for a directory,
+* '?' for other/unknown kind.
 
-- if a file -> launch X editor on it
++
+Only one entry is selected (in green) at a a time.
++
+A sigle click selects an entry for xref:XEdit[edition], 
+xref:XDiff[difference] from Git reference, xref:XHistory[history] or
+xref:XRevert[revert] un-commite change.
++
+A double click on a directory changes current directory to it, while
+a double click on a file launches the xref:XEdit[editor] on it.
 
+Navigation in the list::
 
-anchor:XGui[]
+The simplest way to navigate in the list is to use the wheel of the mouse.
+Combine it with 'Shift' for scrolling one page and with 'Ctrl' for scrolling
+ten pages.
++
+Another way is to use the navigation buttons 'Top', 'PgUp', 'Up',
+'Down', 'PgDown' and 'Bottom'.
++
+Another way is to use the keyboard: Up and Down arrows, Page Up, Page Down,
+Ctrl + Page Up (for Top) and Ctrl + Page Down (for Bottom).
++
+Also don't forget the xref:XQuickSearch[quick search] to quickly find a file.
 
-GitGUI::
-
-anchor:XXterm[]
-
-Xterm::
-This button starts a X terminal by launching the command defined
-in the xref:XConfXterm[xterm] entry of the configuration file.
-
+.Actions on current list selection
 anchor:XEdit[]
 
 Edit::
@@ -237,20 +296,50 @@ anchor:XDiff[]
 Diff::
 This bouton launches a graphical difference tool (as defined in the
 xref:XConfDiff[differator] entry of the configuration file) to show the
-differences between current version of a file and the version in GIT HEAD.
+differences between current version of a file and the version in Git HEAD.
++
+On current dir ('./') it launches the difference on all the modified files of
+current directory and sub-directories. 
++
+This button has no effect if the current list selection is a un-modified file.
 
-Note: If the file is not locally modified this button does nothing.
+anchor:XHistory[]
 
-A bouton allows to switch to history of currently selected entry.
+History::
+This button switches to the screen that shows the xref:XHist[history] of a
+file or directory.
 
-A bouton allows to switch to bookmarks.
+anchor:XRevert[]
 
-A bouton allows to exit.
+Revert::
+This bouton reverts the local change of a file or of all the files of current
+directory and subdirectories (if current selection is './'). It has no effect
+if the current list selection is a un-modified file. A specific simple screen
+asks to confirm or cancell the operation.
 
-anchor:XBookmarks[]
+.Other actions
+
+anchor:XGui[]
+
+GitGUI::
+This button launches the 'git gui' command for committing and pushing local
+changes.
+
+anchor:XXterm[]
+
+Xterm::
+This button starts a X terminal by launching the command defined
+in the xref:XConfXterm[xterm] entry of the configuration file.
+
+Exit::
+A bouton allows to exit Agite.
+
+anchor:XBook[]
 
 Bookmarks
 ~~~~~~~~~
+*'We are HERE'*
+
 Locations (directories) can be bookmarked.
 
 A menu lists the known bookmarks and buttons allow to:
@@ -267,10 +356,14 @@ A menu lists the known bookmarks and buttons allow to:
 
 - return to main screen
 
+
 History
 ~~~~~~~
+anchor:XHist[]
 The history of a file or dir is listed (Head on top), each line with the date
 (YYMMDD:HHMM) a space then the comment.
+
+anchor:XView[]
 
 Left click in list allows selecting reference version and right click selects
 version to compare.
