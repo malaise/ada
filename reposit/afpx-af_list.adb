@@ -292,7 +292,7 @@ package body Af_List is
           return False;
         end if;
       when Shift_Page_Up =>
-        -- Display previous page
+        -- Display 10 pages up
         -- top - height > 1 => top - height exists
         if Status.Id_Top > Shift_Factor * Height + 1 then
           First_Item_Id := Status.Id_Top - Shift_Factor * Height;
@@ -304,7 +304,7 @@ package body Af_List is
           return False;
         end if;
       when Shift_Page_Down =>
-        -- Display next page
+        -- Display 10 pages down
         -- Bottom + height < length => Bottom + height exists
         if Line_List.List_Length - Status.Id_Bottom > Shift_Factor * Height then
           First_Item_Id := Status.Id_Top + Shift_Factor * Height;
