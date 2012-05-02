@@ -152,8 +152,11 @@ procedure T_Con is
             and then Mouse_Event.Col = Con_Io.Col_Range'First then
               exit;
             end if;
-          when Con_Io.Up | Con_Io.Down | Con_Io.Ctrl_Up | Con_Io.Ctrl_Down |
+          when Con_Io.Up | Con_Io.Down |
+               Con_Io.Shift_Up | Con_Io.Shift_Down |
+               Con_Io.Ctrl_Up | Con_Io.Ctrl_Down |
                Con_Io.Pgup | Con_Io.Pgdown |
+               Con_Io.Shift_Pgup | Con_Io.Shift_Pgdown |
                Con_Io.Ctrl_Pgup | Con_Io.Ctrl_Pgdown |
                Con_Io.Left | Con_Io.Right |
                Con_Io.Ctrl_Left | Con_Io.Ctrl_Right |

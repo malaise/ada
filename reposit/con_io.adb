@@ -1224,34 +1224,42 @@ package body Con_Io is
               return;
             when 16#52# =>
               -- Up
-              if not Ctrl then
-                Stat := Up;
-              else
+              if Ctrl then
                 Stat := Ctrl_Up;
+              elsif Shift then
+                Stat := Shift_Up;
+              else
+                Stat := Up;
               end if;
               return;
             when 16#54# =>
               -- Down
-              if not Ctrl then
-                Stat := Down;
-              else
+              if Ctrl then
                 Stat := Ctrl_Down;
+              elsif Shift then
+                Stat := Shift_Down;
+              else
+                Stat := Down;
               end if;
               return;
             when 16#55# =>
               -- Page Up
-              if not Ctrl then
-                Stat := Pgup;
-              else
+              if Ctrl then
                 Stat := Ctrl_Pgup;
+              elsif Shift then
+                Stat := Shift_Pgup;
+              else
+                Stat := Pgup;
               end if;
               return;
             when 16#56# =>
               -- Page Down
-              if not Ctrl then
-                Stat := Pgdown;
-              else
+              if Ctrl then
                 Stat := Ctrl_Pgdown;
+              elsif Shift then
+                Stat := Shift_Pgdown;
+              else
+                Stat := Pgdown;
               end if;
               return;
             when 16#63# =>
@@ -1364,6 +1372,8 @@ package body Con_Io is
             Last := Parse;
             if Ctrl then
               Stat := Ctrl_Up;
+            elsif Shift then
+              Stat := Shift_Up;
             else
               Stat := Up;
             end if;
@@ -1373,6 +1383,8 @@ package body Con_Io is
             Last := Parse;
             if Ctrl then
               Stat := Ctrl_Down;
+            elsif Shift then
+              Stat := Shift_Down;
             else
               Stat := Down;
             end if;
@@ -1380,19 +1392,23 @@ package body Con_Io is
           when 16#55# =>
             -- Page Up
             Last := Parse;
-            if not Ctrl then
-              Stat := Pgup;
-            else
+            if Ctrl then
               Stat := Ctrl_Pgup;
+            elsif Shift then
+              Stat := Shift_Pgup;
+            else
+              Stat := Pgup;
             end if;
             Done := True;
           when 16#56# =>
             -- Page Down
             Last := Parse;
-            if not Ctrl then
-              Stat := Pgdown;
-            else
+            if Ctrl then
               Stat := Ctrl_Pgdown;
+            elsif Shift then
+              Stat := Shift_Pgdown;
+            else
+              Stat := Pgdown;
             end if;
             Done := True;
           when 16#63# =>
@@ -1506,59 +1522,12 @@ package body Con_Io is
   begin
     Get (Name, Str, Last, Stat, Pos, Insert,
          Time_Out => Time_Out, Echo => False);
-    case Stat is
-      when Up =>
-        return (Mvt => Up);
-      when Down =>
-        return (Mvt => Down);
-      when Ctrl_Up =>
-        return (Mvt => Ctrl_Up);
-      when Ctrl_Down =>
-        return (Mvt => Ctrl_Down);
-      when Pgup =>
-        return (Mvt => Pgup);
-      when Pgdown =>
-        return (Mvt => Pgdown);
-      when Ctrl_Pgup =>
-        return (Mvt => Ctrl_Pgup);
-      when Ctrl_Pgdown =>
-        return (Mvt => Ctrl_Pgdown);
-      when Left =>
-        return (Mvt => Left);
-      when Right =>
-        return (Mvt => Right);
-      when Ctrl_Left =>
-        return (Mvt => Ctrl_Left);
-      when Ctrl_Right =>
-        return (Mvt => Ctrl_Right);
-      when Full =>
+    return Result : Get_Result (Stat) do
+      if Stat = Full then
         -- Character input
-        return (Mvt => Full, Char => Str(1));
-      when Tab =>
-        return (Mvt => Tab);
-      when Stab =>
-        return (Mvt => Stab);
-      when Ret =>
-        return (Mvt => Ret);
-      when Esc =>
-        return (Mvt => Esc);
-      when Break =>
-        return (Mvt => Break);
-      when Selection =>
-        return (Mvt => Selection);
-      when Fd_Event =>
-        return (Mvt => Fd_Event);
-      when Timer_Event =>
-        return (Mvt => Timer_Event);
-      when Signal_Event =>
-        return (Mvt => Signal_Event);
-      when Refresh =>
-        return (Mvt => Refresh);
-      when Mouse_Button =>
-        return (Mvt => Mouse_Button);
-      when Timeout =>
-        return (Mvt => Timeout);
-    end case;
+        Result.Char := Str(1);
+      end if;
+    end return;
   end Get;
 
   -- Take first character of keyboard buffer (no echo) or refresh event

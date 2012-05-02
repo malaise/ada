@@ -228,12 +228,22 @@ package Afpx is
   package Line_Dyn_List_Mng is new Dynamic_List (Line_Rec);
   package Line_List_Mng renames Line_Dyn_List_Mng.Dyn_List;
   Line_List : Line_List_Mng.List_Type;
+
   -- Actions on the list
+  -- These are the automatic actions bound on keys
+  --                    +----------------+
+  --                    | Arrows |  Page |
+  -- +------------------+--------+-------+
+  -- | Up/Down          |    X   |       |
+  -- | Page Up/Down     |  Shift |   X   |
+  -- | 10 Pages Up/Down |   Ctrl | Shift |
+  -- | Top/Bottom       |        |  Ctrl |
+  -- +---------------------------_-------+
   type List_Action_List is (Up, Down, Page_Up, Page_Down,
                             Shift_Page_Up, Shift_Page_Down,
                             Top, Bottom, Center);
 
-  -- Update the list due to an action
+  -- Update the list due to an action (e.g. a button)
   -- Exceptions : Invalid_Field if no list in current descriptor.
   procedure Update_List (Action : in List_Action_List);
 

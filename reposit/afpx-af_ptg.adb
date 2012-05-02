@@ -791,23 +791,33 @@ package body Af_Ptg is
           if List_Present then
             List_Change := Af_List.Update (Down, True);
           end if;
-        when Con_Io.Pgup | Con_Io.Ctrl_Up =>
+        when Con_Io.Shift_Up | Con_Io.Pgup =>
           -- List page up
           if List_Present then
             List_Change := Af_List.Update (Page_Up, True);
           end if;
-        when Con_Io.Pgdown | Con_Io.Ctrl_Down =>
+        when Con_Io.Shift_Down | Con_Io.Pgdown =>
           -- List page down
           if List_Present then
             List_Change := Af_List.Update (Page_Down, True);
           end if;
+        when Con_Io.Ctrl_Up | Con_Io.Shift_Pgup =>
+          -- List several pages up
+          if List_Present then
+            List_Change := Af_List.Update (Shift_Page_Up, True);
+          end if;
+        when Con_Io.Ctrl_Down | Con_Io.Shift_Pgdown =>
+          -- List several pages down
+          if List_Present then
+            List_Change := Af_List.Update (Shift_Page_Down, True);
+          end if;
         when Con_Io.Ctrl_Pgup =>
-          -- List page up
+          -- List top
           if List_Present then
             List_Change := Af_List.Update (Top, True);
           end if;
         when Con_Io.Ctrl_Pgdown =>
-          -- List page down
+          -- List bottom
           if List_Present then
             List_Change := Af_List.Update (Bottom, True);
           end if;

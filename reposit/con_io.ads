@@ -342,8 +342,9 @@ package Con_Io is
   -- If Str'length is 0 then last=0 and stat is significant (full if normal
   --  character), but pos_out is not significant.
   -- Note that if Str'Lenght is 0, the cursor is hidden
-  type Curs_Mvt is (Up, Down, Ctrl_Up, Ctrl_Down,
-                    Pgup, Pgdown, Ctrl_Pgup, Ctrl_Pgdown,
+  type Curs_Mvt is (Up, Down, Shift_Up, Shift_Down, Ctrl_Up, Ctrl_Down,
+                    Pgup, Pgdown, Shift_Pgup, Shift_Pgdown,
+                    Ctrl_Pgup, Ctrl_Pgdown,
                     Left, Right, Ctrl_Left, Ctrl_Right,
                     Full, Tab, Stab, Ret, Esc, Break,
                     Mouse_Button, Selection, Timeout, Fd_Event, Timer_Event,

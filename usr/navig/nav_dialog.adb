@@ -333,9 +333,11 @@ package body Nav_Dialog is
                 In_Action := True;
               when Con_Io.Esc =>
                 In_Action := True;
-              when Con_Io.Ctrl_Pgup | Con_Io.Ctrl_Pgdown
-                 | Con_Io.Ctrl_Up   | Con_Io.Ctrl_Down
-                 | Con_Io.Ctrl_Left | Con_Io.Ctrl_Right =>
+              when Con_Io.Shift_Up   | Con_Io.Shift_Down
+                 | Con_Io.Ctrl_Up    | Con_Io.Ctrl_Down
+                 | Con_Io.Shift_Pgup | Con_Io.Shift_Pgdown
+                 | Con_Io.Ctrl_Pgup  | Con_Io.Ctrl_Pgdown
+                 | Con_Io.Ctrl_Left  | Con_Io.Ctrl_Right =>
                 null;
               when Con_Io.Refresh =>
                 Refresh := True;

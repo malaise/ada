@@ -39,8 +39,7 @@ package body Sok_Input is
         case Stat is
           when Up => return Up;
           when Down => return Down;
-          when Pgup | Pgdown | Ctrl_Pgup | Ctrl_Pgdown
-             | Ctrl_Up | Ctrl_Down | Ctrl_Right | Ctrl_Left =>
+          when Shift_Up .. Ctrl_Pgdown | Ctrl_Right | Ctrl_Left =>
             null;
           when Left => return Left;
           when Right => return Right;
@@ -121,8 +120,7 @@ package body Sok_Input is
       case Stat is
         when Up => return;
         when Down => return;
-        when Pgup | Pgdown | Ctrl_Pgup | Ctrl_Pgdown
-           | Ctrl_Up | Ctrl_Down | Ctrl_Right | Ctrl_Left =>
+        when Shift_Up .. Ctrl_Pgdown | Ctrl_Right | Ctrl_Left =>
           null;
         when Left => return;
         when Right => return;
