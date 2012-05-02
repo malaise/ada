@@ -276,7 +276,8 @@ Combine it with 'Shift' for scrolling one page and with 'Ctrl' for scrolling
 ten pages.
 +
 Another way is to use the navigation buttons 'Top', 'PgUp', 'Up',
-'Down', 'PgDown' and 'Bottom'.
+'Down', 'PgDown' and 'Bottom'. The 'Center' button scrolls the list so that the
+selected entry is as most as possible in the middle of the list area.
 +
 Another way is to use the keyboard: Up and Down arrows, Page Up, Page Down,
 Ctrl + Page Up (for Top) and Ctrl + Page Down (for Bottom).
