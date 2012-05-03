@@ -269,6 +269,8 @@ xref:XRevert[revert] un-commite change.
 A double click on a directory changes current directory to it, while
 a double click on a file launches the xref:XEdit[editor] on it.
 
+anchor:XNavig[]
+
 Navigation in the list::
 
 The simplest way to navigate in the list is to use the wheel of the mouse.
@@ -339,27 +341,58 @@ anchor:XBook[]
 
 Bookmarks
 ~~~~~~~~~
-*'We are HERE'*
 
-Locations (directories) can be bookmarked.
+Locations (directories) can be bookmarked. To bookmark a directory, first move
+to it in the xref:XDir[directory] menu, then go in the 'bookmark' menu, then
+click in the button xref:XAdd[AddCur]. This adds the current directory in the list.
+Click in xref:XBookBack[Back] to go back to the xref:XDir[directory] menu.
+Later on you can open the bookmark menu and double click on the entry, or
+select it and click on xref:XGoto[Goto] to go back to this directory.
 
-A menu lists the known bookmarks and buttons allow to:
+Bookmarks are saved in the xref:XConfig[configuration file] so that they 
+are persistent from one session to another.
 
-- go to a bookmark, as for a double click (returns to main)
+The bookmark menu shows current directory and lists the known bookmarks. This
+list can contain four kinds of entry:
 
-- add current dir to bookmarks (with a given name if any)
+* Anonymous bookmarks don't have name. They contain only the path to the
+directory.
+* Named bookmarks are created like anonymous ones but with a name set in the
+'Name to add' field when clicking in xref:XAdd[AddCur]. The name appears in parentheses
+before the path of the bookmark.
+* Separators are created by setting a name (in 'Name to Add') and clicking
+in xref:XAdd[AddSep]. This creates a line with dashes and the name, like:
 
-- add a separator in the list (with a given name if any)
+ ----- Ada -----
 
-- Move current entry up or down
+* Blank lines can also be used to separate bookmarks. They are anonymous 
+separators, created by clicking in xref:XAdd[AddSep] with no name set.
 
-- delete a bookmark
+anchor:XAdd[]
+The buttons 'AddCur' and 'AddSep' insert a named or anonymous entry (depending
+on the field 'Name to add') below current entry.
 
-- return to main screen
+anchor:XGoto[]
+The 'Goto' button allows changing current dir to the bookmark currently
+selected and switches back to the xref:XDir[directory] menu.
+Double clicking on the entry has the same effect. It has no effect on a
+separator.
+
+Bookmarks and separators can be organised with the buttons 'MovUp', 'MovDwn' and
+can be deleted with the button 'Del', with no confirmation.
+
+Navigation in the list is the same as the xref:XNavig[navigation] in the
+xref:XDir[directory] menu, with the mouse wheele, the keyboard and buttons.
+
+anchor:XBookBack[]
+The button 'Back' switches back to  the xref:XDir[directory] menu without
+changing current directory.
 
 
 History
 ~~~~~~~
+*'We are HERE'*
+
 anchor:XHist[]
 The history of a file or dir is listed (Head on top), each line with the date
 (YYMMDD:HHMM) a space then the comment.
