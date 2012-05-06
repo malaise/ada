@@ -90,11 +90,7 @@ This defines the command to be launched for viewing a file (for example
 with the xref:XView[View] button). As the xref:XConfEditor[editor] it must be a
 GUI, for example 'xterm -e cat' or 'xterm -e vi -M'.
 
-
 anchor:XConfDiff[]
-This defines the command to be launched for editing a file (either with
-double click in the list or by selecting the xref:XEdit[Edit] button.
-
 
 differator::
 This defines the command to be launched for performing a xref:XDiff[diff]
@@ -391,27 +387,80 @@ changing current directory.
 
 History
 ~~~~~~~
-*'We are HERE'*
 
 anchor:XHist[]
-The history of a file or dir is listed (Head on top), each line with the date
-(YYMMDD:HHMM) a space then the comment.
+This menu shows the name of the selected file and lists the history of all the
+commits on current branch that have affected this file. 
+
+The newest release (Head) is on top.
+
+In case of a directory the menu shows the name of the directory and list the
+history of the commits of all the files in the directory and in the children
+directories.
+
+.List
+The list shows for each entry the date of the commit (format YYMMDD:HHMM)
+a space then the comment of the commit.
+
+The list can be very long, so there are two indications of the the position of
+the current page:
+
+* The position in term of percent of the history is displayed above the
+list,
+* A hyphen ('-') on the left side of the list indicates the current position
+of the current page, as a scroll bar would do.
 
 anchor:XView[]
 
-Left click in list allows selecting reference version and right click selects
-version to compare.
+.View
+Double click on an entry (a commit) or select an entry and click on the 'View'
+button to view the version of the file that was commited.
 
-A button switches to a screen with the detailed list of files modified by this
-entry of the history.
+When the current history is the one of a directory this feature is de-activated.
+Still it is possible to list and view one by one the files of a commit with the
+xref:XDetails[Details] menu.
 
-If a file, a button launches X diff from previous to this entry of the
-history.
+.Diff
+The 'Diff' button shows the differences between commits. When the history is on
+a directory it applies to all the files of the directory an below that are
+affected by the commit(s).
 
-A button allows to return to main screen.
+'Diff' can compare two arbitrary commits or show the changes of one commit:
+
+* Diff between two commits. 
+** Left click on an a entry of the list. It becomes green and the 'LeftSel'
+above  the list shows the index of this entry from the Head.
+** Right click on an a entry of the list. It becomes black and the 'RightSel'
+above the list shows the index of this entry from the Head.
+** Click on the 'Diff' button. This starts the xref:XConfDiff[differator] 
+with the right (black) selection as reference and the left (green) selection
+as the target of the difference. If the history is about a directory several
+differators may be started.
+
+* Diff of a commit.
+** Ensure that there is no right selection (no entry on black and
+'RightSel'= 0).
+If there is one then find it and de-select it (by a right click). Alternatively 
+you can right-select any entry and de-select it with a second right click on it.
+** Left click on an the entry of the list. It becomes green and the 'LeftSel'
+above the list shows the index of this entry from the Head.
+** Click on the 'Diff' button. This starts the xref:XConfDiff[differator]
+with the version before the selection as reference and the selection
+as the target of the difference. If the history is about a directory several
+differators may be started.
+
+.Detail
+This button switches to a screen that shows the xref:XDetails[details] of the
+commit currently (left-)selected in the history.
+
+.Back
+This button allows to return to xref:XDir[directory] menu.
+
+anchor:XDetails[]
 
 Details
 ~~~~~~~
+*'We are HERE'*
 The Details screen shows for a commit:
 
 - The commit SHA value
