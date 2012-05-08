@@ -144,26 +144,26 @@ directory.
 to a bookmark
 * History: This shows the Git history of a file or directory, the list of
 commits that have modified the file(s).
-* Commit details: This shows informations on a commit, including the list
-of files modified by the commit.
+* Details: This shows informations on a commit, including the list of files
+modified by the commit.
 
+anchor:XNavigation[]
 The navigation is as follows:
 
                         +-----------+
                 /------>| Bookmarks |
   +---------- +/        +-----------+
   | Directory |
-  +---------- +\        +---------+       +--------+
-                \------>| History |<----->| Commit |
-                        +---------+       +--------+
-
+  +---------- +\        +---------+       +---------+
+                \------>| History |<----->| Details |
+                        +---------+       +---------+
 
 All the screen transitions are based on the 'call-return' scheme.
-So please note the double arrow between 'History' and 'Commit': from the
-'History' of a file (or dir) you can select a commit and and see its 'Detail'.
+So please note the double arrow between 'History' and 'Details': from the
+'History' of a file (or dir) you can select a commit and and see its 'Details'.
 In this new screen you can select a file and see its 'History'... and so on.
 Once this is done you we need to "un-stack" all these menus (by clicking on
-the 'Back' button in each) in order to go back to the 'Directory'.
+the 'Back' button in each) in order to go back to the 'Directory' menu.
 
 anchor:XDir[]
 
@@ -460,41 +460,62 @@ anchor:XDetails[]
 
 Details
 ~~~~~~~
-*'We are HERE'*
-The Details screen shows for a commit:
+The 'Details' menu shows the details of a commit:
 
-- The commit SHA value
+* The SHA-1 hash of the commit, that you can copy in the clipboard,
+* The date and comment (up to three lines) of the commit, that you can
+also alternatively copy in the clipboard,
+* The list of all the files in the commit, each preceeded by a letter:
+** M Modified,
+** A Added,
+** D Deleted.
 
-- The date YYYY-MM-DD HH:MM:SS
+A specific entry '/' is added on top of the list, which represents the root of
+the current sandbox. When it is selected you can click on the button 'History'
+to get the full history of the sandbox or click on the button 'Diff' to get
+the differator called on all the files of the commit (differences brought by
+the commit).
 
-- 3 lines of comment
+For all other entries (files) of the list:
 
-- The list of files, each preceeded by a letter M/A/D and a space
+* Double click on the entry or select the entry and click on 'View' allows 
+viewing the file as it was commited,
+* Clicking on 'Hist' allows viewing the full history of the file,
+* Clicking on 'Diff' allows viewing the differences between the version before
+and after the commit.
+
+Note: Clicking on 'Hist' calls a new function to show the history, as explained
+in the section on xref:XNavigation[navigation].
 
 Interfaces with Git
 -------------------
-These functions use Command to call git and parse result.
+This section lists the commands and arguments passed to Git. This requires git
+version 1.7.0 or above:
 
-Requires git 1.7.0 or above.
+* A function get Git version by calling 'git --version',
 
-A function lists current entries and status.
+* A function list local files by calling 'git ls-files' and
+'git status -- porcelain .',
 
-- "git ls-files" => a list of current files
+* A function lists the commits on local dir by calling
+'git log --date=iso --topo-order -- <pwd>',
 
-- "git status -uno --porcelain" => modif versus stage, for the whole box
+* A function gets the details of a commit by calling
+'git log --name-status --date=iso -n A <HSA1_hash>',
 
-- merge lists: apply the status to local file (discard others)
+* A function extracts a given version of a file (in a commit by calling
+'git show <HSA1_hash>:<file>',
 
-A function logs history of file or dir
+* A function lauches the differator on a modified file (versus Head) by calling
+'git difftool -y -x <differator> HEAD -- <file>',
 
-- "git log --name-status --date=iso -- <path>"
+* A function lauches the differator between two versions of a file (or dir) by
+calling 'git difftool -y -x <differator> <ref_HSA1> <comp_HSA1> -- <file>',
 
-A function lists files mofied by a commit
+* A function reverts the local changes of a file by calling
+'git checkout HEAD <file>',
 
-- git log --name-status --date=iso -n 1 <hash>
+* A function gets the name of current branch by calling 'git branch',
 
-A function starts graphical diff
-
-- "git difftool -y -t HEAD <file>" in background
-
+* Finally, Agite also launches 'git gui'.
 
