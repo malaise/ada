@@ -501,7 +501,7 @@ version 1.7.0 or above:
 'git log --date=iso --topo-order -- <pwd>',
 
 * A function gets the details of a commit by calling
-'git log --name-status --date=iso -n A <HSA1_hash>',
+'git log --name-status --date=iso -n 1 <HSA1_hash>',
 
 * A function extracts a given version of a file (in a commit by calling
 'git show <HSA1_hash>:<file>',
