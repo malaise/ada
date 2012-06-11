@@ -327,6 +327,7 @@ procedure Agite is
   procedure Init is
   begin
     Afpx.Use_Descriptor (1);
+    Afpx.Get_Console.Set_Name ("Agite (on " & Socket.Local_Host_Name & ")");
     Cursor_Field := Afpx.Next_Cursor_Field (0);
     Cursor_Col := 0;
     Insert := False;

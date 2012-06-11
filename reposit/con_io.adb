@@ -248,6 +248,12 @@ package body Con_Io is
     return Con /= Null_Console and then Con.Get_Access.Initialised;
   end Is_Open;
 
+  procedure Set_Name (Con : in Console; Name : in String) is
+  begin
+    Check_Con (Con);
+    X_Mng.X_Set_Line_Name (Con.Get_Access.Id, Name);
+  end Set_Name;
+
   -- Suspend and resume con_io
   procedure Suspend (Con : in Console) is
   begin

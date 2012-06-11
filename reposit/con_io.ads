@@ -107,6 +107,9 @@ package Con_Io is
   -- Is a console open
   function Is_Open (Con : Console) return Boolean;
 
+  -- Set console name (X11 window title)
+  procedure Set_Name (Con : in Console; Name : in String);
+
   -- Suspend and resume a console
   -- If a program wants to open several consoles, there are two options:
   -- - One task per console, each task calls *Get and receives its
