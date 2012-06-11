@@ -96,18 +96,18 @@ package body Ada_Parser is
       end if;
       -- See if reserved word or normal identifier
       Is_Reserved := Ada_Words.Check_Keyword (Str);
-      if Is_Reserved = Ada_Words.May_Be_Keyword then
+      if Is_Reserved = Ada_Words.Maybe then
         -- Access, delta, digits or range,
         -- see if prev significant lexical element is "'"
         if Context.Prev_Lex.Image = "'" then
           -- Prev was "'", so current is a qualifier
-          Is_Reserved := Ada_Words.Is_Not_Keyword;
+          Is_Reserved := Ada_Words.False;
         else
           -- Prev was not "'", so current is a reserved word
-          Is_Reserved := Ada_Words.Is_Keyword;
+          Is_Reserved := Ada_Words.True;
         end if;
       end if;
-      if Is_Reserved = Ada_Words.Is_Keyword then
+      if Is_Reserved = Ada_Words.True then
         Lexic := Reserved_Word;
         Get_Text (Lower_Str (Str), Lexic, Context, Text);
       else

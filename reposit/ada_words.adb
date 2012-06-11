@@ -3,12 +3,14 @@ with Hash, Lower_Str;
 pragma Elaborate (Hash);
 package body Ada_Words is
 
+  -- Ada separators
   function Is_Separator (C : Character) return Boolean is
   begin
     return C = ' ' or else C = Ada.Characters.Latin_1.Ht
                    or else C = Ada.Characters.Latin_1.Lf;
   end Is_Separator;
 
+  -- Ada delimiters
   function Is_Delimiter (C : Character) return Boolean is
   begin
     case C is
@@ -43,6 +45,7 @@ package body Ada_Words is
   end Is_Letter;
 
 
+  -- Is Word a valid identifier
   function Is_Identifier (Word : String) return Boolean is
     First : constant Integer := Word'First;
     Prev : Character;
@@ -77,10 +80,12 @@ package body Ada_Words is
 
   -------------------------------------------------------------
 
+  -- Ada reserved word
   subtype Word_Len_Range is Natural range 0 .. 15;
   type Word_Rec is record
     Len : Word_Len_Range;
     Str : String (1 .. Word_Len_Range'Last);
+    -- Some reserved words can be not keyword (ex: access, digits...)
     Must : Boolean;
   end record;
 
@@ -89,10 +94,12 @@ package body Ada_Words is
     Ada.Text_Io.Put (Word.Str (1 .. Word.Len) & " " & Word.Must'Img);
   end Dump;
 
+  -- Hash table of Ada reserved words
   package Word_Hash is new Hash.Hash_Mng (Data_Access => Word_Rec,
                                           Dump => Dump);
   Hash_Table : Word_Hash.Hash_Table;
 
+  -- Adds a reserved Word in the table
   procedure Store (Word : in String; Must_Be_Keyword : in Boolean := True) is
     Low_Word : constant String := Lower_Str (Word);
     Rec : Word_Rec;
@@ -105,6 +112,7 @@ package body Ada_Words is
 
   Table_Initialised : Boolean := False;
 
+  -- Init the whole table of reserved words
   procedure Init is
   begin
     if Table_Initialised then
@@ -205,12 +213,13 @@ package body Ada_Words is
     Table_Initialised := True;
   end Init;
 
+  -- Check if word is a reserved keyword
   function Check_Keyword (Word : String) return Keyword_Res_List is
     Low_Word : constant String := Lower_Str (Word);
     Result : Word_Hash.Found_Rec;
   begin
     if Word = "" then
-      return Is_Not_Keyword;
+      return False;
     end if;
     Init;
     -- Search in hash table
@@ -220,17 +229,17 @@ package body Ada_Words is
       case Result.Found is
         when False =>
           -- Word hash not found => not a keyword
-          return Is_Not_Keyword;
+          return False;
         when True =>
           if Result.Data.Str (1 .. Result.Data.Len) = Low_Word then
             -- Word hash found, and word match otherwise search next word
             if Result.Data.Must then
               -- This word is a keyword
-              return Is_Keyword;
+              return True;
             else
               -- This word is a keyword except if following a '''
               --  (like range, digits...)
-              return May_Be_Keyword;
+              return Maybe;
             end if;
           end if;
       end case;

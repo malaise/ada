@@ -353,11 +353,11 @@ procedure Alook is
       end if;
       -- Identifier or reserved word
       case Ada_Words.Check_Keyword (Str) is
-        when Ada_Words.Is_Keyword =>
+        when Ada_Words.True =>
           Is_Keyword := True;
-        when Ada_Words.May_Be_Keyword =>
+        when Ada_Words.Maybe =>
           Is_Keyword := not Prev_Tick;
-        when Ada_Words.Is_Not_Keyword =>
+        when Ada_Words.False =>
           Is_Keyword := False;
       end case;
       if Is_Keyword and then Str /= Lower_Str (Str) then
