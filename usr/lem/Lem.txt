@@ -9,6 +9,9 @@ vertical speeds, then stop its engines.
 
 Presentation of the screen
 --------------------------
+
+image:Lem.png["Lem",title="Lem"]
+
 The space
 ~~~~~~~~~
 The main area represents the space, the LEM and the Moon ground.

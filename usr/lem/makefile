@@ -5,7 +5,7 @@ EXES := land_lem
 
 CLIBS := x_mng cutil X11
 
-TXT := UserGuide
+TXT := Lem
 
 include $(TEMPLATES)/ada.mk
 
