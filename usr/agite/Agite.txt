@@ -1,7 +1,7 @@
 Agite user guide
 ================
 Pascal MALAISE <malaise@magic.fr>
-V5.0
+V5.1
 
 General purpose
 ---------------
@@ -178,7 +178,8 @@ The first line shows the title and current version of Agite.
 +
 On the left is the indication of current Git branch.
 +
-On the right is the indication of current host.
+On the right is the indication of current host (which is also indicated in the
+X window title of Agite).
 
 .Directories
 Root::
@@ -217,8 +218,8 @@ current directory.
 +
 How to use it: At start-up current directory is automatically pushed and 'PopD'
 is disabled. As soon as you move to another directory 'PopD' allows moving
-back to the original one. When you 'PusD' this allows swapping between the new
-pushed and the last pushed.
+back to the original one. Clicking on 'PusD' allows swapping between the
+new pushed and the last pushed.
 
 .List
 
