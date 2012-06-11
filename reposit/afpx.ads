@@ -21,15 +21,11 @@ package Afpx is
   procedure Get_Screen_Size (Height : out Height_Range;
                              Width  : out Width_Range);
 
-  -- The Con_Io Console used by Afpx. Call Use_Descriptor after use
-  -- Exceptions : No_Descriptor (no Descriptor in use)
-  function Get_Console return Con_Io.Console;
-
   -- Set current descriptor (read from file)
   -- Previous descriptor modifications (from encode, set_colors, put_then_get)
   --  are lost
   -- The Con_Io screen from previous descriptor (if any) is re-used
-  --  (no new window) cleared
+  --  (no new window)
   -- By default, the Con_Io screen is cleared
   -- Exceptions : No_Descriptor (Descriptor not found)
   procedure Use_Descriptor (Descriptor_No : in Descriptor_Range;
@@ -46,6 +42,10 @@ package Afpx is
 
   -- Is a descriptor in use
   function Is_Descriptor_Set return Boolean;
+
+  -- The Con_Io Console used by Afpx
+  -- Exceptions : No_Descriptor (no Descriptor in use)
+  function Get_Console return Con_Io.Console;
 
   -- Suspend and resume a con_io
   -- If a program wants to open several con_io, (by example a graphical con_io

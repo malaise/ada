@@ -237,13 +237,6 @@ package body Afpx is
     Width := Size.Col + 1;
   end Get_Screen_Size;
 
-  -- The Con_Io Console used by Afpx. Call Use_Descriptor after use
-  function Get_Console return Con_Io.Console is
-  begin
-    Af_Dscr.Check;
-    return Console;
-  end Get_Console;
-
   -- Set current descriptor (read descriptor description)
   procedure Use_Descriptor (Descriptor_No : in Descriptor_Range;
                             Clear_Screen : in Boolean := True) is
@@ -297,6 +290,13 @@ package body Afpx is
   begin
     return Af_Dscr.Is_Set;
   end Is_Descriptor_Set;
+
+  -- The Con_Io Console used by Afpx
+  function Get_Console return Con_Io.Console is
+  begin
+    Af_Dscr.Check;
+    return Console;
+  end Get_Console;
 
   -- Suspend and resume the descriptor
   procedure Suspend is
