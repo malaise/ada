@@ -38,8 +38,9 @@ package body Utils is
   end Parse_Spaces;
 
   -- Sigchild callback
-  -- This will trigger Afpx.PtG to return Signal_Evenv
+  -- This will trigger Afpx.PtG to return Signal_Event
   procedure My_Cb (Death_Report : in Proc_Family.Death_Rec) is
+    pragma Unreferenced (Death_Report);
   begin
     null;
   end My_Cb;
