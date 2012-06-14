@@ -110,7 +110,18 @@ package Xml_Parser is
   -------------------------
   -- The tail (Comments and PIs after the root element) are attached
   --  to a dummy child of the root element. This child (if any) is the
-  --  last child of root and has no (empty) name.
+  --  last child of root and has no (empty) name
+
+  -----------------------------
+  -- NOTE ABOUT THE WARNINGS --
+  -----------------------------
+  -- The warnings reported by the parser are:
+  -- - ATTLIST already existing for element and attribute => merge directives
+  -- - attribute already defined for element => discard new definition
+  -- - entity already defined => discard new definition
+  -- - unknown element used in in child definition
+  -- - unknown element used in ATTLIST
+  -- - inconsistency between EMPTY definition of element and an empty tag
 
   -------------------------------------
   -- NOTE ABOUT THE PARSING CALLBACK --

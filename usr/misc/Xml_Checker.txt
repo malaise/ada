@@ -1,7 +1,7 @@
 Xml_Checker
 ===========
 
-Parser version: V29.3
+Parser version: V29.7
 
 Generator version: V10.0
 
@@ -114,13 +114,14 @@ the DOCTYPE directive. You ca use ''-d ""'' or ''--dtd=""'' to force discarding
 the DOCTYPE directive.
 
 anchor:Warnings[]-w | --warnings: :: for check and report warnings. The warnings
-that are handled are:
- * multiple definition of the same ATTLIST,
- * ATTLIST for unknown element,
- * multiple definition of the same attribute for an element,
- * multiple definition of the same ENTITY,
- * reference to a child that is not defined,
- * inconsistency between the EMPY definition of an element and the use of
+that can be reported are:
+ * multiple definition of the same ATTLIST (=> definitions are merged),
+ * ATTLIST for unknown element (=> not used),
+ * multiple definition of the same attribute for an element (=> new definition
+is discarded),
+ * multiple definition of the same ENTITY (=> new definition is discarded),
+ * reference to a child that is not defined (=> child is not useable),
+ * inconsistency between the EMPTY definition of an element in DTD and the use of
 empty element tag (<element/>) in XML.
 
 Other options
@@ -212,7 +213,8 @@ dtd_checker [ -w | --warnings ] [ <dtd_file> ]
 
 By default dtd_checker only checks for errors in the DTD.
 With the option "-w" or "--warnings" it also reports the same
-xref:Warnings[warnings] as xml_checker.
+xref:Warnings[warnings] as xml_checker (except inconsistencies between EMPTY
+definition and empty tag).
 
 If no file is provided then dtd_checker parses stdin.
 
