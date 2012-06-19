@@ -23,7 +23,7 @@ package Xml_Parser is
   -- TYPES --
   -----------
   -- Generic node type
-  -- A node is either an element or a text or a processing instruction (PI)
+  -- A node is either an element, a text, a processing instruction (PI)
   --  or a comment
   type Node_Kind_List is (Element, Text, Pi, Comment);
   type Node_Type (Kind : Node_Kind_List := Element) is private;
@@ -78,10 +78,10 @@ package Xml_Parser is
   ---------------------------
   -- NOTE ABOUT NAMESPACES --
   ---------------------------
-  -- When  Namespaces option is set then
+  -- When Namespaces option is set then
   --  - the document is checked to be namespace-well-formed and namespace-valid
   --  - namespace information of elements (Get_Namespace) and attributes
-  --    (Namesapce field) is filled, otherwise it is empty
+  --    (Namespace field) is filled, otherwise it is empty
   -- Note that names of element and attribute remain qualified and validity
   --  of URIs is not checked
 
@@ -94,8 +94,8 @@ package Xml_Parser is
   -- In Xml V1.1 the xml directive and version is mandatory.
   -- So the Prologue is an element of name "xml" with possible attributes
   --  (no attribute means that there is no Xml directive) and children:
-  --  for a PIs: a Pi node
-  --  for a comments: a Comment node
+  --  for a PIs a Pi node
+  --  for a comment: a Comment node
   --  for the doctype: an empty Text
 
   ----------------------------
@@ -154,6 +154,7 @@ package Xml_Parser is
     -- Only for Kind Element
     Attributes : Attributes_Access := null;
   end record;
+
   -- If the callback raises an exception the parsing raises:
   Callback_Error : exception;
   type Parse_Callback_Access is access
@@ -178,8 +179,8 @@ package Xml_Parser is
   -- On option force a dtd file different from DOCTYPE directive
   -- On option check and fill namespace informations
   -- If a warning callback is set then it is called for each warning detected
-  -- If a Parse_Cb is set then it is called for each node creation et for
-  --  each element end and no tree is build (see above)
+  -- If a parsing callback is set then it is called for each node creation 
+  --  and for each element end, and no tree is build (see above)
   -- May raise File_Error if error accessing the File_Name,
   --           Status_Error if Ctx is not clean
   Stdin : constant String := "";
