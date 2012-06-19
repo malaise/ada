@@ -101,7 +101,7 @@ procedure Xml_Checker is
     Ple (" mutually exclusive.");
     Ple ("Keep, expand and namespace are not allowed on Dump mode, Dump => keep all.");
     Ple ("Canonical only allows options dtd, warnings and keep-comments (it expands,");
-    Ple ("  ignores namespace andy by default removes comments).");
+    Ple ("  ignores namespace and by default removes comments).");
     Ple ("Namespace always expand, so these options are exclusive.");
     Ple ("Default format is -W" & Xml_Parser.Generator.Default_Width'Img
                          & " on stdout.");
