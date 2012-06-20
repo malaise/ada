@@ -17,7 +17,7 @@ package  body Bloc_Io is
                  Mode : in System.Address) return System.Address;
   pragma Import (C, Fopen, "fopen");
 
-  function Fclose(File : System.Address) return Integer;
+  function Fclose(File : System.Address) return C_Types.Int;
   pragma Import (C, Fclose, "fclose");
 
   function Fread(To : System.Address;
@@ -41,6 +41,13 @@ package  body Bloc_Io is
 
   function Ftell(File : System.Address) return C_Types.Long;
   pragma Import (C, Ftell, "ftell");
+
+  function Ferror(File : System.Address) return C_Types.Int;
+  pragma Import (C, Ferror, "ferror");
+
+
+  procedure Clearerr(File : System.Address);
+  pragma Import (C, Clearerr, "clearerr");
 
   ---------------
   -- Functions --
@@ -132,6 +139,7 @@ package  body Bloc_Io is
   procedure Read(File : in File_Type;
                  Item : in out Element_Array) is
     Res : C_Types.Size_T;
+    Iserr : C_Types.Int;
   begin
     Check_Open(File);
     if File.Mode = Out_File then
@@ -143,9 +151,14 @@ package  body Bloc_Io is
                  C_Types.Size_T(Item'Length),
                  File.Ext_File);
     if Res < 0 then
-      raise Device_Error;
-    elsif Res /= C_Types.Size_T(Item'Length) then
-      raise End_Error;
+      -- Check if error (otherwise End Of File)
+      Iserr := Ferror(File.Ext_File);
+      Clearerr(File.Ext_File);
+      if Iserr /= 0 then
+        raise Device_Error;
+      else
+        raise End_Error;
+      end if;
     end if;
   end Read;
 
