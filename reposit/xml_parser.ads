@@ -179,7 +179,7 @@ package Xml_Parser is
   -- On option force a dtd file different from DOCTYPE directive
   -- On option check and fill namespace informations
   -- If a warning callback is set then it is called for each warning detected
-  -- If a parsing callback is set then it is called for each node creation 
+  -- If a parsing callback is set then it is called for each node creation
   --  and for each element end, and no tree is build (see above)
   -- May raise File_Error if error accessing the File_Name,
   --           Status_Error if Ctx is not clean
