@@ -5,7 +5,7 @@ Parser version: V29.7
 
 Generator version: V10.0
 
-Xml_checker version: V16.1
+Xml_checker version: V17.0
 
 Xml_checker is a parser of XML file that checks the syntax (versus DTD) and
 formats the output.
@@ -14,11 +14,12 @@ Syntax
 ------
 ...................................................
 xml_checker[ { <option> } ] [ { <file> } ]
- <option> ::= <silent> | <dump> | <raw> | <width> | <one> |
+ <option> ::= <silent> | <progress> | <dump> | <raw> | <width> | <one> |
             | <expand> | <keep> | <namespace> | <normalize> | <canonical>
             | <check_dtd> | <warnings> | <tree> | <help> | <version>
 
  <silent>     ::= -s | --silent     -- No output, only exit code
+ <progress>   ::= -p | --progress   -- only show a progress bar
  <dump>       ::= -D | --dump       -- Dump expanded Xml tree
  <raw>        ::= -r | --raw        -- Put all on one line
  <width>      ::= -W <Width> | --width=<Width>
@@ -41,7 +42,7 @@ xml_checker[ { <option> } ] [ { <file> } ]
                                     -- Use a specific dtd or none
  <warnings>   ::= -w | --warnings   -- Check for warnings
 
- <tree>       ::= -t | --tree       -- Build tree then dump it
+ <tree>       ::= -t | --tree       -- Build tree then output it
  <help>       ::= -h | --help       -- Put this help
  <version>    ::= -v | --version    -- Put versions
 ...................................................
@@ -50,10 +51,20 @@ exclusive.
 
 Output format
 ~~~~~~~~~~~~~
-anchor:Silent[]-s | --silent: :: for no output at all. Xml_checker exits with 0
-if OK and with 1 on error.
+anchor:Silent[]-s | --silent: :: for no output at all. The xref:Exit[exit
+code] indicates success or failure.
 
--D | --dump: :: for a dump of the line numbers, of XML structure and "Mixed"
+anchor:Progress[]-p | --progress: :: for only output a progress bar like this
+
+  |-------------------------------------------------|
+  |=================================
++
+then exit.
++
+It is not possible to monitor the progress in "xref:Tree[tree]" mode,
+so these options are exclusive.
+
+anchor:Dump[]-D | --dump: :: for a dump of the line numbers, of XML structure and "Mixed"
 information, example:
 
   Prologue:
@@ -131,8 +142,8 @@ XML parser invokes for each element that it finds.
 With this option the XML parser builds the complete tree then xml_checker
 iterates on the tree and displays its content.
 +
-Note that this option is not recommended for big files and not compatible with
-canonical mode.
+Note that this option is not recommended for big files. It is not compatible
+with canonical mode or progress bar.
 +
 Please also consider increasing the process stack size (ulimit -s) to
 avoid stack overflow and Storage_Error.
@@ -157,14 +168,15 @@ after another.
 
 Output
 ~~~~~~
-Xml_checker outputs the dump or the XML text on stdout. There is no output in
-xref:Silent[silent] mode.
+Xml_checker outputs the xref:Dump[dump] or the formated XML text on stdout.
+In xref:Silent[silent] mode there is no output at all. In
+xref:Progress[progress] mode there is just a progress bar.
 
 It outputs xref:Warnings[warnings] (if activated) and errors on stderr.
 
 Exit code
 ~~~~~~~~~
-Xml_checker exits with 0 if no error is detected and with 1 otherwise
+anchor:Exit[]Xml_checker exits with 0 if no error is detected and with 1 otherwise
 (xref:Warnings[warnings] don't affect the exit code).
 
 anchor:XmlParser[] XML parser and generator
@@ -184,8 +196,10 @@ in URIs (parsing error).
 Some other encodings may be handled by defining the environment variable
 XML_PARSER_MAP_DIR to where Byte_To_Unicode can find the mapping file
 named <ENCODING>.xml (in uppercase, ex: ISO-8859-9.xml).
-- There is no support for XML namespaces
-(see http://www.w3.org/TR/2009/REC-xml-names-20091208).
+
+On option the parser provides partial support for XML namespaces
+(see http://www.w3.org/TR/2009/REC-xml-names-20091208). Namespaces are not
+checked for validity of URI references.
 
 By default Xml_Checker invokes this parser with options that ensure that the
 output is the same as the input except the formating (indentation of elements

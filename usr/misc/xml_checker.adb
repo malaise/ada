@@ -1,10 +1,10 @@
 -- Check/Format/Canonify a XML file or flow
 with Ada.Exceptions;
 with As.U, Argument, Argument_Parser, Xml_Parser.Generator, Normal, Basic_Proc,
-     Text_Line, Sys_Calls, Parser;
+     Text_Line, Sys_Calls, Parser, Bloc_Io;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V16.1";
+  Version : constant String := "V17.0";
 
   procedure Ae_Re (E : in Ada.Exceptions.Exception_Id;
                    M : in String := "")
@@ -29,8 +29,8 @@ procedure Xml_Checker is
   -- Abort loop of arguments
   Abort_Error : exception;
 
-  -- Kind of ouput: None, dump, Xml_Generator or Canonical
-  type Output_Kind_List is (None, Dump, Gen, Canon);
+  -- Kind of ouput: None, progress bar, dump, Xml_Generator or Canonical
+  type Output_Kind_List is (None, Progress, Dump, Gen, Canon);
   Output_Kind : Output_Kind_List;
 
   -- Xml_Generator descriptor and format
@@ -49,6 +49,11 @@ procedure Xml_Checker is
 
   -- Use Namespaces
   Namespace : Boolean;
+
+  -- Total Nb of lines of current file (when progress)
+  Lines : Natural;
+  -- Progress factor (Nb of signs)
+  Progress_Factor : constant := 50;
 
   -- Warning detection
   procedure Warning (Ctx : in  Xml_Parser.Ctx_Type; Msg : in String) is
@@ -69,11 +74,12 @@ procedure Xml_Checker is
     procedure Ple (Str : in String) renames Basic_Proc.Put_Line_Error;
   begin
     Ple ("Usage: " & Argument.Get_Program_Name & "[ { <option> } ] [ { <file> } ]");
-    Ple (" <option> ::= <silent> | <dump> | <raw> | <width> | <one> |");
+    Ple (" <option> ::= <silent> | <progress> | <dump> | <raw> | <width> | <one> |");
     Ple ("            | <expand> | <keep> | <namespace> | <normalize> | <canonical>");
     Ple ("            | <check_dtd> | <warnings> | <tree> | <help> | <version>");
 
     Ple (" <silent>     ::= -s | --silent     -- No output, only exit code");
+    Ple (" <progress>   ::= -p | --progress   -- Only show a progress bar");
     Ple (" <dump>       ::= -D | --dump       -- Dump expanded Xml tree");
     Ple (" <raw>        ::= -r | --raw        -- Put all on one line");
     Ple (" <width>      ::= -W <Width> | --width=<Width>");
@@ -106,6 +112,7 @@ procedure Xml_Checker is
     Ple ("Default format is -W" & Xml_Parser.Generator.Default_Width'Img
                          & " on stdout.");
     Ple ("Building the tree is not recommended for big files and forbidden in canonical.");
+    Ple ("Progress bar requires the callback mode (no  tree).");
     Ple ("Please also consider increasing the process stack size (ulimit -s) to");
     Ple ("  avoid stack overflow and Storage_Error.");
   end Usage;
@@ -126,7 +133,8 @@ procedure Xml_Checker is
    12 => ('C', As.U.Tus ("canonical"), False, False),
    13 => (Argument_Parser.No_Key_Char,As.U.Tus ("no-normalize"), False, False),
    14 => ('E', As.U.Tus ("expand"), False, False),
-   15 => ('n', As.U.Tus ("namespace"), False, False)
+   15 => ('n', As.U.Tus ("namespace"), False, False),
+   16 => ('p', As.U.Tus ("progress"), False, False)
    );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
@@ -285,6 +293,9 @@ procedure Xml_Checker is
     end if;
   end Get_File_Name;
 
+  -- To Store Previous progress
+  Prev_Progress : Natural;
+
   -- To store if Cb is in prologue/elements/tail for dump mode
   -- And for Canon_Callback filtering algorithms
   Stage : Xml_Parser.Stage_List;
@@ -297,11 +308,26 @@ procedure Xml_Checker is
   procedure Callback (Ctx  : in Xml_Parser.Ctx_Type;
                       Node : in Xml_Parser.Node_Update) is
     Str : As.U.Asu_Us;
+    Curr_Progress : Natural;
     Indent : constant String (1 .. Node.Level + 1) := (others => ' ');
     use type Xml_Parser.Node_Kind_List, Xml_Parser.Attributes_Access,
              Xml_Parser.Stage_List;
   begin
     if Output_Kind = None then
+      return;
+    elsif Output_Kind = Progress then
+      if Lines > 1 and then Node.Line_No /= 0 then
+        -- Update progress
+        Curr_Progress := Node.Line_No * Progress_Factor / Lines;
+        if Curr_Progress /= Prev_Progress
+        and then Curr_Progress < Progress_Factor then
+          for I in Prev_Progress + 1 .. Curr_Progress loop
+            Out_Flow.Put ("=");
+          end loop;
+          Prev_Progress := Curr_Progress;
+          Out_Flow.Flush;
+        end if;
+      end if;
       return;
     elsif Output_Kind /= Dump then
       -- Use the Image of Xml_Parser.Generator
@@ -396,20 +422,69 @@ procedure Xml_Checker is
                             Node : in Xml_Parser.Node_Update) is separate;
   Callback_Acc : Xml_Parser.Parse_Callback_Access;
 
+  -- Count number of lines of file
+  procedure Count_Lines (File_Name : in String) is
+    package Size_Io is new Bloc_Io(Character);
+    use type Size_Io.Count;
+    Size_Flow : Size_Io.File_Type;
+    Bloc_Size : constant Size_Io.Count := 1024 * 1024;
+    Bloc : Size_Io.Element_Array (1 .. Bloc_Size);
+    File_Size, Nb_Read, Nb_To_Read : Size_Io.Count;
+  begin
+    Size_Flow.Open (Size_Io.In_File, File_Name);
+    File_Size := Size_Flow.Size;
+    Nb_Read := 0;
+    Lines := 0;
+    Nb_To_Read := Bloc_Size;
+    loop
+      -- Compute Nb to read (Bloc_Size or last chars) and read
+      if Nb_Read + Bloc_Size > File_Size then
+        Nb_To_Read := File_Size - Nb_Read;
+      end if;
+      Size_Flow.Read (Bloc(1 .. Nb_To_Read));
+      -- Count Line Feeds
+      for I in 1 .. Nb_To_Read loop
+        if Bloc(I) = Text_Line.Line_Feed_Char then
+          Lines := Lines + 1;
+        end if;
+      end loop;
+      -- Update count of read and exit when done
+      Nb_Read := Nb_Read + Nb_To_Read;
+      exit when Nb_Read = File_Size;
+    end loop;
+    Size_Flow.Close;
+  exception
+    when others =>
+      Lines := 0;
+  end Count_Lines;
+
   -- Parse a file provided as arg or stdin
   -- Retrieve comments and don't expand General Entities if output is Xml
   procedure Do_One (Index : in Natural) is
     -- Parsing elements and charactericstics
     Prologue, Root : Xml_Parser.Element_Type;
     Parse_Ok : Boolean;
+    Dummy : Boolean;
+    pragma Unreferenced (Dummy);
     use type Xml_Parser.Generator.Format_Kind_List,
              Xml_Parser.Parse_Callback_Access;
   begin
 
     -- Title except if stdin or if only one file
-    if Arg_Dscr.Get_Nb_Occurences (No_Key_Index) > 1 then
+    if Arg_Dscr.Get_Nb_Occurences (No_Key_Index) > 1
+    and then Output_Kind /= None then
       Out_Flow.Put_Line (Get_File_Name (Index, True) & ":");
       Out_Flow.Flush;
+    end if;
+
+    if Output_Kind = Progress and then Index /= 0 then
+      -- Count lines and prepare output
+      Count_Lines (Get_File_Name (Index, False));
+      Prev_Progress := 0;
+      Out_Flow.Put_Line ("|-------------------------------------------------|");
+      Out_Flow.Put ("|");
+      Out_Flow.Flush;
+      Dummy := Sys_Calls.Set_Tty_Attr (Out_Flow.Get_Fd, Sys_Calls.Char);
     end if;
 
     Stage := Xml_Parser.Elements;
@@ -439,6 +514,14 @@ procedure Xml_Checker is
       if Output_Kind = Dump then
         Out_Flow.Put_Line ("Unparsed entities:");
         Dump_Unparsed_Entities;
+      end if;
+      if Output_Kind = Progress and then Index /= 0 then
+        for I in Prev_Progress + 1 .. Progress_Factor - 1 loop
+          Out_Flow.Put ("=");
+        end loop;
+        Out_Flow.Put ("|");
+        Out_Flow.Flush;
+        Dummy := Sys_Calls.Set_Tty_Attr (Out_Flow.Get_Fd, Sys_Calls.Canonical);
       end if;
       if Output_Kind /= Dump
       and then Output_Kind /= None
@@ -580,6 +663,22 @@ begin
   if Arg_Dscr.Is_Set (1) then
     -- Silent
     Output_Kind := None;
+  elsif Arg_Dscr.Is_Set (16) then
+    -- Progress bar
+    if Arg_Dscr.Is_Set (10) then
+      Output_Kind := Progress;
+        Ae_Re (Arg_Error'Identity,
+               "Incompatible ""progress"" and ""tree"" options");
+    end if;
+    declare
+      use type Sys_Calls.File_Desc_Kind_List;
+    begin
+      if Sys_Calls.File_Desc_Kind (Sys_Calls.Stdout) = Sys_Calls.Tty then
+        Output_Kind := Progress;
+      else
+        Output_Kind := None;
+      end if;
+    end;
   elsif Arg_Dscr.Is_Set (2) then
     if Arg_Dscr.Is_Set (8) then
       Ae_Re (Arg_Error'Identity,
