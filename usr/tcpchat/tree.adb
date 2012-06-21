@@ -316,17 +316,17 @@ package body Tree is
       Node.Kind := Eval;
       -- Get text of child "command" and current attributes
       Get_Text (Xnode, Node, False, Command => True);
-      -- Get_Attribute IfUnset
+      -- Get_Attribute OnlyIfNotSset
       Node.Ifunset := Trilean.Boo2Tri (
-               Get_Attribute (Xnode, "IfUnset") = "true");
+               Get_Attribute (Xnode, "OnlyIfNotSet") = "true");
     elsif Name = "set" then
       Node.Kind := Set;
       -- Get text
       Get_Text (Xnode, Node, True);
-      -- Get_Attributes Compute and IfUnset
+      -- Get_Attributes Compute and OnlyIfNotSset
       Node.Compute := Get_Attribute (Xnode, "Compute") = "true";
       Node.Ifunset := Trilean.Boo2Tri (
-               Get_Attribute (Xnode, "IfUnset") = "true");
+               Get_Attribute (Xnode, "OnlyIfNotSet") = "true");
     elsif Name = "chdir" then
       Node.Kind := Chdir;
       -- Move to "dir" to get text

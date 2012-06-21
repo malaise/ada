@@ -253,6 +253,7 @@
         <send>error-handler-1</send>
       </script>
     </chdir>
+    <close/>
   </script>
   <chat Name="error2">error2</chat>
   <script>
@@ -264,6 +265,7 @@
       </script>
     </chdir>
     <send>after-error-2</send>
+    <close/>
   </script>
 
   <chat Name="Indirect">indirect</chat>
@@ -274,6 +276,7 @@
     <set Variable="Index" Compute="true">${Index}+1</set>
     <set Variable="Result">${V${Index}}</set>
     <send NewLine="false">${Result}</send>
+    <close/>
   </script>
 
 </chats>

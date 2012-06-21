@@ -86,7 +86,8 @@ on a read or on a skip.
  * A transmission error (closure, overflow).
  * The failure of 'call' or 'eval' of an external command if there is no
 'error' block to handle the failure.
- * The reference to an undefined variable in an expression.
+ * An invalid expression (including invalid computation, reference to an
+ undefined variable...)
  * An undefined variable in a statement 'if', 'elsif', 'while' with the IfUnset
 attribute set (or left) to "error".
  * Error of 'chdir' when changing current directory if there is no "error" block
@@ -108,10 +109,10 @@ rules:
   * Internal variables names cannot be numbers nor start by "$" nor contain "="
   * 'set' with the "Compute" attribute set converts an expression (possibly
 referring to variables) to an integer and back to a string stored in a variable
-  * 'set' and 'eval' with the "IfUnset" attribute set assign the variable only
-if it is not defined yet
-  * 'if', 'elsif' and 'while' may raise error or may return true or false
-depending on the "IfUnset" attribute.
+  * 'set' and 'eval' with the "OnlyIfNotSet" attribute set, assigns the variable
+only if is not defined yet
+  * 'if', 'elsif' and 'while' with the variable not set may raise error or may
+return true or false depending on the "IfUnset" attribute.
 
 Any occurence of "${" or "}" that does't denote a variable must be backslashed.
 

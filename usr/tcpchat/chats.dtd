@@ -58,10 +58,10 @@
 <!ELEMENT command (#PCDATA)>
 <!ELEMENT error EMPTY>
 <!ELEMENT eval (command,%error;?)>
-<!ATTLIST eval %Variable_Set; IfUnset %boolean; "false">
+<!ATTLIST eval %Variable_Set; OnlyIfNotSet %boolean; "false">
 <!ELEMENT set (#PCDATA)>
 <!ATTLIST set %Variable_Set; Compute %boolean; "false"
-              IfUnset %boolean; "false">
+              OnlyIfNotSet %boolean; "false">
 <!ELEMENT chdir (dir,%error;?)>
 <!ELEMENT dir (#PCDATA)>
 <!ELEMENT log (#PCDATA)>
