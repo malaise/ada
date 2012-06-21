@@ -19,7 +19,7 @@ xml_checker[ { <option> } ] [ { <file> } ]
             | <check_dtd> | <warnings> | <tree> | <help> | <version>
 
  <silent>     ::= -s | --silent     -- No output, only exit code
- <progress>   ::= -p | --progress   -- only show a progress bar
+ <progress>   ::= -p | --progress   -- Only show a progress bar
  <dump>       ::= -D | --dump       -- Dump expanded Xml tree
  <raw>        ::= -r | --raw        -- Put all on one line
  <width>      ::= -W <Width> | --width=<Width>
@@ -158,10 +158,10 @@ Behaviour
 
 Inputs
 ~~~~~~
-Xml_checker takes 0, 1 on several arguments files to specify the XML flow to
-process.
+Xml_checker takes 0, 1 or several arguments to specify the XML flow to process.
 
-When no argument xml_checker processes stdin.
+When no argument xml_checker processes stdin. An empty argument ("") also
+denotes stdin.
 
 When one or several files are provided xml_checker processes these files one
 after another.
@@ -191,11 +191,19 @@ http://www.w3.org/TR/2006/REC-xml11-20060816):
 - Only the System Id of the DOCTYPE and of external parsed ENTITY is used,
 Public Id (if any) is skipped.
 - Only the local file, the "file://" and the "http://" schemes are supported
-in URIs (parsing error).
+in URIs (otherwise it raises parsing error).
 - Only UTF-8, UTF-16 and ISO-8859-1 encodings are natively supported.
 Some other encodings may be handled by defining the environment variable
 XML_PARSER_MAP_DIR to where Byte_To_Unicode can find the mapping file
-named <ENCODING>.xml (in uppercase, ex: ISO-8859-9.xml).
+named <ENCODING>.xml (in uppercase, ex: ISO-8859-9.xml). This file maps each
+byte code (from 0 top 255) to a Unicode number and has the format:
+
+  <?xml version="1.0" encoding="UTF-8"?>
+    <Map>
+      <Code Byte="16#00#">16#0000#</Code>
+      ...
+      <Code Byte="16#FF#">16#00FF#</Code>
+   </Map>
 
 On option the parser provides partial support for XML namespaces
 (see http://www.w3.org/TR/2009/REC-xml-names-20091208). Namespaces are not
@@ -208,10 +216,10 @@ and attributes).
 On the other hand the parser by default provides the caller with a tree where
 the comments and CDATA markers are removed, where entities are expanded, and
 where attributes are initialized with their default values. In order to
-display this result xml_checker can be called with:
-...................................................
-xml_checker --tree --keep=none --expand
-...................................................
+trigger this default behaviour of the parser and to display the result
+xml_checker can be called with:
+
+  xml_checker --tree --keep=none --expand
 
 .XML generator
 Xml_checker also uses a child package of Xml_Parser (Xml_Parser.Generator) to
@@ -230,5 +238,8 @@ With the option "-w" or "--warnings" it also reports the same
 xref:Warnings[warnings] as xml_checker (except inconsistencies between EMPTY
 definition and empty tag).
 
-If no file is provided then dtd_checker parses stdin.
+If no file or an empty argument is provided then dtd_checker parses stdin.
+
+Dtd_checker exits with 0 if no error is detected and with 1 otherwise
+(warnings don’t affect the exit code).
 
