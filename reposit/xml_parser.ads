@@ -2,7 +2,7 @@ with Ada.Finalization;
 with As.U, Queues, Trees, Hashed_List.Unique, Text_Char, Dynamic_List,
      Unlimited_Pool, Byte_To_Unicode;
 -- Parse Xml file or string.
--- Call callback while parsing or provide read access to the tree after parsing.
+-- Call callback while parsing or provide access to the tree after parsing.
 -- Limitations:
 --  * Only the System Id of the DOCTYPE and of external parsed ENTITY is used,
 --    Public Id (if any) is skipped.
