@@ -3,6 +3,8 @@ HISTORY
 Main changes
 
 [horizontal]
+*2012/06/20*:: Add option -p (--progress) for progress bar in xml_checker V17.0
+
 *2012/05/10*:: Add Shift with keys arrows and pages
 
 *2012/04/19*:: Add Limited_Pool
