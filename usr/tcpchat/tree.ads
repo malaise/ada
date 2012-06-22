@@ -49,5 +49,7 @@ package Tree is
               := Position_Access(Tree_Mng.No_Position);
 
   procedure Set_Position (Position : in Position_Access);
+
+  function Get_Version return String;
 end Tree;
 

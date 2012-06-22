@@ -3,10 +3,15 @@ with Ada.Exceptions;
 with As.U, Basic_Proc, Argument, Argument_Parser;
 with Debug, Ios, Tree, Events;
 procedure Tcpchat is
+
+  Version : constant String := "2.1";
+
   procedure Usage is
   begin
     Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
       & " -p <tcp_port> -f <chat_file>");
+    Basic_Proc.Put_Line_Error ("   or: " & Argument.Get_Program_Name
+      & " -h | --help | -v | --version");
   end Usage;
 
   procedure Error (Msg : in String) is
@@ -20,7 +25,8 @@ procedure Tcpchat is
   Keys : constant Argument_Parser.The_Keys_Type := (
    01 => ('h', As.U.Tus ("help"), False, False),
    02 => ('p', As.U.Tus ("port"), False, True),
-   03 => ('f', As.U.Tus ("file"), False, True));
+   03 => ('f', As.U.Tus ("file"), False, True),
+   04 => ('v', As.U.Tus ("version"), False, False));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
   Port : As.U.Asu_Us;
@@ -38,6 +44,13 @@ begin
   -- Help
   if Arg_Dscr.Is_Set (1) then
     Usage;
+    Basic_Proc.Set_Error_Exit_Code;
+    return;
+  end if;
+
+  -- Version
+  if Arg_Dscr.Is_Set (4) then
+    Basic_Proc.Put_Line_Output (Version);
     Basic_Proc.Set_Error_Exit_Code;
     return;
   end if;
@@ -69,6 +82,13 @@ begin
   -- Parse file
   Tree.Parse (File);
   Debug.Log ("Tree file parsed OK.");
+
+  -- Check version
+  if Tree.Get_Version /= Version then
+    Error ("File " & File.Image & " has incorrected version "
+         & Tree.Get_Version & ", expecting " & Version);
+    return;
+  end if;
 
   -- Init Ios
   Ios.Init (Port);

@@ -3,13 +3,14 @@
 <!-- TCP chat script for handling http -->
 
 <chats>
+  <version Version="&Version;"/>
   <!-- HTTP 0.9: Send file and close -->
   <!-- HTTP 1.0 or 1.1: Skip noise, send header + file -->
   <chat Name="http" TimeoutMs="&None;" Regexp="true"
         Assign="FILE=${5} HTTPVERS=${7}"
         >GET ((http:/)?/(localhost|${$HOSTNAME}|${$HOSTIP})(:[0-9]+)?)?([^ ]+)( +HTTP/(1\.(0|1)))?</chat>
   <script>
-    <set Variable="SERVER_VERS">V2.2</set>
+    <set Variable="SERVER_VERS">V&Version;</set>
     <cond>
       <if Variable="HTTPVERS"></if>
       <!-- No vers => 0.9 => no more input, no header -->

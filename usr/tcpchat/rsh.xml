@@ -3,6 +3,7 @@
 <!-- TCP chat script for handling rsh -->
 
 <chats>
+  <version Version="&Version;"/>
 
   <!-- Empty: discard -->
   <chat Name="empty"></chat>

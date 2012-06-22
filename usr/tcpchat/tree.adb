@@ -5,6 +5,7 @@ package body Tree is
   -- "Global" variables
   Ctx : Xml_Parser.Ctx_Type;
   Line_Feed : constant String := Text_Line.Line_Feed_Str;
+  Version : As.U.Asu_Us;
 
   ----------------------
   -- Common utilities --
@@ -203,6 +204,7 @@ package body Tree is
     Node, Nop_Node : Node_Rec;
     Default_Timeout : Integer;
     Xchild : Xml_Parser.Node_Type;
+    In_Chats : Boolean;
     Dummy_Node : Boolean;
     Dummy : Boolean;
     pragma Unreferenced (Dummy);
@@ -231,10 +233,17 @@ package body Tree is
     -- Next_Is_Script is for the "read" of select, "default", "if", "else"
     Dummy_Node := False;
     Next_Is_Script := False;
+    In_Chats := False;
 
     if Name = "chats" then
       Node.Kind := Selec;
       Node.Timeout := Get_Timeout (Xnode, Infinite_Ms);
+      In_Chats := True;
+    elsif Name = "version" then
+      Version := Ctx.Get_Attribute (Xnode, 1).Value;
+      Xchild := Ctx.Get_Brother (Xnode);
+      Insert_Node (Xchild, Timeout);
+      return;
     elsif Name = "chat" then
       -- Chat is a Read. Get name, timeout and default timeout
       Node.Kind := Read;
@@ -327,6 +336,15 @@ package body Tree is
       Node.Compute := Get_Attribute (Xnode, "Compute") = "true";
       Node.Ifunset := Trilean.Boo2Tri (
                Get_Attribute (Xnode, "OnlyIfNotSet") = "true");
+    elsif Name = "assign" then
+      Node.Kind := Set;
+      -- Move to "statement" to get text
+      Xchild := Ctx.Get_Child (Xnode, 1);
+      Get_Text (Xchild, Node, True);
+      -- Get_Attributes Compute and OnlyIfNotSset
+      Node.Compute := Get_Attribute (Xchild, "Compute") = "true";
+      Node.Ifunset := Trilean.Boo2Tri (
+               Get_Attribute (Xchild, "OnlyIfNotSet") = "true");
     elsif Name = "chdir" then
       Node.Kind := Chdir;
       -- Move to "dir" to get text
@@ -369,17 +387,28 @@ package body Tree is
       -- Insert each entry
       Debug.Log ("  Inserting entries of " & Mixed_Str (Node.Kind'Img));
       for I in 1 .. Ctx.Get_Nb_Children (Xnode) loop
-        -- Chats and select are made of (expect, script) pairs: insert "expect"
-        -- Cond is made of (if/elsif/else, script) pairs: insert "if/elsif/else"
-        if I rem 2 = 1 then
-          Debug.Log ("    Inserting entry of " & Mixed_Str (Node.Kind'Img));
-          Xchild := Ctx.Get_Child (Xnode, I);
-          Insert_Node (Xchild, Default_Timeout);
+        if In_Chats then
+          -- Chats is made of version then (expect, script) pairs:
+          -- insert "expect"
+          if I = 1 or else I rem 2 = 0 then
+            Debug.Log ("    Inserting entry of " & Mixed_Str (Node.Kind'Img));
+            Xchild := Ctx.Get_Child (Xnode, I);
+            Insert_Node (Xchild, Default_Timeout);
+          end if;
+        else
+          -- Select is made of (expect, script) pairs: insert "expect"
+          -- Cond is made of (if/elsif/else, script) pairs: insert "if/elsif..."
+          if I rem 2 = 1 then
+            Debug.Log ("    Inserting entry of " & Mixed_Str (Node.Kind'Img));
+            Xchild := Ctx.Get_Child (Xnode, I);
+            Insert_Node (Xchild, Default_Timeout);
+          end if;
         end if;
       end loop;
       Debug.Log ("  End of entries of " & Mixed_Str (Node.Kind'Img));
-    elsif Node.Kind = Call or else Node.Kind = Eval
-    or else Node.Kind = Chdir then
+    elsif Node.Kind = Set or else Node.Kind = Call
+    or else Node.Kind = Eval or else Node.Kind = Chdir then
+      -- Assign is an expression then a handler (error+script)
       -- Call, Eval and Chdir are a command or target, then an opt handler
       -- (error+script)
       -- Insert error handler if any
@@ -481,10 +510,11 @@ package body Tree is
     or else Node.Kind = Cond
     or else Node.Kind = Call
     or else Node.Kind = Eval
+    or else Node.Kind = Set
     or else Node.Kind = Chdir then
       -- For leaf children of entries of a Selec, Next is the next of Selec
       -- For leaf children of if/else of a Cond, Next is the next of Cond
-      -- For leaf children of Call, Eval or Chdir, Next is the next of
+      -- For leaf children of Set, Call, Eval or Chdir, Next is the next of
       --  Call/Eval/Chdir
       Inext := Node.Next.all;
     elsif Node.Kind = Repeat then
@@ -580,5 +610,9 @@ package body Tree is
     Chats.Set_Position (Tree_Mng.Position_Access(Position));
   end Set_Position;
 
+  function Get_Version return String is
+  begin
+    return Version.Image;
+  end Get_Version;
 end Tree;
 

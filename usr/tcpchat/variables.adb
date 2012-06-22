@@ -67,7 +67,7 @@ package body Variables is
     or else Name.Element (1) = Ext_Ref
     or else Regular_Expressions.Match ("=", Name.Image, False)
     or else Regular_Expressions.Match ("[0-9]+", Name.Image, True) then
-      Error ("Invalid variable name" & Name.Image);
+      Error ("Invalid variable name " & Name.Image);
       raise Invalid_Name;
     end if;
   end Check;
@@ -80,7 +80,7 @@ package body Variables is
                 Modifiable => True, Persistent => True);
   exception
     when Computer.Invalid_Variable =>
-      Error ("Invalid variable name" & Name.Image);
+      Error ("Invalid variable name " & Name.Image);
       raise Invalid_Name;
   end Set;
 
@@ -90,7 +90,7 @@ package body Variables is
     return Memory.Is_Set (Name.Image);
   exception
     when Computer.Invalid_Variable =>
-      Error ("Invalid variable name" & Name.Image);
+      Error ("Invalid variable name " & Name.Image);
       raise Invalid_Name;
   end Is_Set;
 
@@ -99,14 +99,14 @@ package body Variables is
   begin
     -- Must be a number
     if not Regular_Expressions.Match ("[0-9]+", Name.Image, True) then
-      Error ("Invalid volatile variable name" & Name.Image);
+      Error ("Invalid volatile variable name " & Name.Image);
       raise Invalid_Name;
     end if;
     Memory.Set (Name.Image, Value.Image,
                   Modifiable => True, Persistent => False);
   exception
     when Computer.Invalid_Variable =>
-      Error ("Invalid volatile variable name" & Name.Image);
+      Error ("Invalid volatile variable name " & Name.Image);
       raise Invalid_Name;
   end Set_Volatile;
 

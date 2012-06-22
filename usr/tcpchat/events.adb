@@ -1,6 +1,6 @@
 with Ada.Calendar;
 with As.U, Basic_Proc, Command, Many_Strings, Date_Image, Mixed_Str, Trilean,
-     Directory;
+     Directory, Argument;
 with Variables, Tree, Ios, Matcher, Debug;
 package body Events is
 
@@ -82,7 +82,7 @@ package body Events is
     Variable : As.U.Asu_Us;
     use type Ios.Event_Kind_List;
   begin
-    Put_Line ("Ready");
+    Put_Line (Argument.Get_Program_Name & " V" & Tree.Get_Version & " ready");
     Main : loop
       begin
         -- Where are we?
@@ -396,20 +396,31 @@ package body Events is
             end if;
 
           when Set =>
-            if Set_Var (Node) then
-              -- Load the variable
-              if Matcher.Match (Node,
-                                Variables.Expand (Node.Text,
-                                                  Variables.Local_Env)) then
-                Set_Position (Node.Next.all);
+            -- Set or Assign
+            begin
+              if Set_Var (Node) then
+                -- Load the variable
+                if Matcher.Match (Node,
+                                  Variables.Expand (Node.Text,
+                                                    Variables.Local_Env)) then
+                  Set_Position (Node.Next.all);
+                else
+                  raise Matcher.Match_Error;
+                end if;
               else
-                Put_Line ("Invalid evaluation");
-                Reset;
+                -- Skip
+                Set_Position (Node.Next.all);
               end if;
-            else
-              -- Skip
-              Set_Position (Node.Next.all);
-            end if;
+            exception
+              when Variables.Expand_Error | Matcher.Match_Error =>
+                if Has_Error_Handler (Node) then
+                  Debug.Log ("Invalid evaluation " & Node.Text.Image);
+                  Chats.Move_Child;
+                else
+                  Put_Line ("Invalid evaluation");
+                  Reset;
+                end if;
+            end;
 
           when Chdir =>
             declare

@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- DTD of a chats file of tcpchat -->
 
+<!ENTITY Version "2.1">
+
 <!ENTITY % boolean "(true|false)">
 
 <!ENTITY None "None">
@@ -19,14 +21,17 @@
 
 <!ENTITY % error "(error,script)">
 
-<!ELEMENT chats (chat,script)+>
+<!ELEMENT chats (version,(chat,script)+)>
+<!ELEMENT version EMPTY>
+<!ATTLIST version Version CDATA #REQUIRED>
+
 <!ELEMENT chat (#PCDATA)>
 <!ATTLIST chat Name ID #REQUIRED
                %TimeoutMs;
                InputDefaultTimeoutMs CDATA #IMPLIED
                %ReadDef;>
-<!ELEMENT script ((select|cond|repeat|read|skip|wait|send|call|set|eval|chdir
-                   |log)*,close?)>
+<!ELEMENT script ((select|cond|repeat|read|skip|wait|send|call|set|assign
+                   |eval|chdir |log)*,close?)>
 
 <!ELEMENT select ((expect,script)+,(default,script)?)>
 <!ATTLIST select %TimeoutMs;>
@@ -61,6 +66,10 @@
 <!ATTLIST eval %Variable_Set; OnlyIfNotSet %boolean; "false">
 <!ELEMENT set (#PCDATA)>
 <!ATTLIST set %Variable_Set; Compute %boolean; "false"
+              OnlyIfNotSet %boolean; "false">
+<!ELEMENT assign (expression,%error;)>
+<!ELEMENT expression (#PCDATA)>
+<!ATTLIST expression %Variable_Set; Compute %boolean; "false"
               OnlyIfNotSet %boolean; "false">
 <!ELEMENT chdir (dir,%error;?)>
 <!ELEMENT dir (#PCDATA)>

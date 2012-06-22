@@ -1,5 +1,6 @@
 tcpchat
 =======
+V2.1
 
 Tcpchat accepts connections on a TCP port, expects specific sentences and
 executes specified actions depending on what it receives.
@@ -38,10 +39,10 @@ Some xref:Variables[Variables] can be defined from the content of the input
 string or from part of it.
 
 .Statements
-Once the chat is selected tcpcaht executes one after the other the statements
+Once the chat is selected tcpchat executes one after the other the statements
 of the script:
 
-- 'select': A select is like a sub-chat but with no name nor attibute. It
+- 'select': A select is like a sub-chat but with no name. It
 allows selecting a subscript according to the reception of a matching
 sentence. If the select has a default entry, it is selected when the
 sentence does not match any expected string.
@@ -55,6 +56,7 @@ elsif...  else...).
 - 'call': Call the shell to execute the command and arguments provided. Send
 the output flow of the command.
 - 'set': Set a variable to the result of an evaluated expression.
+- 'assign': Same as 'set' but catches and handles evaluation error.
 - 'eval': Call the shell to execute the command and arguments provided. Set a
 variable to the output flow of the command.
 - 'chdir': Change current directory until another chdir or until a script ends
@@ -87,7 +89,7 @@ on a read or on a skip.
  * The failure of 'call' or 'eval' of an external command if there is no
 'error' block to handle the failure.
  * An invalid expression (including invalid computation, reference to an
- undefined variable...)
+ undefined variable...) in a 'set' statement
  * An undefined variable in a statement 'if', 'elsif', 'while' with the IfUnset
 attribute set (or left) to "error".
  * Error of 'chdir' when changing current directory if there is no "error" block
@@ -101,7 +103,7 @@ called or executed can reference variables. Variables obey to the following
 rules:
 
 - Assignments (after 'chat', 'read' or 'expect') have the form "VAR=... VAR=..."
-- 'set' and 'eval' statements directly assign a variable
+- 'set', 'assign' and 'eval' statements directly assign a variable
 - References have the form $\{name} where:
   * $\{0} denotes the full string matching the regexp
   * $\{1} to $\{9} denote the substrings (matching "(...)" in the regexp)
@@ -114,10 +116,13 @@ only if is not defined yet
   * 'if', 'elsif' and 'while' with the variable not set may raise error or may
 return true or false depending on the "IfUnset" attribute.
 
-Any occurence of "${" or "}" that does't denote a variable must be backslashed.
+Any occurence of "${" or "}" that doesn't denote a variable must be backslashed.
 
 It is an error if a variable does not exist when it is referenced in an
 expression.
+
+A computed expression must be a valid combination of variables, values,
+ operations and parentheses, otherwise this is an error.
 
 .Pattern matching
 The text of 'chat', 'read' and 'expect' statements are regexp with which the
@@ -260,6 +265,8 @@ node or reset.
 - Eval: Issue the command and evaluate the result. Jump to next node.
 
 - Set: Evaluate the variable. Jump to next node.
+
+- Assign: Evaluate the variable. Jump to next node.
 
 - Chdir: Change current directory. Jump to next node.
 
