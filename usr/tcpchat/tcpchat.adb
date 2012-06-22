@@ -4,7 +4,7 @@ with As.U, Basic_Proc, Argument, Argument_Parser;
 with Debug, Ios, Tree, Events;
 procedure Tcpchat is
 
-  Version : constant String := "2.1";
+  Version : constant String := "2.2";
 
   procedure Usage is
   begin

@@ -199,7 +199,7 @@ package body Tree is
   -----------------------
   -- Recursive insertion of a node
   procedure Insert_Node (Xnode : in Xml_Parser.Element_Type;
-                         Timeout : in Integer) is
+                         Current_Timeout : in Integer) is
     Name : constant String := Ctx.Get_Name (Xnode);
     Node, Nop_Node : Node_Rec;
     Default_Timeout : Integer;
@@ -228,9 +228,10 @@ package body Tree is
     -- Init Node's next
     Init_Next (Node);
     -- Propagate default timeout from father
-    Default_Timeout := Timeout;
+    Default_Timeout := Current_Timeout;
     -- Default flags: Dummy is for "repeat" and "error"
-    -- Next_Is_Script is for the "read" of select, "default", "if", "else"
+    -- Next_Is_Script is for the "read" of select, "default", "timeout",
+    --  "if", "else"
     Dummy_Node := False;
     Next_Is_Script := False;
     In_Chats := False;
@@ -242,7 +243,7 @@ package body Tree is
     elsif Name = "version" then
       Version := Ctx.Get_Attribute (Xnode, 1).Value;
       Xchild := Ctx.Get_Brother (Xnode);
-      Insert_Node (Xchild, Timeout);
+      Insert_Node (Xchild, Current_Timeout);
       return;
     elsif Name = "chat" then
       -- Chat is a Read. Get name, timeout and default timeout
@@ -261,7 +262,7 @@ package body Tree is
                                       "InputDefaultTimeoutMs");
     elsif Name = "select" then
       Node.Kind := Selec;
-      Node.Timeout := Get_Timeout (Xnode, Timeout);
+      Node.Timeout := Get_Timeout (Xnode, Current_Timeout);
     elsif Name = "expect" then
       -- The expect of a select => Read without timeout
       Node.Kind := Read;
@@ -271,6 +272,10 @@ package body Tree is
     elsif Name = "default" then
       -- The default of a select
       Node.Kind := Default;
+      Next_Is_Script := True;
+    elsif Name = "timeout" then
+      -- The timeout of a select
+      Node.Kind := Timeout;
       Next_Is_Script := True;
 
     elsif Name = "cond" then
@@ -299,12 +304,12 @@ package body Tree is
 
     elsif Name = "read" then
       Node.Kind := Read;
-      Node.Timeout := Get_Timeout (Xnode, Timeout);
+      Node.Timeout := Get_Timeout (Xnode, Current_Timeout);
       -- Get text
       Get_Text (Xnode, Node, True);
     elsif Name = "skip" then
       Node.Kind := Skip;
-      Node.Timeout := Get_Timeout (Xnode, Timeout);
+      Node.Timeout := Get_Timeout (Xnode, Current_Timeout);
     elsif Name = "wait" then
       Node.Kind := Wait;
       -- Delay is mandatory
@@ -396,8 +401,10 @@ package body Tree is
             Insert_Node (Xchild, Default_Timeout);
           end if;
         else
-          -- Select is made of (expect, script) pairs: insert "expect"
-          -- Cond is made of (if/elsif/else, script) pairs: insert "if/elsif..."
+          -- Select is made of (expect/default/timeout, script) pairs:
+          --   insert "expect/default/timeout"
+          -- Cond is made of (if/elsif/else, script) pairs:
+          --   insert "if/elsif/else"
           if I rem 2 = 1 then
             Debug.Log ("    Inserting entry of " & Mixed_Str (Node.Kind'Img));
             Xchild := Ctx.Get_Child (Xnode, I);

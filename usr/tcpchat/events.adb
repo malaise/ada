@@ -1,6 +1,6 @@
 with Ada.Calendar;
 with As.U, Basic_Proc, Command, Many_Strings, Date_Image, Mixed_Str, Trilean,
-     Directory, Argument;
+     Directory, Argument, Trees;
 with Variables, Tree, Ios, Matcher, Debug;
 package body Events is
 
@@ -75,7 +75,8 @@ package body Events is
   procedure Handle is
     use Tree;
     Node, Child : Node_Rec;
-    Timeout : Integer;
+    Current_Timeout : Integer;
+    Children_Number : Trees.Child_Range;
     Next : Position_Access;
     Event : Ios.Event_Type;
     Disconnection : Boolean;
@@ -97,13 +98,13 @@ package body Events is
             -- If we are root
             --  Keep previous chat timeout if we are in chat
             --  No select timeout if we are not in chat (no useless reset)
-            Timeout := Node.Timeout;
+            Current_Timeout := Node.Timeout;
             if not Chats.Has_Father and then not In_Chat then
-              Timeout := Infinite_Ms;
+              Current_Timeout := Infinite_Ms;
             end if;
 
             -- Read a sentence
-            Event := Ios.Read (Timeout);
+            Event := Ios.Read (Current_Timeout);
             case Event.Kind is
               when Ios.Exit_Requested =>
                 Put_Line ("Exit requested");
@@ -117,8 +118,39 @@ package body Events is
                 Put_Line ("Timeout on chat script");
                 Reset;
               when Ios.Local_Timeout =>
-                Put_Line ("Timeout on select");
-                Reset;
+                Debug.Log ("Select: timeout");
+                Next := Node.Next.all;
+                -- For reset if no timeout
+                Children_Number := Chats.Children_Number;
+                if Children_Number <= 1 then
+                  -- 0! or 1 (expect) entry
+                  In_Chat := False;
+                else
+                  -- See if last child is a timeout
+                  Chats.Move_Child (False);
+                  Child := Chats.Read;
+                  if Position_Access(Chats.Get_Position) = Next
+                  and then Children_Number > 2 then
+                    -- last child is next, go to prev if any
+                    Chats.Move_Brother;
+                    Child := Chats.Read;
+                  else
+                    In_Chat := False;
+                  end if;
+
+                  if In_Chat and then Child.Kind = Timeout then
+                    Debug.Log ("Selec timeout");
+                    -- Move to the child of this select entry
+                    Set_Position (Child.Next.all);
+                  end if;
+                end if;
+                if not In_Chat then
+                  -- No timeout found
+                  Debug.Log ("No timeout on select");
+                  Put_Line ("Timeout on select");
+                  Reset;
+                end if;
+
               when Ios.Got_Sentence =>
                 -- Dispatch to child, avoid Next
                 Debug.Log ("Selec got: " & Event.Sentence.Image);
@@ -132,8 +164,8 @@ package body Events is
                   end if;
                   Child := Chats.Read;
                   Debug.Log ("Selec trying: " & Child.Text.Image);
-                  if Child.Next.all = Next then
-                    -- Last child is Next => no match
+                  if Position_Access(Chats.Get_Position) = Next then
+                    -- Current (last) child is Next => no match
                     Put_Line ("No match on select");
                     Reset;
                     exit Selec_Children;
@@ -150,12 +182,12 @@ package body Events is
                     and then not Child.Name.Is_Null then
                       -- This is the start of a new chat
                       Put_Line ("Starting chat " & Child.Name.Image);
+                      In_Chat := True;
                       Ios.Stop_Global_Timer;
                       Ios.Start_Global_Timer (Child.Timeout);
                     end if;
                     -- Move to the child of this select entry
                     Set_Position (Child.Next.all);
-                    In_Chat := True;
                     exit Selec_Children;
                   elsif not Chats.Has_Brother (False) then
                     -- No more child
@@ -259,7 +291,7 @@ package body Events is
                 end if;
             end case;
 
-          when Default =>
+          when Default | Timeout =>
             -- Should not occur
             raise Internal_Error;
 

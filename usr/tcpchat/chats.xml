@@ -246,6 +246,49 @@
     <close/>
   </script>
 
+  <chat Name="Indirect">indirect</chat>
+  <script>
+    <set Variable="V1">Content1</set>
+    <set Variable="V2">Content2</set>
+    <select TimeoutMs="5_000">
+      <expect Regexp="true" Assign="Index=${0}">.*</expect>
+      <script>
+        <assign>
+          <expression Variable="Index" Compute="true">${Index}+1</expression>
+          <error/>
+          <script>
+            <send>ERROR</send>
+            <wait DelayMs="500"/>
+            <close/>
+          </script>
+        </assign>
+        <assign>
+          <expression Variable="Result">${V${Index}}</expression>
+          <error/>
+          <script>
+            <send>ERROR</send>
+            <wait DelayMs="500"/>
+            <close/>
+          </script>
+        </assign>
+        <send>${Result}</send>
+      </script>
+      <default/>
+      <script>
+        <send>IMPOSSIBLE</send>
+        <wait DelayMs="500"/>
+        <close/>
+      </script>
+      <timeout/>
+      <script>
+        <send>TIMEOUT</send>
+        <wait DelayMs="500"/>
+        <close/>
+      </script>
+    </select>
+    <close/>
+  </script>
+
   <chat Name="error1">error1</chat>
   <script>
     <chdir>
@@ -269,33 +312,6 @@
     </chdir>
     <send>after-error-2</send>
     <wait DelayMs="500"/>
-    <close/>
-  </script>
-
-  <chat Name="Indirect">indirect</chat>
-  <script>
-    <set Variable="V1">Content1</set>
-    <set Variable="V2">Content2</set>
-    <read Regexp="true" Assign="Index=${0}">.*</read>
-    <assign>
-      <expression Variable="Index" Compute="true">${Index}+1</expression>
-      <error/>
-      <script>
-        <send>ERROR</send>
-        <wait DelayMs="500"/>
-        <close/>
-      </script>
-    </assign>
-    <assign>
-      <expression Variable="Result">${V${Index}}</expression>
-      <error/>
-      <script>
-        <send>ERROR</send>
-        <wait DelayMs="500"/>
-        <close/>
-      </script>
-    </assign>
-    <send NewLine="false">${Result}</send>
     <close/>
   </script>
 

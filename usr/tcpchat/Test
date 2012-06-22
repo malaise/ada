@@ -166,19 +166,9 @@ echo -n "Test logout ko: "
 echo -en "" > $EXPECTED
 try $EXPECTED logout
 
-# Error 1 (nothing after handler)
-echo -n "Test error1: "
-echo -en "error-handler-1\n" > $EXPECTED
-try $EXPECTED error1
-
-# Error 2 (a send after handler)
-echo -n "Test error2: "
-echo -en "error-handler-2\nafter-error-2\n" > $EXPECTED
-try $EXPECTED error2
-
 # Indirect 1
 echo -n "Test indirect 1: "
-echo -en "Content2" > $EXPECTED
+echo -en "Content2\n" > $EXPECTED
 try $EXPECTED indirect 0 1
 
 # Indirect a
@@ -190,6 +180,16 @@ try $EXPECTED indirect 0 a
 echo -n "Test indirect 2: "
 echo -en "ERROR\n" > $EXPECTED
 try $EXPECTED indirect 0 2
+
+# Error 1 (nothing after handler)
+echo -n "Test error1: "
+echo -en "error-handler-1\n" > $EXPECTED
+try $EXPECTED error1
+
+# Error 2 (a send after handler)
+echo -n "Test error2: "
+echo -en "error-handler-2\nafter-error-2\n" > $EXPECTED
+try $EXPECTED error2
 
 # Clean
 clean

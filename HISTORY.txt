@@ -3,7 +3,9 @@ HISTORY
 Main changes
 
 [horizontal]
-*2012/06/20*:: Add versionning and statement "assign" in tcpchat V2.1
+
+*2012/06/22*:: Add versioning, statement "assign" and handling of timeout on
+select in tcpchat V2.2
 
 *2012/06/20*:: Add option -p (--progress) for progress bar in xml_checker V17.0
 

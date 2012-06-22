@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- DTD of a chats file of tcpchat -->
 
-<!ENTITY Version "2.1">
+<!ENTITY Version "2.2">
 
 <!ENTITY % boolean "(true|false)">
 
@@ -33,11 +33,12 @@
 <!ELEMENT script ((select|cond|repeat|read|skip|wait|send|call|set|assign
                    |eval|chdir |log)*,close?)>
 
-<!ELEMENT select ((expect,script)+,(default,script)?)>
+<!ELEMENT select ((expect,script)+,(default,script)?,(timeout, script)?)>
 <!ATTLIST select %TimeoutMs;>
 <!ELEMENT expect (#PCDATA)>
 <!ATTLIST expect %ReadDef;>
 <!ELEMENT default EMPTY>
+<!ELEMENT timeout EMPTY>
 
 <!ELEMENT cond ((if,script),(elsif,script)*,(else,script)?)>
 <!ELEMENT if (#PCDATA)>
