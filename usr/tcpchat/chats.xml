@@ -250,7 +250,7 @@
   <script>
     <set Variable="V1">Content1</set>
     <set Variable="V2">Content2</set>
-    <select TimeoutMs="5_000">
+    <select TimeoutMs="1_000">
       <expect Regexp="true" Assign="Index=${0}">.*</expect>
       <script>
         <assign>
@@ -258,7 +258,7 @@
           <error/>
           <script>
             <send>ERROR</send>
-            <wait DelayMs="500"/>
+            <wait DelayMs="100"/>
             <close/>
           </script>
         </assign>
@@ -267,7 +267,7 @@
           <error/>
           <script>
             <send>ERROR</send>
-            <wait DelayMs="500"/>
+            <wait DelayMs="100"/>
             <close/>
           </script>
         </assign>
@@ -276,14 +276,10 @@
       <default/>
       <script>
         <send>IMPOSSIBLE</send>
-        <wait DelayMs="500"/>
-        <close/>
       </script>
       <timeout/>
       <script>
         <send>TIMEOUT</send>
-        <wait DelayMs="500"/>
-        <close/>
       </script>
     </select>
     <close/>

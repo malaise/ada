@@ -181,6 +181,11 @@ echo -n "Test indirect 2: "
 echo -en "ERROR\n" > $EXPECTED
 try $EXPECTED indirect 0 2
 
+# Indirect timeout
+echo -n "Test indirect timeout: "
+echo -en "TIMEOUT\n" > $EXPECTED
+try $EXPECTED indirect 2
+
 # Error 1 (nothing after handler)
 echo -n "Test error1: "
 echo -en "error-handler-1\n" > $EXPECTED
