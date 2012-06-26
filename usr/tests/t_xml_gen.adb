@@ -15,9 +15,12 @@ procedure T_Xml_Gen is
   Warnings : Xml_Parser.Warning_Callback_Access := null;
 
   procedure Clean is
+    use type Sys_Calls.File_Kind_List;
   begin
     Dscr.Clean;
-    Sys_Calls.Unlink (Dtd_Name);
+    if Sys_Calls.File_Stat (Dtd_Name).Kind = Sys_Calls.Link then
+      Sys_Calls.Unlink (Dtd_Name);
+    end if;
   end Clean;
 
   use Xml_Parser, Xml_Parser.Generator;
