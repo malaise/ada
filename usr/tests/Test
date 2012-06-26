@@ -1,0 +1,186 @@
+#!/bin/bash
+
+# Automatic tests of tests
+
+# Cleanup
+function clean {
+  rm -f out err exp nul
+  exit 1
+}
+
+trap clean SIGINT SIGTERM
+
+# Error message
+function error {
+  echo
+  echo $* 2>&1
+  exit 1
+}
+
+
+# Interactive tests
+if [ "$1" = "-i" ] ; then
+  t_afpx
+  t_arbitrary
+  clean
+  echo "Done."
+  exit
+fi
+
+# Utilities for automatic tests
+echo -n > nul
+
+# Launch a test 
+function try {
+  $* > out 2> err
+  if [ $? -ne 0 ] ; then
+    error "Test $1 has failed."
+  fi
+}
+
+# Compare 2 files
+function comp {
+  cmp $1 $2
+  res=$?
+  if [ $res -ne 0 ] ; then
+    error "File $1 differs from expected $2."
+  fi
+}
+
+# t_ada_parser
+echo -n "t_ada_parser: "
+export INPUT=t_ada_parser.adb
+try t_ada_parser $INPUT
+comp out $INPUT
+NB=`wc -l err | awk '{print $1}'`
+export ENB=712
+if [ $NB -ne $ENB ] ; then
+  error "File err has incorrect length $NB i.o. $ENB."
+fi
+echo "OK"
+
+# t_arbitrary
+echo -n "t_arbitrary: "
+try t_arbitrary 21
+cat > exp << EOF
+A is        +21
+abs A is    +21
+-A is       -21
+A positive  True
+Sqrt(A)     +4
+Digits:  2 and 1
+EOF
+comp out exp
+comp err nul
+
+try t_arbitrary 3 7
+cat > exp << EOF
+A is        +3
+abs A is    +3
+-A is       -3
+A positive  True
+Sqrt(A)     +1
+Digits:  and 3
+
+B is        +7
+abs B is    +7
+-B is       -7
+B positive  True
+Sqrt(B)     +2 remaining +3
+A =  B is   FALSE
+A <  B is   TRUE
+A <= B is   TRUE
+A >  B is   FALSE
+A >= B is   FALSE
+A + B is   +10
+A - B is   -4
+A * B is   +21
+A / B is   +0
+A % B is   +3
+A rem B is +3
+A mod B is +3
+A ** B is  +2187
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+# t_arg
+echo -n "t_arg: "
+echo -e "K\na1\n1\nY\n2\nA\n1\nE" | try t_arg -a1v1 -a2
+cat > exp << EOF
+>< >t_arg<
+ 2 arguments.
+E : Exit
+K : Key
+Y : anY_key
+N : Not_key
+A : Any_arg
+Enter the letter of your choice : Enter KEY ? Enter OCCURENCE ? Argument : >v1<
+Char ->v<  118
+Char ->1<  49
+ found at position   1
+
+E : Exit
+K : Key
+Y : anY_key
+N : Not_key
+A : Any_arg
+Enter the letter of your choice : Enter OCCURENCE ? Argument : >a2<
+Char ->a<  97
+Char ->2<  50
+ found at position   2
+
+E : Exit
+K : Key
+Y : anY_key
+N : Not_key
+A : Any_arg
+Enter the letter of your choice : Enter OCCURENCE ? Argument : >-a1v1<
+Char ->-<  45
+Char ->a<  97
+Char ->1<  49
+Char ->v<  118
+Char ->1<  49
+ found at position   1
+
+E : Exit
+K : Key
+Y : anY_key
+N : Not_key
+A : Any_arg
+Enter the letter of your choice : 
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+# t_arg_parser
+echo -n "t_ada_parser: "
+try t_arg_parser auto
+try t_arg_parser -f -m  -m no -o -c -t -c 2
+cat > exp << EOF
+Parsing OK is TRUE and parsing error string is >OK.<
+Number of keys found: 7, Last key at pos: 8, First after at pos: 0 and Nb embedded arguments: 1
+Arguments not key are found on 1 occurences.
+  Kind: Str  Position:  4  Option >no<
+Key f first is found on 1 occurences.
+  Kind: Chr  Position:  1  Option ><
+Key s second is found on 0 occurences.
+Key t third is found on 1 occurences.
+  Kind: Chr  Position:  7  Option ><
+Key m multi is found on 2 occurences.
+  Kind: Chr  Position:  2  Option ><
+  Kind: Chr  Position:  3  Option ><
+Key o opt is found on 1 occurences.
+  Kind: Chr  Position:  5  Option ><
+Key c combine is found on 2 occurences.
+  Kind: Chr  Position:  6  Option ><
+  Kind: Chr  Position:  8  Option >2<
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+clean
+echo "Done."

@@ -4,9 +4,10 @@ with As.U, Argument, Argument_Parser, Environ, Basic_Proc, Integer_Image,
 
 procedure T_Arg_Parser is
 
-  -- The env var set on auto test
+  -- ENV variables used internally
+  -- The env var set for auto test
   Auto_Env_Name : constant String := "T_ARG_PARSER_AUTO_TEST";
-  -- The env var to set vor test of empty list of keys
+  -- The env var to set for test of empty list of keys
   Empty_Env_Name : constant String := "T_ARG_PARSER_EMPTY_TEST";
 
   -- The keys

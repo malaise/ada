@@ -1,4 +1,5 @@
-with Argument, Arbitrary, Rnd, Integer_Image, Mixed_Str, My_Math, Basic_Proc;
+with Argument, Arbitrary, Rnd, Integer_Image, Mixed_Str, My_Math, Basic_Proc,
+     Key_Pressed;
 procedure T_Arbitrary is
 
 
@@ -169,6 +170,8 @@ begin
   end if;
 
   -- No arg => automatic test
+  Key_Pressed.Open (False);
+
   -- Setting from different types
   A := Arbitrary.Set(Integer'(21));
   A := Arbitrary.Set(Long_Integer'(21));
@@ -298,14 +301,22 @@ begin
 
     -- Sleep a bit when B is 0
     if Ib = 0 then
-      Basic_Proc.Put_Line_Output ("Waiting a bit");
+      Basic_Proc.Put_Line_Output ("Waiting a bit, hit a key to stop...");
+      exit when Key_Pressed.Key_Pressed;
       delay 1.0;
+      exit when Key_Pressed.Key_Pressed;
     end if;
   end loop;
 
+  Key_Pressed.Close;
 
 exception
   when Abort_Error =>
-    null;
+    Key_Pressed.Close;
+    Basic_Proc.Set_Error_Exit_Code;
+  when others =>
+    Key_Pressed.Close;
+    Basic_Proc.Set_Error_Exit_Code;
+    raise;
 end T_Arbitrary;
 
