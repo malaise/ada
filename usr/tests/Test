@@ -4,7 +4,7 @@
 
 # Cleanup
 function clean {
-  rm -f out err exp nul
+  rm -f out err exp tmp nul
   exit 1
 }
 
@@ -30,25 +30,53 @@ fi
 # Utilities for automatic tests
 echo -n > nul
 
+# Title
+function title {
+  echo -n $* ": "
+}
+
 # Launch a test 
 function try {
+  local ok=1
+  if [ $1 = "-n" ] ; then
+    ok=0
+    shift
+  fi
   $* > out 2> err
-  if [ $? -ne 0 ] ; then
-    error "Test $1 has failed."
+  res=$?
+  if [ $ok -eq 1 ] ; then
+    if [ $res -ne 0 ] ; then
+      error "Test $1 has failed."
+    fi
+  else
+    if [ $res -eq 0 ] ; then
+      error "Test $1 should have failed."
+    fi
   fi
 }
 
 # Compare 2 files
 function comp {
-  cmp $1 $2
+  local ok=1
+  if [ $1 = "-n" ] ; then
+    ok=0
+    shift
+  fi
+  cmp $1 $2 2> /dev/null
   res=$?
-  if [ $res -ne 0 ] ; then
-    error "File $1 differs from expected $2."
+  if [ $ok -eq 1 ] ; then
+    if [ $res -ne 0 ] ; then
+      error "File $1 differs from expected $2."
+    fi
+  else
+    if [ $res -eq 0 ] ; then
+      error "File $1 should differs from expected $2."
+    fi
   fi
 }
 
 # t_ada_parser
-echo -n "t_ada_parser: "
+title t_ada_parser
 export INPUT=t_ada_parser.adb
 try t_ada_parser $INPUT
 comp out $INPUT
@@ -60,7 +88,7 @@ fi
 echo "OK"
 
 # t_arbitrary
-echo -n "t_arbitrary: "
+title t_arbitrary
 try t_arbitrary 21
 cat > exp << EOF
 A is        +21
@@ -106,7 +134,7 @@ comp err nul
 echo "OK"
 
 # t_arg
-echo -n "t_arg: "
+title t_arg
 echo -e "K\na1\n1\nY\n2\nA\n1\nE" | try t_arg -a1v1 -a2
 cat > exp << EOF
 >< >t_arg<
@@ -156,7 +184,7 @@ comp err nul
 echo "OK"
 
 # t_arg_parser
-echo -n "t_ada_parser: "
+title t_ada_parser
 try t_arg_parser auto
 try t_arg_parser -f -m  -m no -o -c -t -c 2
 cat > exp << EOF
@@ -182,5 +210,60 @@ comp out exp
 comp err nul
 echo "OK"
 
+# t_asb and t_asu
+title t_asb and t_asu
+try t_asb
+mv out tmp
+comp err nul
+try t_asu
+comp err nul
+comp out tmp
+echo "OK"
+
+# t_assert
+title t_assert
+cat > exp << EOF
+This program is normally silent
+Set ENV variable ASSERT_ACTION to TRACE to see the 3 traces
+ or to RAISE to raise first exception.
+EOF
+try t_assert
+comp out exp
+comp err nul
+export ASSERT_ACTION=TRACE
+try t_assert
+comp out exp
+comp -n err nul
+export ASSERT_ACTION=RAISE
+try -n t_assert
+comp out exp
+comp -n err nul
+echo "OK"
+
+# t_async
+title t_async
+xterm -e "t_async -s 20000 > out 2> err" &
+export PID=$!
+usleep 700000
+expect \
+-c 'spawn telnet localhost 20000; \
+  set timeout 1; \
+  expect "Nothing"
+  send "Toto\n"; \
+  sleep 0.3; \
+  close' > /dev/null
+kill $PID
+cat > exp << EOF
+Toto
+EOF
+comp out exp
+cat > exp << EOF
+connected
+disconnected
+EOF
+comp err exp
+echo "OK"
+
 clean
 echo "Done."
+
