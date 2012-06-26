@@ -244,7 +244,7 @@ echo "OK"
 title t_async
 xterm -e "t_async -s 20000 > out 2> err" &
 export PID=$!
-usleep 700000
+sleep 0.7
 expect \
 -c 'spawn telnet localhost 20000; \
   set timeout 1; \
