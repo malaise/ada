@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE Map SYSTEM "byte2unicode.dtd">
+<!DOCTYPE Map SYSTEM "Byte2unicode.dtd">
 <Map>
   <Code Byte="16#00#">16#0000#</Code>
   <Code Byte="16#01#">16#0001#</Code>
