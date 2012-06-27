@@ -2,13 +2,14 @@
 --  * Send on bus the text got by async_stdin
 --  * Output on stdout the text received on bus
 -- In automatic mode:
---  * Send each 10 seconds the automatic message if any
+--  * Send each second the automatic message if any
 --  * Spy (echo "Spyed ><Msg><") each received message, including owers
 --  * Drop (echo "Received <Msg> -> Dropping") messages starting by "Coucou"
 --  * Reply (echo "Received <Msg> -> Replying <reply>") messages "Ah que "
 --  * Reply (echo "Received <Msg> -> Replying <reply>") messages starting by
 --   "Ah que " and containing something
 --   Reply is the remaining text in Mixed_Str
+--  * Exit after sending 3 messages
 with Basic_Proc, Event_Mng, String_Mng, Mixed_Str, As.U, Async_Stdin,
      Argument, Argument_Parser;
 with Autobus;
@@ -185,15 +186,23 @@ begin
     Subs_Drop.Init (Bus'Unrestricted_Access, Receiver'Unrestricted_Access,
                     "Coucou.*", False);
     Subs_Spy.Init (Bus'Unrestricted_Access, Spy'Unrestricted_Access, "", True);
-    loop
-      Sig := False;
-      if not Stimulus.Is_Null then
-        Basic_Proc.Put_Line_Output ("Sending " & Stimulus.Image);
-        Bus.Send (Stimulus.Image);
-      end if;
-      Event_Mng.Pause (10_000);
-      exit when Sig;
-    end loop;
+    if Stimulus.Is_Null then
+      loop
+        Sig := False;
+        Event_Mng.Pause (10_000);
+        exit when Sig;
+      end loop;
+    else
+      for I in 1 .. 3 loop
+        Sig := False;
+        if not Stimulus.Is_Null then
+          Basic_Proc.Put_Line_Output ("Sending " & Stimulus.Image);
+          Bus.Send (Stimulus.Image);
+        end if;
+        Event_Mng.Pause (1_000);
+        exit when Sig;
+      end loop;
+    end if;
 
     Basic_Proc.Put_Line_Output ("Closing.");
     Subs_Repl.Reset;

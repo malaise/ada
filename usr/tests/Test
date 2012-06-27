@@ -4,7 +4,7 @@
 
 # Cleanup
 function clean {
-  rm -f out err exp tmp nul
+  rm -f out out? err err? exp exp? tmp tmp? nul
   exit 1
 }
 
@@ -74,6 +74,9 @@ function comp {
     fi
   fi
 }
+
+# skip some tests
+if [ 1 -eq 0 ] ; then
 
 # t_ada_parser
 title t_ada_parser
@@ -213,11 +216,11 @@ echo "OK"
 # t_asb and t_asu
 title t_asb and t_asu
 try t_asb
-mv out tmp
+mv out out1
 comp err nul
 try t_asu
 comp err nul
-comp out tmp
+comp out out1
 echo "OK"
 
 # t_assert
@@ -263,6 +266,79 @@ disconnected
 EOF
 comp err exp
 echo "OK"
+
+# Skip some tests
+
+# t_autobus
+title t_autobus
+t_autobus -a > out1 2> err1 &
+export PID=$!
+sleep 0.7
+try t_autobus -a Ah que coucou
+kill $PID
+cat << EOF > exp
+Received Ah que coucou -> Replying Coucou!
+Spyed >Ah que coucou<
+Spyed >Coucou!<
+Received Ah que coucou -> Replying Coucou!
+Spyed >Ah que coucou<
+Spyed >Coucou!<
+Received Ah que coucou -> Replying Coucou!
+Spyed >Ah que coucou<
+Spyed >Coucou!<
+Closing.
+Done.
+EOF
+comp out1 exp
+comp err1 nul
+comp err nul
+echo "OK"
+
+# t_basic
+title t_basic
+echo -e "toto\ntiti" | t_basic > out 2> err
+cat << EOF > exp
+toto
+titi
+EOF
+cat << EOF > exp1
+End_Error
+EOF
+comp out exp
+comp err exp1
+echo "OK"
+
+# t_basic
+title t_bloc_io
+try t_bloc_io
+tail -3 out > tmp
+cat << EOF > exp
+Dump:  42 
+Set index to  5371
+Dump:  21 -1 -2  21 
+EOF
+comp tmp exp
+comp err nul
+echo "OK"
+
+# t_byte_to_unicode
+title t_byte_to_unicode
+try t_byte_to_unicode data/ISO-8859-9.xml
+grep -E "^222" out > out1
+tail -2 out > out2
+cat << EOF > exp1
+222      16#DE# ->   350     16#15E#
+EOF
+cat << EOF > exp2
+255      16#FF# ->   255      16#FF#
+
+EOF
+comp out1 exp1
+comp out2 exp2
+comp err nul
+echo "OK"
+
+fi
 
 clean
 echo "Done."
