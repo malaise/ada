@@ -343,7 +343,9 @@ begin
     Basic_Proc.Get_Line (Buf, Len);
     begin
       Pattern.Check (Mr, Lower_Str(Buf(1 .. Len)));
+      pragma Warnings (Off, "variable ""*"" is not modified in loop body");
       exit when Done;
+      pragma Warnings (On, "variable ""*"" is not modified in loop body");
     exception
       when Pattern.Invalid_Pattern =>
         Basic_Proc.Put_Line_Output ("EXCEPTION: Invalid_Pattern");

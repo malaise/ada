@@ -14,7 +14,7 @@ package body Debug is
     return Debug_Status(Kind);
   end Get;
 
-  function Some return Boolean is
+  function Some_Is return Boolean is
   begin
     for K in Debug_List loop
       if Get (K) then
@@ -22,7 +22,7 @@ package body Debug is
       end if;
     end loop;
     return False;
-  end Some;
+  end Some_Is;
 
   procedure Put (Square : in Space.Square_Coordinate) is
   begin

@@ -174,8 +174,6 @@ package body One_File_Statements is
                             & Levels'Img & ".");
       end if;
       if Current.Lines >= 2 then
-        Current.Lines := Current.Lines - 2;
-      elsif Current.Lines >= 1 then
         Current.Lines := Current.Lines - 1;
       end if;
       return Current;

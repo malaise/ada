@@ -8,7 +8,7 @@ package Debug is
   function Get (Kind : in Debug_List) return Boolean;
 
   -- True if at least one debug is on
-  function Some return Boolean;
+  function Some_Is return Boolean;
 
   procedure Put (Square : in Space.Square_Coordinate);
   procedure Put (Piece : in Pieces.Basic_Piece'Class);

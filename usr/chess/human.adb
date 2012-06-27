@@ -163,7 +163,7 @@ package body Human is
         The_End := True;
         exit Get_One;
       end if;
-      if Debug.Some then
+      if Debug.Some_Is then
         Basic_Proc.Put_Output (">> " & Space.Color_List'Image(Move_Color)
                        & " Playing: ");
         Debug.Put(Action);
