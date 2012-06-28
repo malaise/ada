@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with Rnd, Event_Mng, Control_Pool, Sys_Calls;
+with Rnd, Event_Mng, Control_Pool, Sys_Calls, Key_Pressed;
 procedure T_Control_Pool is
 
   subtype Pool_Range is Positive range 1 .. 5;
@@ -54,7 +54,12 @@ begin
     Clients(I).Start(I, Pids(I));
   end loop;
 
-  Event_Mng.Pause (-1);
+  Key_Pressed.Open (False);
+  loop
+    Event_Mng.Wait (1_000);
+    exit when Key_Pressed.Key_Pressed;
+  end loop;
+  Key_Pressed.Close;
 
   Sys_Calls.Put_Line_Output ("Aborting");
   for I in Client_Range loop

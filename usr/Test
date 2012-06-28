@@ -1,0 +1,8 @@
+#!/bin/bash
+export ORIG=$PWD
+for file in */Test ; do
+  cd `dirname $file`
+  ./Test
+  cd $ORIG
+done
+

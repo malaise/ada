@@ -5,7 +5,6 @@
 # Cleanup
 function clean {
   rm -f out out? err err? exp exp? tmp tmp? nul
-  exit 1
 }
 
 trap clean SIGINT SIGTERM
@@ -17,11 +16,22 @@ function error {
   exit 1
 }
 
+# Function to launch an interactive test
+function launch {
+  echo "$1"
+  $* 
+  echo "$1 Done."
+}
+
 
 # Interactive tests
 if [ "$1" = "-i" ] ; then
-  t_afpx
-  t_arbitrary
+  launch t_arbitrary
+  launch t_control_pool
+  launch t_color
+  launch t_con > /dev/null
+  launch t_afpx
+  launch t_curve
   clean
   echo "Done."
   exit
@@ -338,7 +348,163 @@ comp out2 exp2
 comp err nul
 echo "OK"
 
+# t_c_nbres
+title t_c_nbres
+try t_c_nbres 1 5 3 -2
+cat << EOF > exp
+Got:  1.00000000000000E+00 + i * 5.00000000000000E+00
+ in polar:  5.09901951359278E+00  1.37340076694502E+00rd  7.86900680000000E+01°
+Got:  3.00000000000000E+00 - i * 2.00000000000000E+00
+ A+B:  4.00000000000000E+00 + i * 3.00000000000000E+00
+ A-B: -2.00000000000000E+00 + i * 7.00000000000000E+00
+ A*B:  1.30000000000000E+01 + i * 1.30000000000000E+01
+ A/B: -5.38461538461538E-01 + i * 1.30769230769231E+00
+ A**B.real: -7.40000000000000E+01 - i * 1.10000000000000E+02
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+# t_command
+title t_command
+try t_command -s /bin/ls t_c*
+cat << EOF > exp
+Output flow:
+>t_channels<
+>t_channels.adb<
+>t_c_nbres<
+>t_c_nbres.adb<
+>t_color<
+>t_color.adb<
+>t_command<
+>t_command.adb<
+>t_computer<
+>t_computer.adb<
+>t_con<
+>t_con.adb<
+>t_cond<
+>t_cond.adb<
+>t_control_pool<
+>t_control_pool.adb<
+>t_conv<
+>t_conv.adb<
+>t_curve<
+>t_curve.adb<
+
+Error flow:
+><
+
+Exit code:  0
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+# t_computer
+title t_computer
+try t_computer "V1=5" "V2=2" '3*(${V1}+${V2})'
+cat << EOF > exp
+Evaluation: 
+3*(5+2)
+Computation: 
+ 21
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+# t_cond
+title t_cond...
+try t_cond
+cat << EOF > exp
+Main initializing clients
+Client  1 initialised
+Client  1 getting access
+Client  1 trying to wait on condition
+Client  2 initialised
+Client  2 getting access
+Client  2 waiting on condition
+Client  3 initialised
+Client  3 getting access
+Client  3 waiting on condition
+Client  4 initialised
+Client  4 getting access
+Client  4 waiting on condition
+Client  1 giving up
+Client  1 getting access
+Client  1 trying to wait on condition
+
+Main signaling on condition
+Client  2 released on condition, releasing access
+Client  2 getting access
+Client  2 waiting on condition
+
+Main signaling on condition
+Client  3 released on condition, releasing access
+Client  3 getting access
+Client  3 waiting on condition
+
+Main signaling on condition
+Client  4 released on condition, releasing access
+Client  4 getting access
+Client  4 waiting on condition
+
+Main signaling on condition
+Client  1 released on condition, releasing access
+Client  1 getting access
+Client  1 trying to wait on condition
+
+Main signaling on condition
+Client  2 released on condition, releasing access
+Client  2 getting access
+Client  2 waiting on condition
+
+Main signaling on condition
+Client  3 released on condition, releasing access
+Client  3 getting access
+Client  3 waiting on condition
+
+Main broadcasting on condition
+Client  4 released on condition, releasing access
+Client  4 getting access
+Client  1 released on condition, releasing access
+Client  1 terminating
+Client  2 released on condition, releasing access
+Client  2 terminating
+Client  3 released on condition, releasing access
+Client  3 terminating
+Client  4 waiting on condition
+
+Main broadcasting on condition
+Client  4 released on condition, releasing access
+Client  4 terminating
+
+Main broadcasting on condition
+
+Main signaling on condition
+
+Main terminating
+
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
 fi
+
+# t_conv
+title t_conv
+try t_conv
+cat << EOF > exp
+Host:       16#12345678#
+to Network: 16#78563412#
+to Host:    16#12345678#
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+
 
 clean
 echo "Done."
