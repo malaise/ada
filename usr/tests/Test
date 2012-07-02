@@ -490,8 +490,6 @@ comp out exp
 comp err nul
 echo "OK"
 
-fi
-
 # t_conv
 title t_conv
 try t_conv
@@ -504,6 +502,122 @@ comp out exp
 comp err nul
 echo "OK"
 
+# t_day_mng
+title t_day_mng
+echo  -e "5\n600\n57000\n" | try t_day_mng 
+echo >> out
+cat << EOF > exp
+Enter a duration:  5.000000000
+ 0 h   0 min   5 sec   0 msec
+
+Enter a duration:  600.000000000
+ 0 h   10 min   0 sec   0 msec
+
+Enter a duration:  57000.000000000
+ 15 h   50 min   0 sec   0 msec
+
+Enter a duration: 
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+# t_dd
+title t_dd
+try t_dd 10000
+cat << EOF > exp
+This test succeeds if no STORAGE_ERROR is raised.
+Performinig  10000 iterations, each of them consisting in
+ allocating  256 objects of  1024 bytes then freeing them.
+Test successful.
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+# t_delta_date
+title t_delta_date
+try t_delta_date 2012-07-02T15:47:12.514 1963-10-25T21:21:21.210
+cat << EOF > exp
+2012/07/02 15:47:12.514 is a MONDAY
+1963/10/25 21:21:21.210 is a FRIDAY
+ Date2 - Date1:      17782 days  66351.304000000 sec
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+# t_dirname
+title t_dirname
+try t_dirname
+cat << EOF > exp
+Dirname /tools/toto.ads: /tools/
+Dirname toto.ads: 
+Dirname /toto.ads: /
+Basename /tools/toto.ads: toto.ads
+Basename toto.ads: toto.ads
+Basename /toto.ads: toto.ads
+Basename /tools/toto.ads .ads: toto
+Basename /tools/toto.a .ad: toto.a
+File_Prefix /tools/toto.ads: toto
+File_Suffix /tools/toto.ads: .ads
+Normalize /root/dir1/../dirok/./dir3/../toto.ads: /root/dirok/toto.ads
+Make_Full "": /home/malaise/ada/usr/tests/
+Make_Full ".": /home/malaise/ada/usr/tests/
+Make_Full dir1/../dirok/./dir3/../toto.ads: /home/malaise/ada/usr/tests/dirok/toto.ads
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+fi
+
+# t_dl
+title t_dl
+try t_dl --auto
+cat << EOF > exp
+Adds 10 elements
+Reads 5 elements from the last one: 10 09 08 07 06 
+List length: 10 
+Deletes the current
+Pos from first: 05 List length: 09 
+Reads 7 elements from the first one: 01 02 03 04 06 07 08 
+Adds the element 50 before current position
+Store current access and read: 50 
+List length: 10 
+Reads 9 elements from the last one: 10 09 50 08 07 06 04 03 02 
+Search stored access and read: 50 
+Permute 1st and 4th elements, then search 3 from last
+Get current pos from first: 03  Get current item: 03 
+List (length: 09 ) : 04 02 01 06 07 08 50 09 10 
+Seach 50 from first
+Seach 50, skipping current
+Returns not Found, OK
+Pos from first: 07 Pos from last: 03 Can go to next: TRUE Current item, go to next: 50 
+Pos from first: 08 Pos from last: 02 Can go to next: TRUE Current item, go to next: 09 
+Pos from first: 09 Pos from last: 01 Can go to next: FALSE Current item, go to next: raises Not_In_List, OK
+Pos from first: 09 Pos from last: 01 Current item, stay: 10 
+Current item, stay: 10 
+Iteration
+04  is odd
+02  is odd
+01  is even
+06  is odd
+07  is even
+08  is odd
+50  is odd and stopping iteration
+Read raises In_Callback, OK
+Delete fully the list
+Get current pos from first: raises Empty_List, OK
+List length: 00 
+Sort the list: 30 50 42 35: 30 35 42 50 
+Make the following automatic list: 21 05 30 31 07 21 23 12 
+After sorting it: 05 07 12 21 21 23 30 31 
+Copied/Inserted in a new list between 21 and 12: 21 05 07 12 21 21 23 30 31 12 
+EOF
+comp out exp
+comp err nul
+echo "OK"
 
 
 clean

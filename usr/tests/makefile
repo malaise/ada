@@ -13,6 +13,7 @@ CLIBS_t_ndbm := cndbm gdbm \
 CLIBS_t_autobus := posix2pcre pcre
 CLIBS_t_byte_to_unicode := posix2pcre pcre
 CLIBS_t_channels := posix2pcre pcre
+CLIBS_t_delta_date := posix2pcre pcre
 CLIBS_t_regex_filters := posix2pcre pcre
 CLIBS_t_regexp := posix2pcre pcre
 CLIBS_t_string := posix2pcre pcre

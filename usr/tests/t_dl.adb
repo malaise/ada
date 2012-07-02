@@ -1,4 +1,4 @@
-with Basic_Proc, Dynamic_List, Normal, Rnd;
+with Basic_Proc, Dynamic_List, Normal, Rnd, Argument;
 procedure T_Dl is
   package My_Dyn_List is new Dynamic_List(Element_Type => Integer);
   package My_List renames My_Dyn_List.Dyn_List;
@@ -237,12 +237,25 @@ begin
   Dump;
   List.Delete_List;
 
-  -- Sort random list
-  Basic_Proc.Put_Output ("Make the following random list: ");
-  Rnd.Randomize;
-  for I in 1 .. Rnd.Int_Random (0, 10) loop
-    List.Insert (Rnd.Int_Random(0, 50));
-  end loop;
+  if Argument.Get_Nbre_Arg = 1
+  and then Argument.Get_Parameter = "--auto" then
+    Basic_Proc.Put_Output ("Make the following automatic list: ");
+    List.Insert (21);
+    List.Insert (5);
+    List.Insert (30);
+    List.Insert (31);
+    List.Insert (7);
+    List.Insert (21);
+    List.Insert (23);
+    List.Insert (12);
+  else
+    -- Sort random list
+    Basic_Proc.Put_Output ("Make the following random list: ");
+    Rnd.Randomize;
+    for I in 1 .. Rnd.Int_Random (0, 10) loop
+      List.Insert (Rnd.Int_Random(0, 50));
+    end loop;
+  end if;
   Dump;
   My_Sort(List);
   Basic_Proc.Put_Output ("After sorting it: ");
