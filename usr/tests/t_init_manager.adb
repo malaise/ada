@@ -40,11 +40,11 @@ begin
       Mng.Set_Handler (null);
     end if;
     Basic_Proc.Put_Line_Output ("Initializing");
-    delay 2.0;
+    delay 1.0;
     -- End of init, events shall be flushed
     Basic_Proc.Put_Line_Output ("Initialized");
     Mng.Set_Handler (Evt_Handle'Unrestricted_Access);
-    delay 2.0;
+    delay 1.0;
     Basic_Proc.New_Line_Output;
   end loop;
   Basic_Proc.Put_Line_Output ("Terminating");

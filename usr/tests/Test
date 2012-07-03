@@ -18,7 +18,7 @@ function error {
 
 # Function to launch an interactive test
 function launch {
-  echo "$1"
+  echo "Sarting $1:"
   $* 
   echo "$1 Done."
 }
@@ -28,10 +28,12 @@ function launch {
 if [ "$1" = "-i" ] ; then
   launch t_arbitrary
   launch t_control_pool
+  launch t_dur_image
   launch t_color
   launch t_con > /dev/null
   launch t_afpx
   launch t_curve
+  launch t_dscr
   clean
   echo "Done."
   exit
@@ -86,7 +88,7 @@ function comp {
 }
 
 # skip some tests
-if [ 1 -eq 0 ] ; then
+if [ "$1" != "-t" ] ; then
 
 # t_ada_parser
 title t_ada_parser
@@ -199,6 +201,7 @@ echo "OK"
 # t_arg_parser
 title t_ada_parser
 try t_arg_parser auto
+
 try t_arg_parser -f -m  -m no -o -c -t -c 2
 cat > exp << EOF
 Parsing OK is TRUE and parsing error string is >OK.<
@@ -228,6 +231,7 @@ title t_asb and t_asu
 try t_asb
 mv out out1
 comp err nul
+
 try t_asu
 comp err nul
 comp out out1
@@ -244,10 +248,12 @@ try t_assert
 comp out exp
 comp err nul
 export ASSERT_ACTION=TRACE
+
 try t_assert
 comp out exp
 comp -n err nul
 export ASSERT_ACTION=RAISE
+
 try -n t_assert
 comp out exp
 comp -n err nul
@@ -416,77 +422,6 @@ echo "OK"
 # t_cond
 title t_cond...
 try t_cond
-cat << EOF > exp
-Main initializing clients
-Client  1 initialised
-Client  1 getting access
-Client  1 trying to wait on condition
-Client  2 initialised
-Client  2 getting access
-Client  2 waiting on condition
-Client  3 initialised
-Client  3 getting access
-Client  3 waiting on condition
-Client  4 initialised
-Client  4 getting access
-Client  4 waiting on condition
-Client  1 giving up
-Client  1 getting access
-Client  1 trying to wait on condition
-
-Main signaling on condition
-Client  2 released on condition, releasing access
-Client  2 getting access
-Client  2 waiting on condition
-
-Main signaling on condition
-Client  3 released on condition, releasing access
-Client  3 getting access
-Client  3 waiting on condition
-
-Main signaling on condition
-Client  4 released on condition, releasing access
-Client  4 getting access
-Client  4 waiting on condition
-
-Main signaling on condition
-Client  1 released on condition, releasing access
-Client  1 getting access
-Client  1 trying to wait on condition
-
-Main signaling on condition
-Client  2 released on condition, releasing access
-Client  2 getting access
-Client  2 waiting on condition
-
-Main signaling on condition
-Client  3 released on condition, releasing access
-Client  3 getting access
-Client  3 waiting on condition
-
-Main broadcasting on condition
-Client  4 released on condition, releasing access
-Client  4 getting access
-Client  1 released on condition, releasing access
-Client  1 terminating
-Client  2 released on condition, releasing access
-Client  2 terminating
-Client  3 released on condition, releasing access
-Client  3 terminating
-Client  4 waiting on condition
-
-Main broadcasting on condition
-Client  4 released on condition, releasing access
-Client  4 terminating
-
-Main broadcasting on condition
-
-Main signaling on condition
-
-Main terminating
-
-EOF
-comp out exp
 comp err nul
 echo "OK"
 
@@ -541,7 +476,7 @@ try t_delta_date 2012-07-02T15:47:12.514 1963-10-25T21:21:21.210
 cat << EOF > exp
 2012/07/02 15:47:12.514 is a MONDAY
 1963/10/25 21:21:21.210 is a FRIDAY
- Date2 - Date1:      17782 days  66351.304000000 sec
+ Date1 - Date2:      17782 days  66351.304000000 sec
 EOF
 comp out exp
 comp err nul
@@ -569,8 +504,6 @@ EOF
 comp out exp
 comp err nul
 echo "OK"
-
-fi
 
 # t_dl
 title t_dl
@@ -619,6 +552,247 @@ comp out exp
 comp err nul
 echo "OK"
 
+# t_door
+title t_door...
+try t_door
+comp err nul
+echo "OK"
+
+# t_fifo
+title t_fifo
+try t_fifo
+cat << EOF > exp
+Fifo size is  5
+Push  1
+Look  1 -->  1
+Look done
+Push  2
+Look  1 -->  2
+Look  2 -->  1
+Look done
+Push  3
+Look  1 -->  3
+Look  2 -->  2
+Look  3 -->  1
+Look done
+Push  4
+Look  1 -->  4
+Look  2 -->  3
+Look  3 -->  2
+Look  4 -->  1
+Look done
+Push  5
+Look  1 -->  5
+Look  2 -->  4
+Look  3 -->  3
+Look  4 -->  2
+Look  5 -->  1
+Push  6
+FIFO full. Discard last then push again
+Look  1 -->  6
+Look  2 -->  4
+Look  3 -->  3
+Look  4 -->  2
+Look  5 -->  1
+Push  7
+FIFO full. Discard last then push again
+Look  1 -->  7
+Look  2 -->  4
+Look  3 -->  3
+Look  4 -->  2
+Look  5 -->  1
+Push  8
+FIFO full. Discard last then push again
+Look  1 -->  8
+Look  2 -->  4
+Look  3 -->  3
+Look  4 -->  2
+Look  5 -->  1
+Push  9
+FIFO full. Discard last then push again
+Look  1 -->  9
+Look  2 -->  4
+Look  3 -->  3
+Look  4 -->  2
+Look  5 -->  1
+Push  10
+FIFO full. Discard last then push again
+Look  1 -->  10
+Look  2 -->  4
+Look  3 -->  3
+Look  4 -->  2
+Look  5 -->  1
+
+Pop ==>  1
+Look  1 -->  10
+Look  2 -->  4
+Look  3 -->  3
+Look  4 -->  2
+Look done
+
+Pop ==>  2
+Look  1 -->  10
+Look  2 -->  4
+Look  3 -->  3
+Look done
+
+Pop ==>  3
+Look  1 -->  10
+Look  2 -->  4
+Look done
+
+Pop ==>  4
+Look  1 -->  10
+Look done
+
+Pop ==>  10
+FIFO empty
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+# t_file_hash
+title t_file_hash
+try t_file_hash t_file_hash.adb begin
+cat << EOF > exp
+begin -> 
+FOUND begin
+EOF
+comp out exp
+comp err nul
+
+try t_file_hash t_file_hash.adb procedure
+cat << EOF > exp
+procedure -> 
+NOT FOUND
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+# t_fork
+title t_fork
+try t_fork /bin/ls
+comp err nul
+
+try -n t_fork /bin/lsd
+cat << EOF > exp
+Child mutation has failed!
+EOF
+comp err exp
+echo "OK"
+
+# t_fraction
+title t_fraction
+try t_fraction 1:3 1:6
+cat << EOF > exp
+A is        +1:3
+abs A is    +1:3
+-A is       -1:3
+B is        +1:6
+abs B is    +1:6
+-B is       -1:6
+A =  B is   FALSE
+A <  B is   FALSE
+A <= B is   FALSE
+A >  B is   TRUE
+A >= B is   TRUE
+A + B is   +1:2
+A - B is   +1:6
+A * B is   +1:18
+A / B is   +2:1
+A ** B.Num is +1:3
+Set (1,0) raises Constraint_Error, OK.
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+# t_getenv
+title t_getenv
+unset GETENV
+try -n t_getenv
+cat << EOF > exp
+GETENV Not set
+EOF
+tail -1 out > tmp
+comp tmp exp
+comp err nul
+echo "OK"
+
+export GETENV="test is OK."
+try t_getenv
+cat << EOF > exp
+GETENV ->test is OK.<
+EOF
+tail -1 out > tmp
+comp tmp exp
+comp err nul
+echo "OK"
+
+# t_get_line
+title t_get_line
+try t_get_line t_get_line.adb
+cat << EOF > exp
+003 ->   5:>with<>Argument,<>Get_Line,<>Normal,<>Basic_Proc;<
+004 ->   3:>procedure<>T_Get_Line<>is<
+006 ->   1:>begin<
+008 ->   5:>if<>Argument.Get_Nbre_Arg<>/=<>1<>then<
+009 ->   6:>Basic_Proc.Put_Line_Output<>("ERROR.<>Syntax<>:<>t_get_line<><file_name>");<
+010 ->   1:>return;<
+011 ->   2:>end<>if;<
+013 ->   1:>declare<
+014 ->   6:>package<>My_Get_Line<>is<>new<>Get_Line<>("--");<
+016 ->   1:>begin<
+019 ->   1:>begin<
+020 ->   2:>My_Get_Line.Open<>(Argument.Get_Parameter);<
+021 ->   1:>exception<
+022 ->   3:>when<>others<>=><
+023 ->   5:>Basic_Proc.Put_Line_Output<>("ERROR<>opening<>file<>"<
+024 ->   4:>&<>Argument.Get_Parameter<>&<>".");<
+025 ->   1:>raise;<
+026 ->   1:>end;<
+029 ->   1:>loop<
+030 ->   5:>Basic_Proc.Put_Output<>(Normal<>(Integer<>(My_Get_Line.Get_Line_No),<>3,<
+031 ->   7:>Gap<>=><>'0')<>&<>"<>-><>");<
+032 ->   6:>Basic_Proc.Put_Output<>(Normal<>(My_Get_Line.Get_Word_Number,<>3)<>&<>":");<
+033 ->   1:>declare<
+034 ->   6:>Line<>:<>constant<>My_Get_Line.Line_Array<>:=<>My_Get_Line.Get_Words;<
+035 ->   1:>begin<
+036 ->   7:>for<>I<>in<>1<>..<>My_Get_Line.Get_Word_Number<>loop<
+037 ->   6:>Basic_Proc.Put_Output<>(">"<>&<>Line(I).Image<>&<>"<");<
+038 ->   2:>end<>loop;<
+039 ->   1:>end;<
+040 ->   1:>Basic_Proc.New_Line_Output;<
+041 ->   1:>My_Get_Line.Read_Next_Line;<
+042 ->   2:>end<>loop;<
+044 ->   1:>exception<
+045 ->   3:>when<>My_Get_Line.End_Error<>=><
+046 ->   1:>My_Get_Line.Close;<
+047 ->   2:>Basic_Proc.Put_Line_Output<>("Done.");<
+048 ->   1:>end;<
+050 ->   2:>end<>T_Get_Line;<
+Done.
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+# t_init_manager
+title t_init_manager...
+try t_init_manager
+comp err nul
+echo "OK"
+
+fi
+
+# t_input_buffer
+title t_input_buffer
+try t_input_buffer t_input_buffer.adb
+comp out t_input_buffer.adb
+comp err nul
+echo "OK"
 
 clean
 echo "Done."

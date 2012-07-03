@@ -1,6 +1,4 @@
-with My_Io;
-with Sys_Calls;
-with Argument;
+with My_Io, Sys_Calls, Argument;
 procedure T_Getenv is
 
   Set : Boolean;
@@ -21,12 +19,15 @@ begin
     Sys_Calls.Getenv (Argument.Get_Parameter, Set, Tru, Res, Len);
   end if;
   if not Set then
+    Sys_Calls.Set_Error_Exit_Code;
     My_Io.Put_Line (" Not set");
   else
     My_Io.Put (" ->" & Res (1 .. Len) & "<");
     if Tru then
       My_Io.Put (" truncated");
+      Sys_Calls.Set_Error_Exit_Code;
     end if;
     My_Io.New_Line;
   end if;
 end T_Getenv;
+

@@ -11,6 +11,7 @@ procedure T_Fork is
   procedure Sig_Term_Cb is
   begin
     Basic_Proc.Put_Line_Output ("Aborted by user");
+    Basic_Proc.Set_Error_Exit_Code;
     Done := True;
   end Sig_Term_Cb;
 
@@ -24,12 +25,18 @@ procedure T_Fork is
         when Sys_Calls.No_Dead =>
           exit;
         when Sys_Calls.Exited =>
+          Done := True;
+          Basic_Proc.Set_Exit_Code (Death_Dscr.Exit_Code);
           Basic_Proc.Put_Line_Output ("Child pid " & Death_Dscr.Exited_Pid'Img
              & " has exited code " &  Death_Dscr.Exit_Code'Img);
         when Sys_Calls.Signaled =>
+          Done := True;
+          Basic_Proc.Set_Error_Exit_Code;
           Basic_Proc.Put_Line_Output ("Child pid " & Death_Dscr.Signaled_Pid'Img
              & " has exited on signal " &  Death_Dscr.Signal'Img);
         when Sys_Calls.Stopped =>
+          Done := True;
+          Basic_Proc.Set_Error_Exit_Code;
           Basic_Proc.Put_Line_Output ("Child pid " & Death_Dscr.Stopped_Pid'Img
              & " has been stopped");
       end case;
@@ -50,7 +57,8 @@ begin
     Basic_Proc.Put_Line_Output ("I am child  pid " & Child_Pid'Img
          & " of father pid " & Sys_Calls.Get_Parent_Pid'Img);
     Sys_Calls.Mutate (Str);
-    Basic_Proc.Put_Line_Output ("Child mutation has failed!");
+    Basic_Proc.Put_Line_Error ("Child mutation has failed!");
+    Basic_Proc.Set_Error_Exit_Code;
   else
 
     Basic_Proc.Put_Line_Output ("I am father pid " & Sys_Calls.Get_Pid'Img
@@ -70,7 +78,7 @@ begin
 
 exception
   when Sys_Calls.System_Error =>
-    Basic_Proc.Put_Line_Output ("Exception System_Error raised");
+    Basic_Proc.Put_Line_Error ("Exception System_Error raised");
     raise;
 end T_Fork;
 
