@@ -33,9 +33,9 @@ begin
   end;
 
   Basic_Proc.Put_Line_Output (
-      "Starting T1(1, 1) and checking 10 times each 0.5s");
+      "Starting T1(1, 1) and checking 5 times each 0.5s");
   T1.Start ( (Timers.Delay_Sec, null, 1.0, 1.0) );
-  for I in 1 .. 10 loop
+  for I in 1 .. 5 loop
       Put ("T1", T1.Has_Expired);
       delay 0.5;
   end loop;

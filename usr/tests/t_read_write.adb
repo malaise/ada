@@ -71,8 +71,8 @@ procedure T_Read_Write is
         Lock.Release;
       end if;
 
-      -- 1% chances to terminate
-      exit when Rnd.Int_Random (0, 99) = 0;
+      -- 10% chances to terminate
+      exit when Rnd.Int_Random (0, 9) = 0;
     end loop;
     Put_Line (Index, "terminate");
     -- Ready to end
@@ -105,6 +105,7 @@ begin
   end if;
 
   Rnd.Randomize;
+
   -- Give to each actor it's name
   for I in Range_Task loop
     Tasks(I).Num (I);

@@ -1,4 +1,4 @@
-with Ada.Calendar, Ada.Characters.Latin_1;
+with Ada.Calendar, Ada.Characters.Latin_1, Ada.Io_Exceptions;
 with Perpet, My_Io;
 procedure T_Perpet is
 
@@ -62,6 +62,7 @@ procedure T_Perpet is
         Put ("Years -> "); Get (Dur.Years);
         exit;
       exception
+        when Ada.Io_Exceptions.End_Error => raise;
         when others => Error;
       end;
     end loop;
@@ -88,6 +89,7 @@ procedure T_Perpet is
         Put ("Days -> "); Get (D);
         exit;
       exception
+        when Ada.Io_Exceptions.End_Error => raise;
         when others => Error;
       end;
     end loop;
@@ -131,5 +133,7 @@ begin
         My_Io.Put_Line ("TIME_ERROR");
     end;
   end loop;
+exception
+  when Ada.Io_Exceptions.End_Error => null;
 end T_Perpet;
 

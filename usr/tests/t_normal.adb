@@ -1,3 +1,4 @@
+with Ada.Io_Exceptions;
 with My_Io, Normal;
 procedure T_Normal is
   I : Integer;
@@ -6,12 +7,15 @@ procedure T_Normal is
   Gap : Character;
 begin
 
+  Main:
   loop
     loop
       begin
         My_Io.Put ("I ? : "); My_Io.Get (I);
         exit;
       exception
+        when Ada.Io_Exceptions.End_Error =>
+          exit Main;
         when others => null;
       end;
     end loop;
@@ -44,5 +48,6 @@ begin
     My_Io.Put_Line ("012345678901234567890123456789012345678901234567890");
     My_Io.Put_Line ('>' & Normal (I, Len, Right, Gap) & '<');
     My_Io.New_Line;
-  end loop;
+  end loop Main;
+
 end T_Normal;

@@ -1,9 +1,16 @@
-with Basic_Proc, My_Io, Utf_8, Rnd;
+with Int_Io, Basic_Proc, Utf_8, Rnd, Key_Pressed;
 procedure T_Utf8 is
 
   procedure Put (N : Natural) is
+    Str : String (1 .. 10) := (others => ' ');
   begin
-    My_Io.Put (N, Base => 16);
+    Int_Io.Put (Str, N, Base => 16);
+    for I in reverse Str'Range loop
+      if Str(I) /= ' ' then
+        Basic_Proc.Put_Output (Str(1 .. I));
+        return;
+      end if;
+    end loop;
   end Put;
 
   Str : constant String := "aàâeéèêëiîïoôuùü";
@@ -31,6 +38,7 @@ begin
   Basic_Proc.New_Line_Output;
 
   Rnd.Randomize;
+  Key_Pressed.Open (False);
   loop
     U1 := Rnd.Int_Random (Utf_8.Unicode_Number'First,
                           Utf_8.Unicode_Number'Last);
@@ -48,12 +56,20 @@ begin
       Put (U2);
       if U1 /= U2 then
         Basic_Proc.Put_Line_Output (" Bug");
+        Basic_Proc.Set_Error_Exit_Code;
         exit;
       else
         Basic_Proc.Put_Line_Output (" OK");
       end if;
     end;
+    exit when Key_Pressed.Key_Pressed;
   end loop;
 
+  Basic_Proc.Flush_Output;
+  Key_Pressed.Close;
+exception
+  when others =>
+    Key_Pressed.Close;
+    raise;
 end T_Utf8;
 

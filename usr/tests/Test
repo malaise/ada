@@ -18,22 +18,42 @@ function error {
 
 # Function to launch an interactive test
 function launch {
+  local null=0
+  if [ "$1" = "-n" ] ; then
+   null=1
+   shift
+  fi 
   echo "Sarting $1:"
-  $* 
+  if [ $null -eq 1 ] ; then
+    $* > /dev/null
+  else
+    $* 
+  fi
   echo "$1 Done."
 }
 
 
 # Interactive tests
-if [ "$1" = "-i" ] ; then
+if [ "$1" = "-t" ] ; then
+  # Text based
   launch t_arbitrary
   launch t_control_pool
   launch t_dur_image
+  launch t_mut
+  launch t_sorts
+  launch t_utf16
+  launch t_utf8
+elif [ "$1" = "-x" ] ; then
+  # X11 based
+  t_x
   launch t_color
-  launch t_con > /dev/null
+  launch t_key
+  launch -n t_con
+  launch t_dscr
   launch t_afpx
   launch t_curve
-  launch t_dscr
+  launch t_select_file
+  launch t_timers
   clean
   echo "Done."
   exit
@@ -86,9 +106,6 @@ function comp {
     fi
   fi
 }
-
-# skip some tests
-if [ "$1" != "-t" ] ; then
 
 # t_ada_parser
 title t_ada_parser
@@ -719,7 +736,6 @@ EOF
 tail -1 out > tmp
 comp tmp exp
 comp err nul
-echo "OK"
 
 export GETENV="test is OK."
 try t_getenv
@@ -785,13 +801,955 @@ try t_init_manager
 comp err nul
 echo "OK"
 
-fi
-
 # t_input_buffer
 title t_input_buffer
 try t_input_buffer t_input_buffer.adb
 comp out t_input_buffer.adb
 comp err nul
+echo "OK"
+
+# t_lifo
+title t_lifo
+try t_lifo
+cat << EOF > exp
+Lifo size is  5
+Push  1
+Look  1 -->  1
+Look done
+Push  2
+Look  1 -->  1
+Look  2 -->  2
+Look done
+Push  3
+Look  1 -->  1
+Look  2 -->  2
+Look  3 -->  3
+Look done
+Push  4
+Look  1 -->  1
+Look  2 -->  2
+Look  3 -->  3
+Look  4 -->  4
+Look done
+Push  5
+Look  1 -->  1
+Look  2 -->  2
+Look  3 -->  3
+Look  4 -->  4
+Look  5 -->  5
+Push  6
+LIFO full. Discard last then push again
+Look  1 -->  2
+Look  2 -->  3
+Look  3 -->  4
+Look  4 -->  5
+Look  5 -->  6
+Push  7
+LIFO full. Discard last then push again
+Look  1 -->  3
+Look  2 -->  4
+Look  3 -->  5
+Look  4 -->  6
+Look  5 -->  7
+Push  8
+LIFO full. Discard last then push again
+Look  1 -->  4
+Look  2 -->  5
+Look  3 -->  6
+Look  4 -->  7
+Look  5 -->  8
+Push  9
+LIFO full. Discard last then push again
+Look  1 -->  5
+Look  2 -->  6
+Look  3 -->  7
+Look  4 -->  8
+Look  5 -->  9
+Push  10
+LIFO full. Discard last then push again
+Look  1 -->  6
+Look  2 -->  7
+Look  3 -->  8
+Look  4 -->  9
+Look  5 -->  10
+
+Pop ==>  10
+Look  1 -->  6
+Look  2 -->  7
+Look  3 -->  8
+Look  4 -->  9
+Look done
+
+Pop ==>  9
+Look  1 -->  6
+Look  2 -->  7
+Look  3 -->  8
+Look done
+
+Pop ==>  8
+Look  1 -->  6
+Look  2 -->  7
+Look done
+
+Pop ==>  7
+Look  1 -->  6
+Look done
+
+Pop ==>  6
+LIFO empty
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+# t_many_strings
+title t_many_strings
+try t_many_strings toto titi tata
+cat << EOF > exp
+Got 3 substrings:
+>toto<
+>titi<
+>tata<
+This should raise String_Error
+String_Error raised.
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+# t_math
+title t_math
+echo -ne "21.0\n6.5\n" | try t_math 
+cat << EOF > exp
+Enter a real R1 : ? int   (R1)  2.10000000000000E+01
+frac  (R1)  0.00000000000000E+00
+round (R1)                   21
+trunc (R1)                   21
+sqrt (R1)  4.58257569495584E+00
+exp (R1)  1.31881573448321E+09
+ln  (R1)  3.04452243772342E+00
+log_10 (R1)  1.32221929473392E+00
+Angles in radian
+sin (R1)  8.36655638536056E-01
+cos (R1) -5.47729260224268E-01
+tg  (R1) -1.52749852763660E+00
+arc_sin (R1) Exception
+arc_cos (R1) Exception
+arc_tg  (R1)  1.52321322351791E+00
+Enter another real R2 : ?  R1 ** R2  3.93029741545242E+08
+
+Enter a real R1 : ? 
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+# t_network
+title t_network
+try t_network
+cat << EOF > exp
+Creating Node1 to 3.
+Connecting 1-2 1-3 2-3 3-2
+Node1 -> Node2  2, Node3  3, 
+Node2 -> Node1  1, Node3  3, Node3  3, 
+Node3 -> Node1  1, Node2  2, Node2  2, 
+Creating temporary Node4 connected with Node2
+Deleting first connection of Node1
+Node1 -> Node3  3, 
+Node2 -> Node3  3, Node3  3, 
+Node3 -> Node1  1, Node2  2, Node2  2, 
+Deleting all connections between Node2 and Node3
+Node1 -> Node3  3, 
+Node2 -> 
+Node3 -> Node1  1, 
+Deleting all connections of Node3
+Node1 -> 
+Node2 -> 
+Node3 -> 
+Done.
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+# t_normal
+title t_normal
+echo -e "21\n5\ntrue\n*\n" | try t_normal
+cat << EOF > exp
+I ? : LEN ? : RIGHT ? : GAP ? : 0         1         2         3         4         5
+012345678901234567890123456789012345678901234567890
+>***21<
+
+I ? : 
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+# t_normalization
+title t_normalization
+try t_normalization -a
+cat << EOF > exp
+ 3.14159E+00 10 3 > 3.14E+000< >  3.14159@< >  3.14159@< -> OK
+ 3.14159E+01 10 3 > 3.14E+001< > 31.415899< > 31.41589@< -> OK
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+# t_num_letters
+title t_num_letters
+try t_num_letters 1 2 3 4 5 6 7 8 9 0 21
+cat << EOF > exp
+1 -->one<
+2 -->two<
+3 -->three<
+4 -->four<
+5 -->five<
+6 -->six<
+7 -->seven<
+8 -->eight<
+9 -->nine<
+0 -->zero<
+21 -->twenty one<
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+# t_num_match
+title t_num_match
+try t_num_match 21 1-5,30-40
+cat << EOF > exp
+ 21 does not match >1-5,30-40<
+EOF
+comp out exp
+comp err nul
+try t_num_match 21 1-5,30-40,20-22
+cat << EOF > exp
+ 21 matches >1-5,30-40,20-22<
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+# t_parser
+title t_parser
+try t_parser , toto,titi,ta,ta,,
+cat << EOF > exp
+Parsing >toto,titi,ta,ta,,< with separator ',':
+>toto< >titi< >ta< >ta< >< 
+
+Getting indexes:
+Word is >toto< from 1 to 4 separated by ><
+Word is >titi< from 6 to 9 separated by >,<
+Word is >ta< from 11 to 12 separated by >,<
+Word is >ta< from 14 to 15 separated by >,<
+Word is >< from 1 to 0 separated by >,,<
+
+Parsing all in one:
+Got >toto< of kind Word
+Got >,< of kind Separators
+Got >titi< of kind Word
+Got >,< of kind Separators
+Got >ta< of kind Word
+Got >,< of kind Separators
+Got >ta< of kind Word
+Got >,,< of kind Separators
+
+Done.
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+# t_passive_timers
+title t_passive_timers...
+try t_passive_timers
+cat << EOF > exp
+Starting T1(10, 10) and T2(2, 2)
+ and checking each sec until T1 expiration
+T1 has not Expired
+T2 has not Expired
+T1 has not Expired
+T2 has not Expired
+T1 has not Expired
+T2 has Expired
+T1 has not Expired
+T2 has not Expired
+T1 has not Expired
+T2 has Expired
+T1 has not Expired
+T2 has not Expired
+T1 has not Expired
+T2 has Expired
+T1 has not Expired
+T2 has not Expired
+T1 has not Expired
+T2 has Expired
+T1 has not Expired
+T2 has not Expired
+T1 has Expired
+Starting T1(1, 1) and checking 5 times each 0.5s
+T1 has not Expired
+T1 has not Expired
+T1 has Expired
+T1 has not Expired
+T1 has Expired
+Starting T3(0, 1) and checking after 0.5 then 1.0
+T3 has not Expired
+T3 has Expired
+Exception Timer_Expired (OK)
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+# t_perpet
+title t_perpet
+echo -e "1963\n10\n25\n21\n3\n210\n" | try t_perpet
+cat << EOF > exp
+Base :
+Year -> Month -> Day -> 
+Delta :
+Years -> Months ->  Base + Delta:       1985           1          25 
+ Base - Delta:       1942           7          25 
+
+Delta :
+Days ->  Base + Delta:       1964           5          22 
+ Base - Delta:       1963           3          29 
+
+
+Delta :
+Years -> 
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+
+# t_proc_father
+title t_proc_father...
+try t_proc_father t_proc_child
+echo "OK"
+
+# t_read_write
+title t_read_write...
+try t_read_write
+echo "OK"
+
+# t_recursive_mutex
+title t_recursive_mutex
+try t_recursive_mutex
+echo "OK"
+
+# t_regex_filters
+title t_regex_filters
+echo -e "toto\ntiti\nlolo\n" | try t_regex_filters t.t. T .i.i F
+cat << EOF > exp
+Check toto -> True
+Check titi -> False
+Check lolo -> False
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+# t_regexp
+title t_regexp
+try t_regexp "t.t." toto
+cat << EOF > exp
+String >toto< matches at pos [1-4/4]
+EOF
+comp out exp
+comp err nul
+try -n t_regexp "t.t." tolo
+cat << EOF > exp
+String >tolo< does not match
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+# t_romanic
+title t_romanic
+try t_romanic 1963
+cat << EOF > exp
+1963 -> MCMLXIII
+EOF
+comp out exp
+comp err nul
+try t_romanic MMXII
+cat << EOF > exp
+MMXII ->  2012
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+# t_round_at
+title t_round_at
+try t_round_at 215.0 1
+cat << EOF > exp
+Digits:  3
+Image ->  2.20000000000000E+02
+Real_Io -> 2.200E+02
+
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+# t_smart_ref
+title t_smart_ref
+try t_smart_ref
+cat << EOF > exp
+Test: Begin - Initializing R1 to 21 and R3 to 23
+Test: R1 and R3 set - Setting R2 to R1
+Test: Dereferencing R3
+Test: Dereferenced R3, Got 23 - Dereferencing R2
+Test: Dereferenced R2, Got 21 - Dereferencing R1
+Test: Dereferenced R1, Got 21 - Releasing R2 and Dereferencing R1
+Test: Dereferenced R1. Got 21 - Setting R1 to R3
+Test: Set R1 to R3. Got R1= 23 and R3= 23 - Releasing R3
+Test: R3 released - The end: garbage collecting
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+# t_state_machine
+title t_state_machine
+echo  -e "success\nfailure\nsuccess\n" | try t_state_machine
+tail -3 out | head -1 > out1
+cat << EOF > exp
+TRUE DEFAULT START FAILURE SUCCESS ATTACH DETACH  ? Transition: STARTING -- SUCCESS  -> OK      
+EOF
+comp out1 exp
+comp err nul
+echo "OK"
+
+# t_stdin
+title t_stdin
+mknod pipe p
+cat < pipe > out 2> err &
+echo "Toto" | t_stdin pipe
+rm pipe
+cat << EOF > exp
+Toto
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+# t_str_error
+title t_str_error
+try t_str_error 21
+cat << EOF > exp
+ 21 EISDIR          -> Is a directory
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+# t_strnav
+title t_strnav
+try t_strnav
+cat << EOF > exp
+Init navig to "1234567890", (starting at 8 from init string)
+Move by 4 forward (move at 12, containing 5)
+Set No_Char to '-'
+Lookup -10 -> -
+Lookup  -9 -> -
+Lookup  -8 -> -
+Lookup  -7 -> -
+Lookup  -6 -> -
+Lookup  -5 -> -
+Lookup  -4 -> 1
+Lookup  -3 -> 2
+Lookup  -2 -> 3
+Lookup  -1 -> 4
+Lookup   0 -> 5
+Lookup   1 -> 6
+Lookup   2 -> 7
+Lookup   3 -> 8
+Lookup   4 -> 9
+Lookup   5 -> 0
+Lookup   6 -> -
+Lookup   7 -> -
+Lookup   8 -> -
+Lookup   9 -> -
+Lookup  10 -> -
+Rewind to last
+Lookup -10 -> -
+Lookup  -9 -> 1
+Lookup  -8 -> 2
+Lookup  -7 -> 3
+Lookup  -6 -> 4
+Lookup  -5 -> 5
+Lookup  -4 -> 6
+Lookup  -3 -> 7
+Lookup  -2 -> 8
+Lookup  -1 -> 9
+Lookup   0 -> 0
+Lookup   1 -> -
+Lookup   2 -> -
+Lookup   3 -> -
+Lookup   4 -> -
+Lookup   5 -> -
+Lookup   6 -> -
+Lookup   7 -> -
+Lookup   8 -> -
+Lookup   9 -> -
+Lookup  10 -> -
+Move 2 forward
+Lookup -10 -> 2
+Lookup  -9 -> 3
+Lookup  -8 -> 4
+Lookup  -7 -> 5
+Lookup  -6 -> 6
+Lookup  -5 -> 7
+Lookup  -4 -> 8
+Lookup  -3 -> 9
+Lookup  -2 -> 0
+Lookup  -1 -> -
+Lookup   0 -> -
+Lookup   1 -> -
+Lookup   2 -> -
+Lookup   3 -> -
+Lookup   4 -> -
+Lookup   5 -> -
+Lookup   6 -> -
+Lookup   7 -> -
+Lookup   8 -> -
+Lookup   9 -> -
+Lookup  10 -> -
+Image:
+1234567890
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+# t_syslin
+title t_syslin
+try t_syslin syslin3.dat
+cat << EOF > exp
+> 3  2  1   0<
+> 2  1 -1   5<
+> 1  1  2   8<
+Unable to solve: Determinant is nul.
+EOF
+comp out exp
+comp err nul
+try t_syslin syslin2.dat
+cat << EOF > exp
+>2   1      7<
+>1   2      8<
+X(  1) =  2.000000E+00
+X(  2) =  3.000000E+00
+
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+# t_temp_file
+title t_temp_file
+try t_temp_file
+tail -9 out > out1
+cat << EOF > exp
+Checking exception on yet another temp file:
+Raises No_More_Temp OK
+
+Checking exception on invalid directory:
+Raises Invalid_Dir OK
+
+Cleaning temp files.
+
+Done.
+EOF
+comp out1 exp
+comp err nul
+echo "OK"
+
+
+# t_text_char
+title t_text_char
+try t_text_char t_text_char.adb
+comp out t_text_char.adb
+comp err nul
+echo "OK"
+
+# t_text_line
+title t_text_line
+cat t_text_line.adb | try t_text_line
+cat t_text_line.adb > exp
+echo >> exp
+comp out exp
+comp err nul
+echo "OK"
+
+# t_timeq
+title t_timeq
+echo -e "A\nX\n" | try t_timeq
+echo >> out
+cat << EOF > exp
+Insert(Value, Duration) Pop Get(Value) Expire Clear eXit Autotest> 
+Ivd | P | Rv | E | C | X | A ? Putting 11 22 33 44 55 and waiting 3 seconds
+Popping first without expire
+Got 1
+Putting 66 then popping all
+Got 4
+Got 5
+Got 6
+Putting 11 22 33 44 55 and waiting 3 seconds
+Reading 1, 2, 3, 4, 5 and 4 again
+Not data matches  1
+Not data matches  2
+Not data matches  3
+Read  4
+Read  5
+Read  4
+Putting 11 33 and waiting 1 seconds
+Expiring then popping all
+Got 5
+Got 3
+Putting 11 and 66, cleaning then popping all
+End of auto test.
+Ivd | P | Rv | E | C | X | A ? 
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+# t_trees
+title t_trees
+try t_trees
+cat << EOF > exp
+Inserting 1 as root
+Inserting 11 to 15 as root children
+ 1
+    11
+    12
+    13
+    14
+    15
+
+Checking that 1 has got 5 children: 1 has got 5 children
+Adding 151, 1511 and 15111 as 15 descendents
+ 1
+    11
+    12
+    13
+    14
+    15
+       151
+          1511
+             15111
+
+Inserting 0 as root and 2 as elder of 1
+ 0
+    1
+       11
+       12
+       13
+       14
+       15
+          151
+             1511
+                15111
+    2
+
+Replacing 14 by 41 and removing 13
+ 0
+    1
+       11
+       12
+       41
+       15
+          151
+             1511
+                15111
+    2
+
+Swapping 2 and 15
+ 0
+    1
+       11
+       12
+       41
+       2
+    15
+       151
+          1511
+             15111
+
+Addind 21 and deleting branch 15
+ 0
+    1
+       11
+       12
+       41
+       2
+          21
+
+Copying branch 2 below 12
+ 0
+    1
+       11
+       12
+          2
+             21
+       41
+       2
+          21
+
+Deleting branch 2
+ 0
+    1
+       11
+       12
+          2
+             21
+       41
+
+Copying branch 12
+T
+ 0
+    1
+       11
+       12
+          2
+             21
+       41
+
+T'
+ 12
+    2
+       21
+
+Swapping 1 and 2 from trees
+T
+ 0
+    2
+       21
+
+T'
+ 12
+    1
+       11
+       12
+          2
+             21
+       41
+
+Clearing all
+Empty OK.
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+# t_ul
+title t_ul
+try t_ul USER 1 ENV=True ENV ENV=False ENV
+cat << EOF > exp
+Processing arguments:
+Got >USER<->$USER<
+Var >1< is not set.
+Inserted >ENV=True<
+Got >ENV<->True<
+Inserted >ENV=False<
+Got >ENV<->False<
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+# t_unbounded_arrays
+title t_unbounded_arrays
+try t_unbounded_arrays
+cat << EOF > exp
+Empty array:
+Length 0
+Content 
+Image ><
+Array of 3:
+Image >3<
+
+Array of 1, 3, 5:
+Length 3
+Content 1, 3, 5
+Image >1, 3, 5<
+Element 2: 3
+Replaced by 21: 21
+Image >1, 21, 5<
+
+Append 30, 40, 50, 60, 70
+Image >1, 21, 5, 30, 40, 50, 60, 70<
+Same with concat
+Image >1, 21, 5, 30, 40, 50, 60, 70<
+Same with reverse concat
+Image >1, 21, 5, 30, 40, 50, 60, 70<
+Same with prepend
+Image >1, 21, 5, 30, 40, 50, 60, 70<
+
+Slice 4 .. 6
+Content 30, 40, 50
+Image >30, 40, 50<
+Check "=" OK
+
+Replace from 4 to 7 with 41, 51
+Image >1, 21, 5, 41, 51, 70<
+Delete from 4 to 5, insert 30, 40, 50, 60 before 4
+Image >1, 21, 5, 30, 40, 50, 60, 70<
+Replace from 4 to 5 with 41, 51, 61
+Image >1, 21, 5, 41, 51, 61, 50, 60, 70<
+Delete from 4 to 6, insert 30, 40 before 4
+Image >1, 21, 5, 30, 40, 50, 60, 70<
+
+Check Finalization
+Array of 21, 22
+Image >21, 22<
+Done.
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+# t_unbounded_arrays
+title t_urand
+try t_urand
+cat << EOF > exp
+Expected Results    Actual Results
+ 6533892.00          6533892.00
+14220222.00         14220222.00
+ 7275067.00          7275067.00
+ 6172232.00          6172232.00
+ 8354498.00          8354498.00
+10633180.00         10633180.00
+
+
+Random Number Generator Consistent
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+# t_utf
+title t_utf
+try t_utf U+E7
+cat << EOF > exp
+U+0000E7 : 00E7      : C3 A7       : ç
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+# t_virtual
+title t_virtual...
+try t_virtual
+comp err nul
+echo "OK"
+
+# t_xml_gen
+title t_xml_gen
+try t_xml_gen
+comp out ../misc/variables.xml 
+comp err nul
+echo "OK"
+
+# t_xml_string
+title t_xml_string
+try t_xml_string data/xml_1.xml
+cat << EOF > exp
+Parsing file data/dtd_1.dtd
+Parsing string of file data/dtd_2.dtd
+Parsing file data/dtd_3.dtd
+  ---------------------------------------------------------------------------
+Parsing prologue of string of file data/xml_1.xml
+Got Prologue:
+<?xml version="1.1"
+      encoding="UTF-8"?>
+<?Interface_Name Try_Interface?>
+<?Interface_Version 1.0?>
+
+Selected Dtd: 1
+Parsing remaining of string
+Got Elements:
+<try xml:space="preserve">This text is in <bold>bold</bold>.</try>
+  ---------------------------------------------------------------------------
+EOF
+comp out exp
+comp err nul
+try t_xml_string data/xml_2.xml
+cat << EOF > exp
+Parsing file data/dtd_1.dtd
+Parsing string of file data/dtd_2.dtd
+Parsing file data/dtd_3.dtd
+  ---------------------------------------------------------------------------
+Parsing prologue of string of file data/xml_2.xml
+Got Prologue:
+<?xml version="1.1"
+      encoding="UTF-8"?>
+<?Interface_Name Try_Interface?>
+<?Interface_Version 2.1?>
+
+Selected Dtd: 2
+Parsing remaining of string
+Got Elements:
+<try xml:space="preserve">This text is in <bold>bold</bold>,
+ and this one is in <italic>italic</italic>.</try>
+  ---------------------------------------------------------------------------
+EOF
+comp out exp
+comp err nul
+try t_xml_string data/xml_3.xml
+cat << EOF > exp
+Parsing file data/dtd_1.dtd
+Parsing string of file data/dtd_2.dtd
+Parsing file data/dtd_3.dtd
+  ---------------------------------------------------------------------------
+Parsing prologue of string of file data/xml_3.xml
+Got Prologue:
+<?xml version="1.1"
+      encoding="UTF-8"?>
+<?Interface_Name Try_Interface?>
+<?Interface_Version 3.2?>
+
+Selected Dtd: 3
+Parsing remaining of string
+Got Elements:
+<try xml:space="preserve">This text is in <bold>bold</bold>,
+ and this one is in <italic>italic</italic>,
+ and this one is in <superscript>superscript</superscript>.</try>
+  ---------------------------------------------------------------------------
+EOF
+comp out exp
+comp err nul
+try -n t_xml_string data/xml_3_nok.xml
+cat << EOF > exp
+Parsing file data/dtd_1.dtd
+Parsing string of file data/dtd_2.dtd
+Parsing file data/dtd_3.dtd
+  ---------------------------------------------------------------------------
+Parsing prologue of string of file data/xml_3_nok.xml
+Got Prologue:
+<?xml version="1.1"
+      encoding="UTF-8"?>
+<?Interface_Name Try_Interface?>
+<?Interface_Version 2.4?>
+
+Selected Dtd: 2
+Parsing remaining of string
+  ---------------------------------------------------------------------------
+EOF
+cat << EOF > exp1
+Xml_Parser error at line 7 of xml: Element superscript is not defined in dtd.
+EOF
+comp out exp
+comp err exp1
 echo "OK"
 
 clean

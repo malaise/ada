@@ -32,6 +32,7 @@ procedure T_Proc_Father is
     end if;
   end Death_Cb;
 
+  Result : Integer := 1;
   Done : Boolean := False;
 
   procedure Term_Cb is
@@ -56,21 +57,25 @@ procedure T_Proc_Father is
     if Res = 0 then
       Sys_Calls.Put_Line_Output ("Father: Read 0");
       Event_Mng.Del_Fd_Callback (Spawn_Result.Fd_Out, True);
-      return False;
+      Done := True;
+      return True;
     end if;
     Sys_Calls.Put_Line_Output ("Father: Read >" & Buf(1 .. Res) & "<");
     Buf(1 .. Reply'Length) := Reply;
     begin
       -- Reply "F2C"
       Res := Sys_Calls.Write (Spawn_Result.Fd_In, Buf'Address, Reply'Length);
+      Result := 0;
     exception
       when Sys_Calls.System_Error =>
         Res := 0;
+        Result := 1;
     end;
     if Res /= Reply'Length then
       Sys_Calls.Put_Line_Output ("Father: Cannot write "
                             & Natural'Image(Reply'Length)
                             & " bytes on In fd");
+      Result := 1;
     end if;
     return False;
   end Fd_Cb;
@@ -139,5 +144,6 @@ begin
     pragma Warnings (On, "variable ""*"" is not modified in loop body");
   end loop;
 
+  Sys_Calls.Set_Exit_Code (Result);
 end T_Proc_Father;
 

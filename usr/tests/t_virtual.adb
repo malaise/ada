@@ -3,6 +3,7 @@ with Basic_Proc, Date_Image, Virtual_Time, Timers, Event_Mng,
 procedure T_Virtual is
 
   -- The virtual clock and its observer
+  Nb_Notif : Natural := 0;
   My_Clock : aliased Virtual_Time.Clock;
   type Observer_Rec is new Virtual_Time.Observer with null record;
   procedure Notify (An_Observer : in out Observer_Rec;
@@ -21,6 +22,7 @@ procedure T_Virtual is
     Basic_Proc.Put_Line_Output ("  Synchro is R " & Date_Image (Rt)
                         & " - V " & Date_Image (Vt));
     Basic_Proc.Put_Line_Output ("  Speed is" & A_Clock.Get_Speed'Img);
+    Nb_Notif := Nb_Notif + 1;
   end Notify;
   My_Observer : aliased Observer_Rec;
 
@@ -33,6 +35,7 @@ procedure T_Virtual is
   end Put_Now;
 
   -- The timer and its expiration callback
+  Nb_Timer : Natural := 0;
   My_Tid : Timers.Timer_Id;
   function Timer_Callback (Id : Timers.Timer_Id;
                            Data : Timers.Timer_Data) return Boolean is
@@ -41,6 +44,7 @@ procedure T_Virtual is
     Basic_Proc.Put_Line_Output ("Timer expiration at R "
       & Date_Image (Virtual_Time.Current_Time (null))
       & " - V " & Date_Image (My_Clock.Current_Time));
+    Nb_Timer := Nb_Timer + 1;
     return False;
   end Timer_Callback;
 
@@ -73,17 +77,34 @@ procedure T_Virtual is
     return Res;
   end Check_Pt;
 
-  procedure Check_Pt (Pt : in Chronos.Passive_Timers.Passive_Timer) is
-    Dummy : Boolean;
-    pragma Unreferenced (Dummy);
+  Check_Error : exception;
+  procedure Check_Pt (Pt : in Chronos.Passive_Timers.Passive_Timer;
+                      Has_Expired : in Boolean) is
   begin
-    Dummy := Check_Pt (Pt);
+    if Check_Pt (Pt) /= Has_Expired then
+      raise Check_Error;
+    end if;
   end Check_Pt;
+
+  procedure Check_Events (Notif, Timer : in Natural) is
+  begin
+    if Nb_Notif /= Notif then
+      Basic_Proc.Put_Output ("Got " & Nb_Notif'Img
+            & " notifications instead of " & Notif'Img);
+      raise Check_Error;
+    end if;
+    if Nb_Timer /= Timer then
+      Basic_Proc.Put_Output ("Got " & Nb_Timer'Img
+            & " expirations instead of " & Timer'Img);
+      raise Check_Error;
+    end if;
+  end Check_Events;
 
   -- The timed queue and dump of it
   package Int_Queue_Timed is new Queues.Timed (0, Integer);
   My_Queue : Int_Queue_Timed.Timed_Type;
-  procedure Dump_Queue is
+  procedure Check_Queue (Expect : Natural) is
+    Nb_Queue : Natural := 0;
     Val : Integer;
     Done : Boolean;
   begin
@@ -91,9 +112,14 @@ procedure T_Virtual is
     loop My_Queue.Pop (Val, Done);
       exit when not Done;
       Basic_Proc.Put_Output (Val'Img);
+      Nb_Queue := Nb_Queue + 1;
     end loop;
-    Basic_Proc.New_Line_Output;
-  end Dump_Queue;
+      Basic_Proc.New_Line_Output;
+    if Nb_Queue /=  Expect then
+      Basic_Proc.Put_Line_Output ("Expected" & Expect'Img & " elements");
+      raise Check_Error;
+    end if;
+  end Check_Queue;
 
 begin
   Put_Now;
@@ -111,12 +137,13 @@ begin
                  Delay_Seconds => 5.0) );
   Basic_Proc.Put_Line_Output ("Attaching queue and waiting 3s");
   My_Queue.Attach (My_Clock'Unrestricted_Access);
-  Check_Pt (My_Pt);
+  Check_Pt (My_Pt, False);
   Event_Mng.Wait (3_000);
 
   Basic_Proc.New_Line_Output;
   Put_Now;
-  Check_Pt (My_Pt);
+  Check_Pt (My_Pt, False);
+  Check_Events (0, 3);
   Put_Chrono;
   Basic_Proc.Put_Line_Output ("Registering observer");
   My_Clock.Add_Observer (My_Observer'Unrestricted_Access);
@@ -129,7 +156,8 @@ begin
 
   Basic_Proc.New_Line_Output;
   Put_Now;
-  Check_Pt (My_Pt);
+  Check_Pt (My_Pt, False);
+  Check_Events (0, 4);
   Put_Chrono;
   Basic_Proc.Put_Line_Output ("Pushing in Queue 2 3 and 4");
   My_Queue.Push (2, 2.0);
@@ -139,10 +167,11 @@ begin
   My_Clock.Set_Speed (0.5);
   Event_Mng.Wait (5_000);
   Put_Now;
-  Check_Pt (My_Pt);
+  Check_Pt (My_Pt, True);
+  Check_Events (1, 6);
   Put_Chrono;
   My_Queue.Expire;
-  Dump_Queue;
+  Check_Queue (2);
 
   Basic_Proc.New_Line_Output;
   Basic_Proc.Put_Line_Output ("Pushing in Queue 1");
@@ -151,10 +180,11 @@ begin
   My_Clock.Set_Speed (0.0);
   Event_Mng.Wait (3_000);
   Put_Now;
-  Check_Pt (My_Pt);
+  Check_Pt (My_Pt, False);
+  Check_Events (2, 6);
   Put_Chrono;
   My_Queue.Expire;
-  Dump_Queue;
+  Check_Queue (1);
 
   Basic_Proc.New_Line_Output;
   Basic_Proc.Put_Line_Output ("Pushing in Queue 2 3 and 4");
@@ -165,10 +195,11 @@ begin
   My_Clock.Set_Speed (1.0);
   Event_Mng.Wait (3_000);
   Put_Now;
-  Check_Pt (My_Pt);
+  Check_Pt (My_Pt, False);
+  Check_Events (3, 9);
   Put_Chrono;
   My_Queue.Expire;
-  Dump_Queue;
+  Check_Queue (1);
 
   Basic_Proc.New_Line_Output;
   Basic_Proc.Put_Line_Output ("Pushing in Queue 25 and 35");
@@ -192,10 +223,11 @@ begin
 
   Basic_Proc.New_Line_Output;
   Put_Now;
-  Check_Pt (My_Pt);
+  Check_Pt (My_Pt, True);
+  Check_Events (4, 9);
   Put_Chrono;
   My_Queue.Expire;
-  Dump_Queue;
+  Check_Queue (1);
 
   Basic_Proc.New_Line_Output;
   Basic_Proc.Put_Line_Output ("Done.");

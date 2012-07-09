@@ -1,4 +1,4 @@
-with My_Io, Sorts, Rnd, Normal;
+with My_Io, Sorts, Rnd, Normal, Key_Pressed;
 use My_Io;
 procedure T_Sorts is
 
@@ -15,10 +15,11 @@ procedure T_Sorts is
   Ok : Boolean;
   Current_Sort : String (1 .. 3);
 begin
+  Key_Pressed.Open (False);
 
   loop
 
-    -- init of init and results
+    -- Init of init and results
     Last := Rnd.Int_Random (0, Index'Last);
     for I in 1 .. Last loop
       Init(I) := Rnd.Int_Random(0, 99);
@@ -66,11 +67,16 @@ begin
       My_Io.Put_Line (" OK");
       My_Io.New_Line;
       delay 1.0;
+      exit when Key_Pressed.Key_Pressed;
     end if;
 
   end loop;
+
+  Key_Pressed.Close;
+
 exception
   when others =>
+    Key_Pressed.Close;
     My_Io.Put_Line ("Exception when sorting with " & Current_Sort & " on:");
     for I in 1 .. Last loop
       My_Io.Put (Normal(Init(I), 3));

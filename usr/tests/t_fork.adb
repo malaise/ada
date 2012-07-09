@@ -50,6 +50,10 @@ begin
     Str.Cat (Argument.Get_Parameter (Occurence => I));
   end loop;
 
+  -- Catch signals
+  Event_Mng.Set_Sig_Term_Callback (Sig_Term_Cb'Unrestricted_Access);
+  Event_Mng.Set_Sig_Child_Callback (Sig_Child_Cb'Unrestricted_Access);
+
   -- Fork
   Sys_Calls.Procreate (Child, Child_Pid);
 
@@ -64,8 +68,6 @@ begin
     Basic_Proc.Put_Line_Output ("I am father pid " & Sys_Calls.Get_Pid'Img
          & " of child  pid " & Child_Pid'Img);
 
-    Event_Mng.Set_Sig_Term_Callback (Sig_Term_Cb'Unrestricted_Access);
-    Event_Mng.Set_Sig_Child_Callback (Sig_Child_Cb'Unrestricted_Access);
 
     loop
       Event_Mng.Pause (Event_Mng.Infinite_Ms);

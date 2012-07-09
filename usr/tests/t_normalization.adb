@@ -73,6 +73,7 @@ procedure T_Normalization is
       return True;
     else
       Async_Stdin.Put_Line_Out ("ERROR: Got " & Flow.Str.Image & ".");
+      Basic_Proc.Set_Error_Exit_Code;
       return False;
     end if;
   end Do_Test;

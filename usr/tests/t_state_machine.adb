@@ -1,5 +1,5 @@
-with My_Io;
-with State_Machine;
+with Ada.Io_Exceptions;
+with My_Io, State_Machine;
 procedure T_State_Machine is
 
   type State_List is (Unknown, Starting, Failed, Detached, Ok, Error);
@@ -143,6 +143,8 @@ begin
         begin
           Event := Get_Event;
         exception
+          when Ada.Io_Exceptions.End_Error =>
+            raise;
           when others =>
             Valid_Event := False;
         end;
@@ -154,4 +156,7 @@ begin
     end case;
   end loop;
 
+exception
+  when Ada.Io_Exceptions.End_Error =>
+    null;
 end T_State_Machine;

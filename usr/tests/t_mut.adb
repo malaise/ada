@@ -6,8 +6,6 @@ procedure T_Mut is
 
   Critical_Section_Duration : constant := 10.0;
 
-  Dummy : Boolean;
-  pragma Unreferenced (Dummy);
   procedure Get_Immediate (C : out Character; Ok : out Boolean) is
     Status : Sys_Calls.Get_Status_List;
   begin
@@ -73,14 +71,21 @@ procedure T_Mut is
         C : Character;
         S : String (1 .. 256);
         L : Natural;
+        Dummy : Boolean;
+        pragma Unreferenced (Dummy);
         use type Mutex_Manager.Mutex_Kind;
       begin
         Get_Lock.Get;
         -- Skip any pending character
+        Dummy := Sys_Calls.Set_Tty_Attr (Sys_Calls.Stdin,
+                                         Sys_Calls.Transparent);
         loop
           Get_Immediate (C, B);
           exit when not B;
         end loop;
+        Dummy := Sys_Calls.Set_Tty_Attr (Sys_Calls.Stdin,
+                                         Sys_Calls.Canonical);
+
         -- Start get
         In_Get := True;
         loop
@@ -191,8 +196,6 @@ procedure T_Mut is
 
 
   begin -- Exec
-    Basic_Proc.New_Line_Output;
-    Basic_Proc.New_Line_Output;
     -- Give to each actor it's name
     for I in Range_Task loop
       Ta(I).Num (I);
@@ -205,7 +208,6 @@ procedure T_Mut is
 
     Basic_Proc.New_Line_Output;
     Basic_Proc.Put_Line_Output ("Done.");
-    Basic_Proc.New_Line_Output;
   end Exec;
 
   procedure Error (S : in String) is
@@ -239,8 +241,6 @@ begin -- T_Mut
     Error ("Invalid argument " & Argument.Get_Parameter (Occurence => 1));
     return;
   end if;
-
-  Dummy := Sys_Calls.Set_Tty_Attr (Sys_Calls.Stdin, Sys_Calls.Char_No_Echo);
 
   if N_Args = 1 then
     -- Default Nb of tasks
