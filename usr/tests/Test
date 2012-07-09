@@ -34,16 +34,20 @@ function launch {
 
 
 # Interactive tests
-if [ "$1" = "-t" ] ; then
+if [ \( "$1" = "-it" \) -o \( "$1" = "-i" \) ] ; then
   # Text based
   launch t_arbitrary
   launch t_control_pool
   launch t_dur_image
-  launch t_mut
+  launch t_mut s
   launch t_sorts
   launch t_utf16
+  sleep 1
   launch t_utf8
-elif [ "$1" = "-x" ] ; then
+  clean
+  echo "Done."
+  exit
+elif [ \( "$1" = "-ix" \) -o \( "$1" = "-i" \) ] ; then
   # X11 based
   t_x
   launch t_color
@@ -53,10 +57,13 @@ elif [ "$1" = "-x" ] ; then
   launch t_afpx
   launch t_curve
   launch t_select_file
-  launch t_timers
+  launch -n t_timers
   clean
   echo "Done."
   exit
+elif [ "$1" != "" ] ; then
+  echo "Usage: `basename $0` [ -i | -it | -ix ]" 2>&1
+  exit 1
 fi
 
 # Utilities for automatic tests
@@ -281,6 +288,11 @@ title t_async
 xterm -e "t_async -s 20000 > out 2> err" &
 export PID=$!
 sleep 0.7
+kill -0 $PID 2> err
+grep "No such process" err > /dev/null 2>&1
+if [ $? -eq 0 ] ; then
+  error "Xterm has died"
+fi
 expect \
 -c 'spawn telnet localhost 20000; \
   set timeout 1; \
@@ -904,17 +916,20 @@ echo "OK"
 
 # t_many_strings
 title t_many_strings
-try t_many_strings toto titi tata
+try -n t_many_strings toto titi tata
 cat << EOF > exp
 Got 3 substrings:
 >toto<
 >titi<
 >tata<
 This should raise String_Error
-String_Error raised.
+EOF
+cat << EOF > exp1
+
+raised MANY_STRINGS.STRING_ERROR : many_strings.adb:156
 EOF
 comp out exp
-comp err nul
+comp err exp1
 echo "OK"
 
 # t_math

@@ -1,3 +1,4 @@
+with Ada.Io_Exceptions;
 with My_Math, My_Io;
 procedure T_Math is
 
@@ -13,6 +14,7 @@ begin
         Put ("Enter a real R1 : ? "); Get (R);
         exit;
       exception
+        when Ada.Io_Exceptions.End_error => raise;
         when others => Skip_Line;
       end;
     end loop;
@@ -83,4 +85,7 @@ begin
     end;
     New_Line;
   end loop;
+exception
+  when Ada.Io_Exceptions.End_Error =>
+    null;
 end T_Math;
