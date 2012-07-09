@@ -284,10 +284,10 @@ comp -n err nul
 echo "OK"
 
 # t_async
-title t_async
+title t_async...
 xterm -e "t_async -s 20000 > out 2> err" &
 export PID=$!
-sleep 0.7
+sleep 3.0
 kill -0 $PID 2> err
 grep "No such process" err > /dev/null 2>&1
 if [ $? -eq 0 ] ; then
