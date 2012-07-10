@@ -43,6 +43,7 @@ procedure T_Proc_Father is
   end Term_Cb;
 
   Child_Disconnected : Boolean := False;
+  Nb_Failures : Natural := 0;
   function Fd_Cb (Fd : in Sys_Calls.File_Desc;
                   Read : in Boolean) return Boolean is
     pragma Unreferenced (Read);
@@ -67,18 +68,20 @@ procedure T_Proc_Father is
     begin
       -- Reply "F2C"
       Res := Sys_Calls.Write (Spawn_Result.Fd_In, Buf'Address, Reply'Length);
-      Result := 0;
+      if Res /= Reply'Length then
+        Sys_Calls.Put_Line_Output ("Father: Can write only "
+                              & Res'Img & " bytes on In fd");
+        Result := 1;
+      else
+        Result := 0;
+      end if;
     exception
       when Sys_Calls.System_Error =>
-        Res := 0;
-        Result := 1;
+        -- Maybe child has died, allow one failure
+        Sys_Calls.Put_Line_Output ("Father: Failed to write on In fd");
+        Result := Nb_Failures;
+        Nb_Failures := Nb_Failures + 1;
     end;
-    if Res /= Reply'Length then
-      Sys_Calls.Put_Line_Output ("Father: Cannot write "
-                            & Natural'Image(Reply'Length)
-                            & " bytes on In fd");
-      Result := 1;
-    end if;
     return False;
   end Fd_Cb;
 
