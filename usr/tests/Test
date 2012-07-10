@@ -34,12 +34,11 @@ function launch {
 
 
 # Interactive tests
-if [ \( "$1" = "-it" \) -o \( "$1" = "-i" \) ] ; then
+if [ "$1" = "-it" ] ; then
   # Text based
   launch t_arbitrary
   launch t_control_pool
   launch t_dur_image
-  launch t_mut s
   launch t_sorts
   launch t_utf16
   sleep 1
@@ -47,22 +46,22 @@ if [ \( "$1" = "-it" \) -o \( "$1" = "-i" \) ] ; then
   clean
   echo "Done."
   exit
-elif [ \( "$1" = "-ix" \) -o \( "$1" = "-i" \) ] ; then
+elif [ "$1" = "-ix" ] ; then
   # X11 based
-  t_x
-  launch t_color
-  launch t_key
+  launch -n t_x
+  launch -n t_color
+  launch -n t_key
   launch -n t_con
-  launch t_dscr
-  launch t_afpx
-  launch t_curve
-  launch t_select_file
+  launch -n t_dscr
+  launch -n t_afpx
+  launch -n t_curve
+  launch -n t_select_file
   launch -n t_timers
   clean
   echo "Done."
   exit
 elif [ "$1" != "" ] ; then
-  echo "Usage: `basename $0` [ -i | -it | -ix ]" 2>&1
+  echo "Usage: `basename $0` [ -it | -ix ]" 2>&1
   exit 1
 fi
 
@@ -916,20 +915,17 @@ echo "OK"
 
 # t_many_strings
 title t_many_strings
-try -n t_many_strings toto titi tata
+try t_many_strings toto titi tata
 cat << EOF > exp
 Got 3 substrings:
 >toto<
 >titi<
 >tata<
 This should raise String_Error
-EOF
-cat << EOF > exp1
-
-raised MANY_STRINGS.STRING_ERROR : many_strings.adb:156
+String_Error raised.
 EOF
 comp out exp
-comp err exp1
+comp err nul
 echo "OK"
 
 # t_math
@@ -954,6 +950,28 @@ arc_tg  (R1)  1.52321322351791E+00
 Enter another real R2 : ?  R1 ** R2  3.93029741545242E+08
 
 Enter a real R1 : ? 
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+# t_mut...
+title t_mut
+echo -e "b\nw\ni\nw\nw\nw\nt\nt\n" | try t_mut s
+cat << EOF > exp
+    Start of critical section for   1
+    Mutex not free for   2
+    Mutex not free for   2
+    Mutex not free for   2
+    Mutex not free for   2
+    End   of critical section for   1
+    Start of critical section for   2
+    Termination of   1
+    End   of critical section for   2
+    Termination of   2
+
+Done.
+
 EOF
 comp out exp
 comp err nul
@@ -1249,6 +1267,7 @@ title t_stdin
 mknod pipe p
 cat < pipe > out 2> err &
 echo "Toto" | t_stdin pipe
+sleep 1
 rm pipe
 cat << EOF > exp
 Toto

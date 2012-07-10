@@ -18,6 +18,7 @@ procedure T_Proc_Father is
   Str : Many_Strings.Many_String;
   Spawn_Result : Proc_Family.Spawn_Result_Rec;
 
+  Child_Dead : Boolean := False;
   procedure Death_Cb (Death_Report : in Proc_Family.Death_Rec) is
     use type Sys_Calls.Death_Cause_List;
   begin
@@ -30,17 +31,18 @@ procedure T_Proc_Father is
           "Father: child pid " & Death_Report.Signaled_Pid'Img
         & " has exited on signal " & Death_Report.Signal'Img);
     end if;
+    Child_Dead := True;
   end Death_Cb;
 
   Result : Integer := 1;
   Done : Boolean := False;
-
   procedure Term_Cb is
   begin
     Sys_Calls.Put_Line_Output ("Father: aborted by user");
     Done := True;
   end Term_Cb;
 
+  Child_Disconnected : Boolean := False;
   function Fd_Cb (Fd : in Sys_Calls.File_Desc;
                   Read : in Boolean) return Boolean is
     pragma Unreferenced (Read);
@@ -57,7 +59,7 @@ procedure T_Proc_Father is
     if Res = 0 then
       Sys_Calls.Put_Line_Output ("Father: Read 0");
       Event_Mng.Del_Fd_Callback (Spawn_Result.Fd_Out, True);
-      Done := True;
+      Child_Disconnected := True;
       return True;
     end if;
     Sys_Calls.Put_Line_Output ("Father: Read >" & Buf(1 .. Res) & "<");
@@ -138,10 +140,9 @@ begin
                              Fd_Cb'Unrestricted_Access);
 
   loop
-    Event_Mng.Pause (Event_Mng.Infinite_Ms);
-    pragma Warnings (Off, "variable ""*"" is not modified in loop body");
-    exit when Done;
-    pragma Warnings (On, "variable ""*"" is not modified in loop body");
+    Event_Mng.Wait (Event_Mng.Infinite_Ms);
+    exit when Done
+              or else (Child_Dead and then Child_Disconnected);
   end loop;
 
   Sys_Calls.Set_Exit_Code (Result);

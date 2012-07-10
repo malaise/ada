@@ -21,9 +21,14 @@ begin
   end loop;
 
   -- Should raise String_Error
-  Basic_Proc.Put_Line_Output ("This should raise String_Error");
-  Basic_Proc.Put_Line_Output ('>' &
-     Many_Strings.Nth (Str, L + 1) & '<');
+  begin
+    Basic_Proc.Put_Line_Output ("This should raise String_Error");
+    Basic_Proc.Put_Line_Output ('>' &
+       Many_Strings.Nth (Str, L + 1) & '<');
+  exception
+    when Many_Strings.String_Error =>
+      Basic_Proc.Put_Line_Output ("String_Error raised.");
+  end;
 
 end T_Many_Strings;
 

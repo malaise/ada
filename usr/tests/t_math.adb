@@ -14,7 +14,7 @@ begin
         Put ("Enter a real R1 : ? "); Get (R);
         exit;
       exception
-        when Ada.Io_Exceptions.End_error => raise;
+        when Ada.Io_Exceptions.End_Error => raise;
         when others => Skip_Line;
       end;
     end loop;

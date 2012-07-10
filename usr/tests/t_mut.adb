@@ -5,6 +5,7 @@ procedure T_Mut is
   pragma Priority(10);
 
   Critical_Section_Duration : constant := 10.0;
+  Stdin_Is_A_Tty : Boolean;
 
   procedure Get_Immediate (C : out Character; Ok : out Boolean) is
     Status : Sys_Calls.Get_Status_List;
@@ -54,15 +55,17 @@ procedure T_Mut is
           Current_I := I;
         end if;
 
-        Basic_Proc.Put_Output ("Task: ");
-        My_Io.Put (Current_I, 3);
-        if Mut_Kind /= Mutex_Manager.Simple then
-          Basic_Proc.Put_Output (" : Read, Write, Terminate");
-          Basic_Proc.Put_Output (" : Bloqued, Immediate, Wait (3s) ? ");
-        else
-          Basic_Proc.Put_Output (" : Bloqued, Immediate, Wait (3s), Terminate ? ");
+        if Stdin_Is_A_Tty then
+          Basic_Proc.Put_Output ("Task: ");
+          My_Io.Put (Current_I, 3);
+          if Mut_Kind /= Mutex_Manager.Simple then
+            Basic_Proc.Put_Output (" : Read, Write, Terminate");
+            Basic_Proc.Put_Output (" : Bloqued, Immediate, Wait (3s) ? ");
+          else
+            Basic_Proc.Put_Output (" : Bloqued, Immediate, Wait (3s), Terminate ? ");
+          end if;
+          Basic_Proc.Flush_Output;
         end if;
-        Basic_Proc.Flush_Output;
         Prompt_Lock.Release;
       end Prompt;
 
@@ -76,15 +79,17 @@ procedure T_Mut is
         use type Mutex_Manager.Mutex_Kind;
       begin
         Get_Lock.Get;
-        -- Skip any pending character
-        Dummy := Sys_Calls.Set_Tty_Attr (Sys_Calls.Stdin,
-                                         Sys_Calls.Transparent);
-        loop
-          Get_Immediate (C, B);
-          exit when not B;
-        end loop;
-        Dummy := Sys_Calls.Set_Tty_Attr (Sys_Calls.Stdin,
-                                         Sys_Calls.Canonical);
+        if Stdin_Is_A_Tty then
+          -- Skip any pending character on tty
+          Dummy := Sys_Calls.Set_Tty_Attr (Sys_Calls.Stdin,
+                                           Sys_Calls.Transparent);
+          loop
+            Get_Immediate (C, B);
+            exit when not B;
+          end loop;
+          Dummy := Sys_Calls.Set_Tty_Attr (Sys_Calls.Stdin,
+                                           Sys_Calls.Canonical);
+        end if;
 
         -- Start get
         In_Get := True;
@@ -191,6 +196,7 @@ procedure T_Mut is
         pragma Warnings (On,  "variable ""*"" is not modified in loop body");
       end loop;
       -- Ready to end
+      Input.Put ("Termination of", Index);
       accept Done;
     end T;
 
@@ -199,6 +205,7 @@ procedure T_Mut is
     -- Give to each actor it's name
     for I in Range_Task loop
       Ta(I).Num (I);
+      delay 0.1;
     end loop;
 
     -- Wait until termination of each actor
@@ -223,7 +230,7 @@ procedure T_Mut is
   N_Args : Natural;
   N_Tasks : Positive;
   M_Kind : Mutex_Manager.Mutex_Kind;
-  use type Mutex_Manager.Mutex_Kind;
+  use type Mutex_Manager.Mutex_Kind, Sys_Calls.File_Desc_Kind_List;
 
 begin -- T_Mut
   N_Args := Argument.Get_Nbre_Arg;
@@ -241,6 +248,8 @@ begin -- T_Mut
     Error ("Invalid argument " & Argument.Get_Parameter (Occurence => 1));
     return;
   end if;
+
+  Stdin_Is_A_Tty := Sys_Calls.File_Desc_Kind (Sys_Calls.Stdin) = Sys_Calls.Tty;
 
   if N_Args = 1 then
     -- Default Nb of tasks
