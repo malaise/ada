@@ -20,6 +20,9 @@ procedure T_Async is
   -- Common message type
   subtype Message_Type is String (1 .. 1024);
 
+  -- Set asynchronous stdin
+  procedure Set_Async;
+
   -- TCP stuff
   Local_Port_Def : Tcp_Util.Local_Port;
   Remote_Host_Def : Tcp_Util.Remote_Host;
@@ -124,6 +127,8 @@ procedure T_Async is
     Async_Stdin.Put_Line_Err ("connected");
     -- Only one connection at a time
     Tcp_Util.Abort_Accept (Socket.Tcp, Port_Num);
+    -- Ready to process stdin
+    Set_Async;
   end Accept_Cb;
 
   -- Connection report Cb
@@ -140,8 +145,10 @@ procedure T_Async is
       My_Rece.Set_Callbacks (Tcp_Soc, Read_Cb'Unrestricted_Access,
                                     Discon_Cb'Unrestricted_Access);
       Async_Stdin.Put_Line_Err ("connected");
+      -- Ready to process stdin
+      Set_Async;
     else
-      -- COnnection failure => Abort
+      -- Connection failure => Abort
       Give_Up := True;
     end if;
   end Conn_Cb;
@@ -228,6 +235,12 @@ procedure T_Async is
     end if;
   end Async_Cb;
 
+  -- Set asynchronous stdin
+  procedure Set_Async is
+  begin
+    Async_Stdin.Set_Async (Async_Cb'Unrestricted_Access, Message_Type'Length);
+  end Set_Async;
+
   -- Signal callback
   procedure Signal_Cb is
   begin
@@ -273,7 +286,6 @@ begin
   Give_Up := False;
   Event_Mng.Set_Sig_Term_Callback (Signal_Cb'Unrestricted_Access);
   Open;
-  Async_Stdin.Set_Async (Async_Cb'Unrestricted_Access, Message_Type'Length);
 
   -- Main loop
   loop

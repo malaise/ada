@@ -8,7 +8,8 @@ EXES := adand add_nums alook arbipas beep comp_vars ddir \
  mlbx_overflow one_of_arg pascal pingpong prime \
  random relay rndsok renamer \
  second stat statfile status strcase tcping trail_spaces udp_spy \
- wait wake xml_checker pingpong.stat tcping.stat udp_spy.stat xml_checker.stat
+ wait wake xml_checker pingpong.stat tcping.stat tcp_spy udp_spy.stat \
+ xml_checker.stat
 
 CLIBS := cutil
 CLIBS_renamer := x_mng X11

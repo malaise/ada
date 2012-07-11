@@ -283,32 +283,21 @@ comp -n err nul
 echo "OK"
 
 # t_async
-title t_async...
-xterm -e "t_async -s 20000 > out 2> err" &
+title t_async
+../misc/tcp_spy -hn -db 20000 > out1 2>/dev/null & 
 export PID=$!
-sleep 3.0
-kill -0 $PID 2> err
-grep "No such process" err > /dev/null 2>&1
-if [ $? -eq 0 ] ; then
-  error "Xterm has died"
-fi
-expect \
--c 'spawn telnet localhost 20000; \
-  set timeout 1; \
-  expect "Nothing"
-  send "Toto\n"; \
-  sleep 0.3; \
-  close' > /dev/null
+sleep 1.0
+echo "Toto" | try t_async -c localhost:20000
+sleep 1.0
 kill $PID
-cat > exp << EOF
+cat << EOF > exp
 Toto
 EOF
-comp out exp
-cat > exp << EOF
+cat  << EOF > exp1
 connected
-disconnected
 EOF
-comp err exp
+comp out1 exp
+comp err exp1
 echo "OK"
 
 # Skip some tests
