@@ -4,6 +4,8 @@ Main changes
 
 [horizontal]
 
+*2012/07/10*:: Add automatic test in tests
+
 *2012/06/22*:: Add versioning, statement "assign" and handling of timeout on
 select in tcpchat V2.2
 

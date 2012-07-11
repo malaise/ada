@@ -371,6 +371,9 @@ int_image mod_image integer_image (1)::
 ip_addr (1)::
      Parse IP address or port.
 
+key_pressed (1)::
+     Uses Sys_Calls handling of stdin to get a character asynchronously.
+
 limited_list dynamic_list (3)::
      Dynamic list of (limited) private objects, search/sort.
 

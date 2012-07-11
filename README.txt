@@ -3,9 +3,9 @@ Ada notes
 
 This README file describes briefly the main directories of the Ada contrib.
 
-The software compiles with Ada05 (Gnat GPL 2011) and runs on Unix (Linux).
+The software compiles with Ada05 (Gnat GPL 2012) and runs on Unix (Linux).
 
-Some programs depend on PCRE (Perl Compatible Regular Expressions) and work
+Some programs depend on anchor:XPCRE[] PCRE (Perl Compatible Regular Expressions) and work
 with version 7.8 or above (8.21 is OK).
 
 Programs are rated from 1 (simple) to 3 (very complex), on subjective
@@ -45,23 +45,22 @@ Recursive make
 ~~~~~~~~~~~~~~
 The content of the makefile for applying make to subdirecotries is:
 
-SUBDIRS := c reposit usr
-
-include $(HOME)/Makefiles/dir.mk
+  SUBDIRS := c reposit usr
+  include $(HOME)/Makefiles/dir.mk
 
 Other directives can be added if something has also to be compiled in current
 dir.
 
 C directory (MANDATORY)
 -----------------------
-Four libraries here:
+Four libraries are generated here:
 
 .Lib C util (cutil)
 This lib gathers several low level utility libraries:
 
-- timeval used by other C libraries, for struct timeval operations,
+- timeval, used by other C libraries, for struct timeval operations,
 
-- socket interfaced by Ada Socket package, interfaces socket (tcp, udp,
+- socket, interfaced by Ada Socket package, interfaces socket (tcp, udp,
 ipm, message on tcp, afinet or afux) calls,
 
 - sys_calls, interfaced by Ada Sys_Calls and some other Ada packages, for
@@ -71,7 +70,7 @@ several operating system calls,
 several fds, catches signals...
 
 .Lib X Mng (xmng)
-This lib encapsulates all needed calls to X11, interfaced by X_Mng Ada
+This lib encapsulates all the needed calls to X11, interfaced by X_Mng Ada
 package.
 
 .Lib C Ndbm (cnbdbm)
@@ -79,7 +78,7 @@ This lib interfaces with ndbm C library. The corresponding Ndbm package is not
 used at present (except in test).
 
 .Lib Posix to PCRE (posic2pcre)
-Own binding of PCRE to POSIX API, with extension, interfaced by
+Own binding of xref:XPCRE[PCRE] to POSIX API, with extension, interfaced by
 Regular_Expressions Ada package.
 
 Reposit directory
@@ -116,8 +115,7 @@ Account (3)::
      cheque, credit card (defered) and transfer operations.
 
 Agite (3)::
-     GUI for Git, directory oriented. Access to history and external
-diff tool.
+     GUI for Git, directory oriented. Access to history and external diff tool.
 
 Als (2)::
      Lists, more or less the "ls" way, files and directories. Allow selection
