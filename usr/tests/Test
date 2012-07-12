@@ -284,20 +284,27 @@ echo "OK"
 
 # t_async
 title t_async
-../misc/tcp_spy -hn -db 20000 > out1 2>/dev/null & 
+t_async -n -s 20000 > out1 2>err1 & 
 export PID=$!
-sleep 1.0
-echo "Toto" | try t_async -c localhost:20000
-sleep 1.0
+sleep 0.5
+echo -e "Toto\nTiti\nTata" | try t_async -c localhost:20000
+sleep 0.5
 kill $PID
 cat << EOF > exp
 Toto
+Titi
+Tata
 EOF
 cat  << EOF > exp1
 connected
+disconnected
+EOF
+cat  << EOF > exp2
+connected
 EOF
 comp out1 exp
-comp err exp1
+comp err1 exp1
+comp err exp2
 echo "OK"
 
 # Skip some tests

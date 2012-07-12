@@ -5,11 +5,17 @@ procedure T_Async is
   procedure Usage is
   begin
     Async_Stdin.Put_Line_Err ("Usage: "
-       & Argument.Get_Program_Name & " -c <host>:<port>  |  -s <port>");
-    Async_Stdin.Put_Line_Err ("  <host> ::= <host_name> | <host_address>");
-    Async_Stdin.Put_Line_Err ("  <port> ::= <port_name> | <port_num>");
+       & Argument.Get_Program_Name & " [ <no_stdin> ] <mode>");
+    Async_Stdin.Put_Line_Err ("  <no_stdin> ::= -n");
+    Async_Stdin.Put_Line_Err ("  <mode>     ::= <client> | <server>");
+    Async_Stdin.Put_Line_Err ("  <client>   ::= -c <host>:<port>");
+    Async_Stdin.Put_Line_Err ("  <server>   ::= -s <port>");
+    Async_Stdin.Put_Line_Err ("  <host>     ::= <host_name> | <host_address>");
+    Async_Stdin.Put_Line_Err ("  <port>     ::= <port_name> | <port_num>");
   end Usage;
   Arg_Error : exception;
+  Use_Stdin : Boolean;
+  Mode_Index : Positive;
 
   -- Client or server mode
   Server_Mode : Boolean;
@@ -238,7 +244,9 @@ procedure T_Async is
   -- Set asynchronous stdin
   procedure Set_Async is
   begin
-    Async_Stdin.Set_Async (Async_Cb'Unrestricted_Access, Message_Type'Length);
+    if use_Stdin then
+      Async_Stdin.Set_Async (Async_Cb'Unrestricted_Access, Message_Type'Length);
+    end if;
   end Set_Async;
 
   -- Signal callback
@@ -248,18 +256,27 @@ procedure T_Async is
   end Signal_Cb;
 
 begin
+  if Argument.Get_Nbre_Arg = 3
+  and then Argument.Get_Parameter (1) = "-n" then
+    Use_Stdin := False;
+    Mode_Index := 2;
+  else
+    Use_Stdin := True;
+    Mode_Index := 1;
+  end if;
 
   -- Parse Arg, port name or num
-  if Argument.Get_Nbre_Arg /= 2 then
+  if Argument.Get_Nbre_Arg /=  Mode_Index + 1 then
     raise Arg_Error;
   end if;
 
-  if Argument.Get_Parameter (1) = "-s" then
+  if Argument.Get_Parameter (Mode_Index) = "-s" then
     Server_Mode := True;
     declare
       use type Tcp_Util.Remote_Port_List;
     begin
-      Remote_Port_Def := Ip_Addr.Parse (Argument.Get_Parameter (2));
+      Remote_Port_Def := Ip_Addr.Parse (Argument.Get_Parameter (
+                                                       Mode_Index + 1));
       if Remote_Port_Def.Kind = Tcp_Util.Port_Name_Spec then
         Local_Port_Def := (Tcp_Util.Port_Name_Spec, Remote_Port_Def.Name);
       else
@@ -269,10 +286,10 @@ begin
       when others =>
         raise Arg_Error;
     end;
-  elsif Argument.Get_Parameter (1) = "-c" then
+  elsif Argument.Get_Parameter (Mode_Index) = "-c" then
     begin
       Server_Mode := False;
-      Ip_Addr.Parse (Argument.Get_Parameter (2),
+      Ip_Addr.Parse (Argument.Get_Parameter (Mode_Index + 1),
                      Remote_Host_Def, Remote_Port_Def);
     exception
       when others =>
