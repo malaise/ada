@@ -30,19 +30,22 @@ package Http is
 
   ---------------------------------------------------------------------------
   -- Get the (file) content of an URL.                                     --
+  -- URL must have the format "http://<host>[:<port>]/<path>               --
   -- Result can be Ok (and content), Client error (parsing, connection...) --
   --  or Server error.                                                     --
+  --                                                                       --
   -- Set Environ variable HTTP_TIMEOUT_MS to the overall timeout (default  --
   --  is infinite, but other errors are detected).                         --
   -- Set Environ variable HTTP_CONNECT_TIMEOUT_MS to the connection        --
-  --  (one try, default is 3000).
-  -- Because it waits for replies from HTTp server, this function uses     --
+  --  (one try, default is 3000).                                          --
+  --                                                                       --
+  -- Because it waits for replies from the HTTp server, this function uses --
   --  Event_Mng.Wait, which sets signal handlers. As a consequence:        --
   --  * Non interactive programs shall call                                --
   --    Event_Mng.Reset_Default_Signals_Policy after using this function   --
   --  * X11 programs shall Suspend ALL the X objects X_Line/Con_Io/Afpx    --
   --    before calling this function, then Resume the X objects.           --
-  --  * This function is re-entrant with a mutex                           --
+  --  * This function is not re-entrant and protected by with a mutex.     --
   ---------------------------------------------------------------------------
   function Get (Url : String) return Result_Type;
 end Http;
