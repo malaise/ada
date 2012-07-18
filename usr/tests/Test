@@ -36,7 +36,6 @@ function launch {
 # Interactive tests
 if [ "$1" = "-it" ] ; then
   # Text based
-  launch t_arbitrary
   launch t_control_pool
   launch t_dur_image
   launch t_sorts
@@ -168,6 +167,8 @@ A mod B is +3
 A ** B is  +2187
 EOF
 comp out exp
+comp err nul
+try t_arbitrary -a 1000
 comp err nul
 echo "OK"
 

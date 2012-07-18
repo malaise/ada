@@ -8,6 +8,8 @@ procedure T_Arbitrary is
   begin
     Basic_Proc.Put_Line_Output ("Usage: " & Argument.Get_Program_Name
                                     & " [ <num1> [ <num2> ] ]");
+    Basic_Proc.Put_Line_Output ("   or: " & Argument.Get_Program_Name
+                                    & " -a [ <nb_loops> ]");
     raise Abort_Error;
   end Usage;
 
@@ -80,22 +82,23 @@ procedure T_Arbitrary is
 
   A, B, C, D : Arbitrary.Number;
 
-  Ia, Ib : Integer;
+  Ia, Ib, Ic : Integer;
   Na, Nb : Arbitrary.Number;
 
   Nul : Arbitrary.Number;
 
-  I : Integer;
+  I, Nb_Loops : Natural;
   Ok : Boolean;
 begin
 
-  if Argument.Get_Nbre_Arg > 2 then
+  if Argument.Get_Nbre_Arg < 1
+  or else Argument.Get_Nbre_Arg > 2 then
     Usage;
     return;
   end if;
 
 
-  if Argument.Get_Nbre_Arg >= 1 then
+  if Argument.Get_Parameter(1) /= "-a" then
     -- One or two args
     A := Set (1);
 
@@ -118,58 +121,67 @@ begin
     end loop;
     Basic_Proc.Put_Output (" and" & Arbitrary.Last_Digit (A)'Img);
     Basic_Proc.New_Line_Output;
-  end if;
 
-  if Argument.Get_Nbre_Arg = 2 then
-    -- Two args
-    Basic_Proc.New_Line_Output;
-    B := Set (2);
-    Basic_Proc.Put_Line_Output ("B is        " & Arbitrary.Image(B));
-    Basic_Proc.Put_Line_Output ("abs B is    " & Arbitrary.Image(abs B));
-    Basic_Proc.Put_Line_Output ("-B is       " & Arbitrary.Image(-B));
-    Basic_Proc.Put_Line_Output ("B positive  " & Image(Arbitrary.Is_Positive(A)));
-    begin
-      Arbitrary.Sqrt(B, C, D);
-    exception
-      when Constraint_Error =>
-        Basic_Proc.Put_Line_Output ("Constraint_Error on Sqrt(B)");
-    end;
-    Basic_Proc.Put_Line_Output ("Sqrt(B)     " & Arbitrary.Image(C)
-                        & " remaining "  & Arbitrary.Image(D));
+    if Argument.Get_Nbre_Arg = 2 then
+      -- Two args
+      Basic_Proc.New_Line_Output;
+      B := Set (2);
+      Basic_Proc.Put_Line_Output ("B is        " & Arbitrary.Image(B));
+      Basic_Proc.Put_Line_Output ("abs B is    " & Arbitrary.Image(abs B));
+      Basic_Proc.Put_Line_Output ("-B is       " & Arbitrary.Image(-B));
+      Basic_Proc.Put_Line_Output ("B positive  " & Image(Arbitrary.Is_Positive(A)));
+      begin
+        Arbitrary.Sqrt(B, C, D);
+      exception
+        when Constraint_Error =>
+          Basic_Proc.Put_Line_Output ("Constraint_Error on Sqrt(B)");
+      end;
+      Basic_Proc.Put_Line_Output ("Sqrt(B)     " & Arbitrary.Image(C)
+                          & " remaining "  & Arbitrary.Image(D));
 
-    Basic_Proc.Put_Line_Output ("A =  B is   " & Boolean'Image(A = B));
-    Basic_Proc.Put_Line_Output ("A <  B is   " & Boolean'Image(A < B));
-    Basic_Proc.Put_Line_Output ("A <= B is   " & Boolean'Image(A <= B));
-    Basic_Proc.Put_Line_Output ("A >  B is   " & Boolean'Image(A > B));
-    Basic_Proc.Put_Line_Output ("A >= B is   " & Boolean'Image(A >= B));
+      Basic_Proc.Put_Line_Output ("A =  B is   " & Boolean'Image(A = B));
+      Basic_Proc.Put_Line_Output ("A <  B is   " & Boolean'Image(A < B));
+      Basic_Proc.Put_Line_Output ("A <= B is   " & Boolean'Image(A <= B));
+      Basic_Proc.Put_Line_Output ("A >  B is   " & Boolean'Image(A > B));
+      Basic_Proc.Put_Line_Output ("A >= B is   " & Boolean'Image(A >= B));
 
-    Basic_Proc.Put_Line_Output ("A + B is   " &  Arbitrary.Image(A + B));
-    Basic_Proc.Put_Line_Output ("A - B is   " &  Arbitrary.Image(A - B));
-    Basic_Proc.Put_Line_Output ("A * B is   " &  Arbitrary.Image(A * B));
-    begin
-      Arbitrary.Div (A, B, C, D);
-      Basic_Proc.Put_Line_Output ("A / B is   " &  Arbitrary.Image(C));
-      Basic_Proc.Put_Line_Output ("A % B is   " &  Arbitrary.Image(D));
-      Basic_Proc.Put_Line_Output ("A rem B is " &  Arbitrary.Image(A rem B));
-      Basic_Proc.Put_Line_Output ("A mod B is " &  Arbitrary.Image(A mod B));
-    exception
-      when Constraint_Error =>
-        Basic_Proc.Put_Line_Output ("Constraint_Error on division");
-    end;
-    begin
-      Basic_Proc.Put_Line_Output ("A ** B is  " &  Arbitrary.Image(A ** B));
-    exception
-      when Constraint_Error =>
-        Basic_Proc.Put_Line_Output ("Constraint_Error on **");
-    end;
-  end if;
+      Basic_Proc.Put_Line_Output ("A + B is   " &  Arbitrary.Image(A + B));
+      Basic_Proc.Put_Line_Output ("A - B is   " &  Arbitrary.Image(A - B));
+      Basic_Proc.Put_Line_Output ("A * B is   " &  Arbitrary.Image(A * B));
+      begin
+        Arbitrary.Div (A, B, C, D);
+        Basic_Proc.Put_Line_Output ("A / B is   " &  Arbitrary.Image(C));
+        Basic_Proc.Put_Line_Output ("A % B is   " &  Arbitrary.Image(D));
+        Basic_Proc.Put_Line_Output ("A rem B is " &  Arbitrary.Image(A rem B));
+        Basic_Proc.Put_Line_Output ("A mod B is " &  Arbitrary.Image(A mod B));
+      exception
+        when Constraint_Error =>
+          Basic_Proc.Put_Line_Output ("Constraint_Error on division");
+      end;
+      begin
+        Basic_Proc.Put_Line_Output ("A ** B is  " &  Arbitrary.Image(A ** B));
+      exception
+        when Constraint_Error =>
+          Basic_Proc.Put_Line_Output ("Constraint_Error on **");
+      end;
+    end if;
 
-  if Argument.Get_Nbre_Arg /= 0 then
-    -- Done if any arg
+    -- Done if 1st arg is not -a
     return;
   end if;
 
   -- No arg => automatic test
+  Nb_Loops := 0;
+  if Argument.Get_Nbre_Arg = 2 then
+    begin
+      Nb_Loops := Positive'Value (Argument.Get_Parameter(2));
+    exception
+      when Constraint_Error =>
+        Basic_Proc.Put_Line_Output ("Invalid value for nb_loops");
+        Basic_Proc.Set_Error_Exit_Code;
+        return;
+    end;
+  end if;
   Key_Pressed.Open (False);
 
   -- Setting from different types
@@ -205,6 +217,7 @@ begin
 
   -- Loop of comparisons
   Rnd.Randomize;
+  I := 0;
 
   loop
     Ia := Random;
@@ -271,21 +284,21 @@ begin
 
     -- Pow
     begin
-      I := Ia ** Ib;
+     Ic := Ia ** Ib;
       Ok := True;
     exception
       when Constraint_Error =>
-        -- Integers too big
+        -- Integer too big
         Ok := False;
     end;
     if Ok then
-      Check (Na, "**",  Nb, Na ** Nb,  I);
+      Check (Na, "**",  Nb, Na ** Nb,  Ic);
     end if;
 
     -- Sqrt
     if Ib >= 0 then
-      I := Integer(My_Math.Trunc (My_Math.Sqrt (My_Math.Real(Ib))));
-      Check (Nul, "Sqrt", Nb, Arbitrary.Sqrt (Nb), I);
+      Ic := Integer(My_Math.Trunc (My_Math.Sqrt (My_Math.Real(Ib))));
+      Check (Nul, "Sqrt", Nb, Arbitrary.Sqrt (Nb), Ic);
     else
       begin
         A := Arbitrary.Sqrt (Nb);
@@ -300,12 +313,14 @@ begin
     end if;
 
     -- Sleep a bit when B is 0
-    if Ib = 0 then
+    if Ib = 0 and then Nb_Loops = 0 then
       Basic_Proc.Put_Line_Output ("Waiting a bit, hit a key to stop...");
       exit when Key_Pressed.Key_Pressed;
       delay 1.0;
       exit when Key_Pressed.Key_Pressed;
     end if;
+    I := I + 1;
+    exit when I = Nb_Loops;
   end loop;
 
   Key_Pressed.Close;
