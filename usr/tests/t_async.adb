@@ -244,7 +244,7 @@ procedure T_Async is
   -- Set asynchronous stdin
   procedure Set_Async is
   begin
-    if use_Stdin then
+    if Use_Stdin then
       Async_Stdin.Set_Async (Async_Cb'Unrestricted_Access, Message_Type'Length);
     end if;
   end Set_Async;
