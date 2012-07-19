@@ -1,5 +1,4 @@
-with My_Io, Sorts, Rnd, Normal, Key_Pressed;
-use My_Io;
+with Basic_Proc, Sorts, Rnd, Normal, Key_Pressed, Argument;
 procedure T_Sorts is
 
   subtype Index is Integer range 1 .. 25;
@@ -14,8 +13,25 @@ procedure T_Sorts is
   package Tab_Sorts is new Sorts (Integer, Index, "<", Arr);
   Ok : Boolean;
   Current_Sort : String (1 .. 3);
+
+  Nb_Loops, Id_Loop : Natural;
+
 begin
+  Nb_Loops := 0;
+  if Argument.Get_Nbre_Arg = 1 then
+    begin
+      Nb_Loops := Natural'Value (Argument.Get_Parameter(1));
+    exception
+      when Constraint_Error =>
+        Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
+          & " [ <nb_loops> ]");
+        Basic_Proc.Set_Error_Exit_Code;
+        return;
+    end;
+  end if;
+
   Key_Pressed.Open (False);
+  Id_Loop := 0;
 
   loop
 
@@ -45,29 +61,37 @@ begin
     end loop;
 
     if not Ok then
-      My_Io.Put_Line ("ERROR:");
+      Basic_Proc.Put_Line_Error ("ERROR:");
 
-      My_Io.Put_Line ("      INIT    BUBBLE      HEAP     QUICK");
+      Basic_Proc.Put_Line_Error ("      INIT    BUBBLE      HEAP     QUICK");
       for I in 1 .. Last loop
-        My_Io.Put (Normal(Init(I),    10));
-        My_Io.Put (Normal(Res_Bul(I), 10));
-        My_Io.Put (Normal(Res_Tas(I), 10));
-        My_Io.Put (Normal(Res_Rap(I), 10));
-        My_Io.New_Line;
+        Basic_Proc.Put_Error (Normal(Init(I),    10));
+        Basic_Proc.Put_Error (Normal(Res_Bul(I), 10));
+        Basic_Proc.Put_Error (Normal(Res_Tas(I), 10));
+        Basic_Proc.Put_Error (Normal(Res_Rap(I), 10));
+        Basic_Proc.New_Line_Error;
       end loop;
+      Basic_Proc.Set_Error_Exit_Code;
       exit;
     else
       for I in 1 .. Last loop
-        My_Io.Put (Normal(Init(I), 3));
+        Basic_Proc.Put_Output (Normal(Init(I), 3));
       end loop;
-      My_Io.New_Line;
+      Basic_Proc.New_Line_Output;
       for I in 1 .. Last loop
-        My_Io.Put (Normal(Res_Rap(I), 3));
+        Basic_Proc.Put_Output (Normal(Res_Rap(I), 3));
       end loop;
-      My_Io.Put_Line (" OK");
-      My_Io.New_Line;
-      delay 1.0;
+      Basic_Proc.Put_Line_Output (" OK");
+      Basic_Proc.New_Line_Output;
+      Basic_Proc.Flush_Output;
+
+      Id_Loop := Id_Loop + 1;
+      exit when Id_Loop = Nb_Loops;
       exit when Key_Pressed.Key_Pressed;
+      if Nb_Loops = 0 then
+        delay 1.0;
+        exit when Key_Pressed.Key_Pressed;
+      end if;
     end if;
 
   end loop;
@@ -76,12 +100,13 @@ begin
 
 exception
   when others =>
-    Key_Pressed.Close;
-    My_Io.Put_Line ("Exception when sorting with " & Current_Sort & " on:");
+    Basic_Proc.Put_Line_Error ("Exception when sorting with "
+                             & Current_Sort & " on:");
     for I in 1 .. Last loop
-      My_Io.Put (Normal(Init(I), 3));
+      Basic_Proc.Put_Error (Normal(Init(I), 3));
     end loop;
-    My_Io.New_Line;
+    Basic_Proc.New_Line_Error;
+    Key_Pressed.Close;
     raise;
 end T_Sorts;
 

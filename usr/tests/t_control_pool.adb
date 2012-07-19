@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with Rnd, Event_Mng, Control_Pool, Sys_Calls, Key_Pressed;
+with Rnd, Event_Mng, Control_Pool, Sys_Calls;
 procedure T_Control_Pool is
 
   subtype Pool_Range is Positive range 1 .. 5;
@@ -9,6 +9,12 @@ procedure T_Control_Pool is
   task type Client_Task is
     entry Start (Client_No : in Client_Range; Client_Pid : out Sys_Calls.Pid);
   end Client_Task;
+
+  Done : Boolean := False;
+  procedure Term_Cb is
+  begin
+    Done := True;
+  end Term_Cb;
 
   task body Client_Task is
     My_No : Client_Range;
@@ -40,6 +46,7 @@ procedure T_Control_Pool is
         Sys_Calls.Put_Line_Output (My_No'Img & ": releasing " & Pool_No'Img);
         Pool.Release (Pool_No);
       end if;
+      exit when Done;
     end loop;
     Sys_Calls.Put_Line_Output (My_No'Img & ": exit");
   end Client_Task;
@@ -49,21 +56,14 @@ procedure T_Control_Pool is
 
 begin
   Rnd.Randomize;
+  Event_Mng. Set_Sig_Term_Callback (Term_Cb'Unrestricted_Access);
 
   for I in Client_Range loop
     Clients(I).Start(I, Pids(I));
   end loop;
 
-  Key_Pressed.Open (False);
   loop
-    Event_Mng.Wait (1_000);
-    exit when Key_Pressed.Key_Pressed;
-  end loop;
-  Key_Pressed.Close;
-
-  Sys_Calls.Put_Line_Output ("Aborting");
-  for I in Client_Range loop
-    abort Clients(I);
+    exit when Event_Mng.Wait (1_000) and then Done;
   end loop;
 
 end T_Control_Pool;

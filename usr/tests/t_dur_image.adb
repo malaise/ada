@@ -1,11 +1,26 @@
-with Basic_Proc, Rnd, Dur_Image, Key_Pressed;
+with Basic_Proc, Rnd, Dur_Image, Key_Pressed, Argument;
 procedure T_Dur_Image is
   First : Boolean := True;
   D : Duration;
   N : Natural;
+  Nb_Loops, Id_Loop : Natural;
 begin
+  Nb_Loops := 0;
+  if Argument.Get_Nbre_Arg = 1 then
+    begin
+      Nb_Loops := Natural'Value (Argument.Get_Parameter(1));
+    exception
+      when Constraint_Error =>
+        Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
+          & " [ <nb_loops> ]");
+        Basic_Proc.Set_Error_Exit_Code;
+        return;
+    end;
+  end if;
+
   Rnd.Randomize;
   Key_Pressed.Open (False);
+  Id_Loop := 0;
 
   -- Loop of random durations
   loop
@@ -25,9 +40,14 @@ begin
                                           & "<");
       end loop;
     end loop;
+    Id_Loop := Id_Loop + 1;
+    exit when Id_Loop = Nb_Loops;
     exit when Key_Pressed.Key_Pressed;
-    Basic_Proc.Put_Line_Output ("Hit a key to stop.");
-    delay (1.0);
+    if Nb_Loops = 0 then
+      Basic_Proc.Put_Line_Output ("Hit a key to stop.");
+      delay (1.0);
+    end if;
+    exit when Key_Pressed.Key_Pressed;
   end loop;
 
   Key_Pressed.Close;

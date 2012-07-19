@@ -32,21 +32,8 @@ function launch {
   echo "$1 Done."
 }
 
-
-# Interactive tests
-if [ "$1" = "-it" ] ; then
-  # Text based
-  launch t_control_pool
-  launch t_dur_image
-  launch t_sorts
-  launch t_utf16
-  sleep 1
-  launch t_utf8
-  clean
-  echo "Done."
-  exit
-elif [ "$1" = "-ix" ] ; then
-  # X11 based
+if [ "$1" = "-ix" ] ; then
+  # X11 based => interactive
   launch -n t_x
   launch -n t_color
   launch -n t_key
@@ -60,13 +47,12 @@ elif [ "$1" = "-ix" ] ; then
   echo "Done."
   exit
 elif [ "$1" != "" ] ; then
-  echo "Usage: `basename $0` [ -it | -ix ]" 2>&1
+  echo "Usage: `basename $0` [ -ix ]" 2>&1
   exit 1
 fi
 
-# Utilities for automatic tests
 echo -n > nul
-
+# Utilities for automatic tests
 # Title
 function title {
   echo -n $* ": "
@@ -450,6 +436,16 @@ try t_cond
 comp err nul
 echo "OK"
 
+# t_control_pool
+title t_control_pool...
+t_control_pool >out 2>err &
+PID=$!
+sleep 3
+kill $PID
+sleep 7
+comp err nul
+echo "OK"
+
 # t_conv
 title t_conv
 try t_conv
@@ -580,6 +576,12 @@ echo "OK"
 # t_door
 title t_door...
 try t_door
+comp err nul
+echo "OK"
+
+# t_dur_image
+title t_dur_image
+try t_dur_image 1000
 comp err nul
 echo "OK"
 
@@ -1248,6 +1250,12 @@ comp out exp
 comp err nul
 echo "OK"
 
+# t_sorts
+title t_sorts
+try t_sorts 10000
+comp err nul
+echo "OK"
+
 # t_state_machine
 title t_state_machine
 echo  -e "success\nfailure\nsuccess\n" | try t_state_machine
@@ -1675,6 +1683,18 @@ cat << EOF > exp
 U+0000E7 : 00E7      : C3 A7       : ç
 EOF
 comp out exp
+comp err nul
+echo "OK"
+
+# t_utf8
+title t_utf8
+try t_utf8 10000
+comp err nul
+echo "OK"
+
+# t_utf16
+title t_utf16
+try t_utf16 1000
 comp err nul
 echo "OK"
 

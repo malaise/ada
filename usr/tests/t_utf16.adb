@@ -1,5 +1,5 @@
 with Ada.Wide_Text_Io;
-with Int_Io, Basic_Proc, Utf_16, Rnd, Key_Pressed;
+with Int_Io, Basic_Proc, Utf_16, Rnd, Key_Pressed, Argument;
 procedure T_Utf16 is
 
   procedure Put (N : Natural) is
@@ -23,7 +23,22 @@ procedure T_Utf16 is
              16#75#, 16#F9#, 16#FC#);
 
   U1, U2 : Utf_16.Unicode_Number;
+
+  Nb_Loops, Id_Loop : Natural;
 begin
+  Nb_Loops := 0;
+  if Argument.Get_Nbre_Arg = 1 then
+    begin
+      Nb_Loops := Natural'Value (Argument.Get_Parameter(1));
+    exception
+      when Constraint_Error =>
+        Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
+          & " [ <nb_loops> ]");
+        Basic_Proc.Set_Error_Exit_Code;
+        return;
+    end;
+  end if;
+
   Basic_Proc.Put_Line_Output (Str);
   for I in Ucodes'Range loop
     declare
@@ -39,7 +54,8 @@ begin
   Basic_Proc.New_Line_Output;
 
   Rnd.Randomize;
-Key_Pressed.Open (False);
+  Key_Pressed.Open (False);
+  Id_Loop := 0;
   loop
     begin
       U1 := Rnd.Int_Random (Utf_16.Unicode_Number'First,
@@ -65,6 +81,8 @@ Key_Pressed.Open (False);
         end if;
       end;
       exit when Key_Pressed.Key_Pressed;
+      Id_Loop := Id_Loop + 1;
+      exit when Id_Loop = Nb_Loops;
     exception
       when Utf_16.Excluded_Non_Character =>
         null;

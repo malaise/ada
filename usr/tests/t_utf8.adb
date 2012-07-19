@@ -1,4 +1,4 @@
-with Int_Io, Basic_Proc, Utf_8, Rnd, Key_Pressed;
+with Int_Io, Basic_Proc, Utf_8, Rnd, Key_Pressed, Argument;
 procedure T_Utf8 is
 
   procedure Put (N : Natural) is
@@ -22,7 +22,22 @@ procedure T_Utf8 is
              16#75#, 16#F9#, 16#FC#);
 
   U1, U2 : Utf_8.Unicode_Number;
+
+  Nb_Loops, Id_Loop : Natural;
 begin
+  Nb_Loops := 0;
+  if Argument.Get_Nbre_Arg = 1 then
+    begin
+      Nb_Loops := Natural'Value (Argument.Get_Parameter(1));
+    exception
+      when Constraint_Error =>
+        Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
+          & " [ <nb_loops> ]");
+        Basic_Proc.Set_Error_Exit_Code;
+        return;
+    end;
+  end if;
+
   Basic_Proc.Put_Line_Output (Str);
   for I in Ucodes'Range loop
     declare
@@ -39,6 +54,7 @@ begin
 
   Rnd.Randomize;
   Key_Pressed.Open (False);
+  Id_Loop := 0;
   loop
     U1 := Rnd.Int_Random (Utf_8.Unicode_Number'First,
                           Utf_8.Unicode_Number'Last);
@@ -63,6 +79,8 @@ begin
       end if;
     end;
     exit when Key_Pressed.Key_Pressed;
+    Id_Loop := Id_Loop + 1;
+    exit when Id_Loop = Nb_Loops;
   end loop;
 
   Basic_Proc.Flush_Output;
