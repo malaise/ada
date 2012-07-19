@@ -1,4 +1,4 @@
-with Basic_Proc, Con_Io, Argument, Mixed_Str;
+with Con_Io, Argument, Mixed_Str;
 procedure T_Color is
   Console : aliased Con_Io.Console;
   Screen : Con_Io.Window;
@@ -36,12 +36,8 @@ begin
 
     Screen.Move;
     R := Screen.Get;
-    exit when R.Mvt /= Con_Io.Refresh;
+    exit when R.Mvt = Con_Io.Break;
   end loop;
-  Basic_Proc.Put_Line_Output ("Exiting in 1 s");
-  delay 1.0;
   Console.Close;
-  Basic_Proc.Put_Line_Output ("Console destroyed");
-
 end T_Color;
 

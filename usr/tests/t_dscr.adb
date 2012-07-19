@@ -75,6 +75,7 @@ begin
 
   Set_Dscr(Dscr_No);
 
+  One_Dscr:
   loop
     Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result, Redisplay);
     Redisplay := False;
@@ -82,12 +83,19 @@ begin
       when Afpx.Keyboard =>
         case Ptg_Result.Keyboard_Key is
           when Afpx.Return_Key =>
-            null;
-          when Afpx.Escape_Key =>
-            Dscr_No := Dscr_No + 1;
-            Set_Dscr(Dscr_No);
-          when Afpx.Break_Key =>
-            exit;
+            Next_Dscr:
+            loop
+              Dscr_No := Dscr_No + 1;
+              begin
+                Set_Dscr(Dscr_No);
+                exit Next_Dscr;
+              exception
+                when Afpx.No_Descriptor =>
+                  exit One_Dscr when Dscr_No > 21;
+              end;
+            end loop Next_Dscr;
+          when Afpx.Escape_Key | Afpx.Break_Key =>
+            exit One_Dscr;
         end case;
       when Afpx.Mouse_Button =>
         null;
@@ -96,7 +104,7 @@ begin
       when Afpx.Refresh =>
         Redisplay := True;
     end case;
-  end loop;
+  end loop One_Dscr;
 
 end T_Dscr;
 

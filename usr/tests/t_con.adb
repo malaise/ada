@@ -171,28 +171,31 @@ procedure T_Con is
           Con_Io.Current, Con_Io.Color_Of ("Red"), Delt);
     end loop;
 
+    if Stat = Con_Io.Break then
+      Console.Close;
+    else
+      Console.Enable_Motion_Events (False);
+      for I in 1 .. 3 loop
+        W1.Clear;
+        W1.Move (6 - I, 2);
+        W1.Put ("Exiting", Con_Io.Color_Of ("Red"),
+                    Con_Io.Color_Of ("Dark_Green"));
+        W1.Get (Str(1..0), Last, Stat, Pos, Ins,
+           Con_Io.Current, Con_Io.Color_Of ("Red"),
+           (Delay_Kind    => Timers.Delay_Sec,
+            Clock         => null,
+            Period        => Con_Io.No_Period,
+            Delay_Seconds => 3.0) );
+      end loop;
 
-    Console.Enable_Motion_Events (False);
-    for I in 1 .. 3 loop
-      W1.Clear;
-      W1.Move (6 - I, 2);
-      W1.Put ("Exiting", Con_Io.Color_Of ("Red"),
-                  Con_Io.Color_Of ("Dark_Green"));
-      W1.Get (Str(1..0), Last, Stat, Pos, Ins,
-         Con_Io.Current, Con_Io.Color_Of ("Red"),
-         (Delay_Kind    => Timers.Delay_Sec,
-          Clock         => null,
-          Period        => Con_Io.No_Period,
-          Delay_Seconds => 3.0) );
-    end loop;
+      Console.Close;
+      delay 3.0;
 
-    Console.Close;
-    delay 3.0;
-
-    Console.Open;
-    delay 2.0;
-    Console.Close;
-    delay 1.0;
+      Console.Open;
+      delay 2.0;
+      Console.Close;
+      delay 1.0;
+    end if;
 
     My_Io.Put_Line (Me'Img & " Terminated");
 

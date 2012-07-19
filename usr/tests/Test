@@ -23,26 +23,35 @@ function launch {
    null=1
    shift
   fi 
-  echo "Sarting $1:"
+  local command=$1
+  local help="$2"
+  shift
+  shift
+
+  echo "Sarting $command ($help):"
   if [ $null -eq 1 ] ; then
-    $* > /dev/null
+    $command $* > /dev/null
   else
-    $* 
+    $command $* 
   fi
-  echo "$1 Done."
+  res=$?
+  if [ $res -ne 0 ] ; then
+    error "Command $command has failed."
+  fi
+  echo "$command Done."
 }
 
 if [ "$1" = "-ix" ] ; then
   # X11 based => interactive
-  launch -n t_x
-  launch -n t_color
-  launch -n t_key
-  launch -n t_con
-  launch -n t_dscr
-  launch -n t_afpx
-  launch -n t_curve
-  launch -n t_select_file
-  launch -n t_timers
+  launch -n t_x "Click in upper-left corner to stop"
+  launch -n t_color "Hit Ctrl-C to stop"
+  launch -n t_key "Hit Ctrl-C to stop"
+  launch -n t_con "Enter 'exit' in each window to stop"
+  launch -n t_dscr "Hit Return to change Dscr, Esc to stop"
+  launch -n t_afpx "Click in 'EXIT' button to stop"
+  launch -n t_curve "Hit Esc to stop"
+  launch -n t_select_file "Click in 'CANCEL' button to stop"
+  launch -n t_timers "Hit Esc to Suspend timers, Ctrl-C to stop"
   clean
   echo "Done."
   exit
