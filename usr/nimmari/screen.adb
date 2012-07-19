@@ -41,14 +41,10 @@ package body Screen is
     use Afpx;
     use type Common.Game_Kind_List;
   begin
-    begin
-      if Get_Descriptor /= 2 then
-        Use_Descriptor (2);
-      end if;
-    exception
-      when Afpx.No_Descriptor =>
-        Use_Descriptor (2);
-    end;
+    if not Is_Descriptor_Set
+    or else Get_Descriptor /= 2 then
+      Use_Descriptor (2);
+    end if;
     Encode_Field (19, (0,  1), "You: " & Normal (Scores(Common.Human), 3));
     Encode_Field (19, (0, 13), "Me: " & Normal (Scores(Common.Machine), 3));
     Clear_Field (20);
