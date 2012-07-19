@@ -23,7 +23,7 @@ extern int time_to_tm (const time_t *the_time_p, my_tm_t *my_tm_p) {
   tm_p = gmtime (the_time_p);
 
   if (tm_p == (struct tm *) NULL) {
-    return (-1);
+    return (ERROR);
   } else {
     my_tm_p->tm_sec  = tm_p->tm_sec;
     my_tm_p->tm_min  = tm_p->tm_min;
@@ -31,16 +31,27 @@ extern int time_to_tm (const time_t *the_time_p, my_tm_t *my_tm_p) {
     my_tm_p->tm_mday = tm_p->tm_mday;
     my_tm_p->tm_mon  = tm_p->tm_mon + 1; /* mon is 0-11 in struct tm */
     my_tm_p->tm_year = tm_p->tm_year + 1900;
-    return (0);
+    return OK;
   }
 }
 
-extern int set_blocking (int fd, int blocking) {
+extern boolean get_blocking (int fd) {
+   int flg;
+
+  flg = fcntl (fd, F_GETFL, 0);
+  if (flg < 0) {
+    return ERROR;
+  }
+
+  return ((flg & O_NONBLOCK) != 0);
+}
+
+extern int set_blocking (int fd, boolean blocking) {
   int flg;
 
   flg = fcntl (fd, F_GETFL, 0);
   if (flg < 0) {
-    return (-1);
+    return ERROR;
   }
 
   if (blocking) {
@@ -50,23 +61,23 @@ extern int set_blocking (int fd, int blocking) {
   }
 
   if (fcntl (fd, F_SETFL, flg)  == -1) {
-    return (-1);
+    return ERROR;
   }
 
-  return 0;
+  return OK;
 
 }
 
 extern int set_tty_attr (int fd, int mode) {
 
   struct termios termattr;
-  int blk;
+  int set_blk;
 
   for (;;) {
     if (tcgetattr(fd, &termattr) == 0) {
       break;
     } else if (errno != EINTR) {
-      return (-1);
+      return ERROR;
     }
   }
 
@@ -74,55 +85,55 @@ extern int set_tty_attr (int fd, int mode) {
     case NORMAL:
       termattr.c_lflag |= ICANON;
       termattr.c_lflag |= ECHO;
-      blk = 1;
+      set_blk = TRUE;
     break;
     case NOECHO:
       termattr.c_lflag |= ICANON;
       termattr.c_lflag &= ~ECHO;
-      blk = 1;
+      set_blk = TRUE;
     break;
     case CHAR:
       termattr.c_lflag &= ~ICANON;
       termattr.c_lflag |= ECHO;
       termattr.c_cc[VMIN] = 1;
       termattr.c_cc[VTIME]= 0;
-      blk = 1;
+      set_blk = TRUE;
     break;
     case CHARNO:
       termattr.c_lflag &= ~ICANON;
       termattr.c_lflag &= ~ECHO;
       termattr.c_cc[VMIN] = 1;
       termattr.c_cc[VTIME]= 0;
-      blk = 1;
+      set_blk = TRUE;
     break;
     case ASYNC:
       termattr.c_lflag &= ~ICANON;
       termattr.c_lflag |= ECHO;
       termattr.c_cc[VMIN] = 1;
       termattr.c_cc[VTIME]= 0;
-      blk = 0;
+      set_blk = FALSE;
     break;
     case TRANSP:
       termattr.c_lflag &= ~ICANON;
       termattr.c_lflag &= ~ECHO;
       termattr.c_cc[VMIN] = 1;
       termattr.c_cc[VTIME]= 0;
-      blk = 0;
+      set_blk = FALSE;
     break;
     default:
       errno = EINVAL;
-      return (-1);
+      return ERROR;
   }
 
   for (;;) {
     if (tcsetattr (fd, TCSANOW, &termattr) == 0) {
       break;
     } else if (errno != EINTR) {
-      return (-1);
+      return ERROR;
     }
   }
 
-  return set_blocking (fd, blk);
+  return set_blocking (fd, set_blk);
 }
 
 extern int get_immediate (int fd) {
@@ -153,7 +164,7 @@ extern int read_dir (DIR *dir, char *name) {
 
   dir_ent = readdir (dir);
   if (dir_ent == NULL) {
-    return (-1);
+    return ERROR;
   }
 
   strcpy (name, dir_ent->d_name);
@@ -196,7 +207,7 @@ extern int file_stat(const char *path, simple_stat *simple_stat_struct) {
   simple_stat_struct->mtime = stat_struct.st_mtime;
   simple_stat_struct->size = (unsigned long)stat_struct.st_size;
 
-  return (0);
+  return OK;
 
 }
 
@@ -212,7 +223,7 @@ extern int fd_stat(int fd, simple_stat *simple_stat_struct) {
   simple_stat_struct->mtime = stat_struct.st_mtime;
   simple_stat_struct->size = stat_struct.st_mtime;
 
-  return (0);
+  return OK;
 
 }
 
@@ -257,7 +268,7 @@ extern int fd_int_read (int fd, void *buffer, int nbytes) {
     if (res >= 0) {
       return (int)res;
     } else if (errno != EINTR) {
-      return -1;
+      return ERROR;
     }
   }
 }
@@ -269,7 +280,7 @@ extern int fd_int_write (int fd, void *buffer, int nbytes) {
     if (res >= 0) {
       return (int)res;
     } else if (errno != EINTR) {
-      return -1;
+      return ERROR;
     }
   }
 }
@@ -283,7 +294,7 @@ extern int fd_pipe (int *fd1, int *fd2) {
       *fd2 = fds[1];
       return 0;
     } else if (errno != EINTR) {
-      return -1;
+      return ERROR;
     }
   }
 }
@@ -293,7 +304,7 @@ extern int fd_close (int fd) {
     if (close (fd) == 0) {
       return 0;
     } else if (errno != EINTR) {
-      return -1;
+      return ERROR;
     }
   }
 }
@@ -303,7 +314,7 @@ extern int procreate (void) {
 
   pid = fork();
   if (pid == -1) {
-    return 0;
+    return OK;
   } else if (pid > 0) {
     return pid;
   } else {

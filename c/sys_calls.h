@@ -1,6 +1,8 @@
 #ifndef _SYS_CALLS_H_
 #define _SYS_CALLS_H_
 
+#include "boolean.h"
+
 /* Common to several */
 #define OK  (0)
 #define ERROR  (-1)
@@ -17,7 +19,8 @@ typedef struct {
 extern int time_to_tm (const time_t *the_time_p, my_tm_t *my_tm_p);
 
 
-extern int set_blocking (int fd, int blocking);
+extern int set_blocking (int fd, boolean blocking);
+extern boolean get_blocking (int fd);
 
 
 #define NORMAL 0
