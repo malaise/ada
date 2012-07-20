@@ -376,13 +376,33 @@ package body Limited_List is
     else
       case Where is
         when Next =>
-          New_Pos := List.First;
-          New_Pos_First := 1;
-          New_Pos_Last := List_Length(List);
+          if abs (Number - List.Pos_First) > List.Pos_First / 2 then
+            New_Pos := List.First;
+            New_Pos_First := 1;
+            New_Pos_Last := List_Length(List);
+          elsif Number < List.Pos_First then
+            -- Optim: Better move backwards from current
+            Move_To (List, Prev, List.Pos_First - (Number + 1), True);
+            return;
+          else
+            -- Optim: Better move forward from current
+            Move_To (List, Next, (Number + 1) - List.Pos_First, True);
+            return;
+          end if;
         when Prev =>
-          New_Pos := List.Last;
-          New_Pos_First := List_Length(List);
-          New_Pos_Last := 1;
+          if abs (Number - List.Pos_Last) > List.Pos_Last / 2 then
+            New_Pos := List.Last;
+            New_Pos_First := List_Length(List);
+            New_Pos_Last := 1;
+          elsif Number < List.Pos_Last then
+            -- Optim: Better move forward from current
+            Move_To (List, Next, List.Pos_Last - (Number + 1), True);
+            return;
+          else
+            -- Optim: Better move backwards from current
+            Move_To (List, Prev, (Number + 1) - List.Pos_First, True);
+            return;
+          end if;
       end case;
     end if;
     -- Move
