@@ -2,6 +2,8 @@
 with Arbitrary.Prime_List;
 package body Arbitrary.Factors is
 
+  Iterator : Arbitrary.Prime_List.Iterator;
+
   -- Search a number
   procedure Search is new Nb_List_Mng.Search("=");
 
@@ -35,8 +37,8 @@ package body Arbitrary.Factors is
     if C = One then
       L.Insert (One);
     else
-      T := Arbitrary.Prime_List.Next;
-      T := Arbitrary.Prime_List.Next;
+      Iterator.Next (T);
+      Iterator.Next (T);
       loop
         if C rem T = Zero then
           -- Insert this factor and try again with it
@@ -45,13 +47,13 @@ package body Arbitrary.Factors is
           exit when C = One;
         else
           -- Try next factor
-          T := Arbitrary.Prime_List.Next;
+          Iterator.Next (T);
         end if;
       end loop;
     end if;
     -- Rewind lists
     Rewind (L);
-    Arbitrary.Prime_List.Rewind;
+    Iterator.Rewind;
   end Decompose;
 
 

@@ -25,6 +25,15 @@ procedure Prime is
   -- Lists of prime factors
   L1, L2, Lr : Plm.List_Type;
 
+  -- Iterator in Prime_List
+  Iterator : Arbitrary.Prime_List.Iterator;
+  function Get_Next return Positive_Number is
+    N : Positive_Number;
+  begin
+    Iterator.Next (N);
+    return N;
+  end Get_Next;
+
   -- Help
   procedure Usage is
   begin
@@ -145,12 +154,12 @@ begin
     when List_All =>
       -- List all prime numbers
       loop
-        Put_Line (Arbitrary.Prime_List.Next);
+        Put_Line (Get_Next);
       end loop;
     when List =>
       -- List prime numbers up to N1
       loop
-        N2 := Arbitrary.Prime_List.Next;
+        N2 := Get_Next;
         exit when N2 > N1;
         Put_Line (N2);
       end loop;
@@ -158,7 +167,7 @@ begin
     when From =>
       -- List prime numbers from N1 included
       loop
-        N2 := Arbitrary.Prime_List.Next;
+        N2 := Get_Next;
         if N2 >= N1 then
           Put_Line (N2);
         end if;
@@ -166,10 +175,10 @@ begin
 
     when Is_Prime =>
       -- Check if N1 is prime
-      N2 := Arbitrary.Prime_List.Next;
+      N2 := Get_Next;
       if N1 /= One then
         loop
-          N2 := Arbitrary.Prime_List.Next;
+          N2 := Get_Next;
           exit when N1 rem N2 = Zero;
         end loop;
       end if;
@@ -183,7 +192,7 @@ begin
     when Next =>
       -- Look for first prime number > N1
       loop
-        N2 := Arbitrary.Prime_List.Next;
+        N2 := Get_Next;
         exit when N2 > N1;
       end loop;
       Basic_Proc.Put_Line_Output (Image (N2));
@@ -191,7 +200,7 @@ begin
       -- Look for last prime number < N1
       N3 := One;
       loop
-        N2 := Arbitrary.Prime_List.Next;
+        N2 := Get_Next;
         exit when N2 >= N1;
         N3 := N2;
       end loop;

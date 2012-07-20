@@ -1,17 +1,14 @@
 with Dynamic_List;
 package body Arbitrary.Prime_List is
 
-
   package Prime_Dyn_List_Mng is new Dynamic_List(Positive_Number);
   package Prime_List_Mng renames Prime_Dyn_List_Mng.Dyn_List;
   The_List : Prime_List_Mng.List_Type;
-  Need_Search : Boolean := True;
 
   -- Rewind the list of prime numbers found so far
   procedure Rewind is
   begin
     The_List.Rewind (False);
-    Need_Search := The_List.Is_Empty;
   end Rewind;
 
   -- Read item from list
@@ -29,7 +26,6 @@ package body Arbitrary.Prime_List is
   begin
     The_List.Rewind (False, Prime_List_Mng.Prev);
     The_List.Insert (N);
-    Need_Search := True;
   end Append;
 
   Zero : constant Number := Arbitrary.Zero;
@@ -63,16 +59,7 @@ package body Arbitrary.Prime_List is
     Res, Tmp : Positive_Number;
     Is_Prime : Boolean;
     Square : Positive_Number;
-    Moved : Boolean;
   begin
-    -- Need to search?
-    if not Need_Search then
-      -- If reading last then next call will require search
-      The_List.Read (Res, Prime_List_Mng.Next, Moved);
-      Need_Search := not Moved;
-      return Res;
-    end if;
-
     -- Empty list, add 1
     if The_List.Is_Empty then
       Append (One);
@@ -95,8 +82,6 @@ package body Arbitrary.Prime_List is
       end if;
       Square := Sqrt(Res);
 
-      -- We can rewind (which resets Need_Search) because we will append
-      --  (which sets Need_Search)
       Rewind;
       -- Loop on list of primes to find a divisor
       -- Because the case of Res=1, 2 and 3 is already done, we are sure that
@@ -124,6 +109,25 @@ package body Arbitrary.Prime_List is
         return Res;
       end if;
     end loop Search_Loop;
+  end Next;
+
+  -- Rewind the list of prime numbers found so far
+  procedure Rewind (It : in out Iterator) is
+  begin
+    It.Position := Positive'First;
+  end Rewind;
+
+  -- Get next prime number
+  procedure Next (It : in out Iterator; N : out Positive_Number) is
+  begin
+    if It.Position <= The_List.List_Length then
+      -- Next prime number is known, at pos It.Position
+      The_List.Move_At (It.Position);
+      The_List.Read (N, Prime_List_Mng.Current);
+    else
+      N := Next;
+    end if;
+    It.Position := It.Position + 1;
   end Next;
 
 end Arbitrary.Prime_List;

@@ -120,7 +120,7 @@ fi
 echo "OK"
 
 # t_arbitrary
-title t_arbitrary
+title t_arbitrary...
 try t_arbitrary 21
 cat > exp << EOF
 A is        +21
@@ -128,7 +128,7 @@ abs A is    +21
 -A is       -21
 A positive  True
 Sqrt(A)     +4
-Digits:  2 and 1
+Digits: 2 and 1
 EOF
 comp out exp
 comp err nul
@@ -140,13 +140,15 @@ abs A is    +3
 -A is       -3
 A positive  True
 Sqrt(A)     +1
-Digits:  and 3
+Digits: 3
 
 B is        +7
 abs B is    +7
 -B is       -7
 B positive  True
 Sqrt(B)     +2 remaining +3
+Prime factors: +7
+
 A =  B is   FALSE
 A <  B is   TRUE
 A <= B is   TRUE
@@ -163,7 +165,7 @@ A ** B is  +2187
 EOF
 comp out exp
 comp err nul
-try t_arbitrary -a 1000
+try t_arbitrary -a 210
 comp err nul
 echo "OK"
 

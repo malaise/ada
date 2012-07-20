@@ -1,8 +1,6 @@
-with Argument, Arbitrary, Rnd, Integer_Image, Mixed_Str, My_Math, Basic_Proc,
-     Key_Pressed;
+with Argument, Arbitrary.Factors, Rnd, Integer_Image, Mixed_Str,
+     My_Math, Basic_Proc, Key_Pressed;
 procedure T_Arbitrary is
-
-
   Abort_Error : exception;
   procedure Usage is
   begin
@@ -82,6 +80,9 @@ procedure T_Arbitrary is
 
   A, B, C, D : Arbitrary.Number;
 
+  L : Arbitrary.Factors.Nb_List_Mng.List_Type;
+  Moved : Boolean;
+
   Ia, Ib, Ic : Integer;
   Na, Nb : Arbitrary.Number;
 
@@ -115,11 +116,14 @@ begin
         Basic_Proc.Put_Line_Output ("Constraint_Error on Sqrt(A)");
     end;
     -- Digits of A
-    Basic_Proc.Put_Output ("Digits: ");
+    Basic_Proc.Put_Output ("Digits:");
     for I in 1 .. Arbitrary.Nb_Digits (A) - 1 loop
       Basic_Proc.Put_Output (Arbitrary.Nth_Digit (A, I)'Img);
     end loop;
-    Basic_Proc.Put_Output (" and" & Arbitrary.Last_Digit (A)'Img);
+    if Arbitrary.Nb_Digits (A) /= 1 then
+      Basic_Proc.Put_Output (" and");
+    end if;
+    Basic_Proc.Put_Output (Arbitrary.Last_Digit (A)'Img);
     Basic_Proc.New_Line_Output;
 
     if Argument.Get_Nbre_Arg = 2 then
@@ -138,6 +142,27 @@ begin
       end;
       Basic_Proc.Put_Line_Output ("Sqrt(B)     " & Arbitrary.Image(C)
                           & " remaining "  & Arbitrary.Image(D));
+      begin
+        Arbitrary.Factors.Decompose (B, L);
+        Basic_Proc.Put_Output ("Prime factors: ");
+        loop
+          L.Read (C, Moved => Moved);
+          if Moved then
+            Basic_Proc.Put_Output (" ");
+          elsif L.List_Length > 1 then
+            Basic_Proc.Put_Output (" and " );
+          end if;
+          Basic_Proc.Put_Output (Arbitrary.Image (C));
+          exit when not Moved;
+        end loop;
+        Basic_Proc.New_Line_Output;
+      exception
+        when Constraint_Error =>
+          Basic_Proc.Put_Line_Output ("Constraint_Error on decomposition " &
+                    "into prime factors");
+      end;
+
+      Basic_Proc.New_Line_Output;
 
       Basic_Proc.Put_Line_Output ("A =  B is   " & Boolean'Image(A = B));
       Basic_Proc.Put_Line_Output ("A <  B is   " & Boolean'Image(A < B));
@@ -312,10 +337,38 @@ begin
       end;
     end if;
 
-    -- Sleep a bit when B is 0
-    if Ib = 0 and then Nb_Loops = 0 then
+    -- Prime factors
+    L.Delete_List (False);
+    if Ia > 0 then
+      Arbitrary.Factors.Decompose (Na, L);
+      C := Arbitrary.One;
+      loop
+        L.Read (D, Moved => Moved);
+        C := C * D;
+        exit when not Moved;
+      end loop;
+      if C /= Na then
+        Basic_Proc.Put_Line_Output ("ERROR: Prime decomposition of " &
+              Arbitrary.Image (Na) & " does not mutiply to itself");
+        raise Abort_Error;
+      end if;
+    else
+      begin
+        Arbitrary.Factors.Decompose (Na, L);
+        Basic_Proc.Put_Line_Output ("ERROR: decomposition into prime factors " &
+                              "should have raised Constraint_Error");
+        raise Abort_Error;
+      exception
+        when Constraint_Error =>
+          -- OK
+          null;
+      end;
+    end if;
+
+    exit when Key_Pressed.Key_Pressed;
+    -- Sleep a bit
+    if Nb_Loops = 0 and then I /= 0 and then I mod 1000 = 0 then
       Basic_Proc.Put_Line_Output ("Waiting a bit, hit a key to stop...");
-      exit when Key_Pressed.Key_Pressed;
       delay 1.0;
       exit when Key_Pressed.Key_Pressed;
     end if;

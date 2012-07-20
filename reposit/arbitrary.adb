@@ -817,7 +817,7 @@ package body Arbitrary is
     -- Remove last digit of a number
     function Get_Head (N : As.U.Asu_Us) return As.U.Asu_Us is
     begin
-      return As.U.Tus (N.Slice (1, N.Length - 1));
+      return N.Uslice (1, N.Length - 1);
     end Get_Head;
 
     -- The input
@@ -880,9 +880,9 @@ package body Arbitrary is
         exit One_Try when Try = Rest or else Basic.Les_No_Sign (Try, Rest);
         -- Try too big, try with lower Tmp_Quot
         Quot := Basic.Sub_No_Sign (Quot, Onestr);
-     end loop One_Try;
+      end loop One_Try;
 
-     -- Quot is OK
+    -- Quot is OK
     Sol := Sol & Quot;
     Basic.Trim (Sol);
     Rest := Basic.Sub_No_Sign (Rest, Try);
