@@ -148,6 +148,10 @@ package Sys_Calls is
   -- Blocking mode for a non tty. Return True if success
   function Set_Blocking (Fd : File_Desc; Blocking : Boolean) return Boolean;
 
+  -- Is blocking (for tty or not)
+  -- May raise System_Error (not open)
+  function Is_Blocking (Fd : File_Desc) return Boolean;
+
   -- Non blocking get of a character
   -- (from Asynchronous tty or non blocking fd)
   -- If Status is Got then C is the got character

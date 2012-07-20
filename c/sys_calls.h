@@ -20,7 +20,7 @@ extern int time_to_tm (const time_t *the_time_p, my_tm_t *my_tm_p);
 
 
 extern int set_blocking (int fd, boolean blocking);
-extern boolean get_blocking (int fd);
+extern int get_blocking (int fd);
 
 
 #define NORMAL 0

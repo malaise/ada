@@ -35,7 +35,7 @@ extern int time_to_tm (const time_t *the_time_p, my_tm_t *my_tm_p) {
   }
 }
 
-extern boolean get_blocking (int fd) {
+extern int get_blocking (int fd) {
    int flg;
 
   flg = fcntl (fd, F_GETFL, 0);
@@ -43,7 +43,7 @@ extern boolean get_blocking (int fd) {
     return ERROR;
   }
 
-  return ((flg & O_NONBLOCK) != 0);
+  return ((flg & O_NONBLOCK) == 0);
 }
 
 extern int set_blocking (int fd, boolean blocking) {

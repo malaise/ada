@@ -1,5 +1,6 @@
 with Ada.Exceptions, Ada.Characters.Latin_1;
-with Argument, Basic_Proc, Async_Stdin, Event_Mng, Socket, Tcp_Util, Ip_Addr;
+with Argument, Basic_Proc, Async_Stdin, Event_Mng, Socket, Tcp_Util, Ip_Addr,
+     Sys_Calls;
 procedure T_Async is
 
   procedure Usage is
@@ -246,6 +247,10 @@ procedure T_Async is
   begin
     if Use_Stdin then
       Async_Stdin.Set_Async (Async_Cb'Unrestricted_Access, Message_Type'Length);
+      if Sys_Calls.Is_Blocking (Sys_Calls.Stdin) then
+        Async_Stdin.Put_Line_Err ("Stdin is still blocking");
+        raise Program_Error;
+      end if;
     end if;
   end Set_Async;
 
