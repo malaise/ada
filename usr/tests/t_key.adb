@@ -1,16 +1,16 @@
 with Ada.Wide_Text_Io;
-with Con_Io, My_Io, Int_Io, Language;
+with Con_Io, My_Io, Int_Image16, Language;
 procedure T_Key is
   Console : aliased Con_Io.Console;
   Screen : Con_Io.Window;
 
   Got : Con_Io.Get_Result;
   Seq : Con_Io.Unicode_Sequence (1 .. 1);
+  function Unicode_Image16 is new Int_Image16 (Con_Io.Unicode_Number);
 
   Curr_Row : Con_Io.Row_Range := Con_Io.Row_Range_First;
+  Next_Row : Con_Io.Row_Range;
   Clean : constant String (1 .. Con_Io.Def_Col_Last + 1) := (others => ' ');
-  Str : String (1 .. 25);
-  Start : Positive;
 
   use type Con_Io.Curs_Mvt;
 begin
@@ -20,16 +20,27 @@ begin
   Screen.Set_To_Screen (Console'Unrestricted_Access);
   Screen.Set_Foreground (Con_Io.Color_Of("Black"));
   Got := (Mvt => Con_Io.Refresh);
+
   loop
+    -- Get input
+    Got := Screen.Get;
+
+    -- Clear and reset on refresh
     if Got.Mvt = Con_Io.Refresh then
       -- Refresh
       Screen.Clear;
       Curr_Row := Con_Io.Row_Range_First;
     end if;
-    Got := Screen.Get;
 
-    Screen.Move (Curr_Row, Con_Io.Col_Range_First);
+    -- Clean next row
+    Next_Row := Curr_Row + 1;
+    if Next_Row > Screen.Row_Range_Last then
+      Next_Row := Con_Io.Row_Range_First;
+    end if;
+    Screen.Move (Next_Row, Con_Io.Col_Range_First);
     Screen.Put (Clean);
+
+    -- Put input
     Screen.Move (Curr_Row, Con_Io.Col_Range_First);
     Screen.Put (Got.Mvt'Img);
 
@@ -37,19 +48,12 @@ begin
 
     if Got.Mvt = Con_Io.Full then
       Seq(1) := Got.Char;
-      Int_Io.Put (Str, Got.Char, Base => 16);
-      for I in reverse Str'Range loop
-        if Str(I) = ' ' then
-          Start := I;
-          exit;
-        end if;
-      end loop;
 
-      Screen.Put (Str(Start .. Str'Last));
+      Screen.Put (" " & Unicode_Image16(Got.Char));
       Screen.Putw (" " & Language.Unicode_To_Wide (Got.Char));
       Screen.Put (" >" & Language.Unicode_To_String (Seq) & "<");
 
-      My_Io.Put (Str(Start .. Str'Last));
+      My_Io.Put (" " & Unicode_Image16(Got.Char));
       Ada.Wide_Text_Io.Put (" " & Language.Unicode_To_Wide (Got.Char));
       My_Io.Put (" >" & Language.Unicode_To_String (Seq) & "<");
     elsif Got.Mvt = Con_Io.Break then
@@ -58,11 +62,7 @@ begin
       My_Io.Put_Line (" exiting...");
       exit;
     end if;
-    Curr_Row := Curr_Row + 1;
-    if Curr_Row > Screen.Row_Range_Last then
-      Screen.Clear;
-      Curr_Row := Con_Io.Row_Range_First;
-    end if;
+    Curr_Row := Next_Row;
     My_Io.New_Line;
 
   end loop;

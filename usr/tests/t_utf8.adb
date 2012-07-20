@@ -1,17 +1,6 @@
-with Int_Io, Basic_Proc, Utf_8, Rnd, Key_Pressed, Argument;
+with Int_Image16, Basic_Proc, Utf_8, Rnd, Key_Pressed, Argument;
 procedure T_Utf8 is
-
-  procedure Put (N : Natural) is
-    Str : String (1 .. 10) := (others => ' ');
-  begin
-    Int_Io.Put (Str, N, Base => 16);
-    for I in reverse Str'Range loop
-      if Str(I) /= ' ' then
-        Basic_Proc.Put_Output (Str(1 .. I));
-        return;
-      end if;
-    end loop;
-  end Put;
+  function Image16 is new Int_Image16 (Natural);
 
   Str : constant String := "aàâeéèêëiîïoôuùü";
   Ucodes : constant array (Positive range <>) of Utf_8.Unicode_Number
@@ -45,7 +34,7 @@ begin
     begin
       Basic_Proc.Put_Output (Ustr);
       for J in Ustr'Range loop
-        Put (Character'Pos (Ustr(J)));
+        Basic_Proc.Put_Output (" " & Image16 (Character'Pos (Ustr(J))));
       end loop;
     end;
     Basic_Proc.New_Line_Output;
@@ -58,18 +47,18 @@ begin
   loop
     U1 := Rnd.Int_Random (Utf_8.Unicode_Number'First,
                           Utf_8.Unicode_Number'Last);
-    Put (U1);
-    Basic_Proc.Put_Output (" -> ");
+    Basic_Proc.Put_Output (Image16 (U1));
+    Basic_Proc.Put_Output (" ->");
     declare
       Str : constant Utf_8.Sequence := Utf_8.Encode (U1);
     begin
       for I in Str'Range loop
-        Put (Character'Pos (Str(I)));
+        Basic_Proc.Put_Output (" " & Image16 (Character'Pos (Str(I))));
       end loop;
       Basic_Proc.Put_Output (" -> ");
 
       U2 := Utf_8.Decode (Str);
-      Put (U2);
+      Basic_Proc.Put_Output (Image16 (U2));
       if U1 /= U2 then
         Basic_Proc.Put_Line_Output (" Bug");
         Basic_Proc.Set_Error_Exit_Code;

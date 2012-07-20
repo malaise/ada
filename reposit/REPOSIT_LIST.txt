@@ -365,7 +365,7 @@ init_manager (1)::
 input_buffer (1)::
      Extract sentences from a flow of characters.
 
-int_image mod_image integer_image (1)::
+int_image mod_image integer_image int_image16 (1)::
      Image of integer and modulus (no leading space).
 
 ip_addr (1)::
