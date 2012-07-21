@@ -1,5 +1,5 @@
 with Ada.Exceptions;
-with Bloc_Io, Basic_Proc;
+with Bloc_Io, Basic_Proc, Sys_Calls;
 
 procedure T_Bloc_Io is
 
@@ -42,6 +42,7 @@ begin
   Basic_Proc.Put_Line_Output("Size: " & Int_Io.Count'Image(Remain));
 
   if Ro then
+
     while Remain > Arr'Length loop
       Int_Io.Read(File, Arr);
       Dump(Arr);
@@ -56,20 +57,23 @@ begin
     Int_Io.Read(File, Arr(1 .. 4));
     Dump(Arr(1 .. 4));
     Int_Io.Close(File);
-    return;
+    Sys_Calls.Unlink (File_Name);
+
+  else
+
+    for I in 1 .. N_Arr loop
+      Arr := (others => I);
+      Int_Io.Write(File, Arr);
+    end loop;
+    Arr(1) := 42;
+    Int_Io.Write(File, Arr(1 ..1));
+
+    Arr(1 .. 2) := (-1, -2);
+    Int_Io.Write (File, Arr(1 .. 2), N_Arr * Arr'Length - 4);
+
+    Int_Io.Close(File);
+
   end if;
-
-  for I in 1 .. N_Arr loop
-    Arr := (others => I);
-    Int_Io.Write(File, Arr);
-  end loop;
-  Arr(1) := 42;
-  Int_Io.Write(File, Arr(1 ..1));
-
-  Arr(1 .. 2) := (-1, -2);
-  Int_Io.Write (File, Arr(1 .. 2), N_Arr * Arr'Length - 4);
-
-  Int_Io.Close(File);
 
 end T_Bloc_Io;
 
