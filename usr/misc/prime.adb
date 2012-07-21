@@ -74,6 +74,7 @@ procedure Prime is
 
   Zero : constant Arbitrary.Number := Arbitrary.Zero;
   One  : constant Positive_Number := Arbitrary.One;
+  Two  : constant Positive_Number := Arbitrary.Two;
 
   -- Set a positive number from string (for arg parsing)
   function  Positive_Number_Value (Str : String) return Positive_Number is
@@ -175,8 +176,9 @@ begin
 
     when Is_Prime =>
       -- Check if N1 is prime
-      N2 := Get_Next;
-      if N1 /= One then
+      if N1 = One then
+        N2 := Get_Next;
+      else
         loop
           N2 := Get_Next;
           exit when N1 rem N2 = Zero;
@@ -198,7 +200,10 @@ begin
       Basic_Proc.Put_Line_Output (Image (N2));
     when Prev =>
       -- Look for last prime number < N1
-      N3 := One;
+      if N1 <= Two then
+        return;
+      end if;
+      N3 := Two;
       loop
         N2 := Get_Next;
         exit when N2 >= N1;

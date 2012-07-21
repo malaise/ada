@@ -165,7 +165,7 @@ A ** B is  +2187
 EOF
 comp out exp
 comp err nul
-try t_arbitrary -a 210
+try t_arbitrary -a 1000
 comp err nul
 echo "OK"
 
@@ -305,8 +305,6 @@ comp err1 exp1
 comp err exp2
 echo "OK"
 
-# Skip some tests
-
 # t_autobus
 title t_autobus
 t_autobus -a > out1 2> err1 &
@@ -346,8 +344,9 @@ comp out exp
 comp err exp1
 echo "OK"
 
-# t_basic
+# t_bloc_io
 title t_bloc_io
+try t_bloc_io
 try t_bloc_io
 tail -3 out > tmp
 cat << EOF > exp

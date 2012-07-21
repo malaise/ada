@@ -11,7 +11,7 @@ package Arbitrary.Factors is
 
   -- Decompose N in prime factors, append them to L and rewind it
   -- If N is prime (including 1) only append it
-  -- Raise Constraint_Error if N <= 0
+  -- Raise Constraint_Error if N <= 1
   procedure Decompose (N : in Positive_Number;
                        L : in out Nb_List_Mng.List_Type);
 

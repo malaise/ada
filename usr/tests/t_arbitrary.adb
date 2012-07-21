@@ -339,7 +339,7 @@ begin
 
     -- Prime factors
     L.Delete_List (False);
-    if Ia > 0 then
+    if Ia > 1 and then Ia <= 2121 then
       Arbitrary.Factors.Decompose (Na, L);
       C := Arbitrary.One;
       loop
@@ -352,7 +352,7 @@ begin
               Arbitrary.Image (Na) & " does not mutiply to itself");
         raise Abort_Error;
       end if;
-    else
+    elsif Ia <= 1 then
       begin
         Arbitrary.Factors.Decompose (Na, L);
         Basic_Proc.Put_Line_Output ("ERROR: decomposition into prime factors " &

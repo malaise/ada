@@ -24,33 +24,28 @@ package body Arbitrary.Factors is
 
 
   -- Decompose N in prime factors, append them to L and rewind it
-  -- If N is prime (including 1) only append it
+  -- If N is prime only append it
   procedure Decompose (N : in Positive_Number;
                        L : in out Nb_List_Mng.List_Type) is
     C, T : Positive_Number;
   begin
-    if N <= Zero then
+    if N <= One then
       raise Constraint_Error;
     end if;
     C := N;
-    -- Start after 1
-    if C = One then
-      L.Insert (One);
-    else
-      Iterator.Next (T);
-      Iterator.Next (T);
-      loop
-        if C rem T = Zero then
-          -- Insert this factor and try again with it
-          L.Insert (T);
-          C := C / T;
-          exit when C = One;
-        else
-          -- Try next factor
-          Iterator.Next (T);
-        end if;
-      end loop;
-    end if;
+    -- Start at 2
+    Iterator.Next (T);
+    loop
+      if C rem T = Zero then
+        -- Insert this factor and try again with it
+        L.Insert (T);
+        C := C / T;
+        exit when C = One;
+      else
+        -- Try next factor
+        Iterator.Next (T);
+      end if;
+    end loop;
     -- Rewind lists
     Rewind (L);
     Iterator.Rewind;

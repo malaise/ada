@@ -60,10 +60,10 @@ package body Arbitrary.Prime_List is
     Is_Prime : Boolean;
     Square : Positive_Number;
   begin
-    -- Empty list, add 1
+    -- Empty list, add 2
     if The_List.Is_Empty then
-      Append (One);
-      return One;
+      Append (Two);
+      return Two;
     end if;
 
     -- Need to search next, start from last found
@@ -71,9 +71,9 @@ package body Arbitrary.Prime_List is
     -- Loop on Res
     Search_Loop:
     loop
-      -- Optim: if Res=1 or 2, then Next=Res+1 (2 or 3) and is prime
+      -- Optim: if Res=2, then Next=Res+1 (3) and is prime
       -- otherwise Res is odd and next is odd, so at least Res+2
-      if The_List.Get_Position <= 2 then
+      if The_List.Get_Position = 1 then
         Res := Res + One;
         Append (Res);
         return Res;
@@ -84,7 +84,7 @@ package body Arbitrary.Prime_List is
 
       Rewind;
       -- Loop on list of primes to find a divisor
-      -- Because the case of Res=1, 2 and 3 is already done, we are sure that
+      -- Because the case of Res=2 and 3 is already done, we are sure that
       --  Square > 1, so this loop always exits before exhausting the list
       --  so Is_Prime is always set
       Divisor_Loop:
