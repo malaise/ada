@@ -120,7 +120,7 @@ fi
 echo "OK"
 
 # t_arbitrary
-title t_arbitrary...
+title t_arbitrary
 try t_arbitrary 21
 cat > exp << EOF
 A is        +21
