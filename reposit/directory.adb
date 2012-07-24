@@ -92,45 +92,61 @@ package body Directory is
     end if;
   end Remove;
 
+  -- Desc affectation
+  procedure Set (Dest : in out Dir_Rec; Val : in Dir_Rec) is
+  begin
+    Dest := Val;
+  end Set;
+
   -- Opens a directory for list of entries
   function C_Opendir (Name : System.Address) return System.Address;
   pragma Import(C, C_Opendir, "opendir");
 
   function Open (Dir_Name : in String) return Dir_Desc is
     C_Dir_Name : constant String := Str_For_C(Dir_Name);
-    Desc : Dir_Desc;
+    Rec : Dir_Rec;
   begin
-    if Desc.Dir_Addr /= System.Null_Address then
-      raise Open_Error;
-    end if;
-    Desc.Dir_Addr := C_Opendir (C_Dir_Name'Address);
-    if Desc.Dir_Addr = System.Null_Address then
+    Rec.Dir_Addr := C_Opendir (C_Dir_Name'Address);
+    if Rec.Dir_Addr = System.Null_Address then
       if Sys_Calls.Errno = Enoent then
         raise Name_Error;
       else
         raise Access_Error;
       end if;
     end if;
-    return Desc;
+    return (Smart_Desc_Mng.Init (Rec) with null record);
   end Open;
-
+  procedure Open (Desc : in out Dir_Desc; Dir_Name : in String) is
+  begin
+    Desc := Open (Dir_Name);
+  end Open;
 
   -- Gets next entry of the opened directory
   function C_Readdir (Dir : System.Address; Name : System.Address)
            return C_Types.Int;
   pragma Import(C, C_Readdir, "read_dir");
 
+  function Get_Rec (Desc : Dir_Desc) return Dir_Rec is
+    Rec : Dir_Rec;
+  begin
+    -- Check dir desc
+    if not Desc.Is_Set then
+      raise Open_Error;
+    end if;
+    Desc.Get (Rec);
+    if Rec.Dir_Addr = System.Null_Address then
+      raise Open_Error;
+    end if;
+    return Rec;
+  end Get_Rec;
+
   function Next_Entry (Desc : Dir_Desc) return String is
     Len : Integer;
     Dir_Name : Dir_Str;
   begin
-    -- Check dir desc
-    if Desc.Dir_Addr = System.Null_Address then
-      raise Open_Error;
-    end if;
-
     -- Read entry and check validity
-    Len := C_Readdir (Desc.Dir_Addr, Dir_Name(Dir_Name'First)'Address);
+    Len := C_Readdir (Get_Rec (Desc).Dir_Addr,
+                      Dir_Name(Dir_Name'First)'Address);
     if Len = -1 then
       raise End_Error;
     end if;
@@ -149,11 +165,7 @@ package body Directory is
 
   procedure Rewind (Desc : in Dir_Desc) is
   begin
-    -- Check dir desc
-    if Desc.Dir_Addr = System.Null_Address then
-      raise Open_Error;
-    end if;
-    C_Rewinddir (Desc.Dir_Addr);
+    C_Rewinddir (Get_Rec (Desc).Dir_Addr);
   end Rewind;
 
   -- Closes a directory
@@ -161,12 +173,11 @@ package body Directory is
   pragma Import(C, C_Closedir, "closedir");
 
   procedure Close (Desc : in out Dir_Desc) is
+    Rec : Dir_Rec := Get_Rec (Desc);
   begin
-    if Desc.Dir_Addr = System.Null_Address then
-      raise Open_Error;
-    end if;
-    C_Closedir (Desc.Dir_Addr);
-    Desc.Dir_Addr := System.Null_Address;
+    C_Closedir (Rec.Dir_Addr);
+    Rec.Dir_Addr := System.Null_Address;
+    Desc.Set (Rec);
   end Close;
 
 

@@ -24,13 +24,13 @@ package body Dir_Mng is
   begin
 
     if Dir = "" then
-      Dir_Desc := Directory.Open (".");
+      Dir_Desc.Open (".");
     else
-      Dir_Desc := Directory.Open (Dir);
+      Dir_Desc.Open (Dir);
     end if;
 
     loop
-      Directory.Next_Entry (Dir_Desc, File_Name);
+       Dir_Desc.Next_Entry (File_Name);
 
       if Template = ""
       or else Directory.File_Match(File_Name.Image, Template) then
@@ -51,7 +51,7 @@ package body Dir_Mng is
     end loop;
   exception
     when Directory.End_Error =>
-      Directory.Close (Dir_Desc);
+      Dir_Desc.Close;
   end List_Dir;
 
   procedure List_Dir (List : in out File_List_Mng.List_Type;

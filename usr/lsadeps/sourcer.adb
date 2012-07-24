@@ -350,7 +350,7 @@ package body Sourcer is
     use type Directory.File_Kind_List;
   begin
     begin
-      Dir_Desc := Directory.Open (Dir);
+      Dir_Desc.Open (Dir);
     exception
       when Directory.Name_Error =>
         Error ("Cannot find directory " & Dir);
@@ -360,7 +360,7 @@ package body Sourcer is
     loop
       -- Get entry
       begin
-        File_Name := As.U.Tus (Directory.Next_Entry (Dir_Desc));
+        File_Name := As.U.Tus (Dir_Desc.Next_Entry);
       exception
         when Directory.End_Error =>
           -- End of this dir
@@ -377,7 +377,7 @@ package body Sourcer is
     end loop;
 
     -- Done
-    Directory.Close (Dir_Desc);
+    Dir_Desc.Close;
   end Parse_Dir;
 
   -- Parse sources and build lists

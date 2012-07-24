@@ -14,14 +14,14 @@ begin
   Sys_Calls.New_Line_Output;
 
   Sys_Calls.Put_Line_Output ("Checking " & Temp_Dir & " directory content:");
-  Desc := Directory.Open (Temp_Dir);
+  Desc.Open (Temp_Dir);
   begin
     loop
-      Sys_Calls.Put_Line_Output (Directory.Next_Entry (Desc));
+      Sys_Calls.Put_Line_Output (Desc.Next_Entry);
     end loop;
   exception
     when Directory.End_Error =>
-      Directory.Close (Desc);
+      Desc.Close;
   end;
   Sys_Calls.New_Line_Output;
 

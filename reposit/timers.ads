@@ -157,7 +157,7 @@ private
 
   procedure Set (Dest : in out Timer_Rec; Val : in Timer_Rec);
   package Smart_Timer_Mng is new Smart_Reference (
-    Object => Timer_Rec, Set    => Set);
+    Object => Timer_Rec, Set => Set);
 
   type Timer_Id is new Smart_Timer_Mng.Handle with null record;
 

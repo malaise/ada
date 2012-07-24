@@ -92,12 +92,12 @@ begin
       else
         Directory.Get_Current (Dir_Name);
       end if;
-      Dsc := Directory.Open (Dir_Name.Image);
+      Dsc.Open (Dir_Name.Image);
       if Dir_Name.Image = "/" then
         Dir_Name.Set_Null;
       end if;
       loop
-        Directory.Next_Entry (Dsc, File_Name);
+        Dsc.Next_Entry (File_Name);
         My_Io.Put ("  ---->" & File_Name.Image & "< ");
         My_Io.Put (Pad(1 .. Max_Len - File_Name.Length));
         begin
@@ -128,7 +128,7 @@ begin
       end loop;
     exception
       when Directory.End_Error =>
-        Directory.Close (Dsc);
+        null;
     end;
     if Argument.Get_Nbre_Arg /= 0 then
       exit;

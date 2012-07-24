@@ -1,5 +1,5 @@
 with System;
-with As.U, Sys_Calls;
+with As.U, Sys_Calls, Smart_Reference;
 package Directory is
 
   Max_Dir_Name_Len : constant := 1024;
@@ -20,10 +20,11 @@ package Directory is
   -- May raise Name_Error or Access_Error
   procedure Remove (New_Dir : in String);
 
-  type Dir_Desc is private;
+  type Dir_Desc is tagged private;
 
   -- Opens a directory for list of entries
   function Open (Dir_Name : in String) return Dir_Desc;
+  procedure Open (Desc : in out Dir_Desc; Dir_Name : in String);
   -- May raise Open_Error if dir desc is already open
   -- May raise Name_Error if not found
   -- May raise Access_Error
@@ -94,9 +95,15 @@ package Directory is
 
 private
 
-  type Dir_Desc is record
+  type Dir_Rec is record
     Dir_Addr : System.Address := System.Null_Address;
   end record;
+
+  procedure Set (Dest : in out Dir_Rec; Val : in Dir_Rec);
+  package Smart_Desc_Mng is new Smart_Reference (
+    Object => Dir_Rec, Set => Set);
+
+  type Dir_Desc is new Smart_Desc_Mng.Handle with null record;
 
 end Directory;
 

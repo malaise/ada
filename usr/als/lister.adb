@@ -1,6 +1,7 @@
 with Ada.Calendar;
 with Basic_Proc, Argument, Sys_Calls, Regular_Expressions, Directory,
      Dynamic_List;
+with Exit_Code;
 package body Lister is
 
   -- List of file templates
@@ -20,19 +21,21 @@ package body Lister is
   procedure Add_Size (Size : in Sys_Calls.Size_T);
 
   -- Slection criteria
-  Only_Dirs, Only_Files : Boolean := False;
+  Only_Dirs, Only_Files, Only_Others : Boolean := False;
   Only_Links : Link_Criteria_List := No_Link;
   Follow_Links : Boolean := False;
   Date1, Date2 : Entities.Date_Spec_Rec;
   -- Set selection criteria
   procedure Set_Criteria (Only_Dirs, Only_Files : in Boolean;
                           Only_Links : in Link_Criteria_List;
+                          Only_Others : in Boolean;
                           Follow_Links : in Boolean;
                           Date1, Date2 : in Entities.Date_Spec_Rec) is
   begin
     Lister.Only_Dirs := Only_Dirs;
     Lister.Only_Files := Only_Files;
     Lister.Only_Links := Only_Links;
+    Lister.Only_Others := Only_Others;
     Lister.Follow_Links := Follow_Links;
     Lister.Date1 := Date1;
     Lister.Date2 := Date2;
@@ -110,7 +113,8 @@ package body Lister is
                   Link_Ok : Boolean) return Boolean is
     use type Directory.File_Kind_List;
   begin
-    if not (Only_Dirs or else Only_Files or else Only_Links /= No_Link) then
+    if not (Only_Dirs or else Only_Files or else Only_Links /= No_Link
+            or else Only_Others) then
       -- No criteria => averything matches
       return True;
     end if;
@@ -123,7 +127,7 @@ package body Lister is
       or else (Only_Links = Broken_Links and then not Link_Ok);
     else
       -- Any other kind
-      return False;
+      return Only_Others;
     end if;
   end Match;
 
@@ -284,15 +288,17 @@ package body Lister is
     Ent.Path := As.U.Tus (Dir);
     -- Open
     begin
-      Desc := Directory.Open (Dir);
+      Desc.Open (Dir);
     exception
       when Directory.Name_Error =>
         Basic_Proc.Put_Line_Error (Argument.Get_Program_Name & ": "
                                  & Dir & ": No such file or directory.");
+        Exit_Code.Update (Exit_Code.Error);
         return;
       when Directory.Access_Error =>
         Basic_Proc.Put_Line_Error (Argument.Get_Program_Name & ": "
                                  & Dir & ": Permission denied.");
+        Exit_Code.Update (Exit_Code.Error);
         return;
     end;
     -- Add current dir size
@@ -308,7 +314,7 @@ package body Lister is
       begin
         -- Read next entry
         begin
-          Ent.Name := As.U.Tus (Directory.Next_Entry (Desc));
+          Ent.Name := As.U.Tus (Desc.Next_Entry);
         exception
           when Directory.End_Error =>
             -- Done
@@ -371,7 +377,7 @@ package body Lister is
     end loop;
 
     -- Done
-    Directory.Close (Desc);
+    Desc.Close;
   end List;
 
 
@@ -441,22 +447,24 @@ package body Lister is
 
     -- Open
     begin
-      Desc := Directory.Open (Dir);
+      Desc.Open (Dir);
     exception
       when Directory.Name_Error =>
         Basic_Proc.Put_Line_Error (Argument.Get_Program_Name & ": "
                                  & Dir & ": No such file or directory.");
+        Exit_Code.Update (Exit_Code.Error);
         return;
       when Directory.Access_Error =>
         Basic_Proc.Put_Line_Error (Argument.Get_Program_Name & ": "
                                  & Dir & ": Permission denied.");
+        Exit_Code.Update (Exit_Code.Error);
         return;
     end;
 
     -- For each entry
     loop
       begin
-        Str := As.U.Tus (Directory.Next_Entry (Desc));
+        Str := As.U.Tus (Desc.Next_Entry);
       exception
         when Directory.End_Error =>
           -- Done
@@ -483,7 +491,7 @@ package body Lister is
     end loop;
 
     -- Done
-    Directory.Close (Desc);
+    Desc.Close;
   end List_Dirs;
 
   -- Activate, then later get grand total

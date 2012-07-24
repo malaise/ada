@@ -10,7 +10,7 @@ procedure Ddir is
     use Directory;
   begin
     begin
-      Dir_Dsc := Directory.Open(Dir_Name);
+      Dir_Dsc.Open (Dir_Name);
     exception
       when Directory.Name_Error =>
         My_Io.Put_Line ("ERROR no such directory " & Dir_Name);
@@ -23,7 +23,7 @@ procedure Ddir is
     My_Io.Put_Line ("Directories of " & Dir_Name);
     loop
       begin
-        Directory.Next_Entry (Dir_Dsc, Entry_Name);
+        Dir_Dsc.Next_Entry (Entry_Name);
       exception
         when Directory.End_Error =>
           exit;
@@ -41,7 +41,7 @@ procedure Ddir is
         My_Io.Put_Line (Entry_Name.Image);
       end if;
     end loop;
-    Directory.Close(Dir_Dsc);
+    Dir_Dsc.Close;
     My_Io.New_Line;
   end Ddir_One;
 
