@@ -4,7 +4,7 @@ with Integer_Image, Text_Line, Sys_Calls, Trees;
 package body Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "0";
+  Minor_Version : constant String := "1";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -1087,10 +1087,10 @@ package body Xml_Parser.Generator is
     In_Tail : Boolean;
     Closed : Boolean := False;
     -- Terminate tag after children
-    procedure Close is
+    procedure Close (Force_No_Indent : in Boolean := False) is
     begin
       if not In_Tail and then not Closed then
-        if not Is_Mixed and then Format /= Raw then
+        if not Is_Mixed and then Format /= Raw and then not Force_No_Indent then
           -- Indent the end of this non-mixed element
           Put (Flow, Indent);
         end if;
@@ -1212,7 +1212,13 @@ package body Xml_Parser.Generator is
         else
           -- Finish STag now and close (add ETag)
           Put (Flow, ">");
-          Close;
+          if Is_Mixed then
+            -- No indentation between STag and ETag
+            Close (Force_No_Indent => True);
+          else
+            New_Line (Flow);
+            Close (Force_No_Indent => False);
+          end if;
         end if;
       end if;
       -- Terminate now
