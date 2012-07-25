@@ -9,6 +9,7 @@ package Lister is
   type Link_Criteria_List is (All_Links, Broken_Links, No_Link);
   procedure Set_Criteria (Only_Dirs, Only_Files : in Boolean;
                           Only_Links : in Link_Criteria_List;
+                          Only_Others : in Boolean;
                           Follow_Links : in Boolean;
                           Date1, Date2 : in Entities.Date_Spec_Rec);
 

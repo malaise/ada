@@ -1,5 +1,5 @@
 with As.U, Directory, Argument, Basic_Proc;
-with Lister, Output;
+with Lister, Output, Exit_Code;
 package body Targets is
 
 
@@ -8,6 +8,7 @@ package body Targets is
                  Depth : Natural;
                  Merge : Boolean;
                  Skip_Dirs : Boolean;
+                 Put_Dir_Names : Boolean;
                  Args : Argument_Parser.Parsed_Dscr) return Boolean is
     Found : Boolean;
     Entries : Entities.Entity_List;
@@ -55,7 +56,7 @@ package body Targets is
         Subdirs.Read (Subdir, Moved => Moved);
         -- Recursive invocation
         Found := Found or Do_Dir (Directory.Build_File_Name (
-             Dir, Subdir.Image, ""), True, Level + 1);
+             Dir, Subdir.Image, ""), Put_Dir_Names, Level + 1);
         exit when not Moved;
       end loop;
       Subdirs.Delete_List (Deallocate => False);
@@ -111,16 +112,18 @@ package body Targets is
           and then Directory.File_Kind (Dir) = Directory.Dir
           and then Lister.Dir_Matches (Dir) then
             -- Add this "Dir"
-            Found := Found or Do_Dir (Dir, True, 1);
+            Found := Found or Do_Dir (Dir, Put_Dir_Names, 1);
           end if;
         exception
           when Directory.Name_Error =>
             Basic_Proc.Put_Line_Error (Argument.Get_Program_Name & ": "
                                  & Dir & ": No such file or directory.");
+            Exit_Code.Update (Exit_Code.Error);
 
           when Directory.Access_Error =>
             Basic_Proc.Put_Line_Error (Argument.Get_Program_Name & ": "
                                  & Dir & ": Permission denied.");
+            Exit_Code.Update (Exit_Code.Error);
 
         end;
       end loop;

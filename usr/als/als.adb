@@ -1,13 +1,8 @@
 with Ada.Calendar;
 with As.U, Basic_Proc, Argument, Argument_Parser;
-with Entities, Output, Targets, Lister;
+with Entities, Output, Targets, Lister, Exit_Code;
 procedure Als is
-  Version : constant String  := "V7.2";
-
-  -- Exit codes
-  Found_Exit_Code : constant Natural := 0;
-  Empty_Exit_Code : constant Natural := 1;
-  Error_Exit_Code : constant Natural := 2;
+  Version : constant String  := "V8.0";
 
   -- Usage
   procedure Usage is
@@ -23,10 +18,12 @@ procedure Als is
     Put_Line_Error ("  -D (--directories) // Show only directories");
     Put_Line_Error ("  -L (--links)       // Show only symbolic links");
     Put_Line_Error ("  -F (--files)       // Show only regular files");
+    Put_Line_Error ("  -O (--others)      // Show other entries (device, pipe, socket...)");
     Put_Line_Error ("  -B (--broken_links)// Show only broken symbolic links");
     Put_Line_Error ("  -R (--recursive)   // Scan directories recursively");
     Put_Line_Error ("  --depth=<positive> // Scan only to given depth (needs ""-R"")");
     Put_Line_Error ("  --skip_dirs        // Skip directories from arguments");
+    Put_Line_Error ("  --no_names         // Do not show directory names");
     Put_Line_Error ("  <match_name> ::= -m <criteria> | --match=<criteria>");
     Put_Line_Error ("    <criteria> ::= <templates> | @<regex>");
     Put_Line_Error ("    <templates> ::= <template> [ { ,<template> } ]");
@@ -111,7 +108,9 @@ procedure Als is
    28 => ('B', As.U.Tus ("broken_links"), False, False),
    29 => (Argument_Parser.No_Key_Char, As.U.Tus ("follow_links"), False, False),
    30 => (Argument_Parser.No_Key_Char, As.U.Tus ("date_iso"), False, False),
-   31 => (Argument_Parser.No_Key_Char, As.U.Tus ("skip_dirs"), False, False) );
+   31 => (Argument_Parser.No_Key_Char, As.U.Tus ("skip_dirs"), False, False),
+   32 => ('O', As.U.Tus ("others"), False, False),
+   33 => (Argument_Parser.No_Key_Char, As.U.Tus ("no_name"), False, False) );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   -- Option management
   List_Dots, List_Roots_And_Dots : Boolean;
@@ -137,6 +136,9 @@ procedure Als is
   Full_Path : Boolean;
   Date_Iso : Boolean;
   Skip_Dirs : Boolean;
+  List_Only_Others : Boolean;
+  No_Name : Boolean;
+
 
   -- Parse a date argument
   function Parse_Date (Str : String) return Entities.Date_Spec_Rec is separate;
@@ -212,6 +214,8 @@ begin
   No_Sorting := Arg_Dscr.Is_Set (26);
   Full_Path := Arg_Dscr.Is_Set (27);
   Date_Iso := Arg_Dscr.Is_Set (30);
+  List_Only_Others := Arg_Dscr.Is_Set (32);
+  No_Name := Arg_Dscr.Is_Set (33);
   Depth := 0;
 
   -- Check sorting
@@ -373,18 +377,19 @@ begin
   end if;
 
   -- Set selection criteria in Lister, activate Total computation
-  Lister.Set_Criteria (List_Only_Dirs, List_Only_Files, List_Only_Links,
+  Lister.Set_Criteria (List_Only_Dirs, List_Only_Files,
+                       List_Only_Links, List_Only_Others,
                        Follow_Links, Date1, Date2);
   if Put_Total then
     Lister.Activate_Total;
   end if;
 
   -- List each target
-  if Targets.List (Dots, Recursive, Depth, Merge_Lists, Skip_Dirs,
+  if Targets.List (Dots, Recursive, Depth, Merge_Lists, Skip_Dirs, not No_Name,
                    Arg_Dscr) then
-    Basic_Proc.Set_Exit_Code (Found_Exit_Code);
+    Exit_Code.Update (Exit_Code.Found);
   else
-    Basic_Proc.Set_Exit_Code (Empty_Exit_Code);
+    Exit_Code.Update (Exit_Code.Empty);
   end if;
 
   if Put_Total then
@@ -394,6 +399,6 @@ begin
 
 exception
   when Error_Exception =>
-    Basic_Proc.Set_Exit_Code (Error_Exit_Code);
+    Exit_Code.Update (Exit_Code.Error);
 end Als;
 

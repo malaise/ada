@@ -1,6 +1,6 @@
 Als
 ===
-V7.2
+V8.0
 
 Als lists files, directory contents... It supports several powerfull options
 for the selection of entries, the output format of each entry, and general
@@ -26,6 +26,8 @@ Specify which entry to select
   -D (--directories)         Show only directories
   -L (--links)               Show only symbolic links
   -F (--files)               Show only regular files
+  -O (--others)              Show only other entries (character or block device,
+                               pipe, socket)
   -B (--broken_links)        Show only broken symbolic links
 
   -R (--recursive)           Scan directories recursively
@@ -33,6 +35,7 @@ Specify which entry to select
 
   --skip_dirs                Skip directories from arguments
                                (usefull whan calling "asl *")
+  --no_names                 Do not show directory names
 
   <match_name> ::= -m <criteria> | --match=<criteria>
     <criteria> ::= <templates> | @<regex>

@@ -9,6 +9,7 @@ package Targets is
                  Depth : Natural;
                  Merge : Boolean;
                  Skip_Dirs : Boolean;
+                 Put_Dir_Names : Boolean;
                  Args : Argument_Parser.Parsed_Dscr) return Boolean;
 
 

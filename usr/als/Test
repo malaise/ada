@@ -1,0 +1,51 @@
+#!/bin/bash
+
+function error {
+  echo "ERROR. $*" 1>&2
+  exit 1
+}
+
+function launch {
+  als $*
+  if [ $? -eq 2 ] ; then
+    error "Als $* has failed"
+  fi
+}
+  
+
+function do_dir {
+  echo "In $1:"
+  let LSN=0
+  let ALSF=0
+  let ALSD=0
+  let ALSL=0
+  let ALSO=0
+  let ALSN=0
+
+  # Check dir is readable
+  ls -1 $1 > /dev/null 2>&1
+  if [ $? -eq 2 ] ; then
+    return
+  fi
+
+  export LSN=`ls -1 $1 | wc -l`
+
+  export ALSOPTS="-1 --no_name"
+  export ALSF=`launch $ALSOPTS -F $1 | wc -l`
+  export ALSD=`launch $ALSOPTS -D $1 | wc -l`
+  export ALSL=`launch $ALSOPTS -L $1 | wc -l`
+  export ALSO=`launch $ALSOPTS -O $1 | wc -l`
+
+  let ALSN=$ALSF+$ALSD+$ALSL+$ALSO
+
+  if [ $LSN -ne $ALSN ] ; then
+    error "In dir $1 ls finds $LSN entries while als finds $ALSN."
+  fi
+}
+
+do_dir .
+do_dir ${HOME}
+for dir in `als -DM --exclude="proc" /` ; do
+  do_dir $dir
+done
+
