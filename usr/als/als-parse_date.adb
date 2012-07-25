@@ -91,7 +91,7 @@ begin
     Crit.Date := Ada.Calendar.Time_Of (Year, Month, Day,
                    Day_Mng.Pack (Hour, Minute, Second, Milli));
   else
-    -- <positive><letter>, where <letter> ::= Y|M|D|h|m
+    -- <positive><letter>, where <letter> ::= Y|M|D|h|m|s
     declare
       N : constant Positive := Positive'Value (Lstr(3 .. Lstr'Last-1));
       C : constant Character := Lstr(Lstr'Last);
@@ -108,6 +108,8 @@ begin
           Crit.Date := Ada.Calendar.Clock - Duration(N) * 3600;
         when 'm' =>
           Crit.Date := Ada.Calendar.Clock - Duration(N) * 60;
+        when 's' =>
+          Crit.Date := Ada.Calendar.Clock - Duration(N);
         when others =>
           raise Error_Exception;
       end case;

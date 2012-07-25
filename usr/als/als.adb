@@ -2,7 +2,7 @@ with Ada.Calendar;
 with As.U, Basic_Proc, Argument, Argument_Parser;
 with Entities, Output, Targets, Lister, Exit_Code;
 procedure Als is
-  Version : constant String  := "V8.0";
+  Version : constant String  := "V8.1";
 
   -- Usage
   procedure Usage is
@@ -23,7 +23,7 @@ procedure Als is
     Put_Line_Error ("  -R (--recursive)   // Scan directories recursively");
     Put_Line_Error ("  --depth=<positive> // Scan only to given depth (needs ""-R"")");
     Put_Line_Error ("  --skip_dirs        // Skip directories from arguments");
-    Put_Line_Error ("  --no_names         // Do not show directory names");
+    Put_Line_Error ("  --no_name          // Do not show directory names");
     Put_Line_Error ("  <match_name> ::= -m <criteria> | --match=<criteria>");
     Put_Line_Error ("    <criteria> ::= <templates> | @<regex>");
     Put_Line_Error ("    <templates> ::= <template> [ { ,<template> } ]");
@@ -40,7 +40,7 @@ procedure Als is
     Put_Line_Error ("    <date_comp> ::= eq | lt | le | gt | ge");
     Put_Line_Error ("    <date>      ::= yyyy-mm-ddThh:mm:ss | yyyy-mm-dd | Thh:mm:ss");
     Put_Line_Error ("                  | <positive><duration>");
-    Put_Line_Error ("    <duration>  ::= Y | M | D | h | m");
+    Put_Line_Error ("    <duration>  ::= Y | M | D | h | m | s");
     Put_Line_Error ("                     // Keep files that match the date specification");
     Put_Line_Error ("                     //  (before, after or equal to a given date or delay)");
     Put_Line_Error ("    -n <date> (--newer=<date>) is a shortcut to ""-d ge<date>""");
@@ -249,7 +249,8 @@ begin
            and then Date2.Oper <= Entities.Less_Or_Equal)
     or else (Date1.Oper >= Entities.Greater_Than
              and then Date2.Oper >= Entities.Greater_Than) then
-      Error ("With two dates, one must be ""lt"" or ""le"" and the other ""gt or ""ge""");
+      Error ("With two dates, one must be ""lt"" or ""le"" "
+             & "and the other ""gt or ""ge""");
     end if;
   end if;
   -- Parse option newer

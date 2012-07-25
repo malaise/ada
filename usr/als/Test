@@ -1,20 +1,28 @@
 #!/bin/bash
+export N0=0
+export N1=0
+export NE=0
 
 function error {
-  echo "ERROR. $*" 1>&2
+  echo ""
+  echo "ERROR: $*." 1>&2
   exit 1
+}
+
+function title {
+  echo -n "$1: "
 }
 
 function launch {
   als $*
   if [ $? -eq 2 ] ; then
-    error "Als $* has failed"
+    error "als $* has failed"
   fi
 }
   
-
+# Compare ls and als -F + -D + -L + -O nb of entries
 function do_dir {
-  echo "In $1:"
+  title "In $1, ls v.s. als -FDLO"
   let LSN=0
   let ALSF=0
   let ALSD=0
@@ -25,6 +33,7 @@ function do_dir {
   # Check dir is readable
   ls -1 $1 > /dev/null 2>&1
   if [ $? -eq 2 ] ; then
+    echo "Skipped"
     return
   fi
 
@@ -39,13 +48,96 @@ function do_dir {
   let ALSN=$ALSF+$ALSD+$ALSL+$ALSO
 
   if [ $LSN -ne $ALSN ] ; then
-    error "In dir $1 ls finds $LSN entries while als finds $ALSN."
+    error "ls finds $LSN entries while als finds $ALSN"
   fi
+  echo "OK"
 }
 
+# Compare ls and als in some dirs
 do_dir .
 do_dir ${HOME}
 for dir in `als -DM --exclude="proc" /` ; do
   do_dir $dir
 done
+
+# Compare als -R --no-name and als -RM
+title "In ., no_name v.s. merge"
+export ALSRN=`launch -R  -1 --no_name | wc -l`
+export ALSMN=`launch -RM -1 | wc -l`
+if [ $ALSRN -ne $ALSMN ] ; then
+  error "als -R --no-name finds $ALSMN entries while als -RM finds $ALSMN"
+fi
+echo "OK"
+
+# Find a broken link
+title "In ., recursive broken links"
+N0=`launch -BRM | wc -l`
+ln -fs bRoKeNlInK BrokenLink
+N1=`launch -BRM | wc -l`
+rm BrokenLink
+let NE=$N0+1
+if [ $N1 -ne $NE ] ; then
+  error "als -BRM finds $N1 instead of $NE broken links"
+fi
+echo "OK"
+
+# Match dir patterna and file regexp
+title "In lib_*, match regexp *.o and"
+ls -1 lib_Linux/*.o > exp
+launch -M --match_dir="lib_*" -m "@.*\.o" * > res1
+cmp res1 exp > /dev/null 2>&1
+if [ $? -ne 0 ] ; then
+  error "als -M --match_dir='lib_*' -m '@.*\.o' * result res differs from exp"
+fi
+rm exp res1
+echo "OK"
+
+# Exclude file regexp
+title "In lib_Linux, exclude regexp *.ali"
+ls -1 lib_Linux/*.o > exp
+launch -M -e "@.*\.ali" lib_Linux > res1
+cmp res1 exp > /dev/null 2>&1
+if [ $? -ne 0 ] ; then
+  error "als -M -e '@.*\.ali' lib_Linux result res differs from exp"
+fi
+rm exp res1
+echo "OK"
+
+# New file
+title "In ., new file"
+touch NewFile
+res=`launch -n 1s`
+if [ "$res" != "NewFile" ] ; then
+  error "als -n 1s finds $res i.o. NewFile"
+fi
+rm NewFile
+echo "OK"
+
+# Long output
+title "In ., long format and date-iso"
+res=`launch -l --date_iso als | sed -r 's/ +/ /g'`
+exp=`ls -l --time-style="+%Y-%m-%dT%H:%M:%S" als | cut -d ' ' -f 1,3-
+`
+if [ "$res" != "$exp" ] ; then
+  error "als -l --date_iso is $res i.o. $exp"
+fi
+echo "OK"
+
+# Sort by size
+title "In ., reverse sort by size"
+res=`launch -sr1 | tail -1`
+if [ "$res" != "Als.html" ] ; then
+  error "als -sr1 last line is $res i.o. Als.html"
+fi
+echo "OK"
+
+# Sort by date
+title "In ., reverse sort by date"
+touch NewFile
+res=`launch -tr1 | tail -1`
+if [ "$res" != "NewFile" ] ; then
+  error "als -tr1 last line is $res i.o. NewFile"
+fi
+rm NewFile
+echo "OK"
 

@@ -4,7 +4,7 @@ Main changes
 
 [horizontal]
 
-*2012/07/24*:: Add options -O (--others) and --no_names to als V8.0
+*2012/07/24*:: Add options -O (--others) and --no_name to als V8.0
 
 *2012/07/10*:: Add automatic test in tests
 

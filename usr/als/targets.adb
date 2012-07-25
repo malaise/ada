@@ -35,7 +35,7 @@ package body Targets is
         if not Entries.Is_Empty then
           Found := True;
           Output.Put (Entries, True);
-          Need_New_Line := True;
+          Need_New_Line := Put_Name;
           Entries.Delete_List;
         end if;
       end if;

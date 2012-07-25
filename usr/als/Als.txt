@@ -1,6 +1,6 @@
 Als
 ===
-V8.0
+V8.1
 
 Als lists files, directory contents... It supports several powerfull options
 for the selection of entries, the output format of each entry, and general
@@ -35,7 +35,7 @@ Specify which entry to select
 
   --skip_dirs                Skip directories from arguments
                                (usefull whan calling "asl *")
-  --no_names                 Do not show directory names
+  --no_name                  Do not show directory names
 
   <match_name> ::= -m <criteria> | --match=<criteria>
     <criteria> ::= <templates> | @<regex>
@@ -54,7 +54,7 @@ Specify which entry to select
     <date_comp> ::= eq | lt | le | gt | ge
     <date>      ::= yyyy-mm-ddThh:mm:ss | yyyy-mm-dd | Thh:mm:ss
                   | <positive><duration>
-    <duration>  ::= Y | M | D | h | m
+    <duration>  ::= Y | M | D | h | m | s
                              Keep files that match the date specification
                               (before, after or equal to a given date or delay)
     -n <date> (--newer=<date>) is a shortcut to "-d ge<date>"
