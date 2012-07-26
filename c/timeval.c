@@ -203,9 +203,7 @@ int incr_time (timeout_t *p_to, unsigned int delay_ms)
 /* init a time with current time */
 void get_time (timeout_t *p_time)
 {
-  struct timezone zone;
-
-  gettimeofday(p_time, &zone);
+  gettimeofday(p_time, NULL);
 }
 
 
