@@ -38,7 +38,7 @@ package body Sys_Calls is
     C_Uid   : Integer;
     C_Gid   : Integer;
     C_Mtime : Integer;
-    C_Size  : Long_Integer;
+    C_Size  : C_Types.Off_T;
   end record;
 
   function File_Kind_Of (Mode : Integer) return File_Desc_Kind_List is

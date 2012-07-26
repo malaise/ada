@@ -17,7 +17,7 @@ package Entities is
     -- Last modification time
     Modif_Time : Ada.Calendar.Time;
     -- Size
-    Size : Sys_Calls.Size_T;
+    Size : Sys_Calls.Off_T;
     -- Symbolic link first target (if link)
     Link : As.U.Asu_Us;
     -- Symbolic link final target exists (if link)

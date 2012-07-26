@@ -18,7 +18,7 @@ package body Lister is
   -- Total size
   Total_Active : Boolean := False;
   Total_Size : Size_Type := 0;
-  procedure Add_Size (Size : in Sys_Calls.Size_T);
+  procedure Add_Size (Size : in Sys_Calls.Off_T);
 
   -- Slection criteria
   Only_Dirs, Only_Files, Only_Others : Boolean := False;
@@ -505,7 +505,7 @@ package body Lister is
     return Total_Size;
   end Get_Total;
 
-  procedure Add_Size (Size : in Sys_Calls.Size_T) is
+  procedure Add_Size (Size : in Sys_Calls.Off_T) is
   begin
     if Total_Active then
       Total_Size := Total_Size + Size_Type(Size);

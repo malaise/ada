@@ -205,7 +205,7 @@ extern int file_stat(const char *path, simple_stat *simple_stat_struct) {
   simple_stat_struct->uid   = stat_struct.st_uid;
   simple_stat_struct->gid   = stat_struct.st_gid;
   simple_stat_struct->mtime = stat_struct.st_mtime;
-  simple_stat_struct->size = (unsigned long)stat_struct.st_size;
+  simple_stat_struct->size = stat_struct.st_size;
 
   return OK;
 

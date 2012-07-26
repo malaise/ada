@@ -53,7 +53,7 @@ typedef struct {
   int uid;
   int gid;
   int mtime;
-  long size;
+  off_t size;
 } simple_stat;
 
 extern int file_stat(const char *path, simple_stat *simple_stat_struct);

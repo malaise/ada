@@ -93,7 +93,7 @@ package Sys_Calls is
   -- 10th bit ST (sticky)
   -- 11th bit GS (set GID)
   -- 12th bit US (set UID)
-  subtype Size_T is Long_Integer;
+  subtype Off_T is C_Types.Off_T;
   type File_Stat_Rec is record
     Kind       : File_Kind_List;
     Rights     : Natural;
@@ -101,7 +101,7 @@ package Sys_Calls is
     User_Id    : Natural;
     Group_Id   : Natural;
     Modif_Time : Time_T;
-    Size       : Size_T;
+    Size       : Off_T;
   end record;
 
   -- File stat infos

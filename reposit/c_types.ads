@@ -13,6 +13,7 @@ package C_Types is
   subtype Int is Integer;
 
   subtype Long is Long_Integer;
+  subtype Long64 is Long_Long_Integer;
 
   type  Double is new Long_Float;
 
@@ -35,6 +36,7 @@ package C_Types is
   end record;
 
   subtype Size_T is Long;
+  subtype Off_T is Long64;
 
   subtype Mode_T is Uint32;
 

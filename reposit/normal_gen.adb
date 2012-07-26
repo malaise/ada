@@ -7,44 +7,43 @@
 -- Right : If string is shorter than Len character, align it at Right
 --   or at left (not Right) and fill with Gap
 -- Gap : When string is shorter than len, fill empty positions with Gap
-
-function Normal (I     : Integer;
-                 Len   : Positive;
-                 Right : Boolean := True;
-                 Gap   : Character := ' ') return String is
-  L : Positive := Integer'Image(I)'Last;
-  Si : String (1 .. L) := Integer'Image(I);
+function Normal_Gen (I     : Int;
+                     Len   : Positive;
+                     Right : Boolean := True;
+                     Gap   : Character := ' ') return String is
+  L : Positive := Int'Image(I)'Last;
+  Si : String (1 .. L) := Int'Image(I);
   Sm : String (1 .. Len);
   Warning_Char : constant Character := '!';
 
-  -- Real -> integer : round or trunc
-  function Trunc (X : in Float) return Integer is
-    Int : Integer;
+  -- Real -> Int : round or trunc
+  function Trunc (X : in Float) return Int is
+    I : Int;
   begin
-    Int := Integer (X);
+    I := Int (X);
     -- Adjust to 1
     if X > 0.0 then
       -- If x>0 error is 1 too much
-      if Float (Int) > X then Int := Int - 1; end if;
-      return Int;
+      if Float (I) > X then I := I - 1; end if;
+      return I;
     else
       -- If x<0 error is 1 too less
-      if Float (Int) < X then Int := Int + 1; end if;
-      return Int;
+      if Float (I) < X then I := I + 1; end if;
+      return I;
     end if;
   exception
     when others => raise Constraint_Error;
   end Trunc;
 
-  function Round (X : in Float) return Integer is
-    Resultat : Integer;
+  function Round (X : in Float) return Int is
+    Result : Int;
   begin
     if X > 0.0 then
-      Resultat := Trunc  (X + 0.5);
+      Result := Trunc  (X + 0.5);
     else
-      Resultat := Trunc  (X - 0.5);
+      Result := Trunc  (X - 0.5);
     end if;
-    return Resultat;
+    return Result;
   exception
     when others => raise Constraint_Error;
   end Round;
@@ -60,8 +59,8 @@ begin
     -- Round I at Len - 1 digits and cat the warning char
     declare
       R : constant Float := Float(I) / (10.0 ** (L-Len+1) );
-      I : constant Integer := Round (R);
-      Imi : constant String := Integer'Image(I);
+      I : constant Int := Round (R);
+      Imi : constant String := Int'Image(I);
       Fi : Natural := 1;
       Li : Natural := Imi'Last;
     begin
@@ -98,5 +97,5 @@ begin
     end if;
     return Sm;
   end if;
-end Normal;
+end Normal_Gen;
 

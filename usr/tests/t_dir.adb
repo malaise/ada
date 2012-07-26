@@ -47,7 +47,7 @@ procedure T_Dir is
 
   procedure Put_Size (Size : in Sys_Calls.Off_T) is
   begin
-    My_Io.Put(" " & Normal_Long (Size, 12));
+    My_Io.Put(" " & Normal_Long (Size, 10));
   exception
     when Constraint_Error => My_Io.Put(" " & "xxxxxxxxxx");
   end Put_Size;
