@@ -9,7 +9,7 @@ package body Output is
 
   -- Images
   function Nat_Image is new Int_Image (Natural);
-  function Size_Image is new Int_Image (Sys_Calls.Size_T);
+  function Size_Image is new Int_Image (Sys_Calls.Off_T);
   function Total_Image is new Int_Image (Lister.Size_Type);
 
   -- Put a char
@@ -94,7 +94,7 @@ package body Output is
   -- Sorting function for 2 entities according to output format
   function Less_Than (El1, El2 : Entities.Entity) return Boolean is
     use type Ada.Calendar.Time;
-    use type Sys_Calls.Size_T;
+    use type Sys_Calls.Off_T;
     C1, C2 : Entities.Entity;
     use type As.U.Asu_Us;
   begin
@@ -300,7 +300,7 @@ package body Output is
    -- Max length of fields user, group and size, for padding
    Max_Name_Len : constant := 8;
    Max_Group_Len : constant := 6;
-   Max_Size_Len : constant := 9;
+   Max_Size_Len : constant := 10;
    use Bit_Ops;
    use type Directory.File_Kind_List;
    function Id_Image (Id : Natural) return String is
@@ -315,7 +315,7 @@ package body Output is
 
   -- Size on human readable format (xxxx or y.zM or yyM or yyyM)
   -- or on N digits or more
-  function Size_Image (Size : Sys_Calls.Size_T; Human : Boolean) return String is
+  function Size_Image (Size : Sys_Calls.Off_T; Human : Boolean) return String is
     Multipliers : constant array (1 .. 4) of Character := ('k', 'M', 'G', 'T');
     Kilos : Lister.Size_Type;
     Kilosi, Kilosf : Lister.Size_Type;

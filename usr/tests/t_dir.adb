@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with As.U, My_Io, Int_Io, Directory, Sys_Calls, Argument, Day_Mng, Normal;
+with As.U, My_Io, Int_Io, Directory, Sys_Calls, Argument, Day_Mng, Normal, Normal_Long;
 procedure T_Dir is
   File_Name : As.U.Asu_Us;
   Dir_Name : As.U.Asu_Us;
@@ -45,9 +45,11 @@ procedure T_Dir is
     My_Io.Put (" " & Normal (Id, 4));
   end Put_Id;
 
-  procedure Put_Size (Size : in Sys_Calls.Size_T) is
+  procedure Put_Size (Size : in Sys_Calls.Off_T) is
   begin
-    My_Io.Put(" " & Normal (Integer(Size), 10));
+    My_Io.Put(" " & Normal_Long (Size, 12));
+  exception
+    when Constraint_Error => My_Io.Put(" " & "xxxxxxxxxx");
   end Put_Size;
 
   procedure Put_Date (Mtime : in Sys_Calls.Time_T) is
