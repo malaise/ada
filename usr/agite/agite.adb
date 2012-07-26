@@ -142,16 +142,16 @@ procedure Agite is
     Found : Boolean;
     use type Git_If.File_Entry_Rec;
   begin
-    -- Save current position and entry
-    if not Files.Is_Empty then
-      Position := Afpx.Line_List.Get_Position;
-      Files.Move_At (Position);
-      Files.Read (Current_File, Git_If.File_Mng.Dyn_List.Current);
-    end if;
     if Force then
       List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No) - 4;
       Changed := True;
     else
+      -- Save current position and entry
+      if not Files.Is_Empty then
+        Position := Afpx.Line_List.Get_Position;
+        Files.Move_At (Position);
+        Files.Read (Current_File, Git_If.File_Mng.Dyn_List.Current);
+      end if;
       -- Refresh list only if it has changed
       -- Make a copy of files list
       Prev_Files.Insert_Copy (Files);
