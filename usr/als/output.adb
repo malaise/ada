@@ -300,7 +300,7 @@ package body Output is
    -- Max length of fields user, group and size, for padding
    Max_Name_Len : constant := 8;
    Max_Group_Len : constant := 6;
-   Max_Size_Len : constant := 9;
+   Max_Size_Len : constant := 10;
    use Bit_Ops;
    use type Directory.File_Kind_List;
    function Id_Image (Id : Natural) return String is
