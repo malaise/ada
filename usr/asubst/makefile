@@ -6,7 +6,7 @@ EXES := asubst asubst.stat
 CLIBS := cutil
 CLIBS_asubst := posix2pcre pcre
 
-LARGS_asubst.stat := $(CPATHD)/libx_mng.a $(CPATHD)/libcutil.a $(CPATHD)/libposix2pcre.a \
+LARGS_asubst.stat := $(CPATHD)/libcutil.a $(CPATHD)/libposix2pcre.a \
   $(PCRE)/libpcre.a
 
 TXT := Asubst History
