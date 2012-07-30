@@ -62,8 +62,9 @@ procedure T_Dir is
     Minutes  : Day_Mng.T_Minutes;
     Seconds  : Day_Mng.T_Seconds;
     Millisec : Day_Mng.T_Millisec;
+    use type Ada.Calendar.Time;
   begin
-    T := Sys_Calls.Time_Of (Mtime);
+    T := Sys_Calls.Time_Of (Mtime) + Sys_Calls.Gmt_Offset;
     Ada.Calendar.Split (T, Year, Month, Day, Dur);
     Day_Mng.Split (Dur, Hours, Minutes, Seconds, Millisec);
     My_Io.Put (" " &
