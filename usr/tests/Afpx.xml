@@ -90,18 +90,33 @@
     </Field>
 
     <Field Num="14" Kind="Button">
-      <Geometry Up="12" Left="2" Low="14" Right="12"/>
+      <Geometry Up="11" Height="1" Right="${Field_13.Right}" Width="8"/>
       <Colors Foreground="Red" Background="Blue"/>
-      <Init Row="1" Col="2">Top Sel</Init>
+      <Init Row="0" Col="2">Top</Init>
     </Field>
 
     <Field Num="15" Kind="Button">
-      <Geometry Up="12" Left="16" Low="14" Right="28"/>
+      <Geometry Up="${Field_14.Low}+2" Height="1"
+                Right="${Field_14.Right}" Width="${Field_14.Width}"/>
       <Colors Foreground="Red" Background="Blue"/>
-      <Init Row="1" Col="1">Center Sel</Init>
+      <Init Row="0" Col="1">Center</Init>
     </Field>
 
-    <Field Num="16" Kind="Put">
+    <Field Num="16" Kind="Button">
+      <Geometry Up="${Field_15.Low}+2" Height="1"
+                Right="${Field_15.Right}" Width="${Field_15.Width}"/>
+      <Colors Foreground="Red" Background="Blue"/>
+      <Init Row="0" Col="1">Bottom</Init>
+    </Field>
+
+    <Field Num="17" Kind="Put">
+      <Geometry Up="${Field_15.Low}" Height="1"
+                Width="10" Right="${Field_15.Left}-2"/>
+      <Colors Foreground="Black" Background="Brown"/>
+      <Init Row="0" Col="0">Selection:</Init>
+    </Field>
+
+    <Field Num="18" Kind="Put">
       <Geometry Up="5" Left="1" Low="5" Right="45"/>
       <Colors Foreground="Red" Background="Brown"/>
     </Field>

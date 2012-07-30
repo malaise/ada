@@ -352,7 +352,7 @@ package body Af_List is
           end if;
         end;
       when Top_Selected =>
-        -- Set current List item n top in window (do ower best)
+        -- Set current List item in top in window (do ower best)
         declare
           -- Current position in list
           Pos : constant Positive := Line_List.Get_Position;
@@ -363,6 +363,20 @@ package body Af_List is
           else
             -- Set current in top
             First_Item_Id := Pos;
+          end if;
+        end;
+      when Bottom_Selected =>
+        -- Set current List item in bottom in window (do ower best)
+        declare
+          -- Current position in list
+          Pos : constant Positive := Line_List.Get_Position;
+        begin
+          if Pos < Height then
+            -- Not enough items after current
+            return Update(Top, Display);
+          else
+            -- Set current at bottom
+            First_Item_Id := Pos - Height + 1;
           end if;
         end;
     end case;

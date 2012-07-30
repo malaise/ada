@@ -240,11 +240,11 @@ package Afpx is
   -- | Top/Bottom       |        |  Ctrl |
   -- +---------------------------_-------+
 
-  -- last 2 actions are relative to current selection
+  -- Last 3 actions are relative to current (left) selected item
   type List_Action_List is (Up, Down, Page_Up, Page_Down,
                             Shift_Page_Up, Shift_Page_Down,
                             Top, Bottom,
-                            Center_Selected, Top_Selected);
+                            Top_Selected, Center_Selected, Bottom_Selected);
 
   -- Update the list due to an action (e.g. a button)
   -- Exceptions : Invalid_Field if no list in current descriptor.

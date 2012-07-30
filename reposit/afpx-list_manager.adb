@@ -2,8 +2,7 @@ package body Afpx.List_Manager is
 
   -- Scroll the list according to button
   -- Assumption is that buttons are consecutive in the order:
-  -- Top(0), PgUp(1), Up(2), Center(3), Down(4), PgDown(5), Bottom(6)
-  -- subtype Offset_Range is Field_Range range 1 .. 6;
+  -- Top(1), PgUp(2), Up(3), Center(4), Down(5), PgDown(6), Bottom(7)
   procedure Scroll (Offset : in Offset_Range) is
   begin
     case Offset is
