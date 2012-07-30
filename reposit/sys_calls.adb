@@ -433,6 +433,14 @@ package body Sys_Calls is
       Day_Mng.Pack (Tm4C.Tm_Hour, Tm4C.Tm_Min, Tm4C.Tm_Sec, 0));
   end Time_Of;
 
+  -- Get offset of local time versus GMT
+  function Gmt_Offset return Duration is
+    function C_Gmt_Offset return C_Types.Long;
+    pragma Import (C, C_Gmt_Offset, "gmt_offset");
+  begin
+    return Duration (C_Gmt_Offset);
+  end Gmt_Offset;
+
   -- Get effective user/group Id
   function Get_Effective_User_Id return Natural is
     function C_Geteuid return C_Types.Uid_T;

@@ -35,6 +35,17 @@ extern int time_to_tm (const time_t *the_time_p, my_tm_t *my_tm_p) {
   }
 }
 
+extern long gmt_offset (void) {
+
+  time_t ttime;
+  struct tm ltime;
+
+  /* Get gmt offset of current local time */
+  ttime = time (NULL);
+  (void) localtime_r(&ttime, &ltime);
+  return ltime.tm_gmtoff;
+}
+
 extern int get_blocking (int fd) {
    int flg;
 
@@ -192,25 +203,6 @@ extern char * env_val(int i) {
 
 }
 
-static long get_gmtoff (void) {
-  static boolean gmtoff_known = false;
-  static long gmtoff = 0;
-
-  time_t ttime;
-  struct tm ltime, gtime;
-
-  /* Get gmt offset */
-  if (! gmtoff_known) {
-    ttime = time (NULL);
-    (void) localtime_r(&ttime, &ltime);
-    (void) gmtime_r(&ttime, &gtime);
-    gmtoff = (ltime.tm_hour - gtime.tm_hour) * 3600
-           + (ltime.tm_min  - gtime.tm_min) * 60
-           + (ltime.tm_sec  - gtime.tm_sec);
-    gmtoff_known = true;
-  }
-  return gmtoff;
-}
 
 extern int file_stat(const char *path, simple_stat *simple_stat_struct) {
 
@@ -224,7 +216,7 @@ extern int file_stat(const char *path, simple_stat *simple_stat_struct) {
   simple_stat_struct->nlink = stat_struct.st_nlink;
   simple_stat_struct->uid   = stat_struct.st_uid;
   simple_stat_struct->gid   = stat_struct.st_gid;
-  simple_stat_struct->mtime = stat_struct.st_mtime + get_gmtoff();
+  simple_stat_struct->mtime = stat_struct.st_mtime;
   simple_stat_struct->size = stat_struct.st_size;
 
   return OK;

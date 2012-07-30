@@ -18,6 +18,8 @@ typedef struct {
 
 extern int time_to_tm (const time_t *the_time_p, my_tm_t *my_tm_p);
 
+extern long gmt_offset (void);
+
 
 extern int set_blocking (int fd, boolean blocking);
 extern int get_blocking (int fd);

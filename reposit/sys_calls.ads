@@ -93,6 +93,7 @@ package Sys_Calls is
   -- 10th bit ST (sticky)
   -- 11th bit GS (set GID)
   -- 12th bit US (set UID)
+  -- Modif time is in GMT time
   subtype Off_T is C_Types.Off_T;
   type File_Stat_Rec is record
     Kind       : File_Kind_List;
@@ -114,6 +115,10 @@ package Sys_Calls is
 
   -- Convert file time
   function Time_Of (Time : Time_T) return Ada.Calendar.Time;
+
+  -- Get offset of local time versus GMT
+  -- Add this offset to a GMT time to get the corresponding local time
+  function Gmt_Offset return Duration;
 
   -- Get effective user/group Id of current process
   function Get_Effective_User_Id return Natural;
