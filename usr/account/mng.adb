@@ -243,7 +243,7 @@ package body Mng is
     if List_Update = Bottom then
       Afpx.Update_List(Afpx.Bottom);
     elsif List_Update = Center then
-      Afpx.Update_List(Afpx.Center);
+      Afpx.Update_List(Afpx.Center_Selected);
     end if;
     Encode_Amounts;
     Screen.Update_To_Unit;

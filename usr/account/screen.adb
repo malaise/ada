@@ -204,8 +204,8 @@ package body Screen is
               -- Up
               Afpx.Update_List(Afpx.Up);
             when List_Center_Fld =>
-              -- Center
-              Afpx.Update_List(Afpx.Center);
+              -- Center current
+              Afpx.Update_List(Afpx.Center_Selected);
             when List_Down_Fld =>
               -- Down
               Afpx.Update_List(Afpx.Down);

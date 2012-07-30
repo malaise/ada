@@ -166,7 +166,7 @@ package body Mesu_Mng is
     Cursor_Col := 0;
     Insert := False;
     Mesu_Sel.Load;
-    Afpx.Update_List (Afpx.Center);
+    Afpx.Update_List (Afpx.Center_Selected);
 
     if Nb_Month /= 0 then
       Str_Mng.Current_Date_Rec (Current_Date, Nb_Month);
@@ -297,7 +297,7 @@ package body Mesu_Mng is
               Mesu_Sel.Save;
               Pers_Lis.List (Exit_Program);
               Mesu_Sel.Load;
-              Afpx.Update_List(Afpx.Center);
+              Afpx.Update_List(Afpx.Center_Selected);
               if Exit_Program then
                 exit List;
               end if;

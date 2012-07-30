@@ -464,7 +464,7 @@ Basic_Proc.Put_Line_Error ("PTG returns");
           when Lmng_Fld + 2 =>
             Afpx.Update_List(Afpx.Up);
           when Lmng_Fld + 3 =>
-            Afpx.Update_List(Afpx.Center);
+            Afpx.Update_List(Afpx.Center_Selected);
           when Lmng_Fld + 4 =>
             Afpx.Update_List(Afpx.Down);
           when Lmng_Fld + 5 =>

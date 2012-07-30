@@ -108,7 +108,7 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
       when 07 => Afpx.Update_List (Afpx.Top);
       when 08 => Afpx.Update_List (Afpx.Page_Up);
       when 09 => Afpx.Update_List (Afpx.Up);
-      when Center_Fld => Afpx.Update_List (Afpx.Center);
+      when Center_Fld => Afpx.Update_List (Afpx.Center_Selected);
       when 11 => Afpx.Update_List (Afpx.Down);
       when 12 => Afpx.Update_List (Afpx.Page_Down);
       when 13 => Afpx.Update_List (Afpx.Bottom);
@@ -295,7 +295,7 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
     else
       Afpx.Line_List.Rewind;
     end if;
-    Afpx.Update_List(Afpx.Center);
+    Afpx.Update_List(Afpx.Center_Selected);
 
   end Change_Dir;
 
@@ -323,7 +323,7 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
                  From => Dir_Mng.File_List_Mng.Absolute);
     if Found then
       Afpx.Line_List.Move_At (Dir_List.Get_Position);
-      Afpx.Update_List (Afpx.Center);
+      Afpx.Update_List (Afpx.Center_Selected);
     end if;
 
   end Reread;

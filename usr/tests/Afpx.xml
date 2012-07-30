@@ -90,12 +90,18 @@
     </Field>
 
     <Field Num="14" Kind="Button">
-      <Geometry Up="12" Left="21" Low="14" Right="28"/>
+      <Geometry Up="12" Left="2" Low="14" Right="12"/>
       <Colors Foreground="Red" Background="Blue"/>
-      <Init Row="1" Col="1">Center</Init>
+      <Init Row="1" Col="2">Top Sel</Init>
     </Field>
 
-    <Field Num="15" Kind="Put">
+    <Field Num="15" Kind="Button">
+      <Geometry Up="12" Left="16" Low="14" Right="28"/>
+      <Colors Foreground="Red" Background="Blue"/>
+      <Init Row="1" Col="1">Center Sel</Init>
+    </Field>
+
+    <Field Num="16" Kind="Put">
       <Geometry Up="5" Left="1" Low="5" Right="45"/>
       <Colors Foreground="Red" Background="Brown"/>
     </Field>

@@ -114,8 +114,8 @@ begin
                        Right_Select => True);
     Redisplay := False;
 
-    Afpx.Clear_Field (15);
-    Afpx.Encode_Field (15, (0, 0), Ptg_Result.Id_Selected_Right'Img);
+    Afpx.Clear_Field (16);
+    Afpx.Encode_Field (16, (0, 0), Ptg_Result.Id_Selected_Right'Img);
     case Ptg_Result.Event is
       when Afpx.Keyboard =>
         case Ptg_Result.Keyboard_Key is
@@ -162,7 +162,9 @@ begin
           when 13 =>
             Afpx.Update_List(Afpx.Bottom);
           when 14 =>
-            Afpx.Update_List(Afpx.Center);
+            Afpx.Update_List(Afpx.Top_Selected);
+          when 15 =>
+            Afpx.Update_List(Afpx.Center_Selected);
           when others =>
             null;
         end case;

@@ -239,9 +239,12 @@ package Afpx is
   -- | 10 Pages Up/Down |   Ctrl | Shift |
   -- | Top/Bottom       |        |  Ctrl |
   -- +---------------------------_-------+
+
+  -- last 2 actions are relative to current selection
   type List_Action_List is (Up, Down, Page_Up, Page_Down,
                             Shift_Page_Up, Shift_Page_Down,
-                            Top, Bottom, Center);
+                            Top, Bottom,
+                            Center_Selected, Top_Selected);
 
   -- Update the list due to an action (e.g. a button)
   -- Exceptions : Invalid_Field if no list in current descriptor.

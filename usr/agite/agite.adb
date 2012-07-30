@@ -195,7 +195,7 @@ procedure Agite is
                    From => Git_If.File_Mng.Dyn_List.Absolute);
       if Found then
         Afpx.Line_List.Move_At (Files.Get_Position);
-        Afpx.Update_List (Afpx.Center);
+        Afpx.Update_List (Afpx.Center_Selected);
       else
         Afpx.Line_List.Rewind;
         Afpx.Update_List (Afpx.Top);
@@ -350,7 +350,7 @@ procedure Agite is
     History.Handle (Root.Image, Path.Image, Name, Is_File);
     Init;
     Afpx.Line_List.Move_At (Pos);
-    Afpx.Update_List (Afpx.Center);
+    Afpx.Update_List (Afpx.Center_Selected);
   end Do_History;
 
   procedure Do_Revert (Name : in String) is
@@ -364,7 +364,7 @@ procedure Agite is
     end if;
     Init;
     Afpx.Line_List.Move_At (Pos);
-    Afpx.Update_List (Afpx.Center);
+    Afpx.Update_List (Afpx.Center_Selected);
   end Do_Revert;
 
   -- List action on File or Dir
@@ -441,7 +441,7 @@ procedure Agite is
         end if;
         -- Move to it
         Afpx.Line_List.Move_At (Files.Get_Position);
-        Afpx.Update_List (Afpx.Center);
+        Afpx.Update_List (Afpx.Top_Selected);
         -- Done
         return;
       end if;

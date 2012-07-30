@@ -239,7 +239,7 @@ package body Menu1 is
             Afpx.Use_Descriptor(1, False);
             if Saved_Index /= 0 then
               Afpx.Line_List.Move_At (Saved_Index);
-              Afpx.Update_List (Afpx.Center);
+              Afpx.Update_List (Afpx.Center_Selected);
             end if;
             Screen.Init_For_Main1 (Cursor_Field);
             Screen.Put_File (File_Name_Txt.Image);
@@ -248,7 +248,7 @@ package body Menu1 is
             Set_Points_List;
             if Saved_Index /= 0 then
               Afpx.Line_List.Move_At (Saved_Index);
-              Afpx.Update_List (Afpx.Center);
+              Afpx.Update_List (Afpx.Center_Selected);
             end if;
             Screen.Init_For_Main1 (Cursor_Field);
             Screen.Put_File (File_Name_Txt.Image);

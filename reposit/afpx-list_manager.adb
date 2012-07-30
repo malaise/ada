@@ -10,7 +10,7 @@ package body Afpx.List_Manager is
       when 1 => Update_List(Top);
       when 2 => Update_List(Page_Up);
       when 3 => Update_List(Up);
-      when 4 => Update_List(Center);
+      when 4 => Update_List(Center_Selected);
       when 5 => Update_List(Down);
       when 6 => Update_List(Page_Down);
       when 7 => Update_List(Bottom);

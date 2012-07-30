@@ -329,7 +329,7 @@ package body Af_List is
           return False;
         end if;
         First_Item_Id := Line_List.List_Length - Height + 1;
-      when Center =>
+      when Center_Selected =>
         -- Center current List item in window (do ower best)
         declare
           -- List length
@@ -341,11 +341,28 @@ package body Af_List is
           Lastrow : constant Natural := Height - 1;
         begin
           if Pos - 1 < Midrow then
+            -- Not enough items before current
             return Update(Top, Display);
           elsif Len - Pos < Lastrow - Midrow then
+            -- Not enough items after current
             return Update(Bottom, Display);
           else
+            -- Set current in middle
             First_Item_Id := Pos - Midrow;
+          end if;
+        end;
+      when Top_Selected =>
+        -- Set current List item n top in window (do ower best)
+        declare
+          -- Current position in list
+          Pos : constant Positive := Line_List.Get_Position;
+        begin
+          if Line_List.List_Length - Pos <  Height - 1 then
+            -- Not enough items after current
+            return Update(Bottom, Display);
+          else
+            -- Set current in top
+            First_Item_Id := Pos;
           end if;
         end;
     end case;

@@ -146,7 +146,7 @@ package body History is
           Details.Handle (Root, Log.Hash);
           Init;
           Init_List (Logs);
-          Afpx.Update_List (Afpx.Center);
+          Afpx.Update_List (Afpx.Center_Selected);
       end case;
     end Show;
 
