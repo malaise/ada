@@ -116,12 +116,21 @@ echo "OK"
 # Long output
 title "In ., long format and date-iso"
 res=`launch -l --date_iso als | sed -r 's/ +/ /g'`
-exp=`ls -l --time-style="+%Y-%m-%dT%H:%M:%S" als | cut -d ' ' -f 1,3-
-`
+exp=`ls -l --time-style="+%Y-%m-%dT%H:%M:%S" als | cut -d ' ' -f 1,3-`
 if [ "$res" != "$exp" ] ; then
   error "als -l --date_iso is $res i.o. $exp"
 fi
 echo "OK"
+
+# Long output in UTC
+title "In ., long format and date-iso in UTC"
+res=`launch -lU --date_iso als | sed -r 's/ +/ /g'`
+exp=`TZ=UTC ls -l --time-style="+%Y-%m-%dT%H:%M:%S" als | cut -d ' ' -f 1,3-`
+if [ "$res" != "$exp" ] ; then
+  error "als -lU --date_iso is $res i.o. $exp"
+fi
+echo "OK"
+
 
 # Sort by size
 title "In ., reverse sort by size"

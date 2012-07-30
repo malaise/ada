@@ -2,7 +2,7 @@ with Ada.Calendar;
 with As.U, Basic_Proc, Argument, Argument_Parser;
 with Entities, Output, Targets, Lister, Exit_Code;
 procedure Als is
-  Version : constant String  := "V8.1";
+  Version : constant String  := "V9.0";
 
   -- Usage
   procedure Usage is
@@ -61,6 +61,7 @@ procedure Als is
     Put_Line_Error ("  -N (--no_sort)     // Keep order same as in the directory structure");
     Put_Line_Error ("  -M (--merge)       // Show a global list of entries (without dir names)");
     Put_Line_Error ("  -T (--total)       // Also show total size of listed entries");
+    Put_Line_Error ("  -U (--utc)         // Use UTC i.o. local time for date spec and output");
     Put_Line_Error ("Exits with 0 if a result, 1 if none and 2 on error.");
   end Usage;
   Error_Exception : exception;
@@ -110,7 +111,8 @@ procedure Als is
    30 => (Argument_Parser.No_Key_Char, As.U.Tus ("date_iso"), False, False),
    31 => (Argument_Parser.No_Key_Char, As.U.Tus ("skip_dirs"), False, False),
    32 => ('O', As.U.Tus ("others"), False, False),
-   33 => (Argument_Parser.No_Key_Char, As.U.Tus ("no_name"), False, False) );
+   33 => (Argument_Parser.No_Key_Char, As.U.Tus ("no_name"), False, False),
+   34 => ('U', As.U.Tus ("utc"), False, False) );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   -- Option management
   List_Dots, List_Roots_And_Dots : Boolean;
@@ -138,7 +140,7 @@ procedure Als is
   Skip_Dirs : Boolean;
   List_Only_Others : Boolean;
   No_Name : Boolean;
-
+  Utc : Boolean;
 
   -- Parse a date argument
   function Parse_Date (Str : String) return Entities.Date_Spec_Rec is separate;
@@ -216,6 +218,7 @@ begin
   Date_Iso := Arg_Dscr.Is_Set (30);
   List_Only_Others := Arg_Dscr.Is_Set (32);
   No_Name := Arg_Dscr.Is_Set (33);
+  Utc := Arg_Dscr.Is_Set (34);
   Depth := 0;
 
   -- Check sorting
@@ -380,7 +383,7 @@ begin
   -- Set selection criteria in Lister, activate Total computation
   Lister.Set_Criteria (List_Only_Dirs, List_Only_Files,
                        List_Only_Links, List_Only_Others,
-                       Follow_Links, Date1, Date2);
+                       Follow_Links, Date1, Date2, Utc);
   if Put_Total then
     Lister.Activate_Total;
   end if;

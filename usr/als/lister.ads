@@ -11,7 +11,8 @@ package Lister is
                           Only_Links : in Link_Criteria_List;
                           Only_Others : in Boolean;
                           Follow_Links : in Boolean;
-                          Date1, Date2 : in Entities.Date_Spec_Rec);
+                          Date1, Date2 : in Entities.Date_Spec_Rec;
+                          Utc : in Boolean);
 
   -- Add a file match or exclude template or regex
   -- File will match if no matching template or if it matches one of the

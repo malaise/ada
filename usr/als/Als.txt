@@ -1,6 +1,6 @@
 Als
 ===
-V8.1
+V9.0
 
 Als lists files, directory contents... It supports several powerfull options
 for the selection of entries, the output format of each entry, and general
@@ -83,6 +83,8 @@ Specify general formating options
   -M (--merge)               Show a global list of entries (without dir names)
 
   -T (--total)               Also show total size of listed entries
+
+  -U (--utc)                 Use UTC i.o. local time for date spec and output
 
 Other options
 ~~~~~~~~~~~~~

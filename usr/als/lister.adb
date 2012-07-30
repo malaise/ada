@@ -25,12 +25,14 @@ package body Lister is
   Only_Links : Link_Criteria_List := No_Link;
   Follow_Links : Boolean := False;
   Date1, Date2 : Entities.Date_Spec_Rec;
+  Utc : Boolean := False;
   -- Set selection criteria
   procedure Set_Criteria (Only_Dirs, Only_Files : in Boolean;
                           Only_Links : in Link_Criteria_List;
                           Only_Others : in Boolean;
                           Follow_Links : in Boolean;
-                          Date1, Date2 : in Entities.Date_Spec_Rec) is
+                          Date1, Date2 : in Entities.Date_Spec_Rec;
+                          Utc : in Boolean) is
   begin
     Lister.Only_Dirs := Only_Dirs;
     Lister.Only_Files := Only_Files;
@@ -39,6 +41,7 @@ package body Lister is
     Lister.Follow_Links := Follow_Links;
     Lister.Date1 := Date1;
     Lister.Date2 := Date2;
+    Lister.Utc := Utc;
   end Set_Criteria;
 
   -- Check that a template or regex is valid, raises Invalid_Template if not
@@ -234,7 +237,7 @@ package body Lister is
                   File : in String) is
     Ent : Entities.Entity;
     Stat : Sys_Calls.File_Stat_Rec;
-    use type Directory.File_Kind_List;
+    use type Directory.File_Kind_List, Ada.Calendar.Time;
   begin
     -- Prepare list for appending
     Ent_List.Rewind (False, Entities.Entity_List_Mng.Prev);
@@ -252,6 +255,10 @@ package body Lister is
     Ent.Name := As.U.Tus (Directory.Basename(File));
     Ent.Kind := Directory.File_Kind_List (Stat.Kind);
     Ent.Modif_Time := Sys_Calls.Time_Of (Stat.Modif_Time);
+    if not Utc then
+      -- Store modif time in local time
+      Ent.Modif_Time := Ent.Modif_Time + Sys_Calls.Gmt_Offset;
+    end if;
     Ent.Path := As.U.Tus (Directory.Dirname(File));
     Ent.Rights := Stat.Rights;
     Ent.User_Id := Stat.User_Id;
@@ -280,7 +287,8 @@ package body Lister is
     Desc : Directory.Dir_Desc;
     Ent : Entities.Entity;
     Stat : Sys_Calls.File_Stat_Rec;
-    use type Directory.File_Kind_List, Entities.Dots_Kind_List;
+    use type Directory.File_Kind_List, Entities.Dots_Kind_List,
+             Ada.Calendar.Time;
   begin
     -- Prepare list for appending
     Ent_List.Rewind (False, Entities.Entity_List_Mng.Prev);
@@ -349,6 +357,10 @@ package body Lister is
         -- Fill entity
         Ent.Kind := Directory.File_Kind_List (Stat.Kind);
         Ent.Modif_Time := Sys_Calls.Time_Of (Stat.Modif_Time);
+        if not Utc then
+          -- Store modif time in local time
+          Ent.Modif_Time := Ent.Modif_Time + Sys_Calls.Gmt_Offset;
+        end if;
         Ent.Rights := Stat.Rights;
         Ent.User_Id := Stat.User_Id;
         Ent.Group_Id := Stat.Group_Id;

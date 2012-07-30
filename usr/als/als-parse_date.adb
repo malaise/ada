@@ -1,4 +1,4 @@
-with Day_Mng, Perpet;
+with Day_Mng, Perpet, Sys_Calls;
 separate (Als)
 
 function Parse_Date (Str : String) return Entities.Date_Spec_Rec is
@@ -16,7 +16,7 @@ function Parse_Date (Str : String) return Entities.Date_Spec_Rec is
 
   -- Result
   Crit : Entities.Date_Spec_Rec;
-  use type Entities.Date_Oper_List;
+  use type Entities.Date_Oper_List, Ada.Calendar.Time;
 begin
   -- At least 4 characters xxNy
   if Lstr'Length < 4 then
@@ -95,7 +95,7 @@ begin
     declare
       N : constant Positive := Positive'Value (Lstr(3 .. Lstr'Last-1));
       C : constant Character := Lstr(Lstr'Last);
-      use type Perpet.Duration_Rec, Ada.Calendar.Time;
+      use type Perpet.Duration_Rec;
     begin
       case C is
         when 'Y' =>
@@ -114,6 +114,10 @@ begin
           raise Error_Exception;
       end case;
     end;
+  end if;
+  -- Clock is in Local time, convert into UTc if requested
+  if Utc then
+    Crit.Date := Crit.Date - Sys_Calls.Gmt_Offset;
   end if;
   return Crit;
 exception
