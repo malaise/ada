@@ -204,7 +204,7 @@ ada_words (2)::
 address_ops (1)::
      Add, sub and returns image of a System.Address.
 
-afpx (3)::
+afpx (3) afpx.list_manager::
      Graphic (text oriented) manager of input screens that are off-line
      defined.
 
@@ -214,26 +214,26 @@ afpx_bld (2)::
 any_def (1)::
      Definition of variant type that contains any value.
 
-arbitrary arbitrary-factors arbitrary-fractions (2)::
+arbitrary arbitrary.factors arbitrary.fractions (2)::
      Arbitrary precision operations, prime factor decomposition, fractions.
 
-as as-b as-u as-u-utils (2)::
-     Bounded and unbounded strings and associated containers.
-
-autobus (3)::
-     Simple bus to exchange strings between processes.
-
-loc_arg (1)::
+argument (1)::
      Program name and arguments extraction (based on keys).
 
 argument_parser (2)::
      Parser of program arguments (based on keys and options).
+
+as as.b as.u as.u.utils (2)::
+     Bounded and unbounded strings and associated containers.
 
 assertion(1)::
      Raise exception or trace when assertion fails.
 
 async_stdin (2)::
      Asynchronous reading and buffer of characters from input flow.
+
+autobus (3)::
+     Simple bus to exchange strings between processes.
 
 basic_proc (1)::
      Basic IO operations and exit code setting.
@@ -272,6 +272,9 @@ command (2)::
 computer (2)::
      Evaluate expressions based on numbers, variables, operations.
 
+con_io (3)::
+     Console IOs (keyboard, mouse, screen) in text and graphic.     
+
 condition_manager (1)::
      Allow several tasks to wait until unblocked all together or one by one.
 
@@ -279,16 +282,13 @@ console (1)::
      ANSII management of text/cursor console.
 
 control_pool (2)::
-     Control exclusive access to data in a pool
+     Control exclusive access to data in a pool.
 
 convert (1)::
      Converts network <--> host integer.
 
 copy_file (1)::
      Copy a file.
-
-crc_10 (1)::
-     Computes the CRC of strings (CRC is in 0 .. 3FF).
 
 curve (3)::
      Draw a curve of function y=f(x) and drawn a set of points in 2D.
@@ -309,7 +309,7 @@ door_manager (1)::
      Allow several tasks to wait until a given amount or waiters is reached.
 
 dur_image (1)::
-     Return string image of a duration rounded at N digits
+     Return string image of a duration rounded at N digits.
 
 dyn_data (2)::
      Allocate/free data from a pool.
@@ -335,9 +335,6 @@ file_hash (1)::
 forker (2)::
      API to a standalone (in C) forker process.
 
-con_io (3)::
-     Console IOs (keyboard, mouse, screen) in text and graphic.
-
 get_float (1)::
      Get a float or int from a string.
 
@@ -347,8 +344,11 @@ get_line (2)::
 hash hashing (2)::
      Hash table storage of keyed data.
 
+hash_function (1)::
+     Function for hashing a string into integer.
+
 hashed_list (1)::
-     Hashed access to a dynamic list of items
+     Hashed access to a dynamic list of items.
 
 hashed_list.unique (1)::
      Hashed access to a dynamic list of items with unique keys.
@@ -365,8 +365,9 @@ init_manager (1)::
 input_buffer (1)::
      Extract sentences from a flow of characters.
 
-int_image mod_image integer_image int_image16 (1)::
-     Image of integer and modulus (no leading space).
+int_image mod_image float_image integer_image int_image16 (1)::
+     Image of integer, modulus and float, of integer in base 16 (no leading
+     space).
 
 ip_addr (1)::
      Parse IP address or port.
@@ -374,11 +375,17 @@ ip_addr (1)::
 key_pressed (1)::
      Uses Sys_Calls handling of stdin to get a character asynchronously.
 
+language (2)::
+     Support Utf6 - Unicode - wide char conversions.
+
 limited_list dynamic_list (3)::
      Dynamic list of (limited) private objects, search/sort.
 
 limited_pool unlimited_pool (2)::
      Simple pool of (limited) private objects, push/pop.
+
+loc_arg (1)::
+     Simple retrieval of command line arguments.
 
 lower_char lower_str mixed_str upper_char upper_str (1)::
      Upper, lower, mixed string and character conversion.
@@ -404,14 +411,11 @@ ndbm (1)::
 network (2)::
      Simulate a network of inter-connected nodes.
 
-normal (1)::
+normal, normal_long, normal_gen (1)::
      Normalize an integer image into fixed length string.
 
 normalization (1)::
      General normalization of integers and reals.
-
-normalize_path (1)::
-     Normalize a directory path (remove "/.", etc).
 
 null_procedure (1)::
      Null (dummy) procedure.
@@ -422,7 +426,7 @@ num_letters (1)::
 num_match (1)::
      Checks if a number matches a range based criteria.
 
-parser (2)::
+parser, parser.all_in_one (2)::
      Parse a string, separate words and separators.
 
 pattern (2)::
@@ -430,9 +434,6 @@ pattern (2)::
 
 perpet (2)::
      Perpetual calendar.
-
-polygon_mng (2)::
-     Line and polygone intersection.
 
 proc_family (2)::
      Fork/exec unix process.
@@ -509,17 +510,20 @@ text_char (2)::
 text_line (2)::
      Get/put lines of text from/to a flow.
 
-timeval (1)::
-     Conversion from and to timeval structure.
-
 timers (2)::
      Asynchronous timer management.
+
+timeval (1)::
+     Conversion from and to timeval structure.
 
 trace (1)::
      Tracing utility library.
 
 trees (2)::
      Tree of items (father/children) management.
+
+trilean (1)::
+     An enum with 3 values (False, True and Other, or Maybe).
 
 u_rand (2)::
      Universal random number generator.
@@ -539,12 +543,13 @@ utf_8 (2)::
 virtual_time (2)::
      Define virtual time that can shift, accelerate, freeze...
 
+x_mng (3)::
+     Low level interface to X11 (text, basic graphics, Mouse and keyboard).
+
 xml_parser (3)::
-     Parser of Xml files or strings, including check of dtd.
+     Parse Xml files or strings, including check of dtd.
 
 xml_parser.generator (2)::
      Generate Xml output in flow/file/string.
 
-x_mng (3)::
-     Low level interface to X11 (text, basic graphics, Mouse and keyboard).
 
