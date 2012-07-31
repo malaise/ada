@@ -72,7 +72,8 @@ package Git_If is
                          Commit : in out Commit_List);
 
   -- Cat a file at a Hash in a file, Ok if success
-  function Cat (Name : String; Hash : String; File : String) return Boolean;
+  function Cat (Name : String; Hash : String; File : String;
+                Log_Error : Boolean := True) return Boolean;
 
   -- Launch a diff (asynchronous) from current to HEAD
   procedure Launch_Diff (Differator, File_Name : in String);

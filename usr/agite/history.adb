@@ -129,7 +129,7 @@ package body History is
       end if;
     end Show_Delta;
 
-    -- View file of commit details
+    -- View file or commit details
     type Show_List is (Show_View, Show_Details);
     procedure Show (What : in Show_List) is
       Ref : Positive;

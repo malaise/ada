@@ -516,7 +516,8 @@ package body Git_If is
   end List_Commit;
 
   -- Cat a file at a Hash in a file
-  function Cat (Name : String; Hash : String; File : String) return Boolean is
+  function Cat (Name : String; Hash : String; File : String;
+                Log_Error : Boolean := True) return Boolean is
     Cmd : Many_Strings.Many_String;
   begin
     Cmd.Set ("git");
@@ -527,7 +528,9 @@ package body Git_If is
         Out_Flow_3'Access, Err_Flow'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git show: " & Err_Flow.Str.Image);
+      if Log_Error then
+        Basic_Proc.Put_Line_Error ("git show: " & Err_Flow.Str.Image);
+      end if;
       return False;
     end if;
     return True;

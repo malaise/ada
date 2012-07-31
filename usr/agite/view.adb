@@ -11,7 +11,7 @@ begin
     -- Cat file in it
     Afpx.Suspend;
     begin
-      Ok := Git_If.Cat (Path, Hash, Tmp_Name);
+      Ok := Git_If.Cat (Path, Hash, Tmp_Name, Log_Error => False);
       if not Ok then
         -- Try Hash^ (file might be deleted by the commit of hash)
         Ok := Git_If.Cat (Path, Hash & "^", Tmp_Name);

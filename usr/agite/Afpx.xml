@@ -3,7 +3,7 @@
 
 <!-- For agite -->
 <Afpx_Descriptors Height="44" Width="55">
-  <Var Name="Version" Value="V5.3"/>
+  <Var Name="Version" Value="V5.4"/>
 
   <!-- Main screen: explorator -->
   <Descriptor Num="1" Background="Light_Grey">
