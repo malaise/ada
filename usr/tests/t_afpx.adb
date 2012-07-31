@@ -25,10 +25,9 @@ procedure T_Afpx is
     return True;
   end Timer_Cb;
 
-  use Afpx;
-
   procedure Next_Field (Cursor_Field : in out Afpx.Field_Range) is
     Loc : Afpx.Absolute_Field_Range;
+    use type Afpx.Absolute_Field_Range;
   begin
     Loc := Afpx.Next_Cursor_Field (Cursor_Field);
     if Loc = 0 then
@@ -50,10 +49,13 @@ procedure T_Afpx is
   end Encode_Status;
 
   function Cursor_Col_Cb (Cursor_Field : Afpx.Field_Range;
-                 New_Field : Boolean;
-                 Cursor_Col : Con_Io.Col_Range;
-                 Enter_Field_Cause : Afpx.Enter_Field_Cause_List;
-                 Str : Afpx.Unicode_Sequence) return Con_Io.Col_Range is
+                          New_Field : Boolean;
+                          Cursor_Col : Con_Io.Col_Range;
+                          Enter_Field_Cause : Afpx.Enter_Field_Cause_List;
+                          Str : Afpx.Unicode_Sequence)
+           return Con_Io.Col_Range is
+    Last_Index : Con_Io.Col_Range;
+    use type Afpx.Enter_Field_Cause_List, Afpx.Absolute_Field_Range;
   begin
     Basic_Proc.Put_Line_Output ("Cursor_Set_Col_Cb --> "
      & "Cursor_Field:" & Cursor_Field'Img
@@ -61,7 +63,23 @@ procedure T_Afpx is
      & ", Cursor_Col:" & Cursor_Col'Img
      & ", Cause: " & Mixed_Str (Enter_Field_Cause'Img)
      & ", Content: " & Language.Unicode_To_String (Str));
-    return Cursor_Col;
+    Last_Index := Afpx.Last_Index (Afpx.Decode_Field (Cursor_Field, 0), True);
+    case Enter_Field_Cause is
+      when Afpx.Mouse =>
+        if Cursor_Col > Last_Index then
+          return Last_Index;
+        else
+          return Cursor_Col;
+        end if;
+      when Afpx.Right_Full =>
+        return Con_Io.Col_Range'First;
+      when Afpx.Left | Afpx.Tab | Afpx.Stab=>
+        if Cursor_Field = 6 then
+          return Con_Io.Col_Range'First;
+        else
+          return Last_Index;
+        end if;
+    end case;
   end Cursor_Col_Cb;
 
   procedure List_Change_Cb (Action : in Afpx.List_Change_List;
@@ -152,18 +170,18 @@ begin
             if Afpx.Decode_Field(Cursor_Field, 0)(1 .. 4) = "exit" then
               Afpx.Set_Field_Activation (Cursor_Field, False);
               Afpx.Clear_Field (2);
-              Encode_Status (U => Decode_Field(Cursor_Field, 0));
+              Encode_Status (U => Afpx.Decode_Field(Cursor_Field, 0));
               Next_Field (Cursor_Field);
               Cursor_Col := 0;
               Insert := False;
             else
               Afpx.Clear_Field (2);
-              Encode_Status (U => Decode_Field(Cursor_Field, 0));
+              Encode_Status (U => Afpx.Decode_Field(Cursor_Field, 0));
             end if;
           when Afpx.Escape_Key =>
             Afpx.Clear_Field (Cursor_Field);
             Afpx.Clear_Field (2);
-            Encode_Status (U => Decode_Field(Cursor_Field, 0));
+            Encode_Status (U => Afpx.Decode_Field(Cursor_Field, 0));
             Cursor_Col := 0;
             Insert := False;
           when Afpx.Break_Key =>
