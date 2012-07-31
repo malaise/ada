@@ -386,7 +386,7 @@ package body Af_List is
       -- Redisplay the list (called by PtG)
       Af_List.Display (First_Item_Id);
     else
-      -- Recompute and mark modified for nexwt PtG (called by client)
+      -- Recompute and mark modified for next PtG (called by client)
       Compute (First_Item_Id);
       Modified := True;
     end if;

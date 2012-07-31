@@ -127,7 +127,7 @@ package body Af_Ptg is
     Click_Pos : Con_Io.Square;
     Signif_Col : Con_Io.Col_Range;
     Valid : Boolean;
-    List_Change : Boolean;
+    List_Scrolled : Boolean;
     use type Con_Io.Mouse_Button_List, Con_Io.Mouse_Button_Status_List,
              Afpx_Typ.Field_Kind_List;
   begin
@@ -152,21 +152,21 @@ package body Af_Ptg is
       and then Mouse_Status.Status = Con_Io.Pressed then
         case Mouse_Status.Button is
           when Con_Io.Up =>
-            List_Change := Af_List.Update (Up, True);
+            List_Scrolled := Af_List.Update (Up, True);
           when Con_Io.Down =>
-            List_Change := Af_List.Update (Down, True);
+            List_Scrolled := Af_List.Update (Down, True);
           when Con_Io.Shift_Up =>
-            List_Change := Af_List.Update (Page_Up, True);
+            List_Scrolled := Af_List.Update (Page_Up, True);
           when Con_Io.Shift_Down =>
-            List_Change := Af_List.Update (Page_Down, True);
+            List_Scrolled := Af_List.Update (Page_Down, True);
           when Con_Io.Ctrl_Up =>
-            List_Change := Af_List.Update (Shift_Page_Up, True);
+            List_Scrolled := Af_List.Update (Shift_Page_Up, True);
           when Con_Io.Ctrl_Down =>
-            List_Change := Af_List.Update (Shift_Page_Down, True);
+            List_Scrolled := Af_List.Update (Shift_Page_Down, True);
           when others =>
-            List_Change := False;
+            List_Scrolled := False;
         end case;
-        if List_Change and then List_Change_Cb /= null then
+        if List_Scrolled and then List_Change_Cb /= null then
           List_Change_Cb (Scroll, Af_List.Get_Status);
         end if;
       elsif Mouse_Status.Button = Con_Io.Middle
@@ -245,15 +245,22 @@ package body Af_Ptg is
     List_Status : List_Status_Rec;
     Click_Time : Ada.Calendar.Time;
     Loc_Last_Selected_Id : Natural;
+    Selection_Modified : Boolean;
 
     List_Pos : Positive;
+    List_Mod : Boolean;
     procedure Save_Pos is
     begin
+      List_Mod := Line_List.Is_Modified;
       List_Pos := Line_List.Get_Position;
     end Save_Pos;
     procedure Restore_Pos is
     begin
       Line_List.Move_At (List_Pos);
+      if not List_Mod then
+        -- Not seen... not caught
+        Line_List.Modification_Ack;
+      end if;
     end Restore_Pos;
     function Get_Click_Pos return Con_Io.Square is
     begin
@@ -357,13 +364,13 @@ package body Af_Ptg is
           -- Invalid release, restore initial selected
           Save_Pos;
           if Click_But = List_Left then
+            -- Left click on left selection then release outside:
+            -- Restore left selection
             Af_List.Put (Click_Row_List, Selected, False);
           else
-            if List_Status.Ids_Selected(List_Right) /= 0 then
-              Af_List.Put (Click_Row_List, Clicked, False);
-            else
-              Af_List.Put (Click_Row_List, Normal, False);
-            end if;
+            -- Right click on right selection then release outside:
+            -- Restore right selection
+            Af_List.Put (Click_Row_List, Clicked, False);
           end if;
           Restore_Pos;
         elsif Click_But = List_Left
@@ -392,12 +399,26 @@ package body Af_Ptg is
       else
         -- Click on new row
         if not Valid_Field then
-          -- Invalid release, restore clicked field as normal
+          -- Invalid release, restore clicked field
           Save_Pos;
-          Af_List.Put (Click_Row_List, Normal, False);
+          if Af_List.To_Id(Click_Row_List)
+              = List_Status.Ids_Selected(List_Left) then
+            -- Right click on left selection then release outside:
+            -- Restore left selection
+            Af_List.Put (Click_Row_List, Selected, False);
+          elsif Af_List.To_Id(Click_Row_List)
+              = List_Status.Ids_Selected(List_Right) then
+            -- Left click on right selection then release outside:
+            -- Restore right selection
+            Af_List.Put (Click_Row_List, Clicked, False);
+          else
+            -- All other situations: cancel selection
+            Af_List.Put (Click_Row_List, Normal, False);
+          end if;
           Restore_Pos;
         else
           -- Valid release
+          Selection_Modified := True;
           -- Un-select previous if it was shown
           if List_Status.Ids_Selected(Click_But) /= 0
           and then Af_List.Id_Displayed (List_Status.Ids_Selected(Click_But))
@@ -408,9 +429,11 @@ package body Af_Ptg is
             Restore_Pos;
           end if;
           if Click_But = List_Left then
-            -- Reset Right selected if Left clicking on it
+            -- Left click
             if Af_List.To_Id(Click_Row_List)
              = List_Status.Ids_Selected(List_Right) then
+              -- Left click on right selection:
+              -- Reset Right selected
               Af_List.Set_Selected (List_Right, 0);
             end if;
             -- Set Left selected
@@ -418,16 +441,24 @@ package body Af_Ptg is
             Af_List.Set_Selected (Click_But, Af_List.To_Id(Click_Row_List));
           elsif Af_List.To_Id(Click_Row_List)
                 /= List_Status.Ids_Selected(List_Left) then
-            -- Set right selected
+            -- Right click on non selected:
+            -- Set it right selected
             Af_List.Put (Click_Row_List, Clicked, False);
             Af_List.Set_Selected (Click_But, Af_List.To_Id(Click_Row_List));
           else
             -- Right click on left selection: no right selection
+            if List_Status.Ids_Selected(Click_But) = 0 then
+              -- Not cancelling a right selection: Avoid wrong notification
+              Selection_Modified := False;
+            else
+              -- Cancel right selection
+              Af_List.Set_Selected (Click_But, 0);
+            end if;
+            -- Restore left selection
             Af_List.Put (Click_Row_List, Selected, False);
-            Af_List.Set_Selected (Click_But, 0);
           end if;
           Af_List.Set_Current;
-          if List_Change_Cb /= null then
+          if Selection_Modified and then List_Change_Cb /= null then
             if Click_But = List_Left then
               List_Change_Cb (Left_Selection, Af_List.Get_Status);
             else
@@ -647,12 +678,16 @@ package body Af_Ptg is
     Done : Boolean;
     Need_Redisplay : Boolean;
     Selection_Result : Integer;
-    List_Change : Boolean;
+    List_Init : Boolean;
+    List_Scrolled : Boolean;
 
     use Afpx_Typ;
     use type Con_Io.Curs_Mvt;
 
   begin
+    -- For callback of list init
+    List_Init := False;
+
     -- Reset last selection for double click
     Last_Selected_Id := 0;
 
@@ -675,7 +710,7 @@ package body Af_Ptg is
              and then Af_Dscr.Fields(Lfn).Activated
              and then not Line_List.Is_Empty;
 
-      -- Update list if Line_List has changed list if needed
+      -- Update list if Line_List has changed
       if List_Present then
         if Af_List.Get_Status.Ids_Selected(List_Left)
               /= Line_List.Get_Position then
@@ -693,25 +728,23 @@ package body Af_Ptg is
         Af_List.Set_Selected (List_Right, 0);
       end if;
 
-      -- List to be updated if Line_List has changed
+      -- Force List to be updated if Line_List has changed
       if Line_List.Is_Modified then
         Af_List.Modified := True;
         Line_List.Modification_Ack;
       end if;
 
-      if (Need_Redisplay or else Af_List.Modified)
-      and then Af_Dscr.Fields(Lfn).Kind = Afpx_Typ.Button then
-        List_Change := True;
+      if Af_Dscr.Has_List
+      and then (Need_Redisplay or else Af_List.Modified) then
         if not Af_Dscr.Has_List then
           -- No list in this Dscr
-          List_Change := False;
+          null;
         elsif Line_List.Is_Empty then
           -- Empty list
           Af_List.Display(1);
         elsif not Af_Dscr.Fields(Lfn).Activated then
           -- List not active
           Erase_Field (Lfn);
-          Af_List.Modified := False;
         else
           -- List is present (exists, active and not empty)
           if Af_List.Get_Status.Id_Top = 0 then
@@ -722,10 +755,14 @@ package body Af_Ptg is
             Af_List.Display(Af_List.Get_Status.Id_Top);
           end if;
         end if;
-        if List_Change and then List_Change_Cb /= null then
-          List_Change_Cb (List_Modified, Af_List.Get_Status);
-        end if;
       end if;
+
+      -- Call List_Scrolled_Cb only once, when called
+      if Af_Dscr.Has_List and then List_Change_Cb /= null
+      and then not List_Init then
+        List_Change_Cb (Init, Af_List.Get_Status);
+      end if;
+      List_Init := True;
 
       -- Redisplay all fields if requested or needed
       if Need_Redisplay or else Af_Dscr.Current_Dscr.Modified then
@@ -779,47 +816,47 @@ package body Af_Ptg is
 
       Done := False;
       -- Now the big case on keys
-      List_Change := False;
+      List_Scrolled := False;
       case Stat is
         when Con_Io.Up =>
           -- List scroll down
           if List_Present then
-            List_Change := Af_List.Update (Up, True);
+            List_Scrolled := Af_List.Update (Up, True);
           end if;
         when Con_Io.Down =>
           -- List scroll up
           if List_Present then
-            List_Change := Af_List.Update (Down, True);
+            List_Scrolled := Af_List.Update (Down, True);
           end if;
         when Con_Io.Shift_Up | Con_Io.Pgup =>
           -- List page up
           if List_Present then
-            List_Change := Af_List.Update (Page_Up, True);
+            List_Scrolled := Af_List.Update (Page_Up, True);
           end if;
         when Con_Io.Shift_Down | Con_Io.Pgdown =>
           -- List page down
           if List_Present then
-            List_Change := Af_List.Update (Page_Down, True);
+            List_Scrolled := Af_List.Update (Page_Down, True);
           end if;
         when Con_Io.Ctrl_Up | Con_Io.Shift_Pgup =>
           -- List several pages up
           if List_Present then
-            List_Change := Af_List.Update (Shift_Page_Up, True);
+            List_Scrolled := Af_List.Update (Shift_Page_Up, True);
           end if;
         when Con_Io.Ctrl_Down | Con_Io.Shift_Pgdown =>
           -- List several pages down
           if List_Present then
-            List_Change := Af_List.Update (Shift_Page_Down, True);
+            List_Scrolled := Af_List.Update (Shift_Page_Down, True);
           end if;
         when Con_Io.Ctrl_Pgup =>
           -- List top
           if List_Present then
-            List_Change := Af_List.Update (Top, True);
+            List_Scrolled := Af_List.Update (Top, True);
           end if;
         when Con_Io.Ctrl_Pgdown =>
           -- List bottom
           if List_Present then
-            List_Change := Af_List.Update (Bottom, True);
+            List_Scrolled := Af_List.Update (Bottom, True);
           end if;
         when Con_Io.Right | Con_Io.Full =>
           if Get_Active then
@@ -1017,7 +1054,7 @@ package body Af_Ptg is
       Console.Flush;
 
       -- Notify of change of list because of key
-      if List_Change and then List_Change_Cb /= null then
+      if List_Scrolled and then List_Change_Cb /= null then
         List_Change_Cb (Scroll, Af_List.Get_Status);
       end if;
 

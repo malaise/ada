@@ -230,17 +230,38 @@ package Afpx is
   Line_List : Line_List_Mng.List_Type;
 
   -- Actions on the list
-  -- These are the automatic actions bound on keys
-  --                    +----------------+
-  --                    | Arrows |  Page |
-  -- +------------------+--------+-------+
-  -- | Up/Down          |    X   |       |
-  -- | Page Up/Down     |  Shift |   X   |
-  -- | 10 Pages Up/Down |   Ctrl | Shift |
-  -- | Top/Bottom       |        |  Ctrl |
-  -- +---------------------------_-------+
+  -- These are the scrolling actions that are automatic bound on keys
+  --  and mouse wheel (as soon as the list is not empty):
+  --                    +---------------------------------------+
+  --                    | Arrow keys |  Page keys | Mouse wheel |
+  -- +------------------+------------+------------+-------------+
+  -- | Line Up/Down     |      V     |            |      V      |
+  -- | Page Up/Down     |    Shift   |      V     |    Shift    |
+  -- | 10 Pages Up/Down |    Ctrl    |    Shift   |     Ctrl    |
+  -- | Top/Bottom       |            |     Ctrl   |             |
+  -- +----------------------------------------------------------+
 
-  -- Last 3 actions are relative to current (left) selected item
+  -- Selection in the list (with the mouse):
+  -- When the list is active and not empty there is always one line selected,
+  --  which is highlighted with the "Selected" color defined for the list.
+  --  Left click on a line sets the left selection to this line.
+  -- On option (Right_Select set to Put_Then_get) it is possible to have a
+  --  second line selected, which is highlighted by reversing the "Foreground"
+  --  and "Background" colors defined for the list.
+  --  Right click on a line (except the one already left selected) set or unsets
+  --  the right selection to this line.
+  --  Left selecting the right selected line also resets the right selection.
+
+  -- During Put_Then_Get execution the List_Change_Cb callback reports all the
+  --  changes in the list (scroll, selection, change of content).
+  -- When Put_Then_get returns some information can also be obtained but
+  --   nothing about which part of the list was displayed:
+  --  - The current element of the Line_List is the one left-selected
+  --  - The right-selected is set in Put_then_get result
+
+  -- Actions on a list (caller asking Afpx to modify the list)
+  -- Last 3 actions try to move the current selected item (left click)
+  --  at a given position in list window
   type List_Action_List is (Up, Down, Page_Up, Page_Down,
                             Shift_Page_Up, Shift_Page_Down,
                             Top, Bottom,
@@ -305,8 +326,7 @@ package Afpx is
   --  - change of left or right selection
   --  - scroll by keyboard or wheel
   --  - Put_Then_Get is called or redisplays list (list modified)
-  type List_Change_List is (Left_Selection, Right_Selection, Scroll,
-                            List_Modified);
+  type List_Change_List is (Left_Selection, Right_Selection, Scroll, Init);
   type List_Button_List is (List_Left, List_Right);
   type List_Ids_Selected_Array is array (List_Button_List) of Natural;
   type List_Status_Rec is record

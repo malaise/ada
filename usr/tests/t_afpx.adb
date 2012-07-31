@@ -1,4 +1,4 @@
-with Argument, Afpx, Con_Io, Dir_Mng, Timers, Language, Basic_Proc;
+with Argument, Afpx, Con_Io, Dir_Mng, Timers, Language, Basic_Proc, Mixed_Str;
 procedure T_Afpx is
 
   procedure Dir_Sort is new Dir_Mng.File_List_Mng.Sort (Dir_Mng.Less_Than);
@@ -49,6 +49,33 @@ procedure T_Afpx is
     Encode_Status (Language.String_To_Unicode (S));
   end Encode_Status;
 
+  function Cursor_Col_Cb (Cursor_Field : Afpx.Field_Range;
+                 New_Field : Boolean;
+                 Cursor_Col : Con_Io.Col_Range;
+                 Enter_Field_Cause : Afpx.Enter_Field_Cause_List;
+                 Str : Afpx.Unicode_Sequence) return Con_Io.Col_Range is
+  begin
+    Basic_Proc.Put_Line_Output ("Cursor_Set_Col_Cb --> "
+     & "Cursor_Field:" & Cursor_Field'Img
+     & ", New: " & Mixed_Str (New_Field'Img)
+     & ", Cursor_Col:" & Cursor_Col'Img
+     & ", Cause: " & Mixed_Str (Enter_Field_Cause'Img)
+     & ", Content: " & Language.Unicode_To_String (Str));
+    return Cursor_Col;
+  end Cursor_Col_Cb;
+
+  procedure List_Change_Cb (Action : in Afpx.List_Change_List;
+                            Status : in Afpx.List_Status_Rec) is
+  begin
+    Basic_Proc.Put_Line_Output ("List_Change_Cb --> "
+     & "Action: " & Mixed_Str (Action'Img)
+     & ", Nb_Rows:" & Status.Nb_Rows'Img
+     & ", Id_Top: " & Status.Id_Top'Img
+     & ", Id_Bottom: " & Status.Id_Bottom'Img
+     & ", Id_Selected Left: "  & Status.Ids_Selected(Afpx.List_Left)'Img
+     & ", Id_Selected Right: " & Status.Ids_Selected(Afpx.List_Right)'Img);
+  end List_Change_Cb;
+
 begin
   Afpx.Get_Screen_Size (Height, Width);
   Basic_Proc.Put_Line_Output ("Screen geometry is "
@@ -74,8 +101,8 @@ begin
   -- Start a single shot timer in 10 secs
   Timer_Ss.Create ( (Timers.Delay_Sec, null, Timers.No_Period, 10.0),
                               null);
-  -- Start a 10 sec periodical timer in 20 secs
-  Timer_Per.Create ( (Timers.Delay_Sec, null, 10.0, 20.0),
+  -- Start a 1 min periodical timer in 30 secs
+  Timer_Per.Create ( (Timers.Delay_Sec, null, 60.0, 30.0),
                                Timer_Cb'Unrestricted_Access);
   -- Delete the temporary silly timer
   Timer_Tmp.Delete;
@@ -111,7 +138,9 @@ begin
     Afpx.Set_Field_Protection (0, not Flip_Flop);
 
     Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result, Redisplay,
-                       Right_Select => True);
+                       Right_Select => True,
+                       Cursor_Col_Cb  => Cursor_Col_Cb'Unrestricted_Access,
+                       List_Change_Cb => List_Change_Cb'Unrestricted_Access);
     Redisplay := False;
 
     Afpx.Clear_Field (18);
