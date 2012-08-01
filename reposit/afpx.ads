@@ -1,6 +1,8 @@
 with As.U, Unicode, Con_Io, Dynamic_List;
-
 package Afpx is
+
+  -- See also the comments in Afpx.dtd for the definitions of descriptors,
+  --  list and fields (kind, geometry, colors).
 
   -- Descriptor, field index
   type Descriptor_Range is new Positive range 1 .. 50;
@@ -229,7 +231,8 @@ package Afpx is
   package Line_List_Mng renames Line_Dyn_List_Mng.Dyn_List;
   Line_List : Line_List_Mng.List_Type;
 
-  -- Actions on the list
+  -- User actions on the list:
+  ----------------------------
   -- These are the scrolling actions that are automatic bound on keys
   --  and mouse wheel (as soon as the list is not empty):
   --                    +---------------------------------------+
@@ -259,7 +262,8 @@ package Afpx is
   --  - The current element of the Line_List is the one left-selected
   --  - The right-selected is set in Put_then_get result
 
-  -- Actions on a list (caller asking Afpx to modify the list)
+  -- Caller actions on the list (caller asking Afpx to modify the list)
+  -----------------------------
   -- Last 3 actions try to move the current selected item (left click)
   --  at a given position in list window
   type List_Action_List is (Up, Down, Page_Up, Page_Down,
@@ -293,7 +297,6 @@ package Afpx is
 
   -- Call back called by Put_Then_Get when entering a new get field:
   -- Given the field no, the reason for entering field (see Con_Io)
-  type Enter_Field_Cause_List is (Mouse, Right_Full, Left, Tab, Stab);
   --  given the cursor col when this is a Mouse click
   --  and given the content of the get field as by Decode_Field (Row => 0)
   --  the client specifies the column of the cursor.
@@ -301,6 +304,7 @@ package Afpx is
   --  then Str'Length - 1 is used.
   -- If no callback is provided, then cursor is set to end of field if Left and
   --  start of field otherwise.
+  type Enter_Field_Cause_List is (Mouse, Right_Full, Left, Tab, Stab);
   type Cursor_Set_Col_Cb is access
        function (Cursor_Field : Field_Range;
                  New_Field : Boolean;
@@ -325,7 +329,7 @@ package Afpx is
   -- Call back called by Put_Then_Get when something is changed in the list:
   --  - change of left or right selection
   --  - scroll by keyboard or wheel
-  --  - Put_Then_Get is called or redisplays list (list modified)
+  --  - Put_Then_Get is first displaying (init) the list
   type List_Change_List is (Left_Selection, Right_Selection, Scroll, Init);
   type List_Button_List is (List_Left, List_Right);
   type List_Ids_Selected_Array is array (List_Button_List) of Natural;
@@ -352,7 +356,7 @@ package Afpx is
   -- Print the fields and the list (if Redisplay), then gets.
   -- Redisplay should be set if modif of some other screen actions (con_io)
   --  justify a redisplay, by instance when Result.Event was Refresh.
-  -- In List:
+  -- In List: See above section on "User actions on the list".
   --   mouse click changes current list element (or Id_Selected_Right),
   --   Up/Down arrow, Page Up/Down, Ctrl Page Up/Down scrolls the list,
   --   double click terminates Put_Then Get (Mouse_Button, List_Field_No).

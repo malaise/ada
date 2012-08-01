@@ -1,5 +1,7 @@
 <?xml version="1.1" encoding="UTF-8"?>
 <!-- DTD for Afpx xml definition -->
+<!-- See also the comments in afpx.ads for the handling of user actions -->
+<!--  on list, on buttons and on get fields. -->
 
 <!-- General Informations -->
 <!-- ==================== -->
@@ -18,14 +20,14 @@
 <!ATTLIST Afpx_Descriptors Width CDATA #IMPLIED
                            Height CDATA #IMPLIED>
 <!-- The Afpx_Descriptors is made of several descriptors. -->
-<!-- Before descriptors it is possible to re-define any of the 14 color. -->
+<!-- Before descriptors it is possible to re-define any of the 14 colors. -->
 <!--  The constants Color01 to Color14 are automatically created after this -->
 <!--  definition or before the first descriptor. It is also possible to -->
-<!--  define the default background for descriptors (default Color01). -->
+<!--  define the default background for descriptors (default is Color01). -->
 <!-- As soon as the Afpx descriptors declaration is parsed a constant -->
 <!--  Default_Background is defined. -->
-<!-- Before descriptors, it is possible to define and overwrite variables. -->
-<!-- These variables are valid for all the following descriptors. -->
+<!-- Before the descriptors, it is possible to (re)define some variables. -->
+<!-- These variables are valid for all the descriptors. -->
 <!ELEMENT Afpx_Descriptors (Var*,Color_Definitions?,Var*,Descriptor*)>
 
 <!-- A variable name must be <Identifier>[{.<Identifier>}] the Ada way. -->
@@ -35,7 +37,8 @@
 <!ATTLIST Var Name  NMTOKEN #REQUIRED
               Value CDATA   #REQUIRED>
 
-<!-- This defines default colors, if not re-defined by ColorDefinitions -->
+<!-- This ENTITY is informative. It defines the default colors, (if not --> 
+<!--  re-defined by ColorDefinitions). -->
 <!ENTITY % Colors "Light_Grey | Blue | Dark_Green | Cyan |
                    Red | Magenta | Brown | Black |
                    Dark_Grey | Light_Blue | Lime_Green  |Orange |
@@ -50,7 +53,7 @@
 <!-- A descriptor Num has to be positive range 1 .. 50 and sole (no double). -->
 <!-- It cannot be a variable. -->
 <!-- It is possible to define the background color of the descriptor -->
-<!--  (default Default_Background). -->
+<!--  (default is Default_Background). -->
 <!-- As soon as this descriptor declaration is parsed, a constant -->
 <!--  named Descriptor.Background and with current descriptor background is -->
 <!--  defined for the rest of the descriptor. -->
@@ -58,21 +61,24 @@
 <!--  for the rest of the descriptors (e.g. Dscr_1.Background). -->
 <!ATTLIST Descriptor Num NMTOKEN #REQUIRED Background CDATA #IMPLIED>
 <!-- A descriptor allows defining one optional list, then fields. -->
-<!-- Before and between them, it is possible to define and overwrite -->
-<!--  variables that are valid in the descriptor only. -->
+<!-- Before and between them, it is possible to (re)define variables that -->
+<!--  are valid in the descriptor only. -->
 <!ELEMENT Descriptor (Var*, List?,(Var|Field)*)>
 
-<!-- The list can be defined none or once per descriptor, at the -->
-<!-- beginning. -->
+<!-- The list can be defined none or once per descriptor, only at the -->
+<!--  beginning. -->
 <!ATTLIST List>
 <!-- The list (like fields) is defined by a geometry and colors. -->
-<!-- Geometry has to be compatible with screen, and list and fields -->
+<!-- Geometry has to be compatible with the screen, and the list and fields -->
 <!--  must not overlap. -->
 <!ELEMENT List (Geometry,Colors)>
 
 <!-- Field Num has to be within Field_Range (1 .. 200), strictly crescent -->
-<!--  within one descriptor, no "hole" nor double are allowed in filed nums. -->
+<!--  within one descriptor: no "hole" nor double are allowed in field nums. -->
 <!-- It cannot be a variable. -->
+<!-- Put field simply displays fixed text, Button field allows the user to -->
+<!--  click (with the mouse) on it and Get field allows the used to enter -->
+<!--  text in it. -->
 <!ATTLIST Field Num NMTOKEN #REQUIRED Kind (Put|Button|Get) #REQUIRED>
 <!-- Field are defined by a geometry and colors -->
 <!-- Fields also allow defining an initial content (several rows and cols). -->
@@ -80,24 +86,26 @@
 
 <!-- Geometry must define at least one row and one col. -->
 <!-- In each direction it must define an absolute position, and an absolute -->
-<!--  or relative position. -->
+<!--  position or length. Two horizontal and two vertical indications are -->
+<!--  required. -->
 <!-- Geometry must not make the field overlap with another field of the -->
-<!--  descriptor. Geometry of a Get field must define only one row. -->
+<!--  descriptor. -->
+<!-- Geometry of a Get field must define only one row. -->
 <!ELEMENT Geometry EMPTY>
 <!ATTLIST Geometry
      Up   CDATA #IMPLIED Low   CDATA #IMPLIED Height  CDATA #IMPLIED
      Left CDATA #IMPLIED Right CDATA #IMPLIED Width   CDATA #IMPLIED>
 <!-- As soon as an attribute is parsed, the corresponding constant -->
 <!--  is defined and valid for the rest of the descriptor (e.g. List.Up, -->
-<!--  Field_2.Low, Field_21.Right). When all geometry is parsed for a list -->
-<!--  or field, the constants Width and Height  (e.g. List.Width, -->
-<!--  Field_21.Height are also defined. -->
+<!--  Field_2.Low, Field_21.Width). When all geometry is parsed for a list -->
+<!--  or field, the two missing constants (e.g. List.Width, -->
+<!--  Field_21.Up) are also defined. -->
 
 <!-- Any field must have a Foreground and Background color. -->
 <!-- Get fields and List must also have a Selected color. -->
 <!-- Summary of color combinations: -->
 <!-- ========================================== -->
-<!-- Type  |   Foreground  Background  Selected -->
+<!-- Kind  |   Foreground  Background  Selected -->
 <!-- ========================================== -->
 <!-- Put   |       X           X                -->
 <!-- Button|       X           X                -->
@@ -112,8 +120,8 @@
 <!--  (valid for the rest of the descriptor) is defined (e.g. -->
 <!--  List.Foreground and Field_1.Background). -->
 
-<!-- Init row and col have to be compatible with geometry. -->
-<!-- Init string has to be compatible with geometry and init col. -->
+<!-- Init row and col have to be compatible with the geometry of the field. -->
+<!-- Init string has to be compatible with the geometry and the init col. -->
 <!ELEMENT Init (#PCDATA)>
 <!ATTLIST Init Row CDATA #REQUIRED Col CDATA #REQUIRED
                xml:space (default|preserve) "preserve">
