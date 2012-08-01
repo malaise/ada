@@ -355,12 +355,37 @@ procedure Agite is
 
   procedure Do_Revert (Name : in String) is
     Pos : Positive;
+    File : Git_If.File_Entry_Rec;
   begin
     -- Call Confirm and restore current entry
     Pos := Afpx.Line_List.Get_Position;
-    if Confirm ("Ready to revert:",
-                Directory.Build_File_Name (Path.Image, Name, "")) then
-      Git_If.Do_Revert (Name);
+    Files.Move_At (Pos);
+    Files.Read (File, Git_If.File_Mng.Dyn_List.Current);
+    if File.Kind /= ' ' and then File.Kind /= '@' then
+      -- Only for regular files or symbolic links
+      return;
+    end if;
+
+    if File.S2 = '?' then
+      -- File is untracked
+      if Confirm ("Ready to remove:",
+                  Directory.Build_File_Name (Path.Image, Name, "")) then
+        Sys_Calls.Unlink (Name);
+      end if;
+    elsif File.S2 /= ' ' then
+      -- File is modified in index, reset it
+      if Confirm ("Ready to reset:",
+                  Directory.Build_File_Name (Path.Image, Name, "")) then
+      
+        Git_If.Do_Reset (Name);
+        
+      end if;
+    elsif File.S3 /= ' ' then
+      -- File is modified locally, checkout from repository
+      if Confirm ("Ready to revert:",
+                  Directory.Build_File_Name (Path.Image, Name, "")) then
+        Git_If.Do_Revert (Name);
+      end if;
     end if;
     Init;
     Afpx.Line_List.Move_At (Pos);

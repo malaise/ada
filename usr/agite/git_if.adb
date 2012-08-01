@@ -564,9 +564,22 @@ package body Git_If is
     -- Handle error
     if Exit_Code /= 0 then
       Basic_Proc.Put_Line_Error ("git checkout: " & Err_Flow.Str.Image);
-      return;
     end if;
   end Do_Revert;
+
+   -- Launch a reset of index synchronous
+  procedure Do_Reset (File : in String) is
+    Cmd : Many_Strings.Many_String;
+  begin
+    Cmd.Set ("git");
+    Cmd.Cat ("reset");
+    Cmd.Cat ("--");
+    Cmd.Cat (File);
+    Command.Execute (Cmd, True, Command.Both,
+        Out_Flow_3'Access, Err_Flow'Access, Exit_Code);
+    -- Don't handle error because git exits with 1 if some unstaged changes
+    --  remain
+  end Do_Reset;
 
   -- Get current branch name
   function Current_Branch return String is
