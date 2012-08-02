@@ -88,6 +88,9 @@ package Git_If is
   -- Launch a reset of index synchronous
   procedure Do_Reset (File : in String);
 
+  -- Launch a add to index synchronous
+  procedure Do_Add (File : in String);
+
   -- Get current branch name
   function Current_Branch return String;
 

@@ -19,7 +19,7 @@ procedure Agite is
 
   -- Options
   Keys : constant Argument_Parser.The_Keys_Type := (
-    1 => ('h', As.U.Tus ("help"), False, False),
+       1 => ('h', As.U.Tus ("help"), False, False),
     2 => ('n', As.U.Tus ("no_history"), False, False),
     3 => ('p', As.U.Tus ("previous"), False, False));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
@@ -55,7 +55,7 @@ procedure Agite is
   Branch : As.U.Asu_Us;
 
   -- List width and encoding
-  List_Width : Afpx.Width_Range;
+  List_Width : Afpx.Width_Range := Afpx.Width_Range'First;
   procedure Set (Line : in out Afpx.Line_Rec;
                  From : in Git_If.File_Entry_Rec) is
   begin
@@ -142,8 +142,10 @@ procedure Agite is
     Found : Boolean;
     use type Git_If.File_Entry_Rec;
   begin
-    if Force then
+    if List_Width = Afpx.Width_Range'First then
       List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No) - 4;
+    end if;
+    if Force then
       Changed := True;
     else
       -- Save current position and entry
@@ -361,24 +363,40 @@ procedure Agite is
     Pos := Afpx.Line_List.Get_Position;
     Files.Move_At (Pos);
     Files.Read (File, Git_If.File_Mng.Dyn_List.Current);
-    if File.Kind /= ' ' and then File.Kind /= '@' then
+
+    -- Handle Dir and reject non regular nor link
+    if File.Kind = '/' then
+      if File.Name.Image = "."
+      or else File.Name.Image = ".." then
+        return;
+      end if;
+      if Confirm ("Ready to remove directory:",
+                  Directory.Build_File_Name (Path.Image, Name, "")) then
+        begin
+          Directory.Remove (Name);
+          Pos := Pos - 1;
+        exception
+          when Directory.Access_Error =>
+            -- Directory not empty
+            null;
+        end;
+      end if;
+    elsif File.Kind /= ' ' and then File.Kind /= '@' then
       -- Only for regular files or symbolic links
       return;
-    end if;
-
-    if File.S2 = '?' then
+    elsif File.S2 = '?' then
       -- File is untracked
       if Confirm ("Ready to remove:",
                   Directory.Build_File_Name (Path.Image, Name, "")) then
         Sys_Calls.Unlink (Name);
+        Pos := Pos - 1;
       end if;
     elsif File.S2 /= ' ' then
       -- File is modified in index, reset it
       if Confirm ("Ready to reset:",
                   Directory.Build_File_Name (Path.Image, Name, "")) then
-      
+
         Git_If.Do_Reset (Name);
-        
       end if;
     elsif File.S3 /= ' ' then
       -- File is modified locally, checkout from repository
@@ -392,8 +410,18 @@ procedure Agite is
     Afpx.Update_List (Afpx.Center_Selected);
   end Do_Revert;
 
+  -- Add a dir or file
+  procedure Do_Add_File (File : in Git_If.File_Entry_Rec) is
+  begin
+    if File.S2 = '?' or else File.S2 = ' ' then
+      -- Untracked or not in index
+      Git_If.Do_Add (File.Name.Image);
+      Encode_Files (Force => False);
+    end if;
+  end Do_Add_File;
+
   -- List action on File or Dir
-  type Action_List is (Default, Edit, Diff, History, Revert);
+  type Action_List is (Default, Edit, Diff, History, Revert, Add);
   procedure List_Action (Action : in Action_List) is
 
     File : Git_If.File_Entry_Rec;
@@ -424,6 +452,10 @@ procedure Agite is
             if File_Name /= ".." then
               Do_Revert (File_Name);
             end if;
+          when Add =>
+            if File_Name /= ".." then
+              Git_If.Do_Add (File_Name);
+            end if;
         end case;
       elsif File.Kind /= '@' and then File.Kind /= '?' then
         -- File
@@ -436,6 +468,8 @@ procedure Agite is
             Do_History (File_Name, True);
           when Revert =>
             Do_Revert (File_Name);
+          when Add =>
+            Do_Add_File (File);
         end case;
       elsif File.Kind = '?' and then Action = Revert then
         -- Deleted file
@@ -663,6 +697,9 @@ begin
             -- Revert
             List_Action (Revert);
           when 29 =>
+            -- Revert
+            List_Action (Add);
+          when 30 =>
             -- Exit
             raise Utils.Exit_Requested;
           when others =>

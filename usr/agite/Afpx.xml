@@ -2,8 +2,8 @@
 <!DOCTYPE Afpx_Descriptors SYSTEM "../../reposit/Afpx.dtd">
 
 <!-- For agite -->
-<Afpx_Descriptors Height="44" Width="55">
-  <Var Name="Version" Value="V5.5"/>
+<Afpx_Descriptors Height="46" Width="55">
+  <Var Name="Version" Value="V6.0"/>
 
   <!-- Main screen: explorator -->
   <Descriptor Num="1" Background="Light_Grey">
@@ -26,7 +26,7 @@
 
     <!-- List management -->
     <Var Name="LmLeft"  Value="${List.Right}+${LmHOffset}"/>
-    <Var Name="LmUp"    Value="${List.Up}+13"/>
+    <Var Name="LmUp"    Value="${List.Up}+15"/>
     <Var Name="LmSta"   Value="1"/>
 
     <Field Num="2" Kind="Button">
@@ -185,7 +185,15 @@
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">Revert</Init>
     </Field>
+
     <Field Num="29" Kind="Button">
+      <Geometry Up="${Field_28.Low}+2" Left="${LmLeft}"
+                Height="1" Width="${LmWidth}"/>
+      <Colors Foreground="Black" Background="Dark_Grey"/>
+      <Init Row="0" Col="2">Add</Init>
+    </Field>
+
+    <Field Num="30" Kind="Button">
       <Geometry Height="1" Left="${LmLeft}" Low="${List.Low}"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>

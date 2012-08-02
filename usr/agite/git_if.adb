@@ -558,6 +558,7 @@ package body Git_If is
     Cmd.Set ("git");
     Cmd.Cat ("checkout");
     Cmd.Cat ("HEAD");
+    Cmd.Cat ("--");
     Cmd.Cat (File);
     Command.Execute (Cmd, True, Command.Both,
         Out_Flow_3'Access, Err_Flow'Access, Exit_Code);
@@ -581,6 +582,21 @@ package body Git_If is
     --  remain
   end Do_Reset;
 
+   -- Launch a add to index synchronous
+  procedure Do_Add (File : in String) is
+    Cmd : Many_Strings.Many_String;
+  begin
+    Cmd.Set ("git");
+    Cmd.Cat ("add");
+    Cmd.Cat ("--");
+    Cmd.Cat (File);
+    Command.Execute (Cmd, True, Command.Both,
+        Out_Flow_3'Access, Err_Flow'Access, Exit_Code);
+    -- Handle error
+    if Exit_Code /= 0 then
+      Basic_Proc.Put_Line_Error ("git add: " & Err_Flow.Str.Image);
+    end if;
+  end Do_Add;
   -- Get current branch name
   function Current_Branch return String is
     Cmd : Many_Strings.Many_String;
