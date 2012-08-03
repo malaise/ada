@@ -202,6 +202,8 @@ package body Af_Ptg is
     use type Con_Io.Curs_Mvt,
              Con_Io.Mouse_Button_List, Con_Io.Mouse_Button_Status_List;
   begin
+    -- Improve chances for the reversed button to be seen
+    Console.Flush;
     -- Wait until button released
     loop
       Af_Con_Io.Get (Str, Last, Stat, Pos, Ins, Echo => False);
