@@ -29,6 +29,7 @@ package body Af_Ptg is
   Last_Selected_Id : Natural;
   Last_Selection_Time : Ada.Calendar.Time;
   Double_Click_Delay  : constant Ada.Calendar.Day_Duration := 0.3;
+  Show_Click_Delay  : constant Ada.Calendar.Day_Duration := 0.03;
 
   -- Field and Col of selection request
   Selection_Field : Afpx_Typ.Field_Range;
@@ -204,6 +205,7 @@ package body Af_Ptg is
   begin
     -- Improve chances for the reversed button to be seen
     Console.Flush;
+    delay Show_Click_Delay;
     -- Wait until button released
     loop
       Af_Con_Io.Get (Str, Last, Stat, Pos, Ins, Echo => False);
