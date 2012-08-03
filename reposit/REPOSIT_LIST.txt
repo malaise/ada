@@ -553,3 +553,78 @@ xml_parser.generator (2)::
      Generate Xml output in flow/file/string.
 
 
+Examples
+--------
+
+This section aims at providing, for some major packages of the repository, a
+list of some programs of packages that can be refered as exmples of usage.
+Some other examples can be found in the 'tests' directory.
+
+[horizontal]
+Ada_Parser:: astub
+
+Afpx:: agite
+
+Argument_Parser:: asubst
+
+As.B:: enigma
+
+As.U:: asubst
+
+Bloc_Io:: alook
+
+Chronos:: lem
+
+Command:: agite
+
+Computer:: afpx_bld
+
+Con_Io:: sokoban Afpx
+
+Curve:: approx
+
+Dynamic_list:: lsadeps
+
+Exception_Messenger:: Xml_Parser
+
+Hashing:: Xml_Parser, lsadeps
+
+Input_Buffer:: tcpchat
+
+Language:: asubst
+
+Limited_List:: see Dynamic_list
+
+many_Strings:: agite
+
+Multiget:: astub
+
+Parser:: dictio
+
+Regular_Expressions:: asubst
+
+Select_File:: account
+
+Smart_Reference:: timers
+
+Socket:: Dictio
+
+Tcp_Util:: Dictio
+
+Text_Char:: Xml_Parser
+
+Text_Line:: trail_spaces
+
+Timers:: lem, tcpchat
+
+Trees:: Xml_Parser
+
+Unbounded_Arrays:: renardeau
+
+Unlimited_Pool:: tcpchat
+
+Virtual_Time:: lem
+
+X_Mng:: Con_Io
+
+Xml_Parser:: xml_checker
