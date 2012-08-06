@@ -1,6 +1,6 @@
 Asubst
 ======
-V13.3
+V13.4
 :toc:
 
 Asubs is a command line tool that finds occurences of text that match a
@@ -10,7 +10,6 @@ General syntax
 --------------
 ...................................
 Usage: asubst [ { <option > } ] <find_pattern> <replace_string> [ { <file> } ]
-
 or   : asubst -h | --help | -V | --version
 ...................................
 Substitutes strings in files.
@@ -26,7 +25,7 @@ for Perl Regular Expressions.
 
 Options
 -------
-************************************************
+....
 -a or --ascii : consider that input flow or file is pure ASCII,
 
 -D <string> or --delimiter=<string> for a delimiter other than ''\n'',
@@ -63,9 +62,9 @@ Options
 
 -x or --noregex : <find_pattern> is considered as string(s),
 
-\-- : to stop the list of options. If <find_pattern> is "-pat", then use
-asubst [ { <option> } ] \-- "-pat" <replace_pattern> [ { <file> } ].
-************************************************
+-- : to stop the list of options. If <find_pattern> is "-pat", then use:
+     asubst [ { <option> } ] \-- "-pat" <replace_pattern> [ { <file> } ].
+....
 
 Environment
 -----------
@@ -139,28 +138,26 @@ that \xIJ is replaced before compiling the regex, so it cannot be used to
 avoid a given character. "[a\x2Dx]" is exactly the same as "[a-x]", and
 "\x0A" is exactly the same as "\n" (it will be used as regex delimiter).
 
-- The following shortcuts for character classes, to be used in regex within
-brackets:
+- The following shortcuts for character classes, to be used in regex mode and
+*within a bracket expression*:
 
     "\M" [:alnum:], "\A" [:alpha:], "\B" [:blank:], "\C" [:cntrl:],
-
     "\D" [:digit:], "\G" [:graph:], "\L" [:lower:], "\P" [:print:],
-
     "\T" [:punct:], "\S" [:space:], "\U" [:upper:], "\X" [:xdigit:].
 +
-NOTE: Asubst does *NOT* check if such shortcut is within a bracket
-expression or not. For example, "\M" is always replaced by "[:alnum:]" and,
-out of a bracket expression, this becomes a bracket expression, meaning: '':''
-or ''a'' or ''l'' or ''n'' or ''u'' or ''m''.
+NOTE: Asubst does *NOT* check that such shortcut is within a bracket
+expression. For example, "\M" is always replaced by "[:alnum:]". Out of a
+bracket expression this becomes itself a bracket expression (with '':'' ''a''
+''l'' ''n'' ''u'' ''m'' and '':'' characters), which is invalid for PCRE.
 
 NOTE: Only "\s", "\t", "\n" and "\xIJ" are interpreted in "noregex" mode.
 
 NOTE: Beware that some regex expressions are supposed to match a "new line"
 (example [:blank:] within a bracket expression) but will not match in asubst,
-because the input flow/file is decomposed into lines and then each line is
+because the input flow/file is decomposed into lines first, then each line is
 compared to a regex expression.
 
-NOTE: In "regex" mode, other ''\'' expressions are passer to PCRE.
+NOTE: In "regex" mode, other ''\'' expressions are passed to PCRE.
 
 Exclusion pattern
 -----------------

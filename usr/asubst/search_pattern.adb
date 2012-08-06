@@ -146,7 +146,9 @@ package body Search_Pattern is
                                  Dot_All => Dot_All);
     if not Ok then
       Error ("Invalid pattern """ & Crit
-        & """. Error is " & Regular_Expressions.Error(Upat_Access.Pat));
+        & """." & Line_Feed
+        & "Error (from PCRE) is: "
+        & String_Mng.Strip (Regular_Expressions.Error(Upat_Access.Pat)));
     end if;
   end Add;
 
