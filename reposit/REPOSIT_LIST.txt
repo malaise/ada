@@ -1,5 +1,8 @@
 Repository list
 ===============
+:toc:
+
+This file describes the content of the repository.
 
 Program frameworks
 ------------------
@@ -204,7 +207,7 @@ ada_words (2)::
 address_ops (1)::
      Add, sub and returns image of a System.Address.
 
-afpx (3) afpx.list_manager::
+afpx afpx.list_manager (3)::
      Graphic (text oriented) manager of input screens that are off-line
      defined.
 
@@ -214,7 +217,7 @@ afpx_bld (2)::
 any_def (1)::
      Definition of variant type that contains any value.
 
-arbitrary arbitrary.factors arbitrary.fractions (2)::
+arbitrary arbitrary.prime_list arbitrary.factors arbitrary.fractions (2)::
      Arbitrary precision operations, prime factor decomposition, fractions.
 
 argument (1)::
@@ -241,7 +244,7 @@ basic_proc (1)::
 bit_ops (1)::
      Bit operations.
 
-bloc_io (3)::
+bloc_io (2)::
      Read/writes arrays of bytes from/to a file.
 
 byte_to_unicode (1)::
@@ -426,7 +429,7 @@ num_letters (1)::
 num_match (1)::
      Checks if a number matches a range based criteria.
 
-parser, parser.all_in_one (2)::
+parser parser.all_in_one (2)::
      Parse a string, separate words and separators.
 
 pattern (2)::
@@ -556,8 +559,8 @@ xml_parser.generator (2)::
 Examples
 --------
 
-This section aims at providing, for some major packages of the repository, a
-list of some programs of packages that can be refered as exmples of usage.
+This section provides, for the major packages of the repository, a list of
+programs or packages that can be refered as examples of usage.
 Some other examples can be found in the 'tests' directory.
 
 [horizontal]
@@ -565,11 +568,17 @@ Ada_Parser:: astub
 
 Afpx:: agite
 
-Argument_Parser:: asubst
+Arbitrary:: prime, mcd
+
+Argument_Parser:: asubst, als
 
 As.B:: enigma
 
 As.U:: asubst
+
+Async_Stdin:: mcd
+
+Autobus:: mcd
 
 Bloc_Io:: alook
 
@@ -579,23 +588,27 @@ Command:: agite
 
 Computer:: afpx_bld
 
-Con_Io:: sokoban Afpx
+Con_Io:: sokoban, Afpx
 
 Curve:: approx
 
-Dynamic_list:: lsadeps
+anchor:X1Dynamic_List[]Dynamic_List:: lsadeps
+
+Event_Mng:: mcd, tcpchat
 
 Exception_Messenger:: Xml_Parser
 
 Hashing:: Xml_Parser, lsadeps
 
+Http:: Xml_Parser
+
 Input_Buffer:: tcpchat
 
 Language:: asubst
 
-Limited_List:: see Dynamic_list
+Limited_List:: see xref:X1Dynamic_List[Dynamic_List]
 
-many_Strings:: agite
+Many_Strings:: agite
 
 Multiget:: astub
 
@@ -608,6 +621,10 @@ Select_File:: account
 Smart_Reference:: timers
 
 Socket:: Dictio
+
+String_Mng:: asubst
+
+Syslin:: approx
 
 Tcp_Util:: Dictio
 
