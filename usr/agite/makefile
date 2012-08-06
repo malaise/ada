@@ -11,7 +11,6 @@ LARGS_agite.stat := $(CPATHD)/libx_mng.a $(CPATHD)/libcutil.a \
   $(CPATHD)/libposix2pcre.a $(PCRE)/libpcre.a -lX11
 
 TXT := Agite
-DOCOPTS_Agite := -a toc
 
 include $(TEMPLATES)/ada.mk
 

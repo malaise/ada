@@ -1,5 +1,6 @@
 Astub
 =====
+:toc:
 
 Input: ads file name.
 Output: adb file (only if it does not already exist).

@@ -1,5 +1,6 @@
 Ada notes
 =========
+:toc:
 
 This README file describes briefly the main directories of the Ada contrib.
 
@@ -94,8 +95,8 @@ Autobus (and Channels)
 See link:reposit/REPOSIT_LIST.html[] for the list of packages and how to use
 them.
 
-5 Usr directories
------------------
+Usr directories
+---------------
 Each ot them hosts a standalone project except 'misc' (miscellaneous small
 programs, 'tests' (test programs of repository packages) and 'tasks' (simple
 task examples).
