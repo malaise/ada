@@ -1,6 +1,11 @@
 with Ada.Exceptions;
 with As.U.Utils, Basic_Proc, Argument, String_Mng.Regex, Hexa_Utils,
      Socket, Socket_Util, Tcp_Util, Ip_Addr;
+-- Send "Wake On LAN" magic packet: a UDP message containing
+--  6 times 'FF' then 16 times the MAC address (6 bytes each).
+-- By default, broadcasts on local LAN, but if a host name or IP address
+--  is provided then send to this host, by default on port 9 (but a specific
+--  port name or num can be supplied).
 
 procedure Wake is
 
@@ -33,12 +38,13 @@ procedure Wake is
     & Ip_Addr.Image (Default_Port));
   end Usage;
 
+  Exit_On_Error : exception;
   procedure Error (Msg : in String) is
   begin
     Basic_Proc.Put_Line_Error ("ERROR: " & Msg & ".");
     Usage;
     Basic_Proc.Set_Error_Exit_Code;
-    return;
+    raise Exit_On_Error;
   end Error;
 
   function Image (Mac_Addr : Mac_Type) return String is
@@ -150,6 +156,8 @@ begin
   Soc.Close;
 
 exception
+  when Exit_On_Error =>
+    null;
   when Except : others =>
     Error ("Exception: " & Ada.Exceptions.Exception_Name (Except) & " raised");
 end Wake;
