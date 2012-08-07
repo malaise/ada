@@ -174,7 +174,7 @@ underflow and disconnection).
 are sent by publishers on the bus.
 
 * 'Channels' (deprecated) provides channel (connected) or bus (not connected)
-of communication.
+of communication. Use 'Autobus' instead.
 
 Files
 ~~~~~
