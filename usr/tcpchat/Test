@@ -201,5 +201,5 @@ clean
 if [ $DBG  -eq 1 ] ; then
   rm $DEBUG
 fi
-echo "Done."
+echo "OK."
 

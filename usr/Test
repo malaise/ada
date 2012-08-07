@@ -1,8 +1,16 @@
 #!/bin/bash
 export ORIG=$PWD
 for file in */Test ; do
-  cd `dirname $file`
+  export dir=`dirname $file`
+  echo "`basename $dir`:"
+  cd "$dir"
   ./Test
+  if [ "$?" -ne 0 ] ; then
+    echo "ERROR."
+    exit 1
+  fi
+  echo ""
   cd $ORIG
 done
+echo "OK."
 
