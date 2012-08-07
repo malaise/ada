@@ -5,6 +5,15 @@ with Socket, Regular_Expressions, As.U,
      Timers, Chronos.Passive_Timers;
 package Autobus is
 
+  -- How to use:
+  -- First, create and initialise a Bus (provide an IPM address and port)
+  --  You can tune this bus in the file indicated in the ENV variable
+  --  AUTOBUS_CONFIG (see Autobus.dtd).
+  -- Then you can send messages (strings) on it.
+  -- Second, create an observer (with a procedure Receive on it)
+  --  and a Subscriber, and init the subscriber; The procedure Received
+  --  is called with messages received on the Bus.
+
   -------------
   -- The Bus --
   -------------
@@ -12,7 +21,7 @@ package Autobus is
   type Bus_Access_Type is access all Bus_Type;
 
   -- Initialise a Bus, may raise:
-  -- On incorrect format (not <lan>:<port>, invalud LAN or port num)
+  -- On incorrect format (not <lan>:<port>, invalid LAN or port num)
   Invalid_Address : exception;
   -- On LAN or port name not found (DNS, networks, services)
   Name_Error : exception;

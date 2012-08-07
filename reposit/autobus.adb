@@ -2,6 +2,56 @@ with Ada.Unchecked_Deallocation, Ada.Exceptions;
 with Basic_Proc, Environ, Int_Image, Ip_Addr, Socket_Util, Tcp_Util, Event_Mng,
      Integer_Image, Dur_Image;
 package body Autobus is
+  -- Design
+  ---------
+  -- A Bus is the sharing of an IPM address and port. For each Bus we:
+  --  * bind to this IPM address
+  --  * bind to a dynamic TCP port
+  --  * send periodically an Alive message with local host and the TCP port
+  --  * send a Dead message when the Bus is reset
+  --  * when discovering a new partner (in an Alive message), the smaller of
+  --    local and partner's host address connects to the higher. So if local
+  --    host address is the same or larger we connect in TCP to the address
+  --    received, otherwise we just send an Alive message and the partner will
+  --    connect to us and will send us a TCP service message with its TCP
+  --    address.
+  --  * keep a list of partners connected in TCP. This list is updated:
+  --   - when receiving an Alive (we update the date of death to
+  --     current_time + max__to_miss * period)
+  --   - when receiving a Dead message (we disconnect and remove partner)
+  --   - periodically for detecting silent death of partners (date of death
+  --     reached) and removing them.
+  --
+  -- Note: The remote host id that we get when accepting a partner may not be
+  --  the local host that it sees itself (and sends in the Alive message),
+  --  for example if it has several LAN inerfaces.
+  --  This is why, after connecting we always send a TCP service message with
+  --  our local host address, and when accepting we always expect this message.
+  --  There is no such problem when connecting to a partner because we
+  --  connect to the address that we have received in an Alive message.
+  -- Note: This mechanism also applies to ourself, so we always see ourself
+  --  twice as a partner (one connected and one accepted). The accepted one is
+  --  passive (with no Alive message nor associated timeout and no sending on
+  --  it).
+  --
+  -- Sending a message consists in sending it successively to all the partners
+  --  except the passive connection.
+  -- Receiving a TCP message (except the first TCP service message on each
+  --  accepted connection) consists in dispatching it on all the observer,
+  --  which means for each:
+  --  * check if the message comes from ourself and if the subscriber wants
+  --    to receive the echo,
+  --  * check the message content versus the filter if any,
+  --  * call the observer if the message passes.
+  --
+  -- Tuning: The following parameters can be tuned for a Bus:
+  -- The period for sending Alive message and of checking sudden death), in
+  --  seconds (default 1.0).
+  -- The max number of missing Alive messages before considering that
+  --  a partner is dead (default 3). So by default a silent death is detected
+  --  in 3 seconds.
+  -- The timeout in seconds for sending messages (default 0.5).
+  -- The TTL for IPM and TCP frames (default 5).
 
   --------------
   -- INTERNAL --
@@ -351,7 +401,7 @@ package body Autobus is
     if Partner_Acc.Addr = Buses.Access_Current.Addr then
       Debug ("Reception of own identification");
       -- A stopped timer identifies the unique connection to ourself
-      --  (amoung both) that is passive: no alive tiemout check and
+      --  (amoung both) that is passive: no alive timeout check and
       --  no sending of message
       Partner_Acc.Timer.Stop;
     else
@@ -741,7 +791,8 @@ package body Autobus is
     Msg(1 .. Message'Length) := Message;
     Bus.Acc.Partners.Rewind (False, Partner_Access_List_Mng.Next);
 
-    -- Send message on each partner,
+    -- Send message on each partner except on the passive connection to ourself
+    --  (so we send it to ourself only once).
     loop
       exit when Bus.Acc.Partners.Is_Empty;
       Bus.Acc.Partners.Read (Partner_Acc, Moved => Moved);
