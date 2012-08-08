@@ -19,7 +19,7 @@ procedure Mcd is
   end Set_Error_Code;
 
   Termin_Error : exception;
-  procedure Error (Message : in String) is
+  procedure Error (Message : in String; Raise_Error : in Boolean := True) is
   begin
     Basic_Proc.Put_Line_Error (Mixed_Str(Argument.Get_Program_Name) & " error: "
                             & Message & ".");
@@ -32,7 +32,9 @@ procedure Mcd is
       Mcd_Mng.Dump_Stack;
       Close;
       Set_Error_Code;
-      raise Termin_Error;
+      if Raise_Error then
+        raise Termin_Error;
+      end if;
     end if;
   end Error;
 
@@ -46,7 +48,7 @@ begin
             or else Argument.Get_Parameter (1) = "--help"
             or else Argument.Get_Parameter (1) = "help") then
     Io_Flow.Init (Default => True);
-    Mcd_Parser.Print_Help;
+    Mcd_Parser.Print_Help (Command => False);
     Set_Error_Code;
     return;
   end if;
@@ -57,7 +59,7 @@ begin
   exception
     when others =>
       Io_Flow.Init (Default => True);
-      Mcd_Parser.Print_Help;
+      Mcd_Parser.Print_Help (Command => False);
       raise;
   end;
 
@@ -109,6 +111,6 @@ exception
   when Except:others =>
     Error ("Exception "
               & Mixed_Str(Ada.Exceptions.Exception_Name (Except))
-              & " raised");
+              & " raised", Raise_Error => False);
 end Mcd;
 

@@ -74,10 +74,7 @@ package body Io_Flow is
 
     -- Get bus address argument if set
     if Argument.Is_Set (1, "a") then
-      if Argument.Is_Set (2, "a") or else Io_Mode /= Unknown then
-        Async_Stdin.Put_Line_Err ("Too many options.");
-        raise Init_Error;
-      end if;
+      -- Parse (auto)bus address
       Argument.Get_Parameter (Bus_Addr, 1, "a");
       if Bus_Addr.Is_Null then
         Async_Stdin.Put_Line_Err ("Missing autobus address.");
@@ -91,34 +88,29 @@ package body Io_Flow is
       exception
         when Autobus.Invalid_Address =>
           Async_Stdin.Put_Line_Err ("Invalid autobus address "
-                                  & Bus_Addr.Image);
+                                  & Bus_Addr.Image & ".");
           raise Init_Error;
         when Autobus.Name_Error =>
           Async_Stdin.Put_Line_Err ("Name not found in autobus address "
-                                  & Bus_Addr.Image);
+                                  & Bus_Addr.Image & ".");
           raise Init_Error;
         when Autobus.Config_Error =>
           Async_Stdin.Put_Line_Err ("Invalid autobus config for address "
-                                  & Bus_Addr.Image);
+                                  & Bus_Addr.Image & ".");
           raise Init_Error;
       end;
       Bus_Subscriber.Init (Bus'Access, Bus_Observer'Access);
       Io_Mode := Abus;
-      return;
     end if;
 
     -- Get tcp port if set
     if Argument.Is_Set (1, "t") then
-      if Argument.Is_Set (2, "t") or else Io_Mode /= Unknown then
-        Async_Stdin.Put_Line_Err ("Too many options.");
-        raise Init_Error;
-      end if;
-      -- Parse spec
+      -- Parse TCP port
       begin
         Port := Ip_Addr.Parse (Argument.Get_Parameter (1, "t"));
       exception
         when Ip_Addr.Parse_Error =>
-          Async_Stdin.Put_Line_Err ("Invalid tcp port");
+          Async_Stdin.Put_Line_Err ("Invalid tcp port.");
           raise Init_Error;
       end;
       Open_Tcp_Socket (True);
@@ -127,21 +119,16 @@ package body Io_Flow is
           Ip_Addr.Image (Accepting_Soc.Get_Linked_To));
       end if;
       Io_Mode := Tcp;
-      return;
     end if;
 
     -- Get udp/ipm spec if set
     if Argument.Is_Set (1, "u") then
-      if Argument.Is_Set (2, "u") or else Io_Mode /= Unknown then
-        Async_Stdin.Put_Line_Err ("Too many options.");
-        raise Init_Error;
-      end if;
-      -- Parse spec
+      -- Parse udp port or ipm address
       begin
         Ip_Addr.Parse (Argument.Get_Parameter (1, "u"), Host, Port);
       exception
         when Ip_Addr.Parse_Error =>
-          Async_Stdin.Put_Line_Err ("Invalid udp spec");
+          Async_Stdin.Put_Line_Err ("Invalid udp spec.");
           raise Init_Error;
       end;
       Open_Udp_Socket (True);
@@ -157,16 +144,21 @@ package body Io_Flow is
           Ip_Addr.Image (Soc.Get_Linked_To));
       end if;
       Io_Mode := Udp;
-      return;
     end if;
 
     -- If no arg => Stdin
-    if Argument.Get_Nbre_Arg /= 0 then
-      Async_Stdin.Put_Line_Err ("Invalid argument.");
-      raise Init_Error;
-    end if;
     if Io_Mode /= Unknown then
+      if Argument.Get_Nbre_Arg /= 1 then
+        Async_Stdin.Put_Line_Err ("Too many arguments.");
+        raise Init_Error;
+      end if;
+      -- Mode is set
       return;
+    else
+      if Argument.Get_Nbre_Arg /= 0 then
+        Async_Stdin.Put_Line_Err ("invalid argument.");
+        raise Init_Error;
+      end if;
     end if;
 
     -- Stdin

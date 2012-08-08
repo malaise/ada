@@ -4,7 +4,7 @@ pragma Elaborate(Random);
 package body Mcd_Mng is
 
   -- Current version
-  Mcd_Version : constant String := "V7.0";
+  Mcd_Version : constant String := "V7.1";
 
   package Stack is
     -- What can we store in stack
@@ -1126,7 +1126,7 @@ package body Mcd_Mng is
           S := A;
         when Help =>
           -- put help
-          Mcd_Parser.Print_Help;
+          Mcd_Parser.Print_Help (Command => True);
 
       end case;
     end if;

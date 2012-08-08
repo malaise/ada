@@ -414,18 +414,25 @@ package body Mcd_Parser is
   end Next_Item;
 
 
-  procedure Print_Help is
+  procedure Print_Help (Command : in Boolean) is
     Tab1 : constant String (1 .. 5) := (others => ' ');
     Tab2 : constant String (1 .. 3) := (others => ' ');
     Ope_Name : String (1 .. Ope_Len);
     Pad : constant String (1 .. Ope_Len) := (others => ' ');
     Separator : constant String (1 .. Ope_Len) := (others => '-');
   begin
-    Io_Flow.Put_Line ("Usage: " & Argument.Get_Program_Name & " [ -a<bus_address> | -u<udp_spec> | -t<tcp_port> | -h ]");
-    Io_Flow.Put_Line ("  <udp_spec> ::= [<ipm_lan_name_or_num>]:<udp_port>");
-    Io_Flow.Put_Line ("  <port>     ::= <port_name> | <port_num>");
+    if not Command then
+      Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name & " [ -a<bus_address> | -u<udp_spec> | -t<tcp_port> | -h | --help ]");
+      Basic_Proc.Put_Line_Error ("  <udp_spec> ::= [<ipm_lan_name_or_num>]:<udp_port>");
+      Basic_Proc.Put_Line_Error ("  <port>     ::= <port_name> | <port_num>");
+      return;
+    else
+      Io_Flow.Put_Line ("Usage: " & Argument.Get_Program_Name & " [ -a<bus_address> | -u<udp_spec> | -t<tcp_port> | -h | --help ]");
+      Io_Flow.Put_Line ("  <udp_spec> ::= [<ipm_lan_name_or_num>]:<udp_port>");
+      Io_Flow.Put_Line ("  <port>     ::= <port_name> | <port_num>");
+    end if;
     Io_Flow.New_Line;
-    Io_Flow.Put_Line ("Commands are strings read from standard input or from a fifo.");
+    Io_Flow.Put_Line ("Commands are strings read from standard input or from a bus/udp/tcp channel.");
     Io_Flow.Put_Line ("Separators are space and horizontal tab.");
     Io_Flow.Put_Line ("Comments start by '#', up to the end of line");
     Io_Flow.Put_Line ("Item ::= <arbitrary> <fraction> <integer> <real> <boolean> <operator> <register> <subprogram> <string>");

@@ -6,7 +6,7 @@ package Mcd_Parser is
 
   Parsing_Error : exception;
 
-  procedure Print_Help;
+  procedure Print_Help (Command : in Boolean);
 
   procedure Dump_Stack;
 
