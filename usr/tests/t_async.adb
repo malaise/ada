@@ -1,19 +1,21 @@
 with Ada.Exceptions, Ada.Characters.Latin_1;
 with Argument, Basic_Proc, Async_Stdin, Event_Mng, Socket, Socket_Util,
-     Tcp_Util, Ip_Addr, Sys_Calls;
+     Tcp_Util, Ip_Addr, Sys_Calls, Autobus, As.U;
 procedure T_Async is
 
   procedure Usage is
   begin
     Async_Stdin.Put_Line_Err ("Usage: "
        & Argument.Get_Program_Name & " [ <no_stdin> ] <mode>");
-    Async_Stdin.Put_Line_Err ("  <no_stdin> ::= -n");
-    Async_Stdin.Put_Line_Err ("  <mode>     ::= <client> | <server> | <udp>");
-    Async_Stdin.Put_Line_Err ("  <client>   ::= -c <host>:<port>");
-    Async_Stdin.Put_Line_Err ("  <server>   ::= -s <port>");
-    Async_Stdin.Put_Line_Err ("  <udp>      ::= -u [<lan>]:<port> | -U [<lan>]:<port>");
-    Async_Stdin.Put_Line_Err ("  <host>     ::= <host_name> | <host_address>");
-    Async_Stdin.Put_Line_Err ("  <port>     ::= <port_name> | <port_num>");
+    Async_Stdin.Put_Line_Err ("  <no_stdin>   ::= -n");
+    Async_Stdin.Put_Line_Err ("  <mode>       ::= <autobus> | <tcp_client> | <tcp_server> | <udp>");
+    Async_Stdin.Put_Line_Err ("  <autobus>    ::= -a <lan>:<port>");
+    Async_Stdin.Put_Line_Err ("  <tcp_client> ::= -c <host>:<port>");
+    Async_Stdin.Put_Line_Err ("  <tcp_server> ::= -s <port>");
+    Async_Stdin.Put_Line_Err ("  <udp>        ::= -u [<lan>]:<port> | -U [<lan>]:<port>");
+    Async_Stdin.Put_Line_Err ("  <lan>        ::= <lan_name>  | <lan_address>");
+    Async_Stdin.Put_Line_Err ("  <host>       ::= <host_name> | <host_address>");
+    Async_Stdin.Put_Line_Err ("  <port>       ::= <port_name> | <port_num>");
     Async_Stdin.Put_Line_Err ("-U => send on port+1, -u => send on port-1");
   end Usage;
   Arg_Error : exception;
@@ -21,19 +23,22 @@ procedure T_Async is
   Mode_Index : Positive;
 
   -- Client or server or udp mode
-  type Mode_List is (Client, Server, Udp);
+  type Mode_List is (Abus, Client, Server, Udp);
   Mode : Mode_List;
 
   -- Give_up on connection failure, signal, Async_Stdin error
   Give_Up : Boolean := False;
 
   -- Common message type
-  subtype Message_Type is String (1 .. 1024 * 1024);
+  subtype Message_Type is String (1 .. Autobus.Message_Max_Length);
 
   -- Set asynchronous stdin
   procedure Set_Async;
 
-  -- TCP / Udp stuff
+  -- Autobus / TCP / UDP stuff
+  Bus : aliased Autobus.Bus_Type;
+  Bus_Addr : As.U.Asu_Us;
+  Subs : aliased Autobus.Subscriber_Type;
   Local_Port_Def : Tcp_Util.Local_Port;
   Remote_Host_Def : Tcp_Util.Remote_Host;
   Remote_Port_Def : Tcp_Util.Remote_Port;
@@ -44,6 +49,24 @@ procedure T_Async is
   In_Overflow : Boolean;
   procedure Open;
   procedure Close;
+
+  -- Autobus receiver
+  type Observer_Type is new Autobus.Observer_Type with null record;
+  Receiver : aliased Observer_Type;
+  procedure Receive (Observer : in out Observer_Type;
+                     Subscriber : in Autobus.Subscriber_Access_Type;
+                     Message : in String) is
+    pragma Unreferenced (Observer, Subscriber);
+  begin
+    if Message'Length = 1
+    and then Message(Message'First) = Ada.Characters.Latin_1.Eot then
+      -- Single Ctrl D => Close connection
+      Async_Stdin.Put_Line_Err ("closing");
+      Give_Up := True;
+    else
+      Async_Stdin.Put_Out (Message);
+    end if;
+  end Receive;
 
   -- End of sending overflow
   procedure End_Ovf_Cb (Dscr : in  Socket.Socket_Dscr) is
@@ -71,10 +94,11 @@ procedure T_Async is
   procedure Udp_Send is new Socket.Send (Message_Type);
   procedure Send (Msg : in Message_Type; Len : in Positive) is
   begin
-    if not Soc.Is_Open then
+    if Mode = Abus then
+      Bus.Send (Msg(Msg'First .. Msg'First + Len - 1));
+    elsif not Soc.Is_Open then
       return;
-    end if;
-    if Mode = Udp then
+    elsif Mode = Udp then
        Udp_Send (Send_Soc, Msg, Len);
     elsif not In_Overflow then
       if not Tcp_Send (Soc, End_Ovf_Cb'Unrestricted_Access,
@@ -98,11 +122,7 @@ procedure T_Async is
       -- Single Ctrl D => Close connection
       Async_Stdin.Put_Line_Err ("closing");
       Close;
-      if Mode= Server then
-        Open;
-      else
-        Give_Up := True;
-      end if;
+      Give_Up := True;
     else
       Async_Stdin.Put_Out (Msg(1 .. Len));
     end if;
@@ -175,6 +195,10 @@ procedure T_Async is
     pragma Unreferenced (Dummy);
   begin
     case Mode is
+      when Abus =>
+        Bus.Init (Bus_Addr.Image);
+        Subs.Init (Bus'Unrestricted_Access, Receiver'Unrestricted_Access);
+        Set_Async;
       when Server =>
         loop
           begin
@@ -211,25 +235,36 @@ procedure T_Async is
         My_Rece.Set_Callbacks (Soc, Read_Cb'Unrestricted_Access, null);
         Set_Async;
     end case;
+  exception
+    when Autobus.Invalid_Address | Autobus.Name_Error =>
+      raise Arg_Error;
   end Open;
 
   procedure Close is
   begin
-    if Mode = Server then
-        begin
-          Tcp_Util.Abort_Accept (Socket.Tcp, Port_Num);
-        exception
-          when Tcp_Util.No_Such =>
-            null;
-        end;
-    elsif Mode = Client then
-        begin
-          Tcp_Util.Abort_Connect (Remote_Host_Def, Remote_Port_Def);
-        exception
-          when Tcp_Util.No_Such =>
-            null;
-        end;
+    -- Reset Bus
+    if Mode = Abus then
+      Subs.Reset;
+      Bus.Reset;
+      return;
     end if;
+    -- Cancel TCP connect or accept
+    if Mode = Server then
+      begin
+        Tcp_Util.Abort_Accept (Socket.Tcp, Port_Num);
+      exception
+        when Tcp_Util.No_Such =>
+          null;
+      end;
+    elsif Mode = Client then
+      begin
+        Tcp_Util.Abort_Connect (Remote_Host_Def, Remote_Port_Def);
+      exception
+        when Tcp_Util.No_Such =>
+          null;
+      end;
+    end if;
+    -- Cancel TCP or UDP reception and TCP overflow
     if Soc.Is_Open then
       begin
         My_Rece.Remove_Callbacks (Soc);
@@ -244,6 +279,7 @@ procedure T_Async is
          null;
       end;
     end if;
+    -- Close TCP or UDP socket
     if Soc.Is_Open then
       Soc.Close;
     end if;
@@ -297,7 +333,10 @@ begin
     raise Arg_Error;
   end if;
 
-  if Argument.Get_Parameter (Mode_Index) = "-s" then
+  if Argument.Get_Parameter (Mode_Index) = "-a" then
+    Mode := Abus;
+    Argument.Get_Parameter (Bus_Addr, Mode_Index + 1);
+  elsif Argument.Get_Parameter (Mode_Index) = "-s" then
     Mode := Server;
     declare
       use type Tcp_Util.Remote_Port_List;

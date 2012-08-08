@@ -10,6 +10,7 @@ CLIBS := x_mng cutil X11
 CLIBS_t_ndbm := cndbm gdbm \
  $(patsubst /usr/lib/lib%.so, %, $(wildcard /usr/lib/libgdbm_compat.so))
 
+CLIBS_t_async := posix2pcre pcre
 CLIBS_t_autobus := posix2pcre pcre
 CLIBS_t_byte_to_unicode := posix2pcre pcre
 CLIBS_t_channels := posix2pcre pcre
