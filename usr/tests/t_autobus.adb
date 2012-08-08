@@ -26,7 +26,7 @@ procedure T_Autobus is
     Plo ("<mode> ::= -a | --auto | -m | --manual");
     Plo ("<bus>  ::= -b <bus_address> | --bus=<bus_address>");
     Plo ("Ex: " & Argument.Get_Program_Name
-       & " --manual " & Default_Address);
+       & " --manual -b " & Default_Address);
   end Usage;
 
   procedure Error (Msg : in String) is
@@ -165,7 +165,7 @@ begin
     if Key_Dscr.Get_Option (4, 1) = "" then
       Error ("Missing bus address");
     end if;
-    Bus.Init (Key_Dscr.Get_Option (3, 1));
+    Bus.Init (Key_Dscr.Get_Option (4, 1));
   else
     Bus.Init (Default_Address);
   end if;
