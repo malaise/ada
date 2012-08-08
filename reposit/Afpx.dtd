@@ -37,7 +37,7 @@
 <!ATTLIST Var Name  NMTOKEN #REQUIRED
               Value CDATA   #REQUIRED>
 
-<!-- This ENTITY is informative. It defines the default colors, (if not --> 
+<!-- This ENTITY is informative. It defines the default colors, (if not -->
 <!--  re-defined by ColorDefinitions). -->
 <!ENTITY % Colors "Light_Grey | Blue | Dark_Green | Cyan |
                    Red | Magenta | Brown | Black |
