@@ -56,7 +56,8 @@ package body Autobus is
   --------------
   -- INTERNAL --
   --------------
-  -- List of Buses and Partners
+  -- Static data: List of Buses and Partners
+  In_Receive : Boolean := False;
   Buses : Bus_List_Mng.List_Type;
   Partners : Partner_List_Mng.List_Type;
 
@@ -186,6 +187,14 @@ package body Autobus is
   begin
     return Curr.Timer = Crit.Timer;
   end Bus_Match_Timer;
+
+  -- Raise Reset_In_Receive if In_Receive
+  procedure Check_In_Receive is
+  begin
+    if In_Receive then
+      raise Reset_In_Receive;
+    end if;
+  end Check_In_Receive;
 
   -- Remove current (in Partners list) Partner
   -- Remove its ref in its Bus list and remove it from Partners list
@@ -735,6 +744,7 @@ package body Autobus is
     Moved : Boolean;
     use type Socket.Socket_Dscr;
   begin
+    Check_In_Receive;
     -- Check that Bus is initialised
     if Bus.Acc = null then
       raise Status_Error;
@@ -849,6 +859,7 @@ package body Autobus is
     Bus_Found : Boolean;
     Subs : Subscriber_Rec;
     Ok : Boolean;
+    Position : Natural;
   begin
     -- Check that this Bus is initialised
     if Bus = null then
@@ -882,10 +893,18 @@ package body Autobus is
       end if;
     end if;
 
-    -- Store in Bus
+    -- Store in Bus, save position in case we are dispatching
+    if Bus.Acc.Subscribers.Is_Empty then
+      Position := 0;
+    else
+      Position := Bus.Acc.Subscribers.Get_Position;
+    end if;
     Bus.Acc.Subscribers.Rewind (False, Subscriber_List_Mng.Next);
     Bus.Acc.Subscribers.Insert (Subs);
     Subscriber.Acc := Bus.Acc.Subscribers.Access_Current;
+    if Position /= 0 then
+      Bus.Acc.Subscribers.Move_At (Position);
+    end if;
 
     if Filter = "" then
       Debug ("Subscriber init ok");
@@ -899,6 +918,7 @@ package body Autobus is
     Bus_Found : Boolean;
     Subscriber_Found : Boolean;
   begin
+    Check_In_Receive;
     if Subscriber.Acc = null then
       raise Status_Error;
     end if;
@@ -956,10 +976,12 @@ package body Autobus is
       end if;
       if Ok then
         begin
+          In_Receive := True;
           Subs.Observer.Receive (Subs.Client, Message);
+          In_Receive := False;
         exception
           when others =>
-            null;
+            In_Receive := False;
         end;
       end if;
       exit when not Bus.Subscribers.Check_Move;

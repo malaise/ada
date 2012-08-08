@@ -51,6 +51,7 @@ package Autobus is
   -- Filter is a PCRE regular expression
   -- Empty filter lets all messages pass through
   -- Echo allows enabling observation of messages sent by own process
+  -- In Receive it is forbidden to reset a Bus or a Subscriber
   type Observer_Type is limited interface;
   procedure Receive (Observer : in out Observer_Type;
                      Subscriber : in Subscriber_Access_Type;
@@ -77,6 +78,9 @@ package Autobus is
   -- If resetting a Subscriber not initialised or reset
   Status_Error : exception;
 
+  -- If resetting a Bus or a Subscriber while in Receive
+  Reset_In_Receive : exception;
+
   -- If any system error on any call
   System_Error : exception;
 
@@ -96,7 +100,7 @@ private
     Sock : Socket.Socket_Dscr;
     -- Timer of keep alive
     Timer : Timer_Access;
-    -- Reference to the bus (when message recieved or diconnection)
+    -- Reference to the bus (when message received or disconnection)
     Bus : Bus_Access;
   end record;
   package Partner_Dyn_List_Mng is new Dynamic_List (Partner_Rec);
