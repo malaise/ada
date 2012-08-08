@@ -23,12 +23,14 @@ package body Io_Flow is
   -- Udp or tcp socket
   Host : Tcp_Util.Remote_Host;
   Port : Tcp_Util.Remote_Port;
+  Send_Port : Tcp_Util.Remote_Port (Tcp_Util.Port_Num_Spec);
   Is_Ipm : Boolean;
   Soc : Socket.Socket_Dscr;
+  Send_Soc : Socket.Socket_Dscr;
   Accepting_Soc : Socket.Socket_Dscr;
   function Socket_Is_Active return Boolean;
   procedure Activate_Socket (Active : in Boolean);
-  procedure Open_Udp_Socket (And_Activate : in Boolean);
+  procedure Open_Udp_Sockets (Send_Next : in Boolean);
   procedure Open_Tcp_Socket (And_Activate : in Boolean);
   procedure Soc_Send is new Socket.Send (Io_Data.Message_Type);
   procedure Soc_Receive is new Socket.Receive (Io_Data.Message_Type);
@@ -122,16 +124,22 @@ package body Io_Flow is
     end if;
 
     -- Get udp/ipm spec if set
-    if Argument.Is_Set (1, "u") then
+    if Argument.Is_Set (1, "u")
+    or else Argument.Is_Set (1, "U") then
       -- Parse udp port or ipm address
       begin
-        Ip_Addr.Parse (Argument.Get_Parameter (1, "u"), Host, Port);
+        if Argument.Is_Set (1, "u") then
+          Ip_Addr.Parse (Argument.Get_Parameter (1, "u"), Host, Port);
+        else
+          Ip_Addr.Parse (Argument.Get_Parameter (1, "U"), Host, Port);
+        end if;
       exception
         when Ip_Addr.Parse_Error =>
           Async_Stdin.Put_Line_Err ("Invalid udp spec.");
           raise Init_Error;
       end;
-      Open_Udp_Socket (True);
+      Open_Udp_Sockets (Argument.Is_Set (1, "U"));
+      Io_Mode := Udp;
       if Debug.Debug_Level_Array(Debug.Flow) then
         Async_Stdin.Put_Err ("Flow: Init on ");
         if Is_Ipm then
@@ -140,10 +148,10 @@ package body Io_Flow is
         else
           Async_Stdin.Put_Err ("udp ");
         end if;
-        Async_Stdin.Put_Line_Err ("port " &
-          Ip_Addr.Image (Soc.Get_Linked_To));
+        Async_Stdin.Put_Err ("port " & Ip_Addr.Image (Soc.Get_Linked_To));
+        Async_Stdin.Put_Line_Err (" sending on port "
+           & Ip_Addr.Image (Send_Soc.Get_Destination_Port));
       end if;
-      Io_Mode := Udp;
     end if;
 
     -- If no arg => Stdin
@@ -302,9 +310,11 @@ package body Io_Flow is
     Message_To_Put (1 .. Str'Length) := Str;
     if Io_Mode = Abus then
       Bus.Send (Str);
-    else
+    elsif Io_Mode = Tcp then
       Active := Socket_Is_Active;
       Soc_Send (Soc, Message_To_Put, Str'Length);
+    else
+      Soc_Send (Send_Soc, Message_To_Put, Str'Length);
     end if;
   exception
     when Socket.Soc_Would_Block =>
@@ -576,31 +586,40 @@ package body Io_Flow is
     end if;
   end Open_Tcp_Socket;
 
-  procedure Open_Udp_Socket (And_Activate : in Boolean) is
-    use type Tcp_Util.Remote_Host_List, Tcp_Util.Remote_Port_List;
+  procedure Open_Udp_Sockets (Send_Next : in Boolean) is
+    use type Tcp_Util.Remote_Host_List, Tcp_Util.Remote_Port_List,
+             Socket.Port_Num;
   begin
+    -- Open reception socket
     Soc.Open (Socket.Udp);
-    Is_Ipm := False;
     if Host.Kind = Tcp_Util.Host_Id_Spec
-    or else Host.Name.Is_Null then
+    or else not Host.Name.Is_Null then
       -- An address specified => Ipm
       -- Use Set_Dest to indicate Imp address
-      Socket_Util.Set_Destination (Soc, True, Host, Port);
       Is_Ipm := True;
+    else
+      -- No address => broadcast
+      Host := (Kind => Tcp_Util.Host_Id_Spec,
+               Id => Socket.Bcast_Of (Socket.Local_Host_Id));
+      Is_Ipm := False;
     end if;
+    Socket_Util.Set_Destination (Soc, True, Host, Port);
     Socket_Util.Link (Soc, Port);
-    if And_Activate then
-      Activate_Socket (True);
+    Activate_Socket (True);
+    -- Open emission socket
+    Send_Soc.Open (Socket.Udp);
+    Send_Port.Num := Soc.Get_Linked_To;
+    if Send_Next then
+      Send_Port.Num := Send_Port.Num + 1;
+    else
+      Send_Port.Num := Send_Port.Num - 1;
     end if;
+    Socket_Util.Set_Destination (Send_Soc, True, Host, Send_Port);
+    -- Done
     if Debug.Debug_Level_Array(Debug.Flow) then
-      Async_Stdin.Put_Err ("Flow: Udp socket open and ");
-      if And_Activate then
-        Async_Stdin.Put_Line_Err ("active");
-      else
-        Async_Stdin.Put_Line_Err ("inactive");
-      end if;
+      Async_Stdin.Put_Err ("Flow: Udp sockets open");
     end if;
-  end Open_Udp_Socket;
+  end Open_Udp_Sockets;
 
 end Io_Flow;
 

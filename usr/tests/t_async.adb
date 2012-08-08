@@ -1,6 +1,6 @@
 with Ada.Exceptions, Ada.Characters.Latin_1;
-with Argument, Basic_Proc, Async_Stdin, Event_Mng, Socket, Tcp_Util, Ip_Addr,
-     Sys_Calls;
+with Argument, Basic_Proc, Async_Stdin, Event_Mng, Socket, Socket_Util,
+     Tcp_Util, Ip_Addr, Sys_Calls;
 procedure T_Async is
 
   procedure Usage is
@@ -8,34 +8,39 @@ procedure T_Async is
     Async_Stdin.Put_Line_Err ("Usage: "
        & Argument.Get_Program_Name & " [ <no_stdin> ] <mode>");
     Async_Stdin.Put_Line_Err ("  <no_stdin> ::= -n");
-    Async_Stdin.Put_Line_Err ("  <mode>     ::= <client> | <server>");
+    Async_Stdin.Put_Line_Err ("  <mode>     ::= <client> | <server> | <udp>");
     Async_Stdin.Put_Line_Err ("  <client>   ::= -c <host>:<port>");
     Async_Stdin.Put_Line_Err ("  <server>   ::= -s <port>");
+    Async_Stdin.Put_Line_Err ("  <udp>      ::= -u [<lan>]:<port> | -U [<lan>]:<port>");
     Async_Stdin.Put_Line_Err ("  <host>     ::= <host_name> | <host_address>");
     Async_Stdin.Put_Line_Err ("  <port>     ::= <port_name> | <port_num>");
+    Async_Stdin.Put_Line_Err ("-U => send on port+1, -u => send on port-1");
   end Usage;
   Arg_Error : exception;
   Use_Stdin : Boolean;
   Mode_Index : Positive;
 
-  -- Client or server mode
-  Server_Mode : Boolean;
+  -- Client or server or udp mode
+  type Mode_List is (Client, Server, Udp);
+  Mode : Mode_List;
 
   -- Give_up on connection failure, signal, Async_Stdin error
   Give_Up : Boolean := False;
 
   -- Common message type
-  subtype Message_Type is String (1 .. 1024);
+  subtype Message_Type is String (1 .. 1024 * 1024);
 
   -- Set asynchronous stdin
   procedure Set_Async;
 
-  -- TCP stuff
+  -- TCP / Udp stuff
   Local_Port_Def : Tcp_Util.Local_Port;
   Remote_Host_Def : Tcp_Util.Remote_Host;
   Remote_Port_Def : Tcp_Util.Remote_Port;
+  Send_Port_Def : Tcp_Util.Remote_Port;
   Port_Num : Tcp_Util.Port_Num;
-  Tcp_Soc : Socket.Socket_Dscr;
+  Soc : Socket.Socket_Dscr;
+  Send_Soc : Socket.Socket_Dscr;
   In_Overflow : Boolean;
   procedure Open;
   procedure Close;
@@ -62,15 +67,18 @@ procedure T_Async is
 
 
   -- For sending on Tcp
-  function My_Send is new Tcp_Util.Send (Message_Type);
+  function Tcp_Send is new Tcp_Util.Send (Message_Type);
+  procedure Udp_Send is new Socket.Send (Message_Type);
   procedure Send (Msg : in Message_Type; Len : in Positive) is
   begin
-    if not Tcp_Soc.Is_Open then
+    if not Soc.Is_Open then
       return;
     end if;
-    if not In_Overflow then
-      if not My_Send (Tcp_Soc, End_Ovf_Cb'Unrestricted_Access,
-                      Send_Err_Cb'Unrestricted_Access, 1.0, Msg, Len) then
+    if Mode = Udp then
+       Udp_Send (Send_Soc, Msg, Len);
+    elsif not In_Overflow then
+      if not Tcp_Send (Soc, End_Ovf_Cb'Unrestricted_Access,
+                       Send_Err_Cb'Unrestricted_Access, 1.0, Msg, Len) then
         In_Overflow := True;
       end if;
     end if;
@@ -90,7 +98,7 @@ procedure T_Async is
       -- Single Ctrl D => Close connection
       Async_Stdin.Put_Line_Err ("closing");
       Close;
-      if Server_Mode then
+      if Mode= Server then
         Open;
       else
         Give_Up := True;
@@ -108,8 +116,8 @@ procedure T_Async is
   begin
     Async_Stdin.Put_Line_Err ("disconnected");
     -- Tcp_Util closes the socket
-    Tcp_Soc := Socket.No_Socket;
-    if Server_Mode then
+    Soc := Socket.No_Socket;
+    if Mode = Server then
       -- Accept connections again
       Open;
     else
@@ -126,10 +134,10 @@ procedure T_Async is
                          Remote_Host_Id);
     use type Socket.Socket_Dscr;
   begin
-    Tcp_Soc := New_Dscr;
-    Tcp_Soc.Set_Blocking (Socket.Non_Blocking);
+    Soc := New_Dscr;
+    Soc.Set_Blocking (Socket.Non_Blocking);
     In_Overflow := False;
-    My_Rece.Set_Callbacks (Tcp_Soc, Read_Cb'Unrestricted_Access,
+    My_Rece.Set_Callbacks (Soc, Read_Cb'Unrestricted_Access,
                                   Discon_Cb'Unrestricted_Access);
     Async_Stdin.Put_Line_Err ("connected");
     -- Only one connection at a time
@@ -146,11 +154,11 @@ procedure T_Async is
     pragma Unreferenced (Remote_Port_Num, Remote_Host_Id);
   begin
     if Connected then
-      Tcp_Soc := Dscr;
-      Tcp_Soc.Set_Blocking (Socket.Non_Blocking);
+      Soc := Dscr;
+      Soc.Set_Blocking (Socket.Non_Blocking);
       In_Overflow := False;
-      My_Rece.Set_Callbacks (Tcp_Soc, Read_Cb'Unrestricted_Access,
-                                    Discon_Cb'Unrestricted_Access);
+      My_Rece.Set_Callbacks (Soc, Read_Cb'Unrestricted_Access,
+                                  Discon_Cb'Unrestricted_Access);
       Async_Stdin.Put_Line_Err ("connected");
       -- Ready to process stdin
       Set_Async;
@@ -166,64 +174,78 @@ procedure T_Async is
     Dummy : Boolean;
     pragma Unreferenced (Dummy);
   begin
-    if Server_Mode then
-      loop
-        begin
-          Tcp_Util.Accept_From (Socket.Tcp,
-                                Local_Port_Def,
-                                Accept_Cb'Unrestricted_Access,
-                                Acc_Soc,
-                                Port_Num);
-          exit;
-        exception
-          when Socket.Soc_Addr_In_Use =>
-            Async_Stdin.Put_Line_Err ("Cannot accept. Maybe Close-wait. Waiting");
-            Event_Mng.Wait (20_000);
-        end;
-      end loop;
-    else
-      Dummy := Tcp_Util.Connect_To (Socket.Tcp,
-                                    Remote_Host_Def,
-                                    Remote_Port_Def,
-                                    Conn_Cb'Unrestricted_Access,
-                                    1.0,
-                                    1);
-    end if;
+    case Mode is
+      when Server =>
+        loop
+          begin
+            Tcp_Util.Accept_From (Socket.Tcp,
+                                  Local_Port_Def,
+                                  Accept_Cb'Unrestricted_Access,
+                                  Acc_Soc,
+                                  Port_Num);
+            exit;
+          exception
+            when Socket.Soc_Addr_In_Use =>
+              Async_Stdin.Put_Line_Err ("Cannot accept. Maybe Close-wait. Waiting");
+              Event_Mng.Wait (20_000);
+          end;
+        end loop;
+      when Client =>
+        Dummy := Tcp_Util.Connect_To (Socket.Tcp,
+                                      Remote_Host_Def,
+                                      Remote_Port_Def,
+                                      Conn_Cb'Unrestricted_Access,
+                                      1.0,
+                                      1);
+      when Udp =>
+        Soc.Open (Socket.Udp);
+        Soc.Set_Blocking (Socket.Non_Blocking);
+        Socket_Util.Set_Destination (Soc, True, Remote_Host_Def,
+                                     Remote_Port_Def);
+        Socket_Util.Link (Soc, Remote_Port_Def);
+        Send_Soc.Open (Socket.Udp);
+        Send_Soc.Set_Blocking (Socket.Non_Blocking);
+        Socket_Util.Set_Destination (Send_Soc, True, Remote_Host_Def,
+                                     Send_Port_Def);
+
+        My_Rece.Set_Callbacks (Soc, Read_Cb'Unrestricted_Access, null);
+        Set_Async;
+    end case;
   end Open;
 
   procedure Close is
   begin
-    if Server_Mode then
-      begin
-        Tcp_Util.Abort_Accept (Socket.Tcp, Port_Num);
-      exception
-        when Tcp_Util.No_Such =>
-          null;
-      end;
-    else
-      begin
-        Tcp_Util.Abort_Connect (Remote_Host_Def, Remote_Port_Def);
-      exception
-        when Tcp_Util.No_Such =>
-          null;
-      end;
+    if Mode = Server then
+        begin
+          Tcp_Util.Abort_Accept (Socket.Tcp, Port_Num);
+        exception
+          when Tcp_Util.No_Such =>
+            null;
+        end;
+    elsif Mode = Client then
+        begin
+          Tcp_Util.Abort_Connect (Remote_Host_Def, Remote_Port_Def);
+        exception
+          when Tcp_Util.No_Such =>
+            null;
+        end;
     end if;
-    if Tcp_Soc.Is_Open then
+    if Soc.Is_Open then
       begin
-        My_Rece.Remove_Callbacks (Tcp_Soc);
+        My_Rece.Remove_Callbacks (Soc);
       exception
        when Tcp_Util.No_Such =>
          null;
       end;
       begin
-        Tcp_Util.Abort_Send_And_Close (Tcp_Soc);
+        Tcp_Util.Abort_Send_And_Close (Soc);
       exception
        when Tcp_Util.No_Such =>
          null;
       end;
     end if;
-    if Tcp_Soc.Is_Open then
-      Tcp_Soc.Close;
+    if Soc.Is_Open then
+      Soc.Close;
     end if;
   end Close;
 
@@ -276,7 +298,7 @@ begin
   end if;
 
   if Argument.Get_Parameter (Mode_Index) = "-s" then
-    Server_Mode := True;
+    Mode := Server;
     declare
       use type Tcp_Util.Remote_Port_List;
     begin
@@ -292,10 +314,41 @@ begin
         raise Arg_Error;
     end;
   elsif Argument.Get_Parameter (Mode_Index) = "-c" then
+    Mode := Client;
     begin
-      Server_Mode := False;
       Ip_Addr.Parse (Argument.Get_Parameter (Mode_Index + 1),
                      Remote_Host_Def, Remote_Port_Def);
+    exception
+      when others =>
+        raise Arg_Error;
+    end;
+  elsif Argument.Get_Parameter (Mode_Index) = "-u"
+  or else Argument.Get_Parameter (Mode_Index) = "-U" then
+    Mode := Udp;
+    declare
+      use type Tcp_Util.Local_Port_List, Tcp_Util.Remote_Host_List,
+               Socket.Port_Num;
+    begin
+      Ip_Addr.Parse (Argument.Get_Parameter (Mode_Index + 1),
+                     Remote_Host_Def, Remote_Port_Def);
+      if Remote_Host_Def.Kind = Tcp_Util.Host_Name_Spec
+      and then Remote_Host_Def.Name.Is_Null then
+        -- Only a port => broadcast
+        Remote_Host_Def := (Kind => Tcp_Util.Host_Id_Spec,
+                            Id => Socket.Bcast_Of (Socket.Local_Host_Id));
+      end if;
+      Send_Port_Def := (Tcp_Util.Port_Num_Spec, 0);
+      if Remote_Port_Def.Kind = Tcp_Util.Port_Name_Spec then
+        Send_Port_Def.Num := Socket.Port_Num_Of (
+                  Send_Port_Def.Name.Image, Socket.Udp);
+      else
+        Send_Port_Def.Num := Remote_Port_Def.Num;
+      end if;
+      if Argument.Get_Parameter (Mode_Index) = "-u" then
+        Send_Port_Def.Num := Send_Port_Def.Num - 1;
+      else
+        Send_Port_Def.Num := Send_Port_Def.Num + 1;
+      end if;
     exception
       when others =>
         raise Arg_Error;

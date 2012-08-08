@@ -420,16 +420,22 @@ package body Mcd_Parser is
     Ope_Name : String (1 .. Ope_Len);
     Pad : constant String (1 .. Ope_Len) := (others => ' ');
     Separator : constant String (1 .. Ope_Len) := (others => '-');
+    procedure Put_Line (Msg : in String) is
+    begin
+      if Command then
+        Io_Flow.Put_Line (Msg);
+      else
+        Basic_Proc.Put_Line_Error (Msg);
+      end if;
+    end Put_Line;
   begin
+    Put_Line ("Usage: " & Argument.Get_Program_Name & " [ -a<bus_address> | <udp> | -t<tcp_port> | -h | --help ]");
+    Put_Line ("  <udp>      ::= -u<udp_spec> | -U<udp_spec>");
+    Put_Line ("  <udp_spec> ::= [<ipm_lan_name_or_num>]:<udp_port>");
+    Put_Line ("  <port>     ::= <port_name> | <port_num>");
+    Put_Line ("UDP => bind on port, -U => reply on port+1, -u => reply on port-1");
     if not Command then
-      Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name & " [ -a<bus_address> | -u<udp_spec> | -t<tcp_port> | -h | --help ]");
-      Basic_Proc.Put_Line_Error ("  <udp_spec> ::= [<ipm_lan_name_or_num>]:<udp_port>");
-      Basic_Proc.Put_Line_Error ("  <port>     ::= <port_name> | <port_num>");
       return;
-    else
-      Io_Flow.Put_Line ("Usage: " & Argument.Get_Program_Name & " [ -a<bus_address> | -u<udp_spec> | -t<tcp_port> | -h | --help ]");
-      Io_Flow.Put_Line ("  <udp_spec> ::= [<ipm_lan_name_or_num>]:<udp_port>");
-      Io_Flow.Put_Line ("  <port>     ::= <port_name> | <port_num>");
     end if;
     Io_Flow.New_Line;
     Io_Flow.Put_Line ("Commands are strings read from standard input or from a bus/udp/tcp channel.");
