@@ -145,20 +145,16 @@ procedure Agite is
     if List_Width = Afpx.Width_Range'First then
       List_Width := Afpx.Get_Field_Width (Afpx.List_Field_No) - 4;
     end if;
-    if Force then
-      Changed := True;
-    else
-      -- Save current position and entry
-      if not Files.Is_Empty then
-        Position := Afpx.Line_List.Get_Position;
-        Files.Move_At (Position);
-        Files.Read (Current_File, Git_If.File_Mng.Dyn_List.Current);
-      end if;
-      -- Refresh list only if it has changed
+    Changed := Force;
+    -- Save current position and entry
+    if not Files.Is_Empty then
+      Position := Afpx.Line_List.Get_Position;
+      Files.Move_At (Position);
+      Files.Read (Current_File, Git_If.File_Mng.Dyn_List.Current);
       -- Make a copy of files list
       Prev_Files.Insert_Copy (Files);
-      Changed := False;
     end if;
+    -- Refresh list only if it has changed
 
     -- Update list of files
     List_Files;
@@ -216,6 +212,8 @@ procedure Agite is
       if New_Dir = "" then
         if Str /= "" then
           Directory.Change_Current (Str);
+        else
+          Directory.Change_Current (".");
         end if;
       else
         Directory.Change_Current (New_Dir);
@@ -279,7 +277,7 @@ procedure Agite is
 
   -- Refresh list of files
   -- If Set_Dir then change dir to "."
-  -- try to restore current pos
+  -- Try to restore current pos
   procedure Reread (Set_Dir : in Boolean) is
   begin
     -- Re-build list
@@ -697,7 +695,7 @@ begin
             -- Revert
             List_Action (Revert);
           when 29 =>
-            -- Revert
+            -- Add
             List_Action (Add);
           when 30 =>
             -- Exit
