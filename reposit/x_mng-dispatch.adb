@@ -95,7 +95,7 @@ package body Dispatch is
       Event := Selection;
     else
       -- Discard, or Invalid X event
-      Event := No_Event;
+      Event := Timeout;
     end if;
     Log ("Xx_Get_Event", No_Client_No, "-> " & Event'Img);
   end Xx_Get_Event;
@@ -115,7 +115,7 @@ package body Dispatch is
 
     -- Next expiration
     Select_Exp : Timers.Expiration_Rec;
-    Timeout : C_Types.Timeval_T;
+    Timeout_Val : C_Types.Timeval_T;
     Now : Ada.Calendar.Time;
     -- For C x_select
     C_Fd    : C_Types.Int;
@@ -136,19 +136,19 @@ package body Dispatch is
       -- Compute min of Exp and timers, set timeout in Ms
       Select_Exp := Timers.Next_Expiration (Exp);
       if Select_Exp = Timers.Infinite_Expiration then
-        Timeout := Timeval.Infinite_C_Timeout;
+        Timeout_Val := Timeval.Infinite_C_Timeout;
       else
         Now := Ada.Calendar.Clock;
         if Now < Select_Exp.Time then
-          Timeout := Timeval.To_C_Timeout (Select_Exp.Time - Now);
+          Timeout_Val := Timeval.To_C_Timeout (Select_Exp.Time - Now);
         else
-          Timeout := (0, 0);
+          Timeout_Val := (0, 0);
         end if;
       end if;
 
       -- Call the real select
-      Log ("Xx_Select", No_Client_No, "timeout " & Timeval.Image (Timeout));
-      C_Res := X_Select (C_Fd'Address, C_Read'Address, Timeout'Address);
+      Log ("Xx_Select", No_Client_No, "timeout " & Timeval.Image (Timeout_Val));
+      C_Res := X_Select (C_Fd'Address, C_Read'Address, Timeout_Val'Address);
       if C_Res /= Ok then
         Log ("Xx_Select.X_Select", No_Client_No, "-> ERROR");
         raise X_Failure;
@@ -165,7 +165,7 @@ package body Dispatch is
       --               set event to X event if valid
       --               go on if Discard
       if C_Fd = C_Select_No_Event then
-        Evt_In := (Kind => Event_Mng.No_Event);
+        Evt_In := (Kind => Event_Mng.Timeout);
       elsif C_Fd = C_Select_Sig_Event then
         Evt_In := (Kind => Event_Mng.Signal_Event);
       elsif C_Fd = C_Select_Wake_Event then
@@ -175,7 +175,7 @@ package body Dispatch is
       elsif C_Fd = C_Select_X_Event then
         -- Get X event and its owner
         Handle_Event := False;
-        Event := (Internal => False, Kind => No_Event);
+        Event := (Internal => False, Kind => Timeout);
         Xx_Get_Event (C_Id, Event.Kind, Next);
       else
         -- A fd
@@ -194,16 +194,16 @@ package body Dispatch is
             Event := (Internal => False, Kind => Fd_Event);
           when Event_Mng.Signal_Event =>
             Event := (Internal => False, Kind => Signal_Event);
-          when Event_Mng.No_Event =>
-            Event := (Internal => False, Kind => No_Event);
+          when Event_Mng.Timeout =>
+            Event := (Internal => False, Kind => Timeout);
         end case;
 
         -- Done on select timeout (No_Event) or an event to report
-        exit when Evt_In.Kind = Event_Mng.No_Event
-        or else Event.Kind /= No_Event;
+        exit when Evt_In.Kind = Event_Mng.Timeout
+        or else Event.Kind /= Timeout;
       else
         -- X event or private event, done if valid
-        exit when Event.Internal or else Event.Kind /= No_Event;
+        exit when Event.Internal or else Event.Kind /= Timeout;
       end if;
 
     end loop;
@@ -552,7 +552,7 @@ package body Dispatch is
       end if;
 
       -- Fifth, try to fetch a pending X event
-      Event := (Internal => False, Kind => No_Event);
+      Event := (Internal => False, Kind => Timeout);
       if Selected /= No_Client_No
       and then Next_Event then
         New_Client := Selected;
@@ -561,7 +561,7 @@ package body Dispatch is
       end if;
 
       -- Sixth, C select if no pending
-      if Event.Kind = No_Event then
+      if Event.Kind = Timeout then
         -- Select on smaller delay
         New_Client := Closest;
         Log ("Prepare", Client, "is selecting for " & New_Client'Img);
@@ -611,7 +611,7 @@ package body Dispatch is
             -- A general event to deliver to oldest
             Selected := Oldest;
             Next_Event := False;
-          when No_Event =>
+          when Timeout =>
             -- Timeout on select, to deliver to closest
             Selected := New_Client;
             Next_Event := False;

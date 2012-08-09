@@ -52,7 +52,7 @@ package X_Mng is
   type Event_Kind is (
      Keyboard, Tid_Release, Tid_Press, Tid_Motion, Refresh, Selection,
      Exit_Request,
-     Timer_Event, Fd_Event, Signal_Event, No_Event);
+     Timer_Event, Fd_Event, Signal_Event, Timeout);
 
   ----- EXCEPTIONS -----
 

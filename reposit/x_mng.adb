@@ -369,7 +369,7 @@ package body X_Mng is
         when True =>
           Internal_Kind : Internal_Event_Kind := Dispatch_Event;
         when False =>
-          Kind : Event_Kind := No_Event;
+          Kind : Event_Kind := Timeout;
       end case;
     end record;
 
@@ -429,7 +429,7 @@ package body X_Mng is
       -- Client selected by Wait that is (to be) released from Wait_Event,
       --  and the event for it
       Selected : Line_Range := No_Client_No;
-      Event : Event_Rec := (False, No_Event);
+      Event : Event_Rec := (False, Timeout);
       Next_Event : Boolean := False;
       -- Number of successive X events
       Nb_X_Events : Natural := 0;
@@ -1091,7 +1091,7 @@ package body X_Mng is
       when Event_Mng.Timer_Event  => return Timer_Event;
       when Event_Mng.Fd_Event     => return Fd_Event;
       when Event_Mng.Signal_Event => return Signal_Event;
-      when Event_Mng.No_Event     => return No_Event;
+      when Event_Mng.Timeout      => return Timeout;
     end case;
   end Translate_Events;
   procedure X_Wait_Event(Line_Id : in Line;
@@ -1147,7 +1147,7 @@ package body X_Mng is
 
       -- Dispatch non X events if any, and report if needed
       Kind := Translate_Events (Event_Mng.Wait (0));
-      exit when Kind /= No_Event;
+      exit when Kind /= X_Mng.Timeout;
     end loop;
 
     if Debug then

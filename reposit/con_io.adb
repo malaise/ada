@@ -1006,7 +1006,7 @@ package body Con_Io is
         -- Refresh
         Event := Refresh;
         return;
-      when X_Mng.No_Event =>
+      when X_Mng.Timeout =>
         -- Timeout
         Event := Timeout;
         return;

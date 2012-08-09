@@ -86,13 +86,14 @@ package Event_Mng is
   --   or until some fd event and its callback return True,
   --   or until timeout
   -- Any negative timeout means infinite
-  -- The four operations end on event or timeout
-  type Out_Event_List is (Timer_Event, Fd_Event, Signal_Event, No_Event);
+  -- The four operations end on any event or on timeout
+  type Out_Event_List is (Timer_Event, Fd_Event, Signal_Event, Timeout);
 
   -- This uses virtual time and allows various specifications of delay
   function Wait (Delay_Spec : Timers.Delay_Rec) return Out_Event_List;
 
   -- These are in real time and in Milli seconds
+  -- The Boolean is True if an event and False if Timeout
   Infinite_Ms : constant Integer := -1;
   function Wait (Timeout_Ms : Integer) return Out_Event_List;
   function Wait (Timeout_Ms : Integer) return Boolean;
@@ -111,7 +112,7 @@ package Event_Mng is
   ----------------------
   -- This low level operation shall not be used by applications
   -- Event got by another waiting point (X_Wait_Event?)
-  subtype In_Event_List is Out_Event_List range Fd_Event .. No_Event;
+  subtype In_Event_List is Out_Event_List range Fd_Event .. Timeout;
   type Event_Rec (Kind : In_Event_List := Fd_Event) is record
     case Kind is
       when Fd_Event =>
@@ -119,7 +120,7 @@ package Event_Mng is
         Read : Boolean;
       when Signal_Event =>
         null;
-      when No_Event =>
+      when Timeout =>
         null;
     end case;
   end record;

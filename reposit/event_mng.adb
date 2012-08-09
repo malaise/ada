@@ -286,7 +286,7 @@ package body Event_Mng is
     Read  : C_Types.Bool;
     Final_Exp, Next_Exp : Timers.Expiration_Rec;
     Now : Virtual_Time.Time;
-    Timeout : C_Types.Timeval_T;
+    Timeout_Val : C_Types.Timeval_T;
     C_Res : C_Types.Int;
     Handle_Res : Out_Event_List;
     use type Virtual_Time.Clock_Access,
@@ -320,22 +320,22 @@ package body Event_Mng is
       -- Compute next timeout
       Next_Exp := Timers.Next_Expiration (Final_Exp);
       if Next_Exp = Timers.Infinite_Expiration then
-        Timeout := Timeval.Infinite_C_Timeout;
+        Timeout_Val := Timeval.Infinite_C_Timeout;
       else
         Now := Virtual_Time.Current_Time (Delay_Spec.Clock);
         if Now < Next_Exp.Time then
-          Timeout := Timeval.To_C_Timeout (Next_Exp.Time - Now);
+          Timeout_Val := Timeval.To_C_Timeout (Next_Exp.Time - Now);
         else
-          Timeout := (0, 0);
+          Timeout_Val := (0, 0);
         end if;
       end if;
 
       -- Wait
-      Put_Debug ("Event_Mng.Wait timeout " & Timeval.Image(Timeout));
-      C_Res := C_Wait (Fd'Address, Read'Address, Timeout'Address);
+      Put_Debug ("Event_Mng.Wait timeout " & Timeval.Image(Timeout_Val));
+      C_Res := C_Wait (Fd'Address, Read'Address, Timeout_Val'Address);
       if C_Res /= Ok then
         Put_Debug ("Event_Mng.Wait.C_Wait -> ERROR");
-        return No_Event;
+        return Timeout;
       else
         Put_Debug ("Event_Mng.Wait.C_Wait -> "
                  & Integer'Image(Fd)
@@ -348,29 +348,29 @@ package body Event_Mng is
         Handle_Res := Handle ((Kind => Signal_Event));
       elsif Fd = C_Wake_Event then
         -- Wake_up event => skip
-        Handle_Res := No_Event;
+        Handle_Res := Timeout;
       elsif Fd = C_No_Event or else Fd >= 0 then
         -- Expire timers?
-        Handle_Res := Handle ((Kind => No_Event));
-        if Handle_Res = No_Event and then Fd >= 0 then
+        Handle_Res := Handle ((Kind => Timeout));
+        if Handle_Res = Timeout and then Fd >= 0 then
           -- No timer event to report and a fd set: handle fd
           Handle_Res := Handle ((Kind => Fd_Event,
                           Fd => File_Desc(Fd),
                           Read => For_Ada(Read)));
         end if;
       else
-        Handle_Res := No_Event;
+        Handle_Res := Timeout;
         Put_Debug ("Event_Mng.Wait Invalid fd");
       end if;
       Put_Debug ("Event_Mng.Wait Handle -> " & Handle_Res'Img);
 
       -- Done on event or timeout
-      if Handle_Res /= No_Event then
+      if Handle_Res /= Timeout then
         return Handle_Res;
       end if;
       if Timers.Is_Reached (Final_Exp) then
         -- Requested timeout reached
-        return No_Event;
+        return Timeout;
       end if;
 
     end loop;
@@ -395,7 +395,7 @@ package body Event_Mng is
     Event : Out_Event_List;
   begin
     Event := Wait (Timeout_Ms);
-    return Event /= No_Event;
+    return Event /= Timeout;
   end Wait;
 
   procedure Wait (Timeout_Ms : Integer) is
@@ -539,14 +539,14 @@ package body Event_Mng is
             end if;
             -- else No_Event
         end case;
-      when No_Event =>
+      when Timeout =>
         -- Nothing. Expire timers or return timeout
         if Timers.Expire then
           Put_Debug ("Event_Mng.Handle: No_Event -> Timer_Event");
           return Timer_Event;
         end if;
     end case;
-    return No_Event;
+    return Timeout;
 
   end Handle;
 

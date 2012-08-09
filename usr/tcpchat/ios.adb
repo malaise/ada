@@ -227,7 +227,7 @@ package body Ios is
       -- On option wait until sentence ready
       exit when Stop_On_Sentence and then not Sentences.Is_Empty;
       Evt := Event_Mng.Wait (Wait_Def);
-      exit when Evt = Event_Mng.No_Event;
+      exit when Evt = Event_Mng.Timeout;
     end loop;
     if Event /= No_Event then
       Debug.Log ("Wait event exiting cause event is " & Event.Kind'Img);

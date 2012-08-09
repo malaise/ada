@@ -564,7 +564,7 @@ private
   type Console_Data is record
     Initialised : Boolean := False;
     Id : X_Mng.Line;
-    Mouse_Status : X_Mng.Event_Kind := X_Mng.No_Event;
+    Mouse_Status : X_Mng.Event_Kind := X_Mng.Timeout;
     Motion_Enabling : Boolean := False;
     Def_Foreground : Effective_Colors := Default_Foreground;
     Def_Background : Effective_Colors := Default_Background;

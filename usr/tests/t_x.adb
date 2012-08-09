@@ -111,7 +111,7 @@ begin
         -- Ctrl C
         exit Main_Loop when Kbd_Codes.Nbre = 2
              and then Kbd_Codes.Tab(1) = 255 and then Kbd_Codes.Tab(2) = 27;
-      when X_Mng.No_Event =>
+      when X_Mng.Timeout =>
         Put (X_Mng.Event_Kind'Image(Kind));
         Exp.Expiration_Time := Exp.Expiration_Time + Timeout;
       when X_Mng.Exit_Request =>
