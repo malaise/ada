@@ -964,8 +964,8 @@ comp out exp
 comp err nul
 echo "OK"
 
-# t_mut...
-title t_mut
+# t_mut
+title t_mut...
 echo -e "b\nw\ni\nw\nw\nw\nt\nt\n" | try t_mut s
 cat << EOF > exp
     Start of critical section for   1
