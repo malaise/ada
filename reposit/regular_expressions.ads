@@ -26,7 +26,10 @@ package Regular_Expressions is
     Last_Offset_Start :  Offset_Range;
     Last_Offset_Stop  :  Offset_Range;
   end record;
+  -- First cell (0) is the indexes of the string matching the regex
+  --  other cells (1 .. n) are the indexes os substrings
   type Match_Array is array (Natural range <>) of Match_Cell;
+  -- Specific values
   No_Match_Array : Match_Array (1 .. 0);
   subtype One_Match_Array is Match_Array (1 .. 1);
   No_Match : constant Match_Cell := (0, 0, 0);

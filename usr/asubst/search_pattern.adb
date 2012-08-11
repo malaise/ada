@@ -148,7 +148,7 @@ package body Search_Pattern is
       Error ("Invalid pattern """ & Crit
         & """." & Line_Feed
         & "Error (from PCRE) is: "
-        & String_Mng.Strip (Regular_Expressions.Error(Upat_Access.Pat)));
+        & Regular_Expressions.Error(Upat_Access.Pat));
     end if;
   end Add;
 
