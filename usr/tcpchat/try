@@ -3,14 +3,13 @@
 export PASSWORD="userpass"
 export HOSTNAME
 export HOSTIP=`gawk -v HOSTNAME=$HOSTNAME '
-  ($2 == HOSTNAME) {
+  ($2 == HOSTNAME) || ($3 == HOSTNAME) || ($4 == HOSTNAME) {
     ADDR = $1
     gsub ("\\\\.", "\\\\.", ADDR)
     print ADDR
     exit
   }
 ' /etc/hosts `
-
 
 export TCPCHAT_DEBUG=""
 export PORT="http"
