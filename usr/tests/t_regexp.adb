@@ -1,31 +1,33 @@
-with Argument, Regular_Expressions, Integer_Image, String_Mng, Text_Line,
-     Basic_Proc;
+with Argument, Argument_Parser, Regular_Expressions, Integer_Image, String_Mng,
+     Text_Line, Basic_Proc, As.U;
 
 procedure T_Regexp is
 
   procedure Error is
   begin
     Basic_Proc.Put_Line_Output ("Usage: " & Argument.Get_Program_Name
-                        & " <automatic> | <manual>");
+                        & " <automatic> | <manual> | -h | --help");
     Basic_Proc.Put_Line_Output (" <automatic> ::= -c | -f | -p");
     Basic_Proc.Put_Line_Output ("     -c for successive compilations");
     Basic_Proc.Put_Line_Output ("     -f for successive compilations and frees");
     Basic_Proc.Put_Line_Output ("     -p for compiling all arguments as patterns");
     Basic_Proc.Put_Line_Output (" <manual>    ::= [ <option> ] <pattern> { <Search_String> }");
-    Basic_Proc.Put_Line_Output ("     -s for silent check (exit code only)");
-    Basic_Proc.Put_Line_Output ("     -i for case insensitive");
-    Basic_Proc.Put_Line_Output ("     -m for multiline");
-    Basic_Proc.Put_Line_Output ("     -d for dot matches all");
+    Basic_Proc.Put_Line_Output ("     -S (--silent) for silent check (exit code only)");
+    Basic_Proc.Put_Line_Output ("     -i (--case_insensitive) for case insensitive");
+    Basic_Proc.Put_Line_Output ("     -m (--multiline) for multiline");
+    Basic_Proc.Put_Line_Output ("     -d (--dot_all) for dot matches all");
+    Basic_Proc.Put_Line_Output ("     -s (--strict) for strict matching (not only contains)");
   end Error;
 
   Silent : Boolean := False;
   Case_Insensitive : Boolean := False;
   Multi_Line : Boolean := False;
   Dot_All : Boolean := False;
+  Strict : Boolean := False;
   Start : Natural := 1;
   Ok : Boolean;
   Pattern : Regular_Expressions.Compiled_Pattern;
-  Compile_Error : exception;
+  Arg_Error, Compile_Error : exception;
 
   procedure Compile_Pattern (Str : in String; Report : in Boolean := True) is
     Ok : Boolean;
@@ -37,8 +39,8 @@ procedure T_Regexp is
                                  Dot_All => Dot_All);
     if not Ok then
       if not Silent then
-        Basic_Proc.Put_Line_Output ("Error compiling pattern >" & Str & "<");
-        Basic_Proc.Put_Line_Output (Regular_Expressions.Error (Pattern));
+        Basic_Proc.Put_Line_Error ("Error compiling pattern >" & Str & "<");
+        Basic_Proc.Put_Line_Error (Regular_Expressions.Error (Pattern) & ".");
       end if;
       raise Compile_Error;
     elsif Report then
@@ -47,6 +49,16 @@ procedure T_Regexp is
       end if;
     end if;
   end Compile_Pattern;
+
+  -- The keys
+  Keys : constant Argument_Parser.The_Keys_Type := (
+    ('S', As.U.Tus ("silent"), False, False),
+    ('i', As.U.Tus ("case_insensitive"), False, False),
+    ('m', As.U.Tus ("multiline"), False, False),
+    ('d', As.U.Tus ("dot_all"), False, False),
+    ('s', As.U.Tus ("strict"), False, False),
+    ('h', As.U.Tus ("help"), False, False));
+  Dscr : Argument_Parser.Parsed_Dscr;
 
   subtype Match_Result is Natural range 0 .. 50;
   subtype Match_Range is Positive range 1 .. Match_Result'Last;
@@ -81,31 +93,32 @@ begin
     return;
   end if;
 
-  Start := 1;
-  Silent := False;
-  Case_Insensitive := False;
-  Multi_Line := False;
-  Dot_All := False;
+  -- Parse arguments
+  Dscr :=  Argument_Parser.Parse (Keys);
+  if not Dscr.Is_Ok then
+    Basic_Proc.Put_Line_Error ("Invalid argument: "  & Dscr.Get_Error & ".");
+    raise Arg_Error;
+  end if;
 
-  loop
-    if Argument.Get_Parameter (Occurence => Start) = "-s" then
-      Silent := True;
-      Start := Start + 1;
-    elsif Argument.Get_Parameter (Occurence => Start) = "-i" then
-      Case_Insensitive := True;
-      Start := Start + 1;
-    elsif Argument.Get_Parameter (Occurence => Start) = "-m" then
-      Multi_Line := True;
-      Start := Start + 1;
-    elsif Argument.Get_Parameter (Occurence => Start) = "-d" then
-      Dot_All := True;
-      Start := Start + 1;
-    else
-      exit;
-    end if;
-  end loop;
+  if Dscr.Is_Set (6) then
+    -- Help
+    raise Arg_Error;
+  end if;
 
-  -- Compile 1st args as pattern
+  -- At least one non key, not embedded
+  if Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index ) < 1
+  or else Dscr.Get_Nb_Embedded_Arguments /= 0 then
+    Basic_Proc.Put_Line_Error ("Invalid argument");
+    raise Arg_Error;
+  end if;
+  Start := Dscr.Get_First_Pos_After_Keys;
+  Silent := Dscr.Is_Set (1);
+  Case_Insensitive := Dscr.Is_Set (2);
+  Multi_Line := Dscr.Is_Set (3);
+  Dot_All := Dscr.Is_Set (4);
+  Strict := Dscr.Is_Set (5);
+
+  -- Compile 1st arg as pattern
   Compile_Pattern (Argument.Get_Parameter (Occurence => Start), False);
   Start := Start + 1;
 
@@ -122,12 +135,22 @@ begin
                                 Str,
                                 N_Matched,
                                 Match_Info);
+      -- If Strict and if Str matches but not strictly
+      --  (Str contains a string that matches but Str has more characters)
+      -- then it doesn't match
+      if N_Matched /= 0 and then Strict
+      and then (Match_Info(1).First_Offset /= Str'First
+        or else Match_Info(1).Last_Offset_Stop /= Str'Last) then
+        N_Matched := 0;
+      end if;
     end;
+
     if not Silent then
       Basic_Proc.Put_Output ("String >"
                       & Argument.Get_Parameter (Occurence => I)
                       & "< ");
     end if;
+
     if N_Matched = 0 then
       if not Silent then
           Basic_Proc.Put_Line_Output ("does not match");
@@ -159,7 +182,7 @@ begin
 exception
   when Compile_Error =>
     Basic_Proc.Set_Exit_Code (2);
-  when Argument.Argument_Not_Found =>
+  when Arg_Error | Argument.Argument_Not_Found =>
     Error;
     Basic_Proc.Set_Exit_Code (3);
 end T_Regexp;
