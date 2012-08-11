@@ -42,6 +42,12 @@ package Argument_Parser is
   -- The keys for parsing
   type The_Keys_Type is array (The_Keys_Range range <>) of A_Key_Type;
 
+  -- Returns the string image of a key
+  -- If only a char C => 'C'
+  -- If only a string Str => "--Str"
+  -- If both are set => "-C (--Str)"
+  function Image (Key : A_Key_Type) return String;
+
   -- The result of parsing
   type Parsed_Dscr is tagged private;
 
@@ -74,7 +80,8 @@ package Argument_Parser is
   --  Parsed_Is_Ok:
   Parsing_Error : exception;
 
-  -- Return the number of keys parsed (a key plus its option counts for one)
+  -- Return the number of keys parsed
+  -- Each occurence of a key plus its option counts for one
   function Get_Number_Keys (Dscr : Parsed_Dscr) return Natural;
 
   -- Return the position of the last argument related to keys (in case

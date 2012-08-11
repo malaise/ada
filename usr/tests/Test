@@ -225,6 +225,12 @@ try t_arg_parser auto
 
 try t_arg_parser -f -m  -m no -o -c -t -c 2
 cat > exp << EOF
+-f (--first)   A first single key
+-s (--second)  A second single key
+-t (--third)   A third single key
+-m (--multi)   A key that can appear several times
+-o (--opt)     A key that can have options
+-c (--combine) A key that can appear several times and have options
 Parsing OK is TRUE and parsing error string is >OK.<
 Number of keys found: 7, Last key at pos: 8, First after at pos: 0 and Nb embedded arguments: 1
 Arguments not key are found on 1 occurences.

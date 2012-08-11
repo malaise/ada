@@ -1,6 +1,6 @@
 with Ada.Characters.Latin_1;
-with As.U, Argument, Argument_Parser, Environ, Basic_Proc, Integer_Image,
-     Sys_Calls, Command, Many_Strings, Parser, Event_Mng;
+with As.U.Utils, Argument, Argument_Parser, Environ, Basic_Proc, Integer_Image,
+     Sys_Calls, Command, Many_Strings, Parser, Event_Mng, String_Mng;
 
 procedure T_Arg_Parser is
 
@@ -24,6 +24,15 @@ procedure T_Arg_Parser is
     Key_Can_Multiple => False, Key_Can_Option => True),
    (Key_Char => 'c', Key_String => As.U.Tus ("combine"),
     Key_Can_Multiple => True, Key_Can_Option => True) );
+
+  -- The help message for each key
+  Helps : constant As.U.Utils.Asu_Array (Keys'Range) := (
+    As.U.Tus ("A first single key"),
+    As.U.Tus ("A second single key"),
+    As.U.Tus ("A third single key"),
+    As.U.Tus ("A key that can appear several times"),
+    As.U.Tus ("A key that can have options"),
+    As.U.Tus ("A key that can appear several times and have options"));
 
   No_Keys : constant Argument_Parser.The_Keys_Type (1 .. 0)
           := (others => (Argument_Parser.No_Key_Char,
@@ -136,6 +145,12 @@ begin
     if not Environ.Is_Set (Auto_Env_Name)
     or else not Environ.Is_Yes (Auto_Env_Name) then
       -- Verbose output
+      for I in 1 .. Nb_Keys loop
+        Basic_Proc.Put_Line_Output (
+           String_Mng.Procuste (Argument_Parser.Image (Keys(I)), 14)
+           & " " & Helps(I).Image);
+      end loop;
+
       Basic_Proc.Put_Output ("Parsing OK is "
          & Boolean'Image (Dscr.Is_Ok));
       Basic_Proc.Put_Output (" and parsing error string is");

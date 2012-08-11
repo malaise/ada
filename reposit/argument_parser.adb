@@ -16,6 +16,18 @@ package body Argument_Parser is
     Option : As.U.Asu_Us;
   end record;
 
+  -- Image of a key
+  function Image (Key : A_Key_Type) return String is
+    use type As.U.Asu_Us;
+  begin
+    if Key.Key_Char = No_Key_Char then
+      return Key.Key_String.Image;
+    elsif Key.Key_String = No_Key_String then
+      return Key.Key_Char & "";
+    else
+      return "-" & Key.Key_Char & " (--" & Key.Key_String.Image & ")";
+    end if;
+  end Image;
 
   -- Internal for parsing: get option at pos Pos if valid, else No_Match
   function Get_Option (Pos : Positive) return As.U.Asu_Us is
@@ -447,7 +459,7 @@ package body Argument_Parser is
     return Dscr.Nb_Embedded;
   end Get_Nb_Embedded_Arguments;
 
-  -- The following operations alow retreiving info per key
+  -- The following operations allow retreiving info per key
   -- Index is relative to the array provided as input
 
   -- Nb of occurences of the key, possibly 0
