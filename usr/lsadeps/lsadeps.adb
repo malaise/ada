@@ -3,20 +3,33 @@ with As.U, Argument, Argument_Parser, Basic_Proc, Mixed_Str, Directory;
 with Debug, Sourcer, Tree_Mng, Sort, Output, Checker;
 procedure Lsadeps is
 
-  Version : constant String := "V7.3";
+  Version : constant String := "V7.4";
+
+  -- The keys and descriptor of parsed keys
+  Keys : constant Argument_Parser.The_Keys_Type := (
+   01 => (False, 'h', As.U.Tus ("help"),    False),
+   02 => (False, 'v', As.U.Tus ("version"), False),
+   03 => (False, 'c', As.U.Tus ("check"),   False),
+   04 => (False, 's', As.U.Tus ("specs"),   False),
+   05 => (False, 'r', As.U.Tus ("revert"),  False),
+   06 => (False, 't', As.U.Tus ("tree"),    False),
+   07 => (False, 'f', As.U.Tus ("files"),   False),
+   08 => (True,  'I', As.U.Tus ("include"),   True, True, As.U.Tus ("dir")),
+   09 => (True,  'R', As.U.Tus ("recursive"), True, True, As.U.Tus ("dir")));
+  Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
   -- Usage and Error
   procedure Usage is
   begin
     Basic_Proc.Put_Line_Error (
      "Usage: " & Argument.Get_Program_Name
-     & " <version> | <help> | <check> | <depend>");
+     & " <help> | <version> | <check> | <depend>");
     Basic_Proc.Put_Line_Error (
-     " <version>     ::= -v | --version");
+     " <help>        ::= " & Argument_Parser.Image (Keys(1)));
     Basic_Proc.Put_Line_Error (
-     " <help>        ::= -h | --help");
+     " <version>     ::= " & Argument_Parser.Image (Keys(2)));
     Basic_Proc.Put_Line_Error (
-     " <check>       ::= -c | --check  [ <target_dir> ]");
+     " <check>       ::= " & Argument_Parser.Image (Keys(3)) & " [ <target_dir> ]");
     Basic_Proc.Put_Line_Error (
      " <depend>      ::= <options> <target_unit> [ <path_unit> ]");
     Basic_Proc.Put_Line_Error (
@@ -24,19 +37,19 @@ procedure Lsadeps is
     Basic_Proc.Put_Line_Error (
      " <options>     ::=  [ <specs> | <revert> ] [ <tree> ] [ <files> ] [ <include> ]");
     Basic_Proc.Put_Line_Error (
-     " <specs>       ::= -s | --specs");
+     " <specs>       ::= " & Argument_Parser.Image (Keys(4)));
     Basic_Proc.Put_Line_Error (
-     " <revert>      ::= -r | --revert");
+     " <revert>      ::= " & Argument_Parser.Image (Keys(5)));
     Basic_Proc.Put_Line_Error (
-     " <tree>        ::= -t | --tree");
+     " <tree>        ::= " & Argument_Parser.Image (Keys(6)));
     Basic_Proc.Put_Line_Error (
-     " <files>       ::= -f | --files");
+     " <files>       ::= " & Argument_Parser.Image (Keys(7)));
     Basic_Proc.Put_Line_Error (
      " <include>     ::= { <dir> | <recursive> }");
     Basic_Proc.Put_Line_Error (
-     " <dir>         ::= -I <dir> | --include=<dir>");
+     " <dir>         ::= " & Argument_Parser.Image (Keys(8)));
     Basic_Proc.Put_Line_Error (
-     " <recursive>   ::= -R <dir> | --recursive=<dir>");
+     " <recursive>   ::= " & Argument_Parser.Image (Keys(9)));
     Basic_Proc.Put_Line_Error (
      "Check function shows redundant ""with"" clauses in a dir (default: current dir).");
     Basic_Proc.Put_Line_Error (
@@ -71,18 +84,6 @@ procedure Lsadeps is
     raise Error_Raised;
   end Error;
 
-  -- The keys and descriptor of parsed keys
-  Keys : constant Argument_Parser.The_Keys_Type := (
-   01 => ('h', As.U.Tus ("help"), False, False),
-   02 => ('v', As.U.Tus ("version"), False, False),
-   03 => ('c', As.U.Tus ("check"), False, False),
-   04 => ('s', As.U.Tus ("specs"), False, False),
-   05 => ('r', As.U.Tus ("revert"), False, False),
-   06 => ('t', As.U.Tus ("tree"), False, False),
-   07 => ('f', As.U.Tus ("files"), False, False),
-   08 => ('I', As.U.Tus ("include"), True, True),
-   09 => ('R', As.U.Tus ("recursive"), True, True));
-  Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
   -- Option management
   Check_Mode : Boolean := False;

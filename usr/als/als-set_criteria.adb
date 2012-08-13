@@ -1,4 +1,4 @@
-with String_Mng, Many_Strings;
+with Many_Strings;
 separate (Als)
 procedure Set_Criteria (Criteria : in String;
                         Call     : in Call_Access) is

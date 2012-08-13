@@ -29,11 +29,17 @@ package Argument_Parser is
   No_Key_Char : constant Character := ' ';
   No_Key_String : constant As.U.Asu_Us := As.U.Asu_Null;
   -- A key definition
-  type A_Key_Type is record
+  type A_Key_Type (Key_Can_Option : Boolean := False) is record
     Key_Char : Character := No_Key_Char;
     Key_String : As.U.Asu_Us := No_Key_String;
     Key_Can_Multiple : Boolean := False;
-    Key_Can_Option : Boolean := False;
+    case Key_Can_Option is
+      when True =>
+        Required : Boolean := False;
+        Option_Name : As.U.Asu_Us := As.U.Asu_Null;
+      when False =>
+        null;
+    end case;
   end record;
   -- Max number of keys processed
   Max_Keys_Nb : constant := 1024;
@@ -43,9 +49,15 @@ package Argument_Parser is
   type The_Keys_Type is array (The_Keys_Range range <>) of A_Key_Type;
 
   -- Returns the string image of a key
-  -- If only a char C => 'C'
+  -- If only a char C => '-C'
   -- If only a string Str => "--Str"
-  -- If both are set => "-C (--Str)"
+  -- If both are set => "-C | --Str"
+  -- If it can have option, -C <opt> and --Str=<opt>
+  --                    or  -C [<opt>] and --Str[=<opt>]
+  --   depending on Opt_Required
+  -- "opt" is the Option_Name of the key itf not null,
+  -- else the Key_String  of the key itf not null,
+  -- else "option"
   function Image (Key : A_Key_Type) return String;
 
   -- The result of parsing

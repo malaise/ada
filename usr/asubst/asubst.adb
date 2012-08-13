@@ -1,6 +1,6 @@
 with Ada.Exceptions;
-with As.U, Environ, Argument, Argument_Parser, Basic_Proc, Language, Mixed_Str,
-     Text_Line, Regular_Expressions;
+with As.U.Utils, Environ, Argument, Argument_Parser, Basic_Proc, Language,
+     Mixed_Str, Text_Line, Regular_Expressions;
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
@@ -12,60 +12,80 @@ procedure Asubst is
   Error_Exit_Code : constant Natural := 2;
   Terminate_Exit_Code : constant Natural := 3;
 
+  -- The keys and descriptor of parsed keys
+  Keys : constant Argument_Parser.The_Keys_Type := (
+   01 => (False, 'a', As.U.Tus ("ascii"),      False),
+   02 => (True,  'D', As.U.Tus ("delimiter"),  False, False, As.U.Tus ("string")),
+   03 => (False, 'd', As.U.Tus ("dotall"),     False),
+   04 => (True,  'e', As.U.Tus ("exclude"),    False, True, As.U.Tus ("pattern")),
+   05 => (True,  'F', As.U.Tus ("file_list"),  False, True, As.U.Tus ("file")),
+   06 => (False, 'f', As.U.Tus ("file"),       False),
+   07 => (False, 'g', As.U.Tus ("grep"),       False),
+   08 => (False, 'i', As.U.Tus ("ignorecase"), False),
+   09 => (False, 'l', As.U.Tus ("line"),       False),
+   10 => (True,  'm', As.U.Tus ("match"),      False, False, As.U.Tus ("range")),
+   11 => (False, 'n', As.U.Tus ("number"),     False),
+   12 => (True,  'p', As.U.Tus ("tmp"),        False, True, As.U.Tus ("dir")),
+   13 => (False, 'q', As.U.Tus ("quiet"),      False),
+   14 => (False, 's', As.U.Tus ("save"),       False),
+   15 => (False, 't', As.U.Tus ("test"),       False),
+   16 => (False, 'u', As.U.Tus ("utf8"),       False),
+   17 => (False, 'v', As.U.Tus ("verbose"),    False),
+   18 => (False, 'x', As.U.Tus ("noregex"),    False),
+   19 => (False, 'h', As.U.Tus ("help"),       False),
+   20 => (False, 'V', As.U.Tus ("version"),    False)
+   );
+  Arg_Dscr : Argument_Parser.Parsed_Dscr;
+  No_Key_Index : constant Argument_Parser.The_Keys_Index
+               := Argument_Parser.No_Key_Index;
+
+  -- Help (short and long)
   procedure Usage is
   begin
     Basic_Proc.Put_Line_Error (
      "Usage: " & Argument.Get_Program_Name
                & " [ { <option> } ] <find_pattern> <replace_string> [ { <file> } ]");
     Basic_Proc.Put_Line_Error (
-     "or:    " & Argument.Get_Program_Name & " -h | --help | -V | --version");
+     "or:    " & Argument.Get_Program_Name
+         & " " & Argument_Parser.Image (Keys(19))
+       & " | " & Argument_Parser.Image (Keys(20)));
     Basic_Proc.Put_Line_Error (
      "  Substitutes pattern in files, or from stdin to stdout if no file.");
   end Usage;
+
+  Helps : constant As.U.Utils.Asu_Array (1 .. 18) := (
+    01 => As.U.Tus ("for pure ASCII processing"),
+    02 => As.U.Tus ("for a delimiter other than '\n'"),
+    03 => As.U.Tus ("for allow '.' to match '\n', when -D is set"),
+    04 => As.U.Tus ("for skip text matching <pattern>"),
+    05 => As.U.Tus ("to provide a file list of file names"),
+    06 => As.U.Tus ("for display file name in grep mode"),
+    07 => As.U.Tus ("to print matching text (as grep would do) or substitution"),
+    08 => As.U.Tus ("for case insensitive match (of search and exclusion)"),
+    09 => As.U.Tus ("for display line number in grep mode"),
+    10 => As.U.Tus ("for substitution of only <range> matches"),
+    11 => As.U.Tus ("for print number of substitutions"),
+    12 => As.U.Tus ("for directory of temporary files"),
+    13 => As.U.Tus ("for no printout"),
+    14 => As.U.Tus ("for backup of original file"),
+    15 => As.U.Tus ("for test, substitutions not performed"),
+    16 => As.U.Tus ("for processing utf-8 sequences"),
+    17 => As.U.Tus ("for print each substitution"),
+    18 => As.U.Tus ("for <find_pattern> being considered as string(s)") );
 
   procedure Help is
   begin
     Usage;
     Basic_Proc.Put_Line_Error (
-     "  <option> ::= -a | -D <string> | -d | -e <pattern> | -f | -g | -i");
+     "  <option> ::= -a | -D <string> | -d | -e <pattern> | -F | -f | -g | -i");
     Basic_Proc.Put_Line_Error (
      "             | -l | -m <range> | -n | -p | -q | -s | -t | -u | -v | -x | --");
-    Basic_Proc.Put_Line_Error (
-     "    -a or --ascii for pure ASCII processing,");
-    Basic_Proc.Put_Line_Error (
-     "    -D <string> or --delimiter=<string> for a delimiter other than '\n',");
-    Basic_Proc.Put_Line_Error (
-     "    -d or --dotall for allow '.' to match '\n', when -D is set,");
-    Basic_Proc.Put_Line_Error (
-     "    -e <pattern> or --exclude=<pattern> for skip text matching <pattern>,");
-    Basic_Proc.Put_Line_Error (
-     "    -F <file> or --file_list=<file> to provide a file list of file names,");
-    Basic_Proc.Put_Line_Error (
-     "    -f or --file for display file name in grep mode,");
-    Basic_Proc.Put_Line_Error (
-     "    -g or --grep to print matching text (as grep would do) or substitution,");
-    Basic_Proc.Put_Line_Error (
-     "    -i or --ignorecase for case insensitive match (of search and exclusion),");
-    Basic_Proc.Put_Line_Error (
-     "    -l or --line for display line number in grep mode,");
-    Basic_Proc.Put_Line_Error (
-     "    -m <range> or --match=<range> for substitution of only <range> matches,");
-    Basic_Proc.Put_Line_Error (
-     "    -n or --number for print number of substitutions,");
-    Basic_Proc.Put_Line_Error (
-     "    -p <dir> or --tmp=<dir> for directory of temporary files,");
-    Basic_Proc.Put_Line_Error (
-     "    -q or --quiet for no printout,");
-    Basic_Proc.Put_Line_Error (
-     "    -s or --save for backup of original file,");
-    Basic_Proc.Put_Line_Error (
-     "    -t or --test for test, substitutions not performed,");
-    Basic_Proc.Put_Line_Error (
-     "    -u or --utf8 for processing utf-8 sequences,");
-    Basic_Proc.Put_Line_Error (
-     "    -v or --verbose for print each substitution,");
-    Basic_Proc.Put_Line_Error (
-     "    -x or --noregex for <find_pattern> being considered as string(s),");
+    for I in Helps'Range loop
+
+      Basic_Proc.Put_Line_Error (
+       "    " & Argument_Parser.Image (Keys(I)) & " " & Helps(I).Image & ",");
+    end loop;
+
     Basic_Proc.Put_Line_Error (
      "    -- to stop options.");
     Basic_Proc.Put_Line_Error (
@@ -189,33 +209,6 @@ procedure Asubst is
   -- For getenv
   Utf8_Var_Name : constant String := "ASUBST_UTF8";
 
-  -- The keys and descriptor of parsed keys
-  Keys : constant Argument_Parser.The_Keys_Type := (
-   01 => ('a', As.U.Tus ("ascii"), False, False),
-   02 => ('D', As.U.Tus ("delimiter"), False, True),
-   03 => ('d', As.U.Tus ("dotall"), False, False),
-   04 => ('e', As.U.Tus ("exclude"), False, True),
-   05 => ('F', As.U.Tus ("file_list"), False, True),
-   06 => ('g', As.U.Tus ("grep"), False, False),
-   07 => ('h', As.U.Tus ("help"), False, False),
-   08 => ('i', As.U.Tus ("ignorecase"), False, False),
-   09 => ('l', As.U.Tus ("line"), False, False),
-   10 => ('m', As.U.Tus ("match"), False, True),
-   11 => ('n', As.U.Tus ("number"), False, False),
-   12 => ('q', As.U.Tus ("quiet"), False, False),
-   13 => ('s', As.U.Tus ("save"), False, False),
-   14 => ('t', As.U.Tus ("test"), False, False),
-   15 => ('u', As.U.Tus ("utf8"), False, False),
-   16 => ('v', As.U.Tus ("verbose"), False, False),
-   17 => ('V', As.U.Tus ("version"), False, False),
-   18 => ('x', As.U.Tus ("noregex"), False, False),
-   19 => ('p', As.U.Tus ("tmp"), False, True),
-   20 => ('f', As.U.Tus ("file"), False, False)
-   );
-  Arg_Dscr : Argument_Parser.Parsed_Dscr;
-  No_Key_Index : constant Argument_Parser.The_Keys_Index
-               := Argument_Parser.No_Key_Index;
-
   -- Option management
   Dot_All : Boolean := False;
   Exclude : As.U.Asu_Us;
@@ -316,7 +309,7 @@ begin
   end if;
 
   -- Check version and help, must be alone
-  if Arg_Dscr.Is_Set (17) then
+  if Arg_Dscr.Is_Set (20) then
     -- Version
     if Argument.Get_Nbre_Arg /= 1 then
       Basic_Proc.Put_Line_Error (Argument.Get_Program_Name & ": Syntax ERROR.");
@@ -328,7 +321,7 @@ begin
       Basic_Proc.Set_Exit_Code (Error_Exit_Code);
     end if;
     return;
-  elsif Arg_Dscr.Is_Set (07) then
+  elsif Arg_Dscr.Is_Set (19) then
     -- Help
     if  Argument.Get_Nbre_Arg /= 1 then
       Basic_Proc.Put_Line_Error (Argument.Get_Program_Name & ": Syntax ERROR.");
@@ -410,6 +403,13 @@ begin
     File_Of_Files := True;
   end if;
   if Arg_Dscr.Is_Set (06) then
+    -- Put file name
+    if Debug.Set then
+      Basic_Proc.Put_Line_Error ("Option file name");
+    end if;
+    Grep_File_Name := True;
+  end if;
+  if Arg_Dscr.Is_Set (07) then
     -- Put matching text like grep would do
     if Debug.Set then
       Basic_Proc.Put_Line_Error ("Option grep mode");
@@ -463,60 +463,6 @@ begin
     Verbosity := Put_Subst_Nb;
   end if;
   if Arg_Dscr.Is_Set (12) then
-    -- Quiet mode
-    if Debug.Set then
-      Basic_Proc.Put_Line_Error ("Option quiet");
-    end if;
-    if not Check_Verbose then
-      return;
-    end if;
-    Verbosity := Quiet;
-  end if;
-  if Arg_Dscr.Is_Set (13) then
-    -- Make backup
-    if Debug.Set then
-      Basic_Proc.Put_Line_Error ("Option make backup");
-    end if;
-    Backup := True;
-  end if;
-  if Arg_Dscr.Is_Set (14) then
-    -- Test mode
-    if Debug.Set then
-      Basic_Proc.Put_Line_Error ("Option test");
-    end if;
-    Test := True;
-  end if;
-  if Arg_Dscr.Is_Set (15) then
-    if Arg_Dscr.Is_Set (1) then
-      Basic_Proc.Put_Line_Error (Argument.Get_Program_Name
-         & ": Syntax ERROR. Incompatible options -a and -u.");
-      Error;
-      return;
-    end if;
-    -- Process utf-8 sequences
-    if Debug.Set then
-      Basic_Proc.Put_Line_Error ("Option utf8");
-    end if;
-    Lang := Language.Lang_Utf_8;
-  end if;
-  if Arg_Dscr.Is_Set (16) then
-    -- Verbose put each substit
-    if Debug.Set then
-      Basic_Proc.Put_Line_Error ("Option verbose");
-    end if;
-    if not Check_Verbose then
-      return;
-    end if;
-    Verbosity := Verbose;
-  end if;
-  if Arg_Dscr.Is_Set (18) then
-    -- Find pattern is not a regex
-    if Debug.Set then
-      Basic_Proc.Put_Line_Error ("Option noregex");
-    end if;
-    Is_Regex := False;
-  end if;
-  if Arg_Dscr.Is_Set (19) then
     -- Tmp_Dir for temporary files
     begin
       Tmp_Dir := As.U.Tus (Arg_Dscr.Get_Option (19));
@@ -534,12 +480,59 @@ begin
       Basic_Proc.Put_Line_Error ("Option tmp_dir = " & Tmp_Dir.Image);
     end if;
   end if;
-  if Arg_Dscr.Is_Set (20) then
-    -- Put file name
+  if Arg_Dscr.Is_Set (13) then
+    -- Quiet mode
     if Debug.Set then
-      Basic_Proc.Put_Line_Error ("Option file name");
+      Basic_Proc.Put_Line_Error ("Option quiet");
     end if;
-    Grep_File_Name := True;
+    if not Check_Verbose then
+      return;
+    end if;
+    Verbosity := Quiet;
+  end if;
+  if Arg_Dscr.Is_Set (14) then
+    -- Make backup
+    if Debug.Set then
+      Basic_Proc.Put_Line_Error ("Option make backup");
+    end if;
+    Backup := True;
+  end if;
+  if Arg_Dscr.Is_Set (15) then
+    -- Test mode
+    if Debug.Set then
+      Basic_Proc.Put_Line_Error ("Option test");
+    end if;
+    Test := True;
+  end if;
+  if Arg_Dscr.Is_Set (16) then
+    -- Process utf-8 sequences
+    if Arg_Dscr.Is_Set (1) then
+      Basic_Proc.Put_Line_Error (Argument.Get_Program_Name
+         & ": Syntax ERROR. Incompatible options -a and -u.");
+      Error;
+      return;
+    end if;
+    if Debug.Set then
+      Basic_Proc.Put_Line_Error ("Option utf8");
+    end if;
+    Lang := Language.Lang_Utf_8;
+  end if;
+  if Arg_Dscr.Is_Set (17) then
+    -- Verbose put each substit
+    if Debug.Set then
+      Basic_Proc.Put_Line_Error ("Option verbose");
+    end if;
+    if not Check_Verbose then
+      return;
+    end if;
+    Verbosity := Verbose;
+  end if;
+  if Arg_Dscr.Is_Set (18) then
+    -- Find pattern is not a regex
+    if Debug.Set then
+      Basic_Proc.Put_Line_Error ("Option noregex");
+    end if;
+    Is_Regex := False;
   end if;
 
   -- Set language (for regexp)

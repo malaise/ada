@@ -12,32 +12,27 @@ procedure T_Arg_Parser is
 
   -- The keys
   Keys : constant Argument_Parser.The_Keys_Type := (
-   (Key_Char => 'f', Key_String => As.U.Tus ("first"),
-    Key_Can_Multiple => False, Key_Can_Option => False),
-   (Key_Char => 's', Key_String => As.U.Tus ("second"),
-    Key_Can_Multiple => False, Key_Can_Option => False),
-   (Key_Char => 't', Key_String => As.U.Tus ("third"),
-    Key_Can_Multiple => False, Key_Can_Option => False),
-   (Key_Char => 'm', Key_String => As.U.Tus ("multi"),
-    Key_Can_Multiple => True, Key_Can_Option => False),
-   (Key_Char => 'o', Key_String => As.U.Tus ("opt"),
-    Key_Can_Multiple => False, Key_Can_Option => True),
-   (Key_Char => 'c', Key_String => As.U.Tus ("combine"),
-    Key_Can_Multiple => True, Key_Can_Option => True) );
+   (False, 'f', As.U.Tus ("first"),  False),
+   (False, 's', As.U.Tus ("second"), False),
+   (False, 't', As.U.Tus ("third"),  False),
+   (False, 'm', As.U.Tus ("multi"),  True),
+   (True,  'o', As.U.Tus ("opt"),    False, True,  As.U.Asu_Null),
+   (True,  'c', As.U.Tus ("combi"),  True,  False, As.U.Tus ("Opt")));
 
   -- The help message for each key
   Helps : constant As.U.Utils.Asu_Array (Keys'Range) := (
     As.U.Tus ("A first single key"),
     As.U.Tus ("A second single key"),
     As.U.Tus ("A third single key"),
-    As.U.Tus ("A key that can appear several times"),
-    As.U.Tus ("A key that can have options"),
-    As.U.Tus ("A key that can appear several times and have options"));
+    As.U.Tus ("Key that can appear several times"),
+    As.U.Tus ("Key that can have options"),
+    As.U.Tus ("Key that can appear several times and have options"));
 
   No_Keys : constant Argument_Parser.The_Keys_Type (1 .. 0)
-          := (others => (Argument_Parser.No_Key_Char,
+          := (others => (False,
+                         Argument_Parser.No_Key_Char,
                          Argument_Parser.No_Key_String,
-                         False, False));
+                         False));
   Nb_Keys : Natural;
 
   Dscr : Argument_Parser.Parsed_Dscr;
@@ -147,7 +142,7 @@ begin
       -- Verbose output
       for I in 1 .. Nb_Keys loop
         Basic_Proc.Put_Line_Output (
-           String_Mng.Procuste (Argument_Parser.Image (Keys(I)), 14)
+           String_Mng.Procuste (Argument_Parser.Image (Keys(I)), 28)
            & " " & Helps(I).Image);
       end loop;
 
@@ -245,9 +240,9 @@ begin
   Basic_Proc.Put_Line_Output ("Test with keys");
   Sys_Calls.Setenv (Empty_Env_Name, "No");
   Try ("", "0 0 0 0");
-  Try ("-o", "1 1 0 0 o1 1");
+  Try ("-o", "Argument -o at pos 1 must have an option");
   Try ("-o opt", "1 1 0 0 o1 1 opt");
-  Try ("-o opt -o", "Argument -o at pos 3 appears several times");
+  Try ("-o opt1 -o opt2", "Argument -o at pos 3 appears several times");
   Try ("-x -o opt", "Argument -x at pos 1 is not expected");
   Try ("-o opt -f f1 f2", "2 3 4 0 f1 3 o1 1 opt 4 f1 5 f2");
   Try ("-o opt f1 -- -f f1 f2", "1 1 3 0 o1 1 opt 3 f1 5 -f 6 f1 7 f2");

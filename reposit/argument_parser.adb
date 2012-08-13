@@ -3,6 +3,7 @@ with Argument, String_Mng, Integer_Image;
 package body Argument_Parser is
 
   No_Match : constant String := "" & Ada.Characters.Latin_1.Nul;
+  Asu_No_Match : constant As.U.Asu_Us := As.U.Tus (No_Match);
   -- The result of parsing of an arg
   -- If Index is not 0, then it is a single (Char or else string) key
   -- Elsif List is not empty, then it is the list of char keys
@@ -18,14 +19,46 @@ package body Argument_Parser is
 
   -- Image of a key
   function Image (Key : A_Key_Type) return String is
+    Opt : As.U.Asu_Us;
     use type As.U.Asu_Us;
   begin
-    if Key.Key_Char = No_Key_Char then
-      return Key.Key_String.Image;
-    elsif Key.Key_String = No_Key_String then
-      return Key.Key_Char & "";
+    if Key.Key_Can_Option then
+      if not Key.Option_Name.Is_Null then
+        Opt := Key.Option_Name;
+      elsif Key.Key_String /= No_Key_String then
+        Opt := Key.Key_String;
+      else
+        Opt := As.U.Tus ("option");
+      end if;
+      Opt := "<" & Opt & ">";
+      if Key.Required then
+        if Key.Key_Char = No_Key_Char then
+          return "--" & Key.Key_String.Image & "=" & Opt.Image;
+        elsif Key.Key_String = No_Key_String then
+          return "-" & Key.Key_Char & " " & Opt.Image;
+        else
+          return "-" & Key.Key_Char & " " & Opt.Image & " | --"
+                     & Key.Key_String.Image & "=" & Opt.Image;
+        end if;
+      else
+        if Key.Key_Char = No_Key_Char then
+          return "--" & Key.Key_String.Image & "[=" & Opt.Image & "]";
+        elsif Key.Key_String = No_Key_String then
+          return "-" & Key.Key_Char & " [" & Opt.Image & "]";
+        else
+          return "-" & Key.Key_Char & " [" & Opt.Image & "] | --"
+                     & Key.Key_String.Image & "[=" & Opt.Image & "]";
+        end if;
+      end if;
     else
-      return "-" & Key.Key_Char & " (--" & Key.Key_String.Image & ")";
+    if Key.Key_Char = No_Key_Char then
+        return "--" & Key.Key_String.Image;
+      elsif Key.Key_String = No_Key_String then
+        return "-" & Key.Key_Char;
+      else
+        return "-" & Key.Key_Char & " | --"
+                   & Key.Key_String.Image;
+      end if;
     end if;
   end Image;
 
@@ -108,11 +141,19 @@ package body Argument_Parser is
         for I in The_Keys'Range loop
           if The_Keys(I).Key_String = Crit then
             -- Found
-            -- If it has an option and if it can
             if Len /= 0
             and then not The_Keys(I).Key_Can_Option then
+              -- It has an option and cannot
               P_Dscr.Error := As.U.Tus ("Argument " & Str & " at pos "
                  & Integer_Image(Arg_No) & " cannot have option");
+              return;
+            end if;
+            if Len = 0
+            and then The_Keys(I).Key_Can_Option
+            and then The_Keys(I).Required then
+              -- It has no option and mut have one
+              P_Dscr.Error := As.U.Tus ("Argument " & Str & " at pos "
+                 & Integer_Image(Arg_No) & " must have an option");
               return;
             end if;
             A_Dscr.Index := I;
@@ -153,6 +194,12 @@ package body Argument_Parser is
         -- Found, see if it can have and has a valid option
         if The_Keys(A_Dscr.Index).Key_Can_Option then
           A_Dscr.Option := Get_Option (Arg_No + 1);
+          if The_Keys(A_Dscr.Index).Required
+          and then A_Dscr.Option = Asu_No_Match then
+            P_Dscr.Error := As.U.Tus ("Argument " & Str & " at pos "
+               & Integer_Image(Arg_No) & " must have an option");
+            return;
+          end if;
         end if;
         P_Dscr.Ok := True;
         return;
@@ -176,6 +223,12 @@ package body Argument_Parser is
           if I = Str'Last
           and then The_Keys(Index).Key_Can_Option then
             A_Dscr.Option := Get_Option (Arg_No + 1);
+            if The_Keys(Index).Required
+            and then A_Dscr.Option = Asu_No_Match then
+              P_Dscr.Error := As.U.Tus ("Argument " & Str & " at pos "
+                 & Integer_Image(Arg_No) & " must have an option");
+              return;
+            end if;
           end if;
         end loop;
         A_Dscr.Index := 0;

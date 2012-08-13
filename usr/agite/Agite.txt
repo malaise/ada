@@ -1,7 +1,7 @@
 Agite user guide
 ================
 Pascal MALAISE <malaise@magic.fr>
-V5.1
+V6.2
 :toc:
 
 General purpose

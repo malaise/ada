@@ -3,6 +3,22 @@ with As.U, Basic_Proc, Argument, Argument_Parser, Parser, Event_Mng;
 with Clients, Partner;
 procedure Tcpipe is
 
+  -- The keys and descriptor of parsed keys
+  Keys : constant Argument_Parser.The_Keys_Type := (
+    1 => (False, 'h', As.U.Tus ("help"),   False),
+    2 => (True,  'c', As.U.Tus ("client"), False, True, As.U.Tus ("host>:<port")),
+    3 => (True,  's', As.U.Tus ("server"), False, True, As.U.Tus ("port")),
+    4 => (True,  'p', As.U.Tus ("ports"),  True,  True, As.U.Tus ("port_list")),
+    5 => (True,  't', As.U.Tus ("target"), False, True, As.U.Tus ("host")));
+  Arg_Dscr : Argument_Parser.Parsed_Dscr;
+  subtype Name is String (1 .. 10);
+  Names : constant array (Keys'Range) of Name := (
+   "<help>    ",
+   "<client>  ",
+   "<server>  ",
+   "<ports>   ",
+   "<target>  ");
+
   procedure Usage is
   begin
     Basic_Proc.Put_Line_Error (
@@ -10,16 +26,12 @@ procedure Tcpipe is
                & " <mode> [ <ports> ] [ <target> ]");
     Basic_Proc.Put_Line_Error (
      "  <mode>     ::= <client> | <server>");
-    Basic_Proc.Put_Line_Error (
-     "  <client>   ::= -c <host>:<port> | --client=""<host>:<port>""");
-    Basic_Proc.Put_Line_Error (
-     "  <server>   ::= -s <port> | --server=""<port>""");
-    Basic_Proc.Put_Line_Error (
-     "  <ports>    ::= -p <port_list> | --ports=""<port_list>""");
+    for I in Keys'Range loop
+      Basic_Proc.Put_Line_Error (
+       "  " & Names(I) & " ::= " & Argument_Parser.Image (Keys(I)));
+    end loop;
     Basic_Proc.Put_Line_Error (
      "  <portlist> ::= <port>[{,<port>}]");
-    Basic_Proc.Put_Line_Error (
-     "  <target> ::= -t <host> | --target=""<host>""");
   end Usage;
 
   procedure Error (Msg : in String) is
@@ -27,15 +39,6 @@ procedure Tcpipe is
     Basic_Proc.Put_Line_Error ("ERROR: " & Msg & ".");
     Basic_Proc.Set_Error_Exit_Code;
   end Error;
-
-  -- The keys and descriptor of parsed keys
-  Keys : constant Argument_Parser.The_Keys_Type := (
-    1 => ('h', As.U.Tus ("help"), False, False),
-    2 => ('c', As.U.Tus ("client"), False, True),
-    3 => ('s', As.U.Tus ("server"), False, True),
-    4 => ('p', As.U.Tus ("ports"), True, True),
-    5 => ('t', As.U.Tus ("target"), False, True));
-  Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
   -- Partner address
   Client_Mode : Boolean;

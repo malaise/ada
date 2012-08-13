@@ -12,13 +12,13 @@ procedure Pingpong is
 
   -- Argument parsing
   Keys : constant Argument_Parser.The_Keys_Type := (
-    1 => ('h', As.U.Tus ("help"), False, False),
-    2 => ('i', As.U.Tus ("interface"), False, True),
-    3 => ('p', As.U.Tus ("period"), False, True),
-    4 => ('r', As.U.Tus ("reply"), False, False),
-    5 => ('s', As.U.Tus ("send"), False, False),
-    6 => ('a', As.U.Tus ("average"), False, False),
-    7 => ('d', As.U.Tus ("debug"), False, False));
+    1 => (False, 'h', As.U.Tus ("help"), False),
+    2 => (True,  'i', As.U.Tus ("interface"), False, True, As.U.Asu_Null),
+    3 => (True,  'p', As.U.Tus ("period"), False, True, As.U.Asu_Null),
+    4 => (False, 'r', As.U.Tus ("reply"), False),
+    5 => (False, 's', As.U.Tus ("send"), False),
+    6 => (False, 'a', As.U.Tus ("average"), False),
+    7 => (False, 'd', As.U.Tus ("debug"), False));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
   Soc : Socket.Socket_Dscr;
@@ -35,13 +35,26 @@ procedure Pingpong is
   procedure Usage is
   begin
     Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
-      & " [ { <option> } ] <mode> <ipm_addr>:<port_num>");
+      & " [ { <option> } ] <mode> <lan>:<port>");
+    Basic_Proc.Put_Line_Error ("   or: " & Argument.Get_Program_Name
+      & " " & Argument_Parser.Image (Keys(1)));
     Basic_Proc.Put_Line_Error (
-        "  <option> ::= <interface> | <period> | <time>");
-    Basic_Proc.Put_Line_Error ("  <mode> ::= -r | --reply | -s | --send");
-    Basic_Proc.Put_Line_Error ("  <interface>  ::= -i<interf_name> | --interface=<inter_name>");
-    Basic_Proc.Put_Line_Error ("  <period>     ::= -p<period_float> | --period=<period_float>");
-    Basic_Proc.Put_Line_Error ("  <time>       ::= -t | --time_delta");
+        "  <option>    ::= <interface> | <period>");
+    Basic_Proc.Put_Line_Error (
+        "  <interface> ::= " & Argument_Parser.Image (Keys(2)));
+    Basic_Proc.Put_Line_Error (
+        "  <period>    ::= " & Argument_Parser.Image (Keys(3)));
+    Basic_Proc.Put_Line_Error (
+        "  <mode>      ::= " & Argument_Parser.Image (Keys(4))
+      & " | " & Argument_Parser.Image (Keys(5)));
+    Basic_Proc.Put_Line_Error (
+        "  <average>    ::= " & Argument_Parser.Image (Keys(6)));
+    Basic_Proc.Put_Line_Error (
+        "  <debug>      ::= " & Argument_Parser.Image (Keys(7)));
+    Basic_Proc.Put_Line_Error (
+        "  <lan>        ::= <ipm_lan_name> | <ipm_lan_address>");
+    Basic_Proc.Put_Line_Error (
+        "  <port>       ::= <udp_port_name> | <port_num>");
   end Usage;
 
   Abort_Error : exception;
@@ -293,12 +306,12 @@ begin
 
   -- No other options are supported
   --  only one extra arg, the address that is parsed here after
-  -- Muust be after options
+  -- Must be after options
   if Arg_Dscr.Get_Nb_Embedded_Arguments /= 0 then
-    Error ("Address and port must appear after options");
+    Error ("LAN and port must appear after options");
   end if;
   if Arg_Dscr.Get_Nb_Occurences (Argument_Parser.No_Key_Index) /= 1 then
-    Error ("Address and port must be defined once and only once");
+    Error ("LAN and port must be defined once and only once");
   end if;
 
   -- Set interface from host

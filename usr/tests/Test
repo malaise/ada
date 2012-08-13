@@ -220,34 +220,34 @@ comp err nul
 echo "OK"
 
 # t_arg_parser
-title t_ada_parser
+title t_arg_parser
 try t_arg_parser auto
 
-try t_arg_parser -f -m  -m no -o -c -t -c 2
+try t_arg_parser -f -m  -m no -o opt -c -t -c 2
 cat > exp << EOF
--f (--first)   A first single key
--s (--second)  A second single key
--t (--third)   A third single key
--m (--multi)   A key that can appear several times
--o (--opt)     A key that can have options
--c (--combine) A key that can appear several times and have options
+-f | --first                 A first single key
+-s | --second                A second single key
+-t | --third                 A third single key
+-m | --multi                 Key that can appear several times
+-o <opt> | --opt=<opt>       Key that can have options
+-c [<Opt>] | --combi[=<Opt>] Key that can appear several times and have options
 Parsing OK is TRUE and parsing error string is >OK.<
-Number of keys found: 7, Last key at pos: 8, First after at pos: 0 and Nb embedded arguments: 1
+Number of keys found: 7, Last key at pos: 9, First after at pos: 0 and Nb embedded arguments: 1
 Arguments not key are found on 1 occurences.
   Kind: Str  Position:  4  Option >no<
 Key f first is found on 1 occurences.
   Kind: Chr  Position:  1  Option ><
 Key s second is found on 0 occurences.
 Key t third is found on 1 occurences.
-  Kind: Chr  Position:  7  Option ><
+  Kind: Chr  Position:  8  Option ><
 Key m multi is found on 2 occurences.
   Kind: Chr  Position:  2  Option ><
   Kind: Chr  Position:  3  Option ><
 Key o opt is found on 1 occurences.
-  Kind: Chr  Position:  5  Option ><
-Key c combine is found on 2 occurences.
-  Kind: Chr  Position:  6  Option ><
-  Kind: Chr  Position:  8  Option >2<
+  Kind: Chr  Position:  5  Option >opt<
+Key c combi is found on 2 occurences.
+  Kind: Chr  Position:  7  Option ><
+  Kind: Chr  Position:  9  Option >2<
 EOF
 comp out exp
 comp err nul

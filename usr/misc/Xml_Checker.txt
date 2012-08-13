@@ -6,7 +6,7 @@ Parser version: V29.7
 
 Generator version: V10.0
 
-Xml_checker version: V17.0
+Xml_checker version: V17.1
 
 Xml_checker is a parser of XML file that checks the syntax (versus DTD) and
 formats the output.
@@ -16,36 +16,32 @@ Syntax
 ...................................................
 xml_checker[ { <option> } ] [ { <file> } ]
  <option> ::= <silent> | <progress> | <dump> | <raw> | <width> | <one> |
-            | <expand> | <keep> | <namespace> | <normalize> | <canonical>
+            | <expand> | <keep> | <namespace> | <canonical> | <normalize>
             | <check_dtd> | <warnings> | <tree> | <help> | <version>
-
- <silent>     ::= -s | --silent     -- No output, only exit code
- <progress>   ::= -p | --progress   -- Only show a progress bar
- <dump>       ::= -D | --dump       -- Dump expanded Xml tree
- <raw>        ::= -r | --raw        -- Put all on one line
+ <silent>     ::= -s | --silent    : No output, only exit code
+ <progress>   ::= -p | --progress  : Only show a progress bar
+ <dump>       ::= -D | --dump      : Dump expanded Xml tree
+ <raw>        ::= -r | --raw       : Put all on one line
  <width>      ::= -W <Width> | --width=<Width>
-                                    -- Put attributes up to Width
- <one>        ::= -1 | --one        -- Put one attribute per line
-
- <expand>     ::= -E | --expand     -- Expanded general entities
-                                    --  and attributes with default
- <keep>       ::= -k c|d|n|a | --keep=comments|cdata|none|all
-                                    -- Keep comments
-                                    -- Keep CDATA sections unchanged
-                                    -- Keep none (remove comments and CDATA
-                                    --  markers)
-                                    -- Keep all (default)
- <namespace>  ::= -n | --namespace  -- Put Namespace^Suffix
- <canonical>  ::= -C | --canonical  -- Canonicalize xml
- <normalize>  ::= --no-normalize    -- Do not normalize attributes and text
-
- <check_dtd>  ::= -d [ <Dtd> ] | --dtd=[<Dtd>]
-                                    -- Use a specific dtd or none
- <warnings>   ::= -w | --warnings   -- Check for warnings
-
- <tree>       ::= -t | --tree       -- Build tree then output it
- <help>       ::= -h | --help       -- Put this help
- <version>    ::= -v | --version    -- Put versions
+                                   : Put attributes up to Width
+ <one>        ::= -1 | --one       : Put one attribute per line
+ <expand>     ::= -E | --expand    : Expand general entities
+                                   :  and attributes with default
+ <keep>       ::= -k <c|d|n|a> | --keep=<comments|cdata|none|all>
+                                   : Keep comments
+                                   : Keep CDATA sections unchanged
+                                   : Keep none (remove comments and CDATA
+                                   :  markers)
+                                   : Keep all (default)
+ <namespace>  ::= -n | --namespace : Put Namespace^Suffix
+ <canonical>  ::= -C | --canonical : Canonicalize xml
+ <normalize>  ::= --no-normalize   : Do not normalize attributes and text
+ <check_dtd>  ::= -d <Dtd> | --dtd=<Dtd>
+                                   : Use a specific dtd or none
+ <warnings>   ::= -w | --warnings  : Check for warnings
+ <tree>       ::= -t | --tree      : Build tree then dump it
+ <help>       ::= -h | --help      : Put this help
+ <version>    ::= -v | --version   : Put versions
 ...................................................
 All options except expand, keep, dtd, warnings, namespace and tree are
 exclusive.

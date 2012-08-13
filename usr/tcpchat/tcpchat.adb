@@ -4,14 +4,27 @@ with As.U, Basic_Proc, Argument, Argument_Parser;
 with Debug, Ios, Tree, Events;
 procedure Tcpchat is
 
-  Version : constant String := "2.2";
+  Version : constant String := "2.3";
+
+  -- The keys and descriptor of parsed keys
+  Keys : constant Argument_Parser.The_Keys_Type := (
+   01 => (False, 'h', As.U.Tus ("help"),    False),
+   02 => (True,  'p', As.U.Tus ("port"),    False, True, As.U.Asu_Null),
+   03 => (True,  'f', As.U.Tus ("file"),    False, True, As.U.Asu_Null),
+   04 => (False, 'v', As.U.Tus ("version"), False));
+  Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
   procedure Usage is
   begin
     Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
-      & " -p <tcp_port> -f <chat_file>");
+      & " <tcp_port> <chat_file>");
     Basic_Proc.Put_Line_Error ("   or: " & Argument.Get_Program_Name
-      & " -h | --help | -v | --version");
+      & " " & Argument_Parser.Image (Keys(1))
+      & " | " & Argument_Parser.Image (Keys(4)));
+    Basic_Proc.Put_Line_Error ("  <tcp_port>  ::= "
+      & Argument_Parser.Image (Keys(2)));
+    Basic_Proc.Put_Line_Error ("  <chat_file> ::= "
+      & Argument_Parser.Image (Keys(3)));
   end Usage;
 
   procedure Error (Msg : in String) is
@@ -21,13 +34,6 @@ procedure Tcpchat is
     Basic_Proc.Set_Error_Exit_Code;
   end Error;
 
-  -- The keys and descriptor of parsed keys
-  Keys : constant Argument_Parser.The_Keys_Type := (
-   01 => ('h', As.U.Tus ("help"), False, False),
-   02 => ('p', As.U.Tus ("port"), False, True),
-   03 => ('f', As.U.Tus ("file"), False, True),
-   04 => ('v', As.U.Tus ("version"), False, False));
-  Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
   Port : As.U.Asu_Us;
   File : As.U.Asu_Us;

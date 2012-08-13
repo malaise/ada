@@ -16,18 +16,22 @@ procedure Nimmari is
   Change_Game : Boolean;
 
   Keys : constant Argument_Parser.The_Keys_Type := (
-   01 => ('h', As.U.Tus ("help"), False, False),
-   02 => ('n', As.U.Tus ("nim"), False, False),
-   03 => ('m', As.U.Tus ("marienbad"), False, False),
-   04 => ('t', As.U.Tus ("text"), False, False));
+   01 => (False, 'h', As.U.Tus ("help"), False),
+   02 => (False, 'n', As.U.Tus ("nim"), False),
+   03 => (False, 'm', As.U.Tus ("marienbad"), False),
+   04 => (False, 't', As.U.Tus ("text"), False));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
   procedure Usage is
   begin
     Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
-        & " [ -t | --text ]  [ <nim> | <marienbad>]");
-    Basic_Proc.Put_Line_Error (" <nim> ::= -n | --nim");
-    Basic_Proc.Put_Line_Error (" <marienbad> ::= -m | --marienbad");
+        & " [ " & Argument_Parser.Image(Keys(4)) & " ] [ <nim> | <marienbad>]");
+    Basic_Proc.Put_Line_Error ("   or: " & Argument.Get_Program_Name
+        & Argument_Parser.Image(Keys(1)));
+    Basic_Proc.Put_Line_Error (" <nim>       ::= "
+        & Argument_Parser.Image(Keys(2)));
+    Basic_Proc.Put_Line_Error (" <marienbad> ::= "
+        & Argument_Parser.Image(Keys(3)));
   end Usage;
 
   procedure Put (Bars : Common.Bar_Status_Array) is

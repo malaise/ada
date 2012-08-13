@@ -3,12 +3,24 @@ with As.U, Con_Io, Afpx.List_Manager, Basic_Proc, Integer_Image, Directory,
 with Utils.X, Git_If, Config, Bookmarks, History, Confirm;
 procedure Agite is
 
+  -- Options
+  Keys : constant Argument_Parser.The_Keys_Type := (
+    1 => (False, 'h', As.U.Tus ("help"),       False),
+    2 => (False, 'n', As.U.Tus ("no_history"), False),
+    3 => (False, 'p', As.U.Tus ("previous"),   False));
+  Arg_Dscr : Argument_Parser.Parsed_Dscr;
+
   -- Usage and Error message
   procedure Usage is
   begin
     Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
-       & " [ -n | --no_history ] [ <path> | -p | --previous ]");
+       & " <no_history> [ <path> | <previous> ]");
+    Basic_Proc.Put_Line_Error (
+       " <no_history> ::= " & Argument_Parser.Image (Keys(2)));
+    Basic_Proc.Put_Line_Error (
+       " <previous>   ::= " & Argument_Parser.Image (Keys(3)));
   end Usage;
+
   procedure Error (Msg : in String) is
   begin
     Basic_Proc.Put_Line_Error ("ERROR: " & Msg & ".");
@@ -16,13 +28,6 @@ procedure Agite is
     Basic_Proc.Set_Error_Exit_Code;
     raise Utils.Exit_Requested;
   end Error;
-
-  -- Options
-  Keys : constant Argument_Parser.The_Keys_Type := (
-       1 => ('h', As.U.Tus ("help"), False, False),
-    2 => ('n', As.U.Tus ("no_history"), False, False),
-    3 => ('p', As.U.Tus ("previous"), False, False));
-  Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
   -- Got to previous dir (if any) / Save history
   Goto_Previous : Boolean;

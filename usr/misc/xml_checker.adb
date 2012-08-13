@@ -1,10 +1,10 @@
 -- Check/Format/Canonify a XML file or flow
 with Ada.Exceptions;
-with As.U, Argument, Argument_Parser, Xml_Parser.Generator, Normal, Basic_Proc,
-     Text_Line, Sys_Calls, Parser, Bloc_Io;
+with As.U.Utils, Argument, Argument_Parser, Xml_Parser.Generator, Normal,
+     Basic_Proc, Text_Line, Sys_Calls, Parser, Bloc_Io, String_Mng;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V17.0";
+  Version : constant String := "V17.1";
 
   procedure Ae_Re (E : in Ada.Exceptions.Exception_Id;
                    M : in String := "")
@@ -69,39 +69,100 @@ procedure Xml_Checker is
   -- String list of unparsed entities
   Unparsed_Entities : As.U.Asu_Us;
 
+  -- The argument keys and descriptor of parsed keys
+  Keys : constant Argument_Parser.The_Keys_Type := (
+    1 => (False, 's', As.U.Tus ("silent"),    False),
+    2 => (False, 'p', As.U.Tus ("progress"),  False),
+    3 => (False, 'D', As.U.Tus ("dump"),      False),
+    4 => (False, 'r', As.U.Tus ("raw"),       False),
+    5 => (True,  'W', As.U.Tus ("width"),     False, True, As.U.Tus ("Width")),
+    6 => (False, '1', As.U.Tus ("one"),       False),
+    7 => (False, 'E', As.U.Tus ("expand"),    False),
+    8 => (True,  'k', As.U.Tus ("keep"),      True,  True, As.U.Tus ("c|d|n|a")),
+    9 => (False, 'n', As.U.Tus ("namespace"), False),
+   10 => (False, 'C', As.U.Tus ("canonical"), False),
+   11 => (False, Argument_Parser.No_Key_Char, As.U.Tus ("no-normalize"), False),
+   12 => (True,  'd', As.U.Tus ("dtd"),       False, True, As.U.Tus ("Dtd")),
+   13 => (False, 'w', As.U.Tus ("warnings"),  False),
+   14 => (False, 't', As.U.Tus ("tree"),      False),
+   15 => (False, 'h', As.U.Tus ("help"),      False),
+   16 => (False, 'v', As.U.Tus ("version"),   False)
+   );
+  Arg_Dscr : Argument_Parser.Parsed_Dscr;
+  No_Key_Index : constant Argument_Parser.The_Keys_Index
+               := Argument_Parser.No_Key_Index;
+
+  Names : constant As.U.Utils.Asu_Array (Keys'Range) := (
+    11 => As.U.Tus ("normalize"),
+    12 => As.U.Tus ("check_dtd"),
+    others => As.U.Asu_Null);
+
+  Helps : constant As.U.Utils.Asu_Array (Keys'Range) := (
+    01 => As.U.Tus ("No output, only exit code"),
+    02 => As.U.Tus ("Only show a progress bar"),
+    03 => As.U.Tus ("Dump expanded Xml tree"),
+    04 => As.U.Tus ("Put all on one line"),
+    05 => As.U.Tus ("Put attributes up to Width"),
+    06 => As.U.Tus ("Put one attribute per line"),
+    07 => As.U.Tus ("Expand general entities"),
+    08 => As.U.Tus ("Keep comments"),
+    09 => As.U.Tus ("Put Namespace^Suffix"),
+    10 => As.U.Tus ("Canonicalize xml"),
+    11 => As.U.Tus ("Do not normalize attributes and text"),
+    12 => As.U.Tus ("Use a specific dtd or none"),
+    13 => As.U.Tus ("Check for warnings"),
+    14 => As.U.Tus ("Build tree then dump it"),
+    15 => As.U.Tus ("Put this help"),
+    16 => As.U.Tus ("Put versions") );
+
   -- Program help
   procedure Usage is
+    procedure Pl (Str : in String) renames Basic_Proc.Put_Error;
     procedure Ple (Str : in String) renames Basic_Proc.Put_Line_Error;
+    Tab : constant String (1 .. 34) := (others => ' ');
+    Ustr, Tstr : As.U.Asu_Us;
+    use type As.U.Asu_Us;
   begin
     Ple ("Usage: " & Argument.Get_Program_Name & "[ { <option> } ] [ { <file> } ]");
     Ple (" <option> ::= <silent> | <progress> | <dump> | <raw> | <width> | <one> |");
-    Ple ("            | <expand> | <keep> | <namespace> | <normalize> | <canonical>");
+    Ple ("            | <expand> | <keep> | <namespace> | <canonical> | <normalize>");
     Ple ("            | <check_dtd> | <warnings> | <tree> | <help> | <version>");
+    for I in Keys'Range loop
+      if Names(I).Is_Null then
+        Ustr := "<" & Keys(I).Key_String & ">";
+      else
+        Ustr := "<" & Names(I) & ">";
+      end if;
+      Ustr := As.U.Tus (" " & String_Mng.Procuste (Ustr.Image, 12) & " ::= ");
+      if I /= 8 then
+        Ustr := Ustr & Argument_Parser.Image (Keys(I));
+      else
+        -- For Keep we replace "c|d|n|a" by "comments|cdata|none|all>"
+        declare
+          Str : constant String := Argument_Parser.Image (Keys(I));
+        begin
+          Tstr := As.U.Tus (Str(Str'First .. Str'Last - 8))
+                & "comments|cdata|none|all>";
+          Ustr := Ustr & Tstr;
+        end;
+      end if;
+      if Ustr.Length <= Tab'Length then
+        Pl (String_Mng.Procuste (Ustr.Image, Tab'Length));
+      else
+        Ple (Ustr.Image);
+        Pl (Tab);
+      end if;
+      Ple (" : " & Helps(I).Image);
+      if I = 7 then
+        Ple (Tab & " :  and attributes with default");
+      elsif I = 8 then
+        Ple (Tab & " : Keep CDATA sections unchanged");
+        Ple (Tab & " : Keep none (remove comments and CDATA");
+        Ple (Tab & " :  markers)");
+        Ple (Tab & " : Keep all (default)");
+      end if;
+    end loop;
 
-    Ple (" <silent>     ::= -s | --silent     -- No output, only exit code");
-    Ple (" <progress>   ::= -p | --progress   -- Only show a progress bar");
-    Ple (" <dump>       ::= -D | --dump       -- Dump expanded Xml tree");
-    Ple (" <raw>        ::= -r | --raw        -- Put all on one line");
-    Ple (" <width>      ::= -W <Width> | --width=<Width>");
-    Ple ("                                    -- Put attributes up to Width");
-    Ple (" <one>        ::= -1 | --one        -- Put one attribute per line");
-    Ple (" <expand>     ::= -E | --expand     -- Expanded general entities");
-    Ple ("                                    --  and attributes with default");
-    Ple (" <keep>       ::= -k c|d|n|a | --keep=comments|cdata|none|all");
-    Ple ("                                    -- Keep comments");
-    Ple ("                                    -- Keep CDATA sections unchanged");
-    Ple ("                                    -- Keep none (remove comments and CDATA");
-    Ple ("                                    --  markers)");
-    Ple ("                                    -- Keep all (default)");
-    Ple (" <namespace>  ::= -n | --namespace  -- Put Namespace^Suffix");
-    Ple (" <canonical>  ::= -C | --canonical  -- Canonicalize xml");
-    Ple (" <normalize>  ::= --no-normalize    -- Do not normalize attributes and text");
-    Ple (" <check_dtd>  ::= -d [ <Dtd> ] | --dtd=[<Dtd>]");
-    Ple ("                                    -- Use a specific dtd or none");
-    Ple (" <warnings>   ::= -w | --warnings   -- Check for warnings");
-    Ple (" <tree>       ::= -t | --tree       -- Build tree then dump it");
-    Ple (" <help>       ::= -h | --help       -- Put this help");
-    Ple (" <version>    ::= -v | --version    -- Put versions");
     Ple ("Empty Dtd can be used to force skipping validation versus dtd.");
     Ple ("All options except expand, keep, dtd, warnings, namespace and tree are");
     Ple (" mutually exclusive.");
@@ -117,28 +178,6 @@ procedure Xml_Checker is
     Ple ("  avoid stack overflow and Storage_Error.");
   end Usage;
 
-  -- The argument keys and descriptor of parsed keys
-  Keys : constant Argument_Parser.The_Keys_Type := (
-    1 => ('s', As.U.Tus ("silent"), False, False),
-    2 => ('D', As.U.Tus ("dump"), False, False),
-    3 => ('r', As.U.Tus ("raw"), False, False),
-    4 => ('W', As.U.Tus ("width"), False, True),
-    5 => ('1', As.U.Tus ("one"), False, False),
-    6 => ('h', As.U.Tus ("help"), False, False),
-    7 => ('v', As.U.Tus ("version"), False, False),
-    8 => ('k', As.U.Tus ("keep"), True, True),
-    9 => ('d', As.U.Tus ("dtd"), False, True),
-   10 => ('t', As.U.Tus ("tree"), False, False),
-   11 => ('w', As.U.Tus ("warnings"), False, False),
-   12 => ('C', As.U.Tus ("canonical"), False, False),
-   13 => (Argument_Parser.No_Key_Char,As.U.Tus ("no-normalize"), False, False),
-   14 => ('E', As.U.Tus ("expand"), False, False),
-   15 => ('n', As.U.Tus ("namespace"), False, False),
-   16 => ('p', As.U.Tus ("progress"), False, False)
-   );
-  Arg_Dscr : Argument_Parser.Parsed_Dscr;
-  No_Key_Index : constant Argument_Parser.The_Keys_Index
-               := Argument_Parser.No_Key_Index;
 
   -------------------
   -- Dump xml tree --
@@ -582,7 +621,7 @@ begin
   end if;
 
   -- Process help and version options
-  if Arg_Dscr.Is_Set (6) then
+  if Arg_Dscr.Is_Set (15) then
     -- Help: No file nor other option
     if Arg_Dscr.Get_Nb_Occurences (No_Key_Index) /= 0
     or else Arg_Dscr.Get_Number_Keys > 1 then
@@ -591,7 +630,7 @@ begin
     Usage;
     Basic_Proc.Set_Error_Exit_Code;
     return;
-  elsif Arg_Dscr.Is_Set (7) then
+  elsif Arg_Dscr.Is_Set (16) then
     -- Version: No file nor other option
     if Arg_Dscr.Get_Nb_Occurences (No_Key_Index) /= 0
     or else Arg_Dscr.Get_Number_Keys > 1 then
@@ -625,29 +664,29 @@ begin
     -- One or several Keep options
     Max_Opt := Max_Opt + Arg_Dscr.Get_Nb_Occurences (8);
   end if;
-  if Arg_Dscr.Is_Set (9) then
+  if Arg_Dscr.Is_Set (12) then
     -- Check dtd
     Max_Opt := Max_Opt + 1;
   end if;
-  if Arg_Dscr.Is_Set (10) then
+  if Arg_Dscr.Is_Set (14) then
     -- Tree mode
     Max_Opt := Max_Opt + 1;
   else
     Callback_Acc := Callback'Unrestricted_Access;
   end if;
-  if Arg_Dscr.Is_Set (11) then
+  if Arg_Dscr.Is_Set (13) then
     -- Put warnings
     Max_Opt := Max_Opt + 1;
     Warnings := Warning'Unrestricted_Access;
   end if;
-  if Arg_Dscr.Is_Set (14) then
+  if Arg_Dscr.Is_Set (7) then
     -- Expand entities and default of attributes
     Expand := True;
     Max_Opt := Max_Opt + 1;
   end if;
-  if Arg_Dscr.Is_Set (15) then
+  if Arg_Dscr.Is_Set (9) then
     -- Expand namespaces
-    if Arg_Dscr.Is_Set (14) then
+    if Arg_Dscr.Is_Set (7) then
       Ae_Re (Arg_Error'Identity,
              "Incompatible ""namespace"" and ""expand"" options");
     end if;
@@ -663,9 +702,9 @@ begin
   if Arg_Dscr.Is_Set (1) then
     -- Silent
     Output_Kind := None;
-  elsif Arg_Dscr.Is_Set (16) then
+  elsif Arg_Dscr.Is_Set (2) then
     -- Progress bar
-    if Arg_Dscr.Is_Set (10) then
+    if Arg_Dscr.Is_Set (14) then
       Output_Kind := Progress;
         Ae_Re (Arg_Error'Identity,
                "Incompatible ""progress"" and ""tree"" options");
@@ -679,16 +718,16 @@ begin
         Output_Kind := None;
       end if;
     end;
-  elsif Arg_Dscr.Is_Set (2) then
-    if Arg_Dscr.Is_Set (8) then
+  elsif Arg_Dscr.Is_Set (3) then
+    if Arg_Dscr.Is_Set (14) then
       Ae_Re (Arg_Error'Identity,
              "Incompatible ""keep"" and ""dump"" options");
     end if;
-    if Arg_Dscr.Is_Set (14) then
+    if Arg_Dscr.Is_Set (7) then
       Ae_Re (Arg_Error'Identity,
              "Incompatible ""expand"" and ""dump"" options");
     end if;
-    if Arg_Dscr.Is_Set (15) then
+    if Arg_Dscr.Is_Set (9) then
       Ae_Re (Arg_Error'Identity,
              "Incompatible ""namespace"" and ""dump"" options");
     end if;
@@ -698,28 +737,28 @@ begin
     Keep_Cdata := True;
     Expand := False;
     Namespace := False;
-  elsif Arg_Dscr.Is_Set (3) then
+  elsif Arg_Dscr.Is_Set (4) then
     Format := Xml_Parser.Generator.Raw;
-  elsif Arg_Dscr.Is_Set (12) then
+  elsif Arg_Dscr.Is_Set (10) then
     Output_Kind := Canon;
   end if;
 
   if Output_Kind = Gen then
     -- Options only significant in normal mode
-    if Arg_Dscr.Is_Set (4) then
+    if Arg_Dscr.Is_Set (5) then
       -- -w <Width>
       Format := Xml_Parser.Generator.Fill_Width;
-      if Arg_Dscr.Get_Option (4) = "" then
+      if Arg_Dscr.Get_Option (5) = "" then
         Ae_Re (Arg_Error'Identity, "Width value is mandatory with -w");
       end if;
       begin
-        Width := Natural'Value (Arg_Dscr.Get_Option (4));
+        Width := Natural'Value (Arg_Dscr.Get_Option (5));
       exception
         when others =>
           Ae_Re (Arg_Error'Identity, "Invalid Width value "
-               & Arg_Dscr.Get_Option (4));
+               & Arg_Dscr.Get_Option (5));
       end;
-    elsif Arg_Dscr.Is_Set (5) then
+    elsif Arg_Dscr.Is_Set (6) then
       -- -1
       Format := Xml_Parser.Generator.One_Per_Line;
     end if;
@@ -776,9 +815,9 @@ begin
     end loop;
   end if;
 
-  if Arg_Dscr.Is_Set (9) then
+  if Arg_Dscr.Is_Set (12) then
     -- -d: Check dtd file
-    Dtd_File := As.U.Tus (Arg_Dscr.Get_Option (9));
+    Dtd_File := As.U.Tus (Arg_Dscr.Get_Option (12));
     if Dtd_File.Is_Null then
       -- If option set with empty dtd => no check
       Use_Dtd := False;
@@ -786,14 +825,19 @@ begin
   end if;
 
   -- Canonical
-  if Arg_Dscr.Is_Set (12) then
-    if Arg_Dscr.Is_Set (14) then
-      Ae_Re (Arg_Error'Identity, "Canonical already implies expansion.");
+  if Arg_Dscr.Is_Set (10) then
+    if Arg_Dscr.Is_Set (7) then
+      Ae_Re (Arg_Error'Identity,
+             "Incompatible ""canonical"" and ""expand"" options");
     end if;
     -- No tree, no other keep than -k c
-    if Arg_Dscr.Is_Set (10) or else Arg_Dscr.Is_Set (15)
-    or else Keep_Cdata_Set then
-      Ae_Re (Arg_Error'Identity, "Incompatible options with canonical");
+    if Arg_Dscr.Is_Set (14) then
+      Ae_Re (Arg_Error'Identity,
+             "Incompatible ""canonical"" and ""tree"" options");
+    end if;
+    if Arg_Dscr.Is_Set (8) and then Keep_Cdata_Set then
+      Ae_Re (Arg_Error'Identity,
+             "Incompatible ""canonical"" and ""keep cdata"" options");
     end if;
     -- Skip comments by default, don't keep others
     Keep_Comments := Keep_Comments_Set;
@@ -814,7 +858,7 @@ begin
   end if;
 
   -- No normalize
-  if Arg_Dscr.Is_Set (13) then
+  if Arg_Dscr.Is_Set (11) then
     Normalize := False;
   end if;
 

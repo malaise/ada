@@ -3,14 +3,22 @@ with As.U, Argument, Argument_Parser, Mixed_Str, Basic_Proc;
 with Common, Files, Parse_Context;
 procedure Astub is
 
+  -- The keys and descriptor of parsed keys
+  Keys : constant Argument_Parser.The_Keys_Type := (
+   01 => (False, 'f', As.U.Tus ("force"), False),
+   02 => (False, 'k', As.U.Tus ("keep"),  False));
+  Arg_Dscr : Argument_Parser.Parsed_Dscr;
+
   procedure Usage is
   begin
     Basic_Proc.Put_Line_Output ("Usage : " & Argument.Get_Program_Name
-             & " [ -f | --force ] [ -k | --keep ] <spec_file_name>");
+      & " [ <force> ] [ <keep> ] <spec_file_name>");
     Basic_Proc.Put_Line_Output (
-               " -f | --force : Force generation (delete existing body)");
+      "  <force> ::= " & Argument_Parser.Image (Keys(1))
+      & " : Force generation (delete existing body)");
     Basic_Proc.Put_Line_Output (
-               " -k | --keep : Keep empty body");
+      " <keep>   ::= " & Argument_Parser.Image (Keys(2))
+      & "  : Keep empty body");
   end Usage;
 
   procedure Error (Msg : in String) is
@@ -20,11 +28,6 @@ procedure Astub is
     Basic_Proc.Set_Error_Exit_Code;
   end Error;
 
-  -- The keys and descriptor of parsed keys
-  Keys : constant Argument_Parser.The_Keys_Type := (
-   01 => ('f', As.U.Tus ("force"), False, False),
-   02 => ('k', As.U.Tus ("keep"), False, False));
-  Arg_Dscr : Argument_Parser.Parsed_Dscr;
 
   -- The options
   Force_Opt : Boolean;

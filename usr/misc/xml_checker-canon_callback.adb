@@ -1,6 +1,6 @@
 -- Cannonification of XML
 with Ada.Characters.Latin_1;
-with String_Mng, Sorts;
+with Sorts;
 separate (Xml_Checker)
 procedure Canon_Callback (Ctx  : in Xml_Parser.Ctx_Type;
                           Node : in Xml_Parser.Node_Update) is

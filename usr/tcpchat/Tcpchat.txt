@@ -1,6 +1,6 @@
 tcpchat
 =======
-V2.2
+V2.3
 :toc:
 
 Tcpchat accepts connections on a TCP port, expects specific sentences and

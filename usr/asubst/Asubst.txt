@@ -28,9 +28,9 @@ Options
 ....
 -a or --ascii : consider that input flow or file is pure ASCII,
 
--D <string> or --delimiter=<string> for a delimiter other than ''\n'',
+-D <string> or --delimiter=<string> for a delimiter other than '\n',
 
--d or --dotall for allow ''.'' to match ''\n'', when -D is set,
+-d or --dotall for allow '.' to match '\n', when -D is set,
 
 -e <pattern> or --exclude=<pattern> for skip text matching <pattern>,
 

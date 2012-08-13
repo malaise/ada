@@ -2,6 +2,22 @@ with Argument, Argument_Parser, Regular_Expressions, Integer_Image, String_Mng,
      Text_Line, Basic_Proc, As.U;
 
 procedure T_Regexp is
+  -- The keys
+  Keys : constant Argument_Parser.The_Keys_Type := (
+    (False, 'S', As.U.Tus ("silent"), False),
+    (False, 'i', As.U.Tus ("case_insensitive"), False),
+    (False, 'm', As.U.Tus ("multiline"), False),
+    (False, 'd', As.U.Tus ("dot_all"), False),
+    (False, 's', As.U.Tus ("strict"), False),
+    (False, 'h', As.U.Tus ("help"), False));
+  Dscr : Argument_Parser.Parsed_Dscr;
+  Helps : constant array (Keys'Range) of As.U.Asu_Us := (
+    (As.U.Tus ("for silent check (exit code only)")),
+    (As.U.Tus ("for case insensitive")),
+    (As.U.Tus ("for multiline")),
+    (As.U.Tus ("for dot matches all")),
+    (As.U.Tus ("for strict matching (not only contains)")),
+    (As.U.Tus ("for help")));
 
   procedure Error is
   begin
@@ -11,12 +27,11 @@ procedure T_Regexp is
     Basic_Proc.Put_Line_Output ("     -c for successive compilations");
     Basic_Proc.Put_Line_Output ("     -f for successive compilations and frees");
     Basic_Proc.Put_Line_Output ("     -p for compiling all arguments as patterns");
-    Basic_Proc.Put_Line_Output (" <manual>    ::= [ <option> ] <pattern> { <Search_String> }");
-    Basic_Proc.Put_Line_Output ("     -S (--silent) for silent check (exit code only)");
-    Basic_Proc.Put_Line_Output ("     -i (--case_insensitive) for case insensitive");
-    Basic_Proc.Put_Line_Output ("     -m (--multiline) for multiline");
-    Basic_Proc.Put_Line_Output ("     -d (--dot_all) for dot matches all");
-    Basic_Proc.Put_Line_Output ("     -s (--strict) for strict matching (not only contains)");
+    Basic_Proc.Put_Line_Output (" <manual> ::= [ <option> ] <pattern> { <Search_String> }");
+    for I in Keys'Range loop
+      Basic_Proc.Put_Line_Output ("     " & Argument_Parser.Image (Keys(I))
+                                & ", " & Helps(I).Image);
+    end loop;
   end Error;
 
   Silent : Boolean := False;
@@ -50,15 +65,6 @@ procedure T_Regexp is
     end if;
   end Compile_Pattern;
 
-  -- The keys
-  Keys : constant Argument_Parser.The_Keys_Type := (
-    ('S', As.U.Tus ("silent"), False, False),
-    ('i', As.U.Tus ("case_insensitive"), False, False),
-    ('m', As.U.Tus ("multiline"), False, False),
-    ('d', As.U.Tus ("dot_all"), False, False),
-    ('s', As.U.Tus ("strict"), False, False),
-    ('h', As.U.Tus ("help"), False, False));
-  Dscr : Argument_Parser.Parsed_Dscr;
 
   subtype Match_Result is Natural range 0 .. 50;
   subtype Match_Range is Positive range 1 .. Match_Result'Last;

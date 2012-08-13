@@ -19,12 +19,24 @@ procedure T_Autobus is
 
   procedure Plo (Str : in String) renames Basic_Proc.Put_Line_Output;
 
+  -- Arguments
+  Keys : constant Argument_Parser.The_Keys_Type := (
+   1 => (False, 'h', As.U.Tus ("help"), False),
+   2 => (False, 'a', As.U.Tus ("auto"), False),
+   3 => (False, 'm', As.U.Tus ("manual"), False),
+   4 => (True, 'b', As.U.Tus ("bus"), False, True, As.U.Tus ("bus_address")));
+ Key_Dscr : Argument_Parser.Parsed_Dscr;
+
   procedure Usage is
   begin
     Plo ("Usage: " & Argument.Get_Program_Name
        & " <mode> [ <bus> ] [ <auto_message> ]");
-    Plo ("<mode> ::= -a | --auto | -m | --manual");
-    Plo ("<bus>  ::= -b <bus_address> | --bus=<bus_address>");
+    Plo ("   or: " & Argument.Get_Program_Name & " "
+       & Argument_Parser.Image(Keys(1)));
+    Plo (" <mode>   ::= <auto> | <manual>");
+    Plo (" <auto>   ::= " & Argument_Parser.Image(Keys(2)));
+    Plo (" <manual> ::= " & Argument_Parser.Image(Keys(3)));
+    Plo (" <bus>    ::= " & Argument_Parser.Image(Keys(4)));
     Plo ("Ex: " & Argument.Get_Program_Name
        & " --manual -b " & Default_Address);
   end Usage;
@@ -34,14 +46,6 @@ procedure T_Autobus is
     Basic_Proc.Put_Line_Error ("ERROR: " & Msg & ".");
     Basic_Proc.Set_Error_Exit_Code;
   end Error;
-
-  -- Arguments
-  Keys : constant Argument_Parser.The_Keys_Type := (
-   1 => ('h', As.U.Tus ("help"), False, False),
-   2 => ('a', As.U.Tus ("auto"), False, False),
-   3 => ('m', As.U.Tus ("manual"), False, False),
-   4 => ('b', As.U.Tus ("bus"), False, True));
- Key_Dscr : Argument_Parser.Parsed_Dscr;
 
   -- Bus and subscribers
   Bus : aliased Autobus.Bus_Type;
