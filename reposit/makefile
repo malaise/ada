@@ -14,6 +14,7 @@ LIBS := $(filter-out $(SUBUNITS), $(UNITS))
 EXES := afpx_bld clear_screen
 
 CLIBS_afpx_bld := cutil x_mng posix2pcre pcre X11
+CLIBS_afpx_rnb := cutil x_mng posix2pcre pcre X11
 CLIBS_clear_screen := cutil
 
 HTML := true
