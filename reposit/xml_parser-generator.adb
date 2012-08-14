@@ -4,7 +4,7 @@ with Integer_Image, Text_Line, Sys_Calls, Trees;
 package body Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "1";
+  Minor_Version : constant String := "0";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -476,46 +476,12 @@ package body Xml_Parser.Generator is
   begin
     -- Move to node, must be an element
     Move_To_Element (Ctx, Element, Tree);
+    Check_Name (Name);
     -- Update name
     Tree.Read (Cell);
     Cell.Name := As.U.Tus (Name);
     Tree.Replace (Cell);
   end Set_Name;
-
-  -- Add an attribute to current element
-  -- May raise No_Element if current element is text
-  procedure Add_Attribute (Ctx     : in out Ctx_Type;
-                           Element : in out Element_Type;
-                           Name, Value : in String) is
-    Tree : Tree_Acc;
-    Cell : My_Tree_Cell;
-    Nb_Attributes : Natural;
-  begin
-    -- Move to node, must be an element
-    Move_To_Element (Ctx, Element, Tree);
-    -- Increment Nb_Attributes
-    Tree.Read (Cell);
-    Nb_Attributes := Cell.Nb_Attributes;
-    Cell.Nb_Attributes := Cell.Nb_Attributes + 1;
-    Tree.Replace (Cell);
-    -- Add this attribute
-    Cell.Kind := Attribute;
-    Cell.Nb_Attributes := 0;
-    Cell.Name := As.U.Tus (Name);
-    Cell.Value := As.U.Tus (Value);
-    if Nb_Attributes = 0 then
-      -- As first child
-      Tree.Insert_Child (Cell);
-    else
-      -- Insert after current attributes
-      Tree.Move_Child;
-      for I in 1 .. Nb_Attributes - 1 loop
-        Tree.Move_Brother (False);
-      end loop;
-      Tree.Insert_Brother (Cell, False);
-    end if;
-    Tree.Move_Father;
-  end Add_Attribute;
 
  -- Set all the attributes of an element
   -- May raise Invalid_Argument if a name is invalid
@@ -537,6 +503,7 @@ package body Xml_Parser.Generator is
     Cell.Kind := Attribute;
     Cell.Nb_Attributes := 0;
     for I in reverse Attributes'Range loop
+      Check_Name (Attributes(I).Name.Image);
       Cell.Name := Attributes(I).Name;
       Cell.Value := Attributes(I).Value;
       Tree.Insert_Child (Cell);
@@ -571,6 +538,111 @@ package body Xml_Parser.Generator is
       Tree.Delete_Current;
     end loop;
   end Del_Attributes;
+
+  -- Add an attribute to current element
+  -- May raise No_Element if current element is text
+  procedure Add_Attribute (Ctx     : in out Ctx_Type;
+                           Element : in out Element_Type;
+                           Name, Value : in String) is
+    Tree : Tree_Acc;
+    Cell : My_Tree_Cell;
+    Nb_Attributes : Natural;
+  begin
+    -- Move to node, must be an element
+    Move_To_Element (Ctx, Element, Tree);
+    Check_Name (Name);
+    -- Increment Nb_Attributes
+    Tree.Read (Cell);
+    Nb_Attributes := Cell.Nb_Attributes;
+    Cell.Nb_Attributes := Cell.Nb_Attributes + 1;
+    Tree.Replace (Cell);
+    -- Add this attribute
+    Cell.Kind := Attribute;
+    Cell.Nb_Attributes := 0;
+    Cell.Name := As.U.Tus (Name);
+    Cell.Value := As.U.Tus (Value);
+    if Nb_Attributes = 0 then
+      -- As first child
+      Tree.Insert_Child (Cell);
+    else
+      -- Insert after current attributes
+      Tree.Move_Child;
+      for I in 1 .. Nb_Attributes - 1 loop
+        Tree.Move_Brother (False);
+      end loop;
+      Tree.Insert_Brother (Cell, False);
+    end if;
+  end Add_Attribute;
+
+ -- Set the value of an attribute of current element
+  -- May raise Invalid_Argument if a name is invalid
+  -- May raise May raise Attribute_Not_Found
+  procedure Set_Attribute (Ctx     : in out Ctx_Type;
+                           Element : in out Element_Type;
+                           Name, Value : in String) is
+    Tree : Tree_Acc;
+    Cell : My_Tree_Cell;
+    use type As.U.Asu_Us;
+  begin
+    -- Move to node, must be an element
+    Move_To_Element (Ctx, Element, Tree);
+    Check_Name (Name);
+    Tree.Read (Cell);
+    -- Look for attribute with this Name
+    for I in 1 .. Cell.Nb_Attributes loop
+      if I = 1 then
+        Tree.Move_Child;
+      else
+        Tree.Move_Brother (False);
+      end if;
+      Tree.Read (Cell);
+      if Cell.Kind /= Attribute then
+        raise Internal_Error;
+      end if;
+      if Cell.Name = As.U.Tus (Name) then
+        Cell.Value := As.U.Tus (Value);
+        Tree.Replace (Cell);
+        return;
+      end if;
+    end loop;
+    raise Attribute_Not_Found;
+  end Set_Attribute;
+
+ -- Delete an attribute of current element
+  -- May raise Invalid_Argument if a name is invalid
+  -- May raise May raise Attribute_Not_Found
+  procedure Del_Attribute (Ctx     : in out Ctx_Type;
+                           Element : in out Element_Type;
+                           Name : in String) is
+    Tree : Tree_Acc;
+    Cell : My_Tree_Cell;
+    use type As.U.Asu_Us;
+  begin
+    -- Move to node, must be an element
+    Move_To_Element (Ctx, Element, Tree);
+    Check_Name (Name);
+    Tree.Read (Cell);
+    -- Look for attribute with this Name
+    for I in 1 .. Cell.Nb_Attributes loop
+      if I = 1 then
+        Tree.Move_Child;
+      else
+        Tree.Move_Brother (False);
+      end if;
+      Tree.Read (Cell);
+      if Cell.Kind /= Attribute then
+        raise Internal_Error;
+      end if;
+      if Cell.Name = As.U.Tus (Name) then
+        Tree.Delete_Current;
+        Tree.Read (Cell);
+        Cell.Nb_Attributes := Cell.Nb_Attributes - 1;
+        Tree.Replace (Cell);
+        return;
+      end if;
+    end loop;
+    raise Attribute_Not_Found;
+  end Del_Attribute;
 
   -- Insert a child element, text or comment, and move to it
   procedure Add_Child (Ctx      : in out Ctx_Type;

@@ -3,7 +3,7 @@
 package Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "10";
+  Major_Version : constant String := "11";
   function Version return String;
 
   type Ctx_Type is new Xml_Parser.Ctx_Type with private;
@@ -83,13 +83,6 @@ package Xml_Parser.Generator is
                       Element : in out Element_Type;
                       Name    : in String);
 
-
-  -- Add an attribute to current element
-  -- May raise Invalid_Argument if invalid name
-  procedure Add_Attribute (Ctx     : in out Ctx_Type;
-                           Element : in out Element_Type;
-                           Name, Value : in String);
-
   -- Set all the attributes of an element
   -- May raise Invalid_Argument if a name is invalid
   procedure Set_Attributes (Ctx        : in out Ctx_Type;
@@ -99,6 +92,26 @@ package Xml_Parser.Generator is
   -- Delete the attributes of an element
   procedure Del_Attributes (Ctx     : in out Ctx_Type;
                             Element : in out Element_Type);
+
+  -- Add an attribute to current element
+  -- May raise Invalid_Argument if invalid name
+  procedure Add_Attribute (Ctx     : in out Ctx_Type;
+                           Element : in out Element_Type;
+                           Name, Value : in String);
+
+  -- Set the value of an attribute of current element
+  -- May raise Invalid_Argument if a name is invalid
+  -- May raise May raise Attribute_Not_Found
+  procedure Set_Attribute (Ctx     : in out Ctx_Type;
+                           Element : in out Element_Type;
+                           Name, Value : in String);
+
+  -- Delete an attribute of current element
+  -- May raise Invalid_Argument if a name is invalid
+  -- May raise May raise Attribute_Not_Found
+  procedure Del_Attribute (Ctx     : in out Ctx_Type;
+                           Element : in out Element_Type;
+                           Name : in String);
 
   -- Insert a child element, text, Pi or comment, and move to it
   -- For a Text, the Name is the text
