@@ -181,6 +181,9 @@
 
   </Descriptor>
 
+  <!-- Empty desscriptor -->
+  <Descriptor Num="7"/>
+
   <!-- File selection for t_select_file -->
   <Descriptor Num="10">
 
