@@ -33,6 +33,8 @@
 <!-- A variable name must be <Identifier>[{.<Identifier>}] the Ada way. -->
 <!-- Value can be string or number, and may contain some reference to -->
 <!--  variables or constants, on the form ${Variable}. -->
+<!-- Expansion can be prevented by backslashing both delimiters: -->
+<!--  e.g. "\${Variable\}" will become "${Variable}". -->
 <!ELEMENT Var EMPTY>
 <!ATTLIST Var Name  NMTOKEN #REQUIRED
               Value CDATA   #REQUIRED>
