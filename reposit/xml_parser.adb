@@ -4,7 +4,7 @@ with Environ, Basic_Proc, Rnd, Exception_Messenger, Directory, String_Mng,
 package body Xml_Parser is
 
   -- Version incremented at each significant change
-  Minor_Version : constant String := "7";
+  Minor_Version : constant String := "0";
   function Version return String is
   begin
     return "V" & Major_Version & "." & Minor_Version;
@@ -949,16 +949,23 @@ package body Xml_Parser is
   -- May raise Attribute_Not_Found
   function Get_Attribute (Ctx     : Ctx_Type;
                           Element : Element_Type;
-                          Name    : String) return Attribute_Rec is
+                          Name    : String) return As.U.Asu_Us is
     Attributes : constant Attributes_Array
                := Get_Attributes (Ctx, Element);
   begin
     for I in Attributes'Range loop
       if Attributes(I).Name.Image = Name then
-        return Attributes(I);
+        return Attributes(I).Value;
       end if;
     end loop;
     raise Attribute_Not_Found;
+  end Get_Attribute;
+
+  function Get_Attribute (Ctx     : Ctx_Type;
+                          Element : Element_Type;
+                          Name    : String) return String is
+  begin
+    return Get_Attribute (Ctx, Element, Name).Image;
   end Get_Attribute;
 
   ----------------

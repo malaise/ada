@@ -16,7 +16,7 @@ with As.U, Queues, Trees, Hashed_List.Unique, Text_Char, Dynamic_List,
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "29";
+  Major_Version : constant String := "30";
   function Version return String;
 
   -----------
@@ -174,7 +174,7 @@ package Xml_Parser is
   -- On option skip CDATA sections or keep markers
   -- On option, does not expand General entities nor set attributes with
   --  default values (usefull for formatter)
-  -- On option, if expand, keep separators unchanged in attributes and text
+  -- On option, keep separators unchanged in attributes and text
   -- On option does not check compliance with Dtd
   -- On option force a dtd file different from DOCTYPE directive
   -- On option check and fill namespace informations
@@ -357,7 +357,10 @@ package Xml_Parser is
   Attribute_Not_Found : exception;
   function Get_Attribute (Ctx     : Ctx_Type;
                           Element : Element_Type;
-                          Name    : String) return Attribute_Rec;
+                          Name    : String) return String;
+  function Get_Attribute (Ctx     : Ctx_Type;
+                          Element : Element_Type;
+                          Name    : String) return As.U.Asu_Us;
 
 
   ----------------

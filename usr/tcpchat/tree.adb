@@ -23,7 +23,7 @@ package body Tree is
   function Get_Attribute (Xnode   : Xml_Parser.Element_Type;
                           Name    : String) return String is
   begin
-    return Ctx.Get_Attribute (Xnode, Name).Value.Image;
+    return Ctx.Get_Attribute (Xnode, Name);
   end Get_Attribute;
 
   -- Get TimeoutMs or Name if set, else default

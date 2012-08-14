@@ -33,19 +33,19 @@ package body Config is
   function Get_Attribute (Node : Xml_Parser.Element_Type;
                           Name : String;
                           Is_Duration : Boolean) return Duration is
-    Attr : Xml_Parser.Attribute_Rec;
+    Attr : As.U.Asu_Us;
     Dur : Duration;
     Int : Integer;
   begin
     Attr := Ctx.Get_Attribute (Node, Name);
     if Is_Duration then
-      Dur := Duration'Value (Attr.Value.Image);
+      Dur := Duration'Value (Attr.Image);
       if Dur <= 0.0 then
         raise Constraint_Error;
       end if;
       return Dur;
     else
-      Int := Integer'Value (Attr.Value.Image);
+      Int := Integer'Value (Attr.Image);
       if Int <= 0 then
         raise Constraint_Error;
       end if;
@@ -56,7 +56,7 @@ package body Config is
       return 0.0;
     when others =>
       Log_Error ("Config.Init", "invalid " & Name,
-                 Attr.Value.Image & " at line " &
+                 Attr.Image & " at line " &
                  Integer_Image (Ctx.Get_Line_No (Node)));
       raise Config_Error;
   end Get_Attribute;
