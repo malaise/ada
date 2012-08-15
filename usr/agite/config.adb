@@ -70,7 +70,7 @@ package body Config is
   begin
     -- Check Ctx, it is Ok for sure but this correctly sets
     --  Is_Mixed to False on inserted bookmarks
-    Ctx.Check (Ok, null);
+    Ctx.Check (Ok);
     if not Ok then
       Basic_Proc.Put_Line_Error ("Check error on config: "
                                  & Ctx.Get_Parse_Error_Message);

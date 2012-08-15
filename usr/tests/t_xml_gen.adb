@@ -103,7 +103,7 @@ begin
   -- Add an invalid entry
   Dscr.Add_Brother (Fail_Node, "Var1", Xml_Parser.Element, New_Node);
   -- Check tree
-  Dscr.Check (Ok, Warnings);
+  Dscr.Check (Ok, True, Warnings);
   if Ok then
     Basic_Proc.Put_Line_Error ("Check failed to detect invalid element name");
     Basic_Proc.Set_Error_Exit_Code;
@@ -120,7 +120,7 @@ begin
                   Xml_Parser.Comment, New_Node);
 
   -- Check tree
-  Dscr.Check (Ok, Warnings);
+  Dscr.Check (Ok, True, Warnings);
   if not Ok then
     Basic_Proc.Put_Line_Error (Dscr.Get_Parse_Error_Message);
     Basic_Proc.Set_Error_Exit_Code;

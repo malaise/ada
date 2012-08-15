@@ -2,7 +2,7 @@ Xml_Checker
 ===========
 :toc:
 
-Parser version: V30.0
+Parser version: V30.1
 
 Generator version: V11.0
 
@@ -106,13 +106,11 @@ http://www.w3.org/TR/xml-c14n). This option only allows options dtd, warnings
 and keep-comments (it expands and by default removes comments, it is not
 supported in "xref:Tree[tree]" mode).
 
---no-normalize: :: for no normalization of attributes and text. By default, if
-the xref:Expand[expand] option is set the attributes and text are normalized.
+--no-normalize: :: for no normalization of attributes and text. By default the
+text is normalized and, if the xref:Expand[expand] option is set, the attributes
+are normalized as well.
 +
-This option forces no normalization even when expansion is activated.
-+
-It is significant only when expanding because the parser itself does not
-normalize otherwise.
+This option forces no normalization of the text and of the expanded attributes.
 
 Checks
 ~~~~~~

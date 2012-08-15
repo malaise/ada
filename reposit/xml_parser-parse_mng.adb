@@ -300,6 +300,23 @@ package body Parse_Mng  is
     Util.Expand_Vars (Ctx, Adtd, Value, Context);
   end Parse_Value;
 
+  -- Do we add this text to the list of children
+  function Add_Text (Ctx : in Ctx_Type; Text : As.U.Asu_Us) return Boolean is
+    Tmp_Text : As.U.Asu_Us;
+  begin
+    if not Ctx.Expand and then Ctx.Normalize then
+      -- When not expanding, add child only if not empty
+      Tmp_Text := Text;
+      Util.Remove_Entities (Tmp_Text);
+      return not Tmp_Text.Is_Null;
+    elsif not Ctx.Normalize then
+      -- When preserving spaces, add child only if not only separators
+      return not Util.Is_Separators (Text);
+    else
+      return True;
+    end if;
+  end Add_Text;
+
   -- Dtd management, uses util and the tree
   package Dtd is
     -- Init (clear) Dtd data
@@ -1409,26 +1426,17 @@ package body Parse_Mng  is
       end if;
       -- Insert and notify this child
       Tree_Mng.Add_Text (Ctx.Elements.all, Text, Util.Get_Line_No (Ctx.Flow));
-      if not Ctx.Expand then
-        -- When not expanding, add child only if not empty
-        Tmp_Text := Text;
-        Util.Remove_Entities (Tmp_Text);
-        if not Tmp_Text.Is_Null then
-            Add_Child (Ctx, Adtd, Children);
-        end if;
-      elsif not Ctx.Normalize then
-        -- When preserving spaces, add child only if not only separators
-        if not Util.Is_Separators (Text) then
-          Add_Child (Ctx, Adtd, Children);
-        end if;
-      else
+      if Add_Text (Ctx, Text) then
+        Trace ("Txt adding text child");
         Add_Child (Ctx, Adtd, Children);
+      else
+        Trace ("Txt skipping text child");
       end if;
       -- In elements, Creation of this text element
       Call_Callback (Ctx, Elements, True, False,
                      In_Mixed => Children.Is_Mixed);
       Move_Del (Ctx, False);
-      Trace ("Txt added text child >" & Text.Image & "<");
+      Trace ("Txt processed text child >" & Text.Image & "<");
     end if;
 
     -- Now handle tail if not empty

@@ -1,6 +1,6 @@
 with Ada.Finalization;
 with As.U, Queues, Trees, Hashed_List.Unique, Text_Char, Dynamic_List,
-     Unlimited_Pool, Byte_To_Unicode;
+     Unlimited_Pool, Byte_To_Unicode, Trilean;
 -- Parse Xml file or string.
 -- Call callback while parsing or provide access to the tree after parsing.
 -- Limitations:
@@ -16,7 +16,7 @@ with As.U, Queues, Trees, Hashed_List.Unique, Text_Char, Dynamic_List,
 package Xml_Parser is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "30";
+  Major_Version : constant String := "31";
   function Version return String;
 
   -----------
@@ -275,9 +275,11 @@ package Xml_Parser is
   -- Check the Ctx: parse the DTD (if any) and check the Ctx versus it
   --  (same effect as Parse, but on a context that has been set or modified by
   --  Xml_Parser.Generator)
+  -- Normalize = Other means leave as it is: True at Init or value set in Parse
   procedure Check (Ctx : in out Ctx_Type;
                    Ok  : out Boolean;
-                   Warn_Cb  : in Warning_Callback_Access := null);
+                   Normalize : in Trilean.Trilean := Trilean.Other;
+                   Warn_Cb   : in Warning_Callback_Access := null);
 
   -------------------------
   -- NAME AND ATTRIBUTES --

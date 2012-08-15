@@ -1,6 +1,6 @@
 with Ada.Exceptions, Ada.Unchecked_Deallocation;
 with Environ, Basic_Proc, Rnd, Exception_Messenger, Directory, String_Mng,
-     Trilean, Regular_Expressions;
+     Regular_Expressions;
 package body Xml_Parser is
 
   -- Version incremented at each significant change
@@ -656,7 +656,9 @@ package body Xml_Parser is
   --  (same effect as Xml_Parse.Parse)
   procedure Check (Ctx : in out Ctx_Type;
                    Ok  : out Boolean;
-                   Warn_Cb  : in Warning_Callback_Access := null) is
+                   Normalize : in Trilean.Trilean := Trilean.Other;
+                   Warn_Cb   : in Warning_Callback_Access := null) is
+    use type Trilean.Trilean;
   begin
     -- Status must be Parsed_Prologue, Parsed_Elements or Init
     if Ctx.Status /= Parsed_Prologue
@@ -668,6 +670,9 @@ package body Xml_Parser is
     Ctx.Status := Error;
     Ctx.Flow.Err_Msg.Set_Null;
     Ok := False;
+    if Normalize /= Trilean.Other then
+      Ctx.Normalize := Trilean.Tri2Boo (Normalize);
+    end if;
     -- Check this context
     if not Ctx.Elements.Is_Empty then
       Ctx.Elements.Move_Root;

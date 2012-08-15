@@ -2166,8 +2166,10 @@ package body Dtd is
             Children.Is_Empty := False;
             Add_Current_Element (Children.Children, Cell.Name);
           when Xml_Parser.Text =>
-            Children.Is_Empty := False;
-            Children.Has_Text := True;
+            if Add_Text (Ctx, Cell.Name) then
+              Children.Is_Empty := False;
+              Children.Has_Text := True;
+            end if;
           when Xml_Parser.Pi | Xml_Parser.Comment =>
             Children.Is_Empty := False;
         end case;
