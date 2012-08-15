@@ -7,14 +7,13 @@ with Basic_Proc, Argument, Argument_Parser, Environ,
 procedure Afpx_Rnb is
     -- Options
   Keys : constant Argument_Parser.The_Keys_Type := (
-    1 => (False, 'h', As.U.Tus ("help"),          False),
-    2 => (True,  'D', As.U.Tus ("descriptor"),    False, True, As.U.Tus ("desriptor_num")),
-    3 => (True,  'a', As.U.Tus ("insert_after"),  False, True, As.U.Tus ("field_num")),
-    4 => (True,  'b', As.U.Tus ("insert_before"), False, True, As.U.Tus ("field_num")),
-    5 => (True,  'd', As.U.Tus ("delete"),        False, True, As.U.Tus ("field_num")),
-    6 => (True,  'f', As.U.Tus ("file"),          False, True, As.U.Tus ("file_name")),
-    7 => (True,  'o', As.U.Tus ("output"),        False, True, As.U.Tus ("file_name")),
-    8 => (False, 'F', As.U.Tus ("force"),         False));
+    1 => (False, 'h', As.U.Tus ("help"),       False),
+    2 => (True,  'D', As.U.Tus ("descriptor"), False, True, As.U.Tus ("desriptor_num")),
+    3 => (True,  'a', As.U.Tus ("insert"),     False, True, As.U.Tus ("field_num")),
+    4 => (True,  'd', As.U.Tus ("delete"),     False, True, As.U.Tus ("field_num")),
+    5 => (True,  'f', As.U.Tus ("file"),       False, True, As.U.Tus ("file_name")),
+    6 => (True,  'o', As.U.Tus ("output"),     False, True, As.U.Tus ("file_name")),
+    7 => (False, 'F', As.U.Tus ("force"),      False));
   Args : Argument_Parser.Parsed_Dscr;
   Default_File_Name : constant String := "Afpx.xml";
 
@@ -24,24 +23,22 @@ procedure Afpx_Rnb is
     Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
        & " [ <file> ] [ <output> ] [ <force> ] <descriptor> <action> [ <number> ]");
     Basic_Proc.Put_Line_Error (
-       " <file>          ::= " & Argument_Parser.Image (Keys(6))
+       " <file>       ::= " & Argument_Parser.Image (Keys(5))
      & "   (default: " & Default_File_Name & ")");
     Basic_Proc.Put_Line_Error (
-       " <output>        ::= " & Argument_Parser.Image (Keys(7))
+       " <output>     ::= " & Argument_Parser.Image (Keys(6))
      & "   (default: overwrite input");
     Basic_Proc.Put_Line_Error (
-       " <force>         ::= " & Argument_Parser.Image (Keys(8))
+       " <force>      ::= " & Argument_Parser.Image (Keys(7))
      & "   : generate even if deleted field is referenced");
     Basic_Proc.Put_Line_Error (
-       " <descriptor>    ::= " & Argument_Parser.Image (Keys(2)));
+       " <descriptor> ::= " & Argument_Parser.Image (Keys(2)));
     Basic_Proc.Put_Line_Error (
-       " <action>        ::= <insert_after> | <insert_before> | <delete>");
+       " <action>     ::= <insert> | <delete>");
     Basic_Proc.Put_Line_Error (
-       " <insert_after>  ::= " & Argument_Parser.Image (Keys(3)));
+       " <insert>     ::= " & Argument_Parser.Image (Keys(3)));
     Basic_Proc.Put_Line_Error (
-       " <insert_before> ::= " & Argument_Parser.Image (Keys(4)));
-    Basic_Proc.Put_Line_Error (
-       " <delete>        ::= " & Argument_Parser.Image (Keys(5)));
+       " <delete>     ::= " & Argument_Parser.Image (Keys(4)));
     Basic_Proc.Put_Line_Error (
        " <number> is the number of fields to insert or delete (default 1).");
   end Usage;
@@ -105,7 +102,7 @@ procedure Afpx_Rnb is
   Input_File_Name, Output_File_Name : As.U.Asu_Us;
   Force : Boolean := False;
   Dscr : Afpx_Typ.Descriptor_Range;
-  type Action_List is (Insert_After, Insert_Before, Delete);
+  type Action_List is (Insert, Delete);
   Action : Action_List;
   Field_Num : Afpx_Typ.Absolute_Field_Range;
   Number : Afpx_Typ.Field_Range := 1;
@@ -202,8 +199,8 @@ begin
   end if;
 
   -- Input file
-  if Args.Is_Set (6) then
-    Input_File_Name := As.U.Tus (Args.Get_Option (6));
+  if Args.Is_Set (5) then
+    Input_File_Name := As.U.Tus (Args.Get_Option (5));
     if Input_File_Name.Is_Null then
       Error ("Invalid argument: Empty input file name");
     end if;
@@ -211,8 +208,8 @@ begin
     Input_File_Name := As.U.Tus (Default_File_Name);
   end if;
   -- Output file
-  if Args.Is_Set (7) then
-    Output_File_Name := As.U.Tus (Args.Get_Option (7));
+  if Args.Is_Set (6) then
+    Output_File_Name := As.U.Tus (Args.Get_Option (6));
     if Output_File_Name.Is_Null then
       Error ("Invalid argument: Empty output file name");
     end if;
@@ -220,7 +217,7 @@ begin
     Output_File_Name := Input_File_Name;
   end if;
   -- Force
-  Force := Args.Is_Set (8);
+  Force := Args.Is_Set (7);
 
   -- Descriptor
   if not Args.Is_Set (2) then
@@ -239,19 +236,14 @@ begin
     No_Key : Argument_Parser.The_Keys_Range;
   begin
     if Args.Is_Set (3) then
-      Action := Insert_After;
+      Action := Insert;
       Nb_Action := Nb_Action + 1;
       No_Key := 3;
     end if;
     if Args.Is_Set (4) then
-      Action := Insert_Before;
-      Nb_Action := Nb_Action + 1;
-      No_Key := 4;
-    end if;
-    if Args.Is_Set (5) then
       Action := Delete;
       Nb_Action := Nb_Action + 1;
-      No_Key := 5;
+      No_Key := 4;
     end if;
     if Nb_Action = 0 then
       Error ("Invalid arguments:. Missing action");
@@ -268,8 +260,8 @@ begin
              & Args.Get_Option (No_Key));
     end;
   end;
-  if Field_Num = 0 and then Action /= Insert_After then
-    Error ("Invalid argument: Field 0 is only allowed when insterting after");
+  if Field_Num = 0 and then Action /= Insert then
+    Error ("Invalid argument: Field 0 is only allowed when insterting");
   end if;
 
   -- Number
@@ -296,7 +288,7 @@ begin
                Comments => True,
                Cdata => Keep_Cdata_Section,
                Expand => False,
-               Normalize => True,
+               Normalize => False,
                Use_Dtd => True, Dtd_File  => "",
                Namespace => False,
                Warn_Cb => null, Parse_Cb => null);
@@ -379,14 +371,9 @@ begin
       Field_Map.Append ( (I) );
     end loop;
     case Action is
-      when Insert_After =>
+      when Insert =>
         -- Add offest to fields after Field_Num
         for I in Field_Num + 1 .. Nb_Fields loop
-          Field_Map.Replace_Element (Positive(I), (I + Number) );
-        end loop;
-      when Insert_Before =>
-        -- Add offest to fields Field_Num and after
-        for I in Field_Num .. Nb_Fields loop
           Field_Map.Replace_Element (Positive(I), (I + Number) );
         end loop;
       when Delete =>
@@ -416,15 +403,13 @@ begin
   -- Insert / delete
   -- Finally update Field_Elt to the one to start with
   --  and Update Field_Num to its new num
-  --  if Insert_After => First after inserted, Num + Number
-  --  if Insert_Before => Field_Elt, Num + Number
+  --  if Insert => First after inserted, Num + Number
   --  if Delete => the new field now at the place of Field_Elt, Num
   declare
-    Fld_Num : Natural;
     Next_Child : Xml_Parser.Node_Type;
   begin
     case Action is
-      when Insert_After =>
+      when Insert =>
         if Field_Num = 0 then
           -- Append first field as last child of Dscr
           Xml.Add_Child (Dscr_Elt, "Field", Xml_Parser.Element, Tmp_Node);
@@ -464,22 +449,6 @@ begin
             Field_Elt := Tmp_Node;
             exit;
           end if;
-        end loop;
-        Field_Num := Field_Num + Number;
-      when Insert_Before =>
-        -- Prepend Brothers: so that their num are
-        -- Field_Num .. Field_Num + Number - 1
-        -- So prepend Field_Num + Number - 1 first
-        Tmp_Node := Field_Elt;
-        Fld_Num := Positive(Field_Num + Number - 1);
-        for I in 1 .. Positive(Number) loop
-          Xml.Add_Brother (Tmp_Node, "Field", Xml_Parser.Element, Tmp_Node,
-                               Next => False);
-          Complete (Xml, Tmp_Node, Fld_Num);
-          if Debug then
-            Basic_Proc.Put_Line_Output ("Prepend Field" & Fld_Num'Img);
-          end if;
-          Fld_Num := Fld_Num - 1;
         end loop;
         Field_Num := Field_Num + Number;
       when Delete =>
@@ -659,7 +628,7 @@ begin
   end if;
 
   -- Check XML
-  Xml.Check (Ok, null);
+  Xml.Check (Ok);
   if not Ok then
     Error ("INTERNAL ERROR: Xml check failed: "
          & Xml.Get_Parse_Error_Message, False);

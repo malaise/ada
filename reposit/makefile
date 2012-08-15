@@ -11,7 +11,7 @@ SUBUNITS := afpx-af_dscr afpx-af_list afpx-af_ptg \
   x_mng-dispatch 
 LIBS := $(filter-out $(SUBUNITS), $(UNITS))
 
-EXES := afpx_bld clear_screen
+EXES := afpx_bld afpx_rnb clear_screen
 
 CLIBS_afpx_bld := cutil x_mng posix2pcre pcre X11
 CLIBS_afpx_rnb := cutil x_mng posix2pcre pcre X11
