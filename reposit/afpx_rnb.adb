@@ -59,8 +59,10 @@ procedure Afpx_Rnb is
     raise Abort_Error;
   end Error;
 
-  -- Complete an element: add attributes Num and Kind,
-  -- Add children Geometry and Colors with attribtues
+  -- Complete an element:
+  -- Insert before element a Text "Lf   "
+  -- Add to element the attributes Num and Kind,
+  -- Add to element the children Geometry and Colors with attribtues
   Ini_Attrs : Boolean := False;
   Fld_Attrs : Xml_Parser.Attributes_Array (1 ..2);
   Geo_Attrs : Xml_Parser.Attributes_Array (1 ..4);
@@ -68,6 +70,7 @@ procedure Afpx_Rnb is
   procedure Complete (Ctx : in out Xml_Parser.Generator.Ctx_Type;
                       Field : in out Xml_Parser.Element_Type;
                       Fld_Num : in Positive) is
+    Indent : Xml_Parser.Text_Type;
     Child : Xml_Parser.Element_Type;
   begin
     if not Ini_Attrs then
@@ -89,6 +92,9 @@ procedure Afpx_Rnb is
       Col_Attrs(2).Value := As.U.Tus ("White");
       Ini_Attrs := True;
     end if;
+    -- Prepend a Text with Lf + 4 spaces
+    Ctx.Add_Brother (Field, Text_Line.Line_Feed_Str & "    ",
+                     Xml_Parser.Text, Indent, Next => False);
     -- Set field attributes with provided Num
     Fld_Attrs(1).Value := As.U.Tus (Integer_Image (Fld_Num));
     Ctx.Set_Attributes (Field, Fld_Attrs);
@@ -114,9 +120,12 @@ procedure Afpx_Rnb is
 
   -- XML descriptor and nodes
   Xml : Xml_Parser.Generator.Ctx_Type;
-  Tmp_Node : Xml_Parser.Node_Type;
+  -- Node to append to when Field_Num = 0, No_Node => 1st child of Dscr
+  Start_Node : Xml_Parser.Node_Type;
   -- The descriptor and reference field
   Dscr_Elt, Field_Elt : Xml_Parser.Element_Type;
+  -- Tempo node
+  Tmp_Node : Xml_Parser.Node_Type;
 
   -- Number if fields initialy in the dscr
   Nb_Fields : Afpx_Typ.Absolute_Field_Range;
@@ -165,7 +174,7 @@ procedure Afpx_Rnb is
           -- Reference to a deleted field
           Basic_Proc.Put_Line_Output ("Warning: Text """ & Input.Image
             & """ at line " & Integer_Image (Line)
-            & " has unresolved reference to field " & Text.Slice (I, J)
+            & " has a reference to field " & Text.Slice (I, J)
             & ".");
           Ok := False;
         end if;
@@ -181,7 +190,10 @@ procedure Afpx_Rnb is
   end Update;
 
   use type Afpx_Typ.Field_Range, Xml_Parser.Node_Kind_List;
+
 begin
+
+
   ------------------
   -- Parse arguments
   ------------------
@@ -265,7 +277,7 @@ begin
     end;
   end;
   if Field_Num = 0 and then Action /= Insert then
-    Error ("Invalid argument: Field 0 is only allowed when insterting");
+    Error ("Invalid argument: Field 0 is only allowed when inserting");
   end if;
 
   -- Number
@@ -312,6 +324,8 @@ begin
   -- Find descriptor
   declare
     Found : Boolean;
+    -- Last node not text before first field
+    Prev_Node : Xml_Parser.Node_Type;
     use type Afpx_Typ.Descriptor_Range;
   begin
     Dscr_Elt := Xml.Get_Root_Element;
@@ -332,24 +346,37 @@ begin
     Dscr_Elt := Tmp_Node;
 
     -- Find field
+    -- If Insert(0) then set Start_Node to last node not text before first field
+    --  No_Node means that first field has to be inserted as first child of Dscr
     Found := False;
     Nb_Fields := 0;
+    Tmp_Node := Xml_Parser.No_Node;
     for I in 1 ..  Xml.Get_Nb_Children (Dscr_Elt) loop
+      if Nb_Fields = 0 and then Tmp_Node.Kind /= Xml_Parser.Text then
+        -- Keep track of last node not text before first field
+        Prev_Node := Tmp_Node;
+      end if;
       Tmp_Node := Xml.Get_Child (Dscr_Elt, I);
       if Tmp_Node.Kind = Xml_Parser.Element
       and then Xml.Get_Name (Tmp_Node) = "Field" then
         Nb_Fields := Nb_Fields + 1;
-        if  Afpx_Typ.Field_Range'Value (
+        -- Store last node not text before first field
+        if Field_Num = 0 and then Nb_Fields = 1 then
+          Start_Node := Prev_Node;
+        end if;
+        if Afpx_Typ.Field_Range'Value (
           Xml.Get_Attribute (Tmp_Node, "Num")) = Field_Num then
           Found := True;
           Field_Elt := Tmp_Node;
         end if;
       end if;
     end loop;
+
+    -- Check that field is found
     if Field_Num /= 0 and then not Found then
       Error ("Field " & Integer_Image (Positive (Field_Num))
-           & " does not exist in descriptor "
-           & Integer_Image (Positive (Dscr)));
+          & " does not exist in descriptor "
+          & Integer_Image (Positive (Dscr)));
     end if;
     if Debug then
       Basic_Proc.Put_Line_Output ("Got " & Integer_Image (Positive (Nb_Fields))
@@ -410,13 +437,20 @@ begin
   --  if Insert => First after inserted, Num + Number
   --  if Delete => the new field now at the place of Field_Elt, Num
   declare
-    Next_Child : Xml_Parser.Node_Type;
+    Prev_Node, Next_Node : Xml_Parser.Node_Type;
   begin
     case Action is
       when Insert =>
+
         if Field_Num = 0 then
-          -- Append first field as last child of Dscr
-          Xml.Add_Child (Dscr_Elt, "Field", Xml_Parser.Element, Tmp_Node);
+          if Xml_Parser.Is_Valid (Start_Node) then
+            -- Append first field as brother of Start_Node
+            Xml.Add_Brother (Start_Node, "Field", Xml_Parser.Element, Tmp_Node);
+          else
+            -- Append first field as first child of Dscr
+            Xml.Add_Child (Dscr_Elt, "Field", Xml_Parser.Element, Tmp_Node,
+                           Append => False);
+          end if;
           Complete (Xml, Tmp_Node, 1);
           if Debug then
             Basic_Proc.Put_Line_Output ("Insert Field 1");
@@ -440,6 +474,7 @@ begin
             end if;
           end loop;
         end if;
+
         -- Now set Field_Elt to the next Field after last inserted, Tmp_Node
         --  (if any)
         loop
@@ -455,24 +490,34 @@ begin
           end if;
         end loop;
         Field_Num := Field_Num + Number;
+
       when Delete =>
         Tmp_Node := Field_Elt;
         Fields:
         for I in 1 .. Number loop
           -- Has current field a successor (even a Var)
           if Xml.Has_Brother (Tmp_Node) then
-            Next_Child :=  Xml.Get_Brother (Tmp_Node);
+            Next_Node :=  Xml.Get_Brother (Tmp_Node);
           else
-            Next_Child := Xml_Parser.No_Node;
+            Next_Node := Xml_Parser.No_Node;
+          end if;
+          -- If previous node is Text then remove indentation
+          -- It is Lf and maybe spaces => set it to "Lf"
+          if Xml.Has_Brother (Tmp_Node, False) then
+            Prev_Node := Xml.Get_Brother (Tmp_Node, False);
+            if Prev_Node.Kind = Xml_Parser.Text then
+              Xml.Set_Text (Prev_Node, Text_Line.Line_Feed_Str);
+            end if;
           end if;
           -- Delete current field
           Xml.Delete_Node (Tmp_Node, Tmp_Node);
           if Debug then
             Basic_Proc.Put_Line_Output ("Delete Field");
           end if;
+
           -- Move to next field if any
           Field_Elt := Xml_Parser.No_Node;
-          if not Xml_Parser.Is_Valid (Next_Child) then
+          if not Xml_Parser.Is_Valid (Next_Node) then
             if I = Number then
               -- No Field_Elt to start updates from
               exit;
@@ -481,8 +526,8 @@ begin
               Error ("INTERNAL ERROR: No more Child");
             end if;
           end if;
-          -- Restart from this next element
-          Tmp_Node := Next_Child;
+          -- Restart from this next node
+          Tmp_Node := Next_Node;
           -- Skip until it is a field, if any
           Skip:
           while Tmp_Node.Kind /= Xml_Parser.Element
@@ -515,6 +560,8 @@ begin
   begin
     Ok := True;
     -- From Field_Elt included up to end of Dscr, update
+    -- Field_Elt = No_Node means that there is no more field after the
+    --  fields inserted or deleted
     if Xml_Parser.Is_Valid (Field_Elt) then
       loop
 
@@ -622,15 +669,20 @@ begin
              exit;
           end if;
         end loop;
+
         exit when not Xml_Parser.Is_Valid (Field_Elt);
       end loop;
     end if;
   end;
   if not Ok and then not Force then
-    Error ("Some deleted fields are referenced, Aborting."
-         & Text_Line.Line_Feed_Char & " Use ""force"" flag to overwrite");
+    Error ("Some deleted fields are referenced, aborting"
+         & " (use ""force"" flag to overwrite).");
   end if;
 
+
+  -----------------
+  -- Commit changes
+  -----------------
   -- Check XML
   Xml.Check (Ok);
   if not Ok then
