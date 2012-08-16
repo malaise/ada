@@ -1,6 +1,7 @@
 <?xml version="1.1"?>
 <!DOCTYPE Afpx_Descriptors SYSTEM "../../reposit/Afpx.dtd">
 <!-- File selection for Renamer -->
+
 <Afpx_Descriptors>
   <Color_Definitions>
     <Default_Background Color="Black"/>

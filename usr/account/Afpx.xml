@@ -1,6 +1,7 @@
 <?xml version="1.1"?>
 <!DOCTYPE Afpx_Descriptors SYSTEM "../../reposit/Afpx.dtd">
 <!-- Main menu -->
+
 <Afpx_Descriptors Height="45" Width="80">
 
   <Color_Definitions>
@@ -123,38 +124,38 @@
       <Init Row="0" Col="1">Top</Init>
     </Field>
     <Field Num="18" Kind="Button">
-      <Geometry Up="${Field_17.Low}+2" Left="73"
-                Low="${Field_18.Up}+2" Right="78"/>
+      <Geometry Up="${Field_17.Low}+2" Left="73" Low="${Field_18.Up}+2"
+                Right="78"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">PgUp</Init>
     </Field>
     <Field Num="19" Kind="Button">
-      <Geometry Up="${Field_18.Low}+2" Left="73"
-                Low="${Field_19.Up}" Right="78"/>
+      <Geometry Up="${Field_18.Low}+2" Left="73" Low="${Field_19.Up}"
+                Right="78"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="2">Up</Init>
     </Field>
     <Field Num="20" Kind="Button">
-      <Geometry Up="${Field_19.Low}+4" Left="73"
-                Low="${Field_20.Up}+2" Right="78"/>
+      <Geometry Up="${Field_19.Low}+4" Left="73" Low="${Field_20.Up}+2"
+                Right="78"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="0">Center</Init>
     </Field>
     <Field Num="21" Kind="Button">
-      <Geometry Up="${Field_20.Low}+4" Left="73"
-                Low="${Field_21.Up}" Right="78"/>
+      <Geometry Up="${Field_20.Low}+4" Left="73" Low="${Field_21.Up}"
+                Right="78"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">Down</Init>
     </Field>
     <Field Num="22" Kind="Button">
-      <Geometry Up="${Field_21.Low}+2" Left="73"
-                Low="${Field_22.Up}+2" Right="78"/>
+      <Geometry Up="${Field_21.Low}+2" Left="73" Low="${Field_22.Up}+2"
+                Right="78"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="0">PgDown</Init>
     </Field>
     <Field Num="23" Kind="Button">
-      <Geometry Up="${Field_22.Low}+2" Left="73"
-                Low="${Field_23.Up}" Right="78"/>
+      <Geometry Up="${Field_22.Low}+2" Left="73" Low="${Field_23.Up}"
+                Right="78"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="0">Bottom</Init>
     </Field>
@@ -318,15 +319,15 @@
 
     <!-- Get -->
     <Field Num="5" Kind="Get">
-      <Geometry Up="${Screen.Low}-1" Left="1"
-                Low="${Screen.Low}-1" Right="33"/>
-      <Colors Foreground="Black" Background="YellowGreen" Selected="Lime_Green"/>
+      <Geometry Up="${Screen.Low}-1" Left="1" Low="${Screen.Low}-1" Right="33"/>
+      <Colors Foreground="Black" Background="YellowGreen"
+              Selected="Lime_Green"/>
     </Field>
 
     <!-- Messages -->
     <Field Num="6" Kind="Put">
-      <Geometry Up="${Screen.Low}-1" Left="35"
-                Low="${Screen.Low}-1" Right="78"/>
+      <Geometry Up="${Screen.Low}-1" Left="35" Low="${Screen.Low}-1"
+                Right="78"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
 
@@ -466,7 +467,8 @@
     </Field>
     <Field Num="13" Kind="Get">
       <Geometry Up="6" Left="8" Low="6" Right="9"/>
-      <Colors Foreground="Black" Background="YellowGreen" Selected="Lime_Green"/>
+      <Colors Foreground="Black" Background="YellowGreen"
+              Selected="Lime_Green"/>
     </Field>
     <Field Num="14" Kind="Put">
       <Geometry Up="6" Left="10" Low="6" Right="10"/>
@@ -475,7 +477,8 @@
     </Field>
     <Field Num="15" Kind="Get">
       <Geometry Up="6" Left="11" Low="6" Right="12"/>
-      <Colors Foreground="Black" Background="YellowGreen" Selected="Lime_Green"/>
+      <Colors Foreground="Black" Background="YellowGreen"
+              Selected="Lime_Green"/>
     </Field>
     <Field Num="16" Kind="Put">
       <Geometry Up="6" Left="13" Low="6" Right="15"/>
@@ -484,7 +487,8 @@
     </Field>
     <Field Num="17" Kind="Get">
       <Geometry Up="6" Left="16" Low="6" Right="17"/>
-      <Colors Foreground="Black" Background="YellowGreen" Selected="Lime_Green"/>
+      <Colors Foreground="Black" Background="YellowGreen"
+              Selected="Lime_Green"/>
     </Field>
 
     <!-- Amount -->
@@ -499,7 +503,8 @@
     </Field>
     <Field Num="20" Kind="Get">
       <Geometry Up="8" Left="12" Low="8" Right="23"/>
-      <Colors Foreground="Black" Background="YellowGreen" Selected="Lime_Green"/>
+      <Colors Foreground="Black" Background="YellowGreen"
+              Selected="Lime_Green"/>
     </Field>
 
     <!-- Kind -->
@@ -564,7 +569,8 @@
     </Field>
     <Field Num="32" Kind="Get">
       <Geometry Up="14" Left="15" Low="14" Right="34"/>
-      <Colors Foreground="Black" Background="YellowGreen" Selected="Lime_Green"/>
+      <Colors Foreground="Black" Background="YellowGreen"
+              Selected="Lime_Green"/>
     </Field>
 
     <!-- Comment -->
@@ -575,7 +581,8 @@
     </Field>
     <Field Num="34" Kind="Get">
       <Geometry Up="16" Left="11" Low="16" Right="30"/>
-      <Colors Foreground="Black" Background="YellowGreen" Selected="Lime_Green"/>
+      <Colors Foreground="Black" Background="YellowGreen"
+              Selected="Lime_Green"/>
     </Field>
 
     <!-- Reference -->
@@ -586,7 +593,8 @@
     </Field>
     <Field Num="36" Kind="Get">
       <Geometry Up="18" Left="13" Low="18" Right="22"/>
-      <Colors Foreground="Black" Background="YellowGreen" Selected="Lime_Green"/>
+      <Colors Foreground="Black" Background="YellowGreen"
+              Selected="Lime_Green"/>
     </Field>
 
     <!-- Deleted info -->
@@ -781,7 +789,8 @@
     </Field>
     <Field Num="26" Kind="Get">
       <Geometry Up="18" Left="24" Low="18" Right="33"/>
-      <Colors Foreground="Black" Background="YellowGreen" Selected="Lime_Green"/>
+      <Colors Foreground="Black" Background="YellowGreen"
+              Selected="Lime_Green"/>
     </Field>
 
     <!-- Set to All/None -->

@@ -1,6 +1,7 @@
 <?xml version="1.1"?>
 <!DOCTYPE Afpx_Descriptors SYSTEM "../../reposit/Afpx.dtd">
 <!-- for T_Afpx -->
+
 <Afpx_Descriptors>
   <Color_Definitions>
     <Default_Background Color="Dark_Grey"/>
@@ -96,22 +97,22 @@
     </Field>
 
     <Field Num="15" Kind="Button">
-      <Geometry Up="${Field_14.Low}+2" Height="1"
-                Right="${Field_14.Right}" Width="${Field_14.Width}"/>
+      <Geometry Up="${Field_14.Low}+2" Height="1" Right="${Field_14.Right}"
+                Width="${Field_14.Width}"/>
       <Colors Foreground="Red" Background="Blue"/>
       <Init Row="0" Col="1">Center</Init>
     </Field>
 
     <Field Num="16" Kind="Button">
-      <Geometry Up="${Field_15.Low}+2" Height="1"
-                Right="${Field_15.Right}" Width="${Field_15.Width}"/>
+      <Geometry Up="${Field_15.Low}+2" Height="1" Right="${Field_15.Right}"
+                Width="${Field_15.Width}"/>
       <Colors Foreground="Red" Background="Blue"/>
       <Init Row="0" Col="1">Bottom</Init>
     </Field>
 
     <Field Num="17" Kind="Put">
-      <Geometry Up="${Field_15.Low}" Height="1"
-                Width="10" Right="${Field_15.Left}-2"/>
+      <Geometry Up="${Field_15.Low}" Height="1" Width="10"
+                Right="${Field_15.Left}-2"/>
       <Colors Foreground="Black" Background="Brown"/>
       <Init Row="0" Col="0">Selection:</Init>
     </Field>

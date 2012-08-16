@@ -1,212 +1,209 @@
 <?xml version="1.1" encoding="UTF-8"?>
 <!DOCTYPE Afpx_Descriptors SYSTEM "../../reposit/Afpx.dtd">
-
 <!-- For renardeau -->
+
 <Afpx_Descriptors Height="25" Width="40">
 
   <!-- Main screen -->
   <Descriptor Num="1" Background="Light_Grey">
 
-    <Var Name="TxtStart"  Value="${Screen.Width}-19"/>
+    <Var Name="TxtStart" Value="${Screen.Width}-19"/>
 
     <!-- Title -->
     <Field Num="1" Kind="Put">
       <Geometry Up="1" Left="0" Height="1" Width="${Screen.Width}"/>
-      <Colors Foreground="Black" Background="Light_Grey" />
+      <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="12">R E N A R D E A U</Init>
     </Field>
 
     <!-- Base numbers (6) -->
     <Field Num="2" Kind="Put">
-      <Geometry Up="${Field_1.Low}+2" Left="1"
-                Height="1" Width="3"/>
-      <Colors Foreground="Black" Background="Light_Grey" />
+      <Geometry Up="${Field_1.Low}+2" Left="1" Height="1" Width="3"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
     <Field Num="3" Kind="Put">
-      <Geometry Up="${Field_1.Low}+2" Left="${Field_2.Right}+2"
-                Height="1" Width="3"/>
-      <Colors Foreground="Black" Background="Light_Grey" />
+      <Geometry Up="${Field_1.Low}+2" Left="${Field_2.Right}+2" Height="1"
+                Width="3"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
     <Field Num="4" Kind="Put">
-      <Geometry Up="${Field_1.Low}+2" Left="${Field_3.Right}+2"
-                Height="1" Width="3"/>
-      <Colors Foreground="Black" Background="Light_Grey" />
+      <Geometry Up="${Field_1.Low}+2" Left="${Field_3.Right}+2" Height="1"
+                Width="3"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
     <Field Num="5" Kind="Put">
-      <Geometry Up="${Field_1.Low}+2" Left="${Field_4.Right}+2"
-                Height="1" Width="3"/>
-      <Colors Foreground="Black" Background="Light_Grey" />
+      <Geometry Up="${Field_1.Low}+2" Left="${Field_4.Right}+2" Height="1"
+                Width="3"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
     <Field Num="6" Kind="Put">
-      <Geometry Up="${Field_1.Low}+2" Left="${Field_5.Right}+2"
-                Height="1" Width="3"/>
-      <Colors Foreground="Black" Background="Light_Grey" />
+      <Geometry Up="${Field_1.Low}+2" Left="${Field_5.Right}+2" Height="1"
+                Width="3"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
     <Field Num="7" Kind="Put">
-      <Geometry Up="${Field_1.Low}+2" Left="${Field_6.Right}+2"
-                Height="1" Width="3"/>
-      <Colors Foreground="Black" Background="Light_Grey" />
+      <Geometry Up="${Field_1.Low}+2" Left="${Field_6.Right}+2" Height="1"
+                Width="3"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
     <!-- Target number -->
     <Field Num="8" Kind="Put">
-      <Geometry Up="${Field_1.Low}+2" Left="${Screen.Right}-3"
-                Height="1" Width="3"/>
-      <Colors Foreground="Black" Background="Light_Grey" />
+      <Geometry Up="${Field_1.Low}+2" Left="${Screen.Right}-3" Height="1"
+                Width="3"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
 
     <!-- Buttons -->
     <Field Num="9" Kind="Button">
-      <Geometry Up="${Field_2.Low}+2" Left="1"
-                Height="3" Width="4"/>
+      <Geometry Up="${Field_2.Low}+2" Left="1" Height="3" Width="4"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">10</Init>
     </Field>
     <Field Num="10" Kind="Button">
-      <Geometry Up="${Field_2.Low}+2" Left="${Field_9.Right}+2"
-                Height="3" Width="4"/>
+      <Geometry Up="${Field_2.Low}+2" Left="${Field_9.Right}+2" Height="3"
+                Width="4"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">25</Init>
     </Field>
     <Field Num="11" Kind="Button">
-      <Geometry Up="${Field_2.Low}+2" Left="${Field_10.Right}+2"
-                Height="3" Width="4"/>
+      <Geometry Up="${Field_2.Low}+2" Left="${Field_10.Right}+2" Height="3"
+                Width="4"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">50</Init>
     </Field>
     <Field Num="12" Kind="Button">
-      <Geometry Up="${Field_2.Low}+2" Left="${Field_11.Right}+2"
-                Height="3" Width="4"/>
+      <Geometry Up="${Field_2.Low}+2" Left="${Field_11.Right}+2" Height="3"
+                Width="4"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">75</Init>
     </Field>
     <Field Num="13" Kind="Button">
-      <Geometry Up="${Field_2.Low}+2" Left="${Field_12.Right}+2"
-                Height="3" Width="5"/>
+      <Geometry Up="${Field_2.Low}+2" Left="${Field_12.Right}+2" Height="3"
+                Width="5"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">100</Init>
     </Field>
 
     <Field Num="14" Kind="Button">
-      <Geometry Up="${Field_9.Low}+2" Left="1"
-                Height="3" Width="5"/>
+      <Geometry Up="${Field_9.Low}+2" Left="1" Height="3" Width="5"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="2">7</Init>
     </Field>
     <Field Num="15" Kind="Button">
-      <Geometry Up="${Field_9.Low}+2" Left="${Field_14.Right}+2"
-                Height="3" Width="5"/>
+      <Geometry Up="${Field_9.Low}+2" Left="${Field_14.Right}+2" Height="3"
+                Width="5"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="2">8</Init>
     </Field>
     <Field Num="16" Kind="Button">
-      <Geometry Up="${Field_9.Low}+2" Left="${Field_15.Right}+2"
-                Height="3" Width="5"/>
+      <Geometry Up="${Field_9.Low}+2" Left="${Field_15.Right}+2" Height="3"
+                Width="5"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="2">9</Init>
     </Field>
 
     <Field Num="17" Kind="Button">
-      <Geometry Up="${Field_14.Low}+2" Left="${Field_14.Left}"
-                Height="3" Width="5"/>
+      <Geometry Up="${Field_14.Low}+2" Left="${Field_14.Left}" Height="3"
+                Width="5"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="2">4</Init>
     </Field>
     <Field Num="18" Kind="Button">
-      <Geometry Up="${Field_14.Low}+2" Left="${Field_17.Right}+2"
-                Height="3" Width="5"/>
+      <Geometry Up="${Field_14.Low}+2" Left="${Field_17.Right}+2" Height="3"
+                Width="5"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="2">5</Init>
     </Field>
     <Field Num="19" Kind="Button">
-      <Geometry Up="${Field_14.Low}+2" Left="${Field_18.Right}+2"
-                Height="3" Width="5"/>
+      <Geometry Up="${Field_14.Low}+2" Left="${Field_18.Right}+2" Height="3"
+                Width="5"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="2">6</Init>
     </Field>
 
     <Field Num="20" Kind="Button">
-      <Geometry Up="${Field_17.Low}+2" Left="${Field_14.Left}"
-                Height="3" Width="5"/>
+      <Geometry Up="${Field_17.Low}+2" Left="${Field_14.Left}" Height="3"
+                Width="5"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="2">1</Init>
     </Field>
     <Field Num="21" Kind="Button">
-      <Geometry Up="${Field_17.Low}+2" Left="${Field_20.Right}+2"
-                Height="3" Width="5"/>
+      <Geometry Up="${Field_17.Low}+2" Left="${Field_20.Right}+2" Height="3"
+                Width="5"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="2">2</Init>
     </Field>
     <Field Num="22" Kind="Button">
-      <Geometry Up="${Field_17.Low}+2" Left="${Field_21.Right}+2"
-                Height="3" Width="5"/>
+      <Geometry Up="${Field_17.Low}+2" Left="${Field_21.Right}+2" Height="3"
+                Width="5"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="2">3</Init>
     </Field>
 
     <Field Num="23" Kind="Button">
-      <Geometry Up="${Field_20.Low}+2" Left="${Field_20.Left}"
-                Height="3" Width="5"/>
+      <Geometry Up="${Field_20.Low}+2" Left="${Field_20.Left}" Height="3"
+                Width="5"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="2">0</Init>
     </Field>
     <Field Num="24" Kind="Button">
-      <Geometry Up="${Field_23.Up}" Left="${Field_23.Right}+2"
-                Height="3" Right="${Field_22.Right}"/>
+      <Geometry Up="${Field_23.Up}" Left="${Field_23.Right}+2" Height="3"
+                Right="${Field_22.Right}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">E N T E R</Init>
     </Field>
 
     <Field Num="25" Kind="Button">
-      <Geometry Up="${Field_24.Up}" Left="${Field_24.Right}+3"
-                Height="3" Width="5"/>
+      <Geometry Up="${Field_24.Up}" Left="${Field_24.Right}+3" Height="3"
+                Width="5"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">UND</Init>
     </Field>
     <Field Num="26" Kind="Button">
-      <Geometry Up="${Field_25.Up}" Left="${Field_25.Right}+2"
-                Height="3" Width="5"/>
+      <Geometry Up="${Field_25.Up}" Left="${Field_25.Right}+2" Height="3"
+                Width="5"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">CLR</Init>
     </Field>
 
     <!-- Result -->
     <Field Num="27" Kind="Put">
-      <Geometry Up="${Field_14.Up}" Left="${Field_8.Left}-1"
-                Height="1" Width="4"/>
-      <Colors Foreground="Lime_Green" Background="Light_Grey" />
+      <Geometry Up="${Field_14.Up}" Left="${Field_8.Left}-1" Height="1"
+                Width="4"/>
+      <Colors Foreground="Lime_Green" Background="Light_Grey"/>
     </Field>
 
     <!-- Computation -->
     <Field Num="28" Kind="Put">
-      <Geometry Up="${Field_27.Low}+2" Left="${TxtStart}"
-                Height="1" Width="18"/>
-      <Colors Foreground="Black" Background="Light_Grey" />
+      <Geometry Up="${Field_27.Low}+2" Left="${TxtStart}" Height="1"
+                Width="18"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
     <Field Num="29" Kind="Put">
-      <Geometry Up="${Field_28.Low}+2" Left="${TxtStart}"
-                Height="1" Width="18"/>
-      <Colors Foreground="Black" Background="Light_Grey" />
+      <Geometry Up="${Field_28.Low}+2" Left="${TxtStart}" Height="1"
+                Width="18"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
     <Field Num="30" Kind="Put">
-      <Geometry Up="${Field_29.Low}+2" Left="${TxtStart}"
-                Height="1" Width="18"/>
-      <Colors Foreground="Black" Background="Light_Grey" />
+      <Geometry Up="${Field_29.Low}+2" Left="${TxtStart}" Height="1"
+                Width="18"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
     <Field Num="31" Kind="Put">
-      <Geometry Up="${Field_30.Low}+2" Left="${TxtStart}"
-                Height="1" Width="18"/>
-      <Colors Foreground="Black" Background="Light_Grey" />
+      <Geometry Up="${Field_30.Low}+2" Left="${TxtStart}" Height="1"
+                Width="18"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
     <Field Num="32" Kind="Put">
-      <Geometry Up="${Field_31.Low}+2" Left="${TxtStart}"
-                Height="1" Width="18"/>
-      <Colors Foreground="Black" Background="Light_Grey" />
+      <Geometry Up="${Field_31.Low}+2" Left="${TxtStart}" Height="1"
+                Width="18"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
 
     <!-- EXIT -->
     <Field Num="33" Kind="Button">
-      <Geometry Up="${Field_26.Up}" Right="${Screen.Width}-2"
-                Height="3" Width="6"/>
+      <Geometry Up="${Field_26.Up}" Right="${Screen.Width}-2" Height="3"
+                Width="6"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">EXIT</Init>
     </Field>
