@@ -226,7 +226,8 @@ package body One_File_Statements is
       -- Summary so far
       if Put_It then
         -- Put formatted output
-        for I in Integer range 1 .. Max_Tab + Gap'Length + Max_Dig + 1 loop
+        for I in Integer range 1 .. Max_Tab + 1
+                   + Gap'Length + Max_Dig + Gap'Length + 4 + Gap'Length + Max_Dig loop
           Text_Line.Put (File, "-");
         end loop;
         Text_Line.New_Line (File);
