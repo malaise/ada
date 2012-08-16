@@ -59,6 +59,10 @@ procedure Afpx_Rnb is
     raise Abort_Error;
   end Error;
 
+  -- Content if Text field that makes the indentation of Field:
+  -- Line_Feed and 4 spaces
+  Indent : constant String := Text_Line.Line_Feed_Str & "    ";
+
   -- Complete an element:
   -- Insert before element a Text "Lf   "
   -- Add to element the attributes Num and Kind,
@@ -70,8 +74,8 @@ procedure Afpx_Rnb is
   procedure Complete (Ctx : in out Xml_Parser.Generator.Ctx_Type;
                       Field : in out Xml_Parser.Element_Type;
                       Fld_Num : in Positive) is
-    Indent : Xml_Parser.Text_Type;
-    Child : Xml_Parser.Element_Type;
+    Indent_Node : Xml_Parser.Text_Type;
+    Child_Node : Xml_Parser.Element_Type;
   begin
     if not Ini_Attrs then
       -- Init global attributes once
@@ -93,19 +97,19 @@ procedure Afpx_Rnb is
       Ini_Attrs := True;
     end if;
     -- Prepend a Text with Lf + 4 spaces
-    Ctx.Add_Brother (Field, Text_Line.Line_Feed_Str & "    ",
-                     Xml_Parser.Text, Indent, Next => False);
+    Ctx.Add_Brother (Field, Indent, Xml_Parser.Text, Indent_Node,
+                     Next => False);
     -- Set field attributes with provided Num
     Fld_Attrs(1).Value := As.U.Tus (Integer_Image (Fld_Num));
     Ctx.Set_Attributes (Field, Fld_Attrs);
     -- Insert Geometry
-    Ctx.Add_Child (Field, "Geometry", Xml_Parser.Element, Child);
-    Ctx.Set_Put_Empty (Child, True);
-    Ctx.Set_Attributes (Child, Geo_Attrs);
+    Ctx.Add_Child (Field, "Geometry", Xml_Parser.Element, Child_Node);
+    Ctx.Set_Put_Empty (Child_Node, True);
+    Ctx.Set_Attributes (Child_Node, Geo_Attrs);
     -- Insert Colors
-    Ctx.Add_Child (Field, "Colors", Xml_Parser.Element, Child);
-    Ctx.Set_Put_Empty (Child, True);
-    Ctx.Set_Attributes (Child, Col_Attrs);
+    Ctx.Add_Child (Field, "Colors", Xml_Parser.Element, Child_Node);
+    Ctx.Set_Put_Empty (Child_Node, True);
+    Ctx.Set_Attributes (Child_Node, Col_Attrs);
   end Complete;
 
   -- Arguments and ENV
@@ -489,7 +493,9 @@ begin
             exit;
           end if;
         end loop;
-        Field_Num := Field_Num + Number;
+        -- After inserting Number after field_Num the first after inserted
+        --  fields becomes Field_Num + Number + 1
+        Field_Num := Field_Num + Number + 1;
 
       when Delete =>
         Tmp_Node := Field_Elt;
@@ -501,12 +507,12 @@ begin
           else
             Next_Node := Xml_Parser.No_Node;
           end if;
-          -- If previous node is Text then remove indentation
-          -- It is Lf and maybe spaces => set it to "Lf"
+          -- If previous node is indentation then remove it
           if Xml.Has_Brother (Tmp_Node, False) then
             Prev_Node := Xml.Get_Brother (Tmp_Node, False);
-            if Prev_Node.Kind = Xml_Parser.Text then
-              Xml.Set_Text (Prev_Node, Text_Line.Line_Feed_Str);
+            if Prev_Node.Kind = Xml_Parser.Text 
+            and then Xml.Get_Text (Prev_Node) = Indent then
+              Xml.Delete_Node (Prev_Node, Prev_Node);
             end if;
           end if;
           -- Delete current field
