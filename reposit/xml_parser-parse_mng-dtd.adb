@@ -2137,15 +2137,16 @@ package body Dtd is
                             Children : out Children_Desc) is
     -- Current cell in tree
     Cell : My_Tree_Cell;
+    Can_Have_Text : Boolean;
   begin
     if not Adtd.Set then
       -- No dtd => no check
       return;
     end if;
-    -- Set Is_Mixed from Dtd
+    -- Set Is_Mixed from Dtd in Children
     Ctx.Elements.Read (Cell);
     Is_Mixed (Adtd, Cell.Name, Children.Is_Mixed);
-    Tree_Mng.Set_Is_Mixed (Ctx.Elements.all, Children.Is_Mixed);
+    Can_Have_Text := Children.Is_Mixed;
     -- Read current element from tree and make its children lists
     Children.Is_Empty := True;
     Children.Has_Text := False;
@@ -2169,12 +2170,16 @@ package body Dtd is
             if Add_Text (Ctx, Cell.Name) then
               Children.Is_Empty := False;
               Children.Has_Text := True;
+            else
+              -- Force the Is_Mixed in tree
+              Can_Have_Text := True;
             end if;
           when Xml_Parser.Pi | Xml_Parser.Comment =>
             Children.Is_Empty := False;
         end case;
       end loop;
       Ctx.Elements.Move_Father;
+      Tree_Mng.Set_Is_Mixed (Ctx.Elements.all, Can_Have_Text);
     end if;
   end Build_Children;
 
