@@ -4,6 +4,9 @@ Main changes
 
 [horizontal]
 
+*2012/08/16*:: Add afpx_rnb that inserts/deletes fields in a Afpx.xml and
+updates references
+
 *2012/07/30*:: Add options -U (--utc) for utc time in als V9.0
 
 *2012/07/24*:: Add options -O (--others) and --no_name to als V8.0
