@@ -8,8 +8,8 @@ procedure Afpx_Rnb is
     -- Options
   Keys : constant Argument_Parser.The_Keys_Type := (
     1 => (False, 'h', As.U.Tus ("help"),       False),
-    2 => (True,  'D', As.U.Tus ("descriptor"), False, True, As.U.Tus ("desriptor_num")),
-    3 => (True,  'a', As.U.Tus ("insert"),     False, True, As.U.Tus ("field_num")),
+    2 => (True,  'D', As.U.Tus ("descriptor"), False, True, As.U.Tus ("descriptor_num")),
+    3 => (True,  'i', As.U.Tus ("insert"),     False, True, As.U.Tus ("field_num")),
     4 => (True,  'd', As.U.Tus ("delete"),     False, True, As.U.Tus ("field_num")),
     5 => (True,  'f', As.U.Tus ("file"),       False, True, As.U.Tus ("file_name")),
     6 => (True,  'o', As.U.Tus ("output"),     False, True, As.U.Tus ("file_name")),
@@ -23,14 +23,11 @@ procedure Afpx_Rnb is
     Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
        & " [ <file> ] [ <output> ] [ <force> ] <descriptor> <action> [ <number> ]");
     Basic_Proc.Put_Line_Error (
-       " <file>       ::= " & Argument_Parser.Image (Keys(5))
-     & "   (default: " & Default_File_Name & ")");
+       " <file>       ::= " & Argument_Parser.Image (Keys(5)));
     Basic_Proc.Put_Line_Error (
-       " <output>     ::= " & Argument_Parser.Image (Keys(6))
-     & "   (default: overwrite input");
+       " <output>     ::= " & Argument_Parser.Image (Keys(6)));
     Basic_Proc.Put_Line_Error (
-       " <force>      ::= " & Argument_Parser.Image (Keys(7))
-     & "   : generate even if deleted field is referenced");
+       " <force>      ::= " & Argument_Parser.Image (Keys(7)));
     Basic_Proc.Put_Line_Error (
        " <descriptor> ::= " & Argument_Parser.Image (Keys(2)));
     Basic_Proc.Put_Line_Error (
@@ -40,7 +37,14 @@ procedure Afpx_Rnb is
     Basic_Proc.Put_Line_Error (
        " <delete>     ::= " & Argument_Parser.Image (Keys(4)));
     Basic_Proc.Put_Line_Error (
-       " <number> is the number of fields to insert or delete (default 1).");
+       "Insert <number> fields after <field_num> (<field_num>=0 for from 1)");
+    Basic_Proc.Put_Line_Error (
+       "  or delete <number> fields from <field_num> included.");
+    Basic_Proc.Put_Line_Error (
+       "Default input is " & Default_File_Name
+       &  ", default output is to overwrite input.");
+    Basic_Proc.Put_Line_Error (
+       "use <force> to delete fields even if they are referenced.");
   end Usage;
 
   Abort_Error : exception;
