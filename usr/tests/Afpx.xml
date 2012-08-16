@@ -182,8 +182,17 @@
 
   </Descriptor>
 
-  <!-- Empty desscriptor -->
-  <Descriptor Num="7"/>
+  <!-- Empty descriptors -->
+  <Descriptor Num="7">
+  </Descriptor>
+
+  <Descriptor Num="8">
+    <!-- A comment -->
+  </Descriptor>
+
+  <Descriptor Num="9">
+    <Var Name="Dummy" Value="dummy"/>
+  </Descriptor>
 
   <!-- File selection for t_select_file -->
   <Descriptor Num="10">
@@ -295,6 +304,39 @@
 
     <!-- Any other field here -->
 
+  </Descriptor>
+
+  <!-- List + something, for afpx_rnb -->
+  <Descriptor Num="15">
+    <List>
+      <Geometry Up="2" Left="11" Low="21" Right="65"/>
+      <Colors Foreground="Cyan" Background="Brown" Selected="Red"/>
+    </List>
+    <!-- A comment -->
+  </Descriptor>
+
+  <Descriptor Num="16">
+    <List>
+      <Geometry Up="2" Left="11" Low="21" Right="65"/>
+      <Colors Foreground="Cyan" Background="Brown" Selected="Red"/>
+    </List>
+    <!-- A comment -->
+  </Descriptor>
+
+  <Descriptor Num="17">
+    <Var Name="Dummy" Value="dummy"/>
+    <List>
+      <Geometry Up="2" Left="11" Low="21" Right="65"/>
+      <Colors Foreground="Cyan" Background="Brown" Selected="Red"/>
+    </List>
+  </Descriptor>
+
+  <Descriptor Num="18">
+    <List>
+      <Geometry Up="2" Left="11" Low="21" Right="65"/>
+      <Colors Foreground="Cyan" Background="Brown" Selected="Red"/>
+    </List>
+    <Var Name="Dummy" Value="dummy"/>
   </Descriptor>
 
 </Afpx_Descriptors>

@@ -1,0 +1,69 @@
+#!/bin/bash
+
+if [ \( "$1" = "-h" \) -o \( "$1" = "--help" \) ] ; then
+  echo "Usage: `basename $0` [ <nb_fields> ]"
+  exit 1
+fi
+
+nb=""
+if [ "$1" != "" ] ; then
+  nb=$1
+fi
+
+let dscr=1
+while true ; do
+
+  echo ""
+  echo "Dscr $dscr"
+
+  let field=0
+
+  while true ; do
+
+    echo "Field $field"
+
+    # Insert fields
+    afpx_rnb -o Afpx.tmp -D $dscr -i $field $nb 2>err
+    if [ $? -ne 0 ] ; then
+      err=`cat err`
+      crit="ERROR: Field [0-9]+ does not exist in descriptor [0-9]+."
+      if [[ $err =~ $crit ]] ; then
+        break
+      else
+        echo "ERROR inserting field $field: $err" >&2
+        exit 1
+      fi
+    fi
+
+    # Delete fields
+    let field=$field+1
+    afpx_rnb -f Afpx.tmp -D $dscr -d $field $nb 2>err
+    if [ $? -ne 0 ] ; then
+      err=`cat err | sed s/\n//g`
+      echo "ERROR deleting field $field: $err" >&2
+      exit 1
+    fi
+
+    # Check that result is unchanged
+    cmp Afpx.xml Afpx.tmp > /dev/null 2>&1
+    if [ $? -ne 0 ] ; then
+      echo "ERROR, file Afpx.tmp differs from original Afpx.xml" >&2
+      exit 1
+    fi
+
+  done
+
+  let dscr=$dscr+1
+
+  # Skip hole or exit
+  if [ $dscr -eq 5 ] ; then
+    let dscr=6
+  elif [ \( $dscr -ge 11 \) -a \( $dscr -le 14 \) ] ; then
+    let dscr=15
+  elif [ $dscr -eq 19 ] ; then
+    break
+  fi
+done
+
+rm err Afpx.tmp
+echo "Test Ok."

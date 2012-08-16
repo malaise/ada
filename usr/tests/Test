@@ -119,6 +119,14 @@ if [ $NB -ne $ENB ] ; then
 fi
 echo "OK"
 
+# t_afpx_rnb
+title t_afpx_rnb...
+t_afpx_rnb >/dev/null 2>&1
+if [ $? -ne 0 ] ; then
+  error "t_afpx_rnb has failed".
+fi
+echo "OK"
+
 # t_arbitrary
 title t_arbitrary
 try t_arbitrary 21
