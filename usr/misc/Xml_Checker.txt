@@ -2,7 +2,7 @@ Xml_Checker
 ===========
 :toc:
 
-Parser version: V30.1
+Parser version: V31.2
 
 Generator version: V11.0
 

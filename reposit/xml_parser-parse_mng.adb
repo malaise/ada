@@ -1825,6 +1825,11 @@ package body Parse_Mng  is
     Full_File : As.U.Asu_Us;
     Is_File : Boolean;
   begin
+    -- Reset Ctx info
+    Ctx.Preserved := As.U.Asu_Null;
+    Ctx.Ids.Delete_List;
+    Ctx.Idrefs.Delete_List;
+    Ctx.Unparsed_List.Delete_List;
     Namespaces.Init (Ctx);
     -- Reset Dtd
     Dtd.Init (Adtd);
