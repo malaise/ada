@@ -201,7 +201,7 @@ begin
   ------------------
   -- Parse arguments
   ------------------
-  Debug := Environ.Is_Yes ("AFPX_RENUMBER_DEBUG");
+  Debug := Environ.Is_Yes ("AFPX_RNB_DEBUG");
   Args := Argument_Parser.Parse (Keys);
   if not Args.Is_Ok then
     Error ("Invalid arguments: " & Args.Get_Error);
@@ -375,6 +375,20 @@ begin
         end if;
       end if;
     end loop;
+    if not Xml_Parser.Is_Valid (Start_Node)
+    and then Xml_Parser.Is_Valid (Prev_Node) then
+      -- There is a node, not text but no field
+      --  (e.g. only a list)
+      Start_Node := Prev_Node;
+    end if;
+    if Debug and then Xml_Parser.Is_Valid (Start_Node) then
+      Basic_Proc.Put_Output ("Start_Node is " & Start_Node.Kind'Img);
+      if Start_Node.Kind = Xml_Parser.Element then
+        Basic_Proc.Put_Line_Output (" name " & Xml.Get_Name (Start_Node));
+      else
+        Basic_Proc.New_Line_Output;
+      end if;
+    end if;
 
     -- Check that field is found
     if Field_Num /= 0 and then not Found then
@@ -383,7 +397,7 @@ begin
           & Integer_Image (Positive (Dscr)));
     end if;
     if Debug then
-      Basic_Proc.Put_Line_Output ("Got " & Integer_Image (Positive (Nb_Fields))
+      Basic_Proc.Put_Line_Output ("Got " & Integer_Image (Natural (Nb_Fields))
           & " fields");
     end if;
 
@@ -510,7 +524,7 @@ begin
           -- If previous node is indentation then remove it
           if Xml.Has_Brother (Tmp_Node, False) then
             Prev_Node := Xml.Get_Brother (Tmp_Node, False);
-            if Prev_Node.Kind = Xml_Parser.Text 
+            if Prev_Node.Kind = Xml_Parser.Text
             and then Xml.Get_Text (Prev_Node) = Indent then
               Xml.Delete_Node (Prev_Node, Prev_Node);
             end if;
