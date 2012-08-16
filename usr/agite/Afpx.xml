@@ -20,7 +20,7 @@
     </List>
     <Field Num="1" Kind="Put">
       <Geometry Up="0" Left="20" Height="1" Width="9"/>
-      <Colors Foreground="Black" Background="Light_Grey" />
+      <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">A G I T E</Init>
     </Field>
 
@@ -69,17 +69,17 @@
     <!-- Branch, Version and host -->
     <Field Num="9" Kind="Put">
       <Geometry Up="0" Left="1" Height="1" Right="${Field_1.Left}-2"/>
-      <Colors Foreground="Black" Background="Light_Grey" />
+      <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
     <Field Num="10" Kind="Put">
       <Geometry Up="0" Left="${Field_1.Right}+3" Height="1" Width="6"/>
-      <Colors Foreground="Black" Background="Light_Grey" />
+      <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">${Version}</Init>
     </Field>
     <Field Num="11" Kind="Put">
       <Geometry Up="0" Left="${Field_10.Right}+3" Height="1"
                 Right="${Screen.Width}-2"/>
-      <Colors Foreground="Black" Background="Light_Grey" />
+      <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
 
     <!-- Directory navigation -->
@@ -137,12 +137,12 @@
     <!-- Quick search -->
     <Field Num="21" Kind="Put">
       <Geometry Up="${List.Up}-2" Height="1" Left="1" Width="7"/>
-      <Colors Foreground="Black" Background="Light_Grey" />
+      <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">Search:</Init>
     </Field>
     <Field Num="22" Kind="Button">
-    <Geometry Up="${Field_21.Up}" Height="2" Left="${Field_21.Right}+2"
-              Width="36"/>
+      <Geometry Up="${Field_21.Up}" Height="2" Left="${Field_21.Right}+2"
+                Width="36"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789</Init>
       <Init Row="1" Col="0">abcdefghijklmnopqrstuvwxyz !#+-(:=[{</Init>
@@ -216,7 +216,7 @@
     </List>
     <Field Num="1" Kind="Put">
       <Geometry Up="0" Left="23" Height="1" Width="9"/>
-      <Colors Foreground="Black" Background="Light_Grey" />
+      <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">A G I T E</Init>
     </Field>
 
@@ -264,18 +264,18 @@
     <!-- Sub title and current dir -->
     <Field Num="9" Kind="Put">
       <Geometry Up="${Field_1.Low}+2" Left="23" Height="1" Width="9"/>
-      <Colors Foreground="Black" Background="Light_Grey" />
+      <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">Bookmarks</Init>
     </Field>
     <Field Num="10" Kind="Put">
       <Geometry Up="${Field_9.Low}+2" Left="1"
                 Height="1" Right="${Screen.Width}-2"/>
-      <Colors Foreground="Black" Background="Light_Grey" />
+      <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
     <Field Num="11" Kind="Put">
       <Geometry Up="${Field_10.Low}+2" Left="1"
                 Height="1" Width ="12"/>
-      <Colors Foreground="Black" Background="Light_Grey" />
+      <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">Name to add:</Init>
     </Field>
     <Field Num="12" Kind="Get">
@@ -340,7 +340,7 @@
     </List>
     <Field Num="1" Kind="Put">
       <Geometry Up="0" Left="23" Height="1" Width="9"/>
-      <Colors Foreground="Black" Background="Light_Grey" />
+      <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">A G I T E</Init>
     </Field>
 
@@ -388,47 +388,47 @@
     <!-- Sub title and current file/dir-->
     <Field Num="9" Kind="Put">
       <Geometry Up="${Field_1.Low}+2" Left="23" Height="1" Width="9"/>
-      <Colors Foreground="Black" Background="Light_Grey" />
+      <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="1">History</Init>
     </Field>
     <Field Num="10" Kind="Put">
       <Geometry Up="${Field_9.Low}+2" Left="1"
                 Height="1" Right="${Screen.Width}-2"/>
-      <Colors Foreground="Black" Background="Light_Grey" />
+      <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
 
     <!-- List status xxx%  LeftSel: yyyyy  RightSel: zzzzz-->
     <Field Num="11" Kind="Put">
       <Geometry Up="${Field_10.Low}+2" Left="1" Height="1" Width="3"/>
-      <Colors Foreground="Black" Background="Light_Grey" />
+      <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
     <Field Num="12" Kind="Put">
       <Geometry Up="${Field_11.Up}" Left="${Field_11.Right}+1"
                 Height="1" Width="1"/>
-      <Colors Foreground="Black" Background="Light_Grey" />
+      <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">%</Init>
     </Field>
     <Field Num="13" Kind="Put">
       <Geometry Up="${Field_11.Up}" Left="${Field_12.Right}+3"
                 Height="1" Width="8"/>
-      <Colors Foreground="Black" Background="Light_Grey" />
+      <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">LeftSel:</Init>
     </Field>
     <Field Num="14" Kind="Put">
       <Geometry Up="${Field_10.Low}+2" Left="${Field_13.Right}+1"
                 Height="1" Width="7"/>
-      <Colors Foreground="Black" Background="Light_Grey" />
+      <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
     <Field Num="15" Kind="Put">
       <Geometry Up="${Field_11.Up}" Left="${Field_14.Right}+3"
                 Height="1" Width="9"/>
-      <Colors Foreground="Black" Background="Light_Grey" />
+      <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">RightSel:</Init>
     </Field>
     <Field Num="16" Kind="Put">
       <Geometry Up="${Field_10.Low}+2" Left="${Field_15.Right}+1"
                 Height="1" Width="7"/>
-      <Colors Foreground="Black" Background="Light_Grey" />
+      <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
 
     <!-- View, Diff, Details, Back -->
@@ -456,7 +456,7 @@
     </Field>
     <Field Num="21" Kind="Put">
       <Geometry Up="${List.Up}" Right="${List.Left}-1" Width="1" Low="${List.Low}"/>
-      <Colors Foreground="Black" Background="Light_Grey" />
+      <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
 
   </Descriptor>
@@ -475,7 +475,7 @@
     </List>
     <Field Num="1" Kind="Put">
       <Geometry Up="0" Left="23" Height="1" Width="9"/>
-      <Colors Foreground="Black" Background="Light_Grey" />
+      <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">A G I T E</Init>
     </Field>
 
@@ -523,23 +523,23 @@
     <!-- Sub title -->
     <Field Num="9" Kind="Put">
       <Geometry Up="${Field_1.Low}+2" Left="23" Height="1" Width="9"/>
-      <Colors Foreground="Black" Background="Light_Grey" />
+      <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">Details</Init>
     </Field>
 
     <!-- Hash, Date and Comment -->
     <Field Num="10" Kind="Put">
       <Geometry Up="${Field_9.Low}+2" Left="1" Height="1" Width="40"/>
-      <Colors Foreground="Black" Background="Light_Grey" />
+      <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
     <Field Num="11" Kind="Put">
       <Geometry Up="${Field_10.Low}+2" Left="1" Height="1" Width="19"/>
-      <Colors Foreground="Black" Background="Light_Grey" />
+      <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
     <Field Num="12" Kind="Put">
       <Geometry Up="${Field_11.Low}+1" Left="1"
                 Low="${List.Up}-1" Right="${Screen.Right}-1"/>
-      <Colors Foreground="Black" Background="Light_Grey" />
+      <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
 
     <!-- View, History, Back -->
@@ -585,7 +585,7 @@
 
     <Field Num="1" Kind="Put">
       <Geometry Up="0" Left="23" Height="1" Width="9"/>
-      <Colors Foreground="Black" Background="Light_Grey" />
+      <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">A G I T E</Init>
     </Field>
 
@@ -593,12 +593,12 @@
     <Field Num="2" Kind="Put">
       <Geometry Up="${Field_1.Low}+2" Left="1" Height="1"
                 Right="${Screen.Right}-1"/>
-      <Colors Foreground="Black" Background="Light_Grey" />
+      <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
     <Field Num="3" Kind="Put">
       <Geometry Up="${Field_2.Low}+2" Left="1" Height="1"
                 Right="${Screen.Right}-1"/>
-      <Colors Foreground="Black" Background="Light_Grey" />
+      <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
     <Field Num="4" Kind="Button">
       <Geometry Up="${Field_3.Low}+3" Left="20" Height="3" Width="6"/>
