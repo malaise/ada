@@ -1,22 +1,21 @@
 with Afpx;
-with File;
+with File, Afpx_Xref;
 package Screen is
 
   -- The get field
-  Get_Fld           : constant Afpx.Field_Range := 9;
-  -- The scrool buttons
-  subtype List_Scroll_Fld_Range is Afpx.Field_Range range 11 .. 16;
+  Get_Fld           : constant Afpx.Field_Range := Afpx_Xref.Points.Get;
+  -- The scroll buttons
+  subtype List_Scroll_Fld_Range is Afpx.Field_Range
+          range Afpx_Xref.Points.Top .. Afpx_Xref.Points.Bottom;
   -- The Ok/Cancel buttons
-  Ok_Button_Fld     : constant Afpx.Field_Range := 18;
-  Cancel_Button_Fld : constant Afpx.Field_Range := 19;
+  Ok_Button_Fld     : constant Afpx.Field_Range := Afpx_Xref.Points.Ok;
+  Cancel_Button_Fld : constant Afpx.Field_Range := Afpx_Xref.Points.Cancel;
   -- The exit/back button
-  Exit_Button_Fld : constant Afpx.Field_Range := 17;
-
-  -- The F(xxxxx)= field
-  Yfx_Put_Fld : constant Afpx.Field_Range := 30;
+  Exit_Button_Fld : constant Afpx.Field_Range := Afpx_Xref.Points.Quit;
 
   -- All the menues dependant fields
-  subtype Menu_Fld_Range is Afpx.Field_Range range 20 .. 31;
+  subtype Menu_Fld_Range is Afpx.Field_Range
+          range Afpx_Xref.Points.Menu_Start .. Afpx_Xref.Points.Sort;
 
   -- Return width of Get field
   function Get_Get_Width return Afpx.Width_Range;

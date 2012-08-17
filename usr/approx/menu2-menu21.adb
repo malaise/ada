@@ -29,31 +29,35 @@ package body Menu21 is
   begin
     -- Allow clear if bounds set
     Afpx.Set_Field_Activation (Screen.Exit_Button_Fld, The_Bounds_Set);
-    Afpx.Clear_Field (33);
-    Afpx.Clear_Field (34);
+    Afpx.Clear_Field (Afpx_Xref.Bounds.Mode);
+    Afpx.Clear_Field (Afpx_Xref.Bounds.Vals);
     if not The_Bounds_Set then
-      Afpx.Encode_Field (33, (0,0), "Not set");
+      Afpx.Encode_Field (Afpx_Xref.Bounds.Mode, (0,0), "Not set");
       return;
     end if;
     case The_Bounds.Scale is
       when Curve.Curve_Screen =>
-        Afpx.Encode_Field (33, (0, 0), "Computed & fit screen");
+        Afpx.Encode_Field (Afpx_Xref.Bounds.Mode, (0, 0),
+                           "Computed & fit screen");
       when Curve.Curve_Normed =>
-        Afpx.Encode_Field (33, (0, 0), "Computed & normed");
+        Afpx.Encode_Field (Afpx_Xref.Bounds.Mode, (0, 0),
+                           "Computed & normed");
       when Curve.Free_Screen =>
-        Afpx.Encode_Field (33, (0, 0), "Defined & fit screen");
+        Afpx.Encode_Field (Afpx_Xref.Bounds.Mode, (0, 0),
+                           "Defined & fit screen");
       when Curve.Free_Normed =>
-        Afpx.Encode_Field (33, (0, 0), "Defined & normed");
+        Afpx.Encode_Field (Afpx_Xref.Bounds.Mode, (0, 0),
+                           "Defined & normed");
     end case;
-    Afpx.Encode_Field (34, (0, 0), "Xmin: "
+    Afpx.Encode_Field (Afpx_Xref.Bounds.Vals, (0, 0), "Xmin: "
          & Point_Str.Coordinate_Image(The_Bounds.X_Min));
-    Afpx.Encode_Field (34, (1, 0), "Xmax: "
+    Afpx.Encode_Field (Afpx_Xref.Bounds.Vals, (1, 0), "Xmax: "
          & Point_Str.Coordinate_Image(The_Bounds.X_Max));
     if      The_Bounds.Scale = Curve.Free_Screen
     or else The_Bounds.Scale = Curve.Free_Normed then
-      Afpx.Encode_Field (34, (2, 0), "Ymin: "
+      Afpx.Encode_Field (Afpx_Xref.Bounds.Vals, (2, 0), "Ymin: "
            & Point_Str.Coordinate_Image(The_Bounds.Y_Min));
-      Afpx.Encode_Field (34, (3, 0), "Ymax: "
+      Afpx.Encode_Field (Afpx_Xref.Bounds.Vals, (3, 0), "Ymax: "
            & Point_Str.Coordinate_Image(The_Bounds.Y_Max));
     end if;
   end Put_Bounds;
@@ -145,7 +149,7 @@ package body Menu21 is
     use Afpx;
 
   begin
-    Afpx.Use_Descriptor(4);
+    Afpx.Use_Descriptor(Afpx_Xref.Bounds.Dscr_Num);
 
     Cursor_Col := 0;
     Insert := False;
@@ -159,7 +163,7 @@ package body Menu21 is
         when None =>
           null;
         when Partial =>
-          Afpx.Use_Descriptor(4, False);
+          Afpx.Use_Descriptor(Afpx_Xref.Bounds.Dscr_Num, False);
           Screen.Init_For_Main21 (Cursor_Field);
           Screen.Put_File;
           Put_Bounds;
@@ -167,15 +171,24 @@ package body Menu21 is
       -- Clear
       Screen.Put_Title (Screen.Boundaries, not Activate_No_Curve);
       Afpx.Set_Field_Activation (Screen.Exit_Button_Fld, Activate_No_Curve);
-      Afpx.Set_Field_Activation (20, Activate_No_Curve);
-      Afpx.Set_Field_Activation (21, Activate_No_Curve);
-      Afpx.Set_Field_Activation (22, Activate_No_Curve);
-      Afpx.Set_Field_Activation (24, Activate_No_Curve);
-      Afpx.Set_Field_Activation (25, Activate_No_Curve);
-      Afpx.Set_Field_Activation (26, Activate_No_Curve);
-      Afpx.Set_Field_Activation (28, Activate_No_Curve);
-      Afpx.Set_Field_Activation (29, Activate_No_Curve);
-      Afpx.Set_Field_Activation (30, Activate_No_Curve);
+      Afpx.Set_Field_Activation (Afpx_Xref.Bounds.Comp,
+                                 Activate_No_Curve);
+      Afpx.Set_Field_Activation (Afpx_Xref.Bounds.Comp_Fit_Scr,
+                                 Activate_No_Curve);
+      Afpx.Set_Field_Activation (Afpx_Xref.Bounds.Comp_Normed,
+                                 Activate_No_Curve);
+      Afpx.Set_Field_Activation (Afpx_Xref.Bounds.Xd_Yc,
+                                 Activate_No_Curve);
+      Afpx.Set_Field_Activation (Afpx_Xref.Bounds.Xd_Yc_Fit_Scr,
+                                 Activate_No_Curve);
+      Afpx.Set_Field_Activation (Afpx_Xref.Bounds.Xd_Yc_Normed,
+                                 Activate_No_Curve);
+      Afpx.Set_Field_Activation (Afpx_Xref.Bounds.Xyd,
+                                 Activate_No_Curve);
+      Afpx.Set_Field_Activation (Afpx_Xref.Bounds.Xyd_Fit_Scr,
+                                 Activate_No_Curve);
+      Afpx.Set_Field_Activation (Afpx_Xref.Bounds.Xyd_Normed,
+                                 Activate_No_Curve);
 
       Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
                          Ptg_Result, Redisplay);
@@ -203,27 +216,27 @@ package body Menu21 is
               -- Clear
               The_Bounds_Set := False;
               Put_Bounds;
-            when 21 =>
+            when Afpx_Xref.Bounds.Comp_Fit_Scr =>
               -- Computed fit screen
               Set_Bounds (Curve.Curve_Screen, Compute_X => True);
               Restore := Partial;
-            when 22 =>
+            when Afpx_Xref.Bounds.Comp_Normed =>
               -- Computed normed
               Set_Bounds (Curve.Curve_Normed, Compute_X => True);
               Restore := Partial;
-            when 25 =>
+            when Afpx_Xref.Bounds.Xd_Yc_Fit_Scr =>
               -- X set fit screen : Get Xmin & Xmax
               Set_Bounds (Curve.Curve_Screen);
               Restore := Partial;
-            when 26 =>
+            when Afpx_Xref.Bounds.Xd_Yc_Normed =>
               -- X set normed : Get Xmin & Xmax
               Set_Bounds (Curve.Curve_Normed);
               Restore := Partial;
-            when 29 =>
+            when Afpx_Xref.Bounds.Xyd_Fit_Scr =>
               -- Defined fit screen : Get Xmin, Xmax Ymin & Ymax
               Set_Bounds (Curve.Free_Screen);
               Restore := Partial;
-            when 30 =>
+            when Afpx_Xref.Bounds.Xyd_Normed =>
               -- Defined normed : Get Xmin, Xmax Ymin & Ymax
               Set_Bounds (Curve.Free_Normed);
               Restore := Partial;

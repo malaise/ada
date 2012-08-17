@@ -1,6 +1,6 @@
 with Ada.Characters.Latin_1;
 with Con_Io, Afpx, Normal, Language;
-with Point_Str;
+with Point_Str, Afpx_Xref;
 package body Dialog is
 
   -- If points are not saved, ask for confirmation
@@ -266,7 +266,7 @@ package body Dialog is
 
   -- Display y=f(x)
   function Put_Yfx (Point : Points.P_T_One_Point) return Boolean is
-    My_Fld : constant Afpx.Field_Range := 32;
+    My_Fld : constant Afpx.Field_Range := Afpx_Xref.Compute.Yfx_Val;
     Go_On : Boolean;
   begin
     -- Enable Fx, enable and protect y (get field)

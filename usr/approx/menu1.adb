@@ -1,22 +1,24 @@
 with As.U, Con_Io, Afpx, Directory, Select_File, Normal;
-with Points, Screen, Set_Points_List, Dialog, Point_Str, Menu2;
+with Points, Screen, Set_Points_List, Dialog, Point_Str, Menu2, Afpx_Xref;
 package body Menu1 is
 
   type Restore_List is (None, Partial, Full);
   Cursor_Field : Afpx.Field_Range;
   File_Name_Txt : As.U.Asu_Us;
 
+  -- Update of point status during file selection
   procedure Put_Point_Status is
     -- Width of nb_point
     Height : Afpx.Height_Range;
     Width  : Afpx.Width_Range;
   begin
-    Afpx.Get_Field_Size(17, Height, Width);
-    Afpx.Encode_Field(17, (0, 0), Normal(Points.P_Nb, Width));
+    Afpx.Get_Field_Size(Afpx_Xref.Selection.Nb_Points, Height, Width);
+    Afpx.Encode_Field(Afpx_Xref.Selection.Nb_Points, (0, 0),
+                      Normal(Points.P_Nb, Width));
     if Points.P_Saved then
-      Afpx.Clear_Field(19);
+      Afpx.Clear_Field(Afpx_Xref.Selection.Not_Saved);
     else
-      Afpx.Reset_Field(19);
+      Afpx.Reset_Field(Afpx_Xref.Selection.Not_Saved);
     end if;
   end Put_Point_Status;
 
@@ -35,7 +37,7 @@ package body Menu1 is
   begin
     Screen.Error(Msg);
     -- Restore screen
-    Afpx.Use_Descriptor(1, False);
+    Afpx.Use_Descriptor(Afpx_Xref.Points.Dscr_Num, False);
     Screen.Init_For_Main1 (Cursor_Field);
   end Error;
 
@@ -120,7 +122,8 @@ package body Menu1 is
       if not Load then
         Tmp_File_Name := File_Name_Txt;
       end if;
-      Tmp_File_Name := As.U.Tus (My_Select_File(2, Tmp_File_Name.Image,
+      Tmp_File_Name := As.U.Tus (My_Select_File(Afpx_Xref.Selection.Dscr_Num,
+                                                Tmp_File_Name.Image,
                                                 Load, True));
       if Tmp_File_Name.Is_Null then
         -- Cancelled
@@ -140,7 +143,7 @@ package body Menu1 is
     end;
 
     -- Restore (for errors)
-    Afpx.Use_Descriptor(1);
+    Afpx.Use_Descriptor(Afpx_Xref.Points.Dscr_Num);
     Set_Points_List;
     Screen.Init_For_Main1 (Cursor_Field);
     Screen.Put_File (File_Name_Txt.Image);
@@ -205,7 +208,7 @@ package body Menu1 is
     use Afpx;
 
   begin
-    Afpx.Use_Descriptor(1);
+    Afpx.Use_Descriptor(Afpx_Xref.Points.Dscr_Num);
     Screen.Init_For_Main1 (Cursor_Field);
     File_Name_Txt.Set_Null;
     Screen.Put_File ("");
@@ -236,7 +239,7 @@ package body Menu1 is
           when None =>
             null;
           when Partial =>
-            Afpx.Use_Descriptor(1, False);
+            Afpx.Use_Descriptor(Afpx_Xref.Points.Dscr_Num, False);
             if Saved_Index /= 0 then
               Afpx.Line_List.Move_At (Saved_Index);
               Afpx.Update_List (Afpx.Center_Selected);
@@ -244,7 +247,7 @@ package body Menu1 is
             Screen.Init_For_Main1 (Cursor_Field);
             Screen.Put_File (File_Name_Txt.Image);
           when Full =>
-            Afpx.Use_Descriptor(1);
+            Afpx.Use_Descriptor(Afpx_Xref.Points.Dscr_Num);
             Set_Points_List;
             if Saved_Index /= 0 then
               Afpx.Line_List.Move_At (Saved_Index);
@@ -256,15 +259,15 @@ package body Menu1 is
 
         -- Delete/modify/approximation/sort
         if Points.P_Nb = 0 then
-          Afpx.Set_Field_Activation (26, False);
-          Afpx.Set_Field_Activation (27, False);
-          Afpx.Set_Field_Activation (29, False);
-          Afpx.Set_Field_Activation (31, False);
+          Afpx.Set_Field_Activation (Afpx_Xref.Points.Delete, False);
+          Afpx.Set_Field_Activation (Afpx_Xref.Points.Modify, False);
+          Afpx.Set_Field_Activation (Afpx_Xref.Points.Approx, False);
+          Afpx.Set_Field_Activation (Afpx_Xref.Points.Sort, False);
         else
-          Afpx.Set_Field_Activation (26, True);
-          Afpx.Set_Field_Activation (27, True);
-          Afpx.Set_Field_Activation (29, True);
-          Afpx.Set_Field_Activation (31, True);
+          Afpx.Set_Field_Activation (Afpx_Xref.Points.Delete, True);
+          Afpx.Set_Field_Activation (Afpx_Xref.Points.Modify, True);
+          Afpx.Set_Field_Activation (Afpx_Xref.Points.Approx, True);
+          Afpx.Set_Field_Activation (Afpx_Xref.Points.Sort, True);
         end if;
 
         Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
@@ -304,10 +307,10 @@ package body Menu1 is
                 else
                   Restore := Partial;
                 end if;
-              when 21 | 22 =>
+              when Afpx_Xref.Points.Load | Afpx_Xref.Points.Save =>
                 Load_Save(Ptg_Result.Field_No = 21, Restore);
                 Data_Changed := True;
-              when 23 =>
+              when Afpx_Xref.Points.New_Points =>
                 -- New points
                 Screen.Put_Title(Screen.New_Points);
                 if Dialog.Confirm_Lost then
@@ -318,7 +321,7 @@ package body Menu1 is
                 end if;
                 Data_Changed := True;
                 Restore := Partial;
-              when 25 =>
+              when Afpx_Xref.Points.Add =>
                 -- Add point
                 Afpx.Set_Field_Protection (Afpx.List_Field_No, True);
                 Screen.Put_Title(Screen.Add_1);
@@ -333,7 +336,9 @@ package body Menu1 is
                 Afpx.Set_Field_Protection (Afpx.List_Field_No, False);
                 Saved_Index := Afpx.Line_List.List_Length;
                 Restore := Partial;
-              when 26 | 27 | Afpx.List_Field_No =>
+              when Afpx_Xref.Points.Delete
+                 | Afpx_Xref.Points.Modify
+                 | Afpx.List_Field_No =>
                 -- Delete / modify a point
                 Afpx.Set_Field_Protection (Afpx.List_Field_No, True);
                 -- Get index then point
@@ -368,14 +373,14 @@ package body Menu1 is
                 end if;
                 Afpx.Set_Field_Protection (Afpx.List_Field_No, False);
                 Restore := Partial;
-              when 29 =>
+              when Afpx_Xref.Points.Approx =>
                 -- approximation
                 Screen.Store_File;
                 Saved_Index := Afpx.Line_List.Get_Position;
                 Menu2.Main_Screen(Data_Changed);
                 Restore := Full;
                 Data_Changed := False;
-              when 31 =>
+              when Afpx_Xref.Points.Sort =>
                 -- Sort
                 Points.P_Sort;
                 Set_Points_List;
@@ -402,3 +407,4 @@ package body Menu1 is
   end Main_Screen;
 
 end Menu1;
+

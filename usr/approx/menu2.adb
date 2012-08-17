@@ -1,5 +1,5 @@
 with Con_Io, Afpx, Curve, My_Math;
-with Points, Screen, Set_Points_List, Dialog, Resol;
+with Points, Screen, Set_Points_List, Dialog, Resol, Afpx_Xref;
 package body Menu2 is
 
   type Restore_List is (None, Partial, List, Full);
@@ -44,17 +44,17 @@ package body Menu2 is
       when None =>
         null;
       when Partial =>
-        Afpx.Use_Descriptor(3, False);
+        Afpx.Use_Descriptor(Afpx_Xref.Compute.Dscr_Num, False);
         Screen.Init_For_Main2 (Cursor_Field);
         Screen.Put_File;
       when List =>
         -- polynom display needs reset of list
-        Afpx.Use_Descriptor(3, False);
+        Afpx.Use_Descriptor(Afpx_Xref.Compute.Dscr_Num, False);
         Set_Points_List;
         Screen.Init_For_Main2 (Cursor_Field);
         Screen.Put_File;
       when Full =>
-        Afpx.Use_Descriptor(3, True);
+        Afpx.Use_Descriptor(Afpx_Xref.Compute.Dscr_Num, True);
         Set_Points_List;
         Screen.Init_For_Main2 (Cursor_Field);
         Screen.Put_File;
@@ -63,14 +63,14 @@ package body Menu2 is
     -- Back
     Afpx.Set_Field_Activation (Screen.Exit_Button_Fld, Activate_No_Curve);
     -- Set degree
-    Afpx.Set_Field_Activation (22, Activate_No_Curve);
+    Afpx.Set_Field_Activation (Afpx_Xref.Compute.Set_Degree, Activate_No_Curve);
     -- Draw
-    Afpx.Set_Field_Activation (31, Activate_No_Curve);
+    Afpx.Set_Field_Activation (Afpx_Xref.Compute.Draw, Activate_No_Curve);
     -- Set/View bounds
     if Activate_No_Curve then
-      Afpx.Encode_Field(29, (1, 1), " Set");
+      Afpx.Encode_Field(Afpx_Xref.Compute.Bounds, (1, 1), " Set");
     else
-      Afpx.Encode_Field(29, (1, 1), "View");
+      Afpx.Encode_Field(Afpx_Xref.Compute.Bounds, (1, 1), "View");
     end if;
   end Do_Restore;
 
@@ -221,7 +221,7 @@ package body Menu2 is
     use Afpx;
 
   begin
-    Afpx.Use_Descriptor(3);
+    Afpx.Use_Descriptor(Afpx_Xref.Compute.Dscr_Num);
     -- Try to keep previous data
     if Data_Changed then
       -- Or reset degree to max
@@ -274,10 +274,10 @@ package body Menu2 is
               Screen.Scroll(Ptg_Result.Field_No);
             when Screen.Exit_Button_Fld =>
               return;
-            when 22 =>
+            when Afpx_Xref.Compute.Set_Degree =>
               Dialog.Read_Degree;
               Restore := Partial;
-            when 25 =>
+            when Afpx_Xref.Compute.Polynom =>
               -- Display polynom
               Screen.Put_Title(Screen.Polynom, True);
               Screen.Inform(Screen.I_Wait);
@@ -289,7 +289,7 @@ package body Menu2 is
                   Screen.Error (Screen.E_Resolution_Problem);
               end;
               Restore := List;
-            when 27 =>
+            when Afpx_Xref.Compute.Yfx =>
               -- Y=f(x)
               declare
                 Point : Points.P_T_One_Point;
@@ -304,11 +304,11 @@ package body Menu2 is
                 end loop;
               end;
               Restore := Partial;
-            when 29 =>
+            when Afpx_Xref.Compute.Bounds =>
               -- Set boudaries
               Menu21.Main_Screen;
               Restore := Full;
-            when 31 =>
+            when Afpx_Xref.Compute.Draw =>
               -- Draw
               -- Set bounds if needed
               if not Menu21.Bounds_Set then
@@ -336,3 +336,4 @@ package body Menu2 is
   end Main_Screen;
 
 end Menu2;
+
