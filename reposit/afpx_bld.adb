@@ -1103,7 +1103,9 @@ begin
     Xref_Name : Asu_Us;
   begin
     Argument.Get_Parameter (Xref_Name, Param_Key => "x");
-    Xref.Set_Package_Name (Xref_Name);
+   if not Xref_Name.Is_Null then
+      Xref.Set_Package_Name (Xref_Name);
+    end if;
     Expected_Args := Expected_Args + 1;
   exception
     when Argument.Argument_Not_Found =>
