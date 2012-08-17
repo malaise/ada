@@ -158,30 +158,37 @@ procedure Search is
   begin
     -- Set all colors
     One_Set := False;
-    Update_Color (10, Criteria.Status(Oper_Def.Entered));
-    Update_Color (11, Criteria.Status(Oper_Def.Not_Entered));
-    Update_Color (12, Criteria.Status(Oper_Def.Defered));
+    Update_Color (Afpx_Xref.Search.Entered,
+                  Criteria.Status(Oper_Def.Entered));
+    Update_Color (Afpx_Xref.Search.Not_Entered,
+                  Criteria.Status(Oper_Def.Not_Entered));
+    Update_Color (Afpx_Xref.Search.Defered,
+                  Criteria.Status(Oper_Def.Defered));
     Status_Set := One_Set;
     One_Set := False;
-    Update_Color (15, Criteria.Kind(Oper_Def.Cheque));
-    Update_Color (16, Criteria.Kind(Oper_Def.Credit));
-    Update_Color (17, Criteria.Kind(Oper_Def.Transfer));
-    Update_Color (18, Criteria.Kind(Oper_Def.Withdraw));
-    Update_Color (19, Criteria.Kind(Oper_Def.Savings));
+    Update_Color (Afpx_Xref.Search.Cheque, Criteria.Kind(Oper_Def.Cheque));
+    Update_Color (Afpx_Xref.Search.Credit_Card,
+                  Criteria.Kind(Oper_Def.Credit));
+    Update_Color (Afpx_Xref.Search.Transfer, Criteria.Kind(Oper_Def.Transfer));
+    Update_Color (Afpx_Xref.Search.Withdraw, Criteria.Kind(Oper_Def.Withdraw));
+    Update_Color (Afpx_Xref.Search.Savings, Criteria.Kind(Oper_Def.Savings));
     Kind_Set := One_Set;
-    Update_Color (22, Criteria.Date = Prev_Month);
-    Update_Color (23, Criteria.Date = Curr_Month);
-    Update_Color (25, Criteria.Reference_Set);
+    Update_Color (Afpx_Xref.Search.Prev_Month, Criteria.Date = Prev_Month);
+    Update_Color (Afpx_Xref.Search.Curr_Month, Criteria.Date = Curr_Month);
+    Update_Color (Afpx_Xref.Search.Ref_Title, Criteria.Reference_Set);
     -- Update reference
     if not Criteria.Reference_Set then
      Criteria.Reference := (others => ' ');
-     Afpx.Clear_Field (26);
+     Afpx.Clear_Field (Afpx_Xref.Search.Reference);
      Cursor_Col := 0;
     end if;
-    Afpx.Set_Field_Activation (24, Criteria.Date /= All_Dates);
-    Afpx.Set_Field_Activation (26, Criteria.Reference_Set);
+    Afpx.Set_Field_Activation (Afpx_Xref.Search.All_Dates,
+                               Criteria.Date /= All_Dates);
+    Afpx.Set_Field_Activation (Afpx_Xref.Search.Reference,
+                               Criteria.Reference_Set);
     -- Update SEARCH button
-    Afpx.Set_Field_Activation (29, Status_Set and then Kind_Set);
+    Afpx.Set_Field_Activation (Afpx_Xref.Search.Search,
+                               Status_Set and then Kind_Set);
   end Update_Fields;
 
   -- Update the Criteria and fields according to clicked field
@@ -193,23 +200,23 @@ procedure Search is
   begin
     -- Update Criteria booleans according to field clicked
     case Fld is
-      when 10 =>
+      when Afpx_Xref.Search.Entered =>
         Switch (Criteria.Status(Oper_Def.Entered));
-      when 11 =>
+      when Afpx_Xref.Search.Not_Entered =>
         Switch (Criteria.Status(Oper_Def.Not_Entered));
-      when 12 =>
+      when Afpx_Xref.Search.Defered =>
         Switch (Criteria.Status(Oper_Def.Defered));
-      when 15 =>
+      when Afpx_Xref.Search.Cheque =>
         Switch (Criteria.Kind(Oper_Def.Cheque));
-      when 16 =>
+      when Afpx_Xref.Search.Credit_Card =>
         Switch (Criteria.Kind(Oper_Def.Credit));
-      when 17 =>
+      when Afpx_Xref.Search.Transfer =>
         Switch (Criteria.Kind(Oper_Def.Transfer));
-      when 18 =>
+      when Afpx_Xref.Search.Withdraw =>
         Switch (Criteria.Kind(Oper_Def.Withdraw));
-      when 19 =>
+      when Afpx_Xref.Search.Savings =>
         Switch (Criteria.Kind(Oper_Def.Savings));
-      when 25 =>
+      when Afpx_Xref.Search.Ref_Title =>
         Switch (Criteria.Reference_Set);
       when others =>
         raise Program_Error;
@@ -229,7 +236,7 @@ begin
 
   -- Not in sublist: get criteria
   -- Init screen
-  Afpx.Use_Descriptor(4);
+  Afpx.Use_Descriptor(Afpx_Xref.Search.Dscr_Num);
   Screen.Encode_File_Name(Account_Name.Image);
   Screen.Encode_Nb_Oper(Oper_List.List_Length, Sel_List.List_Length);
   Afpx.Set_Field_Activation(Screen.Selected_Fld, True);
@@ -274,19 +281,27 @@ begin
         end case;
       when Afpx.Mouse_Button =>
         case Ptg_Result.Field_No is
-          when 10 | 11 | 12 | 15 | 16 | 17 | 18 | 19 | 25 =>
+          when Afpx_Xref.Search.Entered
+             | Afpx_Xref.Search.Not_Entered
+             | Afpx_Xref.Search.Defered
+             | Afpx_Xref.Search.Cheque
+             | Afpx_Xref.Search.Credit_Card
+             | Afpx_Xref.Search.Transfer
+             | Afpx_Xref.Search.Withdraw
+             | Afpx_Xref.Search.Savings
+             | Afpx_Xref.Search.Ref_Title =>
             -- Switch a button
             Switch_Field (Ptg_Result.Field_No);
             Update_Fields;
-          when 13 =>
+          when Afpx_Xref.Search.All_Status =>
             -- Select all statuses
             Criteria.Status := (others => True);
             Update_Fields;
-          when 20 =>
+          when Afpx_Xref.Search.All_Kind =>
             -- Select all kinds
             Criteria.Kind := (others => True);
             Update_Fields;
-          when 22 =>
+          when Afpx_Xref.Search.Prev_Month =>
             -- Select previous month or all dates
             if Criteria.Date /= Prev_Month then
               Criteria.Date := Prev_Month;
@@ -294,7 +309,7 @@ begin
               Criteria.Date := All_Dates;
             end if;
             Update_Fields;
-          when 23 =>
+          when Afpx_Xref.Search.Curr_Month =>
             -- Select current month or all dates
             if Criteria.Date /= Curr_Month then
               Criteria.Date := Curr_Month;
@@ -302,27 +317,27 @@ begin
               Criteria.Date := All_Dates;
             end if;
             Update_Fields;
-          when 24 =>
+          when Afpx_Xref.Search.All_Dates =>
             -- Select all dates
             Criteria.Date := All_Dates;
             Update_Fields;
-          when 27 =>
+          when Afpx_Xref.Search.All_Oper =>
             -- Select all
             Criteria.Status := (others => True);
             Criteria.Kind := (others => True);
             Update_Fields;
-          when 28 =>
+          when Afpx_Xref.Search.None =>
             -- Select none
             Criteria.Status := (others => False);
             Criteria.Kind := (others => False);
             Update_Fields;
-          when 29 =>
+          when Afpx_Xref.Search.Search =>
             -- Search
             Criteria.Reference := Afpx.Decode_Wide_Field(26, 0);
             Unsel_All(Criteria);
             In_Sublist := True;
             exit;
-          when 30 =>
+          when Afpx_Xref.Search.Cancel =>
             -- Cancel
             In_Sublist := False;
             exit;

@@ -92,7 +92,7 @@ package body Screen is
   -- Reset to default screen
   procedure Reset is
   begin
-    Afpx.Use_Descriptor(1);
+    Afpx.Use_Descriptor(Afpx_Xref.Main.Dscr_Num);
     Afpx.Line_List.Delete_List;
     Set_Mode(Default);
   end Reset;

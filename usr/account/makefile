@@ -2,6 +2,7 @@ include $(HOME)/Makefiles/common.mk
 
 ADAVIEW := $(REPOSIT)
 AFPX := true
+AFPX_XREF := afpx_xref
 EXES := account import export account.stat
 
 CLIBS := cutil

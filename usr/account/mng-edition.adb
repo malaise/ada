@@ -12,16 +12,16 @@ package body Edition is
 
   -- Affectation of kind and status buttons
   Kind_Buttons : constant array (Oper_Def.Kind_List) of Afpx.Field_Range :=
-    (Oper_Def.Cheque => 22,
-     Oper_Def.Credit => 23,
-     Oper_Def.Transfer => 24,
-     Oper_Def.Withdraw => 25,
-     Oper_Def.Savings => 26);
+    (Oper_Def.Cheque => Afpx_Xref.Edition.Cheque,
+     Oper_Def.Credit => Afpx_Xref.Edition.Credit_Card,
+     Oper_Def.Transfer => Afpx_Xref.Edition.Transfer,
+     Oper_Def.Withdraw => Afpx_Xref.Edition.Withdraw,
+     Oper_Def.Savings => Afpx_Xref.Edition.Savings);
 
   Status_Buttons : constant array (Oper_Def.Status_List) of Afpx.Field_Range :=
-    (Oper_Def.Entered => 28,
-     Oper_Def.Not_Entered => 29,
-     Oper_Def.Defered => 30);
+    (Oper_Def.Entered => Afpx_Xref.Edition.Entered,
+     Oper_Def.Not_Entered => Afpx_Xref.Edition.Not_Entered,
+     Oper_Def.Defered => Afpx_Xref.Edition.Defered);
 
   -- Protect get and button fields & set colors.
   procedure Protect_Data is
@@ -30,36 +30,50 @@ package body Edition is
     Black : constant Con_Io.Effective_Colors
                := Con_Io.Color_Of ("Black");
   begin
-    Afpx.Set_Field_Protection(13, True);
-    Afpx.Set_Field_Colors(13, Black, Background => Back);
-    Afpx.Set_Field_Protection(15, True);
-    Afpx.Set_Field_Colors(15, Black, Background => Back);
-    Afpx.Set_Field_Protection(17, True);
-    Afpx.Set_Field_Colors(17, Black, Background => Back);
-    Afpx.Set_Field_Protection(20, True);
-    Afpx.Set_Field_Colors(20, Black, Background => Back);
-    Afpx.Set_Field_Protection(22, True);
-    Afpx.Set_Field_Colors(22, Black, Background => Back);
-    Afpx.Set_Field_Protection(23, True);
-    Afpx.Set_Field_Colors(23, Black, Background => Back);
-    Afpx.Set_Field_Protection(24, True);
-    Afpx.Set_Field_Colors(24, Black, Background => Back);
-    Afpx.Set_Field_Protection(25, True);
-    Afpx.Set_Field_Colors(25, Black, Background => Back);
-    Afpx.Set_Field_Protection(26, True);
-    Afpx.Set_Field_Colors(26, Black, Background => Back);
-    Afpx.Set_Field_Protection(28, True);
-    Afpx.Set_Field_Colors(28, Black, Background => Back);
-    Afpx.Set_Field_Protection(29, True);
-    Afpx.Set_Field_Colors(29, Black, Background => Back);
-    Afpx.Set_Field_Protection(30, True);
-    Afpx.Set_Field_Colors(30, Black, Background => Back);
-    Afpx.Set_Field_Protection(32, True);
-    Afpx.Set_Field_Colors(32, Black, Background => Back);
-    Afpx.Set_Field_Protection(34, True);
-    Afpx.Set_Field_Colors(34, Black, Background => Back);
-    Afpx.Set_Field_Protection(36, True);
-    Afpx.Set_Field_Colors(36, Black, Background => Back);
+    Afpx.Set_Field_Protection(Afpx_Xref.Edition.Day, True);
+    Afpx.Set_Field_Colors(Afpx_Xref.Edition.Day, Black, Background => Back);
+    Afpx.Set_Field_Protection(Afpx_Xref.Edition.Month, True);
+    Afpx.Set_Field_Colors(Afpx_Xref.Edition.Month, Black, Background => Back);
+    Afpx.Set_Field_Protection(Afpx_Xref.Edition.Year, True);
+    Afpx.Set_Field_Colors(Afpx_Xref.Edition.Year, Black, Background => Back);
+    Afpx.Set_Field_Protection(Afpx_Xref.Edition.Amount, True);
+    Afpx.Set_Field_Colors(Afpx_Xref.Edition.Amount, Black, Background => Back);
+
+    Afpx.Set_Field_Protection(Afpx_Xref.Edition.Cheque, True);
+    Afpx.Set_Field_Colors(Afpx_Xref.Edition.Cheque, Black,
+                          Background => Back);
+    Afpx.Set_Field_Protection(Afpx_Xref.Edition.Credit_Card, True);
+    Afpx.Set_Field_Colors(Afpx_Xref.Edition.Credit_Card, Black,
+                          Background => Back);
+    Afpx.Set_Field_Protection(Afpx_Xref.Edition.Transfer, True);
+    Afpx.Set_Field_Colors(Afpx_Xref.Edition.Transfer, Black,
+                          Background => Back);
+    Afpx.Set_Field_Protection(Afpx_Xref.Edition.Withdraw, True);
+    Afpx.Set_Field_Colors(Afpx_Xref.Edition.Withdraw, Black,
+                          Background => Back);
+    Afpx.Set_Field_Protection(Afpx_Xref.Edition.Savings, True);
+    Afpx.Set_Field_Colors(Afpx_Xref.Edition.Savings, Black,
+                          Background => Back);
+
+    Afpx.Set_Field_Protection(Afpx_Xref.Edition.Entered, True);
+    Afpx.Set_Field_Colors(Afpx_Xref.Edition.Entered, Black,
+                          Background => Back);
+    Afpx.Set_Field_Protection(Afpx_Xref.Edition.Not_Entered, True);
+    Afpx.Set_Field_Colors(Afpx_Xref.Edition.Not_Entered, Black,
+                          Background => Back);
+    Afpx.Set_Field_Protection(Afpx_Xref.Edition.Defered, True);
+    Afpx.Set_Field_Colors(Afpx_Xref.Edition.Defered, Black,
+                          Background => Back);
+
+    Afpx.Set_Field_Protection(Afpx_Xref.Edition.Destination, True);
+    Afpx.Set_Field_Colors(Afpx_Xref.Edition.Destination, Black,
+                          Background => Back);
+    Afpx.Set_Field_Protection(Afpx_Xref.Edition.Comment, True);
+    Afpx.Set_Field_Colors(Afpx_Xref.Edition.Comment, Black,
+                          Background => Back);
+    Afpx.Set_Field_Protection(Afpx_Xref.Edition.Reference, True);
+    Afpx.Set_Field_Colors(Afpx_Xref.Edition.Reference, Black,
+                          Background => Back);
   end Protect_Data;
 
   -- Set unit button according to current unit
@@ -67,24 +81,24 @@ package body Edition is
     use type Unit_Format.Units_List;
   begin
     if Unit_Format.Get_Current_Unit = Unit_Format.Euros then
-      Afpx.Reset_Field(19);
+      Afpx.Reset_Field(Afpx_Xref.Edition.Unit);
       begin
-        Afpx.Encode_Field(19, (0, 0), "€");
+        Afpx.Encode_Field(Afpx_Xref.Edition.Unit, (0, 0), "€");
       exception
         when Afpx.String_Too_Long =>
           -- We are not in UTF-8
-          Afpx.Encode_Field(19, (0, 0), "e");
+          Afpx.Encode_Field(Afpx_Xref.Edition.Unit, (0, 0), "E");
       end;
     else
-      Afpx.Set_Field_Colors(19, Con_Io.Color_Of ("Brown4"));
-      Afpx.Encode_Field(19, (0, 0), "F");
+      Afpx.Set_Field_Colors(Afpx_Xref.Edition.Unit, Con_Io.Color_Of ("Brown4"));
+      Afpx.Encode_Field(Afpx_Xref.Edition.Unit, (0, 0), "F");
     end if;
   end Set_Unit;
 
   -- Title, data protection,
   procedure Prepare (Edit_Type : in Edit_List) is
   begin
-    Afpx.Use_Descriptor(3);
+    Afpx.Use_Descriptor(Afpx_Xref.Edition.Dscr_Num);
     Screen.Encode_File_Name(Account_Name.Image);
     Screen.Encode_Nb_Oper(Oper_List.List_Length,
                           Sel_List.List_Length);
@@ -92,19 +106,19 @@ package body Edition is
     Set_Unit;
     case Edit_Type is
       when Create =>
-        Afpx.Encode_Field(9, (0, 0), "creation");
+        Afpx.Encode_Field(Afpx_Xref.Edition.Action, (0, 0), "creation");
         -- Disable No
-        Afpx.Set_Field_Activation(10, False);
-        Afpx.Set_Field_Activation(11, False);
+        Afpx.Set_Field_Activation(Afpx_Xref.Edition.No_Title, False);
+        Afpx.Set_Field_Activation(Afpx_Xref.Edition.No_Value, False);
       when Modify =>
-        Afpx.Encode_Field(9, (0, 0), "modification");
+        Afpx.Encode_Field(Afpx_Xref.Edition.Action, (0, 0), "modification");
       when Copy =>
-        Afpx.Encode_Field(9, (0, 0), "copy");
+        Afpx.Encode_Field(Afpx_Xref.Edition.Action, (0, 0), "copy");
         -- Disable No
-        Afpx.Set_Field_Activation(10, False);
-        Afpx.Set_Field_Activation(11, False);
+        Afpx.Set_Field_Activation(Afpx_Xref.Edition.No_Title, False);
+        Afpx.Set_Field_Activation(Afpx_Xref.Edition.No_Value, False);
       when Delete =>
-        Afpx.Encode_Field(9, (0, 0), "deletion");
+        Afpx.Encode_Field(Afpx_Xref.Edition.Action, (0, 0), "deletion");
         Protect_Data;
     end case;
   end Prepare;
@@ -211,27 +225,31 @@ package body Edition is
     if Edit_Type = Create or else Edit_Type = Copy then
       -- Always and only allow Ok, Cancel,
       --  and also Ok_And_Next if create
-      Afpx.Set_Field_Activation(38, False);
-      Afpx.Set_Field_Activation(39, False);
-      Afpx.Set_Field_Activation(43, False);
+      Afpx.Set_Field_Activation(Afpx_Xref.Edition.Ok_Prev, False);
+      Afpx.Set_Field_Activation(Afpx_Xref.Edition.Cancel_Prev, False);
       if Edit_Type = Copy then
-        Afpx.Set_Field_Activation(42, False);
+        Afpx.Set_Field_Activation(Afpx_Xref.Edition.Ok_Next, False);
       end if;
+      Afpx.Set_Field_Activation(Afpx_Xref.Edition.Cancel_Next, False);
       return;
     end if;
 
     -- Now list cannot be empty: protect out-of-list
-    Afpx.Set_Field_Activation(38, Sel_List.Check_Move(Sel_List_Mng.Prev));
-    Afpx.Set_Field_Activation(39, Sel_List.Check_Move(Sel_List_Mng.Prev));
-    Afpx.Set_Field_Activation(42, Sel_List.Check_Move(Sel_List_Mng.Next));
-    Afpx.Set_Field_Activation(43, Sel_List.Check_Move(Sel_List_Mng.Next));
+    Afpx.Set_Field_Activation(Afpx_Xref.Edition.Ok_Prev,
+                              Sel_List.Check_Move(Sel_List_Mng.Prev));
+    Afpx.Set_Field_Activation(Afpx_Xref.Edition.Cancel_Prev,
+                              Sel_List.Check_Move(Sel_List_Mng.Prev));
+    Afpx.Set_Field_Activation(Afpx_Xref.Edition.Ok_Next,
+                              Sel_List.Check_Move(Sel_List_Mng.Next));
+    Afpx.Set_Field_Activation(Afpx_Xref.Edition.Cancel_Next,
+                              Sel_List.Check_Move(Sel_List_Mng.Next));
 
     if Edit_Type = Delete then
       -- Only allow back
-      Afpx.Set_Field_Activation(38, False);
-      Afpx.Set_Field_Activation(39, False);
-      Afpx.Set_Field_Activation(42, False);
-      Afpx.Set_Field_Activation(43, False);
+      Afpx.Set_Field_Activation(Afpx_Xref.Edition.Ok_Prev, False);
+      Afpx.Set_Field_Activation(Afpx_Xref.Edition.Cancel_Prev, False);
+      Afpx.Set_Field_Activation(Afpx_Xref.Edition.Ok_Next, False);
+      Afpx.Set_Field_Activation(Afpx_Xref.Edition.Cancel_Next, False);
     end if;
   end Protect_Movements;
 
@@ -244,27 +262,29 @@ package body Edition is
   begin
     if Edit_Type /= Create then
       -- No
-      Afpx.Encode_Field(11, (0, 0),
+      Afpx.Encode_Field(Afpx_Xref.Edition.No_Value, (0, 0),
           Normal(Oper_List.Get_Position, 4));
     end if;
     -- Date
     Date_Str := Unit_Format.Short_Date_Image(Oper.Date);
-    Afpx.Encode_Field(13, (0, 0), Date_Str(1 .. 2));
-    Afpx.Encode_Field(15, (0, 0), Date_Str(4 .. 5));
-    Afpx.Encode_Field(17, (0, 0), Date_Str(7 .. 8));
+    Afpx.Encode_Field(Afpx_Xref.Edition.Day, (0, 0), Date_Str(1 .. 2));
+    Afpx.Encode_Field(Afpx_Xref.Edition.Month, (0, 0), Date_Str(4 .. 5));
+    Afpx.Encode_Field(Afpx_Xref.Edition.Year, (0, 0), Date_Str(7 .. 8));
     -- Amount
     if Oper.Amount /= 0.0 then
-      Afpx.Encode_Field(20, (0, 0), Unit_Format.Image(Oper.Amount, True));
+      Afpx.Encode_Field(Afpx_Xref.Edition.Amount, (0, 0),
+                        Unit_Format.Image(Oper.Amount, True));
     else
-      Afpx.Clear_Field(20);
+      Afpx.Clear_Field(Afpx_Xref.Edition.Amount);
     end if;
     Set_Unit;
     -- Kind and status (modifiable or not)
     Set_Buttons(Edit_Type in Create .. Copy, Oper.Kind, Oper.Status);
     -- 3 strings
-    Afpx.Encode_Wide_Field(32, (0, 0), Oper.Destination);
-    Afpx.Encode_Wide_Field(34, (0, 0), Oper.Comment);
-    Afpx.Encode_Wide_Field(36, (0, 0), Oper.Reference);
+    Afpx.Encode_Wide_Field(Afpx_Xref.Edition.Destination, (0, 0),
+                           Oper.Destination);
+    Afpx.Encode_Wide_Field(Afpx_Xref.Edition.Comment, (0, 0), Oper.Comment);
+    Afpx.Encode_Wide_Field(Afpx_Xref.Edition.Reference, (0, 0), Oper.Reference);
     -- Deleted
     Afpx.Set_Field_Activation(37, Deleted);
   end Encode_Oper;
@@ -313,14 +333,15 @@ package body Edition is
 
     -- Check data, return error field
     -- Date
-    Field := 13;
-    Date_Str := Afpx.Decode_Field(13,0) & '/'
-              & Afpx.Decode_Field(15,0) & '/'
-       & "20" & Afpx.Decode_Field(17,0);
+    Field := Afpx_Xref.Edition.Day;
+    Date_Str := Afpx.Decode_Field(Afpx_Xref.Edition.Day, 0) & '/'
+              & Afpx.Decode_Field(Afpx_Xref.Edition.Month, 0) & '/'
+       & "20" & Afpx.Decode_Field(Afpx_Xref.Edition.Year, 0);
     Oper.Date := Unit_Format.Date_Value(Date_Str);
     -- Amount
     Field := 20;
-    Oper.Amount := Unit_Format.Value(Afpx.Decode_Field(20, 0));
+    Oper.Amount := Unit_Format.Value(Afpx.Decode_Field(
+                        Afpx_Xref.Edition.Amount, 0));
     -- Kind and status
     Oper.Kind := Kind;
     Oper.Status := Status;
@@ -334,15 +355,15 @@ package body Edition is
     end if;
 
     -- Strings
-    Field := 32;
+    Field := Afpx_Xref.Edition.Destination;
     Oper.Destination := Afpx.Decode_Wide_Field(32,0);
-    Field := 34;
+    Field := Afpx_Xref.Edition.Comment;
     Oper.Comment     := Afpx.Decode_Wide_Field(34,0);
-    Field := 36;
+    Field := Afpx_Xref.Edition.Reference;
     Oper.Reference   := Afpx.Decode_Wide_Field(36,0);
 
     -- Non empty reference unique for cheque
-    Field := 36;
+    Field := Afpx_Xref.Edition.Reference;
     if Oper.Kind = Oper_Def.Cheque
     and then Oper.Reference /= Oper_Def.Reference_Str'(others => ' ') then
 
@@ -550,12 +571,13 @@ package body Edition is
 
           when Afpx.Mouse_Button =>
             case Ptg_Result.Field_No is
-              when 19 =>
+              when Afpx_Xref.Edition.Unit =>
                 -- Change unit
                 Unit_Format.Switch_Unit;
                 Set_Unit;
 
-              when 22 .. 26 | 28 .. 30 =>
+              when Afpx_Xref.Edition.Cheque .. Afpx_Xref.Edition.Savings
+                 | Afpx_Xref.Edition.Entered .. Afpx_Xref.Edition.Defered =>
                 -- Kind and status buttons
                 Update_Buttons(Ptg_Result.Field_No, Kind, Status);
                 if Edit_Type = Create then
@@ -564,7 +586,7 @@ package body Edition is
                   Insert := False;
                 end if;
 
-              when 38 =>
+              when Afpx_Xref.Edition.Ok_Prev =>
                 -- Ok and prev
                 Cursor_Field := Validate(Edit_Type, Kind, Status);
                 Cursor_Col := 0;
@@ -575,23 +597,23 @@ package body Edition is
                   exit One_Edit;
                 end if;
                 Screen.Ring(True);
-              when 39 =>
+              when Afpx_Xref.Edition.Cancel_Prev =>
                 -- Cancel and prev
                 Cancel(Edit_Type);
                 Sel_List.Move_To(Sel_List_Mng.Prev);
                 exit One_Edit;
-              when 40 =>
+              when Afpx_Xref.Edition.Ok =>
                 -- Ok and back
                 Cursor_Field := Validate(Edit_Type, Kind, Status);
                 Cursor_Col := 0;
                 Insert := False;
                 exit All_Edit when Cursor_Field = 0;
                 Screen.Ring(True);
-              when 41 =>
+              when Afpx_Xref.Edition.Quit =>
                 -- Cancel and back
                 Cancel(Edit_Type);
                 exit All_Edit;
-              when 42 =>
+              when Afpx_Xref.Edition.Ok_Next =>
                 -- Ok and next
                 Cursor_Field := Validate(Edit_Type, Kind, Status);
                 Cursor_Col := 0;
@@ -604,7 +626,7 @@ package body Edition is
                   exit One_Edit;
                 end if;
                 Screen.Ring(True);
-              when 43 =>
+              when Afpx_Xref.Edition.Cancel_Next =>
                 -- Cancel and next
                 Cancel(Edit_Type);
                 Sel_List.Move_To;

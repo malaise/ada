@@ -1,7 +1,7 @@
 with Ada.Calendar, Ada.Characters.Latin_1;
 with As.B, Dynamic_List, Directory, Afpx, Select_File, Normal, Text_Line,
      Environ, Sys_Calls, Date_Image, Language, Perpet, Con_Io;
-with Oper_Def, File_Mng, Oper_Dyn_List_Mng, Screen, Unit_Format;
+with Oper_Def, File_Mng, Oper_Dyn_List_Mng, Screen, Unit_Format, Afpx_Xref;
 
 -- Manage the whole acount status
 package body Mng is
@@ -30,11 +30,13 @@ package body Mng is
   Loading : Boolean;
   procedure Init_Select_File is
   begin
-    Afpx.Clear_Field(1);
+    Afpx.Clear_Field(Screen.Account_Name_Fld);
     if Loading then
-      Afpx.Encode_Field(1, (0, 0), "Loading an account");
+      Afpx.Encode_Field(Afpx_Xref.Selection.Title, (0, 0),
+                        "Loading an account");
     else
-      Afpx.Encode_Field(1, (0, 0), "Saving an account");
+      Afpx.Encode_Field(Afpx_Xref.Selection.Title, (0, 0),
+                        "Saving an account");
     end if;
   end Init_Select_File;
   function Account_Select_File is new Select_File(Init_Select_File);
@@ -345,7 +347,8 @@ package body Mng is
     else
       -- Let user select file
       Loading := True;
-      Loaded_Name.Set (Account_Select_File(2, "", True, False));
+      Loaded_Name.Set (Account_Select_File(Afpx_Xref.Selection.Dscr_Num,
+                                           "", True, False));
       Screen.Reset;
       Screen.Set_Sublist(False);
       Refresh_Screen(Bottom);
@@ -408,7 +411,8 @@ package body Mng is
       if Mode = Cancel then
         return;
       end if;
-      Tmp_Name.Set (Account_Select_File(2, "", False, False));
+      Tmp_Name.Set (Account_Select_File(Afpx_Xref.Selection.Dscr_Num,
+                                        "", False, False));
       Screen.Reset;
       Screen.Set_Sublist(False);
       Refresh_Screen(Center);

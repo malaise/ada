@@ -1,5 +1,5 @@
 with Afpx;
-with Oper_Def;
+with Oper_Def, Afpx_Xref;
 -- Manage the screen fields
 package Screen is
   -- In default mode,
@@ -40,48 +40,48 @@ package Screen is
   procedure Ring (Alarm : in Boolean);
 
   -- Significant fields
-  Account_Name_Fld  : constant Afpx.Field_Range :=  1;
-  Oper_Nb_Fld       : constant Afpx.Field_Range :=  3;
-  Operation_Fld     : constant Afpx.Field_Range :=  4;
-  Account_Saved_Fld : constant Afpx.Field_Range :=  5;
-  Nb_Selected_Fld   : constant Afpx.Field_Range :=  6;
-  Selected_Fld      : constant Afpx.Field_Range :=  7;
+  Account_Name_Fld  : constant Afpx.Field_Range := Afpx_Xref.Main.Name;
+  Oper_Nb_Fld       : constant Afpx.Field_Range := Afpx_Xref.Main.Nb_Oper;
+  Operation_Fld     : constant Afpx.Field_Range := Afpx_Xref.Main.Operations;
+  Account_Saved_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Saved;
+  Nb_Selected_Fld   : constant Afpx.Field_Range := Afpx_Xref.Main.Nb_Selected;
+  Selected_Fld      : constant Afpx.Field_Range := Afpx_Xref.Main.Selected;
 
-  Real_Amnt_Fld     : constant Afpx.Field_Range := 10;
-  Account_Amnt_Fld  : constant Afpx.Field_Range := 12;
-  Defered_Amnt_Fld  : constant Afpx.Field_Range := 14;
-  Saved_Amnt_Fld    : constant Afpx.Field_Range := 16;
+  Real_Amnt_Fld     : constant Afpx.Field_Range := Afpx_Xref.Main.Real;
+  Account_Amnt_Fld  : constant Afpx.Field_Range := Afpx_Xref.Main.Account;
+  Defered_Amnt_Fld  : constant Afpx.Field_Range := Afpx_Xref.Main.Defered;
+  Saved_Amnt_Fld    : constant Afpx.Field_Range := Afpx_Xref.Main.Savings;
 
-  List_Top_Fld      : constant Afpx.Field_Range := 17;
-  List_Pgup_Fld     : constant Afpx.Field_Range := 18;
-  List_Up_Fld       : constant Afpx.Field_Range := 19;
-  List_Center_Fld   : constant Afpx.Field_Range := 20;
-  List_Down_Fld     : constant Afpx.Field_Range := 21;
-  List_Pg_Down_Fld  : constant Afpx.Field_Range := 22;
-  List_Bottom_Fld   : constant Afpx.Field_Range := 23;
+  List_Top_Fld      : constant Afpx.Field_Range := Afpx_Xref.Main.Top;
+  List_Pgup_Fld     : constant Afpx.Field_Range := Afpx_Xref.Main.Pgup;
+  List_Up_Fld       : constant Afpx.Field_Range := Afpx_Xref.Main.Up;
+  List_Center_Fld   : constant Afpx.Field_Range := Afpx_Xref.Main.Center;
+  List_Down_Fld     : constant Afpx.Field_Range := Afpx_Xref.Main.Down;
+  List_Pg_Down_Fld  : constant Afpx.Field_Range := Afpx_Xref.Main.Pgdown;
+  List_Bottom_Fld   : constant Afpx.Field_Range := Afpx_Xref.Main.Bottom;
 
-  Title_Oper_Fld    : constant Afpx.Field_Range := 24;
-  Add_Oper_Fld      : constant Afpx.Field_Range := 25;
-  Copy_Oper_Fld     : constant Afpx.Field_Range := 26;
-  Edit_Oper_Fld     : constant Afpx.Field_Range := 27;
-  Delete_Oper_Fld   : constant Afpx.Field_Range := 28;
-  Clean_Oper_Fld    : constant Afpx.Field_Range := 29;
-  Search_Oper_Fld   : constant Afpx.Field_Range := 30;
-  Show_Oper_Fld     : constant Afpx.Field_Range := 31;
+  Title_Oper_Fld    : constant Afpx.Field_Range := Afpx_Xref.Main.Title_Oper;
+  Add_Oper_Fld      : constant Afpx.Field_Range := Afpx_Xref.Main.Add;
+  Copy_Oper_Fld     : constant Afpx.Field_Range := Afpx_Xref.Main.Copy;
+  Edit_Oper_Fld     : constant Afpx.Field_Range := Afpx_Xref.Main.Edit;
+  Delete_Oper_Fld   : constant Afpx.Field_Range := Afpx_Xref.Main.Delete;
+  Clean_Oper_Fld    : constant Afpx.Field_Range := Afpx_Xref.Main.Cleanup;
+  Search_Oper_Fld   : constant Afpx.Field_Range := Afpx_Xref.Main.Search;
+  Show_Oper_Fld     : constant Afpx.Field_Range := Afpx_Xref.Main.Showall;
 
-  Title_Account_Fld : constant Afpx.Field_Range := 32;
-  New_Account_Fld   : constant Afpx.Field_Range := 33;
-  Load_Account_Fld  : constant Afpx.Field_Range := 34;
-  Save_Account_Fld  : constant Afpx.Field_Range := 35;
-  Print_Account_Fld : constant Afpx.Field_Range := 36;
-  Franc_Account_Fld : constant Afpx.Field_Range := 37;
-  Sdat_Account_Fld  : constant Afpx.Field_Range := 38;
-  Samo_Account_Fld  : constant Afpx.Field_Range := 39;
-  Exit_Account_Fld  : constant Afpx.Field_Range := 40;
+  Title_Account_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Title_Account;
+  New_Account_Fld   : constant Afpx.Field_Range := Afpx_Xref.Main.New_Account;
+  Load_Account_Fld  : constant Afpx.Field_Range := Afpx_Xref.Main.Load;
+  Save_Account_Fld  : constant Afpx.Field_Range := Afpx_Xref.Main.Save;
+  Print_Account_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Print;
+  Franc_Account_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.To_Francs;
+  Sdat_Account_Fld  : constant Afpx.Field_Range := Afpx_Xref.Main.Sort_Date;
+  Samo_Account_Fld  : constant Afpx.Field_Range := Afpx_Xref.Main.Sort_Amount;
+  Exit_Account_Fld  : constant Afpx.Field_Range := Afpx_Xref.Main.Quit;
 
-  Message_Fld       : constant Afpx.Field_Range := 41;
-  Yes_Fld           : constant Afpx.Field_Range := 42;
-  No_Fld            : constant Afpx.Field_Range := 43;
+  Message_Fld       : constant Afpx.Field_Range := Afpx_Xref.Main.Message;
+  Yes_Fld           : constant Afpx.Field_Range := Afpx_Xref.Main.Yes;
+  No_Fld            : constant Afpx.Field_Range := Afpx_Xref.Main.No;
 
 end Screen;
 
