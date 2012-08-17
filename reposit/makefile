@@ -1,7 +1,7 @@
 include $(HOME)/Makefiles/common.mk
 
 include $(TEMPLATES)/units.mk
-SUBUNITS := afpx-af_dscr afpx-af_list afpx-af_ptg \
+SUBUNITS := afpx-af_dscr afpx-af_list afpx-af_ptg afpx_bld-xref \
   autobus-config channels-file pattern-storage \
   xml_parser-file_mng xml_parser-parse_mng \
   xml_parser-parse_mng-dtd xml_parser-parse_mng-entity_mng \

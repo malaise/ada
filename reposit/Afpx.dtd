@@ -56,12 +56,15 @@
 <!-- It cannot be a variable. -->
 <!-- It is possible to define the background color of the descriptor -->
 <!--  (default is Default_Background). -->
+<!-- The descriptor name is the name of the corresponding package in the -->
+<!--  cross-reference package (default: dscr_<Num>) -->
 <!-- As soon as this descriptor declaration is parsed, a constant -->
 <!--  named Descriptor.Background and with current descriptor background is -->
 <!--  defined for the rest of the descriptor. -->
 <!--  Another constant with a specific name and the same value is defined -->
 <!--  for the rest of the descriptors (e.g. Dscr_1.Background). -->
-<!ATTLIST Descriptor Num NMTOKEN #REQUIRED Background CDATA #IMPLIED>
+<!ATTLIST Descriptor Num NMTOKEN #REQUIRED Background CDATA #IMPLIED
+                                           Name CDATA #IMPLIED>
 <!-- A descriptor allows defining one optional list, then fields. -->
 <!-- Before and between them, it is possible to (re)define variables that -->
 <!--  are valid in the descriptor only. -->
@@ -81,7 +84,10 @@
 <!-- Put field simply displays fixed text, Button field allows the user to -->
 <!--  click (with the mouse) on it and Get field allows the used to enter -->
 <!--  text in it. -->
-<!ATTLIST Field Num NMTOKEN #REQUIRED Kind (Put|Button|Get) #REQUIRED>
+<!-- If a Name is set then a variable Name will be generated in the -->
+<!--  cross-reference pacakge. -->
+<!ATTLIST Field Num NMTOKEN #REQUIRED Kind (Put|Button|Get) #REQUIRED
+                                      Name CDATA #IMPLIED>
 <!-- Field are defined by a geometry and colors -->
 <!-- Fields also allow defining an initial content (several rows and cols). -->
 <!ELEMENT Field (Geometry,Colors,Init*)>
@@ -127,4 +133,25 @@
 <!ELEMENT Init (#PCDATA)>
 <!ATTLIST Init Row CDATA #REQUIRED Col CDATA #REQUIRED
                xml:space (default|preserve) "preserve">
+
+<!-- Note on Cross-reference package -->
+<!-- If afpx_bld is called with the option -x<cross_ref_package> thenn it -->
+<!--  generates a file (named cross_ref_package.ads) containing all the -->
+<!--  descriptors ans the fields with a Name. Ex: if Afpx.xml contains: -->
+<!--  <Descriptor Num="1" Name="Main">           -->
+<!--    <Field Num="2" Kind="Put" Name="Top".    -->
+<!--  <Descriptor Num="2"                        -->
+<!--    <Field Num="2" Kind="Put" Name="Up".     -->
+<!-- The cross-reference package will contain:   -->
+<!-- with Afpx;                                  -->
+<!-- package Cross_Ref_Package is                -->
+<!--   package Main is                           -->
+<!--     Top : constant Afpx.Field_Range := 2;   -->
+<!--   end Main;                                 -->
+<!--   package Desr_02 is                        -->
+<!--     Up : constant Afpx.Field_Range := 2;    -->
+<!--   end Dscr_2;                               -->
+<!-- end Cross_Ref_Package;                      -->
+<!-- So names must be valid Ada identifiers, descriptor names must be unique -->
+<!--  and field names must be unique within a descriptor. -->
 
