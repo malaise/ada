@@ -1,6 +1,6 @@
 with As.U, Con_Io, Afpx.List_Manager, Basic_Proc, Integer_Image, Directory,
      Dir_Mng, Sys_Calls, Argument, Argument_Parser, Socket, String_Mng;
-with Utils.X, Git_If, Config, Bookmarks, History, Confirm;
+with Utils.X, Git_If, Config, Bookmarks, History, Confirm, Afpx_Xref;
 procedure Agite is
 
   -- Options
@@ -257,26 +257,26 @@ procedure Agite is
     end if;
 
     -- Encode root dir
-    Afpx.Clear_Field (13);
-    Afpx.Encode_Field (13, (0, 0),
-       Utils.Normalize (Root.Image, Afpx.Get_Field_Width (13)));
+    Afpx.Clear_Field (Afpx_Xref.Main.Root);
+    Afpx.Encode_Field (Afpx_Xref.Main.Root, (0, 0),
+       Utils.Normalize (Root.Image, Afpx.Get_Field_Width (Afpx_Xref.Main.Root)));
 
     -- Encode current branch
-    Afpx.Clear_Field (9);
+    Afpx.Clear_Field (Afpx_Xref.Main.Branch);
     if Branch.Image = ("(no branch)") then
       Branch := As.U.Tus ("None.");
     end if;
-    Afpx.Encode_Field (9, (0, 0),
+    Afpx.Encode_Field (Afpx_Xref.Main.Branch, (0, 0),
          Utils.Normalize ("Br: " & Branch.Image, Afpx.Get_Field_Width (9),
                           False));
 
     -- De-activate Diff and history if no in Git
     if Root.Is_Null then
-      Utils.X.Protect_Field (26);
-      Utils.X.Protect_Field (27);
+      Utils.X.Protect_Field (Afpx_Xref.Main.Diff);
+      Utils.X.Protect_Field (Afpx_Xref.Main.History);
     else
-      Afpx.Reset_Field (26);
-      Afpx.Reset_Field (27);
+      Afpx.Reset_Field (Afpx_Xref.Main.Diff);
+      Afpx.Reset_Field (Afpx_Xref.Main.History);
     end if;
   end Change_Dir;
 
@@ -306,7 +306,7 @@ procedure Agite is
   -- else ">tail"
   Local_Host : As.U.Asu_Us;
   function Host_Str return String is
-    Len : constant Positive := Afpx.Get_Field_Width (11);
+    Len : constant Positive := Afpx.Get_Field_Width (Afpx_Xref.Main.Host);
     use type As.U.Asu_Us;
   begin
     if not Local_Host.Is_Null then
@@ -331,13 +331,13 @@ procedure Agite is
   -- Init Afpx
   procedure Init is
   begin
-    Afpx.Use_Descriptor (1);
+    Afpx.Use_Descriptor (Afpx_Xref.Main.Dscr_Num);
     Afpx.Get_Console.Set_Name ("Agite (on " & Socket.Local_Host_Name & ")");
     Cursor_Field := Afpx.Next_Cursor_Field (0);
     Cursor_Col := 0;
     Insert := False;
     Redisplay := False;
-    Afpx.Encode_Field (11, (0, 0), Host_Str);
+    Afpx.Encode_Field (Afpx_Xref.Main.Host, (0, 0), Host_Str);
     Change_Dir;
   end;
 
@@ -619,8 +619,8 @@ begin
   -- Main loop
   loop
     -- Activate PushD and PopD
-    Afpx.Set_Field_Activation (19, Can_Push);
-    Afpx.Set_Field_Activation (20, Can_Pop);
+    Afpx.Set_Field_Activation (Afpx_Xref.Main.Pushd, Can_Push);
+    Afpx.Set_Field_Activation (Afpx_Xref.Main.Popd,  Can_Pop);
 
     Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
                        Ptg_Result, Redisplay);
@@ -647,19 +647,19 @@ begin
             -- Scroll list
             Afpx.List_Manager.Scroll(
                 Ptg_Result.Field_No - Utils.X.List_Scroll_Fld_Range'First + 1);
-          when 13 =>
+          when Afpx_Xref.Main.Root =>
             -- Root (change dir to)
             Change_Dir (Root.Image);
-          when 15 =>
+          when Afpx_Xref.Main.Chdir =>
             -- Go (to dir)
             Change_Dir;
-          when 16 =>
+          when Afpx_Xref.Main.Reread =>
             -- Reread (change dir . and restore pos)
             Reread (True);
-          when 17 =>
+          when Afpx_Xref.Main.Dirup =>
             -- Up (change dir ..)
             Change_Dir ("..");
-          when 18 =>
+          when Afpx_Xref.Main.Bookmarks =>
             -- Bookmarks (menu)
             declare
               New_Dir : constant String := Bookmarks.Handle;
@@ -669,40 +669,40 @@ begin
                 Change_Dir (New_Dir);
               end if;
             end;
-          when 19 =>
+          when Afpx_Xref.Main.Pushd =>
             -- PushD
             Push_Dir;
-          when 20 =>
+          when Afpx_Xref.Main.Popd =>
             -- PopD
             Pop_Dir;
-          when 22 =>
+          when Afpx_Xref.Main.Quick_Search =>
             -- Quick search
             Locate_File (
               Afpx.Decode_Field (Ptg_Result.Field_No, Ptg_Result.Click_Pos.Row)
                                   (Ptg_Result.Click_Pos.Col + 1));
-          when 23 =>
+          when Afpx_Xref.Main.Gui =>
             -- GUI
             Timer.Start;
             Utils.Launch ("git gui", True);
-          when 24 =>
+          when Afpx_Xref.Main.Xterm =>
             -- XTerm
             Utils.Launch (Config.Xterminal);
-          when 25 =>
+          when Afpx_Xref.Main.Edit =>
             -- Edit (file)
             List_Action (Edit);
-          when 26 =>
+          when Afpx_Xref.Main.Diff =>
             -- Diff
             List_Action (Diff);
-          when 27 =>
+          when Afpx_Xref.Main.History =>
             -- History
             List_Action (History);
-          when 28 =>
+          when Afpx_Xref.Main.Revert =>
             -- Revert
             List_Action (Revert);
-          when 29 =>
+          when Afpx_Xref.Main.Add =>
             -- Add
             List_Action (Add);
-          when 30 =>
+          when Afpx_Xref.Main.Quit =>
             -- Exit
             raise Utils.Exit_Requested;
           when others =>

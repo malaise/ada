@@ -1,5 +1,5 @@
 with Con_Io, Afpx, String_Mng;
-with Utils;
+with Utils, Afpx_Xref;
 function Confirm (Title, Msg : String) return Boolean is
   -- Afpx stuff
   Cursor_Field : Afpx.Field_Range;
@@ -9,14 +9,14 @@ function Confirm (Title, Msg : String) return Boolean is
   Ptg_Result   : Afpx.Result_Rec;
 
 begin
-  Afpx.Use_Descriptor (5);
+  Afpx.Use_Descriptor (Afpx_Xref.Confirm.Dscr_Num);
   Cursor_Field := 1;
   Cursor_Col := 0;
   Insert := False;
   Redisplay := False;
-  Afpx.Encode_Field (2, (0, 0),
+  Afpx.Encode_Field (Afpx_Xref.Confirm.Action, (0, 0),
         String_Mng.Center (Title, Afpx.Get_Field_Width (2)));
-  Afpx.Encode_Field (3, (0, 0),
+  Afpx.Encode_Field (Afpx_Xref.Confirm.Name, (0, 0),
           String_Mng.Center (Msg, Afpx.Get_Field_Width (2)));
 
   -- Main loop
@@ -39,11 +39,11 @@ begin
 
       when Afpx.Mouse_Button =>
         case Ptg_Result.Field_No is
-          when 4 =>
+          when Afpx_Xref.Confirm.Ok =>
             -- OK
             return True;
-          when 5 =>
-            -- OK
+          when Afpx_Xref.Confirm.Cancel =>
+            -- Cancel
             return False;
         when others =>
             -- Other button?

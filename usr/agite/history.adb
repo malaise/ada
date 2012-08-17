@@ -1,6 +1,6 @@
 with Ada.Exceptions;
 with Con_Io, Afpx.List_Manager, String_Mng, Basic_Proc, Normal;
-with Utils.X, Config, Details, View;
+with Utils.X, Config, Details, View, Afpx_Xref;
 package body History is
 
   -- Cut string if too long for list
@@ -65,30 +65,30 @@ package body History is
     -- Init Afpx
     procedure Init is
     begin
-      Afpx.Use_Descriptor (3);
+      Afpx.Use_Descriptor (Afpx_Xref.History.Dscr_Num);
       Cursor_Field := 1;
       Cursor_Col := 0;
       Insert := False;
       -- List characteristics
       Afpx.Get_Field_Size (Afpx.List_Field_No, List_Height, List_Width);
       -- Encode file/dir
-      Afpx.Clear_Field (10);
+      Afpx.Clear_Field (Afpx_Xref.History.File);
       if Is_File then
-        Afpx.Encode_Field (10, (0, 0),
+        Afpx.Encode_Field (Afpx_Xref.History.File, (0, 0),
                Utils.Normalize (Path & Name, Afpx.Get_Field_Width (10)));
       else
         if Name /= "" then
-          Afpx.Encode_Field (10, (0, 0),
+          Afpx.Encode_Field (Afpx_Xref.History.File, (0, 0),
                  Utils.Normalize (Path & Name & "/", Afpx.Get_Field_Width (10)));
         elsif Path /= "" then
-          Afpx.Encode_Field (10, (0, 0),
+          Afpx.Encode_Field (Afpx_Xref.History.File, (0, 0),
                  Utils.Normalize (Path , Afpx.Get_Field_Width (10)));
         else
-          Afpx.Encode_Field (10, (0, 0),
+          Afpx.Encode_Field (Afpx_Xref.History.File, (0, 0),
                  Utils.Normalize ("/" , Afpx.Get_Field_Width (10)));
         end if;
         -- Lock button View
-        Utils.X.Protect_Field (17);
+        Utils.X.Protect_Field (Afpx_Xref.History.View);
       end if;
     end Init;
 
@@ -158,25 +158,26 @@ package body History is
     begin
       -- Put percent value and "scroll bar"
       Percent := Afpx.Get_List_Percent;
-      Afpx.Clear_Field (21);
+      Afpx.Clear_Field (Afpx_Xref.History.Scroll);
       if Percent /= 0 then
-        Afpx.Encode_Field (11, (0, 0), Normal (Percent, 3, True));
+        Afpx.Encode_Field (Afpx_Xref.History.Percent, (0, 0),
+                           Normal (Percent, 3, True));
         -- 0 <-> 1% and Height-1 <-> 100%
         -- (Percent-1)/99 = Row/(Height-1)
-        Afpx.Encode_Field (21,
+        Afpx.Encode_Field (Afpx_Xref.History.Scroll,
            (Row => (Afpx.Get_Field_Height (21) - 1) * (Percent - 1) / 99,
             Col => 0),
            "-");
       else
-        Afpx.Encode_Field (11, (0, 0), " - ");
+        Afpx.Encode_Field (Afpx_Xref.History.Percent, (0, 0), " - ");
       end if;
       -- Put Ids selected
-      Afpx.Encode_Field (14, (0, 0),
+      Afpx.Encode_Field (Afpx_Xref.History.Leftsel, (0, 0),
            Normal (Status.Ids_Selected(Afpx.List_Left),
-                   Afpx.Get_Field_Width (14), False));
-      Afpx.Encode_Field (16, (0, 0),
+                   Afpx.Get_Field_Width (Afpx_Xref.History.Leftsel), False));
+      Afpx.Encode_Field (Afpx_Xref.History.Rightsel, (0, 0),
            Normal (Status.Ids_Selected(Afpx.List_Right),
-                   Afpx.Get_Field_Width (16), False));
+                   Afpx.Get_Field_Width (Afpx_Xref.History.Rightsel), False));
     end List_Change;
 
   begin
@@ -229,7 +230,7 @@ package body History is
 
         when Afpx.Mouse_Button =>
           case Ptg_Result.Field_No is
-            when Afpx.List_Field_No | 17 =>
+            when Afpx.List_Field_No | Afpx_Xref.History.View =>
               -- Double click or View => View if file
               if Is_File then
                 Show (Show_View);
@@ -240,13 +241,13 @@ package body History is
               Afpx.List_Manager.Scroll(
                  Ptg_Result.Field_No - Utils.X.List_Scroll_Fld_Range'First + 1);
 
-            when 18 =>
+            when Afpx_Xref.History.Diff =>
               -- Diff
               Show_Delta (Ptg_Result.Id_Selected_Right);
-            when 19 =>
+            when Afpx_Xref.History.Details =>
               -- Details
               Show (Show_Details);
-            when 20 =>
+            when Afpx_Xref.History.Back =>
               -- Back
               return;
             when others =>

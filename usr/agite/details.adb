@@ -1,6 +1,6 @@
 with Ada.Characters.Latin_1, Ada.Exceptions;
 with As.U, Con_Io, Afpx.List_Manager, String_Mng, Directory, Basic_Proc;
-with Utils.X, View, History, Config;
+with Utils.X, View, History, Config, Afpx_Xref;
 package body Details is
 
   List_Width : Afpx.Width_Range;
@@ -39,7 +39,7 @@ package body Details is
     procedure Init (Cet_Details : in Boolean) is
     begin
       -- Init Afpx
-      Afpx.Use_Descriptor (4);
+      Afpx.Use_Descriptor (Afpx_Xref.Details.Dscr_Num);
       Cursor_Field := 1;
       Cursor_Col := 0;
       Insert := False;
@@ -58,13 +58,14 @@ package body Details is
       end if;
 
       -- Encode info
-      Afpx.Encode_Field (10, (0, 0), Hash);
-      Afpx.Encode_Field (11, (0, 0), Date);
-      Afpx.Get_Field_Size (12, Comment_Height, Comment_Width);
-      Afpx.Clear_Field (12);
+      Afpx.Encode_Field (Afpx_Xref.Details.Hash, (0, 0), Hash);
+      Afpx.Encode_Field (Afpx_Xref.Details.Date, (0, 0), Date);
+      Afpx.Get_Field_Size (Afpx_Xref.Details.Comment,
+                           Comment_Height, Comment_Width);
+      Afpx.Clear_Field (Afpx_Xref.Details.Comment);
       for I in 1 .. Comment_Height loop
         begin
-          Afpx.Encode_Field (12, (I - 1, 0),
+          Afpx.Encode_Field (Afpx_Xref.Details.Comment, (I - 1, 0),
                String_Mng.Procuste (Comment(I).Image,
                                     Comment_Width,
                                     Trunc_Head => False));
@@ -173,22 +174,22 @@ package body Details is
               -- Scroll list
               Afpx.List_Manager.Scroll (
                  Ptg_Result.Field_No - Utils.X.List_Scroll_Fld_Range'First + 1);
-            when 13 =>
+            when Afpx_Xref.Details.View =>
               -- View
               Show (Show_View);
-            when 14 =>
+            when Afpx_Xref.Details.History =>
               -- History
               Show (Show_Hist);
-            when 15 =>
+            when Afpx_Xref.Details.Diff =>
               -- Diff
               Show (Show_Diff);
-            when 16 =>
+            when Afpx_Xref.Details.Back =>
               -- Back
               return;
-            when 17 =>
+            when Afpx_Xref.Details.Copyhash =>
               -- Copy hash to clipboard
               Copy_Selection (False);
-            when 18 =>
+            when Afpx_Xref.Details.Copy =>
               -- Copy commit comment to clipboard
               Copy_Selection (True);
             when others =>

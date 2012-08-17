@@ -3,7 +3,7 @@
 <!-- For agite -->
 
 <Afpx_Descriptors Height="46" Width="55">
-  <Var Name="Version" Value="V6.3"/>
+  <Var Name="Version" Value="V6.4"/>
 
   <!-- Main screen: explorator -->
   <Descriptor Num="1" Background="Light_Grey" Name="Main">
@@ -29,7 +29,7 @@
     <Var Name="LmUp" Value="${List.Up}+15"/>
     <Var Name="LmSta" Value="1"/>
 
-    <Field Num="2" Kind="Button">
+    <Field Num="2" Kind="Button" Name="Up">
       <Geometry Up="${LmUp}" Left="${LmLeft}" Height="1" Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="${LmSta}+1">Top</Init>
@@ -64,7 +64,7 @@
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="${LmSta}">PgDown</Init>
     </Field>
-    <Field Num="8" Kind="Button">
+    <Field Num="8" Kind="Button" Name="Bottom">
       <Geometry Up="${Field_7.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
@@ -72,7 +72,7 @@
     </Field>
 
     <!-- Branch, Version and host -->
-    <Field Num="9" Kind="Put">
+    <Field Num="9" Kind="Put" Name="Branch">
       <Geometry Up="0" Left="1" Height="1" Right="${Field_1.Left}-2"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
@@ -81,7 +81,7 @@
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">${Version}</Init>
     </Field>
-    <Field Num="11" Kind="Put">
+    <Field Num="11" Kind="Put" Name="Host">
       <Geometry Up="0" Left="${Field_10.Right}+3" Height="1"
                 Right="${Screen.Width}-2"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
@@ -93,7 +93,7 @@
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">Root:</Init>
     </Field>
-    <Field Num="13" Kind="Button">
+    <Field Num="13" Kind="Button" Name="Root">
       <Geometry Up="${Field_12.Up}" Left="${Field_12.Right}+2" Height="1"
                 Right="${Screen.Width}-2"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
@@ -103,35 +103,35 @@
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">Go</Init>
     </Field>
-    <Field Num="15" Kind="Get">
+    <Field Num="15" Kind="Get" Name="Chdir">
       <Geometry Up="${Field_14.Up}" Left="${Field_14.Right}+2" Height="1"
                 Right="${Screen.Width}-2"/>
       <Colors Foreground="Black" Background="Light_Grey" Selected="White"/>
     </Field>
-    <Field Num="16" Kind="Button">
+    <Field Num="16" Kind="Button" Name="Reread">
       <Geometry Up="${Field_15.Low}+2" Left="1" Height="1" Width="8"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">Reread</Init>
     </Field>
-    <Field Num="17" Kind="Button">
+    <Field Num="17" Kind="Button" Name="Dirup">
       <Geometry Up="${Field_16.Up}" Left="${Field_16.Right}+2" Height="1"
                 Width="8"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">Dir Up</Init>
     </Field>
-    <Field Num="18" Kind="Button">
+    <Field Num="18" Kind="Button" Name="Bookmarks">
       <Geometry Up="${Field_16.Up}" Left="${Field_17.Right}+2" Height="1"
                 Width="11"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">Bookmarks</Init>
     </Field>
-    <Field Num="19" Kind="Button">
+    <Field Num="19" Kind="Button" Name="Pushd">
       <Geometry Up="${Field_16.Up}" Left="${Field_18.Right}+2" Height="1"
                 Width="7"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">PushD</Init>
     </Field>
-    <Field Num="20" Kind="Button">
+    <Field Num="20" Kind="Button" Name="Popd">
       <Geometry Up="${Field_16.Up}" Left="${Field_19.Right}+2" Height="1"
                 Width="6"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
@@ -144,7 +144,7 @@
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">Search:</Init>
     </Field>
-    <Field Num="22" Kind="Button">
+    <Field Num="22" Kind="Button" Name="Quick_Search">
       <Geometry Up="${Field_21.Up}" Height="2" Left="${Field_21.Right}+2"
                 Width="36"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
@@ -153,51 +153,51 @@
     </Field>
 
     <!-- GUI, Xtem, Edit, Diff, History, Revert, Exit. -->
-    <Field Num="23" Kind="Button">
+    <Field Num="23" Kind="Button" Name="Gui">
       <Geometry Up="${Field_16.Up}" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">GitGUI</Init>
     </Field>
-    <Field Num="24" Kind="Button">
+    <Field Num="24" Kind="Button" Name="Xterm">
       <Geometry Up="${Field_23.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
-      <Init Row="0" Col="2">XTerm</Init>
+      <Init Row="0" Col="1">XTerm</Init>
     </Field>
-    <Field Num="25" Kind="Button">
+    <Field Num="25" Kind="Button" Name="Edit">
       <Geometry Up="${Field_24.Low}+2" Left="${LmLeft}" Height="3"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="2">Edit</Init>
     </Field>
-    <Field Num="26" Kind="Button">
+    <Field Num="26" Kind="Button" Name="Diff">
       <Geometry Up="${Field_25.Low}+2" Left="${LmLeft}" Height="3"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="2">Diff</Init>
     </Field>
-    <Field Num="27" Kind="Button">
+    <Field Num="27" Kind="Button" Name="History">
       <Geometry Up="${Field_26.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="2">Hist</Init>
     </Field>
-    <Field Num="28" Kind="Button">
+    <Field Num="28" Kind="Button" Name="Revert">
       <Geometry Up="${Field_27.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">Revert</Init>
     </Field>
 
-    <Field Num="29" Kind="Button">
+    <Field Num="29" Kind="Button" Name="Add">
       <Geometry Up="${Field_28.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="2">Add</Init>
     </Field>
 
-    <Field Num="30" Kind="Button">
+    <Field Num="30" Kind="Button" Name="Quit">
       <Geometry Height="1" Left="${LmLeft}" Low="${List.Low}"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
@@ -277,7 +277,7 @@
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">Bookmarks</Init>
     </Field>
-    <Field Num="10" Kind="Put">
+    <Field Num="10" Kind="Put" Name="Dir">
       <Geometry Up="${Field_9.Low}+2" Left="1" Height="1"
                 Right="${Screen.Width}-2"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
@@ -287,54 +287,54 @@
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">Name to add:</Init>
     </Field>
-    <Field Num="12" Kind="Get">
+    <Field Num="12" Kind="Get" Name="Name">
       <Geometry Up="${Field_10.Low}+2" Left="${Field_11.Right}+2" Height="1"
                 Right="${LmLeft}-2"/>
       <Colors Foreground="Black" Background="Light_Grey" Selected="White"/>
     </Field>
 
     <!-- Add, Goto, Move, Del, Back -->
-    <Field Num="13" Kind="Button">
+    <Field Num="13" Kind="Button" Name="Addcurr">
       <Geometry Up="${List.Up}-4" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">AddCur</Init>
     </Field>
-    <Field Num="14" Kind="Button">
+    <Field Num="14" Kind="Button" Name="Addsep">
       <Geometry Up="${Field_13.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">AddSep</Init>
     </Field>
 
-    <Field Num="15" Kind="Button">
+    <Field Num="15" Kind="Button" Name="Go">
       <Geometry Up="${Field_14.Low}+2" Left="${LmLeft}" Height="3"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="2">Goto</Init>
     </Field>
 
-    <Field Num="16" Kind="Button">
+    <Field Num="16" Kind="Button" Name="Moveup">
       <Geometry Up="${Field_15.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">MovUp</Init>
     </Field>
-    <Field Num="17" Kind="Button">
+    <Field Num="17" Kind="Button" Name="Movedown">
       <Geometry Up="${Field_16.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="1">MovDwn</Init>
     </Field>
 
-    <Field Num="18" Kind="Button">
+    <Field Num="18" Kind="Button" Name="Del">
       <Geometry Up="${Field_17.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="2">Del</Init>
     </Field>
 
-    <Field Num="19" Kind="Button">
+    <Field Num="19" Kind="Button" Name="Back">
       <Geometry Up="${List.Low}-2" Left="${LmLeft}" Height="3"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
@@ -413,14 +413,14 @@
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="1">History</Init>
     </Field>
-    <Field Num="10" Kind="Put">
+    <Field Num="10" Kind="Put" Name="File">
       <Geometry Up="${Field_9.Low}+2" Left="1" Height="1"
                 Right="${Screen.Width}-2"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
 
     <!-- List status xxx%  LeftSel: yyyyy  RightSel: zzzzz-->
-    <Field Num="11" Kind="Put">
+    <Field Num="11" Kind="Put" Name="Percent">
       <Geometry Up="${Field_10.Low}+2" Left="1" Height="1" Width="3"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
@@ -436,7 +436,7 @@
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">LeftSel:</Init>
     </Field>
-    <Field Num="14" Kind="Put">
+    <Field Num="14" Kind="Put" Name="Leftsel">
       <Geometry Up="${Field_10.Low}+2" Left="${Field_13.Right}+1" Height="1"
                 Width="7"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
@@ -447,38 +447,38 @@
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">RightSel:</Init>
     </Field>
-    <Field Num="16" Kind="Put">
+    <Field Num="16" Kind="Put" Name="Rightsel">
       <Geometry Up="${Field_10.Low}+2" Left="${Field_15.Right}+1" Height="1"
                 Width="7"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
 
     <!-- View, Diff, Details, Back -->
-    <Field Num="17" Kind="Button">
+    <Field Num="17" Kind="Button" Name="View">
       <Geometry Up="${List.Up}" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="2">View</Init>
     </Field>
-    <Field Num="18" Kind="Button">
+    <Field Num="18" Kind="Button" Name="Diff">
       <Geometry Up="${Field_17.Low}+2" Left="${LmLeft}" Height="3"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="2">Diff</Init>
     </Field>
-    <Field Num="19" Kind="Button">
+    <Field Num="19" Kind="Button" Name="Details">
       <Geometry Up="${Field_18.Low}+2" Left="${LmLeft}" Height="3"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">Detail</Init>
     </Field>
 
-    <Field Num="20" Kind="Button">
+    <Field Num="20" Kind="Button" Name="Back">
       <Geometry Up="${List.Low}-2" Left="${LmLeft}" Height="3"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="2">Back</Init>
     </Field>
-    <Field Num="21" Kind="Put">
+    <Field Num="21" Kind="Put" Name="Scroll">
       <Geometry Up="${List.Up}" Right="${List.Left}-1" Width="1"
                 Low="${List.Low}"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
@@ -559,39 +559,39 @@
     </Field>
 
     <!-- Hash, Date and Comment -->
-    <Field Num="10" Kind="Put">
+    <Field Num="10" Kind="Put" Name="Hash">
       <Geometry Up="${Field_9.Low}+2" Left="1" Height="1" Width="40"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
-    <Field Num="11" Kind="Put">
+    <Field Num="11" Kind="Put" Name="Date">
       <Geometry Up="${Field_10.Low}+2" Left="1" Height="1" Width="19"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
-    <Field Num="12" Kind="Put">
+    <Field Num="12" Kind="Put" Name="Comment">
       <Geometry Up="${Field_11.Low}+1" Left="1" Low="${List.Up}-1"
                 Right="${Screen.Right}-1"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
 
     <!-- View, History, Back -->
-    <Field Num="13" Kind="Button">
+    <Field Num="13" Kind="Button" Name="View">
       <Geometry Up="${List.Up}" Left="${LmLeft}" Height="3" Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="2">View</Init>
     </Field>
-    <Field Num="14" Kind="Button">
+    <Field Num="14" Kind="Button" Name="History">
       <Geometry Up="${Field_13.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="2">Hist</Init>
     </Field>
-    <Field Num="15" Kind="Button">
+    <Field Num="15" Kind="Button" Name="Diff">
       <Geometry Up="${Field_14.Low}+2" Left="${LmLeft}" Height="1"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="2">Diff</Init>
     </Field>
-    <Field Num="16" Kind="Button">
+    <Field Num="16" Kind="Button" Name="Back">
       <Geometry Up="${List.Low}-2" Left="${LmLeft}" Height="3"
                 Width="${LmWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
@@ -599,13 +599,13 @@
     </Field>
 
     <!-- Copy Hash / date and comment -->
-    <Field Num="17" Kind="Button">
+    <Field Num="17" Kind="Button" Name="Copyhash">
       <Geometry Up="${Field_10.Up}" Height="1" Width="8"
                 Right="${Screen.Width}-2"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="0" Col="2">Copy</Init>
     </Field>
-    <Field Num="18" Kind="Button">
+    <Field Num="18" Kind="Button" Name="Copy">
       <Geometry Up="${Field_11.Up}" Height="1" Width="8"
                 Right="${Screen.Width}-2"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
@@ -624,22 +624,22 @@
     </Field>
 
     <!-- Sub title and current file/dir-->
-    <Field Num="2" Kind="Put">
+    <Field Num="2" Kind="Put" Name="Action">
       <Geometry Up="${Field_1.Low}+2" Left="1" Height="1"
                 Right="${Screen.Right}-1"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
-    <Field Num="3" Kind="Put">
+    <Field Num="3" Kind="Put" Name="Name">
       <Geometry Up="${Field_2.Low}+2" Left="1" Height="1"
                 Right="${Screen.Right}-1"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
-    <Field Num="4" Kind="Button">
+    <Field Num="4" Kind="Button" Name="Ok">
       <Geometry Up="${Field_3.Low}+3" Left="20" Height="3" Width="6"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="2">OK</Init>
     </Field>
-    <Field Num="5" Kind="Button">
+    <Field Num="5" Kind="Button" Name="Cancel">
       <Geometry Up="${Field_4.Up}" Left="${Field_4.Right}+2" Height="3"
                 Width="8"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>

@@ -1,5 +1,5 @@
 with As.U, Directory, Con_Io, Afpx.List_Manager;
-with Utils.X, Config;
+with Utils.X, Config, Afpx_Xref;
 package body Bookmarks is
 
   -- Strip potential leading "(name) " of bookmark
@@ -58,9 +58,10 @@ package body Bookmarks is
   Cursor_Col : Con_Io.Col_Range;
   function Get_Name return String is
     Str : constant String
-        := Utils.Parse_Spaces (Afpx.Decode_Field (12, 0, False));
+        := Utils.Parse_Spaces (Afpx.Decode_Field (Afpx_Xref.Bookmarks.Name,
+                               0, False));
   begin
-    Afpx.Clear_Field (12);
+    Afpx.Clear_Field (Afpx_Xref.Bookmarks.Name);
     Cursor_Col := 0;
     return Str;
   end Get_Name;
@@ -89,7 +90,7 @@ package body Bookmarks is
 
   begin
     -- Init Afpx
-    Afpx.Use_Descriptor (2);
+    Afpx.Use_Descriptor (Afpx_Xref.Bookmarks.Dscr_Num);
     Cursor_Field := Afpx.Next_Cursor_Field (0);
     Cursor_Col := 0;
     Insert := False;
@@ -97,8 +98,9 @@ package body Bookmarks is
     Dir_Width := Afpx.Get_Field_Width (10);
 
     -- Encode dir
-    Afpx.Clear_Field (10);
-    Afpx.Encode_Field (10, (0, 0), Utils.Normalize (Curr_Dir, Dir_Width));
+    Afpx.Clear_Field (Afpx_Xref.Bookmarks.Dir);
+    Afpx.Encode_Field (Afpx_Xref.Bookmarks.Dir, (0, 0),
+                       Utils.Normalize (Curr_Dir, Dir_Width));
 
     -- Encode Bookmarks
     Load_List;
@@ -107,15 +109,15 @@ package body Bookmarks is
     loop
       -- No Goto nor Del nor Move if no Bookmark
       if Afpx.Line_List.Is_Empty then
-        Utils.X.Protect_Field (15);
-        Utils.X.Protect_Field (16);
-        Utils.X.Protect_Field (17);
-        Utils.X.Protect_Field (18);
+        Utils.X.Protect_Field (Afpx_Xref.Bookmarks.Go);
+        Utils.X.Protect_Field (Afpx_Xref.Bookmarks.Moveup);
+        Utils.X.Protect_Field (Afpx_Xref.Bookmarks.Movedown);
+        Utils.X.Protect_Field (Afpx_Xref.Bookmarks.Del);
       else
-        Afpx.Reset_Field (15);
-        Afpx.Reset_Field (16);
-        Afpx.Reset_Field (17);
-        Afpx.Reset_Field (18);
+        Afpx.Reset_Field (Afpx_Xref.Bookmarks.Go);
+        Afpx.Reset_Field (Afpx_Xref.Bookmarks.Moveup);
+        Afpx.Reset_Field (Afpx_Xref.Bookmarks.Movedown);
+        Afpx.Reset_Field (Afpx_Xref.Bookmarks.Del);
       end if;
 
       Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
@@ -136,7 +138,7 @@ package body Bookmarks is
 
         when Afpx.Mouse_Button =>
           case Ptg_Result.Field_No is
-            when Afpx.List_Field_No | 15 =>
+            when Afpx.List_Field_No | Afpx_Xref.Bookmarks.Go =>
               -- Double click or Goto => move to bookmark
               declare
                 Dir : constant String := Dir_Of (Afpx.Line_List.Get_Position);
@@ -150,7 +152,7 @@ package body Bookmarks is
               -- Scroll list
               Afpx.List_Manager.Scroll(
                  Ptg_Result.Field_No - Utils.X.List_Scroll_Fld_Range'First + 1);
-            when 13 =>
+            when Afpx_Xref.Bookmarks.Addcurr =>
               -- Add current
               Bookmark := (As.U.Tus (Get_Name),
                            As.U.Tus (Directory.Get_Current));
@@ -160,7 +162,7 @@ package body Bookmarks is
                 Config.Add_Bookmark (Afpx.Line_List.Get_Position, Bookmark);
               end if;
               Insert_List (Image (Bookmark));
-            when 14 =>
+            when Afpx_Xref.Bookmarks.Addsep =>
               -- Add separator
               Bookmark := (As.U.Tus (Get_Name), As.U.Asu_Null);
               if Afpx.Line_List.Is_Empty then
@@ -170,7 +172,7 @@ package body Bookmarks is
               end if;
               Insert_List (Image (Bookmark));
 
-            when 16 =>
+            when Afpx_Xref.Bookmarks.Moveup =>
               -- Move bookmark up
               Position := Afpx.Line_List.Get_Position;
               if Position /= 1 then
@@ -178,7 +180,7 @@ package body Bookmarks is
                 Load_List;
                 Afpx.Line_List.Move_At (Position - 1);
               end if;
-            when 17 =>
+            when Afpx_Xref.Bookmarks.Movedown =>
               -- Move bookmark down
               Position := Afpx.Line_List.Get_Position;
               if Position /= Afpx.Line_List.List_Length then
@@ -187,11 +189,11 @@ package body Bookmarks is
                 Afpx.Line_List.Move_At (Position + 1);
               end if;
 
-            when 18 =>
+            when Afpx_Xref.Bookmarks.Del =>
               -- Del
               Config.Del_Bookmark (Afpx.Line_List.Get_Position);
               Afpx.Line_List.Delete (Moved => Dummy);
-            when 19 =>
+            when Afpx_Xref.Bookmarks.Back =>
               -- Back
               return "";
             when others =>
