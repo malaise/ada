@@ -805,6 +805,7 @@ package body Limited_List is
     case Where is
       when Next =>
         for I in 1 .. Occurence loop
+          Found := False;
           if I /= 1 or else From = Skip_Current then
             exit when not Next_Pos;
           end if;
@@ -816,6 +817,7 @@ package body Limited_List is
         end loop;
       when Prev =>
         for I in 1 .. Occurence loop
+          Found := False;
           if I /= 1 or else From = Skip_Current then
             exit when not Prev_Pos;
           end if;
