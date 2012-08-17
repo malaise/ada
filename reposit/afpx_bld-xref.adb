@@ -2,13 +2,22 @@ with Lower_Str, Text_Line, Dynamic_List;
 separate (Afpx_Bld)
 package body Xref is
 
+  procedure Check_Identifier (Name : in String) is
+    use type Ada_Words.Keyword_Res_List;
+  begin
+    if not Ada_Words.Is_Identifier (Name) then
+      raise Invalid_Identifier;
+    end if;
+    if Ada_Words.Check_Keyword (Name) /= Ada_Words.False then
+      raise Invalid_Identifier;
+    end if;
+  end Check_Identifier;
+
   -- The package and file name, set once
   Package_Name, File_Name : Asu_Us;
   procedure Set_Package_Name (Name : in Asu_Us) is
   begin
-    if not Ada_Words.Is_Identifier (Name.Image) then
-      raise Invalid_Identifier;
-    end if;
+    Check_Identifier (Name.Image);
     Package_Name := As.U.Tus (Mixed_Str (Name.Image));
     File_Name := As.U.Tus (Lower_Str (Name.Image) & ".ads");
   end Set_Package_Name;
@@ -30,9 +39,7 @@ package body Xref is
                            Name : in Asu_Us) is
     use type Afpx_Typ.Descriptor_Range, Asu_Us;
   begin
-    if not Ada_Words.Is_Identifier (Name.Image) then
-      raise Invalid_Identifier;
-    end if;
+    Check_Identifier (Name.Image);
     Dscrs (Dscr) := As.U.Tus (Mixed_Str (Name.Image));
     for I in Dscrs'Range loop
       if I /= Dscr and then Dscrs(I) = Dscrs(Dscr) then
@@ -54,9 +61,7 @@ package body Xref is
     Found : Boolean;
     Cell : Field_Cell;
   begin
-    if not Ada_Words.Is_Identifier (Name.Image) then
-      raise Invalid_Identifier;
-    end if;
+    Check_Identifier (Name.Image);
     Cell := (Dscr, Field, As.U.Tus (Mixed_Str (Name.Image)));
     Fields.Insert (Cell);
     -- Check no duplicates
@@ -112,6 +117,9 @@ package body Xref is
           -- Start new descriptor
           Dscr := Positive (Cell.Dscr);
           File.Put_Line ("  package " & Dscrs(Cell.Dscr) & " is");
+          File.Put_Line ("    Dscr_Num : constant Afpx.Descriptor_Range := "
+                         &  Normal (Positive (Cell.Dscr), 2, Gap => '0')
+                         & ";");
         else
             File.Put_Line ("    " & Cell.Name.Image
               & " : constant Afpx.Field_Range := "

@@ -674,6 +674,7 @@ procedure Afpx_Bld is
     Fields(No).Isprotected := False;
     -- Set Field name
     if not Name.Is_Null then
+      Add_Variable (Node, Name_Of (No) & ".Name", Name.Image, False, False);
       begin
         Xref.Set_Field_Name (Dscr, No, Name);
       exception
@@ -876,21 +877,22 @@ procedure Afpx_Bld is
     if not Background then
       Descriptors(Dscr_No).Background := Default_Background;
     end if;
-    -- Overwrite Dscr name
-    if not Name.Is_Null then
-      begin
-        Xref.Set_Dscr_Name (Dscr_No, Name);
-      exception
-        when Xref.Invalid_Identifier =>
-          File_Error (Node, "Invalid descriptor name");
-        when Xref.Identifier_Redefined =>
-          File_Error (Node, "A descriptor with this name already exists");
-      end;
-    end if;
     Add_Variable (Node, "Dscr_" & Dscr_Image (Dscr_No) & ".Background",
         Color_Image (Descriptors(Dscr_No).Background), False, True);
     Add_Variable (Node, "Descriptor.Background",
         Color_Image (Descriptors(Dscr_No).Background), False, False);
+    -- Set Dscr name
+    Add_Variable (Node, "Dscr_" & Dscr_Image (Dscr_No) & ".Name", Name.Image,
+                  False, True);
+    Add_Variable (Node, "Descriptor.Name", Name.Image, False, False);
+    begin
+      Xref.Set_Dscr_Name (Dscr_No, Name);
+    exception
+      when Xref.Invalid_Identifier =>
+        File_Error (Node, "Invalid descriptor name");
+      when Xref.Identifier_Redefined =>
+        File_Error (Node, "A descriptor with this name already exists");
+    end;
 
     -- Init dscr and fields array. No list at init
     Descriptors(Dscr_No).Modified := True;
