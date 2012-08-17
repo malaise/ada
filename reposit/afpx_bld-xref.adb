@@ -50,9 +50,12 @@ package body Xref is
   end Set_Dscr_Name;
 
   function Match (Current, Criteria : Field_Cell) return Boolean is
-    use type Afpx_Typ.Descriptor_Range, Asu_Us;
+    use type Afpx_Typ.Descriptor_Range, Afpx_Typ.Absolute_Field_Range,
+             Asu_Us;
   begin
-    return Current.Dscr = Criteria.Dscr
+    -- A field can have the same name as the descriptor
+    return   Current.Num /= 0
+    and then Current.Dscr = Criteria.Dscr
     and then Current.Name = Criteria.Name;
   end Match;
   procedure Set_Field_Name (Dscr : in Afpx_Typ.Descriptor_Range;
