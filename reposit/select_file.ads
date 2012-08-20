@@ -6,6 +6,10 @@
 -- Allow selection (in Get field) of a non existing file if not For_Read
 -- Change directory transparently
 -- Try or not to select Current_File if it is in list
+
+-- Note that the descriptor can be freely specified but that the field numbers
+--  in this descriptor are fixed (at least from 1 to 16), and that there are
+--  some hidden constraints on their geometry
 with Afpx;
 generic
   -- Any initialisation to do after descriptor activation
