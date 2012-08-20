@@ -2,6 +2,8 @@ with Lower_Str, Text_Line, Dynamic_List;
 separate (Afpx_Bld)
 package body Xref is
 
+  Dscr_Num : constant String := "Dscr_Num";
+
   procedure Check_Identifier (Name : in String) is
     use type Ada_Words.Keyword_Res_List;
   begin
@@ -65,6 +67,9 @@ package body Xref is
     Cell : Field_Cell;
   begin
     Check_Identifier (Name.Image);
+    if Name.Image = Dscr_Num then
+      raise Invalid_Identifier;
+    end if;
     Cell := (Dscr, Field, As.U.Tus (Mixed_Str (Name.Image)));
     Fields.Insert (Cell);
     -- Check no duplicates
@@ -120,7 +125,8 @@ package body Xref is
           -- Start new descriptor
           Dscr := Positive (Cell.Dscr);
           File.Put_Line ("  package " & Dscrs(Cell.Dscr) & " is");
-          File.Put_Line ("    Dscr_Num : constant Afpx.Descriptor_Range := "
+          File.Put_Line ("    " & Dscr_Num
+                         & " : constant Afpx.Descriptor_Range := "
                          &  Normal (Positive (Cell.Dscr), 2, Gap => '0')
                          & ";");
         else
