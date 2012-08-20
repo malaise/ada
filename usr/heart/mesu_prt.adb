@@ -1,6 +1,6 @@
 with Ada.Characters.Latin_1;
 with Normal, Afpx, Sys_Calls, Text_Line;
-with Str_Mng, Mesu_Fil, Pers_Def, Mesu_Def, Mesu_Nam, Pers_Mng;
+with Str_Mng, Mesu_Fil, Pers_Def, Mesu_Def, Mesu_Nam, Pers_Mng, Afpx_Xref;
 package body Mesu_Prt is
 
   Printer_Name : constant String := "";
@@ -73,7 +73,7 @@ package body Mesu_Prt is
     -- for each in list
     Afpx.Line_List.Rewind;
 
-    Afpx.Use_Descriptor (4);
+    Afpx.Use_Descriptor (Afpx_Xref.Printing.Dscr_Num);
     Afpx.Put;
 
     Print:

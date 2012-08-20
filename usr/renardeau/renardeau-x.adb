@@ -1,4 +1,4 @@
-with Afpx, Con_Io, Normal, String_Mng;
+with Afpx, Con_Io, Normal, String_Mng, Afpx_Xref;
 separate (Renardeau)
 
 package body X is
@@ -6,27 +6,27 @@ package body X is
 
   -- Fields
   -- First of Base
-  Base_Fs : constant Field_Range := 2;
+  Base_Fs : constant Field_Range := Afpx_Xref.Main.Base_Fs;
   -- Target
-  Target_F : constant Field_Range := 8;
+  Target_F : constant Field_Range := Afpx_Xref.Main.Target_F;
   -- First of numbers
-  Number_Fs : constant Field_Range := 9;
+  Number_Fs : constant Field_Range := Afpx_Xref.Main.Number_Fs;
   -- First of digits
-  Digit_Fs : constant Field_Range := 14;
+  Digit_Fs : constant Field_Range := Afpx_Xref.Main.Digit_Fs;
   -- Zero
-  Zero_F : constant Field_Range := 23;
+  Zero_F : constant Field_Range := Afpx_Xref.Main.Zero_F;
   -- Enter
-  Enter_F : constant Field_Range := 24;
+  Enter_F : constant Field_Range := Afpx_Xref.Main.Enter_F;
   -- Undo
-  Undo_F : constant Field_Range := 25;
+  Undo_F : constant Field_Range := Afpx_Xref.Main.Undo_F;
   -- Reset
-  Clear_F : constant Field_Range := 26;
+  Clear_F : constant Field_Range := Afpx_Xref.Main.Clear_F;
   -- Result
-  Result_F : constant Field_Range := 27;
+  Result_F : constant Field_Range := Afpx_Xref.Main.Result_F;
   -- First of computations
-  Compute_Fs : constant Field_Range := 28;
+  Compute_Fs : constant Field_Range := Afpx_Xref.Main.Compute_Fs;
   -- Exit
-  Exit_F : constant Field_Range := 33;
+  Exit_F : constant Field_Range := Afpx_Xref.Main.Exit_F;
 
   -- For PTG Get field (there is none here)
   Cursor_Field : Field_Range := 1;
@@ -178,7 +178,7 @@ package body X is
     Reset : Boolean;
   begin
     -- Init / Reset
-    Use_Descriptor (1);
+    Use_Descriptor (Afpx_Xref.Main.Dscr_Num);
     Reset := True;
 
     -- Get foreground color
@@ -245,7 +245,7 @@ package body X is
                 Status := T1;
               end if;
             when Clear_F =>
-              Use_Descriptor (1);
+              Use_Descriptor (Afpx_Xref.Main.Dscr_Num);
               Reset := True;
               Redisplay := False;
               Status := B1;

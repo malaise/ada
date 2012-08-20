@@ -1,6 +1,6 @@
 with Ada.Characters.Latin_1;
 with As.B, Argument, Basic_Proc, Con_Io, Afpx, String_Mng, Language;
-with Conv, Lat_Lon, String_Util, Great_Circle;
+with Conv, Lat_Lon, String_Util, Great_Circle, Afpx_Xref;
 
 procedure Gc is
 
@@ -24,13 +24,15 @@ procedure Gc is
   Insert : Boolean;
   Result : Afpx.Result_Rec;
 
-  subtype A_Flds is Afpx.Field_Range range 06 .. 19;
-  subtype B_Flds is Afpx.Field_Range range 20 .. 33;
-  Heading_Ab_Field  : constant Afpx.Field_Range := 34;
-  Distance_Field  : constant Afpx.Field_Range := 35;
-  Heading_Ba_Field  : constant Afpx.Field_Range := 37;
-  Compute_Field  : constant Afpx.Field_Range := 38;
-  Exit_Field  : constant Afpx.Field_Range := 39;
+  subtype A_Flds is Afpx.Field_Range
+                    range Afpx_Xref.Main.A_First .. Afpx_Xref.Main.A_Last;
+  subtype B_Flds is Afpx.Field_Range
+                    range Afpx_Xref.Main.B_First .. Afpx_Xref.Main.B_Last;
+  Heading_Ab_Field  : constant Afpx.Field_Range := Afpx_Xref.Main.Heading;
+  Distance_Field  : constant Afpx.Field_Range := Afpx_Xref.Main.Distance;
+  Heading_Ba_Field  : constant Afpx.Field_Range := Afpx_Xref.Main.Revert;
+  Compute_Field  : constant Afpx.Field_Range := Afpx_Xref.Main.Compute;
+  Exit_Field  : constant Afpx.Field_Range := Afpx_Xref.Main.Quit;
 
   Decode_Ok : Boolean;
   Need_Clean : Boolean := False;
@@ -146,7 +148,7 @@ begin
         return;
     end;
   else
-    Afpx.Use_Descriptor (1);
+    Afpx.Use_Descriptor (Afpx_Xref.Main.Dscr_Num);
     -- First Get field
     Redisplay := True;
     Cursor_Field := Afpx.Next_Cursor_Field(0);

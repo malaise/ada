@@ -1,6 +1,6 @@
 with Con_Io, Afpx, Normal, Dir_Mng;
 with Mesu_Edi, Pers_Mng, Mesu_Def, Mesu_Sel, Mesu_Nam, Pers_Lis, Mesu_Fil,
-     Mesu_Prt, Mesu_Gra;
+     Mesu_Prt, Mesu_Gra, Afpx_Xref;
 use Afpx;
 package body Mesu_Mng is
 
@@ -34,16 +34,16 @@ package body Mesu_Mng is
     begin
       case Current_Field is
 
-        when 07 | 08 =>
+        when Afpx_Xref.Main.Person | Afpx_Xref.Main.Activity =>
           -- In name or activity
           -- Expand name & activity
-          Person.Name     := Afpx.Decode_Field (07, 00);
-          Person.Activity := Afpx.Decode_Field (08, 00);
+          Person.Name     := Afpx.Decode_Field (Afpx_Xref.Main.Person, 00);
+          Person.Activity := Afpx.Decode_Field (Afpx_Xref.Main.Activity, 00);
 
           if Str_Mng.Is_Spaces (Person.Name) then
             if Str_Mng.Is_Spaces (Person.Activity) then
               -- Name & activity empty : ok
-              Current_Field := 09;
+              Current_Field := Afpx_Xref.Main.Day_After;
               Locok := True;
               if For_Valid then
                 Criteria.Name := (others => ' ');
@@ -51,26 +51,26 @@ package body Mesu_Mng is
               end if;
             else
               -- Name emtpy but activity set : err name
-              Current_Field := 07;
+              Current_Field := Afpx_Xref.Main.Person;
               Locok := False;
             end if;
           else
             Pers_Mng.Expand (Pers_Def.The_Persons,
                              Person.Name, Person.Activity, Pos_Pers);
-            Afpx.Encode_Field (07, (00, 00), Person.Name);
-            Afpx.Encode_Field (08, (00, 00), Person.Activity);
+            Afpx.Encode_Field (Afpx_Xref.Main.Person, (00, 00), Person.Name);
+            Afpx.Encode_Field (Afpx_Xref.Main.Activity, (00, 00), Person.Activity);
 
             -- Set pos in case of end
             if For_Valid then
               if Pos_Pers >= 0 then
                 -- Some person found : ok
-                Current_Field := 09;
+                Current_Field := Afpx_Xref.Main.Day_After;
                 Locok := True;
                 Criteria.Name := Person.Name;
                 Criteria.Activity := Person.Activity;
               else
                 -- Error in name
-                Current_Field := 07;
+                Current_Field := Afpx_Xref.Main.Person;
                 Locok := False;
               end if;
             else
@@ -81,69 +81,83 @@ package body Mesu_Mng is
                 Locok := True;
               elsif Pos_Pers = 0 then
                 -- Several persons found : next field
-                if Current_Field = 07 then
-                  Current_Field := 08;
+                if Current_Field = Afpx_Xref.Main.Person then
+                  Current_Field := Afpx_Xref.Main.Activity;
                 else
-                  Current_Field := 09;
+                  Current_Field := Afpx_Xref.Main.Day_After;
                 end if;
                 Locok := True;
               else
                 -- Error in name
-                Current_Field := 07;
+                Current_Field := Afpx_Xref.Main.Person;
                 Locok := False;
               end if;
             end if;
           end if;
 
 
-        when 09 | 10 | 11 =>
+        when Afpx_Xref.Main.Day_After | Afpx_Xref.Main.Month_After
+           | Afpx_Xref.Main.Year_After =>
           -- In date aft
-          Date_Aft_R.Day   := Afpx.Decode_Field (09, 00);
-          Date_Aft_R.Month := Afpx.Decode_Field (10, 00);
-          Date_Aft_R.Year  := Afpx.Decode_Field (11, 00);
+          Date_Aft_R.Day   := Afpx.Decode_Field (Afpx_Xref.Main.Day_After,
+                                                 00);
+          Date_Aft_R.Month := Afpx.Decode_Field (Afpx_Xref.Main.Month_After,
+                                                 00);
+          Date_Aft_R.Year  := Afpx.Decode_Field (Afpx_Xref.Main.Year_After,
+                                                 00);
 
           if       Str_Mng.Is_Spaces (Date_Aft_R.Day)
           and then Str_Mng.Is_Spaces (Date_Aft_R.Month)
           and then Str_Mng.Is_Spaces (Date_Aft_R.Year) then
             Date_Aft := (others => ' ');
-            Current_Field := 12;
+            Current_Field := Afpx_Xref.Main.Day_Before;
             Locok := True;
           else
-            Current_Field := 09;
+            Current_Field := Afpx_Xref.Main.Day_After;
             Str_Mng.Check_Date (Date_Aft_R, True, Date_Aft, Locok);
             if Locok then
-              Current_Field := 12;
+              Current_Field := Afpx_Xref.Main.Day_Before;
               Str_Mng.To_Rec (Date_Aft, Date_Aft_R);
-              Afpx.Encode_Field (09, (00, 00), Date_Aft_R.Day);
-              Afpx.Encode_Field (10, (00, 00), Date_Aft_R.Month);
-              Afpx.Encode_Field (11, (00, 00), Date_Aft_R.Year);
+              Afpx.Encode_Field (Afpx_Xref.Main.Day_After, (00, 00),
+                                 Date_Aft_R.Day);
+              Afpx.Encode_Field (Afpx_Xref.Main.Month_After, (00, 00),
+                                 Date_Aft_R.Month);
+              Afpx.Encode_Field (Afpx_Xref.Main.Year_After, (00, 00),
+                                 Date_Aft_R.Year);
             end if;
           end if;
           if Locok and then For_Valid then
             Criteria.Date_Aft := Date_Aft;
           end if;
 
-        when 12 | 13 | 14 =>
+        when Afpx_Xref.Main.Day_Before | Afpx_Xref.Main.Month_Before
+           | Afpx_Xref.Main.Year_Before =>
           -- In date bef
-          Date_Bef_R.Day   := Afpx.Decode_Field (12, 00);
-          Date_Bef_R.Month := Afpx.Decode_Field (13, 00);
-          Date_Bef_R.Year  := Afpx.Decode_Field (14, 00);
+          Date_Bef_R.Day   := Afpx.Decode_Field (Afpx_Xref.Main.Day_Before,
+                                                 00);
+          Date_Bef_R.Month := Afpx.Decode_Field (Afpx_Xref.Main.Month_Before,
+                                                 00);
+          Date_Bef_R.Year  := Afpx.Decode_Field (Afpx_Xref.Main.Year_Before,
+                                                 00);
 
           if       Str_Mng.Is_Spaces (Date_Bef_R.Day)
           and then Str_Mng.Is_Spaces (Date_Bef_R.Month)
           and then Str_Mng.Is_Spaces (Date_Bef_R.Year) then
             Date_Bef := (others => ' ');
-            Current_Field := 07;
+            Current_Field := Afpx_Xref.Main.Person;
             Locok := True;
           else
-            Current_Field := 12;
+            Current_Field := Afpx_Xref.Main.Day_Before;
             Str_Mng.Check_Date (Date_Bef_R, True, Date_Bef, Locok);
             if Locok then
-              Current_Field := 07;
+              Current_Field := Afpx_Xref.Main.Person;
               Str_Mng.To_Rec (Date_Bef, Date_Bef_R);
-              Afpx.Encode_Field (12, (00, 00), Date_Bef_R.Day);
-              Afpx.Encode_Field (13, (00, 00), Date_Bef_R.Month);
-              Afpx.Encode_Field (14, (00, 00), Date_Bef_R.Year);
+              Afpx.Encode_Field (Afpx_Xref.Main.Day_Before, (00, 00),
+                                 Date_Bef_R.Day);
+              Afpx.Encode_Field (Afpx_Xref.Main.Month_Before, (00, 00),
+                                 Date_Bef_R.Month);
+              Afpx.Encode_Field (Afpx_Xref.Main.Year_Before, (00, 00),
+                                 Date_Bef_R.Year);
             end if;
           end if;
           if Locok and then For_Valid then
@@ -161,8 +175,8 @@ package body Mesu_Mng is
     end Check_Field;
 
   begin
-    Afpx.Use_Descriptor(1);
-    Cursor_Field := 07;
+    Afpx.Use_Descriptor(Afpx_Xref.Main.Dscr_Num);
+    Cursor_Field := Afpx_Xref.Main.Person;
     Cursor_Col := 0;
     Insert := False;
     Mesu_Sel.Load;
@@ -172,14 +186,20 @@ package body Mesu_Mng is
       Str_Mng.Current_Date_Rec (Current_Date, Nb_Month);
       if Afpx.Line_List.Is_Empty then
         -- List empty : Set Aft to current date - offset
-        Afpx.Encode_Field (09, (00, 00), Current_Date.Day);
-        Afpx.Encode_Field (10, (00, 00), Current_Date.Month);
-        Afpx.Encode_Field (11, (00, 00), Current_Date.Year);
+        Afpx.Encode_Field (Afpx_Xref.Main.Day_After, (00, 00),
+                           Current_Date.Day);
+        Afpx.Encode_Field (Afpx_Xref.Main.Month_After, (00, 00),
+                           Current_Date.Month);
+        Afpx.Encode_Field (Afpx_Xref.Main.Year_After, (00, 00),
+                           Current_Date.Year);
       else
         -- List not empty : Set Bef to current date - offset
-        Afpx.Encode_Field (12, (00, 00), Current_Date.Day);
-        Afpx.Encode_Field (13, (00, 00), Current_Date.Month);
-        Afpx.Encode_Field (14, (00, 00), Current_Date.Year);
+        Afpx.Encode_Field (Afpx_Xref.Main.Day_Before, (00, 00),
+                           Current_Date.Day);
+        Afpx.Encode_Field (Afpx_Xref.Main.Month_Before, (00, 00),
+                           Current_Date.Month);
+        Afpx.Encode_Field (Afpx_Xref.Main.Year_Before, (00, 00),
+                           Current_Date.Year);
       end if;
     end if;
 
@@ -198,35 +218,41 @@ package body Mesu_Mng is
                       not List_Empty and then
                       Afpx.Line_List.List_Length <= Mesu_Gra.Max_Nb_Mesure;
         Allow_Undo := Allow_Undo and then not Pers_Empty;
-        -- Tittles
-        Afpx.Set_Field_Activation (01, not Pers_Empty);
-        Afpx.Set_Field_Activation (03, not Pers_Empty);
-        Afpx.Set_Field_Activation (04, not Pers_Empty);
-        Afpx.Set_Field_Activation (05, not Pers_Empty);
-        Afpx.Set_Field_Activation (06, not Pers_Empty);
+        -- Tittle and slashes
+        Afpx.Set_Field_Activation (Afpx_Xref.Main.Title, not Pers_Empty);
+        Afpx.Set_Field_Activation (Afpx_Xref.Main.Slash1_Da, not Pers_Empty);
+        Afpx.Set_Field_Activation (Afpx_Xref.Main.Slash2_Da, not Pers_Empty);
+        Afpx.Set_Field_Activation (Afpx_Xref.Main.Slash1_Db, not Pers_Empty);
+        Afpx.Set_Field_Activation (Afpx_Xref.Main.Slash2_Db, not Pers_Empty);
         -- Pers, date
-        Afpx.Set_Field_Activation (07, not Pers_Empty);
-        Afpx.Set_Field_Activation (08, not Pers_Empty);
-        Afpx.Set_Field_Activation (09, not Pers_Empty);
-        Afpx.Set_Field_Activation (10, not Pers_Empty);
-        Afpx.Set_Field_Activation (11, not Pers_Empty);
-        Afpx.Set_Field_Activation (12, not Pers_Empty);
-        Afpx.Set_Field_Activation (13, not Pers_Empty);
-        Afpx.Set_Field_Activation (14, not Pers_Empty);
-        Afpx.Set_Field_Activation (15, not Pers_Empty);
-        Afpx.Set_Field_Activation (16, not Pers_Empty);
-        Afpx.Set_Field_Activation (17, Allow_Undo);
+        Afpx.Set_Field_Activation (Afpx_Xref.Main.Person, not Pers_Empty);
+        Afpx.Set_Field_Activation (Afpx_Xref.Main.Activity, not Pers_Empty);
+        Afpx.Set_Field_Activation (Afpx_Xref.Main.Day_After, not Pers_Empty);
+        Afpx.Set_Field_Activation (Afpx_Xref.Main.Month_After, not Pers_Empty);
+        Afpx.Set_Field_Activation (Afpx_Xref.Main.Year_After, not Pers_Empty);
+        Afpx.Set_Field_Activation (Afpx_Xref.Main.Day_Before, not Pers_Empty);
+        Afpx.Set_Field_Activation (Afpx_Xref.Main.Month_Before, not Pers_Empty);
+        Afpx.Set_Field_Activation (Afpx_Xref.Main.Year_Before, not Pers_Empty);
+        Afpx.Set_Field_Activation (Afpx_Xref.Main.Add, not Pers_Empty);
+        Afpx.Set_Field_Activation (Afpx_Xref.Main.Remove, not Pers_Empty);
+        Afpx.Set_Field_Activation (Afpx_Xref.Main.Undo, Allow_Undo);
         -- Buttons
-        Afpx.Set_Field_Activation (22, not Pers_Empty and then not List_Empty);
-        Afpx.Set_Field_Activation (23, Allow_Draw);
-        Afpx.Set_Field_Activation (24, not Pers_Empty and then not List_Empty);
-        Afpx.Set_Field_Activation (25, not Pers_Empty);
-        Afpx.Set_Field_Activation (26, not Pers_Empty and then not List_Empty);
-        Afpx.Set_Field_Activation (27, not Pers_Empty and then not List_Empty);
+        Afpx.Set_Field_Activation (Afpx_Xref.Main.Unselect,
+                                   not Pers_Empty and then not List_Empty);
+        Afpx.Set_Field_Activation (Afpx_Xref.Main.Draw, Allow_Draw);
+        Afpx.Set_Field_Activation (Afpx_Xref.Main.Print,
+                                   not Pers_Empty and then not List_Empty);
+        Afpx.Set_Field_Activation (Afpx_Xref.Main.Create, not Pers_Empty);
+        Afpx.Set_Field_Activation (Afpx_Xref.Main.Edit,
+                                   not Pers_Empty and then not List_Empty);
+        Afpx.Set_Field_Activation (Afpx_Xref.Main.Delete,
+                                   not Pers_Empty and then not List_Empty);
 
-        Afpx.Encode_Field (20, (0, 0), Normal(Afpx.Line_List.List_Length, 5) );
+        Afpx.Encode_Field (Afpx_Xref.Main.Nb_Selected, (0, 0),
+                           Normal(Afpx.Line_List.List_Length, 5) );
 
-        Afpx.Encode_Field (02, (00, 00), Str_Mng.Current_Date_Printed);
+        Afpx.Encode_Field (Afpx_Xref.Main.Date, (00, 00),
+                           Str_Mng.Current_Date_Printed);
         Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
                            Ptg_Result, Redisplay);
         Redisplay := False;
@@ -244,24 +270,26 @@ package body Mesu_Mng is
                 Check_Field (Cursor_Field, False, Ok);
               when Escape_Key =>
                 -- Clear current field
-                if Cursor_Field = 07  then
-                  Afpx.Clear_Field (07);
-                  Afpx.Clear_Field (08);
-                  Cursor_Field := 07;
-                elsif Cursor_Field = 08 then
-                  Afpx.Clear_Field (08);
-                elsif Cursor_Field = 09 or else Cursor_Field = 10
-                or else Cursor_Field = 11 then
-                  Afpx.Clear_Field (09);
-                  Afpx.Clear_Field (10);
-                  Afpx.Clear_Field (11);
-                  Cursor_Field := 09;
-                elsif Cursor_Field = 12 or else Cursor_Field = 13
-                or else Cursor_Field = 14 then
-                  Afpx.Clear_Field (12);
-                  Afpx.Clear_Field (13);
-                  Afpx.Clear_Field (14);
-                  Cursor_Field := 12;
+                if Cursor_Field = Afpx_Xref.Main.Person  then
+                  Afpx.Clear_Field (Afpx_Xref.Main.Person);
+                  Afpx.Clear_Field (Afpx_Xref.Main.Activity);
+                  Cursor_Field := Afpx_Xref.Main.Person;
+                elsif Cursor_Field = Afpx_Xref.Main.Activity then
+                  Afpx.Clear_Field (Afpx_Xref.Main.Activity);
+                elsif Cursor_Field = Afpx_Xref.Main.Day_After
+                or else Cursor_Field = Afpx_Xref.Main.Month_After
+                or else Cursor_Field = Afpx_Xref.Main.Year_After then
+                  Afpx.Clear_Field (Afpx_Xref.Main.Day_After);
+                  Afpx.Clear_Field (Afpx_Xref.Main.Month_After);
+                  Afpx.Clear_Field (Afpx_Xref.Main.Year_After);
+                  Cursor_Field := Afpx_Xref.Main.Day_After;
+                elsif Cursor_Field = Afpx_Xref.Main.Day_Before
+                or else Cursor_Field = Afpx_Xref.Main.Month_Before
+                or else Cursor_Field = Afpx_Xref.Main.Year_Before then
+                  Afpx.Clear_Field (Afpx_Xref.Main.Day_Before);
+                  Afpx.Clear_Field (Afpx_Xref.Main.Month_Before);
+                  Afpx.Clear_Field (Afpx_Xref.Main.Year_Before);
+                  Cursor_Field := Afpx_Xref.Main.Day_Before;
                 else
                   Afpx.Clear_Field (Cursor_Field);
                 end if;
@@ -273,26 +301,27 @@ package body Mesu_Mng is
 
           when Mouse_Button =>
 
-            if Ptg_Result.Field_No = 15 or else Ptg_Result.Field_No = 16 then
+            if Ptg_Result.Field_No = Afpx_Xref.Main.Add
+            or else Ptg_Result.Field_No = Afpx_Xref.Main.Remove then
               -- Add/Rem selec : check all fields one by one
-              Cursor_Field := 07;
+              Cursor_Field := Afpx_Xref.Main.Person;
               loop
                 Check_Field (Cursor_Field, True, Ok);
-                exit when not Ok or else Cursor_Field = 07;
+                exit when not Ok or else Cursor_Field = Afpx_Xref.Main.Person;
               end loop;
               if Ok then
-                if Ptg_Result.Field_No = 15 then
+                if Ptg_Result.Field_No = Afpx_Xref.Main.Add then
                   Mesu_Sel.Add_Selection (Criteria);
                 else
                   Mesu_Sel.Rem_Selection (Criteria);
                 end if;
                 Allow_Undo := True;
               end if;
-            elsif Ptg_Result.Field_No = 17 then
+            elsif Ptg_Result.Field_No = Afpx_Xref.Main.Undo then
               -- Undo
               Mesu_Sel.Undo;
               Allow_Undo := False;
-            elsif Ptg_Result.Field_No = 18 then
+            elsif Ptg_Result.Field_No = Afpx_Xref.Main.Db then
               -- Activiy Db
               Mesu_Sel.Save;
               Pers_Lis.List (Exit_Program);
@@ -302,27 +331,27 @@ package body Mesu_Mng is
                 exit List;
               end if;
               exit Ptg;
-            elsif Ptg_Result.Field_No = 19 then
+            elsif Ptg_Result.Field_No = Afpx_Xref.Main.Quit then
               -- Exit
               exit List;
-            elsif Ptg_Result.Field_No = 22 then
+            elsif Ptg_Result.Field_No = Afpx_Xref.Main.Unselect then
               -- Unselect
               Afpx.Line_List.Read (Line, Afpx.Line_List_Mng.Current);
               Str_Mng.Format_List_To_Mesure (Line, File_Name);
               Mesu_Sel.Rem_Selection (File_Name);
               Allow_Undo := True;
-            elsif Ptg_Result.Field_No = 23 then
+            elsif Ptg_Result.Field_No = Afpx_Xref.Main.Draw then
               -- Draw
               Mesu_Gra.Graphic(Exit_Program);
               if Exit_Program then
                 exit List;
               end if;
               exit Ptg;
-            elsif Ptg_Result.Field_No = 24 then
+            elsif Ptg_Result.Field_No = Afpx_Xref.Main.Print then
               -- Print
               Mesu_Prt.Print;
               exit Ptg;
-            elsif Ptg_Result.Field_No = 25 then
+            elsif Ptg_Result.Field_No = Afpx_Xref.Main.Create then
               -- Create
               File_Name := (others => ' ');
               Mesu_Edi.Edit (File_Name, Exit_Program);
@@ -335,7 +364,7 @@ package body Mesu_Mng is
               -- Edit screen called
               exit Ptg;
             elsif (Ptg_Result.Field_No = 0
-                   or else Ptg_Result.Field_No = 26) then
+                   or else Ptg_Result.Field_No = Afpx_Xref.Main.Edit) then
               -- Edit
               Afpx.Line_List.Read (Line, Afpx.Line_List_Mng.Current);
               Str_Mng.Format_List_To_Mesure (Line, File_Name);
@@ -351,7 +380,7 @@ package body Mesu_Mng is
               end if;
               -- Edit screen called
               exit Ptg;
-            elsif Ptg_Result.Field_No = 27 then
+            elsif Ptg_Result.Field_No = Afpx_Xref.Main.Delete then
               -- Delete
               Afpx.Line_List.Read (Line, Afpx.Line_List_Mng.Current);
               Str_Mng.Format_List_To_Mesure (Line, File_Name);

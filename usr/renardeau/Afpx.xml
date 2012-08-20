@@ -5,7 +5,7 @@
 <Afpx_Descriptors Height="25" Width="40">
 
   <!-- Main screen -->
-  <Descriptor Num="1" Background="Light_Grey">
+  <Descriptor Num="1" Background="Light_Grey" Name="Main">
 
     <Var Name="TxtStart" Value="${Screen.Width}-19"/>
 
@@ -17,7 +17,7 @@
     </Field>
 
     <!-- Base numbers (6) -->
-    <Field Num="2" Kind="Put">
+    <Field Num="2" Kind="Put" Name="Base_Fs">
       <Geometry Up="${Field_1.Low}+2" Left="1" Height="1" Width="3"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
@@ -47,14 +47,14 @@
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
     <!-- Target number -->
-    <Field Num="8" Kind="Put">
+    <Field Num="8" Kind="Put" Name="Target_F">
       <Geometry Up="${Field_1.Low}+2" Left="${Screen.Right}-3" Height="1"
                 Width="3"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
 
     <!-- Buttons -->
-    <Field Num="9" Kind="Button">
+    <Field Num="9" Kind="Button" Name="Number_Fs">
       <Geometry Up="${Field_2.Low}+2" Left="1" Height="3" Width="4"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">10</Init>
@@ -84,7 +84,7 @@
       <Init Row="1" Col="1">100</Init>
     </Field>
 
-    <Field Num="14" Kind="Button">
+    <Field Num="14" Kind="Button" Name="Digit_Fs">
       <Geometry Up="${Field_9.Low}+2" Left="1" Height="3" Width="5"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="2">7</Init>
@@ -140,26 +140,26 @@
       <Init Row="1" Col="2">3</Init>
     </Field>
 
-    <Field Num="23" Kind="Button">
+    <Field Num="23" Kind="Button" Name="Zero_F">
       <Geometry Up="${Field_20.Low}+2" Left="${Field_20.Left}" Height="3"
                 Width="5"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="2">0</Init>
     </Field>
-    <Field Num="24" Kind="Button">
+    <Field Num="24" Kind="Button" Name="Enter_F">
       <Geometry Up="${Field_23.Up}" Left="${Field_23.Right}+2" Height="3"
                 Right="${Field_22.Right}"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">E N T E R</Init>
     </Field>
 
-    <Field Num="25" Kind="Button">
+    <Field Num="25" Kind="Button" Name="Undo_F">
       <Geometry Up="${Field_24.Up}" Left="${Field_24.Right}+3" Height="3"
                 Width="5"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
       <Init Row="1" Col="1">UND</Init>
     </Field>
-    <Field Num="26" Kind="Button">
+    <Field Num="26" Kind="Button" Name="Clear_F">
       <Geometry Up="${Field_25.Up}" Left="${Field_25.Right}+2" Height="3"
                 Width="5"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>
@@ -167,14 +167,14 @@
     </Field>
 
     <!-- Result -->
-    <Field Num="27" Kind="Put">
+    <Field Num="27" Kind="Put" Name="Result_F">
       <Geometry Up="${Field_14.Up}" Left="${Field_8.Left}-1" Height="1"
                 Width="4"/>
       <Colors Foreground="Lime_Green" Background="Light_Grey"/>
     </Field>
 
     <!-- Computation -->
-    <Field Num="28" Kind="Put">
+    <Field Num="28" Kind="Put" Name="Compute_Fs">
       <Geometry Up="${Field_27.Low}+2" Left="${TxtStart}" Height="1"
                 Width="18"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
@@ -201,7 +201,7 @@
     </Field>
 
     <!-- EXIT -->
-    <Field Num="33" Kind="Button">
+    <Field Num="33" Kind="Button" Name="Exit_F">
       <Geometry Up="${Field_26.Up}" Right="${Screen.Width}-2" Height="3"
                 Width="6"/>
       <Colors Foreground="Black" Background="Dark_Grey"/>

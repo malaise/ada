@@ -3,11 +3,12 @@
 <!-- File selection for Renamer -->
 
 <Afpx_Descriptors>
+
   <Color_Definitions>
     <Default_Background Color="Black"/>
   </Color_Definitions>
 
-  <Descriptor Num="1">
+  <Descriptor Num="1" Name="File_Selection">
     <List>
       <Geometry Up="2" Left="11" Low="21" Right="65"/>
       <Colors Foreground="Cyan" Background="Brown" Selected="Red"/>

@@ -1,5 +1,5 @@
 with Afpx, Con_Io, Upper_Str;
-with Pers_Def, Str_Mng, Mesu_Mng, Pers_Mng, Pers_Fil;
+with Pers_Def, Str_Mng, Mesu_Mng, Pers_Mng, Pers_Fil, Afpx_Xref;
 package body Pers_Lis is
 
   procedure Build_List is
@@ -59,11 +59,13 @@ package body Pers_Lis is
 
     procedure Encode_Person is
     begin
-      Afpx.Encode_Field (11, (00, 00), Person.Name);
-      Afpx.Encode_Field (13, (00, 00), Person.Activity);
-      for I in 1 .. 6 loop
-        Afpx.Encode_Field (Afpx.Field_Range (I + 16), (00, 00),
-                           Str_Mng.To_Str(Person.Tz(I)) );
+      Afpx.Encode_Field (Afpx_Xref.Activity.Person, (00, 00), Person.Name);
+      Afpx.Encode_Field (Afpx_Xref.Activity.Activity, (00, 00),
+                         Person.Activity);
+      for I in Afpx.Absolute_Field_Range'(0) .. 5 loop
+        Afpx.Encode_Field (Afpx.Field_Range (Afpx_Xref.Activity.Tz1 + I),
+                           (00, 00),
+                           Str_Mng.To_Str(Person.Tz(Natural(I + 1))) );
       end loop;
     end Encode_Person;
 
@@ -79,25 +81,29 @@ package body Pers_Lis is
 
         when 11 =>
           -- In name : not empty
-          Person.Name := Upper_Str (Afpx.Decode_Field (11, 00));
+          Person.Name := Upper_Str (
+              Afpx.Decode_Field (Afpx_Xref.Activity.Person, 00));
           Str_Mng.Parse (Person.Name);
           Locok := not Str_Mng.Is_Spaces (Person.Name);
           if Locok then
-            Afpx.Encode_Field (11, (00, 00), Person.Name);
-            Current_Field := 13;
+            Afpx.Encode_Field (
+                Afpx_Xref.Activity.Person, (00, 00), Person.Name);
+            Current_Field := Afpx_Xref.Activity.Activity;
           end if;
 
-        when 13 =>
+        when Afpx_Xref.Activity.Activity =>
           -- In activity : not empty
-          Person.Activity := Upper_Str (Afpx.Decode_Field (13, 00));
+          Person.Activity := Upper_Str (
+              Afpx.Decode_Field (Afpx_Xref.Activity.Activity, 00));
           Str_Mng.Parse (Person.Activity);
           Locok := not Str_Mng.Is_Spaces (Person.Activity);
           if Locok then
-            Afpx.Encode_Field (13, (00, 00), Person.Activity);
-            Current_Field := 17;
+            Afpx.Encode_Field (Afpx_Xref.Activity.Activity, (00, 00),
+                Person.Activity);
+            Current_Field := Afpx_Xref.Activity.Tz1;
           end if;
 
-        when 17 | 18 | 19 | 20 | 21 | 22 =>
+        when Afpx_Xref.Activity.Tz1 .. Afpx_Xref.Activity.Tz6 =>
           Locok := True;
           Tz_S := Afpx.Decode_Field (Current_Field, 00);
           begin
@@ -107,21 +113,22 @@ package body Pers_Lis is
               Locok := False;
           end;
           if Locok then
-            Person.Tz (Integer(Current_Field) - 16) := Tz;
+            Person.Tz(Integer(Current_Field - Afpx_Xref.Activity.Tz1 + 1)) := Tz;
           end if;
           if Locok then
             Locok := Tz /= Pers_Def.Bpm_Range'First;
           end if;
           if Locok then
             -- Tz must be crescent
-            if Current_Field /= 17
+            if Current_Field /= Afpx_Xref.Activity.Tz1
             and then Tz /= Pers_Def.Bpm_Range'First then
-              Locok := Tz > Person.Tz (Integer(Current_Field) - 17);
+              Locok := Tz > Person.Tz(Integer(Current_Field
+                                    - Afpx_Xref.Activity.Tz1));
             end if;
           end if;
           if Locok then
             Afpx.Encode_Field (Current_Field, (00, 00), Str_Mng.To_Str(Tz) );
-            if Current_Field = 22 then
+            if Current_Field = Afpx_Xref.Activity.Tz6 then
               Current_Field := First_Field;
             else
               Current_Field := Current_Field + 1;
@@ -145,16 +152,16 @@ package body Pers_Lis is
     begin
       -- Last field must not be empty and valid
       -- Other fields can be filled
-      Cursor_Field := 22;
+      Cursor_Field := Afpx_Xref.Activity.Tz6;
       Cursor_Col := 0;
       Insert := False;
-      Tzm_S := Afpx.Decode_Field (22, 00);
+      Tzm_S := Afpx.Decode_Field (Afpx_Xref.Activity.Tz6, 00);
       Person.Tz(6) := Str_Mng.To_Bpm(Tzm_S);
       if Person.Tz(6) = Pers_Def.Bpm_Range'First then
         -- TZ6 is empty
         return False;
       end if;
-      Tzr_S := Afpx.Decode_Field (16, 00);
+      Tzr_S := Afpx.Decode_Field (Afpx_Xref.Activity.Rest, 00);
       Tzr := Str_Mng.To_Bpm(Tzr_S);
       if Tzr = Pers_Def.Bpm_Range'First then
         -- Rest rate is empty: 50% .. 90% of Max rate (Tz(6))
@@ -169,7 +176,7 @@ package body Pers_Lis is
           Person.Tz(I) := Tzr + Tzd * (Pers_Def.Bpm_Range(I) + 4) / 10;
         end loop;
       end if;
-      Afpx.Clear_Field (16);
+      Afpx.Clear_Field (Afpx_Xref.Activity.Rest);
       return True;
     exception
       when others => return False;
@@ -180,7 +187,7 @@ package body Pers_Lis is
    begin
     Exit_Program := False;
 
-    Afpx.Use_Descriptor(2);
+    Afpx.Use_Descriptor(Afpx_Xref.Activity.Dscr_Num);
 
     State := In_List;
 
@@ -196,39 +203,38 @@ package body Pers_Lis is
       List_Empty := Afpx.Line_List.Is_Empty;
       -- List and menu buttons, only in list
       Act := State = In_List;
-      Afpx.Set_Field_Activation (03, Act);
-      Afpx.Set_Field_Activation (04, Act);
-      Afpx.Set_Field_Activation (06, Act);
+      Afpx.Set_Field_Activation (Afpx_Xref.Activity.Title, Act);
+      Afpx.Set_Field_Activation (Afpx_Xref.Activity.Records, Act);
+      Afpx.Set_Field_Activation (Afpx_Xref.Activity.Create, Act);
       -- Delete/edit if not empty and in list
       Act := Act and then not List_Empty;
-      Afpx.Set_Field_Activation (07, Act);
-      Afpx.Set_Field_Activation (08, Act);
+      Afpx.Set_Field_Activation (Afpx_Xref.Activity.Delete, Act);
+      Afpx.Set_Field_Activation (Afpx_Xref.Activity.Edit, Act);
       -- Edit if edit
       Act := State /= In_List;
-      for I in Afpx.Field_Range'(10) .. 25 loop
+      for I in Afpx_Xref.Activity.Person_Title
+            .. Afpx_Xref.Activity.Cancel loop
         Afpx.Set_Field_Activation (I, Act);
       end loop;
       -- Un protect person name & activity if in create
       Act := State = In_Create;
-      Set_Protection (11, not Act);
-      Set_Protection (13, not Act);
+      Set_Protection (Afpx_Xref.Activity.Person, not Act);
+      Set_Protection (Afpx_Xref.Activity.Activity, not Act);
       -- Un protect other fields if in create or edit
       Act := State = In_Create or else State = In_Edit;
-      Set_Protection (16, not Act);
-      Set_Protection (17, not Act);
-      Set_Protection (18, not Act);
-      Set_Protection (19, not Act);
-      Set_Protection (20, not Act);
-      Set_Protection (21, not Act);
-      Set_Protection (22, not Act);
+      Set_Protection (Afpx_Xref.Activity.Rest, not Act);
+      for I in Afpx_Xref.Activity.Tz1 .. Afpx_Xref.Activity.Tz6 loop
+        Set_Protection (I, not Act);
+      end loop;
       -- Compute if in edit or create
-      Afpx.Set_Field_Activation (23, Act);
+      Afpx.Set_Field_Activation (Afpx_Xref.Activity.Compute, Act);
       -- Confirm if Valid
-      Afpx.Set_Field_Activation (09, State = In_Delete);
+      Afpx.Set_Field_Activation (Afpx_Xref.Activity.Confirm, State = In_Delete);
       -- Lock list if not in list
       Afpx.Set_Field_Protection (Afpx.List_Field_No, State /= In_List);
 
-      Afpx.Encode_Field (02, (00, 00), Str_Mng.Current_Date_Printed);
+      Afpx.Encode_Field (Afpx_Xref.Activity.Date, (00, 00),
+                         Str_Mng.Current_Date_Printed);
 
       Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert,
                          Ptg_Result, Redisplay);
@@ -253,10 +259,10 @@ package body Pers_Lis is
               Check_Field (Cursor_Field, Ok);
             when Escape_Key =>
               -- Clear current field
-              if Cursor_Field = 11  then
-                Afpx.Clear_Field (11);
-                Afpx.Clear_Field (13);
-                Cursor_Field := 11;
+              if Cursor_Field = Afpx_Xref.Activity.Person  then
+                Afpx.Clear_Field (Afpx_Xref.Activity.Person);
+                Afpx.Clear_Field (Afpx_Xref.Activity.Activity);
+                Cursor_Field := Afpx_Xref.Activity.Person;
               else
                 Afpx.Clear_Field (Cursor_Field);
               end if;
@@ -270,17 +276,17 @@ package body Pers_Lis is
         when Mouse_Button =>
 
           case Ptg_Result.Field_No is
-            when 04 =>
+            when Afpx_Xref.Activity.Records =>
               -- Back to records
               exit;
-            when 05 =>
+            when Afpx_Xref.Activity.Quit =>
               -- Exit
               Exit_Program := True;
               exit;
-            when 06 =>
+            when Afpx_Xref.Activity.Create =>
               -- Create
               State := In_Create;
-              First_Field := 11;
+              First_Field := Afpx_Xref.Activity.Person;
               Cursor_Field := First_Field;
               Cursor_Col := 0;
               Insert := False;
@@ -288,23 +294,23 @@ package body Pers_Lis is
               Person.Activity := (others => ' ');
               Person.Tz := (others => Pers_Def.Bpm_Range'First);
               Encode_Person;
-            when 00 | 08 =>
+            when Afpx.List_Field_No | Afpx_Xref.Activity.Edit =>
               -- Edit
               State := In_Edit;
-              First_Field := 17;
+              First_Field := Afpx_Xref.Activity.Tz1;
               Cursor_Field := First_Field;
               Cursor_Col := 0;
               Insert := False;
               Read (Pers_Def.The_Persons, Person,
                     Pers_Def.Person_List_Mng.Current);
               Encode_Person;
-            when 07 =>
+            when Afpx_Xref.Activity.Delete =>
               -- Delete
               State := In_Delete;
               Read (Pers_Def.The_Persons, Person,
                     Pers_Def.Person_List_Mng.Current);
               Encode_Person;
-            when 23 =>
+            when Afpx_Xref.Activity.Compute =>
               -- Compute
               Ok := Compute;
               if Ok then
@@ -318,7 +324,7 @@ package body Pers_Lis is
                 Cursor_Col := 0;
                 Insert := False;
               end if;
-            when 24 =>
+            when Afpx_Xref.Activity.Valid =>
               -- Valid
               if State /= In_Delete then
                 Cursor_Field := First_Field;
@@ -358,7 +364,7 @@ package body Pers_Lis is
                 Pers_Fil.Save;
                 State := In_List;
               end if;
-            when 25 =>
+            when Afpx_Xref.Activity.Cancel =>
               -- Cancel
               State := In_List;
             when others =>

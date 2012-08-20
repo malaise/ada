@@ -1,5 +1,6 @@
 -- Common types and current state
 with Afpx;
+with Afpx_Xref;
 package Common is
   Exit_Requested : exception;
 
@@ -39,7 +40,9 @@ package Common is
 
   -- Index of bar from 1 (first of row 1)
   -- All the bars: 7 + 5 + 3 + 1
-  subtype Index_Range is Afpx.Absolute_Field_Range range 1 .. 16;
+  use type Afpx.Absolute_Field_Range;
+  subtype Index_Range is Afpx.Absolute_Field_Range
+          range Afpx_Xref.Game.Bar1 .. Afpx_Xref.Game.Bar1 + 15;
   type Row_Col_Rec is record
     Row : Row_Range;
     Col : Bar_Range;

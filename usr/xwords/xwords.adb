@@ -1,7 +1,7 @@
--- Search for words matching criteria (au:o:obile) or regexp (au.*bile)
+-- Search for words matching criteria (au:o.obile) or regexp (au.*bile)
 -- Or search anagrams
 with As.U.Utils, Argument, Con_Io, Afpx, Basic_Proc, Language, Many_Strings,
-     String_Mng, Lower_Str, Environ, Integer_Image, Event_Mng;
+     String_Mng, Lower_Str, Environ, Integer_Image, Event_Mng, Afpx_Xref;
 with Cmd, Analist;
 procedure Xwords is
 
@@ -29,20 +29,20 @@ procedure Xwords is
   Status       : Status_List;
 
   -- Fields
-  Clear_Fld : constant Afpx.Field_Range := 3;
-  Recall_Fld : constant Afpx.Field_Range := 4;
-  Get_Fld : constant Afpx.Field_Range := 5;
-  Anagrams_Fld : constant Afpx.Field_Range := 6;
-  Search_Fld : constant Afpx.Field_Range := 7;
-  Research_Fld : constant Afpx.Field_Range := 8;
-  Add_Word_Fld : constant Afpx.Field_Range := 11;
-  Add_Noun_Fld : constant Afpx.Field_Range := 12;
-  Del_Word_Fld : constant Afpx.Field_Range := 13;
-  Del_Noun_Fld : constant Afpx.Field_Range := 14;
-  History_Fld : constant Afpx.Field_Range := 15;
-  Clear_List_Fld : constant Afpx.Field_Range := 16;
-  Lmng_Fld : constant Afpx.Field_Range := 18;
-  Exit_Fld : constant Afpx.Field_Range := 17;
+  Clear_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Clear;
+  Recall_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Recall;
+  Get_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Get;
+  Anagrams_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Anagrams;
+  Search_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Search;
+  Research_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Re_Search;
+  Add_Word_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Add_Word;
+  Add_Noun_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Add_Noun;
+  Del_Word_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Del_Word;
+  Del_Noun_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Del_Noun;
+  History_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.History;
+  Clear_List_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Clear_List;
+  Lmng_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.List_Mng;
+  Exit_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Quit;
 
   -- History of search requests
   History : Cmd.Res_List;
@@ -322,7 +322,7 @@ begin
   end if;
 
   -- Init Afpx
-  Afpx.Use_Descriptor (1);
+  Afpx.Use_Descriptor (Afpx_Xref.Main.Dscr_Num);
   Cursor_Field := Get_Fld;
   Insert := False;
   Redisplay := False;

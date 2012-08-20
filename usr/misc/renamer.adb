@@ -1,5 +1,5 @@
 -- Use Select_File (Afpx) to rename files
-with As.B, Argument, Select_File, Sys_Calls;
+with As.B, Argument, Select_File, Sys_Calls, Afpx_Xref;
 
 procedure Renamer is
 
@@ -28,7 +28,8 @@ begin
 
   loop
     -- Get (orig or new) file name
-    File.Set (My_Select_File (1, File.Image, Read, True));
+    File.Set (My_Select_File (Afpx_Xref.File_Selection.Dscr_Num,
+                              File.Image, Read, True));
     exit when File.Is_Null;
     Ok := True;
 

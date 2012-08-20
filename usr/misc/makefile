@@ -2,6 +2,7 @@ include $(HOME)/Makefiles/common.mk
 
 ADAVIEW := $(REPOSIT)
 AFPX := true
+AFPX_XREF := afpx_xref
 
 EXES := adand add_nums alook arbipas beep comp_vars ddir \
  dtd_checker dtd_checker.stat e2f fact full_path g hanoi impot_04 \

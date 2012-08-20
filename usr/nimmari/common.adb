@@ -84,7 +84,6 @@ package body Common is
   end Nb_Bars;
 
   function Index2Row_Col (Index : Index_Range) return Row_Col_Rec is
-    use type Afpx.Absolute_Field_Range;
   begin
     case Index is
       when 01 .. 07 => return (1, Bar_Range(Index));

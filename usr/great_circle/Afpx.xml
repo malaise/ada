@@ -6,7 +6,7 @@
     <Color_Definition Id="Color07" Color="Brown4"/>
   </Color_Definitions>
 
-  <Descriptor Num="1">
+  <Descriptor Num="1" Name="Main">
     <!-- Title -->
     <Field Num="1" Kind="Put">
       <Geometry Up="0" Left="25" Low="0" Right="48"/>
@@ -40,7 +40,7 @@
     </Field>
 
     <!-- Point A Lat/Lon -->
-    <Field Num="6" Kind="Get">
+    <Field Num="6" Kind="Get" Name="A_First">
       <Geometry Up="6" Left="1" Low="6" Right="1"/>
       <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
       <Init Row="0" Col="0">N</Init>
@@ -112,14 +112,14 @@
       <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
     </Field>
 
-    <Field Num="19" Kind="Put">
+    <Field Num="19" Kind="Put" Name="A_Last">
       <Geometry Up="6" Left="22" Low="6" Right="22"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">"</Init>
     </Field>
 
     <!-- Point B Lat/Lon -->
-    <Field Num="20" Kind="Get">
+    <Field Num="20" Kind="Get" Name="B_First">
       <Geometry Up="6" Left="24" Low="6" Right="24"/>
       <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
       <Init Row="0" Col="0">N</Init>
@@ -191,19 +191,19 @@
       <Colors Foreground="Black" Background="Lime_Green" Selected="Lime_Green"/>
     </Field>
 
-    <Field Num="33" Kind="Put">
+    <Field Num="33" Kind="Put" Name="B_Last">
       <Geometry Up="6" Left="45" Low="6" Right="45"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">"</Init>
     </Field>
 
     <!-- Route and distance -->
-    <Field Num="34" Kind="Put">
+    <Field Num="34" Kind="Put" Name="Heading">
       <Geometry Up="6" Left="50" Low="6" Right="59"/>
       <Colors Foreground="Dark_Green" Background="Light_Grey"/>
     </Field>
 
-    <Field Num="35" Kind="Put">
+    <Field Num="35" Kind="Put" Name="Distance">
       <Geometry Up="6" Left="62" Low="6" Right="66"/>
       <Colors Foreground="Dark_Green" Background="Light_Grey"/>
     </Field>
@@ -214,19 +214,19 @@
       <Init Row="0" Col="0">NM</Init>
     </Field>
 
-    <Field Num="37" Kind="Put">
+    <Field Num="37" Kind="Put" Name="Revert">
       <Geometry Up="7" Left="50" Low="7" Right="59"/>
       <Colors Foreground="Dark_Green" Background="Light_Grey"/>
     </Field>
 
     <!-- Compute and Exit buttons -->
-    <Field Num="38" Kind="Button">
+    <Field Num="38" Kind="Button" Name="Compute">
       <Geometry Up="8" Left="3" Low="10" Right="11"/>
       <Colors Foreground="Black" Background="Lime_Green"/>
       <Init Row="1" Col="1">COMPUTE</Init>
     </Field>
 
-    <Field Num="39" Kind="Button">
+    <Field Num="39" Kind="Button" Name="Quit">
       <Geometry Up="8" Left="16" Low="10" Right="21"/>
       <Colors Foreground="Black" Background="Lime_Green"/>
       <Init Row="1" Col="1">EXIT</Init>

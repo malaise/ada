@@ -1,4 +1,4 @@
-with Afpx, Con_Io, Normal;
+with Afpx, Con_Io, Normal, Afpx_Xref;
 package body Screen is
 
   -- Stick color
@@ -15,7 +15,7 @@ package body Screen is
     Result : Afpx.Result_Rec;
     use type Afpx.Event_List, Afpx.Keyboard_Key_List, Afpx.Absolute_Field_Range;
   begin
-    Afpx.Use_Descriptor (1);
+    Afpx.Use_Descriptor (Afpx_Xref.Intro.Dscr_Num);
     loop
       Afpx.Put_Then_Get(Cursor_Field, Cursor_Col, Insert, Result, True);
       exit when Result.Event = Afpx.Mouse_Button;
@@ -25,11 +25,11 @@ package body Screen is
         raise Common.Exit_Requested;
       end if;
     end loop;
-    if Result.Field_No = 3 then
+    if Result.Field_No = Afpx_Xref.Intro.Play_Nim then
       return Common.Nim;
-    elsif Result.Field_No = 4 then
+    elsif Result.Field_No = Afpx_Xref.Intro.Play_Marienbad then
       return Common.Marienbad;
-    elsif Result.Field_No = 5 then
+    elsif Result.Field_No =  Afpx_Xref.Intro.Quit then
       raise Common.Exit_Requested;
     end if;
     -- To avoid warning
@@ -42,21 +42,23 @@ package body Screen is
     use type Common.Game_Kind_List;
   begin
     if not Is_Descriptor_Set
-    or else Get_Descriptor /= 2 then
-      Use_Descriptor (2);
+    or else Get_Descriptor /= Afpx_Xref.Game.Dscr_Num then
+      Use_Descriptor (Afpx_Xref.Game.Dscr_Num);
     end if;
-    Encode_Field (19, (0,  1), "You: " & Normal (Scores(Common.Human), 3));
-    Encode_Field (19, (0, 13), "Me: " & Normal (Scores(Common.Machine), 3));
-    Clear_Field (20);
-    Clear_Field (22);
+    Encode_Field (Afpx_Xref.Game.Names, (0,  1),
+                  "You: " & Normal (Scores(Common.Human), 3));
+    Encode_Field (Afpx_Xref.Game.Names, (0, 13),
+                  "Me: " & Normal (Scores(Common.Machine), 3));
+    Clear_Field (Afpx_Xref.Game.Game);
+    Clear_Field (Afpx_Xref.Game.Play);
     if Common.Get_Game_Kind = Common.Nim then
-      Encode_Field (20, (0,0), "   Nim");
-      Encode_Field (22, (1,1), "Play Marienbad");
+      Encode_Field (Afpx_Xref.Game.Game, (0,0), "   Nim");
+      Encode_Field (Afpx_Xref.Game.Play, (1,1), "Play Marienbad");
     else
-      Encode_Field (20, (0,0), "Marienbad");
-      Encode_Field (22, (1,1), "   Play Nim");
+      Encode_Field (Afpx_Xref.Game.Game, (0,0), "Marienbad");
+      Encode_Field (Afpx_Xref.Game.Play, (1,1), "   Play Nim");
     end if;
-    Set_Field_Activation (22, False);
+    Set_Field_Activation (Afpx_Xref.Game.Play, False);
   end Reset;
 
   -- Init Bars activation
@@ -108,7 +110,7 @@ package body Screen is
     Redisplay := False;
     loop
       -- Activate play
-      Afpx.Set_Field_Activation (17, Nb_Selected /= 0);
+      Afpx.Set_Field_Activation (Afpx_Xref.Game.Remove, Nb_Selected /= 0);
       Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Result, Redisplay);
       if Result.Event = Afpx.Signal_Event
       or else (Result.Event = Afpx.Keyboard
@@ -141,7 +143,7 @@ package body Screen is
               end if;
             end if;
 
-          when 17 =>
+          when Afpx_Xref.Game.Remove =>
             -- Take selection: set Row and Bars to remove
             Row := Row_Selected;
             Remove := (others => False);
@@ -152,7 +154,7 @@ package body Screen is
               end if;
             end loop;
             exit;
-          when 18 =>
+          when Afpx_Xref.Game.Quit =>
             raise Common.Exit_Requested;
           when others =>
             null;
@@ -173,7 +175,7 @@ package body Screen is
     Init;
 
     -- Remove bars (machine plays)
-    Afpx.Set_Field_Activation (17, False);
+    Afpx.Set_Field_Activation (Afpx_Xref.Game.Remove, False);
     for I in Cols.First_Col .. Cols.Last_Col loop
       if Remove (I) then
         Afpx.Set_Field_Colors (Common.Row_Col2Index ((Row, I)),
@@ -213,20 +215,20 @@ package body Screen is
     end loop;
     -- Validate
     if Result = Common.Played_And_Won or else Result = Common.Won then
-      Afpx.Encode_Field(21, (0, 34), "I win :-)");
+      Afpx.Encode_Field(Afpx_Xref.Game.Wins, (0, 34), "I win :-)");
     else
-      Afpx.Encode_Field(21, (0, 33), "You win :-(");
+      Afpx.Encode_Field(Afpx_Xref.Game.Wins, (0, 33), "You win :-(");
     end if;
-    Afpx.Set_Field_Activation (17, True);
-    Afpx.Encode_Field (17, (1, 1), "P l a y");
-    Afpx.Set_Field_Activation (22, True);
+    Afpx.Set_Field_Activation (Afpx_Xref.Game.Remove, True);
+    Afpx.Encode_Field (Afpx_Xref.Game.Remove, (1, 1), "P l a y");
+    Afpx.Set_Field_Activation (Afpx_Xref.Game.Play, True);
     loop
       Afpx.Put_Then_Get(Cursor_Field, Cursor_Col, Insert, Ptg_Result, True);
       if Ptg_Result.Event = Afpx.Mouse_Button then
-        if Ptg_Result.Field_No = 22 then
+        if Ptg_Result.Field_No = Afpx_Xref.Game.Play then
           Change_Game := True;
           exit;
-        elsif Ptg_Result.Field_No = 17 then
+        elsif Ptg_Result.Field_No = Afpx_Xref.Game.Remove then
           Change_Game := False;
           exit;
         elsif Ptg_Result.Field_No = 18 then
@@ -234,9 +236,9 @@ package body Screen is
         end if;
       end if;
     end loop;
-    Afpx.Reset_Field (17);
-    Afpx.Reset_Field (21);
-    Afpx.Set_Field_Activation (22, False);
+    Afpx.Reset_Field (Afpx_Xref.Game.Remove);
+    Afpx.Reset_Field (Afpx_Xref.Game.Wins);
+    Afpx.Set_Field_Activation (Afpx_Xref.Game.Play, False);
   end End_Game;
 
 end Screen;
