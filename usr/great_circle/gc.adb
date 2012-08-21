@@ -11,7 +11,7 @@ procedure Gc is
     Basic_Proc.Put_Line_Error (" where a is N or S and o is E or W.");
   end Usage;
 
-  Debug : constant Boolean := False;
+  Debug : constant Boolean := True;
 
   Use_Afpx : Boolean;
 
@@ -31,9 +31,11 @@ procedure Gc is
   Heading_Ab_Field  : constant Afpx.Field_Range := Afpx_Xref.Main.Heading;
   Distance_Field  : constant Afpx.Field_Range := Afpx_Xref.Main.Distance;
   Heading_Ba_Field  : constant Afpx.Field_Range := Afpx_Xref.Main.Revert;
+  Switch_Field  : constant Afpx.Field_Range := Afpx_Xref.Main.Switch;
   Compute_Field  : constant Afpx.Field_Range := Afpx_Xref.Main.Compute;
   Exit_Field  : constant Afpx.Field_Range := Afpx_Xref.Main.Quit;
 
+  Sexa_Mode : Boolean := True;
   Decode_Ok : Boolean;
   Need_Clean : Boolean := False;
 
@@ -47,6 +49,48 @@ procedure Gc is
     Afpx.Clear_Field (Distance_Field);
     Afpx.Clear_Field (Heading_Ba_Field);
   end Clear_Result;
+
+  Degree_Sign : constant Wide_Character
+              := Language.Char_To_Wide (Ada.Characters.Latin_1.Degree_Sign);
+
+  procedure Reset_Field (Field : in Afpx.Absolute_Field_Range) is
+    Char : Wide_Character;
+  begin
+    Afpx.Reset_Field (Field);
+    if Sexa_Mode then
+      return;
+    end if;
+    if Afpx.Get_Field_Width (Field) <= 2 then
+      Char := Afpx.Decode_Wide_Field (Field, 0)(1);
+      -- "°" -> ".", "'" -> " " and """[/]" becomes "°[/]"
+      if Char = Language.String_To_Wide("°")(1) then
+        Afpx.Encode_Wide_Field (Field, (0, 0), ".");
+      elsif Char = ''' then
+        Afpx.Encode_Wide_Field (Field, (0, 0), " ");
+      elsif Char = '"' then
+        Afpx.Encode_Wide_Field (Field, (0, 0), Degree_Sign & "");
+      end if;
+    end if;
+  end Reset_Field;
+
+  procedure Reset is
+  begin
+    for Field in A_Flds loop
+      Reset_Field (Field);
+    end loop;
+    for Field in B_Flds loop
+      Reset_Field (Field);
+    end loop;
+    Clear_Result;
+    if Sexa_Mode then
+      Afpx.Encode_Field (Switch_Field, (1, 8), "Deci");
+    else
+      Afpx.Encode_Field (Switch_Field, (1, 8), "Sexa");
+    end if;
+    Cursor_Field := A_Flds'First;
+    Cursor_Col := 0;
+    Insert := False;
+  end Reset;
 
   -- Clear result fields during input
   function Next_Field_Cb (Cursor_Field : Afpx.Field_Range;
@@ -72,25 +116,36 @@ procedure Gc is
                           Point : out Lat_Lon.Lat_Lon_Geo_Rec;
                           Ok : out Boolean;
                           Cursor : in out Afpx.Field_Range) is
-    -- Two '"' added in Afpx screen
-    Point_Txt : As.B.Asb_Bs(String_Util.Coord_Str'Length+2);
+    -- Two '"' added and two '°' instead of '.' in Afpx screen
+    Point_Txt : As.B.Asb_Bs(String_Util.Geo_Str'Length+4);
   begin
     Point_Txt.Set_Null;
     for Field in First_Fld .. Last_Fld loop
-      Point_Txt.Append (Afpx.Decode_Field(Field, 0));
+      Point_Txt.Append (Afpx.Decode_Field(Field, 0, False));
     end loop;
     if Debug then
       Basic_Proc.Put_Line_Error ("Decoded point: " & Point_Txt.Image);
     end if;
-    -- Replace Ndd°mm'ss"/Eddd°mm'ss" by Ndd.mm.ss/Eddd.mm.ss
-    -- "°" has already been replaced by " " in Afpx.Decode_Field
-    Point_Txt.Set (String_Mng.Replace (Point_Txt.Image, " ", "."));
-    Point_Txt.Set (String_Mng.Replace (Point_Txt.Image, "'", "."));
-    Point_Txt.Set (String_Mng.Replace (Point_Txt.Image, """", ""));
-    if Debug then
-      Basic_Proc.Put_Line_Error ("Parsed point: " & Point_Txt.Image);
+    if Sexa_Mode then
+      -- Replace Ndd°mm'ss"/Eddd°mm'ss" by Ndd.mm.ss/Eddd.mm.ss
+      -- "°" has already been replaced by " " in Afpx.Decode_Field
+      Point_Txt.Set (String_Mng.Replace (Point_Txt.Image, "°", "."));
+      Point_Txt.Set (String_Mng.Replace (Point_Txt.Image, "'", "."));
+      Point_Txt.Set (String_Mng.Replace (Point_Txt.Image, """", ""));
+      if Debug then
+        Basic_Proc.Put_Line_Error ("Parsed point: " & Point_Txt.Image);
+      end if;
+      Point := String_Util.Str2Geo(Point_Txt.Image);
+    else
+      -- Replace Ndd.ij kl°/Eddd.ij kl° by Ndd.ijkl/Eddd.ijkl
+      -- "°" has already been replaced by " " in Afpx.Decode_Field
+      Point_Txt.Set (String_Mng.Replace (Point_Txt.Image, "°", ""));
+      Point_Txt.Set (String_Mng.Replace (Point_Txt.Image, " ", ""));
+      if Debug then
+        Basic_Proc.Put_Line_Error ("Parsed point: " & Point_Txt.Image);
+      end if;
+      Point := Lat_Lon.Dec2Geo (String_Util.Str2Dec(Point_Txt.Image));
     end if;
-    Point := String_Util.Str2Geo(Point_Txt.Image);
     if Debug then
       Basic_Proc.Put_Line_Error ("Got point OK: " & Point_Txt.Image);
     end if;
@@ -106,15 +161,32 @@ procedure Gc is
 
   procedure Encode_Heading (F : in Afpx.Field_Range;
                             H : in Conv.Geo_Coord_Rec) is
-    Str : constant String := String_Util.Angle2Str(H);
-    -- Will append " and set ° and ' instead of 2 first .
-    Wstr : Wide_String (1 .. Str'Length + 1);
   begin
-    Wstr := Language.String_To_Wide (Str) & '"';
-    Wstr(4) := Language.Char_To_Wide (
-                 Ada.Characters.Latin_1.Degree_Sign);
-    Wstr(7) := ''';
-    Afpx.Encode_Wide_Field (F, (0, 0), Wstr);
+    if Sexa_Mode then
+      declare
+        Str : constant String := String_Util.Geoangle2Str(H);
+        -- Will append " and set ° and ' instead of 2 first .
+        Wstr : Wide_String (1 .. Str'Length + 1);
+      begin
+        Wstr := Language.String_To_Wide (Str) & '"';
+        Wstr(4) := Language.Char_To_Wide (
+                     Ada.Characters.Latin_1.Degree_Sign);
+        Wstr(7) := ''';
+        Afpx.Encode_Wide_Field (F, (0, 0), Wstr);
+      end;
+    else
+basic_proc.put_Line_error ("Encoding heading");
+      declare
+        Str : constant String := String_Util.Decangle2Str(Conv.Geo2Dec(H));
+        -- Will append °
+        Wstr : Wide_String (1 .. Str'Length + 1);
+      begin
+basic_proc.put_Line_error (">" & Str & "<");
+        Wstr := Language.String_To_Wide (Str) & Degree_Sign;
+        Afpx.Encode_Wide_Field (F, (0, 0), Wstr);
+      end;
+basic_proc.put_Line_error ("Encoded heading");
+    end if;
  end Encode_Heading;
 
 begin
@@ -138,7 +210,7 @@ begin
       -- Compute
       Great_Circle.Compute_Route(A, B, Heading, Distance);
       -- Put result
-      Basic_Proc.Put_Output ("Route: " & String_Util.Angle2Str(Heading));
+      Basic_Proc.Put_Output ("Route: " & String_Util.Geoangle2Str(Heading));
       Basic_Proc.Put_Line_Output ("   Distance(Nm): "
                         & String_Util.Dist2Str(Distance));
     exception
@@ -159,32 +231,21 @@ begin
                          Result, Redisplay, False,
                          Next_Field_Cb'Access);
 
-      -- Exit
-      exit when (Result.Event = Afpx.Keyboard
-                 and then Result.Keyboard_Key = Afpx.Break_Key)
-      or else   (Result.Event = Afpx.Mouse_Button
-                 and then Result.Field_No = Exit_Field);
-
-      -- Reset
-      if Result.Event = Afpx.Keyboard
-      and then Result.Keyboard_Key = Afpx.Escape_Key then
-        for Field in A_Flds loop
-          Afpx.Reset_Field (Field);
-        end loop;
-        for Field in B_Flds loop
-          Afpx.Reset_Field (Field);
-        end loop;
-        Clear_Result;
-        Cursor_Field := A_Flds'First;
-        Cursor_Col := 0;
-        Insert := False;
-      end if;
-
-      -- Compute
       if (Result.Event = Afpx.Keyboard
+          and then Result.Keyboard_Key = Afpx.Break_Key)
+      or else (Result.Event = Afpx.Mouse_Button
+               and then Result.Field_No = Exit_Field) then
+        -- Exit
+        exit;
+      elsif Result.Event = Afpx.Keyboard
+      and then Result.Keyboard_Key = Afpx.Escape_Key then
+        -- Reset
+        Reset;
+      elsif (Result.Event = Afpx.Keyboard
           and then Result.Keyboard_Key = Afpx.Return_Key)
       or else (Result.Event = Afpx.Mouse_Button
                and then Result.Field_No = Compute_Field) then
+        -- Compute
         Cursor_Field := A_Flds'First;
         Cursor_Col := 0;
         Insert := False;
@@ -207,6 +268,11 @@ begin
           -- Clean the result fields at next cursor change field
           Need_Clean := True;
         end if;
+      elsif Result.Event = Afpx.Mouse_Button
+      and then Result.Field_No = Switch_Field then
+        -- Switch
+        Sexa_Mode := not Sexa_Mode;
+        Reset;
       end if;
 
       -- Refresh

@@ -1,3 +1,4 @@
+with Round_At;
 package body Conv is
   use My_Math;
 
@@ -47,7 +48,7 @@ package body Conv is
 
   function Geo2Rad (Coord : Geo_Coord_Rec) return Rad_Coord_Range is
     Deg : C_Nbres.Reducted_Degree;
-    use C_Nbres;
+    use type C_Nbres.Degree;
   begin
     Deg := C_Nbres.Reducted_Degree(Coord.Deg);
     Deg := Deg + C_Nbres.Reducted_Degree(Coord.Min) / 60.0;
@@ -55,6 +56,39 @@ package body Conv is
     Deg := Deg + C_Nbres.Reducted_Degree(Coord.Hun) / 60.0 / 60.0 / 100.0;
     return C_Nbres.To_Radian(Deg);
   end Geo2Rad;
+
+  function Dec2Geo (Coord : Dec_Coord_Rec) return Geo_Coord_Rec is
+    Rad : C_Nbres.Radian;
+    use type C_Nbres.Radian;
+  begin
+    Rad := C_Nbres.Radian(Coord.Deg)
+         + C_Nbres.Radian(Coord.Ten) / (C_Nbres.Radian(Ten_Range'Last + 1));
+    return Rad2Geo (C_Nbres.Reduct(Rad));
+  end Dec2Geo;
+
+  function Geo2Dec (Coord : Geo_Coord_Rec) return Dec_Coord_Rec is
+    R : My_Math.Real;
+    I : My_Math.Inte;
+    Dec : Dec_Coord_Rec;
+  begin
+    R := My_Math.Real (Geo2Rad (Coord));
+    R := Round_At (R, -4);
+    Dec.Deg := Deg_Range (My_Math.Trunc (R));
+
+    I := My_Math.Round (My_Math.Frac(R) * My_Math.Real (Ten_Range'Last + 1));
+    if I > My_Math.Inte(Ten_Range'Last) then
+      if Dec.Deg = Deg_Range'Last then
+        Dec.Deg := Deg_Range'First;
+      else
+        Dec.Deg := Dec.Deg + 1;
+      end if;
+      Dec.Ten := 0;
+    else
+      Dec.Ten := Ten_Range(I);
+    end if;
+    return Dec;
+
+  end Geo2Dec;
 
 end Conv;
 

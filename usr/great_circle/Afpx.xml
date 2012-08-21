@@ -219,15 +219,21 @@
       <Colors Foreground="Dark_Green" Background="Light_Grey"/>
     </Field>
 
-    <!-- Compute and Exit buttons -->
-    <Field Num="38" Kind="Button" Name="Compute">
-      <Geometry Up="8" Left="3" Low="10" Right="11"/>
+    <!-- Switch, Compute and Exit buttons -->
+    <Field Num="38" Kind="Button" Name="Switch">
+      <Geometry Up="8" Left="${Field_6.Left}" Low="10" Width="13"/>
+      <Colors Foreground="Black" Background="Lime_Green"/>
+      <Init Row="1" Col="1">SWITCH Deci</Init>
+    </Field>
+
+    <Field Num="39" Kind="Button" Name="Compute">
+      <Geometry Up="8" Left="${Field_20.Left}" Low="10" Width="9"/>
       <Colors Foreground="Black" Background="Lime_Green"/>
       <Init Row="1" Col="1">COMPUTE</Init>
     </Field>
 
-    <Field Num="39" Kind="Button" Name="Quit">
-      <Geometry Up="8" Left="16" Low="10" Right="21"/>
+    <Field Num="40" Kind="Button" Name="Quit">
+      <Geometry Up="8" Left="${Field_27.Right}" Low="10" Width="6"/>
       <Colors Foreground="Black" Background="Lime_Green"/>
       <Init Row="1" Col="1">EXIT</Init>
     </Field>

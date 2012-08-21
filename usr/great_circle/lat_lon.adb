@@ -79,5 +79,47 @@ package body Lat_Lon is
     return Lat_Lon_Rad;
   end Geo2Rad;
 
+  --  00.0000 <= Lat.Coord <=  90.0000
+  -- 000.0000 <= Lon.Coord <= 180.0000
+  function Is_Lat_Lon_Ok (Lat_Lon_Dec : Lat_Lon_Dec_Rec) return Boolean is
+  begin
+    -- Check lat coord, deg < Max_Lat, or deg = Max_Lat and min=sec=0
+    if Lat_Lon_Dec.Lat.Coord.Deg > Max_Lat then
+      return False;
+    end if;
+    if Lat_Lon_Dec.Lat.Coord.Deg = Max_Lat
+    and then Lat_Lon_Dec.Lat.Coord.Ten /= 0 then
+      return False;
+    end if;
+
+    -- Check lon coord, deg < Max_Lon, or deg = Max_Lon and min=sec=0
+    if Lat_Lon_Dec.Lon.Coord.Deg > Max_Lon then
+      return False;
+    end if;
+    if Lat_Lon_Dec.Lon.Coord.Deg = Max_Lon
+    and then Lat_Lon_Dec.Lon.Coord.Ten /= 0 then
+      return False;
+    end if;
+    return True;
+  end Is_Lat_Lon_Ok;
+
+  function Dec2Geo (Coord : Lat_Lon_Dec_Rec) return Lat_Lon_Geo_Rec is
+  begin
+    return (
+      Lat => (North => Coord.Lat.North,
+              Coord => Conv.Dec2Geo (Coord.Lat.Coord)),
+      Lon => (East  => Coord.Lon.East,
+              Coord => Conv.Dec2Geo (Coord.Lon.Coord)) );
+  end Dec2Geo;
+
+  function Geo2Dec (Coord : Lat_Lon_Geo_Rec) return Lat_Lon_Dec_Rec is
+  begin
+    return (
+      Lat => (North => Coord.Lat.North,
+              Coord => Conv.Geo2Dec (Coord.Lat.Coord)),
+      Lon => (East  => Coord.Lon.East,
+              Coord => Conv.Geo2Dec (Coord.Lon.Coord)) );
+  end Geo2Dec;
+
 end Lat_Lon;
 
