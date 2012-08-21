@@ -221,12 +221,15 @@ package body Language is
           if Nb = 1 then
             -- Optim
             Wc := Char_To_Wide (Str(Index));
+          elsif Index + Nb - 1 > Str'Last then
+            -- Incomplete end of sequence
+            raise Invalid_Utf_8_Sequence;
           else
-              Wc := Utf_8.Decode (Str(Index .. Index + Nb - 1));
+            Wc := Utf_8.Decode (Str(Index .. Index + Nb - 1));
           end if;
         exception
           when Utf_8.Invalid_Sequence =>
-            Wc := Char_To_Wide (Default_Char);
+            raise Invalid_Utf_8_Sequence;
         end;
         Ada.Strings.Wide_Unbounded.Append (Ws, Wc);
         Index := Index + Nb;
