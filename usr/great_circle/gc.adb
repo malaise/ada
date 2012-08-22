@@ -8,10 +8,12 @@ procedure Gc is
   begin
     Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
       & " [ add.mm.ss/oddd.mm.ss add.mm.ss/oddd.mm.ss ]");
+    Basic_Proc.Put_Line_Error ("   or: " & Argument.Get_Program_Name
+      & " [ add.ijkl/oddd.ijkl add.ijkl/oddd.ijkl ]");
     Basic_Proc.Put_Line_Error (" where a is N or S and o is E or W.");
   end Usage;
 
-  Debug : constant Boolean := True;
+  Debug : constant Boolean := False;
 
   Use_Afpx : Boolean;
 
@@ -98,7 +100,8 @@ procedure Gc is
                           Cursor_Col : Con_Io.Col_Range;
                           Enter_Field_Cause : Afpx.Enter_Field_Cause_List;
                           Str : Afpx.Unicode_Sequence) return Con_Io.Col_Range is
-    pragma Unreferenced (Cursor_Field, New_Field, Cursor_Col);
+    Last : Con_Io.Col_Range;
+    pragma Unreferenced (Cursor_Field, New_Field);
     use type Afpx.Enter_Field_Cause_List;
   begin
     if Need_Clean then
@@ -107,6 +110,13 @@ procedure Gc is
     end if;
     if Enter_Field_Cause = Afpx.Left then
       return Afpx.Last_Index (Str, False);
+    elsif Enter_Field_Cause = Afpx.Mouse then
+      Last := Afpx.Last_Index (Str, True);
+      if Cursor_Col <= Last then
+        return Cursor_Col;
+      else
+        return Last;
+      end if;
     else
       return 0;
     end if;
@@ -175,17 +185,15 @@ procedure Gc is
         Afpx.Encode_Wide_Field (F, (0, 0), Wstr);
       end;
     else
-basic_proc.put_Line_error ("Encoding heading");
       declare
         Str : constant String := String_Util.Decangle2Str(Conv.Geo2Dec(H));
         -- Will append °
         Wstr : Wide_String (1 .. Str'Length + 1);
       begin
-basic_proc.put_Line_error (">" & Str & "<");
         Wstr := Language.String_To_Wide (Str) & Degree_Sign;
         Afpx.Encode_Wide_Field (F, (0, 0), Wstr);
       end;
-basic_proc.put_Line_error ("Encoded heading");
+Basic_Proc.Put_Line_Error ("Encoded heading");
     end if;
  end Encode_Heading;
 
@@ -203,14 +211,27 @@ begin
 
   -- Convert args in lat_lon of A and B
   if not Use_Afpx then
+    -- See if Ndd.mm.ss or Ndd.ijkl
+    Sexa_Mode := Argument.Get_Parameter(1)(7) = '.';
     begin
       -- Parse arguments
-      A := String_Util.Str2Geo(Argument.Get_Parameter(1));
-      B := String_Util.Str2Geo(Argument.Get_Parameter(2));
+      if Sexa_Mode then
+        A := String_Util.Str2Geo(Argument.Get_Parameter(1));
+        B := String_Util.Str2Geo(Argument.Get_Parameter(2));
+      else
+        A := Lat_Lon.Dec2Geo (String_Util.Str2Dec(Argument.Get_Parameter(1)));
+        B := Lat_Lon.Dec2Geo (String_Util.Str2Dec(Argument.Get_Parameter(2)));
+      end if;
       -- Compute
       Great_Circle.Compute_Route(A, B, Heading, Distance);
       -- Put result
-      Basic_Proc.Put_Output ("Route: " & String_Util.Geoangle2Str(Heading));
+      if Sexa_Mode then
+        Basic_Proc.Put_Output ("Route: "
+            & String_Util.Geoangle2Str(Heading));
+      else
+        Basic_Proc.Put_Output ("Route: "
+            & String_Util.Decangle2Str(Conv.Geo2Dec(Heading)));
+      end if;
       Basic_Proc.Put_Line_Output ("   Distance(Nm): "
                         & String_Util.Dist2Str(Distance));
     exception

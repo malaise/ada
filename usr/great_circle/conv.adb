@@ -58,21 +58,26 @@ package body Conv is
   end Geo2Rad;
 
   function Dec2Geo (Coord : Dec_Coord_Rec) return Geo_Coord_Rec is
-    Rad : C_Nbres.Radian;
-    use type C_Nbres.Radian;
+    Deg : C_Nbres.Degree;
+    Rad : C_Nbres.Reducted_Radian;
+    use type C_Nbres.Degree, C_Nbres.Reducted_Radian;
   begin
-    Rad := C_Nbres.Radian(Coord.Deg)
-         + C_Nbres.Radian(Coord.Ten) / (C_Nbres.Radian(Ten_Range'Last + 1));
-    return Rad2Geo (C_Nbres.Reduct(Rad));
+    Deg := C_Nbres.Degree(Coord.Deg)
+         + C_Nbres.Degree(Coord.Ten) / (C_Nbres.Degree(Ten_Range'Last) + 1.0);
+    Rad := C_Nbres.To_Radian (Deg);
+    return Rad2Geo (Rad);
   end Dec2Geo;
 
   function Geo2Dec (Coord : Geo_Coord_Rec) return Dec_Coord_Rec is
+    Rad : Rad_Range;
+    Deg : C_Nbres.Degree;
     R : My_Math.Real;
     I : My_Math.Inte;
     Dec : Dec_Coord_Rec;
   begin
-    R := My_Math.Real (Geo2Rad (Coord));
-    R := Round_At (R, -4);
+    Rad := Geo2Rad (Coord);
+    Deg := C_Nbres.To_Degree (Rad);
+    R := Round_At (My_Math.Real (Deg), -4);
     Dec.Deg := Deg_Range (My_Math.Trunc (R));
 
     I := My_Math.Round (My_Math.Frac(R) * My_Math.Real (Ten_Range'Last + 1));
