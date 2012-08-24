@@ -164,7 +164,7 @@ package body Io_Flow is
       return;
     else
       if Argument.Get_Nbre_Arg /= 0 then
-        Async_Stdin.Put_Line_Err ("invalid argument.");
+        Async_Stdin.Put_Line_Err ("Invalid argument.");
         raise Init_Error;
       end if;
     end if;
@@ -333,7 +333,12 @@ package body Io_Flow is
         null;
       when Stdio_Tty | Stdio_Not_Tty =>
         -- Put on stdout (tty or not)
-        Async_Stdin.Put_Out (Str);
+        begin
+          Async_Stdin.Put_Out (Str);
+        exception
+          -- Hide error, like on other flows
+          when Async_Stdin.Io_Error => null;
+        end;
       when Udp | Tcp | Abus =>
         -- Skip if channel is not active
         if (Io_Mode = Udp or else Io_Mode = Tcp)

@@ -1,6 +1,6 @@
 with System;
 with Ada.Calendar;
-with C_Types, Many_Strings;
+with C_Types, Many_Strings, Basic_Proc;
 package Sys_Calls is
 
   -- Call system (execute UNIX command)
@@ -24,6 +24,7 @@ package Sys_Calls is
   function Str_Error (Err : Integer) return String;
 
   -- Put line on stdout or stderr
+  Io_Error : exception renames Basic_Proc.Io_Error;
   procedure Put_Output (Str : in String);
   procedure Put_Output (Char : in Character);
   procedure Put_Line_Output (Str : in String);

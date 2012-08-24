@@ -1,5 +1,5 @@
 with Ada.Calendar, Ada.Characters.Latin_1;
-with Event_Mng, Sys_Calls, Console, Dynamic_List, Environ,
+with Event_Mng, Console, Dynamic_List, Environ,
      Unicode, Utf_8, Language, As.U;
 package body Async_Stdin is
 

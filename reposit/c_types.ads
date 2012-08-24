@@ -44,5 +44,8 @@ package C_Types is
 
   subtype Pid_T is Int;
 
+  -- Constants
+  Eof : constant Int := -1;
+
 end C_Types;
 

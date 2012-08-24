@@ -1,34 +1,41 @@
 with System, Interfaces.C_Streams;
-with Ada.Command_Line, Ada.Characters.Latin_1;
+with Ada.Command_Line, Ada.Characters.Latin_1, C_Types;
 package body Basic_Proc is
+
+  procedure Check (I : in Integer) is
+  begin
+    if I = C_Types.Eof then
+      raise Io_Error;
+    end if;
+  end Check;
 
   -- Put line on stdout
   procedure Put_Output (Str : in String) is
     I : Interfaces.C_Streams.Int;
-    pragma Unreferenced (I);
     Str4C : constant String := Str & Ada.Characters.Latin_1.Nul;
   begin
     I := Interfaces.C_Streams.Fputs (Str4C'Address,
                  Interfaces.C_Streams.Stdout);
+    Check (I);
   end Put_Output;
 
   procedure Put_Output (Char : in Character) is
     I : Interfaces.C_Streams.Int;
-    pragma Unreferenced (I);
     Str4C : constant String := Char & Ada.Characters.Latin_1.Nul;
   begin
     I := Interfaces.C_Streams.Fputs (Str4C'Address,
                  Interfaces.C_Streams.Stdout);
+    Check (I);
   end Put_Output;
 
   procedure New_Line_Output is
     I : Interfaces.C_Streams.Int;
-    pragma Unreferenced (I);
     Str4C : constant String := Ada.Characters.Latin_1.Lf
                              & Ada.Characters.Latin_1.Nul;
   begin
     I := Interfaces.C_Streams.Fputs (Str4C'Address,
                  Interfaces.C_Streams.Stdout);
+    Check (I);
   end New_Line_Output;
 
   procedure Put_Line_Output (Str : in String) is
@@ -39,38 +46,38 @@ package body Basic_Proc is
 
   procedure Flush_Output is
     I : Interfaces.C_Streams.Int;
-    pragma Unreferenced (I);
   begin
     I := Interfaces.C_Streams.Fflush (Interfaces.C_Streams.Stdout);
+    Check (I);
   end Flush_Output;
 
   -- Put line on stderr
   procedure Put_Error (Str : in String) is
     I : Interfaces.C_Streams.Int;
-    pragma Unreferenced (I);
     Str4C : constant String := Str & Ada.Characters.Latin_1.Nul;
   begin
     I := Interfaces.C_Streams.Fputs (Str4C'Address,
                  Interfaces.C_Streams.Stderr);
+    Check (I);
   end Put_Error;
 
   procedure Put_Error (Char : in Character) is
     I : Interfaces.C_Streams.Int;
-    pragma Unreferenced (I);
     Str4C : constant String := Char & Ada.Characters.Latin_1.Nul;
   begin
     I := Interfaces.C_Streams.Fputs (Str4C'Address,
                  Interfaces.C_Streams.Stderr);
+    Check (I);
   end Put_Error;
 
   procedure New_Line_Error is
     I : Interfaces.C_Streams.Int;
-    pragma Unreferenced (I);
     Str4C : constant String := Ada.Characters.Latin_1.Lf
                              & Ada.Characters.Latin_1.Nul;
   begin
     I := Interfaces.C_Streams.Fputs (Str4C'Address,
                  Interfaces.C_Streams.Stderr);
+    Check (I);
   end New_Line_Error;
 
   procedure Put_Line_Error (Str : in String) is
@@ -81,9 +88,9 @@ package body Basic_Proc is
 
   procedure Flush_Error is
     I : Interfaces.C_Streams.Int;
-    pragma Unreferenced (I);
   begin
     I := Interfaces.C_Streams.Fflush (Interfaces.C_Streams.Stderr);
+    Check (I);
   end Flush_Error;
 
   -- Get line from stdin

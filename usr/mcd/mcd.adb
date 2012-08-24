@@ -48,7 +48,7 @@ begin
             or else Argument.Get_Parameter (1) = "--help"
             or else Argument.Get_Parameter (1) = "help") then
     Io_Flow.Init (Default => True);
-    Mcd_Parser.Print_Help (Command => False);
+    Mcd_Parser.Print_Help (Command => True);
     Set_Error_Code;
     return;
   end if;

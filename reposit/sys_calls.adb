@@ -1,7 +1,6 @@
 with Interfaces.C.Strings;
 with Ada.Characters.Latin_1;
-with Day_Mng, Bit_Ops, Basic_Proc;
-
+with Day_Mng, Bit_Ops;
 package body Sys_Calls is
 
   -- Common utilities

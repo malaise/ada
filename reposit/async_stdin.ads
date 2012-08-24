@@ -1,3 +1,4 @@
+with Sys_Calls;
 package Async_Stdin is
 
   -- Maximum amount of characters stored, 0 for infinite
@@ -44,6 +45,7 @@ package Async_Stdin is
   function Strip_Last_Control (Str : String) return String;
 
   -- Put on stdout when in async
+  Io_Error : exception renames Sys_Calls.Io_Error;
   procedure Put_Out (Str : in String);
   procedure Put_Line_Out (Str : in String);
   procedure New_Line_Out;

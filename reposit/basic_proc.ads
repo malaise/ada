@@ -1,5 +1,8 @@
 package Basic_Proc is
 
+  -- Any Put can raise (for ex on EPIPE)
+  Io_Error : exception;
+
   -- Put line on stdout
   procedure Put_Output (Str : in String);
   procedure Put_Output (Char : in Character);
