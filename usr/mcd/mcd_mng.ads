@@ -120,7 +120,6 @@ package Mcd_Mng is
    -- Subprograms
    Call,
    Ifcall,
-   Include,
    Ret,
    Retn,
    Retall,
@@ -166,7 +165,8 @@ package Mcd_Mng is
    -- Miscelaneous
    Nop,
    Getenv,
-   Read,
+   Readfile,
+   Readlins,
    Rnd,
    Sleep,
    Version,

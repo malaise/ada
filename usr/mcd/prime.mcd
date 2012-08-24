@@ -56,7 +56,10 @@ m pushr dup isnotnul swap i pushr < & ifret
 P pushr retacal ] P popr
 
 # Function to display elapsed time
-"format_time.mcd" include D popr
+"format_time.mcd" readfile
+dup isbool [ "Error: cannot read time formating sub-program" putl
+ssize popn retall ] ifcall
+strprog D popr
 clock v popr
 
 # Function to be called on break

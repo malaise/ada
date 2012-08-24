@@ -4,7 +4,7 @@ pragma Elaborate(Random);
 package body Mcd_Mng is
 
   -- Current version
-  Mcd_Version : constant String := "V7.3";
+  Mcd_Version : constant String := "V8.0";
 
   package Stack is
     -- What can we store in stack
@@ -282,10 +282,12 @@ package body Mcd_Mng is
   end Misc;
 
   package File is
-    -- Read and concatenate lines (including Lf)
+    -- Read and concatenate lines (including Lf) into a string
     procedure Read (File_Name : in Item_Rec; Content : out Item_Rec);
-    -- Read ans store each string (excluding Lfs)
+    -- Read ans store each string (excluding Lfs) in Content
+    -- Ok = False if open error
     procedure Read (File_Name : in Item_Rec;
+                    Ok        : out Item_Rec;
                     Content   : out As.U.Utils.Asu_Ua.Unb_Array);
   end File;
 
@@ -897,12 +899,6 @@ package body Mcd_Mng is
             Push(A);
             Misc.Do_Call;
           end if;
-        when Include =>
-          -- read content of A and call it
-          Pop(A);
-          S := A;
-          File.Read(A, B);
-          Push(B);
         when Ret =>
           -- return
           Push( (Kind => Inte, Val_Inte => 1) );
@@ -1090,14 +1086,24 @@ package body Mcd_Mng is
           -- push getenv(A)
           Pop(A); Push (Misc.Getenv(A));
           S := A;
-        when Read =>
-          -- push lines of the file
+        when Readfile =>
+          -- read content of A as string
           Pop(A);
-          File.Read(A, Read_Lines);
-          for I in reverse 1 .. Read_Lines.Length loop
-            Push ((Kind => Chrs, Val_Text => Read_Lines.Element(I)));
-          end loop;
-          Read_Lines.Set_Null;
+          S := A;
+          File.Read(A, B);
+          Push(B);
+        when Readlins =>
+          -- push lines of the file, (first line on top)
+          Pop(A);
+          File.Read(A, B, Read_Lines);
+          if not B.Val_Bool then
+            Push (B);
+          else
+            for I in reverse 1 .. Read_Lines.Length loop
+              Push ((Kind => Chrs, Val_Text => Read_Lines.Element(I)));
+            end loop;
+            Push ((Kind => Inte, Val_Inte => My_Math.Inte(Read_Lines.Length)));
+          end if;
           S := A;
         when Rnd =>
           -- push random value

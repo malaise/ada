@@ -27,38 +27,55 @@ package body File is
     Sys_Calls.Close (In_Fd);
   end Close;
 
-  -- Read the content of the file and return a Prog with the content
+  -- Read the content of the file and return a String with the content
   procedure Read (File_Name : in Item_Rec; Content : out Item_Rec) is
     In_File : Text_Line.File_Type;
   begin
-    Content := (Kind => Prog, Val_Text => As.U.Asu_Null);
 
     -- Open File
-   Open (File_Name, In_File);
+    begin
+      Open (File_Name, In_File);
+    exception
+      when File_Error =>
+        Content := (Kind => Bool, Val_Bool => False);
+        return;
+    end;
 
     -- Read all content
     In_File.Set_Line_Feed ("");
-    Content.Val_Text := In_File.Get;
+    Content := (Kind => Chrs, Val_Text => In_File.Get);
 
     -- Close
     Close (In_File);
+  exception
+    when others =>
+      raise File_Error;
   end Read;
 
   -- Read the content of the file and append to Content
   procedure Read (File_Name : in Item_Rec;
+                  Ok        : out Item_Rec;
                   Content   : out As.U.Utils.Asu_Ua.Unb_Array) is
     In_File : Text_Line.File_Type;
     Line : As.U.Asu_Us;
   begin
 
     -- Open File
-   Open (File_Name, In_File);
+    Content.Set_Null;
+    begin
+      Open (File_Name, In_File);
+    exception
+      when File_Error =>
+        Ok := (Kind => Bool, Val_Bool => False);
+        return;
+     end;
 
     -- Read and append lines
     loop
       Line := In_File.Get;
       exit when Line.Is_Null;
       if Line.Element (Line.Length) = Text_Line.Line_Feed_Char then
+        -- Remove trailing Lf
         Line.Delete (Line.Length, Line.Length);
       end if;
       Content.Append (Line);
@@ -66,6 +83,10 @@ package body File is
 
     -- Close
     Close (In_File);
+    Ok := (Kind => Bool, Val_Bool => True);
+  exception
+    when others =>
+      raise File_Error;
   end Read;
 end File;
 

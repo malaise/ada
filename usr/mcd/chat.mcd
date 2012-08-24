@@ -2,7 +2,7 @@
 # File chat.dat must contain sentences made of
 # - one letter C (for Circé), F (for Fada) or R (for random)
 # - a space
-# - the activity, ex: mange ses croquettes"
+# - the activity, e.g.: mange ses croquettes
 # Eempty lines and comments (lines starting by '#') are skipped
 
 # Init sentence start: the cat
@@ -34,17 +34,22 @@ t pushr a N pushr 1 + N copyr popa
 ] T popr
 
 # Read activities
-"chat.dat" read
+"chat.dat" readlins
+dup isbool [ "Error: cannot read data file" putl ssize popn retall ] ifcall
+pop
 # Check all the activities in the stack
 0 N popr
-[ ssize isnul ifret 
+[ ssize isnul ifret
 T pushr call
 S pushr retacal ] S copyr call
 
 # Init time
 # #########
 # Function to format elapsed time
-"format_time.mcd" include D popr
+"format_time.mcd" readfile
+dup isbool [ "Error: cannot read time formating sub-program" putl
+ssize popn retall ] ifcall
+strprog D popr
 
 # Function to be called on break: show total and elapsed time
 [ i pushr 3 format put " attitudes vues en " put
