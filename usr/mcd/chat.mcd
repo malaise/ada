@@ -1,27 +1,61 @@
 # Display random cats activities
+# File chat.dat must contain sentences made of
+# - one letter C (for Circé), F (for Fada) or R (for random)
+# - a space
+# - the activity, ex: mange ses croquettes"
+# Eempty lines and comments (lines starting by '#') are skipped
 
-# Random sentence start: the cat
-2 M popr
-"Le petit chat Fada" Y popr
-"La petite chatte Circé" Z popr
+# Init sentence start: the cat
+# ###################
+# Stored in registers C and F, themselves stored in b[1..2]
+2 M popr F b 1 popa C b 2 popa
+"Le petit chat Fada" b 1 pusha popr
+"La petite chatte Circé" b 2 pusha popr
 
-# Random sentence end: the activity
+# Init sentence end: the activity, stored in a[1..N]
+# #################
+# Function for error in data format
+[ "Error in data file" putl ssize popn retall ] E popr
+
+# Function to process an activity: skip, check and store
+[ t copyr
+# skip comment or empty line
+strlen 0 = ifret
+t pushr 1 1 strsub "#" = ifret
+# Check format at least 2 chars
+t pushr strlen 2 < E pushr ifcall
+# First char is C, F or R
+t pushr 1 1 strsub dup "C" /= pope dup "F" /= pope "R" /= pope
+pushle pushle pushle & & E pushr ifcall
+# Second char is space
+t pushr 2 2 strsub " " /= E pushr ifcall
+# Update counter and store activity in array a[1..N]
+t pushr a N pushr 1 + N copyr popa
+] T popr
+
 # Read activities
 "chat.dat" read
-# Count them and store them in array a[1..N]
+# Check all the activities in the stack
 0 N popr
-[ ssize isnul ifret a N pushr 1 + N copyr popa
+[ ssize isnul ifret 
+T pushr call
 S pushr retacal ] S copyr call
 
-# Function to display elapsed time
+# Init time
+# #########
+# Function to format elapsed time
 "format_time.mcd" include D popr
-clock t popr
 
-# Function to be called on break
+# Function to be called on break: show total and elapsed time
 [ i pushr 3 format put " attitudes vues en " put
 clock t pushr - D pushr call put "." putl ] callbrk
 
-# Display number of activities
+# Get start time
+clock t popr
+
+# Begin
+# #####
+# Display number of activities read
 "Il y a " put 2 format N pushr put " attitudes:" putl
 
 # Main loop
@@ -30,12 +64,14 @@ clock t pushr - D pushr call put "." putl ] callbrk
 # Set random end of sentence and put num
 rnd N pushr toreal * trunc 1 +
 2 format dup put " " put
-# Set random start of sentence, offset 0 .. 1
-rnd M pushr toreal * trunc
+# Get first letter of sentence,
+dup a swap pusha 1 1 strsub strregi
+# If corresponding register is R then set random
+dup R = [ pop b rnd M pushr toreal * trunc 1 + pusha ] ifcall
 # Display start of sentence, in Y + offset
-Y regind + indreg pushr put " " put
+pushr put " " put
 # Display end of sentence
-a swap pusha put "." putl
+a swap pusha 1 2 "" strrep put "." putl
 # Increment counter
 i pushr 1 + i popr
 # Wait a bit

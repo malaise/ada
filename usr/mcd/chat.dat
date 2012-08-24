@@ -1,40 +1,44 @@
-a peur
-joue du piano
-fait le koala
-explore le toit
-se fait tripoter
-fait sa toilette
-boit dans la mare
-fuit les éboueurs
-dort dans le hamac
-fait des galipettes
-fait de la dentelle
-joue avec la souris
-s'étire près du feu
-dit bonjour aux pies
-mange des croquettes
-se cache sous le lit
-a des yeux de nautilus
-gratte sous son collier
-attaque les brins d'herbe
-guette au coin du couloir
-boxe à travers la chatière
-joue à chat avec les maîtres
-met de l'ordre dans le doudou
-court après l'eau du jet d'eau
-fait la sieste dans le potager
-n'aime pas le vent qui rend fou
-joue dehors avec les autres chats
-remue les papiers dans la corbeille
-veut être de l'autre côté de la porte
-fait des ronrons sur la table à calins
-se fait brosser sur la table à repasser
-deterre les plantations de la maîtresse
-ronronne sur les genoux de la maîtresse
-regarde l'eau s'écouler dans la baignoire
-surveille la maison du haut du secrétaire
-rapporte un oiseau dans la maison pour jouer
-range le secrétaire en mettant tout par terre
-attend la brosse du matin dans la salle de bain
-attend devant la chatière l'arrivée d'un portier
-toise le monde du haut de la cheminée du barbecue
+# F for Fada, C for Circé and R for random, then a space
+C a peur
+C joue du piano
+F fait le koala
+F explore le toit
+C se fait tripoter
+F fait sa toilette
+R boit dans la mare
+F fuit les éboueurs
+C dort dans le hamac
+F fait des galipettes
+C fait de la dentelle
+F joue avec la souris
+C s'étire près du feu
+F dit bonjour aux pies
+R mange des croquettes
+C se cache sous le lit
+F a des yeux de nautilus
+C dort au fond du placard
+F gratte sous son collier
+C attaque les brins d'herbe
+F guette au coin du couloir
+F songe sur le toit du chat
+R boxe à travers la chatière
+F joue à chat avec les maîtres
+F met de l'ordre dans le doudou
+F court après l'eau du jet d'eau
+F fait la sieste dans le potager
+F n'aime pas le vent qui rend fou
+F est tartifletté sur le carrelage
+F joue dehors avec les autres chats
+F remue les papiers dans la corbeille
+C veut être de l'autre côté de la porte
+F fait des ronrons sur la table à calins
+F se fait brosser sur la table à repasser
+F deterre les plantations de la maîtresse
+R ronronne sur les genoux de la maîtresse
+C regarde l'eau s'écouler dans la baignoire
+C surveille la maison du haut du secrétaire
+C rapporte un oiseau dans la maison pour jouer
+F range le secrétaire en mettant tout par terre
+C attend la brosse du matin dans la salle de bain
+C attend devant la chatière l'arrivée d'un portier
+F toise le monde du haut de la cheminée du barbecue
