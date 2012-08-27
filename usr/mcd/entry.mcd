@@ -3,7 +3,8 @@
 # Arg error
 [
 "Error. Usage: entry <entry_time> [ { <leave_time> <entry_time> } ]"
-putl "<time> ::= h[.ms]    and times must be crescent" putl ssize popn retall
+putl "<time> ::= h[.ms]    and times must be crescent" putl
+ssize popn 1 setexit retall
 ] E popr
 
 # Check stack size is odd
@@ -40,7 +41,7 @@ L pushr retacal ] L copyr call
 
 # Convert 8.0 - s and check validity (0 <= s < 24)
 8.0 s pushr - s copyr 0.0 < s pushr 24.0 >= |
-[ "Invalid result " put s pushr putl retall ] ifcall
+[ "Invalid result " put s pushr putl ssize popn 1 setexit retall ] ifcall
 
 # Convert in millisecs
 s pushr 3600.0 * 1000.0 * round

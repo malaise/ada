@@ -2,7 +2,7 @@
 
 # Check 1 arg int len 13
 [ "Error. 1 positive integer argument expected (13 digits)." putl
-  ssize popn retall ] E popr
+  ssize popn 1 setexit retall ] E popr
 ssize 1 /= E pushr ifcall
 dup isinte ~ E pushr ifcall
 dup ispos ~ E pushr ifcall

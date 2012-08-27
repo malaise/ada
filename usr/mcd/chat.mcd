@@ -3,7 +3,9 @@
 # - one letter C (for Circé), F (for Fada) or R (for random)
 # - a space
 # - the activity, e.g.: mange ses croquettes
-# Eempty lines and comments (lines starting by '#') are skipped
+# Empty lines and comments (lines starting by '#') are skipped
+ssize 0 /=
+[ "Error: no argument supported." putl ssize popn 1 setexit retall ] ifcall
 
 # Init sentence start: the cat
 # ###################
@@ -15,7 +17,7 @@
 # Init sentence end: the activity, stored in a[1..N]
 # #################
 # Function for error in data format
-[ "Error in data file" putl ssize popn retall ] E popr
+[ "Error in data file" putl ssize popn 1 setexit retall ] E popr
 
 # Function to process an activity: skip, check and store
 [ t copyr
@@ -35,8 +37,8 @@ t pushr a N pushr 1 + N copyr popa
 
 # Read activities
 "chat.dat" readlins
-dup isbool [ "Error: cannot read data file" putl ssize popn retall ] ifcall
-pop
+isbool [ "Error: cannot read data file" putl ssize popn 1 setexit retall ]
+ifcall
 # Check all the activities in the stack
 0 N popr
 [ ssize isnul ifret
@@ -48,7 +50,7 @@ S pushr retacal ] S copyr call
 # Function to format elapsed time
 "format_time.mcd" readfile
 dup isbool [ "Error: cannot read time formating sub-program" putl
-ssize popn retall ] ifcall
+ssize popn 1 setexit retall ] ifcall
 strprog D popr
 
 # Function to be called on break: show total and elapsed time

@@ -1,6 +1,7 @@
 # Test if some strings match a regex
 # At least the pattern and one string
-ssize 2 < [ "Usage: regex <pattern> { <str> }" putl ssize popn retall ] ifcall
+ssize 2 < [ "Usage: regex <pattern> { <str> }" putl ssize popn 1 setexit retall
+] ifcall
 
 # Pop all stack in estack to get pattern
 [ pope ssize 1 = ifret P pushr retacal ] P copyr call

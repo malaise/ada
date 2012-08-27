@@ -1,9 +1,10 @@
 # Test various string operations
+[ putl ssize popn 1 setexit retall ] E popr
 # Shall produce the same output as t_asu and t_asb
 1 format
 "Empty array:" putl
 "" t popr
-t pushr "" /= t pushr strnull ~ | [ "Init is not empty" putl retall ] ifcall
+t pushr "" /= t pushr strnull ~ | [ "Init is not empty" E pushr call ] ifcall
 "Length " put t pushr strlen putl
 "Image " put t pushr putl
 "Array of 3:" putl "Image " put "3" putl
@@ -35,7 +36,7 @@ newl
 "Slice 4 .. 6" putl
 "Slice string " put t pushr 4 6 strsub putl
 "Uslice Image " put t pushr 4 6 strsub dup putl
-"abc" = [ "Check ""="" OK" putl ] [ "Check ""="" FAILED" putl retall ] ifte call
+"abc" = [ "Check ""="" OK" putl ] [ "Check ""="" FAILED" E pushr call ] ifte call
 newl
 
 "Replace from 4 to 7 with B, C" putl

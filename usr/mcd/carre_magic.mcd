@@ -1,7 +1,8 @@
 # Display, for each dimension of a magic square, the sum to expect
 
 # No argument
-ssize 0 /= [ "Error. No argument accepted." putl ssize popn retall ] ifcall
+[ "Error. One optional size accepted." putl ssize popn 1 setexit retall ] E popr
+ssize 1 > E pushr ifcall
 
 # This function puts n and ((n * n  * n) + n) / 2
 # n beeing and remaining at top of stack
@@ -10,6 +11,9 @@ dup put " -> " put
 dup dup dup dup * * + 2 / putl
 ] F popr
 
+# If one argument, the size
+ssize 1 = [ dup isinte ~ E pushr ifcall F pushr call ssize popn retall ] ifcall
+
 # The loop
 [
 F pushr call
@@ -17,9 +21,6 @@ F pushr call
 L pushr retacal
 ] L popr
 
-
 10 format
 1 L pushr call
-
-
 

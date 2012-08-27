@@ -4,7 +4,8 @@
 [ absv 1.0e-10 <= ] Z popr
 
 # Error, replace by 0.0 exit
-[ "Invalid entry: " put v pushr putl pop 0.0 ] E popr
+[ "Invalid entry: " put v pushr putl pop 0.0 1 setexit ssize popn 1 setexit
+retall ] E popr
 
 # Check that top of stack is valid
 [

@@ -4,7 +4,7 @@
 # Example: mcdt gen_approx.mcd 1 10 0.1 "[ dup * 1.0 + ]"
 
 # Check args
-[ "Error, expecting: x1 x2 dx func" putl ssize popn retall ] E popr
+[ "Error, expecting: x1 x2 dx func" putl ssize popn 1 setexit retall ] E popr
 ssize 4 /= E pushr ifcall
 
 # Get function

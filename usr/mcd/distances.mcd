@@ -44,10 +44,14 @@ S pushr round "  " put put " |" putl
 # Default values
 ssize isnul [ 30 40 50 60 70 80 90 100 110 120 130 140 150 160 170 180 190 200 ] ifcall
 
+[ "Error: optional int arguments expected" putl ssize popn 1 setexit retall ]
+E popr
+
 # Store stack in reverse order in estack
+# Check positive integers
 [ ssize isnul ifret
-pope R pushr retacal ] R popr
-R pushr call
+dup copye isinte ~ E pushr ifcall 1 < E pushr ifcall R pushr retacal ]
+R copyr call
 
 # Title
 "+--------------------------------------------+" putl

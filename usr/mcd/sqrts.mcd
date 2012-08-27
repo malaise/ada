@@ -8,7 +8,7 @@ i pushr @1 + i copyr dup
 "Sqrt(" put put ") = " put dup sqrt dup putl
 # Check v.s. int
 tointe swap tointe sqrt /=
-[ "Error on " put i pushr putl ssize popn retall ] ifcall
+[ "Error on " put i pushr putl ssize popn 1 setexit retall ] ifcall
 # Loop
 pushle copye retacal ] copye
 

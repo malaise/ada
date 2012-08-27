@@ -4,7 +4,7 @@
 [ "Usage: e2f <amount>[<unit>]" putl
   "   <amount> : integer or float" putl
   "   <unit>   :  f or e (default e)" putl
-ssize popn retall ] E popr
+ssize popn 1 setexit retall ] E popr
 
 # Format a real number, rounding at 2 digits
 [

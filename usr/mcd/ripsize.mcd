@@ -4,7 +4,7 @@
 
 # Error messages and exit
 [ "Got an invalid target rip size " put t putl E pushr call ] R popr
-[ "Args: <length> { <start> <stop> }" putl ssize popn retall ] E popr
+[ "Args: <length> { <start> <stop> }" putl ssize popn 1 setexit retall ] E popr
 [ "<start> must be less than <stop>" putl E pushr call ] F popr
 [ "Sum of cuts is longer than film" putl E pushr call ] N popr
 
@@ -64,7 +64,8 @@ L pushr retacal
 l pushr pushle - dup ispos ~ N pushr ifcall k popr
 
 # Display target size
-"Target size is " put 4 format t pushr put "MB for " put 6 format k pushr put " frames." putl
+"Target size is " put 4 format t pushr put "MB for " put 6 format k pushr put
+" frames." putl
 
 # Length / Keep = Rip / Target
 # Rip = Length * Target / keep

@@ -4,7 +4,7 @@
 
 # Error message
 [ "Error, 2 positive numbers Wins and Defeats expected." putl
-ssize popn retall ] E popr
+ssize popn 1 setexit retall ] E popr
 ssize 2 /= E pushr ifcall
 
 # Check the content and put in reg

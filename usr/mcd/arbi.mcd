@@ -1,5 +1,6 @@
 # Test A+B A-B A*B A/B A%B for random arbitraries A and B in -999 .. 999
-ssize isnotnul [ "No argument expected." putl ssize popn retall ] ifcall
+ssize isnotnul [ "No argument expected." putl 1 setexit ssize popn retall ]
+ifcall
 
 # Get a random integer from -999 to +999
 999 toreal r popr
@@ -9,9 +10,9 @@ ssize isnotnul [ "No argument expected." putl ssize popn retall ] ifcall
 #  have the same arbitrary value. If not, the operation is in z.
 [
 x pushr pushr y pushr pushr = ifret
-"Error: " put a pushr put z pushr put b pushr put " -> " put x pushr popr putl
-"And " put i pushr put z pushr put j pushr put " -> " put y pushr popr putl
-retall ] C popr
+"Error: " put a pushr put z pushr put b pushr put " -> " put x pushr pushr putl
+"And " put i pushr put z pushr put j pushr put " -> " put y pushr pushr putl
+1 setexit ssize popn retall ] C popr
 
 # The loop
 [

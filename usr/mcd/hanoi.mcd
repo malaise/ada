@@ -7,7 +7,7 @@ clock z popr
 [ "Error, 3 arguments: <nb_disks> <from_column> <to_column> expected" putl
   "   nb_disks must be > 0," putl
   "   columns must be a, b or c and different." putl
-ssize popn retall ] E popr
+ssize popn 1 setexit retall ] E popr
 
 # Check 3 args
 ssize 3 /= E pushr ifcall

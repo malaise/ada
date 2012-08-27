@@ -9,7 +9,7 @@
 
 # Error message and exit
 [ "Error: <percent> <fuel_flow> <flight_time> expected" putl
-ssize popn retall
+ssize popn 1 setexit retall
 ] E popr
 
 # Check and store one argument

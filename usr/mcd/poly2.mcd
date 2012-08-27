@@ -3,7 +3,7 @@
 # Check 3 args (must be inte or real)
 7.014 format
 ssize 3 /= [ "Error. 3 arguments a b c expected" putl
-ssize popn retall ] ifcall
+ssize popn 1 setexit retall ] ifcall
 
 # Save a b c, 15 digits, title
 toreal c popr toreal b popr toreal a popr

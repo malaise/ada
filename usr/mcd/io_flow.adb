@@ -382,9 +382,11 @@ package body Io_Flow is
       when Stdio_Tty =>
         -- Reset tty blocking
         Async_Stdin.Set_Async;
+        Async_Stdin.Flush_Out;
       when Stdio_Not_Tty =>
         -- Close input flow
         Input_Flow.Close;
+        Async_Stdin.Flush_Out;
       when Abus =>
         Bus_Subscriber.Reset;
         Bus.Reset;

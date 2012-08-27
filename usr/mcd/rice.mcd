@@ -1,7 +1,8 @@
 # Compute 1 + 2 + 4 + 8 + 16 ... up to 64 squares
 
 # Check 1 arg > 0 or no arg (-> 64)
-[ "Error: N > 0 or no argument expected." putl ssize popn retall ] pope
+[ "Error: N > 0 or no argument expected." putl ssize popn 1 setexit retall ]
+pope
 ssize isnul [ "Defaulting to " put 64 dup putl ] ifcall
 dup isarbi [ tointe ] ifcall
 dup isinte ~ pushle copye ifcall

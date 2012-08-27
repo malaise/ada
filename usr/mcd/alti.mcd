@@ -2,7 +2,8 @@
 #      or flight level from altitude and QNH (otherwise)
 
 # Error handling
-[ "Usage: alti <FL/Alt> <QNH>" putl ssize popn retall ] E popr
+[ "Usage: alti <FL/Alt> <QNH>" putl 1 setexit ssize popn 1 setexit retall ]
+E popr
 
 # Check 2 arguments
 ssize 2 /= [ E pushr call ] ifcall

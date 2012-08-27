@@ -51,8 +51,8 @@ clock dateof d popr "is" v popr
 ssize 1 = [
 # check dd/mm/YYyy
 dup "^[0-9]{2}/[0-9]{2}/[0-9]{4}$" regmatch isnul
-[ "Error. Invalid argument (dd/mm/YYyy expected)." putl ssize popn retall ]
-ifcall
+[ "Error. Invalid argument (dd/mm/YYyy expected)." putl
+ssize popn 1 setexit retall ] ifcall
 # dd/mm/YYyy -> YYyy/mm/dd
 dup 7 10 strsub pope
 dup 3 5 strsub pushle swap strcat pope
@@ -64,12 +64,12 @@ dup d pushr 1 10 strsub dup swap3
 # Add hour:min:sec and store
 "-00:00:00.000" strcat d copyr
 timeof isbool
-[ "Error. Invalid date." putl ssize popn retall ] ifcall
+[ "Error. Invalid date." putl ssize popn 1 setexit retall ] ifcall
 ] ifcall
 
 # No more argument accepted
 ssize 0 /= [ "Error. At most one argument (dd/mm/YYyy) expected."
-putl ssize popn retall ] ifcall
+putl ssize popn 1 setexit retall ] ifcall
 
 # Get date corresponding to arg/now
 d pushr timeof A pushr call c popr

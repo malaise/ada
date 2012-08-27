@@ -3,7 +3,8 @@
 # Ex: mult 9 -> tables from 1 to 9
 
 # Error
-[ "Error, no or one positive argument expected" putl ssize popn retall ] E popr
+[ "Error, no or one positive argument expected" putl ssize popn 1 setexit retall
+] E popr
 
 ssize 1 > E pushr ifcall
 

@@ -4,7 +4,7 @@
 
 # Error message
 [ "Error. Two reals lat and lon (deg or grad) then mode (d or g) expected." putl
-ssize popn retall ] E popr
+ssize popn 1 setexit retall ] E popr
 
 # Check an arg and store
 [ dup isinte [ toreal ] ifcall dup isreal ~ E pushr ifcall swap popr ] C popr

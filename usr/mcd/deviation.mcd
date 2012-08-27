@@ -1,7 +1,7 @@
 # Compute the standard deviation and the variance of a set of values
 
 # Function to handle error
-[ "Usage: deviation { <value> }" putl ssize popn retall ] E popr
+[ "Usage: deviation { <value> }" putl ssize popn setexit retall ] E popr
 
 # Non null number of arguments
 ssize 0 = E pushr ifcall

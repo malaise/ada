@@ -1,7 +1,7 @@
 # Compute factorial of arg (inte or arbi)
 
 # Check 1 arg >= 0
-[ "Error: 1 argument N >= 0 expected." putl ssize popn retall ] E popr
+[ "Error: 1 argument N >= 0 expected." putl ssize popn 1 setexit retall ] E popr
 ssize 1 /= E pushr ifcall
 dup isinte [ toarbi ] ifcall
 dup isarbi ~ E pushr ifcall

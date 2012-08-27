@@ -1,7 +1,7 @@
 # Compute sum from 1 to N for each N from 1 to arg
 
 # Check stack is one positive inte
-[ "Error. One argument expected." putl ssize popn retall ] E popr
+[ "Error. One argument expected." putl ssize popn 1 setexit retall ] E popr
 ssize 1 /= E pushr ifcall
 dup isinte ~ E pushr ifcall
 dup ispos ~ E pushr ifcall

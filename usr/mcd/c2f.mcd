@@ -4,7 +4,7 @@
 [ "Usage: c2f <temperture>[<unit>]" putl
   "   <temperture> : integer or float" putl
   "   <unit>   :  f or c (default f)" putl
-ssize popn retall ] E popr
+ssize popn 1 setexit retall ] E popr
 
 # Format a real number, rounding at 2 digits
 [

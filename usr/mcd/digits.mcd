@@ -3,7 +3,7 @@
 # Error and quit
 4 format
 [ "Error, 1 positive argument expected" putl
-ssize popn retall ] E popr
+ssize popn 1 setexit retall ] E popr
 
 # Check 1 arg integer positive
 ssize 1 /= E pushr ifcall

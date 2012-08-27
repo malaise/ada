@@ -3,7 +3,7 @@
 
 # Error
 [ "Error. Two positive arguments (int or arbi) expected."  putl
-ssize popn retall ] E popr
+ssize popn 1 setexit retall ] E popr
 
 # Check one arg
 [

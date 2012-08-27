@@ -2,21 +2,19 @@
 
 # Arguments
 ssize 3 /=
+[ "Error, i then j then function expected" putl ssize popn 1 setexit retall ]
+ifcall
 
-[ "Error, i then j then function expected" putl ssize popn retall ] ifcall
 # The function
-dup isprog ~ [ "Error, function expected" putl ssize popn retall ] ifcall
-F popr
+dup isprog ~ [ "Error, function expected" putl ssize popn 1 setexit retall ]
+ifcall F popr
 
 # Format
 2.010 format
 
 # Error and quit
 [ "Error, 2 real arguments expected: f(i) * f(j) < 0" putl
-ssize popn retall ] E popr
-
-# Check 2 args
-ssize 2 /= E pushr ifcall
+ssize popn 1 setexit retall ] E popr
 
 # Store args
 j popr i popr

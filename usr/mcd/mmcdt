@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ \( $# -eq 1 \) -a \( "$1" = "-h" \) ] ; then
-  echo "USAGE: `basename $0` { [ { <arg> } ] -e <command_file> }"
+  echo "USAGE: `basename $0` { [ { <arg> } ] -e <command_file> }" >&2
   exit 1
 fi
 
@@ -9,14 +9,14 @@ com=/tmp/.mmcdt.mcd
 if [ -f $com ] ; then
   rm -f $com
   if [ -f $com ] ; then
-    echo "Error. Cannot remove tmp file $com"
+    echo "Error. Cannot remove tmp file $com" >&2
     exit 2
   fi
 fi
 
 touch $com
 if [ ! -f $com ] ; then
-  echo "Error. Cannot create tmp file $com"
+  echo "Error. Cannot create tmp file $com" >&2
   exit 2
 fi
 
@@ -24,7 +24,7 @@ while [ $# -ne 0 ] ; do
   if [ "$1" = "-e" ] ; then
 
     if [ ! -f "$2" ] ; then
-      echo "Error. File "$2" not found."
+      echo "Error. File "$2" not found." >&2
       exit 3
     fi
     cat "$2" >> $com
@@ -38,5 +38,7 @@ while [ $# -ne 0 ] ; do
 done
 
 mcd < $com
+res=$?
 rm -f $com
+exit $res
 

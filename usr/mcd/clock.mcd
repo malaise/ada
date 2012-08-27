@@ -3,7 +3,7 @@
 # With arg 's': display current time then at each round second
 
 # Arg error
-[ "Usage: Clock [ s ]" putl ssize popn retall ] E popr
+[ "Usage: Clock [ s ]" putl ssize popn 1 setexit retall ] E popr
 
 # 1 optionnal arg
 60_000 s popr

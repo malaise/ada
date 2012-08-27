@@ -1,13 +1,13 @@
 #!/bin/bash
 if [ -z "$1" ] ; then
-  echo "USAGE: `basename $0` <command_file> [ { <arg> } ]"
+  echo "USAGE: `basename $0` <command_file> [ { <arg> } ]" >&2
   exit 1
 fi
 file=$1
 shift
 if [ -z "$*" ] ; then
-  mmcdt -e $file
+  exec mmcdt -e $file
 else
-  mmcdt "$*" -e $file
+  exec mmcdt "$*" -e $file
 fi
 

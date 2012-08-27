@@ -1,7 +1,8 @@
 # Compute the barycenter for a list of pairs (distance, weight), inte or real
 
 # Function to handle error
-[ "Usage: barycenter { <distance> <weight> }" putl ssize popn retall ] E popr
+[ "Usage: barycenter { <distance> <weight> }" putl ssize popn 1 setexit retall ]
+E popr
 
 # Even number of arguments
 ssize 2 % 0 /= E pushr ifcall

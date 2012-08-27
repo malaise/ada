@@ -1,14 +1,15 @@
 # Sort elements (inte or real) from stack
 
 # Error
-[ "Error. Invalid argument." putl ssize popn retall ] E popr
+[ "Error. Invalid argument." putl ssize popn 1 setexit retall ] E popr
 
 # Save number of elements
 ssize N popr
 
 # Check number of elements
 a regind z regind swap - 1 + dup N pushr <
-[ "Error. Too many arguments. Max is " put putl ssize popn retall ] ifcall
+[ "Error. Too many arguments. Max is " put putl ssize popn 1 setexit retall ]
+ifcall
 pop
 
 # Save elements in registers
