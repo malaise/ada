@@ -1,0 +1,683 @@
+#!/bin/bash
+
+# Automatic tests of mcd
+
+# Cleanup
+echo -n > nul
+function clean {
+  rm -f out err exp nul
+}
+
+trap clean SIGINT SIGTERM
+
+# Title of a test
+function title {
+  echo -n $*": "
+}
+
+# Error message
+function error {
+  echo
+  echo $* 2>&1
+  exit 1
+}
+
+# Function to launch an interactive test
+function launch {
+  local ok=1
+  if [ $1 = "-n" ] ; then
+    ok=0
+    shift
+  fi
+  script=$1.mcd
+  shift
+  mcdt $script $* > out 2> err
+  res=$?
+  if [ $ok -eq 1 ] ; then
+    if [ $res -ne 0 ] ; then
+      error "Mcdt $script has failed."
+    fi
+  else
+    if [ $res -eq 0 ] ; then
+      error "Mcdt $script should have failed."
+    fi
+  fi
+}
+
+# Compare 2 files
+function comp {
+  local ok=1
+  if [ $1 = "-n" ] ; then
+    ok=0
+    shift
+  fi
+  cmp $1 $2 2> /dev/null
+  res=$?
+  if [ $ok -eq 1 ] ; then
+    if [ $res -ne 0 ] ; then
+      error "File $1 differs from expected $2."
+    fi
+  else
+    if [ $res -eq 0 ] ; then
+      error "File $1 should differs from expected $2."
+    fi
+  fi
+}
+
+# Stop mcd running in background
+function stop {
+  pid=`ps -C mcd | awk '($1 != "PID") {print $1}'`
+  if [ "$pid" = "" ] ; then
+    error "Mcd is not running."
+  fi
+  kill $pid
+}
+
+title alti
+launch alti 25301 1024
+echo "FL: 250" > exp
+comp out exp
+comp err nul
+launch alti 0 1014.25
+echo "Alt:    28 ft" > exp
+comp out exp
+comp err nul
+echo "OK"
+
+title arbi
+launch arbi &
+sleep 1
+stop
+sleep 0.5
+echo "OK"
+
+title barycenter
+launch barycenter 1 2 -1 4 2 2
+cat << EOF > exp
+Weight:  8.0000000000E+000
+Moment:  2.0000000000E+000
+Barycenter:  2.5000000000E-001
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+title bubble
+launch bubble 9 1 5 3 7 9
+cat << EOF > exp
+1.000000000E+000
+3.000000000E+000
+5.000000000E+000
+7.000000000E+000
+9.000000000E+000
+9.000000000E+000
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+title c2f
+launch c2f '"21c"'
+echo "21.00c = 69.80f" > exp
+comp out exp
+comp err nul
+launch c2f '"21f"'
+echo "21.00f = -6.11c"> exp
+comp out exp
+comp err nul
+echo "OK"
+
+title carre_magic
+launch carre_magic 21
+echo "   21 ->  4641" > exp
+comp out exp
+comp err nul
+echo "OK"
+
+title chat
+launch chat &
+sleep 2
+stop
+sleep 0.5
+echo "OK"
+
+title clock
+launch clock s &
+sleep 2
+stop
+sleep 0.5
+echo "OK"
+
+title conso
+launch conso 30 8 1.15
+cat << EOF > exp
+Current   fuel: 21.9 tons
+Flight    time: 01h30
+Remaining fuel:  3.7 tons
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+title degra
+launch degra 2.5 30 d
+echo "Lat: 3.148148148E+000 Lon: 3.073641204E+001 grad" > exp
+comp out exp
+comp err nul
+launch degra 21 2.1 g
+echo "Lat: 1.854000000E+001 Lon: 4.133802500E+000 deg" > exp
+comp out exp
+comp err nul
+echo "OK"
+
+title deviation
+launch deviation  4 3 6
+cat << EOF > exp
+Number:     3
+Average:  4.3333333333E+000
+Variance:  1.5555555556E+000
+Deviation:  1.2472191289E+000
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+title digits
+launch digits 25421
+echo "   5 digits." > exp
+comp out exp
+comp err nul
+echo "OK"
+
+title dindreg
+launch dindreg
+cat << EOF > exp
+Storing data in reg a
+Storing reg a in reg B
+Getting reg name from reg B
+Getting data from reg
+Data is: Ah que coucou!
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+title distances
+launch distances 50 130
+cat << EOF > exp
++--------------------------------------------+
+| Speed |         Distances (m)              |
+| (km/h)| Reaction |     Dry    |     Wet    |
+|       |          | Break Stop | Break Stop |
+|--------------------------------------------|
+|    50 |       28 |    11   39 |    17   44 |
+|   130 |       72 |   133  205 |   199  272 |
++--------------------------------------------+
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+title dump_stack
+launch dump_stack 1 21
+cat << EOF > exp
+Stack size is     2
+Stack:
+   21
+    1
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+title e2f
+launch e2f '"21e"'
+echo "21.00e = 137.75f" > exp
+comp out exp
+comp err nul
+launch e2f '"21f"'
+echo "21.00f = 3.20e"> exp
+comp out exp
+comp err nul
+echo "OK"
+
+title eloop
+launch eloop
+cat << EOF > exp
+Things to do    10
+Things to do     9
+Things to do     8
+Things to do     7
+Things to do     6
+Things to do     5
+Things to do     4
+Things to do     3
+Things to do     2
+Things to do     1
+Things to do     0
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+title entry
+launch entry 9 11.30 12.30
+echo "Leave at 18h00." > exp
+comp out exp
+comp err nul
+echo "OK"
+
+title expenses
+launch expenses 1 5 3 21 1 10
+cat << EOF > exp
+MaxId is 3
+Total is  36.00
+Average is  12.00
+Id   1 ->   3.00
+Id   2 -> -12.00
+Id   3 ->   9.00
+Remaining is 0.00
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+title fact
+launch fact 6
+echo "@+6 ! = @+720" > exp
+comp out exp
+comp err nul
+echo "OK"
+
+title fl
+launch fl 3.45 1.25 2
+echo "    7h10" > exp
+comp out exp
+comp err nul
+echo "OK"
+
+title frac
+launch frac &
+sleep 2
+stop
+sleep 0.5
+echo "OK"
+
+title freecell
+launch freecell 35 87
+echo "  28.69%" > exp
+comp out exp
+comp err nul
+echo "OK"
+
+title gen_approx
+mcdt gen_approx.mcd 0 2.1 1 '[ dup * ]' > out 2> err
+cat << EOF > exp
+0.0000000000E+000 0.0000000000E+000
+1.0000000000E+000 1.0000000000E+000
+2.0000000000E+000 4.0000000000E+000
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+title handles
+launch handles
+cat << EOF > exp
+ 0h00m00s
+ 1h05m27s
+ 2h10m54s
+ 3h16m21s
+ 4h21m49s
+ 5h27m16s
+ 6h32m43s
+ 7h38m10s
+ 8h43m38s
+ 9h49m05s
+10h54m32s
+12h00m00s
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+title hanoi
+launch hanoi 3 a b
+cat << EOF > exp
+move disk   1 from a to b
+move disk   2 from a to c
+move disk   1 from b to c
+move disk   3 from a to b
+move disk   1 from c to a
+move disk   2 from c to b
+move disk   1 from a to b
+EOF
+comp err nul
+# Skip last line cause it contains elapsed time
+head -7 out > err
+comp err exp
+echo "OK"
+
+title hcdlcm
+launch hcdlcm 23 @255
+cat << EOF > exp
+Hcd (@+23, @+255) = @+1
+Lcm (@+23, @+255) = @+5865
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+title inf_loop
+launch inf_loop &
+sleep 1
+stop
+sleep 0.5
+echo "OK"
+
+title isqrt
+launch isqrt 21
+echo "4" > exp
+comp out exp
+comp err nul
+echo "OK"
+
+title mlbx_overflow
+launch mlbx_overflow
+cat << EOF > exp
+Try no:  0, this try delay:        10 us; Total delay:        10 us
+Try no:  1, this try delay:        60 us; Total delay:        70 us
+Try no:  2, this try delay:       310 us; Total delay:       380 us
+Try no:  3, this try delay:      1560 us; Total delay:      1940 us
+Try no:  4, this try delay:      7810 us; Total delay:      9750 us
+Try no:  5, this try delay:     39060 us; Total delay:     48810 us
+Try no:  6, this try delay:    195310 us; Total delay:    244120 us
+Try no:  7, this try delay:    976560 us; Total delay:   1220680 us
+Try no:  8, this try delay:   4882810 us; Total delay:   6103490 us
+Try no:  9, this try delay:  24414060 us; Total delay:  30517550 us
+Try no: 10, this try delay: 122070310 us; Total delay: 152587860 us
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+title mult
+launch mult 5
+cat << EOF > exp
+  1   2   3   4   5 
+  2   4   6   8  10 
+  3   6   9  12  15 
+  4   8  12  16  20 
+  5  10  15  20  25 
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+title percent
+launch percent 10 21
+cat << EOF > exp
+     21.00 =      10.00 +     110.00%
+     21.00 =      10.00 *     210.00%
+     10.00 *      21.00% =       2.10
+     10.00 +      21.00% =      12.10
+     10.00 -      21.00% =       7.90
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+title poly2
+launch poly2 5 -21 3
+cat << EOF > exp
+       5.00000000000000E+000 * X**2
++     -2.10000000000000E+001 * X
++      3.00000000000000E+000
+delta =         3.81000000000000E+002
+
+Solution 
+2 reals:      4.05192212959431E+000
+    and:      1.48077870405686E-001
+EOF
+comp out exp
+comp err nul
+launch poly2 21 5 3
+cat << EOF > exp
+       2.10000000000000E+001 * X**2
++      5.00000000000000E+000 * X
++      3.00000000000000E+000
+delta =        -2.27000000000000E+002
+
+Solution 
+2 complex:     -1.19047619047619E-001
+   +/- i *      3.58726646983794E-001
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+title prime
+launch prime 21
+cat << EOF > exp
+@+1
+@+2
+@+3
+@+5
+@+7
+@+11
+@+13
+@+17
+@+19
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+title regex
+mcdt regex.mcd  '"t.t."' '"toto"' > out 2> err
+cat << EOF > exp
+Checking with pattern: t.t.
+toto =>     1
+Done.
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+title regord
+launch regord
+echo "OK"
+
+title ret
+launch ret 5
+cat << EOF > exp
+    5
+in M
+in 6
+in 5
+in 4
+in 3
+in 2
+in 1
+end 6
+end M
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+title rice
+launch rice 10
+cat << EOF > exp
+Square  1 Adding @+1
+Square  2 Adding @+2
+Square  3 Adding @+4
+Square  4 Adding @+8
+Square  5 Adding @+16
+Square  6 Adding @+32
+Square  7 Adding @+64
+Square  8 Adding @+128
+Square  9 Adding @+256
+Square 10 Adding @+512
+Total @+1023
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+title ripsize
+export RIPSIZE=1024
+launch ripsize 1034 0 100
+cat << EOF > exp
+Target size is 1024MB for    934 frames.
+Length without range is   1034 frames, which leads to a rip of 1134MB.
+Length with    range is    934 frames, which leads to a rip of 1024MB.
+EOF
+comp out exp
+comp err nul
+unset RIPSIZE
+launch ripsize 1034 0 100
+cat << EOF > exp
+Target size is  700MB for    934 frames.
+Length without range is   1034 frames, which leads to a rip of  775MB.
+Length with    range is    934 frames, which leads to a rip of  700MB.
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+title rndsqrts
+launch rndsqrts &
+sleep 3
+stop
+sleep 0.5
+echo "OK"
+
+title secu
+launch secu 1631017300164
+echo "key: 10" > exp
+comp out exp
+comp err nul
+echo "OK"
+
+title sn
+launch sn 12
+cat << EOF > exp
+    N      Sn
+    1       1
+    2       3
+    3       6
+    4      10
+    5      15
+    6      21
+    7      28
+    8      36
+    9      45
+   10      55
+   11      66
+   12      78
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+title sqrts
+launch rndsqrts &
+sleep 1
+stop
+sleep 0.5
+echo "OK"
+
+title tindreg
+launch tindreg
+cat << EOF > exp
+Storing data in reg a
+Storing reg a in reg b
+Storing reg b in reg c
+Getting data
+Data is: Ah que coucou!
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+title t_loop
+launch t_loop 7
+cat << EOF > exp
+ 7
+ 6
+ 5
+ 4
+ 3
+ 2
+ 1
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+title today
+launch today
+comp err nul
+echo "OK"
+
+title t_str
+launch t_str
+cat << EOF > exp
+Empty array:
+Length 0
+Image 
+Array of 3:
+Image 3
+
+Array of 1, 3, 5:
+Length 3
+Image 135
+Element 2: 3
+Replaced by u: u
+Image 1u5
+
+Append a, b, c, d, e
+Image 1u5abcde
+Same with concat
+Image 1u5abcde
+Same with reverse concat
+Image 1u5abcde
+Same with prepend
+Image 1u5abcde
+
+Slice 4 .. 6
+Slice string abc
+Uslice Image abc
+Check "=" OK
+
+Replace from 4 to 7 with B, C
+Image 1u5BCe
+Replace from B with 45
+Image 1u545e
+Delete from 4 to 5, insert a, b, c, d before 4
+Image 1u5abcde
+Replace from 4 to 5 with B, C, D
+Image 1u5BCDcde
+Delete from 4 to 6, insert A, B before 4
+Image 1u5ABcde
+
+Check Finalization
+Array of B, C
+Image BC
+Done.
+EOF
+comp out exp
+comp err nul
+echo "OK"
+
+title yfx
+mmcdt 0 10 -e x2-1.mcd -e yfx.mcd > out 2> err
+echo "1.0000000000E+000" > exp
+comp out exp
+comp err nul
+echo "OK"
+
+clean
+echo "Done."
+
