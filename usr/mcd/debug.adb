@@ -1,4 +1,4 @@
-with Environ, Bool_Io, Arbitrary.Fractions, Async_Stdin;
+with Environ, Arbitrary.Fractions, Async_Stdin;
 package body Debug is
 
   procedure Init is
@@ -32,7 +32,7 @@ package body Debug is
       when Real =>
         Async_Stdin.Put_Err (Item.Val_Real'Img);
       when Bool =>
-        Bool_Io.Put(Item.Val_Bool);
+        Async_Stdin.Put_Err (Item.Val_Bool'Img);
       when Chrs =>
         Async_Stdin.Put_Err ("""" & Item.Val_Text.Image & """");
       when Prog =>

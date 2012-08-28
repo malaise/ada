@@ -4,7 +4,7 @@ pragma Elaborate(Random);
 package body Mcd_Mng is
 
   -- Current version
-  Mcd_Version : constant String := "V8.0";
+  Mcd_Version : constant String := "V9.0";
 
   package Stack is
     -- What can we store in stack

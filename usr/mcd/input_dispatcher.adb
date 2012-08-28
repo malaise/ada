@@ -39,6 +39,18 @@ package body Input_Dispatcher is
        or else C = Ada.Characters.Latin_1.Cr;
   end Is_Separator;
 
+  -- Check that a Character is a Sd
+  Sds : constant String := """:";
+  function Is_Sd (C : Character) return Boolean is
+  begin
+    for I in Sds'Range loop
+      if Sds(I) = C then
+        return True;
+      end if;
+    end loop;
+    return False;
+  end Is_Sd;
+
   -- Remove first and last string delimiters
   --  and replace the pairs of delimiters by one delimiter
   -- >"foo ""bar"" stuff"< becomes >foo "bar" stuff<
@@ -46,6 +58,7 @@ package body Input_Dispatcher is
     Tmp_Str : String (1 .. Str'Length);
     Tmp_Len : Natural;
     Tmp_Index : Natural;
+    Sd : Character;
   begin
     if Debug.Debug_Level_Array(Debug.Input) then
       Async_Stdin.Put_Line_Err ("Input_dispacher: parsing substring >"
@@ -53,8 +66,8 @@ package body Input_Dispatcher is
     end if;
     -- Check first and last are delimiters
     if Str'Length < 2
-    or else Str(Str'First) /= Sd
-    or else Str(Str'Last) /= Sd then
+    or else Str(Str'First) /= Str(Str'Last)
+    or else not Is_Sd (Str(Str'First)) then
       -- This should not occure because strings literals have
       --  already been parsed in Next_Str_Word.
       raise String_Error;
@@ -72,6 +85,7 @@ package body Input_Dispatcher is
 
     -- Parse sequence of two delimiters
     Tmp_Index := Tmp_Str'First;
+    Sd := Str(Str'First);
     while Tmp_Index <= Tmp_Len loop
       if Tmp_Str(Tmp_Index) = Sd then
         if Tmp_Index = Tmp_Len or else Tmp_Str(Tmp_Index + 1) /= Sd then
@@ -93,11 +107,11 @@ package body Input_Dispatcher is
     return Tmp_Str(1 .. Tmp_Len);
   end Parse_Substring;
 
-  -- Extraxt next word (from Cur_Index) of Cur_Str
+  -- Extract next word (from Cur_Index) of Cur_Str
   function Next_Str_Word return As.U.Asu_Us is
     Tmp_Index : Positive;
     Lf_Index : Natural;
-    In_Lit : Boolean := False;
+    Sd : Character;
   begin
     -- Loop as long as a comment
     loop
@@ -126,8 +140,8 @@ package body Input_Dispatcher is
     -- Got a start of word
     Tmp_Index := Cur_Index;
 
-    In_Lit := Cur_Str.Element (Tmp_Index) = Sd;
-    if In_Lit then
+    if Is_Sd (Cur_Str.Element (Tmp_Index)) then
+      Sd := Cur_Str.Element (Tmp_Index);
       Stop_Index := Tmp_Index + 1;
       -- Parse string literal, look for Sd-Sep or Sd-End
       Parse_Lit:

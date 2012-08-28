@@ -35,5 +35,6 @@ while [ "$1" != "" ] ; do
   shift
   shift
 done
-mmcdt "$num1" toreal msd "$num" -e format_time.mcd putl
+echo "$num1" toreal msd "$num" ?format_time.mcd? readfile strprog call putl | mcd
+#mmcdt "$num1" toreal msd "$num" -e format_time.mcd putl
 

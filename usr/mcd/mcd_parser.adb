@@ -250,8 +250,9 @@ package body Mcd_Parser is
     C := Txt.Element (1);
 
     -- Strings
-    if C = Input_Dispatcher.Sd
-    and then Txt.Element (Txt.Length) = Input_Dispatcher.Sd then
+    if Txt.Length >= 2
+    and then Input_Dispatcher.Is_Sd (C)
+    and then Txt.Element (Txt.Length) = C then
       -- Save raw string for history
       Instr_Stack.Push (Stack, Item_Chrs);
       -- Remove first and last string delimiters, and replace
@@ -448,7 +449,7 @@ package body Mcd_Parser is
     Io_Flow.Put_Line ("  <integer>    ::= <number> | <base>#<number>#");
     Io_Flow.Put_Line ("  <register>   ::= 'a' .. 'z'  | 'A' .. 'Z'");
     Io_Flow.Put_Line ("  <subprogram> ::= '[' { <item> } ']'");
-    Io_Flow.Put_Line ("  <string>     ::= ""<text>""");
+    Io_Flow.Put_Line ("  <string>     ::= ""<text>"" or :<text>:");
     Io_Flow.Put_Line ("Operators are: ");
     Io_Flow.Put_Line (Tab1
                     & "Name       Action (A is top of stack, then B...)");

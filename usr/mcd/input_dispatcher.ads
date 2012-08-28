@@ -13,8 +13,8 @@ package Input_Dispatcher is
   -- Empty if end of input flow
   function Next_Word return String;
 
-  -- String delimiter (returned by Next_Word)
-  Sd : constant Character := '"';
+  -- String delimiters (returned by Next_Word)
+  function Is_Sd (C : Character) return Boolean;
 
   -- Remove first and last string delimiters
   --  and then pair of delimiters by one
