@@ -1,0 +1,36 @@
+# Given a birth date, compute the age, now or at a given date
+
+# Format of date is "dd/mm/yyyy"
+[ "ERROR: Invalid argument (""dd/mm/yyyy"" { (""dd/mm/yyyy"" } expected)." putl
+ssize popn 1 setexit retall ] E popr
+
+# 1 or 2 string argument
+ssize 1 < E pushr ifcall
+ssize 2 > E pushr ifcall
+
+# Function to check an argument and build time from it
+[
+dup isstr ~ E pushr ifcall
+dup "^[0-9]{2}/[0-9]{2}/[0-9]{4}$" regmatch isnul E pushr ifcall
+
+# Change it to "YYyy/mm/dd-00:00:00.000"
+d copyr 7 10 strsub d pushr 3 6 strsub strcat d pushr 1 2 strsub strcat
+"-00:00:00.000" strcat timeof
+] A popr
+
+# Check argument(s) if no second date then user current time
+A pushr call
+[ clock ] [ swap A pushr call ] ssize 1 = etfi call
+
+# Compute now - birth in days
+- daysof
+
+# Extract days
+dup 1 "-" strloc 1 - 1 swap strsub strinte
+
+# Compute years
+toreal 365.25 / trunc
+
+# Done
+3 format putl
+

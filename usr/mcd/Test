@@ -2,6 +2,8 @@
 
 # Automatic tests of mcd
 
+# FUNCTIONS
+###########
 # Cleanup
 echo -n > nul
 function clean {
@@ -31,7 +33,7 @@ function launch {
   fi
   script=$1.mcd
   shift
-  mcdt $script $* > out 2> err
+  mcdt $script "$*" > out 2> err
   res=$?
   if [ $ok -eq 1 ] ; then
     if [ $res -ne 0 ] ; then
@@ -72,6 +74,16 @@ function stop {
   fi
   kill $pid
 }
+
+# BEGIN
+#######
+
+title age
+launch age :25/10/1963: :28/08/2012:
+echo " 48" > exp
+comp out exp
+comp err nul
+echo "OK"
 
 title alti
 launch alti 25301 1024
@@ -117,11 +129,11 @@ comp err nul
 echo "OK"
 
 title c2f
-launch c2f '"21c"'
+launch c2f :21c:
 echo "21.00c = 69.80f" > exp
 comp out exp
 comp err nul
-launch c2f '"21f"'
+launch c2f :21f:
 echo "21.00f = -6.11c"> exp
 comp out exp
 comp err nul
@@ -231,11 +243,11 @@ comp err nul
 echo "OK"
 
 title e2f
-launch e2f '"21e"'
+launch e2f :21e:
 echo "21.00e = 137.75f" > exp
 comp out exp
 comp err nul
-launch e2f '"21f"'
+launch e2f :21f:
 echo "21.00f = 3.20e"> exp
 comp out exp
 comp err nul
@@ -311,7 +323,7 @@ comp err nul
 echo "OK"
 
 title gen_approx
-mcdt gen_approx.mcd 0 2.1 1 '[ dup * ]' > out 2> err
+launch gen_approx 0 2.1 1 '[ dup * ]'
 cat << EOF > exp
 0.0000000000E+000 0.0000000000E+000
 1.0000000000E+000 1.0000000000E+000
@@ -474,7 +486,7 @@ comp err nul
 echo "OK"
 
 title regex
-mcdt regex.mcd  '"t.t."' '"toto"' > out 2> err
+launch regex :t.t.: :toto:
 cat << EOF > exp
 Checking with pattern: t.t.
 toto =>     1
