@@ -475,7 +475,7 @@ procedure Replace (Source   : in out Asu_Us;
                        Position   : in Positive;
                        New_Item : in Asu_Us) is
   begin
-    if Position + New_Item.Last > Source.Last then
+    if Position + New_Item.Last - 1 > Source.Last then
       raise Index_Error;
     end if;
     Source.Ref(Position .. Position + New_Item.Last - 1) :=
@@ -486,7 +486,7 @@ procedure Replace (Source   : in out Asu_Us;
                        Position   : in Positive;
                        New_Item : in String) is
   begin
-    if Position + New_Item'Length > Source.Last then
+    if Position + New_Item'Length - 1 > Source.Last then
       raise Index_Error;
     end if;
     Source.Ref(Position .. Position + New_Item'Length - 1) := New_Item;
