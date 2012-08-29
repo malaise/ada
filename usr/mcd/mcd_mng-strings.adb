@@ -136,6 +136,9 @@ package body Strings is
     Res.Val_Text.Overwrite (Positive (I.Val_Inte),
                             Sub.Val_Text.Image);
     return Res;
+  exception
+    when As.Index_Error =>
+      raise Argument_Mismatch;
   end Strovw;
 
   function Strdel (S, I, J : Item_Rec) return Item_Rec is
