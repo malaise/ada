@@ -1,35 +1,67 @@
 # Given a birth date, compute the age, now or at a given date
 
-# Format of date is "dd/mm/yyyy"
-[ "ERROR: Invalid argument (""dd/mm/yyyy"" { (""dd/mm/yyyy"" } expected)." putl
-ssize popn 1 setexit retall ] E popr
+# Function on error: one or 2 dates, at format "dd/mm/yyyy"
+[ "ERROR: Invalid argument, expecting: <birth_date> [ <ref_date> ]" putl
+"  <date> ::= ""dd/mm/yyyy""" putl ssize popn 1 setexit retall ] E popr
 
-# 1 or 2 string argument
-ssize 1 < E pushr ifcall
-ssize 2 > E pushr ifcall
-
-# Function to check an argument and build time from it
+# Function to check an argument, store it (in a, b and c) and build time from it
 [
+# Check argument "dd/mm/YYyy"
 dup isstr ~ E pushr ifcall
 dup "^[0-9]{2}/[0-9]{2}/[0-9]{4}$" regmatch isnul E pushr ifcall
 
 # Change it to "YYyy/mm/dd-00:00:00.000"
-d copyr 7 10 strsub d pushr 3 6 strsub strcat d pushr 1 2 strsub strcat
-"-00:00:00.000" strcat timeof
+# Store YYyy in a, mm in b and dd in c, leave time on TOS
+t copyr 7 10 strsub a copyr "/" strcat t pushr 4 5 strsub b copyr "/" strcat
+strcat t pushr 1 2 strsub c copyr strcat "-00:00:00.000" strcat timeof
 ] A popr
 
-# Check argument(s) if no second date then user current time
+# Function to do the same as A (store YYyy, mm and dd) but from current date
+# Leave clock on TOS
+[
+clock dup dateof 12 "00:00:00.000" strovw
+t copyr 1 4 strsub a popr t pushr 6 7 strsub b popr t pushr 9 10 strsub c popr
+] B popr
+
+# BEGIN
+#######
+
+# 1 or 2 string arguments
+ssize 1 < E pushr ifcall
+ssize 2 > E pushr ifcall
+
+# Check argument(s) if no second date then use current time
+ssize 1 = [ B pushr call ] [ A pushr call ] ifte call
+a pushr strinte d popr b pushr strinte e popr c pushr strinte f popr
+swap
 A pushr call
-[ clock ] [ swap A pushr call ] ssize 1 = etfi call
+a pushr strinte a popr b pushr strinte b popr c pushr strinte c popr
 
-# Compute now - birth in days
-- daysof
+# Now birth is TOS and in a, b and c
+# and ref (or cur) is first after TOS and in d, e and f
 
-# Extract days
-dup 1 "-" strloc 1 - 1 swap strsub strinte
+# Check that birth date is before ref
+< [ "ERROR: Birth date must be before reference (or current) date." putl
+ssize popn 1 setexit retall ] ifcall
 
-# Compute years
-toreal 365.25 / trunc
+# Compare dates
+[
+# Substract years
+d pushr a pushr -
+
+# Compare months
+e pushr b pushr - dup
+# Ref month > birth month => age is delta years
+ispos [ pop 2 retn ] ifcall
+# Ref month < birth month => age is delta - 1
+isneg [ 1 - 2 retn ] ifcall
+
+# Compare days
+# Ref day >= birth day => age is delta years
+f pushr c pushr - isneg ~ ifret
+# Ref day < birth day => age is delta - 1
+1 -
+] call
 
 # Done
 3 format putl
