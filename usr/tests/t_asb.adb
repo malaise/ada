@@ -71,8 +71,8 @@ begin
   N1.Set ("1u5abcde");
   N1.Replace (4, 7, "BC");
   Basic_Proc.Put_Line_Output ("Image " & N1.Image);
-  Basic_Proc.Put_Line_Output ("Replace from B with 45");
-  N1.Overwrite (4, "45");
+  Basic_Proc.Put_Line_Output ("Replace from C with 45");
+  N1.Overwrite (5, "45");
   Basic_Proc.Put_Line_Output ("Image " & N1.Image);
   Basic_Proc.Put_Line_Output ("Delete from 4 to 5, insert a, b, c, d before 4");
   N1.Delete (4, 5);

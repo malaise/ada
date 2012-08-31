@@ -96,7 +96,7 @@ package As.U is
                     New_Item : in String);
 
   -- Overwrite a substring by a new one
-  -- May raise Index_Error if Position + New_Item.Length > Source.Length
+  -- May raise Index_Error if Position + New_Item.Length -1 > Source.Length
   procedure Overwrite (Source   : in out Asu_Us;
                        Position   : in Positive;
                        New_Item : in Asu_Us);

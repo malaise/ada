@@ -410,7 +410,7 @@ package body As.U is
     return Result;
   end Count;
 
-procedure Replace (Source   : in out Asu_Us;
+  procedure Replace (Source   : in out Asu_Us;
                      Low      : in Positive;
                      High     : in Natural;
                      By       : in Asu_Us) is

@@ -357,7 +357,7 @@ package body As.B is
     return Result;
   end Count;
 
-procedure Replace (Source   : in out Asb_Bs;
+  procedure Replace (Source   : in out Asb_Bs;
                      Low      : in Positive;
                      High     : in Natural;
                      By       : in Asb_Bs) is

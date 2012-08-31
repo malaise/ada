@@ -42,8 +42,8 @@ newl
 "Replace from 4 to 7 with B, C" putl
 "1u5abcde"  4 7 "BC" strrep
 "Image " put dup putl
-"Replace from B with 45" putl
-4 "45" strovw
+"Replace from C with 45" putl
+5 "45" strovw
 "Image " put dup putl
 "Delete from 4 to 5, insert a, b, c, d before 4" putl
 4 5 strdel 4 "abcd" strins

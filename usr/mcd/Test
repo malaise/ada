@@ -665,14 +665,14 @@ Check "=" OK
 
 Replace from 4 to 7 with B, C
 Image 1u5BCe
-Replace from B with 45
-Image 1u545e
+Replace from C with 45
+Image 1u5B45
 Delete from 4 to 5, insert a, b, c, d before 4
-Image 1u5abcde
+Image 1u5abcd5
 Replace from 4 to 5 with B, C, D
-Image 1u5BCDcde
+Image 1u5BCDcd5
 Delete from 4 to 6, insert A, B before 4
-Image 1u5ABcde
+Image 1u5ABcd5
 
 Check Finalization
 Array of B, C
