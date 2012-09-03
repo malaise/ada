@@ -635,51 +635,7 @@ echo "OK"
 
 title t_str
 launch t_str
-cat << EOF > exp
-Empty array:
-Length 0
-Image 
-Array of 3:
-Image 3
-
-Array of 1, 3, 5:
-Length 3
-Image 135
-Element 2: 3
-Replaced by u: u
-Image 1u5
-
-Append a, b, c, d, e
-Image 1u5abcde
-Same with concat
-Image 1u5abcde
-Same with reverse concat
-Image 1u5abcde
-Same with prepend
-Image 1u5abcde
-
-Slice 4 .. 6
-Slice string abc
-Uslice Image abc
-Check "=" OK
-
-Replace from 4 to 7 with B, C
-Image 1u5BCe
-Replace from C with 45
-Image 1u5B45
-Delete from 4 to 5, insert a, b, c, d before 4
-Image 1u5abcd5
-Replace from 4 to 5 with B, C, D
-Image 1u5BCDcd5
-Delete from 4 to 6, insert A, B before 4
-Image 1u5ABcd5
-
-Check Finalization
-Array of B, C
-Image BC
-Done.
-EOF
-comp out exp
+comp out ../tests/data/t_asbu.ref
 comp err nul
 echo "OK"
 

@@ -410,6 +410,43 @@ package body As.U is
     return Result;
   end Count;
 
+  procedure Overwrite (Source   : in out Asu_Us;
+                       Position   : in Positive;
+                       New_Item : in Asu_Us) is
+    -- Index in New_Item of last overwritting char (others are appended)
+    Lo : Natural;
+  begin
+    Check_Index (Position, Source.Last, True);
+    if Position + New_Item.Last - 1 > Source.Last then
+      Lo := Source.Last - Position + 1;
+    else
+      Lo := New_Item.Last;
+    end if;
+    -- Overwrite by Lo chars from Position
+    Source.Ref(Position .. Position + Lo - 1) := New_Item.Ref(1 ..  Lo);
+    -- Append others
+    Append (Source, New_Item.Ref(Lo + 1 .. New_Item.Last));
+  end Overwrite;
+
+  procedure Overwrite (Source   : in out Asu_Us;
+                       Position   : in Positive;
+                       New_Item : in String) is
+    -- Index in New_Item of last overwritting char (others are appended)
+    Lo : Natural;
+  begin
+    Check_Index (Position, Source.Last, True);
+    if Position + New_Item'Length - 1 > Source.Last then
+      Lo := New_Item'First + Source.Last - Position;
+    else
+      Lo := New_Item'Last;
+    end if;
+    -- Overwrite by Lo chars from Position
+    Source.Ref(Position .. Position + Lo - 1) :=
+        New_Item(New_Item'First ..  Lo);
+    -- Append others
+    Append (Source, New_Item(Lo + 1 .. New_Item'Last));
+  end Overwrite;
+
   procedure Replace (Source   : in out Asu_Us;
                      Low      : in Positive;
                      High     : in Natural;
@@ -428,6 +465,7 @@ package body As.U is
                  & By.Ref(1 .. By.Last)
                  & Source.Ref(Start_Tail .. Source.Last));
   end Replace;
+
   procedure Replace (Source   : in out Asu_Us;
                      Low      : in Positive;
                      High     : in Natural;
@@ -452,7 +490,7 @@ package body As.U is
                     New_Item : in Asu_Us) is
     Last : constant Natural := Source.Last;
   begin
-    if Before > Source.Last then
+    if Before > Source.Last + 1 then
       raise Index_Error;
     end if;
     Append (Source, New_Item);
@@ -464,33 +502,12 @@ package body As.U is
                     New_Item : in String) is
     Last : constant Natural := Source.Last;
   begin
-    if Before > Source.Last then
+    if Before > Source.Last + 1 then
       raise Index_Error;
     end if;
     Append (Source, New_Item);
     Move (Source, Before, Last + 1);
   end Insert;
-
-  procedure Overwrite (Source   : in out Asu_Us;
-                       Position   : in Positive;
-                       New_Item : in Asu_Us) is
-  begin
-    if Position + New_Item.Last - 1 > Source.Last then
-      raise Index_Error;
-    end if;
-    Source.Ref(Position .. Position + New_Item.Last - 1) :=
-       New_Item.Ref(1 ..  New_Item.Last);
-  end Overwrite;
-
-  procedure Overwrite (Source   : in out Asu_Us;
-                       Position   : in Positive;
-                       New_Item : in String) is
-  begin
-    if Position + New_Item'Length - 1 > Source.Last then
-      raise Index_Error;
-    end if;
-    Source.Ref(Position .. Position + New_Item'Length - 1) := New_Item;
-  end Overwrite;
 
   procedure Delete (Source  : in out Asu_Us;
                     From    : in Positive;

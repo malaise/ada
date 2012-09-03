@@ -39,20 +39,41 @@ newl
 "abc" = [ "Check ""="" OK" putl ] [ "Check ""="" FAILED" E pushr call ] ifte call
 newl
 
+"1u5abcde"
 "Replace from 4 to 7 with B, C" putl
-"1u5abcde"  4 7 "BC" strrep
+4 7 "BC" strrep
+"Replace from 1 to 3 with a, b, c, d" putl
+1 3 "abcd" strrep
+"Replace from 5 to 7 with e" putl
+5 7 "e" strrep
 "Image " put dup putl
-"Replace from C with 45" putl
-5 "45" strovw
+
+"Overwrite from 4 with 4, 5" putl
+4 "45" strovw
+"Overwrite from 6 with 6, 7" putl
+6 "67" strovw
+"Overwrite from 1 with 1, 2, 3" putl
+1 "123" strovw
+"Overwrite from 8 with 8" putl
+8 "8" strovw
 "Image " put dup putl
-"Delete from 4 to 5, insert a, b, c, d before 4" putl
-4 5 strdel 4 "abcd" strins
+
+"Replace from 1 to 0 with 0" putl
+1 0 "0" strrep
+"Replace from 3 to 1 with a, b" putl
+3 1 "ab" strrep
+"Replace from 12 to 11 with y, z" putl
+12 11 "yz" strrep
 "Image " put dup putl
+
+"Delete from 3 to 4, insert a, b, c, d before 4" putl
+3 4 strdel 4 "abcd" strins
 "Replace from 4 to 5 with B, C, D" putl
 4 5 "BCD" strrep
-"Image " put dup putl
-"Delete from 4 to 6, insert A, B before 4" putl
-4 6 strdel 4 "AB" strins
+"Delete from 4 to 8, and from 10 to 11" putl
+4 8 strdel 10 11 strdel
+"Insert 9 before 10" putl
+10 "9" strins
 "Image " put putl
 newl
 

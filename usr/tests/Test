@@ -261,15 +261,18 @@ comp out exp
 comp err nul
 echo "OK"
 
-# t_asb and t_asu
-title t_asb and t_asu
+# t_asb 
+title t_asb
 try t_asb
-mv out out1
+comp out data/t_asbu.ref
 comp err nul
+echo "OK"
 
+# t_asb 
+title t_asu
 try t_asu
+comp out data/t_asbu.ref
 comp err nul
-comp out out1
 echo "OK"
 
 # t_assert

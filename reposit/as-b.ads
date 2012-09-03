@@ -77,8 +77,23 @@ package As.B is
   function Count (Source   : Asb_Bs;
                   Pattern : String) return Natural;
 
-  -- Replace a slice by a new string (may insert/remove characters)
-  -- May raise Index_Error if Low > Source.Length+1 or High > Source.Length
+  -- Overwrite a part of a string by a new one
+  -- Do nothing if New_Item is Asb_Null
+  -- Append New_Item if Position = Source.Length + 1
+  -- Extend Source if Position + New_Item.Length - 1 > Source.Length
+  -- May raise Index_Error if Position > Source.Length + 1
+  procedure Overwrite (Source   : in out Asb_Bs;
+                       Position   : in Positive;
+                       New_Item : in Asb_Bs);
+  procedure Overwrite (Source   : in out Asb_Bs;
+                       Position   : in Positive;
+                       New_Item : in String);
+
+  -- Replace a slice by a new string
+  -- Delete chars if By is Asu_Null (except if High < Low)
+  -- Insert By before Low if High < Low
+  -- Append By if Low = Source.Length + 1 (and High < Low)
+  -- May raise Index_Error if Low > Source.Length + 1 or High > Source.Length
   procedure Replace (Source   : in out Asb_Bs;
                      Low      : in Positive;
                      High     : in Natural;
@@ -89,7 +104,8 @@ package As.B is
                      By       : in String);
 
   -- Insert a string before a given position
-  -- May raise Index_Error if Before > Source.Length
+  -- Append if Before = Source.Length + 1
+  -- May raise Index_Error if Before > Source.Length + 1
   procedure Insert (Source   : in out Asb_Bs;
                     Before   : in Positive;
                     New_Item : in Asb_Bs);
@@ -97,23 +113,16 @@ package As.B is
                     Before   : in Positive;
                     New_Item : in String);
 
-  -- Overwrite a substring by a new one
-  -- May raise Index_Error if Position + New_Item.Length - 1 > Source.Length
-  procedure Overwrite (Source   : in out Asb_Bs;
-                       Position   : in Positive;
-                       New_Item : in Asb_Bs);
-  procedure Overwrite (Source   : in out Asb_Bs;
-                       Position   : in Positive;
-                       New_Item : in String);
-
-
   -- Delete some characters
-  -- May raise Index_Error if Through > Source.Length
+  -- Do nothing if Through < From
+  -- May raise Index_Error if Through >= From
+  --  and From > Source.Length or Through > Source.Length
   procedure Delete (Source  : in out Asb_Bs;
                     From    : in Positive;
                     Through : in Natural);
 
-  -- Extract head/tail
+  -- Extract Count characters from head or tail of Source
+  -- Pad with Pad if Count > Source.Length
   function Head (Source : Asb_Bs; Count : Natural; Pad : Character := Space)
           return Asb_Bs;
   function Tail (Source : Asb_Bs; Count : Natural; Pad : Character := Space)

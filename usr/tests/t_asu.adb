@@ -69,23 +69,43 @@ begin
   end if;
   Basic_Proc.New_Line_Output;
 
+  N1.Set ("1u5abcdE");
   Basic_Proc.Put_Line_Output ("Replace from 4 to 7 with B, C");
-  N1.Set ("1u5abcde");
-  N1.Replace (4, 7, "BC");
+  N1.Replace (4, 7, "BC"); --> 1u5BCE
+  Basic_Proc.Put_Line_Output ("Replace from 1 to 3 with a, b, c, d");
+  N1.Replace (1, 3, "abcd"); --> abcdBCE
+  Basic_Proc.Put_Line_Output ("Replace from 5 to 7 with e");
+  N1.Replace (5, 7, "e"); --> abcde
   Basic_Proc.Put_Line_Output ("Image " & N1.Image);
-  Basic_Proc.Put_Line_Output ("Replace from C with 45");
-  N1.Overwrite (5, "45");
+
+  Basic_Proc.Put_Line_Output ("Overwrite from 4 with 4, 5");
+  N1.Overwrite (4, "45"); --> abc45e
+  Basic_Proc.Put_Line_Output ("Overwrite from 6 with 6, 7");
+  N1.Overwrite (6, "67"); --> abc4567
+  Basic_Proc.Put_Line_Output ("Overwrite from 1 with 1, 2, 3");
+  N1.Overwrite (1, "123"); --> 1234567
+  Basic_Proc.Put_Line_Output ("Overwrite from 8 with 8");
+  N1.Overwrite (8, "8"); --> 12345678
   Basic_Proc.Put_Line_Output ("Image " & N1.Image);
-  Basic_Proc.Put_Line_Output ("Delete from 4 to 5, insert a, b, c, d before 4");
-  N1.Delete (4, 5);
-  N1.Insert (4, "abcd");
+
+  Basic_Proc.Put_Line_Output ("Replace from 1 to 0 with 0");
+  N1.Replace (1, 0, "0"); --> 012345678
+  Basic_Proc.Put_Line_Output ("Replace from 3 to 1 with a, b");
+  N1.Replace (3, 1, "ab"); --> 01ab2345678
+  Basic_Proc.Put_Line_Output ("Replace from 12 to 11 with y, z");
+  N1.Replace (12, 11, "yz"); --> 01ab2345678yz
   Basic_Proc.Put_Line_Output ("Image " & N1.Image);
+
+  Basic_Proc.Put_Line_Output ("Delete from 3 to 4, insert a, b, c, d before 4");
+  N1.Delete (3, 4); --> 012345678yz
+  N1.Insert (4, "abcd"); --> 012abcd345678yz
   Basic_Proc.Put_Line_Output ("Replace from 4 to 5 with B, C, D");
-  N1.Replace (4, 5, "BCD");
-  Basic_Proc.Put_Line_Output ("Image " & N1.Image);
-  Basic_Proc.Put_Line_Output ("Delete from 4 to 6, insert A, B before 4");
-  N1.Delete (4, 6);
-  N1.Insert (4, "AB");
+  N1.Replace (4, 5, "BCD"); --> 012BCDcd345678yz
+  Basic_Proc.Put_Line_Output ("Delete from 4 to 8, and from 10 to 11");
+  N1.Delete (4, 8); --> 012345678yz
+  N1.Delete (10, 11); --> 012345678
+  Basic_Proc.Put_Line_Output ("Insert 9 before 10");
+  N1.Insert (10, "9"); --> 0123456789
   Basic_Proc.Put_Line_Output ("Image " & N1.Image);
   Basic_Proc.New_Line_Output;
 

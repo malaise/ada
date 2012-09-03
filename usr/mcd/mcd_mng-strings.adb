@@ -13,10 +13,18 @@ package body Strings is
 
   procedure Check_Inte (X : in Item_Rec) is
   begin
-    if X.Kind /= Inte then
+    if X.Kind /= Inte or else X.Val_Inte < 0
+    or else X.Val_Inte > My_Math.Inte(Integer'Last) then
       raise Invalid_Argument;
     end if;
   end Check_Inte;
+
+  procedure Check_Pos (X : in Item_Rec) is
+  begin
+    if X.Val_Inte = 0 then
+      raise Invalid_Argument;
+    end if;
+  end Check_Pos;
 
   function Strnull (S : Item_Rec) return Item_Rec is
     Res : Item_Rec(Bool);
@@ -45,24 +53,16 @@ package body Strings is
   begin
     Check_Chrs(S);
     Check_Inte(I1);
+    Check_Pos(I1);
     Check_Inte(I2);
 
-    -- Empty string
-    if I2.Val_Inte = 0 or else I2.Val_Inte < I1.Val_Inte then
-      return Res;
-    end if;
-
-    if I1.Val_Inte < 1
-    or else I1.Val_Inte > My_Math.Inte(S.Val_Text.Length) then
-      raise Argument_Mismatch;
-    end if;
-    if I2.Val_Inte < 1
-    or else I2.Val_Inte > My_Math.Inte(S.Val_Text.Length) then
-      raise Argument_Mismatch;
-    end if;
+    Res := S;
     Res.Val_Text := S.Val_Text.Uslice (Positive(I1.Val_Inte),
                                        Natural(I2.Val_Inte));
     return Res;
+  exception
+    when As.Index_Error =>
+      raise Argument_Mismatch;
   end Strsub;
 
   function Strloc (S, Occ, Pat : Item_Rec) return Item_Rec is
@@ -71,14 +71,10 @@ package body Strings is
     Check_Chrs(S);
     Check_Chrs(Pat);
     Check_Inte(Occ);
-
-    if Occ.Val_Inte < 1 or else Occ.Val_Inte > My_Math.Inte(Positive'Last) then
-      raise Invalid_Argument;
-    end if;
+    Check_Pos(Occ);
 
     Res.Val_Inte := My_Math.Inte(
-            String_Mng.Locate (S.Val_Text.Image,
-                               Pat.Val_Text.Image,
+            S.Val_Text.Locate (Pat.Val_Text.Image,
                                Occurence => Positive(Occ.Val_Inte)));
     return Res;
   end Strloc;
@@ -89,19 +85,16 @@ package body Strings is
     Check_Chrs(S);
     Check_Chrs(Sub);
     Check_Inte(I);
+    Check_Pos(I);
     Check_Inte(J);
 
-    -- May raise Index_Error if Low > Source.Length+1 or High > Source.Length
-    if I.Val_Inte < 1
-    or else I.Val_Inte > My_Math.Inte(S.Val_Text.Length) + 1
-    or else J.Val_Inte < 1
-    or else J.Val_Inte > My_Math.Inte(S.Val_Text.Length) then
-      raise Invalid_Argument;
-    end if;
     Res := S;
     Res.Val_Text.Replace (Positive (I.Val_Inte), Natural (J.Val_Inte),
                           Sub.Val_Text.Image);
     return Res;
+  exception
+    when As.Index_Error =>
+      raise Argument_Mismatch;
   end Strrep;
 
   function Strins (S, I, Sub : Item_Rec) return Item_Rec is
@@ -110,15 +103,15 @@ package body Strings is
     Check_Chrs(S);
     Check_Chrs(Sub);
     Check_Inte(I);
+    Check_Pos(I);
 
-    if I.Val_Inte < 1
-    or else I.Val_Inte > My_Math.Inte(S.Val_Text.Length) then
-      raise Argument_Mismatch;
-    end if;
     Res := S;
     Res.Val_Text.Insert (Positive (I.Val_Inte),
                          Sub.Val_Text.Image);
     return Res;
+  exception
+    when As.Index_Error =>
+      raise Argument_Mismatch;
   end Strins;
 
   function Strovw (S, I, Sub : Item_Rec) return Item_Rec is
@@ -127,11 +120,8 @@ package body Strings is
     Check_Chrs(S);
     Check_Chrs(Sub);
     Check_Inte(I);
+    Check_Pos(I);
 
-    if I.Val_Inte < 1
-    or else I.Val_Inte > My_Math.Inte(S.Val_Text.Length) then
-      raise Argument_Mismatch;
-    end if;
     Res := S;
     Res.Val_Text.Overwrite (Positive (I.Val_Inte),
                             Sub.Val_Text.Image);
@@ -146,16 +136,16 @@ package body Strings is
   begin
     Check_Chrs(S);
     Check_Inte(I);
+    Check_Pos(I);
     Check_Inte(J);
 
-    if I.Val_Inte < 1
-    or else J.Val_Inte > My_Math.Inte(S.Val_Text.Length) then
-      raise Argument_Mismatch;
-    end if;
     Res := S;
     Res.Val_Text.Delete (Positive (I.Val_Inte),
                          Natural (J.Val_Inte));
     return Res;
+  exception
+    when As.Index_Error =>
+      raise Argument_Mismatch;
   end Strdel;
 
   function Strlen (S : Item_Rec) return Item_Rec is

@@ -4,7 +4,7 @@ pragma Elaborate(Random);
 package body Mcd_Mng is
 
   -- Current version
-  Mcd_Version : constant String := "V9.0";
+  Mcd_Version : constant String := "V9.1";
 
   package Stack is
     -- What can we store in stack
@@ -992,7 +992,7 @@ package body Mcd_Mng is
           Pop(A); Pop(B); Pop(C); Push (Strings.Strloc(C, B, A));
           S := A;
         when Strrep =>
-          -- push D with its slice B .. C replaced by A
+          -- push D with its slice C .. B replaced by A
           Pop(A); Pop(B); Pop(C); Pop(D); Push (Strings.Strrep(D, C, B, A));
           S := A;
         when Strins =>

@@ -1,0 +1,50 @@
+Empty array:
+Length 0
+Image 
+Array of 3:
+Image 3
+
+Array of 1, 3, 5:
+Length 3
+Image 135
+Element 2: 3
+Replaced by u: u
+Image 1u5
+
+Append a, b, c, d, e
+Image 1u5abcde
+Same with concat
+Image 1u5abcde
+Same with reverse concat
+Image 1u5abcde
+Same with prepend
+Image 1u5abcde
+
+Slice 4 .. 6
+Slice string abc
+Uslice Image abc
+Check "=" OK
+
+Replace from 4 to 7 with B, C
+Replace from 1 to 3 with a, b, c, d
+Replace from 5 to 7 with e
+Image abcde
+Overwrite from 4 with 4, 5
+Overwrite from 6 with 6, 7
+Overwrite from 1 with 1, 2, 3
+Overwrite from 8 with 8
+Image 12345678
+Replace from 1 to 0 with 0
+Replace from 3 to 1 with a, b
+Replace from 12 to 11 with y, z
+Image 01ab2345678yz
+Delete from 3 to 4, insert a, b, c, d before 4
+Replace from 4 to 5 with B, C, D
+Delete from 4 to 8, and from 10 to 11
+Insert 9 before 10
+Image 0123456789
+
+Check Finalization
+Array of B, C
+Image BC
+Done.
