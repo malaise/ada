@@ -104,6 +104,10 @@ begin
   N1.Delete (10, 11); --> 012345678
   Basic_Proc.Put_Line_Output ("Insert 9 before 10");
   N1.Insert (10, "9"); --> 0123456789
+  Basic_Proc.Put_Line_Output ("Replace from 11 to 10 with A, B, C");
+  N1.Replace (11, 10, "ABC"); --> 0123456789ABC
+  Basic_Proc.Put_Line_Output ("Overwrite from 14 with D, E, F");
+  N1.Overwrite (14, "DEF"); --> 0123456789ABCDEF
   Basic_Proc.Put_Line_Output ("Image " & N1.Image);
   Basic_Proc.New_Line_Output;
 

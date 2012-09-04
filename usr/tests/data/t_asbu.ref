@@ -42,7 +42,9 @@ Delete from 3 to 4, insert a, b, c, d before 4
 Replace from 4 to 5 with B, C, D
 Delete from 4 to 8, and from 10 to 11
 Insert 9 before 10
-Image 0123456789
+Replace from 11 to 10 with A, B, C
+Overwrite from 14 with D, E, F
+Image 0123456789ABCDEF
 
 Check Finalization
 Array of B, C

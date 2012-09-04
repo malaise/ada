@@ -74,6 +74,10 @@ newl
 4 8 strdel 10 11 strdel
 "Insert 9 before 10" putl
 10 "9" strins
+"Replace from 11 to 10 with A, B, C" putl
+11 10 "ABC" strrep
+"Overwrite from 14 with D, E, F" putl
+14 "DEF" strovw
 "Image " put putl
 newl
 
