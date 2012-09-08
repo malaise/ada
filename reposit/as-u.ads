@@ -119,6 +119,12 @@ package As.U is
                     From    : in Positive;
                     Through : in Natural);
 
+  -- Delete trailing characters
+  -- Delete characters from Source.Length - Number + 1 to Source.Length
+  -- Source becomes Asu_Null if Number >= Source.Length
+  procedure Trail (Source : in out Asu_Us;
+                   Number : in Positive);
+
   -- Extract Count characters from head or tail of Source
   -- Pad with Pad if Count > Source.Length
   function Head (Source : Asu_Us; Count : Natural; Pad : Character := Space)

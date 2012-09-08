@@ -532,6 +532,17 @@ package body As.U is
     end if;
   end Delete;
 
+  procedure Trail (Source : in out Asu_Us;
+                   Number : in Positive) is
+  begin
+    if Number >= Source.Last then
+      Free(Source.Ref);
+      Source := Asu_Null;
+    else
+      Source.Last := Source.Last - Number;
+    end if;
+  end Trail;
+
   function Head (Source : Asu_Us; Count : Natural; Pad : Character := Space)
           return Asu_Us is
     Result : Asu_Us;

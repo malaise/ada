@@ -144,6 +144,7 @@ package Mcd_Mng is
    Strins,
    Strovw,
    Strdel,
+   Strtrail,
    Strupp,
    Strlow,
    Strmix,

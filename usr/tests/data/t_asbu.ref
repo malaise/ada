@@ -40,7 +40,8 @@ Replace from 12 to 11 with y, z
 Image 01ab2345678yz
 Delete from 3 to 4, insert a, b, c, d before 4
 Replace from 4 to 5 with B, C, D
-Delete from 4 to 8, and from 10 to 11
+Delete from 4 to 8
+Trail 2
 Insert 9 before 10
 Replace from 11 to 10 with A, B, C
 Overwrite from 14 with D, E, F

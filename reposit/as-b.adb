@@ -478,6 +478,16 @@ package body As.B is
     end if;
   end Delete;
 
+  procedure Trail (Source : in out Asb_Bs;
+                   Number : in Positive) is
+  begin
+    if Number >= Source.Last then
+      Set_Null (Source);
+    else
+      Source.Last := Source.Last - Number;
+    end if;
+  end Trail;
+
   function Head (Source : Asb_Bs; Count : Natural; Pad : Character := Space)
           return Asb_Bs is
     Result : Asb_Bs(Count);

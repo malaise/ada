@@ -101,9 +101,10 @@ begin
   N1.Insert (4, "abcd"); --> 012abcd345678yz
   Basic_Proc.Put_Line_Output ("Replace from 4 to 5 with B, C, D");
   N1.Replace (4, 5, "BCD"); --> 012BCDcd345678yz
-  Basic_Proc.Put_Line_Output ("Delete from 4 to 8, and from 10 to 11");
+  Basic_Proc.Put_Line_Output ("Delete from 4 to 8");
   N1.Delete (4, 8); --> 012345678yz
-  N1.Delete (10, 11); --> 012345678
+  Basic_Proc.Put_Line_Output ("Trail 2");
+  N1.Trail (2); --> 012345678
   Basic_Proc.Put_Line_Output ("Insert 9 before 10");
   N1.Insert (10, "9"); --> 0123456789
   Basic_Proc.Put_Line_Output ("Replace from 11 to 10 with A, B, C");

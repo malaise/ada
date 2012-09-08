@@ -70,8 +70,10 @@ newl
 3 4 strdel 4 "abcd" strins
 "Replace from 4 to 5 with B, C, D" putl
 4 5 "BCD" strrep
-"Delete from 4 to 8, and from 10 to 11" putl
-4 8 strdel 10 11 strdel
+"Delete from 4 to 8" putl
+4 8 strdel
+"Trail 2" putl
+2 strtrail
 "Insert 9 before 10" putl
 10 "9" strins
 "Replace from 11 to 10 with A, B, C" putl

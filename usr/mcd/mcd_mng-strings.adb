@@ -148,6 +148,21 @@ package body Strings is
       raise Argument_Mismatch;
   end Strdel;
 
+  function Strtrail (S, N : Item_Rec) return Item_Rec is
+    Res : Item_Rec(Chrs);
+  begin
+    Check_Chrs(S);
+    Check_Inte(N);
+    Check_Pos(N);
+
+    Res := S;
+    Res.Val_Text.Trail (Positive (N.Val_Inte));
+    return Res;
+  exception
+    when As.Index_Error =>
+      raise Argument_Mismatch;
+  end Strtrail;
+
   function Strlen (S : Item_Rec) return Item_Rec is
   begin
     Check_Chrs(S);

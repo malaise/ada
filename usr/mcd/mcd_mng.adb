@@ -4,7 +4,7 @@ pragma Elaborate(Random);
 package body Mcd_Mng is
 
   -- Current version
-  Mcd_Version : constant String := "V9.1";
+  Mcd_Version : constant String := "V10.0";
 
   package Stack is
     -- What can we store in stack
@@ -244,6 +244,7 @@ package body Mcd_Mng is
     function Strins (S, I, Sub : Item_Rec) return Item_Rec;
     function Strovw (S, I, Sub : Item_Rec) return Item_Rec;
     function Strdel (S, I, J : Item_Rec) return Item_Rec;
+    function Strtrail (S, N : Item_Rec) return Item_Rec;
     function Strupp (S : Item_Rec) return Item_Rec;
     function Strlow (S : Item_Rec) return Item_Rec;
     function Strmix (S : Item_Rec) return Item_Rec;
@@ -1005,6 +1006,10 @@ package body Mcd_Mng is
         when Strdel =>
           -- push C without C(B..A)
           Pop(A); Pop(B); Pop(C); Push (Strings.Strdel(C, B, A));
+          S := A;
+        when Strtrail =>
+          -- push B without A last chars
+          Pop(A); Pop(B); Push (Strings.Strtrail(B, A));
           S := A;
         when Strupp =>
           -- push A converted to uppercase

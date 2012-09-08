@@ -176,6 +176,7 @@ package body Mcd_Parser is
    Strins   => (Nosy, "push C after inserting at pos B str A             ", As.U.Asu_Null, False),
    Strovw   => (Nosy, "push C after overwritting from pos B by str A     ", As.U.Asu_Null, False),
    Strdel   => (Nosy, "push C after deleting from pos B to A             ", As.U.Asu_Null, False),
+   Strtrail => (Nosy, "push B after deleting last A characters           ", As.U.Asu_Null, False),
    Strupp   => (Nosy, "push A in UPPERCASE                               ", As.U.Asu_Null, False),
    Strlow   => (Nosy, "push A in lowercase                               ", As.U.Asu_Null, False),
    Strmix   => (Nosy, "push A in Mixed_Case                              ", As.U.Asu_Null, False),
