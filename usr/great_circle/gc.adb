@@ -139,9 +139,9 @@ procedure Gc is
     if Sexa_Mode then
       -- Replace Ndd°mm'ss"/Eddd°mm'ss" by Ndd.mm.ss/Eddd.mm.ss
       -- "°" has already been replaced by " " in Afpx.Decode_Field
-      Point_Txt.Set (String_Mng.Replace (Point_Txt.Image, "°", "."));
-      Point_Txt.Set (String_Mng.Replace (Point_Txt.Image, "'", "."));
-      Point_Txt.Set (String_Mng.Replace (Point_Txt.Image, """", ""));
+      Point_Txt.Set (String_Mng.Substit (Point_Txt.Image, "°", "."));
+      Point_Txt.Set (String_Mng.Substit (Point_Txt.Image, "'", "."));
+      Point_Txt.Set (String_Mng.Substit (Point_Txt.Image, """", ""));
       if Debug then
         Basic_Proc.Put_Line_Error ("Parsed point: " & Point_Txt.Image);
       end if;
@@ -149,8 +149,8 @@ procedure Gc is
     else
       -- Replace Ndd.ij kl°/Eddd.ij kl° by Ndd.ijkl/Eddd.ijkl
       -- "°" has already been replaced by " " in Afpx.Decode_Field
-      Point_Txt.Set (String_Mng.Replace (Point_Txt.Image, "°", ""));
-      Point_Txt.Set (String_Mng.Replace (Point_Txt.Image, " ", ""));
+      Point_Txt.Set (String_Mng.Substit (Point_Txt.Image, "°", ""));
+      Point_Txt.Set (String_Mng.Substit (Point_Txt.Image, " ", ""));
       if Debug then
         Basic_Proc.Put_Line_Error ("Parsed point: " & Point_Txt.Image);
       end if;

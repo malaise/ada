@@ -181,7 +181,7 @@ package String_Mng is
 
   -- Replace occurences of What by By in Str. One pass.
   -- If Skip_Backslashed, use Is_Backslash to detect \What and skip it
-  function Replace (Str, What, By : String;
+  function Substit (Str, What, By : String;
                     Skip_Backslashed : Boolean := False) return String;
 
   -- Return a String (1 .. N)
@@ -194,6 +194,44 @@ package String_Mng is
   function Center (Str : String;
                    Len : Positive;
                    Gap : Character := ' ') return String;
+
+  -- Overwrite a part of a string by a new one
+  -- Do nothing if New_Str is empty
+  -- Append New_Item if Position = Source'Last + 1
+  -- Extend Source if Position + New_Str'Length - 1 > Source'Last
+  -- Raises Constraint_Error if Position < Source'First
+  --                         or Position > Source'Last + 1
+  function Overwrite (Source   : String;
+                      Position : Positive;
+                      New_Str  : String) return String;
+
+  -- Replace a slice by a new string
+  -- Delete chars if By is empty (except if High < Low)
+  -- Insert By before Low if High < Low
+  -- Append By if Low = Source'Last + 1 (and High < Low)
+  -- Raises Constraint_Error if Low < Source'First
+  --                         or Low > Source'Last + 1 or High > Source'Last
+  function Replace (Source   : String;
+                    Low      : Positive;
+                    High     : Natural;
+                    By       : String) return String;
+
+  -- Insert a string before a given position
+  -- Append if Before = Source'Last + 1
+  -- Raises Constraint_Error if Before < Source'First
+  --                         or Before > Source'Last + 1
+  function Insert (Source  : String;
+                   Before  : Positive;
+                   New_Str : String) return String;
+
+  -- Delete some characters
+  -- Do nothing if Through < From
+  -- Raises Constraint_Error if Through >= From and
+  --  From < Source'First or From > Source'Last
+  --  or Through > Source'Last
+  function Delete (Source  : String;
+                   From    : Positive;
+                   Through : Natural) return String;
 
 end String_Mng;
 

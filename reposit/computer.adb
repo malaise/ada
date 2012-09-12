@@ -262,21 +262,21 @@ package body Computer is
       raise Invalid_Expression;
     end if;
     -- Isolate variables
-    Exp := As.U.Tus (String_Mng.Replace (Exp.Image, "${", " ${"));
-    Exp := As.U.Tus (String_Mng.Replace (Exp.Image, "}", "} "));
+    Exp := As.U.Tus (String_Mng.Substit (Exp.Image, "${", " ${"));
+    Exp := As.U.Tus (String_Mng.Substit (Exp.Image, "}", "} "));
     -- Expand variables
     Exp := As.U.Tus (Eval (Memory, Exp.Image));
 
     -- +X and -X will be analysed while parsing
-    Exp := As.U.Tus (String_Mng.Replace (Exp.Image, "+", " +"));
-    Exp := As.U.Tus (String_Mng.Replace (Exp.Image, "-", " -"));
-    Exp := As.U.Tus (String_Mng.Replace (Exp.Image, "*", " * "));
-    Exp := As.U.Tus (String_Mng.Replace (Exp.Image, "/", " / "));
-    Exp := As.U.Tus (String_Mng.Replace (Exp.Image, "(", " ( "));
-    Exp := As.U.Tus (String_Mng.Replace (Exp.Image, ")", " ) "));
+    Exp := As.U.Tus (String_Mng.Substit (Exp.Image, "+", " +"));
+    Exp := As.U.Tus (String_Mng.Substit (Exp.Image, "-", " -"));
+    Exp := As.U.Tus (String_Mng.Substit (Exp.Image, "*", " * "));
+    Exp := As.U.Tus (String_Mng.Substit (Exp.Image, "/", " / "));
+    Exp := As.U.Tus (String_Mng.Substit (Exp.Image, "(", " ( "));
+    Exp := As.U.Tus (String_Mng.Substit (Exp.Image, ")", " ) "));
     -- Replace each "  " by " "
     while String_Mng.Locate (Exp.Image, "  ") /= 0 loop
-      Exp := As.U.Tus (String_Mng.Replace (Exp.Image, "  ", " "));
+      Exp := As.U.Tus (String_Mng.Substit (Exp.Image, "  ", " "));
     end loop;
     Trace ("Fixed expression: " & Exp.Image);
     return Exp.Image;

@@ -133,7 +133,7 @@ begin
   for I in Start .. Argument.Get_Nbre_Arg loop
     declare
       Str : constant String
-          := String_Mng.Replace (Argument.Get_Parameter (Occurence => I),
+          := String_Mng.Substit (Argument.Get_Parameter (Occurence => I),
                                  "\n",
                                  Text_Line.Line_Feed_Str);
     begin

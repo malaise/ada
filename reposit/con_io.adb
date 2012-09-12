@@ -104,7 +104,7 @@ package body Con_Io is
          X_Colors(Xi) := The_Color_Names(I);
          -- Lower case and '_' -> ' '
          X_Colors(Xi) := As.U.Tus (Lower_Str (X_Colors(Xi).Image));
-         X_Colors(Xi) := As.U.Tus (String_Mng.Replace (
+         X_Colors(Xi) := As.U.Tus (String_Mng.Substit (
              X_Colors(Xi).Image, "_", " "));
       end loop;
       X_Mng.X_Initialise ("", X_Colors);

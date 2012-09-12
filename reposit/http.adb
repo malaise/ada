@@ -136,7 +136,7 @@ package body Http is
       Debug ("HTTP: No header delimiter: " & Header.Image);
     end if;
     -- CrLf -> Lf in Header
-    Header := As.U.Tus (String_Mng.Replace (Header.Image, New_Line.Image, Lf));
+    Header := As.U.Tus (String_Mng.Substit (Header.Image, New_Line.Image, Lf));
 
     -- First line of header reply: status
     Ind := String_Mng.Locate (Header.Image, Lf);

@@ -1112,7 +1112,7 @@ package body Util is
 
     -- Build the "find" pattern
     if Seps = "" then
-      Text := As.U.Tus (String_Mng.Replace (Text.Image, " ", ""));
+      Text := As.U.Tus (String_Mng.Substit (Text.Image, " ", ""));
     else
       -- One char: no problem
       Lseps := As.U.Tus (Seps);
@@ -1134,7 +1134,7 @@ package body Util is
     end if;
 
     -- Replace " ?([seps]) ?" by \1
-    Text := As.U.Tus (String_Mng.Regex.Replace (Text.Image,
+    Text := As.U.Tus (String_Mng.Regex.Substit (Text.Image,
         " ?(" & Lseps.Image & ") ?", "\1"));
 
   end Remove_Separators;

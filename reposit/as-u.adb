@@ -441,7 +441,7 @@ package body As.U is
       Lo := New_Item'Last;
     end if;
     -- Overwrite by Lo chars from Position
-    Source.Ref(Position .. Position + Lo - 1) :=
+    Source.Ref(Position .. Position + Lo - New_Item'First) :=
         New_Item(New_Item'First ..  Lo);
     -- Append others
     Append (Source, New_Item(Lo + 1 .. New_Item'Last));

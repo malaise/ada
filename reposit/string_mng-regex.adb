@@ -261,7 +261,7 @@ package body String_Mng.Regex is
   --  second replaced character (thus avoiding loops), up to To_Index.
   -- This cycle may be iterated several times, Nb_Cycles, up to no substitution
   --  if Nb_Cycles is 0 (tbeware that this may lead to infinite loop),
-  function Replace (Within     : String;
+  function Substit (Within     : String;
                     Criteria   : String;
                     By         : String;
                     From_Index : Natural := 0;
@@ -345,7 +345,7 @@ package body String_Mng.Regex is
     return Within (Within'First .. I1 - 1)
          & Working.Image
          & Within (I2 + 1 .. Within'Last);
-  end Replace;
+  end Substit;
 
 
   -- Split Str into several substrings that match the substrings "(...)"

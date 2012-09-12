@@ -1,6 +1,6 @@
 with Ada.Characters.Latin_1, Ada.Exceptions;
 with As.U.Utils, My_Io, String_Mng.Regex, Many_Strings,
-     Upper_Str, Lower_Str, Mixed_Str, Upper_Char, Environ;
+     Upper_Str, Lower_Str, Mixed_Str, Upper_Char, Environ, Argument;
 procedure T_String is
 
   Action : Natural;
@@ -69,6 +69,100 @@ procedure T_String is
 
 begin
 
+  if Argument.Get_Parameter = "-a" then
+    -- Generate the same output as t_asu and t_asb for the operations
+    --  that have no sense with strings
+    My_Io.Put_Line ("Empty array:");
+    My_Io.Put_Line ("Length 0");
+    My_Io.Put_Line ("Image ");
+    My_Io.Put_Line ("Array of 3:");
+    My_Io.Put_Line ("Image 3");
+    My_Io.New_Line;
+    My_Io.Put_Line ("Array of 1, 3, 5:");
+    My_Io.Put_Line ("Length 3");
+    My_Io.Put_Line ("Image 135");
+    My_Io.Put_Line ("Element 2: 3");
+    My_Io.Put_Line ("Replaced by u: u");
+    My_Io.Put_Line ("Image 1u5");
+    My_Io.New_Line;
+    My_Io.Put_Line ("Append a, b, c, d, e");
+    My_Io.Put_Line ("Image 1u5abcde");
+    My_Io.Put_Line ("Same with concat");
+    My_Io.Put_Line ("Image 1u5abcde");
+    My_Io.Put_Line ("Same with reverse concat");
+    My_Io.Put_Line ("Image 1u5abcde");
+    My_Io.Put_Line ("Same with prepend");
+    My_Io.Put_Line ("Image 1u5abcde");
+    My_Io.New_Line;
+    My_Io.Put_Line ("Slice 4 .. 6");
+    My_Io.Put_Line ("Slice string abc");
+    My_Io.Put_Line ("Uslice Image abc");
+    My_Io.Put_Line ("Check ""="" OK");
+    My_Io.New_Line;
+    -- Test Overwrite, Replace, Insert and Delete
+    My_Io.Put_Line ("Replace from 4 to 7 with B, C");
+    My_Io.Put_Line ("Replace from 1 to 3 with a, b, c, d");
+    My_Io.Put_Line ("Replace from 5 to 7 with e");
+    declare
+      N1 : constant String := "1u5abcde";
+      N2 : constant String := String_Mng.Replace (N1, 4, 7, "BC");
+      N3 : constant String := String_Mng.Replace (N2, 1, 3, "abcd");
+      N4 : constant String := String_Mng.Replace (N3, 5, 7, "e");
+    begin
+      My_Io.Put_Line ("Image " & N4);
+    end;
+    My_Io.Put_Line ("Overwrite from 4 with 4, 5");
+    My_Io.Put_Line ("Overwrite from 6 with 6, 7");
+    My_Io.Put_Line ("Overwrite from 1 with 1, 2, 3");
+    My_Io.Put_Line ("Overwrite from 8 with 8");
+    declare
+      N1 : constant String := "abcde";
+      N2 : constant String := String_Mng.Overwrite (N1, 4, "45");
+      N3 : constant String := String_Mng.Overwrite (N2, 6, "67");
+      N4 : constant String := String_Mng.Overwrite (N3, 1, "123");
+      N5 : constant String := String_Mng.Overwrite (N4, 8, "8");
+    begin
+      My_Io.Put_Line ("Image " & N5);
+    end;
+    My_Io.Put_Line ("Replace from 1 to 0 with 0");
+    My_Io.Put_Line ("Replace from 3 to 1 with a, b");
+    My_Io.Put_Line ("Replace from 12 to 11 with y, z");
+    declare
+      N1 : constant String := "12345678";
+      N2 : constant String := String_Mng.Replace (N1, 1, 0, "0");
+      N3 : constant String := String_Mng.Replace (N2, 3, 1, "ab");
+      N4 : constant String := String_Mng.Replace (N3, 12, 11, "yz");
+    begin
+      My_Io.Put_Line ("Image " & N4);
+    end;
+    My_Io.Put_Line ("Delete from 3 to 4, insert a, b, c, d before 4");
+    My_Io.Put_Line ("Replace from 4 to 5 with B, C, D");
+    My_Io.Put_Line ("Delete from 4 to 8");
+    My_Io.Put_Line ("Trail 2");
+    My_Io.Put_Line ("Insert 9 before 10");
+    My_Io.Put_Line ("Replace from 11 to 10 with A, B, C");
+    My_Io.Put_Line ("Overwrite from 14 with D, E, F");
+    declare
+      N1 : constant String := "01ab2345678yz";
+      N2 : constant String := String_Mng.Delete (N1, 3, 4);
+      N3 : constant String := String_Mng.Insert (N2, 4, "abcd");
+      N4 : constant String := String_Mng.Replace (N3, 4, 5, "BCD");
+      N5 : constant String := String_Mng.Delete (N4, 4, 8);
+      N6 : constant String := String_Mng.Cut (N5, 2, False);
+      N7 : constant String := String_Mng.Insert (N6, 10, "9");
+      N8 : constant String := String_Mng.Replace (N7, 11, 10, "ABC");
+      N9 : constant String := String_Mng.overwrite (N8, 14, "DEF");
+    begin
+      My_Io.Put_Line ("Image " & N9);
+    end;
+    My_Io.New_Line;
+    My_Io.Put_Line ("Check Finalization");
+    My_Io.Put_Line ("Array of B, C");
+    My_Io.Put_Line ("Image BC");
+    My_Io.Put_Line ("Done.");
+    return;
+  end if;
+
   loop
     My_Io.Put ("Str (String)? "); My_Io.Get_Line (Str, Str_Len);
 
@@ -98,10 +192,10 @@ begin
       My_Io.Put_Line ("12 Escape location");
       My_Io.Put_Line ("13 Tuncation ot best length");
       My_Io.Put_Line ("14 Copy");
-      My_Io.Put_Line ("15 Replace");
+      My_Io.Put_Line ("15 Substit");
       My_Io.Put_Line ("16 Normalize");
       My_Io.Put_Line ("17 Regex locate");
-      My_Io.Put_Line ("18 Regex replace");
+      My_Io.Put_Line ("18 Regex substit");
       My_Io.Put_Line ("19 Split");
       My_Io.Put_Line ("20 Regex split");
       My_Io.Put_Line ("21 Center");
@@ -277,7 +371,7 @@ begin
             My_Io.Put ("By (Str)? "); My_Io.Get_Line (Str2, Nat2);
             My_Io.Put ("Skip_Backslashed (YN)? "); Bool_Get(Bool1);
             My_Io.Put_Line ("Replaced string: "
-              & String_Mng.Replace (Str(1 .. Str_Len),
+              & String_Mng.Substit (Str(1 .. Str_Len),
                                     What => Str1(1 .. Nat1),
                                     By => Str2(1 .. Nat2),
                                     Skip_Backslashed => Bool1) );
@@ -314,7 +408,7 @@ begin
             My_Io.Put ("To_Index (Nat)? "); Nat_Get (Nat4, True);
             My_Io.Put ("Nb_Cycles (Nat)? "); Nat_Get (Nat5, True);
             My_Io.Put_Line ("Replaced string: "
-              & String_Mng.Regex.Replace (Str(1 .. Str_Len),
+              & String_Mng.Regex.Substit (Str(1 .. Str_Len),
                     Criteria => Str1(1 .. Nat1),
                     By => Str2(1 .. Nat2),
                     From_Index => Nat3,

@@ -150,7 +150,7 @@ package body Tree is
         Basic_Proc.Put_Error ("Text: >" & Node.Text.Image & "< ");
       when Send | Log =>
         Basic_Proc.Put_Error ("Text: >" &
-          String_Mng.Replace (Node.Text.Image, Line_Feed, "[LF]") &  "< ");
+          String_Mng.Substit (Node.Text.Image, Line_Feed, "[LF]") &  "< ");
       when others =>
         null;
     end case;

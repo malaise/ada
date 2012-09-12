@@ -64,7 +64,7 @@ package String_Mng.Regex is
   --  first character after replacement (thus avoiding loops), up to To_Index.
   -- This cycle ends when no substitution occurs or after a maximum Nb_Cycles,
   --  (if not 0). Beware that Nb_Cycles=0 may lead to infinite loop.
-  function Replace (Within     : String;
+  function Substit (Within     : String;
                     Criteria   : String;
                     By         : String;
                     From_Index : Natural := 0;

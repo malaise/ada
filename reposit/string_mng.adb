@@ -488,9 +488,9 @@ package body String_Mng is
 
     -- Remove backslash for delimiters if they have been skipped
     if Skip_Backslashed then
-      Ustr := As.U.Tus (Replace (Ustr.Image, "\" & Start_Delimiter,
+      Ustr := As.U.Tus (Substit (Ustr.Image, "\" & Start_Delimiter,
                         Start_Delimiter));
-      Ustr := As.U.Tus (Replace (Ustr.Image, "\" & Stop_Delimiter,
+      Ustr := As.U.Tus (Substit (Ustr.Image, "\" & Stop_Delimiter,
                         Stop_Delimiter));
     end if;
 
@@ -667,7 +667,7 @@ package body String_Mng is
   end Copy;
 
   -- Replace occurences of What by By in Str. One pass.
-  function Replace (Str, What, By : String;
+  function Substit (Str, What, By : String;
                     Skip_Backslashed: Boolean := False) return String is
     Len : constant Natural := What'Length;
     Last : constant Natural := Str'Last;
@@ -697,7 +697,7 @@ package body String_Mng is
       end if;
     end loop;
     return Result.Image;
-  end Replace;
+  end Substit;
 
   -- Return a String (1 .. N)
   function Normalize (Str : String) return String is
@@ -738,6 +738,111 @@ package body String_Mng is
       return Res;
     end;
   end Center;
+
+  -- Overwrite a part of a string by a new one
+  -- Do nothing if New_Str is empty
+  -- Append New_Item if Position = Source'Last + 1
+  -- Extend Source if Position + New_Str'Length - 1 > Source'Last
+  -- Raises Constraint_Error if Position < Source'First
+  --                         or Position > Source'Last + 1
+  function Overwrite (Source   : String;
+                      Position : Positive;
+                      New_Str  : String) return String is
+    -- Index in New_Str of last overwritting char (others are appended)
+    Lo : Natural;
+    Result : String (1 .. Source'Length);
+  begin
+    if Position < Source'First or else Position > Source'Last + 1 then
+      raise Constraint_Error;
+    end if;
+    if Position + New_Str'Length - 1 > Source'Last then
+      Lo := New_Str'First + Source'Last - Position;
+    else
+      Lo := New_Str'Last;
+    end if;
+    Result := Source;
+    -- Overwrite by Lo chars from Position
+    Result(Position - Source'First + 1
+        .. Position - Source'First + 1 + Lo - New_Str'First) :=
+      New_Str(New_Str'First .. Lo);
+    -- Append others
+    return Result & New_Str(Lo + 1 .. New_Str'Last);
+  end Overwrite;
+
+  -- Replace a slice by a new string
+  -- Delete chars if By is empty (except if High < Low)
+  -- Insert By before Low if High < Low
+  -- Append By if Low = Source'Last + 1 (and High < Low)
+  -- Raises Constraint_Error if Low < Source'First
+  --                         or Low > Source'Last + 1 or High > Source'Last
+  function Replace (Source   : String;
+                    Low      : Positive;
+                    High     : Natural;
+                    By       : String) return String is
+    Start_Tail : Positive;
+  begin
+    if Low < Source'First or else Low > Source'Last + 1
+    or else High > Source'Last then
+      raise Constraint_Error;
+    end if;
+    if Low <= High then
+      -- Replace
+      Start_Tail := High + 1;
+    else
+      -- Insert
+      Start_Tail := Low;
+    end if;
+    return Source(Source'First .. Low - 1)
+         & By
+         & Source(Start_Tail .. Source'Last);
+  end Replace;
+
+  -- Insert a string before a given position
+  -- Append if Before = Source'Last + 1
+  -- Raises Constraint_Error if Before < Source'First
+  --                         or Before > Source'Last + 1
+  function Insert (Source  : String;
+                   Before  : Positive;
+                   New_Str : String) return String is
+  begin
+    if Before < Source'First or else Before > Source'Last + 1 then
+      raise Constraint_Error;
+    end if;
+    if Before = Source'Last + 1 then
+      return Source & New_Str;
+    else
+      return Source(Source'First .. Before - 1)
+           & New_Str
+           & Source(Before .. Source'Last);
+    end if;
+  end Insert;
+
+  -- Delete some characters
+  -- Do nothing if Through < From
+  -- Raises Constraint_Error if Through >= From and
+  --  From < Source'First or From > Source'Last
+  --  or Through > Source'Last
+  function Delete (Source  : String;
+                   From    : Positive;
+                   Through : Natural) return String is
+  begin
+   if Through < From then
+      return Source;
+    end if;
+    if From < Source'First or else From > Source'Last
+    or else Through > Source'Last then
+      raise Constraint_Error;
+    end if;
+    if Source'Last - Source'First = Through - From then
+      return "";
+    end if;
+    if Through = Source'Last then
+      return Source(Source'First .. From - 1);
+    else
+      return Source(Source'First .. From - 1)
+           & Source (Through + 1 .. Source'Last);
+    end if;
+  end Delete;
 
 end String_Mng;
 

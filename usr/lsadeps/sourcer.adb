@@ -187,7 +187,7 @@ package body Sourcer is
       -- Parsing "separate" will identify subunits
       -- Full unit name (parent.unit) without suffix
       Dscr.Parent := As.U.Tus (Mixed_Str (
-         String_Mng.Replace (File(File'First .. Minus - 1), "-", ".")));
+         String_Mng.Substit (File(File'First .. Minus - 1), "-", ".")));
       Dscr.Unit := Dscr.Parent & "."
                & Directory.File_Prefix (File(Minus+1 .. File'Last));
     end if;
@@ -319,7 +319,7 @@ package body Sourcer is
       end if;
       -- Replace @@ by @
       Dscr.Witheds_Parents := As.U.Tus (
-          String_Mng.Replace (Dscr.Witheds_Parents.Image,
+          String_Mng.Substit (Dscr.Witheds_Parents.Image,
                               Separator & Separator,
                               Separator & ""));
     end if;

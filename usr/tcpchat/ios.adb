@@ -80,7 +80,7 @@ package body Ios is
   begin
     -- Store sentence without Lf
     Debug.Log ("Got sentence " & Sentence);
-    Sentences.Push (As.U.Tus (String_Mng.Replace (Sentence, Lf, "")));
+    Sentences.Push (As.U.Tus (String_Mng.Substit (Sentence, Lf, "")));
   end Sentence_Cb;
 
   -- Message reception Cb
@@ -92,7 +92,7 @@ package body Ios is
     pragma Unreferenced (Dscr);
   begin
     Debug.Log ("Read " & Msg(1 .. Len));
-    Buffer.Push (String_Mng.Replace (Msg(1 .. Len), Crlf, Lf));
+    Buffer.Push (String_Mng.Substit (Msg(1 .. Len), Crlf, Lf));
     return True;
   end Read_Cb;
 
@@ -341,7 +341,7 @@ package body Ios is
     Dummy : Boolean;
     pragma Unreferenced (Dummy);
   begin
-    Debug.Log ("Send " & String_Mng.Replace (Text.Image, Lf, "[LF]"));
+    Debug.Log ("Send " & String_Mng.Substit (Text.Image, Lf, "[LF]"));
     if Stdio then
       Async_Stdin.Put_Out (Text.Image);
       Disconnection := False;

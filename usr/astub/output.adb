@@ -76,7 +76,7 @@ package body Output is
     -- Prepend previous tail and replace any sequence of 3 or more
     -- line_feeds by only 2
     Ustr := As.U.Tus (
-      String_Mng.Regex.Replace (Prev_Tail.Image & Str, "\n{3,}",
+      String_Mng.Regex.Substit (Prev_Tail.Image & Str, "\n{3,}",
       Line_Feed_Char & Line_Feed_Char));
     Prev_Tail.Set_Null;
     if Ustr.Is_Null then

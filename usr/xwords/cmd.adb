@@ -27,7 +27,7 @@ package body Cmd is
     loop
       -- Replace for est Rec
       List.Read (Line, Res_Mng.Dyn_List.Current);
-      Line := As.U.Tus (String_Mng.Replace (
+      Line := As.U.Tus (String_Mng.Substit (
                 Line.Image, Ada.Characters.Latin_1.Lf & "", " "));
       List.Modify (Line, Moved => Moved);
       exit when not Moved;

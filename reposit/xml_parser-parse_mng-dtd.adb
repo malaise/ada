@@ -137,7 +137,7 @@ package body Dtd is
       end loop;
     end;
     -- Remove any ','
-    Res := As.U.Tus (String_Mng.Replace (Res.Image, ",", ""));
+    Res := As.U.Tus (String_Mng.Substit (Res.Image, ",", ""));
     -- Now compile to check it
     if not Regular_Expressions.Check (Res.Image) then
       Trace ("Dtd regex does node compile >" & Res.Image & "<");
@@ -241,7 +241,7 @@ package body Dtd is
           end if;
           -- Replace '|' by '#' and prepend and append a '#'
           Info.List := As.U.Tus (
-            String_Mng.Replace (Info_Sep & Info.List.Image & Info_Sep,
+            String_Mng.Substit (Info_Sep & Info.List.Image & Info_Sep,
                                 "|", "" & Info_Sep));
           -- Check unicity of entries
           Iter.Set (Info.List.Image, Is_Sep'Access);
@@ -466,7 +466,7 @@ package body Dtd is
         end if;
         -- Replace '|' by '#' and prepend and append a '#'
         Enum := As.U.Tus (
-          String_Mng.Replace (Info_Sep & Enum.Image & Info_Sep,
+          String_Mng.Substit (Info_Sep & Enum.Image & Info_Sep,
                               "|", "" & Info_Sep));
         -- Check unicity of entries
         Iter.Set (Enum.Image, Is_Sep'Access);
@@ -559,7 +559,7 @@ package body Dtd is
                     & Def_Val.Image & " not in Enum");
         end if;
         -- Remove #default and insert #default in head
-        Enum := As.U.Tus (String_Mng.Replace (
+        Enum := As.U.Tus (String_Mng.Substit (
                  Enum.Image,
                  Info_Sep & Def_Val.Image,
                  ""));
@@ -1416,7 +1416,7 @@ package body Dtd is
   function Strip_Sep (Us : in As.U.Asu_Us) return String is
     use String_Mng;
   begin
-    return Replace (Replace (Us.Image, Info_Sep & Info_Sep, ","),
+    return Substit (Substit (Us.Image, Info_Sep & Info_Sep, ","),
                     "" & Info_Sep, "");
   end Strip_Sep;
 

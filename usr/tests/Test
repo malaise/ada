@@ -469,7 +469,7 @@ t_control_pool >out 2>err &
 PID=$!
 sleep 3
 kill $PID
-sleep 7
+sleep 10
 comp err nul
 echo "OK"
 
@@ -1315,6 +1315,13 @@ cat << EOF > exp
  21 EISDIR          -> Is a directory
 EOF
 comp out exp
+comp err nul
+echo "OK"
+
+# t_string 
+title t_string
+try t_string -a
+comp out data/t_asbu.ref
 comp err nul
 echo "OK"
 
