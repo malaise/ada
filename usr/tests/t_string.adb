@@ -70,6 +70,10 @@ procedure T_String is
 begin
 
   if Argument.Get_Parameter = "-a" then
+    Str := (others => '#');
+    Str(200 .. 209) := "0123456789";
+    Str(301 .. 326) := "abcdefghijklmnopqrstuvwxyz";
+    Str(401 .. 426) := "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     -- Generate the same output as t_asu and t_asb for the operations
     --  that have no sense with strings
     My_Io.Put_Line ("Empty array:");
@@ -104,10 +108,10 @@ begin
     My_Io.Put_Line ("Replace from 1 to 3 with a, b, c, d");
     My_Io.Put_Line ("Replace from 5 to 7 with e");
     declare
-      N1 : constant String := "1u5abcde";
-      N2 : constant String := String_Mng.Replace (N1, 4, 7, "BC");
-      N3 : constant String := String_Mng.Replace (N2, 1, 3, "abcd");
-      N4 : constant String := String_Mng.Replace (N3, 5, 7, "e");
+      N1 : constant String := "1u5abcdE";
+      N2 : constant String := String_Mng.Replace (N1, 4, 7, Str(402 .. 403));
+      N3 : constant String := String_Mng.Replace (N2, 1, 3, Str(301 .. 304));
+      N4 : constant String := String_Mng.Replace (N3, 5, 7, Str(305 .. 305));
     begin
       My_Io.Put_Line ("Image " & N4);
     end;
@@ -117,10 +121,10 @@ begin
     My_Io.Put_Line ("Overwrite from 8 with 8");
     declare
       N1 : constant String := "abcde";
-      N2 : constant String := String_Mng.Overwrite (N1, 4, "45");
-      N3 : constant String := String_Mng.Overwrite (N2, 6, "67");
-      N4 : constant String := String_Mng.Overwrite (N3, 1, "123");
-      N5 : constant String := String_Mng.Overwrite (N4, 8, "8");
+      N2 : constant String := String_Mng.Overwrite (N1, 4, Str(204 .. 205));
+      N3 : constant String := String_Mng.Overwrite (N2, 6, Str(206 .. 207));
+      N4 : constant String := String_Mng.Overwrite (N3, 1, Str(201 .. 203));
+      N5 : constant String := String_Mng.Overwrite (N4, 8, Str(208 .. 208));
     begin
       My_Io.Put_Line ("Image " & N5);
     end;
@@ -129,9 +133,9 @@ begin
     My_Io.Put_Line ("Replace from 12 to 11 with y, z");
     declare
       N1 : constant String := "12345678";
-      N2 : constant String := String_Mng.Replace (N1, 1, 0, "0");
-      N3 : constant String := String_Mng.Replace (N2, 3, 1, "ab");
-      N4 : constant String := String_Mng.Replace (N3, 12, 11, "yz");
+      N2 : constant String := String_Mng.Replace (N1, 1, 0, Str(200 .. 200));
+      N3 : constant String := String_Mng.Replace (N2, 3, 1, Str(301 .. 302));
+      N4 : constant String := String_Mng.Replace (N3, 12, 11, Str(325 .. 326));
     begin
       My_Io.Put_Line ("Image " & N4);
     end;
@@ -145,13 +149,13 @@ begin
     declare
       N1 : constant String := "01ab2345678yz";
       N2 : constant String := String_Mng.Delete (N1, 3, 4);
-      N3 : constant String := String_Mng.Insert (N2, 4, "abcd");
-      N4 : constant String := String_Mng.Replace (N3, 4, 5, "BCD");
+      N3 : constant String := String_Mng.Insert (N2, 4, Str(301 .. 304));
+      N4 : constant String := String_Mng.Replace (N3, 4, 5, Str(402 .. 404));
       N5 : constant String := String_Mng.Delete (N4, 4, 8);
       N6 : constant String := String_Mng.Cut (N5, 2, False);
-      N7 : constant String := String_Mng.Insert (N6, 10, "9");
-      N8 : constant String := String_Mng.Replace (N7, 11, 10, "ABC");
-      N9 : constant String := String_Mng.overwrite (N8, 14, "DEF");
+      N7 : constant String := String_Mng.Insert (N6, 10, Str(209 .. 209));
+      N8 : constant String := String_Mng.Replace (N7, 11, 10, Str(401 .. 403));
+      N9 : constant String := String_Mng.Overwrite (N8, 14, Str(404 .. 406));
     begin
       My_Io.Put_Line ("Image " & N9);
     end;

@@ -792,9 +792,9 @@ package body String_Mng is
       -- Insert
       Start_Tail := Low;
     end if;
-    return Source(Source'First .. Low - 1)
-         & By
-         & Source(Start_Tail .. Source'Last);
+    return Normalize (Source(Source'First .. Low - 1)
+                    & By
+                    & Source(Start_Tail .. Source'Last));
   end Replace;
 
   -- Insert a string before a given position
@@ -811,9 +811,9 @@ package body String_Mng is
     if Before = Source'Last + 1 then
       return Source & New_Str;
     else
-      return Source(Source'First .. Before - 1)
-           & New_Str
-           & Source(Before .. Source'Last);
+      return Normalize (Source(Source'First .. Before - 1)
+                      & New_Str
+                      & Source(Before .. Source'Last));
     end if;
   end Insert;
 
@@ -827,7 +827,7 @@ package body String_Mng is
                    Through : Natural) return String is
   begin
    if Through < From then
-      return Source;
+      return Normalize (Source);
     end if;
     if From < Source'First or else From > Source'Last
     or else Through > Source'Last then
@@ -837,10 +837,10 @@ package body String_Mng is
       return "";
     end if;
     if Through = Source'Last then
-      return Source(Source'First .. From - 1);
+      return Normalize (Source(Source'First .. From - 1));
     else
-      return Source(Source'First .. From - 1)
-           & Source (Through + 1 .. Source'Last);
+      return Normalize (Source(Source'First .. From - 1)
+                      & Source (Through + 1 .. Source'Last));
     end if;
   end Delete;
 
