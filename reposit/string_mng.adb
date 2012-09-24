@@ -29,6 +29,20 @@ package body String_Mng is
     end if;
   end Parse_Spaces;
 
+  -- Return a String (1 .. N)
+  function Normalize (Str : String) return String is
+  begin
+    if Str'First = 1 then
+      -- Optim: no copy if not needed
+      return Str;
+    end if;
+    declare
+      Lstr : constant String (1 .. Str'Length) := Str;
+    begin
+      return Lstr;
+    end;
+  end Normalize;
+
   -- Remove tailing spaces and tabs
   function Strip (Str : String; From : Strip_Kind := Tail) return String is
     Start, Stop : Natural;
@@ -47,7 +61,7 @@ package body String_Mng is
     if Start = 0 then
       return "";
     else
-      return Str(Start .. Stop);
+      return Normalize (Str(Start .. Stop));
     end if;
   end Strip;
 
@@ -110,7 +124,6 @@ package body String_Mng is
     end if;
     return S;
   end Procuste;
-
 
   -- Locate Nth occurence of a fragment within a string,
   --  between a given index (first/last if 0) and the end/beginning of string,
@@ -208,11 +221,11 @@ package body String_Mng is
       -- Check if Nb_Char can be removed at At_Index
       if At_Index + Nb_Char - 1 >= From'Last then
         -- No tail to keep, return head (and pad)
-        return From(From'First .. At_Index-1)
+        return Normalize (From(From'First .. At_Index-1))
              & Do_Pad(From'Last-At_Index+1);
       else
         -- Cat tail to head and return it (and pad)
-        return From(From'First .. At_Index-1)
+        return Normalize (From(From'First .. At_Index-1))
              & From(At_Index+Nb_Char .. From'Last)
              & Do_Pad(Nb_Char);
       end if;
@@ -229,7 +242,6 @@ package body String_Mng is
       end if;
     end if;
   end Remove;
-
 
   -- If To_Right is True, extract Nb_Char characters of From from At_Index
   -- If To_Right is False, extract Nb_Char characters of From up to At_Index
@@ -250,9 +262,9 @@ package body String_Mng is
     end if;
     -- Extract slice
     if To_Right then
-      return From (At_Index .. At_Index + Nb_Char - 1);
+      return Normalize (From (At_Index .. At_Index + Nb_Char - 1));
     else
-      return From (At_Index - Nb_Char + 1 .. At_Index);
+      return Normalize (From (At_Index - Nb_Char + 1 .. At_Index));
     end if;
   end Slice;
 
@@ -699,20 +711,6 @@ package body String_Mng is
     return Result.Image;
   end Substit;
 
-  -- Return a String (1 .. N)
-  function Normalize (Str : String) return String is
-  begin
-    if Str'First = 1 then
-      -- Optim: no copy if not needed
-      return Str;
-    end if;
-    declare
-      Lstr : constant String (1 .. Str'Length) := Str;
-    begin
-      return Lstr;
-    end;
-  end Normalize;
-
   -- Center a String Str in a fixed size
   -- if Str <= Size pad with Gap before then after Str
   -- if Str > Size  raise Constraint_Error
@@ -809,7 +807,7 @@ package body String_Mng is
       raise Constraint_Error;
     end if;
     if Before = Source'Last + 1 then
-      return Source & New_Str;
+      return Normalize (Source & New_Str);
     else
       return Normalize (Source(Source'First .. Before - 1)
                       & New_Str

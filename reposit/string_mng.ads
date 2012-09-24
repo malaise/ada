@@ -9,6 +9,10 @@ package String_Mng is
   function Parse_Spaces (Str : String; From_Head : Boolean := True)
            return Natural;
 
+  -- Return a String(1 .. N), copy of Str
+  -- All functions returning a String return a Normalized String
+  function Normalize (Str : String) return String;
+
   -- Remove tailing spaces and tabs
   type Strip_Kind is (Tail, Head, Both);
   function Strip (Str : String; From : Strip_Kind := Tail) return String;
@@ -183,9 +187,6 @@ package String_Mng is
   -- If Skip_Backslashed, use Is_Backslash to detect \What and skip it
   function Substit (Str, What, By : String;
                     Skip_Backslashed : Boolean := False) return String;
-
-  -- Return a String (1 .. N)
-  function Normalize (Str : String) return String;
 
   -- Center a String Str in a fixed size
   -- if Str <= Size pad with Gap before then after Str

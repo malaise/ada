@@ -342,9 +342,9 @@ package body String_Mng.Regex is
       exit when Cycle = Nb_Cycles;
     end loop Cycles;
     -- Build and return result
-    return Within (Within'First .. I1 - 1)
-         & Working.Image
-         & Within (I2 + 1 .. Within'Last);
+    return Normalize (Within (Within'First .. I1 - 1)
+                    & Working.Image
+                    & Within (I2 + 1 .. Within'Last));
   end Substit;
 
 
