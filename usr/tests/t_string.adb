@@ -183,7 +183,7 @@ begin
       My_Io.Put_Line ("Main menu");
       My_Io.Put_Line (" 0 Exit to change String");
       My_Io.Put_Line (" 1 Case conversion");
-      My_Io.Put_Line (" 2 Parse spaces");
+      My_Io.Put_Line (" 2 Parse spaces - DISCARDED");
       My_Io.Put_Line (" 3 Procuste");
       My_Io.Put_Line (" 4 Locate (fragment)");
       My_Io.Put_Line (" 5 Remove (substring)");
@@ -227,11 +227,7 @@ begin
             end if;
 
           when  2 =>
-            My_Io.Put_Line ("Parse spaces");
-            My_Io.Put ("From_Head (YN)? "); Bool_Get(Bool1);
-            My_Io.Put_Line ("Spaces parsed at: " &
-             Integer'Image (Str_Util.Parse_Spaces (
-               Str(1 .. Str_Len), From_Head => Bool1)) );
+            My_Io.Put_Line ("DISCARDED");
 
           when  3 =>
             My_Io.Put_Line ("Procuste");

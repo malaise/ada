@@ -22,12 +22,10 @@ package body Afpx_Typ is
   -- Make Con_Io.Colors_Definition from Dscr Color_Names
   function To_Def (Names : Color_Names) return Con_Io.Colors_Definition is
     Colors : Con_Io.Colors_Definition;
-    Last : Natural;
   begin
     -- Set the colors when using the first descriptor
     for I in Colors'Range loop
-      Last := Str_Util.Parse_Spaces (Names(I), False);
-      Colors(I) := As.U.Tus (Names(I)(1 .. Last));
+      Colors(I) := As.U.Tus (Str_Util.Strip (Names(I), Str_Util.Tail));
     end loop;
     return Colors;
   end To_Def;

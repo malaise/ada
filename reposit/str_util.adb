@@ -1,34 +1,6 @@
 with As.U;
 package body Str_Util is
 
-  -- Parces spaces and tabs (latin_1.Ht) from the head/tail of a string
-  -- Returns the position of the first/last character or 0 if
-  --  all the string is spaces or tabs (or empty)
-  function Parse_Spaces (Str : String;
-                         From_Head : Boolean := True)
-           return Natural is
-  begin
-    if From_Head then
-      -- Look forward for significant character
-      for I in Str'Range loop
-        if Str(I) /= ' ' and then Str(I) /= Ada.Characters.Latin_1.Ht then
-          return I;
-        end if;
-      end loop;
-      -- Not found
-      return 0;
-    else
-      -- Look backwards for significant character
-      for I in reverse Str'Range loop
-        if Str(I) /= ' ' and then Str(I) /= Ada.Characters.Latin_1.Ht then
-          return I;
-        end if;
-      end loop;
-      -- Not found
-      return 0;
-    end if;
-  end Parse_Spaces;
-
   -- Return a String (1 .. N)
   function Normalize (Str : String) return String is
   begin
@@ -43,8 +15,190 @@ package body Str_Util is
     end;
   end Normalize;
 
+  -- Copy the string Val at the beginning of the string To
+  -- To (To'First .. To'First - Val'Length) := Val;
+  procedure Copy (Val : in String; To : in out String) is
+  begin
+    To (To'First .. To'First + Val'Length - 1) := Val;
+  end Copy;
+
+  -- Swap the characters of string
+  -- Example: ABCD -> DCBA
+  function Swap (Str : String) return String is
+    Res : String (1 .. Str'Length);
+  begin
+    for I in reverse Str'Range loop
+      Res (Str'Last - I + 1) := Str(I);
+    end loop;
+    return Res;
+  end Swap;
+
+  -- Remove any multiple occurence of a character from string.
+  -- Check from head or tail and return string.
+  -- Example ABCAD, Head -> ABCD  and  ABCAD, Tail -> BCAD
+  function Unique (From : String;
+                   From_Head : Boolean := True)
+           return String is
+    Used : array (Character) of Boolean := (others => False);
+    Input, Output : String (1 .. From'Length);
+    Last : Natural;
+    C : Character;
+  begin
+    if From_Head then
+      Input := From;
+    else
+      Input := Swap (From);
+    end if;
+    Last := 0;
+    for I in Input'Range loop
+      C := Input(I);
+      if not Used(C) then
+        Last := Last + 1;
+        Output(Last) := C;
+        Used(C) := True;
+      end if;
+    end loop;
+    if From_Head then
+      return Output(1 .. Last);
+    else
+      return Swap (Output(1 .. Last));
+    end if;
+  end Unique;
+
+  -- Overwrite a part of a string by a new one
+  -- Do nothing if New_Str is empty
+  -- Append New_Item if Position = Source'Last + 1
+  -- Extend Source if Position + New_Str'Length - 1 > Source'Last
+  -- Raises Constraint_Error if Position < Source'First
+  --                         or Position > Source'Last + 1
+  function Overwrite (Source   : String;
+                      Position : Positive;
+                      New_Str  : String) return String is
+    -- Index in New_Str of last overwritting char (others are appended)
+    Lo : Natural;
+    Result : String (1 .. Source'Length);
+  begin
+    if Position < Source'First or else Position > Source'Last + 1 then
+      raise Constraint_Error;
+    end if;
+    if Position + New_Str'Length - 1 > Source'Last then
+      Lo := New_Str'First + Source'Last - Position;
+    else
+      Lo := New_Str'Last;
+    end if;
+    Result := Source;
+    -- Overwrite by Lo chars from Position
+    Result(Position - Source'First + 1
+        .. Position - Source'First + 1 + Lo - New_Str'First) :=
+      New_Str(New_Str'First .. Lo);
+    -- Append others
+    return Result & New_Str(Lo + 1 .. New_Str'Last);
+  end Overwrite;
+
+  -- Replace a slice by a new string
+  -- Delete chars if By is empty (except if High < Low)
+  -- Insert By before Low if High < Low
+  -- Append By if Low = Source'Last + 1 (and High < Low)
+  -- Raises Constraint_Error if Low < Source'First
+  --                         or Low > Source'Last + 1 or High > Source'Last
+  function Replace (Source   : String;
+                    Low      : Positive;
+                    High     : Natural;
+                    By       : String) return String is
+    Start_Tail : Positive;
+  begin
+    if Low < Source'First or else Low > Source'Last + 1
+    or else High > Source'Last then
+      raise Constraint_Error;
+    end if;
+    if Low <= High then
+      -- Replace
+      Start_Tail := High + 1;
+    else
+      -- Insert
+      Start_Tail := Low;
+    end if;
+    return Normalize (Source(Source'First .. Low - 1)
+                    & By
+                    & Source(Start_Tail .. Source'Last));
+  end Replace;
+
+  -- Insert a string before a given position
+  -- Append if Before = Source'Last + 1
+  -- Raises Constraint_Error if Before < Source'First
+  --                         or Before > Source'Last + 1
+  function Insert (Source  : String;
+                   Before  : Positive;
+                   New_Str : String) return String is
+  begin
+    if Before < Source'First or else Before > Source'Last + 1 then
+      raise Constraint_Error;
+    end if;
+    if Before = Source'Last + 1 then
+      return Normalize (Source & New_Str);
+    else
+      return Normalize (Source(Source'First .. Before - 1)
+                      & New_Str
+                      & Source(Before .. Source'Last));
+    end if;
+  end Insert;
+
+  -- Delete some characters
+  -- Do nothing if Through < From
+  -- Raises Constraint_Error if Through >= From and
+  --  From < Source'First or From > Source'Last
+  --  or Through > Source'Last
+  function Delete (Source  : String;
+                   From    : Positive;
+                   Through : Natural) return String is
+  begin
+   if Through < From then
+      return Normalize (Source);
+    end if;
+    if From < Source'First or else From > Source'Last
+    or else Through > Source'Last then
+      raise Constraint_Error;
+    end if;
+    if Source'Last - Source'First = Through - From then
+      return "";
+    end if;
+    if Through = Source'Last then
+      return Normalize (Source(Source'First .. From - 1));
+    else
+      return Normalize (Source(Source'First .. From - 1)
+                      & Source (Through + 1 .. Source'Last));
+    end if;
+  end Delete;
+
   -- Remove tailing spaces and tabs
   function Strip (Str : String; From : Strip_Kind := Tail) return String is
+    -- Parses spaces and tabs (latin_1.Ht) from the head/tail of a string
+    -- Returns the position of the first/last character or 0 if
+    --  all the string is spaces or tabs (or empty)
+    function Parse_Spaces (Str : String;
+                           From_Head : Boolean := True)
+             return Natural is
+    begin
+      if From_Head then
+        -- Look forward for significant character
+        for I in Str'Range loop
+          if Str(I) /= ' ' and then Str(I) /= Ada.Characters.Latin_1.Ht then
+            return I;
+          end if;
+        end loop;
+        -- Not found
+        return 0;
+      else
+        -- Look backwards for significant character
+        for I in reverse Str'Range loop
+          if Str(I) /= ' ' and then Str(I) /= Ada.Characters.Latin_1.Ht then
+            return I;
+          end if;
+        end loop;
+        -- Not found
+        return 0;
+      end if;
+    end Parse_Spaces;
     Start, Stop : Natural;
   begin
     case From is
@@ -64,122 +218,6 @@ package body Str_Util is
       return Normalize (Str(Start .. Stop));
     end if;
   end Strip;
-
-  -- Puts a string Str in a string of fixed length Len.
-  -- If Str is shorter than Len, it is aligned at right or left and padded
-  -- If Str is longer  than Len, it's head ot tail is truncated
-  -- Str : String to put in the returned string
-  -- Len : Number of characters of the returned string
-  -- Align_Left : If string is shorter than Len characters,
-  --     align it at left or at right (not Align_Left) and fill with Gap,
-  -- Gap : When string is shorter than len, fill empty positions with Gap
-  -- Trunc_Head : If string is longer than Len characters, trunc it's head
-  --     or its tail
-  -- Show_Trunc : When string is longer than Len, if Show_Trunc is set,
-  --         then Str is truncated to Len-2 and starts (Trunc_Head) with " >"
-  --         or ends (not Trunc_Head) with " <"
-  function Procuste (Str : String;
-                     Len : Positive;
-                     Align_Left : Boolean := True;
-                     Gap : Character := ' ';
-                     Trunc_Head : Boolean := True;
-                     Show_Trunc : Boolean := True)
-           return String is
-    L : constant Natural := Str'Length;
-    S : String (1 .. Len);
-  begin
-    if L < Len then
-      -- Str is shorter than Len: Pad
-      if Align_Left then
-        -- Copy L characters at left and pad
-        S(1 .. L) := Str;
-        S(L+1 .. Len) := (others => Gap);
-      else
-        -- Copy L characters at right and pad
-        S(Len-L+1 .. Len) := Str;
-        S(1 .. Len-L) := (others => Gap);
-      end if;
-    elsif L > Len then
-      -- Str is larger than Len: Trunc
-      if Trunc_Head then
-        if Show_Trunc and then Len >= 2 then
-          -- Copy "> " then Len-2 last characters of Str
-          S := "> " & Str(Str'Last-Len+1+2 .. Str'Last);
-        else
-          -- Copy Len last characters of Str
-          S := Str(Str'Last-Len+1 .. Str'Last);
-        end if;
-      else
-        if Show_Trunc and then Len >= 2 then
-          -- Copy Len-2 first characters of Str then " <"
-          S := Str(Str'First .. Str'First+Len-1-2) & " <";
-        else
-          -- Copy Len first characters of Str
-          S := Str(Str'First .. Str'First+Len-1);
-        end if;
-      end if;
-    else
-      -- Str is as Len characters: copy
-      S := Str;
-    end if;
-    return S;
-  end Procuste;
-
-  -- Locate Nth occurence of a fragment within a string,
-  --  between a given index (first/last if 0) and the end/beginning of string,
-  --  searching forward or backward
-  -- Returns index in Within of char matching start of Fragment
-  --  or 0 if not found or if Within or Fragment is empty
-  function Locate (Within     : String;
-                   Fragment   : String;
-                   From_Index : Natural := 0;
-                   Forward    : Boolean := True;
-                   Occurence  : Positive := 1)
-           return Natural is
-    Index : Natural;
-    Found_Occurence : Natural := 0;
-  begin
-    -- Fix Index
-    if From_Index = 0 then
-      if Forward then
-        Index := Within'First;
-      else
-        Index := Within'Last;
-      end if;
-    else
-      Index := From_Index;
-    end if;
-
-    -- Handle limit or incorrect values
-    if Within'Length = 0
-    or else Fragment'Length = 0
-    or else Index not in Within'First .. Within'Last then
-      return 0;
-    end if;
-    if Forward then
-      for I in Index .. Within'Last - Fragment'Length + 1 loop
-        if Within(I .. I + Fragment'Length - 1) = Fragment then
-          Found_Occurence := Found_Occurence + 1;
-          if Found_Occurence = Occurence then
-            return I;
-          end if;
-        end if;
-      end loop;
-    else
-      for I in reverse Within'First .. Index - Fragment'Length + 1 loop
-        if Within(I .. I + Fragment'Length - 1) = Fragment then
-          Found_Occurence := Found_Occurence + 1;
-          if Found_Occurence = Occurence then
-            return I;
-          end if;
-        end if;
-      end loop;
-    end if;
-    return 0;
-  exception
-    when Constraint_Error =>
-      return 0;
-  end Locate;
 
   -- Remove Nb_Char characters from the string From at index At_Index.
   -- If Gap is No_Gap, then the string is shorten by Nb_Char, either
@@ -243,6 +281,21 @@ package body Str_Util is
     end if;
   end Remove;
 
+  -- Extract the Nb_Char first (if Head is set to True) or last characters
+  --   (if Head is set to False) of From string.
+  -- Return the remaining string.
+  function Cut (From : String;
+                Nb_Char : Natural;
+                Head : Boolean := True)
+           return String is
+  begin
+    if Head then
+      return Remove (From, From'First, Nb_Char, True);
+    else
+      return Remove (From, From'Last,  Nb_Char, False);
+    end if;
+  end Cut;
+
   -- If To_Right is True, extract Nb_Char characters of From from At_Index
   -- If To_Right is False, extract Nb_Char characters of From up to At_Index
   -- Return the extracted substring.
@@ -269,21 +322,6 @@ package body Str_Util is
   end Slice;
 
   -- Extract the Nb_Char first (if Head is set to True) or last characters
-  --   (if Head is set to False) of From string.
-  -- Return the remaining string.
-  function Cut (From : String;
-                Nb_Char : Natural;
-                Head : Boolean := True)
-           return String is
-  begin
-    if Head then
-      return Remove (From, From'First, Nb_Char, True);
-    else
-      return Remove (From, From'Last,  Nb_Char, False);
-    end if;
-  end Cut;
-
-  -- Extract the Nb_Char first (if Head is set to True) or last characters
   --    (if Head is set to False) of From string.
   -- Return the extracted substring.
   -- Raises Constraint_Error if Nb_Char is more than From'Length.
@@ -299,48 +337,212 @@ package body Str_Util is
     end if;
   end Extract;
 
-  -- Swap the characters of string
-  -- Example: ABCD -> DCBA
-  function Swap (Str : String) return String is
-    Res : String (1 .. Str'Length);
-  begin
-    for I in reverse Str'Range loop
-      Res (Str'Last - I + 1) := Str(I);
-    end loop;
-    return Res;
-  end Swap;
-
-  -- Remove any multiple occurence of a character from string.
-  -- Check from head or tail and return string.
-  -- Example ABCAD, Head -> ABCD  and  ABCAD, Tail -> BCAD
-  function Unique (From : String;
-                   From_Head : Boolean := True)
+  -- Puts a string Str in a string of fixed length Len.
+  -- If Str is shorter than Len, it is aligned at right or left and padded
+  -- If Str is longer  than Len, it's head ot tail is truncated
+  -- Str : String to put in the returned string
+  -- Len : Number of characters of the returned string
+  -- Align_Left : If string is shorter than Len characters,
+  --     align it at left or at right (not Align_Left) and fill with Gap,
+  -- Gap : When string is shorter than len, fill empty positions with Gap
+  -- Trunc_Head : If string is longer than Len characters, trunc it's head
+  --     or its tail
+  -- Show_Trunc : When string is longer than Len, if Show_Trunc is set,
+  --         then Str is truncated to Len-2 and starts (Trunc_Head) with " >"
+  --         or ends (not Trunc_Head) with " <"
+  function Procuste (Str : String;
+                     Len : Positive;
+                     Align_Left : Boolean := True;
+                     Gap : Character := ' ';
+                     Trunc_Head : Boolean := True;
+                     Show_Trunc : Boolean := True)
            return String is
-    Used : array (Character) of Boolean := (others => False);
-    Input, Output : String (1 .. From'Length);
-    Last : Natural;
-    C : Character;
+    L : constant Natural := Str'Length;
+    S : String (1 .. Len);
   begin
-    if From_Head then
-      Input := From;
+    if L < Len then
+      -- Str is shorter than Len: Pad
+      if Align_Left then
+        -- Copy L characters at left and pad
+        S(1 .. L) := Str;
+        S(L+1 .. Len) := (others => Gap);
+      else
+        -- Copy L characters at right and pad
+        S(Len-L+1 .. Len) := Str;
+        S(1 .. Len-L) := (others => Gap);
+      end if;
+    elsif L > Len then
+      -- Str is larger than Len: Trunc
+      if Trunc_Head then
+        if Show_Trunc and then Len >= 2 then
+          -- Copy "> " then Len-2 last characters of Str
+          S := "> " & Str(Str'Last-Len+1+2 .. Str'Last);
+        else
+          -- Copy Len last characters of Str
+          S := Str(Str'Last-Len+1 .. Str'Last);
+        end if;
+      else
+        if Show_Trunc and then Len >= 2 then
+          -- Copy Len-2 first characters of Str then " <"
+          S := Str(Str'First .. Str'First+Len-1-2) & " <";
+        else
+          -- Copy Len first characters of Str
+          S := Str(Str'First .. Str'First+Len-1);
+        end if;
+      end if;
     else
-      Input := Swap (From);
+      -- Str is as Len characters: copy
+      S := Str;
     end if;
-    Last := 0;
-    for I in Input'Range loop
-      C := Input(I);
-      if not Used(C) then
-        Last := Last + 1;
-        Output(Last) := C;
-        Used(C) := True;
+    return S;
+  end Procuste;
+
+  -- Locate where to cut Str so that is best matches the requested line Length
+  -- Looks for separator character
+  -- Default Separator function, True for Space and Latin.Ht.
+  function Is_Separator (Char : Character) return Boolean is
+  begin
+    return Char = ' ' or else Char = Ada.Characters.Latin_1.Ht;
+  end Is_Separator;
+  -- If Str is shorter or equal to Length, return Str'Last
+  -- Else try to find a separator before Length, up to Mini
+  -- Else try to find a separator after  Length, up to Maxi
+  -- Else try to find a separator before Mini,   up to 1
+  -- Else try to find a separator after  Maxi,   up to Str'Length
+  -- Prerequisits Mini <= Length <= Maxi. Beware that they are not
+  --  relative to Str indexes but that the returned value is.
+  -- Returns 0 only if Str is empty.
+  function Truncate (Str : String;
+                     Length : Positive;
+                     Mini, Maxi : Positive;
+                     Separating : access
+    function (Char : Character) return Boolean := Is_Separator'Access)
+  return String is
+    Strlen : constant Natural := Str'Length;
+    -- Corresponding index in Str
+    function Indof (I : Positive) return Positive is
+    begin
+      return I - 1 + Str'First;
+    end Indof;
+  begin
+    if Mini > Length or else Length > Maxi then
+      raise Constraint_Error;
+    end if;
+    -- Handle trivial cases
+    if Strlen = 0 then
+      return "";
+    elsif Strlen <= Length then
+      return Normalize (Str);
+    end if;
+    -- Else try to find a separator before Length, up to Mini
+    for I in reverse Mini .. Length loop
+      if Separating (Str (Indof (I))) then
+        return Normalize (Str (Str'First .. Indof (I)));
       end if;
     end loop;
-    if From_Head then
-      return Output(1 .. Last);
-    else
-      return Swap (Output(1 .. Last));
+    -- Else try to find a separator after  Length, up to Maxi
+    for I in Length + 1 .. Maxi loop
+      if Separating (Str (Indof (I))) then
+        return Normalize (Str (Str'First .. Indof (I)));
+      end if;
+    end loop;
+    -- Else try to find a separator before Mini,   up to 1
+    for I in reverse 1 .. Mini - 1 loop
+      if Separating (Str (Indof (I))) then
+        return Normalize (Str (Str'First .. Indof (I)));
+      end if;
+    end loop;
+    -- Else try to find a separator after  Maxi,   up to Str'Length
+    for I in Maxi + 1 .. Strlen loop
+      if Separating (Str (Indof (I))) then
+        return Normalize (Str (Str'First .. Indof (I)));
+      end if;
+    end loop;
+    -- No separator found
+    return Normalize (Str);
+  end Truncate;
+
+  -- Center a String Str in a fixed size
+  -- if Str <= Size pad with Gap before then after Str
+  -- if Str > Size  raise Constraint_Error
+  function Center (Str : String;
+                   Len : Positive;
+                   Gap : Character := ' ') return String is
+    Start : Positive;
+  begin
+    if Str'Length > Len then
+      raise Constraint_Error;
     end if;
-  end Unique;
+    -- Start position
+    Start := (Len - Str'Length) / 2 + 1;
+    -- Pad before first rather than after last
+    if (Len - Str'Length) rem 2 = 1 then
+      Start := Start + 1;
+    end if;
+    -- Copy
+    declare
+      Res : String(1 .. Len) := (others => Gap);
+    begin
+      Copy (Str, Res (Start .. Len));
+      return Res;
+    end;
+  end Center;
+
+  -- Locate Nth occurence of a fragment within a string,
+  --  between a given index (first/last if 0) and the end/beginning of string,
+  --  searching forward or backward
+  -- Returns index in Within of char matching start of Fragment
+  --  or 0 if not found or if Within or Fragment is empty
+  function Locate (Within     : String;
+                   Fragment   : String;
+                   From_Index : Natural := 0;
+                   Forward    : Boolean := True;
+                   Occurence  : Positive := 1)
+           return Natural is
+    Index : Natural;
+    Found_Occurence : Natural := 0;
+  begin
+    -- Fix Index
+    if From_Index = 0 then
+      if Forward then
+        Index := Within'First;
+      else
+        Index := Within'Last;
+      end if;
+    else
+      Index := From_Index;
+    end if;
+
+    -- Handle limit or incorrect values
+    if Within'Length = 0
+    or else Fragment'Length = 0
+    or else Index not in Within'First .. Within'Last then
+      return 0;
+    end if;
+    if Forward then
+      for I in Index .. Within'Last - Fragment'Length + 1 loop
+        if Within(I .. I + Fragment'Length - 1) = Fragment then
+          Found_Occurence := Found_Occurence + 1;
+          if Found_Occurence = Occurence then
+            return I;
+          end if;
+        end if;
+      end loop;
+    else
+      for I in reverse Within'First .. Index - Fragment'Length + 1 loop
+        if Within(I .. I + Fragment'Length - 1) = Fragment then
+          Found_Occurence := Found_Occurence + 1;
+          if Found_Occurence = Occurence then
+            return I;
+          end if;
+        end if;
+      end loop;
+    end if;
+    return 0;
+  exception
+    when Constraint_Error =>
+      return 0;
+  end Locate;
 
   -- Replace all variables by their values provided by the Resolv callback.
   -- A variable name is identified because it is within delimiters (strings).
@@ -606,78 +808,6 @@ package body Str_Util is
     return Many_Strings.Set (Result);
   end Split;
 
-  -- Locate where to cut Str so that is best matches the requested line Length
-  -- Looks for separator character
-  -- Default Separator function, True for Space and Latin.Ht.
-  function Is_Separator (Char : Character) return Boolean is
-  begin
-    return Char = ' ' or else Char = Ada.Characters.Latin_1.Ht;
-  end Is_Separator;
-  -- If Str is shorter or equal to Length, return Str'Last
-  -- Else try to find a separator before Length, up to Mini
-  -- Else try to find a separator after  Length, up to Maxi
-  -- Else try to find a separator before Mini,   up to 1
-  -- Else try to find a separator after  Maxi,   up to Str'Length
-  -- Prerequisits Mini <= Length <= Maxi. Beware that they are not
-  --  relative to Str indexes but that the returned value is.
-  -- Returns 0 only if Str is empty.
-  function Truncate (Str : String;
-                     Length : Positive;
-                     Mini, Maxi : Positive;
-                     Separating : access
-    function (Char : Character) return Boolean := Is_Separator'Access)
-  return String is
-    Strlen : constant Natural := Str'Length;
-    -- Corresponding index in Str
-    function Indof (I : Positive) return Positive is
-    begin
-      return I - 1 + Str'First;
-    end Indof;
-  begin
-    if Mini > Length or else Length > Maxi then
-      raise Constraint_Error;
-    end if;
-    -- Handle trivial cases
-    if Strlen = 0 then
-      return "";
-    elsif Strlen <= Length then
-      return Normalize (Str);
-    end if;
-    -- Else try to find a separator before Length, up to Mini
-    for I in reverse Mini .. Length loop
-      if Separating (Str (Indof (I))) then
-        return Normalize (Str (Str'First .. Indof (I)));
-      end if;
-    end loop;
-    -- Else try to find a separator after  Length, up to Maxi
-    for I in Length + 1 .. Maxi loop
-      if Separating (Str (Indof (I))) then
-        return Normalize (Str (Str'First .. Indof (I)));
-      end if;
-    end loop;
-    -- Else try to find a separator before Mini,   up to 1
-    for I in reverse 1 .. Mini - 1 loop
-      if Separating (Str (Indof (I))) then
-        return Normalize (Str (Str'First .. Indof (I)));
-      end if;
-    end loop;
-    -- Else try to find a separator after  Maxi,   up to Str'Length
-    for I in Maxi + 1 .. Strlen loop
-      if Separating (Str (Indof (I))) then
-        return Normalize (Str (Str'First .. Indof (I)));
-      end if;
-    end loop;
-    -- No separator found
-    return Normalize (Str);
-  end Truncate;
-
-  -- Copy the string Val at the beginning of the string To
-  -- To (To'First .. To'First - Val'Length) := Val;
-  procedure Copy (Val : in String; To : in out String) is
-  begin
-    To (To'First .. To'First + Val'Length - 1) := Val;
-  end Copy;
-
   -- Replace occurences of What by By in Str. One pass.
   function Substit (Str, What, By : String;
                     Skip_Backslashed: Boolean := False) return String is
@@ -710,137 +840,6 @@ package body Str_Util is
     end loop;
     return Result.Image;
   end Substit;
-
-  -- Center a String Str in a fixed size
-  -- if Str <= Size pad with Gap before then after Str
-  -- if Str > Size  raise Constraint_Error
-  function Center (Str : String;
-                   Len : Positive;
-                   Gap : Character := ' ') return String is
-    Start : Positive;
-  begin
-    if Str'Length > Len then
-      raise Constraint_Error;
-    end if;
-    -- Start position
-    Start := (Len - Str'Length) / 2 + 1;
-    -- Pad before first rather than after last
-    if (Len - Str'Length) rem 2 = 1 then
-      Start := Start + 1;
-    end if;
-    -- Copy
-    declare
-      Res : String(1 .. Len) := (others => Gap);
-    begin
-      Copy (Str, Res (Start .. Len));
-      return Res;
-    end;
-  end Center;
-
-  -- Overwrite a part of a string by a new one
-  -- Do nothing if New_Str is empty
-  -- Append New_Item if Position = Source'Last + 1
-  -- Extend Source if Position + New_Str'Length - 1 > Source'Last
-  -- Raises Constraint_Error if Position < Source'First
-  --                         or Position > Source'Last + 1
-  function Overwrite (Source   : String;
-                      Position : Positive;
-                      New_Str  : String) return String is
-    -- Index in New_Str of last overwritting char (others are appended)
-    Lo : Natural;
-    Result : String (1 .. Source'Length);
-  begin
-    if Position < Source'First or else Position > Source'Last + 1 then
-      raise Constraint_Error;
-    end if;
-    if Position + New_Str'Length - 1 > Source'Last then
-      Lo := New_Str'First + Source'Last - Position;
-    else
-      Lo := New_Str'Last;
-    end if;
-    Result := Source;
-    -- Overwrite by Lo chars from Position
-    Result(Position - Source'First + 1
-        .. Position - Source'First + 1 + Lo - New_Str'First) :=
-      New_Str(New_Str'First .. Lo);
-    -- Append others
-    return Result & New_Str(Lo + 1 .. New_Str'Last);
-  end Overwrite;
-
-  -- Replace a slice by a new string
-  -- Delete chars if By is empty (except if High < Low)
-  -- Insert By before Low if High < Low
-  -- Append By if Low = Source'Last + 1 (and High < Low)
-  -- Raises Constraint_Error if Low < Source'First
-  --                         or Low > Source'Last + 1 or High > Source'Last
-  function Replace (Source   : String;
-                    Low      : Positive;
-                    High     : Natural;
-                    By       : String) return String is
-    Start_Tail : Positive;
-  begin
-    if Low < Source'First or else Low > Source'Last + 1
-    or else High > Source'Last then
-      raise Constraint_Error;
-    end if;
-    if Low <= High then
-      -- Replace
-      Start_Tail := High + 1;
-    else
-      -- Insert
-      Start_Tail := Low;
-    end if;
-    return Normalize (Source(Source'First .. Low - 1)
-                    & By
-                    & Source(Start_Tail .. Source'Last));
-  end Replace;
-
-  -- Insert a string before a given position
-  -- Append if Before = Source'Last + 1
-  -- Raises Constraint_Error if Before < Source'First
-  --                         or Before > Source'Last + 1
-  function Insert (Source  : String;
-                   Before  : Positive;
-                   New_Str : String) return String is
-  begin
-    if Before < Source'First or else Before > Source'Last + 1 then
-      raise Constraint_Error;
-    end if;
-    if Before = Source'Last + 1 then
-      return Normalize (Source & New_Str);
-    else
-      return Normalize (Source(Source'First .. Before - 1)
-                      & New_Str
-                      & Source(Before .. Source'Last));
-    end if;
-  end Insert;
-
-  -- Delete some characters
-  -- Do nothing if Through < From
-  -- Raises Constraint_Error if Through >= From and
-  --  From < Source'First or From > Source'Last
-  --  or Through > Source'Last
-  function Delete (Source  : String;
-                   From    : Positive;
-                   Through : Natural) return String is
-  begin
-   if Through < From then
-      return Normalize (Source);
-    end if;
-    if From < Source'First or else From > Source'Last
-    or else Through > Source'Last then
-      raise Constraint_Error;
-    end if;
-    if Source'Last - Source'First = Through - From then
-      return "";
-    end if;
-    if Through = Source'Last then
-      return Normalize (Source(Source'First .. From - 1));
-    else
-      return Normalize (Source(Source'First .. From - 1)
-                      & Source (Through + 1 .. Source'Last));
-    end if;
-  end Delete;
 
 end Str_Util;
 

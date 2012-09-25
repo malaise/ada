@@ -75,9 +75,8 @@ procedure Xwords is
 
   -- Purge trailing spaces
   function Strip (Str : String) return String is
-     Last : constant Natural := Str_Util.Parse_Spaces (Str, False);
   begin
-    return Str(Str'First .. Last);
+    return Str_Util.Strip (Str);
   end Strip;
 
   -- List anagrams of word

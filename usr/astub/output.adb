@@ -112,34 +112,30 @@ package body Output is
                     Comment : in Boolean;
                     Level : in Natural;
                     Indent : in Boolean) is
+    -- Str without leading and trailing spaces
+    Lstr : constant As.U.Asu_Us := As.U.Tus (Str_Util.Strip (Str));
     -- Must we add the "-- "?
     Add_Comment : Boolean := Comment;
     -- Line to put
     Line2Put : As.U.Asu_Us;
-    -- Index where to start / where to cut
-    Index : Natural;
     -- Index of "--" in string
     Comment_Index : Natural;
   begin
 
     -- Check if this is a line feed (even with spaces before), put it
-    Index := Str_Util.Parse_Spaces (Str);
-    if Index /= 0
-    and then Index = Str'Last
-    and then Str(Str'Last) = Common.Line_Feed then
+    if Lstr.Image = Common.Line_Feed then
       Low_Put (Common.Line_Feed);
       return;
     end if;
 
     -- See there is a comment
-    Comment_Index := Str_Util.Locate (Str, "--");
+    Comment_Index := Str_Util.Locate (Lstr.Image, "--");
 
     -- Check if this is a comment to be put as a comment
     -- If yes, put Str at proper level
     if Comment then
       -- Check that comment is the significant start of Str
-      if Comment_Index /= 0
-      and then Comment_Index = Str_Util.Parse_Spaces (Str) then
+      if Comment_Index = 1 then
         -- The significant start of Str is "--"
         -- so Str is already a comment
         Add_Comment := False;

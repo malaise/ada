@@ -186,19 +186,17 @@ package body Command is
       -- Parser iterator
       Iter : Parser.Iterator;
       Tmp : As.U.Asu_Us;
-      Start, Stop : Natural;
     begin
       Iter.Set (Str.Image, Is_Sep'Access);
       loop
         Tmp := As.U.Tus (Iter.Next_Word);
         exit when Tmp.Is_Null;
-          -- Skip leading and tailing spaces
-          Start := Str_Util.Parse_Spaces (Tmp.Image, True);
-          Stop  := Str_Util.Parse_Spaces (Tmp.Image, False);
-          if Start /= 0 then
-            -- Not Full of spaces => Store
-            Commands.Insert (Tmp.Uslice (Start, Stop));
-            end if;
+        -- Skip leading and tailing spaces
+        Tmp := As.U.Tus (Str_Util.Strip (Tmp.Image, Str_Util.Both));
+        if not Tmp.Is_Null then
+          -- Not Full of spaces => Store
+          Commands.Insert (Tmp);
+        end if;
       end loop;
 
     end;
