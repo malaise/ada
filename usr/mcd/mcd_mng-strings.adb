@@ -1,4 +1,4 @@
-with Upper_Str, Lower_Str, Mixed_Str, String_Mng;
+with Upper_Str, Lower_Str, Mixed_Str, Str_Util;
 separate(Mcd_Mng)
 
 package body Strings is

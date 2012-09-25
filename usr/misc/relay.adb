@@ -5,7 +5,7 @@
 with System;
 with Ada.Characters.Latin_1;
 with As.U, Argument, Sys_Calls, Event_Mng, Socket, Channels, Async_Stdin,
-     String_Mng, Basic_Proc;
+     Str_Util, Basic_Proc;
 procedure Relay is
 
   -- Message type
@@ -101,7 +101,7 @@ procedure Relay is
     if Len = 1 and then Str(Last) = Ada.Characters.Latin_1.Lf then
       Message.Data(Message.Data'First) := Ada.Characters.Latin_1.Cr;
     else
-      String_Mng.Copy (Str (Str'First .. Last), Message.Data);
+      Str_Util.Copy (Str (Str'First .. Last), Message.Data);
     end if;
     if Len > 0 then
       Message.Id := My_Host_Id;

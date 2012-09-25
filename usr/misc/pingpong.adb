@@ -5,7 +5,7 @@ with Ada.Exceptions, Ada.Calendar;
 with As.U,
      Argument, Argument_Parser,
      Basic_Proc,
-     Date_Image, Dur_Image, String_Mng, Mixed_Str,
+     Date_Image, Dur_Image, Str_Util, Mixed_Str,
      Socket, Tcp_Util, Ip_Addr, Event_Mng, Timers,
      Hashed_List.Unique;
 procedure Pingpong is
@@ -338,7 +338,7 @@ begin
   declare
     Addr : constant String
          := Arg_Dscr.Get_Option (Argument_Parser.No_Key_Index);
-    Index : constant Natural := String_Mng.Locate (Addr, ":");
+    Index : constant Natural := Str_Util.Locate (Addr, ":");
     Lan : constant Tcp_Util.Remote_Host
         := Ip_Addr.Parse (Addr(1 .. Index - 1));
     Port : constant Tcp_Util.Remote_Port

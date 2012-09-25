@@ -19,8 +19,8 @@ procedure Resolve_Uri (Ctx : in out Ctx_Type;
 begin
   Trace ("URI expanding " & Uri.Image);
   -- See if first '/' (if any) is ":/"
-  Ind1 := String_Mng.Locate (Uri.Image, "/");
-  Ind2 := String_Mng.Locate (Uri.Image, "://");
+  Ind1 := Str_Util.Locate (Uri.Image, "/");
+  Ind2 := Str_Util.Locate (Uri.Image, "://");
   if Ind2 = 0 or else Ind1 /= Ind2 + 1 then
     Content := Build_Full_Name (Uri, Ctx.Flow.Curr_Flow.Name);
     Is_File := True;

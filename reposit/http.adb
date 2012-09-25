@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1, Ada.Calendar;
-with Basic_Proc, Environ, String_Mng, Parser,
+with Basic_Proc, Environ, Str_Util, Parser,
      Event_Mng, Timers, Ip_Addr, Socket, Tcp_Util, Mutex_Manager;
 package body Http is
 
@@ -111,7 +111,7 @@ package body Http is
     end if;
 
     -- See if line break is Lf or Cr+Lf, set New_Line
-    Ind := String_Mng.Locate (Buffer.Image, Lf);
+    Ind := Str_Util.Locate (Buffer.Image, Lf);
     if Ind = 0 then
       Debug ("HTTP: No line feed at all");
       return;
@@ -124,7 +124,7 @@ package body Http is
     end if;
 
     -- Locate end of header: 2 consecutive New_Lines, Isolate header
-    Ind := String_Mng.Locate (Buffer.Image, New_Line.Image & New_Line.Image);
+    Ind := Str_Util.Locate (Buffer.Image, New_Line.Image & New_Line.Image);
     if Ind /= 0 then
       Header := Buffer.Uslice (1, Ind - 1);
       Ind := Ind + 2 * New_Line.Length;
@@ -136,10 +136,10 @@ package body Http is
       Debug ("HTTP: No header delimiter: " & Header.Image);
     end if;
     -- CrLf -> Lf in Header
-    Header := As.U.Tus (String_Mng.Substit (Header.Image, New_Line.Image, Lf));
+    Header := As.U.Tus (Str_Util.Substit (Header.Image, New_Line.Image, Lf));
 
     -- First line of header reply: status
-    Ind := String_Mng.Locate (Header.Image, Lf);
+    Ind := Str_Util.Locate (Header.Image, Lf);
     if Ind = 0 then
       Debug ("HTTP: No header line feed: " & Header.Image);
       return;
@@ -190,7 +190,7 @@ package body Http is
     end if;
 
     -- Locate content-length header
-    Ind := String_Mng.Locate (Header.Image, "Content-Length:");
+    Ind := Str_Util.Locate (Header.Image, "Content-Length:");
     if Ind = 0 then
       Result := (Client_Error, Missing_Length);
       Debug ("HTTP: Invalid reply (no length): " & Header.Image);
@@ -201,7 +201,7 @@ package body Http is
       Word : As.U.Asu_Us;
       Ind1 : Natural;
     begin
-      Ind1 := String_Mng.Locate (Header.Image, Lf, Ind);
+      Ind1 := Str_Util.Locate (Header.Image, Lf, Ind);
       Iter.Set (Header.Slice (Ind, Ind1 - 1), Is_Space'Access);
       -- Skip "Content-Length:", get value
       Word := As.U.Tus (Iter.Next_Word);
@@ -293,11 +293,11 @@ package body Http is
         return (Client_Error, Invalid_Url);
       end if;
       -- Reject URL with "username:password@"
-      if String_Mng.Locate (Addr.Image, "@") /= 0 then
+      if Str_Util.Locate (Addr.Image, "@") /= 0 then
         return (Client_Error, Invalid_Url);
       end if;
 
-      Port_Start := String_Mng.Locate (Addr.Image, ":");
+      Port_Start := Str_Util.Locate (Addr.Image, ":");
       if Port_Start = 0 then
         -- No port, <host> and "http"
         Host := Ip_Addr.Parse (Addr.Image);

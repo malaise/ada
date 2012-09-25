@@ -1,6 +1,6 @@
 with Ada.Calendar;
 with As.U, Basic_Proc, Argument, Argument_Parser;
-with Entities, Output, Targets, Lister, Exit_Code, String_Mng;
+with Entities, Output, Targets, Lister, Exit_Code, Str_Util;
 procedure Als is
   Version : constant String  := "V9.1";
 
@@ -46,7 +46,7 @@ procedure Als is
   -- Usage
   function Key_Img (I : Argument_Parser.The_Keys_Range) return String is
   begin
-    return String_Mng.Procuste (Argument_Parser.Image(Keys(I)), 19);
+    return Str_Util.Procuste (Argument_Parser.Image(Keys(I)), 19);
   end Key_Img;
 
   procedure Usage is

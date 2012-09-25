@@ -3,7 +3,7 @@
 --  newline).
 with As.U.Utils;
 with Regular_Expressions;
-package String_Mng.Regex is
+package Str_Util.Regex is
 
   -- Result of search, from Regular_Expressions
   -- subtype Offset_Range is Integer;
@@ -93,5 +93,5 @@ package String_Mng.Regex is
                       Separator : String;
                       Options   : Options_Rec := Default_Options)
            return As.U.Utils.Asu_Array;
-end String_Mng.Regex;
+end Str_Util.Regex;
 

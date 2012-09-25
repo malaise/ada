@@ -1,5 +1,5 @@
 with Ada.Exceptions, Ada.Unchecked_Deallocation;
-with Environ, Basic_Proc, Rnd, Exception_Messenger, Directory, String_Mng,
+with Environ, Basic_Proc, Rnd, Exception_Messenger, Directory, Str_Util,
      Regular_Expressions;
 package body Xml_Parser is
 
@@ -882,7 +882,7 @@ package body Xml_Parser is
     if Namespace.Is_Null then
       return Name;
     end if;
-    Index := String_Mng.Locate (Name.Image, ":");
+    Index := Str_Util.Locate (Name.Image, ":");
     if Index = 0 then
       -- DefaultNamespace^Name
       return Namespace & "^" & Name;

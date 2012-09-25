@@ -1,4 +1,4 @@
-with As.U, Assertion, String_Mng, Normal, Environ;
+with As.U, Assertion, Str_Util, Normal, Environ;
 with Dictio_Lib;
 package body Fifos is
 
@@ -525,7 +525,7 @@ package body Fifos is
         Sep_Index : Natural;
       begin
         Txt := As.U.Tus (Data);
-        Sep_Index := String_Mng.Locate (Txt.Image, Separator);
+        Sep_Index := Str_Util.Locate (Txt.Image, Separator);
         if Sep_Index <= 1 or else Sep_Index = Txt.Length then
           raise Data_Error;
         end if;

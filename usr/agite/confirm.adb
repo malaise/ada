@@ -1,4 +1,4 @@
-with Con_Io, Afpx, String_Mng;
+with Con_Io, Afpx, Str_Util;
 with Utils, Afpx_Xref;
 function Confirm (Title, Msg : String) return Boolean is
   -- Afpx stuff
@@ -15,9 +15,9 @@ begin
   Insert := False;
   Redisplay := False;
   Afpx.Encode_Field (Afpx_Xref.Confirm.Action, (0, 0),
-        String_Mng.Center (Title, Afpx.Get_Field_Width (2)));
+        Str_Util.Center (Title, Afpx.Get_Field_Width (2)));
   Afpx.Encode_Field (Afpx_Xref.Confirm.Name, (0, 0),
-          String_Mng.Center (Msg, Afpx.Get_Field_Width (2)));
+          Str_Util.Center (Msg, Afpx.Get_Field_Width (2)));
 
   -- Main loop
   loop

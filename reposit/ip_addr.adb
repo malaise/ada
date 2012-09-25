@@ -1,4 +1,4 @@
-with As.U, Int_Image, String_Mng;
+with As.U, Int_Image, Str_Util;
 package body Ip_Addr is
 
   function Byte_Image is new Int_Image (Socket.Byte);
@@ -35,12 +35,12 @@ package body Ip_Addr is
     begin
       Txt := As.U.Tus (Addr);
       -- 3 and only three dots, not contiguous
-      if String_Mng.Locate (Txt.Image, ".", Occurence => 4) /= 0 then
+      if Str_Util.Locate (Txt.Image, ".", Occurence => 4) /= 0 then
         raise Parse_Error;
       end if;
-      Dots(1) := String_Mng.Locate (Txt.Image, ".", Occurence => 1);
-      Dots(2) := String_Mng.Locate (Txt.Image, ".", Occurence => 2);
-      Dots(3) := String_Mng.Locate (Txt.Image, ".", Occurence => 3);
+      Dots(1) := Str_Util.Locate (Txt.Image, ".", Occurence => 1);
+      Dots(2) := Str_Util.Locate (Txt.Image, ".", Occurence => 2);
+      Dots(3) := Str_Util.Locate (Txt.Image, ".", Occurence => 3);
       if Dots(1) = 1 or else Dots(2) = Dots(1)+1 or else
          Dots(3) = Dots(2)+1 or else Dots(3) = Txt.Length
       or else Dots(3) = 0 then
@@ -137,7 +137,7 @@ package body Ip_Addr is
                    Port : out Tcp_Util.Remote_Port) is
     Colon : Natural;
   begin
-    Colon := String_Mng.Locate (Addr_Port, ":");
+    Colon := Str_Util.Locate (Addr_Port, ":");
     if Colon = 0 or else Addr_Port'Length = 1 then
       -- Only ":" or no ':'
       raise Parse_Error;

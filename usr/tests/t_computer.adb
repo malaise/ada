@@ -1,4 +1,4 @@
-with Basic_Proc, Argument, Computer, String_Mng, Environ;
+with Basic_Proc, Argument, Computer, Str_Util, Environ;
 procedure T_Computer is
   procedure Usage is
   begin
@@ -20,7 +20,7 @@ begin
     declare
       Str : constant String := Argument.Get_Parameter(I);
     begin
-      Loc := String_Mng.Locate (Str, "=");
+      Loc := Str_Util.Locate (Str, "=");
       if Loc = 0 or else Loc = 1 or else Loc = Str'Last then
         raise Constraint_Error;
       end if;

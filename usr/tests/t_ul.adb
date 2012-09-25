@@ -1,7 +1,7 @@
 -- Stores ENV variables in a unique list
 -- Modifies and retrieve list entries according to arguments
 --  <name> | <name>=<value> | dump
-with Hashed_List.Unique, Argument, As.B, String_Mng, Sys_Calls;
+with Hashed_List.Unique, Argument, As.B, Str_Util, Sys_Calls;
 procedure T_Ul is
 
   -- A stored variable (name, value)
@@ -38,7 +38,7 @@ procedure T_Ul is
     L : Natural;
     Var : Var_Rec;
   begin
-    L := String_Mng.Locate (Str, "=");
+    L := Str_Util.Locate (Str, "=");
     if L = 0 then
       return False;
     end if;

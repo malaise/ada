@@ -3,7 +3,7 @@
 --  a and b are integers or ${Variable}
 -- Supports parentheses.
 with Ada.Unchecked_Deallocation;
-with Environ, Basic_Proc, String_Mng, Dynamic_List, Parser;
+with Environ, Basic_Proc, Str_Util, Dynamic_List, Parser;
 package body Computer is
 
   Debug_Read : Boolean := False;
@@ -235,13 +235,13 @@ package body Computer is
       end;
     end Ext_Get;
   begin
-    return String_Mng.Eval_Variables (
+    return Str_Util.Eval_Variables (
               Expression, "${", "}", Ext_Get'Access,
               Muliple_Passes   => True,
               No_Check_Stop    => False,
               Skip_Backslashed => True);
   exception
-    when String_Mng.Inv_Delimiter | String_Mng.Delimiter_Mismatch =>
+    when Str_Util.Inv_Delimiter | Str_Util.Delimiter_Mismatch =>
       raise Invalid_Expression;
   end Eval;
 
@@ -258,25 +258,25 @@ package body Computer is
       end if;
     end loop;
     -- Variables must not follow one each other (${var}${var})
-    if String_Mng.Locate (Exp.Image, "}$") /= 0 then
+    if Str_Util.Locate (Exp.Image, "}$") /= 0 then
       raise Invalid_Expression;
     end if;
     -- Isolate variables
-    Exp := As.U.Tus (String_Mng.Substit (Exp.Image, "${", " ${"));
-    Exp := As.U.Tus (String_Mng.Substit (Exp.Image, "}", "} "));
+    Exp := As.U.Tus (Str_Util.Substit (Exp.Image, "${", " ${"));
+    Exp := As.U.Tus (Str_Util.Substit (Exp.Image, "}", "} "));
     -- Expand variables
     Exp := As.U.Tus (Eval (Memory, Exp.Image));
 
     -- +X and -X will be analysed while parsing
-    Exp := As.U.Tus (String_Mng.Substit (Exp.Image, "+", " +"));
-    Exp := As.U.Tus (String_Mng.Substit (Exp.Image, "-", " -"));
-    Exp := As.U.Tus (String_Mng.Substit (Exp.Image, "*", " * "));
-    Exp := As.U.Tus (String_Mng.Substit (Exp.Image, "/", " / "));
-    Exp := As.U.Tus (String_Mng.Substit (Exp.Image, "(", " ( "));
-    Exp := As.U.Tus (String_Mng.Substit (Exp.Image, ")", " ) "));
+    Exp := As.U.Tus (Str_Util.Substit (Exp.Image, "+", " +"));
+    Exp := As.U.Tus (Str_Util.Substit (Exp.Image, "-", " -"));
+    Exp := As.U.Tus (Str_Util.Substit (Exp.Image, "*", " * "));
+    Exp := As.U.Tus (Str_Util.Substit (Exp.Image, "/", " / "));
+    Exp := As.U.Tus (Str_Util.Substit (Exp.Image, "(", " ( "));
+    Exp := As.U.Tus (Str_Util.Substit (Exp.Image, ")", " ) "));
     -- Replace each "  " by " "
-    while String_Mng.Locate (Exp.Image, "  ") /= 0 loop
-      Exp := As.U.Tus (String_Mng.Substit (Exp.Image, "  ", " "));
+    while Str_Util.Locate (Exp.Image, "  ") /= 0 loop
+      Exp := As.U.Tus (Str_Util.Substit (Exp.Image, "  ", " "));
     end loop;
     Trace ("Fixed expression: " & Exp.Image);
     return Exp.Image;

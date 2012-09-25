@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1;
-with As.U, Con_Io, Directory, Dir_Mng, String_Mng, Language;
+with As.U, Con_Io, Directory, Dir_Mng, Str_Util, Language;
 function Select_File (Descriptor   : Afpx.Descriptor_Range;
                       Current_File : String;
                       For_Read     : Boolean;
@@ -91,7 +91,7 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
   begin
     Afpx.Get_Field_Size (File_Fld, Height, Width);
     Afpx.Encode_Field (File_Fld, (0, 0),
-      String_Mng.Procuste (File_Name, Width));
+      Str_Util.Procuste (File_Name, Width));
   end Put_File;
 
   -- Encode in info field
@@ -278,7 +278,7 @@ function Select_File (Descriptor   : Afpx.Descriptor_Range;
       Afpx_Item.Len := Width;
       Afpx_Item.Str (1 .. Width) :=
           Language.String_To_Unicode (
-              String_Mng.Procuste (
+              Str_Util.Procuste (
                   Dir_Item.Name.Image & ' ' & Char, Width) );
       Afpx.Line_List.Insert (Afpx_Item);
       -- A file/dir name cannot be empty, so an empty try will never match
@@ -401,7 +401,7 @@ begin
     Get_Content.Set_Null;
   else
     Get_Content := As.U.Tus (
-      String_Mng.Procuste (Current_File, Get_Get_Width));
+      Str_Util.Procuste (Current_File, Get_Get_Width));
   end if;
   Afpx.Encode_Field (Get_Fld, (0, 0), Get_Content);
 

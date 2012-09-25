@@ -1,5 +1,5 @@
 with Ada.Exceptions;
-with Con_Io, Afpx.List_Manager, String_Mng, Basic_Proc, Normal;
+with Con_Io, Afpx.List_Manager, Str_Util, Basic_Proc, Normal;
 with Utils.X, Config, Details, View, Afpx_Xref;
 package body History is
 
@@ -13,7 +13,7 @@ package body History is
     return Str;
   else
     -- Trunk tail and show " <" at the end
-    return String_Mng.Procuste (Str, Width, Trunc_Head => False);
+    return Str_Util.Procuste (Str, Width, Trunc_Head => False);
   end if;
   end Procuste;
 

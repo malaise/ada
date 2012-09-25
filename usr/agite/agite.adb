@@ -1,5 +1,5 @@
 with As.U, Con_Io, Afpx.List_Manager, Basic_Proc, Integer_Image, Directory,
-     Dir_Mng, Sys_Calls, Argument, Argument_Parser, Socket, String_Mng;
+     Dir_Mng, Sys_Calls, Argument, Argument_Parser, Socket, Str_Util;
 with Utils.X, Git_If, Config, Bookmarks, History, Confirm, Afpx_Xref;
 procedure Agite is
 
@@ -318,7 +318,7 @@ procedure Agite is
     elsif Local_Host.Length + 2 <= Len then
       Local_Host := "(" & Local_Host & ")";
     end if;
-    Local_Host := As.U.Tus (String_Mng.Procuste (
+    Local_Host := As.U.Tus (Str_Util.Procuste (
         Local_Host.Image,
         Len,
         Align_Left => False,

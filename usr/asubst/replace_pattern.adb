@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1, Ada.Exceptions;
-with As.U, Argument, Sys_Calls, String_Mng, Text_Line, Hashed_List.Unique,
+with As.U, Argument, Sys_Calls, Str_Util, Text_Line, Hashed_List.Unique,
      Hexa_Utils, Upper_Str, Lower_Str, Mixed_Str, Command, Int_Image;
 with Search_Pattern, Debug;
 package body Replace_Pattern is
@@ -167,7 +167,7 @@ package body Replace_Pattern is
     In_Command := False;
     loop
       -- Locate an escape sequence, exit when no more
-      Got := String_Mng.Locate_Escape (The_Pattern.Image,
+      Got := Str_Util.Locate_Escape (The_Pattern.Image,
                                        Start, "\acefiKklmnoPpRrstux");
       exit when Got = 0;
       -- Set corresponding code
@@ -517,7 +517,7 @@ package body Replace_Pattern is
     If_Status := None;
     loop
       -- Locate replace code
-      Got := String_Mng.Locate (Result.Image, Subst_Char & "", Start);
+      Got := Str_Util.Locate (Result.Image, Subst_Char & "", Start);
       exit when Got = 0;
       -- Check that this is a match action record
       Try_Subst:

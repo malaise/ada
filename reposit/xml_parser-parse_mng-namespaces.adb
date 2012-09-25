@@ -44,14 +44,14 @@ package body Namespaces is
     end if;
 
     -- If too many ':' => error, if none => ok
-    if String_Mng.Locate (Name.Image, ":", Occurence => Occurence) /= 0 then
+    if Str_Util.Locate (Name.Image, ":", Occurence => Occurence) /= 0 then
       Util.Error (Ctx.Flow, "Invalid qualified name " & Name.Image);
     elsif Elt_Attr = Other then
       return;
     end if;
 
     -- There is only one ":", must not start/end the name
-    Index := String_Mng.Locate (Name.Image, ":");
+    Index := Str_Util.Locate (Name.Image, ":");
     if Index = 1 or else Index = Name.Length then
       Util.Error (Ctx.Flow, "Invalid qualified name " & Name.Image);
     end if;
@@ -67,7 +67,7 @@ package body Namespaces is
                                  Name, Namespace : in As.U.Asu_Us) is
     Ind : Natural;
   begin
-    Ind := String_Mng.Locate (Name.Image, ":");
+    Ind := Str_Util.Locate (Name.Image, ":");
     -- xmlns:xml
     if Name.Image = Xmlns_Prefix & Xml then
       if Namespace.Image /= Xml_Domain then
@@ -179,7 +179,7 @@ package body Namespaces is
     Found : Boolean;
   begin
     -- Don't resolve a declaration of NS
-    Index := String_Mng.Locate (Name.Image, ":");
+    Index := Str_Util.Locate (Name.Image, ":");
     if Name.Image = Xmlns
     or else (Index = Xmlns_Prefix'Length
            and then Name.Slice(1, Xmlns_Prefix'Length) = Xmlns_Prefix) then

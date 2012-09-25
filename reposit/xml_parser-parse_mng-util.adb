@@ -1,4 +1,4 @@
-with Utf_8, Utf_16, Sys_Calls, String_Mng.Regex;
+with Utf_8, Utf_16, Sys_Calls, Str_Util.Regex;
 separate (Xml_Parser.Parse_Mng)
 package body Util is
   -- Autodetect encoding family
@@ -121,7 +121,7 @@ package body Util is
           else
             -- Append message raised by the map parsing (without last '.')
             Error (Flow, "Error while parsing encoding file " & File_Name
-             & ": " & String_Mng.Cut (Msg, 1, Head => False));
+             & ": " & Str_Util.Cut (Msg, 1, Head => False));
           end if;
         end;
     end;
@@ -1033,18 +1033,18 @@ package body Util is
 
   begin
     -- Check presence of "&" and "%" and ";"
-    Ne := String_Mng.Locate (Str, Ent_Other & "");
-    Np := String_Mng.Locate (Str, Ent_Param & "");
+    Ne := Str_Util.Locate (Str, Ent_Other & "");
+    Np := Str_Util.Locate (Str, Ent_Param & "");
     if Ne + Np = 0 then
       return;
     end if;
-    Ns := String_Mng.Locate (Str, ";");
+    Ns := Str_Util.Locate (Str, ";");
     -- Must have one start at beginning and one stop at end
     if Ne + Np /= 1        -- both or not at beginning
     or else Ns /= Len      -- not at end
-    or else String_Mng.Locate (Str, Ent_Other & "", Occurence => 2) /= 0
-    or else String_Mng.Locate (Str, Ent_Param & "", Occurence => 2) /= 0
-    or else String_Mng.Locate (Str, Ent_End   & "", Occurence => 2) /= 0 then
+    or else Str_Util.Locate (Str, Ent_Other & "", Occurence => 2) /= 0
+    or else Str_Util.Locate (Str, Ent_Param & "", Occurence => 2) /= 0
+    or else Str_Util.Locate (Str, Ent_End   & "", Occurence => 2) /= 0 then
       Entity_Error;
     end if;
     Expand_Vars (Ctx, Dtd, Text, Context);
@@ -1112,7 +1112,7 @@ package body Util is
 
     -- Build the "find" pattern
     if Seps = "" then
-      Text := As.U.Tus (String_Mng.Substit (Text.Image, " ", ""));
+      Text := As.U.Tus (Str_Util.Substit (Text.Image, " ", ""));
     else
       -- One char: no problem
       Lseps := As.U.Tus (Seps);
@@ -1124,7 +1124,7 @@ package body Util is
           Lseps.Append ('^');
         end if;
         -- Move "-" at the beginning
-        Index := String_Mng.Locate (Lseps.Image, "-");
+        Index := Str_Util.Locate (Lseps.Image, "-");
         if Index /= 0 then
           Lseps.Delete (Index, 1);
           Lseps := "-" & Lseps;
@@ -1134,7 +1134,7 @@ package body Util is
     end if;
 
     -- Replace " ?([seps]) ?" by \1
-    Text := As.U.Tus (String_Mng.Regex.Substit (Text.Image,
+    Text := As.U.Tus (Str_Util.Regex.Substit (Text.Image,
         " ?(" & Lseps.Image & ") ?", "\1"));
 
   end Remove_Separators;

@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1;
-with As.U, Environ, Many_Strings, String_Mng, Basic_Proc;
+with As.U, Environ, Many_Strings, Str_Util, Basic_Proc;
 package body Cmd is
 
   -- Path to Words
@@ -27,7 +27,7 @@ package body Cmd is
     loop
       -- Replace for est Rec
       List.Read (Line, Res_Mng.Dyn_List.Current);
-      Line := As.U.Tus (String_Mng.Substit (
+      Line := As.U.Tus (Str_Util.Substit (
                 Line.Image, Ada.Characters.Latin_1.Lf & "", " "));
       List.Modify (Line, Moved => Moved);
       exit when not Moved;

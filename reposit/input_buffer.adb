@@ -1,7 +1,7 @@
 -- Bufferize input flow (strings) until separator is found
 -- Report the received string (text between separators)
 with Ada.Unchecked_Deallocation;
-with String_Mng;
+with Str_Util;
 package body Input_Buffer is
 
   -- Initialise the buffer Buf with the sentence delimiter and the notifier
@@ -39,7 +39,7 @@ package body Input_Buffer is
     end if;
     -- Several notifs
     loop
-      Ind := String_Mng.Locate (Buf.Acc.Text.Image, Buf.Acc.Delim.Image);
+      Ind := Str_Util.Locate (Buf.Acc.Text.Image, Buf.Acc.Delim.Image);
       exit when Ind = 0;
       -- Move to end of sentence (end of delim)
       Ind := Ind + Buf.Acc.Delim.Length - 1;

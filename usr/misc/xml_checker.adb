@@ -1,7 +1,7 @@
 -- Check/Format/Canonify a XML file or flow
 with Ada.Exceptions;
 with As.U.Utils, Argument, Argument_Parser, Xml_Parser.Generator, Normal,
-     Basic_Proc, Text_Line, Sys_Calls, Parser, Bloc_Io, String_Mng;
+     Basic_Proc, Text_Line, Sys_Calls, Parser, Bloc_Io, Str_Util;
 procedure Xml_Checker is
   -- Current version
   Version : constant String := "V17.1";
@@ -133,7 +133,7 @@ procedure Xml_Checker is
       else
         Ustr := "<" & Names(I) & ">";
       end if;
-      Ustr := As.U.Tus (" " & String_Mng.Procuste (Ustr.Image, 12) & " ::= ");
+      Ustr := As.U.Tus (" " & Str_Util.Procuste (Ustr.Image, 12) & " ::= ");
       if I /= 8 then
         Ustr := Ustr & Argument_Parser.Image (Keys(I));
       else
@@ -147,7 +147,7 @@ procedure Xml_Checker is
         end;
       end if;
       if Ustr.Length <= Tab'Length then
-        Pl (String_Mng.Procuste (Ustr.Image, Tab'Length));
+        Pl (Str_Util.Procuste (Ustr.Image, Tab'Length));
       else
         Ple (Ustr.Image);
         Pl (Tab);

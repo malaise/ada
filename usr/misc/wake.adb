@@ -1,5 +1,5 @@
 with Ada.Exceptions;
-with As.U.Utils, Basic_Proc, Argument, String_Mng.Regex, Hexa_Utils,
+with As.U.Utils, Basic_Proc, Argument, Str_Util.Regex, Hexa_Utils,
      Socket, Socket_Util, Tcp_Util, Ip_Addr;
 -- Send "Wake On LAN" magic packet: a UDP message containing
 --  6 times 'FF' then 16 times the MAC address (6 bytes each).
@@ -82,7 +82,7 @@ begin
   -- Parse Mac address: 6 fields separated by ':'
   declare
     Mac_Str : constant As.U.Utils.Asu_Array
-            := String_Mng.Regex.Split_Sep (Argument.Get_Parameter, ":");
+            := Str_Util.Regex.Split_Sep (Argument.Get_Parameter, ":");
     Mac_Error :exception;
   begin
     if Mac_Str'Length /= Mac_Addr'Length then

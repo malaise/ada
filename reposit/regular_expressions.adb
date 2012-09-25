@@ -1,6 +1,6 @@
 -- Posix regular expression
 with Ada.Characters.Latin_1;
-with C_Types, Bit_Ops, Utf_8, Flo_Io, String_Mng;
+with C_Types, Bit_Ops, Utf_8, Flo_Io, Str_Util;
 package body Regular_Expressions is
 
   -- C interface --
@@ -298,7 +298,7 @@ package body Regular_Expressions is
     begin
       Len := C_Regerror (Criteria.Error, Criteria.Comp_Addr,
                          Str'Address, Len);
-      return String_Mng.Strip (Str (1 .. Integer(Len) - 1));
+      return Str_Util.Strip (Str (1 .. Integer(Len) - 1));
     end;
   end Error;
 

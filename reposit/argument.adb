@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1;
-with Loc_Arg, String_Mng;
+with Loc_Arg, Str_Util;
 use Loc_Arg;
 package body Argument is
 
@@ -139,7 +139,7 @@ package body Argument is
     if Parameter'Length < Str.Length then
       raise Argument_Too_Long;
     end if;
-    String_Mng.Copy (Str.Image, Parameter);
+    Str_Util.Copy (Str.Image, Parameter);
     Param_Length := Str.Length;
   end Get_Param_And_Pos;
 
@@ -208,7 +208,7 @@ package body Argument is
   begin
     Get_Param_And_Pos (Str, Pos, 0, Any_Arg);
     Len := Last_Delimiter (Str.Image);
-    String_Mng.Copy (Str.Slice (1, Len), Path);
+    Str_Util.Copy (Str.Slice (1, Len), Path);
     Path_Length := Len;
   end Get_Program_Path;
 
@@ -238,7 +238,7 @@ package body Argument is
     Len := Str.Length;
     Start := Last_Delimiter(Str.Image) + 1;
 
-    String_Mng.Copy (Str.Slice (Start, Len), Name);
+    Str_Util.Copy (Str.Slice (Start, Len), Name);
     Name_Length := Len - Start + 1;
   end Get_Program_Name;
 

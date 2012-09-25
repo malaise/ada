@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1;
-with As.U, Sys_Calls, Argument, Hashed_List.Unique, String_Mng, Text_Line,
+with As.U, Sys_Calls, Argument, Hashed_List.Unique, Str_Util, Text_Line,
      Hexa_Utils, Language;
 with Debug;
 package body Search_Pattern is
@@ -133,7 +133,7 @@ package body Search_Pattern is
     -- Regex: Count max number of substrings, i.e. number of '('
     for I in Sub_String_Range loop
       -- Locate succcessive occurences of "("
-      exit when String_Mng.Locate (Crit, "(", Occurence => I) = 0;
+      exit when Str_Util.Locate (Crit, "(", Occurence => I) = 0;
       Upat.Nb_Substr := I;
     end loop;
     -- Regex compiled patterns cannot be copied and Substrs are used later
@@ -253,7 +253,7 @@ package body Search_Pattern is
     begin
       return    The_Pattern.Element (Start) /= Start_Char
       and then (The_Pattern.Element (Stop) /= Stop_Char
-        or else String_Mng.Is_Backslashed (The_Pattern.Image, Stop));
+        or else Str_Util.Is_Backslashed (The_Pattern.Image, Stop));
     end Check_Iterative;
 
     -- Indexes in Pattern
@@ -281,7 +281,7 @@ package body Search_Pattern is
     Stop_Index := 1;
     loop
       -- Locate sequence
-      Stop_Index := String_Mng.Locate_Escape (The_Pattern.Image,
+      Stop_Index := Str_Util.Locate_Escape (The_Pattern.Image,
                                Stop_Index,
                                "\nstxABCDEFGHIJKLMNOPQRSTUVWXYZ");
       exit when Stop_Index = 0;
@@ -326,7 +326,7 @@ package body Search_Pattern is
       Start_Index := 1;
       Prev_Delim := False;
       loop
-        Stop_Index := String_Mng.Locate (The_Pattern.Image,
+        Stop_Index := Str_Util.Locate (The_Pattern.Image,
                                          Line_Feed, Start_Index);
         if Stop_Index = Start_Index then
           -- A Delim
@@ -366,7 +366,7 @@ package body Search_Pattern is
               --  (or if it is "\$")
               Needs_Stop := Next_Delim
                   and then (Slice(Slice'Last) /= Stop_Char
-                      or else String_Mng.Is_Backslashed (Slice, Slice'Last) );
+                      or else Str_Util.Is_Backslashed (Slice, Slice'Last) );
               -- Add this regex with start/stop strings
               Add (Start_String (Needs_Start) & Slice
                  & Stop_String (Needs_Stop),
@@ -671,7 +671,7 @@ package body Search_Pattern is
                                   Nmatch, Match);
       else
         -- Not a regex, locate string
-        Nmatch := String_Mng.Locate (Str, Upat_Access.Find_Str.Image, Start);
+        Nmatch := Str_Util.Locate (Str, Upat_Access.Find_Str.Image, Start);
         if Nmatch /= 0 then
           -- Fill matching info as if from a regex
           Match(1) := (

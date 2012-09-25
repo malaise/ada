@@ -1,4 +1,4 @@
-with As.U, As.B, Environ, Text_Line, String_Mng.Regex, Ada_Words;
+with As.U, As.B, Environ, Text_Line, Str_Util.Regex, Ada_Words;
 with Common, Files;
 package body Output is
 
@@ -14,7 +14,7 @@ package body Output is
   Min_Length : constant := 50;
   Max_Length : constant := 132;
   Length : Positive := Def_Length;
-  -- Mini lenght for String_Mng.Truncate
+  -- Mini lenght for Str_Util.Truncate
   Mini_Len : constant := 40;
 
   -- get envir variables if first call
@@ -76,7 +76,7 @@ package body Output is
     -- Prepend previous tail and replace any sequence of 3 or more
     -- line_feeds by only 2
     Ustr := As.U.Tus (
-      String_Mng.Regex.Substit (Prev_Tail.Image & Str, "\n{3,}",
+      Str_Util.Regex.Substit (Prev_Tail.Image & Str, "\n{3,}",
       Line_Feed_Char & Line_Feed_Char));
     Prev_Tail.Set_Null;
     if Ustr.Is_Null then
@@ -123,7 +123,7 @@ package body Output is
   begin
 
     -- Check if this is a line feed (even with spaces before), put it
-    Index := String_Mng.Parse_Spaces (Str);
+    Index := Str_Util.Parse_Spaces (Str);
     if Index /= 0
     and then Index = Str'Last
     and then Str(Str'Last) = Common.Line_Feed then
@@ -132,14 +132,14 @@ package body Output is
     end if;
 
     -- See there is a comment
-    Comment_Index := String_Mng.Locate (Str, "--");
+    Comment_Index := Str_Util.Locate (Str, "--");
 
     -- Check if this is a comment to be put as a comment
     -- If yes, put Str at proper level
     if Comment then
       -- Check that comment is the significant start of Str
       if Comment_Index /= 0
-      and then Comment_Index = String_Mng.Parse_Spaces (Str) then
+      and then Comment_Index = Str_Util.Parse_Spaces (Str) then
         -- The significant start of Str is "--"
         -- so Str is already a comment
         Add_Comment := False;
@@ -168,20 +168,21 @@ package body Output is
     end if;
 
     -- Not a comment: split line if too long
-    Index := String_Mng.Truncate (Line2Put.Image,
+    declare
+      Str : constant String
+          := Str_Util.Truncate (Line2Put.Image,
                                   Length, Mini_Len, Length,
                                   Separates'Access);
-
-    -- Put the first chunk 1 .. Index
-    Low_Put (Line2Put.Slice (1, Index));
-
-    if Index /= Line2Put.Length then
-      -- Line2Put is split. First chunk is Put_Line
-      Low_Put (Common.Line_Feed);
-      -- Format the remaining: Index + 1 .. Last
-      Format (Line2Put.Slice (Index + 1, Line2Put.Length),
-              False, Level, True);
-    end if;
+    begin
+      Low_Put (Str);
+      if Str'Length /= Line2Put.Length then
+        -- Line2Put is split. First chunk is Put_Line
+        Low_Put (Common.Line_Feed);
+        -- Format the remaining: Length + 1 .. Last
+        Format (Line2Put.Slice (Str'length + 1, Line2Put.Length),
+                False, Level, True);
+      end if;
+    end;
 
   end Format;
 
@@ -199,7 +200,7 @@ package body Output is
     Lfi := 0;
     loop
       Start := Lfi + 1;
-      Lfi := String_Mng.Locate (Str, Common.Line_Feed, Start);
+      Lfi := Str_Util.Locate (Str, Common.Line_Feed, Start);
       if Lfi = 0 or else Lfi = Str'Last then
         -- No Line_Feed or ends by Line_Feed => Last chunk, process up to end
         Format (Str (Start .. Str'Last), Comment, Level, Indent);

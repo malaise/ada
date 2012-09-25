@@ -1,7 +1,7 @@
 -- More powerfull search and substitution in strings,
 --  based on regex.
 with Hexa_Utils, Upper_Str, Lower_Str, Mixed_Str;
-package body String_Mng.Regex is
+package body Str_Util.Regex is
 
   -- Internal: compile regex
   procedure Compile (Compiled : in out Regular_Expressions.Compiled_Pattern;
@@ -457,5 +457,5 @@ package body String_Mng.Regex is
     return Result.To_Array;
   end Split_Sep;
 
-end String_Mng.Regex;
+end Str_Util.Regex;
 

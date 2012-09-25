@@ -1,5 +1,5 @@
 with As.U, My_Math, Queues, Basic_Proc, Lower_Str, Argument, Bool_Io,
-     Arbitrary.Fractions, Async_Stdin, String_Mng;
+     Arbitrary.Fractions, Async_Stdin, Str_Util;
 with Debug, Input_Dispatcher, Inte_Io, Io_Flow;
 package body Mcd_Parser is
   use type As.U.Asu_Us;
@@ -326,7 +326,7 @@ package body Mcd_Parser is
     -- Parse arbitrary or fraction: @num or @num:denom
     if Txt.Length >= 2 and then Txt.Element(1) = '@' then
       declare
-        I : constant Natural := String_Mng.Locate (Txt.Image, ":");
+        I : constant Natural := Str_Util.Locate (Txt.Image, ":");
         N, D : Arbitrary.Number;
       begin
         Instr_Stack.Push (Stack, Item_Chrs);

@@ -1,6 +1,6 @@
 -- Allows navigation (lookup chars) within a string
 
-package body String_Mng.Navigator is
+package body Str_Util.Navigator is
 
   -- Constructor, re-inits position to start of string
   procedure Set (Navig : in out Navigator_Type; Str : in String) is
@@ -100,5 +100,5 @@ package body String_Mng.Navigator is
     return Navig.Str.Image;
   end Image;
 
-end String_Mng.Navigator;
+end Str_Util.Navigator;
 

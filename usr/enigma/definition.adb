@@ -1,6 +1,6 @@
 -- Parses command line and returns enigma definition
 with Ada.Exceptions;
-with Argument, Xml_Parser, Environ, String_Mng, Parser, Integer_Image;
+with Argument, Xml_Parser, Environ, Str_Util, Parser, Integer_Image;
 with Io_Manager;
 package body Definition is
 
@@ -291,7 +291,7 @@ package body Definition is
           Error ("Missing rotor definition, expecting "
               & Integer_Image (Def.Nb_Rotors));
         end if;
-        Arob := String_Mng.Locate (Str, "@");
+        Arob := Str_Util.Locate (Str, "@");
         if Arob /= Str'Last - 1 then
           Error ("Invalid rotors definition");
         end if;
@@ -334,7 +334,7 @@ package body Definition is
       Error ("Empty reflector definition");
     end if;
     -- Parse and set offset (optional)
-    Arob := String_Mng.Locate (Str, "@");
+    Arob := Str_Util.Locate (Str, "@");
     if Arob = 0 then
       Arob := Str'Last + 1;
       Def.Reflector.Position := 0;

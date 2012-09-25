@@ -1,6 +1,6 @@
 with Ada.Exceptions;
 with Basic_Proc, Sys_Calls, Normal, As.U, Regular_Expressions,
-     String_Mng, Command, Many_Strings, Argument, Parser,
+     Str_Util, Command, Many_Strings, Argument, Parser,
      Hashed_List.Unique, Unbounded_Arrays, Dynamic_List, Integer_Image;
 procedure T_Str_Error is
 
@@ -84,13 +84,13 @@ procedure T_Str_Error is
       -- A definition
       Basic_Proc.Put_Line_Output (
         Normal(Def.Code, 3) & " "
-        & String_Mng.Procuste (Def.Name.Image, Max_Len)
+        & Str_Util.Procuste (Def.Name.Image, Max_Len)
         & " -> "
         & Sys_Calls.Str_Error(Def.Code) );
     elsif Show_Alias then
       -- An alias to dump
       Basic_Proc.Put_Line_Output ("    "
-         & String_Mng.Procuste (Def.Name.Image, Max_Len)
+         & Str_Util.Procuste (Def.Name.Image, Max_Len)
          & " = "
          & Def.Alias_Of.Image);
     else

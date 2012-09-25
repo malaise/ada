@@ -1,5 +1,5 @@
 -- Euro <-> Franc conversion
-with As.U, Argument, Upper_Char, Get_Float, My_Math, Euro_Franc, String_Mng,
+with As.U, Argument, Upper_Char, Get_Float, My_Math, Euro_Franc, Str_Util,
      Basic_Proc;
 use type My_Math.Real;
 
@@ -58,7 +58,7 @@ begin
     end if;
 
     -- If value is float, must have 2 digits for cents
-    Dot := String_Mng.Locate (The_Argument.Image, ".", 1);
+    Dot := Str_Util.Locate (The_Argument.Image, ".", 1);
     if Dot /= 0 and then Dot + 2 /= The_Argument.Length then
       raise Constraint_Error;
     end if;

@@ -1,7 +1,7 @@
 -- Allows navigation (lookup chars) within and possibly outside (around)
 --  a string
 with As.U;
-package String_Mng.Navigator is
+package Str_Util.Navigator is
 
   -- Returned when out of string
   Default_No_Char : constant Character := Ada.Characters.Latin_1.Nul;
@@ -62,5 +62,5 @@ private
     No_Char : Character := Default_No_Char;
   end record;
 
-end String_Mng.Navigator;
+end Str_Util.Navigator;
 

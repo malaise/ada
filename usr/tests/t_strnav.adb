@@ -1,10 +1,10 @@
 with Basic_Proc, Normal;
-with String_Mng.Navigator;
+with Str_Util.Navigator;
 procedure T_Strnav is
   Str : constant String := "ABCDEFG1234567890HIJKLMNOP";
-  Nav : String_Mng.Navigator.Navigator_Type;
+  Nav : Str_Util.Navigator.Navigator_Type;
 
-  procedure Dump (N : in String_Mng.Navigator.Navigator_Type) is
+  procedure Dump (N : in Str_Util.Navigator.Navigator_Type) is
   begin
     for I in -10 .. 10 loop
       Basic_Proc.Put_Line_Output ("Lookup " & Normal (I, 3)

@@ -1,4 +1,4 @@
-with String_Mng, Normal, Con_Io;
+with Str_Util, Normal, Con_Io;
 with Unit_Format;
 package body Screen is
   type Modes_List is (Default, Confirm, Ack);
@@ -101,7 +101,7 @@ package body Screen is
   procedure Encode_File_Name (File_Name : in String) is
   begin
     Afpx.Encode_Field(Account_Name_Fld, (0, 0),
-         String_Mng.Procuste(File_Name,
+         Str_Util.Procuste(File_Name,
                              Afpx.Get_Field_Width(Account_Name_Fld),
                              Align_Left => False));
   end Encode_File_Name;

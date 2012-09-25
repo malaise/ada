@@ -1,4 +1,4 @@
-with Normal, Round_At, String_Mng, As.U;
+with Normal, Round_At, Str_Util, As.U;
 package body Normalization is
 
   Warning_Char : constant Character := '!';
@@ -34,7 +34,7 @@ package body Normalization is
                           Len   : Positive;
                           Exp   : Positive) return String is
     Str : constant String := R'Img;
-    Ie : constant Positive := String_Mng.Locate (Str, "E");
+    Ie : constant Positive := Str_Util.Locate (Str, "E");
     Str_Len : constant Positive := Str'Length;
     Exp_Len : Positive;
     Exp_Str : String (1 .. Exp + 1) := (others => '0');
@@ -73,7 +73,7 @@ package body Normalization is
     Rea := Round_At (Rea, -(Flo_Len - 3));
     declare
       Image : constant String := Rea'Img;
-      Iie : constant Positive := String_Mng.Locate (Image, "E");
+      Iie : constant Positive := Str_Util.Locate (Image, "E");
     begin
       if Iie - 1 >= Flo_Len then
         Flo_Str := Image(1 .. Flo_Len);
@@ -163,7 +163,7 @@ package body Normalization is
   begin
     -- Compute exp of 10 and store all digits (skip E-xx)
     -- Nb of bytes for int part is Exp + 1 (10 ** Exp)
-    Ie := String_Mng.Locate (Digit_Str.Image, "E");
+    Ie := Str_Util.Locate (Digit_Str.Image, "E");
     Exp := Natural'Value (Digit_Str.Slice (Ie + 1, Digit_Str.Length));
     -- Digit_Str contains "-x.yzt"
     Digit_Str.Delete (Ie, Digit_Str.Length);
@@ -271,7 +271,7 @@ package body Normalization is
   -- Local: transform a delta image into a Digit_Str (float image)
   -- Ex: "-xyz.tu" into "-x.yztuE+2"
   procedure Make_Digit (Str : in out As.U.Asu_Us) is
-    Idot : constant Positive := String_Mng.Locate (Str.Image, ".");
+    Idot : constant Positive := Str_Util.Locate (Str.Image, ".");
     Exp_Image : constant String := Integer'Image(Idot - 3);
     Exp_Str : String (1 .. Exp_Image'Length) := Exp_Image;
   begin

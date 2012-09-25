@@ -1,4 +1,4 @@
-with Argument, Argument_Parser, Regular_Expressions, Integer_Image, String_Mng,
+with Argument, Argument_Parser, Regular_Expressions, Integer_Image, Str_Util,
      Text_Line, Basic_Proc, As.U;
 
 procedure T_Regexp is
@@ -133,7 +133,7 @@ begin
   for I in Start .. Argument.Get_Nbre_Arg loop
     declare
       Str : constant String
-          := String_Mng.Substit (Argument.Get_Parameter (Occurence => I),
+          := Str_Util.Substit (Argument.Get_Parameter (Occurence => I),
                                  "\n",
                                  Text_Line.Line_Feed_Str);
     begin

@@ -1,4 +1,4 @@
-with As.U, Dynamic_List, String_Mng, Basic_Proc, Parser;
+with As.U, Dynamic_List, Str_Util, Basic_Proc, Parser;
 with Debug;
 package body Tree_Mng is
 
@@ -122,8 +122,8 @@ package body Tree_Mng is
     Dscr : Sourcer.Src_Dscr;
     function Withes  return Boolean is
     begin
-      return String_Mng.Locate (Dscr.Witheds.Image, Crit) /= 0
-      or else String_Mng.Locate (Dscr.Witheds_Parents.Image, Crit) /= 0;
+      return Str_Util.Locate (Dscr.Witheds.Image, Crit) /= 0
+      or else Str_Util.Locate (Dscr.Witheds_Parents.Image, Crit) /= 0;
     end Withes;
 
   begin

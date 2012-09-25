@@ -1,4 +1,4 @@
-with Afpx, Con_Io, Normal, String_Mng, Afpx_Xref;
+with Afpx, Con_Io, Normal, Str_Util, Afpx_Xref;
 separate (Renardeau)
 
 package body X is
@@ -154,8 +154,8 @@ package body X is
     function Get_Value (Field : in Field_Range; Row : in Con_Io.Row_Range)
              return Natural is
     begin
-      return Natural'Value (String_Mng.Strip (Decode_Field (Field, Row),
-                                              String_Mng.Both));
+      return Natural'Value (Str_Util.Strip (Decode_Field (Field, Row),
+                                              Str_Util.Both));
     end Get_Value;
 
     procedure Put_Base (No : Natural) is

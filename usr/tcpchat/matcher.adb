@@ -1,5 +1,5 @@
 with As.U.Utils;
-with Regular_Expressions, String_Mng.Regex, Any_Def, Integer_Image, Trilean;
+with Regular_Expressions, Str_Util.Regex, Any_Def, Integer_Image, Trilean;
 with Variables, Debug, Error;
 package body Matcher is
 
@@ -36,7 +36,7 @@ package body Matcher is
           Result := Variables.Compute (Str);
         else
           Result := Variables.Expand (Str, Variables.Local_Env);
-          if String_Mng.Locate (Result.Image, "=") /= 0 then
+          if Str_Util.Locate (Result.Image, "=") /= 0 then
             Error ("Invalid value in assignment " & Result.Image);
             raise Match_Error;
           end if;
@@ -135,7 +135,7 @@ package body Matcher is
         exit when Node.Assign(I).Value.Kind = Any_Def.None_Kind;
         Expanding := Node.Assign(I).Value.Str;
         Expanded := Variables.Expand (Expanding, Variables.Local_Env);
-        if String_Mng.Locate (Expanded.Image, "=") /= 0 then
+        if Str_Util.Locate (Expanded.Image, "=") /= 0 then
           Error ("Invalid value in assignment " & Expanded.Image);
           raise Match_Error;
         end if;
@@ -157,7 +157,7 @@ package body Matcher is
                           Statement : in As.U.Asu_Us) is
     Index : Natural;
   begin
-    Index := String_Mng.Locate (Statement.Image, "=");
+    Index := Str_Util.Locate (Statement.Image, "=");
     if Index <= 1 or else Index = Statement.Length then
       Error ("Invalid assignment " & Statement.Image);
       raise Match_Error;
@@ -237,7 +237,7 @@ package body Matcher is
     declare
       -- Split into assignments
       Statements : constant As.U.Utils.Asu_Array
-                 := String_Mng.Regex.Split_Sep (Assign.Image, "[\n\t ]+");
+                 := Str_Util.Regex.Split_Sep (Assign.Image, "[\n\t ]+");
     begin
       Debug.Log ("Found " & Integer_Image (Statements'Length)
                & " assignments");

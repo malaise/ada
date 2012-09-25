@@ -2,7 +2,7 @@ with Ada.Text_Io, Ada.Direct_Io;
 with As.U;
 with Con_Io, Normal, Argument,
      Mixed_Str, Basic_Proc, Xml_Parser,
-     Ada_Words, Parser, String_Mng, Computer, Int_Image,
+     Ada_Words, Parser, Str_Util, Computer, Int_Image,
      Language;
 with Afpx_Typ;
 -- Read Afpx.xml, check it
@@ -167,7 +167,7 @@ procedure Afpx_Bld is
     if Name = ""
     or else Name (Name'First) = '.'
     or else Name (Name'Last) = '.'
-    or else String_Mng.Locate (Name, "..") /= 0 then
+    or else Str_Util.Locate (Name, "..") /= 0 then
       File_Error (Node, "Invalid variable name " & Name);
     end if;
     -- Strings between '.' must be valid identifiers

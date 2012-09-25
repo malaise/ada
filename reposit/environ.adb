@@ -1,5 +1,5 @@
 with Unchecked_Deallocation;
-with Sys_Calls, Lower_Str, String_Mng;
+with Sys_Calls, Lower_Str, Str_Util;
 package body Environ is
 
   -- Don't allocate strings in stack (they may be too long)
@@ -41,7 +41,7 @@ package body Environ is
 
     Sys_Calls.Getenv (Name, Env_Set, Env_Trunc, Ptr.all, Env_Len);
     if Env_Set and then not Env_Trunc and then Env_Len /= 0 then
-      String_Mng.Copy (Ptr.all(1 .. Env_Len), Result);
+      Str_Util.Copy (Ptr.all(1 .. Env_Len), Result);
       Length := Env_Len;
     end if;
 

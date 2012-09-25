@@ -10,7 +10,7 @@ procedure Set_Criteria (Criteria : in String;
   -- Split a template by ',' and call on each slice
   procedure Split_Template (Crit : in String) is
     Mstr : constant Many_Strings.Many_String
-         := String_Mng.Split (Crit, ',');
+         := Str_Util.Split (Crit, ',');
   begin
     for I in 1 .. Many_Strings.Nb (Mstr) loop
       Call (Many_Strings.Nth (Mstr, I), False);

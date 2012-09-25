@@ -1,7 +1,7 @@
 -- Image of a duration (without leading space)
 -- Round at Nb_Digits decimals
 -- If Plus and Dur>=0 then put a '+' sign before result
-with As.U, My_Math, Round_At, String_Mng;
+with As.U, My_Math, Round_At, Str_Util;
 function Dur_Image (Dur : Duration; Nb_Digits : Natural; Plus : Boolean)
                     return String is
    D : Duration;
@@ -13,7 +13,7 @@ begin
 
   -- Locate Dot
   Str := As.U.Tus (D'Img);
-  Dot := String_Mng.Locate (Str.Image, ".");
+  Dot := Str_Util.Locate (Str.Image, ".");
   if Dot = 0 then
     -- No dot!?
     return Str.Image;

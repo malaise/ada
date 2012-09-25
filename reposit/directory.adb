@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1;
-with C_Types, String_Mng;
+with C_Types, Str_Util;
 package body Directory is
   use System;
 
@@ -312,14 +312,14 @@ package body Directory is
 
     -- "//" -> "/" recursively
     loop
-      Start := String_Mng.Locate (Res.Image, Sep_Char & Sep_Char);
+      Start := Str_Util.Locate (Res.Image, Sep_Char & Sep_Char);
       exit when Start = 0;
       Res.Delete (Start, Start);
     end loop;
 
     -- "/./" -> "/"
     loop
-      Start := String_Mng.Locate (Res.Image, Sep_Char & '.' & Sep_Char);
+      Start := Str_Util.Locate (Res.Image, Sep_Char & '.' & Sep_Char);
       exit when Start = 0;
       Res.Delete (Start, Start + 1);
     end loop;
@@ -333,10 +333,10 @@ package body Directory is
     Start := Init;
     loop
       -- Locate next separator
-      First := String_Mng.Locate (Res.Image, Sep_Str, Start + 1);
+      First := Str_Util.Locate (Res.Image, Sep_Str, Start + 1);
       exit when First = 0;
       -- Locate next separator
-      Second := String_Mng.Locate (Res.Image, Sep_Str, First + 1);
+      Second := Str_Util.Locate (Res.Image, Sep_Str, First + 1);
       exit when Second = 0;
       if Res.Slice (First + 1, Second - 1) = ".."
       and then Res.Slice (Start, First - 1) /= ".." then
@@ -352,7 +352,7 @@ package body Directory is
 
     -- "^/.." -> ""
     loop
-      if String_Mng.Locate (Res.Image, Sep_Char & "..") = 1 then
+      if Str_Util.Locate (Res.Image, Sep_Char & "..") = 1 then
         Res.Delete (Start, 3);
       else
         exit;
@@ -385,7 +385,7 @@ package body Directory is
   function Dirname (File_Name : String) return String is
     I : Natural;
   begin
-    I := String_Mng.Locate (File_Name, Sep, Forward => False);
+    I := Str_Util.Locate (File_Name, Sep, Forward => False);
     if I = 0 then
       -- No / in file name => dir name is empty
       return "";
@@ -400,7 +400,7 @@ package body Directory is
     I : Natural;
     Last : constant Natural := File_Name'Last;
   begin
-    I := String_Mng.Locate (File_Name, Sep, Forward => False);
+    I := Str_Util.Locate (File_Name, Sep, Forward => False);
     if I = 0 then
       -- No / in file name => no dir name
       return File_Name;
@@ -420,7 +420,7 @@ package body Directory is
     I : Natural;
     File : constant String := Basename (File_Name);
   begin
-    I := String_Mng.Locate (File, Dot);
+    I := Str_Util.Locate (File, Dot);
     if I = 0 then
       -- No '.', return full file name
       return File;
@@ -434,7 +434,7 @@ package body Directory is
     I : Natural;
     File : constant String := Basename (File_Name);
   begin
-    I := String_Mng.Locate (File, Dot);
+    I := Str_Util.Locate (File, Dot);
     if I = 0 then
       -- No '.', return no suffix
       return "";

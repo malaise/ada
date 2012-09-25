@@ -1,4 +1,4 @@
-with As.U.Utils, Argument, Basic_Proc, Parser, String_Mng;
+with As.U.Utils, Argument, Basic_Proc, Parser, Str_Util;
 package body Command is
 
   -- Pexec options definitions
@@ -193,8 +193,8 @@ package body Command is
         Tmp := As.U.Tus (Iter.Next_Word);
         exit when Tmp.Is_Null;
           -- Skip leading and tailing spaces
-          Start := String_Mng.Parse_Spaces (Tmp.Image, True);
-          Stop  := String_Mng.Parse_Spaces (Tmp.Image, False);
+          Start := Str_Util.Parse_Spaces (Tmp.Image, True);
+          Stop  := Str_Util.Parse_Spaces (Tmp.Image, False);
           if Start /= 0 then
             -- Not Full of spaces => Store
             Commands.Insert (Tmp.Uslice (Start, Stop));

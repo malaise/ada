@@ -10,7 +10,7 @@
 --   "Ah que " and containing something
 --   Reply is the remaining text in Mixed_Str
 --  * Exit after sending 3 messages
-with Basic_Proc, Event_Mng, String_Mng, Mixed_Str, As.U, Async_Stdin,
+with Basic_Proc, Event_Mng, Str_Util, Mixed_Str, As.U, Async_Stdin,
      Argument, Argument_Parser;
 with Autobus;
 procedure T_Autobus is
@@ -78,7 +78,7 @@ procedure T_Autobus is
       -- No reply
       return;
     end if;
-    Index := String_Mng.Locate (Message, " ", Occurence => 2);
+    Index := Str_Util.Locate (Message, " ", Occurence => 2);
     if Index = 0  or else Index = Message'Last then
       Basic_Proc.Put_Line_Output (" -> Rejecting");
       return;

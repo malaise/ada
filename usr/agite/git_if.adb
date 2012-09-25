@@ -1,5 +1,5 @@
 with Ada.Exceptions, Ada.Characters.Latin_1;
-with Environ, Basic_Proc, Many_Strings, Command, Directory, Dir_Mng, String_Mng;
+with Environ, Basic_Proc, Many_Strings, Command, Directory, Dir_Mng, Str_Util;
 with Utils;
 package body Git_If is
 
@@ -65,9 +65,9 @@ package body Git_If is
     end if;
     Out_Flow_3.Str.Delete (1, 12);
     -- Parse number
-    D1 := String_Mng.Locate (Out_Flow_3.Str.Image, ".", Occurence => 1);
-    D2 := String_Mng.Locate (Out_Flow_3.Str.Image, ".", Occurence => 2);
-    D3 := String_Mng.Locate (Out_Flow_3.Str.Image, ".", Occurence => 3);
+    D1 := Str_Util.Locate (Out_Flow_3.Str.Image, ".", Occurence => 1);
+    D2 := Str_Util.Locate (Out_Flow_3.Str.Image, ".", Occurence => 2);
+    D3 := Str_Util.Locate (Out_Flow_3.Str.Image, ".", Occurence => 3);
     if D1 <= 1 or else D2 <= D1 + 1
     or else D2 = Out_Flow_3.Str.Length then
       -- Incorrect format
@@ -238,7 +238,7 @@ package body Git_If is
           -- This is a file, and in 2nd or 3rd stage or untracked
           -- Remove "XY "
           Str.Delete (1, 3);
-          Redirect := String_Mng.Locate (Str.Image, "-> ");
+          Redirect := Str_Util.Locate (Str.Image, "-> ");
           if Redirect /= 0 then
             -- File is a copy or a move ("<old_name> -> <new_name>")
             -- Remove "<old_name> -> "

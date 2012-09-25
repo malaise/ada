@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1;
-with As.B, Argument, Basic_Proc, Con_Io, Afpx, String_Mng, Language;
+with As.B, Argument, Basic_Proc, Con_Io, Afpx, Str_Util, Language;
 with Conv, Lat_Lon, String_Util, Great_Circle, Afpx_Xref;
 
 procedure Gc is
@@ -139,9 +139,9 @@ procedure Gc is
     if Sexa_Mode then
       -- Replace Ndd°mm'ss"/Eddd°mm'ss" by Ndd.mm.ss/Eddd.mm.ss
       -- "°" has already been replaced by " " in Afpx.Decode_Field
-      Point_Txt.Set (String_Mng.Substit (Point_Txt.Image, "°", "."));
-      Point_Txt.Set (String_Mng.Substit (Point_Txt.Image, "'", "."));
-      Point_Txt.Set (String_Mng.Substit (Point_Txt.Image, """", ""));
+      Point_Txt.Set (Str_Util.Substit (Point_Txt.Image, "°", "."));
+      Point_Txt.Set (Str_Util.Substit (Point_Txt.Image, "'", "."));
+      Point_Txt.Set (Str_Util.Substit (Point_Txt.Image, """", ""));
       if Debug then
         Basic_Proc.Put_Line_Error ("Parsed point: " & Point_Txt.Image);
       end if;
@@ -149,8 +149,8 @@ procedure Gc is
     else
       -- Replace Ndd.ij kl°/Eddd.ij kl° by Ndd.ijkl/Eddd.ijkl
       -- "°" has already been replaced by " " in Afpx.Decode_Field
-      Point_Txt.Set (String_Mng.Substit (Point_Txt.Image, "°", ""));
-      Point_Txt.Set (String_Mng.Substit (Point_Txt.Image, " ", ""));
+      Point_Txt.Set (Str_Util.Substit (Point_Txt.Image, "°", ""));
+      Point_Txt.Set (Str_Util.Substit (Point_Txt.Image, " ", ""));
       if Debug then
         Basic_Proc.Put_Line_Error ("Parsed point: " & Point_Txt.Image);
       end if;

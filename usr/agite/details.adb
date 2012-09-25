@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1, Ada.Exceptions;
-with As.U, Con_Io, Afpx.List_Manager, String_Mng, Directory, Basic_Proc;
+with As.U, Con_Io, Afpx.List_Manager, Str_Util, Directory, Basic_Proc;
 with Utils.X, View, History, Config, Afpx_Xref;
 package body Details is
 
@@ -7,7 +7,7 @@ package body Details is
   procedure Set (Line : in out Afpx.Line_Rec;
                  From : in Git_If.Commit_Entry_Rec) is
   begin
-    Afpx.Encode_Line (Line, String_Mng.Procuste (
+    Afpx.Encode_Line (Line, Str_Util.Procuste (
           From.Status & " " & From.File.Image,
           List_Width,
           Trunc_Head => False));
@@ -66,7 +66,7 @@ package body Details is
       for I in 1 .. Comment_Height loop
         begin
           Afpx.Encode_Field (Afpx_Xref.Details.Comment, (I - 1, 0),
-               String_Mng.Procuste (Comment(I).Image,
+               Str_Util.Procuste (Comment(I).Image,
                                     Comment_Width,
                                     Trunc_Head => False));
         exception

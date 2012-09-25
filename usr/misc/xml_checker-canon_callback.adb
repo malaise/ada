@@ -107,7 +107,7 @@ begin
           Attrs(I).Prefix := Xmlns;
           Done := True;
         else
-          Col := String_Mng.Locate (Node_Attrs(I).Name.Image, ":");
+          Col := Str_Util.Locate (Node_Attrs(I).Name.Image, ":");
           if Col = 0 then
             -- Pure attribute
             Attrs(I).Suffix := Node_Attrs(I).Name;

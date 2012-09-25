@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1, Ada.Exceptions;
-with As.U.Utils, My_Io, String_Mng.Regex, Many_Strings,
+with As.U.Utils, My_Io, Str_Util.Regex, Many_Strings,
      Upper_Str, Lower_Str, Mixed_Str, Upper_Char, Environ, Argument;
 procedure T_String is
 
@@ -22,7 +22,7 @@ procedure T_String is
   Str1 : String(1 .. 500);
   Str2 : String(1 .. 500);
 
-  Search_Result : String_Mng.Regex.Search_Result;
+  Search_Result : Str_Util.Regex.Search_Result;
 
   procedure Nat_Get (V : out Natural; Allow_Zero : in Boolean) is
     Str : String (1 .. 80);
@@ -109,9 +109,9 @@ begin
     My_Io.Put_Line ("Replace from 5 to 7 with e");
     declare
       N1 : constant String := "1u5abcdE";
-      N2 : constant String := String_Mng.Replace (N1, 4, 7, Str(402 .. 403));
-      N3 : constant String := String_Mng.Replace (N2, 1, 3, Str(301 .. 304));
-      N4 : constant String := String_Mng.Replace (N3, 5, 7, Str(305 .. 305));
+      N2 : constant String := Str_Util.Replace (N1, 4, 7, Str(402 .. 403));
+      N3 : constant String := Str_Util.Replace (N2, 1, 3, Str(301 .. 304));
+      N4 : constant String := Str_Util.Replace (N3, 5, 7, Str(305 .. 305));
     begin
       My_Io.Put_Line ("Image " & N4);
     end;
@@ -121,10 +121,10 @@ begin
     My_Io.Put_Line ("Overwrite from 8 with 8");
     declare
       N1 : constant String := "abcde";
-      N2 : constant String := String_Mng.Overwrite (N1, 4, Str(204 .. 205));
-      N3 : constant String := String_Mng.Overwrite (N2, 6, Str(206 .. 207));
-      N4 : constant String := String_Mng.Overwrite (N3, 1, Str(201 .. 203));
-      N5 : constant String := String_Mng.Overwrite (N4, 8, Str(208 .. 208));
+      N2 : constant String := Str_Util.Overwrite (N1, 4, Str(204 .. 205));
+      N3 : constant String := Str_Util.Overwrite (N2, 6, Str(206 .. 207));
+      N4 : constant String := Str_Util.Overwrite (N3, 1, Str(201 .. 203));
+      N5 : constant String := Str_Util.Overwrite (N4, 8, Str(208 .. 208));
     begin
       My_Io.Put_Line ("Image " & N5);
     end;
@@ -133,9 +133,9 @@ begin
     My_Io.Put_Line ("Replace from 12 to 11 with y, z");
     declare
       N1 : constant String := "12345678";
-      N2 : constant String := String_Mng.Replace (N1, 1, 0, Str(200 .. 200));
-      N3 : constant String := String_Mng.Replace (N2, 3, 1, Str(301 .. 302));
-      N4 : constant String := String_Mng.Replace (N3, 12, 11, Str(325 .. 326));
+      N2 : constant String := Str_Util.Replace (N1, 1, 0, Str(200 .. 200));
+      N3 : constant String := Str_Util.Replace (N2, 3, 1, Str(301 .. 302));
+      N4 : constant String := Str_Util.Replace (N3, 12, 11, Str(325 .. 326));
     begin
       My_Io.Put_Line ("Image " & N4);
     end;
@@ -148,14 +148,14 @@ begin
     My_Io.Put_Line ("Overwrite from 14 with D, E, F");
     declare
       N1 : constant String := "01ab2345678yz";
-      N2 : constant String := String_Mng.Delete (N1, 3, 4);
-      N3 : constant String := String_Mng.Insert (N2, 4, Str(301 .. 304));
-      N4 : constant String := String_Mng.Replace (N3, 4, 5, Str(402 .. 404));
-      N5 : constant String := String_Mng.Delete (N4, 4, 8);
-      N6 : constant String := String_Mng.Cut (N5, 2, False);
-      N7 : constant String := String_Mng.Insert (N6, 10, Str(209 .. 209));
-      N8 : constant String := String_Mng.Replace (N7, 11, 10, Str(401 .. 403));
-      N9 : constant String := String_Mng.Overwrite (N8, 14, Str(404 .. 406));
+      N2 : constant String := Str_Util.Delete (N1, 3, 4);
+      N3 : constant String := Str_Util.Insert (N2, 4, Str(301 .. 304));
+      N4 : constant String := Str_Util.Replace (N3, 4, 5, Str(402 .. 404));
+      N5 : constant String := Str_Util.Delete (N4, 4, 8);
+      N6 : constant String := Str_Util.Cut (N5, 2, False);
+      N7 : constant String := Str_Util.Insert (N6, 10, Str(209 .. 209));
+      N8 : constant String := Str_Util.Replace (N7, 11, 10, Str(401 .. 403));
+      N9 : constant String := Str_Util.Overwrite (N8, 14, Str(404 .. 406));
     begin
       My_Io.Put_Line ("Image " & N9);
     end;
@@ -230,7 +230,7 @@ begin
             My_Io.Put_Line ("Parse spaces");
             My_Io.Put ("From_Head (YN)? "); Bool_Get(Bool1);
             My_Io.Put_Line ("Spaces parsed at: " &
-             Integer'Image (String_Mng.Parse_Spaces (
+             Integer'Image (Str_Util.Parse_Spaces (
                Str(1 .. Str_Len), From_Head => Bool1)) );
 
           when  3 =>
@@ -243,7 +243,7 @@ begin
 
             My_Io.Put_Line (
                 "Procuste: |"
-              & String_Mng.Procuste(Str(1 .. Str_Len),
+              & Str_Util.Procuste(Str(1 .. Str_Len),
                        Len => Pos1,
                        Align_Left => Bool1,
                        Gap => Char1,
@@ -258,7 +258,7 @@ begin
             My_Io.Put ("Forward (YN)? "); Bool_Get(Bool1);
             My_Io.Put ("Occurence (Pos)? "); Nat_Get(Pos1, False);
             My_Io.Put_Line ("Occurence of fragment located at: " &
-             Integer'Image (String_Mng.Locate (
+             Integer'Image (Str_Util.Locate (
                Str(1 .. Str_Len),
                Fragment => Str1(1 .. Nat1),
                From_Index => Nat2,
@@ -274,7 +274,7 @@ begin
                        My_Io.Get(Char1); My_Io.Skip_Line;
             if Char1 = 'n' then Char1 := Ada.Characters.Latin_1.Nul; end if;
             My_Io.Put_Line ("Remaining string: |"
-              & String_Mng.Remove (Str(1 .. Str_Len),
+              & Str_Util.Remove (Str(1 .. Str_Len),
                  At_Index => Pos1,
                  Nb_Char => Nat1,
                  Shift_Left => Bool1,
@@ -286,7 +286,7 @@ begin
             My_Io.Put ("Nb_Char (Nat)? "); Nat_Get(Nat1, True);
             My_Io.Put ("To_Right (YN)? "); Bool_Get(Bool1);
             My_Io.Put_Line ("Extracted slice: |"
-              & String_Mng.Slice (Str(1 .. Str_Len),
+              & Str_Util.Slice (Str(1 .. Str_Len),
                  At_Index => Pos1,
                  Nb_Char => Nat1,
                  To_Right => Bool1) & "|" );
@@ -296,7 +296,7 @@ begin
             My_Io.Put ("Nb_Char (Nat)? "); Nat_Get(Nat1, True);
             My_Io.Put ("Head (YN)? "); Bool_Get(Bool1);
             My_Io.Put_Line ("Cut string: |"
-              & String_Mng.Cut (Str(1 .. Str_Len),
+              & Str_Util.Cut (Str(1 .. Str_Len),
                  Nb_Char => Nat1,
                  Head => Bool1) & "|" );
 
@@ -305,20 +305,20 @@ begin
             My_Io.Put ("Nb_Char (Nat)? "); Nat_Get(Nat1, True);
             My_Io.Put ("Head (YN)? "); Bool_Get(Bool1);
             My_Io.Put_Line ("Extracted: |"
-              & String_Mng.Extract (Str(1 .. Str_Len),
+              & Str_Util.Extract (Str(1 .. Str_Len),
                  Nb_Char => Nat1,
                  Head => Bool1) & "|" );
 
           when  9 =>
             My_Io.Put_Line ("Swap");
             My_Io.Put_Line ("Swapped: |"
-              & String_Mng.Swap (Str(1 .. Str_Len)) & "|" );
+              & Str_Util.Swap (Str(1 .. Str_Len)) & "|" );
 
           when 10 =>
             My_Io.Put_Line ("Unique (from head or tail)");
             My_Io.Put ("From head (YN)? "); Bool_Get(Bool1);
             My_Io.Put_Line ("Uniqued: |"
-              & String_Mng.Unique (Str(1 .. Str_Len),
+              & Str_Util.Unique (Str(1 .. Str_Len),
                                    From_Head => Bool1) & "|" );
           when 11 =>
             My_Io.Put_Line ("Env variable substitution");
@@ -328,7 +328,7 @@ begin
             My_Io.Put ("No check of stop (YN)? "); Bool_Get(Bool2);
             My_Io.Put ("Skip backslashed (YN)? "); Bool_Get(Bool3);
             My_Io.Put_Line ("Substitued: |"
-              & String_Mng.Eval_Variables (
+              & Str_Util.Eval_Variables (
                         Str(1 .. Str_Len),
                         Start_Delimiter => Str1(1 .. Nat1),
                         Stop_Delimiter => Str2(1 .. Nat2),
@@ -343,7 +343,7 @@ begin
             My_Io.Put ("Escaped (Esc char first) (Str)? ");
                        My_Io.Get_Line (Str1, Nat1);
             My_Io.Put_Line ("Located at: "
-              & Natural'Image (String_Mng.Locate_Escape (
+              & Natural'Image (Str_Util.Locate_Escape (
                         Str(1 .. Str_Len),
                         From_Index => Pos1,
                         Escape => Str1(1 .. Nat1))));
@@ -352,20 +352,20 @@ begin
             My_Io.Put ("Length (Pos)? "); Nat_Get(Pos1, False);
             My_Io.Put ("Mini (Pos)? ");   Nat_Get(Pos2, False);
             My_Io.Put ("Maxi (Pos)? ");   Nat_Get(Pos3, False);
-            My_Io.Put_Line ("Truncated at: "
-              & Natural'Image (String_Mng.Truncate (
+            My_Io.Put_Line ("Truncate result: "
+              & Str_Util.Truncate (
                         Str(1 .. Str_Len),
                         Length => Pos1,
                         Mini => Pos2,
                         Maxi => Pos3,
-                        Separating => String_Mng.Is_Separator'Access)));
+                        Separating => Str_Util.Is_Separator'Access));
           when 14 =>
             My_Io.Put_Line ("14 Copy");
             My_Io.Put ("Val (Str)? "); My_Io.Get_Line (Str1, Nat1);
             declare
               Lstr : String (1 .. Str_Len) := Str (1 .. Str_Len);
             begin
-              String_Mng.Copy (Val => Str1(1 .. Nat1),
+              Str_Util.Copy (Val => Str1(1 .. Nat1),
                                To => Lstr);
               My_Io.Put_Line ("Copy result: " & Lstr);
             end;
@@ -375,7 +375,7 @@ begin
             My_Io.Put ("By (Str)? "); My_Io.Get_Line (Str2, Nat2);
             My_Io.Put ("Skip_Backslashed (YN)? "); Bool_Get(Bool1);
             My_Io.Put_Line ("Replaced string: "
-              & String_Mng.Substit (Str(1 .. Str_Len),
+              & Str_Util.Substit (Str(1 .. Str_Len),
                                     What => Str1(1 .. Nat1),
                                     By => Str2(1 .. Nat2),
                                     Skip_Backslashed => Bool1) );
@@ -386,7 +386,7 @@ begin
               Lstr : constant String (2 .. Str_Len+1) := Str(1 .. Str_Len);
             begin
               My_Io.Put_Line ("Normalized string: "
-                & String_Mng.Normalize (Lstr));
+                & Str_Util.Normalize (Lstr));
             end;
           when 17 =>
             My_Io.Put_Line ("17 Regex locate");
@@ -395,7 +395,7 @@ begin
             My_Io.Put ("To_Index (Nat)? "); Nat_Get (Nat3, True);
             My_Io.Put ("Forward (YN)? "); Bool_Get(Bool1);
             My_Io.Put ("Occurence (Pos)? "); Nat_Get (Pos1, False);
-            Search_Result := String_Mng.Regex.Locate (Str(1 .. Str_Len),
+            Search_Result := Str_Util.Regex.Locate (Str(1 .. Str_Len),
                     Criteria => Str1(1 .. Nat1),
                     From_Index => Nat2,
                     To_Index => Nat3,
@@ -412,7 +412,7 @@ begin
             My_Io.Put ("To_Index (Nat)? "); Nat_Get (Nat4, True);
             My_Io.Put ("Nb_Cycles (Nat)? "); Nat_Get (Nat5, True);
             My_Io.Put_Line ("Replaced string: "
-              & String_Mng.Regex.Substit (Str(1 .. Str_Len),
+              & Str_Util.Regex.Substit (Str(1 .. Str_Len),
                     Criteria => Str1(1 .. Nat1),
                     By => Str2(1 .. Nat2),
                     From_Index => Nat3,
@@ -423,7 +423,7 @@ begin
             My_Io.Put ("Separator (Char)? "); My_Io.Get(Char1); My_Io.Skip_Line;
             declare
               Lstr : constant Many_Strings.Many_String
-                   := String_Mng.Split (Str(1 .. Str_Len), Char1);
+                   := Str_Util.Split (Str(1 .. Str_Len), Char1);
             begin
               My_Io.Put_Line ("Split into: ");
               for I in 1 .. Many_Strings.Nb (Lstr) loop
@@ -436,7 +436,7 @@ begin
             My_Io.Put ("Max_Slices (Pos)? "); Nat_Get (Pos1, False);
             declare
               Lstr : constant As.U.Utils.Asu_Array
-                   := String_Mng.Regex.Split (Str(1 .. Str_Len),
+                   := Str_Util.Regex.Split (Str(1 .. Str_Len),
                                               Str1(1 .. Nat1), Pos1);
             begin
               My_Io.Put_Line ("Split into: ");
@@ -450,14 +450,14 @@ begin
             My_Io.Put ("Gap (Char)? "); My_Io.Get(Char1); My_Io.Skip_Line;
             My_Io.Put_Line (
                 "Center: |"
-              & String_Mng.Center(Str(1 .. Str_Len), Len => Pos1, Gap => Char1)
+              & Str_Util.Center(Str(1 .. Str_Len), Len => Pos1, Gap => Char1)
               & "|" );
           when 22 =>
             My_Io.Put_Line ("22 Regex split on sep");
             My_Io.Put ("Separator (Str)? "); My_Io.Get_Line (Str1, Nat1);
             declare
               Slices : constant As.U.Utils.Asu_Array
-                     := String_Mng.Regex.Split_Sep (Str(1 .. Str_Len),
+                     := Str_Util.Regex.Split_Sep (Str(1 .. Str_Len),
                                                     Str1(1 .. Nat1));
             begin
               for I in 1 .. Slices'Length loop
@@ -470,10 +470,10 @@ begin
         end case;
       exception
         when Error:Constraint_Error
-             | String_Mng.Inv_Delimiter
-             | String_Mng.Delimiter_Mismatch
-             | String_Mng.Regex.Invalid_Regular_Expression
-             | String_Mng.Regex.Invalid_Index =>
+             | Str_Util.Inv_Delimiter
+             | Str_Util.Delimiter_Mismatch
+             | Str_Util.Regex.Invalid_Regular_Expression
+             | Str_Util.Regex.Invalid_Index =>
           My_Io.Put_Line ("Raised " & Ada.Exceptions.Exception_Name(Error)
                                     & "!");
 

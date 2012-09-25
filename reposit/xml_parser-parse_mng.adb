@@ -1250,7 +1250,7 @@ package body Parse_Mng  is
           -- doc is standalone, element has content and is not internal
           Tmp_Text := Text;
           Util.Normalize (Tmp_Text);
-          if String_Mng.Locate (Tmp_Text.Image, Util.Space & "") /= 0 then
+          if Str_Util.Locate (Tmp_Text.Image, Util.Space & "") /= 0 then
             Util.Error (Ctx.Flow, "element with content, defined in external"
                & " markup declaration has spaces in standalone document");
           end if;
@@ -1263,7 +1263,7 @@ package body Parse_Mng  is
 
             -- Expansion stopped but this is a Cdata, locate the end of CDATA
             Start_Index := Index;
-            Index := String_Mng.Locate (Text.Image, Util.Cdata_End,
+            Index := Str_Util.Locate (Text.Image, Util.Cdata_End,
                        Index + Util.Cdata_Start'Length);
             if Index = 0 then
               Util.Error (Ctx.Flow, "Unterminated CDATA section");
@@ -1398,7 +1398,7 @@ package body Parse_Mng  is
           -- Normalize and remove leading and trailing spaces
           Util.Normalize (Tmp_Text);
           Tmp_Text := As.U.Tus (
-              String_Mng.Strip (Tmp_Text.Image, String_Mng.Both));
+              Str_Util.Strip (Tmp_Text.Image, Str_Util.Both));
         end if;
         Text.Append (Tmp_Text);
         if Moved then
@@ -1651,7 +1651,7 @@ package body Parse_Mng  is
       -- Try to preserve spaces if current element has this tuning
       -- Tuning set by Dtd (if default is preserve and no value in Xml)
       --  or by attribute value in Xml. In both cases it in Tree
-      My_Children.Preserve := String_Mng.Locate (
+      My_Children.Preserve := Str_Util.Locate (
               Tree_Mng.Get_Tuning (Ctx.Elements.all),
                                    Tree_Mng.Xml_Space_Preserve) /= 0;
       -- If Dtd reset (not Expand), still apply space preservation

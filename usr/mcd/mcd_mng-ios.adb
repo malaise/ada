@@ -1,5 +1,5 @@
 with Ada.Text_Io;
-with Normal, Bool_Io, Mixed_Str, String_Mng;
+with Normal, Bool_Io, Mixed_Str, Str_Util;
 with Inte_Io, Io_Flow;
 separate (Mcd_Mng)
 
@@ -128,7 +128,7 @@ package body Ios is
       raise Invalid_Argument;
     end if;
     -- Locate :
-    Sep := String_Mng.Locate (S.Val_Text.Image, ":");
+    Sep := Str_Util.Locate (S.Val_Text.Image, ":");
     if Sep <= 2 then
       raise Invalid_Argument;
     end if;

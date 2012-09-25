@@ -2,7 +2,7 @@
 -- Update other field number and references to them
 with Ada.Exceptions;
 with Basic_Proc, Argument, Argument_Parser, Environ,
-     As.U, Integer_Image, Unbounded_Arrays, String_Mng, Text_Line,
+     As.U, Integer_Image, Unbounded_Arrays, Str_Util, Text_Line,
      Afpx_Typ, Xml_Parser.Generator;
 procedure Afpx_Rnb is
     -- Options
@@ -160,13 +160,13 @@ procedure Afpx_Rnb is
     I := 0;
     Updated := False;
     loop
-      I := String_Mng.Locate (Text.Image, "${Field_", I);
+      I := Str_Util.Locate (Text.Image, "${Field_", I);
       exit when I = 0;
-      if not String_Mng.Is_Backslashed (Text.Image, I) then
+      if not Str_Util.Is_Backslashed (Text.Image, I) then
         -- I and J are indexes of Field Num in Text
         I := I + 8;
         begin
-          J := String_Mng.Locate (Text.Image, ".", I) - 1;
+          J := Str_Util.Locate (Text.Image, ".", I) - 1;
           Old_Num := Afpx_Typ.Absolute_Field_Range'Value (
                  Text.Slice (I, J));
           New_Num := Field_Map.Element (Positive (Old_Num));

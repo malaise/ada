@@ -126,7 +126,7 @@ package body Dtd is
     begin
       Index := 1;
       loop
-        Index := String_Mng.Locate (Res.Image, "(", Index + 1);
+        Index := Str_Util.Locate (Res.Image, "(", Index + 1);
         exit when Index = 0;
         C := Str(Index - 1);
         if C /= '(' and then C /= '|' and then C /= ',' then
@@ -137,7 +137,7 @@ package body Dtd is
       end loop;
     end;
     -- Remove any ','
-    Res := As.U.Tus (String_Mng.Substit (Res.Image, ",", ""));
+    Res := As.U.Tus (Str_Util.Substit (Res.Image, ",", ""));
     -- Now compile to check it
     if not Regular_Expressions.Check (Res.Image) then
       Trace ("Dtd regex does node compile >" & Res.Image & "<");
@@ -224,7 +224,7 @@ package body Dtd is
         elsif Info.List.Slice (1, 8) = "#PCDATA|" then
           -- Remove heading #PCDATA
           Info.List := As.U.Tus (
-              String_Mng.Cut (Info.List.Image, 8));
+              Str_Util.Cut (Info.List.Image, 8));
           Util.Remove_Separators (Info.List, "?*+()|,");
           -- Check that everything between "|" are names
           if Info.List.Element (Info.List.Length) = '|'
@@ -241,7 +241,7 @@ package body Dtd is
           end if;
           -- Replace '|' by '#' and prepend and append a '#'
           Info.List := As.U.Tus (
-            String_Mng.Substit (Info_Sep & Info.List.Image & Info_Sep,
+            Str_Util.Substit (Info_Sep & Info.List.Image & Info_Sep,
                                 "|", "" & Info_Sep));
           -- Check unicity of entries
           Iter.Set (Info.List.Image, Is_Sep'Access);
@@ -252,7 +252,7 @@ package body Dtd is
             begin
               exit when Val = "";
               -- The val shall appear only once
-              if String_Mng.Locate (Info.List.Image,
+              if Str_Util.Locate (Info.List.Image,
                                     Info_Sep & Val & Info_Sep,
                                     Occurence => 2) /= 0 then
                 Util.Error (Ctx.Flow, "Mixed value "
@@ -397,7 +397,7 @@ package body Dtd is
       -- Check that this attribute is not already defined, otherwise discard
       --  any new definition
       -- Look for #attribute##
-      Attr_Already_Set := String_Mng.Locate (Info.List.Image,
+      Attr_Already_Set := Str_Util.Locate (Info.List.Image,
              Info_Sep & Att_Name.Image & Info_Sep & Info_Sep) /= 0;
       -- Check supported att types
       Util.Skip_Separators (Ctx.Flow);
@@ -466,7 +466,7 @@ package body Dtd is
         end if;
         -- Replace '|' by '#' and prepend and append a '#'
         Enum := As.U.Tus (
-          String_Mng.Substit (Info_Sep & Enum.Image & Info_Sep,
+          Str_Util.Substit (Info_Sep & Enum.Image & Info_Sep,
                               "|", "" & Info_Sep));
         -- Check unicity of entries
         Iter.Set (Enum.Image, Is_Sep'Access);
@@ -477,7 +477,7 @@ package body Dtd is
           begin
             exit when Val = "";
             -- The val from Istart to Istop shall appear only once
-            if String_Mng.Locate (Enum.Image,
+            if Str_Util.Locate (Enum.Image,
                                   Info_Sep & Val & Info_Sep,
                                   Occurence => 2) /= 0 then
               Util.Error (Ctx.Flow, "Enumerated value "
@@ -553,13 +553,13 @@ package body Dtd is
       and then (Def_Char = 'D' or else Def_Char = 'F') then
         -- Enum and (default or fixed), check default is in enum
         --  and set the default in first pos
-        if (String_Mng.Locate (Enum.Image,
+        if (Str_Util.Locate (Enum.Image,
               Info_Sep & Def_Val.Image & Info_Sep) = 0) then
           Util.Error (Ctx.Flow, "Default or fixed value "
                     & Def_Val.Image & " not in Enum");
         end if;
         -- Remove #default and insert #default in head
-        Enum := As.U.Tus (String_Mng.Substit (
+        Enum := As.U.Tus (Str_Util.Substit (
                  Enum.Image,
                  Info_Sep & Def_Val.Image,
                  ""));
@@ -609,14 +609,14 @@ package body Dtd is
         end if;
         -- Verify Notation is not used twice (##N) for this element
         if Typ_Char = 'N'
-         and then String_Mng.Locate (Info.List.Image,
+         and then Str_Util.Locate (Info.List.Image,
                                      Info_Sep & Info_Sep & "N") /= 0 then
           declare
             Stop : constant Positive
-                 := String_Mng.Locate (Info.List.Image,
+                 := Str_Util.Locate (Info.List.Image,
                                        Info_Sep & Info_Sep & "N");
             Start : constant Positive
-                  := String_Mng.Locate (Info.List.Image, Info_Sep & "",
+                  := Str_Util.Locate (Info.List.Image, Info_Sep & "",
                                         From_Index => Stop - 1,
                                         Forward => False);
           begin
@@ -956,7 +956,7 @@ package body Dtd is
         -- Add to the number of expected "]]>"
         Index := 0;
         loop
-          Index := String_Mng.Locate (Word.Image,
+          Index := Str_Util.Locate (Word.Image,
             Util.Start & Util.Directive & '[', Index + 1);
           exit when Index = 0;
           Nb_Open := Nb_Open + 1;
@@ -1367,7 +1367,7 @@ package body Dtd is
           -- Names are delimited by Info_Sep or any valid character in the
           -- definition of children
           if C = Info_Sep
-          or else String_Mng.Locate (Info_Sep & "?*+()|,", "" & C) /= 0 then
+          or else Str_Util.Locate (Info_Sep & "?*+()|,", "" & C) /= 0 then
             if In_Name then
               -- End of name, completed
               -- Push this child
@@ -1414,7 +1414,7 @@ package body Dtd is
 
   -- Replace "##" by "," then suppress "#"
   function Strip_Sep (Us : in As.U.Asu_Us) return String is
-    use String_Mng;
+    use Str_Util;
   begin
     return Substit (Substit (Us.Image, Info_Sep & Info_Sep, ","),
                     "" & Info_Sep, "");
@@ -1496,7 +1496,7 @@ package body Dtd is
           begin
             exit when Child = "";
             -- Child must appear in dtd
-            if String_Mng.Locate (Info.List.Image,
+            if Str_Util.Locate (Info.List.Image,
                                   Info_Sep & Child & Info_Sep) = 0 then
               Util.Error (Ctx.Flow, "According to dtd, element "
                         & Name.Image
@@ -1651,7 +1651,7 @@ package body Dtd is
       begin
         exit when Attr = "";
         -- Attribute must appear in list of attributes from dtd
-        if String_Mng.Locate (Att_Names.Image,
+        if Str_Util.Locate (Att_Names.Image,
                               Info_Sep & Attr & Info_Sep) = 0 then
           Util.Error (Ctx.Flow, "According to dtd, element " & Name.Image
                     & " cannot have attribute " & Attr,
@@ -1683,7 +1683,7 @@ package body Dtd is
           Adtd.Info_List.Read (Attinfo);
         end if;
         -- Does this attribute appear in xml
-        Att_Set := String_Mng.Locate (Attributes.Image,
+        Att_Set := Str_Util.Locate (Attributes.Image,
                    Info_Sep & Attr & Info_Sep) /= 0;
         if Att_Set then
           -- Get the Xml Attribute
@@ -1702,7 +1702,7 @@ package body Dtd is
           declare
             -- Get the first value from dtd list, from 2 to second sep
             Sep : constant Positive
-                := String_Mng.Locate (Attinfo.List.Image,
+                := Str_Util.Locate (Attinfo.List.Image,
                                       Info_Sep & "", 2);
             Dtd_Val : constant String := Attinfo.List.Slice (2, Sep - 1 );
           begin
@@ -1714,7 +1714,7 @@ package body Dtd is
         elsif (Td(1) = 'E' or else Td (1) = 'N') and then Att_Set then
           -- Not fixed Enum or notation in dtd with value set in xml:
           -- #<val># must be in dtd list
-          if String_Mng.Locate (Attinfo.List.Image,
+          if Str_Util.Locate (Attinfo.List.Image,
                  Info_Sep  & Xml_Val.Image & Info_Sep) = 0 then
             Util.Error (Ctx.Flow, "According to dtd, Enum attribute " & Attr
                       & " has incorrect value "
@@ -1725,7 +1725,7 @@ package body Dtd is
           --  and set Xml_Val
           if Ctx.Standalone then
             -- This default must be defined in internal Dtd
-            if String_Mng.Locate (Adtd.Internals.Image, Info_Sep
+            if Str_Util.Locate (Adtd.Internals.Image, Info_Sep
                      & Name.Image & Info_Sep & Info_Sep & Attr) = 0 then
               Util.Error (Ctx.Flow, "Attribute " & Attr
                      & " needs default value in standalone document");
@@ -1735,7 +1735,7 @@ package body Dtd is
           declare
             -- Get the first value from dtd list, from 2 to second sep
             Sep : constant Positive
-                := String_Mng.Locate (Attinfo.List.Image,
+                := Str_Util.Locate (Attinfo.List.Image,
                                       Info_Sep & "", 2);
             Dtd_Val : constant String
                     := Attinfo.List.Slice (2, Sep - 1 );
@@ -1962,7 +1962,7 @@ package body Dtd is
         Namespaces.Get (Ctx, Cell.Name, False, Namespace);
         -- Check uniqueness of expanded name
         Expanded := Expand_Name (Cell.Name, Namespace);
-        if String_Mng.Locate (
+        if Str_Util.Locate (
                 Expanded_List.Image,
                 Info_Sep & Expanded.Image & Info_Sep) /= 0 then
           Util.Error (Ctx.Flow, "Duplicated expanded attribute name "
@@ -2036,7 +2036,7 @@ package body Dtd is
       return;
     end if;
     -- The element is defined in internal DTD if there is #@Elt# in Internals
-    Yes := String_Mng.Locate (Adtd.Internals.Image,
+    Yes := Str_Util.Locate (Adtd.Internals.Image,
           Info_Sep & "@" & Elt.Image & Info_Sep) /= 0;
   end Can_Have_Spaces;
 
@@ -2068,7 +2068,7 @@ package body Dtd is
       Str : constant String := Info.List.Image;
       Index : Natural;
     begin
-      Index := String_Mng.Locate (Str, Info_Sep & Attr.Image
+      Index := Str_Util.Locate (Str, Info_Sep & Attr.Image
                                      & Info_Sep & Info_Sep);
       if Index = 0 then
         -- Not found
@@ -2084,7 +2084,7 @@ package body Dtd is
   -- Has this element the xml:spaces=preserve
   function Has_Preserve (Ctx : Ctx_Type; Elt  : As.U.Asu_Us) return Boolean is
   begin
-    return String_Mng.Locate (Ctx.Preserved.Image,
+    return Str_Util.Locate (Ctx.Preserved.Image,
                               Info_Sep & Elt.Image & Info_Sep) /= 0;
   end Has_Preserve;
 

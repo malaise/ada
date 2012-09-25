@@ -1,5 +1,5 @@
 with As.U;
-package body String_Mng is
+package body Str_Util is
 
   -- Parces spaces and tabs (latin_1.Ht) from the head/tail of a string
   -- Returns the position of the first/last character or 0 if
@@ -626,7 +626,7 @@ package body String_Mng is
                      Mini, Maxi : Positive;
                      Separating : access
     function (Char : Character) return Boolean := Is_Separator'Access)
-  return Natural is
+  return String is
     Strlen : constant Natural := Str'Length;
     -- Corresponding index in Str
     function Indof (I : Positive) return Positive is
@@ -639,36 +639,36 @@ package body String_Mng is
     end if;
     -- Handle trivial cases
     if Strlen = 0 then
-      return 0;
+      return "";
     elsif Strlen <= Length then
-      return Str'Last;
+      return Normalize (Str);
     end if;
     -- Else try to find a separator before Length, up to Mini
     for I in reverse Mini .. Length loop
       if Separating (Str (Indof (I))) then
-        return Indof (I);
+        return Normalize (Str (Str'First .. Indof (I)));
       end if;
     end loop;
     -- Else try to find a separator after  Length, up to Maxi
     for I in Length + 1 .. Maxi loop
       if Separating (Str (Indof (I))) then
-        return Indof (I);
+        return Normalize (Str (Str'First .. Indof (I)));
       end if;
     end loop;
     -- Else try to find a separator before Mini,   up to 1
     for I in reverse 1 .. Mini - 1 loop
       if Separating (Str (Indof (I))) then
-        return Indof (I);
+        return Normalize (Str (Str'First .. Indof (I)));
       end if;
     end loop;
     -- Else try to find a separator after  Maxi,   up to Str'Length
     for I in Maxi + 1 .. Strlen loop
       if Separating (Str (Indof (I))) then
-        return Indof (I);
+        return Normalize (Str (Str'First .. Indof (I)));
       end if;
     end loop;
     -- No separator found
-    return Str'Last;
+    return Normalize (Str);
   end Truncate;
 
   -- Copy the string Val at the beginning of the string To
@@ -842,5 +842,5 @@ package body String_Mng is
     end if;
   end Delete;
 
-end String_Mng;
+end Str_Util;
 

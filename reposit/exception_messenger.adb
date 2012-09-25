@@ -1,4 +1,4 @@
-with Protected_Pool, String_Mng;
+with Protected_Pool, Str_Util;
 package body Exception_Messenger is
 
   package Msg_Pool is new Protected_Pool (As.U.Asu_Us);
@@ -28,7 +28,7 @@ package body Exception_Messenger is
 
   -- INTERNAL: Retrieve the message associated to an exception message
   function Get_Message (M : String) return String is
-    Str : constant String (1 .. M'Length) := String_Mng.Normalize (M);
+    Str : constant String (1 .. M'Length) := Str_Util.Normalize (M);
     Key : Msg_Pool.Key_Type;
     Res : As.U.Asu_Us;
   begin

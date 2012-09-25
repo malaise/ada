@@ -1,5 +1,5 @@
 with Ada.Strings.Wide_Unbounded;
-with As.U, Environ, String_Mng, Lower_Str, Unbounded_Arrays;
+with As.U, Environ, Str_Util, Lower_Str, Unbounded_Arrays;
 package body Language is
 
   -- When ENV, UTF_8 is set if a Getenv on "LANG" gives a value
@@ -14,9 +14,9 @@ package body Language is
   procedure Getenv_Lang is
     Lang_Str : constant String := Lower_Str (Environ.Getenv ("LANG"));
   begin
-    if String_Mng.Locate (Lang_Str, "utf8") /= 0 then
+    if Str_Util.Locate (Lang_Str, "utf8") /= 0 then
       Lang := Lang_Utf_8;
-    elsif String_Mng.Locate (Lang_Str, "utf-8") /= 0 then
+    elsif Str_Util.Locate (Lang_Str, "utf-8") /= 0 then
       Lang := Lang_Utf_8;
     else
       Lang := Lang_C;

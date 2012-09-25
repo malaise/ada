@@ -1,6 +1,6 @@
 with Ada.Characters.Latin_1;
 with As.U.Utils, Argument, Argument_Parser, Environ, Basic_Proc, Integer_Image,
-     Sys_Calls, Command, Many_Strings, Parser, Event_Mng, String_Mng;
+     Sys_Calls, Command, Many_Strings, Parser, Event_Mng, Str_Util;
 
 procedure T_Arg_Parser is
 
@@ -142,7 +142,7 @@ begin
       -- Verbose output
       for I in 1 .. Nb_Keys loop
         Basic_Proc.Put_Line_Output (
-           String_Mng.Procuste (Argument_Parser.Image (Keys(I)), 28)
+           Str_Util.Procuste (Argument_Parser.Image (Keys(I)), 28)
            & " " & Helps(I).Image);
       end loop;
 

@@ -1,5 +1,5 @@
 with Ada.Exceptions;
-with Basic_Proc, Directory, Sys_Calls, Text_Char, Ada_Parser, String_Mng,
+with Basic_Proc, Directory, Sys_Calls, Text_Char, Ada_Parser, Str_Util,
      Mixed_Str, As.U.Utils, Parser;
 with Debug, Sort;
 package body Sourcer is
@@ -178,7 +178,7 @@ package body Sourcer is
 
     -- Store Unit and parent
     -- Locate last '-' if any, save parent
-    Minus := String_Mng.Locate (File, "-", Forward => False);
+    Minus := Str_Util.Locate (File, "-", Forward => False);
     if Minus = 0 then
       Dscr.Parent.Set_Null;
       Dscr.Unit := As.U.Tus (Directory.File_Prefix (File));
@@ -187,7 +187,7 @@ package body Sourcer is
       -- Parsing "separate" will identify subunits
       -- Full unit name (parent.unit) without suffix
       Dscr.Parent := As.U.Tus (Mixed_Str (
-         String_Mng.Substit (File(File'First .. Minus - 1), "-", ".")));
+         Str_Util.Substit (File(File'First .. Minus - 1), "-", ".")));
       Dscr.Unit := Dscr.Parent & "."
                & Directory.File_Prefix (File(Minus+1 .. File'Last));
     end if;
@@ -299,12 +299,12 @@ package body Sourcer is
           -- Look for successive '.' in its name
           Depth := 1;
           loop
-            Dot := String_Mng.Locate (Unit, ".", Occurence => Depth);
+            Dot := Str_Util.Locate (Unit, ".", Occurence => Depth);
             exit when Dot = 0;
             -- Append parent if new
             Parent := As.U.Tus (Unit(Unit'First .. Dot - 1));
             Parent_Sep := Separator & Parent & Separator;
-            if String_Mng.Locate (Dscr.Witheds_Parents.Image,
+            if Str_Util.Locate (Dscr.Witheds_Parents.Image,
                                   Parent_Sep.Image) = 0 then
               Dscr.Witheds_Parents.Append (Parent_Sep);
               -- Insert cross reference to this parent of withed unit
@@ -319,7 +319,7 @@ package body Sourcer is
       end if;
       -- Replace @@ by @
       Dscr.Witheds_Parents := As.U.Tus (
-          String_Mng.Substit (Dscr.Witheds_Parents.Image,
+          Str_Util.Substit (Dscr.Witheds_Parents.Image,
                               Separator & Separator,
                               Separator & ""));
     end if;
@@ -527,7 +527,7 @@ package body Sourcer is
   -- Does a unit name contain a '.'
   function Has_Dot (Unit : in As.U.Asu_Us) return Boolean is
   begin
-    return String_Mng.Locate (Unit.Image, ".") /= 0;
+    return Str_Util.Locate (Unit.Image, ".") /= 0;
   end Has_Dot;
 
   -- Get parent of Dscr (body or subunit)

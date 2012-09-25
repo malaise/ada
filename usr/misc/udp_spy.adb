@@ -1,7 +1,7 @@
 -- Listen to a UDP (or IPM) port and put packets received
 with Ada.Exceptions, Ada.Text_Io, Ada.Calendar;
 with As.U, Argument, Basic_Proc, Date_Image, Normal, Int_Image,
-     Upper_Str, String_Mng, Text_Line, Sys_Calls,
+     Upper_Str, Str_Util, Text_Line, Sys_Calls,
      Socket, Event_Mng, Ip_Addr, Tcp_Util, Timers;
 
 procedure Udp_Spy is
@@ -276,7 +276,7 @@ begin
             := Argument.Get_Parameter (Param_Key => Argument.Not_Key);
     Index : Natural;
   begin
-    Index := String_Mng.Locate (Address, ":");
+    Index := Str_Util.Locate (Address, ":");
     Host_Name := As.U.Tus (Address(1 .. Index - 1));
     Port_Name := As.U.Tus (Address(Index + 1 .. Address'Last));
   exception

@@ -1,4 +1,4 @@
-with As.U, Sys_Calls, String_Mng, Environ;
+with As.U, Sys_Calls, Str_Util, Environ;
 package body Files is
 
   -- File names
@@ -16,7 +16,7 @@ package body Files is
   begin
     -- Check that spec file ends with spec suffix
     if Spec_File_Name'Length <= Spec_Suffix'Length
-    or else String_Mng.Extract (
+    or else Str_Util.Extract (
        Spec_File_Name, Spec_Suffix'Length, False) /= Spec_Suffix then
       raise In_Error;
     end if;
@@ -33,7 +33,7 @@ package body Files is
 
     -- Create Out file for Text_line
     Body_File_Name := As.U.Tus (
-          String_Mng.Cut (Spec_File_Name, Spec_Suffix'Length, False)
+          Str_Util.Cut (Spec_File_Name, Spec_Suffix'Length, False)
         & Body_Suffix);
 
     -- Check if body file exists and delete it if requested

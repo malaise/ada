@@ -1,4 +1,4 @@
-with Basic_Proc, Xml_Parser, String_Mng, Text_Line, Mixed_Str, Any_Def;
+with Basic_Proc, Xml_Parser, Str_Util, Text_Line, Mixed_Str, Any_Def;
 with Debug, Matcher, Variables;
 package body Tree is
 
@@ -94,7 +94,7 @@ package body Tree is
       Tnode := Ctx.Get_Child (Text_Node, 1);
       Node.Text := Ctx.Get_Text (Tnode);
       -- No Line feed accepted
-      if String_Mng.Locate (Node.Text.Image, Line_Feed) /= 0 then
+      if Str_Util.Locate (Node.Text.Image, Line_Feed) /= 0 then
         Error (Xnode, "Invalid line-feed character in text");
         raise Parse_Error;
       end if;
@@ -150,7 +150,7 @@ package body Tree is
         Basic_Proc.Put_Error ("Text: >" & Node.Text.Image & "< ");
       when Send | Log =>
         Basic_Proc.Put_Error ("Text: >" &
-          String_Mng.Substit (Node.Text.Image, Line_Feed, "[LF]") &  "< ");
+          Str_Util.Substit (Node.Text.Image, Line_Feed, "[LF]") &  "< ");
       when others =>
         null;
     end case;

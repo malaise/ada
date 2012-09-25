@@ -7,7 +7,7 @@
 
 with Ada.Calendar;
 with As.B, Perpet, Argument, Day_Mng, Normal, Upper_Str, Rnd,
-     Num_Letters, Basic_Proc, String_Mng, Parser;
+     Num_Letters, Basic_Proc, Str_Util, Parser;
 with Types, Scrambler_Gen, Definition;
 procedure Def_Enigma is
 
@@ -215,7 +215,7 @@ begin
       Action := Current_Date;
     elsif Argument.Get_Parameter (Occurence => Other_Arg) = "rnd" then
       Action := Random;
-    elsif String_Mng.Locate (Argument.Get_Parameter (Occurence => Other_Arg),
+    elsif Str_Util.Locate (Argument.Get_Parameter (Occurence => Other_Arg),
                              "/") /= 0 then
       -- Looks like a date
       Action := Parse_Date;
@@ -524,7 +524,7 @@ begin
           if Str = "" then
             raise Key_Error;
           end if;
-          Arob := String_Mng.Locate (Str, "@");
+          Arob := Str_Util.Locate (Str, "@");
           if Arob /= Str'Last - 1 then
             raise Key_Error;
           end if;

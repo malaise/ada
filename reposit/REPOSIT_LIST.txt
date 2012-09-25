@@ -68,7 +68,7 @@ Strings
 * 'As.U' and 'As.B' are implementations of Ada.Strings.Unbounded and
 Ada.Strings.Bounded with more features.
 
-* 'String_Mng' provides several operations on strings.
+* 'Str_Util' provides several operations on strings.
 
 * 'Many_Strings' allows storing several strings successively in a string and
 extracting them.
@@ -489,7 +489,7 @@ sorts (2)::
 state_machine (2)::
      Generic state machine manager.
 
-string_mng string_mng-navigator string_mng-regex (2)::
+str_util str_util-navigator str_util-regex (2)::
      Various string utilites, including regexp and navigation.
 
 sys_calls (2)::
@@ -622,7 +622,7 @@ Smart_Reference:: timers
 
 Socket:: Dictio
 
-String_Mng:: asubst
+Str_Util:: asubst
 
 Syslin:: approx
 

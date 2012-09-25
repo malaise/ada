@@ -1,7 +1,7 @@
 -- Search for words matching criteria (au:o.obile) or regexp (au.*bile)
 -- Or search anagrams
 with As.U.Utils, Argument, Con_Io, Afpx, Basic_Proc, Language, Many_Strings,
-     String_Mng, Lower_Str, Environ, Integer_Image, Event_Mng, Afpx_Xref;
+     Str_Util, Lower_Str, Environ, Integer_Image, Event_Mng, Afpx_Xref;
 with Cmd, Analist;
 procedure Xwords is
 
@@ -75,7 +75,7 @@ procedure Xwords is
 
   -- Purge trailing spaces
   function Strip (Str : String) return String is
-     Last : constant Natural := String_Mng.Parse_Spaces (Str, False);
+     Last : constant Natural := Str_Util.Parse_Spaces (Str, False);
   begin
     return Str(Str'First .. Last);
   end Strip;

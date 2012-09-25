@@ -1,5 +1,5 @@
 with Ada.Unchecked_Deallocation, Ada.Characters.Latin_1;
-with Argument, String_Mng, Integer_Image;
+with Argument, Str_Util, Integer_Image;
 package body Argument_Parser is
 
   No_Match : constant String := "" & Ada.Characters.Latin_1.Nul;
@@ -122,7 +122,7 @@ package body Argument_Parser is
           return;
         end if;
         -- Full key, look for option
-        Len := String_Mng.Locate (Str, "=", 3);
+        Len := Str_Util.Locate (Str, "=", 3);
         if Len = 3 then
           -- "--="
           P_Dscr.Error := As.U.Tus ("Argument " & Str & " at pos "
@@ -169,7 +169,7 @@ package body Argument_Parser is
       end if;
 
       -- Char key, no minus allowed
-      if String_Mng.Locate (Str, "-", 2) /= 0 then
+      if Str_Util.Locate (Str, "-", 2) /= 0 then
         P_Dscr.Error := As.U.Tus ("Argument " & Str & " at pos "
            & Integer_Image(Arg_No) & " contains minus");
         return;
@@ -545,7 +545,7 @@ package body Argument_Parser is
     end if;
     if Str(2) = '-' then
       -- String key, look for option
-      Len := String_Mng.Locate (Str, "=", 3);
+      Len := Str_Util.Locate (Str, "=", 3);
       -- Set Len to last of key string
       if Len = 0 then
         Len := Str'Last;
@@ -563,7 +563,7 @@ package body Argument_Parser is
     -- Char key(s)
     if Str'Length > 2 then
       -- Multiple char keys
-      Index := String_Mng.Locate (Str, "" & Key.Key_Char, 2);
+      Index := Str_Util.Locate (Str, "" & Key.Key_Char, 2);
       if Index = 0 then
         return No_Match;
       elsif Index /= Str'Last or else not Key.Key_Can_Option then

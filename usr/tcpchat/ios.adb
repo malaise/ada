@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1, Ada.Calendar;
-with Event_Mng, Ip_Addr, Socket, Tcp_Util, Input_Buffer, String_Mng,
+with Event_Mng, Ip_Addr, Socket, Tcp_Util, Input_Buffer, Str_Util,
      Unlimited_Pool, Timers, Async_Stdin;
 with Debug, Tree;
 package body Ios is
@@ -80,7 +80,7 @@ package body Ios is
   begin
     -- Store sentence without Lf
     Debug.Log ("Got sentence " & Sentence);
-    Sentences.Push (As.U.Tus (String_Mng.Substit (Sentence, Lf, "")));
+    Sentences.Push (As.U.Tus (Str_Util.Substit (Sentence, Lf, "")));
   end Sentence_Cb;
 
   -- Message reception Cb
@@ -92,7 +92,7 @@ package body Ios is
     pragma Unreferenced (Dscr);
   begin
     Debug.Log ("Read " & Msg(1 .. Len));
-    Buffer.Push (String_Mng.Substit (Msg(1 .. Len), Crlf, Lf));
+    Buffer.Push (Str_Util.Substit (Msg(1 .. Len), Crlf, Lf));
     return True;
   end Read_Cb;
 
@@ -341,7 +341,7 @@ package body Ios is
     Dummy : Boolean;
     pragma Unreferenced (Dummy);
   begin
-    Debug.Log ("Send " & String_Mng.Substit (Text.Image, Lf, "[LF]"));
+    Debug.Log ("Send " & Str_Util.Substit (Text.Image, Lf, "[LF]"));
     if Stdio then
       Async_Stdin.Put_Out (Text.Image);
       Disconnection := False;

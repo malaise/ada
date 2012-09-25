@@ -1,4 +1,4 @@
-with String_Mng;
+with Str_Util;
 package body Afpx_Typ is
 
   -- Check is square (relative to field) is in field
@@ -26,7 +26,7 @@ package body Afpx_Typ is
   begin
     -- Set the colors when using the first descriptor
     for I in Colors'Range loop
-      Last := String_Mng.Parse_Spaces (Names(I), False);
+      Last := Str_Util.Parse_Spaces (Names(I), False);
       Colors(I) := As.U.Tus (Names(I)(1 .. Last));
     end loop;
     return Colors;

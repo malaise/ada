@@ -1,4 +1,4 @@
-with Basic_Proc, Argument, Arbitrary.Fractions, String_Mng;
+with Basic_Proc, Argument, Arbitrary.Fractions, Str_Util;
 procedure T_Fraction is
 
   subtype Fraction is Arbitrary.Fractions.Fraction;
@@ -18,7 +18,7 @@ procedure T_Fraction is
   begin
     declare
       Str : constant String := Argument.Get_Parameter(Occurence => Occ);
-      I : constant Natural := String_Mng.Locate (Str, ":");
+      I : constant Natural := Str_Util.Locate (Str, ":");
     begin
       N := Arbitrary.Set (Str(1 .. I - 1));
       D := Arbitrary.Set (Str(I+1 .. Str'Last));

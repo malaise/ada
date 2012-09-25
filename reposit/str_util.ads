@@ -1,7 +1,7 @@
 -- Various String utilities
 with Ada.Characters.Latin_1;
 with Many_Strings;
-package String_Mng is
+package Str_Util is
 
   -- Parses spaces and tabs (Latin_1.Ht) from the head/tail of a string
   -- Returns the position of the first/last character, or 0 if
@@ -159,25 +159,28 @@ package String_Mng is
   function Split (Str       : String;
                   Separator : Character) return Many_Strings.Many_String;
 
-  -- Locate where to cut Str so that it best matches the requested line Length
+  -- Try to cut Str so that it best matches the requested line Length
   -- Looks for separator character
   type Separator_Access is access function (Char : Character) return Boolean;
   -- Default Separator function, True for Space and Latin.Ht.
   function Is_Separator (Char : Character) return Boolean;
-  -- If Str is shorter or equal to Length, return Str'Last
-  -- Else try to find a separator before Length, up to Mini
-  -- Else try to find a separator after  Length, up to Maxi
-  -- Else try to find a separator before Mini,   up to 1
-  -- Else try to find a separator after  Maxi,   up to Str'Length
+  -- If Str is shorter or equal to Length, return Str
+  -- Else try to find a separator, successively:
+  --   before Length, up to Mini
+  --   after  Length, up to Maxi
+  --   before Mini,   up to 1
+  --   after  Maxi,   up to Str'Length
+  -- If a separator is found then return Str up to this separator included,
+  -- Else return Str
   -- Prerequisits Mini <= Length <= Maxi (else Constraint_Error).
-  -- Beware that indexes are not relative to Str, but the returned index is.
-  -- Returns 0 only if Str is empty.
+  -- Beware that Mini, Maxi and Length are not relative to Str
+  -- Returns "" only if Str is empty.
   function Truncate (Str : String;
                      Length : Positive;
                      Mini, Maxi : Positive;
                      Separating : access
     function (Char : Character) return Boolean := Is_Separator'Access)
-  return Natural;
+  return String;
 
   -- Copy the string Val at the beginning of the string To
   -- To (To'First .. To'First + Val'Length - 1) := Val;
@@ -234,5 +237,5 @@ package String_Mng is
                    From    : Positive;
                    Through : Natural) return String;
 
-end String_Mng;
+end Str_Util;
 
