@@ -34,6 +34,7 @@ package Async_Stdin is
   -- By default the input is in insert mode and is reset to insert mode after
   --  each input (just before calling user callback)
   -- This operation allows setting the overwrite mode for next input
+  --  (in user callback or before calling Get_Line)
   procedure Overwrite;
 
   -- Set an internal callback (overwritting any Async callback set)
@@ -41,7 +42,8 @@ package Async_Stdin is
   function Get_Line (Max_Chars : Max_Chars_Range := 0;
                      First_Col : Max_Chars_Range := 1) return String;
 
-  -- Strip last character if Str if it is a control char (before space)
+  -- Strip last character of Str if it is a control char (i.e. before space
+  --  in ASCII table)
   function Strip_Last_Control (Str : String) return String;
 
   -- Put on stdout when in async
