@@ -469,12 +469,15 @@ package body Xml_Parser is
     Parse_Mng.Parse_Dtd (Ctx, Dtd);
     Clean (Ctx);
   exception
-    when Parse_Occ:Parse_Error =>
+    when Error_Occ:Parse_Error =>
       -- Retrieve and set parsing error message
       Clean (Ctx);
-      Error := As.U.Tus (
-        Exception_Messenger.Exception_Message(
-          Ada.Exceptions.Save_Occurrence (Parse_Occ)));
+      declare
+        Loc_Occ : Ada.Exceptions.Exception_Occurrence;
+      begin
+        Ada.Exceptions.Save_Occurrence (Loc_Occ, Error_Occ);
+        Exception_Messenger.Exception_Message (Loc_Occ, Error);
+      end;
     when Error_Occ:others =>
       Trace ("Got exception " & Ada.Exceptions.Exception_Name (Error_Occ));
       raise Internal_Error;
@@ -583,9 +586,12 @@ package body Xml_Parser is
     when Error_Occ:Parse_Error =>
       -- Retrieve and store parsing error message
       Ctx.Status := Error;
-      Ctx.Flow.Err_Msg := As.U.Tus (
-        Exception_Messenger.Exception_Message(
-          Ada.Exceptions.Save_Occurrence (Error_Occ)));
+     declare
+        Loc_Occ : Ada.Exceptions.Exception_Occurrence;
+      begin
+        Ada.Exceptions.Save_Occurrence (Loc_Occ, Error_Occ);
+        Exception_Messenger.Exception_Message (Loc_Occ, Ctx.Flow.Err_Msg);
+      end;
       Ok := False;
     when Storage_Error =>
       raise;
