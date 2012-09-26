@@ -7,10 +7,6 @@ package Str_Util is
   -- All functions returning a String return a Normalized String
   function Normalize (Str : String) return String;
 
-  -- Copy the string Val at the beginning of the string To
-  -- To (To'First .. To'First + Val'Length - 1) := Val;
-  procedure Copy (Val : in String; To : in out String);
-
   -- Swap the characters of string
   -- Example: ABCD -> DCBA
   function Swap (Str : String) return String;
@@ -31,6 +27,11 @@ package Str_Util is
   function Overwrite (Source   : String;
                       Position : Positive;
                       New_Str  : String) return String;
+
+  -- Copy the string Val at the beginning of the string To
+  -- To (To'First .. To'First + Val'Length - 1) := Val;
+  procedure Copy (Val : in String; To : in out String);
+
 
   -- Replace a slice by a new string
   -- Delete chars if By is empty (except if High < Low)

@@ -69,7 +69,8 @@ procedure T_String is
 
 begin
 
-  if Argument.Get_Parameter = "-a" then
+  if Argument.Get_Nbre_Arg = 1
+  and then Argument.Get_Parameter = "-a" then
     Str := (others => '#');
     Str(200 .. 209) := "0123456789";
     Str(301 .. 326) := "abcdefghijklmnopqrstuvwxyz";
@@ -183,6 +184,7 @@ begin
       My_Io.Put_Line ("Main menu");
       My_Io.Put_Line (" 0 Exit to change String");
       My_Io.Put_Line (" 1 Case conversion");
+      My_Io.Put_Line (" 2 Strip");
       My_Io.Put_Line (" 2 Parse spaces - DISCARDED");
       My_Io.Put_Line (" 3 Procuste");
       My_Io.Put_Line (" 4 Locate (fragment)");
@@ -194,7 +196,7 @@ begin
       My_Io.Put_Line ("10 Unique (from head or tail)");
       My_Io.Put_Line ("11 Variable substitution");
       My_Io.Put_Line ("12 Escape location");
-      My_Io.Put_Line ("13 Tuncation ot best length");
+      My_Io.Put_Line ("13 Tuncate at best length");
       My_Io.Put_Line ("14 Copy");
       My_Io.Put_Line ("15 Substit");
       My_Io.Put_Line ("16 Normalize");
@@ -204,6 +206,11 @@ begin
       My_Io.Put_Line ("20 Regex split");
       My_Io.Put_Line ("21 Center");
       My_Io.Put_Line ("22 Regex split on sep");
+      My_Io.Put_Line ("23 Overwrite");
+      My_Io.Put_Line ("24 Replace");
+      My_Io.Put_Line ("25 Insert");
+      My_Io.Put_Line ("26 Delete");
+      My_Io.Put_Line ("27 Check char is backslashed");
 
       My_Io.Put ("Choice (0 .. 22) ? "); Nat_Get (Action, True);
       My_Io.New_Line;
@@ -227,7 +234,25 @@ begin
             end if;
 
           when  2 =>
-            My_Io.Put_Line ("DISCARDED");
+            My_Io.Put_Line ("Strip");
+            My_Io.Put ("From Head/Tail/Both (HTB)? "); My_Io.Get(Char1);
+            My_Io.Skip_Line;
+            Char1 := Upper_Char (Char1);
+            if Char1 = 'H' then
+              My_Io.Put_Line ("|"
+                            & Str_Util.Strip (Str(1 .. Str_Len), Str_Util.Head)
+                            & "|");
+            elsif Char1 = 'T' then
+              My_Io.Put_Line ("|"
+                            & Str_Util.Strip (Str(1 .. Str_Len), Str_Util.Tail)
+                            & "|");
+            elsif Char1 = 'B' then
+              My_Io.Put_Line ("|"
+                            & Str_Util.Strip (Str(1 .. Str_Len), Str_Util.Both)
+                            & "|");
+            else
+              My_Io.Put_Line ("Discarded.");
+            end if;
 
           when  3 =>
             My_Io.Put_Line ("Procuste");
@@ -316,6 +341,7 @@ begin
             My_Io.Put_Line ("Uniqued: |"
               & Str_Util.Unique (Str(1 .. Str_Len),
                                    From_Head => Bool1) & "|" );
+
           when 11 =>
             My_Io.Put_Line ("Env variable substitution");
             My_Io.Put ("Start delimiter (Str)? "); My_Io.Get_Line (Str1, Nat1);
@@ -333,6 +359,7 @@ begin
                         No_Check_Stop => Bool2,
                         Skip_Backslashed => Bool3)
               & "|" );
+
           when 12 =>
             My_Io.Put_Line ("Escape sequence location");
             My_Io.Put ("From index (Pos)? "); Nat_Get(Pos1, False);
@@ -343,6 +370,7 @@ begin
                         Str(1 .. Str_Len),
                         From_Index => Pos1,
                         Escape => Str1(1 .. Nat1))));
+
           when 13 =>
             My_Io.Put_Line ("13 Tuncation ot best length");
             My_Io.Put ("Length (Pos)? "); Nat_Get(Pos1, False);
@@ -355,6 +383,7 @@ begin
                         Mini => Pos2,
                         Maxi => Pos3,
                         Separating => Str_Util.Is_Separator'Access));
+
           when 14 =>
             My_Io.Put_Line ("14 Copy");
             My_Io.Put ("Val (Str)? "); My_Io.Get_Line (Str1, Nat1);
@@ -375,6 +404,7 @@ begin
                                     What => Str1(1 .. Nat1),
                                     By => Str2(1 .. Nat2),
                                     Skip_Backslashed => Bool1) );
+
           when 16 =>
             My_Io.Put_Line ("16 Normalize");
             declare
@@ -384,6 +414,7 @@ begin
               My_Io.Put_Line ("Normalized string: "
                 & Str_Util.Normalize (Lstr));
             end;
+
           when 17 =>
             My_Io.Put_Line ("17 Regex locate");
             My_Io.Put ("Criteria (Str)? "); My_Io.Get_Line (Str1, Nat1);
@@ -400,6 +431,7 @@ begin
             My_Io.Put_Line ("Match at: " & Search_Result.First_Offset'Img
                           & " -" & Search_Result.Last_Offset_Start'Img
                           & " /" & Search_Result.Last_Offset_Stop'Img);
+
           when 18 =>
             My_Io.Put_Line ("18 Regex replace");
             My_Io.Put ("Criteria (Str)? "); My_Io.Get_Line (Str1, Nat1);
@@ -414,6 +446,7 @@ begin
                     From_Index => Nat3,
                     To_Index => Nat4,
                     Nb_Cycles => Nat5));
+
           when 19 =>
             My_Io.Put_Line ("19 Split");
             My_Io.Put ("Separator (Char)? "); My_Io.Get(Char1); My_Io.Skip_Line;
@@ -440,6 +473,7 @@ begin
                 My_Io.Put_Line (">" & Lstr(I).Image & "<");
               end loop;
             end;
+
           when 21 =>
             My_Io.Put_Line ("21 Center");
             My_Io.Put ("Len (Pos)? "); Nat_Get (Pos1, False);
@@ -448,6 +482,7 @@ begin
                 "Center: |"
               & Str_Util.Center(Str(1 .. Str_Len), Len => Pos1, Gap => Char1)
               & "|" );
+
           when 22 =>
             My_Io.Put_Line ("22 Regex split on sep");
             My_Io.Put ("Separator (Str)? "); My_Io.Get_Line (Str1, Nat1);
@@ -460,6 +495,57 @@ begin
                 My_Io.Put_Line (">" & Slices(I).Image & "<");
               end loop;
             end;
+
+          when 23 =>
+            My_Io.Put_Line ("23 Overwrite");
+            My_Io.Put ("Position (Pos)? "); Nat_Get (Pos1, False);
+            My_Io.Put ("New_Str (Str)? "); My_Io.Get_Line (Str1, Nat1);
+            My_Io.Put_Line (
+                "Overwritten: "
+              & Str_Util.Overwrite (Str(1 .. Str_Len),
+                                    Position => Pos1,
+                                    New_Str => Str1(1 .. Nat1)));
+
+          when 24 =>
+            My_Io.Put_Line ("24 Replace");
+            My_Io.Put ("Low (Pos)? "); Nat_Get (Pos1, False);
+            My_Io.Put ("High (Nat)? "); Nat_Get (Nat2, True);
+            My_Io.Put ("By (Str)? "); My_Io.Get_Line (Str1, Nat1);
+            My_Io.Put_Line (
+                "Replaced: "
+              & Str_Util.Replace (Str(1 .. Str_Len),
+                                  Low => Pos1,
+                                  High => Nat2,
+                                  By => Str1(1 .. Nat1)));
+
+          when 25 =>
+            My_Io.Put_Line ("25 Insert");
+            My_Io.Put ("Before (Pos)? "); Nat_Get (Pos1, False);
+            My_Io.Put ("New_Str (Str)? "); My_Io.Get_Line (Str1, Nat1);
+            My_Io.Put_Line (
+                "Inserted: "
+              & Str_Util.Insert (Str(1 .. Str_Len),
+                                 Before => Pos1,
+                                 New_Str => Str1(1 .. Nat1)));
+
+          when 26 =>
+            My_Io.Put_Line ("26 Delete");
+            My_Io.Put ("From (Pos)? "); Nat_Get (Pos1, False);
+            My_Io.Put ("Through (Nat)? "); Nat_Get (Nat1, True);
+            My_Io.Put_Line (
+                "Deleted: "
+              & Str_Util.Delete (Str(1 .. Str_Len),
+                                 From => Pos1,
+                                 Through => Nat1));
+
+          when 27 =>
+            My_Io.Put_Line ("27 Check char is backslashed");
+            My_Io.Put ("Index (Pos)? "); Nat_Get (Pos1, False);
+            My_Io.Put_Line (
+                "Is backslashed: "
+              & Mixed_Str(Boolean'Image (Str_Util.Is_Backslashed (
+                   Str(1 .. Str_Len),
+                   Index => Pos1))));
 
           when others => null;
 

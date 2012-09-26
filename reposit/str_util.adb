@@ -15,13 +15,6 @@ package body Str_Util is
     end;
   end Normalize;
 
-  -- Copy the string Val at the beginning of the string To
-  -- To (To'First .. To'First - Val'Length) := Val;
-  procedure Copy (Val : in String; To : in out String) is
-  begin
-    To (To'First .. To'First + Val'Length - 1) := Val;
-  end Copy;
-
   -- Swap the characters of string
   -- Example: ABCD -> DCBA
   function Swap (Str : String) return String is
@@ -94,6 +87,13 @@ package body Str_Util is
     -- Append others
     return Result & New_Str(Lo + 1 .. New_Str'Last);
   end Overwrite;
+
+  -- Copy the string Val at the beginning of the string To
+  -- To (To'First .. To'First - Val'Length) := Val;
+  procedure Copy (Val : in String; To : in out String) is
+  begin
+    To (To'First .. To'First + Val'Length - 1) := Val;
+  end Copy;
 
   -- Replace a slice by a new string
   -- Delete chars if By is empty (except if High < Low)
