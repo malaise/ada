@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1;
-with Argument, Normal, My_Io, Get_Float, Basic_Proc;
+with Argument, Normal, Basic_Proc, Get_Float, Normalization;
 with Fl_Time, Fl_Get;
 
 procedure Fl is
@@ -43,14 +43,15 @@ begin
     else
       Basic_Proc.Put_Output ('-');
     end if;
-    Basic_Proc.Put_Output (Normal(Integer(Tt.Hours), Max_Hour_Dig + 1));
+    Basic_Proc.Put_Output (Normal (Integer(Tt.Hours), Max_Hour_Dig + 1));
     Basic_Proc.Put_Output ('.');
-    Basic_Proc.Put_Output (Normal(Integer(Tt.Minutes), 2, Gap => '0'));
+    Basic_Proc.Put_Output (Normal (Integer(Tt.Minutes), 2, Gap => '0'));
     if With_Cost then
        Basic_Proc.Put_Output ("     This cost: ");
-       My_Io.Put(Tmp_Cost, Fore => 4, Aft => 2, Exp => 0);
+       Basic_Proc.Put_Output (Normalization.Normal_Fixed (Tmp_Cost, 7, 4));
        Basic_Proc.Put_Output ("  Total cost: ");
-       My_Io.Put_Line(Cost, Fore => 5, Aft => 2, Exp => 0);
+       Basic_Proc.Put_Line_Output (Normalization.Normal_Fixed (
+          Cost, 8, 4));
     else
       Basic_Proc.New_Line_Output;
     end if;

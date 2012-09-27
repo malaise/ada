@@ -1,4 +1,4 @@
-with As.B, Argument, My_Io, Normal;
+with As.B, Argument, Basic_Proc, Normal;
 with Pers_Def, Pers_Fil, Pers_Mng;
 
 procedure Ins_Pers is
@@ -13,18 +13,18 @@ procedure Ins_Pers is
   procedure Put (Person : in Pers_Def.Person_Rec;
                  Display_Pid : in Boolean := False) is
   begin
-    My_Io.Put ("NAME: >" & Person.Name & "<");
-    My_Io.Put ("  ACTIVITY: >" & Person.Activity & "<");
+    Basic_Proc.Put_Output ("NAME: >" & Person.Name & "<");
+    Basic_Proc.Put_Output ("  ACTIVITY: >" & Person.Activity & "<");
     if Display_Pid then
-      My_Io.Put_Line ("  PID: " & Normal(Integer(Person.Pid), 3) );
+      Basic_Proc.Put_Line_Output ("  PID: " & Normal(Integer(Person.Pid), 3) );
     else
-      My_Io.New_Line;
+      Basic_Proc.New_Line_Output;
     end if;
-    My_Io.Put (" Training Zones: ");
+    Basic_Proc.Put_Output (" Training Zones: ");
     for I in Person.Tz'Range loop
-      My_Io.Put (Normal(Integer(Person.Tz(I)), 4));
+      Basic_Proc.Put_Output (Normal(Integer(Person.Tz(I)), 4));
     end loop;
-    My_Io.New_Line;
+    Basic_Proc.New_Line_Output;
   end Put;
 
 begin
@@ -33,7 +33,7 @@ begin
     -- Load list
     Pers_Fil.Load;
     if Pers_Def.The_Persons.Is_Empty then
-      My_Io.Put_Line ("The list is empty.");
+      Basic_Proc.Put_Line_Output ("The list is empty.");
     else
       List_Length := Pers_Def.The_Persons.List_Length;
       for I in 1 .. List_Length loop
@@ -46,8 +46,8 @@ begin
         Put(Person, True);
       end loop;
     end if;
-    My_Io.New_Line;
-    My_Io.Put_Line ("Done.");
+    Basic_Proc.New_Line_Output;
+    Basic_Proc.Put_Line_Output ("Done.");
     return;
   end if;
 
@@ -92,33 +92,33 @@ begin
   if Pos = 0 then
     -- Display and ask confirm
     Put (Person);
-    My_Io.Put ("This person will be inserted. OK? (Y/N) : ");
-    My_Io.Get (C);
+    Basic_Proc.Put_Output ("This person will be inserted. OK? (Y/N) : ");
+    Basic_Proc.Get (C);
     if C /= 'Y' and then C /= 'y' then
-      My_Io.Put_Line ("Aborted");
+      Basic_Proc.Put_Line_Output ("Aborted");
       return;
     end if;
     -- Insert
     Pers_Mng.Insert (Pers_Def.The_Persons, Person);
-    My_Io.New_Line;
-    My_Io.Put_Line ("Done. PID is " & Normal(Integer(Person.Pid), 3) );
+    Basic_Proc.New_Line_Output;
+    Basic_Proc.Put_Line_Output ("Done. PID is " & Normal(Integer(Person.Pid), 3) );
   else
     Pers_Def.The_Persons.Read (Got_Person, Pers_Def.Person_List_Mng.Current);
     Person.Pid := Got_Person.Pid;
-    My_Io.Put_Line ("The person in list");
+    Basic_Proc.Put_Line_Output ("The person in list");
     Put (Got_Person, True);
-    My_Io.New_Line;
-    My_Io.Put_Line ("Will be replaced by");
+    Basic_Proc.New_Line_Output;
+    Basic_Proc.Put_Line_Output ("Will be replaced by");
     Put (Person, True);
-    My_Io.Put ("OK? (Y/N) : ");
-    My_Io.Get (C);
+    Basic_Proc.Put_Output ("OK? (Y/N) : ");
+    Basic_Proc.Get (C);
     if C /= 'Y' and then C /= 'y' then
-      My_Io.Put_Line ("Aborted");
+      Basic_Proc.Put_Line_Output ("Aborted");
       return;
     end if;
     Pers_Def.The_Persons.Modify (Person, Pers_Def.Person_List_Mng.Current);
-    My_Io.New_Line;
-    My_Io.Put_Line ("Done.");
+    Basic_Proc.New_Line_Output;
+    Basic_Proc.Put_Line_Output ("Done.");
   end if;
   -- Save list
   Pers_Fil.Save;
@@ -126,10 +126,10 @@ begin
 
 exception
   when others =>
-    My_Io.Put_Line ("USAGE : " & Argument.Get_Program_Name
+    Basic_Proc.Put_Line_Output ("USAGE : " & Argument.Get_Program_Name
               & " -n <person name> -a <activity> -t <6 training zones>");
-    My_Io.Put_Line (" or   : " & Argument.Get_Program_Name & " -l");
-    My_Io.Put_Line ("Each training zone must be between 0 and 250");
+    Basic_Proc.Put_Line_Output (" or   : " & Argument.Get_Program_Name & " -l");
+    Basic_Proc.Put_Line_Output ("Each training zone must be between 0 and 250");
     raise;
 end Ins_Pers;
 

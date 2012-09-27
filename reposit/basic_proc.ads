@@ -21,6 +21,12 @@ package Basic_Proc is
   End_Error : exception;
   procedure Get_Line (Item : out String;
                       Last : out Natural);
+  -- Skip line (until Lf)
+  procedure Skip_Line;
+
+  -- Get a character
+  procedure Get (C : out Character);
+  function Get return Character;
 
   -- Set exit code
   procedure Set_Exit_Code (Code : in Natural);

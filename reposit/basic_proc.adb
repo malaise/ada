@@ -120,6 +120,32 @@ package body Basic_Proc is
     Last := 0;
   end Get_Line;
 
+  procedure Skip_Line is
+    C : Character;
+  begin
+    loop
+      Get (C);
+      exit when C = Ada.Characters.Latin_1.Lf;
+    end loop;
+  end Skip_Line;
+
+  -- Get a character
+  procedure Get (C : out Character) is
+  begin
+    C := Get;
+  end Get;
+
+  function Get return Character is
+   I : Integer;
+   use type System.Address;
+  begin
+    I := Interfaces.C_Streams.Fgetc (Interfaces.C_Streams.Stdin);
+    if I = Interfaces.C_Streams.Eof then
+      raise End_Error;
+    end if;
+    return Character'Val(I);
+  end Get;
+
   -- Set exit code
   procedure Set_Exit_Code (Code : in Natural) is
   begin

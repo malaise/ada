@@ -1,4 +1,4 @@
-with My_Io, Argument, Con_Io;
+with Basic_Proc, Argument, Con_Io, Afpx;
 with Pers_Def, Pers_Fil, Mesu_Nam, Mesu_Edi, Mesu_Fil;
 
 procedure Ins_Mesu is
@@ -7,8 +7,8 @@ procedure Ins_Mesu is
 
   procedure Error (Msg : in String) is
   begin
-    My_Io.Put_Line (Msg);
-    My_Io.Put_Line ("USAGE : " & Argument.Get_Program_Name
+    Basic_Proc.Put_Line_Output (Msg);
+    Basic_Proc.Put_Line_Output ("USAGE : " & Argument.Get_Program_Name
                                & " [ <mesure_file_name> ]");
   end Error;
 
