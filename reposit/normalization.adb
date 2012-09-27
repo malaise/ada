@@ -92,6 +92,7 @@ package body Normalization is
   procedure Round_Str (Str : in out As.U.Asu_Us; Len : in Positive) is
     Carry : Boolean;
     Char : Character;
+    Idot : Natural;
   begin
     if Len >= Str.Length then
       -- Nothing to do
@@ -116,12 +117,16 @@ package body Normalization is
 
     -- Delete tail
     Str.Delete (Len + 1, Str.Length);
-    -- Propagate Carry
+    -- Locate dot and propagate Carry
+    Idot := 0;
     for I in reverse 2 .. Str.Length loop
-      exit when not Carry;
+      exit when Idot /= 0 and then not Carry;
       Char := Str.Element (I);
-      if Char /= '.' then
-        -- Just skip dot
+      if Char = '.' then
+        -- Store dot index
+        Idot := I;
+      elsif Carry then
+        -- Propagate carry
         if Char /= '9' then
           Char := Character'Succ (Char);
           Carry := False;
@@ -136,12 +141,11 @@ package body Normalization is
       Str.Insert (2, "1");
     end if;
 
-    -- Remove tailing '0's
-    for I in reverse 2 .. Str.Length loop
-      if Str.Element (I) /= '0' then
-        if I /= Str.Length then
-          Str.Delete (I + 1, Str.Length);
-        end if;
+    -- Remove tailing '0's, leave at least " i.0"
+    for I in reverse Idot + 2 .. Str.Length loop
+      if Str.Element (I) = '0' then
+        Str.Delete (I, I);
+      else
         exit;
       end if;
     end loop;
