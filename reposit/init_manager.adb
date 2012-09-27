@@ -8,7 +8,7 @@ package body Init_Manager is
   --  is not new event to accept)
   Wr_Mutex : Mutex_Manager.Mutex (Mutex_Manager.Write_Read, False);
   -- The Read_Mutex is used to protect the pool for event delivery
-  --  because WR_Lutext allows several simultaneous readers
+  --  because the WR_Mutext allows several simultaneous readers
   R_Mutex : Mutex_Manager.Simple_Mutex;
 
   -- The pool of pending events: Fifo
