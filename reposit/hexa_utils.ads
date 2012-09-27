@@ -2,9 +2,9 @@
 package Hexa_Utils is
 
   -- Value of one hexadecimal digit
-  subtype Hexa_Digit is Natural range 0 .. 16;
+  subtype Hexa_Digit is Natural range 0 .. 15;
 
-  -- Convert an hexadecimal character (0..9 | 'a' .. 'f' | 'A' .. 'F')
+  -- Convert an hexadecimal character ('0' .. '9' | 'a' .. 'f' | 'A' .. 'F')
   --  into its value (0 .. 15).
   -- Raises Constraint_Error if invalid character.
   function Char_To_Hexa (C : Character) return Hexa_Digit;
