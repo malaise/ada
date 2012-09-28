@@ -1,5 +1,5 @@
-with My_Io, Mutex_Manager, Schedule, Argument, Basic_Proc, Upper_Char,
-     Sys_Calls;
+with Basic_Proc, Mutex_Manager, Schedule, Argument, Upper_Char, Sys_Calls,
+     Normal;
 
 procedure T_Mut is
   pragma Priority(10);
@@ -57,7 +57,7 @@ procedure T_Mut is
 
         if Stdin_Is_A_Tty then
           Basic_Proc.Put_Output ("Task: ");
-          My_Io.Put (Current_I, 3);
+          Basic_Proc.Put_Output (Normal (Current_I, 3));
           if Mut_Kind /= Mutex_Manager.Simple then
             Basic_Proc.Put_Output (" : Read, Write, Terminate");
             Basic_Proc.Put_Output (" : Bloqued, Immediate, Wait (3s) ? ");
@@ -127,7 +127,7 @@ procedure T_Mut is
           Basic_Proc.New_Line_Output;
         end if;
         Basic_Proc.Put_Output (Tab & S & ' ');
-        My_Io.Put (I, 3);
+        Basic_Proc.Put_Output (Normal (I, 3));
         Basic_Proc.New_Line_Output;
         if In_Get then
           Prompt (1, False);

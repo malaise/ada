@@ -1,5 +1,5 @@
 with Queues;
-with My_Io;
+with Basic_Proc;
 procedure T_Fifo is
 
   Size : constant := 5;
@@ -15,14 +15,14 @@ procedure T_Fifo is
   begin
     for I in 1 .. Size loop
       My_Fifo.Look_Last (Fifo, V, I);
-      My_Io.Put_Line ("Look "  & Integer'Image (I) &
+      Basic_Proc.Put_Line_Output ("Look "  & Integer'Image (I) &
                        " --> " & Positive'Image (V) );
     end loop;
   exception
     when My_Fifo.Fifo_Not =>
-      My_Io.Put_Line ("Look done");
+      Basic_Proc.Put_Line_Output ("Look done");
     when My_Fifo.Fifo_Empty =>
-      My_Io.Put_Line ("FIFO empty");
+      Basic_Proc.Put_Line_Output ("FIFO empty");
       raise;
   end Dump;
 
@@ -31,25 +31,25 @@ procedure T_Fifo is
     My_Fifo.Push (Fifo, I);
   exception
     when My_Fifo.Fifo_Full =>
-      My_Io.Put_Line ("FIFO full. Discard last then push again");
+      Basic_Proc.Put_Line_Output ("FIFO full. Discard last then push again");
       My_Fifo.Discard_Last (Fifo);
       My_Fifo.Push (Fifo, I);
   end Push;
 
 
 begin
-  My_Io.Put_Line ("Fifo size is " & Positive'Image (Size));
+  Basic_Proc.Put_Line_Output ("Fifo size is " & Positive'Image (Size));
 
   for I in 1 .. 10 loop
-    My_Io.Put_Line ("Push " & Positive'Image (I));
+    Basic_Proc.Put_Line_Output ("Push " & Positive'Image (I));
     Push (I);
     Dump;
   end loop;
 
   loop
-    My_Io.New_Line;
+    Basic_Proc.New_Line_Output;
     My_Fifo.Pop (Fifo, N);
-    My_Io.Put_Line ("Pop ==> " & Positive'Image(N));
+    Basic_Proc.Put_Line_Output ("Pop ==> " & Positive'Image(N));
     begin
       Dump;
     exception

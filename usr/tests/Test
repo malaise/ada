@@ -180,6 +180,7 @@ echo "OK"
 # t_arg
 title t_arg
 echo -e "K\na1\n1\nY\n2\nA\n1\nE" | try t_arg -a1v1 -a2
+echo >> out
 cat > exp << EOF
 >< >t_arg<
  2 arguments.
@@ -524,7 +525,7 @@ try t_delta_date 2012-07-02T15:47:12.514 1963-10-25T21:21:21.210
 cat << EOF > exp
 2012/07/02 15:47:12.514 is a MONDAY
 1963/10/25 21:21:21.210 is a FRIDAY
- Date1 - Date2:      17782 days  66351.304000000 sec
+ Date1 - Date2: 17782 days 66351.304 sec
 EOF
 comp out exp
 comp err nul
@@ -997,7 +998,6 @@ cat << EOF > exp
     Termination of   2
 
 Done.
-
 EOF
 comp out exp
 comp err nul

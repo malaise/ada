@@ -341,6 +341,9 @@ forker (2)::
 get_float (1)::
      Get a float or int from a string.
 
+get_int (1)::
+     Get an integer from a string.
+
 get_line (2)::
      Parses lines and words of file.
 
@@ -386,9 +389,6 @@ limited_list dynamic_list (3)::
 
 limited_pool unlimited_pool (2)::
      Simple pool of (limited) private objects, push/pop.
-
-loc_arg (1)::
-     Simple retrieval of command line arguments.
 
 lower_char lower_str mixed_str upper_char upper_str (1)::
      Upper, lower, mixed string and character conversion.

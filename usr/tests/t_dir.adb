@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with As.U, My_Io, Int_Io, Directory, Sys_Calls, Argument, Day_Mng, Normal, Normal_Long;
+with As.U, Basic_Proc, Int_Io, Directory, Sys_Calls, Argument, Day_Mng, Normal, Normal_Long;
 procedure T_Dir is
   File_Name : As.U.Asu_Us;
   Dir_Name : As.U.Asu_Us;
@@ -11,8 +11,8 @@ procedure T_Dir is
     Str : String(1 .. 1024);
     Len : Natural;
   begin
-    My_Io.Put ("Enter new directory: ");
-    My_Io.Get_Line (Str, Len);
+    Basic_Proc.Put_Output ("Enter new directory: ");
+    Basic_Proc.Get_Line (Str, Len);
     return Str(1 .. Len);
   end  Get_New_Dir;
 
@@ -21,7 +21,7 @@ procedure T_Dir is
     Zstr : String(1 .. 4) := (others => '0');
     F,L : Natural;
   begin
-    My_Io.Put (" ");
+    Basic_Proc.Put_Output (" ");
     Int_Io.Put (Str, Rights, Base => 8);
     for I in Str'Range loop
       if Str(I) = '#' then
@@ -37,19 +37,19 @@ procedure T_Dir is
     end loop;
 
     Zstr(4 - L + F .. 4) := Str(F .. L);
-    My_Io.Put(Zstr);
+    Basic_Proc.Put_Output(Zstr);
   end Put_Rights;
 
   procedure Put_Id (Id : in Natural) is
   begin
-    My_Io.Put (" " & Normal (Id, 4));
+    Basic_Proc.Put_Output (" " & Normal (Id, 4));
   end Put_Id;
 
   procedure Put_Size (Size : in Sys_Calls.Off_T) is
   begin
-    My_Io.Put(" " & Normal_Long (Size, 12));
+    Basic_Proc.Put_Output(" " & Normal_Long (Size, 12));
   exception
-    when Constraint_Error => My_Io.Put(" " & "xxxxxxxxxx");
+    when Constraint_Error => Basic_Proc.Put_Output(" " & "xxxxxxxxxx");
   end Put_Size;
 
   procedure Put_Date (Mtime : in Sys_Calls.Time_T) is
@@ -67,7 +67,7 @@ procedure T_Dir is
     T := Sys_Calls.Time_Of (Mtime) + Sys_Calls.Gmt_Offset;
     Ada.Calendar.Split (T, Year, Month, Day, Dur);
     Day_Mng.Split (Dur, Hours, Minutes, Seconds, Millisec);
-    My_Io.Put (" " &
+    Basic_Proc.Put_Output (" " &
                Normal (Year, 4, Gap =>'0') & '/' &
                Normal (Month, 2, Gap =>'0') & '/' &
                Normal (Day, 2, Gap =>'0') & ' '  &
@@ -80,12 +80,12 @@ procedure T_Dir is
 begin
   if Argument.Get_Nbre_Arg = 1 then
     Directory.Create (Argument.Get_Parameter);
-    My_Io.Put_Line ("Created dir " & Argument.Get_Parameter);
+    Basic_Proc.Put_Line_Output ("Created dir " & Argument.Get_Parameter);
   end if;
 
   loop
 
-    My_Io.Put_Line ("PWD ->" & Directory.Get_Current & "<");
+    Basic_Proc.Put_Line_Output ("PWD ->" & Directory.Get_Current & "<");
 
     declare
       Dsc : Directory.Dir_Desc;
@@ -101,32 +101,32 @@ begin
       end if;
       loop
         Dsc.Next_Entry (File_Name);
-        My_Io.Put ("  ---->" & File_Name.Image & "< ");
-        My_Io.Put (Pad(1 .. Max_Len - File_Name.Length));
+        Basic_Proc.Put_Output ("  ---->" & File_Name.Image & "< ");
+        Basic_Proc.Put_Output (Pad(1 .. Max_Len - File_Name.Length));
         begin
           Fstat := Sys_Calls.File_Stat (Dir_Name.Image & '/' & File_Name.Image);
           Put_Id (Fstat.User_Id);
           Put_Id (Fstat.Group_Id);
           Put_Rights (Fstat.Rights);
           Put_Date (Fstat.Modif_Time);
-          My_Io.Put (" " & Fstat.Kind'Img);
+          Basic_Proc.Put_Output (" " & Fstat.Kind'Img);
           if Fstat.Kind = Sys_Calls.File then
             Put_Size (Fstat.Size);
-            My_Io.New_Line;
+            Basic_Proc.New_Line_Output;
           elsif Fstat.Kind = Sys_Calls.Link then
-            My_Io.New_Line;
-            My_Io.Put_Line ("    ++++>" & Directory.Read_Link (
+            Basic_Proc.New_Line_Output;
+            Basic_Proc.Put_Line_Output ("    ++++>" & Directory.Read_Link (
                 Dir_Name.Image & '/' & File_Name.Image) & '<');
           else
-            My_Io.New_Line;
+            Basic_Proc.New_Line_Output;
           end if;
         exception
           when Directory.Name_Error =>
-            My_Io.Put_Line ("???? ???");
+            Basic_Proc.Put_Line_Output ("???? ???");
           when Directory.Access_Error =>
-            My_Io.Put_Line ("!!!! !!!");
+            Basic_Proc.Put_Line_Output ("!!!! !!!");
           when Directory.Recursive_Link =>
-            My_Io.Put_Line ("#### ###");
+            Basic_Proc.Put_Line_Output ("#### ###");
         end;
       end loop;
     exception
@@ -137,16 +137,16 @@ begin
       exit;
     end if;
 
-    My_Io.New_Line;
+    Basic_Proc.New_Line_Output;
     loop
       begin
         Directory.Change_Current (Get_New_Dir);
         exit;
       exception
         when Directory.Name_Error =>
-          My_Io.Put_Line ("-> Not found.");
+          Basic_Proc.Put_Line_Output ("-> Not found.");
         when Directory.Access_Error =>
-          My_Io.Put_Line ("-> Permission.");
+          Basic_Proc.Put_Line_Output ("-> Permission.");
       end;
     end loop;
 
@@ -154,7 +154,7 @@ begin
 
   if Argument.Get_Nbre_Arg = 1 then
     Directory.Remove (Argument.Get_Parameter);
-    My_Io.Put_Line ("Removed dir " & Argument.Get_Parameter);
+    Basic_Proc.Put_Line_Output ("Removed dir " & Argument.Get_Parameter);
   end if;
 end T_Dir;
 

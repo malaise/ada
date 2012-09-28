@@ -1,4 +1,4 @@
-with As.B, Console, Upper_Str, Normal, Hashing, My_Io;
+with As.B, Console, Upper_Str, Normal, Hashing, Basic_Proc;
 procedure T_Hash is
 
   subtype Data_Access is Positive;
@@ -31,58 +31,58 @@ procedure T_Hash is
 
   procedure Dump (I : in Data_Access) is
   begin
-    My_Io.Put(Image(I));
+    Basic_Proc.Put_Output(Image(I));
   end Dump;
 
 begin
 
   loop
-    My_Io.New_Line;
+    Basic_Proc.New_Line_Output;
 
-    My_Io.Put ("Store <>, Zreset <>, Find <>, Reread <>, Delete <>, dumP <>, Clear all, EXIT ? ");
-    My_Io.Get_Line (Input, Len);
+    Basic_Proc.Put_Output ("Store <>, Zreset <>, Find <>, Reread <>, Delete <>, dumP <>, Clear all, EXIT ? ");
+    Basic_Proc.Get_Line (Input, Len);
     Txt.Set (Input(1 .. Len));
     if Txt.Length >= 3 and then Txt.Element (2) = ' ' then
       case Txt.Element (1) is
         when 'S' | 's' =>
           My_Hash.Store (Ht, Str(Txt), I);
-          My_Io.Put_Line (Image(I) & " stored with key >" & Str(Txt) & "<.");
+          Basic_Proc.Put_Line_Output (Image(I) & " stored with key >" & Str(Txt) & "<.");
           I := I + 1;
         when 'Z' | 'z' =>
           My_Hash.Reset_Find (Ht, Str(Txt));
-          My_Io.Put_Line ("Search reset for key >" & Str(Txt) & "<.");
+          Basic_Proc.Put_Line_Output ("Search reset for key >" & Str(Txt) & "<.");
         when 'F' | 'f' =>
           My_Hash.Find_Next (Ht, Str(Txt), Found);
           if Found.Found then
-            My_Io.Put_Line ("Found " & Image(Found.Data) & " with key >" & Str(Txt) & "<.");
+            Basic_Proc.Put_Line_Output ("Found " & Image(Found.Data) & " with key >" & Str(Txt) & "<.");
           else
-            My_Io.Put_Line ("No data found for key >" & Str(Txt) & "<.");
+            Basic_Proc.Put_Line_Output ("No data found for key >" & Str(Txt) & "<.");
           end if;
         when 'R' | 'r' =>
           My_Hash.Re_Read (Ht, Str(Txt), Found);
           if Found.Found then
-            My_Io.Put_Line ("Re-read " & Image(Found.Data) & " with key >" & Str(Txt) & "<.");
+            Basic_Proc.Put_Line_Output ("Re-read " & Image(Found.Data) & " with key >" & Str(Txt) & "<.");
           else
-            My_Io.Put_Line ("No data re-read for key >" & Str(Txt) & "<.");
+            Basic_Proc.Put_Line_Output ("No data re-read for key >" & Str(Txt) & "<.");
           end if;
         when 'D'| 'd' =>
           begin
             My_Hash.Remove (Ht, Str(Txt));
-            My_Io.Put_Line ("Current data for key >" & Str(Txt) & "< deleted.");
+            Basic_Proc.Put_Line_Output ("Current data for key >" & Str(Txt) & "< deleted.");
           exception
             when Hash.Not_Found =>
-              My_Io.Put_Line ("Exception NOT_FOUND raised when deleting data for key >"
+              Basic_Proc.Put_Line_Output ("Exception NOT_FOUND raised when deleting data for key >"
                              & Str(Txt) & "<.");
           end;
         when 'P' | 'p' =>
-          My_Io.Put_Line ("Dumping data for key >" & Str(Txt) & "<:");
+          Basic_Proc.Put_Line_Output ("Dumping data for key >" & Str(Txt) & "<:");
           My_Hash.Dump(Ht, Str(Txt));
         when others =>
           Console.Sound;
       end case;
     elsif Upper_Str (Txt.Image) = "C" then
       My_Hash.Clear_All (Ht);
-      My_Io.Put_Line ("Storage cleared.");
+      Basic_Proc.Put_Line_Output ("Storage cleared.");
     elsif Upper_Str (Txt.Image) = "EXIT" then
       exit;
     else

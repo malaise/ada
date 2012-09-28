@@ -1,21 +1,22 @@
-with My_Io, C_Types, Convert;
+with Basic_Proc, C_Types, Convert, Hexa_Utils, Upper_Str;
 procedure T_Conv is
 
   I : C_Types.Uint32;
 
   procedure Put (N : C_Types.Uint32) is
   begin
-    My_Io.Put (Integer(N), Base => 16);
+    Basic_Proc.Put_Output ("16#" & Upper_Str (Hexa_Utils.Image (Natural(N)))
+                         & "#");
   end Put;
 
 begin
 
   I := 16#12345678#;
-  My_Io.Put ("Host:       "); Put (I); My_Io.New_Line;
+  Basic_Proc.Put_Output ("Host:       "); Put (I); Basic_Proc.New_Line_Output;
   I := Convert.Hton (I);
-  My_Io.Put ("to Network: "); Put (I); My_Io.New_Line;
+  Basic_Proc.Put_Output ("to Network: "); Put (I); Basic_Proc.New_Line_Output;
   I := Convert.Ntoh (I);
-  My_Io.Put ("to Host:    "); Put (I); My_Io.New_Line;
+  Basic_Proc.Put_Output ("to Host:    "); Put (I); Basic_Proc.New_Line_Output;
 
 end T_Conv;
 

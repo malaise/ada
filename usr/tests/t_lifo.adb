@@ -1,5 +1,5 @@
 with Queues;
-with My_Io;
+with Basic_Proc;
 procedure T_Lifo is
 
   Size : constant := 5;
@@ -15,14 +15,14 @@ procedure T_Lifo is
   begin
     for I in 1 .. Size loop
       My_Lifo.Look_Last (Lifo, V, I);
-      My_Io.Put_Line ("Look "  & Integer'Image (I) &
+      Basic_Proc.Put_Line_Output ("Look "  & Integer'Image (I) &
                        " --> " & Positive'Image (V) );
     end loop;
   exception
     when My_Lifo.Lifo_Not =>
-      My_Io.Put_Line ("Look done");
+      Basic_Proc.Put_Line_Output ("Look done");
     when My_Lifo.Lifo_Empty =>
-      My_Io.Put_Line ("LIFO empty");
+      Basic_Proc.Put_Line_Output ("LIFO empty");
       raise;
   end Dump;
 
@@ -31,25 +31,25 @@ procedure T_Lifo is
     My_Lifo.Push (Lifo, I);
   exception
     when My_Lifo.Lifo_Full =>
-      My_Io.Put_Line ("LIFO full. Discard last then push again");
+      Basic_Proc.Put_Line_Output ("LIFO full. Discard last then push again");
       My_Lifo.Discard_Last (Lifo);
       My_Lifo.Push (Lifo, I);
   end Push;
 
 
 begin
-  My_Io.Put_Line ("Lifo size is " & Positive'Image (Size));
+  Basic_Proc.Put_Line_Output ("Lifo size is " & Positive'Image (Size));
 
   for I in 1 .. 10 loop
-    My_Io.Put_Line ("Push " & Positive'Image (I));
+    Basic_Proc.Put_Line_Output ("Push " & Positive'Image (I));
     Push (I);
     Dump;
   end loop;
 
   loop
-    My_Io.New_Line;
+    Basic_Proc.New_Line_Output;
     My_Lifo.Pop (Lifo, N);
-    My_Io.Put_Line ("Pop ==> " & Positive'Image(N));
+    Basic_Proc.Put_Line_Output ("Pop ==> " & Positive'Image(N));
     begin
       Dump;
     exception

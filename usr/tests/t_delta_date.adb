@@ -1,8 +1,7 @@
-with Ada.Calendar, Ada.Text_Io;
-with Perpet, Day_Mng, Normal, My_Io, Argument, Regular_Expressions, Basic_Proc;
+with Ada.Calendar;
+with Perpet, Day_Mng, Normal, Basic_Proc, Argument, Regular_Expressions,
+     Get_Int, Integer_Image, Dur_Image;
 procedure T_Delta_Date is
-
-  package Dur_Io is new Ada.Text_Io.Fixed_Io (Ada.Calendar.Day_Duration);
 
   T1, T2 : Ada.Calendar.Time;
   D : Perpet.Delta_Rec;
@@ -10,8 +9,16 @@ procedure T_Delta_Date is
 
   procedure Error is
   begin
-    My_Io.Put("Error, invalid value.");
+    Basic_Proc.Put_Output("Error, invalid value.");
   end Error;
+
+  procedure Get (N : out Natural) is
+    Str : String (1 .. 255);
+    Last : Natural;
+  begin
+    Basic_Proc.Get_Line (Str, Last);
+    N := Get_Int (Str (1 .. Last));
+  end Get;
 
   function Get return Ada.Calendar.Time is
     Year : Ada.Calendar.Year_Number;
@@ -21,13 +28,13 @@ procedure T_Delta_Date is
     Minute : Day_Mng.T_Minutes;
     Second : Day_Mng.T_Seconds;
     Millisec : Day_Mng.T_Millisec;
-    use My_Io;
+    use Basic_Proc;
   begin
     loop
       begin
         loop
           begin
-            Put ("Year -> "); Get (Year);
+            Put_Output ("Year -> "); Get (Year);
             exit;
           exception
             when others => Error;
@@ -36,7 +43,7 @@ procedure T_Delta_Date is
 
         loop
           begin
-            Put ("Month -> "); Get (Month);
+            Put_Output ("Month -> "); Get (Month);
             exit;
           exception
             when others => Error;
@@ -45,7 +52,7 @@ procedure T_Delta_Date is
 
         loop
           begin
-            Put ("Day -> "); Get (Day);
+            Put_Output ("Day -> "); Get (Day);
             exit;
           exception
             when others => Error;
@@ -54,7 +61,7 @@ procedure T_Delta_Date is
 
         loop
           begin
-            Put ("Hour -> "); Get (Hour);
+            Put_Output ("Hour -> "); Get (Hour);
             exit;
           exception
             when others => Error;
@@ -63,7 +70,7 @@ procedure T_Delta_Date is
 
         loop
           begin
-            Put ("Minute -> "); Get (Minute);
+            Put_Output ("Minute -> "); Get (Minute);
             exit;
           exception
             when others => Error;
@@ -72,7 +79,7 @@ procedure T_Delta_Date is
 
         loop
           begin
-            Put ("Second -> "); Get (Second);
+            Put_Output ("Second -> "); Get (Second);
             exit;
           exception
             when others => Error;
@@ -81,7 +88,7 @@ procedure T_Delta_Date is
 
         loop
           begin
-            Put ("Millisec -> "); Get (Millisec);
+            Put_Output ("Millisec -> "); Get (Millisec);
             exit;
           exception
             when others => Error;
@@ -134,60 +141,68 @@ procedure T_Delta_Date is
     Second : Day_Mng.T_Seconds;
     Millisec : Day_Mng.T_Millisec;
 
-    use My_Io;
+    use Basic_Proc;
   begin
     Ada.Calendar.Split (Date, Year, Month, Day, Secs);
     Day_Mng.Split (Secs, Hour, Minute, Second, Millisec);
-    Put (Normal(Year, 4, Gap => '0')); Put ("/");
-    Put (Normal(Month, 2, Gap => '0')); Put ("/");
-    Put (Normal(Day, 2, Gap => '0')); Put (" ");
-    Put (Normal(Hour, 2, Gap => '0')); Put (":");
-    Put (Normal(Minute, 2, Gap => '0')); Put (":");
-    Put (Normal(Second, 2, Gap => '0')); Put (".");
-    Put (Normal(Millisec, 3, Gap => '0'));
+    Put_Output (Normal(Year, 4, Gap => '0')); Put_Output ("/");
+    Put_Output (Normal(Month, 2, Gap => '0')); Put_Output ("/");
+    Put_Output (Normal(Day, 2, Gap => '0')); Put_Output (" ");
+    Put_Output (Normal(Hour, 2, Gap => '0')); Put_Output (":");
+    Put_Output (Normal(Minute, 2, Gap => '0')); Put_Output (":");
+    Put_Output (Normal(Second, 2, Gap => '0')); Put_Output (".");
+    Put_Output (Normal(Millisec, 3, Gap => '0'));
   end Put;
 
+  procedure Put (D : Ada.Calendar.Day_Duration) is
+  begin
+    Basic_Proc.Put_Output (Dur_Image (D, 3, False));
+  end Put;
+
+  use Basic_Proc;
 begin
   if Argument.Get_Nbre_Arg = 2 then
     T1 := Parse (Argument.Get_Parameter (Occurence => 1));
     Put (T1);
-    My_Io.Put (" is a ");
-    My_Io.Put_Line (Perpet.Day_Of_Week_List'Image(Perpet.Get_Day_Of_Week(T1)));
+    Put_Output (" is a ");
+    Put_Line_Output (Perpet.Day_Of_Week_List'Image(Perpet.Get_Day_Of_Week(T1)));
 
     T2 := Parse (Argument.Get_Parameter (Occurence => 2));
     Put (T2);
-    My_Io.Put (" is a ");
-    My_Io.Put_Line (Perpet.Day_Of_Week_List'Image(Perpet.Get_Day_Of_Week(T2)));
+    Put_Output (" is a ");
+    Put_Line_Output (Perpet.Day_Of_Week_List'Image(Perpet.Get_Day_Of_Week(T2)));
 
     D := Perpet."-"(T1, T2);
-    My_Io.Put (" Date1 - Date2:");
-    My_Io.Put (D.Days); My_Io.Put (" days ");
-    Dur_Io.Put (D.Secs); My_Io.Put (" sec");
+    Put_Output (" Date1 - Date2: ");
+    Put_Output (Integer_Image( (D.Days))); Put_Output (" days ");
+    Put (D.Secs); Put_Output (" sec");
+    New_Line_Output;
     return;
   end if;
 
-  My_Io.Put_Line ("Date1 :");
+  Put_Line_Output ("Date1 :");
   T1 := Get;
   Put (T1);
-  My_Io.Put (" is a ");
-  My_Io.Put_Line (Perpet.Day_Of_Week_List'Image(Perpet.Get_Day_Of_Week(T1)));
+  Put_Output (" is a ");
+  Put_Line_Output (Perpet.Day_Of_Week_List'Image(Perpet.Get_Day_Of_Week(T1)));
   loop
     begin
-      My_Io.Put_Line ("Date2 :");
+      Put_Line_Output ("Date2 :");
       T2 := Get;
       Put (T2);
-      My_Io.Put (" is a ");
-      My_Io.Put_Line (Perpet.Day_Of_Week_List'Image(
+      Put_Output (" is a ");
+      Put_Line_Output (Perpet.Day_Of_Week_List'Image(
                 Perpet.Get_Day_Of_Week(T2)));
       D := Perpet."-"(T1, T2);
-      My_Io.Put (" Date2 - Date1:");
-      My_Io.Put (D.Days); My_Io.Put (" days ");
-      Dur_Io.Put (D.Secs); My_Io.Put (" sec");
+      Put_Output (" Date2 - Date1: ");
+      Put_Output (Integer_Image( (D.Days))); Put_Output (" days ");
+      Put (D.Secs); Put_Output (" sec");
 
-      My_Io.New_Line (2);
+      Basic_Proc.New_Line_Output;
+      Basic_Proc.New_Line_Output;
     exception
       when Ada.Calendar.Time_Error =>
-        My_Io.Put_Line ("TIME_ERROR");
+        Put_Line_Output ("TIME_ERROR");
     end;
   end loop;
 exception

@@ -1,5 +1,5 @@
 with Ada.Exceptions, Ada.Calendar;
-with My_Io, Normal, Argument, Timers, Language;
+with Basic_Proc, Normal, Argument, Timers, Language;
 with Con_Io;
 
 procedure T_Con is
@@ -100,7 +100,7 @@ procedure T_Con is
             & Str(1..Last)
             & Language.Char_To_Unicode ('<')
             & Language.String_To_Unicode (Con_Io.Curs_Mvt'Image(Stat)));
-        My_Io.Put_Line (Positive'Image(Me)
+        Basic_Proc.Put_Line_Output (Positive'Image(Me)
                       & " >" & Language.Unicode_To_String (Str(1 .. Last))
                       & "<" & Con_Io.Curs_Mvt'Image(Stat));
         case Stat is
@@ -197,11 +197,11 @@ procedure T_Con is
       delay 1.0;
     end if;
 
-    My_Io.Put_Line (Me'Img & " Terminated");
+    Basic_Proc.Put_Line_Output (Me'Img & " Terminated");
 
   exception
     when Error : others =>
-       My_Io.Put_Line ("Exception in " &  Me'Img
+       Basic_Proc.Put_Line_Output ("Exception in " &  Me'Img
                      & " " & Ada.Exceptions.Exception_Name (Error));
        raise;
   end Task_T;
@@ -215,6 +215,6 @@ begin
     T(I).Start(I);
     delay 1.0;
   end loop;
-  My_Io.Put_Line ("Main Terminated");
+  Basic_Proc.Put_Line_Output ("Main Terminated");
 end T_Con;
 

@@ -1,5 +1,5 @@
 with Ada.Wide_Text_Io;
-with Con_Io, My_Io, Int_Image16, Language;
+with Con_Io, Basic_Proc, Int_Image16, Language;
 procedure T_Key is
   Console : aliased Con_Io.Console;
   Screen : Con_Io.Window;
@@ -44,7 +44,7 @@ begin
     Screen.Move (Curr_Row, Con_Io.Col_Range_First);
     Screen.Put (Got.Mvt'Img);
 
-    My_Io.Put (Got.Mvt'Img);
+    Basic_Proc.Put_Output (Got.Mvt'Img);
 
     if Got.Mvt = Con_Io.Full then
       Seq(1) := Got.Char;
@@ -53,17 +53,17 @@ begin
       Screen.Putw (" " & Language.Unicode_To_Wide (Got.Char));
       Screen.Put (" >" & Language.Unicode_To_String (Seq) & "<");
 
-      My_Io.Put (" " & Unicode_Image16(Got.Char));
+      Basic_Proc.Put_Output (" " & Unicode_Image16(Got.Char));
       Ada.Wide_Text_Io.Put (" " & Language.Unicode_To_Wide (Got.Char));
-      My_Io.Put (" >" & Language.Unicode_To_String (Seq) & "<");
+      Basic_Proc.Put_Output (" >" & Language.Unicode_To_String (Seq) & "<");
     elsif Got.Mvt = Con_Io.Break then
       Screen.Put (" exiting...");
       Console.Flush;
-      My_Io.Put_Line (" exiting...");
+      Basic_Proc.Put_Line_Output (" exiting...");
       exit;
     end if;
     Curr_Row := Next_Row;
-    My_Io.New_Line;
+    Basic_Proc.New_Line_Output;
 
   end loop;
   delay 1.0;
