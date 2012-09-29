@@ -1,5 +1,4 @@
-with Rnd, My_Io;
-use My_Io;
+with Rnd, Basic_Proc;
 procedure T_Rnd is
 
   type Couleur is (Bleu, Rouge, Jaune, Violet, Vert, Orange, Blanc, Noir);
@@ -18,19 +17,19 @@ begin
     Tableau(Essai) := Tableau(Essai) + 1;
   end loop;
   for I in Couleur loop
-    Put (Couleur'Image (I));
-    Put (" -> ");
-    Put (Tableau (I));
+    Basic_Proc.Put_Output (Couleur'Image (I));
+    Basic_Proc.Put_Output (" -> ");
+    Basic_Proc.Put_Output (Tableau (I)'Img);
     Tot := Tot + Tableau (I);
-    New_Line;
+    Basic_Proc.New_Line_Output;
   end loop;
-  Put ("total :" );
-  Put (Tot);
-  New_Line;
+  Basic_Proc.Put_Output ("total:" );
+  Basic_Proc.Put_Output (Tot'Img);
+  Basic_Proc.New_Line_Output;
 
   loop
     Tot := Rnd.Int_Random (1, 5);
-    Put_Line (Tot'Img);
+    Basic_Proc.Put_Line_Output (Tot'Img);
     exit when Tot < 1 or else Tot > 5;
   end loop;
 

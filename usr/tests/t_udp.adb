@@ -1,5 +1,5 @@
 with Ada.Exceptions;
-with As.U, My_Io, Argument, Socket, Event_Mng;
+with As.U, Basic_Proc, Argument, Socket, Event_Mng;
 
 procedure T_Udp is
 
@@ -17,7 +17,7 @@ procedure T_Udp is
   -- Signal callback
   procedure Signal_Cb is
   begin
-    My_Io.Put_Line ("Aborted.");
+    Basic_Proc.Put_Line_Output ("Aborted.");
     Sig := True;
   end Signal_Cb;
 
@@ -40,32 +40,32 @@ procedure T_Udp is
     Message_Len : Natural;
   begin
     if F /= Fd then
-      My_Io.Put_Line ("Not same Fd");
+      Basic_Proc.Put_Line_Output ("Not same Fd");
       raise Program_Error;
     end if;
-    My_Io.Put ("In callback - ");
+    Basic_Proc.Put_Output ("In callback - ");
     if Server then
-      My_Io.Put ("Server");
+      Basic_Proc.Put_Output ("Server");
     else
-      My_Io.Put ("Client");
+      Basic_Proc.Put_Output ("Client");
     end if;
     begin
       My_Receive (Soc, Message, Message_Len, Set_For_Reply => Server);
     exception
       when Socket.Soc_Conn_Lost =>
-        My_Io.Put_Line (" receives disconnection");
+        Basic_Proc.Put_Line_Output (" receives disconnection");
         return True;
     end;
-    My_Io.Put_Line (" receives: >"
+    Basic_Proc.Put_Line_Output (" receives: >"
                    & Message.Str(1 .. Message.Len)
                    & "< num "
                    & Positive'Image(Message.Num));
     if not Server then
       return False;
     end if;
-    My_Io.Put_Line ("      Working");
+    Basic_Proc.Put_Line_Output ("      Working");
     delay 5.0;
-    My_Io.Put_Line ("      Replying");
+    Basic_Proc.Put_Line_Output ("      Replying");
     Message.Num := Message.Num + 1;
     My_Send (Soc, Message);
     return False;
@@ -105,7 +105,7 @@ begin
 
   -- Create socket, add callback
   Soc.Open (Socket.Udp);
-  My_Io.Put_Line ("Socket created in mode " & Soc.Get_Blocking'Img);
+  Basic_Proc.Put_Line_Output ("Socket created in mode " & Soc.Get_Blocking'Img);
 
   Fd := Soc.Get_Fd;
   Event_Mng.Add_Fd_Callback (Fd, True, Call_Back'Unrestricted_Access);
@@ -143,9 +143,9 @@ begin
   loop
     for I in 1 .. 10 loop
       if Event_Mng.Wait (1000) then
-        My_Io.Put_Line ("Fd event");
+        Basic_Proc.Put_Line_Output ("Fd event");
       else
-        My_Io.Put_Line ("Timeout");
+        Basic_Proc.Put_Line_Output ("Timeout");
       end if;
       exit Main when Sig;
     end loop;
@@ -161,12 +161,12 @@ begin
 
 exception
   when Arg_Error =>
-    My_Io.Put_Line ("Usage: " & Argument.Get_Program_Name & " <port> <mode>");
-    My_Io.Put_Line ("  <port> ::= -p <port_name>");
-    My_Io.Put_Line ("  <mode> ::= -c <server_host_or_lan> "
+    Basic_Proc.Put_Line_Output ("Usage: " & Argument.Get_Program_Name & " <port> <mode>");
+    Basic_Proc.Put_Line_Output ("  <port> ::= -p <port_name>");
+    Basic_Proc.Put_Line_Output ("  <mode> ::= -c <server_host_or_lan> "
                              & "| -s [ <server_lan> ]");
 
   when Error : others =>
-    My_Io.Put_Line ("Exception: " & Ada.Exceptions.Exception_Name (Error));
+    Basic_Proc.Put_Line_Output ("Exception: " & Ada.Exceptions.Exception_Name (Error));
 end T_Udp;
 

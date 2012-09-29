@@ -9,8 +9,6 @@ procedure T_Regex_Filters is
   end Usage;
 
   Filter : Regex_Filters.Regex_Filter;
-  Str : String(1 .. 32*1024);
-  Len : Natural;
   Iter : Parser.Iterator;
   Res : Boolean;
 begin
@@ -48,8 +46,7 @@ begin
   -- Each line
   loop
     -- Get next line and initalise its parsing
-    Basic_Proc.Get_Line (Str, Len);
-    Parser.Set (Iter, Str(1 .. Len));
+    Parser.Set (Iter, Basic_Proc.Get_Line);
     while Parser.Next_Word(Iter) /= "" loop
       Res := Regex_Filters.Check(Parser.Current_Word(Iter), Filter);
       Basic_Proc.Put_Line_Output ("Check " & Parser.Current_Word(Iter)

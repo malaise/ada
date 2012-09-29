@@ -5,7 +5,6 @@ procedure T_Day_Mng is
 
   package Dur_Io is new Ada.Text_Io.Fixed_Io (Ada.Calendar.Day_Duration);
 
-  Str : String (1 .. 21);
   Len : Natural;
   Dur : Ada.Calendar.Day_Duration;
   Hours    : Day_Mng.T_Hours;
@@ -20,12 +19,13 @@ begin
   loop
 
     loop
+      Basic_Proc.Put_Output ("Enter a duration: ");
+      declare
+        Str : constant String := Basic_Proc.Get_Line;
       begin
-        Basic_Proc.Put_Output ("Enter a duration: ");
-        Basic_Proc.Get_Line (Str, Len);
-        exit Main when Len = 0;
+        exit Main when Str = "";
 
-        Dur_Io.Get(Str(1 .. Len), Dur, Len);
+        Dur_Io.Get(Str, Dur, Len);
         exit;
       exception
         when Error:others =>

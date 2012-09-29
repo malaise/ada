@@ -350,10 +350,13 @@ echo "OK"
 
 # t_basic
 title t_basic
-echo -e "toto\ntiti" | t_basic > out 2> err
+echo -e "tata\ntete\ntiti\ntoto\ntutu" | t_basic > out 2> err
 cat << EOF > exp
-toto
+tata
+tete
 titi
+toto
+tutu
 EOF
 cat << EOF > exp1
 End_Error
@@ -1033,7 +1036,8 @@ echo "OK"
 
 # t_normal
 title t_normal
-echo -e "21\n5\ntrue\n*\n" | try t_normal
+echo -en "21\n5\ntrue\n*\n" | try t_normal
+echo "" >> out
 cat << EOF > exp
 I ? : LEN ? : RIGHT ? : GAP ? : 0         1         2         3         4         5
 012345678901234567890123456789012345678901234567890
@@ -1168,17 +1172,18 @@ echo "OK"
 
 # t_perpet
 title t_perpet
-echo -e "1963\n10\n25\n21\n3\n210\n" | try t_perpet
+echo -en "1963\n10\n25\n21\n3\n210\n" | try t_perpet
+echo "" >> out
 cat << EOF > exp
 Base :
 Year -> Month -> Day -> 
 Delta :
-Years -> Months ->  Base + Delta:       1985           1          25 
- Base - Delta:       1942           7          25 
+Years -> Months ->  Base + Delta: 1985 1 25
+ Base - Delta: 1942 7 25
 
 Delta :
-Days ->  Base + Delta:       1964           5          22 
- Base - Delta:       1963           3          29 
+Days ->  Base + Delta: 1964 5 22
+ Base - Delta: 1963 3 29
 
 
 Delta :

@@ -1,5 +1,5 @@
 with System, Interfaces.C_Streams;
-with Ada.Command_Line, Ada.Characters.Latin_1, C_Types;
+with Ada.Command_Line, Ada.Characters.Latin_1, C_Types, As.U;
 package body Basic_Proc is
 
   procedure Check (I : in Integer) is
@@ -118,6 +118,35 @@ package body Basic_Proc is
     end loop;
     -- Should not occur because fgets always appends a Nul
     Last := 0;
+  end Get_Line;
+
+  -- Get line from stdin until Lf
+  function Get_Line return String is
+   Chrs : Interfaces.C_Streams.Chars;
+   Str : String (1 .. 255);
+   Result : As.U.Asu_Us;
+   use type System.Address;
+  begin
+    loop
+      Chrs := Interfaces.C_Streams.Fgets (Str'Address,
+                      Str'Length,
+                      Interfaces.C_Streams.Stdin);
+      if Chrs = System.Null_Address then
+        raise End_Error;
+      end if;
+      for I in Str'Range loop
+        if Str(I) = Ada.Characters.Latin_1.Lf
+        or else Str(I) = Ada.Characters.Latin_1.Cr
+        or else Str(I) = Ada.Characters.Latin_1.Nul then
+          -- Append up to Cr/Lf/Nul excluded
+          Result.Append (Str(Str'First .. I - 1));
+          if Str(I) /= Ada.Characters.Latin_1.Nul
+          or else I = Str'First then
+            return Result.Image;
+          end if;
+        end if;
+      end loop;
+    end loop;
   end Get_Line;
 
   procedure Skip_Line is

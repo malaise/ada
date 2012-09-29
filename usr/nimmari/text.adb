@@ -10,14 +10,13 @@ package body Text is
   -- Get a String of fixed lenght
   -- Returns a string filled with Lf on error
   function Get (Length : Positive) return String is
-    Str : String (1 .. 80);
-    Len : Natural;
+    Str : constant String := Basic_Proc.Get_Line;
+    Err : constant String (1 .. Length) := (others => Lf);
   begin
-    Basic_Proc.Get_Line (Str, Len);
-    if Len /= Length then
-      Str := (others => Lf);
+    if Str'Length /= Length then
+      return Err;
     end if;
-    return Str (1 .. Length);
+    return Str;
   end Get;
 
   -- Intro and choice of game kind

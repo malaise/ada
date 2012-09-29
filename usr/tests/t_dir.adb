@@ -8,12 +8,9 @@ procedure T_Dir is
   Pad : constant String(1 .. Max_Len) := (others => ' ');
 
   function Get_New_Dir return String is
-    Str : String(1 .. 1024);
-    Len : Natural;
   begin
     Basic_Proc.Put_Output ("Enter new directory: ");
-    Basic_Proc.Get_Line (Str, Len);
-    return Str(1 .. Len);
+    return Basic_Proc.Get_Line;
   end  Get_New_Dir;
 
   procedure Put_Rights (Rights : in Natural) is

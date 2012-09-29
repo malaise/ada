@@ -27,4 +27,3 @@ exception
     raise Constraint_Error;
 end Get_Int;
 
-

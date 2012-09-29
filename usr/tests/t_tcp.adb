@@ -1,5 +1,5 @@
 with Ada.Exceptions;
-with As.U, My_Io, Argument, Socket, Event_Mng;
+with As.U, Basic_Proc, Argument, Socket, Event_Mng;
 
 procedure T_Tcp is
 
@@ -19,7 +19,7 @@ procedure T_Tcp is
   -- Signal callback
   procedure Signal_Cb is
   begin
-    My_Io.Put_Line ("Aborted.");
+    Basic_Proc.Put_Line_Output ("Aborted.");
     Sig := True;
   end Signal_Cb;
 
@@ -41,10 +41,10 @@ procedure T_Tcp is
     use type Event_Mng.File_Desc;
     Message_Len : Natural;
   begin
-    My_Io.Put ("In callback - ");
+    Basic_Proc.Put_Output ("In callback - ");
     if F = Accept_Fd then
       if Soc.Is_Open and then Soc.Is_Connected then
-        My_Io.Put_Line ("rejects new connection");
+        Basic_Proc.Put_Line_Output ("rejects new connection");
         declare
           Tmp_Soc : Socket.Socket_Dscr;
         begin
@@ -64,45 +64,45 @@ procedure T_Tcp is
       end;
       Fd := Soc.Get_Fd;
       Event_Mng.Add_Fd_Callback (Fd, True, Call_Back'Unrestricted_Access);
-      My_Io.Put_Line ("accepts connection");
+      Basic_Proc.Put_Line_Output ("accepts connection");
       return True;
     end if;
 
     if F /= Fd then
-      My_Io.Put_Line ("Not same Fd");
+      Basic_Proc.Put_Line_Output ("Not same Fd");
       raise Program_Error;
     end if;
     if Server then
-      My_Io.Put ("Server");
+      Basic_Proc.Put_Output ("Server");
     else
-      My_Io.Put ("Client");
+      Basic_Proc.Put_Output ("Client");
     end if;
     begin
       My_Receive (Soc, Message, Message_Len, False);
     exception
       when Socket.Soc_Conn_Lost | Socket.Soc_Read_0 =>
-        My_Io.Put_Line (" receives disconnection: Closing");
+        Basic_Proc.Put_Line_Output (" receives disconnection: Closing");
         Event_Mng.Del_Fd_Callback (Fd, True);
         Soc.Close;
         return True;
     end;
-    My_Io.Put_Line (" receives: >"
+    Basic_Proc.Put_Line_Output (" receives: >"
                    & Message.Str(1 .. Message.Len)
                    & "< num "
                    & Positive'Image(Message.Num));
     if not Server then
       return False;
     end if;
-    My_Io.Put_Line ("      Working");
+    Basic_Proc.Put_Line_Output ("      Working");
     delay 5.0;
-    My_Io.Put_Line ("      Replying");
+    Basic_Proc.Put_Line_Output ("      Replying");
     Message.Num := Message.Num + 1;
     My_Send (Soc, Message);
-    My_Io.Put_Line ("      Reply sent");
+    Basic_Proc.Put_Line_Output ("      Reply sent");
     return False;
   exception
     when Socket.Soc_Conn_Lost =>
-      My_Io.Put_Line ("      Connection lost: Closing.");
+      Basic_Proc.Put_Line_Output ("      Connection lost: Closing.");
       Event_Mng.Del_Fd_Callback (Fd, True);
       Soc.Close;
       return False;
@@ -112,13 +112,13 @@ procedure T_Tcp is
   begin
     Soc.Open (Protocol);
     Fd := Soc.Get_Fd;
-    My_Io.Put_Line ("Client connecting");
+    Basic_Proc.Put_Line_Output ("Client connecting");
     begin
       Soc.Set_Destination_Name_And_Service (False,
              Server_Name.Image, Server_Port_Name);
     exception
       when Socket.Soc_Conn_Refused =>
-        My_Io.Put_Line ("Client connection has failed. Closing");
+        Basic_Proc.Put_Line_Output ("Client connection has failed. Closing");
         Soc.Close;
         return False;
     end;
@@ -135,16 +135,16 @@ procedure T_Tcp is
     end if;
     Message.Str (1 .. Str'Length) := Str;
     Message.Len := Str'Length;
-    My_Io.Put_Line ("Client sending");
+    Basic_Proc.Put_Line_Output ("Client sending");
     begin
       My_Send (Soc, Message, 30);
     exception
       when Socket.Soc_Conn_Lost =>
-         My_Io.Put_Line ("Client sending disconnection: Closing");
+         Basic_Proc.Put_Line_Output ("Client sending disconnection: Closing");
          Event_Mng.Del_Fd_Callback (Fd, True);
          Soc.Close;
       when others =>
-         My_Io.Put_Line ("Client sending has failed!");
+         Basic_Proc.Put_Line_Output ("Client sending has failed!");
     end;
   end Client_Send;
 
@@ -171,7 +171,7 @@ begin
         exit;
       exception
         when Socket.Soc_Addr_In_Use =>
-           My_Io.Put_Line ("Address in use, waiting");
+           Basic_Proc.Put_Line_Output ("Address in use, waiting");
            delay 20.0;
       end;
     end loop;
@@ -188,9 +188,9 @@ begin
   loop
     for I in 1 .. 10 loop
       if Event_Mng.Wait (1000) then
-        My_Io.Put_Line ("Fd event");
+        Basic_Proc.Put_Line_Output ("Fd event");
       else
-        My_Io.Put_Line ("Timeout");
+        Basic_Proc.Put_Line_Output ("Timeout");
       end if;
       exit Main when Sig;
     end loop;
@@ -215,10 +215,10 @@ begin
 
 exception
   when Arg_Error =>
-    My_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
+    Basic_Proc.Put_Line_Output ("Usage: " & Argument.Get_Program_Name
                    & " -c <server_host> | -s");
 
   when Error : others =>
-    My_Io.Put_Line ("Exception: " & Ada.Exceptions.Exception_Name (Error));
+    Basic_Proc.Put_Line_Output ("Exception: " & Ada.Exceptions.Exception_Name (Error));
 end T_Tcp;
 

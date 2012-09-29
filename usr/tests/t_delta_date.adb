@@ -13,11 +13,8 @@ procedure T_Delta_Date is
   end Error;
 
   procedure Get (N : out Natural) is
-    Str : String (1 .. 255);
-    Last : Natural;
   begin
-    Basic_Proc.Get_Line (Str, Last);
-    N := Get_Int (Str (1 .. Last));
+    N := Get_Int (Basic_Proc.Get_Line);
   end Get;
 
   function Get return Ada.Calendar.Time is

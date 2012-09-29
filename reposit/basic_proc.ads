@@ -17,10 +17,12 @@ package Basic_Proc is
   procedure New_Line_Error;
   procedure Flush_Error;
 
-  -- Get line from stdin (strip tailing Lf)
+  -- Get line from stdin up to Fl or Str'Last (strip tailing Lf if any)
   End_Error : exception;
   procedure Get_Line (Item : out String;
                       Last : out Natural);
+  -- Get line from stdin until Lf (strip it)
+  function Get_Line return String;
   -- Skip line (until Lf)
   procedure Skip_Line;
 

@@ -95,7 +95,7 @@ procedure T_Timeq is
   end Autotest;
 
 
-  Str : String (1 .. 10);
+  Str : String (1 .. 255);
   Len : Natural;
   C : Character;
   V : Val_Range;

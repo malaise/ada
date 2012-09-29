@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1, Ada.Exceptions;
-with As.U.Utils, My_Io, Str_Util.Regex, Many_Strings,
+with As.U.Utils, Basic_Proc, Str_Util.Regex, Many_Strings, Get_Int,
      Upper_Str, Lower_Str, Mixed_Str, Upper_Char, Environ, Argument;
 procedure T_String is
 
@@ -25,13 +25,10 @@ procedure T_String is
   Search_Result : Str_Util.Regex.Search_Result;
 
   procedure Nat_Get (V : out Natural; Allow_Zero : in Boolean) is
-    Str : String (1 .. 80);
-    Len : Integer;
   begin
     loop
-      My_Io.Get_Line (Str, Len);
       begin
-        V := Natural'Value(Str(1 .. Len));
+        V := Get_Int (Basic_Proc.Get_Line);
         if V = 0 and then not Allow_Zero then
           raise Constraint_Error;
         end if;
@@ -40,30 +37,27 @@ procedure T_String is
         when others => null;
       end;
       if Allow_Zero then
-        My_Io.Put ("Enter a Natural ? ");
+        Basic_Proc.Put_Output ("Enter a Natural ? ");
       else
-        My_Io.Put ("Enter a Positive ? ");
+        Basic_Proc.Put_Output ("Enter a Positive ? ");
       end if;
     end loop;
   end Nat_Get;
 
   procedure Bool_Get (V : out Boolean) is
-    Str : String (1 .. 80);
-    Len : Integer;
+    Str : constant String := Mixed_Str (Basic_Proc.Get_Line);
   begin
     loop
-      My_Io.Get_Line (Str, Len);
-      Str(1 .. Len) := Mixed_Str (Str(1 .. Len));
-      if Str(1 .. Len) = "True" or else Str(1 .. Len) = "T"
-      or else Str(1 .. Len) = "Yes" or else Str(1 .. Len) = "Y" then
+      if Str = "True" or else Str = "T"
+      or else Str = "Yes" or else Str = "Y" then
         V := True;
         return;
-      elsif Str(1 .. Len) = "False" or else Str(1 .. Len) = "F"
-      or else Str(1 .. Len) = "No" or else Str(1 .. Len) = "N" then
+      elsif Str = "False" or else Str = "F"
+      or else Str = "No" or else Str = "N" then
         V := False;
         return;
       end if;
-      My_Io.Put ("Yes or No ? ");
+      Basic_Proc.Put_Output ("Yes or No ? ");
     end loop;
   end Bool_Get;
 
@@ -77,49 +71,49 @@ begin
     Str(401 .. 426) := "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     -- Generate the same output as t_asu and t_asb for the operations
     --  that have no sense with strings
-    My_Io.Put_Line ("Empty array:");
-    My_Io.Put_Line ("Length 0");
-    My_Io.Put_Line ("Image ");
-    My_Io.Put_Line ("Array of 3:");
-    My_Io.Put_Line ("Image 3");
-    My_Io.New_Line;
-    My_Io.Put_Line ("Array of 1, 3, 5:");
-    My_Io.Put_Line ("Length 3");
-    My_Io.Put_Line ("Image 135");
-    My_Io.Put_Line ("Element 2: 3");
-    My_Io.Put_Line ("Replaced by u: u");
-    My_Io.Put_Line ("Image 1u5");
-    My_Io.New_Line;
-    My_Io.Put_Line ("Append a, b, c, d, e");
-    My_Io.Put_Line ("Image 1u5abcde");
-    My_Io.Put_Line ("Same with concat");
-    My_Io.Put_Line ("Image 1u5abcde");
-    My_Io.Put_Line ("Same with reverse concat");
-    My_Io.Put_Line ("Image 1u5abcde");
-    My_Io.Put_Line ("Same with prepend");
-    My_Io.Put_Line ("Image 1u5abcde");
-    My_Io.New_Line;
-    My_Io.Put_Line ("Slice 4 .. 6");
-    My_Io.Put_Line ("Slice string abc");
-    My_Io.Put_Line ("Uslice Image abc");
-    My_Io.Put_Line ("Check ""="" OK");
-    My_Io.New_Line;
+    Basic_Proc.Put_Line_Output ("Empty array:");
+    Basic_Proc.Put_Line_Output ("Length 0");
+    Basic_Proc.Put_Line_Output ("Image ");
+    Basic_Proc.Put_Line_Output ("Array of 3:");
+    Basic_Proc.Put_Line_Output ("Image 3");
+    Basic_Proc.New_Line_Output;
+    Basic_Proc.Put_Line_Output ("Array of 1, 3, 5:");
+    Basic_Proc.Put_Line_Output ("Length 3");
+    Basic_Proc.Put_Line_Output ("Image 135");
+    Basic_Proc.Put_Line_Output ("Element 2: 3");
+    Basic_Proc.Put_Line_Output ("Replaced by u: u");
+    Basic_Proc.Put_Line_Output ("Image 1u5");
+    Basic_Proc.New_Line_Output;
+    Basic_Proc.Put_Line_Output ("Append a, b, c, d, e");
+    Basic_Proc.Put_Line_Output ("Image 1u5abcde");
+    Basic_Proc.Put_Line_Output ("Same with concat");
+    Basic_Proc.Put_Line_Output ("Image 1u5abcde");
+    Basic_Proc.Put_Line_Output ("Same with reverse concat");
+    Basic_Proc.Put_Line_Output ("Image 1u5abcde");
+    Basic_Proc.Put_Line_Output ("Same with prepend");
+    Basic_Proc.Put_Line_Output ("Image 1u5abcde");
+    Basic_Proc.New_Line_Output;
+    Basic_Proc.Put_Line_Output ("Slice 4 .. 6");
+    Basic_Proc.Put_Line_Output ("Slice string abc");
+    Basic_Proc.Put_Line_Output ("Uslice Image abc");
+    Basic_Proc.Put_Line_Output ("Check ""="" OK");
+    Basic_Proc.New_Line_Output;
     -- Test Overwrite, Replace, Insert and Delete
-    My_Io.Put_Line ("Replace from 4 to 7 with B, C");
-    My_Io.Put_Line ("Replace from 1 to 3 with a, b, c, d");
-    My_Io.Put_Line ("Replace from 5 to 7 with e");
+    Basic_Proc.Put_Line_Output ("Replace from 4 to 7 with B, C");
+    Basic_Proc.Put_Line_Output ("Replace from 1 to 3 with a, b, c, d");
+    Basic_Proc.Put_Line_Output ("Replace from 5 to 7 with e");
     declare
       N1 : constant String := "1u5abcdE";
       N2 : constant String := Str_Util.Replace (N1, 4, 7, Str(402 .. 403));
       N3 : constant String := Str_Util.Replace (N2, 1, 3, Str(301 .. 304));
       N4 : constant String := Str_Util.Replace (N3, 5, 7, Str(305 .. 305));
     begin
-      My_Io.Put_Line ("Image " & N4);
+      Basic_Proc.Put_Line_Output ("Image " & N4);
     end;
-    My_Io.Put_Line ("Overwrite from 4 with 4, 5");
-    My_Io.Put_Line ("Overwrite from 6 with 6, 7");
-    My_Io.Put_Line ("Overwrite from 1 with 1, 2, 3");
-    My_Io.Put_Line ("Overwrite from 8 with 8");
+    Basic_Proc.Put_Line_Output ("Overwrite from 4 with 4, 5");
+    Basic_Proc.Put_Line_Output ("Overwrite from 6 with 6, 7");
+    Basic_Proc.Put_Line_Output ("Overwrite from 1 with 1, 2, 3");
+    Basic_Proc.Put_Line_Output ("Overwrite from 8 with 8");
     declare
       N1 : constant String := "abcde";
       N2 : constant String := Str_Util.Overwrite (N1, 4, Str(204 .. 205));
@@ -127,26 +121,26 @@ begin
       N4 : constant String := Str_Util.Overwrite (N3, 1, Str(201 .. 203));
       N5 : constant String := Str_Util.Overwrite (N4, 8, Str(208 .. 208));
     begin
-      My_Io.Put_Line ("Image " & N5);
+      Basic_Proc.Put_Line_Output ("Image " & N5);
     end;
-    My_Io.Put_Line ("Replace from 1 to 0 with 0");
-    My_Io.Put_Line ("Replace from 3 to 1 with a, b");
-    My_Io.Put_Line ("Replace from 12 to 11 with y, z");
+    Basic_Proc.Put_Line_Output ("Replace from 1 to 0 with 0");
+    Basic_Proc.Put_Line_Output ("Replace from 3 to 1 with a, b");
+    Basic_Proc.Put_Line_Output ("Replace from 12 to 11 with y, z");
     declare
       N1 : constant String := "12345678";
       N2 : constant String := Str_Util.Replace (N1, 1, 0, Str(200 .. 200));
       N3 : constant String := Str_Util.Replace (N2, 3, 1, Str(301 .. 302));
       N4 : constant String := Str_Util.Replace (N3, 12, 11, Str(325 .. 326));
     begin
-      My_Io.Put_Line ("Image " & N4);
+      Basic_Proc.Put_Line_Output ("Image " & N4);
     end;
-    My_Io.Put_Line ("Delete from 3 to 4, insert a, b, c, d before 4");
-    My_Io.Put_Line ("Replace from 4 to 5 with B, C, D");
-    My_Io.Put_Line ("Delete from 4 to 8");
-    My_Io.Put_Line ("Trail 2");
-    My_Io.Put_Line ("Insert 9 before 10");
-    My_Io.Put_Line ("Replace from 11 to 10 with A, B, C");
-    My_Io.Put_Line ("Overwrite from 14 with D, E, F");
+    Basic_Proc.Put_Line_Output ("Delete from 3 to 4, insert a, b, c, d before 4");
+    Basic_Proc.Put_Line_Output ("Replace from 4 to 5 with B, C, D");
+    Basic_Proc.Put_Line_Output ("Delete from 4 to 8");
+    Basic_Proc.Put_Line_Output ("Trail 2");
+    Basic_Proc.Put_Line_Output ("Insert 9 before 10");
+    Basic_Proc.Put_Line_Output ("Replace from 11 to 10 with A, B, C");
+    Basic_Proc.Put_Line_Output ("Overwrite from 14 with D, E, F");
     declare
       N1 : constant String := "01ab2345678yz";
       N2 : constant String := Str_Util.Delete (N1, 3, 4);
@@ -158,111 +152,113 @@ begin
       N8 : constant String := Str_Util.Replace (N7, 11, 10, Str(401 .. 403));
       N9 : constant String := Str_Util.Overwrite (N8, 14, Str(404 .. 406));
     begin
-      My_Io.Put_Line ("Image " & N9);
+      Basic_Proc.Put_Line_Output ("Image " & N9);
     end;
-    My_Io.New_Line;
-    My_Io.Put_Line ("Check Finalization");
-    My_Io.Put_Line ("Array of B, C");
-    My_Io.Put_Line ("Image BC");
-    My_Io.Put_Line ("Done.");
+    Basic_Proc.New_Line_Output;
+    Basic_Proc.Put_Line_Output ("Check Finalization");
+    Basic_Proc.Put_Line_Output ("Array of B, C");
+    Basic_Proc.Put_Line_Output ("Image BC");
+    Basic_Proc.Put_Line_Output ("Done.");
     return;
   end if;
 
   loop
-    My_Io.Put ("Str (String)? "); My_Io.Get_Line (Str, Str_Len);
+    Basic_Proc.Put_Output ("Str (String)? ");
+    Basic_Proc.Get_Line (Str, Str_Len);
 
     loop
-      My_Io.New_Line;
-      My_Io.Put_Line (
+      Basic_Proc.New_Line_Output;
+      Basic_Proc.Put_Line_Output (
        "String: |0        1         2         3         4         5         6");
-      My_Io.Put_Line (
+      Basic_Proc.Put_Line_Output (
        "String: |123456789012345678901234567890123456789012345678901234567890");
-      My_Io.Put_Line (
+      Basic_Proc.Put_Line_Output (
        "String: |" & Str(1 .. Str_Len) & "|   len: "
                     & Integer'Image(Str_Len));
 
-      My_Io.Put_Line ("Main menu");
-      My_Io.Put_Line (" 0 Exit to change String");
-      My_Io.Put_Line (" 1 Case conversion");
-      My_Io.Put_Line (" 2 Strip");
-      My_Io.Put_Line (" 2 Parse spaces - DISCARDED");
-      My_Io.Put_Line (" 3 Procuste");
-      My_Io.Put_Line (" 4 Locate (fragment)");
-      My_Io.Put_Line (" 5 Remove (substring)");
-      My_Io.Put_Line (" 6 (Extract) Slice");
-      My_Io.Put_Line (" 7 Cut (head or tail)");
-      My_Io.Put_Line (" 8 Extract (head or tail)");
-      My_Io.Put_Line (" 9 Swap");
-      My_Io.Put_Line ("10 Unique (from head or tail)");
-      My_Io.Put_Line ("11 Variable substitution");
-      My_Io.Put_Line ("12 Escape location");
-      My_Io.Put_Line ("13 Tuncate at best length");
-      My_Io.Put_Line ("14 Copy");
-      My_Io.Put_Line ("15 Substit");
-      My_Io.Put_Line ("16 Normalize");
-      My_Io.Put_Line ("17 Regex locate");
-      My_Io.Put_Line ("18 Regex substit");
-      My_Io.Put_Line ("19 Split");
-      My_Io.Put_Line ("20 Regex split");
-      My_Io.Put_Line ("21 Center");
-      My_Io.Put_Line ("22 Regex split on sep");
-      My_Io.Put_Line ("23 Overwrite");
-      My_Io.Put_Line ("24 Replace");
-      My_Io.Put_Line ("25 Insert");
-      My_Io.Put_Line ("26 Delete");
-      My_Io.Put_Line ("27 Check char is backslashed");
+      Basic_Proc.Put_Line_Output ("Main menu");
+      Basic_Proc.Put_Line_Output (" 0 Exit to change String");
+      Basic_Proc.Put_Line_Output (" 1 Case conversion");
+      Basic_Proc.Put_Line_Output (" 2 Strip");
+      Basic_Proc.Put_Line_Output (" 2 Parse spaces - DISCARDED");
+      Basic_Proc.Put_Line_Output (" 3 Procuste");
+      Basic_Proc.Put_Line_Output (" 4 Locate (fragment)");
+      Basic_Proc.Put_Line_Output (" 5 Remove (substring)");
+      Basic_Proc.Put_Line_Output (" 6 (Extract) Slice");
+      Basic_Proc.Put_Line_Output (" 7 Cut (head or tail)");
+      Basic_Proc.Put_Line_Output (" 8 Extract (head or tail)");
+      Basic_Proc.Put_Line_Output (" 9 Swap");
+      Basic_Proc.Put_Line_Output ("10 Unique (from head or tail)");
+      Basic_Proc.Put_Line_Output ("11 Variable substitution");
+      Basic_Proc.Put_Line_Output ("12 Escape location");
+      Basic_Proc.Put_Line_Output ("13 Tuncate at best length");
+      Basic_Proc.Put_Line_Output ("14 Copy");
+      Basic_Proc.Put_Line_Output ("15 Substit");
+      Basic_Proc.Put_Line_Output ("16 Normalize");
+      Basic_Proc.Put_Line_Output ("17 Regex locate");
+      Basic_Proc.Put_Line_Output ("18 Regex substit");
+      Basic_Proc.Put_Line_Output ("19 Split");
+      Basic_Proc.Put_Line_Output ("20 Regex split");
+      Basic_Proc.Put_Line_Output ("21 Center");
+      Basic_Proc.Put_Line_Output ("22 Regex split on sep");
+      Basic_Proc.Put_Line_Output ("23 Overwrite");
+      Basic_Proc.Put_Line_Output ("24 Replace");
+      Basic_Proc.Put_Line_Output ("25 Insert");
+      Basic_Proc.Put_Line_Output ("26 Delete");
+      Basic_Proc.Put_Line_Output ("27 Check char is backslashed");
 
-      My_Io.Put ("Choice (0 .. 22) ? "); Nat_Get (Action, True);
-      My_Io.New_Line;
+      Basic_Proc.Put_Output ("Choice (0 .. 22) ? "); Nat_Get (Action, True);
+      Basic_Proc.New_Line_Output;
 
       begin
         case Action is
           when  0 =>
             exit;
           when  1 =>
-            My_Io.Put ("Case conversion (ULM) ? "); My_Io.Get(Char1);
-            My_Io.Skip_Line;
+            Basic_Proc.Put_Output ("Case conversion (ULM) ? ");
+            Basic_Proc.Get (Char1);
+            Basic_Proc.Skip_Line;
             Char1 := Upper_Char (Char1);
             if Char1 = 'U' then
-              My_Io.Put_Line (Upper_Str (Str(1 .. Str_Len)));
+              Basic_Proc.Put_Line_Output (Upper_Str (Str(1 .. Str_Len)));
             elsif Char1 = 'L' then
-              My_Io.Put_Line (Lower_Str (Str(1 .. Str_Len)));
+              Basic_Proc.Put_Line_Output (Lower_Str (Str(1 .. Str_Len)));
             elsif Char1 = 'M' then
-              My_Io.Put_Line (Mixed_Str (Str(1 .. Str_Len)));
+              Basic_Proc.Put_Line_Output (Mixed_Str (Str(1 .. Str_Len)));
             else
-              My_Io.Put_Line ("Discarded.");
+              Basic_Proc.Put_Line_Output ("Discarded.");
             end if;
 
           when  2 =>
-            My_Io.Put_Line ("Strip");
-            My_Io.Put ("From Head/Tail/Both (HTB)? "); My_Io.Get(Char1);
-            My_Io.Skip_Line;
+            Basic_Proc.Put_Line_Output ("Strip");
+            Basic_Proc.Put_Output ("From Head/Tail/Both (HTB)? "); Basic_Proc.Get(Char1);
+            Basic_Proc.Skip_Line;
             Char1 := Upper_Char (Char1);
             if Char1 = 'H' then
-              My_Io.Put_Line ("|"
+              Basic_Proc.Put_Line_Output ("|"
                             & Str_Util.Strip (Str(1 .. Str_Len), Str_Util.Head)
                             & "|");
             elsif Char1 = 'T' then
-              My_Io.Put_Line ("|"
+              Basic_Proc.Put_Line_Output ("|"
                             & Str_Util.Strip (Str(1 .. Str_Len), Str_Util.Tail)
                             & "|");
             elsif Char1 = 'B' then
-              My_Io.Put_Line ("|"
+              Basic_Proc.Put_Line_Output ("|"
                             & Str_Util.Strip (Str(1 .. Str_Len), Str_Util.Both)
                             & "|");
             else
-              My_Io.Put_Line ("Discarded.");
+              Basic_Proc.Put_Line_Output ("Discarded.");
             end if;
 
           when  3 =>
-            My_Io.Put_Line ("Procuste");
-            My_Io.Put ("Len (Pos)? "); Nat_Get(Pos1, False);
-            My_Io.Put ("Align_Left (YN)? "); Bool_Get(Bool1);
-            My_Io.Put ("Gap (Char)? "); My_Io.Get(Char1); My_Io.Skip_Line;
-            My_Io.Put ("Trunc_Head (YN)? "); Bool_Get(Bool2);
-            My_Io.Put ("Show_Trunc (YN)? "); Bool_Get(Bool3);
+            Basic_Proc.Put_Line_Output ("Procuste");
+            Basic_Proc.Put_Output ("Len (Pos)? "); Nat_Get(Pos1, False);
+            Basic_Proc.Put_Output ("Align_Left (YN)? "); Bool_Get(Bool1);
+            Basic_Proc.Put_Output ("Gap (Char)? "); Basic_Proc.Get(Char1); Basic_Proc.Skip_Line;
+            Basic_Proc.Put_Output ("Trunc_Head (YN)? "); Bool_Get(Bool2);
+            Basic_Proc.Put_Output ("Show_Trunc (YN)? "); Bool_Get(Bool3);
 
-            My_Io.Put_Line (
+            Basic_Proc.Put_Line_Output (
                 "Procuste: |"
               & Str_Util.Procuste(Str(1 .. Str_Len),
                        Len => Pos1,
@@ -273,12 +269,12 @@ begin
               & "|" );
 
           when  4 =>
-            My_Io.Put_Line ("Locate");
-            My_Io.Put ("Fragment (Str)? "); My_Io.Get_Line (Str1, Nat1);
-            My_Io.Put ("From_Index (Nat)? "); Nat_Get(Nat2, True);
-            My_Io.Put ("Forward (YN)? "); Bool_Get(Bool1);
-            My_Io.Put ("Occurence (Pos)? "); Nat_Get(Pos1, False);
-            My_Io.Put_Line ("Occurence of fragment located at: " &
+            Basic_Proc.Put_Line_Output ("Locate");
+            Basic_Proc.Put_Output ("Fragment (Str)? "); Basic_Proc.Get_Line (Str1, Nat1);
+            Basic_Proc.Put_Output ("From_Index (Nat)? "); Nat_Get(Nat2, True);
+            Basic_Proc.Put_Output ("Forward (YN)? "); Bool_Get(Bool1);
+            Basic_Proc.Put_Output ("Occurence (Pos)? "); Nat_Get(Pos1, False);
+            Basic_Proc.Put_Line_Output ("Occurence of fragment located at: " &
              Integer'Image (Str_Util.Locate (
                Str(1 .. Str_Len),
                Fragment => Str1(1 .. Nat1),
@@ -287,14 +283,14 @@ begin
                Occurence => Pos1)) );
 
           when  5 =>
-            My_Io.Put_Line ("Remove (substring)");
-            My_Io.Put ("At_Index (Pos)? "); Nat_Get(Pos1, False);
-            My_Io.Put ("Nb_Char (Nat)? "); Nat_Get(Nat1, True);
-            My_Io.Put ("Shift_Left (YN)? "); Bool_Get(Bool1);
-            My_Io.Put ("Gap (Char, n for none)? ");
-                       My_Io.Get(Char1); My_Io.Skip_Line;
+            Basic_Proc.Put_Line_Output ("Remove (substring)");
+            Basic_Proc.Put_Output ("At_Index (Pos)? "); Nat_Get(Pos1, False);
+            Basic_Proc.Put_Output ("Nb_Char (Nat)? "); Nat_Get(Nat1, True);
+            Basic_Proc.Put_Output ("Shift_Left (YN)? "); Bool_Get(Bool1);
+            Basic_Proc.Put_Output ("Gap (Char, n for none)? ");
+                       Basic_Proc.Get(Char1); Basic_Proc.Skip_Line;
             if Char1 = 'n' then Char1 := Ada.Characters.Latin_1.Nul; end if;
-            My_Io.Put_Line ("Remaining string: |"
+            Basic_Proc.Put_Line_Output ("Remaining string: |"
               & Str_Util.Remove (Str(1 .. Str_Len),
                  At_Index => Pos1,
                  Nb_Char => Nat1,
@@ -302,54 +298,54 @@ begin
                  Gap => Char1) & "|" );
 
           when  6 =>
-            My_Io.Put_Line ("(Extract) Slice");
-            My_Io.Put ("At_Index (Pos)? "); Nat_Get(Pos1, False);
-            My_Io.Put ("Nb_Char (Nat)? "); Nat_Get(Nat1, True);
-            My_Io.Put ("To_Right (YN)? "); Bool_Get(Bool1);
-            My_Io.Put_Line ("Extracted slice: |"
+            Basic_Proc.Put_Line_Output ("(Extract) Slice");
+            Basic_Proc.Put_Output ("At_Index (Pos)? "); Nat_Get(Pos1, False);
+            Basic_Proc.Put_Output ("Nb_Char (Nat)? "); Nat_Get(Nat1, True);
+            Basic_Proc.Put_Output ("To_Right (YN)? "); Bool_Get(Bool1);
+            Basic_Proc.Put_Line_Output ("Extracted slice: |"
               & Str_Util.Slice (Str(1 .. Str_Len),
                  At_Index => Pos1,
                  Nb_Char => Nat1,
                  To_Right => Bool1) & "|" );
 
           when  7 =>
-            My_Io.Put_Line ("Cut (head or tail)");
-            My_Io.Put ("Nb_Char (Nat)? "); Nat_Get(Nat1, True);
-            My_Io.Put ("Head (YN)? "); Bool_Get(Bool1);
-            My_Io.Put_Line ("Cut string: |"
+            Basic_Proc.Put_Line_Output ("Cut (head or tail)");
+            Basic_Proc.Put_Output ("Nb_Char (Nat)? "); Nat_Get(Nat1, True);
+            Basic_Proc.Put_Output ("Head (YN)? "); Bool_Get(Bool1);
+            Basic_Proc.Put_Line_Output ("Cut string: |"
               & Str_Util.Cut (Str(1 .. Str_Len),
                  Nb_Char => Nat1,
                  Head => Bool1) & "|" );
 
           when  8 =>
-            My_Io.Put_Line ("Extract (head or tail)");
-            My_Io.Put ("Nb_Char (Nat)? "); Nat_Get(Nat1, True);
-            My_Io.Put ("Head (YN)? "); Bool_Get(Bool1);
-            My_Io.Put_Line ("Extracted: |"
+            Basic_Proc.Put_Line_Output ("Extract (head or tail)");
+            Basic_Proc.Put_Output ("Nb_Char (Nat)? "); Nat_Get(Nat1, True);
+            Basic_Proc.Put_Output ("Head (YN)? "); Bool_Get(Bool1);
+            Basic_Proc.Put_Line_Output ("Extracted: |"
               & Str_Util.Extract (Str(1 .. Str_Len),
                  Nb_Char => Nat1,
                  Head => Bool1) & "|" );
 
           when  9 =>
-            My_Io.Put_Line ("Swap");
-            My_Io.Put_Line ("Swapped: |"
+            Basic_Proc.Put_Line_Output ("Swap");
+            Basic_Proc.Put_Line_Output ("Swapped: |"
               & Str_Util.Swap (Str(1 .. Str_Len)) & "|" );
 
           when 10 =>
-            My_Io.Put_Line ("Unique (from head or tail)");
-            My_Io.Put ("From head (YN)? "); Bool_Get(Bool1);
-            My_Io.Put_Line ("Uniqued: |"
+            Basic_Proc.Put_Line_Output ("Unique (from head or tail)");
+            Basic_Proc.Put_Output ("From head (YN)? "); Bool_Get(Bool1);
+            Basic_Proc.Put_Line_Output ("Uniqued: |"
               & Str_Util.Unique (Str(1 .. Str_Len),
                                    From_Head => Bool1) & "|" );
 
           when 11 =>
-            My_Io.Put_Line ("Env variable substitution");
-            My_Io.Put ("Start delimiter (Str)? "); My_Io.Get_Line (Str1, Nat1);
-            My_Io.Put ("Stop delimiter (Str)? ");  My_Io.Get_Line (Str2, Nat2);
-            My_Io.Put ("Multiple passes (YN)? "); Bool_Get(Bool1);
-            My_Io.Put ("No check of stop (YN)? "); Bool_Get(Bool2);
-            My_Io.Put ("Skip backslashed (YN)? "); Bool_Get(Bool3);
-            My_Io.Put_Line ("Substitued: |"
+            Basic_Proc.Put_Line_Output ("Env variable substitution");
+            Basic_Proc.Put_Output ("Start delimiter (Str)? "); Basic_Proc.Get_Line (Str1, Nat1);
+            Basic_Proc.Put_Output ("Stop delimiter (Str)? ");  Basic_Proc.Get_Line (Str2, Nat2);
+            Basic_Proc.Put_Output ("Multiple passes (YN)? "); Bool_Get(Bool1);
+            Basic_Proc.Put_Output ("No check of stop (YN)? "); Bool_Get(Bool2);
+            Basic_Proc.Put_Output ("Skip backslashed (YN)? "); Bool_Get(Bool3);
+            Basic_Proc.Put_Line_Output ("Substitued: |"
               & Str_Util.Eval_Variables (
                         Str(1 .. Str_Len),
                         Start_Delimiter => Str1(1 .. Nat1),
@@ -361,22 +357,22 @@ begin
               & "|" );
 
           when 12 =>
-            My_Io.Put_Line ("Escape sequence location");
-            My_Io.Put ("From index (Pos)? "); Nat_Get(Pos1, False);
-            My_Io.Put ("Escaped (Esc char first) (Str)? ");
-                       My_Io.Get_Line (Str1, Nat1);
-            My_Io.Put_Line ("Located at: "
+            Basic_Proc.Put_Line_Output ("Escape sequence location");
+            Basic_Proc.Put_Output ("From index (Pos)? "); Nat_Get(Pos1, False);
+            Basic_Proc.Put_Output ("Escaped (Esc char first) (Str)? ");
+                       Basic_Proc.Get_Line (Str1, Nat1);
+            Basic_Proc.Put_Line_Output ("Located at: "
               & Natural'Image (Str_Util.Locate_Escape (
                         Str(1 .. Str_Len),
                         From_Index => Pos1,
                         Escape => Str1(1 .. Nat1))));
 
           when 13 =>
-            My_Io.Put_Line ("13 Tuncation ot best length");
-            My_Io.Put ("Length (Pos)? "); Nat_Get(Pos1, False);
-            My_Io.Put ("Mini (Pos)? ");   Nat_Get(Pos2, False);
-            My_Io.Put ("Maxi (Pos)? ");   Nat_Get(Pos3, False);
-            My_Io.Put_Line ("Truncate result: "
+            Basic_Proc.Put_Line_Output ("13 Tuncation ot best length");
+            Basic_Proc.Put_Output ("Length (Pos)? "); Nat_Get(Pos1, False);
+            Basic_Proc.Put_Output ("Mini (Pos)? ");   Nat_Get(Pos2, False);
+            Basic_Proc.Put_Output ("Maxi (Pos)? ");   Nat_Get(Pos3, False);
+            Basic_Proc.Put_Line_Output ("Truncate result: "
               & Str_Util.Truncate (
                         Str(1 .. Str_Len),
                         Length => Pos1,
@@ -385,61 +381,61 @@ begin
                         Separating => Str_Util.Is_Separator'Access));
 
           when 14 =>
-            My_Io.Put_Line ("14 Copy");
-            My_Io.Put ("Val (Str)? "); My_Io.Get_Line (Str1, Nat1);
+            Basic_Proc.Put_Line_Output ("14 Copy");
+            Basic_Proc.Put_Output ("Val (Str)? "); Basic_Proc.Get_Line (Str1, Nat1);
             declare
               Lstr : String (1 .. Str_Len) := Str (1 .. Str_Len);
             begin
               Str_Util.Copy (Val => Str1(1 .. Nat1),
                                To => Lstr);
-              My_Io.Put_Line ("Copy result: " & Lstr);
+              Basic_Proc.Put_Line_Output ("Copy result: " & Lstr);
             end;
           when 15 =>
-            My_Io.Put_Line ("15 Replace");
-            My_Io.Put ("What (Str)? "); My_Io.Get_Line (Str1, Nat1);
-            My_Io.Put ("By (Str)? "); My_Io.Get_Line (Str2, Nat2);
-            My_Io.Put ("Skip_Backslashed (YN)? "); Bool_Get(Bool1);
-            My_Io.Put_Line ("Replaced string: "
+            Basic_Proc.Put_Line_Output ("15 Replace");
+            Basic_Proc.Put_Output ("What (Str)? "); Basic_Proc.Get_Line (Str1, Nat1);
+            Basic_Proc.Put_Output ("By (Str)? "); Basic_Proc.Get_Line (Str2, Nat2);
+            Basic_Proc.Put_Output ("Skip_Backslashed (YN)? "); Bool_Get(Bool1);
+            Basic_Proc.Put_Line_Output ("Replaced string: "
               & Str_Util.Substit (Str(1 .. Str_Len),
                                     What => Str1(1 .. Nat1),
                                     By => Str2(1 .. Nat2),
                                     Skip_Backslashed => Bool1) );
 
           when 16 =>
-            My_Io.Put_Line ("16 Normalize");
+            Basic_Proc.Put_Line_Output ("16 Normalize");
             declare
               -- Copy Str in a non normalized string
               Lstr : constant String (2 .. Str_Len+1) := Str(1 .. Str_Len);
             begin
-              My_Io.Put_Line ("Normalized string: "
+              Basic_Proc.Put_Line_Output ("Normalized string: "
                 & Str_Util.Normalize (Lstr));
             end;
 
           when 17 =>
-            My_Io.Put_Line ("17 Regex locate");
-            My_Io.Put ("Criteria (Str)? "); My_Io.Get_Line (Str1, Nat1);
-            My_Io.Put ("From_Index (Nat)? "); Nat_Get (Nat2, True);
-            My_Io.Put ("To_Index (Nat)? "); Nat_Get (Nat3, True);
-            My_Io.Put ("Forward (YN)? "); Bool_Get(Bool1);
-            My_Io.Put ("Occurence (Pos)? "); Nat_Get (Pos1, False);
+            Basic_Proc.Put_Line_Output ("17 Regex locate");
+            Basic_Proc.Put_Output ("Criteria (Str)? "); Basic_Proc.Get_Line (Str1, Nat1);
+            Basic_Proc.Put_Output ("From_Index (Nat)? "); Nat_Get (Nat2, True);
+            Basic_Proc.Put_Output ("To_Index (Nat)? "); Nat_Get (Nat3, True);
+            Basic_Proc.Put_Output ("Forward (YN)? "); Bool_Get(Bool1);
+            Basic_Proc.Put_Output ("Occurence (Pos)? "); Nat_Get (Pos1, False);
             Search_Result := Str_Util.Regex.Locate (Str(1 .. Str_Len),
                     Criteria => Str1(1 .. Nat1),
                     From_Index => Nat2,
                     To_Index => Nat3,
                     Forward => Bool1,
                     Occurence => Pos1);
-            My_Io.Put_Line ("Match at: " & Search_Result.First_Offset'Img
+            Basic_Proc.Put_Line_Output ("Match at: " & Search_Result.First_Offset'Img
                           & " -" & Search_Result.Last_Offset_Start'Img
                           & " /" & Search_Result.Last_Offset_Stop'Img);
 
           when 18 =>
-            My_Io.Put_Line ("18 Regex replace");
-            My_Io.Put ("Criteria (Str)? "); My_Io.Get_Line (Str1, Nat1);
-            My_Io.Put ("By (Str)? "); My_Io.Get_Line (Str2, Nat2);
-            My_Io.Put ("From_Index (Nat)? "); Nat_Get (Nat3, True);
-            My_Io.Put ("To_Index (Nat)? "); Nat_Get (Nat4, True);
-            My_Io.Put ("Nb_Cycles (Nat)? "); Nat_Get (Nat5, True);
-            My_Io.Put_Line ("Replaced string: "
+            Basic_Proc.Put_Line_Output ("18 Regex replace");
+            Basic_Proc.Put_Output ("Criteria (Str)? "); Basic_Proc.Get_Line (Str1, Nat1);
+            Basic_Proc.Put_Output ("By (Str)? "); Basic_Proc.Get_Line (Str2, Nat2);
+            Basic_Proc.Put_Output ("From_Index (Nat)? "); Nat_Get (Nat3, True);
+            Basic_Proc.Put_Output ("To_Index (Nat)? "); Nat_Get (Nat4, True);
+            Basic_Proc.Put_Output ("Nb_Cycles (Nat)? "); Nat_Get (Nat5, True);
+            Basic_Proc.Put_Line_Output ("Replaced string: "
               & Str_Util.Regex.Substit (Str(1 .. Str_Len),
                     Criteria => Str1(1 .. Nat1),
                     By => Str2(1 .. Nat2),
@@ -448,70 +444,70 @@ begin
                     Nb_Cycles => Nat5));
 
           when 19 =>
-            My_Io.Put_Line ("19 Split");
-            My_Io.Put ("Separator (Char)? "); My_Io.Get(Char1); My_Io.Skip_Line;
+            Basic_Proc.Put_Line_Output ("19 Split");
+            Basic_Proc.Put_Output ("Separator (Char)? "); Basic_Proc.Get(Char1); Basic_Proc.Skip_Line;
             declare
               Lstr : constant Many_Strings.Many_String
                    := Str_Util.Split (Str(1 .. Str_Len), Char1);
             begin
-              My_Io.Put_Line ("Split into: ");
+              Basic_Proc.Put_Line_Output ("Split into: ");
               for I in 1 .. Many_Strings.Nb (Lstr) loop
-                My_Io.Put_Line (">" & Many_Strings.Nth (Lstr, I) & "<");
+                Basic_Proc.Put_Line_Output (">" & Many_Strings.Nth (Lstr, I) & "<");
               end loop;
             end;
           when 20 =>
-            My_Io.Put_Line ("20 Regex split");
-            My_Io.Put ("Criteria (String)? "); My_Io.Get_Line (Str1, Nat1);
-            My_Io.Put ("Max_Slices (Pos)? "); Nat_Get (Pos1, False);
+            Basic_Proc.Put_Line_Output ("20 Regex split");
+            Basic_Proc.Put_Output ("Criteria (String)? "); Basic_Proc.Get_Line (Str1, Nat1);
+            Basic_Proc.Put_Output ("Max_Slices (Pos)? "); Nat_Get (Pos1, False);
             declare
               Lstr : constant As.U.Utils.Asu_Array
                    := Str_Util.Regex.Split (Str(1 .. Str_Len),
                                               Str1(1 .. Nat1), Pos1);
             begin
-              My_Io.Put_Line ("Split into: ");
+              Basic_Proc.Put_Line_Output ("Split into: ");
               for I in Lstr'Range loop
-                My_Io.Put_Line (">" & Lstr(I).Image & "<");
+                Basic_Proc.Put_Line_Output (">" & Lstr(I).Image & "<");
               end loop;
             end;
 
           when 21 =>
-            My_Io.Put_Line ("21 Center");
-            My_Io.Put ("Len (Pos)? "); Nat_Get (Pos1, False);
-            My_Io.Put ("Gap (Char)? "); My_Io.Get(Char1); My_Io.Skip_Line;
-            My_Io.Put_Line (
+            Basic_Proc.Put_Line_Output ("21 Center");
+            Basic_Proc.Put_Output ("Len (Pos)? "); Nat_Get (Pos1, False);
+            Basic_Proc.Put_Output ("Gap (Char)? "); Basic_Proc.Get(Char1); Basic_Proc.Skip_Line;
+            Basic_Proc.Put_Line_Output (
                 "Center: |"
               & Str_Util.Center(Str(1 .. Str_Len), Len => Pos1, Gap => Char1)
               & "|" );
 
           when 22 =>
-            My_Io.Put_Line ("22 Regex split on sep");
-            My_Io.Put ("Separator (Str)? "); My_Io.Get_Line (Str1, Nat1);
+            Basic_Proc.Put_Line_Output ("22 Regex split on sep");
+            Basic_Proc.Put_Output ("Separator (Str)? "); Basic_Proc.Get_Line (Str1, Nat1);
             declare
               Slices : constant As.U.Utils.Asu_Array
                      := Str_Util.Regex.Split_Sep (Str(1 .. Str_Len),
                                                     Str1(1 .. Nat1));
             begin
               for I in 1 .. Slices'Length loop
-                My_Io.Put_Line (">" & Slices(I).Image & "<");
+                Basic_Proc.Put_Line_Output (">" & Slices(I).Image & "<");
               end loop;
             end;
 
           when 23 =>
-            My_Io.Put_Line ("23 Overwrite");
-            My_Io.Put ("Position (Pos)? "); Nat_Get (Pos1, False);
-            My_Io.Put ("New_Str (Str)? "); My_Io.Get_Line (Str1, Nat1);
-            My_Io.Put_Line (
+            Basic_Proc.Put_Line_Output ("23 Overwrite");
+            Basic_Proc.Put_Output ("Position (Pos)? "); Nat_Get (Pos1, False);
+            Basic_Proc.Put_Output ("New_Str (Str)? "); Basic_Proc.Get_Line (Str1, Nat1);
+            Basic_Proc.Put_Line_Output (
                 "Overwritten: "
               & Str_Util.Overwrite (Str(1 .. Str_Len),
                                     Position => Pos1,
                                     New_Str => Str1(1 .. Nat1)));
 
           when 24 =>
-            My_Io.Put_Line ("24 Replace");
-            My_Io.Put ("Low (Pos)? "); Nat_Get (Pos1, False);
-            My_Io.Put ("High (Nat)? "); Nat_Get (Nat2, True);
-            My_Io.Put ("By (Str)? "); My_Io.Get_Line (Str1, Nat1);
-            My_Io.Put_Line (
+            Basic_Proc.Put_Line_Output ("24 Replace");
+            Basic_Proc.Put_Output ("Low (Pos)? "); Nat_Get (Pos1, False);
+            Basic_Proc.Put_Output ("High (Nat)? "); Nat_Get (Nat2, True);
+            Basic_Proc.Put_Output ("By (Str)? "); Basic_Proc.Get_Line (Str1, Nat1);
+            Basic_Proc.Put_Line_Output (
                 "Replaced: "
               & Str_Util.Replace (Str(1 .. Str_Len),
                                   Low => Pos1,
@@ -519,29 +515,30 @@ begin
                                   By => Str1(1 .. Nat1)));
 
           when 25 =>
-            My_Io.Put_Line ("25 Insert");
-            My_Io.Put ("Before (Pos)? "); Nat_Get (Pos1, False);
-            My_Io.Put ("New_Str (Str)? "); My_Io.Get_Line (Str1, Nat1);
-            My_Io.Put_Line (
+            Basic_Proc.Put_Line_Output ("25 Insert");
+            Basic_Proc.Put_Output ("Before (Pos)? "); Nat_Get (Pos1, False);
+            Basic_Proc.Put_Output ("New_Str (Str)? ");
+            Basic_Proc.Get_Line (Str1, Nat1);
+            Basic_Proc.Put_Line_Output (
                 "Inserted: "
               & Str_Util.Insert (Str(1 .. Str_Len),
                                  Before => Pos1,
                                  New_Str => Str1(1 .. Nat1)));
 
           when 26 =>
-            My_Io.Put_Line ("26 Delete");
-            My_Io.Put ("From (Pos)? "); Nat_Get (Pos1, False);
-            My_Io.Put ("Through (Nat)? "); Nat_Get (Nat1, True);
-            My_Io.Put_Line (
+            Basic_Proc.Put_Line_Output ("26 Delete");
+            Basic_Proc.Put_Output ("From (Pos)? "); Nat_Get (Pos1, False);
+            Basic_Proc.Put_Output ("Through (Nat)? "); Nat_Get (Nat1, True);
+            Basic_Proc.Put_Line_Output (
                 "Deleted: "
               & Str_Util.Delete (Str(1 .. Str_Len),
                                  From => Pos1,
                                  Through => Nat1));
 
           when 27 =>
-            My_Io.Put_Line ("27 Check char is backslashed");
-            My_Io.Put ("Index (Pos)? "); Nat_Get (Pos1, False);
-            My_Io.Put_Line (
+            Basic_Proc.Put_Line_Output ("27 Check char is backslashed");
+            Basic_Proc.Put_Output ("Index (Pos)? "); Nat_Get (Pos1, False);
+            Basic_Proc.Put_Line_Output (
                 "Is backslashed: "
               & Mixed_Str(Boolean'Image (Str_Util.Is_Backslashed (
                    Str(1 .. Str_Len),
@@ -556,14 +553,14 @@ begin
              | Str_Util.Delimiter_Mismatch
              | Str_Util.Regex.Invalid_Regular_Expression
              | Str_Util.Regex.Invalid_Index =>
-          My_Io.Put_Line ("Raised " & Ada.Exceptions.Exception_Name(Error)
+          Basic_Proc.Put_Line_Output ("Raised " & Ada.Exceptions.Exception_Name(Error)
                                     & "!");
 
       end;
 
     end loop;
 
-    My_Io.New_Line;
+    Basic_Proc.New_Line_Output;
   end loop;
 
 end T_String;

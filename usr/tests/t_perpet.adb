@@ -1,5 +1,5 @@
-with Ada.Calendar, Ada.Characters.Latin_1, Ada.Io_Exceptions;
-with Perpet, My_Io;
+with Ada.Calendar;
+with Perpet, Basic_Proc, Get_Int, Console;
 procedure T_Perpet is
 
   T : Ada.Calendar.Time;
@@ -8,20 +8,20 @@ procedure T_Perpet is
 
   procedure Error is
   begin
-    My_Io.Put(Ada.Characters.Latin_1.Bel);
+    Console.Sound;
   end Error;
 
   function Get return Ada.Calendar.Time is
     Year : Ada.Calendar.Year_Number;
     Month : Ada.Calendar.Month_Number;
     Day : Ada.Calendar.Day_Number;
-    use My_Io;
+    use Basic_Proc;
   begin
     loop
       begin
         loop
           begin
-            Put ("Year -> "); Get (Year);
+            Put_Output ("Year -> "); Year := Get_Int (Get_Line);
             exit;
           exception
             when others => Error;
@@ -30,7 +30,7 @@ procedure T_Perpet is
 
         loop
           begin
-            Put ("Month -> "); Get (Month);
+            Put_Output ("Month -> "); Month := Get_Int (Get_Line);
             exit;
           exception
             when others => Error;
@@ -39,7 +39,7 @@ procedure T_Perpet is
 
         loop
           begin
-            Put ("Day -> "); Get (Day);
+            Put_Output ("Day -> "); Day := Get_Int (Get_Line);
             exit;
           exception
             when others => Error;
@@ -55,21 +55,21 @@ procedure T_Perpet is
 
   function Get return Perpet.Duration_Rec is
     Dur : Perpet.Duration_Rec;
-    use My_Io;
+    use Basic_Proc;
   begin
     loop
       begin
-        Put ("Years -> "); Get (Dur.Years);
+        Put_Output ("Years -> "); Dur.Years := Get_Int (Get_Line);
         exit;
       exception
-        when Ada.Io_Exceptions.End_Error => raise;
+        when Basic_Proc.End_Error => raise;
         when others => Error;
       end;
     end loop;
 
     loop
       begin
-        Put ("Months -> "); Get (Dur.Months);
+        Put_Output ("Months -> "); Dur.Months := Get_Int (Get_Line);
         exit;
       exception
         when others => Error;
@@ -82,14 +82,14 @@ procedure T_Perpet is
 
   function Get return Perpet.Day_Range is
     D : Perpet.Day_Range;
-    use My_Io;
+    use Basic_Proc;
   begin
     loop
       begin
-        Put ("Days -> "); Get (D);
+        Put_Output ("Days -> "); D := Get_Int (Get_Line);
         exit;
       exception
-        when Ada.Io_Exceptions.End_Error => raise;
+        when Basic_Proc.End_Error => raise;
         when others => Error;
       end;
     end loop;
@@ -102,38 +102,36 @@ procedure T_Perpet is
     Month : Ada.Calendar.Month_Number;
     Day : Ada.Calendar.Day_Number;
     Seconds : Ada.Calendar.Day_Duration;
-    use My_Io;
+    use Basic_Proc;
   begin
     Ada.Calendar.Split (Date, Year, Month, Day, Seconds);
-    Put (Year); Put (" ");
-    Put (Month); Put (" ");
-    Put (Day); Put (" ");
-    My_Io.New_Line;
+    Put_Line_Output (Year'Img & Month'Img & Day'Img);
   end Put;
 
 begin
-  My_Io.Put_Line ("Base :");
+  Basic_Proc.Put_Line_Output ("Base :");
   T := Get;
-  My_Io.New_Line;
+  Basic_Proc.New_Line_Output;
   loop
     begin
-      My_Io.Put_Line ("Delta :");
+      Basic_Proc.Put_Line_Output ("Delta :");
       R := Get;
-      My_Io.Put (" Base + Delta:"); Put (Perpet."+"(T, R));
-      My_Io.Put (" Base - Delta:"); Put (Perpet."-"(T, R));
-      My_Io.New_Line;
+      Basic_Proc.Put_Output (" Base + Delta:"); Put (Perpet."+"(T, R));
+      Basic_Proc.Put_Output (" Base - Delta:"); Put (Perpet."-"(T, R));
+      Basic_Proc.New_Line_Output;
 
-      My_Io.Put_Line ("Delta :");
+      Basic_Proc.Put_Line_Output ("Delta :");
       D := Get;
-      My_Io.Put (" Base + Delta:"); Put (Perpet."+"(T, D));
-      My_Io.Put (" Base - Delta:"); Put (Perpet."-"(T, D));
-      My_Io.New_Line (2);
+      Basic_Proc.Put_Output (" Base + Delta:"); Put (Perpet."+"(T, D));
+      Basic_Proc.Put_Output (" Base - Delta:"); Put (Perpet."-"(T, D));
+      Basic_Proc.New_Line_Output;
+      Basic_Proc.New_Line_Output;
     exception
       when Ada.Calendar.Time_Error =>
-        My_Io.Put_Line ("TIME_ERROR");
+        Basic_Proc.Put_Line_Output ("TIME_ERROR");
     end;
   end loop;
 exception
-  when Ada.Io_Exceptions.End_Error => null;
+  when Basic_Proc.End_Error => null;
 end T_Perpet;
 

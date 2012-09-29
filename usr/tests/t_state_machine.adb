@@ -1,5 +1,4 @@
-with Ada.Io_Exceptions;
-with My_Io, State_Machine;
+with Basic_Proc, State_Machine;
 procedure T_State_Machine is
 
   type State_List is (Unknown, Starting, Failed, Detached, Ok, Error);
@@ -18,15 +17,12 @@ procedure T_State_Machine is
 
   function Get_Event return Event_List is
     Event : Event_List;
-    Str : String (1 .. 500);
-    Len : Natural;
   begin
     for E in Event_List loop
-      My_Io.Put (Event_List'Image(E) & " ");
+      Basic_Proc.Put_Output (Event_List'Image(E) & " ");
     end loop;
-    My_Io.Put (" ? ");
-    My_Io.Get_Line (Str, Len);
-    Event := Event_List'Value (Str(1 .. Len));
+    Basic_Proc.Put_Output (" ? ");
+    Event := Event_List'Value (Basic_Proc.Get_Line);
     return Event;
   end Get_Event;
 
@@ -37,29 +33,29 @@ procedure T_State_Machine is
     begin
       if Str'Length <= Strmax'Length then
         Strmax(1 .. Str'Length) := Str;
-        My_Io.Put(Strmax);
+        Basic_Proc.Put_Output (Strmax);
       else
-        My_Io.Put(Str);
+        Basic_Proc.Put_Output (Str);
       end if;
     end Puts;
   begin
     Puts(State_List'Image(Change.Original_State));
-    My_Io.Put(" -- ");
+    Basic_Proc.Put_Output (" -- ");
     if Change.On_Event then
-      Puts(Event_List'Image(Change.Event));
+      Puts (Event_List'Image(Change.Event));
     else
-      Puts("Forced");
+      Puts ("Forced");
     end if;
-    My_Io.Put(" -> ");
-    Puts(State_List'Image(Change.Destination_State));
-    My_Io.New_Line;
+    Basic_Proc.Put_Output (" -> ");
+    Puts (State_List'Image(Change.Destination_State));
+    Basic_Proc.New_Line_Output;
   end Put_Change;
 
   procedure Display_Change (Msg : in String;
                             Change : in Msm.State_Change_Rec) is
   begin
     if Change.Destination_State /= Change.Original_State then
-      My_Io.Put (Msg & ": ");
+      Basic_Proc.Put_Output (Msg & ": ");
       Put_Change (Change);
     end if;
   end Display_Change;
@@ -95,7 +91,7 @@ procedure T_State_Machine is
 
 begin
 
-  My_Io.Put_Line("State machine definition:");
+  Basic_Proc.Put_Line_Output ("State machine definition:");
   -- Declare state machine
   My_Add_Transition (Unknown,  Detach,    Detached);
   My_Add_Transition (Unknown,  Start,     Starting);
@@ -121,14 +117,15 @@ begin
 -- For true_loop detection
 --My_Add_Transition (Ok,       True,      Failed)  ;
 --My_Add_Transition (Failed,   True,      Ok)      ;
-  My_Io.Put_Line("Reports set on State=Unknown and Event=Default");
+  Basic_Proc.Put_Line_Output ("Reports set on State=Unknown and Event=Default");
   Mach.Add_State_Report(Unknown, Report_State'Unrestricted_Access);
   Mach.Add_Event_Report(Default, Report_Event'Unrestricted_Access);
-  My_Io.Put_Line("End of state machine definition.");
-  My_Io.New_Line;
+  Basic_Proc.Put_Line_Output ("End of state machine definition.");
+  Basic_Proc.New_Line_Output;
   Mach.End_Declaration;
 
-  My_Io.Put_Line ("Initial state : " & State_List'Image(Mach.Current_State));
+  Basic_Proc.Put_Line_Output  ("Initial state : "
+                             & State_List'Image(Mach.Current_State));
 
   -- Drive
   loop
@@ -137,13 +134,13 @@ begin
     Valid_Event := True;
     case Cur_State is
       when Failed =>
-        My_Io.Put_Line (" test program : setting state to unknown");
+        Basic_Proc.Put_Line_Output (" test program : setting state to unknown");
         Mach.Set_State (Unknown);
       when others =>
         begin
           Event := Get_Event;
         exception
-          when Ada.Io_Exceptions.End_Error =>
+          when Basic_Proc.End_Error =>
             raise;
           when others =>
             Valid_Event := False;
@@ -151,12 +148,12 @@ begin
         if Valid_Event then
           Mach.New_Event (Event);
         else
-          My_Io.Put_Line (" ???");
+          Basic_Proc.Put_Line_Output (" ???");
         end if;
     end case;
   end loop;
 
 exception
-  when Ada.Io_Exceptions.End_Error =>
+  when Basic_Proc.End_Error =>
     null;
 end T_State_Machine;

@@ -175,7 +175,7 @@ package body Output is
         -- Line2Put is split. First chunk is Put_Line
         Low_Put (Common.Line_Feed);
         -- Format the remaining: Length + 1 .. Last
-        Format (Line2Put.Slice (Str'length + 1, Line2Put.Length),
+        Format (Line2Put.Slice (Str'Length + 1, Line2Put.Length),
                 False, Level, True);
       end if;
     end;

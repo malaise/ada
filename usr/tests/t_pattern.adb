@@ -317,9 +317,6 @@ procedure T_Pattern is
     return True;
   end Auto;
 
-  Buf : String (1 .. 1024);
-  Len : Natural;
-
 begin
 
   -- Hook parser (rule 1)
@@ -339,10 +336,8 @@ begin
   Rule := Pattern.Get_Free_Rule;
 
   loop
-    Basic_Proc.Put_Output ("> ");
-    Basic_Proc.Get_Line (Buf, Len);
     begin
-      Pattern.Check (Mr, Lower_Str(Buf(1 .. Len)));
+      Pattern.Check (Mr, Lower_Str(Basic_Proc.Get_Line));
       pragma Warnings (Off, "variable ""*"" is not modified in loop body");
       exit when Done;
       pragma Warnings (On, "variable ""*"" is not modified in loop body");

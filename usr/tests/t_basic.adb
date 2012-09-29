@@ -6,6 +6,7 @@ begin
   loop
     Basic_Proc.Get_Line (Str, Len);
     Basic_Proc.Put_Line_Output (Str (1 .. Len));
+    Basic_Proc.Put_Line_Output (Basic_Proc.Get_Line);
   end loop;
 exception
   when Basic_Proc.End_Error =>
