@@ -1,6 +1,6 @@
 -- List directories
 -- Usage: ddir [ { <path> } ]
-with As.U, My_Io, Argument, Directory;
+with As.U, Basic_Proc, Argument, Directory;
 procedure Ddir is
 
   procedure Ddir_One (Dir_Name : in String) is
@@ -13,14 +13,14 @@ procedure Ddir is
       Dir_Dsc.Open (Dir_Name);
     exception
       when Directory.Name_Error =>
-        My_Io.Put_Line ("ERROR no such directory " & Dir_Name);
+        Basic_Proc.Put_Line_Output ("ERROR no such directory " & Dir_Name);
         return;
       when Directory.Access_Error =>
-        My_Io.Put_Line ("ERROR reading directory " & Dir_Name);
+        Basic_Proc.Put_Line_Output ("ERROR reading directory " & Dir_Name);
         return;
     end;
 
-    My_Io.Put_Line ("Directories of " & Dir_Name);
+    Basic_Proc.Put_Line_Output ("Directories of " & Dir_Name);
     loop
       begin
         Dir_Dsc.Next_Entry (Entry_Name);
@@ -38,11 +38,11 @@ procedure Ddir is
       if Kind = Directory.Dir
       and then Entry_Name.Image /= "."
       and then Entry_Name.Image /= ".." then
-        My_Io.Put_Line (Entry_Name.Image);
+        Basic_Proc.Put_Line_Output (Entry_Name.Image);
       end if;
     end loop;
     Dir_Dsc.Close;
-    My_Io.New_Line;
+    Basic_Proc.New_Line_Output;
   end Ddir_One;
 
 begin

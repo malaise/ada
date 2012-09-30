@@ -1,5 +1,5 @@
 -- Purpose: solve a.x2 + b.x + c = 0
-with Argument, My_Io, My_Math, Get_Float;
+with Argument, Basic_Proc, My_Math, Get_Float;
 use My_Math;
 procedure Second is
 
@@ -14,7 +14,7 @@ begin
 
   -- Check number of arguments
   if Argument.Get_Nbre_Arg /= 3 then
-    My_Io.Put_Line ("ERROR. 3 arguments expected, a, b and c.");
+    Basic_Proc.Put_Line_Output ("ERROR. 3 arguments expected, a, b and c.");
     return;
   end if;
 
@@ -25,46 +25,46 @@ begin
     C := My_Math.Real (Get_Float.Get_Float (Argument.Get_Parameter(3)));
   exception
     when others =>
-      My_Io.Put_Line ("ERROR in an argument. 3 arguments expected, a, b and c.");
+      Basic_Proc.Put_Line_Output ("ERROR in an argument. 3 arguments expected, a, b and c.");
       return;
   end;
 
-  Real_Io.Put(A); My_Io.Put(" * x2 + ");
-  Real_Io.Put(B); My_Io.Put(" * x + ");
-  Real_Io.Put(C); My_Io.Put(" = 0");
-  My_Io.New_Line;
+  Real_Io.Put (A); Basic_Proc.Put_Output (" * x2 + ");
+  Real_Io.Put (B); Basic_Proc.Put_Output (" * x + ");
+  Real_Io.Put (C); Basic_Proc.Put_Output (" = 0");
+  Basic_Proc.New_Line_Output;
 
   -- A = 0 ?
   if A = 0.0 then
     -- First degree
     if B = 0.0 then
       if C = 0.0 then
-        My_Io.Put_Line ("Inifinity of solutions.");
+        Basic_Proc.Put_Line_Output ("Inifinity of solutions.");
       else
-        My_Io.Put_Line ("No solution.");
+        Basic_Proc.Put_Line_Output ("No solution.");
       end if;
     else
-      My_Io.Put ("One solution: ");
+      Basic_Proc.Put_Output ("One solution: ");
       Real_Io.Put (-C/B);
-        My_Io.New_Line;
+        Basic_Proc.New_Line_Output;
     end if;
   else
     -- A /= 0
     -- Compute discriminant, see if it is >= 0
     D := B * B - 4.0 * A * C;
     if D >= 0.0 then
-      My_Io.Put ("Two real solutions: ");
+      Basic_Proc.Put_Output ("Two real solutions: ");
       Real_Io.Put ((-B + My_Math.Sqrt(D)) / (2.0 * A));
-      My_Io.Put (" and ");
+      Basic_Proc.Put_Output (" and ");
       Real_Io.Put ((-B - My_Math.Sqrt(D)) / (2.0 * A));
-      My_Io.New_Line;
+      Basic_Proc.New_Line_Output;
     else
-      My_Io.Put_Line ("Two complex solutions: ");
+      Basic_Proc.Put_Line_Output ("Two complex solutions: ");
       Real_Io.Put ((-B) / (2.0 * A) );
-      My_Io.Put (" +/-");
+      Basic_Proc.Put_Output (" +/-");
       Real_Io.Put (My_Math.Sqrt(-D) / (2.0 * A));
-      My_Io.Put (" * i ");
-      My_Io.New_Line;
+      Basic_Proc.Put_Output (" * i ");
+      Basic_Proc.New_Line_Output;
     end if;
   end if;
 

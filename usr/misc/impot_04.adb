@@ -1,5 +1,5 @@
-with Flo_Io, Long_Io, My_Math, My_Io, Clear_Screen;
-use My_Io;
+with My_Math, Basic_Proc, Clear_Screen, Get_Float, Normalization;
+use Basic_Proc;
 procedure Impot_04 is
 
   -- Tout montant en francs
@@ -35,20 +35,10 @@ procedure Impot_04 is
 
   -- pour lire un float tres securise
   function Get_Real return My_Math.Real is
-    Chaine : String(1..132);
-    Dernier : Natural;
     Valeur : Float;
-    Int_Val : My_Math.Inte;
   begin
-    My_Io.Get_Line (Chaine, Dernier);
-    begin
-      Flo_Io.Get (Chaine(1..Dernier), Valeur, Dernier);
-      return My_Math.Real(Valeur);
-    exception
-      when others =>
-        Long_Io.Get(Chaine(1..Dernier), Int_Val, Dernier);
-        return My_Math.Real (Int_Val);
-    end;
+    Valeur := Get_Float.Get_Float (Basic_Proc.Get_Line);
+    return My_Math.Real(Valeur);
   end Get_Real;
 
   -- Pour lire une somme avec une invite
@@ -57,11 +47,11 @@ procedure Impot_04 is
   begin
     loop
       begin
-        Put (Message & " : ");
+        Put_Output (Message & " : ");
         Val := Get_Real;
-        return Somme(Val);
+        return Somme (Val);
       exception
-        when others => Put_Line ("ERREUR. Recommencez.");
+        when others => Put_Line_Output ("ERREUR. Recommencez.");
       end;
     end loop;
   end Get_Somme;
@@ -75,19 +65,19 @@ procedure Impot_04 is
   begin
     loop
       begin
-        Put (Message);
-        Put (" : ");
+        Put_Output (Message);
+        Put_Output (" : ");
         Val := Get_Real;
         Frac := My_Math.Frac (Val);
-        if (Frac /= 0.0) and then (Frac /= 0.5) then
+        if Frac /= 0.0 and then Frac /= 0.5 then
           raise Constraint_Error;
         end if;
-        if (Val <= 0.0) then
+        if Val <= 0.0 then
           raise Constraint_Error;
         end if;
         return Positive(My_Math.Int (Val * 10.0) );
       exception
-        when others => Put_Line ("ERREUR. Recommencez.");
+        when others => Put_Line_Output ("ERREUR. Recommencez.");
       end;
     end loop;
   end Get_Part;
@@ -95,9 +85,9 @@ procedure Impot_04 is
   -- Pour imprimer une somme entre 2 messages
   procedure Ecrit (Mes_1 : in String; Valeur : in Somme; Mes_2 : in String) is
   begin
-    Put (Mes_1 & ' ');
-    Put (Float(Valeur), 11, 2, 0);
-    Put_Line (' ' & Mes_2);
+    Put_Output (Mes_1 & ' ');
+    Put_Output (Normalization.Normal_Fixed (My_Math.Real (Valeur), 11, 8));
+    Put_Line_Output (' ' & Mes_2);
   end Ecrit;
 
 
@@ -120,7 +110,7 @@ begin
 
     -- 1.1. deduction 10%
     Deduction_1 := Resultat * (10.0 / 100.0);
-    if (Deduction_1 > Plafond_1_H) then
+    if Deduction_1 > Plafond_1_H then
       Deduction_1 := Plafond_1_H;
     end if;
     Resultat := Resultat - Deduction_1;
@@ -128,7 +118,7 @@ begin
 
     -- 1.3. abattement 20%
     Deduction_2 := Resultat * (20.0 / 100.0);
-    if (Deduction_2 > Plafond_2_H) then
+    if Deduction_2 > Plafond_2_H then
       Deduction_2 := Plafond_2_H;
     end if;
     Resultat := Resultat - Deduction_2;
@@ -184,8 +174,7 @@ begin
     Ecrit ("Quotient familial    : ", Quotient_Familial, "e");
 
     -- determination de la tranche
-    while (Quotient_Familial > Les_Tranches_Familiales(No_Tranche).Somme_Max)
-    loop
+    while Quotient_Familial > Les_Tranches_Familiales(No_Tranche).Somme_Max loop
       No_Tranche := No_Tranche + 1;
     end loop;
     -- calcul de l'impot << i >>
@@ -194,7 +183,9 @@ begin
     Resultat := Resultat
      - ( Somme (Nbre_Part) / 10.0 ) * Les_Tranches_Familiales(No_Tranche).Fixe;
     Impot_I := Resultat;
-    Put ("Tranche No : "); Put (Integer(No_Tranche), 2); New_Line;
+    Put_Output ("Tranche No : ");
+    Put_Output (Normalization.Normal_Int (Integer(No_Tranche), 2));
+    New_Line_Output;
     Ecrit ("Impot <<i>>          : ", Impot_I, "e");
   end;
 
@@ -237,7 +228,7 @@ begin
   -- IMPOT A PAYER
   begin
     Impot_A_Payer := Resultat;
-    New_Line;
+    New_Line_Output;
     Ecrit ("Votre impot a payer est de", Impot_A_Payer, "euros.");
   end;
 

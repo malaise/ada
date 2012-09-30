@@ -1,4 +1,4 @@
-with As.B, Argument, My_Io;
+with As.B, Argument, Basic_Proc;
 with Grid_1;
 procedure Tg1 is
   Key : constant String := Argument.Get_Parameter(1);
@@ -18,19 +18,19 @@ begin
   end loop;
 
   Grid_1.Initialize(Key);
-  My_Io.Put_Line ("Key : " & Key);
+  Basic_Proc.Put_Line_Output ("Key : " & Key);
   Grid_1.Dump;
-  My_Io.New_Line;
+  Basic_Proc.New_Line_Output;
 
 
-  My_Io.Put_Line ("Text : " & Text.Image);
+  Basic_Proc.Put_Line_Output ("Text : " & Text.Image);
   Code.Set_Null;
   for I in 1 .. Text.Length loop
     Rec := Grid_1.Encode (Text.Element (I));
     Code.Append (Rec.Row);
     Code.Append (Rec.Col);
   end loop;
-  My_Io.Put_Line ("Code : " & Code.Image);
+  Basic_Proc.Put_Line_Output ("Code : " & Code.Image);
 
   Text.Set_Null;
   for I in 1 .. Code.Length loop
@@ -41,7 +41,7 @@ begin
       Text.Append (Grid_1.Decode(Rec));
     end if;
   end loop;
-  My_Io.Put_Line ("Text : " & Text.Image);
+  Basic_Proc.Put_Line_Output ("Text : " & Text.Image);
 
 end Tg1;
 

@@ -1,7 +1,5 @@
 with Ada.Calendar;
-
-with Normal, Argument, My_Io, Day_Mng, Console;
-
+with Normal, Argument, Basic_Proc, Day_Mng, Console, Normalization;
 with Types, File, Euristic;
 
 procedure Hungar is
@@ -15,7 +13,7 @@ procedure Hungar is
 
 begin
   if Argument.Get_Nbre_Arg /= 1 then
-    My_Io.Put_Line ("Syntax error. Usage : hungar <file_name>");
+    Basic_Proc.Put_Line_Output ("Syntax error. Usage : hungar <file_name>");
     return;
   end if;
 
@@ -33,7 +31,7 @@ begin
     Euristic.Search (Mattrix.all, Nb_Iterations, Done);
 
     if Done then
-      My_Io.Put_Line ("Result:");
+      Basic_Proc.Put_Line_Output ("Result:");
       Sigma := 0.0;
       Ideal_Note := 0.0;
       for I in 1 .. Dim loop
@@ -61,57 +59,60 @@ begin
         end loop;
 
         -- Affectation
-        My_Io.Put ("row " & Normal(I, 3) & " column " & Normal(Loc_J, 3));
+        Basic_Proc.Put_Output ("row " & Normal(I, 3) & " column " & Normal(Loc_J, 3));
         Loc_Note := File.Get_Note(I, Loc_J);
         if Types."=" (File.Get_Kind, Types.Regret) then
-          My_Io.Put (" cost: ");
+          Basic_Proc.Put_Output (" cost: ");
         else
-          My_Io.Put (" note: ");
+          Basic_Proc.Put_Output (" note: ");
         end if;
-        My_Io.Put (Loc_Note, 3, 2, 0);
+        Basic_Proc.Put_Output (Normalization.Normal_Fixed (Loc_Note, 3, 2));
         Sigma := Sigma + Loc_Note;
 
         -- Ideal minimum cost
         Ideal_Note := Ideal_Note + Loc_Ideal_Note;
-        My_Io.Put ("   Ideal: ");
-        My_Io.Put (Loc_Ideal_Note, 3, 2, 0);
+        Basic_Proc.Put_Output ("   Ideal: ");
+        Basic_Proc.Put_Output (Normalization.Normal_Fixed (
+                                       Loc_Ideal_Note, 3, 2));
 
         -- Loss
         if abs (Loc_Ideal_Note - Loc_Note) > File.Epsilon then
-          My_Io.Put (" Loss: ");
-          My_Io.Put (abs (Loc_Ideal_Note - Loc_Note), 3, 2, 0);
+          Basic_Proc.Put_Output (" Loss: ");
+          Basic_Proc.Put_Output (Normalization.Normal_Fixed (
+              abs (Loc_Ideal_Note - Loc_Note), 3, 2));
         end if;
-        My_Io.New_Line;
+        Basic_Proc.New_Line_Output;
 
       end loop;
-      My_Io.New_Line;
+      Basic_Proc.New_Line_Output;
 
       -- Total
       if Types."=" (File.Get_Kind, Types.Regret) then
-        My_Io.Put ("Total cost: ");
-        My_Io.Put(Sigma, 6, 2, 0);
-        My_Io.Put ("  Ideal cost: ");
-        My_Io.Put(Ideal_Note, 6, 2, 0);
+        Basic_Proc.Put_Output ("Total cost: ");
+        Basic_Proc.Put_Output(Normalization.Normal_Fixed(Sigma, 6, 2));
+        Basic_Proc.Put_Output ("  Ideal cost: ");
+        Basic_Proc.Put_Output(Normalization.Normal_Fixed(Ideal_Note, 6, 2));
       else
-        My_Io.Put ("Total note: ");
-        My_Io.Put(Sigma, 6, 2, 0);
-        My_Io.Put ("  Ideal note: ");
-        My_Io.Put(Ideal_Note, 6, 2, 0);
+        Basic_Proc.Put_Output ("Total note: ");
+        Basic_Proc.Put_Output(Normalization.Normal_Fixed(Sigma, 6, 2));
+        Basic_Proc.Put_Output ("  Ideal note: ");
+        Basic_Proc.Put_Output(Normalization.Normal_Fixed(Ideal_Note, 6, 2));
       end if;
-      My_Io.Put ("  Total loss: ");
-      My_Io.Put (abs (Ideal_Note - Sigma), 6, 2, 0);
-      My_Io.New_Line;
+      Basic_Proc.Put_Output ("  Total loss: ");
+      Basic_Proc.Put_Output (Normalization.Normal_Fixed(
+          abs (Ideal_Note - Sigma), 6, 2));
+      Basic_Proc.New_Line_Output;
     else
       -- Not done
-      My_Io.Put_Line ("No solution found.");
+      Basic_Proc.Put_Line_Output ("No solution found.");
     end if;
   end Solve;
 
-  My_Io.Put ("Iter: ");
+  Basic_Proc.Put_Output ("Iter: ");
   if Positive'Image(Nb_Iterations)'Length - 1 >= Max_Iter_Digits then
-    My_Io.Put (Positive'Image(Nb_Iterations));
+    Basic_Proc.Put_Output (Positive'Image(Nb_Iterations));
   else
-    My_Io.Put (Normal (Nb_Iterations, Max_Iter_Digits));
+    Basic_Proc.Put_Output (Normal (Nb_Iterations, Max_Iter_Digits));
   end if;
 
   Compute_Elapse:
@@ -140,22 +141,22 @@ begin
           return;
         end if;
         Some_Time_Put := True;
-        My_Io.Put (Natural'Image(Val) & " " & Msg);
+        Basic_Proc.Put_Output (Natural'Image(Val) & " " & Msg);
         if Val > 1 then
-          My_Io.Put ("s");
+          Basic_Proc.Put_Output ("s");
         end if;
       end Put_Time;
     begin
-      My_Io.Put ("    In");
+      Basic_Proc.Put_Output ("    In");
       Put_Time (Days, "day");
       Put_Time (Hours, "hour");
       Put_Time (Minutes, "minute");
       Put_Time (Seconds, "second");
       if Some_Time_Put then
-        My_Io.Put (" and");
+        Basic_Proc.Put_Output (" and");
       end if;
       Put_Time (Millisecs, "millisec");
-      My_Io.Put_Line (".");
+      Basic_Proc.Put_Line_Output (".");
     end Display_Elapse;
   end Compute_Elapse;
   Console.Sound;

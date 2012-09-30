@@ -1,7 +1,6 @@
 -- Compute factorial of a integer
-with My_Math, My_Io;
-use My_Math;
-use My_Io;
+with My_Math, Basic_Proc, Get_Int;
+use Basic_Proc, My_Math;
 
 procedure Fact is
 
@@ -20,35 +19,36 @@ procedure Fact is
   end Calcul_Factoriel;
 
 begin
-  Put_Line("Computation of the factorial of a number:");
-  New_Line;
+  Put_Line_Output ("Computation of the factorial of a number:");
+  New_Line_Output;
   loop
 
     loop
       begin
-        Put("Enter the number? ");
-        Get(N);
+        Put_Output ("Enter the number? ");
+        N := Get_Int (Get_Line);
         Nombre := Inte(N);
         exit;
       exception
         when others =>
           Skip_Line;
-          Put_Line("ERROR, a positive or null integer is required. Try again.");
+          Put_Line_Output (
+              "ERROR, a positive or null integer is required. Try again.");
       end;
     end loop;
 
     begin
 
-      Put(Nombre);
-      Put("! = ");
+      Put_Output (Nombre'Img);
+      Put_Output ("! = ");
       Resultat := Calcul_Factoriel(Real(Nombre));
-      Put(Resultat'Img);
-      New_Line;
-      New_Line;
+      Put_Output (Resultat'Img);
+      New_Line_Output;
+      New_Line_Output;
     exception
       when Constraint_Error | Storage_Error =>
-        Put_Line("ERROR, the number is too big. Try again.");
-        New_Line;
+        Put_Line_Output ("ERROR, the number is too big. Try again.");
+        New_Line_Output;
     end;
   end loop;
 end Fact;
