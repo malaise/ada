@@ -5,8 +5,6 @@ package body Unit_Format is
   Current_Unit : Units_List := Default_Unit;
 
   package Amount_Io is new Ada.Text_Io.Float_Io(Oper_Def.Amount_Range);
-  package Real_Io renames My_Math.Real_Io;
-  package Inte_Io is new Ada.Text_Io.Integer_Io(My_Math.Inte);
 
   package Mef is new Euro_Franc(Oper_Def.Amount_Range, Oper_Def.Amount_Range);
 
@@ -206,11 +204,8 @@ package body Unit_Format is
       if Has_Dot(Tmp) then
         Amount_Io.Get(Tmp, Amount_In_Unit, Last);
       else
-        Inte_Io.Get(Tmp, I, Last);
+        I := My_Math.Get (Tmp);
         Amount_In_Unit := Oper_Def.Amount_Range(I);
-      end if;
-      if Last /= Tmp'Last then
-        raise Format_Error;
       end if;
     end;
     -- Convert if needed
@@ -248,15 +243,14 @@ package body Unit_Format is
         Last : constant := Str'Last;
         Dot : constant := Last -2;
         R : My_Math.Real;
-        L : Positive;
         I : My_Math.Inte;
         use My_Math;
       begin
         -- Get Int value
-        Real_Io.Get(Str, R, L);
+        R := My_Math.Get (Str);
         R := R / 1000.0;
         I := My_Math.Round(R);
-        Str (4 .. Dot) := Normal(Integer(I), Dot-3);
+        Str(4 .. Dot) := Normal (Integer(I), Dot-3);
 
         -- Remove digits
         Str(Dot+1 .. Last) := " k";

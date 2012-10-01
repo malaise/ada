@@ -1,5 +1,7 @@
-with Flo_Io, Int_Io;
+with Ada.Text_Io;
+with Get_Int;
 package body Get_Float is
+  package Flo_Io is new Ada.Text_Io.Float_Io (Float);
 
   function Get_Float (Str : String) return Float is
     Int_Float : Int_Float_Rec;
@@ -17,7 +19,6 @@ package body Get_Float is
     L : Positive;
     I : Integer;
     Str_Len : Natural;
-    Got_A_Float : Boolean;
     Dot_Found : Boolean;
   begin
     -- Locate last significant character of Str
@@ -35,23 +36,16 @@ package body Get_Float is
       raise Constraint_Error;
     end if;
 
-    Got_A_Float := Dot_Found;
     if Dot_Found then
       -- Float format
-      Flo_Io.Get(Str, F, L);
-    else
-      -- Int format
-      Int_Io.Get(Str, I, L);
-    end if;
-
-
-    if L /= Str'Last then
-      raise Constraint_Error;
-    end if;
-
-    if Got_A_Float then
+      Flo_Io.Get (Str, F, L);
+      if L /= Str'Last then
+        raise Constraint_Error;
+      end if;
       return (Is_Float => True, Float_Value => F);
     else
+      -- Int format
+      I := Get_Int (Str);
       return (Is_Float => False, Int_Value => I);
     end if;
 

@@ -1,4 +1,4 @@
-with Int_Io, Utf_8;
+with Get_Int, Utf_8;
 separate (Xml_Parser.Parse_Mng)
 -- Entity management
 package body Entity_Mng is
@@ -39,8 +39,6 @@ package body Entity_Mng is
   function Code_Of (Code : String) return Natural is
     Res : Natural;
     Start : Natural;
-    Exp_Last : Natural;
-    Last : Natural;
   begin
     -- Get Hexa or decimal value
     if Code (Code'First + 1) = 'x' then
@@ -49,18 +47,11 @@ package body Entity_Mng is
       end if;
       -- Skip "#x"
       Start := Code'First + 2;
-      Int_Io.Get ("16#" & Code(Start .. Code'Last) & "#",
-                  Res, Last);
-      Exp_Last := 4 + Code'Length - 2;
+      Res := Get_Int ("16#" & Code(Start .. Code'Last) & "#");
     else
       -- Skip "#"
       Start := Code'First + 1;
-      Int_Io.Get (Code(Start .. Code'Last), Res, Last);
-      Exp_Last := Code'Last;
-    end if;
-    -- Check all characters have been was got
-    if Last /= Exp_Last then
-      raise Constraint_Error;
+      Res := Get_Int (Code(Start .. Code'Last));
     end if;
     -- Check for valid values
     if (Res >= 16#20# and then Res <= 16#D7FF#)

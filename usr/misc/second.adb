@@ -1,14 +1,14 @@
 -- Purpose: solve a.x2 + b.x + c = 0
-with Argument, Basic_Proc, My_Math, Get_Float;
+with Argument, Basic_Proc, My_Math, Get_Float, Float_Image;
 use My_Math;
 procedure Second is
+
+  function Real_Image is new Float_Image (My_Math.Real);
 
   A, B, C : My_Math.Real;
 
   -- Discriminant
   D : My_Math.Real;
-
-  package Real_Io renames My_Math.Real_Io;
 
 begin
 
@@ -29,9 +29,9 @@ begin
       return;
   end;
 
-  Real_Io.Put (A); Basic_Proc.Put_Output (" * x2 + ");
-  Real_Io.Put (B); Basic_Proc.Put_Output (" * x + ");
-  Real_Io.Put (C); Basic_Proc.Put_Output (" = 0");
+  Basic_Proc.Put_Output (Real_Image (A)); Basic_Proc.Put_Output (" * x2 + ");
+  Basic_Proc.Put_Output (Real_Image (B)); Basic_Proc.Put_Output (" * x + ");
+  Basic_Proc.Put_Output (Real_Image (C)); Basic_Proc.Put_Output (" = 0");
   Basic_Proc.New_Line_Output;
 
   -- A = 0 ?
@@ -45,8 +45,8 @@ begin
       end if;
     else
       Basic_Proc.Put_Output ("One solution: ");
-      Real_Io.Put (-C/B);
-        Basic_Proc.New_Line_Output;
+      Basic_Proc.Put_Output (Real_Image (-C/B) );
+      Basic_Proc.New_Line_Output;
     end if;
   else
     -- A /= 0
@@ -54,15 +54,15 @@ begin
     D := B * B - 4.0 * A * C;
     if D >= 0.0 then
       Basic_Proc.Put_Output ("Two real solutions: ");
-      Real_Io.Put ((-B + My_Math.Sqrt(D)) / (2.0 * A));
+      Basic_Proc.Put_Output (Real_Image ((-B + My_Math.Sqrt(D)) / (2.0 * A) ));
       Basic_Proc.Put_Output (" and ");
-      Real_Io.Put ((-B - My_Math.Sqrt(D)) / (2.0 * A));
+      Basic_Proc.Put_Output (Real_Image ((-B - My_Math.Sqrt(D)) / (2.0 * A) ));
       Basic_Proc.New_Line_Output;
     else
       Basic_Proc.Put_Line_Output ("Two complex solutions: ");
-      Real_Io.Put ((-B) / (2.0 * A) );
+      Basic_Proc.Put_Output (Real_Image ((-B) / (2.0 * A) ));
       Basic_Proc.Put_Output (" +/-");
-      Real_Io.Put (My_Math.Sqrt(-D) / (2.0 * A));
+      Basic_Proc.Put_Output (Real_Image (My_Math.Sqrt(-D) / (2.0 * A) ));
       Basic_Proc.Put_Output (" * i ");
       Basic_Proc.New_Line_Output;
     end if;

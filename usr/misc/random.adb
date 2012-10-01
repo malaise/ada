@@ -4,7 +4,7 @@
 -- If one float arg F1          0.0 <= N <  F1
 -- If two int arg I1 and I2     I1  <= N <= I2
 -- If two float arg F1 and F2   F1  <= N <  F2
-with Argument, Rnd, Basic_Proc, Int_Io, Flo_Io, Get_Float;
+with Argument, Rnd, Basic_Proc, Get_Float;
 procedure Random is
 
   Nb_Arg : Natural;
@@ -42,9 +42,11 @@ begin
 
   Rnd.Randomize;
   if Int_Float_Min.Is_Float then
-    Flo_Io.Put(Rnd.Float_Random(Int_Float_Min.Float_Value, Int_Float_Max.Float_Value));
+    Basic_Proc.Put_Output (
+     Rnd.Float_Random(Int_Float_Min.Float_Value, Int_Float_Max.Float_Value)'Img);
   else
-    Int_Io.Put(Rnd.Int_Random(Int_Float_Min.Int_Value, Int_Float_Max.Int_Value));
+    Basic_Proc.Put_Output (
+     Rnd.Int_Random(Int_Float_Min.Int_Value, Int_Float_Max.Int_Value)'Img);
   end if;
 
 exception

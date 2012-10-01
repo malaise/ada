@@ -1,6 +1,6 @@
-with System, Ada.Text_Io, Ada.Io_Exceptions;
+with System, Ada.Io_Exceptions;
 with C_Types, Null_Procedure, Dynamic_List, Environ, Timeval, Perpet,
-     Any_Def, My_Math, Virtual_Time;
+     Any_Def, My_Math, Virtual_Time, Basic_Proc;
 package body Event_Mng is
 
   -------------
@@ -35,7 +35,7 @@ package body Event_Mng is
   procedure Put_Debug (Msg : in String) is
   begin
     if Debug then
-      Ada.Text_Io.Put_Line (Msg);
+      Basic_Proc.Put_Line_Output (Msg);
     end if;
   exception
     when Ada.Io_Exceptions.Device_Error =>

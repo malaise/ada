@@ -122,7 +122,7 @@ package body Num_Match is
         Match := Match or else (Num >= Range_First and then Num <= Range_Last);
 
         -- Trace for debug
-        -- Ada.Text_Io.Put_Line ("Checked spec >" & Cur_Spec & "<  -> "
+        -- Basic_Proc.Put_Line_Output ("Checked spec >" & Cur_Spec & "<  -> "
         --                     & Range_First'Img & " -" & Range_Last'Img);
       end One_Spec;
 

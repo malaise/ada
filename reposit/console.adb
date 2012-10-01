@@ -1,4 +1,5 @@
-with Ada.Text_Io, Ada.Characters.Latin_1;
+with Ada.Characters.Latin_1;
+with Basic_Proc;
 -- From man console_codes
 package body Console is
 
@@ -15,75 +16,75 @@ package body Console is
   -- Clear screen
   procedure Clear is
   begin
-    Ada.Text_Io.Put (Csi & "2J");
+    Basic_Proc.Put_Output (Csi & "2J");
   end Clear;
 
   -- Move cursor left/right
   procedure Left is
   begin
-    Ada.Text_Io.Put (Csi & "1D");
+    Basic_Proc.Put_Output (Csi & "1D");
   end Left;
 
   procedure Right is
   begin
-    Ada.Text_Io.Put (Csi & "1C");
+    Basic_Proc.Put_Output (Csi & "1C");
   end Right;
 
   procedure Set_Col (N : Positive) is
   begin
-    Ada.Text_Io.Put (Csi & Trans (N) & 'G');
+    Basic_Proc.Put_Output (Csi & Trans (N) & 'G');
   end Set_Col;
 
   -- Delete
   procedure Delete is
   begin
-    Ada.Text_Io.Put (Csi & "1P");
+    Basic_Proc.Put_Output (Csi & "1P");
   end Delete;
 
   -- Erase whole line
   procedure Erase_Line is
   begin
-    Ada.Text_Io.Put (Csi & "2K");
+    Basic_Proc.Put_Output (Csi & "2K");
   end Erase_Line;
 
   -- Erase from beginning of line to cursor
   procedure Erase_Begin_Line is
   begin
-    Ada.Text_Io.Put (Csi & "0K");
+    Basic_Proc.Put_Output (Csi & "0K");
   end Erase_Begin_Line;
 
   -- Erase from cursor to end of line
   procedure Erase_End_Line is
   begin
-    Ada.Text_Io.Put (Csi & "0K");
+    Basic_Proc.Put_Output (Csi & "0K");
   end Erase_End_Line;
 
   -- Switch reverse
   procedure Set_Reverse (On : in Boolean) is
   begin
     if On then
-      Ada.Text_Io.Put (Csi & "7m");
+      Basic_Proc.Put_Output (Csi & "7m");
     else
-      Ada.Text_Io.Put (Csi & "27m");
+      Basic_Proc.Put_Output (Csi & "27m");
     end if;
   end Set_Reverse;
 
   -- Save/restore cursor pos
   procedure Save is
   begin
-    Ada.Text_Io.Put (Csi & 's');
+    Basic_Proc.Put_Output (Csi & 's');
   end Save;
 
   procedure Restore is
   begin
-    Ada.Text_Io.Put (Csi & 'u');
+    Basic_Proc.Put_Output (Csi & 'u');
   end Restore;
 
   procedure Sound (N_Times : in Positive := 1) is
   begin
     for I in 1 .. N_Times loop
-      Ada.Text_Io.Put (Ada.Characters.Latin_1.Bel);
-      Ada.Text_Io.Flush;
+      Basic_Proc.Put_Output (Ada.Characters.Latin_1.Bel);
+      Basic_Proc.Flush_Output;
       delay 0.2;
     end loop;
   end Sound;

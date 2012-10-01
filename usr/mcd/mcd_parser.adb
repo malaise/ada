@@ -1,6 +1,6 @@
-with As.U, My_Math, Queues, Basic_Proc, Lower_Str, Argument, Bool_Io,
+with As.U, My_Math, Queues, Basic_Proc, Lower_Str, Argument,
      Arbitrary.Fractions, Async_Stdin, Str_Util;
-with Debug, Input_Dispatcher, Inte_Io, Io_Flow;
+with Debug, Input_Dispatcher, Inte_Io, Real_Io, Bool_Io, Io_Flow;
 package body Mcd_Parser is
   use type As.U.Asu_Us;
   use Mcd_Mng;
@@ -388,7 +388,7 @@ package body Mcd_Parser is
     end;
 
     begin
-      My_Math.Real_Io.Get (Txt.Image, R, L);
+      Real_Io.Get (Txt.Image, R, L);
       if L = Txt.Length and then Txt.Element (L) /= '.' then
         Instr_Stack.Push (Stack, Item_Chrs);
         return (Kind => Mcd_Mng.Real, Val_Real => R);

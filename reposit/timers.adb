@@ -1,5 +1,5 @@
-with Ada.Calendar, Ada.Text_Io;
-with Dynamic_List, Environ, Date_Image, Mutex_Manager;
+with Ada.Calendar;
+with Dynamic_List, Environ, Date_Image, Mutex_Manager, Basic_Proc;
 package body Timers is
 
   -- Debugging
@@ -94,7 +94,7 @@ package body Timers is
     if not Debug then
       return;
     end if;
-    Ada.Text_Io.Put_Line (
+    Basic_Proc.Put_Line_Output (
         Date_Image (Ada.Calendar.Clock)(12 .. 23)
       & " Timers." & Proc
       & ": " & Msg);

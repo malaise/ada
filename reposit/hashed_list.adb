@@ -8,12 +8,6 @@ package body Hashed_List is
     end if;
   end Check_Callback;
 
-  -- Element hashing
-  procedure Dump (Data : in Element_Access) is
-  begin
-    null;
-  end Dump;
-
   -- Search in hashing the element matching criteria, returns null if not found
   procedure Locate (List      : in out List_Type;
                     Crit      : in Element_Type;

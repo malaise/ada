@@ -188,6 +188,7 @@ package body Hashing is
       -- Dump hash value of key and lists all data found for key
       procedure Dump (Table     : in Hash_Table;
                       Index     : in Hash_Range;
+                      Put       : access procedure (Data : in Data_Access);
                       Direction : in Direction_List := Forward) is
         Ca : Cell_Access := Table.Arr(Index).First;
       begin
@@ -208,7 +209,7 @@ package body Hashing is
             Basic_Proc.Put_Output (" -> ");
           end if;
 
-          Dump (Ca.Data);
+          Put (Ca.Data);
           Basic_Proc.New_Line_Output;
           if Direction = Forward then
             Ca := Ca.Next;
@@ -220,10 +221,11 @@ package body Hashing is
 
       procedure Dump (Table     : in Hash_Table;
                       Key       : in String;
+                      Put       : access procedure (Data : in Data_Access);
                       Direction : in Direction_List := Forward) is
         I : constant Hash_Range := Hash_Func(Key);
       begin
-        Dump (Table, I, Direction);
+        Dump (Table, I, Put, Direction);
       end Dump;
 
       procedure Clear_All (Table : in out Hash_Table) is

@@ -2,12 +2,13 @@
 -- Reads this file describing a linear system (get_line & get_float)
 -- Solve linear system and put solution
 
-with Basic_Proc, As.U.Utils, Argument, Normal, Syslin, Flo_Io, Get_Line,
+with Basic_Proc, As.U.Utils, Argument, Normal, Syslin, Float_Image, Get_Line,
      Get_Float;
 
 procedure T_Syslin is
 
   package My_Syslin is new Syslin(Float);
+  function My_Image is new Float_Image(Float);
 
   -- Matrix dimension
   Dim : Positive := 1;
@@ -129,7 +130,7 @@ begin
       -- Put solution
       for I in 1 .. Dim loop
         Basic_Proc.Put_Output ("X(" & Normal(I, 3) & ") = ");
-        Flo_Io.Put (Solution(I), Aft => 6);
+        Basic_Proc.Put_Output (My_Image (Solution(I)));
         Basic_Proc.New_Line_Output;
       end loop;
 

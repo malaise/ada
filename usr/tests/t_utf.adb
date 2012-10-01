@@ -1,5 +1,4 @@
-with Int_Io;
-with Utf_8, Utf_16, Argument, Basic_Proc;
+with Utf_8, Utf_16, Argument, Basic_Proc, Get_Int, Hexa_Utils, Upper_Str;
 procedure T_Utf is
 
   procedure Usage is
@@ -21,33 +20,18 @@ procedure T_Utf is
   end Error;
 
   function Get_Value (Str : String) return Natural is
-    Val, Last : Natural;
   begin
-    Int_Io.Get ("16#" & Str & "#", Val, Last);
-    if Last /= Str'Length + 4 then
-      raise Constraint_Error;
-    else
-      return Val;
-    end if;
+    return Get_Int ("16#" & Str & "#");
   end Get_Value;
 
   procedure Put (Str : in String) renames Basic_Proc.Put_Output;
   procedure Put (N : in Natural; Width : in Positive) is
-    Str : String (1 .. 10);
+    Img : constant String := Upper_Str (Hexa_Utils.Image (N));
     Res : String (1 .. Width) := (others => '0');
-    Last : constant Natural := Str'Last;
-    First : Natural;
   begin
-    -- N is aligned on right, padded with spaces
-    Int_Io.Put (Str, N, 16);
-    -- Locate first '#'
-    for I in Str'Range loop
-      First := I;
-      exit when Str(I) = '#';
-    end loop;
-    -- Skip " 16#" and alast '#'
+    -- Skip " 16#" and last '#'
     --  and align on right of output, padded with 0
-    Res (Width - Last + First + 2 .. Width) := Str (First + 1 .. Last - 1);
+    Res (Width - Img'Length + 1 .. Width) := Img;
     Put (Res);
   end Put;
 

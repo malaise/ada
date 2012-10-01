@@ -1,6 +1,7 @@
-with Ada.Calendar;
-with As.U, Basic_Proc, Int_Io, Directory, Sys_Calls, Argument, Day_Mng, Normal, Normal_Long;
+with Ada.Calendar, Ada.Text_Io;
+with As.U, Basic_Proc, Directory, Sys_Calls, Argument, Day_Mng, Normal, Normal_Long;
 procedure T_Dir is
+  package Int_Io is new Ada.Text_Io.Integer_Io (Integer);
   File_Name : As.U.Asu_Us;
   Dir_Name : As.U.Asu_Us;
   Fstat : Sys_Calls.File_Stat_Rec;

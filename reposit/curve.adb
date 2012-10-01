@@ -1,12 +1,10 @@
-with Ada.Text_Io;
-with Unicode, Language, Con_Io, Normal, Upper_Char;
+with Unicode, Language, Con_Io, Normal, Upper_Char, Normalization;
 package body Curve is
   use My_Math;
 
   -- Small font and look square
   Cur_Con_Io : aliased Con_Io.Console;
   Screen : Con_Io.Window;
-  package P_Io is new Ada.Text_Io.Float_Io (T_Coordinate);
 
   -- Init Cur_Con_Io and Screen if necessary
   procedure Init is
@@ -53,7 +51,7 @@ package body Curve is
   function Coo_To_Str (C : T_Coordinate) return String is
     Str : String (1..13);
   begin
-    P_Io.Put (Str, C, 5, 3);
+    Str := Normalization.Normal_Digits (C, 13, 2);
     return Str;
   end Coo_To_Str;
 

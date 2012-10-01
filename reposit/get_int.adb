@@ -1,5 +1,7 @@
-with Int_Io;
+with Ada.Text_Io;
 function Get_Int (Str : String) return Integer is
+  package Int_Io is new Ada.Text_Io.Integer_Io (Integer);
+
   I : Integer;
   L : Positive;
   Str_Len : Natural;

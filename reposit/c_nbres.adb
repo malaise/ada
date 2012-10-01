@@ -1,4 +1,4 @@
-with Round_At;
+with Round_At, Normalization;
 package body C_Nbres is
 
   use My_Math;
@@ -256,10 +256,9 @@ package body C_Nbres is
 
   -------------------------------------------------------------------------------
 
-  -- Width of Fore . Aft E Exp
-  Str_Width : constant Positive := My_Math.Real_Io.Default_Fore + 1
-                                 + My_Math.Real_Io.Default_Aft + 1
-                                 + My_Math.Real_Io.Default_Exp;
+  -- Width of Real
+  Str_Width : constant Positive := My_Math.Real'Width;
+  Exp : constant := 2;
   subtype Image_Str is String (1 .. Str_Width);
 
   function Put (C : Complex) return String is
@@ -267,23 +266,22 @@ package body C_Nbres is
     Real_Str, Imag_Str : Image_Str;
     Sign : Character;
   begin
-    My_Math.Real_Io.Put (Real_Str, Part_Real (C) );
+    Real_Str := Normalization.Normal_Digits (Part_Real (C), Str_Width, Exp);
     if (Imag_Part >= 0.0) then
       Sign := '+';
     else
       Sign := '-';
     end if;
-    My_Math.Real_Io.Put (Imag_Str, abs (Imag_Part) );
+    Imag_Str := Normalization.Normal_Digits (abs (Imag_Part), Str_Width, Exp);
     return Real_Str & ' ' & Sign & " i *" & Imag_Str;
   end Put;
 
   function Get (X, Y : String) return Complex is
     Real_Part, Imag_Part : Real;
-    Last : Positive;
     C : Complex;
   begin
-    My_Math.Real_Io.Get (X, Real_Part, Last);
-    My_Math.Real_Io.Get (Y, Imag_Part, Last);
+    Real_Part := My_Math.Get (X);
+    Imag_Part := My_Math.Get (Y);
     C := Create_Complex (Real_Part, Imag_Part);
     return C;
   end Get;

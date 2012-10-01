@@ -5,7 +5,7 @@ procedure T_Hash is
   procedure Dump (I : in Data_Access);
 
   package Hash is new Hashing.Sized_Hash (512);
-  package My_Hash is new Hash.Hash_Mng (Data_Access, Dump);
+  package My_Hash is new Hash.Hash_Mng (Data_Access);
   Ht : My_Hash.Hash_Table;
 
   subtype Txt_P is As.B.Asb_Bs(500);
@@ -76,7 +76,7 @@ begin
           end;
         when 'P' | 'p' =>
           Basic_Proc.Put_Line_Output ("Dumping data for key >" & Str(Txt) & "<:");
-          My_Hash.Dump(Ht, Str(Txt));
+          My_Hash.Dump(Ht, Str(Txt), Dump'Unrestricted_Access);
         when others =>
           Console.Sound;
       end case;

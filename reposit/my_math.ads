@@ -1,14 +1,10 @@
-with Ada.Numerics, Ada.Text_Io;
+with Ada.Numerics;
 package My_Math is
 
   subtype Inte is Long_Long_Integer;
   -- This should generate the overflow checks
   --  (was subtype Real is Long_Float;)
   type Real is digits 15 range -1.79E308 .. 1.79E308;
-
-  -- IOs of Inte and real
-  package Inte_Io is new Ada.Text_Io.Integer_Io (Inte);
-  package Real_Io is new Ada.Text_Io.Float_Io (Real);
 
   -- Types and constants for trigonometry
   -- pi constant
@@ -17,6 +13,12 @@ package My_Math is
   E : constant := Ada.Numerics.E;
   -- Possible units for trigonometric constants
   type Angle_Unit is (Radian, Degree);
+
+  -- Get an Inte, get a Real from a string
+  -- raise Data_Error if From is not valid
+  Data_Error : exception;
+  function Get (From : String) return Inte;
+  function Get (From : String) return Real;
 
   -- Integer part and fractional part of a real
   -- R := Int(R) + Frac(R)

@@ -1,8 +1,18 @@
-with Ada.Io_Exceptions;
-with My_Math, Basic_Proc;
+with My_Math, Basic_Proc, Int_Image, Float_Image;
 procedure T_Math is
 
-  use My_Math, Basic_Proc, My_Math.Real_Io, My_Math.Inte_Io;
+  function Inte_Image is new Int_Image   (My_Math.Inte);
+  function Real_Image is new Float_Image (My_Math.Real);
+
+  use My_Math, Basic_Proc;
+  procedure Put (I : in My_Math.Inte) is
+  begin
+    Put_Output (Inte_Image (I));
+  end Put;
+  procedure Put (R : in My_Math.Real) is
+  begin
+    Put_Output (Real_Image (R));
+  end Put;
 
   subtype Real is My_Math.Real;
   R, Rp : Real;
@@ -11,10 +21,10 @@ begin
   loop
     loop
       begin
-        Put_Output ("Enter a real R1 : ? "); Get (R);
+        Put_Output ("Enter a real R1 : ? "); R := Get (Get_Line);
         exit;
       exception
-        when Ada.Io_Exceptions.End_Error => raise;
+        when Basic_Proc.End_Error => raise;
         when others => Skip_Line;
       end;
     end loop;
@@ -75,7 +85,7 @@ begin
         when others=> Put_Line_Output ("Exception");
       end;
       begin
-        Put_Output ("Enter another real R2 : ? "); Get (Rp);
+        Put_Output ("Enter another real R2 : ? "); Rp := Get (Get_Line);
         Put_Output (" R1 ** R2 "); Put (R**Rp); New_Line_Output;
       exception
         when others=> Put_Line_Output ("Exception");
@@ -86,7 +96,7 @@ begin
     New_Line_Output;
   end loop;
 exception
-  when Ada.Io_Exceptions.End_Error =>
+  when Basic_Proc.End_Error =>
     null;
 end T_Math;
 

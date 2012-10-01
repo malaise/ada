@@ -9,6 +9,10 @@ package Normalization is
                        Len   : Positive;
                        Right : Boolean := True;
                        Gap   : Character := ' ') return String;
+  function Normal_Int (I     : My_Math.Inte;
+                       Len   : Positive;
+                       Right : Boolean := True;
+                       Gap   : Character := ' ') return String;
 
 
   -- Puts a float F or a real R in a string of fixed length.
@@ -16,7 +20,7 @@ package Normalization is
   -- A space or '-', one digit, then a '.' and a fraction part,
   --  then a 'E' a sign then an exponent.
   -- Examples:
-  -- Len=8, Exp=2 =>  x.yyE+ij,
+  -- Len=9, Exp=2 =>  x.yyE+ij,
   -- Len=7, Exp=1 => -x.yE+i which is the minimum
   -- A warning char at the end of the output signals an exponent for F larger
   --  than Exp

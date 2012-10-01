@@ -1,5 +1,5 @@
-with Ada.Text_Io, Ada.Characters.Latin_1;
-with Environ, Lower_Str;
+with Ada.Characters.Latin_1;
+with Environ, Lower_Str, Basic_Proc;
 package body Pattern is
 
   Inited : Boolean := False;
@@ -19,7 +19,7 @@ package body Pattern is
     if not Debug then
       return;
     end if;
-    Ada.Text_Io.Put_Line ("Pattern." & Proc &": " & Msg & ".");
+    Basic_Proc.Put_Line_Output ("Pattern." & Proc &": " & Msg & ".");
   end Put_Debug;
 
   procedure Check_Rule (Rule : in Rule_No) is

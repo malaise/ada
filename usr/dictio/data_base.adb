@@ -17,12 +17,7 @@ package body Data_Base is
   type Item_Access is access all Item_Rec;
   -- Hash on: Item.Kind & Item.Name (not Parsed)
   H_Use : constant Boolean := True;
-  procedure H_Dump (Data : in Item_Access) is
-  begin
-    null;
-  end H_Dump;
-  package H_Item is new Hash.Hash_Mng (
-        Data_Access => Item_Access, Dump => H_Dump);
+  package H_Item is new Hash.Hash_Mng (Data_Access => Item_Access);
   H_Table : H_Item.Hash_Table;
   function H_Get (Kind : Item_Kind; Name : Item_Name)
                  return Item_Access is

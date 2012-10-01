@@ -1,5 +1,5 @@
-with Ada.Direct_Io, Ada.Text_Io;
-with Environ;
+with Ada.Direct_Io;
+with Environ, Basic_Proc;
 separate (Afpx)
 package body Af_Dscr is
 
@@ -155,12 +155,12 @@ begin
                   Afpx_Typ.Dest_Path.Image & Afpx_Typ.Init_File_Name);
   exception
     when others =>
-      Ada.Text_Io.Put ("AFPX ERROR: Can't read descriptors. For info, "
+      Basic_Proc.Put_Error ("AFPX ERROR: Can't read descriptors. For info, "
                       & File_Dir_Env_Name & " is ");
       if Environ.Is_Set (File_Dir_Env_Name) then
-        Ada.Text_Io.Put_Line (Afpx_Typ.Dest_Path.Image);
+        Basic_Proc.Put_Line_Error (Afpx_Typ.Dest_Path.Image);
       else
-        Ada.Text_Io.Put_Line ("not set.");
+        Basic_Proc.Put_Line_Error ("not set.");
       end if;
       raise Afpx_File_Not_Found;
   end;

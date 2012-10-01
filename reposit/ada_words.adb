@@ -1,6 +1,5 @@
-with Ada.Text_Io, Ada.Characters.Latin_1;
+with Ada.Characters.Latin_1;
 with Hash, Lower_Str;
-pragma Elaborate (Hash);
 package body Ada_Words is
 
   -- Ada separators
@@ -89,14 +88,8 @@ package body Ada_Words is
     Must : Boolean;
   end record;
 
-  procedure Dump (Word : in Word_Rec) is
-  begin
-    Ada.Text_Io.Put (Word.Str (1 .. Word.Len) & " " & Word.Must'Img);
-  end Dump;
-
   -- Hash table of Ada reserved words
-  package Word_Hash is new Hash.Hash_Mng (Data_Access => Word_Rec,
-                                          Dump => Dump);
+  package Word_Hash is new Hash.Hash_Mng (Data_Access => Word_Rec);
   Hash_Table : Word_Hash.Hash_Table;
 
   -- Adds a reserved Word in the table

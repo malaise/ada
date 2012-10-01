@@ -169,9 +169,8 @@ private
   -- Element hashing
   package Sized_Hash is new Hashing.Sized_Hash (Hash_Max);
 
-  procedure Dump (Data : in Element_Access);
   package Hash_Mng is new Sized_Hash.Hash_Mng
-                  (Element_Access, Dump, Hash_Func);
+                  (Element_Access, Hash_Func);
 
   -- A unique list
   type List_Type is limited new Ada.Finalization.Limited_Controlled with record

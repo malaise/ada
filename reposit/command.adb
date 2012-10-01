@@ -1,5 +1,5 @@
-with Ada.Text_Io;
-with Sys_Calls, Environ, Proc_Family, Event_Mng, Text_Line,  Mutex_Manager;
+with Basic_Proc, Sys_Calls, Environ, Proc_Family, Event_Mng, Text_Line,
+     Mutex_Manager;
 package body Command is
 
   -- The Mutex of exclusive execution
@@ -34,7 +34,7 @@ package body Command is
   procedure Term_Cb is
   begin
     if Debug then
-      Ada.Text_Io.Put_Line ("Command: Sigterm received");
+      Basic_Proc.Put_Line_Output ("Command: Sigterm received");
     end if;
     Aborted := True;
   end Term_Cb;
@@ -47,22 +47,23 @@ package body Command is
       when Sys_Calls.Exited =>
         if Death_Report.Exited_Pid /= Current_Pid then
           if Debug then
-            Ada.Text_Io.Put_Line ("Command: Death Cb bad exit pid");
+            Basic_Proc.Put_Line_Output ("Command: Death Cb bad exit pid");
           end if;
           return;
         end if;
       when Sys_Calls.Signaled  =>
         if Death_Report.Signaled_Pid /= Current_Pid then
           if Debug then
-            Ada.Text_Io.Put_Line ("Command: Death Cb bad signal pid");
+            Basic_Proc.Put_Line_Output ("Command: Death Cb bad signal pid");
           end if;
           return;
         end if;
     end case;
     if Debug then
-      Ada.Text_Io.Put_Line ("Command: Death Cb " & Death_Report.Cause'Img);
+      Basic_Proc.Put_Line_Output ("Command: Death Cb "
+                                & Death_Report.Cause'Img);
       if Death_Report.Cause = Sys_Calls.Exited then
-        Ada.Text_Io.Put_Line ("Command: Exit code "
+        Basic_Proc.Put_Line_Output ("Command: Exit code "
                             & Death_Report.Exit_Code'Img);
       end if;
     end if;
@@ -110,11 +111,11 @@ package body Command is
     if Debug then
       if Fd = Output_Fd then
         if Debug then
-          Ada.Text_Io.Put_Line ("Command: Fd Cb output flow");
+          Basic_Proc.Put_Line_Output ("Command: Fd Cb output flow");
         end if;
       else
         if Debug then
-          Ada.Text_Io.Put_Line ("Command: Fd Cb error flow");
+          Basic_Proc.Put_Line_Output ("Command: Fd Cb error flow");
         end if;
       end if;
     end if;
@@ -146,13 +147,13 @@ package body Command is
         end if;
       end if;
       if Debug then
-        Ada.Text_Io.Put_Line ("Command: Fd Cb got >" & Line.Image & "<");
+        Basic_Proc.Put_Line_Output ("Command: Fd Cb got >" & Line.Image & "<");
       end if;
     end loop;
     Flow.Close;
     if not Got then
       if Debug then
-        Ada.Text_Io.Put_Line ("Command: Fd Cb end of flow");
+        Basic_Proc.Put_Line_Output ("Command: Fd Cb end of flow");
       end if;
       -- We were awaken but nothing to read -> End of flow
       if Fd = Output_Fd then
@@ -164,7 +165,7 @@ package body Command is
       Sys_Calls.Close (Fd);
     end if;
     if Debug then
-      Ada.Text_Io.Put_Line ("Command: Fd Cb Done");
+      Basic_Proc.Put_Line_Output ("Command: Fd Cb Done");
     end if;
     return True;
   end Fd_Cb;
@@ -227,15 +228,16 @@ package body Command is
     end if;
     -- Spawn
     if Debug then
-      Ada.Text_Io.Put_Line ("Command: Spwaning >" & Cmd_Line.Image & "<");
+      Basic_Proc.Put_Line_Output ("Command: Spwaning >" & Cmd_Line.Image & "<");
     end if;
     Spawn_Result := Proc_Family.Spawn (Cmd_Line,
                                        Proc_Family.Std_Fds,
                                        Death_Cb'Access);
     if not Spawn_Result.Ok or else not Spawn_Result.Open then
       if Debug then
-        Ada.Text_Io.Put_Line ("Command: Spawn error: " & Spawn_Result.Ok'Img
-                             & " " & Spawn_Result.Open'Img);
+        Basic_Proc.Put_Line_Output ("Command: Spawn error: "
+                   & Spawn_Result.Ok'Img
+                   & " " & Spawn_Result.Open'Img);
       end if;
       Mut.Release;
       raise Spawn_Error;
@@ -248,8 +250,9 @@ package body Command is
     Event_Mng.Add_Fd_Callback (Spawn_Result.Fd_Out, True, Fd_Cb'Access);
     Event_Mng.Add_Fd_Callback (Spawn_Result.Fd_Err, True, Fd_Cb'Access);
     if Debug then
-      Ada.Text_Io.Put_Line ("Command: Fds are: " & Spawn_Result.Fd_Out'Img
-                           & " and " & Spawn_Result.Fd_Err'Img);
+      Basic_Proc.Put_Line_Output ("Command: Fds are: "
+                 & Spawn_Result.Fd_Out'Img
+                 & " and " & Spawn_Result.Fd_Err'Img);
     end if;
 
     -- Wait until child ends and no more out/err data
@@ -265,7 +268,7 @@ package body Command is
 
     -- Unset Cbs and close
     if Debug then
-      Ada.Text_Io.Put_Line ("Command: Cleaning");
+      Basic_Proc.Put_Line_Output ("Command: Cleaning");
     end if;
     Event_Mng.Set_Sig_Term_Callback (Prev_Term_Cb);
     Sys_Calls.Close (Spawn_Result.Fd_In);

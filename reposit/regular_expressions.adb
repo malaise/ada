@@ -1,6 +1,6 @@
 -- Posix regular expression
 with Ada.Characters.Latin_1;
-with C_Types, Bit_Ops, Utf_8, Flo_Io, Str_Util;
+with C_Types, Bit_Ops, Utf_8, Str_Util, Get_Float;
 package body Regular_Expressions is
 
   -- C interface --
@@ -84,12 +84,11 @@ package body Regular_Expressions is
   Invalid_Pcre_Version : exception;
   procedure Check_Pcre_Version is
     Vers : Float;
-    Last : Positive;
   begin
     if Version_Ok then
       return;
     end if;
-    Flo_Io.Get (Get_Pcre_Version, Vers, Last);
+    Vers := Get_Float.Get_Float (Get_Pcre_Version);
     if Vers < 7.8 then
       raise Invalid_Pcre_Version;
     end if;

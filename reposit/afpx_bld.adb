@@ -1,6 +1,6 @@
-with Ada.Text_Io, Ada.Direct_Io;
-with As.U;
-with Con_Io, Normal, Argument,
+with Ada.Direct_Io;
+with As.U,
+     Con_Io, Normal, Argument,
      Mixed_Str, Basic_Proc, Xml_Parser,
      Ada_Words, Parser, Str_Util, Computer, Int_Image,
      Language;
@@ -844,7 +844,7 @@ procedure Afpx_Bld is
                       "Descriptor " & Afpx_Typ.Descriptor_Range'Image(Dscr_No)
                     & " already defined");
         end if;
-        Ada.Text_Io.Put_Line ("   descriptor " &
+        Basic_Proc.Put_Line_Output ("   descriptor " &
                           Normal(Integer(Dscr_No), 2, Gap => '0'));
         -- Store default Dscr name if Name not set yet
         if Name.Is_Null then
@@ -1063,7 +1063,7 @@ begin
   -- Help
   begin
     Argument.Get_Parameter (List_File_Name, Param_Key => "h");
-    Ada.Text_Io.Put_Line ("Usage: " & Argument.Get_Program_Name
+    Basic_Proc.Put_Line_Output ("Usage: " & Argument.Get_Program_Name
         & " [ -l<afpx_file> ] [ -d<dest_dir> ] [ -x<cross_ref_package> ]");
     return;
   exception
@@ -1120,12 +1120,12 @@ begin
     raise Argument_Error;
   end if;
 
-  Ada.Text_Io.Put_Line ("Reading " & List_File_Name.Image);
-  Ada.Text_Io.Put_Line ("Writing in " & Afpx_Typ.Dest_Path.Image);
+  Basic_Proc.Put_Line_Output ("Reading " & List_File_Name.Image);
+  Basic_Proc.Put_Line_Output ("Writing in " & Afpx_Typ.Dest_Path.Image);
   Afpx_Typ.Dest_Path.Append ("/");
 
   -- First check
-  Ada.Text_Io.Put_Line ("Parsing:");
+  Basic_Proc.Put_Line_Output ("Parsing:");
   declare
     Parse_Ok : Boolean;
   begin
@@ -1142,12 +1142,12 @@ begin
       raise File_Not_Found;
   end;
 
-  Ada.Text_Io.Put_Line ("Checking:");
-  Load_Dscrs(Root, True);
+  Basic_Proc.Put_Line_Output ("Checking:");
+  Load_Dscrs (Root, True);
   -- Then write
-  Ada.Text_Io.Put_Line ("Building:");
-  Load_Dscrs(Root, False);
-  Ada.Text_Io.Put_Line ("Done.");
+  Basic_Proc.Put_Line_Output ("Building:");
+  Load_Dscrs (Root, False);
+  Basic_Proc.Put_Line_Output ("Done.");
 exception
   when Argument_Error =>
     Close (True);

@@ -330,6 +330,7 @@ export PID=$!
 sleep 0.7
 try t_autobus -a Ah que coucou
 kill $PID
+echo >> out1
 cat << EOF > exp
 Received Ah que coucou -> Replying Coucou!
 Spyed >Ah que coucou<
@@ -385,11 +386,11 @@ try t_byte_to_unicode data/ISO-8859-9.xml
 grep -E "^222" out > out1
 tail -2 out > out2
 cat << EOF > exp1
-222      16#DE# ->   350     16#15E#
+222 16#DE# ->   350 16#15E#
 EOF
 cat << EOF > exp2
-255      16#FF# ->   255      16#FF#
-
+254 16#FE# ->   351 16#15F#
+255 16#FF# ->   255 16#FF#
 EOF
 comp out1 exp1
 comp out2 exp2
@@ -400,14 +401,14 @@ echo "OK"
 title t_c_nbres
 try t_c_nbres 1 5 3 -2
 cat << EOF > exp
-Got:  1.00000000000000E+00 + i * 5.00000000000000E+00
+Got:  1.000000000000000E+00 + i * 5.000000000000000E+00
  in polar:  5.09901951359278E+00  1.37340076694502E+00rd  7.86900680000000E+01°
-Got:  3.00000000000000E+00 - i * 2.00000000000000E+00
- A+B:  4.00000000000000E+00 + i * 3.00000000000000E+00
- A-B: -2.00000000000000E+00 + i * 7.00000000000000E+00
- A*B:  1.30000000000000E+01 + i * 1.30000000000000E+01
- A/B: -5.38461538461538E-01 + i * 1.30769230769231E+00
- A**B.real: -7.40000000000000E+01 - i * 1.10000000000000E+02
+Got:  3.000000000000000E+00 - i * 2.000000000000000E+00
+ A+B:  4.000000000000000E+00 + i * 3.000000000000000E+00
+ A-B: -2.000000000000000E+00 + i * 7.000000000000000E+00
+ A*B:  1.300000000000000E+01 + i * 1.300000000000000E+01
+ A/B: -5.384615384615380E-01 + i * 1.307692307692310E+00
+ A**B.real: -7.400000000000000E+01 - i * 1.100000000000000E+02
 EOF
 comp out exp
 comp err nul
@@ -961,23 +962,24 @@ echo "OK"
 # t_math
 title t_math
 echo -ne "21.0\n6.5\n" | try t_math 
+echo >> out
 cat << EOF > exp
-Enter a real R1 : ? int   (R1)  2.10000000000000E+01
-frac  (R1)  0.00000000000000E+00
-round (R1)                   21
-trunc (R1)                   21
-sqrt (R1)  4.58257569495584E+00
-exp (R1)  1.31881573448321E+09
-ln  (R1)  3.04452243772342E+00
-log_10 (R1)  1.32221929473392E+00
+Enter a real R1 : ? int   (R1) 2.10000000000000E+01
+frac  (R1) 0.00000000000000E+00
+round (R1) 21
+trunc (R1) 21
+sqrt (R1) 4.58257569495584E+00
+exp (R1) 1.31881573448321E+09
+ln  (R1) 3.04452243772342E+00
+log_10 (R1) 1.32221929473392E+00
 Angles in radian
-sin (R1)  8.36655638536056E-01
+sin (R1) 8.36655638536056E-01
 cos (R1) -5.47729260224268E-01
 tg  (R1) -1.52749852763660E+00
 arc_sin (R1) Exception
 arc_cos (R1) Exception
-arc_tg  (R1)  1.52321322351791E+00
-Enter another real R2 : ?  R1 ** R2  3.93029741545242E+08
+arc_tg  (R1) 1.52321322351791E+00
+Enter another real R2 : ?  R1 ** R2 3.93029741545242E+08
 
 Enter a real R1 : ? 
 EOF
@@ -1259,8 +1261,7 @@ try t_round_at 215.0 1
 cat << EOF > exp
 Digits:  3
 Image ->  2.20000000000000E+02
-Real_Io -> 2.200E+02
-
+Normalization ->  2.200E+02
 EOF
 comp out exp
 comp err nul
@@ -1426,9 +1427,8 @@ try t_syslin syslin2.dat
 cat << EOF > exp
 >2   1      7<
 >1   2      8<
-X(  1) =  2.000000E+00
-X(  2) =  3.000000E+00
-
+X(  1) = 2.00000E+00
+X(  2) = 3.00000E+00
 EOF
 comp out exp
 comp err nul

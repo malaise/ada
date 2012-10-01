@@ -1,6 +1,6 @@
 -- Euro <-> Franc conversion
 with As.U, Argument, Upper_Char, Get_Float, My_Math, Euro_Franc, Str_Util,
-     Basic_Proc;
+     Basic_Proc, Normalization;
 use type My_Math.Real;
 
 procedure E2F is
@@ -24,7 +24,8 @@ procedure E2F is
     I : My_Math.Inte;
   begin
     I := My_Math.Round(V * 100.0);
-    My_Math.Real_Io.Put(My_Math.Real(I) / 100.0, 0, 2, 0);
+    Basic_Proc.Put_Output (Normalization.Normal_Fixed (
+              My_Math.Real(I) / 100.0, 9, 6));
   end Put;
 
 

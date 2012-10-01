@@ -402,9 +402,6 @@ multiget (2)::
 mutex_manager (2)::
      Mutex for exclusive access or read/write access to shared data.
 
-bool_io flo_io int_io long_io (1)::
-     Boolean, float, integer and long_long_integer IOs with Ada.Text_Io.
-
 my_math (2)::
      Math library.
 

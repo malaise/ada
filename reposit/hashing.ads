@@ -44,8 +44,6 @@ package Hashing is
     generic
       -- Access to data, managed by client
       type Data_Access is private;
-      -- Procedure to dump data in Dump
-      with procedure Dump (Data : in Data_Access);
       -- Hashing function
       with function Hash_Func (Key : String) return Hash_Range is Hash_Def_Func;
     package Hash_Mng is
@@ -106,12 +104,14 @@ package Hashing is
       procedure Remove (Table : in out Hash_Table;
                         Key   : in String);
 
-      -- Dump hash value of key and lists all data found for key
+      -- Dump hash value of key and list all data found for key
       procedure Dump (Table     : in Hash_Table;
                       Index     : in Hash_Range;
+                      Put       : access procedure (Data : in Data_Access);
                       Direction : in Direction_List := Forward);
       procedure Dump (Table     : in Hash_Table;
                       Key       : in String;
+                      Put       : access procedure (Data : in Data_Access);
                       Direction : in Direction_List := Forward);
 
       -- Remove all the data stored in the hash table

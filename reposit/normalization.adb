@@ -1,4 +1,4 @@
-with Normal, Round_At, Str_Util, As.U;
+with Normal, Normal_Gen, Round_At, Str_Util, As.U;
 package body Normalization is
 
   Warning_Char : constant Character := '!';
@@ -13,6 +13,14 @@ package body Normalization is
                        Gap   : Character := ' ') return String
            renames Normal;
 
+  function Normal_Int (I     : My_Math.Inte;
+                       Len   : Positive;
+                       Right : Boolean := True;
+                       Gap   : Character := ' ') return String is
+    function Normal_Inte is new Normal_Gen (My_Math.Inte);
+  begin
+    return Normal_Inte (I, Len, Right, Gap);
+  end Normal_Int;
 
   -- Puts a float F or a real R in a string of fixed length.
   -- S i . f {[ f ]} E S e {[ e ]}

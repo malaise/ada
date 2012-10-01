@@ -1,5 +1,9 @@
+with Ada.Text_Io;
 with C_Types;
 package body My_Math is
+
+  package Inte_Io is new Ada.Text_Io.Integer_Io (Inte);
+  package Real_Io is new Ada.Text_Io.Float_Io (Real);
 
   function Cpow (X, Y : C_Types.Double) return C_Types.Double;
   pragma Import (C, Cpow, "pow");
@@ -34,8 +38,39 @@ package body My_Math is
   --------------------------
   -- Constants for computing
   --------------------------
-  -- Multiples et sub multiples of pi
+  -- Multiples and sub-multiples of pi
   Pi_Hundred_Heighty   : constant := Pi/180.0;
+
+  -- Get an Inte, get a Real from a string
+  -- raise Data_Error if From is not valid
+  function Get (From : String) return Inte is
+    I : Inte;
+    Last : Positive;
+  begin
+    Inte_Io.Get (From, I, Last);
+    if Last /= From'Last then
+      raise Data_Error;
+    end if;
+    return I;
+  exception
+    when Ada.Text_Io.Data_Error =>
+      raise Data_Error;
+  end Get;
+
+  function Get (From : String) return Real is
+    R : Real;
+    Last : Positive;
+  begin
+    Real_Io.Get (From, R, Last);
+    if Last /= From'Last then
+      raise Data_Error;
+    end if;
+    return R;
+  exception
+    when Ada.Text_Io.Data_Error =>
+      raise Data_Error;
+  end Get;
+
 
 
   -- Integer part of a real

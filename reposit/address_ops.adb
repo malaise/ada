@@ -1,8 +1,6 @@
 with Ada.Text_Io, Unchecked_Conversion;
 package body Address_Ops is
 
-
-
   type Readable_Address is mod System.Memory_Size;
   package Addr_Io is new Ada.Text_Io.Modular_Io(Readable_Address);
 
