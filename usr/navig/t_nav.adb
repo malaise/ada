@@ -1,15 +1,11 @@
-with Ada.Text_Io;
-with My_Io;
+with Basic_Proc, Integer_Image, Normalization;
 with Nav_Types, Nav_Data;
 procedure T_Nav is
-Str : String (1..20);
-Lst : Natural;
 
   Data_In, Data_Out : Nav_Data.T_Data;
   subtype Ti is Positive range 1..7;
   I1, I2, I3 : Ti;
   Report : Nav_Data.T_Consistency;
-  package Cons_Io is new Ada.Text_Io.Enumeration_Io (Nav_Data.T_Consistency);
 
   function Dot (S : String) return Natural is
   begin
@@ -25,11 +21,11 @@ Lst : Natural;
   begin
     loop
       begin
-        My_Io.Put (Msg & " unknown ? ");
-        My_Io.Get_Line (S, L);
+        Basic_Proc.Put_Output (Msg & " unknown ? ");
+        Basic_Proc.Get_Line (S, L);
         return Ti'Value (S(1..L));
       exception
-        when others => My_Io.Put_Line ("ERREUR...");
+        when others => Basic_Proc.Put_Line_Output ("ERREUR...");
       end;
     end loop;
   end Get_Indice;
@@ -42,8 +38,8 @@ Lst : Natural;
   begin
     loop
       begin
-        My_Io.Put (Msg & " angle ? ");
-        My_Io.Get_Line (S, L);
+        Basic_Proc.Put_Output (Msg & " angle ? ");
+        Basic_Proc.Get_Line (S, L);
         D := Dot (S(1..L));
         if D = 0 then
           A.Degrees := Nav_Types.T_Degree'Value (S(1..L));
@@ -54,7 +50,7 @@ Lst : Natural;
         end if;
         return A;
       exception
-        when others => My_Io.Put_Line ("ERREUR...");
+        when others => Basic_Proc.Put_Line_Output ("ERREUR...");
       end;
     end loop;
   end Get_Angle;
@@ -67,8 +63,8 @@ Lst : Natural;
   begin
     loop
       begin
-        My_Io.Put (Msg & " angle ? ");
-        My_Io.Get_Line (S, L);
+        Basic_Proc.Put_Output (Msg & " angle ? ");
+        Basic_Proc.Get_Line (S, L);
         if S(1)='-'  then
           S(1..L-1) := S(2..L);
           L := L - 1;
@@ -86,7 +82,7 @@ Lst : Natural;
         end if;
         return A;
       exception
-        when others => My_Io.Put_Line ("ERREUR...");
+        when others => Basic_Proc.Put_Line_Output ("ERREUR...");
       end;
     end loop;
   end Get_Drift;
@@ -97,23 +93,23 @@ Lst : Natural;
   begin
     loop
       begin
-        My_Io.Put (Msg & " speed ? ");
-        My_Io.Get_Line (S, L);
+        Basic_Proc.Put_Output (Msg & " speed ? ");
+        Basic_Proc.Get_Line (S, L);
         return Nav_Types.T_Speed (Positive'Value (S(1..L)));
       exception
-        when others => My_Io.Put_Line ("ERREUR...");
+        when others => Basic_Proc.Put_Line_Output ("ERREUR...");
       end;
     end loop;
   end Get_Speed;
 
 begin
-  My_Io.Put_Line ("1 : WIND SPEED");
-  My_Io.Put_Line ("2 : WIND ANGLE");
-  My_Io.Put_Line ("3 : PLAN SPEED");
-  My_Io.Put_Line ("4 : PLAN ANGLE");
-  My_Io.Put_Line ("5 : TRAJ SPEED");
-  My_Io.Put_Line ("6 : TRAJ ANGLE");
-  My_Io.Put_Line ("7 : DRIFT");
+  Basic_Proc.Put_Line_Output ("1 : WIND SPEED");
+  Basic_Proc.Put_Line_Output ("2 : WIND ANGLE");
+  Basic_Proc.Put_Line_Output ("3 : PLAN SPEED");
+  Basic_Proc.Put_Line_Output ("4 : PLAN ANGLE");
+  Basic_Proc.Put_Line_Output ("5 : TRAJ SPEED");
+  Basic_Proc.Put_Line_Output ("6 : TRAJ ANGLE");
+  Basic_Proc.Put_Line_Output ("7 : DRIFT");
   I1 := Get_Indice ("1st");
   loop
     I2 := Get_Indice ("2nd");
@@ -158,30 +154,49 @@ begin
   end if;
 
   Nav_Data.Resolution (Data_In, Report, Data_Out);
-  My_Io.New_Line;
-  Cons_Io.Put (Report);
-  My_Io.New_Line;
-  if Nav_Data."/=" (Report, Nav_Data.Ok) then return; end if;
-
-  My_Io.Put ("WIND SPEED "); My_Io.Put_Line (Data_Out.Wind.Speed);
-  My_Io.Put ("WIND ANGLE "); My_Io.Put (Integer(Data_Out.Wind.Angle.Degrees));
-  My_Io.Put ("."); My_Io.Put_Line (Integer(Data_Out.Wind.Angle.Minutes));
-
-  My_Io.Put ("PLAN SPEED "); My_Io.Put_Line (Data_Out.Plan.Speed);
-  My_Io.Put ("PLAN ANGLE "); My_Io.Put (Integer(Data_Out.Plan.Angle.Degrees));
-  My_Io.Put ("."); My_Io.Put_Line (Integer(Data_Out.Plan.Angle.Minutes));
-
-  My_Io.Put ("TRAJ SPEED "); My_Io.Put_Line (Data_Out.Traj.Speed);
-  My_Io.Put ("TRAJ ANGLE "); My_Io.Put (Integer(Data_Out.Traj.Angle.Degrees));
-  My_Io.Put ("."); My_Io.Put_Line (Integer(Data_Out.Traj.Angle.Minutes));
-
-  My_Io.Put ("DRIFT ");
-  if Data_Out.Drift.Positiv then
-    My_Io.Put ("+");
-  else
-    My_Io.Put ("-");
+  Basic_Proc.New_Line_Output;
+  Basic_Proc.Put_Line_Output (Report'Img);
+  Basic_Proc.New_Line_Output;
+  if Nav_Data."/=" (Report, Nav_Data.Ok) then
+    return;
   end if;
-  My_Io.Put (Integer(Data_Out.Drift.Degrees)); My_Io.Put (".");
-  My_Io.Put_Line (Integer(Data_Out.Drift.Minutes));
+
+  Basic_Proc.Put_Output ("WIND SPEED ");
+  Basic_Proc.Put_Line_Output (
+      Normalization.Normal_Fixed (Data_Out.Wind.Speed, 6, 3));
+  Basic_Proc.Put_Output ("WIND ANGLE ");
+  Basic_Proc.Put_Output (Integer_Image (Integer(Data_Out.Wind.Angle.Degrees)));
+  Basic_Proc.Put_Output (".");
+  Basic_Proc.Put_Line_Output (
+      Integer_Image (Integer(Data_Out.Wind.Angle.Minutes)));
+
+  Basic_Proc.Put_Output ("PLAN SPEED ");
+  Basic_Proc.Put_Line_Output (
+      Normalization.Normal_Fixed (Data_Out.Plan.Speed, 6, 3));
+  Basic_Proc.Put_Output ("PLAN ANGLE ");
+  Basic_Proc.Put_Output (Integer_Image (Integer(Data_Out.Plan.Angle.Degrees)));
+  Basic_Proc.Put_Output (".");
+  Basic_Proc.Put_Line_Output (
+      Integer_Image (Integer(Data_Out.Plan.Angle.Minutes)));
+
+  Basic_Proc.Put_Output ("TRAJ SPEED ");
+  Basic_Proc.Put_Line_Output (
+      Normalization.Normal_Fixed (Data_Out.Traj.Speed, 6, 3));
+  Basic_Proc.Put_Output ("TRAJ ANGLE ");
+  Basic_Proc.Put_Output (Integer_Image (Integer(Data_Out.Traj.Angle.Degrees)));
+  Basic_Proc.Put_Output (".");
+  Basic_Proc.Put_Line_Output (
+      Integer_Image (Integer(Data_Out.Traj.Angle.Minutes)));
+
+  Basic_Proc.Put_Output ("DRIFT ");
+  if Data_Out.Drift.Positiv then
+    Basic_Proc.Put_Output ("+");
+  else
+    Basic_Proc.Put_Output ("-");
+  end if;
+  Basic_Proc.Put_Output (Integer_Image (Integer(Data_Out.Drift.Degrees)));
+  Basic_Proc.Put_Output (".");
+  Basic_Proc.Put_Line_Output (
+      Integer_Image (Integer(Data_Out.Drift.Minutes)));
 end T_Nav;
 

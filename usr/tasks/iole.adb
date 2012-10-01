@@ -1,4 +1,4 @@
-with My_Io, Rnd;
+with Basic_Proc, Rnd;
 procedure Iole is
 
   task T1 is
@@ -12,7 +12,7 @@ procedure Iole is
     loop
       select
         accept Request do
-          My_Io.Put_Line ("Request");
+          Basic_Proc.Put_Line_Output ("Request");
         end Request;
       or
         terminate;
@@ -24,7 +24,7 @@ procedure Iole is
   begin
     loop
       delay Rnd.Dur_Random (0.0, 0.1);
-      My_Io.Put_Line ("Event");
+      Basic_Proc.Put_Line_Output ("Event");
     end loop;
   end T2;
 
@@ -34,3 +34,4 @@ begin
     T1.Request;
   end loop;
 end Iole;
+

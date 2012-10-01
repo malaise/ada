@@ -1,4 +1,4 @@
-with My_Io;
+with Basic_Proc;
 procedure Wheeles is
 
   Nb_Wheeles : constant := 3;
@@ -16,27 +16,27 @@ procedure Wheeles is
   begin
     accept Start (No : in Wheeles_Range) do
       T_Wheele.No := No;
-      My_Io.Put_Line ("Task " & Wheeles_Range'Image(No) & " is starting.");
+      Basic_Proc.Put_Line_Output ("Task " & Wheeles_Range'Image(No) & " is starting.");
     end Start;
-    My_Io.Put_Line ("Task " & Wheeles_Range'Image(No) & " is started.");
+    Basic_Proc.Put_Line_Output ("Task " & Wheeles_Range'Image(No) & " is started.");
 
     loop
-      My_Io.Put_Line ("Task " & Wheeles_Range'Image(No) & " is running.");
+      Basic_Proc.Put_Line_Output ("Task " & Wheeles_Range'Image(No) & " is running.");
       select
         accept Stop do
-          My_Io.Put_Line ("Task " & Wheeles_Range'Image(No) & " is exiting.");
+          Basic_Proc.Put_Line_Output ("Task " & Wheeles_Range'Image(No) & " is exiting.");
         end Stop;
         exit;
       or
         delay 0.01;
       end select;
     end loop;
-    My_Io.Put_Line ("Task " & Wheeles_Range'Image(No) & " is exited.");
+    Basic_Proc.Put_Line_Output ("Task " & Wheeles_Range'Image(No) & " is exited.");
   end T_Wheele;
 
 
 begin
-  My_Io.Put_Line ("Starting tasks.");
+  Basic_Proc.Put_Line_Output ("Starting tasks.");
   for I in Wheeles_Range loop
     Wheeles_Array(I).Start(I);
   end loop;
@@ -47,16 +47,16 @@ begin
       Len : Natural;
     begin
       delay 1.0;
-      My_Io.Get_Line (Str, Len);
+      Basic_Proc.Get_Line (Str, Len);
       exit when Str(1..Len) = "exit";
     exception
       when others => null;
     end;
   end loop;
-  My_Io.Put_Line ("Stopping tasks.");
+  Basic_Proc.Put_Line_Output ("Stopping tasks.");
 
   for I in Wheeles_Range loop
     Wheeles_Array(I).Stop;
   end loop;
-  My_Io.Put_Line ("Exiting.");
+  Basic_Proc.Put_Line_Output ("Exiting.");
 end Wheeles;

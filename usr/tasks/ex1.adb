@@ -1,5 +1,5 @@
-with My_Io;
-use  My_Io;
+with Basic_Proc, Normal;
+use  Basic_Proc;
 procedure Ex1 is
   pragma Priority (1);
 
@@ -20,9 +20,9 @@ procedure Ex1 is
 
   procedure Print (Message : in String; Client_No : in Client_Range) is
   begin
-    Put (Message & ' ');
-    Put (Client_No, 3);
-    New_Line;
+    Put_Output (Message & ' ');
+    Put_Output (Normal (Client_No, 3));
+    New_Line_Output;
   end Print;
 
 
@@ -33,7 +33,7 @@ procedure Ex1 is
     loop
       select
         accept Service (No_Client : in Client_Range) do
-          Print("                           Service de", No_Client);
+          Print ("                           Service de", No_Client);
           delay (1.0);
         end Service;
       or
@@ -44,7 +44,7 @@ procedure Ex1 is
 
   exception
     when others =>
-      Put_Line ("Exception serveur");
+      Put_Line_Output ("Exception serveur");
   end Serveur;
 
 
@@ -56,14 +56,14 @@ procedure Ex1 is
     end Init;
 
     loop
-      Print("Requete de", No);
+      Print ("Requete de", No);
       Serveur.Service (No);
 --      Schedule;
     end loop;
 
   exception
     when others =>
-      Put_Line ("Exception client");
+      Put_Line_Output ("Exception client");
   end Client;
 
 begin
@@ -75,5 +75,6 @@ begin
 
 exception
   when others =>
-    Put_Line ("Exception procedure");
+    Put_Line_Output ("Exception procedure");
 end Ex1;
+

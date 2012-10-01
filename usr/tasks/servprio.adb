@@ -1,4 +1,5 @@
-with My_Io, Rnd, Ada.Text_Io, Schedule; use My_Io;
+with Basic_Proc, Rnd, Schedule, Text_Line;
+use Basic_Proc;
 procedure Servprio is
 
   type Urgence is (Critique, Urgent, Normal, Lent);
@@ -11,7 +12,7 @@ procedure Servprio is
   function My_Random is
     new Rnd.Discr_Random(Urgence);
 
-  Fich : Ada.Text_Io.File_Type;
+  Fich : Text_Line.File_Type;
   Nom  : constant String := ("servprio.dat");
 
   task Serveur is
@@ -31,11 +32,11 @@ procedure Servprio is
                   Degre     : in Urgence;
                   Client_No : in Client_Range) is
   begin
-    Ada.Text_Io.Put(Fich, Auteur);
-    Ada.Text_Io.Put(Fich, " de ");
-    Ada.Text_Io.Put(Fich, Client_Range'Image(Client_No));
-    Ada.Text_Io.Put(Fich, " priorite ");
-    Ada.Text_Io.Put_Line(Fich, Urgence'Image(Degre));
+    Text_Line.Put (Fich, Auteur);
+    Text_Line.Put (Fich, " de ");
+    Text_Line.Put (Fich, Client_Range'Image(Client_No));
+    Text_Line.Put (Fich, " priorite ");
+    Text_Line.Put_Line(Fich, Urgence'Image(Degre));
   end Print;
 
 
@@ -49,9 +50,9 @@ procedure Servprio is
       Schedule;
 
       select
-        accept Service(I)(No_Client : in Client_Range) do
-          Print("Service", I, No_Client);
-          Put_Line("Service");
+        accept Service(I) (No_Client : in Client_Range) do
+          Print ("Service", I, No_Client);
+          Put_Line_Output ("Service");
           Totals(I) := Totals(I) + 1;
         end Service;
         I := Urgence'First;
@@ -70,7 +71,7 @@ procedure Servprio is
 
   exception
     when others =>
-      Put_Line("Exception serveur");
+      Put_Line_Output ("Exception serveur");
   end Serveur;
 
 
@@ -81,69 +82,70 @@ procedure Servprio is
     N_Loop   : Positive;
     Calcul   : Tableau := (others => 0);
   begin
-    accept Init(No : in Client_Range) do
+    accept Init (No : in Client_Range) do
       Client.No := No;
     end Init;
 
-    N_Loop := Rnd.Int_Random(1, Max_Loop);
+    N_Loop := Rnd.Int_Random (1, Max_Loop);
     for I in 1 .. N_Loop loop
       Schedule;
       Prio := My_Random;
-      Print("                           Requete", Prio, No);
+      Print ("                           Requete", Prio, No);
 
-      Serveur.Service(Prio)(No);
+      Serveur.Service(Prio) (No);
 
-      Calcul(Prio) := Calcul(Prio) + 1;
+      Calcul (Prio) := Calcul (Prio) + 1;
     end loop;
 
-    accept Fin(Total : in out Tableau) do
+    accept Fin (Total : in out Tableau) do
       for I in Urgence loop
         Total(I) := Total(I) + Calcul(I);
       end loop;
     end Fin;
 
-    Ada.Text_Io.Put(Fich, "                           Fin client ");
-    Ada.Text_Io.Put(Fich, Client_Range'Image(No));
-    Ada.Text_Io.Put(Fich, " , ");
-    Ada.Text_Io.Put(Fich, Positive'Image(N_Loop));
-    Ada.Text_Io.Put_Line(Fich, " appels");
+    Text_Line.Put (Fich, "                           Fin client ");
+    Text_Line.Put (Fich, Client_Range'Image(No));
+    Text_Line.Put (Fich, " , ");
+    Text_Line.Put (Fich, Positive'Image(N_Loop));
+    Text_Line.Put_Line (Fich, " appels");
 
   exception
     when others =>
-      Put_Line("Exception client");
+      Put_Line_Output ("Exception client");
       raise;
   end Client;
 
 begin
-  Ada.Text_Io.Create(Fich, Ada.Text_Io.Out_File, Nom);
+  Text_Line.Create_All (Fich, Nom);
 
   for I in Client_Range loop
-    Clients(I).Init(I);
+    Clients(I).Init (I);
   end loop;
 
   Serveur.Init;
 
   for I in Client_Range loop
-    Clients(I).Fin(Totalc);
+    Clients(I).Fin (Totalc);
   end loop;
 
   Serveur.Fin;
 
-  Ada.Text_Io.Put_Line(Fich, "TOTAUX");
+  Text_Line.Put_Line (Fich, "TOTAUX");
   for I in Urgence loop
-    Ada.Text_Io.Put(Fich, Urgence'Image(I));
-    Ada.Text_Io.Put(Fich, " -> ");
-    Ada.Text_Io.Put(Fich, Positive'Image(Totals(I)));
-    Ada.Text_Io.Put(Fich, " & ");
-    Ada.Text_Io.Put_Line(Fich, Positive'Image(Totalc(I)));
+    Text_Line.Put (Fich, Urgence'Image(I));
+    Text_Line.Put (Fich, " -> ");
+    Text_Line.Put (Fich, Positive'Image(Totals(I)));
+    Text_Line.Put (Fich, " & ");
+    Text_Line.Put_Line (Fich, Positive'Image(Totalc(I)));
     Total_Appel := Total_Appel + Totalc(I);
   end loop;
-  Ada.Text_Io.Put_Line(Fich, " TOTAL APPELS : " & Positive'Image(Total_Appel));
+  Text_Line.Put_Line (Fich, " TOTAL APPELS : " & Positive'Image(Total_Appel));
 
-  Ada.Text_Io.Close(Fich);
+  Text_Line.Close_All (Fich);
 
 exception
   when others =>
-    Put_Line("Exception prog");
+    Put_Line_Output ("Exception prog");
     raise;
 end Servprio;
+
