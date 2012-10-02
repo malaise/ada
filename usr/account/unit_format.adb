@@ -1,10 +1,8 @@
-with Ada.Text_Io, Ada.Calendar;
-with My_Math, Normal, Euro_Franc, Language;
+with Ada.Calendar;
+with My_Math, Normal, Euro_Franc, Language, Normalization;
 package body Unit_Format is
 
   Current_Unit : Units_List := Default_Unit;
-
-  package Amount_Io is new Ada.Text_Io.Float_Io(Oper_Def.Amount_Range);
 
   package Mef is new Euro_Franc(Oper_Def.Amount_Range, Oper_Def.Amount_Range);
 
@@ -164,7 +162,8 @@ package body Unit_Format is
       Amount_In_Unit := Mef.Euros_To_Francs(Amount_In_Euros);
     end if;
     Str := (others => ' ');
-    Amount_Io.Put(Str, Amount_In_Unit, 2, 0);
+    Str := Normalization.Normal_Fixed (My_Math.Real (Amount_In_Unit),
+                                       Amount_Str'Length, 9, 'O');
     if Align_Left then
       -- Put string at the beginning
       Str_Ret := (others => ' ');
@@ -198,11 +197,12 @@ package body Unit_Format is
     declare
       -- Strip blancs
       Tmp : constant String := Str(First_Dig(Str) .. Last_Dig(Str));
+      R : My_Math.Real;
       I : My_Math.Inte;
-      Last : Positive;
     begin
       if Has_Dot(Tmp) then
-        Amount_Io.Get(Tmp, Amount_In_Unit, Last);
+        R := My_Math.Get (Tmp);
+        Amount_In_Unit := Oper_Def.Amount_Range(R);
       else
         I := My_Math.Get (Tmp);
         Amount_In_Unit := Oper_Def.Amount_Range(I);

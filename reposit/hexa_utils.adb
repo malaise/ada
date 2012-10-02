@@ -60,4 +60,17 @@ package body Hexa_Utils is
     return Res.Image;
   end Image;
 
+  -- Image in hexadecimal of a Natural, padded with '0' to fit length
+  -- Lower case, no leading space
+  -- Raises Constraint_Error if Image(N) > Len
+  function Image (N : Natural; Len : Positive; Gap : Character := '0')
+           return String is
+    Result : String (1 .. Len) := (others => Gap);
+    Imag : constant String := Image (N);
+  begin
+    Result (Result'Last - Imag'Length + 1 .. Result'Last) := Imag;
+    return Result;
+  end Image;
+
 end Hexa_Utils;
+

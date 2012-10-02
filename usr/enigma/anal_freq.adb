@@ -1,5 +1,5 @@
-with Ada.Text_Io, Ada.Exceptions;
-with Argument, My_Math, Sys_Calls, Normal, Mixed_Str;
+with Ada.Exceptions;
+with Argument, My_Math, Sys_Calls, Normal, Mixed_Str, Upper_Str, Hexa_Utils;
 -- Analyse the frequency of each byte of stdin
 procedure Anal_Freq is
   -- Put all letters or only non-null
@@ -12,12 +12,9 @@ procedure Anal_Freq is
   Pos : Natural;
   -- Result of read
   Res : Natural;
-  -- P in hexa: 16#xx#
-  Str16 : String (1 .. 6);
   -- Percentage of appearance
   Percent : Natural;
 
-  package Int_Io is new Ada.Text_Io.Integer_Io (Natural);
 begin
 
   if Argument.Get_Nbre_Arg = 0 then
@@ -65,13 +62,8 @@ begin
           Sys_Calls.Put_Output (' ');
         end if;
         Pos := Character'Pos (I);
-        Int_Io.Put (Str16, Pos, Base => 16);
-        if Str16(4) = '#' then
-          -- 16#x# i.o. 16#0x#
-          Str16(4) := '0';
-        end if;
-        Sys_Calls.Put_Output (' ' & Normal (Pos, 3, Gap => '0')
-                       & ' ' & Str16(4..5));
+        Sys_Calls.Put_Output (' ' & Normal (Pos, 3, Gap => '0') & ' ');
+        Sys_Calls.Put_Output (Upper_Str (Hexa_Utils.Image (Pos, 2)));
         Percent := Natural (Table(I) * 100 / Nb_Read);
         if Percent < 100 then
           Sys_Calls.Put_Output ("  " & Normal (Percent, 2, Gap => '0'));

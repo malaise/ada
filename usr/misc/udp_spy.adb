@@ -1,8 +1,8 @@
 -- Listen to a UDP (or IPM) port and put packets received
-with Ada.Exceptions, Ada.Text_Io, Ada.Calendar;
+with Ada.Exceptions, Ada.Calendar;
 with As.U, Argument, Basic_Proc, Date_Image, Normal, Int_Image,
      Upper_Str, Str_Util, Text_Line, Sys_Calls,
-     Socket, Event_Mng, Ip_Addr, Tcp_Util, Timers;
+     Socket, Event_Mng, Ip_Addr, Tcp_Util, Timers, Hexa_Utils;
 
 procedure Udp_Spy is
 
@@ -32,8 +32,6 @@ procedure Udp_Spy is
 
   use type Socket.Host_Id;
   use type Tcp_Util.Remote_Port_List, Tcp_Util.Remote_Host_List;
-
-  package Byte_Io is new Ada.Text_Io.Integer_Io (Socket.Byte);
 
   function Port_Image is new Int_Image (Socket.Port_Num);
   function Inte_Image is new Int_Image (Integer);
@@ -106,7 +104,6 @@ procedure Udp_Spy is
   -- "  xx xx xx xx xx xx xx xx   xx xx xx xx xx xx xx xx   ................"
   procedure Dump_Data (Len : in Natural) is
     -- "16#xx#"
-    Byte_Str : String (1 .. 6);
     Hexa_Str : String (1 .. 49) := (others => ' ');
     Char_Str : String (1 .. 16) := (others => ' ');
     function Hexa_Index (I : Positive) return Positive is
@@ -126,12 +123,7 @@ procedure Udp_Spy is
       B := Data(I);
       -- Hexa dump
       O := Hexa_Index (I);
-      Byte_Io.Put (Byte_Str, B, 16);
-      if B < 16 then
-        -- " 16#e#" -> "16#0e#"
-        Byte_Str := Byte_Str(2 .. 4) & '0' & Byte_Str(5 .. 6);
-      end if;
-      Hexa_Str(O .. O + 1) := Upper_Str (Byte_Str(4 .. 5));
+      Hexa_Str(O .. O + 1) := Upper_Str (Hexa_Utils.Image (Integer(B), 2));
       -- Ascii dump
       O := (I - 1) rem 16 + 1;
       if B < 32 or else B > 126 then

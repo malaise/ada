@@ -1,60 +1,32 @@
-with Ada.Text_Io;
-with Language;
+with My_Math, Language, Normalization;
 package body Point_Str is
 
-  package Coo_Io is new Ada.Text_Io.Float_Io(Points.P_T_Coordinate);
-  package Coo_Int_Io is new Ada.Text_Io.Integer_Io(Integer);
-
+  Exp_Len : constant := 3;
   function Coordinate_Image (Coordinate : Points.P_T_Coordinate)
                             return Coordinate_String is
-    Str : Coordinate_String;
   begin
-    Coo_Io.Put (Str, Coordinate, 8, 4);
-    return Str;
+    return Normalization.Normal_Digits (Coordinate, Coordinate_String_Len,
+                                        Exp_Len);
   end Coordinate_Image;
 
   -- May raise Constraint_Error
   function Coordinate_Value (Str : String) return Points.P_T_Coordinate is
-    C : Points.P_T_Coordinate;
-    L : Positive;
-    I : Integer;
-    Str_Len : Natural;
+    I : My_Math.Inte;
   begin
 
-    -- Locate last significant character of Str
-    Str_Len := 0;
-    for J in reverse Str'Range loop
-      if Str(J) /= ' ' then
-        Str_Len := J + 1 - Str'First;
-        exit;
-      end if;
-    end loop;
-    if Str_Len = 0 then
-      raise Constraint_Error;
-    end if;
-
-    Try_To_Convert:
     begin
       -- Float format
-      Coo_Io.Get(Str, C, L);
+      return My_Math.Get (Str);
     exception
-      when Ada.Text_Io.Data_Error =>
+      when My_Math.Data_Error =>
          -- Int format
-        Coo_Int_Io.Get(Str, I, L);
-        C := Points.P_T_Coordinate (I);
-    end Try_To_Convert;
-
-    if L /= Str'Last then
-      raise Constraint_Error;
-    else
-      return C;
-    end if;
+        I := My_Math.Get (Str);
+        return Points.P_T_Coordinate (I);
+    end;
   exception
     when others =>
       raise Constraint_Error;
   end Coordinate_Value;
-
-
 
   function Encode_Rec (Point : Points.P_T_One_Point) return Afpx.Line_Rec is
     Rec : Afpx.Line_Rec;
@@ -75,3 +47,4 @@ package body Point_Str is
 
 
 end Point_Str;
+

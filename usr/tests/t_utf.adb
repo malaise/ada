@@ -26,13 +26,8 @@ procedure T_Utf is
 
   procedure Put (Str : in String) renames Basic_Proc.Put_Output;
   procedure Put (N : in Natural; Width : in Positive) is
-    Img : constant String := Upper_Str (Hexa_Utils.Image (N));
-    Res : String (1 .. Width) := (others => '0');
   begin
-    -- Skip " 16#" and last '#'
-    --  and align on right of output, padded with 0
-    Res (Width - Img'Length + 1 .. Width) := Img;
-    Put (Res);
+    Put (Upper_Str (Hexa_Utils.Image (N, Width)));
   end Put;
 
   Nb_Arg : Natural;

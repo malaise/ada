@@ -1,11 +1,8 @@
-with Ada.Exceptions, Ada.Calendar, Ada.Text_Io;
-with Basic_Proc, Day_Mng;
+with Ada.Exceptions, Ada.Calendar;
+with Basic_Proc, Day_Mng, Get_Dur;
 
 procedure T_Day_Mng is
 
-  package Dur_Io is new Ada.Text_Io.Fixed_Io (Ada.Calendar.Day_Duration);
-
-  Len : Natural;
   Dur : Ada.Calendar.Day_Duration;
   Hours    : Day_Mng.T_Hours;
   Minutes  : Day_Mng.T_Minutes;
@@ -25,7 +22,7 @@ begin
       begin
         exit Main when Str = "";
 
-        Dur_Io.Get(Str, Dur, Len);
+        Dur := Get_Dur (Str);
         exit;
       exception
         when Error:others =>

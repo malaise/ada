@@ -1,11 +1,9 @@
 -- dependance de taches
-with Ada.Text_Io;
+with Basic_Proc;
 procedure Termin is
-  use Ada.Text_Io;
+  use Basic_Proc;
 
   type T_Creation is (Par_Acces, Direct);
-
-  package Creation_Io is new Ada.Text_Io.Enumeration_Io (T_Creation);
 
   Loops : constant array (T_Creation) of Positive := (4, 2);
 
@@ -28,31 +26,32 @@ procedure Termin is
     accept Init (Nom : in T_Creation) do
       T_Tache.Nom := Init.Nom;
     end Init;
-    Put ("tache "); Creation_Io.Put (Nom, T_Creation'Width);
-    Put_Line (" lancee");
+    Put_Output ("tache "); Put_Output (Nom'Img);
+    Put_Line_Output (" lancee");
     for I in 1..Loops(Nom) loop
       delay 0.5;
-      Put ("tache ");Creation_Io.Put (Nom, T_Creation'Width);
-      Put_Line (" active");
+      Put_Output ("tache "); Put_Output (Nom'Img);
+      Put_Line_Output (" active");
     end loop;
-    Put ("tache "); Creation_Io.Put (Nom, T_Creation'Width);
-    Put_Line (" achevee");
+    Put_Output ("tache "); Put_Output (Nom'Img);
+    Put_Line_Output (" achevee");
   end T_Tache;
 
 begin
-  Put_Line ("Une tache depend du bloc ou elle est declaree, sauf une tache "
+  Put_Line_Output ("Une tache depend du bloc ou elle est declaree, sauf une tache "
     & "accedee,");
-  Put_Line (" laquelle depend du bloc qui declare le type acces:");
-  New_Line (2);
+  Put_Line_Output (" laquelle depend du bloc qui declare le type acces:");
+  New_Line_Output;
+  New_Line_Output;
 
   declare
     Pa : constant T_Ptr_Tache := new T_Tache;
     Pb : T_Tache;
   begin
-    Put (Separateur); Put (" Debut bloc "); Put_Line (Separateur);
+    Put_Output (Separateur); Put_Output (" Debut bloc "); Put_Line_Output (Separateur);
     Pa.Init (Par_Acces);
     Pb.Init (Direct);
   end;
-  Put (Separateur); Put (" Fin   bloc "); Put_Line (Separateur);
+  Put_Output (Separateur); Put_Output (" Fin   bloc "); Put_Line_Output (Separateur);
 
 end Termin;
