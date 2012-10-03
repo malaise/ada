@@ -1,4 +1,4 @@
-with Basic_Proc, Normal, Get_Int;
+with Basic_Proc, Normal, Gets;
 procedure T_Normal is
   I : Integer;
   Len : Positive;
@@ -11,7 +11,7 @@ begin
     loop
       Basic_Proc.Put_Output ("I ? : ");
       begin
-        I := Get_Int (Basic_Proc.Get_Line);
+        I := Gets.Get_Int (Basic_Proc.Get_Line);
         exit;
       exception
         when Basic_Proc.End_Error =>
@@ -22,7 +22,7 @@ begin
     loop
       Basic_Proc.Put_Output ("LEN ? : ");
       begin
-        Len := Get_Int (Basic_Proc.Get_Line);
+        Len := Gets.Get_Int (Basic_Proc.Get_Line);
         exit;
       exception
         when others => null;

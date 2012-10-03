@@ -1,5 +1,5 @@
 with Ada.Exceptions, Ada.Calendar;
-with Basic_Proc, Day_Mng, Get_Dur;
+with Basic_Proc, Day_Mng, Gets;
 
 procedure T_Day_Mng is
 
@@ -22,7 +22,7 @@ begin
       begin
         exit Main when Str = "";
 
-        Dur := Get_Dur (Str);
+        Dur := Gets.Get_Dur (Str);
         exit;
       exception
         when Error:others =>

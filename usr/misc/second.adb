@@ -1,5 +1,5 @@
 -- Purpose: solve a.x2 + b.x + c = 0
-with Argument, Basic_Proc, My_Math, Get_Float, Float_Image;
+with Argument, Basic_Proc, My_Math, Gets, Float_Image;
 use My_Math;
 procedure Second is
 
@@ -20,12 +20,13 @@ begin
 
   -- Parse arguments
   begin
-    A := My_Math.Real (Get_Float.Get_Float (Argument.Get_Parameter(1)));
-    B := My_Math.Real (Get_Float.Get_Float (Argument.Get_Parameter(2)));
-    C := My_Math.Real (Get_Float.Get_Float (Argument.Get_Parameter(3)));
+    A := My_Math.Real (Gets.Get_Float (Argument.Get_Parameter(1)));
+    B := My_Math.Real (Gets.Get_Float (Argument.Get_Parameter(2)));
+    C := My_Math.Real (Gets.Get_Float (Argument.Get_Parameter(3)));
   exception
     when others =>
-      Basic_Proc.Put_Line_Output ("ERROR in an argument. 3 arguments expected, a, b and c.");
+      Basic_Proc.Put_Line_Output (
+         "ERROR in an argument. 3 Float arguments expected, a, b and c.");
       return;
   end;
 

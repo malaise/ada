@@ -3,7 +3,7 @@
 -- Solve linear system and put solution
 
 with Basic_Proc, As.U.Utils, Argument, Normal, Syslin, Float_Image, Get_Line,
-     Get_Float;
+     Gets;
 
 procedure T_Syslin is
 
@@ -74,9 +74,9 @@ begin
         -- Parse current line in matrix and vector
         begin
           for J in 1 .. Dim loop
-            Matrix (I, J) := Get_Float.Get_Float(Line.Element (J).Image);
+            Matrix (I, J) := Gets.Get_Int_Or_Float(Line.Element (J).Image);
           end loop;
-          Vector (I) := Get_Float.Get_Float(Line.Element (Dim+1).Image);
+          Vector (I) := Gets.Get_Int_Or_Float(Line.Element (Dim+1).Image);
         exception
           when others =>
             Basic_Proc.Put_Line_Output ("ERROR, when reading data at line "

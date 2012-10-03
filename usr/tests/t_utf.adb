@@ -1,4 +1,4 @@
-with Utf_8, Utf_16, Argument, Basic_Proc, Get_Int, Hexa_Utils, Upper_Str;
+with Utf_8, Utf_16, Argument, Basic_Proc, Gets, Hexa_Utils, Upper_Str;
 procedure T_Utf is
 
   procedure Usage is
@@ -21,7 +21,7 @@ procedure T_Utf is
 
   function Get_Value (Str : String) return Natural is
   begin
-    return Get_Int ("16#" & Str & "#");
+    return Gets.Get_Int ("16#" & Str & "#");
   end Get_Value;
 
   procedure Put (Str : in String) renames Basic_Proc.Put_Output;

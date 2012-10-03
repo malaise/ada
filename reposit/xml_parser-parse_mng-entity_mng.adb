@@ -1,4 +1,4 @@
-with Get_Int, Utf_8;
+with Gets, Utf_8;
 separate (Xml_Parser.Parse_Mng)
 -- Entity management
 package body Entity_Mng is
@@ -47,11 +47,11 @@ package body Entity_Mng is
       end if;
       -- Skip "#x"
       Start := Code'First + 2;
-      Res := Get_Int ("16#" & Code(Start .. Code'Last) & "#");
+      Res := Gets.Get_Int ("16#" & Code(Start .. Code'Last) & "#");
     else
       -- Skip "#"
       Start := Code'First + 1;
-      Res := Get_Int (Code(Start .. Code'Last));
+      Res := Gets.Get_Int (Code(Start .. Code'Last));
     end if;
     -- Check for valid values
     if (Res >= 16#20# and then Res <= 16#D7FF#)

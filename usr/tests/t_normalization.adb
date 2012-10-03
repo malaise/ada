@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1;
-with Normalization, Get_Float, Async_Stdin, Basic_Proc, Argument, As.U,
+with Normalization, Gets, Async_Stdin, Basic_Proc, Argument, As.U,
      Unbounded_Arrays, Command, Many_Strings, Event_Mng;
 procedure T_Normalization is
   F : Float;
@@ -86,7 +86,7 @@ begin
       loop
         begin
           Async_Stdin.Put_Out ("F ? : ");
-          F := Get_Float.Get_Float (Async_Stdin.Strip_Last_Control (
+          F := Gets.Get_Float (Async_Stdin.Strip_Last_Control (
                 Async_Stdin.Get_Line (80, 7)));
           D := Delt_Range (F);
           exit;
@@ -144,7 +144,7 @@ begin
   elsif Argument.Get_Nbre_Arg = 3 then
     -- 3 args => 3 Outputs on the line
     begin
-      F := Get_Float.Get_Float (Argument.Get_Parameter (Occurence => 1));
+      F := Gets.Get_Float (Argument.Get_Parameter (Occurence => 1));
       D := Delt_Range (F);
       Len := Positive'Value (Argument.Get_Parameter (Occurence => 2));
       Exp := Positive'Value (Argument.Get_Parameter (Occurence => 3));

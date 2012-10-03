@@ -338,17 +338,8 @@ file_hash (1)::
 forker (2)::
      API to a standalone (in C) forker process.
 
-get_dur (1)::
-     Get a duration from a string.
-
-get_float (1)::
-     Get a float or int from a string.
-
-get_int (1)::
-     Get an integer from a string.
-
-get_line (2)::
-     Parses lines and words of file.
+gets (1)::
+     Get an integer, float or duration from a string.
 
 hash hashing (2)::
      Hash table storage of keyed data.

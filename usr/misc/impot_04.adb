@@ -1,43 +1,43 @@
-with My_Math, Basic_Proc, Clear_Screen, Get_Float, Normalization;
+with My_Math, Basic_Proc, Clear_Screen, Gets, Normalization;
 use Basic_Proc;
 procedure Impot_04 is
 
   -- Tout montant en francs
   type Somme is digits 12 range -1_000_000_000.00 .. 1_000_000_000.00;
 
-  -- le salaire net imposable
+  -- Le salaire net imposable
   Salaire : Somme;
   -- le revenu brut global
   Revenu_Brut_Global : Somme;
 
-  -- les charges deduites
+  -- Les charges deduites
   Charges_Deduites : Somme;
-  -- le revenu net
+  -- Le revenu net
   Revenu_Net_Imposable : Somme;
 
-  -- le nombre de parts, le quotient familial et l'impot i
+  -- Le nombre de parts, le quotient familial et l'impot i
   Nbre_Part : Positive;     -- Le nombre saisi * 10
   Quotient_Familial : Somme;
   Impot_I : Somme;
 
-  -- l'impot apres correction
+  -- L'impot apres correction
   Impot_Apres_Correction : Somme;
-  -- l'impot apres deduction
+  -- L'impot apres deduction
   Impot_Apres_Deduction  : Somme;
   pragma Unreferenced (Impot_Apres_Correction, Impot_Apres_Deduction);
 
 
-  -- l'impot a payer
+  -- L'impot a payer
   Impot_A_Payer : Somme;
 
-  -- les resultats intermediaires des calculs
+  -- Les resultats intermediaires des calculs
   Resultat : Somme;
 
-  -- pour lire un float tres securise
+  -- Pour lire un float tres securise
   function Get_Real return My_Math.Real is
     Valeur : Float;
   begin
-    Valeur := Get_Float.Get_Float (Basic_Proc.Get_Line);
+    Valeur := Gets.Get_Int_Or_Float (Basic_Proc.Get_Line);
     return My_Math.Real(Valeur);
   end Get_Real;
 
@@ -96,35 +96,35 @@ begin
 
   -- 1. CALCUL DU REVENU BRUT GLOBAL
   declare
-    -- les deductions plafonnees
+    -- Les deductions plafonnees
     Deduction_1, Deduction_2 : Somme;
-    -- les plafonds
-    -- deduction 10%
+    -- Les plafonds
+    -- Deduction 10%
     Plafond_1_H : constant Somme := 12_862.00;
     -- abattement 20%
     Plafond_2_H : constant Somme := 23_580.00;
   begin
-    -- le salaire net imposable
+    -- Le salaire net imposable
     Salaire := Get_Somme ("Entrez votre salaire net imposable");
     Resultat := Salaire;
 
-    -- 1.1. deduction 10%
+    -- 1.1. Deduction 10%
     Deduction_1 := Resultat * (10.0 / 100.0);
     if Deduction_1 > Plafond_1_H then
       Deduction_1 := Plafond_1_H;
     end if;
     Resultat := Resultat - Deduction_1;
-    -- ecrit ("apres deduction 10% et plafonds : ", resultat, "");
+    -- Ecrit ("apres deduction 10% et plafonds : ", resultat, "");
 
-    -- 1.3. abattement 20%
+    -- 1.3. Abattement 20%
     Deduction_2 := Resultat * (20.0 / 100.0);
     if Deduction_2 > Plafond_2_H then
       Deduction_2 := Plafond_2_H;
     end if;
     Resultat := Resultat - Deduction_2;
-    -- ecrit ("apres deduction 20% et plafonds : ", inter, "");
+    -- Ecrit ("apres deduction 20% et plafonds : ", inter, "");
 
-    -- le revenu
+    -- Le revenu
     Revenu_Brut_Global := Resultat;
     Ecrit ("Revenu brut global   : ", Revenu_Brut_Global, "e");
   end;
@@ -133,11 +133,11 @@ begin
   declare
     use My_Math;
   begin
-    -- 2.1. deductions diverses
+    -- 2.1. Deductions diverses
     Charges_Deduites := 0.0;
     Resultat := Resultat - Charges_Deduites;
 
-    -- arrondi a la dizaine de francs inferieure}
+    -- Arrondi a la dizaine de francs inferieure}
     Resultat := Somme (My_Math.Inte (My_Math.Real (Resultat/10.0) * 10.0) );
     Revenu_Net_Imposable := Resultat;
     Ecrit ("Revenu net imposable : ", Revenu_Net_Imposable, "e");
@@ -146,10 +146,10 @@ begin
   -- 3. 4. 5. NOMBRE DE PARTS, QUOTIENT FAMILIAL et de L'IMPOT << I >>
   declare
 
-    -- numero de tranche
+    -- Numero de tranche
     type Indice_Tranche is new Positive range 1..7;
     No_Tranche : Indice_Tranche := Indice_Tranche'First;
-    -- les tranches
+    -- Les tranches
     type Descripteur_Tranche_Familiale is record
       Somme_Max : Somme;
       Coefficient : Natural;
@@ -166,18 +166,18 @@ begin
       6 => ( Somme_Max=>48_747.0,  Coefficient=>4262, Fixe=>07_000.61),
       7 => ( Somme_Max=>Somme'Last,Coefficient=>4809, Fixe=>09_667.07));
   begin
-    -- saisie du nombre de parts
+    -- Saisie du nombre de parts
     Nbre_Part := Get_Part ("Entrez le nombre de parts");
 
-    -- quotient familial
+    -- Quotient familial
     Quotient_Familial := Resultat / (Somme(Nbre_Part) / 10.0 );
     Ecrit ("Quotient familial    : ", Quotient_Familial, "e");
 
-    -- determination de la tranche
+    -- Determination de la tranche
     while Quotient_Familial > Les_Tranches_Familiales(No_Tranche).Somme_Max loop
       No_Tranche := No_Tranche + 1;
     end loop;
-    -- calcul de l'impot << i >>
+    -- Calcul de l'impot << i >>
     Resultat := Resultat
      * (Somme (Les_Tranches_Familiales(No_Tranche).Coefficient) / 10_000.0);
     Resultat := Resultat

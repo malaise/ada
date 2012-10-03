@@ -1,5 +1,5 @@
 -- Compute factorial of a integer
-with My_Math, Basic_Proc, Get_Int;
+with My_Math, Basic_Proc, Gets;
 use Basic_Proc, My_Math;
 
 procedure Fact is
@@ -26,7 +26,7 @@ begin
     loop
       begin
         Put_Output ("Enter the number? ");
-        N := Get_Int (Get_Line);
+        N := Gets.Get_Int (Get_Line);
         Nombre := Inte(N);
         exit;
       exception

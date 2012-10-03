@@ -1,6 +1,6 @@
 -- Test timed queue
 with Ada.Calendar, Ada.Characters.Latin_1;
-with Argument, Queues.Timed, Basic_Proc, Get_Float, Lower_Char;
+with Argument, Queues.Timed, Basic_Proc, Gets, Lower_Char;
 procedure T_Timeq is
 
   procedure Usage is
@@ -120,7 +120,7 @@ begin
         end if;
         begin
           V := Val_Range'Value(Str(2 .. 2));
-          D := Duration(Get_Float.Get_Float(Str(3 .. Len)));
+          D := Duration(Gets.Get_Int_Or_Float (Str(3 .. Len)));
           Val_Queue.Push (Vals, V, (0, D));
         exception
           when Val_Queue.Timed_Full =>

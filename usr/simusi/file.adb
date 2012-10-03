@@ -1,4 +1,4 @@
-with As.U.Utils, Argument, Basic_Proc, Get_Line, Get_Float;
+with As.U.Utils, Argument, Basic_Proc, Get_Line, Gets;
 pragma Elaborate (Argument);
 with Arg_Parsing;
 package body File is
@@ -110,10 +110,10 @@ package body File is
     Cote.Start := Line_Range'Value(Line.Element (1).Image);
     Cote.Stop  := Line_Range'Value(Line.Element (2).Image);
     if Kind = Design then
-      Cote.Value := Get_Float.Get_Float(Line.Element (3).Image);
-      Cote.Inter := Get_Float.Get_Float(Line.Element (4).Image);
+      Cote.Value := Gets.Get_Float(Line.Element (3).Image);
+      Cote.Inter := Gets.Get_Float(Line.Element (4).Image);
     else
-      Cote.Inter := Get_Float.Get_Float(Line.Element (3).Image);
+      Cote.Inter := Gets.Get_Float(Line.Element (3).Image);
     end if;
     -- Error if start=stop. Set start < stop
     if Cote.Start = Cote.Stop then

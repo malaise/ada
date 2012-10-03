@@ -1,4 +1,4 @@
-with As.U, Argument, Basic_Proc, Upper_Char, Get_Int, Normal;
+with As.U, Argument, Basic_Proc, Upper_Char, Gets, Normal;
 use  Basic_Proc;
 procedure T_Arg is
 
@@ -32,7 +32,7 @@ procedure T_Arg is
     Str : As.U.Asu_Us;
   begin
     Get_Txt (Str);
-    I := Get_Int (Str.Image);
+    I := Gets.Get_Int (Str.Image);
   end Get;
 
 begin

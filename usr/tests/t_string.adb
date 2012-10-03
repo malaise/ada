@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1, Ada.Exceptions;
-with As.U.Utils, Basic_Proc, Str_Util.Regex, Many_Strings, Get_Int,
+with As.U.Utils, Basic_Proc, Str_Util.Regex, Many_Strings, Gets,
      Upper_Str, Lower_Str, Mixed_Str, Upper_Char, Environ, Argument;
 procedure T_String is
 
@@ -28,7 +28,7 @@ procedure T_String is
   begin
     loop
       begin
-        V := Get_Int (Basic_Proc.Get_Line);
+        V := Gets.Get_Int (Basic_Proc.Get_Line);
         if V = 0 and then not Allow_Zero then
           raise Constraint_Error;
         end if;

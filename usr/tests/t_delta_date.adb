@@ -1,6 +1,6 @@
 with Ada.Calendar;
 with Perpet, Day_Mng, Normal, Basic_Proc, Argument, Regular_Expressions,
-     Get_Int, Integer_Image, Dur_Image;
+     Gets, Integer_Image, Dur_Image;
 procedure T_Delta_Date is
 
   T1, T2 : Ada.Calendar.Time;
@@ -14,7 +14,7 @@ procedure T_Delta_Date is
 
   procedure Get (N : out Natural) is
   begin
-    N := Get_Int (Basic_Proc.Get_Line);
+    N := Gets.Get_Int (Basic_Proc.Get_Line);
   end Get;
 
   function Get return Ada.Calendar.Time is

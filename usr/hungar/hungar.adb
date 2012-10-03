@@ -66,20 +66,20 @@ begin
         else
           Basic_Proc.Put_Output (" note: ");
         end if;
-        Basic_Proc.Put_Output (Normalization.Normal_Fixed (Loc_Note, 3, 2));
+        Basic_Proc.Put_Output (Normalization.Normal_Fixed (Loc_Note, 7, 4));
         Sigma := Sigma + Loc_Note;
 
         -- Ideal minimum cost
         Ideal_Note := Ideal_Note + Loc_Ideal_Note;
         Basic_Proc.Put_Output ("   Ideal: ");
         Basic_Proc.Put_Output (Normalization.Normal_Fixed (
-                                       Loc_Ideal_Note, 3, 2));
+                                       Loc_Ideal_Note, 7, 4));
 
         -- Loss
         if abs (Loc_Ideal_Note - Loc_Note) > File.Epsilon then
           Basic_Proc.Put_Output (" Loss: ");
           Basic_Proc.Put_Output (Normalization.Normal_Fixed (
-              abs (Loc_Ideal_Note - Loc_Note), 3, 2));
+              abs (Loc_Ideal_Note - Loc_Note), 7, 4));
         end if;
         Basic_Proc.New_Line_Output;
 
@@ -89,18 +89,18 @@ begin
       -- Total
       if Types."=" (File.Get_Kind, Types.Regret) then
         Basic_Proc.Put_Output ("Total cost: ");
-        Basic_Proc.Put_Output(Normalization.Normal_Fixed(Sigma, 6, 2));
+        Basic_Proc.Put_Output(Normalization.Normal_Fixed(Sigma, 8, 5));
         Basic_Proc.Put_Output ("  Ideal cost: ");
-        Basic_Proc.Put_Output(Normalization.Normal_Fixed(Ideal_Note, 6, 2));
+        Basic_Proc.Put_Output(Normalization.Normal_Fixed(Ideal_Note, 7, 4));
       else
         Basic_Proc.Put_Output ("Total note: ");
-        Basic_Proc.Put_Output(Normalization.Normal_Fixed(Sigma, 6, 2));
+        Basic_Proc.Put_Output(Normalization.Normal_Fixed(Sigma, 8, 5));
         Basic_Proc.Put_Output ("  Ideal note: ");
-        Basic_Proc.Put_Output(Normalization.Normal_Fixed(Ideal_Note, 6, 2));
+        Basic_Proc.Put_Output(Normalization.Normal_Fixed(Ideal_Note, 7, 4));
       end if;
       Basic_Proc.Put_Output ("  Total loss: ");
       Basic_Proc.Put_Output (Normalization.Normal_Fixed(
-          abs (Ideal_Note - Sigma), 6, 2));
+          abs (Ideal_Note - Sigma), 8, 5));
       Basic_Proc.New_Line_Output;
     else
       -- Not done

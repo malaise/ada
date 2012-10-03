@@ -1,5 +1,5 @@
 -- Euro <-> Franc conversion
-with As.U, Argument, Upper_Char, Get_Float, My_Math, Euro_Franc, Str_Util,
+with As.U, Argument, Upper_Char, Gets, My_Math, Euro_Franc, Str_Util,
      Basic_Proc, Normalization;
 use type My_Math.Real;
 
@@ -65,7 +65,7 @@ begin
     end if;
 
     -- Get it in Real format
-    Amount := My_Math.Real(Get_Float.Get_Float(The_Argument.Image));
+    Amount := My_Math.Real(Gets.Get_Int_Or_Float (The_Argument.Image));
 
   exception
     when others =>

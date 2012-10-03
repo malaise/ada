@@ -1,4 +1,4 @@
-with Basic_Proc, My_Math, Round_At, Get_Float, Argument, Normalization;
+with Basic_Proc, My_Math, Round_At, Gets, Argument, Normalization;
 procedure T_Round_At is
   End_Error : exception;
   procedure Error is
@@ -8,7 +8,7 @@ procedure T_Round_At is
     raise End_Error;
   end Error;
 
-  Int_Float : Get_Float.Int_Float_Rec;
+  Int_Float : Gets.Int_Float_Rec;
   R, Res : My_Math.Real;
   I, D : Integer;
 
@@ -20,7 +20,7 @@ begin
   end if;
 
   -- Get R
-  Int_Float := Get_Float.Get_Int_Float (
+  Int_Float := Gets.Get_Int_Float (
                    Argument.Get_Parameter (Occurence => 1));
   if not Int_Float.Is_Float then
     Error;
@@ -28,7 +28,7 @@ begin
   R := My_Math.Real(Int_Float.Float_Value);
 
   -- Get I
-  Int_Float := Get_Float.Get_Int_Float (
+  Int_Float := Gets.Get_Int_Float (
                    Argument.Get_Parameter (Occurence => 2));
   if Int_Float.Is_Float then
     Error;

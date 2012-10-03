@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with Perpet, Basic_Proc, Get_Int, Console;
+with Perpet, Basic_Proc, Gets, Console;
 procedure T_Perpet is
 
   T : Ada.Calendar.Time;
@@ -21,7 +21,7 @@ procedure T_Perpet is
       begin
         loop
           begin
-            Put_Output ("Year -> "); Year := Get_Int (Get_Line);
+            Put_Output ("Year -> "); Year := Gets.Get_Int (Get_Line);
             exit;
           exception
             when others => Error;
@@ -30,7 +30,7 @@ procedure T_Perpet is
 
         loop
           begin
-            Put_Output ("Month -> "); Month := Get_Int (Get_Line);
+            Put_Output ("Month -> "); Month := Gets.Get_Int (Get_Line);
             exit;
           exception
             when others => Error;
@@ -39,7 +39,7 @@ procedure T_Perpet is
 
         loop
           begin
-            Put_Output ("Day -> "); Day := Get_Int (Get_Line);
+            Put_Output ("Day -> "); Day := Gets.Get_Int (Get_Line);
             exit;
           exception
             when others => Error;
@@ -59,7 +59,7 @@ procedure T_Perpet is
   begin
     loop
       begin
-        Put_Output ("Years -> "); Dur.Years := Get_Int (Get_Line);
+        Put_Output ("Years -> "); Dur.Years := Gets.Get_Int (Get_Line);
         exit;
       exception
         when Basic_Proc.End_Error => raise;
@@ -69,7 +69,7 @@ procedure T_Perpet is
 
     loop
       begin
-        Put_Output ("Months -> "); Dur.Months := Get_Int (Get_Line);
+        Put_Output ("Months -> "); Dur.Months := Gets.Get_Int (Get_Line);
         exit;
       exception
         when others => Error;
@@ -86,7 +86,7 @@ procedure T_Perpet is
   begin
     loop
       begin
-        Put_Output ("Days -> "); D := Get_Int (Get_Line);
+        Put_Output ("Days -> "); D := Gets.Get_Int (Get_Line);
         exit;
       exception
         when Basic_Proc.End_Error => raise;

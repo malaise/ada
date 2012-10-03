@@ -1,4 +1,4 @@
-with As.U.Utils, Basic_Proc, My_Math, Get_Line, Get_Float;
+with As.U.Utils, Basic_Proc, My_Math, Get_Line, Gets;
 
 package body File is
 
@@ -87,7 +87,7 @@ package body File is
       -- Parse current line in matrix and vector
       begin
         for J in 1 .. Dim loop
-          F := Float_Cell_Range (Get_Float.Get_Float (Line.Element (J).Image));
+          F := Float_Cell_Range (Gets.Get_Int_Or_Float (Line.Element(J).Image));
           if F > 100.00
           or else My_Math.Frac (My_Math.Real (F)) * 100.0 > 100.0 then
             My_Get_Line.Close;

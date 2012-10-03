@@ -4,12 +4,12 @@
 -- If one float arg F1          0.0 <= N <  F1
 -- If two int arg I1 and I2     I1  <= N <= I2
 -- If two float arg F1 and F2   F1  <= N <  F2
-with Argument, Rnd, Basic_Proc, Get_Float;
+with Argument, Rnd, Basic_Proc, Gets;
 procedure Random is
 
   Nb_Arg : Natural;
 
-  Int_Float_Min, Int_Float_Max : Get_Float.Int_Float_Rec;
+  Int_Float_Min, Int_Float_Max : Gets.Int_Float_Rec;
 
   Error : exception;
 
@@ -23,7 +23,7 @@ begin
     Int_Float_Max := (Is_Float=> False, Int_Value => 1);
   elsif Nb_Arg = 1 then
     -- One arg, the max
-    Int_Float_Max := Get_Float.Get_Int_Float(Argument.Get_Parameter(1));
+    Int_Float_Max := Gets.Get_Int_Float (Argument.Get_Parameter(1));
     if Int_Float_Max.Is_Float then
       Int_Float_Min := (Is_Float=> True, Float_Value => 0.0);
     else
@@ -31,8 +31,8 @@ begin
     end if;
   elsif Nb_Arg = 2 then
     -- Two args, the min and max
-    Int_Float_Min := Get_Float.Get_Int_Float(Argument.Get_Parameter(1));
-    Int_Float_Max := Get_Float.Get_Int_Float(Argument.Get_Parameter(2));
+    Int_Float_Min := Gets.Get_Int_Float(Argument.Get_Parameter(1));
+    Int_Float_Max := Gets.Get_Int_Float(Argument.Get_Parameter(2));
     if Int_Float_Min.Is_Float /= Int_Float_Max.Is_Float then
       raise Error;
     end if;

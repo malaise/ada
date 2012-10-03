@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1;
-with Argument, Normal, Basic_Proc, Get_Float, Normalization;
+with Argument, Normal, Basic_Proc, Gets, Normalization;
 with Fl_Time, Fl_Get;
 
 procedure Fl is
@@ -82,7 +82,7 @@ begin
       begin
         Basic_Proc.Put_Output (">>");
         Basic_Proc.Get_Line (Str, Len);
-        Tmp_Cost := Get_Float.Get_Float (Str(1 .. Len));
+        Tmp_Cost := Gets.Get_Int_Or_Float (Str(1 .. Len));
       exception
         when others =>
           T := (True, 0, 0);
