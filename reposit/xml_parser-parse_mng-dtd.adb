@@ -1,4 +1,4 @@
-with Parser, Integer_Image, Upper_Char;
+with Parser, Images, Upper_Char;
 separate (Xml_Parser.Parse_Mng)
 package body Dtd is
 
@@ -10,7 +10,7 @@ package body Dtd is
   end Is_Sep;
 
   -- Image of line_no without leading space
-  function Line_Image (I : Integer) return String renames Integer_Image;
+  function Line_Image (I : Integer) return String renames Images.Integer_Image;
 
   -- Init (clear) Dtd data
   procedure Init (Adtd : in out Dtd_Type) is

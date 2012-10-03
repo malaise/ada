@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with Directory, Sys_Calls, Bit_Ops, Normal, Int_Image, Date_Image, Upper_Str,
+with Directory, Sys_Calls, Bit_Ops, Normal, Images, Upper_Str,
      Basic_Proc, Environ;
 package body Output is
 
@@ -8,9 +8,9 @@ package body Output is
   Max_To_Sort : Natural := 5_000;
 
   -- Images
-  function Nat_Image is new Int_Image (Natural);
-  function Size_Image is new Int_Image (Sys_Calls.Off_T);
-  function Total_Image is new Int_Image (Lister.Size_Type);
+  function Nat_Image is new Images.Int_Image (Natural);
+  function Size_Image is new Images.Int_Image (Sys_Calls.Off_T);
+  function Total_Image is new Images.Int_Image (Lister.Size_Type);
 
   -- Put a char
   procedure Put_Output (C : in Character) renames Basic_Proc.Put_Output;
@@ -483,7 +483,7 @@ package body Output is
     -- Modif time
     -- Date_Image is "YYyy-Mm-DdTHh:Mm:Ss.mmm"
     -- Replace 'T' by a space except if option Date_Iso
-    Date := Date_Image (Entity.Modif_Time, Iso => True);
+    Date := Images.Date_Image (Entity.Modif_Time, Iso => True);
     if not Date_Iso then
       Date(11) := ' ';
     end if;

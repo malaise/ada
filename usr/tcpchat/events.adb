@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with As.U, Basic_Proc, Command, Many_Strings, Date_Image, Mixed_Str, Trilean,
+with As.U, Basic_Proc, Command, Many_Strings, Images, Mixed_Str, Trilean,
      Directory, Argument, Trees;
 with Variables, Tree, Ios, Matcher, Debug;
 package body Events is
@@ -7,7 +7,7 @@ package body Events is
   -- Report progress
   procedure Put_Line (Str : in String) is
   begin
-    Basic_Proc.Put_Line_Error (Date_Image (Ada.Calendar.Clock)
+    Basic_Proc.Put_Line_Error (Images.Date_Image (Ada.Calendar.Clock)
                               & " => " & Str & ".");
   end Put_Line;
 

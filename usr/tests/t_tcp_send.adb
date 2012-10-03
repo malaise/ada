@@ -1,5 +1,5 @@
 with Ada.Exceptions;
-with Basic_Proc, Argument, Mixed_Str, Mod_Image,
+with Basic_Proc, Argument, Mixed_Str, Images,
      Event_Mng, Ip_Addr, Socket, Tcp_Util;
 with Trace;
 procedure T_Tcp_Send is
@@ -24,7 +24,7 @@ procedure T_Tcp_Send is
 
   -- Sequence number
   type Sequence_Number is mod Integer'Last;
-  function Image is new Mod_Image (Sequence_Number);
+  function Image is new Images.Mod_Image (Sequence_Number);
 
   -- Signal callback
   Sig : Boolean := False;

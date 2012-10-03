@@ -1,4 +1,4 @@
-with Basic_Proc, Date_Image, Virtual_Time, Timers, Event_Mng,
+with Basic_Proc, Images, Virtual_Time, Timers, Event_Mng,
      Chronos.Passive_Timers, Queues.Timed;
 procedure T_Virtual is
 
@@ -15,12 +15,12 @@ procedure T_Virtual is
   begin
     Basic_Proc.Put_Line_Output ("Observer notification");
     Basic_Proc.Put_Line_Output (
-         "  at R " & Date_Image (Rtime)
-       & " - V " & Date_Image (Vtime)
+         "  at R " & Images.Date_Image (Rtime)
+       & " - V " & Images.Date_Image (Vtime)
        & " speed" & Speed'Img);
     A_Clock.Get_Synchro (Rt, Vt);
-    Basic_Proc.Put_Line_Output ("  Synchro is R " & Date_Image (Rt)
-                        & " - V " & Date_Image (Vt));
+    Basic_Proc.Put_Line_Output ("  Synchro is R " & Images.Date_Image (Rt)
+                        & " - V " & Images.Date_Image (Vt));
     Basic_Proc.Put_Line_Output ("  Speed is" & A_Clock.Get_Speed'Img);
     Nb_Notif := Nb_Notif + 1;
   end Notify;
@@ -30,8 +30,8 @@ procedure T_Virtual is
   procedure Put_Now is
   begin
     Basic_Proc.Put_Line_Output (
-        "Now is R " & Date_Image (Virtual_Time.Current_Time (null))
-      & " - V " & Date_Image (My_Clock.Current_Time));
+        "Now is R " & Images.Date_Image (Virtual_Time.Current_Time (null))
+      & " - V " & Images.Date_Image (My_Clock.Current_Time));
   end Put_Now;
 
   -- The timer and its expiration callback
@@ -42,8 +42,8 @@ procedure T_Virtual is
     pragma Unreferenced (Id, Data);
   begin
     Basic_Proc.Put_Line_Output ("Timer expiration at R "
-      & Date_Image (Virtual_Time.Current_Time (null))
-      & " - V " & Date_Image (My_Clock.Current_Time));
+      & Images.Date_Image (Virtual_Time.Current_Time (null))
+      & " - V " & Images.Date_Image (My_Clock.Current_Time));
     Nb_Timer := Nb_Timer + 1;
     return False;
   end Timer_Callback;

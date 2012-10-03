@@ -1,6 +1,6 @@
 -- Listen to a UDP (or IPM) port and put packets received
 with Ada.Exceptions, Ada.Calendar;
-with As.U, Argument, Basic_Proc, Date_Image, Normal, Int_Image,
+with As.U, Argument, Basic_Proc, Images, Normal,
      Upper_Str, Str_Util, Text_Line, Sys_Calls,
      Socket, Event_Mng, Ip_Addr, Tcp_Util, Timers, Hexa_Utils;
 
@@ -33,8 +33,8 @@ procedure Udp_Spy is
   use type Socket.Host_Id;
   use type Tcp_Util.Remote_Port_List, Tcp_Util.Remote_Host_List;
 
-  function Port_Image is new Int_Image (Socket.Port_Num);
-  function Inte_Image is new Int_Image (Integer);
+  function Port_Image is new Images.Int_Image (Socket.Port_Num);
+  function Inte_Image is new Images.Int_Image (Integer);
 
   -- Put host (name or IP @) that has send last message on socket
   function Dest_Image (S : Socket.Socket_Dscr; Allow_Name : Boolean)
@@ -59,7 +59,7 @@ procedure Udp_Spy is
 
   -- Current date image
   function Curr_Date_Image return String is
-    Date : String := Date_Image (Ada.Calendar.Clock);
+    Date : String := Images.Date_Image (Ada.Calendar.Clock);
   begin
     -- Date is "YYyy/Mm/Dd Hh:Mm:Ss.mmm"
     Date (11) := '/';

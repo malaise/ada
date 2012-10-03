@@ -1,4 +1,4 @@
-with As.B, Integer_Image, Basic_Proc;
+with As.B, Images, Basic_Proc;
 procedure T_Asb is
 
   N1, N2 : As.B.Asb_Bs(128);
@@ -18,7 +18,7 @@ begin
     Basic_Proc.Put_Output ("Init is not empty");
     return;
   end if;
-  Basic_Proc.Put_Line_Output ("Length " & Integer_Image(N1.Length));
+  Basic_Proc.Put_Line_Output ("Length " & Images.Integer_Image(N1.Length));
   Basic_Proc.Put_Line_Output ("Image " & N1.Image);
   Basic_Proc.Put_Line_Output ("Array of 3:");
   N1.Set ('3');
@@ -27,7 +27,7 @@ begin
 
   Basic_Proc.Put_Line_Output ("Array of 1, 3, 5:");
   N1.Set ("135");
-  Basic_Proc.Put_Line_Output ("Length " & Integer_Image(N1.Length));
+  Basic_Proc.Put_Line_Output ("Length " & Images.Integer_Image(N1.Length));
   Basic_Proc.Put_Line_Output ("Image " & N1.Image);
   Basic_Proc.Put_Line_Output ("Element 2: " & N1.Element (2));
   N1.Replace_Element (2, 'u');

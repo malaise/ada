@@ -1,6 +1,6 @@
 with Ada.Calendar;
 with Perpet, Day_Mng, Normal, Basic_Proc, Argument, Regular_Expressions,
-     Gets, Integer_Image, Dur_Image;
+     Gets, Images;
 procedure T_Delta_Date is
 
   T1, T2 : Ada.Calendar.Time;
@@ -153,7 +153,7 @@ procedure T_Delta_Date is
 
   procedure Put (D : Ada.Calendar.Day_Duration) is
   begin
-    Basic_Proc.Put_Output (Dur_Image (D, 3, False));
+    Basic_Proc.Put_Output (Images.Dur_Image (D, 3, False));
   end Put;
 
   use Basic_Proc;
@@ -171,7 +171,7 @@ begin
 
     D := Perpet."-"(T1, T2);
     Put_Output (" Date1 - Date2: ");
-    Put_Output (Integer_Image( (D.Days))); Put_Output (" days ");
+    Put_Output (Images.Integer_Image(D.Days)); Put_Output (" days ");
     Put (D.Secs); Put_Output (" sec");
     New_Line_Output;
     return;
@@ -192,7 +192,7 @@ begin
                 Perpet.Get_Day_Of_Week(T2)));
       D := Perpet."-"(T1, T2);
       Put_Output (" Date2 - Date1: ");
-      Put_Output (Integer_Image( (D.Days))); Put_Output (" days ");
+      Put_Output (Images.Integer_Image (D.Days)); Put_Output (" days ");
       Put (D.Secs); Put_Output (" sec");
 
       Basic_Proc.New_Line_Output;

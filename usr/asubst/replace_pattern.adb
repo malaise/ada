@@ -1,10 +1,10 @@
 with Ada.Characters.Latin_1, Ada.Exceptions;
 with As.U, Argument, Sys_Calls, Str_Util, Text_Line, Hashed_List.Unique,
-     Hexa_Utils, Upper_Str, Lower_Str, Mixed_Str, Command, Int_Image;
+     Hexa_Utils, Upper_Str, Lower_Str, Mixed_Str, Command, Images;
 with Search_Pattern, Debug;
 package body Replace_Pattern is
 
-  function Code_Image is new Int_Image (Command.Exit_Code_Range);
+  function Code_Image is new Images.Int_Image (Command.Exit_Code_Range);
 
   -- The pattern to replace
   The_Pattern : As.U.Asu_Us;

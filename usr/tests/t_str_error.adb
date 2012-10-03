@@ -1,7 +1,7 @@
 with Ada.Exceptions;
 with Basic_Proc, Sys_Calls, Normal, As.U, Regular_Expressions,
      Str_Util, Command, Many_Strings, Argument, Parser,
-     Hashed_List.Unique, Unbounded_Arrays, Dynamic_List, Integer_Image;
+     Hashed_List.Unique, Unbounded_Arrays, Dynamic_List, Images;
 procedure T_Str_Error is
 
   -- Command, flow and line read
@@ -371,7 +371,7 @@ begin
           Basic_Proc.Put_Output (Line.Image & " => ");
         end if;
         -- Mnemonic or code
-        Basic_Proc.Put_Line_Output (Integer_Image (Code_Crit.Code)
+        Basic_Proc.Put_Line_Output (Images.Integer_Image (Code_Crit.Code)
                                   & " => Code not found");
         Basic_Proc.Set_Error_Exit_Code;
       end if;

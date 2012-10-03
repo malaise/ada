@@ -1,6 +1,5 @@
 with Ada.Unchecked_Deallocation, Ada.Exceptions;
-with Basic_Proc, Environ, Int_Image, Ip_Addr, Socket_Util, Tcp_Util, Event_Mng,
-     Integer_Image, Dur_Image;
+with Basic_Proc, Environ, Images, Ip_Addr, Socket_Util, Tcp_Util, Event_Mng;
 package body Autobus is
   -- Design
   ---------
@@ -82,7 +81,7 @@ package body Autobus is
   Internal_Error : exception;
 
   -- Image of a port num
-  function Port_Image is new Int_Image (Socket.Port_Num);
+  function Port_Image is new Images.Int_Image (Socket.Port_Num);
 
   -- Image of a full address
   function Image (Host : Socket.Host_Id; Port : Socket.Port_Num)
@@ -729,9 +728,9 @@ package body Autobus is
     Buses.Insert (Rbus);
     Bus.Acc := Buses.Access_Current;
     Debug ("Bus " & Rbus.Name.Image & " created at " & Rbus.Addr.Image);
-    Debug (" with Period: " & Dur_Image (Rbus.Heartbeat_Period, 1, False)
-       & ", MaxMissed: " & Integer_Image(Rbus.Heartbeat_Max_Missed)
-       & " and Timeout: " &  Dur_Image (Rbus.Timeout, 1, False));
+    Debug (" with Period: " & Images.Dur_Image (Rbus.Heartbeat_Period, 1, False)
+       & ", MaxMissed: " & Images.Integer_Image(Rbus.Heartbeat_Max_Missed)
+       & " and Timeout: " &  Images.Dur_Image (Rbus.Timeout, 1, False));
 
     -- Wait a little bit (100ms) for "immediate" connections to establish
     Event_Mng.Pause (100);

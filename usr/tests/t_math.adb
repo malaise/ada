@@ -1,8 +1,8 @@
-with My_Math, Basic_Proc, Int_Image, Float_Image;
+with My_Math, Basic_Proc, Images;
 procedure T_Math is
 
-  function Inte_Image is new Int_Image   (My_Math.Inte);
-  function Real_Image is new Float_Image (My_Math.Real);
+  function Inte_Image is new Images.Int_Image (My_Math.Inte);
+  function Real_Image is new Images.Flo_Image (My_Math.Real);
 
   use My_Math, Basic_Proc;
   procedure Put (I : in My_Math.Inte) is

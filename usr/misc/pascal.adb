@@ -1,6 +1,5 @@
 -- Pascal Triangle
-
-with Basic_Proc, Integer_Image, Long_Image;
+with Basic_Proc, Images;
 use Basic_Proc;
 -- Compute elements of the 33 first lines lignes of the Pascal's triangle
 procedure Pascal is
@@ -17,14 +16,14 @@ procedure Pascal is
 
 begin
   Put_Output ("Computation of the ");
-  Put_Output (Integer_Image(No_Line_Max));
+  Put_Output (Images.Integer_Image(No_Line_Max));
   Put_Line_Output (" first lines of the PASCAL triangle:");
   New_Line_Output;
 
   Principale : for No_Line in Typ_No_Line loop
 
     -- Line number for computation
-    Put_Output (Integer_Image (No_Line));
+    Put_Output (Images.Integer_Image (No_Line));
     Put_Line_Output (" : ");
 
     Put_Output ("   ");
@@ -45,7 +44,7 @@ begin
                       Table(Typ_No_Line'Pred(No_Line), Index);
       end if;
       Table(No_Line, Index) := Element;
-      Put_Output (Long_Image (Element));
+      Put_Output (Images.Long_Image (Element));
       if Index /= Typ_Index'Succ(No_Line) then
         Put_Output ('/');
       end if;

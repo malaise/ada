@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1;
-with As.U.Utils, Argument, Argument_Parser, Environ, Basic_Proc, Integer_Image,
+with As.U.Utils, Argument, Argument_Parser, Environ, Basic_Proc, Images,
      Sys_Calls, Command, Many_Strings, Parser, Event_Mng, Str_Util;
 
 procedure T_Arg_Parser is
@@ -41,7 +41,7 @@ procedure T_Arg_Parser is
   procedure Put (S : String) renames Basic_Proc.Put_Output;
   procedure Put (I : Natural; Append_Sep : Boolean) is
   begin
-    Put (Integer_Image (I));
+    Put (Images.Integer_Image (I));
     if Append_Sep then
       Put (" ");
     end if;

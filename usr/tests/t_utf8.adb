@@ -1,6 +1,6 @@
-with Int_Image16, Basic_Proc, Utf_8, Rnd, Key_Pressed, Argument;
+with Images, Basic_Proc, Utf_8, Rnd, Key_Pressed, Argument;
 procedure T_Utf8 is
-  function Image16 is new Int_Image16 (Natural);
+  function Image16 is new Images.Int_Image16 (Natural);
 
   Str : constant String := "aàâeéèêëiîïoôuùü";
   Ucodes : constant array (Positive range <>) of Utf_8.Unicode_Number

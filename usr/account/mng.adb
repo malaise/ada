@@ -1,6 +1,6 @@
 with Ada.Calendar, Ada.Characters.Latin_1;
 with As.B, Dynamic_List, Directory, Afpx, Select_File, Normal, Text_Line,
-     Environ, Sys_Calls, Date_Image, Language, Perpet, Con_Io;
+     Environ, Sys_Calls, Images, Language, Perpet, Con_Io;
 with Oper_Def, File_Mng, Oper_Dyn_List_Mng, Screen, Unit_Format, Afpx_Xref;
 
 -- Manage the whole acount status
@@ -502,7 +502,7 @@ package body Mng is
         return;
     end;
     Pf.Put_Line("Account: " & Account_Name.Image
-               & "     at: " & Date_Image(Ada.Calendar.Clock) (1 .. 16));
+               & "     at: " & Images.Date_Image(Ada.Calendar.Clock) (1 .. 16));
     Pf.Put_Line(Page_Title);
     Line := 3;
 

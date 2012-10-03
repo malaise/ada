@@ -1,6 +1,6 @@
 -- Parses command line and returns enigma definition
 with Ada.Exceptions;
-with Argument, Xml_Parser, Environ, Str_Util, Parser, Integer_Image;
+with Argument, Xml_Parser, Environ, Str_Util, Parser, Images;
 with Io_Manager;
 package body Definition is
 
@@ -174,7 +174,8 @@ package body Definition is
     if Str'Length mod 2 /= 0 then
       Error ("Invalid number of switches");
     elsif Str'Length > Types.Nb_Letters then
-      Error ("Too many switches (max is " & Integer_Image (Types.Nb_Letters)
+      Error ("Too many switches (max is "
+             & Images.Integer_Image (Types.Nb_Letters)
              & ")");
     end if;
     -- Set switches, check no dup and no identity
@@ -289,7 +290,7 @@ package body Definition is
       begin
         if Str = "" then
           Error ("Missing rotor definition, expecting "
-              & Integer_Image (Def.Nb_Rotors));
+              & Images.Integer_Image (Def.Nb_Rotors));
         end if;
         Arob := Str_Util.Locate (Str, "@");
         if Arob /= Str'Last - 1 then
@@ -417,7 +418,7 @@ package body Definition is
         Error ("Invalid number of rotor initial offsets in """
           & Argument.Get_Parameter (1, Init_Key)
           & """, expecting "
-          & Integer_Image (Rotor_Nb));
+          & Images.Integer_Image (Rotor_Nb));
       end if;
     end if;
 

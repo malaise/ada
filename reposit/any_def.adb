@@ -1,10 +1,10 @@
-with Int_Image, Float_Image, Mixed_Str, Address_Ops;
+with Images, Mixed_Str, Address_Ops;
 package body Any_Def is
 
-  function Integer_Image is new Int_Image (Integer);
-  function Inte_Image is new Int_Image (My_Math.Inte);
-  function Flo_Image is new Float_Image (Float);
-  function Real_Image is new Float_Image (My_Math.Real);
+  function Integer_Image is new Images.Int_Image (Integer);
+  function Inte_Image is new Images.Int_Image (My_Math.Inte);
+  function Flo_Image is new Images.Flo_Image (Float);
+  function Real_Image is new Images.Flo_Image (My_Math.Real);
 
 
   function Image (A : Any) return String is

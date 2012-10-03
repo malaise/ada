@@ -1,9 +1,9 @@
 -- Purpose: solve a.x2 + b.x + c = 0
-with Argument, Basic_Proc, My_Math, Gets, Float_Image;
+with Argument, Basic_Proc, My_Math, Gets, Images;
 use My_Math;
 procedure Second is
 
-  function Real_Image is new Float_Image (My_Math.Real);
+  function Real_Image is new Images.Flo_Image (My_Math.Real);
 
   A, B, C : My_Math.Real;
 

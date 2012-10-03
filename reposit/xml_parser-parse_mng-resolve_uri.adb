@@ -1,4 +1,4 @@
-with Int_Image, Event_Mng, Http;
+with Images, Event_Mng, Http;
 separate (Xml_Parser.Parse_Mng)
 
 -- Resolve an URI:
@@ -15,7 +15,7 @@ procedure Resolve_Uri (Ctx : in out Ctx_Type;
   File_Scheme : constant String := "file";
   Http_Scheme : constant String := "http";
   Result : Http.Result_Type;
-  function Code_Image is new Int_Image (Http.Server_Code_Range);
+  function Code_Image is new Images.Int_Image (Http.Server_Code_Range);
 begin
   Trace ("URI expanding " & Uri.Image);
   -- See if first '/' (if any) is ":/"

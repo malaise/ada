@@ -1,7 +1,7 @@
-with As.U, Int_Image, Str_Util;
+with As.U, Images, Str_Util;
 package body Ip_Addr is
 
-  function Byte_Image is new Int_Image (Socket.Byte);
+  function Byte_Image is new Images.Int_Image (Socket.Byte);
 
   -- Return -1 if convestion impossible or greater than Max
   function To_Natural (Str : String) return Integer is
@@ -125,7 +125,7 @@ package body Ip_Addr is
   end Parse;
 
   -- Image of a port
-  function Port_Image is new Int_Image (Socket.Port_Num);
+  function Port_Image is new Images.Int_Image (Socket.Port_Num);
   function Image (Port : Socket.Port_Num) return String renames Port_Image;
 
   -- Parse a string at format <addr>:<port> where <addr> and <port>

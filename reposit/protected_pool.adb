@@ -1,9 +1,9 @@
 with Ada.Unchecked_Deallocation;
-with Mod_Image;
+with Images;
 package body Protected_Pool is
 
   -- Conversion from/to string
-  function Mod_Key_Image is new Mod_Image (Key_Type);
+  function Mod_Key_Image is new Images.Mod_Image (Key_Type);
   function Key_Image (Key : Key_Type) return String renames Mod_Key_Image;
   function Key_Value (Str : String) return Key_Type is
   begin

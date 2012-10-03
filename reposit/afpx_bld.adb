@@ -2,7 +2,7 @@ with Ada.Direct_Io;
 with As.U,
      Con_Io, Normal, Argument,
      Mixed_Str, Basic_Proc, Xml_Parser,
-     Ada_Words, Parser, Str_Util, Computer, Int_Image,
+     Ada_Words, Parser, Str_Util, Computer, Images,
      Language;
 with Afpx_Typ;
 -- Read Afpx.xml, check it
@@ -202,7 +202,7 @@ procedure Afpx_Bld is
   end Add_Variable;
 
   -- Geometry variable value
-  function Geo_Image is new Int_Image (Natural);
+  function Geo_Image is new Images.Int_Image (Natural);
 
   -- Check and return size of screen
   Root_Name : constant String := "Afpx_Descriptors";
@@ -317,7 +317,7 @@ procedure Afpx_Bld is
   end Load_Variable;
 
   -- Name of variable of a field
-  function Fn_Image is new Int_Image (Afpx_Typ.Absolute_Field_Range);
+  function Fn_Image is new Images.Int_Image (Afpx_Typ.Absolute_Field_Range);
   function Name_Of (Fn : Afpx_Typ.Absolute_Field_Range) return String is
   begin
     if Fn = 0 then
@@ -818,7 +818,7 @@ procedure Afpx_Bld is
   end Check_Overlap;
 
   -- Load a descriptor (at a given index)
-  function Dscr_Image is new Int_Image (Afpx_Typ.Descriptor_Range);
+  function Dscr_Image is new Images.Int_Image (Afpx_Typ.Descriptor_Range);
   procedure Load_Dscr (Node : in Xp.Element_Type;
                        Dscr_Index : in Afpx_Typ.Descriptor_Range;
                        Screen_Size : in Con_Io.Square)  is

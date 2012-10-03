@@ -1,4 +1,4 @@
-with Argument, Argument_Parser, Regular_Expressions, Integer_Image, Str_Util,
+with Argument, Argument_Parser, Regular_Expressions, Images, Str_Util,
      Text_Line, Basic_Proc, As.U;
 
 procedure T_Regexp is
@@ -169,9 +169,9 @@ begin
         -- List submatches
         for I in Match_Range'(1) .. N_Matched loop
           Basic_Proc.Put_Output (
-              " [" & Integer_Image(Match_Info(I).First_Offset)
-            & "-" & Integer_Image(Match_Info(I).Last_Offset_Start)
-            & "/" & Integer_Image(Match_Info(I).Last_Offset_Stop) & "]");
+              " [" & Images.Integer_Image(Match_Info(I).First_Offset)
+            & "-" & Images.Integer_Image(Match_Info(I).Last_Offset_Start)
+            & "/" & Images.Integer_Image(Match_Info(I).Last_Offset_Stop) & "]");
         end loop;
         Basic_Proc.New_Line_Output;
       end if;

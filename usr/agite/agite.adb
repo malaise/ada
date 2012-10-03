@@ -1,4 +1,4 @@
-with As.U, Con_Io, Afpx.List_Manager, Basic_Proc, Integer_Image, Directory,
+with As.U, Con_Io, Afpx.List_Manager, Basic_Proc, Images, Directory,
      Dir_Mng, Sys_Calls, Argument, Argument_Parser, Socket, Str_Util;
 with Utils.X, Git_If, Config, Bookmarks, History, Confirm, Afpx_Xref;
 procedure Agite is
@@ -727,9 +727,9 @@ begin
 exception
   when Incorrect_Version =>
     Basic_Proc.Put_Line_Error ("Incorrect Git version. Minimum required: "
-      & Integer_Image (Ref_Version.Major) & "."
-      & Integer_Image (Ref_Version.Medium) & "."
-      & Integer_Image (Ref_Version.Minor) );
+      & Images.Integer_Image (Ref_Version.Major) & "."
+      & Images.Integer_Image (Ref_Version.Medium) & "."
+      & Images.Integer_Image (Ref_Version.Minor) );
     Basic_Proc.Set_Error_Exit_Code;
   when Config.Invalid_Config =>
     Basic_Proc.Put_Line_Error ("Invalid configuration");

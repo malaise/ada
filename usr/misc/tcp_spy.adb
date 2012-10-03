@@ -1,7 +1,7 @@
 -- Listen to a TCP port, accepts one connection at a time
 --  and put packets received
 with Ada.Exceptions, Ada.Calendar;
-with Argument, Basic_Proc, Date_Image, Normal, Int_Image,
+with Argument, Basic_Proc, Images, Normal,
      Upper_Str, Text_Line, Sys_Calls,
      Socket, Event_Mng, Ip_Addr, Tcp_Util, Timers, Hexa_Utils;
 
@@ -31,12 +31,12 @@ procedure Tcp_Spy is
   use type Socket.Host_Id;
   use type Tcp_Util.Remote_Port_List, Tcp_Util.Remote_Host_List;
 
-  function Port_Image is new Int_Image (Socket.Port_Num);
-  function Inte_Image is new Int_Image (Integer);
+  function Port_Image is new Images.Int_Image (Socket.Port_Num);
+  function Inte_Image is new Images.Int_Image (Integer);
 
   -- Current date image
   function Curr_Date_Image return String is
-    Date : String := Date_Image (Ada.Calendar.Clock);
+    Date : String := Images.Date_Image (Ada.Calendar.Clock);
   begin
     -- Date is "YYyy/Mm/Dd Hh:Mm:Ss.mmm"
     Date (11) := '/';

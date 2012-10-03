@@ -1,12 +1,12 @@
 with Ada.Wide_Text_Io;
-with Con_Io, Basic_Proc, Int_Image16, Language;
+with Con_Io, Basic_Proc, Images, Language;
 procedure T_Key is
   Console : aliased Con_Io.Console;
   Screen : Con_Io.Window;
 
   Got : Con_Io.Get_Result;
   Seq : Con_Io.Unicode_Sequence (1 .. 1);
-  function Unicode_Image16 is new Int_Image16 (Con_Io.Unicode_Number);
+  function Unicode_Image16 is new Images.Int_Image16 (Con_Io.Unicode_Number);
 
   Curr_Row : Con_Io.Row_Range := Con_Io.Row_Range_First;
   Next_Row : Con_Io.Row_Range;

@@ -1,8 +1,8 @@
-with Argument, Basic_Proc, Unicode, Byte_To_Unicode, Normal, Int_Image16;
+with Argument, Basic_Proc, Unicode, Byte_To_Unicode, Normal, Images;
 procedure T_Byte_To_Unicode is
   Map : Byte_To_Unicode.Map;
   Uni : Unicode.Unicode_Number;
-  function Image16 is new Int_Image16 (Unicode.Unicode_Number);
+  function Image16 is new Images.Int_Image16 (Unicode.Unicode_Number);
 begin
 
 

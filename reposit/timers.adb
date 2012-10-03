@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with Dynamic_List, Environ, Date_Image, Mutex_Manager, Basic_Proc;
+with Dynamic_List, Environ, Images, Mutex_Manager, Basic_Proc;
 package body Timers is
 
   -- Debugging
@@ -95,7 +95,7 @@ package body Timers is
       return;
     end if;
     Basic_Proc.Put_Line_Output (
-        Date_Image (Ada.Calendar.Clock)(12 .. 23)
+        Images.Date_Image (Ada.Calendar.Clock)(12 .. 23)
       & " Timers." & Proc
       & ": " & Msg);
   end Put_Debug;
@@ -237,7 +237,8 @@ package body Timers is
           Delay_Spec.Clock.Reference_Time_Of (Timer.Exp.Expiration_Time);
       end if;
       Put_Debug ("Create",
-                 "started for " & Date_Image (Timer.Exp.Expiration_Time));
+                 "started for "
+               & Images.Date_Image (Timer.Exp.Expiration_Time));
     end if;
 
     -- Insert in beginning of list and sort
@@ -458,7 +459,8 @@ package body Timers is
 
     --Done
     Put_Debug ("Resume",
-               "restarted for " & Date_Image (Timer.Exp.Expiration_Time));
+               "restarted for "
+             & Images.Date_Image (Timer.Exp.Expiration_Time));
     Release_Mutex;
   end Resume;
 
@@ -591,7 +593,8 @@ package body Timers is
       return Infinite_Expiration;
     end if;
 
-    Put_Debug ("Wait_Until", "-> " & Date_Image (Timer.Exp.Expiration_Time));
+    Put_Debug ("Wait_Until", "-> "
+             & Images.Date_Image (Timer.Exp.Expiration_Time));
     Release_Mutex;
     return (Infinite => False, Time =>Timer.Exp.Expiration_Time);
   end Wait_Until;
@@ -693,7 +696,8 @@ package body Timers is
           Timer.Exp.Expiration_Time := Rtime
               + (Timer.Remaining * Perpet.Natural_Duration(1.0 / New_Speed));
           Put_Debug ("Update",
-                     "restarted for " & Date_Image (Timer.Exp.Expiration_Time));
+                     "restarted for "
+                   & Images.Date_Image (Timer.Exp.Expiration_Time));
         end if;
         Timer.Frozen := False;
       elsif not Timer.Frozen and then New_Speed = 0.0 then

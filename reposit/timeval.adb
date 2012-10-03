@@ -1,9 +1,9 @@
 -- Tranformation from and to struct timeval
 with Ada.Calendar;
-with Int_Image, Normal;
+with Images, Normal;
 package body Timeval is
 
-  function Sec_Image is new Int_Image (C_Types.Time_T);
+  function Sec_Image is new Images.Int_Image (C_Types.Time_T);
 
   Dur_Day : constant Perpet.Natural_Duration
           := Ada.Calendar.Day_Duration'Last;

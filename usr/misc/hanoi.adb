@@ -1,5 +1,5 @@
 with Ada.Calendar;
-with Basic_Proc, Integer_Image, Dur_Image, Long_Image;
+with Basic_Proc, Images;
 use Basic_Proc;
 -- Simulation of the game of Hanoi towers
 
@@ -70,7 +70,7 @@ procedure Hanoi is
 
     if Trace then
       Put_Output ("Move the disk ");
-      Put_Output (Integer_Image (No_Disk));
+      Put_Output (Images.Integer_Image (No_Disk));
       Put_Output (" from ");
       Put_Output (Origin'Img);
       Put_Output (" to ");
@@ -176,7 +176,7 @@ begin -- Hanoi
 
       New_Line_Output;
       Put_Output ("Transfer from ");
-      Put_Output (Integer_Image(Nb_Disks));
+      Put_Output (Images.Integer_Image(Nb_Disks));
       Put_Output (" disks from ");
       Put_Output (Origin'Img);
       Put_Output (" to ");
@@ -184,10 +184,10 @@ begin -- Hanoi
       Put_Line_Output (".");
 
       Put_Output ("Operation done in ");
-      Put_Output (Long_Image(Nb_Moves));
+      Put_Output (Images.Long_Image (Nb_Moves));
       Put_Line_Output (" moves ");
       Put_Output (" and in ");
-      Put_Output (Dur_Image (Seconds, 3, False));
+      Put_Output (Images.Dur_Image (Seconds, 3, False));
       Put_Line_Output (" seconds.");
 
     exception

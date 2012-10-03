@@ -1,8 +1,8 @@
 with Ada.Calendar;
-with Normal, Sys_Calls, Int_Image, Date_Image, Text_Line;
+with Normal, Sys_Calls, Images, Text_Line;
 package body Trace is
 
-  function Pid_Image is new Int_Image (Sys_Calls.Pid);
+  function Pid_Image is new Images.Int_Image (Sys_Calls.Pid);
 
   File            : Text_Line.File_Type;
   Trace_File_Name : constant String := "_trace_";
@@ -33,7 +33,7 @@ package body Trace is
     if Message /= "" or else Date then
       File.Put (Normal(Count, 5));
       if Date then
-        File.Put (" " & Date_Image (Ada.Calendar.Clock, True));
+        File.Put (" " & Images.Date_Image (Ada.Calendar.Clock, True));
       end if;
       File.Put_Line (" ->" & Message & "<");
     end if;

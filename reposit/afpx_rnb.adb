@@ -2,7 +2,7 @@
 -- Update other field number and references to them
 with Ada.Exceptions;
 with Basic_Proc, Argument, Argument_Parser, Environ,
-     As.U, Integer_Image, Unbounded_Arrays, Str_Util, Text_Line,
+     As.U, Images, Unbounded_Arrays, Str_Util, Text_Line,
      Afpx_Typ, Xml_Parser.Generator;
 procedure Afpx_Rnb is
     -- Options
@@ -100,7 +100,7 @@ procedure Afpx_Rnb is
     Ctx.Add_Brother (Field, Indent, Xml_Parser.Text, Indent_Node,
                      Next => False);
     -- Set field attributes with provided Num
-    Fld_Attrs(1).Value := As.U.Tus (Integer_Image (Fld_Num));
+    Fld_Attrs(1).Value := As.U.Tus (Images.Integer_Image (Fld_Num));
     Ctx.Set_Attributes (Field, Fld_Attrs);
     -- Insert Geometry
     Ctx.Add_Child (Field, "Geometry", Xml_Parser.Element, Child_Node);
@@ -177,14 +177,14 @@ procedure Afpx_Rnb is
         if New_Num = 0 then
           -- Reference to a deleted field
           Basic_Proc.Put_Line_Output ("Warning: Text """ & Input.Image
-            & """ at line " & Integer_Image (Line)
+            & """ at line " & Images.Integer_Image (Line)
             & " has a reference to field " & Text.Slice (I, J)
             & ".");
           Ok := False;
         end if;
         if Old_Num /= New_Num then
           Updated := True;
-          Text.Replace (I, J, Integer_Image (Natural (New_Num)));
+          Text.Replace (I, J, Images.Integer_Image (Natural (New_Num)));
         end if;
       end if;
       exit when I >= Text.Length;
@@ -345,7 +345,8 @@ begin
       end if;
     end loop;
     if not Found then
-      Error ("Dscr " & Integer_Image (Positive (Dscr)) & " does not exist");
+      Error ("Dscr " & Images.Integer_Image (Positive (Dscr))
+           & " does not exist");
     end if;
     Dscr_Elt := Tmp_Node;
 
@@ -392,20 +393,21 @@ begin
 
     -- Check that field is found
     if Field_Num /= 0 and then not Found then
-      Error ("Field " & Integer_Image (Positive (Field_Num))
+      Error ("Field " & Images.Integer_Image (Positive (Field_Num))
           & " does not exist in descriptor "
-          & Integer_Image (Positive (Dscr)));
+          & Images.Integer_Image (Positive (Dscr)));
     end if;
     if Debug then
-      Basic_Proc.Put_Line_Output ("Got " & Integer_Image (Natural (Nb_Fields))
-          & " fields");
+      Basic_Proc.Put_Line_Output ("Got "
+          & Images.Integer_Image (Natural (Nb_Fields)) & " fields");
     end if;
 
     -- Check that there are enough fields to delete
     if Action = Delete and then Field_Num + Number > Nb_Fields + 1 then
-      Error ("Cannot delete " & Integer_Image (Positive (Number))
-            & " fields from field " & Integer_Image (Positive (Field_Num))
-            & " in descriptor " & Integer_Image (Positive (Dscr)) );
+      Error ("Cannot delete " & Images.Integer_Image (Positive (Number))
+            & " fields from field "
+            & Images.Integer_Image (Positive (Field_Num))
+            & " in descriptor " & Images.Integer_Image (Positive (Dscr)) );
     end if;
   end;
 
@@ -438,8 +440,8 @@ begin
     if Debug then
       Basic_Proc.Put_Output ("Translation map is: " );
       for I in 1 .. Field_Map.Length loop
-        Basic_Proc.Put_Output (Integer_Image (Positive (I)) & "->"
-            & Integer_Image (Natural (Field_Map.Element(I))) & ", ");
+        Basic_Proc.Put_Output (Images.Integer_Image (Positive (I)) & "->"
+            & Images.Integer_Image (Natural (Field_Map.Element(I))) & ", ");
       end loop;
       Basic_Proc.New_Line_Output;
     end if;
@@ -593,7 +595,7 @@ begin
               & "->" & Field_Num'Img);
           end if;
           Xml.Set_Attribute (Field_Elt, "Num",
-                             Integer_Image(Positive(Field_Num)));
+                             Images.Integer_Image(Positive(Field_Num)));
           Field_Num := Field_Num + 1;
 
           -- Field Geometry

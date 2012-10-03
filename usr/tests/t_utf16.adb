@@ -1,7 +1,7 @@
 with Ada.Wide_Text_Io;
-with Int_Image16, Basic_Proc, Utf_16, Rnd, Key_Pressed, Argument;
+with Images, Basic_Proc, Utf_16, Rnd, Key_Pressed, Argument;
 procedure T_Utf16 is
-  function Image16 is new Int_Image16 (Natural);
+  function Image16 is new Images.Int_Image16 (Natural);
 
   Str : constant String := "aàâeéèêëiîïoôuùü";
   Ucodes : constant array (Positive range <>) of Utf_16.Unicode_Number

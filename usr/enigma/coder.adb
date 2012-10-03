@@ -1,10 +1,10 @@
-with Integer_Image, Environ;
+with Images, Environ;
 with Definition, Io_Manager;
 package body Coder is
 
   function Limage (L : Types.Lid) return String is
   begin
-    return Integer_Image (Natural (L));
+    return Images.Integer_Image (Natural (L));
   end Limage;
   function Image (L : Types.Lid) return String is
   begin
@@ -100,7 +100,7 @@ package body Coder is
       X := X - Machine.Rotors(I).Offset + Machine.Rotors(I).Position;
       X := Machine.Rotors(I).Scrambler.Translate (X)
          + Machine.Rotors(I).Offset - Machine.Rotors(I).Position;
-      Put ("R" & Integer_Image (I) & "->" & Image (X) & ", ");
+      Put ("R" & Images.Integer_Image (I) & "->" & Image (X) & ", ");
     end loop;
     -- Encode through the reflector
     X := X + Machine.Reflector.Position;
@@ -112,7 +112,7 @@ package body Coder is
       X := X - Machine.Rotors(I).Offset + Machine.Rotors(I).Position;
       X := Reverted(I).Translate (X)
          + Machine.Rotors(I).Offset - Machine.Rotors(I).Position;
-      Put ("R" & Integer_Image (I) & "->" & Image (X) & ", ");
+      Put ("R" & Images.Integer_Image (I) & "->" & Image (X) & ", ");
     end loop;
     -- Encode through the switches
     X := Machine.Switches.Translate (X);

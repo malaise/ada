@@ -2,13 +2,13 @@
 -- Reads this file describing a linear system (get_line & get_float)
 -- Solve linear system and put solution
 
-with Basic_Proc, As.U.Utils, Argument, Normal, Syslin, Float_Image, Get_Line,
+with Basic_Proc, As.U.Utils, Argument, Normal, Syslin, Images, Get_Line,
      Gets;
 
 procedure T_Syslin is
 
   package My_Syslin is new Syslin(Float);
-  function My_Image is new Float_Image(Float);
+  function My_Image is new Images.Flo_Image(Float);
 
   -- Matrix dimension
   Dim : Positive := 1;

@@ -1,4 +1,4 @@
-with Basic_Proc, Rnd, Dur_Image, Key_Pressed, Argument;
+with Basic_Proc, Rnd, Images, Key_Pressed, Argument;
 procedure T_Dur_Image is
   First : Boolean := True;
   D : Duration;
@@ -35,8 +35,9 @@ begin
       -- Loop of various Nb_Digits
       for I in 1 .. 10 loop
         N := Rnd.Int_Random (Maxi => 10);
-        Basic_Proc.Put_Line_Output (N'Img & " ->" & Dur_Image (D, N, True)
-                                          & "<->" & Dur_Image (D, N, False)
+        Basic_Proc.Put_Line_Output (
+             N'Img & " ->" & Images.Dur_Image (D, N, True)
+                   & "<->" & Images.Dur_Image (D, N, False)
                                           & "<");
       end loop;
     end loop;

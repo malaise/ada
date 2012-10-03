@@ -3,7 +3,7 @@
 -- With a random target integer number (100 to 999)
 -- Try to obtain the target or to get as close as possible to it
 with Unchecked_Deallocation;
-with Argument, Integer_Image, Bit_Ops, Unbounded_Arrays, Basic_Proc;
+with Argument, Images, Bit_Ops, Unbounded_Arrays, Basic_Proc;
 procedure Renardeau is
 
   -- Internal representation
@@ -132,15 +132,15 @@ procedure Renardeau is
       end if;
       if Is_No_Operation (Outputs.Element(1)) then
         Basic_Proc.Put_Line_Output (
-                 Integer_Image (Outputs.Element(1).Result));
+                 Images.Integer_Image (Outputs.Element(1).Result));
       else
         for I in 1 .. Outputs.Length loop
           Output := Outputs.Element(I);
           Basic_Proc.Put_Line_Output (
-            Integer_Image (Output.Left) & " "
+            Images.Integer_Image (Output.Left) & " "
           & Operations_Images (Output.Operation) & " "
-          & Integer_Image (Output.Right) & " = "
-          & Integer_Image (Output.Result));
+          & Images.Integer_Image (Output.Right) & " = "
+          & Images.Integer_Image (Output.Result));
         end loop;
       end if;
     end if;

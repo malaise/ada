@@ -1,6 +1,6 @@
 with As.U.Utils;
 with Argument, Sys_Calls, Text_Line, Temp_File, Regular_Expressions, Directory,
-     Copy_File, File_Access, Mixed_Str, Int_Image, Basic_Proc;
+     Copy_File, File_Access, Mixed_Str, Images, Basic_Proc;
 with Search_Pattern, Replace_Pattern, Debug;
 package body Substit is
 
@@ -29,7 +29,7 @@ package body Substit is
 
   -- Current line number
   Line_No : Long_Long_Natural;
-  function Line_Image is new Int_Image (Long_Long_Natural);
+  function Line_Image is new Images.Int_Image (Long_Long_Natural);
 
   -- Display error. If Give_Up then also cleanup and raise Substit_Error
   procedure Error (Msg : in String; Give_Up : in Boolean := True);

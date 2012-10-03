@@ -1,5 +1,5 @@
 with As.U.Utils;
-with Regular_Expressions, Str_Util.Regex, Any_Def, Integer_Image, Trilean;
+with Regular_Expressions, Str_Util.Regex, Any_Def, Images, Trilean;
 with Variables, Debug, Error;
 package body Matcher is
 
@@ -119,7 +119,7 @@ package body Matcher is
       -- Set volatile variables to matching substring
       for I in Match_Info'Range  loop
         -- ${0} is first match ...
-        Expanding := As.U.Tus (Integer_Image (I - 1));
+        Expanding := As.U.Tus (Images.Integer_Image (I - 1));
         if I <= N_Matched
         and then Regular_Expressions.Valid_Match (Match_Info(I)) then
           Expanded := Result.Uslice (Match_Info(I).First_Offset,
@@ -239,7 +239,7 @@ package body Matcher is
       Statements : constant As.U.Utils.Asu_Array
                  := Str_Util.Regex.Split_Sep (Assign.Image, "[\n\t ]+");
     begin
-      Debug.Log ("Found " & Integer_Image (Statements'Length)
+      Debug.Log ("Found " & Images.Integer_Image (Statements'Length)
                & " assignments");
       if Statements'Length = 0 then
         -- No separator => Parse the whole Assign string

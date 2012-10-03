@@ -1,4 +1,4 @@
-with Date_Image, Timeval;
+with Images, Timeval;
 
 separate (X_Mng)
 package body Dispatch is
@@ -471,10 +471,10 @@ package body Dispatch is
       Log ("Prepare", Client, Nb_Clients'Img & " " & Nb_Waiting'Img);
       if Exp.Infinite then
         Log  ("Prepare", Client, "Exp infinite at "
-            & Date_Image (Ada.Calendar.Clock));
+            & Images.Date_Image (Ada.Calendar.Clock));
       else
-        Log  ("Prepare", Client, "Exp " & Date_Image (Exp.Time) & " at "
-            & Date_Image (Ada.Calendar.Clock));
+        Log  ("Prepare", Client, "Exp " & Images.Date_Image (Exp.Time) & " at "
+            & Images.Date_Image (Ada.Calendar.Clock));
       end if;
 
       -- Update client data with desired expiration

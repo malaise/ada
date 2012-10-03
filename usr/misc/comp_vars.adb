@@ -2,7 +2,7 @@
 -- Output results as XML or optionnaly in shell format (export <Name>=<Value>)
 -- Usage: Comp_Vars [ -s | --shell ] [ { <file> } ]
 with As.U, Argument, Text_Line, Sys_Calls, Xml_Parser, Computer, Environ,
-     Integer_Image;
+     Images;
 procedure Comp_Vars is
 
   -- Computer memory
@@ -189,7 +189,7 @@ procedure Comp_Vars is
         Expr : constant String := Text.Image;
       begin
         if Var_Is_Int then
-          Result := As.U.Tus (Integer_Image (Memory.Compute (Expr)));
+          Result := As.U.Tus (Images.Integer_Image (Memory.Compute (Expr)));
         else
           Result := As.U.Tus (Memory.Eval (Expr));
         end if;

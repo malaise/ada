@@ -57,7 +57,7 @@ package body Config is
     when others =>
       Log_Error ("Config.Init", "invalid " & Name,
                  Attr.Image & " at line " &
-                 Integer_Image (Ctx.Get_Line_No (Node)));
+                 Images.Integer_Image (Ctx.Get_Line_No (Node)));
       raise Config_Error;
   end Get_Attribute;
 

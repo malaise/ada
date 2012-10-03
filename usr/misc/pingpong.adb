@@ -5,7 +5,7 @@ with Ada.Exceptions, Ada.Calendar;
 with As.U,
      Argument, Argument_Parser,
      Basic_Proc,
-     Date_Image, Dur_Image, Str_Util, Mixed_Str,
+     Images, Str_Util, Mixed_Str,
      Socket, Tcp_Util, Ip_Addr, Event_Mng, Timers,
      Hashed_List.Unique;
 procedure Pingpong is
@@ -69,7 +69,7 @@ procedure Pingpong is
   procedure Put (Message : in String) is
   begin
     Basic_Proc.Put_Line_Output ("PingPong at "
-      & Date_Image (Ada.Calendar.Clock) & ": " & Message);
+      & Images.Date_Image (Ada.Calendar.Clock) & ": " & Message);
   end Put;
 
   -- Signal callback
@@ -207,7 +207,7 @@ procedure Pingpong is
       Txt := As.U.Tus ("Current delta");
     end if;
     Put (Txt.Image & " of " & Message.Host_Name (1 .. Message.Host_Name_Len)
-         & " is " & Dur_Image (Delta_Time, 3, True));
+         & " is " & Images.Dur_Image (Delta_Time, 3, True));
     return False;
   end Call_Back;
 

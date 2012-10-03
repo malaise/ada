@@ -1,4 +1,4 @@
-with Basic_Proc, As.U, Unbounded_Arrays, Integer_Image;
+with Basic_Proc, As.U, Unbounded_Arrays, Images;
 procedure T_Unbounded_Arrays is
 
   type Nat_Array is array (Positive range <>) of Natural;
@@ -13,7 +13,7 @@ procedure T_Unbounded_Arrays is
     Res : As.U.Asu_Us;
   begin
     for I in A'Range loop
-      Res.Append (Integer_Image (A(I)));
+      Res.Append (Images.Integer_Image (A(I)));
       if I /= A'Last then
         Res.Append (", ");
       end if;
@@ -38,7 +38,7 @@ begin
     Basic_Proc.Put_Output ("Init is not empty");
     return;
   end if;
-  Basic_Proc.Put_Line_Output ("Length " & Integer_Image(N1.Length));
+  Basic_Proc.Put_Line_Output ("Length " & Images.Integer_Image(N1.Length));
   Basic_Proc.Put_Line_Output ("Content " & Image(N1.To_Array));
   Basic_Proc.Put_Line_Output ("Image " & Image(N1));
   Basic_Proc.Put_Line_Output ("Array of 3:");
@@ -48,12 +48,14 @@ begin
 
   Basic_Proc.Put_Line_Output ("Array of 1, 3, 5:");
   N1 := Natua.To_Unbounded_Array ( (1, 3, 5) );
-  Basic_Proc.Put_Line_Output ("Length " & Integer_Image(N1.Length));
+  Basic_Proc.Put_Line_Output ("Length " & Images.Integer_Image(N1.Length));
   Basic_Proc.Put_Line_Output ("Content " & Image(N1.To_Array));
   Basic_Proc.Put_Line_Output ("Image " & Image(N1));
-  Basic_Proc.Put_Line_Output ("Element 2: " & Integer_Image(N1.Element (2)));
+  Basic_Proc.Put_Line_Output ("Element 2: "
+                            & Images.Integer_Image(N1.Element (2)));
   N1.Replace_Element (2, 21);
-  Basic_Proc.Put_Line_Output ("Replaced by 21: " & Integer_Image(N1.Element (2)));
+  Basic_Proc.Put_Line_Output ("Replaced by 21: "
+                            & Images.Integer_Image(N1.Element (2)));
   Basic_Proc.Put_Line_Output ("Image " & Image(N1));
   Basic_Proc.New_Line_Output;
 

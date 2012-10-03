@@ -1,7 +1,7 @@
 -- Search for words matching criteria (au:o.obile) or regexp (au.*bile)
 -- Or search anagrams
 with As.U.Utils, Argument, Con_Io, Afpx, Basic_Proc, Language, Many_Strings,
-     Str_Util, Lower_Str, Environ, Integer_Image, Event_Mng, Afpx_Xref;
+     Str_Util, Lower_Str, Environ, Images, Event_Mng, Afpx_Xref;
 with Cmd, Analist;
 procedure Xwords is
 
@@ -115,7 +115,7 @@ procedure Xwords is
       if Anagrams.Element(I).Length /= Length then
         Length := Anagrams.Element(I).Length;
         Afpx.Line_List.Insert (Us2Afpx (As.U.Tus (
-             "-- " & Integer_Image (Length) & " --")));
+             "-- " & Images.Integer_Image (Length) & " --")));
       end if;
       Afpx.Line_List.Insert (Us2Afpx (Anagrams.Element(I)));
     end loop;
