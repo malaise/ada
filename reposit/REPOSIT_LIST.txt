@@ -366,7 +366,7 @@ input_buffer (1)::
      Extract sentences from a flow of characters.
 
 int_image mod_image float_image integer_image int_image16 long_image (1)::
-     Image of integer, long long integer, modulus and float, of integer in base
+     Image of integer, long long integer, modulus, float, integer in base
      16 (no leading space).
 
 ip_addr (1)::
