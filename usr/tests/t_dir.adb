@@ -1,5 +1,6 @@
 with Ada.Calendar, Ada.Text_Io;
-with As.U, Basic_Proc, Directory, Sys_Calls, Argument, Day_Mng, Normal, Normal_Long;
+with As.U, Basic_Proc, Directory, Sys_Calls, Argument, Day_Mng, Normal,
+     Normalization;
 procedure T_Dir is
   package Int_Io is new Ada.Text_Io.Integer_Io (Integer);
   File_Name : As.U.Asu_Us;
@@ -45,7 +46,7 @@ procedure T_Dir is
 
   procedure Put_Size (Size : in Sys_Calls.Off_T) is
   begin
-    Basic_Proc.Put_Output(" " & Normal_Long (Size, 12));
+    Basic_Proc.Put_Output(" " & Normalization.Normal_Long (Size, 12));
   exception
     when Constraint_Error => Basic_Proc.Put_Output(" " & "xxxxxxxxxx");
   end Put_Size;

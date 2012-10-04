@@ -7,6 +7,6 @@
 -- Right : If string is shorter than Len character, align it at Right
 --   or at left (not Right) and fill with Gap
 -- Gap : When string is shorter than len, fill empty positions with Gap
-with Normal_Gen;
-function Normal is new Normal_Gen (Integer);
+with Normalization;
+function Normal is new Normalization.Normal_Gen (Integer);
 

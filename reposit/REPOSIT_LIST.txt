@@ -101,6 +101,8 @@ to integers.
 
 * 'C_Nbres' implements complex numbers.
 
+* 'Gets' allows getting a number (integer, float...) from a string.
+
 * 'Normalisation' generates formatted image of integer, digits, delta or fixed
 real.
 
@@ -405,11 +407,8 @@ ndbm (1)::
 network (2)::
      Simulate a network of inter-connected nodes.
 
-normal, normal_long, normal_gen (1)::
-     Normalize an integer image into fixed length string.
-
-normalization (1)::
-     General normalization of integers and reals.
+normalization, normal (1)::
+     Formatted images of integers and reals.
 
 null_procedure (1)::
      Null (dummy) procedure.
