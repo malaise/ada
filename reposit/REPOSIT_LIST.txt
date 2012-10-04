@@ -70,6 +70,9 @@ Ada.Strings.Bounded with more features.
 
 * 'Str_Util' provides several operations on strings.
 
+* 'Normalization', 'Images' and 'Gets' provide ways tro transform numeric to
+values to strings and reverse.
+
 * 'Many_Strings' allows storing several strings successively in a string and
 extracting them.
 
@@ -193,6 +196,9 @@ directories, and tools for building and splitting directory path.
 
 * 'Dir_Mng' fills a xref:XDynamic_List[dynamic list] with the content of a
 directory.
+
+* 'Basic_Proc', 'Async_Stdin', 'Key_Pressed' (and 'Sys_Calls') provide input
+from stdin and output to stdout and stderr.
 
 List of packages
 ----------------
