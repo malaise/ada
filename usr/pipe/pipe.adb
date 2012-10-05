@@ -9,12 +9,11 @@ with Ada.Characters.Latin_1;
 
 with Basic_Proc, Argument, Async_Stdin, Mixed_Str, Event_Mng;
 with Fifos;
-with Io_Data;
 procedure Pipe is
 
-  -- Message type, same as Mcd
-  Max_Data_Size : constant := Io_Data.Max_Message_Len;
-  subtype Message_Type is Io_Data.Message_Type;
+  -- Message type
+  Max_Data_Size : constant := 1024;
+  subtype Message_Type is String (1 .. Max_Data_Size);
 
   -- The fifo
   package Pipe_Fifo is new Fifos.Fifo (Message_Type);

@@ -1,6 +1,6 @@
 include $(HOME)/Makefiles/common.mk
 
-ADAVIEW := $(USR)/mcd $(USR)/fifos $(USR)/dictio $(REPOSIT)
+ADAVIEW := $(USR)/fifos $(USR)/dictio $(REPOSIT)
 EXES := pipe
 
 CLIBS := cutil
