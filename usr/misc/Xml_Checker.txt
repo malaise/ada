@@ -51,7 +51,7 @@ Output format
 anchor:Silent[]-s | --silent: :: for no output at all. The xref:Exit[exit
 code] indicates success or failure.
 
-anchor:Progress[]-p | --progress: :: for only output a progress bar like this
+anchor:Progress[]-p | --progress: :: for only output a progress bar like this:
 
   |-------------------------------------------------|
   |=================================
@@ -75,10 +75,15 @@ information, example:
   00000008 M -  Var : Name=V1 Type=Int
   00000008 - M   =>5<=
 +
+A 'M' in first column indicates that the field has Mixed content while in
+second column it denotes a field that is part of a Mixed content (they are not
+exclusive).
++
 Note that this options is incompatible with the xref:Expand[expand] option and
 with the xref:Keep[keep] option. Dump implies to keep all as is.
 
--r | --raw: :: for a XML output, all on one line (no line feed).
+-r | --raw: :: for a XML output, all on one line (no indentation and no line
+feed).
 
 -W <Width> | --width=<Width>: :: for limiting the number of attributes per
 line to up to <Width> columns. Default format is ''-W 80''.
@@ -94,8 +99,8 @@ anchor:Keep[]-k c|d|n|a | --keep=comments|cdata|none|all: :: for keep comments,
 or keep CDATA sections unchanged, or keep none (remove comments and CDATA
 markers) or keep all unchanged, which is the default.
 
--n | --namespace: :: for namespace checks and expansion. Add checks that flow is
-namespace-well-formed and namespace-valid (see 
+-n | --namespace: :: for namespace checks and expansion. Add checks that the
+input flowflow is namespace-well-formed and namespace-valid (see 
 http://www.w3.org/TR/REC-xml-names) and expand namespaces as
 '<namespace>^<suffix>.'
 +
@@ -141,7 +146,7 @@ Note that this option is not recommended for big files. It is not compatible
 with canonical mode or progress bar.
 +
 Please also consider increasing the process stack size (ulimit -s) to
-avoid stack overflow and Storage_Error.
+avoid stack overflow and Storage_Error, especially in this mode.
 
 -h | --help: :: for put online help.
 
@@ -155,7 +160,7 @@ Inputs
 ~~~~~~
 Xml_checker takes 0, 1 or several arguments to specify the XML flow to process.
 
-When no argument xml_checker processes stdin. An empty argument ("") also
+With no argument xml_checker processes stdin. An empty argument ("") also
 denotes stdin.
 
 When one or several files are provided xml_checker processes these files one
@@ -204,15 +209,15 @@ On option the parser provides partial support for XML namespaces
 (see http://www.w3.org/TR/2009/REC-xml-names-20091208). Namespaces are not
 checked for validity of URI references.
 
-By default Xml_Checker invokes this parser with options that ensure that the
-output is the same as the input except the formating (indentation of elements
-and attributes).
-
-On the other hand the parser by default provides the caller with a tree where
+By default Xml_Checker invokes this parser in callback mode to allow large
+files and specific options, and with options that ensure that the output is the
+same as the input except the formating (indentation of elements
+and attributes). +
+On the other hand the parser by default provides the caller with a tree, where
 the comments and CDATA markers are removed, where entities are expanded, and
-where attributes are initialized with their default values. In order to
-trigger this default behaviour of the parser and to display the result
-xml_checker can be called with:
+where attributes are initialized with their default values. +
+In order to trigger this default behaviour of the parser and to display the
+result xml_checker can be called with:
 
   xml_checker --tree --keep=none --expand
 

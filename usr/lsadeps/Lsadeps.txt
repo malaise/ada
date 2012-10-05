@@ -26,7 +26,10 @@ Usage: lsadeps <version> | <help> | <check> | <depend>
  <dir>         ::= -I <dir> | --include=<dir>
  <recursive>   ::= -R <dir> | --recursive=<dir>
 
-Check function shows redundant "with" clauses in a dir (default: current dir).
+Check function shows redundant "with" clauses in a dir (default: current
+dir). +
+Check mode does not support options (even includes), only one optional target
+directory.
 
 Dependency function by default lists units on which <target_unit> depends,
 which are withed units, their body and subunits, units withed by these
@@ -47,16 +50,15 @@ Other options are:
  - <include> to add some directories or some directory trees to the search path
    (default is current and target directories).
 
-Check mode does not support options (even includes), only one optional target
-directory.
 
-Specs and revert modes are mutually exclusive.
-
+Specs and revert modes are mutually exclusive. +
 Path mode and tree are mutually exculsive.
 
 Format of output
 ----------------
-There are two main functions: list dependancies and check redundant "with"
+There are two main functions: list dependancies and check redundant "with".
+
+Results are put on stdout.
 
 Show dependancies
 ~~~~~~~~~~~~~~~~~
@@ -103,28 +105,38 @@ Check redundant "with"
 This funtion checks that no redundant "with" clause appear in the body and
 sub-units of each unit.
 
+It reports redundacy with messages like: +
+"'Unit <unit> withes <withed> already withed by parent <unit>'", +
+- where <unit> is the path of the unit, followed by '#', then either 'US' (Unit
+Spec), 'UB' (Unit Body) or 'SU' (SubUnit) +
+- and <withed> is the name of the redundant withed unit.
+
+Example:
+
+  Unit lsadeps/Output#UB withes Sourcer already withed by parent lsadeps/Output#US
+
 lsadeps then exits with 1 if at least one redundant "with" is detected and
 with 0 otherwise.
 
 Examples
 --------
 
-What are the units needed by Unit
+What are the units needed by 'Unit'
 --------------------
   lsadeps Unit (or lsadeps unit)
 --------------------
 
-What are the units, including those or the repository, needed by Unit
+What are the units, including those of the repository, needed by 'Unit'
 --------------------
   lsadeps -I ~/ada/reposit Unit
 --------------------
 
-What are all the files needed to build Unit
+What are all the files needed to build 'Unit'
 --------------------
   lsadeps -f -I ~/ada/reposit Unit
 --------------------
 
-How does Unit1 need Unit2
+How does 'Unit1' need 'Unit2'
 --------------------
   lsadeps Unit1 Unit2
 --------------------
@@ -138,7 +150,7 @@ High level design
 -----------------
 Parse and check arguments
 ~~~~~~~~~~~~~~~~~~~~~~~~~
-- in non check mode target is a unit (possibly containing a path), an
+- in non check mode, target is a unit (possibly containing a path). An
 optional path_unit triggers the path analysis between the target and this unit
 
 - in check mode it is an optional path that denotes the directory to check
@@ -162,14 +174,14 @@ store in a list:
 
 - Unit_Name of parent (if child spec, child body or subunit)
 
-- List of withed unit names: @Name\@Name...@
+- List of withed unit names: @\Name@Name...@
 
-- List of used unit names: @Name\@Name...@
+- List of used unit names: @\Name@Name...@
 
-- List of subunits names (if body or subunit): @Name\@Name...@
+- List of subunits names (if body or subunit): @\Name@Name...@
 
 "Path/Unit_Name#Kind" is the unique access key.  A spec, its body and its
-subunits must be colocated.
+subunits must be colocated in the same directory.
 
 No check that withed units exist but check that target is listed (as spec or
 standalone body). Also store in a list, for each Unit_Name, the list of
@@ -182,7 +194,8 @@ each unit make the list of its withed units.
 
 For each unit U check that no withed unit W is withed twice by U or by a
 parent of U, including indirect with of a child of W. Note that a redundant
-"with" context clause is acceptable in case of a "use" context clause.
+"with" context clause is necessary (so accepted) in case of a "use" context
+clause!
 
 Exit program.
 

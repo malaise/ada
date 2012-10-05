@@ -13,20 +13,22 @@ Direct input::
     The program has no blocking input at all (ex: reads files) or reads stdin
 and blocks on it (and puts on stdout/stderr).
 +
-=> The program can use Basic_Proc or Sys_Calls (or even Ada.Text_Io) for its Ios.
+=> The program can use Basic_Proc or Sys_Calls (or even Ada.Text_Io) for its
+Ios. It can use Key_Pressed to asynchronously check for keyboard input, while
+processing.
 
 Multiplexed inputs::
     The program multiplexes several inputs and stimuli: file descriptors (UDP or 
 TCP socket), stdin, signals (SIGCHILD and SIGTERM), timers.
 +
-=> The program must use Event_Mng.Wait as the single blocking point. This
+=> The program *must* use Event_Mng.Wait as the single blocking point. This
 allows dispatching the FD events, timers and signals to the proper callbacks).
 
- * Event_Mng allows defining callabcks for handling signal and FD events,
+ * Event_Mng allows defining callbacks for handling signal and FD events,
 
  * Timers allows defining timers, expiration and callback,
 
- * Socket allows reading on socket FDs,
+ * Socket allows sending and reading on socket FDs,
 
  * Async_Stdin allows defining a callback on stdin,
 
@@ -36,16 +38,17 @@ X11 mutiplexed inputs ::
     The program uses X11 and multiplexes X11 events with other inputs (see
 above).
 +
-=> The program must use either X_Mng.X_Wait_Event or Con_Io.Put_Then_Get (or
+=> The program *must* use either X_Mng.X_Wait_Event or Con_Io.Put_Then_Get (or
 Con_Io.Get) or Afpx.Put_Then_Get. It can also use more specialized tools based
-on X11 like Curve and Select_File.
+on X11 like Curve (compatible with Con_Io) and Select_File (compatible with
+Afpx).
 +
 Several tasks can be defined, for example one for each window.
 
 Notes: 
 
 * Using Event_Mng in non interactive programs requires caution (see
-Event_Mng.Reset_Default_Signals_Policy).
+Event_Mng.Reset_Default_Signals_Policy and Command).
 
 * Using X_Mng is exclusive with Con_Io and Afpx. 
 
@@ -55,22 +58,24 @@ Event_Mng.Reset_Default_Signals_Policy).
 Families of tools
 -----------------
 
-Arguments
-~~~~~~~~~
+Execution environment
+~~~~~~~~~~~~~~~~~~~~~
 * 'Argument' provides simple parsing by keys, while 'Argument_Parser' provides a
 more strict logic and higher level parsing. Use the later if the arguments are
 many, are optional, support options...
 
 * 'Environ' allows retrieving and checking environmental variables.
 
+* 'Basic_Proc' allows setting the exit code of the process.
+
 Strings
 ~~~~~~~
 * 'As.U' and 'As.B' are implementations of Ada.Strings.Unbounded and
-Ada.Strings.Bounded with more features.
+Ada.Strings.Bounded with extra features.
 
 * 'Str_Util' provides several operations on strings.
 
-* 'Normalization', 'Images' and 'Gets' provide ways tro transform numeric to
+* 'Normalization', 'Images' and 'Gets' provide ways tro transform numeric 
 values to strings and reverse.
 
 * 'Many_Strings' allows storing several strings successively in a string and
@@ -113,7 +118,7 @@ real.
 
 Data containers
 ~~~~~~~~~~~~~~~
-* 'Dyn_Data' allocates and frees data, relying on a free list.
+* 'Dyn_Data' allocates and frees data, relying on a free list to reuse memory.
 
 * 'Limited_List' and anchor:XDynamic_List[] 'Dynamic_List' are linked lists of
 data, limited or simply private.
@@ -158,7 +163,7 @@ on which one can check the expiration from time to time.
 
 * 'Perpet' is a perpetual calendar.
 
-* 'Day_Mang' converts durations to and from hours/minutes/seconds/milliseconds.
+* 'Day_Mng' converts durations to and from hours/minutes/seconds/milliseconds.
 
 Forking child process
 ~~~~~~~~~~~~~~~~~~~~~
@@ -302,10 +307,7 @@ copy_file (1)::
      Copy a file.
 
 curve (3)::
-     Draw a curve of function y=f(x) and drawn a set of points in 2D.
-
-date_image (1)::
-     String image "YYyy/Mm/Dd Hh:Mm:Ss.mmm" of a date.
+     Draw a curve of function y=f(x) and draw a set of points in 2D.
 
 day_mng (2)::
      Split/pack a duration into hours, minutes, seconds.
@@ -319,11 +321,8 @@ directory (2)::
 door_manager (1)::
      Allow several tasks to wait until a given amount or waiters is reached.
 
-dur_image (1)::
-     Return string image of a duration rounded at N digits.
-
 dyn_data (2)::
-     Allocate/free data from a pool.
+     Allocate/free data from a pool, use a free list to reuse memory.
 
 environ (2)::
      Environment variable extraction and basic tests.
@@ -335,7 +334,7 @@ event_mng (3)::
      Multiplex reception of events (timers, fd, signals).
 
 exception_messenger (1)::
-     Allow transmission of un-truncated exception message.
+     Allow transmission of un-truncated long exception message.
 
 file_access (1)::
      Decode Unix file access flags.
@@ -367,15 +366,15 @@ hexa_utils (1)::
 http (2)::
      Fetch the target of a HTTP URL.
 
+images (1)::
+     Image of integer, long long integer, modulus, float, integer in base
+     16 (no leading space), duration and time.
+
 init_manager (1)::
      Manage atomic init of state while concurent update events are bufferized.
 
 input_buffer (1)::
      Extract sentences from a flow of characters.
-
-int_image mod_image float_image integer_image int_image16 long_image (1)::
-     Image of integer, long long integer, modulus, float, integer in base
-     16 (no leading space).
 
 ip_addr (1)::
      Parse IP address or port.
@@ -405,7 +404,7 @@ mutex_manager (2)::
      Mutex for exclusive access or read/write access to shared data.
 
 my_math (2)::
-     Math library.
+     Math library (round, trunc, trigo, exp, ln).
 
 ndbm (1)::
      Interface to C ndbm library.
@@ -641,3 +640,4 @@ Virtual_Time:: lem
 X_Mng:: Con_Io
 
 Xml_Parser:: xml_checker
+

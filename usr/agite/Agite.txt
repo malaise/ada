@@ -163,7 +163,7 @@ All the screen transitions are based on the 'call-return' scheme.
 So please note the double arrow between 'History' and 'Details': from the
 'History' of a file (or dir) you can select a commit and and see its 'Details'.
 In this new screen you can select a file and see its 'History'... and so on.
-Once this is done you we need to "un-stack" all these menus (by clicking on
+Once this is done you need to "un-stack" all these menus (by clicking on
 the 'Back' button in each) in order to go back to the 'Directory' menu.
 
 anchor:XDir[]
@@ -316,7 +316,7 @@ Revert::
 This bouton reverts the local change of a file or of all the files of current
 directory and subdirectories (if current selection is './'). It has no effect
 if the current list selection is a un-modified file. A specific simple screen
-asks to confirm or cancell the operation.
+asks to confirm or cancel the operation.
 
 .Other actions
 
@@ -356,8 +356,8 @@ list can contain four kinds of entry:
 * Anonymous bookmarks don't have name. They contain only the path to the
 directory.
 * Named bookmarks are created like anonymous ones but with a name set in the
-'Name to add' field when clicking in xref:XAdd[AddCur]. The name appears in parentheses
-before the path of the bookmark.
+'Name to add' field when clicking in xref:XAdd[AddCur]. The name appears in
+parentheses before the path of the bookmark.
 * Separators are created by setting a name (in 'Name to Add') and clicking
 in xref:XAdd[AddSep]. This creates a line with dashes and the name, like:
 
@@ -380,7 +380,7 @@ Bookmarks and separators can be organised with the buttons 'MovUp', 'MovDwn' and
 can be deleted with the button 'Del', with no confirmation.
 
 Navigation in the list is the same as the xref:XNavig[navigation] in the
-xref:XDir[directory] menu, with the mouse wheele, the keyboard and buttons.
+xref:XDir[directory] menu, with the mouse wheel, the keyboard and buttons.
 
 anchor:XBookBack[]
 The button 'Back' switches back to  the xref:XDir[directory] menu without
@@ -497,10 +497,10 @@ version 1.7.0 or above:
 * A function get Git version by calling 'git --version',
 
 * A function list local files by calling 'git ls-files' and
-'git status -- porcelain .',
+'git status \-- porcelain .',
 
 * A function lists the commits on local dir by calling
-'git log --date=iso --topo-order -- <pwd>',
+'git log --date=iso --topo-order \-- <pwd>',
 
 * A function gets the details of a commit by calling
 'git log --name-status --date=iso -n 1 <HSA1_hash>',
@@ -509,13 +509,13 @@ version 1.7.0 or above:
 'git show <HSA1_hash>:<file>',
 
 * A function lauches the differator on a modified file (versus Head) by calling
-'git difftool -y -x <differator> HEAD -- <file>',
+'git difftool -y -x <differator> HEAD \-- <file>',
 
 * A function lauches the differator between two versions of a file (or dir) by
-calling 'git difftool -y -x <differator> <ref_HSA1> <comp_HSA1> -- <file>',
+calling 'git difftool -y -x <differator> <ref_HSA1> <comp_HSA1> \-- <file>',
 
 * A function reverts the local changes of a file by calling
-'git checkout HEAD <file>',
+'git checkout HEAD \-- <file>' or 'git reset \-- <file>',
 
 * A function gets the name of current branch by calling 'git branch',
 

@@ -105,13 +105,14 @@ and 'tasks' (simple task examples).
 They all depend on C and Reposit and are independant from the others (except
 'pipe' -> 'fifos' -> 'dictio').
 
-The more usefull are 'agite', 'alook', 'als', 'asubst', 'lsadeps', 'mcd', 
-'udp_Spy' and 'xml_Checker'.
+The more usefull are 'udp_spy' and 'xml_checker' (in directory 'misc'), 'agite',
+'alook', 'als', 'asubst', 'lsadeps' and 'mcd'.
 
 The games are 'g' (in directory 'misc'), 'lem', 'mmind', 'nimmari' and
 'sokoban'.
 
-Here is the full list and description:
+Here is the full list and description, rated from 1 (simple) to 3 (very
+complex) on subjective criteria:
 
 Account (3)::
      Based on 'Afpx', this tool handles the management of bank accounts, with

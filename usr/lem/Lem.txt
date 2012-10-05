@@ -30,10 +30,9 @@ The fuel gauge becomes yellow when reaching 20%, then red when reaching 10%.
 The speeds are red when above acceptable values for landing. Note that the LEM
 speed can be far above the speed gauges maxima without problem.
 
-Finally, in the lower right corner, an indicator shows "APPR" when above a
-landing area and and not too high (less than 5 times the LEM height).
-
-This indicator shows "CLOSE" when getting close to land, then "LAND" when
+Finally, in the lower right corner, a "LAND" indicator shows 'APPR' when above a
+landing area and and not too high (less than 5 times the LEM height). +
+This indicator shows 'CLOSE' when getting close to land, then 'LAND' when
 landed.
 
 Below the indicator, a chronometer indicates the duration of the mission.
@@ -78,15 +77,15 @@ Scenario
 ~~~~~~~~
 The game starts at a random (high) position, with a random vertical speed and
 a reasonable vertical thrust (and a very reasonable horizontal speed).
-Spot a flat landing area and adjust speeds to reach it. Check the area (APPR
-indicator) before landing.
+Spot a flat landing area and adjust speeds to reach it. Check the area ("LAND"
+indicator showing 'APPR' or 'CLOSE') before landing.
 
 You land safely if within 75% of the speed limits and with at least 10% of
 fuel remaining. Otherwise it is just acceptable (normally, below average).
 
-When landed (LAND indicator), horizontal thrust has no effect. You can still
-use the vertical thrust to take off, or you can shut-down the engine, which
-ends the game.
+When landed ("LAND" indicator showing 'LAND'), horizontal thrust has no effect.
+You can still use the vertical thrust to take off, or you can shut-down the
+engine (by setting vertical thrust to 0), which ends the game.
 
 When the game ends, a message indicates if you lost or crashed the LEM, if you
 landed normally or safely.
@@ -121,9 +120,9 @@ Beware that the horizontal speed is nearly never nul, if needed, swap sides
 when getting close to a side of the landing area. Also anticipate the changes
 of vertical speeds, always remain on the "safe" side.
 
-You will bump (APPR then LAND then APPR) if you are slowing down at excessive
+You will bump ('APPR' then 'LAND' then 'APPR') if you are slowing down at excessive
 rate (positive acceleration). The best landing is with a null or slightly
-negative acceleration. So, at the last time, reduce a littel bit the power (if
+negative acceleration. So, at the last time, reduce a little bit the power (if
 it is safe).
 
 Troubleshooting
@@ -131,9 +130,9 @@ Troubleshooting
 Any software has bugs. Please report any bug to malaise-at-magic-dot-fr.
 
 If you think that you landed properly but crashed, please check the speeds and
-the "APPR" indicator before suspecting a bug. If the speeds are not both blue
-or the "LAND" indicator is not set at the time the LEM contacts the ground,
-then it is a crash, not a bug.
+the "LAND" indicator before suspecting a bug. If the speeds are not both blue
+or the "LAND" indicator is empty at the time the LEM contacts the ground,
+then it is a crash, not a bug :-).
 
 Elements of design
 ------------------
@@ -147,7 +146,8 @@ The axes are x (horizontal, left to right) and y (vertical bottom to top).
 
 The LEM
 ~~~~~~~
-Is square 10x10 m made of a rectangle and 2 feet and has an empty mass of M kg.
+The LEM is a square 10x10 m made of a rectangle and 2 feet and has an empty
+mass of M kg.
 
 It has a fuel tank of F kg of fuel.
 
@@ -169,11 +169,11 @@ It provides the following operations
 
 The acceleration a is X_Thrust / m and Y_Thrust / m + g
 
-The mass m is m0 - (X_Thrust + Y_Thrust) * C * t
+The mass M is M0 - (X_Thrust + Y_Thrust) * C * t
 
 Where C is the consumption rate in kg/N/s
 
-Each period, V0, P0, m0 and a are re-computed with current thrust value
+Each period, V0, P0, M0 and a are re-computed with current thrust value
 (which leads to a rather accurate integration of mass evolution).
 
 Speed V = V0 + a.t and position P = 1/2.a.t^2^ + VO.t + P0
@@ -224,12 +224,17 @@ Displays the Y thrust, Y speed and X speed current values each 0.5s
 
 The inputs
 ~~~~~~~~~~
-<- and -> set a X thrust to Max_X_Thrust during 1s
+<- and ->, left and right mouse clicks set a X thrust to Max_X_Thrust during
+1s, +
+Ctrl with arrows and left and right mouse double-click set a X thrust to
+5 * Max_X_Thrust during 1s.
 
-&#8595; and &#8593; increase/decrease Y thrust by 1/5 of Max_Y_Thrust
+&#8595; and &#8593; and mouse down and up wheele increase/decrease the Y thrust
+by 1/5 of Max_Y_Thrust, +
+Ctrl with arrows set Y thrust to 0 or to the the Max.
 
-Values
-~~~~~~
+Numeric Values
+~~~~~~~~~~~~~~
 Moon gravity g=1.635 m/s^2^ (1/6 of Earth)
 
 Fuel F=5.600 tons
@@ -251,7 +256,8 @@ Hpmax=50 m
 Validation
 ~~~~~~~~~~
 .In theory,
-without decreasing the mass (and without X thrust):
+for staying at a constant level without decreasing the mass (and without X
+thrust):
 
 [width="75%", options="header"]
 |=========================================================
@@ -261,8 +267,9 @@ without decreasing the mass (and without X thrust):
 |Consumption (kg/s) | 25506 * C = 46.68  |29.92
 |Autonomy (s)       | 5600 / 46.68 = 120 |187
 |=========================================================
+Average autonomy is 152 s.
 
 .Practically,
-starting at full mass and applying a (decreasing) Y thrust to remain at constant
-height the mission duration is around 150s.
+starting at full mass and applying a (decreasing) Y thrust to stay at a constant
+level the mission duration is around 150 s.
 

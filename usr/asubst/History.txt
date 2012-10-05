@@ -1,6 +1,13 @@
 History of Asubst
 =================
-219/04/2012 V13.3::
+
+10/08/2012 V13.5::
+Add: Strip trailing spaces from PCRE error string
+
+06/08/2012 V13.4::
+Add: Improve doc and PCRE error message
+
+19/04/2012 V13.3::
 Add: Description of exit code in online help
 
 24/02/2012 V13.2::

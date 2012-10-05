@@ -1,6 +1,6 @@
 Asubst
 ======
-V13.4
+V13.5
 :toc:
 
 Asubs is a command line tool that finds occurences of text that match a
@@ -168,8 +168,7 @@ also the <exclude_regex> will not be replaced.
 NOTE: Beware that it applies to the text matching <find_pattern> only.
 
 For example 'echo "toto" | asubst --exclude=toto to ti' will replace toto by
-titi because each matching "to" does not match the exclusion "toto".
-
+titi because each matching "to" does not match the exclusion "toto". +
 On the other hand, 'echo "toto" | asubst --exclude=to to ti' and 'echo "toto"
 | asubst --exclude=toto toto titi' will not substitute.
 
@@ -189,15 +188,16 @@ Delimiter
 ---------
 Normally, asubst reads the input flow or file line by line (separated by ''\n'')
 and searches for matches between the input sequences of text and the sequence
-of regex of find_pattern. However, when an input delimiter is specified
-(option -D or --delimiter) then asubst reads sequences of text separated by
-this delimiter (the whole text if delimiter is empty). The delimiter string
-is not a regular expression but can contain "\s", "\t", "\xIJ" (even "\x00")
-and "\n".
+of regex of find_pattern. +
+However, when an input delimiter is specified (option -D or --delimiter) then
+asubst reads sequences of text separated by this delimiter (the whole text if
+delimiter is empty). The delimiter string is not a regular expression but can
+contain "\s", "\t", "\xIJ" (even "\x00") and "\n".
 
 If a delimiter is specified, then the find pattern cannot contain ''^'' or ''$''
 and it applies to each chunk. Still, it can contain ''\n'' to denote line feed
-within a chunk. Option -d (--dotall) can then be used to allow ''.'' in find
+within a chunk. +
+Option -d (--dotall) can then be used to allow ''.'' in find
 pattern to match ''\n'' in the text.
 
 Examples:
@@ -303,8 +303,7 @@ Regex and noregex modes
 In both modes "\x0A" is the same as "\n", and "\s" and "\t" are interpreted.
 
 In regex mode "\x00" is forbidden in find pattern because it is the C string
-terminator and it is used as such by regex library.
-
+terminator and it is used as such by regex library. +
 It is allowed in noregex mode.
 
 In noregex mode "\A" to "\X" are not interpreted, like other regex specific
@@ -337,26 +336,30 @@ standard code 128 + signal_number.
 
 Troubleshooting
 ---------------
-- Asubst is stuck. -> Maybe an argument is missing or an option is not
-complete, and asubst is waiting in stdin.
-e.g. "asubst -m 5 6 file". Asubst considers "5" as the value for m, "6" as the
-find_pattern and "file" as the replace_string, so no file name is provided.
+- Asubst is stuck. +
+-> Maybe an argument is missing or an option is not complete, and asubst is
+waiting in stdin. +
+Example:  "asubst -m 5 6 file": asubst considers "5" as the value for m, "6" as
+the find_pattern and "file" as the replace_string, so that no file name is
+provided.
 
-- I want to substitute "\f", why do I need to provide "\\\\f"? -> Because
-regex imposes to provide "\\f" for matching "\f", ("\f" matches "f") and the
+- I want to substitute "\f", why do I need to provide "\\\\f"? +
+-> Because regex imposes to provide "\\f" for matching "\f", ("\f" matches "f") and the
 shell imposes a "\\" for each "\" transmitted to asubst.
 +
 Note that you can pass to the shell ''\\f'' instead of "\\\\f".
 +
 Same considerations apply to "\$" or ''$'' in order to pass '$' to asubst.
 
-- ERROR: Cannot create temp file in ".".  -> Asubst cannot make the temporary
-file, probably because the file system does not support hard links (e.g. samba
-file system). Try the -p (--tmp) option with a UNIX directory.
+- ERROR: Cannot create temp file in ".".  +
+-> Asubst cannot make the temporary file, probably because the file system does
+not support hard links (e.g. samba file system). Try the -p (--tmp) option with
+a UNIX directory.
 
-- The 'else' part of the condition is not processed. -> The whole replace
-string is not processed if the input text does not match the find pattern.
-Example, with '"([A-Z][a-z])|([0-1])"' '"\i11Letter\i12Digit\eOther\f"' the input
-text "!"  remains unchanged. Appending "|." to the search pattern makes it
+- The 'else' part of the condition is not processed. +
+-> The whole replace string is not processed if the input text does not match
+the find pattern. +
+Example, with '"([A-Z][a-z])|([0-1])"' '"\i11Letter\i12Digit\eOther\f"' the
+input text "!" remains unchanged. Appending "|." to the search pattern makes it
 match and be substituted by 'Other'.
 
