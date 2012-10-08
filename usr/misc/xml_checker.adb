@@ -4,7 +4,7 @@ with As.U.Utils, Argument, Argument_Parser, Xml_Parser.Generator, Normal,
      Basic_Proc, Text_Line, Sys_Calls, Parser, Bloc_Io, Str_Util;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V17.1";
+  Version : constant String := "V17.2";
 
   procedure Ae_Re (E : in Ada.Exceptions.Exception_Id;
                    M : in String := "")
@@ -168,7 +168,8 @@ procedure Xml_Checker is
     Ple (" mutually exclusive.");
     Ple ("Keep, expand and namespace are not allowed on Dump mode, Dump => keep all.");
     Ple ("Canonical only allows options dtd, warnings and keep-comments (it expands,");
-    Ple ("  ignores namespace and by default removes comments).");
+    Ple ("  removes CDATA markers, ignores namespace, does not normalize and by default");
+    Ple ("  removes comments).");
     Ple ("Namespace always expand, so these options are exclusive.");
     Ple ("Default format is -W" & Xml_Parser.Generator.Default_Width'Img
                          & " on stdout.");
@@ -835,6 +836,17 @@ begin
       Ae_Re (Arg_Error'Identity,
              "Incompatible ""canonical"" and ""tree"" options");
     end if;
+    -- No namespace
+    if Arg_Dscr.Is_Set (9) then
+      Ae_Re (Arg_Error'Identity,
+             "Incompatible ""canonical"" and ""namespace"" options");
+    end if;
+    -- No no-normalized (forced)
+    if Arg_Dscr.Is_Set (7) then
+      Ae_Re (Arg_Error'Identity,
+             "Incompatible ""canonical"" and ""no-normalize"" options");
+    end if;
+    -- No no-normalized (forced)
     if Arg_Dscr.Is_Set (8) and then Keep_Cdata_Set then
       Ae_Re (Arg_Error'Identity,
              "Incompatible ""canonical"" and ""keep cdata"" options");

@@ -6,7 +6,7 @@ Parser version: V31.2
 
 Generator version: V11.0
 
-Xml_checker version: V17.1
+Xml_checker version: V17.2
 
 Xml_checker is a parser of XML file that checks the syntax (versus DTD) and
 formats the output.
@@ -56,8 +56,7 @@ anchor:Progress[]-p | --progress: :: for only output a progress bar like this:
   |-------------------------------------------------|
   |=================================
 +
-then exit.
-+
+then exit. +
 It is not possible to monitor the progress in "xref:Tree[tree]" mode,
 so these options are exclusive.
 
@@ -102,19 +101,18 @@ markers) or keep all unchanged, which is the default.
 -n | --namespace: :: for namespace checks and expansion. Add checks that the
 input flowflow is namespace-well-formed and namespace-valid (see 
 http://www.w3.org/TR/REC-xml-names) and expand namespaces as
-'<namespace>^<suffix>.'
-+
+'<namespace>^<suffix>.' +
 This option always expand, so it is exclusive with option xref:Expand[expand].
 
 -C | --canonical: :: for canonicalization of the XML (see
 http://www.w3.org/TR/xml-c14n). This option only allows options dtd, warnings
-and keep-comments (it expands and by default removes comments, it is not
-supported in "xref:Tree[tree]" mode).
+and keep-comments (it expands, removes CDATA markers, does xref:Normalize[not
+normalize] and by default removes comments; it is not supported in xref:Tree[tree]
+mode).
 
---no-normalize: :: for no normalization of attributes and text. By default the
+anchor:Normalize[]--no-normalize: :: for no normalization of attributes and text. By default the
 text is normalized and, if the xref:Expand[expand] option is set, the attributes
-are normalized as well.
-+
+are normalized as well. +
 This option forces no normalization of the text and of the expanded attributes.
 
 Checks
@@ -209,20 +207,38 @@ On option the parser provides partial support for XML namespaces
 (see http://www.w3.org/TR/2009/REC-xml-names-20091208). Namespaces are not
 checked for validity of URI references.
 
-By default Xml_Checker invokes this parser in callback mode to allow large
+By default xml_checker invokes this parser in callback mode to allow large
 files and specific options, and with options that ensure that the output is the
 same as the input except the formating (indentation of elements
 and attributes). +
 On the other hand the parser by default provides the caller with a tree, where
 the comments and CDATA markers are removed, where entities are expanded, and
-where attributes are initialized with their default values. +
-In order to trigger this default behaviour of the parser and to display the
-result xml_checker can be called with:
-
-  xml_checker --tree --keep=none --expand
+where attributes are initialized with their default values. This is the most
+convenient for an application that wants to process the content of the XML file. +
+The following table summarizes the defaults of Xml_Checker (and 
+xref:Generator[Generator]) and of Xml_Parser, and highlights the differences:
+[width="75%", options="header"]
+|=========================================================
+| Option         | Xml_Parser default   | Xml_cheker default
+| File name      | None, ("" for stdin) | Stdin
+| Comments      s| False               s| True
+| Cdata         s| Remove markers      s| Keep markers
+| Expand        s| True                s| False
+| Normalize      | True                 | True
+| Use Dtd        | True                 | True
+| Dtd file       | ""                   | ""
+| Namespace      | False                | False
+| Warnings       | False                | False
+| Callback/Tree s| Tree                s| Callback
+| Format         | Fill width           | Fill width
+| Width          | 80                   | 80
+|=========================================================
+In order to trigger the default behaviour of the parser, xml_checker can be called
+with options: +
+'--tree --keep=none --expand'
 
 .XML generator
-Xml_checker also uses a child package of Xml_Parser (Xml_Parser.Generator) to
+anchor:Generator[]Xml_checker also uses a child package of Xml_Parser (Xml_Parser.Generator) to
 build the XML output of the tree or of each node.
 
 DTD checker
