@@ -4,7 +4,7 @@ with As.U.Utils, Argument, Argument_Parser, Xml_Parser.Generator, Normal,
      Basic_Proc, Text_Line, Sys_Calls, Parser, Bloc_Io, Str_Util;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V17.2";
+  Version : constant String := "V17.3";
 
   procedure Ae_Re (E : in Ada.Exceptions.Exception_Id;
                    M : in String := "")
@@ -40,7 +40,7 @@ procedure Xml_Checker is
   -- Normalize text
   Normalize : Boolean;
 
-  -- Flow of dump
+  -- Flow of dump or canonicalization
   Out_Flow : Text_Line.File_Type;
 
   -- Dtd options
@@ -116,7 +116,7 @@ procedure Xml_Checker is
     16 => As.U.Tus ("Put versions") );
 
   -- Program help
-  procedure Usage is
+  procedure Usage (Full : in Boolean) is
     procedure Pl (Str : in String) renames Basic_Proc.Put_Error;
     procedure Ple (Str : in String) renames Basic_Proc.Put_Line_Error;
     Tab : constant String (1 .. 34) := (others => ' ');
@@ -124,6 +124,10 @@ procedure Xml_Checker is
     use type As.U.Asu_Us;
   begin
     Ple ("Usage: " & Argument.Get_Program_Name & "[ { <option> } ] [ { <file> } ]");
+    if not Full then
+      Ple ("Use option '-h' or '--help' for help.");
+      return;
+    end if;
     Ple (" <option> ::= <silent> | <progress> | <dump> | <raw> | <width> | <one> |");
     Ple ("            | <expand> | <keep> | <namespace> | <canonical> | <normalize>");
     Ple ("            | <check_dtd> | <warnings> | <tree> | <help> | <version>");
@@ -627,8 +631,10 @@ begin
     if Arg_Dscr.Get_Nb_Occurences (No_Key_Index) /= 0
     or else Arg_Dscr.Get_Number_Keys > 1 then
       Ae_Re (Arg_Error'Identity, "Too many options");
+      Usage (False);
+    else
+      Usage (True);
     end if;
-    Usage;
     Basic_Proc.Set_Error_Exit_Code;
     return;
   elsif Arg_Dscr.Is_Set (16) then
@@ -895,7 +901,7 @@ exception
     -- Argument error
     Basic_Proc.Put_Line_Error ("Error "
          & Ada.Exceptions.Exception_Message(Error) & ".");
-    Usage;
+    Usage (False);
     Basic_Proc.Set_Error_Exit_Code;
   when Abort_Error =>
     -- Error already put while parsing file
@@ -905,7 +911,7 @@ exception
     Basic_Proc.Put_Line_Error ("Exception "
         & Ada.Exceptions.Exception_Name (Error)
         & " raised.");
-    Usage;
+    Usage (False);
     Basic_Proc.Set_Error_Exit_Code;
 end Xml_Checker;
 

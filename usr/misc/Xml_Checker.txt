@@ -6,7 +6,7 @@ Parser version: V31.2
 
 Generator version: V11.0
 
-Xml_checker version: V17.2
+Xml_checker version: V17.3
 
 Xml_checker is a parser of XML file that checks the syntax (versus DTD) and
 formats the output.
@@ -104,11 +104,12 @@ http://www.w3.org/TR/REC-xml-names) and expand namespaces as
 '<namespace>^<suffix>.' +
 This option always expand, so it is exclusive with option xref:Expand[expand].
 
--C | --canonical: :: for canonicalization of the XML (see
+anchor:Canonical[]-C | --canonical: :: for canonicalization of the XML (see
 http://www.w3.org/TR/xml-c14n). This option only allows options dtd, warnings
-and keep-comments (it expands, removes CDATA markers, does xref:Normalize[not
-normalize] and by default removes comments; it is not supported in xref:Tree[tree]
-mode).
+and keep-comments. +
+It expands, removes CDATA markers, does xref:Normalize[not normalize], does not
+expand namespaces and by default removes comments; it is not supported in
+xref:Tree[tree] mode).
 
 anchor:Normalize[]--no-normalize: :: for no normalization of attributes and text. By default the
 text is normalized and, if the xref:Expand[expand] option is set, the attributes
@@ -177,8 +178,8 @@ Exit code
 anchor:Exit[]Xml_checker exits with 0 if no error is detected and with 1 otherwise
 (xref:Warnings[warnings] don't affect the exit code).
 
-anchor:XmlParser[] XML parser and generator
--------------------------------------------
+anchor:XmlParser[] Use of XML parser and generator
+--------------------------------------------------
 .XML parser
 Xml_checker uses a standalone package (Xml_Parser) to parse the XML flow.
 
@@ -194,7 +195,7 @@ in URIs (otherwise it raises parsing error).
 Some other encodings may be handled by defining the environment variable
 XML_PARSER_MAP_DIR to where Byte_To_Unicode can find the mapping file
 named <ENCODING>.xml (in uppercase, ex: ISO-8859-9.xml). This file maps each
-byte code (from 0 top 255) to a Unicode number and has the format:
+byte code (from 0 top 255) to a Unicode number and must have the format:
 
   <?xml version="1.0" encoding="UTF-8"?>
     <Map>
@@ -207,19 +208,26 @@ On option the parser provides partial support for XML namespaces
 (see http://www.w3.org/TR/2009/REC-xml-names-20091208). Namespaces are not
 checked for validity of URI references.
 
-By default xml_checker invokes this parser in callback mode to allow large
-files and specific options, and with options that ensure that the output is the
-same as the input except the formating (indentation of elements
+.XML generator
+Xml_checker also uses a XML generator that is a child package of Xml_Parser
+(Xml_Parser.Generator) to build the formatted XML output of the tree or of
+each node. The generator is not used in 'Dump' and in 'Canonical' modes.
+
+.Default behaviour
+By default xml_checker invokes the XML parser in callback mode (to allow large
+files and specific options), and with options that ensure that the output is
+the same as the input except the formating (indentation of elements
 and attributes). +
 On the other hand the parser by default provides the caller with a tree, where
 the comments and CDATA markers are removed, where entities are expanded, and
 where attributes are initialized with their default values. This is the most
-convenient for an application that wants to process the content of the XML file. +
-The following table summarizes the defaults of Xml_Checker (and 
-xref:Generator[Generator]) and of Xml_Parser, and highlights the differences:
+convenient for an application that wants to process the content of the XML
+file. +
+The following table summarizes the defaults of Xml_Checker (and Generator) and
+of Xml_Parser. The differents are highlighted:
 [width="75%", options="header"]
 |=========================================================
-| Option         | Xml_Parser default   | Xml_cheker default
+| Option         | Xml_Parser default   | xml_cheker default
 | File name      | None, ("" for stdin) | Stdin
 | Comments      s| False               s| True
 | Cdata         s| Remove markers      s| Keep markers
@@ -233,13 +241,17 @@ xref:Generator[Generator]) and of Xml_Parser, and highlights the differences:
 | Format         | Fill width           | Fill width
 | Width          | 80                   | 80
 |=========================================================
-In order to trigger the default behaviour of the parser, xml_checker can be called
-with options: +
+In order to trigger the default behaviour of the parser, xml_checker shalled
+be called with options: +
 '--tree --keep=none --expand'
 
-.XML generator
-anchor:Generator[]Xml_checker also uses a child package of Xml_Parser (Xml_Parser.Generator) to
-build the XML output of the tree or of each node.
+.Canonicalization
+As explained about xref:Canonical[canonical] option, xml_checker supports
+canonicalization of XML documents. It invokes the XML parser with fixed options:
+'remove CDATA makers', 'expand', 'normalize', 'no namespace' and with a
+specific 'callback'. This callback performs the XML canonicalization, for which
+the outout format is fixed. So xml_checker does not use the generator in this
+mode.
 
 DTD checker
 -----------
