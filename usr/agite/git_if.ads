@@ -55,6 +55,8 @@ package Git_If is
   procedure List_Log (Path : in String;
                       Log : in out Log_List);
 
+  -- Get last hash (hash of last commit) of file or dir
+  function Last_Hash (Path : in String) return Git_Hash;
 
   -- COMMIT DETAILS
   -- A commit file entry

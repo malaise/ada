@@ -15,9 +15,9 @@ begin
   Insert := False;
   Redisplay := False;
   Afpx.Encode_Field (Afpx_Xref.Confirm.Action, (0, 0),
-        Str_Util.Center (Title, Afpx.Get_Field_Width (2)));
+      Str_Util.Center (Title, Afpx.Get_Field_Width (Afpx_Xref.Confirm.Action)));
   Afpx.Encode_Field (Afpx_Xref.Confirm.Name, (0, 0),
-          Str_Util.Center (Msg, Afpx.Get_Field_Width (2)));
+      Str_Util.Center (Msg, Afpx.Get_Field_Width (Afpx_Xref.Confirm.Name)));
 
   -- Main loop
   loop

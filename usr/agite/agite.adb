@@ -1,6 +1,6 @@
 with As.U, Con_Io, Afpx.List_Manager, Basic_Proc, Images, Directory,
      Dir_Mng, Sys_Calls, Argument, Argument_Parser, Socket, Str_Util;
-with Utils.X, Git_If, Config, Bookmarks, History, Confirm, Afpx_Xref;
+with Utils.X, Git_If, Config, Bookmarks, History, Confirm, Error, Afpx_Xref;
 procedure Agite is
 
   -- Options
@@ -381,6 +381,11 @@ procedure Agite is
         exception
           when Directory.Access_Error =>
             -- Directory not empty
+            Error ("Cannot remove directory",
+                    Directory.Build_File_Name (Path.Image, Name, ""),
+                   "Access error (not empty?)");
+          when Directory.Name_Error =>
+            -- Very unlikely mut maybe the dir has disappeared meanwhile
             null;
         end;
       end if;
@@ -426,7 +431,6 @@ procedure Agite is
   -- List action on File or Dir
   type Action_List is (Default, Edit, Diff, History, Revert, Add);
   procedure List_Action (Action : in Action_List) is
-
     File : Git_If.File_Entry_Rec;
   begin
     Files.Move_At (Afpx.Line_List.Get_Position);
@@ -442,7 +446,7 @@ procedure Agite is
           when Edit  =>
             null;
           when Diff =>
-            if File_Name = "." then
+            if File_Name /= ".." then
               Git_If.Launch_Diff (Differator.Image, File_Name);
             end if;
           when History =>
@@ -466,7 +470,20 @@ procedure Agite is
           when Edit | Default =>
             Do_Edit (File_Name);
           when Diff =>
-            Git_If.Launch_Diff (Differator.Image, File_Name);
+            if File.S2 = ' ' and then File.S3 = ' ' then
+              -- File is unmodified: diff on last commit of it
+              declare
+                Hash : constant Git_If.Git_Hash := Git_If.Last_Hash (File_Name);
+              begin
+                if Hash /= Git_If.No_Hash then
+                  Git_If.Launch_Delta (Differator.Image, File_Name,
+                                       Hash & "^", Hash);
+                end if;
+              end;
+            else
+              -- File is "modified"
+              Git_If.Launch_Diff (Differator.Image, File_Name);
+            end if;
           when History =>
             Do_History (File_Name, True);
           when Revert =>

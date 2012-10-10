@@ -472,6 +472,36 @@ package body Git_If is
     Log.Rewind;
   end List_Log;
 
+  -- Get last hash (hash of last commit) of file or dir
+  function Last_Hash (Path : in String) return Git_Hash is
+    Cmd : Many_Strings.Many_String;
+    Line : As.U.Asu_Us;
+  begin
+    Cmd.Set ("git");
+    Cmd.Cat ("log");
+    Cmd.Cat ("--pretty=format:'%H'");
+    Cmd.Cat ("-n");
+    Cmd.Cat ("-1");
+    Cmd.Cat ("--");
+    Cmd.Cat (Path);
+    Command.Execute (Cmd, True, Command.Both,
+        Out_Flow_1'Access, Err_Flow'Access, Exit_Code);
+    -- Handle error
+    if Exit_Code /= 0 then
+      Basic_Proc.Put_Line_Error ("git log1: " & Err_Flow.Str.Image);
+      return No_Hash;
+    end if;
+
+    -- Encode info
+    if Out_Flow_1.List.Is_Empty then
+      return No_Hash;
+    else
+      Out_Flow_1.List.Rewind;
+      Out_Flow_1.List.Read (Line, Command.Res_Mng.Dyn_List.Current);
+      return Line.Image;
+    end if;
+  end Last_Hash;
+
   -- List detailed info on a commit
   procedure List_Commit (Hash : in Git_Hash;
                          Date : out Iso_Date;
@@ -494,7 +524,7 @@ package body Git_If is
         Out_Flow_1'Access, Err_Flow'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git log1: " & Err_Flow.Str.Image);
+      Basic_Proc.Put_Line_Error ("git log2: " & Err_Flow.Str.Image);
       return;
     end if;
 

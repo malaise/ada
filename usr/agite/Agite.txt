@@ -1,7 +1,7 @@
 Agite user guide
 ================
 Pascal MALAISE <malaise@magic.fr>
-V6.5
+V6.6
 :toc:
 
 General purpose
@@ -290,19 +290,24 @@ anchor:XEdit[]
 Edit::
 This button launches an editor (defined in the xref:XConfEditor[editor] entry of
 the configuration file) on the file currently selected in the list, as a double
-click on this file would do.
+click on this file would do. +
+It has no effect if current list selection is a directory.
 
 anchor:XDiff[]
 
 Diff::
-This bouton launches a graphical difference tool (as defined in the
-xref:XConfDiff[differator] entry of the configuration file) to show the
-differences between current version of a file and the version in Git HEAD.
+*On a file*, this bouton launches a graphical difference tool (as defined in the
+xref:XConfDiff[differator] entry of the configuration file) to show current
+modification of the selected file. It shows the differences between the
+currently modified file and the version in Git HEAD. +
+On a un-modified file it shows the last update of the file (the difference
+introduced by the last commit involving the file).
 +
-On current dir ('./') it launches the difference on all the modified files of
-current directory and sub-directories. 
-+
-This button has no effect if the current list selection is a un-modified file.
+*On a directory* (including './' but excluding '../'), this bouton launches the
+difference on all the modified files of the selected directory and
+of its sub-directories. +
+It has no effect if the selceted directory is the parent directory ('../') or if
+there is no modified file under the selected directory.
 
 anchor:XHistory[]
 
@@ -313,10 +318,16 @@ file or directory.
 anchor:XRevert[]
 
 Revert::
-This bouton reverts the local change of a file or of all the files of current
-directory and subdirectories (if current selection is './'). It has no effect
-if the current list selection is a un-modified file. A specific simple screen
-asks to confirm or cancel the operation.
+This bouton reverts the local change on the current list selection. +
+First, a simple screen asks to confirm or cancel the operation. +
+Then, depending on the selection:
+
+- If it is a file unknown by Git then it will be removed
+- If it is a file just added to Git then it will become unknown by Git
+- If it is a file known and modified then it will be restored
+- If it is a file known and not modified then the button has no effect
+- If it is a directory then it will be deleted, which succeeds only if the
+directory is empty.
 
 .Other actions
 
