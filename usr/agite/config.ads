@@ -13,6 +13,9 @@ package Config is
   -- Diff GUI
   function Differator return String;
 
+  -- Make command
+  function Make return String;
+
   -- Refresh period
   function Period return Duration;
 

@@ -1,7 +1,7 @@
 Agite user guide
 ================
 Pascal MALAISE <malaise@magic.fr>
-V6.6
+V7.0
 :toc:
 
 General purpose
@@ -72,7 +72,7 @@ anchor:XConfXterm[]
 
 xterm::
 This defines the command to be launched when the
-xref:XXterm[xterm] button is selected. Example: 'gnome-terminal --zoom=0.9'
+xref:XXterm[XTerm] button is selected. Example: 'gnome-terminal --zoom=0.9'
 
 anchor:XConfEditor[]
 
@@ -94,11 +94,18 @@ GUI, for example 'xterm -e cat' or 'xterm -e vi -M'.
 anchor:XConfDiff[]
 
 differator::
-This defines the command to be launched for performing a xref:XDiff[diff]
+This defines the command to be launched for performing a xref:XDiff[Diff]
 between two versions of a file. Agite will launch 'git difftool -y -x
 <differator> HEAD -- <file>' for the diff between current file and GIT
 repository and 'git difftool -y -x <differator> <ref_rev> <comp_rev> -- <file>'
 for the diff between two revisions of a file.
+
+anchor:XConfMake[]
+
+make::
+This defines the command to be launched for local compilation with the
+xref:XMake[Make] button. It shall launch a GUI. +
+Example: '#xterm -e 'sh -c "make; echo -n Done.; read a"'#'
 
 anchor:XConfPeriod[]
 
@@ -342,6 +349,12 @@ anchor:XXterm[]
 Xterm::
 This button starts a X terminal by launching the command defined
 in the xref:XConfXterm[xterm] entry of the configuration file.
+
+anchor:XMake[]
+
+Make::
+This button makes a local compilation by launching the command defined
+in the xref:XConfMake[make] entry of the configuration file.
 
 Exit::
 A bouton allows to exit Agite.

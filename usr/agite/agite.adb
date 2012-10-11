@@ -717,6 +717,9 @@ begin
           when Afpx_Xref.Main.Xterm =>
             -- XTerm
             Utils.Launch (Config.Xterminal);
+          when Afpx_Xref.Main.Make =>
+            -- Make
+            Utils.Launch (Config.Make);
           when Afpx_Xref.Main.Edit =>
             -- Edit (file)
             List_Action (Edit);
