@@ -582,6 +582,9 @@ begin
     return;
   end if;
 
+  -- Check configuration file
+  Config.Check;
+
   -- Get and check version
   begin
     Version := Git_If.Get_Version;

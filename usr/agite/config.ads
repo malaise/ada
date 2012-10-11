@@ -1,5 +1,7 @@
 with As.U;
 package Config is
+  -- Check configuration (raise Invalid_Config)
+  procedure Check;
 
   -- X terminal
   function Xterminal return String;

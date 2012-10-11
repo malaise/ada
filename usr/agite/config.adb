@@ -27,11 +27,11 @@ package body Config is
   Curr_Dir_Pos : constant := 7;
   Bookmarks_Pos : constant := 8;
 
-  -- Load the conf
+  -- Load the conf and check
   Ctx : Xml_Parser.Generator.Ctx_Type;
   Root : Xml_Parser.Element_Type;
   Bookmarks : Xml_Parser.Element_Type;
-  procedure Load is
+  procedure Check is
     use type Xml_Parser.Ctx_Status_List;
   begin
     if Ctx.Get_Status /= Xml_Parser.Clean then
@@ -57,12 +57,16 @@ package body Config is
     Bookmarks := Ctx.Get_Child (Root, Bookmarks_Pos);
     -- Verify that each definition has one (text) child
     -- Prev dir may be empty
-    for I in 1 .. 3 loop
-       if Ctx.Get_Nb_Children (Ctx.Get_Child (Root, I)) /= 1 then
-         raise Invalid_Config;
+    for I in 1 .. Curr_Dir_Pos - 1 loop
+      if Ctx.Get_Nb_Children (Ctx.Get_Child (Root, I)) /= 1 then
+        raise Invalid_Config;
       end if;
     end loop;
-  end Load;
+    -- Verify that bookmarks is named "bookmarks"
+    if Ctx.Get_Name (Bookmarks) /= "bookmarks" then
+      raise Invalid_Config;
+    end if;
+  end Check;
 
   -- Save the conf
   procedure Save is
@@ -82,35 +86,30 @@ package body Config is
   -- X terminal
   function Xterminal return String is
   begin
-    Load;
     return Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 1), 1));
   end Xterminal;
 
   -- Editor GUI
   function Editor return String is
   begin
-    Load;
     return Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 2), 1));
   end Editor;
 
   -- Viewer GUI
   function Viewer return String is
   begin
-    Load;
     return Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 3), 1));
   end Viewer;
 
   -- Diff GUI
   function Differator return String is
   begin
-    Load;
     return Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 4), 1));
   end Differator;
 
   -- Make command
   function Make return String is
   begin
-    Load;
     return Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 5), 1));
   end Make;
 
@@ -118,7 +117,6 @@ package body Config is
   function Period return Duration is
     Result : Timers.Period_Range;
   begin
-    Load;
     Result := Timers.Period_Range'Value (
                Ctx.Get_Text (Ctx.Get_Child (Ctx.Get_Child (Root, 6), 1)));
     return Result;
@@ -132,7 +130,6 @@ package body Config is
     Prev : Xml_Parser.Element_Type;
     New_Node : Xml_Parser.Node_Type;
   begin
-    Load;
     -- Prev dir may not be empty
     Prev := Ctx.Get_Child (Root, Curr_Dir_Pos);
     if Ctx.Get_Nb_Children (Prev) = 1 then
@@ -145,7 +142,6 @@ package body Config is
   function Prev_Dir return String is
     Prev : Xml_Parser.Element_Type;
   begin
-    Load;
     -- Prev dir may be empty
     Prev := Ctx.Get_Child (Root, Curr_Dir_Pos);
     if Ctx.Get_Nb_Children (Prev) = 1 then
@@ -158,7 +154,6 @@ package body Config is
   -- Bookmarks
   function Get_Bookmarks return Bookmark_Array is
   begin
-    Load;
     declare
       Result : Bookmark_Array (1 .. Ctx.Get_Nb_Children (Bookmarks));
     begin
@@ -192,7 +187,6 @@ package body Config is
   procedure Del_Bookmark (Index : in Positive) is
     Bookmark : Xml_Parser.Element_Type;
   begin
-    Load;
     Bookmark := Ctx.Get_Child (Bookmarks, Index);
     -- Del Bookmark marker and its text
     Ctx.Delete_Node (Bookmark, Bookmark);
@@ -203,7 +197,6 @@ package body Config is
                           Bookmark : in Bookmark_Rec) is
     New_Node : Xml_Parser.Node_Type;
   begin
-    Load;
     -- Add Bookmark marker
     if After_Index = 0 then
       -- As first child
@@ -234,7 +227,6 @@ package body Config is
     Name, Path : As.U.Asu_Us;
   begin
     -- Move to bookmark at index
-    Load;
     Bookmark := Ctx.Get_Child (Bookmarks, Index);
     -- Read its name and path
     if Ctx.Get_Nb_Attributes (Bookmark) /= 0 then
