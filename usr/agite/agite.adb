@@ -212,20 +212,26 @@ procedure Agite is
     Str : constant String
         := Utils.Parse_Spaces (Afpx.Decode_Field (Dir_Field, 0, False));
     Width : constant Afpx.Width_Range := Afpx.Get_Field_Width (Dir_Field);
+    Target : As.U.Asu_Us;
   begin
     begin
       if New_Dir = "" then
         if Str /= "" then
-          Directory.Change_Current (Str);
+          Target := As.U.Tus (Str);
         else
-          Directory.Change_Current (".");
+          Target := As.U.Tus (".");
         end if;
       else
-        Directory.Change_Current (New_Dir);
+        Target := As.U.Tus (New_Dir);
       end if;
+      Directory.Change_Current (Target.Image);
     exception
       when others =>
         -- Cannot change to new dir or cannot process files (No_Git?)
+        Error ("Changing directory to:",
+               Target.Image,
+               "Staying in current.");
+        Afpx.Use_Descriptor (Afpx_Xref.Main.Dscr_Num);
         Directory.Change_Current (Directory.Get_Current);
     end;
     -- Success, reset root path for re-evaluation, save current dir
@@ -576,30 +582,6 @@ begin
     return;
   end if;
 
-  -- No history
-  Update_History := not Arg_Dscr.Is_Set (2);
-
-  -- Goto previous or provided path
-  Goto_Previous := Arg_Dscr.Is_Set (3);
-  begin
-    if Arg_Dscr.Is_Set (Argument_Parser.No_Key_Index) then
-      if Goto_Previous then
-        Error ("""Previous"" option and path are mutually exclusive");
-      end if;
-      -- Go to path
-      Directory.Change_Current (Arg_Dscr.Get_Option (
-                           Argument_Parser.No_Key_Index));
-    elsif Goto_Previous then
-      -- Goto previous if possible
-      if Config.Prev_Dir /= "" then
-        Directory.Change_Current (Config.Prev_Dir);
-      end if;
-    end if;
-  exception
-    when Directory.Name_Error =>
-      null;
-  end;
-
   -- Get and check version
   begin
     Version := Git_If.Get_Version;
@@ -618,6 +600,37 @@ begin
       end if;
     end if;
   end if;
+
+  -- No history
+  Update_History := not Arg_Dscr.Is_Set (2);
+
+  -- Goto previous or provided path
+  Goto_Previous := Arg_Dscr.Is_Set (3);
+  declare
+    Target_Dir : As.U.Asu_Us;
+  begin
+    if Arg_Dscr.Is_Set (Argument_Parser.No_Key_Index) then
+      if Goto_Previous then
+        Error ("""Previous"" option and path are mutually exclusive");
+      end if;
+      -- Go to path
+      Target_Dir := As.U.Tus (Arg_Dscr.Get_Option (
+                                 Argument_Parser.No_Key_Index));
+    elsif Goto_Previous then
+      -- Goto previous if possible
+      if Config.Prev_Dir /= "" then
+        Target_Dir := As.U.Tus (Config.Prev_Dir);
+      end if;
+    end if;
+    if not Target_Dir.Is_Null then
+      Directory.Change_Current (Target_Dir.Image);
+    end if;
+  exception
+    when Directory.Name_Error =>
+      Error ("Changing directory to:",
+             Target_Dir.Image,
+             "No such directory, starting in current.");
+  end;
 
   -- Get or init config
   Editor := As.U.Tus (Config.Editor);

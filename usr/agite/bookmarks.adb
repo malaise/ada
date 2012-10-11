@@ -1,5 +1,5 @@
 with As.U, Directory, Con_Io, Afpx.List_Manager;
-with Utils.X, Config, Afpx_Xref;
+with Utils.X, Config, Afpx_Xref, Confirm;
 package body Bookmarks is
 
   -- Strip potential leading "(name) " of bookmark
@@ -74,7 +74,7 @@ package body Bookmarks is
     Insert       : Boolean;
     Redisplay    : Boolean;
     Ptg_Result   : Afpx.Result_Rec;
-    use type Afpx.Absolute_Field_Range;
+    use type Afpx.Absolute_Field_Range, Afpx.Descriptor_Range;
 
     -- Current dir
     Curr_Dir : constant String := Directory.Get_Current;
@@ -191,8 +191,17 @@ package body Bookmarks is
 
             when Afpx_Xref.Bookmarks.Del =>
               -- Del
-              Config.Del_Bookmark (Afpx.Line_List.Get_Position);
-              Afpx.Line_List.Delete (Moved => Dummy);
+              Bookmark := Config.Get_Bookmark (Afpx.Line_List.Get_Position);
+              -- Confirm bookmark deletion (no confirmation for separators)
+              if Bookmark.Path.Is_Null
+              or else Confirm ("Remove bookmark", Image (Bookmark)) then
+                Config.Del_Bookmark (Afpx.Line_List.Get_Position);
+                Afpx.Line_List.Delete (Moved => Dummy);
+              end if;
+              -- Restore descriptor
+              if Afpx.Get_Descriptor /= Afpx_Xref.Bookmarks.Dscr_Num then
+                Afpx.Use_Descriptor (Afpx_Xref.Bookmarks.Dscr_Num);
+              end if;
             when Afpx_Xref.Bookmarks.Back =>
               -- Back
               return "";
