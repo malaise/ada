@@ -49,7 +49,8 @@ package body Config is
       end if;
     exception
       when Xml_Parser.File_Error =>
-        Basic_Proc.Put_Line_Error ("Cannot open config file.");
+        Basic_Proc.Put_Line_Error (
+            "Cannot open config file: " & Get_File_Name & ".");
         raise Invalid_Config;
     end;
     -- Store references

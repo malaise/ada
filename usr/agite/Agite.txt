@@ -1,7 +1,7 @@
 Agite user guide
 ================
 Pascal MALAISE <malaise@magic.fr>
-V7.1
+V7.2
 :toc:
 
 General purpose
@@ -27,13 +27,13 @@ This allows restarting Agite in the same directory as when it stopped by
 providing the argument '-p' or '--previous'.
 
 On the other hand this feature is hardly compatible with several instances of
-Agite running in parallel. Other instances of the program shall not save the
+Agite running in parallel. Onky one instance of the program shall save the
 current directory, which is achieved by providing the argument '-n' or
-'--no_history'.
+'--no_history' to all the other instances.
 
 Instead of previous directory the start-up directory can be explicitly
-specified in the command line with '<path>'. By default Agite starts in
-the current directory.
+specified in the command line with '<path>'. If no path nor '--previous' is
+specified then by default Agite starts in the current directory.
 
 Environment variables
 ---------------------
@@ -42,7 +42,7 @@ Agite is based on Afpx screen manager, which reads the configuration files
 AFPX.DSC, AFPX.FLD and AFPX.INI. Either theses files are in the current
 directory at startup or the environment variable 'AFPX_DATA_DIR' must be
 set to the directory containing these files.
-
++
 Note: Agite unsets AFPX_DATA_DIR at start-up so its children don't inherit
 from this setting.
 
@@ -51,7 +51,8 @@ Agite allows several settings to be defined in a
 xref:XConfig[configuration file]. By default this file is 
 '$\{HOME}/.agite/agite.xml' but this can be overridden by setting the
 environment variable 'AGITE_CONF_FILE' to the full path and name of the
-configuration file.
+configuration file. At least 'HOME' or 'AGITE_CONF_FILE' must be set in the
+environment.
 
 GIT_DIR::
 Agite needs to know the root directory of the current Git sandbox (if any). It
