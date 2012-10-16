@@ -1,7 +1,7 @@
 Agite user guide
 ================
 Pascal MALAISE <malaise@magic.fr>
-V7.2
+V7.3
 :toc:
 
 General purpose
@@ -67,7 +67,7 @@ Configuration file
 ------------------
 User defined configuration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
-Agite reads at start-up some user-defined configuration parameters.
+Agite reads at start-up some user-defined configuration parameters:
 
 anchor:XConfXterm[]
 
@@ -114,14 +114,14 @@ period::
 Agite refreshes the current status of files in the xref:Xdir[directory] screen
 when it starts xref:XGui[Git GUI] or xref:XEdit[Editor] and when they exit.
 This is because these tools can modify the current status of local files. Still,
-it is possible from a stand-alone terminal to also modify the list or status of
-local files. This is why Agite preiodically checks and redisplays the status of
+it is possible from a stand-alone program to also modify the list or status of
+local files. This is why Agite periodically checks and redisplays the status of
 local files. This parameter defines the period in seconds of this automatic
 check.
 +
-0.0 disables the feature.
+Setting the value to 0.0 disables the feature.
 +
-Note: a manual refresh is always possible with the xref:XReread[Reread] button.
+Note: A manual refresh is always possible with the xref:XReread[Reread] button.
 
 Agite persistent data
 ~~~~~~~~~~~~~~~~~~~~~
@@ -130,8 +130,8 @@ to another.
 
 last_dir::
 Agite continuously stores the current directory in this entry. See the 
-xref:XCommandLine[arguments] '-p' ('--previous') and '-n' ('--no_history') for
-how to use or disable this feature.
+xref:XCommandLine[argument] '-p' ('--previous') for how to use this feature
+and the argument '-n' ('--no_history') for how to disable this feature.
 
 bookmarks::
 Agite stores the xref:XBook[bookmarks] in this section:
@@ -140,8 +140,8 @@ Agite stores the xref:XBook[bookmarks] in this section:
 * separators have a 'Name' and no content,
 * bookmarks have a content and possibly a 'Name'.
 
-*Note: The DTD file 'agite.dtd' must be located in the same directory as the
-Agite XML configuration file.*
+*Note: The DTD file 'agite.dtd' must be located according to the ''DOCTYPE''
+directive of the Agite XML configuration file.*
 
 Agite screens
 -------------
@@ -179,16 +179,16 @@ anchor:XDir[]
 Directory status
 ~~~~~~~~~~~~~~~~
 The 'Directory' menu lists the git content, subdirectories and files, of
-current directory. We find, starting from top:
+of current directory. Starting from top, the fields are:
 
 .Environment
 Title::
-The first line shows the title and current version of Agite.
+The first line shows in the middle the name and current version of Agite.
 +
 On the left is the indication of current Git branch.
 +
-On the right is the indication of current host (which is also indicated in the
-X window title of Agite).
+On the right is the indication of current host (which normally is also
+indicated in title of the X window of Agite).
 
 .Directories
 Root::
