@@ -352,6 +352,8 @@ package Afpx is
   -- 1 => Top, 100 => Bottom
   subtype Percent_Range is Natural range 0 .. 100;
   function Get_List_Percent return Percent_Range;
+  -- Get position in list corresponding to Percent
+  function Get_List_Index (Percent : Percent_Range) return Natural;
 
   -- Print the fields and the list (if Redisplay), then gets.
   -- Redisplay should be set if modif of some other screen actions (con_io)

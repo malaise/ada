@@ -155,6 +155,7 @@ package body History is
                            Status : in Afpx.List_Status_Rec) is
       pragma Unreferenced (Action);
       Percent : Afpx.Percent_Range;
+      Row : Con_Io.Row_Range;
     begin
       -- Put percent value and "scroll bar"
       Percent := Afpx.Get_List_Percent;
@@ -164,11 +165,11 @@ package body History is
                            Normal (Percent, 3, True));
         -- 0 <-> 1% and Height-1 <-> 100%
         -- (Percent-1)/99 = Row/(Height-1)
+        Row := (Afpx.Get_Field_Height (Afpx_Xref.History.Scroll) - 1)
+                    * (Percent - 1) / 99;
         Afpx.Encode_Field (Afpx_Xref.History.Scroll,
-           (Row => (Afpx.Get_Field_Height (Afpx_Xref.History.Scroll) - 1)
-                    * (Percent - 1) / 99,
-            Col => 0),
-           "-");
+                          (Row => Row, Col => 0),
+                          "-");
       else
         Afpx.Encode_Field (Afpx_Xref.History.Percent, (0, 0), " - ");
       end if;
@@ -180,6 +181,29 @@ package body History is
            Normal (Status.Ids_Selected(Afpx.List_Right),
                    Afpx.Get_Field_Width (Afpx_Xref.History.Rightsel), False));
     end List_Change;
+
+    -- Move according to click row in scroll field
+    procedure Move_At_Scroll (Row : in Con_Io.Row_Range) is
+      Percent : Afpx.Percent_Range;
+      Saved_Position, Position : Natural;
+      
+    begin
+      if Afpx.Line_List.Is_Empty then
+        return;
+      end if;
+      Saved_Position := Afpx.Line_List.Get_Position;
+      -- 0 <-> 1% and Height-1 <-> 100%
+      -- (Percent-1)/99 = Row/(Height-1)
+      Percent := (Row * 99
+                  / (Afpx.Get_Field_Height (Afpx_Xref.History.Scroll) - 1)) + 1;
+      Position := Afpx.Get_List_Index (Percent);
+      if Position = 0 then
+        return;
+      end if;
+      Afpx.Line_List.Move_At (Position);
+      Afpx.Update_List (Afpx.Top_Selected);
+      Afpx.Line_List.Move_At (Saved_Position);
+    end Move_At_Scroll;
 
   begin
     -- Init Afpx
@@ -241,7 +265,8 @@ package body History is
               -- Scroll list
               Afpx.List_Manager.Scroll(
                  Ptg_Result.Field_No - Utils.X.List_Scroll_Fld_Range'First + 1);
-
+            when Afpx_Xref.History.Scroll =>
+              Move_At_Scroll (Ptg_Result.Click_Pos.Row);
             when Afpx_Xref.History.Diff =>
               -- Diff
               Show_Delta (Ptg_Result.Id_Selected_Right);

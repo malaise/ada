@@ -3,7 +3,7 @@
 <!-- For agite -->
 
 <Afpx_Descriptors Height="46" Width="55">
-  <Var Name="Version" Value="V7.4"/>
+  <Var Name="Version" Value="V7.5"/>
 
   <!-- Main screen: explorator -->
   <Descriptor Num="1" Background="Light_Grey" Name="Main">
@@ -468,7 +468,7 @@
                 Width="7"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
-    <Field Num="17" Kind="Put" Name="Scroll">
+    <Field Num="17" Kind="Button" Name="Scroll">
       <Geometry Up="${List.Up}" Right="${List.Left}-1" Width="1"
                 Low="${List.Low}"/>
       <Colors Foreground="Black" Background="Light_Grey"/>

@@ -440,13 +440,41 @@ package body Af_List is
       return 0;
     end if;
 
-    -- At which percent is the bottom shown
-    -- Top index when at bottom
+    -- At which percent is the bottom shown?
+    -- Top index when at bottom:
     Last_Top := Line_List.List_Length - Height + 1;
     -- Factor = (100 - 1) / (LastTop - 1)
     -- Percent - 1 = (Top - 1) * Factor
-    return (Get_Status.Id_Top - 1) * (100 - 1) / (Last_Top - 1)  + 1;
+    return (Get_Status.Id_Top - 1) * (100 - 1) / (Last_Top - 1) + 1;
   end Get_Percent;
+
+ -- Get position in list corresponding to Percent
+  function Get_Index (Percent : Percent_Range) return Natural is
+    Last_Top : Integer;
+    Height : constant Positive := Af_Dscr.Fields(Lfn).Height;
+    Index : Natural;
+  begin
+    if not Af_Dscr.Has_List then
+      -- No list field
+      return 0;
+    elsif Line_List.List_Length <= Height
+    or else Percent = 0 then
+      -- List shorter than field or 0%
+      return 1;
+    end if;
+    -- Top index when at bottom:
+    Last_Top := Line_List.List_Length - Height + 1;
+    -- Factor = (100 - 1) / (LastTop - 1)
+    -- Top - 1 = (Percent - 1) / Factor
+    Index := (Percent - 1) * (Last_Top - 1) / (100 - 1) + 1;
+    -- Ensure that result is not too high
+    if Index > Line_List.List_Length then
+      return Line_List.List_Length;
+    else
+      return Index;
+    end if;
+  end Get_Index;
+
 
   procedure Set_Current is
   begin
