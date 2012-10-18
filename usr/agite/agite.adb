@@ -335,7 +335,7 @@ procedure Agite is
   end Host_Str;
 
   -- Init Afpx
-  procedure Init is
+  procedure Init (Position : in Natural) is
   begin
     Afpx.Use_Descriptor (Afpx_Xref.Main.Dscr_Num);
     Afpx.Get_Console.Set_Name ("Agite (on " & Socket.Local_Host_Name & ")");
@@ -344,7 +344,14 @@ procedure Agite is
     Insert := False;
     Redisplay := False;
     Afpx.Encode_Field (Afpx_Xref.Main.Host, (0, 0), Host_Str);
+    if Position /= 0 and then not Afpx.Line_List.Is_Empty then
+      Afpx.Line_List.Move_At (Position);
+    end if;
     Change_Dir;
+    if Position /= 0 and then not Afpx.Line_List.Is_Empty then
+      Afpx.Line_List.Move_At (Position);
+    end if;
+    Afpx.Update_List (Afpx.Center_Selected);
   end;
 
   procedure Do_Edit (File_Name : in String) is
@@ -359,13 +366,11 @@ procedure Agite is
     -- Call history and restore current entry
     Pos := Afpx.Line_List.Get_Position;
     History.Handle (Root.Image, Path.Image, Name, Is_File);
-    Init;
-    Afpx.Line_List.Move_At (Pos);
-    Afpx.Update_List (Afpx.Center_Selected);
+    Init (Pos);
   end Do_History;
 
   procedure Do_Revert (Name : in String) is
-    Pos : Positive;
+    Pos : Natural;
     File : Git_If.File_Entry_Rec;
   begin
     -- Call Confirm and restore current entry
@@ -419,9 +424,7 @@ procedure Agite is
         Git_If.Do_Revert (Name);
       end if;
     end if;
-    Init;
-    Afpx.Line_List.Move_At (Pos);
-    Afpx.Update_List (Afpx.Center_Selected);
+    Init (Pos);
   end Do_Revert;
 
   -- Add a dir or file
@@ -640,7 +643,7 @@ begin
   Differator := As.U.Tus (Config.Differator);
 
   -- Init Afpx and Timer
-  Init;
+  Init (0);
   Timer.Start (Periodic => True);
 
   -- Now we can reset this env variables for our children
@@ -697,7 +700,7 @@ begin
             declare
               New_Dir : constant String := Bookmarks.Handle;
             begin
-              Init;
+              Init (0);
               if New_Dir /= "" then
                 Change_Dir (New_Dir);
               end if;
@@ -715,7 +718,6 @@ begin
                                   (Ptg_Result.Click_Pos.Col + 1));
           when Afpx_Xref.Main.Gui =>
             -- GUI
-            Timer.Start;
             Utils.Launch ("git gui", True);
           when Afpx_Xref.Main.Xterm =>
             -- XTerm

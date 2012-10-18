@@ -206,7 +206,7 @@ anchor:XReread[]
 Reread::
 Normally Agite re-scans the current directory and refreshes the list and status
 when necessary, and also periodically if the feature is enabled (see
-Xref:XConfReread[period] configuration option). This button explicitly refreshes
+xref:XConfPeriod[period] configuration option). This button explicitly refreshes
 the current display.
 
 Dir Up::
@@ -215,12 +215,12 @@ This button allows moving up to parent directory.
 Bookmarks::
 This button activates the xref:XBook[Bookmarks] menu.
 
-PushD and Popd::
+PushD and PopD::
 These buttons allows storing the current directory ('PushD') then
 allows moving back to it later on ('PopD').
 +
 How it works: Agite keeps a cache of two paths, D1 and D2.
-'PushD' pushes current directory as D1 and saves D1 as D2,
+'PushD' saves D1 as D2 and pushes current directory as D1,
 while 'PopD' swaps D1 and D2 and moves to the new D1 (if D2 is empty then 'PopD'
 makes a 'PushD' first. Note that PopD is disabled if it would lead to move to
 current directory.
@@ -237,19 +237,19 @@ anchor:XQuickSearch[]
 Quick search::
 On top of the list is a quick search area on two rows.
 Clicking in any character of this area triggers a search of file (not dir)
-starting with this character. If found the file becomes selected in the list,
-otherwise the selection is unchanged.
+starting with this character. If found, the file becomes selected in the list
+and ath the top of the list area. Otherwise the selection is unchanged.
 
 The list::
-The list shows the directories then files of xref:XGo[current directory),
+The list shows the directories then the files of xref:XGo[current directory],
 in alphabetical order.
 +
 Each directory starts with three spaces then the name then \'/'.
 +
 Each file is preceeded by two characters of its Git status (see
-'man git-status') then a space, then the name:
+'man git-status') then a space, then the name. Status can be:
 
-* \' ' = unmodified
+* ' ' = unmodified
 * M = modified
 * A = added
 * D = deleted
@@ -266,11 +266,11 @@ After the name a character represents the kind:
 * '?' for other/unknown kind.
 
 +
-Only one entry is selected (in green) at a a time.
+Only one entry is selected (in green) at a time.
 +
 A sigle click selects an entry for xref:XEdit[edition], 
 xref:XDiff[difference] from Git reference, xref:XHistory[history] or
-xref:XRevert[revert] un-commite change.
+xref:XRevert[revert] operation.
 +
 A double click on a directory changes current directory to it, while
 a double click on a file launches the xref:XEdit[editor] on it.
@@ -290,32 +290,33 @@ selected entry is as most as possible in the middle of the list area.
 Another way is to use the keyboard: Up and Down arrows, Page Up, Page Down,
 Ctrl + Page Up (for Top) and Ctrl + Page Down (for Bottom).
 +
-Also don't forget the xref:XQuickSearch[quick search] to quickly find a file.
+Keep in mind that the xref:XQuickSearch[quick search] is also a good way to
+quickly find a file.
 
 .Actions on current list selection
 anchor:XEdit[]
 
 Edit::
-This button launches an editor (defined in the xref:XConfEditor[editor] entry of
-the configuration file) on the file currently selected in the list, as a double
-click on this file would do. +
+This button launches the editor (defined in the xref:XConfEditor[editor] entry
+of the configuration file) on the file currently selected in the list, as a
+double click on this file would do. +
 It has no effect if current list selection is a directory.
 
 anchor:XDiff[]
 
 Diff::
-*On a file*, this bouton launches a graphical difference tool (as defined in the
-xref:XConfDiff[differator] entry of the configuration file) to show current
-modification of the selected file. It shows the differences between the
-currently modified file and the version in Git HEAD. +
+*On a file*, this button launches the graphical difference tool (defined in
+the xref:XConfDiff[differator] entry of the configuration file) to show the
+current modifications (if any) of the selected file. It shows the differences
+between the currently modified file and the version in Git HEAD. +
 On a un-modified file it shows the last update of the file (the difference
 introduced by the last commit involving the file).
 +
-*On a directory* (including './' but excluding '../'), this bouton launches the
+*On a directory* (including './' but excluding '../'), this button launches the
 difference on all the modified files of the selected directory and
 of its sub-directories. +
-It has no effect if the selceted directory is the parent directory ('../') or if
-there is no modified file under the selected directory.
+It has no effect if the selected directory is the parent directory entry ('../')
+or if there is no modified file under the selected directory.
 
 anchor:XHistory[]
 
@@ -326,13 +327,14 @@ file or directory.
 anchor:XRevert[]
 
 Revert::
-This bouton reverts the local change on the current list selection. +
+This button reverts the local change on the current list selection. +
 First, a simple screen asks to confirm or cancel the operation. +
 Then, depending on the selection:
 
 - If it is a file unknown by Git then it will be removed
 - If it is a file just added to Git then it will become unknown by Git
-- If it is a file known and modified then it will be restored
+- If it is a file known and modified then it will be restored to its last
+  committed content
 - If it is a file known and not modified then the button has no effect
 - If it is a directory then it will be deleted, which succeeds only if the
 directory is empty.
@@ -358,7 +360,7 @@ This button makes a local compilation by launching the command defined
 in the xref:XConfMake[make] entry of the configuration file.
 
 Exit::
-A bouton allows to exit Agite.
+A button makes Agite exit.
 
 anchor:XBook[]
 
@@ -375,16 +377,22 @@ select it and click on xref:XGoto[Goto] to go back to this directory.
 Bookmarks are saved in the xref:XConfig[configuration file] so that they 
 are persistent from one session to another.
 
-The bookmark menu shows current directory and lists the known bookmarks. This
-list can contain four kinds of entry:
+The bookmark menu shows the current directory and lists the known bookmarks.
+This list can contain four kinds of entry:
 
-* Anonymous bookmarks don't have name. They contain only the path to the
-directory.
+* Anonymous bookmarks don't have name. They contain only the path to a
+directory. Example:
+
+ /home/user/ada
+
 * Named bookmarks are created like anonymous ones but with a name set in the
 'Name to add' field when clicking in xref:XAdd[AddCur]. The name appears in
-parentheses before the path of the bookmark.
+parentheses before the path of the bookmark. Example:
+
+ (Reposit) /home/user/ada/reposit
+
 * Separators are created by setting a name (in 'Name to Add') and clicking
-in xref:XAdd[AddSep]. This creates a line with dashes and the name, like:
+in xref:XAdd[AddSep]. This creates a line with dashes and the name. Example:
 
  ----- Ada -----
 
@@ -405,7 +413,7 @@ Bookmarks and separators can be organised with the buttons 'MovUp', 'MovDwn' and
 can be deleted with the button 'Del', with no confirmation.
 
 Navigation in the list is the same as the xref:XNavig[navigation] in the
-xref:XDir[directory] menu, with the mouse wheel, the keyboard and buttons.
+directory menu, with the mouse wheel, the keyboard and buttons.
 
 anchor:XBookBack[]
 The button 'Back' switches back to  the xref:XDir[directory] menu without
@@ -417,17 +425,19 @@ History
 
 anchor:XHist[]
 This menu shows the name of the selected file and lists the history of all the
-commits on current branch that have affected this file. 
-
+commits on current branch that have affected this file. +
 The newest release (Head) is on top.
 
-In case of a directory the menu shows the name of the directory and list the
-history of the commits of all the files in the directory and in the children
-directories.
+In case of a directory the menu shows the name of the directory (relative to
+root) and lists the history of the commits of all the files in the directory
+and in its sub-directories.
 
 .List
 The list shows for each entry the date of the commit (format YYMMDD:HHMM)
 a space then the comment of the commit.
+
+Navigation in the list is the same as the xref:XNavig[navigation] in the
+directory menu, with the mouse wheel, the keyboard and buttons.
 
 The list can be very long, so there are two indications of the the position of
 the current page:
@@ -443,14 +453,14 @@ anchor:XView[]
 Double click on an entry (a commit) or select an entry and click on the 'View'
 button to view the version of the file that was commited.
 
-When the current history is the one of a directory this feature is de-activated.
+When the current history is on a directory this feature is de-activated.
 Still it is possible to list and view one by one the files of a commit with the
 xref:XDetails[Details] menu.
 
 .Diff
 The 'Diff' button shows the differences between commits. When the history is on
-a directory it applies to all the files of the directory an below that are
-affected by the commit(s).
+a directory it applies to all the files of the directory and sub-directories
+that were affected by the commit(s).
 
 'Diff' can compare two arbitrary commits or show the changes of one commit:
 

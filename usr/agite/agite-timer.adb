@@ -13,7 +13,7 @@ package body Timer is
   begin
     Spec.Delay_Seconds := Period;
     Tid := Timers.Create (Spec, Timer_Cb'Unrestricted_Access);
-    -- Sighnal to Agite the expiration
+    -- Signal to Agite the expiration
     return True;
   end Timer_Cb;
 

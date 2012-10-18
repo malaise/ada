@@ -165,7 +165,8 @@ package body History is
         -- 0 <-> 1% and Height-1 <-> 100%
         -- (Percent-1)/99 = Row/(Height-1)
         Afpx.Encode_Field (Afpx_Xref.History.Scroll,
-           (Row => (Afpx.Get_Field_Height (21) - 1) * (Percent - 1) / 99,
+           (Row => (Afpx.Get_Field_Height (Afpx_Xref.History.Scroll) - 1)
+                    * (Percent - 1) / 99,
             Col => 0),
            "-");
       else
