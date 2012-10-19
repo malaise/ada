@@ -1,7 +1,7 @@
 Agite user guide
 ================
 Pascal MALAISE <malaise@magic.fr>
-V7.3
+V7.6
 :toc:
 
 General purpose
@@ -439,13 +439,19 @@ a space then the comment of the commit.
 Navigation in the list is the same as the xref:XNavig[navigation] in the
 directory menu, with the mouse wheel, the keyboard and buttons.
 
-The list can be very long, so there are two indications of the the position of
-the current page:
+The list can be very long, so there are several extra features on the history
+list:
 
-* The position in term of percent of the history is displayed above the
-list,
+* The position of current page, in term of percentage of the history, is
+displayed above the list,
+
+* The indexes of left and right selection are also displayed above the list,
+
 * A hyphen ('-') on the left side of the list indicates the current position
-of the current page, as a scroll bar would do.
+of the current page, as a scroll bar would do,
+
+* You can click at a given row in this "scroll bar" area to get the list move
+at the corresponding page (and the hyphen be will at this position).
 
 anchor:XView[]
 

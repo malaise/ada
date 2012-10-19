@@ -1,3 +1,4 @@
+with My_Math, Roundiv;
 separate (Afpx)
 package body Af_List is
 
@@ -431,6 +432,7 @@ package body Af_List is
   function Get_Percent return Percent_Range is
     Last_Top : Integer;
     Height : constant Positive := Af_Dscr.Fields(Lfn).Height;
+    use type My_Math.Real;
   begin
     if not Af_Dscr.Has_List then
       -- No list field
@@ -445,7 +447,7 @@ package body Af_List is
     Last_Top := Line_List.List_Length - Height + 1;
     -- Factor = (100 - 1) / (LastTop - 1)
     -- Percent - 1 = (Top - 1) * Factor
-    return (Get_Status.Id_Top - 1) * (100 - 1) / (Last_Top - 1) + 1;
+    return Roundiv."/" ((Get_Status.Id_Top - 1) * (100 - 1), Last_Top - 1) + 1;
   end Get_Percent;
 
  -- Get position in list corresponding to Percent
@@ -453,9 +455,11 @@ package body Af_List is
     Last_Top : Integer;
     Height : constant Positive := Af_Dscr.Fields(Lfn).Height;
     Index : Natural;
+    use type My_Math.Real;
   begin
-    if not Af_Dscr.Has_List then
-      -- No list field
+    if not Af_Dscr.Has_List
+    or else Line_List.Is_Empty then
+      -- No list field, or empty list
       return 0;
     elsif Line_List.List_Length <= Height
     or else Percent = 0 then
@@ -466,7 +470,7 @@ package body Af_List is
     Last_Top := Line_List.List_Length - Height + 1;
     -- Factor = (100 - 1) / (LastTop - 1)
     -- Top - 1 = (Percent - 1) / Factor
-    Index := (Percent - 1) * (Last_Top - 1) / (100 - 1) + 1;
+    Index := Roundiv."/" ((Percent - 1) * (Last_Top - 1), 100 - 1) + 1;
     -- Ensure that result is not too high
     if Index > Line_List.List_Length then
       return Line_List.List_Length;

@@ -460,6 +460,9 @@ rnd (1)::
 romanic (1)::
      Decimal to romanic conversion (11 <--> XI).
 
+roundiv (1)::
+     Divide float of A by float of B and return rounded result.
+
 round_at (1)::
      Round a float at a given position, before or after decimal.
 
