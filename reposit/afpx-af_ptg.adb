@@ -13,7 +13,7 @@ package body Af_Ptg is
         -- Double click in list
         -- Click and release in a Button field
         But_Field_No : Afpx_Typ.Absolute_Field_Range;
-        But_Square : Con_Io.Square;
+        But_Click_Square, But_Release_Square : Con_Io.Square;
       when Afpx_Typ.Get =>
         -- Click and release in a Get field
         Get_Field_No : Afpx_Typ.Field_Range;
@@ -193,6 +193,7 @@ package body Af_Ptg is
     return Valid;
   end Valid_Click;
 
+  -- Wait until release and return absolute po
   function Wait_Release (Button : List_Button_List) return Con_Io.Square is
     Str : Unicode_Sequence (1 .. 0);
     Last : Natural;
@@ -266,11 +267,11 @@ package body Af_Ptg is
         Line_List.Modification_Ack;
       end if;
     end Restore_Pos;
-    function Get_Click_Pos return Con_Io.Square is
+    function Get_Relative (Pos : Con_Io.Square) return Con_Io.Square is
     begin
-      return (Row => Click_Pos.Row - Field.Upper_Left.Row,
-              Col => Click_Pos.Col - Field.Upper_Left.Col);
-    end Get_Click_Pos;
+      return (Row => Pos.Row - Field.Upper_Left.Row,
+              Col => Pos.Col - Field.Upper_Left.Col);
+    end Get_Relative;
 
     use Afpx_Typ;
     use Ada.Calendar;
@@ -383,7 +384,8 @@ package body Af_Ptg is
           -- Double Left click
           Af_List.Put (Click_Row_List, Selected, False);
           Result := (Kind => Afpx_Typ.Button, But_Field_No => Click_Field,
-                     But_Square => Get_Click_Pos);
+                     But_Click_Square => Get_Relative (Click_Pos),
+                     But_Release_Square => Get_Relative (Release_Pos));
         elsif Click_But = List_Left then
           -- Valid Left click. Store for next click to check double click
           Af_List.Put (Click_Row_List, Selected, False);
@@ -494,7 +496,8 @@ package body Af_Ptg is
       Put_Field (Click_Field, Normal);
       if Valid_Field then
         Result := (Kind => Afpx_Typ.Button, But_Field_No => Click_Field,
-                   But_Square => Get_Click_Pos);
+                   But_Click_Square => Get_Relative (Click_Pos),
+                   But_Release_Square => Get_Relative (Release_Pos));
       end if;
     end if;
 
@@ -1003,7 +1006,8 @@ package body Af_Ptg is
                            Event        => Mouse_Button,
                            Field_No =>
                               Absolute_Field_Range(Click_Result.But_Field_No),
-                           Click_Pos => Click_Result.But_Square);
+                           Click_Pos => Click_Result.But_Click_Square,
+                           Release_Pos => Click_Result.But_Release_Square);
                 Insert := False;
                 Done := True;
             end case;

@@ -1,8 +1,7 @@
 Agite user guide
 ================
-Pascal MALAISE <malaise@magic.fr>
-V7.6
-:toc:
+Pascal MALAISE     <malaise@magic.fr>
+V7.7
 
 General purpose
 ---------------
@@ -450,8 +449,9 @@ displayed above the list,
 * A hyphen ('-') on the left side of the list indicates the current position
 of the current page, as a scroll bar would do,
 
-* You can click at a given row in this "scroll bar" area to get the list move
-at the corresponding page (and the hyphen be will at this position).
+* You can click at a given row in this "scroll bar". The list will be moved
+at the page corresponding to where you *release* the mouse button (and the
+hyphen be will at this position).
 
 anchor:XView[]
 

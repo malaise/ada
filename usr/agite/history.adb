@@ -271,7 +271,8 @@ package body History is
               Afpx.List_Manager.Scroll(
                  Ptg_Result.Field_No - Utils.X.List_Scroll_Fld_Range'First + 1);
             when Afpx_Xref.History.Scroll =>
-              Move_At_Scroll (Ptg_Result.Click_Pos.Row);
+              -- Scroll bar
+              Move_At_Scroll (Ptg_Result.Release_Pos.Row);
             when Afpx_Xref.History.Diff =>
               -- Diff
               Show_Delta (Ptg_Result.Id_Selected_Right);
