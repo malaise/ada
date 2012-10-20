@@ -1,6 +1,5 @@
 Xml_Checker
 ===========
-:toc:
 
 Parser version: V31.2
 

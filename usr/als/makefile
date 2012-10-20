@@ -11,6 +11,7 @@ LARGS_als.stat := $(CPATHD)/libcutil.a $(CPATHD)/libposix2pcre.a \
   $(PCRE)/libpcre.a
 
 TXT := Als
+DOCOPTS_Als := -a toc
 
 include $(TEMPLATES)/ada.mk
 

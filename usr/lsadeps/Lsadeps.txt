@@ -1,7 +1,6 @@
 lsadeps
 =======
 V7.4
-:toc:
 
 Lsadeps lists ada dependencies between files or units, optionnally in reverse
 order.

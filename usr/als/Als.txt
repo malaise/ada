@@ -1,7 +1,6 @@
 Als
 ===
 V9.1
-:toc:
 
 Als lists files, directory contents... It supports several powerfull options
 for the selection of entries, the output format of each entry, and general

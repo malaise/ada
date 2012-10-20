@@ -1,6 +1,5 @@
 Enigma
 ======
-:toc:
 
 Enigma is a simulator of the cypher machine used by the Germans during 2nd
 world war. This typing machine was based on switches and rotors that

@@ -30,6 +30,7 @@ LARGS_xml_checker.stat := $(CPATHD)/libcutil.a $(CPATHD)/libposix2pcre.a \
   $(PCRE)/libpcre.a
 
 TXT := Xml_Checker
+DOCOPTS_Xml_Checker := -a toc
 
 include $(TEMPLATES)/ada.mk
 

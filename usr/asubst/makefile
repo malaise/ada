@@ -10,6 +10,7 @@ LARGS_asubst.stat := $(CPATHD)/libcutil.a $(CPATHD)/libposix2pcre.a \
   $(PCRE)/libpcre.a
 
 TXT := Asubst History
+DOCOPTS_Asubst := -a toc
 
 include $(TEMPLATES)/ada.mk
 

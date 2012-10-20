@@ -1,7 +1,6 @@
 Land the LEM
 ============
 V3.0
-:toc:
 
 The goal of the game is to land the LEM on the Moon.
 

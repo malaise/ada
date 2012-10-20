@@ -1,6 +1,5 @@
 Ada notes
 =========
-:toc:
 
 This README file describes briefly the main directories of the Ada contrib.
 

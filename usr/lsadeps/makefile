@@ -10,6 +10,7 @@ LARGS_lsadeps.stat := $(CPATHD)/libcutil.a $(CPATHD)/libposix2pcre.a \
   $(PCRE)/libpcre.a
 
 TXT := Lsadeps
+DOCOPTS_TXT := -a toc
 
 include $(TEMPLATES)/ada.mk
 
