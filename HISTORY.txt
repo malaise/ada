@@ -4,6 +4,8 @@ Main changes
 
 [horizontal]
 
+*2012/10/22*:: Add option -L (--list) to asubst V14.0
+
 *2012/10/03*:: Re-organize inputs/outputs of text
 
 *2012/08/16*:: Add afpx_rnb that inserts/deletes fields in a Afpx.xml and

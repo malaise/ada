@@ -1,6 +1,6 @@
 Asubst
 ======
-V13.5
+V14.0
 
 Asubs is a command line tool that finds occurences of text that match a
 pattern (regular expresssion) and replaces these occurences by a given string.
@@ -24,46 +24,28 @@ for Perl Regular Expressions.
 
 Options
 -------
-....
--a or --ascii : consider that input flow or file is pure ASCII,
-
--D <string> or --delimiter=<string> for a delimiter other than '\n',
-
--d or --dotall for allow '.' to match '\n', when -D is set,
-
--e <pattern> or --exclude=<pattern> for skip text matching <pattern>,
-
--F <file> or --file_list=<file> to provide a file list of file names,
-
--f or --file for display file name in grep mode,
-
--g or --grep : print matching text as grep would do (no substitution),
-
--i or --ignorecase : do case insensitive match checking of <find_pattern>,
-
--l or --line for display line number in grep mode,
-
--m <range> or --match=<range> for substitution of only <range> matches,
-
--n or --number : print number of substitutions per file,
-
--p <dir> or --tmp=<dir> : directory of temporary files,
-
--q or --quiet : no printout,
-
--s or --save : make a copy (<file>.asu) of original file(s),
-
--t or --test for test, substitutions not performed,
-
--u or --utf8 : process utf-8 sequences,
-
--v or --verbose : print each substitution and its line number,
-
--x or --noregex : <find_pattern> is considered as string(s),
-
--- : to stop the list of options. If <find_pattern> is "-pat", then use:
+-a or --ascii : consider that input flow or file is pure ASCII, +
+-D <string> or --delimiter=<string> for a delimiter other than '\n', +
+-d or --dotall for allow '.' to match '\n', when -D is set, +
+-e <pattern> or --exclude=<pattern> for skip text matching <pattern>, +
+-F <file> or --file_list=<file> to provide a file list of file names, +
+-f or --file for display file name in grep mode, +
+-g or --grep : print matching text as grep would do (no substitution), +
+-i or --ignorecase : do case insensitive match checking of <find_pattern>, +
+-L or --list : print files matching text as 'grep -l' would do (no
+substitution), +
+-l or --line for display line number in grep mode, +
+-m <range> or --match=<range> for substitution of only <range> matches, +
+-n or --number : print number of substitutions per file, +
+-p <dir> or --tmp=<dir> : directory of temporary files, +
+-q or --quiet : no printout, +
+-s or --save : make a copy (<file>.asu) of original file(s), +
+-t or --test for test, substitutions not performed, +
+-u or --utf8 : process utf-8 sequences, +
+-v or --verbose : print each substitution and its line number, +
+-x or --noregex : <find_pattern> is considered as string(s), +
+-- : to stop the list of options. If <find_pattern> is "-pat", then use: +
      asubst [ { <option> } ] \-- "-pat" <replace_pattern> [ { <file> } ].
-....
 
 Environment
 -----------
@@ -275,24 +257,24 @@ echo -en "toto" | asubst "(.)(.)(..)" "\u\r12\c\r11"    ->  "Otto"
 
 Grep mode
 ---------
-In grep mode, asubst only looks for find_pattern and displays the result,
-(possibly with the input file name and possibly with the line number in this
-input file) but does not alter the files.
+In grep mode, asubst only looks for find_pattern and does not alter the files. +
+Grep mode is triggered by any of the following options:
 
-As a consequence, grep mode imposes quiet, test and no-backup modes. File_name
-and line_nb modes are allowed in grep mode only, and line_nb mode requires
-file_name mode.
+- With option 'grep', asubst displays the matching text, possibly with the input
+file name (option 'file') and possibly with the line number in the input file
+(options 'file' and 'line'). +
+In 'grep' mode without 'file' mode it is possible to provide a non empty
+replace_string, so that asubst displays the substitution. This is especially
+useful if the replace_string contains some "\RIJ" or "\rIJ".
+- With option 'list', asubst displays once each file name where there is
+at least one matching.
 
-NOTE: It is possible to get the result of 'grep -l <pattern>' simply with 
-'asubst -t <pattern> ""'.
-
-It is possible to provide a non empty replace_string (if file_name mode is not
-active), so that asubst displays it. This is especially useful if it contains
-some "\RIJ" or "\rIJ".
+Each of the 'grep' and 'list' options impose 'quiet', 'test' and 'no-backup'
+modes.
 
 Examples:
 --------------------------------------
-echo -en "toto" | asubst -gl "toto" ""                  -> toto
+echo -en "toto" | asubst -gf "toto" ""                  -> toto
 echo -en "toto" | asubst -g "toto" "found"              -> found
 echo -en "*cs add" | asubst -g "^\*([^ ]+) " "Got \r11" -> Got cs
 --------------------------------------

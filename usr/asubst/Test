@@ -70,7 +70,7 @@ fi
 echo "$STEP OK."
 
 # Make reference in file and result
-# Will remove both "------" and the linefeed before Test
+# Will remove both "------" and the line feed before Test
 echo "Package body Pack is" > $FR
 echo "Package body Pack is" > $FE
 echo "" >> $FR
@@ -255,6 +255,7 @@ fi
 # Check mono regexp grep
 STEP="Test mono regexp grep"
 res=`asubst -gf " is" "" $FT`
+code=$?
 if [ $code -ne 0 ] ; then
   echo "Error: asubst exited with code $code"
   echo "$STEP FAILED."
@@ -275,6 +276,7 @@ fi
 # Check grep with exclusion
 STEP="Test grep with exclusion"
 res=`asubst -g "--exclude=Pack\sis" "[^\s]{4} is" "" $FT`
+code=$?
 if [ $code -ne 0 ] ; then
   echo "Error: asubst exited with code $code"
   echo "$STEP FAILED."
@@ -292,7 +294,49 @@ if [ $? -ne 0 ] ; then
   echo "$STEP FAILED."
   exit 1
 fi
-STEP="Test grep"
+# Check mono regexp grep with file name
+STEP="Test mono regexp grep with file name"
+res=`asubst -L " is" "" $FT`
+code=$?
+if [ $code -ne 0 ] ; then
+  echo "Error: asubst exited with code $code"
+  echo "$STEP FAILED."
+  exit 1
+fi
+exp_res=`echo -e "tstfile.tst\n"`
+if [ "$res" != "$exp_res" ] ; then
+  echo "Result $res differs from expected."
+  echo "$STEP FAILED."
+  exit 1
+fi
+cmp -s $FT $FR
+if [ $? -ne 0 ] ; then
+  echo "Result file $FT differs from expected $FR."
+  echo "$STEP FAILED."
+  exit 1
+fi
+# Check multiple regexp grep with file name
+STEP="Test multiple regexp grep with file name"
+res=`asubst -L " is\n *begin" "" $FT`
+code=$?
+if [ $code -ne 0 ] ; then
+  echo "Error: asubst exited with code $code"
+  echo "$STEP FAILED."
+  exit 1
+fi
+exp_res=`echo -e "tstfile.tst\n"`
+if [ "$res" != "$exp_res" ] ; then
+  echo "Result $res differs from expected."
+  echo "$STEP FAILED."
+  exit 1
+fi
+cmp -s $FT $FR
+if [ $? -ne 0 ] ; then
+  echo "Result file $FT differs from expected $FR."
+  echo "$STEP FAILED."
+  exit 1
+fi
+STEP="Tests of grep"
 echo "$STEP OK."
 
 # Exit codes

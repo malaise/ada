@@ -16,8 +16,9 @@ package Substit is
                         Backup         : Boolean;
                         Verbose        : Boolean;
                         Grep           : Boolean;
-                        Grep_Line_Nb   : Boolean;
+                        Grep_List      : Boolean;
                         Grep_File_Name : Boolean;
+                        Grep_Line_Nb   : Boolean;
                         Test           : Boolean) return Natural;
   -- Error handled and traced by Do_One
   Substit_Error : exception;

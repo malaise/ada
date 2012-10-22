@@ -347,11 +347,13 @@ package body Substit is
   procedure Subst_Lines (Match_Range    : in String;
                          Verbose        : in Boolean;
                          Grep           : in Boolean;
-                         Grep_Line_Nb   : in Boolean;
+                         Grep_List      : in Boolean;
                          Grep_File_Name : in Boolean;
+                         Grep_Line_Nb   : in Boolean;
                          Test           : in Boolean;
                          Nb_Match       : in out Long_Long_Natural;
-                         Loc_Subst      : out Long_Long_Natural);
+                         Loc_Subst      : out Long_Long_Natural;
+                         Done_File      : out Boolean);
 
   function Do_One_File (File_Name      : String;
                         Tmp_Dir        : String;
@@ -360,9 +362,11 @@ package body Substit is
                         Backup         : Boolean;
                         Verbose        : Boolean;
                         Grep           : Boolean;
-                        Grep_Line_Nb   : Boolean;
+                        Grep_List      : Boolean;
                         Grep_File_Name : Boolean;
+                        Grep_Line_Nb   : Boolean;
                         Test           : Boolean) return Long_Long_Natural is
+    Done_File : Boolean;
     Nb_Subst : Long_Long_Natural;
     Nb_Match : Long_Long_Natural;
     Loc_Subst : Long_Long_Natural;
@@ -379,12 +383,14 @@ package body Substit is
     Substit.Delimiter := As.U.Tus (Delimiter);
     -- Init substitution by reading Nb_Pattern lines and Newlines
     -- Loop on substit
+    Done_File := False;
     Nb_Subst := 0;
     Nb_Match := 0;
     Loc_Subst := 0;
     loop
-      -- Done when the amount of lines cannot be read
-      exit when not Read;
+      -- Done when file is already put in List mode
+      --   or when the amount of lines cannot be read
+      exit when Done_File or else not Read;
       -- If grep is iterative with a replace and got something,
       --  then append a line feed
       if Grep and then Is_Iterative and then Loc_Subst /= 0
@@ -392,8 +398,8 @@ package body Substit is
         Basic_Proc.New_Line_Output;
       end if;
       -- Process these lines
-      Subst_Lines (Match_Range, Do_Verbose, Grep, Grep_Line_Nb, Grep_File_Name,
-                   Test, Nb_Match, Loc_Subst);
+      Subst_Lines (Match_Range, Do_Verbose, Grep, Grep_List, Grep_File_Name,
+                  Grep_Line_Nb, Test, Nb_Match, Loc_Subst, Done_File);
       Nb_Subst := Nb_Subst + Loc_Subst;
     end loop;
     -- Put remaining lines (read but not matching, or not read)
@@ -432,15 +438,18 @@ package body Substit is
                             Match_Range    : in String;
                             Verbose        : in Boolean;
                             Grep           : in Boolean;
-                            Grep_Line_Nb   : in Boolean;
+                            Grep_List      : in Boolean;
                             Grep_File_Name : in Boolean;
+                            Grep_Line_Nb   : in Boolean;
                             Test           : in Boolean;
                             Nb_Match       : in out Long_Long_Natural;
-                            Loc_Subst      : out Long_Long_Natural) is
+                            Loc_Subst      : out Long_Long_Natural;
+                            Done_File      : out Boolean) is
 
     Current : Positive;
     Match_Res : Regular_Expressions.Match_Cell;
   begin
+    Done_File := False;
     -- Multiple substitutions in one line
     Current := 1;
     Loc_Subst := 0;
@@ -503,8 +512,15 @@ package body Substit is
             elsif Grep then
               if Loc_Subst = 1
               and then not Is_Stdin
-              and then Grep_File_Name then
-                Basic_Proc.Put_Output (In_File_Name.Image & ":");
+              and then (Grep_List or else Grep_File_Name) then
+                Basic_Proc.Put_Output (In_File_Name.Image);
+                if Grep_List then
+                  -- Done with this file
+                  Basic_Proc.New_Line_Output;
+                  Done_File := True;
+                  exit;
+                end if;
+                Basic_Proc.Put_Output (":");
                 if Grep_Line_Nb then
                   Basic_Proc.Put_Output (Line_Image(Line_No) & ":");
                 end if;
@@ -512,6 +528,7 @@ package body Substit is
               if Replace_Pattern.Is_Empty then
                 -- Display once each matching line
                 Basic_Proc.Put_Line_Output (Line.all.Image);
+                -- Done with this line
                 exit;
               else
                 -- Display each replaced (line feed is handled in Do_One_File)
@@ -587,16 +604,18 @@ package body Substit is
   procedure Subst_Lines (Match_Range    : in String;
                          Verbose        : in Boolean;
                          Grep           : in Boolean;
-                         Grep_Line_Nb   : in Boolean;
+                         Grep_List      : in Boolean;
                          Grep_File_Name : in Boolean;
+                         Grep_Line_Nb   : in Boolean;
                          Test           : in Boolean;
                          Nb_Match       : in out Long_Long_Natural;
-                         Loc_Subst      : out Long_Long_Natural) is
+                         Loc_Subst      : out Long_Long_Natural;
+                         Done_File      : out Boolean) is
     Match_Res : Regular_Expressions.Match_Cell;
     Line, First_Line, Last_Line : access As.U.Asu_Us;
     Matches, Excluded : Boolean;
 
-    -- Put matching text, complete lines text or just the matching text
+    -- Put matching text, complete line or just the matching text
     procedure Put_Match (Complete : in Boolean) is
       use type Str_Access;
     begin
@@ -638,11 +657,12 @@ package body Substit is
     if Is_Iterative then
       -- Handle separately multiple substitutions if one pattern
       Subst_One_Line (Line_List.Access_Current,
-                      Match_Range, Verbose, Grep, Grep_Line_Nb, Grep_File_Name,
-                      Test, Nb_Match, Loc_Subst);
+                      Match_Range, Verbose, Grep, Grep_List, Grep_File_Name,
+                      Grep_Line_Nb, Test, Nb_Match, Loc_Subst, Done_File);
       return;
     end if;
 
+    Done_File := False;
     Loc_Subst := 0;
     -- Check all patterns until one does not match
     for I in 1 .. Nb_Pattern loop
@@ -768,8 +788,14 @@ package body Substit is
           Basic_Proc.Put_Line_Output (" -> " & Str_Replacing);
         elsif Grep then
           -- Display grep result
-          if not Is_Stdin and then Grep_File_Name then
-            Basic_Proc.Put_Output (In_File_Name.Image & ":");
+          if not Is_Stdin and then (Grep_List or else Grep_File_Name) then
+            Basic_Proc.Put_Output (In_File_Name.Image);
+            if Grep_List then
+              Basic_Proc.New_Line_Output;
+              Done_File := True;
+              return;
+            end if;
+            Basic_Proc.Put_Output (":");
             if Grep_Line_Nb then
               Basic_Proc.Put_Output (Line_Image(Line_No) & ":");
             end if;
