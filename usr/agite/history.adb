@@ -1,5 +1,5 @@
 with Ada.Exceptions;
-with Con_Io, Afpx.List_Manager, Str_Util, Basic_Proc, Normal, My_Math, Roundiv;
+with Con_Io, Afpx.List_Manager, Str_Util, Basic_Proc, Normal, Roundiv;
 with Utils.X, Config, Details, View, Afpx_Xref;
 package body History is
 
@@ -156,7 +156,6 @@ package body History is
       pragma Unreferenced (Action);
       Percent : Afpx.Percent_Range;
       Row : Con_Io.Row_Range;
-      use type My_Math.Real;
     begin
       -- Put percent value and "scroll bar"
       Percent := Afpx.Get_List_Percent;
@@ -167,9 +166,9 @@ package body History is
         -- 0 <-> 1% and Height-1 <-> 100%
         -- (Percent-1)/99 = Row/(Height-1)
         Row := Con_Io.Row_Range(
-          Roundiv."/" ((Afpx.Get_Field_Height (Afpx_Xref.History.Scroll) - 1)
-                       * (Percent - 1),
-                       99));
+          Roundiv ((Afpx.Get_Field_Height (Afpx_Xref.History.Scroll) - 1)
+                    * (Percent - 1),
+                   99));
         Afpx.Encode_Field (Afpx_Xref.History.Scroll,
                           (Row => Row, Col => 0),
                           "-");
@@ -189,7 +188,6 @@ package body History is
     procedure Move_At_Scroll (Row : in Con_Io.Row_Range) is
       Percent : Afpx.Percent_Range;
       Saved_Position, Position : Natural;
-      use type My_Math.Real;
     begin
       if Afpx.Line_List.Is_Empty then
         return;
@@ -197,7 +195,7 @@ package body History is
       Saved_Position := Afpx.Line_List.Get_Position;
       -- 0 <-> 1% and Height-1 <-> 100%
       -- (Percent-1)/99 = Row/(Height-1)
-      Percent := Roundiv."/" (
+      Percent := Roundiv (
                    Row * 99,
                    Afpx.Get_Field_Height (Afpx_Xref.History.Scroll) - 1)
                  + 1;

@@ -29,6 +29,9 @@ package My_Math is
   function Round (X : Real) return Inte;
   function Trunc (X : Real) return Inte;
 
+  -- Divide A by B and return the rounded result
+  function Roundiv (A, B : Inte) return Inte;
+
   -- Power and sqrt
   function "**" (Number, Exponent : Real) return Real;
   function Sqrt (X : Real) return Real;

@@ -71,8 +71,6 @@ package body My_Math is
       raise Data_Error;
   end Get;
 
-
-
   -- Integer part of a real
   function Int (X : Real) return Real is
 
@@ -175,7 +173,13 @@ package body My_Math is
       raise Math_Error;
   end Trunc;
 
-  -- power
+  -- Rounded result of division
+  function Roundiv (A, B : Inte) return Inte is
+  begin
+    return My_Math.Round (My_Math.Real(A) / My_Math.Real(B));
+  end Roundiv;
+
+  -- Power
   function "**" (Number, Exponent : Real) return Real is
   begin
    return Real(Cpow (C_Types.Double(Number), C_Types.Double(Exponent)));
@@ -184,7 +188,7 @@ package body My_Math is
       raise Math_Error;
   end "**";
 
-  -- square root
+  -- Square root
   function Sqrt (X : Real) return Real is
   begin
     if X < 0.0 then
@@ -213,6 +217,7 @@ package body My_Math is
     return E ** X;
   end Exp;
 
+  -- Ln
   function Ln (X : Real) return Real is
   begin
     if X < 0.0 then
@@ -224,6 +229,7 @@ package body My_Math is
       raise Math_Error;
   end Ln;
 
+  -- Trigo
   function Sin (X    : Real;
                 Mode : Angle_Unit := Radian) return Real is
     Y      : Real;
