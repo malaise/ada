@@ -3,7 +3,7 @@ Tcpipe
 
 Tcpipe is a program that relays TCP connections.
 
-Typical usage is to start two tcpipe instances, a server and a client that
+Typical usage is to start two tcpipe instances: a server and a client that
 connects to this server.
 
 When a client application connects to one tcpipe instance, the other tcpipe
@@ -26,29 +26,33 @@ Usage: tcpipe <mode> [ <ports> ] [ <target> ]
 The <client> and <server> options define the connection between two tcpipe
 instances.
 
-The ports are the ones on which tcpipe accepts connections from clients.
+The ports are the ones on which tcpipe accepts connections from clients
+applications.
 
-The target host is the one to which tcpipe attempts to connect to clients.
+The target host is the one to which tcpipe attempts to connect to clients
+applications.
 
 Usage
 -----
 Tcpipe can be usefull for multiplexing several TCP connections between several
-clients within one TCP connection, especially through a firewall.
+client applications within one TCP connection, especially through a firewall.
 
  * This reduces the number of TCP connections through the firewall,
- * This allows connections between clients to be established despite the
-filters of the firewall (allowed ports, direction of connection...).
+ * This allows connections between client applications to be established
+despite the filters of the firewall (allowed ports, direction of connection...).
 
 Example
 -------
-  On host host1 start "tcpipe -s 50000 -p40000"
-  On host host2 start "tcpipe -c host1:50000 -tclient2"
-  -> tcpipe on host2 connects to tcpipe on host1, port 50000
-  On the host client2 that can be reached by host2, start a client that accepts connections on port 40000
-  On a host client1 that can reach host1, start an application that connects to host1 on port 40000
-  -> tcpipe on host1 accepts the connection from client1
-  -> tcpipe on host2 connects to the application on client2
-  -> data sent by any of the applications is relayed to the other
+On host host1 start "tcpipe -s 50000 -p40000" +
+On host host2 start "tcpipe -c host1:50000 -tclient2" +
+-> tcpipe on host2 connects to tcpipe on host1, port 50000 +
+On the host client2 that can be reached by host2, start a client that accepts
+connections on port 40000 +
+On a host client1 that can reach host1, start an application that connects to
+host1 on port 40000 +
+-> tcpipe on host1 accepts the connection from client1 +
+-> tcpipe on host2 connects to the application on client2 +
+-> data sent by any of the applications is relayed to the other
   
 Errors
 ------
@@ -56,8 +60,8 @@ Errors
 As soon as a tcpipe instance is started with some ports it accepts connections
 to these ports.
 
-When a client connects to a port of a tcpipe instance T1, then T1 accepts the
-connection, then:
+When a client  application connects to a port of a tcpipe instance T1, then T1
+accepts the connection, then:
 
 * T1 transmits a connection request to its partner T2 (if any)
 * the partner T2 tries to connect to the target on the same port
@@ -67,10 +71,10 @@ the tcpipe T1 closes the connection.
 
 .Disconnection
 Any disconnection between both tcpipe instances leads these instances to close
-all the connections with their local clients.
+all the connections with their local client applications.
 
-Any disconnection of a client from an instance leads the other instance to
-close the corresponding connection with its client.
+Any disconnection of a client application from an instance leads the other
+instance to close the corresponding connection with its client application.
 
 Protocol
 --------
@@ -81,8 +85,8 @@ These messages are made of:
 
 * a Kind: Connect, Disconnect or Data
 * a Port: port number concerned
-* a Local: boolean indicator (Local=True means a connection from a client,
-otherwise it means a connection to a client). Connect message is always not
-Local.
+* a Local: boolean indicator (Local=True means a connection from a client
+* application, otherwise it means a connection to a client application).
+Connect message is always not Local.
 * a String: the data when kind is Data
 
