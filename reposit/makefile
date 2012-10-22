@@ -21,7 +21,7 @@ HTML := true
 GNATHTMLOPT := -d
 
 TXT := REPOSIT_LIST
-DOCOPTS_TXT := -a toc
+DOCOPTS_REPOSIT_LIST := -a toc
 
 include $(TEMPLATES)/ada.mk
 
