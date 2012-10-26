@@ -459,6 +459,9 @@ rnd (1)::
 romanic (1)::
      Decimal to romanic conversion (11 <--> XI).
 
+round (1)::
+     Round a float to nearest integer
+
 roundiv (1)::
      Divide float of A by float of B and return rounded result.
 
@@ -524,6 +527,9 @@ trees (2)::
 
 trilean (1)::
      An enum with 3 values (False, True and Other, or Maybe).
+
+trunc (1)::
+     Trunc a float to lower integer
 
 u_rand (2)::
      Universal random number generator.
