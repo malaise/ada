@@ -201,7 +201,7 @@ procedure Afpx_Rnb is
   Input_File_Name, Output_File_Name : As.U.Asu_Us;
   Force : Boolean := False;
   type Action_List is (Insert, Delete, Move);
-  subtype One_Action_List is Action_List range (Insert, Delete);
+  subtype One_Action_List is Action_List range Insert .. Delete;
   Action : Action_List;
   First_Action, Last_Action : Action_List;
   Field_Numi : Afpx_Typ.Absolute_Field_Range := 0;
@@ -550,7 +550,7 @@ begin
     declare
       Prev_Node, Next_Node : Xml_Parser.Node_Type;
     begin
-      case Curr_Action Action is
+      case Curr_Action is
         when Insert =>
 
           if Field_Numi = 0 then
@@ -563,14 +563,14 @@ begin
               Xml.Add_Child (Dscr_Elt, "Field", Xml_Parser.Element, Tmp_Node,
                              Append => False);
             end if;
-            Complete (Xml, Tmp_Node, 1);
+            Complete (Xml, Tmp_Node, 1, False);
             if Debug then
               Basic_Proc.Put_Line_Output ("Insert Field 1");
             end if;
             -- Append remaining brothers
             for I in 2 .. Positive(Number) loop
               Xml.Add_Brother (Tmp_Node, "Field", Xml_Parser.Element, Tmp_Node);
-              Complete (Xml, Tmp_Node, I);
+              Complete (Xml, Tmp_Node, I, False);
               if Debug then
                 Basic_Proc.Put_Line_Output ("Append Field" & I'Img);
               end if;
@@ -580,7 +580,7 @@ begin
             Tmp_Node := Field_Elt;
             for I in 1 .. Positive(Number) loop
               Xml.Add_Brother (Tmp_Node, "Field", Xml_Parser.Element, Tmp_Node);
-              Complete (Xml, Tmp_Node, Positive(Field_Numi) + I);
+              Complete (Xml, Tmp_Node, Positive(Field_Numi) + I, False);
               if Debug then
                 Basic_Proc.Put_Line_Output ("Append Field" & I'Img);
               end if;
@@ -660,6 +660,9 @@ begin
           end loop Fields;
           -- Now Field_Numi is the first field num to which we substitute
           Field_Numi := Field_Numd;
+        when Move =>
+          -- @@@
+          null;
       end case;
     end;
 
