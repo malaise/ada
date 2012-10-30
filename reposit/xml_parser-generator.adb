@@ -728,11 +728,12 @@ package body Xml_Parser.Generator is
 
   --  Copy Src element as Next (or prev) Child (or brother)
   --  of Dst
-  procedure  Copy (Ctx   : in out Ctx_Type;
-                  Src   : in out Element_Type;
-                  Dst   : in out Element_Type;
-                  Child : in Boolean := True;
-                  Next  : in Boolean := True) is
+  procedure  Copy (Ctx      : in out Ctx_Type;
+                   Src      : in out Element_Type;
+                   Dst      : in out Element_Type;
+                   New_Node : out Node_Type;
+                   Child    : in Boolean := True;
+                   Next     : in Boolean := True) is
     Tree : Tree_Acc;
   begin
     -- Move to Src, must be an element, save pos
@@ -742,6 +743,10 @@ package body Xml_Parser.Generator is
     Move_To_Element (Ctx, Dst, Tree);
     -- Copy Src below or beside Dst
     Tree.Copy_Saved (Child, not Next);
+    New_Node := (Kind => Src.Kind,
+                 Magic => Ctx.Magic,
+                 In_Prologue => False,
+                 Tree_Access => Tree.Get_Position);
   exception
     when Trees.Is_Ancestor =>
       raise Invalid_Node;

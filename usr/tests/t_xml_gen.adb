@@ -78,7 +78,7 @@ begin
   Node := New_Node;
 
   -- Add a Copy from Node_1 as brother
-  Dscr.Copy (Node_1, Node, Child => False, Next => True);
+  Dscr.Copy (Node_1, Node, New_Node => New_Node, Child => False, Next => True);
   New_Node := Dscr.Get_Brother (Node);
   --  Adapt
   Dscr.Del_Attributes (New_Node);

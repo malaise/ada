@@ -3,7 +3,7 @@
 package Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "11";
+  Major_Version : constant String := "12";
   function Version return String;
 
   type Ctx_Type is new Xml_Parser.Ctx_Type with private;
@@ -148,11 +148,12 @@ package Xml_Parser.Generator is
   --  of Dst
   -- May raise Invalid_Node if one is in prologue
   -- May raise Invalid_Node is Src is ancestor of the Dst
-  procedure Copy (Ctx   : in out Ctx_Type;
-                  Src   : in out Element_Type;
-                  Dst   : in out Element_Type;
-                  Child : in Boolean := True;
-                  Next  : in Boolean := True);
+  procedure Copy (Ctx      : in out Ctx_Type;
+                  Src      : in out Element_Type;
+                  Dst      : in out Element_Type;
+                  New_Node : out Node_Type;
+                  Child    : in Boolean := True;
+                  Next     : in Boolean := True);
 
   -- Set the Put_Empty tag on the element
   -- Shall the Element, if empty, be put with EmptyElemTag (<element/>) or
