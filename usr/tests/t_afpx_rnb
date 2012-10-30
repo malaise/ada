@@ -39,7 +39,7 @@ while true ; do
     let field=$field+1
     afpx_rnb -f Afpx.tmp -D $dscr -d $field $nb 2>err
     if [ $? -ne 0 ] ; then
-      err=`cat err | sed s/\n//g`
+      err=`cat err | sed 's/\n//g'`
       echo "ERROR deleting field $field: $err" >&2
       exit 1
     fi

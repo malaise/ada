@@ -77,8 +77,9 @@ procedure Afpx_Rnb is
   Dscr_Elt, Field_Elt : Xml_Parser.Element_Type;
 
   -- Find field Fld_Num
-  -- If Insert(0) then set Start_Node to last node not text before first field
-  --  No_Node means that first field has to be inserted as first child of Dscr
+  -- If 0 (Insert(0)) then set Start_Node to last node not text before first
+  --  field, No_Node means that first field has to be inserted as first child
+  --  of Dscr
   function Find_Field (Field_Num : Afpx_Typ.Absolute_Field_Range)
            return Xml_Parser.Node_Type is
     -- Tempo node
@@ -109,7 +110,7 @@ procedure Afpx_Rnb is
         if Afpx_Typ.Field_Range'Value (
           Xml.Get_Attribute (Tmp_Node, "Num")) = Field_Num then
           Found := True;
-          Field_Elt := Tmp_Node;
+          Node := Tmp_Node;
         end if;
       end if;
     end loop;
@@ -122,7 +123,13 @@ procedure Afpx_Rnb is
     if Debug and then Xml_Parser.Is_Valid (Node) then
       Basic_Proc.Put_Output ("Start_Node is " & Node.Kind'Img);
       if Node.Kind = Xml_Parser.Element then
-        Basic_Proc.Put_Line_Output (" name " & Xml.Get_Name (Node));
+        Basic_Proc.Put_Output (" Name " & Xml.Get_Name (Node));
+        if Xml.Get_Name (Node) = "Field" then
+          Basic_Proc.Put_Line_Output (" Num "
+                                    & Xml.Get_Attribute (Node, "Num"));
+        else
+          Basic_Proc.New_Line_Output;
+        end if;
       else
         Basic_Proc.New_Line_Output;
       end if;
@@ -141,27 +148,57 @@ procedure Afpx_Rnb is
     return Node;
   end Find_Field;
 
+  -- Find next node named "Field" after Fld
+  -- Return No_Node if none or if Fld is No_Node
+  function Next_Field (Fld : Xml_Parser.Node_Type)
+           return Xml_Parser.Node_Type is
+    Result : Xml_Parser.Node_Type;
+    use type Xml_Parser.Node_Kind_List;
+  begin
+    if not Xml_Parser.Is_Valid (Fld) then
+      return Xml_Parser.No_Node;
+    end if;
+    Result := Fld;
+    loop
+      if not Xml.Has_Brother (Result) then
+        return Xml_Parser.No_Node;
+      end if;
+      Result := Xml.Get_Brother (Result);
+      if Result.Kind = Xml_Parser.Element
+      and then Xml.Get_Name (Result) = "Field" then
+        return Result;
+      end if;
+    end loop;
+  end Next_Field;
+
   -- Content if Text field that makes the indentation of Field:
   -- Line_Feed and 4 spaces
   Indent : constant String := Text_Line.Line_Feed_Str & "    ";
 
-  -- Complete an element:
-  -- Insert before element a Text "Lf   "
-  -- Add to element the attributes Num and Kind,
-  -- Add to element the children Geometry and Colors with attribtues
+  -- Default attributes when creating a field
   Ini_Attrs : Boolean := False;
   Fld_Attrs : Xml_Parser.Attributes_Array (1 ..2);
   Geo_Attrs : Xml_Parser.Attributes_Array (1 ..4);
   Col_Attrs : Xml_Parser.Attributes_Array (1 ..2);
-  procedure Complete (Ctx : in out Xml_Parser.Generator.Ctx_Type;
-                      Field : in out Xml_Parser.Element_Type;
-                      Fld_Num : in Positive;
-                      Num_Only : in Boolean) is
+
+  -- Add a field (brother or child) of reference node
+  -- If Copy_From is set (not No_Node) then copy from it, other insert a default
+  -- Set its Fld_Num.
+  -- Insert before element a Text "Lf   "
+  -- Add to element the attributes Num and Kind,
+  -- Add to element the children Geometry and Colors with attribtues
+  procedure Add_Field (Ref_Node  : in out Xml_Parser.Node_Type;
+                       Child     : in Boolean;
+                       Fld_Num   : in Positive;
+                       Copy_From : in out Xml_Parser.Node_Type;
+                       Field     : out Xml_Parser.Element_Type) is
+    -- Text for Indentation
     Indent_Node : Xml_Parser.Text_Type;
+    -- geometry and color
     Child_Node : Xml_Parser.Element_Type;
   begin
+    -- Init global attributes once
     if not Ini_Attrs then
-      -- Init global attributes once
       Fld_Attrs(1).Name  := As.U.Tus ("Num");
       Fld_Attrs(2).Name  := As.U.Tus ("Kind");
       Fld_Attrs(2).Value := As.U.Tus ("Put");
@@ -179,23 +216,46 @@ procedure Afpx_Rnb is
       Col_Attrs(2).Value := As.U.Tus ("White");
       Ini_Attrs := True;
     end if;
-    -- Prepend a Text with Lf + 4 spaces
-    Ctx.Add_Brother (Field, Indent, Xml_Parser.Text, Indent_Node,
-                     Next => False);
-    -- Set field attributes with provided Num
-    Fld_Attrs(1).Value := As.U.Tus (Images.Integer_Image (Fld_Num));
-    Ctx.Set_Attributes (Field, Fld_Attrs);
-    if not Num_Only then
-      -- Insert Geometry
-      Ctx.Add_Child (Field, "Geometry", Xml_Parser.Element, Child_Node);
-      Ctx.Set_Put_Empty (Child_Node, True);
-      Ctx.Set_Attributes (Child_Node, Geo_Attrs);
-      -- Insert Colors
-      Ctx.Add_Child (Field, "Colors", Xml_Parser.Element, Child_Node);
-      Ctx.Set_Put_Empty (Child_Node, True);
-      Ctx.Set_Attributes (Child_Node, Col_Attrs);
+
+    if Xml_Parser.Is_Valid (Copy_From) then
+      -- Copy as first child or next brother
+      Xml.Copy (Copy_From, Ref_Node, Field, Child, not Child);
+    else
+      -- Insert a new child or brother
+      if Child then
+        Xml.Add_Child (Ref_Node, "Field", Xml_Parser.Element, Field, False);
+      else
+        Xml.Add_Brother (Ref_Node, "Field", Xml_Parser.Element, Field);
+      end if;
     end if;
-  end Complete;
+
+    -- Complete
+    -- Prepend a Text with Lf + 4 spaces
+    Xml.Add_Brother (Field, Indent, Xml_Parser.Text, Indent_Node,
+                     Next => False);
+    -- Set Field num
+    Fld_Attrs(1).Value := As.U.Tus (Images.Integer_Image (Fld_Num));
+    if Debug then
+      Basic_Proc.Put_Line_Output ("Insert Field " & Fld_Attrs(1).Value.Image);
+    end if;
+    if Xml_Parser.Is_Valid (Copy_From) then
+      -- Set field Num attribute with provided Num
+      Xml.Set_Attribute (Field, Fld_Attrs(1).Name.Image,
+                                Fld_Attrs(1).Value.Image);
+    else
+      -- Set attributes to ("Num", Num)
+      Xml.Set_Attributes (Field, Fld_Attrs);
+      -- Insert Geometry
+      Xml.Add_Child (Field, "Geometry", Xml_Parser.Element, Child_Node);
+      Xml.Set_Put_Empty (Child_Node, True);
+      Xml.Set_Attributes (Child_Node, Geo_Attrs);
+      -- Insert Colors
+      Xml.Add_Child (Field, "Colors", Xml_Parser.Element, Child_Node);
+      Xml.Set_Put_Empty (Child_Node, True);
+      Xml.Set_Attributes (Child_Node, Col_Attrs);
+    end if;
+  end Add_Field;
+
 
   -- Arguments and ENV
   Input_File_Name, Output_File_Name : As.U.Asu_Us;
@@ -203,13 +263,15 @@ procedure Afpx_Rnb is
   type Action_List is (Insert, Delete, Move);
   subtype One_Action_List is Action_List range Insert .. Delete;
   Action : Action_List;
-  First_Action, Last_Action : Action_List;
+  First_Action, Last_Action : One_Action_List;
   Field_Numi : Afpx_Typ.Absolute_Field_Range := 0;
   Field_Numd : Afpx_Typ.Field_Range := 1;
   Number : Afpx_Typ.Field_Range := 1;
 
   -- Node to append to when Field_Num = 0, No_Node => 1st child of Dscr
-  Start_Node : Xml_Parser.Node_Type;
+  Start_Nodei : Xml_Parser.Node_Type;
+  -- First node to delete or move
+  Start_Noded : Xml_Parser.Node_Type;
   -- Tempo node
   Tmp_Node : Xml_Parser.Node_Type;
 
@@ -461,14 +523,17 @@ begin
     Dscr_Elt := Tmp_Node;
   end;
 
-  -- Find field
+  -- Find fields
   if Action /= Delete then
-    -- Find start node, also counts fields
-    Start_Node := Find_Field (Field_Numi);
-  else
-    -- Just to count fields
-    Start_Node := Find_Field (Field_Numd);
-    if Field_Numd + Number > Nb_Fields + 1 then
+    -- Insert or Move: Find start node, also counts fields
+    Start_Nodei := Find_Field (Field_Numi);
+  end if;
+
+  if Action /= Insert then
+    -- delete or Move: Find node to delete, also counts fields
+    Start_Noded:= Find_Field (Field_Numd);
+    if Action = Delete
+    and then Field_Numd + Number > Nb_Fields + 1 then
       -- Not enough fields to delete
       Error ("Cannot delete " & Images.Integer_Image (Positive (Number))
             & " fields from field "
@@ -537,76 +602,55 @@ begin
     end if;
   end;
 
-  for Curr_Action in One_Action_List'(First_Action) .. Last_Action loop
 
-    ----------------
-    -- Update Fields
-    ----------------
+  ----------------
+  -- Update Fields
+  ----------------
+  for Curr_Action in One_Action_List range First_Action .. Last_Action loop
     -- Insert / delete
     -- Finally update Field_Elt to the one to start with
     --  and Update Field_Num to its new num
     --  if Insert => First after inserted, Num + Number
     --  if Delete => the new field now at the place of Field_Elt, Num
     declare
+      Next_Nodei, Next_Noded : Xml_Parser.Node_Type;
+      Start_Num : Positive;
       Prev_Node, Next_Node : Xml_Parser.Node_Type;
     begin
       case Curr_Action is
         when Insert =>
 
           if Field_Numi = 0 then
-            if Xml_Parser.Is_Valid (Start_Node) then
+            if Xml_Parser.Is_Valid (Start_Nodei) then
               -- Append first field as brother of Start_Node
-              Xml.Add_Brother (Start_Node, "Field", Xml_Parser.Element,
-                               Tmp_Node);
+              Add_Field (Start_Nodei, False, 1, Start_Noded, Next_Nodei);
             else
-              -- Append first field as first child of Dscr
-              Xml.Add_Child (Dscr_Elt, "Field", Xml_Parser.Element, Tmp_Node,
-                             Append => False);
+              -- Insert first field as First child of Dscr
+              Add_Field (Dscr_Elt, True, 1, Start_Noded, Next_Nodei);
             end if;
-            Complete (Xml, Tmp_Node, 1, False);
-            if Debug then
-              Basic_Proc.Put_Line_Output ("Insert Field 1");
-            end if;
-            -- Append remaining brothers
-            for I in 2 .. Positive(Number) loop
-              Xml.Add_Brother (Tmp_Node, "Field", Xml_Parser.Element, Tmp_Node);
-              Complete (Xml, Tmp_Node, I, False);
-              if Debug then
-                Basic_Proc.Put_Line_Output ("Append Field" & I'Img);
-              end if;
-            end loop;
+            Next_Noded := Next_Field (Start_Noded);
+            Start_Num := 2;
           else
-            -- Append brothers
-            Tmp_Node := Field_Elt;
-            for I in 1 .. Positive(Number) loop
-              Xml.Add_Brother (Tmp_Node, "Field", Xml_Parser.Element, Tmp_Node);
-              Complete (Xml, Tmp_Node, Positive(Field_Numi) + I, False);
-              if Debug then
-                Basic_Proc.Put_Line_Output ("Append Field" & I'Img);
-              end if;
-            end loop;
+            Next_Nodei := Start_Nodei;
+            Next_Noded := Start_Noded;
+            Start_Num := 1;
           end if;
+          -- Append remaining brothers
+          for I in Start_Num .. Positive(Number) loop
+            Add_Field (Next_Nodei, False, Natural(Field_Numi) + I, Next_Noded,
+                       Next_Nodei);
+            Next_Noded := Next_Field (Next_Noded);
+          end loop;
 
           -- Now set Field_Elt to the next Field after last inserted, Tmp_Node
           --  (if any)
-          loop
-            if not Xml.Has_Brother (Tmp_Node) then
-              Field_Elt := Xml_Parser.No_Node;
-              exit;
-            end if;
-            Tmp_Node := Xml.Get_Brother (Tmp_Node);
-            if Tmp_Node.Kind = Xml_Parser.Element
-            and then Xml.Get_Name (Tmp_Node) = "Field" then
-              Field_Elt := Tmp_Node;
-              exit;
-            end if;
-          end loop;
+          Field_Elt := Next_Field (Next_Nodei);
           -- After inserting Number after field_Num the first after inserted
           --  fields becomes Field_Numi + Number + 1
           Field_Numi := Field_Numi + Number + 1;
 
         when Delete =>
-          Tmp_Node := Field_Elt;
+          Tmp_Node := Start_Noded;
           Fields:
           for I in 1 .. Number loop
             -- Has current field a successor (even a Var)
@@ -660,8 +704,10 @@ begin
           end loop Fields;
           -- Now Field_Numi is the first field num to which we substitute
           Field_Numi := Field_Numd;
+
         when Move =>
-          -- @@@
+          -- Needed by the compiler despite One_Action_List values
+          --  are completly covered
           null;
       end case;
     end;
