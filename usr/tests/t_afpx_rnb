@@ -5,11 +5,21 @@ if [ \( "$1" = "-h" \) -o \( "$1" = "--help" \) ] ; then
   exit 1
 fi
 
+function error {
+  echo "ERROR $1" >&2
+  exit 1
+}
+
 nb=""
+let nbn=1
 if [ "$1" != "" ] ; then
   nb=$1
+  let nbn=0+$1
 fi
 
+if false ; then
+
+echo Insertions and deletions
 let dscr=1
 while true ; do
 
@@ -30,25 +40,22 @@ while true ; do
       if [[ $err =~ $crit ]] ; then
         break
       else
-        echo "ERROR inserting field $field: $err" >&2
-        exit 1
+        error "inserting field $field: $err"
       fi
     fi
 
     # Delete fields
     let field=$field+1
-    afpx_rnb -f Afpx.tmp -D $dscr -d $field $nb 2>err
+    afpx_rnb -f Afpx.tmp -o Afpx.res -D $dscr -d $field $nb 2>err
     if [ $? -ne 0 ] ; then
       err=`cat err | sed 's/\n//g'`
-      echo "ERROR deleting field $field: $err" >&2
-      exit 1
+      error "deleting field $field: $err"
     fi
 
     # Check that result is unchanged
-    cmp Afpx.xml Afpx.tmp > /dev/null 2>&1
+    cmp Afpx.xml Afpx.res > /dev/null 2>&1
     if [ $? -ne 0 ] ; then
-      echo "ERROR, file Afpx.tmp differs from original Afpx.xml" >&2
-      exit 1
+      error "file Afpx.res differs from original Afpx.xml"
     fi
 
   done
@@ -64,6 +71,57 @@ while true ; do
     break
   fi
 done
+fi
 
-rm err Afpx.tmp
+type asubst > /dev/null 2>&1
+if [ $? -ne 0 ] ; then
+  error "asubst not found"
+fi
+
+echo "Move nums then back"
+cat Afpx.xml | asubst -q -D "" '\n([\B]*\n)+' '\n' > Afpx.ref
+for nums in 1:7 2:8 3:9 16:8 ; do
+
+  # Movement back
+  let bnumi=`echo $nums | cut -d ':' -f 1`+0
+  let bnumj=`echo $nums | cut -d ':' -f 2`+0
+  if [ $bnumi -lt $bnumj ] ; then
+    # We moved nb from bnumi to bnumj above
+    # Move back from bnumj-nb+1 to bnumi - 1
+    let bnumi=$bnumi-1
+    let bnumj=$bnumj-$nbn+1
+  else
+     # We moved nb from bnumi to bnumj below
+     # Move back from bnumj to bnumi+nb
+     let bnumi=$bnumi
+     let bnumj=$bnumj+$nbn
+  fi
+  bnums=$bnumj":"$bnumi
+
+  echo "$nums then $bnums"
+  # Move fields
+  afpx_rnb -o Afpx.tmp -D 1 -m $nums $nb 2>err
+  if [ $? -ne 0 ] ; then
+    err=`cat err | sed 's/\n//g'`
+    error "moving fields $nums: $err"
+  fi
+
+  # Move back
+  afpx_rnb -f Afpx.tmp -o Afpx.res -D 1 -m $bnums $nb 2>err
+  if [ $? -ne 0 ] ; then
+    err=`cat err | sed 's/\n//g'`
+    error "moving field $bnums: $err"
+  fi
+  asubst -q -D "" '\n([\B]*\n)+' '\n' Afpx.res
+
+  # Check that result is unchanged
+  cmp Afpx.ref Afpx.res > /dev/null 2>&1
+  if [ $? -ne 0 ] ; then
+    error "file Afpx.res differs from reference Afpx.ref"
+  fi
+
+done
+
+rm -f err Afpx.ref Afpx.tmp Afpx.res
 echo "Test Ok."
+
