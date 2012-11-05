@@ -17,6 +17,7 @@ package Afpx_Typ is
   type Absolute_Field_Range is new Natural range 0 .. 200;
   subtype Field_Range is Absolute_Field_Range
           range 1 .. Absolute_Field_Range 'Last;
+  List_Field_No : constant Absolute_Field_Range := 0;
 
   -- The maximum length of a color name
   Max_Color_Name_Len : constant := 80;
