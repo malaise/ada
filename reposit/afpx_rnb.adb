@@ -309,8 +309,8 @@ procedure Afpx_Rnb is
     Input : constant As.U.Asu_Us := Text;
     I, J : Natural;
     New_Num : Afpx_Typ.Absolute_Field_Range;
-    Old_Num : Afpx_Typ.Field_Range;
-    use type Afpx_Typ.Field_Range;
+    Old_Num : Afpx_Typ.Absolute_Field_Range;
+    use type Afpx_Typ.Absolute_Field_Range;
   begin
     I := 0;
     Updated := False;
@@ -324,7 +324,11 @@ procedure Afpx_Rnb is
           J := Str_Util.Locate (Text.Image, ".", I) - 1;
           Old_Num := Afpx_Typ.Absolute_Field_Range'Value (
                  Text.Slice (I, J));
-          New_Num := Field_Map.Element (Positive (Old_Num));
+          if Old_Num = Afpx_Typ.List_Field_No then
+            New_Num := Old_Num;
+          else
+            New_Num := Field_Map.Element (Positive (Old_Num));
+          end if;
         exception
           when others =>
             Error ("INTERNAL ERROR: Cannot update field num");
