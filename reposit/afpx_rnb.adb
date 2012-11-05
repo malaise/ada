@@ -1,7 +1,7 @@
 -- Insert or remove fields in a Afpx.xml file
 -- Update other field number and references to them
 with Ada.Exceptions;
-with Basic_Proc, Argument, Argument_Parser, Environ,
+with Basic_Proc, Argument, Argument_Parser, Environ, Lower_Str,
      As.U, Images, Unbounded_Arrays, Str_Util, Text_Line,
      Afpx_Typ, Xml_Parser.Generator;
 procedure Afpx_Rnb is
@@ -13,9 +13,10 @@ procedure Afpx_Rnb is
     4 => (True,  'd', As.U.Tus ("delete"),     False, True, As.U.Tus ("field_num")),
     5 => (True,  'm', As.U.Tus ("move"),       False, True, As.U.Tus ("from_field:to_field")),
     6 => (True,  'c', As.U.Tus ("copy"),       False, True, As.U.Tus ("from_field:to_field")),
-    7 => (True,  'f', As.U.Tus ("file"),       False, True, As.U.Tus ("file_name")),
-    8 => (True,  'o', As.U.Tus ("output"),     False, True, As.U.Tus ("file_name")),
-    9 => (False, 'F', As.U.Tus ("force"),      False));
+    7 => (True,  'n', As.U.Tus ("number"),     False, True, As.U.Tus ("number")),
+    8 => (True,  'f', As.U.Tus ("file"),       False, True, As.U.Tus ("file_name")),
+    9 => (True,  'o', As.U.Tus ("output"),     False, True, As.U.Tus ("file_name")),
+   10 => (False, 'F', As.U.Tus ("force"),      False));
   Args : Argument_Parser.Parsed_Dscr;
   Default_File_Name : constant String := "Afpx.xml";
 
@@ -25,11 +26,11 @@ procedure Afpx_Rnb is
     Basic_Proc.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
        & " [ <file> ] [ <output> ] [ <force> ] <descriptor> <action> [ <number> ]");
     Basic_Proc.Put_Line_Error (
-       " <file>       ::= " & Argument_Parser.Image (Keys(7)));
+       " <file>       ::= " & Argument_Parser.Image (Keys(8)));
     Basic_Proc.Put_Line_Error (
-       " <output>     ::= " & Argument_Parser.Image (Keys(8)));
+       " <output>     ::= " & Argument_Parser.Image (Keys(9)));
     Basic_Proc.Put_Line_Error (
-       " <force>      ::= " & Argument_Parser.Image (Keys(9)));
+       " <force>      ::= " & Argument_Parser.Image (Keys(10)));
     Basic_Proc.Put_Line_Error (
        " <descriptor> ::= " & Argument_Parser.Image (Keys(2)));
     Basic_Proc.Put_Line_Error (
@@ -38,6 +39,12 @@ procedure Afpx_Rnb is
        " <insert>     ::= " & Argument_Parser.Image (Keys(3)));
     Basic_Proc.Put_Line_Error (
        " <delete>     ::= " & Argument_Parser.Image (Keys(4)));
+    Basic_Proc.Put_Line_Error (
+       " <move>       ::= " & Argument_Parser.Image (Keys(5)));
+    Basic_Proc.Put_Line_Error (
+       " <copy>       ::= " & Argument_Parser.Image (Keys(6)));
+    Basic_Proc.Put_Line_Error (
+       " <number>     ::= " & Argument_Parser.Image (Keys(7)));
     Basic_Proc.Put_Line_Error (
        "Insert <number> fields after <field_num> (<field_num>=0 for from 1)");
     Basic_Proc.Put_Line_Error (
@@ -295,6 +302,7 @@ procedure Afpx_Rnb is
                     Afpx_Typ.Absolute_Field_Range,
                     Field_Array);
   Field_Map : Field_Map_Mng.Unb_Array;
+  Old_Num, New_Num : Afpx_Typ.Absolute_Field_Range;
 
   -- Ok so far (mainly about unresolved references)
   Ok : Boolean;
@@ -372,13 +380,13 @@ begin
   end if;
   -- General validity
   if Args.Get_Nb_Embedded_Arguments /= 0
-  or else Args.Get_Nb_Occurences (Argument_Parser.No_Key_Index) > 1 then
-    Error ("Invalid arguments.");
+  or else Args.Get_Nb_Occurences (Argument_Parser.No_Key_Index) > 0 then
+    Error ("Invalid arguments");
   end if;
 
   -- Input file
-  if Args.Is_Set (7) then
-    Input_File_Name := As.U.Tus (Args.Get_Option (7));
+  if Args.Is_Set (8) then
+    Input_File_Name := As.U.Tus (Args.Get_Option (8));
     if Input_File_Name.Is_Null then
       Error ("Invalid argument: Empty input file name");
     end if;
@@ -386,8 +394,8 @@ begin
     Input_File_Name := As.U.Tus (Default_File_Name);
   end if;
   -- Output file
-  if Args.Is_Set (8) then
-    Output_File_Name := As.U.Tus (Args.Get_Option (8));
+  if Args.Is_Set (9) then
+    Output_File_Name := As.U.Tus (Args.Get_Option (9));
     if Output_File_Name.Is_Null then
       Error ("Invalid argument: Empty output file name");
     end if;
@@ -395,7 +403,7 @@ begin
     Output_File_Name := Input_File_Name;
   end if;
   -- Force
-  Force := Args.Is_Set (9);
+  Force := Args.Is_Set (10);
 
   -- Descriptor
   if not Args.Is_Set (2) then
@@ -479,10 +487,9 @@ begin
   end;
 
   -- Number
-  if Args.Is_Set (Argument_Parser.No_Key_Index) then
+  if Args.Is_Set (7) then
     begin
-      Number := Afpx_Typ.Field_Range'Value (
-          Args.Get_Option (Argument_Parser.No_Key_Index));
+      Number := Afpx_Typ.Field_Range'Value (Args.Get_Option (7));
     exception
       when others =>
       Error ("Invalid argument: Invalid number of fields "
@@ -567,10 +574,11 @@ begin
   if Action /= Insert then
     -- delete or Move: Find node to delete, also counts fields
     Start_Noded:= Find_Field (Field_Numd);
-    if Action = Delete
+    if (Action = Delete or else Action = Move)
     and then Field_Numd + Number > Nb_Fields + 1 then
       -- Not enough fields to delete
-      Error ("Cannot delete " & Images.Integer_Image (Positive (Number))
+      Error ("Cannot " & Lower_Str (Action'Img)
+            & " " & Images.Integer_Image (Positive (Number))
             & " fields from field "
             & Images.Integer_Image (Positive (Field_Numd))
             & " in descriptor " & Images.Integer_Image (Positive (Dscr)) );
@@ -578,40 +586,66 @@ begin
   end if;
 
 
-  for Curr_Action in First_Action .. Last_Action loop
-    -----------
-    -- Make Map
-    -----------
-    -- Map indexed by initial field nums xx and containing new nums XX
-    -- (0 if deleted)
-    for I in 1 .. Nb_Fields loop
-      Field_Map.Append ( (I) );
-    end loop;
-    case One_Action_List'(Curr_Action) is
-      when Insert =>
-        -- Add offest to fields after Field_Num
-        for I in Field_Numi + 1 .. Nb_Fields loop
-          Field_Map.Replace_Element (Positive(I), (I + Number) );
-        end loop;
-      when Delete =>
-        -- Set 0 to Number fields from Field_Num included
-        for I in Field_Numd .. Field_Numd + Number - 1 loop
-          Field_Map.Replace_Element (Positive(I), (0) );
-        end loop;
-        -- Sub offset to following fields
-        for I in Field_Numd + Number .. Nb_Fields loop
-          Field_Map.Replace_Element (Positive(I), (I - Number) );
-        end loop;
-    end case;
-    if Debug then
-      Basic_Proc.Put_Output ("Translation map is: " );
-      for I in 1 .. Field_Map.Length loop
-        Basic_Proc.Put_Output (Images.Integer_Image (Positive (I)) & "->"
-            & Images.Integer_Image (Natural (Field_Map.Element(I))) & ", ");
+  -----------
+  -- Make Map
+  -----------
+  -- Map indexed by initial field nums xx and containing new nums XX
+  -- (0 if deleted)
+  for I in 1 .. Nb_Fields loop
+    Field_Map.Append ( (I) );
+  end loop;
+  case Action is
+    when Insert | Copy =>
+      -- Add offest to fields after Field_Num
+      for I in Field_Numi + 1 .. Nb_Fields loop
+        Field_Map.Replace_Element (Positive(I), (I + Number) );
       end loop;
-      Basic_Proc.New_Line_Output;
-    end if;
+    when Delete =>
+      -- Set 0 to Number fields from Field_Num included
+      for I in Field_Numd .. Field_Numd + Number - 1 loop
+        Field_Map.Replace_Element (Positive(I), (0) );
+      end loop;
+      -- Sub offset to following fields
+      for I in Field_Numd + Number .. Nb_Fields loop
+        Field_Map.Replace_Element (Positive(I), (I - Number) );
+      end loop;
+    when Move =>
+      for I in 1 .. Nb_Fields loop
+        Old_Num := Field_Map.Element (Positive(I));
+        New_Num := Old_Num;
+        if Old_Num >= Field_Numd
+        and then Old_Num <= Field_Numd + Number - 1 then
+          -- If field is moved then set new number
+          New_Num := Old_Num - Field_Numd + Field_Numi + 1;
+          if Field_Numi > Field_Numd then
+            -- Move forward
+            New_Num := New_Num - Number;
+          end if;
+        else
+          -- Adjust new number for other fields, after deleted, or after
+          --  inserted, or both
+          if I > Field_Numd then
+            New_Num := New_Num - Number;
+          end if;
+          if I > Field_Numi then
+            New_Num := New_Num + Number;
+          end if;
+        end if;
+        if New_Num /= Old_Num then
+          Field_Map.Replace_Element (Positive(I), (New_Num));
+        end if;
+      end loop;
+  end case;
+  if Debug then
+    Basic_Proc.Put_Output ("Translation map is: " );
+    for I in 1 .. Field_Map.Length loop
+      Basic_Proc.Put_Output (Images.Integer_Image (Positive (I)) & "->"
+          & Images.Integer_Image (Natural (Field_Map.Element(I))) & ", ");
+    end loop;
+    Basic_Proc.New_Line_Output;
+  end if;
 
+  for Curr_Action in First_Action .. Last_Action loop
     ------------------------------
     -- Insert and/or delete fields
     ------------------------------
@@ -675,153 +709,153 @@ begin
 
       end case;
     end;
+  end loop;
 
-    --------------
-    -- Update Nums
-    --------------
-    declare
-      Field : Xml_Parser.Node_Type;
-      Child : Xml_Parser.Element_Type;
-      Num_Read, Num_Comp : Afpx_Typ.Absolute_Field_Range;
-      Geometry : Xml_Parser.Attributes_Array (1 .. 4);
-      Txt : As.U.Asu_Us;
-      Updated, Changed : Boolean;
-    begin
-      -- Find first field (variables before fields cannot reference fields)
-      if Action /= Delete
-      or else Number /= Nb_Fields then
-        Field := Xml.Get_Child (Dscr_Elt, 1);
-        if not Is_Field (Field) then
-          Field := Next_Field (Field);
-        end if;
+  --------------
+  -- Update Nums
+  --------------
+  declare
+    Field : Xml_Parser.Node_Type;
+    Child : Xml_Parser.Element_Type;
+    Num_Read, Num_Comp : Afpx_Typ.Absolute_Field_Range;
+    Geometry : Xml_Parser.Attributes_Array (1 .. 4);
+    Txt : As.U.Asu_Us;
+    Updated, Changed : Boolean;
+  begin
+    -- Find first field (variables before first field cannot reference fields)
+    if Action /= Delete
+    or else Number /= Nb_Fields then
+      Field := Xml.Get_Child (Dscr_Elt, 1);
+      if not Is_Field (Field) then
+        Field := Next_Field (Field);
       end if;
-      Num_Comp := 1;
+    end if;
+    Num_Comp := 1;
 
-      Ok := True;
-      -- From Field included up to end of Dscr, update field num and variable
-      -- references
-      -- Same for Vars
-      loop
-        exit when not Xml_Parser.Is_Valid (Field);
+    Ok := True;
+    -- From Field included up to end of Dscr, update field num and variable
+    -- references
+    -- Same for Vars
+    loop
+      exit when not Xml_Parser.Is_Valid (Field);
 
-        if Xml.Get_Name (Field) = Field_Name then
-          -- Field num
-          Num_Read := Afpx_Typ.Absolute_Field_Range'Value (
-              Xml.Get_Attribute (Field, Field_Num_Name));
+      if Xml.Get_Name (Field) = Field_Name then
+        -- Field num
+        Num_Read := Afpx_Typ.Absolute_Field_Range'Value (
+            Xml.Get_Attribute (Field, Field_Num_Name));
 
-          if Debug then
-             Basic_Proc.Put_Line_Output (
-                 Images.Integer_Image (Positive (Num_Read)) & "->"
-               & Images.Integer_Image (Positive (Num_Comp)));
+        if Debug then
+           Basic_Proc.Put_Line_Output (
+               Images.Integer_Image (Positive (Num_Read)) & "->"
+             & Images.Integer_Image (Positive (Num_Comp)));
+        end if;
+       if Num_Read /= Num_Comp then
+          Xml.Set_Attribute (Field, Field_Num_Name,
+            Images.Integer_Image(Positive(Num_Comp)));
+        end if;
+        Num_Comp := Num_Comp + 1;
+
+        -- Field Geometry
+        Child := Xml_Parser.No_Node;
+        for I in 1 .. Xml.Get_Nb_Children (Field) loop
+          Tmp_Node := Xml.Get_Child (Field, I);
+          if Tmp_Node.Kind = Xml_Parser.Element
+          and then Xml.Get_Name (Tmp_Node) = "Geometry" then
+            Child := Tmp_Node;
+            exit;
           end if;
-         if Num_Read /= Num_Comp then
-            Xml.Set_Attribute (Field, Field_Num_Name,
-              Images.Integer_Image(Positive(Num_Comp)));
+        end loop;
+        if not Xml_Parser.Is_Valid (Child) then
+          Error ("INTERNAL ERROR: No child Geometry found");
+        end if;
+        begin
+          Geometry := Xml.Get_Attributes (Child);
+        exception
+          when Constraint_Error =>
+            Error ("INTERNAL ERROR: Invalid Geometry");
+        end;
+        Changed := False;
+        for I in Geometry'Range loop
+          Update (Geometry(I).Value, Xml.Get_Line_No (Tmp_Node), Updated);
+          Changed := Changed or else Updated;
+          if Debug and then Updated then
+            Basic_Proc.Put_Line_Output ("Update Geometry " &
+              Geometry(I).Name.Image & " to " & Geometry(I).Value.Image);
           end if;
-          Num_Comp := Num_Comp + 1;
-
-          -- Field Geometry
-          Child := Xml_Parser.No_Node;
-          for I in 1 .. Xml.Get_Nb_Children (Field) loop
-            Tmp_Node := Xml.Get_Child (Field, I);
-            if Tmp_Node.Kind = Xml_Parser.Element
-            and then Xml.Get_Name (Tmp_Node) = "Geometry" then
-              Child := Tmp_Node;
-              exit;
-            end if;
-          end loop;
-          if not Xml_Parser.Is_Valid (Child) then
-            Error ("INTERNAL ERROR: No child Geometry found");
-          end if;
-          begin
-            Geometry := Xml.Get_Attributes (Child);
-          exception
-            when Constraint_Error =>
-              Error ("INTERNAL ERROR: Invalid Geometry");
-          end;
-          Changed := False;
-          for I in Geometry'Range loop
-            Update (Geometry(I).Value, Xml.Get_Line_No (Tmp_Node), Updated);
-            Changed := Changed or else Updated;
-            if Debug and then Updated then
-              Basic_Proc.Put_Line_Output ("Update Geometry " &
-                Geometry(I).Name.Image & " to " & Geometry(I).Value.Image);
-            end if;
-          end loop;
-          if Changed then
-            Xml.Set_Attributes (Child, Geometry);
-          end if;
-
-          -- Field Init if any, brother of Geometry
-          Tmp_Node := Child;
-          Child := Xml_Parser.No_Node;
-          while Xml.Has_Brother (Tmp_Node) loop
-            Tmp_Node := Xml.Get_Brother (Tmp_Node);
-            if Tmp_Node.Kind = Xml_Parser.Element
-            and then Xml.Get_Name (Tmp_Node) = "Init" then
-              Child := Tmp_Node;
-              exit;
-            end if;
-          end loop;
-          if Xml_Parser.Is_Valid (Child) then
-            -- Get Text nodes
-            for I in 1 .. Xml.Get_Nb_Children (Child) loop
-              Tmp_Node := Xml.Get_Child (Child, I);
-              if Tmp_Node.Kind = Xml_Parser.Text then
-                Txt := Xml.Get_Text (Tmp_Node);
-                Update (Txt, Xml.Get_Line_No (Tmp_Node), Updated);
-                if Updated then
-                  Xml.Set_Text (Tmp_Node, Txt.Image);
-                  if Debug then
-                    Basic_Proc.Put_Line_Output ("Update Init text to " &
-                       Txt.Image);
-                  end if;
-                end if;
-              end if;
-            end loop;
-          end if;
-
-        elsif Xml.Get_Name (Field) = "Var" then
-          -- Var value
-          begin
-            Txt := Xml.Get_Attribute (Field, "Value");
-          exception
-            when Xml_Parser.Attribute_Not_Found =>
-              Error ("INTERNAL ERROR: Invalid Var");
-          end;
-          Update (Txt, Xml.Get_Line_No (Field), Updated);
-          if Updated then
-            Xml.Set_Attribute (Field, "Value", Txt.Image);
-            if Debug then
-              Basic_Proc.Put_Line_Output ("Update Var "
-                  & Xml.Get_Attribute (Field, "Name")
-                  & " to " & Txt.Image);
-            end if;
-          end if;
-
+        end loop;
+        if Changed then
+          Xml.Set_Attributes (Child, Geometry);
         end if;
 
-        -- Move to next Field or Var
-        Tmp_Node := Field;
-        Field := Xml_Parser.No_Node;
+        -- Field Init if any, brother of Geometry
+        Tmp_Node := Child;
+        Child := Xml_Parser.No_Node;
         while Xml.Has_Brother (Tmp_Node) loop
           Tmp_Node := Xml.Get_Brother (Tmp_Node);
           if Tmp_Node.Kind = Xml_Parser.Element
-          and then  (Xml.Get_Name (Tmp_Node) /= Field_Name
-             or else Xml.Get_Name (Tmp_Node) /= "Var") then
-             Field := Tmp_Node;
-             exit;
+          and then Xml.Get_Name (Tmp_Node) = "Init" then
+            Child := Tmp_Node;
+            exit;
           end if;
         end loop;
+        if Xml_Parser.Is_Valid (Child) then
+          -- Get Text nodes
+          for I in 1 .. Xml.Get_Nb_Children (Child) loop
+            Tmp_Node := Xml.Get_Child (Child, I);
+            if Tmp_Node.Kind = Xml_Parser.Text then
+              Txt := Xml.Get_Text (Tmp_Node);
+              Update (Txt, Xml.Get_Line_No (Tmp_Node), Updated);
+              if Updated then
+                Xml.Set_Text (Tmp_Node, Txt.Image);
+                if Debug then
+                  Basic_Proc.Put_Line_Output ("Update Init text to " &
+                     Txt.Image);
+                end if;
+              end if;
+            end if;
+          end loop;
+        end if;
 
+      elsif Xml.Get_Name (Field) = "Var" then
+        -- Var value
+        begin
+          Txt := Xml.Get_Attribute (Field, "Value");
+        exception
+          when Xml_Parser.Attribute_Not_Found =>
+            Error ("INTERNAL ERROR: Invalid Var");
+        end;
+        Update (Txt, Xml.Get_Line_No (Field), Updated);
+        if Updated then
+          Xml.Set_Attribute (Field, "Value", Txt.Image);
+          if Debug then
+            Basic_Proc.Put_Line_Output ("Update Var "
+                & Xml.Get_Attribute (Field, "Name")
+                & " to " & Txt.Image);
+          end if;
+        end if;
+
+      end if;
+
+      -- Move to next Field or Var
+      Tmp_Node := Field;
+      Field := Xml_Parser.No_Node;
+      while Xml.Has_Brother (Tmp_Node) loop
+        Tmp_Node := Xml.Get_Brother (Tmp_Node);
+        if Tmp_Node.Kind = Xml_Parser.Element
+        and then  (Xml.Get_Name (Tmp_Node) /= Field_Name
+           or else Xml.Get_Name (Tmp_Node) /= "Var") then
+           Field := Tmp_Node;
+           exit;
+        end if;
       end loop;
-    end;
-    if not Ok and then Action = Delete and then not Force then
-      Error ("Some deleted fields are referenced, aborting"
-           & " (use ""force"" flag to overwrite).");
-    end if;
 
-  end loop;
+    end loop;
+  end;
+  if not Ok and then Action = Delete and then not Force then
+    Error ("Some deleted fields are referenced, aborting"
+         & " (use ""force"" flag to overwrite).");
+  end if;
+
 
   -----------------
   -- Commit changes

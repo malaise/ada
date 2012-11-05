@@ -10,8 +10,22 @@ function error {
   exit 1
 }
 
-# Insertions then deletions
+export do_ins=1
+export do_mov=1
+export do_cop=1
 
+if [ "$1" = "-i" ] ; then
+  do_mov=0
+  do_cop=0
+elif [ "$1" = "-m" ] ; then
+  do_ins=0
+  do_cop=0
+elif [ "$1" = "-c" ] ; then
+  do_ins=0
+  do_cop=0
+fi
+
+# Insertions then deletions
 function insdel {
   local dscr=$1
   local field
@@ -19,7 +33,7 @@ function insdel {
   local nb=$3
 
   # Insert fields
-  afpx_rnb -o Afpx.tmp -D $dscr -i $field $nb 2>err
+  afpx_rnb -o Afpx.tmp -D $dscr -i $field -n $nb 2>err
   if [ $? -ne 0 ] ; then
     err=`cat err`
     crit="ERROR: Field [0-9]+ does not exist in descriptor [0-9]+."
@@ -32,7 +46,7 @@ function insdel {
 
   # Delete fields
   let field=$field+1
-  afpx_rnb -f Afpx.tmp -o Afpx.res -D $dscr -d $field $nb 2>err
+  afpx_rnb -f Afpx.tmp -o Afpx.res -D $dscr -d $field -n $nb 2>err
   if [ $? -ne 0 ] ; then
     err=`cat err | sed 's/\n//g'`
     error "deleting field $field: $err"
@@ -46,50 +60,48 @@ function insdel {
   return 0
 }
 
-if false ; then
+if [ $do_ins -eq 1 ] ; then
 
-echo Insertions and deletions
-let dscr=1
-while true ; do
-
-  # Skip hole or exit
-  if [ $dscr -eq 5 ] ; then
-    let dscr=6
-  elif [ \( $dscr -ge 11 \) -a \( $dscr -le 14 \) ] ; then
-    let dscr=15
-  elif [ $dscr -eq 19 ] ; then
-    break
-  fi
-  echo ""
-  echo "Dscr $dscr"
-
-  # Iterate on all fields
-  let field=0
+  echo Insertions and deletions
+  let dscr=1
   while true ; do
-    echo "Field $field"
-    insdel $dscr $field 1
-    res=$?
-    if [ $res = 1 ] ; then
-      break;
+
+    # Skip hole or exit
+    if [ $dscr -eq 5 ] ; then
+      let dscr=6
+    elif [ \( $dscr -ge 11 \) -a \( $dscr -le 14 \) ] ; then
+      let dscr=15
+    elif [ $dscr -eq 19 ] ; then
+      break
     fi
-    let field=$field+1
+    echo "Dscr $dscr"
+
+    # Iterate on all fields
+    let field=0
+    while true ; do
+      echo "$field/1"
+      insdel $dscr $field 1
+      res=$?
+      if [ $res = 1 ] ; then
+        break;
+      fi
+      let field=$field+1
+    done
+
+    let dscr=$dscr+1
   done
 
-  let dscr=$dscr+1
-done
-
-echo ""
-echo "Dscr 1"
-echo 5 2
-insdel 1 5 2
-echo 0 3
-insdel 1 0 3
-echo 19 4
-insdel 1 19 4
+  echo "Dscr 1"
+  echo 5/2
+  insdel 1 5 2
+  echo 0/3
+  insdel 1 0 3
+  echo 19/4
+  insdel 1 19 4
+  echo ""
 fi
 
 # Move one way then back
-
 type asubst > /dev/null 2>&1
 if [ $? -ne 0 ] ; then
   error "asubst not found"
@@ -119,14 +131,14 @@ function movmov {
 
   echo "$nums/$nb then $bnums"
   # Move fields
-  afpx_rnb -o Afpx.tmp -D 1 -m $nums $nb 2>err
+  afpx_rnb -o Afpx.tmp -D 1 -m $nums -n $nb 2>err
   if [ $? -ne 0 ] ; then
     err=`cat err | sed 's/\n//g'`
     error "moving fields $nums: $err"
   fi
 
   # Move back
-  afpx_rnb -f Afpx.tmp -o Afpx.res -D 1 -m $bnums $nb 2>err
+  afpx_rnb -f Afpx.tmp -o Afpx.res -D 1 -m $bnums -n $nb 2>err
   if [ $? -ne 0 ] ; then
     err=`cat err | sed 's/\n//g'`
     error "moving field $bnums: $err"
@@ -140,16 +152,19 @@ function movmov {
   fi
 }
 
-echo ""
-echo "Move then back"
-cat Afpx.xml | asubst -q -D "" '\n([\B]*\n)+' '\n' > Afpx.ref
-#for nums in 1:7/1 2:8/1 3:9/1 16:8/1 ; do
-for nums in 16:8/1 ; do
+if [ $do_mov -eq 1 ] ; then
+  echo "Move then back"
+  cat Afpx.xml | asubst -q -D "" '\n([\B]*\n)+' '\n' > Afpx.ref
+  for nums in 1:7/1 2:8/1 3:9/1 8:16/1 10:18/1 \
+              7:1/1 8:2/1 9:3/1 16:8/1 18:10/1\
+              1:10/2 2:11/2 8:17/2 9:18/2 13:17/3\
+              10:1/2 11:2/2 17:8/2 18:9/1 17:13/2 ; do
+    movmov $nums
 
-  movmov $nums
-
-done
+  done
+fi
 
 rm -f err Afpx.ref Afpx.tmp Afpx.res
+echo ""
 echo "Test Ok."
 
