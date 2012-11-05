@@ -226,6 +226,10 @@ afpx afpx.list_manager (3)::
 afpx_bld (2)::
      Process that compiles XML text description of screens for AFPX.
 
+afpx_rnb (3)::
+     Process that re-organises a AFPX XML file (insertion, deletion,
+     move, copy of fields in a descriptor) and updates associated references.
+
 any_def (1)::
      Definition of variant type that contains any value.
 

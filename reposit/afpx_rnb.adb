@@ -447,6 +447,7 @@ begin
     if Nb_Action /= 1 then
       Error ("Invalid arguments: Too many actions");
     end if;
+    -- Parse field no or src:dst fields
     case Action is
       when Insert | Delete =>
         begin
@@ -498,8 +499,8 @@ begin
   end if;
 
   -- Nothing when Moving from i to i or from i to i-1
-  if Action = Delete and then
-  (Field_Numd = Field_Numi or else Field_Numd = Field_Numi - 1) then
+  if Action = Move and then
+  (Field_Numd = Field_Numi or else Field_Numi = Field_Numd - 1) then
     return;
   end if;
 
@@ -510,7 +511,6 @@ begin
       Error ("Invalid argument: source and destination overlap");
     end if;
   end if;
-
 
 
   -----------------
@@ -572,11 +572,11 @@ begin
   end if;
 
   if Action /= Insert then
-    -- delete or Move: Find node to delete, also counts fields
+    -- Delete, Move or Copy: Find node to delete, also counts fields
+    --  In Copy, node to delete is simply not deleted
     Start_Noded:= Find_Field (Field_Numd);
-    if (Action = Delete or else Action = Move)
-    and then Field_Numd + Number > Nb_Fields + 1 then
-      -- Not enough fields to delete
+    if Field_Numd + Number > Nb_Fields + 1 then
+      -- Not enough fields to delete or copy
       Error ("Cannot " & Lower_Str (Action'Img)
             & " " & Images.Integer_Image (Positive (Number))
             & " fields from field "
@@ -645,18 +645,20 @@ begin
     Basic_Proc.New_Line_Output;
   end if;
 
+
+  ------------------------------
+  -- Insert and/or delete fields
+  ------------------------------
   for Curr_Action in First_Action .. Last_Action loop
-    ------------------------------
-    -- Insert and/or delete fields
-    ------------------------------
     declare
       Next_Nodei, Next_Noded : Xml_Parser.Node_Type;
       Start_Num : Positive;
       Prev_Node, Next_Node : Xml_Parser.Node_Type;
     begin
       case One_Action_List'(Curr_Action) is
-        when Insert =>
 
+        when Insert =>
+          -- For Action Insert, Move or Copy
           if Field_Numi = 0 then
             if Xml_Parser.Is_Valid (Start_Nodei) then
               -- Append first field as brother of Start_Node
@@ -680,6 +682,7 @@ begin
           end loop;
 
         when Delete =>
+          -- For Action Delete or Move
           Next_Noded := Start_Noded;
           for I in 1 .. Number loop
             -- Get next field
@@ -710,6 +713,7 @@ begin
       end case;
     end;
   end loop;
+
 
   --------------
   -- Update Nums
