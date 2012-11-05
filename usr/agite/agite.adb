@@ -344,6 +344,7 @@ procedure Agite is
     Insert := False;
     Redisplay := False;
     Afpx.Encode_Field (Afpx_Xref.Main.Host, (0, 0), Host_Str);
+    Encode_Files (True);
     if Position /= 0 and then not Afpx.Line_List.Is_Empty then
       Afpx.Line_List.Move_At (Position);
     end if;
@@ -352,7 +353,7 @@ procedure Agite is
       Afpx.Line_List.Move_At (Position);
     end if;
     Afpx.Update_List (Afpx.Center_Selected);
-  end;
+  end Init;
 
   procedure Do_Edit (File_Name : in String) is
   begin
