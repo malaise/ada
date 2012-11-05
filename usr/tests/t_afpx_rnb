@@ -10,57 +10,47 @@ function error {
   exit 1
 }
 
-nb=""
-let nbn=1
-if [ "$1" != "" ] ; then
-  nb=$1
-  let nbn=0+$1
-fi
+# Insertions then deletions
+
+function insdel {
+  local dscr=$1
+  local field
+  let field=0+$2
+  local nb=$3
+
+  # Insert fields
+  afpx_rnb -o Afpx.tmp -D $dscr -i $field $nb 2>err
+  if [ $? -ne 0 ] ; then
+    err=`cat err`
+    crit="ERROR: Field [0-9]+ does not exist in descriptor [0-9]+."
+    if [[ $err =~ $crit ]] ; then
+      return 1
+    else
+      error "inserting field $field: $err"
+    fi
+  fi
+
+  # Delete fields
+  let field=$field+1
+  afpx_rnb -f Afpx.tmp -o Afpx.res -D $dscr -d $field $nb 2>err
+  if [ $? -ne 0 ] ; then
+    err=`cat err | sed 's/\n//g'`
+    error "deleting field $field: $err"
+  fi
+
+  # Check that result is unchanged
+  cmp Afpx.xml Afpx.res > /dev/null 2>&1
+  if [ $? -ne 0 ] ; then
+    error "file Afpx.res differs from original Afpx.xml"
+  fi
+  return 0
+}
 
 if false ; then
 
 echo Insertions and deletions
 let dscr=1
 while true ; do
-
-  echo ""
-  echo "Dscr $dscr"
-
-  let field=0
-
-  while true ; do
-
-    echo "Field $field"
-
-    # Insert fields
-    afpx_rnb -o Afpx.tmp -D $dscr -i $field $nb 2>err
-    if [ $? -ne 0 ] ; then
-      err=`cat err`
-      crit="ERROR: Field [0-9]+ does not exist in descriptor [0-9]+."
-      if [[ $err =~ $crit ]] ; then
-        break
-      else
-        error "inserting field $field: $err"
-      fi
-    fi
-
-    # Delete fields
-    let field=$field+1
-    afpx_rnb -f Afpx.tmp -o Afpx.res -D $dscr -d $field $nb 2>err
-    if [ $? -ne 0 ] ; then
-      err=`cat err | sed 's/\n//g'`
-      error "deleting field $field: $err"
-    fi
-
-    # Check that result is unchanged
-    cmp Afpx.xml Afpx.res > /dev/null 2>&1
-    if [ $? -ne 0 ] ; then
-      error "file Afpx.res differs from original Afpx.xml"
-    fi
-
-  done
-
-  let dscr=$dscr+1
 
   # Skip hole or exit
   if [ $dscr -eq 5 ] ; then
@@ -70,35 +60,64 @@ while true ; do
   elif [ $dscr -eq 19 ] ; then
     break
   fi
+  echo ""
+  echo "Dscr $dscr"
+
+  # Iterate on all fields
+  let field=0
+  while true ; do
+    echo "Field $field"
+    insdel $dscr $field 1
+    res=$?
+    if [ $res = 1 ] ; then
+      break;
+    fi
+    let field=$field+1
+  done
+
+  let dscr=$dscr+1
 done
+
+echo ""
+echo "Dscr 1"
+echo 5 2
+insdel 1 5 2
+echo 0 3
+insdel 1 0 3
+echo 19 4
+insdel 1 19 4
 fi
+
+# Move one way then back
 
 type asubst > /dev/null 2>&1
 if [ $? -ne 0 ] ; then
   error "asubst not found"
 fi
 
-echo "Move nums then back"
-cat Afpx.xml | asubst -q -D "" '\n([\B]*\n)+' '\n' > Afpx.ref
-for nums in 1:7 2:8 3:9 16:8 ; do
+function movmov {
+  # $1 is i:j/n, split
+  nums=`echo $1 | cut -d '/' -f 1`
 
-  # Movement back
   let bnumi=`echo $nums | cut -d ':' -f 1`+0
   let bnumj=`echo $nums | cut -d ':' -f 2`+0
+  let nb=`echo $1 | cut -d '/' -f 2`+0
+
+  # Movement back
   if [ $bnumi -lt $bnumj ] ; then
-    # We moved nb from bnumi to bnumj above
+    # We moved nb from bnumi to after bnumj above
     # Move back from bnumj-nb+1 to bnumi - 1
     let bnumi=$bnumi-1
-    let bnumj=$bnumj-$nbn+1
+    let bnumj=$bnumj-$nb+1
   else
-     # We moved nb from bnumi to bnumj below
-     # Move back from bnumj to bnumi+nb
-     let bnumi=$bnumi
-     let bnumj=$bnumj+$nbn
+     # We moved nb from bnumi to after bnumj below
+     # Move back from bnumj+1 to bnumi+nb
+     let bnumi=$bnumi+$nb-1
+     let bnumj=$bnumj+1
   fi
   bnums=$bnumj":"$bnumi
 
-  echo "$nums then $bnums"
+  echo "$nums/$nb then $bnums"
   # Move fields
   afpx_rnb -o Afpx.tmp -D 1 -m $nums $nb 2>err
   if [ $? -ne 0 ] ; then
@@ -119,6 +138,15 @@ for nums in 1:7 2:8 3:9 16:8 ; do
   if [ $? -ne 0 ] ; then
     error "file Afpx.res differs from reference Afpx.ref"
   fi
+}
+
+echo ""
+echo "Move then back"
+cat Afpx.xml | asubst -q -D "" '\n([\B]*\n)+' '\n' > Afpx.ref
+#for nums in 1:7/1 2:8/1 3:9/1 16:8/1 ; do
+for nums in 16:8/1 ; do
+
+  movmov $nums
 
 done
 
