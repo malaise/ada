@@ -3,7 +3,7 @@
 package Xml_Parser.Generator is
 
   -- Version incremented at each significant change
-  Major_Version : constant String := "12";
+  Major_Version : constant String := "13";
   function Version return String;
 
   type Ctx_Type is new Xml_Parser.Ctx_Type with private;
@@ -149,8 +149,8 @@ package Xml_Parser.Generator is
   -- May raise Invalid_Node if one is in prologue
   -- May raise Invalid_Node is Src is ancestor of the Dst
   procedure Copy (Ctx      : in out Ctx_Type;
-                  Src      : in out Element_Type;
-                  Dst      : in out Element_Type;
+                  Src      : in Element_Type;
+                  Dst      : in Element_Type;
                   New_Node : out Node_Type;
                   Child    : in Boolean := True;
                   Next     : in Boolean := True);

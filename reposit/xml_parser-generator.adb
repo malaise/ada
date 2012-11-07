@@ -729,8 +729,8 @@ package body Xml_Parser.Generator is
   --  Copy Src element as Next (or prev) Child (or brother)
   --  of Dst
   procedure  Copy (Ctx      : in out Ctx_Type;
-                   Src      : in out Element_Type;
-                   Dst      : in out Element_Type;
+                   Src      : in Element_Type;
+                   Dst      : in Element_Type;
                    New_Node : out Node_Type;
                    Child    : in Boolean := True;
                    Next     : in Boolean := True) is
