@@ -207,10 +207,10 @@ procedure Afpx_Rnb is
   -- Insert before element a Text "Lf   "
   -- Add to element the attributes Num and Kind,
   -- Add to element the children Geometry and Colors with attribtues
-  procedure Add_Field (Ref_Node  : in out Xml_Parser.Node_Type;
+  procedure Add_Field (Ref_Node  : in Xml_Parser.Node_Type;
                        Child     : in Boolean;
-                       Fld_Num   : in Positive;
-                       Copy_From : in out Xml_Parser.Node_Type;
+                       Fld_Num   : in Afpx_Typ.Field_Range;
+                       Copy_From : in Xml_Parser.Node_Type;
                        Field     : out Xml_Parser.Element_Type) is
     -- Text for Indentation
     Indent_Node : Xml_Parser.Text_Type;
@@ -254,7 +254,7 @@ procedure Afpx_Rnb is
     Xml.Add_Brother (Field, Indent, Xml_Parser.Text, Indent_Node,
                      Next => False);
     -- Set Field num
-    Fld_Attrs(1).Value := As.U.Tus (Images.Integer_Image (Fld_Num));
+    Fld_Attrs(1).Value := As.U.Tus (Images.Integer_Image (Positive (Fld_Num)));
     if Debug then
       Basic_Proc.Put_Line_Output ("Insert Field " & Fld_Attrs(1).Value.Image);
     end if;
@@ -281,9 +281,7 @@ procedure Afpx_Rnb is
   Input_File_Name, Output_File_Name : As.U.Asu_Us;
   Force : Boolean := False;
   type Action_List is (Insert, Delete, Move, Copy);
-  subtype One_Action_List is Action_List range Insert .. Delete;
   Action : Action_List;
-  First_Action, Last_Action : One_Action_List;
   Field_Numi : Afpx_Typ.Absolute_Field_Range := 0;
   Field_Numd : Afpx_Typ.Field_Range := 1;
   Number : Afpx_Typ.Field_Range := 1;
@@ -359,6 +357,71 @@ procedure Afpx_Rnb is
     end loop;
 
   end Update;
+
+   procedure Insert_Nodes (Start_Node : in Xml_Parser.Node_Type;
+                           Field_Num  : Afpx_Typ.Absolute_Field_Range;
+                           From_Node  : in Xml_Parser.Node_Type;
+                           Number     : in Afpx_Typ.Field_Range) is
+    Next_Node_To, Next_Node_From : Xml_Parser.Node_Type;
+    Start_Num : Afpx_Typ.Field_Range;
+    use type Afpx_Typ.Field_Range;
+  begin
+    -- For Action Insert, Move or Copy
+    if Field_Num = 0 then
+      if Xml_Parser.Is_Valid (Start_Node) then
+        -- Append first field as brother of Start_Node
+        Add_Field (Start_Node, False, 1, From_Node, Next_Node_To);
+      else
+        -- Insert first field as First child of Dscr
+        Add_Field (Dscr_Elt, True, 1, From_Node, Next_Node_To);
+      end if;
+      Next_Node_From := Next_Field (From_Node);
+      Start_Num := 2;
+    else
+      Next_Node_To := Start_Node;
+      Next_Node_From := From_Node;
+      Start_Num := 1;
+    end if;
+    -- Append remaining brothers
+    for I in Start_Num .. Number loop
+      Add_Field (Next_Node_To, False, Field_Num + I, Next_Node_From,
+                 Next_Node_To);
+      Next_Node_From := Next_Field (Next_Node_From);
+    end loop;
+  end Insert_Nodes;
+
+  procedure Delete_Nodes (Start_Node : in Xml_Parser.Node_Type;
+                          Number     : in Afpx_Typ.Field_Range) is
+    Curr_Node, Prev_Node, Next_Node : Xml_Parser.Node_Type;
+    use type Afpx_Typ.Field_Range, Xml_Parser.Node_Kind_List;
+  begin
+    -- For Action Delete or Move
+    Curr_Node := Start_Node;
+    for I in 1 .. Number loop
+
+      -- If previous node is indentation then remove it
+      if Xml.Has_Brother (Curr_Node, False) then
+        Prev_Node := Xml.Get_Brother (Curr_Node, False);
+        if Prev_Node.Kind = Xml_Parser.Text
+        and then Xml.Get_Text (Prev_Node) = Indent then
+          Xml.Delete_Node (Prev_Node, Prev_Node);
+        end if;
+      end if;
+      -- Get next field and delete current field
+      Next_Node := Next_Field (Curr_Node);
+      Xml.Delete_Node (Curr_Node, Curr_Node);
+      if Debug then
+        Basic_Proc.Put_Line_Output ("Delete Field");
+      end if;
+
+      -- Move to next field if any
+      exit when I = Number;
+      if not Xml_Parser.Is_Valid (Next_Node) then
+          Error ("INTERNAL ERROR: No more Field");
+      end if;
+      Curr_Node := Next_Node;
+    end loop;
+  end Delete_Nodes;
 
   use type Afpx_Typ.Field_Range, Xml_Parser.Node_Kind_List;
 
@@ -463,8 +526,6 @@ begin
             Error ("Invalid argument: Invalid field num "
                  & Args.Get_Option (No_Key));
         end;
-        First_Action := Action;
-        Last_Action := Action;
       when Move | Copy =>
         declare
           Nums : constant String := Args.Get_Option (No_Key);
@@ -478,12 +539,6 @@ begin
           when others =>
             Error ("Invalid argument: Invalid field nums " & Nums);
         end;
-        First_Action := Insert;
-        if Action = Move then
-          Last_Action := Delete;
-        else
-          Last_Action := Insert;
-        end if;
     end case;
   end;
 
@@ -649,70 +704,17 @@ begin
   ------------------------------
   -- Insert and/or delete fields
   ------------------------------
-  for Curr_Action in First_Action .. Last_Action loop
-    declare
-      Next_Nodei, Next_Noded : Xml_Parser.Node_Type;
-      Start_Num : Positive;
-      Prev_Node, Next_Node : Xml_Parser.Node_Type;
-    begin
-      case One_Action_List'(Curr_Action) is
-
-        when Insert =>
-          -- For Action Insert, Move or Copy
-          if Field_Numi = 0 then
-            if Xml_Parser.Is_Valid (Start_Nodei) then
-              -- Append first field as brother of Start_Node
-              Add_Field (Start_Nodei, False, 1, Start_Noded, Next_Nodei);
-            else
-              -- Insert first field as First child of Dscr
-              Add_Field (Dscr_Elt, True, 1, Start_Noded, Next_Nodei);
-            end if;
-            Next_Noded := Next_Field (Start_Noded);
-            Start_Num := 2;
-          else
-            Next_Nodei := Start_Nodei;
-            Next_Noded := Start_Noded;
-            Start_Num := 1;
-          end if;
-          -- Append remaining brothers
-          for I in Start_Num .. Positive(Number) loop
-            Add_Field (Next_Nodei, False, Natural(Field_Numi) + I, Next_Noded,
-                       Next_Nodei);
-            Next_Noded := Next_Field (Next_Noded);
-          end loop;
-
-        when Delete =>
-          -- For Action Delete or Move
-          Next_Noded := Start_Noded;
-          for I in 1 .. Number loop
-            -- Get next field
-            Next_Node := Next_Field (Next_Noded);
-
-            -- If previous node is indentation then remove it
-            if Xml.Has_Brother (Next_Noded, False) then
-              Prev_Node := Xml.Get_Brother (Next_Noded, False);
-              if Prev_Node.Kind = Xml_Parser.Text
-              and then Xml.Get_Text (Prev_Node) = Indent then
-                Xml.Delete_Node (Prev_Node, Prev_Node);
-              end if;
-            end if;
-            -- Delete current field
-            Xml.Delete_Node (Next_Noded, Next_Noded);
-            if Debug then
-              Basic_Proc.Put_Line_Output ("Delete Field");
-            end if;
-
-            -- Move to next field if any
-            exit when I = Number;
-            if not Xml_Parser.Is_Valid (Next_Node) then
-                Error ("INTERNAL ERROR: No more Field");
-            end if;
-            Next_Noded := Next_Node;
-          end loop;
-
-      end case;
-    end;
-  end loop;
+  case Action is
+    when Insert =>
+      Insert_Nodes (Start_Nodei, Field_Numi, Start_Noded, Number);
+    when Delete =>
+      Delete_Nodes (Start_Noded, Number);
+    when Move =>
+      Insert_Nodes (Start_Nodei, Field_Numi, Start_Noded, Number);
+      Delete_Nodes (Start_Noded, Number);
+    when Copy =>
+      Insert_Nodes (Start_Nodei, Field_Numi, Start_Noded, Number);
+  end case;
 
 
   --------------
