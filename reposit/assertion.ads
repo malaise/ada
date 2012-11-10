@@ -2,7 +2,8 @@ package Assertion is
 
   -- Action can be Ignore (do nothing), Put_Trace (trace assertion error)
   --  or Raise_Exception (trace and raise Assert_Error)
-  type Action_List is (Ignore, Put_Trace, Raise_Exception);
+  type Assert_Action_List is (Default, Ignore, Put_Trace, Raise_Exception);
+  type Action_List is new Assert_Action_List range Ignore .. Raise_Exception;
   Default_Action : constant Action_List := Ignore;
 
   Assert_Error : exception;
@@ -19,8 +20,10 @@ package Assertion is
   -- Get action value
   function Get return Action_List;
 
-  -- Do nothing if What is True, else do action
-  procedure Assert (What : in Boolean; Trace : in String := "");
+  -- Do nothing if What is True, else do Action
+  -- If Action is Default, do the Action Set or defined in ENV
+  procedure Assert (What : in Boolean; Trace : in String := "";
+                    Action : in Assert_Action_List := Default);
 
 end Assertion;
 

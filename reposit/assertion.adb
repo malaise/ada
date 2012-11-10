@@ -51,7 +51,9 @@ package body Assertion is
   --  If set to TRACE, trace assertion error
   --  If set to RAISE, trace and raise Assert_Error
   --  Else do nothing
-  procedure Assert (What : in Boolean; Trace : in String := "") is
+  procedure Assert (What : in Boolean; Trace : in String := "";
+                    Action : in Assert_Action_List := Default) is
+    To_Do : Action_List;
   begin
     if What then
       -- Assertion is True
@@ -62,7 +64,12 @@ package body Assertion is
       -- Init is necessary
       Init;
     end if;
-    if Action = Ignore then
+    if Action = Default then
+      To_Do := Assertion.Action;
+    else
+      To_Do := Action_List(Action);
+    end if;
+    if To_Do = Ignore then
       -- Action is to ignore False assertion
       return;
     end if;
@@ -76,7 +83,7 @@ package body Assertion is
     end if;
     Basic_Proc.Put_Line_Error (".");
 
-    if Action = Put_Trace then
+    if To_Do = Put_Trace then
       -- Action is only to log False assertion
       return;
     end if;
