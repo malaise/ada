@@ -186,6 +186,11 @@ package body Input_Dispatcher is
 
     return As.U.Tus (Cur_Str.Slice (Tmp_Index, Stop_Index));
 
+  exception
+    when String_Error =>
+      -- Prevent infinite loop if String_Error is handled (ex: on stdin)
+      Cur_Index := Cur_Index + 1;
+      raise;
   end Next_Str_Word;
 
   -- Next string to parse, also current string
@@ -276,7 +281,7 @@ package body Input_Dispatcher is
       -- In stdin
       loop
         if Str_Stdin.Length = 0 then
-          -- End if string. Need to get a new string
+          -- End of string. Need to get a new string
           Io_Flow.Next_Line (Str_Stdin);
           if Str_Stdin.Length = 0 then
               return "";

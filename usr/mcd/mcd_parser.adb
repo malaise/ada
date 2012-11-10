@@ -228,6 +228,9 @@ package body Mcd_Parser is
       Txt := As.U.Tus (Input_Dispatcher.Next_Word);
     exception
       when Input_Dispatcher.String_Error =>
+        if Debug.Debug_Level_Array(Debug.Parser) then
+          Async_Stdin.Put_Line_Err ("Parser: Getting String_Error");
+        end if;
         -- Impossible to parse a word
         Item_Chrs.Val_Text := As.U.Tus (Input_Dispatcher.Current_String);
         Instr_Stack.Push (Stack, Item_Chrs);
