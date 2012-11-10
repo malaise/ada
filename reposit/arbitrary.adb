@@ -201,7 +201,7 @@ package body Arbitrary is
                         Q : out Character) is
       Ta, Tb, D : Natural;
     begin
-      Ta := To_Int( A(1)) * 10 + To_Int( A(2));
+      Ta := To_Int (A(1)) * 10 + To_Int (A(2));
       Tb := To_Int (B);
       D := Ta / Tb;
       if D in I_Digit then
@@ -278,7 +278,7 @@ package body Arbitrary is
       if C then
         raise Constraint_Error;
       end if;
-      -- Remove tailing '0's
+      -- Remove heading '0's
       Trim (R);
       return R;
     end Sub_No_Sign;
@@ -801,7 +801,8 @@ package body Arbitrary is
     end Sqrt2;
 
     -- Extract and remove a heading slice of a number
-    -- The slice length is 2 if the length of the number rem 2 = 0 and 1 otherwise
+    -- The slice length is 2 if the length of the number rem 2 = 0
+    --  and 1 otherwise
     procedure Get_Slice (N : in out As.U.Asu_Us; S : out As.U.Asu_Us) is
       L : Positive;
     begin

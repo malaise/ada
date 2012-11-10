@@ -6,13 +6,13 @@ with Socket, Regular_Expressions, As.U,
 package Autobus is
 
   -- How to use:
-  -- First, create and initialise a Bus (provide an IPM address and port)
-  --  You can tune this bus in the file indicated in the ENV variable
-  --  AUTOBUS_CONFIG (see Autobus.dtd).
-  -- Then you can send messages (strings) on it.
-  -- Second, create an observer (with a procedure Receive on it)
-  --  and a Subscriber, and init the subscriber; The procedure Received
-  --  is called with messages received on the Bus.
+  -- * First, create and initialise a Bus (provide an IPM address and port)
+  --   You can tune this bus in the file indicated in the ENV variable
+  --    AUTOBUS_CONFIG (see Autobus.dtd).
+  --   Then you can send messages (strings) on it.
+  -- * Second, create an observer (with a procedure Receive on it)
+  --    and a Subscriber, and init the subscriber. The procedure Receive
+  --    will be called with messages received on the Bus.
 
   -------------
   -- The Bus --

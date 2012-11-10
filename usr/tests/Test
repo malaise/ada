@@ -286,13 +286,13 @@ EOF
 try t_assert
 comp out exp
 comp err nul
-export ASSERT_ACTION=TRACE
 
+export ASSERT_ACTION=TRACE
 try t_assert
 comp out exp
 comp -n err nul
-export ASSERT_ACTION=RAISE
 
+export ASSERT_ACTION=RAISE
 try -n t_assert
 comp out exp
 comp -n err nul
