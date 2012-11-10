@@ -4,7 +4,7 @@
 with Argument;
 with One_File_Statements;
 
-procedure Stat is
+procedure Astat is
   First : Positive := 1;
   Put_It : Boolean := True;
 begin
@@ -25,5 +25,5 @@ begin
   -- Total
   One_File_Statements.Print_Statements_Of_File("", Put_It);
 
-end Stat;
+end Astat;
 
