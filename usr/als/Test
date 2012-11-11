@@ -81,7 +81,7 @@ if [ $N1 -ne $NE ] ; then
 fi
 echo "OK"
 
-# Match dir patterna and file regexp
+# Match dir pattern and file regexp
 title "In lib_*, match regexp *.o and"
 ls -1 lib_Linux/*.o > exp
 launch -M --match_dir="lib_*" -m "@.*\.o" * > res1
@@ -105,10 +105,11 @@ echo "OK"
 
 # New file
 title "In ., new file"
+export DELAY=2s
 touch NewFile
-res=`launch -n 1s`
+res=`launch -n $DELAY`
 if [ "$res" != "NewFile" ] ; then
-  error "als -n 1s finds $res i.o. NewFile"
+  error "als -n $DELAY finds $res i.o. NewFile"
 fi
 rm NewFile
 echo "OK"
