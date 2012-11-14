@@ -15,7 +15,7 @@ with Basic_Proc, Event_Mng, Str_Util, Mixed_Str, As.U, Async_Stdin,
 with Autobus;
 procedure T_Autobus is
 
-  Default_Address : constant String := "234.234.234.234:21212";
+  Default_Address : constant String := "234.7.6.5:21021";
 
   procedure Plo (Str : in String) renames Basic_Proc.Put_Line_Output;
 
