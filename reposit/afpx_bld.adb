@@ -46,10 +46,14 @@ procedure Afpx_Bld is
     -- Setting file/dscr/field name
     procedure Set_Package_Name (Name : in Asu_Us);
     procedure Set_Dscr_Name (Dscr : in Afpx_Typ.Descriptor_Range;
-                             Name : in Asu_Us);
-    procedure Set_Field_Name (Dscr : in Afpx_Typ.Descriptor_Range;
+                             Name : in Asu_Us;
+                             Line : in Natural);
+    procedure Set_Field_Name (Dscr  : in Afpx_Typ.Descriptor_Range;
                               Field : in Afpx_Typ.Field_Range;
-                              Name : in Asu_Us);
+                              Name  : in Asu_Us;
+                              Line  : in Natural);
+    -- When an identifier is redefined, get line of previous definition
+    function Prev_Name_Line return Natural;
 
     -- Generate the file if the package name has been set
     procedure Generate;
@@ -140,10 +144,9 @@ procedure Afpx_Bld is
 
   procedure File_Error (Node : in Xp.Node_Type; Msg : in String) is
   begin
-    Basic_Proc.Put_Error ("Error: " & Msg);
-    Basic_Proc.Put_Line_Error (
-          " at line" & Positive'Image (Ctx.Get_Line_No (Node))
-        & " of file " & List_File_Name.Image);
+    Basic_Proc.Put_Line_Error ("Error in file " & List_File_Name.Image
+       & " at line " & Images.Integer_Image ((Ctx.Get_Line_No (Node)))
+       & ": " & Msg & ".");
     raise File_Syntax_Error;
   end File_Error;
 
@@ -676,13 +679,14 @@ procedure Afpx_Bld is
     if not Name.Is_Null then
       Add_Variable (Node, Name_Of (No) & ".Name", Name.Image, False, False);
       begin
-        Xref.Set_Field_Name (Dscr, No, Name);
+        Xref.Set_Field_Name (Dscr, No, Name, Ctx.Get_Line_No (Node));
       exception
         when Xref.Invalid_Identifier =>
           File_Error (Node, "Invalid field name");
         when Xref.Identifier_Redefined =>
           File_Error (Node,
-            "A field with this name already exists in the descriptor");
+            "A field with this name already exists in the descriptor at line "
+          & Images.Integer_Image (Xref.Prev_Name_Line));
       end;
     end if;
     Load_Geometry (Ctx.Get_Child (Node, 1), No, Screen_Size);
@@ -886,12 +890,14 @@ procedure Afpx_Bld is
                   False, True);
     Add_Variable (Node, "Descriptor.Name", Name.Image, False, False);
     begin
-      Xref.Set_Dscr_Name (Dscr_No, Name);
+      Xref.Set_Dscr_Name (Dscr_No, Name, Ctx.Get_Line_No(Node));
     exception
       when Xref.Invalid_Identifier =>
         File_Error (Node, "Invalid descriptor name");
       when Xref.Identifier_Redefined =>
-        File_Error (Node, "A descriptor with this name already exists");
+        File_Error (Node,
+            "A descriptor with this name already exists at line "
+          & Images.Integer_Image (Xref.Prev_Name_Line));
     end;
 
     -- Init dscr and fields array. No list at init

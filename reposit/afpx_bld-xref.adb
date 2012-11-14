@@ -3,6 +3,13 @@ separate (Afpx_Bld)
 package body Xref is
 
   Dscr_Num : constant String := "Dscr_Num";
+  -- When an identifier is redefined, get line of previous definition
+  Prev_Line_No : Natural := 0;
+  function Prev_Name_Line return Natural is
+  begin
+    return Prev_Line_No;
+  end Prev_Name_Line;
+
 
   procedure Check_Identifier (Name : in String) is
     use type Ada_Words.Keyword_Res_List;
@@ -25,30 +32,37 @@ package body Xref is
   end Set_Package_Name;
 
   -- The descriptor names
-  type Dscr_Array is array (Afpx_Typ.Descriptor_Range) of Asu_Us;
+  type Dscr_Rec is record
+    Name : Asu_Us;
+    Line_No : Natural := 0;
+  end record;
+  type Dscr_Array is array (Afpx_Typ.Descriptor_Range) of Dscr_Rec;
   Dscrs : Dscr_Array;
   -- The field names, a dummy field (0) for the Dscr
   type Field_Cell is record
     Dscr : Afpx_Typ.Descriptor_Range;
     Num  : Afpx_Typ.Absolute_Field_Range;
     Name : Asu_Us;
+    Line_No : Natural;
   end record;
   package Field_List_Mng is new Dynamic_List (Field_Cell);
   package Field_Dyn_List_Mng renames Field_List_Mng.Dyn_List;
   Fields : Field_Dyn_List_Mng.List_Type;
 
   procedure Set_Dscr_Name (Dscr : in Afpx_Typ.Descriptor_Range;
-                           Name : in Asu_Us) is
+                           Name : in Asu_Us;
+                           Line : in Natural) is
     use type Afpx_Typ.Descriptor_Range, Asu_Us;
   begin
     Check_Identifier (Name.Image);
-    Dscrs (Dscr) := As.U.Tus (Mixed_Str (Name.Image));
+    Dscrs(Dscr) := (As.U.Tus (Mixed_Str (Name.Image)), Line);
     for I in Dscrs'Range loop
-      if I /= Dscr and then Dscrs(I) = Dscrs(Dscr) then
+      if I /= Dscr and then Dscrs(I).Name = Dscrs(Dscr).Name then
+        Prev_Line_No := Dscrs(I).Line_No;
         raise Identifier_Redefined;
       end if;
     end loop;
-    Fields.Insert ( (Dscr, 0, Dscrs (Dscr)) );
+    Fields.Insert ( (Dscr, 0, Dscrs(Dscr).Name, Dscrs(Dscr).Line_No) );
   end Set_Dscr_Name;
 
   function Match (Current, Criteria : Field_Cell) return Boolean is
@@ -60,9 +74,10 @@ package body Xref is
     and then Current.Dscr = Criteria.Dscr
     and then Current.Name = Criteria.Name;
   end Match;
-  procedure Set_Field_Name (Dscr : in Afpx_Typ.Descriptor_Range;
+  procedure Set_Field_Name (Dscr  : in Afpx_Typ.Descriptor_Range;
                             Field : in Afpx_Typ.Field_Range;
-                            Name : in Asu_Us) is
+                            Name  : in Asu_Us;
+                            Line  : in Natural) is
     Found : Boolean;
     Cell : Field_Cell;
   begin
@@ -70,13 +85,17 @@ package body Xref is
     if Name.Image = Dscr_Num then
       raise Invalid_Identifier;
     end if;
-    Cell := (Dscr, Field, As.U.Tus (Mixed_Str (Name.Image)));
+    Cell := (Dscr, Field, As.U.Tus (Mixed_Str (Name.Image)), Line);
     Fields.Insert (Cell);
     -- Check no duplicates
     Field_Dyn_List_Mng.Search_Match (Fields, Found, Match'Access, Cell,
                                      Occurence => 2,
                                      From => Field_Dyn_List_Mng.Absolute);
     if Found then
+      Field_Dyn_List_Mng.Search_Match (Fields, Found, Match'Access, Cell,
+                                       From => Field_Dyn_List_Mng.Absolute);
+      Fields.Read (Cell, Field_Dyn_List_Mng.Current);
+      Prev_Line_No := Cell.Line_No;
       raise Identifier_Redefined;
     else
       Fields.Rewind (Where => Field_Dyn_List_Mng.Prev);
@@ -86,7 +105,7 @@ package body Xref is
   -- Clean all dscr and field names
   procedure Clean is
   begin
-    Dscrs := (others => As.U.Asu_Null);
+    Dscrs := (others => <>);
     Fields.Delete_List (Deallocate => False);
   end Clean;
 
@@ -100,7 +119,7 @@ package body Xref is
     begin
       if Dscr /= 0 then
         File.Put_Line ("  end "
-              & Dscrs(Afpx_Typ.Descriptor_Range(Dscr)).Image & ";");
+              & Dscrs(Afpx_Typ.Descriptor_Range(Dscr)).Name.Image & ";");
       end if;
     end Close;
     use type Afpx_Typ.Absolute_Field_Range;
@@ -124,7 +143,7 @@ package body Xref is
           Close;
           -- Start new descriptor
           Dscr := Positive (Cell.Dscr);
-          File.Put_Line ("  package " & Dscrs(Cell.Dscr) & " is");
+          File.Put_Line ("  package " & Dscrs(Cell.Dscr).Name & " is");
           File.Put_Line ("    " & Dscr_Num
                          & " : constant Afpx.Descriptor_Range := "
                          &  Normal (Positive (Cell.Dscr), 2, Gap => '0')
