@@ -3,6 +3,9 @@ package As.B is
   -- Bounded strings
   type Asb_Bs (Max : Natural) is tagged private;
 
+  -- Access type
+  type Asb_Bs_Access is access all Asb_Bs;
+
   -- Raised when the result exceeds the Max
   Length_Error : exception;
 

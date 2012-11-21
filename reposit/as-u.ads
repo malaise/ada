@@ -4,6 +4,10 @@ package As.U is
   -- Unbounded strings
   type Asu_Us is tagged private;
 
+  -- Access and array types
+  type Asu_Us_Access is access all Asu_Us;
+  type Asu_Array is array (Positive range <>) of Asu_Us;
+
   -- Null unbounded string and unbounded string length
   Asu_Null : constant Asu_Us;
   procedure Set_Null (Target : in out Asu_Us);

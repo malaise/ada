@@ -6,13 +6,13 @@ package As.U.Utils is
   package Asu_Dyn_List_Mng renames Asu_List_Mng.Dyn_List;
 
   -- Hahsed_List and Unique_List of Asu_Us
-  type Asu_Us_Access is access all Asu_Us;
+  subtype Asu_Us_Access is As.U.Asu_Us_Access;
   package Asu_Hashed_List_Mng is new Hashed_List (
        Asu_Us, Asu_Us_Access, Set, As.U."=" , Image);
   package Asu_Unique_List_Mng is new Asu_Hashed_List_Mng.Unique;
 
   -- Unbounded array of Asu_Us
-  type Asu_Array is array (Positive range <>) of Asu_Us;
+  subtype Asu_Array is As.U.Asu_Array;
   package Asu_Unbounded_Arrays is new Unbounded_Arrays (Asu_Us, Asu_Array);
   package Asu_Ua renames Asu_Unbounded_Arrays;
 
