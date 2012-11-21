@@ -9,6 +9,7 @@ package Many_Strings is
   -- A Many_String is a list of strings (possibly empty strings)
   --  separated by Separator
   -- No separator if there is no or one string
+  -- <many_strings> ::= <string> [ { <separator> <string> } ]
   type Many_String is tagged private;
   Empty_String : constant Many_String;
 
@@ -20,14 +21,17 @@ package Many_Strings is
   function Is_Empty (Str : Many_String) return Boolean;
 
   -- Init a Many_String
-  function Set (To : String) return Many_String;
-  function Set (To : As.U.Asu_Us) return Many_String;
-  procedure Set (Str : in out Many_String; To : in String);
-  procedure Set (Str : in out Many_String; To : in As.U.Asu_Us);
+  function Set (From : String) return Many_String;
+  function Set (From : As.U.Asu_Us) return Many_String;
+  function Set (From : As.U.Asu_Array) return Many_String;
+  procedure Set (Str : in out Many_String; From : in String);
+  procedure Set (Str : in out Many_String; From : in As.U.Asu_Us);
+  procedure Set (Str : in out Many_String; From : in As.U.Asu_Array);
 
   -- Concatenation
   -- If Str is empty then it is set to What
-  -- otherwise concatenate to Str a Separator then What (even if What is empty)
+  -- If What is empty then let Str unchanged
+  -- otherwise concatenate to Str a Separator then What
   function Cat (Str : Many_String; What : String) return Many_String;
   function Cat (Str : Many_String; What : As.U.Asu_Us) return Many_String;
   function Cat (Str : Many_String; What : Many_String) return Many_String;
@@ -44,6 +48,9 @@ package Many_Strings is
   function Nb  (Str : Many_String) return Positive;
   function Nth (Str : Many_String; N : Positive) return String;
   function Nth (Str : Many_String; N : Positive) return As.U.Asu_Us;
+
+  -- Split a Many_String into strings
+  function Split (Str : Many_String) return As.U.Asu_Array;
 
   String_Error : exception;
 private

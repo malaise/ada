@@ -952,6 +952,10 @@ Got 3 substrings:
 >toto<
 >titi<
 >tata<
+After split:
+>toto<
+>titi<
+>tata<
 This should raise String_Error
 String_Error raised.
 EOF

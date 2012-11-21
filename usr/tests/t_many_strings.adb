@@ -1,8 +1,18 @@
-with Basic_Proc, Argument, Many_Strings;
+with Basic_Proc, Argument, Many_Strings, As.U;
 
 procedure T_Many_Strings is
   Str : Many_Strings.Many_String;
   L : Positive;
+
+  procedure Put (S : in Many_Strings.Many_String) is
+  begin
+    -- Decode substrings
+    for I in 1 ..  S.Nb loop
+      Basic_Proc.Put_Line_Output ('>' & S.Nth (I) & '<');
+    end loop;
+  end Put;
+
+
 begin
 
   -- Build String (may raise Constraint_Error if args too long)
@@ -11,14 +21,21 @@ begin
   end loop;
 
   -- Decode number
-  L := Many_Strings.Nb (Str);
+  L := Str.Nb;
   Basic_Proc.Put_Line_Output ("Got" & L'Img & " substrings:");
-
   -- Decode substrings
-  for I in 1 .. L loop
-    Basic_Proc.Put_Line_Output ('>' &
-         Many_Strings.Nth (Str, I) & '<');
-  end loop;
+  Put (Str);
+
+  -- Split and set back
+  declare
+    A : constant As.U.Asu_Array := Str.Split;
+  begin
+    Str.Reset;
+    Str.Set (A);
+  end;
+  -- Decode substrings
+  Basic_Proc.Put_Line_Output ("After split:");
+  Put (Str);
 
   -- Should raise String_Error
   begin
