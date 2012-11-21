@@ -4,6 +4,9 @@ Main changes
 
 [horizontal]
 
+*2012/11/21*:: Add option -d (--direct) to see direct (first level) dependencies
+in lsadesp V7.5
+
 *2012/11/05*:: Add function Move and Copy in afpx_rnb
 
 *2012/10/22*:: Add option -L (--list) to asubst V14.0

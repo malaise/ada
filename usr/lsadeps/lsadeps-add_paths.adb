@@ -1,8 +1,8 @@
 with Dynamic_List, Recurs;
 separate (Lsadeps)
 procedure Add_Paths is
-  -- The index (8 or 9), occurence and position of -I and -R arguments
-  --  in order of occurence and index, then sorted by position
+  -- The index (Include or Recursive index), occurence and position of -I
+  --  and -R arguments in order of occurence and index, then sorted by position
   type Arg_Rec is record
     Index : Argument_Parser.The_Keys_Range;
     Occurence : Positive;
@@ -54,8 +54,8 @@ procedure Add_Paths is
 
 begin
   -- Store includes and recursive directives: must not be empty
-  Store (8, False);
-  Store (9, True);
+  Store (Include_Index, False);
+  Store (Recursive_Index, True);
   if Args.Is_Empty then
     return;
   end if;

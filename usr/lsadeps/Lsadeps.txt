@@ -1,6 +1,6 @@
 lsadeps
 =======
-V7.4
+V7.5
 
 Lsadeps lists ada dependencies between files or units, optionnally in reverse
 order.
@@ -16,10 +16,11 @@ Usage: lsadeps <version> | <help> | <check> | <depend>
  <check>       ::= -c | --check  [ <target_dir> ]
  <depend>      ::= <options> <target_unit> [ <path_unit> ]
  <target_unit> ::=  [<path>/]<unit>
- <options>     ::=  [ <specs> | <revert> ] [ <tree> ] [ <files> ] [ <include> ]
+ <options>     ::=  [ <specs> | <revert> ] [ <tree> | <direct> ] [ <files> ] [ <include> ]
  <specs>       ::= -s | --specs
  <revert>      ::= -r | --revert
  <tree>        ::= -t | --tree
+ <direct>      ::= -d | --direct
  <files>       ::= -f | --files
  <include>     ::= { <dir> | <recursive> }
  <dir>         ::= -I <dir> | --include=<dir>
@@ -44,6 +45,8 @@ Other options are:
 
  - <tree> to show the tree of dependencies (instead of a sorted unique list),
 
+ - <direct> to show the direct dependencies between units,
+
  - <file> to show the file names (instead of unit names),
 
  - <include> to add some directories or some directory trees to the search path
@@ -51,11 +54,12 @@ Other options are:
 
 
 Specs and revert modes are mutually exclusive. +
+Tree and direct mode are mutually exclusive. +
 Path mode and tree are mutually exculsive.
 
 Format of output
 ----------------
-There are two main functions: list dependancies and check redundant "with".
+There are two main functions: show dependancies and check redundant "with".
 
 Results are put on stdout.
 
@@ -75,11 +79,13 @@ and subunits... recusively
 
 - tree option: show tree of dependencies instead of list
 
+- direct option: show direct dependencies (show first level of tree)
+
 - files option: show file names instead of units
 
 In list mode local units are listed first, then "remote" ones in the order of
 the include directives and they are sorted by alphapbetical order. In tree
-mode the units appear in the same order as in the "with" directives.
+and direct modes the units appear in the same order as in the "with" directives.
 
 By default the search is restricted to local directory and target directory
 (and path_unit directory if any), but additional directories can be added to
@@ -208,7 +214,7 @@ recursively in this order:
        - WithsOfBody
        - WithsOfSububits
 
-If in specs only mode don't insert body andsubunits. If in reverse mode,
+If in "specs only" mode don't insert body and subunits. If in reverse mode,
 build a unique list of units that list targets, of units that list these
 units. Stop recursive search when reaching a non-standalone body or a subunit.
 
@@ -223,10 +229,17 @@ In tree mode
 ^^^^^^^^^^^^
 Dump the tree:
 
-  UnitSpec - UnitBody - Subunits - WithSpecs
-                      - WithsSpecs...
+  UnitSpec - WithsSpecs - WithsSpecs...
            - ParentSpec - WithsSpecs...
-           - WithsSpecs - WithsSpecs...
+           - UnitBody - WithsSpecs...
+                      - Subunits - WithSpecs...
+
+In direct mode
+^^^^^^^^^^^^
+Dump the first level of tree:
+
+  UnitSpec - WithsSpecs
+           - UnitBody
 
 In list mode
 ^^^^^^^^^^^^

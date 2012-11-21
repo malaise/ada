@@ -3,7 +3,7 @@ with As.U, Argument, Argument_Parser, Basic_Proc, Mixed_Str, Directory;
 with Debug, Sourcer, Tree_Mng, Sort, Output, Checker;
 procedure Lsadeps is
 
-  Version : constant String := "V7.4";
+  Version : constant String := "V7.5";
 
   -- The keys and descriptor of parsed keys
   Keys : constant Argument_Parser.The_Keys_Type := (
@@ -13,10 +13,13 @@ procedure Lsadeps is
    04 => (False, 's', As.U.Tus ("specs"),   False),
    05 => (False, 'r', As.U.Tus ("revert"),  False),
    06 => (False, 't', As.U.Tus ("tree"),    False),
-   07 => (False, 'f', As.U.Tus ("files"),   False),
-   08 => (True,  'I', As.U.Tus ("include"),   True, True, As.U.Tus ("dir")),
-   09 => (True,  'R', As.U.Tus ("recursive"), True, True, As.U.Tus ("dir")));
+   07 => (False, 'd', As.U.Tus ("direct"),  False),
+   08 => (False, 'f', As.U.Tus ("files"),   False),
+   09 => (True,  'I', As.U.Tus ("include"),   True, True, As.U.Tus ("dir")),
+   10 => (True,  'R', As.U.Tus ("recursive"), True, True, As.U.Tus ("dir")));
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
+  Include_Index : constant Argument_Parser.The_Keys_Range := 9;
+  Recursive_Index : constant Argument_Parser.The_Keys_Range := 10;
 
   -- Usage and Error
   procedure Usage is
@@ -35,7 +38,7 @@ procedure Lsadeps is
     Basic_Proc.Put_Line_Error (
      " <target_unit> ::=  [<path>/]<unit>");
     Basic_Proc.Put_Line_Error (
-     " <options>     ::=  [ <specs> | <revert> ] [ <tree> ] [ <files> ] [ <include> ]");
+     " <options>     ::=  [ <specs> | <revert> ] [ <tree> | <direct> ] [ <files> ] [ <include> ]");
     Basic_Proc.Put_Line_Error (
      " <specs>       ::= " & Argument_Parser.Image (Keys(4)));
     Basic_Proc.Put_Line_Error (
@@ -43,13 +46,15 @@ procedure Lsadeps is
     Basic_Proc.Put_Line_Error (
      " <tree>        ::= " & Argument_Parser.Image (Keys(6)));
     Basic_Proc.Put_Line_Error (
-     " <files>       ::= " & Argument_Parser.Image (Keys(7)));
+     " <direct>      ::= " & Argument_Parser.Image (Keys(7)));
+    Basic_Proc.Put_Line_Error (
+     " <files>       ::= " & Argument_Parser.Image (Keys(8)));
     Basic_Proc.Put_Line_Error (
      " <include>     ::= { <dir> | <recursive> }");
     Basic_Proc.Put_Line_Error (
-     " <dir>         ::= " & Argument_Parser.Image (Keys(8)));
+     " <dir>         ::= " & Argument_Parser.Image (Keys(9)));
     Basic_Proc.Put_Line_Error (
-     " <recursive>   ::= " & Argument_Parser.Image (Keys(9)));
+     " <recursive>   ::= " & Argument_Parser.Image (Keys(10)));
     Basic_Proc.Put_Line_Error (
      "Check function shows redundant ""with"" clauses in a dir (default: current dir).");
     Basic_Proc.Put_Line_Error (
@@ -68,6 +73,8 @@ procedure Lsadeps is
      " Other options are:");
     Basic_Proc.Put_Line_Error (
      " <tree> to show the tree of dependencies (instead of a sorted unique list),");
+    Basic_Proc.Put_Line_Error (
+     " <direct> to show the direct dependencies between units,");
     Basic_Proc.Put_Line_Error (
      " <file> to show the file names (instead of unit names),");
     Basic_Proc.Put_Line_Error (
@@ -90,6 +97,7 @@ procedure Lsadeps is
   Specs_Mode : Boolean := False;
   Revert_Mode : Boolean := False;
   Tree_Mode : Boolean := False;
+  Direct_Mode : Boolean := False;
   Files_Mode : Boolean := False;
   Target, Target_Dir : As.U.Asu_Us;
   Path, Path_Dir : As.U.Asu_Us;
@@ -179,21 +187,30 @@ begin
     Tree_Mode := True;
   end if;
   if Arg_Dscr.Is_Set (7) then
+    Direct_Mode := True;
+  end if;
+  if Arg_Dscr.Is_Set (8) then
     Files_Mode := True;
   end if;
 
   -- Check mode
   if Arg_Dscr.Is_Set (3) then
     -- No option
-    if Specs_Mode or else Revert_Mode or else Tree_Mode or else Files_Mode then
+    if Specs_Mode or else Revert_Mode or else Tree_Mode or else Direct_Mode
+    or else Files_Mode then
       Error ("Check mode does not support options");
     end if;
     -- No include
-    if Arg_Dscr.Get_Nb_Occurences (8) /= 0
-    or else Arg_Dscr.Get_Nb_Occurences (9) /= 0 then
+    if Arg_Dscr.Get_Nb_Occurences (9) /= 0
+    or else Arg_Dscr.Get_Nb_Occurences (10) /= 0 then
       Error ("Check mode is exclusive with simple or recursive includes");
     end if;
     Check_Mode := True;
+  end if;
+
+  -- Check not tree and direct
+  if Tree_Mode and then Direct_Mode then
+    Error ("Tree and Direct mode are mutually exclusive");
   end if;
 
   -- Save current dir and add it to paths (top prio)
@@ -247,7 +264,6 @@ begin
     Add_Paths;
   end if;
 
-
   ----------------------------
   -- BUILD LISTS OF SOURCES --
   ----------------------------
@@ -283,11 +299,9 @@ begin
   ------------------
   -- CHECK TARGET --
   ------------------
-  if not Check_Mode then
-    Target_Dscr := Check_Unit (Target_Dir, Target, "Target");
-    if not Path.Is_Null then
-      Path_Dscr := Check_Unit (Path_Dir, Path, "Path");
-    end if;
+  Target_Dscr := Check_Unit (Target_Dir, Target, "Target");
+  if not Path.Is_Null then
+    Path_Dscr := Check_Unit (Path_Dir, Path, "Path");
   end if;
 
   ----------------------------
@@ -300,7 +314,7 @@ begin
   -------------------
   -- Back to original dir
   Check_Dir ("");
-  Output.Put (Revert_Mode, Tree_Mode, Files_Mode, Path_Dscr);
+  Output.Put (Revert_Mode, Tree_Mode, Direct_Mode, Files_Mode, Path_Dscr);
 
 exception
   when Error_Raised | Sourcer.Error_Raised =>
