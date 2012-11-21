@@ -226,6 +226,7 @@ package Trees is
 
     -- Iterate on current and children (old to young by default)
     -- Nothing if tree is empty
+    -- Level is 0 on current item
     procedure Iterate (The_Tree   : in out Tree_Type;
                        Do_One_Acc : access
       function (Element : Element_Type; Level : Natural) return Boolean;
