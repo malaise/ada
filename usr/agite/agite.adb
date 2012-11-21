@@ -239,7 +239,7 @@ procedure Agite is
     if Update_History then
       Config.Save_Curr_Dir (Directory.Get_Current);
     end if;
-    if Target.image /= "." then
+    if Target.Image /= "." then
       -- Dir has changed
       Afpx.Line_List.Rewind (Check_Empty => False);
     end if;
