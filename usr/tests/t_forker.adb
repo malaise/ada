@@ -11,7 +11,7 @@ procedure T_Forker is
   Buff : String (1 .. 500);
   Len  : Natural;
 
-  Req_Num : Natural;
+  Req_Num : Forker.Command_Number;
   Req : Forker.Request_Rec;
   Rep : Forker.Report_Rec;
 
@@ -40,7 +40,7 @@ procedure T_Forker is
     raise Program_Error;
   end Cat_Str;
 
-  use type Socket.Port_Num, Tcp_Util.Remote_Host_List;
+  use type Socket.Port_Num, Tcp_Util.Remote_Host_List, Forker.Command_Number;
 begin
 
   -- Basic_Proc.Put_Line_Output ("Req_size: " & Integer'Image(Forker.Request_Rec'Size));
@@ -94,7 +94,7 @@ begin
 
     if Len = 1 and then Buff(1) = 's' then
       -- Start
-      Basic_Proc.Put_Line_Output ("Number =" & Natural'Image(Req_Num));
+      Basic_Proc.Put_Line_Output ("Number =" & Req_Num'Img);
       Req := (Kind => Forker.Start_Request,
               Start_Data => Forker.Init_Start);
       Req.Start_Data.Number := Req_Num;
@@ -177,7 +177,7 @@ begin
         Basic_Proc.Put_Output ("Number ? ");
         Basic_Proc.Get_Line (Buff, Len);
         begin
-          Req.Kill_Data.Number := Natural'Value(Buff(1 .. Len));
+          Req.Kill_Data.Number := Forker.Command_Number'Value(Buff(1 .. Len));
           exit;
         exception
           when others => null;
@@ -230,22 +230,20 @@ begin
         case Rep.Kind is
           when Forker.Start_Report =>
             Basic_Proc.Put_Line_Output ("Start: command"
-              & Natural'Image(Rep.Start_Result.Number)
-              & " Pid "
-              & Forker.Pid_Result'Image(Rep.Start_Result.Started_Pid));
+              & Rep.Start_Result.Number'Img
+              & " Pid " & Rep.Start_Result.Started_Pid'Img);
           when Forker.Kill_Report =>
             Basic_Proc.Put_Line_Output ("Kill: command"
-              & Natural'Image(Rep.Kill_Result.Number)
-              & " Pid "
-              & Forker.Pid_Result'Image(Rep.Kill_Result.Killed_Pid));
+              & Rep.Kill_Result.Number'Img
+              & " Pid " & Rep.Kill_Result.Killed_Pid'Img);
           when Forker.Exit_Report =>
             Forker.Decode_Exit (Rep.Exit_Result.Status, Cause, Code);
             Basic_Proc.Put_Line_Output ("Exit: command"
-              & Natural'Image(Rep.Exit_Result.Number)
-              & " Pid" & Forker.Pid_Result'Image(Rep.Exit_Result.Exit_Pid)
-              & " Status" & Integer'Image(Rep.Exit_Result.Status)
-              & ": Cause " & Lower_Str(Forker.Exit_Cause_List'Image(Cause))
-              & " Code" & Natural'Image(Code));
+              & Rep.Exit_Result.Number'Img
+              & " Pid" & Rep.Exit_Result.Exit_Pid'Img
+              & " Status" & Rep.Exit_Result.Status'Img
+              & ": Cause " & Lower_Str(Cause'Img)
+              & " Code" & Code'Img);
           when Forker.Forker_Exit_Report =>
             Basic_Proc.Put_Line_Output ("Forker exited");
           when Forker.Pong_Report =>

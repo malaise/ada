@@ -1,10 +1,15 @@
 -- Interface to forker process
 with System;
 with Ada.Characters.Latin_1;
+with C_Types;
 package Forker is
 
+  subtype Int is C_Types.int;
+  subtype Nat is Int range 0 .. Int'Last;
+
   -- Command number
-  subtype Command_Number is Natural;
+  type Command_Number is new Natural;
+  for Command_Number'Size use C_types.Int'Size;
   type Boolean_For_C is new Boolean;
   for Boolean_For_C'Size use System.Storage_Unit;
 
@@ -14,6 +19,7 @@ package Forker is
   -- Request kind
   type Request_List is (Start_Request, Kill_Request,
                         Forker_Exit_Request, Ping_Request);
+  for Request_List'Size use Int'Size;
 
   -- Sizing: Program-arguments and Environ are stored at format
   -- <field>Nul<field>Nul ... <field>NulNul
@@ -51,12 +57,12 @@ package Forker is
   -- Kill request
   type Kill_Request_Rec is record
     Number : Command_Number;
-    Signal : Natural;
+    Signal : Nat;
   end record;
 
   -- Forker exit request
   type Forker_Exit_Request_Rec is record
-    Exit_Code : Natural;
+    Exit_Code : Nat;
   end record;
 
   -- Request
@@ -80,8 +86,9 @@ package Forker is
   -- Report kind
   type Report_List is (Start_Report, Kill_Report, Exit_Report,
                        Forker_Exit_Report, Pong_Report);
+  for Report_List'Size use Int'Size;
   -- Started/killed pid or -1 if error
-  subtype Pid_Result is Integer range -1 .. Integer'Last;
+  subtype Pid_Result is Int range -1 .. Int'Last;
 
   -- Start report
   type Start_Report_Rec is record
@@ -99,7 +106,7 @@ package Forker is
   type Exit_Report_Rec is record
     Number : Command_Number;
     Exit_Pid : Pid_Result;
-    Status : Integer;
+    Status : Int;
   end record;
 
   -- Report
@@ -124,6 +131,7 @@ package Forker is
 
   -- Exit report status decoding
   type Exit_Cause_List is (Normal, Signal, Stop);
+  for Exit_Cause_List'Size use Int'Size;
   procedure Decode_Exit (Status : in Integer;
                          Cause  : out Exit_Cause_List;
                          Code   : out Natural);
