@@ -234,6 +234,11 @@ extern int reset_default_signals (void) {
   return res;
 }
 
+/* Are signal handled */
+extern boolean signal_handling_set (void) {
+  return sig_handled;
+}
+
 /* Compute time remaining */
 extern void evt_time_remaining (timeout_t *remaining, timeout_t *exp_time) {
 
@@ -295,7 +300,7 @@ extern int evt_wait (int *p_fd, boolean *p_read, timeout_t *timeout) {
   for (;;) {
 
     /* Check for signal */
-    if (sig_handled && check_signal() ) {
+    if (check_signal() ) {
       *p_fd = SIG_EVENT;
       evt_time_remaining (timeout, &exp_time);
       return (WAIT_OK);

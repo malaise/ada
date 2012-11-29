@@ -178,6 +178,9 @@ package body Event_Mng is
   function C_Reset_Default_Signals return C_Types.Int;
   pragma Import(C, C_Reset_Default_Signals, "reset_default_signals");
 
+  function C_Signal_Handling_Set return C_Types.Bool;
+  pragma Import(C, C_Signal_Handling_Set, "signal_handling_set");
+
   Cb_Term_Sig : Sig_Callback := Null_Procedure'Access;
   Cb_Child_Sig : Sig_Callback := Null_Procedure'Access;
 
@@ -243,6 +246,11 @@ package body Event_Mng is
       Sys_Calls.Kill (Sys_Calls.Get_Pid, Sigterm);
     end if;
   end Reset_Default_Signals_Policy;
+
+  function Are_Signals_Handled return Boolean is
+  begin
+    return Boolean(C_Signal_Handling_Set);
+  end Are_Signals_Handled;
 
   -- PRIVATE. Get kind of last signal
   type Signal_Kind_List is (Unknown_Sig, No_Sig, Dummy_Sig,

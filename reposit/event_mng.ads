@@ -69,6 +69,9 @@ package Event_Mng is
   -- Kill ourself SIGTERM if a Sig Term was received but not handled
   procedure Reset_Default_Signals_Policy;
 
+  -- Is signal handling activated
+  function Are_Signals_Handled return Boolean;
+
   -------------------
   -- Waiting point --
   -------------------
