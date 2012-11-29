@@ -8,7 +8,7 @@ package Http is
   type Result_Kind_List is (Ok, Client_Error, Server_Error);
   type Client_Error_List is (
     Invalid_Url,    -- Not "http://<host>/<opt_content>
-    Name_Error,     -- Host or port "http" not found
+    Name_Error,     -- Host or port not found
     Invalid_Answer, -- Not "HTTP/<vers> <code> <text>"
     Missing_Length, -- No "Content-Length:" in answer
     Msg_Too_Long,   -- Answer message is too long (above Max_Msg_Len)
@@ -37,16 +37,15 @@ package Http is
   -- Set Environ variable HTTP_TIMEOUT_MS to the overall timeout (default  --
   --  is infinite, but other errors are detected).                         --
   -- Set Environ variable HTTP_CONNECT_TIMEOUT_MS to the connection        --
-  --  (one try, default is 3000).                                          --
+  --  timeout (one try, default is 3000).                                          --
   --                                                                       --
-  -- Because it waits for replies from the HTTp server, this function uses --
-  --  Event_Mng.Wait, which sets signal handlers. As a consequence:        --
-  --  * Non interactive programs shall call                                --
-  --    Event_Mng.Reset_Default_Signals_Policy after using this function   --
+  -- Because it waits for replies from the HTTP server, this function uses --
+  --  Event_Mng.Wait. As a consequence:        --
   --  * X11 programs shall Suspend ALL the X objects X_Line/Con_Io/Afpx    --
   --    before calling this function, then Resume the X objects.           --
-  --  * This function is not re-entrant and protected by with a mutex.     --
+  --  * This function is not re-entrant and is protected by a mutex.     --
   ---------------------------------------------------------------------------
   function Get (Url : String) return Result_Type;
+
 end Http;
 

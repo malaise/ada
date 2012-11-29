@@ -1,4 +1,4 @@
-with Images, Event_Mng, Http;
+with Images, Http;
 separate (Xml_Parser.Parse_Mng)
 
 -- Resolve an URI:
@@ -41,8 +41,6 @@ begin
     Trace ("URI fetching through http " & Uri.Image);
     -- Handle "http" scheme
     Result := Http.Get (Uri.Image);
-    -- If Sigterm/Sigint occured, resend
-    Event_Mng.Reset_Default_Signals_Policy;
     case Result.Kind is
       when Http.Ok =>
         -- Done
