@@ -1,6 +1,6 @@
 with Ada.Characters.Latin_1;
 with Normalization, Gets, Async_Stdin, Basic_Proc, Argument, As.U,
-     Unbounded_Arrays, Command, Many_Strings, Event_Mng;
+     Unbounded_Arrays, Command, Many_Strings;
 procedure T_Normalization is
   F : Float;
   type Delt_Range is delta 0.00001 digits 13
@@ -49,11 +49,6 @@ procedure T_Normalization is
     Command.Execute (Cmd, True, Command.Both,
                      Flow'Unrestricted_Access, Flow'Unrestricted_Access,
                      Code);
-    if Event_Mng.Reset_Default_Signals_Policy then
-       -- Command aborted
-      Basic_Proc.Put_Line_Error ("Aborted");
-      return False;
-    end if;
     if Code = Command.Error then
       -- Command returns error
       Basic_Proc.Put_Line_Error ("ERROR: " & Flow.Str.Image);
@@ -76,6 +71,11 @@ procedure T_Normalization is
       Basic_Proc.Set_Error_Exit_Code;
       return False;
     end if;
+  exception
+    when Command.Terminate_Request =>
+      -- Command aborted
+      Basic_Proc.Put_Line_Error ("Aborted");
+      return False;
   end Do_Test;
 
 begin

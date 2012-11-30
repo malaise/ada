@@ -47,6 +47,7 @@ package Proc_Family is
   -- Spawn relies internally on a Event_Mng callback on Sig_Child, so
   --  - A Signal_Event is generated on the death of children
   --  - Programs using Spawn shall not set their own Sig_Child callback
+  --    or they shall save it before Spawn and restore it afterwards
   type Comm_Kind_List is (None, Std_Fds, New_Fds);
   function Spawn (Mutation     : Many_Strings.Many_String
                                := Many_Strings.Empty_String;

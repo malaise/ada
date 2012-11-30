@@ -1,4 +1,4 @@
-with Event_Mng, Many_Strings;
+with Many_Strings;
 separate (Replace_Pattern)
 
 function Shell_Command (Cmd : String) return String is
@@ -12,10 +12,6 @@ begin
   -- Execute command and check exit code
   Command.Execute (Many_Strings.Set (Cmd), True, Command.Only_Out,
      Out_Flow'Access, Err_Flow'Access, Code);
-  if Event_Mng.Reset_Default_Signals_Policy then
-    -- Sig term received after event
-    raise Terminate_Request;
-  end if;
   if Code /= 0 then
     Sys_Calls.Put_Line_Error ("Replace, command exited with code "
                             & Code_Image (Code));

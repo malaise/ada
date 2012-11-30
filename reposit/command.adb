@@ -31,12 +31,17 @@ package body Command is
   Current_Pid : Sys_Calls.Pid;
 
   -- Termination callback
+  Prev_Term_Cb : aliased Event_Mng.Sig_Callback;
   procedure Term_Cb is
+    use type Event_Mng.Sig_Callback;
   begin
     if Debug then
       Basic_Proc.Put_Line_Output ("Command: Sigterm received");
     end if;
     Aborted := True;
+    if Prev_Term_Cb /= null then
+      Prev_Term_Cb.all;
+    end if;
   end Term_Cb;
 
   -- The callback for death of child
@@ -181,7 +186,8 @@ package body Command is
     Str : As.U.Asu_Us;
     Nb_Substr : Positive;
     Spawn_Result : Proc_Family.Spawn_Result_Rec;
-    Prev_Term_Cb : aliased Event_Mng.Sig_Callback;
+    Prev_Child_Cb : aliased Event_Mng.Sig_Callback;
+    Signals_Handled : Boolean;
     use type Sys_Calls.Death_Cause_List;
   begin
     Mut.Get;
@@ -205,10 +211,12 @@ package body Command is
     Child_Done := False;
     Exit_Code := Error;
 
-    -- Ready for sigterm
+    -- Ready for sigterm and sigchild
     Aborted := False;
+    Signals_Handled := Event_Mng.Are_Signals_Handled;
     Prev_Term_Cb := Event_Mng.Get_Sig_Term_Callback;
     Event_Mng.Set_Sig_Term_Callback (Term_Cb'Access);
+    Prev_Child_Cb := Event_Mng.Get_Sig_Child_Callback;
 
     -- Build command line
     if Use_Sh then
@@ -271,6 +279,10 @@ package body Command is
       Basic_Proc.Put_Line_Output ("Command: Cleaning");
     end if;
     Event_Mng.Set_Sig_Term_Callback (Prev_Term_Cb);
+    Event_Mng.Set_Sig_Child_Callback (Prev_Child_Cb);
+    if not Signals_Handled then
+      Event_Mng.Reset_Default_Signals_Policy;
+    end if;
     Sys_Calls.Close (Spawn_Result.Fd_In);
 
     -- Set "out" values

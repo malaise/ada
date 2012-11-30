@@ -1,4 +1,4 @@
-with Basic_Proc, Argument, Http, Mixed_Str, Images, Event_Mng;
+with Basic_Proc, Argument, Http, Mixed_Str, Images;
 procedure T_Http is
   function Code_Image is new Images.Int_Image (Http.Server_Code_Range);
   Result : Http.Result_Type;
@@ -11,7 +11,6 @@ begin
   end if;
 
   Result := Http.Get (Argument.Get_Parameter (1));
-  Event_Mng.Reset_Default_Signals_Policy;
   case Result.Kind is
     when Http.Ok =>
       Basic_Proc.Put_Output (Result.Content.Image);
