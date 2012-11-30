@@ -20,6 +20,16 @@ export FI=tstfile.ins
 export FD=tstfile.del
 export FG=tstfile.got
 
+function clean {
+  rm -rf $FR $FT $FS $FE $FL $FI $FD $FG
+}
+function sighandler {
+  clean
+  exit 1
+}
+
+trap sighandler SIGINT SIGTERM
+
 # Prepare inserted file
 echo -en "toto\nle" > $FI
 
@@ -372,6 +382,6 @@ fi
 echo "$STEP OK."
 
 # Cleanup test files
-rm -rf $FR $FT $FS $FE $FL $FI $FD $FG
+clean
 echo "Test OK."
 
