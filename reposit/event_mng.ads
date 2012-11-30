@@ -75,13 +75,10 @@ package Event_Mng is
   -------------------
   -- Waiting point --
   -------------------
-  -- WARNING:
-  -- * Non interactive programs shall call Reset_Default_Signal_Policy after
-  --   using this function
-  -- * X11 programs shall use the X waiting point (X_Wait_Event/Put_Then_Get)
-  --   instead. If they really need to use Wait, they shall Suspend ALL the X
-  --   objects (X_Line/Con_Io/Afpx) before calling Wait, then Resume the X
-  --   objects after it returns.
+  -- WARNING: X11 programs shall use the X waiting point
+  --   (X_Wait_Event/Put_Then_Get) instead. If they really need to use Wait,
+  --   they shall Suspend ALL the X objects (X_Line/Con_Io/Afpx) before calling
+  --   Wait, then Resume the X objects after it returns.
   --
   -- Wait until a Terminate_Sig or Child_Sig with a callback set,
   --   or until a Dummy_Sig,
@@ -108,6 +105,8 @@ package Event_Mng is
   --  - A signal (even Dummy) is received
   --  - Another Pause (armed earlier) expires (and we are in a Cb of this Pause)
   -- Usefull to wait a bit and still process timers and Fds transparently
+  -- WARNING: Non interactive programs shall call Reset_Default_Signal_Policy
+  --   after using this function.
   procedure Pause (Timeout_Ms : in Integer);
 
   ----------------------
