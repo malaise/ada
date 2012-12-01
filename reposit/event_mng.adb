@@ -440,9 +440,6 @@ package body Event_Mng is
   begin
     Set_Debug;
 
-    -- Pause is released by a Dummy signal
-    Activate_Signal_Handling;
-
     -- Increment global pause level and store ours
     Pause_Level.Inte := Pause_Level.Inte + 1;
     Loc_Level := Pause_Level;
@@ -467,24 +464,10 @@ package body Event_Mng is
     end if;
 
     -- Wait for this or a lower level pause expiration
-    -- or signal
+    --  or a signal
     loop
-
-      if Wait (Wait_Timeout) = Signal_Event then
-        -- Exit all pauses on signal
-        Put_Debug ("Event_Mng.Pause Signal " & Any_Def.Image (Pause_Level));
-        if Pause_Level.Inte /= 0 then
-          Pause_Level.Inte := Pause_Level.Inte - 1;
-          if Pause_Level.Inte /= 0 then
-            Send_Dummy_Signal;
-          end if;
-        end if;
-        -- Cancel timer if not yet expired
-        Tid.Delete_If_Exists;
-        exit;
-      end if;
-
-      exit when Pause_Level.Inte < Loc_Level.Inte;
+      exit when Wait (Wait_Timeout) = Signal_Event
+      or else Pause_Level.Inte < Loc_Level.Inte;
     end loop;
   end Pause;
 

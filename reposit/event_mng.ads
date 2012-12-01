@@ -102,11 +102,10 @@ package Event_Mng is
 
   -- Waits for the specified delay or a signal
   -- Pause returns if either:
+  --  - Expiration of the delay
   --  - A signal (even Dummy) is received
   --  - Another Pause (armed earlier) expires (and we are in a Cb of this Pause)
   -- Usefull to wait a bit and still process timers and Fds transparently
-  -- WARNING: Non interactive programs shall call Reset_Default_Signal_Policy
-  --   after using this function.
   procedure Pause (Timeout_Ms : in Integer);
 
   ----------------------
