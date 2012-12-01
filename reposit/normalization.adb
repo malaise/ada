@@ -20,7 +20,6 @@ package body Normalization is
     L : Positive := Int'Image(I)'Last;
     Si : String (1 .. L) := Int'Image(I);
     Sm : String (1 .. Len);
-    Warning_Char : constant Character := '!';
 
     -- Real -> Int : round or trunc
     function Trunc (X : in Float) return Int is
