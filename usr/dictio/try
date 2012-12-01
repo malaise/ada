@@ -45,12 +45,14 @@ while [ "$1" != "" ] ; do
   fi
 done
 
+# Set dictio channel
 if [ "$MODE" = "channel" ] ; then
   export CHANNEL="-ntest_tcp -cdictio.xml"
 else
   export CHANNEL="-ntest_udp -btest_ipm"
 fi
 
+# Set client port
 export HOST=`uname -s`
 if [ "$HOST" = "Linux" ] ; then
   export PORT=fido
@@ -59,6 +61,18 @@ elif [ "$HOST" = "OSF1" ] ; then
 else
   echo "Unknown host type: $HOST"
   exit 1
+fi
+
+# Clean previous Afunix socket if any
+SOK=`grep -E "^$PORT[[:blank:]]" /etc/services | awk '{print $2}' \
+| cut -d '/' -f1`
+if [ -z "$SOK" ] ; then
+  SOK=$PORT
+fi
+SOK=/tmp/.socket_afux/$SOK
+if [ -S $SOK ] ; then
+  echo Cleaning afunix socket $SOK
+  rm $SOK
 fi
 
 exec ./dictio $CHANNEL -p$PORT -P$DICTIO_PRIO
