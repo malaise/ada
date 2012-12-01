@@ -4,12 +4,12 @@ with Ada.Characters.Latin_1;
 with C_Types;
 package Forker is
 
-  subtype Int is C_Types.int;
+  subtype Int is C_Types.Int;
   subtype Nat is Int range 0 .. Int'Last;
 
   -- Command number
   type Command_Number is new Natural;
-  for Command_Number'Size use C_types.Int'Size;
+  for Command_Number'Size use C_Types.Int'Size;
   type Boolean_For_C is new Boolean;
   for Boolean_For_C'Size use System.Storage_Unit;
 
