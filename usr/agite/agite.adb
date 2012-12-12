@@ -152,7 +152,8 @@ procedure Agite is
     end if;
     Changed := Force;
     -- Save current position and entry
-    if not Files.Is_Empty then
+    if not Force and then not Files.Is_Empty
+    and then not Afpx.Line_List.Is_Empty then
       Position := Afpx.Line_List.Get_Position;
       Files.Move_At (Position);
       Files.Read (Current_File, Git_If.File_Mng.Dyn_List.Current);
@@ -339,7 +340,7 @@ procedure Agite is
   end Host_Str;
 
   -- Init Afpx
-  procedure Init (Position : in Natural) is
+  procedure Init (Position : in Natural; Dir : in String := "") is
   begin
     Afpx.Use_Descriptor (Afpx_Xref.Main.Dscr_Num);
     Afpx.Get_Console.Set_Name ("Agite (on " & Socket.Local_Host_Name & ")");
@@ -348,11 +349,7 @@ procedure Agite is
     Insert := False;
     Redisplay := False;
     Afpx.Encode_Field (Afpx_Xref.Main.Host, (0, 0), Host_Str);
-    Encode_Files (True);
-    if Position /= 0 and then not Afpx.Line_List.Is_Empty then
-      Afpx.Line_List.Move_At (Position);
-    end if;
-    Change_Dir;
+    Change_Dir (Dir);
     if Position /= 0 and then not Afpx.Line_List.Is_Empty then
       Afpx.Line_List.Move_At (Position);
     end if;
@@ -705,10 +702,7 @@ begin
             declare
               New_Dir : constant String := Bookmarks.Handle;
             begin
-              Init (0);
-              if New_Dir /= "" then
-                Change_Dir (New_Dir);
-              end if;
+              Init (0, New_Dir);
             end;
           when Afpx_Xref.Main.Pushd =>
             -- PushD
