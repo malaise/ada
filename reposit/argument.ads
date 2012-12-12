@@ -113,12 +113,12 @@ package Argument is
 
   -- Analyse of Argument(0)
 
-  -- Path of program  from Argument(0) (with last /)
+  -- Path of program (with last /)
   function Get_Program_Path return String;
   procedure Get_Program_Path (Path : out String;
                               Path_Length : out Natural);
 
-  -- Name of program from Argument(0)
+  -- Name of program
   function Get_Program_Name return String;
   procedure Get_Program_Name (Name : out String;
                               Name_Length : out Natural);
