@@ -476,3 +476,12 @@ extern int get_errno (void) {
   return errno;
 }
 
+/* Long shift */
+extern unsigned long shl_long (unsigned long l, int bits) {
+  return l << bits;
+}
+
+extern unsigned long shr_long (unsigned long l, int bits) {
+  return l >> bits;
+}
+

@@ -7,6 +7,7 @@ with System.Bit_Ops;
 pragma Warnings (On,  "* is an internal GNAT unit");
 
 with Interfaces;
+with C_Types;
 
 package body Bit_Ops is
 
@@ -15,10 +16,10 @@ package body Bit_Ops is
   function To_Integer is new Unchecked_Conversion
     (Source => Interfaces.Unsigned_32, Target => Integer);
 
-  function To_Unsigned_64 is new Unchecked_Conversion
-    (Source => Long_Integer, Target => Interfaces.Unsigned_64);
-  function To_Long_Integer is new Unchecked_Conversion
-    (Source => Interfaces.Unsigned_64, Target => Long_Integer);
+  function Shl_Long (L : C_Types.Long; Bits : C_Types.Int) return C_Types.Long;
+  pragma Import (C, Shl_Long, "shl_long");
+  function Shr_Long (L : C_Types.Long; Bits : C_Types.Int) return C_Types.Long;
+  pragma Import (C, Shr_Long, "shr_long");
 
   function To_Unsigned_64 is new Unchecked_Conversion
     (Source => Long_Long_Integer, Target => Interfaces.Unsigned_64);
@@ -107,16 +108,16 @@ package body Bit_Ops is
     return Res;
   end "Not";
 
-  function Shl (Val : Long_Integer; Bits : Integer) return Long_Integer is
+  function Shl (Val : Long_Integer; Bits : Integer)
+               return Long_Integer is
   begin
-    return To_Long_Integer(
-      Interfaces.Shift_Left(To_Unsigned_64(Val), Bits));
+    return Shl_Long(Val, Bits);
   end Shl;
 
-  function Shr (Val : Long_Integer; Bits : Integer) return Long_Integer is
+  function Shr (Val : Long_Integer; Bits : Integer)
+               return Long_Integer is
   begin
-    return To_Long_Integer(
-      Interfaces.Shift_Right(To_Unsigned_64(Val), Bits));
+    return Shr_Long(Val, Bits);
   end Shr;
 
   -- Long_Long_Integer

@@ -109,5 +109,8 @@ extern int get_gid_of_group_name (char *name, int *gid);
 /* Get errno */
 extern int get_errno (void);
 
+/* Long shift */
+extern unsigned long shl_long (unsigned long l, int bits);
+extern unsigned long shr_long (unsigned long l, int bits);
 #endif
 
