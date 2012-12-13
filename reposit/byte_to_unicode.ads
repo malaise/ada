@@ -1,5 +1,5 @@
 -- Convert a byte to a Unicode number accoding to a map
---  that is load from a xml definition
+--  that is loaded from a xml definition
 with Unicode;
 package Byte_To_Unicode is
 

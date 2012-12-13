@@ -35,7 +35,7 @@ package Exception_Messenger is
   -- If it matches but is not (any more) in the pool, then return "".
   -- If it is found in the pool then suppress it from the pool and return it.
   -- The exception occurence can be passed as "in out" or by access, but in
-  --  both cases it is necessary to save the originial occurence first.
+  --  both cases it is necessary to save the original occurence first.
 
   -- Procedure: Occurence passed in out.
   -- To pass an exception occurrence in out the user must save it in a local

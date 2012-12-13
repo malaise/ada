@@ -29,7 +29,7 @@ package Command is
   subtype Exit_Code_Range is Integer range -1 .. Integer'Last;
   Error : constant Exit_Code_Range := -1;
 
-  -- Call command,
+  -- Call command and wait for its termination
   -- If not Use_Sh, then Cmd must be the program then its arguments
   --   concatenated in a Many_String
   -- If Use_Sh, then issue a 'sh -c "Cmd"'. Cmd can then be either a
@@ -37,11 +37,11 @@ package Command is
   -- Report or propagate output/error flow with proper kind
   -- Set resulting exit code
   ---------------------------------------------------------------------------
-  -- Because it waits for asynchronous exit of child, this function uses   --
-  --  Event_Mng.Wait, which sets signal handlers. As a consequence:        --
+  -- Because it waits for the asynchronous exit of the child, this         --
+  --  function uses Event_Mng.Wait internally. As a consequence:                                    --
   --  * X11 programs shall Suspend ALL the X objects X_Line/Con_Io/Afpx    --
-  --    before calling this function, then Resume the X objects.           --
-  --  * This function is re-entrant with a mutex                           --
+  --    before calling this function, then Resume the X objects,            --
+  --  * This function is protected agains parallel execution with a mutex  --
   ---------------------------------------------------------------------------
   procedure Execute (Cmd : in Many_Strings.Many_String;
                      Use_Sh : in Boolean;
