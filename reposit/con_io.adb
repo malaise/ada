@@ -1536,22 +1536,9 @@ package body Con_Io is
     end return;
   end Get;
 
-  -- Take first character of keyboard buffer (no echo) or refresh event
-  procedure Pause (Con : in Console) is
-    Str  : Unicode_Sequence (1 .. 0);
-    Last : Natural;
-    Stat : Curs_Mvt;
-    Pos  : Positive;
-    Ins  : Boolean;
-  begin
-    Check_Con (Con);
-    loop
-      -- Str is empty so no echo at all
-      Get (Con.Get_Access.Screen_Window.all, Str, Last, Stat, Pos, Ins);
-      exit when Stat /= Mouse_Button;
-    end loop;
-  end Pause;
-
+  ------------------------
+  -- Graphic operations --
+  ------------------------
   function X_Max (Con : Console) return X_Range is
   begin
     Check_Con (Con);

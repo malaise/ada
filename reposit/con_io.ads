@@ -83,7 +83,7 @@ package Con_Io is
 
   -- Can be called to initialise the consoles manager
   -- If not called, this init will be called together with first console
-  --  opening and with default colors
+  --  opening
   procedure Initialise;
 
   -- One console
@@ -92,7 +92,7 @@ package Con_Io is
 
   -- Open a console, which appears on screen
   -- Shall be called prior any action on the console
-  -- Screen window is created with the attributes of the Console and cleared
+  -- Screen window is open with the attributes of the Console and cleared
   procedure Open (Con : in out Console;
                   Font_No  : in Font_No_Range := 1;
                   Row_Last : in Row_Range := Def_Row_Last;
@@ -117,7 +117,7 @@ package Con_Io is
   -- - One taks (or main) opens several consoles but only one is active at a
   --   time. In this case the program must suspend and not use the previous
   --   console, then open and use the new console, then close the new console
-  --   then resume and use the first console.
+  --   then resume and use the previous console.
   procedure Suspend (Con : in Console);
   procedure Resume (Con : in Console);
   function Is_Suspended (Con : Console) return Boolean;
@@ -169,7 +169,7 @@ package Con_Io is
   -- Is a window open
   function Is_Open (Name : Window) return Boolean;
 
-  -- Get Console of a window
+  -- Get the Console of a window
   function Get_Console (Name : Window_Access) return Console;
 
   -- Clear window and move to home
@@ -246,7 +246,7 @@ package Con_Io is
                  Background : in Colors := Current;
                  Move       : in Boolean := True);
 
-  -- Idem but append a Lf
+  -- Idem and append a Lf
   procedure Put_Line (Name       : in Window;
                       S          : in String;
                       Foreground : in Colors := Current;
@@ -266,7 +266,7 @@ package Con_Io is
                   Background : in Colors := Current;
                   Move       : in Boolean := True);
 
-  -- Idem but append a Lf
+  -- Idem and append a Lf
   procedure Putw_Line (Name       : in Window;
                        S          : in Wide_String;
                        Foreground : in Colors := Current;
@@ -286,7 +286,7 @@ package Con_Io is
                   Background : in Colors := Current;
                   Move       : in Boolean := True);
 
-  -- Idem but append a Lf
+  -- Idem and append a Lf
   procedure Putu_Line (Name       : in Window;
                        S          : in Unicode_Sequence;
                        Foreground : in Colors := Current;
@@ -297,7 +297,7 @@ package Con_Io is
 
   -- Selection (in/out) management
   -- Set the selection to be transfered to other applications
-  -- Resets if empty string
+  -- Resets selection if empty string
   procedure Set_Selection (Con : in Console; Selection : in String);
 
   -- Request selection from other applications. An event (Curs_Mvt) of
@@ -319,7 +319,7 @@ package Con_Io is
 
   -- Get a string of at most width put characters. Width is deduced from
   --  the size to put initial string.
-  -- The string must be short enought to be put in 1 line at current position
+  -- The string must be short enough to be put in 1 line at current position
   --  in the window.
   -- The current cursor position is updated by the call
   -- The Left and Right arrows, Insert, Del, Backspace, Home, End,
@@ -331,9 +331,11 @@ package Con_Io is
   --  if Tab, Ctrl Tab, Return(Lf), Escape is pressed
   --  on CtrlC/CtrlBreak or X event Exit_Request (from window manager)
   --  on mouse click, release (or motion if enabled)
+  --  on reception of a selection
   --  on time_out expiration
-  --  if a callback has been activated on a fd (see x_mng)
+  --  if a callback has been activated on a fd (see event_mng)
   --  if a callback has been activated on a timer expiration (see timer)
+  --  if a callback has been activated on a signal reception (see event_mng)
   --  if a refresh is needed on the screen (see x_mng)
   -- Mouse_button event can only be generated if the mouse cursor is shown
 
@@ -399,9 +401,6 @@ package Con_Io is
   end record;
   function Get (Name     : Window;
                 Time_Out : Delay_Rec := Infinite_Delay) return Get_Result;
-
-  -- Take first character of keyboard buffer (no echo) or refresh event
-  procedure Pause (Con : in Console);
 
 
   -- Graphic operations on Screen window (with Screen attributes)
