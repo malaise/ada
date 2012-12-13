@@ -11,7 +11,15 @@ package Bit_Ops is
   function Shl (Val : Integer; Bits : Integer) return Integer;
   function Shr (Val : Integer; Bits : Integer) return Integer;
 
-  -- Operation on long_long_integers
+  -- Operation on long integers
+  function "And" (Left, Right : Long_Integer) return Long_Integer;
+  function "Or"  (Left, Right : Long_Integer) return Long_Integer;
+  function "Xor" (Left, Right : Long_Integer) return Long_Integer;
+  function "Not" (Val : Long_Integer) return Long_Integer;
+  function Shl (Val : Long_Integer; Bits : Integer) return Long_Integer;
+  function Shr (Val : Long_Integer; Bits : Integer) return Long_Integer;
+
+  -- Operation on long long integers
   function "And" (Left, Right : Long_Long_Integer) return Long_Long_Integer;
   function "Or"  (Left, Right : Long_Long_Integer) return Long_Long_Integer;
   function "Xor" (Left, Right : Long_Long_Integer) return Long_Long_Integer;
