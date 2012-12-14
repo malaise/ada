@@ -5,7 +5,8 @@ procedure T_Ndbm is
   subtype Key is Natural;
   subtype Data is String (1 .. 10);
 
-  package My_Ndbm is new Ndbm (Key, Data, "data/test_dbm");
+  package My_Ndbm is new Ndbm (Key, Data);
+  Db : My_Ndbm.Database;
 
   K : Key;
   D : Data;
@@ -14,25 +15,25 @@ procedure T_Ndbm is
 
 begin
 
-  My_Ndbm.Open;
+  Db.Open ("data/test_dbm");
 
   -- Infinite loop
   for N in 1 .. 1_000 loop
 
     -- Fill
     for I in 1 .. 1_000 loop
-      My_Ndbm.Write (I, Normal(I, 10));
+      Db.Write (I, Normal(I, 10));
     end loop;
 
     -- Read
     Nb_Op := 0;
-    K := My_Ndbm.First_Key;
+    K := Db.First_Key;
     loop
-      D := My_Ndbm.Read (K);
+      D := Db.Read (K);
       Nb_Op := Nb_Op + 1;
       Basic_Proc.Put_Line_Output (D);
       begin
-        K := My_Ndbm.Next_Key;
+        K := Db.Next_Key;
       exception
         when My_Ndbm.No_Data =>
            Basic_Proc.Put_Line_Output ("No more to read, "
@@ -46,9 +47,9 @@ begin
     Nb_Op := 0;
     loop
       begin
-        K := My_Ndbm.First_Key;
+        K := Db.First_Key;
         begin
-          My_Ndbm.Delete (K);
+          Db.Delete (K);
           Nb_Op := Nb_Op + 1;
         exception
           when My_Ndbm.No_Data =>
@@ -64,7 +65,7 @@ begin
     end loop;
 
     begin
-      K := My_Ndbm.First_Key;
+      K := Db.First_Key;
       Basic_Proc.Put_Line_Output ("First Key Ok ????!!!!");
     exception
       when My_Ndbm.No_Data =>
@@ -72,7 +73,7 @@ begin
     end;
 
     begin
-      D := My_Ndbm.Read (K);
+      D := Db.Read (K);
       Basic_Proc.Put_Line_Output ("Read Ok ????!!!!");
     exception
       when My_Ndbm.No_Data =>
@@ -83,7 +84,7 @@ begin
 
   end loop;
 
-  My_Ndbm.Close;
+  Db.Close;
 
 end T_Ndbm;
 

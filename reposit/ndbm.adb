@@ -1,9 +1,6 @@
-with System;
 with Ada.Characters.Latin_1;
 with Bit_Ops, C_Types;
 package body Ndbm is
-
-  Db : System.Address := System.Null_Address;
 
   -- Open flags
   O_Rdwr  : constant C_Types.Int := 8#0000002#;
@@ -75,9 +72,9 @@ package body Ndbm is
   ------------------------
   -- Internal functions --
   ------------------------
-  procedure Check_Open is
+  procedure Check_Open (Db : Database) is
   begin
-    if not Is_Open then
+    if not Is_Open (Db) then
       raise Use_Error;
     end if;
   end Check_Open;
@@ -85,17 +82,17 @@ package body Ndbm is
   ----------
   -- Open --
   ----------
-  procedure Open is
+  procedure Open (Db : in out Database; File_Name : in String) is
     Name_For_C : constant String := File_Name & Ada.Characters.Latin_1.Nul;
     use Bit_Ops;
   begin
-    if Is_Open then
+    if Is_Open (Db) then
       raise Use_Error;
     end if;
-    Db := Dbm_Open (Name_For_C(1)'Address,
-                    O_Rdwr or O_Creat,
-                    C_Types.Uint32 (S_Irusr or S_Iwusr or S_Irgrp));
-    if not Is_Open then
+    Db.Acc := Dbm_Open (Name_For_C(1)'Address,
+                        O_Rdwr or O_Creat,
+                        C_Types.Uint32 (S_Irusr or S_Iwusr or S_Irgrp));
+    if not Is_Open (Db) then
       raise Name_Error;
     end if;
   end Open;
@@ -103,34 +100,35 @@ package body Ndbm is
   -----------
   -- Close --
   -----------
-  procedure Close is
+  procedure Close (Db : in out Database) is
   begin
-    Check_Open;
-    Dbm_Close (Db);
+    Check_Open (Db);
+    Dbm_Close (Db.Acc);
+    Db.Acc := System.Null_Address;
   end Close;
 
   -------------
   -- Is_Open --
   -------------
-  function Is_Open return Boolean is
+  function Is_Open (Db : in Database) return Boolean is
     use type System.Address;
   begin
-    return Db /= System.Null_Address;
+    return Db.Acc /= System.Null_Address;
   end Is_Open;
 
   -----------
   -- Write --
   -----------
-  procedure Write (K : in Key; D : in Data) is
+  procedure Write (Db : in out Database; K : in Key; D : in Data) is
     The_Key, The_Data : Datum;
     Res : Integer;
   begin
-    Check_Open;
+    Check_Open (Db);
     The_Key.Dptr := K'Address;
     The_Key.Dsize := Key_Len;
     The_Data.Dptr := D'Address;
     The_Data.Dsize := Data_Len;
-    Res := Dbm_Store (Db, The_Key'Address, The_Data'Address,
+    Res := Dbm_Store (Db.Acc, The_Key'Address, The_Data'Address,
                       Dbm_Replace);
     if Res /= 0 then
       raise Ndbm_Error;
@@ -140,15 +138,15 @@ package body Ndbm is
   ----------
   -- Read --
   ----------
-  function Read (K : in Key) return Data is
+  function Read (Db : Database; K : in Key) return Data is
     The_Key, The_Data : Datum;
     D : Data;
     use type System.Address;
   begin
-    Check_Open;
+    Check_Open (Db);
     The_Key.Dptr := K'Address;
     The_Key.Dsize := Key_Len;
-    Dbm_Fetch (Db, The_Key'Address, The_Data'Address);
+    Dbm_Fetch (Db.Acc, The_Key'Address, The_Data'Address);
     if The_Data.Dptr = System.Null_Address then
       raise No_Data;
     end if;
@@ -159,14 +157,14 @@ package body Ndbm is
   ------------
   -- Delete --
   ------------
-  procedure Delete (K : in Key) is
+  procedure Delete (Db : in out Database; K : in Key) is
     The_Key : Datum;
     Res : Integer;
   begin
-    Check_Open;
+    Check_Open (Db);
     The_Key.Dptr := K'Address;
     The_Key.Dsize := Key_Len;
-    Res := Dbm_Delete (Db, The_Key'Address);
+    Res := Dbm_Delete (Db.Acc, The_Key'Address);
     if Res /= 0 then
       raise No_Data;
     end if;
@@ -175,13 +173,13 @@ package body Ndbm is
   ---------------
   -- First_Key --
   ---------------
-  function First_Key return Key is
+  function First_Key (Db : Database) return Key is
     The_Key : Datum;
     K : Key;
     use type System.Address;
   begin
-    Check_Open;
-    Dbm_Firstkey (Db, The_Key'Address);
+    Check_Open (Db);
+    Dbm_Firstkey (Db.Acc, The_Key'Address);
     if The_Key.Dptr = System.Null_Address then
       raise No_Data;
     end if;
@@ -192,19 +190,26 @@ package body Ndbm is
   --------------
   -- Next_Key --
   --------------
-  function Next_Key return Key is
+  function Next_Key (Db : Database) return Key is
     The_Key : Datum;
     K : Key;
     use type System.Address;
   begin
-    Check_Open;
-    Dbm_Nextkey (Db, The_Key'Address);
+    Check_Open (Db);
+    Dbm_Nextkey (Db.Acc, The_Key'Address);
     if The_Key.Dptr = System.Null_Address then
       raise No_Data;
     end if;
     Memcpy (K'Address, The_Key.Dptr, C_Types.Size_T (Key_Len));
     return K;
   end Next_Key;
+
+  overriding procedure Finalize (Db : in out Database) is
+  begin
+    if Is_Open (Db) then
+      Close (Db);
+    end if;
+  end Finalize;
 
 end Ndbm;
 

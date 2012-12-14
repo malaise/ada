@@ -1,9 +1,11 @@
 -- Interface to gdbm (dbm and ndbm) database manager
+with System;
+with Ada.Finalization;
 generic
   type Key is private;
   type Data is private;
-  File_Name : in String;
 package Ndbm is
+  type Database is tagged limited private;
 
   -- Open error
   Name_Error : exception;
@@ -18,23 +20,28 @@ package Ndbm is
   Ndbm_Error : exception;
 
   -- Open/create the database for read-write
-  procedure Open;
+  procedure Open (Db : in out Database; File_Name : in String);
   -- Close the database
-  procedure Close;
+  procedure Close (Db : in out Database);
   -- Is database open
-  function Is_Open return Boolean;
+  function Is_Open (Db : Database) return Boolean;
 
   -- Insert/replace data at a specific key
-  procedure Write (K : in Key; D : in Data);
+  procedure Write (Db : in out Database; K : in Key; D : in Data);
 
   -- Read data at a specific key
-  function Read (K : in Key) return Data;
+  function Read (Db : Database; K : Key) return Data;
   -- Delete data at a specific key
-  procedure Delete (K : in Key);
+  procedure Delete (Db : in out Database; K : in Key);
 
   -- First/Next key, may raise No_Data
-  function First_Key return Key;
-  function Next_Key  return Key;
+  function First_Key (Db : Database) return Key;
+  function Next_Key  (Db : Database) return Key;
 
+private
+  type Database is limited new Ada.Finalization.Limited_Controlled with record
+    Acc : System.Address := System.Null_Address;
+  end record;
+  overriding procedure Finalize (Db : in out Database);
 end Ndbm;
 
