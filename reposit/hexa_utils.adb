@@ -61,7 +61,7 @@ package body Hexa_Utils is
   end Image;
 
   -- Image in hexadecimal of a Natural, padded with '0' to fit length
-  -- Lower case, no leading space
+  -- Lower case
   -- Raises Constraint_Error if Image(N) > Len
   function Image (N : Natural; Len : Positive; Gap : Character := '0')
            return String is

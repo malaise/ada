@@ -22,7 +22,7 @@ package Hexa_Utils is
   function Image (N : Natural) return String;
 
   -- Image in hexadecimal of a Natural, with head padded with gap to fit length
-  -- Lower case, no leading space
+  -- Lower case
   -- Raises Constraint_Error if Image(N) > Len
   function Image (N : Natural; Len : Positive; Gap : Character := '0')
            return String;

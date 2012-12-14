@@ -107,7 +107,7 @@ package Limited_List is
 
   -- Delete and deallocate anyway. Set Moved to True if movement was possible
   --  (and done) or if list becomes empty, and False otherwise (movement done
-  --  in the --  opposite direction)
+  --  in the opposite direction)
   procedure Deallocate (List  : in out List_Type;
                         Move  : in Direction := Next;
                         Moved : out Boolean);
