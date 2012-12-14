@@ -46,7 +46,7 @@ procedure T_Dir is
 
   procedure Put_Size (Size : in Sys_Calls.Off_T) is
   begin
-    Basic_Proc.Put_Output(" " & Normalization.Normal_Long (Size, 12));
+    Basic_Proc.Put_Output(" " & Normalization.Normal_Long_Long (Size, 12));
   exception
     when Constraint_Error => Basic_Proc.Put_Output(" " & "xxxxxxxxxx");
   end Put_Size;

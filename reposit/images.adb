@@ -20,10 +20,15 @@ package body Images is
   function Loc_Integer_Image is new Int_Image (Integer);
   function Integer_Image (I : Integer) return String renames Loc_Integer_Image;
 
-  -- Image of Long_Long_Integer
-  function Loc_Long_Image is new Int_Image (Long_Long_Integer);
-  function Long_Image (L : Long_Long_Integer) return String
+  -- Image of Long_Integer
+  function Loc_Long_Image is new Int_Image (Long_Integer);
+  function Long_Image (L : Long_Integer) return String
            renames Loc_Long_Image;
+
+  -- Image of Long_Long_Integer
+  function Loc_Long_Long_Image is new Int_Image (Long_Long_Integer);
+  function Long_Long_Image (L : Long_Long_Integer) return String
+           renames Loc_Long_Long_Image;
 
 
   -- Image of Integer in base 16 (without leading space)

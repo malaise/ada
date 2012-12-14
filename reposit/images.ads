@@ -8,8 +8,9 @@ package Images is
   -- Image of Integer
   function Integer_Image (I : Integer) return String;
 
-  -- Image of Long_Long_Integer
-  function Long_Image (L : Long_Long_Integer) return String;
+  -- Image of Long_Integer and Long_Long_Integer
+  function Long_Image (L : Long_Integer) return String;
+  function Long_Long_Image (L : Long_Long_Integer) return String;
 
   -- Image of Integer in base 16 (without leading space)
   -- "16#XYZ#"

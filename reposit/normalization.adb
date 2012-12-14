@@ -119,12 +119,19 @@ package body Normalization is
                         Gap   : Character := ' ') return String
            renames Loc_Normal_Inte;
 
-  function Loc_Normal_Long is new Normal_Gen (Long_Long_Integer);
-  function Normal_Long (L     : Long_Long_Integer;
+  function Loc_Normal_Long is new Normal_Gen (Long_Integer);
+  function Normal_Long (L     : Long_Integer;
                         Len   : Positive;
                         Right : Boolean := True;
                         Gap   : Character := ' ') return String
            renames Loc_Normal_Long;
+
+  function Loc_Normal_Long_Long is new Normal_Gen (Long_Long_Integer);
+  function Normal_Long_Long (L     : Long_Long_Integer;
+                             Len   : Positive;
+                             Right : Boolean := True;
+                             Gap   : Character := ' ') return String
+           renames Loc_Normal_Long_Long;
 
   -- Puts a float F or a real R in a string of fixed length.
   -- S i . f {[ f ]} E S e {[ e ]}

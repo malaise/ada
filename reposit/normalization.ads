@@ -27,10 +27,14 @@ package Normalization is
                         Len   : Positive;
                         Right : Boolean := True;
                         Gap   : Character := ' ') return String;
-  function Normal_Long (L     : Long_Long_Integer;
+  function Normal_Long (L     : Long_Integer;
                         Len   : Positive;
                         Right : Boolean := True;
                         Gap   : Character := ' ') return String;
+  function Normal_Long_Long (L     : Long_Long_Integer;
+                             Len   : Positive;
+                             Right : Boolean := True;
+                             Gap   : Character := ' ') return String;
 
 
 
