@@ -8,7 +8,7 @@ procedure Parse_Task (Level : in Natural) is
 begin
   -- Read until task name, skip "type"
   loop
-    Word := Parser_Ada.Multiparse.Get (True);
+    Word := Parser_Ada.Multiparser.Get (True);
     if Word.Lexic = Parser_Ada.Reserved_Word
     and then Word.Text.Image = "type" then
       -- Skip type
@@ -38,7 +38,7 @@ begin
 
   -- Parse until "end", display the entries as comment
   loop
-    Word := Parser_Ada.Multiparse.Get (True);
+    Word := Parser_Ada.Multiparser.Get (True);
     if Word.Lexic = Parser_Ada.Comment then
       Output.Put_Line (Word.Text.Image, False, Level + 1, True);
     elsif Word.Lexic = Parser_Ada.Separator then

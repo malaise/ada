@@ -21,6 +21,7 @@ package Parser_Ada is
     User_Data_Type => Boolean,
     Get_Item => Get_Word,
     Unget_Length => 0);
+  Multiparser : Multiparse.Multigetter;
 
 end Parser_Ada;
 

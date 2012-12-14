@@ -13,7 +13,7 @@ begin
 
   -- Read until entry name
   loop
-    Word := Parser_Ada.Multiparse.Get (True);
+    Word := Parser_Ada.Multiparser.Get (True);
     Words.Add (Word);
     exit when Word.Lexic /= Parser_Ada.Separator;
   end loop;
@@ -32,7 +32,7 @@ begin
   In_Parent := False;
   In_Id := False;
   loop
-    Word := Parser_Ada.Multiparse.Get (True);
+    Word := Parser_Ada.Multiparser.Get (True);
     Words.Add (Word);
     if Word.Text.Image = "(" then
       In_Parent := True;

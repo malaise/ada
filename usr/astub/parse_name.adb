@@ -19,9 +19,9 @@ begin
 
   -- Read while identifier or "." and concat to Name
   Name := Word.Text;
-  Parser_Ada.Multiparse.Start_Recording;
+  Parser_Ada.Multiparser.Start_Recording;
   loop
-    Word := Parser_Ada.Multiparse.Get (True);
+    Word := Parser_Ada.Multiparser.Get (True);
     Words.Add (Word);
     exit when Word.Lexic /= Parser_Ada.Identifier
     and then  Word.Lexic /= Parser_Ada.String_Literal
@@ -29,8 +29,8 @@ begin
       Name.Append (Word.Text);
   end loop;
   Words.Del;
-  Parser_Ada.Multiparse.Unget;
-  Parser_Ada.Multiparse.Stop_Recording;
+  Parser_Ada.Multiparser.Unget;
+  Parser_Ada.Multiparser.Stop_Recording;
 
   -- Read until a significant character (and unget)
   Parse_To_Ends (

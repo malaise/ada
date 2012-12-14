@@ -31,7 +31,7 @@ begin
     In_Id := True;
     Nb_Parent := 1;
     loop
-      Word := Parser_Ada.Multiparse.Get (True);
+      Word := Parser_Ada.Multiparser.Get (True);
       Words.Add (Word);
       if Word.Text.Image = "(" then
         Nb_Parent := Nb_Parent + 1;

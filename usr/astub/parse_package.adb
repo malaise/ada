@@ -36,7 +36,7 @@ begin
 
   -- Loop until expected word
   loop
-    Word := Parser_Ada.Multiparse.Get (True);
+    Word := Parser_Ada.Multiparser.Get (True);
     declare
       Str : constant String := Word.Text.Image;
     begin

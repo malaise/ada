@@ -12,7 +12,7 @@ begin
   Prev_Private := False;
   -- Loop until expected word
   loop
-    Word := Parser_Ada.Multiparse.Get (False);
+    Word := Parser_Ada.Multiparser.Get (False);
     declare
       Str : constant String := Word.Text.Image;
     begin
@@ -36,7 +36,7 @@ begin
       elsif Str = "private" then
         -- Skip private prefix of package/procedure/function
         --   keep trace for "private with"
-        Trash_Word := Parser_Ada.Multiparse.Get (False);
+        Trash_Word := Parser_Ada.Multiparser.Get (False);
       elsif Str = "generic" then
         -- Not terminated by ";"
         Output.New_Line;

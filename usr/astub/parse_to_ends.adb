@@ -22,7 +22,7 @@ begin
     exit when End_Criteria'Length = 0;
 
     -- Read next lexical element, cannot return ""
-    Word := Parser_Ada.Multiparse.Get (True);
+    Word := Parser_Ada.Multiparser.Get (True);
     -- In any case, save it
     Words.Add (Word);
 
@@ -81,10 +81,10 @@ begin
   end if;
 
   -- Loop until next significant word
-  Parser_Ada.Multiparse.Start_Recording;
+  Parser_Ada.Multiparser.Start_Recording;
   loop
     -- Read next lexical element or end of file
-    Word := Parser_Ada.Multiparse.Get (False);
+    Word := Parser_Ada.Multiparser.Get (False);
     -- In any case, save it
     Words.Add (Word);
     if Word.Lexic = Parser_Ada.Comment and then Put_Comments then
@@ -102,8 +102,8 @@ begin
 
   -- Unget this significant word
   Words.Del;
-  Parser_Ada.Multiparse.Unget;
-  Parser_Ada.Multiparse.Stop_Recording;
+  Parser_Ada.Multiparser.Unget;
+  Parser_Ada.Multiparser.Stop_Recording;
 
 end Parse_To_Ends;
 
