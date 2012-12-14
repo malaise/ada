@@ -16,14 +16,14 @@ procedure Sokoban is
   end Usage;
 
 begin
-  Rnd.Randomize;
+  Rnd.Gen.Randomize;
 
   begin
     if Argument.Get_Nbre_Arg = 0 then
       No_Frame := Sok_Types.Frame_Range'First;
     elsif Argument.Get_Nbre_Arg = 1 then
       if Upper_Str (Argument.Get_Parameter) = "RND" then
-        No_Frame := Frame_Random;
+        No_Frame := Frame_Random (Rnd.Gen);
       elsif Upper_Str (Argument.Get_Parameter) = "RST" then
         No_Frame := Sok_Types.Restore_Frame;
       else

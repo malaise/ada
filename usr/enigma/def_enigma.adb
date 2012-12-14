@@ -327,7 +327,7 @@ begin
       end if;
 
     when Random =>
-      Rnd.Randomize;
+      Rnd.Gen.Randomize;
       -- Set random switches, not empty
       loop
         declare
@@ -335,7 +335,7 @@ begin
           Str : constant String := Scrambler_Gen.Generate (True);
           Used : String (Str'Range) := (others => ' ');
           -- Generate a random number of switch entries
-          N : constant Natural := Rnd.Int_Random (1, Id_Range'Last / 2);
+          N : constant Natural := Rnd.Gen.Int_Random (1, Id_Range'Last / 2);
         begin
           for I in 1 .. N loop
             -- Skip identity and dual definition
@@ -352,31 +352,31 @@ begin
 
       -- Set random number (3 to 4) of random rotors and rotor settings
       -- rotor 10 has N°0
-      Nb_Rotors := Rnd.Int_Random (3, 4);
+      Nb_Rotors := Rnd.Gen.Int_Random (3, 4);
       declare
         Rot_Num : Rotor_Id;
       begin
         for I in 1 .. Nb_Rotors loop
           if Nb_Rotors /= 4 or else I /= 1 then
             -- Not the the first of 4 rotors: any of the 10 first rotors
-            Rot_Num := Rnd.Int_Random (Rotor_Id'First, Rotor_Id'Last);
+            Rot_Num := Rnd.Gen.Int_Random (Rotor_Id'First, Rotor_Id'Last);
           else
             -- First rotor of 4: Any of 11th or 12th rotor
-            Rot_Num := Rnd.Int_Random (1, 2);
+            Rot_Num := Rnd.Gen.Int_Random (1, 2);
           end if;
           Rot_Num := Store (Rot_Num, I);
-          Rotors.Append (To_Letter (Rot_Num) & To_Letter (Id_Random));
-          Init_Offset.Append (To_Letter (Id_Random));
+          Rotors.Append (To_Letter (Rot_Num) & To_Letter (Id_Random (Rnd.Gen)));
+          Init_Offset.Append (To_Letter (Id_Random (Rnd.Gen)));
         end loop;
       end;
 
       -- Set random reflector, no offset
       if Nb_Rotors /= 4 then
         -- 3 rotors: Reflector A to C
-        Reflector.Set (To_Letter (Rnd.Int_Random (1, 3)) & 'A');
+        Reflector.Set (To_Letter (Rnd.Gen.Int_Random (1, 3)) & 'A');
       else
         -- 4 rotors: Reflectors Bthin or Cthin
-        Reflector.Set (To_Letter (Rnd.Int_Random (4, 5)) & 'A');
+        Reflector.Set (To_Letter (Rnd.Gen.Int_Random (4, 5)) & 'A');
       end if;
 
     when Extract =>
@@ -719,7 +719,7 @@ begin
     Basic_Proc.Put_Output (" ");
     -- Key coded onto text
     -- Switch and random separator
-    Separator := To_Letter (Id_Random);
+    Separator := To_Letter (Id_Random (Rnd.Gen));
     Basic_Proc.Put_Output (Switch.Image & Separator & Separator);
     for I in 1 .. Rotors.Length loop
       if I rem 2 = 1 then

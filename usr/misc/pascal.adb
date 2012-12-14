@@ -44,7 +44,7 @@ begin
                       Table(Typ_No_Line'Pred(No_Line), Index);
       end if;
       Table(No_Line, Index) := Element;
-      Put_Output (Images.Long_Image (Element));
+      Put_Output (Images.Long_Long_Image (Element));
       if Index /= Typ_Index'Succ(No_Line) then
         Put_Output ('/');
       end if;

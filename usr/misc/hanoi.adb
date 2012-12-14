@@ -184,7 +184,7 @@ begin -- Hanoi
       Put_Line_Output (".");
 
       Put_Output ("Operation done in ");
-      Put_Output (Images.Long_Image (Nb_Moves));
+      Put_Output (Images.Long_Long_Image (Nb_Moves));
       Put_Line_Output (" moves ");
       Put_Output (" and in ");
       Put_Output (Images.Dur_Image (Seconds, 3, False));

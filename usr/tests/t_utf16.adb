@@ -42,13 +42,13 @@ begin
   end loop;
   Basic_Proc.New_Line_Output;
 
-  Rnd.Randomize;
+  Rnd.Gen.Randomize;
   Key_Pressed.Open (False);
   Id_Loop := 0;
   loop
     begin
-      U1 := Rnd.Int_Random (Utf_16.Unicode_Number'First,
-                            Utf_16.Unicode_Number'Last);
+      U1 := Rnd.Gen.Int_Random (Utf_16.Unicode_Number'First,
+                                Utf_16.Unicode_Number'Last);
       declare
         Str : constant Utf_16.Sequence := Utf_16.Encode (U1);
       begin

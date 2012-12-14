@@ -292,12 +292,12 @@ procedure T_Dictio is
   begin
     for I in 1 .. 100 loop
       for J in 1 .. 100 loop
-        N := Rnd.Int_Random (1, Name'Last);
+        N := Rnd.Gen.Int_Random (1, Name'Last);
         for K in 1 .. N loop
-          Name(K) := Character'Val(Rnd.Int_Random (
+          Name(K) := Character'Val(Rnd.Gen.Int_Random (
                 Character'Pos('a'), Character'Pos('z')));
         end loop;
-        if N > 3 and then Rnd.Int_Random = 1 then
+        if N > 3 and then Rnd.Gen.Int_Random = 1 then
           Name(2) := '.';
         end if;
         if Verbose then
@@ -359,7 +359,7 @@ begin
 
   Event_Mng.Set_Sig_Term_Callback (Sig_Cb'Unrestricted_Access);
 
-  Rnd.Randomize;
+  Rnd.Gen.Randomize;
 
   Dictio_Lib.Dictio_State_Cb := Dictio_State_Cb'Unrestricted_Access;
   Dictio_Lib.Notify_Cb := Dictio_Notify_Cb'Unrestricted_Access;

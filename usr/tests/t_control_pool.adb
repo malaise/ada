@@ -31,9 +31,9 @@ procedure T_Control_Pool is
     end Start;
     loop
       -- Get a random pool resource
-      Pool_No := Rnd.Int_Random(Pool_Range'First, Pool_Range'Last);
+      Pool_No := Rnd.Gen.Int_Random(Pool_Range'First, Pool_Range'Last);
       T1 := Ada.Calendar.Clock;
-      Dur1 := Rnd.Dur_Random (-0.1, 3.0);
+      Dur1 := Rnd.Gen.Dur_Random (-0.1, 3.0);
       Sys_Calls.Put_Line_Output (My_No'Img & ": getting " & Pool_No'Img & " for " & Dur1'Img);
       Got := Pool.Get(Pool_No, Dur1);
       Dur2 := Ada.Calendar.Clock - T1;
@@ -42,7 +42,7 @@ procedure T_Control_Pool is
       if Got then
         -- Wait a bit (1 to 5 s) or signal
         Sys_Calls.Put_Line_Output (My_No'Img & ": working on " & Pool_No'Img);
-        exit when Event_Mng.Wait(Rnd.Int_Random(1_000, 5_000));
+        exit when Event_Mng.Wait(Rnd.Gen.Int_Random(1_000, 5_000));
         Sys_Calls.Put_Line_Output (My_No'Img & ": releasing " & Pool_No'Img);
         Pool.Release (Pool_No);
       end if;
@@ -55,7 +55,7 @@ procedure T_Control_Pool is
   Pids : array (Client_Range) of Sys_Calls.Pid;
 
 begin
-  Rnd.Randomize;
+  Rnd.Gen.Randomize;
   Event_Mng. Set_Sig_Term_Callback (Term_Cb'Unrestricted_Access);
 
   for I in Client_Range loop

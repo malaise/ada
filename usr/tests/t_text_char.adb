@@ -34,16 +34,16 @@ begin
   Text_Char.Open (File, Fd);
 
   -- Loop of read
-  Rnd.Randomize;
+  Rnd.Gen.Randomize;
   loop
     C := Text_Char.Get (File);
     Sys_Calls.Put_Output (C);
     Q.Push (Circ, C);
     exit when Text_Char.End_Of_File (File);
     -- Check unget average each 4 chars
-    if Rnd.Int_Random (0, 3) = 0 then
+    if Rnd.Gen.Int_Random (0, 3) = 0 then
       -- Undo 1 to 4 characters
-      Nundo := Rnd.Int_Random (1, 4);
+      Nundo := Rnd.Gen.Int_Random (1, 4);
       if Nundo > Q.Length (Circ) then
         -- Don't undo more characters than read
         Nundo := Q.Length (Circ);

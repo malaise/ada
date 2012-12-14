@@ -18,7 +18,7 @@ begin
     end;
   end if;
 
-  Rnd.Randomize;
+  Rnd.Gen.Randomize;
   Key_Pressed.Open (False);
   Id_Loop := 0;
 
@@ -29,12 +29,12 @@ begin
         D := 0.0;
         First := False;
       else
-        D := Rnd.Dur_Random (-99.999999, 100.0);
+        D := Rnd.Gen.Dur_Random (-99.999999, 100.0);
       end if;
       Basic_Proc.Put_Line_Output ("D is " & D'Img);
       -- Loop of various Nb_Digits
       for I in 1 .. 10 loop
-        N := Rnd.Int_Random (Maxi => 10);
+        N := Rnd.Gen.Int_Random (Maxi => 10);
         Basic_Proc.Put_Line_Output (
              N'Img & " ->" & Images.Dur_Image (D, N, True)
                    & "<->" & Images.Dur_Image (D, N, False)

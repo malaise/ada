@@ -28,7 +28,7 @@ procedure T_Arbitrary is
       := Positive(My_Math.Sqrt (My_Math.Real(Integer'Last))) - 2;
   function Random return Integer is
   begin
-    return Rnd.Int_Random (-Max, Max);
+    return Rnd.Gen.Int_Random (-Max, Max);
   end Random;
 
   function Image (I : Integer) return String is
@@ -241,7 +241,7 @@ begin
   delay 1.0;
 
   -- Loop of comparisons
-  Rnd.Randomize;
+  Rnd.Gen.Randomize;
   I := 0;
 
   loop

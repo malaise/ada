@@ -251,9 +251,9 @@ begin
   else
     -- Sort random list
     Basic_Proc.Put_Output ("Make the following random list: ");
-    Rnd.Randomize;
-    for I in 1 .. Rnd.Int_Random (0, 10) loop
-      List.Insert (Rnd.Int_Random(0, 50));
+    Rnd.Gen.Randomize;
+    for I in 1 .. Rnd.Gen.Int_Random (0, 10) loop
+      List.Insert (Rnd.Gen.Int_Random(0, 50));
     end loop;
   end if;
   Dump;

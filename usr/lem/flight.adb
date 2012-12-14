@@ -12,7 +12,7 @@ package body Flight is
     Init_Pos : Space.Position_Rec;
     use type Space.X_Range;
   begin
-    Init_Pos.X_Pos :=  Space.X_Range (Rnd.Float_Random (
+    Init_Pos.X_Pos :=  Space.X_Range (Rnd.Gen.Float_Random (
        Float(Space.X_Range'First + 1.5 * Lem.Width),
        Float(Space.X_Range'Last - 1.5 * Lem.Width) ));
     Init_Pos.Y_Pos := Space.Y_Range'Last - Lem.Height;

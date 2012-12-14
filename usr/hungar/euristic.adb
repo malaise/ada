@@ -150,7 +150,7 @@ package body Euristic is
     end Init_Zeros;
 
     -- Init random serial list
-    Rnd.Randomize;
+    Rnd.Gen.Randomize;
 
     Euristic_Loop:
     loop
@@ -191,7 +191,7 @@ package body Euristic is
         end loop;
 
         -- Select one randomly
-        Selected_Zero := Rnd.Int_Random (1, Nb_Min_Zero);
+        Selected_Zero := Rnd.Gen.Int_Random (1, Nb_Min_Zero);
         Zero_Desc(Selected_Zero).State := Squared;
 
         -- Propagate the choice

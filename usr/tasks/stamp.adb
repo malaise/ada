@@ -38,10 +38,11 @@ procedure Stamp is
     loop
       I := I + 1;
       Put_Line_Output (Normal (I, 2));
-      delay Rnd.Dur_Random(0.0, 0.1);
+      delay Rnd.Gen.Dur_Random(0.0, 0.1);
     end loop;
   end Scan;
 
 begin
+  Rnd.Gen.Randomize;
   Scan.Start;
 end Stamp;

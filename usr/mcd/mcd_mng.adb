@@ -1113,7 +1113,7 @@ package body Mcd_Mng is
         when Rnd =>
           -- push random value
           S := (Kind => Real,
-                 Val_Real => My_Math.Real(Random.Float_Random));
+                 Val_Real => My_Math.Real(Random.Gen.Float_Random));
           Push(S);
         when Sleep =>
           -- sleep A seconds
@@ -1149,6 +1149,6 @@ package body Mcd_Mng is
   end Check_Empty_Stack;
 
 begin
-  Random.Randomize;
+  Random.Gen.Randomize;
 end Mcd_Mng;
 

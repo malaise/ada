@@ -9,7 +9,7 @@ begin
     & Normal(Integer(Common.Get_Stored_Level), 1)
     & " digits from 1 to 8.");
 
-  Rnd.Randomize;
+  Rnd.Gen.Randomize;
   Response.New_Code;
 
   declare

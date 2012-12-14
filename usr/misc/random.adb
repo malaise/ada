@@ -13,6 +13,8 @@ procedure Random is
 
   Error : exception;
 
+  Mgen : Rnd.Generator;
+
 begin
 
   Nb_Arg := Argument.Get_Nbre_Arg;
@@ -40,13 +42,14 @@ begin
     raise Error;
   end if;
 
-  Rnd.Randomize;
+  Mgen.Randomize;
   if Int_Float_Min.Is_Float then
     Basic_Proc.Put_Output (
-     Rnd.Float_Random(Int_Float_Min.Float_Value, Int_Float_Max.Float_Value)'Img);
+     Mgen.Float_Random(Int_Float_Min.Float_Value,
+                       Int_Float_Max.Float_Value)'Img);
   else
     Basic_Proc.Put_Output (
-     Rnd.Int_Random(Int_Float_Min.Int_Value, Int_Float_Max.Int_Value)'Img);
+     Mgen.Int_Random(Int_Float_Min.Int_Value, Int_Float_Max.Int_Value)'Img);
   end if;
 
 exception

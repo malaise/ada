@@ -3,7 +3,7 @@
 -- Then do the same on the quotien of this division... until the quotien
 -- becomes 0.
 with Ada.Calendar, Ada.Characters.Latin_1;
-with U_Rand, Clear_Screen, Sys_Calls, Normal;
+with Rnd, Clear_Screen, Sys_Calls, Normal;
 procedure G is
   -- Generated number
   subtype Number is Natural range 0 .. 999_999_999;
@@ -21,44 +21,12 @@ procedure G is
   Dummy : Boolean;
   pragma Unreferenced (Dummy);
 
-  procedure Init is
-    N : Positive;
-  begin
-    N := Positive (Ada.Calendar.Seconds(Ada.Calendar.Clock));
-    N := (N mod (U_Rand.Seed_Range_2'Last)) + 1;
-    U_Rand.Start (New_L => N);
-  end Init;
-
   function Rand return Positive is
-    subtype Digit is Natural range 0 .. 9;
-    subtype R_Digit is Float range
-     Float (Digit'First) .. Float (Digit'Last + 1);
     Ret : Positive;
-    function Trunc (R : in R_Digit) return Digit is
-      D : Natural;
-    begin
-      D := Natural (R);
-      if Float (D) > R then
-        D := D - 1;
-      end if;
-      return D;
-    end Trunc;
-    function New_Digit (Allow_0 : in Boolean) return Digit is
-      R : R_Digit;
-      D : Digit;
-    begin
-      loop
-        R := U_Rand.Next * R_Digit'Last;
-        D := Trunc (R);
-        exit when Allow_0 or else D /= 0;
-      end loop;
-      return D;
-    end New_Digit;
-
   begin
-    Ret := New_Digit (Allow_0 => False);
+    Ret := Rnd.Gen.Int_Random (1, 9);
     for I in 1 .. 8 loop
-      Ret := Ret * 10 + New_Digit (Allow_0 => True);
+      Ret := Ret * 10 + Rnd.Gen.Int_Random (0, 9);
     end loop;
     return Ret;
   end Rand;
@@ -98,8 +66,7 @@ procedure G is
   end Get_Char;
 
 begin
-  Dummy := Sys_Calls.Set_Tty_Attr (Sys_Calls.Stdin, Sys_Calls.Char_No_Echo);
-  Init;
+  Rnd.Gen.Randomize;
 
   Game:
   loop

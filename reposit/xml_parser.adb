@@ -289,7 +289,7 @@ package body Xml_Parser is
 
   function Get_Magic return Float is
   begin
-    return Rnd.Float_Random (0.0, Float(Integer'Last));
+    return Rnd.Gen.Float_Random (0.0, Float(Integer'Last));
   end Get_Magic;
 
   -------------
@@ -1321,7 +1321,7 @@ package body Xml_Parser is
     end if;
   end Adjust;
 begin
-  Rnd.Randomize;
+  Rnd.Gen.Randomize;
   -- Ensure that Invalid_Pcre_Version exception is not masked
   Regular_Expressions.Check_Pcre_Version;
 end Xml_Parser;

@@ -14,7 +14,7 @@ package body Response is
 
     for I in Common.Level_Range
      range Common.Level_Range'First .. Current_Level loop
-      Secret.Color(I) := Color_Random;
+      Secret.Color(I) := Color_Random (Rnd.Gen);
     end loop;
   end New_Code;
 

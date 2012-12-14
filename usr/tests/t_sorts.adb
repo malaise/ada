@@ -17,6 +17,8 @@ procedure T_Sorts is
   Nb_Loops, Id_Loop : Natural;
 
 begin
+  Rnd.Gen.Randomize;
+
   Nb_Loops := 0;
   if Argument.Get_Nbre_Arg = 1 then
     begin
@@ -36,9 +38,9 @@ begin
   loop
 
     -- Init of init and results
-    Last := Rnd.Int_Random (0, Index'Last);
+    Last := Rnd.Gen.Int_Random (0, Index'Last);
     for I in 1 .. Last loop
-      Init(I) := Rnd.Int_Random(0, 99);
+      Init(I) := Rnd.Gen.Int_Random(0, 99);
     end loop;
     Res_Bul(1 .. Last) := Init(1..Last);
     Res_Tas(1 .. Last) := Init(1..Last);

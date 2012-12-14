@@ -45,9 +45,9 @@ procedure T_Read_Write is
     loop
       Schedule;
       -- Wait from -0.1 to 0.5
-      Dur := Duration (Rnd.Int_Random (-1, 5)) / 10.0;
+      Dur := Duration (Rnd.Gen.Int_Random (-1, 5)) / 10.0;
       -- 10% chances to write
-      if Rnd.Int_Random (0, 9) = 0 then
+      if Rnd.Gen.Int_Random (0, 9) = 0 then
         Kind := Mutex_Manager.Write;
       else
         Kind := Mutex_Manager.Read;
@@ -64,7 +64,7 @@ procedure T_Read_Write is
 
       if Res then
         -- Wait a bit
-        delay Duration (Rnd.Int_Random (1, 5)) / 10.0;
+        delay Duration (Rnd.Gen.Int_Random (1, 5)) / 10.0;
 
         -- Release lock
         Put_Line (Index, "release");
@@ -72,7 +72,7 @@ procedure T_Read_Write is
       end if;
 
       -- 10% chances to terminate
-      exit when Rnd.Int_Random (0, 9) = 0;
+      exit when Rnd.Gen.Int_Random (0, 9) = 0;
     end loop;
     Put_Line (Index, "terminate");
     -- Ready to end
@@ -104,7 +104,7 @@ begin
     return;
   end if;
 
-  Rnd.Randomize;
+  Rnd.Gen.Randomize;
 
   -- Give to each actor it's name
   for I in Range_Task loop

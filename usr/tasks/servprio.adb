@@ -86,10 +86,10 @@ procedure Servprio is
       Client.No := No;
     end Init;
 
-    N_Loop := Rnd.Int_Random (1, Max_Loop);
+    N_Loop := Rnd.Gen.Int_Random (1, Max_Loop);
     for I in 1 .. N_Loop loop
       Schedule;
-      Prio := My_Random;
+      Prio := My_Random (Rnd.Gen);
       Print ("                           Requete", Prio, No);
 
       Serveur.Service(Prio) (No);
@@ -116,6 +116,7 @@ procedure Servprio is
   end Client;
 
 begin
+  Rnd.Gen.Randomize;
   Text_Line.Create_All (Fich, Nom);
 
   for I in Client_Range loop

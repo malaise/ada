@@ -6,9 +6,9 @@ begin
   if Argument.Get_Nbre_Arg = 0 then
     return;
   end if;
-  Rnd.Randomize;
+  Rnd.Gen.Randomize;
 
   Basic_Proc.Put_Line_Output (String'(Argument.Get_Parameter(
-         Rnd.Int_Random(1, Argument.Get_Nbre_Arg))));
+         Rnd.Gen.Int_Random(1, Argument.Get_Nbre_Arg))));
 end One_Of_Arg;
 

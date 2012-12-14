@@ -22,12 +22,26 @@ package U_Rand is
   Default_K : constant Seed_Range_1 := 56;
   Default_L : constant Seed_Range_1 := 78;
 
-  procedure Start(New_I : in Seed_Range_1 := Default_I;
+  type Generator is tagged private;
+
+  procedure Start(Gen   : in out Generator;
+                  New_I : in Seed_Range_1 := Default_I;
                   New_J : in Seed_Range_1 := Default_J;
                   New_K : in Seed_Range_1 := Default_K;
                   New_L : in Seed_Range_2 := Default_L);
 
-  function Next return Float;
+  procedure Next (Gen   : in out Generator; Val : out Float);
+private
+  M3 : constant := 97;
+  subtype Range_3 is Integer range 1 .. M3;
+  type Array_3 is array(Range_3) of Float;
+
+  type Generator is tagged record
+    Started : Boolean := False;
+    Ni, Nj  : Integer;
+    C       : Float;
+    U       : Array_3;
+  end record;
 
 end U_Rand;
 

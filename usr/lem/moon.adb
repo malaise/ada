@@ -26,7 +26,7 @@ package body Moon is
     Ref_Y : constant Space.Y_Range := Ground(Ref_Index).Y_Pos;
   begin
     loop
-      Ground(Of_Index).Y_Pos := Space.Y_Range (Rnd.Float_Random (
+      Ground(Of_Index).Y_Pos := Space.Y_Range (Rnd.Gen.Float_Random (
           Float(Space.Y_Range'First+ Y_Ground_Min), Float(Y_Ground_Max)));
       exit when abs (Ground(Of_Index).Y_Pos - Ref_Y) >= Y_Min_Delta;
     end loop;
@@ -80,7 +80,7 @@ package body Moon is
     if not Hard_Level then
       Last_Index := Last_Index - 1;
     end if;
-    Index_Landing := Rnd.Int_Random (First_Index, Last_Index);
+    Index_Landing := Rnd.Gen.Int_Random (First_Index, Last_Index);
 
     -- Set random landing altitude
     Ground(Index_Landing).Y_Pos := Space.Y_Range'First;

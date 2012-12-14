@@ -3,7 +3,7 @@ package body Compute is
 
   procedure Init is
   begin
-    Rnd.Randomize;
+    Rnd.Gen.Randomize;
   end Init;
 
   -- Remove How_Many random bars from From
@@ -19,8 +19,8 @@ package body Compute is
       exit when Nb_Removed = How_Many;
       Remove_One:
       loop
-        Remove_Index := Rnd.Int_Random (Common.Bar_Range'First,
-                                        Common.Bar_Range'Last);
+        Remove_Index := Rnd.Gen.Int_Random (Common.Bar_Range'First,
+                                            Common.Bar_Range'Last);
         if From(Remove_Index) then
           -- Remove this one
           From(Remove_Index) := False;
@@ -153,7 +153,7 @@ package body Compute is
           end if;
         end loop;
         -- Select one randomly
-        Nb_True := Rnd.Int_Random (1, Nb_True);
+        Nb_True := Rnd.Gen.Int_Random (1, Nb_True);
         -- Select row, the Nb_True matching
         Nb_Row := 0;
         for I in Common.Row_Range loop
@@ -199,7 +199,7 @@ package body Compute is
             Nb_Non0 := Nb_Non0 + 1;
           end if;
         end loop;
-        Nb_Non0 := Rnd.Int_Random (1, Nb_Non0);
+        Nb_Non0 := Rnd.Gen.Int_Random (1, Nb_Non0);
         -- Select row, the Nb_Non0 th matching
         Curr_Non0 := 0;
         for I in Common.Row_Range loop
@@ -220,7 +220,7 @@ package body Compute is
         N : Integer;
       begin
         -- 1.0 <= R < N + 1.0
-        R := Rnd.Float_Random (1.0, Float(Sums(Row)) + 1.0);
+        R := Rnd.Gen.Float_Random (1.0, Float(Sums(Row)) + 1.0);
         R := R / Factor;
         -- Nb to remove
         N := Integer(My_Math.Trunc (My_Math.Real (R)));

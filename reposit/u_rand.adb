@@ -1,23 +1,18 @@
 package body U_Rand is
-  M3     : constant := 97;
   Init_C : constant := 362436.0/16777216.0;
   Cd     : constant := 7654321.0/16777216.0;
   Cm     : constant := 16777213.0/16777216.0;
 
   subtype Range_1 is Integer range 0 .. M1 - 1;
   subtype Range_2 is Integer range 0 .. M2 - 1;
-  subtype Range_3 is Integer range 1 .. M3;
 
-  I, J, K : Range_1;
-  Ni, Nj  : Integer;
-  L       : Range_2;
-  C       : Float;
-  U       : array(Range_3) of Float;
-
-  procedure Start(New_I : in Seed_Range_1 := Default_I;
+  procedure Start(Gen   : in out Generator;
+                  New_I : in Seed_Range_1 := Default_I;
                   New_J : in Seed_Range_1 := Default_J;
                   New_K : in Seed_Range_1 := Default_K;
                   New_L : in Seed_Range_2 := Default_L) is
+    I, J, K : Range_1;
+    L       : Range_2;
     S, T : Float;
     M    : Range_1;
   begin
@@ -25,9 +20,9 @@ package body U_Rand is
     J := New_J;
     K := New_K;
     L := New_L;
-    Ni := Range_3'Last;
-    Nj := (Range_3'Last/3) + 1;
-    C := Init_C;
+    Gen.Ni := Range_3'Last;
+    Gen.Nj := (Range_3'Last/3) + 1;
+    Gen.C := Init_C;
 
     for Ii in Range_3 loop
       S := 0.0;
@@ -43,39 +38,40 @@ package body U_Rand is
         end if;
         T := 0.5*T;
       end loop;
-      U(Ii) := S;
+      Gen.U(Ii) := S;
     end loop;
+    Gen.Started := True;
   end Start;
 
-  function Next return Float is
+  procedure Next (Gen : in out Generator; Val : out Float) is
     Temp : Float;
   begin
-    Temp := U(Ni) - U(Nj);
+    if not Gen.Started then
+      Start (Gen);
+    end if;
+    Temp := Gen.U(Gen.Ni) - Gen.U(Gen.Nj);
     if Temp < 0.0 then
       Temp := Temp + 1.0;
     end if;
-    U(Ni) := Temp;
-    Ni := Ni - 1;
-    if Ni = 0 then
-      Ni := Range_3'Last;
+    Gen.U(Gen.Ni) := Temp;
+    Gen.Ni := Gen.Ni - 1;
+    if Gen.Ni = 0 then
+      Gen.Ni := Range_3'Last;
     end if;
-    Nj := Nj - 1;
-    if Nj = 0 then
-      Nj := Range_3'Last;
+    Gen.Nj := Gen.Nj - 1;
+    if Gen.Nj = 0 then
+      Gen.Nj := Range_3'Last;
     end if;
-    C := C - Cd;
-    if C < 0.0 then
-      C := C + Cm;
+    Gen.C := Gen.C - Cd;
+    if Gen.C < 0.0 then
+      Gen.C := Gen.C + Cm;
     end if;
-    Temp := Temp - C;
+    Temp := Temp - Gen.C;
     if Temp < 0.0 then
       Temp := Temp + 1.0;
     end if;
-    return Temp;
+    Val := Temp;
   end Next;
 
-begin
-  -- initialize table U
-  Start;
 end U_Rand;
 

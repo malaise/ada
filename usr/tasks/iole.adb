@@ -23,14 +23,15 @@ procedure Iole is
   task body T2 is
   begin
     loop
-      delay Rnd.Dur_Random (0.0, 0.1);
+      delay Rnd.Gen.Dur_Random (0.0, 0.1);
       Basic_Proc.Put_Line_Output ("Event");
     end loop;
   end T2;
 
 begin
+  Rnd.Gen.Randomize;
   loop
-    delay Rnd.Dur_Random (0.0, 0.2);
+    delay Rnd.Gen.Dur_Random (0.0, 0.2);
     T1.Request;
   end loop;
 end Iole;

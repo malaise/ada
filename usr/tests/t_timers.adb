@@ -103,12 +103,13 @@ procedure T_Timers is
       if The_Timers(T) = Id then
         Display ("Expiration of " & Timer_List'Image(T));
         if T = Single then
-          N := Rnd.Int_Random (1, 5);
+          N := Rnd.Gen.Int_Random (1, 5);
           Start (Single, Duration(N), Timers.No_Period, True);
         elsif T = Funny then
           Nb_Funny := Nb_Funny + 1;
           if Nb_Funny <= Max_Funny then
-            Start (Funny, Rnd.Dur_Random (2.1, 2.9), Timers.No_Period, True);
+            Start (Funny, Rnd.Gen.Dur_Random (2.1, 2.9),
+                   Timers.No_Period, True);
           else
             Start (Funny, 20.0, Timers.No_Period, False);
           end if;
@@ -123,7 +124,7 @@ procedure T_Timers is
 
 begin
   Display ("Use Esc/Return to Suspend/Resume periodical and single timers");
-  Rnd.Randomize;
+  Rnd.Gen.Randomize;
 
   -- Start timers
   Start (Periodic, 1.0, 3.0, True);

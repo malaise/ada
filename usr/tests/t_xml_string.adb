@@ -271,9 +271,10 @@ begin
   if Argument.Get_Nbre_Arg = 1
   and then Upper_Str (Argument.Get_Parameter) = "RND" then
     Dir_Mng.List_Dir (File_List, Data_Dir, "xml_*.xml");
+    Rnd.Gen.Randomize;
     loop
       -- Select a random entry
-      File_List.Move_At (Rnd.Int_Random (1, File_List.List_Length));
+      File_List.Move_At (Rnd.Gen.Int_Random (1, File_List.List_Length));
       File_List.Read (File_Entry, Dir_Mng.File_List_Mng.Current);
       if File_Entry.Kind = Directory.File then
         Do_One (Data_Dir & "/" & File_Entry.Name.Image);
