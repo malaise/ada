@@ -3,9 +3,13 @@ include $(HOME)/Makefiles/common.mk
 
 ADAVIEW := $(HOME)/ada/cots/pragmarc
 ADAWARN := false
+
+include $(TEMPLATES)/units.mk
+NOTUNITS := $(filter-out mine_detector,$(UNITS))
+
 EXES := mine_detector
 
-GARGS_mine_detector := `gtkada-config`
+GARGS := `gtkada-config`
 
 include $(TEMPLATES)/ada.mk
 
