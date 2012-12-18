@@ -1,6 +1,8 @@
 include $(HOME)/Makefiles/common.mk
 
 ADAVIEW := $(REPOSIT)
+
+SUBUNITS := lsadeps-add_paths
 EXES := lsadeps lsadeps.stat
 
 CLIBS := cutil

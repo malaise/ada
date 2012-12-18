@@ -1,6 +1,8 @@
 include $(HOME)/Makefiles/common.mk
 
 ADAVIEW := $(REPOSIT)
+
+SUBUNITS := replace_pattern-file_content replace_pattern-shell_command
 EXES := asubst asubst.stat
 
 CLIBS := cutil

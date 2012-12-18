@@ -1,8 +1,11 @@
 include $(HOME)/Makefiles/common.mk
 
 ADAVIEW := $(REPOSIT)
+
 AFPX := true
 AFPX_XREF := afpx_xref
+
+SUBUNITS := agite-timer
 EXES := agite agite.stat t_git
 
 CLIBS := x_mng cutil X11

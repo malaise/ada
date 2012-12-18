@@ -3,18 +3,21 @@ with Con_Io;
 with Sok_Input;
 
 procedure T_Input is
+  Con : aliased Con_Io.Console;
+  Scr : Con_Io.Window;
   Key : Sok_Input.Key_List;
 begin
 
-  Con_Io.Init;
-  Con_Io.Reset_Term;
+  Con.Open;
+  Scr := Con_Io.Get_Screen (Con'Unrestricted_Access);
+  Con.Reset_Screen;
   loop
     Key := Sok_Input.Get_Key;
-    Con_Io.Put (" " & Sok_Input.Key_List'Image(Key)
+    Scr.Put (" " & Sok_Input.Key_List'Image(Key)
               & "    " & Ada.Characters.Latin_1.Cr);
   end loop;
 exception
   when Sok_Input.Break_Requested =>
-    Con_Io.Put ("Break" & "      " & Ada.Characters.Latin_1.Cr);
+    Scr.Put ("Break" & "      " & Ada.Characters.Latin_1.Cr);
     Sok_Input.End_Of_Program;
 end T_Input;

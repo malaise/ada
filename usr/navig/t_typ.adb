@@ -1,4 +1,4 @@
-with Basic_Proc, Get_Int;
+with Basic_Proc, Gets;
 with Nav_Types;
 procedure T_Typ is
   A1, A2, A3 : Nav_Types.T_Angle;
@@ -6,14 +6,14 @@ procedure T_Typ is
   I : Integer;
 begin
   Basic_Proc.Put_Output ("A1 : deg, min ");
-  I := Get_Int (Basic_Proc.Get_Line);
+  I := Gets.Get_Int (Basic_Proc.Get_Line);
   A1.Degrees := Nav_Types.T_Degree(I);
-  I := Get_Int (Basic_Proc.Get_Line);
+  I := Gets.Get_Int (Basic_Proc.Get_Line);
   A1.Minutes := Nav_Types.T_Minute(I);
   Basic_Proc.Put_Output ("A2 : deg, min ");
-  I := Get_Int (Basic_Proc.Get_Line);
+  I := Gets.Get_Int (Basic_Proc.Get_Line);
   A2.Degrees := Nav_Types.T_Degree(I);
-  I := Get_Int (Basic_Proc.Get_Line);
+  I := Gets.Get_Int (Basic_Proc.Get_Line);
   A2.Minutes := Nav_Types.T_Minute(I);
 
   Basic_Proc.New_Line_Output;

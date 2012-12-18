@@ -1,4 +1,4 @@
-with Basic_Proc, Integer_Image, Normalization;
+with Basic_Proc, Images, Normalization;
 use Basic_Proc;
 with Nav_Types, Nav_Format;
 use  Nav_Types, Nav_Format;
@@ -44,7 +44,7 @@ begin
       Value (Str_Angle, Angle, Res, Pos);
       Put (Res, Pos);
       if Res = Set then
-        Put_Output ("VALUE : " & Integer_Image (Integer(Angle.Degrees)));
+        Put_Output ("VALUE : " & Images.Integer_Image (Integer(Angle.Degrees)));
       end if;
       if Res /= Error then
         Put_Output ("IMAGE : " & Imag(Angle, Res=Set));
@@ -61,15 +61,13 @@ begin
         else
           Put_Output ('+');
         end if;
-        Put_Output (Integer_Image (Integer(Drift.Degrees)));
-        Put_Line_Output (Integer_Image (Integer(Drift.Minutes)));
+        Put_Output (Images.Integer_Image (Integer(Drift.Degrees)));
+        Put_Line_Output (Images.Integer_Image (Integer(Drift.Minutes)));
       end if;
       if Res /= Error then
         Put_Output ("IMAGE : ");
         Put_Line_Output (Imag(Drift, Res=Set));
       end if;
-    exception
-      when others => raise;
     end;
   end loop;
 end T_Form;

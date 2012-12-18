@@ -1,4 +1,4 @@
-with Basic_Proc, Integer_Image, Normalization;
+with Basic_Proc, Images, Normalization;
 with Nav_Types, Nav_Data;
 procedure T_Nav is
 
@@ -165,28 +165,31 @@ begin
   Basic_Proc.Put_Line_Output (
       Normalization.Normal_Fixed (Data_Out.Wind.Speed, 6, 3));
   Basic_Proc.Put_Output ("WIND ANGLE ");
-  Basic_Proc.Put_Output (Integer_Image (Integer(Data_Out.Wind.Angle.Degrees)));
+  Basic_Proc.Put_Output (
+      Images.Integer_Image (Integer(Data_Out.Wind.Angle.Degrees)));
   Basic_Proc.Put_Output (".");
   Basic_Proc.Put_Line_Output (
-      Integer_Image (Integer(Data_Out.Wind.Angle.Minutes)));
+      Images.Integer_Image (Integer(Data_Out.Wind.Angle.Minutes)));
 
   Basic_Proc.Put_Output ("PLAN SPEED ");
   Basic_Proc.Put_Line_Output (
       Normalization.Normal_Fixed (Data_Out.Plan.Speed, 6, 3));
   Basic_Proc.Put_Output ("PLAN ANGLE ");
-  Basic_Proc.Put_Output (Integer_Image (Integer(Data_Out.Plan.Angle.Degrees)));
+  Basic_Proc.Put_Output (
+      Images.Integer_Image (Integer(Data_Out.Plan.Angle.Degrees)));
   Basic_Proc.Put_Output (".");
   Basic_Proc.Put_Line_Output (
-      Integer_Image (Integer(Data_Out.Plan.Angle.Minutes)));
+      Images.Integer_Image (Integer(Data_Out.Plan.Angle.Minutes)));
 
   Basic_Proc.Put_Output ("TRAJ SPEED ");
   Basic_Proc.Put_Line_Output (
       Normalization.Normal_Fixed (Data_Out.Traj.Speed, 6, 3));
   Basic_Proc.Put_Output ("TRAJ ANGLE ");
-  Basic_Proc.Put_Output (Integer_Image (Integer(Data_Out.Traj.Angle.Degrees)));
+  Basic_Proc.Put_Output (
+      Images.Integer_Image (Integer(Data_Out.Traj.Angle.Degrees)));
   Basic_Proc.Put_Output (".");
   Basic_Proc.Put_Line_Output (
-      Integer_Image (Integer(Data_Out.Traj.Angle.Minutes)));
+      Images.Integer_Image (Integer(Data_Out.Traj.Angle.Minutes)));
 
   Basic_Proc.Put_Output ("DRIFT ");
   if Data_Out.Drift.Positiv then
@@ -194,9 +197,10 @@ begin
   else
     Basic_Proc.Put_Output ("-");
   end if;
-  Basic_Proc.Put_Output (Integer_Image (Integer(Data_Out.Drift.Degrees)));
+  Basic_Proc.Put_Output (
+      Images.Integer_Image (Integer(Data_Out.Drift.Degrees)));
   Basic_Proc.Put_Output (".");
   Basic_Proc.Put_Line_Output (
-      Integer_Image (Integer(Data_Out.Drift.Minutes)));
+      Images.Integer_Image (Integer(Data_Out.Drift.Minutes)));
 end T_Nav;
 

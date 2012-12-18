@@ -3,8 +3,8 @@
 with Normalization, Basic_Proc;
 use Basic_Proc;
 
-with Common, Data;
-use Common, Data;
+with Data;
+use Data;
 
 procedure T_File is
 begin

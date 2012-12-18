@@ -2,6 +2,8 @@
 include $(HOME)/Makefiles/common.mk
 
 ADAVIEW := $(REPOSIT)
+
+SUBUNITS := als-parse_date als-set_criteria
 EXES := als als.stat
 
 CLIBS := cutil

@@ -1,4 +1,3 @@
-with Con_Io;
 with Nav_Data, Nav_Screen;
 use  Nav_Data, Nav_Screen;
 procedure T_Scr is
@@ -15,12 +14,12 @@ begin
   Arrow (Traj_A);
   Put_Result (Plan_S, " 120.0");
   Dot (Plan_S);
-  Act := Get_Action;
+  Act := Get_Action (Nav_Screen.Compute);
   Err_Format;
   Clear_Line (Traj_A);
   Clear_Line (Plan_S);
   delay 2.0;
   Clear_Err;
-  Put_Help;
+  B := Put_Help;
   B := Confirm_Quit;
 end T_Scr;

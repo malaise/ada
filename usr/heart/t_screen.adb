@@ -1,15 +1,15 @@
 with Ada.Calendar;
-with Argument, Afpx, Con_Io, Dynamic_List, Dir_Mng, Normal;
+with Argument, Afpx, Con_Io, Dir_Mng, Normal;
 procedure T_Screen is
 
   Afpx_Item : Afpx.Line_Rec;
 
   Dscr : Afpx.Descriptor_Range;
 
+  Insert : Boolean;
   Cursor_Field : Afpx.Field_Range;
   Cursor_Col   : Con_Io.Col_Range;
   Ptg_Result   : Afpx.Result_Rec;
-  Redisplay : Boolean;
 
 
   Curr_Date  : Afpx.Absolute_Field_Range;
@@ -57,15 +57,13 @@ begin
     Dir_List.Rewind;
     loop
       Dir_List.Read (Dir_Item, Dir_Mng.File_List_Mng.Current);
-      Afpx_Item.Len := Dir_Item.Len;
-      Afpx_Item.Str := (others => ' ');
-      Afpx_Item.Str(1 .. Afpx_Item.Len) := Dir_Item.Name (1 .. Dir_Item.Len);
+      Afpx.Encode_Line (Afpx_Item, Dir_Item.Name.Image);
       Afpx.Line_List.Insert (Afpx_Item);
       exit when not Dir_List.Check_Move;
       Dir_List.Move_To;
     end loop;
     -- End of list
-    Afpx.Line_List.Rewind (Afpx.Line_List_Mng.Prev);
+    Afpx.Line_List.Rewind (Where => Afpx.Line_List_Mng.Prev);
   exception
     when Dir_Mng.Name_Error =>
       null;
@@ -91,10 +89,9 @@ begin
     Curr_Date := 02;
   end if;
 
+  Insert := False;
   Cursor_Field := First_Get;
   Cursor_Col := 0;
-  Redisplay := False;
-
 
   -- Encode date
   declare
@@ -112,7 +109,7 @@ begin
     List_Empty := Afpx.Line_List.Is_Empty;
     if Dscr = 1 then
       Allow_Draw := not List_Empty and then
-                    Afpx.Line_List.Length <= 10;
+                    Afpx.Line_List.List_Length <= 10;
       Afpx.Set_Field_Activation (22, not List_Empty);
       Afpx.Set_Field_Activation (23, Allow_Draw);
       Afpx.Set_Field_Activation (24, not List_Empty);
@@ -151,39 +148,39 @@ begin
       Afpx.Set_Field_Protection (21, Act);
       Afpx.Set_Field_Activation (24, not Act);
       if Act then
-        Afpx.Set_Field_Colors (11, Foreground => Con_Io.Cyan,
-                                   Background => Con_Io.Black);
-        Afpx.Set_Field_Colors (13, Foreground => Con_Io.Cyan,
-                                   Background => Con_Io.Black);
-        Afpx.Set_Field_Colors (16, Foreground => Con_Io.Cyan,
-                                   Background => Con_Io.Black);
-        Afpx.Set_Field_Colors (17, Foreground => Con_Io.Cyan,
-                                   Background => Con_Io.Black);
-        Afpx.Set_Field_Colors (18, Foreground => Con_Io.Cyan,
-                                   Background => Con_Io.Black);
-        Afpx.Set_Field_Colors (19, Foreground => Con_Io.Cyan,
-                                   Background => Con_Io.Black);
-        Afpx.Set_Field_Colors (20, Foreground => Con_Io.Cyan,
-                                   Background => Con_Io.Black);
-        Afpx.Set_Field_Colors (21, Foreground => Con_Io.Cyan,
-                                   Background => Con_Io.Black);
+        Afpx.Set_Field_Colors (11, Foreground => Con_Io.Color_Of ("Cyan"),
+                                   Background => Con_Io.Color_Of ("Black"));
+        Afpx.Set_Field_Colors (13, Foreground => Con_Io.Color_Of ("Cyan"),
+                                   Background => Con_Io.Color_Of ("Black"));
+        Afpx.Set_Field_Colors (16, Foreground => Con_Io.Color_Of ("Cyan"),
+                                   Background => Con_Io.Color_Of ("Black"));
+        Afpx.Set_Field_Colors (17, Foreground => Con_Io.Color_Of ("Cyan"),
+                                   Background => Con_Io.Color_Of ("Black"));
+        Afpx.Set_Field_Colors (18, Foreground => Con_Io.Color_Of ("Cyan"),
+                                   Background => Con_Io.Color_Of ("Black"));
+        Afpx.Set_Field_Colors (19, Foreground => Con_Io.Color_Of ("Cyan"),
+                                   Background => Con_Io.Color_Of ("Black"));
+        Afpx.Set_Field_Colors (20, Foreground => Con_Io.Color_Of ("Cyan"),
+                                   Background => Con_Io.Color_Of ("Black"));
+        Afpx.Set_Field_Colors (21, Foreground => Con_Io.Color_Of ("Cyan"),
+                                   Background => Con_Io.Color_Of ("Black"));
       else
-        Afpx.Set_Field_Colors (11, Foreground => Con_Io.Brown,
-                                   Background => Con_Io.Blue);
-        Afpx.Set_Field_Colors (13, Foreground => Con_Io.Brown,
-                                   Background => Con_Io.Blue);
-        Afpx.Set_Field_Colors (16, Foreground => Con_Io.Brown,
-                                   Background => Con_Io.Blue);
-        Afpx.Set_Field_Colors (17, Foreground => Con_Io.Brown,
-                                   Background => Con_Io.Blue);
-        Afpx.Set_Field_Colors (18, Foreground => Con_Io.Brown,
-                                   Background => Con_Io.Blue);
-        Afpx.Set_Field_Colors (19, Foreground => Con_Io.Brown,
-                                   Background => Con_Io.Blue);
-        Afpx.Set_Field_Colors (20, Foreground => Con_Io.Brown,
-                                   Background => Con_Io.Blue);
-        Afpx.Set_Field_Colors (21, Foreground => Con_Io.Brown,
-                                   Background => Con_Io.Blue);
+        Afpx.Set_Field_Colors (11, Foreground => Con_Io.Color_Of ("Brown"),
+                                   Background => Con_Io.Color_Of ("Blue"));
+        Afpx.Set_Field_Colors (13, Foreground => Con_Io.Color_Of ("Brown"),
+                                   Background => Con_Io.Color_Of ("Blue"));
+        Afpx.Set_Field_Colors (16, Foreground => Con_Io.Color_Of ("Brown"),
+                                   Background => Con_Io.Color_Of ("Blue"));
+        Afpx.Set_Field_Colors (17, Foreground => Con_Io.Color_Of ("Brown"),
+                                   Background => Con_Io.Color_Of ("Blue"));
+        Afpx.Set_Field_Colors (18, Foreground => Con_Io.Color_Of ("Brown"),
+                                   Background => Con_Io.Color_Of ("Blue"));
+        Afpx.Set_Field_Colors (19, Foreground => Con_Io.Color_Of ("Brown"),
+                                   Background => Con_Io.Color_Of ("Blue"));
+        Afpx.Set_Field_Colors (20, Foreground => Con_Io.Color_Of ("Brown"),
+                                   Background => Con_Io.Color_Of ("Blue"));
+        Afpx.Set_Field_Colors (21, Foreground => Con_Io.Color_Of ("Brown"),
+                                   Background => Con_Io.Color_Of ("Blue"));
       end if;
       -- Compute if in edit
       Afpx.Set_Field_Activation (24, In_Edit);
@@ -194,13 +191,12 @@ begin
     end if;
 
 
-    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Ptg_Result);
-    Redisplay := False;
+    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
 
     case Ptg_Result.Event is
 
       when Refresh =>
-        Redisplay := True;
+        null;
 
       when Keyboard =>
 
@@ -240,7 +236,7 @@ begin
                 Afpx.Encode_Field(20, (00, 00),
                    "Remove xxxxx records from the selection");
               end if;
-              Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Ptg_Result);
+              Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result);
               -- Here we can confirm or abort
               if      (    In_Add and then Ptg_Result.Field_No = 15)
               or else (not In_Add and then Ptg_Result.Field_No = 16) then
@@ -257,7 +253,7 @@ begin
               Afpx.Reset_Field (16);
             when  22 | 27 =>
               -- Unselect, delete
-              Afpx.Line_List.Delete (Done => Moved);
+              Afpx.Line_List.Delete (Moved => Moved);
             when others =>
               Allow_Undo := False;
           end case;

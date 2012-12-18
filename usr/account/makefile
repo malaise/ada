@@ -1,8 +1,11 @@
 include $(HOME)/Makefiles/common.mk
 
 ADAVIEW := $(REPOSIT)
+
 AFPX := true
 AFPX_XREF := afpx_xref
+
+SUBUNITS := account-quit mng-deletion mng-edition mng-search
 EXES := account import export account.stat
 
 CLIBS := cutil

@@ -1,5 +1,5 @@
-with Basic_Proc, Argument, Con_Io, Afpx;
-with Pers_Def, Pers_Fil, Mesu_Nam, Mesu_Edi, Mesu_Fil;
+with Basic_Proc, Argument, Afpx;
+with Pers_Fil, Mesu_Nam, Mesu_Edi, Mesu_Fil;
 
 procedure Ins_Mesu is
   File_Name : Mesu_Nam.File_Name_Str;
