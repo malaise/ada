@@ -15,7 +15,6 @@ procedure T_Urand is
                          6=>" 10633180.00");
     Gen : U_Rand.Generator;
     Rnum : Float;
-    pragma Unreferenced (Rnum);
 begin
     for I in 1..20000 loop
       U_Rand.Next (Gen, Rnum);
