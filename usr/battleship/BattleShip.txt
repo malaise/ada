@@ -1,0 +1,221 @@
+Battle Ship
+===========
+Pascal MALAISE     <malaise@magic.fr>
+V1.0
+
+General purpose
+---------------
+This is a network game for two players. Each player has a fleet of battle ships
+and must sink the fleet of his opponent.
+
+The game is decomposed in two steps:
+
+- Each player defines his own fleet,
+- The players try to sink the opponent fleet by shooting at it.
+
+Starting the game
+-----------------
+The arguments of the games are:
+- <ipm_address>:<port> of the communication channel.
+- an optional -s flag for the server (also game leader).
+
+The game is blocked as long as a client and a server are not connected.
+
+ 
+Setting up the fleet
+--------------------
+This step consists in positionning your fleet on the grid.
+
+Rules
+~~~~~
+Each grid is a square of 100 squares numbered from A to J vertically and from 1
+to 10 horizontally.
+
+Each fleet is composed of:
+
+- 1 aircraft carrier of 5 cells
+- 1 battleship of 4 cells
+- 1 cruiser of 3 cells
+- 1 submarine of 2 cells
+- 1 destroyer of 1 cell
+
+Each ship must be in one row or in one column, but not in diagonal. The ships
+cannot overlap.
+
+anchor:XGrid[] Example:
+
+[width="75%", halign="center", valign="middle", cols="s,,,,,,,,,,"]
+
+|==========================================
+|   s| 1 s| 2 s| 3 s| 4 s| 5 s| 6 s| 7 s| 8 s| 9 s|10 
+| A |   | X | X |   |   |   |   |   |   | X
+| B |   |   |   |   |   |   |   |   |   | X
+| C |   |   | X |   |   |   |   |   |   | X
+| D |   |   | X |   |   | X | X | X |   | X
+| E |   |   | X |   |   |   |   |   |   | X
+| F |   |   | X |   |   |   |   |   |   |  
+| G |   |   |   |   | X |   |   |   |   |  
+| H |   |   |   |   |   |   |   |   |   |  
+| I |   |   |   |   |   |   |   |   |   |  
+| J |   |   |   |   |   |   |   |   |   |  
+|==========================================
+
+Graphical interface
+~~~~~~~~~~~~~~~~~~~
+The screen is decomposed in two areas: the 'grid' (with the ships already placed)
+on the left and the available 'actions' on the right.
+
+Actions are the list of available ships (the ones that are not already in the
+grid), plus a 'Cancel' button while setting a ship, plus a 'Delete' button
+(while there is at least one ship on the grid), plus a 'Done' button (when all
+the ships are placed in the grid),
+
+.Setting a ship
+
+- Select an available ship in the 'actions' area
+  * The ship becomes enhanced
+  * A Cancel button appears
+  * The available squares in the 'grid' are enhanced as proposed (allowing
+    the ship to be put here without touching another ship)
+- Click in a proposed square in the 'grid'
+  * The square becomes allocated
+  * The other available squares become back to normal
+  * For the destroyer (that is only one cell) this is the end of the action:
+    the ship is removed from the 'actions' list
+  * For all other ships, the possible other extremities for the ship are
+    enhanced as proposed (up to four possibilities)
+- Click in one proposed square,
+   * The ship is placed, all its squares are allocated,
+   * The other available squares become back to normal
+   * This is the end of the action: the ship is removed from the 'actions' list
+
+Example: Suppose that in the grid in xref:XGrid[example] all the ships except
+the the cruiser are already set and you now set it in row D.
+
+- you select the cruiser
+- you click in D8
+- D8 becomes allocated and D6, B8 and F8 are proposed
+- you click in D6
+- D6 and D7 become allocated, B8 and F8 become back to normal
+- This is the end of the action
+
+.Deleting a ship
+- Select the delete button in the 'actions' area
+  * The delete action becomes enhanced
+  * The ships in the 'grid' are enhanced
+- Select an enhanced square
+  * The selected ship is removed from the 'grid'
+  * It is added in the 'actions' list
+  * The delete button becomes back to normal (or is hidden if no more ship is
+    in the grid)
+
+Not allocated squares are in light blue, allocated squares are in black and proposed 
+squares are in green.
+
+.End of set-up
+As soon as and as long as all the ships are in the grid a 'Done' button allows
+completing the set-up. When both players have set up their fleet they start to 
+play.
+
+Playing the game
+----------------
+
+Rules
+~~~~~
+The leader starts first by shooting in one cell of his opponent. The result is
+a miss or a hit. Then the other player shoots... and so on. Bothe players see
+the result of the shoot.
+
+When a ship is sunk both players are notified of the ship sunk.
+
+When all a fleet is sunk the game ends.
+
+Graphical interface
+~~~~~~~~~~~~~~~~~~~
+The screen is decomposed in two areas:
+
+- the player's local grid on the left, with the ships and the results of the
+ opponent's shoots,
+- the target grid on the right, with the results of the player's shoot.
+
+When it is your opponent go to shoot, your local grid is enhanced. When he shoots,
+if it is a hit the square becomes red otherwise it becomes dark blue. +
+The square coordinates and result are summarized by a text below the grid, for
+examples:
+
+- A5 missed
+- D4 hit
+- E8 hit, cruiser sunk
+- J10 hit, aircraft carrier sunk, you loose
+
+This text is cleared when you play.
+
+When it is your go to shoot your target grid is enhanced. Select a square
+to shoot in it. If it is a hit the square becomes red, otherwise it becomes
+dark blue. +
+The square coordinates and result are summarized by a text below the grid
+until your opponent plays.
+ 
+When the game ends the leader has two buttons: Restart and Exit.
+
+Design
+------
+
+Messages
+~~~~~~~~
+The communication is based on a 'autobus'.
+Messages exchanged are strings where the first character denotes the kind of
+message:
+
+- C: I am client
+- Z: Reset (enter set-up phase)
+- D: Done (set-up completed)
+- S <row> <column>: shoot and coordinates, with 'a' for column 10, ex: "SIa"
+  "SE5"
+- R <row> <column> <result> [ <sink> ]: reply and coordinates, where
+  * <result> is M (missed), H (hit), S (sink) or E (end)
+  * <sink> (when <result> is S or D) is the sinked ship name, ex: "RIaM" "RE5H"
+    "RE6Saircraft carrier" "RF7Ecruiser"
+- E: exit
+
+Protocol
+~~~~~~~~
+- When the games starts it shows "connecting".
+- If it is client it periodically sends a "C".
+- When the server recevies a "C" it sends a "Z". Both games enter the set-up
+  phase.
+- When a game has completed its set-up it sends a "D".
+- When a game has completed its set-up and received a "D" it starts playing:
+  * the server starts shooting (displays the 'shoot' mode and send the shoot)
+  * the client waits for the shoot (displays the shoot received), and replies
+- When the game is ended the server displays the buttons Restart and Exit and
+  sends a "Z" or "E" according to the players selection.
+- Both games enter the set-up or exit.
+
+States
+~~~~~~
+Each game knows if it is client or server.
+
+Each game knows its current state:
+
+- Connect (waiting for partner)
+- Setup (with or without remote completed)
+- Wait (until remote set-up completion)
+- Shoot (get target cell from player, send it and wait for reply)
+- Target (wait for shoot and send reply) 
+- Ended (for server: get action Restart or Exit and send it, for client: wait
+  for this action from server)
+
+Each cell of the local grid is either Empty, Used or Hit.
+
+Each cell of the target grid is either Unknown, Missed or Hit.
+
+Graphical Interface
+~~~~~~~~~~~~~~~~~~~
+The HMI is based on Afpx with two descriptors:
+
+- One for the set-up (including connection state and wait state),
+- One for the playing (shoot, target and ended states).
+
+Each cell is a field of 4 columns by 2 rows.
+
