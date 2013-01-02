@@ -562,7 +562,7 @@ begin
   -- Check no overlap
   if Action = Move or else Action = Copy then
     if Field_Numi >= Field_Numd
-    and then Field_Numi < Field_Numd + Number then
+    and then Field_Numi < Field_Numd + Number  - 1 then
       Error ("Invalid argument: source and destination overlap");
     end if;
   end if;
