@@ -6,7 +6,7 @@ package Afpx is
 
   -- Descriptor, field index
   type Descriptor_Range is new Positive range 1 .. 50;
-  type Absolute_Field_Range is new Natural range 0 .. 200;
+  type Absolute_Field_Range is new Natural range 0 .. 500;
   subtype Field_Range is Absolute_Field_Range
           range 1 .. Absolute_Field_Range 'Last;
   List_Field_No : constant Absolute_Field_Range := 0;
@@ -155,7 +155,7 @@ package Afpx is
   --       - Selected has to be Current for put and button fields
   procedure Set_Field_Colors (
     Field_No   : in Absolute_Field_Range;
-    Foreground : in Con_Io.Colors       := Con_Io.Current;
+    Foreground : in Con_Io.Colors := Con_Io.Current;
     Background : in Con_Io.Colors := Con_Io.Current;
     Selected   : in Con_Io.Colors := Con_Io.Current);
 

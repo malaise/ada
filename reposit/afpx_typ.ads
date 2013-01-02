@@ -2,7 +2,7 @@ with As.U, Unicode, Con_Io;
 package Afpx_Typ is
 
   -- Version of Afpx
-  Afpx_Version : constant Float := 6.0;
+  Afpx_Version : constant Float := 7.0;
 
   -- Files path
   Dest_Path : As.U.Asu_Us;
@@ -14,7 +14,7 @@ package Afpx_Typ is
 
   -- Descriptor, field index
   type Descriptor_Range is new Positive range 1 .. 50;
-  type Absolute_Field_Range is new Natural range 0 .. 200;
+  type Absolute_Field_Range is new Natural range 0 .. 500;
   subtype Field_Range is Absolute_Field_Range
           range 1 .. Absolute_Field_Range 'Last;
   List_Field_No : constant Absolute_Field_Range := 0;

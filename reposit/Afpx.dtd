@@ -81,7 +81,7 @@
 <!--  must not overlap. -->
 <!ELEMENT List (Geometry,Colors)>
 
-<!-- Field Num has to be within Field_Range (1 .. 200), strictly crescent -->
+<!-- Field Num has to be within Field_Range (1 .. 500), strictly crescent -->
 <!--  within one descriptor: no "hole" nor double are allowed in field nums. -->
 <!-- It cannot be a variable. -->
 <!-- Put field simply displays fixed text, Button field allows the user to -->
