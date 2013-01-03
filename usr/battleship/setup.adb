@@ -95,12 +95,13 @@ package body Setup is
   Curr_Ship : Curr_Ship_List;
 
   -- Where are ships set and squares used
-  type Pos_List is array (1 .. 5) of Utils.Coord;
+  subtype Ship_Len_Range is Positive range 1 .. 5;
+  type Pos_List is array (Ship_Len_Range) of Utils.Coord;
   Ships_Pos : array (Ship_List) of Pos_List;
   Grid : array (Utils.Row_Range, Utils.Col_Range) of Boolean
        := (others => (others => False));
 
-  -- Valid extrmities
+  -- Valid extremities
   subtype Valid_Number is Natural range 0 .. 4;
   subtype Valid_Range is Valid_Number range 1 .. Valid_Number'Last;
   Valid_Nb : Valid_Number;
@@ -203,6 +204,16 @@ package body Setup is
     end loop;
   end Define;
 
+  -- Length of a ship
+  function Length (Ship : Curr_Ship_List) return Ship_Len_Range is
+  begin
+    case Ship is
+      when Carrier => return 5;
+      when Battleship => return 4;
+      when Cruiser => return 3;
+      when Sub1 => return 2;
+    end case;
+  end Length;
 
   -- Check if a direction is valid for a ship
   type Dir_List is (Up, Down, Left, Right);
@@ -215,12 +226,7 @@ package body Setup is
     Len : Positive;
   begin
     -- Length of ship
-    case Ship is
-      when Carrier => Len := 5;
-      when Battleship => Len := 4;
-      when Cruiser => Len := 3;
-      when Sub1 => Len := 2;
-    end case;
+    Len := Length (Ship);
     case Dir is
       when Up =>
         -- From Start, Len rows up
@@ -287,10 +293,49 @@ package body Setup is
     end case;
   end Get_Valid;
 
+  -- Store Ship position
+  procedure Store_Ship (Ship : Curr_Ship_List; Start, Stop : in Utils.Coord) is
+    I : Positive;
+    use type Utils.Row_Range, Utils.Col_Range;
+  begin
+    Ships(Ship) := True;
+    I := 1;
+    if Start.Row = Stop.Row then
+      if Start.Col < Stop.Col then
+        for Col in Start.Col .. Stop.Col loop
+          Ships_Pos(Ship)(I) := (Start.Row, Col);
+          Grid (Start.Row, Col) := True;
+          I := I + 1;
+        end loop;
+      else
+        for Col in Stop.Col .. Start.Col loop
+          Ships_Pos(Ship)(I) := (Start.Row, Col);
+          Grid (Start.Row, Col) := True;
+          I := I + 1;
+        end loop;
+      end if;
+    else
+      if Start.Row < Stop.Row then
+        for Row in Start.Row .. Stop.Row loop
+          Ships_Pos(Ship)(I) := (Row, Start.Col);
+          Grid (Row, Start.Col) := True;
+          I := I + 1;
+        end loop;
+      else
+        for Row in Stop.Row .. Start.Row loop
+          Ships_Pos(Ship)(I) := (Row, Start.Col);
+          Grid (Row, Start.Col) := True;
+          I := I + 1;
+        end loop;
+      end if;
+    end if;
+  end Store_Ship;
+
   -- Handle user action during setup
   function Handle_Click (Fld : Afpx.Field_Range) return Boolean is
     use type Afpx.Field_Range, Utils.Coord;
     Start, Stop : Utils.Coord;
+    Found : Boolean;
   begin
     case Fld is
       -- Set a ship
@@ -313,10 +358,10 @@ package body Setup is
           when Setting =>
             -- Store Coordinate
             Start := Utils.Fld2Coord (Afpx_Xref.Setup.Grid, Fld);
+            Ships_Pos(Curr_Ship)(1) := Start;
             if Utils.Debug_Setup then
               Utils.Debug ("Selected Cell is " & Utils.Image (Start));
             end if;
-            Ships_Pos(Curr_Ship)(1) := Start;
             -- Propose valid extremities
             Valid_Nb := 0;
             for Dir in Dir_List loop
@@ -345,8 +390,42 @@ package body Setup is
             end if;
           when Positionning =>
             -- Check if this is a valid extremity
-            -- Store ship (move Sub1 as Sub2 if first sub) and update grid
-            Action := Idle;
+            Found := False;
+            Start := Ships_Pos(Curr_Ship)(1);
+            Stop := Utils.Fld2Coord (Afpx_Xref.Setup.Grid, Fld);
+            -- Cancel proposed cells
+            for I in 1 .. Valid_Nb loop
+              if Valids(I) = Stop then
+                 Found := True;
+              end if;
+              Afpx.Reset_Field (
+                Utils.Coord2Fld (Afpx_Xref.Setup.Grid, Valids(I)),
+                Reset_String => False);
+            end loop;
+            if Found then
+              -- Store ship and update grid
+              Store_Ship (Curr_Ship, Start, Stop);
+              if Utils.Debug_Setup then
+                for I in 1 .. Length (Curr_Ship) loop
+                  Utils.Debug ("Ship is in "
+                              & Utils.Image (Ships_Pos(Curr_Ship)(I)));
+                end loop;
+              end if;
+              -- Update screen
+              for I in 1 .. Length (Curr_Ship) loop
+                Afpx.Set_Field_Colors (
+                    Utils.Coord2Fld (Afpx_Xref.Setup.Grid,
+                                     Ships_Pos(Curr_Ship)(I)),
+                    Background => Con_Io.Color_Of ("Black"));
+              end loop;
+              -- Move Sub1 as Sub2 is first submarine
+              if Curr_Ship = Sub1 and then not Ships(Sub2) then
+                Ships_Pos(Sub2) := Ships_Pos(Sub1);
+                Ships(Sub2) := True;
+                Ships(Sub1) := False;
+              end if;
+              Action := Idle;
+            end if;
           when Deleting =>
             -- Check there is a ship and delete it
             null;
