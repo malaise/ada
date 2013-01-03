@@ -31,6 +31,9 @@ package Autobus is
   procedure Init (Bus : in out Bus_Type;
                   Address : in String);
 
+  -- Is a Bus initialised
+  function Is_Init (Bus : Bus_Type) return Boolean;
+
   -- Reset a Bus (make it re-usable)
   procedure Reset (Bus : in out Bus_Type);
 
@@ -65,6 +68,9 @@ package Autobus is
                   Observer : access Observer_Type'Class;
                   Filter : in String := "";
                   Echo : in Boolean := False);
+
+  -- Is a Subscriber initialised
+  function Is_Init (Subscriber : Subscriber_Type) return Boolean;
 
   -- Reset a Subscriber (make it re-usable)
   procedure Reset (Subscriber : in out Subscriber_Type);

@@ -737,6 +737,12 @@ package body Autobus is
 
   end Init;
 
+  -- Is a Bus initialised
+  function Is_Init (Bus : Bus_Type) return Boolean is
+  begin
+    return Bus.Acc /= null;
+  end Is_Init;
+
   -- Reset a Bus (make it re-usable)
   procedure Reset (Bus : in out Bus_Type) is
     Bus_Found : Boolean;
@@ -911,6 +917,12 @@ package body Autobus is
       Debug ("Subscriber " & Filter & " init ok");
     end if;
   end Init;
+
+  -- Is a Subscriber initialised
+  function Is_Init (Subscriber : Subscriber_Type) return Boolean is
+  begin
+    return Subscriber.Acc /= null;
+  end Is_Init;
 
   -- Reset a Subscriber (make it re-usable)
   procedure Reset (Subscriber : in out Subscriber_Type) is
