@@ -1,0 +1,3 @@
+#!/bin/bash
+exec ./battleship 234.235.236.237:21210 $*
+

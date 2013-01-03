@@ -30,7 +30,10 @@ package body Communication is
     pragma Unreferenced (Observer, Subscriber);
   begin
     if Utils.Debug_Comm then
-      Basic_Proc.Put_Line_Output ("Received " & Message);
+      Utils.Debug ("Received " & Message);
+    end if;
+    if Message = "E" then
+      raise Utils.Abort_Game;
     end if;
     if Server and then Message = "C" then
       -- Server receiving a client login
@@ -70,7 +73,7 @@ package body Communication is
         raise Init_Error;
     end;
     if Utils.Debug_Comm then
-      Basic_Proc.Put_Line_Output ("Bus initialised");
+      Utils.Debug ("Bus initialised");
     end if;
 
     -- Init connection observer
@@ -97,12 +100,38 @@ package body Communication is
       end if;
       Subs.Reset;
       if Utils.Debug_Comm then
-        Basic_Proc.Put_Line_Output ("Connection completed");
+        Utils.Debug ("Connection completed");
       end if;
     end if;
     return Connected;
   end Is_Connected;
 
+  -- Set reception callback
+  Reception : Reception_Cb := null;
+  type Reception_Type is new Autobus.Observer_Type with null record;
+  procedure Receive (Observer : in out Reception_Type;
+                     Subscriber : in Autobus.Subscriber_Access_Type;
+                     Message : in String) is
+    pragma Unreferenced (Observer, Subscriber);
+  begin
+    if Utils.Debug_Comm then
+      Utils.Debug ("Received " & Message);
+    end if;
+    if Reception /= null then
+      Reception (Message);
+    end if;
+  end Receive;
+  Receptor : aliased Reception_Type;
+  procedure Set_Callback (Receive : Reception_Cb := null) is
+  begin
+    if Subs.Is_Init then
+      Subs.Reset;
+    end if;
+    if Receive /= null then
+      Reception := Receive;
+      Subs.Init (Bus'Access, Receptor'Access, "");
+    end if;
+  end Set_Callback;
 
   -- Send "E" (end) to partner
   procedure Send_End is
@@ -113,7 +142,7 @@ package body Communication is
   procedure Close is
   begin
     if Utils.Debug_Comm then
-      Basic_Proc.Put_Line_Output ("Closing communications");
+      Utils.Debug ("Closing communications");
     end if;
     if Subs.Is_Init then
       Subs.Reset;

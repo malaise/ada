@@ -75,13 +75,11 @@ the ships are placed in the grid),
 - Select an available ship in the 'actions' area
   * The ship becomes enhanced
   * A Cancel button appears
-  * The available squares in the 'grid' are enhanced as proposed (allowing
-    the ship to be put here without touching another ship)
-- Click in a proposed square in the 'grid'
+- Click in a square in the 'grid'. If it is valid:
   * The square becomes allocated
   * The other available squares become back to normal
   * The possible other extremities for the ship are enhanced as proposed (up to four
-    possibilities)
+    possibilities). If no possibility the clisk has no effect.
 - Click in one proposed square,
    * The ship is placed, all its squares are allocated,
    * The other available squares become back to normal

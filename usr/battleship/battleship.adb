@@ -1,3 +1,4 @@
+with Ada.Exceptions;
 with Argument, Argument_Parser, Basic_Proc, As.U;
 with Utils, Communication, Setup;
 procedure Battleship is
@@ -59,7 +60,13 @@ exception
     Error ("Communication initilisation error");
     Communication.Close;
   when Utils.Abort_Game =>
-    Basic_Proc.Put_Line_Output ("Aborted by user");
+    Basic_Proc.Put_Line_Output ("Aborted by user.");
+    Communication.Send_End;
+    Communication.Close;
+  when Error:others =>
+    Basic_Proc.Put_Line_Output ("Exception "
+        & Ada.Exceptions.Exception_Name (Error)
+        & " raised");
     Communication.Send_End;
     Communication.Close;
 end Battleship;
