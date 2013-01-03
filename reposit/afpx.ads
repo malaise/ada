@@ -169,7 +169,7 @@ package Afpx is
   function  Get_Field_Activation (Field_No : in Absolute_Field_Range)
                                   return Boolean;
 
-  -- Protect/Unprotect a Get or Button for further put_then_gets
+  -- Protect/Unprotect the List, a Get or Button for further put_then_gets
   -- A protected get field is displayed like a put field
   -- A protected button field is displayed like a put (but no click/release)
   -- A protected list is displayed (but no item can be selected)

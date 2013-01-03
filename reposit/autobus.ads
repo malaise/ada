@@ -55,6 +55,7 @@ package Autobus is
   -- Empty filter lets all messages pass through
   -- Echo allows enabling observation of messages sent by own process
   -- In Receive it is forbidden to reset a Bus or a Subscriber
+  -- Exceptions raised by Receive are caught and hidden
   type Observer_Type is limited interface;
   procedure Receive (Observer : in out Observer_Type;
                      Subscriber : in Subscriber_Access_Type;
