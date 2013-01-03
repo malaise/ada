@@ -16,7 +16,8 @@ The game is decomposed in two steps:
 Starting the game
 -----------------
 The arguments of the games are:
-- <ipm_address>:<port> of the communication channel.
+
+- <ipm_address>:<port> of the communication channel,
 - an optional -s flag for the server (also game leader).
 
 The game is blocked as long as a client and a server are not connected.
@@ -36,8 +37,7 @@ Each fleet is composed of:
 - 1 aircraft carrier of 5 cells
 - 1 battleship of 4 cells
 - 1 cruiser of 3 cells
-- 1 submarine of 2 cells
-- 1 destroyer of 1 cell
+- 2 submarines of 2 cells
 
 Each ship must be in one row or in one column, but not in diagonal. The ships
 cannot overlap.
@@ -55,7 +55,7 @@ anchor:XGrid[] Example:
 | E |   |   | X |   |   |   |   |   |   | X
 | F |   |   | X |   |   |   |   |   |   |  
 | G |   |   |   |   | X |   |   |   |   |  
-| H |   |   |   |   |   |   |   |   |   |  
+| H |   |   |   |   | X |   |   |   |   |  
 | I |   |   |   |   |   |   |   |   |   |  
 | J |   |   |   |   |   |   |   |   |   |  
 |==========================================
@@ -80,10 +80,8 @@ the ships are placed in the grid),
 - Click in a proposed square in the 'grid'
   * The square becomes allocated
   * The other available squares become back to normal
-  * For the destroyer (that is only one cell) this is the end of the action:
-    the ship is removed from the 'actions' list
-  * For all other ships, the possible other extremities for the ship are
-    enhanced as proposed (up to four possibilities)
+  * The possible other extremities for the ship are enhanced as proposed (up to four
+    possibilities)
 - Click in one proposed square,
    * The ship is placed, all its squares are allocated,
    * The other available squares become back to normal
