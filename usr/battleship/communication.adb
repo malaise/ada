@@ -142,6 +142,9 @@ package body Communication is
   -- Send a message to partner
   procedure Send (Msg : in String) is
   begin
+    if Utils.Debug_Comm then
+      Utils.Debug ("Sending >" & Msg & "<");
+    end if;
     Bus.Send (Msg);
   end Send;
 

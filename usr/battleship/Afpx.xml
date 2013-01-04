@@ -481,7 +481,7 @@
       <Colors Foreground="Lime_Green" Background="Black"/>
     </Field>
     <Field Num="108" Kind="Put">
-      <Geometry Up="${TopG}+5" Left="${LeftG}+21" Width="16" Height="1"/>
+      <Geometry Up="${TopG}+5" Left="${LeftG}+21" Width="10" Height="1"/>
       <Colors Foreground="Black" Background="${Default_Background}"/>
       <Init Row="0" Col="0">Battleship</Init>
     </Field>
@@ -490,7 +490,7 @@
       <Colors Foreground="Lime_Green" Background="Black"/>
     </Field>
     <Field Num="110" Kind="Put">
-      <Geometry Up="${TopG}+8" Left="${LeftG}+21" Width="16" Height="1"/>
+      <Geometry Up="${TopG}+8" Left="${LeftG}+21" Width="7" Height="1"/>
       <Colors Foreground="Black" Background="${Default_Background}"/>
       <Init Row="0" Col="0">Cruiser</Init>
     </Field>
@@ -499,7 +499,7 @@
       <Colors Foreground="Lime_Green" Background="Black"/>
     </Field>
     <Field Num="112" Kind="Put">
-      <Geometry Up="${TopG}+11" Left="${LeftG}+21" Width="16" Height="1"/>
+      <Geometry Up="${TopG}+11" Left="${LeftG}+21" Width="9" Height="1"/>
       <Colors Foreground="Black" Background="${Default_Background}"/>
       <Init Row="0" Col="0">Submarine</Init>
     </Field>

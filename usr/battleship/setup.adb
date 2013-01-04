@@ -94,8 +94,7 @@ package body Setup is
   Curr_Ship : Curr_Ship_List;
 
   -- Squares used
-  Grid : array (Utils.Row_Range, Utils.Col_Range) of Boolean
-       := (others => (others => False));
+  Grid : array (Utils.Row_Range, Utils.Col_Range) of Boolean;
 
   -- Valid extremities
   subtype Valid_Number is Natural range 0 .. 4;
@@ -113,9 +112,14 @@ package body Setup is
     Insert       : Boolean;
     Result       : Afpx.Result_Rec;
     Redisplay    : Boolean;
+    Ship         : Fleet.Ship_List;
     Ship_Fld     : Afpx.Absolute_Field_Range;
     use type Afpx.Keyboard_Key_List, Afpx.Field_Range;
   begin
+    if Utils.Debug_Setup then
+      Utils.Debug ("Start of setup");
+    end if;
+
     -- Reset Afpx descriptor
     Afpx.Use_Descriptor (Afpx_Xref.Setup.Dscr_Num);
     Afpx.Clear_Field (Afpx_Xref.Setup.Title);
@@ -133,20 +137,22 @@ package body Setup is
     Redisplay := False;
 
     -- Init ship names
-    Curr_Ship := Fleet.Ship_List'First;
+    Ship := Fleet.Ship_List'First;
     for I in Afpx_Xref.Setup.Aircraftcarrier
               .. Afpx_Xref.Setup.Submarines + 1 loop
       if Afpx.Is_Put_Kind (I) then
-        Fleet.Ship_Names(Curr_Ship) := As.U.Tus (Afpx.Decode_Field (I, 0));
+        Fleet.Ship_Names(Ship) := As.U.Tus (Afpx.Decode_Field (I, 0));
+        Ship := Fleet.Ship_List'Succ (Ship);
       end if;
-      Curr_Ship := Fleet.Ship_List'Succ (Curr_Ship);
     end loop;
     -- Copy to second submarine
-    Fleet.Ship_Names(Curr_Ship) :=
-          Fleet.Ship_Names(Fleet.Ship_List'Pred (Curr_Ship));
+    Fleet.Ship_Names(Ship) :=
+          Fleet.Ship_Names(Fleet.Ship_List'Pred (Ship));
 
     -- Init for setup
     Action := Idle;
+    Ships := No_Ship;
+    Grid := (others => (others => False));
 
     loop
       -- Cancel is active if setting or deleting
@@ -158,38 +164,36 @@ package body Setup is
       -- Done is Active in Idle if all ships are set
       Afpx.Set_Field_Activation (Afpx_Xref.Setup.Done,
                                  Action = Idle and then Ships = All_Ships);
+
       -- Activate ships
-      Afpx.Set_Field_Activation (Afpx_Xref.Setup.Aircraftcarrier,
-                                 Action = Idle
-                                 and then not Ships(Fleet.Carrier));
-      Afpx.Set_Field_Activation (Afpx_Xref.Setup.Battleship,
-                                 Action = Idle
-                                 and then not Ships(Fleet.Battleship));
-      Afpx.Set_Field_Activation (Afpx_Xref.Setup.Cruiser,
-                                 Action = Idle
-                                 and then not Ships(Fleet.Cruiser));
-      Afpx.Set_Field_Activation (Afpx_Xref.Setup.Submarines,
-                                 Action = Idle and then
-                                 ( not Ships(Fleet.Sub1)
-                                   or else not Ships(Fleet.Sub2))) ;
+      Ship := Fleet.Ship_List'First;
+      for I in Afpx_Xref.Setup.Aircraftcarrier
+            .. Afpx_Xref.Setup.Submarines loop
+        if Afpx.Is_Button_Kind (I) then
+          if Action = Idle then
+            -- When idle: reset and activate avilable ships
+            Afpx.Reset_Field (I, Reset_String => False);
+            Afpx.Set_Field_Activation (I, not Ships(Ship));
+          else
+            -- When not idle: de-activate all ships by default
+            Afpx.Set_Field_Activation (I, False);
+          end if;
+          Ship := Fleet.Ship_List'Succ (Ship);
+        end if;
+      end loop;
       if Action = Setting or else Action = Positionning then
-         -- Activate and protect ship being set
+         -- Activate and protect the ship being set
          Ship_Fld := Afpx_Xref.Setup.Aircraftcarrier
             + (Afpx.Absolute_Field_Range (
                 Fleet.Ship_List'Pos(Curr_Ship)
               - Fleet.Ship_List'Pos(Fleet.Ship_List'First)) * 2);
          Afpx.Set_Field_Activation (Ship_Fld, True);
          Afpx.Set_Field_Protection (Ship_Fld, True);
-      elsif Action = Idle then
-        -- Unprotect ships
-        for I in Afpx_Xref.Setup.Aircraftcarrier
-              .. Afpx_Xref.Setup.Submarines loop
-          if Afpx.Is_Button_Kind (I) then
-            Afpx.Set_Field_Protection (I, False);
-          end if;
-        end loop;
+         Afpx.Set_Field_Colors (Ship_Fld,
+                   Background => Con_Io.Color_Of ("Lime_Green"));
       end if;
 
+      -- Get action
       Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Result, Redisplay);
       case Result.Event is
         when Afpx.Signal_Event =>
@@ -223,6 +227,9 @@ package body Setup is
           null;
       end case;
     end loop;
+    if Utils.Debug_Setup then
+      Utils.Debug ("End of setup");
+    end if;
   end Define;
 
   -- Is a cell allowed: no ship in Cell nor in in adjacent cells
@@ -530,6 +537,9 @@ package body Setup is
         Action := Idle;
       when Afpx_Xref.Setup.Done =>
         -- Store setup
+        if Utils.Debug_Setup then
+          Utils.Debug ("Local setup completed");
+        end if;
         -- Done
         Action := Done;
         return True;
