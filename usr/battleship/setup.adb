@@ -1,4 +1,4 @@
-with Con_Io, Afpx;
+with Con_Io, Afpx, As.U;
 with Afpx_Xref, Communication, Utils, Fleet;
 package body Setup is
 
@@ -58,8 +58,8 @@ package body Setup is
   end Init;
 
   -- Reception of a message from partner
-  Partner_Done : Boolean := False;
-  Abort_Game : Boolean := False;
+  Partner_Done : Boolean;
+  Abort_Game : Boolean;
   procedure Receive (Msg : in String) is
   begin
 
@@ -122,6 +122,8 @@ package body Setup is
     Afpx.Encode_Field (Afpx_Xref.Setup.Title, (0, 3), "Setup");
 
     -- Init reception of message from partner
+    Partner_Done := False;
+    Abort_Game := False;
     Communication.Set_Callback (Receive'Access);
 
     -- Init for Afpx Ptg
@@ -129,6 +131,19 @@ package body Setup is
     Cursor_Col := 0;
     Insert := False;
     Redisplay := False;
+
+    -- Init ship names
+    Curr_Ship := Fleet.Ship_List'First;
+    for I in Afpx_Xref.Setup.Aircraftcarrier
+              .. Afpx_Xref.Setup.Submarines + 1 loop
+      if Afpx.Is_Put_Kind (I) then
+        Fleet.Ship_Names(Curr_Ship) := As.U.Tus (Afpx.Decode_Field (I, 0));
+      end if;
+      Curr_Ship := Fleet.Ship_List'Succ (Curr_Ship);
+    end loop;
+    -- Copy to second submarine
+    Fleet.Ship_Names(Curr_Ship) :=
+          Fleet.Ship_Names(Fleet.Ship_List'Pred (Curr_Ship));
 
     -- Init for setup
     Action := Idle;
@@ -399,10 +414,7 @@ package body Setup is
                 Valids(Valid_Nb) := Stop;
               end if;
             end loop;
-            -- Cancel if none
-            if Valid_Nb = 0 then
-              Action := Idle;
-            else
+            if Valid_Nb /= 0 then
               Afpx.Set_Field_Colors (
                 Utils.Coord2Fld (Afpx_Xref.Setup.Grid, Start),
                 Background => Con_Io.Color_Of ("Black"));
@@ -478,6 +490,10 @@ package body Setup is
                     Utils.Coord2Fld (Afpx_Xref.Setup.Grid,
                                      Fleet.My_Ships(Del_Ship)(I)),
                     Reset_String => False);
+                if Utils.Debug_Setup then
+                  Utils.Debug ("Deleting ship in "
+                              & Utils.Image (Fleet.My_Ships(Del_Ship)(I)));
+                end if;
               end loop;
               Ships(Del_Ship) := False;
               -- Move Sub1 as Sub2 if first submarine
@@ -494,11 +510,18 @@ package body Setup is
       when Afpx_Xref.Setup.Cancel =>
         -- Cancel proposed cells
         if Action = Positionning then
+          if Utils.Debug_Setup then
+            Utils.Debug ("Cancelling "
+                       & Utils.Image (Fleet.My_Ships(Curr_Ship)(1)));
+          end if;
           Afpx.Reset_Field (
             Utils.Coord2Fld (Afpx_Xref.Setup.Grid,
                              Fleet.My_Ships(Curr_Ship)(1)),
             Reset_String => False);
           for I in 1 .. Valid_Nb loop
+            if Utils.Debug_Setup then
+              Utils.Debug ("Cancelling " & Utils.Image (Valids(I)));
+            end if;
             Afpx.Reset_Field (
               Utils.Coord2Fld (Afpx_Xref.Setup.Grid, Valids(I)),
               Reset_String => False);

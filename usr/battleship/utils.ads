@@ -8,6 +8,7 @@ package Utils is
   procedure Init;
   function Debug_Comm return Boolean;
   function Debug_Setup return Boolean;
+  function Debug_Play return Boolean;
 
   -- Debug message
   procedure Debug (Msg : in String);

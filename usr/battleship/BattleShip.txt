@@ -171,7 +171,7 @@ message:
   "SE5"
 - R <row> <column> <result> [ <sink> ]: reply and coordinates, where
   * <result> is M (missed), H (hit), S (sink) or E (end)
-  * <sink> (when <result> is S or D) is the sinked ship name, ex: "RIaM" "RE5H"
+  * <sink> (when <result> is S or E) is the sinked ship name, ex: "RIaM" "RE5H"
     "RE6Saircraft carrier" "RF7Ecruiser"
 - E: exit
 

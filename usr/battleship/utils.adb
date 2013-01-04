@@ -5,10 +5,12 @@ package body Utils is
   -- Debug modes
   Dbg_Comm : Boolean := False;
   Dbg_Setup : Boolean := False;
+  Dbg_Play : Boolean := False;
   procedure Init is
   begin
     Dbg_Comm := Environ.Is_Yes ("BATTLESHIP_DEBUG_COMM");
     Dbg_Setup := Environ.Is_Yes ("BATTLESHIP_DEBUG_SETUP");
+    Dbg_Play := Environ.Is_Yes ("BATTLESHIP_DEBUG_PLAY");
   end Init;
 
   function Debug_Comm return Boolean is
@@ -20,6 +22,11 @@ package body Utils is
   begin
     return Dbg_Setup;
   end Debug_Setup;
+
+  function Debug_Play return Boolean is
+  begin
+    return Dbg_Play;
+  end Debug_Play;
 
   -- Debug message
   procedure Debug (Msg : in String) is

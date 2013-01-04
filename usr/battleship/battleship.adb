@@ -1,6 +1,6 @@
 with Ada.Exceptions;
 with Argument, Argument_Parser, Basic_Proc, As.U;
-with Utils, Communication, Setup;
+with Utils, Communication, Setup, Battle;
 procedure Battleship is
    -- The keys
   Keys : constant Argument_Parser.The_Keys_Type := (
@@ -21,6 +21,8 @@ procedure Battleship is
     Basic_Proc.Set_Error_Exit_Code;
   end Error;
 
+  Server : Boolean;
+  Start : Boolean;
 
 begin
   Utils.Init;
@@ -43,18 +45,29 @@ begin
   end if;
 
   -- Init setup screen and connect
+  Server := Dscr.Is_Set (2);
   if not Setup.Init (Dscr.Get_Option (Argument_Parser.No_Key_Index),
-                     Dscr.Is_Set (2)) then
+                     Server) then
     -- Connection cancelled by user
     Communication.Close;
     return;
   end if;
 
-  -- Setup fleet
-  Setup.Define;
+  -- Loop of games
+  Start := Server;
+  loop
+    -- Setup fleet
+    Setup.Define;
+
+    -- Play game
+    exit when not Battle.Play (Server, Start);
+    Start := not Start;
+  end loop;
 
   -- Done
+  Communication.Send_End;
   Communication.Close;
+
 exception
   when Communication.Init_Error =>
     Error ("Communication initilisation error");
