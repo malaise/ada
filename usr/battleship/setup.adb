@@ -1,5 +1,5 @@
 with Con_Io, Afpx;
-with Afpx_Xref, Communication, Utils;
+with Afpx_Xref, Communication, Utils, Fleet;
 package body Setup is
 
   function Init (Addr : String; Server : Boolean) return Boolean is
@@ -80,24 +80,20 @@ package body Setup is
 
   -- Status during Setup (some are needed for field activation)
   -- Current action
-  type Action_List is (Idle, Setting, Positionning, Deleting);
+  type Action_List is (Idle, Setting, Positionning, Deleting, Done);
   Action : Action_List;
 
   -- Which ships are set
-  type Ship_List is (Carrier, Battleship, Cruiser, Sub1, Sub2);
-  type Ship_State is array (Ship_List) of Boolean;
+  type Ship_State is array (Fleet.Ship_List) of Boolean;
   No_Ship : constant Ship_State := (others => False);
   All_Ships : constant Ship_State := (others => True);
   Ships : Ship_State := No_Ship;
 
   -- Kind of ship currently being set
-  subtype Curr_Ship_List is Ship_List range Carrier .. Sub1;
+  subtype Curr_Ship_List is Fleet.Ship_List range Fleet.Carrier .. Fleet.Sub1;
   Curr_Ship : Curr_Ship_List;
 
-  -- Where are ships set and squares used
-  subtype Ship_Len_Range is Positive range 1 .. 5;
-  type Pos_List is array (Ship_Len_Range) of Utils.Coord;
-  Ships_Pos : array (Ship_List) of Pos_List;
+  -- Squares used
   Grid : array (Utils.Row_Range, Utils.Col_Range) of Boolean
        := (others => (others => False));
 
@@ -107,7 +103,7 @@ package body Setup is
   Valid_Nb : Valid_Number;
   Valids : array (Valid_Range) of Utils.Coord;
 
-  -- Handle user action during setup
+  -- Handle user action during setup, return True when Done
   function Handle_Click (Fld: Afpx.Field_Range) return Boolean;
 
   -- Define Setup
@@ -117,14 +113,13 @@ package body Setup is
     Insert       : Boolean;
     Result       : Afpx.Result_Rec;
     Redisplay    : Boolean;
-    Completed    : Boolean;
     Ship_Fld     : Afpx.Absolute_Field_Range;
     use type Afpx.Keyboard_Key_List, Afpx.Field_Range;
   begin
     -- Reset Afpx descriptor
     Afpx.Use_Descriptor (Afpx_Xref.Setup.Dscr_Num);
     Afpx.Clear_Field (Afpx_Xref.Setup.Title);
-    Afpx.Encode_Field (Afpx_Xref.Setup.Title, (0, 0), "Setup");
+    Afpx.Encode_Field (Afpx_Xref.Setup.Title, (0, 3), "Setup");
 
     -- Init reception of message from partner
     Communication.Set_Callback (Receive'Access);
@@ -136,11 +131,12 @@ package body Setup is
     Redisplay := False;
 
     -- Init for setup
-    Completed := False;
+    Action := Idle;
 
     loop
       -- Cancel is active if setting or deleting
-      Afpx.Set_Field_Activation (Afpx_Xref.Setup.Cancel, Action /= Idle);
+      Afpx.Set_Field_Activation (Afpx_Xref.Setup.Cancel,
+                                 Action /= Idle and then Action /= Done);
       -- Delete is active only in idle if at least one ship is set
       Afpx.Set_Field_Activation (Afpx_Xref.Setup.Delete,
                                  Action = Idle and then Ships /= No_Ship);
@@ -149,19 +145,24 @@ package body Setup is
                                  Action = Idle and then Ships = All_Ships);
       -- Activate ships
       Afpx.Set_Field_Activation (Afpx_Xref.Setup.Aircraftcarrier,
-                                 Action = Idle and then not Ships(Carrier));
+                                 Action = Idle
+                                 and then not Ships(Fleet.Carrier));
       Afpx.Set_Field_Activation (Afpx_Xref.Setup.Battleship,
-                                 Action = Idle and then not Ships(Battleship));
+                                 Action = Idle
+                                 and then not Ships(Fleet.Battleship));
       Afpx.Set_Field_Activation (Afpx_Xref.Setup.Cruiser,
-                                 Action = Idle and then not Ships(Cruiser));
+                                 Action = Idle
+                                 and then not Ships(Fleet.Cruiser));
       Afpx.Set_Field_Activation (Afpx_Xref.Setup.Submarines,
                                  Action = Idle and then
-                                 ( not Ships(Sub1) or else not Ships(Sub2))) ;
+                                 ( not Ships(Fleet.Sub1)
+                                   or else not Ships(Fleet.Sub2))) ;
       if Action = Setting or else Action = Positionning then
          -- Activate and protect ship being set
          Ship_Fld := Afpx_Xref.Setup.Aircraftcarrier
             + (Afpx.Absolute_Field_Range (
-                Ship_List'Pos(Curr_Ship) - Ship_List'Pos(Ship_List'First)) * 2);
+                Fleet.Ship_List'Pos(Curr_Ship)
+              - Fleet.Ship_List'Pos(Fleet.Ship_List'First)) * 2);
          Afpx.Set_Field_Activation (Ship_Fld, True);
          Afpx.Set_Field_Protection (Ship_Fld, True);
       elsif Action = Idle then
@@ -191,10 +192,15 @@ package body Setup is
           if Abort_Game then
             raise Utils.Abort_Game;
           end if;
-          exit when Completed and then Partner_Done;
+          exit when Action = Done and then Partner_Done;
         when Afpx.Mouse_Button =>
-          Completed := Handle_Click (Result.Field_No);
-          exit when Completed and then Partner_Done;
+          if Handle_Click (Result.Field_No) then
+            -- Setup is just done locally
+            Communication.Send ("D");
+            exit when Action = Done and then Partner_Done;
+            -- Waiting for partner completion of setup
+            Afpx.Encode_Field (Afpx_Xref.Setup.Title, (0, 2), "Waiting");
+          end if;
         when Afpx.Refresh =>
           Redisplay := True;
         when others =>
@@ -204,16 +210,36 @@ package body Setup is
     end loop;
   end Define;
 
-  -- Length of a ship
-  function Length (Ship : Curr_Ship_List) return Ship_Len_Range is
+  -- Is a cell allowed: no ship in Cell nor in in adjacent cells
+  --  but touching corner is allowed
+  function Allowed (R : Utils.Row_Range; C : Utils.Col_Range) return Boolean is
   begin
-    case Ship is
-      when Carrier => return 5;
-      when Battleship => return 4;
-      when Cruiser => return 3;
-      when Sub1 => return 2;
-    end case;
-  end Length;
+    if Grid (R, C) then
+      -- Cell is already used
+      return False;
+    end if;
+    if Utils.In_Grid ((R, C), -1, 0)
+    and then Grid (Utils.Row_Range'Pred(R), C) then
+      -- One ship above
+      return False;
+    end if;
+    if Utils.In_Grid ((R, C), 1, 0)
+    and then Grid (Utils.Row_Range'Succ(R), C) then
+      -- One ship below
+      return False;
+    end if;
+    if Utils.In_Grid ((R, C), 0, -1)
+    and then Grid (R, Utils.Col_Range'Pred(C)) then
+      -- One ship on left
+      return False;
+    end if;
+    if Utils.In_Grid ((R, C), 0, 1)
+    and then Grid (R, Utils.Col_Range'Succ(C)) then
+      -- One ship on right
+      return False;
+    end if;
+    return True;
+  end Allowed;
 
   -- Check if a direction is valid for a ship
   type Dir_List is (Up, Down, Left, Right);
@@ -226,16 +252,16 @@ package body Setup is
     Len : Positive;
   begin
     -- Length of ship
-    Len := Length (Ship);
+    Len := Fleet.Length (Ship) - 1;
     case Dir is
       when Up =>
         -- From Start, Len rows up
-        if Start.Row < Utils.Row_Range'Val(Len - 1) then
+        if not Utils.In_Grid (Start, -Len, 0) then
           return Start;
         end if;
-        Erow := Utils.Row_Range'Val(Utils.Row_Range'Pos(Start.Row) - Len + 1);
+        Erow := Utils.Row_Range'Val(Utils.Row_Range'Pos(Start.Row) - Len);
         for Row in Erow .. Start.Row loop
-          if Grid (Row, Start.Col) then
+          if not Allowed (Row, Start.Col) then
             return Start;
           end if;
         end loop;
@@ -245,14 +271,12 @@ package body Setup is
         return (Erow, Start.Col);
       when Down =>
         -- From Start, Len rows down
-        if Start.Row > Utils.Row_Range'Val(
-              Utils.Row_Range'Pos(Utils.Row_Range'Last) - Len + 1)
-        then
+        if not Utils.In_Grid (Start, Len, 0) then
           return Start;
         end if;
-        Erow := Utils.Row_Range'Val(Utils.Row_Range'Pos(Start.Row) + Len - 1);
+        Erow := Utils.Row_Range'Val(Utils.Row_Range'Pos(Start.Row) + Len);
         for Row in Start.Row .. Erow loop
-          if Grid (Row, Start.Col) then
+          if not Allowed (Row, Start.Col) then
             return Start;
           end if;
         end loop;
@@ -262,12 +286,12 @@ package body Setup is
         return (Erow, Start.Col);
       when Left =>
         -- From Start, Len cols left
-        if Start.Col < Utils.Col_Range(Len) then
+        if not Utils.In_Grid (Start, 0, -Len) then
           return Start;
         end if;
-        Ecol := Start.Col - Utils.Col_Range(Len - 1);
+        Ecol := Start.Col - Utils.Col_Range(Len);
         for Col in Ecol .. Start.Col loop
-          if Grid (Start.Row, Col) then
+          if not Allowed (Start.Row, Col) then
             return Start;
           end if;
         end loop;
@@ -277,12 +301,12 @@ package body Setup is
         return (Start.Row, Ecol);
       when Right =>
         -- From Start, Len cols right
-        if Start.Col > Utils.Col_Range'Last - Utils.Col_Range(Len - 1) then
+        if not Utils.In_Grid (Start, 0, Len) then
           return Start;
         end if;
-        Ecol := Start.Col + Utils.Col_Range(Len - 1);
+        Ecol := Start.Col + Utils.Col_Range(Len);
         for Col in Start.Col .. Ecol loop
-          if Grid (Start.Row, Col) then
+          if not Allowed (Start.Row, Col) then
             return Start;
           end if;
         end loop;
@@ -303,13 +327,13 @@ package body Setup is
     if Start.Row = Stop.Row then
       if Start.Col < Stop.Col then
         for Col in Start.Col .. Stop.Col loop
-          Ships_Pos(Ship)(I) := (Start.Row, Col);
+          Fleet.My_Ships(Ship)(I) := (Start.Row, Col);
           Grid (Start.Row, Col) := True;
           I := I + 1;
         end loop;
       else
         for Col in Stop.Col .. Start.Col loop
-          Ships_Pos(Ship)(I) := (Start.Row, Col);
+          Fleet.My_Ships(Ship)(I) := (Start.Row, Col);
           Grid (Start.Row, Col) := True;
           I := I + 1;
         end loop;
@@ -317,13 +341,13 @@ package body Setup is
     else
       if Start.Row < Stop.Row then
         for Row in Start.Row .. Stop.Row loop
-          Ships_Pos(Ship)(I) := (Row, Start.Col);
+          Fleet.My_Ships(Ship)(I) := (Row, Start.Col);
           Grid (Row, Start.Col) := True;
           I := I + 1;
         end loop;
       else
         for Row in Stop.Row .. Start.Row loop
-          Ships_Pos(Ship)(I) := (Row, Start.Col);
+          Fleet.My_Ships(Ship)(I) := (Row, Start.Col);
           Grid (Row, Start.Col) := True;
           I := I + 1;
         end loop;
@@ -333,32 +357,33 @@ package body Setup is
 
   -- Handle user action during setup
   function Handle_Click (Fld : Afpx.Field_Range) return Boolean is
-    use type Afpx.Field_Range, Utils.Coord;
     Start, Stop : Utils.Coord;
     Found : Boolean;
+    Del_Ship : Fleet.Ship_List;
+    use type Afpx.Field_Range, Utils.Coord, Fleet.Ship_List;
   begin
     case Fld is
       -- Set a ship
       when Afpx_Xref.Setup.Aircraftcarrier =>
         Action := Setting;
-        Curr_Ship := Carrier;
+        Curr_Ship := Fleet.Carrier;
       when Afpx_Xref.Setup.Battleship =>
         Action := Setting;
-        Curr_Ship := Battleship;
+        Curr_Ship := Fleet.Battleship;
       when Afpx_Xref.Setup.Cruiser =>
         Action := Setting;
-        Curr_Ship := Cruiser;
+        Curr_Ship := Fleet.Cruiser;
       when Afpx_Xref.Setup.Submarines =>
         Action := Setting;
-        Curr_Ship := Sub1;
+        Curr_Ship := Fleet.Sub1;
       when Afpx_Xref.Setup.Grid .. Afpx_Xref.Setup.Grid + 99 =>
         case Action is
-          when Idle =>
+          when Idle | Done =>
             null;
           when Setting =>
             -- Store Coordinate
             Start := Utils.Fld2Coord (Afpx_Xref.Setup.Grid, Fld);
-            Ships_Pos(Curr_Ship)(1) := Start;
+            Fleet.My_Ships(Curr_Ship)(1) := Start;
             if Utils.Debug_Setup then
               Utils.Debug ("Selected Cell is " & Utils.Image (Start));
             end if;
@@ -391,44 +416,78 @@ package body Setup is
           when Positionning =>
             -- Check if this is a valid extremity
             Found := False;
-            Start := Ships_Pos(Curr_Ship)(1);
+            Start := Fleet.My_Ships(Curr_Ship)(1);
             Stop := Utils.Fld2Coord (Afpx_Xref.Setup.Grid, Fld);
-            -- Cancel proposed cells
             for I in 1 .. Valid_Nb loop
               if Valids(I) = Stop then
-                 Found := True;
+                Found := True;
               end if;
-              Afpx.Reset_Field (
-                Utils.Coord2Fld (Afpx_Xref.Setup.Grid, Valids(I)),
-                Reset_String => False);
             end loop;
             if Found then
+              -- Cancel proposed cells
+              for I in 1 .. Valid_Nb loop
+                Afpx.Reset_Field (
+                  Utils.Coord2Fld (Afpx_Xref.Setup.Grid, Valids(I)),
+                  Reset_String => False);
+              end loop;
               -- Store ship and update grid
               Store_Ship (Curr_Ship, Start, Stop);
               if Utils.Debug_Setup then
-                for I in 1 .. Length (Curr_Ship) loop
+                for I in 1 .. Fleet.Length (Curr_Ship) loop
                   Utils.Debug ("Ship is in "
-                              & Utils.Image (Ships_Pos(Curr_Ship)(I)));
+                              & Utils.Image (Fleet.My_Ships(Curr_Ship)(I)));
                 end loop;
               end if;
               -- Update screen
-              for I in 1 .. Length (Curr_Ship) loop
+              for I in 1 .. Fleet.Length (Curr_Ship) loop
                 Afpx.Set_Field_Colors (
                     Utils.Coord2Fld (Afpx_Xref.Setup.Grid,
-                                     Ships_Pos(Curr_Ship)(I)),
+                                     Fleet.My_Ships(Curr_Ship)(I)),
                     Background => Con_Io.Color_Of ("Black"));
               end loop;
-              -- Move Sub1 as Sub2 is first submarine
-              if Curr_Ship = Sub1 and then not Ships(Sub2) then
-                Ships_Pos(Sub2) := Ships_Pos(Sub1);
-                Ships(Sub2) := True;
-                Ships(Sub1) := False;
+              -- Move Sub1 as Sub2 if first submarine
+              if Curr_Ship = Fleet.Sub1 and then not Ships(Fleet.Sub2) then
+                Fleet.My_Ships(Fleet.Sub2) := Fleet.My_Ships(Fleet.Sub1);
+                Ships(Fleet.Sub2) := True;
+                Ships(Fleet.Sub1) := False;
               end if;
               Action := Idle;
             end if;
           when Deleting =>
             -- Check there is a ship and delete it
-            null;
+            Start := Utils.Fld2Coord (Afpx_Xref.Setup.Grid, Fld);
+            if Grid(Start.Row, Start.Col) then
+              -- There is a ship here, find it
+              Search:
+              for S in Fleet.Ship_List loop
+                if Ships(S) then
+                  for I in 1 .. Fleet.Length (S) loop
+                    if Fleet.My_Ships(S)(I) = Start then
+                      -- Found it
+                      Del_Ship := S;
+                      exit Search;
+                    end if;
+                  end loop;
+                end if;
+              end loop Search;
+              -- Delete this ship
+              for I in 1 .. Fleet.Length (Del_Ship) loop
+                Grid(Fleet.My_Ships(Del_Ship)(I).Row,
+                     Fleet.My_Ships(Del_Ship)(I).Col) := False;
+                Afpx.Reset_Field (
+                    Utils.Coord2Fld (Afpx_Xref.Setup.Grid,
+                                     Fleet.My_Ships(Del_Ship)(I)),
+                    Reset_String => False);
+              end loop;
+              Ships(Del_Ship) := False;
+              -- Move Sub1 as Sub2 if first submarine
+              if Del_Ship = Fleet.Sub2 and then Ships(Fleet.Sub1) then
+                Fleet.My_Ships(Fleet.Sub2) := Fleet.My_Ships(Fleet.Sub1);
+                Ships(Fleet.Sub2) := True;
+                Ships(Fleet.Sub1) := False;
+              end if;
+            end if;
+            Action := Idle;
         end case;
       when Afpx_Xref.Setup.Delete =>
         Action := Deleting;
@@ -436,7 +495,8 @@ package body Setup is
         -- Cancel proposed cells
         if Action = Positionning then
           Afpx.Reset_Field (
-            Utils.Coord2Fld (Afpx_Xref.Setup.Grid, Ships_Pos(Curr_Ship)(1)),
+            Utils.Coord2Fld (Afpx_Xref.Setup.Grid,
+                             Fleet.My_Ships(Curr_Ship)(1)),
             Reset_String => False);
           for I in 1 .. Valid_Nb loop
             Afpx.Reset_Field (
@@ -448,6 +508,7 @@ package body Setup is
       when Afpx_Xref.Setup.Done =>
         -- Store setup
         -- Done
+        Action := Done;
         return True;
       when others =>
         null;

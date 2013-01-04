@@ -40,7 +40,8 @@ Each fleet is composed of:
 - 2 submarines of 2 cells
 
 Each ship must be in one row or in one column, but not in diagonal. The ships
-cannot overlap.
+cannot overlap nor touch each other by the border. They can touch by the
+corners.
 
 anchor:XGrid[] Example:
 
@@ -54,8 +55,8 @@ anchor:XGrid[] Example:
 | D |   |   | X |   |   | X | X | X |   | X
 | E |   |   | X |   |   |   |   |   |   | X
 | F |   |   | X |   |   |   |   |   |   |  
-| G |   |   |   |   | X |   |   |   |   |  
-| H |   |   |   |   | X |   |   |   |   |  
+| G |   |   |   | X |   |   |   |   |   |  
+| H |   |   |   | X |   |   |   |   |   |  
 | I |   |   |   |   |   |   |   |   |   |  
 | J |   |   |   |   |   |   |   |   |   |  
 |==========================================

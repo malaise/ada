@@ -136,8 +136,14 @@ package body Communication is
   -- Send "E" (end) to partner
   procedure Send_End is
   begin
-    Bus.Send ("E");
+    Send ("E");
   end Send_End;
+
+  -- Send a message to partner
+  procedure Send (Msg : in String) is
+  begin
+    Bus.Send (Msg);
+  end Send;
 
   procedure Close is
   begin

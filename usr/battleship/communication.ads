@@ -18,6 +18,9 @@ package Communication is
   -- Send "E" (end) to partner
   procedure Send_End;
 
+  -- Send a message to partner
+  procedure Send (Msg : in String);
+
   -- Close communications
   procedure Close;
 

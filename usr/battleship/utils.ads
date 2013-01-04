@@ -28,8 +28,11 @@ package Utils is
   -- Cell of a field
   function Fld2Coord (Start : Afpx.Field_Range; Fld : Afpx.Field_Range)
                      return Coord;
-  -- Field of a Cell
+  -- Field of a cell
   function Coord2Fld (Start : Afpx.Field_Range; C : Coord)
                      return Afpx.Field_Range;
+  -- Is a cell in grid
+  function In_Grid (C : Coord; Row_Offset, Col_Offset : Integer) return Boolean;
+
 end Utils;
 

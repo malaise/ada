@@ -13,10 +13,11 @@
       <Init Row="0" Col="0">Battle Ships</Init>
     </Field>
     <Field Num="2" Kind="Put" Name="Title">
-      <Geometry Up="3" Left="39" Width="7" Height="1"/>
+      <Geometry Up="3" Left="39" Width="10" Height="1"/>
       <Colors Foreground="Black" Background="${Default_Background}"/>
-      <Init Row="0" Col="0">Connect</Init>
-      <!--                   Setup -->
+      <Init Row="0" Col="0">Connecting</Init>
+      <!--                     Setup -->
+      <!--                    Waiting -->
     </Field>
 
     <!-- Grid -->
@@ -532,10 +533,11 @@
       <Init Row="0" Col="0">Battle Ships</Init>
     </Field>
     <Field Num="2" Kind="Put" Name="Title">
-      <Geometry Up="3" Left="40" Width="5" Height="1"/>
+      <Geometry Up="3" Left="40" Width="7" Height="1"/>
       <Colors Foreground="Black" Background="${Default_Background}"/>
-      <Init Row="0" Col="0">Shoot</Init>
-      <!--                  Wait -->
+      <Init Row="0" Col="1">Shoot</Init>
+      <!--                 Waiting -->
+      <!--                   End -->
     </Field>
 
     <!-- Grid 1 -->

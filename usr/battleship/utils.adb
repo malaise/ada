@@ -69,5 +69,17 @@ package body Utils is
     return Start + Afpx.Absolute_Field_Range (Row_Range'Pos (C.Row) * 10)
                  + Afpx.Field_Range (C.Col) - 1;
   end Coord2Fld;
+
+   -- Is a cell in grid
+  function In_Grid (C : Coord; Row_Offset, Col_Offset : Integer)
+                   return Boolean is
+    Row, Col : Integer;
+  begin
+    Row := Row_Range'Pos(C.Row) + 1 + Row_Offset;
+    Col := Integer(C.Col) + Col_Offset;
+    return Row >= 1 and then Row <= 10
+    and then Col >= 1 and then Col <= 10;
+  end In_Grid;
+
 end Utils;
 
