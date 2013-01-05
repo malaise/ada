@@ -110,7 +110,7 @@ They all depend on C and Reposit and are independant from the others (except
 The more usefull are 'udp_spy' and 'xml_checker' (in directory 'misc'), 'agite',
 'alook', 'als', 'asubst', 'lsadeps' and 'mcd'.
 
-The games are 'g' (in directory 'misc'), 'lem', 'mmind', 'nimmari' and
+The games are 'g' (in directory 'misc'), 'battleship', 'lem', 'mmind', 'nimmari' and
 'sokoban'.
 
 Here is the full list and description, rated from 1 (simple) to 3 (very
@@ -137,6 +137,9 @@ Astub (3)::
 
 Asubst (3)::
      Substitutes in files the strings matching a regexp by new strings.
+
+Battleship (2)::
+     Battleship game for two players through the network (with 'Autobus').
 
 Chess (3)::
      With 'Con_Io' and 'Tcp_Util', allows two players to play chess on one or
