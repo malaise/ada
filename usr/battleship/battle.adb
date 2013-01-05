@@ -96,6 +96,7 @@ package body Battle is
       Afpx.Reset_Field (Afpx_Xref.Play.Scale1 + 1, Reset_String => False);
       Afpx.Reset_Field (Afpx_Xref.Play.Scale2, Reset_String => False);
       Afpx.Reset_Field (Afpx_Xref.Play.Scale2 + 1, Reset_String => False);
+      Afpx.Clear_Field (Afpx_Xref.Play.Title);
       if Done then
         Afpx.Encode_Field (Afpx_Xref.Play.Title, (0, 2), "End");
       elsif Shoot then
@@ -156,7 +157,9 @@ package body Battle is
             end if;
             return True;
           end if;
+          -- Shoot?
           if Shoot
+          and then not Done
           and then Result.Field_No in Afpx_Xref.Play.Grid2
                                    .. Afpx_Xref.Play.Grid2 + 99 then
             Target := Utils.Fld2Coord (Afpx_Xref.Play.Grid2, Result.Field_No);
@@ -182,6 +185,7 @@ package body Battle is
   procedure Center (Fld : in Afpx.Field_Range;
                     Str : in String) is
   begin
+    Afpx.Clear_Field (Fld);
     Afpx.Encode_Field (Fld, (0, 0),
          Str_Util.Center (Str, Afpx.Get_Field_Width (Fld)));
   end Center;

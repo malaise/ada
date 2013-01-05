@@ -5,9 +5,12 @@ ADAVIEW := $(REPOSIT)
 AFPX := true
 AFPX_XREF := afpx_xref
 
-EXES := battleship
+EXES := battleship battleship.stat
 
-CLIBS :=  posix2pcre pcre x_mng cutil X11
+CLIBS := x_mng cutil posix2pcre pcre X11
+
+LARGS_battleship.stat := $(CPATHD)/libx_mng.a $(CPATHD)/libcutil.a \
+ $(CPATHD)/libposix2pcre.a $(PCRE)/libpcre.a -lX11
 
 TXT := BattleShip
 DOCOPTS_Asubst := -a toc

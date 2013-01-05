@@ -218,6 +218,7 @@ package body Setup is
             Communication.Send ("D");
             exit when Action = Done and then Partner_Done;
             -- Waiting for partner completion of setup
+            Afpx.Clear_Field (Afpx_Xref.Setup.Title);
             Afpx.Encode_Field (Afpx_Xref.Setup.Title, (0, 2), "Waiting");
           end if;
         when Afpx.Refresh =>
