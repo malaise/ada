@@ -8,6 +8,9 @@ The software compiles with Ada05 (Gnat GPL 2012) and runs on Unix (Linux).
 Some programs depend on anchor:XPCRE[] PCRE (Perl Compatible Regular Expressions) and work
 with version 7.8 or above (8.21 is OK).
 
+The graphical library is based on X11 and needs the font packages 75dpi and
+100dpi transcoded from ISO 10646-1.
+
 Programs are rated from 1 (simple) to 3 (very complex), on subjective
 criteria.
 
