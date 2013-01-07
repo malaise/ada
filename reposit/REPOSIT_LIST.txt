@@ -12,46 +12,64 @@ Direct input::
     The program has no blocking input at all (ex: reads files) or reads stdin
 and blocks on it (and puts on stdout/stderr).
 +
-=> The program can use Basic_Proc or Sys_Calls (or even Ada.Text_Io) for its
-Ios. It can use Key_Pressed to asynchronously check for keyboard input, while
+=> The program can use 'Basic_Proc' or 'Sys_Calls' (or even Ada.Text_Io) for its
+Ios. It can use 'Key_Pressed' to asynchronously check for keyboard input, while
 processing.
 
 Multiplexed inputs::
     The program multiplexes several inputs and stimuli: file descriptors (UDP or 
 TCP socket), stdin, signals (SIGCHILD and SIGTERM), timers.
 +
-=> The program *must* use Event_Mng.Wait as the single blocking point. This
+=> The program *must* use 'Event_Mng'.Wait as the single blocking point. This
 allows dispatching the FD events, timers and signals to the proper callbacks).
 
- * Event_Mng allows defining callbacks for handling signal and FD events,
+ * 'Event_Mng' allows defining callbacks for handling signal and FD events,
 
- * Timers allows defining timers, expiration and callback,
+ * 'Timers' allows defining timers, expiration and callback,
 
- * Socket allows sending and reading on socket FDs,
+ * 'Socket' allows sending and reading on socket FDs,
 
- * Async_Stdin allows defining a callback on stdin,
+ * 'Async_Stdin' allows defining a callback on stdin,
 
- * Sys_Calls allows direct access to other FDs.
+ * 'Sys_Calls' allows direct access to other FDs.
 
 X11 mutiplexed inputs ::
     The program uses X11 and multiplexes X11 events with other inputs (see
 above).
 +
-=> The program *must* use either X_Mng.X_Wait_Event or Con_Io.Put_Then_Get (or
-Con_Io.Get) or Afpx.Put_Then_Get. It can also use more specialized tools based
-on X11 like Curve (compatible with Con_Io) and Select_File (compatible with
-Afpx).
+=> The program *must* use either 'X_Mng'.X_Wait_Event or 'Con_Io'.Put_Then_Get
+(or 'Con_Io'.Get) or 'Afpx'.Put_Then_Get. It can also use more specialized tools
+based on X11 like 'Curve' (compatible with 'Con_Io') and 'Select_File'
+(compatible with 'Afpx').
 +
 Several tasks can be defined, for example one for each window.
 
 Notes: 
 
-* Using Event_Mng in non interactive programs requires caution (see
-Event_Mng.Reset_Default_Signals_Policy and Command).
+* Using 'Event_Mng' in non interactive programs requires caution (see
+'Event_Mng'.Reset_Default_Signals_Policy and Command).
 
-* Using X_Mng is exclusive with Con_Io and Afpx. 
+* Using 'X_Mng' is exclusive with 'Con_Io' and 'Afpx'. 
 
-* Using Con_Io and Afpx simultaneously requires caution (see Afpx.Suspend).
+* Using 'Con_Io' and 'Afpx' simultaneously requires caution (see
+'Afpx'.Suspend).
+
+Notes on X11 resources:
+
+* The following env variables can be set to statically tune the X11 resources:
+  ** X_COLOR_MAP: "PRIVATE" or "PUBLIC" (default "PUBLIC") defines the way the
+    color map (of 14 entries) is allocated,
+  ** X_FONT_KIND: "courier", "fixed" or "lucidatypewriter" (default
+    "lucidatypewriter") defines the font family
+  ** CON_IO_FONT: can be set to "small" or "large" to use a font smaller or
+    larger than the default.
+* The colors can be defined by each application.
+  ** For 'X_Mng' the default colors are:
+black, blue, dark green, cyan, red, magenta, brown, light grey, grey,
+light blue, lime green, orange, yellow and white. +
+  ** For 'Con_Io' (and 'Afpx') the default colors are: light grey, blue,
+dark green, cyan, red, magenta, brown, white, dark grey, light blue, lime green,
+orange, yellow and black.
 
 
 Families of tools
@@ -59,13 +77,14 @@ Families of tools
 
 Execution environment
 ~~~~~~~~~~~~~~~~~~~~~
-* 'Argument' provides simple parsing by keys, while 'Argument_Parser' provides a
-more strict logic and higher level parsing. Use the later if the arguments are
-many, are optional, support options...
+* 'Argument' provides a simple parsing by keys, while 'Argument_Parser' provides
+a more strict policy and higher level parsing. Use the later if the arguments
+are many, are optional, support options...
 
 * 'Environ' allows retrieving and checking environmental variables.
 
-* 'Basic_Proc' allows setting the exit code of the process.
+* 'Basic_Proc' allows setting the exit code of the process and basic
+input/output.
 
 Strings
 ~~~~~~~
