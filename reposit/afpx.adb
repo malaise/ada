@@ -406,6 +406,36 @@ package body Afpx is
     Width  := Af_Dscr.Fields(Fn).Width;
   end Get_Field_Size;
 
+  -- Get field kind
+  -- Exceptions : No_Descriptor, Invalid_Field
+  -- type Field_Kind_List is (Put, Button, Get);
+  function Get_Field_Kind (Field_No : in Field_Range) return Field_Kind_List is
+    Fn : constant Afpx_Typ.Absolute_Field_Range
+       := Afpx_Typ.Absolute_Field_Range(Field_No);
+  begin
+    Af_Dscr.Check(Fn);
+    case Af_Dscr.Fields(Fn).Kind is
+      when Afpx_Typ.Put => return Put;
+      when Afpx_Typ.Button => return Button;
+      when Afpx_Typ.Get => return Get;
+    end case;
+  end Get_Field_Kind;
+
+  function Is_Put_Kind    (Field_No : in Field_Range) return Boolean is
+  begin
+    return Get_Field_Kind (Field_No) = Put;
+  end Is_Put_Kind;
+
+  function Is_Button_Kind (Field_No : in Field_Range) return Boolean is
+  begin
+    return Get_Field_Kind (Field_No) = Button;
+  end Is_Button_Kind;
+
+  function Is_Get_Kind    (Field_No : in Field_Range) return Boolean is
+  begin
+    return Get_Field_Kind (Field_No) = Get;
+  end Is_Get_Kind;
+
   -- Encode a string in a row of a field
   procedure Encode_Field (Field_No : in Field_Range;
                           From_Pos : in Con_Io.Square;
@@ -459,34 +489,6 @@ package body Afpx is
   begin
     Encode_Field (Field_No, From_Pos, Str.Image);
   end Encode_Field;
-
-  -- Encode a string in a line for the list
-  -- Exceptions : String_Too_Long
-  procedure Encode_Line (Line : in out Line_Rec;
-                         Str  : in String) is
-  begin
-    Encode_Line (Line, Language.String_To_Unicode (Str));
-  end Encode_Line;
-
-  procedure Encode_Line (Line : in out Line_Rec;
-                         Str  : in Unicode_Sequence) is
-  begin
-    if Str'Length > Af_Dscr.Fields(Lfn).Width then
-      raise String_Too_Long;
-    end if;
-    Line.Len := Str'Length;
-    Line.Str (1 .. Line.Len) := Str;
-  end Encode_Line;
-
-  procedure Encode_Wide_Line (Line : in out Line_Rec;
-                              Str  : in Wide_String) is
-    Ustr : Unicode_Sequence (Str'Range);
-  begin
-    for I in Ustr'Range loop
-      Ustr(I) := Language.Wide_To_Unicode (Str(I));
-    end loop;
-    Encode_Line (Line, Ustr);
-  end Encode_Wide_Line;
 
   -- Decode the content of a row of a field
   function Decode_Field (Field_No : Field_Range;
@@ -655,43 +657,18 @@ package body Afpx is
     return Af_Dscr.Fields(Fn).Isprotected;
   end Get_Field_Protection;
 
-  -- Get field kind
-  -- Exceptions : No_Descriptor, Invalid_Field
-  -- type Field_Kind_List is (Put, Button, Get);
-  function Get_Field_Kind (Field_No : in Field_Range) return Field_Kind_List is
-    Fn : constant Afpx_Typ.Absolute_Field_Range
-       := Afpx_Typ.Absolute_Field_Range(Field_No);
-  begin
-    Af_Dscr.Check(Fn);
-    case Af_Dscr.Fields(Fn).Kind is
-      when Afpx_Typ.Put => return Put;
-      when Afpx_Typ.Button => return Button;
-      when Afpx_Typ.Get => return Get;
-    end case;
-  end Get_Field_Kind;
-
-  function Is_Put_Kind    (Field_No : in Field_Range) return Boolean is
-  begin
-    return Get_Field_Kind (Field_No) = Put;
-  end Is_Put_Kind;
-
-  function Is_Button_Kind (Field_No : in Field_Range) return Boolean is
-  begin
-    return Get_Field_Kind (Field_No) = Button;
-  end Is_Button_Kind;
-
-  function Is_Get_Kind    (Field_No : in Field_Range) return Boolean is
-  begin
-    return Get_Field_Kind (Field_No) = Get;
-  end Is_Get_Kind;
-
   -- Erase all the fields of the descriptor from the screen
   procedure Erase is
     use Afpx_Typ;
   begin
     Af_Dscr.Check;
+    -- Check no list active in descriptor
     if Af_Dscr.Fields(Lfn).Kind = Afpx_Typ.Button then
-      Af_Ptg.Erase_Field (Lfn);
+      if Af_Dscr.Fields (Lfn).Activated then
+        raise List_In_Put;
+      else
+        Af_Ptg.Erase_Field (Lfn);
+      end if;
     end if;
     for I in 1 .. Af_Dscr.Current_Dscr.Nb_Fields loop
       Af_Ptg.Erase_Field (I);
@@ -786,6 +763,34 @@ package body Afpx is
       end if;
     end loop;
   end Prev_Cursor_Field;
+
+  -- Encode a string in a line for the list
+  -- Exceptions : String_Too_Long
+  procedure Encode_Line (Line : in out Line_Rec;
+                         Str  : in String) is
+  begin
+    Encode_Line (Line, Language.String_To_Unicode (Str));
+  end Encode_Line;
+
+  procedure Encode_Line (Line : in out Line_Rec;
+                         Str  : in Unicode_Sequence) is
+  begin
+    if Str'Length > Af_Dscr.Fields(Lfn).Width then
+      raise String_Too_Long;
+    end if;
+    Line.Len := Str'Length;
+    Line.Str (1 .. Line.Len) := Str;
+  end Encode_Line;
+
+  procedure Encode_Wide_Line (Line : in out Line_Rec;
+                              Str  : in Wide_String) is
+    Ustr : Unicode_Sequence (Str'Range);
+  begin
+    for I in Ustr'Range loop
+      Ustr(I) := Language.Wide_To_Unicode (Str(I));
+    end loop;
+    Encode_Line (Line, Ustr);
+  end Encode_Wide_Line;
 
   procedure Update_List (Action : in List_Action_List) is
     Dummy : Boolean;

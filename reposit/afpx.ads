@@ -101,6 +101,14 @@ package Afpx is
                             Height : out Height_Range;
                             Width  : out Width_Range);
 
+  -- Get field kind
+  -- Exceptions : No_Descriptor, Invalid_Field
+  type Field_Kind_List is (Put, Button, Get);
+  function Get_Field_Kind (Field_No : in Field_Range) return Field_Kind_List;
+  function Is_Put_Kind    (Field_No : in Field_Range) return Boolean;
+  function Is_Button_Kind (Field_No : in Field_Range) return Boolean;
+  function Is_Get_Kind    (Field_No : in Field_Range) return Boolean;
+
   -- Encode a string in a field.
   -- The Row is filled with spaces, then with Str starting at Col
   -- Exceptions : No_Descriptor, Invalid_Field
@@ -180,22 +188,16 @@ package Afpx is
   function  Get_Field_Protection (Field_No : in Absolute_Field_Range)
                                   return Boolean;
 
-  -- Get field kind
-  -- Exceptions : No_Descriptor, Invalid_Field
-  type Field_Kind_List is (Put, Button, Get);
-  function Get_Field_Kind (Field_No : in Field_Range) return Field_Kind_List;
-  function Is_Put_Kind    (Field_No : in Field_Range) return Boolean;
-  function Is_Button_Kind (Field_No : in Field_Range) return Boolean;
-  function Is_Get_Kind    (Field_No : in Field_Range) return Boolean;
-
   -- Erase all the fields of the descriptor from the screen
-  --  (Fill them with current screen's background color)
-  -- Exceptions : No_Descriptor
+  -- Fill the fields on the screen with current screen's background color,
+  --  but the content of the fields is not affected
+  -- The list if any has to be de-activated
+  -- Exceptions : No_Descriptor, List_In_Put
   procedure Erase;
 
   -- Put a descriptor content
-  -- Any list has to be de-activated
-  -- Exceptions : No_Descriptor, List_In_Put.
+  -- The list is any has to be de-activated
+  -- Exceptions : No_Descriptor, List_In_Put
   procedure Put;
 
   -- Computes next cursor field after current one:
@@ -204,6 +206,7 @@ package Afpx is
   --  Else the next matching after From is returned
   -- When the last field is reached the search reastarts from beginning
   -- 0 is returned if no matching field is found
+  -- Exceptions : No_Descriptor
   function Next_Cursor_Field (From : Absolute_Field_Range)
                               return Absolute_Field_Range;
 
