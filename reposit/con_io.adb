@@ -1,6 +1,5 @@
 with Ada.Calendar;
-with Argument, Environ, Lower_Str, Event_Mng, Str_Util, Dynamic_List,
-     Basic_Proc;
+with Argument, Environ, Lower_Str, Event_Mng, Str_Util, Basic_Proc;
 package body Con_Io is
 
   -- Some constants
@@ -27,11 +26,6 @@ package body Con_Io is
   The_Color_Names : Colors_Definition := Default_Colors;
   subtype Font_No_Offset_Range is Integer range -1 .. 1;
   Font_No_Offset : Font_No_Offset_Range := 0;
-
-  -- List of open windows
-  package Window_Dyn_List_Mng is new Dynamic_List (Window);
-  package Window_List_Mng renames Window_Dyn_List_Mng.Dyn_List;
-  Windows : Window_List_Mng.List_Type;
 
   procedure Debug (Msg : in String) is
   begin

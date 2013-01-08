@@ -169,5 +169,12 @@ private
   end record;
   overriding procedure Finalize (Bus : in out Bus_Type);
 
+  -- Lists of buses ans partners
+  -- Defined in spec in order to avoid that the finalization of the body
+  --  (which may occur before the finalization of user data) deletes the list
+  --  too early
+  Buses : Bus_List_Mng.List_Type;
+  Partners : Partner_List_Mng.List_Type;
+
 end Autobus;
 

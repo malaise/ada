@@ -55,10 +55,8 @@ package body Autobus is
   --------------
   -- INTERNAL --
   --------------
-  -- Static data: List of Buses and Partners
+  -- Static data: List of Buses and Partners,
   In_Receive : Boolean := False;
-  Buses : Bus_List_Mng.List_Type;
-  Partners : Partner_List_Mng.List_Type;
 
   -- Access to Subscriber_Rec
   type Subscriber_Access is access all Subscriber_Rec;
@@ -348,7 +346,8 @@ package body Autobus is
       if Remove then
         Partners.Search_Access (Partner_Found, Partner_Acc);
         if not Partner_Found  then
-          Log_Error ("Timer_Cb", "partner not found", "in partners list");
+          Log_Error ("Remove_Partners", "partner not found",
+                     "in partners list");
         else
           Remove_Current_Partner (True);
         end if;
@@ -643,7 +642,7 @@ package body Autobus is
     -- Find Bus
     Bus.Timer := Id;
     Buses.Search_Match (Bus_Found, Bus_Match_Timer'Access, Bus,
-                          From => Bus_List_Mng.Absolute);
+                        From => Bus_List_Mng.Absolute);
     if not Bus_Found then
       Log_Error ("Timer_Cb", "bus not found", "in buses list");
       return False;
@@ -951,6 +950,7 @@ package body Autobus is
 
     Debug ("Subscriber.Reset " & Subscriber.Acc.Bus.Name.Image);
     Remove_Current_Subscriber;
+    Subscriber.Acc := null;
   end Reset;
 
   -- Dispatch the message to the subscribers of current bus
@@ -1024,15 +1024,27 @@ package body Autobus is
   -- Internal: Finalizations
   overriding procedure Finalize (Bus : in out Bus_Type) is
   begin
+    if Debug_Set then
+      Basic_Proc.Put_Line_Output ("Autobus: finalizing Bus");
+    end if;
     if Bus.Acc /= null then
       Reset (Bus);
+    end if;
+    if Debug_Set then
+      Basic_Proc.Put_Line_Output ("Autobus: Bus finalized");
     end if;
   end Finalize;
 
   overriding procedure Finalize (Subscriber : in out Subscriber_Type) is
   begin
+    if Debug_Set then
+      Basic_Proc.Put_Line_Output ("Autobus: finalizing Subscriber");
+    end if;
     if Subscriber.Acc /= null then
       Reset (Subscriber);
+    end if;
+    if Debug_Set then
+      Basic_Proc.Put_Line_Output ("Autobus: Subscriber finalized");
     end if;
   end Finalize;
 

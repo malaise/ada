@@ -1,5 +1,5 @@
 with Ada.Characters.Latin_1;
-with As.U, X_Mng, Timers, Unicode, Language, Smart_Reference;
+with As.U, X_Mng, Timers, Unicode, Language, Smart_Reference, Dynamic_List;
 package Con_Io is
 
   -- Propagation of Unicode definitions
@@ -610,6 +610,14 @@ private
                := (Window_Ref_Mng.Null_Handle with others => <>);
 
   Screen_Data : constant Window_Data := (others => <>);
+
+  -- List of open windows
+  -- Defined in spec in order to avoid that the finalization of the body
+  --  (which may occur before the finalization of user data) deletes the list
+  --  too early
+  package Window_Dyn_List_Mng is new Dynamic_List (Window);
+  package Window_List_Mng renames Window_Dyn_List_Mng.Dyn_List;
+  Windows : Window_List_Mng.List_Type;
 
 end Con_Io;
 
