@@ -776,7 +776,7 @@ package body Util is
   package Name_List_Mng renames Name_Dyn_List_Mng.Dyn_List;
   procedure Search_Name is new Name_List_Mng.Search (As.U."=");
 
-  -- INTERNAL: Verify propoer nesting of parenths
+  -- INTERNAL: Verify proper nesting of parenths
   function Check_Nesting (Str : String) return Boolean is
     Level : Natural := 0;
     Char : Character;
