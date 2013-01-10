@@ -51,7 +51,7 @@ package body Exception_Messenger is
       return Res.Image;
     exception
       when Msg_Pool.Not_Found =>
-        return Str
+        return Str;
     end;
   end Get_Message;
 
