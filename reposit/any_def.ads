@@ -19,14 +19,14 @@ package Any_Def is
   type Any (Kind : Any_Kind_List := None_Kind) is record
     case Kind is
       when None_Kind    => null;
-      when Bool_Kind    => Bool    : Boolean;
-      when Integer_Kind => Int     : Integer;
-      when Inte_Kind    => Inte    : My_Math.Inte;
-      when Real_Kind    => Real    : My_Math.Real;
-      when Float_Kind   => Flo     : Float;
-      when Str_Kind     => Str     : As.U.Asu_Us;
-      when Address_Kind => Address : System.Address;
-      when Access_Kind  => Acc     : Any_Access;
+      when Bool_Kind    => Bool : Boolean;
+      when Integer_Kind => Int  : Integer;
+      when Inte_Kind    => Inte : My_Math.Inte;
+      when Real_Kind    => Real : My_Math.Real;
+      when Float_Kind   => Flo  : Float;
+      when Str_Kind     => Str  : As.U.Asu_Us;
+      when Address_Kind => Addr : System.Address;
+      when Access_Kind  => Acc  : Any_Access;
     end case;
   end record;
 

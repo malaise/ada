@@ -17,7 +17,7 @@ package body Any_Def is
       when Real_Kind    => return Real_Image (A.Real);
       when Float_Kind   => return Flo_Image (A.Flo);
       when Str_Kind     => return A.Str.Image;
-      when Address_Kind => return Address_Ops.Image (A.Address);
+      when Address_Kind => return Address_Ops.Image (A.Addr);
       when Access_Kind  => return "->" & Image(A.Acc.all);
     end case;
   end Image;
