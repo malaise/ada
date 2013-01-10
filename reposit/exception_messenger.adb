@@ -45,13 +45,13 @@ package body Exception_Messenger is
         return Str;
     end;
 
-    -- Get message from pool, return "" if not found
+    -- Get message from pool, return Str if not found
     begin
       Res := Pool.Get (Key);
       return Res.Image;
     exception
       when Msg_Pool.Not_Found =>
-        return "";
+        return Str
     end;
   end Get_Message;
 

@@ -29,11 +29,12 @@ package Exception_Messenger is
                              Message : in String := "");
 
 
-  -- Retrieve the message associated to an exception.
-  -- If the message attached does not match "Exception_Messenger_Key_xxx",
-  --  then return this message.
-  -- If it matches but is not (any more) in the pool, then return "".
-  -- If it is found in the pool then suppress it from the pool and return it.
+  -- Retrieve the message associated to an exception occurence X.
+  -- If the Exception_Message of X does not match "Exception_Messenger_Key_xxx"
+  --  or if it is not (any more) in the pool, then return the Exception_Message
+  --  of X
+  -- If it is found in the pool then suppress the corresponding message from
+  --  the pool and return it.
   -- The exception occurence can be passed as "in out" or by access, but in
   --  both cases it is necessary to save the original occurence first.
 
