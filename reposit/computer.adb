@@ -41,8 +41,8 @@ package body Computer is
 
   -- Variable management
   ----------------------
-  -- Reset all variables
-  procedure Reset (Memory : in out Memory_Type; Not_Persistent : in Boolean) is
+  -- Reset volatile or all variables
+  procedure Reset (Memory : in out Memory_Type; Only_Volatile : in Boolean) is
     Vol_List : As.U.Asu_Us;
     -- Iterator to build list of names of volatile variables
     procedure List_Iter (Current : in Var_Rec;
@@ -56,7 +56,7 @@ package body Computer is
     Iter : Parser.Iterator;
     Var : Var_Rec;
   begin
-    if not Not_Persistent then
+    if not Only_Volatile then
       -- Delete all
       Trace ("Deleting all variables");
       Memory.Var_List.Delete_List;
@@ -148,6 +148,32 @@ package body Computer is
     Memory.Var_List.Search (Crit, Found);
     return Found;
   end Is_Set;
+
+  -- Set (store), maybe overwrite a variable
+  procedure Unset (Memory : in out Memory_Type;
+                   Name : in String) is
+    Var : Var_Rec;
+    Found : Boolean;
+  begin
+    if Name = "" then
+      raise Invalid_Variable;
+    end if;
+    -- Check that this variable exists (persistent or not) and is modifiable
+    Var.Name := As.U.Tus (Name);
+    Var.Persistent := False;
+    Memory.Var_List.Search (Var, Found);
+    if not Found then
+      raise Unknown_Variable;
+    end if;
+    Memory.Var_List.Read (Var);
+    if not Var.Modifiable then
+      -- One of the original and of the new (or both)
+      --  is not modifiable
+      raise Constant_Exists;
+    end if;
+    Trace ("Deleting volatile " & Image (Var));
+    Memory.Var_List.Delete (Var);
+  end Unset;
 
   -- Read a variable rec (internal)
   -- May raise Unknown_Variable

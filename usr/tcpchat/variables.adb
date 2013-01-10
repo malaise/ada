@@ -56,7 +56,7 @@ package body Variables is
   procedure Reset is
   begin
     Debug.Log ("Resetting variables");
-    Memory.Reset (Not_Persistent => False);
+    Memory.Reset (Only_Volatile => False);
   end Reset;
 
   -- Chek that a name is valid
@@ -113,7 +113,7 @@ package body Variables is
   procedure Clear_Volatiles is
   begin
     Debug.Log ("Resetting volatiles");
-    Memory.Reset (Not_Persistent => True);
+    Memory.Reset (Only_Volatile => True);
   end Clear_Volatiles;
 
   -- Expand the expression

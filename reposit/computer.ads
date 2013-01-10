@@ -10,8 +10,13 @@ package Computer is
 
   -- Variable management
   ----------------------
-  -- Reset not persistent or all variables
-  procedure Reset (Memory : in out Memory_Type; Not_Persistent : in Boolean);
+  -- There are 2 kinds of variables: persistent or not. This is just to provide
+  --  a way to reset only the volatile (non-persistent) variables or all the
+  --  variables
+
+  -- Reset (delete) volatile or all variables
+  procedure Reset (Memory : in out Memory_Type; Only_Volatile : in Boolean);
+
   -- Set (store), maybe overwrite a variable
   -- May raise Constant_Exists if a variable with this name already exists
   --  and if either previous value or new value is not Modifiable
@@ -20,11 +25,21 @@ package Computer is
                  Value : in String;
                  Modifiable : in Boolean;
                  Persistent : in Boolean);
+
   -- Check if a variable is set
   function Is_Set (Memory : Memory_Type; Name : String) return Boolean;
+
+  -- Unset (delete) a variable
+  -- May raise Unknown_Variable
+  -- May raise Constant_Exists if a variable with this name already exists
+  --  and is not Modifiable
+  procedure Unset (Memory : in out Memory_Type;
+                   Name : in String);
+
   -- Get a variable
   -- May raise Unknown_Variable
   function Get (Memory : Memory_Type; Name : String) return String;
+
   -- Get characteristics, may raise Unknown_Variable
   function Is_Modifiable (Memory : Memory_Type; Name : String) return Boolean;
   function Is_Persistent (Memory : Memory_Type; Name : String) return Boolean;
@@ -51,9 +66,11 @@ package Computer is
 
   -- On Set, Get or Is_Set if empty name
   Invalid_Variable : exception;
-  -- On Set if Modifiable is set and a variable
-  --  with this name already exists, or if Modifiable is not set but a
-  --  non modifiable variable with this name already exists.
+  -- On Set if a constant (not modifiable variable) with this name already
+  --  exists, if Modifiable is set but a variable (modifiable or not) with this
+  --  name already exists.
+  -- On Unset if a constant (not modifiable variable) with this name already
+  -- exists.
   Constant_Exists : exception;
   -- On Get or Eval when unknown variable
   Unknown_Variable : exception;

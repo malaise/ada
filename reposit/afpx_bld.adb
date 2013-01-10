@@ -1034,7 +1034,7 @@ procedure Afpx_Bld is
                          Init_Io.Positive_Count(Dscr_Index));
         end if;
         -- Reset volatile variables and constants defined for this descriptor
-        Memory.Reset (Not_Persistent => True);
+        Memory.Reset (Only_Volatile => True);
         -- Ready for next descriptor
         Dscr_Index := Dscr_Index + 1;
       end if;
@@ -1047,7 +1047,7 @@ procedure Afpx_Bld is
     end loop;
 
     -- Reset all variables
-    Memory.Reset (Not_Persistent => False);
+    Memory.Reset (Only_Volatile => False);
 
     if Check_Only then
       Xref.Clean;
