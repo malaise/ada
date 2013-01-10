@@ -766,7 +766,7 @@ package body Sys_Calls is
 
   -- Process procreation (fork)
   procedure Procreate (Child : out Boolean; Child_Pid : out Pid) is
-    function C_Procreate return C_Types.Int;
+    function C_Procreate return C_Types.Pid_T;
     pragma Import (C, C_Procreate, "procreate");
     Res : C_Types.Int;
   begin
