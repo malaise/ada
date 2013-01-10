@@ -14,11 +14,13 @@ package Environ is
   procedure Get_Str (Name : String; Result : in out String;
                                     Length : in out Natural);
   -- Getenv for a unbounded string
+  -- Leave result unchanged if not set or trunc or empty otherwise set it.
   procedure Get_Us (Name : String; Result : in out As.U.Asu_Us);
 
   -- Getenv an Integer
-  -- First variant returns Default if not set or trunc or empty
-  -- Second variant leaves Result unchanged
+  -- First variant returns Default if not set or trunc or empty or if invalid
+  --   content
+  -- Second variant leaves Result unchanged in these cases
   function  Get_Int (Name : String; Default : Integer) return Integer;
   procedure Get_Int (Name : String; Result : in out Integer);
 

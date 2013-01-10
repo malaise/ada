@@ -20,7 +20,7 @@ package File_Hash is
        Hash_Max, Hash_Func);
 
 
-  -- Load the content of the file in the list
+  -- Load the content of the file in the list (insert after current position)
   Init_Error : exception;
   procedure Load (File_Name : in String;
                   List : in out List_Mng.List_Type);
