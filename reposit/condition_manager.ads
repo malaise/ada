@@ -6,6 +6,11 @@ package Condition_Manager is
   --  (broadcast).
   type Condition is tagged private;
 
+  -- Before waiting on a condition the user must get access to it
+  -- By starting to wait the application automatically releases the exclusive
+  --  access to the condition
+  
+
   -- Get access to the condition
   -- If delay is negative, wait until mutex is got
   -- If delay is null, try and give up if not free
@@ -29,8 +34,8 @@ package Condition_Manager is
   -- Atomically release the mutex and block the calling task on the condition
   -- Upon successful return, the access to the condition is already granted to
   --  the calling task
-  -- The calling task must own the condition's mutex, otherwise No_Access
-  --  is raised
+  -- The calling task must have already got access the the condition, otherwise
+  --   No_Access is raised
   No_Access : exception;
   function Wait (A_Condition  : Condition;
                  Waiting_Time : Duration) return Boolean;

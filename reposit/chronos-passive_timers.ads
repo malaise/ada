@@ -18,7 +18,7 @@ package Chronos.Passive_Timers is
   procedure Start (Timer      : in out Passive_Timer;
                    Delay_Spec : in Timers.Delay_Rec);
 
-  -- Stop a timer, which becomes unusable until re-started
+  -- Stop a timer, which becomes unusable (deleted) until re-started
   Timer_Stopped : exception;
   procedure Stop (Timer : in out Passive_Timer);
 
