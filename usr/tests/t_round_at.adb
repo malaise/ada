@@ -36,7 +36,7 @@ begin
   I := Int_Float.Int_Value;
 
   -- Compute nb of digits before dot
-  D := Integer (My_Math.Trunc (My_Math.Log_10 (abs R))) + 1;
+  D := Integer (My_Math.Trunc (My_Math.Lg (abs R))) + 1;
   Basic_Proc.Put_Line_Output ("Digits: " & D'Img);
 
   -- Round and put

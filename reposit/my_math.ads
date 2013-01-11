@@ -37,7 +37,7 @@ package My_Math is
   function Sqrt (X : Real) return Real;
 
   -- 10 based Log
-  function Log_10 (X : Real) return Real;
+  function Lg (X : Real) return Real;
 
   -- Logarithmic functions based on E
   function Exp (X : Real := 1.0) return Real;
@@ -46,7 +46,7 @@ package My_Math is
   -- Trigonometric functions
   function Sin (X : Real; Mode : Angle_Unit := Radian) return Real;
   function Cos (X : Real; Mode : Angle_Unit := Radian) return Real;
-  function Tg  (X : Real; Mode : Angle_Unit := Radian) return Real;
+  function Tan  (X : Real; Mode : Angle_Unit := Radian) return Real;
 
   -- Invert trigonometric functions
   -- arc sinus returned on -pi/2 .. pi/2
@@ -54,7 +54,7 @@ package My_Math is
   -- arc cosinus returned on 0 .. pi
   function Arc_Cos (X : Real; Mode : Angle_Unit := Radian) return Real;
   -- arc tangent returned on -pi/2 .. pi/2
-  function Arc_Tg  (X : Real; Mode : Angle_Unit := Radian) return Real;
+  function Arc_Tan  (X : Real; Mode : Angle_Unit := Radian) return Real;
 
   -- Exception raised in case of invalid argument or numeric error
   Math_Error : exception;

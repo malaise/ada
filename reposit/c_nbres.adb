@@ -107,7 +107,7 @@ package body C_Nbres is
     X_Pol.Module := Sqrt
      (C.Part_Real * C.Part_Real + C.Part_Imag * C.Part_Imag);
     if (C.Part_Real /= 0.0) then
-      X_Pol.Argument := Reduct (Radian(Arc_Tg (C.Part_Imag / C.Part_Real)));
+      X_Pol.Argument := Reduct (Radian(Arc_Tan (C.Part_Imag / C.Part_Real)));
     else
       X_Pol.Argument := Pi / 2.0;
     end if;

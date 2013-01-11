@@ -11,7 +11,7 @@ dup isinte ~ E pushr ifcall
 dup isneg E pushr ifcall
 
 # Trunc log 10
-toreal log trunc
+toreal lg trunc
 
 1 + put " digits." putl
 

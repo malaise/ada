@@ -47,7 +47,7 @@ package Mcd_Mng is
    Epsilon,
    Exp,
    Ln,
-   Log,
+   Lg,
    -- Numerical conversion
    Toreal,
    Tointe,

@@ -77,8 +77,8 @@ package body Mcd_Parser is
    -- Logarithm
    Epsilon  => (Nosy, "push epsilon (1.0E-10)                            ", As.U.Asu_Null, False),
    Exp      => (Nosy, "push e (exponential)                              ", As.U.Asu_Null, False),
-   Ln       => (Nosy, "push ln(A)  (neper logarithm)                     ", As.U.Asu_Null, False),
-   Log      => (Nosy, "push log(A) (base 10 logarithm)                   ", As.U.Asu_Null, True),
+   Ln       => (Nosy, "push ln(A) (neper logarithm)                      ", As.U.Asu_Null, False),
+   Lg       => (Nosy, "push lg(A) (base 10 logarithm)                    ", As.U.Asu_Null, True),
    -- Numerical conversion
    Toreal   => (Nosy, "push Real(A) (A integer)                          ", As.U.Asu_Null, False),
    Tointe   => (Nosy, "push Inte(A) (A arbitrary)                        ", As.U.Asu_Null, False),

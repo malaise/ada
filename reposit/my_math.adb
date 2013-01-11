@@ -201,7 +201,7 @@ package body My_Math is
   end Sqrt;
 
   -- Based 10 log
-  function Log_10 (X : Real) return Real is
+  function Lg (X : Real) return Real is
   begin
     if X < 0.0 then
       raise Math_Error;
@@ -210,7 +210,7 @@ package body My_Math is
   exception
     when others =>
       raise Math_Error;
-  end Log_10;
+  end Lg;
 
   function Exp (X : Real := 1.0) return Real is
   begin
@@ -260,8 +260,8 @@ package body My_Math is
       raise Math_Error;
   end Cos;
 
-  function Tg (X    : Real;
-               Mode : Angle_Unit := Radian) return Real is
+  function Tan (X    : Real;
+                Mode : Angle_Unit := Radian) return Real is
     Y       : Real;
   begin
     if Mode = Radian then
@@ -273,7 +273,7 @@ package body My_Math is
   exception
     when others =>
       raise Math_Error;
-  end Tg;
+  end Tan;
 
   function Arc_Sin (X    : Real;
                     Mode : Angle_Unit := Radian) return Real is
@@ -309,8 +309,8 @@ package body My_Math is
       raise Math_Error;
   end Arc_Cos;
 
-  function Arc_Tg (X    : Real;
-                   Mode : Angle_Unit := Radian) return Real is
+  function Arc_Tan (X    : Real;
+                    Mode : Angle_Unit := Radian) return Real is
     Y       : Real;
   begin
     Y := Real(Catan (C_Types.Double(X)));
@@ -321,7 +321,7 @@ package body My_Math is
   exception
     when others =>
       raise Math_Error;
-  end Arc_Tg;
+  end Arc_Tan;
 
 end My_Math;
 

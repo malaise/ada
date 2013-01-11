@@ -49,7 +49,7 @@ begin
         when others=> Put_Line_Output ("Exception");
       end;
       begin
-        Put_Output ("log_10 (R1) "); Put( Log_10 (R)); New_Line_Output;
+        Put_Output ("lg (R1) "); Put( Lg (R)); New_Line_Output;
       exception
         when others=> Put_Line_Output ("Exception");
       end;
@@ -65,7 +65,7 @@ begin
         when others=> Put_Line_Output ("Exception");
       end;
       begin
-        Put_Output ("tg  (R1) "); Put( Tg (R)); New_Line_Output;
+        Put_Output ("tan (R1) "); Put( Tan (R)); New_Line_Output;
       exception
         when others=> Put_Line_Output ("Exception");
       end;
@@ -80,7 +80,7 @@ begin
         when others=> Put_Line_Output ("Exception");
       end;
       begin
-        Put_Output ("arc_tg  (R1) "); Put( Arc_Tg (R)); New_Line_Output;
+        Put_Output ("arc_tan (R1) "); Put( Arc_Tan (R)); New_Line_Output;
       exception
         when others=> Put_Line_Output ("Exception");
       end;

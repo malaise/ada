@@ -139,7 +139,7 @@ package body Mcd_Mng is
     function Acos    (X : Item_Rec) return Item_Rec;
     function Atan    (X : Item_Rec) return Item_Rec;
     function Ln      (X : Item_Rec) return Item_Rec;
-    function Log     (X : Item_Rec) return Item_Rec;
+    function Lg      (X : Item_Rec) return Item_Rec;
 
     -- Arbi,Arbi,Arbi->Arbi or Inte,Inte,Inte->Inte or Real,Real,Real->Real
     function Proport (X, Y, Z : Item_Rec) return Item_Rec;
@@ -616,9 +616,9 @@ package body Mcd_Mng is
           -- push ln(A)
           Pop(A); Push (Operations.Ln(A));
           S := A;
-        when Log =>
-          -- push log(A)
-          Pop(A); Push (Operations.Log(A));
+        when Lg =>
+          -- push lg(A)
+          Pop(A); Push (Operations.Lg(A));
           S := A;
 
         -- Numerical conversion

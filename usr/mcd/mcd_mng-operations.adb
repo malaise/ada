@@ -1027,7 +1027,7 @@ package body Operations is
     if X.Kind /= Real then
       raise Invalid_Argument;
     end if;
-    return (Kind => Real, Val_Real => My_Math.Tg(X.Val_Real));
+    return (Kind => Real, Val_Real => My_Math.Tan(X.Val_Real));
   exception
     when Invalid_Argument | Argument_Mismatch =>
       raise;
@@ -1066,7 +1066,7 @@ package body Operations is
     if X.Kind /= Real then
       raise Invalid_Argument;
     end if;
-    return (Kind => Real, Val_Real => My_Math.Arc_Tg(X.Val_Real));
+    return (Kind => Real, Val_Real => My_Math.Arc_Tan(X.Val_Real));
   exception
     when Invalid_Argument | Argument_Mismatch =>
       raise;
@@ -1087,18 +1087,18 @@ package body Operations is
       raise Compute_Error;
   end Ln;
 
-  function Log (X : Item_Rec) return Item_Rec is
+  function Lg (X : Item_Rec) return Item_Rec is
   begin
     if X.Kind /= Real then
       raise Invalid_Argument;
     end if;
-    return (Kind => Real, Val_Real => My_Math.Log_10(X.Val_Real));
+    return (Kind => Real, Val_Real => My_Math.Lg(X.Val_Real));
   exception
     when Invalid_Argument | Argument_Mismatch =>
       raise;
     when others =>
       raise Compute_Error;
-  end Log;
+  end Lg;
 
   -- Arbi,Arbi,Arbi->Arbi or Frac,Frac,Frac->Frac or
   -- Inte,Inte,Inte->Inte or Real,Real,Real->Real
