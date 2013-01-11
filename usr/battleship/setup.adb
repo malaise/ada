@@ -207,16 +207,11 @@ package body Setup is
             raise Utils.Abort_Game;
           end if;
         when Afpx.Fd_Event =>
-          -- Receive a completion or end message
-          if Abort_Game then
-            raise Utils.Abort_Game;
-          end if;
-          exit when Action = Done and then Partner_Done;
+          null;
         when Afpx.Mouse_Button =>
           if Handle_Click (Result.Field_No) then
             -- Setup is just done locally
             Communication.Send ("D");
-            exit when Action = Done and then Partner_Done;
             -- Waiting for partner completion of setup
             Afpx.Clear_Field (Afpx_Xref.Setup.Title);
             Afpx.Encode_Field (Afpx_Xref.Setup.Title, (0, 2), "Waiting");
@@ -227,6 +222,11 @@ package body Setup is
           -- Other event
           null;
       end case;
+      -- Received a completion or end message
+      if Abort_Game then
+        raise Utils.Abort_Game;
+      end if;
+      exit when Action = Done and then Partner_Done;
     end loop;
     if Utils.Debug_Setup then
       Utils.Debug ("End of setup");

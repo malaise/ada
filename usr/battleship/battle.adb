@@ -13,173 +13,11 @@ package body Battle is
   -- Default content of a grid
   Empty_Grid : constant Grit_Matrix := (others => (others => (False, False)));
 
-  -- Reception of a message from partner
-  Message : As.U.Asu_Us;
-  Abort_Game : Boolean;
-  procedure Receive (Msg : in String) is
-  begin
-
-    if Msg = "E" then
-      -- Aborted by partner
-      if Utils.Debug_Play then
-        Utils.Debug ("Partner has aborted game");
-      end if;
-      Abort_Game := True;
-    else
-      if Utils.Debug_Play then
-        Utils.Debug ("Received message: " & Msg);
-      end if;
-      Message := As.U.Tus (Msg);
-    end if;
-  end Receive;
-
-  -- Handle a shoot reply or a shoot
-  -- Return true when Reset
-  Shoot : Boolean;
-  Done : Boolean;
+  -- Local and opponent grids
   My_Grid, Op_Grid : Grit_Matrix;
+
+  -- Colors
   Black, Blue, Red : Con_Io.Effective_Colors;
-  function Handle_Message return Boolean;
-
-  -- Return true as long as play a new game
-  function Play (Server, Start : Boolean) return Boolean is
-    Cursor_Field : Afpx.Field_Range;
-    Cursor_Col   : Con_Io.Col_Range;
-    Insert       : Boolean;
-    Result       : Afpx.Result_Rec;
-    Redisplay    : Boolean;
-    Target : Utils.Coord;
-
-    use type Afpx.Keyboard_Key_List, Afpx.Field_Range;
-  begin
-    if Utils.Debug_Play then
-      Utils.Debug ("Start of play");
-    end if;
-
-    -- Init Afpx and colors
-    Afpx.Use_Descriptor (Afpx_Xref.Play.Dscr_Num);
-    Black := Con_Io.Color_Of ("Black");
-    Blue := Con_Io.Color_Of ("Blue");
-    Red := Con_Io.Color_Of ("Red");
-    Afpx.Set_Field_Activation (Afpx_Xref.Play.Win, False);
-    Afpx.Set_Field_Activation (Afpx_Xref.Play.Loose, False);
-
-    -- Init for Afpx Ptg
-    Cursor_Field := 1;
-    Cursor_Col := 0;
-    Insert := False;
-    Redisplay := False;
-
-    -- Init my grid and screen from Fleet
-    My_Grid := Empty_Grid;
-    Op_Grid := Empty_Grid;
-    for Ship in Fleet.Ship_List loop
-      for C in 1 .. Fleet.Length (Ship) loop
-        My_Grid(Fleet.My_Ships(Ship)(C).Row,
-                Fleet.My_Ships(Ship)(C).Col).Used := True;
-        Afpx.Set_Field_Colors (
-            Utils.Coord2Fld (Afpx_Xref.Play.Grid1, Fleet.My_Ships(Ship)(C)),
-            Background => Black);
-      end loop;
-    end loop;
-
-    -- Init reception callback
-    Shoot := Start;
-    Done := False;
-    Abort_Game := False;
-    Message.Set_Null;
-    Communication.Set_Callback (Receive'Access);
-
-    loop
-      -- Screen title and scales colors
-      Afpx.Reset_Field (Afpx_Xref.Play.Scale1, Reset_String => False);
-      Afpx.Reset_Field (Afpx_Xref.Play.Scale1 + 1, Reset_String => False);
-      Afpx.Reset_Field (Afpx_Xref.Play.Scale2, Reset_String => False);
-      Afpx.Reset_Field (Afpx_Xref.Play.Scale2 + 1, Reset_String => False);
-      Afpx.Clear_Field (Afpx_Xref.Play.Title);
-      if Done then
-        Afpx.Encode_Field (Afpx_Xref.Play.Title, (0, 2), "End");
-      elsif Shoot then
-        Afpx.Reset_Field (Afpx_Xref.Play.Title, Reset_Colors => False);
-        Afpx.Set_Field_Colors (Afpx_Xref.Play.Scale2, Foreground => Blue);
-        Afpx.Set_Field_Colors (Afpx_Xref.Play.Scale2 + 1, Foreground => Blue);
-      else
-        Afpx.Encode_Field (Afpx_Xref.Play.Title, (0, 0), "Waiting");
-        Afpx.Set_Field_Colors (Afpx_Xref.Play.Scale1, Foreground => Blue);
-        Afpx.Set_Field_Colors (Afpx_Xref.Play.Scale1 + 1, Foreground => Blue);
-      end if;
-
-      -- Buttons at end of game
-      Afpx.Set_Field_Activation (Afpx_Xref.Play.Restart,  Server and then Done);
-      Afpx.Set_Field_Activation (Afpx_Xref.Play.Exitgame, Server and then Done);
-
-      -- Get action
-      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Result, Redisplay);
-      case Result.Event is
-        when Afpx.Signal_Event =>
-          -- Aborted by signal
-          if Communication.Sig_Received then
-            raise Utils.Abort_Game;
-          end if;
-        when Afpx.Keyboard =>
-          if Result.Keyboard_Key = Afpx.Break_Key then
-            -- Aborted by Ctrl C
-            raise Utils.Abort_Game;
-          end if;
-        when Afpx.Fd_Event =>
-          -- Receive a shoot or reply or end message
-          if Abort_Game then
-            if Done then
-              if Utils.Debug_Play then
-                Utils.Debug ("End of play");
-              end if;
-              return False;
-            else
-              raise Utils.Abort_Game;
-            end if;
-          end if;
-          if Handle_Message then
-            -- Received a reset
-            return True;
-          end if;
-        when Afpx.Mouse_Button =>
-          -- Shoot or end of game choice
-          if Result.Field_No = Afpx_Xref.Play.Exitgame then
-            Communication.Send ("E");
-            if Utils.Debug_Play then
-              Utils.Debug ("End of play");
-            end if;
-            return False;
-          elsif Result.Field_No = Afpx_Xref.Play.Restart then
-            Communication.Send ("Z");
-            if Utils.Debug_Play then
-              Utils.Debug ("End of play");
-            end if;
-            return True;
-          end if;
-          -- Shoot?
-          if Shoot
-          and then not Done
-          and then Result.Field_No in Afpx_Xref.Play.Grid2
-                                   .. Afpx_Xref.Play.Grid2 + 99 then
-            Target := Utils.Fld2Coord (Afpx_Xref.Play.Grid2, Result.Field_No);
-            if Utils.Debug_Play then
-              Utils.Debug ("Shooting at " & Utils.Image (Target));
-            end if;
-            -- Clear message of last reply sent
-            Afpx.Clear_Field (Afpx_Xref.Play.My_Msg);
-            -- Send shoot request
-            Communication.Send ("S" & Utils.Image (Target));
-          end if;
-        when Afpx.Refresh =>
-          Redisplay := True;
-        when others =>
-          -- Other event
-          null;
-      end case;
-    end loop;
-
-  end Play;
 
   -- Center text in a field
   procedure Center (Fld : in Afpx.Field_Range;
@@ -299,36 +137,50 @@ package body Battle is
     end loop;
   end Show_Sunk;
 
-  -- Handle reception of shoot or shoot reply
-  function Handle_Message return Boolean is
+  -- Variables shared by Play and Receive
+  Abort_Game : Boolean;
+  Shoot : Boolean;
+  Shot : Boolean;
+  Done : Boolean;
+  Reset : Boolean;
+
+  -- Reception of a message from partner
+  procedure Receive (Msg : in String) is
     C : Utils.Coord;
     Cell : Cell_State;
     Reply : As.U.Asu_Us;
-    Result : Boolean;
+    Message : constant String (1 .. Msg'Length) := Msg;
   begin
     if Utils.Debug_Play then
-      Utils.Debug ("Handling message >" & Message.Image & "<");
+      Utils.Debug ("Handling message >" & Message & "<");
       if Shoot then
         Utils.Debug ("while shooting");
       else
         Utils.Debug ("while waiting");
       end if;
     end if;
-    if Message.Is_Null then
-      -- Other Fd than Autobus message
-      return False;
+    if Message = "E" then
+      -- Aborted by partner
+    if Utils.Debug_Play then
+      Utils.Debug ("Received message: " & Message);
+    end if;
+      if Utils.Debug_Play then
+        Utils.Debug ("Partner has aborted game");
+      end if;
+      Abort_Game := True;
+      return;
     end if;
 
-    if Message.Element (1) = 'S' then
+    if Message(1) = 'S' then
       -- Received a shoot request
-      if Shoot or else Message.Length /= 3 then
+      if Shoot or else Message'Length /= 3 then
         raise Protocol_Error;
       end if;
       -- Clear message of last reply received
       Afpx.Clear_Field (Afpx_Xref.Play.Op_Msg);
       -- Evaluate result
       begin
-        C := Utils.Value (Message.Slice (2, 3));
+        C := Utils.Value (Message(2 .. 3));
       exception
         when others =>
           if Utils.Debug_Play then
@@ -337,7 +189,7 @@ package body Battle is
           raise Protocol_Error;
       end;
       Cell := My_Grid(C.Row, C.Col);
-      Reply := As.U.Tus ("R" & Message.Slice (2, 3));
+      Reply := As.U.Tus ("R" & Message(2 .. 3));
       if Cell.Shot then
         -- Cell already shot
         Reply.Append ("M");
@@ -365,16 +217,16 @@ package body Battle is
       -- Reply
       Communication.Send (Reply.Image);
       Shoot := True;
-      Result := False;
+      Shot := False;
 
-    elsif Message.Element (1) = 'R' then
+    elsif Message(1) = 'R' then
       -- Received a shoot reply
-      if not Shoot then
+      if not Shoot or else not Shot then
         raise Protocol_Error;
       end if;
       -- Evaluate result
       begin
-        C := Utils.Value (Message.Slice (2, 3));
+        C := Utils.Value (Message(2 .. 3));
       exception
         when others =>
           if Utils.Debug_Play then
@@ -386,11 +238,11 @@ package body Battle is
       -- Show result if new shot
      if not Op_Grid (C.Row, C.Col).Shot then
        Op_Grid (C.Row, C.Col).Shot := True;
-       if Message.Element (4) = 'M' then
+       if Message(4) = 'M' then
          -- Miss
          Afpx.Set_Field_Colors (Utils.Coord2Fld (Afpx_Xref.Play.Grid2, C),
                                  Background => Blue);
-       elsif  Message.Element (4) = 'H' then
+       elsif  Message(4) = 'H' then
          -- Hit
          Afpx.Set_Field_Colors (Utils.Coord2Fld (Afpx_Xref.Play.Grid2, C),
                                  Background => Black);
@@ -404,28 +256,169 @@ package body Battle is
        end if;
      end if;
       -- Update message
-      Center (Afpx_Xref.Play.Op_Msg, Decode (Message.Image));
-      if Message.Element (4) = 'E' then
+      Center (Afpx_Xref.Play.Op_Msg, Decode (Message));
+      if Message(4) = 'E' then
         -- Lost
         Afpx.Set_Field_Activation (Afpx_Xref.Play.Win, True);
         Done := True;
       end if;
       Shoot := False;
-      Result := False;
 
-    elsif Message.Element (1) = 'Z' then
+    elsif Message(1) = 'Z' then
       -- Receive a reset
       if not Done then
         raise Protocol_Error;
       end if;
-      Result := True;
+      Reset := True;
     else
       raise Protocol_Error;
     end if;
     -- Done
-    Message.Set_Null;
-    return Result;
-  end Handle_Message;
+  end Receive;
+
+  -- Return true as long as play a new game
+  function Play (Server, Start : Boolean) return Boolean is
+    Cursor_Field : Afpx.Field_Range;
+    Cursor_Col   : Con_Io.Col_Range;
+    Insert       : Boolean;
+    Result       : Afpx.Result_Rec;
+    Redisplay    : Boolean;
+    Target : Utils.Coord;
+
+    use type Afpx.Keyboard_Key_List, Afpx.Field_Range;
+  begin
+    if Utils.Debug_Play then
+      Utils.Debug ("Start of play");
+    end if;
+
+    -- Init Afpx and colors
+    Afpx.Use_Descriptor (Afpx_Xref.Play.Dscr_Num);
+    Black := Con_Io.Color_Of ("Black");
+    Blue := Con_Io.Color_Of ("Blue");
+    Red := Con_Io.Color_Of ("Red");
+    Afpx.Set_Field_Activation (Afpx_Xref.Play.Win, False);
+    Afpx.Set_Field_Activation (Afpx_Xref.Play.Loose, False);
+
+    -- Init for Afpx Ptg
+    Cursor_Field := 1;
+    Cursor_Col := 0;
+    Insert := False;
+    Redisplay := False;
+
+    -- Init my grid and screen from Fleet
+    My_Grid := Empty_Grid;
+    Op_Grid := Empty_Grid;
+    for Ship in Fleet.Ship_List loop
+      for C in 1 .. Fleet.Length (Ship) loop
+        My_Grid(Fleet.My_Ships(Ship)(C).Row,
+                Fleet.My_Ships(Ship)(C).Col).Used := True;
+        Afpx.Set_Field_Colors (
+            Utils.Coord2Fld (Afpx_Xref.Play.Grid1, Fleet.My_Ships(Ship)(C)),
+            Background => Black);
+      end loop;
+    end loop;
+
+    -- Init reception callback
+    Shoot := Start;
+    Shot := False;
+    Done := False;
+    Reset := False;
+    Abort_Game := False;
+    Communication.Set_Callback (Receive'Access);
+
+    loop
+      -- Screen title and scales colors
+      Afpx.Reset_Field (Afpx_Xref.Play.Scale1, Reset_String => False);
+      Afpx.Reset_Field (Afpx_Xref.Play.Scale1 + 1, Reset_String => False);
+      Afpx.Reset_Field (Afpx_Xref.Play.Scale2, Reset_String => False);
+      Afpx.Reset_Field (Afpx_Xref.Play.Scale2 + 1, Reset_String => False);
+      Afpx.Clear_Field (Afpx_Xref.Play.Title);
+      if Done then
+        Afpx.Encode_Field (Afpx_Xref.Play.Title, (0, 2), "End");
+      elsif Shoot then
+        Afpx.Reset_Field (Afpx_Xref.Play.Title, Reset_Colors => False);
+        Afpx.Set_Field_Colors (Afpx_Xref.Play.Scale2, Foreground => Blue);
+        Afpx.Set_Field_Colors (Afpx_Xref.Play.Scale2 + 1, Foreground => Blue);
+      else
+        Afpx.Encode_Field (Afpx_Xref.Play.Title, (0, 0), "Waiting");
+        Afpx.Set_Field_Colors (Afpx_Xref.Play.Scale1, Foreground => Blue);
+        Afpx.Set_Field_Colors (Afpx_Xref.Play.Scale1 + 1, Foreground => Blue);
+      end if;
+
+      -- Buttons at end of game
+      Afpx.Set_Field_Activation (Afpx_Xref.Play.Restart,  Server and then Done);
+      Afpx.Set_Field_Activation (Afpx_Xref.Play.Exitgame, Server and then Done);
+
+      -- Get action
+      Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Result, Redisplay);
+      case Result.Event is
+        when Afpx.Signal_Event =>
+          -- Aborted by signal
+          if Communication.Sig_Received then
+            raise Utils.Abort_Game;
+          end if;
+        when Afpx.Keyboard =>
+          if Result.Keyboard_Key = Afpx.Break_Key then
+            -- Aborted by Ctrl C
+            raise Utils.Abort_Game;
+          end if;
+        when Afpx.Fd_Event =>
+          null;
+        when Afpx.Mouse_Button =>
+          -- Shoot or end of game choice
+          if Result.Field_No = Afpx_Xref.Play.Exitgame then
+            Communication.Send ("E");
+            if Utils.Debug_Play then
+              Utils.Debug ("End of play");
+            end if;
+            return False;
+          elsif Result.Field_No = Afpx_Xref.Play.Restart then
+            Communication.Send ("Z");
+            if Utils.Debug_Play then
+              Utils.Debug ("End of play");
+            end if;
+            return True;
+          end if;
+          -- Shoot?
+          if Shoot
+          and then not Shot
+          and then not Done
+          and then Result.Field_No in Afpx_Xref.Play.Grid2
+                                   .. Afpx_Xref.Play.Grid2 + 99 then
+            Target := Utils.Fld2Coord (Afpx_Xref.Play.Grid2, Result.Field_No);
+            if Utils.Debug_Play then
+              Utils.Debug ("Shooting at " & Utils.Image (Target));
+            end if;
+            -- Clear message of last reply sent
+            Afpx.Clear_Field (Afpx_Xref.Play.My_Msg);
+            -- Send shoot request
+            Communication.Send ("S" & Utils.Image (Target));
+            Shot := True;
+          end if;
+        when Afpx.Refresh =>
+          Redisplay := True;
+        when others =>
+          -- Other event
+          null;
+      end case;
+      -- Received a shoot or reply or end message
+      if Abort_Game then
+        if Done then
+          if Utils.Debug_Play then
+            Utils.Debug ("End of play");
+          end if;
+          return False;
+        else
+          raise Utils.Abort_Game;
+        end if;
+      end if;
+      if Reset then
+        -- Received a reset
+        return True;
+      end if;
+    end loop;
+
+  end Play;
 
 end Battle;
 
