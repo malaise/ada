@@ -51,6 +51,7 @@ private
   package Elt_List_Mng renames Elt_Dyn_List_Mng.Dyn_List;
   type List_Access is access Elt_List_Mng.List_Type;
   type Pool_Type is limited new Ada.Finalization.Limited_Controlled with record
+    -- So that Store is a function returning the Key
     Next_Key : Key_Access := new Key_Type'(Key_Type'First);
     Mutex : Mutex_Manager.Simple_Mutex;
     List : List_Access := new Elt_List_Mng.List_Type;

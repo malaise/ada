@@ -9,7 +9,7 @@ package Condition_Manager is
   -- Before waiting on a condition the user must get access to it
   -- By starting to wait the application automatically releases the exclusive
   --  access to the condition
-  
+
 
   -- Get access to the condition
   -- If delay is negative, wait until mutex is got
