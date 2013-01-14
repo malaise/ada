@@ -15,14 +15,13 @@ package Task_Mng is
   Min_Period : constant Duration := 0.1;
 
   -- At elaboration, the activity is not started
-  -- This call starts effectively the activity, eventually with a new period.
+  -- This call starts effectively the activity, possibly with a new period.
   -- If the activity if already started, its period is updated (next activation
   --  will occure at now + New_Period).
   procedure Start (New_Period : in Duration := Activation_Period);
 
   -- When the the task is started, stops it.
   -- If the task is already stopped, no effect.
-  -- If the task has been aborted, exception is raised.
   procedure Stop;
 
 private

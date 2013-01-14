@@ -1,12 +1,10 @@
 with Any_Def, Perpet, Virtual_Time, Smart_Reference;
 package Timers is
 
-  -- How to specify a timer, wait some seconds or until a specific time
+  -- How to specify a timer, wait some seconds, some days or until a
+  --  specific time
   type Delay_List is (Delay_Sec, Delay_Del, Delay_Exp);
 
-  -- May be returned by Wait_For
-  -- Do not use for timers
-  Infinite_Seconds : constant Duration := -1.0;
 
   -- How to specify a period for a timer
   subtype Period_Range is Duration range 0.0 .. Duration'Last;
@@ -17,45 +15,46 @@ package Timers is
   Default_Delta : constant Perpet.Delta_Rec := (0, 0.0);
 
   type Delay_Rec (Delay_Kind : Delay_List := Delay_Sec) is record
+    -- The reference clock of the timer (null for rela time)
     Clock  : Virtual_Time.Clock_Access := null;
+    -- The period of expirations (No_Period for single shot)
     Period : Period_Range := No_Period;
     case Delay_Kind is
       when Delay_Sec =>
+        -- After some seconds
         Delay_Seconds : Duration := Default_Timeout;
       when Delay_Del =>
+        -- After some days and seconds
         Delay_Delta : Perpet.Delta_Rec := Default_Delta;
       when Delay_Exp =>
+        -- At a some time
         Expiration_Time : Virtual_Time.Time;
     end case;
   end record;
-
-  -- Infinite delay. Do not use for timers
-  Infinite_Delay : constant Delay_Rec(Delay_Sec)
-                 := (Delay_Kind    => Delay_Sec,
-                     Clock         => null,
-                     Period        => No_Period,
-                     Delay_Seconds => Infinite_Seconds);
 
   -- Timer unique identifier
   type Timer_Id is tagged private;
   No_Timer : constant Timer_Id;
 
   -- Timer status, independant from the associated clock status
-  type Timer_Status is (Deleted,   -- Not created or single-shot expired
+  type Timer_Status is (Deleted,   -- Not created or deleted
+                                   --  or single-shot expired
                         Running,   -- Will expire
                         Suspended);-- Will expire but currently suspended
   function Status (Id : in Timer_Id) return Timer_Status;
   -- True if timer is not Deleted
   function Exists (Id : in Timer_Id) return Boolean;
 
-  -- Timer callback: called when the timer expires with two arguments:
-  --  the timer Id if the timer created
-  --  the Data provided at timer creation
-  -- Should return True if the timer expiration has to be reported by Expire
-  --  (and Event_Mng will report Timer_Event)
+  -- The user data registered with the timer and delivered to the callback
+  --  at (each) expiration
   subtype Timer_Data is Any_Def.Any;
   No_Data : constant Timer_Data := (Kind => Any_Def.None_Kind);
 
+  -- Timer callback: called when the timer expires, with two arguments:
+  --  - the timer Id of the timer created
+  --  - the Data provided at timer creation
+  -- Should return True if the timer expiration has to be reported by Expire
+  --  (and Event_Mng will report a Timer_Event)
   type Timer_Callback is access
         function (Id : in Timer_Id;
                   Data : in Timer_Data) return Boolean;
@@ -100,11 +99,20 @@ package Timers is
   -- The following operations are used by Event_Mng and X_Mng --
   -- They should not be used by "normal" applications         --
   --------------------------------------------------------------
+  -- May be returned by Wait_For. Do not use for timers
+  Infinite_Seconds : constant Duration := -1.0;
 
-  -- For each timer for which if expiration time/delay is reached
-  -- its callback is called
-  -- then, if periodical it is re-armed (and may expire)
-  --       if not it is deleted
+  -- Infinite delay. Do not use for timers
+  Infinite_Delay : constant Delay_Rec(Delay_Sec)
+                 := (Delay_Kind    => Delay_Sec,
+                     Clock         => null,
+                     Period        => No_Period,
+                     Delay_Seconds => Infinite_Seconds);
+
+  -- For each timer for which the expiration time/delay is reached
+  --  its callback is called
+  --  then, if periodical it is re-armed (and may expire)
+  --        if not it is deleted
   -- Return True if at least one timer has expired with a callback set
   --  and this callback has returned True or if at least one timer has
   --  expired with no callback set

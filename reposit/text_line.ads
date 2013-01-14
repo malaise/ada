@@ -92,7 +92,7 @@ package Text_Line is
   procedure Create_All (File : in out File_Type;
                         File_Name : in String);
 
-  -- Close the file then the fd (if not stdin)
+  -- Close the file then the fd (if not stdin/stdout/stderr)
   -- May raise Status_Error if File is not open
   procedure Close_All (File : in out File_Type);
 

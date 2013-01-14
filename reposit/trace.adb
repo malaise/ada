@@ -21,7 +21,8 @@ package body Trace is
     Created := True;
   end Create;
 
-  procedure Put (Message : in String; Date : in Boolean;
+  procedure Put (Message : in String;
+                 Date : in Boolean;
                  Flush : in Boolean := False) is
   begin
     if not Activated then

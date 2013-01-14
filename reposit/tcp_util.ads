@@ -1,5 +1,6 @@
 -- Automatically connect, re-connect, accept, handle sending overflow and
 --  receive data on a TCP socket
+-- Also send and receive on a UDP/IPM socket
 with As.U, Socket;
 package Tcp_Util is
 

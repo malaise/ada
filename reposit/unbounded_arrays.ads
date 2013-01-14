@@ -1,4 +1,4 @@
--- Unbounded array of element
+-- Unbounded array of elements
 with Ada.Finalization;
 generic
   type Element_Type is private;
@@ -6,14 +6,16 @@ generic
 
   -- Each time a re-allocation is needed, increment Length by
   --   Nb_To_Add + Growth_Offset + Curr_Length / Growth_Factor
-  -- so that some further growths will not lead to re-alloc
+  -- so that some further growths will not lead to too many re-allocations
   Growth_Factor : Natural := 64;
   Growth_Offset : Natural := 32;
 
 package Unbounded_Arrays is
 
+  -- Access to array
   type Array_Access is access all Element_Array;
 
+  -- the unbounded array of elements
   type Unbounded_Array is tagged private;
   subtype Unb_Array is Unbounded_Array;
 
@@ -129,7 +131,6 @@ private
      (Ada.Finalization.Controlled with Reference => Null_Array'Access,
                                        Last      => 0);
   Null_Unb_Array : constant Unbounded_Array := Null_Unbounded_Array;
-
 
 end Unbounded_Arrays;
 

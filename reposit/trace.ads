@@ -4,8 +4,9 @@ package Trace is
   -- Traces are activated at start-up
   procedure Activate (On : in Boolean := True);
 
-  -- Traces the number of call and the message, if activated
-  procedure Put (Message : in String; Date : in Boolean;
+  -- If activated, trace the number of call, possibly the date, and the message
+  procedure Put (Message : in String;
+                 Date : in Boolean;
                  Flush : in Boolean := False);
 
 end Trace;

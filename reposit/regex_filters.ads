@@ -1,5 +1,6 @@
 -- Set a list of regex expressions and success conditions
 -- Check a string versus the citeria one after the other
+with Ada.Finalization;
 with Dynamic_List, Regular_Expressions;
 package Regex_Filters is
 
@@ -13,7 +14,7 @@ package Regex_Filters is
 
   -- Check Str versus first Criteria.
   -- Success is if it matches and then Match was set to True for this Criteria,
-  --  or if does not match and Match was set to False for this Criteria.
+  --  or if it does not match and Match was set to False for this Criteria.
   -- If success, then go to next criteria otherwise return False
   -- Return True is success for all criterias or no criteria defined
   function Check (Str : String; Filter : in Regex_Filter) return Boolean;
@@ -24,7 +25,7 @@ package Regex_Filters is
 private
   type Pattern_Access is access Regular_Expressions.Compiled_Pattern;
 
-  type Filter_Cell is record
+  type Filter_Cell is new Ada.Finalization.Controlled with record
     Pattern : Pattern_Access;
     Match : Boolean;
   end record;
@@ -32,7 +33,11 @@ private
   package Filter_Dyn_List_Mng is new Dynamic_List (Filter_Cell);
   package Filter_List_Mng renames Filter_Dyn_List_Mng.Dyn_List;
 
-  type Regex_Filter is new Filter_List_Mng.List_Type with null record;
+  type Regex_Filter is limited new Ada.Finalization.Limited_Controlled
+                               with record
+    List :  Filter_List_Mng.List_Type;
+  end record;
+  overriding procedure Finalize (Filter : in out Regex_Filter);
 
 end Regex_Filters;
 

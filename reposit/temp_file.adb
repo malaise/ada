@@ -22,13 +22,7 @@ package body Temp_File  is
   -- If the link fails another way, it's a problem of file system, directory...
 
   -- Remove a file if possible, no error
-  procedure Remove (File_Name : in String) is
-    Dummy : Boolean;
-    pragma Unreferenced (Dummy);
-  begin
-    Dummy := Sys_Calls.Unlink (File_Name);
-  end Remove;
-
+  procedure Remove (File_Name : in String) renames Sys_Calls.Unlink;
 
   -- Possible suffixes, tried one after another
   subtype Suffix_Range is Natural range 000 .. 999;
@@ -64,6 +58,7 @@ package body Temp_File  is
         -- Creation failed, bad
         raise Invalid_Dir;
     end;
+
     -- From now we will need to remove Tfn in any case
     -- Maybe several competitors will try to remove the same Tmp_tmp
     --  but what is important is that at least one (the first) succeeds

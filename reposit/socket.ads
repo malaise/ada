@@ -220,7 +220,7 @@ package Socket is
                Host   : in Host_Id;
                Port   : in Port_Num);
 
-  -- Check the connection status, espcially after an asynchronous
+  -- Check the connection status, especially after an asynchronous
   --  connect (Set_Destination on a non Blocking Tcp socket)
   function Is_Connected (Socket : Socket_Dscr) return Boolean;
 
@@ -250,7 +250,7 @@ package Socket is
   -- Must have been set by either
   -- * Set Destination
   -- * Receive (Set_To_Reply => True) in Udp
-  -- * Accept in Tcp
+  -- * Accept_Connection in Tcp
   -- May raise Soc_Dest_Err is destination is not already set
   function Get_Destination_Host (Socket : Socket_Dscr) return Host_Id;
   function Get_Destination_Port (Socket : Socket_Dscr) return Port_Num;

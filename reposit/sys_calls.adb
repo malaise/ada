@@ -78,8 +78,7 @@ package body Sys_Calls is
     return C_System (Command4C'Address);
   end Call_System;
 
-
-  -- Rename/move a file
+  -- Remove a file
   function Unlink (File_Name : String) return Boolean is
     function C_Unlink (Pathname: System.Address) return C_Types.Int;
     pragma Import (C, C_Unlink, "unlink");
@@ -96,6 +95,7 @@ package body Sys_Calls is
     Dummy := Unlink (File_Name);
   end Unlink;
 
+  -- Rename/move a file
   function Rename (Src, Dest : String) return Boolean is
     function C_Rename (Oldpath, Newpath : System.Address) return C_Types.Int;
     pragma Import (C, C_Rename, "rename");

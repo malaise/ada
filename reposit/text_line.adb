@@ -375,22 +375,9 @@ package body Text_Line is
   end Close_All;
 
   overriding procedure Finalize (File : in out File_Type) is
-    Fd : Sys_Calls.File_Desc;
-    use type Sys_Calls.File_Desc;
   begin
     if File.Acc /= null then
-      Fd := File.Acc.Fd;
-      Close (File);
-      if Fd /= Sys_Calls.Stdin
-      and then Fd /= Sys_Calls.Stdout
-      and then Fd /= Sys_Calls.Stderr then
-        begin
-          Sys_Calls.Close (Fd);
-        exception
-          when others =>
-            null;
-        end;
-      end if;
+      Close_All (File);
     end if;
   end Finalize;
 

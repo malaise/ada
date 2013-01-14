@@ -47,8 +47,6 @@ procedure Pexec is
     return True;
   end Execute;
 
-  procedure My_Recurs is new Recurs (Do_In_Dir => Execute);
-
 begin
 
   -- Parse command line
@@ -57,12 +55,13 @@ begin
 
   -- Save current dir, Recurs, restore current dir
   Initial_Dir := As.U.Tus (Directory.Get_Current);
-  My_Recurs (Name_Of_Dir      => not No_Name_Of_Dir,
-             In_Current       => not Not_In_Current,
-             First_Level_Only => First_Level_Only,
-             Leaves_Only      => Leaves_Only,
-             Stop_On_Error    => not No_Stop_On_Error,
-             Follow_Links     => Follow_Links);
+  Recurs (Do_In_Dir        => Execute'Access,
+          Name_Of_Dir      => not No_Name_Of_Dir,
+          In_Current       => not Not_In_Current,
+          First_Level_Only => First_Level_Only,
+          Leaves_Only      => Leaves_Only,
+          Stop_On_Error    => not No_Stop_On_Error,
+          Follow_Links     => Follow_Links);
   Restore;
 
 exception

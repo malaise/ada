@@ -21,7 +21,7 @@ package body Regex_Filters is
     Regular_Expressions.Compile (Cell.Pattern.all, Ok, Criteria);
     if Ok then
       -- Insert if Ok
-      Filter.Insert(Cell);
+      Filter.List.Insert(Cell);
     else
       -- Roll back, free regex pattern
       Regular_Expressions.Free(Cell.Pattern.all);
@@ -44,11 +44,11 @@ package body Regex_Filters is
     Match : Boolean;
   begin
     -- True if empty list
-    if Filter.Is_Empty then
+    if Filter.List.Is_Empty then
       return True;
     end if;
     -- Make a copy of list container, just for scanning
-    Loc_List.Unchecked_Assign(Filter_List_Mng.List_Type(Filter));
+    Loc_List.Unchecked_Assign(Filter.List);
     -- Rewind
     Loc_List.Move_To(Number => 0, From_Current => False);
 
@@ -79,26 +79,25 @@ package body Regex_Filters is
 
 
   procedure Clear_Filter (Filter : in out Regex_Filter) is
-    Cell : Filter_Cell;
   begin
     -- Done if empty list
-    if Filter.Is_Empty then
+    if Filter.List.Is_Empty then
       return;
     end if;
 
     -- Rewind
-    Filter.Rewind;
+    Filter.List.Rewind;
     -- Loop of Get
     loop
-      Filter.Get(Cell);
-      -- Free regex pattern
-      Regular_Expressions.Free(Cell.Pattern.all);
-      Free(Cell.Pattern);
-      exit when Filter.Is_Empty;
+      Filter.List.Delete;
+      exit when Filter.List.Is_Empty;
     end loop;
-    -- Delete the list itself
-    Filter.Delete_List;
   end Clear_Filter;
+
+  overriding procedure Finalize (Filter : in out Regex_Filter) is
+  begin
+    Clear_Filter (Filter);
+  end Finalize;
 
 end Regex_Filters;
 

@@ -1,6 +1,6 @@
 -- Handle the file selection screen
 -- Using the provided Afpx descriptor
--- Fills text input field with the provided Current_File (if not too long)
+-- Fill text input field with the provided Current_File
 -- Display title according to For_Read and the provided titles
 --  If titles are empty, display default title
 -- Allow selection (in Get field) of a non existing file if not For_Read

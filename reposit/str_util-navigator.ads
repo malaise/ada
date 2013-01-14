@@ -24,8 +24,9 @@ package Str_Util.Navigator is
                       Offset : Integer := 0) return Boolean;
 
   -- Move forward or backwards
-  -- If Current + By is out the string, raise May raise Out_Of_Bounds if Check
-  --  and move out of the string
+  -- If Current + By is out of the string,
+  --  if Check then raises Out_Of_Bounds
+  --  otherwise move out of the string
   procedure Move (Navig : in out Navigator_Type;
                   By    : in Integer := 1;
                   Check : in Boolean := False);
@@ -50,7 +51,7 @@ package Str_Util.Navigator is
   -- Return the String (from 1 to Length) stored in the Navigator
   function Image (Navig  : Navigator_Type) return String;
 
-  -- Raised when Check is set and moving/look out of string
+  -- Raised when Check is set and moving/looking out of string
   Out_Of_Bounds : exception;
 
 private

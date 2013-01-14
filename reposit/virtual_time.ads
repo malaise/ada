@@ -54,7 +54,7 @@ package Virtual_Time is
   -- May raise Vtime_Error is current speed is 0.0
   function Reference_Time_Of (A_Clock : Clock;
                               Virtual_Time : Time) return Time;
-  -- Return Virtual_Time is A_Clock is null
+  -- Return Virtual_Time if A_Clock is null
   function Reference_Time_Of (A_Clock : Clock_Access;
                               Virtual_Time : Time) return Time;
 

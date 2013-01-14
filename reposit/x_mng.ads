@@ -38,7 +38,7 @@ package X_Mng is
   -- For X_Draw_Points
   type Byte_Array is array (Positive range <>) of Byte;
 
-  -- Fir X_Fill_Area
+  -- For X_Fill_Area
   type Natural_Array is array (Positive range <>) of Natural;
 
   -- Mouse buttons
@@ -60,13 +60,13 @@ package X_Mng is
 
   ----- LINE MANAGEMENT -----
 
-  -- Initialise connection to X server on a host
+  -- Initialise the connection to X server on a host and define colors
   --  this call should be done only once, and before any other call
   procedure X_Initialise (Server_Name    : in String);
   procedure X_Initialise (Server_Name    : in String;
                           Colors         : in Color_Definition);
 
-  -- Opens a line on the host
+  -- Open a line on the host
   -- screen_id is integer, (a negative value for the default screen)
   -- row and column are the coordonates of the upper-left corner of the
   --  window in the screen (in characters)
@@ -77,7 +77,7 @@ package X_Mng is
   procedure X_Open_Line(Line_Definition : in Line_Definition_Rec;
                         Line_Id         : in out Line);
 
-  -- Closes a line
+  -- Close a line
   -- The line_id is the token, previously given by open_line
   procedure X_Close_Line(Line_Id : in out Line);
 
@@ -85,10 +85,10 @@ package X_Mng is
   -- If a program wants to open several lines, there are two options:
   -- - One task per line, each task calls X_Wait_Event and receives its
   --   events
-  -- - One taks (or main) opens several lines but only one is active at a
+  -- - One task (or main) opens several lines but only one can be active at a
   --   time. In this case the program must suspend and not use the previous
-  --   line, then open and use the new line, then close the new line
-  --   then resume and use the first line.
+  --   line, then open and use the new line, then close or suspend the new line
+  --   then resume and use a previous line.
   procedure X_Suspend (Line_Id : in out Line);
   procedure X_Resume  (Line_Id : in out Line);
   function  X_Is_Suspended  (Line_Id : Line) return Boolean;
@@ -99,10 +99,10 @@ package X_Mng is
   procedure X_Set_Line_Name (Line_Id : in Line;
                              Line_Name : in String);
 
-  -- Flushes all the outputs of all the lines on the host
+  -- Flush all the outputs of all the lines on the host
   procedure X_Flush(Line_Id : in Line);
 
-  -- Clears a line
+  -- Clear a line
   -- The line_id is the token, previously given by open_line
   -- The character attributes are lost.
   -- A flush is done
@@ -110,7 +110,7 @@ package X_Mng is
 
   ----- PUT and ATTRIBUTE MANAGEMENT -----
 
-  -- Sets the attributes for a further put in the same window
+  -- Set the attributes for a further put in the same window
   -- The line_id is the token, previously given by open_line
   -- The paper and ink are color numbers (from 0 to 13)
   -- The attributes are True or False
@@ -120,35 +120,35 @@ package X_Mng is
                              Underline   : in Boolean := False;
                              Inverse     : in Boolean := False);
 
-  -- Sets the xor mode or a further put in the same window
+  -- Set the xor mode or a further put in the same window
   -- The line_id is the token, previously given by open_line
   -- if Xor_More is set, all further puts and drawings will be in xor
   procedure X_Set_Xor_Mode(Line_Id     : in Line;
                            Xor_Mode    : in Boolean);
 
 
-  -- Writes a char with the attributes previously set
+  -- Write a char with the attributes previously set
   -- The line_id is the token, previously given by open_line
   -- The character is the one to be written
   procedure X_Put_Char(Line_Id : in Line;
                        Car : in Character;
                        Row, Column : in Natural);
 
-  -- Writes a char with the attributes previously set
+  -- Write a char with the attributes previously set
   -- The line_id is the token, previously given by open_line
   -- The character is the one to be written
   procedure X_Put_Char(Line_Id : in Line;
                        Car : in Byte;
                        Row, Column : in Natural);
 
-  -- Writes a char with the attributes previously set
+  -- Write a char with the attributes previously set
   -- The line_id is the token, previously given by open_line
   -- The character is the one to be written
   procedure X_Overwrite_Char(Line_Id : in Line;
                              Car : in Byte;
                              Row, Column : in Natural);
 
-  -- Writes a string with the attributes previously set
+  -- Write a string with the attributes previously set
   --  at a specified position
   -- The line_id is the token, previously given by open_line
   -- The string is the one to be written
@@ -157,7 +157,7 @@ package X_Mng is
                          Str         : in String;
                          Row, Column : in Natural);
 
-  -- Writes a char on a line with specified characteristics
+  -- Write a char on a line with specified characteristics
   -- The line_id is the token, previously given by open_line
   -- The row and column are in characters, relative to the window
   -- The character is the one to be written
@@ -171,7 +171,7 @@ package X_Mng is
                                   Underline   : in Boolean := False;
                                   Inverse     : in Boolean := False);
 
-  -- Draws a rectangle (width * height) at position
+  -- Draw a rectangle (width * height) at position
   --  with current foreground color.
   -- New position is updated to lower-right square of rectangle.
   procedure X_Draw_Area(Line_Id : in Line;
@@ -180,7 +180,7 @@ package X_Mng is
 
   ----- GRAPHIC MANAGEMENT -----
 
-  -- Writes a char on a line with current characteristics
+  -- Write a char on a line with current characteristics
   --  attributes and xor mode
   -- The line_id is the token, previously given by open_line
   -- The current row and column are not affected
@@ -272,7 +272,7 @@ package X_Mng is
                          Timeout : in out Timers.Delay_Rec;
                          Kind : out Event_Kind);
 
-  -- Reads the position on Tid in Row/Col or X/Y
+  -- Read the position on Tid in Row/Col or X/Y
   -- The line_id must be the one given by wait_event
   -- Button can be left, middle or right
   -- row and column are the position of the "finger" on the Tid
@@ -282,7 +282,7 @@ package X_Mng is
                        Button  : out Button_List;
                        Row, Column : out Integer);
 
-  -- Reads a key of a sequence
+  -- Read a key of a sequence
   -- The line_id must be the one given by wait_event
   -- Control if control key was on
   -- Shift if Code and shift key was on
@@ -313,8 +313,7 @@ package X_Mng is
   function X_Get_Selection (Line_Id : Line; Max_Len : Natural) return String;
 
   ----- BELL -----
-  -- This procedures rings a bell at 400Hz for 100ms and repeats it the number
-  -- specified.
+  -- Ring a bell at 400Hz for 100ms and repeats it the number specified.
   procedure X_Bell (Line_Id : in Line; Repeat : in Bell_Repeat);
 
 
