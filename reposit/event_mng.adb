@@ -328,11 +328,11 @@ package body Event_Mng is
       -- Compute next timeout
       Next_Exp := Timers.Next_Expiration (Final_Exp);
       if Next_Exp = Timers.Infinite_Expiration then
-        Timeout_Val := Timeval.Infinite_C_Timeout;
+        Timeout_Val := Timeval.Infinite_Timeout;
       else
         Now := Virtual_Time.Current_Time (Delay_Spec.Clock);
         if Now < Next_Exp.Time then
-          Timeout_Val := Timeval.To_C_Timeout (Next_Exp.Time - Now);
+          Timeout_Val := Timeval.Delta2Timeout (Next_Exp.Time - Now);
         else
           Timeout_Val := (0, 0);
         end if;

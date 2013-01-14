@@ -136,11 +136,11 @@ package body Dispatch is
       -- Compute min of Exp and timers, set timeout in Ms
       Select_Exp := Timers.Next_Expiration (Exp);
       if Select_Exp = Timers.Infinite_Expiration then
-        Timeout_Val := Timeval.Infinite_C_Timeout;
+        Timeout_Val := Timeval.Infinite_Timeout;
       else
         Now := Ada.Calendar.Clock;
         if Now < Select_Exp.Time then
-          Timeout_Val := Timeval.To_C_Timeout (Select_Exp.Time - Now);
+          Timeout_Val := Timeval.Delta2Timeout (Select_Exp.Time - Now);
         else
           Timeout_Val := (0, 0);
         end if;

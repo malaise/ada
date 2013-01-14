@@ -8,7 +8,8 @@ package body Timeval is
   Dur_Day : constant Perpet.Natural_Duration
           := Ada.Calendar.Day_Duration'Last;
 
-  function To_C_Timeout (Delta_Date : Perpet.Delta_Rec) return C_Types.Timeval_T is
+  function Delta2Timeout (Delta_Date : Perpet.Delta_Rec)
+                         return C_Types.Timeval_T is
     Result : C_Types.Timeval_T;
   begin
     -- Split Delta.Secs into Result.Tv_Sec and Result.Tv_Usec
@@ -21,9 +22,9 @@ package body Timeval is
   exception
     when Constraint_Error =>
       raise Timeval_Error;
-  end To_C_Timeout;
+  end Delta2Timeout;
 
-  function To_Delta (Timeout : C_Types.Timeval_T) return Perpet.Delta_Rec is
+  function Timeout2Delta (Timeout : C_Types.Timeval_T) return Perpet.Delta_Rec is
     Result : Perpet.Delta_Rec;
   begin
     -- Split Timeout.Tv_Sec into Result.Days and Result.Secs
@@ -37,7 +38,7 @@ package body Timeval is
   exception
     when Constraint_Error =>
       raise Timeval_Error;
-  end To_Delta;
+  end Timeout2Delta;
 
   function Image (Timeout : C_Types.Timeval_T) return String is
   begin
@@ -48,5 +49,6 @@ package body Timeval is
            & Normal (Integer (Timeout.Tv_Usec), 6, Gap => '0');
     end if;
   end Image;
+
 end Timeval;
 
