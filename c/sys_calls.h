@@ -7,48 +7,16 @@
 #define OK  (0)
 #define ERROR  (-1)
 
-typedef struct {
-  int tm_sec;       /* Seconds after the minute [0-60]   */
-  int tm_min;       /* Minutes after the hour [0-59]     */
-  int tm_hour;      /* Hours since midnight [0-23]       */
-  int tm_mday;      /* Day of the month [1-31]           */
-  int tm_mon;       /* Months since January [1-12] *******/
-  int tm_year;      /* Years since 1900                  */
-} my_tm_t;
+/* When not specified these operations are imported by Sys_Calls */
 
-extern int time_to_tm (const time_t *the_time_p, my_tm_t *my_tm_p);
+/* Get errno */
+extern int get_errno (void);
 
-extern long gmt_offset (void);
-
-
-extern int set_blocking (int fd, boolean blocking);
-extern int get_blocking (int fd);
-
-
-#define NORMAL 0
-#define NOECHO 1
-#define CHAR   2
-#define CHARNO 3
-#define ASYNC  4
-#define TRANSP 5
-
-extern int set_tty_attr (int fd, int mode);
-
-
-#define NONE   (-2)
-#define CLOSED (-3)
-/* May return ERROR, NONE or CLOSED */
-extern int get_immediate (int fd);
-
-
-extern int read_dir (DIR *dir, char *name);
-
-
+/* Environment nb variables and get a variable */
 extern int env_len (void);
-
 extern char * env_val(int i);
 
-
+/* Fstat on a fd, lstat on a file path */
 typedef struct {
   int mode;
   int nlink;
@@ -57,14 +25,56 @@ typedef struct {
   int mtime;
   off_t size;
 } simple_stat;
-
+extern int fd_stat(int fd, simple_stat *simple_stat_struct);
 extern int file_stat(const char *path, simple_stat *simple_stat_struct);
 
-extern int fd_stat(int fd, simple_stat *simple_stat_struct);
+/* Time to struct tm */
+typedef struct {
+  int tm_sec;       /* Seconds after the minute [0-60]   */
+  int tm_min;       /* Minutes after the hour [0-59]     */
+  int tm_hour;      /* Hours since midnight [0-23]       */
+  int tm_mday;      /* Day of the month [1-31]           */
+  int tm_mon;       /* Months since January [1-12] *******/
+  int tm_year;      /* Years since 1900                  */
+} my_tm_t;
+extern int time_to_tm (const time_t *the_time_p, my_tm_t *my_tm_p);
 
+/* Current offset of local time v.s. GMT */
+extern long gmt_offset (void);
+
+/* Get user name from uid and get uid and gid from user name */
+/* Return name len on success and ERROR (-1) on error (not found) */
+extern int get_user_name_of_uid (int uid, char *name);
+/* Return 0 on success and ERROR (-1) on error (not found) */
+extern int get_ids_of_user_name (char *name, int *uid, int *gid);
+
+/* Get group name from gid and get gid from group name */
+/* Return name len on success and ERROR (-1) on error (not found) */
+extern int get_group_name_of_gid (int gid, char *name);
+/* Return 0 on success and ERROR (-1) on error (not found) */
+extern int get_gid_of_group_name (char *name, int *gid);
+
+/* Set TTY mode */
+#define NORMAL 0
+#define NOECHO 1
+#define CHAR   2
+#define CHARNO 3
+#define ASYNC  4
+#define TRANSP 5
+extern int set_tty_attr (int fd, int mode);
+
+/* Set/get blocking mode */
+extern int set_blocking (int fd, boolean blocking);
+extern int get_blocking (int fd);
+
+/* Get char without waiting for Lf */
+#define NONE   (-2)
+#define CLOSED (-3)
+/* May return ERROR, NONE or CLOSED */
+extern int get_immediate (int fd);
+
+/* Create/open/read/write/close/pipe a fd */
 extern int fd_create (const char *path);
-
-extern int dir_create (const char *path);
 
 #define READ_ONLY  0
 #define WRITE_ONLY 1
@@ -75,9 +85,9 @@ extern int fd_int_read (int fd, void *buffer, int nbytes);
 
 extern int fd_int_write (int fd, void *buffer, int nbytes);
 
+extern int fd_close (int fd);
 extern int fd_pipe (int *fd1, int *fd2);
 
-extern int fd_close (int fd);
 
 /* Fork. >0 : father, pid of child, <0 : child, -pid, 0 : error */
 extern int procreate (void);
@@ -94,22 +104,12 @@ extern void mutate (char * const program, int len);
 /* Pid is set if not ERROR nor NO_MORE, Code if EXITED or SIGNALED */
 extern void next_dead (int *cause, int *pid, int *code);
 
-/* Get user name from uid and get uid and gid from user name */
-/* Return name len on success and ERROR (-1) on error (not found) */
-extern int get_user_name_of_uid (int uid, char *name);
-/* Return 0 on success and ERROR (-1) on error (not found) */
-extern int get_ids_of_user_name (char *name, int *uid, int *gid);
+/* Imported by Directory: Create a directory */
+extern int dir_create (const char *path);
+/* Imported by Directory: Read a directory entry */
+extern int read_dir (DIR *dir, char *name);
 
-/* Get group name from gid and get gid from group name */
-/* Return name len on success and ERROR (-1) on error (not found) */
-extern int get_group_name_of_gid (int gid, char *name);
-/* Return 0 on success and ERROR (-1) on error (not found) */
-extern int get_gid_of_group_name (char *name, int *gid);
-
-/* Get errno */
-extern int get_errno (void);
-
-/* Long shift */
+/* Imported by Bit_Ops: Long shift */
 extern unsigned long shl_long (unsigned long l, int bits);
 extern unsigned long shr_long (unsigned long l, int bits);
 #endif

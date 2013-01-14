@@ -16,6 +16,71 @@
 
 #include "sys_calls.h"
 
+/* Get errno */
+extern int get_errno (void) {
+  return errno;
+}
+
+/* Environment nb variables and get a variable */
+extern char **environ;
+extern int env_len (void) {
+  int i;
+
+  i = 0;
+  while (environ[i] != NULL) {
+    i++;
+  }
+  return i;
+}
+
+extern char * env_val(int i) {
+
+  if (i <= 0) {
+    return NULL;
+  } else {
+    return environ[i - 1];
+  }
+
+}
+
+/* Fstat on a fd */
+extern int fd_stat(int fd, simple_stat *simple_stat_struct) {
+
+  struct stat stat_struct;
+
+  if (fstat (fd, &stat_struct) != 0) {
+    return (-1);
+  }
+
+  simple_stat_struct->mode = stat_struct.st_mode;
+  simple_stat_struct->mtime = stat_struct.st_mtime;
+  simple_stat_struct->size = stat_struct.st_mtime;
+
+  return OK;
+
+}
+
+/* Lstat on a file path */
+extern int file_stat(const char *path, simple_stat *simple_stat_struct) {
+
+  struct stat stat_struct;
+
+  if (lstat (path, &stat_struct) != 0) {
+    return (-1);
+  }
+
+  simple_stat_struct->mode  = stat_struct.st_mode;
+  simple_stat_struct->nlink = stat_struct.st_nlink;
+  simple_stat_struct->uid   = stat_struct.st_uid;
+  simple_stat_struct->gid   = stat_struct.st_gid;
+  simple_stat_struct->mtime = stat_struct.st_mtime;
+  simple_stat_struct->size = stat_struct.st_size;
+
+  return OK;
+
+}
+
+/* Time to struct tm */
 extern int time_to_tm (const time_t *the_time_p, my_tm_t *my_tm_p) {
 
   struct tm *tm_p;
@@ -35,6 +100,7 @@ extern int time_to_tm (const time_t *the_time_p, my_tm_t *my_tm_p) {
   }
 }
 
+/* Current offset of local time v.s. GMT */
 extern long gmt_offset (void) {
 
   time_t ttime;
@@ -46,39 +112,64 @@ extern long gmt_offset (void) {
   return ltime.tm_gmtoff;
 }
 
-extern int get_blocking (int fd) {
-   int flg;
+/* Get user name from uid and get uid and gid from user name */
+/* Return len on success and ERROR (-1) on error (not found) */
+#define BUF_SIZE 1024
+extern int get_user_name_of_uid (int uid, char *name) {
+  int res;
+  struct passwd pwbuf, *ppasswd;
+  char buf[BUF_SIZE];
 
-  flg = fcntl (fd, F_GETFL, 0);
-  if (flg < 0) {
-    return ERROR;
-  }
-
-  return ((flg & O_NONBLOCK) == 0);
+  /* Find entry matching uid */
+  res = getpwuid_r((uid_t) uid, &pwbuf, buf, BUF_SIZE, &ppasswd);
+  if (res != 0) return ERROR;
+  strcpy (name, pwbuf.pw_name);
+  return strlen (pwbuf.pw_name);
 }
 
-extern int set_blocking (int fd, boolean blocking) {
-  int flg;
+/* Return 0 on success and ERROR (-1) on error (not found) */
+extern int get_ids_of_user_name (char *name, int *uid, int *gid) {
+  int res;
+  struct passwd pwbuf, *ppasswd;
+  char buf[BUF_SIZE];
 
-  flg = fcntl (fd, F_GETFL, 0);
-  if (flg < 0) {
-    return ERROR;
-  }
-
-  if (blocking) {
-    flg &= ~O_NONBLOCK;
-  } else {
-    flg |= O_NONBLOCK;
-  }
-
-  if (fcntl (fd, F_SETFL, flg)  == -1) {
-    return ERROR;
-  }
-
+  /* Find entry matching name */
+  res = getpwnam_r(name, &pwbuf, buf, BUF_SIZE, &ppasswd);
+  if (res != 0) return ERROR;
+  *uid = (int)pwbuf.pw_uid;
+  *gid = (int)pwbuf.pw_gid;
   return OK;
-
 }
 
+
+/* Get group name from gid and get gid from group name */
+/* Return len on success and ERROR (-1) on error (not found) */
+extern int get_group_name_of_gid (int gid, char *name) {
+  int res;
+  struct group grpbuf, *pgroup;
+  char buf[BUF_SIZE];
+
+  /* Find entry matching uid */
+  res = getgrgid_r((gid_t) gid, &grpbuf, buf, BUF_SIZE, &pgroup);
+  if (res != 0) return ERROR;
+  strcpy (name, grpbuf.gr_name);
+  return strlen (grpbuf.gr_name);
+}
+
+/* Return 0 on success and ERROR (-1) on error (not found) */
+extern int get_gid_of_group_name (char *name, int *gid) {
+  int res;
+  struct group grpbuf, *pgroup;
+  char buf[BUF_SIZE];
+
+  /* Find entry matching uid */
+  res = getgrnam_r(name, &grpbuf, buf, BUF_SIZE, &pgroup);
+  if (res != 0) return ERROR;
+  *gid = grpbuf.gr_gid;
+  return OK;
+}
+
+/* Set TTY mode */
 extern int set_tty_attr (int fd, int mode) {
 
   struct termios termattr;
@@ -147,6 +238,41 @@ extern int set_tty_attr (int fd, int mode) {
   return set_blocking (fd, set_blk);
 }
 
+/* Set/get blocking mode */
+extern int set_blocking (int fd, boolean blocking) {
+  int flg;
+
+  flg = fcntl (fd, F_GETFL, 0);
+  if (flg < 0) {
+    return ERROR;
+  }
+
+  if (blocking) {
+    flg &= ~O_NONBLOCK;
+  } else {
+    flg |= O_NONBLOCK;
+  }
+
+  if (fcntl (fd, F_SETFL, flg)  == -1) {
+    return ERROR;
+  }
+
+  return OK;
+
+}
+
+extern int get_blocking (int fd) {
+   int flg;
+
+  flg = fcntl (fd, F_GETFL, 0);
+  if (flg < 0) {
+    return ERROR;
+  }
+
+  return ((flg & O_NONBLOCK) == 0);
+}
+
+/* Get char without waiting for Lf */
 extern int get_immediate (int fd) {
 
   ssize_t n;
@@ -169,92 +295,13 @@ extern int get_immediate (int fd) {
   }
 }
 
-extern int read_dir (DIR *dir, char *name) {
-
-  struct dirent * dir_ent;
-
-  dir_ent = readdir (dir);
-  if (dir_ent == NULL) {
-    return ERROR;
-  }
-
-  strcpy (name, dir_ent->d_name);
-  return (strlen(name));
-}
-
-extern char **environ;
-extern int env_len (void) {
-  int i;
-
-  i = 0;
-  while (environ[i] != NULL) {
-    i++;
-  }
-  return i;
-}
-
-extern char * env_val(int i) {
-
-  if (i <= 0) {
-    return NULL;
-  } else {
-    return environ[i - 1];
-  }
-
-}
-
-
-extern int file_stat(const char *path, simple_stat *simple_stat_struct) {
-
-  struct stat stat_struct;
-
-  if (lstat (path, &stat_struct) != 0) {
-    return (-1);
-  }
-
-  simple_stat_struct->mode  = stat_struct.st_mode;
-  simple_stat_struct->nlink = stat_struct.st_nlink;
-  simple_stat_struct->uid   = stat_struct.st_uid;
-  simple_stat_struct->gid   = stat_struct.st_gid;
-  simple_stat_struct->mtime = stat_struct.st_mtime;
-  simple_stat_struct->size = stat_struct.st_size;
-
-  return OK;
-
-}
-
-extern int fd_stat(int fd, simple_stat *simple_stat_struct) {
-
-  struct stat stat_struct;
-
-  if (fstat (fd, &stat_struct) != 0) {
-    return (-1);
-  }
-
-  simple_stat_struct->mode = stat_struct.st_mode;
-  simple_stat_struct->mtime = stat_struct.st_mtime;
-  simple_stat_struct->size = stat_struct.st_mtime;
-
-  return OK;
-
-}
-
+/* Create/open/read/write/close/pipe a fd */
 /* Rights are -rw-r--r-- */
 #define FD_ACCESS_RIGHTS (S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH)
 extern int fd_create (const char *path) {
   return creat(path, FD_ACCESS_RIGHTS);
 }
 
-/* Rights are -rwxr-xr-x */
-#define DIR_ACCESS_RIGHTS (S_IRUSR | S_IWUSR | S_IXUSR \
-                         | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH)
-extern int dir_create (const char *path) {
-  return mkdir(path, DIR_ACCESS_RIGHTS);
-}
-
-#define READ_ONLY  0
-#define WRITE_ONLY 1
-#define READ_WRITE 2
 extern int fd_open (const char *path, int mode) {
   int flags;
   switch (mode) {
@@ -297,6 +344,16 @@ extern int fd_int_write (int fd, void *buffer, int nbytes) {
   }
 }
 
+extern int fd_close (int fd) {
+  for (;;) {
+    if (close (fd) == 0) {
+      return 0;
+    } else if (errno != EINTR) {
+      return ERROR;
+    }
+  }
+}
+
 extern int fd_pipe (int *fd1, int *fd2) {
   int fds[2];
 
@@ -311,16 +368,7 @@ extern int fd_pipe (int *fd1, int *fd2) {
   }
 }
 
-extern int fd_close (int fd) {
-  for (;;) {
-    if (close (fd) == 0) {
-      return 0;
-    } else if (errno != EINTR) {
-      return ERROR;
-    }
-  }
-}
-
+/* Fork. >0 : father, pid of child, <0 : child, -pid, 0 : error */
 extern int procreate (void) {
   pid_t pid;
 
@@ -334,6 +382,7 @@ extern int procreate (void) {
   }
 }
 
+/* Execv */
 extern void mutate (char * const program, int len) {
   int i, j, n;
   char * * argv;
@@ -377,10 +426,6 @@ extern void mutate (char * const program, int len) {
 }
 
 /* Waitpid (WNOHANG): pid is set to 0 if no more child */
-#define NO_MORE  0
-#define EXITED   1
-#define SIGNALED 2
-#define STOPPED  3
 extern void next_dead (int *cause, int *pid, int *code) {
 
   int status;
@@ -413,70 +458,30 @@ extern void next_dead (int *cause, int *pid, int *code) {
 
 }
 
-
-/* Get user name from uid and get uid and gid from user name */
-/* Return len on success and ERROR (-1) on error (not found) */
-#define BUF_SIZE 1024
-extern int get_user_name_of_uid (int uid, char *name) {
-  int res;
-  struct passwd pwbuf, *ppasswd;
-  char buf[BUF_SIZE];
-
-  /* Find entry matching uid */
-  res = getpwuid_r((uid_t) uid, &pwbuf, buf, BUF_SIZE, &ppasswd);
-  if (res != 0) return ERROR;
-  strcpy (name, pwbuf.pw_name);
-  return strlen (pwbuf.pw_name);
+/* Imported by Directory: Create a directory */
+/* Rights are -rwxr-xr-x */
+#define DIR_ACCESS_RIGHTS (S_IRUSR | S_IWUSR | S_IXUSR \
+                         | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH)
+extern int dir_create (const char *path) {
+  return mkdir(path, DIR_ACCESS_RIGHTS);
 }
 
-/* Return 0 on success and ERROR (-1) on error (not found) */
-extern int get_ids_of_user_name (char *name, int *uid, int *gid) {
-  int res;
-  struct passwd pwbuf, *ppasswd;
-  char buf[BUF_SIZE];
+/* Imported by Directory: Read a directory entry */
+extern int read_dir (DIR *dir, char *name) {
 
-  /* Find entry matching name */
-  res = getpwnam_r(name, &pwbuf, buf, BUF_SIZE, &ppasswd);
-  if (res != 0) return ERROR;
-  *uid = (int)pwbuf.pw_uid;
-  *gid = (int)pwbuf.pw_gid;
-  return OK;
+  struct dirent * dir_ent;
+
+  dir_ent = readdir (dir);
+  if (dir_ent == NULL) {
+    return ERROR;
+  }
+
+  strcpy (name, dir_ent->d_name);
+  return (strlen(name));
 }
 
 
-/* Get group name from gid and get gid from group name */
-/* Return len on success and ERROR (-1) on error (not found) */
-extern int get_group_name_of_gid (int gid, char *name) {
-  int res;
-  struct group grpbuf, *pgroup;
-  char buf[BUF_SIZE];
-
-  /* Find entry matching uid */
-  res = getgrgid_r((gid_t) gid, &grpbuf, buf, BUF_SIZE, &pgroup);
-  if (res != 0) return ERROR;
-  strcpy (name, grpbuf.gr_name);
-  return strlen (grpbuf.gr_name);
-}
-
-/* Return 0 on success and ERROR (-1) on error (not found) */
-extern int get_gid_of_group_name (char *name, int *gid) {
-  int res;
-  struct group grpbuf, *pgroup;
-  char buf[BUF_SIZE];
-
-  /* Find entry matching uid */
-  res = getgrnam_r(name, &grpbuf, buf, BUF_SIZE, &pgroup);
-  if (res != 0) return ERROR;
-  *gid = grpbuf.gr_gid;
-  return OK;
-}
-
-/* Get errno */
-extern int get_errno (void) {
-  return errno;
-}
-
-/* Long shift */
+/* Imported by Bit_Ops: Long shift */
 extern unsigned long shl_long (unsigned long l, int bits) {
   return l << bits;
 }
