@@ -48,7 +48,6 @@ procedure Add_Paths is
     Sort.Add_Path (As.U.Tus (Dir));
     return True;
   end Add_Current;
-  procedure Add_Recurs is new Recurs (Add_Current);
 
   Moved : Boolean;
 
@@ -72,12 +71,13 @@ begin
       Sort.Add_Path (Arg.Path);
     else
       Directory.Change_Current (Arg.Path.Image);
-      Add_Recurs (Name_Of_Dir => False,
-                  In_Current  => True,
-                  First_Level_Only =>  False,
-                  Leaves_Only => False,
-                  Stop_On_Error => True,
-                  Follow_Links => False);
+      Recurs (Do_In_Dir        => Add_Current'Access,
+              Name_Of_Dir      => False,
+              In_Current       => True,
+              First_Level_Only =>  False,
+              Leaves_Only      => False,
+              Stop_On_Error    => True,
+              Follow_Links     => False);
     end if;
     exit when not Moved;
   end loop;

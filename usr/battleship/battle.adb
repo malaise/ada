@@ -161,9 +161,9 @@ package body Battle is
     end if;
     if Message = "E" then
       -- Aborted by partner
-    if Utils.Debug_Play then
-      Utils.Debug ("Received message: " & Message);
-    end if;
+      if Utils.Debug_Play then
+        Utils.Debug ("Received message: " & Message);
+      end if;
       if Utils.Debug_Play then
         Utils.Debug ("Partner has aborted game");
       end if;
