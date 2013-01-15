@@ -2,8 +2,6 @@ with Language;
 with Afpx_Typ;
 package body Afpx is
 
-  Initialised : Boolean := False;
-
   Console : aliased Con_Io.Console;
   Af_Con_Io : Con_Io.Window;
   Size : Con_Io.Square;
@@ -246,17 +244,15 @@ package body Afpx is
                             Clear_Screen : in Boolean := True) is
   begin
     Af_Dscr.Load_Dscr (Afpx_Typ.Descriptor_Range (Descriptor_No));
-    if not Initialised
-    and then Af_Dscr.Current_Dscr.Colors (Con_Io.Effective_Colors'First)
-             /= Afpx_Typ.No_Color then
-      -- If necessary, Set the colors when using the first descriptor
-      Con_Io.Set_Colors (Afpx_Typ.To_Def (Af_Dscr.Current_Dscr.Colors));
-    end if;
     if not Console.Is_Open then
-      -- Done only once at first dsescriptor
-      Con_Io.Initialise;
+      -- Done only once at first descriptor
+      if Af_Dscr.Current_Dscr.Colors (Con_Io.Effective_Colors'First)
+         /= Afpx_Typ.No_Color then
+        -- If necessary, Set the colors when using the first descriptor
+        Con_Io.Set_Colors (Afpx_Typ.To_Def (Af_Dscr.Current_Dscr.Colors));
+      end if;
+      -- Done only once at first descriptor
       Size := Af_Dscr.Load_Size;
-      Initialised := True;
       -- Create console and screen
       Console.Open (
               Font_No => 1,

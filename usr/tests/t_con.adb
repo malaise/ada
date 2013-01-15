@@ -13,7 +13,6 @@ procedure T_Con is
   Nb_Tasks : constant := 2;
   T : array (1 .. Nb_Tasks) of Task_T;
 
-
   task body Task_T is
 
     Console : aliased Con_Io.Console;
@@ -208,9 +207,8 @@ procedure T_Con is
 
 
 begin
-  -- Init Con_Io with stack of main
+  -- Force Con_Io init on main stack
   Con_Io.Initialise;
-
   for I in T'Range loop
     T(I).Start(I);
     delay 1.0;

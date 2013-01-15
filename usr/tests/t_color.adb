@@ -19,8 +19,6 @@ begin
     Ic := Con_Io.Effective_Colors'Succ (Ic);
   end loop;
   Con_Io.Set_Colors (Colors);
-  Con_Io.Initialise;
-
   Console.Open;
   Screen.Set_To_Screen (Console'Unrestricted_Access);
 

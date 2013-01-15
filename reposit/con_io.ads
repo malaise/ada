@@ -81,9 +81,10 @@ package Con_Io is
   Default_Xor_Mode   : constant Effective_Xor_Modes := Xor_Off;
 
 
-  -- Can be called to initialise the consoles manager
-  -- If not called, this init will be called together with first console
-  --  opening
+  -- Can be called to initialise the consoles manager (for example, if all
+  --  the consoles are created by threads, this ensures that the initialisation
+  --  is done with the main stack)
+  -- It is called automatically when opening the first console
   procedure Initialise;
 
   -- One console
@@ -91,6 +92,7 @@ package Con_Io is
   type Console_Access is access all Console;
 
   -- Open a console, which appears on screen
+  -- Initialise Con_Io if necessary
   -- Shall be called prior any action on the console
   -- Screen window is open with the attributes of the Console and cleared
   procedure Open (Con : in out Console;
