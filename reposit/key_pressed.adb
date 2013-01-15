@@ -14,7 +14,7 @@ package body Key_Pressed is
       return;
     end if;
     if Blocking then
-      Res := Sys_Calls.Set_Tty_Attr (Sys_Calls.Stdin, Sys_Calls.Char);
+      Res := Sys_Calls.Set_Tty_Attr (Sys_Calls.Stdin, Sys_Calls.Char_No_Echo);
     else
       Res := Sys_Calls.Set_Tty_Attr (Sys_Calls.Stdin, Sys_Calls.Transparent);
     end if;

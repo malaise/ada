@@ -1,4 +1,5 @@
--- Simple package to passively test if a key has been pressed
+-- Simple package to passively test if / wait until a key has been pressed
+-- No echo of input
 -- Not compatible with blocking inputs on stdin, of course.
 with Ada.Characters.Latin_1;
 package Key_Pressed is
@@ -15,12 +16,12 @@ package Key_Pressed is
   procedure Close (Check : in Boolean := False);
 
   -- Check if a key has been pressed,
-  --  return specific characters if not or on error
+  --  return specific characters if not (only if open non blocking) or on error
   No_Key     : constant Character := Ada.Characters.Latin_1.Nul;
   Error_Key  : constant Character := Ada.Characters.Latin_1.Eot;
   function Get_Key return Character;
 
-  -- Check if a key has been pressed,
+  -- Check if a key has been pressed or wait until a key is pressed,
   --  raise exception on error
   function Key_Pressed return Boolean;
 
