@@ -280,8 +280,10 @@ package body Command is
     end if;
     Event_Mng.Set_Sig_Term_Callback (Prev_Term_Cb);
     Event_Mng.Set_Sig_Child_Callback (Prev_Child_Cb);
-    if not Signals_Handled then
-      Event_Mng.Reset_Default_Signals_Policy;
+    -- Restore default signal policy if this was the case initially
+    if not Signals_Handled and then Event_Mng.Reset_Default_Signals_Policy then
+      -- A signal was received and not handled
+      raise Terminate_Request;
     end if;
     Sys_Calls.Close (Spawn_Result.Fd_In);
 
