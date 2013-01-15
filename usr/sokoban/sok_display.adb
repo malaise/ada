@@ -275,11 +275,11 @@ package body Sok_Display is
       Ink := Con_Io.Color_Of ("Light_Grey");
       Paper := Con_Io.Color_Of ("Blue");
     elsif not Clicked then
-      Ink := Con_Io.Color_Of ("Red");
+      Ink := Con_Io.Color_Of ("Lime_Green");
       Paper := Con_Io.Color_Of ("Blue");
     else
       Ink := Con_Io.Color_Of ("Blue");
-      Paper := Con_Io.Color_Of ("Red");
+      Paper := Con_Io.Color_Of ("Lime_Green");
     end if;
 
     case Action is
