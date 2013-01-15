@@ -79,6 +79,16 @@ if [ -f $FS ] ; then
 fi
 echo "$STEP OK."
 
+# Substitution with a "--" and stdin as "-"
+STEP="Test of substitution with -- and stdin as -"
+res=`echo "t_o..T'I" | asubst "--"  "[\T]" "-" "-"`
+if [ "$res" != "t-o--T-I" ] ; then
+  echo "Result $res differs from expected."
+  echo "$STEP FAILED."
+  exit 1
+fi
+echo "$STEP OK."
+
 # Make reference in file and result
 # Will remove both "------" and the line feed before Test
 echo "Package body Pack is" > $FR
@@ -204,17 +214,39 @@ if [ -f "Temp_File.*" ] ; then
 fi
 echo "$STEP OK."
 
-# Substitution with a "--"
-STEP="Test of substitution with --"
-res=`echo "t_o..T'I" | asubst "--"  "[\T]" "-"`
-if [ "$res" != "t-o--T-I" ] ; then
-  echo "Result $res differs from expected."
+# Exit codes
+STEP="Tests of exit code"
+asubst -g > /dev/null 2>&1
+code=$?
+if [ $code != 2 ] ; then
+  echo "Error: asubst exited with code $code instead of 2"
+  echo "$STEP FAILED."
+  exit 1
+fi
+asubst "[is" "is" $FT > /dev/null 2>&1
+code=$?
+if [ $code != 2 ] ; then
+  echo "Error: asubst exited with code $code instead of 2"
+  echo "$STEP FAILED."
+  exit 1
+fi
+echo "That is the question" | asubst -g "[Tt]his" "" > /dev/null 2>&1
+code=$?
+if [ $code != 1 ] ; then
+  echo "Error: asubst exited with code $code instead of 1"
+  echo "$STEP FAILED."
+  exit 1
+fi
+echo "That is the question" | asubst -g "[Tt]h.*is" "" > /dev/null 2>&1
+code=$?
+if [ $code != 0 ] ; then
+  echo "Error: asubst exited with code $code instead of 0"
   echo "$STEP FAILED."
   exit 1
 fi
 echo "$STEP OK."
 
-# Grep mode, check result and exit code
+# Grep mode
 rm -rf $FS
 cp $FR $FT
 # Check multiple regexp grep
@@ -347,38 +379,6 @@ if [ $? -ne 0 ] ; then
   exit 1
 fi
 STEP="Tests of grep"
-echo "$STEP OK."
-
-# Exit codes
-STEP="Tests of exit code"
-asubst -g > /dev/null 2>&1
-code=$?
-if [ $code != 2 ] ; then
-  echo "Error: asubst exited with code $code instead of 2"
-  echo "$STEP FAILED."
-  exit 1
-fi
-asubst "[is" "is" $FT > /dev/null 2>&1
-code=$?
-if [ $code != 2 ] ; then
-  echo "Error: asubst exited with code $code instead of 2"
-  echo "$STEP FAILED."
-  exit 1
-fi
-echo "That is the question" | asubst -g "[Tt]his" "" > /dev/null 2>&1
-code=$?
-if [ $code != 1 ] ; then
-  echo "Error: asubst exited with code $code instead of 1"
-  echo "$STEP FAILED."
-  exit 1
-fi
-echo "That is the question" | asubst -g "[Tt]h.*is" "" > /dev/null 2>&1
-code=$?
-if [ $code != 0 ] ; then
-  echo "Error: asubst exited with code $code instead of 0"
-  echo "$STEP FAILED."
-  exit 1
-fi
 echo "$STEP OK."
 
 # Cleanup test files

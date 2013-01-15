@@ -4,7 +4,7 @@ with As.U.Utils, Environ, Argument, Argument_Parser, Basic_Proc, Language,
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
-  Version : constant String  := "V14.0";
+  Version : constant String  := "V14.1";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -239,6 +239,8 @@ procedure Asubst is
   -- Language
   Lang : Language.Language_List
        := Language.Get_Env;
+  -- Stdin and Stdout
+  Std_In_Out : constant String := "-";
   use type Language.Language_List;
 
   -- Check that there are not several (conflictual) verbosity levels
@@ -256,27 +258,36 @@ procedure Asubst is
 
   -- Process one file
   procedure Do_One_File (File_Name : in String) is
+    File : As.U.Asu_Us;
+    Bkp : Boolean;
   begin
+    -- File and backup option: Stdin -> "-" and False
+    File := As.U.Tus (File_Name);
+    Bkp := Backup;
+    if File_Name = "" or else File_Name = Std_In_Out then
+      File := As.U.Tus (Substit.Std_In_Out);
+      Bkp := False;
+    end if;
     if Verbosity = Verbose then
       -- Put file name
-      Basic_Proc.Put_Line_Output (File_Name);
+      Basic_Proc.Put_Line_Output (File.Image);
     end if;
     Nb_Subst := Substit.Do_One_File (
-                  File_Name,
+                  File.Image,
                   Tmp_Dir.Image,
                   Delimiter.Image,
                   Match_Range.Image,
-                  Backup, Verbosity = Verbose, Grep,
+                  Bkp, Verbosity = Verbose, Grep,
                   Grep_List, Grep_File_Name, Grep_Line_Nb, Test);
     if Nb_Subst /= 0 then
       Found := True;
     end if;
     if Verbosity = Put_File_Name and then Nb_Subst /= 0 then
       -- Put file name if substitution occured
-      Basic_Proc.Put_Line_Output (File_Name);
+      Basic_Proc.Put_Line_Output (File.Image);
     elsif Verbosity >= Put_Subst_Nb then
       -- Put file name and nb of substitutions
-      Basic_Proc.Put_Line_Output (File_Name & Nb_Subst'Img);
+      Basic_Proc.Put_Line_Output (File.Image & Nb_Subst'Img);
     end if;
   exception
     when Substit.Substit_Error =>
@@ -287,7 +298,7 @@ procedure Asubst is
       Basic_Proc.Put_Line_Error (Argument.Get_Program_Name
                 & ": EXCEPTION: " & Ada.Exceptions.Exception_Name (Error)
                 & " while processing file "
-                & File_Name & ".");
+                & File.Image & ".");
       Ok := False;
   end Do_One_File;
 
@@ -658,7 +669,18 @@ begin
     if Ok then
       loop
         begin
-          Do_One_File (File_Mng.Get_Next_File);
+          declare
+            File : constant String := File_Mng.Get_Next_File;
+          begin
+            if File = Std_In_Out
+            and then Arg_Dscr.Get_Option (05, 1) = File_Mng.Stdin then
+              Basic_Proc.Put_Line_Error (Argument.Get_Program_Name
+                  & ": ERROR. Cannot use Stdin flow when file list is Stdin."
+                  & " Skipping.");
+              Ok := False;
+            end if;
+            Do_One_File (File);
+          end;
         exception
           when File_Mng.End_Error =>
             exit;
@@ -666,10 +688,11 @@ begin
             Ok := False;
             exit;
         end;
-      end loop;
+        end loop;
     end if;
-  elsif Arg_Dscr.Get_Nb_Occurences (No_Key_Index) = 2 then
-    -- No file: stdin -> stdout
+  elsif Arg_Dscr.Get_Nb_Occurences (No_Key_Index) = 2
+  or else Arg_Dscr.Get_Option (No_Key_Index, 3) = Std_In_Out then
+    -- No file or "-": stdin -> stdout
     if Backup then
       Basic_Proc.Put_Line_Error (Argument.Get_Program_Name
                 & ": ERROR. Cannot make backup when no file name.");
