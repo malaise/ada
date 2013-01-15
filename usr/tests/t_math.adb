@@ -49,7 +49,7 @@ begin
         when others=> Put_Line_Output ("Exception");
       end;
       begin
-        Put_Output ("lg (R1) "); Put( Lg (R)); New_Line_Output;
+        Put_Output ("lg  (R1) "); Put( Lg (R)); New_Line_Output;
       exception
         when others=> Put_Line_Output ("Exception");
       end;
