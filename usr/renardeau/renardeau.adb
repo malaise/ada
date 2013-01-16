@@ -72,8 +72,7 @@ procedure Renardeau is
                         Target : out Positive;
                         Cancel : out Boolean) is
   begin
-    X_Mode := Argument.Get_Nbre_Arg = 1
-              and then Argument.Get_Parameter (1) = "-x";
+    X_Mode := Argument.Get_Nbre_Arg = 0;
     -- Afpx option
     if X_Mode then
       X.Get_Inputs (Bases, Target, Cancel);
