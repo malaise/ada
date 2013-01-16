@@ -4,5 +4,5 @@ export DICTIO_FILE=${WORDS_PATH}/french_words
 export XWORDS_DIR=${HOME}/ada/usr/xwords
 export AFPX_DATA_DIR=${XWORDS_DIR}
 
-${XWORDS_DIR}/xwords $* > /tmp/xwords.log 2>&1
+${XWORDS_DIR}/xwords $*
 

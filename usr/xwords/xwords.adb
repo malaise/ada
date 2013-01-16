@@ -1,7 +1,8 @@
 -- Search for words matching criteria (au:o.obile) or regexp (au.*bile)
 -- Or search anagrams
 with As.U.Utils, Argument, Con_Io, Afpx, Basic_Proc, Language, Many_Strings,
-     Str_Util, Lower_Str, Environ, Images, Event_Mng, Afpx_Xref;
+     Str_Util, Lower_Str, Environ, Images, Event_Mng, Afpx_Xref, Mutex_Manager,
+     Trilean;
 with Cmd, Analist;
 procedure Xwords is
 
@@ -17,6 +18,20 @@ procedure Xwords is
 
   -- Log option
   Log : Boolean := False;
+
+  -- Debug (anagram loading)
+  Debug_Set : Boolean := False;
+  Debug_On : Boolean := False;
+  procedure Debug (Message : in String) is
+  begin
+    if not Debug_Set then
+      Debug_On := Environ.Is_Yes ("XWORDS_DEBUG");
+      Debug_Set := True;
+    end if;
+    if Debug_On then
+      Basic_Proc.Put_Line_Error (Message);
+    end if;
+  end Debug;
 
   -- Afpx stuff
   Cursor_Field : Afpx.Field_Range;
@@ -255,9 +270,11 @@ procedure Xwords is
   task Load_Anagrams is
     entry Start (File_Name : in String);
     entry Stop;
-    entry Done (Ok : out Boolean);
   end Load_Anagrams;
 
+  -- Anagram loading status: Ok, Failed or Pending
+  Anagram_Loaded : Trilean.Trilean := Trilean.Other;
+  Lock : Mutex_Manager.Mutex (Mutex_Manager.Write_Read, False);
   task body Load_Anagrams is
     File_Name : As.U.Asu_Us;
     Load : Boolean;
@@ -267,6 +284,7 @@ procedure Xwords is
     select
       -- Load: Get file name
       accept Start (File_Name : in String) do
+        Debug ("Loading");
         Load_Anagrams.File_Name := As.U.Tus (File_Name);
       end Start;
       Load := True;
@@ -288,18 +306,15 @@ procedure Xwords is
         when Analist.Init_Error =>
           Ok := False;
       end;
-Basic_Proc.Put_Line_Error ("Loaded");
+      Debug ("Loaded");
+      -- Report completion
+      Lock.Get (Mutex_Manager.Write);
+      Anagram_Loaded := Trilean.Boo2Tri (Ok);
+      Lock.Release;
+      Debug ("Reported");
       -- Wake up main task
       Event_Mng.Send_Dummy_Signal;
-      -- Report status
-      select
-        accept Done (Ok : out Boolean) do
-          Ok := Load_Anagrams.Ok;
-        end Done;
-      or
-        -- If main returns without calling
-        terminate;
-      end select;
+      Debug ("Signaled");
 
    end if;
    -- Done
@@ -345,27 +360,27 @@ begin
   loop
     -- Get result of loading the dictio: polling
     if Loading_Anagrams then
-      declare
-        Ok : Boolean;
-      begin
-        select
-          Load_Anagrams.Done (Ok);
+      Lock.Get (Mutex_Manager.Read);
+      case Anagram_Loaded is
+        when Trilean.True =>
+          -- Dictio loaded OK, enable
+          Debug ("Activated");
+          Afpx.Set_Field_Activation (Anagrams_Fld, True);
           Loading_Anagrams := False;
-          if Ok then
-            -- Dictio loaded OK, enable
-            Afpx.Set_Field_Activation (Anagrams_Fld, True);
-          else
-            Basic_Proc.Put_Line_Error (
+          Lock.Release;
+        when Trilean.False =>
+          -- Dictio loading failed
+          Basic_Proc.Put_Line_Error (
                  "Error while loading anagrams dictionary: "
                 & Dictio_File_Name.Image & ".");
 
-            Basic_Proc.Set_Error_Exit_Code;
-           return;
-          end if;
-        or
-          delay 0.0;
-        end select;
-      end;
+          Basic_Proc.Set_Error_Exit_Code;
+          Lock.Release;
+          return;
+        when Trilean.Other =>
+          -- Dictio not loaded yet
+          Lock.Release;
+      end case;
     end if;
 
     -- Color and protection of result list according to status
@@ -383,9 +398,9 @@ begin
 
     -- Set cursor at last significant char of the Get field
     Cursor_Col := Afpx.Last_Index (Afpx.Decode_Field (Get_Fld, 0), True);
-Basic_Proc.Put_Line_Error ("Call PTG");
+    Debug ("Calling PTG");
     Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result, Redisplay);
-Basic_Proc.Put_Line_Error ("PTG returns");
+    Debug ("PTG returning");
     Redisplay := False;
 
     case Ptg_Result.Event is
