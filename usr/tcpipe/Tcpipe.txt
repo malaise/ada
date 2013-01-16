@@ -3,8 +3,8 @@ Tcpipe
 
 Tcpipe is a program that relays TCP connections.
 
-Typical usage is to start two tcpipe instances: a server and a client that
-connects to this server.
+Typical usage is to start two tcpipe instances on different hosts: a server and
+a client that connects to this server.
 
 When a client application connects to one tcpipe instance, the other tcpipe
 instance connects to another client application and both instances relay the
@@ -32,8 +32,8 @@ applications.
 The target host is the one to which tcpipe attempts to connect to clients
 applications.
 
-Usage
------
+Goal
+----
 Tcpipe can be usefull for multiplexing several TCP connections between several
 client applications within one TCP connection, especially through a firewall.
 
@@ -41,8 +41,8 @@ client applications within one TCP connection, especially through a firewall.
  * This allows connections between client applications to be established
 despite the filters of the firewall (allowed ports, direction of connection...).
 
-Example
--------
+Usage - Example
+---------------
 On host host1 start "tcpipe -s 50000 -p40000" +
 On host host2 start "tcpipe -c host1:50000 -tclient2" +
 -> tcpipe on host2 connects to tcpipe on host1, port 50000 +
