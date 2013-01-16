@@ -212,6 +212,7 @@ procedure T_Async is
             when Socket.Soc_Addr_In_Use =>
               Async_Stdin.Put_Line_Err ("Cannot accept. Maybe Close-wait. Waiting");
               Event_Mng.Wait (20_000);
+              exit when Give_Up;
           end;
         end loop;
       when Client =>
@@ -402,8 +403,10 @@ begin
   Open;
 
   -- Main loop
-  loop
-    exit when Event_Mng.Wait (Event_Mng.Infinite_Ms) and then Give_Up;
+  pragma Warnings (Off, "variable ""*"" is not modified in loop body");
+  while not Give_Up loop
+    pragma Warnings (On, "variable ""*"" is not modified in loop body");
+    Event_Mng.Wait (Event_Mng.Infinite_Ms);
   end loop;
 
   -- Close
