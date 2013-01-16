@@ -171,6 +171,11 @@ comp out exp
 comp err nul
 echo "OK"
 
+title day_of_week
+launch day_of_week
+comp err nul
+echo "OK"
+
 title degra
 launch degra 2.5 30 d
 echo "Lat: 3.148148148E+000 Lon: 3.073641204E+001 grad" > exp
@@ -625,11 +630,6 @@ cat << EOF > exp
  1
 EOF
 comp out exp
-comp err nul
-echo "OK"
-
-title today
-launch today
 comp err nul
 echo "OK"
 
