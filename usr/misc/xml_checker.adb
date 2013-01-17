@@ -4,7 +4,7 @@ with As.U.Utils, Argument, Argument_Parser, Xml_Parser.Generator, Normal,
      Basic_Proc, Text_Line, Sys_Calls, Parser, Bloc_Io, Str_Util;
 procedure Xml_Checker is
   -- Current version
-  Version : constant String := "V17.3";
+  Version : constant String := "V17.4";
 
   procedure Ae_Re (E : in Ada.Exceptions.Exception_Id;
                    M : in String := "")
@@ -726,7 +726,7 @@ begin
       end if;
     end;
   elsif Arg_Dscr.Is_Set (3) then
-    if Arg_Dscr.Is_Set (14) then
+    if Arg_Dscr.Is_Set (8) then
       Ae_Re (Arg_Error'Identity,
              "Incompatible ""keep"" and ""dump"" options");
     end if;
