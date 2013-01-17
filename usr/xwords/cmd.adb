@@ -62,7 +62,7 @@ package body Cmd is
     end if;
     Cmd.Set (Words_Path & Com);
     Cmd.Cat (Arg);
-    Command.Execute (Cmd, False, Command.Both,
+    Command.Execute (Cmd, True, Command.Both,
         Output_Flow'Access, Error_Flow'Access, Exit_Code);
 
     if Exit_Code = Command.Error then
