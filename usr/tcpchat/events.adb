@@ -352,7 +352,7 @@ package body Events is
               Command.Execute (
                 Cmd => Many_Strings.Set (As.U.Asu_Us'(
                     Variables.Expand (Node.Text, Variables.Local_Env))),
-                Use_Sh => True,
+                Use_Shell => True,
                 Mix_Policy => Command.Only_Out,
                 Out_Flow => Flow'Access,
                 Err_Flow => null,
@@ -393,7 +393,7 @@ package body Events is
                 Command.Execute (
                   Cmd => Many_Strings.Set (As.U.Asu_Us'(
                       Variables.Expand (Node.Text, Variables.Local_Env))),
-                  Use_Sh => True,
+                  Use_Shell => True,
                   Mix_Policy => Command.Only_Out,
                   Out_Flow => Flow'Access,
                   Err_Flow => null,

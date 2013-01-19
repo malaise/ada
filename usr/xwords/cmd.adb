@@ -62,8 +62,9 @@ package body Cmd is
     end if;
     Cmd.Set (Words_Path & Com);
     Cmd.Cat (Arg);
+    -- Words needs bash
     Command.Execute (Cmd, True, Command.Both,
-        Output_Flow'Access, Error_Flow'Access, Exit_Code);
+        Output_Flow'Access, Error_Flow'Access, Exit_Code, "/bin/bash");
 
     if Exit_Code = Command.Error then
       if Debug then

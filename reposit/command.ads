@@ -30,12 +30,13 @@ package Command is
   Error : constant Exit_Code_Range := -1;
 
   -- Call command and wait for its termination
-  -- If not Use_Sh, then Cmd must be the program then its arguments
+  -- If not Use_Shell, then Cmd must be the program then its arguments
   --   concatenated in a Many_String
-  -- If Use_Sh, then issue a 'sh -c "Cmd"'. Cmd can then be either a
+  -- If Use_Shell, then issue a 'sh -c "Cmd"'. Cmd can then be either a
   --   Many_String as above or the program and arguments separated by spaces
   -- Report or propagate output/error flow with proper kind
   -- Set resulting exit code
+  -- If Use_Shell, the shell can be specified to another than the default
   ---------------------------------------------------------------------------
   -- Because it waits for the asynchronous exit of the child, this         --
   --  function uses Event_Mng.Wait internally. As a consequence:                                    --
@@ -43,12 +44,14 @@ package Command is
   --    before calling this function, then Resume the X objects,            --
   --  * This function is protected agains parallel execution with a mutex  --
   ---------------------------------------------------------------------------
+  Default_Shell : constant String := "/bin/sh";
   procedure Execute (Cmd : in Many_Strings.Many_String;
-                     Use_Sh : in Boolean;
+                     Use_Shell : in Boolean;
                      Mix_Policy : in Flow_Mixing_Policies;
                      Out_Flow : in Flow_Access;
                      Err_Flow : in Flow_Access;
-                     Exit_Code : out Exit_Code_Range);
+                     Exit_Code : out Exit_Code_Range;
+                     Shell : in String := Default_Shell);
 
   -- Terminate requested by Control C
   Terminate_Request : exception;

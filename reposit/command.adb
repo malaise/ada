@@ -177,11 +177,12 @@ package body Command is
 
   -- Execute Cmd
   procedure Execute (Cmd : in Many_Strings.Many_String;
-                     Use_Sh : in Boolean;
+                     Use_Shell : in Boolean;
                      Mix_Policy : in Flow_Mixing_Policies;
                      Out_Flow : in Flow_Access;
                      Err_Flow : in Flow_Access;
-                     Exit_Code : out Exit_Code_Range) is
+                     Exit_Code : out Exit_Code_Range;
+                     Shell : in String := Default_Shell) is
     Cmd_Line : Many_Strings.Many_String;
     Str : As.U.Asu_Us;
     Nb_Substr : Positive;
@@ -219,8 +220,8 @@ package body Command is
     Prev_Child_Cb := Event_Mng.Get_Sig_Child_Callback;
 
     -- Build command line
-    if Use_Sh then
-      Cmd_Line.Set ("/bin/sh");
+    if Use_Shell then
+      Cmd_Line.Set (Shell);
       Cmd_Line.Cat ("-c");
       -- Extract substrings and concatenante with spaces
       Nb_Substr := Many_Strings.Nb (Cmd);
