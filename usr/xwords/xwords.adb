@@ -78,13 +78,14 @@ procedure Xwords is
     Ustr : constant Language.Unicode_Sequence
          := Language.String_To_Unicode (Us.Image);
   begin
-    Rec.Len := Ustr'Length;
     -- Procuste
     Rec.Str := (others => Con_Io.Space);
-    if Rec.Len > List_Width then
+    if Ustr'Length >= List_Width then
       Rec.Len := List_Width;
+    else
+      Rec.Len := Ustr'Length;
     end if;
-    Rec.Str (1 .. Rec.Len) := Ustr(1 .. Rec.Len);
+    Rec.Str(1 .. Rec.Len) := Ustr(1 .. Rec.Len);
     return Rec;
   end Us2Afpx;
 
@@ -164,21 +165,22 @@ procedure Xwords is
 
     -- Build command
     Word := As.U.Tus (Strip (Afpx.Decode_Field (Get_Fld, 0, False)));
+    Com.Set ("words");
     case Num is
       when Search_Fld | Research_Fld =>
-        Com.Set ("ws");
+        Arg.Set ("search");
       when Add_Word_Fld | Add_Noun_Fld =>
-        Com.Set ("wa");
+        Arg.Set ("add");
       when Del_Word_Fld | Del_Noun_Fld =>
-        Com.Set ("wd");
+        Arg.Set ("delete");
       when others =>
         Status := Error;
         return;
     end case;
     if Num = Research_Fld then
-      Arg.Set ("-re");
+      Arg.Cat ("-re");
     elsif Num = Add_Noun_Fld or else Num = Del_Noun_Fld then
-      Arg.Set ("-noun");
+      Arg.Cat ("-noun");
     end if;
     Arg.Cat (Word);
 
@@ -197,7 +199,7 @@ procedure Xwords is
       Status := Ok;
     end if;
 
-    -- Add normal word to anagram list
+    -- Add/del normal word to anagram list
     if Status = Ok then
       if Num = Add_Word_Fld then
         Analist.Add (Word);

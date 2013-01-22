@@ -15,6 +15,9 @@ package body Cmd is
   Error_Flow : aliased Command.Flow_Rec (Command.Str);
   Exit_Code : Command.Exit_Code_Range;
 
+  -- Words exits with 0 if found, 1 i not found and 2 on error
+  Words_Error : constant Command.Exit_Code_range := 2;
+
   -- Replace all LineFeeds by spaces
   procedure Normalize (List : in out Res_List) is
     Line : As.U.Asu_Us;
@@ -25,10 +28,12 @@ package body Cmd is
     end if;
     List.Rewind;
     loop
-      -- Replace for est Rec
+      -- Replace Lf by space for each Rec
       List.Read (Line, Res_Mng.Dyn_List.Current);
       Line := As.U.Tus (Str_Util.Substit (
                 Line.Image, Ada.Characters.Latin_1.Lf & "", " "));
+      -- Remove trailing spaces
+      Line := As.U.Tus (Str_Util.Strip (Line.image));
       List.Modify (Line, Moved => Moved);
       exit when not Moved;
     end loop;
@@ -66,11 +71,16 @@ package body Cmd is
     Command.Execute (Cmd, True, Command.Both,
         Output_Flow'Access, Error_Flow'Access, Exit_Code, "/bin/bash");
 
-    if Exit_Code = Command.Error then
+    if Exit_Code = Words_Error then
       if Debug then
-        Basic_Proc.Put_Line_Output ("Execute error");
+        Basic_Proc.Put_Line_Output ("Words error");
       end if;
-      Res.Insert (As.U.Tus ("Spawn error"));
+      if Error_Flow.Str.Is_Null then
+        Res.Insert (As.U.Tus ("Words error"));
+      else
+        Res.Insert (Error_Flow.Str);
+      end if;
+      Normalize (Res);
       Ok := False;
       return;
     end if;
@@ -85,15 +95,16 @@ package body Cmd is
       Res.Insert (Error_Flow.Str);
     end if;
     Normalize (Res);
-    Ok := Exit_Code = 0;
+    Ok := True;
 
-    -- Exec failed leads to Exit code 1 with no output
-    if Exit_Code = 1 and then Res.Is_Empty then
+  exception
+    when Command.Spawn_Error =>
       if Debug then
         Basic_Proc.Put_Line_Output ("Adding spwan error");
       end if;
       Res.Insert (As.U.Tus ("Spawn error"));
-    end if;
+      Normalize (Res);
+      Ok := False;
   end Exec;
 
 end Cmd;
