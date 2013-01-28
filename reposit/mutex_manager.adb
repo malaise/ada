@@ -1,3 +1,4 @@
+with Unchecked_Deallocation;
 package body Mutex_Manager is
 
   use type Ada.Task_Identification.Task_Id;
@@ -327,6 +328,22 @@ package body Mutex_Manager is
         return A_Mutex.Wr_Mutex_Pointer.Mutex_Owns;
     end case;
   end Is_Owner;
+
+  -- Cleanup
+  procedure Free is new Unchecked_Deallocation (Mutex_Protect,
+                                                Mutex_Access);
+  procedure Free is new Unchecked_Deallocation (Rw_Mutex_Protect,
+                                                Rw_Mutex_Access);
+  procedure Free is new Unchecked_Deallocation (Wr_Mutex_Protect,
+                                                Wr_Mutex_Access);
+  overriding procedure Finalize (M : in out Mutex) is
+  begin
+    case M.Kind is
+      when Simple => Free (M.Mutex_Pointer);
+      when Read_Write => Free (M.Rw_Mutex_Pointer);
+      when Write_Read => Free (M.Wr_Mutex_Pointer);
+    end case;
+  end Finalize;
 
 end Mutex_Manager;
 

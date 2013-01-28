@@ -1,4 +1,4 @@
-with Ada.Task_Identification;
+with Ada.Task_Identification, Ada.Finalization;
 -- Mutex (single and Read_Write) management
 package Mutex_Manager is
 
@@ -18,7 +18,7 @@ package Mutex_Manager is
 
   -- Mutex object, free at creation
   type Mutex (Kind : Mutex_Kind;
-              Recursive : Boolean) is tagged private;
+              Recursive : Boolean) is tagged limited private;
   subtype Simple_Mutex is Mutex (Simple, False);
 
   -- Get a mutex.
@@ -36,10 +36,10 @@ package Mutex_Manager is
   function Get (A_Mutex      : Mutex;
                 Waiting_Time : Duration;
                 Kind         : Access_Kind := Read) return Boolean;
-  function Get (A_Mutex : Mutex) return Boolean;
   -- Get a mutex : infinite wait.
   procedure Get (A_Mutex      : in Mutex;
                  Kind         : in Access_Kind := Read);
+  function Get (A_Mutex : Mutex) return Boolean;
 
 
   -- Release a mutex.
@@ -171,7 +171,8 @@ private
 
   -- The general purpose mutex
   type Mutex (Kind : Mutex_Kind;
-              Recursive : Boolean) is tagged record
+              Recursive : Boolean) is new Ada.Finalization.Limited_Controlled
+  with record
     case Kind is
       when Simple =>
         Mutex_Pointer : Mutex_Access := new Mutex_Protect (Recursive);
@@ -181,6 +182,8 @@ private
         Wr_Mutex_Pointer : Wr_Mutex_Access := new Wr_Mutex_Protect (Recursive);
     end case;
   end record;
+
+  overriding procedure Finalize (M : in out Mutex);
 
 end Mutex_Manager;
 
