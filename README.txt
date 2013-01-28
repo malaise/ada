@@ -9,7 +9,7 @@ Some programs depend on anchor:XPCRE[] PCRE (Perl Compatible Regular Expressions
 with version 7.8 or above (8.21 is OK).
 
 The graphical library is based on X11 and needs the font packages 75dpi and
-100dpi transcoded from ISO 10646-1.
+100dpi and the corresponding transcoded (from ISO 10646-1) versions.
 
 Programs are rated from 1 (simple) to 3 (very complex), on subjective
 criteria.
@@ -260,6 +260,8 @@ This directory mainly contains a copy of:
 - pragmarc and mine from http://pragmada.home.mchsi.com (under GPL)
 
 - LinXtris from http://sourceforge.net/projects/linxtris (under GPL)
+
+They use Gtk-Ada 2.1x.
 
 Testing
 -------

@@ -184,7 +184,6 @@ extern int x_close_line (void *line_id) {
 
 /* Set line name */
 extern int x_set_line_name (void *line_id, const char *line_name) {
-    int result;
 
     t_window *win_id = (t_window*) line_id;
 
@@ -193,7 +192,7 @@ extern int x_set_line_name (void *line_id, const char *line_name) {
         return (WAIT_ERR);
     }
 
-    result = XStoreName(local_server.x_server, win_id->x_window, line_name);
+    (void) XStoreName(local_server.x_server, win_id->x_window, line_name);
     /* Strange: it works but returns error */
     /*    return ((result == Success) ? WAIT_OK : WAIT_ERR); */
     return (WAIT_OK);
@@ -232,7 +231,6 @@ extern int x_set_attributes (void *line_id, int paper, int ink,
   boolean superbright, boolean underline, boolean reverse) {
 
     t_window *win_id = (t_window*) line_id;
-    int no_font;
 
     /* Check that window is open */
         if (! lin_check(win_id)) {
@@ -249,7 +247,6 @@ extern int x_set_attributes (void *line_id, int paper, int ink,
     win_id->bold = superbright;
 
     /* Update graphic context */
-    no_font = lin_get_font (win_id);
     scr_set_attrib (win_id->server->x_server,
       win_id->x_graphic_context, win_id->server->x_font,
       lin_get_font(win_id), win_id->screen->color_id,
