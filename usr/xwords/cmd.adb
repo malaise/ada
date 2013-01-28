@@ -16,7 +16,7 @@ package body Cmd is
   Exit_Code : Command.Exit_Code_Range;
 
   -- Words exits with 0 if found, 1 i not found and 2 on error
-  Words_Error : constant Command.Exit_Code_range := 2;
+  Words_Error : constant Command.Exit_Code_Range := 2;
 
   -- Replace all LineFeeds by spaces
   procedure Normalize (List : in out Res_List) is
@@ -33,7 +33,7 @@ package body Cmd is
       Line := As.U.Tus (Str_Util.Substit (
                 Line.Image, Ada.Characters.Latin_1.Lf & "", " "));
       -- Remove trailing spaces
-      Line := As.U.Tus (Str_Util.Strip (Line.image));
+      Line := As.U.Tus (Str_Util.Strip (Line.Image));
       List.Modify (Line, Moved => Moved);
       exit when not Moved;
     end loop;
