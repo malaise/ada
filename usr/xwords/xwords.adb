@@ -1,7 +1,7 @@
 -- Search for words matching criteria (au:o.obile) or regexp (au.*bile)
 -- Or search anagrams
 with As.U.Utils, Argument, Con_Io, Afpx, Basic_Proc, Language, Many_Strings,
-     Str_Util, Lower_Str, Environ, Images, Event_Mng, Afpx_Xref, Mutex_Manager,
+     Str_Util, Lower_Str, Environ, Images, Event_Mng, Afpx_Xref, Protected_Var,
      Trilean;
 with Cmd, Analist;
 procedure Xwords is
@@ -275,8 +275,8 @@ procedure Xwords is
   end Load_Anagrams;
 
   -- Anagram loading status: Ok, Failed or Pending
-  Anagram_Loaded : Trilean.Trilean := Trilean.Other;
-  Lock : Mutex_Manager.Mutex (Mutex_Manager.Write_Read, False);
+  package Protected_Trilean is new Protected_Var (Trilean.Trilean);
+  Anagram_Loaded : Protected_Trilean.Protected_T;
   task body Load_Anagrams is
     File_Name : As.U.Asu_Us;
     Load : Boolean;
@@ -309,10 +309,8 @@ procedure Xwords is
           Ok := False;
       end;
       Debug ("Loaded");
-      -- Report completion
-      Lock.Get (Mutex_Manager.Write);
-      Anagram_Loaded := Trilean.Boo2Tri (Ok);
-      Lock.Release;
+      -- Report completion: Ok or failure
+      Anagram_Loaded.Set (Trilean.Boo2Tri (Ok));
       Debug ("Reported");
       -- Wake up main task
       Event_Mng.Send_Dummy_Signal;
@@ -344,6 +342,7 @@ begin
   Redisplay := False;
 
   -- Load Anagram dictio
+  Anagram_Loaded.Set (Trilean.Other);
   begin
     -- Button is inactive until dictio is loaded OK
     Afpx.Set_Field_Activation (Anagrams_Fld, False);
@@ -362,14 +361,12 @@ begin
   loop
     -- Get result of loading the dictio: polling
     if Loading_Anagrams then
-      Lock.Get (Mutex_Manager.Read);
-      case Anagram_Loaded is
+      case Anagram_Loaded.Get is
         when Trilean.True =>
           -- Dictio loaded OK, enable
           Debug ("Activated");
           Afpx.Set_Field_Activation (Anagrams_Fld, True);
           Loading_Anagrams := False;
-          Lock.Release;
         when Trilean.False =>
           -- Dictio loading failed
           Basic_Proc.Put_Line_Error (
@@ -377,11 +374,10 @@ begin
                 & Dictio_File_Name.Image & ".");
 
           Basic_Proc.Set_Error_Exit_Code;
-          Lock.Release;
           return;
         when Trilean.Other =>
           -- Dictio not loaded yet
-          Lock.Release;
+          null;
       end case;
     end if;
 
