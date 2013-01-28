@@ -464,6 +464,9 @@ property_def (1)::
 protected_pool (1)::
      Store and retrieve data (by key) in a protected pool.
 
+protected_var (1)::
+     Generic protected variable (write-read).
+
 queues queues-timed (1)::
      Fifo, Lifo, Prio, Timed queues.
 
