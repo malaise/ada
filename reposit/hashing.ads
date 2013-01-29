@@ -19,8 +19,7 @@ package Hashing is
   Not_Found : exception;
 
   -- Default maximum size of primary hash table (4095)
-  subtype Def_Max_Hash_Range is Max_Hash_Range
-          range 0 .. 16#FFF#;
+  subtype Def_Max_Hash_Range is Max_Hash_Range range 0 .. 16#FFF#;
   Def_Max_Hash_Value : constant Def_Max_Hash_Range := Def_Max_Hash_Range'Last;
   function Def_Max_Hash_Func (Key : String) return Def_Max_Hash_Range;
 

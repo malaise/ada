@@ -9,14 +9,14 @@ package Hash_Function is
   -- For immediate computation
   function Hash (Str : in String) return Hash_Range;
 
-  -- For iterative compuations:
-  -- Reset computing of hash value
+  -- For iterative computations:
+  -- Reset the currently computed of hash value
   procedure Rst (Buffer : in out Hash_Buffer);
 
-  -- Add Str to computed hash value
+  -- Add Str to the currently computed hash value
   procedure Add (Buffer : in out Hash_Buffer; Str : in String);
 
-  -- Get currently computed hash value (which is not reset)
+  -- Get the currently computed hash value (which is not reset)
   function Get (Buffer : in Hash_Buffer) return Hash_Range;
 
 private

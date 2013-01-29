@@ -4,7 +4,7 @@ package Hashed_List.Unique is
   -----------------
   -- UNIQUE LIST --
   -----------------
-  -- A unique list is hashed list where at most one element of a given value
+  -- A unique list is a hashed list where at most one element of a given value
   --  (in the sense of "=") is stored.
   -- Storing an element leads to either
   --  - insertion (when the element is new)
@@ -39,7 +39,7 @@ package Hashed_List.Unique is
                            Item : in Element_Type);
   -- Insert or replace an item
   -- May raise Full_List (no more memory)
-  -- This ensures that Hased_List.Insert is not called on a Unique_List
+  -- This ensures that Hashed_List.Insert is not called on a Unique_List
   overriding procedure Insert (List : in out Unique_List_Type;
                                Item : in Element_Type;
                                Where : in Where_Insert_List := Last);
