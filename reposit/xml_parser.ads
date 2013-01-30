@@ -12,7 +12,7 @@ with As.U, Queues, Trees, Hashed_List.Unique, Text_Char, Dynamic_List,
 --    Some other encodings may be handled by defining the environment variable
 --    XML_PARSER_MAP_DIR to where Byte_To_Unicode can find the mapping file
 --    named <ENCODING>.xml (in uppercase, ex: ISO-8859-9.xml).
---  * Namespaces are not checked for validity of URI references.
+--  * Namespaces are not checked for the validity of URI references.
 package Xml_Parser is
 
   -- Version incremented at each significant change
@@ -56,7 +56,7 @@ package Xml_Parser is
   -- The children of an element
   type Nodes_Array is array (Child_Index range <>) of Node_Type;
 
-  -- A parsing context (token for all operation)
+  -- A parsing context (token for all operations)
   type Ctx_Type is tagged limited private;
 
   -- Context status
@@ -78,7 +78,7 @@ package Xml_Parser is
   ---------------------------
   -- NOTE ABOUT NAMESPACES --
   ---------------------------
-  -- When Namespaces option is set then
+  -- When Namespaces option is set then:
   --  - the document is checked to be namespace-well-formed and namespace-valid
   --  - namespace information of elements (Get_Namespace) and attributes
   --    (Namespace field) is filled, otherwise it is empty
@@ -119,7 +119,7 @@ package Xml_Parser is
   -- - ATTLIST already existing for element and attribute => merge directives
   -- - attribute already defined for element => discard new definition
   -- - entity already defined => discard new definition
-  -- - unknown element used in in child definition
+  -- - unknown element used in child definition
   -- - unknown element used in ATTLIST
   -- - inconsistency between EMPTY definition of element and an empty tag
 
@@ -133,9 +133,8 @@ package Xml_Parser is
   --  then its children (recusively) then it is closed (Creation = False)
   -- Only PIs have a value
   -- Is_Mixed is set on element if this element has mixed content
-  -- In_Mixed is on anything else when it is within a Is_Mixed element
-  --  indent shall be skipped
-  -- After parsing the Ctx has status Unparsed and only unparsed entities infos
+  -- In_Mixed is on anything within a Is_Mixed element: indent shall be skipped
+  -- After parsing, the Ctx has status Unparsed and only unparsed entities infos
   --  can be got from it.
   type Stage_List is (Prologue, Elements, Tail);
   type Node_Update is new Ada.Finalization.Controlled with record
@@ -209,9 +208,9 @@ package Xml_Parser is
   --  are not used any more
   procedure Clean (Ctx : in out Ctx_Type);
 
-  --------------------
-  -- STRING PARSING --
-  --------------------
+  -----------------
+  -- DTD PARSING --
+  -----------------
   -- Parse a Dtd, stdin if empty
   -- Optionally check for some warnings
   -- The Dtd can then be used to Parse_Elements
@@ -233,6 +232,9 @@ package Xml_Parser is
   -- Clean a dtd
   procedure Clean_Dtd (Dtd : in out Dtd_Type);
 
+  --------------------
+  -- STRING PARSING --
+  --------------------
   -- Parse the prologue of a string
   -- Then one can call Get_Prologue on Ctx
   --  (Calling Get_Root_Element will raise Status_Error);
@@ -364,7 +366,6 @@ package Xml_Parser is
                           Element : Element_Type;
                           Name    : String) return As.U.Asu_Us;
 
-
   ----------------
   -- NAVIGATION --
   ----------------
@@ -438,7 +439,7 @@ package Xml_Parser is
   -------------------
   -- Shall the Element, if empty, be put with EmptyElemTag (<element/>) or
   --  with STag and ETag (<element></elememt>)
-  -- By default it is False except if
+  -- By default it is False except if:
   --  - Parsed element is empty with EmptyElemTag (</element>)
   --  - or Generator.Set_Put_Empty (True) is called on the element
   function Get_Put_Empty (Ctx     : Ctx_Type;
