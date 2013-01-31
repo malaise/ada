@@ -1,27 +1,45 @@
 with As.U;
 package body Romanic is
-  Nb_Digits : constant := 7;
-  subtype Digits_Range is Positive range 1 .. Nb_Digits;
 
-  type Typo_Rec is record
-    Typo : Character;
-    Val  : Positive;
-  end record;
+  Values : constant array (Digit) of Positive := (
+    'I' =>     1,
+    'V' =>     5,
+    'X' =>    10,
+    'L' =>    50,
+    'C' =>   100,
+    'D' =>   500,
+    'M' => 1_000);
 
-  Typo_Def_Array : constant array (Digits_Range) of Typo_Rec := (
-    ('I',     1),
-    ('V',     5),
-    ('X',    10),
-    ('L',    50),
-    ('C',   100),
-    ('D',   500),
-    ('M', 1_000));
+  -- Character <-> Digit conversion
+  function D2C (D : Digit) return Character is
+  begin
+    case D is
+      when 'I' => return 'I';
+      when 'V' => return 'V';
+      when 'X' => return 'X';
+      when 'L' => return 'L';
+      when 'C' => return 'C';
+      when 'D' => return 'D';
+      when 'M' => return 'M';
+    end case;
+  end D2C;
+  function C2D (C : Character) return Digit is
+  begin
+    case C is
+      when 'I' => return 'I';
+      when 'V' => return 'V';
+      when 'X' => return 'X';
+      when 'L' => return 'L';
+      when 'C' => return 'C';
+      when 'D' => return 'D';
+      when 'M' => return 'M';
+      when others => raise Constraint_Error;
+    end case;
+  end C2D;
 
   -- Convert a romanic number into arabic
   -- May raise Invalid_Roman
-  function Romanic2Arabic (Romanic : in String) return Arabic_Range is
-    -- Is current digit valid
-    Valid : Boolean;
+  function Romanic2Arabic (R : Number) return Arabic is
     -- Number of repeated digit
     Nb_Repet : Natural;
     -- Final result
@@ -31,11 +49,11 @@ package body Romanic is
 
     -- Get current, next or next_next digit of romanic number
     None : constant Character := '-';
-    Cur_Index : Positive := Romanic'First;
+    Cur_Index : Positive := R'First;
     function Prev return Character is
     begin
-      if Cur_Index > Romanic'First then
-        return Romanic(Cur_Index - 1);
+      if Cur_Index > R'First then
+        return D2C(R(Cur_Index - 1));
       else
         return None;
       end if;
@@ -43,8 +61,8 @@ package body Romanic is
 
     function Current return Character is
     begin
-      if Cur_Index <= Romanic'Last then
-        return Romanic(Cur_Index);
+      if Cur_Index <= R'Last then
+        return D2C(R(Cur_Index));
       else
         return None;
       end if;
@@ -52,8 +70,8 @@ package body Romanic is
 
     function Next return Character is
     begin
-      if Cur_Index + 1 <= Romanic'Last then
-        return Romanic(Cur_Index + 1);
+      if Cur_Index + 1 <= R'Last then
+        return D2C(R(Cur_Index + 1));
       else
         return None;
       end if;
@@ -61,8 +79,8 @@ package body Romanic is
 
     function Next_Next return Character is
     begin
-      if Cur_Index + 2 <= Romanic'Last then
-        return Romanic(Cur_Index + 2);
+      if Cur_Index + 2 <= R'Last then
+        return D2C(R(Cur_Index + 2));
       else
         return None;
       end if;
@@ -73,12 +91,10 @@ package body Romanic is
       if C = None then
         return 0;
       end if;
-      for I in Typo_Def_Array'Range loop
-        if Typo_Def_Array(I).Typo = C then
-          return Typo_Def_Array(I).Val;
-        end if;
-      end loop;
-      raise Invalid_Romanic;
+      return Values(C2D(C));
+    exception
+      when Constraint_Error =>
+        raise Invalid_Romanic;
     end Value;
 
     procedure Shift is
@@ -87,22 +103,9 @@ package body Romanic is
     end Shift;
 
   begin
-    if Romanic = "" then
+    if R = "" then
       raise Invalid_Romanic;
     end if;
-    -- First check all digits are valid
-    for I in Romanic'Range loop
-      Valid := False;
-      for J in Typo_Def_Array'Range loop
-        if Typo_Def_Array(J).Typo = Romanic(I) then
-          Valid := True;
-          exit;
-        end if;
-      end loop;
-      if not Valid then
-        raise Invalid_Romanic;
-      end if;
-    end loop;
 
     -- Now the decoding
     Result := 0;
@@ -172,7 +175,7 @@ package body Romanic is
       Shift;
     end loop;
 
-    return Arabic_Range(Result);
+    return Arabic(Result);
   exception
     when others =>
       raise Invalid_Romanic;
@@ -180,11 +183,12 @@ package body Romanic is
 
 
   -- Convert an arabic number into romanic
-  function Arabic2Romanic (Arabic : in Arabic_Range) return String is
+  function Arabic2Romanic (A : in Arabic) return Number is
     -- Remaining value
-    Rest : Natural := Arabic;
+    Rest : Natural := A;
     -- Index in Type_Def_Array, init to last power of 10 (odd)
-    Index : Digits_Range := Digits_Range'Last;
+    Index : Digit := Digit'Last;
+    Other : Digit;
     -- Result string
     Result : As.U.Asu_Us;
     N : Natural;
@@ -193,29 +197,31 @@ package body Romanic is
 
     loop
       -- Compute number of digits(Index) from 0 to 9
-      Div :=  Typo_Def_Array(Index).Val;
+      Div :=  Values(Index);
       N := Rest / Div;
       if N > 9 then
         raise Program_Error;
       elsif N = 9 then
         -- Current then Next_Next
-        Result.Append (Typo_Def_Array(Index).Typo
-                     & Typo_Def_Array(Index+2).Typo);
+        Other := Digit'Succ(Index);
+        Other := Digit'Succ(Other);
+        Result.Append (D2C (Index) & D2C (Other));
       elsif N >= 5 then
         -- Next then N times current
-        Result.Append (Typo_Def_Array(Index+1).Typo);
+        Other := Digit'Succ(Index);
+        Result.Append (D2C (Other));
         for I in 6 .. N loop
-          Result.Append (Typo_Def_Array(Index).Typo);
+          Result.Append (D2C (Index));
         end loop;
-      elsif N = 4 and then Index /= Digits_Range'Last then
+      elsif N = 4 and then Index /= Digit'Last then
         -- Current then Next
-        Result.Append (Typo_Def_Array(Index).Typo
-                          & Typo_Def_Array(Index+1).Typo);
+        Other := Digit'Succ(Index);
+        Result.Append (D2C (Index) & D2C (Other));
       else
         -- N times current
         -- Up to 3 times for all but M and up to 4 times for M
         for I in 1 .. N loop
-          Result.Append (Typo_Def_Array(Index).Typo);
+          Result.Append (D2C (Index));
         end loop;
       end if;
 
@@ -224,11 +230,40 @@ package body Romanic is
       exit when Rest = 0;
 
       -- Next slice of power of 10
-      Index := Index - 2;
+      Index := Digit'Pred(Index);
+      Index := Digit'Pred(Index);
     end loop;
 
-    return Result.Image;
+    return Value (Result.Image);
   end Arabic2Romanic;
+
+  -- Convert Romanic from and to string
+  function Image (R : Number) return String is
+    Res : String (1 .. R'Length);
+  begin
+    if R = "" then
+      raise Invalid_Romanic;
+    end if;
+    for I in R'Range loop
+      Res (Res'First + I - R'First) := D2C (R(I));
+    end loop;
+    return Res;
+  end Image;
+
+  function Value (S : String) return Number is
+    Res : Number (1 .. S'Length);
+  begin
+    if S = "" then
+      raise Invalid_Romanic;
+    end if;
+    for I in S'Range loop
+      Res (Res'First + I - S'First) := C2D (S(I));
+    end loop;
+    return Res;
+  exception
+    when others =>
+      raise Invalid_Romanic;
+  end Value;
 
 end Romanic;
 

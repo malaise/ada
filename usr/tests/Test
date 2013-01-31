@@ -1245,6 +1245,7 @@ echo "OK"
 
 # t_romanic
 title t_romanic
+try t_romanic
 try t_romanic 1963
 cat << EOF > exp
 1963 -> MCMLXIII
