@@ -342,8 +342,8 @@ package body Search_Pattern is
           Add (Delimiter.Image, Case_Sensitive, False, List);
           Prev_Delim := True;
         else
-          -- A Regex: see if it is followed by a delim (always,
-          --  except at the end)
+          -- A Regex: see if it is followed by a delim (always, except at the
+          --  end)
           Next_Delim := Stop_Index /= 0;
           -- Make Stop_Index be the last index of regex,
           if Stop_Index = 0 then
@@ -669,6 +669,13 @@ package body Search_Pattern is
         Regular_Expressions.Exec (Upat_Access.Pat,
                                   Str(Start .. Str'Last),
                                   Nmatch, Match);
+        -- For exclusion, the match must be strict
+        if not Search and then Nmatch >= 1 and then
+            (Match(1).First_Offset /= Start
+             or else Match(1).Last_Offset_Stop /= Str'Last) then
+          -- Not strict matching
+          Nmatch := 0;
+        end if;
       else
         -- Not a regex, locate string
         Nmatch := Str_Util.Locate (Str, Upat_Access.Find_Str.Image, Start);

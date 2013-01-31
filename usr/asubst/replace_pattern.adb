@@ -15,7 +15,7 @@ package body Replace_Pattern is
   -- The line feed string
   Line_Feed : constant String := Text_Line.Line_Feed_Str;
 
-  -- Regex and subbstring indexes of \R and \r
+  -- Regex and substring indexes of \R and \r
   subtype Byte is Natural range 0 .. 255;
 
   -- Record describing an action to perform during substitution
@@ -81,24 +81,31 @@ package body Replace_Pattern is
   end Error;
 
   -- Check and get an hexa code from The_Pattern (Index .. Index + 1)
-  function Get_Hexa (Index : Positive) return Byte is
+  function Get_Hexa (Index : Positive; Hexa : in Boolean) return Byte is
+   Error_Msg : As.U.Asu_Us;
    Result : Byte;
   begin
+    -- Set error message
+    if Hexa then
+      Error_Msg := As.U.Tus ("hexadecimal sequence");
+    else
+      Error_Msg := As.U.Tus ("regex or substring index");
+    end if;
     -- First digit: 16 * C
     if Index > The_Pattern.Length then
-      Error ("No hexadecimal sequence at the end of replace pattern");
+      Error ("No " & Error_Msg.Image & " at the end of replace pattern");
     end if;
     begin
       Result := 16#10# * Hexa_Utils.Char_To_Hexa (The_Pattern.Element (Index));
     exception
       when Constraint_Error =>
-        Error ("Invalid hexadecimal sequence "
+        Error ("Invalid " & Error_Msg.Image & " "
              & The_Pattern.Slice (Index, Index + 1)
              & " in replace pattern");
     end;
     -- First digit: 1 * C
     if Index + 1 > The_Pattern.Length then
-      Error ("Uncomplete hexadecimal sequence at the end of replace pattern");
+      Error ("Uncomplete " & Error_Msg.Image & " at the end of replace pattern");
       raise Parse_Error;
     end if;
     begin
@@ -106,12 +113,12 @@ package body Replace_Pattern is
               + Hexa_Utils.Char_To_Hexa (The_Pattern.Element (Index + 1));
     exception
       when Constraint_Error =>
-        Error ("Invalid hexadecimal sequence "
+        Error ("Invalid " & Error_Msg.Image & " "
              & The_Pattern.Slice (Index, Index + 1)
              & " in replace pattern");
     end;
     if Debug.Set then
-      Sys_Calls.Put_Line_Error ("Replace, got hexadecimal sequence "
+      Sys_Calls.Put_Line_Error ("Replace, got " & Error_Msg.Image & " "
                                & The_Pattern.Slice (Index, Index + 1));
     end if;
     return Result;
@@ -271,16 +278,7 @@ package body Replace_Pattern is
           Subst.Action := Start_Mixedcase;
           Switch_Case (Subst, Case_Action);
         when 'n' =>
-          -- "\n" replaced by Line_Feed
-          if Case_Action /= Stop_Case then
-            -- Case substitution stops with the line, add subst marker
-            Case_Action := Stop_Case;
-            Subst.Action := Stop_Case;
-            Substites.Insert (Subst);
-            The_Pattern.Replace (Got - 1, Got, Subst_Char & Line_Feed);
-          else
-            The_Pattern.Replace (Got - 1, Got, Line_Feed);
-          end if;
+          The_Pattern.Replace (Got - 1, Got, Line_Feed);
         when 's' =>
           -- "\s" replaced by Space
           The_Pattern.Replace (Got - 1, Got, " ");
@@ -293,14 +291,14 @@ package body Replace_Pattern is
           Switch_Case (Subst, Case_Action);
         when 'x' =>
           -- "\xIJ" hexa replaced by byte
-          Hexa_Byte := Get_Hexa (Got + 1);
+          Hexa_Byte := Get_Hexa (Got + 1, True);
           The_Pattern.Replace (Got - 1, Got + 2,
                                Character'Val (Hexa_Byte) & "");
         when 'R' | 'r' | 'i' | 'a' | 'o' =>
           -- "\RIJ" or \rIJ, IJ in hexa, replaced by matching (sub) string
           -- "\iIJ", IJ in hexa, replaced by text if substring is matching
           -- Check IJ is a valid byte in hexa
-          Hexa_Byte := Get_Hexa (Got + 1);
+          Hexa_Byte := Get_Hexa (Got + 1, False);
           Subst.Info := Hexa_Byte;
           if Esc_Char = 'R' then
             -- Replace by regex index IJ, check IJ
@@ -371,13 +369,9 @@ package body Replace_Pattern is
       -- Also done if end of pattern
       exit when Start >= The_Pattern.Length;
     end loop;
-    -- Stop case substitution at end of line, add subst marker
+    -- Check not in case substitution
     if Case_Action /= Stop_Case then
-      Subst.Action := Stop_Case;
-      Subst.Index := The_Pattern.Length + 1;
-      Subst.Info := 0;
-      Substites.Insert (Subst);
-      The_Pattern.Append (Subst_Char & "");
+      Error ("Un-terminated case substitution");
     end if;
     -- Check not in conditional section
     if If_Mode /= None then
