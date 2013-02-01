@@ -31,9 +31,12 @@ package body Af_Dscr is
   end Load_Size;
 
   -- Load a descriptor
+  procedure Load_Files;
   procedure Load_Dscr (Dscr_No : in Afpx_Typ.Descriptor_Range) is
     Dscr_Index : Afpx_Typ.Descriptor_Range;
   begin
+    -- Load Afpx files if needed
+    Load_Files;
 
     -- Check it is defined
     if not Dscrs(Dscr_No).Modified then
@@ -137,45 +140,57 @@ package body Af_Dscr is
       raise Afpx_Internal_Error;
   end Load_Field;
 
-begin
   -- Try to getenv data dir then to open the files
-  declare
-    File_Dir_Env_Name : constant String := "AFPX_DATA_DIR";
-    Default_Path : constant String := ".";
+  Files_Loaded : Boolean := False;
+  procedure Load_Files is
   begin
-    Afpx_Typ.Dest_Path := As.U.Tus (Default_Path);
-    Environ.Get_Us (File_Dir_Env_Name, Afpx_Typ.Dest_Path);
-    Afpx_Typ.Dest_Path.Append ("/");
+    if Files_Loaded then
+      return;
+    end if;
 
-    Dscr_Io.Open (Dscr_File, Dscr_Io.In_File,
-                  Afpx_Typ.Dest_Path.Image & Afpx_Typ.Dscr_File_Name);
-    Fld_Io.Open  (Fld_File,  Fld_Io.In_File,
-                  Afpx_Typ.Dest_Path.Image & Afpx_Typ.Fld_File_Name);
-    Init_Io.Open (Init_File, Init_Io.In_File,
-                  Afpx_Typ.Dest_Path.Image & Afpx_Typ.Init_File_Name);
-  exception
-    when others =>
-      Basic_Proc.Put_Error ("AFPX ERROR: Can't read descriptors. For info, "
-                      & File_Dir_Env_Name & " is ");
-      if Environ.Is_Set (File_Dir_Env_Name) then
-        Basic_Proc.Put_Line_Error (Afpx_Typ.Dest_Path.Image);
-      else
-        Basic_Proc.Put_Line_Error ("not set.");
-      end if;
-      raise Afpx_File_Not_Found;
-  end;
+    declare
+      File_Dir_Env_Name : constant String := "AFPX_DATA_DIR";
+      Default_Path : constant String := ".";
+    begin
+      Afpx_Typ.Dest_Path := As.U.Tus (Default_Path);
+      Environ.Get_Us (File_Dir_Env_Name, Afpx_Typ.Dest_Path);
+      Afpx_Typ.Dest_Path.Append ("/");
 
-  -- Read first descriptor
-  begin
-    Dscr_Io.Read (Dscr_File, Dscrs, 1);
-  exception
-    when others =>
-      raise Afpx_File_Read_Error;
-  end;
+      Dscr_Io.Open (Dscr_File, Dscr_Io.In_File,
+                    Afpx_Typ.Dest_Path.Image & Afpx_Typ.Dscr_File_Name);
+      Fld_Io.Open  (Fld_File,  Fld_Io.In_File,
+                    Afpx_Typ.Dest_Path.Image & Afpx_Typ.Fld_File_Name);
+      Init_Io.Open (Init_File, Init_Io.In_File,
+                    Afpx_Typ.Dest_Path.Image & Afpx_Typ.Init_File_Name);
+    exception
+      when others =>
+        Basic_Proc.Put_Error ("AFPX ERROR: Can't read descriptors. For info, "
+                        & File_Dir_Env_Name & " is ");
+        if Environ.Is_Set (File_Dir_Env_Name) then
+          Basic_Proc.Put_Line_Error (Afpx_Typ.Dest_Path.Image);
+        else
+          Basic_Proc.Put_Line_Error ("not set.");
+        end if;
+        raise Afpx_File_Not_Found;
+    end;
 
-  -- Check Afpx version
-  if Dscrs(1).Version /= Afpx_Typ.Afpx_Version then
-    raise Afpx_File_Version_Error;
-  end if;
+    -- Read first descriptor
+    begin
+      Dscr_Io.Read (Dscr_File, Dscrs, 1);
+    exception
+      when others =>
+        raise Afpx_File_Read_Error;
+    end;
+
+    -- Check Afpx version
+    if Dscrs(1).Version /= Afpx_Typ.Afpx_Version then
+      raise Afpx_File_Version_Error;
+    end if;
+    Files_Loaded := True;
+  end Load_Files;
+
+begin
+  -- Load files (and check) at elaboration, so as early as possible
+  Load_Files;
 end Af_Dscr;
 
