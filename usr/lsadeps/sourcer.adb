@@ -140,7 +140,6 @@ package body Sourcer is
     -- Full file name
     Full_File_Name : As.U.Asu_Us;
     -- Text_Char stuff
-    Fd : Sys_Calls.File_Desc;
     Txt : Text_Char.File_Type;
     -- File root: path/prefix
     Root_File : As.U.Asu_Us;
@@ -200,12 +199,11 @@ package body Sourcer is
 
     -- Open
     begin
-      Fd := Sys_Calls.Open (Full_File_Name.Image, Sys_Calls.In_File);
+      Txt.Open_All (Text_Line.In_File, Full_File_Name.Image);
     exception
-      when Sys_Calls.Name_Error =>
+      when Text_Line.Name_Error =>
         Error ("Cannot open file " & Dscr.File.Image);
     end;
-    Txt.Open (Fd);
 
     -- Parse until start of unit
     loop
@@ -280,7 +278,7 @@ package body Sourcer is
          (Dscr.Path.Image, Dscr.Unit.Image, ""));
     if not Dscr.Witheds.Is_Null then
       Dscr.Witheds.Append (Separator);
-      -- Scan each withed unit and and appends its parents if any
+      -- Scan each withed unit and append its parents if any
       Iterator.Set (Dscr.Witheds.Image, Is_Sep'Access);
       loop
         declare
@@ -330,8 +328,7 @@ package body Sourcer is
     -- Done: store and close
     -- Drop new version of this unit if one already exists
     List.Insert_If_New (Dscr);
-    Txt.Close;
-    Sys_Calls.Close (Fd);
+    Txt.Close_All;
 
     if Debug.Is_Set then
       Dump (Dscr);
