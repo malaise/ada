@@ -304,7 +304,7 @@ package body Text_Line is
     return Line;
   end Trim;
 
- -- Open the fd associated to File_Name (stdin if empty) for reading
+  -- Open the fd associated to File_Name (stdin if empty) for reading
   --  and open File to it
   procedure Open_All (File : in out File_Type;
                       Mode : in File_Mode;
