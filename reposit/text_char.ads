@@ -37,6 +37,21 @@ package Text_Char is
   -- May raise Status_Error if File is not open
   function End_Of_File (File : in File_Type) return Boolean;
 
+  -- Shortcuts to open/close the fd and the file together
+
+  -- Open the fd associated to File_Name (use stdin if empty File_Name)
+  --  and open File to it
+  -- May raise Name_Error or Io_Error if error opening File_Name
+  -- May raise Status_Error if File is already open
+  procedure Open_All (File : in out File_Type;
+                      File_Name : in String := "");
+
+
+  -- Close the file then the fd (if not stdin)
+  -- May raise Status_Error if File is not open
+  procedure Close_All (File : in out File_Type);
+
+  Name_Error : exception;
   Status_Error : exception;
   End_Error : exception;
   Io_Error : exception;

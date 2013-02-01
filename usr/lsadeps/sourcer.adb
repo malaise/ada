@@ -199,9 +199,9 @@ package body Sourcer is
 
     -- Open
     begin
-      Txt.Open_All (Text_Line.In_File, Full_File_Name.Image);
+      Txt.Open_All (Full_File_Name.Image);
     exception
-      when Text_Line.Name_Error =>
+      when Text_Char.Name_Error =>
         Error ("Cannot open file " & Dscr.File.Image);
     end;
 

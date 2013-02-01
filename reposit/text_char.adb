@@ -164,6 +164,51 @@ package body Text_Char is
     return File.Acc.Get_Index /= 0;
   end End_Of_File;
 
+  -- Open the fd associated to File_Name (stdin if empty) for reading
+  --  and open File to it
+  procedure Open_All (File : in out File_Type;
+                      File_Name : in String := "") is
+    Fd : Sys_Calls.File_Desc;
+  begin
+    if File.Acc /= null then
+      raise Status_Error;
+    end if;
+    if File_Name /= "" then
+      begin
+        Fd := Sys_Calls.Open (File_Name, Sys_Calls.In_File);
+      exception
+        when Sys_Calls.Name_Error =>
+          raise Name_Error;
+        when Sys_Calls.System_Error =>
+          raise Io_Error;
+      end;
+    else
+      Fd := Sys_Calls.Stdin;
+    end if;
+    Open (File, Fd);
+  end Open_All;
+
+  -- Close the file then the fd (if not stdin)
+  -- May raise Status_Error if File is not open
+  procedure Close_All (File : in out File_Type) is
+    Fd : Sys_Calls.File_Desc;
+    use type Sys_Calls.File_Desc;
+  begin
+    if File.Acc = null then
+      raise Status_Error;
+    end if;
+    Fd := File.Acc.Line_File.Get_Fd;
+    if Fd /= Sys_Calls.Stdin then
+      begin
+        Sys_Calls.Close (Fd);
+      exception
+        when others =>
+          null;
+      end;
+    end if;
+    Close (File);
+  end Close_All;
+
   overriding procedure Finalize (File : in out File_Type) is
   begin
     if Is_Open (File) then
