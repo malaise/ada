@@ -220,7 +220,7 @@ package body Regular_Expressions is
     if Cres /= 0 then
       return;
     end if;
-    -- Set N_Matched to 1 event if empty Match_Info
+    -- Set N_Matched to 1 even if empty Match_Info
     if Match_Info'Length = 0 then
       N_Matched := 1;
       return;

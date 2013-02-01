@@ -81,13 +81,13 @@ package Regular_Expressions is
 
   -- Check that a Match_Cell (returned by Exec or Match) is valid
   --  i.e. it can be used to extract a matching (sub) string
+  -- No_Match and Any_Match are not valid
   function Valid_Match (Cell : Match_Cell) return Boolean;
 
   -- Compare string Str to Criteria (Compile and Exec with default values)
   -- If Strict is set, then True is returned if and only if the
   --  complete Str matches the criteria (i.e. First_Offset = Str'First
   --  and Last_Offset_Stop = Str'Last)
-  --  So False is returned if Any_Match, except if Str is empty
   -- May raise No_Criteria is Criteria does not compile
   function Match (Criteria, Str : String;
                   Strict : in Boolean) return Boolean;

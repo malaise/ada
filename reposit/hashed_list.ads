@@ -132,7 +132,7 @@ package Hashed_List is
                      Iteration : access
      procedure (Current : in Element_Type;
                 Go_On   : in out Boolean);
-                     From    : in Reference := From_First);
+                     From      : in Reference := From_First);
 
   -- Rewind internal list
   -- May raise Not_In_List if list is empty

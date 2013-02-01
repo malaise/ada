@@ -81,7 +81,7 @@ package body Temp_File  is
         Remove (Tfn);
         if Sys_Calls.File_Found (Fn) then
           -- Link probably worked but exclusive acces is not guaranteed
-          -- Take the risk of a dandling orphan Tmp_tmp file.
+          -- Take the risk of a dandling orphan Temp_File.
           return "";
         else
           raise Invalid_Dir;
@@ -119,5 +119,6 @@ package body Temp_File  is
     -- No success
     raise No_More_Temp;
   end Create;
+
 end Temp_File;
 
