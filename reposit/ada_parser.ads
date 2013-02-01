@@ -17,6 +17,10 @@ package Ada_Parser is
     String_Literal,    -- " { <character> | "" } "
     Comment);      -- -- Text, up to NewLine
 
+  -- Reserved words are returned in lowercase
+  -- Idendifiers are returned in Mixed_Case
+  -- Numeric literals are returned in UPPERCASE
+
   -- Parse flow of File until end of file
   -- Call callback for each lexical element
   -- May raise Syntax_Error
