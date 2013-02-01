@@ -306,7 +306,7 @@ package Limited_List is
   -- Called with each matching element, which can be updated.
   -- Processing of Iterate can be stopped by resetting Go_On to False
   --  (it is initialised to True).
-  type Iteration_Access is access procedure (Current : in out Element_Type;
+  type Iteration_Access is access procedure (Current : in Element_Type;
                                              Go_On   : in out Boolean);
 
   -- Search the next item matching the provided criteria and
@@ -321,7 +321,7 @@ package Limited_List is
                      Where     : in Direction := Next;
                      From      : in Search_Kind_List;
                      Iteration : access
-    procedure (Current : in out Element_Type;
+    procedure (Current : in Element_Type;
                Go_On   : in out Boolean));
 
   generic

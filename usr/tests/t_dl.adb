@@ -20,7 +20,7 @@ procedure T_Dl is
     if New_Line then Basic_Proc.New_Line_Output; end if;
   end Put;
 
-  procedure Iteration (Current : in out Integer;
+  procedure Iteration (Current : in Integer;
                        Go_On   : in out Boolean) is
   begin
     Put (Current);

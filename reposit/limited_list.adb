@@ -898,7 +898,7 @@ package body Limited_List is
                      Where     : in Direction := Next;
                      From      : in Search_Kind_List;
                      Iteration : access
-    procedure (Current : in out Element_Type;
+    procedure (Current : in Element_Type;
                Go_On   : in out Boolean)) is
     Found : Boolean;
     Go_On : Boolean;
