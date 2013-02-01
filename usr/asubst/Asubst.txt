@@ -152,21 +152,22 @@ NOTE: In "regex" mode, other ''\'' expressions are passed to PCRE.
 
 Exclusion pattern
 -----------------
+This option means that the text matching the <find_pattern> but also stricly
+matching the <exclude_regex> will not be replaced.
+
+NOTE: Beware that it applies to the text matching <find_pattern> only. +
+'Stricly' means that the full text must match the full pattern, e.g. "to"
+does not strictly match "o" but strictly matches ".o". +
 If set, the <exclude_regex> must have the same number of regex as the
-<find_pattern>. This option means that text matching the <find_pattern> but
-also stricly matching the <exclude_regex> will not be replaced.
-
-NOTE: Beware that it applies to the text matching <find_pattern> only.
-
-NOTE: 'Stricly' means that the full text must match the full pattern, e.g. "to"
-does not strictly match "o" but strictly matches ".o".
+<find_pattern>. +
+Exclusion is allowed in noregex mode, despite not very usefull.
 
 For example 'echo "toto" | asubst --exclude=toto to ti' will replace toto by
-titi because each matching "to" does not match the exclusion "toto". +
-On the other hand, 'echo "toto" | asubst --exclude=to to ti' and 'echo "toto"
+titi because each matching "to" does not match the exclusion "toto". Same with
+'--exclude=o'. +
+On the other hand, 'echo "toto" | asubst --exclude=to t. ti' and 'echo "toto"
 | asubst --exclude=toto toto titi' will not substitute.
 
-NOTE: Exclusion is allowed in noregex mode, despite not very usefull.
 
 Match range
 -----------
@@ -210,7 +211,7 @@ asubst -D '\n\n' -- '\b([\M]+)\b[\S]+\1' '->\R01<-' file
 
 Replace string
 --------------
-The following ''\'' sequences are supported by asubst:
+The following ''\'' sequences are supported iin the replace string:
 
 - "\n" will be replaced by a newline.
 
@@ -220,6 +221,14 @@ The following ''\'' sequences are supported by asubst:
 
 - "\xIJ" where IJ is an hexadecimal number (00 to FF or ff) will be replaced
 by a byte with the corresponding value.
+
+- "\RIJ" where IJ is an hexadecimal number will be replaced by the string
+matching the regex number IJ, (00 \<= IJ \<= NbOfRegex, 00 means the whole
+string matching all the regexes).
+
+- "\rIJ" where IJ is an hexadecimal number will be replaced by the string
+matching the substring J of the regex number I (0 < I), J = 0 for the
+complete string, (so "\R0x" = "\rx0").
 
 - "\iIJ", "\aIJ", "\oIJ", "\e" and "\f" to replace by the <text> following it,
 if Jth substring of the Ith regex matches (i.e. \rIJ is not empty).
@@ -233,31 +242,23 @@ else replace by T3.
 +
 <text> ends when encountering another "\i", a "\e" or a "\f".
 
-- "\RIJ" where IJ is an hexadecimal number will be replaced by the string
-matching the regex number IJ, (00 \<= IJ \<= NbOfRegex, 00 means the whole
-string matching all the regexes).
-
-- "\rIJ" where IJ is an hexadecimal number will be replaced by the string
-matching the substring J of the regex number I (0 < I), J = 0 for the
-complete string, (so "\R0x" = "\rx0").
-
 - "\K"<shell command>"\k", within which "\RIJ" and "\rIJ" are first replaced,
 then the command is launched (and must exit with 0), then the whole command
 directive is replaced by the command output.
 
 - "\P"<file path>"\p", within which "\RIJ" and "\rIJ" are first replaced,
-then the content of the file is inserted as is.
+then whole directive is replaced by the content of the file.
 
 - "\u", "\l", "\m" for starting an UPPER, lower or Mixed case conversion. "\c"
 for stopping a case conversion. A conversion ends when a new one starts,
 on "\c".
 
+NOTE: Conditions apply first, then replacement, then case conversion.
+
 NOTE: Substrings are numbered in the order of the opening parenthesis,
 left to right.
 
 NOTE: "\r0i", "\i0i", "\a0i" and "\o0i" are forbidden.
-
-Conditions apply first, then replacement, then case conversion.
 
 Examples:
 --------------------------------------
