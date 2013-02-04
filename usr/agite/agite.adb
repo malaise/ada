@@ -402,6 +402,12 @@ procedure Agite is
             null;
         end;
       end if;
+    elsif File.Kind = '?' and then File.S3 = 'D' then
+      -- File is deleted locally, checkout from repository
+      if Confirm ("Ready to revert:",
+                  Directory.Build_File_Name (Path.Image, Name, "")) then
+        Git_If.Do_Revert (Name);
+      end if;
     elsif File.Kind /= ' ' and then File.Kind /= '@' then
       -- Only for regular files or symbolic links
       return;
@@ -416,7 +422,6 @@ procedure Agite is
       -- File is modified in index, reset it
       if Confirm ("Ready to reset:",
                   Directory.Build_File_Name (Path.Image, Name, "")) then
-
         Git_If.Do_Reset (Name);
       end if;
     elsif File.S3 /= ' ' then
@@ -502,9 +507,24 @@ procedure Agite is
           when Add =>
             Do_Add_File (File);
         end case;
-      elsif File.Kind = '?' and then Action = Revert then
-        -- Deleted file
-        Do_Revert (File_Name);
+      elsif File.Kind = '?' then
+        case Action is
+          when Revert =>
+            -- Deleted file
+            Do_Revert (File_Name);
+          when Diff =>
+            -- File is deleted: diff from last commit to null
+            declare
+              Hash : constant Git_If.Git_Hash := Git_If.Last_Hash (File_Name);
+            begin
+              if Hash /= Git_If.No_Hash then
+                Git_If.Launch_Delta (Differator.Image, File_Name,
+                                     Hash, "");
+              end if;
+            end;
+          when others =>
+            null;
+        end case;
       end if;
     end;
   end List_Action;
