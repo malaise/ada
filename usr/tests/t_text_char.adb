@@ -3,7 +3,6 @@ procedure T_Text_Char is
   package Q is new Queues.Circ (4, Character);
   Circ : Q.Circ_Type;
 
-  Fd : Sys_Calls.File_Desc;
   File : Text_Char.File_Type;
   C, U : Character;
   Nundo : Natural;
@@ -20,9 +19,9 @@ begin
 
   -- Open file for Text_Line
   begin
-    Fd := Sys_Calls.Open (Argument.Get_Parameter, Sys_Calls.In_File);
+    File.Open_All (Argument.Get_Parameter);
   exception
-    when Sys_Calls.Name_Error =>
+    when Text_Char.Name_Error =>
       Sys_Calls.Put_Line_Error ("Error: Cannot open file " &
           Argument.Get_Parameter);
       Sys_Calls.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
@@ -30,8 +29,6 @@ begin
       Sys_Calls.Set_Error_Exit_Code;
       return;
   end;
-  -- This should work ok
-  Text_Char.Open (File, Fd);
 
   -- Loop of read
   Rnd.Gen.Randomize;
@@ -67,8 +64,7 @@ begin
   end loop;
 
   -- Done: close
-  Text_Char.Close (File);
-  Sys_Calls.Close (Fd);
+  File.Close_All;
 
 end T_Text_Char;
 

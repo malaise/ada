@@ -2,7 +2,6 @@ with Ada.Characters.Latin_1;
 with Argument, Text_Char, Text_Line, Sys_Calls, Ada_Parser, Mixed_Str;
 procedure T_Ada_Parser is
 
-  Fd : Sys_Calls.File_Desc;
   Ifile : Text_Char.File_Type;
   Ofile : Text_Line.File_Type;
 
@@ -38,9 +37,9 @@ begin
 
   -- Open file for Text_Line
   begin
-    Fd := Sys_Calls.Open (Argument.Get_Parameter, Sys_Calls.In_File);
+    Ifile.Open_All (Argument.Get_Parameter);
   exception
-    when Sys_Calls.Name_Error =>
+    when Text_Char.Name_Error =>
       Sys_Calls.Put_Line_Error ("Error: Cannot open file " &
           Argument.Get_Parameter);
       Sys_Calls.Put_Line_Error ("Usage: " & Argument.Get_Program_Name
@@ -48,17 +47,15 @@ begin
       Sys_Calls.Set_Error_Exit_Code;
       return;
   end;
-  -- This should work ok
-  Text_Char.Open (Ifile, Fd);
-  Text_Line.Open (Ofile, Text_Line.Out_File, Sys_Calls.Stdout);
+  -- Stdout
+  Ofile.Open_All (Text_Line.Out_File, "");
 
   -- Parse
   Ada_Parser.Parse (Ifile, Callback'Access);
 
   -- Done: close
-  Text_Line.Close (Ofile);
-  Text_Char.Close (Ifile);
-  Sys_Calls.Close (Fd);
+  Ofile.Close_All;
+  Ifile.Close_All;
 
 end T_Ada_Parser;
 

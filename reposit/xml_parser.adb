@@ -40,7 +40,29 @@ package body Xml_Parser is
     procedure Open (File_Name : in String; File : in out Text_Char.File_Type);
     procedure Close (File : in out Text_Char.File_Type);
   end File_Mng;
-  package body File_Mng is separate;
+
+  package body File_Mng is
+    -- Open file, raises File_Error if name error
+    procedure Open (File_Name : in String; File : in out Text_Char.File_Type) is
+    begin
+      if Text_Char.Is_Open (File) then
+        raise Text_Char.Status_Error;
+      end if;
+      if File_Name = Stdin then
+        File.Open_All ("");
+      else
+        File.Open_All (File_Name);
+      end if;
+    exception
+      when Text_Char.Name_Error =>
+        raise File_Error;
+    end Open;
+
+    procedure Close (File : in out Text_Char.File_Type) is
+    begin
+      File.Close_All;
+    end Close;
+  end File_Mng;
 
   -- My tree manipulation
   package Tree_Mng is

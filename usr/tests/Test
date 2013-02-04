@@ -113,7 +113,7 @@ export INPUT=t_ada_parser.adb
 try t_ada_parser $INPUT
 comp out $INPUT
 NB=`wc -l err | awk '{print $1}'`
-export ENB=712
+export ENB=654
 if [ $NB -ne $ENB ] ; then
   error "File err has incorrect length $NB i.o. $ENB."
 fi

@@ -12,7 +12,6 @@ package body Files is
   -- Open --
   procedure Open (Spec_File_Name : in String;
                   Delete_Body : in Boolean) is
-    Fd : Sys_Calls.File_Desc;
   begin
     -- Check that spec file ends with spec suffix
     if Spec_File_Name'Length <= Spec_Suffix'Length
@@ -23,13 +22,11 @@ package body Files is
 
     -- Open In file for Text_Char
     begin
-      Fd := Sys_Calls.Open (Spec_File_Name, Sys_Calls.In_File);
+      In_File.Open_All (Spec_File_Name);
     exception
-      when Sys_Calls.Name_Error =>
+      when Text_Char.Name_Error =>
         raise In_Error;
     end;
-    -- This should work ok
-    Text_Char.Open (In_File, Fd);
 
     -- Create Out file for Text_line
     Body_File_Name := As.U.Tus (
@@ -54,28 +51,27 @@ package body Files is
 
     -- Check that Out file does not exist
     begin
-      Fd := Sys_Calls.Open (Body_File_Name.Image, Sys_Calls.In_File);
-      Sys_Calls.Close (Fd);
+      Out_File.Open_All (Text_Line.In_File, Body_File_Name.Image);
+      -- File already exists
+      Out_File.Close_All;
       Body_File_Name.Set_Null;
       Close (Remove);
       raise Out_Error;
     exception
-      when Sys_Calls.Name_Error =>
+      when Text_Line.Name_Error =>
          -- Ok, Out file does not exist
          null;
     end;
 
     -- Create Out file
     begin
-      Fd := Sys_Calls.Create (Body_File_Name.Image);
+      Out_File.Create_All (Body_File_Name.Image);
     exception
-      when Sys_Calls.Name_Error =>
+      when Text_Line.Name_Error =>
         Body_File_Name.Set_Null;
         Close (Remove);
         raise Out_Error;
     end;
-    -- This should work ok
-    Text_Line.Open (Out_File, Text_Line.Out_File, Fd);
 
   end Open;
 
@@ -86,19 +82,14 @@ package body Files is
   -- type Result_Action_List is (Keep, Remove_If_Not_Keep, Remove);
   -- Close files
   procedure Close (Action : in Result_Action_List) is
-    Fd : Sys_Calls.File_Desc;
   begin
     -- Close Out file if it is open
-    if Text_Line.Is_Open (Out_File) then
-      Fd := Text_Line.Get_Fd (Out_File);
-      Text_Line.Close (Out_File);
-      Sys_Calls.Close (Fd);
+    if Out_File.Is_Open then
+      Out_File.Close_All;
     end if;
     -- Close In file if it is open
-    if Text_Char.Is_Open (In_File) then
-      Fd := Text_Char.Get_Fd (In_File);
-      Text_Char.Close (In_File);
-      Sys_Calls.Close (Fd);
+    if In_File.Is_Open then
+      In_File.Close_All;
     end if;
 
     -- Delete result if it was created

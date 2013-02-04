@@ -15,7 +15,6 @@ procedure T_Input_Buffer is
   end Error;
 
   -- Flow of chars
-  Fd : Sys_Calls.File_Desc;
   File : Text_Char.File_Type;
   Char : Character;
 
@@ -41,11 +40,10 @@ begin
 
   -- Open flow
   if Argument.Get_Parameter (1) = "-" then
-    Fd := Sys_Calls.Stdin;
+    File.Open_All ("");
   else
-    Fd := Sys_Calls.Open (Argument.Get_Parameter (1), Sys_Calls.In_File);
+    File.Open_All (Argument.Get_Parameter (1));
   end if;
-  File.Open (Fd);
 
   -- Init buffer, delimiter is line feed
   Buffer.Set (Notifier'Unrestricted_Access);
@@ -82,10 +80,7 @@ begin
   end;
 
   -- Close
-  File.Close;
-  if Fd /= Sys_Calls.Stdin then
-    Sys_Calls.Close (Fd);
-  end if;
+  File.Close_All;
 
   -- Test Clean versus Tail
   Buffer.Clean;
