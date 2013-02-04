@@ -41,6 +41,7 @@ package body Mcd_Parser is
    Sub      => ("- ", "push B - A                                        ", As.U.Asu_Null, False),
    Mult     => ("* ", "push B * A                                        ", As.U.Asu_Null, False),
    Div      => ("/ ", "push B / A                                        ", As.U.Asu_Null, False),
+   Roundiv  => (Nosy, "push Round (B / A)                                ", As.U.Asu_Null, False),
    Remind   => ("% ", "push B % A (rest of division)                     ", As.U.Asu_Null, False),
    Pow      => ("**", "push B ** A (pow)                                 ", As.U.Asu_Null, False),
    Sqrt     => (Nosy, "push Sqrt(A)                                      ", As.U.Asu_Null, False),

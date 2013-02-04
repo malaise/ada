@@ -40,6 +40,7 @@ package body Mcd_Mng is
     function Sub     (L, R : Item_Rec) return Item_Rec;
     function Mult    (L, R : Item_Rec) return Item_Rec;
     function Div     (L, R : Item_Rec) return Item_Rec;
+    function Roundiv (L, R : Item_Rec) return Item_Rec;
 
     -- Arbi,Arbi->Arbi or Frac,Arbi->Frac or Inte,Inte->Inte or
     -- Real,Real->Real
@@ -477,6 +478,10 @@ package body Mcd_Mng is
         when Div =>
           -- push B / A
           Pop(A); Pop(B); Push (Operations.Div(B,A));
+          S := A;
+        when Roundiv =>
+          -- push Roundiv (B, A)
+          Pop(A); Pop(B); Push (Operations.Roundiv(B,A));
           S := A;
         when Remind =>
           -- push B rem A

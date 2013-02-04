@@ -86,6 +86,8 @@ begin
       end;
       begin
         Put_Output ("Enter another real R2 : ? "); Rp := Get (Get_Line);
+        Put_Output (" roundiv (round(R1), round(R2)) ");
+        Put (Roundiv(Round(R), Round(Rp))); New_Line_Output;
         Put_Output (" R1 ** R2 "); Put (R**Rp); New_Line_Output;
       exception
         when others=> Put_Line_Output ("Exception");

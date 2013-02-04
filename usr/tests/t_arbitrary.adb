@@ -176,6 +176,8 @@ begin
       begin
         Arbitrary.Div (A, B, C, D);
         Basic_Proc.Put_Line_Output ("A / B is   " &  Arbitrary.Image(C));
+        Basic_Proc.Put_Line_Output ("Roundiv(A, B) is "
+                                 &  Arbitrary.Image (Arbitrary.Roundiv (A, B)));
         Basic_Proc.Put_Line_Output ("A % B is   " &  Arbitrary.Image(D));
         Basic_Proc.Put_Line_Output ("A rem B is " &  Arbitrary.Image(A rem B));
         Basic_Proc.Put_Line_Output ("A mod B is " &  Arbitrary.Image(A mod B));
@@ -274,6 +276,9 @@ begin
     -- Basic operations where B /= 0
     if Ib /= 0 then
       Check (Na, "/",  Nb, Na / Nb,  Ia / Ib);
+      Check (Na, "roundiv",  Nb, Arbitrary.Roundiv (Na, Nb),
+             Integer (My_Math.Roundiv (My_Math.Inte(Ia),
+                                       My_Math.Inte(Ib))));
       Check (Na, "rem",  Nb, Na rem Nb,  Ia rem Ib);
       Check (Na, "mod",  Nb, Na mod Nb,  Ia mod Ib);
     else

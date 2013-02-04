@@ -141,6 +141,54 @@ package body Operations is
       raise Compute_Error;
   end Div;
 
+  function Roundiv (L, R : Item_Rec) return Item_Rec is
+    Plus : Boolean;
+    Res : Item_Rec;
+    use type Arbitrary.Number, Arbitrary.Fractions.Fraction;
+  begin
+    if not Is_Arbi_Or_Frac_Or_Inte_Or_Real(L)
+    or else not Is_Arbi_Or_Frac_Or_Inte_Or_Real(R) then
+      raise Invalid_Argument;
+    end if;
+    if L.Kind /= R.Kind then
+      raise Argument_Mismatch;
+    end if;
+    if L.Kind = Arbi then
+      return (Kind => Arbi,
+              Val_Arbi => Arbitrary.Roundiv (L.Val_Arbi, R.Val_Arbi));
+    elsif L.Kind = Frac then
+      Res := (Kind => Frac, Val_Frac => L.Val_Frac / R.Val_Frac);
+      -- Roundiv (N/D) : 1
+      Res.Val_Frac := Arbitrary.Fractions.Set (
+        Numerator => Arbitrary.Roundiv (
+          Arbitrary.Fractions.Numerator (Res.Val_Frac),
+          Arbitrary.Fractions.Denominator (Res.Val_Frac)),
+        Denominator => Arbitrary.One);
+      return Res;
+    elsif L.Kind = Inte then
+      return (Kind => Inte,
+              Val_Inte => My_Math.Roundiv (L.Val_Inte,  R.Val_Inte));
+    else
+      Res := (Kind => Real, Val_Real => L.Val_Real / R.Val_Real);
+      -- See if result rounds to Int or Int+1
+      Plus := My_Math.Frac (abs Res.Val_Real) >= 0.5;
+      Res.Val_Real := My_Math.Int (Res.Val_Real);
+      if Plus then
+        if Res.Val_Real >= 0.0 then
+          Res.Val_Real := Res.Val_Real + 1.0;
+        else
+          Res.Val_Real := Res.Val_Real - 1.0;
+        end if;
+      end if;
+      return Res;
+    end if;
+  exception
+    when Invalid_Argument | Argument_Mismatch =>
+      raise;
+    when others =>
+      raise Compute_Error;
+  end Roundiv;
+
   -- Arbi,Arbi->Arbi or Frac,Arbi->Frac or Inte,Inte->Inte or Real,Real->Real
   function Pow     (L, R : Item_Rec) return Item_Rec is
     use type Arbitrary.Number, Arbitrary.Fractions.Fraction;

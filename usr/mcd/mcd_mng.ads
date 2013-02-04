@@ -10,6 +10,7 @@ package Mcd_Mng is
    Sub,
    Mult,
    Div,
+   Roundiv,
    Remind,
    Pow,
    Sqrt,

@@ -737,6 +737,32 @@ package body Arbitrary is
     end if;
   end Div;
 
+  function Roundiv (A, B : Number) return Number is
+    Pa : constant Boolean := Basic.Check_Is_Pos (A);
+    Pb : constant Boolean := Basic.Check_Is_Pos (B);
+    Q, R : Number;
+    Abs_R : Number;
+  begin
+    Div (A, B, Q, R);
+    Abs_R := abs R;
+    if abs B - Abs_R <= Abs_R then
+      -- R >= B/2 => Q++ or Q--
+      if Q = Zero then
+        if Pa = Pb then
+          return Q + One;
+        else
+          return Q - One;
+        end if;
+      elsif Basic.Check_Is_Pos (Q) then
+        return Q + One;
+      else
+        return Q - One;
+      end if;
+    else
+      return Q;
+    end if;
+  end Roundiv;
+
   function "**" (A, B : Number) return Number is
     Pb : constant Boolean := Basic.Check_Is_Pos (B);
     R : Number := One;
