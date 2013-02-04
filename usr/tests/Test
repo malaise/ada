@@ -166,6 +166,7 @@ A + B is   +10
 A - B is   -4
 A * B is   +21
 A / B is   +0
+Roundiv(A, B) is +0
 A % B is   +3
 A rem B is +3
 A mod B is +3
