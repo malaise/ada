@@ -407,11 +407,14 @@ key_pressed (1)::
 language (2)::
      Support Utf6 - Unicode - wide char conversions.
 
-limited_list dynamic_list (3)::
-     Dynamic list of (limited) private objects, search/sort.
-
 limited_pool unlimited_pool (2)::
      Simple pool of (limited) private objects, push/pop.
+
+long_longs (1)::
+     Definition of long long integer and associated subtypes.
+
+long_long_limited_list limited_list dynamic_list (3)::
+     Dynamic list of (limited) private objects, search/sort.
 
 lower_char lower_str mixed_str upper_char upper_str (1)::
      Upper, lower, mixed string and character conversion.

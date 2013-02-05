@@ -1,4 +1,4 @@
-with Ada.Finalization;
+with Long_Long_Limited_List;
 generic
   -- Type of the element of the list
   type Element_Type is limited private;
@@ -6,18 +6,20 @@ generic
 
 package Limited_List is
 
+  package My_List is new Long_Long_Limited_List (Element_Type, Set);
+
   -- Descriptor of the list
   type List_Type is tagged limited private;
 
   -- For Read and Modify to set new position
-  type Movement is (Next, Prev, Current);
+  type Movement is new My_List.Movement;
 
   -- For Insert, Get and Delete, to set new position
   -- For Move_To and Search to set direction of move
   subtype Direction is Movement range Next .. Prev;
 
   -- For Get_Position
-  type Reference is (From_First, From_Last);
+  type Reference is new My_List.Reference;
 
 
   -- All calls except Insert, Is_Empty, List_Length, searches and Iterate
@@ -220,7 +222,8 @@ package Limited_List is
   -- From_Current : Search starts from current item (that may match)
   -- Skip_Current : Search starts after/before current item
   -- Absolute     : Search starts fron beginning/end of list
-  type Search_Kind_List is (From_Current, Skip_Current, Absolute);
+  type Search_Kind_List is new My_List.Search_Kind_List;
+
 
   -- Search with criteria of any type
   -----------------------------------
@@ -266,8 +269,7 @@ package Limited_List is
   -- Search with Match access and on Element_Type
   -----------------------------------------------
   -- For Search_Match
-  type Match_Access is access function (Current, Criteria : Element_Type)
-                              return Boolean;
+  type Match_Access is new My_List.Match_Access;
   -- Search the Nth occurence of an item matching the provided criteria
   -- Match is provided as a callback.
   -- Starts from current, skipping it or not (usefull if current is the result
@@ -306,8 +308,7 @@ package Limited_List is
   -- Called with each matching element, which can be updated.
   -- Processing of Iterate can be stopped by resetting Go_On to False
   --  (it is initialised to True).
-  type Iteration_Access is access procedure (Current : in Element_Type;
-                                             Go_On   : in out Boolean);
+  type Iteration_Access is new My_List.Iteration_Access;
 
   -- Search the next item matching the provided criteria and
   --  call Iteration with this item.
@@ -336,37 +337,23 @@ package Limited_List is
 
 
   -- When reading, getting, moving, permuting, getting position
-  Empty_List, Full_List : exception;
+  Empty_List : exception renames My_List.Empty_List;
+  Full_List : exception renames My_List.Full_List;
 
   -- When moving, searching, permuting
-  Not_In_List           : exception;
+  Not_In_List : exception renames My_List.Not_In_List;
 
   -- When modifying List in an application callback
-  In_Callback : exception;
+  In_Callback : exception renames My_List.In_Callback;
 
   -- When sorting, most often because Less_Than is not strict
-  Sort_Error : exception;
+  Sort_Error : exception renames My_List.Sort_Error;
 
 private
-  type Cell;
-  type Link is access Cell;
-  type Cell is record
-    Value : Element_Type;
-    Next  : Link := null;
-    Prev  : Link := null;
-  end record;
 
-  type List_Type is limited new Ada.Finalization.Limited_Controlled with record
-    Modified  : Boolean := True;
-    Assigned  : Boolean := False;
-    In_Cb     : Boolean := False;
-    Pos_First : Natural := 0;
-    Pos_Last  : Natural := 0;
-    Current   : Link    := null;
-    First     : Link    := null;
-    Last      : Link    := null;
+  type List_Type is tagged limited record
+    List : My_List.List_Type;
   end record;
-  overriding procedure Finalize (List : in out List_Type);
 
 end Limited_List;
 
