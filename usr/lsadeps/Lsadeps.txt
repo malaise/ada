@@ -26,44 +26,50 @@ Usage: lsadeps <version> | <help> | <check> | <depend>
  <dir>         ::= -I <dir> | --include=<dir>
  <recursive>   ::= -R <dir> | --recursive=<dir>
 
-Check function shows redundant "with" clauses in a dir (default: current
-dir). +
-Check mode does not support options (even includes), only one optional target
-directory.
+There are two main functions: List dependancies and check redundant "with".
 
-Dependency function by default lists units on which <target_unit> depends,
+List dependancies
+~~~~~~~~~~~~~~~~~
+This function by default lists units on which <target_unit> depends,
 which are withed units, their body and subunits, units withed by these
-units... recursively. Alternative modes are:
+units... recursively. +
+Alternative modes are:
 
- - <specs> to show only units withed by specs and standalone bodies,
+ - 'specs' to show only units withed by specs and standalone bodies,
 
- - <revert> to show units withing <target_unit>... recursively.
+ - 'revert' to show units withing <target_unit>... recursively.
 
- - <path_unit> to show dependency paths between two units.
+ - 'path_unit' to show dependency paths between two units.
 
 Other options are:
 
- - <tree> to show the tree of dependencies (instead of a sorted unique list),
+ - 'tree' to show the tree of dependencies (instead of a sorted unique list),
 
- - <direct> to show the direct dependencies between units,
+ - 'direct' to show only the units that are directly dependent,
 
- - <file> to show the file names (instead of unit names),
+ - 'file' to show the file names (instead of unit names),
 
- - <include> to add some directories or some directory trees to the search path
+ - 'include' to add some directories or some directory trees to the search path
    (default is current and target directories).
 
 
-Specs and revert modes are mutually exclusive. +
-Tree and direct mode are mutually exclusive. +
-Path mode and tree are mutually exculsive.
+'Specs' and 'revert' modes are mutually exclusive. +
+'Tree' and 'direct' mode are mutually exclusive. +
+'Path mode and 'tree' are mutually exculsive.
+
+Check redundant "with"
+~~~~~~~~~~~~~~~~~~~~~~
+This function shows redundant "with" clauses in a dir (default: current
+dir). +
+It does not support any option (even includes), only one optional 'target'
+directory.
 
 Format of output
 ----------------
-There are two main functions: show dependancies and check redundant "with".
 
 Results are put on stdout.
 
-Show dependancies
+List dependancies
 ~~~~~~~~~~~~~~~~~
 There are 4 different modes of analyse of dependancies (that can be combined)
 and 2 options of output:
@@ -146,21 +152,27 @@ How does 'Unit1' need 'Unit2'
   lsadeps Unit1 Unit2
 --------------------
 
-What are all the units that will be re-compiled due to a modification of Unit spec
+What are all the units that will be re-compiled due to a modification of
+Unit spec
 --------------------
   lsadeps -r -R ~/ada/usr Unit
+--------------------
+
+Check redundant "with" in current directory
+--------------------
+  lsadeps -c
 --------------------
 
 High level design
 -----------------
 Parse and check arguments
 ~~~~~~~~~~~~~~~~~~~~~~~~~
-- in non check mode, target is a unit (possibly containing a path). An
+- in dependancy mode, target is a unit (possibly containing a path). An
 optional path_unit triggers the path analysis between the target and this unit
 
-- in check mode it is an optional path that denotes the directory to check
-
 - include dirs (recursive or not) must exist
+
+- in check mode it is an optional path that denotes the directory to check
 
 Parse ada sources
 ~~~~~~~~~~~~~~~~~
@@ -204,8 +216,8 @@ clause!
 
 Exit program.
 
-Build tree
-~~~~~~~~~~
+Build dependancy tree
+~~~~~~~~~~~~~~~~~~~~~
 If in normal (not reverse) mode, start from target, process dependancies
 recursively in this order:
 
@@ -235,7 +247,7 @@ Dump the tree:
                       - Subunits - WithSpecs...
 
 In direct mode
-^^^^^^^^^^^^
+^^^^^^^^^^^^^^
 Dump the first level of tree:
 
   UnitSpec - WithsSpecs

@@ -138,11 +138,11 @@ Data containers
 ~~~~~~~~~~~~~~~
 * 'Dyn_Data' allocates and frees data, relying on a free list to reuse memory.
 
-* 'Limited_List' and anchor:XDynamic_List[] 'Dynamic_List' are linked lists of
-data, limited or simply private.
+* 'Long_Long_Limited_List', 'Limited_List' and anchor:XDynamic_List[]
+'Dynamic_List' are linked lists of data, limited or simply private.
 
-* 'Limited_Pool' and 'Unlimited_Pool' are simple dynamic lists with push/pop
-operations.
+* 'Long_Long_Limited_Pool', 'Limited_Pool' and 'Unlimited_Pool' are simple dynamic lists
+with push/pop operations.
 
 * 'Hashing' provides basic hashing table, while 'Hashed_List' provides a hashed
 storage of data, possibly with unicity of each data.
@@ -407,14 +407,14 @@ key_pressed (1)::
 language (2)::
      Support Utf6 - Unicode - wide char conversions.
 
-limited_pool unlimited_pool (2)::
-     Simple pool of (limited) private objects, push/pop.
-
 long_longs (1)::
      Definition of long long integer and associated subtypes.
 
 long_long_limited_list limited_list dynamic_list (3)::
      Dynamic list of (limited) private objects, search/sort.
+
+long_long_limited_pool limited_pool unlimited_pool (2)::
+     Simple pool of (limited) private objects, push/pop.
 
 lower_char lower_str mixed_str upper_char upper_str (1)::
      Upper, lower, mixed string and character conversion.

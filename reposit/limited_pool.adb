@@ -1,80 +1,48 @@
 package body Limited_Pool is
 
+  -- type Pool_Type is tagged limited private;
+
   -- Check if pool is not empty, get number of elements in pool
   function Is_Empty (Pool : in Pool_Type) return Boolean is
   begin
-    -- The one of the list
-    return Pool_List_Mng.List_Type(Pool).Is_Empty;
+    return Pool.Pool.Is_Empty;
   end Is_Empty;
 
   function Length (Pool : in Pool_Type) return Natural is
   begin
-    return Pool.List_Length;
+    return Natural (Pool.Pool.Length);
   end Length;
 
-  -- Add in beginning of list
+  -- Add in pool
   procedure Push (Pool : in out Pool_Type; Data : in Data_Type) is
   begin
-    Pool.Insert(Data, Pool_List_Mng.Prev);
-  exception
-    when Pool_List_Mng.Full_List =>
+   if Pool.Length = Natural'Last then
       raise Pool_Full;
+    end if;
+    Pool.Pool.Push (Data);
   end Push;
 
-  -- Get from pool, move to next
+  -- Get from pool last pushed (Lifo) or first pushed (Fifo)
   procedure Pop (Pool : in out Pool_Type; Data : out Data_Type) is
   begin
-    if Pool.Is_Empty then
-      raise Empty_Pool;
-    end if;
-    if not Lifo then
-      -- Fifo means pop last (and go to previous) then rewind to first
-      Pool.Rewind (True, Pool_List_Mng.Prev);
-      Pool.Get (Data, Pool_List_Mng.Prev);
-      Pool.Rewind (False);
-    else
-      -- Lifo means pop first and move to next
-      Pool.Get(Data);
-    end if;
+    Pool.Pool.Pop (Data);
   end Pop;
 
   procedure Pop (Pool : in out Pool_Type) is
   begin
-    if Pool.Is_Empty then
-      raise Empty_Pool;
-    end if;
-    if not Lifo then
-      -- Fifo means pop last (and go to previous) then rewind to first
-      Pool.Rewind (True, Pool_List_Mng.Prev);
-      Pool.Delete (Pool_List_Mng.Prev);
-      Pool.Rewind (False);
-    else
-      -- Lifo means pop first and move to next
-      Pool.Delete;
-    end if;
+    Pool.Pool.Pop;
   end Pop;
 
-  -- Read from pool, remain at current pos
-  procedure Read (Pool : in out Pool_Type; Data : out Data_Type) is
+  -- Read from pool last pushed (Lifo) or first pushed (Fifo)
+  procedure Front (Pool : in out Pool_Type; Data : out Data_Type) is
   begin
-    if Pool.Is_Empty then
-      raise Empty_Pool;
-    end if;
-    if not Lifo then
-      -- Fifo means read last then rewind to first
-      Pool.Rewind (True, Pool_List_Mng.Prev);
-      Pool.Read (Data, Pool_List_Mng.Current);
-      Pool.Rewind (True);
-    else
-      -- Lifo means read first
-      Pool.Read (Data, Pool_List_Mng.Current);
-    end if;
-  end Read;
+    Pool.Pool.Front (Data);
+  end Front;
 
-  -- Clear the pool
+  -- Clear the pool (deallocates)
   procedure Clear (Pool : in out Pool_Type) is
   begin
-    Pool.Delete_List;
+    Pool.Pool.Clear;
   end Clear;
 
 end Limited_Pool;
