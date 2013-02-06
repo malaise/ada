@@ -626,6 +626,7 @@ extern int soc_set_dest_name_service (soc_token token, const char *host_lan,
 
   /* Read port num */
   if ((serv_name = getservbyname(service, ns_proto[soc->protocol]))== NULL) {
+    errno = ENOENT;
     UNLOCK;
     return (SOC_NAME_NOT_FOUND);
   }
@@ -633,6 +634,7 @@ extern int soc_set_dest_name_service (soc_token token, const char *host_lan,
   if (! lan) {
     /* Read  IP adress of host */
     if ((host_name = gethostbyname(host_lan)) == NULL) {
+      errno = ENOENT;
       UNLOCK;
       return (SOC_NAME_NOT_FOUND);
     }
@@ -647,6 +649,7 @@ extern int soc_set_dest_name_service (soc_token token, const char *host_lan,
 
     /* Read IP prefix of LAN */
     if ((lan_name = getnetbyname(host_lan)) == NULL) {
+      errno = ENOENT;
       UNLOCK;
       return (SOC_NAME_NOT_FOUND);
     }
@@ -707,6 +710,7 @@ extern int soc_set_dest_name_port (soc_token token, const char *host_lan,
   if (! lan) {
     /* Read  IP adress of host */
     if ((host_name = gethostbyname(host_lan)) == NULL) {
+      errno = ENOENT;
       UNLOCK;
       return (SOC_NAME_NOT_FOUND);
     }
@@ -721,6 +725,7 @@ extern int soc_set_dest_name_port (soc_token token, const char *host_lan,
 
     /* Read IP prefix of LAN */
     if ((lan_name = getnetbyname(host_lan)) == NULL) {
+      errno = ENOENT;
       UNLOCK;
       return (SOC_NAME_NOT_FOUND);
     }
@@ -776,6 +781,7 @@ extern int soc_set_dest_host_service (soc_token token, const soc_host *host,
 
   /* Read port num */
   if ((serv_name = getservbyname(service, ns_proto[soc->protocol]))== NULL) {
+    errno = ENOENT;
     UNLOCK;
     return (SOC_NAME_NOT_FOUND);
   }
@@ -878,6 +884,7 @@ extern int soc_change_dest_name (soc_token token, const char *host_lan, boolean 
   if (! lan) {
     /* Read  IP adress of host */
     if ((host_name = gethostbyname(host_lan)) == NULL) {
+      errno = ENOENT;
       UNLOCK;
       return (SOC_NAME_NOT_FOUND);
     }
@@ -886,6 +893,7 @@ extern int soc_change_dest_name (soc_token token, const char *host_lan, boolean 
   } else {
     /* Read IP prefix of LAN */
     if ((lan_name = getnetbyname(host_lan)) == NULL) {
+      errno = ENOENT;
       UNLOCK;
       return (SOC_NAME_NOT_FOUND);
     }
@@ -970,6 +978,7 @@ extern int soc_change_dest_service (soc_token token, const char *service) {
 
   /* Read IP adress of port */
   if ((serv_name = getservbyname(service, ns_proto[soc->protocol]))== NULL) {
+    errno = ENOENT;
     UNLOCK;
     return (SOC_NAME_NOT_FOUND);
   }
@@ -1249,11 +1258,13 @@ extern int soc_get_lan_name (char *lan_name, unsigned int lan_name_len) {
   struct netent  *netentp;
 
   if (gethostname(host_name, sizeof(host_name)) == -1) {
+    errno = ENOENT;
     return (SOC_NAME_NOT_FOUND);
   }
 
   hostentp = gethostbyname (host_name);
   if (hostentp ==  (struct hostent *)NULL) {
+    errno = ENOENT;
     return (SOC_NAME_NOT_FOUND);
   }
 
@@ -1287,6 +1298,7 @@ extern int soc_host_name_of (const soc_host *p_host, char *host_name,
   /* Read name of host */
   host_struct = gethostbyaddr( (const char*)p_host, sizeof(*p_host), AF_INET);
   if (host_struct == (struct hostent *)NULL) {
+    errno = ENOENT;
     return (SOC_NAME_NOT_FOUND);
   }
 
@@ -1305,6 +1317,7 @@ extern int soc_host_of (const char *host_name, soc_host *p_host) {
   /* Read  IP adress of host */
   host_struct = gethostbyname(host_name);
   if (host_struct == (struct hostent *)NULL) {
+    errno = ENOENT;
     return (SOC_NAME_NOT_FOUND);
   }
   memcpy((void *) &(p_host->integer),
@@ -1331,6 +1344,7 @@ extern int soc_port_name_of (const soc_port port,
   port_struct = getservbyport((int)htons((uint16_t)port),
                               ns_proto[protocol_of(proto)]);
   if (port_struct == (struct servent *)NULL) {
+    errno = ENOENT;
     return (SOC_NAME_NOT_FOUND);
   }
 
@@ -1352,6 +1366,7 @@ extern int soc_port_of (const char *port_name,
   /* Read  num of port */
   port_struct = getservbyname(port_name, ns_proto[protocol_of(proto)]);
   if (port_struct == (struct servent *)NULL) {
+    errno = ENOENT;
     return (SOC_NAME_NOT_FOUND);
   }
   *p_port = (soc_port) ntohs((uint16_t)port_struct->s_port);
@@ -1379,10 +1394,15 @@ extern int soc_get_local_host_id (soc_host *p_host) {
   /* Get current host name */
   res = soc_get_local_host_name(hostname, sizeof(hostname));
   if (res != SOC_OK) {
+    perror ("gethostname of soc_get_local_host_name");
     return (res);
   }
   /* Get its addr */
-  return soc_host_of(hostname, p_host);
+  res = soc_host_of(hostname, p_host);
+  if (res != SOC_OK) {
+    perror ("gethostbyname of soc_host_of");
+  }
+  return (res);
 }
 
 static void close_sock (int sock) {
@@ -1673,6 +1693,7 @@ extern int soc_link_service (soc_token token, const char *service) {
 
   /* Read IP adress of port */
   if ((serv_name = getservbyname(service, ns_proto[soc->protocol]))== NULL) {
+    errno = ENOENT;
     UNLOCK;
     return (SOC_NAME_NOT_FOUND);
   }
