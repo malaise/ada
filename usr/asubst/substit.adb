@@ -524,6 +524,9 @@ package body Substit is
                 if Grep_Line_Nb then
                   Basic_Proc.Put_Output (Line_Image(Line_No) & ":");
                 end if;
+              elsif Grep_List then
+                Done_File := True;
+                exit;
               end if;
               if Replace_Pattern.Is_Empty then
                 -- Display once each matching line
@@ -799,6 +802,9 @@ package body Substit is
             if Grep_Line_Nb then
               Basic_Proc.Put_Output (Line_Image(Line_No) & ":");
             end if;
+          elsif Grep_List then
+            Done_File := True;
+            return;
           end if;
           if Replace_Pattern.Is_Empty then
             Put_Match (True);
