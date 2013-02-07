@@ -2,7 +2,6 @@ with Ada.Exceptions;
 with Xml_Parser, Lower_Str, Mixed_Str;
 package body Byte_To_Unicode is
 
-
   function Value (Str : String) return Natural is
   begin
     if Str'Length >= 2
@@ -36,14 +35,19 @@ package body Byte_To_Unicode is
 
     -- Get the Map and check Nb of codes
     Node := Ctx.Get_Root_Element;
-    if Ctx.Get_Nb_Children (Node) /= Table_Array'Length then
+    if Ctx.Get_Nb_Children (Node) > Table_Array'Length then
       Ada.Exceptions.Raise_Exception (Parse_Error'Identity,
-                                      "Wrong number of Code entries.");
+                                      "Too many Code entries.");
     end if;
+ 
+    -- Initialise to identity
+    for I in Table_Array'Range loop
+      The_Map.Table(I) := I;
+    end loop;
 
     -- Iterate on all children of the Map
-    for I in Table_Array'Range loop
-      Child := Ctx.Get_Child (Node, I+1);
+    for I in 1 .. Ctx.Get_Nb_Children (Node) loop
+      Child := Ctx.Get_Child (Node, I);
       -- Get code, first attribute
       Attr := Ctx.Get_Attribute (Child, 1);
       Code := Value (Attr.Value.Image);

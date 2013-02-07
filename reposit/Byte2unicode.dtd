@@ -3,8 +3,8 @@
 <!-- DTD for Byte_To_Unicode -->
 <!-- +++++++++++++++++++++++ -->
 
-<!-- All the Codes (from 0x00 to 0xFF) must be defined -->
-<!-- In any order -->
+<!-- All the Codes (from 0x00 to 0xFF) are initialized each to itself
+<!-  The file definew in any order the Codes that differ from the Bytes -->
 <!ELEMENT Map (Code+)>
 
 <!-- Byte can be in decimal or hexadecimal (16#zz# or 0xzz) -->

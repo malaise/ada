@@ -9,8 +9,10 @@ package Byte_To_Unicode is
   type Map is tagged private;
 
   -- Load a (XML defined) map from File_Name (or stdin if "")
+  -- The file defines the Code values that differ from the input Byte
+  --  (the table is initialised to identidy)
   -- Raises File_Error if error accessing file
-  -- Raises Parse_Error if incorrect or uncomplete table
+  -- Raises Parse_Error if incorrect table (e.g. duplicate entry)
   -- An error message is associated to the Parse_Error exception
   --  (error detected by the Xml_Parser or locally).
   -- See byte2unicode.dtd for the format of the file
