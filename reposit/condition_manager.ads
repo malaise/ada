@@ -32,8 +32,8 @@ package Condition_Manager is
 
 
   -- Atomically release the mutex and block the calling task on the condition
-  -- Upon successful return, the access to the condition is already granted to
-  --  the calling task
+  -- Upon successful return, the access to the condition is already granted
+  --  again to the calling task
   -- The calling task must have already got access the the condition, otherwise
   --   No_Access is raised
   No_Access : exception;

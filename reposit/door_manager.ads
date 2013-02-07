@@ -15,7 +15,7 @@ package Door_Manager is
   Already_Got : exception renames Condition_Manager.Already_Got;
   function Get (A_Door : Door;
                 Waiting_Time : Duration) return Boolean;
-  -- Get access to the condition : infinite wait
+  -- Get access to the door : infinite wait
   procedure Get (A_Door : in Door);
 
   -- Release access to the door
@@ -43,8 +43,8 @@ package Door_Manager is
                                Val : in Integer);
 
 
-  -- Wait until the required number of waiters is reached
-  --  (door access should have been granted)
+  -- Atomically release the mutex and block the calling task and wait until
+  --   the required number of waiters is reached
   -- Upon successful return, the access to the door is already granted to the
   --  calling task
   function Wait (A_Door : in Door;
