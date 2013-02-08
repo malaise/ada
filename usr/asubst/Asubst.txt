@@ -1,6 +1,6 @@
 Asubst
 ======
-V15.1
+V16.0
 
 Asubs is a command line tool that finds occurences of text that match a
 pattern (regular expresssion), and replaces these occurences by a given string.
@@ -34,6 +34,7 @@ Options
 -f or --file for display the matching file names in grep mode, +
 -g or --grep : print matching text as grep would do (no substitution), +
 -i or --ignorecase : do case insensitive match checking of <find_pattern>, +
+-I or --invertmatch : invert grep matching as "grep -v" would do, +
 -L or --list : print the files matching text as "grep -l" would do (no
 substitution), +
 -l or --line for display the line numbers in grep mode, +
@@ -173,7 +174,8 @@ Match range
 -----------
 The <range> has the format: i-j,k-l... Example: '"-4,7-9,15-"' means the first 4
 matching occurences, the 7th to the 9th and 15th and following occurences.
-Only these occurences of matching (in each file or flow) will be substituted.
+Only these occurences of matching (in each file or flow, after applying
+exclusion) will be substituted.
 
 NOTE: "" means none, "-" means all.
 
@@ -285,10 +287,19 @@ replace_string, so that asubst displays the substitution. This is especially
 useful if the replace_string contains some "\RIJ" or "\rIJ".
 
 - With option -L (--list), asubst displays once each file name where there is
-at least one matching. The replace_string is not used in this case.
+at least one matching.
 
-The 'grep' and 'list' options each impose 'quiet', 'test' and 'no-backup'
+In both cases ('grep' or 'list') the option -I (--invertmatch) makes asubst
+show the lines or files that *don't* match instead of those which match. It
+applies after applying exclusion and match range.
+
+The options 'grep' and 'list' each impose 'quiet', 'test' and 'no backup'
 modes.
+
+The options 'file', 'list' and 'invermatch' each impose an empty
+replace string.
+
+The option 'invermatch' imposes a single regex (i.e. with no delimiter).
 
 Examples:
 --------------------------------------

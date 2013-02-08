@@ -4,6 +4,8 @@ Main changes
 
 [horizontal]
 
+*2013/02/08*:: Add option -I (--invertmatch) to asubst V16.0
+
 *2012/11/21*:: Add option -d (--direct) to see direct (first level) dependencies
 in lsadesp V7.5
 

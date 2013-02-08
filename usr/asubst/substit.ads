@@ -19,6 +19,7 @@ package Substit is
                         Grep_List      : Boolean;
                         Grep_File_Name : Boolean;
                         Grep_Line_Nb   : Boolean;
+                        Grep_Invert    : Boolean;
                         Test           : Boolean) return Natural;
   -- Error handled and traced by Do_One
   Substit_Error : exception;

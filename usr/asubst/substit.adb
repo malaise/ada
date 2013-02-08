@@ -350,6 +350,7 @@ package body Substit is
                          Grep_List      : in Boolean;
                          Grep_File_Name : in Boolean;
                          Grep_Line_Nb   : in Boolean;
+                         Grep_Invert    : in Boolean;
                          Test           : in Boolean;
                          Nb_Match       : in out Long_Long_Natural;
                          Loc_Subst      : out Long_Long_Natural;
@@ -365,6 +366,7 @@ package body Substit is
                         Grep_List      : Boolean;
                         Grep_File_Name : Boolean;
                         Grep_Line_Nb   : Boolean;
+                        Grep_Invert    : Boolean;
                         Test           : Boolean) return Long_Long_Natural is
     Done_File : Boolean;
     Nb_Subst : Long_Long_Natural;
@@ -399,7 +401,8 @@ package body Substit is
       end if;
       -- Process these lines
       Subst_Lines (Match_Range, Do_Verbose, Grep, Grep_List, Grep_File_Name,
-                  Grep_Line_Nb, Test, Nb_Match, Loc_Subst, Done_File);
+                   Grep_Line_Nb, Grep_Invert, Test, Nb_Match, Loc_Subst,
+                   Done_File);
       Nb_Subst := Nb_Subst + Loc_Subst;
     end loop;
     -- Put remaining lines (read but not matching, or not read)
@@ -441,6 +444,7 @@ package body Substit is
                             Grep_List      : in Boolean;
                             Grep_File_Name : in Boolean;
                             Grep_Line_Nb   : in Boolean;
+                            Grep_Invert    : in Boolean;
                             Test           : in Boolean;
                             Nb_Match       : in out Long_Long_Natural;
                             Loc_Subst      : out Long_Long_Natural;
@@ -448,6 +452,8 @@ package body Substit is
 
     Current : Positive;
     Match_Res : Regular_Expressions.Match_Cell;
+    Matches : Boolean;
+    use type Regular_Expressions.Match_Cell;
   begin
     Done_File := False;
     -- Multiple substitutions in one line
@@ -456,108 +462,162 @@ package body Substit is
     loop
       -- Search a Match from Current to Last
       -- Exit when no (more) match
-      exit when not Search_Pattern.Check (Line.all.Image,
+      Matches := Search_Pattern.Check (Line.all.Image,
                         Current, Search => True, Regex_Index => 1);
 
       -- Found a match
-      Match_Res := Search_Pattern.Str_Indexes;
-      if Debug.Set then
-        Sys_Calls.Put_Line_Error ("Match in end of line >"
-           & Line.all.Slice (Current, Line.all.Length)
-           & "< from" & Match_Res.First_Offset'Img
-           & " to" & Match_Res.Last_Offset_Stop'Img);
+      if Matches then
+        Match_Res := Search_Pattern.Str_Indexes;
+        if Debug.Set then
+          Sys_Calls.Put_Line_Error ("Match in end of line >"
+             & Line.all.Slice (Current, Line.all.Length)
+             & "< from" & Match_Res.First_Offset'Img
+             & " to" & Match_Res.Last_Offset_Stop'Img);
+        end if;
+      else
+        Match_Res := Regular_Expressions.No_Match;
       end if;
 
       -- Check if this matching pattern matches the exclusion rule
-      if Search_Pattern.Check (
-          Line.all.Slice (Match_Res.First_Offset,
-                               Match_Res.Last_Offset_Stop),
-          Start => Match_Res.First_Offset,
-          Search => False, Regex_Index => 1) then
-        -- Str matches the find criteria but also the exclude criteria: skip
-        if Debug.Set then
-          Sys_Calls.Put_Line_Error
-              ("Match >" & Line.all.Slice (Match_Res.First_Offset,
-                                      Match_Res.Last_Offset_Stop)
-               & "< discarded because matching exclusion");
+      if Matches then
+        if Search_Pattern.Check (
+            Line.all.Slice (Match_Res.First_Offset,
+                            Match_Res.Last_Offset_Stop),
+            Start => Match_Res.First_Offset,
+            Search => False, Regex_Index => 1) then
+          -- Str matches the find criteria but also the exclude criteria: skip
+          if Debug.Set then
+            Sys_Calls.Put_Line_Error
+                ("Match >" & Line.all.Slice (Match_Res.First_Offset,
+                                             Match_Res.Last_Offset_Stop)
+                 & "< discarded because matching exclusion");
+          end if;
+          Matches := False;
         end if;
-        Current := Match_Res.First_Offset + 1;
-        exit when Current > Line.all.Length;
-      else
+      end if;
+
+      -- Check if this matching pattern matches match range
+      if Matches then
         Nb_Match := Nb_Match + 1;
         if not Subst_Match.Matches (Nb_Match, Match_Range) then
           if Debug.Set then
             Sys_Calls.Put_Line_Error
                 ("Match >" & Line.all.Slice (Match_Res.First_Offset,
-                                        Match_Res.Last_Offset_Stop)
+                                             Match_Res.Last_Offset_Stop)
                  & "< discarded because out of matching range");
           end if;
-          Current := Match_Res.First_Offset + 1;
-          exit when Current > Line.all.Length;
+          Matches := False;
+        end if;
+      end if;
+
+      -- Invert matching
+      if Grep_Invert then
+        if Line.all.Image = In_File.Get_Line_Feed then
+          Matches := False;
+          Match_Res := Regular_Expressions.No_Match;
+          if Debug.Set then
+            Sys_Calls.Put_Line_Error
+                ("Match delimiter discarded because grep inversion");
+          end if;
+        elsif Line.all.Is_Null then
+          Matches := False;
+          Match_Res := Regular_Expressions.No_Match;
+          if Debug.Set then
+            Sys_Calls.Put_Line_Error
+                ("Match empty discarded because grep inversion");
+          end if;
+        elsif Matches then
+          -- Line matching becomes not matching
+          Matches := False;
+          if Debug.Set then
+            Sys_Calls.Put_Line_Error 
+                ("Match >" & Line.all.Slice (Match_Res.First_Offset,
+                                             Match_Res.Last_Offset_Stop)
+                 & "< discarded because grep inversion");
+          end if;
+          Match_Res := Regular_Expressions.No_Match;
         else
-          -- Str matches the find criteria and does not match the exclude
-          --  criteria: OK
-          -- Get substituting string
-          declare
-            Replacing : constant String := Replace_Pattern.Replace;
-          begin
-            Loc_Subst := Loc_Subst + 1;
-            -- Display verbose substitution
-            if Verbose then
-              Basic_Proc.Put_Line_Output (
-                  Line_No'Img & " : "
-                & Line.all.Slice (Match_Res.First_Offset,
-                                       Match_Res.Last_Offset_Stop)
-                & " -> " & Replacing);
-            elsif Grep then
-              if Loc_Subst = 1
-              and then not Is_Stdin
-              and then (Grep_List or else Grep_File_Name) then
-                Basic_Proc.Put_Output (In_File_Name.Image);
-                if Grep_List then
-                  -- Done with this file
-                  Basic_Proc.New_Line_Output;
-                  Done_File := True;
-                  exit;
-                end if;
-                Basic_Proc.Put_Output (":");
-                if Grep_Line_Nb then
-                  Basic_Proc.Put_Output (Line_Image(Line_No) & ":");
-                end if;
-              elsif Grep_List then
+          -- Line not matching becomes full matching
+          Matches := True;
+          Match_Res.First_Offset := 1;
+          Match_Res.Last_Offset_Stop := Line.all.Length;
+          if Debug.Set then
+            Sys_Calls.Put_Line_Error 
+                ("Match >" & Line.all.Slice (Match_Res.First_Offset,
+                                             Match_Res.Last_Offset_Stop)
+                 & "< matches because grep inversion");
+          end if;
+        end if;
+      end if;
+
+      if not Matches then
+        -- Search next match if any
+        exit when Match_Res = Regular_Expressions.No_Match;
+        Current := Match_Res.First_Offset + 1;
+        exit when Current > Line.all.Length;
+      else
+        -- Str matches the find criteria and does not match the exclude
+        --  criteria, and...: OK
+        -- Get substituting string
+        declare
+          Replacing : constant String := Replace_Pattern.Replace;
+        begin
+          Loc_Subst := Loc_Subst + 1;
+          -- Display verbose substitution
+          if Verbose then
+            Basic_Proc.Put_Line_Output (
+                Line_No'Img & " : "
+              & Line.all.Slice (Match_Res.First_Offset,
+                                Match_Res.Last_Offset_Stop)
+              & " -> " & Replacing);
+          elsif Grep then
+            if Loc_Subst = 1
+            and then not Is_Stdin
+            and then (Grep_List or else Grep_File_Name) then
+              Basic_Proc.Put_Output (In_File_Name.Image);
+              if Grep_List then
+                -- Done with this file
+                Basic_Proc.New_Line_Output;
                 Done_File := True;
                 exit;
               end if;
-              if Replace_Pattern.Is_Empty then
-                -- Display once each matching line
-                Basic_Proc.Put_Line_Output (Line.all.Image);
-                -- Done with this line
-                exit;
-              else
-                -- Display each replaced (line feed is handled in Do_One_File)
-                Basic_Proc.Put_Output (Replacing);
+              Basic_Proc.Put_Output (":");
+              if Grep_Line_Nb then
+                Basic_Proc.Put_Output (Line_Image(Line_No) & ":");
               end if;
+            elsif Grep_List then
+              Done_File := True;
+              exit;
             end if;
-            if not Test then
-              -- Substitute from start to stop
-              if Debug.Set then
-                Sys_Calls.Put_Line_Error ("Replacing by "
-                  & Line.all.Slice (Match_Res.First_Offset,
-                                         Match_Res.Last_Offset_Stop)
-                  & " -> " & Replacing);
-              end if;
-              Line.all.Replace (Match_Res.First_Offset,
-                                Match_Res.Last_Offset_Stop,
-                                Replacing);
-              -- Next search index is the next char after the replaced string
-              Current := Match_Res.First_Offset + Replacing'Length;
+            if Replace_Pattern.Is_Empty then
+              -- Display once each matching line
+              Basic_Proc.Put_Line_Output (Line.all.Image);
+              -- Done with this line
+              exit;
             else
-              Current := Match_Res.Last_Offset_Stop + 1;
+              -- Display each replaced (line feed is handled in Do_One_File)
+              Basic_Proc.Put_Output (Replacing);
             end if;
-            exit when Current > Line.all.Length;
-          end;
+          end if;
+          if not Test then
+            -- Substitute from start to stop
+            if Debug.Set then
+              Sys_Calls.Put_Line_Error ("Replacing by "
+                & Line.all.Slice (Match_Res.First_Offset,
+                                       Match_Res.Last_Offset_Stop)
+                & " -> " & Replacing);
+            end if;
+            Line.all.Replace (Match_Res.First_Offset,
+                              Match_Res.Last_Offset_Stop,
+                              Replacing);
+            -- Next search index is the next char after the replaced string
+            Current := Match_Res.First_Offset + Replacing'Length;
+          else
+            Current := Match_Res.Last_Offset_Stop + 1;
+          end if;
+          exit when Current > Line.all.Length;
+        end;
 
-        end if;
       end if;
     end loop;
 
@@ -610,6 +670,7 @@ package body Substit is
                          Grep_List      : in Boolean;
                          Grep_File_Name : in Boolean;
                          Grep_Line_Nb   : in Boolean;
+                         Grep_Invert    : in Boolean;
                          Test           : in Boolean;
                          Nb_Match       : in out Long_Long_Natural;
                          Loc_Subst      : out Long_Long_Natural;
@@ -661,7 +722,8 @@ package body Substit is
       -- Handle separately multiple substitutions if one pattern
       Subst_One_Line (Line_List.Access_Current,
                       Match_Range, Verbose, Grep, Grep_List, Grep_File_Name,
-                      Grep_Line_Nb, Test, Nb_Match, Loc_Subst, Done_File);
+                      Grep_Line_Nb, Grep_Invert, Test, Nb_Match, Loc_Subst,
+                      Done_File);
       return;
     end if;
 
@@ -750,6 +812,20 @@ package body Substit is
         if Debug.Set then
           Sys_Calls.Put_Line_Error ("Line >" & Line.all.Image
                & "< discarded because out of matching range");
+        end if;
+      end if;
+    end if;
+
+    -- Invert matching
+    if Grep_Invert then
+      Matches := not Matches;
+      if Debug.Set then
+        if not Matches then
+          Sys_Calls.Put_Line_Error ("Line >" & Line.all.Image
+               & "< discarded because grep inversion");
+        else
+          Sys_Calls.Put_Line_Error ("Line >" & Line.all.Image
+               & "< matches because grep inversion");
         end if;
       end if;
     end if;

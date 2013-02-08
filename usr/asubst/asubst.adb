@@ -4,7 +4,7 @@ with As.U.Utils, Environ, Argument, Argument_Parser, Basic_Proc, Language,
 with Search_Pattern, Replace_Pattern, Substit, File_Mng, Debug;
 procedure Asubst is
 
-  Version : constant String  := "V15.1";
+  Version : constant String  := "V16.0";
 
   -- Exit codes
   Ok_Exit_Code : constant Natural := 0;
@@ -14,33 +14,34 @@ procedure Asubst is
 
   -- The keys and descriptor of parsed keys
   Keys : constant Argument_Parser.The_Keys_Type := (
-   01 => (False, 'a', As.U.Tus ("ascii"),      False),
-   02 => (True,  'D', As.U.Tus ("delimiter"),  False, False, As.U.Tus ("string")),
-   03 => (False, 'd', As.U.Tus ("dotall"),     False),
-   04 => (True,  'e', As.U.Tus ("exclude"),    False, True, As.U.Tus ("pattern")),
-   05 => (True,  'F', As.U.Tus ("file_list"),  False, True, As.U.Tus ("file")),
-   06 => (False, 'f', As.U.Tus ("file"),       False),
-   07 => (False, 'g', As.U.Tus ("grep"),       False),
-   08 => (False, 'i', As.U.Tus ("ignorecase"), False),
-   09 => (False, 'L', As.U.Tus ("list"),       False),
-   10 => (False, 'l', As.U.Tus ("line"),       False),
-   11 => (True,  'm', As.U.Tus ("match"),      False, False, As.U.Tus ("range")),
-   12 => (False, 'n', As.U.Tus ("number"),     False),
-   13 => (True,  'p', As.U.Tus ("tmp"),        False, True, As.U.Tus ("dir")),
-   14 => (False, 'q', As.U.Tus ("quiet"),      False),
-   15 => (False, 's', As.U.Tus ("save"),       False),
-   16 => (False, 't', As.U.Tus ("test"),       False),
-   17 => (False, 'u', As.U.Tus ("utf8"),       False),
-   18 => (False, 'v', As.U.Tus ("verbose"),    False),
-   19 => (False, 'x', As.U.Tus ("noregex"),    False),
-   20 => (False, 'h', As.U.Tus ("help"),       False),
-   21 => (False, 'V', As.U.Tus ("version"),    False)
+   01 => (False, 'a', As.U.Tus ("ascii"),       False),
+   02 => (True,  'D', As.U.Tus ("delimiter"),   False, False, As.U.Tus ("string")),
+   03 => (False, 'd', As.U.Tus ("dotall"),      False),
+   04 => (True,  'e', As.U.Tus ("exclude"),     False, True, As.U.Tus ("pattern")),
+   05 => (True,  'F', As.U.Tus ("file_list"),   False, True, As.U.Tus ("file")),
+   06 => (False, 'f', As.U.Tus ("file"),        False),
+   07 => (False, 'g', As.U.Tus ("grep"),        False),
+   08 => (False, 'i', As.U.Tus ("ignorecase"),  False),
+   09 => (False, 'I', As.U.Tus ("invertmatch"), False),
+   10 => (False, 'L', As.U.Tus ("list"),        False),
+   11 => (False, 'l', As.U.Tus ("line"),        False),
+   12 => (True,  'm', As.U.Tus ("match"),       False, False, As.U.Tus ("range")),
+   13 => (False, 'n', As.U.Tus ("number"),      False),
+   14 => (True,  'p', As.U.Tus ("tmp"),         False, True, As.U.Tus ("dir")),
+   15 => (False, 'q', As.U.Tus ("quiet"),       False),
+   16 => (False, 's', As.U.Tus ("save"),        False),
+   17 => (False, 't', As.U.Tus ("test"),        False),
+   18 => (False, 'u', As.U.Tus ("utf8"),        False),
+   19 => (False, 'v', As.U.Tus ("verbose"),     False),
+   20 => (False, 'x', As.U.Tus ("noregex"),     False),
+   21 => (False, 'h', As.U.Tus ("help"),        False),
+   22 => (False, 'V', As.U.Tus ("version"),     False)
    );
   Arg_Dscr : Argument_Parser.Parsed_Dscr;
   No_Key_Index : constant Argument_Parser.The_Keys_Index
                := Argument_Parser.No_Key_Index;
-  Help_Key : constant Argument_Parser.The_Keys_Range := 20;
-  Vers_Key : constant Argument_Parser.The_Keys_Range := 21;
+  Help_Key : constant Argument_Parser.The_Keys_Range := 21;
+  Vers_Key : constant Argument_Parser.The_Keys_Range := 22;
 
   -- Help (short and long)
   procedure Usage is
@@ -56,7 +57,7 @@ procedure Asubst is
      "  Substitutes pattern in files, or from stdin to stdout if no file.");
   end Usage;
 
-  Helps : constant As.U.Utils.Asu_Array (1 .. 19) := (
+  Helps : constant As.U.Utils.Asu_Array (1 .. 20) := (
     01 => As.U.Tus ("for pure ASCII processing"),
     02 => As.U.Tus ("for a delimiter other than '\n'"),
     03 => As.U.Tus ("for allow '.' to match '\n', when -D is set"),
@@ -65,17 +66,18 @@ procedure Asubst is
     06 => As.U.Tus ("for display file name in grep mode"),
     07 => As.U.Tus ("to print matching text (as grep would do) or substitution"),
     08 => As.U.Tus ("for case insensitive match (of search and exclusion)"),
-    09 => As.U.Tus ("to print matching files (as grep -l would do)"),
-    10 => As.U.Tus ("for display line number in grep mode"),
-    11 => As.U.Tus ("for substitution of only <range> matches"),
-    12 => As.U.Tus ("for print number of substitutions"),
-    13 => As.U.Tus ("for directory of temporary files"),
-    14 => As.U.Tus ("for no printout"),
-    15 => As.U.Tus ("for backup of original file"),
-    16 => As.U.Tus ("for test, substitutions not performed"),
-    17 => As.U.Tus ("for processing utf-8 sequences"),
-    18 => As.U.Tus ("for print each substitution"),
-    19 => As.U.Tus ("for <find_pattern> being considered as string(s)")
+    09 => As.U.Tus ("to invert matching (as grep -v would do)"),
+    10 => As.U.Tus ("to print matching files (as grep -l would do)"),
+    11 => As.U.Tus ("for display line number in grep mode"),
+    12 => As.U.Tus ("for substitution of only <range> matches"),
+    13 => As.U.Tus ("for print number of substitutions"),
+    14 => As.U.Tus ("for directory of temporary files"),
+    15 => As.U.Tus ("for no printout"),
+    16 => As.U.Tus ("for backup of original file"),
+    17 => As.U.Tus ("for test, substitutions not performed"),
+    18 => As.U.Tus ("for processing utf-8 sequences"),
+    19 => As.U.Tus ("for print each substitution"),
+    20 => As.U.Tus ("for <find_pattern> being considered as string(s)")
    );
 
   procedure Help is
@@ -227,6 +229,7 @@ procedure Asubst is
   Grep_Line_Nb : Boolean := False;
   Grep_File_Name : Boolean := False;
   Grep_List : Boolean := False;
+  Grep_Invert : Boolean := False;
   Backup : Boolean := False;
   Is_Regex : Boolean := True;
   Test : Boolean := False;
@@ -273,12 +276,18 @@ procedure Asubst is
       Basic_Proc.Put_Line_Output (File.Image);
     end if;
     Nb_Subst := Substit.Do_One_File (
-                  File.Image,
-                  Tmp_Dir.Image,
-                  Delimiter.Image,
-                  Match_Range.Image,
-                  Bkp, Verbosity = Verbose, Grep,
-                  Grep_List, Grep_File_Name, Grep_Line_Nb, Test);
+                  File_Name      => File.Image,
+                  Tmp_Dir        => Tmp_Dir.Image,
+                  Delimiter      => Delimiter.Image,
+                  Match_Range    => Match_Range.Image,
+                  Backup         => Bkp,
+                  Verbose        => Verbosity = Verbose,
+                  Grep           => Grep,
+                  Grep_List      => Grep_List,
+                  Grep_File_Name => Grep_File_Name,
+                  Grep_Line_Nb   => Grep_Line_Nb,
+                  Grep_Invert    => Grep_Invert,
+                  Test           => Test);
     if Nb_Subst /= 0 then
       Found := True;
     end if;
@@ -442,6 +451,13 @@ begin
     Case_Sensitive := False;
   end if;
   if Arg_Dscr.Is_Set (09) then
+    -- Invert grep matching
+    if Debug.Set then
+      Basic_Proc.Put_Line_Error ("Option invert matching");
+    end if;
+    Grep_Invert := True;
+  end if;
+  if Arg_Dscr.Is_Set (10) then
     -- Put matching file like grep -l would do
     if Debug.Set then
       Basic_Proc.Put_Line_Error ("Option file mode");
@@ -455,20 +471,20 @@ begin
     Grep := True;
     Grep_List := True;
   end if;
-  if Arg_Dscr.Is_Set (10) then
+  if Arg_Dscr.Is_Set (11) then
     -- Put line no
     if Debug.Set then
       Basic_Proc.Put_Line_Error ("Option line no");
     end if;
     Grep_Line_Nb := True;
   end if;
-  if Arg_Dscr.Is_Set (11) then
+  if Arg_Dscr.Is_Set (12) then
     -- Substit only occurences that match criteria
     declare
       Dummy : Boolean;
       pragma Unreferenced (Dummy);
     begin
-      Match_Range := As.U.Tus (Arg_Dscr.Get_Option (11));
+      Match_Range := As.U.Tus (Arg_Dscr.Get_Option (12));
       Dummy := Substit.Subst_Match.Matches (0, Match_Range.Image);
     exception
       when others =>
@@ -484,7 +500,7 @@ begin
     -- No criteria
     Match_Range := As.U.Tus ("-");
   end if;
-  if Arg_Dscr.Is_Set (12) then
+  if Arg_Dscr.Is_Set (13) then
     -- Put number of substitutions
     if Debug.Set then
       Basic_Proc.Put_Line_Error ("Option put numbers");
@@ -494,10 +510,10 @@ begin
     end if;
     Verbosity := Put_Subst_Nb;
   end if;
-  if Arg_Dscr.Is_Set (13) then
+  if Arg_Dscr.Is_Set (14) then
     -- Tmp_Dir for temporary files
     begin
-      Tmp_Dir := As.U.Tus (Arg_Dscr.Get_Option (13));
+      Tmp_Dir := As.U.Tus (Arg_Dscr.Get_Option (14));
       if Tmp_Dir.Length = 0 then
         raise Constraint_Error;
       end if;
@@ -512,7 +528,7 @@ begin
       Basic_Proc.Put_Line_Error ("Option tmp_dir = " & Tmp_Dir.Image);
     end if;
   end if;
-  if Arg_Dscr.Is_Set (14) then
+  if Arg_Dscr.Is_Set (15) then
     -- Quiet mode
     if Debug.Set then
       Basic_Proc.Put_Line_Error ("Option quiet");
@@ -522,21 +538,21 @@ begin
     end if;
     Verbosity := Quiet;
   end if;
-  if Arg_Dscr.Is_Set (15) then
+  if Arg_Dscr.Is_Set (16) then
     -- Make backup
     if Debug.Set then
       Basic_Proc.Put_Line_Error ("Option make backup");
     end if;
     Backup := True;
   end if;
-  if Arg_Dscr.Is_Set (16) then
+  if Arg_Dscr.Is_Set (17) then
     -- Test mode
     if Debug.Set then
       Basic_Proc.Put_Line_Error ("Option test");
     end if;
     Test := True;
   end if;
-  if Arg_Dscr.Is_Set (17) then
+  if Arg_Dscr.Is_Set (18) then
     -- Process utf-8 sequences
     if Arg_Dscr.Is_Set (1) then
       Basic_Proc.Put_Line_Error (Argument.Get_Program_Name
@@ -549,7 +565,7 @@ begin
     end if;
     Lang := Language.Lang_Utf_8;
   end if;
-  if Arg_Dscr.Is_Set (18) then
+  if Arg_Dscr.Is_Set (19) then
     -- Verbose put each substit
     if Debug.Set then
       Basic_Proc.Put_Line_Error ("Option verbose");
@@ -559,7 +575,7 @@ begin
     end if;
     Verbosity := Verbose;
   end if;
-  if Arg_Dscr.Is_Set (19) then
+  if Arg_Dscr.Is_Set (20) then
     -- Find pattern is not a regex
     if Debug.Set then
       Basic_Proc.Put_Line_Error ("Option noregex");
@@ -575,6 +591,7 @@ begin
                 Language.Get_Language)));
   end if;
 
+  -- Parse (including checks) search pattern and replace string
   begin
     Search_Pattern.Parse (
          Arg_Dscr.Get_Option (No_Key_Index, 1),
@@ -600,7 +617,7 @@ begin
   if Grep then
     if Test or else Verbosity /= Put_File_Name or else Backup then
       Basic_Proc.Put_Line_Error (Argument.Get_Program_Name
-        & ": Syntax ERROR. Grep mode imposes quiet, test and no-backup.");
+        & ": Syntax ERROR. Grep mode imposes quiet, test and no backup.");
       Error;
       return;
     end if;
@@ -622,11 +639,26 @@ begin
     Error;
     return;
   end if;
-  -- Grep AND File_Name => empty Replace_Pattern
-  if Grep and then Grep_File_Name
+  -- Invert => Grep
+  if Grep_Invert and then not Grep then
+    Basic_Proc.Put_Line_Error (Argument.Get_Program_Name
+      & ": Syntax ERROR. Invert_match option requires grep mode.");
+    Error;
+    return;
+  end if;
+  -- Grep AND (File_Name or List or Invert) => empty Replace_Pattern
+  if Grep and then (Grep_File_Name or else Grep_List or else Grep_Invert) 
   and then Arg_Dscr.Get_Option (No_Key_Index, 2) /= "" then
     Basic_Proc.Put_Line_Error (Argument.Get_Program_Name
-      & ": Syntax ERROR. Grep with file_name implies empty replace_string.");
+      & ": Syntax ERROR. Grep with file, list or invertmatch implies empty replace string.");
+    Error;
+    return;
+  end if;
+  -- Grep Invert => Single regexp
+  if Grep and then Grep_Invert
+  and then Search_Pattern.Number /= 1 then
+    Basic_Proc.Put_Line_Error (Argument.Get_Program_Name
+      & ": Syntax ERROR. Grep with invertmatch implies single search pattern.");
     Error;
     return;
   end if;
@@ -710,6 +742,7 @@ begin
             Grep_List      => Grep_List,
             Grep_File_Name => Grep_File_Name,
             Grep_Line_Nb   => Grep_Line_Nb,
+            Grep_Invert    => Grep_Invert,
             Test           => Test);
         if Nb_Subst /= 0 then
           Found := True;

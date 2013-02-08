@@ -97,15 +97,15 @@ echo "" >> $FR
 echo "" >> $FE
 echo "  ----------" >> $FR
 echo "  -- Test --" >> $FR
-echo "  -- Test --" >> $FE
 echo "  ----------" >> $FR
+echo "  -- Test --" >> $FE
 echo "" >> $FR
 echo "  procedure Test is" >> $FR
 echo "  procedure Test is" >> $FE
 echo "  begin" >> $FR
 echo "  begin" >> $FE
-echo "    null" >> $FR
-echo "    null" >> $FE
+echo "    null;" >> $FR
+echo "    null;" >> $FE
 echo "  end Test;" >> $FR
 echo "  end Test;" >> $FE
 echo "" >> $FR
@@ -367,6 +367,27 @@ if [ $code -ne 0 ] ; then
   exit 1
 fi
 exp_res=`echo -e "tstfile.tst\n"`
+if [ "$res" != "$exp_res" ] ; then
+  echo "Result $res differs from expected."
+  echo "$STEP FAILED."
+  exit 1
+fi
+cmp -s $FT $FR
+if [ $? -ne 0 ] ; then
+  echo "Result file $FT differs from expected $FR."
+  echo "$STEP FAILED."
+  exit 1
+fi
+# Check mono regexp grep with inversion
+STEP="Test mono regexp grep with inversion"
+res=`asubst -g -I "is|--|end" "" $FT`
+code=$?
+if [ $code -ne 0 ] ; then
+  echo "Error: asubst exited with code $code"
+  echo "$STEP FAILED."
+  exit 1
+fi
+exp_res=`echo -e "  begin\n    null;\n"`
 if [ "$res" != "$exp_res" ] ; then
   echo "Result $res differs from expected."
   echo "$STEP FAILED."
