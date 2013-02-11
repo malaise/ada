@@ -39,7 +39,7 @@ package body Byte_To_Unicode is
       Ada.Exceptions.Raise_Exception (Parse_Error'Identity,
                                       "Too many Code entries.");
     end if;
- 
+
     -- Initialise to identity
     for I in Table_Array'Range loop
       The_Map.Table(I) := I;
