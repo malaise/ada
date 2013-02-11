@@ -63,7 +63,7 @@ package Limited_List is
 
   -- Insert a new item after or before the current item
   --  the new item becomes then the current item
-  -- May raise Full_List (no more memory)
+  -- May raise Full_List (no more memory or length too big)
   procedure Insert (List  : in out List_Type;
                     Item  : in Element_Type;
                     Where : in Direction := Next);
