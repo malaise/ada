@@ -22,7 +22,9 @@ package body Menu1 is
     end if;
   end Put_Point_Status;
 
-  function My_Select_File is new Select_File(Put_Point_Status);
+  package Msf is new Select_File(Afpx_Xref.Selection.Dscr_Num,
+                                            Put_Point_Status);
+
 
   procedure Encode_File_In_Get (File_Name : in String) is
   begin
@@ -122,9 +124,8 @@ package body Menu1 is
       if not Load then
         Tmp_File_Name := File_Name_Txt;
       end if;
-      Tmp_File_Name := As.U.Tus (My_Select_File(Afpx_Xref.Selection.Dscr_Num,
-                                                Tmp_File_Name.Image,
-                                                Load, True));
+      Tmp_File_Name := As.U.Tus (Msf.Get_File (Tmp_File_Name.Image,
+                                               Load, True));
       if Tmp_File_Name.Is_Null then
         -- Cancelled
        return;

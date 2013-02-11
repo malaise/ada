@@ -530,7 +530,7 @@ package body Substit is
           -- Line matching becomes not matching
           Matches := False;
           if Debug.Set then
-            Sys_Calls.Put_Line_Error 
+            Sys_Calls.Put_Line_Error
                 ("Match >" & Line.all.Slice (Match_Res.First_Offset,
                                              Match_Res.Last_Offset_Stop)
                  & "< discarded because grep inversion");
@@ -542,7 +542,7 @@ package body Substit is
           Match_Res.First_Offset := 1;
           Match_Res.Last_Offset_Stop := Line.all.Length;
           if Debug.Set then
-            Sys_Calls.Put_Line_Error 
+            Sys_Calls.Put_Line_Error
                 ("Match >" & Line.all.Slice (Match_Res.First_Offset,
                                              Match_Res.Last_Offset_Stop)
                  & "< matches because grep inversion");

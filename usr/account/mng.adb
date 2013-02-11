@@ -39,7 +39,8 @@ package body Mng is
                         "Saving an account");
     end if;
   end Init_Select_File;
-  function Account_Select_File is new Select_File(Init_Select_File);
+  package Asf is new Select_File(Afpx_Xref.Selection.Dscr_Num,
+                                 Init_Select_File);
 
   -- Selection list
   type Sel_Rec is record
@@ -347,8 +348,7 @@ package body Mng is
     else
       -- Let user select file
       Loading := True;
-      Loaded_Name.Set (Account_Select_File(Afpx_Xref.Selection.Dscr_Num,
-                                           "", True, False));
+      Loaded_Name.Set (Asf.Get_File("", True, False));
       Screen.Reset;
       Screen.Set_Sublist(False);
       Refresh_Screen(Bottom);
@@ -411,8 +411,7 @@ package body Mng is
       if Mode = Cancel then
         return;
       end if;
-      Tmp_Name.Set (Account_Select_File(Afpx_Xref.Selection.Dscr_Num,
-                                        "", False, False));
+      Tmp_Name.Set (Asf.Get_File("", False, False));
       Screen.Reset;
       Screen.Set_Sublist(False);
       Refresh_Screen(Center);

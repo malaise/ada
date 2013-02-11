@@ -5,14 +5,15 @@ procedure T_Select_File is
   Read : Boolean;
   File : As.B.Asb_Bs(500);
 
-  function My_Select_File is new Select_File (Read_Title  => "Test read",
-                                              Write_Title => "Test write");
+  package My_Select_File is new Select_File (10,
+                                             Read_Title  => "Test read",
+                                             Write_Title => "Test write");
 
 begin
   Read := True;
 
   loop
-    File.Set (My_Select_File (10, File.Image, Read, not Read));
+    File.Set (My_Select_File.Get_File (File.Image, Read, not Read));
     Basic_Proc.Put_Line_Output (File.Image);
     exit when File.Is_Null;
     Read := not Read;

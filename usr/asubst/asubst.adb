@@ -647,7 +647,7 @@ begin
     return;
   end if;
   -- Grep AND (File_Name or List or Invert) => empty Replace_Pattern
-  if Grep and then (Grep_File_Name or else Grep_List or else Grep_Invert) 
+  if Grep and then (Grep_File_Name or else Grep_List or else Grep_Invert)
   and then Arg_Dscr.Get_Option (No_Key_Index, 2) /= "" then
     Basic_Proc.Put_Line_Error (Argument.Get_Program_Name
       & ": Syntax ERROR. Grep with file, list or invertmatch implies empty replace string.");

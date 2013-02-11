@@ -1,5 +1,5 @@
 -- Use Select_File (Afpx) to rename files
-with As.B, Argument, Select_File, Sys_Calls, Afpx_Xref;
+with As.B, Argument, Select_File, Sys_Calls, Afpx, Afpx_Xref;
 
 procedure Renamer is
 
@@ -7,9 +7,10 @@ procedure Renamer is
   Ok : Boolean;
   File, Prev_File : As.B.Asb_Bs(500);
 
-  function My_Select_File is
-           new Select_File (Read_Title  => "Select file to rename",
-                            Write_Title => "Enter new name and Ret");
+  package Msf is
+          new Select_File (Afpx_Xref.File_Selection.Dscr_Num,
+                           Read_Title  => "Select file to rename",
+                           Write_Title => "Enter new name and Ret");
 
   function Me return String renames Argument.Get_Program_Name;
 
@@ -23,21 +24,33 @@ procedure Renamer is
   end File_Exists;
 
 begin
+  Afpx.Use_Descriptor (Afpx_Xref.File_Selection.Dscr_Num);
   -- Start reading file to rename
   Read := True;
 
   loop
+    -- Protect list when getting new name
+    Afpx.Set_Field_Protection (Afpx.List_Field_No, not Read);
+    if Read then
+      Afpx.Clear_Field  (16);
+      Afpx.Encode_Field (16, (1, 2), "EXIT");
+    else
+      Afpx.Reset_Field (16, Reset_Colors => False);
+    end if;
     -- Get (orig or new) file name
-    File.Set (My_Select_File (Afpx_Xref.File_Selection.Dscr_Num,
-                              File.Image, Read, True));
-    exit when File.Is_Null;
-    Ok := True;
+    File.Set (Msf.Get_File (File.Image, Read, True));
+
+    -- CANCEL / EXIT button?
+    Ok := not File.Is_Null;
+    -- Exit
+    exit when not Ok and then Read;
 
     -- Check if no /
-    if File.Locate ("/") /= 0 then
-      Sys_Calls.Put_Line_Output (Me & ": File name contains '/'. Skipping.");
+Sys_Calls.Put_Line_Output (">" & File.Image & "<");
+    if Ok and then File.Locate ("/") /= 0 then
+      Sys_Calls.Put_Line_Error (Me & ": File name contains '/'. Skipping.");
+      Msf.Report_Error ("File name contains '/'");
       Ok := False;
-      Read := True;
       File.Set_Null;
     end if;
 
@@ -49,52 +62,64 @@ begin
           if File_Exists (File.Image) then
             -- Save original file name
             Prev_File.Set(File);
-            Read := False;
-            Ok := False;
           else
-            Sys_Calls.Put_Line_Output (Me & ": File not found "
-                                     & File.Image
-                                     & ". Skipping.");
+            Sys_Calls.Put_Line_Error (Me & ": File not found "
+                                    & File.Image
+                                    & ". Skipping.");
+            Msf.Report_Error ("File not found");
+            Ok := False;
           end if;
         else
-          -- Check file does not exist and is accessible
-          if File_Exists (File.Image) then
-            Sys_Calls.Put_Line_Output (Me & ": New name "
-                                     & File.Image
-                                     & " already exists. Skipping.");
+          -- Check file is different, does not exist and is accessible
+          if As.B."=" (Prev_File, File) then
+            Sys_Calls.Put_Line_Error (Me & ": New name "
+                                    & File.Image
+                                    & " is prev name. Skipping.");
+            Msf.Report_Error ("Same file name");
             Ok := False;
-          elsif As.B."=" (Prev_File, File) then
-            Sys_Calls.Put_Line_Output (Me & ": New name "
-                                     & File.Image
-                                     & " is prev name. Skipping.");
+          elsif File_Exists (File.Image) then
+            Sys_Calls.Put_Line_Error (Me & ": New name "
+                                    & File.Image
+                                    & " already exists. Skipping.");
+            Msf.Report_Error ("File exists");
             Ok := False;
           end if;
-          Read := True;
         end if;
       exception
         when Access_Error =>
-          Sys_Calls.Put_Line_Output (Me & ": Cannot access file "
-                                   & File.Image
-                                   & ". Skipping.");
+          Sys_Calls.Put_Line_Error (Me & ": Cannot access file "
+                                  & File.Image
+                                  & ". Skipping.");
+          Msf.Report_Error ("Access error");
           Ok := False;
-          Read := True;
       end;
     end if;
 
     -- Rename
-    if Ok then
+    if Ok and then not Read then
       Ok := Sys_Calls.Rename (Prev_File.Image, File.Image);
       if Ok then
         Sys_Calls.Put_Line_Output (Me & ": " & Prev_File.Image &
                               " renamed to " & File.Image);
       else
-        Sys_Calls.Put_Line_Output (Me & ": Failed to rename " & Prev_File.Image &
-                              " to " & File.Image);
+        Sys_Calls.Put_Line_Error (Me & ": Failed to rename "
+                                & Prev_File.Image & " to " & File.Image);
+        Msf.Report_Error ("Rename error");
       end if;
       File.Set_Null;
+    end if;
+
+    if Ok then
+      Read := not Read;
+    else
+      -- Restart on error
+      Read := True;
     end if;
   end loop;
 
   Sys_Calls.Put_Line_Output (Me & ": Done.");
+exception
+  when Msf.Exit_Requested =>
+    Sys_Calls.Put_Line_Output (Me & ": Aborted.");
 end Renamer;
 

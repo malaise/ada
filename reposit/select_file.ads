@@ -1,17 +1,23 @@
 -- Handle the file selection screen
 -- Using the provided Afpx descriptor
--- Fill text input field with the provided Current_File
--- Display title according to For_Read and the provided titles
---  If titles are empty, display default title
--- Allow selection (in Get field) of a non existing file if not For_Read
--- Change directory transparently
--- Try or not to select Current_File if it is in list
+-- Get_File:
+--   Fill text input field with the provided Current_File
+--   Display title according to For_Read and the provided titles
+--    If titles are empty, display default title
+--   Allow selection (in Get field) of a non existing file if not For_Read
+--   Change directory transparently
+--   Try or not to select Current_File if it is in list
+--   Return "" if CANCEL
+-- Report_Error:
+--  Show message in message field until OK
 
 -- Note that the descriptor can be freely specified but that the field numbers
 --  in this descriptor are fixed (at least from 1 to 16), and that there are
 --  some hidden constraints on their geometry
 with Afpx;
 generic
+  -- The descriptor to use
+  Descriptor : Afpx.Descriptor_Range;
   -- Any initialisation to do after descriptor activation
   with procedure Init_Procedure is null;
   -- Any action to do when a fd_event has been received (see Afpx Fd_Event)
@@ -24,8 +30,16 @@ generic
   Read_Title  : in String := "";
   Write_Title : in String := "";
 
-function Select_File (Descriptor   : Afpx.Descriptor_Range;
-                      Current_File : String;
-                      For_Read     : Boolean;
-                      Try_Select   : Boolean) return String;
+package Select_File is
+  -- On Ctrl C, or close window
+  Exit_Requested : exception;
+
+  -- Get file name
+  function Get_File (Current_File : String;
+                     For_Read     : Boolean;
+                     Try_Select   : Boolean) return String;
+
+  -- Report an error
+  procedure Report_Error (Message : in String);
+end Select_File;
 
