@@ -348,7 +348,12 @@ package body Mng is
     else
       -- Let user select file
       Loading := True;
-      Loaded_Name.Set (Asf.Get_File("", True, False));
+      begin
+        Loaded_Name.Set (Asf.Get_File("", True, False));
+      exception
+        when Asf.Exit_Requested =>
+          return;
+      end;
       Screen.Reset;
       Screen.Set_Sublist(False);
       Refresh_Screen(Bottom);
@@ -411,7 +416,12 @@ package body Mng is
       if Mode = Cancel then
         return;
       end if;
-      Tmp_Name.Set (Asf.Get_File("", False, False));
+      begin
+        Tmp_Name.Set (Asf.Get_File("", False, False));
+      exception
+        when Asf.Exit_Requested =>
+          return;
+      end;
       Screen.Reset;
       Screen.Set_Sublist(False);
       Refresh_Screen(Center);

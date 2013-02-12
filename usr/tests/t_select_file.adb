@@ -18,5 +18,8 @@ begin
     exit when File.Is_Null;
     Read := not Read;
   end loop;
+exception
+  when My_Select_File.Exit_Requested =>
+    Basic_Proc.Put_Line_Output ("Aborted by user.");
 end T_Select_File;
 

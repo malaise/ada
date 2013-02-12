@@ -124,8 +124,13 @@ package body Menu1 is
       if not Load then
         Tmp_File_Name := File_Name_Txt;
       end if;
-      Tmp_File_Name := As.U.Tus (Msf.Get_File (Tmp_File_Name.Image,
-                                               Load, True));
+      begin
+        Tmp_File_Name := As.U.Tus (Msf.Get_File (Tmp_File_Name.Image,
+                                                 Load, True));
+      exception
+        when Msf.Exit_Requested =>
+          Tmp_File_Name.Set_Null;
+      end;
       if Tmp_File_Name.Is_Null then
         -- Cancelled
        return;
