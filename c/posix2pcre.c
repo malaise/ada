@@ -130,7 +130,9 @@ extern int regcomp(regex_t *preg, const char *pattern, int cflags) {
 
   if (preg->re_pcre == NULL) return eint[errorcode];
 
-  preg->re_nsub = pcre_info((const pcre *)preg->re_pcre, NULL, NULL);
+  pcre_fullinfo((const pcre *)preg->re_pcre, NULL, PCRE_INFO_CAPTURECOUNT,
+                &(preg->re_nsub));
+
   return 0;
 }
 
