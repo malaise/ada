@@ -1,6 +1,6 @@
 Als
 ===
-V9.1
+V10.0
 
 Als lists files, directory contents... It supports several powerfull options
 for the selection of entries, the output format of each entry, and general
@@ -10,7 +10,7 @@ General syntax
 --------------
 
  Usage: als [ { <option> } ] [ { <file_or_dir_spec> } ]
- or   : als  --help | -v | --version
+ or   : als -h | --help | -v | --version
 
 List files or directory contents.
 
@@ -65,7 +65,7 @@ Specify how to show each entry selected
   -l (--list)                Show rights, owner, size, date, symbolic link target
   -1 (--1row)                One name per line
   -c (--classify)            Append '/' to dirs, '@' to symbolic links
-  -h (--human)               Show sizes in friendly format (e.g. 1K, 2G)
+  -H (--human)               Show sizes in friendly format (e.g. 1K, 2G)
   -p (--path)                Show full path of entries
   <separator> ::= -S <string> | --separator=<string>
                              Insert <string> beween each entry
@@ -88,7 +88,7 @@ Specify general formating options
 
 Other options
 ~~~~~~~~~~~~~
-  --help                     Show online help
+  -h (--help)                Show online help
   -v (--version)             Show current version of Als
 
 Notes on compatibility between options
@@ -100,7 +100,7 @@ They are accepted and silently ignored when provided alone.
 
 Example:
 
-Option -h is usefull only when -l is provided. So "als -h" is the same as "als".
+Option -H is usefull only when -l is provided. So "als -H" is the same as "als".
 
 .Some options are mutually exclusive
 Providing these options together is reported as an error.

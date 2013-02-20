@@ -2,7 +2,7 @@ with Ada.Calendar;
 with As.U, Basic_Proc, Argument, Argument_Parser;
 with Entities, Output, Targets, Lister, Exit_Code, Str_Util;
 procedure Als is
-  Version : constant String  := "V9.1";
+  Version : constant String  := "V10.0";
 
   -- The keys and descriptor of parsed keys
   Nkc : constant Character := Argument_Parser.No_Key_Char;
@@ -18,7 +18,7 @@ procedure Als is
    09 => (False, 't', As.U.Tus ("time"),         False),
    10 => (False, 'M', As.U.Tus ("merge"),        False),
    11 => (True,  'd', As.U.Tus ("date"),         True,  True, As.U.Tus ("date_comp><date")),
-   12 => (False, Nkc, As.U.Tus ("help"), False),
+   12 => (False, 'h', As.U.Tus ("help"), False),
    13 => (False, 'v', As.U.Tus ("version"),      False),
    14 => (False, 'L', As.U.Tus ("links"),        False),
    15 => (False, 'F', As.U.Tus ("files"),        False),
@@ -31,7 +31,7 @@ procedure Als is
    22 => (True,  'n', As.U.Tus ("newer"),        False, True, As.U.Tus ("date")),
    23 => (False, 'c', As.U.Tus ("classify"), False),
    24 => (True,  Nkc, As.U.Tus ("depth"),        False, True, As.U.Tus ("positive")),
-   25 => (False, 'h', As.U.Tus ("human"),        False),
+   25 => (False, 'H', As.U.Tus ("human"),        False),
    26 => (False, 'N', As.U.Tus ("no_sort"),      False),
    27 => (False, 'p', As.U.Tus ("path"),         False),
    28 => (False, 'B', As.U.Tus ("broken_links"), False),
@@ -55,7 +55,7 @@ procedure Als is
     Put_Line_Error ("Usage:" & Argument.Get_Program_Name
       & " [ { <option> } ] [ { <file_or_dir_spec> } ]");
     Put_Line_Error ("   or: " & Argument.Get_Program_Name
-      & Argument_Parser.Image(Keys(12))
+      & " " & Argument_Parser.Image(Keys(12))
       & " | " & Argument_Parser.Image(Keys(13)));
 
     Put_Line_Error ("Which entries to show:");
