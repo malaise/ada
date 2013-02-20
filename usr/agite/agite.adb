@@ -380,8 +380,8 @@ procedure Agite is
     Files.Move_At (Pos);
     Files.Read (File, Git_If.File_Mng.Dyn_List.Current);
 
-    -- Handle Dir and reject non regular nor link
     if File.Kind = '/' then
+      -- Handle Dir
       if File.Name.Image = "."
       or else File.Name.Image = ".." then
         return;
@@ -480,8 +480,34 @@ procedure Agite is
               Git_If.Do_Add (File_Name);
             end if;
         end case;
-      elsif File.Kind /= '@' and then File.Kind /= '?' then
-        -- File
+      elsif File.Kind = '?' then
+        case Action is
+          when Revert =>
+            -- File or link deleted in GIT
+            Do_Revert (File_Name);
+          when Diff =>
+            -- File is deleted: diff from last commit to null
+            declare
+              Hash : constant Git_If.Git_Hash := Git_If.Last_Hash (File_Name);
+            begin
+              if Hash /= Git_If.No_Hash then
+                Git_If.Launch_Delta (Differator.Image, File_Name,
+                                     Hash, "");
+              end if;
+            end;
+          when others =>
+            null;
+        end case;
+      elsif File.Kind = '@' then
+        case Action is
+          when Revert =>
+            -- Link
+            Do_Revert (File_Name);
+          when others =>
+            null;
+        end case;
+      else
+        -- Regular tracked file
         case Action is
           when Edit | Default =>
             Do_Edit (File_Name);
@@ -506,24 +532,6 @@ procedure Agite is
             Do_Revert (File_Name);
           when Add =>
             Do_Add_File (File);
-        end case;
-      elsif File.Kind = '?' then
-        case Action is
-          when Revert =>
-            -- Deleted file
-            Do_Revert (File_Name);
-          when Diff =>
-            -- File is deleted: diff from last commit to null
-            declare
-              Hash : constant Git_If.Git_Hash := Git_If.Last_Hash (File_Name);
-            begin
-              if Hash /= Git_If.No_Hash then
-                Git_If.Launch_Delta (Differator.Image, File_Name,
-                                     Hash, "");
-              end if;
-            end;
-          when others =>
-            null;
         end case;
       end if;
     end;
