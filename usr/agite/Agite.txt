@@ -1,7 +1,7 @@
 Agite user guide
 ================
 Pascal MALAISE     <malaise@magic.fr>
-V7.9
+V7.13
 
 General purpose
 ---------------
@@ -323,6 +323,12 @@ History::
 This button switches to the screen that shows the xref:XHist[history] of a
 file or directory.
 
+anchor:XAdd[]
+
+Add::
+Adds to Git the current directory (its content in fact), the current file or
+symbolic link.
+
 anchor:XRevert[]
 
 Revert::
@@ -330,13 +336,14 @@ This button reverts the local change on the current list selection. +
 First, a simple screen asks to confirm or cancel the operation. +
 Then, depending on the selection:
 
-- If it is a file unknown by Git then it will be removed
-- If it is a file just added to Git then it will become unknown by Git
-- If it is a file known and modified then it will be restored to its last
-  committed content
-- If it is a file known and not modified then the button has no effect
 - If it is a directory then it will be deleted, which succeeds only if the
 directory is empty.
+- If it is a file or a symbolic link,
+ * if unknown by Git, then it will be removed,
+ * if just added to Git, then it will become unknown by Git,
+ * if known by GIT and modified, then it will be restored to its last committed
+content,
+ * if known by GIT and not modified, then the button has no effect.
 
 .Other actions
 

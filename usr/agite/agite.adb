@@ -444,7 +444,9 @@ procedure Agite is
     end if;
   end Do_Add_File;
 
-  -- List action on File or Dir
+  -- List action on File or Dir:
+  --  Launch the diff depending on file kind and status
+  --  or dispatch other actions
   type Action_List is (Default, Edit, Diff, History, Revert, Add);
   procedure List_Action (Action : in Action_List) is
     File : Git_If.File_Entry_Rec;
@@ -500,9 +502,11 @@ procedure Agite is
         end case;
       elsif File.Kind = '@' then
         case Action is
+          -- Link
           when Revert =>
-            -- Link
             Do_Revert (File_Name);
+          when Add =>
+            Do_Add_File (File);
           when others =>
             null;
         end case;
