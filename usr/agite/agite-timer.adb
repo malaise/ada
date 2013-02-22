@@ -4,15 +4,18 @@ package body Timer is
 
   -- We don't make a real periodic because if Agite makes a long GIT
   -- operation we don't want a burst of executions
- Period : Timers.Period_Range;
+ Period : Timers.Period_Range := Timers.No_Period;
  Tid : Timers.Timer_Id := Timers.No_Timer;
  function Timer_Cb (Id   : in Timers.Timer_Id;
                     Data : in Timers.Timer_Data) return Boolean is
     pragma Unreferenced (Id, Data);
     Spec : Timers.Delay_Rec;
   begin
-    Spec.Delay_Seconds := Period;
-    Tid := Timers.Create (Spec, Timer_Cb'Unrestricted_Access);
+    if Period /= Timers.No_Period then
+      -- Period is set => restart pseudo periodic
+      Spec.Delay_Seconds := Period;
+      Tid := Timers.Create (Spec, Timer_Cb'Unrestricted_Access);
+    end if;
     -- Signal to Agite the expiration
     return True;
   end Timer_Cb;
@@ -23,9 +26,13 @@ package body Timer is
     pragma Unreferenced (Dummy);
   begin
     if Periodic then
-      Period := Config.Period;
+      -- Set Period and start pseudo periodic
+      if Period = Timers.No_Period then
+        Period := Config.Period;
+      end if;
       Spec.Delay_Seconds := Period;
     else
+      -- Stop possible pseudo periodic and arm a single shot of one second
       Stop;
       Spec.Delay_Seconds := 1.0;
     end if;

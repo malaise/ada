@@ -304,7 +304,9 @@ procedure Agite is
     end if;
   end Reread;
 
-  -- Periodical timer to refresh list/status of file
+  -- Start periodical timer to refresh list/status of file
+  --  or force a (earlier) single shot
+  -- Or stop timer
   package Timer is
     procedure Start (Periodic : in Boolean := False);
     procedure Stop;
