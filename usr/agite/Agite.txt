@@ -1,7 +1,7 @@
 Agite user guide
 ================
 Pascal MALAISE     <malaise@magic.fr>
-V7.14
+V7.15
 
 General purpose
 ---------------
@@ -271,8 +271,10 @@ A sigle click selects an entry for xref:XEdit[edition],
 xref:XDiff[difference] from Git reference, xref:XHistory[history] or
 xref:XRevert[revert] operation.
 +
-A double click on a directory changes current directory to it, while
-a double click on a file launches the xref:XEdit[editor] on it.
+A double click on a directory changes current directory to it. +
+A double click on a file launches the xref:XEdit[editor] on it. +
+A double click on a symbolic link makes one or the other (or nothing),
+depending on the target of the link.
 
 anchor:XNavig[]
 

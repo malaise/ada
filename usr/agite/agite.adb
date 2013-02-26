@@ -208,6 +208,36 @@ procedure Agite is
     -- Copy in Afpx list
   end Encode_Files;
 
+  -- Read the target of link and its kind ('?' if error)
+  procedure Link_Target (File_Name : in String;
+                         Target : out As.U.Asu_Us; Kind : out Character) is
+    Desc_Kind : Directory.File_Kind_List;
+  begin
+    Target := As.U.Tus (Directory.Read_Link (File_Name));
+    Desc_Kind := Directory.File_Kind (Target.Image);
+    case Desc_Kind is
+      when Directory.File =>
+        Kind := ' ';
+      when Directory.Dir =>
+        Kind := '/';
+      when others =>
+        Kind := '?';
+    end case;
+  exception
+    when others =>
+      Target.Set_Null;
+      Kind := '?';
+  end Link_Target;
+
+  -- Get the file corresponding to current position in Afpx list
+  function Get_Current_File return Git_If.File_Entry_Rec is
+    File : Git_If.File_Entry_Rec;
+  begin
+    Files.Move_At (Afpx.Line_List.Get_Position);
+    Files.Read (File, Git_If.File_Mng.Dyn_List.Current);
+    return File;
+  end Get_Current_File;
+
   -- Change dir (or at least try) according to argument or Dir_Field
   procedure Change_Dir (New_Dir : in String := "") is
     Str : constant String
@@ -217,12 +247,14 @@ procedure Agite is
   begin
     begin
       if New_Dir = "" then
+        -- Use the Str got from Dir_Field (the Get field)
         if Str /= "" then
           Target := As.U.Tus (Str);
         else
           Target := As.U.Tus (".");
         end if;
       else
+        -- Use the provided path
         Target := As.U.Tus (New_Dir);
       end if;
       Directory.Change_Current (Target.Image);
@@ -451,10 +483,10 @@ procedure Agite is
   --  or dispatch other actions
   type Action_List is (Default, Edit, Diff, History, Revert, Add);
   procedure List_Action (Action : in Action_List) is
-    File : Git_If.File_Entry_Rec;
+    File : constant Git_If.File_Entry_Rec := Get_Current_File;
+    Target : As.U.Asu_Us;
+    Kind : Character;
   begin
-    Files.Move_At (Afpx.Line_List.Get_Position);
-    Files.Read (File, Git_If.File_Mng.Dyn_List.Current);
     declare
       File_Name : constant String := File.Name.Image;
     begin
@@ -505,6 +537,13 @@ procedure Agite is
       elsif File.Kind = '@' then
         case Action is
           -- Link
+          when Default =>
+            Link_Target (File_Name, Target, Kind);
+            if Kind = '/' then
+              Change_Dir (Target.Image);
+            elsif Kind = ' ' then
+               Do_Edit (Target.Image);
+            end if;
           when Revert =>
             Do_Revert (File_Name);
           when Add =>

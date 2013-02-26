@@ -20,7 +20,7 @@ package Git_If is
     S2 : Character;
     S3 : Character;
     Name : As.U.Asu_Us;
-    Kind : Character;
+    Kind : Character;    -- ' ', '@', '/' or '?'
   end record;
   package File_Mng is new Dynamic_List (File_Entry_Rec);
   subtype File_List is File_Mng.Dyn_List.List_Type;
