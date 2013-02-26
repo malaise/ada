@@ -43,7 +43,15 @@ package Directory is
   procedure Close (Desc : in out Dir_Desc);
   -- May raise Open_Error if dir desc is not open
 
+  -- File kind
+  type File_Kind_List is new Sys_Calls.File_Kind_List;
+  function File_Kind (File_Name : String) return File_Kind_List;
 
+  -- Is it a directory, a symbolic link
+  function Is_Dir  (File_Name : String) return Boolean;
+  function Is_Link (File_Name : String) return Boolean;
+
+  -- Read the target(s) of a symbolic link
   function Read_Link (File_Name : String; Recursive : Boolean := True)
                       return String;
   procedure Read_Link (File_Name : in String;
@@ -81,10 +89,6 @@ package Directory is
   function Build_File_Name (Dirname : String;
                             File_Prefix, File_Suffix : in String)
            return String;
-
-  -- File kind and complete status
-  type File_Kind_List is new Sys_Calls.File_Kind_List;
-  function File_Kind (File_Name : String) return File_Kind_List;
 
   -- Exceptions
   Name_Error     : exception renames Sys_Calls.Name_Error;

@@ -180,6 +180,29 @@ package body Directory is
     Desc.Set (Rec);
   end Close;
 
+  -- Use Sys_Calls to retrieve file stat
+  function File_Kind (File_Name : String) return File_Kind_List is
+  begin
+    return File_Kind_List(Sys_Calls.File_Stat (File_Name).Kind);
+  exception
+    when Sys_Calls.Name_Error =>
+      raise Name_Error;
+    when Sys_Calls.Access_Error =>
+      raise Access_Error;
+  end File_Kind;
+
+  -- Is it a dir, a symbolic link
+  function Is_Dir (File_Name : String) return Boolean is
+    use type Sys_Calls.File_Kind_List;
+  begin
+    return Sys_Calls.File_Stat (File_Name).Kind = Sys_Calls.Dir;
+  end Is_Dir;
+
+  function Is_Link (File_Name : String) return Boolean is
+    use type Sys_Calls.File_Kind_List;
+  begin
+    return Sys_Calls.File_Stat (File_Name).Kind = Sys_Calls.Link;
+  end Is_Link;
 
   -- Follow a link
   function C_Readlink (Path : System.Address;
@@ -230,14 +253,14 @@ package body Directory is
       -- Current is a link, read it,
       Dest := As.U.Tus (Read_One_Link(Src.Image));
       if Dest.Length >= 1 and then Dest.Element (1) /= Separator then
-        -- Link is relative, append apth of source
+        -- Link is relative, append path of source
         Dest := As.U.Tus (Dirname (Src.Image)) & Dest;
       end if;
       Dest := As.U.Tus (Make_Full_Path (Dest.Image));
       -- Done when not a link
       exit when Sys_Calls.File_Stat (Dest.Image).Kind /= Sys_Calls.Link;
 
-      -- Detec recursion
+      -- Detect recursion
       if Dest = Src then
         -- Link points to itself
         raise Recursive_Link;
@@ -254,7 +277,6 @@ package body Directory is
     end loop;
     return Dest.Image;
   end Read_Link;
-
 
   procedure Read_Link (File_Name : in String;
                        Target : in out As.U.Asu_Us;
@@ -463,17 +485,6 @@ package body Directory is
       return Dirname & Sep & Build_Name;
     end if;
   end Build_File_Name;
-
-  -- Use Sys_Calls
-  function File_Kind (File_Name : String) return File_Kind_List is
-  begin
-    return File_Kind_List(Sys_Calls.File_Stat (File_Name).Kind);
-  exception
-    when Sys_Calls.Name_Error =>
-      raise Name_Error;
-    when Sys_Calls.Access_Error =>
-      raise Access_Error;
-  end File_Kind;
 
 end Directory;
 
