@@ -59,6 +59,9 @@ procedure Agite is
   Files : Git_If.File_List;
   Branch : As.U.Asu_Us;
 
+  -- Quick search dir or file
+  Search_Dir : Boolean;
+
   -- List width and encoding
   List_Width : Afpx.Width_Range := Afpx.Width_Range'First;
   procedure Set (Line : in out Afpx.Line_Rec;
@@ -277,6 +280,10 @@ procedure Agite is
       Afpx.Line_List.Rewind (Check_Empty => False);
     end if;
     Encode_Files (Force => True);
+
+    -- Reset Quick search dir option
+    Search_Dir := False;
+    Afpx.Clear_Field (Afpx_Xref.Main.Search_Dir);
 
     -- Encode current dir (get field)
     Afpx.Clear_Field (Dir_Field);
@@ -584,8 +591,9 @@ procedure Agite is
 
   -- Locate a file that has its first letter = Key
   -- Move to it in Afpx list if found
-  procedure Locate_File (Key : in Character) is
+  procedure Locate_Entry (Key : in Character) is
     File : Git_If.File_Entry_Rec;
+    Kind_Ok : Boolean;
     Moved : Boolean;
   begin
     if Files.Is_Empty then
@@ -594,9 +602,14 @@ procedure Agite is
     Files.Rewind;
     loop
       Files.Read (File, Moved => Moved);
-      -- Regular file or other kind, and matching Key
-      if (File.Kind = ' ' or else File.Kind = '?')
-      and then File.Name.Element(1) = Key then
+      if Search_Dir then
+        -- Directory
+        Kind_Ok := File.Kind = '/';
+      else
+        -- Regular file or other kind
+        Kind_Ok := File.Kind = ' ' or else File.Kind = '?';
+      end if;
+      if Kind_Ok and then File.Name.Element(1) = Key then
         -- Got it
         if Moved then
           -- Move back to matching entry
@@ -611,7 +624,7 @@ procedure Agite is
       exit when not Moved;
     end loop;
     -- Not found
-  end Locate_File;
+  end Locate_Entry;
 
   -- Push/pop dir
   Dir1, Dir2 : As.U.Asu_Us;
@@ -785,9 +798,17 @@ begin
             Pop_Dir;
           when Afpx_Xref.Main.Quick_Search =>
             -- Quick search
-            Locate_File (
+            Locate_Entry (
               Afpx.Decode_Field (Ptg_Result.Field_No, Ptg_Result.Click_Pos.Row)
                                   (Ptg_Result.Click_Pos.Col + 1));
+          when Afpx_Xref.Main.Search_Dir =>
+            -- Flip flop quick search dir option
+            Search_Dir := not Search_Dir;
+            if Search_Dir then
+              Afpx.Encode_Field (Afpx_Xref.Main.Search_Dir, (0, 0), "X");
+            else
+              Afpx.Clear_Field (Afpx_Xref.Main.Search_Dir);
+            end if;
           when Afpx_Xref.Main.Gui =>
             -- GUI
             Utils.Launch ("git gui", True);

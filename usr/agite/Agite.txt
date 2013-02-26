@@ -1,7 +1,7 @@
 Agite user guide
 ================
 Pascal MALAISE     <malaise@magic.fr>
-V7.15
+V8.0
 
 General purpose
 ---------------
@@ -235,9 +235,11 @@ anchor:XQuickSearch[]
 
 Quick search::
 On top of the list is a quick search area on two rows.
-Clicking in any character of this area triggers a search of file (not dir)
+Clicking in any character of this area triggers a search of file
 starting with this character. If found, the file becomes selected in the list
-and ath the top of the list area. Otherwise the selection is unchanged.
+and ath the top of the list area. Otherwise the selection is unchanged. +
+A tick box button allows searching for directory (starting with the character
+that will be clicked) instead of file.
 
 The list::
 The list shows the directories then the files of xref:XGo[current directory],
