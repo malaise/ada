@@ -40,8 +40,11 @@ extern void delay (timeout_t *p_timeout);
 extern void wait_until (timeout_t *p_time);
 
 /* Convert time to double (sec.usec) and reverse */
-extern double time_to_double (timeout_t *p_time );
+extern double time_to_double (timeout_t *p_time);
 extern void double_to_time (double from, timeout_t *p_to);
+
+/* ISO Image of a time: yyyy-mm-ddThh:mm:ss.uuuuuu (26 bytes + '\0') */
+extern void image (timeout_t *p_time, char *str);
 
 #endif
 

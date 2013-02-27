@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <limits.h>
 #include <math.h>
+#include <time.h>
+#include <string.h>
 extern double trunc(double x);
 extern double round(double x);
 
@@ -29,8 +31,6 @@ extern double round(double x);
  * Return : -1 if the time is negative, 0 if it 0, 1 if it is positive
  *
  * Errors : None
- *
- * History :
  *
  *******************************************************************************
 */
@@ -71,7 +71,6 @@ int normalize_time (timeout_t *p_time)
 }
 
 
-
 /*
  ******************************************************************************
  * Function : add_time
@@ -88,8 +87,6 @@ int normalize_time (timeout_t *p_time)
  * Return : -1 if the resulting time is negative, 0 if it 0, 1 if it is positive
  *
  * Errors : None
- *
- * History :
  *
  *******************************************************************************
 */
@@ -128,8 +125,6 @@ int add_time (timeout_t *p_to, timeout_t *p_val)
  *
  * Errors : None
  *
- * History :
- *
  *******************************************************************************
 */
 /* Subs *p_val to *p_to and returns the sign of *p_to after addition */
@@ -163,8 +158,6 @@ int sub_time ( timeout_t *p_to,  timeout_t *p_val)
  *
  * Errors : None
  *
- * History :
- *
  *******************************************************************************
 */
 /* Adds delay in ms to *p_to */
@@ -196,8 +189,6 @@ int incr_time (timeout_t *p_to, unsigned int delay_ms)
  *
  * Errors : None
  *
- * History :
- *
  *******************************************************************************
 */
 /* init a time with current time */
@@ -223,8 +214,6 @@ void get_time (timeout_t *p_time)
  * Return : -1 if a<b,  0 if a=b,  1 if a>b
  *
  * Errors : None
- *
- * History :
  *
  *******************************************************************************
 */
@@ -265,8 +254,6 @@ int comp_time (timeout_t *p_time_1, timeout_t *p_time_2)
  *
  * Errors : None
  *
- * History :
- *
  *******************************************************************************
 */
 boolean time_is_reached (timeout_t *p_time)
@@ -296,8 +283,6 @@ boolean time_is_reached (timeout_t *p_time)
  * Return : None
  *
  * Errors : None
- *
- * History :
  *
  *******************************************************************************
 */
@@ -346,8 +331,6 @@ extern void delay ( timeout_t *p_timeout ) {
  *
  * Errors : None
  *
- * History :
- *
  *******************************************************************************
 */
 extern void wait_until ( timeout_t *p_time ) {
@@ -378,8 +361,6 @@ extern void wait_until ( timeout_t *p_time ) {
  *
  * Errors : None
  *
- * History :
- *
  *******************************************************************************
 */
 extern double time_to_double (timeout_t *p_time ) {
@@ -403,8 +384,6 @@ extern double time_to_double (timeout_t *p_time ) {
  * Return : The double value of conversion
  *
  * Errors : None
- *
- * History :
  *
  *******************************************************************************
 */
@@ -433,5 +412,31 @@ extern void double_to_time (double from, timeout_t *p_to) {
   p_to->tv_usec = (long)u;
   normalize_time (p_to);
 
+}
+
+/*
+ ******************************************************************************
+ * Function : image
+ *
+ * Abstract : Builds the time image at ISO format
+ *
+ * Decisions : yyyy-mm-ddThh:mm:ss.uuuuuu (26 bytes + '\0')
+ *
+ * Input  : p_time the time to build image from
+ *
+ * Output : str address to put the 27 bytes
+ *
+ * Return : none
+ *
+ *******************************************************************************
+*/
+extern void image (timeout_t *p_time, char *str) {
+  struct tm tm_time;
+  char str_msec[7];
+
+  (void)gmtime_r(&(p_time->tv_sec), &tm_time);
+  (void)strftime (str, 21, "%Y-%m-%dT%H:%M:%S.", &tm_time);
+  sprintf (str_msec, "%06ld", p_time->tv_usec);
+  strcat (str, str_msec);
 }
 
