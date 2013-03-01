@@ -178,6 +178,18 @@ package body Git_If is
     Dir_List : Dir_Mng.File_List_Mng.List_Type;
     Dir_Entry : Dir_Mng.File_Entry_Rec;
     Redirect : Natural;
+
+    procedure Init_List is
+    begin
+      Files.Delete_List;
+      File_Entry := (Name => As.U.Tus ("."),
+                     S2 => ' ', S3 => ' ',
+                     Kind => Char_Of (Sys_Calls.Dir));
+      Files.Insert (File_Entry);
+      File_Entry.Name := As.U.Tus ("..");
+      Files.Insert (File_Entry);
+    end Init_List;
+
     use type Directory.File_Kind_List;
   begin
     -- Init result
@@ -191,6 +203,7 @@ package body Git_If is
     -- Handle error
     if Exit_Code /= 0 then
       Basic_Proc.Put_Line_Error ("git ls-files: " & Err_Flow.Str.Image);
+      Init_List;
       return;
     end if;
 
@@ -203,7 +216,7 @@ package body Git_If is
         Out_Flow_2'Access, Err_Flow'Access, Exit_Code);
     -- Handle error
     if Exit_Code /= 0 then
-      Basic_Proc.Put_Line_Error ("git status: " & Err_Flow.Str.Image);
+      Init_List;
       return;
     end if;
 
