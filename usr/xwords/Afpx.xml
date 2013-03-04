@@ -9,7 +9,7 @@
     <!-- Title and list -->
     <Var Name="WWidth" Value="40"/>
     <List>
-      <Geometry Up="6" Left="1" Low="${Screen.Low}-1" Width="${WWidth}"/>
+      <Geometry Up="7" Left="1" Low="${Screen.Low}-1" Width="${WWidth}"/>
       <Colors Foreground="Black" Background="Dark_Grey" Selected="Dark_Green"/>
     </List>
     <Field Num="1" Kind="Put">
@@ -171,6 +171,35 @@
                 Right="${Field_5.Right}"/>
       <Colors Foreground="Black" Background="Light_Grey"/>
       <Init Row="0" Col="0">         |         |         |         |</Init>
+    </Field>
+
+    <!-- Scroll bar and summary -->
+    <Field Num="27" Kind="Put" Name="Scroll">
+      <Geometry Up="${List.Up}" Left="${List.Left}-1" Height="${List.Height}"
+                Width="1"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+    </Field>
+    <Field Num="28" Kind="Put">
+      <Geometry Up="${List.Up}-1" Left="${List.Left}" Height="1"
+                Width="4"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Init Row="0" Col="0">Top:</Init>
+    </Field>
+    <Field Num="29" Kind="Put" Name="Topnum">
+      <Geometry Up="${Field_28.Up}" Left="${Field_28.Right}+2" Height="1"
+                Width="7"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+    </Field>
+    <Field Num="30" Kind="Put">
+      <Geometry Up="${Field_29.Up}" Left="${Field_29.Right}+3" Height="1"
+                Width="3"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Init Row="0" Col="0">Of:</Init>
+    </Field>
+    <Field Num="31" Kind="Put" Name="Topof">
+      <Geometry Up="${Field_30.Up}" Left="${Field_30.Right}+2" Height="1"
+                Width="7"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
     </Field>
   </Descriptor>
 
