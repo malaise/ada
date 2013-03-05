@@ -206,6 +206,34 @@
       <Init Row="0" Col="0">         |         |         |         |</Init>
     </Field>
 
+    <!-- Scroll bar and summary -->
+    <Field Num="27" Kind="Put" Name="Scroll">
+      <Geometry Up="${List.Up}" Left="${List.Left}-1" Height="${List.Height}"
+                Width="1"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+    </Field>
+    <Field Num="28" Kind="Put">
+      <Geometry Up="${List.Low}+1" Left="${List.Left}" Height="1"
+                Width="4"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Init Row="0" Col="0">Top:</Init>
+    </Field>
+    <Field Num="29" Kind="Put" Name="Topnum">
+      <Geometry Up="${List.Low}+1" Left="${Field_28.Right}+2" Height="1"
+                Width="7"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+    </Field>
+    <Field Num="30" Kind="Put">
+      <Geometry Up="${List.Low}+1" Left="${Field_29.Right}+3" Height="1"
+                Width="3"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+      <Init Row="0" Col="0">Of:</Init>
+    </Field>
+    <Field Num="31" Kind="Put" Name="Topof">
+      <Geometry Up="${List.Low}+1" Left="${Field_30.Right}+2" Height="1"
+                Width="7"/>
+      <Colors Foreground="Black" Background="Light_Grey"/>
+    </Field>
   </Descriptor>
 
 </Afpx_Descriptors>
