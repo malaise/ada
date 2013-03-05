@@ -2,7 +2,7 @@
 -- Or search anagrams
 with As.U.Utils, Argument, Con_Io, Afpx, Basic_Proc, Language, Many_Strings,
      Str_Util, Lower_Str, Environ, Images, Event_Mng, Afpx_Xref,
-     Mutex_Manager, Protected_Var, Trilean;
+     Mutex_Manager, Protected_Var, Trilean, Roundiv;
 with Cmd, Analist;
 procedure Xwords is
 
@@ -46,7 +46,11 @@ procedure Xwords is
   -- Fields
   Clear_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Clear;
   Recall_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Recall;
+  Nouns_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Nouns;
   Get_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Get;
+  Scroll_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Scroll;
+  Topnum_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Topnum;
+  Topof_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Topof;
   Anagrams_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Anagrams;
   Search_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Search;
   Research_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Re_Search;
@@ -69,6 +73,9 @@ procedure Xwords is
   -- Dictio init status
   Dictio_File_Name : As.U.Asu_Us;
   Loading_Anagrams : Boolean;
+
+  -- List is words or history
+  List_Is_Words : Boolean;
 
   -- Us to Afpx line
   function Us2Afpx (Us : As.U.Asu_Us) return Afpx.Line_Rec is
@@ -94,6 +101,96 @@ procedure Xwords is
   begin
     return Str_Util.Strip (Str);
   end Strip;
+
+  -- Callback for scroll of list
+  procedure List_Cb (Action : in Afpx.List_Change_List;
+                     Afpx_Status : in Afpx.List_Status_Rec)  is
+    Percent : Afpx.Percent_Range;
+    Row : Con_Io.Row_Range;
+
+    use type Afpx.List_Change_List, Afpx.List_Status_Rec;
+  begin
+    if Status /= Found or else not List_Is_Words then
+      return;
+    end if;
+    if Action /= Afpx.Init and then Action /= Afpx.Scroll then
+      return;
+    end if;
+    -- Id top
+    Afpx.Clear_Field (Topnum_Fld);
+    Afpx.Encode_Field (Topnum_Fld, (0, 0),
+                       Images.Integer_Image (Afpx_Status.Id_Top));
+    -- Scroll bar index
+    Afpx.Clear_Field (Scroll_Fld);
+    Percent := Afpx.Get_List_Percent;
+    if Percent /= 0 then
+      -- 0 <-> 1% and Height-1 <-> 100%
+      -- (Percent-1)/99 = Row/(Height-1)
+      Row := Con_Io.Row_Range(
+        Roundiv ((Afpx.Get_Field_Height (Scroll_Fld) - 1) * (Percent - 1), 99));
+      Afpx.Encode_Field (Scroll_Fld, (Row => Row, Col => 0), "-");
+    else
+      Afpx.Encode_Field (Scroll_Fld, (0, 0), "-");
+    end if;
+  end List_Cb;
+
+  -- Move Afpx list ot first noun (if any)
+  procedure Move_To_Nouns is
+    Position : Positive;
+    Line : Afpx.Line_Rec;
+    Moved : Boolean;
+  begin
+    if Afpx.Line_List.Is_Empty then
+      return;
+    end if;
+    Position := Afpx.Line_List.Get_Position;
+    -- Search for line in uppercase
+    Afpx.Line_List.Rewind;
+    loop
+      Afpx.Line_List.Read (Line, Moved => Moved);
+      if Line.Len /= 0
+      and then Language.Is_Char (Line.Str(1))
+      and then Language.Unicode_To_Char (Line.Str(1)) >= 'A'
+      and then Language.Unicode_To_Char (Line.Str(1)) <= 'Z' then
+        -- Found the first UPPERCASE line, move it at top of window
+        if Moved then
+          Afpx.Line_List.Move_To (Afpx.Line_List_Mng.Prev);
+        end if;
+        Afpx.Update_List (Afpx.Top_Selected);
+        exit;
+      end if;
+      if not Moved then
+        -- Reached end of list with only lowercase words
+        -- Restore position and done
+        Afpx.Line_List.Move_At (Position);
+        exit;
+      end if;
+    end loop;
+  end Move_To_Nouns;
+
+  -- Scroll list according to row (of scroll button) clicked
+  procedure Do_Scroll (Row : in Con_Io.Row_Range)is
+    Percent : Afpx.Percent_Range;
+    Saved_Position, Position : Natural;
+  begin
+    if Afpx.Line_List.Is_Empty then
+      return;
+    end if;
+    Saved_Position := Afpx.Line_List.Get_Position;
+    -- 0 <-> 1% and Height-1 <-> 100%
+    -- (Percent-1)/99 = Row/(Height-1)
+    Percent := Roundiv (
+                 Row * 99,
+                 Afpx.Get_Field_Height (Scroll_Fld) - 1) + 1;
+    Position := Afpx.Get_List_Index (Percent);
+    if Position = 0 then
+      return;
+    end if;
+    Afpx.Line_List.Move_At (Position);
+    Afpx.Update_List (Afpx.Top_Selected);
+    Afpx.Line_List.Move_At (Saved_Position);
+
+  end Do_Scroll;
 
   -- List anagrams of word
   procedure Do_Anagrams is
@@ -143,6 +240,7 @@ procedure Xwords is
       Status := Ok;
     else
       Status := Found;
+      List_Is_Words := True;
     end if;
 
   exception
@@ -182,7 +280,7 @@ procedure Xwords is
     elsif Num = Add_Noun_Fld or else Num = Del_Noun_Fld then
       Arg.Cat ("-noun");
     end if;
-    Arg.Cat (Word);
+    Arg.Cat ('"' & Word & '"');
 
     -- Prevent X events to interfere with the Command internal loop
     --  and execute command
@@ -195,6 +293,7 @@ procedure Xwords is
       Status := Error;
     elsif Num = Search_Fld or else Num = Research_Fld then
       Status := Found;
+      List_Is_Words := True;
     else
       Status := Ok;
     end if;
@@ -382,6 +481,17 @@ begin
     end if;
 
     -- Color and protection of result list according to status
+    Afpx.Clear_Field (Topof_Fld);
+    if Status = Found and then List_Is_Words then
+      -- Get position of top and encode field
+      Afpx.Encode_Field (Topof_Fld, (0, 0),
+                         Images.Integer_Image (Afpx.Line_List.List_Length));
+      Afpx.Set_Field_Activation (Nouns_Fld, True);
+    else
+      Afpx.Clear_Field (Scroll_Fld);
+      Afpx.Clear_Field (Topnum_Fld);
+      Afpx.Set_Field_Activation (Nouns_Fld, False);
+    end if;
     case Status is
       when Found =>
         Afpx.Reset_Field (Afpx.List_Field_No, Reset_String => False);
@@ -397,7 +507,8 @@ begin
     -- Set cursor at last significant char of the Get field
     Cursor_Col := Afpx.Last_Index (Afpx.Decode_Field (Get_Fld, 0), True);
     Debug ("Calling PTG");
-    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result, Redisplay);
+    Afpx.Put_Then_Get (Cursor_Field, Cursor_Col, Insert, Ptg_Result, Redisplay,
+                       List_Change_Cb => List_Cb 'Unrestricted_Access);
     Debug ("PTG returning");
     Redisplay := False;
 
@@ -425,6 +536,10 @@ begin
               Afpx.Set_Selection (Strip (Lower_Str (Str)));
             end;
 
+          -- Scroll bar
+          when Scroll_Fld =>
+            Do_Scroll (Ptg_Result.Release_Pos.Row);
+
           -- Clear get and error
           when Clear_Fld =>
             Afpx.Clear_Field (Get_Fld);
@@ -437,6 +552,10 @@ begin
           -- Recall last request
           when Recall_Fld =>
             Do_Recall;
+
+          -- Move to first noun
+          when Nouns_Fld =>
+            Move_To_Nouns;
 
           -- Search anagrams
           when Anagrams_Fld =>
@@ -463,6 +582,7 @@ begin
               History.Rewind (True, Cmd.Res_Mng.Dyn_List.Prev);
             end if;
             Status := Found;
+            List_Is_Words := False;
           -- Clear list
           when Clear_List_Fld =>
             Afpx.Line_List.Delete_List (Deallocate => False);

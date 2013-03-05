@@ -173,7 +173,7 @@ package body History is
                           (Row => Row, Col => 0),
                           "-");
       else
-        Afpx.Encode_Field (Afpx_Xref.History.Percent, (0, 0), " - ");
+        Afpx.Encode_Field (Afpx_Xref.History.Percent, (0, 0), "-");
       end if;
       -- Put Ids selected
       Afpx.Encode_Field (Afpx_Xref.History.Leftsel, (0, 0),
