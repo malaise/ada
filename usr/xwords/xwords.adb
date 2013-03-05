@@ -62,9 +62,6 @@ procedure Xwords is
   Clear_List_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Clear_List;
   Lmng_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.List_Mng;
   Exit_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Quit;
-  Scroll_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Scroll;
-  Topnum_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Topnum;
-  Topof_Fld : constant Afpx.Field_Range := Afpx_Xref.Main.Topof;
 
   -- History of search requests
   History : Cmd.Res_List;
@@ -133,10 +130,67 @@ procedure Xwords is
         Roundiv ((Afpx.Get_Field_Height (Scroll_Fld) - 1) * (Percent - 1), 99));
       Afpx.Encode_Field (Scroll_Fld, (Row => Row, Col => 0), "-");
     else
-      Afpx.Encode_Field (Scroll_Fld, (0, 0), " - ");
+      Afpx.Encode_Field (Scroll_Fld, (0, 0), "-");
     end if;
-
   end List_Cb;
+
+  -- Move Afpx list ot first noun (if any)
+  procedure Move_To_Nouns is
+    Position : Positive;
+    Line : Afpx.Line_Rec;
+    Moved : Boolean;
+  begin
+    if Afpx.Line_List.Is_Empty then
+      return;
+    end if;
+    Position := Afpx.Line_List.Get_Position;
+    -- Search for line in uppercase
+    Afpx.Line_List.Rewind;
+    loop
+      Afpx.Line_List.Read (Line, Moved => Moved);
+      if Line.Len /= 0
+      and then Language.Is_Char (Line.Str(1))
+      and then Language.Unicode_To_Char (Line.Str(1)) >= 'A'
+      and then Language.Unicode_To_Char (Line.Str(1)) <= 'Z' then
+        -- Found the first UPPERCASE line, move it at top of window
+        if Moved then
+          Afpx.Line_List.Move_To (Afpx.Line_List_Mng.Prev);
+        end if;
+        Afpx.Update_List (Afpx.Top_Selected);
+        exit;
+      end if;
+      if not Moved then
+        -- Reached end of list with only lowercase words
+        -- Restore position and done
+        Afpx.Line_List.Move_At (Position);
+        exit;
+      end if;
+    end loop;
+  end Move_To_Nouns;
+
+  -- Scroll list according to row (of scroll button) clicked
+  procedure Do_Scroll (Row : in Con_Io.Row_Range)is
+    Percent : Afpx.Percent_Range;
+    Saved_Position, Position : Natural;
+  begin
+    if Afpx.Line_List.Is_Empty then
+      return;
+    end if;
+    Saved_Position := Afpx.Line_List.Get_Position;
+    -- 0 <-> 1% and Height-1 <-> 100%
+    -- (Percent-1)/99 = Row/(Height-1)
+    Percent := Roundiv (
+                 Row * 99,
+                 Afpx.Get_Field_Height (Scroll_Fld) - 1) + 1;
+    Position := Afpx.Get_List_Index (Percent);
+    if Position = 0 then
+      return;
+    end if;
+    Afpx.Line_List.Move_At (Position);
+    Afpx.Update_List (Afpx.Top_Selected);
+    Afpx.Line_List.Move_At (Saved_Position);
+
+  end Do_Scroll;
 
   -- List anagrams of word
   procedure Do_Anagrams is
@@ -432,9 +486,11 @@ begin
       -- Get position of top and encode field
       Afpx.Encode_Field (Topof_Fld, (0, 0),
                          Images.Integer_Image (Afpx.Line_List.List_Length));
+      Afpx.Set_Field_Activation (Nouns_Fld, True);
     else
       Afpx.Clear_Field (Scroll_Fld);
       Afpx.Clear_Field (Topnum_Fld);
+      Afpx.Set_Field_Activation (Nouns_Fld, False);
     end if;
     case Status is
       when Found =>
