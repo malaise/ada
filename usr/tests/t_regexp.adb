@@ -27,7 +27,7 @@ procedure T_Regexp is
     Basic_Proc.Put_Line_Output ("     -c for successive compilations");
     Basic_Proc.Put_Line_Output ("     -f for successive compilations and frees");
     Basic_Proc.Put_Line_Output ("     -p for compiling all arguments as patterns");
-    Basic_Proc.Put_Line_Output (" <manual> ::= [ <option> ] <pattern> { <Search_String> }");
+    Basic_Proc.Put_Line_Output (" <manual> ::= [ <option> ] <pattern> { <search_string> }");
     for I in Keys'Range loop
       Basic_Proc.Put_Line_Output ("     " & Argument_Parser.Image (Keys(I))
                                 & ", " & Helps(I).Image);

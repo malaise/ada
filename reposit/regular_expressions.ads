@@ -74,9 +74,16 @@ package Regular_Expressions is
                   End_Line_Match : in Boolean := True);
 
   -- Compare string Str to Criteria (Compile and Exec with default values)
+  -- Return a Match_Array of size between 0 (no match) and the requested
+  --  Max_Match depending on how many substrigs have matched
+  -- May raise No_Criteria if Criteria does not compile
+  function Match (Criteria, Str : String; Max_Match : Positive := 10)
+                  return Match_Array;
+
+  -- Compare string Str to Criteria (Compile and Exec with default values)
   -- Returns No_Match or a Match_Cell (possibly Any_Match) corresponding
   --  to Match_Info(1)
-  -- May raise No_Criteria is Criteria does not compile
+  -- May raise No_Criteria if Criteria does not compile
   function Match (Criteria, Str : String) return Match_Cell;
 
   -- Check that a Match_Cell (returned by Exec or Match) is valid
@@ -88,7 +95,13 @@ package Regular_Expressions is
   -- If Strict is set, then True is returned if and only if the
   --  complete Str matches the criteria (i.e. First_Offset = Str'First
   --  and Last_Offset_Stop = Str'Last)
-  -- May raise No_Criteria is Criteria does not compile
+  -- Note that setting Strict to True does not prevent lazyness of evaluation,
+  --  so if there are different ways for Str to match Criteria then the Match
+  --  may select the shortest alternative and the strictness check may fail;
+  --  this is not the case if the Criteria starts by '^' and ends by '$'
+  -- Example: "ti" matches "to?|ti"  but not strictly, while it stricly matches
+  --  "^(to?|ti)$" and "ti|to?"
+  -- May raise No_Criteria if Criteria does not compile
   function Match (Criteria, Str : String;
                   Strict : in Boolean) return Boolean;
 

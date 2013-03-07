@@ -248,13 +248,14 @@ package body Regular_Expressions is
   end Exec;
 
   -- Compare string Str to Criteria
-  -- Returns No_Match or a Match_Cell
-  -- May raise No_Criteria is Criteria does not compile.
-  function Match (Criteria, Str : String) return Match_Cell is
+  -- Return a Match_Array of size between 0 (no match) and Max_Match
+  -- May raise No_Criteria if Criteria does not compile
+  function Match (Criteria, Str : String; Max_Match : Positive := 10)
+                  return Match_Array is
     Pattern : Compiled_Pattern;
     Ok : Boolean;
     Matched : Natural;
-    Match_Info : One_Match_Array;
+    Match_Info : Match_Array (1 .. Max_Match);
   begin
     Compile (Pattern, Ok, Criteria);
     if not Ok then
@@ -262,12 +263,28 @@ package body Regular_Expressions is
     end if;
     Exec (Pattern, Str, Matched, Match_Info);
     Free (Pattern);
-    return Match_Info(1);
+    return Match_Info(1 .. Matched);
+  end Match;
+
+  -- Compare string Str to Criteria
+  -- Returns No_Match or a Match_Cell
+  -- May raise No_Criteria if Criteria does not compile
+  function Match (Criteria, Str : String) return Match_Cell is
+  begin
+    declare
+      Match_Info : constant Match_Array := Match (Criteria, Str, 1);
+    begin
+      if Match_Info'Length = 0 then
+        return No_Match;
+      else
+        return Match_Info(1);
+      end if;
+    end;
   end Match;
 
   -- Compare string Str to Criteria
   -- Returns True or False
-  -- May raise No_Criteria is Criteria does not compile.
+  -- May raise No_Criteria if Criteria does not compile.
   function Match (Criteria, Str : String;
                   Strict : in Boolean) return Boolean is
     Result : Match_Cell;
