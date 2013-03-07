@@ -176,7 +176,7 @@ package body Regular_Expressions is
   procedure Exec (Criteria : in Compiled_Pattern;
                   To_Check : in String;
                   N_Matched : out Natural;
-                  Match_Info : in out Match_Array;
+                  Match_Info : out Match_Array;
                   Begin_Line_Match : in Boolean := True;
                   End_Line_Match : in Boolean := True) is
     C_Match_Info : C_Match_Array (1 .. Match_Info'Length);
