@@ -67,6 +67,13 @@ begin
       elsif Str = "is" then
         -- Skip "is"
         null;
+      elsif Str = "with" then
+        -- Skip aspect, until "is"
+        loop
+          Word := Parser_Ada.Multiparser.Get (True);
+          exit when Word.Lexic = Parser_Ada.Reserved_Word
+          and then Word.Text.Image = "is";
+        end loop;
       elsif Str = "end" then
         -- End of this package
         -- Put "package body <Name> is" if needed

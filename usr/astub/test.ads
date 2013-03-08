@@ -10,7 +10,7 @@ generic
   type Typ is private;
   -- A function as generic formal argument
   with function ">" (A, B : Typ) return Boolean is <>;
-package Test is
+package Test with Pure is
 
   -- A type
   type Typ1 is new String;
@@ -60,10 +60,13 @@ package Test is
   procedure Proc1 (A : in Integer);
 
   -- A function
-  function Func1 (A, B : Integer;
+  function Func1 (A, B : in out Integer;
                   C : Character) return String;
   -- Another function
   function Func2 return Integer;
+
+  -- An expression function
+  function Incr (A : Integer) return Integer is (A + 1);
 
   -- A procedure and function with access
   procedure Proca (A : in Integer;
@@ -77,10 +80,12 @@ package Test is
 
   -- A package
   package Pack1 is
+    subtype Int is Integer;
+    subtype Char is Character;
     -- A function
-    function Func3 (A, B : Integer; C : Character) return String;
+    function Func3 (A, B : Int; C : Char) return String with Priority => 10;
     -- A procedure
-    procedure Proc2 (A : in Integer);
+    procedure Proc2 (A : in Integer) with Priority => 11;
   end Pack1;
   -- Another package
   package Pack2 is

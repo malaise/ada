@@ -3,7 +3,7 @@ Ada notes
 
 This README file describes briefly the main directories of the Ada contrib.
 
-The software compiles with Ada05 (Gnat GPL 2012) and runs on Unix (Linux).
+The software compiles with Ada 2012 (Gnat GPL 2012) and runs on Unix (Linux).
 
 Some programs depend on anchor:XPCRE[] PCRE (Perl Compatible Regular Expressions) and work
 with version 7.8 or above (8.21 is OK).

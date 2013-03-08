@@ -185,6 +185,7 @@ package body Ada_Words is
 
     Store ("select");
     Store ("separate");
+    Store ("some");
     Store ("subtype");
     Store ("synchronized");
 

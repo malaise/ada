@@ -1,10 +1,11 @@
 with As.U;
-with Common, Output, Words, Parse_To_End, Parse_To_Ends,
+with Common, Output, Words, Parse_To_Ends, Parse_To_End,
      Parser_Ada, Parse_Name, Fix_Comment, Put_Comments;
 
 procedure Parse_Function (Level : in Natural;
                           Generated : in out Boolean) is
   Name, Args : As.U.Asu_Us;
+  Has_Aspect : Boolean;
   Word : Parser_Ada.Word_Rec;
   In_Id : Boolean;
   Nb_Parent : Natural;
@@ -64,13 +65,17 @@ begin
 
   -- Parse return
   if Word.Text.Image = "return" then
-    Parse_To_End (Parser_Ada.Delimiter, ";", Level, Put_Comments => False,
-                  Up_To_Next_Significant => False);
+    Parse_To_Ends (
+      (1 => (Parser_Ada.Delimiter, As.U.Tus (";")),
+       2 => (Parser_Ada.Reserved_Word, As.U.Tus ("with"))),
+      Level, Put_Comments => False,
+      Up_To_Next_Significant => False);
   else
     Common.Error (Word.Text.Image);
   end if;
 
-  -- If a renames or generic instanciation, put as comment
+  -- If a renames or generic instanciation or expresssion function
+  --  then put as comment
   if Words.Search (Parser_Ada.Reserved_Word, "renames") /= 0 then
     Fix_Comment (Level);
     Output.Put_Line (Words.Concat, True, Level, True);
@@ -84,12 +89,21 @@ begin
     return;
   end if;
 
-  -- This is a "real" declaration: remove last ";"
+  Has_Aspect := Words.Search (Parser_Ada.Reserved_Word, "with") /= 0;
+
+  -- This is a "real" declaration: remove last ";" or " with"
   Generated := True;
   Words.Del;
+  if Has_Aspect then
+    Words.Del;
+  end if;
 
   -- Output this and " is"
   Output.Put_Line (Words.Concat & " is", False, Level);
+ -- Skip aspect if any
+  if Has_Aspect then
+    Parse_To_End (Parser_Ada.Delimiter, ";", Level);
+  end if;
   Words.Reset;
 
   -- begin

@@ -76,7 +76,7 @@ package body Test is
   end Proc1;
 
   -- A function
-  function Func1 (A, B : Integer;
+  function Func1 (A, B : in out Integer;
                   C : Character) return String is
   begin
     return Func1 (A, B, C);
@@ -87,6 +87,9 @@ package body Test is
   begin
     return Func2;
   end Func2;
+
+  -- An expression function
+  -- function Incr (A : Integer) return Integer is (A + 1);
 
   -- A procedure and function with access
   procedure Proca (A : in Integer;
@@ -108,8 +111,12 @@ package body Test is
   -- A package
   package body Pack1 is
 
+    -- subtype Int is Integer;
+
+    -- subtype Char is Character;
+
     -- A function
-    function Func3 (A, B : Integer; C : Character) return String is
+    function Func3 (A, B : Int; C : Char) return String is
     begin
       return Func3 (A, B, C);
     end Func3;

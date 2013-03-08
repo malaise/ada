@@ -23,7 +23,7 @@ procedure T_Regexp is
   begin
     Basic_Proc.Put_Line_Output ("Usage: " & Argument.Get_Program_Name
                         & " <automatic> | <manual> | -h | --help");
-    Basic_Proc.Put_Line_Output (" <automatic> ::= -c | -f | -p");
+    Basic_Proc.Put_Line_Output (" <automatic> ::= -c  |  -f  |  -p [ { <pattern> } ]");
     Basic_Proc.Put_Line_Output ("     -c for successive compilations");
     Basic_Proc.Put_Line_Output ("     -f for successive compilations and frees");
     Basic_Proc.Put_Line_Output ("     -p for compiling all arguments as patterns");
