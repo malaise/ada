@@ -1,4 +1,8 @@
 #!/bin/bash
+if [ -f test.adb ] ; then
+  echo "Removing previous test.adb"
+  rm test.adb
+fi
 make test.adb
 if [ $? -ne 0 ] ; then
   exit 1

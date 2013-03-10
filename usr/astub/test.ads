@@ -13,7 +13,8 @@ generic
 package Test with Pure is
 
   -- A type
-  type Typ1 is new String;
+  type Typ1 is new String
+    with Default_Component_Value => Ada.Characters.Latin_1.Space;
   -- Another type
   type Typ2 is record
     Field1 : Integer;
@@ -40,13 +41,18 @@ package Test with Pure is
   type Typ4 is access procedure (A : in Integer);
 
   -- A private type
-  type Typ5 is private;
+  type Typ5 is private with Type_Invariant => Check(Stack);
+  function Check (S: Stack) return Boolean;
 
   -- A type with comments
   type Typ6 is (
    Red,      -- The colors
    Orange,   -- Of a
    Green);   -- Traffic light
+
+  -- An enumerated
+  type Typ7 is (Black, Red, White)
+    with Default_Value => Black;
 
   -- A variable and a constant
   Var1 : Typ2;
@@ -80,8 +86,10 @@ package Test with Pure is
 
   -- A package
   package Pack1 is
-    subtype Int is Integer;
-    subtype Char is Character;
+    subtype Int is Integer
+      with Dynamic_Predicate => Int mod 2 = 0;
+    subtype Char is Character
+      with Static_Predicate => Char in 'a' .. 'f' | 'a' .. 'F' | '0'.. '9';
     -- A function
     function Func3 (A, B : Int; C : Char) return String with Priority => 10;
     -- A procedure
